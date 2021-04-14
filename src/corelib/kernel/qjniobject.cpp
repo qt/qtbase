@@ -489,7 +489,7 @@ jclass QtAndroidPrivate::findClass(const char *className, JNIEnv *env)
     }
 
     if (!clazz) // We didn't get an env. pointer or we got one with the WRONG class loader...
-        clazz = loadClass(classDotEnc, QJniEnvironment(), true);
+        clazz = loadClass(classDotEnc, QJniEnvironment().jniEnv(), true);
 
     return clazz;
 }
@@ -538,11 +538,11 @@ QJniObject::QJniObject(const char *className)
 {
     QJniEnvironment env;
     d->m_className = toBinaryEncClassName(className);
-    d->m_jclass = loadClass(d->m_className, env, true);
+    d->m_jclass = loadClass(d->m_className, env.jniEnv(), true);
     d->m_own_jclass = false;
     if (d->m_jclass) {
         // get default constructor
-        jmethodID constructorId = getCachedMethodID(env, d->m_jclass, d->m_className, "<init>", "()V");
+        jmethodID constructorId = getCachedMethodID(env.jniEnv(), d->m_jclass, d->m_className, "<init>", "()V");
         if (constructorId) {
             jobject obj = env->NewObject(d->m_jclass, constructorId);
             if (obj) {
@@ -571,10 +571,10 @@ QJniObject::QJniObject(const char *className, const char *signature, ...)
 {
     QJniEnvironment env;
     d->m_className = toBinaryEncClassName(className);
-    d->m_jclass = loadClass(d->m_className, env, true);
+    d->m_jclass = loadClass(d->m_className, env.jniEnv(), true);
     d->m_own_jclass = false;
     if (d->m_jclass) {
-        jmethodID constructorId = getCachedMethodID(env, d->m_jclass, d->m_className, "<init>", signature);
+        jmethodID constructorId = getCachedMethodID(env.jniEnv(), d->m_jclass, d->m_className, "<init>", signature);
         if (constructorId) {
             va_list args;
             va_start(args, signature);
@@ -593,10 +593,10 @@ QJniObject::QJniObject(const char *className, const char *signature, const QVaLi
 {
     QJniEnvironment env;
     d->m_className = toBinaryEncClassName(className);
-    d->m_jclass = loadClass(d->m_className, env, true);
+    d->m_jclass = loadClass(d->m_className, env.jniEnv(), true);
     d->m_own_jclass = false;
     if (d->m_jclass) {
-        jmethodID constructorId = getCachedMethodID(env, d->m_jclass, d->m_className, "<init>", signature);
+        jmethodID constructorId = getCachedMethodID(env.jniEnv(), d->m_jclass, d->m_className, "<init>", signature);
         if (constructorId) {
             jobject obj = env->NewObjectV(d->m_jclass, constructorId, args);
             if (obj) {
@@ -626,7 +626,7 @@ QJniObject::QJniObject(jclass clazz, const char *signature, ...)
     if (clazz) {
         d->m_jclass = static_cast<jclass>(env->NewGlobalRef(clazz));
         if (d->m_jclass) {
-            jmethodID constructorId = getMethodID(env, d->m_jclass, "<init>", signature);
+            jmethodID constructorId = getMethodID(env.jniEnv(), d->m_jclass, "<init>", signature);
             if (constructorId) {
                 va_list args;
                 va_start(args, signature);
@@ -658,7 +658,7 @@ QJniObject::QJniObject(jclass clazz)
     d->m_jclass = static_cast<jclass>(env->NewGlobalRef(clazz));
     if (d->m_jclass) {
         // get default constructor
-        jmethodID constructorId = getMethodID(env, d->m_jclass, "<init>", "()V");
+        jmethodID constructorId = getMethodID(env.jniEnv(), d->m_jclass, "<init>", "()V");
         if (constructorId) {
             jobject obj = env->NewObject(d->m_jclass, constructorId);
             if (obj) {
@@ -676,7 +676,7 @@ QJniObject::QJniObject(jclass clazz, const char *signature, const QVaListPrivate
     if (clazz) {
         d->m_jclass = static_cast<jclass>(env->NewGlobalRef(clazz));
         if (d->m_jclass) {
-            jmethodID constructorId = getMethodID(env, d->m_jclass, "<init>", signature);
+            jmethodID constructorId = getMethodID(env.jniEnv(), d->m_jclass, "<init>", signature);
             if (constructorId) {
                 jobject obj = env->NewObjectV(d->m_jclass, constructorId, args);
                 if (obj) {
@@ -772,7 +772,7 @@ QJniObject QJniObject::callObjectMethodV(const char *methodName,
 {
     QJniEnvironment env;
     jobject res = nullptr;
-    jmethodID id = getCachedMethodID(env, d->m_jclass, d->m_className, methodName, signature);
+    jmethodID id = getCachedMethodID(env.jniEnv(), d->m_jclass, d->m_className, methodName, signature);
     if (id) {
         res = env->CallObjectMethodV(d->m_jobject, id, args);
         if (env.checkAndClearExceptions()) {
@@ -793,9 +793,9 @@ QJniObject QJniObject::callStaticObjectMethodV(const char *className,
 {
     QJniEnvironment env;
     jobject res = nullptr;
-    jclass clazz = loadClass(className, env);
+    jclass clazz = loadClass(className, env.jniEnv());
     if (clazz) {
-        jmethodID id = getCachedMethodID(env, clazz, toBinaryEncClassName(className),
+        jmethodID id = getCachedMethodID(env.jniEnv(), clazz, toBinaryEncClassName(className),
                                          methodName, signature, true);
         if (id) {
             res = env->CallStaticObjectMethodV(clazz, id, args);
@@ -817,7 +817,7 @@ QJniObject QJniObject::callStaticObjectMethodV(jclass clazz,
                                                va_list args)
 {
     QJniEnvironment env;
-    jmethodID id = getMethodID(env, clazz, methodName, signature, true);
+    jmethodID id = getMethodID(env.jniEnv(), clazz, methodName, signature, true);
     if (!id)
         return QJniObject();
 
@@ -840,7 +840,7 @@ template <>
 Q_CORE_EXPORT void QJniObject::callMethod<void>(const char *methodName, const char *signature, ...) const
 {
     QJniEnvironment env;
-    jmethodID id = getCachedMethodID(env, d->m_jclass, d->m_className, methodName, signature);
+    jmethodID id = getCachedMethodID(env.jniEnv(), d->m_jclass, d->m_className, methodName, signature);
     if (id) {
         va_list args;
         va_start(args, signature);
@@ -885,9 +885,9 @@ Q_CORE_EXPORT void QJniObject::callStaticMethod<void>(const char *className,
                                                       ...)
 {
     QJniEnvironment env;
-    jclass clazz = loadClass(className, env);
+    jclass clazz = loadClass(className, env.jniEnv());
     if (clazz) {
-        jmethodID id = getCachedMethodID(env, clazz, toBinaryEncClassName(className),
+        jmethodID id = getCachedMethodID(env.jniEnv(), clazz, toBinaryEncClassName(className),
                                          methodName, signature, true);
         if (id) {
             va_list args;
@@ -936,7 +936,7 @@ Q_CORE_EXPORT void QJniObject::callStaticMethod<void>(jclass clazz,
 {
     QJniEnvironment env;
     if (clazz) {
-        jmethodID id = getMethodID(env, clazz, methodName, signature, true);
+        jmethodID id = getMethodID(env.jniEnv(), clazz, methodName, signature, true);
         if (id) {
             va_list args;
             va_start(args, signature);
@@ -954,9 +954,9 @@ Q_CORE_EXPORT void QJniObject::callStaticMethodV<void>(const char *className,
                                                        va_list args)
 {
     QJniEnvironment env;
-    jclass clazz = loadClass(className, env);
+    jclass clazz = loadClass(className, env.jniEnv());
     if (clazz) {
-        jmethodID id = getCachedMethodID(env, clazz,
+        jmethodID id = getCachedMethodID(env.jniEnv(), clazz,
                                          toBinaryEncClassName(className), methodName,
                                          signature, true);
         if (id) {
@@ -973,7 +973,7 @@ Q_CORE_EXPORT void QJniObject::callStaticMethodV<void>(jclass clazz,
                                                        va_list args)
 {
     QJniEnvironment env;
-    jmethodID id = getMethodID(env, clazz, methodName, signature, true);
+    jmethodID id = getMethodID(env.jniEnv(), clazz, methodName, signature, true);
     if (id) {
         env->CallStaticVoidMethodV(clazz, id, args);
         env.checkAndClearExceptions();
@@ -1002,7 +1002,7 @@ Q_CORE_EXPORT void QJniObject::callMethodV<void>(const char *methodName, const c
                                                  va_list args) const
 {
     QJniEnvironment env;
-    jmethodID id = getCachedMethodID(env, d->m_jclass, d->m_className, methodName, signature);
+    jmethodID id = getCachedMethodID(env.jniEnv(), d->m_jclass, d->m_className, methodName, signature);
     if (id) {
         env->CallVoidMethodV(d->m_jobject, id, args);
         env.checkAndClearExceptions();
@@ -1015,7 +1015,7 @@ template <> Q_CORE_EXPORT Type QJniObject::callMethod<Type>(const char *methodNa
 { \
     QJniEnvironment env; \
     Type res = 0; \
-    jmethodID id = getCachedMethodID(env, d->m_jclass, d->m_className, methodName, signature); \
+    jmethodID id = getCachedMethodID(env.jniEnv(), d->m_jclass, d->m_className, methodName, signature); \
     if (id) { \
         va_list args; \
         va_start(args, signature); \
@@ -1038,9 +1038,9 @@ template <> Q_CORE_EXPORT Type QJniObject::callStaticMethod<Type>(const char *cl
 { \
     QJniEnvironment env; \
     Type res = 0; \
-    jclass clazz = loadClass(className, env); \
+    jclass clazz = loadClass(className, env.jniEnv()); \
     if (clazz) { \
-        jmethodID id = getCachedMethodID(env, clazz, toBinaryEncClassName(className), methodName, \
+        jmethodID id = getCachedMethodID(env.jniEnv(), clazz, toBinaryEncClassName(className), methodName, \
                                          signature, true); \
         if (id) { \
             va_list args; \
@@ -1067,7 +1067,7 @@ template <> Q_CORE_EXPORT Type QJniObject::callStaticMethod<Type>(jclass clazz, 
     QJniEnvironment env; \
     Type res = 0; \
     if (clazz) { \
-        jmethodID id = getMethodID(env, clazz, methodName, signature, true); \
+        jmethodID id = getMethodID(env.jniEnv(), clazz, methodName, signature, true); \
         if (id) { \
             va_list args; \
             va_start(args, signature); \
@@ -1090,7 +1090,7 @@ Q_CORE_EXPORT Type QJniObject::callMethodV<Type>(const char *methodName, const c
 {\
     QJniEnvironment env;\
     Type res = 0;\
-    jmethodID id = getCachedMethodID(env, d->m_jclass, d->m_className, methodName, signature);\
+    jmethodID id = getCachedMethodID(env.jniEnv(), d->m_jclass, d->m_className, methodName, signature);\
     if (id) {\
         res = env->Call##MethodName##MethodV(d->m_jobject, id, args);\
         if (env.checkAndClearExceptions())  \
@@ -1106,9 +1106,9 @@ Q_CORE_EXPORT Type QJniObject::callStaticMethodV<Type>(const char *className,\
 {\
     QJniEnvironment env;\
     Type res = 0;\
-    jclass clazz = loadClass(className, env);\
+    jclass clazz = loadClass(className, env.jniEnv());\
     if (clazz) {\
-        jmethodID id = getCachedMethodID(env, clazz, toBinaryEncClassName(className), methodName,\
+        jmethodID id = getCachedMethodID(env.jniEnv(), clazz, toBinaryEncClassName(className), methodName,\
                                          signature, true);\
         if (id) {\
             res = env->CallStatic##MethodName##MethodV(clazz, id, args);\
@@ -1126,7 +1126,7 @@ Q_CORE_EXPORT Type QJniObject::callStaticMethodV<Type>(jclass clazz,\
 {\
     QJniEnvironment env;\
     Type res = 0;\
-    jmethodID id = getMethodID(env, clazz, methodName, signature, true);\
+    jmethodID id = getMethodID(env.jniEnv(), clazz, methodName, signature, true);\
     if (id) {\
         res = env->CallStatic##MethodName##MethodV(clazz, id, args);\
         if (env.checkAndClearExceptions())  \
@@ -1162,7 +1162,7 @@ DECLARE_JNI_METHODS(Double, jdouble, "()D")
 QJniObject QJniObject::callObjectMethod(const char *methodName, const char *signature, ...) const
 {
     QJniEnvironment env;
-    jmethodID id = getCachedMethodID(env, d->m_jclass, d->m_className, methodName, signature);
+    jmethodID id = getCachedMethodID(env.jniEnv(), d->m_jclass, d->m_className, methodName, signature);
     if (id) {
         va_list args;
         va_start(args, signature);
@@ -1193,9 +1193,9 @@ QJniObject QJniObject::callStaticObjectMethod(const char *className,
                                               ...)
 {
     QJniEnvironment env;
-    jclass clazz = loadClass(className, env);
+    jclass clazz = loadClass(className, env.jniEnv());
     if (clazz) {
-        jmethodID id = getCachedMethodID(env, clazz, toBinaryEncClassName(className),
+        jmethodID id = getCachedMethodID(env.jniEnv(), clazz, toBinaryEncClassName(className),
                                          methodName, signature, true);
         if (id) {
             va_list args;
@@ -1222,7 +1222,7 @@ QJniObject QJniObject::callStaticObjectMethod(jclass clazz,
 {
     QJniEnvironment env;
     if (clazz) {
-        jmethodID id = getMethodID(env, clazz, methodName, signature, true);
+        jmethodID id = getMethodID(env.jniEnv(), clazz, methodName, signature, true);
         if (id) {
             va_list args;
             va_start(args, signature);
@@ -1349,12 +1349,12 @@ Q_CORE_EXPORT void QJniObject::setStaticField<jobject>(const char *className,
                                                        jobject value)
 {
     QJniEnvironment env;
-    jclass clazz = loadClass(className, env);
+    jclass clazz = loadClass(className, env.jniEnv());
 
     if (!clazz)
         return;
 
-    jfieldID id = getCachedFieldID(env, clazz, className, fieldName, signature, true);
+    jfieldID id = getCachedFieldID(env.jniEnv(), clazz, className, fieldName, signature, true);
     if (id) {
         env->SetStaticObjectField(clazz, id, value);
         env.checkAndClearExceptions();
@@ -1373,7 +1373,7 @@ template <> Q_CORE_EXPORT void QJniObject::setStaticField<jobject>(jclass clazz,
                                                                    jobject value)
 {
     QJniEnvironment env;
-    jfieldID id = getFieldID(env, clazz, fieldName, signature, true);
+    jfieldID id = getFieldID(env.jniEnv(), clazz, fieldName, signature, true);
 
     if (id) {
         env->SetStaticObjectField(clazz, id, value);
@@ -1420,7 +1420,7 @@ template <> Q_CORE_EXPORT Type QJniObject::getField<Type>(const char *fieldName)
 { \
     QJniEnvironment env; \
     Type res = 0; \
-    jfieldID id = getCachedFieldID(env, d->m_jclass, d->m_className, fieldName, Signature); \
+    jfieldID id = getCachedFieldID(env.jniEnv(), d->m_jclass, d->m_className, fieldName, Signature); \
     if (id) {\
         res = env->Get##FieldName##Field(d->m_jobject, id); \
         if (env.checkAndClearExceptions())  \
@@ -1432,10 +1432,10 @@ template <> \
 Q_CORE_EXPORT Type QJniObject::getStaticField<Type>(const char *className, const char *fieldName) \
 { \
     QJniEnvironment env; \
-    jclass clazz = loadClass(className, env); \
+    jclass clazz = loadClass(className, env.jniEnv()); \
     if (!clazz) \
         return 0; \
-    jfieldID id = getCachedFieldID(env, clazz, toBinaryEncClassName(className), fieldName, \
+    jfieldID id = getCachedFieldID(env.jniEnv(), clazz, toBinaryEncClassName(className), fieldName, \
                                    Signature, true); \
     if (!id) \
         return 0; \
@@ -1449,7 +1449,7 @@ Q_CORE_EXPORT Type QJniObject::getStaticField<Type>(jclass clazz, const char *fi
 {\
     QJniEnvironment env;\
     Type res = 0;\
-    jfieldID id = getFieldID(env, clazz, fieldName, Signature, true);\
+    jfieldID id = getFieldID(env.jniEnv(), clazz, fieldName, Signature, true);\
     if (id) {\
         res = env->GetStatic##FieldName##Field(clazz, id);\
         if (env.checkAndClearExceptions())  \
@@ -1462,10 +1462,10 @@ template <> Q_CORE_EXPORT void QJniObject::setStaticField<Type>(const char *clas
                                                                 Type value) \
 { \
     QJniEnvironment env; \
-    jclass clazz = loadClass(className, env); \
+    jclass clazz = loadClass(className, env.jniEnv()); \
     if (!clazz) \
         return; \
-    jfieldID id = getCachedFieldID(env, clazz, className, fieldName, Signature, true); \
+    jfieldID id = getCachedFieldID(env.jniEnv(), clazz, className, fieldName, Signature, true); \
     if (!id) \
         return; \
     env->SetStatic##FieldName##Field(clazz, id, value); \
@@ -1476,7 +1476,7 @@ template <> Q_CORE_EXPORT void QJniObject::setStaticField<Type>(jclass clazz,\
                                                                 Type value)\
 {\
     QJniEnvironment env;\
-    jfieldID id = getFieldID(env, clazz, fieldName, Signature, true);\
+    jfieldID id = getFieldID(env.jniEnv(), clazz, fieldName, Signature, true);\
     if (id) {\
         env->SetStatic##FieldName##Field(clazz, id, value);\
         env.checkAndClearExceptions();\
@@ -1485,7 +1485,7 @@ template <> Q_CORE_EXPORT void QJniObject::setStaticField<Type>(jclass clazz,\
 template <> Q_CORE_EXPORT void QJniObject::setField<Type>(const char *fieldName, Type value) \
 { \
     QJniEnvironment env; \
-    jfieldID id = getCachedFieldID(env, d->m_jclass, d->m_className, fieldName, Signature); \
+    jfieldID id = getCachedFieldID(env.jniEnv(), d->m_jclass, d->m_className, fieldName, Signature); \
     if (id) { \
         env->Set##FieldName##Field(d->m_jobject, id, value); \
         env.checkAndClearExceptions(); \
@@ -1521,10 +1521,10 @@ QJniObject QJniObject::getStaticObjectField(const char *className,
                                             const char *signature)
 {
     QJniEnvironment env;
-    jclass clazz = loadClass(className, env);
+    jclass clazz = loadClass(className, env.jniEnv());
     if (!clazz)
         return QJniObject();
-    jfieldID id = getCachedFieldID(env, clazz, toBinaryEncClassName(className), fieldName,
+    jfieldID id = getCachedFieldID(env.jniEnv(), clazz, toBinaryEncClassName(className), fieldName,
                                    signature, true);
     if (!id)
         return QJniObject();
@@ -1549,7 +1549,7 @@ QJniObject QJniObject::getStaticObjectField(jclass clazz,
                                             const char *signature)
 {
     QJniEnvironment env;
-    jfieldID id = getFieldID(env, clazz, fieldName, signature, true);
+    jfieldID id = getFieldID(env.jniEnv(), clazz, fieldName, signature, true);
     if (!id)
         return QJniObject();
 
@@ -1628,7 +1628,7 @@ template <> Q_CORE_EXPORT
 void QJniObject::setField<jobject>(const char *fieldName, const char *signature, jobject value)
 {
     QJniEnvironment env;
-    jfieldID id = getCachedFieldID(env, d->m_jclass, d->m_className, fieldName, signature);
+    jfieldID id = getCachedFieldID(env.jniEnv(), d->m_jclass, d->m_className, fieldName, signature);
     if (id) {
         env->SetObjectField(d->m_jobject, id, value);
         env.checkAndClearExceptions();
@@ -1641,7 +1641,7 @@ void QJniObject::setField<jobjectArray>(const char *fieldName,
                                         jobjectArray value)
 {
     QJniEnvironment env;
-    jfieldID id = getCachedFieldID(env, d->m_jclass, d->m_className, fieldName, signature);
+    jfieldID id = getCachedFieldID(env.jniEnv(), d->m_jclass, d->m_className, fieldName, signature);
     if (id) {
         env->SetObjectField(d->m_jobject, id, value);
         env.checkAndClearExceptions();
@@ -1672,7 +1672,7 @@ void QJniObject::setField<jobjectArray>(const char *fieldName,
 QJniObject QJniObject::getObjectField(const char *fieldName, const char *signature) const
 {
     QJniEnvironment env;
-    jfieldID id = getCachedFieldID(env, d->m_jclass, d->m_className, fieldName, signature);
+    jfieldID id = getCachedFieldID(env.jniEnv(), d->m_jclass, d->m_className, fieldName, signature);
     if (!id)
         return QJniObject();
 
@@ -1815,10 +1815,10 @@ bool QJniObject::isClassAvailable(const char *className)
 {
     QJniEnvironment env;
 
-    if (!env)
+    if (!env.jniEnv())
         return false;
 
-    return loadClass(className, env);;
+    return loadClass(className, env.jniEnv());;
 }
 
 /*!

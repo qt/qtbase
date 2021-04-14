@@ -58,9 +58,8 @@ void tst_QGuiVariant::createGuiType_data()
 {
     QTest::addColumn<int>("typeId");
     for (int i = QMetaType::FirstGuiType; i <= QMetaType::LastGuiType; ++i) {
-        QMetaType metaType(i);
-        if (metaType.isValid())
-            QTest::newRow(QMetaType::typeName(i)) << i;
+        if (QMetaType metaType(i); metaType.isValid())
+            QTest::newRow(metaType.name()) << i;
     }
 }
 

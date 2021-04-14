@@ -85,9 +85,8 @@ void tst_QMetaType::typeBuiltin_data()
 {
     QTest::addColumn<QByteArray>("typeName");
     for (int i = 0; i < QMetaType::User; ++i) {
-        const char *name = QMetaType::typeName(i);
-        if (name)
-            QTest::newRow(name) << QByteArray(name);
+        if (QMetaType metaType(i); metaType.isValid())
+            QTest::newRow(metaType.name()) << QByteArray(metaType.name());
     }
 }
 
@@ -98,7 +97,7 @@ void tst_QMetaType::typeBuiltin()
     const char *nm = typeName.constData();
     QBENCHMARK {
         for (int i = 0; i < 100000; ++i)
-            QMetaType::type(nm);
+            QMetaType::fromName(nm);
     }
 }
 
@@ -113,7 +112,7 @@ void tst_QMetaType::typeBuiltin_QByteArray()
     QFETCH(QByteArray, typeName);
     QBENCHMARK {
         for (int i = 0; i < 100000; ++i)
-            QMetaType::type(typeName);
+            QMetaType::fromName(typeName);
     }
 }
 
@@ -121,9 +120,8 @@ void tst_QMetaType::typeBuiltinNotNormalized_data()
 {
     QTest::addColumn<QByteArray>("typeName");
     for (int i = 0; i < QMetaType::User; ++i) {
-        const char *name = QMetaType::typeName(i);
-        if (name)
-            QTest::newRow(name) << QByteArray(name).append(" ");
+        if (QMetaType metaType(i); metaType.isValid())
+            QTest::newRow(metaType.name()) << QByteArray(metaType.name()).append(" ");
     }
 }
 
@@ -133,7 +131,7 @@ void tst_QMetaType::typeBuiltinNotNormalized()
     const char *nm = typeName.constData();
     QBENCHMARK {
         for (int i = 0; i < 10000; ++i)
-            QMetaType::type(nm);
+            QMetaType::fromName(nm);
     }
 }
 
@@ -144,7 +142,7 @@ void tst_QMetaType::typeCustom()
     qRegisterMetaType<Foo>("Foo");
     QBENCHMARK {
         for (int i = 0; i < 10000; ++i)
-            QMetaType::type("Foo");
+            QMetaType::fromName("Foo");
     }
 }
 
@@ -153,25 +151,25 @@ void tst_QMetaType::typeCustomNotNormalized()
     qRegisterMetaType<Foo>("Foo");
     QBENCHMARK {
         for (int i = 0; i < 10000; ++i)
-            QMetaType::type("Foo ");
+            QMetaType::fromName("Foo ");
     }
 }
 
 void tst_QMetaType::typeNotRegistered()
 {
-    Q_ASSERT(QMetaType::type("Bar") == 0);
+    Q_ASSERT(!QMetaType::fromName("Bar").isValid());
     QBENCHMARK {
         for (int i = 0; i < 10000; ++i)
-            QMetaType::type("Bar");
+            QMetaType::fromName("Bar");
     }
 }
 
 void tst_QMetaType::typeNotRegisteredNotNormalized()
 {
-    Q_ASSERT(QMetaType::type("Bar") == 0);
+    Q_ASSERT(!QMetaType::fromName("Bar").isValid());
     QBENCHMARK {
         for (int i = 0; i < 10000; ++i)
-            QMetaType::type("Bar ");
+            QMetaType::fromName("Bar ");
     }
 }
 
@@ -179,9 +177,8 @@ void tst_QMetaType::typeNameBuiltin_data()
 {
     QTest::addColumn<int>("type");
     for (int i = 0; i < QMetaType::User; ++i) {
-        const char *name = QMetaType::typeName(i);
-        if (name)
-            QTest::newRow(name) << i;
+        if (QMetaType metaType(i); metaType.isValid())
+            QTest::newRow(metaType.name()) << i;
     }
 }
 
@@ -190,7 +187,7 @@ void tst_QMetaType::typeNameBuiltin()
     QFETCH(int, type);
     QBENCHMARK {
         for (int i = 0; i < 500000; ++i)
-            QMetaType::typeName(type);
+            QMetaType(type).name();
     }
 }
 
@@ -199,17 +196,17 @@ void tst_QMetaType::typeNameCustom()
     int type = qRegisterMetaType<Foo>("Foo");
     QBENCHMARK {
         for (int i = 0; i < 100000; ++i)
-            QMetaType::typeName(type);
+            QMetaType(type).name();
     }
 }
 
 void tst_QMetaType::typeNameNotRegistered()
 {
     // We don't care much about this case, but test it anyway.
-    Q_ASSERT(QMetaType::typeName(-1) == 0);
+    Q_ASSERT(QMetaType(-1).name() == nullptr);
     QBENCHMARK {
         for (int i = 0; i < 500000; ++i)
-            QMetaType::typeName(-1);
+            QMetaType(-1).name();
     }
 }
 
@@ -238,7 +235,7 @@ void tst_QMetaType::isRegisteredCustom()
 
 void tst_QMetaType::isRegisteredNotRegistered()
 {
-    Q_ASSERT(QMetaType::typeName(-1) == 0);
+    Q_ASSERT(QMetaType(-1).name() == nullptr);
     QBENCHMARK {
         for (int i = 0; i < 100000; ++i)
             QMetaType::isRegistered(-1);
@@ -249,7 +246,7 @@ void tst_QMetaType::constructInPlace_data()
 {
     QTest::addColumn<int>("typeId");
     for (int i = QMetaType::FirstCoreType; i <= QMetaType::LastCoreType; ++i) {
-        auto name = QMetaType::typeName(i);
+        auto name = QMetaType(i).name();
         if (name && i != QMetaType::Void)
             QTest::newRow(name) << i;
     }
@@ -261,14 +258,15 @@ void tst_QMetaType::constructInPlace_data()
 void tst_QMetaType::constructInPlace()
 {
     QFETCH(int, typeId);
-    int size = QMetaType::sizeOf(typeId);
+    const QMetaType metaType(typeId);
+    size_t size = metaType.sizeOf();
     void *storage = qMallocAligned(size, 2 * sizeof(qlonglong));
-    QCOMPARE(QMetaType::construct(typeId, storage, /*copy=*/0), storage);
-    QMetaType::destruct(typeId, storage);
+    QCOMPARE(metaType.construct(storage, /*copy=*/0), storage);
+    metaType.destruct(storage);
     QBENCHMARK {
         for (int i = 0; i < 100000; ++i) {
-            QMetaType::construct(typeId, storage, /*copy=*/0);
-            QMetaType::destruct(typeId, storage);
+            metaType.construct(storage, /*copy=*/0);
+            metaType.destruct(storage);
         }
     }
     qFreeAligned(storage);
@@ -282,18 +280,19 @@ void tst_QMetaType::constructInPlaceCopy_data()
 void tst_QMetaType::constructInPlaceCopy()
 {
     QFETCH(int, typeId);
-    int size = QMetaType::sizeOf(typeId);
+    const QMetaType metaType(typeId);
+    size_t size = metaType.sizeOf();
     void *storage = qMallocAligned(size, 2 * sizeof(qlonglong));
-    void *other = QMetaType::create(typeId);
-    QCOMPARE(QMetaType::construct(typeId, storage, other), storage);
-    QMetaType::destruct(typeId, storage);
+    void *other = metaType.create();
+    QCOMPARE(metaType.construct(storage, other), storage);
+    metaType.destruct(storage);
     QBENCHMARK {
         for (int i = 0; i < 100000; ++i) {
-            QMetaType::construct(typeId, storage, other);
-            QMetaType::destruct(typeId, storage);
+            metaType.construct(storage, other);
+            metaType.destruct(storage);
         }
     }
-    QMetaType::destroy(typeId, other);
+    metaType.destroy(other);
     qFreeAligned(storage);
 }
 
@@ -305,19 +304,19 @@ void tst_QMetaType::constructInPlaceCopyStaticLess_data()
 void tst_QMetaType::constructInPlaceCopyStaticLess()
 {
     QFETCH(int, typeId);
-    int size = QMetaType::sizeOf(typeId);
+    const QMetaType metaType(typeId);
+    size_t size = metaType.sizeOf();
     void *storage = qMallocAligned(size, 2 * sizeof(qlonglong));
-    void *other = QMetaType::create(typeId);
-    QCOMPARE(QMetaType::construct(typeId, storage, other), storage);
-    QMetaType::destruct(typeId, storage);
+    void *other = metaType.create();
+    QCOMPARE(metaType.construct(storage, other), storage);
+    metaType.destruct(storage);
     QBENCHMARK {
-        QMetaType type(typeId);
         for (int i = 0; i < 100000; ++i) {
-            type.construct(storage, other);
-            type.destruct(storage);
+            metaType.construct(storage, other);
+            metaType.destruct(storage);
         }
     }
-    QMetaType::destroy(typeId, other);
+    metaType.destroy(other);
     qFreeAligned(storage);
 }
 
