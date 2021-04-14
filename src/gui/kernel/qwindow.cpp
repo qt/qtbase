@@ -1753,13 +1753,7 @@ void QWindow::setGeometry(const QRect &rect)
         QScreen *newScreen = d->screenForGeometry(rect);
         if (newScreen && isTopLevel())
             d->setTopLevelScreen(newScreen, true);
-
-        QRect nativeRect;
-        if (newScreen && isTopLevel())
-            nativeRect = QHighDpi::toNativePixels(rect, newScreen);
-        else
-            nativeRect = QHighDpi::toNativeLocalPosition(rect, newScreen);
-        d->platformWindow->setGeometry(nativeRect);
+        d->platformWindow->setGeometry(QHighDpi::toNativeWindowGeometry(rect, this));
     } else {
         d->geometry = rect;
 
