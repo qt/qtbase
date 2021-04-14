@@ -92,8 +92,6 @@ qt_internal_add_module(Core
         io/qurlidna.cpp
         io/qurlquery.cpp io/qurlquery.h
         io/qurlrecode.cpp
-        itemmodels/qabstractitemmodel.cpp itemmodels/qabstractitemmodel.h itemmodels/qabstractitemmodel_p.h
-        itemmodels/qitemselectionmodel.cpp itemmodels/qitemselectionmodel.h itemmodels/qitemselectionmodel_p.h
         kernel/qabstracteventdispatcher.cpp kernel/qabstracteventdispatcher.h kernel/qabstracteventdispatcher_p.h
         kernel/qabstractnativeeventfilter.cpp kernel/qabstractnativeeventfilter.h
         kernel/qassociativeiterable.cpp kernel/qassociativeiterable.h
@@ -1016,6 +1014,12 @@ qt_internal_extend_target(Core CONDITION UNIX AND NOT APPLE AND NOT HAIKU AND (A
     SOURCES
         io/qstandardpaths_unix.cpp
         io/qstorageinfo_unix.cpp
+)
+
+qt_internal_extend_target(Core CONDITION QT_FEATURE_itemmodel
+    SOURCES
+        itemmodels/qabstractitemmodel.cpp itemmodels/qabstractitemmodel.h itemmodels/qabstractitemmodel_p.h
+        itemmodels/qitemselectionmodel.cpp itemmodels/qitemselectionmodel.h itemmodels/qitemselectionmodel_p.h
 )
 
 qt_internal_extend_target(Core CONDITION QT_FEATURE_proxymodel
