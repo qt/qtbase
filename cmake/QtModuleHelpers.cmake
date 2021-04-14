@@ -17,9 +17,10 @@
 function(qt_internal_add_module target)
     qt_internal_module_info(module "${target}")
 
+    # TODO: Remove GENERATE_METATYPES once it's not used anymore.
     # Process arguments:
     qt_parse_all_arguments(arg "qt_add_module"
-        "NO_MODULE_HEADERS;STATIC;DISABLE_TOOLS_EXPORT;EXCEPTIONS;INTERNAL_MODULE;NO_SYNC_QT;NO_PRIVATE_MODULE;HEADER_MODULE;GENERATE_METATYPES;NO_CONFIG_HEADER_FILE;SKIP_DEPENDS_INCLUDE;NO_ADDITIONAL_TARGET_INFO"
+        "NO_MODULE_HEADERS;STATIC;DISABLE_TOOLS_EXPORT;EXCEPTIONS;INTERNAL_MODULE;NO_SYNC_QT;NO_PRIVATE_MODULE;HEADER_MODULE;GENERATE_METATYPES;NO_GENERATE_METATYPES;NO_CONFIG_HEADER_FILE;SKIP_DEPENDS_INCLUDE;NO_ADDITIONAL_TARGET_INFO"
         "MODULE_INCLUDE_NAME;CONFIG_MODULE_NAME;PRECOMPILED_HEADER;CONFIGURE_FILE_PATH;${__default_target_info_args}"
         "${__default_private_args};${__default_public_args};${__default_private_module_args};QMAKE_MODULE_CONFIG;EXTRA_CMAKE_FILES;EXTRA_CMAKE_INCLUDES;NO_PCH_SOURCES" ${ARGN})
 
@@ -498,15 +499,24 @@ set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
     endif()
 
     # Generate metatypes
-    if (${arg_GENERATE_METATYPES})
-        set(metatypes_install_dir ${INSTALL_LIBDIR}/metatypes)
-        set(args)
-        if (NOT QT_WILL_INSTALL)
-            set(args COPY_OVER_INSTALL INSTALL_DIR "${QT_BUILD_DIR}/${metatypes_install_dir}")
-        else()
-            set(args INSTALL_DIR "${metatypes_install_dir}")
+    if(${arg_GENERATE_METATYPES})
+        # No mention of NO_GENERATE_METATYPES. You should not use it.
+        message(WARNING "GENERATE_METATYPES is on by default for Qt modules. Please remove the manual specification.")
+    endif()
+    if (NOT ${arg_NO_GENERATE_METATYPES})
+        get_target_property(target_type ${target} TYPE)
+        if (NOT target_type STREQUAL "INTERFACE_LIBRARY")
+            set(metatypes_install_dir ${INSTALL_LIBDIR}/metatypes)
+            set(args)
+            if (NOT QT_WILL_INSTALL)
+                set(args COPY_OVER_INSTALL INSTALL_DIR "${QT_BUILD_DIR}/${metatypes_install_dir}")
+            else()
+                set(args INSTALL_DIR "${metatypes_install_dir}")
+            endif()
+            qt6_extract_metatypes(${target} ${args})
+        elseif(${arg_GENERATE_METATYPES})
+            message(FATAL_ERROR "Meta types generation does not work on interface libraries")
         endif()
-        qt6_extract_metatypes(${target} ${args})
     endif()
     qt_internal_get_min_new_policy_cmake_version(min_new_policy_version)
     qt_internal_get_max_new_policy_cmake_version(max_new_policy_version)

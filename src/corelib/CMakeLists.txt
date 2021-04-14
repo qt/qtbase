@@ -32,6 +32,7 @@ endif()
 
 qt_internal_add_module(Core
     QMAKE_MODULE_CONFIG moc resources
+    NO_GENERATE_METATYPES # metatypes are extracted manually below
     EXCEPTIONS
     SOURCES
         global/archdetect.cpp
