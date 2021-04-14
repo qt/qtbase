@@ -80,6 +80,7 @@ private slots:
     void typeNoOperatorEqual();
     void bindingValueReplacement();
     void quntypedBindableApi();
+    void readonlyConstQBindable();
 
     void testNewStuff();
     void qobjectObservers();
@@ -1028,6 +1029,26 @@ void tst_QProperty::quntypedBindableApi()
     QCOMPARE(iprop.value(), 42);
     QUntypedBindable propLess;
     QVERIFY(propLess.takeBinding().isNull());
+}
+
+void tst_QProperty::readonlyConstQBindable()
+{
+    QProperty<int> i {42};
+    const QBindable<int> bindableI(const_cast<const QProperty<int> *>(&i));
+
+    // check that read-only operations work with a const QBindable
+    QVERIFY(bindableI.isReadOnly());
+    QVERIFY(!bindableI.hasBinding());
+    // we can still create a binding to a read only bindable through the interface
+    QProperty<int> j;
+    j.setBinding(bindableI.makeBinding());
+    QCOMPARE(j.value(), bindableI.value());
+    int counter = 0;
+    auto observer = bindableI.subscribe([&](){++counter;});
+    QCOMPARE(counter, 1);
+    auto observer2 = bindableI.onValueChanged([&](){++counter;});
+    i = 0;
+    QCOMPARE(counter, 3);
 }
 
 class MyQObject : public QObject

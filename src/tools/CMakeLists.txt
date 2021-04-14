@@ -12,7 +12,7 @@ endif()
 # Only include the following tools when performing a host build
 if(NOT CMAKE_CROSSCOMPILING)
     add_subdirectory(androiddeployqt)
-    if(QT_FEATURE_gui)
+    if(QT_FEATURE_gui AND QT_FEATURE_systemsemaphore)
         add_subdirectory(androidtestrunner)
     endif()
 endif()
