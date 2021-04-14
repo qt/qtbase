@@ -87,8 +87,8 @@ public:
     void setSecure(bool enable);
     bool isHttpOnly() const;
     void setHttpOnly(bool enable);
-    SameSite sameSite() const;
-    void setSameSite(SameSite sameSite);
+    SameSite sameSitePolicy() const;
+    void setSameSitePolicy(SameSite sameSite);
 
     bool isSessionCookie() const;
     QDateTime expirationDate() const;
