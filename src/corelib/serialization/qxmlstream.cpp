@@ -1297,6 +1297,11 @@ inline int QXmlStreamReaderPrivate::fastScanName(int *prefix)
     int n = 0;
     uint c;
     while ((c = getChar()) != StreamEOF) {
+        if (n >= 4096) {
+            // This is too long to be a sensible name, and
+            // can exhaust memory
+            return 0;
+        }
         switch (c) {
         case '\n':
         case ' ':
