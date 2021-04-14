@@ -253,6 +253,11 @@ if(MACOS)
         cmake/macos/MacOSXBundleInfo.plist.in
         DESTINATION "${__GlobalConfig_install_dir}/macos"
     )
+elseif(IOS)
+    qt_copy_or_install(FILES
+        cmake/ios/MacOSXBundleInfo.plist.in
+        DESTINATION "${__GlobalConfig_install_dir}/ios"
+    )
 endif()
 
 # Install CI support files to libexec.
