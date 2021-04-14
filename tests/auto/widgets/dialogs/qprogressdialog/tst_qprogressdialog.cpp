@@ -51,6 +51,7 @@ private Q_SLOTS:
     void getSetCheck();
     void task198202();
     void QTBUG_31046();
+    void QTBUG_19983();
     void settingCustomWidgets();
     void i18n();
     void setValueReentrancyGuard();
@@ -208,6 +209,29 @@ void tst_QProgressDialog::QTBUG_31046()
     QThread::msleep(200);
     dlg.setValue(50);
     QCOMPARE(50, dlg.value());
+}
+
+void tst_QProgressDialog::QTBUG_19983()
+{
+    QProgressDialog tempDlg;
+    tempDlg.setRange(0, 0);
+    tempDlg.setLabelText("This is a test.");
+
+    QPushButton *btnOne = new QPushButton("Cancel", &tempDlg);
+    tempDlg.setCancelButton(btnOne);
+    tempDlg.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&tempDlg));
+    const auto btnOneGeometry = btnOne->geometry();
+    QVERIFY(QPoint(0,0) != btnOneGeometry.topLeft());
+
+    tempDlg.cancel();
+    QVERIFY(!tempDlg.isVisible());
+
+    QPushButton *btnTwo = new QPushButton("Cancel", &tempDlg);
+    tempDlg.setCancelButton(btnTwo);
+    tempDlg.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&tempDlg));
+    QCOMPARE(btnOneGeometry, btnTwo->geometry());
 }
 
 void tst_QProgressDialog::settingCustomWidgets()
