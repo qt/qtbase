@@ -305,10 +305,7 @@ QNetworkListManagerNetworkInformationBackend::~QNetworkListManagerNetworkInforma
 {
     if (comInitFailed)
         return;
-    if (monitoring)
-        stop();
-    else
-        CoUninitialize();
+    stop();
 }
 
 void QNetworkListManagerNetworkInformationBackend::setConnectivity(NLM_CONNECTIVITY newConnectivity)
@@ -354,12 +351,13 @@ bool QNetworkListManagerNetworkInformationBackend::start()
 
 void QNetworkListManagerNetworkInformationBackend::stop()
 {
-    Q_ASSERT(managerEvents);
-    Q_ASSERT(monitoring);
-    // Can return false but realistically shouldn't since that would break everything:
-    managerEvents->stop();
-    monitoring = false;
-    managerEvents.Reset();
+    if (monitoring) {
+        Q_ASSERT(managerEvents);
+        // Can return false but realistically shouldn't since that would break everything:
+        managerEvents->stop();
+        monitoring = false;
+        managerEvents.Reset();
+    }
 
     CoUninitialize();
     comInitFailed = true; // we check this value in start() to see if we need to re-initialize
