@@ -44,6 +44,9 @@ list(APPEND CMAKE_MODULE_PATH "${_qt_import_prefix}/3rdparty/kwin")
 if(APPLE AND (NOT CMAKE_SYSTEM_NAME OR CMAKE_SYSTEM_NAME STREQUAL "Darwin"))
     # Add module directory to pick up custom Info.plist template for macOS
     list(APPEND CMAKE_MODULE_PATH "${_qt_import_prefix}/macos")
+elseif(APPLE AND CMAKE_SYSTEM_NAME STREQUAL "iOS")
+    # Add module directory to pick up custom Info.plist template for iOS
+    list(APPEND CMAKE_MODULE_PATH "${_qt_import_prefix}/ios")
 endif()
 
 set(QT_ADDITIONAL_PACKAGES_PREFIX_PATH "" CACHE STRING "Additional directories where find(Qt6 ...) components are searched")

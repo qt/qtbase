@@ -559,6 +559,144 @@ function(qt6_finalize_executable target)
         qt6_android_generate_deployment_settings("${target}")
         qt6_android_add_apk_target("${target}")
     endif()
+    if(IOS)
+        qt6_finalize_ios_app("${target}")
+    endif()
+endfunction()
+
+function(_qt_internal_find_ios_development_team_id out_var)
+    get_property(team_id GLOBAL PROPERTY _qt_internal_ios_development_team_id)
+    get_property(team_id_computed GLOBAL PROPERTY _qt_internal_ios_development_team_id_computed)
+    if(team_id_computed)
+        # Just in case if the value is non-empty but still booly FALSE.
+        if(NOT team_id)
+            set(team_id "")
+        endif()
+        set("${out_var}" "${team_id}" PARENT_SCOPE)
+        return()
+    endif()
+
+    set_property(GLOBAL PROPERTY _qt_internal_ios_development_team_id_computed "TRUE")
+
+    set(home_dir "$ENV{HOME}")
+    set(xcode_preferences_path "${home_dir}/Library/Preferences/com.apple.dt.Xcode.plist")
+
+    # Extract the first account name (email) from the user's Xcode preferences
+    message(DEBUG "Trying to extract an Xcode development team id from '${xcode_preferences_path}'")
+    execute_process(COMMAND "/usr/libexec/PlistBuddy"
+                            -x -c "print IDEProvisioningTeams" "${xcode_preferences_path}"
+                    OUTPUT_VARIABLE teams_xml
+                    ERROR_VARIABLE plist_error)
+    if(teams_xml AND NOT plist_error)
+        string(REPLACE "\n" ";" teams_xml_lines "${teams_xml}")
+        foreach(xml_line ${teams_xml_lines})
+            if(xml_line MATCHES "<key>(.+)</key>")
+                set(first_account "${CMAKE_MATCH_1}")
+                string(STRIP "${first_account}" first_account)
+                break()
+            endif()
+        endforeach()
+    endif()
+
+    if(NOT first_account)
+        message(DEBUG "Failed to extract an Xcode development team id.")
+        return()
+    endif()
+
+    # Extract the first team ID
+    execute_process(COMMAND "/usr/libexec/PlistBuddy"
+                            -c "print IDEProvisioningTeams:${first_account}:0:teamID"
+                            "${xcode_preferences_path}"
+                    OUTPUT_VARIABLE team_id
+                    ERROR_VARIABLE team_id_error)
+    if(team_id AND NOT team_id_error)
+        message(DEBUG "Successfully extracted the first encountered Xcode development team id.")
+        string(STRIP "${team_id}" team_id)
+        set_property(GLOBAL PROPERTY _qt_internal_ios_development_team_id "${team_id}")
+        set("${out_var}" "${team_id}" PARENT_SCOPE)
+    endif()
+endfunction()
+
+function(_qt_internal_get_ios_bundle_identifier_prefix out_var)
+    get_property(prefix GLOBAL PROPERTY _qt_internal_ios_bundle_identifier_prefix)
+    get_property(prefix_computed GLOBAL PROPERTY
+                 _qt_internal_ios_bundle_identifier_prefix_computed)
+    if(prefix_computed)
+        # Just in case if the value is non-empty but still booly FALSE.
+        if(NOT prefix)
+            set(prefix "")
+        endif()
+        set("${out_var}" "${prefix}" PARENT_SCOPE)
+        return()
+    endif()
+
+    set_property(GLOBAL PROPERTY _qt_internal_ios_bundle_identifier_prefix_computed "TRUE")
+
+    set(home_dir "$ENV{HOME}")
+    set(xcode_preferences_path "${home_dir}/Library/Preferences/com.apple.dt.Xcode.plist")
+
+    message(DEBUG "Trying to extract the default bundle identifier prefix from Xcode preferences.")
+    execute_process(COMMAND "/usr/libexec/PlistBuddy"
+                            -c "print IDETemplateOptions:bundleIdentifierPrefix"
+                            "${xcode_preferences_path}"
+                    OUTPUT_VARIABLE prefix
+                    ERROR_VARIABLE prefix_error)
+    if(prefix AND NOT prefix_error)
+        message(DEBUG "Successfully extracted the default bundle indentifier prefix.")
+        string(STRIP "${prefix}" prefix)
+    else()
+        message(DEBUG "Failed to extract the default bundle indentifier prefix.")
+    endif()
+
+    if(prefix)
+        set_property(GLOBAL PROPERTY _qt_internal_ios_bundle_identifier_prefix "${prefix}")
+        set("${out_var}" "${prefix}" PARENT_SCOPE)
+    endif()
+endfunction()
+
+function(_qt_internal_get_default_ios_bundle_identifier out_var)
+    _qt_internal_get_ios_bundle_identifier_prefix(prefix)
+    if(NOT prefix)
+        set(prefix "com.yourcompany")
+    endif()
+    set("${out_var}" "${prefix}.\${PRODUCT_NAME:rfc1034identifier}" PARENT_SCOPE)
+endfunction()
+
+
+function(qt6_finalize_ios_app target)
+    # If user hasn't provided a development team id, try to find the first one specified
+    # in the Xcode preferences.
+    if(NOT CMAKE_XCODE_ATTRIBUTE_DEVELOPMENT_TEAM AND NOT QT_NO_SET_XCODE_DEVELOPMENT_TEAM_ID)
+        get_target_property(existing_team_id "${target}" XCODE_ATTRIBUTE_DEVELOPMENT_TEAM)
+        if(NOT existing_team_id)
+            _qt_internal_find_ios_development_team_id(team_id)
+            set_target_properties("${target}"
+                                  PROPERTIES XCODE_ATTRIBUTE_DEVELOPMENT_TEAM "${team_id}")
+        endif()
+    endif()
+
+    # If user hasn't provided a bundle identifier for the app, get a default identifier
+    # using the default bundle prefix from Xcode preferences and add it to the generated
+    # Info.plist file.
+    if(NOT MACOSX_BUNDLE_GUI_IDENTIFIER AND NOT QT_NO_SET_XCODE_BUNDLE_IDENTIFIER)
+        get_target_property(existing_id "${target}" MACOSX_BUNDLE_GUI_IDENTIFIER)
+        if(NOT existing_id)
+            _qt_internal_get_default_ios_bundle_identifier(bundle_id)
+            set_target_properties("${target}"
+                                  PROPERTIES MACOSX_BUNDLE_GUI_IDENTIFIER "${bundle_id}")
+        endif()
+    endif()
+
+    # Reuse the same bundle identifier for the Xcode property.
+    if(NOT CMAKE_XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER
+            AND NOT QT_NO_SET_XCODE_BUNDLE_IDENTIFIER)
+        get_target_property(existing_id "${target}" XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER)
+        if(NOT existing_id)
+            set_target_properties("${target}"
+                                  PROPERTIES XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER
+                                  "${bundle_id}")
+        endif()
+    endif()
 endfunction()
 
 if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)

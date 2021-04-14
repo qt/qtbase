@@ -50,6 +50,9 @@ if(NOT QT_BUILD_STANDALONE_TESTS)
     if(MACOS)
         # Add module directory to pick up custom Info.plist template
         list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/macos")
+    elseif(IOS)
+        # Add module directory to pick up custom Info.plist template
+        list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/ios")
     endif()
 
     ## Find the build internals package.
