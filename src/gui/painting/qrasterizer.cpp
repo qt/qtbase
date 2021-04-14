@@ -864,7 +864,7 @@ void QRasterizer::rasterizeLine(const QPointF &a, const QPointF &b, qreal width,
                 if (leftWidth == QScFixedFactor)
                     coverage[0] = rightWidth * 255;
                 else
-                    coverage[0] = (leftWidth + rightWidth) * 255;
+                    coverage[0] = (rightWidth + leftWidth - QScFixedFactor) * 255;
                 x[0] = iLeft;
                 len[0] = 1;
             } else {
