@@ -40,9 +40,7 @@
     now widely used as a data exchange format on the internet.
 
     The JSON support in Qt provides an easy to use C++ API to parse,
-    modify and save JSON data. It also contains support for saving this
-    data in a binary format that is directly "mmap"-able and very fast to
-    access.
+    modify and save JSON data.
 
     More details about the JSON data format can be found at \l{http://json.org}{json.org}
     and in \l{http://tools.ietf.org/html/rfc4627}{RFC-4627}.
