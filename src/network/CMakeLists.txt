@@ -427,6 +427,8 @@ qt_internal_extend_target(Network CONDITION WIN32 PUBLIC_LIBRARIES ws2_32) # spe
 
 qt_internal_extend_target(Network CONDITION QNX PUBLIC_LIBRARIES socket) # special case: mkspecs/common/qcc-base-qnx.conf
 
+qt_internal_extend_target(Network CONDITION SOLARIS PUBLIC_LIBRARIES socket nsl) # special case
+
 # include the snippet projects for developer-builds
 if(QT_FEATURE_private_tests)
     add_subdirectory(doc/snippets/network)

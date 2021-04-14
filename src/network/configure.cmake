@@ -81,6 +81,22 @@ freeifaddrs(list);
 "# FIXME: use: unmapped library: network
 )
 
+# ifr_index
+qt_config_compile_test(ifr_index
+    LABEL "ifr_index"
+    CODE
+"#include <net/if.h>
+
+int main(void)
+{
+    /* BEGIN TEST: */
+struct ifreq req;
+req.ifr_index = 0;
+    /* END TEST: */
+    return 0;
+}
+")
+
 # ipv6ifname
 qt_config_compile_test(ipv6ifname
     LABEL "IPv6 ifname"
@@ -220,6 +236,10 @@ qt_feature("getifaddrs" PUBLIC
     CONDITION TEST_getifaddrs
 )
 qt_feature_definition("getifaddrs" "QT_NO_GETIFADDRS" NEGATE VALUE "1")
+qt_feature("ifr_index" PRIVATE
+    LABEL "ifr_index"
+    CONDITION TEST_ifr_index
+)
 qt_feature("ipv6ifname" PUBLIC
     LABEL "IPv6 ifname"
     CONDITION TEST_ipv6ifname

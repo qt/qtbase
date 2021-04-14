@@ -142,6 +142,17 @@
             },
             "use": "network"
         },
+        "ifr_index": {
+            "label": "ifr_index",
+            "type": "compile",
+            "test": {
+                "include": "net/if.h",
+                "main": [
+                    "struct ifreq req;",
+                    "req.ifr_index = 0;"
+                ]
+            }
+        },
         "ipv6ifname": {
             "label": "IPv6 ifname",
             "type": "compile",
@@ -237,6 +248,11 @@
             "label": "getifaddrs()",
             "condition": "tests.getifaddrs",
             "output": [ "feature" ]
+        },
+        "ifr_index": {
+            "label": "ifr_index",
+            "condition": "tests.ifr_index",
+            "output": [ "privateFeature" ]
         },
         "ipv6ifname": {
             "label": "IPv6 ifname",

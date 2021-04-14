@@ -84,7 +84,11 @@
 #define QT_FEATURE_datetimeparser -1
 #define QT_FEATURE_easingcurve -1
 #define QT_FEATURE_etw -1
+#if defined(__linux__) || defined(__GLIBC__)
 #define QT_FEATURE_getauxval (__has_include(<sys/auxv.h>) ? 1 : -1)
+#else
+#define QT_FEATURE_getauxval -1
+#endif
 #define QT_FEATURE_getentropy -1
 #define QT_NO_GEOM_VARIANT
 #define QT_FEATURE_hijricalendar -1

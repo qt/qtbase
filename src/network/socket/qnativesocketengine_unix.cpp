@@ -783,7 +783,11 @@ QNetworkInterface QNativeSocketEnginePrivate::nativeMulticastInterface() const
         return QNetworkInterface::interfaceFromIndex(v);
     }
 
+#if defined(Q_OS_SOLARIS)
+    struct in_addr v = { 0, 0, 0, 0};
+#else
     struct in_addr v = { 0 };
+#endif
     QT_SOCKOPTLEN_T sizeofv = sizeof(v);
     if (::getsockopt(socketDescriptor, IPPROTO_IP, IP_MULTICAST_IF, &v, &sizeofv) == -1)
         return QNetworkInterface();
