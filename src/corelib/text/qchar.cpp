@@ -595,6 +595,7 @@ QT_BEGIN_NAMESPACE
     \value ByteOrderSwapped
     \value ParagraphSeparator
     \value LineSeparator
+    \value VisualTabCharacter Used to represent a tabulation as a horizontal arrow. Since 6.2.
     \value LastValidCodePoint
 */
 

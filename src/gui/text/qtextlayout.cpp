@@ -2617,7 +2617,7 @@ void QTextLine::draw_internal(QPainter *p, const QPointF &pos,
                     gf.width = iterator.itemWidth;
                     QPainterPrivate::get(p)->drawTextItem(QPointF(iterator.x.toReal(), y.toReal()), gf, eng);
                     if (eng->option.flags() & QTextOption::ShowTabsAndSpaces) {
-                        const QChar visualTab = u'\x2192';
+                        const QChar visualTab = QChar(QChar::VisualTabCharacter);
                         int w = QFontMetrics(f).horizontalAdvance(visualTab);
                         qreal x = iterator.itemWidth.toReal() - w; // Right-aligned
                         if (x < 0)
