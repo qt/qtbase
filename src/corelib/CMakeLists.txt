@@ -1187,6 +1187,11 @@ if(QT_FEATURE_mimetype AND QT_FEATURE_mimetype_database)
         )
     else()
         if(QT_FEATURE_zstd)
+            if(NOT QT_CMAKE_ZSTD_SUPPORT)
+                message(FATAL_ERROR
+                    "CMake was not built with zstd support. "
+                    "Rebuild CMake or set QT_AVOID_CMAKE_ARCHIVING_API=ON.")
+            endif()
             set(qmime_db_compression Zstd)
             string(APPEND qmime_db_content "#define MIME_DATABASE_IS_ZSTD\n")
         else()
