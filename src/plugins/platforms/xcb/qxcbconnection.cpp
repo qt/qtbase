@@ -221,6 +221,12 @@ void QXcbConnection::printXcbEvent(const QLoggingCategory &log, const char *mess
 }
 #define CASE_PRINT_AND_RETURN(name) case name : PRINT_AND_RETURN(#name);
 
+#define XI_PRINT_AND_RETURN(name) { \
+    qCDebug(log, "%s | XInput Event(%s) | sequence: %d", message, name, sequence); \
+    return; \
+}
+#define XI_CASE_PRINT_AND_RETURN(name) case name : XI_PRINT_AND_RETURN(#name);
+
     switch (response_type) {
     CASE_PRINT_AND_RETURN( XCB_KEY_PRESS );
     CASE_PRINT_AND_RETURN( XCB_KEY_RELEASE );
@@ -255,7 +261,44 @@ void QXcbConnection::printXcbEvent(const QLoggingCategory &log, const char *mess
     CASE_PRINT_AND_RETURN( XCB_COLORMAP_NOTIFY );
     CASE_PRINT_AND_RETURN( XCB_CLIENT_MESSAGE );
     CASE_PRINT_AND_RETURN( XCB_MAPPING_NOTIFY );
-    CASE_PRINT_AND_RETURN( XCB_GE_GENERIC );
+    case XCB_GE_GENERIC: {
+        if (hasXInput2() && isXIEvent(event)) {
+            auto *xiDeviceEvent = reinterpret_cast<const xcb_input_button_press_event_t*>(event); // qt_xcb_input_device_event_t
+            switch (xiDeviceEvent->event_type) {
+            XI_CASE_PRINT_AND_RETURN( XCB_INPUT_KEY_PRESS );
+            XI_CASE_PRINT_AND_RETURN( XCB_INPUT_KEY_RELEASE );
+            XI_CASE_PRINT_AND_RETURN( XCB_INPUT_BUTTON_PRESS );
+            XI_CASE_PRINT_AND_RETURN( XCB_INPUT_BUTTON_RELEASE );
+            XI_CASE_PRINT_AND_RETURN( XCB_INPUT_MOTION );
+            XI_CASE_PRINT_AND_RETURN( XCB_INPUT_ENTER );
+            XI_CASE_PRINT_AND_RETURN( XCB_INPUT_LEAVE );
+            XI_CASE_PRINT_AND_RETURN( XCB_INPUT_FOCUS_IN );
+            XI_CASE_PRINT_AND_RETURN( XCB_INPUT_FOCUS_OUT );
+            XI_CASE_PRINT_AND_RETURN( XCB_INPUT_HIERARCHY );
+            XI_CASE_PRINT_AND_RETURN( XCB_INPUT_PROPERTY );
+            XI_CASE_PRINT_AND_RETURN( XCB_INPUT_RAW_KEY_PRESS );
+            XI_CASE_PRINT_AND_RETURN( XCB_INPUT_RAW_KEY_RELEASE );
+            XI_CASE_PRINT_AND_RETURN( XCB_INPUT_RAW_BUTTON_PRESS );
+            XI_CASE_PRINT_AND_RETURN( XCB_INPUT_RAW_BUTTON_RELEASE );
+            XI_CASE_PRINT_AND_RETURN( XCB_INPUT_RAW_MOTION );
+            XI_CASE_PRINT_AND_RETURN( XCB_INPUT_TOUCH_BEGIN );
+            XI_CASE_PRINT_AND_RETURN( XCB_INPUT_TOUCH_UPDATE );
+            XI_CASE_PRINT_AND_RETURN( XCB_INPUT_TOUCH_END );
+            XI_CASE_PRINT_AND_RETURN( XCB_INPUT_TOUCH_OWNERSHIP );
+            XI_CASE_PRINT_AND_RETURN( XCB_INPUT_RAW_TOUCH_BEGIN );
+            XI_CASE_PRINT_AND_RETURN( XCB_INPUT_RAW_TOUCH_UPDATE );
+            XI_CASE_PRINT_AND_RETURN( XCB_INPUT_RAW_TOUCH_END );
+            XI_CASE_PRINT_AND_RETURN( XCB_INPUT_BARRIER_HIT );
+            XI_CASE_PRINT_AND_RETURN( XCB_INPUT_BARRIER_LEAVE );
+            default:
+                qCDebug(log, "%s | XInput Event(other type) | sequence: %d", message, sequence);
+                return;
+            }
+        } else {
+            qCDebug(log, "%s | %s(%d) | sequence: %d", message, "XCB_GE_GENERIC", response_type, sequence);
+            return;
+        }
+    }
     }
     // XFixes
     if (isXFixesType(response_type, XCB_XFIXES_SELECTION_NOTIFY))
