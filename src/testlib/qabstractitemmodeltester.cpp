@@ -720,12 +720,12 @@ void QAbstractItemModelTesterPrivate::rowsAboutToBeRemoved(const QModelIndex &pa
     Changing c;
     c.parent = parent;
     c.oldSize = model->rowCount(parent);
-    if (start > 0) {
+    if (start > 0 && model->columnCount(parent) > 0) {
         const QModelIndex startIndex = model->index(start - 1, 0, parent);
         MODELTESTER_VERIFY(startIndex.isValid());
         c.last = model->data(startIndex);
     }
-    if (end < c.oldSize - 1) {
+    if (end < c.oldSize - 1 && model->columnCount(parent) > 0) {
         const QModelIndex endIndex = model->index(end + 1, 0, parent);
         MODELTESTER_VERIFY(endIndex.isValid());
         c.next = model->data(endIndex);
