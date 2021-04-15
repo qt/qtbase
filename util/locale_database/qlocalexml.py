@@ -155,7 +155,7 @@ class QLocaleXmlReader (object):
                         try:
                             to = likely[(locale.language, 'AnyScript', locale.country)]
                         except KeyError:
-                            to = likely[(locale.language, 'AnyScript', 'AnyCountry')]
+                            to = likely[(locale.language, 'AnyScript', 'AnyTerritory')]
                     except KeyError:
                         pass
                     else:
@@ -196,7 +196,7 @@ class QLocaleXmlReader (object):
         sub-tags mapping says language's default locale uses the given
         script and country."""
         for have, give in self.__likely:
-            if have[1:] == ('AnyScript', 'AnyCountry') and give[2] != 'AnyCountry':
+            if have[1:] == ('AnyScript', 'AnyTerritory') and give[2] != 'AnyTerritory':
                 assert have[0] == give[0], (have, give)
                 yield ((self.__langByName[give[0]][0],
                         self.__textByName[give[1]][0]),
@@ -590,7 +590,7 @@ class Locale (object):
         return cls(cls.__monthNames(calendars),
                    language='C', language_code='0', languageEndonym='',
                    script='AnyScript', script_code='0',
-                   country='AnyCountry', country_code='0', countryEndonym='',
+                   country='AnyTerritory', country_code='0', countryEndonym='',
                    groupSizes=(3, 3, 1),
                    decimal='.', group=',', list=';', percent='%',
                    zero='0', minus='-', plus='+', exp='e',

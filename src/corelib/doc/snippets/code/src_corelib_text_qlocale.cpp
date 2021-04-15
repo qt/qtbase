@@ -59,10 +59,6 @@ int i = egyptian.toInt(s2);
 
 
 //! [1]
-QLocale::setDefault(QLocale(QLocale::Hebrew, QLocale::Israel));
-QLocale hebrew; // Constructs a default QLocale
-QString s1 = hebrew.toString(15714.3, 'e');
-
 bool ok;
 double d;
 

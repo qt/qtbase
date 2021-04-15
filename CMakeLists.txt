@@ -126,7 +126,7 @@ if(QT_BUILD_TESTS)
 endif()
 
 if(NOT QT_BUILD_STANDALONE_TESTS)
-    if(QT_WILL_BUILD_TOOLS)
+    if(QT_WILL_BUILD_TOOLS AND QT_FEATURE_settings)
         add_subdirectory(qmake)
     endif()
     # As long as we use the mkspecs (for qplatformdefs.h), we need to always

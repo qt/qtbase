@@ -85,7 +85,7 @@ public:
 
     enum QueryType {
         LanguageId, // uint
-        CountryId, // uint
+        TerritoryId, // uint
         DecimalPoint, // QString
         GroupSeparator, // QString (empty QString means: don't group digits)
         ZeroDigit, // QString
@@ -122,7 +122,7 @@ public:
         ListToSeparatedString, // QString
         LocaleChanged, // system locale changed
         NativeLanguageName, // QString
-        NativeCountryName, // QString
+        NativeTerritoryName, // QString
         StandaloneMonthNameLong, // QString, in: int
         StandaloneMonthNameShort // QString, in: int
     };
@@ -150,17 +150,17 @@ struct QLocaleId
 {
     Q_CORE_EXPORT static QLocaleId fromName(const QString &name);
     inline bool operator==(QLocaleId other) const
-    { return language_id == other.language_id && script_id == other.script_id && country_id == other.country_id; }
+    { return language_id == other.language_id && script_id == other.script_id && territory_id == other.territory_id; }
     inline bool operator!=(QLocaleId other) const
     { return !operator==(other); }
     inline bool isValid() const
     {
         return language_id <= QLocale::LastLanguage && script_id <= QLocale::LastScript
-                && country_id <= QLocale::LastCountry;
+                && territory_id <= QLocale::LastTerritory;
     }
     inline bool matchesAll() const
     {
-        return !language_id && !script_id && !country_id;
+        return !language_id && !script_id && !territory_id;
     }
     // Use as: filter.accept...(candidate)
     inline bool acceptLanguage(quint16 lang) const
@@ -169,9 +169,9 @@ struct QLocaleId
         // So, when searching for AnyLanguage, accept everything *but* AnyLanguage.
         return language_id ? lang == language_id : lang;
     }
-    inline bool acceptScriptCountry(QLocaleId other) const
+    inline bool acceptScriptTerritory(QLocaleId other) const
     {
-        return (!country_id || other.country_id == country_id)
+        return (!territory_id || other.territory_id == territory_id)
                 && (!script_id || other.script_id == script_id);
     }
 
@@ -180,7 +180,7 @@ struct QLocaleId
 
     QByteArray name(char separator = '-') const;
 
-    ushort language_id = 0, script_id = 0, country_id = 0;
+    ushort language_id = 0, script_id = 0, territory_id = 0;
 };
 Q_DECLARE_TYPEINFO(QLocaleId, Q_PRIMITIVE_TYPE);
 
@@ -288,7 +288,7 @@ public:
             QLocale::NumberOptions number_options = QLocale::DefaultNumberOptions) const;
 
     // Access to assorted data members:
-    QLocaleId id() const { return QLocaleId { m_language_id, m_script_id, m_country_id }; }
+    QLocaleId id() const { return QLocaleId { m_language_id, m_script_id, m_territory_id }; }
 
     QString decimalPoint() const;
     QString groupSeparator() const;
@@ -359,7 +359,7 @@ public:
     X(byteCount) X(byteAmountSI) X(byteAmountIEC) \
     X(currencySymbol) X(currencyDisplayName) \
     X(currencyFormat) X(currencyFormatNegative) \
-    X(endonymLanguage) X(endonymCountry)
+    X(endonymLanguage) X(endonymTerritory)
 
 #define rangeGetter(name) \
     DataRange name() const { return { m_ ## name ## _idx, m_ ## name ## _size }; }
@@ -367,7 +367,7 @@ public:
 #undef rangeGetter
 
 public:
-    quint16 m_language_id, m_script_id, m_country_id;
+    quint16 m_language_id, m_script_id, m_territory_id;
 
     // Offsets, then sizes, for each range:
 #define rangeIndex(name) quint16 m_ ## name ## _idx;
@@ -401,22 +401,22 @@ public:
           m_index(index), m_numberOptions(numberOptions) {}
 
     quint16 languageId() const { return m_data->m_language_id; }
-    quint16 countryId() const { return m_data->m_country_id; }
+    quint16 territoryId() const { return m_data->m_territory_id; }
 
     QByteArray bcp47Name(char separator = '-') const;
     QByteArray rawName(char separator = '-') const;
 
     inline QLatin1String languageCode() const { return languageToCode(QLocale::Language(m_data->m_language_id)); }
     inline QLatin1String scriptCode() const { return scriptToCode(QLocale::Script(m_data->m_script_id)); }
-    inline QLatin1String countryCode() const { return countryToCode(QLocale::Country(m_data->m_country_id)); }
+    inline QLatin1String territoryCode() const { return territoryToCode(QLocale::Territory(m_data->m_territory_id)); }
 
     static const QLocalePrivate *get(const QLocale &l) { return l.d; }
     static QLatin1String languageToCode(QLocale::Language language);
     static QLatin1String scriptToCode(QLocale::Script script);
-    static QLatin1String countryToCode(QLocale::Country country);
+    static QLatin1String territoryToCode(QLocale::Territory territory);
     static QLocale::Language codeToLanguage(QStringView code) noexcept;
     static QLocale::Script codeToScript(QStringView code) noexcept;
-    static QLocale::Country codeToCountry(QStringView code) noexcept;
+    static QLocale::Territory codeToTerritory(QStringView code) noexcept;
 
     QLocale::MeasurementSystem measurementSystem() const;
 

@@ -55,8 +55,8 @@ private:
     QLineEdit *languageName;
     QLineEdit *nativeLanguageName;
     QLineEdit *scriptName;
-    QLineEdit *countryName;
-    QLineEdit *nativeCountryName;
+    QLineEdit *territoryName;
+    QLineEdit *nativeTerritoryName;
 
 private slots:
     void localeChanged(QLocale locale);

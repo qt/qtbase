@@ -193,6 +193,7 @@ function(qt_build_internals_set_up_system_prefixes)
 
         list(REMOVE_ITEM CMAKE_SYSTEM_PREFIX_PATH
             "/usr/local" # Homebrew
+            "/opt/homebrew" # Apple Silicon Homebrew
             "/usr/X11R6"
             "/usr/pkg"
             "/opt"

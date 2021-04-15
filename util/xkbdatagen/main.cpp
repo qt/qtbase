@@ -450,7 +450,7 @@ int main(int argc, char **argv)
            "    const char *variant; // 0 means any variant\n"
            "    Qt::LayoutDirection direction;\n"
            "    QLocale::Language language;\n"
-           "    QLocale::Country country;\n"
+           "    QLocale::Territory territory;\n"
            "} xkbLayoutData[] = {\n");
 
     // contents
@@ -485,7 +485,7 @@ int main(int argc, char **argv)
     }
 
     // wrapping up
-    printf("    { 0, 0, Qt::LeftToRight, QLocale::C, QLocale::AnyCountry }\n"
+    printf("    { 0, 0, Qt::LeftToRight, QLocale::C, QLocale::AnyTerritory }\n"
            "};\n");
 
     return 0;

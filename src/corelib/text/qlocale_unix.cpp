@@ -130,7 +130,7 @@ static bool contradicts(const QString &maybe, const QString &known)
      */
     QLocaleId knownId = QLocaleId::fromName(known);
     QLocaleId maybeId = QLocaleId::fromName(maybe);
-    return !(maybeId.acceptLanguage(knownId.language_id) && maybeId.acceptScriptCountry(knownId));
+    return !(maybeId.acceptLanguage(knownId.language_id) && maybeId.acceptScriptTerritory(knownId));
 }
 
 QLocale QSystemLocale::fallbackLocale() const

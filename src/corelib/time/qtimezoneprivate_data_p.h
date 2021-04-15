@@ -75,7 +75,7 @@ QT_BEGIN_NAMESPACE
 
 struct QZoneData {
     quint16 windowsIdKey;      // Windows ID Key
-    quint16 country;           // Country of IANA ID's, AnyCountry means No Country
+    quint16 territory;         // Territory of IANA ID's, AnyTerritory means No Territory
     quint16 ianaIdIndex;      // All IANA ID's for the Windows ID and Country, space separated
 };
 

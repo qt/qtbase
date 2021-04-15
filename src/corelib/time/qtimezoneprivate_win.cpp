@@ -376,13 +376,13 @@ int yearEndOffset(const QWinTimeZonePrivate::QWinTransitionRule &rule, int year)
     return offset;
 }
 
-QLocale::Country userCountry()
+QLocale::Territory userTerritory()
 {
     const GEOID id = GetUserGeoID(GEOCLASS_NATION);
     wchar_t code[3];
     const int size = GetGeoInfo(id, GEO_ISO2, code, 3, 0);
-    return (size == 3) ? QLocalePrivate::codeToCountry(QStringView(code, size))
-                       : QLocale::AnyCountry;
+    return (size == 3) ? QLocalePrivate::codeToTerritory(QStringView(code, size))
+                       : QLocale::AnyTerritory;
 }
 
 // Index of last rule in rules with .startYear <= year:
@@ -727,13 +727,13 @@ QTimeZonePrivate::Data QWinTimeZonePrivate::previousTransition(qint64 beforeMSec
 
 QByteArray QWinTimeZonePrivate::systemTimeZoneId() const
 {
-    const QLocale::Country country = userCountry();
+    const QLocale::Territory territory = userTerritory();
     const QByteArray windowsId = windowsSystemZoneId();
     QByteArray ianaId;
-    // If we have a real country, then try get a specific match for that country
-    if (country != QLocale::AnyCountry)
-        ianaId = windowsIdToDefaultIanaId(windowsId, country);
-    // If we don't have a real country, or there wasn't a specific match, try the global default
+    // If we have a real territory, then try get a specific match for that territory
+    if (territory != QLocale::AnyTerritory)
+        ianaId = windowsIdToDefaultIanaId(windowsId, territory);
+    // If we don't have a real territory, or there wasn't a specific match, try the global default
     if (ianaId.isEmpty())
         ianaId = windowsIdToDefaultIanaId(windowsId);
     return ianaId;

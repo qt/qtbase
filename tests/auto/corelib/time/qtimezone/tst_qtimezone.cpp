@@ -103,7 +103,7 @@ void tst_QTimeZone::printTimeZone(const QTimeZone &tz)
     qDebug() << "Is Valid                = " << tz.isValid();
     qDebug() << "";
     qDebug() << "Zone ID                 = " << tz.id();
-    qDebug() << "Country                 = " << QLocale::countryToString(tz.country());
+    qDebug() << "Territory               = " << QLocale::territoryToString(tz.territory());
     qDebug() << "Comment                 = " << tz.comment();
     qDebug() << "";
     qDebug() << "Locale                  = " << QLocale().name();
@@ -178,7 +178,7 @@ void tst_QTimeZone::createTest()
     QCOMPARE((tz == other), false);
     QCOMPARE((tz != other), true);
 
-    QCOMPARE(tz.country(), QLocale::NewZealand);
+    QCOMPARE(tz.territory(), QLocale::NewZealand);
 
     QDateTime jan = QDateTime(QDate(2012, 1, 1), QTime(0, 0, 0), Qt::UTC);
     QDateTime jun = QDateTime(QDate(2012, 6, 1), QTime(0, 0, 0), Qt::UTC);
@@ -275,7 +275,7 @@ void tst_QTimeZone::nullTest()
     QCOMPARE(utc.isValid(), false);
 
     QCOMPARE(nullTz1.id(), QByteArray());
-    QCOMPARE(nullTz1.country(), QLocale::AnyCountry);
+    QCOMPARE(nullTz1.territory(), QLocale::AnyTerritory);
     QCOMPARE(nullTz1.comment(), QString());
 
     QDateTime jan = QDateTime(QDate(2012, 1, 1), QTime(0, 0, 0), Qt::UTC);
@@ -359,7 +359,7 @@ void tst_QTimeZone::dataStreamTest()
     }
     QCOMPARE(tz2.id(), QByteArray("QST"));
     QCOMPARE(tz2.comment(), QString("Qt Testing"));
-    QCOMPARE(tz2.country(), QLocale::Norway);
+    QCOMPARE(tz2.territory(), QLocale::Norway);
     QCOMPARE(tz2.abbreviation(QDateTime::currentDateTime()), QString("QST"));
     QCOMPARE(tz2.displayName(QTimeZone::StandardTime, QTimeZone::LongName, QLocale()),
              QString("Qt Standard Time"));
@@ -642,7 +642,7 @@ void tst_QTimeZone::transitionEachZone()
         if (here * 1000 != stamp) {
             // (The +1 is due to using _1_:30 as baseSecs.)
             qDebug("Failing at half past %d UTC (offset %d in %s)", i + 1, when.offsetFromUtc(),
-                   QLocale::countryToString(named.country()).toUtf8().constData());
+                   QLocale::territoryToString(named.territory()).toUtf8().constData());
         }
         QCOMPARE(stamp % 1000, 0);
         QCOMPARE(here - stamp / 1000, 0);
@@ -732,7 +732,7 @@ void tst_QTimeZone::stressTest()
         QCOMPARE(testZone.isValid(), true);
         QCOMPARE(testZone.id(), id);
         QDateTime testDate = QDateTime(QDate(2015, 1, 1), QTime(0, 0, 0), Qt::UTC);
-        testZone.country();
+        testZone.territory();
         testZone.comment();
         testZone.displayName(testDate);
         testZone.displayName(QTimeZone::DaylightTime);
@@ -783,7 +783,7 @@ void tst_QTimeZone::windowsId()
     USA         "America/Chicago America/Indiana/Knox America/Indiana/Tell_City America/Menominee"
                 "America/North_Dakota/Beulah America/North_Dakota/Center"
                 "America/North_Dakota/New_Salem"
-    AnyCountry  "CST6CDT"
+    AnyTerritory  "CST6CDT"
 */
     QCOMPARE(QTimeZone::ianaIdToWindowsId("America/Chicago"),
              QByteArray("Central Standard Time"));
@@ -800,7 +800,7 @@ void tst_QTimeZone::windowsId()
              QByteArray("America/Chicago"));
     QCOMPARE(QTimeZone::windowsIdToDefaultIanaId("Central Standard Time", QLocale::Canada),
              QByteArray("America/Winnipeg"));
-    QCOMPARE(QTimeZone::windowsIdToDefaultIanaId("Central Standard Time", QLocale::AnyCountry),
+    QCOMPARE(QTimeZone::windowsIdToDefaultIanaId("Central Standard Time", QLocale::AnyTerritory),
              QByteArray("CST6CDT"));
     QCOMPARE(QTimeZone::windowsIdToDefaultIanaId(QByteArray()), QByteArray());
 
@@ -837,13 +837,13 @@ void tst_QTimeZone::windowsId()
 
     list.clear();
     list << "CST6CDT";
-    QCOMPARE(QTimeZone::windowsIdToIanaIds("Central Standard Time", QLocale::AnyCountry),
+    QCOMPARE(QTimeZone::windowsIdToIanaIds("Central Standard Time", QLocale::AnyTerritory),
              list);
 
     // Check no windowsId return empty
     list.clear();
     QCOMPARE(QTimeZone::windowsIdToIanaIds(QByteArray()), list);
-    QCOMPARE(QTimeZone::windowsIdToIanaIds(QByteArray(), QLocale::AnyCountry), list);
+    QCOMPARE(QTimeZone::windowsIdToIanaIds(QByteArray(), QLocale::AnyTerritory), list);
 }
 
 void tst_QTimeZone::isValidId_data()
@@ -1009,7 +1009,7 @@ void tst_QTimeZone::utcTest()
     QUtcTimeZonePrivate tzp;
     QCOMPARE(tzp.isValid(),   true);
     QCOMPARE(tzp.id(), QByteArray("UTC"));
-    QCOMPARE(tzp.country(), QLocale::AnyCountry);
+    QCOMPARE(tzp.territory(), QLocale::AnyTerritory);
     QCOMPARE(tzp.abbreviation(0), QString("UTC"));
     QCOMPARE(tzp.displayName(QTimeZone::StandardTime, QTimeZone::LongName, QLocale()), QString("UTC"));
     QCOMPARE(tzp.offsetFromUtc(0), 0);
@@ -1050,7 +1050,7 @@ void tst_QTimeZone::utcTest()
     QCOMPARE(tz.isValid(),   true);
     QCOMPARE(tz.id(), QByteArray("QST"));
     QCOMPARE(tz.comment(), QString("Qt Testing"));
-    QCOMPARE(tz.country(), QLocale::Norway);
+    QCOMPARE(tz.territory(), QLocale::Norway);
     QCOMPARE(tz.abbreviation(now), QString("QST"));
     QCOMPARE(tz.displayName(QTimeZone::StandardTime, QTimeZone::LongName, QLocale()),
              QString("Qt Standard Time"));

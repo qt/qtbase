@@ -426,8 +426,8 @@ QVariant QSystemLocale::query(QueryType type, QVariant in) const
     switch(type) {
     case LanguageId:
         return getLocaleValue<QLocalePrivate::codeToLanguage>(kCFLocaleLanguageCode);
-    case CountryId:
-        return getLocaleValue<QLocalePrivate::codeToCountry>(kCFLocaleCountryCode);
+    case TerritoryId:
+        return getLocaleValue<QLocalePrivate::codeToTerritory>(kCFLocaleCountryCode);
     case ScriptId:
         return getLocaleValue<QLocalePrivate::codeToScript>(kCFLocaleScriptCode);
     case DecimalPoint:

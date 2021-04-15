@@ -817,7 +817,7 @@ int QResourceRoot::findNode(const QString &_path, const QLocale &locale) const
         }
     }
 #ifdef DEBUG_RESOURCE_MATCH
-    qDebug() << "!!!!" << "START" << path << locale.country() << locale.language();
+    qDebug() << "!!!!" << "START" << path << locale.territory() << locale.language();
 #endif
 
     if (path == QLatin1String("/"))
@@ -877,7 +877,7 @@ int QResourceRoot::findNode(const QString &_path, const QLocale &locale) const
 
                     if (!splitter.hasNext()) {
                         if (!(flags & Directory)) {
-                            const qint16 country = qFromBigEndian<qint16>(tree + offset);
+                            const qint16 territory = qFromBigEndian<qint16>(tree + offset);
                             offset += 2;
 
                             const qint16 language = qFromBigEndian<qint16>(tree + offset);
@@ -885,14 +885,15 @@ int QResourceRoot::findNode(const QString &_path, const QLocale &locale) const
 #ifdef DEBUG_RESOURCE_MATCH
                             qDebug() << "    " << "LOCALE" << country << language;
 #endif
-                            if (country == locale.country() && language == locale.language()) {
+                            if (territory == locale.territory() && language == locale.language()) {
 #ifdef DEBUG_RESOURCE_MATCH
                                 qDebug() << "!!!!" << "FINISHED" << __LINE__ << sub_node;
 #endif
                                 return sub_node;
-                            } else if ((country == QLocale::AnyCountry
+                            } else if ((territory == QLocale::AnyTerritory
                                         && language == locale.language())
-                                       || (country == QLocale::AnyCountry && language == QLocale::C
+                                       || (territory == QLocale::AnyTerritory
+                                           && language == QLocale::C
                                            && node == -1)) {
                                 node = sub_node;
                             }

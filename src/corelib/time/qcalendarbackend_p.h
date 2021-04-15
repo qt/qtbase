@@ -63,7 +63,7 @@ QT_BEGIN_NAMESPACE
 // Locale-related parts, mostly handled in ../text/qlocale.cpp
 
 struct QCalendarLocale {
-    quint16 m_language_id, m_script_id, m_country_id;
+    quint16 m_language_id, m_script_id, m_territory_id;
 
 #define rangeGetter(name) \
     QLocaleData::DataRange name() const { return { m_ ## name ## _idx, m_ ## name ## _size }; }

@@ -247,14 +247,13 @@ void Window::createGeneralOptionsGroupBox()
     int index = 0;
     for (int _lang = QLocale::C; _lang <= QLocale::LastLanguage; ++_lang) {
         QLocale::Language lang = static_cast<QLocale::Language>(_lang);
-        QList<QLocale::Country> countries = QLocale::countriesForLanguage(lang);
-        for (int i = 0; i < countries.count(); ++i) {
-            QLocale::Country country = countries.at(i);
+        const auto territories = QLocale::territoriesForLanguage(lang);
+        for (auto territory : territories) {
             QString label = QLocale::languageToString(lang);
             label += QLatin1Char('/');
-            label += QLocale::countryToString(country);
-            QLocale locale(lang, country);
-            if (this->locale().language() == lang && this->locale().country() == country)
+            label += QLocale::territoryToString(territory);
+            QLocale locale(lang, territory);
+            if (this->locale().language() == lang && this->locale().territory() == territory)
                 curLocaleIndex = index;
             localeCombo->addItem(label, locale);
             ++index;

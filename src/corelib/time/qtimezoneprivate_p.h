@@ -101,7 +101,7 @@ public:
     bool isValid() const;
 
     QByteArray id() const;
-    virtual QLocale::Country country() const;
+    virtual QLocale::Territory territory() const;
     virtual QString comment() const;
 
     virtual QString displayName(qint64 atMSecsSinceEpoch,
@@ -131,7 +131,7 @@ public:
 
     virtual bool isTimeZoneIdAvailable(const QByteArray &ianaId) const;
     virtual QList<QByteArray> availableTimeZoneIds() const;
-    virtual QList<QByteArray> availableTimeZoneIds(QLocale::Country country) const;
+    virtual QList<QByteArray> availableTimeZoneIds(QLocale::Territory territory) const;
     virtual QList<QByteArray> availableTimeZoneIds(int utcOffset) const;
 
     virtual void serialize(QDataStream &ds) const;
@@ -151,10 +151,10 @@ public:
     static QByteArray ianaIdToWindowsId(const QByteArray &ianaId);
     static QByteArray windowsIdToDefaultIanaId(const QByteArray &windowsId);
     static QByteArray windowsIdToDefaultIanaId(const QByteArray &windowsId,
-                                                QLocale::Country country);
+                                                QLocale::Territory territory);
     static QList<QByteArray> windowsIdToIanaIds(const QByteArray &windowsId);
     static QList<QByteArray> windowsIdToIanaIds(const QByteArray &windowsId,
-                                                 QLocale::Country country);
+                                                 QLocale::Territory territory);
 
     // returns "UTC" QString and QByteArray
     [[nodiscard]] static inline QString utcQString()
@@ -185,7 +185,7 @@ public:
     QUtcTimeZonePrivate(qint32 offsetSeconds);
     // Create custom offset from UTC
     QUtcTimeZonePrivate(const QByteArray &zoneId, int offsetSeconds, const QString &name,
-                        const QString &abbreviation, QLocale::Country country,
+                        const QString &abbreviation, QLocale::Territory territory,
                         const QString &comment);
     QUtcTimeZonePrivate(const QUtcTimeZonePrivate &other);
     virtual ~QUtcTimeZonePrivate();
@@ -197,7 +197,7 @@ public:
 
     Data data(qint64 forMSecsSinceEpoch) const override;
 
-    QLocale::Country country() const override;
+    QLocale::Territory territory() const override;
     QString comment() const override;
 
     QString displayName(QTimeZone::TimeType timeType,
@@ -212,7 +212,7 @@ public:
 
     bool isTimeZoneIdAvailable(const QByteArray &ianaId) const override;
     QList<QByteArray> availableTimeZoneIds() const override;
-    QList<QByteArray> availableTimeZoneIds(QLocale::Country country) const override;
+    QList<QByteArray> availableTimeZoneIds(QLocale::Territory country) const override;
     QList<QByteArray> availableTimeZoneIds(int utcOffset) const override;
 
     void serialize(QDataStream &ds) const override;
@@ -220,13 +220,13 @@ public:
 private:
     void init(const QByteArray &zoneId);
     void init(const QByteArray &zoneId, int offsetSeconds, const QString &name,
-              const QString &abbreviation, QLocale::Country country,
+              const QString &abbreviation, QLocale::Territory territory,
               const QString &comment);
 
     QString m_name;
     QString m_abbreviation;
     QString m_comment;
-    QLocale::Country m_country;
+    QLocale::Territory m_territory;
     int m_offsetFromUtc;
 };
 
@@ -263,7 +263,7 @@ public:
     QByteArray systemTimeZoneId() const override;
 
     QList<QByteArray> availableTimeZoneIds() const override;
-    QList<QByteArray> availableTimeZoneIds(QLocale::Country country) const override;
+    QList<QByteArray> availableTimeZoneIds(QLocale::Territory territory) const override;
     QList<QByteArray> availableTimeZoneIds(int offsetFromUtc) const override;
 
 private:
@@ -315,7 +315,7 @@ public:
 
     QTzTimeZonePrivate *clone() const override;
 
-    QLocale::Country country() const override;
+    QLocale::Territory territory() const override;
     QString comment() const override;
 
     QString displayName(qint64 atMSecsSinceEpoch,
@@ -343,7 +343,7 @@ public:
 
     bool isTimeZoneIdAvailable(const QByteArray &ianaId) const override;
     QList<QByteArray> availableTimeZoneIds() const override;
-    QList<QByteArray> availableTimeZoneIds(QLocale::Country country) const override;
+    QList<QByteArray> availableTimeZoneIds(QLocale::Territory territory) const override;
 
 private:
     void init(const QByteArray &ianaId);
