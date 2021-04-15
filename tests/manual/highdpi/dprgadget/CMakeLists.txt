@@ -14,6 +14,7 @@ qt_add_executable(dprgadget
 target_link_libraries(dprgadget PUBLIC
     Qt::Core
     Qt::Gui
+    Qt::GuiPrivate
     Qt::Widgets
 )
 
