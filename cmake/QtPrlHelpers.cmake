@@ -225,6 +225,9 @@ function(qt_internal_walk_libs
                         set_property(TARGET ${lib_target_unaliased} PROPERTY IMPORTED_GLOBAL TRUE)
                     endif()
                 endif()
+            elseif("${lib_target}" MATCHES "^Qt::(.*)")
+                message(FATAL_ERROR "The ${CMAKE_MATCH_1} target is mentioned as a dependency for \
+${target}, but not declared.")
             else()
                 set(final_lib_name_to_merge "${lib_target}")
                 if(lib_target MATCHES "/([^/]+).framework$")
