@@ -285,7 +285,7 @@ class QMutex
 {
 public:
 
-    inline constexpr explicit QMutex() noexcept { }
+    constexpr QMutex() noexcept { }
 
     inline void lock() noexcept {}
     inline bool tryLock(int timeout = 0) noexcept { Q_UNUSED(timeout); return true; }
@@ -305,9 +305,6 @@ public:
         Q_UNUSED(timePoint);
         return true;
     }
-
-private:
-    Q_DISABLE_COPY(QMutex)
 };
 
 class QRecursiveMutex : public QMutex {};
