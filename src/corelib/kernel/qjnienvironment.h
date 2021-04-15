@@ -44,12 +44,6 @@
 
 #if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
 #include <jni.h>
-#else
-class JNIEnv;
-class JNINativeMethod;
-class JavaVM;
-class jclass;
-#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -81,5 +75,7 @@ private:
 };
 
 QT_END_NAMESPACE
+
+#endif
 
 #endif // QJNI_ENVIRONMENT_H
