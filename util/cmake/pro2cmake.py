@@ -4040,8 +4040,8 @@ def get_qml_import_version(scope: Scope, target: str) -> str:
 
     if import_version:
         replacements = [
-            ("$$QT_MINOR_VERSION", "${CMAKE_PROJECT_VERSION_MINOR}"),
-            ("$$QT_VERSION", "${CMAKE_PROJECT_VERSION}"),
+            ("$$QT_MINOR_VERSION", "${PROJECT_VERSION_MINOR}"),
+            ("$$QT_VERSION", "${PROJECT_VERSION}"),
         ]
         for needle, replacement in replacements:
             import_version = import_version.replace(needle, replacement)
