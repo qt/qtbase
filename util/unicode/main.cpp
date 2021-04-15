@@ -290,10 +290,7 @@ static const char *grapheme_break_class_string =
     "    GraphemeBreak_T,\n"
     "    GraphemeBreak_LV,\n"
     "    GraphemeBreak_LVT,\n"
-    "    Graphemebreak_E_Base,\n"
-    "    Graphemebreak_E_Modifier,\n"
-    "    Graphemebreak_Glue_After_Zwj,\n"
-    "    Graphemebreak_E_Base_GAZ,\n"
+    "    GraphemeBreak_Extended_Pictographic,\n"
     "\n"
     "    NumGraphemeBreakClasses\n"
     "};\n\n";
@@ -313,10 +310,7 @@ enum GraphemeBreakClass {
     GraphemeBreak_T,
     GraphemeBreak_LV,
     GraphemeBreak_LVT,
-    Graphemebreak_E_Base,
-    Graphemebreak_E_Modifier,
-    Graphemebreak_Glue_After_Zwj,
-    Graphemebreak_E_Base_GAZ,
+    GraphemeBreak_Extended_Pictographic,
 
     GraphemeBreak_Unassigned
 };
@@ -343,11 +337,8 @@ static void initGraphemeBreak()
         { GraphemeBreak_T, "T" },
         { GraphemeBreak_LV, "LV" },
         { GraphemeBreak_LVT, "LVT" },
-        { Graphemebreak_E_Base, "E_Base" },
-        { Graphemebreak_E_Modifier, "E_Modifier" },
-        { Graphemebreak_Glue_After_Zwj, "Glue_After_Zwj" },
-        { Graphemebreak_E_Base_GAZ, "E_Base_GAZ" },
-        { GraphemeBreak_Unassigned, 0 }
+        { GraphemeBreak_Extended_Pictographic, "Extended_Pictographic" },
+        { GraphemeBreak_Unassigned, nullptr }
     };
     GraphemeBreakList *d = breaks;
     while (d->name) {
@@ -1893,6 +1884,59 @@ static void readGraphemeBreak()
     }
 }
 
+static void readEmojiData()
+{
+    qDebug("Reading emoji-data.txt");
+
+    QFile f("data/emoji-data.txt");
+    if (!f.open(QFile::ReadOnly))
+        qFatal("Couldn't find emoji-data.txt");
+
+    while (!f.atEnd()) {
+        QByteArray line;
+        line.resize(1024);
+        int len = f.readLine(line.data(), 1024);
+        line.resize(len-1);
+
+        int comment = line.indexOf('#');
+        if (comment >= 0)
+            line = line.left(comment);
+        line.replace(" ", "");
+
+        if (line.isEmpty())
+            continue;
+
+        QList<QByteArray> l = line.split(';');
+        Q_ASSERT(l.size() == 2);
+
+        // NOTE: for the moment we process emoji_data only to extract
+        // the code points with Extended_Pictographic. This is needed by
+        // extended grapheme clustering (cf. the GB11 rule in UAX #29).
+        if (l[1] != "Extended_Pictographic")
+            continue;
+
+        QByteArray codes = l[0];
+        codes.replace("..", ".");
+        QList<QByteArray> cl = codes.split('.');
+
+        bool ok;
+        int from = cl[0].toInt(&ok, 16);
+        Q_ASSERT(ok);
+        int to = from;
+        if (cl.size() == 2) {
+            to = cl[1].toInt(&ok, 16);
+            Q_ASSERT(ok);
+        }
+
+        for (int codepoint = from; codepoint <= to; ++codepoint) {
+            UnicodeData &ud = UnicodeData::valueRef(codepoint);
+            // Check we're not overwriting the data from GraphemeBreakProperty.txt...
+            Q_ASSERT(ud.p.graphemeBreakClass == GraphemeBreak_Any);
+            ud.p.graphemeBreakClass = GraphemeBreak_Extended_Pictographic;
+        }
+    }
+}
+
 static void readWordBreak()
 {
     qDebug("Reading WordBreakProperty.txt");
@@ -3026,6 +3070,7 @@ int main(int, char **)
     // readBlocks();
     readScripts();
     readGraphemeBreak();
+    readEmojiData();
     readWordBreak();
     readSentenceBreak();
     readLineBreak();

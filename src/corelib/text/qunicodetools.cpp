@@ -56,45 +56,90 @@ namespace QUnicodeTools {
 // -----------------------------------------------------------------------------------------------------
 //
 // The text boundaries determination algorithm.
-// See http://www.unicode.org/reports/tr29/tr29-31.html
+// See https://www.unicode.org/reports/tr29/tr29-37.html
 //
 // -----------------------------------------------------------------------------------------------------
 
 namespace GB {
 
-/*
- * Most grapheme break rules can be implemented table driven, but rules GB10, GB12 and GB13 need a bit
- * of special treatment.
- */
-enum State : uchar {
-    Break,
-    Inside,
-    GB10,
-    GB10_2,
-    GB10_3,
-    GB13, // also covers GB12
+// This table is indexed by the grapheme break classes of two
+// (adjacent) code points.
+// The class of the first code point selects an entry.
+// If the entry's bit at position second_cp_class is set
+// (in other words: if entry & (1u << second_cp_class) is non-zero)
+// then there is NO grapheme break between the two code points.
+
+using GBTableEntryType = quint16;
+
+// Check that we have enough bits in the table (in case
+// NumGraphemeBreakClasses grows too much).
+static_assert(sizeof(GBTableEntryType) * CHAR_BIT >= QUnicodeTables::NumGraphemeBreakClasses,
+              "Internal error: increase the size in bits of GBTableEntryType");
+
+// GB9, GB9a
+static const GBTableEntryType Extend_SpacingMark_ZWJ =
+        FLAG(QUnicodeTables::GraphemeBreak_Extend)
+        | FLAG(QUnicodeTables::GraphemeBreak_SpacingMark)
+        | FLAG(QUnicodeTables::GraphemeBreak_ZWJ);
+
+static const GBTableEntryType HardBreak = 0u;
+
+static const GBTableEntryType breakTable[QUnicodeTables::NumGraphemeBreakClasses] = {
+    Extend_SpacingMark_ZWJ, // Any
+    FLAG(QUnicodeTables::GraphemeBreak_LF), // CR
+    HardBreak, // LF
+    HardBreak, // Control
+    Extend_SpacingMark_ZWJ, // Extend
+    Extend_SpacingMark_ZWJ, // ZWJ
+    Extend_SpacingMark_ZWJ, // RegionalIndicator
+    (Extend_SpacingMark_ZWJ
+        | FLAG(QUnicodeTables::GraphemeBreak_Any)
+        | FLAG(QUnicodeTables::GraphemeBreak_Prepend)
+        | FLAG(QUnicodeTables::GraphemeBreak_L)
+        | FLAG(QUnicodeTables::GraphemeBreak_V)
+        | FLAG(QUnicodeTables::GraphemeBreak_T)
+        | FLAG(QUnicodeTables::GraphemeBreak_LV)
+        | FLAG(QUnicodeTables::GraphemeBreak_LVT)
+        | FLAG(QUnicodeTables::GraphemeBreak_RegionalIndicator)
+        | FLAG(QUnicodeTables::GraphemeBreak_Extended_Pictographic)
+    ), // Prepend
+    Extend_SpacingMark_ZWJ, // SpacingMark
+    (Extend_SpacingMark_ZWJ
+        | FLAG(QUnicodeTables::GraphemeBreak_L)
+        | FLAG(QUnicodeTables::GraphemeBreak_V)
+        | FLAG(QUnicodeTables::GraphemeBreak_LV)
+        | FLAG(QUnicodeTables::GraphemeBreak_LVT)
+    ), // L
+    (Extend_SpacingMark_ZWJ
+        | FLAG(QUnicodeTables::GraphemeBreak_V)
+        | FLAG(QUnicodeTables::GraphemeBreak_T)
+    ), // V
+    (Extend_SpacingMark_ZWJ
+        | FLAG(QUnicodeTables::GraphemeBreak_T)
+    ), // T
+    (Extend_SpacingMark_ZWJ
+        | FLAG(QUnicodeTables::GraphemeBreak_V)
+        | FLAG(QUnicodeTables::GraphemeBreak_T)
+    ), // LV
+    (Extend_SpacingMark_ZWJ
+        | FLAG(QUnicodeTables::GraphemeBreak_T)
+    ), // LVT
+    Extend_SpacingMark_ZWJ // Extended_Pictographic
 };
 
-static const State breakTable[QUnicodeTables::NumGraphemeBreakClasses][QUnicodeTables::NumGraphemeBreakClasses] = {
-//    Any     CR      LF     Control  Extend  ZWJ     RI     Prepend  S-Mark  L       V       T       LV      LVT     E_B     E_M     GAZ     EBG
-    { Break , Break , Break , Break , Inside, Inside, Break , Break , Inside, Break , Break , Break , Break , Break , Break , Break , Break , Break  }, // Any
-    { Break , Break , Inside, Break , Break , Break , Break , Break , Break , Break , Break , Break , Break , Break , Break , Break , Break , Break  }, // CR
-    { Break , Break , Break , Break , Break , Break , Break , Break , Break , Break , Break , Break , Break , Break , Break , Break , Break , Break  }, // LF
-    { Break , Break , Break , Break , Break , Break , Break , Break , Break , Break , Break , Break , Break , Break , Break , Break , Break , Break  }, // Control
-    { Break , Break , Break , Break , GB10_2, Inside, Break , Break , Inside, Break , Break , Break , Break , Break , Break , GB10_3, Break , Break  }, // Extend
-    { Break , Break , Break , Break , Inside, Inside, Break , Break , Inside, Break , Break , Break , Break , Break , Break , Break , Inside, Inside }, // ZWJ
-    { Break , Break , Break , Break , Inside, Inside, GB13  , Break , Inside, Break , Break , Break , Break , Break , Break , Break , Break , Break  }, // RegionalIndicator
-    { Inside, Break , Break , Break , Inside, Inside, Inside, Inside, Inside, Inside, Inside, Inside, Inside, Inside, Inside, Inside, Inside, Inside }, // Prepend
-    { Break , Break , Break , Break , Inside, Inside, Break , Break , Inside, Break , Break , Break , Break , Break , Break , Break , Break , Break  }, // SpacingMark
-    { Break , Break , Break , Break , Inside, Inside, Break , Break , Inside, Inside, Inside, Break , Inside, Inside, Break , Break , Break , Break  }, // L
-    { Break , Break , Break , Break , Inside, Inside, Break , Break , Inside, Break , Inside, Inside, Break , Break , Break , Break , Break , Break  }, // V
-    { Break , Break , Break , Break , Inside, Inside, Break , Break , Inside, Break , Break , Inside, Break , Break , Break , Break , Break , Break  }, // T
-    { Break , Break , Break , Break , Inside, Inside, Break , Break , Inside, Break , Inside, Inside, Break , Break , Break , Break , Break , Break  }, // LV
-    { Break , Break , Break , Break , Inside, Inside, Break , Break , Inside, Break , Break , Inside, Break , Break , Break , Break , Break , Break  }, // LVT
-    { Break , Break , Break , Break , GB10  , Inside, Break , Break , Inside, Break , Break , Break , Break , Break , Break , Inside, Break , Break  }, // E_B
-    { Break , Break , Break , Break , Inside, Inside, Break , Break , Inside, Break , Break , Break , Break , Break , Break , Break , Break , Break  }, // E_M
-    { Break , Break , Break , Break , Inside, Inside, Break , Break , Inside, Break , Break , Break , Break , Break , Break , Break , Break , Break  }, // GAZ
-    { Break , Break , Break , Break , GB10  , Inside, Break , Break , Inside, Break , Break , Break , Break , Break , Break , Inside, Break , Break  }, // EBG
+static bool shouldBreakBetweenClasses(QUnicodeTables::GraphemeBreakClass first,
+                                      QUnicodeTables::GraphemeBreakClass second)
+{
+    return (breakTable[first] & FLAG(second)) == 0;
+}
+
+// Some rules (GB11, GB12, GB13) cannot be represented by the table alone,
+// so we need to store some local state.
+enum class State : uchar {
+    Normal,
+    GB11_ExtPicExt,    // saw a Extend after a Extended_Pictographic
+    GB11_ExtPicExtZWJ, // saw a ZWG after a Extended_Pictographic and zero or more Extend
+    GB12_13_RI,        // saw a RegionalIndicator following a non-RegionalIndicator
 };
 
 } // namespace GB
@@ -102,7 +147,7 @@ static const State breakTable[QUnicodeTables::NumGraphemeBreakClasses][QUnicodeT
 static void getGraphemeBreaks(const char16_t *string, qsizetype len, QCharAttributes *attributes)
 {
     QUnicodeTables::GraphemeBreakClass lcls = QUnicodeTables::GraphemeBreak_LF; // to meet GB1
-    GB::State state = GB::Break; // only required to track some of the rules
+    GB::State state = GB::State::Normal;
     for (qsizetype i = 0; i != len; ++i) {
         qsizetype pos = i;
         char32_t ucs4 = string[i];
@@ -117,36 +162,54 @@ static void getGraphemeBreaks(const char16_t *string, qsizetype len, QCharAttrib
         const QUnicodeTables::Properties *prop = QUnicodeTables::properties(ucs4);
         QUnicodeTables::GraphemeBreakClass cls = (QUnicodeTables::GraphemeBreakClass) prop->graphemeBreakClass;
 
-        switch (GB::breakTable[lcls][cls]) {
-        case GB::Break:
-            attributes[pos].graphemeBoundary = true;
-            state = GB::Break;
-            break;
-        case GB::Inside:
-            state = GB::Break;
-            break;
-        case GB::GB10:
-            state = GB::GB10;
-            break;
-        case GB::GB10_2:
-            if (state == GB::GB10 || state == GB::GB10_2)
-                state = GB::GB10_2;
-            else
-                state = GB::Break;
-            break;
-        case GB::GB10_3:
-            if (state != GB::GB10 && state != GB::GB10_2)
-                attributes[pos].graphemeBoundary = true;
-            state = GB::Break;
-            break;
-        case GB::GB13:
-            if (state != GB::GB13) {
-                state = GB::GB13;
-            } else {
-                attributes[pos].graphemeBoundary = true;
-                state = GB::Break;
+        bool shouldBreak = GB::shouldBreakBetweenClasses(lcls, cls);
+
+        switch (state) {
+        case GB::State::Normal:
+            if (lcls == QUnicodeTables::GraphemeBreak_Extended_Pictographic) { // GB11
+                if (cls == QUnicodeTables::GraphemeBreak_Extend) {
+                    state = GB::State::GB11_ExtPicExt;
+                    Q_ASSERT(!shouldBreak); // GB9, do not break before Extend
+                } else if (cls == QUnicodeTables::GraphemeBreak_ZWJ) {
+                    state = GB::State::GB11_ExtPicExtZWJ;
+                    Q_ASSERT(!shouldBreak); // GB9, do not break before ZWJ
+                }
+            } else if (cls == QUnicodeTables::GraphemeBreak_RegionalIndicator) { // GB12, GB13
+                state = GB::State::GB12_13_RI;
             }
+
+            break;
+        case GB::State::GB11_ExtPicExt:
+            Q_ASSERT(lcls == QUnicodeTables::GraphemeBreak_Extend);
+            if (cls == QUnicodeTables::GraphemeBreak_Extend) {
+                // keep going in the current state
+                Q_ASSERT(!shouldBreak); // GB9, do not break before Extend
+            } else if (cls == QUnicodeTables::GraphemeBreak_ZWJ) {
+                state = GB::State::GB11_ExtPicExtZWJ;
+                Q_ASSERT(!shouldBreak); // GB9, do not break before ZWJ
+            }
+
+            break;
+
+        case GB::State::GB11_ExtPicExtZWJ:
+            Q_ASSERT(lcls == QUnicodeTables::GraphemeBreak_ZWJ);
+            if (cls == QUnicodeTables::GraphemeBreak_Extended_Pictographic)
+                shouldBreak = false;
+
+            state = GB::State::Normal;
+            break;
+
+        case GB::State::GB12_13_RI:
+            Q_ASSERT(lcls == QUnicodeTables::GraphemeBreak_RegionalIndicator);
+            if (cls == QUnicodeTables::GraphemeBreak_RegionalIndicator)
+                shouldBreak = false;
+
+            state = GB::State::Normal;
+            break;
         }
+
+        if (shouldBreak)
+            attributes[pos].graphemeBoundary = true;
 
         lcls = cls;
     }
