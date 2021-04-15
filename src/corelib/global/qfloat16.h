@@ -239,7 +239,7 @@ Q_CORE_EXPORT void qFloatFromFloat16(float *, const qfloat16 *, qsizetype length
 */
 [[nodiscard]] inline bool qFuzzyIsNull(qfloat16 f) noexcept
 {
-    return qAbs(static_cast<float>(f)) <= 0.001f;
+    return qAbs(f) < 0.00976f; // 1/102.5 to 3 significant digits; see qFuzzyCompare()
 }
 
 [[nodiscard]] inline bool qIsNull(qfloat16 f) noexcept

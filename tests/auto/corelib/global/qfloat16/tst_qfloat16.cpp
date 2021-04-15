@@ -118,7 +118,7 @@ void tst_qfloat16::fuzzyIsNull_data()
     QTest::addColumn<qfloat16>("value");
     QTest::addColumn<bool>("isNull");
     using Bounds = std::numeric_limits<qfloat16>;
-    const qfloat16 one(1), huge(1000), tiny(0.00099f);
+    const qfloat16 one(1), huge(1000), tiny(0.00976f);
 
     QTest::newRow("zero") << qfloat16(0.0f) << true;
     QTest::newRow("min") << Bounds::min() << true;
