@@ -526,16 +526,10 @@
 
 /*!
     \fn int QUtf8StringView::length() const
-    \obsolete
-    Use size() and port callers to qsizetype.
 
-    Same as size(), except returns the result as an \c int.
+    Same as size().
 
     This function is provided for compatibility with other Qt containers.
-
-    \warning QUtf8StringView can represent strings with more than 2\sup{31} code points.
-    Calling this function on a string view for which size() returns a value greater
-    than \c{INT_MAX} constitutes undefined behavior.
 
     \sa empty(), isEmpty(), isNull(), size()
 */

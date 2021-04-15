@@ -322,16 +322,10 @@
 
 /*!
     \fn int QAnyStringView::length() const
-    \obsolete
-    Use size() instead, and port callers to qsizetype.
 
-    Same as size(), except that it returns the result as an \c int.
+    Same as size().
 
     This function is provided for compatibility with other Qt containers.
-
-    \warning QAnyStringView can represent strings with more than 2\sup{31} characters.
-    Calling this function on a string view for which size() returns a value greater
-    than \c{INT_MAX} constitutes undefined behavior.
 
     \sa size()
 */

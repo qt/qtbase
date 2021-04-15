@@ -1667,7 +1667,7 @@ static bool android_default_message_handler(QtMsgType type,
 #ifdef Q_OS_WIN
 static void win_outputDebugString_helper(QStringView message)
 {
-    const int maxOutputStringLength = 32766;
+    const qsizetype maxOutputStringLength = 32766;
     static QBasicMutex m;
     auto locker = qt_unique_lock(m);
     // fast path: Avoid string copies if one output is enough
@@ -1675,9 +1675,9 @@ static void win_outputDebugString_helper(QStringView message)
         OutputDebugString(reinterpret_cast<const wchar_t *>(message.utf16()));
     } else {
         wchar_t *messagePart = new wchar_t[maxOutputStringLength + 1];
-        for (int i = 0; i < message.length(); i += maxOutputStringLength) {
-            const int length = std::min(message.length() - i, maxOutputStringLength);
-            const int len = message.mid(i, length).toWCharArray(messagePart);
+        for (qsizetype i = 0; i < message.length(); i += maxOutputStringLength) {
+            const qsizetype length = std::min(message.length() - i, maxOutputStringLength);
+            const qsizetype len = message.mid(i, length).toWCharArray(messagePart);
             Q_ASSERT(len == length);
             messagePart[len] = 0;
             OutputDebugString(messagePart);
