@@ -2190,6 +2190,16 @@ inline char qToLower(char ch)
     \sa fromLatin1(), fromLocal8Bit(), fromUtf8()
 */
 
+/*! \fn QString::QString(const char8_t *str)
+
+    Constructs a string initialized with the UTF-8 string \a str. The
+    given const char8_t pointer is converted to Unicode using the
+    fromUtf8() function.
+
+    \since 6.1
+    \sa fromLatin1(), fromLocal8Bit(), fromUtf8()
+*/
+
 /*! \fn QString QString::fromStdString(const std::string &str)
 
     Returns a copy of the \a str string. The given string is converted
@@ -5322,6 +5332,14 @@ QString QString::fromLocal8Bit(QByteArrayView ba)
     suppressed. In order to do stateful decoding, please use \l QStringDecoder.
 
     \sa toUtf8(), fromLatin1(), fromLocal8Bit()
+*/
+
+/*!
+    \fn QString QString::fromUtf8(const char8_t *str)
+    \overload
+    \since 6.1
+
+    This overload is only available when compiling in C++20 mode.
 */
 
 /*!

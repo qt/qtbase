@@ -386,6 +386,12 @@ public:
     QString(QChar c);
     QString(qsizetype size, QChar c);
     inline QString(QLatin1String latin1);
+#if defined(__cpp_char8_t) || defined(Q_CLANG_QDOC)
+    Q_WEAK_OVERLOAD
+    inline QString(const char8_t *str)
+        : QString(fromUtf8(str))
+    {}
+#endif
     inline QString(const QString &) noexcept;
     inline ~QString();
     QString &operator=(QChar c);
@@ -746,6 +752,9 @@ public:
         return fromUtf8(QByteArrayView(utf8, !utf8 || size < 0 ? qstrlen(utf8) : size));
     }
 #if defined(__cpp_char8_t) || defined(Q_CLANG_QDOC)
+    Q_WEAK_OVERLOAD
+    static inline QString fromUtf8(const char8_t *str)
+    { return fromUtf8(reinterpret_cast<const char *>(str)); }
     Q_WEAK_OVERLOAD
     static inline QString fromUtf8(const char8_t *str, qsizetype size)
     { return fromUtf8(reinterpret_cast<const char *>(str), size); }
