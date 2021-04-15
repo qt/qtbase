@@ -260,8 +260,23 @@ function(qt_setup_tool_path_command)
     list(APPEND command COMMAND)
     list(APPEND command set PATH=${bindir}$<SEMICOLON>%PATH%)
     set(QT_TOOL_PATH_SETUP_COMMAND "${command}" CACHE INTERNAL "internal command prefix for tool invocations" FORCE)
+    # QT_TOOL_PATH_SETUP_COMMAND is deprecated. Please use _qt_internal_wrap_tool_command
+    # instead.
 endfunction()
 qt_setup_tool_path_command()
+
+function(qt_internal_generate_tool_command_wrapper)
+    if(NOT CMAKE_HOST_WIN32 OR DEFINED QT_TOOL_COMMAND_WRAPPER_PATH)
+        return()
+    endif()
+    set(bindir "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}/${INSTALL_BINDIR}")
+    file(TO_NATIVE_PATH "${bindir}" bindir)
+    set(QT_TOOL_COMMAND_WRAPPER_PATH "${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/qt_setup_tool_path.bat"
+        CACHE INTERNAL "Path to the wrapper of the tool commands")
+    file(GENERATE OUTPUT "${QT_TOOL_COMMAND_WRAPPER_PATH}" CONTENT
+        "@echo off\r\nset PATH=${bindir}$<SEMICOLON>%PATH%\r\n%*")
+endfunction()
+qt_internal_generate_tool_command_wrapper()
 
 # Platform define path, etc.
 if(WIN32)
