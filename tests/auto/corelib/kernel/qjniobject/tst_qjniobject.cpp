@@ -26,6 +26,8 @@
 **
 ****************************************************************************/
 
+#include <jni.h>
+
 #include <QString>
 #include <QtCore/QJniEnvironment>
 #include <QtCore/QJniObject>
@@ -520,9 +522,9 @@ void tst_QJniObject::callStaticLongMethod()
 void tst_QJniObject::getStaticObjectFieldClassName()
 {
     {
-        QJniObject boolObject = QJniObject::getStaticObjectField<jobject>("java/lang/Boolean",
-                                                                          "FALSE",
-                                                                          "Ljava/lang/Boolean;");
+        QJniObject boolObject = QJniObject::getStaticObjectField("java/lang/Boolean",
+                                                                 "FALSE",
+                                                                 "Ljava/lang/Boolean;");
         QVERIFY(boolObject.isValid());
 
         jboolean booleanValue = boolObject.callMethod<jboolean>("booleanValue");
@@ -530,9 +532,9 @@ void tst_QJniObject::getStaticObjectFieldClassName()
     }
 
     {
-        QJniObject boolObject = QJniObject::getStaticObjectField<jobject>("java/lang/Boolean",
-                                                                          "TRUE",
-                                                                          "Ljava/lang/Boolean;");
+        QJniObject boolObject = QJniObject::getStaticObjectField("java/lang/Boolean",
+                                                                 "TRUE",
+                                                                 "Ljava/lang/Boolean;");
         QVERIFY(boolObject.isValid());
 
         jboolean booleanValue = boolObject.callMethod<jboolean>("booleanValue");
@@ -556,9 +558,9 @@ void tst_QJniObject::getStaticObjectField()
     QVERIFY(cls != 0);
 
     {
-        QJniObject boolObject = QJniObject::getStaticObjectField<jobject>(cls,
-                                                                          "FALSE",
-                                                                          "Ljava/lang/Boolean;");
+        QJniObject boolObject = QJniObject::getStaticObjectField(cls,
+                                                                 "FALSE",
+                                                                 "Ljava/lang/Boolean;");
         QVERIFY(boolObject.isValid());
 
         jboolean booleanValue = boolObject.callMethod<jboolean>("booleanValue");
@@ -566,9 +568,9 @@ void tst_QJniObject::getStaticObjectField()
     }
 
     {
-        QJniObject boolObject = QJniObject::getStaticObjectField<jobject>(cls,
-                                                                          "TRUE",
-                                                                          "Ljava/lang/Boolean;");
+        QJniObject boolObject = QJniObject::getStaticObjectField(cls,
+                                                                 "TRUE",
+                                                                 "Ljava/lang/Boolean;");
         QVERIFY(boolObject.isValid());
 
         jboolean booleanValue = boolObject.callMethod<jboolean>("booleanValue");
