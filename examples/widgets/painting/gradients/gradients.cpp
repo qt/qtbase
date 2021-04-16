@@ -105,6 +105,8 @@ uint ShadeWidget::colorAt(int x)
     for (int i = 1; i < pts.size(); ++i) {
         if (pts.at(i - 1).x() <= x && pts.at(i).x() >= x) {
             QLineF l(pts.at(i - 1), pts.at(i));
+            if (qIsNull(l.dx()))
+                continue;
             l.setLength(l.length() * ((x - l.x1()) / l.dx()));
             return m_shade.pixel(qRound(qMin(l.x2(), (qreal(m_shade.width() - 1)))),
                                  qRound(qMin(l.y2(), qreal(m_shade.height() - 1))));
