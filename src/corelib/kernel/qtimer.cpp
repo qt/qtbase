@@ -241,7 +241,7 @@ void QTimer::start()
         stop();
     d->nulltimer = (!d->inter && d->single);
     d->id = QObject::startTimer(d->inter, d->type);
-    d->isActiveData.markDirty();
+    d->isActiveData.notify();
 }
 
 /*!
@@ -278,7 +278,7 @@ void QTimer::stop()
     if (d->id != INV_TIMER) {
         QObject::killTimer(d->id);
         d->id = INV_TIMER;
-        d->isActiveData.markDirty();
+        d->isActiveData.notify();
     }
 }
 
@@ -763,9 +763,8 @@ void QTimer::setInterval(int msec)
         // No need to call markDirty() for d->isActiveData here,
         // as timer state actually does not change
     }
-
     if (intervalChanged)
-        d->inter.markDirty();
+        d->inter.notify();
 }
 
 int QTimer::interval() const

@@ -830,6 +830,24 @@ qt_feature("zstd" PRIVATE
     LABEL "Zstandard support"
     CONDITION ZSTD_FOUND
 )
+# special case begin
+# Check whether CMake was built with zstd support.
+# See https://gitlab.kitware.com/cmake/cmake/-/issues/21552
+if(NOT DEFINED CACHE{QT_CMAKE_ZSTD_SUPPORT})
+    set(QT_CMAKE_ZSTD_SUPPORT FALSE CACHE INTERNAL "")
+    if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.18")
+        execute_process(COMMAND "${CMAKE_COMMAND}"
+            -P "${CMAKE_CURRENT_SOURCE_DIR}/config.tests/cmake_zstd/check_zstd.cmake"
+            WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/config.tests"
+            OUTPUT_QUIET ERROR_QUIET
+            RESULT_VARIABLE qt_check_zstd_exit_code)
+        if(qt_check_zstd_exit_code EQUAL 0)
+            set(QT_CMAKE_ZSTD_SUPPORT TRUE CACHE INTERNAL "")
+        endif()
+        unset(qt_check_zstd_exit_code)
+    endif()
+endif()
+# special case end
 qt_feature("thread" PUBLIC
     SECTION "Kernel"
     LABEL "Thread support"

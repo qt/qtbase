@@ -60,6 +60,8 @@ QT_BEGIN_NAMESPACE
     Since \c JNIEnv doesn't do much error checking, such as exception checking and clearing,
     QJniEnvironment allows you to do that easily.
 
+    For more information about JNIEnv, see \l {Java: Interface Function Table}.
+
     \note This API has been designed and tested for use with Android.
     It has not been tested for other platforms.
 */
@@ -266,7 +268,7 @@ bool QJniEnvironment::registerNativeMethods(const char *className, JNINativeMeth
     In contrast to \l QJniObject, which handles exceptions internally, if you
     make JNI calls directly via \c JNIEnv, you need to clear any potential
     exceptions after the call using this function. For more information about
-    \c JNIEnv calls that can throw an exception, see \l {Oracle: JNI Functions}{JNI Functions}.
+    \c JNIEnv calls that can throw an exception, see \l {Java: JNI Functions}{JNI Functions}.
 
     \return \c true when a pending exception was cleared.
 */
@@ -293,7 +295,7 @@ bool QJniEnvironment::checkAndClearExceptions(QJniEnvironment::OutputMode output
     In contrast to \l QJniObject, which handles exceptions internally, if you
     make JNI calls directly via \c JNIEnv, you need to clear any potential
     exceptions after the call using this function. For more information about
-    \c JNIEnv calls that can throw an exception, see \l {Oracle: JNI Functions}{JNI Functions}.
+    \c JNIEnv calls that can throw an exception, see \l {Java: JNI Functions}{JNI Functions}.
 
     \return \c true when a pending exception was cleared.
 */

@@ -63,6 +63,11 @@
 
 QT_BEGIN_NAMESPACE
 
+namespace Qt {
+Q_CORE_EXPORT void beginPropertyUpdateGroup();
+Q_CORE_EXPORT void endPropertyUpdateGroup();
+}
+
 template <typename T>
 class QPropertyData : public QUntypedPropertyData
 {
@@ -217,6 +222,7 @@ protected:
     using ChangeHandler = void (*)(QPropertyObserver*, QUntypedPropertyData *);
 
 private:
+    friend struct QPropertyDelayedNotifications;
     friend struct QPropertyObserverNodeProtector;
     friend class QPropertyObserver;
     friend struct QPropertyObserverPointer;
@@ -229,7 +235,7 @@ private:
     QtPrivate::QTagPreservingPointerToPointer<QPropertyObserver, ObserverTag> prev;
 
     union {
-        QPropertyBindingPrivate *bindingToMarkDirty = nullptr;
+        QPropertyBindingPrivate *binding = nullptr;
         ChangeHandler changeHandler;
         QUntypedPropertyData *aliasedPropertyData;
     };
@@ -329,8 +335,6 @@ public:
 
     parameter_type value() const
     {
-        if (d.hasBinding())
-            d.evaluateIfDirty(this);
         d.registerWithCurrentlyEvaluatingBinding();
         return this->val;
     }
@@ -389,9 +393,7 @@ public:
 
     QPropertyBinding<T> setBinding(const QPropertyBinding<T> &newBinding)
     {
-        QPropertyBinding<T> oldBinding(d.setBinding(newBinding, this));
-        notify();
-        return oldBinding;
+        return QPropertyBinding<T>(d.setBinding(newBinding, this));
     }
 
     bool setBinding(const QUntypedPropertyBinding &newBinding)
@@ -400,11 +402,6 @@ public:
             return false;
         setBinding(static_cast<const QPropertyBinding<T> &>(newBinding));
         return true;
-    }
-
-    void markDirty() {
-        d.markDirty();
-        notify();
     }
 
 #ifndef Q_CLANG_QDOC
@@ -852,11 +849,11 @@ public:
 
     bool isEmpty() { return !d; }
 
-    void maybeUpdateBindingAndRegister(const QUntypedPropertyData *data) const
+    void registerDependency(const QUntypedPropertyData *data) const
     {
-        if (!d && !bindingStatus->currentlyEvaluatingBinding)
+        if (!bindingStatus->currentlyEvaluatingBinding)
             return;
-        maybeUpdateBindingAndRegister_helper(data);
+        registerDependency_helper(data);
     }
     QtPrivate::QPropertyBindingData *bindingData(const QUntypedPropertyData *data) const
     {
@@ -864,6 +861,9 @@ public:
             return nullptr;
         return bindingData_helper(data);
     }
+    // ### Qt 7: remove unused BIC shim
+    void maybeUpdateBindingAndRegister(const QUntypedPropertyData *data) const { registerDependency(data); }
+
     QtPrivate::QPropertyBindingData *bindingData(QUntypedPropertyData *data, bool create)
     {
         if (!d && !create)
@@ -871,6 +871,8 @@ public:
         return bindingData_helper(data, create);
     }
 private:
+    void registerDependency_helper(const QUntypedPropertyData *data) const;
+    // ### Unused, but keep for BC
     void maybeUpdateBindingAndRegister_helper(const QUntypedPropertyData *data) const;
     QtPrivate::QPropertyBindingData *bindingData_helper(const QUntypedPropertyData *data) const;
     QtPrivate::QPropertyBindingData *bindingData_helper(QUntypedPropertyData *data, bool create);
@@ -923,7 +925,7 @@ public:
 
     parameter_type value() const
     {
-        qGetBindingStorage(owner())->maybeUpdateBindingAndRegister(this);
+        qGetBindingStorage(owner())->registerDependency(this);
         return this->val;
     }
 
@@ -987,7 +989,6 @@ public:
     {
         QtPrivate::QPropertyBindingData *bd = qGetBindingStorage(owner())->bindingData(this, true);
         QUntypedPropertyBinding oldBinding(bd->setBinding(newBinding, this, HasSignal ? &signalCallBack : nullptr));
-        notify(bd);
         return static_cast<QPropertyBinding<T> &>(oldBinding);
     }
 
@@ -1016,15 +1017,6 @@ public:
     {
         auto *bd = qGetBindingStorage(owner())->bindingData(this);
         return bd && bd->binding() != nullptr;
-    }
-
-    void markDirty() {
-        QBindingStorage *storage = qGetBindingStorage(owner());
-        auto bd = storage->bindingData(this, /*create=*/false);
-        if (bd) { // if we have no BindingData, nobody can listen anyway
-            bd->markDirty();
-            notify(bd);
-        }
     }
 
     QPropertyBinding<T> binding() const
@@ -1130,7 +1122,7 @@ public:
 
     parameter_type value() const
     {
-        qGetBindingStorage(owner())->maybeUpdateBindingAndRegister(this);
+        qGetBindingStorage(owner())->registerDependency(this);
         return (owner()->*Getter)();
     }
 
@@ -1176,15 +1168,13 @@ public:
         return *storage->bindingData(const_cast<QObjectComputedProperty *>(this), true);
     }
 
-    void markDirty() {
+    void notify() {
         // computed property can't store a binding, so there's nothing to mark
         auto *storage = const_cast<QBindingStorage *>(qGetBindingStorage(owner()));
         auto bd = storage->bindingData(const_cast<QObjectComputedProperty *>(this), false);
         if (bd)
-            bindingData().notifyObservers(this);
+            bd->notifyObservers(this);
     }
-
-private:
 };
 
 #define Q_OBJECT_COMPUTED_PROPERTY(Class, Type, name,  ...) \

@@ -50,8 +50,7 @@
     The binding expression computes the value by reading other QProperty values.
     Behind the scenes this dependency is tracked. Whenever a change in any property's
     dependency is detected, the binding expression is re-evaluated and the new
-    result is applied to the property. This happens lazily, by marking the binding
-    as dirty and evaluating it only when the property's value is requested. For example:
+    result is applied to the property. For example:
 
     \code
     QProperty<QString> firstname("John");
@@ -63,20 +62,19 @@
 
     qDebug() << fullname.value(); // Prints "John Smith age: 41"
 
-    firstname = "Emma"; // Marks binding expression as dirty
+    firstname = "Emma"; // Triggers binding reevaluation
 
-    qDebug() << fullname.value(); // Re-evaluates the binding expression and prints "Emma Smith age: 41"
+    qDebug() << fullname.value(); // Prints the new value "Emma Smith age: 41"
 
     // Birthday is coming up
-    age.setValue(age.value() + 1);
+    age.setValue(age.value() + 1); // Triggers re-evaluation
 
-    qDebug() << fullname.value(); // Re-evaluates the binding expression and prints "Emma Smith age: 42"
+    qDebug() << fullname.value(); // Prints "Emma Smith age: 42"
     \endcode
 
     When a new value is assigned to the \c firstname property, the binding
-    expression for \c fullname is marked as dirty. So when the last \c qDebug() statement
-    tries to read the name value of the \c fullname property, the expression is
-    evaluated again, \c firstname() will be called again and return the new value.
+    expression for \c fullname is reevaluated. So when the last \c qDebug() statement
+    tries to read the name value of the \c fullname property, the new value is returned.
 
     Since bindings are C++ functions, they may do anything that's possible
     in C++. This includes calling other functions. If those functions access values
