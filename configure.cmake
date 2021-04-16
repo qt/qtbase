@@ -646,7 +646,9 @@ qt_feature("signaling_nan" PUBLIC
 )
 qt_feature("sse2" PRIVATE
     LABEL "SSE2"
-    CONDITION ( ( ( TEST_architecture_arch STREQUAL i386 ) OR ( TEST_architecture_arch STREQUAL x86_64 ) ) AND TEST_subarch_sse2 ) OR QT_FORCE_FEATURE_sse2 # special case
+    CONDITION ( ( (  TEST_architecture_arch STREQUAL i386 )
+        OR ( TEST_architecture_arch STREQUAL x86_64 ) ) AND TEST_subarch_sse2 ) OR QT_FORCE_FEATURE_sse2 OR WASM
+    AUTODETECT NOT WASM
 )
 qt_feature_definition("sse2" "QT_COMPILER_SUPPORTS_SSE2" VALUE "1")
 qt_feature_config("sse2" QMAKE_PRIVATE_CONFIG)
@@ -1004,7 +1006,7 @@ qt_configure_add_summary_entry(
     TYPE "featureList"
     ARGS "sse2 sse3 ssse3 sse4_1 sse4_2"
     MESSAGE "SSE"
-    CONDITION ( ( TEST_architecture_arch STREQUAL i386 ) OR ( TEST_architecture_arch STREQUAL x86_64 ) )
+    CONDITION ( ( TEST_architecture_arch STREQUAL i386 ) OR ( TEST_architecture_arch STREQUAL x86_64 ) OR ( TEST_architecture_arch STREQUAL wasm ) )
 )
 qt_configure_add_summary_entry(
     TYPE "featureList"

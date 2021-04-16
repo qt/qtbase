@@ -340,6 +340,10 @@
 #  define Q_PROCESSOR_WASM
 #  define Q_BYTE_ORDER Q_LITTLE_ENDIAN
 #  define Q_PROCESSOR_WORDSIZE 8
+#ifdef QT_COMPILER_SUPPORTS_SSE2
+#  define Q_PROCESSOR_X86 6   // enables SIMD support
+#endif
+
 #endif
 
 /*

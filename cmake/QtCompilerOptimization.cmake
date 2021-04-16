@@ -199,4 +199,7 @@ if(WASM)
     set(QT_CFLAGS_OPTIMIZE_FULL "-O3")
     set(QT_CFLAGS_OPTIMIZE_SIZE "-Os")
     set(QT_CFLAGS_OPTIMIZE_DEBUG "-g2")
+
+    set(QT_CFLAGS_SSE2 -O2 -msimd128 -msse -msse2)
+
 endif()
