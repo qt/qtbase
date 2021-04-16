@@ -118,10 +118,7 @@ enum GraphemeBreakClass {
     GraphemeBreak_T,
     GraphemeBreak_LV,
     GraphemeBreak_LVT,
-    Graphemebreak_E_Base,
-    Graphemebreak_E_Modifier,
-    Graphemebreak_Glue_After_Zwj,
-    Graphemebreak_E_Base_GAZ,
+    GraphemeBreak_Extended_Pictographic,
 
     NumGraphemeBreakClasses
 };
