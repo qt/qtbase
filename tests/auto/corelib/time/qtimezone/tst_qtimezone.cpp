@@ -996,10 +996,10 @@ void tst_QTimeZone::malformed()
     const QDateTime now = QDateTime::currentDateTime();
     QTimeZone barf("QUT4tCZ0 , /");
     if (barf.isValid())
-        barf.offsetFromUtc(now);
+        QCOMPARE(barf.offsetFromUtc(now), 0);
     barf = QTimeZone("QtC+09,,MA");
     if (barf.isValid())
-        barf.offsetFromUtc(now);
+        QCOMPARE(barf.offsetFromUtc(now), 0);
 }
 
 void tst_QTimeZone::utcTest()

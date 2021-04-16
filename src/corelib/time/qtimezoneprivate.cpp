@@ -224,7 +224,10 @@ QString QTimeZonePrivate::abbreviation(qint64 atMSecsSinceEpoch) const
 
 int QTimeZonePrivate::offsetFromUtc(qint64 atMSecsSinceEpoch) const
 {
-    return standardTimeOffset(atMSecsSinceEpoch) + daylightTimeOffset(atMSecsSinceEpoch);
+    const int std = standardTimeOffset(atMSecsSinceEpoch);
+    const int dst = daylightTimeOffset(atMSecsSinceEpoch);
+    const int bad = invalidSeconds();
+    return std == bad || dst == bad ? bad : std + dst;
 }
 
 int QTimeZonePrivate::standardTimeOffset(qint64 atMSecsSinceEpoch) const
