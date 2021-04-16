@@ -68,15 +68,15 @@ bool GraphicsView::viewportEvent(QEvent *event)
     case QEvent::TouchEnd:
     {
         QTouchEvent *touchEvent = static_cast<QTouchEvent *>(event);
-        QList<QTouchEvent::TouchPoint> touchPoints = touchEvent->touchPoints();
+        const auto touchPoints = touchEvent->points();
         if (touchPoints.count() == 2) {
             // determine scale factor
-            const QTouchEvent::TouchPoint &touchPoint0 = touchPoints.first();
-            const QTouchEvent::TouchPoint &touchPoint1 = touchPoints.last();
+            const QEventPoint &touchPoint0 = touchPoints.first();
+            const QEventPoint &touchPoint1 = touchPoints.last();
             qreal currentScaleFactor =
                     QLineF(touchPoint0.position(), touchPoint1.position()).length()
                     / QLineF(touchPoint0.pressPosition(), touchPoint1.pressPosition()).length();
-            if (touchEvent->touchPointStates() & Qt::TouchPointReleased) {
+            if (touchEvent->touchPointStates() & QEventPoint::Released) {
                 // if one of the fingers is released, remember the current scale
                 // factor so that adding another finger later will continue zooming
                 // by adding new scale factor to the existing remembered value.

@@ -196,11 +196,11 @@ bool ScribbleArea::event(QEvent *event)
     case QEvent::TouchEnd:
     {
         const QTouchEvent *touch = static_cast<QTouchEvent *>(event);
-        const QList<QTouchEvent::TouchPoint> touchPoints = static_cast<QTouchEvent *>(event)->touchPoints();
+        const auto touchPoints = static_cast<QTouchEvent *>(event)->points();
         for (const QTouchEvent::TouchPoint &touchPoint : touchPoints) {
             switch (touchPoint.state()) {
-            case Qt::TouchPointStationary:
-            case Qt::TouchPointReleased:
+            case QEventPoint::Stationary:
+            case QEventPoint::Released:
                 // don't do anything if this touch point hasn't moved or has been released
                 continue;
             default:

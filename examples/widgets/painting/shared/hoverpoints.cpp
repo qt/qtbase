@@ -176,12 +176,12 @@ bool HoverPoints::eventFilter(QObject *object, QEvent *event)
         case QEvent::TouchUpdate:
             {
                 const QTouchEvent *const touchEvent = static_cast<const QTouchEvent*>(event);
-                const QList<QTouchEvent::TouchPoint> points = touchEvent->touchPoints();
+                const auto points = touchEvent->points();
                 const qreal pointSize = qMax(m_pointSize.width(), m_pointSize.height());
-                for (const QTouchEvent::TouchPoint &touchPoint : points) {
-                    const int id = touchPoint.id();
-                    switch (touchPoint.state()) {
-                    case Qt::TouchPointPressed:
+                for (const auto &point : points) {
+                    const int id = point.id();
+                    switch (point.state()) {
+                    case QEventPoint::Pressed:
                         {
                             // find the point, move it
                             const auto mappedPoints = m_fingerPointMapping.values();
@@ -197,7 +197,7 @@ bool HoverPoints::eventFilter(QObject *object, QEvent *event)
                                     if (activePoints.contains(i))
                                         continue;
 
-                                    qreal d = QLineF(touchPoint.position(), m_points.at(i)).length();
+                                    qreal d = QLineF(point.position(), m_points.at(i)).length();
                                     if ((distance < 0 && d < 12 * pointSize) || d < distance) {
                                         distance = d;
                                         activePoint = i;
@@ -206,25 +206,25 @@ bool HoverPoints::eventFilter(QObject *object, QEvent *event)
                                 }
                             }
                             if (activePoint != -1) {
-                                m_fingerPointMapping.insert(touchPoint.id(), activePoint);
-                                movePoint(activePoint, touchPoint.position());
+                                m_fingerPointMapping.insert(point.id(), activePoint);
+                                movePoint(activePoint, point.position());
                             }
                         }
                         break;
-                    case Qt::TouchPointReleased:
+                    case QEventPoint::Released:
                         {
                             // move the point and release
                             QHash<int,int>::iterator it = m_fingerPointMapping.find(id);
-                            movePoint(it.value(), touchPoint.position());
+                            movePoint(it.value(), point.position());
                             m_fingerPointMapping.erase(it);
                         }
                         break;
-                    case Qt::TouchPointMoved:
+                    case QEventPoint::Updated:
                         {
                             // move the point
                             const int pointIdx = m_fingerPointMapping.value(id, -1);
                             if (pointIdx >= 0) // do we track this point?
-                                movePoint(pointIdx, touchPoint.position());
+                                movePoint(pointIdx, point.position());
                         }
                         break;
                     default:
