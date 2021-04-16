@@ -127,7 +127,9 @@ public:
         FlagMask           = 0x00000300,        // obsolete
         ButtonMask         = ~FlagMask          // obsolete
     };
-    typedef StandardButton Button;  // obsolete
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+    typedef StandardButton Button;
+#endif
 
     Q_DECLARE_FLAGS(StandardButtons, StandardButton)
     Q_FLAG(StandardButtons)
@@ -185,28 +187,59 @@ public:
     static StandardButton information(QWidget *parent, const QString &title,
          const QString &text, StandardButtons buttons = Ok,
          StandardButton defaultButton = NoButton);
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0) // needed as long as we have int overloads
+    inline static StandardButton information(QWidget *parent, const QString &title,
+                                  const QString& text,
+                                  StandardButton button0, StandardButton button1 = NoButton)
+    { return information(parent, title, text, StandardButtons(button0), button1); }
+#endif
+
     static StandardButton question(QWidget *parent, const QString &title,
          const QString &text, StandardButtons buttons = StandardButtons(Yes | No),
          StandardButton defaultButton = NoButton);
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+    inline static int question(QWidget *parent, const QString &title,
+                               const QString& text,
+                               StandardButton button0, StandardButton button1)
+    { return question(parent, title, text, StandardButtons(button0), button1); }
+#endif
+
     static StandardButton warning(QWidget *parent, const QString &title,
          const QString &text, StandardButtons buttons = Ok,
          StandardButton defaultButton = NoButton);
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+    inline static int warning(QWidget *parent, const QString &title,
+                              const QString& text,
+                              StandardButton button0, StandardButton button1)
+    { return warning(parent, title, text, StandardButtons(button0), button1); }
+#endif
+
     static StandardButton critical(QWidget *parent, const QString &title,
          const QString &text, StandardButtons buttons = Ok,
          StandardButton defaultButton = NoButton);
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+    inline static int critical(QWidget *parent, const QString &title,
+                               const QString& text,
+                               StandardButton button0, StandardButton button1)
+    { return critical(parent, title, text, StandardButtons(button0), button1); }
+#endif
+
     static void about(QWidget *parent, const QString &title, const QString &text);
     static void aboutQt(QWidget *parent, const QString &title = QString());
 
+#if QT_DEPRECATED_SINCE(6,2)
     // the following functions are obsolete:
-
+    QT_DEPRECATED_VERSION_X_6_2("Use the overload taking StandardButtons instead.")
     QMessageBox(const QString &title, const QString &text, Icon icon,
                   int button0, int button1, int button2,
                   QWidget *parent = nullptr,
                   Qt::WindowFlags f = Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint);
 
+    QT_DEPRECATED_VERSION_X_6_2("Use the overload taking StandardButtons instead.")
     static int information(QWidget *parent, const QString &title,
                            const QString& text,
                            int button0, int button1 = 0, int button2 = 0);
+    QT_DEPRECATED_VERSION_X_6_2("Use the overload taking StandardButtons instead.")
     static int information(QWidget *parent, const QString &title,
                            const QString& text,
                            const QString& button0Text,
@@ -214,14 +247,12 @@ public:
                            const QString& button2Text = QString(),
                            int defaultButtonNumber = 0,
                            int escapeButtonNumber = -1);
-    inline static StandardButton information(QWidget *parent, const QString &title,
-                                  const QString& text,
-                                  StandardButton button0, StandardButton button1 = NoButton)
-    { return information(parent, title, text, StandardButtons(button0), button1); }
 
+    QT_DEPRECATED_VERSION_X_6_2("Use the overload taking StandardButtons instead.")
     static int question(QWidget *parent, const QString &title,
                         const QString& text,
                         int button0, int button1 = 0, int button2 = 0);
+    QT_DEPRECATED_VERSION_X_6_2("Use the overload taking StandardButtons instead.")
     static int question(QWidget *parent, const QString &title,
                         const QString& text,
                         const QString& button0Text,
@@ -229,14 +260,12 @@ public:
                         const QString& button2Text = QString(),
                         int defaultButtonNumber = 0,
                         int escapeButtonNumber = -1);
-    inline static int question(QWidget *parent, const QString &title,
-                               const QString& text,
-                               StandardButton button0, StandardButton button1)
-    { return question(parent, title, text, StandardButtons(button0), button1); }
 
+    QT_DEPRECATED_VERSION_X_6_2("Use the overload taking StandardButtons instead.")
     static int warning(QWidget *parent, const QString &title,
                        const QString& text,
                        int button0, int button1, int button2 = 0);
+    QT_DEPRECATED_VERSION_X_6_2("Use the overload taking StandardButtons instead.")
     static int warning(QWidget *parent, const QString &title,
                        const QString& text,
                        const QString& button0Text,
@@ -244,14 +273,12 @@ public:
                        const QString& button2Text = QString(),
                        int defaultButtonNumber = 0,
                        int escapeButtonNumber = -1);
-    inline static int warning(QWidget *parent, const QString &title,
-                              const QString& text,
-                              StandardButton button0, StandardButton button1)
-    { return warning(parent, title, text, StandardButtons(button0), button1); }
 
+    QT_DEPRECATED_VERSION_X_6_2("Use the overload taking StandardButtons instead.")
     static int critical(QWidget *parent, const QString &title,
                         const QString& text,
                         int button0, int button1, int button2 = 0);
+    QT_DEPRECATED_VERSION_X_6_2("Use the overload taking StandardButtons instead.")
     static int critical(QWidget *parent, const QString &title,
                         const QString& text,
                         const QString& button0Text,
@@ -259,13 +286,12 @@ public:
                         const QString& button2Text = QString(),
                         int defaultButtonNumber = 0,
                         int escapeButtonNumber = -1);
-    inline static int critical(QWidget *parent, const QString &title,
-                               const QString& text,
-                               StandardButton button0, StandardButton button1)
-    { return critical(parent, title, text, StandardButtons(button0), button1); }
 
+    QT_DEPRECATED_VERSION_X_6_2("Use button() and QPushButton::text() instead.")
     QString buttonText(int button) const;
+    QT_DEPRECATED_VERSION_X_6_2("Use addButton() instead.")
     void setButtonText(int button, const QString &text);
+#endif
 
     QString informativeText() const;
     void setInformativeText(const QString &text);
@@ -278,8 +304,10 @@ public:
     void setWindowTitle(const QString &title);
     void setWindowModality(Qt::WindowModality windowModality);
 
-
+#if QT_DEPRECATED_SINCE(6,2)
+    QT_DEPRECATED_VERSION_X_6_2("Use QStyle::standardIcon() instead.")
     static QPixmap standardIcon(Icon icon);
+#endif
 
 Q_SIGNALS:
     void buttonClicked(QAbstractButton *button);

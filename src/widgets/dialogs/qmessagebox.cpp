@@ -2049,6 +2049,7 @@ void QMessageBoxPrivate::retranslateStrings()
 #endif
 }
 
+#if QT_DEPRECATED_SINCE(6,2)
 /*!
     \obsolete
 
@@ -2497,6 +2498,8 @@ void QMessageBox::setButtonText(int button, const QString &text)
         addButton(QMessageBox::Ok)->setText(text);
     }
 }
+#endif // QT_DEPRECATED_SINCE(6,2)
+
 
 #if QT_CONFIG(textedit)
 /*!
@@ -2724,6 +2727,7 @@ void QMessageBoxPrivate::helperDone(QDialog::DialogCode code, QPlatformDialogHel
         clickedButton = button;
 }
 
+#if QT_DEPRECATED_SINCE(6,2)
 /*!
     \obsolete
 
@@ -2741,6 +2745,7 @@ QPixmap QMessageBox::standardIcon(Icon icon)
 {
     return QMessageBoxPrivate::standardIcon(icon, nullptr);
 }
+#endif
 
 /*!
     \typedef QMessageBox::Button

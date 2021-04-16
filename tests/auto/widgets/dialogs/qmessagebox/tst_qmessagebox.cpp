@@ -388,6 +388,8 @@ void tst_QMessageBox::staticSourceCompat()
     int ret;
 
     // source compat tests for < 4.2
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     ExecCloseHelper closeHelper;
     closeHelper.start(Qt::Key_Enter);
     ret = QMessageBox::information(nullptr, "title", "text", QMessageBox::Yes, QMessageBox::No);
@@ -438,10 +440,13 @@ void tst_QMessageBox::staticSourceCompat()
         QCOMPARE(ret, 1);
         QVERIFY(closeHelper.done());
     }
+QT_WARNING_POP
 }
 
 void tst_QMessageBox::instanceSourceCompat()
 {
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
      QMessageBox mb("Application name here",
                     "Saving the file will overwrite the original file on the disk.\n"
                     "Do you really want to save?",
@@ -466,6 +471,7 @@ void tst_QMessageBox::instanceSourceCompat()
     closeHelper.start(QKeyCombination(Qt::ALT | Qt::Key_Z).toCombined(), &mb);
     QCOMPARE(mb.exec(), 1);
 #endif
+QT_WARNING_POP
 }
 
 void tst_QMessageBox::detailsText()
@@ -546,8 +552,11 @@ void tst_QMessageBox::incorrectDefaultButton()
     closeHelper.start(Qt::Key_Escape);
     QTest::ignoreMessage(QtWarningMsg, "QDialogButtonBox::createButton: Invalid ButtonRole, button not added");
     QTest::ignoreMessage(QtWarningMsg, "QDialogButtonBox::createButton: Invalid ButtonRole, button not added");
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     //do not crash here -> call old function of QMessageBox in this case
     QMessageBox::question(nullptr, "", "I've been hit!",QMessageBox::Ok | QMessageBox::Cancel,QMessageBox::Save | QMessageBox::Cancel,QMessageBox::Ok);
+QT_WARNING_POP
     QVERIFY(closeHelper.done());
 }
 
