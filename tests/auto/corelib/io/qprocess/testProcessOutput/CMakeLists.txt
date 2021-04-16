@@ -1,11 +1,5 @@
-# Generated from testProcessOutput.pro.
-
 #####################################################################
 ## testProcessOutput Binary:
 #####################################################################
 
-qt_internal_add_executable(testProcessOutput
-    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/"
-    SOURCES
-        main.cpp
-)
+add_executable(testProcessOutput main.cpp)
