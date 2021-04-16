@@ -2653,38 +2653,9 @@ QList<QLocale> QLocale::matchingLocales(QLocale::Language language, QLocale::Scr
     return result;
 }
 
-/*!
-    \since 6.2
-
-    Returns the list of countries that have entries for \a language in Qt's locale
-    database. If the result is an empty list, then \a language is not represented in
-    Qt's locale database.
-
-    \sa matchingLocales()
-*/
-QList<QLocale::Territory> QLocale::territoriesForLanguage(QLocale::Language language)
-{
-    QList<Territory> result;
-    if (language == C) {
-        result << AnyTerritory;
-        return result;
-    }
-
-    unsigned language_id = language;
-    const QLocaleData *data = locale_data + locale_index[language_id];
-    while (data->m_language_id == language_id) {
-        const QLocale::Territory territory = static_cast<Territory>(data->m_territory_id);
-        if (!result.contains(territory))
-            result.append(territory);
-        ++data;
-    }
-
-    return result;
-}
-
 #if QT_DEPRECATED_SINCE(6, 6)
 /*!
-    \obsolete Use territoriesForLanguage(Language) instead.
+    \obsolete Use matchingLocales() instead and consult the territory() of each.
     \since 4.3
 
     Returns the list of countries that have entries for \a language in Qt's locale
@@ -2695,7 +2666,12 @@ QList<QLocale::Territory> QLocale::territoriesForLanguage(QLocale::Language lang
 */
 QList<QLocale::Country> QLocale::countriesForLanguage(Language language)
 {
-    return territoriesForLanguage(language);
+    const auto locales = matchingLocales(language, AnyScript, AnyCountry);
+    QList<QLocale::Country> result;
+    result.reserve(locales.size());
+    for (const auto &locale : locales)
+        result.append(locale.territory());
+    return result;
 }
 #endif
 

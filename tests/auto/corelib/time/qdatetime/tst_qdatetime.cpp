@@ -615,7 +615,7 @@ void tst_QDateTime::setMSecsSinceEpoch_data()
             << Q_INT64_C(-123456789)
             << QDateTime(QDate(1969, 12, 30), QTime(13, 42, 23, 211), Qt::UTC)
             << QDateTime(QDate(1969, 12, 30), QTime(14, 42, 23, 211), Qt::LocalTime);
-    QTest::newRow("non-time_t")
+    QTest::newRow("post-32-bit-time_t")
             << (Q_INT64_C(1000) << 32)
             << QDateTime(QDate(2106, 2, 7), QTime(6, 28, 16), Qt::UTC)
             << QDateTime(QDate(2106, 2, 7), QTime(7, 28, 16));
@@ -713,10 +713,7 @@ void tst_QDateTime::setMSecsSinceEpoch()
     }
 
     QCOMPARE(dt.toMSecsSinceEpoch(), msecs);
-
-    if (quint64(msecs / 1000) < 0xFFFFFFFF) {
-        QCOMPARE(qint64(dt.toSecsSinceEpoch()), msecs / 1000);
-    }
+    QCOMPARE(qint64(dt.toSecsSinceEpoch()), msecs / 1000);
 
     QDateTime reference(QDate(1970, 1, 1), QTime(0, 0), Qt::UTC);
     QCOMPARE(dt, reference.addMSecs(msecs));
@@ -766,11 +763,10 @@ void tst_QDateTime::fromMSecsSinceEpoch()
     QCOMPARE(dtUtc.toMSecsSinceEpoch(), msecs);
     QCOMPARE(dtOffset.toMSecsSinceEpoch(), msecs);
 
-    if (quint64(msecs / 1000) < 0xFFFFFFFF) {
+    if (!localOverflow)
         QCOMPARE(qint64(dtLocal.toSecsSinceEpoch()), msecs / 1000);
-        QCOMPARE(qint64(dtUtc.toSecsSinceEpoch()), msecs / 1000);
-        QCOMPARE(qint64(dtOffset.toSecsSinceEpoch()), msecs / 1000);
-    }
+    QCOMPARE(qint64(dtUtc.toSecsSinceEpoch()), msecs / 1000);
+    QCOMPARE(qint64(dtOffset.toSecsSinceEpoch()), msecs / 1000);
 
     QDateTime reference(QDate(1970, 1, 1), QTime(0, 0), Qt::UTC);
     if (!localOverflow)

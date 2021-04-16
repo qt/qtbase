@@ -53,6 +53,8 @@
 #include <qcryptographichash.h>
 #include <qdebug.h>
 
+#include <memory>
+
 #define CACHE_POSTFIX QLatin1String(".d")
 #define PREPARED_SLASH QLatin1String("prepared/")
 #define CACHE_VERSION 8
@@ -196,7 +198,7 @@ QIODevice *QNetworkDiskCache::prepare(const QNetworkCacheMetaData &metaData)
             break;
         }
     }
-    QScopedPointer<QCacheItem> cacheItem(new QCacheItem);
+    std::unique_ptr<QCacheItem> cacheItem = std::make_unique<QCacheItem>();
     cacheItem->metaData = metaData;
 
     QIODevice *device = nullptr;
@@ -218,7 +220,7 @@ QIODevice *QNetworkDiskCache::prepare(const QNetworkCacheMetaData &metaData)
         cacheItem->writeHeader(cacheItem->file);
         device = cacheItem->file;
     }
-    d->inserting[device] = cacheItem.take();
+    d->inserting[device] = cacheItem.release();
     return device;
 }
 
@@ -395,7 +397,7 @@ QIODevice *QNetworkDiskCache::data(const QUrl &url)
     qDebug() << "QNetworkDiskCache::data()" << url;
 #endif
     Q_D(QNetworkDiskCache);
-    QScopedPointer<QBuffer> buffer;
+    std::unique_ptr<QBuffer> buffer;
     if (!url.isValid())
         return nullptr;
     if (d->lastItem.metaData.url() == url && d->lastItem.data.isOpen()) {
@@ -417,22 +419,11 @@ QIODevice *QNetworkDiskCache::data(const QUrl &url)
             buffer->setData(d->lastItem.data.data());
         } else {
             buffer.reset(new QBuffer);
-            // ### verify that QFile uses the fd size and not the file name
-            qint64 size = file->size() - file->pos();
-            const uchar *p = nullptr;
-#if !defined(Q_OS_INTEGRITY)
-            p = file->map(file->pos(), size);
-#endif
-            if (p) {
-                buffer->setData((const char *)p, size);
-                file.take()->setParent(buffer.data());
-            } else {
-                buffer->setData(file->readAll());
-            }
+            buffer->setData(file->readAll());
         }
     }
     buffer->open(QBuffer::ReadOnly);
-    return buffer.take();
+    return buffer.release();
 }
 
 /*!
