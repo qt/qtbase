@@ -212,81 +212,95 @@ static_assert(QTypeInfo<Movable>::isComplex);
 static_assert(!QTypeInfo<Custom>::isRelocatable);
 static_assert(QTypeInfo<Custom>::isComplex);
 
+// leak checking utility:
+template<typename T>
+struct LeakChecker
+{
+    int instancesCount;
+    LeakChecker() : instancesCount(T::counter.loadAcquire()) { }
+    ~LeakChecker() { QCOMPARE(instancesCount, T::counter.loadAcquire()); }
+};
+template<> struct LeakChecker<int>{};
+template<> struct LeakChecker<QString>{};
+#define TST_QLIST_CHECK_LEAKS(Type)                                                                \
+    LeakChecker<Type> checker;                                                                     \
+    Q_UNUSED(checker);
 
 class tst_QList : public QObject
 {
     Q_OBJECT
+
 private slots:
     void constructors_empty() const;
     void constructors_emptyReserveZero() const;
     void constructors_emptyReserve() const;
     void constructors_reserveAndInitialize() const;
-    void copyConstructorInt() const;
-    void copyConstructorMovable() const;
-    void copyConstructorCustom() const;
-    void assignmentInt() const;
-    void assignmentMovable() const;
-    void assignmentCustom() const;
-    void assignFromInitializerListInt() const;
-    void assignFromInitializerListMovable() const;
-    void assignFromInitializerListCustom() const;
-    void addInt() const;
-    void addMovable() const;
-    void addCustom() const;
-    void appendInt() const;
-    void appendMovable() const;
-    void appendCustom() const;
+    void copyConstructorInt() const { copyConstructor<int>(); }
+    void copyConstructorMovable() const { copyConstructor<Movable>(); }
+    void copyConstructorCustom() const { copyConstructor<Custom>(); }
+    void assignmentInt() const { testAssignment<int>(); }
+    void assignmentMovable() const { testAssignment<Movable>(); }
+    void assignmentCustom() const { testAssignment<Custom>(); }
+    void assignFromInitializerListInt() const { assignFromInitializerList<int>(); }
+    void assignFromInitializerListMovable() const { assignFromInitializerList<Movable>(); }
+    void assignFromInitializerListCustom() const { assignFromInitializerList<Custom>(); }
+    void addInt() const { add<int>(); }
+    void addMovable() const { add<Movable>(); }
+    void addCustom() const { add<Custom>(); }
+    void appendInt() const { append<int>(); }
+    void appendMovable() const { append<Movable>(); }
+    void appendCustom() const { append<Custom>(); }
     void appendRvalue() const;
     void appendList() const;
     void at() const;
-    void capacityInt() const;
-    void capacityMovable() const;
-    void capacityCustom() const;
-    void clearInt() const;
-    void clearMovable() const;
-    void clearCustom() const;
+    void capacityInt() const { capacity<int>(); }
+    void capacityMovable() const { capacity<Movable>(); }
+    void capacityCustom() const { capacity<Custom>(); }
+    void clearInt() const { clear<int>(); }
+    void clearMovable() const { clear<Movable>(); }
+    void clearCustom() const { clear<Custom>(); }
     void constData() const;
     void constFirst() const;
     void constLast() const;
     void contains() const;
-    void countInt() const;
-    void countMovable() const;
-    void countCustom() const;
+    void countInt() const { count<int>(); }
+    void countMovable() const { count<Movable>(); }
+    void countCustom() const { count<Custom>(); }
     void cpp17ctad() const;
     void data() const;
-    void emptyInt() const;
-    void emptyMovable() const;
-    void emptyCustom() const;
+    void emptyInt() const { empty<int>(); }
+    void emptyMovable() const { empty<Movable>(); }
+    void emptyCustom() const { empty<Custom>(); }
     void endsWith() const;
-    void eraseEmptyInt() const;
-    void eraseEmptyMovable() const;
-    void eraseEmptyCustom() const;
-    void eraseEmptyReservedInt() const;
-    void eraseEmptyReservedMovable() const;
-    void eraseEmptyReservedCustom() const;
-    void eraseInt() const;
-    void eraseIntShared() const;
-    void eraseMovable() const;
-    void eraseMovableShared() const;
-    void eraseCustom() const;
-    void eraseCustomShared() const;
-    void eraseReservedInt() const;
-    void eraseReservedMovable() const;
-    void eraseReservedCustom() const;
-    void fillInt() const;
-    void fillMovable() const;
-    void fillCustom() const;
-    void fillDetachInt() const;
-    void fillDetachMovable() const;
-    void fillDetachCustom() const;
+    void eraseEmptyInt() const { eraseEmpty<int>(); }
+    void eraseEmptyMovable() const { eraseEmpty<Movable>(); }
+    void eraseEmptyCustom() const { eraseEmpty<Custom>(); }
+    void eraseEmptyReservedInt() const { eraseEmptyReserved<int>(); }
+    void eraseEmptyReservedMovable() const { eraseEmptyReserved<Movable>(); }
+    void eraseEmptyReservedCustom() const { eraseEmptyReserved<Custom>(); }
+    void eraseInt() const { erase<int>(false); }
+    void eraseIntShared() const { erase<int>(true); }
+    void eraseMovable() const { erase<Movable>(false); }
+    void eraseMovableShared() const { erase<Movable>(true); }
+    void eraseCustom() const { erase<Custom>(false); }
+    void eraseCustomShared() const { erase<Custom>(true); }
+    void eraseReservedInt() const { eraseReserved<int>(); }
+    void eraseReservedMovable() const { eraseReserved<Movable>(); }
+    void eraseReservedCustom() const { eraseReserved<Custom>(); }
+    void fillInt() const { fill<int>(); }
+    void fillMovable() const { fill<Movable>(); }
+    void fillCustom() const { fill<Custom>(); }
+    void fillDetachInt() const { fillDetach<int>(); }
+    void fillDetachMovable() const { fillDetach<Movable>(); }
+    void fillDetachCustom() const { fillDetach<Custom>(); }
     void first() const;
-    void fromListInt() const;
-    void fromListMovable() const;
-    void fromListCustom() const;
+    void fromListInt() const { fromList<int>(); }
+    void fromListMovable() const { fromList<Movable>(); }
+    void fromListCustom() const { fromList<Custom>(); }
     void indexOf() const;
-    void insertInt() const;
-    void insertMovable() const;
-    void insertCustom() const;
+    void insertInt() const { insert<int>(); }
+    void insertMovable() const { insert<Movable>(); }
+    void insertCustom() const { insert<Custom>(); }
     void insertZeroCount_data();
     void insertZeroCount() const;
     void isEmpty() const;
@@ -294,19 +308,19 @@ private slots:
     void lastIndexOf() const;
     void mid() const;
     void sliced() const;
-    void moveInt() const;
-    void moveMovable() const;
-    void moveCustom() const;
-    void prependInt() const;
-    void prependMovable() const;
-    void prependCustom() const;
+    void moveInt() const { move<int>(); }
+    void moveMovable() const { move<Movable>(); }
+    void moveCustom() const { move<Custom>(); }
+    void prependInt() const { prepend<int>(); }
+    void prependMovable() const { prepend<Movable>(); }
+    void prependCustom() const { prepend<Custom>(); }
     void qhashInt() const { qhash<int>(); }
     void qhashMovable() const { qhash<Movable>(); }
     void qhashCustom() const { qhash<Custom>(); }
     void removeAllWithAlias() const;
-    void removeInt() const;
-    void removeMovable() const;
-    void removeCustom() const;
+    void removeInt() const { remove<int>(); }
+    void removeMovable() const { remove<Movable>(); }
+    void removeCustom() const { remove<Custom>(); }
     void removeFirstLast() const;
     void resizePOD_data() const;
     void resizePOD() const;
@@ -319,60 +333,52 @@ private slots:
     void resizeToTheSameSize_data();
     void resizeToTheSameSize() const;
     void reverseIterators() const;
-    void sizeInt() const;
-    void sizeMovable() const;
-    void sizeCustom() const;
+    void sizeInt() const { size<int>(); }
+    void sizeMovable() const { size<Movable>(); }
+    void sizeCustom() const { size<Custom>(); }
     void startsWith() const;
-    void swapInt() const;
-    void swapMovable() const;
-    void swapCustom() const;
+    void swapInt() const { swap<int>(); }
+    void swapMovable() const { swap<Movable>(); }
+    void swapCustom() const { swap<Custom>(); }
     void toList() const;
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     void fromStdVector() const;
     void toStdVector() const;
 #endif
     void value() const;
-
     void testOperators() const;
-
     void reserve();
     void reserveZero();
-    void initializeListInt();
-    void initializeListMovable();
-    void initializeListCustom();
-
+    void initializeListInt() { initializeList<int>(); }
+    void initializeListMovable() { initializeList<Movable>(); }
+    void initializeListCustom() { initializeList<Custom>(); }
     void const_shared_null();
-
-    void detachInt() const;
-    void detachMovable() const;
-    void detachCustom() const;
+    void detachInt() const { detach<int>(); }
+    void detachMovable() const { detach<Movable>(); }
+    void detachCustom() const { detach<Custom>(); }
     void detachThreadSafetyInt() const;
     void detachThreadSafetyMovable() const;
     void detachThreadSafetyCustom() const;
-
     void insertMove() const;
-
     void swapItemsAt() const;
-
-    void emplaceInt();
-    void emplaceCustom();
-    void emplaceMovable();
-    void emplaceConsistentWithStdVectorInt();
-    void emplaceConsistentWithStdVectorCustom();
-    void emplaceConsistentWithStdVectorMovable();
-    void emplaceConsistentWithStdVectorQString();
+    void emplaceInt() { emplaceImpl<int>(); }
+    void emplaceCustom() { emplaceImpl<Custom>(); }
+    void emplaceMovable() { emplaceImpl<Movable>(); }
+    void emplaceConsistentWithStdVectorInt() { emplaceConsistentWithStdVectorImpl<int>(); }
+    void emplaceConsistentWithStdVectorCustom() { emplaceConsistentWithStdVectorImpl<Custom>(); }
+    void emplaceConsistentWithStdVectorMovable() { emplaceConsistentWithStdVectorImpl<Movable>(); }
+    void emplaceConsistentWithStdVectorQString() { emplaceConsistentWithStdVectorImpl<QString>(); }
     void emplaceReturnsIterator();
     void emplaceBack();
     void emplaceBackReturnsRef();
     void emplaceWithElementFromTheSameContainer();
     void emplaceWithElementFromTheSameContainer_data();
-
     void fromReadOnlyData() const;
-
     void reallocateCustomAlignedType_qtbug90359() const;
 
 private:
     template<typename T> void copyConstructor() const;
+    template<typename T> void testAssignment() const;
     template<typename T> void add() const;
     template<typename T> void append() const;
     template<typename T> void assignFromInitializerList() const;
@@ -489,6 +495,8 @@ void tst_QList::constructors_reserveAndInitialize() const
 template<typename T>
 void tst_QList::copyConstructor() const
 {
+    TST_QLIST_CHECK_LEAKS(T)
+
     T value1(SimpleValue<T>::at(0));
     T value2(SimpleValue<T>::at(1));
     T value3(SimpleValue<T>::at(2));
@@ -506,28 +514,11 @@ void tst_QList::copyConstructor() const
     }
 }
 
-void tst_QList::copyConstructorInt() const
+template<typename T>
+void tst_QList::testAssignment() const
 {
-    copyConstructor<int>();
-}
+    TST_QLIST_CHECK_LEAKS(T)
 
-void tst_QList::copyConstructorMovable() const
-{
-    const int instancesCount = Movable::counter.loadAcquire();
-    copyConstructor<Movable>();
-    QCOMPARE(instancesCount, Movable::counter.loadAcquire());
-}
-
-void tst_QList::copyConstructorCustom() const
-{
-    const int instancesCount = Custom::counter.loadAcquire();
-    copyConstructor<Custom>();
-    QCOMPARE(instancesCount, Custom::counter.loadAcquire());
-}
-
-template <class T>
-static inline void testAssignment()
-{
     QList<T> v1(5);
     QCOMPARE(v1.size(), 5);
     QVERIFY(v1.isDetached());
@@ -556,24 +547,11 @@ static inline void testAssignment()
     QCOMPARE((void *)v2.constData(), data2);
 }
 
-void tst_QList::assignmentInt() const
-{
-    testAssignment<int>();
-}
-
-void tst_QList::assignmentMovable() const
-{
-    testAssignment<Movable>();
-}
-
-void tst_QList::assignmentCustom() const
-{
-    testAssignment<Custom>();
-}
-
 template<typename T>
 void tst_QList::assignFromInitializerList() const
 {
+    TST_QLIST_CHECK_LEAKS(T)
+
     T val1(SimpleValue<T>::at(1));
     T val2(SimpleValue<T>::at(2));
     T val3(SimpleValue<T>::at(3));
@@ -586,28 +564,11 @@ void tst_QList::assignFromInitializerList() const
     QCOMPARE(v1.size(), 0);
 }
 
-void tst_QList::assignFromInitializerListInt() const
-{
-    assignFromInitializerList<int>();
-}
-
-void tst_QList::assignFromInitializerListMovable() const
-{
-    const int instancesCount = Movable::counter.loadAcquire();
-    assignFromInitializerList<Movable>();
-    QCOMPARE(instancesCount, Movable::counter.loadAcquire());
-}
-
-void tst_QList::assignFromInitializerListCustom() const
-{
-    const int instancesCount = Custom::counter.loadAcquire();
-    assignFromInitializerList<Custom>();
-    QCOMPARE(instancesCount, Custom::counter.loadAcquire());
-}
-
 template<typename T>
 void tst_QList::add() const
 {
+    TST_QLIST_CHECK_LEAKS(T)
+
     {
         QList<T> empty1;
         QList<T> empty2;
@@ -636,28 +597,11 @@ void tst_QList::add() const
     }
 }
 
-void tst_QList::addInt() const
-{
-    add<int>();
-}
-
-void tst_QList::addMovable() const
-{
-    const int instancesCount = Movable::counter.loadAcquire();
-    add<Movable>();
-    QCOMPARE(instancesCount, Movable::counter.loadAcquire());
-}
-
-void tst_QList::addCustom() const
-{
-    const int instancesCount = Custom::counter.loadAcquire();
-    add<Custom>();
-    QCOMPARE(instancesCount, Custom::counter.loadAcquire());
-}
-
 template<typename T>
 void tst_QList::append() const
 {
+    TST_QLIST_CHECK_LEAKS(T)
+
     {
         QList<T> myvec;
         myvec.append(SimpleValue<T>::at(0));
@@ -696,25 +640,6 @@ void tst_QList::append() const
 
         QCOMPARE(v, combined);
     }
-}
-
-void tst_QList::appendInt() const
-{
-    append<int>();
-}
-
-void tst_QList::appendMovable() const
-{
-    const int instancesCount = Movable::counter.loadAcquire();
-    append<Movable>();
-    QCOMPARE(instancesCount, Movable::counter.loadAcquire());
-}
-
-void tst_QList::appendCustom() const
-{
-    const int instancesCount = Custom::counter.loadAcquire();
-    append<Custom>();
-    QCOMPARE(instancesCount, Custom::counter.loadAcquire());
 }
 
 void tst_QList::appendRvalue() const
@@ -951,6 +876,8 @@ void tst_QList::at() const
 template<typename T>
 void tst_QList::capacity() const
 {
+    TST_QLIST_CHECK_LEAKS(T)
+
     QList<T> myvec;
 
     // TODO: is this guaranteed? seems a safe assumption, but I suppose preallocation of a
@@ -978,28 +905,11 @@ void tst_QList::capacity() const
     QVERIFY(myvec.capacity() == 0);
 }
 
-void tst_QList::capacityInt() const
-{
-    capacity<int>();
-}
-
-void tst_QList::capacityMovable() const
-{
-    const int instancesCount = Movable::counter.loadAcquire();
-    capacity<Movable>();
-    QCOMPARE(instancesCount, Movable::counter.loadAcquire());
-}
-
-void tst_QList::capacityCustom() const
-{
-    const int instancesCount = Custom::counter.loadAcquire();
-    capacity<Custom>();
-    QCOMPARE(instancesCount, Custom::counter.loadAcquire());
-}
-
 template<typename T>
 void tst_QList::clear() const
 {
+    TST_QLIST_CHECK_LEAKS(T)
+
     QList<T> myvec;
     myvec << SimpleValue<T>::at(0) << SimpleValue<T>::at(1) << SimpleValue<T>::at(2);
 
@@ -1008,25 +918,6 @@ void tst_QList::clear() const
     myvec.clear();
     QCOMPARE(myvec.size(), 0);
     QCOMPARE(myvec.capacity(), oldCapacity);
-}
-
-void tst_QList::clearInt() const
-{
-    clear<int>();
-}
-
-void tst_QList::clearMovable() const
-{
-    const int instancesCount = Movable::counter.loadAcquire();
-    clear<Movable>();
-    QCOMPARE(instancesCount, Movable::counter.loadAcquire());
-}
-
-void tst_QList::clearCustom() const
-{
-    const int instancesCount = Custom::counter.loadAcquire();
-    clear<Custom>();
-    QCOMPARE(instancesCount, Custom::counter.loadAcquire());
 }
 
 void tst_QList::constData() const
@@ -1056,6 +947,8 @@ void tst_QList::contains() const
 template<typename T>
 void tst_QList::count() const
 {
+    TST_QLIST_CHECK_LEAKS(T)
+
     // total size
     {
         // zero size
@@ -1092,25 +985,6 @@ void tst_QList::count() const
         myvec.remove(0);
         QVERIFY(myvec.count(SimpleValue<T>::at(0)) == 1);
     }
-}
-
-void tst_QList::countInt() const
-{
-    count<int>();
-}
-
-void tst_QList::countMovable() const
-{
-    const int instancesCount = Movable::counter.loadAcquire();
-    count<Movable>();
-    QCOMPARE(instancesCount, Movable::counter.loadAcquire());
-}
-
-void tst_QList::countCustom() const
-{
-    const int instancesCount = Custom::counter.loadAcquire();
-    count<Custom>();
-    QCOMPARE(instancesCount, Custom::counter.loadAcquire());
 }
 
 void tst_QList::cpp17ctad() const
@@ -1161,6 +1035,8 @@ void tst_QList::data() const
 template<typename T>
 void tst_QList::empty() const
 {
+    TST_QLIST_CHECK_LEAKS(T)
+
     QList<T> myvec;
 
     // starts empty
@@ -1173,25 +1049,6 @@ void tst_QList::empty() const
     // empty again
     myvec.remove(0);
     QVERIFY(myvec.empty());
-}
-
-void tst_QList::emptyInt() const
-{
-    empty<int>();
-}
-
-void tst_QList::emptyMovable() const
-{
-    const int instancesCount = Movable::counter.loadAcquire();
-    empty<Movable>();
-    QCOMPARE(instancesCount, Movable::counter.loadAcquire());
-}
-
-void tst_QList::emptyCustom() const
-{
-    const int instancesCount = Custom::counter.loadAcquire();
-    empty<Custom>();
-    QCOMPARE(instancesCount, Custom::counter.loadAcquire());
 }
 
 void tst_QList::endsWith() const
@@ -1217,56 +1074,22 @@ void tst_QList::endsWith() const
 template<typename T>
 void tst_QList::eraseEmpty() const
 {
+    TST_QLIST_CHECK_LEAKS(T)
+
     QList<T> v;
     v.erase(v.begin(), v.end());
     QCOMPARE(v.size(), 0);
-}
-
-void tst_QList::eraseEmptyInt() const
-{
-    eraseEmpty<int>();
-}
-
-void tst_QList::eraseEmptyMovable() const
-{
-    const int instancesCount = Movable::counter.loadAcquire();
-    eraseEmpty<Movable>();
-    QCOMPARE(instancesCount, Movable::counter.loadAcquire());
-}
-
-void tst_QList::eraseEmptyCustom() const
-{
-    const int instancesCount = Custom::counter.loadAcquire();
-    eraseEmpty<Custom>();
-    QCOMPARE(instancesCount, Custom::counter.loadAcquire());
 }
 
 template<typename T>
 void tst_QList::eraseEmptyReserved() const
 {
+    TST_QLIST_CHECK_LEAKS(T)
+
     QList<T> v;
     v.reserve(10);
     v.erase(v.begin(), v.end());
     QCOMPARE(v.size(), 0);
-}
-
-void tst_QList::eraseEmptyReservedInt() const
-{
-    eraseEmptyReserved<int>();
-}
-
-void tst_QList::eraseEmptyReservedMovable() const
-{
-    const int instancesCount = Movable::counter.loadAcquire();
-    eraseEmptyReserved<Movable>();
-    QCOMPARE(instancesCount, Movable::counter.loadAcquire());
-}
-
-void tst_QList::eraseEmptyReservedCustom() const
-{
-    const int instancesCount = Custom::counter.loadAcquire();
-    eraseEmptyReserved<Custom>();
-    QCOMPARE(instancesCount, Custom::counter.loadAcquire());
 }
 
 template<typename T>
@@ -1299,10 +1122,12 @@ struct SharedVectorChecker
 template<typename T>
 void tst_QList::erase(bool shared) const
 {
-    // note: remove() is actually more efficient, and more dangerous, because it uses the non-detaching
-    // begin() / end() internally. you can also use constBegin() and constEnd() with erase(), but only
-    // using reinterpret_cast... because both iterator types are really just pointers.
-    // so we use a mix of erase() and remove() to cover more cases.
+    TST_QLIST_CHECK_LEAKS(T)
+
+    // note: remove() is actually more efficient, and more dangerous, because it uses the
+    // non-detaching begin() / end() internally. you can also use constBegin() and constEnd() with
+    // erase(), but only using reinterpret_cast... because both iterator types are really just
+    // pointers. so we use a mix of erase() and remove() to cover more cases.
     {
         QList<T> v = SimpleValue<T>::vector(12);
         SharedVectorChecker<T> svc(v, shared);
@@ -1356,46 +1181,11 @@ void tst_QList::erase(bool shared) const
     }
 }
 
-void tst_QList::eraseInt() const
+template<typename T>
+void tst_QList::eraseReserved() const
 {
-    erase<int>(false);
-}
+    TST_QLIST_CHECK_LEAKS(T)
 
-void tst_QList::eraseIntShared() const
-{
-    erase<int>(true);
-}
-
-void tst_QList::eraseMovable() const
-{
-    const int instancesCount = Movable::counter.loadAcquire();
-    erase<Movable>(false);
-    QCOMPARE(instancesCount, Movable::counter.loadAcquire());
-}
-
-void tst_QList::eraseMovableShared() const
-{
-    const int instancesCount = Movable::counter.loadAcquire();
-    erase<Movable>(true);
-    QCOMPARE(instancesCount, Movable::counter.loadAcquire());
-}
-
-void tst_QList::eraseCustom() const
-{
-    const int instancesCount = Custom::counter.loadAcquire();
-    erase<Custom>(false);
-    QCOMPARE(instancesCount, Custom::counter.loadAcquire());
-}
-
-void tst_QList::eraseCustomShared() const
-{
-    const int instancesCount = Custom::counter.loadAcquire();
-    erase<Custom>(true);
-    QCOMPARE(instancesCount, Custom::counter.loadAcquire());
-}
-
-template<typename T> void tst_QList::eraseReserved() const
-{
     {
         QList<T> v(12);
         v.reserve(16);
@@ -1428,28 +1218,11 @@ template<typename T> void tst_QList::eraseReserved() const
     }
 }
 
-void tst_QList::eraseReservedInt() const
-{
-    eraseReserved<int>();
-}
-
-void tst_QList::eraseReservedMovable() const
-{
-    const int instancesCount = Movable::counter.loadAcquire();
-    eraseReserved<Movable>();
-    QCOMPARE(instancesCount, Movable::counter.loadAcquire());
-}
-
-void tst_QList::eraseReservedCustom() const
-{
-    const int instancesCount = Custom::counter.loadAcquire();
-    eraseReserved<Custom>();
-    QCOMPARE(instancesCount, Custom::counter.loadAcquire());
-}
-
 template<typename T>
 void tst_QList::fill() const
 {
+    TST_QLIST_CHECK_LEAKS(T)
+
     QList<T> myvec;
 
     // resize
@@ -1472,28 +1245,11 @@ void tst_QList::fill() const
     QCOMPARE(myvec, QList<T>() << SimpleValue<T>::at(3) << SimpleValue<T>::at(3));
 }
 
-void tst_QList::fillInt() const
-{
-    fill<int>();
-}
-
-void tst_QList::fillMovable() const
-{
-    const int instancesCount = Movable::counter.loadAcquire();
-    fill<Movable>();
-    QCOMPARE(instancesCount, Movable::counter.loadAcquire());
-}
-
-void tst_QList::fillCustom() const
-{
-    const int instancesCount = Custom::counter.loadAcquire();
-    fill<Custom>();
-    QCOMPARE(instancesCount, Custom::counter.loadAcquire());
-}
-
 template<typename T>
 void tst_QList::fillDetach() const
 {
+    TST_QLIST_CHECK_LEAKS(T)
+
     // detaches to the same size
     {
         QList<T> original = { SimpleValue<T>::at(1), SimpleValue<T>::at(1), SimpleValue<T>::at(1) };
@@ -1529,25 +1285,6 @@ void tst_QList::fillDetach() const
                  QList<T>({ SimpleValue<T>::at(1), SimpleValue<T>::at(1), SimpleValue<T>::at(1) }));
         QCOMPARE(copy, QList<T>({ SimpleValue<T>::at(2) }));
     }
-}
-
-void tst_QList::fillDetachInt() const
-{
-    fillDetach<int>();
-}
-
-void tst_QList::fillDetachMovable() const
-{
-    const int instancesCount = Movable::counter.loadAcquire();
-    fillDetach<Movable>();
-    QCOMPARE(instancesCount, Movable::counter.loadAcquire());
-}
-
-void tst_QList::fillDetachCustom() const
-{
-    const int instancesCount = Custom::counter.loadAcquire();
-    fillDetach<Custom>();
-    QCOMPARE(instancesCount, Custom::counter.loadAcquire());
 }
 
 void tst_QList::first() const
@@ -1647,6 +1384,8 @@ void tst_QList::constFirst() const
 template<typename T>
 void tst_QList::fromList() const
 {
+    TST_QLIST_CHECK_LEAKS(T)
+
     QList<T> list;
     list << SimpleValue<T>::at(0) << SimpleValue<T>::at(1) << SimpleValue<T>::at(2) << SimpleValue<T>::at(3);
 
@@ -1656,25 +1395,6 @@ void tst_QList::fromList() const
     // test it worked ok
     QCOMPARE(myvec, QList<T>() << SimpleValue<T>::at(0) << SimpleValue<T>::at(1) << SimpleValue<T>::at(2) << SimpleValue<T>::at(3));
     QCOMPARE(list, QList<T>() << SimpleValue<T>::at(0) << SimpleValue<T>::at(1) << SimpleValue<T>::at(2) << SimpleValue<T>::at(3));
-}
-
-void tst_QList::fromListInt() const
-{
-    fromList<int>();
-}
-
-void tst_QList::fromListMovable() const
-{
-    const int instancesCount = Movable::counter.loadAcquire();
-    fromList<Movable>();
-    QCOMPARE(instancesCount, Movable::counter.loadAcquire());
-}
-
-void tst_QList::fromListCustom() const
-{
-    const int instancesCount = Custom::counter.loadAcquire();
-    fromList<Custom>();
-    QCOMPARE(instancesCount, Custom::counter.loadAcquire());
 }
 
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
@@ -1720,6 +1440,8 @@ void tst_QList::indexOf() const
 template <typename T>
 void tst_QList::insert() const
 {
+    TST_QLIST_CHECK_LEAKS(T)
+
     QList<T> myvec;
     const T
         tA = SimpleValue<T>::at(0),
@@ -1783,21 +1505,6 @@ void tst_QList::insert() const
     QCOMPARE(myvec, QList<T>() << tB << tB << tX << tZ << ti << ti
              << tA << tB << tC << tT);
     QCOMPARE(myvec2, myvec);
-}
-
-void tst_QList::insertInt() const
-{
-    insert<int>();
-}
-
-void tst_QList::insertMovable() const
-{
-    insert<Movable>();
-}
-
-void tst_QList::insertCustom() const
-{
-    insert<Custom>();
 }
 
 void tst_QList::insertZeroCount_data()
@@ -1981,6 +1688,8 @@ void tst_QList::sliced() const
 template <typename T>
 void tst_QList::qhash() const
 {
+    TST_QLIST_CHECK_LEAKS(T)
+
     QList<T> l1, l2;
     QCOMPARE(qHash(l1), qHash(l2));
     l1 << SimpleValue<T>::at(0);
@@ -1991,6 +1700,8 @@ void tst_QList::qhash() const
 template <typename T>
 void tst_QList::move() const
 {
+    TST_QLIST_CHECK_LEAKS(T)
+
     QList<T> list;
     list << T_FOO << T_BAR << T_BAZ;
 
@@ -2007,28 +1718,11 @@ void tst_QList::move() const
     QCOMPARE(list, QList<T>() << T_BAR << T_FOO << T_BAZ);
 }
 
-void tst_QList::moveInt() const
-{
-    move<int>();
-}
-
-void tst_QList::moveMovable() const
-{
-    const int instancesCount = Movable::counter.loadAcquire();
-    move<Movable>();
-    QCOMPARE(instancesCount, Movable::counter.loadAcquire());
-}
-
-void tst_QList::moveCustom() const
-{
-    const int instancesCount = Custom::counter.loadAcquire();
-    move<Custom>();
-    QCOMPARE(instancesCount, Custom::counter.loadAcquire());
-}
-
 template<typename T>
 void tst_QList::prepend() const
 {
+    TST_QLIST_CHECK_LEAKS(T)
+
     QList<T> myvec;
     T val1 = SimpleValue<T>::at(0);
     T val2 = SimpleValue<T>::at(1);
@@ -2062,25 +1756,6 @@ void tst_QList::prepend() const
     QCOMPARE(myvec.at(0), val5);
 }
 
-void tst_QList::prependInt() const
-{
-    prepend<int>();
-}
-
-void tst_QList::prependMovable() const
-{
-    const int instancesCount = Movable::counter.loadAcquire();
-    prepend<Movable>();
-    QCOMPARE(instancesCount, Movable::counter.loadAcquire());
-}
-
-void tst_QList::prependCustom() const
-{
-    const int instancesCount = Custom::counter.loadAcquire();
-    prepend<Custom>();
-    QCOMPARE(instancesCount, Custom::counter.loadAcquire());
-}
-
 void tst_QList::removeAllWithAlias() const
 {
     QList<QString> strings;
@@ -2091,6 +1766,8 @@ void tst_QList::removeAllWithAlias() const
 template<typename T>
 void tst_QList::remove() const
 {
+    TST_QLIST_CHECK_LEAKS(T)
+
     QList<T> myvec;
     T val1 = SimpleValue<T>::at(1);
     T val2 = SimpleValue<T>::at(2);
@@ -2125,25 +1802,6 @@ void tst_QList::remove() const
     // remove rest
     myvec.remove(0, 3);
     QCOMPARE(myvec, QList<T>());
-}
-
-void tst_QList::removeInt() const
-{
-    remove<int>();
-}
-
-void tst_QList::removeMovable() const
-{
-    const int instancesCount = Movable::counter.loadAcquire();
-    remove<Movable>();
-    QCOMPARE(instancesCount, Movable::counter.loadAcquire());
-}
-
-void tst_QList::removeCustom() const
-{
-    const int instancesCount = Custom::counter.loadAcquire();
-    remove<Custom>();
-    QCOMPARE(instancesCount, Custom::counter.loadAcquire());
 }
 
 struct RemoveLastTestClass
@@ -2472,6 +2130,8 @@ void tst_QList::reverseIterators() const
 template<typename T>
 void tst_QList::size() const
 {
+    TST_QLIST_CHECK_LEAKS(T)
+
     // zero size
     QList<T> myvec;
     QVERIFY(myvec.size() == 0);
@@ -2487,25 +2147,6 @@ void tst_QList::size() const
     QVERIFY(myvec.size() == 1);
     myvec.remove(0);
     QVERIFY(myvec.size() == 0);
-}
-
-void tst_QList::sizeInt() const
-{
-    size<int>();
-}
-
-void tst_QList::sizeMovable() const
-{
-    const int instancesCount = Movable::counter.loadAcquire();
-    size<Movable>();
-    QCOMPARE(instancesCount, Movable::counter.loadAcquire());
-}
-
-void tst_QList::sizeCustom() const
-{
-    const int instancesCount = Custom::counter.loadAcquire();
-    size<Custom>();
-    QCOMPARE(instancesCount, Custom::counter.loadAcquire());
 }
 
 // ::squeeze() is tested in ::capacity().
@@ -2533,6 +2174,8 @@ void tst_QList::startsWith() const
 template<typename T>
 void tst_QList::swap() const
 {
+    TST_QLIST_CHECK_LEAKS(T)
+
     QList<T> v1, v2;
     T val1 = SimpleValue<T>::at(0);
     T val2 = SimpleValue<T>::at(1);
@@ -2546,25 +2189,6 @@ void tst_QList::swap() const
     v1.swap(v2);
     QCOMPARE(v1,QList<T>() << val4 << val5 << val6);
     QCOMPARE(v2,QList<T>() << val1 << val2 << val3);
-}
-
-void tst_QList::swapInt() const
-{
-    swap<int>();
-}
-
-void tst_QList::swapMovable() const
-{
-    const int instancesCount = Movable::counter.loadAcquire();
-    swap<Movable>();
-    QCOMPARE(instancesCount, Movable::counter.loadAcquire());
-}
-
-void tst_QList::swapCustom() const
-{
-    const int instancesCount = Custom::counter.loadAcquire();
-    swap<Custom>();
-    QCOMPARE(instancesCount, Custom::counter.loadAcquire());
 }
 
 void tst_QList::toList() const
@@ -2716,6 +2340,8 @@ void tst_QList::reserveZero()
 template<typename T>
 void tst_QList::initializeList()
 {
+    TST_QLIST_CHECK_LEAKS(T)
+
     T val1(SimpleValue<T>::at(1));
     T val2(SimpleValue<T>::at(2));
     T val3(SimpleValue<T>::at(3));
@@ -2734,25 +2360,6 @@ void tst_QList::initializeList()
     QCOMPARE(v4.size(), 0);
 }
 
-void tst_QList::initializeListInt()
-{
-    initializeList<int>();
-}
-
-void tst_QList::initializeListMovable()
-{
-    const int instancesCount = Movable::counter.loadAcquire();
-    initializeList<Movable>();
-    QCOMPARE(instancesCount, Movable::counter.loadAcquire());
-}
-
-void tst_QList::initializeListCustom()
-{
-    const int instancesCount = Custom::counter.loadAcquire();
-    initializeList<Custom>();
-    QCOMPARE(instancesCount, Custom::counter.loadAcquire());
-}
-
 void tst_QList::const_shared_null()
 {
     QList<int> v2;
@@ -2762,6 +2369,8 @@ void tst_QList::const_shared_null()
 template<typename T>
 void tst_QList::detach() const
 {
+    TST_QLIST_CHECK_LEAKS(T)
+
     {
         // detach an empty vector
         QList<T> v;
@@ -2854,25 +2463,6 @@ void tst_QList::detach() const
         for (int i = 0; i < v.size(); ++i)
             QCOMPARE(v[i], SimpleValue<T>::at(3));
     }
-}
-
-void tst_QList::detachInt() const
-{
-    detach<int>();
-}
-
-void tst_QList::detachMovable() const
-{
-    const int instancesCount = Movable::counter.loadAcquire();
-    detach<Movable>();
-    QCOMPARE(instancesCount, Movable::counter.loadAcquire());
-}
-
-void tst_QList::detachCustom() const
-{
-    const int instancesCount = Custom::counter.loadAcquire();
-    detach<Custom>();
-    QCOMPARE(instancesCount, Custom::counter.loadAcquire());
 }
 
 static QAtomicPointer<QList<int> > detachThreadSafetyDataInt;
@@ -3023,41 +2613,6 @@ void tst_QList::swapItemsAt() const
     QCOMPARE(copy.at(2), 2);
 }
 
-void tst_QList::emplaceInt()
-{
-    emplaceImpl<int>();
-}
-
-void tst_QList::emplaceCustom()
-{
-    emplaceImpl<Custom>();
-}
-
-void tst_QList::emplaceMovable()
-{
-    emplaceImpl<Movable>();
-}
-
-void tst_QList::emplaceConsistentWithStdVectorInt()
-{
-    emplaceConsistentWithStdVectorImpl<int>();
-}
-
-void tst_QList::emplaceConsistentWithStdVectorCustom()
-{
-    emplaceConsistentWithStdVectorImpl<Custom>();
-}
-
-void tst_QList::emplaceConsistentWithStdVectorMovable()
-{
-    emplaceConsistentWithStdVectorImpl<Movable>();
-}
-
-void tst_QList::emplaceConsistentWithStdVectorQString()
-{
-    emplaceConsistentWithStdVectorImpl<QString>();
-}
-
 void tst_QList::emplaceReturnsIterator()
 {
     QList<Movable> vec;
@@ -3126,6 +2681,8 @@ void tst_QList::emplaceWithElementFromTheSameContainer_data()
 template<typename T>
 void tst_QList::emplaceImpl() const
 {
+    TST_QLIST_CHECK_LEAKS(T)
+
     QList<T> vec {'a', 'b', 'c', 'd'};
 
     vec.emplace(2, 'k');
@@ -3150,6 +2707,8 @@ static void squeezeVec(QList<T> &qVec, std::vector<T> &stdVec)
 template<typename T>
 void tst_QList::emplaceConsistentWithStdVectorImpl() const
 {
+    TST_QLIST_CHECK_LEAKS(T)
+
     // fast-patch to make QString work with the old logic
     const auto convert = [] (char i) {
         if constexpr (std::is_same_v<QString, T>) {
