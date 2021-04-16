@@ -1064,8 +1064,7 @@ QStringList QDir::nameFilters() const
     list of filters specified by \a nameFilters.
 
     Each name filter is a wildcard (globbing) filter that understands
-    \c{*} and \c{?} wildcards. See \l{QRegularExpression#Wildcard matching}
-    {QRegularExpression Wildcard Matching}.
+    \c{*} and \c{?} wildcards. See \l{QRegularExpression::fromWildcard()}.
 
     For example, the following code sets three name filters on a QDir
     to ensure that only files with extensions typically used for C++
@@ -2114,8 +2113,7 @@ QString QDir::rootPath()
     patterns in the list of \a filters; otherwise returns \c false. The
     matching is case insensitive.
 
-    \sa {QRegularExpression#Wildcard matching}{QRegularExpression Wildcard Matching},
-        entryList(), entryInfoList()
+    \sa QRegularExpression::fromWildcard(), entryList(), entryInfoList()
 */
 bool QDir::match(const QStringList &filters, const QString &fileName)
 {
@@ -2134,8 +2132,7 @@ bool QDir::match(const QStringList &filters, const QString &fileName)
     contain multiple patterns separated by spaces or semicolons.
     The matching is case insensitive.
 
-    \sa {QRegularExpression#Wildcard matching}{QRegularExpression Wildcard Matching},
-        entryList(), entryInfoList()
+    \sa QRegularExpression::fromWildcard(), entryList(), entryInfoList()
 */
 bool QDir::match(const QString &filter, const QString &fileName)
 {
