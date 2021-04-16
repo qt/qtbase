@@ -2407,11 +2407,10 @@ size_t qHash(long double key, size_t seed) noexcept
     hashes. A multi-valued hash is a hash that allows multiple values
     with the same key.
 
-    Because QMultiHash inherits QHash, all of QHash's functionality also
-    applies to QMultiHash. For example, you can use isEmpty() to test
+    QMultiHash mostly mirrors QHash's API. For example, you can use isEmpty() to test
     whether the hash is empty, and you can traverse a QMultiHash using
     QHash's iterator classes (for example, QHashIterator). But opposed to
-    QHash, it provides an insert() function will allow the insertion of
+    QHash, it provides an insert() function that allows the insertion of
     multiple items with the same key. The replace() function corresponds to
     QHash::insert(). It also provides convenient operator+() and
     operator+=().
