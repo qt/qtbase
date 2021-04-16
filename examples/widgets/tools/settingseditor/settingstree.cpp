@@ -214,7 +214,7 @@ void SettingsTree::updateChildItems(QTreeWidgetItem *parent)
         if (value.userType() == QMetaType::UnknownType) {
             child->setText(1, "Invalid");
         } else {
-            if (value.type() == QVariant::String) {
+            if (value.typeId() == QMetaType::QString) {
                 const QString stringValue = value.toString();
                 if (m_typeChecker->boolExp.match(stringValue).hasMatch()) {
                     value.setValue(stringValue.compare("true", Qt::CaseInsensitive) == 0);

@@ -333,7 +333,7 @@ class Q_CORE_EXPORT QVariant
     explicit QVariant(Type type)
         : QVariant(QMetaType(int(type)))
     {}
-    QT_DEPRECATED_VERSION_X_6_0("Use metaType().")
+    QT_DEPRECATED_VERSION_X_6_0("Use typeId() or metaType().")
     Type type() const
     {
         int type = d.typeId();
