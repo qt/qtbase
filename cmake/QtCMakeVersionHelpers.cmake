@@ -121,6 +121,12 @@ function(qt_internal_warn_about_unsuitable_cmake_versions)
     # https://gitlab.kitware.com/cmake/cmake/-/issues/21977
     list(APPEND unsuitable_versions "3.20.0")
 
+    # AUTOMOC can crash or hang when using a Qt that supports moc depfiles.
+    # Issues reported on Windows with Ninja and Makefiles, but it could be happening
+    # on other platforms too.
+    # https://gitlab.kitware.com/cmake/cmake/-/issues/22014
+    list(APPEND unsuitable_versions "3.20.1")
+
     foreach(unsuitable_version ${unsuitable_versions})
         if(CMAKE_VERSION VERSION_EQUAL unsuitable_version)
             message(WARNING
