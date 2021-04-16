@@ -74,13 +74,18 @@ Q_DECLARE_METATYPE(sqlite3_stmt*)
 
 QT_BEGIN_NAMESPACE
 
-static QString _q_escapeIdentifier(const QString &identifier)
+static QString _q_escapeIdentifier(const QString &identifier, QSqlDriver::IdentifierType type)
 {
     QString res = identifier;
+    // If it contains [ and ] then we assume it to be escaped properly already as this indicates
+    // the syntax is exactly how it should be
+    if (identifier.contains(QLatin1Char('[')) && identifier.contains(QLatin1Char(']')))
+        return res;
     if (!identifier.isEmpty() && !identifier.startsWith(QLatin1Char('"')) && !identifier.endsWith(QLatin1Char('"'))) {
         res.replace(QLatin1Char('"'), QLatin1String("\"\""));
         res.prepend(QLatin1Char('"')).append(QLatin1Char('"'));
-        res.replace(QLatin1Char('.'), QLatin1String("\".\""));
+        if (type == QSqlDriver::TableName)
+            res.replace(QLatin1Char('.'), QLatin1String("\".\""));
     }
     return res;
 }
@@ -912,13 +917,24 @@ static QSqlIndex qGetTableInfo(QSqlQuery &q, const QString &tableName, bool only
 {
     QString schema;
     QString table(tableName);
-    int indexOfSeparator = tableName.indexOf(QLatin1Char('.'));
+    const int indexOfSeparator = tableName.indexOf(QLatin1Char('.'));
     if (indexOfSeparator > -1) {
-        schema = tableName.left(indexOfSeparator).append(QLatin1Char('.'));
-        table = tableName.mid(indexOfSeparator + 1);
+        const int indexOfCloseBracket = tableName.indexOf(QLatin1Char(']'));
+        if (indexOfCloseBracket != tableName.size() - 1) {
+            // Handles a case like databaseName.tableName
+            schema = tableName.left(indexOfSeparator + 1);
+            table = tableName.mid(indexOfSeparator + 1);
+        } else {
+            const int indexOfOpenBracket = tableName.lastIndexOf(QLatin1Char('['), indexOfCloseBracket);
+            if (indexOfOpenBracket > 0) {
+                // Handles a case like databaseName.[tableName]
+                schema = tableName.left(indexOfOpenBracket);
+                table = tableName.mid(indexOfOpenBracket);
+            }
+        }
     }
-    q.exec(QLatin1String("PRAGMA ") + schema + QLatin1String("table_info (") + _q_escapeIdentifier(table) + QLatin1Char(')'));
-
+    q.exec(QLatin1String("PRAGMA ") + schema + QLatin1String("table_info (") +
+           _q_escapeIdentifier(table, QSqlDriver::TableName) + QLatin1Char(')'));
     QSqlIndex ind;
     while (q.next()) {
         bool isPk = q.value(5).toInt();
@@ -980,8 +996,7 @@ QVariant QSQLiteDriver::handle() const
 
 QString QSQLiteDriver::escapeIdentifier(const QString &identifier, IdentifierType type) const
 {
-    Q_UNUSED(type);
-    return _q_escapeIdentifier(identifier);
+    return _q_escapeIdentifier(identifier, type);
 }
 
 static void handle_sqlite_callback(void *qobj,int aoperation, char const *adbname, char const *atablename,
