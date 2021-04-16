@@ -39,7 +39,6 @@
 ****************************************************************************/
 
 #include "qwindowspipewriter_p.h"
-#include <qscopedvaluerollback.h>
 #include <qcoreapplication.h>
 #include <QMutexLocker>
 
@@ -56,8 +55,7 @@ QWindowsPipeWriter::QWindowsPipeWriter(HANDLE pipeWriteEnd, QObject *parent)
       stopped(true),
       writeSequenceStarted(false),
       bytesWrittenPending(false),
-      winEventActPosted(false),
-      inBytesWritten(false)
+      winEventActPosted(false)
 {
     ZeroMemory(&overlapped, sizeof(OVERLAPPED));
     overlapped.hEvent = eventHandle;
@@ -290,12 +288,7 @@ bool QWindowsPipeWriter::consumePendingAndEmit(bool allowWinActPosting)
     if (stopped)
         return false;
 
-    emit canWrite();
-    if (!inBytesWritten) {
-        QScopedValueRollback<bool> guard(inBytesWritten, true);
-        emit bytesWritten(numberOfBytesWritten);
-    }
-
+    emit bytesWritten(numberOfBytesWritten);
     return true;
 }
 
@@ -317,8 +310,7 @@ bool QWindowsPipeWriter::waitForNotification(const QDeadlineTimer &deadline)
 
 /*!
     Waits for the completion of the asynchronous write operation.
-    Returns \c true, if we've emitted the bytesWritten signal (non-recursive case)
-    or bytesWritten will be emitted by the event loop (recursive case).
+    Returns \c true, if we've emitted the bytesWritten signal.
  */
 bool QWindowsPipeWriter::waitForWrite(int msecs)
 {

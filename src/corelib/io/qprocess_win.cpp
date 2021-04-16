@@ -49,6 +49,7 @@
 #include <qfileinfo.h>
 #include <qrandom.h>
 #include <qwineventnotifier.h>
+#include <qscopedvaluerollback.h>
 #include <private/qsystemlibrary_p.h>
 #include <private/qthread_p.h>
 #include <qdebug.h>
@@ -832,16 +833,25 @@ qint64 QProcessPrivate::pipeWriterBytesToWrite() const
     return stdinChannel.writer ? stdinChannel.writer->bytesToWrite() : qint64(0);
 }
 
+void QProcessPrivate::_q_bytesWritten(qint64 bytes)
+{
+    Q_Q(QProcess);
+
+    if (!emittedBytesWritten) {
+        QScopedValueRollback<bool> guard(emittedBytesWritten, true);
+        emit q->bytesWritten(bytes);
+    }
+    _q_canWrite();
+}
+
 bool QProcessPrivate::writeToStdin()
 {
     Q_Q(QProcess);
 
     if (!stdinChannel.writer) {
         stdinChannel.writer = new QWindowsPipeWriter(stdinChannel.pipe[1], q);
-        QObject::connect(stdinChannel.writer, &QWindowsPipeWriter::bytesWritten,
-                         q, &QProcess::bytesWritten);
-        QObjectPrivate::connect(stdinChannel.writer, &QWindowsPipeWriter::canWrite,
-                                this, &QProcessPrivate::_q_canWrite);
+        QObjectPrivate::connect(stdinChannel.writer, &QWindowsPipeWriter::bytesWritten,
+                                this, &QProcessPrivate::_q_bytesWritten);
     } else {
         if (stdinChannel.writer->isWriteOperationActive())
             return true;

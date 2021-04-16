@@ -1294,7 +1294,7 @@ void tst_QProcess::waitForReadyReadInAReadyReadSlot()
     QVERIFY(process.waitForFinished(5000));
     QCOMPARE(process.exitStatus(), QProcess::NormalExit);
     QCOMPARE(process.exitCode(), 0);
-    QVERIFY(process.bytesAvailable() > bytesAvailable);
+    QVERIFY(process.bytesAvailable() >= bytesAvailable);
 }
 
 void tst_QProcess::waitForReadyReadInAReadyReadSlotSlot()
@@ -1304,6 +1304,8 @@ void tst_QProcess::waitForReadyReadInAReadyReadSlotSlot()
     bytesAvailable = process->bytesAvailable();
     process->write("bar", 4);
     QVERIFY(process->waitForReadyRead(5000));
+    QVERIFY(process->bytesAvailable() > bytesAvailable);
+    bytesAvailable = process->bytesAvailable();
     QTestEventLoop::instance().exitLoop();
 }
 

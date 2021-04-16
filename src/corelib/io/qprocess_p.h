@@ -294,6 +294,9 @@ public:
     // private slots
     bool _q_canReadStandardOutput();
     bool _q_canReadStandardError();
+#ifdef Q_OS_WIN
+    void _q_bytesWritten(qint64 bytes);
+#endif
     bool _q_canWrite();
     bool _q_startupNotification();
     void _q_processDied();

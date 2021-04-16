@@ -77,7 +77,6 @@ public:
     HANDLE syncEvent() const { return syncHandle; }
 
 Q_SIGNALS:
-    void canWrite();
     void bytesWritten(qint64 bytes);
 
 protected:
@@ -104,7 +103,6 @@ private:
     bool writeSequenceStarted;
     bool bytesWrittenPending;
     bool winEventActPosted;
-    bool inBytesWritten;
 };
 
 QT_END_NAMESPACE

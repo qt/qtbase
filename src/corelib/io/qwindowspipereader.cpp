@@ -39,7 +39,6 @@
 ****************************************************************************/
 
 #include "qwindowspipereader_p.h"
-#include <qscopedvaluerollback.h>
 #include <qcoreapplication.h>
 #include <QMutexLocker>
 
@@ -61,8 +60,7 @@ QWindowsPipeReader::QWindowsPipeReader(QObject *parent)
       readSequenceStarted(false),
       pipeBroken(false),
       readyReadPending(false),
-      winEventActPosted(false),
-      inReadyRead(false)
+      winEventActPosted(false)
 {
     ZeroMemory(&overlapped, sizeof(OVERLAPPED));
     overlapped.hEvent = eventHandle;
@@ -424,10 +422,8 @@ bool QWindowsPipeReader::consumePendingAndEmit(bool allowWinActPosting)
     if (state != Running)
         return false;
 
-    if (emitReadyRead && !inReadyRead) {
-        QScopedValueRollback<bool> guard(inReadyRead, true);
+    if (emitReadyRead)
         emit readyRead();
-    }
     if (emitPipeClosed) {
         if (dwError != ERROR_BROKEN_PIPE && dwError != ERROR_PIPE_NOT_CONNECTED)
             emit winError(dwError, QLatin1String("QWindowsPipeReader::consumePendingAndEmit"));
@@ -484,8 +480,7 @@ bool QWindowsPipeReader::waitForNotification(const QDeadlineTimer &deadline)
 
 /*!
     Waits for the completion of the asynchronous read operation.
-    Returns \c true, if we've emitted the readyRead signal (non-recursive case)
-    or readyRead will be emitted by the event loop (recursive case).
+    Returns \c true, if we've emitted the readyRead signal.
  */
 bool QWindowsPipeReader::waitForReadyRead(int msecs)
 {
