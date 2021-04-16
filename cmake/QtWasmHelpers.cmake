@@ -19,6 +19,11 @@ function (qt_internal_setup_wasm_target_properties wasmTarget)
 
     target_compile_options("${wasmTarget}" INTERFACE --bind)
 
+    #simd
+    if (QT_FEATURE_sse2)
+        target_compile_options("${wasmTarget}" INTERFACE -O2 -msimd128 -msse -msse2)
+    endif()
+
     # Hardcode wasm memory size. Emscripten does not currently support memory growth
     # (ALLOW_MEMORY_GROWTH) in pthreads mode, and requires specifying the memory size
     # at build time. Further, browsers limit the maximum initial memory size to 1GB.

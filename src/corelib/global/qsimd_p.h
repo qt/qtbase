@@ -190,10 +190,13 @@
 #    define __SSE__                         1
 #  endif
 
-#  if defined(Q_CC_GNU) && !defined(Q_CC_INTEL)
+#  if defined(Q_CC_GNU) && !defined(Q_CC_INTEL) && !defined(Q_OS_WASM)
 // GCC 4.4 and Clang 2.8 added a few more intrinsics there
 #    include <x86intrin.h>
 #  endif
+#ifdef Q_OS_WASM
+#   include <immintrin.h>
+# endif
 
 #  if defined(__SSE4_2__) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS) && (defined(Q_CC_INTEL) || defined(Q_CC_MSVC))
 // POPCNT instructions:

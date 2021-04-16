@@ -177,6 +177,10 @@ if(UIKIT)
     qt_internal_apply_bitcode_flags(PlatformCommonInternal)
 endif()
 
+if(WASM AND QT_FEATURE_sse2)
+    target_compile_definitions(PlatformCommonInternal INTERFACE QT_COMPILER_SUPPORTS_SSE2)
+endif()
+
 # Taken from mkspecs/common/msvc-version.conf and mkspecs/common/msvc-desktop.conf
 if (MSVC)
     if (MSVC_VERSION GREATER_EQUAL 1799)
