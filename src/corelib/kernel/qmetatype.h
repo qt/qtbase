@@ -444,7 +444,7 @@ public:
 
     bool isValid() const;
     bool isRegistered() const;
-#if defined(QT_QMETATYPE_BC_COMPAT)
+#if defined(QT_QMETATYPE_BC_COMPAT) || defined(Q_QDOC)
     int id() const;
 #else
     // ### Qt 7: Remove traces of out of line version
