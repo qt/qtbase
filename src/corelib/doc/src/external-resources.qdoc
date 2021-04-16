@@ -78,7 +78,7 @@
 
 /*!
     \externalpage https://docs.oracle.com/javase/7/docs/technotes/guides/jni/spec/functions.html
-    \title Oracle: JNI Functions
+    \title Java: JNI Functions
 */
 
 /*!
@@ -89,4 +89,14 @@
 /*!
     \externalpage https://developer.android.com/training/articles/perf-jni#local-and-global-references
     \title JNI tips: Local and global references
+*/
+
+/*!
+    \externalpage https://docs.oracle.com/javase/7/docs/technotes/guides/jni/spec/invocation.html#attach_current_thread
+    \title Java: AttachCurrentThread
+*/
+
+/*!
+    \externalpage https://docs.oracle.com/en/java/javase/13/docs/specs/jni/functions.html#interface-function-table
+    \title Java: Interface Function Table
 */

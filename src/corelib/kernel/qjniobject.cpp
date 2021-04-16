@@ -160,7 +160,7 @@ QT_BEGIN_NAMESPACE
     \l {JNI Design Overview: Global and Local References}. Local references
     created outside a native method scope must be deleted manually, since
     the garbage collector will not free them automatically because we are using
-    \c AttachCurrentThread. For more information, see
+    \l {Java: AttachCurrentThread}{AttachCurrentThread}. For more information, see
     \l {JNI tips: Local and global references}.
 
     If you want to keep a Java object alive you need to either create a new global
