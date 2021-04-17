@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
-** Copyright (C) 2016 Intel Corporation.
+** Copyright (C) 2021 The Qt Company Ltd.
+** Copyright (C) 2021 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -67,6 +67,7 @@ QT_END_NAMESPACE
 #else
 # include <sys/types.h>
 # include <unistd.h>
+# include <private/qcore_unix_p.h>
 #endif
 #ifdef Q_OS_MAC
 # include <sys/mount.h>
@@ -237,6 +238,12 @@ private slots:
     void writeToReadOnlyFile();
 #if defined(Q_OS_LINUX) || defined(Q_OS_AIX) || defined(Q_OS_FREEBSD) || defined(Q_OS_NETBSD)
     void virtualFile();
+#endif
+#ifdef Q_OS_UNIX
+    void unixPipe_data();
+    void unixPipe();
+    void socketPair_data() { unixPipe_data(); }
+    void socketPair();
 #endif
     void textFile();
     void rename_data();
@@ -2579,6 +2586,72 @@ void tst_QFile::virtualFile()
     // seeking
     QVERIFY(f.seek(1));
     QCOMPARE(f.pos(), Q_INT64_C(1));
+}
+#endif // defined(Q_OS_LINUX) || defined(Q_OS_AIX) || defined(Q_OS_FREEBSD) || defined(Q_OS_NETBSD)
+
+#ifdef Q_OS_UNIX
+static void unixPipe_helper(int pipes[2])
+{
+    // start a thread and wait for it to write a first byte
+    static constexpr int Timeout = 1000;
+    QScopedPointer<QThread> thr(QThread::create([fd = pipes[1]]() {
+        char c = 1;
+        qt_safe_write(fd, &c, 1);
+        QTest::qSleep(Timeout);
+        c = 2;
+        qt_safe_write(fd, &c, 1);
+    }));
+    thr->start();
+
+    // synchronize with the thread having started
+    char c = 0;
+    QVERIFY2(qt_safe_read(pipes[0], &c, 1) == 1, qPrintable(qt_error_string()));
+    QCOMPARE(c, '\1');
+
+    QFETCH(bool, useStdio);
+    QElapsedTimer timer;
+    timer.start();
+    QFile f;
+    if (useStdio) {
+        FILE *fh = fdopen(pipes[0], "rb");
+        QVERIFY(f.open(fh, QIODevice::ReadOnly | QIODevice::Unbuffered));
+    } else {
+        QVERIFY(f.open(pipes[0], QIODevice::ReadOnly | QIODevice::Unbuffered));
+    }
+
+    // this ought to block
+    c = 0;
+    QCOMPARE(f.read(&c, 1), 1);
+    QCOMPARE(c, '\2');
+    int elapsed = timer.elapsed();
+    QVERIFY2(elapsed >= Timeout, QByteArray::number(elapsed));
+
+    thr->wait();
+}
+
+void tst_QFile::unixPipe_data()
+{
+    QTest::addColumn<bool>("useStdio");
+    QTest::newRow("no-stdio") << false;
+    QTest::newRow("with-stdio") << true;
+}
+
+void tst_QFile::unixPipe()
+{
+    int pipes[2] = { -1, -1 };
+    QVERIFY2(pipe(pipes) == 0, qPrintable(qt_error_string()));
+    unixPipe_helper(pipes);
+    qt_safe_close(pipes[0]);
+    qt_safe_close(pipes[1]);
+}
+
+void tst_QFile::socketPair()
+{
+    int pipes[2] = { -1, -1 };
+    QVERIFY2(socketpair(AF_UNIX, SOCK_STREAM, 0, pipes) == 0, qPrintable(qt_error_string()));
+    unixPipe_helper(pipes);
+    qt_safe_close(pipes[0]);
+    qt_safe_close(pipes[1]);
 }
 #endif
 
