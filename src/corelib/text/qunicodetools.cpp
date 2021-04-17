@@ -43,6 +43,8 @@
 #include "qvarlengtharray.h"
 #include "qlibrary.h"
 
+#include <limits.h>
+
 #define FLAG(x) (1 << (x))
 
 QT_BEGIN_NAMESPACE
