@@ -46,6 +46,8 @@ public:
     };
     uint seed;
 
+    template <typename T1, typename T2> void stdPair_template(const T1 &t1, const T2 &t2);
+
 public slots:
     void initTestCase();
     void init();
@@ -62,6 +64,18 @@ private Q_SLOTS:
     void rangeCommutative();
 
     void stdHash();
+
+    void stdPair_int_int()          { stdPair_template(1, 2); }
+    void stdPair_ulong_llong()      { stdPair_template(1UL, -2LL); }
+    void stdPair_ullong_long()      { stdPair_template(1ULL, -2L); }
+    void stdPair_string_int()       { stdPair_template(QString("Hello"), 2); }
+    void stdPair_int_string()       { stdPair_template(1, QString("Hello")); }
+    void stdPair_bytearray_string() { stdPair_template(QByteArray("Hello"), QString("World")); }
+    void stdPair_string_bytearray() { stdPair_template(QString("Hello"), QByteArray("World")); }
+    void stdPair_int_pairIntInt()   { stdPair_template(1, std::make_pair(2, 3)); }
+    void stdPair_2x_pairIntInt()    { stdPair_template(std::make_pair(1, 2), std::make_pair(2, 3)); }
+    void stdPair_string_pairIntInt()    { stdPair_template(QString("Hello"), std::make_pair(42, -47)); } // QTBUG-92910
+    void stdPair_int_pairIntPairIntInt() { stdPair_template(1, std::make_pair(2, std::make_pair(3, 4))); }
 
     void setGlobalQHashSeed();
 };
@@ -308,6 +322,32 @@ void tst_QHashFunctions::stdHash()
         QCOMPARE(s.size(), 2UL);
     }
 
+}
+
+template <typename T1, typename T2>
+void tst_QHashFunctions::stdPair_template(const T1 &t1, const T2 &t2)
+{
+    std::pair<T1, T2> dpair{};
+    std::pair<T1, T2> vpair{t1, t2};
+
+    size_t seed = QHashSeed::globalSeed();
+
+    // confirm proper working of the pair and of the underlying types
+    QVERIFY(t1 == t1);
+    QVERIFY(t2 == t2);
+    QCOMPARE(qHash(t1), qHash(t1));
+    QCOMPARE(qHash(t2), qHash(t2));
+    QCOMPARE(qHash(t1, seed), qHash(t1, seed));
+    QCOMPARE(qHash(t2, seed), qHash(t2, seed));
+
+    QVERIFY(dpair == dpair);
+    QVERIFY(vpair == vpair);
+
+    // therefore their hashes should be equal
+    QCOMPARE(qHash(dpair), qHash(dpair));
+    QCOMPARE(qHash(dpair, seed), qHash(dpair, seed));
+    QCOMPARE(qHash(vpair), qHash(vpair));
+    QCOMPARE(qHash(vpair, seed), qHash(vpair, seed));
 }
 
 void tst_QHashFunctions::setGlobalQHashSeed()

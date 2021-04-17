@@ -114,9 +114,14 @@ constexpr inline bool HasQHashSingleArgOverload<T, std::enable_if_t<
     std::is_convertible_v<decltype(qHash(std::declval<const T &>())), size_t>
 >> = true;
 
+template <typename T1, typename T2> static constexpr bool noexceptPairHash();
 }
 
 Q_CORE_EXPORT Q_DECL_PURE_FUNCTION size_t qHashBits(const void *p, size_t size, size_t seed = 0) noexcept;
+
+// implementation below qHashMulti
+template <typename T1, typename T2> inline size_t qHash(const std::pair<T1, T2> &key, size_t seed = 0)
+    noexcept(QHashPrivate::noexceptPairHash<T1, T2>());
 
 // C++ builtin types
 Q_DECL_CONST_FUNCTION constexpr inline size_t qHash(char key, size_t seed = 0) noexcept
@@ -290,8 +295,16 @@ inline size_t qHashRangeCommutative(InputIterator first, InputIterator last, siz
     return std::accumulate(first, last, seed, QtPrivate::QHashCombineCommutative());
 }
 
-template <typename T1, typename T2> inline size_t qHash(const std::pair<T1, T2> &key, size_t seed = 0)
-    noexcept(noexcept(qHash(key.first, seed)) && noexcept(qHash(key.second, seed)))
+namespace QHashPrivate {
+template <typename T1, typename T2> static constexpr bool noexceptPairHash()
+{
+    size_t seed = 0;
+    return noexcept(qHash(std::declval<T1>(), seed)) && noexcept(qHash(std::declval<T2>(), seed));
+}
+} // QHashPrivate
+
+template <typename T1, typename T2> inline size_t qHash(const std::pair<T1, T2> &key, size_t seed)
+    noexcept(QHashPrivate::noexceptPairHash<T1, T2>())
 {
     return qHashMulti(seed, key.first, key.second);
 }
