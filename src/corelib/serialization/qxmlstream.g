@@ -237,6 +237,7 @@ bool QXmlStreamReaderPrivate::parse()
             setType(QXmlStreamReader::EndElement);
             Tag tag = tagStack_pop();
             namespaceUri = tag.namespaceDeclaration.namespaceUri;
+            prefix = tag.namespaceDeclaration.prefix;
             name = tag.name;
             qualifiedName = tag.qualifiedName;
             isEmptyElement = false;
@@ -1300,6 +1301,7 @@ etag ::= LANGLE SLASH qname space_opt RANGLE;
             namespaceUri = tag.namespaceDeclaration.namespaceUri;
             name = tag.name;
             qualifiedName = tag.qualifiedName;
+            prefix = tag.namespaceDeclaration.prefix;
             if (qualifiedName != symName(3))
                 raiseWellFormedError(QXmlStream::tr("Opening and ending tag mismatch."));
         } break;

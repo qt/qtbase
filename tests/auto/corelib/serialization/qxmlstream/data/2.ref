@@ -5,5 +5,5 @@ StartElement( name="doc" namespaceUri="namespaceUri" qualifiedName="ns:doc" pref
     NamespaceDeclaration( prefix="ns" namespaceUri="namespaceUri" )
  )
 Characters( text="The world goes round and round" )
-EndElement( name="doc" namespaceUri="namespaceUri" qualifiedName="ns:doc" )
+EndElement( name="doc" namespaceUri="namespaceUri" qualifiedName="ns:doc" prefix="ns" )
 EndDocument( )

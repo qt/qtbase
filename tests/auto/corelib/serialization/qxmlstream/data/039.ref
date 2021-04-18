@@ -16,7 +16,7 @@ StartElement( name="bar" namespaceUri="http://example.org/~kipper" qualifiedName
 
     Attribute( name="attr" qualifiedName="attr" value="2" )
  )
-EndElement( name="bar" namespaceUri="http://example.org/~kipper" qualifiedName="b:bar" )
+EndElement( name="bar" namespaceUri="http://example.org/~kipper" qualifiedName="b:bar" prefix="b" )
 Characters( whitespace text="
 
 " )
