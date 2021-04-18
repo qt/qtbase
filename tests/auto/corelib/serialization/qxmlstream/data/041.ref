@@ -12,7 +12,7 @@ StartElement( name="bar" namespaceUri="http://example.org/~wilbur" qualifiedName
 
     Attribute( name="attr" qualifiedName="attr" value="2" )
  )
-EndElement( name="bar" namespaceUri="http://example.org/~wilbur" qualifiedName="a:bar" )
+EndElement( name="bar" namespaceUri="http://example.org/~wilbur" qualifiedName="a:bar" prefix="a" )
 Characters( whitespace text="
 
 " )
