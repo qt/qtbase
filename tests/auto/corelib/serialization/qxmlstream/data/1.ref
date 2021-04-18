@@ -4,5 +4,5 @@ StartElement( name="doc" namespaceUri="namespaceUri" qualifiedName="ns:doc" pref
 
     NamespaceDeclaration( prefix="ns" namespaceUri="namespaceUri" )
  )
-EndElement( name="doc" namespaceUri="namespaceUri" qualifiedName="ns:doc" )
+EndElement( name="doc" namespaceUri="namespaceUri" qualifiedName="ns:doc" prefix="ns" )
 EndDocument( )

@@ -8,8 +8,8 @@ Characters( whitespace text="
 StartElement( name="foo" namespaceUri="http://example.org/other-namespace" qualifiedName="a:foo" prefix="a"
     NamespaceDeclaration( prefix="a" namespaceUri="http://example.org/other-namespace" )
  )
-EndElement( name="foo" namespaceUri="http://example.org/other-namespace" qualifiedName="a:foo" )
+EndElement( name="foo" namespaceUri="http://example.org/other-namespace" qualifiedName="a:foo" prefix="a" )
 Characters( whitespace text="
 " )
-EndElement( name="foo" namespaceUri="http://example.org/namespace" qualifiedName="a:foo" )
+EndElement( name="foo" namespaceUri="http://example.org/namespace" qualifiedName="a:foo" prefix="a" )
 EndDocument( )
