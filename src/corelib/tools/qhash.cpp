@@ -670,7 +670,9 @@ size_t qHashBits(const void *p, size_t size, size_t seed) noexcept
     if (seed && qCpuHasFeature(AES) && qCpuHasFeature(SSE4_2))
         return aeshash(reinterpret_cast<const uchar *>(p), size, seed);
 #elif defined(__ARM_FEATURE_CRYPTO)
-    if (seed)
+    // Do additional runtime check as Yocto hard enables Crypto extension for
+    // all armv8 configs
+    if (seed && (qCpuFeatures() & CpuFeatureAES))
         return aeshash(reinterpret_cast<const uchar *>(p), size, seed);
 #endif
     if (size <= QT_POINTER_SIZE)

@@ -68,9 +68,11 @@
 #define HWCAP_VFPv3D16  16384
 
 // copied from <asm/hwcap.h> (ARM):
+#define HWCAP2_AES   (1 << 0)
 #define HWCAP2_CRC32 (1 << 4)
 
 // copied from <asm/hwcap.h> (Aarch64)
+#define HWCAP_AES               (1 << 3)
 #define HWCAP_CRC32             (1 << 7)
 
 // copied from <linux/auxvec.h>
@@ -93,12 +95,14 @@ QT_BEGIN_NAMESPACE
 /* Data:
  neon
  crc32
+ aes
  */
 static const char features_string[] =
         " neon\0"
         " crc32\0"
+        " aes\0"
         "\0";
-static const int features_indices[] = { 0, 6 };
+static const int features_indices[] = { 0, 6, 13 };
 #elif defined(Q_PROCESSOR_MIPS)
 /* Data:
  dsp
@@ -152,6 +156,8 @@ static inline quint64 detectProcessorFeatures()
                     // For Aarch64:
                     if (vector[i+1] & HWCAP_CRC32)
                         features |= CpuFeatureCRC32;
+                    if (vector[i+1] & HWCAP_AES)
+                        features |= CpuFeatureAES;
 #  endif
                     // Aarch32, or ARMv7 or before:
                     if (vector[i+1] & HWCAP_NEON)
@@ -162,6 +168,8 @@ static inline quint64 detectProcessorFeatures()
                 if (vector[i] == AT_HWCAP2) {
                     if (vector[i+1] & HWCAP2_CRC32)
                         features |= CpuFeatureCRC32;
+                    if (vector[i+1] & HWCAP2_AES)
+                        features |= CpuFeatureAES;
                 }
 #  endif
             }
@@ -178,6 +186,9 @@ static inline quint64 detectProcessorFeatures()
 #endif
 #if defined(__ARM_FEATURE_CRC32)
     features |= CpuFeatureCRC32;
+#endif
+#if defined(__ARM_FEATURE_CRYPTO)
+    features |= CpuFeatureAES;
 #endif
 
     return features;
@@ -586,6 +597,12 @@ Q_CORE_EXPORT QBasicAtomicInteger<unsigned> qt_cpu_features[2] = { Q_BASIC_ATOMI
 
 quint64 qDetectCpuFeatures()
 {
+    auto minFeatureTest = minFeature;
+#if defined(Q_OS_LINUX) && defined(Q_PROCESSOR_ARM_64)
+    // Yocto hard-codes CRC32+AES on. Since they are unlikely to be used
+    // automatically by compilers, we can just add runtime check.
+    minFeatureTest &= ~(CpuFeatureAES|CpuFeatureCRC32);
+#endif
     quint64 f = detectProcessorFeatures();
     QByteArray disable = qgetenv("QT_NO_CPU_FEATURE");
     if (!disable.isEmpty()) {
@@ -601,8 +618,8 @@ quint64 qDetectCpuFeatures()
 #else
     bool runningOnValgrind = false;
 #endif
-    if (Q_UNLIKELY(!runningOnValgrind && minFeature != 0 && (f & minFeature) != minFeature)) {
-        quint64 missing = minFeature & ~f;
+    if (Q_UNLIKELY(!runningOnValgrind && minFeatureTest != 0 && (f & minFeatureTest) != minFeatureTest)) {
+        quint64 missing = minFeatureTest & ~f;
         fprintf(stderr, "Incompatible processor. This Qt build requires the following features:\n   ");
         for (int i = 0; i < features_count; ++i) {
             if (missing & (Q_UINT64_C(1) << i))

@@ -311,6 +311,8 @@ enum CPUFeatures {
     CpuFeatureNEON          = 2,
     CpuFeatureARM_NEON      = CpuFeatureNEON,
     CpuFeatureCRC32         = 4,
+    CpuFeatureAES           = 8,
+    CpuFeatureARM_CRYPTO    = CpuFeatureAES,
 #elif defined(Q_PROCESSOR_MIPS)
     CpuFeatureDSP           = 2,
     CpuFeatureDSPR2         = 4,
@@ -326,6 +328,9 @@ static const quint64 qCompilerCpuFeatures = 0
 #endif
 #if defined __ARM_FEATURE_CRC32
         | CpuFeatureCRC32
+#endif
+#if defined __ARM_FEATURE_CRYPTO
+        | CpuFeatureAES
 #endif
 #if defined __mips_dsp
         | CpuFeatureDSP
