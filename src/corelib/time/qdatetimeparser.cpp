@@ -1734,8 +1734,8 @@ QDateTimeParser::findTimeZoneName(QStringView str, const QDateTime &when) const
     // Collect up plausibly-valid characters; let QTimeZone work out what's
     // truly valid.
     const auto invalidZoneNameCharacter = [] (const QChar &c) {
-        return c.unicode() >= 127u
-               || (!c.isLetterOrNumber() && !QLatin1String("+-./:_").contains(c));
+        const auto cu = c.unicode();
+        return cu >= 127u || !(memchr("+-./:_", char(cu), 6) || c.isLetterOrNumber());
     };
     int index = std::distance(str.cbegin(),
                               std::find_if(str.cbegin(), str.cend(), invalidZoneNameCharacter));
