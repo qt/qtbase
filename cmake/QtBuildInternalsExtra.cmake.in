@@ -21,9 +21,25 @@ get_filename_component(QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX
 # This is an attempt to support Conan, aka handle installation of modules into a
 # different installation prefix than the original one. Also allow to opt out via a special variable.
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT AND
-   NOT QT_BUILD_INTERNALS_NO_FORCE_SET_INSTALL_PREFIX)
-    set(CMAKE_INSTALL_PREFIX "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}" CACHE PATH
+        NOT QT_BUILD_INTERNALS_NO_FORCE_SET_INSTALL_PREFIX)
+    set(qtbi_orig_prefix "@CMAKE_INSTALL_PREFIX@")
+    set(qtbi_new_prefix "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}")
+    if(CMAKE_HOST_WIN32)
+        # Make sure we use exactly the original prefix if it points to the same directory as the new
+        # one. This is needed for the case where the original prefix is passed without drive letter
+        # to support installing with DESTDIR set.
+        file(REAL_PATH "${qtbi_orig_prefix}" qtbi_real_orig_prefix)
+        file(REAL_PATH "${qtbi_new_prefix}" qtbi_real_new_prefix)
+        if(qtbi_real_orig_prefix STREQUAL qtbi_real_new_prefix)
+            set(qtbi_new_prefix "${qtbi_orig_prefix}")
+        endif()
+    endif()
+    set(CMAKE_INSTALL_PREFIX "${qtbi_new_prefix}" CACHE PATH
         "Install path prefix, prepended onto install directories." FORCE)
+    unset(qtbi_orig_prefix)
+    unset(qtbi_real_orig_prefix)
+    unset(qtbi_new_prefix)
+    unset(qtbi_real_new_prefix)
 endif()
 
 # Propagate developer builds to other modules via BuildInternals package.
