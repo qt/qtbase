@@ -280,6 +280,18 @@ void testReadOnlyPropertyBasics(
             testedObj.property(propertyName).template value<PropertyType>(), initial, comparator,
             represent);
 
+    // Check that attempting to bind this read-only property to another property has no effect:
+    QProperty<PropertyType> propSetter(initial);
+    QVERIFY(!bindable.hasBinding());
+    bindable.setBinding(Qt::makePropertyBinding(propSetter));
+    QVERIFY(!bindable.hasBinding());
+    propSetter.setValue(changed);
+    QPROPERTY_TEST_COMPARISON_HELPER(
+            testedObj.property(propertyName).template value<PropertyType>(), initial, comparator,
+            represent);
+    if (spy)
+        QCOMPARE(spy->count(), 0);
+
     QProperty<PropertyType> propObserver;
     propObserver.setBinding(bindable.makeBinding());
 
