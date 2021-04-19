@@ -132,7 +132,7 @@ static inline quint64 detectProcessorFeatures()
 
 #if defined(Q_OS_LINUX)
 #  if defined(Q_PROCESSOR_ARM_V8) && defined(Q_PROCESSOR_ARM_64)
-    features |= Q_UINT64_C(1) << CpuFeatureNEON; // NEON is always available on ARMv8 64bit.
+    features |= CpuFeatureNEON; // NEON is always available on ARMv8 64bit.
 #  endif
     int auxv = qt_safe_open("/proc/self/auxv", O_RDONLY);
     if (auxv != -1) {
@@ -151,17 +151,17 @@ static inline quint64 detectProcessorFeatures()
 #  if defined(Q_PROCESSOR_ARM_V8) && defined(Q_PROCESSOR_ARM_64)
                     // For Aarch64:
                     if (vector[i+1] & HWCAP_CRC32)
-                        features |= Q_UINT64_C(1) << CpuFeatureCRC32;
+                        features |= CpuFeatureCRC32;
 #  endif
                     // Aarch32, or ARMv7 or before:
                     if (vector[i+1] & HWCAP_NEON)
-                        features |= Q_UINT64_C(1) << CpuFeatureNEON;
+                        features |= CpuFeatureNEON;
                 }
 #  if defined(Q_PROCESSOR_ARM_32)
                 // For Aarch32:
                 if (vector[i] == AT_HWCAP2) {
                     if (vector[i+1] & HWCAP2_CRC32)
-                        features |= Q_UINT64_C(1) << CpuFeatureCRC32;
+                        features |= CpuFeatureCRC32;
                 }
 #  endif
             }
@@ -174,10 +174,10 @@ static inline quint64 detectProcessorFeatures()
 #endif
 
 #if defined(__ARM_NEON__)
-    features |= Q_UINT64_C(1) << CpuFeatureNEON;
+    features |= CpuFeatureNEON;
 #endif
 #if defined(__ARM_FEATURE_CRC32)
-    features |= Q_UINT64_C(1) << CpuFeatureCRC32;
+    features |= CpuFeatureCRC32;
 #endif
 
     return features;
@@ -505,18 +505,18 @@ static inline quint64 detectProcessorFeatures()
     quint64 flags = 0;
 
 #if defined __mips_dsp
-    flags |= Q_UINT64_C(1) << CpuFeatureDSP;
+    flags |= CpuFeatureDSP;
 #  if defined __mips_dsp_rev && __mips_dsp_rev >= 2
-    flags |= Q_UINT64_C(1) << CpuFeatureDSPR2;
+    flags |= CpuFeatureDSPR2;
 #  elif defined(Q_OS_LINUX)
     if (procCpuinfoContains("cpu model", "MIPS 74Kc") || procCpuinfoContains("cpu model", "MIPS 74Kf"))
-        flags |= Q_UINT64_C(1) << CpuFeatureDSPR2;
+        flags |= CpuFeatureDSPR2;
 #  endif
 #elif defined(Q_OS_LINUX)
     if (procCpuinfoContains("ASEs implemented", "dsp")) {
-        flags |= Q_UINT64_C(1) << CpuFeatureDSP;
+        flags |= CpuFeatureDSP;
         if (procCpuinfoContains("cpu model", "MIPS 74Kc") || procCpuinfoContains("cpu model", "MIPS 74Kf"))
-            flags |= Q_UINT64_C(1) << CpuFeatureDSPR2;
+            flags |= CpuFeatureDSPR2;
     }
 #endif
 
