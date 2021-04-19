@@ -422,11 +422,11 @@ static int parsePosixTime(const char *begin, const char *end)
     // caller's responsibility to ensure that begin is part of a null-terminated
     // string.
 
-    const int maxHour = QTimeZone::MaxUtcOffsetSecs / 3600;
+    const int maxHour = 137; // POSIX's extended range.
     bool ok = false;
     const char *cut = begin;
     hour = qstrtoll(begin, &cut, 10, &ok);
-    if (!ok || hour < 0 || hour > maxHour || cut > begin + 2)
+    if (!ok || hour < -maxHour || hour > maxHour || cut > begin + 2)
         return INT_MIN;
     begin = cut;
     if (begin < end && *begin == ':') {
@@ -454,15 +454,9 @@ static int parsePosixTime(const char *begin, const char *end)
     return (hour * 60 + min) * 60 + sec;
 }
 
-static QTime parsePosixTransitionTime(const QByteArray &timeRule)
+static int parsePosixTransitionTime(const QByteArray &timeRule)
 {
-    // Format "hh[:mm[:ss]]"
-    int value = parsePosixTime(timeRule.constBegin(), timeRule.constEnd());
-    if (value == INT_MIN) {
-        // if we failed to parse, return 02:00
-        return QTime(2, 0, 0);
-    }
-    return QTime::fromMSecsSinceStartOfDay(value * 1000);
+    return parsePosixTime(timeRule.constBegin(), timeRule.constEnd());
 }
 
 static int parsePosixOffset(const char *begin, const char *end)
@@ -601,24 +595,17 @@ static QList<QTimeZonePrivate::Data> calculatePosixTransitions(const QByteArray 
         return result; // Malformed.
 
     // Get the std to dst transtion details
-    QList<QByteArray> dstParts = parts.at(1).split('/');
-    QByteArray dstDateRule = dstParts.at(0);
-    QTime dstTime;
-    if (dstParts.count() > 1)
-        dstTime = parsePosixTransitionTime(dstParts.at(1));
-    else
-        dstTime = QTime(2, 0, 0);
+    const int twoOClock = 7200; // Default transition time, when none specified
+    const auto dstParts = parts.at(1).split('/');
+    const QByteArray dstDateRule = dstParts.at(0);
+    const int dstTime = dstParts.count() < 2 ? twoOClock : parsePosixTransitionTime(dstParts.at(1));
 
     // Get the dst to std transtion details
-    QList<QByteArray> stdParts = parts.at(2).split('/');
-    QByteArray stdDateRule = stdParts.at(0);
-    QTime stdTime;
-    if (stdParts.count() > 1)
-        stdTime = parsePosixTransitionTime(stdParts.at(1));
-    else
-        stdTime = QTime(2, 0, 0);
+    const auto stdParts = parts.at(2).split('/');
+    const QByteArray stdDateRule = stdParts.at(0);
+    const int stdTime = stdParts.count() < 2 ? twoOClock : parsePosixTransitionTime(stdParts.at(1));
 
-    if (dstDateRule.isEmpty() || stdDateRule.isEmpty() || !dstTime.isValid() || !stdTime.isValid())
+    if (dstDateRule.isEmpty() || stdDateRule.isEmpty() || dstTime == INT_MIN || stdTime == INT_MIN)
         return result; // Malformed.
 
     // Limit year to the range QDateTime can represent:
@@ -630,14 +617,14 @@ static QList<QTimeZonePrivate::Data> calculatePosixTransitions(const QByteArray 
 
     for (int year = startYear; year <= endYear; ++year) {
         QTimeZonePrivate::Data dstData;
-        QDateTime dst(calculatePosixDate(dstDateRule, year), dstTime, Qt::UTC);
+        QDateTime dst(calculatePosixDate(dstDateRule, year).startOfDay(Qt::UTC).addSecs(dstTime));
         dstData.atMSecsSinceEpoch = dst.toMSecsSinceEpoch() - (stdZone.offset * 1000);
         dstData.offsetFromUtc = dstZone.offset;
         dstData.standardTimeOffset = stdZone.offset;
         dstData.daylightTimeOffset = dstZone.offset - stdZone.offset;
         dstData.abbreviation = dstZone.name;
         QTimeZonePrivate::Data stdData;
-        QDateTime std(calculatePosixDate(stdDateRule, year), stdTime, Qt::UTC);
+        QDateTime std(calculatePosixDate(stdDateRule, year).startOfDay(Qt::UTC).addSecs(stdTime));
         stdData.atMSecsSinceEpoch = std.toMSecsSinceEpoch() - (dstZone.offset * 1000);
         stdData.offsetFromUtc = stdZone.offset;
         stdData.standardTimeOffset = stdZone.offset;

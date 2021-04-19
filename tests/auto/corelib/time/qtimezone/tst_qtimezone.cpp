@@ -405,7 +405,7 @@ void tst_QTimeZone::isTimeZoneIdAvailable()
     const QList<QByteArray> available = QTimeZone::availableTimeZoneIds();
     for (const QByteArray &id : available) {
         QVERIFY(QTimeZone::isTimeZoneIdAvailable(id));
-        QVERIFY(QTimeZone(id).isValid());
+        QVERIFY2(QTimeZone(id).isValid(), id);
     }
 }
 
