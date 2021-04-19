@@ -334,6 +334,9 @@ QTimeZone::QTimeZone() noexcept
 
 QTimeZone::QTimeZone(const QByteArray &ianaId)
 {
+    // If invalid (other than empty), reject immediately:
+    if (!ianaId.isEmpty() && !QTimeZonePrivate::isValidId(ianaId))
+        return;
     // Try and see if it's a CLDR UTC offset ID - just as quick by creating as
     // by looking up.
     d = new QUtcTimeZonePrivate(ianaId);

@@ -1000,6 +1000,9 @@ void tst_QTimeZone::malformed()
     barf = QTimeZone("QtC+09,,MA");
     if (barf.isValid())
         QCOMPARE(barf.offsetFromUtc(now), 0);
+    barf = QTimeZone("UTCC+14:00,-,");
+    if (barf.isValid())
+        QCOMPARE(barf.daylightTimeOffset(now), -14 * 3600);
 }
 
 void tst_QTimeZone::utcTest()
