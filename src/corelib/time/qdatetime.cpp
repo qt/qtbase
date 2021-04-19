@@ -2663,7 +2663,9 @@ bool QDateTimePrivate::epochMSecsToLocalTime(qint64 msecs, QDate *localDate, QTi
                 : QDateTimePrivate::StandardTime;
         }
 
-        if (add_overflow(msecs, sys.d->offsetFromUtc(msecs) * MSECS_PER_SEC, &msecs))
+        // NB: cast to qint64 here is important to make sure a matching
+        // add_overflow is found, GCC 7.5.0 fails without this cast
+        if (add_overflow(msecs, qint64(sys.d->offsetFromUtc(msecs) * MSECS_PER_SEC), &msecs))
             return false;
         msecsToTime(msecs, localDate, localTime);
         return true;
