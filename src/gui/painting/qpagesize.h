@@ -224,7 +224,7 @@ public:
     };
 
     QPageSize();
-    explicit QPageSize(PageSizeId pageSizeId);
+    Q_IMPLICIT QPageSize(PageSizeId pageSizeId);
     explicit QPageSize(const QSize &pointSize,
                        const QString &name = QString(),
                        SizeMatchPolicy matchPolicy = FuzzyMatch);
