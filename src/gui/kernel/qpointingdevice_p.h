@@ -88,7 +88,9 @@ public:
     struct EventPointData {
         QEventPoint eventPoint;
         QPointer<QObject> exclusiveGrabber;
+        QPointer<QObject> exclusiveGrabberContext;          // extra info about where the grab happened
         QList<QPointer <QObject> > passiveGrabbers;
+        QList<QPointer <QObject> > passiveGrabbersContext;  // parallel list: extra info about where the grabs happened
     };
     EventPointData *queryPointById(int id) const;
     EventPointData *pointById(int id) const;
@@ -100,6 +102,7 @@ public:
     void setExclusiveGrabber(const QPointerEvent *event, const QEventPoint &point, QObject *exclusiveGrabber);
     bool removeExclusiveGrabber(const QPointerEvent *event, const QObject *grabber);
     bool addPassiveGrabber(const QPointerEvent *event, const QEventPoint &point, QObject *grabber);
+    static bool setPassiveGrabberContext(EventPointData *epd, QObject *grabber, QObject *context);
     bool removePassiveGrabber(const QPointerEvent *event, const QEventPoint &point, QObject *grabber);
     void clearPassiveGrabbers(const QPointerEvent *event, const QEventPoint &point);
     void removeGrabber(QObject *grabber, bool cancel = false);
