@@ -69,13 +69,10 @@ find_package(Qt6 REQUIRED COMPONENTS ${required_packages})
 find_package(Qt6 OPTIONAL_COMPONENTS ${optional_packages})
 
 # Setup common test variables which were previously set by ctest_testcase_common.prf.
-set(CMAKE_MODULES_UNDER_TEST "${required_packages}")
-foreach(qt_package ${optional_packages})
-    set(package_name "${QT_CMAKE_EXPORT_NAMESPACE}${qt_package}")
-    list(APPEND CMAKE_MODULES_UNDER_TEST "${qt_package}")
-endforeach()
+set(CMAKE_MODULES_UNDER_TEST "${required_packages}" ${optional_packages})
 
 foreach(qt_package ${CMAKE_MODULES_UNDER_TEST})
+    set(package_name "${QT_CMAKE_EXPORT_NAMESPACE}${qt_package}")
     if(${package_name}_FOUND)
         set(CMAKE_${qt_package}_MODULE_MAJOR_VERSION "${${package_name}_VERSION_MAJOR}")
         set(CMAKE_${qt_package}_MODULE_MINOR_VERSION "${${package_name}_VERSION_MINOR}")
