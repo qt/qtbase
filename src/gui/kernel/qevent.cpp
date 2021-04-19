@@ -400,7 +400,7 @@ QList<QPointer<QObject> > QPointerEvent::passiveGrabbers(const QEventPoint &poin
         qWarning() << "point is not in activePoints" << point;
         return {};
     }
-    return persistentPoint->passiveGrabbers;
+    return persistentPoint->passiveGrabbers.keys();
 }
 
 /*!
