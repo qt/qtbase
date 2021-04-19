@@ -994,12 +994,15 @@ QDataStream &operator>>(QDataStream &ds, QTimeZone &tz)
         QString comment;
         ds >> ianaId >> utcOffset >> name >> abbreviation >> territory >> comment;
         // Try creating as a system timezone, which succeeds (producing a valid
-        // zone) iff ianaId is valid; we can then ignore the other data.
+        // zone) iff ianaId is valid; use this if it is a plain offset from UTC
+        // zone, with the right offset, ignoring the other data:
         tz = QTimeZone(ianaId.toUtf8());
-        // If not, then construct a custom timezone using all the saved values:
-        if (!tz.isValid())
+        if (!tz.isValid() || tz.hasDaylightTime()
+            || tz.offsetFromUtc(QDateTime::fromMSecsSinceEpoch(0, Qt::UTC)) != utcOffset) {
+            // Construct a custom timezone using the saved values:
             tz = QTimeZone(ianaId.toUtf8(), utcOffset, name, abbreviation,
                            QLocale::Territory(territory), comment);
+        }
     } else {
         tz = QTimeZone(ianaId.toUtf8());
     }
