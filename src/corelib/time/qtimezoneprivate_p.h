@@ -301,6 +301,7 @@ struct QTzTimeZoneCacheEntry
     QList<QByteArray> m_abbreviations;
     QByteArray m_posixRule;
     QTzTransitionRule m_preZoneRule;
+    bool m_hasDst;
 };
 
 class Q_AUTOTEST_EXPORT QTzTimeZonePrivate final : public QTimeZonePrivate

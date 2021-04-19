@@ -1140,6 +1140,7 @@ void tst_QTimeZone::tzTest()
     // Test POSIX-format value for $TZ:
     QTzTimeZonePrivate tzposix("MET-1METDST-2,M3.5.0/02:00:00,M10.5.0/03:00:00");
     QVERIFY(tzposix.isValid());
+    QVERIFY(tzposix.hasDaylightTime());
 
     // RHEL has been seen with this as Africa/Casablanca's POSIX rule:
     QTzTimeZonePrivate permaDst("<+00>0<+01>,0/0,J365/25");

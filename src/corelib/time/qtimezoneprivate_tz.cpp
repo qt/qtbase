@@ -555,7 +555,52 @@ PosixZone PosixZone::parse(const char *&pos, const char *end)
     return {std::move(name), offset};
 }
 
-static QList<QTimeZonePrivate::Data> calculatePosixTransitions(const QByteArray &posixRule, int startYear, int endYear,
+static auto validatePosixRule(const QByteArray &posixRule)
+{
+    // Format is described here:
+    // http://www.gnu.org/software/libc/manual/html_node/TZ-Variable.html
+    // See also calculatePosixTransition()'s reference.
+    const auto parts = posixRule.split(',');
+    const struct { bool isValid, hasDst; } fail{false, false}, good{true, parts.count() > 1};
+    const QByteArray &zoneinfo = parts.at(0);
+    if (zoneinfo.isEmpty())
+        return fail;
+
+    const char *begin = zoneinfo.begin();
+
+    // Updates begin to point after the name and offset it parses:
+    if (PosixZone::parse(begin, zoneinfo.end()).name.isEmpty())
+        return fail;
+
+    if (good.hasDst) {
+        if (begin >= zoneinfo.end())
+            return fail;
+        // Expect a second name and offset after the first:
+        if (PosixZone::parse(begin, zoneinfo.end()).name.isEmpty())
+            return fail;
+    }
+    if (begin < zoneinfo.end())
+        return fail;
+
+    if (good.hasDst) {
+        if (parts.count() != 3 || parts.at(1).isEmpty() || parts.at(2).isEmpty())
+            return fail;
+        for (int i = 1; i < 3; ++i) {
+            const auto tran = parts.at(i).split('/');
+            if (!calculatePosixDate(tran.at(0), 1972).isValid())
+                return fail;
+            if (tran.count() > 1) {
+                const auto time = tran.at(1);
+                if (parsePosixTime(time.begin(), time.end()) == INT_MIN)
+                    return fail;
+            }
+        }
+    }
+    return good;
+}
+
+static QList<QTimeZonePrivate::Data> calculatePosixTransitions(const QByteArray &posixRule,
+                                                               int startYear, int endYear,
                                                                qint64 lastTranMSecs)
 {
     QList<QTimeZonePrivate::Data> result;
@@ -564,6 +609,7 @@ static QList<QTimeZonePrivate::Data> calculatePosixTransitions(const QByteArray 
     // i.e. "std offset dst [offset],start[/time],end[/time]"
     // See the section about TZ at
     // http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap08.html
+    // and the link in validatePosixRule(), above.
     QList<QByteArray> parts = posixRule.split(',');
 
     PosixZone stdZone, dstZone = PosixZone::invalid();
@@ -727,11 +773,9 @@ QTzTimeZoneCacheEntry QTzTimeZoneCache::findEntry(const QByteArray &ianaId)
             tzif.setFileName(QLatin1String("/usr/lib/zoneinfo/") + QString::fromLocal8Bit(ianaId));
             if (!tzif.open(QIODevice::ReadOnly)) {
                 // ianaId may be a POSIX rule, taken from $TZ or /etc/TZ
-                const QByteArray zoneInfo = ianaId.split(',').at(0);
-                const char *begin = zoneInfo.constBegin();
-                if (PosixZone::parse(begin, zoneInfo.constEnd()).hasValidOffset()
-                    && (begin == zoneInfo.constEnd()
-                        || PosixZone::parse(begin, zoneInfo.constEnd()).hasValidOffset())) {
+                auto check = validatePosixRule(ianaId);
+                if (check.isValid) {
+                    ret.m_hasDst = check.hasDst;
                     ret.m_posixRule = ianaId;
                 }
                 return ret;
@@ -743,6 +787,7 @@ QTzTimeZoneCacheEntry QTzTimeZoneCache::findEntry(const QByteArray &ianaId)
 
     // Parse the old version block of data
     bool ok = false;
+    QByteArray posixRule;
     QTzHeader hdr = parseTzHeader(ds, &ok);
     if (!ok || ds.status() != QDataStream::Ok)
         return ret;
@@ -783,14 +828,21 @@ QTzTimeZoneCacheEntry QTzTimeZoneCache::findEntry(const QByteArray &ianaId)
         typeList = parseTzIndicators(ds, typeList, hdr2.tzh_ttisstdcnt, hdr2.tzh_ttisgmtcnt);
         if (ds.status() != QDataStream::Ok)
             return ret;
-        ret.m_posixRule = parseTzPosixRule(ds);
+        posixRule = parseTzPosixRule(ds);
         if (ds.status() != QDataStream::Ok)
             return ret;
     }
+    // Translate the TZ file's raw data into our internal form:
 
-    // Translate the TZ file into internal format
+    if (!posixRule.isEmpty()) {
+        auto check = validatePosixRule(posixRule);
+        if (!check.isValid) // We got a POSIX rule, but it was malformed:
+            return ret;
+        ret.m_posixRule = posixRule;
+        ret.m_hasDst = check.hasDst;
+    }
 
-    // Translate the array index based tz_abbrind into list index
+    // Translate the array-index-based tz_abbrind into list index
     const int size = abbrevMap.size();
     ret.m_abbreviations.clear();
     ret.m_abbreviations.reserve(size);
@@ -879,6 +931,8 @@ QTzTimeZoneCacheEntry QTzTimeZoneCache::findEntry(const QByteArray &ianaId)
         // If the rule already exist then use that, otherwise add it
         int ruleIndex = ret.m_tranRules.indexOf(rule);
         if (ruleIndex == -1) {
+            if (rule.dstOffset != 0)
+                ret.m_hasDst = true;
             ret.m_tranRules.append(rule);
             tran.ruleIndex = ret.m_tranRules.size() - 1;
         } else {
@@ -1051,12 +1105,7 @@ int QTzTimeZonePrivate::daylightTimeOffset(qint64 atMSecsSinceEpoch) const
 
 bool QTzTimeZonePrivate::hasDaylightTime() const
 {
-    // TODO Perhaps cache as frequently accessed?
-    for (const QTzTransitionRule &rule : cached_data.m_tranRules) {
-        if (rule.dstOffset != 0)
-            return true;
-    }
-    return false;
+    return cached_data.m_hasDst;
 }
 
 bool QTzTimeZonePrivate::isDaylightTime(qint64 atMSecsSinceEpoch) const
