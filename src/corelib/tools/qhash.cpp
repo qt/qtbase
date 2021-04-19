@@ -416,7 +416,7 @@ static size_t aeshash(const uchar *p, size_t len, size_t seed) noexcept
 #endif
     } else {
         quint32 replicated_len = quint16(len) | (quint32(quint16(len)) << 16);
-        __m128i mseed = _mm_cvtsi32_si128(seed);
+        __m128i mseed = _mm_cvtsi32_si128(int(seed));
         key = _mm_insert_epi32(mseed, replicated_len, 1);
         key = _mm_unpacklo_epi64(key, key);
     }
