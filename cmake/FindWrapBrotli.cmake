@@ -39,5 +39,52 @@ else()
             target_link_libraries(WrapBrotli::WrapBrotliCommon INTERFACE PkgConfig::libbrotlicommon)
             set(WrapBrotli_FOUND ON)
         endif()
+    else()
+        find_path(BROTLI_INCLUDE_DIR NAMES "brotli/decode.h")
+
+        foreach(lib_name BrotliDec BrotliEnc BrotliCommon)
+            string(TOLOWER ${lib_name} lower_lib_name)
+
+            find_library(${lib_name}_LIBRARY_RELEASE
+                         NAMES ${lower_lib_name} ${lower_lib_name}-static)
+
+            find_library(${lib_name}_LIBRARY_DEBUG
+                         NAMES ${lower_lib_name}d ${lower_lib_name}-staticd
+                         ${lower_lib_name} ${lower_lib_name}-static)
+
+            include(SelectLibraryConfigurations)
+            select_library_configurations(${lib_name})
+
+            if (BROTLI_INCLUDE_DIR AND ${lib_name}_LIBRARY)
+                set(${lib_name}_FOUND TRUE)
+            endif()
+
+            if (${lib_name}_FOUND AND NOT TARGET WrapBrotli::Wrap${lib_name})
+                add_library(WrapBrotli::Wrap${lib_name} UNKNOWN IMPORTED)
+                set_target_properties(WrapBrotli::Wrap${lib_name} PROPERTIES
+                                      INTERFACE_INCLUDE_DIRECTORIES "${BROTLI_INCLUDE_DIR}"
+                                      IMPORTED_LOCATION "${${lib_name}_LIBRARY}")
+
+                if(${lib_name}_LIBRARY_RELEASE)
+                    foreach(config_name RELEASE RELWITHDEBINFO MINSIZEREL)
+                        set_property(TARGET WrapBrotli::Wrap${lib_name} APPEND PROPERTY
+                                     IMPORTED_CONFIGURATIONS ${config_name})
+                        set_target_properties(WrapBrotli::Wrap${lib_name} PROPERTIES
+                                              IMPORTED_LOCATION_${config_name} "${${lib_name}_LIBRARY_RELEASE}")
+                    endforeach()
+                endif()
+
+                if(${lib_name}_LIBRARY_DEBUG)
+                    set_property(TARGET WrapBrotli::Wrap${lib_name} APPEND PROPERTY
+                                 IMPORTED_CONFIGURATIONS DEBUG)
+                    set_target_properties(WrapBrotli::Wrap${lib_name} PROPERTIES
+                                          IMPORTED_LOCATION_DEBUG "${${lib_name}_LIBRARY_DEBUG}")
+                endif()
+            endif()
+        endforeach()
+
+        include(FindPackageHandleStandardArgs)
+        find_package_handle_standard_args(WrapBrotli REQUIRED_VARS
+                                          BrotliDec_FOUND BrotliEnc_FOUND BrotliCommon_FOUND)
     endif()
 endif()
