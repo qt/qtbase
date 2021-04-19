@@ -1567,7 +1567,6 @@ QString QPropertyBindingError::description() const
   owner is notified via the Callback function.
 */
 
-
 /*!
   \fn template <typename Class, typename T, auto offset, auto Callback> template <typename Functor> QObjectBindableProperty<Class, T, offset, Callback>::QObjectBindableProperty(Functor &&f)
 
@@ -1600,14 +1599,18 @@ QString QPropertyBindingError::description() const
 */
 
 /*!
-  \fn template <typename Class, typename T, auto offset, auto Callback> void QObjectBindableProperty<Class, T, offset, Callback>::markDirty()
+  \fn template <typename Class, typename T, auto offset, auto Callback> void QObjectBindableProperty<Class, T, offset, Callback>::notify()
 
-  Programatically sets the property dirty. Any binding which depend on it will
-  be notified.
-  This can be useful for properties which do not only depend on bindable properties,
-  but also on non-bindable properties or some other state.
+  Programmatically signals a change of the property. Any binding which depend on it will
+  be notified, and if the property has a signal, it will be emitted.
 
-  \sa QProperty::markDirty()
+  This can be useful in combination with setValueBypassingBindings to defer signalling the change
+  until a class invariant has been restored.
+
+  \note If this property has a binding (i.e. hasBinding() returns true), that binding is not reevaluated when
+  notify() is called. Any binding depending on this property is still reevaluated as usual.
+
+  \sa Qt::beginProperytUpdateGroup(), setValueBypassingBindings()
 */
 
 /*!

@@ -82,6 +82,7 @@ private slots:
     void bindingValueReplacement();
     void quntypedBindableApi();
     void readonlyConstQBindable();
+    void qobjectBindableManualNotify();
 
     void testNewStuff();
     void qobjectObservers();
@@ -1136,6 +1137,50 @@ public:
     Q_OBJECT_COMPUTED_PROPERTY(MyQObject, int, computedData, &MyQObject::computed);
     Q_OBJECT_COMPAT_PROPERTY(MyQObject, int, compatData, &MyQObject::setCompat)
 };
+
+
+void tst_QProperty::qobjectBindableManualNotify()
+{
+    // Given an object of type MyQObject,
+    MyQObject object;
+    // track its foo property's change count
+    auto bindable = object.bindableFoo();
+    int fooChangeCount = 0;
+    auto changeHandler = bindable.onValueChanged([&](){++fooChangeCount;});
+    // and how many changed signals it emits.
+    QSignalSpy fooChangedSpy(&object, &MyQObject::fooChanged);
+
+    // If we bypass the bindings system,
+    object.fooData.setValueBypassingBindings(42);
+    // there is no change.
+    QCOMPARE(fooChangeCount, 0);
+    QCOMPARE(fooChangedSpy.count(), 0);
+    // Once we notify manually
+    object.fooData.notify();
+    // observers are notified and the signal arrives.
+    QCOMPARE(fooChangeCount, 1);
+    QCOMPARE(fooChangedSpy.count(), 1);
+
+    // If we set a binding
+    int i = 1;
+    object.fooData.setBinding([&](){return i;});
+    // then the value changes
+    QCOMPARE(object.foo(), 1);
+    // and the change and signal count are incremented.
+    QCOMPARE(fooChangeCount, 2);
+    QCOMPARE(fooChangedSpy.count(), 2);
+    // Changing a non-property won't trigger any notification.
+    i = 2;
+    QCOMPARE(fooChangeCount, 2);
+    QCOMPARE(fooChangedSpy.count(), 2);
+    // Manually triggering the notification
+    object.fooData.notify();
+    // increments the change count
+    QCOMPARE(fooChangeCount, 3);
+    QCOMPARE(fooChangedSpy.count(), 3);
+    // but doesn't actually cause a binding reevaluation.
+    QCOMPARE(object.foo(), 1);
+}
 
 void tst_QProperty::testNewStuff()
 {

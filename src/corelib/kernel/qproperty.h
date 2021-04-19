@@ -962,6 +962,11 @@ public:
         notify(bd);
     }
 
+    void notify() {
+        auto *bd = qGetBindingStorage(owner())->bindingData(this);
+        notify(bd);
+    }
+
     void setValue(rvalue_ref t)
     {
         auto *bd = qGetBindingStorage(owner())->bindingData(this);
