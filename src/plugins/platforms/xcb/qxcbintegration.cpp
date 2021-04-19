@@ -274,6 +274,7 @@ QPlatformOpenGLContext *QXcbIntegration::createPlatformOpenGLContext(QOpenGLCont
     return glIntegration->createPlatformOpenGLContext(context);
 }
 
+# if QT_CONFIG(xcb_glx_plugin)
 QOpenGLContext *QXcbIntegration::createOpenGLContext(GLXContext context, void *visualInfo, QOpenGLContext *shareContext) const
 {
     using namespace QNativeInterface::Private;
@@ -282,6 +283,7 @@ QOpenGLContext *QXcbIntegration::createOpenGLContext(GLXContext context, void *v
     else
         return nullptr;
 }
+# endif
 
 #if QT_CONFIG(egl)
 QOpenGLContext *QXcbIntegration::createOpenGLContext(EGLContext context, EGLDisplay display, QOpenGLContext *shareContext) const
