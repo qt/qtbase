@@ -580,14 +580,14 @@ static QList<QTimeZonePrivate::Data> calculatePosixTransitions(const QByteArray 
         }
     }
 
-    // If only the name part then no transitions
-    if (parts.count() == 1) {
+    // If only the name part, or no DST specified, then no transitions
+    if (parts.count() == 1 || !dstZone.hasValidOffset()) {
         QTimeZonePrivate::Data data;
         data.atMSecsSinceEpoch = lastTranMSecs;
         data.offsetFromUtc = stdZone.offset;
         data.standardTimeOffset = stdZone.offset;
         data.daylightTimeOffset = 0;
-        data.abbreviation = stdZone.name;
+        data.abbreviation = stdZone.name.isEmpty() ? QString::fromUtf8(parts.at(0)) : stdZone.name;
         result << data;
         return result;
     }
