@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2017 Pier Luigi Fiorini <pierluigi.fiorini@gmail.com>
+** Copyright (C) 2021 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Giuseppe D'Angelo <giuseppe.dangelo@kdab.com>
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -56,16 +57,16 @@
 //
 
 #include <QtGui/qtguiglobal.h>
+#include <QtCore/qlist.h>
+#include <QtCore/qpoint.h>
+#include <QtCore/qsize.h>
 #include <QtCore/qstring.h>
-#include <QtCore/qmap.h>
 
 QT_BEGIN_NAMESPACE
 
 class Q_GUI_EXPORT QEdidParser
 {
 public:
-    QEdidParser();
-
     bool parse(const QByteArray &blob);
 
     QString identifier;
@@ -83,8 +84,6 @@ public:
     bool useTables;
 
 private:
-    QMap<QString, QString> m_vendorCache;
-
     QString parseEdidString(const quint8 *data);
 };
 

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2017 Pier Luigi Fiorini <pierluigi.fiorini@gmail.com>
+** Copyright (C) 2021 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Giuseppe D'Angelo <giuseppe.dangelo@kdab.com>
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -38,6 +39,7 @@
 ****************************************************************************/
 
 #include <QtCore/QFile>
+#include <QtCore/QByteArrayView>
 
 #include "qedidparser_p.h"
 #include "qedidvendortable_p.h"
@@ -58,31 +60,46 @@
 
 QT_BEGIN_NAMESPACE
 
-QEdidParser::QEdidParser()
+static QString lookupVendorIdInSystemDatabase(QByteArrayView id)
 {
-    // Cache vendors list from pnp.ids
+    QString result;
+
     const QString fileName = QLatin1String("/usr/share/hwdata/pnp.ids");
-    if (QFile::exists(fileName)) {
-        QFile file(fileName);
+    QFile file(fileName);
+    if (!file.open(QFile::ReadOnly))
+        return result;
 
-        if (file.open(QFile::ReadOnly)) {
-            while (!file.atEnd()) {
-                QString line = QString::fromUtf8(file.readLine()).trimmed();
+    // On Ubuntu 20.04 the longest line in the file is 85 bytes, so this
+    // leaves plenty of room...
+    constexpr int MaxLineSize = 512;
+    char buf[MaxLineSize];
 
-                if (line.startsWith(QLatin1Char('#')))
-                    continue;
+    while (!file.atEnd()) {
+        auto read = file.readLine(buf, MaxLineSize);
+        if (read < 0 || read == MaxLineSize) // read error
+            break;
 
-                QStringList parts = line.split(QLatin1Char('\t'));
-                if (parts.count() > 1) {
-                    QString pnpId = parts.at(0);
-                    parts.removeFirst();
-                    m_vendorCache[pnpId] = parts.join(QLatin1Char(' '));
-                }
-            }
+        QByteArrayView line(buf, read - 1); // -1 to remove the trailing newline
+        if (line.isEmpty())
+            continue;
 
-            file.close();
+        if (line.startsWith('#'))
+            continue;
+
+        auto tabPosition = line.indexOf('\t');
+        if (tabPosition <= 0) // no vendor id
+            continue;
+        if (tabPosition + 1 == line.size()) // no vendor name
+            continue;
+
+        if (line.first(tabPosition) == id) {
+            auto vendor = line.sliced(tabPosition + 1);
+            result = QString::fromUtf8(vendor.data(), vendor.size());
+            break;
         }
     }
+
+    return result;
 }
 
 bool QEdidParser::parse(const QByteArray &blob)
@@ -105,7 +122,6 @@ bool QEdidParser::parse(const QByteArray &blob)
     pnpId[0] = 'A' + ((data[EDID_OFFSET_PNP_ID] & 0x7c) / 4) - 1;
     pnpId[1] = 'A' + ((data[EDID_OFFSET_PNP_ID] & 0x3) * 8) + ((data[EDID_OFFSET_PNP_ID + 1] & 0xe0) / 32) - 1;
     pnpId[2] = 'A' + (data[EDID_OFFSET_PNP_ID + 1] & 0x1f) - 1;
-    QString pnpIdString = QString::fromLatin1(pnpId, 3);
 
     // Clear manufacturer
     manufacturer = QString();
@@ -137,20 +153,29 @@ bool QEdidParser::parse(const QByteArray &blob)
     }
 
     // Try to use cache first because it is potentially more updated
-    manufacturer = m_vendorCache.value(pnpIdString);
+    manufacturer = lookupVendorIdInSystemDatabase(pnpId);
+
     if (manufacturer.isEmpty()) {
         // Find the manufacturer from the vendor lookup table
-        for (const auto &vendor : q_edidVendorTable) {
-            if (strncmp(vendor.id, pnpId, 3) == 0) {
-                manufacturer = QString::fromUtf8(vendor.name);
-                break;
-            }
-        }
+        const auto compareVendorId = [](const VendorTable &vendor, const char *str)
+        {
+            return strncmp(vendor.id, str, 3) < 0;
+        };
+
+        const auto b = std::begin(q_edidVendorTable);
+        const auto e = std::end(q_edidVendorTable);
+        auto it = std::lower_bound(b,
+                                   e,
+                                   pnpId,
+                                   compareVendorId);
+
+        if (it != e && strncmp(it->id, pnpId, 3) == 0)
+            manufacturer = QString::fromUtf8(it->name);
     }
 
     // If we don't know the manufacturer, fallback to PNP ID
     if (manufacturer.isEmpty())
-        manufacturer = pnpIdString;
+        manufacturer = QString::fromUtf8(pnpId, std::size(pnpId));
 
     // Physical size
     physicalSize = QSizeF(data[EDID_PHYSICAL_WIDTH], data[EDID_OFFSET_PHYSICAL_HEIGHT]) * 10;
