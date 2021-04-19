@@ -1748,7 +1748,7 @@ QDateTimeParser::findTimeZoneName(QStringView str, const QDateTime &when) const
     Q_ASSERT(index <= str.size());
     while (lastSlash < index) {
         int slash = str.indexOf(QLatin1Char('/'), lastSlash + 1);
-        if (slash < 0)
+        if (slash < 0 || slash > index)
             slash = index; // i.e. the end of the candidate text
         else if (++count > 5)
             index = slash; // Truncate
