@@ -508,6 +508,8 @@ void QPointingDevicePrivate::setExclusiveGrabber(const QPointerEvent *event, con
     QMutableEventPoint::from(persistentPoint->eventPoint).setGlobalGrabPosition(point.globalPosition());
     if (exclusiveGrabber)
         emit q->grabChanged(exclusiveGrabber, QPointingDevice::GrabExclusive, event, point);
+    else
+        persistentPoint->exclusiveGrabberContext.clear();
 }
 
 /*!
@@ -540,7 +542,7 @@ bool QPointingDevicePrivate::addPassiveGrabber(const QPointerEvent *event, const
         qCDebug(lcPointerGrab) << name << "point" << point.id() << point.state()
                                << ": grab (passive)" << grabber;
     }
-    persistentPoint->passiveGrabbers << grabber;
+    persistentPoint->passiveGrabbers.insert(grabber, {});
     emit q->grabChanged(grabber, QPointingDevice::GrabPassive, event, point);
     return true;
 }
@@ -553,14 +555,14 @@ bool QPointingDevicePrivate::removePassiveGrabber(const QPointerEvent *event, co
         qWarning() << "point is not in activePoints" << point;
         return false;
     }
-    int i = persistentPoint->passiveGrabbers.indexOf(grabber);
-    if (i >= 0) {
+    auto pgit = persistentPoint->passiveGrabbers.find(grabber);
+    if (pgit != persistentPoint->passiveGrabbers.end()) {
         if (Q_UNLIKELY(lcPointerGrab().isDebugEnabled())) {
             qCDebug(lcPointerGrab) << name << "point" << point.id() << point.state()
                                    << ": removing passive grabber" << grabber;
         }
         emit q->grabChanged(grabber, QPointingDevice::UngrabPassive, event, point);
-        persistentPoint->passiveGrabbers.removeAt(i);
+        persistentPoint->passiveGrabbers.erase(pgit);
         return true;
     }
     return false;
@@ -578,9 +580,9 @@ void QPointingDevicePrivate::clearPassiveGrabbers(const QPointerEvent *event, co
         return;
     if (Q_UNLIKELY(lcPointerGrab().isDebugEnabled())) {
         qCDebug(lcPointerGrab) << name << "point" << point.id() << point.state()
-                               << ": clearing" << persistentPoint->passiveGrabbers;
+                               << ": clearing" << persistentPoint->passiveGrabbers.keys();
     }
-    for (auto g : persistentPoint->passiveGrabbers)
+    for (auto g : persistentPoint->passiveGrabbers.keys())
         emit q->grabChanged(g, QPointingDevice::UngrabPassive, event, point);
     persistentPoint->passiveGrabbers.clear();
 }
@@ -606,15 +608,16 @@ void QPointingDevicePrivate::removeGrabber(QObject *grabber, bool cancel)
                                    << "@" << epd.eventPoint.scenePosition()
                                    << ": grab" << grabber << "-> nullptr";
             epd.exclusiveGrabber.clear();
+            epd.exclusiveGrabberContext.clear();
             emit q->grabChanged(grabber,
                                 cancel ? QPointingDevice::CancelGrabExclusive : QPointingDevice::UngrabExclusive,
                                 nullptr, epd.eventPoint);
         }
-        int pi = epd.passiveGrabbers.indexOf(grabber);
-        if (pi >= 0) {
+        auto pgit = epd.passiveGrabbers.find(grabber);
+        if (pgit != epd.passiveGrabbers.end()) {
             qCDebug(lcPointerGrab) << name << "point" << epd.eventPoint.id() << epd.eventPoint.state()
                                    << ": removing passive grabber" << grabber;
-            epd.passiveGrabbers.removeAt(pi);
+            epd.passiveGrabbers.erase(pgit);
             emit q->grabChanged(grabber,
                                 cancel ? QPointingDevice::CancelGrabPassive : QPointingDevice::UngrabPassive,
                                 nullptr, epd.eventPoint);

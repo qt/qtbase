@@ -85,10 +85,12 @@ public:
     /*! \internal
         This struct (stored in activePoints) holds persistent state between event deliveries.
     */
+    using PassiveGrabbersMap = QFlatMap<QPointer<QObject>, QPointer<QObject>>;
     struct EventPointData {
         QEventPoint eventPoint;
         QPointer<QObject> exclusiveGrabber;
-        QList<QPointer <QObject> > passiveGrabbers;
+        QPointer<QObject> exclusiveGrabberContext;  // extra info about where the grab happened
+        PassiveGrabbersMap passiveGrabbers;         // key: passive grabber; value: context (where the grab happened)
     };
     EventPointData *queryPointById(int id) const;
     EventPointData *pointById(int id) const;
