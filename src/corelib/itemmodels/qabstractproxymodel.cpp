@@ -474,6 +474,25 @@ QHash<int,QByteArray> QAbstractProxyModel::roleNames() const
   return d->model->roleNames();
 }
 
+/*!
+    Equivalent to calling createIndex on the source model.
+
+    This method is useful if your proxy model wants to maintain the
+    parent-child relationship of items in the source model.
+    When reimplementing mapToSource(), you can call this method to
+    create an index of the source model.
+    A typical use would be to save the internal pointer coming from the source model
+    in the proxy index when reimplementing mapFromSource() and use the same internal
+    pointer as \a internalPtr to recover the original source index when
+    reimplementing mapToSource().
+    \since 6.2
+ */
+QModelIndex QAbstractProxyModel::createSourceIndex(int row, int col, void *internalPtr) const
+{
+    if (sourceModel())
+        return sourceModel()->createIndex(row, col, internalPtr);
+    return QModelIndex();
+}
 
 QT_END_NAMESPACE
 

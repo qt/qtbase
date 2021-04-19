@@ -49,9 +49,8 @@ QModelIndex QTransposeProxyModelPrivate::uncheckedMapToSource(const QModelIndex 
 {
     if (!model || !proxyIndex.isValid())
         return QModelIndex();
-    if (proxyIndex.internalPointer())
-        return model->createIndex(proxyIndex.column(), proxyIndex.row(), proxyIndex.internalPointer());
-    return model->index(proxyIndex.column(), proxyIndex.row());
+    Q_Q(const QTransposeProxyModel);
+    return q->createSourceIndex(proxyIndex.column(), proxyIndex.row(), proxyIndex.internalPointer());
 }
 
 QModelIndex QTransposeProxyModelPrivate::uncheckedMapFromSource(const QModelIndex &sourceIndex) const

@@ -102,6 +102,7 @@ Q_SIGNALS:
     void sourceModelChanged(QPrivateSignal);
 
 protected:
+    QModelIndex createSourceIndex(int row, int col, void *internalPtr) const;
     QAbstractProxyModel(QAbstractProxyModelPrivate &, QObject *parent);
 
 private:

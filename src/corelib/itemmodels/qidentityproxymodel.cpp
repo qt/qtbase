@@ -257,7 +257,7 @@ QModelIndex QIdentityProxyModel::mapToSource(const QModelIndex& proxyIndex) cons
     if (!d->model || !proxyIndex.isValid())
         return QModelIndex();
     Q_ASSERT(proxyIndex.model() == this);
-    return d->model->createIndex(proxyIndex.row(), proxyIndex.column(), proxyIndex.internalPointer());
+    return createSourceIndex(proxyIndex.row(), proxyIndex.column(), proxyIndex.internalPointer());
 }
 
 /*!
