@@ -139,6 +139,11 @@ static QPalette *qt_mac_createSystemPalette()
 
     palette->setColor(QPalette::Normal, QPalette::Link, qt_mac_toQColor([NSColor linkColor]));
 
+    qc = qt_mac_toQColor([NSColor placeholderTextColor]);
+    palette->setColor(QPalette::Active, QPalette::PlaceholderText, qc);
+    palette->setColor(QPalette::Inactive, QPalette::PlaceholderText, qc);
+    palette->setColor(QPalette::Disabled, QPalette::PlaceholderText, qc);
+
     return palette;
 }
 
