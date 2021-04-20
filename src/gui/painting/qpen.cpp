@@ -909,9 +909,9 @@ QDataStream &operator<<(QDataStream &s, const QPen &p)
     if (s.version() < 3) {
         s << (quint8)p.style();
     } else if (s.version() < QDataStream::Qt_4_3) {
-        s << (quint8)(p.style() | p.capStyle() | p.joinStyle());
+        s << (quint8)(uint(p.style()) | uint(p.capStyle()) | uint(p.joinStyle()));
     } else {
-        s << (quint16)(p.style() | p.capStyle() | p.joinStyle());
+        s << (quint16)(uint(p.style()) | uint(p.capStyle()) | uint(p.joinStyle()));
         s << (bool)(dd->cosmetic);
     }
 
