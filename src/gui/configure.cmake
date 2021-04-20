@@ -1266,7 +1266,6 @@ qt_configure_add_summary_entry(ARGS "qqnx_imf")
 qt_configure_end_summary_section() # end of "QNX" section
 qt_configure_add_summary_section(NAME "XCB")
 qt_configure_add_summary_entry(ARGS "system-xcb-xinput")
-qt_configure_add_summary_entry(ARGS "xcb-native-painting")
 qt_configure_add_summary_section(NAME "GL integrations")
 qt_configure_add_summary_entry(ARGS "xcb-glx-plugin")
 qt_configure_add_summary_entry(ARGS "xcb-glx")
