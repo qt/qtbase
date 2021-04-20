@@ -57,6 +57,10 @@
 #elif defined(Q_OS_LINUX) && (defined(Q_PROCESSOR_ARM) || defined(Q_PROCESSOR_MIPS_32))
 #include "private/qcore_unix_p.h"
 
+#if QT_CONFIG(getauxval)
+#  include <sys/auxv.h>
+#endif
+
 // the kernel header definitions for HWCAP_*
 // (the ones we need/may need anyway)
 
@@ -134,54 +138,32 @@ static inline quint64 detectProcessorFeatures()
 {
     quint64 features = 0;
 
-#if defined(Q_OS_LINUX)
-#  if defined(Q_PROCESSOR_ARM_V8) && defined(Q_PROCESSOR_ARM_64)
-    features |= CpuFeatureNEON; // NEON is always available on ARMv8 64bit.
+#if QT_CONFIG(getauxval)
+    unsigned long auxvHwCap = getauxval(AT_HWCAP);
+    if (auxvHwCap != 0) {
+#  if defined(Q_PROCESSOR_ARM_64)
+        // For Aarch64:
+        features |= CpuFeatureNEON; // NEON is always available
+        if (auxvHwCap & HWCAP_CRC32)
+            features |= CpuFeatureCRC32;
+        if (auxvHwCap & HWCAP_AES)
+            features |= CpuFeatureAES;
+#  else
+        // For ARM32:
+        if (auxvHwCap & HWCAP_NEON)
+            features |= CpuFeatureNEON;
+        auxvHwCap = getauxval(AT_HWCAP2);
+        if (auxvHwCap & HWCAP2_CRC32)
+            features |= CpuFeatureCRC32;
+        if (auxvHwCap & HWCAP2_AES)
+            features |= CpuFeatureAES;
 #  endif
-    int auxv = qt_safe_open("/proc/self/auxv", O_RDONLY);
-    if (auxv != -1) {
-        unsigned long vector[64];
-        int nread;
-        while (features == 0) {
-            nread = qt_safe_read(auxv, (char *)vector, sizeof vector);
-            if (nread <= 0) {
-                // EOF or error
-                break;
-            }
-
-            int max = nread / (sizeof vector[0]);
-            for (int i = 0; i < max; i += 2) {
-                if (vector[i] == AT_HWCAP) {
-#  if defined(Q_PROCESSOR_ARM_V8) && defined(Q_PROCESSOR_ARM_64)
-                    // For Aarch64:
-                    if (vector[i+1] & HWCAP_CRC32)
-                        features |= CpuFeatureCRC32;
-                    if (vector[i+1] & HWCAP_AES)
-                        features |= CpuFeatureAES;
-#  endif
-                    // Aarch32, or ARMv7 or before:
-                    if (vector[i+1] & HWCAP_NEON)
-                        features |= CpuFeatureNEON;
-                }
-#  if defined(Q_PROCESSOR_ARM_32)
-                // For Aarch32:
-                if (vector[i] == AT_HWCAP2) {
-                    if (vector[i+1] & HWCAP2_CRC32)
-                        features |= CpuFeatureCRC32;
-                    if (vector[i+1] & HWCAP2_AES)
-                        features |= CpuFeatureAES;
-                }
-#  endif
-            }
-        }
-
-        qt_safe_close(auxv);
         return features;
     }
-    // fall back if /proc/self/auxv wasn't found
-#endif
+    // fall back to compile-time flags if getauxval failed
+#endif // QT_CONFIG(getauxval)
 
-#if defined(__ARM_NEON__)
+#if defined(__ARM_NEON__) || defined(__ARM_NEON)
     features |= CpuFeatureNEON;
 #endif
 #if defined(__ARM_FEATURE_CRC32)
