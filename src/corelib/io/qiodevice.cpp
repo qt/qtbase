@@ -527,7 +527,7 @@ bool QIODevice::isSequential() const
 
     \sa OpenMode
 */
-QIODevice::OpenMode QIODevice::openMode() const
+QIODeviceBase::OpenMode QIODevice::openMode() const
 {
     return d_func()->openMode;
 }
@@ -539,7 +539,7 @@ QIODevice::OpenMode QIODevice::openMode() const
 
     \sa openMode(), OpenMode
 */
-void QIODevice::setOpenMode(OpenMode openMode)
+void QIODevice::setOpenMode(QIODeviceBase::OpenMode openMode)
 {
     Q_D(QIODevice);
 #if defined QIODEVICE_DEBUG
@@ -589,7 +589,7 @@ bool QIODevice::isTextModeEnabled() const
     default, this function returns \c false if openMode() returns
     \c NotOpen.
 
-    \sa openMode(), OpenMode
+    \sa openMode(), QIODeviceBase::OpenMode
 */
 bool QIODevice::isOpen() const
 {
@@ -774,9 +774,9 @@ bool QIODevicePrivate::allWriteBuffersEmpty() const
     otherwise returns \c false. This function should be called from any
     reimplementations of open() or other functions that open the device.
 
-    \sa openMode(), OpenMode
+    \sa openMode(), QIODeviceBase::OpenMode
 */
-bool QIODevice::open(OpenMode mode)
+bool QIODevice::open(QIODeviceBase::OpenMode mode)
 {
     Q_D(QIODevice);
     d->openMode = mode;
@@ -797,7 +797,7 @@ bool QIODevice::open(OpenMode mode)
     First emits aboutToClose(), then closes the device and sets its
     OpenMode to NotOpen. The error string is also reset.
 
-    \sa setOpenMode(), OpenMode
+    \sa setOpenMode(), QIODeviceBase::OpenMode
 */
 void QIODevice::close()
 {
