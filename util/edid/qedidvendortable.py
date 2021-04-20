@@ -98,12 +98,12 @@ header = """
 
 QT_BEGIN_NAMESPACE
 
-typedef struct VendorTable {
+struct VendorTable {
     const char id[4];
     const char name[%d];
-} VendorTable;
+};
 
-static const struct VendorTable q_edidVendorTable[] = {"""
+static const VendorTable q_edidVendorTable[] = {"""
 
 footer = """};
 

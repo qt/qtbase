@@ -60,10 +60,10 @@
 
 QT_BEGIN_NAMESPACE
 
-typedef struct VendorTable {
+struct VendorTable {
     const char id[4];
     const char name[78];
-} VendorTable;
+};
 
 static const struct VendorTable q_edidVendorTable[] = {
     { "AAA", "Avolites Ltd" },
