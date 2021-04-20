@@ -245,8 +245,6 @@ qt_internal_add_module(Gui
         util/qabstractlayoutstyleinfo.cpp util/qabstractlayoutstyleinfo_p.h
         util/qastchandler.cpp util/qastchandler_p.h
         util/qdesktopservices.cpp util/qdesktopservices.h
-        util/qedidparser.cpp util/qedidparser_p.h
-        util/qedidvendortable_p.h
         util/qgridlayoutengine.cpp util/qgridlayoutengine_p.h
         util/qhexstring_p.h
         util/qktxhandler.cpp util/qktxhandler_p.h
@@ -1023,6 +1021,12 @@ qt_internal_extend_target(Gui # special case CONDITION NOT GCC OR NOT QT_COMPILE
         painting/qdrawhelper.cpp
     NO_PCH_SOURCES
         "painting/qdrawhelper.cpp"
+)
+
+qt_internal_extend_target(Gui CONDITION (QT_FEATURE_eglfs OR QT_FEATURE_xcb)
+    SOURCES
+        util/qedidparser.cpp util/qedidparser_p.h
+        util/qedidvendortable_p.h
 )
 
 
