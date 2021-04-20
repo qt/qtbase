@@ -151,6 +151,7 @@ if(WIN32)
     target_compile_definitions(PlatformCommonInternal INTERFACE "UNICODE;_UNICODE")
     if(MSVC)
         target_compile_definitions(PlatformCommonInternal INTERFACE
+            "_CRT_SECURE_NO_WARNINGS"
             "$<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,SHARED_LIBRARY>:_WINDLL>"
         )
     endif()
