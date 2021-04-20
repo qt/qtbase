@@ -78,7 +78,7 @@ public:
 #endif
     virtual ~QIODevice();
 
-    OpenMode openMode() const;
+    QIODeviceBase::OpenMode openMode() const;
 
     void setTextModeEnabled(bool enabled);
     bool isTextModeEnabled() const;
@@ -95,7 +95,7 @@ public:
     int currentWriteChannel() const;
     void setCurrentWriteChannel(int channel);
 
-    virtual bool open(OpenMode mode);
+    virtual bool open(QIODeviceBase::OpenMode mode);
     virtual void close();
 
     // ### Qt 7 - QTBUG-76492: pos() and seek() should not be virtual, and
@@ -159,7 +159,7 @@ protected:
     virtual qint64 skipData(qint64 maxSize);
     virtual qint64 writeData(const char *data, qint64 len) = 0;
 
-    void setOpenMode(OpenMode openMode);
+    void setOpenMode(QIODeviceBase::OpenMode openMode);
 
     void setErrorString(const QString &errorString);
 
