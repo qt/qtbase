@@ -193,14 +193,56 @@ function(qt_internal_add_executable name)
             ${extra_libraries}
             Qt::PlatformCommonInternal
         )
-        list(REMOVE_DUPLICATES libs)
+
+        set(deduped_libs "")
         foreach(lib IN LISTS libs)
             if(NOT TARGET "${lib}")
                 continue()
             endif()
+
+            # Normalize module by stripping any leading "Qt::", because properties are set on the
+            # versioned target (either Gui when building the module, or Qt6::Gui when it's
+            # imported).
+            if(lib MATCHES "Qt::([-_A-Za-z0-9]+)")
+                set(new_lib "${QT_CMAKE_EXPORT_NAMESPACE}::${CMAKE_MATCH_1}")
+                if(TARGET "${new_lib}")
+                    set(lib "${new_lib}")
+                endif()
+            endif()
+
+            # Unalias the target.
+            get_target_property(aliased_target ${lib} ALIASED_TARGET)
+            if(aliased_target)
+                set(lib ${aliased_target})
+            endif()
+
+            list(APPEND deduped_libs "${lib}")
+        endforeach()
+
+        list(REMOVE_DUPLICATES deduped_libs)
+
+        foreach(lib IN LISTS deduped_libs)
             string(MAKE_C_IDENTIFIER "${name}_plugin_imports_${lib}" out_file)
             string(APPEND out_file .cpp)
-            set(class_names "$<GENEX_EVAL:$<TARGET_PROPERTY:${lib},_qt_repo_plugin_class_names>>")
+
+            # Initialize plugins that are built in the same repository as the Qt module 'lib'.
+            set(class_names_regular
+                "$<GENEX_EVAL:$<TARGET_PROPERTY:${lib},_qt_initial_repo_plugin_class_names>>")
+
+            # Initialize plugins that are built in the current Qt repository, but are associated
+            # with a Qt module from a different repository (qtsvg's QSvgPlugin associated with
+            # qtbase's QtGui).
+            string(MAKE_C_IDENTIFIER "${PROJECT_NAME}" current_project_name)
+            set(prop_prefix "_qt_repo_${current_project_name}")
+            set(class_names_current_project
+                "$<GENEX_EVAL:$<TARGET_PROPERTY:${lib},${prop_prefix}_plugin_class_names>>")
+
+            # Only add separator if first list is not empty, so we don't trigger the file generation
+            # when all lists are empty.
+            set(class_names_separator "$<$<NOT:$<STREQUAL:${class_names_regular},>>:;>" )
+            set(class_names
+                "${class_names_regular}${class_names_separator}${class_names_current_project}")
+
             file(GENERATE OUTPUT ${out_file} CONTENT
 "// This file is auto-generated. Do not edit.
 #include <QtPlugin>
@@ -212,7 +254,9 @@ Q_IMPORT_PLUGIN($<JOIN:${class_names},)\nQ_IMPORT_PLUGIN(>)
             target_sources(${name} PRIVATE
                 "$<$<NOT:$<STREQUAL:${class_names},>>:${out_file}>"
             )
-            target_link_libraries(${name} PRIVATE "$<TARGET_PROPERTY:${lib},_qt_repo_plugins>")
+            target_link_libraries(${name} PRIVATE
+                "$<TARGET_PROPERTY:${lib},_qt_initial_repo_plugins>"
+                "$<TARGET_PROPERTY:${lib},${prop_prefix}_plugins>")
         endforeach()
     endif()
 endfunction()

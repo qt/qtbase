@@ -176,30 +176,69 @@ function(qt_internal_add_plugin target)
         endif()
         get_target_property(is_imported_qt_module ${qt_module_target} IMPORTED)
 
+        # Associate plugin with its Qt module when both are both built in the same repository.
+        # Check that by comparing the PROJECT_NAME of each.
+        # This covers auto-linking of the majority of plugins to executables and in-tree tests.
+        # Linking of plugins in standalone tests (when the Qt module will be an imported target)
+        # is handled instead by the complicated genex logic in QtModulePlugins.cmake.in.
+        set(is_plugin_and_module_in_same_project FALSE)
         if(NOT is_imported_qt_module)
+            # This QT_PLUGINS assignment is only used by QtPostProcessHelpers to decide if a
+            # QtModulePlugins.cmake file should be generated (which only happens in static builds).
             set_property(TARGET "${qt_module_target}" APPEND PROPERTY QT_PLUGINS "${target}")
+
             get_target_property(module_source_dir ${qt_module_target} SOURCE_DIR)
             get_directory_property(module_project_name
                 DIRECTORY ${module_source_dir}
                 DEFINITION PROJECT_NAME
             )
+            if(module_project_name STREQUAL PROJECT_NAME)
+                set(is_plugin_and_module_in_same_project TRUE)
+            endif()
 
             # When linking static plugins with the special logic in qt_internal_add_executable,
             # make sure to skip non-default plugins.
-            if(module_project_name STREQUAL PROJECT_NAME AND _default_plugin)
-                set_property(TARGET ${qt_module_target} APPEND PROPERTY _qt_repo_plugins "${target}")
-                set_property(TARGET ${qt_module_target} APPEND PROPERTY _qt_repo_plugin_class_names
-                    "$<TARGET_PROPERTY:${target},QT_PLUGIN_CLASS_NAME>"
-            )
+            if(is_plugin_and_module_in_same_project AND _default_plugin)
+                set_property(TARGET ${qt_module_target} APPEND PROPERTY
+                             _qt_initial_repo_plugins
+                             "${target}")
+                set_property(TARGET ${qt_module_target} APPEND PROPERTY
+                             _qt_initial_repo_plugin_class_names
+                             "$<TARGET_PROPERTY:${target},QT_PLUGIN_CLASS_NAME>"
+                )
             endif()
-        else()
-            # TODO: If a repo A provides an internal executable E and a plugin P, with the plugin
-            # type belonging to a Qt module defined in a different repo, and executable E needs to
-            # link to plugin P in a static build, currently that won't happen. The executable E
-            # will link to plugins mentioned in the Qt module's _qt_repo_plugins property, but that
-            # property will not list P because the Qt module will be an imported target and won't
-            # have a SOURCE_DIR or PROJECT NAME, so the checks above will not be met.
-            # Figure out how to handle such a scenario.
+        endif()
+
+        # Associate plugin with its Qt module when the plugin is built in the current repository
+        # but the module is built in a different repository (qtsvg's QSvgPlugin associated with
+        # qtbase's QtGui).
+        # The association is done in a separate property, to ensure that reconfiguring in-tree tests
+        # in qtbase doesn't accidentally cause linking to a plugin from a previously built qtsvg.
+        # Needed for in-tree tests like in qtsvg, qtimageformats.
+        # This is done for each Qt module regardless if it's an imported target or not, to handle
+        # both per-repo and top-level builds (in per-repo build of qtsvg QtGui is imported, in a
+        # top-level build Gui is not imported, but in both cases qtsvg tests need to link to
+        # QSvgPlugin).
+        #
+        # TODO: Top-level in-tree tests and qdeclarative per-repo in-tree tests that depend on
+        #       static Qml plugins won't work due to the requirement of running qmlimportscanner
+        #       at configure time, but qmlimportscanner is not built at that point. Moving the
+        #       execution of qmlimportscanner to build time is non-trivial because qmlimportscanner
+        #       not only generates a cpp file to compile but also outputs a list of static plugins
+        #       that should be linked and there is no straightforward way to tell CMake to link
+        #       against a list of libraries that was discovered at build time (apart from
+        #       response files, which apparently might not work on all platforms).
+        #       qmake doesn't have this problem because each project is configured separately so
+        #       qmlimportscanner is always built by the time it needs to be run for a test.
+        if(NOT is_plugin_and_module_in_same_project AND _default_plugin)
+            string(MAKE_C_IDENTIFIER "${PROJECT_NAME}" current_project_name)
+            set(prop_prefix "_qt_repo_${current_project_name}")
+            set_property(TARGET ${qt_module_target} APPEND PROPERTY
+                         ${prop_prefix}_plugins "${target}")
+            set_property(TARGET ${qt_module_target} APPEND PROPERTY
+                         ${prop_prefix}_plugin_class_names
+                "$<TARGET_PROPERTY:${target},QT_PLUGIN_CLASS_NAME>"
+            )
         endif()
     endif()
 
