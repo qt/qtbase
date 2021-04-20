@@ -1506,6 +1506,15 @@ bool updateAndroidManifest(Options &options)
                            reader.attributes().hasAttribute(QLatin1String("android:label")) &&
                            reader.attributes().value(QLatin1String("android:label")) == QLatin1String("@string/app_name")) {
                     checkOldAndroidLabelString = true;
+                } else if (reader.name() == QLatin1String("meta-data")) {
+                    const auto name = reader.attributes().value(QLatin1String("android:name"));
+                    const auto value = reader.attributes().value(QLatin1String("android:value"));
+                    if (name == QLatin1String("android.app.lib_name")
+                            && value.contains(QLatin1Char(' '))) {
+                        fprintf(stderr, "The Activity's android.app.lib_name should not contain"
+                                        " spaces.\n");
+                        return false;
+                    }
                 }
             }
         }
