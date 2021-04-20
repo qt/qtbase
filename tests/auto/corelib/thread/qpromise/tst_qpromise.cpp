@@ -78,21 +78,21 @@ private slots:
 struct TrivialType { int field = 0; };
 struct CopyOnlyType {
     Q_DISABLE_MOVE(CopyOnlyType)
-    CopyOnlyType() = default;
+    constexpr CopyOnlyType(int field = 0) noexcept : field(field) {}
     CopyOnlyType(const CopyOnlyType &) = default;
     CopyOnlyType& operator=(const CopyOnlyType &) = default;
     ~CopyOnlyType() = default;
 
-    int field = 0;
+    int field;
 };
 struct MoveOnlyType {
     Q_DISABLE_COPY(MoveOnlyType)
-    MoveOnlyType() = default;
+    constexpr MoveOnlyType(int field = 0) noexcept : field(field) {}
     MoveOnlyType(MoveOnlyType &&) = default;
     MoveOnlyType& operator=(MoveOnlyType &&) = default;
     ~MoveOnlyType() = default;
 
-    int field = 0;
+    int field;
 };
 bool operator==(const CopyOnlyType &a, const CopyOnlyType &b) { return a.field == b.field; }
 bool operator==(const MoveOnlyType &a, const MoveOnlyType &b) { return a.field == b.field; }
