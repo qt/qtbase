@@ -2629,7 +2629,7 @@ static inline bool millisInSystemRange(qint64 millis, qint64 slack = 0)
     return millis <= msecsMax + slack;
 #else
     if constexpr (std::numeric_limits<qint64>::max() / MSECS_PER_SEC > TIME_T_MAX) {
-        const qint64 msecsMax = TIME_T_MAX * MSECS_PER_SEC;
+        const qint64 msecsMax = quint64(TIME_T_MAX) * MSECS_PER_SEC;
         return millis <= msecsMax + slack;
     } else {
         return true;
