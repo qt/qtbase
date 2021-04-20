@@ -884,6 +884,7 @@ class QObjectBindableProperty : public QPropertyData<T>
 {
     using ThisType = QObjectBindableProperty<Class, T, Offset, Signal>;
     static bool constexpr HasSignal = !std::is_same_v<decltype(Signal), std::nullptr_t>;
+    using SignalTakesValue = std::is_invocable<decltype(Signal), Class, T>;
     Class *owner()
     {
         char *that = reinterpret_cast<char *>(this);
@@ -897,8 +898,12 @@ class QObjectBindableProperty : public QPropertyData<T>
     static void signalCallBack(QUntypedPropertyData *o)
     {
         QObjectBindableProperty *that = static_cast<QObjectBindableProperty *>(o);
-        if constexpr (HasSignal)
-            (that->owner()->*Signal)();
+        if constexpr (HasSignal) {
+            if constexpr (SignalTakesValue::value)
+                (that->owner()->*Signal)(that->valueBypassingBindings());
+            else
+                (that->owner()->*Signal)();
+        }
     }
 public:
     using value_type = typename QPropertyData<T>::value_type;
@@ -1060,8 +1065,12 @@ private:
     {
         if (binding)
             binding->notifyObservers(this);
-        if constexpr (HasSignal)
-            (owner()->*Signal)();
+        if constexpr (HasSignal) {
+            if constexpr (SignalTakesValue::value)
+                (owner()->*Signal)(this->valueBypassingBindings());
+            else
+                (owner()->*Signal)();
+        }
     }
 };
 

@@ -1344,6 +1344,10 @@ QString QPropertyBindingError::description() const
 
   \snippet code/src_corelib_kernel_qproperty.cpp 2
 
+  The change handler can optionally accept one argument, of the same type as the property,
+  in which case it is passed the new value of the property. Otherwise, it should take no
+  arguments.
+
   If the property does not need a changed notification, you can leave out the
   "NOTIFY xChanged" in the Q_PROPERTY macro as well as the last argument
   of the Q_OBJECT_BINDABLE_PROPERTY and Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS

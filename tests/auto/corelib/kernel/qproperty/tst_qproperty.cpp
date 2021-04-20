@@ -83,6 +83,7 @@ private slots:
     void quntypedBindableApi();
     void readonlyConstQBindable();
     void qobjectBindableManualNotify();
+    void qobjectBindableSignalTakingNewValue();
 
     void testNewStuff();
     void qobjectObservers();
@@ -1088,7 +1089,7 @@ class MyQObject : public QObject
     Q_PROPERTY(int compat READ compat WRITE setCompat NOTIFY compatChanged)
 
 signals:
-    void fooChanged();
+    void fooChanged(int newFoo);
     void barChanged();
     void compatChanged();
 
@@ -1180,6 +1181,28 @@ void tst_QProperty::qobjectBindableManualNotify()
     QCOMPARE(fooChangedSpy.count(), 3);
     // but doesn't actually cause a binding reevaluation.
     QCOMPARE(object.foo(), 1);
+}
+
+void tst_QProperty::qobjectBindableSignalTakingNewValue()
+{
+    // Given an object of type MyQObject,
+    MyQObject object;
+    // and tracking the values emitted via its fooChanged signal,
+    int newValue = -1;
+    QObject::connect(&object, &MyQObject::fooChanged, [&](int i){ newValue = i; } );
+
+    // when we change the property's value via the bindable interface
+    object.bindableFoo().setValue(1);
+    // we obtain the newly set value.
+    QCOMPARE(newValue, 1);
+
+    // The same holds true when we set a binding
+    QProperty<int> i {2};
+    object.bindableFoo().setBinding(Qt::makePropertyBinding(i));
+    QCOMPARE(newValue, 2);
+    // and when the binding gets reevaluated to a new value
+    i = 3;
+    QCOMPARE(newValue, 3);
 }
 
 void tst_QProperty::testNewStuff()
