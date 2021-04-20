@@ -358,10 +358,6 @@ function(qt_internal_add_module target)
             )
     endif()
 
-    if(MSVC)
-        list(APPEND defines_for_extend_target _CRT_SECURE_NO_WARNINGS)
-    endif()
-
     qt_internal_extend_target("${target}"
         ${header_module}
         SOURCES ${arg_SOURCES}
