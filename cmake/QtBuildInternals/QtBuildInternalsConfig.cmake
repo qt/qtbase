@@ -636,3 +636,16 @@ macro(qt_examples_build_end)
 
     set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ${BACKUP_CMAKE_FIND_ROOT_PATH_MODE_PACKAGE})
 endmacro()
+
+if ("STANDALONE_TEST" IN_LIST Qt6BuildInternals_FIND_COMPONENTS)
+    include(${CMAKE_CURRENT_LIST_DIR}/QtStandaloneTestTemplateProject/Main.cmake)
+    if (NOT PROJECT_VERSION_MAJOR)
+        get_property(_qt_major_version TARGET ${QT_CMAKE_EXPORT_NAMESPACE}::Core PROPERTY INTERFACE_QT_MAJOR_VERSION)
+        set(PROJECT_VERSION ${Qt${_qt_major_version}Core_VERSION})
+
+        string(REPLACE "." ";" _qt_core_version_list ${PROJECT_VERSION})
+        list(GET _qt_core_version_list 0 PROJECT_VERSION_MAJOR)
+        list(GET _qt_core_version_list 1 PROJECT_VERSION_MINOR)
+        list(GET _qt_core_version_list 2 PROJECT_VERSION_PATCH)
+    endif()
+endif()

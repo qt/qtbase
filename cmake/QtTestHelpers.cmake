@@ -385,18 +385,20 @@ function(qt_internal_add_test name)
             "${CMAKE_CURRENT_SOURCE_DIR}")
         qt_path_join(testdata_install_dir ${QT_INSTALL_DIR}
                      "${relative_path_to_test_project}")
-        foreach(testdata IN LISTS arg_TESTDATA)
-            set(testdata "${CMAKE_CURRENT_SOURCE_DIR}/${testdata}")
-            if (IS_DIRECTORY "${testdata}")
-                qt_install(
-                    DIRECTORY "${testdata}"
-                    DESTINATION "${testdata_install_dir}")
-            else()
-                qt_install(
-                    FILES "${testdata}"
-                    DESTINATION "${testdata_install_dir}")
-            endif()
-        endforeach()
+        if (testdata_install_dir)
+            foreach(testdata IN LISTS arg_TESTDATA)
+                set(testdata "${CMAKE_CURRENT_SOURCE_DIR}/${testdata}")
+                if (IS_DIRECTORY "${testdata}")
+                    qt_install(
+                        DIRECTORY "${testdata}"
+                        DESTINATION "${testdata_install_dir}")
+                else()
+                    qt_install(
+                        FILES "${testdata}"
+                        DESTINATION "${testdata_install_dir}")
+                endif()
+            endforeach()
+        endif()
     endif()
 
 endfunction()
