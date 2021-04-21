@@ -284,6 +284,9 @@ const char msg2[] = "==Qt=magic=Qt== Sub-architecture:"
 #ifdef __ARM_FEATURE_CRC32
 " crc32"
 #endif
+#ifdef __ARM_FEATURE_CRYPTO
+" crypto"
+#endif
 
 // -- SPARC --
 #ifdef __VIS__

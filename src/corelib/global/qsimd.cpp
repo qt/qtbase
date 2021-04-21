@@ -54,22 +54,19 @@
 #  if !defined(Q_CC_GNU)
 #    include <intrin.h>
 #  endif
-#elif defined(Q_OS_LINUX) && (defined(Q_PROCESSOR_ARM) || defined(Q_PROCESSOR_MIPS_32))
-#include "private/qcore_unix_p.h"
-
-#if QT_CONFIG(getauxval)
+#  if defined(Q_PROCESSOR_ARM64)
+#    include <processthreadsapi.h>
+#  endif
+#elif defined(Q_OS_LINUX) && defined(Q_PROCESSOR_MIPS_32)
+#  include "private/qcore_unix_p.h"
+#elif QT_CONFIG(getauxval) && defined(Q_PROCESSOR_ARM)
 #  include <sys/auxv.h>
-#endif
 
 // the kernel header definitions for HWCAP_*
 // (the ones we need/may need anyway)
 
 // copied from <asm/hwcap.h> (ARM)
-#define HWCAP_CRUNCH    1024
-#define HWCAP_THUMBEE   2048
 #define HWCAP_NEON      4096
-#define HWCAP_VFPv3     8192
-#define HWCAP_VFPv3D16  16384
 
 // copied from <asm/hwcap.h> (ARM):
 #define HWCAP2_AES   (1 << 0)
@@ -84,7 +81,9 @@
 #define AT_HWCAP2 26    /* extension of AT_HWCAP */
 
 #elif defined(Q_CC_GHS)
-#include <INTEGRITY_types.h>
+#  include <INTEGRITY_types.h>
+#elif defined(Q_OS_DARWIN) && defined(Q_PROCESSOR_ARM)
+#  include <sys/sysctl.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -155,8 +154,26 @@ static inline quint64 detectProcessorFeatures()
         return features;
     }
     // fall back to compile-time flags if getauxval failed
-#endif // QT_CONFIG(getauxval)
-
+#elif defined(Q_OS_DARWIN) && defined(Q_PROCESSOR_ARM)
+    unsigned feature;
+    size_t len = sizeof(feature);
+    if (sysctlbyname("hw.optional.neon", &feature, &len, nullptr, 0) == 0)
+        features |= feature ? CpuFeatureNEON : 0;
+    if (sysctlbyname("hw.optional.armv8_crc32", &feature, &len, nullptr, 0) == 0)
+        features |= feature ? CpuFeatureCRC32 : 0;
+    // There is currently no optional value for crypto/AES.
+#if defined(__ARM_FEATURE_CRYPTO)
+    features |= CpuFeatureAES;
+#endif
+    return features;
+#elif defined(Q_OS_WIN) && defined(Q_PROCESSOR_ARM64)
+    features |= CpuFeatureNEON;
+    if (IsProcessorFeaturePresent(PF_ARM_V8_CRC32_INSTRUCTIONS_AVAILABLE) != 0)
+        features |= CpuFeatureCRC32;
+    if (IsProcessorFeaturePresent(PF_ARM_V8_CRYPTO_INSTRUCTIONS_AVAILABLE) != 0)
+        features |= CpuFeatureAES;
+    return features;
+#endif
 #if defined(__ARM_NEON__) || defined(__ARM_NEON)
     features |= CpuFeatureNEON;
 #endif

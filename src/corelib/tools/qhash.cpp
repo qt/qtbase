@@ -527,7 +527,8 @@ lt16:
 }
 #endif
 
-#if defined(__ARM_FEATURE_CRYPTO) && !defined(QT_BOOTSTRAPPED)
+#if defined(Q_PROCESSOR_ARM) && QT_COMPILER_SUPPORTS_HERE(AES) && !defined(QHASH_AES_SANITIZER_BUILD) && !defined(QT_BOOTSTRAPPED)
+QT_FUNCTION_TARGET(AES)
 static size_t aeshash(const uchar *p, size_t len, size_t seed) noexcept
 {
     uint8x16_t key;
@@ -669,10 +670,14 @@ size_t qHashBits(const void *p, size_t size, size_t seed) noexcept
 #ifdef AESHASH
     if (seed && qCpuHasFeature(AES) && qCpuHasFeature(SSE4_2))
         return aeshash(reinterpret_cast<const uchar *>(p), size, seed);
-#elif defined(__ARM_FEATURE_CRYPTO) && !defined(QT_BOOTSTRAPPED)
-    // Do additional runtime check as Yocto hard enables Crypto extension for
+#elif defined(Q_PROCESSOR_ARM) && QT_COMPILER_SUPPORTS_HERE(AES) && !defined(QHASH_AES_SANITIZER_BUILD) && !defined(QT_BOOTSTRAPPED)
+# if defined(Q_OS_LINUX)
+    // Do specific runtime-only check as Yocto hard enables Crypto extension for
     // all armv8 configs
     if (seed && (qCpuFeatures() & CpuFeatureAES))
+# else
+    if (seed && qCpuHasFeature(AES))
+# endif
         return aeshash(reinterpret_cast<const uchar *>(p), size, seed);
 #endif
     if (size <= QT_POINTER_SIZE)

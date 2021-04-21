@@ -763,12 +763,12 @@ qt_feature("shani" PRIVATE
 )
 qt_feature_definition("shani" "QT_COMPILER_SUPPORTS_SHA" VALUE "1")
 qt_feature_config("shani" QMAKE_PRIVATE_CONFIG)
-qt_feature("x86SimdAlways"
-    LABEL "Intrinsics without -mXXX option"
-    CONDITION ( ( TEST_architecture_arch STREQUAL i386 ) OR ( TEST_architecture_arch STREQUAL x86_64 ) ) AND ON
+qt_feature("simdAlways"
+    LABEL "Intrinsics without compiler architecture option"
+    CONDITION ( ( ( TEST_architecture_arch STREQUAL i386 ) OR ( TEST_architecture_arch STREQUAL x86_64 ) ) AND ON ) OR ( TEST_architecture_arch STREQUAL arm64 )
 )
-qt_feature_definition("x86SimdAlways" "QT_COMPILER_SUPPORTS_SIMD_ALWAYS" VALUE "1")
-qt_feature_config("x86SimdAlways" QMAKE_PRIVATE_CONFIG)
+qt_feature_definition("simdAlways" "QT_COMPILER_SUPPORTS_SIMD_ALWAYS" VALUE "1")
+qt_feature_config("simdAlways" QMAKE_PRIVATE_CONFIG)
 qt_feature("mips_dsp" PRIVATE
     LABEL "DSP"
     CONDITION ( TEST_architecture_arch STREQUAL mips ) AND TEST_arch_${TEST_architecture_arch}_subarch_dsp
@@ -787,6 +787,18 @@ qt_feature("neon" PRIVATE
 )
 qt_feature_definition("neon" "QT_COMPILER_SUPPORTS_NEON" VALUE "1")
 qt_feature_config("neon" QMAKE_PRIVATE_CONFIG)
+qt_feature("arm_crc32" PRIVATE
+    LABEL "CRC32"
+    CONDITION ( ( TEST_architecture_arch STREQUAL arm ) OR ( TEST_architecture_arch STREQUAL arm64 ) ) AND TEST_arch_${TEST_architecture_arch}_subarch_crc32
+)
+qt_feature_definition("arm_crc32" "QT_COMPILER_SUPPORTS_CRC32" VALUE "1")
+qt_feature_config("arm_crc32" QMAKE_PRIVATE_CONFIG)
+qt_feature("arm_crypto" PRIVATE
+    LABEL "AES"
+    CONDITION ( ( TEST_architecture_arch STREQUAL arm ) OR ( TEST_architecture_arch STREQUAL arm64 ) ) AND TEST_arch_${TEST_architecture_arch}_subarch_crypto
+)
+qt_feature_definition("arm_crypto" "QT_COMPILER_SUPPORTS_AES" VALUE "1")
+qt_feature_config("arm_crypto" QMAKE_PRIVATE_CONFIG)
 qt_feature("posix_fallocate" PRIVATE
     LABEL "POSIX fallocate()"
     CONDITION TEST_posix_fallocate
@@ -983,11 +995,13 @@ qt_configure_add_summary_entry(
     CONDITION ( ( TEST_architecture_arch STREQUAL i386 ) OR ( TEST_architecture_arch STREQUAL x86_64 ) )
 )
 qt_configure_add_summary_entry(
-    ARGS "x86SimdAlways"
-    CONDITION ( ( TEST_architecture_arch STREQUAL i386 ) OR ( TEST_architecture_arch STREQUAL x86_64 ) ) AND NOT MSVC
+    ARGS "simdAlways"
+    CONDITION ( ( TEST_architecture_arch STREQUAL i386 ) OR ( TEST_architecture_arch STREQUAL x86_64 ) OR ( TEST_architecture_arch STREQUAL arm64 ) ) AND NOT MSVC
 )
 qt_configure_add_summary_entry(
-    ARGS "neon"
+    TYPE "featureList"
+    ARGS "neon arm_crc32 arm_crypto"
+    MESSAGE "Extensions"
     CONDITION ( TEST_architecture_arch STREQUAL arm ) OR ( TEST_architecture_arch STREQUAL arm64 )
 )
 qt_configure_add_summary_entry(
@@ -1043,8 +1057,8 @@ qt_configure_add_report_entry(
 )
 qt_configure_add_report_entry(
     TYPE NOTE
-    MESSAGE "Using pthreads"
-    CONDITION QT_FEATURE_thread
+    MESSAGE "Enable thread support"
+    CONDITION QT_FEATURE_thread AND WASM
 )
 qt_configure_add_report_entry(
     TYPE ERROR

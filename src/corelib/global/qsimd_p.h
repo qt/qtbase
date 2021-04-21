@@ -145,16 +145,13 @@
 
 #define QT_COMPILER_SUPPORTS(x)     (QT_COMPILER_SUPPORTS_ ## x - 0)
 
-#if defined(Q_PROCESSOR_ARM)
-#  define QT_COMPILER_SUPPORTS_HERE(x)    (__ARM_FEATURE_ ## x)
-#  if defined(Q_CC_GNU) && !defined(Q_CC_INTEL) && Q_CC_GNU >= 600
+#if defined(Q_PROCESSOR_ARM) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS)
+#  define QT_COMPILER_SUPPORTS_HERE(x)    ((__ARM_FEATURE_ ## x) || (__ ## x ## __) || QT_COMPILER_SUPPORTS(x))
+#  if defined(Q_CC_GNU)
      /* GCC requires attributes for a function */
 #    define QT_FUNCTION_TARGET(x)  __attribute__((__target__(QT_FUNCTION_TARGET_STRING_ ## x)))
 #  else
 #    define QT_FUNCTION_TARGET(x)
-#  endif
-#  if !defined(__ARM_FEATURE_NEON) && defined(__ARM_NEON__)
-#    define __ARM_FEATURE_NEON           // also support QT_COMPILER_SUPPORTS_HERE(NEON)
 #  endif
 #elif defined(Q_PROCESSOR_MIPS)
 #  define QT_COMPILER_SUPPORTS_HERE(x)    (__ ## x ## __)
@@ -173,6 +170,9 @@
 #  else
 #    define QT_FUNCTION_TARGET(x)
 #  endif
+#elif defined(Q_PROCESSOR_ARM)
+#  define QT_COMPILER_SUPPORTS_HERE(x)    ((__ARM_FEATURE_ ## x) || (__ ## x ## __))
+#  define QT_FUNCTION_TARGET(x)
 #else
 #  define QT_COMPILER_SUPPORTS_HERE(x)    (__ ## x ## __)
 #  define QT_FUNCTION_TARGET(x)
@@ -259,17 +259,14 @@ QT_END_NAMESPACE
 
 #endif  /* Q_PROCESSOR_X86 */
 
-// Clang compiler fix, see http://lists.llvm.org/pipermail/cfe-commits/Week-of-Mon-20160222/151168.html
-// This should be tweaked with an "upper version" of clang once we know which release fixes the
-// issue. At that point we can rely on __ARM_FEATURE_CRC32 again.
-#if defined(Q_CC_CLANG) && defined(Q_OS_DARWIN) && defined (__ARM_FEATURE_CRC32)
-#  undef __ARM_FEATURE_CRC32
-#endif
-
 // NEON intrinsics
 // note: as of GCC 4.9, does not support function targets for ARM
 #if defined(__ARM_NEON) || defined(__ARM_NEON__)
+#if defined(Q_CC_CLANG)
+#define QT_FUNCTION_TARGET_STRING_NEON      "neon"
+#else
 #define QT_FUNCTION_TARGET_STRING_NEON      "+neon" // unused: gcc doesn't support function targets on non-aarch64, and on Aarch64 NEON is always available.
+#endif
 #ifndef __ARM_NEON__
 // __ARM_NEON__ is not defined on AArch64, but we need it in our NEON detection.
 #define __ARM_NEON__
@@ -291,14 +288,29 @@ inline uint8_t vaddv_u8(uint8x8_t v8)
 #endif
 
 #endif
-// AArch64/ARM64
-#if defined(Q_PROCESSOR_ARM_V8) && defined(__ARM_FEATURE_CRC32)
-#if defined(Q_PROCESSOR_ARM_64)
-// only available on aarch64
-#define QT_FUNCTION_TARGET_STRING_CRC32      "+crc"
-#endif
+
+#if defined(Q_PROCESSOR_ARM) && defined(__ARM_FEATURE_CRC32)
 #  include <arm_acle.h>
 #endif
+
+#if defined(Q_PROCESSOR_ARM_64)
+#if defined(Q_CC_CLANG)
+#define QT_FUNCTION_TARGET_STRING_AES        "crypto"
+#define QT_FUNCTION_TARGET_STRING_CRC32      "crc"
+#elif defined(Q_CC_GNU)
+#define QT_FUNCTION_TARGET_STRING_AES        "+crypto"
+#define QT_FUNCTION_TARGET_STRING_CRC32      "+crc"
+#endif
+#elif defined(Q_PROCESSOR_ARM_32)
+#if defined(Q_CC_CLANG)
+#define QT_FUNCTION_TARGET_STRING_AES        "armv8-a,crypto"
+#define QT_FUNCTION_TARGET_STRING_CRC32      "armv8-a,crc"
+#elif defined(Q_CC_GNU)
+#define QT_FUNCTION_TARGET_STRING_AES        "arch=armv8-a+crypto"
+#define QT_FUNCTION_TARGET_STRING_CRC32      "arch=armv8-a+crc"
+#endif
+#endif
+
 
 #ifdef __cplusplus
 #include <qatomic.h>

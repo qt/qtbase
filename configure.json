@@ -1244,9 +1244,9 @@
                 { "type": "define", "name": "QT_COMPILER_SUPPORTS_SHA", "value": 1 }
             ]
         },
-        "x86SimdAlways": {
-            "label": "Intrinsics without -mXXX option",
-            "condition": "(arch.i386 || arch.x86_64) && tests.x86SimdAlways",
+        "simdAlways": {
+            "label": "Intrinsics without compiler architecture option",
+            "condition": "((arch.i386 || arch.x86_64) && tests.x86SimdAlways) || arch.arm64",
             "output": [
                 "privateConfig",
                 { "type": "define", "name": "QT_COMPILER_SUPPORTS_SIMD_ALWAYS", "value": 1 }
@@ -1277,6 +1277,24 @@
                 "privateConfig",
                 "privateFeature",
                 { "type": "define", "name": "QT_COMPILER_SUPPORTS_NEON", "value": 1 }
+            ]
+        },
+        "arm_crc32": {
+            "label": "CRC32",
+            "condition": "(arch.arm || arch.arm64) && subarch.crc32",
+            "output": [
+                "privateConfig",
+                "privateFeature",
+                { "type": "define", "name": "QT_COMPILER_SUPPORTS_CRC32", "value": 1 }
+            ]
+        },
+        "arm_crypto": {
+            "label": "AES",
+            "condition": "(arch.arm || arch.arm64) && subarch.crypto",
+            "output": [
+                "privateConfig",
+                "privateFeature",
+                { "type": "define", "name": "QT_COMPILER_SUPPORTS_AES", "value": 1 }
             ]
         },
         "posix_fallocate": {
@@ -1609,12 +1627,13 @@
                         },
                         {
                             "type": "feature",
-                            "args": "x86SimdAlways",
-                            "condition": "(arch.i386 || arch.x86_64) && !config.msvc"
+                            "args": "simdAlways",
+                            "condition": "(arch.i386 || arch.x86_64 || arch.arm64) && !config.msvc"
                         },
                         {
-                            "type": "feature",
-                            "args": "neon",
+                            "message": "Extensions",
+                            "type": "featureList",
+                            "args": "neon arm_crc32 arm_crypto",
                             "condition": "arch.arm || arch.arm64"
                         },
                         {
