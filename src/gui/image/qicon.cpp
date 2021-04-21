@@ -1323,9 +1323,9 @@ QIcon QIcon::fromTheme(const QString &name)
         bool hasUserTheme = QIconLoader::instance()->hasUserTheme();
         QIconEngine * const engine = (platformTheme && !hasUserTheme) ? platformTheme->createIconEngine(name)
                                                    : new QIconLoaderEngine(name);
-        QIcon *cachedIcon  = new QIcon(engine);
-        icon = *cachedIcon;
-        qtIconCache()->insert(name, cachedIcon);
+        icon = QIcon(engine);
+        if (!icon.isNull())
+            qtIconCache()->insert(name, new QIcon(icon));
     }
 
     return icon;
