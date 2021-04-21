@@ -30,6 +30,7 @@
 #include <QTest>
 
 #include <qcoreapplication.h>
+#include <qmetaobject.h>
 #include <qdebug.h>
 #include <qboxlayout.h>
 #include <qmenubar.h>
@@ -248,6 +249,22 @@ void tst_QLayout::setContentsMargins()
 
     layout.setContentsMargins(52, 53, 54, 55);
     QVERIFY(!layout.invalidated);
+
+    MyLayout otherLayout; // with default contents margins
+    QVERIFY(layout.contentsMargins() != otherLayout.contentsMargins());
+    layout.unsetContentsMargins();
+    QCOMPARE(layout.contentsMargins(), otherLayout.contentsMargins());
+
+    layout.setContentsMargins(10, 20, 30, 40);
+    QVERIFY(layout.contentsMargins() != otherLayout.contentsMargins());
+
+    int contentsMarginsPropertyIndex = QLayout::staticMetaObject.indexOfProperty("contentsMargins");
+    QVERIFY(contentsMarginsPropertyIndex >= 0);
+    QMetaProperty contentsMarginsProperty = QLayout::staticMetaObject.property(contentsMarginsPropertyIndex);
+    QVERIFY(contentsMarginsProperty.isValid());
+    QVERIFY(contentsMarginsProperty.isResettable());
+    QVERIFY(contentsMarginsProperty.reset(&layout));
+    QCOMPARE(layout.contentsMargins(), otherLayout.contentsMargins());
 }
 
 class EventReceiver : public QObject
