@@ -167,6 +167,39 @@
     Here, code triggered in change handlers might use the circle, while it has
     the new radius, but still the old area.
 
+    \section1 Bindable Properties with Virtual Setters and Getters
+
+    Property setters and getters should normally be minimal and do nothing but
+    setting the property; hence it is not normally appropriate for such setters
+    and getters to be virtual. There is nothing it makes sense for the derived
+    class to do.
+
+    However some Qt classes can have properties with virtual setters. When
+    subclassing such a Qt class, overriding such setters requires special care.
+
+    In any case the base implementation \e must be called for the binding to
+    work correctly.
+
+    The following illustrates this approach.
+
+    \badcode
+    void DerivedClass::setValue(int val)
+    {
+        // do something
+        BaseClass::setValue(val);
+        // probably do something else
+    }
+    \endcode
+
+    All the common rules and recomendations regarding writing to bindable
+    properties also apply here. As soon as the base class implementation is
+    called, all the observers are notified about the change to the property.
+    This means that class invariants must be met before calling the base
+    implementation.
+
+    In the rare case where such virtual getters or setters are necessary, the
+    base class should document the requirements it imposes on overrides.
+
     \section1 Formulating a Property Binding
 
     Any C++ expression evaluating to the correct type can be used as a binding
