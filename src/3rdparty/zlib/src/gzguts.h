@@ -10,6 +10,8 @@
 #  ifndef _CRT_NONSTDC_NO_DEPRECATE
 #    define _CRT_NONSTDC_NO_DEPRECATE
 #  endif
+// disable warnings like '=': conversion from 'size_t' to 'unsigned int', possible loss of data
+#  pragma warning(disable: 4267)
 #endif
 
 #ifdef _LARGEFILE64_SOURCE
