@@ -26,12 +26,14 @@ diff -ruN orig/gzguts.h src/gzguts.h
 +#  ifndef _CRT_NONSTDC_NO_DEPRECATE
 +#    define _CRT_NONSTDC_NO_DEPRECATE
 +#  endif
++// disable warnings like '=': conversion from 'size_t' to 'unsigned int', possible loss of data
++#  pragma warning(disable: 4267)
 +#endif
 +
  #ifdef _LARGEFILE64_SOURCE
  #  ifndef _LARGEFILE_SOURCE
  #    define _LARGEFILE_SOURCE 1
-@@ -12,6 +21,15 @@
+@@ -12,6 +23,15 @@
  #  endif
  #endif
  
