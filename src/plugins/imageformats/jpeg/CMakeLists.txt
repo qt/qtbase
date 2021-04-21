@@ -19,6 +19,13 @@ qt_internal_add_plugin(QJpegPlugin
         Qt::GuiPrivate
 )
 
+# Fails to build on Windows with a static Qt, PCH enabled and
+# the vendored libjpeg sources, due to 'boolean'
+# redefinition in jmorecfg.h and rpcndr.h.
+if(WIN32 AND NOT BUILD_SHARED_LIBS)
+    qt_update_ignore_pch_source(QJpegPlugin "qjpeghandler.cpp")
+endif()
+
 #### Keys ignored in scope 1:.:.:jpeg.pro:<TRUE>:
 # OTHER_FILES = "jpeg.json"
 
