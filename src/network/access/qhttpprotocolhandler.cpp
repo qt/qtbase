@@ -216,6 +216,8 @@ void QHttpProtocolHandler::_q_receiveReply()
             }
       case QHttpNetworkReplyPrivate::AllDoneState:
             m_channel->allDone();
+            if (state == QHttpNetworkReplyPrivate::AllDoneState)
+                lastBytes = bytes; // No need to loop more just to call m_channel->allDone again.
             break;
         default:
             break;
