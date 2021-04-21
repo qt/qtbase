@@ -437,6 +437,8 @@ private slots:
     void taskQTBUG_30653_doItemsLayout();
     void taskQTBUG_50171_selectRowAfterSwapColumns();
     void deselectRow();
+    void selectRowsAndCells();
+    void selectColumnsAndCells();
 
 #if QT_CONFIG(wheelevent)
     void mouseWheel_data();
@@ -4781,6 +4783,76 @@ void tst_QTableView::deselectRow()
     tw.selectRow(1);
     // QTBUG-79092 - deselection was not possible when column 0 was hidden
     QVERIFY(!tw.selectionModel()->isRowSelected(1, QModelIndex()));
+}
+
+class QTableViewSelectCells : public QTableView
+{
+public:
+    QItemSelectionModel::SelectionFlags selectionCommand(const QModelIndex &index,
+                                                         const QEvent *) const override
+    {
+        return QTableView::selectionCommand(index, shiftPressed ? &mouseEvent : nullptr);
+    }
+    QMouseEvent mouseEvent = QMouseEvent(QEvent::MouseButtonPress, QPointF(), Qt::LeftButton, Qt::LeftButton, Qt::ShiftModifier);
+    bool shiftPressed = false;
+};
+
+void tst_QTableView::selectRowsAndCells()
+{
+    const auto checkRows = [](const QModelIndexList &mil)
+    {
+        QCOMPARE(mil.size(), 3);
+        for (const auto &mi : mil)
+            QVERIFY(mi.row() >= 1 && mi.row() <= 3);
+    };
+    QTableViewSelectCells tw;
+    QtTestTableModel model(5, 1);
+    tw.setSelectionBehavior(QAbstractItemView::SelectRows);
+    tw.setSelectionMode(QAbstractItemView::ExtendedSelection);
+    tw.setModel(&model);
+    tw.show();
+
+    tw.selectRow(1);
+    tw.shiftPressed = true;
+    tw.selectRow(2);
+    tw.shiftPressed = false;
+    QTest::mouseClick(tw.viewport(), Qt::LeftButton, Qt::ShiftModifier, tw.visualRect(model.index(3, 0)).center());
+    checkRows(tw.selectionModel()->selectedRows());
+
+    tw.clearSelection();
+    QTest::mouseClick(tw.viewport(), Qt::LeftButton, Qt::NoModifier, tw.visualRect(model.index(3, 0)).center());
+    tw.shiftPressed = true;
+    tw.selectRow(1);
+    checkRows(tw.selectionModel()->selectedRows());
+}
+
+void tst_QTableView::selectColumnsAndCells()
+{
+    const auto checkColumns = [](const QModelIndexList &mil)
+    {
+        QCOMPARE(mil.size(), 3);
+        for (const auto &mi : mil)
+            QVERIFY(mi.column() >= 1 && mi.column() <= 3);
+    };
+    QTableViewSelectCells tw;
+    QtTestTableModel model(1, 5);
+    tw.setSelectionBehavior(QAbstractItemView::SelectColumns);
+    tw.setSelectionMode(QAbstractItemView::ExtendedSelection);
+    tw.setModel(&model);
+    tw.show();
+
+    tw.selectColumn(1);
+    tw.shiftPressed = true;
+    tw.selectColumn(2);
+    tw.shiftPressed = false;
+    QTest::mouseClick(tw.viewport(), Qt::LeftButton, Qt::ShiftModifier, tw.visualRect(model.index(0, 3)).center());
+    checkColumns(tw.selectionModel()->selectedColumns());
+
+    tw.clearSelection();
+    QTest::mouseClick(tw.viewport(), Qt::LeftButton, Qt::NoModifier, tw.visualRect(model.index(0, 3)).center());
+    tw.shiftPressed = true;
+    tw.selectColumn(1);
+    checkColumns(tw.selectionModel()->selectedColumns());
 }
 
 // This has nothing to do with QTableView, but it's convenient to reuse the QtTestTableModel

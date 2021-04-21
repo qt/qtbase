@@ -3388,7 +3388,7 @@ void QTableViewPrivate::selectRow(int row, bool anchor)
         selectionModel->setCurrentIndex(index, QItemSelectionModel::NoUpdate);
         if ((anchor && !(command & QItemSelectionModel::Current))
             || (q->selectionMode() == QTableView::SingleSelection))
-            rowSectionAnchor = row;
+            currentSelectionStartIndex = model->index(row, column, root);
 
         if (q->selectionMode() != QTableView::SingleSelection
             && command.testFlag(QItemSelectionModel::Toggle)) {
@@ -3401,6 +3401,7 @@ void QTableViewPrivate::selectRow(int row, bool anchor)
                 command |= QItemSelectionModel::Current;
         }
 
+        const auto rowSectionAnchor = currentSelectionStartIndex.row();
         QModelIndex upper = model->index(qMin(rowSectionAnchor, row), column, root);
         QModelIndex lower = model->index(qMax(rowSectionAnchor, row), column, root);
         if ((verticalHeader->sectionsMoved() && upper.row() != lower.row())) {
@@ -3427,7 +3428,7 @@ void QTableViewPrivate::selectColumn(int column, bool anchor)
         selectionModel->setCurrentIndex(index, QItemSelectionModel::NoUpdate);
         if ((anchor && !(command & QItemSelectionModel::Current))
             || (q->selectionMode() == QTableView::SingleSelection))
-            columnSectionAnchor = column;
+            currentSelectionStartIndex = model->index(row, column, root);
 
         if (q->selectionMode() != QTableView::SingleSelection
             && command.testFlag(QItemSelectionModel::Toggle)) {
@@ -3440,6 +3441,7 @@ void QTableViewPrivate::selectColumn(int column, bool anchor)
                 command |= QItemSelectionModel::Current;
         }
 
+        const auto columnSectionAnchor = currentSelectionStartIndex.column();
         QModelIndex left = model->index(row, qMin(columnSectionAnchor, column), root);
         QModelIndex right = model->index(row, qMax(columnSectionAnchor, column), root);
         if ((horizontalHeader->sectionsMoved() && left.column() != right.column())) {
