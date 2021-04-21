@@ -1425,6 +1425,31 @@ QString QPropertyBindingError::description() const
   be analyzed carefully to comply with the rules given in
   \l {Writing to a Bindable Property}.
 
+  \section2 Properties with Virtual Setters
+
+  Some of the pre-existing Qt classes (for example, \l QAbstractProxyModel)
+  have properties with virtual setters. Special care must be taken when
+  making such properties bindable.
+
+  For the binding to work properly, the property must be correctly handled in
+  all reimplemented methods of each derived class.
+
+  Unless the derived class has access to the underlying property object, the
+  base implementation \e must be called for the binding to work correctly.
+
+  If the derived class can directly access the property instance, there is no
+  need to explicitly call the base implementation, but the property's value
+  \e must be correctly updated.
+
+  Refer to \l {Bindable Properties with Virtual Setters and Getters} for more
+  details.
+
+  In both cases the expected behavior \e must be documented in the property's
+  documentation, so that users can correctly override the setter.
+
+  Properties for which these conditions cannot be met should not be made
+  bindable.
+
   \sa Q_OBJECT_COMPAT_PROPERTY, QObjectBindableProperty, {Qt's Property System}, {Qt Bindable
   Properties}
 */
