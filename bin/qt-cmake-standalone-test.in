@@ -1,4 +1,4 @@
 @__qt_cmake_standalone_test_os_prelude@
 
 @__qt_cmake_standalone_test_script_relpath@
-@__qt_cmake_private_relpath@ @__qt_cmake_standalone_test_relpath@ -DQT_STANDALONE_TEST_PATH=@__qt_cmake_standalone_passed_args@
+@__qt_cmake_private_relpath@ @__qt_cmake_standalone_test_relpath@ -DQT_BUILD_STANDALONE_TESTS=ON -DQT_STANDALONE_TEST_PATH=@__qt_cmake_standalone_passed_args@
