@@ -176,7 +176,7 @@ bool QThreadPoolPrivate::tryStart(QRunnable *task)
     }
 
     // can't do anything if we're over the limit
-    if (activeThreadCount() >= maxThreadCount)
+    if (activeThreadCount() >= maxThreadCount())
         return false;
 
     if (waitingThreads.count() > 0) {
@@ -249,7 +249,7 @@ void QThreadPoolPrivate::tryToStartMoreThreads()
 bool QThreadPoolPrivate::tooManyThreadsActive() const
 {
     const int activeThreadCount = this->activeThreadCount();
-    return activeThreadCount > maxThreadCount && (activeThreadCount - reservedThreads) > 1;
+    return activeThreadCount > maxThreadCount() && (activeThreadCount - reservedThreads) > 1;
 }
 
 /*!
@@ -571,7 +571,7 @@ bool QThreadPool::tryStart(std::function<void()> functionToRun)
 
     Q_D(QThreadPool);
     QMutexLocker locker(&d->mutex);
-    if (!d->allThreads.isEmpty() && d->activeThreadCount() >= d->maxThreadCount)
+    if (!d->allThreads.isEmpty() && d->activeThreadCount() >= d->maxThreadCount())
         return false;
 
     QRunnable *runnable = QRunnable::create(std::move(functionToRun));
@@ -612,7 +612,9 @@ void QThreadPool::setExpiryTimeout(int expiryTimeout)
 
 /*! \property QThreadPool::maxThreadCount
 
-    \brief the maximum number of threads used by the thread pool.
+    \brief the maximum number of threads used by the thread pool. This property
+    will default to the value of QThread::idealThreadCount() at the moment the
+    QThreadPool object is created.
 
     \note The thread pool will always use at least 1 thread, even if
     \a maxThreadCount limit is zero or negative.
@@ -623,7 +625,7 @@ void QThreadPool::setExpiryTimeout(int expiryTimeout)
 int QThreadPool::maxThreadCount() const
 {
     Q_D(const QThreadPool);
-    return d->maxThreadCount;
+    return d->requestedMaxThreadCount;
 }
 
 void QThreadPool::setMaxThreadCount(int maxThreadCount)
@@ -631,10 +633,10 @@ void QThreadPool::setMaxThreadCount(int maxThreadCount)
     Q_D(QThreadPool);
     QMutexLocker locker(&d->mutex);
 
-    if (maxThreadCount == d->maxThreadCount)
+    if (maxThreadCount == d->requestedMaxThreadCount)
         return;
 
-    d->maxThreadCount = maxThreadCount;
+    d->requestedMaxThreadCount = maxThreadCount;
     d->tryToStartMoreThreads();
 }
 
