@@ -34,21 +34,24 @@
 
     \image fetchmore-example.png
 
-
-    This example consists of a dialog where you can enter a directory
-    name in the \uicontrol Directory edit field. The application loads and
-    visualizes all files it finds as you are typing. It is not required
-    to press [Enter] to launch the search.
-
     When you have large - or perhaps even infinite - data sets, you
     will need to add items to the model in batches, and preferably only
-    when the items are needed by the view (i.e., when they are visible
+    when the items are needed by the view (i.e., when they become visible
     in the view).
 
     In this example, we implement \c FileListModel - an item view
     model containing the entries of a directory. We also have \c
     Window, which sets up the GUI and feeds the model with
     directories.
+
+    The UI consists of a dialog with a list showing the contents
+    of the root directory. Directories can be navigated by double-clicking.
+
+    At the bottom, there is a log window displaying messages when the view
+    asks the model for more data.
+
+    To exercise it, navigate to a large directory (say \c /bin), and scroll
+    to the bottom. Log messages appear showing the data being retrieved.
 
     Let's take a tour of \c {FileListModel}'s code.
 

@@ -52,7 +52,8 @@
 #define FILELISTMODEL_H
 
 #include <QAbstractListModel>
-#include <QStringList>
+#include <QFileInfoList>
+#include <QFileIconProvider>
 
 //![0]
 class FileListModel : public QAbstractListModel
@@ -65,8 +66,10 @@ public:
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
 
+    QFileInfo fileInfoAt(const QModelIndex &) const;
+
 signals:
-    void numberPopulated(int number);
+    void numberPopulated(const QString &path, int start, int number, int total);
 
 public slots:
     void setDirPath(const QString &path);
@@ -76,8 +79,10 @@ protected:
     void fetchMore(const QModelIndex &parent) override;
 
 private:
-    QStringList fileList;
-    int fileCount;
+    QFileInfoList fileList;
+    QString path;
+    QFileIconProvider iconProvider;
+    int fileCount = 0;
 };
 //![0]
 
