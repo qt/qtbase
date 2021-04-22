@@ -322,6 +322,8 @@ static inline void multithread_pixels_function(QImageScaleInfo *isi, int dh, con
         semaphore.acquire(segments);
         return;
     }
+#else
+    Q_UNUSED(isi);
 #endif
     scaleSection(0, dh);
 }
