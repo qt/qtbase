@@ -105,7 +105,7 @@ endfunction()
 
 function(qt_auto_detect_android)
     # Auto-detect NDK root
-    if(NOT DEFINED CMAKE_ANDROID_NDK_ROOT AND DEFINED ANDROID_SDK_ROOT)
+    if(NOT DEFINED ANDROID_NDK_ROOT AND DEFINED ANDROID_SDK_ROOT)
         set(ndk_root "${ANDROID_SDK_ROOT}/ndk-bundle")
         if(IS_DIRECTORY "${ndk_root}")
             message(STATUS "Android NDK detected: ${ndk_root}")
