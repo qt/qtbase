@@ -421,10 +421,11 @@ Option::init(int argc, char **argv)
             } else if (opt == "-makefile") {
                 Option::qmake_mode = Option::QMAKE_GENERATE_MAKEFILE;
             } else if (opt == "-qtconf") {
-                // Move the argument following "-qtconf <file>" in front and check again.
-                if (args.length() >= 3)
+                if (args.length() >= 3) {
+                    // Move the argument following "-qtconf <file>" in front and check again.
                     args.prepend(args.takeAt(2));
-                continue;
+                    continue;
+                }
             } else {
                 break;
             }
