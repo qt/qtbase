@@ -144,6 +144,12 @@ function(qt_auto_detect_android)
         endif()
     endif()
 
+    if("${CMAKE_TOOLCHAIN_FILE}" STREQUAL ""
+            AND (DEFINED ANDROID_ABI OR DEFINED ANDROID_NATIVE_API_LEVEL))
+        message(FATAL_ERROR "An Android build was requested, but no Android toolchain file was "
+            "specified nor detected.")
+    endif()
+
     if(DEFINED CMAKE_TOOLCHAIN_FILE AND NOT DEFINED QT_AUTODETECT_ANDROID)
         qt_auto_detect_read_toolchain_file(tcf VARIABLES CMAKE_SYSTEM_NAME)
         if(tcf_CMAKE_SYSTEM_NAME STREQUAL "Android")
