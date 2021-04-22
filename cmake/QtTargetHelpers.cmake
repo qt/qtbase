@@ -558,3 +558,7 @@ function(qt_internal_install_pdb_files target install_dir_path)
         endif()
     endif()
 endfunction()
+
+function(qt_disable_apple_app_extension_api_only target)
+    set_target_properties("${target}" PROPERTIES QT_NO_APP_EXTENSION_ONLY_API TRUE)
+endfunction()
