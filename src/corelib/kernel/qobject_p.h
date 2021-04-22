@@ -112,7 +112,7 @@ public:
 
         inline void nameChangedForwarder(const QString &name)
         {
-            emit parent->q_func()->objectNameChanged(name, QObject::QPrivateSignal());
+            Q_EMIT parent->q_func()->objectNameChanged(name, QObject::QPrivateSignal());
         }
 
         QList<QByteArray> propertyNames;
