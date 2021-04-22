@@ -1025,6 +1025,9 @@ QCursor QWasmEventTranslator::cursorForMode(QWasmWindow::ResizeMode m)
     case QWasmWindow::ResizeRight:
         return Qt::SizeHorCursor;
         break;
+    case QWasmWindow::ResizeNone:
+        return Qt::ArrowCursor;
+        break;
     }
     return Qt::ArrowCursor;
 }
