@@ -46,9 +46,9 @@
 #include <QtCore/qcoreapplication.h>
 #include <QDir>
 
-using namespace QNativeInterface;
-
 QT_BEGIN_NAMESPACE
+
+using namespace QNativeInterface;
 
 typedef QMap<QString, QString> AndroidDirCache;
 Q_GLOBAL_STATIC(AndroidDirCache, androidDirCache)
