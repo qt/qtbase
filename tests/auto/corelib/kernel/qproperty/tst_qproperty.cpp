@@ -32,6 +32,14 @@
 #include <qproperty.h>
 #include <private/qproperty_p.h>
 
+#if __has_include(<source_location>) && __cplusplus >= 202002L && !defined(Q_CLANG_QDOC)
+#include <source_location>
+#define QT_SOURCE_LOCATION_NAMESPACE std
+#elif __has_include(<experimental/source_location>) && __cplusplus >= 201703L && !defined(Q_CLANG_QDOC)
+#include <experimental/source_location>
+#define QT_SOURCE_LOCATION_NAMESPACE std::experimental
+#endif
+
 using namespace QtPrivate;
 
 
@@ -466,7 +474,7 @@ void tst_QProperty::dontTriggerDependenciesIfUnchangedValue()
 void tst_QProperty::bindingSourceLocation()
 {
 #if defined(QT_PROPERTY_COLLECT_BINDING_LOCATION)
-    auto bindingLine = std::experimental::source_location::current().line() + 1;
+    auto bindingLine = QT_SOURCE_LOCATION_NAMESPACE::source_location::current().line() + 1;
     auto binding = Qt::makePropertyBinding([]() { return 42; });
     QCOMPARE(QPropertyBindingPrivate::get(binding)->sourceLocation().line, bindingLine);
 #else
@@ -1802,5 +1810,7 @@ void tst_QProperty::groupedNotificationConsistency()
 }
 
 QTEST_MAIN(tst_QProperty);
+
+#undef QT_SOURCE_LOCATION_NAMESPACE
 
 #include "tst_qproperty.moc"
