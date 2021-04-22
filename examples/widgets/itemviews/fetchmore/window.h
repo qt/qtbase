@@ -54,8 +54,12 @@
 #include <QWidget>
 
 QT_BEGIN_NAMESPACE
-class QTextBrowser;
+class QModelIndex;
+class QListView;
+class QPlainTextEdit;
 QT_END_NAMESPACE
+
+class FileListModel;
 
 class Window : public QWidget
 {
@@ -65,10 +69,13 @@ public:
     Window(QWidget *parent = nullptr);
 
 public slots:
-    void updateLog(int number);
+    void updateLog(const QString &path, int start, int number, int total);
+    void activated(const QModelIndex &);
 
 private:
-    QTextBrowser *logViewer;
+    QPlainTextEdit *logViewer;
+    FileListModel *model;
+    QListView *view;
 };
 
 #endif // WINDOW_H

@@ -54,8 +54,10 @@
 #include <QDir>
 #include <QPalette>
 
+static const int batchSize = 100;
+
 FileListModel::FileListModel(QObject *parent)
-    : QAbstractListModel(parent), fileCount(0)
+    : QAbstractListModel(parent)
 {}
 
 //![4]
@@ -67,23 +69,32 @@ int FileListModel::rowCount(const QModelIndex &parent) const
 QVariant FileListModel::data(const QModelIndex &index, int role) const
 {
     if (!index.isValid())
-        return QVariant();
+        return {};
 
-    if (index.row() >= fileList.size() || index.row() < 0)
-        return QVariant();
+    const int row = index.row();
+    if (row >= fileList.size() || row < 0)
+        return {};
 
-    if (role == Qt::DisplayRole) {
-        return fileList.at(index.row());
-    } else if (role == Qt::BackgroundRole) {
-        int batch = (index.row() / 100) % 2;
-        if (batch == 0)
-            return qApp->palette().base();
-        else
-            return qApp->palette().alternateBase();
+    switch (role) {
+    case Qt::DisplayRole:
+        return fileList.at(row).fileName();
+    case Qt::BackgroundRole: {
+        const int batch = row / batchSize;
+        const QPalette &palette = QGuiApplication::palette();
+        return (batch % 2) != 0 ? palette.alternateBase() : palette.base();
     }
-    return QVariant();
+    case Qt::DecorationRole:
+        return iconProvider.icon(fileList.at(row));
+    }
+    return {};
 }
+
 //![4]
+
+QFileInfo FileListModel::fileInfoAt(const QModelIndex &index) const
+{
+    return fileList.at(index.row());
+}
 
 //![1]
 bool FileListModel::canFetchMore(const QModelIndex &parent) const
@@ -99,19 +110,20 @@ void FileListModel::fetchMore(const QModelIndex &parent)
 {
     if (parent.isValid())
         return;
-    int remainder = fileList.size() - fileCount;
-    int itemsToFetch = qMin(100, remainder);
+    const int start = fileCount;
+    const int remainder = int(fileList.size()) - start;
+    const int itemsToFetch = qMin(batchSize, remainder);
 
     if (itemsToFetch <= 0)
         return;
 
-    beginInsertRows(QModelIndex(), fileCount, fileCount + itemsToFetch - 1);
+    beginInsertRows(QModelIndex(), start, start + itemsToFetch - 1);
 
     fileCount += itemsToFetch;
 
     endInsertRows();
 
-    emit numberPopulated(itemsToFetch);
+    emit numberPopulated(path, start, itemsToFetch, int(fileList.size()));
 }
 //![2]
 
@@ -121,7 +133,8 @@ void FileListModel::setDirPath(const QString &path)
     QDir dir(path);
 
     beginResetModel();
-    fileList = dir.entryList();
+    this->path = path;
+    fileList = dir.entryInfoList(QDir::NoDot | QDir::AllEntries, QDir::Name);
     fileCount = 0;
     endResetModel();
 }
