@@ -506,7 +506,7 @@ void tst_QThreadPool::setMaxThreadCountStartsAndStopsThreads()
     };
 
     QThreadPool threadPool;
-    threadPool.setMaxThreadCount(1);
+    threadPool.setMaxThreadCount(-1);   // docs say we'll always start at least one
 
     WaitingTask task;
     threadPool.start(&task);

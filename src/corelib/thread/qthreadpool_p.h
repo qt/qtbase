@@ -55,6 +55,7 @@
 #include "QtCore/qmutex.h"
 #include "QtCore/qthread.h"
 #include "QtCore/qwaitcondition.h"
+#include "QtCore/qthreadpool.h"
 #include "QtCore/qset.h"
 #include "QtCore/qqueue.h"
 #include "private/qobject_p.h"
@@ -158,6 +159,8 @@ public:
     void tryToStartMoreThreads();
     bool tooManyThreadsActive() const;
 
+    int maxThreadCount() const
+    { return qMax(requestedMaxThreadCount, 1); }    // documentation says we start at least one
     void startThread(QRunnable *runnable = nullptr);
     void reset();
     bool waitForDone(int msecs);
@@ -174,7 +177,7 @@ public:
     QWaitCondition noActiveThreads;
 
     int expiryTimeout = 30000;
-    int maxThreadCount = QThread::idealThreadCount();
+    int requestedMaxThreadCount = QThread::idealThreadCount();  // don't use this directly
     int reservedThreads = 0;
     int activeThreads = 0;
     uint stackSize = 0;
