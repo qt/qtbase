@@ -177,6 +177,7 @@ static bool debuggerPresent()
 #endif
 }
 
+#if !defined(Q_OS_WASM)
 static bool hasSystemCrashReporter()
 {
 #if defined(Q_OS_MACOS)
@@ -243,6 +244,7 @@ static void stackTrace()
     fprintf(stderr, "=== End of stack trace ===\n");
 #endif
 }
+#endif // !Q_OS_WASM
 
 static bool installCoverageTool(const char * appname, const char * testname)
 {
