@@ -100,12 +100,6 @@
 
 QT_BEGIN_NAMESPACE
 
-template <typename T, typename Cmp = std::less<>>
-static constexpr bool points_into_range(const T *p, const T *b, const T *e, Cmp less = {}) noexcept
-{
-    return !less(p, b) && less(p, e);
-}
-
 const char16_t QString::_empty = 0;
 
 /*
@@ -2814,7 +2808,7 @@ QString& QString::insert(qsizetype i, const QChar *unicode, qsizetype size)
         return *this;
     }
 
-    if (!d->needsDetach() && points_into_range(s, d.data(), d.data() + d.size))
+    if (!d->needsDetach() && QtPrivate::q_points_into_range(s, d.data(), d.data() + d.size))
         return insert(i, QStringView{QVarLengthArray(s, s + size)});
 
     d->insert(i, s, size);
@@ -3108,7 +3102,7 @@ static void removeStringImpl(QString &s, const T &needle, Qt::CaseSensitivity cs
 QString &QString::remove(const QString &str, Qt::CaseSensitivity cs)
 {
     const auto s = str.d.data();
-    if (points_into_range(s, d.data(), d.data() + d.size))
+    if (QtPrivate::q_points_into_range(s, d.data(), d.data() + d.size))
         removeStringImpl(*this, QStringView{QVarLengthArray(s, s + str.size())}, cs);
     else
         removeStringImpl(*this, qToStringViewIgnoringNull(str), cs);
