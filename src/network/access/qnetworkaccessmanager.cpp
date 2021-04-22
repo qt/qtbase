@@ -1209,6 +1209,7 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
         }
     }
 #ifdef Q_OS_WASM
+    Q_UNUSED(isLocalFile);
     // Support http, https, and relative urls
     if (scheme == QLatin1String("http") || scheme == QLatin1String("https") || scheme.isEmpty()) {
         QNetworkReplyWasmImpl *reply = new QNetworkReplyWasmImpl(this);
