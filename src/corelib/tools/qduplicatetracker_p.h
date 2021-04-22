@@ -67,8 +67,9 @@ class QDuplicateTracker {
 #ifdef __cpp_lib_memory_resource
     template <typename HT>
     struct QHasher {
+        size_t storedSeed = qGlobalQHashSeed();
         size_t operator()(const HT &t) const {
-            return QHashPrivate::calculateHash(t, qGlobalQHashSeed());
+            return QHashPrivate::calculateHash(t, storedSeed);
         }
     };
 
