@@ -1065,6 +1065,25 @@ void tst_QProperty::quntypedBindableApi()
     QCOMPARE(iprop.value(), 42);
     QUntypedBindable propLess;
     QVERIFY(propLess.takeBinding().isNull());
+
+    QUntypedBindable invalidBindable;
+#ifndef QT_NO_DEBUG
+    QTest::ignoreMessage(QtMsgType::QtWarningMsg, "setBinding: Could not set binding via bindable interface. The QBindable is invalid.");
+#endif
+    invalidBindable.setBinding(Qt::makePropertyBinding(iprop));
+
+    QUntypedBindable readOnlyBindable(static_cast<const QProperty<int> *>(&iprop) );
+    QVERIFY(readOnlyBindable.isReadOnly());
+#ifndef QT_NO_DEBUG
+    QTest::ignoreMessage(QtMsgType::QtWarningMsg, "setBinding: Could not set binding via bindable interface. The QBindable is read-only.");
+#endif
+    readOnlyBindable.setBinding(Qt::makePropertyBinding(iprop));
+
+    QProperty<float> fprop;
+#ifndef QT_NO_DEBUG
+    QTest::ignoreMessage(QtMsgType::QtWarningMsg, "setBinding: Could not set binding as the property expects it to be of type int but got float instead.");
+#endif
+    bindable.setBinding(Qt::makePropertyBinding(fprop));
 }
 
 void tst_QProperty::readonlyConstQBindable()
@@ -1216,6 +1235,9 @@ void tst_QProperty::qobjectBindableSignalTakingNewValue()
 void tst_QProperty::testNewStuff()
 {
     MyQObject testReadOnly;
+#ifndef QT_NO_DEBUG
+    QTest::ignoreMessage(QtMsgType::QtWarningMsg, "setBinding: Could not set binding via bindable interface. The QBindable is read-only.");
+#endif
     testReadOnly.bindableFoo().setBinding([](){return 42;});
     auto bindable = const_cast<const MyQObject&>(testReadOnly).bindableFoo();
     QVERIFY(bindable.hasBinding());

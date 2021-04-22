@@ -43,9 +43,7 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/qshareddata.h>
 #include <QtCore/qstring.h>
-#include <functional>
 #include <type_traits>
-#include <variant>
 
 #include <QtCore/qpropertyprivate.h>
 
@@ -555,6 +553,15 @@ public:
 
 }
 
+namespace QtPrivate {
+// used in Q(Untyped)Bindable to print warnings about various binding errors
+namespace BindableWarnings {
+enum Reason { InvalidInterface, NonBindableInterface, ReadOnlyInterface };
+Q_CORE_EXPORT void printUnsuitableBindableWarning(QAnyStringView prefix, Reason reason);
+Q_CORE_EXPORT void printMetaTypeMismatch(QMetaType actual, QMetaType expected);
+}
+}
+
 class QUntypedBindable
 {
 protected:
@@ -600,6 +607,11 @@ public:
     {
         if (iface)
             iface->setObserver(data, observer);
+#ifndef QT_NO_DEBUG
+        else
+            QtPrivate::BindableWarnings::printUnsuitableBindableWarning("observe:",
+                                                                        QtPrivate::BindableWarnings::InvalidInterface);
+#endif
     }
 
     template<typename Functor>
@@ -619,16 +631,31 @@ public:
 
     QUntypedPropertyBinding binding() const
     {
-        if (!iface->getBinding)
+        if (!isBindable()) {
+#ifndef QT_NO_DEBUG
+            QtPrivate::BindableWarnings::printUnsuitableBindableWarning("binding: ",
+                                                                        QtPrivate::BindableWarnings::NonBindableInterface);
+#endif
             return QUntypedPropertyBinding();
+        }
         return iface->getBinding(data);
     }
     bool setBinding(const QUntypedPropertyBinding &binding)
     {
-        if (!iface->setBinding)
+        if (isReadOnly()) {
+#ifndef QT_NO_DEBUG
+            const auto errorType = iface ? QtPrivate::BindableWarnings::ReadOnlyInterface :
+                                           QtPrivate::BindableWarnings::InvalidInterface;
+            QtPrivate::BindableWarnings::printUnsuitableBindableWarning("setBinding: Could not set binding via bindable interface.", errorType);
+#endif
             return false;
-        if (!binding.isNull() && binding.valueMetaType() != iface->metaType())
+        }
+        if (!binding.isNull() && binding.valueMetaType() != iface->metaType()) {
+#ifndef QT_NO_DEBUG
+            QtPrivate::BindableWarnings::printMetaTypeMismatch(iface->metaType(), binding.valueMetaType());
+#endif
             return false;
+        }
         iface->setBinding(data, binding);
         return true;
     }
@@ -675,7 +702,16 @@ public:
     QPropertyBinding<T> setBinding(const QPropertyBinding<T> &binding)
     {
         Q_ASSERT(!iface || binding.isNull() || binding.valueMetaType() == iface->metaType());
-        return (iface && iface->setBinding) ? static_cast<QPropertyBinding<T> &&>(iface->setBinding(data, binding)) : QPropertyBinding<T>();
+
+        if (iface && iface->setBinding)
+            return static_cast<QPropertyBinding<T> &&>(iface->setBinding(data, binding));
+#ifndef QT_NO_DEBUG
+        if (!iface)
+            QtPrivate::BindableWarnings::printUnsuitableBindableWarning("setBinding", QtPrivate::BindableWarnings::InvalidInterface);
+        else
+            QtPrivate::BindableWarnings::printUnsuitableBindableWarning("setBinding: Could not set binding via bindable interface.", QtPrivate::BindableWarnings::ReadOnlyInterface);
+#endif
+        return QPropertyBinding<T>();
     }
 #ifndef Q_CLANG_QDOC
     template <typename Functor>

@@ -42,8 +42,11 @@
 
 #include <qscopedvaluerollback.h>
 #include <QScopeGuard>
+#include <QtCore/qloggingcategory.h>
 
 QT_BEGIN_NAMESPACE
+
+Q_LOGGING_CATEGORY(lcQPropertyBinding, "qt.qproperty.binding");
 
 using namespace QtPrivate;
 
@@ -2130,6 +2133,36 @@ bool isPropertyInBindingWrapper(const QUntypedPropertyData *property)
     return bindingStatus.currentCompatProperty &&
            bindingStatus.currentCompatProperty->property == property;
 }
+
+namespace BindableWarnings {
+
+void printUnsuitableBindableWarning(QAnyStringView prefix, BindableWarnings::Reason reason)
+{
+    switch (reason) {
+    case QtPrivate::BindableWarnings::NonBindableInterface:
+        qCWarning(lcQPropertyBinding).noquote() << prefix.toString()
+                                                << "The QBindable does not allow interaction with the binding.";
+        break;
+    case QtPrivate::BindableWarnings::ReadOnlyInterface:
+        qCWarning(lcQPropertyBinding).noquote() << prefix.toString()
+                                                << "The QBindable is read-only.";
+        break;
+    default:
+    case QtPrivate::BindableWarnings::InvalidInterface:
+        qCWarning(lcQPropertyBinding).noquote() << prefix.toString()
+                                                << "The QBindable is invalid.";
+        break;
+    }
+}
+
+void printMetaTypeMismatch(QMetaType actual, QMetaType expected)
+{
+    qCWarning(lcQPropertyBinding) << "setBinding: Could not set binding as the property expects it to be of type"
+                                  << actual.name()
+                                  << "but got" << expected.name() << "instead.";
+}
+
+} // namespace BindableWarnings end
 
 } // namespace QtPrivate end
 
