@@ -157,6 +157,7 @@ public:
     int activeThreadCount() const;
 
     void tryToStartMoreThreads();
+    bool areAllThreadsActive() const;
     bool tooManyThreadsActive() const;
 
     int maxThreadCount() const

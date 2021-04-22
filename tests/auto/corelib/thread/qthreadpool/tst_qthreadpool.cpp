@@ -89,6 +89,7 @@ private slots:
     void releaseThread_data();
     void releaseThread();
     void reserveAndStart();
+    void releaseAndBlock();
     void start();
     void tryStart();
     void tryStartPeakThreadCount();
@@ -713,21 +714,19 @@ void tst_QThreadPool::reserveAndStart() // QTBUG-21051
     threadpool->reserveThread();
     QCOMPARE(threadpool->activeThreadCount(), 1);
 
-    // start a task, to get a running thread
+    // start a task, to get a running thread, works since one thread is always allowed
     WaitingTask task;
     threadpool->start(&task);
     QCOMPARE(threadpool->activeThreadCount(), 2);
+    // tryStart() will fail since activeThreadCount() >= maxThreadCount() and one thread is already running
+    QVERIFY(!threadpool->tryStart(&task));
+    QTRY_COMPARE(threadpool->activeThreadCount(), 2);
     task.waitForStarted.acquire();
     task.waitBeforeDone.release();
     QTRY_COMPARE(task.count.loadRelaxed(), 1);
     QTRY_COMPARE(threadpool->activeThreadCount(), 1);
 
-    // now the thread is waiting, but tryStart() will fail since activeThreadCount() >= maxThreadCount()
-    QVERIFY(!threadpool->tryStart(&task));
-    QTRY_COMPARE(threadpool->activeThreadCount(), 1);
-
-    // start() will therefore do a failing tryStart(), followed by enqueueTask()
-    // which will actually wake up the waiting thread.
+    // start() will wake up the waiting thread.
     threadpool->start(&task);
     QTRY_COMPARE(threadpool->activeThreadCount(), 2);
     task.waitForStarted.acquire();
@@ -736,6 +735,54 @@ void tst_QThreadPool::reserveAndStart() // QTBUG-21051
     QTRY_COMPARE(threadpool->activeThreadCount(), 1);
 
     threadpool->releaseThread();
+    QTRY_COMPARE(threadpool->activeThreadCount(), 0);
+
+    threadpool->setMaxThreadCount(savedLimit);
+}
+
+void tst_QThreadPool::releaseAndBlock()
+{
+    class WaitingTask : public QRunnable
+    {
+    public:
+        QSemaphore waitBeforeDone;
+
+        WaitingTask() { setAutoDelete(false); }
+
+        void run() override
+        {
+            waitBeforeDone.acquire();
+        }
+    };
+
+    // Set up
+    QThreadPool *threadpool = QThreadPool::globalInstance();
+    const int savedLimit = threadpool->maxThreadCount();
+    threadpool->setMaxThreadCount(1);
+    QCOMPARE(threadpool->activeThreadCount(), 0);
+
+    // start a task, to get a running thread, works since one thread is always allowed
+    WaitingTask task1, task2;
+    threadpool->start(&task1);
+    QCOMPARE(threadpool->activeThreadCount(), 1);
+
+    // tryStart() will fail since activeThreadCount() >= maxThreadCount() and one thread is already running
+    QVERIFY(!threadpool->tryStart(&task2));
+    QCOMPARE(threadpool->activeThreadCount(), 1);
+
+    // Use release without reserve to account for the blocking thread.
+    threadpool->releaseThread();
+    QTRY_COMPARE(threadpool->activeThreadCount(), 0);
+
+    // Now we can start task2
+    QVERIFY(threadpool->tryStart(&task2));
+    QCOMPARE(threadpool->activeThreadCount(), 1);
+    task2.waitBeforeDone.release();
+    QTRY_COMPARE(threadpool->activeThreadCount(), 0);
+
+    threadpool->reserveThread();
+    QCOMPARE(threadpool->activeThreadCount(), 1);
+    task1.waitBeforeDone.release();
     QTRY_COMPARE(threadpool->activeThreadCount(), 0);
 
     threadpool->setMaxThreadCount(savedLimit);
@@ -917,6 +964,7 @@ void tst_QThreadPool::waitForDone()
 {
     QElapsedTimer total, pass;
     total.start();
+    pass.start();
 
     QThreadPool threadPool;
     while (total.elapsed() < 10000) {
@@ -1101,6 +1149,7 @@ void tst_QThreadPool::destroyingWaitsForTasksToFinish()
 {
     QElapsedTimer total, pass;
     total.start();
+    pass.start();
 
     while (total.elapsed() < 10000) {
         int runs;
