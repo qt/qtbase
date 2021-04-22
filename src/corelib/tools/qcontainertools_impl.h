@@ -55,6 +55,19 @@ namespace QtPrivate
 {
 
 /*!
+  \internal
+
+  Returns whether \a p is within a range [b, e). In simplest form equivalent to:
+  b <= p < e.
+*/
+template<typename T, typename Cmp = std::less<const T *>>
+static constexpr bool q_points_into_range(const T *p, const T *b, const T *e,
+                                          Cmp less = {}) noexcept
+{
+    return !less(p, b) && less(p, e);
+}
+
+/*!
     \internal
 
     A wrapper around std::rotate(), with an optimization for
