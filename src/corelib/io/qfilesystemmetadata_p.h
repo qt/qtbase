@@ -298,13 +298,13 @@ inline QDateTime QFileSystemMetaData::fileTime(QAbstractFileEngine::FileTime tim
 
 #if defined(Q_OS_UNIX)
 inline QDateTime QFileSystemMetaData::birthTime() const
-{ return birthTime_ ? QDateTime::fromMSecsSinceEpoch(birthTime_) : QDateTime(); }
+{ return birthTime_ ? QDateTime::fromMSecsSinceEpoch(birthTime_, Qt::UTC) :  QDateTime(); }
 inline QDateTime QFileSystemMetaData::metadataChangeTime() const
-{ return metadataChangeTime_ ? QDateTime::fromMSecsSinceEpoch(metadataChangeTime_) : QDateTime(); }
+{ return metadataChangeTime_ ? QDateTime::fromMSecsSinceEpoch(metadataChangeTime_, Qt::UTC) :  QDateTime(); }
 inline QDateTime QFileSystemMetaData::modificationTime() const
-{ return modificationTime_ ? QDateTime::fromMSecsSinceEpoch(modificationTime_) : QDateTime(); }
+{ return modificationTime_ ? QDateTime::fromMSecsSinceEpoch(modificationTime_, Qt::UTC) :  QDateTime(); }
 inline QDateTime QFileSystemMetaData::accessTime() const
-{ return accessTime_ ? QDateTime::fromMSecsSinceEpoch(accessTime_) : QDateTime(); }
+{ return accessTime_ ? QDateTime::fromMSecsSinceEpoch(accessTime_, Qt::UTC) :  QDateTime(); }
 
 inline uint QFileSystemMetaData::userId() const                     { return userId_; }
 inline uint QFileSystemMetaData::groupId() const                    { return groupId_; }

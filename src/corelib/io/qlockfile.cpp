@@ -289,7 +289,7 @@ bool QLockFile::tryLock(int timeout)
             return false;
         case LockFailedError:
             if (!d->isLocked && d->isApparentlyStale()) {
-                if (Q_UNLIKELY(QFileInfo(d->fileName).lastModified() > QDateTime::currentDateTime()))
+                if (Q_UNLIKELY(QFileInfo(d->fileName).lastModified() > QDateTime::currentDateTimeUtc()))
                     qInfo("QLockFile: Lock file '%ls' has a modification time in the future", qUtf16Printable(d->fileName));
                 // Stale lock from another thread/process
                 // Ensure two processes don't remove it at the same time
