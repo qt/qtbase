@@ -27,6 +27,7 @@
 ****************************************************************************/
 
 #include <QTest>
+#include <QSignalSpy>
 #include <QStringListModel>
 
 #include "tst_qsortfilterproxymodel.h"
@@ -41,6 +42,7 @@ private slots:
     void tst_caseSensitivity();
     void tst_keepCaseSensitivity_QTBUG_92260();
     void tst_keepPatternOptions_QTBUG_92260();
+    void tst_regexCaseSensitivityNotification();
 };
 
 tst_QSortFilterProxyModelRegularExpression::tst_QSortFilterProxyModelRegularExpression() :
@@ -138,6 +140,23 @@ void tst_QSortFilterProxyModelRegularExpression::tst_keepPatternOptions_QTBUG_92
     QCOMPARE(proxyModel.filterCaseSensitivity(), Qt::CaseSensitive);
     QCOMPARE(proxyModel.filterRegularExpression().patternOptions(),
              QRegularExpression::MultilineOption);
+}
+
+/*!
+    This test ensures that if the case sensitivity is changed during a call to
+    setFilterRegularExpression, the notification signal will be emitted
+*/
+void tst_QSortFilterProxyModelRegularExpression::tst_regexCaseSensitivityNotification()
+{
+    QSortFilterProxyModel proxy;
+    QSignalSpy spy(&proxy, &QSortFilterProxyModel::filterCaseSensitivityChanged);
+    proxy.setFilterCaseSensitivity(Qt::CaseInsensitive);
+    QCOMPARE(spy.count(), 1);
+    QRegularExpression re("regex");
+    QVERIFY(!re.patternOptions().testFlag(QRegularExpression::CaseInsensitiveOption));
+    proxy.setFilterRegularExpression(re);
+    QCOMPARE(proxy.filterCaseSensitivity(), Qt::CaseSensitive);
+    QCOMPARE(spy.count(), 2);
 }
 
 QTEST_MAIN(tst_QSortFilterProxyModelRegularExpression)
