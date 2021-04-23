@@ -761,8 +761,10 @@ inline Qt::WindowType QWidget::windowType() const
 inline Qt::WindowFlags QWidget::windowFlags() const
 { return data->window_flags; }
 
+#if QT_DEPRECATED_SINCE(6, 1)
 inline bool QWidget::isTopLevel() const
 { return (windowType() & Qt::Window); }
+#endif
 
 inline bool QWidget::isWindow() const
 { return (windowType() & Qt::Window); }
