@@ -45,6 +45,7 @@
 #  include <type_traits>
 #  include <cstddef>
 #  include <utility>
+#  include <cstdint>
 #endif
 #ifndef __ASSEMBLER__
 #  include <assert.h>
@@ -248,6 +249,20 @@ typedef ptrdiff_t qptrdiff;
 typedef ptrdiff_t qsizetype;
 typedef ptrdiff_t qintptr;
 typedef size_t quintptr;
+
+#define PRIdQPTRDIFF "td"
+#define PRIiQPTRDIFF "ti"
+
+#define PRIdQSIZETYPE "td"
+#define PRIiQSIZETYPE "ti"
+
+#define PRIdQINTPTR "td"
+#define PRIiQINTPTR "ti"
+
+#define PRIuQUINTPTR "zu"
+#define PRIoQUINTPTR "zo"
+#define PRIxQUINTPTR "zx"
+#define PRIXQUINTPTR "zX"
 #endif
 
 /*
@@ -593,7 +608,7 @@ Q_CORE_EXPORT Q_DECL_CONST_FUNCTION const char *qVersion(void) Q_DECL_NOEXCEPT;
       && sizeof(void *) == sizeof(qptrdiff)
 
   size_t and qsizetype are not guaranteed to be the same size as a pointer, but
-  they usually are.
+  they usually are. We actually check for that in qglobal.cpp.
 */
 template <int> struct QIntegerForSize;
 template <>    struct QIntegerForSize<1> { typedef quint8  Unsigned; typedef qint8  Signed; };
@@ -610,6 +625,47 @@ typedef QIntegerForSizeof<void *>::Unsigned quintptr;
 typedef QIntegerForSizeof<void *>::Signed qptrdiff;
 typedef qptrdiff qintptr;
 using qsizetype = QIntegerForSizeof<std::size_t>::Signed;
+
+// These custom definitions are necessary as we're not defining our
+// datatypes in terms of the language ones, but in terms of integer
+// types that have the sime size. For instance, on a 32-bit platform,
+// qptrdiff is int, while ptrdiff_t may be aliased to long; therefore
+// using %td to print a qptrdiff would be wrong (and raise -Wformat
+// warnings), although both int and long have same bit size on that
+// platform.
+//
+// We know that sizeof(size_t) == sizeof(void *) == sizeof(qptrdiff).
+#if SIZE_MAX == 4294967295ULL
+#define PRIuQUINTPTR "u"
+#define PRIoQUINTPTR "o"
+#define PRIxQUINTPTR "x"
+#define PRIXQUINTPTR "X"
+
+#define PRIdQPTRDIFF "d"
+#define PRIiQPTRDIFF "i"
+
+#define PRIdQINTPTR "d"
+#define PRIiQINTPTR "i"
+
+#define PRIdQSIZETYPE "d"
+#define PRIiQSIZETYPE "i"
+#elif SIZE_MAX == 18446744073709551615ULL
+#define PRIuQUINTPTR "llu"
+#define PRIoQUINTPTR "llo"
+#define PRIxQUINTPTR "llx"
+#define PRIXQUINTPTR "llX"
+
+#define PRIdQPTRDIFF "lld"
+#define PRIiQPTRDIFF "lli"
+
+#define PRIdQINTPTR "lld"
+#define PRIiQINTPTR "lli"
+
+#define PRIdQSIZETYPE "lld"
+#define PRIiQSIZETYPE "lli"
+#else
+#error Unsupported platform (unknown value for SIZE_MAX)
+#endif
 
 /* moc compats (signals/slots) */
 #ifndef QT_MOC_COMPAT

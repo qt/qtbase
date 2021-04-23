@@ -32,6 +32,7 @@
 #include <QPair>
 #include <QSysInfo>
 #include <QLatin1String>
+#include <QString>
 
 #include <cmath>
 
@@ -58,6 +59,7 @@ private slots:
     void qRoundFloats();
     void qRoundDoubles_data();
     void qRoundDoubles();
+    void PRImacros();
 };
 
 extern "C" {        // functions in qglobal.c
@@ -665,6 +667,35 @@ void tst_QGlobal::qRoundDoubles() {
                  Continue);
 #endif
     QCOMPARE(qRound64(actual), expected);
+}
+
+void tst_QGlobal::PRImacros()
+{
+    // none of these calls must generate a -Wformat warning
+    {
+        quintptr p = 123u;
+        (void)QString::asprintf("The value %" PRIuQUINTPTR " is nice", p);
+        (void)QString::asprintf("The value %" PRIoQUINTPTR " is nice", p);
+        (void)QString::asprintf("The value %" PRIxQUINTPTR " is nice", p);
+        (void)QString::asprintf("The value %" PRIXQUINTPTR " is nice", p);
+    }
+
+    {
+        qintptr p = 123;
+        (void)QString::asprintf("The value %" PRIdQINTPTR " is nice", p);
+        (void)QString::asprintf("The value %" PRIiQINTPTR " is nice", p);
+    }
+
+    {
+        qptrdiff d = 123;
+        (void)QString::asprintf("The value %" PRIdQPTRDIFF " is nice", d);
+        (void)QString::asprintf("The value %" PRIiQPTRDIFF " is nice", d);
+    }
+    {
+        qsizetype s = 123;
+        (void)QString::asprintf("The value %" PRIdQSIZETYPE " is nice", s);
+        (void)QString::asprintf("The value %" PRIiQSIZETYPE " is nice", s);
+    }
 }
 
 QTEST_APPLESS_MAIN(tst_QGlobal)

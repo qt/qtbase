@@ -826,7 +826,26 @@ static_assert(sizeof(qint64) == 8, "Internal error, qint64 is misdefined");
 
     Note that qintptr is signed. Use quintptr for unsigned values.
 
+    In order to print values of this type by using formatted-output
+    facilities such as \c{printf()}, qDebug(), QString::asprintf() and
+    so on, you can use the \c{PRIdQINTPTR} and \c{PRIiQINTPTR}
+    macros as format specifiers. They will both print the value as a
+    base 10 number.
+
+    \code
+    qintptr p = 123;
+    printf("The pointer is %" PRIdQINTPTR "\n", p);
+    \endcode
+
     \sa qptrdiff, qint32, qint64
+*/
+
+/*!
+    \macro PRIdQINTPTR
+    \macro PRIiQINTPTR
+    \since 6.2
+
+    See qintptr.
 */
 
 /*!
@@ -844,7 +863,33 @@ static_assert(sizeof(qint64) == 8, "Internal error, qint64 is misdefined");
 
     Note that quintptr is unsigned. Use qptrdiff for signed values.
 
+    In order to print values of this type by using formatted-output
+    facilities such as \c{printf()}, qDebug(), QString::asprintf() and
+    so on, you can use the following macros as format specifiers:
+
+    \list
+    \li \c{PRIuQUINTPTR}: prints the value as a base 10 number.
+    \li \c{PRIoQUINTPTR}: prints the value as a base 8 number.
+    \li \c{PRIxQUINTPTR}: prints the value as a base 16 number, using lowercase \c{a-f} letters.
+    \li \c{PRIXQUINTPTR}: prints the value as a base 16 number, using uppercase \c{A-F} letters.
+    \endlist
+
+    \code
+    quintptr p = 123u;
+    printf("The pointer value is 0x%" PRUXQUINTPTR "\n", p);
+    \endcode
+
     \sa qptrdiff, quint32, quint64
+*/
+
+/*!
+    \macro PRUoQUINTPTR
+    \macro PRIuQUINTPTR
+    \macro PRIxQUINTPTR
+    \macro PRIXQUINTPTR
+    \since 6.2
+
+    See quintptr.
 */
 
 /*!
@@ -860,7 +905,26 @@ static_assert(sizeof(qint64) == 8, "Internal error, qint64 is misdefined");
 
     Note that qptrdiff is signed. Use quintptr for unsigned values.
 
+    In order to print values of this type by using formatted-output
+    facilities such as \c{printf()}, qDebug(), QString::asprintf() and
+    so on, you can use the \c{PRIdQPTRDIFF} and \c{PRIiQPTRDIFF}
+    macros as format specifiers. They will both print the value as a
+    base 10 number.
+
+    \code
+    qptrdiff d = 123;
+    printf("The difference is %" PRIdQPTRDIFF "\n", d);
+    \endcode
+
     \sa quintptr, qint32, qint64
+*/
+
+/*!
+    \macro PRIdQPTRDIFF
+    \macro PRIiQPTRDIFF
+    \since 6.2
+
+    See qptrdiff.
 */
 
 /*!
@@ -875,7 +939,26 @@ static_assert(sizeof(qint64) == 8, "Internal error, qint64 is misdefined");
 
     Note that qsizetype is signed. Use \c size_t for unsigned values.
 
+    In order to print values of this type by using formatted-output
+    facilities such as \c{printf()}, qDebug(), QString::asprintf() and
+    so on, you can use the \c{PRIdQSIZETYPE} and \c{PRIiQSIZETYPE}
+    macros as format specifiers. They will both print the value as a
+    base 10 number.
+
+    \code
+    qsizetype s = 123;
+    printf("The size is %" PRIdQSIZETYPE "\n", s);
+    \endcode
+
     \sa qptrdiff
+*/
+
+/*!
+    \macro PRIdQSIZETYPE
+    \macro PRIiQSIZETYPE
+    \since 6.2
+
+    See qsizetype.
 */
 
 /*!
