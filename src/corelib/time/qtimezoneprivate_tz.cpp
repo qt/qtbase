@@ -619,34 +619,61 @@ static QList<QTimeZonePrivate::Data> calculatePosixTransitions(const QByteArray 
     Q_ASSERT(startYear <= endYear);
 
     for (int year = startYear; year <= endYear; ++year) {
-        QTimeZonePrivate::Data dstData;
+        // Note: std and dst, despite being QDateTime(,, Qt::UTC), have the
+        // date() and time() of the *zone*'s description of the transition
+        // moments; the atMSecsSinceEpoch values computed from them are
+        // correctly offse to be UTC-based.
+
+        QTimeZonePrivate::Data dstData; // Transition to DST
         QDateTime dst(calculatePosixDate(dstDateRule, year).startOfDay(Qt::UTC).addSecs(dstTime));
-        dstData.atMSecsSinceEpoch = dst.toMSecsSinceEpoch() - (stdZone.offset * 1000);
+        dstData.atMSecsSinceEpoch = dst.toMSecsSinceEpoch() - stdZone.offset * 1000;
         dstData.offsetFromUtc = dstZone.offset;
         dstData.standardTimeOffset = stdZone.offset;
         dstData.daylightTimeOffset = dstZone.offset - stdZone.offset;
         dstData.abbreviation = dstZone.name;
-        QTimeZonePrivate::Data stdData;
+        QTimeZonePrivate::Data stdData; // Transition to standard time
         QDateTime std(calculatePosixDate(stdDateRule, year).startOfDay(Qt::UTC).addSecs(stdTime));
-        stdData.atMSecsSinceEpoch = std.toMSecsSinceEpoch() - (dstZone.offset * 1000);
+        stdData.atMSecsSinceEpoch = std.toMSecsSinceEpoch() - dstZone.offset * 1000;
         stdData.offsetFromUtc = stdZone.offset;
         stdData.standardTimeOffset = stdZone.offset;
         stdData.daylightTimeOffset = 0;
         stdData.abbreviation = stdZone.name;
-        // Part of maxYear will overflow (likewise for minYear, below):
-        if (year == maxYear && (dstData.atMSecsSinceEpoch < 0 || stdData.atMSecsSinceEpoch < 0)) {
-            if (dstData.atMSecsSinceEpoch > 0) {
-                result << dstData;
-            } else if (stdData.atMSecsSinceEpoch > 0) {
-                result << stdData;
+
+        if (year == startYear) {
+            // Handle the special case of fixed state, which may be represented
+            // by fake transitions at start and end of each year:
+            if (dstData.atMSecsSinceEpoch < stdData.atMSecsSinceEpoch) {
+                if (dst <= QDate(year, 1, 1).startOfDay(Qt::UTC)
+                    && std >= QDate(year, 12, 31).endOfDay(Qt::UTC)) {
+                    // Permanent DST:
+                    dstData.atMSecsSinceEpoch = lastTranMSecs;
+                    result << dstData;
+                    return result;
+                }
+            } else {
+                if (std <= QDate(year, 1, 1).startOfDay(Qt::UTC)
+                    && dst >= QDate(year, 12, 31).endOfDay(Qt::UTC)) {
+                    // Permanent Standard time, perversely described:
+                    stdData.atMSecsSinceEpoch = lastTranMSecs;
+                    result << stdData;
+                    return result;
+                }
             }
-        } else if (year < 1970) { // We ignore DST before the epoch.
-            if (year > minYear || stdData.atMSecsSinceEpoch != QTimeZonePrivate::invalidMSecs())
-                result << stdData;
-        } else if (dst < std) {
-            result << dstData << stdData;
-        } else {
-            result << stdData << dstData;
+        }
+
+        const bool useStd = std.isValid() && std.date().year() == year && !stdZone.name.isEmpty();
+        const bool useDst = dst.isValid() && dst.date().year() == year && !dstZone.name.isEmpty()
+            // We ignore DST before 1970 -- for now.
+            && dstData.atMSecsSinceEpoch >= 0;
+        if (useStd && useDst) {
+            if (dst < std)
+                result << dstData << stdData;
+            else
+                result << stdData << dstData;
+        } else if (useStd) {
+            result << stdData;
+        } else if (useDst) {
+            result << dstData;
         }
     }
     return result;

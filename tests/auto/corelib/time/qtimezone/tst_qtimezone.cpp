@@ -1152,6 +1152,12 @@ void tst_QTimeZone::tzTest()
     // 1am on the next year's Jan 1st; check we don't do that:
     QVERIFY(permaDst.isDaylightTime(
                 QDateTime(QDate(2020, 1, 1), QTime(1, 30), utcP1).toMSecsSinceEpoch()));
+    // It shouldn't have any transitions. QTimeZone::hasTransitions() only says
+    // whether the backend supports them, so ask for transitions in a wide
+    // enough interval that one would show up, if there are any:
+    QVERIFY(permaDst.transitions(QDate(2015, 1, 1).startOfDay(Qt::UTC).toMSecsSinceEpoch(),
+                                 QDate(2020, 1, 1).startOfDay(Qt::UTC).toMSecsSinceEpoch()
+                                ).isEmpty());
 
     QTimeZone tzBrazil("BRT+3"); // parts of Northern Brazil, as a POSIX rule
     QVERIFY(tzBrazil.isValid());
