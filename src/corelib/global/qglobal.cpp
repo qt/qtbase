@@ -173,6 +173,12 @@ static_assert(sizeof(size_t) == sizeof(void *), "size_t and a pointer don't have
 static_assert(sizeof(size_t) == sizeof(qsizetype)); // implied by the definition
 static_assert((std::is_same<qsizetype, qptrdiff>::value));
 
+// Check that our own typedefs are not broken.
+static_assert(sizeof(qint8) == 1, "Internal error, qint8 is misdefined");
+static_assert(sizeof(qint16)== 2, "Internal error, qint16 is misdefined");
+static_assert(sizeof(qint32) == 4, "Internal error, qint32 is misdefined");
+static_assert(sizeof(qint64) == 8, "Internal error, qint64 is misdefined");
+
 /*!
     \class QFlag
     \inmodule QtCore
