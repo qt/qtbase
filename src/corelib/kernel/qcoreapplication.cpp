@@ -2332,18 +2332,9 @@ QString QCoreApplication::applicationFilePath()
     if (QCoreApplicationPrivate::cachedApplicationFilePath)
         return *QCoreApplicationPrivate::cachedApplicationFilePath;
 
-    QString qAppFileName_str = qAppFileName();
-    if (!qAppFileName_str.isEmpty()) {
-        QFileInfo fi(qAppFileName_str);
-        if (fi.exists()) {
-            QCoreApplicationPrivate::setApplicationFilePath(fi.canonicalFilePath());
-            return *QCoreApplicationPrivate::cachedApplicationFilePath;
-        }
-    }
-
-    if (!arguments().isEmpty()) {
+    QString absPath = qAppFileName();
+    if (absPath.isEmpty() && !arguments().isEmpty()) {
         QString argv0 = QFile::decodeName(arguments().at(0).toLocal8Bit());
-        QString absPath;
 
         if (!argv0.isEmpty() && argv0.at(0) == QLatin1Char('/')) {
             /*
@@ -2366,14 +2357,13 @@ QString QCoreApplication::applicationFilePath()
         }
 
         absPath = QDir::cleanPath(absPath);
-
-        QFileInfo fi(absPath);
-        if (fi.exists()) {
-            QCoreApplicationPrivate::setApplicationFilePath(fi.canonicalFilePath());
-            return *QCoreApplicationPrivate::cachedApplicationFilePath;
-        }
     }
 
+    absPath = QFileInfo(absPath).canonicalFilePath();
+    if (!absPath.isEmpty()) {
+        QCoreApplicationPrivate::setApplicationFilePath(absPath);
+        return *QCoreApplicationPrivate::cachedApplicationFilePath;
+    }
     return QString();
 }
 
