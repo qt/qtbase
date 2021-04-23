@@ -238,6 +238,12 @@ QString QLockFilePrivate::processNameByPid(qint64 pid)
         // The pid is gone. Return some invalid process name to fail the test.
         return QStringLiteral("/ERROR/");
     }
+
+    // remove the " (deleted)" suffix, if any
+    static const char deleted[] = " (deleted)";
+    if (buf.endsWith(deleted))
+        buf.chop(strlen(deleted));
+
     return QFileInfo(QFile::decodeName(buf)).fileName();
 #elif defined(Q_OS_HAIKU)
     thread_info info;
