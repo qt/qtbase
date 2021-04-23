@@ -1326,6 +1326,10 @@ function(__qt_propagate_generated_resource target resource_name generated_source
         target_compile_definitions("${resource_target}" PRIVATE
             "$<TARGET_PROPERTY:${QT_CMAKE_EXPORT_NAMESPACE}::Core,INTERFACE_COMPILE_DEFINITIONS>"
         )
+
+        target_link_libraries(${resource_target} PRIVATE ${QT_CMAKE_EXPORT_NAMESPACE}::Platform)
+        _qt_internal_copy_dependency_properties(${resource_target} ${target} PRIVATE_ONLY)
+
         # Special handling is required for the Core library resources. The linking of the Core
         # library to the resources adds a circular dependency. This leads to the wrong
         # objects/library order in the linker command line, since the Core library target is resolved
@@ -1711,4 +1715,53 @@ function(_qt_internal_apply_strict_cpp target)
                 OBJCXX_EXTENSIONS OFF)
         endif()
     endif()
+endfunction()
+
+# Copies properties of the dependency to the target.
+# Arguments:
+#   PROPERTIES list of properties to copy. If not specified the following properties are copied
+#              by default: INCLUDE_DIRECTORIES SYSTEM_INCLUDE_DIRECTORIES COMPILE_DEFINITIONS
+#              COMPILE_OPTIONS COMPILE_FEATURES
+#   PRIVATE_ONLY copy only private properties (without INTERFACE analogues). Optional.
+#   INTERFACE_ONLY copy only interface properties (without non-prefixed analogues). Optional.
+#      Note: Not all properties have INTERFACE properties analogues.
+#            See https://cmake.org/cmake/help/latest/prop_tgt/EXPORT_PROPERTIES.html for details.
+#
+# PRIVATE_ONLY and INTERFACE_ONLY in the same call are not allowed. Omit these options to copy
+# both sets.
+function(_qt_internal_copy_dependency_properties target dependency)
+    cmake_parse_arguments(arg "INTERFACE_ONLY;PRIVATE_ONLY" "" "PROPERTIES" ${ARGN})
+    if(arg_PRIVATE_ONLY AND arg_INTERFACE_ONLY)
+        message("Both PRIVATE_ONLY and INTERFACE_ONLY options are set.\
+Please use _qt_internal_copy_dependency_properties without these options to copy a set of
+properties of both types."
+        )
+    endif()
+
+    if(arg_PROPERTIES)
+        set(common_props_to_set ${arg_PROPERTIES})
+    else()
+        set(common_props_to_set
+            INCLUDE_DIRECTORIES SYSTEM_INCLUDE_DIRECTORIES
+            COMPILE_DEFINITIONS COMPILE_OPTIONS
+            COMPILE_FEATURES
+        )
+    endif()
+
+    set(props_to_set "")
+    if(NOT arg_INTERFACE_ONLY)
+        set(props_to_set ${common_props_to_set})
+    endif()
+    if(NOT arg_PRIVATE_ONLY)
+        list(TRANSFORM common_props_to_set PREPEND INTERFACE_
+                        OUTPUT_VARIABLE interface_properties)
+        list(APPEND props_to_set ${interface_properties})
+    endif()
+
+    foreach(prop ${props_to_set})
+        set_property(TARGET
+            "${target}" APPEND PROPERTY
+            ${prop} "$<TARGET_PROPERTY:${dependency},${prop}>"
+        )
+    endforeach()
 endfunction()
