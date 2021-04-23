@@ -37,6 +37,7 @@
 #include <tuple>
 #include <algorithm>
 #include <vector>
+#include <set>
 #include <stdexcept>
 #include <functional>
 #include <memory>
@@ -84,6 +85,10 @@ private slots:
     void dataPointerAllocate();
     void selfEmplaceBackwards();
     void selfEmplaceForward();
+#ifndef QT_NO_EXCEPTIONS
+    void relocateWithExceptions_data();
+    void relocateWithExceptions();
+#endif // QT_NO_EXCEPTIONS
 };
 
 template <class T> const T &const_(const T &t) { return t; }
@@ -2275,6 +2280,282 @@ void tst_QArrayData::selfEmplaceForward()
     QList<QChar> complexObjs { u'a', u'b', u'c', u'd' };
     RUN_TEST_FUNC(testSelfEmplace, MyComplexQString(), 4, complexObjs);
 }
+
+#ifndef QT_NO_EXCEPTIONS
+struct ThrowingTypeWatcher
+{
+    std::vector<void *> destroyedAddrs;
+    bool watch = false;
+
+    void destroyed(void *addr)
+    {
+        if (watch)
+            destroyedAddrs.push_back(addr);
+    }
+};
+
+ThrowingTypeWatcher &throwingTypeWatcher()
+{
+    static ThrowingTypeWatcher global;
+    return global;
+}
+
+struct ThrowingType
+{
+    static unsigned int throwOnce;
+    static constexpr char throwString[] = "Requested to throw";
+    enum MoveCase {
+        MoveRightNoOverlap,
+        MoveRightOverlap,
+        MoveLeftNoOverlap,
+        MoveLeftOverlap,
+    };
+    enum ThrowCase {
+        NoThrow,
+        ThrowInUninitializedRegion,
+        ThrowInOverlapRegion,
+    };
+
+    // reinforce basic checkers with std::shared_ptr which happens to signal
+    // very explicitly about use-after-free and so on under ASan
+    std::shared_ptr<int> doubleFreeHelper = std::shared_ptr<int>(new int(42));
+    int id = 0;
+
+    void checkThrow()
+    {
+        // deferred throw
+        if (throwOnce > 0) {
+            --throwOnce;
+            if (throwOnce == 0) {
+                throw std::runtime_error(throwString);
+            }
+        }
+        return;
+    }
+
+    void copy(const ThrowingType &other) noexcept(false)
+    {
+        doubleFreeHelper = other.doubleFreeHelper;
+        id = other.id;
+        checkThrow();
+    }
+
+    ThrowingType(int val = 0) noexcept(false) : id(val) { checkThrow(); }
+    ThrowingType(const ThrowingType &other) noexcept(false) { copy(other); }
+    ThrowingType &operator=(const ThrowingType &other) noexcept(false)
+    {
+        copy(other);
+        return *this;
+    }
+    ThrowingType(ThrowingType &&other) noexcept(false) { copy(other); }
+    ThrowingType &operator=(ThrowingType &&other) noexcept(false)
+    {
+        copy(other);
+        return *this;
+    }
+    ~ThrowingType() noexcept(true)
+    {
+        throwingTypeWatcher().destroyed(this); // notify global watcher
+        id = -1;
+        // if we're in dtor but use_count is 0, it's double free
+        QVERIFY(doubleFreeHelper.use_count() > 0);
+    }
+
+    friend bool operator==(const ThrowingType &a, const ThrowingType &b) { return a.id == b.id; }
+};
+
+unsigned int ThrowingType::throwOnce = 0;
+static_assert(!QTypeInfo<ThrowingType>::isRelocatable);
+
+void tst_QArrayData::relocateWithExceptions_data()
+{
+    QTest::addColumn<ThrowingType::MoveCase>("moveCase");
+    QTest::addColumn<ThrowingType::ThrowCase>("throwCase");
+    // Not throwing
+    QTest::newRow("no-throw-move-right-no-overlap")
+            << ThrowingType::MoveRightNoOverlap << ThrowingType::NoThrow;
+    QTest::newRow("no-throw-move-right-overlap")
+            << ThrowingType::MoveRightOverlap << ThrowingType::NoThrow;
+    QTest::newRow("no-throw-move-left-no-overlap")
+            << ThrowingType::MoveLeftNoOverlap << ThrowingType::NoThrow;
+    QTest::newRow("no-throw-move-left-overlap")
+            << ThrowingType::MoveLeftOverlap << ThrowingType::NoThrow;
+    // Throwing in uninitialized region
+    QTest::newRow("throw-in-uninit-region-move-right-no-overlap")
+            << ThrowingType::MoveRightNoOverlap << ThrowingType::ThrowInUninitializedRegion;
+    QTest::newRow("throw-in-uninit-region-move-right-overlap")
+            << ThrowingType::MoveRightOverlap << ThrowingType::ThrowInUninitializedRegion;
+    QTest::newRow("throw-in-uninit-region-move-left-no-overlap")
+            << ThrowingType::MoveLeftNoOverlap << ThrowingType::ThrowInUninitializedRegion;
+    QTest::newRow("throw-in-uninit-region-move-left-overlap")
+            << ThrowingType::MoveLeftOverlap << ThrowingType::ThrowInUninitializedRegion;
+    // Throwing in overlap region
+    QTest::newRow("throw-in-overlap-region-move-right-overlap")
+            << ThrowingType::MoveRightOverlap << ThrowingType::ThrowInOverlapRegion;
+    QTest::newRow("throw-in-overlap-region-move-left-overlap")
+            << ThrowingType::MoveLeftOverlap << ThrowingType::ThrowInOverlapRegion;
+}
+
+void tst_QArrayData::relocateWithExceptions()
+{
+    // Assume that non-throwing moves perform correctly. Otherwise, all previous
+    // tests would've failed. Test only what happens when exceptions are thrown.
+    QFETCH(ThrowingType::MoveCase, moveCase);
+    QFETCH(ThrowingType::ThrowCase, throwCase);
+
+    struct ThrowingTypeLeakChecker
+    {
+        ThrowingType::MoveCase moveCase;
+        ThrowingType::ThrowCase throwCase;
+        size_t containerSize = 0;
+
+        ThrowingTypeLeakChecker(ThrowingType::MoveCase mc, ThrowingType::ThrowCase tc)
+            : moveCase(mc), throwCase(tc)
+        {
+        }
+
+        void start(qsizetype size)
+        {
+            containerSize = size_t(size);
+            throwingTypeWatcher().watch = true;
+        }
+
+        ~ThrowingTypeLeakChecker()
+        {
+            const size_t destroyedElementsCount = throwingTypeWatcher().destroyedAddrs.size();
+            const size_t destroyedElementsUniqueCount =
+                    std::set<void *>(throwingTypeWatcher().destroyedAddrs.begin(),
+                                     throwingTypeWatcher().destroyedAddrs.end())
+                            .size();
+
+            // reset the global watcher first and only then verify things
+            throwingTypeWatcher().watch = false;
+            throwingTypeWatcher().destroyedAddrs.clear();
+
+            size_t deletedByRelocate = 0;
+            switch (throwCase) {
+            case ThrowingType::NoThrow:
+                // if no overlap, N elements from old range. otherwise, N - 1
+                // elements from old range
+                if (moveCase == ThrowingType::MoveLeftNoOverlap
+                    || moveCase == ThrowingType::MoveRightNoOverlap) {
+                    deletedByRelocate = containerSize;
+                } else {
+                    deletedByRelocate = containerSize - 1;
+                }
+                break;
+            case ThrowingType::ThrowInUninitializedRegion:
+                // 1 relocated element from uninitialized region
+                deletedByRelocate = 1u;
+                break;
+            case ThrowingType::ThrowInOverlapRegion:
+                // 2 relocated elements from uninitialized region
+                deletedByRelocate = 2u;
+                break;
+            default:
+                QFAIL("Unknown throwCase");
+            }
+
+            QCOMPARE(destroyedElementsCount, deletedByRelocate + containerSize);
+            QCOMPARE(destroyedElementsUniqueCount, destroyedElementsCount);
+        }
+    };
+
+    const auto setDeferredThrow = [throwCase]() {
+        switch (throwCase) {
+        case ThrowingType::NoThrow:
+            break; // do nothing
+        case ThrowingType::ThrowInUninitializedRegion:
+            ThrowingType::throwOnce = 2;
+            break;
+        case ThrowingType::ThrowInOverlapRegion:
+            ThrowingType::throwOnce = 3;
+            break;
+        default:
+            QFAIL("Unknown throwCase");
+        }
+    };
+
+    const auto createDataPointer = [](qsizetype capacity, qsizetype initSize) {
+        QArrayDataPointer<ThrowingType> qadp(QTypedArrayData<ThrowingType>::allocate(capacity));
+        qadp->appendInitialize(initSize);
+        int i = 0;
+        std::generate(qadp.begin(), qadp.end(), [&i]() { return ThrowingType(i++); });
+        return qadp;
+    };
+
+    switch (moveCase) {
+    case ThrowingType::MoveRightNoOverlap: {
+        ThrowingTypeLeakChecker watch(moveCase, throwCase);
+        auto storage = createDataPointer(20, 3);
+        QVERIFY(storage.freeSpaceAtEnd() > 3);
+
+        watch.start(storage.size);
+        try {
+            setDeferredThrow();
+            storage->relocate(4);
+            if (throwCase != ThrowingType::NoThrow)
+                QFAIL("Unreachable line!");
+        } catch (const std::runtime_error &e) {
+            QCOMPARE(std::string(e.what()), ThrowingType::throwString);
+        }
+        break;
+    }
+    case ThrowingType::MoveRightOverlap: {
+        ThrowingTypeLeakChecker watch(moveCase, throwCase);
+        auto storage = createDataPointer(20, 3);
+        QVERIFY(storage.freeSpaceAtEnd() > 3);
+
+        watch.start(storage.size);
+        try {
+            setDeferredThrow();
+            storage->relocate(2);
+            if (throwCase != ThrowingType::NoThrow)
+                QFAIL("Unreachable line!");
+        } catch (const std::runtime_error &e) {
+            QCOMPARE(std::string(e.what()), ThrowingType::throwString);
+        }
+        break;
+    }
+    case ThrowingType::MoveLeftNoOverlap: {
+        ThrowingTypeLeakChecker watch(moveCase, throwCase);
+        auto storage = createDataPointer(20, 2);
+        storage->insert(0, 1, ThrowingType(42));
+        QVERIFY(storage.freeSpaceAtBegin() > 3);
+
+        watch.start(storage.size);
+        try {
+            setDeferredThrow();
+            storage->relocate(-4);
+            if (throwCase != ThrowingType::NoThrow)
+                QFAIL("Unreachable line!");
+        } catch (const std::runtime_error &e) {
+            QCOMPARE(std::string(e.what()), ThrowingType::throwString);
+        }
+        break;
+    }
+    case ThrowingType::MoveLeftOverlap: {
+        ThrowingTypeLeakChecker watch(moveCase, throwCase);
+        auto storage = createDataPointer(20, 2);
+        storage->insert(0, 1, ThrowingType(42));
+        QVERIFY(storage.freeSpaceAtBegin() > 3);
+
+        watch.start(storage.size);
+        try {
+            setDeferredThrow();
+            storage->relocate(-2);
+            if (throwCase != ThrowingType::NoThrow)
+                QFAIL("Unreachable line!");
+        } catch (const std::runtime_error &e) {
+            QCOMPARE(std::string(e.what()), ThrowingType::throwString);
+        }
+        break;
+    }
+    default:
+        QFAIL("Unknown ThrowingType::MoveCase");
+    };
+}
+#endif // QT_NO_EXCEPTIONS
 
 QTEST_APPLESS_MAIN(tst_QArrayData)
 #include "tst_qarraydata.moc"
