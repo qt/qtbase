@@ -116,6 +116,10 @@ void tst_QAbstractItemModelTester::standardItemModelZeroColumns()
     // QTBUG-92886
     model.insertRows(0, 5);
     model.removeRows(1, 2);
+
+    const QModelIndex parentIndex = model.index(0, 0);
+    model.insertRows(0, 5, parentIndex);
+    model.removeRows(1, 2, parentIndex);
 }
 
 void tst_QAbstractItemModelTester::testInsertThroughProxy()
