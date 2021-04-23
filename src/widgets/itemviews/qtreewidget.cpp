@@ -506,22 +506,18 @@ bool QTreeModel::insertColumns(int column, int count, const QModelIndex &parent)
 bool QTreeModel::removeRows(int row, int count, const QModelIndex &parent) {
     if (count < 1 || row < 0 || (row + count) > rowCount(parent))
         return false;
-
-    beginRemoveRows(parent, row, row + count - 1);
-
-    QSignalBlocker blocker(this);
-
-    QTreeWidgetItem *itm = item(parent);
+    QTreeWidgetItem *parentItem = item(parent);
+    // if parentItem is valid, begin/end RemoveRows is handled by takeChild below
+    if (!parentItem)
+        beginRemoveRows(parent, row, row + count - 1);
     for (int i = row + count - 1; i >= row; --i) {
-        QTreeWidgetItem *child = itm ? itm->takeChild(i) : rootItem->children.takeAt(i);
+        QTreeWidgetItem *child = parentItem ? parentItem->takeChild(i) : rootItem->children.takeAt(i);
         Q_ASSERT(child);
         child->view = nullptr;
         delete child;
-        child = nullptr;
     }
-    blocker.unblock();
-
-    endRemoveRows();
+    if (!parentItem)
+        endRemoveRows();
     return true;
 }
 
