@@ -5356,4 +5356,101 @@ void tst_QSortFilterProxyModel::autoAcceptChildRowsBinding()
                                                                            "autoAcceptChildRows");
 }
 
+void tst_QSortFilterProxyModel::filterCaseSensitivityBinding()
+{
+    QSortFilterProxyModel proxyModel;
+    QCOMPARE(proxyModel.filterCaseSensitivity(), Qt::CaseSensitive);
+    QTestPrivate::testReadWritePropertyBasics<QSortFilterProxyModel, Qt::CaseSensitivity>(
+            proxyModel, Qt::CaseInsensitive, Qt::CaseSensitive, "filterCaseSensitivity");
+    if (QTest::currentTestFailed())
+        return;
+
+    // Make sure that setting QRegularExpression updates filterCaseSensitivity
+    // and invalidates its binding.
+    QProperty<Qt::CaseSensitivity> setter(Qt::CaseSensitive);
+    proxyModel.bindableFilterCaseSensitivity().setBinding(Qt::makePropertyBinding(setter));
+    QCOMPARE(proxyModel.filterCaseSensitivity(), Qt::CaseSensitive);
+    QVERIFY(proxyModel.bindableFilterCaseSensitivity().hasBinding());
+
+    QSignalSpy spy(&proxyModel, &QSortFilterProxyModel::filterCaseSensitivityChanged);
+    QRegularExpression regExp("pattern", QRegularExpression::CaseInsensitiveOption);
+    proxyModel.setFilterRegularExpression(regExp);
+    QCOMPARE(proxyModel.filterCaseSensitivity(), Qt::CaseInsensitive);
+    QCOMPARE(spy.count(), 1);
+    QVERIFY(!proxyModel.bindableFilterCaseSensitivity().hasBinding());
+}
+
+void tst_QSortFilterProxyModel::filterRegularExpressionBinding()
+{
+    QSortFilterProxyModel proxyModel;
+    QCOMPARE(proxyModel.filterRegularExpression(), QRegularExpression());
+    const QRegularExpression initial("initial", QRegularExpression::CaseInsensitiveOption);
+    const QRegularExpression changed("changed");
+    QTestPrivate::testReadWritePropertyBasics<QSortFilterProxyModel, QRegularExpression>(
+            proxyModel, initial, changed, "filterRegularExpression");
+    if (QTest::currentTestFailed())
+        return;
+
+    // Make sure that setting filterCaseSensitivity updates QRegularExpression
+    // and invalidates its binding.
+    QProperty<QRegularExpression> setter(initial);
+    proxyModel.bindableFilterRegularExpression().setBinding(Qt::makePropertyBinding(setter));
+    QCOMPARE(proxyModel.filterRegularExpression(), initial);
+    QVERIFY(proxyModel.bindableFilterRegularExpression().hasBinding());
+
+    int counter = 0;
+    auto handler = proxyModel.bindableFilterRegularExpression().onValueChanged(
+            [&counter]() { ++counter; });
+    Q_UNUSED(handler);
+    proxyModel.setFilterCaseSensitivity(Qt::CaseSensitive);
+    QCOMPARE(proxyModel.filterRegularExpression(), QRegularExpression(initial.pattern()));
+    QCOMPARE(counter, 1);
+    QVERIFY(!proxyModel.bindableFilterRegularExpression().hasBinding());
+
+    QProperty<Qt::CaseSensitivity> csSetter(Qt::CaseInsensitive);
+    // Make sure that setting filter string updates QRegularExpression, but does
+    // not break the binding for case sensitivity.
+    proxyModel.setFilterRegularExpression(initial);
+    proxyModel.bindableFilterCaseSensitivity().setBinding(Qt::makePropertyBinding(csSetter));
+    QVERIFY(proxyModel.bindableFilterCaseSensitivity().hasBinding());
+
+    counter = 0;
+    proxyModel.setFilterRegularExpression("ch(ang|opp)ed");
+    // The pattern has changed, but the case sensitivity options are the same.
+    QCOMPARE(proxyModel.filterRegularExpression(),
+             QRegularExpression("ch(ang|opp)ed", QRegularExpression::CaseInsensitiveOption));
+    QCOMPARE(counter, 1);
+    QVERIFY(proxyModel.bindableFilterCaseSensitivity().hasBinding());
+
+    // Make sure that setting filter wildcard updates QRegularExpression, but
+    // does not break the binding for case sensitivity.
+    proxyModel.setFilterRegularExpression(initial);
+    proxyModel.bindableFilterCaseSensitivity().setBinding(Qt::makePropertyBinding(csSetter));
+    QVERIFY(proxyModel.bindableFilterCaseSensitivity().hasBinding());
+
+    counter = 0;
+    proxyModel.setFilterWildcard("*.jpeg");
+    const QString wildcardStr = QRegularExpression::wildcardToRegularExpression(
+            "*.jpeg", QRegularExpression::UnanchoredWildcardConversion);
+    // The pattern has changed, but the case sensitivity options are the same.
+    QCOMPARE(proxyModel.filterRegularExpression(),
+             QRegularExpression(wildcardStr, QRegularExpression::CaseInsensitiveOption));
+    QCOMPARE(counter, 1);
+    QVERIFY(proxyModel.bindableFilterCaseSensitivity().hasBinding());
+
+    // Make sure that setting filter fixed string updates QRegularExpression,
+    // but does not break the binding for case sensitivity.
+    proxyModel.setFilterRegularExpression(initial);
+    proxyModel.bindableFilterCaseSensitivity().setBinding(Qt::makePropertyBinding(csSetter));
+    QVERIFY(proxyModel.bindableFilterCaseSensitivity().hasBinding());
+
+    counter = 0;
+    proxyModel.setFilterFixedString("test");
+    // The pattern has changed, but the case sensitivity options are the same.
+    QCOMPARE(proxyModel.filterRegularExpression(),
+             QRegularExpression("test", QRegularExpression::CaseInsensitiveOption));
+    QCOMPARE(counter, 1);
+    QVERIFY(proxyModel.bindableFilterCaseSensitivity().hasBinding());
+}
+
 #include "tst_qsortfilterproxymodel.moc"

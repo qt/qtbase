@@ -59,26 +59,29 @@ class Q_CORE_EXPORT QSortFilterProxyModel : public QAbstractProxyModel
     friend class QSortFilterProxyModelGreaterThan;
 
     Q_OBJECT
-    Q_PROPERTY(QRegularExpression filterRegularExpression READ filterRegularExpression WRITE setFilterRegularExpression)
-    Q_PROPERTY(int filterKeyColumn READ filterKeyColumn WRITE setFilterKeyColumn BINDABLE
-                       bindableFilterKeyColumn)
-    Q_PROPERTY(bool dynamicSortFilter READ dynamicSortFilter WRITE setDynamicSortFilter BINDABLE
-                       bindableDynamicSortFilter)
-    Q_PROPERTY(Qt::CaseSensitivity filterCaseSensitivity READ filterCaseSensitivity WRITE setFilterCaseSensitivity NOTIFY filterCaseSensitivityChanged)
-    Q_PROPERTY(Qt::CaseSensitivity sortCaseSensitivity READ sortCaseSensitivity WRITE
-                       setSortCaseSensitivity NOTIFY sortCaseSensitivityChanged BINDABLE
-                               bindableSortCaseSensitivity)
-    Q_PROPERTY(bool isSortLocaleAware READ isSortLocaleAware WRITE setSortLocaleAware NOTIFY
-                       sortLocaleAwareChanged BINDABLE bindableIsSortLocaleAware)
-    Q_PROPERTY(int sortRole READ sortRole WRITE setSortRole NOTIFY sortRoleChanged BINDABLE
-                       bindableSortRole)
-    Q_PROPERTY(int filterRole READ filterRole WRITE setFilterRole NOTIFY filterRoleChanged BINDABLE
-                       bindableFilterRole)
-    Q_PROPERTY(bool recursiveFilteringEnabled READ isRecursiveFilteringEnabled WRITE
-                       setRecursiveFilteringEnabled NOTIFY recursiveFilteringEnabledChanged BINDABLE
-                               bindableRecursiveFilteringEnabled)
-    Q_PROPERTY(bool autoAcceptChildRows READ autoAcceptChildRows WRITE setAutoAcceptChildRows NOTIFY
-                       autoAcceptChildRowsChanged BINDABLE bindableAutoAcceptChildRows)
+    Q_PROPERTY(QRegularExpression filterRegularExpression READ filterRegularExpression
+               WRITE setFilterRegularExpression BINDABLE bindableFilterRegularExpression)
+    Q_PROPERTY(int filterKeyColumn READ filterKeyColumn WRITE setFilterKeyColumn
+               BINDABLE bindableFilterKeyColumn)
+    Q_PROPERTY(bool dynamicSortFilter READ dynamicSortFilter WRITE setDynamicSortFilter
+               BINDABLE bindableDynamicSortFilter)
+    Q_PROPERTY(Qt::CaseSensitivity filterCaseSensitivity READ filterCaseSensitivity
+               WRITE setFilterCaseSensitivity NOTIFY filterCaseSensitivityChanged
+               BINDABLE bindableFilterCaseSensitivity)
+    Q_PROPERTY(Qt::CaseSensitivity sortCaseSensitivity READ sortCaseSensitivity
+               WRITE setSortCaseSensitivity NOTIFY sortCaseSensitivityChanged
+               BINDABLE bindableSortCaseSensitivity)
+    Q_PROPERTY(bool isSortLocaleAware READ isSortLocaleAware WRITE setSortLocaleAware
+               NOTIFY sortLocaleAwareChanged BINDABLE bindableIsSortLocaleAware)
+    Q_PROPERTY(int sortRole READ sortRole WRITE setSortRole NOTIFY sortRoleChanged
+               BINDABLE bindableSortRole)
+    Q_PROPERTY(int filterRole READ filterRole WRITE setFilterRole NOTIFY filterRoleChanged
+               BINDABLE bindableFilterRole)
+    Q_PROPERTY(bool recursiveFilteringEnabled READ isRecursiveFilteringEnabled
+               WRITE setRecursiveFilteringEnabled NOTIFY recursiveFilteringEnabledChanged
+               BINDABLE bindableRecursiveFilteringEnabled)
+    Q_PROPERTY(bool autoAcceptChildRows READ autoAcceptChildRows WRITE setAutoAcceptChildRows
+               NOTIFY autoAcceptChildRowsChanged BINDABLE bindableAutoAcceptChildRows)
 
 public:
     explicit QSortFilterProxyModel(QObject *parent = nullptr);
@@ -93,6 +96,7 @@ public:
     QItemSelection mapSelectionFromSource(const QItemSelection &sourceSelection) const override;
 
     QRegularExpression filterRegularExpression() const;
+    QBindable<QRegularExpression> bindableFilterRegularExpression();
 
     int filterKeyColumn() const;
     void setFilterKeyColumn(int column);
@@ -100,6 +104,7 @@ public:
 
     Qt::CaseSensitivity filterCaseSensitivity() const;
     void setFilterCaseSensitivity(Qt::CaseSensitivity cs);
+    QBindable<Qt::CaseSensitivity> bindableFilterCaseSensitivity();
 
     Qt::CaseSensitivity sortCaseSensitivity() const;
     void setSortCaseSensitivity(Qt::CaseSensitivity cs);

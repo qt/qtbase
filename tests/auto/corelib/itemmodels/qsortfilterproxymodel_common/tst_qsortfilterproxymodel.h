@@ -173,6 +173,8 @@ private slots:
     void filterRoleBinding();
     void recursiveFilteringEnabledBinding();
     void autoAcceptChildRowsBinding();
+    void filterCaseSensitivityBinding();
+    void filterRegularExpressionBinding();
 
 protected:
     void buildHierarchy(const QStringList &data, QAbstractItemModel *model);
