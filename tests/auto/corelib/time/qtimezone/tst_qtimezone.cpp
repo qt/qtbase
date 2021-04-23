@@ -1141,6 +1141,18 @@ void tst_QTimeZone::tzTest()
     QTzTimeZonePrivate tzposix("MET-1METDST-2,M3.5.0/02:00:00,M10.5.0/03:00:00");
     QVERIFY(tzposix.isValid());
 
+    // RHEL has been seen with this as Africa/Casablanca's POSIX rule:
+    QTzTimeZonePrivate permaDst("<+00>0<+01>,0/0,J365/25");
+    const QTimeZone utcP1("UTC+01:00"); // Should always have same offset as permaDst
+    QVERIFY(permaDst.isValid());
+    QVERIFY(permaDst.hasDaylightTime());
+    QVERIFY(permaDst.isDaylightTime(QDate(2020, 1, 1).startOfDay(utcP1).toMSecsSinceEpoch()));
+    QVERIFY(permaDst.isDaylightTime(QDate(2020, 12, 31).endOfDay(utcP1).toMSecsSinceEpoch()));
+    // Note that the final /25 could be misunderstood as putting a fall-back at
+    // 1am on the next year's Jan 1st; check we don't do that:
+    QVERIFY(permaDst.isDaylightTime(
+                QDateTime(QDate(2020, 1, 1), QTime(1, 30), utcP1).toMSecsSinceEpoch()));
+
     QTimeZone tzBrazil("BRT+3"); // parts of Northern Brazil, as a POSIX rule
     QVERIFY(tzBrazil.isValid());
     QCOMPARE(tzBrazil.offsetFromUtc(QDateTime(QDate(1111, 11, 11).startOfDay())), -10800);

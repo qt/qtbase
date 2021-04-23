@@ -393,19 +393,22 @@ static QDate calculatePosixDate(const QByteArray &dateRule, int year)
                 return calculateDowDate(year, month, dow, week);
         }
     } else if (dateRule.at(0) == 'J') {
-        // Day of Year ignores Feb 29
+        // Day of Year 1...365, ignores Feb 29.
+        // So March always starts on day 60.
         int doy = dateRule.mid(1).toInt(&ok);
         if (ok && doy > 0 && doy < 366) {
-            QDate date = QDate(year, 1, 1).addDays(doy - 1);
-            if (QDate::isLeapYear(date.year()) && date.month() > 2)
-                date = date.addDays(-1);
-            return date;
+            // Subtract 1 because we're adding days *after* the first of
+            // January, unless it's after February in a leap year, when the leap
+            // day cancels that out:
+            if (!QDate::isLeapYear(year) || doy < 60)
+                --doy;
+            return QDate(year, 1, 1).addDays(doy);
         }
     } else {
-        // Day of Year includes Feb 29
+        // Day of Year 0...365, includes Feb 29
         int doy = dateRule.toInt(&ok);
-        if (ok && doy > 0 && doy <= 366)
-            return QDate(year, 1, 1).addDays(doy - 1);
+        if (ok && doy >= 0 && doy < 366)
+            return QDate(year, 1, 1).addDays(doy);
     }
     return QDate();
 }
