@@ -143,7 +143,7 @@ void QWindowsPipeReader::cancelAsyncRead(State newState)
         // Wait for callback to complete.
         do {
             locker.unlock();
-            waitForNotification(QDeadlineTimer(-1));
+            waitForNotification();
             locker.relock();
         } while (readSequenceStarted);
     }
@@ -462,67 +462,18 @@ DWORD QWindowsPipeReader::checkPipeState()
     return 0;
 }
 
-bool QWindowsPipeReader::waitForNotification(const QDeadlineTimer &deadline)
+bool QWindowsPipeReader::waitForNotification()
 {
+    DWORD waitRet;
     do {
-        DWORD waitRet = WaitForSingleObjectEx(syncHandle, deadline.remainingTime(), TRUE);
+        waitRet = WaitForSingleObjectEx(syncHandle, INFINITE, TRUE);
         if (waitRet == WAIT_OBJECT_0)
             return true;
 
-        if (waitRet != WAIT_IO_COMPLETION)
-            return false;
-
         // Some I/O completion routine was called. Wait some more.
-    } while (!deadline.hasExpired());
+    } while (waitRet == WAIT_IO_COMPLETION);
 
     return false;
-}
-
-/*!
-    Waits for the completion of the asynchronous read operation.
-    Returns \c true, if we've emitted the readyRead signal.
- */
-bool QWindowsPipeReader::waitForReadyRead(int msecs)
-{
-    QDeadlineTimer timer(msecs);
-
-    // Make sure that 'syncHandle' was triggered by the thread pool callback.
-    while (isReadOperationActive() && waitForNotification(timer)) {
-        if (consumePendingAndEmit(false))
-            return true;
-    }
-
-    return false;
-}
-
-/*!
-    Waits until the pipe is closed.
- */
-bool QWindowsPipeReader::waitForPipeClosed(int msecs)
-{
-    const int sleepTime = 10;
-    QDeadlineTimer timer(msecs);
-
-    while (waitForReadyRead(timer.remainingTime())) {}
-    if (pipeBroken)
-        return true;
-
-    if (timer.hasExpired())
-        return false;
-
-    // When the read buffer is full, the read sequence is not running,
-    // so we need to peek the pipe to detect disconnection.
-    forever {
-        checkPipeState();
-        consumePendingAndEmit(false);
-        if (pipeBroken)
-            return true;
-
-        if (timer.hasExpired())
-            return false;
-
-        Sleep(sleepTime);
-    }
 }
 
 QT_END_NAMESPACE

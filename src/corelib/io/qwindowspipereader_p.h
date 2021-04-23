@@ -53,7 +53,6 @@
 //
 
 #include <qobject.h>
-#include <qdeadlinetimer.h>
 #include <qmutex.h>
 #include <private/qringbuffer_p.h>
 
@@ -80,9 +79,8 @@ public:
     qint64 bytesAvailable() const;
     qint64 read(char *data, qint64 maxlen);
     bool canReadLine() const;
-    bool waitForReadyRead(int msecs);
+    DWORD checkPipeState();
     bool checkForReadyRead() { return consumePendingAndEmit(false); }
-    bool waitForPipeClosed(int msecs);
 
     bool isReadOperationActive() const;
     HANDLE syncEvent() const { return syncHandle; }
@@ -103,8 +101,7 @@ private:
     static void CALLBACK waitCallback(PTP_CALLBACK_INSTANCE instance, PVOID context,
                                       PTP_WAIT wait, TP_WAIT_RESULT waitResult);
     bool readCompleted(DWORD errorCode, DWORD numberOfBytesRead);
-    DWORD checkPipeState();
-    bool waitForNotification(const QDeadlineTimer &deadline);
+    bool waitForNotification();
     bool consumePendingAndEmit(bool allowWinActPosting);
     bool consumePending();
 

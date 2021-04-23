@@ -133,6 +133,7 @@ public:
 #elif defined(Q_OS_WIN)
     ~QLocalSocketPrivate();
     void destroyPipeHandles();
+    qint64 pipeWriterBytesToWrite() const;
     void _q_canRead();
     void _q_bytesWritten(qint64 bytes);
     void _q_canWrite();
