@@ -151,6 +151,7 @@ private slots:
     void getMimeDataWithInvalidItem();
     void testVisualItemRect();
     void reparentHiddenItem();
+    void persistentChildIndex();
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     void clearItemData();
 #endif
@@ -3585,6 +3586,21 @@ void tst_QTreeWidget::reparentHiddenItem()
     parent->removeChild(child);
     otherParent->addChild(child);
     QVERIFY(grandChild->isHidden());
+}
+
+void tst_QTreeWidget::persistentChildIndex() // QTBUG-90030
+{
+    QTreeWidget tree;
+    QTreeWidgetItem *toplevel = new QTreeWidgetItem(QStringList{QStringLiteral("toplevel")});
+    tree.addTopLevelItem(toplevel);
+    QModelIndex firstIndex = tree.model()->index(0, 0);
+    QTreeWidgetItem *child1 = new QTreeWidgetItem(QStringList{QStringLiteral("child1")});
+    QTreeWidgetItem *child2 = new QTreeWidgetItem(QStringList{QStringLiteral("child2")});
+    toplevel->addChildren({child1, child2});
+    QPersistentModelIndex persistentIdx = tree.model()->index(1, 0, firstIndex);
+    QCOMPARE(persistentIdx.data().toString(), QStringLiteral("child2"));
+    tree.model()->removeRows(0, 1, firstIndex);
+    QCOMPARE(persistentIdx.data().toString(), QStringLiteral("child2"));
 }
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
