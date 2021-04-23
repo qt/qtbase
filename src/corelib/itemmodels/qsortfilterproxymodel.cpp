@@ -2523,9 +2523,13 @@ QRegularExpression QSortFilterProxyModel::filterRegularExpression() const
 void QSortFilterProxyModel::setFilterRegularExpression(const QRegularExpression &regularExpression)
 {
     Q_D(QSortFilterProxyModel);
+    const Qt::CaseSensitivity cs = filterCaseSensitivity();
     d->filter_about_to_be_changed();
     d->filter_regularexpression = regularExpression;
     d->filter_changed(QSortFilterProxyModelPrivate::Direction::Rows);
+    const Qt::CaseSensitivity updatedCs = filterCaseSensitivity();
+    if (cs != updatedCs)
+        emit filterCaseSensitivityChanged(updatedCs);
 }
 
 /*!
