@@ -455,7 +455,7 @@ void QAbstractItemModelTesterPrivate::parent()
 
     // Common error test #2, make sure that a second level index has a parent
     // that is the first level index.
-    if (model->rowCount(topIndex) > 0) {
+    if (model->rowCount(topIndex) > 0 && model->columnCount(topIndex) > 0) {
         QModelIndex childIndex = model->index(0, 0, topIndex);
         MODELTESTER_VERIFY(childIndex.isValid());
         MODELTESTER_COMPARE(model->parent(childIndex), topIndex);
