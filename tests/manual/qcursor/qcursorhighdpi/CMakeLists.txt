@@ -22,5 +22,5 @@ qt_internal_add_manual_test(qcursorhighdpi
 
 qt_internal_extend_target(qcursorhighdpi CONDITION WIN32
     PUBLIC_LIBRARIES
-        User32
+        user32
 )

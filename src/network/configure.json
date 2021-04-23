@@ -89,11 +89,11 @@
             "sources": [
                 { "type": "openssl" },
                 {
-                    "libs": "-lssleay32 -llibeay32 -lUser32 -lWs2_32 -lAdvapi32 -lGdi32",
+                    "libs": "-lssleay32 -llibeay32 -luser32 -lws2_32 -ladvapi32 -lgdi32",
                     "condition": "config.win32"
                 },
                 {
-                    "libs": "-llibssl -llibcrypto -lUser32 -lWs2_32 -lAdvapi32 -lCrypt32",
+                    "libs": "-llibssl -llibcrypto -luser32 -lws2_32 -ladvapi32 -lcrypt32",
                     "condition": "config.msvc"
                 },
                 {

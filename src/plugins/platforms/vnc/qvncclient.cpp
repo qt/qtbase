@@ -47,7 +47,7 @@
 #include <QtGui/qguiapplication.h>
 
 #ifdef Q_OS_WIN
-#include <Winsock2.h>
+#include <winsock2.h>
 #else
 #include <arpa/inet.h>
 #endif

@@ -63,7 +63,7 @@ QT_REQUIRE_CONFIG(schannel);
 
 #define SECURITY_WIN32
 #define SCHANNEL_USE_BLACKLISTS 1
-#include <Winternl.h> // needed for UNICODE defines
+#include <winternl.h> // needed for UNICODE defines
 #include <security.h>
 #include <schnlsp.h>
 #undef SCHANNEL_USE_BLACKLISTS
