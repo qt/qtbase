@@ -1403,11 +1403,26 @@ void tst_QPropertyAnimation::recursiveAnimations()
 
 void tst_QPropertyAnimation::bindings()
 {
-    AnimationObject o;
-    QPropertyAnimation a(&o, "value");
+    std::unique_ptr<AnimationObject> o1(new AnimationObject);
+    std::unique_ptr<AnimationObject> o2(new AnimationObject);
+    QPropertyAnimation a(o1.get(), "value");
 
-    QTestPrivate::testReadWritePropertyBasics(a, QByteArray("value"), QByteArray("realValue"),
-                                              "propertyName");
+    QTestPrivate::testReadWritePropertyBasics<QPropertyAnimation, QByteArray>(
+            a, QByteArray("realValue"), QByteArray("value"), "propertyName");
+    if (QTest::currentTestFailed()) {
+        qDebug() << "Failed property test for QPropertyAnimation::propertyName";
+        return;
+    }
+    QTestPrivate::testReadWritePropertyBasics<QPropertyAnimation, QObject *>(a, o2.get(), o1.get(),
+                                                                             "targetObject");
+    if (QTest::currentTestFailed()) {
+        qDebug() << "Failed property test for QPropertyAnimation::targetObject";
+        return;
+    }
+
+    a.setTargetObject(o1.get());
+    o1.reset();
+    QCOMPARE(a.targetObject(), nullptr);
 }
 
 QTEST_MAIN(tst_QPropertyAnimation)

@@ -64,14 +64,20 @@ class QPropertyAnimationPrivate : public QVariantAnimationPrivate
 {
    Q_DECLARE_PUBLIC(QPropertyAnimation)
 public:
-    QPropertyAnimationPrivate()
-        : targetValue(nullptr), propertyType(0), propertyIndex(-1)
-    {
-    }
+    QPropertyAnimationPrivate() : propertyType(0), propertyIndex(-1) { }
 
-    QPointer<QObject> target;
-    //we use targetValue to be able to unregister the target from the global hash
-    QObject *targetValue;
+    void setTargetObjectForwarder(QObject *target) { q_func()->setTargetObject(target); }
+    Q_OBJECT_COMPAT_PROPERTY_WITH_ARGS(QPropertyAnimationPrivate, QObject *, targetObject,
+                                       &QPropertyAnimationPrivate::setTargetObjectForwarder,
+                                       nullptr)
+    void targetObjectDestroyed()
+    {
+        // stop() has to be called before targetObject is set to nullptr.
+        // targetObject must not be nullptr in states unequal to "Stopped".
+        q_func()->stop();
+        targetObject.setValueBypassingBindings(nullptr);
+        targetObject.notify();
+    }
 
     //for the QProperty
     int propertyType;
