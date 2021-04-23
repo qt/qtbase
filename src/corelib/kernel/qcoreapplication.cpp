@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2021 The Qt Company Ltd.
-** Copyright (C) 2016 Intel Corporation.
+** Copyright (C) 2021 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -107,6 +107,10 @@
 #  include <sys/types.h>
 
 #  include "qcore_unix_p.h"
+#endif
+
+#if __has_include(<sys/auxv.h>)     // Linux and FreeBSD
+#  include <sys/auxv.h>
 #endif
 
 #ifdef Q_OS_VXWORKS
@@ -2288,11 +2292,24 @@ QString QCoreApplication::applicationDirPath()
 #if !defined(Q_OS_WIN) && !defined(Q_OS_DARWIN)     // qcoreapplication_win.cpp or qcoreapplication_mac.cpp
 static QString qAppFileName()
 {
-#  if defined(Q_OS_LINUX) && (!defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_EMBEDDED))
-    return QFile::decodeName(qt_readlink("/proc/self/exe"));
-#  endif
-
+#  if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
+    // the actual process on Android is the Java VM, so this doesn't help us
     return QString();
+#  elif defined(Q_OS_LINUX)
+    // this includes the Embedded Android builds
+    return QFile::decodeName(qt_readlink("/proc/self/exe"));
+#  elif defined(AT_EXECPATH)
+    // seen on FreeBSD, but I suppose the other BSDs could adopt this API
+    char execfn[PATH_MAX];
+    if (elf_aux_info(AT_EXECPATH, execfn, sizeof(execfn)) != 0)
+        execfn[0] = '\0';
+
+    qsizetype len = qstrlen(execfn);
+    return QFile::decodeName(QByteArray::fromRawData(execfn, len));
+#  else
+    // other OS or something
+    return QString();
+#endif
 }
 #endif
 
