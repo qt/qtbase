@@ -403,8 +403,9 @@ Option::init(int argc, char **argv)
         for (int i = 1; i < argc; i++)
             args << QString::fromLocal8Bit(argv[i]);
 
-        while (!args.isEmpty()) {
-            QString opt = args.at(0);
+        qsizetype idx = 0;
+        while (idx < args.size()) {
+            QString opt = args.at(idx);
             if (opt == "-project") {
                 Option::recursive = true;
                 Option::qmake_mode = Option::QMAKE_GENERATE_PROJECT;
@@ -421,15 +422,15 @@ Option::init(int argc, char **argv)
             } else if (opt == "-makefile") {
                 Option::qmake_mode = Option::QMAKE_GENERATE_MAKEFILE;
             } else if (opt == "-qtconf") {
-                if (args.length() >= 3) {
-                    // Move the argument following "-qtconf <file>" in front and check again.
-                    args.prepend(args.takeAt(2));
-                    continue;
-                }
+                // Skip "-qtconf <file>" and proceed.
+                ++idx;
+                if (idx + 1 < args.length())
+                    ++idx;
+                continue;
             } else {
                 break;
             }
-            args.takeFirst();
+            args.takeAt(idx);
             break;
         }
 
