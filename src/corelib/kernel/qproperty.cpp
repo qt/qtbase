@@ -1006,6 +1006,16 @@ QString QPropertyBindingError::description() const
 */
 
 /*!
+  \fn QMetaType QUntypedBindable::metaType() const
+  \since 6.2
+
+  Returns the metatype of the property from which the QUntypedBindable was created.
+  If the bindable is invalid, an invalid metatype will be returned.
+
+  \sa isValid(), QUntypedPropertyBinding::valueMetaType()
+*/
+
+/*!
   \class QBindable
   \inmodule QtCore
   \brief QBindable is a wrapper class around binding-enabled properties. It allows type-safe

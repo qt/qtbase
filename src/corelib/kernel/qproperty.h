@@ -484,6 +484,8 @@ struct QBindableInterface
     MakeBinding makeBinding;
     SetObserver setObserver;
     GetMetaType metaType;
+
+    static constexpr quintptr MetaTypeAccessorFlag = 0x1;
 };
 
 template<typename Property, typename = void>
@@ -650,9 +652,9 @@ public:
 #endif
             return false;
         }
-        if (!binding.isNull() && binding.valueMetaType() != iface->metaType()) {
+        if (!binding.isNull() && binding.valueMetaType() != metaType()) {
 #ifndef QT_NO_DEBUG
-            QtPrivate::BindableWarnings::printMetaTypeMismatch(iface->metaType(), binding.valueMetaType());
+            QtPrivate::BindableWarnings::printMetaTypeMismatch(metaType(), binding.valueMetaType());
 #endif
             return false;
         }
@@ -662,6 +664,21 @@ public:
     bool hasBinding() const
     {
         return !binding().isNull();
+    }
+
+    QMetaType metaType() const
+    {
+        if (!(iface && data))
+            return QMetaType();
+        if (iface->metaType)
+            return iface->metaType();
+        // ### Qt 7: Change the metatype function to take data as its argument
+        // special casing for QML's proxy bindable: allow multiplexing in the getter
+        // function to retrieve the metatype from data
+        Q_ASSERT(iface->getter);
+        QMetaType result;
+        iface->getter(data, reinterpret_cast<void *>(quintptr(&result) | QtPrivate::QBindableInterface::MetaTypeAccessorFlag));
+        return result;
     }
 
 };
@@ -678,7 +695,7 @@ public:
     using QUntypedBindable::QUntypedBindable;
     explicit QBindable(const QUntypedBindable &b) : QUntypedBindable(b)
     {
-        if (iface && iface->metaType() != QMetaType::fromType<T>()) {
+        if (iface && metaType() != QMetaType::fromType<T>()) {
             data = nullptr;
             iface = nullptr;
         }
@@ -701,7 +718,7 @@ public:
     using QUntypedBindable::setBinding;
     QPropertyBinding<T> setBinding(const QPropertyBinding<T> &binding)
     {
-        Q_ASSERT(!iface || binding.isNull() || binding.valueMetaType() == iface->metaType());
+        Q_ASSERT(!iface || binding.isNull() || binding.valueMetaType() == metaType());
 
         if (iface && iface->setBinding)
             return static_cast<QPropertyBinding<T> &&>(iface->setBinding(data, binding));
