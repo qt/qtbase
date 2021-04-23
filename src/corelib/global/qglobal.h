@@ -226,12 +226,8 @@ typedef short qint16;              /* 16 bit signed */
 typedef unsigned short quint16;    /* 16 bit unsigned */
 typedef int qint32;                /* 32 bit signed */
 typedef unsigned int quint32;      /* 32 bit unsigned */
-#if defined(Q_OS_WIN) && !defined(Q_CC_GNU)
-#  define Q_INT64_C(c) c ## i64    /* signed 64 bit constant */
-#  define Q_UINT64_C(c) c ## ui64   /* unsigned 64 bit constant */
-typedef __int64 qint64;            /* 64 bit signed */
-typedef unsigned __int64 quint64;  /* 64 bit unsigned */
-#else
+// Unlike LL / ULL in C++, for historical reasons, we force the
+// result to be of the requested type.
 #ifdef __cplusplus
 #  define Q_INT64_C(c) static_cast<long long>(c ## LL)     /* signed 64 bit constant */
 #  define Q_UINT64_C(c) static_cast<unsigned long long>(c ## ULL) /* unsigned 64 bit constant */
@@ -241,7 +237,6 @@ typedef unsigned __int64 quint64;  /* 64 bit unsigned */
 #endif
 typedef long long qint64;           /* 64 bit signed */
 typedef unsigned long long quint64; /* 64 bit unsigned */
-#endif
 
 typedef qint64 qlonglong;
 typedef quint64 qulonglong;

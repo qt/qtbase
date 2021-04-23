@@ -786,8 +786,8 @@ static_assert(sizeof(qint64) == 8, "Internal error, qint64 is misdefined");
 /*! \typedef qint64
     \relates <QtGlobal>
 
-    Typedef for \c{long long int} (\c __int64 on Windows). This type
-    is guaranteed to be 64-bit on all platforms supported by Qt.
+    Typedef for \c{long long int}. This type is guaranteed to be 64-bit
+    on all platforms supported by Qt.
 
     Literals of this type can be created using the Q_INT64_C() macro:
 
@@ -800,9 +800,8 @@ static_assert(sizeof(qint64) == 8, "Internal error, qint64 is misdefined");
     \typedef quint64
     \relates <QtGlobal>
 
-    Typedef for \c{unsigned long long int} (\c{unsigned __int64} on
-    Windows). This type is guaranteed to be 64-bit on all platforms
-    supported by Qt.
+    Typedef for \c{unsigned long long int}. This type is guaranteed to
+    be 64-bit on all platforms supported by Qt.
 
     Literals of this type can be created using the Q_UINT64_C()
     macro:
