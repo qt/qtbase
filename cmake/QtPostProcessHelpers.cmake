@@ -707,10 +707,15 @@ function(qt_internal_create_config_file_for_standalone_tests)
 endfunction()
 
 function(qt_internal_install_prl_files)
-    # Install prl files
+    # Get locations relative to QT_BUILD_DIR from which prl files should be installed.
     get_property(prl_install_dirs GLOBAL PROPERTY QT_PRL_INSTALL_DIRS)
+
+    # Clear the list of install dirs so the previous values don't pollute the list of install dirs
+    # for the next repository in a top-level build.
+    set_property(GLOBAL PROPERTY QT_PRL_INSTALL_DIRS "")
+
     foreach(prl_install_dir ${prl_install_dirs})
-        qt_install(DIRECTORY "${PROJECT_BINARY_DIR}/${prl_install_dir}/"
+        qt_install(DIRECTORY "${QT_BUILD_DIR}/${prl_install_dir}/"
             DESTINATION ${prl_install_dir}
             FILES_MATCHING PATTERN "*.prl"
         )
