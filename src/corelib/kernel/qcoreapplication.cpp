@@ -105,6 +105,8 @@
 #  include <langinfo.h>
 #  include <unistd.h>
 #  include <sys/types.h>
+
+#  include "qcore_unix_p.h"
 #endif
 
 #ifdef Q_OS_VXWORKS
@@ -2283,6 +2285,17 @@ QString QCoreApplication::applicationDirPath()
     return d->cachedApplicationDirPath;
 }
 
+#if !defined(Q_OS_WIN) && !defined(Q_OS_DARWIN)     // qcoreapplication_win.cpp or qcoreapplication_mac.cpp
+static QString qAppFileName()
+{
+#  if defined(Q_OS_LINUX) && (!defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_EMBEDDED))
+    return QFile::decodeName(qt_readlink("/proc/self/exe"));
+#  endif
+
+    return QString();
+}
+#endif
+
 /*!
     Returns the file path of the application executable.
 
@@ -2319,10 +2332,6 @@ QString QCoreApplication::applicationFilePath()
     if (QCoreApplicationPrivate::cachedApplicationFilePath)
         return *QCoreApplicationPrivate::cachedApplicationFilePath;
 
-#if defined(Q_OS_WIN)
-    QCoreApplicationPrivate::setApplicationFilePath(QFileInfo(qAppFileName()).filePath());
-    return *QCoreApplicationPrivate::cachedApplicationFilePath;
-#elif defined(Q_OS_MAC)
     QString qAppFileName_str = qAppFileName();
     if (!qAppFileName_str.isEmpty()) {
         QFileInfo fi(qAppFileName_str);
@@ -2331,17 +2340,7 @@ QString QCoreApplication::applicationFilePath()
             return *QCoreApplicationPrivate::cachedApplicationFilePath;
         }
     }
-#endif
-#if defined( Q_OS_UNIX )
-#  if defined(Q_OS_LINUX) && (!defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_EMBEDDED))
-    // Try looking for a /proc/<pid>/exe symlink first which points to
-    // the absolute path of the executable
-    QFileInfo pfi(QStringLiteral("/proc/self/exe"));
-    if (pfi.exists() && pfi.isSymLink()) {
-        QCoreApplicationPrivate::setApplicationFilePath(pfi.canonicalFilePath());
-        return *QCoreApplicationPrivate::cachedApplicationFilePath;
-    }
-#  endif
+
     if (!arguments().isEmpty()) {
         QString argv0 = QFile::decodeName(arguments().at(0).toLocal8Bit());
         QString absPath;
@@ -2375,7 +2374,6 @@ QString QCoreApplication::applicationFilePath()
         }
     }
 
-#endif
     return QString();
 }
 
