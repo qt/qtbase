@@ -1168,6 +1168,44 @@ void QTextHtmlParserNode::setListStyle(const QList<QCss::Value> &cssValues)
         blockFormat.setProperty(QTextFormat::ListStyle, listStyle);
 }
 
+static QTextFrameFormat::BorderStyle toQTextFrameFormat(QCss::BorderStyle cssStyle)
+{
+    switch (cssStyle) {
+    case QCss::BorderStyle::BorderStyle_Dotted:
+        return QTextFrameFormat::BorderStyle::BorderStyle_Dotted;
+    case QCss::BorderStyle::BorderStyle_Dashed:
+        return QTextFrameFormat::BorderStyle::BorderStyle_Dashed;
+    case QCss::BorderStyle::BorderStyle_Solid:
+        return QTextFrameFormat::BorderStyle::BorderStyle_Solid;
+    case QCss::BorderStyle::BorderStyle_Double:
+        return QTextFrameFormat::BorderStyle::BorderStyle_Double;
+    case QCss::BorderStyle::BorderStyle_DotDash:
+        return QTextFrameFormat::BorderStyle::BorderStyle_DotDash;
+    case QCss::BorderStyle::BorderStyle_DotDotDash:
+        return QTextFrameFormat::BorderStyle::BorderStyle_DotDotDash;
+    case QCss::BorderStyle::BorderStyle_Groove:
+        return QTextFrameFormat::BorderStyle::BorderStyle_Groove;
+    case QCss::BorderStyle::BorderStyle_Ridge:
+        return QTextFrameFormat::BorderStyle::BorderStyle_Ridge;
+    case QCss::BorderStyle::BorderStyle_Inset:
+        return QTextFrameFormat::BorderStyle::BorderStyle_Inset;
+    case QCss::BorderStyle::BorderStyle_Outset:
+        return QTextFrameFormat::BorderStyle::BorderStyle_Outset;
+    case QCss::BorderStyle::BorderStyle_Unknown:
+    case QCss::BorderStyle::BorderStyle_None:
+    case QCss::BorderStyle::BorderStyle_Native:
+        return QTextFrameFormat::BorderStyle::BorderStyle_None;
+    case QCss::BorderStyle::NumKnownBorderStyles:
+        break;
+    // Intentionally no "default" to allow a compiler warning when extending the enum
+    // without updating this here. clang gives such a warning.
+    }
+    // Must not happen, intentionally trigger undefined behavior which sanitizers will detect.
+    // Having all cases covered in switch is not sufficient:
+    // MSVC would warn when there is no "default".
+    return static_cast<QTextFrameFormat::BorderStyle>(-1);
+}
+
 void QTextHtmlParserNode::applyCssDeclarations(const QList<QCss::Declaration> &declarations, const QTextDocument *resourceProvider)
 {
     QCss::ValueExtractor extractor(declarations);
@@ -1187,7 +1225,7 @@ void QTextHtmlParserNode::applyCssDeclarations(const QList<QCss::Declaration> &d
         // because tableBorder is not relevant for cells.
         extractor.extractBorder(cssBorder, tableCellBorderBrush, cssStyles, cssRadii);
         for (int i = 0; i < 4; ++i) {
-            tableCellBorderStyle[i] = static_cast<QTextFrameFormat::BorderStyle>(cssStyles[i] - 1);
+            tableCellBorderStyle[i] = toQTextFrameFormat(cssStyles[i]);
             tableCellBorder[i] = static_cast<qreal>(cssBorder[i]);
         }
     }
