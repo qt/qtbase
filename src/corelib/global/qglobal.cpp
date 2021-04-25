@@ -876,14 +876,14 @@ static_assert(sizeof(qint64) == 8, "Internal error, qint64 is misdefined");
 
     \code
     quintptr p = 123u;
-    printf("The pointer value is 0x%" PRUXQUINTPTR "\n", p);
+    printf("The pointer value is 0x%" PRIXQUINTPTR "\n", p);
     \endcode
 
     \sa qptrdiff, quint32, quint64
 */
 
 /*!
-    \macro PRUoQUINTPTR
+    \macro PRIoQUINTPTR
     \macro PRIuQUINTPTR
     \macro PRIxQUINTPTR
     \macro PRIXQUINTPTR
