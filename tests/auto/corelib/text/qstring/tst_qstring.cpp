@@ -2419,6 +2419,36 @@ void tst_QString::insert_special_cases()
     QCOMPARE(a.insert(1, QLatin1String("BCD")), QString("ABCDEF"));
     QCOMPARE(a.insert(3, QLatin1String("-")), QString("ABC-DEF"));
     QCOMPARE(a.insert(a.size() + 1, QLatin1String("XYZ")), QString("ABC-DEF XYZ"));
+
+    {
+        a = "one";
+        a.prepend(u'a');
+        QString b(a.data_ptr()->freeSpaceAtEnd(), u'b');
+        QCOMPARE(a.insert(a.size() + 1, QLatin1String(b.toLatin1())), QString("aone ") + b);
+    }
+
+    {
+        a = "onetwothree";
+        while (a.size() - 1)
+            a.remove(0, 1);
+        QString b(a.data_ptr()->freeSpaceAtEnd() + 1, u'b');
+        QCOMPARE(a.insert(a.size() + 1, QLatin1String(b.toLatin1())), QString("e ") + b);
+    }
+
+    {
+        a = "one";
+        a.prepend(u'a');
+        QString b(a.data_ptr()->freeSpaceAtEnd(), u'b');
+        QCOMPARE(a.insert(a.size() + 1, b), QString("aone ") + b);
+    }
+
+    {
+        a = "onetwothree";
+        while (a.size() - 1)
+            a.remove(0, 1);
+        QString b(a.data_ptr()->freeSpaceAtEnd() + 1, u'b');
+        QCOMPARE(a.insert(a.size() + 1, b), QString("e ") + b);
+    }
 }
 
 void tst_QString::append_data(bool emptyIsNoop)
@@ -2477,6 +2507,49 @@ void tst_QString::append_special_cases()
         QVERIFY(a.capacity() > 0);
         a.append(QLatin1String("BC"));
         QCOMPARE(a, QLatin1String("ABC"));
+    }
+
+    {
+        QString a = "one";
+        a.prepend(u'a');
+        QString b(a.data_ptr()->freeSpaceAtEnd(), u'b');
+        QCOMPARE(a.append(QLatin1String(b.toLatin1())), QString("aone") + b);
+    }
+
+    {
+        QString a = "onetwothree";
+        while (a.size() - 1)
+            a.remove(0, 1);
+        QString b(a.data_ptr()->freeSpaceAtEnd(), u'b');
+        QCOMPARE(a.append(QLatin1String(b.toLatin1())), QString("e") + b);
+    }
+
+    {
+        QString a = "one";
+        a.prepend(u'a');
+        QString b(a.data_ptr()->freeSpaceAtEnd(), u'b');
+        QCOMPARE(a.append(b), QString("aone") + b);
+    }
+
+    {
+        QString a = "onetwothree";
+        while (a.size() - 1)
+            a.remove(0, 1);
+        QString b(a.data_ptr()->freeSpaceAtEnd() + 1, u'b');
+        QCOMPARE(a.append(b), QString("e") + b);
+    }
+
+    {
+        QString a = "one";
+        a.prepend(u'a');
+        QCOMPARE(a.append(u'b'), QString("aoneb"));
+    }
+
+    {
+        QString a = "onetwothree";
+        while (a.size() - 1)
+            a.remove(0, 1);
+        QCOMPARE(a.append(u'b'), QString("eb"));
     }
 }
 
