@@ -2355,8 +2355,6 @@ QString QCoreApplication::applicationFilePath()
             */
             absPath = QStandardPaths::findExecutable(argv0);
         }
-
-        absPath = QDir::cleanPath(absPath);
     }
 
     absPath = QFileInfo(absPath).canonicalFilePath();
