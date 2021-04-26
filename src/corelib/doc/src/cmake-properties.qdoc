@@ -112,6 +112,24 @@ that.
 */
 
 /*!
+\page cmake-target-property-QT_ANDROID_MIN_SDK_VERSION.html
+\ingroup cmake-properties-qtcore
+\ingroup cmake-target-properties-qtcore
+
+\title QT_ANDROID_MIN_SDK_VERSION
+\target cmake-target-property-QT_ANDROID_MIN_SDK_VERSION
+
+\brief Minimum Android SDK version.
+
+\preliminarycmakeproperty
+\cmakepropertyandroidonly
+
+Specifies the minimum Android API level for the target.
+
+\sa{qt6_android_generate_deployment_settings}{qt_android_generate_deployment_settings()}
+*/
+
+/*!
 \page cmake-target-property-QT_ANDROID_PACKAGE_SOURCE_DIR.html
 \ingroup cmake-properties-qtcore
 \ingroup cmake-target-properties-qtcore
