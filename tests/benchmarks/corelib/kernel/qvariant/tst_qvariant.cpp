@@ -338,7 +338,7 @@ void tst_qvariant::createCoreType_data()
     QTest::addColumn<int>("typeId");
     for (int i = QMetaType::FirstCoreType; i <= QMetaType::LastCoreType; ++i) {
         if (QMetaType metaType(i); metaType.isValid()) // QMetaType(27) does not exist
-            QTest::newRow(metaType.typeName(i)) << i;
+            QTest::newRow(metaType.name()) << i;
     }
 }
 
