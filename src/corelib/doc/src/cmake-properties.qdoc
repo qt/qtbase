@@ -144,6 +144,48 @@ then place this directly into the directory specified by this variable.
 */
 
 /*!
+\page cmake-target-property-QT_ANDROID_VERSION_CODE.html
+\ingroup cmake-properties-qtcore
+\ingroup cmake-target-properties-qtcore
+
+\title QT_ANDROID_VERSION_CODE
+\target cmake-target-property-QT_ANDROID_VERSION_CODE
+
+\brief Internal Android app version.
+
+\preliminarycmakeproperty
+\cmakepropertyandroidonly
+
+Specifies the app's version number. This is usually a number that
+increments monotonically with each release of your project.
+
+For more information, see \l{Android: App Versioning}{Android App Versioning}.
+
+\sa{qt6_android_generate_deployment_settings}{qt_android_generate_deployment_settings()}
+*/
+
+/*!
+\page cmake-target-property-QT_ANDROID_VERSION_NAME.html
+\ingroup cmake-properties-qtcore
+\ingroup cmake-target-properties-qtcore
+
+\title QT_ANDROID_VERSION_NAME
+\target cmake-target-property-QT_ANDROID_VERSION_NAME
+
+\brief Human-readable Android app version.
+
+\preliminarycmakeproperty
+\cmakepropertyandroidonly
+
+Specifies the app's version as a human readable string, usually three
+numbers, separated by dots.
+
+For more information, see \l{Android: App Versioning}{Android App Versioning}.
+
+\sa{qt6_android_generate_deployment_settings}{qt_android_generate_deployment_settings()}
+*/
+
+/*!
 \page cmake-target-property-QT_QML_ROOT_PATH.html
 \ingroup cmake-properties-qtcore
 \ingroup cmake-target-properties-qtcore
