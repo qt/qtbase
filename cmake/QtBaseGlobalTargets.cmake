@@ -3,6 +3,7 @@ qt_path_join(__GlobalConfig_build_dir ${QT_CONFIG_BUILD_DIR} ${__GlobalConfig_pa
 qt_path_join(__GlobalConfig_install_dir ${QT_CONFIG_INSTALL_DIR} ${__GlobalConfig_path_suffix})
 set(__GlobalConfig_install_dir_absolute "${__GlobalConfig_install_dir}")
 set(__qt_bin_dir_absolute "${QT_INSTALL_DIR}/${INSTALL_BINDIR}")
+set(__qt_libexec_dir_absolute "${QT_INSTALL_DIR}/${INSTALL_LIBEXECDIR}")
 if(QT_WILL_INSTALL)
     # Need to prepend the install prefix when doing prefix builds, because the config install dir
     # is relative then.
@@ -11,6 +12,8 @@ if(QT_WILL_INSTALL)
                  ${__GlobalConfig_install_dir_absolute})
     qt_path_join(__qt_bin_dir_absolute
                  ${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX} ${__qt_bin_dir_absolute})
+    qt_path_join(__qt_libexec_dir_absolute
+                 ${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX} ${__qt_libexec_dir_absolute})
 endif()
 # Compute relative path from $qt_prefix/bin dir to global CMake config install dir, to use in the
 # unix-y qt-cmake shell script, to make it work even if the installed Qt is relocated.

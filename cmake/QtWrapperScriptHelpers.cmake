@@ -138,24 +138,28 @@ function(qt_internal_create_qt_configure_tests_wrapper_script)
     #
     # The script takes a path to the repo for which the standalone tests will be configured.
     set(script_name "qt-internal-configure-tests")
-    set(qt_cmake_path
-        "${QT_STAGING_PREFIX}/${INSTALL_BINDIR}/qt-cmake")
 
-    set(common_args "-DQT_BUILD_STANDALONE_TESTS=ON")
+    set(script_passed_args "-DQT_BUILD_STANDALONE_TESTS=ON")
+
+    file(RELATIVE_PATH relative_path_from_libexec_dir_to_bin_dir
+        ${__qt_libexec_dir_absolute}
+        ${__qt_bin_dir_absolute})
+    file(TO_NATIVE_PATH "${relative_path_from_libexec_dir_to_bin_dir}"
+                        relative_path_from_libexec_dir_to_bin_dir)
+
     if(CMAKE_HOST_UNIX)
-        set(script_os_prelude "#!/bin/sh")
-        string(PREPEND qt_cmake_path "exec ")
-        set(script_passed_args "${common_args} \"$@\"")
+        configure_file("${CMAKE_CURRENT_SOURCE_DIR}/libexec/${script_name}.in"
+            "${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/${script_name}" @ONLY)
+
+        qt_install(PROGRAMS "${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/${script_name}"
+                   DESTINATION "${INSTALL_LIBEXECDIR}")
     else()
-        set(script_os_prelude "@echo off")
-        string(APPEND script_name ".bat")
-        string(APPEND qt_cmake_path ".bat")
-        set(script_passed_args "${common_args} %*")
+        configure_file("${CMAKE_CURRENT_SOURCE_DIR}/libexec/${script_name}.bat.in"
+            "${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/${script_name}.bat" @ONLY)
+
+        qt_install(PROGRAMS "${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/${script_name}.bat"
+                   DESTINATION "${INSTALL_LIBEXECDIR}")
     endif()
-    configure_file("${CMAKE_CURRENT_SOURCE_DIR}/libexec/qt-internal-configure-tests.in"
-                   "${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/${script_name}")
-    qt_install(PROGRAMS "${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/${script_name}"
-               DESTINATION "${INSTALL_LIBEXECDIR}")
 endfunction()
 
 function(qt_internal_install_android_helper_scripts)
