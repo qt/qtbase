@@ -9,6 +9,7 @@ qt_internal_add_test(tst_qurl
         tst_qurl.cpp
     PUBLIC_LIBRARIES
         Qt::Concurrent
+        Qt::TestPrivate
 )
 
 ## Scopes:
