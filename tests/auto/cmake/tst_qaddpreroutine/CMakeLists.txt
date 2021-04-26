@@ -24,8 +24,9 @@ find_package(Qt6 COMPONENTS Gui Test CONFIG REQUIRED)
 qt_internal_add_plugin(QTBUG_90341ThemePlugin
     OUTPUT_NAME QTBUG_90341
     OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+    CLASS_NAME ThemePlugin
     TYPE platformthemes
-    DEFAULT_IF FALSE
+    DEFAULT_IF TRUE
     SOURCES
         plugin.cpp
     SKIP_INSTALL
@@ -42,7 +43,6 @@ qt_internal_add_test(tst_qaddpreroutine
         Qt::Gui
 )
 
-qt6_import_plugins(tst_qaddpreroutine INCLUDE QTBUG_90341)
 
 target_compile_definitions(tst_qaddpreroutine
     PRIVATE QT_QPA_PLATFORM_PLUGIN_PATH=\"${CMAKE_BINARY_DIR}\")
