@@ -9,7 +9,6 @@
 function(qt_auto_detect_wasm)
     if("${QT_QMAKE_TARGET_MKSPEC}" STREQUAL "wasm-emscripten" AND DEFINED ENV{EMSDK})
         if(NOT DEFINED QT_AUTODETECT_WASM)
-            set(QT_AUTODETECT_WASM TRUE CACHE BOOL "")
             # detect EMSCRIPTEN_ROOT path
             file(READ "$ENV{EMSDK}/.emscripten" ver)
             string(REGEX MATCH "EMSCRIPTEN_ROOT.*$" EMROOT "${ver}")
@@ -48,6 +47,7 @@ function(qt_auto_detect_wasm)
                 message(FATAL_ERROR "Cannot find the toolchain file Emscripten.cmake. "
                 "Please specify the toolchain file with -DCMAKE_TOOLCHAIN_FILE=<file>.")
             endif()
+            set(QT_AUTODETECT_WASM TRUE CACHE BOOL "")
 
             if(NOT DEFINED BUILD_SHARED_LIBS)
                 set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build Qt statically or dynamically" FORCE)
