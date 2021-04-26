@@ -114,12 +114,24 @@ contains(TEMPLATE, .*app) {
 
 qtConfTest_emccVersion()
 
-# Pass --source-map-base on the linker line. This informs the
-# browser where to find the source files when debugging.
-WASM_SOURCE_MAP_BASE = http://localhost:8000/
-!isEmpty(QT_WASM_SOURCE_MAP_BASE):\
-    WASM_SOURCE_MAP_BASE = $$QT_WASM_SOURCE_MAP_BASE
-CONFIG(debug): QMAKE_LFLAGS += -g4 --source-map-base $$WASM_SOURCE_MAP_BASE
+CONFIG(debug):!isEmpty(QT_WASM_SOURCE_MAP) {
+
+    EMCC_VERSION = $$qtSystemEmccVersion()
+
+    greaterThan(EMCC_VERSION, 2.0.16) {
+        # emsdk 2.0.17 depreciates use of -g4
+        QMAKE_LFLAGS += -gsource-map
+    } else {
+        QMAKE_LFLAGS += -g4
+    }
+    # Pass --source-map-base on the linker line. This informs the
+    # browser where to find the source files when debugging.
+    WASM_SOURCE_MAP_BASE = http://localhost:8000/
+    !isEmpty(QT_WASM_SOURCE_MAP_BASE):\
+        WASM_SOURCE_MAP_BASE = $$QT_WASM_SOURCE_MAP_BASE
+    QMAKE_LFLAGS += --source-map-base $$WASM_SOURCE_MAP_BASE
+}
+
 
 # Creates the stand-alone version of the library from bitcode
 !static:contains(TEMPLATE, .*lib): {
