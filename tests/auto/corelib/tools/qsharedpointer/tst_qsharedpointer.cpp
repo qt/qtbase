@@ -38,7 +38,6 @@
 #include <QtCore/QMap>
 #include <QtCore/QThread>
 
-#include "externaltests.h"
 #include "forwarddeclared.h"
 #include "nontracked.h"
 #include "wrapper.h"
@@ -112,9 +111,10 @@ private slots:
     void threadStressTest_data();
     void threadStressTest();
     void validConstructs();
+#if 0
     void invalidConstructs_data();
     void invalidConstructs();
-
+#endif
 
     // let invalidConstructs be the last test, because it's the slowest;
     // add new tests above this block
@@ -2125,6 +2125,7 @@ void tst_QSharedPointer::validConstructs()
     }
 }
 
+#if 0
 typedef bool (QTest::QExternalTest:: * TestFunction)(const QByteArray &body);
 Q_DECLARE_METATYPE(TestFunction)
 void tst_QSharedPointer::invalidConstructs_data()
@@ -2334,6 +2335,7 @@ void tst_QSharedPointer::invalidConstructs()
         QFAIL("Fail");
     }
 }
+#endif // #if 0
 
 void tst_QSharedPointer::qvariantCast()
 {
