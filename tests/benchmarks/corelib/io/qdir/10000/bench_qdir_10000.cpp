@@ -130,7 +130,7 @@ private slots:
         QBENCHMARK {
             QStringList fileList = testdir.entryList(QDir::NoFilter, QDir::Unsorted);
             foreach (const QString &filename, fileList) {
-
+                Q_UNUSED(filename);
             }
         }
     }
@@ -150,7 +150,7 @@ private slots:
         QBENCHMARK {
             QStringList fileList = testdir.entryList(QDir::NoFilter, QDir::Time);
             foreach (const QString &filename, fileList) {
-
+                Q_UNUSED(filename);
             }
         }
     }
