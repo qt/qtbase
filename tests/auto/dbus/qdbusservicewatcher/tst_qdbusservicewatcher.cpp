@@ -28,6 +28,7 @@
 ****************************************************************************/
 
 #include <QTest>
+#include <QtTest/private/qpropertytesthelper_p.h>
 #include <QSignalSpy>
 #include <QTestEventLoop>
 #include <QDBusConnection>
@@ -55,6 +56,7 @@ private slots:
     void setConnection_data();
     void setConnection();
     void bindings();
+    void bindingsAutomated();
 
 private:
     QString generateServiceName();
@@ -469,5 +471,33 @@ void tst_QDBusServiceWatcher::bindings()
     QCOMPARE(notificationCounter, 5);
 }
 
+void tst_QDBusServiceWatcher::bindingsAutomated()
+{
+    QString serviceName("normal");
+
+    QDBusConnection con("");
+    QVERIFY(!con.isConnected());
+
+    QDBusServiceWatcher watcher(serviceName, con, QDBusServiceWatcher::WatchForRegistration);
+
+    QTestPrivate::testReadWritePropertyBasics<QDBusServiceWatcher, QStringList>(
+            watcher,
+            QStringList() << "foo" << "bar",
+            QStringList() << "bar" << "foo",
+            "watchedServices");
+    if (QTest::currentTestFailed()) {
+        qDebug("Failed property test for QDBusServiceWatcher::watchedServices");
+        return;
+    }
+
+    QTestPrivate::testReadWritePropertyBasics<QDBusServiceWatcher,
+                                              QFlags<QDBusServiceWatcher::WatchModeFlag>>(
+            watcher, QDBusServiceWatcher::WatchForUnregistration,
+            QDBusServiceWatcher::WatchForRegistration, "watchMode");
+    if (QTest::currentTestFailed()) {
+        qDebug("Failed property test for QDBusServiceWatcher::watchMode");
+        return;
+    }
+}
 QTEST_MAIN(tst_QDBusServiceWatcher)
 #include "tst_qdbusservicewatcher.moc"

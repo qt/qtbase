@@ -60,7 +60,13 @@ public:
     {
     }
 
-    QStringList servicesWatched;
+    void setWatchedServicesForwardToQ(const QStringList &list)
+    {
+        q_func()->setWatchedServices(list);
+    }
+    Q_OBJECT_COMPAT_PROPERTY(QDBusServiceWatcherPrivate, QStringList, watchedServicesData,
+                             &QDBusServiceWatcherPrivate::setWatchedServicesForwardToQ)
+
     QDBusConnection connection;
     void setWatchModeForwardToQ(QDBusServiceWatcher::WatchMode mode)
     {
@@ -92,17 +98,17 @@ void QDBusServiceWatcherPrivate::setConnection(const QStringList &services,
 {
     if (connection.isConnected()) {
         // remove older rules
-        for (const QString &s : qAsConst(servicesWatched))
+        for (const QString &s : qAsConst(watchedServicesData.value()))
             removeService(s);
     }
 
     connection = c;
     watchMode.setValueBypassingBindings(wm); // caller has to call notify()
-    servicesWatched = services;
+    watchedServicesData.setValueBypassingBindings(services); // caller has to call notify()
 
     if (connection.isConnected()) {
         // add new rules
-        for (const QString &s : qAsConst(servicesWatched))
+        for (const QString &s : qAsConst(watchedServicesData.value()))
             addService(s);
     }
 }
@@ -273,7 +279,7 @@ QDBusServiceWatcher::~QDBusServiceWatcher()
 */
 QStringList QDBusServiceWatcher::watchedServices() const
 {
-    return d_func()->servicesWatched;
+    return d_func()->watchedServicesData;
 }
 
 /*!
@@ -283,27 +289,45 @@ QStringList QDBusServiceWatcher::watchedServices() const
     watching services and adding new ones. This is an expensive operation and
     should be avoided, if possible. Instead, use addWatchedService() and
     removeWatchedService() if you can to manipulate entries in the list.
+
+    Removes any existing binding of watchedServices.
 */
 void QDBusServiceWatcher::setWatchedServices(const QStringList &services)
 {
     Q_D(QDBusServiceWatcher);
-    if (services == d->servicesWatched)
+    d->watchedServicesData.removeBindingUnlessInWrapper();
+    if (services == d->watchedServicesData)
         return;
     d->setConnection(services, d->connection, d->watchMode);
+    d->watchedServicesData.notify();
+}
+
+QBindable<QStringList> QDBusServiceWatcher::bindableWatchedServices()
+{
+    Q_D(QDBusServiceWatcher);
+    return &d->watchedServicesData;
 }
 
 /*!
     Adds \a newService to the list of services to be watched by this object.
     This function is more efficient than setWatchedServices() and should be
     used whenever possible to add services.
+
+    Removes any existing binding of watchedServices.
 */
 void QDBusServiceWatcher::addWatchedService(const QString &newService)
 {
     Q_D(QDBusServiceWatcher);
-    if (d->servicesWatched.contains(newService))
+    d->watchedServicesData.removeBindingUnlessInWrapper();
+    if (d->watchedServicesData.value().contains(newService))
         return;
     d->addService(newService);
-    d->servicesWatched << newService;
+
+    auto templist = d->watchedServicesData.valueBypassingBindings();
+    templist << newService;
+    d->watchedServicesData.setValueBypassingBindings(templist);
+
+    d->watchedServicesData.notify();
 }
 
 /*!
@@ -312,13 +336,25 @@ void QDBusServiceWatcher::addWatchedService(const QString &newService)
     still be signals pending delivery about \a service. Those signals will
     still be emitted whenever the D-Bus messages are processed.
 
+    Removes any existing binding of watchedServices.
+
     This function returns \c true if any services were removed.
 */
 bool QDBusServiceWatcher::removeWatchedService(const QString &service)
 {
     Q_D(QDBusServiceWatcher);
+    d->watchedServicesData.removeBindingUnlessInWrapper();
     d->removeService(service);
-    return d->servicesWatched.removeOne(service);
+    auto tempList = d->watchedServicesData.value();
+    bool result = tempList.removeOne(service);
+    if (result) {
+        d->watchedServicesData.setValueBypassingBindings(tempList);
+        d->watchedServicesData.notify();
+        return true;
+    } else {
+        // nothing changed
+        return false;
+    }
 }
 
 QDBusServiceWatcher::WatchMode QDBusServiceWatcher::watchMode() const
@@ -337,7 +373,7 @@ void QDBusServiceWatcher::setWatchMode(WatchMode mode)
     d->watchMode.removeBindingUnlessInWrapper();
     if (mode == d->watchMode.value())
         return;
-    d->setConnection(d->servicesWatched, d->connection, mode);
+    d->setConnection(d->watchedServicesData, d->connection, mode);
     d->watchMode.notify();
 }
 
@@ -368,7 +404,7 @@ void QDBusServiceWatcher::setConnection(const QDBusConnection &connection)
     Q_D(QDBusServiceWatcher);
     if (connection.name() == d->connection.name())
         return;
-    d->setConnection(d->servicesWatched, connection, d->watchMode);
+    d->setConnection(d->watchedServicesData, connection, d->watchMode);
 }
 
 QT_END_NAMESPACE
