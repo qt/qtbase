@@ -147,9 +147,19 @@ function(qt6_android_generate_deployment_settings target)
             "   \"android-package-source-directory\": \"${android_package_source_dir_native}\",\n")
     endif()
 
-    #TODO: ANDROID_VERSION_NAME, doesn't seem to be used?
+    # version code
+    get_target_property(android_version_code ${target} QT_ANDROID_VERSION_CODE)
+    if (android_version_code)
+        string(APPEND file_contents
+            "   \"android-version-code\": \"${android_version_code}\",\n")
+    endif()
 
-    #TODO: ANDROID_VERSION_CODE, doesn't seem to be used?
+    # version name
+    get_target_property(android_version_name ${target} QT_ANDROID_VERSION_NAME)
+    if (android_version_name)
+        string(APPEND file_contents
+            "   \"android-version-name\": \"${android_version_name}\",\n")
+    endif()
 
     get_target_property(qml_import_path ${target} QT_QML_IMPORT_PATH)
     if (qml_import_path)
