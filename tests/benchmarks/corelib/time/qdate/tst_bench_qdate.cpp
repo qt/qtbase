@@ -149,7 +149,7 @@ void tst_QDate::daysInYear()
 {
     const auto list = yearly(1601, 2401);
     QBENCHMARK {
-        for (const QDate date : list)
+        for (const QDate &date : list)
             date.daysInYear();
     }
 }
@@ -167,7 +167,7 @@ void tst_QDate::getSetDate()
     QDate store;
     const auto list = daily(JULIAN_DAY_2010, JULIAN_DAY_2020);
     QBENCHMARK {
-        for (const auto test : list) {
+        for (const auto &test : list) {
             int year, month, day;
             test.getDate(&year, &month, &day);
             store.setDate(year, month, day);
@@ -181,7 +181,7 @@ void tst_QDate::addDays()
     QDate store;
     const auto list = daily(JULIAN_DAY_2010, JULIAN_DAY_2020);
     QBENCHMARK {
-        for (const auto test : list)
+        for (const auto &test : list)
             store = test.addDays(17);
     }
     Q_UNUSED(store);
@@ -192,7 +192,7 @@ void tst_QDate::addMonths()
     QDate store;
     const auto list = daily(JULIAN_DAY_2010, JULIAN_DAY_2020);
     QBENCHMARK {
-        for (const auto test : list)
+        for (const auto &test : list)
             store = test.addMonths(17);
     }
     Q_UNUSED(store);
@@ -203,7 +203,7 @@ void tst_QDate::addYears()
     QDate store;
     const auto list = daily(JULIAN_DAY_2010, JULIAN_DAY_2020);
     QBENCHMARK {
-        for (const auto test : list)
+        for (const auto &test : list)
             store = test.addYears(17);
     }
     Q_UNUSED(store);
