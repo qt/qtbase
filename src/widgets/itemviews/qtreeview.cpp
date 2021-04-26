@@ -1769,7 +1769,7 @@ void QTreeView::drawRow(QPainter *painter, const QStyleOptionViewItem &option,
 
         /* Prior to Qt 4.3, the background of the branch (in selected state and
            alternate row color was provided by the view. For backward compatibility,
-           this is now delegated to the style using PE_PanelViewItemRow which
+           this is now delegated to the style using PE_PanelItemViewRow which
            does the appropriate fill */
         if (d->isTreePosition(headerSection)) {
             const int i = d->indentationForItem(d->current);
