@@ -161,6 +161,13 @@ function(qt6_android_generate_deployment_settings target)
             "   \"android-version-name\": \"${android_version_name}\",\n")
     endif()
 
+    # minimum SDK version
+    get_target_property(android_min_sdk_version ${target} QT_ANDROID_MIN_SDK_VERSION)
+    if(android_min_sdk_version)
+        string(APPEND file_contents
+            "   \"android-min-sdk-version\": \"${android_min_sdk_version}\",\n")
+    endif()
+
     get_target_property(qml_import_path ${target} QT_QML_IMPORT_PATH)
     if (qml_import_path)
         set(_import_paths "")
