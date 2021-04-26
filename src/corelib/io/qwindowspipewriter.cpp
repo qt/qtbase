@@ -115,16 +115,6 @@ void QWindowsPipeWriter::stop()
 }
 
 /*!
-    Returns \c true if async operation is in progress or a bytesWritten
-    signal is pending.
- */
-bool QWindowsPipeWriter::isWriteOperationActive() const
-{
-    QMutexLocker locker(&mutex);
-    return writeSequenceStarted || bytesWrittenPending;
-}
-
-/*!
     Returns the number of bytes that are waiting to be written.
  */
 qint64 QWindowsPipeWriter::bytesToWrite() const
@@ -320,39 +310,6 @@ bool QWindowsPipeWriter::consumePendingAndEmit(bool allowWinActPosting)
 
     emit bytesWritten(numberOfBytesWritten);
     return true;
-}
-
-bool QWindowsPipeWriter::waitForNotification(const QDeadlineTimer &deadline)
-{
-    do {
-        DWORD waitRet = WaitForSingleObjectEx(syncHandle, deadline.remainingTime(), TRUE);
-        if (waitRet == WAIT_OBJECT_0)
-            return true;
-
-        if (waitRet != WAIT_IO_COMPLETION)
-            return false;
-
-        // Some I/O completion routine was called. Wait some more.
-    } while (!deadline.hasExpired());
-
-    return false;
-}
-
-/*!
-    Waits for the completion of the asynchronous write operation.
-    Returns \c true, if we've emitted the bytesWritten signal.
- */
-bool QWindowsPipeWriter::waitForWrite(int msecs)
-{
-    QDeadlineTimer timer(msecs);
-
-    // Make sure that 'syncHandle' was triggered by the thread pool callback.
-    while (isWriteOperationActive() && waitForNotification(timer)) {
-        if (consumePendingAndEmit(false))
-            return true;
-    }
-
-    return false;
 }
 
 QT_END_NAMESPACE

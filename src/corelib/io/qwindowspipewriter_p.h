@@ -53,7 +53,6 @@
 //
 
 #include <qobject.h>
-#include <qdeadlinetimer.h>
 #include <qmutex.h>
 #include <private/qringbuffer_p.h>
 
@@ -72,9 +71,7 @@ public:
     bool write(const QByteArray &ba);
     bool write(const char *data, qint64 size);
     void stop();
-    bool waitForWrite(int msecs);
     bool checkForWrite() { return consumePendingAndEmit(false); }
-    bool isWriteOperationActive() const;
     qint64 bytesToWrite() const;
     HANDLE syncEvent() const { return syncHandle; }
 
@@ -92,7 +89,6 @@ private:
     static void CALLBACK waitCallback(PTP_CALLBACK_INSTANCE instance, PVOID context,
                                       PTP_WAIT wait, TP_WAIT_RESULT waitResult);
     bool writeCompleted(DWORD errorCode, DWORD numberOfBytesWritten);
-    bool waitForNotification(const QDeadlineTimer &deadline);
     bool consumePendingAndEmit(bool allowWinActPosting);
 
     HANDLE handle;

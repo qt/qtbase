@@ -377,10 +377,8 @@ void QLocalSocket::close()
 bool QLocalSocket::flush()
 {
     Q_D(QLocalSocket);
-    bool written = false;
-    while (d->pipeWriter && d->pipeWriter->waitForWrite(0))
-        written = true;
-    return written;
+
+    return d->pipeWriter && d->pipeWriter->checkForWrite();
 }
 
 void QLocalSocket::disconnectFromServer()
