@@ -162,6 +162,24 @@ then place this directly into the directory specified by this variable.
 */
 
 /*!
+\page cmake-target-property-QT_ANDROID_TARGET_SDK_VERSION.html
+\ingroup cmake-properties-qtcore
+\ingroup cmake-target-properties-qtcore
+
+\title QT_ANDROID_TARGET_SDK_VERSION
+\target cmake-target-property-QT_ANDROID_TARGET_SDK_VERSION
+
+\brief Android target SDK version.
+
+\preliminarycmakeproperty
+\cmakepropertyandroidonly
+
+Specifies the target Android API level for the target.
+
+\sa{qt6_android_generate_deployment_settings}{qt_android_generate_deployment_settings()}
+*/
+
+/*!
 \page cmake-target-property-QT_ANDROID_VERSION_CODE.html
 \ingroup cmake-properties-qtcore
 \ingroup cmake-target-properties-qtcore
