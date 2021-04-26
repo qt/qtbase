@@ -107,10 +107,12 @@ Q_DECLARE_METATYPE(QNetworkProxyQuery)
 
 typedef QSharedPointer<QNetworkReply> QNetworkReplyPtr;
 
+#if QT_CONFIG(ssl)
 QT_BEGIN_NAMESPACE
 // Technically, a workaround, and only needed for OpenSSL:
 void qt_ForceTlsSecurityLevel();
 QT_END_NAMESPACE
+#endif
 
 class MyCookieJar;
 class tst_QNetworkReply: public QObject
@@ -1586,8 +1588,9 @@ void tst_QNetworkReply::initTestCase()
         QString::fromLatin1("Couldn't find echo dir starting from %1.").arg(QDir::currentPath())));
 
     cleanupTestData();
-
+#if QT_CONFIG(ssl)
     QT_PREPEND_NAMESPACE(qt_ForceTlsSecurityLevel)();
+#endif
 }
 
 void tst_QNetworkReply::cleanupTestCase()
