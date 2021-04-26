@@ -38,6 +38,8 @@
 #include <qfileinfo.h>
 #include <qmap.h>
 
+#include <QtTest/private/qemulationdetector_p.h>
+
 Q_DECLARE_METATYPE(QUrl::FormattingOptions)
 
 class tst_QUrl : public QObject
@@ -4124,6 +4126,8 @@ void tst_QUrl::testThreadingHelper()
 
 void tst_QUrl::testThreading()
 {
+    if (QTestPrivate::isRunningArmOnX86())
+        QSKIP("This test fails in QEMU and looks like because of a data race, QTBUG-93176");
     s_urlStorage = new UrlStorage;
     QThreadPool::globalInstance()->setMaxThreadCount(100);
     QFutureSynchronizer<void> sync;
