@@ -1,6 +1,3 @@
-# QTBUG-87429
-[renderToTextureArrayOfTexturedQuad]
-android
 # QTBUG-92211
 [renderPassDescriptorCompatibility]
 android
