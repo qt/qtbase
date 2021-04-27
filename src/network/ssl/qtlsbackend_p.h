@@ -94,13 +94,6 @@ class QSslKey;
 
 namespace QTlsPrivate {
 
-// The class TlsKey encapsulates key's data (DER) or backend-specific
-// data-structure, like RSA/DSA/DH structs in OpenSSL.
-// TLSTODO: Interface is mostly what QSslKeyPrivate is now. Names,
-// however strange they are, for now preserved to ease the transition
-// (this may change in future - for example, 'decodeDer' is not just
-// decoding DER, it's initializing a key from DER. Note, QSslKey requires
-// a real TLS library because private keys tend to be encrypted.
 class Q_NETWORK_PRIVATE_EXPORT TlsKey {
 public:
     virtual ~TlsKey();
@@ -117,7 +110,7 @@ public:
     virtual QByteArray derFromPem(const QByteArray &pem, QMap<QByteArray, QByteArray> *headers) const = 0;
     virtual QByteArray pemFromDer(const QByteArray &der, const QMap<QByteArray, QByteArray> &headers) const = 0;
 
-    virtual void fromHandle(Qt::HANDLE opaque, KeyType type) = 0;
+    virtual void fromHandle(Qt::HANDLE handle, KeyType type) = 0;
     virtual Qt::HANDLE handle() const = 0;
 
     virtual bool isNull() const = 0;
@@ -127,35 +120,30 @@ public:
 
     virtual void clear(bool deepClear) = 0;
 
-    // Needed by QSslKeyPrivate::pemFromDer() for non-OpenSSL backends.
     virtual bool isPkcs8() const = 0;
 
     virtual QByteArray decrypt(Cipher cipher, const QByteArray &data,
-                               const QByteArray &key, const QByteArray &iv) const = 0;
+                               const QByteArray &passPhrase, const QByteArray &iv) const = 0;
     virtual QByteArray encrypt(Cipher cipher, const QByteArray &data,
                                const QByteArray &key, const QByteArray &iv) const = 0;
 
-    // Those two are non-virtual, always the same and only depend on the key type
-    // and algorithm:
     QByteArray pemHeader() const;
     QByteArray pemFooter() const;
 };
 
-// An abstraction hiding OpenSSL's X509 or our generic
-// 'derData'-based code.
 class Q_NETWORK_PRIVATE_EXPORT X509Certificate
 {
 public:
     virtual ~X509Certificate();
 
-    virtual bool isEqual(const X509Certificate &rhs) const = 0;
+    virtual bool isEqual(const X509Certificate &other) const = 0;
     virtual bool isNull() const = 0;
     virtual bool isSelfSigned() const = 0;
     virtual QByteArray version() const = 0;
     virtual QByteArray serialNumber() const = 0;
-    virtual QStringList issuerInfo(QSslCertificate::SubjectInfo info) const = 0;
+    virtual QStringList issuerInfo(QSslCertificate::SubjectInfo subject) const = 0;
     virtual QStringList issuerInfo(const QByteArray &attribute) const = 0;
-    virtual QStringList subjectInfo(QSslCertificate::SubjectInfo info) const = 0;
+    virtual QStringList subjectInfo(QSslCertificate::SubjectInfo subject) const = 0;
     virtual QStringList subjectInfo(const QByteArray &attribute) const = 0;
 
     virtual QList<QByteArray> subjectInfoAttributes() const = 0;
@@ -167,13 +155,14 @@ public:
     virtual TlsKey *publicKey() const;
 
     // Extensions. Plugins do not expose internal representation
-    // and cannot rely on QSslCertificate's internals.
+    // and cannot rely on QSslCertificate's internals. Thus,
+    // we provide this information 'in pieces':
     virtual qsizetype numberOfExtensions() const = 0;
-    virtual QString oidForExtension(qsizetype index) const = 0;
-    virtual QString nameForExtension(qsizetype index) const = 0;
-    virtual QVariant valueForExtension(qsizetype index) const = 0;
-    virtual bool isExtensionCritical(qsizetype index) const = 0;
-    virtual bool isExtensionSupported(qsizetype index) const = 0;
+    virtual QString oidForExtension(qsizetype i) const = 0;
+    virtual QString nameForExtension(qsizetype i) const = 0;
+    virtual QVariant valueForExtension(qsizetype i) const = 0;
+    virtual bool isExtensionCritical(qsizetype i) const = 0;
+    virtual bool isExtensionSupported(qsizetype i) const = 0;
 
     virtual QByteArray toPem() const = 0;
     virtual QByteArray toDer() const = 0;
@@ -225,7 +214,9 @@ public:
     virtual QList<QOcspResponse> ocsps() const;
 
     static bool isMatchingHostname(const QSslCertificate &cert, const QString &peerName);
-    static bool isMatchingHostname(const QString &cn, const QString &hostname);
+
+    void setErrorAndEmit(QSslSocketPrivate *d, QAbstractSocket::SocketError errorCode,
+                         const QString &errorDescription) const;
 };
 #else
 class TlsCryptograph;
@@ -353,8 +344,9 @@ public:
     virtual QString longNameForId(int cid) const;
     virtual bool isTlsNamedCurve(int cid) const;
 
-    // TLSTODO: int->enum ugliness in error reporting.
-    // DH decoding:
+    // Note: int and not QSslDiffieHellmanParameter::Error - because this class and
+    // its enum are QT_CONFIG(ssl)-conditioned. But not QTlsBackend and
+    // its virtual functions. DH decoding:
     virtual int dhParametersFromDer(const QByteArray &derData, QByteArray *data) const;
     virtual int dhParametersFromPem(const QByteArray &pemData, QByteArray *data) const;
 
@@ -425,7 +417,7 @@ public:
     static void setNegotiatedProtocol(QSslSocketPrivate *d, const QByteArray &protocol);
     static void storePeerCertificate(QSslSocketPrivate *d, const QSslCertificate &peerCert);
     static void storePeerCertificateChain(QSslSocketPrivate *d, const QList<QSslCertificate> &peerChain);
-    static void addTustedRoot(QSslSocketPrivate *d, const QSslCertificate &rootCert);
+    static void addTustedRoot(QSslSocketPrivate *d, const QSslCertificate &rootCert);// TODO: "addTrusted..."
     // The next one - is a "very important" feature! Kidding ...
     static void setEphemeralKey(QSslSocketPrivate *d, const QSslKey &key);
 #endif // QT_CONFIG(ssl)
