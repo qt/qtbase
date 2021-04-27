@@ -652,7 +652,7 @@ void tst_QFileDialog2::task226366_lowerCaseHardDriveWindows()
     //i clear my previous selection in the completer
     QTest::keyClick(edit->completer()->popup(), Qt::Key_Down);
     edit->clear();
-    QTest::keyClick(edit, (char)(Qt::Key_C | Qt::SHIFT));
+    QTest::keyClick(edit, Qt::Key_C, Qt::ShiftModifier);
     QTest::qWait(200);
     QTest::keyClick(edit->completer()->popup(), Qt::Key_Down);
     QCOMPARE(edit->text(), QString("C:/"));
