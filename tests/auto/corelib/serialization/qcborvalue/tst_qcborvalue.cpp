@@ -2129,8 +2129,8 @@ void tst_QCborValue::extendedTypeValidation_data()
 
         // walking null
         char dt[] = "2020-04-15T17:33:32.125Z";
-        quint8 len = strlen(dt);
-        for (int i = 0; i < int(len); ++i) {
+        quint8 len = quint8(strlen(dt));
+        for (quint8 i = 0; i < len; ++i) {
             char c = '\0';
             qSwap(c, dt[i]);
             QTest::addRow("DateTime:Null-at-%d", i)
