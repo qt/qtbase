@@ -307,7 +307,6 @@
         },
         "schannel": {
             "label": "Schannel",
-            "autoDetect": false,
             "disable": "input.ssl == 'no'",
             "condition": "config.win32",
             "output": [

@@ -133,7 +133,7 @@ qt_config_linker_supports_flag_test(gdb_index
 qt_config_compile_test(reduce_relocations
     LABEL "-Bsymbolic-functions support"
     CODE
-"#if !(defined(__i386) || defined(__i386__) || defined(__x86_64) || defined(__x86_64__) || defined(__amd64))
+"#if !(defined(__i386) || defined(__i386__) || defined(__x86_64) || defined(__x86_64__) || defined(__amd64)) || defined(__sun)
 #  error Symbolic function binding on this architecture may be broken, disabling it (see QTBUG-36129).
 #endif
 
