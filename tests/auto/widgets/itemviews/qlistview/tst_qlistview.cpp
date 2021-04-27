@@ -109,6 +109,7 @@ private slots:
     void moveCursor();
     void moveCursor2();
     void moveCursor3();
+    void moveCursor4();
     void indexAt();
     void clicked();
     void singleSelectionRemoveRow();
@@ -573,6 +574,56 @@ void tst_QListView::moveCursor3()
     QCOMPARE(view.selectionModel()->currentIndex(), model.index(0, 0));
 }
 
+void tst_QListView::moveCursor4()
+{
+    int indexCount = 100;
+    PublicListView listView;
+    QStandardItemModel model;
+    for (int i = 0; i < 100; i++)
+    {
+        QStandardItem* item = new QStandardItem(QString("item 0%0").arg(i));
+        QFont font = item->font();
+        font.setPixelSize(14);
+        item->setFont(font);
+        model.appendRow(item);
+    }
+    QFont font = model.item(0)->font();
+    font.setPixelSize(50);
+    font.setBold(true);
+    model.item(0)->setFont(font);
+    listView.setModel(&model);
+    listView.setFixedSize(200, 200);
+    listView.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    listView.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    listView.show();
+    listView.selectionModel()->setCurrentIndex(model.index(0, 0), QItemSelectionModel::SelectCurrent);
+
+    QModelIndex idx = listView.moveCursor(PublicListView::MovePageDown, Qt::NoModifier);
+
+    int actualIndex = 0;
+    int indexHeight = 0;
+    while (indexHeight <= listView.viewport()->height()) {
+        indexHeight +=  listView.visualRect(model.item(actualIndex)->index()).height();
+        actualIndex++;
+    }
+    QTRY_COMPARE(idx, model.index(actualIndex - 2, 0));
+    idx = listView.moveCursor(PublicListView::MoveUp, Qt::NoModifier);
+    QTRY_COMPARE(idx, model.index(0, 0));
+
+    listView.setCurrentIndex(model.index(indexCount - 2, 0));
+    idx = listView.moveCursor(PublicListView::MovePageDown, Qt::NoModifier);
+    QTRY_COMPARE(idx, model.index(99, 0));
+
+    listView.setCurrentIndex(model.index(3, 0));
+    actualIndex = 3;
+    indexHeight = 0;
+    while (indexHeight <= listView.viewport()->height()) {
+        indexHeight +=  listView.visualRect(model.item(actualIndex)->index()).height();
+        actualIndex++;
+    }
+    idx = listView.moveCursor(PublicListView::MovePageDown, Qt::NoModifier);
+    QTRY_COMPARE(idx, model.index(actualIndex - 2, 0));
+}
 
 class QListViewShowEventListener : public QListView
 {
