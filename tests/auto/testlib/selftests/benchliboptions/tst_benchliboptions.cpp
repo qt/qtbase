@@ -94,7 +94,7 @@ int main(int argc, char** argv)
     /* Run with no special arguments. */
     {
         tst_BenchlibOptions test;
-        ret += QTest::qExec(&test, args.size(), const_cast<char**>(&args[0]));
+        ret += QTest::qExec(&test, int(args.size()), const_cast<char**>(&args[0]));
     }
 
     /* Run with an exact number of iterations. */
@@ -103,7 +103,7 @@ int main(int argc, char** argv)
         extraArgs.push_back("-iterations");
         extraArgs.push_back("15");
         tst_BenchlibFifteenIterations test;
-        ret += QTest::qExec(&test, extraArgs.size(), const_cast<char**>(&extraArgs[0]));
+        ret += QTest::qExec(&test, int(extraArgs.size()), const_cast<char**>(&extraArgs[0]));
     }
 
     /*
@@ -114,7 +114,7 @@ int main(int argc, char** argv)
         extraArgs.push_back("-minimumvalue");
         extraArgs.push_back("100");
         tst_BenchlibOneHundredMinimum test;
-        ret += QTest::qExec(&test, extraArgs.size(), const_cast<char**>(&extraArgs[0]));
+        ret += QTest::qExec(&test, int(extraArgs.size()), const_cast<char**>(&extraArgs[0]));
     }
 
     return ret;

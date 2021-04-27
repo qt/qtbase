@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
     args.push_back("fiveTablePasses");
     args.push_back("fiveTablePasses:fiveTablePasses_data1");
     args.push_back("-v2");
-    argc = args.size();
+    argc = int(args.size());
     argv = const_cast<char**>(&args[0]);
 
     QTEST_MAIN_IMPL(tst_DataTable)
