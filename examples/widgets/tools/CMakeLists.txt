@@ -14,5 +14,9 @@ add_subdirectory(undoframework)
 
 if(QT_FEATURE_library) # special case
     add_subdirectory(echoplugin)
-    add_subdirectory(plugandpaint) # special case
+    # special case begin
+    if(QT_FEATURE_inputdialog)
+        add_subdirectory(plugandpaint)
+    endif()
+    # special case end
 endif()
