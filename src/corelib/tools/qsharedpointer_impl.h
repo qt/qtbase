@@ -457,6 +457,7 @@ public:
     DECLARE_COMPARE_SET(const QSharedPointer &p1, p1.data(), std::nullptr_t, nullptr)
     DECLARE_COMPARE_SET(std::nullptr_t, nullptr, const QSharedPointer &p2, p2.data())
 #undef DECLARE_TEMPLATE_COMPARE_SET
+#undef DECLARE_COMPARE_SET
 
 private:
     explicit QSharedPointer(Qt::Initialization) {}
@@ -658,9 +659,14 @@ public:
     friend bool operator!=(const QSharedPointer<X> &p1, const QWeakPointer &p2) noexcept
     { return p2 != p1; }
 
-    DECLARE_COMPARE_SET(const QWeakPointer &p1, p1.d, std::nullptr_t, nullptr)
-    DECLARE_COMPARE_SET(std::nullptr_t, nullptr, const QWeakPointer &p2, p2.data())
-#undef DECLARE_COMPARE_SET
+    friend bool operator==(const QWeakPointer &p, std::nullptr_t)
+    { return p.isNull(); }
+    friend bool operator==(std::nullptr_t, const QWeakPointer &p)
+    { return p.isNull(); }
+    friend bool operator!=(const QWeakPointer &p, std::nullptr_t)
+    { return !p.isNull(); }
+    friend bool operator!=(std::nullptr_t, const QWeakPointer &p)
+    { return !p.isNull(); }
 
 private:
     friend struct QtPrivate::EnableInternalData;

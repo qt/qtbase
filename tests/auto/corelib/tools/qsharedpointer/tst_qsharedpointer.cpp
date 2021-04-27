@@ -341,6 +341,11 @@ void tst_QSharedPointer::basics()
         QCOMPARE(!weak, isNull);
         QCOMPARE(bool(weak), !isNull);
 
+        QCOMPARE(weak.isNull(), (weak == nullptr));
+        QCOMPARE(weak.isNull(), (nullptr == weak));
+        QCOMPARE(!weak.isNull(), (weak != nullptr));
+        QCOMPARE(!weak.isNull(), (nullptr != weak));
+
         QVERIFY(ptr == weak);
         QVERIFY(weak == ptr);
         QVERIFY(! (ptr != weak));
@@ -426,6 +431,12 @@ void tst_QSharedPointer::nullptrOps()
     QVERIFY(!p2.get());
     QVERIFY(p1 == p2);
 
+    QWeakPointer<char> wp1 = p1;
+    QVERIFY(wp1 == nullptr);
+    QVERIFY(nullptr == wp1);
+    QCOMPARE(wp1, nullptr);
+    QCOMPARE(nullptr, wp1);
+
     QSharedPointer<char> p3 = p1;
     QVERIFY(p3 == p1);
     QVERIFY(p3 == null);
@@ -452,6 +463,10 @@ void tst_QSharedPointer::nullptrOps()
     QVERIFY(p4 != p2);
     QVERIFY(p4 != null);
     QVERIFY(p4 != p3);
+
+    QWeakPointer<char> wp2 = p4;
+    QVERIFY(wp2 != nullptr);
+    QVERIFY(nullptr != wp2);
 }
 
 void tst_QSharedPointer::swap()
