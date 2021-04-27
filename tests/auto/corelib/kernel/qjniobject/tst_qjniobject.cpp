@@ -65,22 +65,31 @@ private slots:
     void compareOperatorTests();
     void callStaticObjectMethodClassName();
     void callStaticObjectMethod();
+    void callStaticObjectMethodById();
     void callStaticBooleanMethodClassName();
     void callStaticBooleanMethod();
+    void callStaticBooleanMethodById();
     void callStaticCharMethodClassName();
     void callStaticCharMethod();
+    void callStaticCharMethodById();
     void callStaticIntMethodClassName();
     void callStaticIntMethod();
+    void callStaticIntMethodById();
     void callStaticByteMethodClassName();
     void callStaticByteMethod();
+    void callStaticByteMethodById();
     void callStaticDoubleMethodClassName();
     void callStaticDoubleMethod();
+    void callStaticDoubleMethodById();
     void callStaticFloatMethodClassName();
     void callStaticFloatMethod();
+    void callStaticFloatMethodById();
     void callStaticLongMethodClassName();
     void callStaticLongMethod();
+    void callStaticLongMethodById();
     void callStaticShortMethodClassName();
     void callStaticShortMethod();
+    void callStaticShortMethodById();
     void getStaticObjectFieldClassName();
     void getStaticObjectField();
     void getStaticIntFieldClassName();
@@ -270,6 +279,28 @@ void tst_QJniObject::callStaticObjectMethod()
     QCOMPARE(returnedString, QString::fromLatin1("test format"));
 }
 
+void tst_QJniObject::callStaticObjectMethodById()
+{
+    QJniEnvironment env;
+    jclass cls = env.findClass("java/lang/String");
+    QVERIFY(cls != 0);
+
+    jmethodID id = env.findStaticMethod(
+            cls, "format", "(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;");
+    QVERIFY(id != 0);
+
+    QJniObject formatString = QJniObject::fromString(QLatin1String("test format"));
+    QVERIFY(formatString.isValid());
+
+    QJniObject returnValue = QJniObject::callStaticObjectMethod(
+            cls, id, formatString.object<jstring>(), jobjectArray(0));
+    QVERIFY(returnValue.isValid());
+
+    QString returnedString = returnValue.toString();
+
+    QCOMPARE(returnedString, QString::fromLatin1("test format"));
+}
+
 void tst_QJniObject::callStaticBooleanMethod()
 {
     QJniEnvironment env;
@@ -295,6 +326,32 @@ void tst_QJniObject::callStaticBooleanMethod()
                                                             "parseBoolean",
                                                             "(Ljava/lang/String;)Z",
                                                             parameter.object<jstring>());
+        QVERIFY(!b);
+    }
+}
+
+void tst_QJniObject::callStaticBooleanMethodById()
+{
+    QJniEnvironment env;
+    jclass cls = env.findClass("java/lang/Boolean");
+    QVERIFY(cls != 0);
+
+    jmethodID id = env.findStaticMethod(cls, "parseBoolean", "(Ljava/lang/String;)Z");
+    QVERIFY(id != 0);
+
+    {
+        QJniObject parameter = QJniObject::fromString("true");
+        QVERIFY(parameter.isValid());
+
+        jboolean b = QJniObject::callStaticMethod<jboolean>(cls, id, parameter.object<jstring>());
+        QVERIFY(b);
+    }
+
+    {
+        QJniObject parameter = QJniObject::fromString("false");
+        QVERIFY(parameter.isValid());
+
+        jboolean b = QJniObject::callStaticMethod<jboolean>(cls, id, parameter.object<jstring>());
         QVERIFY(!b);
     }
 }
@@ -352,6 +409,22 @@ void tst_QJniObject::callStaticByteMethod()
     QCOMPARE(returnValue, jbyte(number.toInt()));
 }
 
+void tst_QJniObject::callStaticByteMethodById()
+{
+    QJniEnvironment env;
+    jclass cls = env.findClass("java/lang/Byte");
+    QVERIFY(cls != 0);
+
+    jmethodID id = env.findStaticMethod(cls, "parseByte", "(Ljava/lang/String;)B");
+    QVERIFY(id != 0);
+
+    QString number = QString::number(123);
+    QJniObject parameter = QJniObject::fromString(number);
+
+    jbyte returnValue = QJniObject::callStaticMethod<jbyte>(cls, id, parameter.object<jstring>());
+    QCOMPARE(returnValue, jbyte(number.toInt()));
+}
+
 void tst_QJniObject::callStaticIntMethodClassName()
 {
     QString number = QString::number(123);
@@ -381,6 +454,22 @@ void tst_QJniObject::callStaticIntMethod()
     QCOMPARE(returnValue, number.toInt());
 }
 
+void tst_QJniObject::callStaticIntMethodById()
+{
+    QJniEnvironment env;
+    jclass cls = env.findClass("java/lang/Integer");
+    QVERIFY(cls != 0);
+
+    jmethodID id = env.findStaticMethod(cls, "parseInt", "(Ljava/lang/String;)I");
+    QVERIFY(id != 0);
+
+    QString number = QString::number(123);
+    QJniObject parameter = QJniObject::fromString(number);
+
+    jint returnValue = QJniObject::callStaticMethod<jint>(cls, id, parameter.object<jstring>());
+    QCOMPARE(returnValue, number.toInt());
+}
+
 void tst_QJniObject::callStaticCharMethodClassName()
 {
     jchar returnValue = QJniObject::callStaticMethod<jchar>("java/lang/Character",
@@ -401,6 +490,19 @@ void tst_QJniObject::callStaticCharMethod()
                                                             "toUpperCase",
                                                             "(C)C",
                                                             jchar('a'));
+    QCOMPARE(returnValue, jchar('A'));
+}
+
+void tst_QJniObject::callStaticCharMethodById()
+{
+    QJniEnvironment env;
+    jclass cls = env.findClass("java/lang/Character");
+    QVERIFY(cls != 0);
+
+    jmethodID id = env.findStaticMethod(cls, "toUpperCase", "(C)C");
+    QVERIFY(id != 0);
+
+    jchar returnValue = QJniObject::callStaticMethod<jchar>(cls, id, jchar('a'));
     QCOMPARE(returnValue, jchar('A'));
 }
 
@@ -433,6 +535,23 @@ void tst_QJniObject::callStaticDoubleMethod()
     QCOMPARE(returnValue, number.toDouble());
 }
 
+void tst_QJniObject::callStaticDoubleMethodById()
+{
+    QJniEnvironment env;
+    jclass cls = env.findClass("java/lang/Double");
+    QVERIFY(cls != 0);
+
+    jmethodID id = env.findStaticMethod(cls, "parseDouble", "(Ljava/lang/String;)D");
+    QVERIFY(id != 0);
+
+    QString number = QString::number(123.45);
+    QJniObject parameter = QJniObject::fromString(number);
+
+    jdouble returnValue =
+            QJniObject::callStaticMethod<jdouble>(cls, id, parameter.object<jstring>());
+    QCOMPARE(returnValue, number.toDouble());
+}
+
 void tst_QJniObject::callStaticFloatMethodClassName()
 {
     QString number = QString::number(123.45);
@@ -459,6 +578,22 @@ void tst_QJniObject::callStaticFloatMethod()
                                                               "parseFloat",
                                                               "(Ljava/lang/String;)F",
                                                               parameter.object<jstring>());
+    QCOMPARE(returnValue, number.toFloat());
+}
+
+void tst_QJniObject::callStaticFloatMethodById()
+{
+    QJniEnvironment env;
+    jclass cls = env.findClass("java/lang/Float");
+    QVERIFY(cls != 0);
+
+    jmethodID id = env.findStaticMethod(cls, "parseFloat", "(Ljava/lang/String;)F");
+    QVERIFY(id != 0);
+
+    QString number = QString::number(123.45);
+    QJniObject parameter = QJniObject::fromString(number);
+
+    jfloat returnValue = QJniObject::callStaticMethod<jfloat>(cls, id, parameter.object<jstring>());
     QCOMPARE(returnValue, number.toFloat());
 }
 
@@ -491,6 +626,22 @@ void tst_QJniObject::callStaticShortMethod()
     QCOMPARE(returnValue, number.toShort());
 }
 
+void tst_QJniObject::callStaticShortMethodById()
+{
+    QJniEnvironment env;
+    jclass cls = env.findClass("java/lang/Short");
+    QVERIFY(cls != 0);
+
+    jmethodID id = env.findStaticMethod(cls, "parseShort", "(Ljava/lang/String;)S");
+    QVERIFY(id != 0);
+
+    QString number = QString::number(123);
+    QJniObject parameter = QJniObject::fromString(number);
+
+    jshort returnValue = QJniObject::callStaticMethod<jshort>(cls, id, parameter.object<jstring>());
+    QCOMPARE(returnValue, number.toShort());
+}
+
 void tst_QJniObject::callStaticLongMethodClassName()
 {
     QString number = QString::number(123);
@@ -516,6 +667,22 @@ void tst_QJniObject::callStaticLongMethod()
                                                             "parseLong",
                                                             "(Ljava/lang/String;)J",
                                                             parameter.object<jstring>());
+    QCOMPARE(returnValue, jlong(number.toLong()));
+}
+
+void tst_QJniObject::callStaticLongMethodById()
+{
+    QJniEnvironment env;
+    jclass cls = env.findClass("java/lang/Long");
+    QVERIFY(cls != 0);
+
+    jmethodID id = env.findStaticMethod(cls, "parseLong", "(Ljava/lang/String;)J");
+    QVERIFY(id != 0);
+
+    QString number = QString::number(123);
+    QJniObject parameter = QJniObject::fromString(number);
+
+    jlong returnValue = QJniObject::callStaticMethod<jlong>(cls, id, parameter.object<jstring>());
     QCOMPARE(returnValue, jlong(number.toLong()));
 }
 

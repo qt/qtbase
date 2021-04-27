@@ -917,6 +917,25 @@ QJniObject QJniObject::callStaticObjectMethodV(jclass clazz,
 */
 
 /*!
+    \fn template <typename T> T QJniObject::callStaticMethod(jclass clazz, jmethodID methodId, ...)
+
+    Calls the static method identified by \a methodId from the class \a clazz
+    with any subsequent arguments. Useful when \a clazz and \a methodId are
+    already cached from previous operations.
+
+    \code
+    QJniEnvironment env;
+    jclass javaMathClass = env.findClass("java/lang/Math");
+    jmethodID methodId = env.findStaticMethod(javaMathClass, "max", "(II)I");
+    if (methodId != 0) {
+        jint a = 2;
+        jint b = 4;
+        jint max = QJniObject::callStaticMethod<jint>(javaMathClass, methodId, a, b);
+    }
+    \endcode
+*/
+
+/*!
     \fn template <typename T> T QJniObject::callStaticMethod(jclass clazz, const char *methodName)
 
     Calls the static method \a methodName on \a clazz and returns the value.
@@ -1008,6 +1027,35 @@ QJniObject QJniObject::callStaticObjectMethod(jclass clazz, const char *methodNa
             va_end(args);
             return res;
         }
+    }
+
+    return QJniObject();
+}
+
+/*!
+    \fn QJniObject QJniObject::callStaticObjectMethod(jclass clazz, jmethodID methodId, ...)
+
+    Calls the static method identified by \a methodId from the class \a clazz
+    with any subsequent arguments. Useful when \a clazz and \a methodId are
+    already cached from previous operations.
+
+    \code
+    QJniEnvironment env;
+    jclass clazz = env.findClass("java/lang/String");
+    jmethodID methodId = env.findStaticMethod(clazz, "valueOf", "(I)Ljava/lang/String;");
+    if (methodId != 0)
+        QJniObject str = QJniObject::callStaticObjectMethod(clazz, methodId, 10);
+    \endcode
+*/
+QJniObject QJniObject::callStaticObjectMethod(jclass clazz, jmethodID methodId, ...)
+{
+    QJniEnvironment env;
+    if (clazz && methodId) {
+        va_list args;
+        va_start(args, methodId);
+        QJniObject res = getCleanJniObject(env->CallStaticObjectMethodV(clazz, methodId, args));
+        va_end(args);
+        return res;
     }
 
     return QJniObject();
