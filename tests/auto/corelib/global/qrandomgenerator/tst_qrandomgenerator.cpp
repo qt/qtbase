@@ -1000,18 +1000,18 @@ template <typename Generator> void stdRandomDistributions_template()
 {
     Generator rd;
 
-    std::bernoulli_distribution()(rd);
+    (void)std::bernoulli_distribution()(rd);
 
-    std::binomial_distribution<quint32>()(rd);
-    std::binomial_distribution<quint64>()(rd);
+    (void)std::binomial_distribution<quint32>()(rd);
+    (void)std::binomial_distribution<quint64>()(rd);
 
-    std::negative_binomial_distribution<quint32>()(rd);
-    std::negative_binomial_distribution<quint64>()(rd);
+    (void)std::negative_binomial_distribution<quint32>()(rd);
+    (void)std::negative_binomial_distribution<quint64>()(rd);
 
-    std::poisson_distribution<int>()(rd);
-    std::poisson_distribution<qint64>()(rd);
+    (void)std::poisson_distribution<int>()(rd);
+    (void)std::poisson_distribution<qint64>()(rd);
 
-    std::normal_distribution<qreal>()(rd);
+    (void)std::normal_distribution<qreal>()(rd);
 
     {
         std::discrete_distribution<int> discrete{0, 1, 1, 10000, 2};
