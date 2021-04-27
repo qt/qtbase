@@ -1766,7 +1766,7 @@ void tst_QFile::largeUncFileSupport()
         // Retry in case of sharing violation
         QTRY_VERIFY(fOpen(largeFileEncoded, "rb", &fhF));
         StdioFileGuard fh(fhF);
-        int fd = int(_fileno(fh));
+        int fd = int(QT_FILENO(fh));
         QFile file;
         QVERIFY(file.open(fd, QIODevice::ReadOnly));
         QCOMPARE(file.size(), size);
@@ -2854,8 +2854,8 @@ void tst_QFile::handle()
     StdioFileGuard fp(fopen(qPrintable(m_testSourceFile), "r"));
     QVERIFY(fp);
     file2.open(fp, QIODevice::ReadOnly);
-    QCOMPARE(int(file2.handle()), int(fileno(fp)));
-    QCOMPARE(int(file2.handle()), int(fileno(fp)));
+    QCOMPARE(int(file2.handle()), int(QT_FILENO(fp)));
+    QCOMPARE(int(file2.handle()), int(QT_FILENO(fp)));
     fp.close();
 
     //test round trip of adopted posix file handle
