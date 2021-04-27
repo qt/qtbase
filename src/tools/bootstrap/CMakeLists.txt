@@ -19,6 +19,7 @@ qt_internal_extend_target(Bootstrap
         ../../corelib/global/qnumeric.cpp
         ../../corelib/global/qoperatingsystemversion.cpp
         ../../corelib/global/qrandom.cpp
+        ../../corelib/global/qsimd.cpp
         ../../corelib/io/qabstractfileengine.cpp
         ../../corelib/io/qbuffer.cpp
         ../../corelib/io/qdebug.cpp
