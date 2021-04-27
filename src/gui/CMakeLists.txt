@@ -51,7 +51,6 @@ endif()
 # special case end
 
 qt_internal_add_module(Gui
-    GENERATE_METATYPES
     PLUGIN_TYPES accessiblebridge platforms platforms/darwin xcbglintegrations platformthemes platforminputcontexts generic iconengines imageformats egldeviceintegrations
     FEATURE_DEPENDENCIES  # special case:
         Qt::Network # special case:
