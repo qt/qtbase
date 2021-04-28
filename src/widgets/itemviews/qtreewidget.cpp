@@ -3340,7 +3340,8 @@ void QTreeWidget::dropEvent(QDropEvent *event) {
         QModelIndex topIndex;
         int col = -1;
         int row = -1;
-        if (d->dropOn(event, &row, &col, &topIndex)) {
+        // check whether a subclass has already accepted the event, ie. moved the data
+        if (!event->isAccepted() && d->dropOn(event, &row, &col, &topIndex)) {
             const QList<QModelIndex> idxs = selectedIndexes();
             QList<QPersistentModelIndex> indexes;
             const int indexesCount = idxs.count();
@@ -3387,9 +3388,11 @@ void QTreeWidget::dropEvent(QDropEvent *event) {
             }
 
             event->accept();
-            // Don't want QAbstractItemView to delete it because it was "moved" we already did it
-            d->dropEventMoved = true;
         }
+        // either we or a subclass accepted the move event, so assume that the data was
+        // moved and that QAbstractItemView shouldn't remove the source when QDrag::exec returns
+        if (event->isAccepted())
+            d->dropEventMoved = true;
     }
 
     QTreeView::dropEvent(event);
