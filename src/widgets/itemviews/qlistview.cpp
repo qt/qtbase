@@ -921,7 +921,8 @@ void QListView::dropEvent(QDropEvent *event)
         bool topIndexDropped = false;
         int col = -1;
         int row = -1;
-        if (d->dropOn(event, &row, &col, &topIndex)) {
+        // check whether a subclass has already accepted the event, ie. moved the data
+        if (!event->isAccepted() && d->dropOn(event, &row, &col, &topIndex)) {
             const QList<QModelIndex> selIndexes = selectedIndexes();
             QList<QPersistentModelIndex> persIndexes;
             persIndexes.reserve(selIndexes.count());
@@ -940,23 +941,29 @@ void QListView::dropEvent(QDropEvent *event)
                 QPersistentModelIndex dropRow = model()->index(row, col, topIndex);
 
                 int r = row == -1 ? model()->rowCount() : (dropRow.row() >= 0 ? dropRow.row() : row);
+                bool dataMoved = false;
                 for (int i = 0; i < persIndexes.count(); ++i) {
                     const QPersistentModelIndex &pIndex = persIndexes.at(i);
                     if (r != pIndex.row()) {
                         // try to move (preserves selection)
-                        d->dropEventMoved |= model()->moveRow(QModelIndex(), pIndex.row(), QModelIndex(), r);
-                        if (!d->dropEventMoved) // can't move - abort and let QAbstractItemView handle this
+                        dataMoved |= model()->moveRow(QModelIndex(), pIndex.row(), QModelIndex(), r);
+                        if (!dataMoved) // can't move - abort and let QAbstractItemView handle this
                             break;
                     } else {
                         // move onto itself is blocked, don't delete anything
-                        d->dropEventMoved = true;
+                        dataMoved = true;
                     }
                     r = pIndex.row() + 1;   // Dropped items are inserted contiguously and in the right order.
                 }
-                if (d->dropEventMoved)
-                    event->accept(); // data moved, nothing to be done in QAbstractItemView::dropEvent
+                if (dataMoved)
+                    event->accept();
             }
         }
+
+        // either we or a subclass accepted the move event, so assume that the data was
+        // moved and that QAbstractItemView shouldn't remove the source when QDrag::exec returns
+        if (event->isAccepted())
+            d->dropEventMoved = true;
     }
 
     if (!d->commonListView->filterDropEvent(event) || !d->dropEventMoved) {
