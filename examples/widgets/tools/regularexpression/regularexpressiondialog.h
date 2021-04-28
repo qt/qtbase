@@ -54,6 +54,7 @@
 #define REGULAREXPRESSIONDIALOG_H
 
 #include <QDialog>
+#include <QRegularExpression>
 
 QT_BEGIN_NAMESPACE
 class QCheckBox;
@@ -72,18 +73,25 @@ class RegularExpressionDialog : public QDialog
 public:
     RegularExpressionDialog(QWidget *parent = nullptr);
 
+private slots:
+    void updateReplacement();
+
 private:
     void refresh();
     void setupUi();
     QWidget *setupLeftUi();
-    QWidget *setupRightUi();
+    QWidget *setupTextUi();
+    QWidget *setupOptionsUi();
+    QWidget *setupInfoUi();
     void setResultUiEnabled(bool enabled);
 
     QLineEdit *patternLineEdit;
     QLineEdit *rawStringLiteralLineEdit;
     QLineEdit *escapedPatternLineEdit;
+    QLineEdit *replacementLineEdit;
 
     QPlainTextEdit *subjectTextEdit;
+    QPlainTextEdit *replacementTextEdit;
 
     QCheckBox *caseInsensitiveOptionCheckBox;
     QCheckBox *dotMatchesEverythingOptionCheckBox;
@@ -104,6 +112,8 @@ private:
 
     QLabel *regexpStatusLabel;
     QTreeWidget *namedGroupsTreeWidget;
+
+    QRegularExpression regularExpression;
 };
 
 #endif
