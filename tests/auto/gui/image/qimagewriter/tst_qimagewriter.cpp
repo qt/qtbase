@@ -291,7 +291,13 @@ void tst_QImageWriter::writeImage2()
         QVERIFY(reader.read(&written));
     }
 
-    written = written.convertToFormat(image.format());
+    // The 8-bit input value might have turned into a fraction in 16-bit grayscale
+    // which can't be preserved in file formats that doesn't support 16bpc.
+    if (image.format() == QImage::Format_Grayscale16 &&
+        written.format() != QImage::Format_Grayscale16 && written.depth() <= 32)
+        image.convertTo(QImage::Format_Grayscale8);
+
+    written.convertTo(image.format());
     if (!equalImageContents(written, image)) {
         qDebug() << "image" << image.format() << image.width()
                  << image.height() << image.depth()

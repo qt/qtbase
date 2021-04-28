@@ -602,6 +602,22 @@ static void storeOpaque(QRgba64 *dst, const QRgba64 *src, const QColorVector *bu
     }
 }
 
+static void storeGray(quint8 *dst, const QRgb *src, const QColorVector *buffer, const qsizetype len,
+                      const QColorTransformPrivate *d_ptr)
+{
+    Q_UNUSED(src);
+    for (qsizetype i = 0; i < len; ++i)
+        dst[i] = d_ptr->colorSpaceOut->lut[1]->u8FromLinearF32(buffer[i].y);
+}
+
+static void storeGray(quint16 *dst, const QRgba64 *src, const QColorVector *buffer, const qsizetype len,
+                      const QColorTransformPrivate *d_ptr)
+{
+    Q_UNUSED(src);
+    for (qsizetype i = 0; i < len; ++i)
+        dst[i] = d_ptr->colorSpaceOut->lut[1]->u16FromLinearF32(buffer[i].y);
+}
+
 static constexpr qsizetype WorkBlockSize = 256;
 
 template <typename T, int Count = 1>
@@ -643,6 +659,33 @@ void QColorTransformPrivate::apply(T *dst, const T *src, qsizetype count, Transf
             storePremultiplied(dst + i, src + i, buffer, len, this);
         else
             storeUnpremultiplied(dst + i, src + i, buffer, len, this);
+
+        i += len;
+    }
+}
+
+template<typename D, typename S>
+void QColorTransformPrivate::applyReturnGray(D *dst, const S *src, qsizetype count, TransformFlags flags) const
+{
+    if (!colorMatrix.isValid())
+        return;
+
+    updateLutsIn();
+    updateLutsOut();
+
+    QUninitialized<QColorVector, WorkBlockSize> buffer;
+
+    qsizetype i = 0;
+    while (i < count) {
+        const qsizetype len = qMin(count - i, WorkBlockSize);
+        if (flags & InputPremultiplied)
+            loadPremultiplied(buffer, src + i, len, this);
+        else
+            loadUnpremultiplied(buffer, src + i, len, this);
+
+        applyMatrix(buffer, len, colorMatrix);
+
+        storeGray(dst + i, src + i, buffer, len, this);
 
         i += len;
     }
@@ -706,6 +749,26 @@ void QColorTransformPrivate::apply(QRgb *dst, const QRgb *src, qsizetype count, 
 void QColorTransformPrivate::apply(QRgba64 *dst, const QRgba64 *src, qsizetype count, TransformFlags flags) const
 {
     apply<QRgba64>(dst, src, count, flags);
+}
+
+/*!
+    \internal
+    Is to be called on a color-transform to XYZ, returns only luminance values.
+
+*/
+void QColorTransformPrivate::apply(quint8 *dst, const QRgb *src, qsizetype count, TransformFlags flags) const
+{
+    applyReturnGray<quint8, QRgb>(dst, src, count, flags);
+}
+
+/*!
+    \internal
+    Is to be called on a color-transform to XYZ, returns only luminance values.
+
+*/
+void QColorTransformPrivate::apply(quint16 *dst, const QRgba64 *src, qsizetype count, TransformFlags flags) const
+{
+    applyReturnGray<quint16, QRgba64>(dst, src, count, flags);
 }
 
 

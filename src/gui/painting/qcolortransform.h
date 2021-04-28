@@ -75,6 +75,7 @@ public:
 private:
     friend class QColorSpace;
     friend class QColorSpacePrivate;
+    friend class QColorTransformPrivate;
     friend class QImage;
 
     QExplicitlySharedDataPointer<QColorTransformPrivate> d;

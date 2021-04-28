@@ -454,6 +454,17 @@ QColorTransform QColorSpacePrivate::transformationToColorSpace(const QColorSpace
     return combined;
 }
 
+QColorTransform QColorSpacePrivate::transformationToXYZ() const
+{
+    QColorTransform transform;
+    auto ptr = new QColorTransformPrivate;
+    transform.d = ptr;
+    ptr->colorSpaceIn = this;
+    ptr->colorSpaceOut = this;
+    ptr->colorMatrix = toXyz;
+    return transform;
+}
+
 /*!
     \class QColorSpace
     \brief The QColorSpace class provides a color space abstraction.

@@ -3788,6 +3788,7 @@ QImage::Format QRasterBuffer::prepare(QImage *image)
     bytes_per_line = image->bytesPerLine();
 
     format = image->format();
+    colorSpace = image->colorSpace();
     if (image->depth() == 1 && image->colorTable().size() == 2) {
         monoDestinationWithClut = true;
         const QList<QRgb> colorTable = image->colorTable();

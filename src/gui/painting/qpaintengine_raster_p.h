@@ -450,6 +450,7 @@ public:
 
     QPainter::CompositionMode compositionMode;
     QImage::Format format;
+    QColorSpace colorSpace;
     QImage colorizeBitmap(const QImage &image, const QColor &color);
 
 private:

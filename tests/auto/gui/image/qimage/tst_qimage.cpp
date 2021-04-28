@@ -2951,21 +2951,29 @@ void tst_QImage::genericRgbConversion()
 
     QImage image(16, 16, format);
 
-    for (int i = 0; i < image.height(); ++i)
-        for (int j = 0; j < image.width(); ++j)
-            image.setPixel(j, i, qRgb(j*16, i*16, 0));
+    for (int i = 0; i < image.height(); ++i) {
+        for (int j = 0; j < image.width(); ++j) {
+            if (srcGrayscale || dstGrayscale)
+                image.setPixel(j, i, qRgb((i + j) * 8, (i + j) * 8, (i + j) * 8));
+            else
+                image.setPixel(j, i, qRgb(j * 16, i * 16, (i + j) * 8));
+        }
+    }
 
     QImage imageConverted = image.convertToFormat(dest_format);
+    uint mask = std::min(image.depth(), imageConverted.depth()) < 32 ? 0xFFF0F0F0 : 0xFFFFFFFF;
+    if (srcGrayscale || dstGrayscale)
+        mask = std::max(image.depth(), imageConverted.depth()) < 32 ? 0xFFF0F0F0 : 0xFFFFFFFF;
+    if (srcGrayscale && dstGrayscale)
+        mask = 0xFFFFFFFF;
     QCOMPARE(imageConverted.format(), dest_format);
     for (int i = 0; i < imageConverted.height(); ++i) {
         for (int j = 0; j < imageConverted.width(); ++j) {
             QRgb convertedColor = imageConverted.pixel(j,i);
-            if (srcGrayscale || dstGrayscale) {
-                QVERIFY(qAbs(qGray(convertedColor) - qGray(qRgb(j*16, i*16, 0))) < 15);
-            } else {
-                QCOMPARE(qRed(convertedColor) & 0xF0, j * 16);
-                QCOMPARE(qGreen(convertedColor) & 0xF0, i * 16);
-            }
+            if (srcGrayscale || dstGrayscale)
+                QCOMPARE(convertedColor & mask, qRgb((i + j) * 8, (i + j) * 8, (i + j) * 8) & mask);
+            else
+                QCOMPARE(convertedColor & mask, qRgb(j * 16, i * 16, (i + j) * 8) & mask);
         }
     }
 }
@@ -3014,8 +3022,7 @@ void tst_QImage::inplaceRgbConversion()
     for (int i = 0; i < imageConverted.height(); ++i) {
         for (int j = 0; j < imageConverted.width(); ++j) {
             QRgb convertedColor = imageConverted.pixel(j,i);
-            QCOMPARE(qRed(convertedColor) & 0xF0, j * 16);
-            QCOMPARE(qGreen(convertedColor) & 0xF0, i * 16);
+            QCOMPARE(convertedColor & 0xFFF0F0F0, qRgb(j * 16, i * 16, 0));
         }
     }
     if (qt_depthForFormat(format) == qt_depthForFormat(dest_format))

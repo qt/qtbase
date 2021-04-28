@@ -65,6 +65,9 @@ public:
     QExplicitlySharedDataPointer<const QColorSpacePrivate> colorSpaceIn;
     QExplicitlySharedDataPointer<const QColorSpacePrivate> colorSpaceOut;
 
+    static QColorTransformPrivate *get(const QColorTransform &q)
+    { return q.d.data(); }
+
     void updateLutsIn() const;
     void updateLutsOut() const;
     bool simpleGammaCorrection() const;
@@ -81,9 +84,15 @@ public:
 
     void apply(QRgb *dst, const QRgb *src, qsizetype count, TransformFlags flags = Unpremultiplied) const;
     void apply(QRgba64 *dst, const QRgba64 *src, qsizetype count, TransformFlags flags = Unpremultiplied) const;
+    void apply(quint8 *dst, const QRgb *src, qsizetype count, TransformFlags flags = Unpremultiplied) const;
+    void apply(quint16 *dst, const QRgba64 *src, qsizetype count, TransformFlags flags = Unpremultiplied) const;
 
     template<typename T>
     void apply(T *dst, const T *src, qsizetype count, TransformFlags flags) const;
+
+    template<typename D, typename S>
+    void applyReturnGray(D *dst, const S *src, qsizetype count, TransformFlags flags) const;
+
 };
 
 QT_END_NAMESPACE

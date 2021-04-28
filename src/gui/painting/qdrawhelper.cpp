@@ -43,6 +43,7 @@
 #include <qstylehints.h>
 #include <qguiapplication.h>
 #include <qatomic.h>
+#include <private/qcolortransform_p.h>
 #include <private/qcolortrclut_p.h>
 #include <private/qdrawhelper_p.h>
 #include <private/qdrawhelper_x86_p.h>
@@ -334,6 +335,51 @@ static void QT_FASTCALL destStore(QRasterBuffer *rasterBuffer, int x, int y, con
     store(dest, buffer, x, length, nullptr, nullptr);
 }
 
+static void QT_FASTCALL destStoreGray8(QRasterBuffer *rasterBuffer, int x, int y, const uint *buffer, int length)
+{
+    uchar *data = rasterBuffer->scanLine(y) + x;
+
+    bool failed = false;
+    for (int k = 0; k < length; ++k) {
+        if (!qIsGray(buffer[k])) {
+            failed = true;
+            break;
+        }
+        data[k] = qRed(buffer[k]);
+    }
+    if (failed) { // Non-gray colors
+        QColorSpace fromCS = rasterBuffer->colorSpace.isValid() ? rasterBuffer->colorSpace : QColorSpace::SRgb;
+        QColorTransform tf = QColorSpacePrivate::get(fromCS)->transformationToXYZ();
+        QColorTransformPrivate *tfd = QColorTransformPrivate::get(tf);
+
+        tfd->apply(data, buffer, length, QColorTransformPrivate::InputPremultiplied);
+    }
+}
+
+static void QT_FASTCALL destStoreGray16(QRasterBuffer *rasterBuffer, int x, int y, const uint *buffer, int length)
+{
+    quint16 *data = reinterpret_cast<quint16 *>(rasterBuffer->scanLine(y)) + x;
+
+    bool failed = false;
+    for (int k = 0; k < length; ++k) {
+        if (!qIsGray(buffer[k])) {
+            failed = true;
+            break;
+        }
+        data[k] = qRed(buffer[k]) * 257;
+    }
+    if (failed) { // Non-gray colors
+        QColorSpace fromCS = rasterBuffer->colorSpace.isValid() ? rasterBuffer->colorSpace : QColorSpace::SRgb;
+        QColorTransform tf = QColorSpacePrivate::get(fromCS)->transformationToXYZ();
+        QColorTransformPrivate *tfd = QColorTransformPrivate::get(tf);
+
+        QRgba64 tmp_line[BufferSize];
+        for (int k = 0; k < length; ++k)
+            tmp_line[k] = QRgba64::fromArgb32(buffer[k]);
+        tfd->apply(data, tmp_line, length, QColorTransformPrivate::InputPremultiplied);
+    }
+}
+
 static DestStoreProc destStoreProc[QImage::NImageFormats] =
 {
     nullptr,            // Format_Invalid
@@ -360,11 +406,11 @@ static DestStoreProc destStoreProc[QImage::NImageFormats] =
     destStore,          // Format_RGB30
     destStore,          // Format_A2RGB30_Premultiplied
     destStore,          // Format_Alpha8
-    destStore,          // Format_Grayscale8
+    destStoreGray8,     // Format_Grayscale8
     destStore,          // Format_RGBX64
     destStore,          // Format_RGBA64
     destStore,          // Format_RGBA64_Premultiplied
-    destStore,          // Format_Grayscale16
+    destStoreGray16,    // Format_Grayscale16
     destStore,          // Format_BGR888
 };
 
@@ -381,6 +427,50 @@ static void QT_FASTCALL destStore64RGBA64(QRasterBuffer *rasterBuffer, int x, in
     QRgba64 *dest = reinterpret_cast<QRgba64*>(rasterBuffer->scanLine(y)) + x;
     for (int i = 0; i < length; ++i) {
         dest[i] = buffer[i].unpremultiplied();
+    }
+}
+
+static void QT_FASTCALL destStore64Gray8(QRasterBuffer *rasterBuffer, int x, int y, const QRgba64 *buffer, int length)
+{
+    uchar *data = rasterBuffer->scanLine(y) + x;
+
+    bool failed = false;
+    for (int k = 0; k < length; ++k) {
+        if (buffer[k].red() != buffer[k].green() || buffer[k].red() != buffer[k].blue()) {
+            failed = true;
+            break;
+        }
+        data[k] = buffer[k].red8();
+    }
+    if (failed) { // Non-gray colors
+        QColorSpace fromCS = rasterBuffer->colorSpace.isValid() ? rasterBuffer->colorSpace : QColorSpace::SRgb;
+        QColorTransform tf = QColorSpacePrivate::get(fromCS)->transformationToXYZ();
+        QColorTransformPrivate *tfd = QColorTransformPrivate::get(tf);
+
+        quint16 gray_line[BufferSize];
+        tfd->apply(gray_line, buffer, length, QColorTransformPrivate::InputPremultiplied);
+        for (int k = 0; k < length; ++k)
+            data[k] = qt_div_257(gray_line[k]);
+    }
+}
+
+static void QT_FASTCALL destStore64Gray16(QRasterBuffer *rasterBuffer, int x, int y, const QRgba64 *buffer, int length)
+{
+    quint16 *data = reinterpret_cast<quint16 *>(rasterBuffer->scanLine(y)) + x;
+
+    bool failed = false;
+    for (int k = 0; k < length; ++k) {
+        if (buffer[k].red() != buffer[k].green() || buffer[k].red() != buffer[k].blue()) {
+            failed = true;
+            break;
+        }
+        data[k] = buffer[k].red();
+    }
+    if (failed) { // Non-gray colors
+        QColorSpace fromCS = rasterBuffer->colorSpace.isValid() ? rasterBuffer->colorSpace : QColorSpace::SRgb;
+        QColorTransform tf = QColorSpacePrivate::get(fromCS)->transformationToXYZ();
+        QColorTransformPrivate *tfd = QColorTransformPrivate::get(tf);
+        tfd->apply(data, buffer, length, QColorTransformPrivate::InputPremultiplied);
     }
 }
 
@@ -410,11 +500,11 @@ static DestStoreProc64 destStoreProc64[QImage::NImageFormats] =
     destStore64,        // Format_RGB30
     destStore64,        // Format_A2RGB30_Premultiplied
     destStore64,        // Format_Alpha8
-    destStore64,        // Format_Grayscale8
+    destStore64Gray8,   // Format_Grayscale8
     nullptr,            // Format_RGBX64
     destStore64RGBA64,  // Format_RGBA64
     nullptr,            // Format_RGBA64_Premultiplied
-    destStore64,        // Format_Grayscale16
+    destStore64Gray16,  // Format_Grayscale16
     destStore64,        // Format_BGR888
 };
 #endif

@@ -120,6 +120,7 @@ public:
                                    const QList<uint16_t> &greenTransferFunctionTable,
                                    const QList<uint16_t> &blueTransferFunctionTable);
     QColorTransform transformationToColorSpace(const QColorSpacePrivate *out) const;
+    QColorTransform transformationToXYZ() const;
 
     static constexpr QColorSpace::NamedColorSpace Unknown = QColorSpace::NamedColorSpace(0);
     QColorSpace::NamedColorSpace namedColorSpace = Unknown;
