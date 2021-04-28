@@ -166,11 +166,16 @@ QGuiApplication *tst_QHighDpi::createStandardOffscreenApp(const QJsonArray &scre
 
 void tst_QHighDpi::standardScreenDpiTestData()
 {
-    // We run each test under three screen configurations (each with three screens):
+    // We run each test under different DPI configurations, each with three screens:
     QTest::addColumn<QList<qreal>>("dpiValues");
-    QTest::newRow("96") << QList<qreal> { 96, 96, 96 }; // standard-dpi sanity check
-    QTest::newRow("192") << QList<qreal> { 192, 192, 192 };  // 2x high dpi
-    QTest::newRow("144-168-192") << QList<qreal> { 144, 168, 192 }; // mixed dpi (1.5x, 1.75x, 2x)
+    // Standard-DPI sanity check
+    QTest::newRow("96") << QList<qreal> { 96, 96, 96 };
+    // 2x high DPI
+    QTest::newRow("192") << QList<qreal> { 192, 192, 192 };
+    // Mixed desktop DPI (1.5x, 1.75x, 2x)
+    QTest::newRow("144-168-192") << QList<qreal> { 144, 168, 192 };
+    // Densities from Android's DisplayMetrics docs, normalized to base 96 DPI
+    QTest::newRow("240-252-360") << QList<qreal> { 400./160 * 96, 420./160 * 96, 600./160 * 96 };
 }
 
 void tst_QHighDpi::cleanup()
