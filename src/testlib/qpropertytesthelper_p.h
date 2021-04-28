@@ -124,7 +124,7 @@ namespace QTestPrivate {
         return;
     \endcode
     after doing so, if there is any later code in the test. If testing several
-    properties in one test method, emitting a debug message saying which
+    properties in one test method, emitting a warning message saying which
     property failed, before returning, is a kindness to readers of the output.
 */
 template<typename TestedClass, typename PropertyType>
@@ -140,7 +140,7 @@ void testReadWritePropertyBasics(
     const QMetaObject *metaObject = instance.metaObject();
     QMetaProperty metaProperty = metaObject->property(metaObject->indexOfProperty(propertyName));
     QVERIFY2(metaProperty.metaType() == QMetaType::fromType<PropertyType>(),
-             QByteArray("Preconditions not met for ") +  propertyName  + '\n' +
+             QByteArray("Preconditions not met for ") +  propertyName  + "\n"
              "The type of initial and changed value does not match the type of the property.\n"
              "Please ensure that the types match exactly (convertability is not enough).\n"
              "You can provide the template types to the "
@@ -227,6 +227,119 @@ void testReadWritePropertyBasics(
 
 /*!
     \internal
+    Basic testing of a bindable property that is writable only once.
+
+    The write-once properties are writable properties which accept only
+    one valid setting of the value ("write"), after which later attempts
+    are ignored.
+
+    This helper function tests the behavior of bindable write-once property
+    \a propertyName, of type \c PropertyType, in class \c TestedClass.
+    The caller must supply an \a instance of \c TestedClass and two distinct
+    values, \a initial and \a changed, of \c PropertyType.
+
+    The property of \a instance must not yet have been set when this function
+    is called. The value it has before being set should be passed as \a prior
+    and a distinct value, that this test can set it to, as \a changed.
+
+    The \a bindingPreservedOnWrite parameter controls whether this function
+    expects the binding set by this function to be preserved when setting a value
+    directly. The default value is 'true'.
+
+    By default \c {operator==()} is used to compare values of the property and
+    \c {QTest::toString()} is used to generate proper error messages.
+
+    If such comparison is not supported for \c PropertyType, or the comparison
+    it supports is not appropriate to this property, a custom \a comparator can
+    be supplied.
+
+    Apart from that, a custom \a represent callback can also be specified to
+    generate a string representation of \c PropertyType. If supplied, it must
+    allocate its returned string using \c {new char[]}, so that it can be used
+    in place of \l {QTest::toString()}.
+
+    \note Any test calling this method will need to call
+    \code
+    if (QTest::currentTestFailed())
+        return;
+    \endcode
+    after doing so, if there is any later code in the test. If testing several
+    properties in one test method, emitting a warning message saying which
+    property failed, before returning, is a kindness to readers of the output.
+*/
+
+template<typename TestedClass, typename PropertyType>
+void testWriteOncePropertyBasics(
+        TestedClass &instance, const PropertyType &prior, const PropertyType &changed,
+        const char *propertyName,
+        bool bindingPreservedOnWrite = true,
+        std::function<bool(const PropertyType &, const PropertyType &)> comparator =
+                [](const PropertyType &lhs, const PropertyType &rhs) { return lhs == rhs; },
+        std::function<char *(const PropertyType &)> represent =
+                [](const PropertyType &val) { return QTest::toString(val); })
+{
+    // get the property
+    const QMetaObject *metaObject = instance.metaObject();
+    QMetaProperty metaProperty = metaObject->property(metaObject->indexOfProperty(propertyName));
+
+    // in case the TestedClass has setProperty()/property() methods.
+    QObject &testedObj = static_cast<QObject &>(instance);
+
+    QVERIFY2(metaProperty.metaType() == QMetaType::fromType<PropertyType>(),
+             QByteArray("Preconditions not met for ") +  propertyName + "\n"
+             "The type of prior and changed value does not match the type of the property.\n"
+             "Please ensure that the types match exactly (convertability is not enough).\n"
+             "You can provide the template types to the "
+             "function explicitly to force a certain type.\n"
+             "Property is " + metaProperty.metaType().name()
+             + " but parameters are " + QMetaType::fromType<PropertyType>().name() + ".\n");
+
+    QVERIFY2(metaProperty.isBindable(), "Preconditions not met for " + QByteArray(propertyName));
+
+    QUntypedBindable bindable = metaProperty.bindable(&instance);
+
+    QScopedPointer<QSignalSpy> spy(nullptr);
+    if (metaProperty.hasNotifySignal())
+        spy.reset(new QSignalSpy(&instance, metaProperty.notifySignal()));
+
+    QPROPERTY_TEST_COMPARISON_HELPER(
+            testedObj.property(propertyName).template value<PropertyType>(), prior, comparator,
+            represent);
+
+    QProperty<PropertyType> propObserver;
+    propObserver.setBinding(bindable.makeBinding());
+    QPROPERTY_TEST_COMPARISON_HELPER(propObserver.value(), prior, comparator, represent);
+
+    // Create a binding that sets the 'changed' value to the property
+    QProperty<PropertyType> propSetter(changed);
+    QVERIFY(!bindable.hasBinding());
+    bindable.setBinding(Qt::makePropertyBinding(propSetter));
+    QVERIFY(bindable.hasBinding());
+
+    QPROPERTY_TEST_COMPARISON_HELPER(
+            testedObj.property(propertyName).template value<PropertyType>(), changed, comparator,
+            represent);
+    QPROPERTY_TEST_COMPARISON_HELPER(propObserver.value(), changed, comparator, represent);
+    if (spy)
+        QCOMPARE(spy->count(), 1);
+
+    // Attempt to set back the 'prior' value and verify that it has no effect
+    testedObj.setProperty(propertyName, QVariant::fromValue(prior));
+    QPROPERTY_TEST_COMPARISON_HELPER(
+            testedObj.property(propertyName).template value<PropertyType>(), changed, comparator,
+            represent);
+    QPROPERTY_TEST_COMPARISON_HELPER(propObserver.value(), changed, comparator, represent);
+    if (spy)
+        QCOMPARE(spy->count(), 1);
+    if (bindingPreservedOnWrite)
+        QVERIFY(bindable.hasBinding());
+    else
+        QVERIFY(!bindable.hasBinding());
+}
+
+
+/*!
+    \internal
     Basic testing of a read-only bindable property.
 
     This helper function tests the behavior of bindable read-only property
@@ -256,7 +369,7 @@ void testReadWritePropertyBasics(
         return;
     \endcode
     after doing so, if there is any later code in the test. If testing several
-    properties in one test method, emitting a debug message saying which
+    properties in one test method, emitting a warning message saying which
     property failed, before returning, is a kindness to readers of the output.
 */
 template<typename TestedClass, typename PropertyType>
@@ -277,7 +390,7 @@ void testReadOnlyPropertyBasics(
     QObject &testedObj = static_cast<QObject &>(instance);
 
     QVERIFY2(metaProperty.metaType() == QMetaType::fromType<PropertyType>(),
-             QByteArray("Preconditions not met for ") +  propertyName  + '\n' +
+             QByteArray("Preconditions not met for ") +  propertyName  + "\n"
              "The type of initial and changed value does not match the type of the property.\n"
              "Please ensure that the types match exactly (convertability is not enough).\n"
              "You can provide the template types to the "
