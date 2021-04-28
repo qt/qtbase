@@ -69,6 +69,7 @@ private slots:
     void controlTypes2();
     void adjustSizeShouldMakeSureLayoutIsActivated();
     void testRetainSizeWhenHidden();
+    void removeWidget();
 };
 
 tst_QLayout::tst_QLayout()
@@ -379,6 +380,29 @@ void tst_QLayout::testRetainSizeWhenHidden()
     // e verify that changing back the hidden widget to want the hidden size will ensure that it gets more size
     label1->setSizePolicy(sp_retain);
     QCOMPARE(widget.sizeHint().height(), normalHeight);
+}
+
+void tst_QLayout::removeWidget()
+{
+    QHBoxLayout layout;
+    QCOMPARE(layout.count(), 0);
+    QWidget w;
+    layout.addWidget(&w);
+    QCOMPARE(layout.count(), 1);
+    layout.removeWidget(&w);
+    QCOMPARE(layout.count(), 0);
+
+    QPointer<QLayout> childLayout(new QHBoxLayout);
+    layout.addLayout(childLayout);
+    QCOMPARE(layout.count(), 1);
+
+    layout.removeWidget(nullptr);
+    QCOMPARE(layout.count(), 1);
+
+    layout.removeItem(childLayout);
+    QCOMPARE(layout.count(), 0);
+
+    QVERIFY(!childLayout.isNull());
 }
 
 QTEST_MAIN(tst_QLayout)
