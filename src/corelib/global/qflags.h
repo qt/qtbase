@@ -83,8 +83,6 @@ Q_DECLARE_TYPEINFO(QIncompatibleFlag, Q_PRIMITIVE_TYPE);
 constexpr inline QIncompatibleFlag::QIncompatibleFlag(int value) noexcept : i(value) {}
 
 
-#ifndef Q_NO_TYPESAFE_FLAGS
-
 template<typename Enum>
 class QFlags
 {
@@ -189,17 +187,6 @@ constexpr inline void operator-(Flags::enum_type f1, QFlags<Flags::enum_type> f2
 constexpr inline void operator-(int f1, QFlags<Flags::enum_type> f2) noexcept = delete; \
 Q_DECLARE_INCOMPATIBLE_FLAGS(Flags)
 
-
-#else /* Q_NO_TYPESAFE_FLAGS */
-
-#ifndef Q_MOC_RUN
-#define Q_DECLARE_FLAGS(Flags, Enum)\
-typedef uint Flags;
-#endif
-
-#define Q_DECLARE_OPERATORS_FOR_FLAGS(Flags)
-
-#endif /* Q_NO_TYPESAFE_FLAGS */
 
 QT_END_NAMESPACE
 
