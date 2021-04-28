@@ -32,6 +32,13 @@ function(__qt_internal_plugin_has_class_name plugin_target out_var)
     set(${out_var} "${classname}" PARENT_SCOPE)
 endfunction()
 
+# Constructs a generator expression which decides whether a plugin will be used.
+#
+# The conditions are based on the various properties set in qt_import_plugins.
+
+# All the TARGET_PROPERTY genexes are evaluated in the context  of the currently linked target.
+#
+# The genex is saved into out_var.
 function(__qt_internal_get_static_plugin_condition_genex
          plugin_target_unprefixed
          out_var)
@@ -49,8 +56,9 @@ function(__qt_internal_get_static_plugin_condition_genex
     # Plugin genex marker for prl processing.
     set(_is_plugin_marker_genex "$<BOOL:QT_IS_PLUGIN_GENEX>")
 
-    # The code in here uses the properties defined in qt_import_plugins (Qt6CoreMacros.cmake)
     set(_plugin_is_default "$<TARGET_PROPERTY:${plugin_target},QT_DEFAULT_PLUGIN>")
+
+    # The code in here uses the properties defined in qt_import_plugins (Qt6CoreMacros.cmake)
 
     # INCLUDE
     set(_plugin_is_whitelisted "$<IN_LIST:${plugin_target},${_manual_plugins_genex}>")
@@ -120,14 +128,23 @@ function(__qt_internal_get_static_plugin_condition_genex
     set(${out_var} "${_plugin_condition}" PARENT_SCOPE)
 endfunction()
 
+# Wraps the genex condition to evaluate to true only when using the regular plugin importing mode
+# (not finalizer mode).
+function(__qt_internal_get_plugin_condition_regular_mode plugin_condition out_var)
+    set(not_finalizer_mode "$<NOT:$<BOOL:$<TARGET_PROPERTY:_qt_static_plugins_use_finalizer_mode>>>")
+    set(full_plugin_condition "$<AND:${plugin_condition},${not_finalizer_mode}>")
+    set(${out_var} "${full_plugin_condition}" PARENT_SCOPE)
+endfunction()
+
 # Link plugin via usage requirements of associated Qt module.
 function(__qt_internal_add_static_plugin_linkage plugin_target qt_module_target)
     __qt_internal_get_static_plugin_condition_genex("${plugin_target}" plugin_condition)
+    __qt_internal_get_plugin_condition_regular_mode("${plugin_condition}" full_plugin_condition)
 
     set(plugin_target "${QT_CMAKE_EXPORT_NAMESPACE}::${plugin_target}")
 
     # If this condition is true, we link against the plug-in
-    set(plugin_genex "$<${plugin_condition}:${plugin_target}>")
+    set(plugin_genex "$<${full_plugin_condition}:${plugin_target}>")
     target_link_libraries(${qt_module_target} INTERFACE "${plugin_genex}")
 endfunction()
 
@@ -205,3 +222,164 @@ function(__qt_internal_add_static_plugin_init_object_library
     set(${out_var_plugin_init_target} "${plugin_init_target}" PARENT_SCOPE)
 endfunction()
 
+# Collect a list of genexes to link plugin libraries.
+function(__qt_internal_collect_plugin_libraries plugin_targets out_var)
+    set(plugins_to_link "")
+
+    foreach(plugin_target ${plugin_targets})
+        __qt_internal_get_static_plugin_condition_genex(
+            "${plugin_target}"
+            plugin_condition)
+
+        set(plugin_target_versioned "${QT_CMAKE_EXPORT_NAMESPACE}::${plugin_target}")
+
+        list(APPEND plugins_to_link "$<${plugin_condition}:${plugin_target_versioned}>")
+    endforeach()
+
+    set("${out_var}" "${plugins_to_link}" PARENT_SCOPE)
+endfunction()
+
+# Collect a list of genexes to link plugin initializer object libraries.
+#
+# The object libraries are only linked if the associated plugins are linked.
+function(__qt_internal_collect_plugin_init_libraries plugin_targets out_var)
+    set(plugin_inits_to_link "")
+
+    foreach(plugin_target ${plugin_targets})
+        __qt_internal_get_static_plugin_condition_genex(
+            "${plugin_target}"
+            plugin_condition)
+
+        __qt_internal_get_static_plugin_init_target_name("${plugin_target}" plugin_init_target)
+        set(plugin_init_target_versioned "${QT_CMAKE_EXPORT_NAMESPACE}::${plugin_init_target}")
+
+        list(APPEND plugin_inits_to_link "$<${plugin_condition}:${plugin_init_target_versioned}>")
+    endforeach()
+
+    set("${out_var}" "${plugin_inits_to_link}" PARENT_SCOPE)
+endfunction()
+
+# Collects all plugin targets discovered by walking the dependencies of ${target}.
+#
+# Walks immediate dependencies and their transitive dependencies.
+# Plugins are collected by inspecting the _qt_plugins property found on any dependency Qt target.
+function(__qt_internal_collect_plugin_targets_from_dependencies target out_var)
+    set(dep_targets "")
+
+    __qt_internal_collect_all_target_dependencies("${target}" dep_targets)
+
+    set(plugin_targets "")
+    foreach(dep_target ${dep_targets})
+        get_target_property(plugins ${dep_target} _qt_plugins)
+        if(plugins)
+            list(APPEND plugin_targets ${plugins})
+        endif()
+    endforeach()
+
+    # Plugins that are specified via qt_import_plugin's INCLUDE or INCLUDE_BY_TYPE can have
+    # dependencies on Qt modules. These modules in turn might bring in more default plugins to link
+    # So it's recursive. Do only one pass for now. Try to extract the included static plugins, walk
+    # their public and private dependencies, check if any of them are Qt modules that provide more
+    # plugins and extract the target names of those plugins.
+    __qt_internal_collect_plugin_targets_from_dependencies_of_plugins(
+        "${target}" recursive_plugin_targets)
+    if(recursive_plugin_targets)
+        list(APPEND plugin_targets ${recursive_plugin_targets})
+    endif()
+    list(REMOVE_DUPLICATES plugin_targets)
+
+    set("${out_var}" "${plugin_targets}" PARENT_SCOPE)
+endfunction()
+
+# Helper to collect plugin targets from encountered module dependencies as a result of walking
+# dependencies. These module dependencies might expose additional plugins.
+function(__qt_internal_collect_plugin_targets_from_dependencies_of_plugins target out_var)
+    set(assigned_plugins_overall "")
+
+    get_target_property(assigned_qt_plugins "${target}" QT_PLUGINS)
+
+    if(assigned_qt_plugins)
+        foreach(assigned_qt_plugin ${assigned_qt_plugins})
+            if(TARGET "${assigned_qt_plugin}")
+                list(APPEND assigned_plugins_overall "${assigned_qt_plugin}")
+            endif()
+        endforeach()
+    endif()
+
+    get_target_property(assigned_qt_plugins_by_type "${target}" _qt_plugins_by_type)
+
+    if(assigned_qt_plugins_by_type)
+        foreach(assigned_qt_plugin ${assigned_qt_plugins_by_type})
+            if(TARGET "${assigned_qt_plugin}")
+                list(APPEND assigned_plugins_overall "${assigned_qt_plugin}")
+            endif()
+        endforeach()
+    endif()
+
+    set(plugin_targets "")
+    foreach(target ${assigned_plugins_overall})
+        __qt_internal_walk_libs(
+            "${target}"
+            dep_targets
+            _discarded_out_var
+            "qt_private_link_library_targets"
+            "collect_targets")
+
+        foreach(dep_target ${dep_targets})
+            get_target_property(plugins ${dep_target} _qt_plugins)
+            if(plugins)
+                list(APPEND plugin_targets ${plugins})
+            endif()
+        endforeach()
+    endforeach()
+
+    list(REMOVE_DUPLICATES plugin_targets)
+
+    set("${out_var}" "${plugin_targets}" PARENT_SCOPE)
+endfunction()
+
+# Helper to check if the finalizer mode of plugin importing should be used.
+# If true or unset, use finalizer mode.
+# If false, use regular mode (usage requirement propagation via associated Qt module)
+function(__qt_internal_get_plugin_imports_finalizer_mode target out_var)
+    get_target_property(value ${target} _qt_static_plugins_use_finalizer_mode)
+    if("${value}" STREQUAL "value-NOTFOUND")
+        set(value "")
+    endif()
+    set(${out_var} "${value}" PARENT_SCOPE)
+endfunction()
+
+# Main logic of finalizer mode.
+function(__qt_internal_apply_plugin_imports_finalizer_mode target)
+    # Nothing to do in a shared build.
+    if(QT6_IS_SHARED_LIBS_BUILD)
+        return()
+    endif()
+
+    # Process a target only once.
+    get_target_property(processed ${target} _qt_plugin_finalizer_imports_processed)
+    if(processed)
+        return()
+    endif()
+
+    __qt_internal_get_plugin_imports_finalizer_mode(${target} use_finalizer_mode)
+
+    # By default if the project hasn't explicitly opted in or out, use finalizer mode.
+    if("${use_finalizer_mode}" STREQUAL "")
+        qt_enable_import_plugins_finalizer_mode(${target} TRUE)
+    endif()
+
+    # Check if the project chose a mode explicitly.
+    __qt_internal_get_plugin_imports_finalizer_mode(${target} use_finalizer_mode)
+    if(NOT use_finalizer_mode)
+        return()
+    endif()
+
+    __qt_internal_collect_plugin_targets_from_dependencies("${target}" plugin_targets)
+    __qt_internal_collect_plugin_init_libraries("${plugin_targets}" init_libraries)
+    __qt_internal_collect_plugin_libraries("${plugin_targets}" plugin_libraries)
+
+    target_link_libraries(${target} PRIVATE "${plugin_libraries}" "${init_libraries}")
+
+    set_target_properties(${target} PROPERTIES _qt_plugin_finalizer_imports_processed TRUE)
+endfunction()

@@ -6,21 +6,45 @@ enable_testing()
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 find_package(Qt6 COMPONENTS REQUIRED MockPlugins1 MockPlugins2)
-# MockPlugins3 is automatically find_dependency'd by QMock5Plugin which depends on MockPlugins3.
-# QMock5Plugin itself is loaded by QtMockPlugins1Plugins.cmake.
+# MockPlugins3 package is automatically found by the find_dependency call in
+# QMock5PluginConfig.cmake which depends on MockPlugins3.
+# QMock5Plugin itself is loaded by QtMockPlugins1Plugins.cmake, so via QtMockPlugins1Config.cmake.
 
-function(create_test_executable TARGET_NAME)
-    set(CHECK_FILE ${CMAKE_BINARY_DIR}/${TARGET_NAME}_check.cpp)
+function(create_test_executable target)
+    cmake_parse_arguments(arg "FINALIZER_MODE;QT_WRAPPER" "" "ADD_EXECUTABLE_ARGS" ${ARGN})
+
+    set(target_name_adjusted "${target}")
+    if(arg_FINALIZER_MODE)
+        set(target_name_adjusted "${target}_finalizer")
+    endif()
+
+    set(CHECK_FILE ${CMAKE_BINARY_DIR}/${target_name_adjusted}_check.cpp)
 
     set(EXPECTED_PLUGINS)
-    foreach(_p ${ARGN})
+    foreach(_p ${arg_UNPARSED_ARGUMENTS})
         string(APPEND EXPECTED_PLUGINS "    \"${_p}\",\n")
     endforeach()
     configure_file("${CMAKE_SOURCE_DIR}/check.cpp.in" ${CHECK_FILE})
 
-    add_executable(${TARGET_NAME} main.cpp ${CHECK_FILE})
-    target_link_libraries(${TARGET_NAME} PRIVATE Qt6::MockPlugins1)
-    add_test(test_${TARGET_NAME} ${TARGET_NAME})
+    set(add_executable_args ${target_name_adjusted} main.cpp ${CHECK_FILE}
+        ${arg_ADD_EXECUTABLE_ARGS})
+
+    if(arg_QT_WRAPPER)
+        qt_add_executable(${add_executable_args})
+    else()
+        add_executable(${add_executable_args})
+    endif()
+    target_link_libraries(${target_name_adjusted} PRIVATE Qt6::MockPlugins1)
+    add_test(test_${target_name_adjusted} ${target_name_adjusted})
+
+    if(arg_FINALIZER_MODE)
+        set(finalizer_mode "TRUE")
+    else()
+        set(finalizer_mode "FALSE")
+    endif()
+    qt_enable_import_plugins_finalizer_mode(${target_name_adjusted} ${finalizer_mode})
+
+    set(target ${target_name_adjusted} PARENT_SCOPE)
 endfunction()
 
 # No call to qt_import_plugins() for the default case.
@@ -28,6 +52,7 @@ create_test_executable(default
     QMock1Plugin QMock2Plugin
 
     QMock3Plugin # TODO: Should not be linked based on .pro file, see QTBUG-93501
+    ${import_mode}
 )
 
 # No call to qt_import_plugins() for the default_link case.
@@ -42,64 +67,99 @@ create_test_executable(default_link QMock1Plugin QMock2Plugin
     #       suggests that MockPlugins1 OR MockPlugins2 is sufficient to link the plugin, not both.
     #       See QTBUG-93501
     QMock3Plugin
+    ${import_mode}
 )
-target_link_libraries(default_link PRIVATE Qt6::MockPlugins2)
+target_link_libraries(${target} PRIVATE Qt6::MockPlugins2)
 
-create_test_executable(manual QMock1Plugin QMock2Plugin QMock3Plugin QMock4Plugin)
-qt_import_plugins(manual
-    INCLUDE Qt6::QMock3Plugin Qt6::QMock4Plugin
-)
+# Check that both regular and finalizer mode plugin importing pulls in the same set of plugins.
+foreach(import_mode "" "FINALIZER_MODE")
+    create_test_executable(manual QMock1Plugin QMock2Plugin QMock3Plugin QMock4Plugin
+        ${import_mode})
+    qt_import_plugins(${target}
+        INCLUDE Qt6::QMock3Plugin Qt6::QMock4Plugin
+    )
 
-create_test_executable(manual_genex QMock1Plugin QMock2Plugin QMock3Plugin)
-qt_import_plugins(manual_genex
-    INCLUDE $<1:Qt6::QMock3Plugin> $<0:Qt6::QMock4Plugin>
-)
+    create_test_executable(manual_genex QMock1Plugin QMock2Plugin QMock3Plugin ${import_mode})
+    qt_import_plugins(${target}
+        INCLUDE $<1:Qt6::QMock3Plugin> $<0:Qt6::QMock4Plugin>
+    )
 
-create_test_executable(blacklist QMock1Plugin)
-qt_import_plugins(blacklist
-    EXCLUDE Qt6::QMock2Plugin Qt6::QMock3Plugin
-)
+    create_test_executable(blacklist QMock1Plugin ${import_mode})
+    qt_import_plugins(${target}
+        EXCLUDE Qt6::QMock2Plugin Qt6::QMock3Plugin
+    )
 
-create_test_executable(blacklist_genex QMock1Plugin)
-qt_import_plugins(blacklist_genex
-    EXCLUDE $<1:Qt6::QMock2Plugin> $<1:Qt6::QMock3Plugin> $<0:Qt6::QMock1Plugin>
-)
+    create_test_executable(blacklist_genex QMock1Plugin ${import_mode})
+    qt_import_plugins(${target}
+        EXCLUDE $<1:Qt6::QMock2Plugin> $<1:Qt6::QMock3Plugin> $<0:Qt6::QMock1Plugin>
+    )
 
-create_test_executable(override QMock3Plugin QMock4Plugin)
-qt_import_plugins(override
-    INCLUDE_BY_TYPE mockplugin Qt6::QMock3Plugin Qt6::QMock4Plugin
-)
+    create_test_executable(override QMock3Plugin QMock4Plugin ${import_mode})
+    qt_import_plugins(${target}
+        INCLUDE_BY_TYPE mockplugin Qt6::QMock3Plugin Qt6::QMock4Plugin
+    )
 
-create_test_executable(override_genex QMock3Plugin)
-qt_import_plugins(override_genex
-    INCLUDE_BY_TYPE mockplugin $<1:Qt6::QMock3Plugin> $<0:Qt6::QMock4Plugin>
-)
-get_target_property(prop_plugs override_genex QT_PLUGINS)
-get_target_property(prop_types override_genex QT_PLUGINS_mockplugin)
+    create_test_executable(override_genex QMock3Plugin ${import_mode})
+    qt_import_plugins(${target}
+        INCLUDE_BY_TYPE mockplugin $<1:Qt6::QMock3Plugin> $<0:Qt6::QMock4Plugin>
+    )
 
-create_test_executable(override_mix QMock2Plugin QMock3Plugin)
-qt_import_plugins(override_mix
-    INCLUDE Qt6::QMock2Plugin
-    INCLUDE_BY_TYPE mockplugin Qt6::QMock3Plugin
-)
+    create_test_executable(override_mix QMock2Plugin QMock3Plugin ${import_mode})
+    qt_import_plugins(${target}
+        INCLUDE Qt6::QMock2Plugin
+        INCLUDE_BY_TYPE mockplugin Qt6::QMock3Plugin
+    )
 
-if(NOT WIN32)
-    # Compiling an empty static array fails on Windows.
-    create_test_executable(none)
-    qt_import_plugins(none
+    if(NOT WIN32)
+        # Compiling an empty static array fails on Windows.
+        create_test_executable(none ${import_mode})
+        qt_import_plugins(${target}
+            EXCLUDE_BY_TYPE mockplugin
+        )
+    endif()
+
+    create_test_executable(none_mix QMock3Plugin QMock4Plugin ${import_mode})
+    qt_import_plugins(${target}
+        INCLUDE Qt6::QMock3Plugin Qt6::QMock4Plugin
         EXCLUDE_BY_TYPE mockplugin
     )
+
+    # QMock5Plugin links against the Qt::MockPlugins3 module, which provides the default plugin
+    # QMock6Plugin which is why it is pulled in.
+    create_test_executable(recursive QMock5Plugin QMock6Plugin ${import_mode})
+    qt_import_plugins(${target}
+        INCLUDE_BY_TYPE mockplugin Qt6::QMock5Plugin
+    )
+endforeach()
+
+
+# No call to qt_import_plugins() in finalizer mode means nothing will be linked.
+if(NOT WIN32)
+    # Compiling an empty static array fails on Windows.
+    create_test_executable(default_finalizer_missing_import_call FINALIZER_MODE)
 endif()
 
-create_test_executable(none_mix QMock3Plugin QMock4Plugin)
-qt_import_plugins(none_mix
-    INCLUDE Qt6::QMock3Plugin Qt6::QMock4Plugin
-    EXCLUDE_BY_TYPE mockplugin
-)
+# Empty call to qt_import_plugins() in finalizer mode means default plugins are linked.
+create_test_executable(default_finalizer
+    QMock1Plugin QMock2Plugin
+    QMock3Plugin # TODO: Should not be linked based on .pro file, see QTBUG-93501
+    FINALIZER_MODE)
+qt_import_plugins(${target})
 
-# QMock5Plugin links against the Qt::MockPlugins3 module, which provides the default plugin
-# QMock6Plugin which is why it is pulled in.
-create_test_executable(recursive QMock5Plugin QMock6Plugin)
-qt_import_plugins(recursive
-    INCLUDE_BY_TYPE mockplugin Qt6::QMock5Plugin
-)
+# Check that plugin importing with manual finalization works.
+create_test_executable(default_qt_add_executable_manually_finalized
+    QMock1Plugin QMock2Plugin
+    QMock3Plugin # TODO: Should not be linked based on .pro file, see QTBUG-93501
+    FINALIZER_MODE QT_WRAPPER
+    ADD_EXECUTABLE_ARGS MANUAL_FINALIZATION)
+
+qt_finalize_executable(${target})
+
+# Check that plugin importing with automatic finalization works when the CMake version is high
+# enough.
+if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.19)
+    create_test_executable(default_qt_add_executable_auto_finalized
+        QMock1Plugin QMock2Plugin
+        QMock3Plugin # TODO: Should not be linked based on .pro file, see QTBUG-93501
+        FINALIZER_MODE QT_WRAPPER)
+endif()

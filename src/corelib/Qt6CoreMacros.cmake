@@ -487,6 +487,7 @@ function(qt6_add_executable target)
         # due to special behavior of cmake_language() argument handling
         cmake_language(EVAL CODE "cmake_language(DEFER CALL qt6_finalize_executable ${target})")
     else()
+        set_target_properties("${target}" PROPERTIES _qt_is_immediately_finalized TRUE)
         qt6_finalize_executable("${target}")
     endif()
 endfunction()
@@ -514,6 +515,13 @@ endfunction()
 # This function is currently in Technical Preview.
 # It's signature and behavior might change.
 function(qt6_finalize_executable target)
+    get_target_property(is_finalized "${target}" _qt_executable_is_finalized)
+    if(is_finalized)
+        message(AUTHOR_WARNING
+                "Tried to call qt6_finalize_executable twice on executable: '${target}'. \
+                 Did you forget to specify MANUAL_FINALIZATION to qt6_add_executable?")
+        return()
+    endif()
 
     # We can't evaluate generator expressions at configure time, so we can't
     # ask for any transitive properties or even the full library dependency
@@ -567,6 +575,18 @@ function(qt6_finalize_executable target)
     if(IOS)
         qt6_finalize_ios_app("${target}")
     endif()
+
+    # For finalizer mode of plugin importing to work safely, we need to know the list of Qt
+    # dependencies the target has, but those might be added later than the qt_add_executable call.
+    # Most of our examples are like that. Only enable finalizer mode when we are sure that the user
+    # manually finalized the executable, or it was automatically done via a deferred call.
+    # A project can still do it manually by calling qt_import_plugins() explicitly.
+    get_target_property(is_immediately_finalized "${target}" _qt_is_immediately_finalized)
+    if(NOT is_immediately_finalized)
+        __qt_internal_apply_plugin_imports_finalizer_mode("${target}")
+    endif()
+
+    set_target_properties(${target} PROPERTIES _qt_executable_is_finalized TRUE)
 endfunction()
 
 function(_qt_internal_find_ios_development_team_id out_var)
@@ -806,6 +826,7 @@ function(qt6_import_plugins target)
             # Check if passed plugin target name is a version-less one, and make a version-full
             # one.
             set_property(TARGET "${target}" APPEND PROPERTY "QT_PLUGINS_${_current_type}" "${_arg}")
+            set_property(TARGET "${target}" APPEND PROPERTY "_qt_plugins_by_type" "${_arg}")
             _qt_get_plugin_name_with_version("${_arg}" qt_plugin_with_version)
 
             # TODO: Do we really need this check? We didn't have it in Qt5, and plugin targets
@@ -822,6 +843,15 @@ function(qt6_import_plugins target)
         string(REGEX REPLACE "[-/]" "_" _plugin_type "${_arg}")
         set_property(TARGET "${target}" PROPERTY "QT_PLUGINS_${_plugin_type}" "-")
     endforeach()
+
+    # If the project called qt_import_plugins, use this as an event to enable finalizer mode for
+    # plugin importing.
+    #
+    # This is done in addition to the code in qt_finalize_executable, to ensure pre-existing
+    # projects that use qt_import_plugins activate finalizer mode even with an older CMake version
+    # that doesn't support deferred calls (and projects that don't explicitly call
+    # qt_finalize_executable).
+    __qt_internal_apply_plugin_imports_finalizer_mode(${target})
 endfunction()
 
 if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
@@ -831,6 +861,37 @@ if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
         elseif(QT_DEFAULT_MAJOR_VERSION EQUAL 6)
             qt6_import_plugins(${ARGV})
         endif()
+    endfunction()
+endif()
+
+# This function allows enabling or disabling the finalizer mode of plugin importing in static Qt
+# builds.
+#
+# When finalizer mode is enabled, all plugins initializer object libraries are directly linked to
+# the given '${target}' (executable or shared library).
+# This prevents cycles between Qt provided static libraries and reduces link time, due to the
+# libraries not being repeated because they are not part of a cycle anymore.
+#
+# When finalizer mode is disabled, each plugin initializer is propagated via usage requirements
+# of its associated module.
+#
+# Finalizer mode is enabled by default if:
+#   - the project calls qt_import_plugins explicitly or
+#   - the project calls qt_finalize_executable explicitly or
+#   - the project uses qt_add_executable and a CMake version greater than or equal to 3.19
+#     (which will DEFER CALL qt_finalize_executable)
+function(qt6_enable_import_plugins_finalizer_mode target enabled)
+    if(enabled)
+        set(enabled "TRUE")
+    else()
+        set(enabled "FALSE")
+    endif()
+    set_property(TARGET "${target}" PROPERTY _qt_static_plugins_use_finalizer_mode "${enabled}")
+endfunction()
+
+if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
+    function(qt_enable_import_plugins_finalizer_mode)
+        qt6_enable_import_plugins_finalizer_mode(${ARGV})
     endfunction()
 endif()
 
