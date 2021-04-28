@@ -2657,19 +2657,22 @@ bool QDateTimePrivate::epochMSecsToLocalTime(qint64 msecs, QDate *localDate, QTi
 #if QT_CONFIG(timezone)
         // Use the system time-zone.
         const auto sys = QTimeZone::systemTimeZone();
-        if (daylightStatus) {
-            *daylightStatus = sys.d->isDaylightTime(msecs)
-                ? QDateTimePrivate::DaylightTime
-                : QDateTimePrivate::StandardTime;
-        }
+        if (sys.isValid()) {
+            if (daylightStatus) {
+                *daylightStatus = sys.d->isDaylightTime(msecs)
+                    ? QDateTimePrivate::DaylightTime
+                    : QDateTimePrivate::StandardTime;
+            }
 
-        // NB: cast to qint64 here is important to make sure a matching
-        // add_overflow is found, GCC 7.5.0 fails without this cast
-        if (add_overflow(msecs, qint64(sys.d->offsetFromUtc(msecs) * MSECS_PER_SEC), &msecs))
-            return false;
-        msecsToTime(msecs, localDate, localTime);
-        return true;
-#else // Kludge
+            // NB: cast to qint64 here is important to make sure a matching
+            // add_overflow is found, GCC 7.5.0 fails without this cast
+            if (add_overflow(msecs, qint64(sys.d->offsetFromUtc(msecs)) * MSECS_PER_SEC, &msecs))
+                return false;
+            msecsToTime(msecs, localDate, localTime);
+            return true;
+        }
+#endif // timezone
+        // Kludge
         // Use existing method to fake the conversion (this is deeply flawed
         // as it may apply the conversion from the wrong day number, e.g. if
         // rule is last Sunday of month).
@@ -2686,7 +2689,6 @@ bool QDateTimePrivate::epochMSecsToLocalTime(qint64 msecs, QDate *localDate, QTi
         bool res = qt_localtime(fakeMsecs, localDate, localTime, daylightStatus);
         *localDate = localDate->addDays(fakeDate.daysTo(utcDate));
         return res;
-#endif // timezone
     }
 
     // Falls inside time_t supported range so can use localtime
@@ -2743,19 +2745,22 @@ qint64 QDateTimePrivate::localMSecsToEpochMSecs(qint64 localMsecs,
 #if QT_CONFIG(timezone)
     // Use the system zone:
     const auto sys = QTimeZone::systemTimeZone();
-    const qint64 utcMsecs =
-        QDateTimePrivate::zoneMSecsToEpochMSecs(localMsecs, sys,
-                                                QDateTimePrivate::UnknownDaylightTime,
-                                                localDate, localTime);
-    if (abbreviation)
-        *abbreviation = sys.d->abbreviation(utcMsecs);
-    if (daylightStatus) {
-        *daylightStatus = sys.d->isDaylightTime(utcMsecs)
-            ? QDateTimePrivate::DaylightTime
-            : QDateTimePrivate::StandardTime;
+    if (sys.isValid()) {
+        const qint64 utcMsecs =
+            QDateTimePrivate::zoneMSecsToEpochMSecs(localMsecs, sys,
+                                                    QDateTimePrivate::UnknownDaylightTime,
+                                                    localDate, localTime);
+        if (abbreviation && sys.isValid())
+            *abbreviation = sys.d->abbreviation(utcMsecs);
+        if (daylightStatus) {
+            *daylightStatus = sys.isValid() && sys.d->isDaylightTime(utcMsecs)
+                ? QDateTimePrivate::DaylightTime
+                : QDateTimePrivate::StandardTime;
+        }
+        return utcMsecs;
     }
-    return utcMsecs;
-#else // Kludge
+#endif // timezone
+    // Kludge
     // Use existing method to fake the conversion (this is deeply flawed as it
     // may apply the conversion from the wrong day number, e.g. if rule is last
     // Sunday of month).
@@ -2777,7 +2782,6 @@ qint64 QDateTimePrivate::localMSecsToEpochMSecs(qint64 localMsecs,
     QTime utcTime;
     msecsToTime(utcMsecs, &utcDate, &utcTime);
     return timeToMSecs(utcDate.addDays(fakeDiff), utcTime);
-#endif
 }
 
 static inline bool specCanBeSmall(Qt::TimeSpec spec)
