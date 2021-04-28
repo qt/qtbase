@@ -46,7 +46,6 @@ private: // helpers
     QGuiApplication *createStandardOffscreenApp(const QJsonArray &screens);
     static void standardScreenDpiTestData();
 private slots:
-    void initTestCase();
     void cleanup();
     void qhighdpiscaling_data();
     void qhighdpiscaling();
@@ -172,15 +171,6 @@ void tst_QHighDpi::standardScreenDpiTestData()
     QTest::newRow("96") << QList<qreal> { 96, 96, 96 }; // standard-dpi sanity check
     QTest::newRow("192") << QList<qreal> { 192, 192, 192 };  // 2x high dpi
     QTest::newRow("144-168-192") << QList<qreal> { 144, 168, 192 }; // mixed dpi (1.5x, 1.75x, 2x)
-}
-
-void tst_QHighDpi::initTestCase()
-{
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    // Run tests on the (proposed) Qt 6 default configuration
-    QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-    QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
-#endif
 }
 
 void tst_QHighDpi::cleanup()
