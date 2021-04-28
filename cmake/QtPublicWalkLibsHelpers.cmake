@@ -56,15 +56,25 @@ function(__qt_internal_memoize_values_in_dict target dict_name dict_key values)
 endfunction()
 
 
-# Walks a target's link libraries recursively, and performs some actions (poor man's polypmorphism)
+# Walks a target's public link libraries recursively, and performs some actions (poor man's
+# polypmorphism)
 #
-# out_var is the name of the variable where the result will be assigned. The result is a list of
-# libraries, mostly in generator expression form.
-# rcc_objects_out_var is the name of the variable where the collected rcc object files will be
-# assigned (for the initial target and its dependencies)
-# dict_name is used for caching the results, and preventing the same target from being processed
-# twice
-# operation is a string to tell the function what additional behaviors to execute.
+# Walks INTERFACE_LINK_LIBRARIES for all target types, as well as LINK_LIBRARIES for static
+# library targets.
+#
+# out_var: the name of the variable where the result will be assigned. The result is a list of
+#          libraries, mostly in generator expression form.
+# rcc_objects_out_var: the name of the variable where the collected rcc object files will be
+#                      assigned (for the initial target and its dependencies)
+# dict_name: used for caching the results, and preventing the same target from being processed
+#            twice
+# operation: a string to tell the function what additional behaviors to execute.
+#            'collect_libs' (default) operation is to collect linker file paths and flags.
+#                           Used for prl file generation.
+#            'promote_global' promotes walked imported targets to global scope.
+#            'collect_targets' collects all target names (discards framework or link flags)
+#
+#
 function(__qt_internal_walk_libs
          target out_var rcc_objects_out_var dict_name operation)
     set(collected ${ARGN})
@@ -179,7 +189,12 @@ function(__qt_internal_walk_libs
                         __qt_internal_merge_libs(rcc_objects ${lib_rcc_objects_${target}})
                     endif()
                 elseif(NOT lib_target_type STREQUAL "OBJECT_LIBRARY")
-                    __qt_internal_merge_libs(libs "$<TARGET_LINKER_FILE:${lib_target}>")
+
+                    if(operation STREQUAL "collect_targets")
+                        __qt_internal_merge_libs(libs ${lib_target})
+                    else()
+                        __qt_internal_merge_libs(libs "$<TARGET_LINKER_FILE:${lib_target}>")
+                    endif()
 
                     get_target_property(target_rcc_objects "${lib_target}" _qt_rcc_objects)
                     if(target_rcc_objects)
@@ -220,11 +235,13 @@ function(__qt_internal_walk_libs
                 message(FATAL_ERROR "The ${CMAKE_MATCH_1} target is mentioned as a dependency for \
 ${target}, but not declared.")
             else()
-                set(final_lib_name_to_merge "${lib_target}")
-                if(lib_target MATCHES "/([^/]+).framework$")
-                    set(final_lib_name_to_merge "-framework ${CMAKE_MATCH_1}")
+                if(NOT operation STREQUAL "collect_targets")
+                    set(final_lib_name_to_merge "${lib_target}")
+                    if(lib_target MATCHES "/([^/]+).framework$")
+                        set(final_lib_name_to_merge "-framework ${CMAKE_MATCH_1}")
+                    endif()
+                    __qt_internal_merge_libs(libs "${final_lib_name_to_merge}")
                 endif()
-                __qt_internal_merge_libs(libs "${final_lib_name_to_merge}")
             endif()
         endforeach()
         __qt_internal_memoize_values_in_dict("${target}" "${dict_name}" "libs" "${libs}")
@@ -234,4 +251,43 @@ ${target}, but not declared.")
     endif()
     set(${out_var} ${libs} PARENT_SCOPE)
     set(${rcc_objects_out_var} ${rcc_objects} PARENT_SCOPE)
+endfunction()
+
+
+# Given ${target}, collect all its private dependencies that are CMake targets.
+#
+# Discards non-CMake-target dependencies like linker flags or file paths.
+# Does nothing when given an interface library.
+#
+# To be used to extract the full list of target dependencies of a library or executable.
+function(__qt_internal_collect_all_target_dependencies target out_var)
+    set(dep_targets "")
+
+    get_target_property(target_type ${target} TYPE)
+
+    if(NOT target_type STREQUAL "INTERFACE_LIBRARY")
+        get_target_property(link_libs ${target} LINK_LIBRARIES)
+        if(link_libs)
+            foreach(lib ${link_libs})
+                if(TARGET "${lib}")
+                    list(APPEND dep_targets "${lib}")
+
+                    __qt_internal_walk_libs(
+                        "${lib}"
+                        lib_walked_targets
+                        _discarded_out_var
+                        "qt_private_link_library_targets"
+                        "collect_targets")
+
+                    if(lib_walked_targets)
+                        list(APPEND dep_targets ${lib_walked_targets})
+                    endif()
+                endif()
+            endforeach()
+        endif()
+    endif()
+
+    list(REMOVE_DUPLICATES dep_targets)
+
+    set(${out_var} "${dep_targets}" PARENT_SCOPE)
 endfunction()
