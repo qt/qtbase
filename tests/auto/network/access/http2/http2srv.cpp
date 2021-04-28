@@ -753,8 +753,10 @@ void Http2Server::handleDATA()
     }
 
     if (inboundFrame.flags().testFlag(FrameFlag::END_STREAM)) {
-        closedStreams.insert(streamID); // Enter "half-closed remote" state.
-        streamWindows.erase(it);
+        if (responseBody.isEmpty()) {
+            closedStreams.insert(streamID); // Enter "half-closed remote" state.
+            streamWindows.erase(it);
+        }
         emit receivedData(streamID);
     }
     emit receivedDATAFrame(streamID,

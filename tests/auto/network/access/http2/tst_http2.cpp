@@ -160,6 +160,7 @@ private:
     int windowUpdates = 0;
     bool prefaceOK = false;
     bool serverGotSettingsACK = false;
+    bool POSTResponseHEADOnly = true;
 
     static const RawSettings defaultServerSettings;
 };
@@ -889,14 +890,21 @@ void tst_Http2::contentEncoding()
 void tst_Http2::authenticationRequired_data()
 {
     QTest::addColumn<bool>("success");
+    QTest::addColumn<bool>("responseHEADOnly");
 
-    QTest::addRow("failed-auth") << false;
-    QTest::addRow("successful-auth") << true;
+    QTest::addRow("failed-auth") << false << true;
+    QTest::addRow("successful-auth") << true << true;
+    // Include a DATA frame in the response from the remote server. An example would be receiving a
+    // JSON response on a request along with the 401 error.
+    QTest::addRow("failed-auth-with-response") << false << false;
+    QTest::addRow("successful-auth-with-response") << true << false;
 }
 
 void tst_Http2::authenticationRequired()
 {
     clearHTTP2State();
+    QFETCH(const bool, responseHEADOnly);
+    POSTResponseHEADOnly = responseHEADOnly;
 
     QFETCH(const bool, success);
 
@@ -975,6 +983,7 @@ void tst_Http2::clearHTTP2State()
     windowUpdates = 0;
     prefaceOK = false;
     serverGotSettingsACK = false;
+    POSTResponseHEADOnly = true;
 }
 
 void tst_Http2::runEventLoop(int ms)
@@ -1107,7 +1116,7 @@ void tst_Http2::receivedData(quint32 streamID)
     Q_ASSERT(srv);
     QMetaObject::invokeMethod(srv, "sendResponse", Qt::QueuedConnection,
                               Q_ARG(quint32, streamID),
-                              Q_ARG(bool, true /*HEADERS only*/));
+                              Q_ARG(bool, POSTResponseHEADOnly /*true = HEADERS only*/));
 }
 
 void tst_Http2::windowUpdated(quint32 streamID)
