@@ -584,3 +584,9 @@ endfunction()
 function(qt_disable_apple_app_extension_api_only target)
     set_target_properties("${target}" PROPERTIES QT_NO_APP_EXTENSION_ONLY_API TRUE)
 endfunction()
+
+# Common function to add Qt prefixes to the target name
+function(qt_internal_qtfy_target out_var target)
+    set(${out_var} "Qt${target}" PARENT_SCOPE)
+    set(${out_var}_versioned "Qt${PROJECT_VERSION_MAJOR}${target}" PARENT_SCOPE)
+endfunction()

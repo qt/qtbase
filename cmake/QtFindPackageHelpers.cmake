@@ -211,9 +211,9 @@ endfunction()
 function(qt_record_extra_qt_package_dependency main_target_name dep_target_name
                                                                 dep_package_version)
     # EntryPoint -> Qt6EntryPoint.
-    qt_internal_module_info(qtfied_target_name "${dep_target_name}")
-    qt_record_extra_package_dependency("${main_target_name}" "${qtfied_target_name_versioned}"
-                                                             "${dep_package_version}")
+    qt_internal_qtfy_target(qtfied_target_name "${dep_target_name}")
+    qt_record_extra_package_dependency("${main_target_name}"
+        "${qtfied_target_name_versioned}" "${dep_package_version}")
 endfunction()
 
 # This function records a 'QtFooTools' package dependency for the ${main_target_name} target
@@ -249,7 +249,7 @@ function(qt_record_extra_qt_main_tools_package_dependency main_target_name
                                                           dep_non_versioned_package_name
                                                           dep_package_version)
     # WaylandScannerTools -> Qt6WaylandScannerTools.
-    qt_internal_module_info(qtfied_package_name "${dep_non_versioned_package_name}")
+    qt_internal_qtfy_target(qtfied_package_name "${dep_non_versioned_package_name}")
     qt_record_extra_main_tools_package_dependency(
         "${main_target_name}" "${qtfied_package_name_versioned}" "${dep_package_version}")
 endfunction()
