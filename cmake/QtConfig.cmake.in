@@ -53,6 +53,10 @@ set(QT_ADDITIONAL_PACKAGES_PREFIX_PATH "" CACHE STRING "Additional directories w
 file(TO_CMAKE_PATH "${QT_ADDITIONAL_PACKAGES_PREFIX_PATH}" _qt_additional_packages_prefix_path)
 file(TO_CMAKE_PATH "$ENV{QT_ADDITIONAL_PACKAGES_PREFIX_PATH}" _qt_additional_packages_prefix_path_env)
 
+# Public helpers available to all Qt packages.
+include("${CMAKE_CURRENT_LIST_DIR}/QtFeature.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/QtPublicPluginHelpers.cmake")
+
 # Find required dependencies, if any.
 include(CMakeFindDependencyMacro)
 if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@Dependencies.cmake")

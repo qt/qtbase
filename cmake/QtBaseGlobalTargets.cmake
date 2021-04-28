@@ -159,7 +159,9 @@ qt_internal_export_modern_cmake_config_targets_file(TARGETS ${__export_targets}
                                                     CONFIG_INSTALL_DIR
                                                     ${__GlobalConfig_install_dir})
 
-## Install some QtBase specific CMake files:
+# Install internal CMake files.
+# The functions defined inside can not be used in public projects.
+# They can only be used while building Qt itself.
 qt_copy_or_install(FILES
                    cmake/ModuleDescription.json.in
                    cmake/Qt3rdPartyLibraryConfig.cmake.in
@@ -179,8 +181,6 @@ qt_copy_or_install(FILES
                    cmake/QtDbusHelpers.cmake
                    cmake/QtDocsHelpers.cmake
                    cmake/QtExecutableHelpers.cmake
-                   cmake/QtFeature.cmake
-                   cmake/QtFeatureCommon.cmake
                    cmake/QtFileConfigure.txt.in
                    cmake/QtFindPackageHelpers.cmake
                    cmake/QtFindWrapConfigExtra.cmake.in
@@ -237,7 +237,25 @@ qt_copy_or_install(FILES
     DESTINATION "${__GlobalConfig_install_dir}"
 )
 
-file(COPY cmake/QtFeature.cmake DESTINATION "${__GlobalConfig_build_dir}")
+# Install public CMake files.
+# The functions defined inside can be used in both public projects and while building Qt.
+# Usually we put such functions into Qt6CoreMacros.cmake, but that's getting bloated.
+# These files will be included by Qt6Config.cmake.
+set(__public_cmake_helpers
+    cmake/QtFeature.cmake
+    cmake/QtFeatureCommon.cmake
+    cmake/QtPublicPluginHelpers.cmake
+)
+
+qt_copy_or_install(FILES ${__public_cmake_helpers} DESTINATION "${__GlobalConfig_install_dir}")
+
+# In prefix builds we also need to copy the files into the build config directory, so that the
+# build-dir Qt6Config.cmake finds the files when building examples in-tree.
+if(QT_WILL_INSTALL)
+    foreach(_public_cmake_helper ${__public_cmake_helpers})
+        file(COPY "${_public_cmake_helper}" DESTINATION "${__GlobalConfig_build_dir}")
+    endforeach()
+endif()
 
 # TODO: Check whether this is the right place to install these
 qt_copy_or_install(DIRECTORY cmake/3rdparty DESTINATION "${__GlobalConfig_install_dir}")

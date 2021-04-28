@@ -507,6 +507,7 @@ set(__qt_internal_add_executable_multi_args
 
 option(QT_CMAKE_DEBUG_EXTEND_TARGET "Debug extend_target calls in Qt's build system" OFF)
 
+# Internal helpers available only while building Qt itself.
 include(Qt3rdPartyLibraryHelpers)
 include(QtAppHelpers)
 include(QtAutogenHelpers)
@@ -543,6 +544,10 @@ include(QtJavaHelpers)
 if(ANDROID)
     include(QtAndroidHelpers)
 endif()
+
+# Helpers that are available in public projects and while building Qt itself.
+include(QtPublicPluginHelpers)
+
 
 # TODO: This block provides support for old variables. It should be removed once
 #       we remove all references to these variables in other Qt module repos.
