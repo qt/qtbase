@@ -629,6 +629,19 @@ Q_CORE_EXPORT BindingEvaluationState *suspendCurrentBindingStatus();
 Q_CORE_EXPORT void restoreBindingStatus(BindingEvaluationState *status);
 }
 
+struct QUntypedBindablePrivate
+{
+    static QtPrivate::QBindableInterface const *getInterface(const QUntypedBindable &bindable)
+    {
+        return bindable.iface;
+    }
+
+    static QUntypedPropertyData *getPropertyData(const QUntypedBindable &bindable)
+    {
+        return bindable.data;
+    }
+};
+
 QT_END_NAMESPACE
 
 #endif // QPROPERTY_P_H

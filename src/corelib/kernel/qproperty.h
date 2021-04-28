@@ -566,6 +566,7 @@ Q_CORE_EXPORT void printMetaTypeMismatch(QMetaType actual, QMetaType expected);
 
 class QUntypedBindable
 {
+    friend struct QUntypedBindablePrivate; // allows access to internal data
 protected:
     QUntypedPropertyData *data = nullptr;
     const QtPrivate::QBindableInterface *iface = nullptr;
