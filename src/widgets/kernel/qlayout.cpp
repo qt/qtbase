@@ -1386,6 +1386,11 @@ QRect QLayout::alignmentRect(const QRect &r) const
 */
 void QLayout::removeWidget(QWidget *widget)
 {
+    if (Q_UNLIKELY(!widget)) {
+        qWarning("QLayout::removeWidget: Cannot remove a null widget.");
+        return;
+    }
+
     int i = 0;
     QLayoutItem *child;
     while ((child = itemAt(i))) {
