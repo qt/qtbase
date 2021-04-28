@@ -162,14 +162,6 @@ private:
 typedef QFlags<Enum> Flags;
 #endif
 
-#define Q_DECLARE_INCOMPATIBLE_FLAGS(Flags) \
-constexpr inline QIncompatibleFlag operator|(Flags::enum_type f1, int f2) noexcept \
-{ return QIncompatibleFlag(int(f1) | f2); } \
-constexpr inline void operator+(int f1, Flags::enum_type f2) noexcept = delete; \
-constexpr inline void operator+(Flags::enum_type f1, int f2) noexcept = delete; \
-constexpr inline void operator-(int f1, Flags::enum_type f2) noexcept = delete; \
-constexpr inline void operator-(Flags::enum_type f1, int f2) noexcept = delete;
-
 #define Q_DECLARE_OPERATORS_FOR_FLAGS(Flags) \
 constexpr inline QFlags<Flags::enum_type> operator|(Flags::enum_type f1, Flags::enum_type f2) noexcept \
 { return QFlags<Flags::enum_type>(f1) | f2; } \
@@ -181,8 +173,12 @@ constexpr inline void operator+(int f1, QFlags<Flags::enum_type> f2) noexcept = 
 constexpr inline void operator-(Flags::enum_type f1, Flags::enum_type f2) noexcept = delete; \
 constexpr inline void operator-(Flags::enum_type f1, QFlags<Flags::enum_type> f2) noexcept = delete; \
 constexpr inline void operator-(int f1, QFlags<Flags::enum_type> f2) noexcept = delete; \
-Q_DECLARE_INCOMPATIBLE_FLAGS(Flags)
-
+constexpr inline QIncompatibleFlag operator|(Flags::enum_type f1, int f2) noexcept \
+{ return QIncompatibleFlag(int(f1) | f2); } \
+constexpr inline void operator+(int f1, Flags::enum_type f2) noexcept = delete; \
+constexpr inline void operator+(Flags::enum_type f1, int f2) noexcept = delete; \
+constexpr inline void operator-(int f1, Flags::enum_type f2) noexcept = delete; \
+constexpr inline void operator-(Flags::enum_type f1, int f2) noexcept = delete;
 
 QT_END_NAMESPACE
 
