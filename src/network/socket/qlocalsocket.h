@@ -44,6 +44,10 @@
 #include <QtCore/qiodevice.h>
 #include <QtNetwork/qabstractsocket.h>
 
+#ifndef QT_NO_DEBUG_STREAM
+#include <QtCore/qdebug.h>
+#endif
+
 QT_REQUIRE_CONFIG(localserver);
 
 QT_BEGIN_NAMESPACE
@@ -155,7 +159,6 @@ private:
 };
 
 #ifndef QT_NO_DEBUG_STREAM
-#include <QtCore/qdebug.h>
 Q_NETWORK_EXPORT QDebug operator<<(QDebug, QLocalSocket::LocalSocketError);
 Q_NETWORK_EXPORT QDebug operator<<(QDebug, QLocalSocket::LocalSocketState);
 #endif
