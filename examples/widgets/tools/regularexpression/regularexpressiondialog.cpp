@@ -66,12 +66,13 @@
 #include <QAction>
 #include <QClipboard>
 #include <QContextMenuEvent>
+#include <QFont>
+#include <QFontDatabase>
 
 #include <QHBoxLayout>
 #include <QGridLayout>
 #include <QFormLayout>
 
-#include <QRegularExpression>
 #include <QRegularExpressionMatch>
 #include <QRegularExpressionMatchIterator>
 
@@ -104,6 +105,20 @@ static QString codeToPattern(QString code)
         code.remove(0, 1);
     }
     return code;
+}
+
+static QFrame *createHorizontalSeparator()
+{
+    auto *result = new QFrame;
+    result->setFrameStyle(QFrame::HLine | QFrame::Sunken);
+    return result;
+}
+
+static QFrame *createVerticalSeparator()
+{
+    auto *result = new QFrame;
+    result->setFrameStyle(QFrame::VLine | QFrame::Sunken);
+    return result;
 }
 
 class PatternLineEdit : public QLineEdit
@@ -239,6 +254,7 @@ void RegularExpressionDialog::setResultUiEnabled(bool enabled)
 {
     matchDetailsTreeWidget->setEnabled(enabled);
     namedGroupsTreeWidget->setEnabled(enabled);
+    replacementTextEdit->setEnabled(enabled);
 }
 
 static void setTextColor(QWidget *widget, const QColor &color)
@@ -264,6 +280,7 @@ void RegularExpressionDialog::refresh()
     matchDetailsTreeWidget->clear();
     namedGroupsTreeWidget->clear();
     regexpStatusLabel->setText(QString());
+    replacementTextEdit->clear();
 
     if (pattern.isEmpty()) {
         setResultUiEnabled(false);
@@ -271,12 +288,12 @@ void RegularExpressionDialog::refresh()
         return;
     }
 
-    QRegularExpression rx(pattern);
-    if (!rx.isValid()) {
+    regularExpression.setPattern(pattern);
+    if (!regularExpression.isValid()) {
         setTextColor(patternLineEdit, Qt::red);
         regexpStatusLabel->setText(tr("Invalid: syntax error at position %1 (%2)")
-                                   .arg(rx.patternErrorOffset())
-                                   .arg(rx.errorString()));
+                                   .arg(regularExpression.patternErrorOffset())
+                                   .arg(regularExpression.errorString()));
         setResultUiEnabled(false);
         setUpdatesEnabled(true);
         return;
@@ -308,11 +325,13 @@ void RegularExpressionDialog::refresh()
     if (useUnicodePropertiesOptionCheckBox->isChecked())
         patternOptions |= QRegularExpression::UseUnicodePropertiesOption;
 
-    rx.setPatternOptions(patternOptions);
+    regularExpression.setPatternOptions(patternOptions);
 
-    const int capturingGroupsCount = rx.captureCount() + 1;
+    const int capturingGroupsCount = regularExpression.captureCount() + 1;
 
-    QRegularExpressionMatchIterator iterator = rx.globalMatch(text, offsetSpinBox->value(), matchType, matchOptions);
+    const int offset = offsetSpinBox->value();
+    QRegularExpressionMatchIterator iterator =
+        regularExpression.globalMatch(text, offset, matchType, matchOptions);
     int i = 0;
 
     while (iterator.hasNext()) {
@@ -334,7 +353,7 @@ void RegularExpressionDialog::refresh()
 
     regexpStatusLabel->setText(tr("Valid"));
 
-    const QStringList namedCaptureGroups = rx.namedCaptureGroups();
+    const QStringList namedCaptureGroups = regularExpression.namedCaptureGroups();
     for (int i = 0; i < namedCaptureGroups.size(); ++i) {
         const QString currentNamedCaptureGroup = namedCaptureGroups.at(i);
 
@@ -343,28 +362,44 @@ void RegularExpressionDialog::refresh()
         namedGroupItem->setText(1, currentNamedCaptureGroup.isNull() ? tr("<no name>") : currentNamedCaptureGroup);
     }
 
+    updateReplacement();
 
     setUpdatesEnabled(true);
 }
 
-void RegularExpressionDialog::setupUi()
+void RegularExpressionDialog::updateReplacement()
 {
-    QWidget *leftHalfContainer = setupLeftUi();
+    replacementTextEdit->clear();
+    const QString &replacement = replacementLineEdit->text();
+    if (!regularExpression.isValid() || replacement.isEmpty())
+        return;
 
-    QFrame *verticalSeparator = new QFrame;
-    verticalSeparator->setFrameStyle(QFrame::VLine | QFrame::Sunken);
-
-    QWidget *rightHalfContainer = setupRightUi();
-
-    QHBoxLayout *mainLayout = new QHBoxLayout;
-    mainLayout->addWidget(leftHalfContainer);
-    mainLayout->addWidget(verticalSeparator);
-    mainLayout->addWidget(rightHalfContainer);
-
-    setLayout(mainLayout);
+    QString replaced = subjectTextEdit->toPlainText();
+    replaced.replace(regularExpression, replacement);
+    replacementTextEdit->setPlainText(replaced);
 }
 
-QWidget *RegularExpressionDialog::setupLeftUi()
+void RegularExpressionDialog::setupUi()
+{
+    auto *mainLayout = new QVBoxLayout(this);
+    mainLayout->addWidget(setupTextUi());
+    mainLayout->addWidget(createHorizontalSeparator());
+    auto *horizontalLayout = new QHBoxLayout();
+    mainLayout->addLayout(horizontalLayout);
+    horizontalLayout->addWidget(setupOptionsUi());
+    horizontalLayout->addWidget(createVerticalSeparator());
+    horizontalLayout->addWidget(setupInfoUi());
+
+    auto font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+    patternLineEdit->setFont(font);
+    rawStringLiteralLineEdit->setFont(font);
+    escapedPatternLineEdit->setFont(font);
+    replacementLineEdit->setFont(font);
+    subjectTextEdit->setFont(font);
+    replacementTextEdit->setFont(font);
+}
+
+QWidget *RegularExpressionDialog::setupTextUi()
 {
     QWidget *container = new QWidget;
 
@@ -386,6 +421,35 @@ QWidget *RegularExpressionDialog::setupLeftUi()
 
     subjectTextEdit = new QPlainTextEdit;
     layout->addRow(tr("&Subject text:"), subjectTextEdit);
+
+    layout->addRow(createHorizontalSeparator());
+
+    QLabel *replaceLabel = new QLabel(tr("<h3>Replacement"));
+    layout->addRow(replaceLabel);
+
+    replacementLineEdit = new QLineEdit;
+    replacementLineEdit->setClearButtonEnabled(true);
+    connect(replacementLineEdit, &QLineEdit::textChanged, this,
+            &RegularExpressionDialog::updateReplacement);
+    layout->addRow(tr("&Replace by:"), replacementLineEdit);
+    replacementLineEdit->setToolTip(tr("Use \\1, \\2... as placeholders for the captured groups."));
+
+    replacementTextEdit = new QPlainTextEdit;
+    replacementTextEdit->setReadOnly(true);
+    layout->addRow(tr("Result:"), replacementTextEdit);
+
+    return container;
+}
+
+QWidget *RegularExpressionDialog::setupOptionsUi()
+{
+    QWidget *container = new QWidget;
+
+    QFormLayout *layout = new QFormLayout(container);
+    layout->setFieldGrowthPolicy(QFormLayout::AllNonFixedFieldsGrow);
+    layout->setContentsMargins(QMargins());
+
+    layout->addRow(new QLabel(tr("<h3>Options</h3>")));
 
     caseInsensitiveOptionCheckBox = new QCheckBox(tr("Case insensitive (/i)"));
     dotMatchesEverythingOptionCheckBox = new QCheckBox(tr("Dot matches everything (/s)"));
@@ -431,7 +495,7 @@ QWidget *RegularExpressionDialog::setupLeftUi()
     return container;
 }
 
-QWidget *RegularExpressionDialog::setupRightUi()
+QWidget *RegularExpressionDialog::setupInfoUi()
 {
     QWidget *container = new QWidget;
 
@@ -447,9 +511,7 @@ QWidget *RegularExpressionDialog::setupRightUi()
     matchDetailsTreeWidget->setSizeAdjustPolicy(QTreeWidget::AdjustToContents);
     layout->addRow(tr("Match details:"), matchDetailsTreeWidget);
 
-    QFrame *horizontalSeparator = new QFrame;
-    horizontalSeparator->setFrameStyle(QFrame::HLine | QFrame::Sunken);
-    layout->addRow(horizontalSeparator);
+    layout->addRow(createHorizontalSeparator());
 
     QLabel *regexpInfoLabel = new QLabel(tr("<h3>Regular expression information</h3>"));
     layout->addRow(regexpInfoLabel);
