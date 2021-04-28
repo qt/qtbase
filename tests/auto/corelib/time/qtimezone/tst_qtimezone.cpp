@@ -1138,7 +1138,7 @@ void tst_QTimeZone::tzTest()
     QVERIFY(tzp.isValid());
 
     // Test POSIX-format value for $TZ:
-    QTzTimeZonePrivate tzposix("MET-1METDST-2,M3.5.0/02:00:00,M10.5.0/03:00:00");
+    QTimeZone tzposix("MET-1METDST-2,M3.5.0/02:00:00,M10.5.0/03:00:00");
     QVERIFY(tzposix.isValid());
     QVERIFY(tzposix.hasDaylightTime());
 
