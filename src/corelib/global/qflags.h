@@ -105,10 +105,6 @@ public:
 #endif
     typedef Enum enum_type;
     // compiler-generated copy/move ctor/assignment operators are fine!
-#ifdef Q_CLANG_QDOC
-    constexpr inline QFlags(const QFlags &other);
-    constexpr inline QFlags &operator=(const QFlags &other);
-#endif
     constexpr inline QFlags() noexcept : i(0) {}
     constexpr inline QFlags(Enum flags) noexcept : i(Int(flags)) {}
     constexpr inline QFlags(QFlag flag) noexcept : i(flag) {}
