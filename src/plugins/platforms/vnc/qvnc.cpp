@@ -477,6 +477,9 @@ void QRfbRawEncoder::write()
 //                     server->screen()->geometry().height());
 //    }
 
+    const QImage screenImage = client->server()->screenImage();
+    rgn &= screenImage.rect();
+
     const auto rectsInRegion = rgn.rectCount();
 
     {
@@ -491,8 +494,6 @@ void QRfbRawEncoder::write()
 
     if (rectsInRegion <= 0)
         return;
-
-    const QImage screenImage = client->server()->screenImage();
 
     for (const QRect &tileRect: rgn) {
         const QRfbRect rect(tileRect.x(), tileRect.y(),
