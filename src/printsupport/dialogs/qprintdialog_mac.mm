@@ -117,7 +117,7 @@ QT_USE_NAMESPACE
         // (Apologies to the folks with more than INT_MAX pages)
         if (dialog->fromPage() == 1 && dialog->toPage() == INT_MAX) {
             dialog->setPrintRange(QPrintDialog::AllPages);
-            dialog->setFromTo(0, 0);
+            printer->setPageRanges(QPageRanges());
         } else {
             dialog->setPrintRange(QPrintDialog::PageRange); // In a way a lie, but it shouldn't hurt.
             // Carbon hands us back a very large number here even for ALL, set it to max

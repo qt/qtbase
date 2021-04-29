@@ -147,16 +147,16 @@ static void qt_win_read_back_PRINTDLGEX(PRINTDLGEX *pd, QPrintDialog *pdlg, QPri
 {
     if (pd->Flags & PD_SELECTION) {
         pdlg->setPrintRange(QPrintDialog::Selection);
-        pdlg->setFromTo(0, 0);
+        pdlg->printer()->setPageRanges(QPageRanges());
     } else if (pd->Flags & PD_PAGENUMS) {
         pdlg->setPrintRange(QPrintDialog::PageRange);
         pdlg->setFromTo(pd->lpPageRanges[0].nFromPage, pd->lpPageRanges[0].nToPage);
     } else if (pd->Flags & PD_CURRENTPAGE) {
         pdlg->setPrintRange(QPrintDialog::CurrentPage);
-        pdlg->setFromTo(0, 0);
+       pdlg->printer()->setPageRanges(QPageRanges());
     } else { // PD_ALLPAGES
         pdlg->setPrintRange(QPrintDialog::AllPages);
-        pdlg->setFromTo(0, 0);
+        pdlg->printer()->setPageRanges(QPageRanges());
     }
 
     d->ep->printToFile = (pd->Flags & PD_PRINTTOFILE) != 0;
