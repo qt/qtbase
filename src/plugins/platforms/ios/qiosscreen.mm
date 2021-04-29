@@ -462,7 +462,7 @@ QSizeF QIOSScreen::physicalSize() const
     return m_physicalSize;
 }
 
-QDpi QIOSScreen::logicalDpi() const
+QDpi QIOSScreen::logicalBaseDpi() const
 {
     return QDpi(72, 72);
 }
