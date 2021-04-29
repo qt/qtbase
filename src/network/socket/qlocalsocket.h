@@ -163,6 +163,8 @@ Q_NETWORK_EXPORT QDebug operator<<(QDebug, QLocalSocket::LocalSocketError);
 Q_NETWORK_EXPORT QDebug operator<<(QDebug, QLocalSocket::LocalSocketState);
 #endif
 
+Q_DECLARE_OPERATORS_FOR_FLAGS(QLocalSocket::SocketOptions)
+
 QT_END_NAMESPACE
 
 #endif // QLOCALSOCKET_H
