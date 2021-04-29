@@ -70,6 +70,11 @@
 
 QT_BEGIN_NAMESPACE
 
+// MSVC 19.28 does show spurious warning "C4723: potential divide by 0" for code that divides
+// by height() in release builds. Anyhow, all the code paths in this file are only executed
+// for valid QPixmap's, where height() cannot be 0. Therefore disable the warning.
+QT_WARNING_DISABLE_MSVC(4723)
+
 static bool qt_pixmap_thread_test()
 {
     if (Q_UNLIKELY(!QCoreApplication::instance())) {
