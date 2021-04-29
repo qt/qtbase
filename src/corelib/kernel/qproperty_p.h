@@ -570,6 +570,13 @@ public:
         return onValueChanged(f);
     }
 
+    template<typename Functor>
+    QPropertyNotifier addNotifier(Functor f)
+    {
+        static_assert(std::is_invocable_v<Functor>, "Functor callback must be callable without any parameters");
+        return QPropertyNotifier(*this, f);
+    }
+
     QtPrivate::QPropertyBindingData &bindingData() const
     {
         auto *storage = const_cast<QBindingStorage *>(qGetBindingStorage(owner()));

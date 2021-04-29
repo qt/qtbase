@@ -294,6 +294,33 @@ public:
     }
 };
 
+class [[nodiscard]] QPropertyNotifier : public QPropertyObserver
+{
+    std::function<void()> m_handler;
+public:
+    QPropertyNotifier() = default;
+    template<typename Functor>
+    QPropertyNotifier(Functor handler)
+        : QPropertyObserver([](QPropertyObserver *self, QUntypedPropertyData *) {
+            auto This = static_cast<QPropertyNotifier *>(self);
+            This->m_handler();
+        })
+        , m_handler(handler)
+    {
+    }
+
+    template<typename Functor, typename Property, typename = typename Property::InheritsQUntypedPropertyData>
+    QPropertyNotifier(const Property &property, Functor handler)
+        : QPropertyObserver([](QPropertyObserver *self, QUntypedPropertyData *) {
+            auto This = static_cast<QPropertyNotifier *>(self);
+            This->m_handler();
+        })
+        , m_handler(handler)
+    {
+        setSource(property);
+    }
+};
+
 template <typename T>
 class QProperty : public QPropertyData<T>
 {
@@ -440,6 +467,13 @@ public:
         static_assert(std::is_invocable_v<Functor>, "Functor callback must be callable without any parameters");
         f();
         return onValueChanged(f);
+    }
+
+    template<typename Functor>
+    QPropertyNotifier addNotifier(Functor f)
+    {
+        static_assert(std::is_invocable_v<Functor>, "Functor callback must be callable without any parameters");
+        return QPropertyNotifier(*this, f);
     }
 
     const QtPrivate::QPropertyBindingData &bindingData() const { return d; }
@@ -628,6 +662,14 @@ public:
     {
         f();
         return onValueChanged(f);
+    }
+
+    template<typename Functor>
+    QPropertyNotifier addNotifier(Functor f)
+    {
+        QPropertyNotifier handler(f);
+        observe(&handler);
+        return handler;
     }
 
     QUntypedPropertyBinding binding() const
@@ -871,6 +913,12 @@ public:
         return QBindable<T>(aliasedProperty(), iface).subscribe(f);
     }
 
+    template<typename Functor>
+    QPropertyNotifier addNotifier(Functor f)
+    {
+        return QBindable<T>(aliasedProperty(), iface).notify(f);
+    }
+
     bool isValid() const
     {
         return aliasedProperty() != nullptr;
@@ -1109,6 +1157,13 @@ public:
         return onValueChanged(f);
     }
 
+    template<typename Functor>
+    QPropertyNotifier addNotifier(Functor f)
+    {
+        static_assert(std::is_invocable_v<Functor>, "Functor callback must be callable without any parameters");
+        return QPropertyNotifier(*this, f);
+    }
+
     const QtPrivate::QPropertyBindingData &bindingData() const
     {
         auto *storage = const_cast<QBindingStorage *>(qGetBindingStorage(owner()));
@@ -1236,6 +1291,13 @@ public:
         static_assert(std::is_invocable_v<Functor>, "Functor callback must be callable without any parameters");
         f();
         return onValueChanged(f);
+    }
+
+    template<typename Functor>
+    QPropertyNotifier addNotifier(Functor f)
+    {
+        static_assert(std::is_invocable_v<Functor>, "Functor callback must be callable without any parameters");
+        return QPropertyNotifier(*this, f);
     }
 
     QtPrivate::QPropertyBindingData &bindingData() const

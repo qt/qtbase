@@ -108,6 +108,8 @@ private slots:
     void groupedNotifications();
     void groupedNotificationConsistency();
     void uninstalledBindingDoesNotEvaluate();
+
+    void notify();
 };
 
 void tst_QProperty::functorBinding()
@@ -1772,6 +1774,36 @@ void tst_QProperty::uninstalledBindingDoesNotEvaluate()
     j = 12;
     // does not lead to the binding being reevaluated.
     QCOMPARE(bindingEvaluationCounter, 2);
+}
+
+void tst_QProperty::notify()
+{
+    QProperty<int> testProperty(0);
+    QList<int> recordedValues;
+    int value = 0;
+    QPropertyNotifier notifier;
+
+    {
+        QPropertyNotifier handler = testProperty.addNotifier([&]() {
+            recordedValues << testProperty;
+        });
+        notifier = testProperty.addNotifier([&]() {
+            value = testProperty;
+        });
+
+        testProperty = 1;
+        testProperty = 2;
+    }
+    QCOMPARE(value, 2);
+    testProperty = 3;
+    QCOMPARE(value, 3);
+    notifier = {};
+    testProperty = 4;
+    QCOMPARE(value, 3);
+
+    QCOMPARE(recordedValues.count(), 2);
+    QCOMPARE(recordedValues.at(0), 1);
+    QCOMPARE(recordedValues.at(1), 2);
 }
 
 QTEST_MAIN(tst_QProperty);

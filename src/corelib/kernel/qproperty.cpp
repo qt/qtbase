@@ -958,6 +958,18 @@ QString QPropertyBindingError::description() const
 */
 
 /*!
+  \fn template<typename Functor> QPropertyNotifier QUntypedBindable::addNotifier(Functor f)
+
+  Installs \a f as a change handler. Whenever the underlying property changes, \a f will be called, as
+  long as the returned \c QPropertyNotifier and the property are kept alive.
+
+  This method is in some cases easier to use than onValueChanged(), as the returned object is not a template.
+  It can therefore more easily be stored, e.g. as a member in a class.
+
+  \sa onValueChanged(), subscribe()
+*/
+
+/*!
   \fn QUntypedPropertyBinding QUntypedBindable::binding() const
 
   Returns the underlying property's binding if there is any, or a default
@@ -1247,7 +1259,7 @@ QString QPropertyBindingError::description() const
   is either called immediately, or deferred, depending on the context.
 
   The callback \a f is expected to be a type that has a plain call operator () without any
-  parameters. This means that you can provide a C++ lambda expression, an std::function
+  parameters. This means that you can provide a C++ lambda expression, a std::function
   or even a custom struct with a call operator.
 
   The returned property change handler object keeps track of the registration. When it
@@ -1261,12 +1273,31 @@ QString QPropertyBindingError::description() const
   the value of the property changes in the future. On each value change, the handler
   is either called immediately, or deferred, depending on the context.
 
+  The callback \a f is expected to be a type that can be copied and has a plain call
+  operator() without any parameters. This means that you can provide a C++ lambda expression,
+  a std::function or even a custom struct with a call operator.
+
+  The returned property change handler object keeps track of the subscription. When it
+  goes out of scope, the callback is unsubscribed.
+*/
+
+/*!
+  \fn QPropertyNotifier QProperty<T>::addNotifier(Functor f)
+
+  Subscribes the given functor \a f as a callback that is called whenever
+  the value of the property changes.
+
   The callback \a f is expected to be a type that has a plain call operator () without any
-  parameters. This means that you can provide a C++ lambda expression, an std::function
+  parameters. This means that you can provide a C++ lambda expression, a std::function
   or even a custom struct with a call operator.
 
   The returned property change handler object keeps track of the subscription. When it
   goes out of scope, the callback is unsubscribed.
+
+  This method is in some cases easier to use than onValueChanged(), as the returned object is not a template.
+  It can therefore more easily be stored, e.g. as a member in a class.
+
+  \sa onValueChanged(), subscribe()
 */
 
 /*!
@@ -1664,7 +1695,7 @@ QString QPropertyBindingError::description() const
   is either called immediately, or deferred, depending on the context.
 
   The callback \a f is expected to be a type that has a plain call operator () without any
-  parameters. This means that you can provide a C++ lambda expression, an std::function
+  parameters. This means that you can provide a C++ lambda expression, a std::function
   or even a custom struct with a call operator.
 
   The returned property change handler object keeps track of the registration. When it
@@ -1679,11 +1710,30 @@ QString QPropertyBindingError::description() const
   is either called immediately, or deferred, depending on the context.
 
   The callback \a f is expected to be a type that has a plain call operator () without any
-  parameters. This means that you can provide a C++ lambda expression, an std::function
+  parameters. This means that you can provide a C++ lambda expression, a std::function
   or even a custom struct with a call operator.
 
   The returned property change handler object keeps track of the subscription. When it
   goes out of scope, the callback is unsubscribed.
+*/
+
+/*!
+  \fn template <typename Class, typename T, auto offset, auto Callback> template <typename Functor> QPropertyNotifier QObjectBindableProperty<Class, T, offset, Callback>::addNotifier(Functor f)
+
+  Subscribes the given functor \a f as a callback that is called whenever
+  the value of the property changes.
+
+  The callback \a f is expected to be a type that has a plain call operator () without any
+  parameters. This means that you can provide a C++ lambda expression, a std::function
+  or even a custom struct with a call operator.
+
+  The returned property change handler object keeps track of the subscription. When it
+  goes out of scope, the callback is unsubscribed.
+
+  This method is in some cases easier to use than onValueChanged(), as the returned object is not a template.
+  It can therefore more easily be stored, e.g. as a member in a class.
+
+  \sa onValueChanged(), subscribe()
 */
 
 /*!
@@ -1698,9 +1748,23 @@ QString QPropertyBindingError::description() const
 
   \ingroup tools
 
-  QPropertyChangeHandler\<PropertyType, Functor\> is created when registering a
+  QPropertyChangeHandler\<Functor\> is created when registering a
   callback on a QProperty to listen to changes to the property's value, using QProperty::onValueChanged
   and QProperty::subscribe. As long as the change handler is alive, the callback remains installed.
+
+  A handler instance can be transferred between C++ scopes using move semantics.
+*/
+
+/*!
+  \class QPropertyNotifier
+  \inmodule QtCore
+  \brief The QPropertyNotifier class controls the lifecycle of change callback installed on a QProperty.
+
+  \ingroup tools
+
+  QPropertyNotifier is created when registering a
+  callback on a QProperty to listen to changes to the property's value, using QProperty::addNotifier.
+  As long as the change handler is alive, the callback remains installed.
 
   A handler instance can be transferred between C++ scopes using move semantics.
 */
@@ -1881,7 +1945,7 @@ QString QPropertyBindingError::description() const
   is either called immediately, or deferred, depending on the context.
 
   The callback \a f is expected to be a type that has a plain call operator () without any
-  parameters. This means that you can provide a C++ lambda expression, an std::function
+  parameters. This means that you can provide a C++ lambda expression, a std::function
   or even a custom struct with a call operator.
 
   The returned property change handler object keeps track of the registration. When it
@@ -1896,11 +1960,30 @@ QString QPropertyBindingError::description() const
   is either called immediately, or deferred, depending on the context.
 
   The callback \a f is expected to be a type that has a plain call operator () without any
-  parameters. This means that you can provide a C++ lambda expression, an std::function
+  parameters. This means that you can provide a C++ lambda expression, a std::function
   or even a custom struct with a call operator.
 
   The returned property change handler object keeps track of the subscription. When it
   goes out of scope, the callback is unsubscribed.
+*/
+
+/*!
+  \fn template <typename T> QPropertyNotifier QPropertyAlias<T>::addNotifier(Functor f)
+
+  Subscribes the given functor \a f as a callback that is called whenever
+  the value of the aliased property changes.
+
+  The callback \a f is expected to be a type that has a plain call operator () without any
+  parameters. This means that you can provide a C++ lambda expression, a std::function
+  or even a custom struct with a call operator.
+
+  The returned property change handler object keeps track of the subscription. When it
+  goes out of scope, the callback is unsubscribed.
+
+  This method is in some cases easier to use than onValueChanged(), as the returned object is not a template.
+  It can therefore more easily be stored, e.g. as a member in a class.
+
+  \sa onValueChanged(), subscribe()
 */
 
 /*!
