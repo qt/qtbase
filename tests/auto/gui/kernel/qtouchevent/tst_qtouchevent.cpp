@@ -1949,7 +1949,7 @@ void tst_QTouchEvent::grabbers()
     QCOMPARE(devPriv->pointById(0)->exclusiveGrabber, grabExclusive ? &w : nullptr);
     QCOMPARE(devPriv->pointById(0)->passiveGrabbers.count(), grabPassive ? 1 : 0);
     if (grabPassive)
-        QCOMPARE(devPriv->pointById(0)->passiveGrabbers.keys().first(), &w);
+        QCOMPARE(devPriv->pointById(0)->passiveGrabbers.first(), &w);
 
     // Ensure that eventpoints are forgotten after release delivery
     points.first().state = QEventPoint::State::Released;

@@ -290,7 +290,7 @@ void tst_QMouseEvent::grabbers()
     QCOMPARE(firstEPD->exclusiveGrabber, grabExclusive ? testMouseWidget : nullptr);
     QCOMPARE(firstEPD->passiveGrabbers.count(), grabPassive ? 1 : 0);
     if (grabPassive)
-        QCOMPARE(firstEPD->passiveGrabbers.keys().first(), testMouseWidget);
+        QCOMPARE(firstEPD->passiveGrabbers.first(), testMouseWidget);
 
     // Ensure that grabbers are forgotten after release delivery
     QTest::mouseRelease(testMouseWidget, Qt::LeftButton, Qt::KeyboardModifiers(), {10, 10});
