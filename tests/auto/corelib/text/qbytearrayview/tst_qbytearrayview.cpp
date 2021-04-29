@@ -193,6 +193,7 @@ private slots:
     }
 
     void comparison() const;
+    void compare() const;
 
 private:
     template <typename Data>
@@ -633,6 +634,20 @@ void tst_QByteArrayView::comparison() const
     QVERIFY(aa != bb);
     QVERIFY(aa < bb);
     QVERIFY(bb > aa);
+}
+
+void tst_QByteArrayView::compare() const
+{
+    QByteArrayView alpha = "original";
+
+    QVERIFY(alpha.compare("original", Qt::CaseSensitive) == 0);
+    QVERIFY(alpha.compare("Original", Qt::CaseSensitive) > 0);
+    QVERIFY(alpha.compare("Original", Qt::CaseInsensitive) == 0);
+    QByteArrayView beta = "unoriginal";
+    QVERIFY(alpha.compare(beta, Qt::CaseInsensitive) < 0);
+    beta = "Unoriginal";
+    QVERIFY(alpha.compare(beta, Qt::CaseInsensitive) < 0);
+    QVERIFY(alpha.compare(beta, Qt::CaseSensitive) > 0);
 }
 
 QTEST_APPLESS_MAIN(tst_QByteArrayView)

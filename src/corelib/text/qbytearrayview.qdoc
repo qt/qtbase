@@ -354,6 +354,18 @@
 */
 
 /*!
+    \fn int QByteArrayView::compare(QByteArrayView bv, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
+    \since 6.2
+
+    Returns an integer less than, equal to, or greater than zero depending on
+    whether this QByteArrayView sorts before, at the same position as, or after
+    the QByteArrayView \a bv. The comparison is performed according to case
+    sensitivity \a cs.
+
+    \sa operator==()
+*/
+
+/*!
     \fn QByteArrayView::const_iterator QByteArrayView::begin() const
 
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the
