@@ -40,9 +40,9 @@ QT_BEGIN_NAMESPACE
 
 static QString standardImports()
 {
-    return QString::fromLatin1(R"I(from PySide%1.QtCore import *
-from PySide%1.QtGui import *
-from PySide%1.QtWidgets import *
+    return QString::fromLatin1(R"I(from PySide%1.QtCore import *  # type: ignore
+from PySide%1.QtGui import *  # type: ignore
+from PySide%1.QtWidgets import *  # type: ignore
 )I").arg(QT_VERSION_MAJOR);
 }
 
