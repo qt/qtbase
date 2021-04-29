@@ -59,3 +59,42 @@ instructions:
     maxTimeBetweenOutput: 900
     userMessageOnFailure: >
       Failed to run tests.
+
+  - type: Group
+    instructions:
+      - type: EnvironmentVariable
+        variableName: QT_MODULE_TO_TEST
+        variableValue: "{{.SourceDir}}"
+      - type: PrependToEnvironmentVariable
+        variableName: PATH
+        variableValue: "{{.InstallDir}}/bin:"
+      - type: InstallSourceArchive
+        maxTimeInSeconds: 600
+        maxTimeBetweenOutput: 600
+        project: qt/qtqa
+        ref: dev
+        directory: qt/qtqa
+        userMessageOnFailure: "Could not install qt/qtqa source archive. Please investigate why."
+      - type: ChangeDirectory
+        directory: "{{.AgentWorkingDir}}/qt/qtqa/tests/postbuild/bic"
+      - type: ExecuteCommand
+        command: ["{{.InstallDir}}/bin/qmake"]
+        maxTimeInSeconds: 7200
+        maxTimeBetweenOutput: 300
+        userMessageOnFailure: "Failed to execute qmake for bic tests"
+      - type: RunQtUnitTest
+        runTestCommand: ["make", "check", "-j1"]
+        directory: "{{.AgentWorkingDir}}/qt/qtqa/tests/postbuild/bic"
+        testRepetitionAllowance: 0
+        maxTimeInSeconds: 7200
+        maxTimeBetweenOutput: 300
+        userMessageOnFailure: "Running bic tests failed."
+    enable_if:
+      condition: and
+      conditions:
+        - condition: property
+          property: features
+          contains_value: Packaging
+        - condition: property
+          property: target.os
+          equals_value: Linux
