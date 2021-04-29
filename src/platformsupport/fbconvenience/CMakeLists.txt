@@ -1,10 +1,10 @@
 # Generated from fbconvenience.pro.
 
 #####################################################################
-## FbSupport Module:
+## FbSupportPrivate Module:
 #####################################################################
 
-qt_internal_add_module(FbSupport
+qt_internal_add_module(FbSupportPrivate
     CONFIG_MODULE_NAME fb_support
     STATIC
     INTERNAL_MODULE

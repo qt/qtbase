@@ -1,10 +1,10 @@
 # Generated from eglfs_kms_support.pro.
 
 #####################################################################
-## EglFsKmsSupport Module:
+## EglFsKmsSupportPrivate Module:
 #####################################################################
 
-qt_internal_add_module(EglFsKmsSupport
+qt_internal_add_module(EglFsKmsSupportPrivate
     CONFIG_MODULE_NAME eglfs_kms_support
     INTERNAL_MODULE
     SOURCES
@@ -26,7 +26,7 @@ qt_internal_add_module(EglFsKmsSupport
 )
 
 # begin special case
-qt_internal_extend_target(EglFsKmsSupport
+qt_internal_extend_target(EglFsKmsSupportPrivate
       CONDITION QNX
       COMPILE_OPTIONS -fpermissive
 )

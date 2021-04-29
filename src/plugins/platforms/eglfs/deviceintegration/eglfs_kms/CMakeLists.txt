@@ -1,10 +1,10 @@
 # Generated from eglfs_kms.pro.
 
 #####################################################################
-## EglFsKmsGbmSupport Module:
+## EglFsKmsGbmSupportPrivate Module:
 #####################################################################
 
-qt_internal_add_module(EglFsKmsGbmSupport
+qt_internal_add_module(EglFsKmsGbmSupportPrivate
     CONFIG_MODULE_NAME eglfs_kms_gbm_support
     INTERNAL_MODULE
     SOURCES

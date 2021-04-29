@@ -129,14 +129,14 @@ _qt_library_map = [
     LibraryMapping(
         "devicediscovery",
         "Qt6",
-        "Qt::DeviceDiscoverySupport",
-        extra=["COMPONENTS", "DeviceDiscoverySupport"],
+        "Qt::DeviceDiscoverySupportPrivate",
+        extra=["COMPONENTS", "DeviceDiscoverySupportPrivate"],
     ),
     LibraryMapping(
         "devicediscovery_support",
         "Qt6",
-        "Qt::DeviceDiscoverySupport",
-        extra=["COMPONENTS", "DeviceDiscoverySupport"],
+        "Qt::DeviceDiscoverySupportPrivate",
+        extra=["COMPONENTS", "DeviceDiscoverySupportPrivate"],
     ),
     LibraryMapping("edid", "Qt6", "Qt::EdidSupport", extra=["COMPONENTS", "EdidSupport"]),
     LibraryMapping("edid_support", "Qt6", "Qt::EdidSupport", extra=["COMPONENTS", "EdidSupport"]),
@@ -144,17 +144,17 @@ _qt_library_map = [
     LibraryMapping(
         "eglfsdeviceintegration",
         "Qt6",
-        "Qt::EglFSDeviceIntegration",
-        extra=["COMPONENTS", "EglFSDeviceIntegration"],
+        "Qt::EglFSDeviceIntegrationPrivate",
+        extra=["COMPONENTS", "EglFSDeviceIntegrationPrivate"],
     ),
     LibraryMapping(
-        "eglfs_kms_support", "Qt6", "Qt::EglFsKmsSupport", extra=["COMPONENTS", "EglFsKmsSupport"]
+        "eglfs_kms_support", "Qt6", "Qt::EglFsKmsSupportPrivate", extra=["COMPONENTS", "EglFsKmsSupportPrivate"]
     ),
     LibraryMapping(
         "eglfs_kms_gbm_support",
         "Qt6",
-        "Qt::EglFsKmsGbmSupport",
-        extra=["COMPONENTS", "EglFsKmsGbmSupport"],
+        "Qt::EglFsKmsGbmSupportPrivate",
+        extra=["COMPONENTS", "EglFsKmsGbmSupportPrivate"],
     ),
     LibraryMapping("egl_support", "Qt6", "Qt::EglSupport", extra=["COMPONENTS", "EglSupport"]),
     # enginio: Not needed in Qt6!
@@ -170,8 +170,8 @@ _qt_library_map = [
         "Qt::EventDispatcherSupport",
         extra=["COMPONENTS", "EventDispatcherSupport"],
     ),
-    LibraryMapping("fbconvenience", "Qt6", "Qt::FbSupport", extra=["COMPONENTS", "FbSupport"]),
-    LibraryMapping("fb_support", "Qt6", "Qt::FbSupport", extra=["COMPONENTS", "FbSupport"]),
+    LibraryMapping("fbconvenience", "Qt6", "Qt::FbSupportPrivate", extra=["COMPONENTS", "FbSupportPrivate"]),
+    LibraryMapping("fb_support", "Qt6", "Qt::FbSupportPrivate", extra=["COMPONENTS", "FbSupportPrivate"]),
     LibraryMapping(
         "fontdatabase_support",
         "Qt6",
@@ -195,9 +195,9 @@ _qt_library_map = [
         "Qt::HunspellInputMethod",
         extra=["COMPONENTS", "HunspellInputMethod"],
     ),
-    LibraryMapping("input", "Qt6", "Qt::InputSupport", extra=["COMPONENTS", "InputSupport"]),
+    LibraryMapping("input", "Qt6", "Qt::InputSupportPrivate", extra=["COMPONENTS", "InputSupportPrivate"]),
     LibraryMapping(
-        "input_support", "Qt6", "Qt::InputSupport", extra=["COMPONENTS", "InputSupport"]
+        "input_support", "Qt6", "Qt::InputSupportPrivate", extra=["COMPONENTS", "InputSupportPrivate"]
     ),
     LibraryMapping(
         "installer-lib", "Qt6", "Qt::AppManInstaller", extra=["COMPONENTS", "AppManInstaller"]
@@ -206,8 +206,8 @@ _qt_library_map = [
     LibraryMapping("ivicore", "Qt6", "Qt::IviCore", extra=["COMPONENTS", "IviCore"]),
     LibraryMapping("ivimedia", "Qt6", "Qt::IviMedia", extra=["COMPONENTS", "IviMedia"]),
     LibraryMapping("knx", "Qt6", "Qt::Knx", extra=["COMPONENTS", "Knx"]),
-    LibraryMapping("kmsconvenience", "Qt6", "Qt::KmsSupport", extra=["COMPONENTS", "KmsSupport"]),
-    LibraryMapping("kms_support", "Qt6", "Qt::KmsSupport", extra=["COMPONENTS", "KmsSupport"]),
+    LibraryMapping("kmsconvenience", "Qt6", "Qt::KmsSupportPrivate", extra=["COMPONENTS", "KmsSupportPrivate"]),
+    LibraryMapping("kms_support", "Qt6", "Qt::KmsSupportPrivate", extra=["COMPONENTS", "KmsSupportPrivate"]),
     LibraryMapping(
         "launcher-lib", "Qt6", "Qt::AppManLauncher", extra=["COMPONENTS", "AppManLauncher"]
     ),
@@ -364,7 +364,7 @@ _qt_library_map = [
     LibraryMapping("window-lib", "Qt6", "Qt::AppManWindow", extra=["COMPONENTS", "AppManWindow"]),
     LibraryMapping("winextras", "Qt6", "Qt::WinExtras", extra=["COMPONENTS", "WinExtras"]),
     LibraryMapping("x11extras", "Qt6", "Qt::X11Extras", extra=["COMPONENTS", "X11Extras"]),
-    LibraryMapping("xcb_qpa_lib", "Qt6", "Qt::XcbQpa", extra=["COMPONENTS", "XcbQpa"]),
+    LibraryMapping("xcb_qpa_lib", "Qt6", "Qt::XcbQpaPrivate", extra=["COMPONENTS", "XcbQpaPrivate"]),
     LibraryMapping(
         "xkbcommon_support", "Qt6", "Qt::XkbCommonSupport", extra=["COMPONENTS", "XkbCommonSupport"]
     ),
