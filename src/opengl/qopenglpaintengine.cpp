@@ -1745,6 +1745,14 @@ bool QOpenGL2PaintEngineEx::shouldDrawCachedGlyphs(QFontEngine *fontEngine, cons
     return QPaintEngineEx::shouldDrawCachedGlyphs(fontEngine, t);
 }
 
+
+// MSVC 19.28 does show spurious warning "C4723: potential divide by 0" for the code
+// that divides by QOpenGLTextureGlyphCache::height() in release builds.
+// Anyhow, the code path in this method is only executed
+// if height() != 0. Therefore disable the warning.
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_MSVC(4723)
+
 void QOpenGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngine::GlyphFormat glyphFormat,
                                                 QStaticTextItem *staticTextItem)
 {
@@ -2059,6 +2067,8 @@ void QOpenGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngine::GlyphFormat gly
     funcs.glDrawElements(GL_TRIANGLE_STRIP, 6 * numGlyphs, GL_UNSIGNED_SHORT, useIndexVbo ? nullptr : elementIndices.data());
 #endif
 }
+
+QT_WARNING_POP
 
 void QOpenGL2PaintEngineEx::drawPixmapFragments(const QPainter::PixmapFragment *fragments, int fragmentCount, const QPixmap &pixmap,
                                             QPainter::PixmapFragmentHints hints)
