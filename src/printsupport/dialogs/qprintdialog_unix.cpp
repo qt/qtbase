@@ -796,13 +796,13 @@ void QPrintDialogPrivate::setupPrinter()
     // print range
     if (options.printAll->isChecked()) {
         p->setPrintRange(QPrinter::AllPages);
-        p->setFromTo(0,0);
+        p->setPageRanges(QPageRanges());
     } else if (options.printSelection->isChecked()) {
         p->setPrintRange(QPrinter::Selection);
-        p->setFromTo(0,0);
+        p->setPageRanges(QPageRanges());
     } else if (options.printCurrentPage->isChecked()) {
         p->setPrintRange(QPrinter::CurrentPage);
-        p->setFromTo(0,0);
+        p->setPageRanges(QPageRanges());
     } else if (options.printRange->isChecked()) {
         if (q->testOption(QPrintDialog::PrintPageRange)) {
             p->setPrintRange(QPrinter::PageRange);
@@ -811,7 +811,7 @@ void QPrintDialogPrivate::setupPrinter()
             // This case happens when CUPS server-side page range is enabled
             // Setting the range to the printer occurs below
             p->setPrintRange(QPrinter::AllPages);
-            p->setFromTo(0,0);
+            p->setPageRanges(QPageRanges());
         }
     }
 
