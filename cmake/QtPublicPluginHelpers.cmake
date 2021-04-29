@@ -126,7 +126,7 @@ function(__qt_internal_add_static_plugin_import_macro
         qt_module_target
         qt_module_unprefixed)
     set(_generated_qt_plugin_file_name
-        "${CMAKE_CURRENT_BINARY_DIR}/qt_${qt_module_unprefixed}_${plugin_target}.cpp")
+        "${CMAKE_CURRENT_BINARY_DIR}/.qt_plugins/qt_${qt_module_unprefixed}_${plugin_target}.cpp")
 
     set(plugin_target_versioned "${QT_CMAKE_EXPORT_NAMESPACE}::${plugin_target}")
     get_target_property(class_name "${plugin_target_versioned}" QT_PLUGIN_CLASS_NAME)
