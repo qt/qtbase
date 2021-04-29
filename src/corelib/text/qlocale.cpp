@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2021 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Copyright (C) 2021 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -4336,7 +4336,7 @@ QStringList QLocale::uiLanguages() const
     if (d->m_data == &systemLocaleData) {
         uiLanguages = systemLocale()->query(QSystemLocale::UILanguages).toStringList();
         // ... but we need to include likely-adjusted forms of each of those, too:
-        for (const auto &entry : uiLanguages)
+        for (const auto &entry : std::as_const(uiLanguages))
             locales.append(QLocale(entry));
         if (locales.isEmpty())
             locales.append(systemLocale()->fallbackLocale());
