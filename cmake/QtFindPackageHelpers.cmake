@@ -7,10 +7,10 @@
 # Only works if called from qt_find_package(), because the promotion needs to happen in the same
 # directory scope where the imported target is first created.
 #
-# Uses qt_internal_walk_libs.
+# Uses __qt_internal_walk_libs.
 function(qt_find_package_promote_targets_to_global_scope target)
-    qt_internal_walk_libs("${target}" _discarded_out_var _discarded_out_var_2
-                          "qt_find_package_targets_dict" "promote_global")
+    __qt_internal_walk_libs("${target}" _discarded_out_var _discarded_out_var_2
+                            "qt_find_package_targets_dict" "promote_global")
 endfunction()
 
 macro(qt_find_package)

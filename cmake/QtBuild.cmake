@@ -547,6 +547,8 @@ endif()
 
 # Helpers that are available in public projects and while building Qt itself.
 include(QtPublicPluginHelpers)
+include(QtPublicTargetHelpers)
+include(QtPublicWalkLibsHelpers)
 
 
 # TODO: This block provides support for old variables. It should be removed once

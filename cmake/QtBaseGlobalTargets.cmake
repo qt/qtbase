@@ -134,7 +134,7 @@ target_include_directories(GlobalConfigPrivate INTERFACE
 )
 add_library(Qt::GlobalConfigPrivate ALIAS GlobalConfigPrivate)
 
-include(QtPublicTargetsHelpers)
+include(QtPlatformTargetHelpers)
 qt_internal_setup_public_platform_target()
 
 # defines PlatformCommonInternal PlatformModuleInternal PlatformPluginInternal PlatformToolInternal
@@ -214,7 +214,7 @@ qt_copy_or_install(FILES
                    cmake/QtPrecompiledHeadersHelpers.cmake
                    cmake/QtPriHelpers.cmake
                    cmake/QtPrlHelpers.cmake
-                   cmake/QtPublicTargetsHelpers.cmake
+                   cmake/QtPlatformTargetHelpers.cmake
                    cmake/QtProcessConfigureArgs.cmake
                    cmake/QtQmakeHelpers.cmake
                    cmake/QtResourceHelpers.cmake
@@ -245,6 +245,8 @@ set(__public_cmake_helpers
     cmake/QtFeature.cmake
     cmake/QtFeatureCommon.cmake
     cmake/QtPublicPluginHelpers.cmake
+    cmake/QtPublicTargetHelpers.cmake
+    cmake/QtPublicWalkLibsHelpers.cmake
 )
 
 qt_copy_or_install(FILES ${__public_cmake_helpers} DESTINATION "${__GlobalConfig_install_dir}")
