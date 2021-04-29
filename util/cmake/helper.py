@@ -251,10 +251,10 @@ _qt_library_map = [
         "package-lib", "Qt6", "Qt::AppManPackage", extra=["COMPONENTS", "AppManPackage"]
     ),
     LibraryMapping(
-        "packetprotocol", "Qt6", "Qt::PacketProtocol", extra=["COMPONENTS", "PacketProtocol"]
+        "packetprotocol", "Qt6", "Qt::PacketProtocolPrivate", extra=["COMPONENTS", "PacketProtocolPrivate"]
     ),
     LibraryMapping(
-        "particles", "Qt6", "Qt::QuickParticles", extra=["COMPONENTS", "QuickParticles"]
+        "particles", "Qt6", "Qt::QuickParticlesPrivate", extra=["COMPONENTS", "QuickParticlesPrivate"]
     ),
     LibraryMapping(
         "plugin-interfaces",
@@ -268,11 +268,11 @@ _qt_library_map = [
     ),
     LibraryMapping("printsupport", "Qt6", "Qt::PrintSupport", extra=["COMPONENTS", "PrintSupport"]),
     LibraryMapping("purchasing", "Qt6", "Qt::Purchasing", extra=["COMPONENTS", "Purchasing"]),
-    LibraryMapping("qmldebug", "Qt6", "Qt::QmlDebug", extra=["COMPONENTS", "QmlDebug"]),
-    LibraryMapping("qmldevtools", "Qt6", "Qt::QmlDevTools", extra=["COMPONENTS", "QmlDevTools"]),
-    LibraryMapping("qmlcompiler", "Qt6", "Qt::QmlCompiler", extra=["COMPONENTS", "QmlCompiler"]),
+    LibraryMapping("qmldebug", "Qt6", "Qt::QmlDebugPrivate", extra=["COMPONENTS", "QmlDebugPrivate"]),
+    LibraryMapping("qmldevtools", "Qt6", "Qt::QmlDevToolsPrivate", extra=["COMPONENTS", "QmlDevToolsPrivate"]),
+    LibraryMapping("qmlcompiler", "Qt6", "Qt::QmlCompilerPrivate", extra=["COMPONENTS", "QmlCompilerPrivate"]),
     LibraryMapping("qml", "Qt6", "Qt::Qml", extra=["COMPONENTS", "Qml"]),
-    LibraryMapping("qmldom", "Qt6", "Qt::QmlDom", extra=["COMPONENTS", "QmlDom"]),
+    LibraryMapping("qmldom", "Qt6", "Qt::QmlDomPrivate", extra=["COMPONENTS", "QmlDomPrivate"]),
     LibraryMapping("qmlmodels", "Qt6", "Qt::QmlModels", extra=["COMPONENTS", "QmlModels"]),
     LibraryMapping("qmltest", "Qt6", "Qt::QuickTest", extra=["COMPONENTS", "QuickTest"]),
     LibraryMapping(
@@ -309,7 +309,7 @@ _qt_library_map = [
         extra=["COMPONENTS", "QuickControls2Impl"],
     ),
     LibraryMapping("quick", "Qt6", "Qt::Quick", extra=["COMPONENTS", "Quick"]),
-    LibraryMapping("quickshapes", "Qt6", "Qt::QuickShapes", extra=["COMPONENTS", "QuickShapes"]),
+    LibraryMapping("quickshapes", "Qt6", "Qt::QuickShapesPrivate", extra=["COMPONENTS", "QuickShapesPrivate"]),
     LibraryMapping(
         "quicktemplates2", "Qt6", "Qt::QuickTemplates2", extra=["COMPONENTS", "QuickTemplates2"]
     ),
@@ -374,7 +374,7 @@ _qt_library_map = [
         "qmlworkerscript", "Qt6", "Qt::QmlWorkerScript", extra=["COMPONENTS", "QmlWorkerScript"]
     ),
     LibraryMapping(
-        "quickparticles", "Qt6", "Qt::QuickParticles", extra=["COMPONENTS", "QuickParticles"]
+        "quickparticles", "Qt6", "Qt::QuickParticlesPrivate", extra=["COMPONENTS", "QuickParticlesPrivate"]
     ),
     LibraryMapping(
         "linuxofono_support",

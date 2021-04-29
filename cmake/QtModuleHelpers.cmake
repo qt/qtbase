@@ -371,7 +371,7 @@ function(qt_internal_add_module target)
     # Make sure to create such paths for both the the BUILD_INTERFACE and the INSTALL_INTERFACE.
     #
     # Only add syncqt headers if they exist.
-    # This handles cases like QmlDevTools which do not have their own headers, but borrow them
+    # This handles cases like QmlDevToolsPrivate which do not have their own headers, but borrow them
     # from another module.
     if(NOT arg_NO_SYNC_QT AND NOT arg_NO_MODULE_HEADERS)
         # Don't include private headers unless they exist, aka syncqt created them.
@@ -682,7 +682,7 @@ set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
 
     set(interface_includes "")
 
-    # Handle cases like QmlDevTools which do not have their own headers, but rather borrow them
+    # Handle cases like QmlDevToolsPrivate which do not have their own headers, but rather borrow them
     # from another module.
     if(NOT arg_NO_SYNC_QT)
         list(APPEND interface_includes "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>")
