@@ -43,10 +43,10 @@ elseif (UNIX)
             $<TARGET_FILE:mylib>
             "${CMAKE_CURRENT_BINARY_DIR}/../libmylib.so.1.0.0"
             COMMAND ${CMAKE_COMMAND} -E create_symlink
-            "${CMAKE_CURRENT_BINARY_DIR}/../libmylib.so.1.0.0"
+            "libmylib.so.1.0.0"
             "${CMAKE_CURRENT_BINARY_DIR}/../libmylib.so.1"
             COMMAND ${CMAKE_COMMAND} -E create_symlink
-            "${CMAKE_CURRENT_BINARY_DIR}/../libmylib.so.1.0.0"
+            "libmylib.so.1.0.0"
             "${CMAKE_CURRENT_BINARY_DIR}/../libmylib.so1"
             )
 else() #Win32

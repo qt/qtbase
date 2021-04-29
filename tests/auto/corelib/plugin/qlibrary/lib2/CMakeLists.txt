@@ -48,15 +48,15 @@ if (UNIX)
             $<TARGET_FILE:mylib2>
             "${CMAKE_CURRENT_BINARY_DIR}/../libmylib.so.2.0.0"
         COMMAND ${CMAKE_COMMAND} -E create_symlink
-            "${CMAKE_CURRENT_BINARY_DIR}/../libmylib.so.2.0.0"
+            "libmylib.so.2.0.0"
             "${CMAKE_CURRENT_BINARY_DIR}/../libmylib.so.2"
         COMMAND ${CMAKE_COMMAND} -E remove
             "${CMAKE_CURRENT_BINARY_DIR}/../libmylib.so"
         COMMAND ${CMAKE_COMMAND} -E create_symlink
-            "${CMAKE_CURRENT_BINARY_DIR}/../libmylib.so.2.0.0"
+            "libmylib.so.2.0.0"
             "${CMAKE_CURRENT_BINARY_DIR}/../libmylib.so"
         COMMAND ${CMAKE_COMMAND} -E create_symlink
-            "${CMAKE_CURRENT_BINARY_DIR}/../libmylib.so.2.0.0"
+            "libmylib.so.2.0.0"
             "${CMAKE_CURRENT_BINARY_DIR}/../libmylib.so2"
     )
 else() #Win32
