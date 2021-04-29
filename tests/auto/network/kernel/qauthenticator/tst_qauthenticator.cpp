@@ -49,6 +49,8 @@ private Q_SLOTS:
     void ntlmAuth();
 
     void equalityOperators();
+
+    void isMethodSupported();
 };
 
 tst_QAuthenticator::tst_QAuthenticator()
@@ -161,6 +163,22 @@ void tst_QAuthenticator::equalityOperators()
     QVERIFY(!(s1 == s2));
     QVERIFY(s1 != s2);
     QVERIFY(s2 != s1);
+}
+
+void tst_QAuthenticator::isMethodSupported()
+{
+    QVERIFY(QAuthenticatorPrivate::isMethodSupported("basic"));
+    QVERIFY(QAuthenticatorPrivate::isMethodSupported("Basic realm=\"Shadow\""));
+    QVERIFY(QAuthenticatorPrivate::isMethodSupported("DIgesT"));
+    QVERIFY(QAuthenticatorPrivate::isMethodSupported("NTLM"));
+    QVERIFY(QAuthenticatorPrivate::isMethodSupported("ntlm"));
+#if QT_CONFIG(sspi) || QT_CONFIG(gssapi)
+    QVERIFY(QAuthenticatorPrivate::isMethodSupported("negotiate"));
+#else
+    QVERIFY(!QAuthenticatorPrivate::isMethodSupported("negotiate"));
+#endif
+
+    QVERIFY(!QAuthenticatorPrivate::isMethodSupported("Bearer"));
 }
 
 QTEST_MAIN(tst_QAuthenticator);

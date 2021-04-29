@@ -423,6 +423,26 @@ void QAuthenticatorPrivate::updateCredentials()
     }
 }
 
+bool QAuthenticatorPrivate::isMethodSupported(QByteArrayView method)
+{
+    Q_ASSERT(!method.startsWith(' ')); // This should be trimmed during parsing
+    auto separator = method.indexOf(' ');
+    if (separator != -1)
+        method = method.first(separator);
+    const auto isSupported = [method](QByteArrayView reference) {
+        return method.compare(reference, Qt::CaseInsensitive) == 0;
+    };
+    static const char methods[][10] = {
+        "basic",
+        "ntlm",
+        "digest",
+#if QT_CONFIG(sspi) || QT_CONFIG(gssapi)
+        "negotiate",
+#endif
+    };
+    return std::any_of(methods, methods + std::size(methods), isSupported);
+}
+
 void QAuthenticatorPrivate::parseHttpResponse(const QList<QPair<QByteArray, QByteArray> > &values, bool isProxy, const QString &host)
 {
 #if !QT_CONFIG(gssapi)

@@ -115,6 +115,8 @@ public:
 
     void parseHttpResponse(const QList<QPair<QByteArray, QByteArray> >&, bool isProxy, const QString &host);
     void updateCredentials();
+
+    static bool isMethodSupported(QByteArrayView method);
 };
 
 
