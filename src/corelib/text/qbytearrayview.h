@@ -320,6 +320,13 @@ template<typename QByteArrayLike,
 [[nodiscard]] inline QByteArrayView qToByteArrayViewIgnoringNull(const QByteArrayLike &b) noexcept
 { return QByteArrayView(b.data(), b.size()); }
 
+#if QT_DEPRECATED_SINCE(6, 0)
+QT_DEPRECATED_VERSION_X_6_0("Use the QByteArrayView overload.")
+inline quint16 qChecksum(const char *s, qsizetype len,
+                         Qt::ChecksumType standard = Qt::ChecksumIso3309)
+{ return qChecksum(QByteArrayView(s, len), standard); }
+#endif
+
 QT_END_NAMESPACE
 
 #endif // QBYTEARRAYVIEW_H
