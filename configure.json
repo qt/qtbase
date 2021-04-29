@@ -1514,8 +1514,8 @@
         },
         {
             "type": "note",
-            "condition": "features.thread",
-            "message": "Using pthreads"
+            "condition": "features.thread && config.wasm",
+            "message": "Enable thread support"
         },
         {
             "type": "error",

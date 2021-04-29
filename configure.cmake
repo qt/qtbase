@@ -1131,8 +1131,8 @@ qt_configure_add_report_entry(
 )
 qt_configure_add_report_entry(
     TYPE NOTE
-    MESSAGE "Using pthreads"
-    CONDITION QT_FEATURE_thread
+    MESSAGE "Enable thread support"
+    CONDITION QT_FEATURE_thread AND WASM
 )
 qt_configure_add_report_entry(
     TYPE WARNING
