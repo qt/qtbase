@@ -3445,6 +3445,7 @@ def write_module(cm_fh: IO[str], scope: Scope, *, indent: int = 0) -> str:
         extra.append("STATIC")
     if "internal_module" in scope.get("CONFIG"):
         is_public_module = False
+        cmake_target_name += "Private" # Assume all internal modules have the 'Private' suffix
         extra.append("INTERNAL_MODULE")
     if "no_module_headers" in scope.get("CONFIG"):
         extra.append("NO_MODULE_HEADERS")
