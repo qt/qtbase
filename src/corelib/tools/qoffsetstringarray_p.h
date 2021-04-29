@@ -55,6 +55,7 @@
 
 #include <tuple>
 #include <array>
+#include <limits>
 
 QT_BEGIN_NAMESPACE
 
