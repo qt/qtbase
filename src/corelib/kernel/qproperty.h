@@ -1130,13 +1130,17 @@ private:
 
 #define QT_OBJECT_BINDABLE_PROPERTY_3(Class, Type, name) \
     static constexpr size_t _qt_property_##name##_offset() { \
+        QT_WARNING_PUSH QT_WARNING_DISABLE_INVALID_OFFSETOF \
         return offsetof(Class, name); \
+        QT_WARNING_POP \
     } \
     QObjectBindableProperty<Class, Type, Class::_qt_property_##name##_offset, nullptr> name;
 
 #define QT_OBJECT_BINDABLE_PROPERTY_4(Class, Type, name, Signal) \
     static constexpr size_t _qt_property_##name##_offset() { \
+        QT_WARNING_PUSH QT_WARNING_DISABLE_INVALID_OFFSETOF \
         return offsetof(Class, name); \
+        QT_WARNING_POP \
     } \
     QObjectBindableProperty<Class, Type, Class::_qt_property_##name##_offset, Signal> name;
 
@@ -1148,7 +1152,9 @@ private:
 #define QT_OBJECT_BINDABLE_PROPERTY_WITH_ARGS_4(Class, Type, name, value)                          \
     static constexpr size_t _qt_property_##name##_offset()                                         \
     {                                                                                              \
+        QT_WARNING_PUSH QT_WARNING_DISABLE_INVALID_OFFSETOF                                        \
         return offsetof(Class, name);                                                              \
+        QT_WARNING_POP                                                                             \
     }                                                                                              \
     QObjectBindableProperty<Class, Type, Class::_qt_property_##name##_offset, nullptr> name =      \
             QObjectBindableProperty<Class, Type, Class::_qt_property_##name##_offset, nullptr>(    \
@@ -1157,7 +1163,9 @@ private:
 #define QT_OBJECT_BINDABLE_PROPERTY_WITH_ARGS_5(Class, Type, name, value, Signal)                  \
     static constexpr size_t _qt_property_##name##_offset()                                         \
     {                                                                                              \
+        QT_WARNING_PUSH QT_WARNING_DISABLE_INVALID_OFFSETOF                                        \
         return offsetof(Class, name);                                                              \
+        QT_WARNING_POP                                                                             \
     }                                                                                              \
     QObjectBindableProperty<Class, Type, Class::_qt_property_##name##_offset, Signal> name =       \
             QObjectBindableProperty<Class, Type, Class::_qt_property_##name##_offset, Signal>(     \
