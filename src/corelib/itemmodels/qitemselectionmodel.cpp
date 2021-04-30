@@ -675,6 +675,7 @@ void QItemSelectionModelPrivate::_q_rowsAboutToBeRemoved(const QModelIndex &pare
                                                          int start, int end)
 {
     Q_Q(QItemSelectionModel);
+    Q_ASSERT(start <= end);
     finalize();
 
     // update current index
@@ -699,6 +700,7 @@ void QItemSelectionModelPrivate::_q_rowsAboutToBeRemoved(const QModelIndex &pare
 
     QItemSelection deselected;
     QItemSelection newParts;
+    bool indexesOfSelectionChanged = false;
     QItemSelection::iterator it = ranges.begin();
     while (it != ranges.end()) {
         if (it->topLeft().parent() != parent) {  // Check parents until reaching root or contained in range
@@ -710,6 +712,8 @@ void QItemSelectionModelPrivate::_q_rowsAboutToBeRemoved(const QModelIndex &pare
                 deselected.append(*it);
                 it = ranges.erase(it);
             } else {
+                if (itParent.isValid() && end < itParent.row())
+                    indexesOfSelectionChanged = true;
                 ++it;
             }
         } else if (start <= it->bottom() && it->bottom() <= end    // Full inclusion
@@ -734,12 +738,16 @@ void QItemSelectionModelPrivate::_q_rowsAboutToBeRemoved(const QModelIndex &pare
             deselected.append(removedRange);
             QItemSelection::split(*it, removedRange, &newParts);
             it = ranges.erase(it);
-        } else
+        } else if (end < it->top()) { // deleted row before selection
+            indexesOfSelectionChanged = true;
             ++it;
+        } else {
+            ++it;
+        }
     }
     ranges.append(newParts);
 
-    if (!deselected.isEmpty())
+    if (!deselected.isEmpty() || indexesOfSelectionChanged)
         emit q->selectionChanged(QItemSelection(), deselected);
 }
 
@@ -791,11 +799,12 @@ void QItemSelectionModelPrivate::_q_columnsAboutToBeInserted(const QModelIndex &
     QList<QItemSelectionRange> split;
     QList<QItemSelectionRange>::iterator it = ranges.begin();
     for (; it != ranges.end(); ) {
-        if ((*it).isValid() && (*it).parent() == parent
+        const QModelIndex &itParent = it->parent();
+        if ((*it).isValid() && itParent == parent
             && (*it).left() < start && (*it).right() >= start) {
-            QModelIndex bottomMiddle = model->index((*it).bottom(), start - 1, (*it).parent());
+            QModelIndex bottomMiddle = model->index((*it).bottom(), start - 1, itParent);
             QItemSelectionRange left((*it).topLeft(), bottomMiddle);
-            QModelIndex topMiddle = model->index((*it).top(), start, (*it).parent());
+            QModelIndex topMiddle = model->index((*it).top(), start, itParent);
             QItemSelectionRange right(topMiddle, (*it).bottomRight());
             it = ranges.erase(it);
             split.append(left);
@@ -815,25 +824,35 @@ void QItemSelectionModelPrivate::_q_columnsAboutToBeInserted(const QModelIndex &
 void QItemSelectionModelPrivate::_q_rowsAboutToBeInserted(const QModelIndex &parent,
                                                           int start, int end)
 {
+    Q_Q(QItemSelectionModel);
     Q_UNUSED(end);
     finalize();
     QList<QItemSelectionRange> split;
     QList<QItemSelectionRange>::iterator it = ranges.begin();
+    bool indexesOfSelectionChanged = false;
     for (; it != ranges.end(); ) {
-        if ((*it).isValid() && (*it).parent() == parent
+        const QModelIndex &itParent = it->parent();
+        if ((*it).isValid() && itParent == parent
             && (*it).top() < start && (*it).bottom() >= start) {
-            QModelIndex middleRight = model->index(start - 1, (*it).right(), (*it).parent());
+            QModelIndex middleRight = model->index(start - 1, (*it).right(), itParent);
             QItemSelectionRange top((*it).topLeft(), middleRight);
-            QModelIndex middleLeft = model->index(start, (*it).left(), (*it).parent());
+            QModelIndex middleLeft = model->index(start, (*it).left(), itParent);
             QItemSelectionRange bottom(middleLeft, (*it).bottomRight());
             it = ranges.erase(it);
             split.append(top);
             split.append(bottom);
+        } else if ((*it).isValid() && itParent == parent      // insertion before selection
+            && (*it).top() >= start) {
+            indexesOfSelectionChanged = true;
+            ++it;
         } else {
             ++it;
         }
     }
     ranges += split;
+
+    if (indexesOfSelectionChanged)
+        emit q->selectionChanged(QItemSelection(), QItemSelection());
 }
 
 /*!
@@ -1226,6 +1245,11 @@ void QItemSelectionModel::select(const QModelIndex &index, QItemSelectionModel::
 
     Note the that the current index changes independently from the selection.
     Also note that this signal will not be emitted when the item model is reset.
+
+    Items which stay selected but change their index are not included in
+    \a selected and \a deselected. Thus, this signal might be emitted with both
+    \a selected and \a deselected empty, if only the indices of selected items
+    change.
 
     \sa select(), currentChanged()
 */

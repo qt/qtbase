@@ -103,6 +103,8 @@ private slots:
     void QTBUG18001_data();
     void QTBUG18001();
 
+    void QTBUG93305();
+
 private:
     QAbstractItemModel *model;
     QItemSelectionModel *selection;
@@ -2895,6 +2897,47 @@ void tst_QItemSelectionModel::QTBUG18001()
        QVERIFY2(expected == actual, description.data());
     }
 
+}
+
+void tst_QItemSelectionModel::QTBUG93305()
+{
+    // make sure the model is sane (5x5)
+    QCOMPARE(model->rowCount(QModelIndex()), 5);
+    QCOMPARE(model->columnCount(QModelIndex()), 5);
+
+    QSignalSpy spy(selection, &QItemSelectionModel::selectionChanged);
+
+    // select in row 1
+    QModelIndex index = model->index(1, 0, QModelIndex());
+    selection->select(index, QItemSelectionModel::ClearAndSelect);
+    QVERIFY(selection->hasSelection());
+    QCOMPARE(spy.count(), 1);
+
+    // removing row 0 does not change which cells are selected, but it
+    // does change the row number of the selected cells. Thus it changes
+    // what selectedIndexes() returns.
+    // The property selectedIndexes() has selectionChanged() as its
+    // NOTIFY signal, so selectionChanged() should be emitted.
+
+    // delete row 0
+    model->removeRows(0, 1, QModelIndex());
+    QVERIFY(selection->hasSelection());
+    QCOMPARE(spy.count(), 2);
+
+    // inserting a row before the first row again does not change which cells
+    // are selected, but does change the row number of the selected cells.
+    // This changes what selectedIndexes() returns and should thus trigger
+    // a selectionChanged() signal
+
+    // insert row 0 again
+    model->insertRows(0, 1, QModelIndex());
+    QVERIFY(selection->hasSelection());
+    QCOMPARE(spy.count(), 3);
+
+    // test for inserting multiple (6) rows
+    model->insertRows(0, 6, QModelIndex());
+    QVERIFY(selection->hasSelection());
+    QCOMPARE(spy.count(), 4);
 }
 
 QTEST_MAIN(tst_QItemSelectionModel)
