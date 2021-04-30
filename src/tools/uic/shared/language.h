@@ -48,6 +48,8 @@ ConnectionSyntax connectionSyntax();
 void setConnectionSyntax(ConnectionSyntax cs);
 
 extern QString derefPointer;
+extern char listStart;
+extern char listEnd;
 extern QString nullPtr;
 extern QString operatorNew;
 extern QString qtQualifier;

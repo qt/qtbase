@@ -1624,8 +1624,10 @@ QString WriteInitialization::writeFontProperties(const DomFont *f)
     m_output << m_indent << language::stackVariable("QFont", fontName)
         << language::eol;
     if (f->hasElementFamily() && !f->elementFamily().isEmpty()) {
-        m_output << m_indent << fontName << ".setFamilies(QStringList{"
-            << language::qstring(f->elementFamily(), m_dindent) << "})" << language::eol;
+        m_output << m_indent << fontName << ".setFamilies("
+            << language::listStart
+            << language::qstring(f->elementFamily(), m_dindent)
+            << language::listEnd << ')' << language::eol;
     }
     if (f->hasElementPointSize() && f->elementPointSize() > 0) {
          m_output << m_indent << fontName << ".setPointSize(" << f->elementPointSize()
