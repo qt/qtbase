@@ -90,7 +90,6 @@ qt_internal_extend_target(QJpegPlugin CONDITION NOT QT_FEATURE_system_jpeg
         ../../../3rdparty/libjpeg/src/jsimd_none.c
         ../../../3rdparty/libjpeg/src/jutils.c
     INCLUDE_DIRECTORIES
-        ../../../3rdparty/libjpeg
         ../../../3rdparty/libjpeg/src
 )
 

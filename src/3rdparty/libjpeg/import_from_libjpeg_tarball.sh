@@ -165,4 +165,4 @@ for i in $FILES; do
     copy_file "$i" "src/$i"
 done
 
-echo Done. $TARGET_DIR/jconfig.h and jconfigint.h may need manual updating.
+echo Done. $TARGET_DIR/src/jconfig.h and jconfigint.h may need manual updating.
