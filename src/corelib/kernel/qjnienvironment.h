@@ -58,8 +58,11 @@ public:
     JNIEnv &operator*() const;
     JNIEnv *jniEnv() const;
     jclass findClass(const char *className);
+    jmethodID findMethod(jclass clazz, const char *methodName, const char *signature);
+    jmethodID findStaticMethod(jclass clazz, const char *methodName, const char *signature);
     static JavaVM *javaVM();
     bool registerNativeMethods(const char *className, JNINativeMethod methods[], int size);
+    bool registerNativeMethods(jclass clazz, JNINativeMethod methods[], int size);
 
     enum class OutputMode {
         Silent,

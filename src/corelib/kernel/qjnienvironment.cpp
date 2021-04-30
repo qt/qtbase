@@ -198,6 +198,54 @@ jclass QJniEnvironment::findClass(const char *className)
 }
 
 /*!
+    Searches for an instance method of a class \a clazz. The method is specified
+    by its \a methodName and \a signature.
+
+    Returns the method ID or \c nullptr if the method is not found.
+
+    A usecase for this method is searching for class methods and caching their
+    IDs, so that they could later be used for calling the methods.
+*/
+jmethodID QJniEnvironment::findMethod(jclass clazz, const char *methodName, const char *signature)
+{
+    jmethodID id = d->jniEnv->GetMethodID(clazz, methodName, signature);
+    if (checkAndClearExceptions(d->jniEnv))
+        return nullptr;
+
+    return id;
+}
+
+/*!
+    Searches for a static method of a class \a clazz. The method is specified
+    by its \a methodName and \a signature.
+
+    Returns the method ID or \c nullptr if the method is not found.
+
+    A usecase for this method is searching for class methods and caching their
+    IDs, so that they could later be used for calling the methods.
+
+    \code
+    QJniEnvironment env;
+    jclass javaClass = env.findClass("org/qtproject/example/android/CustomClass");
+    jmethodID methodId = env.findStaticMethod(javaClass,
+                                              "staticJavaMethod",
+                                              "(Ljava/lang/String;)V");
+    QJniObject javaMessage = QJniObject::fromString("findStaticMethod example");
+    QJniObject::callStaticMethod<void>(javaClass,
+                                       methodId,
+                                       javaMessage.object<jstring>());
+    \endcode
+*/
+jmethodID QJniEnvironment::findStaticMethod(jclass clazz, const char *methodName, const char *signature)
+{
+    jmethodID id = d->jniEnv->GetStaticMethodID(clazz, methodName, signature);
+    if (checkAndClearExceptions(d->jniEnv))
+        return nullptr;
+
+    return id;
+}
+
+/*!
     \fn JavaVM *QJniEnvironment::javaVM()
 
     Returns the Java VM interface for the current process. Although it might
@@ -216,7 +264,7 @@ JavaVM *QJniEnvironment::javaVM()
     which can call native C++ functions from class \a className. These methods
     must be registered before any attempt to call them.
 
-    Returns True if the registration is successful, otherwise False.
+    Returns \c true if the registration is successful, otherwise \c false.
 
     Each element in the methods array consists of:
     \list
@@ -240,14 +288,31 @@ bool QJniEnvironment::registerNativeMethods(const char *className, JNINativeMeth
         return false;
 
     jclass clazz = d->jniEnv->GetObjectClass(classObject.object());
-    if (d->jniEnv->RegisterNatives(clazz, methods, size) < 0) {
-        checkAndClearExceptions();
-        d->jniEnv->DeleteLocalRef(clazz);
-        return false;
-    }
-
+    const bool result = registerNativeMethods(clazz, methods, size);
     d->jniEnv->DeleteLocalRef(clazz);
 
+    return result;
+}
+
+/*!
+    \overload
+
+    This overload uses a previously cached jclass instance \a clazz.
+
+    \code
+    JNINativeMethod methods[] {{"callNativeOne", "(I)V", reinterpret_cast<void *>(fromJavaOne)},
+                               {"callNativeTwo", "(I)V", reinterpret_cast<void *>(fromJavaTwo)}};
+    QJniEnvironment env;
+    jclass clazz = env.findClass("org/qtproject/android/TestJavaClass");
+    env.registerNativeMethods(clazz, methods, 2);
+    \endcode
+*/
+bool QJniEnvironment::registerNativeMethods(jclass clazz, JNINativeMethod methods[], int size)
+{
+    if (d->jniEnv->RegisterNatives(clazz, methods, size) < 0) {
+        checkAndClearExceptions();
+        return false;
+    }
     return true;
 }
 
