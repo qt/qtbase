@@ -329,7 +329,11 @@ function(qt_generate_prl_file target install_dir)
                  "${prl_meta_info_name_prefix}$<CONFIG>${prl_meta_info_name_suffix}")
 
     # The final prl file name that will be embedded in the file above.
-    set(final_prl_file_name "${prefix_for_final_prl_name}$<TARGET_FILE_BASE_NAME:${target}>.prl")
+    set(final_prl_file_name "${prefix_for_final_prl_name}$<TARGET_FILE_BASE_NAME:${target}>")
+    if(ANDROID)
+        string(APPEND final_prl_file_name "_${CMAKE_ANDROID_ARCH_ABI}")
+    endif()
+    string(APPEND final_prl_file_name ".prl")
     qt_path_join(final_prl_file_path "${QT_BUILD_DIR}/${install_dir}" "${final_prl_file_name}")
 
     # Generate the prl content and its final file name into configuration specific files
