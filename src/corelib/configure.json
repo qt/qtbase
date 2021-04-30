@@ -282,6 +282,22 @@
                 "main": "std::mt19937 mt(0);"
             }
         },
+        "cxx17_bm_searcher": {
+            "label": "C++17 boyer_moore_searcher",
+            "type": "compile",
+            "test": {
+                "include": [ "algorithm", "functional" ],
+                "main": [
+                    "const char haystack[] = \"hello\";",
+                    "const char needle[] = \"e\";",
+                    "const auto it =",
+                        "std::search(haystack + 0, haystack + std::size(haystack),",
+                                    "std::boyer_moore_searcher(needle + 0, needle + std::size(needle)));",
+                    "(void)it;"
+                ],
+                "qmake": "CONFIG += c++17"
+            }
+        },
         "cxx17_filesystem": {
             "label": "C++17 <filesystem>",
             "type": "compile",
@@ -542,6 +558,13 @@
             "label": "C++11 <future>",
             "condition": "tests.cxx11_future",
             "output": [ "publicFeature" ]
+        },
+        "cxx17_bm_searcher": {
+            "label": "C++17 boyer_moore_searcher",
+            "condition": "tests.cxx17_bm_searcher",
+            "output": [
+                "privateFeature"
+            ]
         },
         "cxx17_filesystem": {
             "label": "C++17 <filesystem>",
