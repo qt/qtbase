@@ -43,6 +43,8 @@ void setLanguage(Language l)
     switch (_language) {
     case Language::Cpp:
         derefPointer = QLatin1String("->");
+        listStart = '{';
+        listEnd = '}';
         nullPtr = QLatin1String("nullptr");
         operatorNew = QLatin1String("new ");
         qtQualifier = QLatin1String("Qt::");
@@ -54,6 +56,8 @@ void setLanguage(Language l)
         break;
     case Language::Python:
         derefPointer = QLatin1String(".");
+        listStart = '[';
+        listEnd = ']';
         nullPtr = QLatin1String("None");
         operatorNew = QLatin1String("");
         qtQualifier = QLatin1String("Qt.");
@@ -67,6 +71,8 @@ void setLanguage(Language l)
 }
 
 QString derefPointer;
+char listStart;
+char listEnd;
 QString nullPtr;
 QString operatorNew;
 QString qtQualifier;
