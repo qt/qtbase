@@ -5,7 +5,6 @@ gcc: QMAKE_CFLAGS_WARN_ON += -Wno-unused-parameter -Wno-main
 
 
 INCLUDEPATH += \
-    $$PWD/libjpeg \
     $$PWD/libjpeg/src
 
 SOURCES += \
