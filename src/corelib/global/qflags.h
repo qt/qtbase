@@ -52,21 +52,21 @@ class QFlag
 {
     int i;
 public:
-    constexpr inline QFlag(int value) noexcept : i(value) {}
-    constexpr inline operator int() const noexcept { return i; }
+    constexpr inline Q_IMPLICIT QFlag(int value) noexcept : i(value) {}
+    constexpr inline Q_IMPLICIT operator int() const noexcept { return i; }
 
 #if !defined(Q_CC_MSVC)
     // Microsoft Visual Studio has buggy behavior when it comes to
     // unsigned enums: even if the enum is unsigned, the enum tags are
     // always signed
 #  if !defined(__LP64__) && !defined(Q_CLANG_QDOC)
-    constexpr inline QFlag(long value) noexcept : i(int(value)) {}
-    constexpr inline QFlag(ulong value) noexcept : i(int(long(value))) {}
+    constexpr inline Q_IMPLICIT QFlag(long value) noexcept : i(int(value)) {}
+    constexpr inline Q_IMPLICIT QFlag(ulong value) noexcept : i(int(long(value))) {}
 #  endif
-    constexpr inline QFlag(uint value) noexcept : i(int(value)) {}
-    constexpr inline QFlag(short value) noexcept : i(int(value)) {}
-    constexpr inline QFlag(ushort value) noexcept : i(int(uint(value))) {}
-    constexpr inline operator uint() const noexcept { return uint(i); }
+    constexpr inline Q_IMPLICIT QFlag(uint value) noexcept : i(int(value)) {}
+    constexpr inline Q_IMPLICIT QFlag(short value) noexcept : i(int(value)) {}
+    constexpr inline Q_IMPLICIT QFlag(ushort value) noexcept : i(int(uint(value))) {}
+    constexpr inline Q_IMPLICIT operator uint() const noexcept { return uint(i); }
 #endif
 };
 Q_DECLARE_TYPEINFO(QFlag, Q_PRIMITIVE_TYPE);
@@ -76,7 +76,7 @@ class QIncompatibleFlag
     int i;
 public:
     constexpr inline explicit QIncompatibleFlag(int i) noexcept;
-    constexpr inline operator int() const noexcept { return i; }
+    constexpr inline Q_IMPLICIT operator int() const noexcept { return i; }
 };
 Q_DECLARE_TYPEINFO(QIncompatibleFlag, Q_PRIMITIVE_TYPE);
 
@@ -106,8 +106,8 @@ public:
     typedef Enum enum_type;
     // compiler-generated copy/move ctor/assignment operators are fine!
     constexpr inline QFlags() noexcept : i(0) {}
-    constexpr inline QFlags(Enum flags) noexcept : i(Int(flags)) {}
-    constexpr inline QFlags(QFlag flag) noexcept : i(flag) {}
+    constexpr inline Q_IMPLICIT QFlags(Enum flags) noexcept : i(Int(flags)) {}
+    constexpr inline Q_IMPLICIT QFlags(QFlag flag) noexcept : i(flag) {}
 
     constexpr inline QFlags(std::initializer_list<Enum> flags) noexcept
         : i(initializer_list_helper(flags.begin(), flags.end())) {}
