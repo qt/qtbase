@@ -516,6 +516,15 @@ static_assert(sizeof(qint64) == 8, "Internal error, qint64 is misdefined");
 */
 
 /*!
+    \fn template <typename Enum> size_t qHash(QFlags<Enum> flags, size_t seed = 0) noexcept
+    \since 6.2
+    \relates QFlags
+
+    Calculates the hash for the flags \a flags, using \a seed
+    to seed the calcualtion.
+*/
+
+/*!
   \macro Q_DISABLE_COPY(Class)
   \relates QObject
 
