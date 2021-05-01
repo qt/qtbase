@@ -398,7 +398,7 @@ qt_QMetaEnum_flagDebugOperator_helper(QDebug debug, const QFlags<T> &flags)
 {
     const QMetaObject *obj = qt_getEnumMetaObject(T());
     const char *name = qt_getEnumName(T());
-    return qt_QMetaEnum_flagDebugOperator(debug, quint64(flags), obj, name);
+    return qt_QMetaEnum_flagDebugOperator(debug, flags.toInt(), obj, name);
 }
 
 template <class T>
