@@ -242,9 +242,9 @@ struct QDirSortItem
 
 class QDirSortItemComparator
 {
-    int qt_cmp_si_sort_flags;
+    QDir::SortFlags qt_cmp_si_sort_flags;
 public:
-    QDirSortItemComparator(int flags) : qt_cmp_si_sort_flags(flags) {}
+    QDirSortItemComparator(QDir::SortFlags flags) : qt_cmp_si_sort_flags(flags) {}
     bool operator()(const QDirSortItem &, const QDirSortItem &) const;
 };
 
@@ -259,8 +259,8 @@ bool QDirSortItemComparator::operator()(const QDirSortItem &n1, const QDirSortIt
         return !f1->item.isDir();
 
     qint64 r = 0;
-    int sortBy = (qt_cmp_si_sort_flags & QDir::SortByMask)
-                 | (qt_cmp_si_sort_flags & QDir::Type);
+    int sortBy = ((qt_cmp_si_sort_flags & QDir::SortByMask)
+                 | (qt_cmp_si_sort_flags & QDir::Type)).toInt();
 
     switch (sortBy) {
       case QDir::Time: {
@@ -282,7 +282,7 @@ bool QDirSortItemComparator::operator()(const QDirSortItem &n1, const QDirSortIt
         break;
       case QDir::Type:
       {
-        bool ic = qt_cmp_si_sort_flags & QDir::IgnoreCase;
+        bool ic = qt_cmp_si_sort_flags.testAnyFlag(QDir::IgnoreCase);
 
         if (f1->suffix_cache.isNull())
             f1->suffix_cache = ic ? f1->item.suffix().toLower()
@@ -302,7 +302,7 @@ bool QDirSortItemComparator::operator()(const QDirSortItem &n1, const QDirSortIt
 
     if (r == 0 && sortBy != QDir::Unsorted) {
         // Still not sorted - sort by name
-        bool ic = qt_cmp_si_sort_flags & QDir::IgnoreCase;
+        bool ic = qt_cmp_si_sort_flags.testAnyFlag(QDir::IgnoreCase);
 
         if (f1->filename_cache.isNull())
             f1->filename_cache = ic ? f1->item.fileName().toLower()
