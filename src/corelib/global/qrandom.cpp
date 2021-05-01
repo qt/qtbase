@@ -383,7 +383,6 @@ struct QRandomGenerator::SystemAndGlobalGenerators
 
         constexpr SystemAndGlobalGenerators g = {};
         Q_UNUSED(g);
-        Q_STATIC_ASSERT(std::is_literal_type<SystemAndGlobalGenerators>::value);
 #endif
     }
 
