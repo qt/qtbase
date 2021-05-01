@@ -1547,6 +1547,7 @@ namespace Qt {
         MatchRegularExpression = 4,
         MatchWildcard = 5,
         MatchFixedString = 8,
+        MatchTypeMask = 0x0F,
         MatchCaseSensitive = 16,
         MatchWrap = 32,
         MatchRecursive = 64

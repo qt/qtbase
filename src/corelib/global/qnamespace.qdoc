@@ -2838,6 +2838,7 @@
            the search reaches the last item in the model, it begins again at
            the first item and continues until all items have been examined.
     \value MatchRecursive          Searches the entire hierarchy.
+    \omitvalue MatchTypeMask
 
     \sa QString::compare(), QRegularExpression
 */

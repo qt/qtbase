@@ -2533,7 +2533,7 @@ QModelIndexList QAbstractItemModel::match(const QModelIndex &start, int role,
                                           Qt::MatchFlags flags) const
 {
     QModelIndexList result;
-    uint matchType = flags & 0x0F;
+    uint matchType = (flags & Qt::MatchTypeMask).toInt();
     Qt::CaseSensitivity cs = flags & Qt::MatchCaseSensitive ? Qt::CaseSensitive : Qt::CaseInsensitive;
     bool recurse = flags & Qt::MatchRecursive;
     bool wrap = flags & Qt::MatchWrap;
