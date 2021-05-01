@@ -143,7 +143,7 @@ public:
     constexpr inline bool testFlag(Enum flag) const noexcept { return (i & Int(flag)) == Int(flag) && (Int(flag) != 0 || i == Int(flag) ); }
     constexpr inline QFlags &setFlag(Enum flag, bool on = true) noexcept
     {
-        return on ? (*this |= flag) : (*this &= ~Int(flag));
+        return on ? (*this |= flag) : (*this &= ~QFlags(flag));
     }
 
 private:
