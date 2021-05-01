@@ -498,6 +498,24 @@ static_assert(sizeof(qint64) == 8, "Internal error, qint64 is misdefined");
 */
 
 /*!
+    \fn template <typename Enum> QFlags<Enum> QFlags<Enum>::fromInt(Int i) noexcept
+    \since 6.2
+
+    Constructs a QFlags object representing the integer value \a i.
+*/
+
+/*!
+    \fn template <typename Enum> Int QFlags<Enum>::toInt() const noexcept
+    \since 6.2
+
+    Returns the value stored in the QFlags object as an integer. Note
+    that the returned integer may be signed or unsigned, depending on
+    whether the enum's underlying type is signed or unsigned.
+
+    \sa Int
+*/
+
+/*!
   \macro Q_DISABLE_COPY(Class)
   \relates QObject
 

@@ -112,6 +112,9 @@ public:
     constexpr inline QFlags(std::initializer_list<Enum> flags) noexcept
         : i(initializer_list_helper(flags.begin(), flags.end())) {}
 
+    constexpr static inline QFlags fromInt(Int i) noexcept { return QFlags(QFlag(i)); }
+    constexpr inline Int toInt() const noexcept { return i; }
+
     constexpr inline QFlags &operator&=(int mask) noexcept { i &= mask; return *this; }
     constexpr inline QFlags &operator&=(uint mask) noexcept { i &= mask; return *this; }
     constexpr inline QFlags &operator&=(Enum mask) noexcept { i &= Int(mask); return *this; }
