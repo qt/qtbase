@@ -20,7 +20,7 @@ function(qt_compute_relative_rpath_base rpath install_location out_var)
     # needed in the .prf files, but for CMake we need to prepend them ourselves.
     if(APPLE)
         set(rpath_rel_base "@loader_path")
-    elseif(LINUX OR SOLARIS)
+    elseif(LINUX OR SOLARIS OR FREEBSD)
         set(rpath_rel_base "$ORIGIN")
     else()
         message(WARNING "No known RPATH_REL_BASE for target platform.")
