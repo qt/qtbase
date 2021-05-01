@@ -368,13 +368,8 @@ struct QRandomGenerator::SystemAndGlobalGenerators
 
     void confirmLiteral()
     {
-#if !defined(Q_CC_MSVC) && !defined(Q_OS_INTEGRITY)
-        // Currently fails to compile with MSVC 2017, saying QBasicMutex is not
-        // a literal type. Disassembly with MSVC 2013 and 2015 shows it is
-        // actually a literal; MSVC 2017 has a bug relating to this, so we're
-        // withhold judgement for now.  Integrity's compiler is unable to
-        // guarantee g's alignment for some reason.
-
+#if !defined(Q_OS_INTEGRITY)
+        // Integrity's compiler is unable to guarantee g's alignment for some reason.
         constexpr SystemAndGlobalGenerators g = {};
         Q_UNUSED(g);
 #endif
