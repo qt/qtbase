@@ -117,6 +117,7 @@ public:
 
     constexpr inline QFlags &operator&=(int mask) noexcept { i &= mask; return *this; }
     constexpr inline QFlags &operator&=(uint mask) noexcept { i &= mask; return *this; }
+    constexpr inline QFlags &operator&=(QFlags mask) noexcept { i &= mask.i; return *this; }
     constexpr inline QFlags &operator&=(Enum mask) noexcept { i &= Int(mask); return *this; }
     constexpr inline QFlags &operator|=(QFlags other) noexcept { i |= other.i; return *this; }
     constexpr inline QFlags &operator|=(Enum other) noexcept { i |= Int(other); return *this; }
@@ -131,6 +132,7 @@ public:
     constexpr inline QFlags operator^(Enum other) const noexcept { return QFlags(QFlag(i ^ Int(other))); }
     constexpr inline QFlags operator&(int mask) const noexcept { return QFlags(QFlag(i & mask)); }
     constexpr inline QFlags operator&(uint mask) const noexcept { return QFlags(QFlag(i & mask)); }
+    constexpr inline QFlags operator&(QFlags other) const noexcept { return QFlags(QFlag(i & other.i)); }
     constexpr inline QFlags operator&(Enum other) const noexcept { return QFlags(QFlag(i & Int(other))); }
     constexpr inline QFlags operator~() const noexcept { return QFlags(QFlag(~i)); }
 

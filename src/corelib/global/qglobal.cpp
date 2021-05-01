@@ -378,6 +378,13 @@ static_assert(sizeof(qint64) == 8, "Internal error, qint64 is misdefined");
 */
 
 /*!
+    \fn template <typename Enum> QFlags &QFlags<Enum>::operator&=(QFlags mask)
+    \since 6.2
+
+    \overload
+*/
+
+/*!
     \fn template <typename Enum> QFlags &QFlags<Enum>::operator|=(QFlags other)
 
     Performs a bitwise OR operation with \a other and stores the
@@ -462,6 +469,13 @@ static_assert(sizeof(qint64) == 8, "Internal error, qint64 is misdefined");
 
 /*!
     \fn template <typename Enum> QFlags QFlags<Enum>::operator&(Enum mask) const
+
+    \overload
+*/
+
+/*!
+    \fn template <typename Enum> QFlags QFlags<Enum>::operator&(QFlags mask) const
+    \since 6.2
 
     \overload
 */
