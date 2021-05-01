@@ -1874,11 +1874,11 @@ public:
     {}
 
     constexpr explicit QKeyCombination(Qt::Modifiers modifiers, Qt::Key key = Qt::Key_unknown) noexcept
-        : combination(int(modifiers) | int(key))
+        : combination(modifiers.toInt() | int(key))
     {}
 
     constexpr explicit QKeyCombination(Qt::KeyboardModifiers modifiers, Qt::Key key = Qt::Key_unknown) noexcept
-        : combination(int(modifiers) | int(key))
+        : combination(modifiers.toInt() | int(key))
     {}
 
     constexpr Qt::KeyboardModifiers keyboardModifiers() const noexcept
@@ -1888,7 +1888,7 @@ public:
 
     constexpr Qt::Key key() const noexcept
     {
-        return Qt::Key(combination & ~Qt::KeyboardModifierMask);
+        return Qt::Key(combination & ~int(Qt::KeyboardModifierMask));
     }
 
     static constexpr QKeyCombination fromCombined(int combined)
