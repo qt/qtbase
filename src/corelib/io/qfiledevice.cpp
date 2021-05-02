@@ -642,7 +642,7 @@ QFile::Permissions QFileDevice::permissions() const
 {
     Q_D(const QFileDevice);
     QAbstractFileEngine::FileFlags perms = d->engine()->fileFlags(QAbstractFileEngine::PermsMask) & QAbstractFileEngine::PermsMask;
-    return QFile::Permissions((int)perms); //ewww
+    return QFile::Permissions::fromInt(perms.toInt()); //ewww
 }
 
 /*!
@@ -658,7 +658,7 @@ QFile::Permissions QFileDevice::permissions() const
 bool QFileDevice::setPermissions(Permissions permissions)
 {
     Q_D(QFileDevice);
-    if (d->engine()->setPermissions(permissions)) {
+    if (d->engine()->setPermissions(permissions.toInt())) {
         unsetError();
         return true;
     }
