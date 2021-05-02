@@ -580,7 +580,7 @@ void QIODevice::setTextModeEnabled(bool enabled)
 */
 bool QIODevice::isTextModeEnabled() const
 {
-    return d_func()->openMode & Text;
+    return d_func()->openMode.testAnyFlag(Text);
 }
 
 /*!
