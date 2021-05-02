@@ -2535,8 +2535,8 @@ QModelIndexList QAbstractItemModel::match(const QModelIndex &start, int role,
     QModelIndexList result;
     uint matchType = (flags & Qt::MatchTypeMask).toInt();
     Qt::CaseSensitivity cs = flags & Qt::MatchCaseSensitive ? Qt::CaseSensitive : Qt::CaseInsensitive;
-    bool recurse = flags & Qt::MatchRecursive;
-    bool wrap = flags & Qt::MatchWrap;
+    bool recurse = flags.testAnyFlag(Qt::MatchRecursive);
+    bool wrap = flags.testAnyFlag(Qt::MatchWrap);
     bool allHits = (hits == -1);
     QString text; // only convert to a string if it is needed
 #if QT_CONFIG(regularexpression)

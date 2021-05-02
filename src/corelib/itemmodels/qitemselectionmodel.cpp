@@ -1477,7 +1477,7 @@ bool QItemSelectionModel::isSelected(const QModelIndex &index) const
 
     if (selected) {
         Qt::ItemFlags flags = d->model->flags(index);
-        return (flags & Qt::ItemIsSelectable);
+        return flags.testAnyFlag(Qt::ItemIsSelectable);
     }
 
     return false;
