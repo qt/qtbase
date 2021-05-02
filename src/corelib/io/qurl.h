@@ -74,12 +74,18 @@ public:
 
     inline QUrlTwoFlags &operator&=(int mask) { i &= mask; return *this; }
     inline QUrlTwoFlags &operator&=(uint mask) { i &= mask; return *this; }
+    inline QUrlTwoFlags &operator&=(QFlags<E1> mask) { i &= mask.toInt(); return *this; }
+    inline QUrlTwoFlags &operator&=(QFlags<E2> mask) { i &= mask.toInt(); return *this; }
     inline QUrlTwoFlags &operator|=(QUrlTwoFlags f) { i |= f.i; return *this; }
     inline QUrlTwoFlags &operator|=(E1 f) { i |= f; return *this; }
     inline QUrlTwoFlags &operator|=(E2 f) { i |= f; return *this; }
+    inline QUrlTwoFlags &operator|=(QFlags<E1> mask) { i |= mask.toInt(); return *this; }
+    inline QUrlTwoFlags &operator|=(QFlags<E2> mask) { i |= mask.toInt(); return *this; }
     inline QUrlTwoFlags &operator^=(QUrlTwoFlags f) { i ^= f.i; return *this; }
     inline QUrlTwoFlags &operator^=(E1 f) { i ^= f; return *this; }
     inline QUrlTwoFlags &operator^=(E2 f) { i ^= f; return *this; }
+    inline QUrlTwoFlags &operator^=(QFlags<E1> mask) { i ^= mask.toInt(); return *this; }
+    inline QUrlTwoFlags &operator^=(QFlags<E2> mask) { i ^= mask.toInt(); return *this; }
 
     constexpr inline operator QFlags<E1>() const { return QFlag(i); }
     constexpr inline operator QFlags<E2>() const { return QFlag(i); }
