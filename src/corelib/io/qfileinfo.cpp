@@ -180,7 +180,7 @@ uint QFileInfoPrivate::getFileFlags(QAbstractFileEngine::FileFlags request) cons
         setCachedFlag(cachedFlags);
     }
 
-    return fileFlags & request;
+    return fileFlags & request.toInt();
 }
 
 QDateTime &QFileInfoPrivate::getFileTime(QAbstractFileEngine::FileTime request) const
@@ -1330,8 +1330,8 @@ bool QFileInfo::permission(QFile::Permissions permissions) const
 {
     Q_D(const QFileInfo);
     // the QFileSystemMetaData::MetaDataFlag and QFile::Permissions overlap, so just cast.
-    auto fseFlags = QFileSystemMetaData::MetaDataFlag(int(permissions));
-    auto feFlags = QAbstractFileEngine::FileFlags(int(permissions));
+    auto fseFlags = QFileSystemMetaData::MetaDataFlags::fromInt(permissions.toInt());
+    auto feFlags = QAbstractFileEngine::FileFlags::fromInt(permissions.toInt());
     return d->checkAttribute<bool>(
                 fseFlags,
                 [=]() { return (d->metaData.permissions() & permissions) == permissions; },
