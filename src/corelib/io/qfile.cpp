@@ -78,7 +78,7 @@ QFilePrivate::~QFilePrivate()
 }
 
 bool
-QFilePrivate::openExternalFile(int flags, int fd, QFile::FileHandleFlags handleFlags)
+QFilePrivate::openExternalFile(QIODevice::OpenMode flags, int fd, QFile::FileHandleFlags handleFlags)
 {
 #ifdef QT_NO_FSFILEENGINE
     Q_UNUSED(flags);
@@ -88,12 +88,12 @@ QFilePrivate::openExternalFile(int flags, int fd, QFile::FileHandleFlags handleF
     auto fs = std::make_unique<QFSFileEngine>();
     auto fe = fs.get();
     fileEngine = std::move(fs);
-    return fe->open(QIODevice::OpenMode(flags), fd, handleFlags);
+    return fe->open(flags, fd, handleFlags);
 #endif
 }
 
 bool
-QFilePrivate::openExternalFile(int flags, FILE *fh, QFile::FileHandleFlags handleFlags)
+QFilePrivate::openExternalFile(QIODevice::OpenMode flags, FILE *fh, QFile::FileHandleFlags handleFlags)
 {
 #ifdef QT_NO_FSFILEENGINE
     Q_UNUSED(flags);
@@ -103,7 +103,7 @@ QFilePrivate::openExternalFile(int flags, FILE *fh, QFile::FileHandleFlags handl
     auto fs = std::make_unique<QFSFileEngine>();
     auto fe = fs.get();
     fileEngine = std::move(fs);
-    return fe->open(QIODevice::OpenMode(flags), fh, handleFlags);
+    return fe->open(flags, fh, handleFlags);
 #endif
 }
 
@@ -377,8 +377,8 @@ QFile::exists() const
 {
     Q_D(const QFile);
     // 0x1000000 = QAbstractFileEngine::Refresh, forcing an update
-    return (d->engine()->fileFlags(QAbstractFileEngine::FlagsMask
-                                    | QAbstractFileEngine::Refresh) & QAbstractFileEngine::ExistsFlag);
+    return d->engine()->fileFlags(QAbstractFileEngine::FlagsMask
+                                    | QAbstractFileEngine::Refresh).testAnyFlag(QAbstractFileEngine::ExistsFlag);
 }
 
 /*!

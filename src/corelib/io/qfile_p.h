@@ -67,8 +67,8 @@ protected:
     QFilePrivate();
     ~QFilePrivate();
 
-    bool openExternalFile(int flags, int fd, QFile::FileHandleFlags handleFlags);
-    bool openExternalFile(int flags, FILE *fh, QFile::FileHandleFlags handleFlags);
+    bool openExternalFile(QIODevice::OpenMode flags, int fd, QFile::FileHandleFlags handleFlags);
+    bool openExternalFile(QIODevice::OpenMode flags, FILE *fh, QFile::FileHandleFlags handleFlags);
 
     QAbstractFileEngine *engine() const override;
 
