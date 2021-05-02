@@ -500,7 +500,7 @@ inline void QLibraryStore::releaseLibrary(QLibraryPrivate *lib)
 QLibraryPrivate::QLibraryPrivate(const QString &canonicalFileName, const QString &version, QLibrary::LoadHints loadHints)
     : fileName(canonicalFileName), fullVersion(version), pluginState(MightBeAPlugin)
 {
-    loadHintsInt.storeRelaxed(loadHints);
+    loadHintsInt.storeRelaxed(loadHints.toInt());
     if (canonicalFileName.isEmpty())
         errorString = QLibrary::tr("The shared library was not found.");
 }
@@ -521,7 +521,7 @@ void QLibraryPrivate::mergeLoadHints(QLibrary::LoadHints lh)
     if (pHnd.loadRelaxed())
         return;
 
-    loadHintsInt.storeRelaxed(lh);
+    loadHintsInt.storeRelaxed(lh.toInt());
 }
 
 QFunctionPointer QLibraryPrivate::resolve(const char *symbol)

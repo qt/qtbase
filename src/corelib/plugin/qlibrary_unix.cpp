@@ -142,7 +142,7 @@ bool QLibraryPrivate::load_sys()
         suffixes = suffixes_sys(fullVersion);
     }
     int dlFlags = 0;
-    int loadHints = this->loadHints();
+    auto loadHints = this->loadHints();
     if (loadHints & QLibrary::ResolveAllSymbolsHint) {
         dlFlags |= RTLD_NOW;
     } else {
