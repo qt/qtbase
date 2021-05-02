@@ -99,6 +99,7 @@ qt_internal_extend_target(Bootstrap
         ../../xml/dom/qdom.cpp
     DEFINES
         HAVE_CONFIG_H
+        QT_TYPESAFE_FLAGS
     PUBLIC_DEFINES # special case
         QT_VERSION_MAJOR=${PROJECT_VERSION_MAJOR} # special case
         QT_VERSION_MINOR=${PROJECT_VERSION_MINOR} # special case
