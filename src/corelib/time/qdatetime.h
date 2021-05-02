@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
-** Copyright (C) 2016 Intel Corporation.
+** Copyright (C) 2021 The Qt Company Ltd.
+** Copyright (C) 2021 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -240,8 +240,12 @@ class Q_CORE_EXPORT QDateTime
 #if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
         quintptr status : 8;
 #endif
+#if QT_VERSION >= QT_VERSION_CHECK(7,0,0)
+        qint64 msecs : 56;
+#else
         // note: this is only 24 bits on 32-bit systems...
         qintptr msecs : sizeof(void *) * 8 - 8;
+#endif
 
 #if Q_BYTE_ORDER == Q_BIG_ENDIAN
         quintptr status : 8;

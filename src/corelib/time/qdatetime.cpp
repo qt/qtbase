@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2021 The Qt Company Ltd.
-** Copyright (C) 2016 Intel Corporation.
+** Copyright (C) 2021 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -3454,6 +3454,10 @@ inline qint64 QDateTimePrivate::zoneMSecsToEpochMSecs(qint64 zoneMSecs, const QT
 */
 QDateTime::QDateTime() noexcept
 {
+#if QT_VERSION >= QT_VERSION_CHECK(7,0,0) || QT_POINTER_SIZE == 8
+    static_assert(sizeof(ShortData) == sizeof(qint64));
+    static_assert(sizeof(Data) == sizeof(qint64));
+#endif
 }
 
 /*!
