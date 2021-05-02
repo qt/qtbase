@@ -539,6 +539,30 @@ static_assert(sizeof(qint64) == 8, "Internal error, qint64 is misdefined");
 */
 
 /*!
+    \fn template <typename Enum> bool operator==(QFlags<Enum> lhs, QFlags<Enum> rhs)
+    \fn template <typename Enum> bool operator==(QFlags<Enum> lhs, Enum rhs)
+    \fn template <typename Enum> bool operator==(Enum lhs, QFlags<Enum> rhs)
+    \since 6.2
+    \relates QFlags
+
+    Compares \a lhs and \a rhs for equality; the two arguments are
+    considered equal if they represent exactly the same value
+    (bitmask).
+*/
+
+/*!
+    \fn template <typename Enum> bool operator!=(QFlags<Enum> lhs, QFlags<Enum> rhs)
+    \fn template <typename Enum> bool operator!=(QFlags<Enum> lhs, Enum rhs)
+    \fn template <typename Enum> bool operator!=(Enum lhs, QFlags<Enum> rhs)
+    \since 6.2
+    \relates QFlags
+
+    Compares \a lhs and \a rhs for inequality; the two arguments are
+    considered different if they don't represent exactly the same value
+    (bitmask).
+*/
+
+/*!
   \macro Q_DISABLE_COPY(Class)
   \relates QObject
 

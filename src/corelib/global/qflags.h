@@ -151,6 +151,19 @@ public:
         return on ? (*this |= flag) : (*this &= ~QFlags(flag));
     }
 
+    friend constexpr inline bool operator==(QFlags lhs, QFlags rhs) noexcept
+    { return lhs.i == rhs.i; }
+    friend constexpr inline bool operator!=(QFlags lhs, QFlags rhs) noexcept
+    { return lhs.i != rhs.i; }
+    friend constexpr inline bool operator==(QFlags lhs, Enum rhs) noexcept
+    { return lhs == QFlags(rhs); }
+    friend constexpr inline bool operator!=(QFlags lhs, Enum rhs) noexcept
+    { return lhs != QFlags(rhs); }
+    friend constexpr inline bool operator==(Enum lhs, QFlags rhs) noexcept
+    { return QFlags(lhs) == rhs; }
+    friend constexpr inline bool operator!=(Enum lhs, QFlags rhs) noexcept
+    { return QFlags(lhs) != rhs; }
+
 private:
     constexpr static inline Int initializer_list_helper(typename std::initializer_list<Enum>::const_iterator it,
                                                                typename std::initializer_list<Enum>::const_iterator end)
