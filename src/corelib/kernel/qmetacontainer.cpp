@@ -85,7 +85,7 @@ bool QMetaContainer::hasInputIterator() const
 {
     if (!d_ptr)
         return false;
-    return d_ptr->iteratorCapabilities & QtMetaContainerPrivate::InputCapability;
+    return d_ptr->iteratorCapabilities.testAnyFlag(QtMetaContainerPrivate::InputCapability);
 }
 
 /*!
@@ -102,7 +102,7 @@ bool QMetaContainer::hasForwardIterator() const
 {
     if (!d_ptr)
         return false;
-    return d_ptr->iteratorCapabilities & QtMetaContainerPrivate::ForwardCapability;
+    return d_ptr->iteratorCapabilities.testAnyFlag(QtMetaContainerPrivate::ForwardCapability);
 }
 
 /*!
@@ -118,7 +118,7 @@ bool QMetaContainer::hasBidirectionalIterator() const
 {
     if (!d_ptr)
         return false;
-    return d_ptr->iteratorCapabilities & QtMetaContainerPrivate::BiDirectionalCapability;
+    return d_ptr->iteratorCapabilities.testAnyFlag(QtMetaContainerPrivate::BiDirectionalCapability);
 }
 
 /*!
@@ -133,7 +133,7 @@ bool QMetaContainer::hasRandomAccessIterator() const
 {
     if (!d_ptr)
         return false;
-    return d_ptr->iteratorCapabilities & QtMetaContainerPrivate::RandomAccessCapability;
+    return d_ptr->iteratorCapabilities.testAnyFlag(QtMetaContainerPrivate::RandomAccessCapability);
 }
 
 /*!
