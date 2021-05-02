@@ -159,7 +159,7 @@ bool QDirPrivate::exists() const
                                        | QAbstractFileEngine::Refresh);
     if (!(info & QAbstractFileEngine::DirectoryType))
         return false;
-    return info & QAbstractFileEngine::ExistsFlag;
+    return info.testAnyFlag(QAbstractFileEngine::ExistsFlag);
 }
 
 // static
@@ -1647,7 +1647,7 @@ bool QDir::isReadable() const
         if (!d->metaData.hasFlags(QFileSystemMetaData::UserReadPermission))
             QFileSystemEngine::fillMetaData(d->dirEntry, d->metaData, QFileSystemMetaData::UserReadPermission);
 
-        return (d->metaData.permissions() & QFile::ReadUser) != 0;
+        return d->metaData.permissions().testAnyFlag(QFile::ReadUser);
     }
 
     const QAbstractFileEngine::FileFlags info =
@@ -1655,7 +1655,7 @@ bool QDir::isReadable() const
                                        | QAbstractFileEngine::PermsMask);
     if (!(info & QAbstractFileEngine::DirectoryType))
         return false;
-    return info & QAbstractFileEngine::ReadUserPerm;
+    return info.testAnyFlag(QAbstractFileEngine::ReadUserPerm);
 }
 
 /*!
@@ -1690,7 +1690,7 @@ bool QDir::isRoot() const
 {
     if (!d_ptr->fileEngine)
         return d_ptr->dirEntry.isRoot();
-    return d_ptr->fileEngine->fileFlags(QAbstractFileEngine::FlagsMask) & QAbstractFileEngine::RootFlag;
+    return d_ptr->fileEngine->fileFlags(QAbstractFileEngine::FlagsMask).testAnyFlag(QAbstractFileEngine::RootFlag);
 }
 
 /*!
@@ -2157,8 +2157,8 @@ bool QDir::match(const QString &filter, const QString &fileName)
 */
 QString qt_normalizePathSegments(const QString &name, QDirPrivate::PathNormalizations flags, bool *ok)
 {
-    const bool allowUncPaths = QDirPrivate::AllowUncPaths & flags;
-    const bool isRemote = QDirPrivate::RemotePath & flags;
+    const bool allowUncPaths = flags.testAnyFlag(QDirPrivate::AllowUncPaths);
+    const bool isRemote = flags.testAnyFlag(QDirPrivate::RemotePath);
     const int len = name.length();
 
     if (ok)
@@ -2484,10 +2484,10 @@ static QDebug operator<<(QDebug debug, QDir::SortFlags sorting)
         debug << "QDir::SortFlags(NoSort)";
     } else {
         QString type;
-        if ((sorting & 3) == QDir::Name) type = QLatin1String("Name");
-        if ((sorting & 3) == QDir::Time) type = QLatin1String("Time");
-        if ((sorting & 3) == QDir::Size) type = QLatin1String("Size");
-        if ((sorting & 3) == QDir::Unsorted) type = QLatin1String("Unsorted");
+        if ((sorting & QDir::SortByMask) == QDir::Name) type = QLatin1String("Name");
+        if ((sorting & QDir::SortByMask) == QDir::Time) type = QLatin1String("Time");
+        if ((sorting & QDir::SortByMask) == QDir::Size) type = QLatin1String("Size");
+        if ((sorting & QDir::SortByMask) == QDir::Unsorted) type = QLatin1String("Unsorted");
 
         QStringList flags;
         if (sorting & QDir::DirsFirst) flags << QLatin1String("DirsFirst");

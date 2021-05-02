@@ -353,8 +353,8 @@ bool QDirIteratorPrivate::matchesFilters(const QString &fileName, const QFileInf
     }
 #endif
     // skip symlinks
-    const bool skipSymlinks = (filters & QDir::NoSymLinks);
-    const bool includeSystem = (filters & QDir::System);
+    const bool skipSymlinks = filters.testAnyFlag(QDir::NoSymLinks);
+    const bool includeSystem = filters.testAnyFlag(QDir::System);
     if (skipSymlinks && fi.isSymLink()) {
         // The only reason to save this file is if it is a broken link and we are requesting system files.
         if (!includeSystem || fi.exists())
@@ -362,7 +362,7 @@ bool QDirIteratorPrivate::matchesFilters(const QString &fileName, const QFileInf
     }
 
     // filter hidden
-    const bool includeHidden = (filters & QDir::Hidden);
+    const bool includeHidden = filters.testAnyFlag(QDir::Hidden);
     if (!includeHidden && !dotOrDotDot && fi.isHidden())
         return false;
 
