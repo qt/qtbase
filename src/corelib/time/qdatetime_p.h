@@ -101,14 +101,14 @@ public:
         TimeSpecMask        = 0x30,
 
         SetToStandardTime   = 0x40,
-        SetToDaylightTime   = 0x80
+        SetToDaylightTime   = 0x80,
+        ValidityMask        = ValidDate | ValidTime | ValidDateTime,
+        DaylightMask        = SetToStandardTime | SetToDaylightTime,
     };
     Q_DECLARE_FLAGS(StatusFlags, StatusFlag)
 
     enum {
         TimeSpecShift = 4,
-        ValidityMask        = ValidDate | ValidTime | ValidDateTime,
-        DaylightMask        = SetToStandardTime | SetToDaylightTime
     };
 
     static QDateTime::Data create(QDate toDate, QTime toTime, Qt::TimeSpec toSpec,
@@ -138,6 +138,8 @@ public:
                                         QDate *localDate = nullptr, QTime *localTime = nullptr);
 #endif // timezone
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(QDateTimePrivate::StatusFlags)
 
 QT_END_NAMESPACE
 
