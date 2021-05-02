@@ -330,7 +330,7 @@ public:
     bool isSharedWith(const QArrayDataPointer &other) const noexcept { return d && d == other.d; }
     bool needsDetach() const noexcept { return !d || d->needsDetach(); }
     qsizetype detachCapacity(qsizetype newSize) const noexcept { return d ? d->detachCapacity(newSize) : newSize; }
-    const typename Data::ArrayOptions flags() const noexcept { return d ? typename Data::ArrayOption(d->flags) : Data::ArrayOptionDefault; }
+    const typename Data::ArrayOptions flags() const noexcept { return d ? d->flags : Data::ArrayOptionDefault; }
     void setFlag(typename Data::ArrayOptions f) noexcept { Q_ASSERT(d); d->flags |= f; }
     void clearFlag(typename Data::ArrayOptions f) noexcept { if (d) d->flags &= ~f; }
 

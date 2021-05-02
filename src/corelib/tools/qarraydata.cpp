@@ -178,7 +178,7 @@ static QArrayData *allocateData(qsizetype allocSize)
     QArrayData *header = static_cast<QArrayData *>(::malloc(size_t(allocSize)));
     if (header) {
         header->ref_.storeRelaxed(1);
-        header->flags = 0;
+        header->flags = {};
         header->alloc = 0;
     }
     return header;

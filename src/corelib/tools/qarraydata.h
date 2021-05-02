@@ -68,7 +68,7 @@ struct QArrayData
     Q_DECLARE_FLAGS(ArrayOptions, ArrayOption)
 
     QBasicAtomicInt ref_;
-    uint flags;
+    ArrayOptions flags;
     qsizetype alloc;
 
     qsizetype allocatedCapacity() noexcept

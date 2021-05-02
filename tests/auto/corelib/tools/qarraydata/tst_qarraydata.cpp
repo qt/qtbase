@@ -97,7 +97,7 @@ void tst_QArrayData::referenceCounting()
 {
     {
         // Reference counting initialized to 1 (owned)
-        QArrayData array = { Q_BASIC_ATOMIC_INITIALIZER(1), 0, 0 };
+        QArrayData array = { Q_BASIC_ATOMIC_INITIALIZER(1), {}, 0 };
 
         QCOMPARE(array.ref_.loadRelaxed(), 1);
 
