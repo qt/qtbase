@@ -36,6 +36,8 @@ private slots:
     void testFlag() const;
     void testFlagZeroFlag() const;
     void testFlagMultiBits() const;
+    void testFlags();
+    void testAnyFlag();
     void constExpr();
     void signedness();
     void classEnum();
@@ -89,6 +91,62 @@ void tst_QFlags::testFlagMultiBits() const
         const Qt::WindowFlags hasDialog(Qt::Dialog);
         QVERIFY(hasDialog.testFlag(Qt::Dialog));
     }
+}
+
+void tst_QFlags::testFlags()
+{
+    using Int = Qt::TextInteractionFlags::Int;
+    constexpr Int Zero(0);
+
+    Qt::TextInteractionFlags flags;
+    QCOMPARE(flags.toInt(), Zero);
+    QVERIFY(flags.testFlags(flags));
+    QVERIFY(Qt::TextInteractionFlags::fromInt(Zero).testFlags(flags));
+    QVERIFY(!flags.testFlags(Qt::TextSelectableByMouse));
+    QVERIFY(!flags.testFlags(Qt::TextSelectableByKeyboard));
+    QVERIFY(!flags.testFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard));
+    QVERIFY(flags.testFlags(Qt::TextInteractionFlags::fromInt(Zero)));
+    QVERIFY(flags.testFlags(Qt::TextInteractionFlags(Qt::TextSelectableByMouse) & ~Qt::TextSelectableByMouse));
+
+    flags = Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard;
+    QVERIFY(flags.toInt() != Zero);
+    QVERIFY(flags.testFlags(flags));
+    QVERIFY(flags.testFlags(Qt::TextSelectableByMouse));
+    QVERIFY(flags.testFlags(Qt::TextSelectableByKeyboard));
+    QVERIFY(flags.testFlags(Qt::TextSelectableByKeyboard | Qt::TextSelectableByMouse));
+    QVERIFY(!flags.testFlags(Qt::TextSelectableByKeyboard | Qt::TextSelectableByMouse | Qt::TextEditable));
+    QVERIFY(!flags.testFlags(Qt::TextInteractionFlags()));
+    QVERIFY(!flags.testFlags(Qt::TextInteractionFlags::fromInt(Zero)));
+    QVERIFY(!flags.testFlags(Qt::TextEditable));
+    QVERIFY(!flags.testFlags(Qt::TextSelectableByMouse | Qt::TextEditable));
+}
+
+void tst_QFlags::testAnyFlag()
+{
+    Qt::TextInteractionFlags flags;
+    QVERIFY(!flags.testAnyFlags(Qt::NoTextInteraction));
+    QVERIFY(!flags.testAnyFlags(Qt::TextSelectableByMouse));
+    QVERIFY(!flags.testAnyFlags(Qt::TextSelectableByKeyboard));
+    QVERIFY(!flags.testAnyFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard));
+    QVERIFY(!flags.testAnyFlag(Qt::TextEditorInteraction));
+    QVERIFY(!flags.testAnyFlag(Qt::TextBrowserInteraction));
+
+    flags = Qt::TextSelectableByMouse;
+    QVERIFY(!flags.testAnyFlags(Qt::NoTextInteraction));
+    QVERIFY(flags.testAnyFlags(Qt::TextSelectableByMouse));
+    QVERIFY(!flags.testAnyFlags(Qt::TextSelectableByKeyboard));
+    QVERIFY(flags.testAnyFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard));
+    QVERIFY(flags.testAnyFlag(Qt::TextEditorInteraction));
+    QVERIFY(flags.testAnyFlag(Qt::TextBrowserInteraction));
+
+    flags = Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard;
+    QVERIFY(!flags.testAnyFlags(Qt::NoTextInteraction));
+    QVERIFY(flags.testAnyFlags(Qt::TextSelectableByMouse));
+    QVERIFY(flags.testAnyFlags(Qt::TextSelectableByKeyboard));
+    QVERIFY(flags.testAnyFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard));
+    QVERIFY(flags.testAnyFlag(Qt::TextEditorInteraction));
+    QVERIFY(flags.testAnyFlag(Qt::TextEditorInteraction));
+    QVERIFY(flags.testAnyFlag(Qt::TextBrowserInteraction));
 }
 
 template <unsigned int N, typename T> bool verifyConstExpr(T n) { return n == N; }

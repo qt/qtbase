@@ -145,7 +145,10 @@ public:
 
     constexpr inline bool operator!() const noexcept { return !i; }
 
-    constexpr inline bool testFlag(Enum flag) const noexcept { return (i & Int(flag)) == Int(flag) && (Int(flag) != 0 || i == Int(0) ); }
+    constexpr inline bool testFlag(Enum flag) const noexcept { return testFlags(flag); }
+    constexpr inline bool testFlags(QFlags flags) const noexcept { return flags.i ? ((i & flags.i) == flags.i) : i == Int(0); }
+    constexpr inline bool testAnyFlag(Enum flag) const noexcept { return testAnyFlags(flag); }
+    constexpr inline bool testAnyFlags(QFlags flags) const noexcept { return (i & flags.i) != Int(0); }
     constexpr inline QFlags &setFlag(Enum flag, bool on = true) noexcept
     {
         return on ? (*this |= flag) : (*this &= ~QFlags(flag));

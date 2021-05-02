@@ -510,6 +510,44 @@ static_assert(sizeof(qint64) == 8, "Internal error, qint64 is misdefined");
     no bits set to 1 (that is, its value as a integer is 0), then this
     function will return \c true if and only if this flags object also
     has no bits set to 1.
+
+    \sa testAnyFlag()
+*/
+
+/*!
+    \fn template <typename Enum> bool QFlags<Enum>::testFlags(QFlags flags) const noexcept
+    \since 6.2
+
+    Returns \c true if this flags object matches the given \a flags.
+
+    If \a flags has any flags set, this flags object matches precisely
+    if all flags set in \a flags are also set in this flags object.
+    Otherwise, when \a flags has no flags set, this flags object only
+    matches if it also has no flags set.
+
+    \sa testAnyFlags()
+*/
+
+/*!
+    \fn template <typename Enum> bool QFlags<Enum>::testAnyFlag(Enum flag) const noexcept
+    \since 6.2
+
+    Returns \c true if \b any flag set in \a flag is also set in this
+    flags object, otherwise \c false. If \a flag has no flags set, the
+    return will always be \c false.
+
+    \sa testFlag()
+*/
+
+/*!
+    \fn template <typename Enum> bool QFlags<Enum>::testAnyFlags(QFlags flags) const noexcept
+    \since 6.2
+
+    Returns \c true if \b any flag set in \a flags is also set in this
+    flags object, otherwise \c false. If \a flags has no flags set, the
+    return will always be \c false.
+
+    \sa testFlags()
 */
 
 /*!
