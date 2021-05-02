@@ -38,6 +38,7 @@
 ****************************************************************************/
 
 #include <QtCore/qglobal.h>
+#include <QtCore/qcompare_impl.h>
 
 #ifndef QFLAGS_H
 #define QFLAGS_H
@@ -115,8 +116,10 @@ public:
     constexpr static inline QFlags fromInt(Int i) noexcept { return QFlags(QFlag(i)); }
     constexpr inline Int toInt() const noexcept { return i; }
 
+#ifndef QT_TYPESAFE_FLAGS
     constexpr inline QFlags &operator&=(int mask) noexcept { i &= mask; return *this; }
     constexpr inline QFlags &operator&=(uint mask) noexcept { i &= mask; return *this; }
+#endif
     constexpr inline QFlags &operator&=(QFlags mask) noexcept { i &= mask.i; return *this; }
     constexpr inline QFlags &operator&=(Enum mask) noexcept { i &= Int(mask); return *this; }
     constexpr inline QFlags &operator|=(QFlags other) noexcept { i |= other.i; return *this; }
@@ -124,14 +127,27 @@ public:
     constexpr inline QFlags &operator^=(QFlags other) noexcept { i ^= other.i; return *this; }
     constexpr inline QFlags &operator^=(Enum other) noexcept { i ^= Int(other); return *this; }
 
-    constexpr inline operator Int() const noexcept { return i; }
+#ifdef QT_TYPESAFE_FLAGS
+    constexpr inline explicit operator Int() const noexcept { return i; }
+    constexpr inline explicit operator bool() const noexcept { return i; }
+    // For some reason, moc goes through QFlag in order to read/write
+    // properties of type QFlags; so a conversion to QFlag is also
+    // needed here. (It otherwise goes through a QFlags->int->QFlag
+    // conversion sequence.)
+    constexpr inline explicit operator QFlag() const noexcept { return QFlag(i); }
+#else
+    constexpr inline Q_IMPLICIT operator Int() const noexcept { return i; }
+    constexpr inline bool operator!() const noexcept { return !i; }
+#endif
 
     constexpr inline QFlags operator|(QFlags other) const noexcept { return QFlags(QFlag(i | other.i)); }
     constexpr inline QFlags operator|(Enum other) const noexcept { return QFlags(QFlag(i | Int(other))); }
     constexpr inline QFlags operator^(QFlags other) const noexcept { return QFlags(QFlag(i ^ other.i)); }
     constexpr inline QFlags operator^(Enum other) const noexcept { return QFlags(QFlag(i ^ Int(other))); }
+#ifndef QT_TYPESAFE_FLAGS
     constexpr inline QFlags operator&(int mask) const noexcept { return QFlags(QFlag(i & mask)); }
     constexpr inline QFlags operator&(uint mask) const noexcept { return QFlags(QFlag(i & mask)); }
+#endif
     constexpr inline QFlags operator&(QFlags other) const noexcept { return QFlags(QFlag(i & other.i)); }
     constexpr inline QFlags operator&(Enum other) const noexcept { return QFlags(QFlag(i & Int(other))); }
     constexpr inline QFlags operator~() const noexcept { return QFlags(QFlag(~i)); }
@@ -142,8 +158,6 @@ public:
     constexpr inline void operator-(QFlags other) const noexcept = delete;
     constexpr inline void operator-(Enum other) const noexcept = delete;
     constexpr inline void operator-(int other) const noexcept = delete;
-
-    constexpr inline bool operator!() const noexcept { return !i; }
 
     constexpr inline bool testFlag(Enum flag) const noexcept { return testFlags(flag); }
     constexpr inline bool testFlags(QFlags flags) const noexcept { return flags.i ? ((i & flags.i) == flags.i) : i == Int(0); }
@@ -167,6 +181,20 @@ public:
     friend constexpr inline bool operator!=(Enum lhs, QFlags rhs) noexcept
     { return QFlags(lhs) != rhs; }
 
+#ifdef QT_TYPESAFE_FLAGS
+    // Provide means of comparing flags against a literal 0; opt-in
+    // because otherwise they're ambiguous against operator==(int,int)
+    // after a QFlags->int conversion.
+    friend constexpr inline bool operator==(QFlags flags, QtPrivate::CompareAgainstLiteralZero) noexcept
+    { return flags.i == Int(0); }
+    friend constexpr inline bool operator!=(QFlags flags, QtPrivate::CompareAgainstLiteralZero) noexcept
+    { return flags.i != Int(0); }
+    friend constexpr inline bool operator==(QtPrivate::CompareAgainstLiteralZero, QFlags flags) noexcept
+    { return Int(0) == flags.i; }
+    friend constexpr inline bool operator!=(QtPrivate::CompareAgainstLiteralZero, QFlags flags) noexcept
+    { return Int(0) != flags.i; }
+#endif
+
 private:
     constexpr static inline Int initializer_list_helper(typename std::initializer_list<Enum>::const_iterator it,
                                                                typename std::initializer_list<Enum>::const_iterator end)
@@ -181,6 +209,19 @@ private:
 #ifndef Q_MOC_RUN
 #define Q_DECLARE_FLAGS(Flags, Enum)\
 typedef QFlags<Enum> Flags;
+#endif
+
+#ifdef QT_TYPESAFE_FLAGS
+
+// These are opt-in, for backwards compatibility
+#define QT_DECLARE_TYPESAFE_OPERATORS_FOR_FLAGS_ENUM(Flags) \
+constexpr inline Flags operator~(Flags::enum_type e) noexcept \
+{ return ~Flags(e); } \
+constexpr inline void operator|(Flags::enum_type f1, int f2) noexcept = delete;
+#else
+#define QT_DECLARE_TYPESAFE_OPERATORS_FOR_FLAGS_ENUM(Flags) \
+constexpr inline QIncompatibleFlag operator|(Flags::enum_type f1, int f2) noexcept \
+{ return QIncompatibleFlag(int(f1) | f2); }
 #endif
 
 #define Q_DECLARE_OPERATORS_FOR_FLAGS(Flags) \
@@ -198,12 +239,11 @@ constexpr inline void operator+(int f1, QFlags<Flags::enum_type> f2) noexcept = 
 constexpr inline void operator-(Flags::enum_type f1, Flags::enum_type f2) noexcept = delete; \
 constexpr inline void operator-(Flags::enum_type f1, QFlags<Flags::enum_type> f2) noexcept = delete; \
 constexpr inline void operator-(int f1, QFlags<Flags::enum_type> f2) noexcept = delete; \
-constexpr inline QIncompatibleFlag operator|(Flags::enum_type f1, int f2) noexcept \
-{ return QIncompatibleFlag(int(f1) | f2); } \
 constexpr inline void operator+(int f1, Flags::enum_type f2) noexcept = delete; \
 constexpr inline void operator+(Flags::enum_type f1, int f2) noexcept = delete; \
 constexpr inline void operator-(int f1, Flags::enum_type f2) noexcept = delete; \
-constexpr inline void operator-(Flags::enum_type f1, int f2) noexcept = delete;
+constexpr inline void operator-(Flags::enum_type f1, int f2) noexcept = delete; \
+QT_DECLARE_TYPESAFE_OPERATORS_FOR_FLAGS_ENUM(Flags)
 
 QT_END_NAMESPACE
 

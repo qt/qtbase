@@ -36,6 +36,7 @@ qt_internal_add_module(Core
     EXCEPTIONS
     SOURCES
         global/archdetect.cpp
+        global/qcompare_impl.h
         global/qcompare.h
         global/qcompilerdetection.h
         global/qcontainerinfo.h
