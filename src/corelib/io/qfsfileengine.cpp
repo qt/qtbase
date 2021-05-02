@@ -277,7 +277,7 @@ bool QFSFileEngine::open(QIODevice::OpenMode openMode, FILE *fh, QFile::FileHand
 
     d->openMode = res.openMode;
     d->lastFlushFailed = false;
-    d->closeFileHandle = (handleFlags & QFile::AutoCloseHandle);
+    d->closeFileHandle = handleFlags.testAnyFlag(QFile::AutoCloseHandle);
     d->fileEntry.clear();
     d->tried_stat = 0;
     d->fd = -1;
@@ -339,7 +339,7 @@ bool QFSFileEngine::open(QIODevice::OpenMode openMode, int fd, QFile::FileHandle
 
     d->openMode = res.openMode;
     d->lastFlushFailed = false;
-    d->closeFileHandle = (handleFlags & QFile::AutoCloseHandle);
+    d->closeFileHandle = handleFlags.testAnyFlag(QFile::AutoCloseHandle);
     d->fileEntry.clear();
     d->fh = nullptr;
     d->fd = -1;
