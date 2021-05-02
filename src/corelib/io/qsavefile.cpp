@@ -204,7 +204,7 @@ bool QSaveFile::open(OpenMode mode)
     // In the future we could implement ReadWrite by copying from the existing file to the temp file...
     // The implications of NewOnly and ExistingOnly when used with QSaveFile need to be considered carefully...
     if (mode & (ReadOnly | Append | NewOnly | ExistingOnly)) {
-        qWarning("QSaveFile::open: Unsupported open mode 0x%x", int(mode));
+        qWarning("QSaveFile::open: Unsupported open mode 0x%x", uint(mode.toInt()));
         return false;
     }
 
