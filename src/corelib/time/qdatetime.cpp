@@ -2802,13 +2802,14 @@ static inline bool msecsCanBeSmall(qint64 msecs)
 static constexpr inline
 QDateTimePrivate::StatusFlags mergeSpec(QDateTimePrivate::StatusFlags status, Qt::TimeSpec spec)
 {
-    return QDateTimePrivate::StatusFlags((status & ~QDateTimePrivate::TimeSpecMask) |
-                                         (int(spec) << QDateTimePrivate::TimeSpecShift));
+    status &= ~QDateTimePrivate::TimeSpecMask;
+    status |= QDateTimePrivate::StatusFlags::fromInt(int(spec) << QDateTimePrivate::TimeSpecShift);
+    return status;
 }
 
 static constexpr inline Qt::TimeSpec extractSpec(QDateTimePrivate::StatusFlags status)
 {
-    return Qt::TimeSpec((status & QDateTimePrivate::TimeSpecMask) >> QDateTimePrivate::TimeSpecShift);
+    return Qt::TimeSpec((status & QDateTimePrivate::TimeSpecMask).toInt() >> QDateTimePrivate::TimeSpecShift);
 }
 
 // Set the Daylight Status if LocalTime set via msecs
@@ -2937,7 +2938,7 @@ static void refreshZonedDateTime(QDateTimeData &d, Qt::TimeSpec spec)
     }
 
     if (status & QDateTimePrivate::ShortData) {
-        d.data.status = status;
+        d.data.status = status.toInt();
     } else {
         d->m_status = status;
         d->m_offsetFromUtc = offsetFromUtc;
@@ -2955,7 +2956,7 @@ static void refreshSimpleDateTime(QDateTimeData &d)
         status &= ~QDateTimePrivate::ValidDateTime;
 
     if (status & QDateTimePrivate::ShortData)
-        d.data.status = status;
+        d.data.status = status.toInt();
     else
         d->m_status = status;
 }
@@ -2984,8 +2985,8 @@ static void checkValidDateTime(QDateTimeData &d)
 static void setTimeSpec(QDateTimeData &d, Qt::TimeSpec spec, int offsetSeconds)
 {
     auto status = getStatus(d);
-    status &= ~(uint(QDateTimePrivate::ValidDateTime) | uint(QDateTimePrivate::DaylightMask) |
-                uint(QDateTimePrivate::TimeSpecMask));
+    status &= ~(QDateTimePrivate::ValidDateTime | QDateTimePrivate::DaylightMask |
+                QDateTimePrivate::TimeSpecMask);
 
     switch (spec) {
     case Qt::OffsetFromUTC:
@@ -3004,7 +3005,7 @@ static void setTimeSpec(QDateTimeData &d, Qt::TimeSpec spec, int offsetSeconds)
 
     status = mergeSpec(status, spec);
     if (d.isShort() && offsetSeconds == 0) {
-        d.data.status = status;
+        d.data.status = status.toInt();
     } else {
         d.detach();
         d->m_status = status & ~QDateTimePrivate::ShortData;
@@ -3057,8 +3058,8 @@ static void setDateTime(QDateTimeData &d, QDate date, QTime time)
         if (msecsCanBeSmall(msecs)) {
             // yes, we can
             d.data.msecs = qintptr(msecs);
-            d.data.status &= ~(QDateTimePrivate::ValidityMask | QDateTimePrivate::DaylightMask);
-            d.data.status |= newStatus;
+            d.data.status &= ~(QDateTimePrivate::ValidityMask | QDateTimePrivate::DaylightMask).toInt();
+            d.data.status |= newStatus.toInt();
         } else {
             // nope...
             d.detach();
@@ -3097,14 +3098,14 @@ inline QDateTime::Data::Data() noexcept
     // default-constructed data has a special exception:
     // it can be small even if CanBeSmall == false
     // (optimization so we don't allocate memory in the default constructor)
-    quintptr value = quintptr(mergeSpec(QDateTimePrivate::ShortData, Qt::LocalTime));
+    quintptr value = mergeSpec(QDateTimePrivate::ShortData, Qt::LocalTime).toInt();
     d = reinterpret_cast<QDateTimePrivate *>(value);
 }
 
 inline QDateTime::Data::Data(Qt::TimeSpec spec)
 {
     if (CanBeSmall && Q_LIKELY(specCanBeSmall(spec))) {
-        d = reinterpret_cast<QDateTimePrivate *>(quintptr(mergeSpec(QDateTimePrivate::ShortData, spec)));
+        d = reinterpret_cast<QDateTimePrivate *>(quintptr(mergeSpec(QDateTimePrivate::ShortData, spec).toInt()));
     } else {
         // the structure is too small, we need to detach
         d = new QDateTimePrivate;
@@ -3121,7 +3122,7 @@ inline QDateTime::Data::Data(const Data &other)
         if (specCanBeSmall(extractSpec(d->m_status)) && msecsCanBeSmall(d->m_msecs)) {
             ShortData sd;
             sd.msecs = qintptr(d->m_msecs);
-            sd.status = d->m_status | QDateTimePrivate::ShortData;
+            sd.status = (d->m_status | QDateTimePrivate::ShortData).toInt();
             data = sd;
         } else {
             // no, have to keep it big
@@ -3151,7 +3152,7 @@ inline QDateTime::Data &QDateTime::Data::operator=(const Data &other)
         if (specCanBeSmall(extractSpec(other.d->m_status)) && msecsCanBeSmall(other.d->m_msecs)) {
             ShortData sd;
             sd.msecs = qintptr(other.d->m_msecs);
-            sd.status = other.d->m_status | QDateTimePrivate::ShortData;
+            sd.status = (other.d->m_status | QDateTimePrivate::ShortData).toInt();
             data = sd;
         } else {
             // no, have to keep it big
@@ -3191,7 +3192,7 @@ inline void QDateTime::Data::detach()
     if (wasShort) {
         // force enlarging
         x = new QDateTimePrivate;
-        x->m_status = QDateTimePrivate::StatusFlag(data.status & ~QDateTimePrivate::ShortData);
+        x->m_status = QDateTimePrivate::StatusFlags::fromInt(data.status) & ~QDateTimePrivate::ShortData;
         x->m_msecs = data.msecs;
     } else {
         if (d->ref.loadRelaxed() == 1)
@@ -3571,7 +3572,7 @@ bool QDateTime::isNull() const
 bool QDateTime::isValid() const
 {
     auto status = getStatus(d);
-    return status & QDateTimePrivate::ValidDateTime;
+    return status.testAnyFlag(QDateTimePrivate::ValidDateTime);
 }
 
 /*!
@@ -4014,7 +4015,7 @@ void QDateTime::setMSecsSinceEpoch(qint64 msecs)
     if (msecsCanBeSmall(msecs) && d.isShort()) {
         // we can keep short
         d.data.msecs = qintptr(msecs);
-        d.data.status = status;
+        d.data.status = status.toInt();
     } else {
         d.detach();
         d->m_status = status & ~QDateTimePrivate::ShortData;
@@ -4043,7 +4044,7 @@ void QDateTime::setSecsSinceEpoch(qint64 secs)
     if (!mul_overflow(secs, std::integral_constant<qint64, MSECS_PER_SEC>(), &msecs)) {
         setMSecsSinceEpoch(msecs);
     } else if (d.isShort()) {
-        d.data.status &= ~QDateTimePrivate::ValidWhenMask;
+        d.data.status &= ~int(QDateTimePrivate::ValidWhenMask);
     } else {
         d.detach();
         d->m_status &= ~QDateTimePrivate::ValidWhenMask;
@@ -4338,7 +4339,7 @@ QDateTime QDateTime::addMSecs(qint64 msecs) const
         if (!add_overflow(toMSecsSinceEpoch(), msecs, &msecs)) {
             dt.setMSecsSinceEpoch(msecs);
         } else if (dt.d.isShort()) {
-            dt.d.data.status &= ~QDateTimePrivate::ValidWhenMask;
+            dt.d.data.status &= ~int(QDateTimePrivate::ValidWhenMask);
         } else {
             dt.d.detach();
             dt.d->m_status &= ~QDateTimePrivate::ValidWhenMask;
@@ -4349,7 +4350,7 @@ QDateTime QDateTime::addMSecs(qint64 msecs) const
         // No need to convert, just add on
         if (add_overflow(getMSecs(d), msecs, &msecs)) {
             if (dt.d.isShort()) {
-                dt.d.data.status &= ~QDateTimePrivate::ValidWhenMask;
+                dt.d.data.status &= ~int(QDateTimePrivate::ValidWhenMask);
             } else {
                 dt.d.detach();
                 dt.d->m_status &= ~QDateTimePrivate::ValidWhenMask;

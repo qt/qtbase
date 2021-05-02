@@ -1356,7 +1356,7 @@ QDateTimeParser::scanString(const QDateTime &defaultValue, bool fixup) const
 
     if (parserType != QMetaType::QDate) {
         if (isSet & Hour12Section) {
-            const bool hasHour = isSet & Hour24Section;
+            const bool hasHour = isSet.testAnyFlag(Hour24Section);
             if (ampm == -1) // If we don't know from hour, assume am:
                 ampm = !hasHour || hour < 12 ? 0 : 1;
             hour12 = hour12 % 12 + ampm * 12;
@@ -1438,7 +1438,7 @@ QDateTimeParser::parse(const QString &input, int position,
                 const SectionNode &sn = sectionNodes.at(i);
                 QString t = sectionText(m_text, i, sn.pos).toLower();
                 if ((t.size() < sectionMaxSize(i)
-                     && (((int)fieldInfo(i) & (FixedWidth|Numeric)) != Numeric))
+                     && ((fieldInfo(i) & (FixedWidth|Numeric)) != Numeric))
                     || t.contains(space)) {
                     switch (sn.type) {
                     case AmPmSection:
