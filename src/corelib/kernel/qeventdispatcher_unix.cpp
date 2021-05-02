@@ -469,7 +469,7 @@ bool QEventDispatcherUNIX::processEvents(QEventLoop::ProcessEventsFlags flags)
 
     const bool include_timers = (flags & QEventLoop::X11ExcludeTimers) == 0;
     const bool include_notifiers = (flags & QEventLoop::ExcludeSocketNotifiers) == 0;
-    const bool wait_for_events = flags & QEventLoop::WaitForMoreEvents;
+    const bool wait_for_events = (flags & QEventLoop::WaitForMoreEvents) != 0;
 
     const bool canWait = (threadData->canWaitLocked()
                           && !d->interrupt.loadRelaxed()

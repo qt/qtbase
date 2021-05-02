@@ -411,7 +411,7 @@ bool QEventDispatcherGlib::processEvents(QEventLoop::ProcessEventsFlags flags)
 {
     Q_D(QEventDispatcherGlib);
 
-    const bool canWait = (flags & QEventLoop::WaitForMoreEvents);
+    const bool canWait = flags.testAnyFlag(QEventLoop::WaitForMoreEvents);
     if (canWait)
         emit aboutToBlock();
     else
