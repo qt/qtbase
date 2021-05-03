@@ -1919,6 +1919,8 @@ public:
     {
         return lhs.combination != rhs.combination;
     }
+
+    bool operator<(QKeyCombination) const = delete;
 };
 
 Q_DECLARE_TYPEINFO(QKeyCombination, Q_RELOCATABLE_TYPE);
