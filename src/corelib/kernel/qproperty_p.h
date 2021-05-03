@@ -585,13 +585,13 @@ private:
     }
 };
 
-#define Q_OBJECT_COMPAT_PROPERTY4(Class, Type, name,  setter) \
+#define QT_OBJECT_COMPAT_PROPERTY_4(Class, Type, name,  setter) \
     static constexpr size_t _qt_property_##name##_offset() { \
         return offsetof(Class, name); \
     } \
     QObjectCompatProperty<Class, Type, Class::_qt_property_##name##_offset, setter> name;
 
-#define Q_OBJECT_COMPAT_PROPERTY5(Class, Type, name,  setter, signal) \
+#define QT_OBJECT_COMPAT_PROPERTY_5(Class, Type, name,  setter, signal) \
     static constexpr size_t _qt_property_##name##_offset() { \
         return offsetof(Class, name); \
     } \
@@ -599,10 +599,10 @@ private:
 
 #define Q_OBJECT_COMPAT_PROPERTY(...) \
     QT_WARNING_PUSH QT_WARNING_DISABLE_INVALID_OFFSETOF \
-    QT_OVERLOADED_MACRO(Q_OBJECT_COMPAT_PROPERTY, __VA_ARGS__) \
+    QT_OVERLOADED_MACRO(QT_OBJECT_COMPAT_PROPERTY, __VA_ARGS__) \
     QT_WARNING_POP
 
-#define Q_OBJECT_COMPAT_PROPERTY_WITH_ARGS5(Class, Type, name,  setter, value) \
+#define QT_OBJECT_COMPAT_PROPERTY_WITH_ARGS_5(Class, Type, name,  setter, value) \
     static constexpr size_t _qt_property_##name##_offset() { \
         return offsetof(Class, name); \
     } \
@@ -610,7 +610,7 @@ private:
             QObjectCompatProperty<Class, Type, Class::_qt_property_##name##_offset, setter>(       \
                     value);
 
-#define Q_OBJECT_COMPAT_PROPERTY_WITH_ARGS6(Class, Type, name, setter, signal, value) \
+#define QT_OBJECT_COMPAT_PROPERTY_WITH_ARGS_6(Class, Type, name, setter, signal, value) \
     static constexpr size_t _qt_property_##name##_offset() { \
         return offsetof(Class, name); \
     } \
@@ -620,7 +620,7 @@ private:
 
 #define Q_OBJECT_COMPAT_PROPERTY_WITH_ARGS(...) \
     QT_WARNING_PUSH QT_WARNING_DISABLE_INVALID_OFFSETOF \
-    QT_OVERLOADED_MACRO(Q_OBJECT_COMPAT_PROPERTY_WITH_ARGS, __VA_ARGS__) \
+    QT_OVERLOADED_MACRO(QT_OBJECT_COMPAT_PROPERTY_WITH_ARGS, __VA_ARGS__) \
     QT_WARNING_POP
 
 

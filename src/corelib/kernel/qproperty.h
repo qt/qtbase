@@ -1130,13 +1130,13 @@ private:
     }
 };
 
-#define Q_OBJECT_BINDABLE_PROPERTY3(Class, Type, name) \
+#define QT_OBJECT_BINDABLE_PROPERTY_3(Class, Type, name) \
     static constexpr size_t _qt_property_##name##_offset() { \
         return offsetof(Class, name); \
     } \
     QObjectBindableProperty<Class, Type, Class::_qt_property_##name##_offset, nullptr> name;
 
-#define Q_OBJECT_BINDABLE_PROPERTY4(Class, Type, name, Signal) \
+#define QT_OBJECT_BINDABLE_PROPERTY_4(Class, Type, name, Signal) \
     static constexpr size_t _qt_property_##name##_offset() { \
         return offsetof(Class, name); \
     } \
@@ -1144,10 +1144,10 @@ private:
 
 #define Q_OBJECT_BINDABLE_PROPERTY(...) \
     QT_WARNING_PUSH QT_WARNING_DISABLE_INVALID_OFFSETOF \
-    QT_OVERLOADED_MACRO(Q_OBJECT_BINDABLE_PROPERTY, __VA_ARGS__) \
+    QT_OVERLOADED_MACRO(QT_OBJECT_BINDABLE_PROPERTY, __VA_ARGS__) \
     QT_WARNING_POP
 
-#define Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS4(Class, Type, name, value)                            \
+#define QT_OBJECT_BINDABLE_PROPERTY_WITH_ARGS_4(Class, Type, name, value)                          \
     static constexpr size_t _qt_property_##name##_offset()                                         \
     {                                                                                              \
         return offsetof(Class, name);                                                              \
@@ -1156,7 +1156,7 @@ private:
             QObjectBindableProperty<Class, Type, Class::_qt_property_##name##_offset, nullptr>(    \
                     value);
 
-#define Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS5(Class, Type, name, value, Signal)                    \
+#define QT_OBJECT_BINDABLE_PROPERTY_WITH_ARGS_5(Class, Type, name, value, Signal)                  \
     static constexpr size_t _qt_property_##name##_offset()                                         \
     {                                                                                              \
         return offsetof(Class, name);                                                              \
@@ -1167,7 +1167,7 @@ private:
 
 #define Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(...)                                                  \
     QT_WARNING_PUSH QT_WARNING_DISABLE_INVALID_OFFSETOF \
-    QT_OVERLOADED_MACRO(Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS, __VA_ARGS__) \
+    QT_OVERLOADED_MACRO(QT_OBJECT_BINDABLE_PROPERTY_WITH_ARGS, __VA_ARGS__) \
     QT_WARNING_POP
 
 template<typename Class, typename T, auto Offset, auto Getter>
