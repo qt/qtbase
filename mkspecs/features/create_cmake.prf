@@ -170,6 +170,9 @@ qtConfig(debug_and_release) {
 }
 
 contains(CONFIG, plugin) {
+    CMAKE_PLUGIN_NAME = $$PLUGIN_CLASS_NAME
+
+    plugin_genex_check =
     equals(PLUGIN_EXTENDS, -) {
         CMAKE_PLUGIN_EXTENDS = -
     } else {
@@ -177,8 +180,13 @@ contains(CONFIG, plugin) {
         for (p, PLUGIN_EXTENDS) {
             m = $$cmakeModuleName($$p)
             list_plugin_extends += Qt::$$m
+
+            # CMake introduced $<IN_LIST:> in 3.12 which is too new for Qt, so manually
+            # unroll each module check with an STREQUAL genex
+            plugin_genex_check += \"$<STREQUAL:$<TARGET_PROPERTY:Qt5::$${CMAKE_PLUGIN_NAME},QT_PLUGIN_EXTENDS>,Qt::$${m}>,\"
         }
         CMAKE_PLUGIN_EXTENDS = $$join(list_plugin_extends, ";")
+        CMAKE_PLUGIN_EXTENDS_GENEX_CHECK = $$join(plugin_genex_check, "$$escape_expand(\\n)                ")
     }
 
     PLUGIN_MODULE_NAME =
@@ -207,7 +215,6 @@ contains(CONFIG, plugin) {
 
     CMAKE_MODULE_NAME = $$cmakeModuleName($$PLUGIN_MODULE_NAME)
 
-    CMAKE_PLUGIN_NAME = $$PLUGIN_CLASS_NAME
     CMAKE_PLUGIN_TYPE = $$PLUGIN_TYPE
     CMAKE_PLUGIN_TYPE_ESCAPED = $$replace(PLUGIN_TYPE, [-/], _)
 
