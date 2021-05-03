@@ -140,7 +140,7 @@ QFileSystemEntry::NativePath QFileSystemEntry::nativeFilePath() const
 void QFileSystemEntry::resolveFilePath() const
 {
     if (m_filePath.isEmpty() && !m_nativeFilePath.isEmpty()) {
-#if defined(QFILESYSTEMENTRY_NATIVE_PATH_IS_UTF16)
+#ifdef Q_OS_WIN
         m_filePath = QDir::fromNativeSeparators(m_nativeFilePath);
 #else
         m_filePath = QDir::fromNativeSeparators(QFile::decodeName(m_nativeFilePath));
@@ -156,8 +156,6 @@ void QFileSystemEntry::resolveNativeFilePath() const
         if (isRelative())
             filePath = fixIfRelativeUncPath(m_filePath);
         m_nativeFilePath = QFSFileEnginePrivate::longFileName(QDir::toNativeSeparators(filePath));
-#elif defined(QFILESYSTEMENTRY_NATIVE_PATH_IS_UTF16)
-        m_nativeFilePath = QDir::toNativeSeparators(m_filePath);
 #else
         m_nativeFilePath = QFile::encodeName(QDir::toNativeSeparators(m_filePath));
 #endif
