@@ -325,10 +325,10 @@ bool QMacPrintEnginePrivate::newPage_helper()
         CGContextTranslateCTM(cgContext, page.x() - paper.x(), page.y() - paper.y());
     cgEngine->d_func()->orig_xform = CGContextGetCTM(cgContext);
     cgEngine->d_func()->setClip(nullptr);
-    cgEngine->state->dirtyFlags = QPaintEngine::DirtyFlag(QPaintEngine::AllDirty
-                                                          & ~(QPaintEngine::DirtyClipEnabled
-                                                              | QPaintEngine::DirtyClipRegion
-                                                              | QPaintEngine::DirtyClipPath));
+    cgEngine->state->dirtyFlags = QPaintEngine::DirtyFlags(QPaintEngine::AllDirty)
+                                      & ~(QPaintEngine::DirtyClipEnabled
+                                          | QPaintEngine::DirtyClipRegion
+                                          | QPaintEngine::DirtyClipPath);
     if (cgEngine->painter()->hasClipping())
         cgEngine->state->dirtyFlags |= QPaintEngine::DirtyClipEnabled;
     cgEngine->syncState();
