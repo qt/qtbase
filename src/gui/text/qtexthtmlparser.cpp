@@ -1032,8 +1032,11 @@ void QTextHtmlParserNode::initializeProperties(const QTextHtmlParserNode *parent
     // we don't paint per-row background colors, yet. so as an
     // exception inherit the background color here
     // we also inherit the background between inline elements
+    // we also inherit from non-body block elements since we merge them together
     if ((parent->id != Html_tr || !isTableCell())
-        && (displayMode != QTextHtmlElement::DisplayInline || parent->displayMode != QTextHtmlElement::DisplayInline)) {
+        && (displayMode != QTextHtmlElement::DisplayInline || parent->displayMode != QTextHtmlElement::DisplayInline)
+        && (parent->id == Html_body || displayMode != QTextHtmlElement::DisplayBlock || parent->displayMode != QTextHtmlElement::DisplayBlock)
+       ) {
         charFormat.clearProperty(QTextFormat::BackgroundBrush);
     }
 
