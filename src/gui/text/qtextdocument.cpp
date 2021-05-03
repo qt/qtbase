@@ -2331,11 +2331,6 @@ QTextHtmlExporter::QTextHtmlExporter(const QTextDocument *_doc)
 {
     const QFont defaultFont = doc->defaultFont();
     defaultCharFormat.setFont(defaultFont);
-    // don't export those for the default font since we cannot turn them off with CSS
-    defaultCharFormat.clearProperty(QTextFormat::FontUnderline);
-    defaultCharFormat.clearProperty(QTextFormat::FontOverline);
-    defaultCharFormat.clearProperty(QTextFormat::FontStrikeOut);
-    defaultCharFormat.clearProperty(QTextFormat::TextUnderlineStyle);
 }
 
 static QStringList resolvedFontFamilies(const QTextCharFormat &format)
@@ -2408,8 +2403,28 @@ QString QTextHtmlExporter::toHtml(ExportMode mode)
             html += QLatin1String("px;");
         }
 
-        // do not set text-decoration on the default font since those values are /always/ propagated
-        // and cannot be turned off with CSS
+        QString decorationTag(QLatin1String(" text-decoration:"));
+        bool atLeastOneDecorationSet = false;
+        if (defaultCharFormat.hasProperty(QTextFormat::FontUnderline) || defaultCharFormat.hasProperty(QTextFormat::TextUnderlineStyle)) {
+            if (defaultCharFormat.fontUnderline()) {
+                decorationTag += QLatin1String(" underline");
+                atLeastOneDecorationSet = true;
+            }
+        }
+        if (defaultCharFormat.hasProperty(QTextFormat::FontOverline)) {
+            if (defaultCharFormat.fontOverline()) {
+                decorationTag += QLatin1String(" overline");
+                atLeastOneDecorationSet = true;
+            }
+        }
+        if (defaultCharFormat.hasProperty(QTextFormat::FontStrikeOut)) {
+            if (defaultCharFormat.fontStrikeOut()) {
+                decorationTag += QLatin1String(" line-through");
+                atLeastOneDecorationSet = true;
+            }
+        }
+        if (atLeastOneDecorationSet)
+            html += decorationTag + QLatin1Char(';');
 
         html += QLatin1Char('\"');
 

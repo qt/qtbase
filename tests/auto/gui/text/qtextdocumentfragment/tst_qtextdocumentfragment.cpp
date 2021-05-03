@@ -2426,12 +2426,12 @@ void tst_QTextDocumentFragment::defaultFont()
     f.setFamily("Courier New");
     f.setBold(true);
     f.setItalic(true);
-    f.setStrikeOut(true); // set here but deliberately ignored for the html export
+    f.setStrikeOut(true);
     f.setPointSize(100);
     doc->setDefaultFont(f);
     doc->setPlainText("Hello World");
     const QString html = doc->toHtml();
-    QLatin1String str("<body style=\" font-family:'Courier New'; font-size:100pt; font-weight:700; font-style:italic;\">");
+    QLatin1String str("<body style=\" font-family:'Courier New'; font-size:100pt; font-weight:700; font-style:italic; text-decoration: line-through;\">");
     QVERIFY(html.contains(str));
 }
 
