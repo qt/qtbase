@@ -2260,9 +2260,9 @@ static GradleProperties readGradleProperties(const QString &path)
         if (line.trimmed().startsWith('#'))
             continue;
 
-        QList<QByteArray> prop(line.split('='));
-        if (prop.size() > 1)
-            properties[prop.at(0).trimmed()] = prop.at(1).trimmed();
+        const int idx = line.indexOf('=');
+        if (idx > -1)
+            properties[line.left(idx).trimmed()] = line.mid(idx + 1).trimmed();
     }
     file.close();
     return properties;
