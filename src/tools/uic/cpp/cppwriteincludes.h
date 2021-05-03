@@ -29,79 +29,46 @@
 #ifndef CPPWRITEINCLUDES_H
 #define CPPWRITEINCLUDES_H
 
-#include "treewalker.h"
+#include <writeincludesbase.h>
 
-#include <qmap.h>
-#include <qset.h>
-#include <qstring.h>
+#include <QtCore/qmap.h>
 
 #include <set>
 
 QT_BEGIN_NAMESPACE
 
 class QTextStream;
-class CustomWidgetsInfo;
-class Driver;
-class Uic;
 
 namespace CPP {
 
-struct WriteIncludes : public TreeWalker
+class  WriteIncludes : public WriteIncludesBase
 {
+public:
     WriteIncludes(Uic *uic);
 
     void acceptUI(DomUI *node) override;
-    void acceptWidget(DomWidget *node) override;
-    void acceptLayout(DomLayout *node) override;
-    void acceptSpacer(DomSpacer *node) override;
-    void acceptProperty(DomProperty *node) override;
-
-//
-// actions
-//
-    void acceptActionGroup(DomActionGroup *node) override;
-    void acceptAction(DomAction *node) override;
-    void acceptActionRef(DomActionRef *node) override;
-
-//
-// custom widgets
-//
-    void acceptCustomWidgets(DomCustomWidgets *node) override;
-    void acceptCustomWidget(DomCustomWidget *node) override;
-
-//
-// include hints
-//
-    void acceptIncludes(DomIncludes *node) override;
     void acceptInclude(DomInclude *node) override;
 
 protected:
      QTextStream &output() const { return m_output; }
-
-private:
-    void add(const QString &className, bool determineHeader = true, const QString &header = QString(), bool global = false);
+     void doAdd(const QString &className, const DomCustomWidget *dcw = nullptr) override;
 
 private:
     using OrderedSet = std::set<QString>;
+    void addCppCustomWidget(const QString &className, const DomCustomWidget *dcw);
     void insertIncludeForClass(const QString &className, QString header = QString(), bool global = false);
     void insertInclude(const QString &header, bool global);
     void writeHeaders(const OrderedSet &headers, bool global);
     QString headerForClassName(const QString &className) const;
 
-    const Uic *m_uic;
     QTextStream &m_output;
 
     OrderedSet m_localIncludes;
     OrderedSet m_globalIncludes;
     QSet<QString> m_includeBaseNames;
-
-    QSet<QString> m_knownClasses;
-
     using StringMap = QMap<QString, QString>;
     StringMap m_classToHeader;
     StringMap m_oldHeaderToNewHeader;
-
-    bool m_laidOut = false;
 };
 
 } // namespace CPP

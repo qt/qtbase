@@ -21,6 +21,7 @@ qt_internal_add_tool(${target_name}
         python/pythonwritedeclaration.cpp python/pythonwritedeclaration.h
         python/pythonwriteimports.cpp python/pythonwriteimports.h
         shared/language.cpp shared/language.h
+        shared/writeincludesbase.cpp shared/writeincludesbase.h
         treewalker.cpp treewalker.h
         ui4.cpp ui4.h
         uic.cpp uic.h
