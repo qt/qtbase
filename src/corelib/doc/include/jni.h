@@ -37,48 +37,26 @@
 **
 ****************************************************************************/
 
-#ifndef QJNI_ENVIRONMENT_H
-#define QJNI_ENVIRONMENT_H
+#pragma once
 
-#include <QtCore/QScopedPointer>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API. It exists purely as an
+// implementation detail. This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-#if defined(Q_QDOC) || (defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED))
-#include <jni.h>
-
-QT_BEGIN_NAMESPACE
-
-class QJniEnvironmentPrivate;
-
-class Q_CORE_EXPORT QJniEnvironment
-{
-public:
-    QJniEnvironment();
-    ~QJniEnvironment();
-    JNIEnv *operator->() const;
-    JNIEnv &operator*() const;
-    JNIEnv *jniEnv() const;
-    jclass findClass(const char *className);
-    jmethodID findMethod(jclass clazz, const char *methodName, const char *signature);
-    jmethodID findStaticMethod(jclass clazz, const char *methodName, const char *signature);
-    static JavaVM *javaVM();
-    bool registerNativeMethods(const char *className, JNINativeMethod methods[], int size);
-    bool registerNativeMethods(jclass clazz, JNINativeMethod methods[], int size);
-
-    enum class OutputMode {
-        Silent,
-        Verbose
-    };
-
-    bool checkAndClearExceptions(OutputMode outputMode = OutputMode::Verbose);
-    static bool checkAndClearExceptions(JNIEnv *env, OutputMode outputMode = OutputMode::Verbose);
-
-private:
-    Q_DISABLE_COPY_MOVE(QJniEnvironment)
-    QScopedPointer<QJniEnvironmentPrivate> d;
-};
-
-QT_END_NAMESPACE
-
+// Dummy declarations for generating docs on non-Android platforms
+#if !defined(Q_OS_ANDROID) && defined(Q_QDOC)
+typedef struct {} JNIEnv;
+typedef struct {} JNINativeMethod;
+struct _jclass;
+typedef _jclass* jclass;
+struct _jobject;
+typedef _jobject* jobject;
+typedef void* JavaVM;
 #endif
-
-#endif // QJNI_ENVIRONMENT_H

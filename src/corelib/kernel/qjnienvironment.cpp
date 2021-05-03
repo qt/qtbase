@@ -158,7 +158,7 @@ JNIEnv &QJniEnvironment::operator*() const
 }
 
 /*!
-    \fn JNIEnv *QJniEnvironment::jniEnv()
+    \fn JNIEnv *QJniEnvironment::jniEnv() const
 
     Returns the JNI Environment's \c JNIEnv pointer.
 */

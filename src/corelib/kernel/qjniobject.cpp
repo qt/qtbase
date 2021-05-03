@@ -638,8 +638,6 @@ QJniObject::QJniObject(const char *className, const char *signature, const QVaLi
 }
 
 /*!
-    \fn QJniObject::QJniObject(jclass clazz, const char *signature, ...)
-
     Constructs a new JNI object from \a clazz by calling the constructor with
     \a signature specifying the types of any subsequent arguments.
 
@@ -672,8 +670,6 @@ QJniObject::QJniObject(jclass clazz, const char *signature, ...)
 }
 
 /*!
-    \fn QJniObject::QJniObject(jclass clazz)
-
     Constructs a new JNI object by calling the default constructor of \a clazz.
 
     \note The QJniObject will create a new reference to the class \a clazz
@@ -719,8 +715,6 @@ QJniObject::QJniObject(jclass clazz, const char *signature, const QVaListPrivate
 }
 
 /*!
-    \fn QJniObject::QJniObject(jobject object)
-
     Constructs a new JNI object around the Java object \a object.
 
     \note The QJniObject will hold a reference to the Java object \a object
@@ -732,15 +726,15 @@ QJniObject::QJniObject(jclass clazz, const char *signature, const QVaListPrivate
 
     \sa fromLocalRef()
 */
-QJniObject::QJniObject(jobject obj)
+QJniObject::QJniObject(jobject object)
     : d(new QJniObjectPrivate())
 {
-    if (!obj)
+    if (!object)
         return;
 
     QJniEnvironment env;
-    d->m_jobject = env->NewGlobalRef(obj);
-    jclass cls = env->GetObjectClass(obj);
+    d->m_jobject = env->NewGlobalRef(object);
+    jclass cls = env->GetObjectClass(object);
     d->m_jclass = static_cast<jclass>(env->NewGlobalRef(cls));
     env->DeleteLocalRef(cls);
 }
@@ -750,19 +744,19 @@ QJniObject::QJniObject(jobject obj)
     exception clearing and delete the local reference before returning.
     The JNI object can be null if there was an exception.
 */
-QJniObject QJniObject::getCleanJniObject(jobject obj)
+QJniObject QJniObject::getCleanJniObject(jobject object)
 {
-    if (!obj)
+    if (!object)
         return QJniObject();
 
     QJniEnvironment env;
     if (env.checkAndClearExceptions()) {
-        env->DeleteLocalRef(obj);
+        env->DeleteLocalRef(object);
         return QJniObject();
     }
 
-    QJniObject res(obj);
-    env->DeleteLocalRef(obj);
+    QJniObject res(object);
+    env->DeleteLocalRef(object);
     return res;
 }
 
@@ -775,12 +769,14 @@ QJniObject::~QJniObject()
 {}
 
 /*!
-    \fn jobject QJniObject::object() const
+    \fn template <typename T> T QJniObject::object() const
 
-    Returns the object held by the QJniObject as jobject.
+    Returns the object held by the QJniObject either as jobject or as type T.
+    T can be one of \l {Object Types}{JNI Object Types}.
 
     \code
-    jobject object = jniObject.object();
+    QJniObject string = QJniObject::fromString("Hello, JNI");
+    jstring jstring = string.object<jstring>();
     \endcode
 
     \note The returned object is still kept live by this QJniObject. To keep the
@@ -1091,26 +1087,6 @@ QJniObject QJniObject::callStaticObjectMethod(jclass clazz, jmethodID methodId, 
 */
 
 /*!
-    \fn template <typename T> T QJniObject::object() const
-
-    Returns the object held by the QJniObject as type T.
-    T can be one of \l {Object Types}{JNI Object Types}.
-
-    \code
-    QJniObject string = QJniObject::fromString("Hello, JNI");
-    jstring jstring = string.object<jstring>();
-    \endcode
-
-    \note The returned object is still kept live by this QJniObject. To keep the
-    object live beyond the lifetime of this QJniObject, for example to record it
-    for later use, the easiest approach is to store it in another QJniObject with
-    a suitable lifetime. Alternatively, you can make a new global reference to the
-    object and store it, taking care to free it when you are done with it.
-
-    \snippet jni/src_qjniobject.cpp QJniObject scope
-*/
-
-/*!
     \fn template <typename T> QJniObject &QJniObject::operator=(T object)
 
     Replace the current object with \a object. The old Java object will be released.
@@ -1169,7 +1145,7 @@ QJniObject QJniObject::callStaticObjectMethod(jclass clazz, jmethodID methodId, 
 /*!
     \fn QJniObject QJniObject::getStaticObjectField(const char *className, const char *fieldName, const char *signature)
 
-    Retrieves a JNI object from the field \a filedName with \a signature from
+    Retrieves a JNI object from the field \a fieldName with \a signature from
     class \a className.
 
     \note This function can be used without a template type.
