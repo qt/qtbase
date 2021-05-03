@@ -104,6 +104,17 @@ void tst_QFileSystemEntry::getSetCheck_data()
             << QString("A:dir\\without\\leading\\backslash.bat")
             << absPrefix + QString("A:\\dir\\without\\leading\\backslash.bat")
             << "A:dir/without/leading/backslash.bat" << "backslash.bat" << "backslash" << "backslash" << "bat" << "bat" << false << false;
+
+    QTest::newRow("longpath")
+            << QString("\\\\?\\D:\\")
+            << absPrefix + QString("D:\\")
+            << "D:/" << "" << "" << "" << "" << "" << true << false;
+
+    QTest::newRow("uncprefix")
+            << QString("\\\\?\\UNC\\localhost\\C$\\tmp.txt")
+            << absPrefix + QString("UNC\\localhost\\C$\\tmp.txt")
+            << "//localhost/C$/tmp.txt" << "tmp.txt" << "tmp" << "tmp" << "txt" << "txt" << true
+            << false;
 }
 
 void tst_QFileSystemEntry::getSetCheck()
@@ -137,7 +148,7 @@ void tst_QFileSystemEntry::getSetCheck()
     QCOMPARE(entry2.isRelative(), relative);
     QCOMPARE(entry2.filePath(), filepath);
     // Since this entry was created using the native path,
-    // the object shouldnot change nativeFilePath.
+    // the object shouldn't change nativeFilePath.
     QCOMPARE(entry2.nativeFilePath(), nativeFilePath);
     QCOMPARE(entry2.fileName(), filename);
     QCOMPARE(entry2.baseName(), baseName);
