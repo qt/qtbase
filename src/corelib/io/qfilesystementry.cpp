@@ -142,12 +142,6 @@ void QFileSystemEntry::resolveFilePath() const
     if (m_filePath.isEmpty() && !m_nativeFilePath.isEmpty()) {
 #if defined(QFILESYSTEMENTRY_NATIVE_PATH_IS_UTF16)
         m_filePath = QDir::fromNativeSeparators(m_nativeFilePath);
-#ifdef Q_OS_WIN
-        if (m_filePath.startsWith(QLatin1String("//?/UNC/")))
-            m_filePath = m_filePath.remove(2,6);
-        if (m_filePath.startsWith(QLatin1String("//?/")))
-            m_filePath = m_filePath.remove(0,4);
-#endif
 #else
         m_filePath = QDir::fromNativeSeparators(QFile::decodeName(m_nativeFilePath));
 #endif

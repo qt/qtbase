@@ -952,22 +952,29 @@ QString QDir::toNativeSeparators(const QString &pathName)
 QString QDir::fromNativeSeparators(const QString &pathName)
 {
 #if defined(Q_OS_WIN)
-    int i = pathName.indexOf(QLatin1Char('\\'));
+    const QChar nativeSeparator = u'\\';
+    int i = pathName.indexOf(nativeSeparator);
     if (i != -1) {
         QString n(pathName);
-        if (n.startsWith(QLatin1String("\\\\?\\"))) {
-            n.remove(0, 4);
-            i = n.indexOf(QLatin1Char('\\'));
-            if (i == -1)
+        const QStringView uncPrefix(uR"(\\?\UNC\)");
+        const QStringView extendedLengthPathPrefix(uR"(\\?\)");
+        if (n.startsWith(uncPrefix)) {
+            // Keep the initial double-slash, chop out the rest of the prefix.
+            n = n.remove(2, uncPrefix.size() - 2);
+            if ((i = n.indexOf(nativeSeparator)) == -1)
+                return n;
+        } else if (n.startsWith(extendedLengthPathPrefix)) {
+            n = n.sliced(extendedLengthPathPrefix.size());
+            if ((i = n.indexOf(nativeSeparator)) == -1)
                 return n;
         }
 
         QChar * const data = n.data();
-        data[i++] = QLatin1Char('/');
+        data[i++] = u'/';
 
         for (; i < n.length(); ++i) {
-            if (data[i] == QLatin1Char('\\'))
-                data[i] = QLatin1Char('/');
+            if (data[i] == nativeSeparator)
+                data[i] = u'/';
         }
 
         return n;
@@ -2312,16 +2319,8 @@ static QString qt_cleanPath(const QString &path, bool *ok)
 {
     if (path.isEmpty())
         return path;
-    QString name = path;
-#if defined (Q_OS_WIN)
-    if (name.startsWith(QLatin1String("\\\\?\\")))
-        name.remove(0, 4);
-#endif
 
-    QChar dir_separator = QDir::separator();
-    if (dir_separator != QLatin1Char('/'))
-       name.replace(dir_separator, QLatin1Char('/'));
-
+    QString name = QDir::fromNativeSeparators(path);
     QString ret = qt_normalizePathSegments(name, OSSupportsUncPaths ? QDirPrivate::AllowUncPaths : QDirPrivate::DefaultNormalization, ok);
 
     // Strip away last slash except for root directories
