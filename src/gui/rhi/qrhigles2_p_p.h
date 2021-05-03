@@ -862,6 +862,7 @@ public:
                         QSet<int> *activeUniformLocations, QGles2UniformDescriptionVector *dst);
     void gatherSamplers(GLuint program, const QShaderDescription::InOutVariable &v,
                         QGles2SamplerDescriptionVector *dst);
+    void sanityCheckVertexFragmentInterface(const QShaderDescription &vsDesc, const QShaderDescription &fsDesc);
     bool isProgramBinaryDiskCacheEnabled() const;
 
     enum ProgramCacheResult {
