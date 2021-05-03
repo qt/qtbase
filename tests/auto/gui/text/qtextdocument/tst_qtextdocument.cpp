@@ -103,6 +103,7 @@ private slots:
     void toHtmlRootFrameProperties();
     void toHtmlLineHeightProperties();
     void toHtmlDefaultFontSpacingProperties();
+    void toHtmlTextDecorationUnderline();
     void capitalizationHtmlInExport();
     void wordspacingHtmlExport();
 
@@ -1991,6 +1992,62 @@ void tst_QTextDocument::toHtmlDefaultFontSpacingProperties()
                                    .arg((defaultFont.italic() ? "italic" : "normal"));
 
     QCOMPARE(doc.toHtml(), expectedOutput);
+}
+
+void tst_QTextDocument::toHtmlTextDecorationUnderline()
+{
+    CREATE_DOC_AND_CURSOR();
+
+    cursor.insertText("Some text");
+    QFont fnt = doc.defaultFont();
+    fnt.setUnderline(true);
+    doc.setDefaultFont(fnt);
+
+    QString expectedOutput =
+            QString("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" "
+                    "\"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+                    "<html><head><meta name=\"qrichtext\" content=\"1\" />"
+                    "<meta charset=\"utf-8\" /><style type=\"text/css\">\n"
+                    "p, li { white-space: pre-wrap; }\n"
+                    "</style></head>"
+                    "<body style=\" font-family:'%1'; font-size:%2; "
+                    "font-weight:%3; font-style:%4; text-decoration: underline;\">\n"
+                    "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; "
+                    "margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Some text</p>"
+                    "</body></html>");
+
+    expectedOutput = expectedOutput.arg(doc.defaultFont().family())
+                             .arg(cssFontSizeString(doc.defaultFont()))
+                             .arg(doc.defaultFont().weight())
+                             .arg((doc.defaultFont().italic() ? "italic" : "normal"));
+
+    QCOMPARE(doc.toHtml(), expectedOutput);
+
+    QTextCharFormat format;
+    format.setFontUnderline(false);
+    cursor.select(QTextCursor::Document);
+    cursor.mergeCharFormat(format);
+
+    QString expectedOutput2 =
+            QString("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" "
+                    "\"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+                    "<html><head><meta name=\"qrichtext\" content=\"1\" />"
+                    "<meta charset=\"utf-8\" /><style type=\"text/css\">\n"
+                    "p, li { white-space: pre-wrap; }\n"
+                    "</style></head>"
+                    "<body style=\" font-family:'%1'; font-size:%2; "
+                    "font-weight:%3; font-style:%4; text-decoration: underline;\">\n"
+                    "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; "
+                    "margin-right:0px; -qt-block-indent:0; text-indent:0px;\">"
+                    "<span style=\" text-decoration:none;\">Some text</span></p>"
+                    "</body></html>");
+
+    expectedOutput2 = expectedOutput2.arg(doc.defaultFont().family())
+                              .arg(cssFontSizeString(doc.defaultFont()))
+                              .arg(doc.defaultFont().weight())
+                              .arg((doc.defaultFont().italic() ? "italic" : "normal"));
+
+    QCOMPARE(doc.toHtml(), expectedOutput2);
 }
 
 void tst_QTextDocument::capitalizationHtmlInExport()
