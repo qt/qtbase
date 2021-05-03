@@ -206,6 +206,12 @@ void tst_QTemporaryFile::fileTemplate_data()
         prefix = "qt_" + hanTestText();
         QTest::newRow("Chinese characters") << (prefix + "XXXXXX") << prefix << QString() << QString();
     }
+
+#ifdef Q_OS_WIN
+    const auto tmp = QDir::toNativeSeparators(QDir::tempPath()).sliced(QDir::rootPath().size());
+    QTest::newRow("UNC") << uR"(\\localhost\C$\)"_qs + tmp + uR"(\QTBUG-74291.XXXXXX.tmpFile)"_qs
+                         << "QTBUG-74291." << ".tmpFile" << "";
+#endif
 }
 
 void tst_QTemporaryFile::fileTemplate()

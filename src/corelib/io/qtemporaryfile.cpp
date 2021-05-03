@@ -78,7 +78,7 @@ typedef int NativeFileHandle;
 QTemporaryFileName::QTemporaryFileName(const QString &templateName)
 {
     // Ensure there is a placeholder mask
-    QString qfilename = templateName;
+    QString qfilename = QDir::fromNativeSeparators(templateName);
     uint phPos = qfilename.length();
     uint phLength = 0;
 

@@ -157,6 +157,12 @@ void tst_QTemporaryDir::fileTemplate_data()
         prefix = "qt_" + hanTestText();
         QTest::newRow("Chinese") << (prefix + "XXXXXX" + umlautTestText()) << prefix << umlautTestText();
     }
+
+#ifdef Q_OS_WIN
+    const auto tmp = QDir::toNativeSeparators(QDir::tempPath()).sliced(QDir::rootPath().size());
+    QTest::newRow("UNC") << uR"(\\localhost\C$\)"_qs + tmp + uR"(\UNC.XXXXXX.tmpDir)"_qs
+                         << "UNC." << ".tmpDir";
+#endif
 }
 
 void tst_QTemporaryDir::fileTemplate()
