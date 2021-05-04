@@ -263,11 +263,28 @@ static inline ControlElement<T> *ptr(QWidget *widget)
     return nullptr;
 }
 
+QString QMdiSubWindowPrivate::originalWindowTitleHelper() const
+{
+    Q_Q(const QMdiSubWindow);
+    // QTBUG-92240: When DontMaximizeSubWindowOnActivation is set and
+    // there is another subwindow maximized, use its original title.
+    if (auto *mdiArea = q->mdiArea()) {
+        const auto &subWindows = mdiArea->subWindowList();
+        for (auto *subWindow : subWindows) {
+            if (subWindow != q && subWindow->isMaximized()) {
+                auto *subWindowD = static_cast<QMdiSubWindowPrivate *>(qt_widget_private(subWindow));
+                if (!subWindowD->originalTitle.isNull())
+                    return subWindowD->originalTitle;
+            }
+        }
+    }
+    return q->window()->windowTitle();
+}
+
 QString QMdiSubWindowPrivate::originalWindowTitle()
 {
-    Q_Q(QMdiSubWindow);
     if (originalTitle.isNull()) {
-        originalTitle = q->window()->windowTitle();
+        originalTitle = originalWindowTitleHelper();
         if (originalTitle.isNull())
             originalTitle = QLatin1String("");
     }
@@ -282,11 +299,17 @@ void QMdiSubWindowPrivate::setNewWindowTitle()
         return;
     QString original = originalWindowTitle();
     if (!original.isEmpty()) {
-        if (!original.contains(QMdiSubWindow::tr("- [%1]").arg(childTitle)))
-            q->window()->setWindowTitle(QMdiSubWindow::tr("%1 - [%2]").arg(original, childTitle));
+        if (!original.contains(QMdiSubWindow::tr("- [%1]").arg(childTitle))) {
+            auto title = QMdiSubWindow::tr("%1 - [%2]").arg(original, childTitle);
+            ignoreWindowTitleChange = true;
+            q->window()->setWindowTitle(title);
+            ignoreWindowTitleChange = false;
+        }
 
     } else {
+        ignoreWindowTitleChange = true;
         q->window()->setWindowTitle(childTitle);
+        ignoreWindowTitleChange = false;
     }
 }
 
