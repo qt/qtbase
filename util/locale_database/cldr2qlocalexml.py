@@ -2,7 +2,7 @@
 # coding=utf8
 #############################################################################
 ##
-## Copyright (C) 2020 The Qt Company Ltd.
+## Copyright (C) 2021 The Qt Company Ltd.
 ## Contact: https://www.qt.io/licensing/
 ##
 ## This file is part of the test suite of the Qt Toolkit.
@@ -59,7 +59,6 @@ import sys
 
 from cldr import CldrReader
 from qlocalexml import QLocaleXmlWriter
-from enumdata import language_list, script_list, country_list
 
 def usage(name, err, message = ''):
     err.write("""Usage: {} path/to/cldr/common/main [out-file.xml]
@@ -110,7 +109,7 @@ def main(args, out, err):
     writer = QLocaleXmlWriter(emit.write)
 
     writer.version(reader.root.cldrVersion)
-    writer.enumData(language_list, script_list, country_list)
+    writer.enumData()
     writer.likelySubTags(reader.likelySubTags())
     writer.locales(reader.readLocales(calendars), calendars)
 

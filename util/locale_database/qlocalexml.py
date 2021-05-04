@@ -1,7 +1,7 @@
 # coding=utf8
 #############################################################################
 ##
-## Copyright (C) 2020 The Qt Company Ltd.
+## Copyright (C) 2021 The Qt Company Ltd.
 ## Contact: https://www.qt.io/licensing/
 ##
 ## This file is part of the test suite of the Qt Toolkit.
@@ -333,10 +333,11 @@ class QLocaleXmlWriter (object):
         self.__write('<localeDatabase>')
 
     # Output of various sections, in their usual order:
-    def enumData(self, languages, scripts, countries):
-        self.__enumTable('language', languages)
-        self.__enumTable('script', scripts)
-        self.__enumTable('country', countries)
+    def enumData(self):
+        from enumdata import language_list, script_list, country_list
+        self.__enumTable('language', language_list)
+        self.__enumTable('script', script_list)
+        self.__enumTable('country', country_list)
 
     def likelySubTags(self, entries):
         self.__openTag('likelySubtags')
