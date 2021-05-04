@@ -106,6 +106,8 @@ private slots:
 #endif
     void background();
     void tabAlignment();
+    void tabFont_data();
+    void tabFont();
     void attributesList();
     void minmaxSizes();
     void task206238_twice();
@@ -1177,6 +1179,71 @@ void tst_QStyleSheetStyle::tabAlignment()
     tabWidget.setStyleSheet("QTabWidget::tab-bar { alignment: center ; }");
     QVERIFY(bar->geometry().bottom() < 300);
     QVERIFY(bar->geometry().top() > 100);
+}
+
+void tst_QStyleSheetStyle::tabFont_data()
+{
+    QTest::addColumn<int>("pixelSize");
+    QTest::addColumn<QTabWidget::TabPosition>("tabPosition");
+
+    QTest::newRow("medium, horizontal") << 24 << QTabWidget::North;
+    QTest::newRow("large, vertical") << 36 << QTabWidget::West;
+}
+
+#include <QApplication>
+
+void tst_QStyleSheetStyle::tabFont()
+{
+    QFETCH(int, pixelSize);
+    QFETCH(QTabWidget::TabPosition, tabPosition);
+    const bool vertical = tabPosition == QTabWidget::West || tabPosition == QTabWidget::East;
+
+    // macOS style centers tabs and messes up the test
+    QWindowsStyle windowsStyle;
+    QWidget topLevel;
+    topLevel.setStyle(&windowsStyle);
+    topLevel.setWindowTitle(QTest::currentTestFunction());
+    QTabWidget tabWidget;
+    tabWidget.setStyle(&windowsStyle);
+    tabWidget.addTab(new QWidget,"Tab title");
+    tabWidget.setTabPosition(tabPosition);
+    QTabWidget styledWidget;
+    styledWidget.setStyle(&windowsStyle);
+    styledWidget.setTabPosition(tabPosition);
+    styledWidget.addTab(new QWidget,"Tab title");
+
+    QTabBar *bar = tabWidget.tabBar();
+    QTabBar *styledBar = styledWidget.tabBar();
+    QVERIFY(bar && styledBar);
+    bar->setStyle(&windowsStyle);
+    styledBar->setStyle(&windowsStyle);
+
+    QBoxLayout box(vertical ? QBoxLayout::LeftToRight : QBoxLayout::TopToBottom);
+    box.addWidget(&tabWidget);
+    box.addWidget(&styledWidget);
+    topLevel.setLayout(&box);
+
+    topLevel.resize(600, 600);
+    centerOnScreen(&topLevel);
+    topLevel.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
+
+    const QRect defaultRect = bar->tabRect(0);
+    QCOMPARE(styledBar->tabRect(0), defaultRect);
+
+    QFont font;
+    font.setPointSize(pixelSize);
+    tabWidget.setFont(font);
+
+    const QRect rectWithFont = bar->tabRect(0);
+    if (vertical)
+        QVERIFY(rectWithFont.height() > defaultRect.height());
+    else
+        QVERIFY(rectWithFont.width() > defaultRect.width());
+
+    styledWidget.setStyleSheet(QString("QTabBar { font-size: %1pt; }").arg(pixelSize));
+    const QRect rectWithStyle = styledBar->tabRect(0);
+    QCOMPARE(rectWithStyle.size(), rectWithFont.size());
 }
 
 void tst_QStyleSheetStyle::attributesList()
