@@ -2640,15 +2640,15 @@ QList<QLocale> QLocale::matchingLocales(QLocale::Language language, QLocale::Scr
         result.reserve(locale_data_size);
 
     quint16 index = locale_index[language];
-    Q_ASSERT(filter.acceptLanguage(locale_data[index].m_language_id));
-    do {
+    // There may be no matches, for some languages (e.g. Abkhazian at CLDR v39).
+    while (filter.acceptLanguage(locale_data[index].m_language_id)) {
         const QLocaleId id = locale_data[index].id();
         if (filter.acceptScriptTerritory(id)) {
             result.append(QLocale(*(id.language_id == C ? c_private()
                                     : new QLocalePrivate(locale_data + index, index))));
         }
         ++index;
-    } while (filter.acceptLanguage(locale_data[index].m_language_id));
+    }
 
     return result;
 }

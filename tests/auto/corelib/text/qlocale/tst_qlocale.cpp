@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -716,6 +716,12 @@ void tst_QLocale::matchingLocales()
     QVERIFY(!locales.isEmpty());
     QVERIFY(!locales.contains(c));
     QVERIFY(locales.contains(ru_RU));
+
+    // Regression check for assertion failure when no locales match:
+    locales = QLocale::matchingLocales(QLocale::Abkhazian, QLocale::AnyScript, QLocale::AnyTerritory);
+    // Empty in CLDR v39, but don't require that.
+    QVERIFY(!locales.contains(c));
+    QVERIFY(!locales.contains(ru_RU));
 }
 
 void tst_QLocale::unixLocaleName_data()
