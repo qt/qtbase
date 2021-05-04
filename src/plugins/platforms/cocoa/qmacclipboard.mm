@@ -56,11 +56,6 @@
 QT_BEGIN_NAMESPACE
 
 /*****************************************************************************
-  QClipboard debug facilities
- *****************************************************************************/
-//#define DEBUG_PASTEBOARD
-
-/*****************************************************************************
    QMacPasteboard code
 *****************************************************************************/
 
@@ -201,10 +196,8 @@ OSStatus QMacPasteboard::promiseKeeper(PasteboardRef paste, PasteboardItemID id,
         return cantGetFlavorErr;
     }
 
-#ifdef DEBUG_PASTEBOARD
-    qDebug("PasteBoard: Calling in promise for %s[%ld] [%s] (%s) [%d]", qPrintable(promise.mime), promise_id,
+    qCDebug(lcQpaClipboard, "PasteBoard: Calling in promise for %s[%ld] [%s] (%s) [%d]", qPrintable(promise.mime), promise_id,
            qPrintable(flavorAsQString), qPrintable(promise.convertor->convertorName()), promise.offset);
-#endif
 
     // Get the promise data. If this is a "lazy" promise call variantData()
     // to request the data from the application.
@@ -237,10 +230,8 @@ QMacPasteboard::hasOSType(int c_flavor) const
     if (PasteboardGetItemCountSafe(paste, &cnt) || !cnt)
         return false;
 
-#ifdef DEBUG_PASTEBOARD
-    qDebug("PasteBoard: hasOSType [%c%c%c%c]", (c_flavor>>24)&0xFF, (c_flavor>>16)&0xFF,
+    qCDebug(lcQpaClipboard, "PasteBoard: hasOSType [%c%c%c%c]", (c_flavor>>24)&0xFF, (c_flavor>>16)&0xFF,
            (c_flavor>>8)&0xFF, (c_flavor>>0)&0xFF);
-#endif
     for (uint index = 1; index <= cnt; ++index) {
 
         PasteboardItemID id;
@@ -259,16 +250,12 @@ QMacPasteboard::hasOSType(int c_flavor) const
             if (preferredTag)
                 CFRelease(preferredTag);
             if (os_flavor == c_flavor) {
-#ifdef DEBUG_PASTEBOARD
-                qDebug("  - Found!");
-#endif
+                qCDebug(lcQpaClipboard, "  - Found!");
                 return true;
             }
         }
     }
-#ifdef DEBUG_PASTEBOARD
-    qDebug("  - NotFound!");
-#endif
+    qCDebug(lcQpaClipboard, "  - NotFound!");
     return false;
 }
 
@@ -284,9 +271,7 @@ QMacPasteboard::hasFlavor(QString c_flavor) const
     if (PasteboardGetItemCountSafe(paste, &cnt) || !cnt)
         return false;
 
-#ifdef DEBUG_PASTEBOARD
-    qDebug("PasteBoard: hasFlavor [%s]", qPrintable(c_flavor));
-#endif
+    qCDebug(lcQpaClipboard, "PasteBoard: hasFlavor [%s]", qPrintable(c_flavor));
     for (uint index = 1; index <= cnt; ++index) {
 
         PasteboardItemID id;
@@ -295,15 +280,11 @@ QMacPasteboard::hasFlavor(QString c_flavor) const
 
         PasteboardFlavorFlags flags;
         if (PasteboardGetItemFlavorFlags(paste, id, QCFString(c_flavor), &flags) == noErr) {
-#ifdef DEBUG_PASTEBOARD
-            qDebug("  - Found!");
-#endif
+            qCDebug(lcQpaClipboard, "  - Found!");
             return true;
         }
     }
-#ifdef DEBUG_PASTEBOARD
-    qDebug("  - NotFound!");
-#endif
+    qCDebug(lcQpaClipboard, "  - NotFound!");
     return false;
 }
 
@@ -377,10 +358,8 @@ QMacPasteboard::setMimeData(QMimeData *mime_src, DataRequestType dataRequestType
                         QMacPasteboard::Promise promise(itemID, c, mimeType, mimeData, item, dataRequestType);
                         promises.append(promise);
                         PasteboardPutItemFlavor(paste, reinterpret_cast<PasteboardItemID>(itemID), QCFString(flavor), 0, kPasteboardFlavorNoFlags);
-#ifdef DEBUG_PASTEBOARD
-                        qDebug(" -  adding %d %s [%s] <%s> [%d]",
+                        qCDebug(lcQpaClipboard, " -  adding %ld %s [%s] <%s> [%d]",
                                itemID, qPrintable(mimeType), qPrintable(flavor), qPrintable(c->convertorName()), item);
-#endif
                     }
                 }
             }
@@ -401,9 +380,7 @@ QMacPasteboard::formats() const
     if (PasteboardGetItemCountSafe(paste, &cnt) || !cnt)
         return ret;
 
-#ifdef DEBUG_PASTEBOARD
-    qDebug("PasteBoard: Formats [%d]", (int)cnt);
-#endif
+    qCDebug(lcQpaClipboard, "PasteBoard: Formats [%d]", (int)cnt);
     for (uint index = 1; index <= cnt; ++index) {
 
         PasteboardItemID id;
@@ -417,14 +394,10 @@ QMacPasteboard::formats() const
         const int type_count = CFArrayGetCount(types);
         for (int i = 0; i < type_count; ++i) {
             const QString flavor = QString::fromCFString((CFStringRef)CFArrayGetValueAtIndex(types, i));
-#ifdef DEBUG_PASTEBOARD
-            qDebug(" -%s", qPrintable(QString(flavor)));
-#endif
+            qCDebug(lcQpaClipboard, " -%s", qPrintable(QString(flavor)));
             QString mimeType = QMacInternalPasteboardMime::flavorToMime(mime_type, flavor);
             if (!mimeType.isEmpty() && !ret.contains(mimeType)) {
-#ifdef DEBUG_PASTEBOARD
-                qDebug("   -<%d> %s [%s]", ret.size(), qPrintable(mimeType), qPrintable(QString(flavor)));
-#endif
+                qCDebug(lcQpaClipboard, "   -<%lld> %s [%s]", ret.size(), qPrintable(mimeType), qPrintable(QString(flavor)));
                 ret << mimeType;
             }
         }
@@ -444,9 +417,7 @@ QMacPasteboard::hasFormat(const QString &format) const
     if (PasteboardGetItemCountSafe(paste, &cnt) || !cnt)
         return false;
 
-#ifdef DEBUG_PASTEBOARD
-    qDebug("PasteBoard: hasFormat [%s]", qPrintable(format));
-#endif
+    qCDebug(lcQpaClipboard, "PasteBoard: hasFormat [%s]", qPrintable(format));
     for (uint index = 1; index <= cnt; ++index) {
 
         PasteboardItemID id;
@@ -460,14 +431,10 @@ QMacPasteboard::hasFormat(const QString &format) const
         const int type_count = CFArrayGetCount(types);
         for (int i = 0; i < type_count; ++i) {
             const QString flavor = QString::fromCFString((CFStringRef)CFArrayGetValueAtIndex(types, i));
-#ifdef DEBUG_PASTEBOARD
-            qDebug(" -%s [0x%x]", qPrintable(QString(flavor)), mime_type);
-#endif
+            qCDebug(lcQpaClipboard, " -%s [0x%x]", qPrintable(QString(flavor)), mime_type);
             QString mimeType = QMacInternalPasteboardMime::flavorToMime(mime_type, flavor);
-#ifdef DEBUG_PASTEBOARD
             if (!mimeType.isEmpty())
-                qDebug("   - %s", qPrintable(mimeType));
-#endif
+                qCDebug(lcQpaClipboard, "   - %s", qPrintable(mimeType));
             if (mimeType == format)
                 return true;
         }
@@ -487,9 +454,7 @@ QMacPasteboard::retrieveData(const QString &format, QMetaType) const
     if (PasteboardGetItemCountSafe(paste, &cnt) || !cnt)
         return QByteArray();
 
-#ifdef DEBUG_PASTEBOARD
-    qDebug("Pasteboard: retrieveData [%s]", qPrintable(format));
-#endif
+    qCDebug(lcQpaClipboard, "Pasteboard: retrieveData [%s]", qPrintable(format));
     const QList<QMacInternalPasteboardMime *> mimes = QMacInternalPasteboardMime::all(mime_type);
     for (int mime = 0; mime < mimes.size(); ++mime) {
         QMacInternalPasteboardMime *c = mimes.at(mime);
@@ -525,18 +490,14 @@ QMacPasteboard::retrieveData(const QString &format, QMetaType) const
                         if (PasteboardCopyItemFlavorData(paste, id, flavor, &macBuffer) == noErr) {
                             QByteArray buffer((const char *)CFDataGetBytePtr(macBuffer), CFDataGetLength(macBuffer));
                             if (!buffer.isEmpty()) {
-#ifdef DEBUG_PASTEBOARD
-                                qDebug("  - %s [%s] (%s)", qPrintable(format), qPrintable(QString::fromNSString(flavor)), qPrintable(c->convertorName()));
-#endif
+                                qCDebug(lcQpaClipboard, "  - %s [%s] (%s)", qPrintable(format), qPrintable(c_flavor), qPrintable(c->convertorName()));
                                 buffer.detach(); //detach since we release the macBuffer
                                 retList.append(buffer);
                                 break; //skip to next element
                             }
                         }
                     } else {
-#ifdef DEBUG_PASTEBOARD
-                        qDebug("  - NoMatch %s [%s] (%s)", qPrintable(c_flavor), qPrintable(QString::fromNSString(flavor)), qPrintable(c->convertorName()));
-#endif
+                        qCDebug(lcQpaClipboard, "  - NoMatch %s [%s] (%s)", qPrintable(c_flavor), qPrintable(QString::fromCFString(flavor)), qPrintable(c->convertorName()));
                     }
                 }
             }
@@ -560,9 +521,7 @@ void QMacPasteboard::clear_helper()
 void
 QMacPasteboard::clear()
 {
-#ifdef DEBUG_PASTEBOARD
-    qDebug("PasteBoard: clear!");
-#endif
+    qCDebug(lcQpaClipboard, "PasteBoard: clear!");
     clear_helper();
 }
 
@@ -576,10 +535,8 @@ QMacPasteboard::sync() const
     if (fromGlobal)
         const_cast<QMacPasteboard *>(this)->setMimeData(nullptr);
 
-#ifdef DEBUG_PASTEBOARD
     if (fromGlobal)
-        qDebug("Pasteboard: Synchronize!");
-#endif
+        qCDebug(lcQpaClipboard, "Pasteboard: Synchronize!");
     return fromGlobal;
 }
 
