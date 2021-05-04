@@ -121,6 +121,9 @@
 #if QT_CONFIG(toolbar)
 #include <QtWidgets/qtoolbar.h>
 #endif
+#if QT_CONFIG(pushbutton)
+#include <QtWidgets/qpushbutton.h>
+#endif
 
 #include <QtGui/qpainterpath.h>
 #include <QtGui/qscreen.h>
@@ -2928,6 +2931,12 @@ void QStyleSheetStyle::polish(QWidget *w)
         if (!rule.hasBackground() || rule.background()->isTransparent() || rule.hasBox()
             || (!rule.hasNativeBorder() && !rule.border()->isOpaque()))
             w->setAttribute(Qt::WA_OpaquePaintEvent, false);
+        if (rule.hasBox() || !rule.hasNativeBorder()
+#if QT_CONFIG(pushbutton)
+              || (qobject_cast<QPushButton *>(w))
+#endif
+            )
+            w->setAttribute(Qt::WA_MacShowFocusRect, false);
     }
 }
 
