@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -82,6 +82,8 @@ public:
     static bool validParts(int year, int month, int day);
     static QCalendar::YearMonthDay partsFromJulian(qint64 jd);
     static bool julianFromParts(int year, int month, int day, qint64 *jd);
+    // Used internally:
+    static int yearStartWeekDay(int year);
 };
 
 QT_END_NAMESPACE

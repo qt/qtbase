@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -138,6 +138,13 @@ bool QGregorianCalendar::julianFromParts(int year, int month, int day, qint64 *j
     *jd = day + qDiv(153 * m + 2, 5) - 32045
         + 365 * y + qDiv(y, 4) - qDiv(y, 100) + qDiv(y, 400);
     return true;
+}
+
+int QGregorianCalendar::yearStartWeekDay(int year)
+{
+    // Equivalent to weekDayOfJulian(julianForParts({year, 1, 1})
+    const int y = year - (year < 0 ? 800 : 801);
+    return (y + qDiv(y, 4) - qDiv(y, 100) + qDiv(y, 400)) % 7 + 1;
 }
 
 QCalendar::YearMonthDay QGregorianCalendar::julianDayToDate(qint64 jd) const

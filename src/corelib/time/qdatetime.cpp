@@ -2788,13 +2788,42 @@ static inline bool millisInSystemRange(qint64 millis, qint64 slack = 0)
         && (bounds.maxClip || millis <= bounds.max + slack);
 }
 
-// First year for which system functions give useful answers, when earlier times
-// aren't handled by those functions (see millisInSystemRange):
-#ifdef Q_OS_WIN
-constexpr int firstSystemTimeYear = 1970;
-#else // First year fully in 32-bit time_t range:
-constexpr int firstSystemTimeYear = 1902;
+/*!
+    \internal
+    Returns a year, in the system range, with the same day-of-week pattern
+
+    Returns the number of a year, in the range supported by system time_t
+    functions, that starts and ends on the same days of the week as \a year.
+    This implies it is a leap year precisely if \a year is.  If year is before
+    the epoch, a year early in the supported range is used; otherwise, one late
+    in that range. For a leap year, this may be as much as 26 years years from
+    the range's relevant end; for normal years at most a decade from the end.
+
+    This ensures that any DST rules based on, e.g., the last Sunday in a
+    particular month will select the same date in the returned year as they
+    would if applied to \a year. Of course, the zone's rules may be different in
+    \a year than in the selected year, but it's hard to do better.
+*/
+static int systemTimeYearMatching(int year)
+{
+#ifdef Q_OS_WIN // Doesn't suppor times before epoch
+    static constexpr int forLeapEarly[] = { 1984, 1996, 1980, 1992, 1976, 1988, 1972 };
+    static constexpr int regularEarly[] = { 1978, 1973, 1974, 1975, 1970, 1971, 1977 };
+#else // First year fully in 32-bit time_t range is 1902
+    static constexpr int forLeapEarly[] = { 1928, 1912, 1924, 1908, 1916, 1904, 1920 };
+    static constexpr int regularEarly[] = { 1905, 1906, 1907, 1902, 1903, 1909, 1910 };
 #endif
+    static constexpr int forLeapLate[] = { 2012, 2024, 2036, 2020, 2032, 2016, 2028 };
+    static constexpr int regularLate[] = { 2034, 2035, 2030, 2031, 2037, 2027, 2033 };
+    const int dow = QGregorianCalendar::yearStartWeekDay(year);
+    Q_ASSERT(dow == QDate(year, 1, 1).dayOfWeek());
+    const int res = (QGregorianCalendar::leapTest(year)
+                     ? (year < 1970 ? forLeapEarly : forLeapLate)
+                     : (year < 1970 ? regularEarly : regularLate))[dow == 7 ? 0 : dow];
+    Q_ASSERT(QDate(res, 1, 1).dayOfWeek() == dow);
+    Q_ASSERT(QDate(res, 12, 31).dayOfWeek() == QDate(year, 12, 31).dayOfWeek());
+    return res;
+}
 
 // Convert an MSecs Since Epoch into Local Time
 bool QDateTimePrivate::epochMSecsToLocalTime(qint64 msecs, QDate *localDate, QTime *localTime,
@@ -2822,18 +2851,14 @@ bool QDateTimePrivate::epochMSecsToLocalTime(qint64 msecs, QDate *localDate, QTi
         }
 #endif // timezone
         // Kludge
-        // Use existing method to fake the conversion (this is deeply flawed
-        // as it may apply the conversion from the wrong day number, e.g. if
-        // rule is last Sunday of month).
+        // Use existing method to fake the conversion.
         QDate utcDate;
         QTime utcTime;
         msecsToTime(msecs, &utcDate, &utcTime);
         int year, month, day;
         utcDate.getDate(&year, &month, &day);
-        // No boundary year is a leap year, so make sure date isn't Feb 29
-        if (month == 2 && day == 29)
-            --day;
-        QDate fakeDate(year < 1970 ? firstSystemTimeYear : 2037, month, day);
+
+        QDate fakeDate(systemTimeYearMatching(year), month, day);
         qint64 fakeMsecs = QDateTime(fakeDate, utcTime, Qt::UTC).toMSecsSinceEpoch();
         bool res = qt_localtime(fakeMsecs, localDate, localTime, daylightStatus);
         *localDate = localDate->addDays(fakeDate.daysTo(utcDate));
@@ -2880,19 +2905,14 @@ qint64 QDateTimePrivate::localMSecsToEpochMSecs(qint64 localMsecs,
     }
 #endif // timezone
     // Kludge
-    // Use existing method to fake the conversion (this is deeply flawed as it
-    // may apply the conversion from the wrong day number, e.g. if rule is last
-    // Sunday of month).
+    // Use existing method to fake the conversion.
     QDate dt;
     QTime tm;
     msecsToTime(localMsecs, &dt, &tm);
     int year, month, day;
     dt.getDate(&year, &month, &day);
-    // No boundary year is a leap year, so make sure date isn't Feb 29
-    if (month == 2 && day == 29)
-        --day;
     bool ok;
-    QDate fakeDate(year < 1970 ? firstSystemTimeYear : 2037, month, day);
+    QDate fakeDate(systemTimeYearMatching(year), month, day);
     const qint64 fakeDiff = fakeDate.daysTo(dt);
     const qint64 utcMsecs = qt_mktime(&fakeDate, &tm, daylightStatus, abbreviation, &ok);
     Q_ASSERT(ok);
