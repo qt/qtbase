@@ -349,7 +349,7 @@ public:
         constexpr const char *signature = getTypeSignature<T>();
         jfieldID id = getCachedFieldID(env.jniEnv(), fieldName, signature);
         if (id) {
-            setFieldForType<T>(env, object(), id, value);
+            setFieldForType<T>(env.jniEnv(), object(), id, value);
             env.checkAndClearExceptions();
         }
     }
@@ -361,7 +361,7 @@ public:
         QJniEnvironment env;
         jfieldID id = getCachedFieldID(env.jniEnv(), fieldName, signature);
         if (id) {
-            setFieldForType<T>(env, object(), id, value);
+            setFieldForType<T>(env.jniEnv(), object(), id, value);
             env.checkAndClearExceptions();
         }
     }
@@ -381,7 +381,7 @@ public:
         if (!id)
             return;
 
-        setStaticFieldForType<T>(env, clazz, id, value);
+        setStaticFieldForType<T>(env.jniEnv(), clazz, id, value);
         env.checkAndClearExceptions();
     }
 
@@ -399,7 +399,7 @@ public:
         jfieldID id = getCachedFieldID(env.jniEnv(), clazz, className, fieldName,
                                        signature, true);
         if (id) {
-            setStaticFieldForType<T>(env, clazz, id, value);
+            setStaticFieldForType<T>(env.jniEnv(), clazz, id, value);
             env.checkAndClearExceptions();
         }
     }
@@ -413,7 +413,7 @@ public:
         jfieldID id = getFieldID(env.jniEnv(), clazz, fieldName, signature, true);
 
         if (id) {
-            setStaticFieldForType<T>(env, clazz, id, value);
+            setStaticFieldForType<T>(env.jniEnv(), clazz, id, value);
             env.checkAndClearExceptions();
         }
     }
@@ -426,7 +426,7 @@ public:
         constexpr const char *signature = getTypeSignature<T>();
         jfieldID id = getFieldID(env.jniEnv(), clazz, fieldName, signature, true);
         if (id) {
-            setStaticFieldForType<T>(env, clazz, id, value);
+            setStaticFieldForType<T>(env.jniEnv(), clazz, id, value);
             env.checkAndClearExceptions();
         }
     }

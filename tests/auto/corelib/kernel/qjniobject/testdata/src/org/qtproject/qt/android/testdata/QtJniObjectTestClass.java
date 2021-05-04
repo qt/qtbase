@@ -44,6 +44,28 @@ public class QtJniObjectTestClass
     static final Throwable A_THROWABLE_OBJECT = new Throwable(A_STRING_OBJECT);
 
     // --------------------------------------------------------------------------------------------
+
+    byte BYTE_VAR;
+    short SHORT_VAR;
+    int INT_VAR;
+    long LONG_VAR;
+    float FLOAT_VAR;
+    double DOUBLE_VAR;
+    boolean BOOLEAN_VAR;
+    char CHAR_VAR;
+    String STRING_OBJECT_VAR;
+
+    static byte S_BYTE_VAR;
+    static short S_SHORT_VAR;
+    static int S_INT_VAR;
+    static long S_LONG_VAR;
+    static float S_FLOAT_VAR;
+    static double S_DOUBLE_VAR;
+    static boolean S_BOOLEAN_VAR;
+    static char S_CHAR_VAR;
+    static String S_STRING_OBJECT_VAR;
+
+    // --------------------------------------------------------------------------------------------
     public static void staticVoidMethod() { return; }
     public static void staticVoidMethodWithArgs(int a, boolean b, char c) { return; }
 
