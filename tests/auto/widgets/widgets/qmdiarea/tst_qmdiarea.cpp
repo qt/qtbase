@@ -1,4 +1,4 @@
-/****************************************************************************
+﻿/****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
@@ -281,6 +281,8 @@ private slots:
     void nativeSubWindows();
     void task_209615();
     void task_236750();
+    void qtbug92240_title_data();
+    void qtbug92240_title();
 
 private:
     QMdiSubWindow *activeWindow;
@@ -2695,6 +2697,45 @@ void tst_QMdiArea::task_236750()
     subWindow->setWindowFlags(subWindow->windowFlags() | Qt::FramelessWindowHint);
     // Please do not crash (floating point exception).
     subWindow->showMinimized();
+}
+
+// QTBUG-92240: When subwindows are maximized, their title is supposed to
+// appear on the main window. When DontMaximizeSubWindowOnActivation was set,
+// titles of previously created maximized windows interfered, resulting in
+// "QTBUG-92240 - [1] - [2]".
+void tst_QMdiArea::qtbug92240_title_data()
+{
+    QTest::addColumn<bool>("dontMaximize");
+    QTest::newRow("default") << false;
+    QTest::newRow("dontMaximize") << true;
+}
+
+void tst_QMdiArea::qtbug92240_title()
+{
+    QFETCH(bool, dontMaximize);
+
+#ifdef Q_OS_MACOS
+    QSKIP("Not supported on macOS");
+#endif
+
+    QMainWindow w;
+    const QString title = QStringLiteral("QTBUG-92240");
+    w.setWindowTitle(title);
+    w.menuBar()->addMenu(QStringLiteral("File"));
+    w.show();
+
+    auto *mdiArea = new QMdiArea;
+    w.setCentralWidget(mdiArea);
+    if (dontMaximize)
+        mdiArea->setOption(QMdiArea::DontMaximizeSubWindowOnActivation);
+    auto *sw1 = mdiArea->addSubWindow(new QWidget);
+    sw1->setWindowTitle(QStringLiteral("1"));
+    sw1->showMaximized();
+    QTRY_COMPARE(w.windowTitle(), QLatin1String("QTBUG-92240 - [1]"));
+    auto *sw2 = mdiArea->addSubWindow(new QWidget);
+    sw2->setWindowTitle(QStringLiteral("2"));
+    sw2->showMaximized();
+    QTRY_COMPARE(w.windowTitle(), QLatin1String("QTBUG-92240 - [2]"));
 }
 
 QTEST_MAIN(tst_QMdiArea)
