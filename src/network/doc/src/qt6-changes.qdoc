@@ -169,7 +169,7 @@
     signal), you have to explicitly set this policy when creating a request:
 
     \code
-    request.setAttribute(QNetworkRequest::RedirectPolicy, QNetworkRequest::ManualRedirectPolicy);
+    request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::ManualRedirectPolicy);
     \endcode
 
     \section2 HTTP/2 is enabled by default
