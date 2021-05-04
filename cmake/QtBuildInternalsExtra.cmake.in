@@ -28,8 +28,8 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT AND
         # Make sure we use exactly the original prefix if it points to the same directory as the new
         # one. This is needed for the case where the original prefix is passed without drive letter
         # to support installing with DESTDIR set.
-        file(REAL_PATH "${qtbi_orig_prefix}" qtbi_real_orig_prefix)
-        file(REAL_PATH "${qtbi_new_prefix}" qtbi_real_new_prefix)
+        get_filename_component(qtbi_real_orig_prefix "${qtbi_orig_prefix}" REALPATH)
+        get_filename_component(qtbi_real_new_prefix "${qtbi_new_prefix}" REALPATH)
         if(qtbi_real_orig_prefix STREQUAL qtbi_real_new_prefix)
             set(qtbi_new_prefix "${qtbi_orig_prefix}")
         endif()
