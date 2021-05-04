@@ -113,7 +113,7 @@ def main(args, out, err):
     writer.likelySubTags(reader.likelySubTags())
     writer.locales(reader.readLocales(calendars), calendars)
 
-    writer.close()
+    writer.close(err.write)
     return 0
 
 if __name__ == '__main__':

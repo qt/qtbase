@@ -338,6 +338,13 @@ class QLocaleXmlWriter (object):
         self.__enumTable('language', language_map)
         self.__enumTable('script', script_map)
         self.__enumTable('territory', territory_map)
+        # Prepare to detect any unused codes (see __writeLocale(), close()):
+        self.__languages = set(p[1] for p in language_map.values()
+                               if not p[1].isspace())
+        self.__scripts = set(p[1] for p in script_map.values()
+                             if p[1] != 'ZZ')
+        self.__territories = set(p[1] for p in territory_map.values()
+                                 if p[1] != 'Zzzz')
 
     def likelySubTags(self, entries):
         self.__openTag('likelySubtags')
@@ -351,13 +358,13 @@ class QLocaleXmlWriter (object):
     def locales(self, locales, calendars):
         self.__openTag('localeList')
         self.__openTag('locale')
-        Locale.C(calendars).toXml(self.inTag, calendars)
+        self.__writeLocale(Locale.C(calendars), calendars)
         self.__closeTag('locale')
         keys = locales.keys()
         keys.sort()
         for key in keys:
             self.__openTag('locale')
-            locales[key].toXml(self.inTag, calendars)
+            self.__writeLocale(locales[key], calendars)
             self.__closeTag('locale')
         self.__closeTag('localeList')
 
@@ -367,10 +374,24 @@ class QLocaleXmlWriter (object):
     def inTag(self, tag, text):
         self.__write('<{0}>{1}</{0}>'.format(tag, text))
 
-    def close(self):
+    def close(self, grumble):
+        """Finish writing and grumble any issues discovered."""
         if self.__rawOutput != self.__complain:
             self.__write('</localeDatabase>')
         self.__rawOutput = self.__complain
+
+        if self.__languages or self.__scripts or self.territories:
+            grumble('Some enum members are unused, corresponding to these tags:\n')
+            import textwrap
+            def kvetch(kind, seq, g = grumble, w = textwrap.wrap):
+                g('\n\t'.join(w(' {}: '.format(kind) + ', '.join(seq), width=80)) + '\n')
+            if self.__languages:
+                kvetch('Languages', self.__languages)
+            if self.__scripts:
+                kvetch('Scripts', self.__scripts)
+            if self.__territories:
+                kvetch('Territories', self.__territories)
+            grumble('It may make sense to deprecate them.')
 
     # Implementation details
     @staticmethod
@@ -397,6 +418,12 @@ class QLocaleXmlWriter (object):
         self.inTag('territory', likely[2])
         # self.inTag('variant', likely[3])
         self.__closeTag(tag)
+
+    def __writeLocale(self, locale, calendars):
+        locale.toXml(self.inTag, calendars)
+        self.__languages.discard(locale.language_code)
+        self.__scripts.discard(locale.script_code)
+        self.__territories.discard(locale.territory_code)
 
     def __openTag(self, tag):
         self.__write('<{}>'.format(tag))
