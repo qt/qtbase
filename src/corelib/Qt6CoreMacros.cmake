@@ -517,7 +517,9 @@ function(qt6_finalize_executable target)
 
     # We can't evaluate generator expressions at configure time, so we can't
     # ask for any transitive properties or even the full library dependency
-    # chain. We can still look at the immediate dependencies though and query
+    # chain.
+    # We can still look at the immediate dependencies
+    # (and recursively their dependencies) and query
     # any that are not expressed as generator expressions. For any we can
     # identify as a CMake target known to the current scope, we can check if
     # that target has a finalizer to be called. This is expected to cover the
@@ -526,12 +528,11 @@ function(qt6_finalize_executable target)
     # responsible for calling any relevant functions themselves instead of
     # relying on these automatic finalization calls.
     set(finalizers)
-    get_target_property(immediate_deps ${target} LINK_LIBRARIES)
-    if(immediate_deps)
-        foreach(dep IN LISTS immediate_deps)
-            if(NOT TARGET ${dep})
-                continue()
-            endif()
+
+    __qt_internal_collect_all_target_dependencies("${target}" dep_targets)
+
+    if(dep_targets)
+        foreach(dep IN LISTS dep_targets)
             get_target_property(dep_finalizers ${dep}
                 INTERFACE_QT_EXECUTABLE_FINALIZERS
             )
@@ -541,6 +542,7 @@ function(qt6_finalize_executable target)
         endforeach()
         list(REMOVE_DUPLICATES finalizers)
     endif()
+
     if(finalizers)
         if(CMAKE_VERSION VERSION_LESS 3.18)
             # cmake_language() not available
