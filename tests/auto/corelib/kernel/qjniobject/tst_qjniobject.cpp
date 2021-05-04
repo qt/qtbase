@@ -108,6 +108,26 @@ private slots:
     void getStaticCharField();
     void getBooleanField();
     void getIntField();
+
+    void setIntField();
+    void setByteField();
+    void setLongField();
+    void setDoubleField();
+    void setFloatField();
+    void setShortField();
+    void setCharField();
+    void setBooleanField();
+    void setObjectField();
+    void setStaticIntField();
+    void setStaticByteField();
+    void setStaticLongField();
+    void setStaticDoubleField();
+    void setStaticFloatField();
+    void setStaticShortField();
+    void setStaticCharField();
+    void setStaticBooleanField();
+    void setStaticObjectField();
+
     void templateApiCheck();
     void isClassAvailable();
     void fromLocalRef();
@@ -887,6 +907,128 @@ void tst_QJniObject::getIntField()
     QVERIFY(obj.isValid());
     jint res = obj.getField<jint>("m_currentRotation");
     QCOMPARE(res, -1);
+}
+
+template <typename T>
+void setField(const char *fieldName, T testValue)
+{
+    QJniObject obj(testClassName);
+    QVERIFY(obj.isValid());
+
+    obj.setField(fieldName, testValue);
+
+    T res = obj.getField<T>(fieldName);
+    QCOMPARE(res, testValue);
+}
+
+void tst_QJniObject::setIntField()
+{
+    setField("INT_VAR", 555);
+}
+
+void tst_QJniObject::setByteField()
+{
+    setField("BYTE_VAR", jbyte(555));
+}
+
+void tst_QJniObject::setLongField()
+{
+    setField("LONG_VAR", jlong(9223372036847758232L));
+}
+
+void tst_QJniObject::setDoubleField()
+{
+    setField("DOUBLE_VAR", jdouble(1.2));
+}
+
+void tst_QJniObject::setFloatField()
+{
+    setField("FLOAT_VAR", jfloat(1.2));
+}
+
+void tst_QJniObject::setShortField()
+{
+    setField("SHORT_VAR", jshort(123));
+}
+
+void tst_QJniObject::setCharField()
+{
+    setField("CHAR_VAR", jchar('A'));
+}
+
+void tst_QJniObject::setBooleanField()
+{
+    setField("BOOLEAN_VAR", jboolean(true));
+}
+
+void tst_QJniObject::setObjectField()
+{
+    QJniObject obj(testClassName);
+    QVERIFY(obj.isValid());
+
+    QJniObject testValue = QJniObject::fromString(QStringLiteral("Hello"));
+    obj.setField("STRING_OBJECT_VAR", testValue.object<jstring>());
+
+    QJniObject res = obj.getObjectField<jstring>("STRING_OBJECT_VAR");
+    QCOMPARE(res.toString(), testValue.toString());
+}
+
+template <typename T>
+void setStaticField(const char *fieldName, T testValue)
+{
+    QJniObject::setStaticField(testClassName, fieldName, testValue);
+
+    T res = QJniObject::getStaticField<T>(testClassName, fieldName);
+    QCOMPARE(res, testValue);
+}
+
+void tst_QJniObject::setStaticIntField()
+{
+    setStaticField("S_INT_VAR", 555);
+}
+
+void tst_QJniObject::setStaticByteField()
+{
+    setStaticField("S_BYTE_VAR", jbyte(555));
+}
+
+void tst_QJniObject::setStaticLongField()
+{
+    setStaticField("S_LONG_VAR", jlong(9223372036847758232L));
+}
+
+void tst_QJniObject::setStaticDoubleField()
+{
+    setStaticField("S_DOUBLE_VAR", jdouble(1.2));
+}
+
+void tst_QJniObject::setStaticFloatField()
+{
+    setStaticField("S_FLOAT_VAR", jfloat(1.2));
+}
+
+void tst_QJniObject::setStaticShortField()
+{
+    setStaticField("S_SHORT_VAR", jshort(123));
+}
+
+void tst_QJniObject::setStaticCharField()
+{
+    setStaticField("S_CHAR_VAR", jchar('A'));
+}
+
+void tst_QJniObject::setStaticBooleanField()
+{
+    setStaticField("S_BOOLEAN_VAR", jboolean(true));
+}
+
+void tst_QJniObject::setStaticObjectField()
+{
+    QJniObject testValue = QJniObject::fromString(QStringLiteral("Hello"));
+    QJniObject::setStaticField(testClassName, "S_STRING_OBJECT_VAR", testValue.object<jstring>());
+
+    QJniObject res = QJniObject::getStaticObjectField<jstring>(testClassName, "S_STRING_OBJECT_VAR");
+    QCOMPARE(res.toString(), testValue.toString());
 }
 
 void tst_QJniObject::templateApiCheck()
