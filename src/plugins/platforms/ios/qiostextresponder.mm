@@ -514,14 +514,22 @@
         // from within a undo callback.
         NSUndoManager *undoMgr = self.undoManager;
         [undoMgr removeAllActions];
+
+        [undoMgr beginUndoGrouping];
+        [undoMgr registerUndoWithTarget:self selector:@selector(undo) object:nil];
+        [undoMgr endUndoGrouping];
         [undoMgr beginUndoGrouping];
         [undoMgr registerUndoWithTarget:self selector:@selector(undo) object:nil];
         [undoMgr endUndoGrouping];
 
-        // Schedule an operation that we immediately pop off to be able to schedule a redo
+        // Schedule operations that we immediately pop off to be able to schedule redos
         [undoMgr beginUndoGrouping];
         [undoMgr registerUndoWithTarget:self selector:@selector(registerRedo) object:nil];
         [undoMgr endUndoGrouping];
+        [undoMgr beginUndoGrouping];
+        [undoMgr registerUndoWithTarget:self selector:@selector(registerRedo) object:nil];
+        [undoMgr endUndoGrouping];
+        [undoMgr undo];
         [undoMgr undo];
 
         // Note that, perhaps because of a bug in UIKit, the buttons on the shortcuts bar ends up
@@ -530,6 +538,11 @@
         // become disabled when there is nothing more to undo (Qt didn't change anything upon receiving
         // an undo request). This seems to be OK behavior, so we let it stay like that unless it shows
         // to cause problems.
+
+        // QTBUG-63393: Having two operations on the rebuilt undo stack keeps the undo/redo widgets
+        // always enabled on the shortcut bar. This workaround was found by experimenting with
+        // removing the removeAllActions call, and is related to the unknown internal implementation
+        // details of how the shortcut bar updates the dimming of its buttons.
     });
 }
 
