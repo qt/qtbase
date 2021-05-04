@@ -863,27 +863,3 @@ script_aliases = {
     'MendeKikakuiScript': 'MendeScript',
     'BengaliScript': 'BanglaScript',
 }
-
-def countryCodeToId(code):
-    if not code:
-        return 0
-    for country_id in country_list:
-        if country_list[country_id][1] == code:
-            return country_id
-    return -1
-
-def languageCodeToId(code):
-    if not code:
-        return 0
-    for language_id in language_list:
-        if language_list[language_id][1] == code:
-            return language_id
-    return -1
-
-def scriptCodeToId(code):
-    if not code:
-        return 0
-    for script_id in script_list:
-        if script_list[script_id][1] == code:
-            return script_id
-    return -1
