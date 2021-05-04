@@ -5220,15 +5220,26 @@ QSize QStyleSheetStyle::sizeFromContents(ContentsType ct, const QStyleOption *op
 #if QT_CONFIG(tabbar)
     case CT_TabBarTab: {
         QRenderRule subRule = renderRule(w, opt, PseudoElement_TabBarTab);
-        if (subRule.hasBox() || !subRule.hasNativeBorder()) {
+        if (subRule.hasBox() || !subRule.hasNativeBorder() || subRule.hasFont) {
             int spaceForIcon = 0;
             bool vertical = false;
+            QString text;
             if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab *>(opt)) {
                 if (!tab->icon.isNull())
                     spaceForIcon = 6 /* icon offset */ + 4 /* spacing */ + 2 /* magic */; // ###: hardcoded to match with common style
                 vertical = verticalTabs(tab->shape);
+                text = tab->text;
             }
-            sz = csz + QSize(vertical ? 0 : spaceForIcon, vertical ? spaceForIcon : 0);
+            if (subRule.hasBox() || !subRule.hasNativeBorder())
+                sz = csz + QSize(vertical ? 0 : spaceForIcon, vertical ? spaceForIcon : 0);
+            if (subRule.hasFont) {
+                QFont ruleFont = subRule.font.resolve(w->font());
+                QFontMetrics fm(ruleFont);
+                const QSize textSize = fm.size(Qt::TextShowMnemonic, text)
+                                     + QSize(pixelMetric(PM_TabBarTabHSpace, opt, w),
+                                             pixelMetric(PM_TabBarTabVSpace, opt, w));
+                sz = sz.expandedTo(vertical ? textSize.transposed() : textSize);
+            }
             return subRule.boxSize(subRule.adjustSize(sz));
         }
         sz = subRule.adjustSize(csz);
@@ -6058,13 +6069,17 @@ QRect QStyleSheetStyle::subElementRect(SubElement se, const QStyleOption *opt, c
     case SE_TabBarTabLeftButton:
     case SE_TabBarTabRightButton: {
         QRenderRule subRule = renderRule(w, opt, PseudoElement_TabBarTab);
-        if (subRule.hasBox() || !subRule.hasNativeBorder()) {
+        if (subRule.hasBox() || !subRule.hasNativeBorder() || subRule.hasFont) {
             if (se == SE_TabBarTabText) {
                 if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab *>(opt)) {
                     const QTabBar *bar = qobject_cast<const QTabBar *>(w);
                     const QRect optRect = bar && tab->tabIndex != -1 ? bar->tabRect(tab->tabIndex) : opt->rect;
                     const QRect r = positionRect(w, subRule, PseudoElement_TabBarTab, optRect, opt->direction);
                     QStyleOptionTab tabCopy(*tab);
+                    if (subRule.hasFont) {
+                        const QFont ruleFont = w ? subRule.font.resolve(w->font()) : subRule.font;
+                        tabCopy.fontMetrics = QFontMetrics(ruleFont);
+                    }
                     tabCopy.rect = subRule.contentsRect(r);
                     return ParentStyle::subElementRect(se, &tabCopy, w);
                 }
