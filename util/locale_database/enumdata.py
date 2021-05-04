@@ -1,7 +1,7 @@
 # -*- coding: utf-8; -*-
 #############################################################################
 ##
-## Copyright (C) 2020 The Qt Company Ltd.
+## Copyright (C) 2021 The Qt Company Ltd.
 ## Contact: https://www.qt.io/licensing/
 ##
 ## This file is part of the test suite of the Qt Toolkit.
@@ -52,7 +52,7 @@
 # languages so closely related to one another that they could also be
 # regarded as divergent dialects of the macrolanguage.
 
-language_list = {
+language_map = {
       0: ("AnyLanguage",                 "  "),
       1: ("C",                           "  "),
 
@@ -408,7 +408,7 @@ language_aliases = {
     'Kirghiz': 'Kyrgyz'
     }
 
-country_list = {
+country_map = {
       0: ("AnyTerritory",                                 "ZZ"),
 
       1: ("Afghanistan",                                  "AF"),
@@ -708,7 +708,7 @@ country_aliases = {
     'TuvaluCountry': 'TuvaluTerritory',
 }
 
-script_list = {
+script_map = {
       0: ("AnyScript",              "Zzzz"),
 
       1: ("Adlam",                  "Adlm"),

@@ -334,10 +334,10 @@ class QLocaleXmlWriter (object):
 
     # Output of various sections, in their usual order:
     def enumData(self):
-        from enumdata import language_list, script_list, country_list
-        self.__enumTable('language', language_list)
-        self.__enumTable('script', script_list)
-        self.__enumTable('country', country_list)
+        from enumdata import language_map, script_map, country_map
+        self.__enumTable('language', language_map)
+        self.__enumTable('script', script_map)
+        self.__enumTable('country', country_map)
 
     def likelySubTags(self, entries):
         self.__openTag('likelySubtags')

@@ -1,7 +1,7 @@
 # -*- coding: utf-8; -*-
 #############################################################################
 ##
-## Copyright (C) 2020 The Qt Company Ltd.
+## Copyright (C) 2021 The Qt Company Ltd.
 ## Contact: https://www.qt.io/licensing/
 ##
 ## This file is part of the test suite of the Qt Toolkit.
@@ -410,10 +410,10 @@ class CldrAccess (object):
         for k in self.__parentLocale.keys():
             for f in k.split('_'):
                 scraps.add(f)
-        from enumdata import language_list, country_list, script_list
-        language = dict((v, k) for k, v in language_list.values() if not v.isspace())
-        country = dict((v, k) for k, v in country_list.values() if v != 'ZZ')
-        script = dict((v, k) for k, v in script_list.values() if v != 'Zzzz')
+        from enumdata import language_map, country_map, script_map
+        language = dict((v, k) for k, v in language_map.values() if not v.isspace())
+        country = dict((v, k) for k, v in country_map.values() if v != 'ZZ')
+        script = dict((v, k) for k, v in script_map.values() if v != 'Zzzz')
         lang = dict(self.__checkEnum(language, self.__codeMap('language'), scraps))
         land = dict(self.__checkEnum(country, self.__codeMap('country'), scraps))
         text = dict(self.__checkEnum(script, self.__codeMap('script'), scraps))
@@ -673,10 +673,10 @@ enumdata.py (keeping the old name as an alias):
             # They're not actually lists: mappings from numeric value
             # to pairs of full name and short code. What we want, in
             # each case, is a mapping from code to the other two.
-            from enumdata import language_list, script_list, country_list
-            for form, book, empty in (('language', language_list, 'AnyLanguage'),
-                                      ('script', script_list, 'AnyScript'),
-                                      ('country', country_list, 'AnyTerritory')):
+            from enumdata import language_map, script_map, country_map
+            for form, book, empty in (('language', language_map, 'AnyLanguage'),
+                                      ('script', script_map, 'AnyScript'),
+                                      ('country', country_map, 'AnyTerritory')):
                 cache[form] = dict((pair[1], (num, pair[0]))
                                    for num, pair in book.items() if pair[0] != 'C')
                 # (Have to filter out the C locale, as we give it the
