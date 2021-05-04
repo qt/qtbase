@@ -286,6 +286,7 @@ public:
 #endif
     void updateInternalWindowTitle();
     QString originalWindowTitle();
+    QString originalWindowTitleHelper() const;
     void setNewWindowTitle();
 
     inline int titleBarHeight() const
