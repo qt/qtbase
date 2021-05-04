@@ -43,12 +43,12 @@ public slots:
 
     inline auto constRefReturn() -> const CXX11TrailingReturn &
     {
-        return {};
+        return *this;
     }
 
     inline auto constConstRefReturn() const -> const CXX11TrailingReturn &
     {
-        return {};
+        return *this;
     }
 
 signals:
