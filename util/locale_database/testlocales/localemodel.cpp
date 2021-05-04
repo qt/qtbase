@@ -680,7 +680,7 @@ LocaleModel::LocaleModel(QObject *parent)
 QVariant LocaleModel::data(const QModelIndex &index, int role) const
 {
     if (!index.isValid()
-        || role != Qt::DisplayRole && role != Qt::EditRole && role != Qt::ToolTipRole
+        || (role != Qt::DisplayRole && role != Qt::EditRole && role != Qt::ToolTipRole)
         || index.column() >= g_model_cols
         || index.row() >= g_locale_list_count + 2)
         return QVariant();
@@ -821,9 +821,9 @@ int LocaleModel::rowCount(const QModelIndex &parent) const
 Qt::ItemFlags LocaleModel::flags(const QModelIndex &index) const
 {
     if (!index.isValid())
-        return 0;
+        return {};
     if (index.row() == 0 && index.column() == g_model_cols - 1)
-        return 0;
+        return {};
     if (index.row() == 0)
         return QAbstractItemModel::flags(index) | Qt::ItemIsEditable;
     return QAbstractItemModel::flags(index);
@@ -835,7 +835,7 @@ bool LocaleModel::setData(const QModelIndex &index, const QVariant &value, int r
         || index.row() != 0
         || index.column() >= g_model_cols - 1
         || role != Qt::EditRole
-        || m_data_list.at(index.column()).type() != value.type())
+        || m_data_list.at(index.column()).typeId() != value.typeId())
         return false;
 
     m_data_list[index.column()] = value;
