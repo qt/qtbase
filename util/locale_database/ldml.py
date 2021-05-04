@@ -227,7 +227,7 @@ class LocaleScanner (object):
     def tagCodes(self):
         """Yields four tag codes
 
-        The tag codes are language, script, country and variant; an
+        The tag codes are language, script, territory and variant; an
         empty value for any of them indicates that no value was
         provided.  The values are obtained from the primary file's
         top-level <identity> element.  An Error is raised if any
@@ -259,7 +259,7 @@ class LocaleScanner (object):
         """Fetches currency data for this locale.
 
         Single argument, isoCode, is the ISO currency code for the
-        currency in use in the country. See also numericData, which
+        currency in use in the territory. See also numericData, which
         includes some currency formats.
         """
         if isoCode:
@@ -347,10 +347,10 @@ class LocaleScanner (object):
                             stem + '{}Formats/{}FormatLength[{}]/{}Format/pattern'.format(
                                 key, key, pair[1], key))))
 
-    def endonyms(self, language, script, country, variant):
+    def endonyms(self, language, script, territory, variant):
         # TODO: take variant into account ?
-        for seq in ((language, script, country),
-                    (language, script), (language, country), (language,)):
+        for seq in ((language, script, territory),
+                    (language, script), (language, territory), (language,)):
             if not all(seq):
                 continue
             try:
@@ -365,9 +365,9 @@ class LocaleScanner (object):
             # grumble(failed to find endonym for language)
             yield 'languageEndonym', ''
 
-        yield ('countryEndonym',
+        yield ('territoryEndonym',
                self.find('localeDisplayNames/territories/territory[{}]'
-                         .format(country), ''))
+                         .format(territory), ''))
 
     def unitData(self):
         yield ('byte_unit',

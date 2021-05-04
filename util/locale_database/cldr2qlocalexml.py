@@ -42,7 +42,7 @@ standard output. This file is the input needed by
 
 When you update the CLDR data, be sure to also update
 src/corelib/text/qt_attribution.json's entry for unicode-cldr. Check
-this script's output for unknown language, country or script messages;
+this script's output for unknown language, territory or script messages;
 if any can be resolved, use their entry in common/main/en.xml to
 append new entries to enumdata.py's lists and update documentation in
 src/corelib/text/qlocale.qdoc, adding the new entries in alphabetic

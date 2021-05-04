@@ -67,7 +67,7 @@ class CldrReader (object):
         Yields pairs (have, give) of 4-tuples; if what you have
         matches the left member, giving the right member is probably
         sensible. Each 4-tuple's entries are the full names of a
-        language, a script, a country (strictly territory) and a
+        language, a script, a territory (usually a country) and a
         variant (currently ignored)."""
         skips = []
         for got, use in self.root.likelySubTags():
@@ -100,7 +100,7 @@ class CldrReader (object):
 
     def readLocales(self, calendars = ('gregorian',)):
         locales = tuple(self.__allLocales(calendars))
-        return dict(((k.language_id, k.script_id, k.country_id, k.variant_code),
+        return dict(((k.language_id, k.script_id, k.territory_id, k.variant_code),
                      k) for k in locales)
 
     def __allLocales(self, calendars):
@@ -109,38 +109,38 @@ class CldrReader (object):
 
         for locale in self.root.defaultContentLocales:
             try:
-                language, script, country, variant = self.__splitLocale(locale)
+                language, script, territory, variant = self.__splitLocale(locale)
             except ValueError:
                 self.whitter(skip(locale, 'only language tag'))
                 continue
 
-            if not (script or country):
+            if not (script or territory):
                 self.grumble(skip(locale, 'second tag is neither script nor territory'))
                 continue
 
-            if not (language and country):
+            if not (language and territory):
                 continue
 
             try:
                 yield self.__getLocaleData(self.root.locale(locale), calendars,
-                                           language, script, country, variant)
+                                           language, script, territory, variant)
             except Error as e:
                 self.grumble(skip(locale, e.message))
 
         for locale in self.root.fileLocales:
             try:
                 chain = self.root.locale(locale)
-                language, script, country, variant = chain.tagCodes()
+                language, script, territory, variant = chain.tagCodes()
                 assert language
                 # TODO: this skip should probably be based on likely
-                # sub-tags, instead of empty country: if locale has a
+                # sub-tags, instead of empty territory: if locale has a
                 # likely-subtag expansion, that's what QLocale uses,
                 # and we'll be saving its data for the expanded locale
                 # anyway, so don't need to record it for itself.
                 # See also QLocaleXmlReader.loadLocaleMap's grumble.
-                if not country:
+                if not territory:
                     continue
-                yield self.__getLocaleData(chain, calendars, language, script, country, variant)
+                yield self.__getLocaleData(chain, calendars, language, script, territory, variant)
             except Error as e:
                 self.grumble('Skipping file locale "{}" ({})\n'.format(locale, e.message))
 
@@ -154,12 +154,12 @@ class CldrReader (object):
     def __parseTags(self, locale):
         tags = self.__splitLocale(locale)
         language = tags.next()
-        script = country = variant = ''
+        script = territory = variant = ''
         try:
-            script, country, variant = tags
+            script, territory, variant = tags
         except ValueError:
             pass
-        return tuple(p[1] for p in self.root.codesToIdName(language, script, country, variant))
+        return tuple(p[1] for p in self.root.codesToIdName(language, script, territory, variant))
 
     def __splitLocale(self, name):
         """Generate (language, script, territory, variant) from a locale name
@@ -206,16 +206,16 @@ class CldrReader (object):
             tag = tags.next()
         self.grumble('Ignoring unparsed cruft {} in {}\n'.format('_'.join(tag + tuple(tags)), name))
 
-    def __getLocaleData(self, scan, calendars, language, script, country, variant):
-        ids, names = zip(*self.root.codesToIdName(language, script, country, variant))
-        assert ids[0] > 0 and ids[2] > 0, (language, script, country, variant)
+    def __getLocaleData(self, scan, calendars, language, script, territory, variant):
+        ids, names = zip(*self.root.codesToIdName(language, script, territory, variant))
+        assert ids[0] > 0 and ids[2] > 0, (language, script, territory, variant)
         locale = Locale(
             language = names[0], language_code = language, language_id = ids[0],
             script = names[1], script_code = script, script_id = ids[1],
-            country = names[2], country_code = country, country_id = ids[2],
+            territory = names[2], territory_code = territory, territory_id = ids[2],
             variant_code = variant)
 
-        firstDay, weStart, weEnd = self.root.weekData(country)
+        firstDay, weStart, weEnd = self.root.weekData(territory)
         assert all(day in ('mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun')
                    for day in (firstDay, weStart, weEnd))
 
@@ -223,7 +223,7 @@ class CldrReader (object):
                       weekendStart = weStart,
                       weekendEnd = weEnd)
 
-        iso, digits, rounding = self.root.currencyData(country)
+        iso, digits, rounding = self.root.currencyData(territory)
         locale.update(currencyIsoCode = iso,
                       currencyDigits = int(digits),
                       currencyRounding = int(rounding))
@@ -231,7 +231,7 @@ class CldrReader (object):
         locale.update(scan.currencyData(iso))
         locale.update(scan.numericData(self.root.numberSystem, self.whitter))
         locale.update(scan.textPatternData())
-        locale.update(scan.endonyms(language, script, country, variant))
+        locale.update(scan.endonyms(language, script, territory, variant))
         locale.update(scan.unitData()) # byte, kB, MB, GB, ..., KiB, MiB, GiB, ...
         locale.update(scan.calendarNames(calendars)) # Names of days and months
 
@@ -312,36 +312,36 @@ class CldrAccess (object):
         except KeyError:
             raise Error('Unsupported number system: {}'.format(system))
 
-    def weekData(self, country):
+    def weekData(self, territory):
         """Data on the weekly cycle.
 
         Returns a triple (W, S, E) of en's short names for week-days;
         W is the first day of the week, S the start of the week-end
-        and E the end of the week-end.  Where data for a country is
+        and E the end of the week-end.  Where data for a territory is
         unavailable, the data for CLDR's territory 001 (The World) is
         used."""
         try:
-            return self.__weekData[country]
+            return self.__weekData[territory]
         except KeyError:
             return self.__weekData['001']
 
-    def currencyData(self, country):
-        """Returns currency data for the given country code.
+    def currencyData(self, territory):
+        """Returns currency data for the given territory code.
 
         Return value is a tuple (ISO4217 code, digit count, rounding
-        mode).  If CLDR provides no data for this country, ('', 2, 1)
+        mode).  If CLDR provides no data for this territory, ('', 2, 1)
         is the default result.
         """
         try:
-            return self.__currencyData[country]
+            return self.__currencyData[territory]
         except KeyError:
             return '', 2, 1
 
-    def codesToIdName(self, language, script, country, variant = ''):
+    def codesToIdName(self, language, script, territory, variant = ''):
         """Maps each code to the appropriate ID and name.
 
         Returns a 4-tuple of (ID, name) pairs corresponding to the
-        language, script, country and variant given.  Raises a
+        language, script, territory and variant given.  Raises a
         suitable error if any of them is unknown, indicating all that
         are unknown plus suitable names for any that could sensibly be
         added to enumdata.py to make them known.
@@ -353,13 +353,13 @@ class CldrAccess (object):
         try:
             return (enum('language')[language],
                     enum('script')[script],
-                    enum('country')[country],
+                    enum('territory')[territory],
                     enum('variant')[variant])
         except KeyError:
             pass
 
-        parts, values = [], [language, script, country, variant]
-        for index, key in enumerate(('language', 'script', 'country', 'variant')):
+        parts, values = [], [language, script, territory, variant]
+        for index, key in enumerate(('language', 'script', 'territory', 'variant')):
             naming, enums = self.__codeMap(key), enum(key)
             value = values[index]
             if value not in enums:
@@ -372,7 +372,7 @@ class CldrAccess (object):
             parts[-1] = 'and ' + parts[-1]
         assert parts
         raise Error('Unknown ' + ', '.join(parts),
-                    language, script, country, variant)
+                    language, script, territory, variant)
 
     @staticmethod
     def __checkEnum(given, proper, scraps,
@@ -410,12 +410,12 @@ class CldrAccess (object):
         for k in self.__parentLocale.keys():
             for f in k.split('_'):
                 scraps.add(f)
-        from enumdata import language_map, country_map, script_map
+        from enumdata import language_map, territory_map, script_map
         language = dict((v, k) for k, v in language_map.values() if not v.isspace())
-        country = dict((v, k) for k, v in country_map.values() if v != 'ZZ')
+        territory = dict((v, k) for k, v in territory_map.values() if v != 'ZZ')
         script = dict((v, k) for k, v in script_map.values() if v != 'Zzzz')
         lang = dict(self.__checkEnum(language, self.__codeMap('language'), scraps))
-        land = dict(self.__checkEnum(country, self.__codeMap('country'), scraps))
+        land = dict(self.__checkEnum(territory, self.__codeMap('territory'), scraps))
         text = dict(self.__checkEnum(script, self.__codeMap('script'), scraps))
         if lang or land or text:
             grumble("""\
@@ -427,7 +427,7 @@ enumdata.py (keeping the old name as an alias):
                         + '\n\t'.join('{} -> {}'.format(k, v) for k, v in lang.items())
                         + '\n')
             if land:
-                grumble('Country:\n\t'
+                grumble('Territory:\n\t'
                         + '\n\t'.join('{} -> {}'.format(k, v) for k, v in land.items())
                         + '\n')
             if text:
@@ -460,7 +460,7 @@ enumdata.py (keeping the old name as an alias):
  </supplementalData>
 """
         zones = self.supplement('windowsZones.xml')
-        enum = self.__enumMap('country')
+        enum = self.__enumMap('territory')
         badZones, unLands, defaults, windows = set(), set(), {}, {}
 
         for name, attrs in zones.find('windowsZones/mapTimezones'):
@@ -469,7 +469,7 @@ enumdata.py (keeping the old name as an alias):
 
             wid, code = attrs['other'], attrs['territory']
             data = dict(windowsId = wid,
-                        countryCode = code,
+                        territoryCode = code,
                         ianaList = attrs['type'])
 
             try:
@@ -487,11 +487,11 @@ enumdata.py (keeping the old name as an alias):
                 except KeyError:
                     unLands.append(code)
                     continue
-                data.update(countryId = cid, country = name)
+                data.update(territoryId = cid, territory = name)
                 windows[key, cid] = data
 
         if unLands:
-            raise Error('Unknown country codes, please add to enumdata.py: '
+            raise Error('Unknown territory codes, please add to enumdata.py: '
                         + ', '.join(sorted(unLands)))
 
         if badZones:
@@ -580,7 +580,7 @@ enumdata.py (keeping the old name as an alias):
             for elt in source.findNodes('currencyData/region'):
                 iso, digits, rounding = '', 2, 1
                 try:
-                    country = elt.dom.attributes['iso3166'].nodeValue
+                    territory = elt.dom.attributes['iso3166'].nodeValue
                 except KeyError:
                     continue
                 for child in elt.findAllChildren('currency'):
@@ -599,7 +599,7 @@ enumdata.py (keeping the old name as an alias):
                         'currencyData/fractions/info[iso4217={}]'.format(iso)):
                         digits = data['digits']
                         rounding = data['rounding']
-                cache[country] = iso, digits, rounding
+                cache[territory] = iso, digits, rounding
             assert cache
 
         return cache
@@ -673,10 +673,10 @@ enumdata.py (keeping the old name as an alias):
             # They're not actually lists: mappings from numeric value
             # to pairs of full name and short code. What we want, in
             # each case, is a mapping from code to the other two.
-            from enumdata import language_map, script_map, country_map
+            from enumdata import language_map, script_map, territory_map
             for form, book, empty in (('language', language_map, 'AnyLanguage'),
                                       ('script', script_map, 'AnyScript'),
-                                      ('country', country_map, 'AnyTerritory')):
+                                      ('territory', territory_map, 'AnyTerritory')):
                 cache[form] = dict((pair[1], (num, pair[0]))
                                    for num, pair in book.items() if pair[0] != 'C')
                 # (Have to filter out the C locale, as we give it the
@@ -693,7 +693,7 @@ enumdata.py (keeping the old name as an alias):
     def __codeMap(self, key, cache = {},
                   # Maps our name for it to CLDR's name:
                   naming = {'language': 'languages', 'script': 'scripts',
-                            'country': 'territories', 'variant': 'variants'}):
+                            'territory': 'territories', 'variant': 'variants'}):
         if not cache:
             root = self.xml('common', 'main', 'en.xml').root.findUniqueChild('localeDisplayNames')
             for dst, src in naming.items():

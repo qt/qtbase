@@ -28,7 +28,7 @@
 #############################################################################
 
 # A run of cldr2qlocalexml.py will produce output reporting any
-# language, script and country codes it sees, in data, for which it
+# language, script and territory codes it sees, in data, for which it
 # can find a name (taken always from en.xml) that could potentially be
 # used. There is no point adding a mapping for such a code unless the
 # CLDR's common/main/ contains an XML file for at least one locale
@@ -36,7 +36,7 @@
 
 # Each *_list reflects the current values of its enums in qlocale.h;
 # if new xml language files are available in CLDR, these languages and
-# countries need to be *appended* to this list (for compatibility
+# territories need to be *appended* to this list (for compatibility
 # between versions).  Include any spaces present in names (scripts
 # shall squish them out for the enum entries) in *_list, but use the
 # squished forms of names in the *_aliases mappings.
@@ -408,7 +408,7 @@ language_aliases = {
     'Kirghiz': 'Kyrgyz'
     }
 
-country_map = {
+territory_map = {
       0: ("AnyTerritory",                                 "ZZ"),
 
       1: ("Afghanistan",                                  "AF"),
@@ -677,7 +677,7 @@ country_map = {
     261: ("Zimbabwe",                                     "ZW"),
 }
 
-country_aliases = {
+territory_aliases = {
     # Renamings prior to Qt 6.0 (CLDR v37):
     'DemocraticRepublicOfCongo': 'CongoKinshasa',
     'PeoplesRepublicOfCongo': 'CongoBrazzaville',

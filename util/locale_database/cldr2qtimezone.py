@@ -291,13 +291,13 @@ class ZoneIdWriter (SourceFileEditor):
         windowsIdData, ianaIdData = ByteArrayData(), ByteArrayData()
 
         # Write Windows/IANA table
-        out('// Windows ID Key, Country Enum, IANA ID Index\n')
+        out('// Windows ID Key, Territory Enum, IANA ID Index\n')
         out('static const QZoneData zoneDataTable[] = {\n')
         for index, data in sorted(windowsIds.items()):
             out('    {{ {:6d},{:6d},{:6d} }}, // {} / {}\n'.format(
-                    data['windowsKey'], data['countryId'],
+                    data['windowsKey'], data['territoryId'],
                     ianaIdData.append(data['ianaList']),
-                    data['windowsId'], data['country']))
+                    data['windowsId'], data['territory']))
         out('    {      0,     0,     0 } // Trailing zeroes\n')
         out('};\n\n')
 

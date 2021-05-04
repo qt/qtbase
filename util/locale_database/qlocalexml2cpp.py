@@ -47,28 +47,28 @@ def compareLocaleKeys(key1, key2):
         return key1[0] - key2[0]
 
     defaults = compareLocaleKeys.default_map
-    # maps {(language, script): country} by ID
+    # maps {(language, script): territory} by ID
     try:
-        country = defaults[key1[:2]]
+        territory = defaults[key1[:2]]
     except KeyError:
         pass
     else:
-        if key1[2] == country:
+        if key1[2] == territory:
             return -1
-        if key2[2] == country:
+        if key2[2] == territory:
             return 1
 
     if key1[1] == key2[1]:
         return key1[2] - key2[2]
 
     try:
-        country = defaults[key2[:2]]
+        territory = defaults[key2[:2]]
     except KeyError:
         pass
     else:
-        if key2[2] == country:
+        if key2[2] == territory:
             return 1
-        if key1[2] == country:
+        if key1[2] == territory:
             return -1
 
     return key1[1] - key2[1]
@@ -327,7 +327,7 @@ class LocaleDataWriter (LocaleSourceEditor):
                        currency_format_data.append(locale.currencyFormat),
                        currency_format_data.append(locale.currencyNegativeFormat),
                        endonyms_data.append(locale.languageEndonym),
-                       endonyms_data.append(locale.countryEndonym)) # 6 entries
+                       endonyms_data.append(locale.territoryEndonym)) # 6 entries
                       ) # Total: 37 entries
             assert len(ranges) == 37
 
@@ -341,7 +341,7 @@ class LocaleDataWriter (LocaleSourceEditor):
                          locale.firstDayOfWeek, locale.weekendStart, locale.weekendEnd,
                          locale.groupTop, locale.groupHigher, locale.groupLeast) ))
                               + ', // {}/{}/{}\n'.format(
-                    locale.language, locale.script, locale.country))
+                    locale.language, locale.script, locale.territory))
         self.writer.write(formatLine(*( # All zeros, matching the format:
                     (0,) * 3 + (0,) * 37 * 2
                     + (currencyIsoCodeData(0),)
@@ -393,8 +393,8 @@ class LocaleDataWriter (LocaleSourceEditor):
     def scriptNames(self, scripts):
         self.__writeNameData(self.writer.write, scripts, 'script')
 
-    def countryNames(self, countries):
-        self.__writeNameData(self.writer.write, countries, 'territory')
+    def territoryNames(self, territories):
+        self.__writeNameData(self.writer.write, territories, 'territory')
 
     # TODO: unify these next three into the previous three; kept
     # separate for now to verify we're not changing data.
@@ -405,8 +405,8 @@ class LocaleDataWriter (LocaleSourceEditor):
     def scriptCodes(self, scripts):
         self.__writeCodeList(self.writer.write, scripts, 'script', 4)
 
-    def countryCodes(self, countries): # TODO: unify with countryNames()
-        self.__writeCodeList(self.writer.write, countries, 'territory', 3)
+    def territoryCodes(self, territories): # TODO: unify with territoryNames()
+        self.__writeCodeList(self.writer.write, territories, 'territory', 3)
 
 class CalendarDataWriter (LocaleSourceEditor):
     formatCalendar = (
@@ -444,7 +444,7 @@ class CalendarDataWriter (LocaleSourceEditor):
                                 (locale.standaloneShortMonths, locale.shortMonths,
                                  locale.standaloneNarrowMonths, locale.narrowMonths)))
             except ValueError as e:
-                e.args += (locale.language, locale.script, locale.country, stem)
+                e.args += (locale.language, locale.script, locale.territory, stem)
                 raise
 
             self.writer.write(
@@ -452,7 +452,7 @@ class CalendarDataWriter (LocaleSourceEditor):
                         key +
                         tuple(r.index for r in ranges) +
                         tuple(r.length for r in ranges) ))
-                + '// {}/{}/{}\n'.format(locale.language, locale.script, locale.country))
+                + '// {}/{}/{}\n'.format(locale.language, locale.script, locale.territory))
         self.writer.write(self.formatCalendar(*( (0,) * (3 + 6 * 2) ))
                           + '// trailing zeros\n')
         self.writer.write('};\n')
@@ -468,9 +468,9 @@ class LocaleHeaderWriter (SourceFileEditor):
         self.__enum('Language', languages, self.__language)
         self.writer.write('\n')
 
-    def countries(self, countries):
+    def territories(self, territories):
         self.writer.write("    // ### Qt 7: Rename to Territory\n")
-        self.__enum('Country', countries, self.__country, 'Territory')
+        self.__enum('Country', territories, self.__territory, 'Territory')
 
     def scripts(self, scripts):
         self.__enum('Script', scripts, self.__script)
@@ -478,7 +478,7 @@ class LocaleHeaderWriter (SourceFileEditor):
 
     # Implementation details
     from enumdata import (language_aliases as __language,
-                          country_aliases as __country,
+                          territory_aliases as __territory,
                           script_aliases as __script)
 
     def __enum(self, name, book, alias, suffix = None):
@@ -562,11 +562,11 @@ def main(args, out, err):
         writer.writer.write('\n')
         writer.languageNames(reader.languages)
         writer.scriptNames(reader.scripts)
-        writer.countryNames(reader.countries)
+        writer.territoryNames(reader.territories)
         # TODO: merge the next three into the previous three
         writer.languageCodes(reader.languages)
         writer.scriptCodes(reader.scripts)
-        writer.countryCodes(reader.countries)
+        writer.territoryCodes(reader.territories)
     except Error as e:
         writer.cleanup()
         err.write('\nError updating locale data: ' + e.message + '\n')
@@ -605,7 +605,7 @@ def main(args, out, err):
     try:
         writer.languages(reader.languages)
         writer.scripts(reader.scripts)
-        writer.countries(reader.countries)
+        writer.territories(reader.territories)
     except Error as e:
         writer.cleanup()
         err.write('\nError updating qlocale.h: ' + e.message + '\n')
