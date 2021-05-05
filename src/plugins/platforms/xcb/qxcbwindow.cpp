@@ -1620,11 +1620,7 @@ bool QXcbWindow::requestSystemTrayWindowDock()
 bool QXcbWindow::handleNativeEvent(xcb_generic_event_t *event)
 {
     auto eventType = connection()->nativeInterface()->nativeEventType();
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     qintptr result = 0; // Used only by MS Windows
-#else
-    long result = 0; // Used only by MS Windows
-#endif
     return QWindowSystemInterface::handleNativeEvent(window(), eventType, event, &result);
 }
 

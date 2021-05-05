@@ -35,11 +35,7 @@
 #include <QtCore/qpoint.h>
 #include <emscripten/html5.h>
 #include "qwasmwindow.h"
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #include <QtGui/qinputdevice.h>
-#else
-#include <QtGui/qpointingdevice.h>
-#endif
 #include <QHash>
 #include <QCursor>
 

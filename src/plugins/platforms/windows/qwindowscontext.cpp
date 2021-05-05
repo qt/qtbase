@@ -1750,11 +1750,7 @@ static inline QByteArray nativeEventType() { return QByteArrayLiteral("windows_g
 bool QWindowsContext::filterNativeEvent(MSG *msg, LRESULT *result)
 {
     QAbstractEventDispatcher *dispatcher = QAbstractEventDispatcher::instance();
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     qintptr filterResult = 0;
-#else
-    long filterResult = 0;
-#endif
     if (dispatcher && dispatcher->filterNativeEvent(nativeEventType(), msg, &filterResult)) {
         *result = LRESULT(filterResult);
         return true;
@@ -1765,11 +1761,7 @@ bool QWindowsContext::filterNativeEvent(MSG *msg, LRESULT *result)
 // Send to QWindowSystemInterface
 bool QWindowsContext::filterNativeEvent(QWindow *window, MSG *msg, LRESULT *result)
 {
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     qintptr filterResult = 0;
-#else
-    long filterResult = 0;
-#endif
     if (QWindowSystemInterface::handleNativeEvent(window, nativeEventType(), msg, &filterResult)) {
         *result = LRESULT(filterResult);
         return true;
