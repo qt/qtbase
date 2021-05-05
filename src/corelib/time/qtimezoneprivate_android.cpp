@@ -95,10 +95,10 @@ static QJniObject getDisplayName(QJniObject zone, jint style, jboolean dst,
     QJniObject
         jvariant = QJniObject::fromString(QLocale::scriptToString(locale.script()));
     QJniObject jlocale("java.util.Locale",
-                              "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V",
-                              static_cast<jstring>(jlanguage.object()),
-                              static_cast<jstring>(jterritory.object()),
-                              static_cast<jstring>(jvariant.object()));
+                       "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V",
+                       jlanguage.object<jstring>(),
+                       jterritory.object<jstring>(),
+                       jvariant.object<jstring>());
 
     return zone.callObjectMethod("getDisplayName",
                                  "(ZILjava/util/Locale;)Ljava/lang/String;",
@@ -110,7 +110,7 @@ void QAndroidTimeZonePrivate::init(const QByteArray &ianaId)
     const QString iana = QString::fromUtf8(ianaId);
     androidTimeZone = QJniObject::callStaticObjectMethod(
         "java.util.TimeZone", "getTimeZone", "(Ljava/lang/String;)Ljava/util/TimeZone;",
-        static_cast<jstring>(QJniObject::fromString(iana).object()));
+        QJniObject::fromString(iana).object<jstring>());
 
     // The ID or display name of the zone we've got, if it looks like what we asked for:
     const auto match = [iana](const QJniObject &jname) -> QByteArray {
@@ -247,16 +247,16 @@ QList<QByteArray> QAndroidTimeZonePrivate::availableTimeZoneIds() const
     QJniObject androidAvailableIdList = QJniObject::callStaticObjectMethod("java.util.TimeZone", "getAvailableIDs", "()[Ljava/lang/String;");
 
     QJniEnvironment jniEnv;
-    int androidTZcount = jniEnv->GetArrayLength( static_cast<jarray>(androidAvailableIdList.object()) );
+    int androidTZcount = jniEnv->GetArrayLength(androidAvailableIdList.object<jarray>());
 
     // need separate jobject and QJniObject here so that we can delete (DeleteLocalRef) the reference to the jobject
     // (or else the JNI reference table fills after 512 entries from GetObjectArrayElement)
     jobject androidTZobject;
     QJniObject androidTZ;
-    for (int i=0; i<androidTZcount; i++ ) {
-        androidTZobject = jniEnv->GetObjectArrayElement( static_cast<jobjectArray>( androidAvailableIdList.object() ), i );
+    for (int i = 0; i < androidTZcount; i++) {
+        androidTZobject = jniEnv->GetObjectArrayElement(androidAvailableIdList.object<jobjectArray>(), i);
         androidTZ = androidTZobject;
-        availableTimeZoneIdList.append( androidTZ.toString().toUtf8() );
+        availableTimeZoneIdList.append(androidTZ.toString().toUtf8());
         jniEnv->DeleteLocalRef(androidTZobject);
     }
 

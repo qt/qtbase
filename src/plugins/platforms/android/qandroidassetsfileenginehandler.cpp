@@ -147,7 +147,7 @@ public:
                                                                             QtAndroid::assets(), QJniObject::fromString(path).object());
         if (files.isValid()) {
             QJniEnvironment env;
-            jobjectArray jFiles = static_cast<jobjectArray>(files.object());
+            jobjectArray jFiles = files.object<jobjectArray>();
             const jint nFiles = env->GetArrayLength(jFiles);
             for (int i = 0; i < nFiles; ++i) {
                 AssetItem item{QJniObject::fromLocalRef(env->GetObjectArrayElement(jFiles, i)).toString()};

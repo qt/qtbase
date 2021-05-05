@@ -91,7 +91,7 @@ QList<QNetworkProxy> QNetworkProxyFactory::systemProxyForQuery(const QNetworkPro
                                                               "()[Ljava/lang/String;");
         bool exclude = false;
         if (exclusionList.isValid()) {
-            jobjectArray listObject = static_cast<jobjectArray>(exclusionList.object());
+            jobjectArray listObject = exclusionList.object<jobjectArray>();
             QJniEnvironment env;
             QJniObject entry;
             const int size = env->GetArrayLength(listObject);

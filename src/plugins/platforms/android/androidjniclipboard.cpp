@@ -114,7 +114,7 @@ namespace QtAndroidClipboard
             if (uris.isValid()) {
                 QList<QUrl> urls;
                 QJniEnvironment env;
-                jobjectArray juris = static_cast<jobjectArray>(uris.object());
+                jobjectArray juris = uris.object<jobjectArray>();
                 const jint nUris = env->GetArrayLength(juris);
                 urls.reserve(static_cast<int>(nUris));
                 for (int i = 0; i < nUris; ++i)

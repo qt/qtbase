@@ -198,10 +198,10 @@ bool AndroidContentFileEngineIterator::hasNext() const
                                            QJniObject::fromString(path()).object());
             if (objArray.isValid()) {
                 QJniEnvironment env;
-                const jsize length = env->GetArrayLength(static_cast<jarray>(objArray.object()));
+                const jsize length = env->GetArrayLength(objArray.object<jarray>());
                 for (int i = 0; i != length; ++i) {
                     m_entries << QJniObject(env->GetObjectArrayElement(
-                                static_cast<jobjectArray>(objArray.object()), i)).toString();
+                                objArray.object<jobjectArray>(), i)).toString();
                 }
             }
         }

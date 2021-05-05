@@ -70,7 +70,7 @@ QList<QByteArray> fetchSslCertificateData()
         return certificateData;
 
     QJniEnvironment env;
-    jobjectArray jcertificates = static_cast<jobjectArray>(certificates.object());
+    jobjectArray jcertificates = certificates.object<jobjectArray>();
     const jint nCertificates = env->GetArrayLength(jcertificates);
     certificateData.reserve(static_cast<int>(nCertificates));
 
