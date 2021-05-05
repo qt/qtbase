@@ -1051,7 +1051,8 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
         info.height = TRUNC(top - bottom);
 
         // If any of the metrics are too large to fit, don't cache them
-        if (areMetricsTooLarge(info))
+        // Also, avoid integer overflow when linearAdvance is to large to fit in a signed short
+        if (areMetricsTooLarge(info) || info.linearAdvance > 0x7FFF)
             return nullptr;
 
         g = new Glyph;
