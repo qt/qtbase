@@ -303,32 +303,6 @@ static void setAndroidSdkVersion(JNIEnv *env)
     g_androidSdkVersion = env->GetStaticIntField(androidVersionClass, androidSDKFieldID);
 }
 
-static void setNativeActivity(JNIEnv *env, jclass, jobject activity)
-{
-    if (g_jActivity != 0)
-        env->DeleteGlobalRef(g_jActivity);
-
-    if (activity != 0) {
-        g_jActivity = env->NewGlobalRef(activity);
-        env->DeleteLocalRef(activity);
-    } else {
-        g_jActivity = 0;
-    }
-}
-
-static void setNativeService(JNIEnv *env, jclass, jobject service)
-{
-    if (g_jService != 0)
-        env->DeleteGlobalRef(g_jService);
-
-    if (service != 0) {
-        g_jService = env->NewGlobalRef(service);
-        env->DeleteLocalRef(service);
-    } else {
-        g_jService = 0;
-    }
-}
-
 jint QtAndroidPrivate::initJNI(JavaVM *vm, JNIEnv *env)
 {
     jclass jQtNative = env->FindClass("org/qtproject/qt/android/QtNative");
@@ -389,8 +363,6 @@ jint QtAndroidPrivate::initJNI(JavaVM *vm, JNIEnv *env)
         {"runPendingCppRunnables", "()V",  reinterpret_cast<void *>(runPendingCppRunnables)},
         {"dispatchGenericMotionEvent", "(Landroid/view/MotionEvent;)Z", reinterpret_cast<void *>(dispatchGenericMotionEvent)},
         {"dispatchKeyEvent", "(Landroid/view/KeyEvent;)Z", reinterpret_cast<void *>(dispatchKeyEvent)},
-        {"setNativeActivity", "(Landroid/app/Activity;)V", reinterpret_cast<void *>(setNativeActivity)},
-        {"setNativeService", "(Landroid/app/Service;)V", reinterpret_cast<void *>(setNativeService)},
         {"sendRequestPermissionsResult", "(I[Ljava/lang/String;[I)V", reinterpret_cast<void *>(sendRequestPermissionsResult)},
     };
 
@@ -447,15 +419,6 @@ jobject QtAndroidPrivate::classLoader()
 jint QtAndroidPrivate::androidSdkVersion()
 {
     return g_androidSdkVersion;
-}
-
-void QtAndroidPrivate::runOnUiThread(QRunnable *runnable, JNIEnv *env)
-{
-    runOnAndroidThread([runnable]() {
-        runnable->run();
-        if (runnable->autoDelete())
-            delete runnable;
-    }, env);
 }
 
 void QtAndroidPrivate::runOnAndroidThread(const QtAndroidPrivate::Runnable &runnable, JNIEnv *env)

@@ -124,7 +124,6 @@ namespace QtAndroidPrivate
     Q_CORE_EXPORT jint androidSdkVersion();
     Q_CORE_EXPORT void runOnAndroidThread(const Runnable &runnable, JNIEnv *env);
     Q_CORE_EXPORT void runOnAndroidThreadSync(const Runnable &runnable, JNIEnv *env, int timeoutMs = INT_MAX);
-    Q_CORE_EXPORT void runOnUiThread(QRunnable *runnable, JNIEnv *env);
     Q_CORE_EXPORT void requestPermissions(JNIEnv *env, const QStringList &permissions, const PermissionsResultFunc &callbackFunc, bool directCall = false);
     Q_CORE_EXPORT PermissionsHash requestPermissionsSync(JNIEnv *env, const QStringList &permissions, int timeoutMs = INT_MAX);
     Q_CORE_EXPORT PermissionsResult checkPermission(const QString &permission);
