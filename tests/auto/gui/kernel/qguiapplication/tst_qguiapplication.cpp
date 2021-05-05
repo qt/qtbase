@@ -1020,13 +1020,7 @@ void tst_QGuiApplication::genericPluginsAndWindowSystemEvents()
     QCoreApplication::postEvent(&testReceiver, new QEvent(QEvent::User));
     QCOMPARE(testReceiver.customEvents, 0);
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     QStaticPlugin testPluginInfo(qt_plugin_instance, qt_plugin_query_metadata);
-#else
-    QStaticPlugin testPluginInfo;
-    testPluginInfo.instance = qt_plugin_instance;
-    testPluginInfo.rawMetaData = qt_plugin_query_metadata;
-#endif
     qRegisterStaticPluginFunction(testPluginInfo);
     int argc = 3;
     char *argv[] = { const_cast<char*>(QTest::currentAppName()), const_cast<char*>("-plugin"), const_cast<char*>("testplugin") };

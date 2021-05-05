@@ -616,16 +616,6 @@ QFontEngineData::~QFontEngineData()
     \since 5.2
 */
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-/*
-  \obsolete
-  Constructs a font from \a font for use on the paint device \a pd.
-*/
-QFont::QFont(const QFont &font, QPaintDevice *pd)
-    : QFont(font, static_cast<const QPaintDevice*>(pd))
-{}
-#endif
-
 /*!
   \since 5.13
   Constructs a font from \a font for use on the paint device \a pd.

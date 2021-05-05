@@ -2653,11 +2653,7 @@ void QWindow::tabletEvent(QTabletEvent *ev)
     Should return true only if the event was handled.
 */
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 bool QWindow::nativeEvent(const QByteArray &eventType, void *message, qintptr *result)
-#else
-bool QWindow::nativeEvent(const QByteArray &eventType, void *message, long *result)
-#endif
 {
     Q_UNUSED(eventType);
     Q_UNUSED(message);

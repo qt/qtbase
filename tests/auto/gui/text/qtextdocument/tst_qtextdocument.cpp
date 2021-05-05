@@ -1800,12 +1800,10 @@ void tst_QTextDocument::toHtml()
     QCOMPARE(output, expectedOutput);
 
     QDomDocument document;
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     QEXPECT_FAIL("charfmt-for-list-item",
                  "The attribute \"style\" is redefined in the generated HTML, which is not valid "
                  "according to XML standard. The new QDomDocument implementation follows the XML "
                  "standard.", Continue);
-#endif
     QVERIFY2(document.setContent(output), "Output was not valid XML");
 }
 

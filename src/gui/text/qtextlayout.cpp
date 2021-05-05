@@ -352,21 +352,7 @@ QTextLayout::QTextLayout(const QString& text)
     calculations will be done in screen metrics.
 */
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-/*!
-\if !defined(qt6)
-    \fn QTextLayout::QTextLayout(const QString &text, const QFont &font, QPaintDevice *paintdevice)
-    \obsolete
-    Identical to QTextLayout::QTextLayout(const QString &text, const QFont &font, const QPaintDevice *paintdevice)
-\else
-    \nothing
-\endif
-*/
-
-QTextLayout::QTextLayout(const QString &text, const QFont &font, QPaintDevice *paintdevice)
-#else
 QTextLayout::QTextLayout(const QString &text, const QFont &font, const QPaintDevice *paintdevice)
-#endif
 {
     const QFont f(paintdevice ? QFont(font, paintdevice) : font);
     d = new QTextEngine((text.isNull() ? (const QString&)QString::fromLatin1("") : text), f);

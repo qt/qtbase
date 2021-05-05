@@ -1994,11 +1994,7 @@ bool QGuiApplicationPrivate::sendQWindowEventToQPlatformWindow(QWindow *window, 
     return platformWindow->windowEvent(event);
 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 bool QGuiApplicationPrivate::processNativeEvent(QWindow *window, const QByteArray &eventType, void *message, qintptr *result)
-#else
-bool QGuiApplicationPrivate::processNativeEvent(QWindow *window, const QByteArray &eventType, void *message, long *result)
-#endif
 {
     return window->nativeEvent(eventType, message, result);
 }

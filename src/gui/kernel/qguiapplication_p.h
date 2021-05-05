@@ -187,11 +187,7 @@ public:
                                                Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers);
 #endif
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     static bool processNativeEvent(QWindow *window, const QByteArray &eventType, void *message, qintptr *result);
-#else
-    static bool processNativeEvent(QWindow *window, const QByteArray &eventType, void *message, long *result);
-#endif
 
     static bool sendQWindowEventToQPlatformWindow(QWindow *window, QEvent *event);
 

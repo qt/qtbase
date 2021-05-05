@@ -896,11 +896,7 @@ QPlatformDropQtResponse QWindowSystemInterface::handleDrop(QWindow *window, cons
     \note This function can only be called from the GUI thread.
 */
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 bool QWindowSystemInterface::handleNativeEvent(QWindow *window, const QByteArray &eventType, void *message, qintptr *result)
-#else
-bool QWindowSystemInterface::handleNativeEvent(QWindow *window, const QByteArray &eventType, void *message, long *result)
-#endif
 {
     return QGuiApplicationPrivate::processNativeEvent(window, eventType, message, result);
 }
