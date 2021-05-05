@@ -57,6 +57,7 @@ struct Q_CORE_EXPORT QAndroidApplication
     QT_DECLARE_NATIVE_INTERFACE(QAndroidApplication)
     static jobject context();
     static bool isActivityContext();
+    static int sdkVersion();
 };
 #endif
 }

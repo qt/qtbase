@@ -82,4 +82,15 @@ bool QNativeInterface::QAndroidApplication::isActivityContext()
     return QtAndroidPrivate::activity();
 }
 
+/*!
+    \fn int QNativeInterface::QAndroidApplication::sdkVersion()
+
+    Returns the Android SDK version. This is also known as the API level.
+
+    \since 6.2
+*/
+int QNativeInterface::QAndroidApplication::sdkVersion()
+{
+    return QtAndroidPrivate::androidSdkVersion();
+}
 QT_END_NAMESPACE
