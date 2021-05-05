@@ -1038,7 +1038,9 @@ static bool addFontToDatabase(QString familyName,
     const QString foundryName; // No such concept.
     const bool fixed = !(textmetric->tmPitchAndFamily & TMPF_FIXED_PITCH);
     const bool ttf = (textmetric->tmPitchAndFamily & TMPF_TRUETYPE);
-    const bool scalable = textmetric->tmPitchAndFamily & (TMPF_VECTOR|TMPF_TRUETYPE);
+    const bool unreliableTextMetrics = type == 0;
+    const bool scalable = (textmetric->tmPitchAndFamily & (TMPF_VECTOR|TMPF_TRUETYPE))
+                          && !unreliableTextMetrics;
     const int size = scalable ? SMOOTH_SCALABLE : textmetric->tmHeight;
     const QFont::Style style = textmetric->tmItalic ? QFont::StyleItalic : QFont::StyleNormal;
     const bool antialias = false;
