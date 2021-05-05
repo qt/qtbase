@@ -75,7 +75,6 @@ static jobject g_jClassLoader = nullptr;
 static jint g_androidSdkVersion = 0;
 static jclass g_jNativeClass = nullptr;
 static jmethodID g_runPendingCppRunnablesMethodID = nullptr;
-static jmethodID g_hideSplashScreenMethodID = nullptr;
 Q_GLOBAL_STATIC(std::deque<QtAndroidPrivate::Runnable>, g_pendingRunnables);
 static QBasicMutex g_pendingRunnablesMutex;
 
@@ -377,7 +376,6 @@ jint QtAndroidPrivate::initJNI(JavaVM *vm, JNIEnv *env)
     g_runPendingCppRunnablesMethodID = env->GetStaticMethodID(jQtNative,
                                                        "runPendingCppRunnablesOnAndroidThread",
                                                        "()V");
-    g_hideSplashScreenMethodID = env->GetStaticMethodID(jQtNative, "hideSplashScreen", "(I)V");
     g_jNativeClass = static_cast<jclass>(env->NewGlobalRef(jQtNative));
     env->DeleteLocalRef(jQtNative);
 
@@ -547,11 +545,6 @@ void QtAndroidPrivate::unregisterKeyEventListener(QtAndroidPrivate::KeyEventList
 {
     QMutexLocker locker(&g_keyEventListeners()->mutex);
     g_keyEventListeners()->listeners.removeOne(listener);
-}
-
-void QtAndroidPrivate::hideSplashScreen(JNIEnv *env, int duration)
-{
-    env->CallStaticVoidMethod(g_jNativeClass, g_hideSplashScreenMethodID, duration);
 }
 
 void QtAndroidPrivate::waitForServiceSetup()

@@ -58,6 +58,7 @@ struct Q_CORE_EXPORT QAndroidApplication
     static jobject context();
     static bool isActivityContext();
     static int sdkVersion();
+    static void hideSplashScreen(int duration = 0);
 };
 #endif
 }

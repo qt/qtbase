@@ -149,14 +149,10 @@ namespace QtAndroidPrivate
     Q_CORE_EXPORT void registerKeyEventListener(KeyEventListener *listener);
     Q_CORE_EXPORT void unregisterKeyEventListener(KeyEventListener *listener);
 
-    Q_CORE_EXPORT void hideSplashScreen(JNIEnv *env, int duration = 0);
-
-
     Q_CORE_EXPORT void waitForServiceSetup();
     Q_CORE_EXPORT int acuqireServiceSetup(int flags);
     Q_CORE_EXPORT void setOnBindListener(OnBindListener *listener);
     Q_CORE_EXPORT jobject callOnBindListener(jobject intent);
-
 }
 
 QT_END_NAMESPACE

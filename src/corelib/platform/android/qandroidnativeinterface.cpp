@@ -39,6 +39,7 @@
 
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/private/qjnihelpers_p.h>
+#include <QtCore/qjniobject.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -93,4 +94,20 @@ int QNativeInterface::QAndroidApplication::sdkVersion()
 {
     return QtAndroidPrivate::androidSdkVersion();
 }
+
+/*!
+    \fn void QNativeInterface::QAndroidApplication::hideSplashScreen(int duration)
+
+    Hides the splash screen by using a fade effect for the given \a duration.
+    If \a duration is not provided (default is 0) the splash screen is hidden
+    immedetiately after the app starts.
+
+    \since 6.2
+*/
+void QNativeInterface::QAndroidApplication::hideSplashScreen(int duration)
+{
+    QJniObject::callStaticMethod<void>("org/qtproject/qt/android/QtNative",
+                                       "hideSplashScreen", "(I)V", duration);
+}
+
 QT_END_NAMESPACE
