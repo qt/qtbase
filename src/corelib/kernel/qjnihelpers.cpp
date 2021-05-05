@@ -289,21 +289,10 @@ void QtAndroidPrivate::handleResume()
         listeners.at(i)->handleResume();
 }
 
-static void setAndroidSdkVersion(JNIEnv *env)
-{
-    jclass androidVersionClass = env->FindClass("android/os/Build$VERSION");
-    if (QJniEnvironment::checkAndClearExceptions(env))
-        return;
-
-    jfieldID androidSDKFieldID = env->GetStaticFieldID(androidVersionClass, "SDK_INT", "I");
-    if (QJniEnvironment::checkAndClearExceptions(env))
-        return;
-
-    g_androidSdkVersion = env->GetStaticIntField(androidVersionClass, androidSDKFieldID);
-}
-
 jint QtAndroidPrivate::initJNI(JavaVM *vm, JNIEnv *env)
 {
+    g_javaVM = vm;
+
     jclass jQtNative = env->FindClass("org/qtproject/qt/android/QtNative");
 
     if (QJniEnvironment::checkAndClearExceptions(env))
@@ -344,7 +333,7 @@ jint QtAndroidPrivate::initJNI(JavaVM *vm, JNIEnv *env)
     if (QJniEnvironment::checkAndClearExceptions(env))
         return JNI_ERR;
 
-    setAndroidSdkVersion(env);
+    g_androidSdkVersion = QJniObject::getStaticField<jint>("android/os/Build$VERSION", "SDK_INT");
 
     g_jClassLoader = env->NewGlobalRef(classLoader);
     env->DeleteLocalRef(classLoader);
@@ -356,7 +345,6 @@ jint QtAndroidPrivate::initJNI(JavaVM *vm, JNIEnv *env)
         g_jService = env->NewGlobalRef(service);
         env->DeleteLocalRef(service);
     }
-    g_javaVM = vm;
 
     static const JNINativeMethod methods[] = {
         {"runPendingCppRunnables", "()V",  reinterpret_cast<void *>(runPendingCppRunnables)},
