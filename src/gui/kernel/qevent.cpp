@@ -1934,11 +1934,6 @@ QIconDragEvent::~QIconDragEvent()
 
     When this event occurs it is customary to show a QMenu with a
     context menu, if this is relevant to the context.
-
-    Context menu events contain a special accept flag that indicates
-    whether the receiver accepted the event. If the event handler does
-    not accept the event then, if possible, whatever triggered the event will be
-    handled as a regular input event.
 */
 
 #ifndef QT_NO_CONTEXTMENU
