@@ -779,7 +779,7 @@ private:
 void tst_Moc::initTestCase()
 {
     QString binpath = QLibraryInfo::path(QLibraryInfo::BinariesPath);
-    QString qmake = QString("%1/qmake").arg(binpath);
+    QString qtpaths = QString("%1/qtpaths").arg(binpath);
     QString libexecPath = QLibraryInfo::path(QLibraryInfo::LibraryExecutablesPath);
     m_moc = QString("%1/moc").arg(libexecPath);
 
@@ -788,7 +788,7 @@ void tst_Moc::initTestCase()
     m_sourceDirectory = QFileInfo(testHeader).absolutePath();
 #if defined(Q_OS_UNIX) && QT_CONFIG(process)
     QProcess proc;
-    proc.start(qmake, QStringList() << "-query" << "QT_INSTALL_HEADERS");
+    proc.start(qtpaths, QStringList() << "-query" << "QT_INSTALL_HEADERS");
     QVERIFY(proc.waitForFinished());
     QCOMPARE(proc.exitCode(), 0);
     QByteArray output = proc.readAllStandardOutput();
