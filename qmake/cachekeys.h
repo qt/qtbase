@@ -29,6 +29,7 @@
 #ifndef CACHEKEYS_H
 #define CACHEKEYS_H
 
+#include "option.h"
 #include "project.h"
 #include <qstring.h>
 #include <qstringlist.h>

@@ -28,6 +28,7 @@
 
 #include "project.h"
 
+#include "cachekeys.h"
 #include "option.h"
 #include <qmakeevaluator_p.h>
 
@@ -52,8 +53,10 @@ QMakeProject::QMakeProject(QMakeProject *p)
 
 bool QMakeProject::boolRet(VisitReturn vr)
 {
-    if (vr == ReturnError)
+    if (vr == ReturnError) {
+        qmakeClearCaches();
         exit(3);
+    }
     Q_ASSERT(vr == ReturnTrue || vr == ReturnFalse);
     return vr != ReturnFalse;
 }
