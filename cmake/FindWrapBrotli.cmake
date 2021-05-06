@@ -86,5 +86,12 @@ else()
         include(FindPackageHandleStandardArgs)
         find_package_handle_standard_args(WrapBrotli REQUIRED_VARS
                                           BrotliDec_FOUND BrotliEnc_FOUND BrotliCommon_FOUND)
+
+        if (WrapBrotli_FOUND)
+            set_property(TARGET WrapBrotli::WrapBrotliDec APPEND PROPERTY
+                         INTERFACE_LINK_LIBRARIES WrapBrotli::WrapBrotliCommon)
+            set_property(TARGET WrapBrotli::WrapBrotliEnc APPEND PROPERTY
+                         INTERFACE_LINK_LIBRARIES WrapBrotli::WrapBrotliCommon)
+        endif()
     endif()
 endif()
