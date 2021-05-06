@@ -1731,13 +1731,19 @@ bool QFontDatabase::isSmoothlyScalable(const QString &family, const QString &sty
     for (int j = 0; j < f->count; j++) {
         QtFontFoundry *foundry = f->foundries[j];
         if (foundryName.isEmpty() || foundry->name.compare(foundryName, Qt::CaseInsensitive) == 0) {
-            for (int k = 0; k < foundry->count; k++)
-                if ((style.isEmpty() ||
-                     foundry->styles[k]->styleName == style ||
-                     foundry->styles[k]->key == styleKey) && foundry->styles[k]->smoothScalable) {
-                    smoothScalable = true;
+            for (int k = 0; k < foundry->count; k++) {
+                QtFontStyle *fontStyle = foundry->styles[k];
+                smoothScalable =
+                        fontStyle->smoothScalable
+                        && ((style.isEmpty()
+                             || fontStyle->styleName == style
+                             || fontStyle->key == styleKey)
+                            || (fontStyle->styleName.isEmpty()
+                                && style == styleStringHelper(fontStyle->key.weight,
+                                                              QFont::Style(fontStyle->key.style))));
+                if (smoothScalable)
                     goto end;
-                }
+            }
         }
     }
  end:
