@@ -203,11 +203,14 @@ void QMimeBinaryProvider::ensureLoaded()
         const QString cacheFileName = m_directory + QLatin1String("/mime.cache");
         m_cacheFile = new CacheFile(cacheFileName);
         m_mimetypeListLoaded = false;
+        m_mimetypeExtra.clear();
     } else {
-        if (checkCacheChanged())
+        if (checkCacheChanged()) {
             m_mimetypeListLoaded = false;
-        else
+            m_mimetypeExtra.clear();
+        } else {
             return; // nothing to do
+        }
     }
     if (!m_cacheFile->isValid()) { // verify existence and version
         delete m_cacheFile;
@@ -489,47 +492,44 @@ void QMimeBinaryProvider::addAllMimeTypes(QList<QMimeType> &result)
     }
 }
 
-void QMimeBinaryProvider::loadMimeTypePrivate(QMimeTypePrivate &data)
+bool QMimeBinaryProvider::loadMimeTypePrivate(QMimeTypePrivate &data)
 {
 #ifdef QT_NO_XMLSTREAMREADER
     Q_UNUSED(data);
     qWarning("Cannot load mime type since QXmlStreamReader is not available.");
-    return;
+    return false;
 #else
     if (data.loaded)
-        return;
-    data.loaded = true;
-    // load comment and globPatterns
+        return true;
 
-    const QString file = data.name + QLatin1String(".xml");
-    // shared-mime-info since 1.3 lowercases the xml files
-    QStringList mimeFiles = QStandardPaths::locateAll(QStandardPaths::GenericDataLocation, QLatin1String("mime/") + file.toLower());
-    if (mimeFiles.isEmpty())
-        mimeFiles = QStandardPaths::locateAll(QStandardPaths::GenericDataLocation, QLatin1String("mime/") + file); // pre-1.3
-    if (mimeFiles.isEmpty()) {
-        qWarning() << "No file found for" << file << ", even though update-mime-info said it would exist.\n"
-                      "Either it was just removed, or the directory doesn't have executable permission..."
-                   << QStandardPaths::locateAll(QStandardPaths::GenericDataLocation, QLatin1String("mime"), QStandardPaths::LocateDirectory);
-        return;
-    }
+    auto it = m_mimetypeExtra.constFind(data.name);
+    if (it == m_mimetypeExtra.constEnd()) {
+        // load comment and globPatterns
 
-    QString mainPattern;
+        // shared-mime-info since 1.3 lowercases the xml files
+        QString mimeFile = m_directory + QLatin1Char('/') + data.name.toLower() + QLatin1String(".xml");
+        if (!QFile::exists(mimeFile))
+            mimeFile = m_directory + QLatin1Char('/') + data.name + QLatin1String(".xml"); // pre-1.3
 
-    for (QStringList::const_reverse_iterator it = mimeFiles.crbegin(), end = mimeFiles.crend(); it != end; ++it) { // global first, then local.
-        QFile qfile(*it);
+        QFile qfile(mimeFile);
         if (!qfile.open(QFile::ReadOnly))
-            continue;
+            return false;
+
+        auto insertIt = m_mimetypeExtra.insert(data.name, MimeTypeExtra{});
+        it = insertIt;
+        MimeTypeExtra &extra = insertIt.value();
+        QString mainPattern;
 
         QXmlStreamReader xml(&qfile);
         if (xml.readNextStartElement()) {
             if (xml.name() != QLatin1String("mime-type")) {
-                continue;
+                return false;
             }
             const auto name = xml.attributes().value(QLatin1String("type"));
             if (name.isEmpty())
-                continue;
+                return false;
             if (name.compare(data.name, Qt::CaseInsensitive))
-                qWarning() << "Got name" << name << "in file" << file << "expected" << data.name;
+                qWarning() << "Got name" << name << "in file" << mimeFile << "expected" << data.name;
 
             while (xml.readNextStartElement()) {
                 const auto tag = xml.name();
@@ -539,49 +539,37 @@ void QMimeBinaryProvider::loadMimeTypePrivate(QMimeTypePrivate &data)
                     if (lang.isEmpty()) {
                         lang = QLatin1String("default"); // no locale attribute provided, treat it as default.
                     }
-                    data.localeComments.insert(lang, text);
+                    extra.localeComments.insert(lang, text);
                     continue; // we called readElementText, so we're at the EndElement already.
-                } else if (tag == QLatin1String("icon")) { // as written out by shared-mime-info >= 0.40
-                    data.iconName = xml.attributes().value(QLatin1String("name")).toString();
                 } else if (tag == QLatin1String("glob-deleteall")) { // as written out by shared-mime-info >= 0.70
-                    data.globPatterns.clear();
+                    extra.globPatterns.clear();
                     mainPattern.clear();
                 } else if (tag == QLatin1String("glob")) { // as written out by shared-mime-info >= 0.70
                     const QString pattern = xml.attributes().value(QLatin1String("pattern")).toString();
                     if (mainPattern.isEmpty() && pattern.startsWith(QLatin1Char('*'))) {
                         mainPattern = pattern;
                     }
-                    if (!data.globPatterns.contains(pattern))
-                        data.globPatterns.append(pattern);
+                    if (!extra.globPatterns.contains(pattern))
+                        extra.globPatterns.append(pattern);
                 }
                 xml.skipCurrentElement();
             }
             Q_ASSERT(xml.name() == QLatin1String("mime-type"));
         }
-    }
 
-    // Let's assume that shared-mime-info is at least version 0.70
-    // Otherwise we would need 1) a version check, and 2) code for parsing patterns from the globs file.
-#if 1
-    if (!mainPattern.isEmpty() && (data.globPatterns.isEmpty() || data.globPatterns.constFirst() != mainPattern)) {
-        // ensure it's first in the list of patterns
-        data.globPatterns.removeAll(mainPattern);
-        data.globPatterns.prepend(mainPattern);
-    }
-#else
-    const bool globsInXml = sharedMimeInfoVersion() >= QT_VERSION_CHECK(0, 70, 0);
-    if (globsInXml) {
-        if (!mainPattern.isEmpty() && data.globPatterns.constFirst() != mainPattern) {
+        // Let's assume that shared-mime-info is at least version 0.70
+        // Otherwise we would need 1) a version check, and 2) code for parsing patterns from the globs file.
+        if (!mainPattern.isEmpty() &&
+                (extra.globPatterns.isEmpty() || extra.globPatterns.constFirst() != mainPattern)) {
             // ensure it's first in the list of patterns
-            data.globPatterns.removeAll(mainPattern);
-            data.globPatterns.prepend(mainPattern);
+            extra.globPatterns.removeAll(mainPattern);
+            extra.globPatterns.prepend(mainPattern);
         }
-    } else {
-        // Fallback: get the patterns from the globs file
-        // TODO: This would be the only way to support shared-mime-info < 0.70
-        // But is this really worth the effort?
     }
-#endif
+    const MimeTypeExtra &e = it.value();
+    data.localeComments = e.localeComments;
+    data.globPatterns = e.globPatterns;
+    return true;
 #endif //QT_NO_XMLSTREAMREADER
 }
 

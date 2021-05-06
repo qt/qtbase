@@ -79,6 +79,7 @@ public:
     virtual void addAliases(const QString &name, QStringList &result) = 0;
     virtual void findByMagic(const QByteArray &data, int *accuracyPtr, QMimeType &candidate) = 0;
     virtual void addAllMimeTypes(QList<QMimeType> &result) = 0;
+    virtual bool loadMimeTypePrivate(QMimeTypePrivate &) { return false; }
     virtual void loadIcon(QMimeTypePrivate &) {}
     virtual void loadGenericIcon(QMimeTypePrivate &) {}
     virtual void ensureLoaded() {}
@@ -107,7 +108,7 @@ public:
     void addAliases(const QString &name, QStringList &result) override;
     void findByMagic(const QByteArray &data, int *accuracyPtr, QMimeType &candidate) override;
     void addAllMimeTypes(QList<QMimeType> &result) override;
-    static void loadMimeTypePrivate(QMimeTypePrivate &);
+    bool loadMimeTypePrivate(QMimeTypePrivate &) override;
     void loadIcon(QMimeTypePrivate &) override;
     void loadGenericIcon(QMimeTypePrivate &) override;
     void ensureLoaded() override;
@@ -126,6 +127,12 @@ private:
     QStringList m_cacheFileNames;
     QSet<QString> m_mimetypeNames;
     bool m_mimetypeListLoaded;
+    struct MimeTypeExtra
+    {
+        QHash<QString, QString> localeComments;
+        QStringList globPatterns;
+    };
+    QMap<QString, MimeTypeExtra> m_mimetypeExtra;
 };
 
 /*

@@ -228,7 +228,20 @@ void QMimeDatabasePrivate::loadMimeTypePrivate(QMimeTypePrivate &mimePrivate)
         return; // invalid mimetype
     if (!mimePrivate.loaded) { // XML provider sets loaded=true, binary provider does this on demand
         Q_ASSERT(mimePrivate.fromCache);
-        QMimeBinaryProvider::loadMimeTypePrivate(mimePrivate);
+        bool found = false;
+        for (const auto &provider : providers()) {
+            if (provider->loadMimeTypePrivate(mimePrivate)) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            const QString file = mimePrivate.name + QLatin1String(".xml");
+            qWarning() << "No file found for" << file << ", even though update-mime-info said it would exist.\n"
+                          "Either it was just removed, or the directory doesn't have executable permission..."
+                       << QStandardPaths::locateAll(QStandardPaths::GenericDataLocation, QLatin1String("mime"), QStandardPaths::LocateDirectory);
+        }
+        mimePrivate.loaded = true;
     }
 }
 
