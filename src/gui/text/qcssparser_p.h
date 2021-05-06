@@ -201,6 +201,7 @@ enum Property {
     QtIcon,
     LetterSpacing,
     WordSpacing,
+    TextDecorationColor,
     NumProperties
 };
 

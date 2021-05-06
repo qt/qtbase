@@ -6061,6 +6061,9 @@ static void drawTextItemDecoration(QPainter *painter, const QPointF &pos, const 
     if (flags & QTextItem::StrikeOut) {
         QLineF strikeOutLine = line;
         strikeOutLine.translate(0., - fe->ascent().toReal() / 3.);
+        QColor uc = charFormat.underlineColor();
+        if (uc.isValid())
+            pen.setColor(uc);
         painter->setPen(pen);
         if (textEngine)
             textEngine->addStrikeOut(painter, strikeOutLine);
@@ -6071,6 +6074,9 @@ static void drawTextItemDecoration(QPainter *painter, const QPointF &pos, const 
     if (flags & QTextItem::Overline) {
         QLineF overline = line;
         overline.translate(0., - fe->ascent().toReal());
+        QColor uc = charFormat.underlineColor();
+        if (uc.isValid())
+            pen.setColor(uc);
         painter->setPen(pen);
         if (textEngine)
             textEngine->addOverline(painter, overline);

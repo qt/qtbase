@@ -1346,6 +1346,7 @@ void QTextHtmlParserNode::applyCssDeclarations(const QList<QCss::Declaration> &d
             default: break;
             }
             break;
+        case QCss::TextDecorationColor: charFormat.setUnderlineColor(decl.colorValue()); break;
         case QCss::ListStyleType:
         case QCss::ListStyle:
             setListStyle(decl.d->values);

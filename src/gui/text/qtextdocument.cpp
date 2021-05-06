@@ -2560,6 +2560,11 @@ bool QTextHtmlExporter::emitCharFormatStyle(const QTextCharFormat &format)
         if (!atLeastOneDecorationSet)
             html += QLatin1String("none");
         html += QLatin1Char(';');
+        if (format.hasProperty(QTextFormat::TextUnderlineColor)) {
+            html += QLatin1String(" text-decoration-color:");
+            html += colorValue(format.underlineColor());
+            html += QLatin1Char(';');
+        }
         attributesEmitted = true;
     } else {
         html.chop(decorationTag.size());

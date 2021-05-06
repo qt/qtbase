@@ -166,6 +166,7 @@ static const QCssKnownValue properties[NumProperties - 1] = {
     { "subcontrol-position", QtPosition },
     { "text-align", TextAlignment },
     { "text-decoration", TextDecoration },
+    { "text-decoration-color", TextDecorationColor },
     { "text-indent", TextIndent },
     { "text-transform", TextTransform },
     { "text-underline-style", TextUnderlineStyle },
