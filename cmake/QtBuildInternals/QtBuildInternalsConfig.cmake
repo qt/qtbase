@@ -324,6 +324,50 @@ macro(qt_prepare_standalone_project)
     qt_enable_cmake_languages()
 endmacro()
 
+# Define a repo target set, and store accompanying information.
+#
+# A repo target set is a subset of targets in a Qt module repository. To build a repo target set,
+# set QT_BUILD_SINGLE_REPO_TARGET_SET to the name of the repo target set.
+#
+# This function is to be called in the top-level project file of a repository,
+# before qt_internal_prepare_single_repo_target_set_build()
+#
+# This function stores information in variables of the parent scope.
+#
+# Positional Arguments:
+#   name - The name of this repo target set.
+#
+# Named Arguments:
+#   DEPENDS - List of Qt6 COMPONENTS that are build dependencies of this repo target set.
+function(qt_internal_define_repo_target_set name)
+    set(oneValueArgs DEPENDS)
+    set(prefix QT_REPO_TARGET_SET_)
+    cmake_parse_arguments(${prefix}${name} "" ${oneValueArgs} "" ${ARGN})
+    foreach(arg IN LISTS oneValueArgs)
+        set(${prefix}${name}_${arg} ${${prefix}${name}_${arg}} PARENT_SCOPE)
+    endforeach()
+    set(QT_REPO_KNOWN_TARGET_SETS "${QT_REPO_KNOWN_TARGET_SETS};${name}" PARENT_SCOPE)
+endfunction()
+
+# Setup a single repo target set build if QT_BUILD_SINGLE_REPO_TARGET_SET is defined.
+#
+# This macro must be called in the top-level project file of the repository after all repo target
+# sets have been defined.
+macro(qt_internal_prepare_single_repo_target_set_build)
+    if(DEFINED QT_BUILD_SINGLE_REPO_TARGET_SET)
+        if(NOT QT_BUILD_SINGLE_REPO_TARGET_SET IN_LIST QT_REPO_KNOWN_TARGET_SETS)
+            message(FATAL_ERROR
+                "Repo target set '${QT_BUILD_SINGLE_REPO_TARGET_SET}' is undefined.")
+        endif()
+        message(STATUS
+            "Preparing single repo target set build of ${QT_BUILD_SINGLE_REPO_TARGET_SET}")
+        if (NOT "${QT_REPO_TARGET_SET_${QT_BUILD_SINGLE_REPO_TARGET_SET}_DEPENDS}" STREQUAL "")
+            find_package(${INSTALL_CMAKE_NAMESPACE} ${PROJECT_VERSION} CONFIG REQUIRED
+                COMPONENTS ${QT_REPO_TARGET_SET_${QT_BUILD_SINGLE_REPO_TARGET_SET}_DEPENDS})
+        endif()
+    endif()
+endmacro()
+
 macro(qt_build_repo_begin)
     qt_build_internals_set_up_private_api()
     qt_enable_cmake_languages()
