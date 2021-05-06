@@ -62,8 +62,14 @@ public:
     jmethodID findMethod(jclass clazz, const char *methodName, const char *signature);
     jmethodID findStaticMethod(jclass clazz, const char *methodName, const char *signature);
     static JavaVM *javaVM();
+    bool registerNativeMethods(const char *className, const JNINativeMethod methods[], int size);
+    bool registerNativeMethods(jclass clazz, const JNINativeMethod methods[], int size);
+
+#if QT_DEPRECATED_SINCE(6, 2)
+    // ### Qt 7: remove
+    QT_DEPRECATED_VERSION_X_6_2("Use the overload with a const JNINativeMethod[] instead.")
     bool registerNativeMethods(const char *className, JNINativeMethod methods[], int size);
-    bool registerNativeMethods(jclass clazz, JNINativeMethod methods[], int size);
+#endif
 
     enum class OutputMode {
         Silent,

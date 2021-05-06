@@ -97,8 +97,9 @@ static void fromJavaTwo(JNIEnv *env, jobject thiz, jint x)
 void foo()
 {
     // register the native methods first, ideally it better be done with the app start
-    JNINativeMethod methods[] {{"callNativeOne", "(I)V", reinterpret_cast<void *>(fromJavaOne)},
-                               {"callNativeTwo", "(I)V", reinterpret_cast<void *>(fromJavaTwo)}};
+    const JNINativeMethod methods[] =
+                {{"callNativeOne", "(I)V", reinterpret_cast<void *>(fromJavaOne)},
+                 {"callNativeTwo", "(I)V", reinterpret_cast<void *>(fromJavaTwo)}};
     QJniEnvironment env;
     env.registerNativeMethods("my/java/project/FooJavaClass", methods, 2);
 

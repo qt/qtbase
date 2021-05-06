@@ -122,7 +122,7 @@ static void callbackFromJava(JNIEnv *env, jobject /*thiz*/, jstring value)
 
 void tst_QJniEnvironment::registerNativeMethods()
 {
-    JNINativeMethod methods[] {
+    const JNINativeMethod methods[] {
         {"callbackFromJava", "(Ljava/lang/String;)V", reinterpret_cast<void *>(callbackFromJava)}
     };
 
@@ -146,7 +146,7 @@ static void intCallbackFromJava(JNIEnv *env, jobject /*thiz*/, jint value)
 
 void tst_QJniEnvironment::registerNativeMethodsByJclass()
 {
-    JNINativeMethod methods[] {
+    const JNINativeMethod methods[] {
         { "intCallbackFromJava", "(I)V", reinterpret_cast<void *>(intCallbackFromJava) }
     };
 
