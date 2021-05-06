@@ -111,11 +111,15 @@
             if (QCoreApplication::sendEvent(fo, &queryEvent)) {
                 bool imEnabled = queryEvent.value(Qt::ImEnabled).toBool();
                 Qt::InputMethodHints hints = static_cast<Qt::InputMethodHints>(queryEvent.value(Qt::ImHints).toUInt());
-                if (imEnabled && !(hints & Qt::ImhDigitsOnly || hints & Qt::ImhFormattedNumbersOnly || hints & Qt::ImhHiddenText)) {
+                // make sure we send dead keys and the next key to the input method for composition
+                const bool ignoreHidden = (hints & Qt::ImhHiddenText) && !text.isEmpty() && !m_lastKeyDead;
+                if (imEnabled && !(hints & Qt::ImhDigitsOnly || hints & Qt::ImhFormattedNumbersOnly || ignoreHidden)) {
                     // pass the key event to the input method. note that m_sendKeyEvent may be set to false during this call
                     m_currentlyInterpretedKeyEvent = nsevent;
                     [self interpretKeyEvents:@[nsevent]];
                     m_currentlyInterpretedKeyEvent = 0;
+                    // if the last key we sent was dead, then pass the next key to the IM as well to complete composition
+                    m_lastKeyDead = text.isEmpty();
                 }
             }
         }
