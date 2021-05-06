@@ -104,13 +104,6 @@ QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QCocoaMenuBar);
     \return the underlying NSOpenGLContext.
 */
 
-struct Q_GUI_EXPORT QCocoaGLContext
-{
-    QT_DECLARE_NATIVE_INTERFACE(QCocoaGLContext)
-    static QOpenGLContext *fromNative(QT_IGNORE_DEPRECATIONS(NSOpenGLContext) *, QOpenGLContext *shareContext = nullptr);
-    virtual QT_IGNORE_DEPRECATIONS(NSOpenGLContext) *nativeContext() const = 0;
-};
-
 QT_DEFINE_NATIVE_INTERFACE(QCocoaGLContext, QOpenGLContext);
 QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QCocoaGLIntegration);
 
