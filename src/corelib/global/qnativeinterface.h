@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -37,55 +37,37 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORMMENU_P_H
-#define QPLATFORMMENU_P_H
+#include <QtCore/qglobal.h>
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include <QtGui/private/qtguiglobal_p.h>
-
-#include <QtCore/qnativeinterface.h>
+#ifndef QNATIVEINTERFACE_H
+#define QNATIVEINTERFACE_H
 
 QT_BEGIN_NAMESPACE
 
-// ----------------- QNativeInterface -----------------
+// Ensures that the interface's typeinfo is exported so that
+// dynamic casts work reliably, and protects the destructor
+// so that pointers to the interface can't be deleted.
+#define QT_DECLARE_NATIVE_INTERFACE(InterfaceClass) \
+    protected: virtual ~InterfaceClass(); public:
 
-#if !defined(Q_OS_MACOS) && defined(Q_CLANG_QDOC)
-typedef void NSMenu;
-#else
-QT_END_NAMESPACE
-Q_FORWARD_DECLARE_OBJC_CLASS(NSMenu);
-QT_BEGIN_NAMESPACE
-#endif
+// Declares an accessor for the native interface
+#define QT_DECLARE_NATIVE_INTERFACE_ACCESSOR \
+    template <typename QNativeInterface> \
+    QNativeInterface *nativeInterface() const;
 
-namespace QNativeInterface::Private {
+// Provides a definition for the interface destructor
+#define QT_DEFINE_NATIVE_INTERFACE_2(Namespace, InterfaceClass) \
+    QT_PREPEND_NAMESPACE(Namespace)::InterfaceClass::~InterfaceClass() = default
 
-#if defined(Q_OS_MACOS) || defined(Q_CLANG_QDOC)
-struct Q_GUI_EXPORT QCocoaMenu
-{
-    QT_DECLARE_NATIVE_INTERFACE(QCocoaMenu)
-    virtual NSMenu *nsMenu() const = 0;
-    virtual void setAsDockMenu() const = 0;
-};
+// Provides a definition for the destructor, and an explicit
+// template instantiation of the native interface accessor.
+#define QT_DEFINE_NATIVE_INTERFACE_3(Namespace, InterfaceClass, PublicClass) \
+    QT_DEFINE_NATIVE_INTERFACE_2(Namespace, InterfaceClass); \
+    template Q_DECL_EXPORT QT_PREPEND_NAMESPACE(Namespace)::InterfaceClass *PublicClass::nativeInterface() const
 
-struct Q_GUI_EXPORT QCocoaMenuBar
-{
-    QT_DECLARE_NATIVE_INTERFACE(QCocoaMenuBar)
-    virtual NSMenu *nsMenu() const = 0;
-};
-#endif
-
-} // QNativeInterface::Private
+#define QT_DEFINE_NATIVE_INTERFACE(...) QT_OVERLOADED_MACRO(QT_DEFINE_NATIVE_INTERFACE, QNativeInterface, __VA_ARGS__)
+#define QT_DEFINE_PRIVATE_NATIVE_INTERFACE(...) QT_OVERLOADED_MACRO(QT_DEFINE_NATIVE_INTERFACE, QNativeInterface::Private, __VA_ARGS__)
 
 QT_END_NAMESPACE
 
-#endif // QPLATFORMMENU_P_H
+#endif // QNATIVEINTERFACE_H

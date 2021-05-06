@@ -46,6 +46,8 @@
 #include <QtGui/qopenglcontext.h>
 #include <QtGui/qwindowdefs.h>
 
+#include <QtCore/qnativeinterface.h>
+
 #if defined(Q_OS_MACOS)
 Q_FORWARD_DECLARE_OBJC_CLASS(NSOpenGLContext);
 #endif

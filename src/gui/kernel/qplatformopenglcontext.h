@@ -59,6 +59,8 @@
 #include <QtGui/qopengl.h>
 #include <QtGui/qopenglcontext.h>
 
+#include <QtCore/qnativeinterface.h>
+
 QT_BEGIN_NAMESPACE
 
 

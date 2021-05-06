@@ -49,6 +49,7 @@ qt_internal_add_module(Core
         global/qlogging.cpp global/qlogging.h
         global/qmalloc.cpp
         global/qnamespace.h # this header is specified on purpose so AUTOMOC processes it
+        global/qnativeinterface.h
         global/qnumeric.cpp global/qnumeric.h global/qnumeric_p.h
         global/qoperatingsystemversion.cpp global/qoperatingsystemversion.h global/qoperatingsystemversion_p.h
         global/qprocessordetection.h

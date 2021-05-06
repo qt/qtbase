@@ -42,6 +42,7 @@
 
 #include <QtGui/qtguiglobal.h>
 #include <QtGui/qoffscreensurface.h>
+#include <QtCore/qnativeinterface.h>
 
 #if defined(Q_OS_ANDROID)
 struct ANativeWindow;

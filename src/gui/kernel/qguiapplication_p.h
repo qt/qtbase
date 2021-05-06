@@ -58,6 +58,7 @@
 #include <QtCore/QSharedPointer>
 #include <QtCore/private/qcoreapplication_p.h>
 
+#include <QtCore/qnativeinterface.h>
 #include <QtCore/private/qthread_p.h>
 
 #include <qpa/qwindowsysteminterface.h>

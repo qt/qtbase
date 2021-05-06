@@ -54,6 +54,7 @@
 #include <QtGui/private/qtguiglobal_p.h>
 #include <QtCore/qbasictimer.h>
 #include <QtCore/qrect.h>
+#include <QtCore/qnativeinterface.h>
 
 QT_BEGIN_NAMESPACE
 

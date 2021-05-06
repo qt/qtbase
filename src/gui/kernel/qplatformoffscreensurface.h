@@ -54,6 +54,8 @@
 #include <QtGui/qoffscreensurface.h>
 #include <QtCore/qscopedpointer.h>
 
+#include <QtCore/qnativeinterface.h>
+
 QT_BEGIN_NAMESPACE
 
 class QOffscreenSurface;

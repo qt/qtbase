@@ -41,6 +41,7 @@
 #define QCOREAPPLICATION_PLATFORM_H
 
 #include <QtCore/qglobal.h>
+#include <QtCore/qnativeinterface.h>
 
 #if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
 class _jobject;

@@ -57,6 +57,7 @@
 #include <qlocale.h>
 #include <qevent.h>
 
+#include <QtCore/qnativeinterface.h>
 
 QT_BEGIN_NAMESPACE
 

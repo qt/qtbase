@@ -1395,30 +1395,6 @@ inline int qIntCast(float f) { return int(f); }
 #define QT_OVERLOADED_MACRO_IMP(MACRO, ARGC) QT_OVERLOADED_MACRO_EXPAND(MACRO, ARGC)
 #define QT_OVERLOADED_MACRO(MACRO, ...) QT_VA_ARGS_EXPAND(QT_OVERLOADED_MACRO_IMP(MACRO, QT_VA_ARGS_COUNT(__VA_ARGS__))(__VA_ARGS__))
 
-// Ensures that the interface's typeinfo is exported so that
-// dynamic casts work reliably, and protects the destructor
-// so that pointers to the interface can't be deleted.
-#define QT_DECLARE_NATIVE_INTERFACE(InterfaceClass) \
-    protected: virtual ~InterfaceClass(); public:
-
-// Declares an accessor for the native interface
-#define QT_DECLARE_NATIVE_INTERFACE_ACCESSOR \
-    template <typename QNativeInterface> \
-    QNativeInterface *nativeInterface() const;
-
-// Provides a definition for the interface destructor
-#define QT_DEFINE_NATIVE_INTERFACE_2(Namespace, InterfaceClass) \
-    QT_PREPEND_NAMESPACE(Namespace)::InterfaceClass::~InterfaceClass() = default
-
-// Provides a definition for the destructor, and an explicit
-// template instantiation of the native interface accessor.
-#define QT_DEFINE_NATIVE_INTERFACE_3(Namespace, InterfaceClass, PublicClass) \
-    QT_DEFINE_NATIVE_INTERFACE_2(Namespace, InterfaceClass); \
-    template Q_DECL_EXPORT QT_PREPEND_NAMESPACE(Namespace)::InterfaceClass *PublicClass::nativeInterface() const
-
-#define QT_DEFINE_NATIVE_INTERFACE(...) QT_OVERLOADED_MACRO(QT_DEFINE_NATIVE_INTERFACE, QNativeInterface, __VA_ARGS__)
-#define QT_DEFINE_PRIVATE_NATIVE_INTERFACE(...) QT_OVERLOADED_MACRO(QT_DEFINE_NATIVE_INTERFACE, QNativeInterface::Private, __VA_ARGS__)
-
 // This macro can be used to calculate member offsets for types with a non standard layout.
 // It uses the fact that offsetof() is allowed to support those types since C++17 as an optional
 // feature. All our compilers do support this, but some issue a warning, so we wrap the offsetof()

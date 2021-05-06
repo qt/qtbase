@@ -42,6 +42,7 @@
 
 #include <QtGui/qtguiglobal.h>
 #include <QtCore/QObject>
+#include <QtCore/qnativeinterface.h>
 #include <QtGui/qsurface.h>
 Q_MOC_INCLUDE(<QScreen>)
 

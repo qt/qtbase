@@ -47,6 +47,7 @@
 #include <QtCore/qnamespace.h>
 #include <QtCore/QObject>
 #include <QtCore/QScopedPointer>
+#include <QtCore/qnativeinterface.h>
 
 #include <QtGui/QSurfaceFormat>
 
@@ -60,6 +61,7 @@
 #include <QtGui/qopengl.h>
 
 #include <QtCore/qvariant.h>
+#include <QtCore/qnativeinterface.h>
 
 QT_BEGIN_NAMESPACE
 
