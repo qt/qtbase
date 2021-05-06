@@ -59,7 +59,7 @@ public:
     ~QOffscreenX11PlatformNativeInterface();
 
     void *nativeResourceForScreen(const QByteArray &resource, QScreen *screen) override;
-#ifndef QT_NO_OPENGL
+#if !defined(QT_NO_OPENGL) && QT_CONFIG(xcb_glx_plugin)
     void *nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context) override;
 #endif
 
@@ -72,7 +72,9 @@ public:
     ~QOffscreenX11Integration();
     bool hasCapability(QPlatformIntegration::Capability cap) const override;
 
+#if !defined(QT_NO_OPENGL) && QT_CONFIG(xcb_glx_plugin)
     QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const override;
+#endif
     QOffscreenX11PlatformNativeInterface *nativeInterface() const override;
 };
 
@@ -93,6 +95,7 @@ private:
     QScopedPointer<QOffscreenX11Info> m_x11Info;
 };
 
+#if QT_CONFIG(xcb_glx_plugin)
 class QOffscreenX11GLXContextData;
 
 class QOffscreenX11GLXContext : public QPlatformOpenGLContext
@@ -119,6 +122,7 @@ public:
 private:
     QScopedPointer<QOffscreenX11GLXContextData> d;
 };
+#endif // QT_CONFIG(xcb_glx_plugin)
 
 QT_END_NAMESPACE
 

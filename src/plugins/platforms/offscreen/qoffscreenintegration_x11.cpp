@@ -88,6 +88,7 @@ bool QOffscreenX11Integration::hasCapability(QPlatformIntegration::Capability ca
     }
 }
 
+#if !defined(QT_NO_OPENGL) && QT_CONFIG(xcb_glx_plugin)
 QPlatformOpenGLContext *QOffscreenX11Integration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
     auto &connection = nativeInterface()->m_connection;
@@ -100,6 +101,7 @@ QPlatformOpenGLContext *QOffscreenX11Integration::createPlatformOpenGLContext(QO
 
     return new QOffscreenX11GLXContext(connection->x11Info(), context);
 }
+#endif // !defined(QT_NO_OPENGL) && QT_CONFIG(xcb_glx_plugin)
 
 QOffscreenX11PlatformNativeInterface *QOffscreenX11Integration::nativeInterface() const
 {
@@ -121,7 +123,7 @@ void *QOffscreenX11PlatformNativeInterface::nativeResourceForScreen(const QByteA
     return nullptr;
 }
 
-#ifndef QT_NO_OPENGL
+#if !defined(QT_NO_OPENGL) && QT_CONFIG(xcb_glx_plugin)
 void *QOffscreenX11PlatformNativeInterface::nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context) {
     if (resource.toLower() == QByteArrayLiteral("glxconfig") ) {
         if (context) {
@@ -164,6 +166,7 @@ QOffscreenX11Info *QOffscreenX11Connection::x11Info()
     return m_x11Info.data();
 }
 
+#if QT_CONFIG(xcb_glx_plugin)
 class QOffscreenX11GLXContextData
 {
 public:
@@ -311,5 +314,5 @@ void *QOffscreenX11GLXContext::glxConfig() const
 {
     return d->config;
 }
-
+#endif // QT_CONFIG(xcb_glx_plugin)
 QT_END_NAMESPACE
