@@ -1173,7 +1173,7 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
 {
     Q_UNUSED(expectedSize); // Avoid warning in release mode
     Q_UNUSED(buf);
-    int size = 0;
+    qsizetype size = 0;
     int dataIndex;
     int paramsIndex;
     int enumIndex;
@@ -1467,7 +1467,7 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
             }
         }
         // parameterMetaTypesIndex is equal to the total number of metatypes
-        size += static_cast<int>(sizeof(QMetaType) * parameterMetaTypesIndex);
+        size += sizeof(QMetaType) * parameterMetaTypesIndex;
     }
 
     // Align the final size and return it.
