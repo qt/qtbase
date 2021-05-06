@@ -77,7 +77,7 @@ int main(int argc, char **argv)
         std::cerr << "Loaded plugins do not match what was expected!" << std::endl
                   << "Expected plugins:" << std::endl;
 
-        QList<QString> expectedPluginList = expectedPluginSet.toList();
+        QList<QString> expectedPluginList = expectedPluginSet.values();
         expectedPluginList.sort();
         for (QString plugin : expectedPluginList) {
             std::cerr << (actualPluginSet.contains(plugin) ? "  " : "- ")
@@ -86,7 +86,7 @@ int main(int argc, char **argv)
 
         std::cerr << std::endl << "Actual plugins:" << std::endl;
 
-        QList<QString> actualPluginList = actualPluginSet.toList();
+        QList<QString> actualPluginList = actualPluginSet.values();
         actualPluginList.sort();
         for (QString plugin : actualPluginList) {
             std::cerr << (expectedPluginSet.contains(plugin) ? "  " : "+ ")

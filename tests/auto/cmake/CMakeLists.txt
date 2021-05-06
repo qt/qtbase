@@ -221,8 +221,30 @@ if(NOT NO_WIDGETS)
     _qt_internal_test_expect_pass(test_QTBUG-63422)
 endif()
 
-# FIXME: Needs porting of the qmake .pro files to create the modules and plugins in Qt6 CMake land.
-# _qt_internal_test_expect_pass(test_import_plugins BINARY ${CMAKE_CTEST_COMMAND})
+# Find main Qt installation location and bin dir.
+if(QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX)
+    set(qt_install_prefix "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}")
+elseif(QT6_INSTALL_PREFIX)
+    set(qt_install_prefix "${QT6_INSTALL_PREFIX}")
+endif()
+if(INSTALL_BINDIR)
+    set(qt_install_bin_dir "${INSTALL_BINDIR}")
+elseif(QT6_INSTALL_BINS)
+    set(qt_install_bin_dir "${QT6_INSTALL_BINS}")
+endif()
+
+# Test building and installing a few dummy Qt modules and plugins.
+_qt_internal_test_expect_pass(mockplugins
+    BINARY "${CMAKE_COMMAND}"
+    BINARY_ARGS
+    "-DQT_BUILD_DIR=${CMAKE_CURRENT_BINARY_DIR}/mockplugins"
+    -P "${qt_install_prefix}/${qt_install_bin_dir}/qt-cmake-private-install.cmake")
+set_tests_properties(mockplugins PROPERTIES FIXTURES_SETUP build_mockplugins)
+
+# Test importing the plugins built in the project above.
+_qt_internal_test_expect_pass(test_import_plugins BINARY ${CMAKE_CTEST_COMMAND} BINARY_ARGS -V)
+set_tests_properties(test_import_plugins PROPERTIES FIXTURES_REQUIRED build_mockplugins)
+
 _qt_internal_test_expect_pass(test_versionless_targets)
 
 _qt_internal_test_expect_pass(test_add_resources_binary_generated

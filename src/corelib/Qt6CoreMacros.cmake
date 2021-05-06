@@ -803,10 +803,13 @@ function(qt6_import_plugins target)
 
             # Check if passed plugin target name is a version-less one, and make a version-full
             # one.
+            set_property(TARGET "${target}" APPEND PROPERTY "QT_PLUGINS_${_current_type}" "${_arg}")
             _qt_get_plugin_name_with_version("${_arg}" qt_plugin_with_version)
-            if(TARGET "${_arg}" OR TARGET "${qt_plugin_with_version}")
-                set_property(TARGET "${target}" APPEND PROPERTY "QT_PLUGINS_${_current_type}" "${_arg}")
-            else()
+
+            # TODO: Do we really need this check? We didn't have it in Qt5, and plugin targets
+            # wrapped in genexes end up causing warnings, but we explicitly use GENEX_EVAL to
+            # support them.
+            if(NOT TARGET "${_arg}" AND NOT TARGET "${qt_plugin_with_version}")
                 message("Warning: plug-in ${_arg} is not known to the current Qt installation.")
             endif()
         endif()

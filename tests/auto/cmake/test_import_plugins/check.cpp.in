@@ -5,4 +5,4 @@ QString expectedPlugins[] = {
 @EXPECTED_PLUGINS@
 };
 
-std::size_t numExpectedPlugins = sizeof(expectedPlugins) / sizeof(numExpectedPlugins);
+std::size_t numExpectedPlugins = sizeof(expectedPlugins) / sizeof(*expectedPlugins);
