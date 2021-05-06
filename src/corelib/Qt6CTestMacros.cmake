@@ -134,13 +134,17 @@ endfunction()
 #
 # BINARY: Path to the test artifact that will be executed after the build is complete. If a
 #         relative path is specified, it will be counted from the build directory.
+#         Can also be passed a random executable to be found in PATH, like 'ctest'.
+#
+# BINARY_ARGS: Additional arguments to pass to the BINARY.
 #
 # TESTNAME: a custom test name to use instead of the one derived from the source directory name
 #
 # BUILD_OPTIONS: a list of -D style CMake definitions to pass to ctest's --build-options (which
 #                are ultimately passed to the CMake invocation of the test project)
 macro(_qt_internal_test_expect_pass _dir)
-  cmake_parse_arguments(_ARGS "SIMULATE_IN_SOURCE" "BINARY;TESTNAME" "BUILD_OPTIONS" ${ARGN})
+  cmake_parse_arguments(_ARGS "SIMULATE_IN_SOURCE" "BINARY;TESTNAME" "BUILD_OPTIONS;BINARY_ARGS"
+                        ${ARGN})
   if(_ARGS_TESTNAME)
       set(testname "${_ARGS_TESTNAME}")
   else()
@@ -192,7 +196,7 @@ macro(_qt_internal_test_expect_pass _dir)
         --build-project "${_dir}"
         --build-options "-DCMAKE_PREFIX_PATH=${__expect_pass_prefixes}" ${BUILD_OPTIONS_LIST}
                         ${_ARGS_BUILD_OPTIONS}
-        --test-command ${_ARGS_BINARY}
+        --test-command ${_ARGS_BINARY} ${_ARGS_BINARY_ARGS}
     )
     add_test(${testname} ${CMAKE_CTEST_COMMAND} ${ctest_command_args})
     if(_ARGS_SIMULATE_IN_SOURCE)
