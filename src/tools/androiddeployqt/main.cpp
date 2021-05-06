@@ -2845,39 +2845,39 @@ bool signPackage(const Options &options)
         }
     }
 
-    QString apkSignerCommandLine = QLatin1String("%1 sign --ks %2")
+    QString apkSignCommand = QLatin1String("%1 sign --ks %2")
             .arg(shellQuote(apksignerTool), shellQuote(options.keyStore));
 
     if (!options.keyStorePassword.isEmpty())
-        apkSignerCommandLine += QLatin1String(" --ks-pass pass:%1").arg(shellQuote(options.keyStorePassword));
+        apkSignCommand += QLatin1String(" --ks-pass pass:%1").arg(shellQuote(options.keyStorePassword));
 
     if (!options.keyStoreAlias.isEmpty())
-        apkSignerCommandLine += QLatin1String(" --ks-key-alias %1").arg(shellQuote(options.keyStoreAlias));
+        apkSignCommand += QLatin1String(" --ks-key-alias %1").arg(shellQuote(options.keyStoreAlias));
 
     if (!options.keyPass.isEmpty())
-        apkSignerCommandLine += QLatin1String(" --key-pass pass:%1").arg(shellQuote(options.keyPass));
+        apkSignCommand += QLatin1String(" --key-pass pass:%1").arg(shellQuote(options.keyPass));
 
     if (options.verbose)
-        apkSignerCommandLine += QLatin1String(" --verbose");
+        apkSignCommand += QLatin1String(" --verbose");
 
-    apkSignerCommandLine += QLatin1String(" %1")
+    apkSignCommand += QLatin1String(" %1")
             .arg(packagePath(options, SignedAPK));
 
-    auto apkSignerRunner = [&] {
-        FILE *apkSignerCommand = openProcess(apkSignerCommandLine);
-        if (apkSignerCommand == 0) {
+    auto apkSignerRunner = [](const QString &command, bool verbose) {
+        FILE *apkSigner = openProcess(command);
+        if (apkSigner == 0) {
             fprintf(stderr, "Couldn't run apksigner.\n");
             return false;
         }
 
         char buffer[512];
-        while (fgets(buffer, sizeof(buffer), apkSignerCommand) != 0)
+        while (fgets(buffer, sizeof(buffer), apkSigner) != 0)
             fprintf(stdout, "%s", buffer);
 
-        int errorCode = pclose(apkSignerCommand);
+        int errorCode = pclose(apkSigner);
         if (errorCode != 0) {
             fprintf(stderr, "apksigner command failed.\n");
-            if (!options.verbose)
+            if (!verbose)
                 fprintf(stderr, "  -- Run with --verbose for more information.\n");
             return false;
         }
@@ -2885,14 +2885,14 @@ bool signPackage(const Options &options)
     };
 
     // Sign the package
-    if (!apkSignerRunner())
+    if (!apkSignerRunner(apkSignCommand, options.verbose))
         return false;
 
-    apkSignerCommandLine = QLatin1String("%1 verify --verbose %2")
+    const QString apkVerifyCommand = QLatin1String("%1 verify --verbose %2")
         .arg(shellQuote(apksignerTool), packagePath(options, SignedAPK));
 
     // Verify the package and remove the unsigned apk
-    return apkSignerRunner() && QFile::remove(packagePath(options, UnsignedAPK));
+    return apkSignerRunner(apkVerifyCommand, true) && QFile::remove(packagePath(options, UnsignedAPK));
 }
 
 enum ErrorCode
