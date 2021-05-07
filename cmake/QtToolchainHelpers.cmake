@@ -130,11 +130,13 @@ function(qt_internal_create_toolchain_file)
         # When building another qt repo, ensure the same list of architectures is used by default.
         # Detection of a qt repo is done by checking for QT_REPO_MODULE_VERSION which is set in
         # the repo's .cmake.conf file.
-        # Standalone tests will be not be built with multiple architectures to avoid issues in the
-        # CI when trying to run cmake build tests on VMs that do not have a universal macOS
+        # Most standalone tests will also be built with multiple architectures.
+        # Certain tests will be built with a single arch only (like tests/auto/cmake) to avoid
+        # issues in the CI when trying to build them on VMs that do not have a universal macOS
         # SDK.
-        list(APPEND init_platform "# Only build multiple architectures when building Qt itself")
-        list(APPEND init_platform "if((QT_REPO_MODULE_VERSION AND NOT QT_BUILD_STANDALONE_TESTS) OR QT_FORCE_QT_OSX_ARCHITECTURES)")
+        list(APPEND init_platform
+            "# Only build multiple architectures when building Qt itself. Can be explicitly enabled or disabled.")
+        list(APPEND init_platform "if((QT_REPO_MODULE_VERSION AND NOT QT_FORCE_SINGLE_QT_OSX_ARCHITECTURE) OR QT_FORCE_ALL_QT_OSX_ARCHITECTURES)")
         list(APPEND init_platform "    set(__qt_toolchain_building_qt_repo TRUE)")
         list(APPEND init_platform "    set(CMAKE_OSX_ARCHITECTURES \"\${QT_OSX_ARCHITECTURES}\" CACHE STRING \"\")")
         list(APPEND init_platform "endif()")

@@ -50,6 +50,17 @@ if (NO_DBUS)
   list(APPEND BUILD_OPTIONS_LIST "-DNO_DBUS=True")
 endif()
 
+if(APPLE AND CMAKE_OSX_ARCHITECTURES)
+    list(LENGTH CMAKE_OSX_ARCHITECTURES osx_arch_count)
+
+    # When Qt is built as universal config (macOS or iOS), force CMake build tests to build one
+    # architecture instead of all of them, because the build machine that builds the cmake tests
+    # might not have a universal SDK installed.
+    if(osx_arch_count GREATER 1)
+        list(APPEND BUILD_OPTIONS_LIST "-DQT_FORCE_SINGLE_QT_OSX_ARCHITECTURE=ON")
+    endif()
+endif()
+
 foreach(module ${CMAKE_MODULES_UNDER_TEST})
     list(APPEND BUILD_OPTIONS_LIST
         "-DCMAKE_${module}_MODULE_MAJOR_VERSION=${CMAKE_${module}_MODULE_MAJOR_VERSION}"
