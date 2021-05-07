@@ -157,8 +157,16 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QMacAccessibilityElement);
     if (state.searchEdit)
         traits |= UIAccessibilityTraitSearchField;
 
-    if (iface->role() == QAccessible::Button)
+    const auto accessibleRole = iface->role();
+    if (accessibleRole == QAccessible::Button) {
         traits |= UIAccessibilityTraitButton;
+    } else if (accessibleRole == QAccessible::EditableText) {
+        static auto defaultTextFieldTraits = []{
+            auto *textField = [[[UITextField alloc] initWithFrame:CGRectZero] autorelease];
+            return textField.accessibilityTraits;
+        }();
+        traits |= defaultTextFieldTraits;
+    }
 
     if (iface->valueInterface())
         traits |= UIAccessibilityTraitAdjustable;
