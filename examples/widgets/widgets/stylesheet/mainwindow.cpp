@@ -76,10 +76,12 @@ void MainWindow::on_editStyleAction_triggered()
 
 void MainWindow::on_aboutAction_triggered()
 {
+    const QString url = QStringLiteral("http://doc.qt.io/qt-%1/stylesheet.html")
+        .arg(QT_VERSION_MAJOR);
     QMessageBox::about(this, tr("About Style sheet"),
         tr("The <b>Style Sheet</b> example shows how widgets can be styled "
-           "using <a href=\"http://doc.qt.io/qt-5/stylesheet.html\">Qt "
+           "using <a href=\"%1\">Qt "
            "Style Sheets</a>. Click <b>File|Edit Style Sheet</b> to pop up the "
            "style editor, and either choose an existing style sheet or design "
-           "your own."));
+           "your own.").arg(url));
 }
