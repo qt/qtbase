@@ -77,6 +77,7 @@ public:
     int methodIndex() const;
     int relativeMethodIndex() const;
     int revision() const;
+    bool isConst() const;
 
     inline const QMetaObject *enclosingMetaObject() const { return mobj; }
 

@@ -2140,6 +2140,23 @@ int QMetaMethod::revision() const
 }
 
 /*!
+    \since 6.2
+
+    Returns whether the method is const qualified.
+
+    \note This method might errorneously return \false for a const method
+    if it belongs to a library compiled against an older version of Qt.
+ */
+bool QMetaMethod::isConst() const
+{
+    if (!mobj)
+        return false;
+    if (QMetaObjectPrivate::get(mobj)->revision < 10)
+        return false;
+    return data.flags() & MethodIsConst;
+}
+
+/*!
     Returns the access specification of this method (private,
     protected, or public).
 

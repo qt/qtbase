@@ -1743,6 +1743,28 @@ void QMetaMethodBuilder::setAttributes(int value)
 }
 
 /*!
+    Returns true if the method is const qualified.
+ */
+int QMetaMethodBuilder::isConst() const
+{
+    QMetaMethodBuilderPrivate *d = d_func();
+    if (!d)
+        return false;
+    return (d->attributes & MethodIsConst);
+}
+
+void QMetaMethodBuilder::setConst(bool methodIsConst)
+{
+    QMetaMethodBuilderPrivate *d = d_func();
+    if (!d)
+        return;
+    if (methodIsConst)
+        d->attributes |= MethodIsConst;
+    else
+        d->attributes &= ~MethodIsConst;
+}
+
+/*!
     Returns the revision of this method.
 
     \sa setRevision()

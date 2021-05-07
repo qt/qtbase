@@ -747,7 +747,7 @@ void Generator::generateFunctions(const QList<FunctionDef> &list, const char *fu
         const FunctionDef &f = list.at(i);
 
         QByteArray comment;
-        unsigned char flags = type;
+        uint flags = type;
         if (f.access == FunctionDef::Private) {
             flags |= AccessPrivate;
             comment.append("Private");
@@ -773,6 +773,11 @@ void Generator::generateFunctions(const QList<FunctionDef> &list, const char *fu
         if (f.revision > 0) {
             flags |= MethodRevisioned;
             comment.append(" | MethodRevisioned");
+        }
+
+        if (f.isConst) {
+            flags |= MethodIsConst;
+            comment.append(" | MethodIsConst ");
         }
 
         int argc = f.arguments.count();

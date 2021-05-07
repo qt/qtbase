@@ -98,7 +98,9 @@ enum MethodFlags {
     MethodCompatibility = 0x10,
     MethodCloned = 0x20,
     MethodScriptable = 0x40,
-    MethodRevisioned = 0x80
+    MethodRevisioned = 0x80,
+
+    MethodIsConst = 0x100, // no use case for volatile so far
 };
 
 enum MetaObjectFlag {
@@ -173,6 +175,7 @@ struct QMetaObjectPrivate
     // revision 8 is Qt 5.12: It adds the enum name to QMetaEnum
     // revision 9 is Qt 6.0: It adds the metatype of properties and methods
     // revision 10 is Qt 6.2: The metatype of the metaobject is stored in the metatypes array
+    //                        and metamethods store a flag stating whether they are const
     enum { OutputRevision = 10 }; // Used by moc, qmetaobjectbuilder and qdbus
     enum { IntsPerMethod = QMetaMethod::Data::Size };
     enum { IntsPerEnum = QMetaEnum::Data::Size };

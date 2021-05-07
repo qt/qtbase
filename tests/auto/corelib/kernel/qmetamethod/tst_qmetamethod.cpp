@@ -55,6 +55,8 @@ private slots:
     void parameterMetaType();
 
     void parameterTypeName();
+
+    void isConst();
 };
 
 struct CustomType { };
@@ -82,7 +84,7 @@ public:
                                  uchar ucharArg, float floatArg);
     Q_INVOKABLE MethodTestObject(bool, int);
 
-    Q_INVOKABLE void voidInvokable();
+    Q_INVOKABLE void voidInvokable() const;
     Q_INVOKABLE void voidInvokableInt(int voidInvokableIntArg);
     Q_INVOKABLE void voidInvokableQReal(qreal voidInvokableQRealArg);
     Q_INVOKABLE void voidInvokableQString(const QString &voidInvokableQStringArg);
@@ -143,7 +145,7 @@ MethodTestObject::MethodTestObject(bool, int, uint, qlonglong, qulonglong,
                                    uchar, float) {}
 MethodTestObject::MethodTestObject(bool, int) {}
 
-void MethodTestObject::voidInvokable() {}
+void MethodTestObject::voidInvokable() const {}
 void MethodTestObject::voidInvokableInt(int) {}
 void MethodTestObject::voidInvokableQReal(qreal) {}
 void MethodTestObject::voidInvokableQString(const QString &) {}
@@ -863,6 +865,25 @@ void tst_QMetaMethod::parameterTypeName()
         QCOMPARE(mm.parameterTypeName(0), QByteArray("int"));
         QCOMPARE(mm.parameterTypeName(1), QByteArray("float"));
         QCOMPARE(mm.parameterTypeName(2), QByteArray("MyGadget"));
+    }
+}
+
+void tst_QMetaMethod::isConst()
+{
+    auto mo = MethodTestObject::staticMetaObject;
+    {
+        const auto normalized = QMetaObject::normalizedSignature("qrealInvokable()");
+        const int idx = mo.indexOfSlot(normalized);
+        QMetaMethod mm = mo.method(idx);
+        QVERIFY(mm.isValid());
+        QCOMPARE(mm.isConst(), false);
+    }
+    {
+        const auto normalized = QMetaObject::normalizedSignature("voidInvokable()");
+        const int idx = mo.indexOfSlot(normalized);
+        QMetaMethod mm = mo.method(idx);
+        QVERIFY(mm.isValid());
+        QCOMPARE(mm.isConst(), true);
     }
 }
 
