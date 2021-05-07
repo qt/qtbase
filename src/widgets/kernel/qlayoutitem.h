@@ -137,6 +137,7 @@ public:
 
     bool hasHeightForWidth() const override;
     int heightForWidth(int) const override;
+    int minimumHeightForWidth(int) const override;
     QSizePolicy::ControlTypes controlTypes() const override;
 protected:
     QWidget *wid;

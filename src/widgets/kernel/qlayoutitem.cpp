@@ -575,6 +575,36 @@ int QWidgetItem::heightForWidth(int w) const
     return hfw;
 }
 
+int QWidgetItem::minimumHeightForWidth(int w) const
+{
+    if (isEmpty())
+        return -1;
+
+    w = !wid->testAttribute(Qt::WA_LayoutUsesWidgetRect)
+      ? fromLayoutItemSize(wid->d_func(), QSize(w, 0)).width()
+      : w;
+
+    int hfw;
+    if (wid->layout())
+        hfw = wid->layout()->totalMinimumHeightForWidth(w);
+    else
+        hfw = wid->heightForWidth(w);   // QWidget doesn't have minimumHeightForWidth()
+
+    if (hfw > wid->maximumHeight())
+        hfw = wid->maximumHeight();
+    if (hfw < wid->minimumHeight())
+        hfw = wid->minimumHeight();
+
+    hfw = !wid->testAttribute(Qt::WA_LayoutUsesWidgetRect)
+        ? toLayoutItemSize(wid->d_func(), QSize(0, hfw)).height()
+        : hfw;
+
+    if (hfw < 0)
+        hfw = 0;
+    return hfw;
+
+}
+
 /*!
     \reimp
 */
