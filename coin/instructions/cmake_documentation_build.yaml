@@ -20,7 +20,7 @@ instructions:
     variableValue: "-DCMAKE_INSTALL_PREFIX:PATH={{.InstallDir}} {{.SourceDir}}"
   - !include "{{qt/qtbase}}/call_cmake.yaml"
   - type: ExecuteCommand
-    command: "{{.Env.ENV_PREFIX}} cmake --build . --target generate_docs -v"
+    command: "{{.Env.ENV_PREFIX}} cmake --build . --target docs -v"
     maxTimeInSeconds: 6000
     maxTimeBetweenOutput: 1200
     userMessageOnFailure: Failed to generate documentation.
