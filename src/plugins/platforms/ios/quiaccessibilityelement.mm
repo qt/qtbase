@@ -123,8 +123,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QMacAccessibilityElement);
     if (val) {
         return val->currentValue().toString().toNSString();
     } else if (QAccessibleTextInterface *text = iface->textInterface()) {
-        // FIXME doesn't work?
-        return text->text(0, text->characterCount() - 1).toNSString();
+        return text->text(0, text->characterCount()).toNSString();
     }
 
     return [super accessibilityHint];
