@@ -354,7 +354,7 @@ class QWindowsMime;
 
 struct Q_GUI_EXPORT QWindowsApplication
 {
-    QT_DECLARE_NATIVE_INTERFACE(QWindowsApplication)
+    QT_DECLARE_NATIVE_INTERFACE(QWindowsApplication, 1, QGuiApplication)
 
     enum WindowActivationBehavior {
         DefaultActivateWindow,

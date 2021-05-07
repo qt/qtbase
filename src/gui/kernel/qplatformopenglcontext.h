@@ -104,12 +104,6 @@ private:
     Q_DISABLE_COPY(QPlatformOpenGLContext)
 };
 
-template <typename NativeInterface>
-NativeInterface *QOpenGLContext::nativeInterface() const
-{
-    return dynamic_cast<NativeInterface*>(handle());
-}
-
 namespace QNativeInterface::Private {
 
 #if defined(Q_OS_MACOS)

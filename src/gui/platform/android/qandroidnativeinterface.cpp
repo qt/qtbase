@@ -60,7 +60,7 @@ using namespace QNativeInterface::Private;
     \ingroup native-interfaces-qoffscreensurface
 */
 
-QT_DEFINE_NATIVE_INTERFACE(QAndroidOffscreenSurface, QOffscreenSurface);
+QT_DEFINE_NATIVE_INTERFACE(QAndroidOffscreenSurface);
 QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QAndroidOffScreenIntegration);
 
 QOffscreenSurface  *QNativeInterface::QAndroidOffscreenSurface::fromNative(ANativeWindow *nativeSurface)

@@ -37,36 +37,103 @@
 **
 ****************************************************************************/
 
-#include <QtCore/qglobal.h>
-
 #ifndef QNATIVEINTERFACE_H
 #define QNATIVEINTERFACE_H
 
+#include <QtCore/qglobal.h>
+#include <QtCore/qloggingcategory.h>
+
+#include <typeinfo>
+
+#ifndef QT_STATIC
+#  define Q_NATIVE_INTERFACE_EXPORT Q_DECL_EXPORT
+#  define Q_NATIVE_INTERFACE_IMPORT Q_DECL_IMPORT
+#else
+#  define Q_NATIVE_INTERFACE_EXPORT
+#  define Q_NATIVE_INTERFACE_IMPORT
+#endif
+
 QT_BEGIN_NAMESPACE
 
-// Ensures that the interface's typeinfo is exported so that
-// dynamic casts work reliably, and protects the destructor
-// so that pointers to the interface can't be deleted.
-#define QT_DECLARE_NATIVE_INTERFACE(InterfaceClass) \
-    protected: virtual ~InterfaceClass(); public:
+// We declare a virtual non-inline function in the form
+// of the destructor, making it the key function. This
+// ensures that the typeinfo of the class is exported.
+// By being protected, we also ensure that pointers to
+// the interface can't be deleted.
+#define QT_DECLARE_NATIVE_INTERFACE_3(NativeInterface, Revision, BaseType) \
+    protected: \
+        virtual ~NativeInterface(); \
+        struct TypeInfo { \
+            using baseType = BaseType; \
+            static constexpr int revision = Revision; \
+        }; \
+    public: \
+
+// Revisioned interfaces only make sense when exposed through a base
+// type via QT_DECLARE_NATIVE_INTERFACE_ACCESSOR, as the revision
+// checks happen at that level (and not for normal dynamic_casts).
+#define QT_DECLARE_NATIVE_INTERFACE_2(NativeInterface, Revision) \
+    static_assert(false, "Must provide a base type when specifying revision");
+
+#define QT_DECLARE_NATIVE_INTERFACE_1(NativeInterface) \
+    QT_DECLARE_NATIVE_INTERFACE_3(NativeInterface, 0, void)
+
+#define QT_DECLARE_NATIVE_INTERFACE(...) \
+    QT_OVERLOADED_MACRO(QT_DECLARE_NATIVE_INTERFACE, __VA_ARGS__)
+
+namespace QNativeInterface::Private {
+    template <typename NativeInterface>
+    struct TypeInfo : private NativeInterface
+    {
+        static constexpr int revision() { return NativeInterface::TypeInfo::revision; }
+
+        template<typename BaseType>
+        static constexpr bool isCompatibleWith =
+            std::is_base_of<typename NativeInterface::TypeInfo::baseType, BaseType>::value;
+    };
+
+    template <typename T>
+    Q_NATIVE_INTERFACE_IMPORT void *resolveInterface(const T *that, const std::type_info &type, int revision);
+
+    Q_CORE_EXPORT Q_DECLARE_LOGGING_CATEGORY(lcNativeInterface)
+}
 
 // Declares an accessor for the native interface
 #define QT_DECLARE_NATIVE_INTERFACE_ACCESSOR \
-    template <typename QNativeInterface> \
-    QNativeInterface *nativeInterface() const;
+    template <typename I> \
+    I *nativeInterface() const \
+    { \
+        using T = std::decay_t<decltype(*this)>; \
+        using namespace QNativeInterface::Private; \
+        static_assert(TypeInfo<I>::template isCompatibleWith<T>, \
+            "T::nativeInterface<I>() requires that native interface I is compatible with T"); \
+        \
+        return static_cast<I*>(resolveInterface(this, typeid(I), TypeInfo<I>::revision())); \
+    }
 
 // Provides a definition for the interface destructor
 #define QT_DEFINE_NATIVE_INTERFACE_2(Namespace, InterfaceClass) \
     QT_PREPEND_NAMESPACE(Namespace)::InterfaceClass::~InterfaceClass() = default
 
-// Provides a definition for the destructor, and an explicit
-// template instantiation of the native interface accessor.
-#define QT_DEFINE_NATIVE_INTERFACE_3(Namespace, InterfaceClass, PublicClass) \
-    QT_DEFINE_NATIVE_INTERFACE_2(Namespace, InterfaceClass); \
-    template Q_DECL_EXPORT QT_PREPEND_NAMESPACE(Namespace)::InterfaceClass *PublicClass::nativeInterface() const
-
 #define QT_DEFINE_NATIVE_INTERFACE(...) QT_OVERLOADED_MACRO(QT_DEFINE_NATIVE_INTERFACE, QNativeInterface, __VA_ARGS__)
 #define QT_DEFINE_PRIVATE_NATIVE_INTERFACE(...) QT_OVERLOADED_MACRO(QT_DEFINE_NATIVE_INTERFACE, QNativeInterface::Private, __VA_ARGS__)
+
+#define QT_NATIVE_INTERFACE_RETURN_IF(NativeInterface, baseType) \
+    using QNativeInterface::Private::lcNativeInterface; \
+    qCDebug(lcNativeInterface, "Comparing requested type id %s with available %s", \
+            type.name(), typeid(NativeInterface).name()); \
+    if (type == typeid(NativeInterface)) { \
+        qCDebug(lcNativeInterface, "Match for type id %s. Comparing revisions (requested %d / available %d)", \
+            type.name(), revision, TypeInfo<NativeInterface>::revision()); \
+        if (revision == TypeInfo<NativeInterface>::revision()) { \
+            qCDebug(lcNativeInterface) << "Full match. Returning dynamic cast of" << baseType; \
+            return dynamic_cast<NativeInterface*>(baseType); \
+        } else { \
+            qCWarning(lcNativeInterface, "Native interface revision mismatch (requested %d / available %d) for interface %s", \
+                revision, TypeInfo<NativeInterface>::revision(), type.name()); \
+            return nullptr; \
+        } \
+    }
 
 QT_END_NAMESPACE
 

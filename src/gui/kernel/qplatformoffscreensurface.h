@@ -83,12 +83,6 @@ private:
     Q_DISABLE_COPY(QPlatformOffscreenSurface)
 };
 
-template <typename NativeInterface>
-NativeInterface *QOffscreenSurface::nativeInterface() const
-{
-    return dynamic_cast<NativeInterface*>(surfaceHandle());
-}
-
 namespace QNativeInterface::Private {
 
 #if defined(Q_OS_ANDROID)

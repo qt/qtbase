@@ -95,7 +95,7 @@ using namespace QNativeInterface::Private;
     \note This function requires that the QGuiApplication instance is already created.
 */
 
-QT_DEFINE_NATIVE_INTERFACE(QWGLContext, QOpenGLContext);
+QT_DEFINE_NATIVE_INTERFACE(QWGLContext);
 QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QWindowsGLIntegration);
 
 HMODULE QNativeInterface::QWGLContext::openGLModuleHandle()

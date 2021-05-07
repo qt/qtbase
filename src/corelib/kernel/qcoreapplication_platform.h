@@ -55,7 +55,7 @@ namespace QNativeInterface
 #if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED) || defined(Q_CLANG_QDOC)
 struct Q_CORE_EXPORT QAndroidApplication
 {
-    QT_DECLARE_NATIVE_INTERFACE(QAndroidApplication)
+    QT_DECLARE_NATIVE_INTERFACE(QAndroidApplication, 1, QCoreApplication)
     static jobject context();
     static bool isActivityContext();
     static int sdkVersion();

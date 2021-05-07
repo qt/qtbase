@@ -444,7 +444,7 @@ SettingsDialog::SettingsDialog(QWidget *parent) : QDialog(parent)
     auto layout = new QVBoxLayout(this);
 
     TouchWindowTouchTypes touchTypes;
-    if (auto nativeWindowsApp = dynamic_cast<QWindowsApplication *>(QGuiApplicationPrivate::platformIntegration()))
+    if (auto nativeWindowsApp = qGuiApp->nativeInterface<QWindowsApplication>())
         touchTypes = nativeWindowsApp->touchWindowTouchType();
 
     m_fineCheckBox = new QCheckBox("Fine Touch", this);
@@ -468,7 +468,7 @@ void SettingsDialog::touchTypeToggled()
         types.setFlag(TouchWindowTouchType::FineTouch);
     if (m_palmCheckBox->isChecked())
         types.setFlag(TouchWindowTouchType::WantPalmTouch);
-    if (auto nativeWindowsApp = dynamic_cast<QWindowsApplication *>(QGuiApplicationPrivate::platformIntegration()))
+    if (auto nativeWindowsApp = qGuiApp->nativeInterface<QWindowsApplication>())
         nativeWindowsApp->setTouchWindowTouchType(types);
     else
         qWarning("Missing Interface QWindowsApplication");

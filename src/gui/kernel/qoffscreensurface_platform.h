@@ -55,7 +55,7 @@ namespace QNativeInterface {
 #if defined(Q_OS_ANDROID) || defined(Q_CLANG_QDOC)
 struct Q_GUI_EXPORT QAndroidOffscreenSurface
 {
-    QT_DECLARE_NATIVE_INTERFACE(QAndroidOffscreenSurface)
+    QT_DECLARE_NATIVE_INTERFACE(QAndroidOffscreenSurface, 1, QOffscreenSurface)
     static QOffscreenSurface *fromNative(ANativeWindow *nativeSurface);
     virtual ANativeWindow *nativeSurface() const = 0;
 };

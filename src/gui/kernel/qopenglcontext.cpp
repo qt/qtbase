@@ -1309,6 +1309,32 @@ QDebug operator<<(QDebug debug, const QOpenGLContextGroup *cg)
 }
 #endif // QT_NO_DEBUG_STREAM
 
+using namespace QNativeInterface;
+
+template <>
+Q_NATIVE_INTERFACE_EXPORT void *QNativeInterface::Private::resolveInterface(const QOpenGLContext *that, const std::type_info &type, int revision)
+{
+    Q_UNUSED(that); Q_UNUSED(type); Q_UNUSED(revision);
+
+    auto *platformContext = that->handle();
+    Q_UNUSED(platformContext);
+
+#if defined(Q_OS_MACOS)
+    QT_NATIVE_INTERFACE_RETURN_IF(QCocoaGLContext, platformContext);
+#endif
+#if defined(Q_OS_WIN)
+    QT_NATIVE_INTERFACE_RETURN_IF(QWGLContext, platformContext);
+#endif
+#if QT_CONFIG(xcb_glx_plugin)
+    QT_NATIVE_INTERFACE_RETURN_IF(QGLXContext, platformContext);
+#endif
+#if QT_CONFIG(egl)
+    QT_NATIVE_INTERFACE_RETURN_IF(QEGLContext, platformContext);
+#endif
+
+    return nullptr;
+}
+
 #include "moc_qopenglcontext.cpp"
 
 QT_END_NAMESPACE

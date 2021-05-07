@@ -4196,6 +4196,21 @@ QInputDeviceManager *QGuiApplicationPrivate::inputDeviceManager()
     return m_inputDeviceManager;
 }
 
+template <>
+Q_NATIVE_INTERFACE_EXPORT void *QNativeInterface::Private::resolveInterface(const QGuiApplication *that, const std::type_info &type, int revision)
+{
+    using namespace QNativeInterface::Private;
+
+    auto *platformIntegration = QGuiApplicationPrivate::platformIntegration();
+    Q_UNUSED(platformIntegration);
+
+#if defined(Q_OS_WIN)
+    QT_NATIVE_INTERFACE_RETURN_IF(QWindowsApplication, platformIntegration);
+#endif
+
+    return resolveInterface<QCoreApplication>(that, type, revision);
+}
+
 #include "moc_qguiapplication.cpp"
 
 QT_END_NAMESPACE

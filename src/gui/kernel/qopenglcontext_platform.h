@@ -71,7 +71,7 @@ namespace QNativeInterface {
 #if defined(Q_OS_MACOS) || defined(Q_CLANG_QDOC)
 struct Q_GUI_EXPORT QCocoaGLContext
 {
-    QT_DECLARE_NATIVE_INTERFACE(QCocoaGLContext)
+    QT_DECLARE_NATIVE_INTERFACE(QCocoaGLContext, 1, QOpenGLContext)
     static QOpenGLContext *fromNative(QT_IGNORE_DEPRECATIONS(NSOpenGLContext) *context, QOpenGLContext *shareContext = nullptr);
     virtual QT_IGNORE_DEPRECATIONS(NSOpenGLContext) *nativeContext() const = 0;
 };
@@ -80,7 +80,7 @@ struct Q_GUI_EXPORT QCocoaGLContext
 #if defined(Q_OS_WIN) || defined(Q_CLANG_QDOC)
 struct Q_GUI_EXPORT QWGLContext
 {
-    QT_DECLARE_NATIVE_INTERFACE(QWGLContext)
+    QT_DECLARE_NATIVE_INTERFACE(QWGLContext, 1, QOpenGLContext)
     static HMODULE openGLModuleHandle();
     static QOpenGLContext *fromNative(HGLRC context, HWND window, QOpenGLContext *shareContext = nullptr);
     virtual HGLRC nativeContext() const = 0;
@@ -90,7 +90,7 @@ struct Q_GUI_EXPORT QWGLContext
 #if QT_CONFIG(xcb_glx_plugin) || defined(Q_CLANG_QDOC)
 struct Q_GUI_EXPORT QGLXContext
 {
-    QT_DECLARE_NATIVE_INTERFACE(QGLXContext)
+    QT_DECLARE_NATIVE_INTERFACE(QGLXContext, 1, QOpenGLContext)
     static QOpenGLContext *fromNative(GLXContext configBasedContext, QOpenGLContext *shareContext = nullptr);
     static QOpenGLContext *fromNative(GLXContext visualBasedContext, void *visualInfo, QOpenGLContext *shareContext = nullptr);
     virtual GLXContext nativeContext() const = 0;
@@ -100,7 +100,7 @@ struct Q_GUI_EXPORT QGLXContext
 #if QT_CONFIG(egl) || defined(Q_CLANG_QDOC)
 struct Q_GUI_EXPORT QEGLContext
 {
-    QT_DECLARE_NATIVE_INTERFACE(QEGLContext)
+    QT_DECLARE_NATIVE_INTERFACE(QEGLContext, 1, QOpenGLContext)
     static QOpenGLContext *fromNative(EGLContext context, EGLDisplay display, QOpenGLContext *shareContext = nullptr);
     virtual EGLContext nativeContext() const = 0;
 };

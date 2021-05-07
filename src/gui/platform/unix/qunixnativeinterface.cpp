@@ -96,7 +96,7 @@ using namespace QNativeInterface::Private;
     \return the underlying GLXContext.
 */
 
-QT_DEFINE_NATIVE_INTERFACE(QGLXContext, QOpenGLContext);
+QT_DEFINE_NATIVE_INTERFACE(QGLXContext);
 QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QGLXIntegration);
 
 QOpenGLContext *QNativeInterface::QGLXContext::fromNative(GLXContext configBasedContext, QOpenGLContext *shareContext)
@@ -143,7 +143,7 @@ QOpenGLContext *QNativeInterface::QGLXContext::fromNative(GLXContext visualBased
     \return the underlying EGLContext.
 */
 
-QT_DEFINE_NATIVE_INTERFACE(QEGLContext, QOpenGLContext);
+QT_DEFINE_NATIVE_INTERFACE(QEGLContext);
 QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QEGLIntegration);
 
 QOpenGLContext *QNativeInterface::QEGLContext::fromNative(EGLContext context, EGLDisplay display, QOpenGLContext *shareContext)
@@ -198,11 +198,6 @@ QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QVsp2Screen);
 
 QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QEvdevKeyMapper);
 
-template <>
-QEvdevKeyMapper *QKeyMapper::nativeInterface<QEvdevKeyMapper>() const
-{
-    return dynamic_cast<QEvdevKeyMapper*>(QGuiApplicationPrivate::platformIntegration());
-}
 #endif // QT_CONFIG(evdev)
 
 QT_END_NAMESPACE
