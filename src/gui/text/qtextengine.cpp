@@ -2190,10 +2190,15 @@ void QTextEngine::itemize() const
                         : formatCollection()->defaultFont().capitalization();
                 if (s) {
                     for (const auto &range : qAsConst(s->formats)) {
-                        if (range.start >= prevPosition && range.start < position && range.format.hasProperty(QTextFormat::FontCapitalization)) {
-                            itemizer.generate(prevPosition, range.start - prevPosition, capitalization);
-                            itemizer.generate(range.start, range.length, range.format.fontCapitalization());
-                            prevPosition = range.start + range.length;
+                        if (range.start + range.length <= prevPosition || range.start >= position)
+                            continue;
+                        if (range.format.hasProperty(QTextFormat::FontCapitalization)) {
+                            if (range.start > prevPosition)
+                                itemizer.generate(prevPosition, range.start - prevPosition, capitalization);
+                            int newStart = std::max(prevPosition, range.start);
+                            int newEnd = std::min(position, range.start + range.length);
+                            itemizer.generate(newStart, newEnd - newStart, range.format.fontCapitalization());
+                            prevPosition = newEnd;
                         }
                     }
                 }
