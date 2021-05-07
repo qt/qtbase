@@ -4163,6 +4163,9 @@ QGles2Buffer::~QGles2Buffer()
 
 void QGles2Buffer::destroy()
 {
+    delete[] data;
+    data = nullptr;
+
     if (!buffer)
         return;
 
@@ -4170,10 +4173,7 @@ void QGles2Buffer::destroy()
     e.type = QRhiGles2::DeferredReleaseEntry::Buffer;
 
     e.buffer.buffer = buffer;
-
     buffer = 0;
-    delete[] data;
-    data = nullptr;
 
     QRHI_RES_RHI(QRhiGles2);
     rhiD->releaseQueue.append(e);
@@ -4197,6 +4197,7 @@ bool QGles2Buffer::create()
             qWarning("Uniform buffer: multiple usages specified, this is not supported by the OpenGL backend");
             return false;
         }
+        delete[] data;
         data = new char[nonZeroSize];
         QRHI_PROF_F(newBuffer(this, uint(nonZeroSize), 0, 1));
         return true;
