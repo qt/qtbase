@@ -121,16 +121,35 @@ qint64 QWindowsPipeWriter::bytesToWrite() const
 }
 
 /*!
-    Writes data to the pipe.
+    Writes a shallow copy of \a ba to the internal buffer.
  */
 bool QWindowsPipeWriter::write(const QByteArray &ba)
+{
+    return writeImpl(ba);
+}
+
+/*!
+    Writes data to the internal buffer.
+ */
+bool QWindowsPipeWriter::write(const char *data, qint64 size)
+{
+    return writeImpl(data, size);
+}
+
+template <typename... Args>
+inline bool QWindowsPipeWriter::writeImpl(Args... args)
 {
     QMutexLocker locker(&mutex);
 
     if (lastError != ERROR_SUCCESS)
         return false;
 
-    writeBuffer.append(ba);
+    writeBuffer.append(args...);
+    return writeImplTail(&locker);
+}
+
+bool QWindowsPipeWriter::writeImplTail(QMutexLocker<QMutex> *locker)
+{
     if (writeSequenceStarted)
         return true;
 
@@ -143,10 +162,10 @@ bool QWindowsPipeWriter::write(const QByteArray &ba)
 
     if (!winEventActPosted) {
         winEventActPosted = true;
-        locker.unlock();
+        locker->unlock();
         QCoreApplication::postEvent(this, new QEvent(QEvent::WinEventAct));
     } else {
-        locker.unlock();
+        locker->unlock();
     }
 
     SetEvent(syncHandle);
@@ -232,8 +251,6 @@ void QWindowsPipeWriter::waitCallback(PTP_CALLBACK_INSTANCE instance, PVOID cont
 bool QWindowsPipeWriter::writeCompleted(DWORD errorCode, DWORD numberOfBytesWritten)
 {
     if (errorCode == ERROR_SUCCESS) {
-        Q_ASSERT(numberOfBytesWritten == DWORD(writeBuffer.nextDataBlockSize()));
-
         bytesWrittenPending = true;
         pendingBytesWrittenValue += numberOfBytesWritten;
         writeBuffer.free(numberOfBytesWritten);

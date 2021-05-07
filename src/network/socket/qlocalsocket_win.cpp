@@ -157,7 +157,6 @@ QLocalSocketPrivate::QLocalSocketPrivate() : QIODevicePrivate(),
        emittedReadyRead(false),
        emittedBytesWritten(false)
 {
-    writeBufferChunkSize = QIODEVICE_BUFFERSIZE;
 }
 
 QLocalSocketPrivate::~QLocalSocketPrivate()
@@ -276,13 +275,18 @@ qint64 QLocalSocket::writeData(const char *data, qint64 len)
 
     if (len == 0)
         return 0;
-    d->write(data, len);
+
     if (!d->pipeWriter) {
         d->pipeWriter = new QWindowsPipeWriter(d->handle, this);
         QObjectPrivate::connect(d->pipeWriter, &QWindowsPipeWriter::bytesWritten,
                                 d, &QLocalSocketPrivate::_q_bytesWritten);
     }
-    d->writeToSocket();
+
+    if (d->isWriteChunkCached(data, len))
+        d->pipeWriter->write(*(d->currentWriteChunk));
+    else
+        d->pipeWriter->write(data, len);
+
     return len;
 }
 
@@ -340,7 +344,7 @@ qint64 QLocalSocket::bytesAvailable() const
 qint64 QLocalSocket::bytesToWrite() const
 {
     Q_D(const QLocalSocket);
-    return d->writeBuffer.size() + d->pipeWriterBytesToWrite();
+    return d->pipeWriterBytesToWrite();
 }
 
 bool QLocalSocket::canReadLine() const
@@ -389,7 +393,6 @@ void QLocalSocket::disconnectFromServer()
         // It must be destroyed before close() to prevent an infinite loop.
         delete d->pipeWriter;
         d->pipeWriter = 0;
-        d->writeBuffer.clear();
     }
 
     flush();
@@ -434,21 +437,8 @@ void QLocalSocketPrivate::_q_bytesWritten(qint64 bytes)
         QScopedValueRollback<bool> guard(emittedBytesWritten, true);
         emit q->bytesWritten(bytes);
     }
-    if (writeBuffer.isEmpty()) {
-        if (state == QLocalSocket::ClosingState && pipeWriterBytesToWrite() == 0)
-            q->close();
-    } else {
-        writeToSocket();
-    }
-}
-
-void QLocalSocketPrivate::writeToSocket()
-{
-    Q_ASSERT(pipeWriter);
-    Q_ASSERT(!writeBuffer.isEmpty());
-
-    if (!pipeWriter->isWriteOperationActive())
-        pipeWriter->write(writeBuffer.read());
+    if (state == QLocalSocket::ClosingState && pipeWriterBytesToWrite() == 0)
+        q->close();
 }
 
 qintptr QLocalSocket::socketDescriptor() const
@@ -489,9 +479,6 @@ bool QLocalSocket::waitForDisconnected(int msecs)
 
     QDeadlineTimer deadline(msecs);
     while (!d->pipeReader->isPipeClosed()) {
-        if (!d->writeBuffer.isEmpty())
-            d->writeToSocket();
-
         QSocketPoller poller(*d);
         if (!poller.poll(deadline))
             return false;
@@ -525,9 +512,6 @@ bool QLocalSocket::waitForReadyRead(int msecs)
 
     QDeadlineTimer deadline(msecs);
     while (!d->pipeReader->isPipeClosed()) {
-        if (!d->writeBuffer.isEmpty())
-            d->writeToSocket();
-
         QSocketPoller poller(*d);
         if (poller.waitForClose || !poller.poll(deadline))
             return false;
@@ -551,11 +535,8 @@ bool QLocalSocket::waitForBytesWritten(int msecs)
 
     QDeadlineTimer deadline(msecs);
     while (!d->pipeReader->isPipeClosed()) {
-        if (!d->writeBuffer.isEmpty()) {
-            d->writeToSocket();
-        } else if (d->pipeWriterBytesToWrite() == 0) {
+        if (bytesToWrite() == 0)
             return false;
-        }
 
         QSocketPoller poller(*d);
         if (!poller.poll(deadline))

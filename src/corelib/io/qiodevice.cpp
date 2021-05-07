@@ -1763,9 +1763,7 @@ qint64 QIODevice::write(const QByteArray &data)
 */
 void QIODevicePrivate::write(const char *data, qint64 size)
 {
-    if (currentWriteChunk != nullptr
-        && currentWriteChunk->constData() == data
-        && currentWriteChunk->size() == size) {
+    if (isWriteChunkCached(data, size)) {
         // We are called from write(const QByteArray &) overload.
         // So, we can make a shallow copy of chunk.
         writeBuffer.append(*currentWriteChunk);

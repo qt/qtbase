@@ -185,6 +185,13 @@ public:
     qint64 skipByReading(qint64 maxSize);
     void write(const char *data, qint64 size);
 
+    inline bool isWriteChunkCached(const char *data, qint64 size) const
+    {
+        return currentWriteChunk != nullptr
+               && currentWriteChunk->constData() == data
+               && currentWriteChunk->size() == size;
+    }
+
 #ifdef QT_NO_QOBJECT
     QIODevice *q_ptr = nullptr;
 #endif

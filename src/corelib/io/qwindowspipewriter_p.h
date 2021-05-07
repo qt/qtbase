@@ -69,6 +69,7 @@ public:
     ~QWindowsPipeWriter();
 
     bool write(const QByteArray &ba);
+    bool write(const char *data, qint64 size);
     void stop();
     bool waitForWrite(int msecs);
     bool checkForWrite() { return consumePendingAndEmit(false); }
@@ -83,6 +84,10 @@ protected:
     bool event(QEvent *e) override;
 
 private:
+    template <typename... Args>
+    inline bool writeImpl(Args... args);
+    bool writeImplTail(QMutexLocker<QMutex> *locker);
+
     void startAsyncWriteLocked();
     static void CALLBACK waitCallback(PTP_CALLBACK_INSTANCE instance, PVOID context,
                                       PTP_WAIT wait, TP_WAIT_RESULT waitResult);
