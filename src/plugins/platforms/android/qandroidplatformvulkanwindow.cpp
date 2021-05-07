@@ -173,7 +173,7 @@ VkSurfaceKHR *QAndroidPlatformVulkanWindow::vkSurface()
             return &m_vkSurface;
 
         QJniEnvironment env;
-        m_nativeWindow = ANativeWindow_fromSurface(env, m_androidSurfaceObject.object());
+        m_nativeWindow = ANativeWindow_fromSurface(env.jniEnv(), m_androidSurfaceObject.object());
 
         VkAndroidSurfaceCreateInfoKHR surfaceInfo;
         memset(&surfaceInfo, 0, sizeof(surfaceInfo));
