@@ -286,12 +286,7 @@ bool QJniEnvironment::registerNativeMethods(const char *className, JNINativeMeth
 
     if (!classObject.isValid())
         return false;
-
-    jclass clazz = d->jniEnv->GetObjectClass(classObject.object());
-    const bool result = registerNativeMethods(clazz, methods, size);
-    d->jniEnv->DeleteLocalRef(clazz);
-
-    return result;
+    return registerNativeMethods(classObject.objectClass(), methods, size);
 }
 
 /*!

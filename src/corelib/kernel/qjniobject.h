@@ -68,6 +68,9 @@ public:
         return static_cast<T>(javaObject());
     }
 
+    jclass objectClass() const;
+    QByteArray className() const;
+
     template <typename T>
     T callMethod(const char *methodName, const char *signature, ...) const
     {

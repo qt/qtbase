@@ -779,10 +779,10 @@ QJniObject::~QJniObject()
     jstring jstring = string.object<jstring>();
     \endcode
 
-    \note The returned object is still kept live by this QJniObject. To keep the
-    object live beyond the lifetime of this QJniObject, for example to record it
+    \note The returned object is still kept alive by this QJniObject. To keep the
+    object alive beyond the lifetime of this QJniObject, for example to record it
     for later use, the easiest approach is to store it in another QJniObject with
-    a suitable lifetime. Alternatively, you can make a new global reference to the
+    a suitable lifetime. Alternatively, you may create a new global reference to the
     object and store it, taking care to free it when you are done with it.
 
     \snippet jni/src_qjniobject.cpp QJniObject scope
@@ -790,6 +790,36 @@ QJniObject::~QJniObject()
 jobject QJniObject::object() const
 {
     return javaObject();
+}
+
+/*!
+    \fn jclass QJniObject::objectClass() const
+
+    Returns the class object held by the QJniObject as a \c jclass.
+
+    \note The returned object is still kept alive by this QJniObject. To keep the
+    object alive beyond the lifetime of this QJniObject, for example to record it
+    for later use, the easiest approach is to store it in another QJniObject with
+    a suitable lifetime. Alternatively, you may create a new global reference to the
+    object and store it, taking care to free it when you are done with it.
+
+    \since 6.2
+*/
+jclass QJniObject::objectClass() const
+{
+    return d->m_jclass;
+}
+
+/*!
+    \fn QByteArray QJniObject::className() const
+
+    Returns the name of the class object held by the QJniObject as a \c QByteArray.
+
+    \since 6.2
+*/
+QByteArray QJniObject::className() const
+{
+    return d->m_className;
 }
 
 QJniObject QJniObject::callObjectMethodV(const char *methodName,
