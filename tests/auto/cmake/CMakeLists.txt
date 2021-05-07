@@ -44,6 +44,22 @@ cmake_minimum_required(VERSION 3.14)
 
 project(cmake_usage_tests)
 
+# Building the CMake tests as part of a Qt prefix build + in-tree tests, currently doesn't work.
+# Each CMake test will fail with a message like
+#
+# CMake Error at qtbase/lib/cmake/Qt6/Qt6Config.cmake:33 (include):
+#   include could not find load file:
+#    qtbase/lib/cmake/Qt6/Qt6Targets.cmake
+#
+# That's because the Qt packages are not installed, and we try to load the Config files from the
+# build dir, but they can't work in a prefix build without installation.
+# Configuring the tests as standalone tests or as a separate project works fine.
+# Configuring the tests in-tree also works fine in a non-prefix build.
+if(QT_REPO_MODULE_VERSION AND NOT QT_BUILD_STANDALONE_TESTS AND QT_WILL_INSTALL)
+    message(WARNING
+        "Skipping building CMake build tests because they don't work in a prefix in-tree config")
+endif()
+
 enable_testing()
 
 # Most of the tests fail to build on Boot2qt / qemu with undefined references to QtDBus because
