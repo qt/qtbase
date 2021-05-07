@@ -127,6 +127,7 @@ public:
     virtual QLayoutItem *replaceWidget(QWidget *from, QWidget *to,
                                        Qt::FindChildOptions options = Qt::FindChildrenRecursively);
 
+    int totalMinimumHeightForWidth(int w) const;
     int totalHeightForWidth(int w) const;
     QSize totalMinimumSize() const;
     QSize totalMaximumSize() const;

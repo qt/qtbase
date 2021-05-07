@@ -63,7 +63,7 @@ struct QBoxLayoutItem
     }
     int mhfw(int w) {
         if (item->hasHeightForWidth()) {
-            return item->heightForWidth(w);
+            return item->minimumHeightForWidth(w);
         } else {
             return item->minimumSize().height();
         }
