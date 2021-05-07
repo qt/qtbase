@@ -2369,7 +2369,8 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
             if (s->matrix.type() > QTransform::TxScale) {
                 SrcOverTransformFunc func = qTransformFunctions[d->rasterBuffer->format][img.format()];
                 // The fast transform methods doesn't really work on small targets, see QTBUG-93475
-                if (func && (!clip || clip->hasRectClip) && targetBounds.width() >= 16 && targetBounds.height() >= 16) {
+                // And it can't antialias the edges
+                if (func && (!clip || clip->hasRectClip) && !s->flags.antialiased && targetBounds.width() >= 16 && targetBounds.height() >= 16) {
                     func(d->rasterBuffer->buffer(), d->rasterBuffer->bytesPerLine(), img.bits(),
                          img.bytesPerLine(), r, sr, !clip ? d->deviceRect : clip->clipRect,
                          s->matrix, s->intOpacity);
