@@ -63,7 +63,11 @@ foreach(_target_dep ${_tool_deps})
     if(${CMAKE_FIND_PACKAGE_NAME}_FIND_REQUIRED)
         list(APPEND find_package_args REQUIRED)
     endif()
-    find_package(${pkg} ${version} ${find_package_args})
+    find_package(${pkg} ${version} ${find_package_args}
+        PATHS
+            ${_qt_additional_packages_prefix_path}
+            ${_qt_additional_packages_prefix_path_env}
+    )
     if (NOT ${pkg}_FOUND)
         if(NOT "${QT_HOST_PATH}" STREQUAL "")
              set(CMAKE_PREFIX_PATH ${BACKUP_@target@_CMAKE_PREFIX_PATH})
