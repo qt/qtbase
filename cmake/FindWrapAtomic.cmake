@@ -30,10 +30,10 @@ int main(int, char **)
 
 check_cxx_source_compiles("${atomic_test_sources}" HAVE_STDATOMIC)
 if(NOT HAVE_STDATOMIC)
-    set(_req_libraries "${CMAKE_REQUIRE_LIBRARIES}")
-    set(CMAKE_REQUIRE_LIBRARIES "atomic")
+    set(_req_libraries "${CMAKE_REQUIRED_LIBRARIES}")
+    set(CMAKE_REQUIRED_LIBRARIES "atomic")
     check_cxx_source_compiles("${atomic_test_sources}" HAVE_STDATOMIC_WITH_LIB)
-    set(CMAKE_REQUIRE_LIBRARIES "${_req_libraries}")
+    set(CMAKE_REQUIRED_LIBRARIES "${_req_libraries}")
 endif()
 
 add_library(WrapAtomic::WrapAtomic INTERFACE IMPORTED)
