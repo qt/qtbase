@@ -60,7 +60,9 @@
 #ifndef QT_NO_QOBJECT
 #include <qthread.h>
 #include <qthreadstorage.h>
+#if QT_CONFIG(future)
 #include <QtCore/qpromise.h>
+#endif
 #include <private/qthread_p.h>
 #if QT_CONFIG(thread)
 #include <qthreadpool.h>
@@ -994,7 +996,6 @@ bool QCoreApplication::testAttribute(Qt::ApplicationAttribute attribute)
 {
     return QCoreApplicationPrivate::testAttribute(attribute);
 }
-
 
 #ifndef QT_NO_QOBJECT
 
@@ -3076,8 +3077,7 @@ void QCoreApplication::setEventDispatcher(QAbstractEventDispatcher *eventDispatc
 
     \sa Q_OBJECT, QObject::tr()
 */
-
-#ifndef QT_NO_QOBJECT
+#if QT_CONFIG(future) && !defined(QT_NO_QOBJECT)
 #if !defined(Q_OS_ANDROID)
 
     QFuture<QPermission::PermissionResult> defaultPermissionFuture()
@@ -3225,7 +3225,7 @@ QCoreApplication::checkPermission(const QString &permission)
 {
     return QCoreApplicationPrivate::checkPermission(permission);
 }
-#endif
+#endif // future && QT_NO_QOBJECT
 
 QT_END_NAMESPACE
 

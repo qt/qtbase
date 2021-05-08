@@ -45,9 +45,11 @@
 #ifndef QT_NO_QOBJECT
 #include <QtCore/qcoreevent.h>
 #include <QtCore/qeventloop.h>
+#if QT_CONFIG(future)
 #include <QtCore/qfuture.h>
-#include <QtCore/qobject.h>
 #include <QtCore/qpermission.h>
+#endif
+#include <QtCore/qobject.h>
 #else
 #include <QtCore/qscopedpointer.h>
 #endif
@@ -158,6 +160,7 @@ public:
                              int n = -1);
 
 #ifndef QT_NO_QOBJECT
+#if QT_CONFIG(future)
     static QFuture<QPermission::PermissionResult> requestPermission(
                                                         QPermission::PermisionType permission);
     static QFuture<QPermission::PermissionResult> requestPermission(const QString &permission);
@@ -165,7 +168,7 @@ public:
     static QFuture<QPermission::PermissionResult> checkPermission(
                                                         QPermission::PermisionType permission);
     static QFuture<QPermission::PermissionResult> checkPermission(const QString &permission);
-
+#endif
     void installNativeEventFilter(QAbstractNativeEventFilter *filterObj);
     void removeNativeEventFilter(QAbstractNativeEventFilter *filterObj);
 

@@ -62,8 +62,10 @@
 #ifndef QT_NO_QOBJECT
 #include "private/qobject_p.h"
 #include "private/qlocking_p.h"
+#if QT_CONFIG(future)
 #include <QtCore/qpermission.h>
 #include <QtCore/qfuture.h>
+#endif
 #endif
 
 #ifdef Q_OS_MACOS
@@ -201,8 +203,7 @@ public:
     void processCommandLineArguments();
     QString qmljs_debug_arguments; // a string containing arguments for js/qml debugging.
     inline QString qmljsDebugArgumentsString() const { return qmljs_debug_arguments; }
-
-#ifndef QT_NO_QOBJECT
+#if QT_CONFIG(future) && !defined QT_NO_QOBJECT
     static QFuture<QPermission::PermissionResult> requestPermission(
                                                         QPermission::PermisionType permission);
     static QFuture<QPermission::PermissionResult> requestPermission(const QString &permission);

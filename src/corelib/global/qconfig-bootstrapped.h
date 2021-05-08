@@ -98,6 +98,7 @@
 #define QT_FEATURE_journald -1
 #define QT_FEATURE_futimens -1
 #define QT_FEATURE_futimes -1
+#define QT_FEATURE_future -1
 #define QT_FEATURE_itemmodel -1
 #define QT_FEATURE_library -1
 #ifdef __linux__
