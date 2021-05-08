@@ -844,6 +844,7 @@ static_assert(sizeof(qint64) == 8, "Internal error, qint64 is misdefined");
     \macro PRIdQINTPTR
     \macro PRIiQINTPTR
     \since 6.2
+    \relates <QtGlobal>
 
     See qintptr.
 */
@@ -888,6 +889,7 @@ static_assert(sizeof(qint64) == 8, "Internal error, qint64 is misdefined");
     \macro PRIxQUINTPTR
     \macro PRIXQUINTPTR
     \since 6.2
+    \relates <QtGlobal>
 
     See quintptr.
 */
@@ -923,6 +925,7 @@ static_assert(sizeof(qint64) == 8, "Internal error, qint64 is misdefined");
     \macro PRIdQPTRDIFF
     \macro PRIiQPTRDIFF
     \since 6.2
+    \relates <QtGlobal>
 
     See qptrdiff.
 */
@@ -957,6 +960,7 @@ static_assert(sizeof(qint64) == 8, "Internal error, qint64 is misdefined");
     \macro PRIdQSIZETYPE
     \macro PRIiQSIZETYPE
     \since 6.2
+    \relates <QtGlobal>
 
     See qsizetype.
 */
