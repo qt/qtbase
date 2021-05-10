@@ -1131,4 +1131,9 @@ public class QtActivity extends Activity
     {
         QtNative.activityDelegate().notifyObjectFocus(viewId);
     }
+
+    public void notifyQtAndroidPluginRunning(boolean running)
+    {
+        QtNative.activityDelegate().notifyQtAndroidPluginRunning(running);
+    }
 }
