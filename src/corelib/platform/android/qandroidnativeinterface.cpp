@@ -37,11 +37,26 @@
 **
 ****************************************************************************/
 
-#include <QtCore/qcoreapplication.h>
+#include <QtCore/qcoreapplication_platform.h>
+
 #include <QtCore/private/qjnihelpers_p.h>
 #include <QtCore/qjniobject.h>
+#if QT_CONFIG(future) && !defined(QT_NO_QOBJECT)
+#include <QtConcurrent/QtConcurrent>
+#include <QtCore/qpromise.h>
+#include <deque>
+#endif
 
 QT_BEGIN_NAMESPACE
+
+#if QT_CONFIG(future) && !defined(QT_NO_QOBJECT)
+static const char qtNativeClassName[] = "org/qtproject/qt/android/QtNative";
+
+typedef std::pair<std::function<QVariant()>, QSharedPointer<QPromise<QVariant>>> RunnablePair;
+typedef std::deque<RunnablePair> PendingRunnables;
+Q_GLOBAL_STATIC(PendingRunnables, g_pendingRunnables);
+static QBasicMutex g_pendingRunnablesMutex;
+#endif
 
 /*!
     \class QNativeInterface::QAndroidApplication
@@ -108,6 +123,138 @@ void QNativeInterface::QAndroidApplication::hideSplashScreen(int duration)
 {
     QJniObject::callStaticMethod<void>("org/qtproject/qt/android/QtNative",
                                        "hideSplashScreen", "(I)V", duration);
+}
+
+/*!
+    Posts the function \a runnable to the Android thread. The function will be
+    queued and executed on the Android UI thread. If the call is made on the
+    Android UI thread \a runnable will be executed immediately. If the Android
+    app is paused or the main Activity is null, \c runnable is added to the
+    Android main thread's queue.
+
+    This call returns a QFuture<QVariant> which allows doing both synchronous
+    and asynchronous calls, and can handle any return type. However, to get
+    a result back from the QFuture::result(), QVariant::value() should be used.
+
+    If the \a runnable execution takes longer than the period of \a timeout,
+    the blocking calls \l QFuture::waitForFinished() and \l QFuture::result()
+    are ended once \a timeout has elapsed. However, if \a runnable has already
+    started execution, it won't be cancelled.
+
+    The following example shows how to run an asynchronous call that expects
+    a return type:
+
+    \code
+    auto task = QNativeInterface::QAndroidApplication::runOnAndroidMainThread([=]() {
+        QJniObject surfaceView;
+        if (!surfaceView.isValid())
+            qDebug() << "SurfaceView object is not valid yet";
+
+        surfaceView = QJniObject("android/view/SurfaceView",
+                                 "(Landroid/content/Context;)V",
+                                 QNativeInterface::QAndroidApplication::context());
+
+        return QVariant::fromValue(surfaceView);
+    }).then([](QFuture<QVariant> future) {
+        auto surfaceView = future.result().value<QJniObject>();
+        if (surfaceView.isValid())
+            qDebug() << "Retrieved SurfaceView object is valid";
+    });
+    \endcode
+
+    The following example shows how to run a synchronous call with a void
+    return type:
+
+    \code
+    QNativeInterface::QAndroidApplication::runOnAndroidMainThread([]() {
+       QJniObject activity = QNativeInterface::QAndroidApplication::context();
+       // Hide system ui elements or go full screen
+       activity.callObjectMethod("getWindow", "()Landroid/view/Window;")
+               .callObjectMethod("getDecorView", "()Landroid/view/View;")
+               .callMethod<void>("setSystemUiVisibility", "(I)V", 0xffffffff);
+    }).waitForFinished();
+    \endcode
+
+    \note Becareful about the type of operations you do on the Android's main
+    thread, as any long operation can block the app's UI rendering and input
+    handling. If the function is expected to have long execution time, it's
+    also good to use a \l QDeadlineTimer() in your \a runnable to manage
+    the execution and make sure it doesn't block the UI thread. Usually,
+    any operation longer than 5 seconds might block the app's UI. For more
+    information, see \l {Android: Keeping your app responsive}{Keeping your app responsive}.
+
+    \since 6.2
+*/
+#if QT_CONFIG(future) && !defined(QT_NO_QOBJECT)
+QFuture<QVariant> QNativeInterface::QAndroidApplication::runOnAndroidMainThread(
+                                                    const std::function<QVariant()> &runnable,
+                                                    const QDeadlineTimer &timeout)
+{
+    QSharedPointer<QPromise<QVariant>> promise(new QPromise<QVariant>());
+    QFuture<QVariant> future = promise->future();
+    promise->start();
+
+    (void) QtConcurrent::run([=, &future]() {
+        if (!timeout.isForever()) {
+            QEventLoop loop;
+            QTimer::singleShot(timeout.remainingTime(), &loop, [&]() {
+                future.cancel();
+                promise->finish();
+                loop.quit();
+            });
+
+            QFutureWatcher<QVariant> watcher;
+            QObject::connect(&watcher, &QFutureWatcher<QVariant>::finished, &loop, [&]() {
+                loop.quit();
+            });
+            QObject::connect(&watcher, &QFutureWatcher<QVariant>::canceled, &loop, [&]() {
+                loop.quit();
+            });
+            watcher.setFuture(future);
+            loop.exec();
+        }
+    });
+
+    QMutexLocker locker(&g_pendingRunnablesMutex);
+    g_pendingRunnables->push_back(std::pair(runnable, promise));
+    locker.unlock();
+
+    QJniObject::callStaticMethod<void>(qtNativeClassName,
+                                       "runPendingCppRunnablesOnAndroidThread",
+                                       "()V");
+    return future;
+}
+
+// function called from Java from Android UI thread
+static void runPendingCppRunnables(JNIEnv */*env*/, jobject /*obj*/)
+{
+    // run all posted runnables
+    for (;;) {
+        QMutexLocker locker(&g_pendingRunnablesMutex);
+        if (g_pendingRunnables->empty())
+            break;
+
+        std::pair pair = std::move(g_pendingRunnables->front());
+        g_pendingRunnables->pop_front();
+        locker.unlock();
+
+        // run the runnable outside the sync block!
+        auto promise = pair.second;
+        if (!promise->isCanceled())
+            promise->addResult(pair.first());
+        promise->finish();
+    }
+}
+#endif
+
+bool QtAndroidPrivate::registerNativeInterfaceNatives()
+{
+#if QT_CONFIG(future) && !defined(QT_NO_QOBJECT)
+    JNINativeMethod methods = {"runPendingCppRunnables", "()V", (void *)runPendingCppRunnables};
+    return QJniEnvironment().registerNativeMethods(qtNativeClassName, &methods, 1);
+#else
+    return true;
+#endif
 }
 
 QT_END_NAMESPACE

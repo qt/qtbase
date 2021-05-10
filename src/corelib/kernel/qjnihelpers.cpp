@@ -358,6 +358,9 @@ jint QtAndroidPrivate::initJNI(JavaVM *vm, JNIEnv *env)
     if (!registerPermissionNatives())
         return JNI_ERR;
 
+    if (!registerNativeInterfaceNatives())
+        return JNI_ERR;
+
     g_runPendingCppRunnablesMethodID = env->GetStaticMethodID(jQtNative,
                                                        "runPendingCppRunnablesOnAndroidThread",
                                                        "()V");

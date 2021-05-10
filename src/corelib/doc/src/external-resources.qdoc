@@ -105,3 +105,8 @@
     \externalpage https://doc.qt.io/qtcreator/creator-deploying-android.html#editing-manifest-files
     \title Qt Creator: Editing Manifest Files
 */
+
+/*!
+    \externalpage https://developer.android.com/training/articles/perf-anr
+    \title Android: Keeping your app responsive
+*/
