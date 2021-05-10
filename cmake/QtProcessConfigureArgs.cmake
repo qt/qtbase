@@ -93,6 +93,8 @@ while(NOT "${configure_args}" STREQUAL "")
         push("-DINSTALL_MKSPECSDIR=${path}")
     elseif(arg STREQUAL "-developer-build")
         set(developer_build TRUE)
+        # Treat this argument as "unhandled" to process it further.
+        set_property(GLOBAL APPEND PROPERTY UNHANDLED_ARGS "${arg}")
     elseif(arg STREQUAL "-cmake-file-api")
         set(cmake_file_api TRUE)
     elseif(arg STREQUAL "-no-cmake-file-api")
