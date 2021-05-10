@@ -535,6 +535,13 @@ void QtAndroidPrivate::unregisterKeyEventListener(QtAndroidPrivate::KeyEventList
     g_keyEventListeners()->listeners.removeOne(listener);
 }
 
+void QtAndroidPrivate::hideSplashScreen(JNIEnv *env, int duration)
+{
+    Q_UNUSED(env)
+    QJniObject::callStaticMethod<void>("org/qtproject/qt/android/QtNative",
+                                       "hideSplashScreen", "(I)V", duration);
+}
+
 void QtAndroidPrivate::waitForServiceSetup()
 {
     g_waitForServiceSetupSemaphore->acquire();

@@ -149,6 +149,9 @@ namespace QtAndroidPrivate
     Q_CORE_EXPORT void registerKeyEventListener(KeyEventListener *listener);
     Q_CORE_EXPORT void unregisterKeyEventListener(KeyEventListener *listener);
 
+    // TODO: Remove once other modules refectoring is done and androidextras is not needed.
+    Q_CORE_EXPORT void hideSplashScreen(JNIEnv *env, int duration = 0);
+
     Q_CORE_EXPORT void waitForServiceSetup();
     Q_CORE_EXPORT int acuqireServiceSetup(int flags);
     Q_CORE_EXPORT void setOnBindListener(OnBindListener *listener);
