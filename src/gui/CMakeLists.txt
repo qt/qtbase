@@ -967,6 +967,11 @@ qt_internal_extend_target(Gui CONDITION UNIX AND (QT_FEATURE_xcb OR NOT UIKIT)
         platform/unix/qgenericunixservices.cpp platform/unix/qgenericunixservices_p.h
 )
 
+qt_internal_extend_target(Gui CONDITION UNIX AND (QT_FEATURE_xcb)
+    SOURCES
+        platform/unix/qtx11extras.cpp platform/unix/qtx11extras_p.h
+)
+
 qt_internal_extend_target(Gui CONDITION TARGET Qt::DBus AND UNIX AND (QT_FEATURE_xcb OR NOT UIKIT)
     LIBRARIES
         Qt::DBus
