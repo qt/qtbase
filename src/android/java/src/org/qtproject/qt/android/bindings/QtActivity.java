@@ -1141,4 +1141,9 @@ public class QtActivity extends Activity
     {
         return QtNative.activityDelegate().isKeyboardVisible();
     }
+
+    public void notifyQtAndroidPluginRunning(boolean running)
+    {
+        QtNative.activityDelegate().notifyQtAndroidPluginRunning(running);
+    }
 }
