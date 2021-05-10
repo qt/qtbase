@@ -107,6 +107,7 @@ static constexpr const auto KeyTbl = qMakeArray(
         Emkb2Qt< Qt::Key_PageDown,      'P','a','g','e','D','o','w','n' >,
         Emkb2Qt< Qt::Key_Shift,         'S','h','i','f','t' >,
         Emkb2Qt< Qt::Key_Control,       'C','o','n','t','r','o','l' >,
+        Emkb2Qt< Qt::Key_Meta,          'M','e','t','a'>,
         Emkb2Qt< Qt::Key_Meta,          'O','S'>,
         Emkb2Qt< Qt::Key_Alt,           'A','l','t','L','e','f','t' >,
         Emkb2Qt< Qt::Key_Alt,           'A','l','t' >,
