@@ -273,6 +273,7 @@ QPropertyBindingPrivate::~QPropertyBindingPrivate()
 
 void QPropertyBindingPrivate::unlinkAndDeref()
 {
+    clearDependencyObservers();
     propertyDataPtr = nullptr;
     if (--ref == 0)
         destroyAndFreeMemory(this);

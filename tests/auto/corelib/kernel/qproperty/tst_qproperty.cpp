@@ -107,6 +107,7 @@ private slots:
     void noDoubleNotification();
     void groupedNotifications();
     void groupedNotificationConsistency();
+    void uninstalledBindingDoesNotEvaluate();
 };
 
 void tst_QProperty::functorBinding()
@@ -1745,6 +1746,32 @@ void tst_QProperty::groupedNotificationConsistency()
     j = 2;
     Qt::endPropertyUpdateGroup();
     QVERIFY(areEqual); // value changed runs after everything has been evaluated
+}
+
+void tst_QProperty::uninstalledBindingDoesNotEvaluate()
+{
+    QProperty<int> i;
+    QProperty<int> j;
+    int bindingEvaluationCounter = 0;
+    i.setBinding([&](){
+        bindingEvaluationCounter++;
+        return j.value();
+    });
+    QCOMPARE(bindingEvaluationCounter, 1);
+    // Sanity check: if we force a binding reevaluation,
+    j = 42;
+    // the binding function will be called again.
+    QCOMPARE(bindingEvaluationCounter, 2);
+    // If we keep referencing the binding
+    auto keptBinding = i.binding();
+    // but have it not installed on a property
+    i = 10;
+    QVERIFY(!i.hasBinding());
+    QVERIFY(!keptBinding.isNull());
+    // then changing a dependency
+    j = 12;
+    // does not lead to the binding being reevaluated.
+    QCOMPARE(bindingEvaluationCounter, 2);
 }
 
 QTEST_MAIN(tst_QProperty);
