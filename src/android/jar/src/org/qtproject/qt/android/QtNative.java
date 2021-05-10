@@ -843,13 +843,8 @@ public class QtNative
         int perm = PackageManager.PERMISSION_DENIED;
         synchronized (m_mainActivityMutex) {
             Context context = getContext();
-            try {
-                if (m_checkSelfPermissionMethod == null)
-                    m_checkSelfPermissionMethod = Context.class.getMethod("checkSelfPermission", String.class);
-                perm = (Integer)m_checkSelfPermissionMethod.invoke(context, permission);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            PackageManager pm = context.getPackageManager();
+            perm = pm.checkPermission(permission, context.getPackageName());
         }
 
         return perm;
