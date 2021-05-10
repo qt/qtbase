@@ -320,13 +320,6 @@
     \skipto Notepad::~Notepad
     \printuntil }
 
-    In order to have the text edit field occupy the whole screen, we add
-    \c setCentralWidget to the main window.
-
-    \quotefromfile tutorials/notepad/notepad.cpp
-    \skipto Notepad::Notepad(QWidget *parent)
-    \printuntil }
-
     \section2 Project File
 
     The wizard generates the following project file, \c {notepad.pro}, for

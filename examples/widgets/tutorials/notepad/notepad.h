@@ -89,18 +89,6 @@ private slots:
 
     void print();
 
-    void exit();
-
-    void copy();
-
-    void cut();
-
-    void paste();
-
-    void undo();
-
-    void redo();
-
     void selectFont();
 
     void setFontBold(bool bold);

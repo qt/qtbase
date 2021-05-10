@@ -72,19 +72,24 @@ Notepad::Notepad(QWidget *parent) :
     ui(new Ui::Notepad)
 {
     ui->setupUi(this);
-    this->setCentralWidget(ui->textEdit);
 
     connect(ui->actionNew, &QAction::triggered, this, &Notepad::newDocument);
     connect(ui->actionOpen, &QAction::triggered, this, &Notepad::open);
     connect(ui->actionSave, &QAction::triggered, this, &Notepad::save);
     connect(ui->actionSave_as, &QAction::triggered, this, &Notepad::saveAs);
     connect(ui->actionPrint, &QAction::triggered, this, &Notepad::print);
-    connect(ui->actionExit, &QAction::triggered, this, &Notepad::exit);
-    connect(ui->actionCopy, &QAction::triggered, this, &Notepad::copy);
-    connect(ui->actionCut, &QAction::triggered, this, &Notepad::cut);
-    connect(ui->actionPaste, &QAction::triggered, this, &Notepad::paste);
-    connect(ui->actionUndo, &QAction::triggered, this, &Notepad::undo);
-    connect(ui->actionRedo, &QAction::triggered, this, &Notepad::redo);
+    connect(ui->actionExit, &QAction::triggered, this, &QWidget::close);
+#if QT_CONFIG(clipboard)
+    connect(ui->textEdit, &QTextEdit::copyAvailable, ui->actionCopy, &QAction::setEnabled);
+    connect(ui->actionCopy, &QAction::triggered, ui->textEdit, &QTextEdit::copy);
+    connect(ui->actionCut, &QAction::triggered, ui->textEdit, &QTextEdit::cut);
+    connect(ui->actionPaste, &QAction::triggered, ui->textEdit, &QTextEdit::paste);
+#endif
+    connect(ui->textEdit, &QTextEdit::undoAvailable, ui->actionUndo, &QAction::setEnabled);
+    connect(ui->actionUndo, &QAction::triggered, ui->textEdit, &QTextEdit::undo);
+    connect(ui->textEdit, &QTextEdit::redoAvailable, ui->actionRedo, &QAction::setEnabled);
+    connect(ui->actionRedo, &QAction::triggered, ui->textEdit, &QTextEdit::redo);
+
     connect(ui->actionFont, &QAction::triggered, this, &Notepad::selectFont);
     connect(ui->actionBold, &QAction::triggered, this, &Notepad::setFontBold);
     connect(ui->actionUnderline, &QAction::triggered, this, &Notepad::setFontUnderline);
@@ -117,6 +122,8 @@ void Notepad::newDocument()
 void Notepad::open()
 {
     QString fileName = QFileDialog::getOpenFileName(this, "Open the file");
+    if (fileName.isEmpty())
+        return;
     QFile file(fileName);
     currentFile = fileName;
     if (!file.open(QIODevice::ReadOnly | QFile::Text)) {
@@ -136,6 +143,8 @@ void Notepad::save()
     // If we don't have a filename from before, get one.
     if (currentFile.isEmpty()) {
         fileName = QFileDialog::getSaveFileName(this, "Save");
+        if (fileName.isEmpty())
+            return;
         currentFile = fileName;
     } else {
         fileName = currentFile;
@@ -155,6 +164,8 @@ void Notepad::save()
 void Notepad::saveAs()
 {
     QString fileName = QFileDialog::getSaveFileName(this, "Save as");
+    if (fileName.isEmpty())
+        return;
     QFile file(fileName);
 
     if (!file.open(QFile::WriteOnly | QFile::Text)) {
@@ -180,42 +191,6 @@ void Notepad::print()
 #endif // QT_CONFIG(printdialog)
     ui->textEdit->print(&printDev);
 #endif // QT_CONFIG(printer)
-}
-
-void Notepad::exit()
-{
-    QCoreApplication::quit();
-}
-
-void Notepad::copy()
-{
-#if QT_CONFIG(clipboard)
-    ui->textEdit->copy();
-#endif
-}
-
-void Notepad::cut()
-{
-#if QT_CONFIG(clipboard)
-    ui->textEdit->cut();
-#endif
-}
-
-void Notepad::paste()
-{
-#if QT_CONFIG(clipboard)
-    ui->textEdit->paste();
-#endif
-}
-
-void Notepad::undo()
-{
-     ui->textEdit->undo();
-}
-
-void Notepad::redo()
-{
-    ui->textEdit->redo();
 }
 
 void Notepad::selectFont()
@@ -244,8 +219,7 @@ void Notepad::setFontBold(bool bold)
 
 void Notepad::about()
 {
-   QMessageBox::about(this, tr("About MDI"),
-                tr("The <b>Notepad</b> example demonstrates how to code a basic "
-                   "text editor using QtWidgets"));
-
+    QMessageBox::about(this, tr("About Notepad"),
+                       tr("The <b>Notepad</b> example demonstrates how to code a basic "
+                          "text editor using QtWidgets"));
 }

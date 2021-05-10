@@ -53,8 +53,15 @@
     <addaction name="actionRedo"/>
     <addaction name="actionFont"/>
    </widget>
+   <widget class="QMenu" name="menuAbout">
+    <property name="title">
+     <string>About</string>
+    </property>
+    <addaction name="actionAbout"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
+   <addaction name="menuAbout"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -170,8 +177,6 @@
    </property>
    <property name="toolTip">
     <string>Exit notepad</string>
-   </property>
-   <property name="shortcut">
    </property>
   </action>
   <action name="actionCopy">
