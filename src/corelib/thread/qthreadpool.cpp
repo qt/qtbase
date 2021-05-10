@@ -771,6 +771,57 @@ void QThreadPool::releaseThread()
 }
 
 /*!
+    Releases a thread previously reserved with reserveThread() and uses it
+    to run \a runnable.
+
+    Note that the thread pool takes ownership of the \a runnable if
+    \l{QRunnable::autoDelete()}{runnable->autoDelete()} returns \c true,
+    and the \a runnable will be deleted automatically by the thread
+    pool after the \l{QRunnable::run()}{runnable->run()} returns. If
+    \l{QRunnable::autoDelete()}{runnable->autoDelete()} returns \c false,
+    ownership of \a runnable remains with the caller. Note that
+    changing the auto-deletion on \a runnable after calling this
+    functions results in undefined behavior.
+
+    \note Calling this when no threads are reserved results in
+    undefined behavior.
+
+    \since 6.3
+    \sa reserveThread(), start()
+*/
+void QThreadPool::startOnReservedThread(QRunnable *runnable)
+{
+    if (!runnable)
+        return releaseThread();
+
+    Q_D(QThreadPool);
+    QMutexLocker locker(&d->mutex);
+    Q_ASSERT(d->reservedThreads > 0);
+    --d->reservedThreads;
+
+    if (!d->tryStart(runnable)) {
+        // This can only happen if we reserved max threads,
+        // and something took the one minimum thread.
+        d->enqueueTask(runnable, INT_MAX);
+    }
+}
+
+/*!
+    \overload
+    \since 6.3
+
+    Releases a thread previously reserved with reserveThread() and uses it
+    to run \a functionToRun.
+*/
+void QThreadPool::startOnReservedThread(std::function<void()> functionToRun)
+{
+    if (!functionToRun)
+        return releaseThread();
+
+    startOnReservedThread(QRunnable::create(std::move(functionToRun)));
+}
+
+/*!
     Waits up to \a msecs milliseconds for all threads to exit and removes all
     threads from the thread pool. Returns \c true if all threads were removed;
     otherwise it returns \c false. If \a msecs is -1 (the default), the timeout
