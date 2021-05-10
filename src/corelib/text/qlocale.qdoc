@@ -465,9 +465,9 @@
 */
 
 /*!
-    \enum QLocale::Territory
+    \typealias QLocale::Territory
 
-    This enumeration type is an alias for Country,
+    This enumeration type is an alias for \l Country,
     which shall be renamed to Territory at a future release.
 
     \sa territory(), territoryToString()
