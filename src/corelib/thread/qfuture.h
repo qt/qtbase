@@ -431,12 +431,6 @@ inline QFuture<void> QFutureInterface<void>::future()
     return QFuture<void>(this);
 }
 
-template <typename T>
-QFuture<void> qToVoidFuture(const QFuture<T> &future)
-{
-    return QFuture<void>(future.d);
-}
-
 Q_DECLARE_SEQUENTIAL_ITERATOR(Future)
 
 QT_END_NAMESPACE
