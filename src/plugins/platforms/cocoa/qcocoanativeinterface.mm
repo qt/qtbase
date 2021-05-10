@@ -94,10 +94,6 @@ void *QCocoaNativeInterface::nativeResourceForWindow(const QByteArray &resourceS
 
 QPlatformNativeInterface::NativeResourceForIntegrationFunction QCocoaNativeInterface::nativeResourceFunctionForIntegration(const QByteArray &resource)
 {
-    if (resource.toLower() == "addtomimelist")
-        return NativeResourceForIntegrationFunction(QCocoaNativeInterface::addToMimeList);
-    if (resource.toLower() == "removefrommimelist")
-        return NativeResourceForIntegrationFunction(QCocoaNativeInterface::removeFromMimeList);
     if (resource.toLower() == "registerdraggedtypes")
         return NativeResourceForIntegrationFunction(QCocoaNativeInterface::registerDraggedTypes);
     if (resource.toLower() == "registertouchwindow")
@@ -156,16 +152,6 @@ void QCocoaNativeInterface::onAppFocusWindowChanged(QWindow *window)
 {
     Q_UNUSED(window);
     QCocoaMenuBar::updateMenuBarImmediately();
-}
-
-void QCocoaNativeInterface::addToMimeList(void *macPasteboardMime)
-{
-    qt_mac_addToGlobalMimeList(reinterpret_cast<QMacInternalPasteboardMime *>(macPasteboardMime));
-}
-
-void QCocoaNativeInterface::removeFromMimeList(void *macPasteboardMime)
-{
-    qt_mac_removeFromGlobalMimeList(reinterpret_cast<QMacInternalPasteboardMime *>(macPasteboardMime));
 }
 
 void QCocoaNativeInterface::registerDraggedTypes(const QStringList &types)

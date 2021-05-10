@@ -75,11 +75,6 @@ private:
 
     Q_INVOKABLE void clearCurrentThreadCocoaEventDispatcherInterruptFlag();
 
-    // QMacPastebardMime support. The mac pasteboard void pointers are
-    // QMacPastebardMime instances from the cocoa plugin or qtmacextras
-    // These two classes are kept in sync and can be casted between.
-    static void addToMimeList(void *macPasteboardMime);
-    static void removeFromMimeList(void *macPasteboardMime);
     static void registerDraggedTypes(const QStringList &types);
 
     // Set a QWindow as a "guest" (subwindow) of a non-QWindow
