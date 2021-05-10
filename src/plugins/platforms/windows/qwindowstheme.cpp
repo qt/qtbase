@@ -269,6 +269,12 @@ static inline QPalette standardPalette()
     return palette;
 }
 
+static QColor placeHolderColor(QColor textColor)
+{
+    textColor.setAlpha(128);
+    return textColor;
+}
+
 static void populateLightSystemBasePalette(QPalette &result)
 {
     result.setColor(QPalette::WindowText, getSysColor(COLOR_WINDOWTEXT));
@@ -278,7 +284,9 @@ static void populateLightSystemBasePalette(QPalette &result)
     result.setColor(QPalette::Light, btnHighlight);
     result.setColor(QPalette::Dark, getSysColor(COLOR_BTNSHADOW));
     result.setColor(QPalette::Mid, result.button().color().darker(150));
-    result.setColor(QPalette::Text, getSysColor(COLOR_WINDOWTEXT));
+    const QColor textColor = getSysColor(COLOR_WINDOWTEXT);
+    result.setColor(QPalette::Text, textColor);
+    result.setColor(QPalette::PlaceholderText, placeHolderColor(textColor));
     result.setColor(QPalette::BrightText, btnHighlight);
     result.setColor(QPalette::Base, getSysColor(COLOR_WINDOW));
     result.setColor(QPalette::Window, btnFace);
@@ -300,6 +308,7 @@ static void populateDarkSystemBasePalette(QPalette &result)
     result.setColor(QPalette::Dark, QColor(darkModeBtnShadowRgb));
     result.setColor(QPalette::Mid, result.button().color().darker(150));
     result.setColor(QPalette::Text, darkModeWindowText);
+    result.setColor(QPalette::PlaceholderText, placeHolderColor(darkModeWindowText));
     result.setColor(QPalette::BrightText, btnHighlight);
     result.setColor(QPalette::Base, darkModebtnFace);
     result.setColor(QPalette::Window, darkModebtnFace);
