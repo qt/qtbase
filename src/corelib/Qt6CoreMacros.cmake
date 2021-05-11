@@ -1373,9 +1373,6 @@ function(__qt_propagate_generated_resource target resource_name generated_source
             target_link_libraries(${target} INTERFACE ${resource_target})
         endif()
         set(${output_generated_target} "${resource_target}" PARENT_SCOPE)
-
-        # No need to compile Q_IMPORT_PLUGIN-containing files for non-executables.
-        _qt_internal_disable_static_default_plugins("${resource_target}")
     else()
         set(${output_generated_target} "" PARENT_SCOPE)
         target_sources(${target} PRIVATE ${generated_source_code})

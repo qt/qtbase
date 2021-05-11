@@ -49,11 +49,6 @@ function(qt_internal_add_cmake_library target)
     endif()
     qt_skip_warnings_are_errors_when_repo_unclean("${target}")
 
-    # No need to compile Q_IMPORT_PLUGIN-containing files for non-executables.
-    if(is_static_lib)
-        _qt_internal_disable_static_default_plugins("${target}")
-    endif()
-
     if (arg_INSTALL_DIRECTORY)
         set(install_arguments
             ARCHIVE_INSTALL_DIRECTORY ${arg_ARCHIVE_INSTALL_DIRECTORY}
@@ -144,11 +139,6 @@ function(qt_internal_add_3rdparty_library target)
     qt_internal_add_qt_repo_known_module(${target})
     qt_internal_add_target_aliases(${target})
     _qt_internal_apply_strict_cpp(${target})
-
-    # No need to compile Q_IMPORT_PLUGIN-containing files for non-executables.
-    if(is_static_lib)
-        _qt_internal_disable_static_default_plugins("${target}")
-    endif()
 
     if (ANDROID)
         qt_android_apply_arch_suffix("${target}")

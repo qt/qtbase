@@ -144,11 +144,6 @@ function(qt_internal_add_module target)
     qt_skip_warnings_are_errors_when_repo_unclean("${target}")
     _qt_internal_apply_strict_cpp("${target}")
 
-    # No need to compile Q_IMPORT_PLUGIN-containing files for non-executables.
-    if(is_static_lib)
-        _qt_internal_disable_static_default_plugins("${target}")
-    endif()
-
     # Add _private target to link against the private headers:
     if(NOT ${arg_NO_PRIVATE_MODULE})
         set(target_private "${target}Private")

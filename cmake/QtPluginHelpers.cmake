@@ -119,10 +119,6 @@ function(qt_internal_add_plugin target)
     qt_skip_warnings_are_errors_when_repo_unclean("${target}")
     _qt_internal_apply_strict_cpp("${target}")
 
-    # Disable linking of plugins against other plugins during static regular and
-    # super builds. The latter causes cyclic dependencies otherwise.
-    _qt_internal_disable_static_default_plugins("${target}")
-
     set_target_properties("${target}" PROPERTIES
         LIBRARY_OUTPUT_DIRECTORY "${output_directory}"
         RUNTIME_OUTPUT_DIRECTORY "${output_directory}"
@@ -322,8 +318,13 @@ function(qt_internal_add_plugin target)
     endforeach()
 
     qt_register_target_dependencies("${target}" "${arg_PUBLIC_LIBRARIES}" "${qt_libs_private}")
+    set(plugin_init_target "")
     if (NOT BUILD_SHARED_LIBS)
         qt_generate_plugin_pri_file("${target}" pri_file)
+
+        if(qt_module_target)
+            __qt_internal_add_static_plugin_init_object_library("${target}" plugin_init_target)
+        endif()
     endif()
 
     if (NOT arg_SKIP_INSTALL)
@@ -372,10 +373,13 @@ function(qt_internal_add_plugin target)
         # Make the export name of plugins be consistent with modules, so that
         # qt_add_resource adds its additional targets to the same export set in a static Qt build.
         set(export_name "${INSTALL_CMAKE_NAMESPACE}${target}Targets")
-        qt_install(TARGETS "${target}"
+        qt_install(TARGETS
+                   "${target}"
+                   ${plugin_init_target}
                    EXPORT ${export_name}
                    RUNTIME DESTINATION "${install_directory}"
                    LIBRARY DESTINATION "${install_directory}"
+                   OBJECTS DESTINATION "${install_directory}"
                    ARCHIVE DESTINATION "${archive_install_directory}"
         )
         qt_install(EXPORT ${export_name}
