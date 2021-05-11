@@ -72,7 +72,6 @@ static JavaVM *g_javaVM = nullptr;
 static jobject g_jActivity = nullptr;
 static jobject g_jService = nullptr;
 static jobject g_jClassLoader = nullptr;
-static jint g_androidSdkVersion = 0;
 static jclass g_jNativeClass = nullptr;
 static jmethodID g_runPendingCppRunnablesMethodID = nullptr;
 Q_GLOBAL_STATIC(std::deque<QtAndroidPrivate::Runnable>, g_pendingRunnables);
@@ -333,8 +332,6 @@ jint QtAndroidPrivate::initJNI(JavaVM *vm, JNIEnv *env)
     if (QJniEnvironment::checkAndClearExceptions(env))
         return JNI_ERR;
 
-    g_androidSdkVersion = QJniObject::getStaticField<jint>("android/os/Build$VERSION", "SDK_INT");
-
     g_jClassLoader = env->NewGlobalRef(classLoader);
     env->DeleteLocalRef(classLoader);
     if (activity) {
@@ -404,7 +401,10 @@ jobject QtAndroidPrivate::classLoader()
 
 jint QtAndroidPrivate::androidSdkVersion()
 {
-    return g_androidSdkVersion;
+    static jint sdkVersion = 0;
+    if (!sdkVersion)
+        sdkVersion = QJniObject::getStaticField<jint>("android/os/Build$VERSION", "SDK_INT");
+    return sdkVersion;
 }
 
 void QtAndroidPrivate::runOnAndroidThread(const QtAndroidPrivate::Runnable &runnable, JNIEnv *env)
