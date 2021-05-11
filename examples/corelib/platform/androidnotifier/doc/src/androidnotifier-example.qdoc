@@ -1,0 +1,84 @@
+/****************************************************************************
+**
+** Copyright (C) 2021 The Qt Company Ltd.
+** Contact: http://www.qt.io/licensing/
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file. Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: https://www.gnu.org/licenses/fdl-1.3.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \title Qt Android Notifier
+    \example platform/androidnotifier
+    \brief Demonstrates calling Java code from Qt in an Android application.
+
+    \image androidnotifier.png
+
+    This example demonstrates how to add a custom Java class to an Android
+    application, and how to call it using the JNI convenience APIs in Qt.
+
+    Click on one of the smiley faces to send a notification in the status bar
+    of the Android screen.
+
+    \include examples-run.qdocinc
+
+    \section1 Calling Java Methods from C++ Code
+
+    We define a custom Java class called \c NotificationClient in the
+    NotificationClient.java file:
+
+    \quotefromfile platform/androidnotifier/android/src/org/qtproject/example/androidnotifier/NotificationClient.java
+    \skipto org.qtproject.example.androidnotifier
+    \printuntil /^\}/
+
+    In the NotificationClient C++ class header file, \c notificationclient.h, we
+    declare a simple C++ API to display notifications on an Android device. It
+    consists of a single string property, \c notification, and a slot,
+    \c updateAndroidNotification(), that calls the Java code:
+
+    \snippet platform/androidnotifier/notificationclient.h Qt Notification Class
+
+    We connect the \c notificationChanged() signal to the
+    \c updateAndroidNotification() slot to update the notification text when the
+    \c notification text changes:
+
+    \snippet platform/androidnotifier/notificationclient.cpp notification changed signal
+
+    The \c updateAndroidNotification() function calls the Java method responsible
+    for sending the notification from the Android platform APIs. First, we construct
+    a Java string \c jstring from the notification string, then pass the \c jstring
+    object as a parameter to the \c notify() method in Java:
+
+    \snippet platform/androidnotifier/notificationclient.cpp Send notification message to Java
+
+    The call to the Java meethod use \l QJniObject which relies on the Java Native
+    Interface (JNI) APIs to communicate with Java. Also, in the previous snippet,
+    we are passing the app's context object which the the static Java code can use
+    to tap into the app's specific properties and APIs.
+
+    To make sure our smiley buttons do what they are supposed to, we add the
+    the following code to change the notification text if either of them are
+    clicked:
+
+    \snippet platform/androidnotifier/main.cpp Connect button signals
+
+    \sa {Qt for Android}
+*/
