@@ -953,35 +953,10 @@ QString QDir::toNativeSeparators(const QString &pathName)
 QString QDir::fromNativeSeparators(const QString &pathName)
 {
 #if defined(Q_OS_WIN)
-    const QChar nativeSeparator = u'\\';
-    int i = pathName.indexOf(nativeSeparator);
-    if (i != -1) {
-        QString n(pathName);
-        const QStringView uncPrefix(uR"(\\?\UNC\)");
-        const QStringView extendedLengthPathPrefix(uR"(\\?\)");
-        if (n.startsWith(uncPrefix)) {
-            // Keep the initial double-slash, chop out the rest of the prefix.
-            n = n.remove(2, uncPrefix.size() - 2);
-            if ((i = n.indexOf(nativeSeparator)) == -1)
-                return n;
-        } else if (n.startsWith(extendedLengthPathPrefix)) {
-            n = n.sliced(extendedLengthPathPrefix.size());
-            if ((i = n.indexOf(nativeSeparator)) == -1)
-                return n;
-        }
-
-        QChar * const data = n.data();
-        data[i++] = u'/';
-
-        for (; i < n.length(); ++i) {
-            if (data[i] == nativeSeparator)
-                data[i] = u'/';
-        }
-
-        return n;
-    }
-#endif
+    return QFileSystemEntry::removeUncOrLongPathPrefix(pathName).replace(u'\\', u'/');
+#else
     return pathName;
+#endif
 }
 
 static QString qt_cleanPath(const QString &path, bool *ok = nullptr);

@@ -1268,8 +1268,19 @@ tst_QDir::cleanPath_data()
     QTest::newRow("drive-above-root") << "A:/.." << "A:/..";
     QTest::newRow("unc-server-up") << "//server/path/.." << "//server";
     QTest::newRow("unc-server-above-root") << "//server/.." << "//server/..";
-    QTest::newRow("longpath") << "\\\\?\\d:\\" << "d:/";
+
+    QTest::newRow("longpath") << uR"(\\?\d:\)"_qs << u"d:/"_qs;
+    QTest::newRow("longpath-slash") << u"//?/d:/"_qs << u"d:/"_qs;
+    QTest::newRow("longpath-mixed-slashes") << uR"(//?/d:\)"_qs << u"d:/"_qs;
+    QTest::newRow("longpath-mixed-slashes-2") << uR"(\\?\d:/)"_qs << u"d:/"_qs;
+
     QTest::newRow("unc-network-share") << uR"(\\?\UNC\localhost\c$\tmp.txt)"_qs
+        << u"//localhost/c$/tmp.txt"_qs;
+    QTest::newRow("unc-network-share-slash") << u"//?/UNC/localhost/c$/tmp.txt"_qs
+        << u"//localhost/c$/tmp.txt"_qs;
+    QTest::newRow("unc-network-share-mixed-slashes") << uR"(//?/UNC/localhost\c$\tmp.txt)"_qs
+        << u"//localhost/c$/tmp.txt"_qs;
+    QTest::newRow("unc-network-share-mixed-slashes-2") << uR"(\\?\UNC\localhost/c$/tmp.txt)"_qs
         << u"//localhost/c$/tmp.txt"_qs;
 #else
     QTest::newRow("data15") << "//c:/foo" << "/c:/foo";
@@ -1747,6 +1758,8 @@ void tst_QDir::nativeSeparators()
     QCOMPARE(QDir::fromNativeSeparators(QLatin1String("\\")), QString("/"));
     QCOMPARE(QDir::fromNativeSeparators(QLatin1String("\\\\?\\C:\\")), QString("C:/"));
     QCOMPARE(QDir::fromNativeSeparators(uR"(\\?\UNC\localhost\c$\tmp.txt)"_qs),
+             u"//localhost/c$/tmp.txt"_qs);
+    QCOMPARE(QDir::fromNativeSeparators(uR"(//?/UNC/localhost\c$\tmp.txt)"_qs),
              u"//localhost/c$/tmp.txt"_qs);
 #else
     QCOMPARE(QDir::toNativeSeparators(QLatin1String("/")), QString("/"));

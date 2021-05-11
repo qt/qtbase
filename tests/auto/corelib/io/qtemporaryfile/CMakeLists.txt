@@ -45,3 +45,8 @@ if(ANDROID AND NOT ANDROID_EMBEDDED)
             ${android_testdata_resource_files}
     )
 endif()
+
+qt_internal_extend_target(tst_qtemporaryfile CONDITION WIN32
+    LIBRARIES
+        shlwapi
+)
