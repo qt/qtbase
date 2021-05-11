@@ -3569,6 +3569,7 @@ static QRegionPrivate *PolygonRegion(const QPoint *Pts, int Count, int rule)
     int fixWAET = false;
     POINTBLOCK FirstPtBlock, *curPtBlock; /* PtBlock buffers    */
     FirstPtBlock.pts = reinterpret_cast<QPoint *>(FirstPtBlock.data);
+    FirstPtBlock.next = nullptr;
     POINTBLOCK *tmpPtBlock;
     int numFullPtBlocks = 0;
 
