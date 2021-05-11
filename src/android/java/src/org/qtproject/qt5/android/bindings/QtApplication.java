@@ -102,9 +102,7 @@ public class QtApplication extends Application
                         }
                     }
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            } catch (Exception e) { }
         }
     }
 
