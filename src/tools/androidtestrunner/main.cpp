@@ -446,26 +446,23 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    if (!QFile::exists(g_options.apkPath)) {
-        if (g_options.makeCommand.isEmpty()) {
-            fprintf(stderr,
-                    "No apk found at \"%s\". Provide a make command with the \"--make\" parameter "
-                    "to generate it first.\n",
-                    qPrintable(g_options.apkPath));
-            return 1;
-        }
-        if (!execCommand(g_options.makeCommand, nullptr, true)) {
-            if (!g_options.skipAddInstallRoot) {
-                // we need to run make INSTALL_ROOT=path install to install the application file(s) first
-                if (!execCommand(QStringLiteral("%1 INSTALL_ROOT=%2 install")
-                                 .arg(g_options.makeCommand, QDir::toNativeSeparators(g_options.buildPath)), nullptr, g_options.verbose)) {
-                    return 1;
-                }
-            } else {
-                if (!execCommand(QStringLiteral("%1")
-                                 .arg(g_options.makeCommand), nullptr, g_options.verbose)) {
-                    return 1;
-                }
+    if (g_options.makeCommand.isEmpty()) {
+        fprintf(stderr,
+                "It is required to provide a make command with the \"--make\" parameter "
+                "to generate the apk.\n");
+        return 1;
+    }
+    if (!execCommand(g_options.makeCommand, nullptr, true)) {
+        if (!g_options.skipAddInstallRoot) {
+            // we need to run make INSTALL_ROOT=path install to install the application file(s) first
+            if (!execCommand(QStringLiteral("%1 INSTALL_ROOT=%2 install")
+                             .arg(g_options.makeCommand, QDir::toNativeSeparators(g_options.buildPath)), nullptr, g_options.verbose)) {
+                return 1;
+            }
+        } else {
+            if (!execCommand(QStringLiteral("%1")
+                             .arg(g_options.makeCommand), nullptr, g_options.verbose)) {
+                return 1;
             }
         }
     }

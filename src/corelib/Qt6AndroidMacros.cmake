@@ -288,35 +288,48 @@ function(qt6_android_add_apk_target target)
     if(NOT QT_NO_GLOBAL_APK_TARGET)
         if(NOT TARGET apk)
             add_custom_target(apk
-                DEPENDS ${target}_prepare_apk_dir
+                DEPENDS ${target}_make_apk
                 COMMENT "Building all apks"
             )
         endif()
-        set(should_add_to_global_apk TRUE)
     endif()
 
     set(deployment_tool "${QT_HOST_PATH}/${QT6_HOST_INFO_BINDIR}/androiddeployqt")
-    set(apk_dir "$<TARGET_PROPERTY:${target},BINARY_DIR>/android-build")
-    add_custom_target(${target}_prepare_apk_dir ALL
+    set(apk_final_dir "$<TARGET_PROPERTY:${target},BINARY_DIR>/android-build")
+    set(apk_intermediate_dir "${CMAKE_CURRENT_BINARY_DIR}/android-build")
+    set(apk_file_name "${target}.apk")
+    set(apk_final_file_path "${apk_final_dir}/${apk_file_name}")
+    set(apk_intermediate_file_path "${apk_intermediate_dir}/${apk_file_name}")
+
+    # This target is used by Qt Creator's Android support.
+    add_custom_target(${target}_prepare_apk_dir
         DEPENDS ${target}
         COMMAND ${CMAKE_COMMAND}
             -E copy_if_different $<TARGET_FILE:${target}>
-            "${apk_dir}/libs/${CMAKE_ANDROID_ARCH_ABI}/$<TARGET_FILE_NAME:${target}>"
+            "${apk_final_dir}/libs/${CMAKE_ANDROID_ARCH_ABI}/$<TARGET_FILE_NAME:${target}>"
         COMMENT "Copying ${target} binary to apk folder"
     )
 
-    add_custom_target(${target}_make_apk
-        DEPENDS ${target}_prepare_apk_dir
-        COMMAND  ${deployment_tool}
-            --input ${deployment_file}
-            --output ${apk_dir}
-            --apk ${apk_dir}/${target}.apk
+    # Add custom command that creates the apk in an intermediate location.
+    # We need the intermediate location, because we cannot have target-dependent generator
+    # expressions in OUTPUT.
+    add_custom_command(OUTPUT "${apk_intermediate_file_path}"
+        COMMAND ${CMAKE_COMMAND}
+            -E copy "$<TARGET_FILE:${target}>"
+            "${apk_intermediate_dir}/libs/${CMAKE_ANDROID_ARCH_ABI}/$<TARGET_FILE_NAME:${target}>"
+        COMMAND "${deployment_tool}"
+            --input "${deployment_file}"
+            --output "${apk_intermediate_dir}"
+            --apk "${apk_intermediate_file_path}"
         COMMENT "Creating APK for ${target}"
-    )
+        DEPENDS "${target}" "${deployment_file}")
 
-    if(should_add_to_global_apk)
-        add_dependencies(apk "${target}_make_apk")
-    endif()
+    # Create a ${target}_make_apk target to copy the apk from the intermediate to its final
+    # location.  If the final and intermediate locations are identical, this is a no-op.
+    add_custom_target(${target}_make_apk
+        COMMAND "${CMAKE_COMMAND}"
+            -E copy_if_different "${apk_intermediate_file_path}" "${apk_final_file_path}"
+        DEPENDS "${apk_intermediate_file_path}")
 endfunction()
 
 if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
