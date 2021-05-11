@@ -1893,10 +1893,35 @@ QStandardItem *QStandardItem::takeChild(int row, int column)
     QStandardItem *item = nullptr;
     int index = d->childIndex(row, column);
     if (index != -1) {
+        QModelIndex changedIdx;
         item = d->children.at(index);
-        if (item)
-            item->d_func()->setParentAndModel(nullptr, nullptr);
+        if (item && d->model) {
+            QStandardItemPrivate *const item_d = item->d_func();
+            const int savedRows = item_d->rows;
+            const int savedCols = item_d->columns;
+            const QVector<QStandardItem*> savedChildren = item_d->children;
+            if (savedRows > 0) {
+                d->model->d_func()->rowsAboutToBeRemoved(item, 0, savedRows - 1);
+                item_d->rows = 0;
+                item_d->children = QVector<QStandardItem*>(); //slightly faster than clear
+                d->model->d_func()->rowsRemoved(item, 0, savedRows);
+            }
+            if (savedCols > 0) {
+                d->model->d_func()->columnsAboutToBeRemoved(item, 0, savedCols - 1);
+                item_d->columns = 0;
+                if (!item_d->children.isEmpty())
+                    item_d->children = QVector<QStandardItem*>(); //slightly faster than clear
+                d->model->d_func()->columnsRemoved(item, 0, savedCols);
+            }
+            item_d->rows = savedRows;
+            item_d->columns = savedCols;
+            item_d->children = savedChildren;
+            changedIdx = d->model->indexFromItem(item);
+            item_d->setParentAndModel(nullptr, nullptr);
+        }
         d->children.replace(index, nullptr);
+        if (changedIdx.isValid())
+            d->model->dataChanged(changedIdx, changedIdx);
     }
     return item;
 }
