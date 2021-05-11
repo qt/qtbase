@@ -3830,6 +3830,7 @@ void QClipData::initialize()
     Q_CHECK_PTR(m_clipLines);
     QT_TRY {
         allocated = clipSpanHeight;
+        count = 0;
         QT_TRY {
             if (hasRegionClip) {
                 const auto rects = clipRegion.begin();
@@ -3841,7 +3842,6 @@ void QClipData::initialize()
 
                 int y = 0;
                 int firstInBand = 0;
-                count = 0;
                 while (firstInBand < numRects) {
                     const int currMinY = rects[firstInBand].y();
                     const int currMaxY = currMinY + rects[firstInBand].height();
@@ -3899,7 +3899,6 @@ void QClipData::initialize()
                 }
 
                 const int len = clipRect.width();
-                count = 0;
                 while (y < ymax) {
                     QSpan *span = m_spans + count;
                     span->x = xmin;
