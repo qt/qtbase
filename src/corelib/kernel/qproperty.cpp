@@ -571,10 +571,9 @@ QPropertyObserver::QPropertyObserver(ChangeHandler changeHandler)
     d.setChangeHandler(changeHandler);
 }
 
-QPropertyObserver::QPropertyObserver(QUntypedPropertyData *aliasedPropertyPtr)
+QPropertyObserver::QPropertyObserver(QUntypedPropertyData *)
 {
-    QPropertyObserverPointer d{this};
-    d.setAliasedProperty(aliasedPropertyPtr);
+    // ### Qt 7: Remove, currently left for binary compatibility
 }
 
 /*! \internal
@@ -625,8 +624,6 @@ QPropertyObserver &QPropertyObserver::operator=(QPropertyObserver &&other) noexc
 
 void QPropertyObserverPointer::unlink()
 {
-    if (ptr->next.tag() == QPropertyObserver::ObserverNotifiesAlias)
-        ptr->aliasedPropertyData = nullptr;
     if (ptr->next)
         ptr->next->prev = ptr->prev;
     if (ptr->prev)
@@ -640,13 +637,6 @@ void QPropertyObserverPointer::setChangeHandler(QPropertyObserver::ChangeHandler
     Q_ASSERT(ptr->next.tag() != QPropertyObserver::ObserverIsPlaceholder);
     ptr->changeHandler = changeHandler;
     ptr->next.setTag(QPropertyObserver::ObserverNotifiesChangeHandler);
-}
-
-void QPropertyObserverPointer::setAliasedProperty(QUntypedPropertyData *property)
-{
-    Q_ASSERT(ptr->next.tag() != QPropertyObserver::ObserverIsPlaceholder);
-    ptr->aliasedPropertyData = property;
-    ptr->next.setTag(QPropertyObserver::ObserverNotifiesAlias);
 }
 
 void QPropertyObserverPointer::setBindingToNotify(QPropertyBindingPrivate *binding)
@@ -708,9 +698,6 @@ void QPropertyObserverPointer::notify(QUntypedPropertyData *propertyDataPtr)
      */
     while (observer) {
         QPropertyObserver *next = observer->next.data();
-
-        char preventBug[1] = {'\0'}; // QTBUG-87245
-        Q_UNUSED(preventBug);
         switch (QPropertyObserver::ObserverTag(observer->next.tag())) {
         case QPropertyObserver::ObserverNotifiesChangeHandler:
         {
@@ -734,11 +721,10 @@ void QPropertyObserverPointer::notify(QUntypedPropertyData *propertyDataPtr)
             next = protector.next();
             break;
         }
-        case QPropertyObserver::ObserverNotifiesAlias:
-            break;
         case QPropertyObserver::ObserverIsPlaceholder:
             // recursion is already properly handled somewhere else
             break;
+        default: Q_UNREACHABLE();
         }
         observer = next;
     }

@@ -83,7 +83,6 @@ private slots:
     void genericPropertyBindingBool();
     void setBindingFunctor();
     void multipleObservers();
-    void propertyAlias();
     void arrowAndStarOperator();
     void notifiedProperty();
     void typeNoOperatorEqual();
@@ -97,7 +96,6 @@ private slots:
     void qobjectObservers();
     void compatBindings();
     void metaProperty();
-    void aliasOnMetaProperty();
 
     void modifyObserverListWhileIterating();
     void compatPropertyNoDobuleNotification();
@@ -791,52 +789,6 @@ void tst_QProperty::multipleObservers()
     QCOMPARE(property.value(), 22);
 }
 
-void tst_QProperty::propertyAlias()
-{
-    QScopedPointer<QProperty<int>> property(new QProperty<int>);
-    property->setValue(5);
-    QPropertyAlias alias(property.get());
-    QVERIFY(alias.isValid());
-    QCOMPARE(alias.value(), 5);
-
-    int value1 = 1;
-    auto changeHandler = alias.onValueChanged([&]() { value1 = alias.value(); });
-    QCOMPARE(value1, 1);
-
-    int value2 = 2;
-    auto subscribeHandler = alias.subscribe([&]() { value2 = alias.value(); });
-    QCOMPARE(value2, 5);
-
-    alias.setValue(6);
-    QVERIFY(alias.isValid());
-    QCOMPARE(alias.value(), 6);
-    QCOMPARE(value1, 6);
-    QCOMPARE(value2, 6);
-
-    alias.setBinding([]() { return 12; });
-    QCOMPARE(value1, 12);
-    QCOMPARE(value2, 12);
-    QCOMPARE(alias.value(), 12);
-
-    alias.setValue(22);
-    QCOMPARE(value1, 22);
-    QCOMPARE(value2, 22);
-    QCOMPARE(alias.value(), 22);
-
-    property.reset();
-
-    QVERIFY(!alias.isValid());
-    QCOMPARE(alias.value(), int());
-    QCOMPARE(value1, 22);
-    QCOMPARE(value2, 22);
-
-    // Does not crash
-    alias.setValue(25);
-    QCOMPARE(alias.value(), int());
-    QCOMPARE(value1, 22);
-    QCOMPARE(value2, 22);
-}
-
 void tst_QProperty::arrowAndStarOperator()
 {
     QString str("Hello");
@@ -1443,42 +1395,6 @@ void tst_QProperty::metaProperty()
     QCOMPARE(object.fooData.value(), 666);
     object.setFoo(1);
     QCOMPARE(object.fooData.value(), 1);
-}
-
-void tst_QProperty::aliasOnMetaProperty()
-{
-    MyQObject object;
-    QPropertyAlias<int> alias(object.bindableFoo());
-
-    QVERIFY(alias.isValid());
-    QCOMPARE(alias.value(), object.foo());
-    QVERIFY(!alias.hasBinding());
-
-    object.setFoo(42);
-    QCOMPARE(alias.value(), 42);
-
-    auto f = [&object]() -> int {
-        return object.barData;
-    };
-    object.bindableFoo().setBinding(f);
-    QVERIFY(alias.hasBinding());
-    QCOMPARE(alias.value(), object.bar());
-
-    object.setBar(111);
-    QCOMPARE(alias.value(), 111);
-
-    int changedCount = 0;
-    auto observer = alias.onValueChanged([&changedCount]() { ++changedCount; });
-    QCOMPARE(changedCount, 0);
-    object.setBar(666);
-    QCOMPARE(changedCount, 1);
-
-    alias.setBinding([&object]() { return object.read(); });
-    QCOMPARE(changedCount, 2);
-    QCOMPARE(alias.value(), 0);
-    object.readData = 100;
-    QCOMPARE(changedCount, 3);
-    QCOMPARE(alias.value(), 100);
 }
 
 void tst_QProperty::modifyObserverListWhileIterating()

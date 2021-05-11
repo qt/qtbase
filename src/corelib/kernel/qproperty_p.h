@@ -105,7 +105,6 @@ struct QPropertyObserverPointer
 
     void setBindingToNotify(QPropertyBindingPrivate *binding);
     void setChangeHandler(QPropertyObserver::ChangeHandler changeHandler);
-    void setAliasedProperty(QUntypedPropertyData *propertyPtr);
 
     void notify(QUntypedPropertyData *propertyDataPtr);
 #ifndef QT_NO_DEBUG
