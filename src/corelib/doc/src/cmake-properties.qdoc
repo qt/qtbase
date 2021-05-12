@@ -298,3 +298,20 @@ That library provides implementations of main (or WinMain).
 
 On targets that must provide their own entry point, set the property \c qt_no_entrypoint to inhibit linking against Qt's entrypoint library.
 */
+
+/*!
+\page cmake-target-property-qt_resource_prefix.html
+\ingroup cmake-properties-qtcore
+\ingroup cmake-target-properties-qtcore
+
+\title QT_RESOURCE_PREFIX
+\target cmake-target-property-QT_RESOURCE_PREFIX
+
+\brief Specifies the default Qt resource prefix.
+
+\preliminarycmakeproperty
+
+When using \l{qt6_add_resources}{qt_add_resources} without a \c PREFIX
+argument, then the value of this target property will be used as
+resource prefix.
+*/
