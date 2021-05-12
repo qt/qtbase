@@ -224,15 +224,13 @@ QString QMakeLibraryInfo::rawLocation(int loc, QMakeLibraryInfo::PathGroup group
                                                      : group == EffectivePaths ? "EffectivePaths"
                                                                                : "Paths"));
 
-            ret = config->value(locinfo.key, locinfo.defaultValue).toString();
-
+            ret = config->value(locinfo.key).toString();
             if (ret.isEmpty()) {
-                if (loc == HostPrefixPath) {
-                    locinfo = defaultLocationInfo(QLibraryInfo::PrefixPath);
-                    ret = config->value(locinfo.key, locinfo.defaultValue).toString();
-                } else if (loc == TargetSpecPath || loc == HostSpecPath
-                           || loc == SysrootifyPrefixPath) {
+                if (loc == HostPrefixPath || loc == TargetSpecPath || loc == HostSpecPath
+                           || loc == SysrootifyPrefixPath || loc == QLibraryInfo::PrefixPath) {
                     fromConf = false;
+                } else {
+                    ret = locinfo.defaultValue;
                 }
                 // The last case here is SysrootPath, which can be legitimately empty.
                 // All other keys have non-empty fallbacks to start with.
