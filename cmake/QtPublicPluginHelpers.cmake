@@ -90,10 +90,17 @@ function(__qt_internal_get_static_plugin_condition_genex
         ">"
     )
 
+    # No point in linking the plugin initialization source file into static libraries. The
+    # initialization symbol will be discarded by the linker when the static lib is linked into an
+    # executable or shared library, because nothing is referencing the global static symbol.
+    set(type_genex "$<TARGET_PROPERTY:TYPE>")
+    set(no_static_genex "$<NOT:$<STREQUAL:${type_genex},STATIC_LIBRARY>>")
+
     # Complete condition that defines whether a static plugin is linked
     string(CONCAT _plugin_condition
         "$<BOOL:$<AND:"
             "${_is_plugin_marker_genex},"
+            "${no_static_genex},"
             "$<OR:"
                 "${_plugin_is_whitelisted},"
                 "${_plugin_versionless_is_whitelisted},"
