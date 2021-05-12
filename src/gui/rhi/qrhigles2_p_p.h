@@ -55,6 +55,7 @@
 #include "qrhi_p_p.h"
 #include "qshaderdescription_p.h"
 #include <qopengl.h>
+#include <QByteArray>
 #include <QSurface>
 
 QT_BEGIN_NAMESPACE
@@ -74,7 +75,7 @@ struct QGles2Buffer : public QRhiBuffer
     int nonZeroSize = 0;
     GLuint buffer = 0;
     GLenum targetForDataOps;
-    char *data = nullptr;
+    QByteArray data;
     enum Access {
         AccessNone,
         AccessVertex,
