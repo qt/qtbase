@@ -112,6 +112,11 @@ int runUic(int argc, char *argv[])
     fromImportsOption.setDescription(QStringLiteral("Python: generate imports relative to '.'"));
     parser.addOption(fromImportsOption);
 
+    // FIXME Qt 7: Remove?
+    QCommandLineOption useStarImportsOption(QStringLiteral("star-imports"));
+    useStarImportsOption.setDescription(QStringLiteral("Python: Use * imports"));
+    parser.addOption(useStarImportsOption);
+
     parser.addPositionalArgument(QStringLiteral("[uifile]"), QStringLiteral("Input file (*.ui), otherwise stdin."));
 
     parser.process(app);
@@ -123,6 +128,7 @@ int runUic(int argc, char *argv[])
     driver.option().implicitIncludes = !parser.isSet(noImplicitIncludesOption);
     driver.option().idBased = parser.isSet(idBasedOption);
     driver.option().fromImports = parser.isSet(fromImportsOption);
+    driver.option().useStarImports = parser.isSet(useStarImportsOption);
     driver.option().postfix = parser.value(postfixOption);
     driver.option().translateFunction = parser.value(translateOption);
     driver.option().includeFile = parser.value(includeOption);

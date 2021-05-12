@@ -29,27 +29,40 @@
 #ifndef PYTHONWRITEIMPORTS_H
 #define PYTHONWRITEIMPORTS_H
 
-#include <treewalker.h>
+#include <writeincludesbase.h>
+
+#include <QtCore/qhash.h>
+#include <QtCore/qmap.h>
+#include <QtCore/qstringlist.h>
 
 QT_BEGIN_NAMESPACE
 
-class Uic;
-
 namespace Python {
 
-struct WriteImports : public TreeWalker
+class WriteImports : public WriteIncludesBase
 {
 public:
+    using ClassesPerModule = QMap<QString, QStringList>;
+
     explicit WriteImports(Uic *uic);
 
     void acceptUI(DomUI *node) override;
-    void acceptCustomWidget(DomCustomWidget *node) override;
+    void acceptProperty(DomProperty *node) override;
+
+protected:
+    void doAdd(const QString &className, const DomCustomWidget *dcw = nullptr) override;
 
 private:
+    void addPythonCustomWidget(const QString &className, const DomCustomWidget *dcw);
+    bool addQtClass(const QString &className);
     void writeImport(const QString &module);
-    QString qtModuleOf(const DomCustomWidget *node) const;
 
-    Uic *const m_uic;
+    QHash<QString, QString> m_classToModule;
+    // Module->class (modules sorted)
+
+    ClassesPerModule m_qtClasses;
+    ClassesPerModule m_customWidgets;
+    QStringList m_plainCustomWidgets; // Custom widgets without any module
 };
 
 } // namespace Python

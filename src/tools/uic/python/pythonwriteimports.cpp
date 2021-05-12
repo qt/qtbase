@@ -31,19 +31,49 @@
 #include <customwidgetsinfo.h>
 #include <option.h>
 #include <uic.h>
+#include <driver.h>
 
 #include <ui4.h>
 
 #include <QtCore/qtextstream.h>
 
+#include <algorithm>
+
 QT_BEGIN_NAMESPACE
 
-static QString standardImports()
+// Generate imports for Python. Note some things differ from C++:
+// - qItemView->header()->setFoo() does not require QHeaderView to be imported
+// - qLabel->setFrameShape(QFrame::Box) however requires QFrame to be imported
+//   (see acceptProperty())
+
+namespace Python {
+
+// Classes required for properties
+static WriteImports::ClassesPerModule defaultClasses()
 {
-    return QString::fromLatin1(R"I(from PySide%1.QtCore import *  # type: ignore
-from PySide%1.QtGui import *  # type: ignore
-from PySide%1.QtWidgets import *  # type: ignore
-)I").arg(QT_VERSION_MAJOR);
+    return {
+        {QStringLiteral("QtCore"),
+            {QStringLiteral("QCoreApplication"), QStringLiteral("QDate"),
+             QStringLiteral("QDateTime"), QStringLiteral("QLocale"),
+             QStringLiteral("QMetaObject"), QStringLiteral("QObject"),
+             QStringLiteral("QPoint"), QStringLiteral("QRect"),
+             QStringLiteral("QSize"), QStringLiteral("QTime"),
+             QStringLiteral("QUrl"), QStringLiteral("Qt")},
+        },
+        {QStringLiteral("QtGui"),
+            {QStringLiteral("QBrush"), QStringLiteral("QColor"),
+             QStringLiteral("QConicalGradient"), QStringLiteral("QCursor"),
+             QStringLiteral("QGradient"), QStringLiteral("QFont"),
+             QStringLiteral("QFontDatabase"), QStringLiteral("QIcon"),
+             QStringLiteral("QImage"), QStringLiteral("QKeySequence"),
+             QStringLiteral("QLinearGradient"), QStringLiteral("QPalette"),
+             QStringLiteral("QPainter"), QStringLiteral("QPixmap"),
+             QStringLiteral("QTransform"), QStringLiteral("QRadialGradient")}
+        },
+        {QStringLiteral("QtWidgets"),
+            {QStringLiteral("QSizePolicy")}
+        }
+    };
 }
 
 // Change the name of a qrc file "dir/foo.qrc" file to the Python
@@ -60,19 +90,72 @@ static QString pythonResource(QString resource)
     return resource;
 }
 
-namespace Python {
-
-WriteImports::WriteImports(Uic *uic) : m_uic(uic)
+// Helpers for WriteImports::ClassesPerModule maps
+static void insertClass(const QString &module, const QString &className,
+                        WriteImports::ClassesPerModule *c)
 {
+    auto usedIt = c->find(module);
+    if (usedIt == c->end())
+        c->insert(module, {className});
+    else if (!usedIt.value().contains(className))
+        usedIt.value().append(className);
+}
+
+// Format a class list: "from A import (B, C)"
+static void formatImportClasses(QTextStream &str, QStringList classList)
+{
+    std::sort(classList.begin(), classList.end());
+
+    const qsizetype size = classList.size();
+    if (size > 1)
+        str << '(';
+    for (qsizetype i = 0; i < size; ++i) {
+        if (i > 0)
+            str << (i % 4 == 0 ? ",\n    " : ", ");
+        str << classList.at(i);
+    }
+    if (size > 1)
+        str << ')';
+}
+
+static void formatClasses(QTextStream &str, const WriteImports::ClassesPerModule &c,
+                          bool useStarImports = false,
+                          const QByteArray &modulePrefix = {})
+{
+    for (auto it = c.cbegin(), end = c.cend(); it != end; ++it) {
+        str << "from " << modulePrefix << it.key() << " import ";
+        if (useStarImports)
+            str << "*  # type: ignore";
+        else
+            formatImportClasses(str, it.value());
+        str << '\n';
+    }
+}
+
+WriteImports::WriteImports(Uic *uic) : WriteIncludesBase(uic),
+    m_qtClasses(defaultClasses())
+{
+    for (const auto &e : classInfoEntries())
+        m_classToModule.insert(QLatin1String(e.klass), QLatin1String(e.module));
 }
 
 void WriteImports::acceptUI(DomUI *node)
 {
-    auto &output = m_uic->output();
-    output << standardImports() << '\n';
-    if (auto customWidgets = node->elementCustomWidgets()) {
-        TreeWalker::acceptCustomWidgets(customWidgets);
+    WriteIncludesBase::acceptUI(node);
+
+    auto &output = uic()->output();
+    const bool useStarImports = uic()->driver()->option().useStarImports;
+
+    const QByteArray qtPrefix = QByteArrayLiteral("PySide")
+        + QByteArray::number(QT_VERSION_MAJOR) + '.';
+
+    formatClasses(output, m_qtClasses, useStarImports, qtPrefix);
+
+    if (!m_customWidgets.isEmpty() || !m_plainCustomWidgets.isEmpty()) {
         output << '\n';
+        formatClasses(output, m_customWidgets, useStarImports);
+        for (const auto &w : m_plainCustomWidgets)
+            output << "import " << w << '\n';
     }
 
     if (auto resources = node->elementResources()) {
@@ -87,57 +170,76 @@ void WriteImports::acceptUI(DomUI *node)
 
 void WriteImports::writeImport(const QString &module)
 {
-
-    if (m_uic->option().fromImports)
-        m_uic->output() << "from  . ";
-    m_uic->output() << "import " << module << '\n';
+    if (uic()->option().fromImports)
+        uic()->output() << "from  . ";
+    uic()->output() << "import " << module << '\n';
 }
 
-QString WriteImports::qtModuleOf(const DomCustomWidget *node) const
+void WriteImports::doAdd(const QString &className, const DomCustomWidget *dcw)
 {
-    if (m_uic->customWidgetsInfo()->extends(node->elementClass(), QLatin1String("QAxWidget")))
-        return QStringLiteral("QtAxContainer");
-    if (const auto headerElement = node->elementHeader()) {
-        const auto &header = headerElement->text();
-        if (header.startsWith(QLatin1String("Qt"))) {
-            const int slash = header.indexOf(QLatin1Char('/'));
-            if (slash != -1)
-                return header.left(slash);
-        }
+    const CustomWidgetsInfo *cwi = uic()->customWidgetsInfo();
+    if (cwi->extends(className, QLatin1String("QListWidget")))
+        add(QStringLiteral("QListWidgetItem"));
+    else if (cwi->extends(className, QLatin1String("QTreeWidget")))
+        add(QStringLiteral("QTreeWidgetItem"));
+    else if (cwi->extends(className, QLatin1String("QTableWidget")))
+        add(QStringLiteral("QTableWidgetItem"));
+
+    if (dcw != nullptr) {
+        addPythonCustomWidget(className, dcw);
+        return;
     }
-    return QString();
+
+    if (!addQtClass(className))
+        qWarning("WriteImports::add(): Unknown Qt class %s", qPrintable(className));
 }
 
-void WriteImports::acceptCustomWidget(DomCustomWidget *node)
+bool WriteImports::addQtClass(const QString &className)
 {
-    const auto &className = node->elementClass();
+    // QVariant is not exposed in PySide
+    if (className == u"QVariant" || className == u"Qt")
+        return true;
+
+    const auto moduleIt = m_classToModule.constFind(className);
+    const bool result = moduleIt != m_classToModule.cend();
+    if (result)
+        insertClass(moduleIt.value(), className, &m_qtClasses);
+    return result;
+}
+
+void WriteImports::addPythonCustomWidget(const QString &className, const DomCustomWidget *node)
+{
     if (className.contains(QLatin1String("::")))
         return; // Exclude namespaced names (just to make tests pass).
-    const QString &importModule = qtModuleOf(node);
-    auto &output = m_uic->output();
-    // For starting importing Qt for Python modules
-    if (!importModule.isEmpty()) {
-        output << "from ";
-        if (importModule.startsWith(QLatin1String("Qt")))
-            output << "PySide" << QT_VERSION_MAJOR << '.';
-        output << importModule;
-        if (!className.isEmpty())
-            output << " import " << className << "\n\n";
-    } else {
-        // When the elementHeader is not set, we know it's the continuation
-        // of a Qt for Python import or a normal import of another module.
-        if (!node->elementHeader() || node->elementHeader()->text().isEmpty()) {
-            output << "import " << className << '\n';
-        } else { // When we do have elementHeader, we know it's a relative import.
-            QString modulePath = node->elementHeader()->text();
-            // Replace the '/' by '.'
-            modulePath.replace(QLatin1Char('/'), QLatin1Char('.'));
-            // '.h' is added by default on headers for <customwidget>
-            if (modulePath.endsWith(QLatin1String(".h")))
-                modulePath.chop(2);
-            output << "from " << modulePath << " import " << className << '\n';
-        }
+
+    if (addQtClass(className))  // Qt custom widgets like QQuickWidget, QAxWidget, etc
+        return;
+
+    // When the elementHeader is not set, we know it's the continuation
+    // of a Qt for Python import or a normal import of another module.
+    if (!node->elementHeader() || node->elementHeader()->text().isEmpty()) {
+        m_plainCustomWidgets.append(className);
+    } else { // When we do have elementHeader, we know it's a relative import.
+        QString modulePath = node->elementHeader()->text();
+        // Replace the '/' by '.'
+        modulePath.replace(QLatin1Char('/'), QLatin1Char('.'));
+        // '.h' is added by default on headers for <customwidget>
+        if (modulePath.endsWith(QLatin1String(".h")))
+            modulePath.chop(2);
+        insertClass(modulePath, className, &m_customWidgets);
     }
+}
+
+void WriteImports::acceptProperty(DomProperty *node)
+{
+    if (node->kind() == DomProperty::Enum) {
+        // Add base classes like QFrame for QLabel::frameShape()
+        const QString &enumV = node->elementEnum();
+        const auto colonPos = enumV.indexOf(u"::");
+        if (colonPos > 0)
+            addQtClass(enumV.left(colonPos));
+    }
+    WriteIncludesBase::acceptProperty(node);
 }
 
 } // namespace Python
