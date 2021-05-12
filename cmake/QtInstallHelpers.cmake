@@ -136,6 +136,10 @@ function(qt_internal_install_versioned_link install_dir target)
         return()
     endif()
 
+    if(NOT QT_CREATE_VERSIONED_HARD_LINK)
+        return()
+    endif()
+
     qt_path_join(install_base_file_path "$\{qt_full_install_prefix}"
         "${install_dir}" "$<TARGET_FILE_BASE_NAME:${target}>")
     set(original "${install_base_file_path}$<TARGET_FILE_SUFFIX:${target}>")
