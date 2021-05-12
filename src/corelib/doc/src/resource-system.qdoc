@@ -38,7 +38,7 @@
     (icons, translation files, etc.) and you don't want to run the
     risk of losing the files.
 
-    The resource system is based on tight cooperation between \l qmake,
+    The resource system is based on tight cooperation between the build system,
     \l rcc (Qt's resource compiler), and QFile.
 
     \section1 Resource Collection Files (\c{.qrc})
@@ -122,9 +122,25 @@
 
     \section2 Compiled-In Resources
 
-    For a resource to be compiled into the binary the \c .qrc file must be
-    mentioned in the application's \c .pro file so that \c qmake knows
-    about it. For example:
+    For a resource to be compiled into the binary, the \c .qrc file must be
+    mentioned in the application's project file so that the build tool knows
+    about it.
+
+    In CMake projects, one can use CMake's built-in \c AUTORCC feature to add \c
+    .qrc files directly as source files:
+
+    \snippet resource-system/CMakeLists.txt AUTORCC
+
+    See \l {https://cmake.org/cmake/help/latest/prop_tgt/AUTORCC.html}
+    {CMake's AUTORCC documentation}.
+
+    Qt's own CMake function \l qt_add_resources allows more control over the
+    creation of resources. For example, it allows to specify the content of the
+    resource directly in the project file without writing a \c .qrc file first:
+
+    \snippet resource-system/CMakeLists.txt qt_add_resources
+
+    In qmake projects, assign the \c .qrc files to the \l RESOURCES variable:
 
     \snippet resource-system/application.pro 0
 
