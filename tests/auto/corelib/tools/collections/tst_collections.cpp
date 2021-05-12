@@ -1710,7 +1710,7 @@ void tst_Collections::qstring()
     QVERIFY (hello.contains('e') != false);
 
     QVERIFY(hello.indexOf('e') == 1);
-    QVERIFY(hello.indexOf('e', -10) == 1);
+    QVERIFY(hello.indexOf('e', -10) == -1);
     QVERIFY(hello.indexOf('l') == 2);
     QVERIFY(hello.indexOf('l',2) == 2);
     QVERIFY(hello.indexOf('l',3) == 3);

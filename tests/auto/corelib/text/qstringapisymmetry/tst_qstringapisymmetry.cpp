@@ -2268,6 +2268,9 @@ void tst_QStringApiSymmetry::indexOf_data(bool rhsHasVariableLength)
                                      << a << QLatin1String("a") << zeroPos << minus1Pos << minus1Pos;
     QTest::addRow("haystack: null, needle: a") << null << QLatin1String()
                                      << a << QLatin1String("a") << zeroPos << minus1Pos << minus1Pos;
+    QTest::addRow("haystack: anything, needle: a, large negative offset")
+            << "anything" << QLatin1String("anything") << a << QLatin1String("a") << qsizetype(-500)
+            << minus1Pos << minus1Pos;
 
 #define ROW(h, n, st, cs, cis) \
     QTest::addRow("haystack: %s, needle: %s", #h, #n) << h << QLatin1String(#h) \

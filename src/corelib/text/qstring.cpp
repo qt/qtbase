@@ -10157,6 +10157,8 @@ char16_t valueTypeToUtf16<char>(char t)
 
 static inline qsizetype qFindChar(QStringView str, QChar ch, qsizetype from, Qt::CaseSensitivity cs) noexcept
 {
+    if (-from > str.size())
+        return -1;
     if (from < 0)
         from = qMax(from + str.size(), qsizetype(0));
     if (from < str.size()) {
