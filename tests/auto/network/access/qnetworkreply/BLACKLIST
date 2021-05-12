@@ -32,8 +32,7 @@ windows-10
 # QTBUG-66247
 b2qt
 windows-10 msvc-2015
-ubuntu
-rhel
+linux
 [ioHttpRedirectPolicy]
 opensuse-leap
 b2qt
