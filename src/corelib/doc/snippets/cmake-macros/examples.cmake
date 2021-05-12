@@ -22,6 +22,13 @@ qt_add_resources(SOURCES example.qrc)
 add_executable(myapp ${SOURCES})
 #! [qt_add_resources]
 
+#! [qt_add_resources_target]
+add_executable(myapp main.cpp)
+qt_add_resources(myapp "images"
+    PREFIX "/images"
+    FILES image1.png image2.png)
+#! [qt_add_resources_target]
+
 #! [qt5_add_big_resources]
 set(SOURCES main.cpp)
 qt5_add_big_resources(SOURCES big_resource.qrc)
