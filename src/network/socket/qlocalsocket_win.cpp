@@ -282,7 +282,7 @@ qint64 QLocalSocket::writeData(const char *data, qint64 len)
         QObjectPrivate::connect(d->pipeWriter, &QWindowsPipeWriter::bytesWritten,
                                 d, &QLocalSocketPrivate::_q_bytesWritten);
     }
-    d->_q_canWrite();
+    d->writeToSocket();
     return len;
 }
 
@@ -434,20 +434,21 @@ void QLocalSocketPrivate::_q_bytesWritten(qint64 bytes)
         QScopedValueRollback<bool> guard(emittedBytesWritten, true);
         emit q->bytesWritten(bytes);
     }
-    _q_canWrite();
-}
-
-void QLocalSocketPrivate::_q_canWrite()
-{
-    Q_Q(QLocalSocket);
     if (writeBuffer.isEmpty()) {
         if (state == QLocalSocket::ClosingState && pipeWriterBytesToWrite() == 0)
             q->close();
     } else {
-        Q_ASSERT(pipeWriter);
-        if (!pipeWriter->isWriteOperationActive())
-            pipeWriter->write(writeBuffer.read());
+        writeToSocket();
     }
+}
+
+void QLocalSocketPrivate::writeToSocket()
+{
+    Q_ASSERT(pipeWriter);
+    Q_ASSERT(!writeBuffer.isEmpty());
+
+    if (!pipeWriter->isWriteOperationActive())
+        pipeWriter->write(writeBuffer.read());
 }
 
 qintptr QLocalSocket::socketDescriptor() const
@@ -488,7 +489,8 @@ bool QLocalSocket::waitForDisconnected(int msecs)
 
     QDeadlineTimer deadline(msecs);
     while (!d->pipeReader->isPipeClosed()) {
-        d->_q_canWrite();
+        if (!d->writeBuffer.isEmpty())
+            d->writeToSocket();
 
         QSocketPoller poller(*d);
         if (!poller.poll(deadline))
@@ -499,7 +501,7 @@ bool QLocalSocket::waitForDisconnected(int msecs)
 
         // When the read buffer is full, the read sequence is not running,
         // so we need to peek the pipe to detect disconnection.
-        if (poller.waitForClose)
+        if (poller.waitForClose && isValid())
             d->pipeReader->checkPipeState();
 
         d->pipeReader->checkForReadyRead();
@@ -523,7 +525,8 @@ bool QLocalSocket::waitForReadyRead(int msecs)
 
     QDeadlineTimer deadline(msecs);
     while (!d->pipeReader->isPipeClosed()) {
-        d->_q_canWrite();
+        if (!d->writeBuffer.isEmpty())
+            d->writeToSocket();
 
         QSocketPoller poller(*d);
         if (poller.waitForClose || !poller.poll(deadline))
@@ -548,9 +551,11 @@ bool QLocalSocket::waitForBytesWritten(int msecs)
 
     QDeadlineTimer deadline(msecs);
     while (!d->pipeReader->isPipeClosed()) {
-        if (bytesToWrite() == 0)
+        if (!d->writeBuffer.isEmpty()) {
+            d->writeToSocket();
+        } else if (d->pipeWriterBytesToWrite() == 0) {
             return false;
-        d->_q_canWrite();
+        }
 
         QSocketPoller poller(*d);
         if (!poller.poll(deadline))

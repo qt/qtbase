@@ -58,7 +58,7 @@ QWindowsPipeReader::QWindowsPipeReader(QObject *parent)
       lastError(ERROR_SUCCESS),
       state(Stopped),
       readSequenceStarted(false),
-      pipeBroken(false),
+      pipeBroken(true),
       readyReadPending(false),
       winEventActPosted(false)
 {
@@ -112,10 +112,6 @@ void QWindowsPipeReader::stop()
 void QWindowsPipeReader::drainAndStop()
 {
     cancelAsyncRead(Draining);
-
-    // Note that signals are not emitted in the call below, as the caller
-    // is expected to do that synchronously.
-    consumePending();
 }
 
 /*!
@@ -123,10 +119,11 @@ void QWindowsPipeReader::drainAndStop()
  */
 void QWindowsPipeReader::cancelAsyncRead(State newState)
 {
+    pipeBroken = true;
     if (state != Running)
         return;
 
-    QMutexLocker locker(&mutex);
+    mutex.lock();
     state = newState;
     if (readSequenceStarted) {
         // This can legitimately fail due to the GetOverlappedResult()
@@ -142,11 +139,17 @@ void QWindowsPipeReader::cancelAsyncRead(State newState)
 
         // Wait for callback to complete.
         do {
-            locker.unlock();
+            mutex.unlock();
             waitForNotification();
-            locker.relock();
+            mutex.lock();
         } while (readSequenceStarted);
     }
+    mutex.unlock();
+
+    // Because pipeBroken was set earlier, finish reading to keep the class
+    // state consistent. Note that signals are not emitted in the call
+    // below, as the caller is expected to do that synchronously.
+    consumePending();
 }
 
 /*!
