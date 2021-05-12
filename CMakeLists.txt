@@ -81,6 +81,9 @@ if(NOT QT_BUILD_STANDALONE_TESTS)
     ## Should this Qt be built with Werror?
     option(WARNINGS_ARE_ERRORS "Build Qt with warnings as errors" ${FEATURE_developer_build})
 
+    ## Should this Qt create versioned hard link for some tools?
+    option(QT_CREATE_VERSIONED_HARD_LINK "Enable the use of versioned hard link" ON)
+
     ## QtBase specific configure tests:
     include(QtBaseConfigureTests)
 

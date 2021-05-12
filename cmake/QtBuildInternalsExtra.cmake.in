@@ -65,5 +65,9 @@ set(QT_BUILD_EXAMPLES_BY_DEFAULT @QT_BUILD_EXAMPLES_BY_DEFAULT@ CACHE BOOL
 # Propagate usage of ccache.
 set(QT_USE_CCACHE @QT_USE_CCACHE@ CACHE BOOL "Enable the use of ccache")
 
+# Propagate usage of versioned hard link.
+set(QT_CREATE_VERSIONED_HARD_LINK "@QT_CREATE_VERSIONED_HARD_LINK@" CACHE BOOL
+    "Enable the use of versioned hard link")
+
 # Extra set of exported variables
 @QT_EXTRA_BUILD_INTERNALS_VARS@
