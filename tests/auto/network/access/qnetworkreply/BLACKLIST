@@ -7,8 +7,7 @@ osx
 osx
 [ioHttpRedirectMultipartPost]
 b2qt
-ubuntu
-rhel
+linux
 [ioHttpRedirectPolicy]
 opensuse-leap
 b2qt
