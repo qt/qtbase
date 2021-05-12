@@ -34,6 +34,7 @@ rhel-7.6
 centos
 opensuse-leap
 ubuntu
+sles-15
 
 [syntheticEnterLeave]
 macos # Can't move cursor (QTBUG-76312)
