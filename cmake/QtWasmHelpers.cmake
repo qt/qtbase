@@ -7,6 +7,7 @@ function (qt_internal_setup_wasm_target_properties wasmTarget)
     "SHELL:-s USE_WEBGL2=1"
     "--bind"
     "SHELL:-s FETCH=1")
+    target_compile_options("${wasmTarget}" INTERFACE --bind)
 
     # Hardcode wasm memory size. Emscripten does not currently support memory growth
     # (ALLOW_MEMORY_GROWTH) in pthreads mode, and requires specifying the memory size
