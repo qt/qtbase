@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -46,6 +46,8 @@
 #include <QtCore/qobject.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qlist.h>
+
+#include "../shared/tlshelpers.h"
 
 #include <algorithm>
 
@@ -169,6 +171,9 @@ QT_BEGIN_NAMESPACE
 
 void tst_QDtls::initTestCase()
 {
+    if (!TlsAux::activeBackendSupportsDtls())
+        QSKIP("The active TLS backend does not support DTLS");
+
     certDirPath = QFileInfo(QFINDTESTDATA("certs")).absolutePath();
     QVERIFY(certDirPath.size() > 0);
     certDirPath += QDir::separator() + QStringLiteral("certs") + QDir::separator();

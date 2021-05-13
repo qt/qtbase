@@ -48,9 +48,7 @@
     // TLSTODO: find another solution, for now this code
     // (OpenSSL specific) is a part of plugin, not in
     // QtNetwork anymore.
-    //#ifndef QT_NO_OPENSSL
     //    #include "private/qsslsocket_openssl_symbols_p.h"
-    //#endif
 #endif
 
 #if QT_CONFIG(ssl)
@@ -244,12 +242,12 @@ void tst_QSslKey::createPlainTestRows(bool pemOnly)
                 continue; // Schannel treats RC2 as 128 bit
         }
 
-#if QT_CONFIG(ssl) && defined(QT_NO_OPENSSL) // generic backend
-        if (keyInfo.fileInfo.fileName().contains(QRegularExpression("-aes\\d\\d\\d-")))
-            continue; // No AES support in the generic back-end
-        if (keyInfo.fileInfo.fileName().contains("pkcs8-pkcs12"))
-            continue; // The generic back-end doesn't support PKCS#12 algorithms
-#endif
+        if (isSchannel || isSecureTransport) {
+            if (keyInfo.fileInfo.fileName().contains(QRegularExpression("-aes\\d\\d\\d-")))
+                continue; // No AES support in the generic back-end
+            if (keyInfo.fileInfo.fileName().contains("pkcs8-pkcs12"))
+                continue; // The generic back-end doesn't support PKCS#12 algorithms
+        }
 
         QTest::newRow(keyInfo.fileInfo.fileName().toLatin1())
             << keyInfo.fileInfo.absoluteFilePath() << keyInfo.algorithm << keyInfo.type

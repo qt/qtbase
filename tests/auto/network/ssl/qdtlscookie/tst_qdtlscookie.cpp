@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -28,6 +28,8 @@
 
 #include <QTest>
 #include <QTestEventLoop>
+
+#include "../shared/tlshelpers.h"
 
 #include <QtNetwork/qhostaddress.h>
 #include <QtNetwork/qsslsocket.h>
@@ -139,6 +141,9 @@ QHostAddress tst_QDtlsCookie::toNonAny(const QHostAddress &addr)
 
 void tst_QDtlsCookie::initTestCase()
 {
+    if (!TlsAux::activeBackendSupportsDtls())
+        QSKIP("The active TLS backend does not support DTLS");
+
     QVERIFY(noiseMaker.bind());
     spammerAddress = toNonAny(noiseMaker.localAddress());
     spammerPort = noiseMaker.localPort();

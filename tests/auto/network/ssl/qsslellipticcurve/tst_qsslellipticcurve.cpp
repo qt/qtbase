@@ -28,6 +28,13 @@
 
 
 #include <QTest>
+
+#include <QtNetwork/qtnetworkglobal.h>
+
+#if QT_CONFIG(ssl)
+#include <QSslSocket>
+#endif // ssl
+
 #include <QSslEllipticCurve>
 #include <QSslConfiguration>
 
@@ -35,18 +42,27 @@ class tst_QSslEllipticCurve : public QObject
 {
     Q_OBJECT
 
-#ifndef QT_NO_SSL
+#if QT_CONFIG(ssl)
 private Q_SLOTS:
+    void initTestCase();
     void constExpr();
     void construction();
     void fromShortName_data();
     void fromShortName();
     void fromLongName_data();
     void fromLongName();
-#endif
+#endif // Feature 'ssl'.
 };
 
-#ifndef QT_NO_SSL
+#if QT_CONFIG(ssl)
+
+void tst_QSslEllipticCurve::initTestCase()
+{
+    // At the moment only OpenSSL backend properly supports
+    // QSslEllipticCurve.
+    if (QSslSocket::activeBackend() != QStringLiteral("openssl"))
+        QSKIP("The active TLS backend does not support QSslEllipticCurve");
+}
 
 void tst_QSslEllipticCurve::constExpr()
 {
@@ -127,7 +143,7 @@ void tst_QSslEllipticCurve::fromLongName()
     QCOMPARE(result.longName(), valid ? longName : QString());
 }
 
-#endif // QT_NO_SSL
+#endif // Feature 'ssl'.
 
 QTEST_MAIN(tst_QSslEllipticCurve)
 #include "tst_qsslellipticcurve.moc"
