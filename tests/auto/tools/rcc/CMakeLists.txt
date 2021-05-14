@@ -11,9 +11,9 @@ qt_internal_add_test(tst_rcc
 
 # Resources:
 set(images_resource_files
-    "images/circle.png"
-    "images/square.png"
-    "images/subdir/triangle.png"
+    "data/images/images/circle.png"
+    "data/images/images/square.png"
+    "data/images/images/subdir/triangle.png"
 )
 
 qt_internal_add_resource(tst_rcc "images"
@@ -25,7 +25,7 @@ qt_internal_add_resource(tst_rcc "images"
         ${images_resource_files}
 )
 set(size-0_resource_files
-    "data/data-0.txt"
+    "data/sizes/data/data-0.txt"
 )
 
 qt_internal_add_resource(tst_rcc "size-0"
@@ -37,10 +37,10 @@ qt_internal_add_resource(tst_rcc "size-0"
         ${size-0_resource_files}
 )
 set(size-2-0-35-1_resource_files
-    "data/data-0.txt"
-    "data/data-1.txt"
-    "data/data-2.txt"
-    "data/data-35.txt"
+    "data/sizes/data/data-0.txt"
+    "data/sizes/data/data-1.txt"
+    "data/sizes/data/data-2.txt"
+    "data/sizes/data/data-35.txt"
 )
 
 qt_internal_add_resource(tst_rcc "size-2-0-35-1"
@@ -52,7 +52,7 @@ qt_internal_add_resource(tst_rcc "size-2-0-35-1"
         ${size-2-0-35-1_resource_files}
 )
 set(size-1_resource_files
-    "data/data-1.txt"
+    "data/sizes/data/data-1.txt"
 )
 
 qt_internal_add_resource(tst_rcc "size-1"
@@ -63,4 +63,3 @@ qt_internal_add_resource(tst_rcc "size-1"
     FILES
         ${size-1_resource_files}
 )
-

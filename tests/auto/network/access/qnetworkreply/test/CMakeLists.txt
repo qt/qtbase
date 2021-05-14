@@ -29,11 +29,8 @@ qt_internal_add_test(tst_qnetworkreply
 )
 
 # Resources:
-set_source_files_properties("../resource"
-    PROPERTIES QT_RESOURCE_ALIAS "resource"
-)
 set(qnetworkreply_resource_files
-    "resource"
+    "../resource"
 )
 
 qt_internal_add_resource(tst_qnetworkreply "qnetworkreply"

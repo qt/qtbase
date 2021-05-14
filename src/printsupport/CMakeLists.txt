@@ -103,36 +103,36 @@ qt_internal_extend_target(PrintSupport CONDITION QT_FEATURE_printdialog
 if(QT_FEATURE_printdialog)
     # Resources:
     set(qprintdialog_resource_files
-        "images/fit-page-24.png"
-        "images/fit-page-32.png"
-        "images/fit-width-24.png"
-        "images/fit-width-32.png"
-        "images/go-first-24.png"
-        "images/go-first-32.png"
-        "images/go-last-24.png"
-        "images/go-last-32.png"
-        "images/go-next-24.png"
-        "images/go-next-32.png"
-        "images/go-previous-24.png"
-        "images/go-previous-32.png"
-        "images/layout-landscape-24.png"
-        "images/layout-landscape-32.png"
-        "images/layout-portrait-24.png"
-        "images/layout-portrait-32.png"
-        "images/page-setup-24.png"
-        "images/page-setup-32.png"
-        "images/print-24.png"
-        "images/print-32.png"
-        "images/view-page-multi-24.png"
-        "images/view-page-multi-32.png"
-        "images/view-page-one-24.png"
-        "images/view-page-one-32.png"
-        "images/view-page-sided-24.png"
-        "images/view-page-sided-32.png"
-        "images/zoom-in-24.png"
-        "images/zoom-in-32.png"
-        "images/zoom-out-24.png"
-        "images/zoom-out-32.png"
+        "dialogs/images/fit-page-24.png"
+        "dialogs/images/fit-page-32.png"
+        "dialogs/images/fit-width-24.png"
+        "dialogs/images/fit-width-32.png"
+        "dialogs/images/go-first-24.png"
+        "dialogs/images/go-first-32.png"
+        "dialogs/images/go-last-24.png"
+        "dialogs/images/go-last-32.png"
+        "dialogs/images/go-next-24.png"
+        "dialogs/images/go-next-32.png"
+        "dialogs/images/go-previous-24.png"
+        "dialogs/images/go-previous-32.png"
+        "dialogs/images/layout-landscape-24.png"
+        "dialogs/images/layout-landscape-32.png"
+        "dialogs/images/layout-portrait-24.png"
+        "dialogs/images/layout-portrait-32.png"
+        "dialogs/images/page-setup-24.png"
+        "dialogs/images/page-setup-32.png"
+        "dialogs/images/print-24.png"
+        "dialogs/images/print-32.png"
+        "dialogs/images/view-page-multi-24.png"
+        "dialogs/images/view-page-multi-32.png"
+        "dialogs/images/view-page-one-24.png"
+        "dialogs/images/view-page-one-32.png"
+        "dialogs/images/view-page-sided-24.png"
+        "dialogs/images/view-page-sided-32.png"
+        "dialogs/images/zoom-in-24.png"
+        "dialogs/images/zoom-in-32.png"
+        "dialogs/images/zoom-out-24.png"
+        "dialogs/images/zoom-out-32.png"
     )
 
     qt_internal_add_resource(PrintSupport "qprintdialog"
@@ -144,8 +144,8 @@ if(QT_FEATURE_printdialog)
             ${qprintdialog_resource_files}
     )
     set(qprintdialog1_resource_files
-        "images/status-color.png"
-        "images/status-gray-scale.png"
+        "dialogs/images/status-color.png"
+        "dialogs/images/status-gray-scale.png"
     )
 
     qt_internal_add_resource(PrintSupport "qprintdialog1"
@@ -192,4 +192,3 @@ qt_internal_extend_target(PrintSupport CONDITION QT_FEATURE_printpreviewdialog
 qt_internal_add_docs(PrintSupport
     doc/qtprintsupport.qdocconf
 )
-

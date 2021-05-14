@@ -482,11 +482,6 @@ def process_qrc_file(
 
             # Get alias:
             alias = file.get("alias", "")
-            # In cases where examples use shared resources, we set the alias
-            # too the same name of the file, or the applications won't be
-            # be able to locate the resource
-            if not alias and is_parent_path:
-                alias = path
             files[path] = alias
 
         output += write_add_qt_resource_call(
@@ -518,26 +513,29 @@ def write_add_qt_resource_call(
 ) -> str:
     output = ""
 
-    sorted_files = sorted(files.keys())
-
-    assert sorted_files
-
     if base_dir:
         base_dir_expanded = scope.expandString(base_dir)
         if base_dir_expanded:
             base_dir = base_dir_expanded
+        new_files = {}
+        for file_path, alias in files.items():
+            full_file_path = posixpath.join(base_dir, file_path)
+            new_files[full_file_path] = alias
+        files = new_files
+
+    sorted_files = sorted(files.keys())
+    assert sorted_files
 
     source_file_properties = defaultdict(list)
 
     for source in sorted_files:
-        full_source = posixpath.join(base_dir, source)
         alias = files[source]
         if alias:
-            source_file_properties[full_source].append(f'QT_RESOURCE_ALIAS "{alias}"')
+            source_file_properties[source].append(f'QT_RESOURCE_ALIAS "{alias}"')
         # If a base dir is given, we have to write the source file property
         # assignments that disable the quick compiler per file.
         if base_dir and skip_qtquick_compiler:
-            source_file_properties[full_source].append("QT_SKIP_QUICKCOMPILER 1")
+            source_file_properties[source].append("QT_SKIP_QUICKCOMPILER 1")
 
     for full_source in source_file_properties:
         per_file_props = source_file_properties[full_source]

@@ -40,6 +40,8 @@ if(ANDROID)
         # special case end
     )
 
+    list(TRANSFORM qmake_libs_resource_files PREPEND "${CMAKE_CURRENT_BINARY_DIR}/../")
+
     qt_internal_add_resource(tst_qlibrary "qmake_libs"
         PREFIX
             "android_test_data"

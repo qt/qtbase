@@ -23,15 +23,9 @@ qt_internal_add_test(tst_qtextstream
 )
 
 # Resources:
-set_source_files_properties("../resources/big_endian/"
-    PROPERTIES QT_RESOURCE_ALIAS "resources/big_endian/"
-)
-set_source_files_properties("../resources/little_endian/"
-    PROPERTIES QT_RESOURCE_ALIAS "resources/little_endian/"
-)
 set(qtextstream_resource_files
-    "resources/big_endian/"
-    "resources/little_endian/"
+    "../resources/big_endian/"
+    "../resources/little_endian/"
 )
 
 qt_internal_add_resource(tst_qtextstream "qtextstream"
