@@ -55,6 +55,7 @@ if(ANDROID)
             bin/libplugin2.so
         )
     endif()
+    list(TRANSFORM qmake_libs_resource_files PREPEND "${CMAKE_CURRENT_BINARY_DIR}/../")
     # special case end
 
     qt_internal_add_resource(tst_qfactoryloader "qmake_libs"

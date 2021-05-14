@@ -282,12 +282,12 @@ qt_internal_add_module(Gui
 )
 
 # Resources:
-set_source_files_properties("painting/../../3rdparty/icc/sRGB2014.icc"
+set_source_files_properties("../3rdparty/icc/sRGB2014.icc"
     PROPERTIES QT_RESOURCE_ALIAS "sRGB2014.icc"
 )
 set(qpdf_resource_files
-    "../../3rdparty/icc/sRGB2014.icc"
-    "qpdfa_metadata.xml"
+    "../3rdparty/icc/sRGB2014.icc"
+    "painting/qpdfa_metadata.xml"
 )
 
 qt_internal_add_resource(Gui "qpdf"

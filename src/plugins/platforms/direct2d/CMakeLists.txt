@@ -79,14 +79,12 @@ set_source_files_properties("../windows/openglblacklists/default.json"
     PROPERTIES QT_RESOURCE_ALIAS "default.json"
 )
 set(openglblacklists_resource_files
-    "openglblacklists/default.json"
+    "../windows/openglblacklists/default.json"
 )
 
 qt_internal_add_resource(QWindowsDirect2DIntegrationPlugin "openglblacklists"
     PREFIX
         "/qt-project.org/windows/openglblacklists"
-    BASE
-        "../windows"
     FILES
         ${openglblacklists_resource_files}
 )
@@ -150,91 +148,28 @@ qt_internal_extend_target(QWindowsDirect2DIntegrationPlugin CONDITION QT_FEATURE
 
 if(QT_FEATURE_imageformat_png)
     # Resources:
-    set_source_files_properties("../windows/images/closedhandcursor_32.png"
-        PROPERTIES QT_RESOURCE_ALIAS "images/closedhandcursor_32.png"
-    )
-    set_source_files_properties("../windows/images/closedhandcursor_48.png"
-        PROPERTIES QT_RESOURCE_ALIAS "images/closedhandcursor_48.png"
-    )
-    set_source_files_properties("../windows/images/closedhandcursor_64.png"
-        PROPERTIES QT_RESOURCE_ALIAS "images/closedhandcursor_64.png"
-    )
-    set_source_files_properties("../windows/images/dragcopycursor_32.png"
-        PROPERTIES QT_RESOURCE_ALIAS "images/dragcopycursor_32.png"
-    )
-    set_source_files_properties("../windows/images/dragcopycursor_48.png"
-        PROPERTIES QT_RESOURCE_ALIAS "images/dragcopycursor_48.png"
-    )
-    set_source_files_properties("../windows/images/dragcopycursor_64.png"
-        PROPERTIES QT_RESOURCE_ALIAS "images/dragcopycursor_64.png"
-    )
-    set_source_files_properties("../windows/images/draglinkcursor_32.png"
-        PROPERTIES QT_RESOURCE_ALIAS "images/draglinkcursor_32.png"
-    )
-    set_source_files_properties("../windows/images/draglinkcursor_48.png"
-        PROPERTIES QT_RESOURCE_ALIAS "images/draglinkcursor_48.png"
-    )
-    set_source_files_properties("../windows/images/draglinkcursor_64.png"
-        PROPERTIES QT_RESOURCE_ALIAS "images/draglinkcursor_64.png"
-    )
-    set_source_files_properties("../windows/images/dragmovecursor_32.png"
-        PROPERTIES QT_RESOURCE_ALIAS "images/dragmovecursor_32.png"
-    )
-    set_source_files_properties("../windows/images/dragmovecursor_48.png"
-        PROPERTIES QT_RESOURCE_ALIAS "images/dragmovecursor_48.png"
-    )
-    set_source_files_properties("../windows/images/dragmovecursor_64.png"
-        PROPERTIES QT_RESOURCE_ALIAS "images/dragmovecursor_64.png"
-    )
-    set_source_files_properties("../windows/images/openhandcursor_32.png"
-        PROPERTIES QT_RESOURCE_ALIAS "images/openhandcursor_32.png"
-    )
-    set_source_files_properties("../windows/images/openhandcursor_48.png"
-        PROPERTIES QT_RESOURCE_ALIAS "images/openhandcursor_48.png"
-    )
-    set_source_files_properties("../windows/images/openhandcursor_64.png"
-        PROPERTIES QT_RESOURCE_ALIAS "images/openhandcursor_64.png"
-    )
-    set_source_files_properties("../windows/images/splithcursor_32.png"
-        PROPERTIES QT_RESOURCE_ALIAS "images/splithcursor_32.png"
-    )
-    set_source_files_properties("../windows/images/splithcursor_48.png"
-        PROPERTIES QT_RESOURCE_ALIAS "images/splithcursor_48.png"
-    )
-    set_source_files_properties("../windows/images/splithcursor_64.png"
-        PROPERTIES QT_RESOURCE_ALIAS "images/splithcursor_64.png"
-    )
-    set_source_files_properties("../windows/images/splitvcursor_32.png"
-        PROPERTIES QT_RESOURCE_ALIAS "images/splitvcursor_32.png"
-    )
-    set_source_files_properties("../windows/images/splitvcursor_48.png"
-        PROPERTIES QT_RESOURCE_ALIAS "images/splitvcursor_48.png"
-    )
-    set_source_files_properties("../windows/images/splitvcursor_64.png"
-        PROPERTIES QT_RESOURCE_ALIAS "images/splitvcursor_64.png"
-    )
     set(cursors_resource_files
-        "images/closedhandcursor_32.png"
-        "images/closedhandcursor_48.png"
-        "images/closedhandcursor_64.png"
-        "images/dragcopycursor_32.png"
-        "images/dragcopycursor_48.png"
-        "images/dragcopycursor_64.png"
-        "images/draglinkcursor_32.png"
-        "images/draglinkcursor_48.png"
-        "images/draglinkcursor_64.png"
-        "images/dragmovecursor_32.png"
-        "images/dragmovecursor_48.png"
-        "images/dragmovecursor_64.png"
-        "images/openhandcursor_32.png"
-        "images/openhandcursor_48.png"
-        "images/openhandcursor_64.png"
-        "images/splithcursor_32.png"
-        "images/splithcursor_48.png"
-        "images/splithcursor_64.png"
-        "images/splitvcursor_32.png"
-        "images/splitvcursor_48.png"
-        "images/splitvcursor_64.png"
+        "../windows/images/closedhandcursor_32.png"
+        "../windows/images/closedhandcursor_48.png"
+        "../windows/images/closedhandcursor_64.png"
+        "../windows/images/dragcopycursor_32.png"
+        "../windows/images/dragcopycursor_48.png"
+        "../windows/images/dragcopycursor_64.png"
+        "../windows/images/draglinkcursor_32.png"
+        "../windows/images/draglinkcursor_48.png"
+        "../windows/images/draglinkcursor_64.png"
+        "../windows/images/dragmovecursor_32.png"
+        "../windows/images/dragmovecursor_48.png"
+        "../windows/images/dragmovecursor_64.png"
+        "../windows/images/openhandcursor_32.png"
+        "../windows/images/openhandcursor_48.png"
+        "../windows/images/openhandcursor_64.png"
+        "../windows/images/splithcursor_32.png"
+        "../windows/images/splithcursor_48.png"
+        "../windows/images/splithcursor_64.png"
+        "../windows/images/splitvcursor_32.png"
+        "../windows/images/splitvcursor_48.png"
+        "../windows/images/splitvcursor_64.png"
     )
 
     qt_internal_add_resource(QWindowsDirect2DIntegrationPlugin "cursors"

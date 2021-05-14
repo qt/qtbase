@@ -30,7 +30,7 @@ qt_internal_add_resource(tst_bench_qgraphicsview "qgraphicsview"
         ${qgraphicsview_resource_files}
 )
 set(images_resource_files
-    "qt4logo.png"
+    "chiptester/qt4logo.png"
 )
 
 qt_internal_add_resource(tst_bench_qgraphicsview "images"
