@@ -236,7 +236,7 @@ protected:
     struct ProcessEventsState
     {
         ProcessEventsState(QEventLoop::ProcessEventsFlags f)
-         : flags(f), wasInterrupted(false)
+         : flags(f.toInt()), wasInterrupted(false)
          , processedPostedEvents(false), processedTimers(false)
          , deferredWakeUp(false), deferredUpdateTimers(false) {}
 

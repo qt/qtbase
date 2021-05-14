@@ -366,7 +366,7 @@ bool QEventDispatcherCoreFoundation::processEvents(QEventLoop::ProcessEventsFlag
                 // to do another pass.
 
                 // But we should only wait for more events the first time
-                m_processEvents.flags &= ~QEventLoop::WaitForMoreEvents;
+                m_processEvents.flags &= ~int(QEventLoop::WaitForMoreEvents);
                 continue;
 
             } else if (m_overdueTimerScheduled && !m_processEvents.processedTimers) {
