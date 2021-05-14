@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>data/qticon64.png</file>
+    </qresource>
+</RCC>

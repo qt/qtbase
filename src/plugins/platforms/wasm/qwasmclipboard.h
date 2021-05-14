@@ -51,11 +51,15 @@ public:
     bool ownsMode(QClipboard::Mode mode) const override;
 
     static void qWasmClipboardPaste(QMimeData *mData);
-    void initClipboardEvents();
+    void initClipboardPermissions();
     void installEventHandlers(const emscripten::val &canvas);
     bool hasClipboardApi;
-    void readTextFromClipboard();
-    void writeTextToClipboard();
+    bool hasPermissionsApi;
+    void writeToClipboardApi();
+    void writeToClipboard(const QMimeData *data);
+    bool isPaste;
+    bool m_isListener;
+    bool isSafari;
 };
 
 #endif // QWASMCLIPBOARD_H

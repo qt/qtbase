@@ -845,7 +845,10 @@ bool QWasmEventTranslator::processKeyboard(int eventType, const EmscriptenKeyboa
     // handlers if direct clipboard access is not available.
     if (!QWasmIntegration::get()->getWasmClipboard()->hasClipboardApi && modifiers & Qt::ControlModifier &&
         (qtKey == Qt::Key_X || qtKey == Qt::Key_C || qtKey == Qt::Key_V)) {
-            return 0;
+            if (qtKey == Qt::Key_V) {
+                QWasmIntegration::get()->getWasmClipboard()->isPaste = true;
+            }
+            return false;
     }
 
     bool accepted = false;
@@ -853,7 +856,8 @@ bool QWasmEventTranslator::processKeyboard(int eventType, const EmscriptenKeyboa
     if (keyType == QEvent::KeyPress &&
             mods.testFlag(Qt::ControlModifier)
             && qtKey == Qt::Key_V) {
-        QWasmIntegration::get()->getWasmClipboard()->readTextFromClipboard();
+                QWasmIntegration::get()->getWasmClipboard()->isPaste = true;
+        accepted = false; // continue on to event
     } else {
         if (keyText.isEmpty())
             keyText = QString(keyEvent->key);
@@ -865,7 +869,8 @@ bool QWasmEventTranslator::processKeyboard(int eventType, const EmscriptenKeyboa
     if (keyType == QEvent::KeyPress &&
             mods.testFlag(Qt::ControlModifier)
             && qtKey == Qt::Key_C) {
-        QWasmIntegration::get()->getWasmClipboard()->writeTextToClipboard();
+                QWasmIntegration::get()->getWasmClipboard()->isPaste = false;
+        accepted = false; // continue on to event
     }
 
     QWasmEventDispatcher::maintainTimers();

@@ -1,0 +1,2 @@
+The Clipboard manual test app can be used both on desktop and in the browser
+using WebAssembly to test clipboard use between WebAssembly app and the desktop.
