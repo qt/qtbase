@@ -104,11 +104,10 @@ namespace QNativeInterface::Private {
     I *nativeInterface() const \
     { \
         using T = std::decay_t<decltype(*this)>; \
-        using namespace QNativeInterface::Private; \
-        static_assert(TypeInfo<I>::template isCompatibleWith<T>, \
+        static_assert(QNativeInterface::Private::TypeInfo<I>::template isCompatibleWith<T>, \
             "T::nativeInterface<I>() requires that native interface I is compatible with T"); \
         \
-        return static_cast<I*>(resolveInterface(this, typeid(I), TypeInfo<I>::revision())); \
+        return static_cast<I*>(QNativeInterface::Private::resolveInterface(this, typeid(I), QNativeInterface::Private::TypeInfo<I>::revision())); \
     }
 
 // Provides a definition for the interface destructor
