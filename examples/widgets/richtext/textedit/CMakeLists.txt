@@ -65,6 +65,7 @@ set(textedit_resource_files
     "images/mac/textleft.png"
     "images/mac/textright.png"
     "images/mac/textunder.png"
+    "images/mac/textundercolor.png"
     "images/mac/zoomin.png"
     "images/mac/zoomout.png"
     "images/win/checkbox-checked.png"
@@ -88,6 +89,7 @@ set(textedit_resource_files
     "images/win/textleft.png"
     "images/win/textright.png"
     "images/win/textunder.png"
+    "images/win/textundercolor.png"
     "images/win/zoomin.png"
     "images/win/zoomout.png"
 )
