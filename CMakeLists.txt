@@ -8,12 +8,19 @@ cmake_minimum_required(VERSION 3.16)
 # Get the repo version and CMake policy details
 include(.cmake.conf)
 
-# Bail out if parts of the build directory's components are symlinks.
+# Bail out if any part of the build directory's path is symlinked.
+# The OS-level current working directory is always the real path and some
+# parts of the build system only deal with that path, which causes confusion
+# when compared to the logical working directory maintained by the shell and
+# passed on the command line.
 get_filename_component(build_dir_absolute "${CMAKE_BINARY_DIR}" ABSOLUTE)
 get_filename_component(build_dir_realpath "${CMAKE_BINARY_DIR}" REALPATH)
 if(NOT build_dir_absolute STREQUAL build_dir_realpath)
     message(FATAL_ERROR "The build path \"${CMAKE_BINARY_DIR}\" contains symlinks. \
-This is not supported. Please use some other - transparent - mechanism to map directories.")
+This is not supported. Possible solutions:
+- map directories using a transparent mechanism such as mount --bind
+- pass the real path of the build directory to CMake, e.g. using \
+cd $(realpath <build_dir>) before invoking cmake <source_dir>.")
 endif()
 unset(build_dir_absolute)
 unset(build_dir_realpath)
