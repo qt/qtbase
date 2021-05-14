@@ -524,7 +524,7 @@ QAbstractFileEngine::FileFlags QFSFileEngine::fileFlags(QAbstractFileEngine::Fil
     {
         QFileSystemMetaData::MetaDataFlags queryFlags;
 
-        queryFlags |= QFileSystemMetaData::MetaDataFlags(uint(type))
+        queryFlags |= QFileSystemMetaData::MetaDataFlags::fromInt(type.toInt())
                 & QFileSystemMetaData::Permissions;
 
         // AliasType and BundleType are 0x0
@@ -545,7 +545,7 @@ QAbstractFileEngine::FileFlags QFSFileEngine::fileFlags(QAbstractFileEngine::Fil
     }
 
     if (exists && (type & PermsMask))
-        ret |= FileFlags(uint(d->metaData.permissions()));
+        ret |= FileFlags::fromInt(d->metaData.permissions().toInt());
 
     if (type & TypesMask) {
         if ((type & LinkType) && d->metaData.isLegacyLink())
