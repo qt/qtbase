@@ -59,10 +59,8 @@
 #include <stdarg.h>
 #include <string.h>
 
-#ifndef QT_NO_EXCEPTIONS
-#  include <string>
-#  include <exception>
-#endif
+#include <string>
+#include <exception>
 
 #include <errno.h>
 #if defined(Q_CC_MSVC)
@@ -3098,14 +3096,9 @@ void qt_check_pointer(const char *n, int l) noexcept
 */
 void qBadAlloc()
 {
-#ifndef QT_NO_EXCEPTIONS
     QT_THROW(std::bad_alloc());
-#else
-    std::terminate();
-#endif
 }
 
-#ifndef QT_NO_EXCEPTIONS
 /*
    \internal
    Allows you to call std::terminate() without including <exception>.
@@ -3115,7 +3108,6 @@ Q_NORETURN void qTerminate() noexcept
 {
     std::terminate();
 }
-#endif
 
 /*
   The Q_ASSERT macro calls this function when the test fails.
