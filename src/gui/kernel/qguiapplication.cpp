@@ -2176,7 +2176,7 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
         processMouseEvent(e); // the original mouse event
         return;
     }
-    if (mouseMove && !positionChanged) {
+    if (type == QEvent::MouseMove && !positionChanged) {
         // On Windows, and possibly other platforms, a touchpad can send a mouse move
         // that does not change position, between a press and a release. This may
         // confuse applications, so we always filter out these mouse events for
