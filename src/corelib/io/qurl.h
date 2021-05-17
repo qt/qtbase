@@ -313,21 +313,21 @@ constexpr inline QIncompatibleFlag operator|(QUrl::UrlFormattingOption f1, int f
 
 // add operators for OR'ing the two types of flags
 inline QUrl::FormattingOptions &operator|=(QUrl::FormattingOptions &i, QUrl::ComponentFormattingOptions f)
-{ i |= QUrl::UrlFormattingOption(uint(f)); return i; }
+{ i |= QUrl::UrlFormattingOption(f.toInt()); return i; }
 constexpr inline QUrl::FormattingOptions operator|(QUrl::UrlFormattingOption i, QUrl::ComponentFormattingOption f)
-{ return i | QUrl::UrlFormattingOption(uint(f)); }
+{ return i | QUrl::UrlFormattingOption(qToUnderlying(f)); }
 constexpr inline QUrl::FormattingOptions operator|(QUrl::UrlFormattingOption i, QUrl::ComponentFormattingOptions f)
-{ return i | QUrl::UrlFormattingOption(uint(f)); }
+{ return i | QUrl::UrlFormattingOption(f.toInt()); }
 constexpr inline QUrl::FormattingOptions operator|(QUrl::ComponentFormattingOption f, QUrl::UrlFormattingOption i)
-{ return i | QUrl::UrlFormattingOption(uint(f)); }
+{ return i | QUrl::UrlFormattingOption(qToUnderlying(f)); }
 constexpr inline QUrl::FormattingOptions operator|(QUrl::ComponentFormattingOptions f, QUrl::UrlFormattingOption i)
-{ return i | QUrl::UrlFormattingOption(uint(f)); }
+{ return i | QUrl::UrlFormattingOption(f.toInt()); }
 constexpr inline QUrl::FormattingOptions operator|(QUrl::FormattingOptions i, QUrl::ComponentFormattingOptions f)
-{ return i | QUrl::UrlFormattingOption(uint(f)); }
+{ return i | QUrl::UrlFormattingOption(f.toInt()); }
 constexpr inline QUrl::FormattingOptions operator|(QUrl::ComponentFormattingOption f, QUrl::FormattingOptions i)
-{ return i | QUrl::UrlFormattingOption(uint(f)); }
+{ return i | QUrl::UrlFormattingOption(qToUnderlying(f)); }
 constexpr inline QUrl::FormattingOptions operator|(QUrl::ComponentFormattingOptions f, QUrl::FormattingOptions i)
-{ return i | QUrl::UrlFormattingOption(uint(f)); }
+{ return i | QUrl::UrlFormattingOption(f.toInt()); }
 
 //inline QUrl::UrlFormattingOption &operator=(const QUrl::UrlFormattingOption &i, QUrl::ComponentFormattingOptions f)
 //{ i = int(f); f; }
