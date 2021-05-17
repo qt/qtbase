@@ -60,8 +60,10 @@
 #include <stdarg.h>
 #include <string.h>
 
-#include <string>
-#include <exception>
+#include <exception> // For std::terminate
+#ifndef QT_NO_EXCEPTIONS
+#include <new> // For std::bad_alloc
+#endif
 
 #include <errno.h>
 #if defined(Q_CC_MSVC)
@@ -3289,7 +3291,11 @@ void qt_check_pointer(const char *n, int l) noexcept
 */
 void qBadAlloc()
 {
-    QT_THROW(std::bad_alloc());
+#ifndef QT_NO_EXCEPTIONS
+    throw std::bad_alloc();
+#else
+    std::terminate();
+#endif
 }
 
 /*
