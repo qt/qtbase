@@ -3878,6 +3878,15 @@ bool qunsetenv(const char *varName)
 */
 
 /*!
+    \fn template <typename Enum> std::underlying_type_t<Enum> qToUnderlying(Enum e)
+    \relates <QtGlobal>
+    \since 6.2
+
+    Converts the enumerator \e to the equivalent value expressed in its
+    enumeration's underlying type.
+*/
+
+/*!
     \macro QT_TR_NOOP(sourceText)
     \relates <QtGlobal>
 

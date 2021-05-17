@@ -60,6 +60,7 @@ private slots:
     void qRoundDoubles_data();
     void qRoundDoubles();
     void PRImacros();
+    void testqToUnderlying();
 };
 
 extern "C" {        // functions in qglobal.c
@@ -696,6 +697,25 @@ void tst_QGlobal::PRImacros()
         QCOMPARE(QString::asprintf("The value %" PRIdQSIZETYPE " is nice", s), "The value 123 is nice");
         QCOMPARE(QString::asprintf("The value %" PRIiQSIZETYPE " is nice", s), "The value 123 is nice");
     }
+}
+
+void tst_QGlobal::testqToUnderlying()
+{
+    enum class E {
+        E1 = 123,
+        E2 = 456,
+    };
+    static_assert(std::is_same_v<decltype(qToUnderlying(E::E1)), int>);
+    QCOMPARE(qToUnderlying(E::E1), 123);
+    QCOMPARE(qToUnderlying(E::E2), 456);
+
+    enum EE : unsigned long {
+        EE1 = 123,
+        EE2 = 456,
+    };
+    static_assert(std::is_same_v<decltype(qToUnderlying(EE1)), unsigned long>);
+    QCOMPARE(qToUnderlying(EE1), 123UL);
+    QCOMPARE(qToUnderlying(EE2), 456UL);
 }
 
 QTEST_APPLESS_MAIN(tst_QGlobal)

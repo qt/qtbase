@@ -1177,6 +1177,13 @@ constexpr T qExchange(T &t, U &&newValue)
     return old;
 }
 
+// like std::to_underlying
+template <typename Enum>
+constexpr std::underlying_type_t<Enum> qToUnderlying(Enum e) noexcept
+{
+    return static_cast<std::underlying_type_t<Enum>>(e);
+}
+
 #ifdef __cpp_conditional_explicit
 #define Q_IMPLICIT explicit(false)
 #else
