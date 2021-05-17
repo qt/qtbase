@@ -307,6 +307,8 @@ public:
 
     QHash<QModelIndex, Mapping *>::const_iterator create_mapping(
         const QModelIndex &source_parent) const;
+    QHash<QModelIndex, Mapping *>::const_iterator create_mapping_recursive(
+            const QModelIndex &source_parent) const;
     QModelIndex proxy_to_source(const QModelIndex &proxyIndex) const;
     QModelIndex source_to_proxy(const QModelIndex &sourceIndex) const;
     bool can_create_mapping(const QModelIndex &source_parent) const;
@@ -533,6 +535,29 @@ IndexMap::const_iterator QSortFilterProxyModelPrivate::create_mapping(
     return it;
 }
 
+// Go up the tree, creating mappings, unless of course the parent is filtered out
+IndexMap::const_iterator QSortFilterProxyModelPrivate::create_mapping_recursive(const QModelIndex &source_parent) const
+{
+    if (source_parent.isValid()) {
+        const QModelIndex source_grand_parent = source_parent.parent();
+        IndexMap::const_iterator it = source_index_mapping.constFind(source_grand_parent);
+        IndexMap::const_iterator end = source_index_mapping.constEnd();
+        if (it == end) {
+            it = create_mapping_recursive(source_grand_parent);
+            end = source_index_mapping.constEnd();
+            if (it == end)
+                return end;
+        }
+        Mapping *gm = it.value();
+        if (gm->proxy_rows.at(source_parent.row()) == -1 ||
+                gm->proxy_columns.at(source_parent.column()) == -1) {
+            // Can't do, parent is filtered
+            return end;
+        }
+    }
+    return create_mapping(source_parent);
+}
+
 QModelIndex QSortFilterProxyModelPrivate::proxy_to_source(const QModelIndex &proxy_index) const
 {
     if (!proxy_index.isValid())
@@ -751,8 +776,10 @@ void QSortFilterProxyModelPrivate::remove_source_items(
 {
     Q_Q(QSortFilterProxyModel);
     QModelIndex proxy_parent = q->mapFromSource(source_parent);
-    if (!proxy_parent.isValid() && source_parent.isValid())
+    if (!proxy_parent.isValid() && source_parent.isValid()) {
+        proxy_to_source.clear();
         return; // nothing to do (already removed)
+    }
 
     const auto proxy_intervals = proxy_intervals_for_source_items(
         source_to_proxy, source_items);
@@ -1404,11 +1431,20 @@ void QSortFilterProxyModelPrivate::_q_sourceDataChanged(const QModelIndex &sourc
         const QModelIndex &source_bottom_right = data_changed.bottomRight;
         const QModelIndex source_parent = source_top_left.parent();
 
+        bool change_in_unmapped_parent = false;
         IndexMap::const_iterator it = source_index_mapping.constFind(source_parent);
         if (it == source_index_mapping.constEnd()) {
-            // Don't care, since we don't have mapping for this index
-            continue;
+            // We don't have mapping for this index, so we cannot know how things
+            // changed (in case the change affects filtering) in order to forward
+            // the change correctly.
+            // But we can at least forward the signal "as is", if the row isn't
+            // filtered out, this is better than nothing.
+            it = create_mapping_recursive(source_parent);
+            if (it == source_index_mapping.constEnd())
+                continue;
+            change_in_unmapped_parent = true;
         }
+
         Mapping *m = it.value();
 
         // Figure out how the source changes affect us
@@ -1418,7 +1454,7 @@ void QSortFilterProxyModelPrivate::_q_sourceDataChanged(const QModelIndex &sourc
         QVector<int> source_rows_resort;
         int end = qMin(source_bottom_right.row(), m->proxy_rows.count() - 1);
         for (int source_row = source_top_left.row(); source_row <= end; ++source_row) {
-            if (dynamic_sortfilter) {
+            if (dynamic_sortfilter && !change_in_unmapped_parent) {
                 if (m->proxy_rows.at(source_row) != -1) {
                     if (!filterAcceptsRowInternal(source_row, source_parent)) {
                         // This source row no longer satisfies the filter, so it must be removed
@@ -1568,7 +1604,6 @@ void QSortFilterProxyModelPrivate::_q_sourceReset()
     _q_clearMapping();
     // All internal structures are deleted in clear()
     q->endResetModel();
-    create_mapping(QModelIndex());
     update_source_sort_column();
     if (dynamic_sortfilter && update_source_sort_column())
         sort();
@@ -1634,8 +1669,8 @@ void QSortFilterProxyModelPrivate::_q_sourceRowsAboutToBeInserted(
 
     const bool toplevel = !source_parent.isValid();
     const bool recursive_accepted = filter_recursive && !toplevel && filterAcceptsRowInternal(source_parent.row(), source_parent.parent());
-    //Force the creation of a mapping now, even if its empty.
-    //We need it because the proxy can be acessed at the moment it emits rowsAboutToBeInserted in insert_source_items
+    //Force the creation of a mapping now, even if it's empty.
+    //We need it because the proxy can be accessed at the moment it emits rowsAboutToBeInserted in insert_source_items
     if (!filter_recursive || toplevel || recursive_accepted) {
         if (can_create_mapping(source_parent))
             create_mapping(source_parent);
@@ -1754,8 +1789,8 @@ void QSortFilterProxyModelPrivate::_q_sourceColumnsAboutToBeInserted(
 {
     Q_UNUSED(start);
     Q_UNUSED(end);
-    //Force the creation of a mapping now, even if its empty.
-    //We need it because the proxy can be acessed at the moment it emits columnsAboutToBeInserted in insert_source_items
+    //Force the creation of a mapping now, even if it's empty.
+    //We need it because the proxy can be accessed at the moment it emits columnsAboutToBeInserted in insert_source_items
     if (can_create_mapping(source_parent))
         create_mapping(source_parent);
 }
@@ -2149,7 +2184,6 @@ void QSortFilterProxyModel::setSourceModel(QAbstractItemModel *sourceModel)
     connect(d->model, SIGNAL(modelReset()), this, SLOT(_q_sourceReset()));
 
     endResetModel();
-    d->create_mapping(QModelIndex());
     if (d->update_source_sort_column() && d->dynamic_sortfilter)
         d->sort();
 }

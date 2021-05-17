@@ -91,6 +91,7 @@ private slots:
     void changeSourceDataKeepsStableSorting_qtbug1548();
     void changeSourceDataForwardsRoles_qtbug35440();
     void changeSourceDataProxySendDataChanged_qtbug87781();
+    void changeSourceDataTreeModel();
     void changeSourceDataProxyFilterSingleColumn();
     void changeSourceDataProxyFilterMultipleColumns();
     void resortingDoesNotBreakTreeModels();
