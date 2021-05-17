@@ -674,27 +674,27 @@ void tst_QGlobal::PRImacros()
     // none of these calls must generate a -Wformat warning
     {
         quintptr p = 123u;
-        (void)QString::asprintf("The value %" PRIuQUINTPTR " is nice", p);
-        (void)QString::asprintf("The value %" PRIoQUINTPTR " is nice", p);
-        (void)QString::asprintf("The value %" PRIxQUINTPTR " is nice", p);
-        (void)QString::asprintf("The value %" PRIXQUINTPTR " is nice", p);
+        QCOMPARE(QString::asprintf("The value %" PRIuQUINTPTR " is nice", p), "The value 123 is nice");
+        QCOMPARE(QString::asprintf("The value %" PRIoQUINTPTR " is nice", p), "The value 173 is nice");
+        QCOMPARE(QString::asprintf("The value %" PRIxQUINTPTR " is nice", p), "The value 7b is nice");
+        QCOMPARE(QString::asprintf("The value %" PRIXQUINTPTR " is nice", p), "The value 7B is nice");
     }
 
     {
         qintptr p = 123;
-        (void)QString::asprintf("The value %" PRIdQINTPTR " is nice", p);
-        (void)QString::asprintf("The value %" PRIiQINTPTR " is nice", p);
+        QCOMPARE(QString::asprintf("The value %" PRIdQINTPTR " is nice", p), "The value 123 is nice");
+        QCOMPARE(QString::asprintf("The value %" PRIiQINTPTR " is nice", p), "The value 123 is nice");
     }
 
     {
         qptrdiff d = 123;
-        (void)QString::asprintf("The value %" PRIdQPTRDIFF " is nice", d);
-        (void)QString::asprintf("The value %" PRIiQPTRDIFF " is nice", d);
+        QCOMPARE(QString::asprintf("The value %" PRIdQPTRDIFF " is nice", d), "The value 123 is nice");
+        QCOMPARE(QString::asprintf("The value %" PRIiQPTRDIFF " is nice", d), "The value 123 is nice");
     }
     {
         qsizetype s = 123;
-        (void)QString::asprintf("The value %" PRIdQSIZETYPE " is nice", s);
-        (void)QString::asprintf("The value %" PRIiQSIZETYPE " is nice", s);
+        QCOMPARE(QString::asprintf("The value %" PRIdQSIZETYPE " is nice", s), "The value 123 is nice");
+        QCOMPARE(QString::asprintf("The value %" PRIiQSIZETYPE " is nice", s), "The value 123 is nice");
     }
 }
 
