@@ -39,7 +39,7 @@ target_include_directories(composition PUBLIC
 
 # special case begin
 if(NOT TARGET painting_shared::painting_shared)
-  add_subdirectory(../shared painting_shared)
+    include(../shared/use_lib.cmake)
 endif()
 # special case end
 

@@ -1,14 +1,6 @@
 # special case skip regeneration
 # Port of shared.pri to be included by painting examples
 
-if(NOT TARGET Qt::Widgets)
-    find_package(Qt6 REQUIRED COMPONENTS Widgets)
-endif()
-
-if(NOT TARGET Qt::OpenGL)
-    find_package(Qt6 OPTIONAL_COMPONENTS OpenGL)
-endif()
-
 add_library(painting_shared OBJECT)
 add_library(painting_shared::painting_shared ALIAS painting_shared)
 qt6_wrap_cpp(moc_files arthurwidgets.h hoverpoints.h) # no automoc for OBJECT libs:-/
