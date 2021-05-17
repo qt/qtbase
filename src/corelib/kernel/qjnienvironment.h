@@ -54,6 +54,7 @@ class Q_CORE_EXPORT QJniEnvironment
 public:
     QJniEnvironment();
     ~QJniEnvironment();
+    bool isValid() const;
     JNIEnv *operator->() const;
     JNIEnv &operator*() const;
     JNIEnv *jniEnv() const;

@@ -138,6 +138,16 @@ QJniEnvironment::~QJniEnvironment()
 }
 
 /*!
+    Returns \c true if this instance holds a valid JNIEnv object.
+
+    \since 6.2
+*/
+bool QJniEnvironment::isValid() const
+{
+    return d->jniEnv;
+}
+
+/*!
     \fn JNIEnv *QJniEnvironment::operator->() const
 
     Provides access to the JNI Environment's \c JNIEnv pointer.
