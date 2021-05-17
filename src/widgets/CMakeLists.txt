@@ -65,8 +65,6 @@ qt_internal_add_module(Widgets
         "kernel/qt_widgets_pch.h"
 )
 
-add_dependencies(Widgets ${QT_CMAKE_EXPORT_NAMESPACE}::uic)  # special case
-
 # Resources:
 set(qstyle_resource_files
     "images/cdr-128.png"

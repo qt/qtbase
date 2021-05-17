@@ -275,10 +275,6 @@ qt_update_ignore_pch_source(Core kernel/qmetatype.cpp )
 
 # special case begin
 add_dependencies(Core qmodule_pri)
-add_dependencies(Core ${QT_CMAKE_EXPORT_NAMESPACE}::moc)
-add_dependencies(Core ${QT_CMAKE_EXPORT_NAMESPACE}::rcc)
-add_dependencies(CorePrivate ${QT_CMAKE_EXPORT_NAMESPACE}::moc)
-add_dependencies(CorePrivate ${QT_CMAKE_EXPORT_NAMESPACE}::rcc)
 
 if (NOT QT_NAMESPACE STREQUAL "")
     target_compile_definitions(Core PUBLIC "QT_NAMESPACE=${QT_NAMESPACE}")
