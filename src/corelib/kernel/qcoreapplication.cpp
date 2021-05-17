@@ -3085,14 +3085,11 @@ void QCoreApplication::setEventDispatcher(QAbstractEventDispatcher *eventDispatc
         QPromise<QPermission::PermissionResult> promise;
         QFuture<QPermission::PermissionResult> future = promise.future();
         promise.start();
-    #ifndef QT_NO_EXCEPTIONS
-        const auto exception = std::make_exception_ptr(
-                    std::runtime_error("This platform doesn't have an implementation "
-                                       "for the application permissions API."));
-        promise.setException(exception);
-    #else
-        promise.addResult(QPermission::Denied);
-    #endif
+#if defined(QT_DEBUG)
+        qWarning() << "This platform doesn't have an implementation"
+                   << "for the application permissions API.";
+#endif
+        promise.addResult(QPermission::Authorized);
         promise.finish();
         return future;
     }
@@ -3144,6 +3141,10 @@ void QCoreApplication::setEventDispatcher(QAbstractEventDispatcher *eventDispatc
 
     \snippet permissions/permissions.cpp Request camera permission sync
 
+    \note Any platform that doesn't have an implementation for this API,
+    returns QPermission::Authorized by default. Currently, only Android
+    has an implemtation for this API.
+
     \since 6.2
     \sa checkPermission()
 */
@@ -3172,6 +3173,10 @@ QCoreApplication::requestPermission(QPermission::PermisionType permission)
 
     \snippet permissions/permissions.cpp Request camera permission sync on Android
 
+    \note Any platform that doesn't have an implementation for this API,
+    returns QPermission::Authorized by default. Currently, only Android
+    has an implemtation for this API.
+
     \since 6.2
     \sa checkPermission()
 */
@@ -3193,6 +3198,10 @@ QCoreApplication::requestPermission(const QString &permission)
     To do the same request synchronously:
 
     \snippet permissions/permissions.cpp Check camera permission sync
+
+    \note Any platform that doesn't have an implementation for this API,
+    returns QPermission::Authorized by default. Currently, only Android
+    has an implemtation for this API.
 
     \since 6.2
     \sa requestPermission()
@@ -3216,6 +3225,10 @@ QCoreApplication::checkPermission(QPermission::PermisionType permission)
     To do the same request synchronously:
 
     \snippet permissions/permissions.cpp Check camera permission sync on Android
+
+    \note Any platform that doesn't have an implementation for this API,
+    returns QPermission::Authorized by default. Currently, only Android
+    has an implemtation for this API.
 
     \since 6.2
     \sa requestPermission()
