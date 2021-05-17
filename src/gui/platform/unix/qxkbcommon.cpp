@@ -552,6 +552,12 @@ static int keysymToQtKey_internal(xkb_keysym_t keysym, Qt::KeyboardModifiers mod
         auto it = std::lower_bound(KeyTbl.cbegin(), KeyTbl.cend(), searchKey);
         if (it != KeyTbl.end() && !(searchKey < *it))
             qtKey = it->qt;
+
+        // translate Super/Hyper keys to Meta if we're using them as the MetaModifier
+        if (superAsMeta && (qtKey == Qt::Key_Super_L || qtKey == Qt::Key_Super_R))
+            qtKey = Qt::Key_Meta;
+        if (hyperAsMeta && (qtKey == Qt::Key_Hyper_L || qtKey == Qt::Key_Hyper_R))
+            qtKey = Qt::Key_Meta;
     }
 
     if (qtKey)
@@ -577,12 +583,6 @@ static int keysymToQtKey_internal(xkb_keysym_t keysym, Qt::KeyboardModifiers mod
              qtKey = text.unicode()->toUpper().unicode();
          }
     }
-
-    // translate Super/Hyper keys to Meta if we're using them as the MetaModifier
-    if (superAsMeta && (qtKey == Qt::Key_Super_L || qtKey == Qt::Key_Super_R))
-        qtKey = Qt::Key_Meta;
-    if (hyperAsMeta && (qtKey == Qt::Key_Hyper_L || qtKey == Qt::Key_Hyper_R))
-        qtKey = Qt::Key_Meta;
 
     return qtKey;
 }
