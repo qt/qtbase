@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the demonstration applications of the Qt Toolkit.
@@ -52,8 +52,6 @@
 #define TEXTEDIT_H
 
 #include <QMainWindow>
-#include <QMap>
-#include <QPointer>
 
 QT_BEGIN_NAMESPACE
 class QAction;
@@ -106,7 +104,6 @@ private slots:
 
     void clipboardDataChanged();
     void about();
-    void printPreview(QPrinter *);
 
 private:
     void setupFileActions();
@@ -146,7 +143,6 @@ private:
     QFontComboBox *comboFont;
     QComboBox *comboSize;
 
-    QToolBar *tb;
     QString fileName;
     QTextEdit *textEdit;
 };
