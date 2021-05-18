@@ -475,7 +475,7 @@ function(qt6_add_executable target)
     _qt_internal_create_executable("${target}" ${arg_UNPARSED_ARGUMENTS})
 
     if(arg_MANUAL_FINALIZATION)
-        # Caller says they will call qt6_finalize_executable() themselves later
+        # Caller says they will call qt6_finalize_target() themselves later
         return()
     endif()
 
@@ -485,10 +485,10 @@ function(qt6_add_executable target)
     if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.19)
         # Need to wrap in an EVAL CODE or else ${target} won't be evaluated
         # due to special behavior of cmake_language() argument handling
-        cmake_language(EVAL CODE "cmake_language(DEFER CALL qt6_finalize_executable ${target})")
+        cmake_language(EVAL CODE "cmake_language(DEFER CALL qt6_finalize_target ${target})")
     else()
         set_target_properties("${target}" PROPERTIES _qt_is_immediately_finalized TRUE)
-        qt6_finalize_executable("${target}")
+        qt6_finalize_target("${target}")
     endif()
 endfunction()
 
@@ -512,13 +512,11 @@ function(_qt_internal_create_executable target)
     target_link_libraries("${target}" PRIVATE Qt6::Core)
 endfunction()
 
-# This function is currently in Technical Preview.
-# It's signature and behavior might change.
-function(qt6_finalize_executable target)
+function(_qt_internal_finalize_executable target)
     get_target_property(is_finalized "${target}" _qt_executable_is_finalized)
     if(is_finalized)
         message(AUTHOR_WARNING
-                "Tried to call qt6_finalize_executable twice on executable: '${target}'. \
+                "Tried to call qt6_finalize_target twice on executable: '${target}'. \
                  Did you forget to specify MANUAL_FINALIZATION to qt6_add_executable?")
         return()
     endif()
@@ -587,6 +585,17 @@ function(qt6_finalize_executable target)
     endif()
 
     set_target_properties(${target} PROPERTIES _qt_executable_is_finalized TRUE)
+endfunction()
+
+function(qt6_finalize_target target)
+    if(NOT TARGET "${target}")
+        message(FATAL_ERROR "No target '${target}' found in current scope.")
+    endif()
+
+    get_target_property(target_type ${target} TYPE)
+    if(target_type STREQUAL "EXECUTABLE")
+        _qt_internal_finalize_executable(${ARGV})
+    endif()
 endfunction()
 
 function(_qt_internal_find_ios_development_team_id out_var)
@@ -728,8 +737,8 @@ if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
     function(qt_add_executable)
         qt6_add_executable(${ARGV})
     endfunction()
-    function(qt_finalize_executable)
-        qt6_finalize_executable(${ARGV})
+    function(qt_finalize_target)
+        qt6_finalize_target(${ARGV})
     endfunction()
 endif()
 
@@ -847,10 +856,10 @@ function(qt6_import_plugins target)
     # If the project called qt_import_plugins, use this as an event to enable finalizer mode for
     # plugin importing.
     #
-    # This is done in addition to the code in qt_finalize_executable, to ensure pre-existing
+    # This is done in addition to the code in qt_finalize_target, to ensure pre-existing
     # projects that use qt_import_plugins activate finalizer mode even with an older CMake version
     # that doesn't support deferred calls (and projects that don't explicitly call
-    # qt_finalize_executable).
+    # qt_finalize_target).
     __qt_internal_apply_plugin_imports_finalizer_mode(${target})
 endfunction()
 
@@ -877,9 +886,9 @@ endif()
 #
 # Finalizer mode is enabled by default if:
 #   - the project calls qt_import_plugins explicitly or
-#   - the project calls qt_finalize_executable explicitly or
+#   - the project calls qt_finalize_target explicitly or
 #   - the project uses qt_add_executable and a CMake version greater than or equal to 3.19
-#     (which will DEFER CALL qt_finalize_executable)
+#     (which will DEFER CALL qt_finalize_target)
 function(qt6_enable_import_plugins_finalizer_mode target enabled)
     if(enabled)
         set(enabled "TRUE")

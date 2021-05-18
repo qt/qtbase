@@ -421,7 +421,7 @@ for you as a convenience.
 After a target is created, further processing or \e{finalization} steps are
 commonly needed. The steps to perform depend on the platform and on various
 properties of the target. The finalization processing is implemented by the
-\l{qt6_finalize_executable}{qt_finalize_executable()} command.
+\l{qt6_finalize_target}{qt_finalize_target()} command.
 
 Finalization can occur either as part of this call or be deferred to sometime
 after this command returns (but it should still be in the same directory scope).
@@ -432,11 +432,11 @@ CMake versions earlier than 3.19, automatic deferral isn't supported. In that
 case, finalization is performed immediately before this command returns.
 
 Regardless of the CMake version, the \c{MANUAL_FINALIZATION} keyword can be given to
-indicate that you will explicitly call \l{qt6_finalize_executable}{qt_finalize_executable()}
+indicate that you will explicitly call \l{qt6_finalize_target}{qt_finalize_target()}
 yourself instead at some later time. In general, \c MANUAL_FINALIZATION should
 not be needed unless the project has to support CMake 3.18 or earlier.
 
-\sa {qt6_finalize_executable}{qt_finalize_executable()}
+\sa {qt6_finalize_target}{qt_finalize_target()}
 
 \section1 Examples
 
@@ -457,11 +457,11 @@ for finalizing the target by adding the \c{MANUAL_FINALIZATION} keyword.
 */
 
 /*!
-\page qt_finalize_executable.html
+\page qt_finalize_target.html
 \ingroup cmake-macros-qtcore
 
-\title qt_finalize_executable
-\target qt6_finalize_executable
+\title qt_finalize_target
+\target qt6_finalize_target
 
 \brief Handles various common platform-specific tasks associated with Qt targets.
 
@@ -470,9 +470,9 @@ for finalizing the target by adding the \c{MANUAL_FINALIZATION} keyword.
 \section1 Synopsis
 
 \badcode
-qt_finalize_executable(target)
+qt_finalize_target(target)
 
-qt6_finalize_executable(target)
+qt6_finalize_target(target)
 \endcode
 
 \section1 Description
@@ -573,7 +573,7 @@ Some are provided by Qt, others by CMake or the Android NDK.
 
 The properties below will be read from the specified \c{target}. Note that this
 command is called as part of target finalization (see
-\l{qt6_finalize_executable}{qt_finalize_executable()}). If you are using
+\l{qt6_finalize_target}{qt_finalize_target()}). If you are using
 \l{qt6_add_executable}{qt_add_executable()} to create the target and you need to
 modify some of these target properties, you need to ensure that target
 finalization is deferred. See \l{qt6_add_executable}{qt_add_executable()} for
@@ -597,7 +597,7 @@ Upon return, the \c{QT_ANDROID_DEPLOYMENT_SETTINGS_FILE} target property will
 contain the location of the generated deployment settings file.
 
 \sa {qt6_android_add_apk_target}{qt_android_add_apk_target()},
-    {qt6_finalize_executable}{qt_finalize_executable()}
+    {qt6_finalize_target}{qt_finalize_target()}
 
 \section1 Example
 
@@ -639,7 +639,7 @@ the \c{apk} build target, which will be created if it doesn't already exist.
 This can be disabled by setting the \c{QT_NO_GLOBAL_APK_TARGET} variable to true.
 
 \sa {qt6_android_generate_deployment_settings}{qt_android_generate_deployment_settings()},
-    {qt6_finalize_executable}{qt_finalize_executable()}
+    {qt6_finalize_target}{qt_finalize_target()}
 
 \section1 Example
 

@@ -153,7 +153,7 @@ create_test_executable(default_qt_add_executable_manually_finalized
     FINALIZER_MODE QT_WRAPPER
     ADD_EXECUTABLE_ARGS MANUAL_FINALIZATION)
 
-qt_finalize_executable(${target})
+qt_finalize_target(${target})
 
 # Check that plugin importing with automatic finalization works when the CMake version is high
 # enough.
