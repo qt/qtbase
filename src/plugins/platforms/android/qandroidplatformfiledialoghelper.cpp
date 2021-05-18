@@ -147,10 +147,10 @@ QStringList nameFilterExtensions(const QString nameFilters)
 {
     QStringList ret;
 #if QT_CONFIG(regularexpression)
-    QRegularExpression re("(\\*\\.?\\w*)");
+    QRegularExpression re("(\\*\\.[a-z .]+)");
     QRegularExpressionMatchIterator i = re.globalMatch(nameFilters);
     while (i.hasNext())
-        ret << i.next().captured(1);
+        ret << i.next().captured(1).trimmed();
 #endif // QT_CONFIG(regularexpression)
     ret.removeAll("*");
     return ret;
@@ -159,23 +159,24 @@ QStringList nameFilterExtensions(const QString nameFilters)
 void QAndroidPlatformFileDialogHelper::setMimeTypes()
 {
     QStringList mimeTypes = options()->mimeTypeFilters();
-    const QString nameFilter = options()->initiallySelectedNameFilter();
+    const QStringList nameFilters = options()->nameFilters();
+    const QString nameFilter = nameFilters.isEmpty() ? QString() : nameFilters.first();
 
-    if (mimeTypes.isEmpty() && !nameFilter.isEmpty()) {
+    if (!nameFilter.isEmpty()) {
         QMimeDatabase db;
         for (const QString &filter : nameFilterExtensions(nameFilter))
-            mimeTypes.append(db.mimeTypeForFile(filter).name());
+            mimeTypes.append(db.mimeTypeForFile(filter, QMimeDatabase::MatchExtension).name());
     }
 
-    QString type = !mimeTypes.isEmpty() ? mimeTypes.at(0) : QLatin1String("*/*");
+    const QString initialType = mimeTypes.size() == 1 ? mimeTypes.at(0) : QLatin1String("*/*");
     m_intent.callObjectMethod("setType", "(Ljava/lang/String;)Landroid/content/Intent;",
-                              QJNIObjectPrivate::fromString(type).object());
+                              QJNIObjectPrivate::fromString(initialType).object());
 
     if (!mimeTypes.isEmpty()) {
         const QJNIObjectPrivate extraMimeType = QJNIObjectPrivate::getStaticObjectField(
                 JniIntentClass, "EXTRA_MIME_TYPES", "Ljava/lang/String;");
 
-        QJNIObjectPrivate mimeTypesArray = QJNIObjectPrivate::callStaticObjectMethod(
+        const QJNIObjectPrivate mimeTypesArray = QJNIObjectPrivate::callStaticObjectMethod(
                 "org/qtproject/qt5/android/QtNative",
                 "getStringArray",
                 "(Ljava/lang/String;)[Ljava/lang/String;",
