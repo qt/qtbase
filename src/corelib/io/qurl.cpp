@@ -413,7 +413,6 @@
 #include "qstringlist.h"
 #include "qdebug.h"
 #include "qhash.h"
-#include "qdir.h"         // for QDir::fromNativeSeparators
 #include "qdatastream.h"
 #if QT_CONFIG(topleveldomain) // ### Qt6: Remove section
 #include "qtldurl_p.h"
@@ -3816,6 +3815,25 @@ bool QUrl::isDetached() const
     return !d || d->ref.loadRelaxed() == 1;
 }
 
+static QString fromNativeSeparators(const QString &pathName)
+{
+#if defined(Q_OS_WIN)
+    QString result(pathName);
+    const QChar nativeSeparator = u'\\';
+    auto i = result.indexOf(nativeSeparator);
+    if (i != -1) {
+        QChar * const data = result.data();
+        const auto length = result.length();
+        for (; i < length; ++i) {
+            if (data[i] == nativeSeparator)
+                data[i] = u'/';
+        }
+    }
+    return result;
+#else
+    return pathName;
+#endif
+}
 
 /*!
     Returns a QUrl representation of \a localFile, interpreted as a local
@@ -3854,7 +3872,7 @@ QUrl QUrl::fromLocalFile(const QString &localFile)
     if (localFile.isEmpty())
         return url;
     QString scheme = fileScheme();
-    QString deslashified = QDir::fromNativeSeparators(localFile);
+    QString deslashified = fromNativeSeparators(localFile);
 
     // magic for drives on windows
     if (deslashified.length() > 1 && deslashified.at(1) == QLatin1Char(':') && deslashified.at(0) != QLatin1Char('/')) {
