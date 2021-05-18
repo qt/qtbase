@@ -10,6 +10,8 @@ elseif(QT_FEATURE_eglfs_viv)
     set(_device_integration "eglfs_viv")
 elseif(QT_FEATURE_eglfs_brcm)
     set(_device_integration "eglfs_brcm")
+elseif(QT_FEATURE_eglfs_openwfd)
+    set(_device_integration "eglfs_openwfd")
 endif()
 
 set(QT_QPA_DEFAULT_EGLFS_INTEGRATION "${_device_integration}" CACHE STRING "Default EGLFS device integration plugin")
