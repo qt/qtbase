@@ -609,6 +609,9 @@ void tst_QSharedPointer::useOfForwardDeclared()
 
 void tst_QSharedPointer::memoryManagement()
 {
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_CLANG("-Wself-assign-overloaded")
+
     int generation = Data::generationCounter + 1;
     int destructorCounter = Data::destructorCounter;
 
@@ -670,6 +673,7 @@ void tst_QSharedPointer::memoryManagement()
     QVERIFY(ptr.isNull());
     QVERIFY(ptr == 0);
     QCOMPARE(ptr.data(), (Data*)0);
+QT_WARNING_POP
 }
 
 void tst_QSharedPointer::dropLastReferenceOfForwardDeclared()
@@ -2128,7 +2132,10 @@ void tst_QSharedPointer::validConstructs()
         Data *aData = new Data;
         QSharedPointer<Data> ptr1 = QSharedPointer<Data>(aData);
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_CLANG("-Wself-assign-overloaded")
         ptr1 = ptr1;            // valid
+QT_WARNING_POP
 
         QSharedPointer<Data> ptr2(ptr1);
 
