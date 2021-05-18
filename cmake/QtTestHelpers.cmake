@@ -266,7 +266,13 @@ function(qt_internal_add_test name)
 
     # Generate a label in the form tests/auto/foo/bar/tst_baz
     # and use it also for XML output
-    file(RELATIVE_PATH label "${PROJECT_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/${name}")
+    set(label_base_directory "${PROJECT_SOURCE_DIR}")
+    if (QT_SUPERBUILD)
+        # Prepend repository name for qt5 builds, so that tests can be run for
+        # individual repositories.
+        set(label_base_directory "${label_base_directory}/..")
+    endif()
+    file(RELATIVE_PATH label "${label_base_directory}" "${CMAKE_CURRENT_SOURCE_DIR}/${name}")
 
     if (arg_LOWDPI)
         target_compile_definitions("${name}" PUBLIC TESTCASE_LOWDPI)
