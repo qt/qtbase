@@ -3168,6 +3168,7 @@ void QIconModeViewBase::doDynamicLayout(const QListViewLayoutInfo &info)
 
     QRect rect(QPoint(), topLeft);
     QListViewItem *item = nullptr;
+    Q_ASSERT(info.first <= info.last);
     for (int row = info.first; row <= info.last; ++row) {
         item = &items[row];
         if (isHidden(row)) {
@@ -3238,6 +3239,7 @@ void QIconModeViewBase::doDynamicLayout(const QListViewLayoutInfo &info)
             flowPosition += deltaFlowPosition; // current position + item width + gap
         }
     }
+    Q_ASSERT(item);
     batchSavedDeltaSeg = deltaSegPosition;
     batchStartRow = info.last + 1;
     bool done = (info.last >= rowCount() - 1);
