@@ -34,6 +34,7 @@ target_compile_definitions(QtLibraryInfo PUBLIC
     QT_HOST_MKSPEC="${QT_QMAKE_HOST_MKSPEC}"
     QT_TARGET_MKSPEC="${QT_QMAKE_TARGET_MKSPEC}"
 )
+qt_set_common_target_properties(QtLibraryInfo)
 
 # qmake is out of any module, so we manually evaluate the required features.
 include("${CMAKE_CURRENT_SOURCE_DIR}/configure.cmake")
