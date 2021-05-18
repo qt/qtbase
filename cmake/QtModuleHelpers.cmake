@@ -1,3 +1,37 @@
+macro(qt_internal_get_internal_add_module_keywords option_args single_args multi_args)
+    set(${option_args}
+        STATIC
+        EXCEPTIONS
+        INTERNAL_MODULE
+        HEADER_MODULE
+        DISABLE_TOOLS_EXPORT
+        SKIP_DEPENDS_INCLUDE
+        NO_MODULE_HEADERS
+        NO_SYNC_QT
+        NO_PRIVATE_MODULE
+        NO_CONFIG_HEADER_FILE
+        NO_ADDITIONAL_TARGET_INFO
+        NO_GENERATE_METATYPES
+        GENERATE_METATYPES          # TODO: Remove once it is not used anymore
+    )
+    set(${single_args}
+        MODULE_INCLUDE_NAME
+        CONFIG_MODULE_NAME
+        PRECOMPILED_HEADER
+        CONFIGURE_FILE_PATH
+        ${__default_target_info_args}
+    )
+    set(${multi_args}
+        QMAKE_MODULE_CONFIG
+        EXTRA_CMAKE_FILES
+        EXTRA_CMAKE_INCLUDES
+        NO_PCH_SOURCES
+        ${__default_private_args}
+        ${__default_public_args}
+        ${__default_private_module_args}
+    )
+endmacro()
+
 # This is the main entry function for creating a Qt module, that typically
 # consists of a library, public header files, private header files and configurable
 # features.
@@ -17,12 +51,18 @@
 function(qt_internal_add_module target)
     qt_internal_module_info(module "${target}")
 
-    # TODO: Remove GENERATE_METATYPES once it's not used anymore.
-    # Process arguments:
-    qt_parse_all_arguments(arg "qt_add_module"
-        "NO_MODULE_HEADERS;STATIC;DISABLE_TOOLS_EXPORT;EXCEPTIONS;INTERNAL_MODULE;NO_SYNC_QT;NO_PRIVATE_MODULE;HEADER_MODULE;GENERATE_METATYPES;NO_GENERATE_METATYPES;NO_CONFIG_HEADER_FILE;SKIP_DEPENDS_INCLUDE;NO_ADDITIONAL_TARGET_INFO"
-        "MODULE_INCLUDE_NAME;CONFIG_MODULE_NAME;PRECOMPILED_HEADER;CONFIGURE_FILE_PATH;${__default_target_info_args}"
-        "${__default_private_args};${__default_public_args};${__default_private_module_args};QMAKE_MODULE_CONFIG;EXTRA_CMAKE_FILES;EXTRA_CMAKE_INCLUDES;NO_PCH_SOURCES" ${ARGN})
+    qt_internal_get_internal_add_module_keywords(
+        option_args
+        single_args
+        multi_args
+    )
+
+    qt_parse_all_arguments(arg "qt_internal_add_module"
+        "${option_args}"
+        "${single_args}"
+        "${multi_args}"
+        ${ARGN}
+    )
 
     qt_internal_add_qt_repo_known_module("${target}")
 
