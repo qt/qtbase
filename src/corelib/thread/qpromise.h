@@ -85,7 +85,11 @@ public:
     }
 #ifndef QT_NO_EXCEPTIONS
     void setException(const QException &e) { d.reportException(e); }
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
     void setException(std::exception_ptr e) { d.reportException(e); }
+#else
+    void setException(const std::exception_ptr &e) { d.reportException(e); }
+#endif
 #endif
     void start() { d.reportStarted(); }
     void finish() { d.reportFinished(); }

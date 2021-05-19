@@ -142,10 +142,17 @@
     \sa isCanceled()
 */
 
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
 /*! \fn template<typename T> void QPromise<T>::setException(std::exception_ptr e)
 
     \overload
 */
+#else
+/*! \fn template<typename T> void QPromise<T>::setException(const std::exception_ptr &e)
+
+    \overload
+*/
+#endif
 
 /*! \fn template<typename T> void QPromise<T>::start()
 

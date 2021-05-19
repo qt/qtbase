@@ -107,7 +107,11 @@ public:
     void reportCanceled();
 #ifndef QT_NO_EXCEPTIONS
     void reportException(const QException &e);
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
     void reportException(std::exception_ptr e);
+#else
+    void reportException(const std::exception_ptr &e);
+#endif
 #endif
     void reportResultsReady(int beginIndex, int endIndex);
 

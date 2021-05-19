@@ -351,7 +351,11 @@ void QFutureInterfaceBase::reportException(const QException &exception)
     }
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
 void QFutureInterfaceBase::reportException(std::exception_ptr exception)
+#else
+void QFutureInterfaceBase::reportException(const std::exception_ptr &exception)
+#endif
 {
     QMutexLocker locker(&d->m_mutex);
     if (d->state.loadRelaxed() & (Canceled|Finished))
