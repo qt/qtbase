@@ -1,7 +1,7 @@
 
 function (qt_internal_setup_wasm_target_properties wasmTarget)
 
-    target_link_options("${wasmTarget}" INTERFACE "SHELL:-s EXIT_RUNTIME=1"
+    target_link_options("${wasmTarget}" INTERFACE
     "SHELL:-s ERROR_ON_UNDEFINED_SYMBOLS=1"
     "SHELL:-s EXTRA_EXPORTED_RUNTIME_METHODS=[UTF16ToString,stringToUTF16]"
     "SHELL:-s USE_WEBGL2=1"
