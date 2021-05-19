@@ -124,7 +124,14 @@ static void setBoolLane(QBasicAtomicInt *atomic, bool enable, int shift)
     logs messages of type \c QtWarningMsg, \c QtCriticalMsg, \c QtFatalMsg, but
     ignores messages of type \c QtDebugMsg and \c QtInfoMsg.
 
-    If no argument is passed, all messages are logged.
+    If no argument is passed, all messages are logged. Only Qt internal categories
+    which start with \c{qt} are handled differently: For these, only messages of type
+    \c QtInfoMsg, \c QtWarningMsg, and \c QtCriticalMsg are logged by default.
+
+    \note Logging categories are not affected by your C++ build configuration.
+    That is, whether messages are printed does not change depending on whether
+    the code is compiled with debug symbols ('Debug Build'), optimizations
+    ('Release Build'), or some other combination.
 
     \section1 Configuring Categories
 
