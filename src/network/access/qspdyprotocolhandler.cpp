@@ -762,7 +762,8 @@ bool QSpdyProtocolHandler::uploadData(qint32 streamID)
 void QSpdyProtocolHandler::_q_uploadDataReadyRead()
 {
     QNonContiguousByteDevice *device = qobject_cast<QNonContiguousByteDevice *>(sender());
-    Q_ASSERT(device);
+    if (!device)
+        return;
     qint32 streamID = m_streamIDs.value(device);
     Q_ASSERT(streamID > 0);
     uploadData(streamID);
