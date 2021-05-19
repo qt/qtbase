@@ -87,6 +87,7 @@ public:
                                                  QRhiTexture::Format backingFormatHint) = 0;
     virtual QRhiTexture *createTexture(QRhiTexture::Format format,
                                        const QSize &pixelSize,
+                                       int depth,
                                        int sampleCount,
                                        QRhiTexture::Flags flags) = 0;
     virtual QRhiSampler *createSampler(QRhiSampler::Filter magFilter,
@@ -180,7 +181,7 @@ public:
                               QSize *blockDim) const;
     void textureFormatInfo(QRhiTexture::Format format, const QSize &size,
                            quint32 *bpl, quint32 *byteSize, quint32 *bytesPerPixel) const;
-    quint32 approxByteSizeForTexture(QRhiTexture::Format format, const QSize &baseSize,
+    quint32 approxByteSizeForTexture(QRhiTexture::Format format, const QSize &baseSize, int depth,
                                      int mipCount, int layerCount);
 
     QRhiProfilerPrivate *profilerPrivateOrNull()
@@ -447,7 +448,8 @@ public:
         // In the backend this can then end up, where applicable, as a
         // single, batched copy operation with only one set of barriers.
         // This helps when doing for example glyph cache fills.
-        QList<QRhiTextureSubresourceUploadDescription> subresDesc[QRhi::MAX_LAYERS][QRhi::MAX_LEVELS];
+        using MipLevelUploadList = std::array<QVector<QRhiTextureSubresourceUploadDescription>, QRhi::MAX_MIP_LEVELS>;
+        QVarLengthArray<MipLevelUploadList, 6> subresDesc;
         QRhiTexture *src;
         QRhiTextureCopyDescription desc;
         QRhiReadbackDescription rb;
@@ -458,6 +460,12 @@ public:
             TextureOp op = {};
             op.type = Upload;
             op.dst = tex;
+            int maxLayer = -1;
+            for (auto it = desc.cbeginEntries(), itEnd = desc.cendEntries(); it != itEnd; ++it) {
+                if (it->layer() > maxLayer)
+                    maxLayer = it->layer();
+            }
+            op.subresDesc.resize(maxLayer + 1);
             for (auto it = desc.cbeginEntries(), itEnd = desc.cendEntries(); it != itEnd; ++it)
                 op.subresDesc[it->layer()][it->level()].append(it->description());
             return op;

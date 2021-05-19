@@ -101,7 +101,7 @@ struct QD3D11RenderBuffer : public QRhiRenderBuffer
 
 struct QD3D11Texture : public QRhiTexture
 {
-    QD3D11Texture(QRhiImplementation *rhi, Format format, const QSize &pixelSize,
+    QD3D11Texture(QRhiImplementation *rhi, Format format, const QSize &pixelSize, int depth,
                   int sampleCount, Flags flags);
     ~QD3D11Texture();
     void destroy() override;
@@ -112,14 +112,21 @@ struct QD3D11Texture : public QRhiTexture
     bool prepareCreate(QSize *adjustedSize = nullptr);
     bool finishCreate();
     ID3D11UnorderedAccessView *unorderedAccessViewForLevel(int level);
+    ID3D11Resource *textureResource() const
+    {
+        if (tex)
+            return tex;
+        return tex3D;
+    }
 
     ID3D11Texture2D *tex = nullptr;
+    ID3D11Texture3D *tex3D = nullptr;
     bool owns = true;
     ID3D11ShaderResourceView *srv = nullptr;
     DXGI_FORMAT dxgiFormat;
     uint mipLevelCount = 0;
     DXGI_SAMPLE_DESC sampleDesc;
-    ID3D11UnorderedAccessView *perLevelViews[QRhi::MAX_LEVELS];
+    ID3D11UnorderedAccessView *perLevelViews[QRhi::MAX_MIP_LEVELS];
     uint generation = 0;
     friend class QRhiD3D11;
 };
@@ -439,6 +446,7 @@ struct QD3D11CommandBuffer : public QRhiCommandBuffer
                 UINT dstSubRes;
                 UINT dstX;
                 UINT dstY;
+                UINT dstZ;
                 ID3D11Resource *src;
                 UINT srcSubRes;
                 bool hasSrcBox;
@@ -596,6 +604,7 @@ public:
                                          QRhiTexture::Format backingFormatHint) override;
     QRhiTexture *createTexture(QRhiTexture::Format format,
                                const QSize &pixelSize,
+                               int depth,
                                int sampleCount,
                                QRhiTexture::Flags flags) override;
     QRhiSampler *createSampler(QRhiSampler::Filter magFilter,

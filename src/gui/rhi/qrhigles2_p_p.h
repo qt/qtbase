@@ -116,6 +116,7 @@ struct QGles2SamplerData
     GLenum glmagfilter = 0;
     GLenum glwraps = 0;
     GLenum glwrapt = 0;
+    GLenum glwrapr = 0;
     GLenum gltexcomparefunc = 0;
 };
 
@@ -125,6 +126,7 @@ inline bool operator==(const QGles2SamplerData &a, const QGles2SamplerData &b)
             && a.glmagfilter == b.glmagfilter
             && a.glwraps == b.glwraps
             && a.glwrapt == b.glwrapt
+            && a.glwrapr == b.glwrapr
             && a.gltexcomparefunc == b.gltexcomparefunc;
 }
 
@@ -135,7 +137,7 @@ inline bool operator!=(const QGles2SamplerData &a, const QGles2SamplerData &b)
 
 struct QGles2Texture : public QRhiTexture
 {
-    QGles2Texture(QRhiImplementation *rhi, Format format, const QSize &pixelSize,
+    QGles2Texture(QRhiImplementation *rhi, Format format, const QSize &pixelSize, int depth,
                   int sampleCount, Flags flags);
     ~QGles2Texture();
     void destroy() override;
@@ -154,7 +156,7 @@ struct QGles2Texture : public QRhiTexture
     GLenum gltype;
     QGles2SamplerData samplerState;
     bool specified = false;
-    bool compressedAtlasBuilt = false;
+    bool zeroInitialized = false;
     int mipLevelCount = 0;
 
     enum Access {
@@ -440,17 +442,20 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
                 int size;
             } getBufferSubData;
             struct {
+                GLenum srcTarget;
                 GLenum srcFaceTarget;
                 GLuint srcTexture;
                 int srcLevel;
                 int srcX;
                 int srcY;
+                int srcZ;
                 GLenum dstTarget;
                 GLuint dstTexture;
                 GLenum dstFaceTarget;
                 int dstLevel;
                 int dstX;
                 int dstY;
+                int dstZ;
                 int w;
                 int h;
             } copyTex;
@@ -470,6 +475,7 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
                 int level;
                 int dx;
                 int dy;
+                int dz;
                 int w;
                 int h;
                 GLenum glformat;
@@ -486,6 +492,7 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
                 GLenum glintformat;
                 int w;
                 int h;
+                int depth;
                 int size;
                 const void *data; // must come from retainData()
             } compressedImage;
@@ -496,6 +503,7 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
                 int level;
                 int dx;
                 int dy;
+                int dz;
                 int w;
                 int h;
                 GLenum glintformat;
@@ -739,6 +747,7 @@ public:
                                          QRhiTexture::Format backingFormatHint) override;
     QRhiTexture *createTexture(QRhiTexture::Format format,
                                const QSize &pixelSize,
+                               int depth,
                                int sampleCount,
                                QRhiTexture::Flags flags) override;
     QRhiSampler *createSampler(QRhiSampler::Filter magFilter,
@@ -929,7 +938,8 @@ public:
               texelFetch(false),
               intAttributes(true),
               screenSpaceDerivatives(false),
-              programBinary(false)
+              programBinary(false),
+              texture3D(false)
         { }
         int ctxMajor;
         int ctxMinor;
@@ -972,6 +982,7 @@ public:
         uint intAttributes : 1;
         uint screenSpaceDerivatives : 1;
         uint programBinary : 1;
+        uint texture3D : 1;
     } caps;
     QGles2SwapChain *currentSwapChain = nullptr;
     QList<GLint> supportedCompressedFormats;

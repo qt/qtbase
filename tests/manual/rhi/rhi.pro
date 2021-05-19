@@ -21,7 +21,8 @@ SUBDIRS += \
     computebuffer \
     computeimage \
     instancing \
-    noninstanced
+    noninstanced \
+    tex3d
 
 qtConfig(widgets) {
     SUBDIRS += \

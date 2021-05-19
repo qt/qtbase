@@ -218,10 +218,11 @@ QRhiRenderBuffer *QRhiNull::createRenderBuffer(QRhiRenderBuffer::Type type, cons
     return new QNullRenderBuffer(this, type, pixelSize, sampleCount, flags, backingFormatHint);
 }
 
-QRhiTexture *QRhiNull::createTexture(QRhiTexture::Format format, const QSize &pixelSize,
+QRhiTexture *QRhiNull::createTexture(QRhiTexture::Format format,
+                                     const QSize &pixelSize, int depth,
                                      int sampleCount, QRhiTexture::Flags flags)
 {
-    return new QNullTexture(this, format, pixelSize, sampleCount, flags);
+    return new QNullTexture(this, format, pixelSize, depth, sampleCount, flags);
 }
 
 QRhiSampler *QRhiNull::createSampler(QRhiSampler::Filter magFilter, QRhiSampler::Filter minFilter,
@@ -415,8 +416,8 @@ QRhi::FrameOpResult QRhiNull::finish()
 void QRhiNull::simulateTextureUpload(const QRhiResourceUpdateBatchPrivate::TextureOp &u)
 {
     QNullTexture *texD = QRHI_RES(QNullTexture, u.dst);
-    for (int layer = 0; layer < QRhi::MAX_LAYERS; ++layer) {
-        for (int level = 0; level < QRhi::MAX_LEVELS; ++level) {
+    for (int layer = 0, maxLayer = u.subresDesc.count(); layer < maxLayer; ++layer) {
+        for (int level = 0; level < QRhi::MAX_MIP_LEVELS; ++level) {
             for (const QRhiTextureSubresourceUploadDescription &subresDesc : qAsConst(u.subresDesc[layer][level])) {
                 if (!subresDesc.image().isNull()) {
                     const QImage src = subresDesc.image();
@@ -642,9 +643,9 @@ QRhiTexture::Format QNullRenderBuffer::backingFormat() const
     return m_type == Color ? QRhiTexture::RGBA8 : QRhiTexture::UnknownFormat;
 }
 
-QNullTexture::QNullTexture(QRhiImplementation *rhi, Format format, const QSize &pixelSize,
+QNullTexture::QNullTexture(QRhiImplementation *rhi, Format format, const QSize &pixelSize, int depth,
                            int sampleCount, Flags flags)
-    : QRhiTexture(rhi, format, pixelSize, sampleCount, flags)
+    : QRhiTexture(rhi, format, pixelSize, depth, sampleCount, flags)
 {
 }
 
@@ -663,12 +664,15 @@ bool QNullTexture::create()
 {
     QRHI_RES_RHI(QRhiNull);
     const bool isCube = m_flags.testFlag(CubeMap);
+    const bool is3D = m_flags.testFlag(ThreeDimensional);
     const bool hasMipMaps = m_flags.testFlag(MipMapped);
     QSize size = m_pixelSize.isEmpty() ? QSize(1, 1) : m_pixelSize;
+    m_depth = qMax(1, m_depth);
     const int mipLevelCount = hasMipMaps ? rhiD->q->mipLevelsForSize(size) : 1;
-    const int layerCount = isCube ? 6 : 1;
+    const int layerCount = is3D ? m_depth : (isCube ? 6 : 1);
 
     if (m_format == RGBA8) {
+        image.resize(layerCount);
         for (int layer = 0; layer < layerCount; ++layer) {
             for (int level = 0; level < mipLevelCount; ++level) {
                 image[layer][level] = QImage(rhiD->q->sizeForMipLevel(level, size),

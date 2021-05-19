@@ -546,6 +546,10 @@ bool QRhiD3D11::isFeatureSupported(QRhi::Feature feature) const
         return true;
     case QRhi::RenderBufferImport:
         return false;
+    case QRhi::ThreeDimensionalTextures:
+        return true;
+    case QRhi::RenderTo3DTextureSlice:
+        return true;
     default:
         Q_UNREACHABLE();
         return false;
@@ -633,10 +637,11 @@ QRhiRenderBuffer *QRhiD3D11::createRenderBuffer(QRhiRenderBuffer::Type type, con
     return new QD3D11RenderBuffer(this, type, pixelSize, sampleCount, flags, backingFormatHint);
 }
 
-QRhiTexture *QRhiD3D11::createTexture(QRhiTexture::Format format, const QSize &pixelSize,
+QRhiTexture *QRhiD3D11::createTexture(QRhiTexture::Format format,
+                                      const QSize &pixelSize, int depth,
                                       int sampleCount, QRhiTexture::Flags flags)
 {
-    return new QD3D11Texture(this, format, pixelSize, sampleCount, flags);
+    return new QD3D11Texture(this, format, pixelSize, depth, sampleCount, flags);
 }
 
 QRhiSampler *QRhiD3D11::createSampler(QRhiSampler::Filter magFilter, QRhiSampler::Filter minFilter,
@@ -1351,17 +1356,18 @@ QRhi::FrameOpResult QRhiD3D11::finish()
 void QRhiD3D11::enqueueSubresUpload(QD3D11Texture *texD, QD3D11CommandBuffer *cbD,
                                     int layer, int level, const QRhiTextureSubresourceUploadDescription &subresDesc)
 {
-    UINT subres = D3D11CalcSubresource(UINT(level), UINT(layer), texD->mipLevelCount);
-    const QPoint dp = subresDesc.destinationTopLeft();
+    const bool is3D = texD->m_flags.testFlag(QRhiTexture::ThreeDimensional);
+    UINT subres = D3D11CalcSubresource(UINT(level), is3D ? 0u : UINT(layer), texD->mipLevelCount);
     D3D11_BOX box;
-    box.front = 0;
+    box.front = is3D ? UINT(layer) : 0u;
     // back, right, bottom are exclusive
-    box.back = 1;
+    box.back = box.front + 1;
     QD3D11CommandBuffer::Command &cmd(cbD->commands.get());
     cmd.cmd = QD3D11CommandBuffer::Command::UpdateSubRes;
-    cmd.args.updateSubRes.dst = texD->tex;
+    cmd.args.updateSubRes.dst = texD->textureResource();
     cmd.args.updateSubRes.dstSubRes = subres;
 
+    const QPoint dp = subresDesc.destinationTopLeft();
     if (!subresDesc.image().isNull()) {
         QImage img = subresDesc.image();
         QSize size = img.size();
@@ -1488,6 +1494,7 @@ void QRhiD3D11::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
                 cmd.args.copySubRes.dstSubRes = 0;
                 cmd.args.copySubRes.dstX = 0;
                 cmd.args.copySubRes.dstY = 0;
+                cmd.args.copySubRes.dstZ = 0;
                 cmd.args.copySubRes.src = bufD->buffer;
                 cmd.args.copySubRes.srcSubRes = 0;
                 cmd.args.copySubRes.hasSrcBox = true;
@@ -1508,8 +1515,8 @@ void QRhiD3D11::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
         const QRhiResourceUpdateBatchPrivate::TextureOp &u(ud->textureOps[opIdx]);
         if (u.type == QRhiResourceUpdateBatchPrivate::TextureOp::Upload) {
             QD3D11Texture *texD = QRHI_RES(QD3D11Texture, u.dst);
-            for (int layer = 0; layer < QRhi::MAX_LAYERS; ++layer) {
-                for (int level = 0; level < QRhi::MAX_LEVELS; ++level) {
+            for (int layer = 0, maxLayer = u.subresDesc.count(); layer < maxLayer; ++layer) {
+                for (int level = 0; level < QRhi::MAX_MIP_LEVELS; ++level) {
                     for (const QRhiTextureSubresourceUploadDescription &subresDesc : qAsConst(u.subresDesc[layer][level]))
                         enqueueSubresUpload(texD, cbD, layer, level, subresDesc);
                 }
@@ -1518,8 +1525,10 @@ void QRhiD3D11::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
             Q_ASSERT(u.src && u.dst);
             QD3D11Texture *srcD = QRHI_RES(QD3D11Texture, u.src);
             QD3D11Texture *dstD = QRHI_RES(QD3D11Texture, u.dst);
-            UINT srcSubRes = D3D11CalcSubresource(UINT(u.desc.sourceLevel()), UINT(u.desc.sourceLayer()), srcD->mipLevelCount);
-            UINT dstSubRes = D3D11CalcSubresource(UINT(u.desc.destinationLevel()), UINT(u.desc.destinationLayer()), dstD->mipLevelCount);
+            const bool srcIs3D = srcD->m_flags.testFlag(QRhiTexture::ThreeDimensional);
+            const bool dstIs3D = dstD->m_flags.testFlag(QRhiTexture::ThreeDimensional);
+            UINT srcSubRes = D3D11CalcSubresource(UINT(u.desc.sourceLevel()), srcIs3D ? 0u : UINT(u.desc.sourceLayer()), srcD->mipLevelCount);
+            UINT dstSubRes = D3D11CalcSubresource(UINT(u.desc.destinationLevel()), dstIs3D ? 0u : UINT(u.desc.destinationLayer()), dstD->mipLevelCount);
             const QPoint dp = u.desc.destinationTopLeft();
             const QSize mipSize = q->sizeForMipLevel(u.desc.sourceLevel(), srcD->m_pixelSize);
             const QSize copySize = u.desc.pixelSize().isEmpty() ? mipSize : u.desc.pixelSize();
@@ -1527,18 +1536,19 @@ void QRhiD3D11::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
             D3D11_BOX srcBox;
             srcBox.left = UINT(sp.x());
             srcBox.top = UINT(sp.y());
-            srcBox.front = 0;
+            srcBox.front = srcIs3D ? UINT(u.desc.sourceLayer()) : 0u;
             // back, right, bottom are exclusive
             srcBox.right = srcBox.left + UINT(copySize.width());
             srcBox.bottom = srcBox.top + UINT(copySize.height());
-            srcBox.back = 1;
+            srcBox.back = srcBox.front + 1;
             QD3D11CommandBuffer::Command &cmd(cbD->commands.get());
             cmd.cmd = QD3D11CommandBuffer::Command::CopySubRes;
-            cmd.args.copySubRes.dst = dstD->tex;
+            cmd.args.copySubRes.dst = dstD->textureResource();
             cmd.args.copySubRes.dstSubRes = dstSubRes;
             cmd.args.copySubRes.dstX = UINT(dp.x());
             cmd.args.copySubRes.dstY = UINT(dp.y());
-            cmd.args.copySubRes.src = srcD->tex;
+            cmd.args.copySubRes.dstZ = dstIs3D ? UINT(u.desc.destinationLayer()) : 0u;
+            cmd.args.copySubRes.src = srcD->textureResource();
             cmd.args.copySubRes.srcSubRes = srcSubRes;
             cmd.args.copySubRes.hasSrcBox = true;
             cmd.args.copySubRes.srcBox = srcBox;
@@ -1560,7 +1570,13 @@ void QRhiD3D11::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
                     qWarning("Multisample texture cannot be read back");
                     continue;
                 }
-                src = texD->tex;
+                // No support for reading back 3D, not because it is not
+                // possible technically, but we need to draw the line somewhere.
+                if (texD->m_flags.testFlag(QRhiTexture::ThreeDimensional)) {
+                    qWarning("3D texture cannot be read back");
+                    continue;
+                }
+                src = texD->textureResource();
                 dxgiFormat = texD->dxgiFormat;
                 pixelSize = q->sizeForMipLevel(u.rb.level(), texD->m_pixelSize);
                 format = texD->m_format;
@@ -1616,6 +1632,7 @@ void QRhiD3D11::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
             cmd.args.copySubRes.dstSubRes = 0;
             cmd.args.copySubRes.dstX = 0;
             cmd.args.copySubRes.dstY = 0;
+            cmd.args.copySubRes.dstZ = 0;
             cmd.args.copySubRes.src = src;
             cmd.args.copySubRes.srcSubRes = subres;
             cmd.args.copySubRes.hasSrcBox = false;
@@ -1791,12 +1808,12 @@ void QRhiD3D11::endPass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resource
             Q_ASSERT(srcTexD || srcRbD);
             QD3D11CommandBuffer::Command &cmd(cbD->commands.get());
             cmd.cmd = QD3D11CommandBuffer::Command::ResolveSubRes;
-            cmd.args.resolveSubRes.dst = dstTexD->tex;
+            cmd.args.resolveSubRes.dst = dstTexD->textureResource();
             cmd.args.resolveSubRes.dstSubRes = D3D11CalcSubresource(UINT(colorAtt.resolveLevel()),
                                                                     UINT(colorAtt.resolveLayer()),
                                                                     dstTexD->mipLevelCount);
             if (srcTexD) {
-                cmd.args.resolveSubRes.src = srcTexD->tex;
+                cmd.args.resolveSubRes.src = srcTexD->textureResource();
                 if (srcTexD->dxgiFormat != dstTexD->dxgiFormat) {
                     qWarning("Resolve source (%d) and destination (%d) formats do not match",
                              int(srcTexD->dxgiFormat), int(dstTexD->dxgiFormat));
@@ -2582,7 +2599,7 @@ void QRhiD3D11::executeCommandBuffer(QD3D11CommandBuffer *cbD, QD3D11SwapChain *
             break;
         case QD3D11CommandBuffer::Command::CopySubRes:
             context->CopySubresourceRegion(cmd.args.copySubRes.dst, cmd.args.copySubRes.dstSubRes,
-                                           cmd.args.copySubRes.dstX, cmd.args.copySubRes.dstY, 0,
+                                           cmd.args.copySubRes.dstX, cmd.args.copySubRes.dstY, cmd.args.copySubRes.dstZ,
                                            cmd.args.copySubRes.src, cmd.args.copySubRes.srcSubRes,
                                            cmd.args.copySubRes.hasSrcBox ? &cmd.args.copySubRes.srcBox : nullptr);
             break;
@@ -2885,11 +2902,11 @@ QRhiTexture::Format QD3D11RenderBuffer::backingFormat() const
         return m_type == Color ? QRhiTexture::RGBA8 : QRhiTexture::UnknownFormat;
 }
 
-QD3D11Texture::QD3D11Texture(QRhiImplementation *rhi, Format format, const QSize &pixelSize,
+QD3D11Texture::QD3D11Texture(QRhiImplementation *rhi, Format format, const QSize &pixelSize, int depth,
                              int sampleCount, Flags flags)
-    : QRhiTexture(rhi, format, pixelSize, sampleCount, flags)
+    : QRhiTexture(rhi, format, pixelSize, depth, sampleCount, flags)
 {
-    for (int i = 0; i < QRhi::MAX_LEVELS; ++i)
+    for (int i = 0; i < QRhi::MAX_MIP_LEVELS; ++i)
         perLevelViews[i] = nullptr;
 }
 
@@ -2900,7 +2917,7 @@ QD3D11Texture::~QD3D11Texture()
 
 void QD3D11Texture::destroy()
 {
-    if (!tex)
+    if (!tex && !tex3D)
         return;
 
     if (srv) {
@@ -2908,17 +2925,22 @@ void QD3D11Texture::destroy()
         srv = nullptr;
     }
 
-    for (int i = 0; i < QRhi::MAX_LEVELS; ++i) {
+    for (int i = 0; i < QRhi::MAX_MIP_LEVELS; ++i) {
         if (perLevelViews[i]) {
             perLevelViews[i]->Release();
             perLevelViews[i] = nullptr;
         }
     }
 
-    if (owns)
-        tex->Release();
+    if (owns) {
+        if (tex)
+            tex->Release();
+        if (tex3D)
+            tex3D->Release();
+    }
 
     tex = nullptr;
+    tex3D = nullptr;
 
     QRHI_RES_RHI(QRhiD3D11);
     QRHI_PROF;
@@ -2962,12 +2984,13 @@ static inline DXGI_FORMAT toD3DDepthTextureDSVFormat(QRhiTexture::Format format)
 
 bool QD3D11Texture::prepareCreate(QSize *adjustedSize)
 {
-    if (tex)
+    if (tex || tex3D)
         destroy();
 
     const QSize size = m_pixelSize.isEmpty() ? QSize(1, 1) : m_pixelSize;
     const bool isDepth = isDepthTextureFormat(m_format);
     const bool isCube = m_flags.testFlag(CubeMap);
+    const bool is3D = m_flags.testFlag(ThreeDimensional);
     const bool hasMipMaps = m_flags.testFlag(MipMapped);
 
     QRHI_RES_RHI(QRhiD3D11);
@@ -2979,6 +3002,10 @@ bool QD3D11Texture::prepareCreate(QSize *adjustedSize)
             qWarning("Cubemap texture cannot be multisample");
             return false;
         }
+        if (is3D) {
+            qWarning("3D texture cannot be multisample");
+            return false;
+        }
         if (hasMipMaps) {
             qWarning("Multisample texture cannot have mipmaps");
             return false;
@@ -2986,6 +3013,15 @@ bool QD3D11Texture::prepareCreate(QSize *adjustedSize)
     }
     if (isDepth && hasMipMaps) {
         qWarning("Depth texture cannot have mipmaps");
+        return false;
+    }
+    if (isCube && is3D) {
+        qWarning("Texture cannot be both cube and 3D");
+        return false;
+    }
+    m_depth = qMax(1, m_depth);
+    if (m_depth > 1 && !is3D) {
+        qWarning("Texture cannot have a depth of %d when it is not 3D", m_depth);
         return false;
     }
 
@@ -3000,6 +3036,7 @@ bool QD3D11Texture::finishCreate()
     QRHI_RES_RHI(QRhiD3D11);
     const bool isDepth = isDepthTextureFormat(m_format);
     const bool isCube = m_flags.testFlag(CubeMap);
+    const bool is3D = m_flags.testFlag(ThreeDimensional);
 
     D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
     memset(&srvDesc, 0, sizeof(srvDesc));
@@ -3010,13 +3047,16 @@ bool QD3D11Texture::finishCreate()
     } else {
         if (sampleDesc.Count > 1) {
             srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DMS;
+        } else if (is3D) {
+            srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE3D;
+            srvDesc.Texture3D.MipLevels = mipLevelCount;
         } else {
             srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
             srvDesc.Texture2D.MipLevels = mipLevelCount;
         }
     }
 
-    HRESULT hr = rhiD->dev->CreateShaderResourceView(tex, &srvDesc, &srv);
+    HRESULT hr = rhiD->dev->CreateShaderResourceView(textureResource(), &srvDesc, &srv);
     if (FAILED(hr)) {
         qWarning("Failed to create srv: %s", qPrintable(comErrorMessage(hr)));
         return false;
@@ -3034,6 +3074,7 @@ bool QD3D11Texture::create()
 
     const bool isDepth = isDepthTextureFormat(m_format);
     const bool isCube = m_flags.testFlag(CubeMap);
+    const bool is3D = m_flags.testFlag(ThreeDimensional);
 
     uint bindFlags = D3D11_BIND_SHADER_RESOURCE;
     uint miscFlags = isCube ? D3D11_RESOURCE_MISC_TEXTURECUBE : 0;
@@ -3054,30 +3095,50 @@ bool QD3D11Texture::create()
     if (m_flags.testFlag(UsedWithLoadStore))
         bindFlags |= D3D11_BIND_UNORDERED_ACCESS;
 
-    D3D11_TEXTURE2D_DESC desc;
-    memset(&desc, 0, sizeof(desc));
-    desc.Width = UINT(size.width());
-    desc.Height = UINT(size.height());
-    desc.MipLevels = mipLevelCount;
-    desc.ArraySize = isCube ? 6 : 1;
-    desc.Format = dxgiFormat;
-    desc.SampleDesc = sampleDesc;
-    desc.Usage = D3D11_USAGE_DEFAULT;
-    desc.BindFlags = bindFlags;
-    desc.MiscFlags = miscFlags;
-
     QRHI_RES_RHI(QRhiD3D11);
-    HRESULT hr = rhiD->dev->CreateTexture2D(&desc, nullptr, &tex);
-    if (FAILED(hr)) {
-        qWarning("Failed to create texture: %s", qPrintable(comErrorMessage(hr)));
-        return false;
+    if (!is3D) {
+        D3D11_TEXTURE2D_DESC desc;
+        memset(&desc, 0, sizeof(desc));
+        desc.Width = UINT(size.width());
+        desc.Height = UINT(size.height());
+        desc.MipLevels = mipLevelCount;
+        desc.ArraySize = isCube ? 6 : 1;
+        desc.Format = dxgiFormat;
+        desc.SampleDesc = sampleDesc;
+        desc.Usage = D3D11_USAGE_DEFAULT;
+        desc.BindFlags = bindFlags;
+        desc.MiscFlags = miscFlags;
+
+        HRESULT hr = rhiD->dev->CreateTexture2D(&desc, nullptr, &tex);
+        if (FAILED(hr)) {
+            qWarning("Failed to create 2D texture: %s", qPrintable(comErrorMessage(hr)));
+            return false;
+        }
+        if (!m_objectName.isEmpty())
+            tex->SetPrivateData(WKPDID_D3DDebugObjectName, UINT(m_objectName.size()), m_objectName.constData());
+    } else {
+        D3D11_TEXTURE3D_DESC desc;
+        memset(&desc, 0, sizeof(desc));
+        desc.Width = UINT(size.width());
+        desc.Height = UINT(size.height());
+        desc.Depth = UINT(m_depth);
+        desc.MipLevels = mipLevelCount;
+        desc.Format = dxgiFormat;
+        desc.Usage = D3D11_USAGE_DEFAULT;
+        desc.BindFlags = bindFlags;
+        desc.MiscFlags = miscFlags;
+
+        HRESULT hr = rhiD->dev->CreateTexture3D(&desc, nullptr, &tex3D);
+        if (FAILED(hr)) {
+            qWarning("Failed to create 3D texture: %s", qPrintable(comErrorMessage(hr)));
+            return false;
+        }
+        if (!m_objectName.isEmpty())
+            tex3D->SetPrivateData(WKPDID_D3DDebugObjectName, UINT(m_objectName.size()), m_objectName.constData());
     }
 
     if (!finishCreate())
         return false;
-
-    if (!m_objectName.isEmpty())
-        tex->SetPrivateData(WKPDID_D3DDebugObjectName, UINT(m_objectName.size()), m_objectName.constData());
 
     QRHI_PROF;
     QRHI_PROF_F(newTexture(this, true, int(mipLevelCount), isCube ? 6 : 1, int(sampleDesc.Count)));
@@ -3089,14 +3150,16 @@ bool QD3D11Texture::create()
 
 bool QD3D11Texture::createFrom(QRhiTexture::NativeTexture src)
 {
-    ID3D11Texture2D *srcTex = reinterpret_cast<ID3D11Texture2D *>(src.object);
-    if (srcTex == nullptr)
+    if (!src.object)
         return false;
 
     if (!prepareCreate())
         return false;
 
-    tex = srcTex;
+    if (m_flags.testFlag(ThreeDimensional))
+        tex3D = reinterpret_cast<ID3D11Texture3D *>(src.object);
+    else
+        tex = reinterpret_cast<ID3D11Texture2D *>(src.object);
 
     if (!finishCreate())
         return false;
@@ -3112,7 +3175,7 @@ bool QD3D11Texture::createFrom(QRhiTexture::NativeTexture src)
 
 QRhiTexture::NativeTexture QD3D11Texture::nativeTexture()
 {
-    return {quint64(tex), 0};
+    return { quint64(textureResource()), 0 };
 }
 
 ID3D11UnorderedAccessView *QD3D11Texture::unorderedAccessViewForLevel(int level)
@@ -3121,6 +3184,7 @@ ID3D11UnorderedAccessView *QD3D11Texture::unorderedAccessViewForLevel(int level)
         return perLevelViews[level];
 
     const bool isCube = m_flags.testFlag(CubeMap);
+    const bool is3D = m_flags.testFlag(ThreeDimensional);
     D3D11_UNORDERED_ACCESS_VIEW_DESC desc;
     memset(&desc, 0, sizeof(desc));
     desc.Format = dxgiFormat;
@@ -3129,6 +3193,9 @@ ID3D11UnorderedAccessView *QD3D11Texture::unorderedAccessViewForLevel(int level)
         desc.Texture2DArray.MipSlice = UINT(level);
         desc.Texture2DArray.FirstArraySlice = 0;
         desc.Texture2DArray.ArraySize = 6;
+    } else if (is3D) {
+        desc.ViewDimension = D3D11_UAV_DIMENSION_TEXTURE3D;
+        desc.Texture3D.MipSlice = UINT(level);
     } else {
         desc.ViewDimension = D3D11_UAV_DIMENSION_TEXTURE2D;
         desc.Texture2D.MipSlice = UINT(level);
@@ -3136,7 +3203,7 @@ ID3D11UnorderedAccessView *QD3D11Texture::unorderedAccessViewForLevel(int level)
 
     QRHI_RES_RHI(QRhiD3D11);
     ID3D11UnorderedAccessView *uav = nullptr;
-    HRESULT hr = rhiD->dev->CreateUnorderedAccessView(tex, &desc, &uav);
+    HRESULT hr = rhiD->dev->CreateUnorderedAccessView(textureResource(), &desc, &uav);
     if (FAILED(hr)) {
         qWarning("Failed to create UAV: %s", qPrintable(comErrorMessage(hr)));
         return nullptr;
@@ -3404,6 +3471,11 @@ bool QD3D11TextureRenderTarget::create()
                 rtvDesc.Texture2DArray.MipSlice = UINT(colorAtt.level());
                 rtvDesc.Texture2DArray.FirstArraySlice = UINT(colorAtt.layer());
                 rtvDesc.Texture2DArray.ArraySize = 1;
+            } else if (texD->flags().testFlag(QRhiTexture::ThreeDimensional)) {
+                rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE3D;
+                rtvDesc.Texture3D.MipSlice = UINT(colorAtt.level());
+                rtvDesc.Texture3D.FirstWSlice = UINT(colorAtt.layer());
+                rtvDesc.Texture3D.WSize = 1;
             } else {
                 if (texD->sampleDesc.Count > 1) {
                     rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DMS;
@@ -3412,7 +3484,7 @@ bool QD3D11TextureRenderTarget::create()
                     rtvDesc.Texture2D.MipSlice = UINT(colorAtt.level());
                 }
             }
-            HRESULT hr = rhiD->dev->CreateRenderTargetView(texD->tex, &rtvDesc, &rtv[attIndex]);
+            HRESULT hr = rhiD->dev->CreateRenderTargetView(texD->textureResource(), &rtvDesc, &rtv[attIndex]);
             if (FAILED(hr)) {
                 qWarning("Failed to create rtv: %s", qPrintable(comErrorMessage(hr)));
                 return false;

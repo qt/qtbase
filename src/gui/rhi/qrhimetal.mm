@@ -182,7 +182,7 @@ struct QRhiMetalData
             struct {
                 id<MTLTexture> texture;
                 id<MTLBuffer> stagingBuffers[QMTL_FRAMES_IN_FLIGHT];
-                id<MTLTexture> views[QRhi::MAX_LEVELS];
+                id<MTLTexture> views[QRhi::MAX_MIP_LEVELS];
             } texture;
             struct {
                 id<MTLSamplerState> samplerState;
@@ -249,7 +249,7 @@ struct QMetalTextureData
     id<MTLTexture> tex = nil;
     id<MTLBuffer> stagingBuf[QMTL_FRAMES_IN_FLIGHT];
     bool owns = true;
-    id<MTLTexture> perLevelViews[QRhi::MAX_LEVELS];
+    id<MTLTexture> perLevelViews[QRhi::MAX_MIP_LEVELS];
 
     id<MTLTexture> viewForLevel(int level);
 };
@@ -281,7 +281,8 @@ struct QMetalRenderTargetData
     struct ColorAtt {
         bool needsDrawableForTex = false;
         id<MTLTexture> tex = nil;
-        int layer = 0;
+        int arrayLayer = 0;
+        int slice = 0;
         int level = 0;
         bool needsDrawableForResolveTex = false;
         id<MTLTexture> resolveTex = nil;
@@ -597,6 +598,10 @@ bool QRhiMetal::isFeatureSupported(QRhi::Feature feature) const
         return true;
     case QRhi::RenderBufferImport:
         return false;
+    case QRhi::ThreeDimensionalTextures:
+        return true;
+    case QRhi::RenderTo3DTextureSlice:
+        return true;
     default:
         Q_UNREACHABLE();
         return false;
@@ -687,10 +692,11 @@ QRhiRenderBuffer *QRhiMetal::createRenderBuffer(QRhiRenderBuffer::Type type, con
     return new QMetalRenderBuffer(this, type, pixelSize, sampleCount, flags, backingFormatHint);
 }
 
-QRhiTexture *QRhiMetal::createTexture(QRhiTexture::Format format, const QSize &pixelSize,
+QRhiTexture *QRhiMetal::createTexture(QRhiTexture::Format format,
+                                      const QSize &pixelSize, int depth,
                                       int sampleCount, QRhiTexture::Flags flags)
 {
-    return new QMetalTexture(this, format, pixelSize, sampleCount, flags);
+    return new QMetalTexture(this, format, pixelSize, depth, sampleCount, flags);
 }
 
 QRhiSampler *QRhiMetal::createSampler(QRhiSampler::Filter magFilter, QRhiSampler::Filter minFilter,
@@ -1613,6 +1619,7 @@ void QRhiMetal::enqueueSubresUpload(QMetalTexture *texD, void *mp, void *blitEnc
     const QPoint dp = subresDesc.destinationTopLeft();
     const QByteArray rawData = subresDesc.data();
     QImage img = subresDesc.image();
+    const bool is3D = texD->m_flags.testFlag(QRhiTexture::ThreeDimensional);
     id<MTLBlitCommandEncoder> blitEnc = (id<MTLBlitCommandEncoder>) blitEncPtr;
 
     if (!img.isNull()) {
@@ -1649,9 +1656,9 @@ void QRhiMetal::enqueueSubresUpload(QMetalTexture *texD, void *mp, void *blitEnc
                                  sourceBytesPerImage: 0
                                  sourceSize: MTLSizeMake(NSUInteger(w), NSUInteger(h), 1)
           toTexture: texD->d->tex
-          destinationSlice: NSUInteger(layer)
+          destinationSlice: NSUInteger(is3D ? 0 : layer)
           destinationLevel: NSUInteger(level)
-          destinationOrigin: MTLOriginMake(NSUInteger(dp.x()), NSUInteger(dp.y()), 0)
+          destinationOrigin: MTLOriginMake(NSUInteger(dp.x()), NSUInteger(dp.y()), NSUInteger(is3D ? layer : 0))
           options: MTLBlitOptionNone];
 
         *curOfs += aligned<qsizetype>(fullImageSizeBytes, QRhiMetalData::TEXBUF_ALIGN);
@@ -1687,9 +1694,9 @@ void QRhiMetal::enqueueSubresUpload(QMetalTexture *texD, void *mp, void *blitEnc
                                  sourceBytesPerImage: 0
                                  sourceSize: MTLSizeMake(NSUInteger(w), NSUInteger(h), 1)
           toTexture: texD->d->tex
-          destinationSlice: NSUInteger(layer)
+          destinationSlice: NSUInteger(is3D ? 0 : layer)
           destinationLevel: NSUInteger(level)
-          destinationOrigin: MTLOriginMake(NSUInteger(dx), NSUInteger(dy), 0)
+          destinationOrigin: MTLOriginMake(NSUInteger(dx), NSUInteger(dy), NSUInteger(is3D ? layer : 0))
           options: MTLBlitOptionNone];
 
         *curOfs += aligned<qsizetype>(rawData.size(), QRhiMetalData::TEXBUF_ALIGN);
@@ -1720,9 +1727,9 @@ void QRhiMetal::enqueueSubresUpload(QMetalTexture *texD, void *mp, void *blitEnc
                                  sourceBytesPerImage: 0
                                  sourceSize: MTLSizeMake(NSUInteger(w), NSUInteger(h), 1)
           toTexture: texD->d->tex
-          destinationSlice: NSUInteger(layer)
+          destinationSlice: NSUInteger(is3D ? 0 : layer)
           destinationLevel: NSUInteger(level)
-          destinationOrigin: MTLOriginMake(NSUInteger(dp.x()), NSUInteger(dp.y()), 0)
+          destinationOrigin: MTLOriginMake(NSUInteger(dp.x()), NSUInteger(dp.y()), NSUInteger(is3D ? layer : 0))
           options: MTLBlitOptionNone];
 
         *curOfs += aligned<qsizetype>(rawData.size(), QRhiMetalData::TEXBUF_ALIGN);
@@ -1783,8 +1790,8 @@ void QRhiMetal::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
         if (u.type == QRhiResourceUpdateBatchPrivate::TextureOp::Upload) {
             QMetalTexture *utexD = QRHI_RES(QMetalTexture, u.dst);
             qsizetype stagingSize = 0;
-            for (int layer = 0; layer < QRhi::MAX_LAYERS; ++layer) {
-                for (int level = 0; level < QRhi::MAX_LEVELS; ++level) {
+            for (int layer = 0, maxLayer = u.subresDesc.count(); layer < maxLayer; ++layer) {
+                for (int level = 0; level < QRhi::MAX_MIP_LEVELS; ++level) {
                     for (const QRhiTextureSubresourceUploadDescription &subresDesc : qAsConst(u.subresDesc[layer][level]))
                         stagingSize += subresUploadByteSize(subresDesc);
                 }
@@ -1798,8 +1805,8 @@ void QRhiMetal::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
 
             void *mp = [utexD->d->stagingBuf[currentFrameSlot] contents];
             qsizetype curOfs = 0;
-            for (int layer = 0; layer < QRhi::MAX_LAYERS; ++layer) {
-                for (int level = 0; level < QRhi::MAX_LEVELS; ++level) {
+            for (int layer = 0, maxLayer = u.subresDesc.count(); layer < maxLayer; ++layer) {
+                for (int level = 0; level < QRhi::MAX_MIP_LEVELS; ++level) {
                     for (const QRhiTextureSubresourceUploadDescription &subresDesc : qAsConst(u.subresDesc[layer][level]))
                         enqueueSubresUpload(utexD, mp, blitEnc, layer, level, subresDesc, &curOfs);
                 }
@@ -1818,6 +1825,8 @@ void QRhiMetal::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
             Q_ASSERT(u.src && u.dst);
             QMetalTexture *srcD = QRHI_RES(QMetalTexture, u.src);
             QMetalTexture *dstD = QRHI_RES(QMetalTexture, u.dst);
+            const bool srcIs3D = srcD->m_flags.testFlag(QRhiTexture::ThreeDimensional);
+            const bool dstIs3D = dstD->m_flags.testFlag(QRhiTexture::ThreeDimensional);
             const QPoint dp = u.desc.destinationTopLeft();
             const QSize mipSize = q->sizeForMipLevel(u.desc.sourceLevel(), srcD->m_pixelSize);
             const QSize copySize = u.desc.pixelSize().isEmpty() ? mipSize : u.desc.pixelSize();
@@ -1825,14 +1834,14 @@ void QRhiMetal::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
 
             ensureBlit();
             [blitEnc copyFromTexture: srcD->d->tex
-                                      sourceSlice: NSUInteger(u.desc.sourceLayer())
+                                      sourceSlice: NSUInteger(srcIs3D ? 0 : u.desc.sourceLayer())
                                       sourceLevel: NSUInteger(u.desc.sourceLevel())
-                                      sourceOrigin: MTLOriginMake(NSUInteger(sp.x()), NSUInteger(sp.y()), 0)
+                                      sourceOrigin: MTLOriginMake(NSUInteger(sp.x()), NSUInteger(sp.y()), NSUInteger(srcIs3D ? u.desc.sourceLayer() : 0))
                                       sourceSize: MTLSizeMake(NSUInteger(copySize.width()), NSUInteger(copySize.height()), 1)
                                       toTexture: dstD->d->tex
-                                      destinationSlice: NSUInteger(u.desc.destinationLayer())
+                                      destinationSlice: NSUInteger(dstIs3D ? 0 : u.desc.destinationLayer())
                                       destinationLevel: NSUInteger(u.desc.destinationLevel())
-                                      destinationOrigin: MTLOriginMake(NSUInteger(dp.x()), NSUInteger(dp.y()), 0)];
+                                      destinationOrigin: MTLOriginMake(NSUInteger(dp.x()), NSUInteger(dp.y()), NSUInteger(dstIs3D ? u.desc.destinationLayer() : 0))];
 
             srcD->lastActiveFrameSlot = dstD->lastActiveFrameSlot = currentFrameSlot;
         } else if (u.type == QRhiResourceUpdateBatchPrivate::TextureOp::Read) {
@@ -1848,6 +1857,10 @@ void QRhiMetal::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
             if (texD) {
                 if (texD->samples > 1) {
                     qWarning("Multisample texture cannot be read back");
+                    continue;
+                }
+                if (texD->m_flags.testFlag(QRhiTexture::ThreeDimensional)) {
+                    qWarning("3D texture readback is not implemented");
                     continue;
                 }
                 readback.pixelSize = q->sizeForMipLevel(u.rb.level(), texD->m_pixelSize);
@@ -2019,7 +2032,8 @@ void QRhiMetal::beginPass(QRhiCommandBuffer *cb,
 
     for (uint i = 0; i < uint(rtD->colorAttCount); ++i) {
         cbD->d->currentPassRpDesc.colorAttachments[i].texture = rtD->fb.colorAtt[i].tex;
-        cbD->d->currentPassRpDesc.colorAttachments[i].slice = NSUInteger(rtD->fb.colorAtt[i].layer);
+        cbD->d->currentPassRpDesc.colorAttachments[i].slice = NSUInteger(rtD->fb.colorAtt[i].arrayLayer);
+        cbD->d->currentPassRpDesc.colorAttachments[i].depthPlane = NSUInteger(rtD->fb.colorAtt[i].slice);
         cbD->d->currentPassRpDesc.colorAttachments[i].level = NSUInteger(rtD->fb.colorAtt[i].level);
         if (rtD->fb.colorAtt[i].resolveTex) {
             cbD->d->currentPassRpDesc.colorAttachments[i].storeAction = MTLStoreActionMultisampleResolve;
@@ -2129,7 +2143,7 @@ static void qrhimtl_releaseTexture(const QRhiMetalData::DeferredReleaseEntry &e)
     [e.texture.texture release];
     for (int i = 0; i < QMTL_FRAMES_IN_FLIGHT; ++i)
         [e.texture.stagingBuffers[i] release];
-    for (int i = 0; i < QRhi::MAX_LEVELS; ++i)
+    for (int i = 0; i < QRhi::MAX_MIP_LEVELS; ++i)
         [e.texture.views[i] release];
 }
 
@@ -2580,15 +2594,15 @@ QRhiTexture::Format QMetalRenderBuffer::backingFormat() const
         return m_type == Color ? QRhiTexture::RGBA8 : QRhiTexture::UnknownFormat;
 }
 
-QMetalTexture::QMetalTexture(QRhiImplementation *rhi, Format format, const QSize &pixelSize,
+QMetalTexture::QMetalTexture(QRhiImplementation *rhi, Format format, const QSize &pixelSize, int depth,
                              int sampleCount, Flags flags)
-    : QRhiTexture(rhi, format, pixelSize, sampleCount, flags),
+    : QRhiTexture(rhi, format, pixelSize, depth, sampleCount, flags),
       d(new QMetalTextureData(this))
 {
     for (int i = 0; i < QMTL_FRAMES_IN_FLIGHT; ++i)
         d->stagingBuf[i] = nil;
 
-    for (int i = 0; i < QRhi::MAX_LEVELS; ++i)
+    for (int i = 0; i < QRhi::MAX_MIP_LEVELS; ++i)
         d->perLevelViews[i] = nil;
 }
 
@@ -2615,7 +2629,7 @@ void QMetalTexture::destroy()
         d->stagingBuf[i] = nil;
     }
 
-    for (int i = 0; i < QRhi::MAX_LEVELS; ++i) {
+    for (int i = 0; i < QRhi::MAX_MIP_LEVELS; ++i) {
         e.texture.views[i] = d->perLevelViews[i];
         d->perLevelViews[i] = nil;
     }
@@ -2634,6 +2648,7 @@ bool QMetalTexture::prepareCreate(QSize *adjustedSize)
 
     const QSize size = m_pixelSize.isEmpty() ? QSize(1, 1) : m_pixelSize;
     const bool isCube = m_flags.testFlag(CubeMap);
+    const bool is3D = m_flags.testFlag(ThreeDimensional);
     const bool hasMipMaps = m_flags.testFlag(MipMapped);
 
     QRHI_RES_RHI(QRhiMetal);
@@ -2645,10 +2660,23 @@ bool QMetalTexture::prepareCreate(QSize *adjustedSize)
             qWarning("Cubemap texture cannot be multisample");
             return false;
         }
+        if (is3D) {
+            qWarning("3D texture cannot be multisample");
+            return false;
+        }
         if (hasMipMaps) {
             qWarning("Multisample texture cannot have mipmaps");
             return false;
         }
+    }
+    if (isCube && is3D) {
+        qWarning("Texture cannot be both cube and 3D");
+        return false;
+    }
+    m_depth = qMax(1, m_depth);
+    if (m_depth > 1 && !is3D) {
+        qWarning("Texture cannot have a depth of %d when it is not 3D", m_depth);
+        return false;
     }
 
     if (adjustedSize)
@@ -2666,13 +2694,17 @@ bool QMetalTexture::create()
     MTLTextureDescriptor *desc = [[MTLTextureDescriptor alloc] init];
 
     const bool isCube = m_flags.testFlag(CubeMap);
+    const bool is3D = m_flags.testFlag(ThreeDimensional);
     if (isCube)
         desc.textureType = MTLTextureTypeCube;
+    else if (is3D)
+        desc.textureType = MTLTextureType3D;
     else
         desc.textureType = samples > 1 ? MTLTextureType2DMultisample : MTLTextureType2D;
     desc.pixelFormat = d->format;
     desc.width = NSUInteger(size.width());
     desc.height = NSUInteger(size.height());
+    desc.depth = is3D ? m_depth : 1;
     desc.mipmapLevelCount = NSUInteger(mipLevelCount);
     if (samples > 1)
         desc.sampleCount = NSUInteger(samples);
@@ -3009,12 +3041,14 @@ bool QMetalTextureRenderTarget::create()
         QMetalRenderBuffer *rbD = QRHI_RES(QMetalRenderBuffer, it->renderBuffer());
         Q_ASSERT(texD || rbD);
         id<MTLTexture> dst = nil;
+        bool is3D = false;
         if (texD) {
             dst = texD->d->tex;
             if (attIndex == 0) {
                 d->pixelSize = rhiD->q->sizeForMipLevel(it->level(), texD->pixelSize());
                 d->sampleCount = texD->samples;
             }
+            is3D = texD->flags().testFlag(QRhiTexture::ThreeDimensional);
         } else if (rbD) {
             dst = rbD->d->tex;
             if (attIndex == 0) {
@@ -3024,7 +3058,8 @@ bool QMetalTextureRenderTarget::create()
         }
         QMetalRenderTargetData::ColorAtt colorAtt;
         colorAtt.tex = dst;
-        colorAtt.layer = it->layer();
+        colorAtt.arrayLayer = is3D ? 0 : it->layer();
+        colorAtt.slice = is3D ? it->layer() : 0;
         colorAtt.level = it->level();
         QMetalTexture *resTexD = QRHI_RES(QMetalTexture, it->resolveTexture());
         colorAtt.resolveTex = resTexD ? resTexD->d->tex : nil;

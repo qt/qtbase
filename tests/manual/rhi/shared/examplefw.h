@@ -538,6 +538,12 @@ int main(int argc, char **argv)
             qDebug("Enabling Vulkan validation layer (if available)");
             inst.setLayers({ "VK_LAYER_KHRONOS_validation" });
         }
+        const QVersionNumber supportedVersion = inst.supportedApiVersion();
+        qDebug() << "Supported Vulkan API version:" << supportedVersion;
+        if (supportedVersion >= QVersionNumber(1, 1)) {
+            qDebug("Requesting Vulkan API 1.1 on the VkInstance");
+            inst.setApiVersion(QVersionNumber(1, 1));
+        }
         inst.setExtensions(QRhiVulkanInitParams::preferredInstanceExtensions());
         if (!inst.create()) {
             qWarning("Failed to create Vulkan instance, switching to OpenGL");

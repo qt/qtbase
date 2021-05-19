@@ -1,0 +1,6 @@
+<!DOCTYPE RCC><RCC version="1.0">
+  <qresource>
+    <file>texture3d.vert.qsb</file>
+    <file>texture3d.frag.qsb</file>
+</qresource>
+</RCC>

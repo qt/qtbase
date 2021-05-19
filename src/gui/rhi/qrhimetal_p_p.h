@@ -102,7 +102,7 @@ struct QMetalTextureData;
 
 struct QMetalTexture : public QRhiTexture
 {
-    QMetalTexture(QRhiImplementation *rhi, Format format, const QSize &pixelSize,
+    QMetalTexture(QRhiImplementation *rhi, Format format, const QSize &pixelSize, int depth,
                   int sampleCount, Flags flags);
     ~QMetalTexture();
     void destroy() override;
@@ -360,6 +360,7 @@ public:
                                          QRhiTexture::Format backingFormatHint) override;
     QRhiTexture *createTexture(QRhiTexture::Format format,
                                const QSize &pixelSize,
+                               int depth,
                                int sampleCount,
                                QRhiTexture::Flags flags) override;
     QRhiSampler *createSampler(QRhiSampler::Filter magFilter,

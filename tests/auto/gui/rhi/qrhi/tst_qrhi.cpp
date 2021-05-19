@@ -135,6 +135,8 @@ private slots:
     void textureImportOpenGL();
     void renderbufferImportOpenGL_data();
     void renderbufferImportOpenGL();
+    void threeDimTexture_data();
+    void threeDimTexture();
 
 private:
     void setWindowType(QWindow *window, QRhi::Implementation impl);
@@ -169,6 +171,11 @@ void tst_QRhi::initTestCase()
 #endif
 
 #ifdef TST_VK
+    const QVersionNumber supportedVersion = vulkanInstance.supportedApiVersion();
+    if (supportedVersion >= QVersionNumber(1, 2))
+        vulkanInstance.setApiVersion(QVersionNumber(1, 2));
+    else if (supportedVersion >= QVersionNumber(1, 1))
+        vulkanInstance.setApiVersion(QVersionNumber(1, 2));
     vulkanInstance.setLayers({ "VK_LAYER_KHRONOS_validation" });
     vulkanInstance.setExtensions(QRhiVulkanInitParams::preferredInstanceExtensions());
     vulkanInstance.create();
@@ -358,7 +365,8 @@ void tst_QRhi::create()
             QRhi::ReadBackAnyTextureFormat,
             QRhi::PipelineCacheDataLoadSave,
             QRhi::ImageDataStride,
-            QRhi::RenderBufferImport
+            QRhi::RenderBufferImport,
+            QRhi::ThreeDimensionalTextures
         };
         for (size_t i = 0; i <sizeof(features) / sizeof(QRhi::Feature); ++i)
             rhi->isFeatureSupported(features[i]);
@@ -3815,6 +3823,101 @@ void tst_QRhi::renderbufferImportOpenGL()
     image.fill(Qt::red);
     QVERIFY(imageRGBAEquals(image, wrapperImage));
 #endif
+}
+
+void tst_QRhi::threeDimTexture_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::threeDimTexture()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing 3D textures");
+
+    if (!rhi->isFeatureSupported(QRhi::ThreeDimensionalTextures))
+        QSKIP("Skipping testing 3D textures because they are reported as unsupported");
+
+    const int WIDTH = 512;
+    const int HEIGHT = 256;
+    const int DEPTH = 128;
+
+    {
+        QScopedPointer<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGBA8, WIDTH, HEIGHT, DEPTH));
+        QVERIFY(texture->create());
+
+        QRhiResourceUpdateBatch *batch = rhi->nextResourceUpdateBatch();
+        QVERIFY(batch);
+
+        for (int i = 0; i < DEPTH; ++i) {
+            QImage img(WIDTH, HEIGHT, QImage::Format_RGBA8888);
+            img.fill(QColor::fromRgb(i * 2, 0, 0));
+            QRhiTextureUploadEntry sliceUpload(i, 0, QRhiTextureSubresourceUploadDescription(img));
+            batch->uploadTexture(texture.data(), sliceUpload);
+        }
+
+        QVERIFY(submitResourceUpdates(rhi.data(), batch));
+    }
+
+    // mipmaps
+    {
+        QScopedPointer<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGBA8, WIDTH, HEIGHT, DEPTH,
+                                                            1, QRhiTexture::MipMapped | QRhiTexture::UsedWithGenerateMips));
+        QVERIFY(texture->create());
+
+        QRhiResourceUpdateBatch *batch = rhi->nextResourceUpdateBatch();
+        QVERIFY(batch);
+
+        for (int i = 0; i < DEPTH; ++i) {
+            QImage img(WIDTH, HEIGHT, QImage::Format_RGBA8888);
+            img.fill(QColor::fromRgb(i * 2, 0, 0));
+            QRhiTextureUploadEntry sliceUpload(i, 0, QRhiTextureSubresourceUploadDescription(img));
+            batch->uploadTexture(texture.data(), sliceUpload);
+        }
+
+        batch->generateMips(texture.data());
+
+        QVERIFY(submitResourceUpdates(rhi.data(), batch));
+    }
+
+    // render target (one slice)
+    // NB with Vulkan we require Vulkan 1.1 for this to work.
+    {
+        const int SLICE = 23;
+        QScopedPointer<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGBA8, WIDTH, HEIGHT, DEPTH,
+                                                            1, QRhiTexture::RenderTarget));
+        QVERIFY(texture->create());
+
+        QRhiColorAttachment att(texture.data());
+        att.setLayer(SLICE);
+        QRhiTextureRenderTargetDescription rtDesc(att);
+        QScopedPointer<QRhiTextureRenderTarget> rt(rhi->newTextureRenderTarget(rtDesc));
+        QScopedPointer<QRhiRenderPassDescriptor> rp(rt->newCompatibleRenderPassDescriptor());
+        rt->setRenderPassDescriptor(rp.data());
+        QVERIFY(rt->create());
+
+        QRhiResourceUpdateBatch *batch = rhi->nextResourceUpdateBatch();
+        QVERIFY(batch);
+
+        for (int i = 0; i < DEPTH; ++i) {
+            QImage img(WIDTH, HEIGHT, QImage::Format_RGBA8888);
+            img.fill(QColor::fromRgb(i * 2, 0, 0));
+            QRhiTextureUploadEntry sliceUpload(i, 0, QRhiTextureSubresourceUploadDescription(img));
+            batch->uploadTexture(texture.data(), sliceUpload);
+        }
+
+        QRhiCommandBuffer *cb = nullptr;
+        QVERIFY(rhi->beginOffscreenFrame(&cb) == QRhi::FrameOpSuccess);
+        QVERIFY(cb);
+        cb->beginPass(rt.data(), Qt::blue, { 1.0f, 0 }, batch);
+        // slice 23 is now blue
+        cb->endPass();
+        rhi->endOffscreenFrame();
+    }
 }
 
 #include <tst_qrhi.moc>

@@ -387,7 +387,7 @@ void QRhiProfilerPrivate::newRenderBuffer(QRhiRenderBuffer *rb, bool transientBa
     const QSize sz = rb->pixelSize();
     // just make up something, ds is likely D24S8 while color is RGBA8 or similar
     const QRhiTexture::Format assumedFormat = type == QRhiRenderBuffer::DepthStencil ? QRhiTexture::D32F : QRhiTexture::RGBA8;
-    quint32 byteSize = rhiDWhenEnabled->approxByteSizeForTexture(assumedFormat, sz, 1, 1);
+    quint32 byteSize = rhiDWhenEnabled->approxByteSizeForTexture(assumedFormat, sz, 1, 1, 1);
     if (sampleCount > 1)
         byteSize *= uint(sampleCount);
 
@@ -418,7 +418,8 @@ void QRhiProfilerPrivate::newTexture(QRhiTexture *tex, bool owns, int mipCount, 
 
     const QRhiTexture::Format format = tex->format();
     const QSize sz = tex->pixelSize();
-    quint32 byteSize = rhiDWhenEnabled->approxByteSizeForTexture(format, sz, mipCount, layerCount);
+    const int depth = tex->depth();
+    quint32 byteSize = rhiDWhenEnabled->approxByteSizeForTexture(format, sz, depth, mipCount, layerCount);
     if (sampleCount > 1)
         byteSize *= uint(sampleCount);
 
@@ -470,7 +471,7 @@ void QRhiProfilerPrivate::resizeSwapChain(QRhiSwapChain *sc, int bufferCount, in
         return;
 
     const QSize sz = sc->currentPixelSize();
-    quint32 byteSize = rhiDWhenEnabled->approxByteSizeForTexture(QRhiTexture::BGRA8, sz, 1, 1);
+    quint32 byteSize = rhiDWhenEnabled->approxByteSizeForTexture(QRhiTexture::BGRA8, sz, 1, 1, 1);
     byteSize = byteSize * uint(bufferCount) + byteSize * uint(msaaBufferCount) * uint(sampleCount);
 
     startEntry(QRhiProfiler::ResizeSwapChain, ts.elapsed(), sc);

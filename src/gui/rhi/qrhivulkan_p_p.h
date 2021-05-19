@@ -128,7 +128,7 @@ struct QVkRenderBuffer : public QRhiRenderBuffer
 
 struct QVkTexture : public QRhiTexture
 {
-    QVkTexture(QRhiImplementation *rhi, Format format, const QSize &pixelSize,
+    QVkTexture(QRhiImplementation *rhi, Format format, const QSize &pixelSize, int depth,
                int sampleCount, Flags flags);
     ~QVkTexture();
     void destroy() override;
@@ -146,7 +146,7 @@ struct QVkTexture : public QRhiTexture
     QVkAlloc imageAlloc = nullptr;
     VkBuffer stagingBuffers[QVK_FRAMES_IN_FLIGHT];
     QVkAlloc stagingAllocations[QVK_FRAMES_IN_FLIGHT];
-    VkImageView perLevelImageViews[QRhi::MAX_LEVELS];
+    VkImageView perLevelImageViews[QRhi::MAX_MIP_LEVELS];
     bool owns = true;
     struct UsageState {
         // no tracking of subresource layouts (some operations can keep
@@ -676,6 +676,7 @@ public:
                                          QRhiTexture::Format backingFormatHint) override;
     QRhiTexture *createTexture(QRhiTexture::Format format,
                                const QSize &pixelSize,
+                               int depth,
                                int sampleCount,
                                QRhiTexture::Flags flags) override;
     QRhiSampler *createSampler(QRhiSampler::Filter magFilter,
@@ -846,7 +847,6 @@ public:
     int gfxQueueFamilyIdx = -1;
     int gfxQueueIdx = 0;
     VkQueue gfxQueue = VK_NULL_HANDLE;
-    bool hasCompute = false;
     quint32 timestampValidBits = 0;
     bool importedAllocator = false;
     QVkAllocator allocator = nullptr;
@@ -857,12 +857,9 @@ public:
     VkPhysicalDeviceProperties physDevProperties;
     VkDeviceSize ubufAlign;
     VkDeviceSize texbufAlign;
-    bool hasWideLines = false;
     bool deviceLost = false;
     bool releaseCachedResourcesCalledBeforeFrameStart = false;
 
-    bool debugMarkersAvailable = false;
-    bool vertexAttribDivisorAvailable = false;
     PFN_vkCmdDebugMarkerBeginEXT vkCmdDebugMarkerBegin = nullptr;
     PFN_vkCmdDebugMarkerEndEXT vkCmdDebugMarkerEnd = nullptr;
     PFN_vkCmdDebugMarkerInsertEXT vkCmdDebugMarkerInsert = nullptr;
@@ -876,6 +873,14 @@ public:
     PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR vkGetPhysicalDeviceSurfaceCapabilitiesKHR = nullptr;
     PFN_vkGetPhysicalDeviceSurfaceFormatsKHR vkGetPhysicalDeviceSurfaceFormatsKHR;
     PFN_vkGetPhysicalDeviceSurfacePresentModesKHR vkGetPhysicalDeviceSurfacePresentModesKHR;
+
+    struct {
+        bool compute = false;
+        bool wideLines = false;
+        bool debugMarkers = false;
+        bool vertexAttribDivisor = false;
+        bool texture3DSliceAs2D = false;
+    } caps;
 
     VkPipelineCache pipelineCache = VK_NULL_HANDLE;
     struct DescriptorPoolData {
@@ -978,7 +983,7 @@ public:
                 QVkAlloc allocation;
                 VkBuffer stagingBuffers[QVK_FRAMES_IN_FLIGHT];
                 QVkAlloc stagingAllocations[QVK_FRAMES_IN_FLIGHT];
-                VkImageView extraImageViews[QRhi::MAX_LEVELS];
+                VkImageView extraImageViews[QRhi::MAX_MIP_LEVELS];
             } texture;
             struct {
                 VkSampler sampler;

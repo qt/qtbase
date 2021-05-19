@@ -651,6 +651,15 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     may want to associated a renderbuffer object with an EGLImage object) it is
     important to allow wrapping an existing OpenGL renderbuffer object with a
     QRhiRenderBuffer.
+
+    \value ThreeDimensionalTextures Indicates that 3D textures are supported.
+    In practice this feature will be unsupported with OpenGL and OpenGL ES
+    versions lower than 3.0.
+
+    \value RenderTo3DTextureSlice Indicates that rendering to a slice in a 3D
+    texture is supported. This can be unsupported with Vulkan 1.0 due to
+    relying on VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT which is a Vulkan 1.1
+    feature.
  */
 
 /*!
@@ -1477,9 +1486,10 @@ QDebug operator<<(QDebug dbg, const QRhiShaderStage &s)
     support for multisample textures, but does support multisample
     renderbuffers).
 
-    When targeting a non-multisample texture, the layer() and level()
-    indicate the targeted layer (face index \c{0-5} for cubemaps) and mip
-    level.
+    When targeting a non-multisample texture, the layer() and level() indicate
+    the targeted layer (face index \c{0-5} for cubemaps) and mip level. For 3D
+    textures layer() specifies the slice (one 2D image within the 3D texture)
+    to render to.
 
     When texture() or renderBuffer() is multisample, resolveTexture() can be
     set optionally. When set, samples are resolved automatically into that
@@ -1815,6 +1825,13 @@ QRhiTextureUploadDescription::QRhiTextureUploadDescription(std::initializer_list
     \note The source and destination rectangles defined by pixelSize(),
     sourceTopLeft(), and destinationTopLeft() must fit the source and
     destination textures, respectively. The behavior is undefined otherwise.
+
+    With cubemap and 3D textures one face or slice can be copied at a time. The
+    face or slice is specified by the source and destination layer indices.
+    With mipmapped textures one mip level can be copied at a time. The source
+    and destination layer and mip level indices can differ, but the size and
+    position must be carefully controlled to avoid out of bounds copies, in
+    which case the behavior is undefined.
  */
 
 /*!
@@ -2405,6 +2422,15 @@ bool QRhiRenderBuffer::createFrom(NativeRenderBuffer src)
 
      \value ExternalOES The texture should use the GL_TEXTURE_EXTERNAL_OES
      target with OpenGL. This flag is ignored with other graphics APIs.
+
+     \value ThreeDimensional The texture is a 3D texture. Such textures should
+     be created with the QRhi::newTexture() overload taking a depth in addition
+     to width and height. A 3D texture can have mipmaps but cannot be
+     multisample. Reading back the contents of a 3D texture is not currently
+     supported. When rendering into a 3D texture, the layer specified in the
+     render target's color attachment refers to a slice in range [0..depth-1].
+     The underlying graphics API may not support 3D textures at run time.
+     Support is indicated by the QRhi::ThreeDimensionalTextures feature.
  */
 
 /*!
@@ -2495,10 +2521,10 @@ bool QRhiRenderBuffer::createFrom(NativeRenderBuffer src)
 /*!
     \internal
  */
-QRhiTexture::QRhiTexture(QRhiImplementation *rhi, Format format_, const QSize &pixelSize_,
+QRhiTexture::QRhiTexture(QRhiImplementation *rhi, Format format_, const QSize &pixelSize_, int depth_,
                          int sampleCount_, Flags flags_)
     : QRhiResource(rhi),
-      m_format(format_), m_pixelSize(pixelSize_), m_sampleCount(sampleCount_), m_flags(flags_)
+      m_format(format_), m_pixelSize(pixelSize_), m_depth(depth_), m_sampleCount(sampleCount_), m_flags(flags_)
 {
 }
 
@@ -4625,7 +4651,7 @@ void QRhiImplementation::textureFormatInfo(QRhiTexture::Format format, const QSi
 }
 
 // Approximate because it excludes subresource alignment or multisampling.
-quint32 QRhiImplementation::approxByteSizeForTexture(QRhiTexture::Format format, const QSize &baseSize,
+quint32 QRhiImplementation::approxByteSizeForTexture(QRhiTexture::Format format, const QSize &baseSize, int depth,
                                                      int mipCount, int layerCount)
 {
     quint32 approxSize = 0;
@@ -4636,7 +4662,8 @@ quint32 QRhiImplementation::approxByteSizeForTexture(QRhiTexture::Format format,
         textureFormatInfo(format, size, nullptr, &byteSize, nullptr);
         approxSize += byteSize;
     }
-    approxSize *= uint(layerCount);
+    approxSize *= depth; // 3D texture depth or 1 otherwise
+    approxSize *= uint(layerCount); // 6 for cubemaps or 1 otherwise
     return approxSize;
 }
 
@@ -5294,6 +5321,8 @@ void QRhiResourceUpdateBatch::copyTexture(QRhiTexture *dst, QRhiTexture *src, co
    \note The texture must be created with QRhiTexture::UsedAsTransferSource.
 
    \note Multisample textures cannot be read back.
+
+   \note 3D textures cannot be read back.
 
    \note The readback returns raw byte data, in order to allow the applications
    to interpret it in any way they see fit. Be aware of the blending settings
@@ -6377,7 +6406,30 @@ QRhiTexture *QRhi::newTexture(QRhiTexture::Format format,
                               int sampleCount,
                               QRhiTexture::Flags flags)
 {
-    return d->createTexture(format, pixelSize, sampleCount, flags);
+    return d->createTexture(format, pixelSize, 1, sampleCount, flags);
+}
+
+/*!
+    \return a new texture with the specified \a format, \a width, \a height, \a
+    depth, \a sampleCount, and \a flags.
+
+    This overload is suitable for 3D textures because it allows specifying \a
+    depth. A 3D texture must have QRhiTexture::ThreeDimensional set in \a
+    flags, but using this overload that can be omitted because the flag is set
+    implicitly whenever \a depth is greater than 0. For 2D and cube textures \a
+    depth should be set to 0.
+
+    \overload
+ */
+QRhiTexture *QRhi::newTexture(QRhiTexture::Format format,
+                              int width, int height, int depth,
+                              int sampleCount,
+                              QRhiTexture::Flags flags)
+{
+    if (depth > 0)
+        flags |= QRhiTexture::ThreeDimensional;
+
+    return d->createTexture(format, QSize(width, height), depth, sampleCount, flags);
 }
 
 /*!

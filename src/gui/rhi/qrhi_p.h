@@ -753,7 +753,8 @@ public:
         UsedWithGenerateMips = 1 << 6,
         UsedWithLoadStore = 1 << 7,
         UsedAsCompressedAtlas = 1 << 8,
-        ExternalOES = 1 << 9
+        ExternalOES = 1 << 9,
+        ThreeDimensional = 1 << 10
     };
     Q_DECLARE_FLAGS(Flags, Flag)
 
@@ -819,6 +820,9 @@ public:
     QSize pixelSize() const { return m_pixelSize; }
     void setPixelSize(const QSize &sz) { m_pixelSize = sz; }
 
+    int depth() const { return m_depth; }
+    void setDepth(int depth) { m_depth = depth; }
+
     Flags flags() const { return m_flags; }
     void setFlags(Flags f) { m_flags = f; }
 
@@ -831,10 +835,11 @@ public:
     virtual void setNativeLayout(int layout);
 
 protected:
-    QRhiTexture(QRhiImplementation *rhi, Format format_, const QSize &pixelSize_,
+    QRhiTexture(QRhiImplementation *rhi, Format format_, const QSize &pixelSize_, int depth_,
                 int sampleCount_, Flags flags_);
     Format m_format;
     QSize m_pixelSize;
+    int m_depth;
     int m_sampleCount;
     Flags m_flags;
 };
@@ -1540,7 +1545,9 @@ public:
         ReadBackAnyTextureFormat,
         PipelineCacheDataLoadSave,
         ImageDataStride,
-        RenderBufferImport
+        RenderBufferImport,
+        ThreeDimensionalTextures,
+        RenderTo3DTextureSlice
     };
 
     enum BeginFrameFlag {
@@ -1600,6 +1607,11 @@ public:
                             int sampleCount = 1,
                             QRhiTexture::Flags flags = {});
 
+    QRhiTexture *newTexture(QRhiTexture::Format format,
+                            int width, int height, int depth,
+                            int sampleCount = 1,
+                            QRhiTexture::Flags flags = {});
+
     QRhiSampler *newSampler(QRhiSampler::Filter magFilter,
                             QRhiSampler::Filter minFilter,
                             QRhiSampler::Filter mipmapMode,
@@ -1646,8 +1658,7 @@ public:
 
     QRhiProfiler *profiler();
 
-    static const int MAX_LAYERS = 6; // cubemaps only
-    static const int MAX_LEVELS = 16; // a width and/or height of 65536 should be enough for everyone
+    static const int MAX_MIP_LEVELS = 16; // a width and/or height of 65536 should be enough for everyone
 
     void releaseCachedResources();
 
