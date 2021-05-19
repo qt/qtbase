@@ -625,8 +625,8 @@ bool QCocoaScreen::isOnline() const
     // returning -1 to signal that the displayId is invalid. Some functions
     // will also assert or even crash in this case, so it's important that
     // we double check if a display is online before calling other functions.
-    auto isOnline = CGDisplayIsOnline(m_displayId);
-    static const uint32_t kCGDisplayIsDisconnected = int32_t(-1);
+    int isOnline = CGDisplayIsOnline(m_displayId);
+    static const int kCGDisplayIsDisconnected = 0xffffffff;
     return isOnline != kCGDisplayIsDisconnected && isOnline;
 }
 
