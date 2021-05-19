@@ -4669,8 +4669,7 @@ static inline uint msecsFromDecomposed(int hour, int minute, int sec, int msec =
 
 QDate QDate::currentDate()
 {
-    SYSTEMTIME st;
-    memset(&st, 0, sizeof(SYSTEMTIME));
+    SYSTEMTIME st = {};
     GetLocalTime(&st);
     return QDate(st.wYear, st.wMonth, st.wDay);
 }
@@ -4678,8 +4677,7 @@ QDate QDate::currentDate()
 QTime QTime::currentTime()
 {
     QTime ct;
-    SYSTEMTIME st;
-    memset(&st, 0, sizeof(SYSTEMTIME));
+    SYSTEMTIME st = {};
     GetLocalTime(&st);
     ct.setHMS(st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
     return ct;
@@ -4688,8 +4686,7 @@ QTime QTime::currentTime()
 QDateTime QDateTime::currentDateTime()
 {
     QTime t;
-    SYSTEMTIME st;
-    memset(&st, 0, sizeof(SYSTEMTIME));
+    SYSTEMTIME st = {};
     GetLocalTime(&st);
     QDate d(st.wYear, st.wMonth, st.wDay);
     t.mds = msecsFromDecomposed(st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
@@ -4699,8 +4696,7 @@ QDateTime QDateTime::currentDateTime()
 QDateTime QDateTime::currentDateTimeUtc()
 {
     QTime t;
-    SYSTEMTIME st;
-    memset(&st, 0, sizeof(SYSTEMTIME));
+    SYSTEMTIME st = {};
     GetSystemTime(&st);
     QDate d(st.wYear, st.wMonth, st.wDay);
     t.mds = msecsFromDecomposed(st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
@@ -4709,8 +4705,7 @@ QDateTime QDateTime::currentDateTimeUtc()
 
 qint64 QDateTime::currentMSecsSinceEpoch() noexcept
 {
-    SYSTEMTIME st;
-    memset(&st, 0, sizeof(SYSTEMTIME));
+    SYSTEMTIME st = {};
     GetSystemTime(&st);
     const qint64 daysAfterEpoch = QDate(1970, 1, 1).daysTo(QDate(st.wYear, st.wMonth, st.wDay));
 
@@ -4720,8 +4715,7 @@ qint64 QDateTime::currentMSecsSinceEpoch() noexcept
 
 qint64 QDateTime::currentSecsSinceEpoch() noexcept
 {
-    SYSTEMTIME st;
-    memset(&st, 0, sizeof(SYSTEMTIME));
+    SYSTEMTIME st = {};
     GetSystemTime(&st);
     const qint64 daysAfterEpoch = QDate(1970, 1, 1).daysTo(QDate(st.wYear, st.wMonth, st.wDay));
 
