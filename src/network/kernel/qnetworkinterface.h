@@ -176,6 +176,7 @@ Q_DECLARE_SHARED(QNetworkInterface)
 Q_DECLARE_OPERATORS_FOR_FLAGS(QNetworkInterface::InterfaceFlags)
 
 #ifndef QT_NO_DEBUG_STREAM
+Q_NETWORK_EXPORT QDebug operator<<(QDebug debug, const QNetworkAddressEntry &entry);
 Q_NETWORK_EXPORT QDebug operator<<(QDebug debug, const QNetworkInterface &networkInterface);
 #endif
 

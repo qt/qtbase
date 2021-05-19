@@ -931,17 +931,32 @@ static inline QDebug flagsDebug(QDebug debug, QNetworkInterface::InterfaceFlags 
     return debug;
 }
 
-static inline QDebug operator<<(QDebug debug, const QNetworkAddressEntry &entry)
+/*!
+   \since 6.2
+
+    Writes the QNetworkAddressEntry \a entry to the stream and
+    returns a reference to the stream.
+
+    \relates QNetworkAddressEntry
+ */
+QDebug operator<<(QDebug debug, const QNetworkAddressEntry &entry)
 {
-    debug << "(address = " << entry.ip();
+    QDebugStateSaver saver(debug);
+    debug.resetFormat().nospace();
+    debug << "address = " << entry.ip();
     if (!entry.netmask().isNull())
         debug << ", netmask = " << entry.netmask();
     if (!entry.broadcast().isNull())
         debug << ", broadcast = " << entry.broadcast();
-    debug << ')';
     return debug;
 }
 
+/*!
+    Writes the QNetworkInterface \a networkInterface to the stream and
+    returns a reference to the stream.
+
+    \relates QNetworkInterface
+ */
 QDebug operator<<(QDebug debug, const QNetworkInterface &networkInterface)
 {
     QDebugStateSaver saver(debug);
