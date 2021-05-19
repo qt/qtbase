@@ -112,7 +112,7 @@ public:
     bool addResult(T &&result, int index = -1) { }
 #endif
 private:
-    mutable QFutureInterface<T> d = QFutureInterface<T>();
+    mutable QFutureInterface<T> d;
 };
 
 template<typename T>
