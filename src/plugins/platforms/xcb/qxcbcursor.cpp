@@ -668,7 +668,8 @@ void QXcbCursor::setPos(const QPoint &pos)
 {
     QXcbVirtualDesktop *virtualDesktop = nullptr;
     queryPointer(connection(), &virtualDesktop, nullptr);
-    xcb_warp_pointer(xcb_connection(), XCB_NONE, virtualDesktop->root(), 0, 0, 0, 0, pos.x(), pos.y());
+    if (virtualDesktop)
+        xcb_warp_pointer(xcb_connection(), XCB_NONE, virtualDesktop->root(), 0, 0, 0, 0, pos.x(), pos.y());
     xcb_flush(xcb_connection());
 }
 
