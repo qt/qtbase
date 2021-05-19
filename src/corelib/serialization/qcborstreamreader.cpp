@@ -1583,9 +1583,9 @@ QCborStreamReaderPrivate::readStringChunk_byte(ReadStringChunk params, qsizetype
             handleError(CborErrorDataTooLarge);
             return -1;
         }
-        try {
+        QT_TRY {
             params.array->resize(newSize);
-        } catch (const std::bad_alloc &) {
+        } QT_CATCH (const std::bad_alloc &) {
             // the distinction between DataTooLarge and OOM is mostly for
             // compatibility with Qt 5; in Qt 6, we could consider everything
             // to be OOM.
@@ -1626,9 +1626,9 @@ QCborStreamReaderPrivate::readStringChunk_unicode(ReadStringChunk params, qsizet
     // conversion uses the same number of words or less.
     QChar *begin = nullptr;
     if (params.isString()) {
-        try {
+        QT_TRY {
             params.string->resize(utf8len);
-        } catch (const std::bad_alloc &) {
+        } QT_CATCH (const std::bad_alloc &) {
             if (utf8len > MaxStringSize)
                 handleError(CborErrorDataTooLarge);
             else
