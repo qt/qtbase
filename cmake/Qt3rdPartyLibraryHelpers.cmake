@@ -1,52 +1,96 @@
-# Wrapper function to create a regular cmake target and forward all the
-# arguments collected by the conversion script.
-function(qt_internal_add_cmake_library target)
-    # Process arguments:
-    qt_parse_all_arguments(arg "qt_add_cmake_library"
-        "SHARED;MODULE;STATIC;INTERFACE"
-        "OUTPUT_DIRECTORY;ARCHIVE_INSTALL_DIRECTORY;INSTALL_DIRECTORY"
-        "${__default_private_args};${__default_public_args}"
+macro(qt_internal_get_add_library_option_args option_args)
+    set(${option_args}
+        SHARED
+        STATIC
+        MODULE
+        INTERFACE
+        )
+endmacro()
+
+# Helper to create a library using the public _qt_internal_add_library function.
+#
+# The difference to _qt_internal_add_library is that MODULE is replaced with STATIC in a static
+# Qt build.
+# Everything else is just prepation for option validating.
+function(qt_internal_add_common_qt_library_helper target)
+    qt_internal_get_add_library_option_args(option_args)
+    qt_parse_all_arguments(arg "qt_internal_add_common_qt_library_helper"
+        "${option_args}"
+        ""
+        ""
         ${ARGN}
     )
 
-    set(is_static_lib 0)
-
-    ### Define Targets:
-    if(${arg_INTERFACE})
-        add_library("${target}" INTERFACE)
-    elseif(${arg_STATIC} OR (${arg_MODULE} AND NOT BUILD_SHARED_LIBS))
-        add_library("${target}" STATIC)
-        set(is_static_lib 1)
-    elseif(${arg_SHARED})
-        add_library("${target}" SHARED)
-        _qt_internal_apply_win_prefix_and_suffix("${target}")
-    elseif(${arg_MODULE})
-        add_library("${target}" MODULE)
-        set_property(TARGET ${name} PROPERTY C_VISIBILITY_PRESET default)
-        set_property(TARGET ${name} PROPERTY CXX_VISIBILITY_PRESET default)
-        set_property(TARGET ${name} PROPERTY OBJC_VISIBILITY_PRESET default)
-        set_property(TARGET ${name} PROPERTY OBJCXX_VISIBILITY_PRESET default)
-
-        if(APPLE)
-            # CMake defaults to using .so extensions for loadable modules, aka plugins,
-            # but Qt plugins are actually suffixed with .dylib.
-            set_property(TARGET "${target}" PROPERTY SUFFIX ".dylib")
-        endif()
-        _qt_internal_apply_win_prefix_and_suffix("${target}")
+    if(arg_SHARED)
+        set(arg_SHARED SHARED)
     else()
-        add_library("${target}")
-        if(NOT BUILD_SHARED_LIBS)
-            set(is_static_lib 1)
-        endif()
+        set(arg_SHARED "")
     endif()
+
+    if(arg_MODULE)
+        set(arg_MODULE MODULE)
+    else()
+        set(arg_MODULE "")
+    endif()
+
+    if(arg_STATIC)
+        set(arg_STATIC STATIC)
+    else()
+        set(arg_STATIC "")
+    endif()
+
+    if(arg_INTERFACE)
+        set(arg_INTERFACE INTERFACE)
+    else()
+        set(arg_INTERFACE "")
+    endif()
+
+    if(arg_MODULE AND NOT BUILD_SHARED_LIBS)
+        set(arg_MODULE STATIC)
+    endif()
+
+    _qt_internal_add_library(${target} ${arg_STATIC} ${arg_SHARED} ${arg_MODULE} ${arg_INTERFACE})
+endfunction()
+
+# Wrapper function to create a regular cmake target and forward all the
+# arguments collected by the conversion script.
+function(qt_internal_add_cmake_library target)
+    qt_internal_get_add_library_option_args(option_args)
+    set(single_args
+        OUTPUT_DIRECTORY
+        ARCHIVE_INSTALL_DIRECTORY
+        INSTALL_DIRECTORY
+    )
+    set(multi_args
+        ${__default_private_args}
+        ${__default_public_args}
+    )
+
+    qt_parse_all_arguments(arg "qt_add_cmake_library"
+        "${option_args}"
+        "${single_args}"
+        "${multi_args}"
+        ${ARGN}
+    )
+
+    qt_remove_args(library_helper_args
+        ARGS_TO_REMOVE
+            ${single_args}
+            ${multi_args}
+        ALL_ARGS
+            ${option_args}
+            ${single_args}
+            ${multi_args}
+        ARGS
+            ${ARGN}
+    )
+
+    qt_internal_add_common_qt_library_helper(${target} ${library_helper_args})
 
     if (NOT arg_ARCHIVE_INSTALL_DIRECTORY AND arg_INSTALL_DIRECTORY)
         set(arg_ARCHIVE_INSTALL_DIRECTORY "${arg_INSTALL_DIRECTORY}")
     endif()
 
-    if (ANDROID)
-        qt_android_apply_arch_suffix("${target}")
-    endif()
     qt_skip_warnings_are_errors_when_repo_unclean("${target}")
 
     if (arg_INSTALL_DIRECTORY)
@@ -91,42 +135,43 @@ endfunction()
 # compile 3rdparty libraries as part of the build.
 #
 function(qt_internal_add_3rdparty_library target)
-    # Process arguments:
-    qt_parse_all_arguments(arg "qt_add_3rdparty_library"
-        "SHARED;MODULE;STATIC;INTERFACE;EXCEPTIONS;INSTALL;SKIP_AUTOMOC"
-        "OUTPUT_DIRECTORY;QMAKE_LIB_NAME"
-        "${__default_private_args};${__default_public_args}"
+    qt_internal_get_add_library_option_args(library_option_args)
+    set(option_args
+        EXCEPTIONS
+        INSTALL
+        SKIP_AUTOMOC
+        )
+    set(single_args
+        OUTPUT_DIRECTORY
+        QMAKE_LIB_NAME
+    )
+    set(multi_args
+        ${__default_private_args}
+        ${__default_public_args}
+    )
+
+    qt_parse_all_arguments(arg "qt_internal_add_3rdparty_library"
+        "${library_option_args};${option_args}"
+        "${single_args}"
+        "${multi_args}"
         ${ARGN}
     )
 
-    set(is_static_lib 0)
+    qt_remove_args(library_helper_args
+        ARGS_TO_REMOVE
+            ${option_args}
+            ${single_args}
+            ${multi_args}
+        ALL_ARGS
+            ${library_option_args}
+            ${option_args}
+            ${single_args}
+            ${multi_args}
+        ARGS
+            ${ARGN}
+    )
 
-    ### Define Targets:
-    if(${arg_INTERFACE})
-        add_library("${target}" INTERFACE)
-    elseif(${arg_STATIC} OR (${arg_MODULE} AND NOT BUILD_SHARED_LIBS))
-        add_library("${target}" STATIC)
-        set(is_static_lib 1)
-    elseif(${arg_SHARED})
-        add_library("${target}" SHARED)
-    elseif(${arg_MODULE})
-        add_library("${target}" MODULE)
-        set_property(TARGET ${name} PROPERTY C_VISIBILITY_PRESET default)
-        set_property(TARGET ${name} PROPERTY CXX_VISIBILITY_PRESET default)
-        set_property(TARGET ${name} PROPERTY OBJC_VISIBILITY_PRESET default)
-        set_property(TARGET ${name} PROPERTY OBJCXX_VISIBILITY_PRESET default)
-
-        if(APPLE)
-            # CMake defaults to using .so extensions for loadable modules, aka plugins,
-            # but Qt plugins are actually suffixed with .dylib.
-            set_property(TARGET "${target}" PROPERTY SUFFIX ".dylib")
-        endif()
-    else()
-        add_library("${target}")
-        if(NOT BUILD_SHARED_LIBS)
-            set(is_static_lib 1)
-        endif()
-    endif()
+    qt_internal_add_common_qt_library_helper(${target} ${library_helper_args})
 
     if(NOT arg_INTERFACE)
         qt_set_common_target_properties(${target})
@@ -142,10 +187,6 @@ function(qt_internal_add_3rdparty_library target)
     qt_internal_add_qt_repo_known_module(${target})
     qt_internal_add_target_aliases(${target})
     _qt_internal_apply_strict_cpp(${target})
-
-    if (ANDROID)
-        qt_android_apply_arch_suffix("${target}")
-    endif()
 
     qt_skip_warnings_are_errors_when_repo_unclean("${target}")
 

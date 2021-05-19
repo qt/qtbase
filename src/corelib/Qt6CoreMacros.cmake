@@ -1731,31 +1731,33 @@ function(qt6_add_plugin target)
         )
     endif()
 
-    # If no explicit STATIC/SHARED option is set, default to the flavor of the Qt build.
-    if(QT6_IS_SHARED_LIBS_BUILD)
-        set(create_static_plugin FALSE)
-    else()
-        set(create_static_plugin TRUE)
-    endif()
-
     # Explicit option takes priority over the computed default.
     if(arg_STATIC)
         set(create_static_plugin TRUE)
     elseif(arg_SHARED)
         set(create_static_plugin FALSE)
+    else()
+        # If no explicit STATIC/SHARED option is set, default to the flavor of the Qt build.
+        if(QT6_IS_SHARED_LIBS_BUILD)
+            set(create_static_plugin FALSE)
+        else()
+            set(create_static_plugin TRUE)
+        endif()
     endif()
 
-    if (create_static_plugin)
-        add_library(${target} STATIC)
-        target_compile_definitions(${target} PRIVATE QT_STATICPLUGIN)
+    # The default of _qt_internal_add_library creates SHARED in a shared Qt build, so we need to
+    # be explicit about the MODULE.
+    if(create_static_plugin)
+        set(type_to_create STATIC)
     else()
-        add_library(${target} MODULE)
-        if(APPLE)
-            # CMake defaults to using .so extensions for loadable modules, aka plugins,
-            # but Qt plugins are actually suffixed with .dylib.
-            set_property(TARGET "${target}" PROPERTY SUFFIX ".dylib")
-        endif()
-        _qt_internal_apply_win_prefix_and_suffix(${target})
+        set(type_to_create MODULE)
+    endif()
+
+    _qt_internal_add_library(${target} ${type_to_create})
+
+    get_target_property(target_type "${target}" TYPE)
+    if (target_type STREQUAL "STATIC_LIBRARY")
+        target_compile_definitions(${target} PRIVATE QT_STATICPLUGIN)
     endif()
 
     set(output_name ${target})
@@ -1765,7 +1767,6 @@ function(qt6_add_plugin target)
     set_property(TARGET "${target}" PROPERTY OUTPUT_NAME "${output_name}")
 
     if (ANDROID)
-        qt6_android_apply_arch_suffix("${target}")
         set_target_properties(${target}
             PROPERTIES
             LIBRARY_OUTPUT_NAME "plugins_${arg_TYPE}_${output_name}"
@@ -1793,6 +1794,105 @@ endfunction()
 if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
     function(qt_add_plugin)
         qt6_add_plugin(${ARGV})
+    endfunction()
+endif()
+
+# Creates a library by forwarding arguments to add_library, applies some Qt naming file name naming
+# conventions and ensures the execution of Qt specific finalizers.
+function(qt6_add_library target)
+    cmake_parse_arguments(PARSE_ARGV 1 arg "MANUAL_FINALIZATION" "" "")
+
+    _qt_internal_add_library("${target}" ${arg_UNPARSED_ARGUMENTS})
+
+    if(arg_MANUAL_FINALIZATION)
+        # Caller says they will call qt6_finalize_target() themselves later
+        return()
+    endif()
+
+    # Defer the finalization if we can. When the caller's project requires
+    # CMake 3.19 or later, this makes the calls to this function concise while
+    # still allowing target property modification before finalization.
+    if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.19)
+        # Need to wrap in an EVAL CODE or else ${target} won't be evaluated
+        # due to special behavior of cmake_language() argument handling
+        cmake_language(EVAL CODE "cmake_language(DEFER CALL qt6_finalize_target ${target})")
+    else()
+        set_target_properties("${target}" PROPERTIES _qt_is_immediately_finalized TRUE)
+        qt6_finalize_target("${target}")
+    endif()
+endfunction()
+
+# Creates a library target by forwarding the arguments to add_library.
+#
+# Applies some Qt specific behaviors:
+# - If no type option is specified, rather than defaulting to STATIC it defaults to STATIC or SHARED
+#   depending on the Qt configuration.
+# - Applies Qt specific prefixes and suffixes to file names depending on platform.
+function(_qt_internal_add_library target)
+    set(opt_args
+        STATIC
+        SHARED
+        MODULE
+        INTERFACE
+        OBJECT
+    )
+    set(single_args "")
+    set(multi_args "")
+    cmake_parse_arguments(PARSE_ARGV 1 arg "${opt_args}" "${single_args}" "${multi_args}")
+
+    set(option_type_count 0)
+    if(arg_STATIC)
+        set(type_to_create STATIC)
+        math(EXPR option_type_count "${option_type_count}+1")
+    elseif(arg_SHARED)
+        set(type_to_create SHARED)
+        math(EXPR option_type_count "${option_type_count}+1")
+    elseif(arg_MODULE)
+        set(type_to_create MODULE)
+        math(EXPR option_type_count "${option_type_count}+1")
+    elseif(arg_INTERFACE)
+        set(type_to_create INTERFACE)
+        math(EXPR option_type_count "${option_type_count}+1")
+    elseif(arg_OBJECT)
+        set(type_to_create OBJECT)
+        math(EXPR option_type_count "${option_type_count}+1")
+    endif()
+
+    if(option_type_count GREATER 1)
+        message(FATAL_ERROR
+            "Multiple type options were given. Only one should be used."
+        )
+    endif()
+
+    # If no explicit type option is set, default to the flavor of the Qt build.
+    # This in contrast to CMake which defaults to STATIC.
+    if(NOT arg_STATIC AND NOT arg_SHARED AND NOT arg_MODULE AND NOT arg_INTERFACE
+            AND NOT arg_OBJECT)
+        if(QT6_IS_SHARED_LIBS_BUILD)
+            set(type_to_create SHARED)
+        else()
+            set(type_to_create STATIC)
+        endif()
+    endif()
+
+    add_library(${target} ${type_to_create} ${arg_UNPARSED_ARGUMENTS})
+
+    _qt_internal_apply_win_prefix_and_suffix("${target}")
+
+    if(arg_MODULE AND APPLE)
+        # CMake defaults to using .so extensions for loadable modules, aka plugins,
+        # but Qt plugins are actually suffixed with .dylib.
+        set_property(TARGET "${target}" PROPERTY SUFFIX ".dylib")
+    endif()
+
+    if(ANDROID)
+        qt6_android_apply_arch_suffix("${target}")
+    endif()
+endfunction()
+
+if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
+    function(qt_add_library)
+        qt6_add_library(${ARGV})
     endfunction()
 endif()
 
