@@ -1209,14 +1209,15 @@ int qRegisterNormalizedMetaType(const QT_PREPEND_NAMESPACE(QByteArray) &normaliz
     const QMetaType metaType = QMetaType::fromType<T>();
     const int id = metaType.id();
 
-    if (id > 0) {
+    QtPrivate::SequentialContainerTransformationHelper<T>::registerConverter();
+    QtPrivate::SequentialContainerTransformationHelper<T>::registerMutableView();
+    QtPrivate::AssociativeContainerTransformationHelper<T>::registerConverter();
+    QtPrivate::AssociativeContainerTransformationHelper<T>::registerMutableView();
+    QtPrivate::MetaTypePairHelper<T>::registerConverter();
+    QtPrivate::MetaTypeSmartPointerHelper<T>::registerConverter();
+
+    if (normalizedTypeName != metaType.name()) {
         QMetaType::registerNormalizedTypedef(normalizedTypeName, metaType);
-        QtPrivate::SequentialContainerTransformationHelper<T>::registerConverter();
-        QtPrivate::SequentialContainerTransformationHelper<T>::registerMutableView();
-        QtPrivate::AssociativeContainerTransformationHelper<T>::registerConverter();
-        QtPrivate::AssociativeContainerTransformationHelper<T>::registerMutableView();
-        QtPrivate::MetaTypePairHelper<T>::registerConverter();
-        QtPrivate::MetaTypeSmartPointerHelper<T>::registerConverter();
     }
 
     return id;
@@ -1348,6 +1349,12 @@ struct QMetaTypeIdQObject<T, QMetaType::IsEnumeration>
     } QT_END_NAMESPACE                                                  \
     /**/
 
+template <typename T>
+int qRegisterMetatypeIndirection()
+{
+    return qRegisterNormalizedMetaType<T>(QMetaType::fromType<T>().name());
+}
+
 #ifndef Q_MOC_RUN
 #define Q_DECLARE_METATYPE(TYPE) Q_DECLARE_METATYPE_IMPL(TYPE)
 #define Q_DECLARE_METATYPE_IMPL(TYPE)                                   \
@@ -1361,6 +1368,12 @@ struct QMetaTypeIdQObject<T, QMetaType::IsEnumeration>
                 static QBasicAtomicInt metatype_id = Q_BASIC_ATOMIC_INITIALIZER(0); \
                 if (const int id = metatype_id.loadAcquire())           \
                     return id;                                          \
+                const auto mt = QMetaType::fromType<TYPE>();            \
+                if (QByteArrayView(mt.name()) == (#TYPE)) {             \
+                    qRegisterMetatypeIndirection<TYPE>();               \
+                    metatype_id.storeRelease(mt.id());                  \
+                    return mt.id();                                     \
+                }                                                       \
                 const int newId = qRegisterMetaType< TYPE >(#TYPE);     \
                 metatype_id.storeRelease(newId);                        \
                 return newId;                                           \
