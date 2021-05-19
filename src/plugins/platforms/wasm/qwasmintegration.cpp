@@ -62,11 +62,6 @@
 using namespace emscripten;
 QT_BEGIN_NAMESPACE
 
-static void browserBeforeUnload(emscripten::val)
-{
-    QWasmIntegration::QWasmBrowserExit();
-}
-
 static void addCanvasElement(emscripten::val canvas)
 {
     QWasmIntegration::get()->addScreen(canvas);
@@ -95,7 +90,6 @@ static void resizeAllScreens(emscripten::val event)
 
 EMSCRIPTEN_BINDINGS(qtQWasmIntegraton)
 {
-    function("qtBrowserBeforeUnload", &browserBeforeUnload);
     function("qtAddCanvasElement", &addCanvasElement);
     function("qtRemoveCanvasElement", &removeCanvasElement);
     function("qtResizeCanvasElement", &resizeCanvasElement);
@@ -126,8 +120,6 @@ QWasmIntegration::QWasmIntegration()
                    << "Instead, set Module.qtCanvasElements to be an array of canvas elements, or use qtloader.js.";
         addScreen(canvas);
     }
-
-    emscripten::val::global("window").set("onbeforeunload", val::module_property("qtBrowserBeforeUnload"));
 
     // install browser window resize handler
     auto onWindowResize = [](int eventType, const EmscriptenUiEvent *e, void *userData) -> int {
@@ -170,12 +162,6 @@ QWasmIntegration::~QWasmIntegration()
     m_screens.clear();
 
     s_instance = nullptr;
-}
-
-void QWasmIntegration::QWasmBrowserExit()
-{
-    QCoreApplication *app = QCoreApplication::instance();
-    app->quit();
 }
 
 bool QWasmIntegration::hasCapability(QPlatformIntegration::Capability cap) const

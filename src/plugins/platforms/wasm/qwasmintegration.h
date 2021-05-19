@@ -82,7 +82,6 @@ public:
     QWasmClipboard *getWasmClipboard() { return m_clipboard; }
 
     static QWasmIntegration *get() { return s_instance; }
-    static void QWasmBrowserExit();
 
     void addScreen(const emscripten::val &canvas);
     void removeScreen(const emscripten::val &canvas);
