@@ -7,7 +7,7 @@
   </properties>
   <testcase name="initTestCase" result="pass" time="@TEST_DURATION@"/>
   <testcase name="basics" result="fail" time="@TEST_DURATION@">
-    <failure result="fail" message="Compared pointers are not the same"/>
+    <failure result="fail" message="Compared QObject pointers are not the same"/>
   </testcase>
   <testcase name="delays" result="pass" time="@TEST_DURATION@"/>
   <testcase name="reals" result="pass" time="@TEST_DURATION@"/>

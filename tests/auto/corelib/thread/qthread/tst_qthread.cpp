@@ -779,8 +779,9 @@ void tst_QThread::adoptedThreadAffinity()
     thread.startAndWait(adoptedThreadAffinityFunction, affinity);
     thread.join();
 
-    // adopted thread should have affinity to itself
-    QCOMPARE(affinity[0], affinity[1]);
+    // adopted thread (deleted) should have affinity to itself
+    QCOMPARE(static_cast<const void *>(affinity[0]),
+             static_cast<const void *>(affinity[1]));
 }
 
 void tst_QThread::adoptedThreadSetPriority()

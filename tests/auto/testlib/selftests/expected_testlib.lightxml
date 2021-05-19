@@ -9,7 +9,7 @@
 </TestFunction>
 <TestFunction name="basics">
 <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/testlib/tst_testlib.cpp" line="0">
-    <Description><![CDATA[Compared pointers are not the same]]></Description>
+    <Description><![CDATA[Compared QObject pointers are not the same]]></Description>
 </Incident>
     <Duration msecs="0"/>
 </TestFunction>

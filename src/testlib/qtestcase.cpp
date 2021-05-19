@@ -2822,6 +2822,24 @@ char *QTest::toString(const void *p)
     return msg;
 }
 
+/*! \internal
+ */
+char *QTest::toString(const volatile QObject *vo)
+{
+    if (vo == nullptr)
+        return qstrdup("<null>");
+
+    auto *o = const_cast<const QObject*>(vo);
+    const QString &name = o->objectName();
+    const char *className = o->metaObject()->className();
+    char *msg = new char[256];
+    if (name.isEmpty())
+        qsnprintf(msg, 256, "%s/%p", className, o);
+    else
+        qsnprintf(msg, 256, "%s/\"%s\"", className, qPrintable(name));
+    return msg;
+}
+
 /*! \fn char *QTest::toString(const QColor &color)
     \internal
  */

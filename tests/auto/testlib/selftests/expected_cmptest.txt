@@ -51,6 +51,10 @@ FAIL!  : tst_Cmptest::compare_tostring(both non-null user type) Compared values 
    Actual   (actual)  : QVariant(PhonyClass,<value not representable as string>)
    Expected (expected): QVariant(PhonyClass,<value not representable as string>)
    Loc: [qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(0)]
+FAIL!  : tst_Cmptest::compareQObjects() Compared QObject pointers are not the same
+   Actual   (&object1): QObject/"object1"
+   Expected (&object2): QObject/"object2"
+   Loc: [qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(0)]
 PASS   : tst_Cmptest::compareQStringLists(empty lists)
 PASS   : tst_Cmptest::compareQStringLists(equal lists)
 FAIL!  : tst_Cmptest::compareQStringLists(last item different) Compared lists differ at index 2.
@@ -189,5 +193,5 @@ FAIL!  : tst_Cmptest::tryVerify2() 'opaqueFunc() < 2' returned FALSE. (42)
    Loc: [qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(0)]
 PASS   : tst_Cmptest::verifyExplicitOperatorBool()
 PASS   : tst_Cmptest::cleanupTestCase()
-Totals: 21 passed, 45 failed, 0 skipped, 0 blacklisted, 0ms
+Totals: 21 passed, 46 failed, 0 skipped, 0 blacklisted, 0ms
 ********* Finished testing of tst_Cmptest *********

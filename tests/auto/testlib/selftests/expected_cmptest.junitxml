@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite name="tst_Cmptest" timestamp="@TEST_START_TIME@" tests="28" failures="45" errors="0" time="@TEST_DURATION@">
+<testsuite name="tst_Cmptest" timestamp="@TEST_START_TIME@" tests="29" failures="46" errors="0" time="@TEST_DURATION@">
   <properties>
     <property name="QTestVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtVersion" value="@INSERT_QT_VERSION_HERE@"/>
@@ -53,6 +53,11 @@
     <failure result="fail" message="Compared values are not the same
    Actual   (actual)  : QVariant(PhonyClass,&lt;value not representable as string&gt;)
    Expected (expected): QVariant(PhonyClass,&lt;value not representable as string&gt;)" tag="both non&#x002D;null user type"/>
+  </testcase>
+  <testcase name="compareQObjects" result="fail" time="@TEST_DURATION@">
+    <failure result="fail" message="Compared QObject pointers are not the same
+   Actual   (&amp;object1): QObject/&quot;object1&quot;
+   Expected (&amp;object2): QObject/&quot;object2&quot;"/>
   </testcase>
   <testcase name="compareQStringLists" result="fail" time="@TEST_DURATION@">
     <failure result="fail" message="Compared lists differ at index 2.

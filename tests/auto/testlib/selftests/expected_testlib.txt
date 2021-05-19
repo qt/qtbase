@@ -1,7 +1,7 @@
 ********* Start testing of tst_TestLib *********
 Config: Using QtTest library
 PASS   : tst_TestLib::initTestCase()
-FAIL!  : tst_TestLib::basics() Compared pointers are not the same
+FAIL!  : tst_TestLib::basics() Compared QObject pointers are not the same
    Loc: [qtbase/tests/auto/testlib/selftests/testlib/tst_testlib.cpp(0)]
 PASS   : tst_TestLib::delays()
 PASS   : tst_TestLib::reals(zero)

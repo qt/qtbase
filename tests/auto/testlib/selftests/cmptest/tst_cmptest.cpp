@@ -139,6 +139,7 @@ private slots:
     void compare_pointerfuncs();
     void compare_tostring();
     void compare_tostring_data();
+    void compareQObjects();
     void compareQStringLists();
     void compareQStringLists_data();
     void compareQListInt_data();
@@ -289,6 +290,17 @@ void tst_Cmptest::compare_pointerfuncs()
     QCOMPARE(&i, intptr());
 }
 
+void tst_Cmptest::compareQObjects()
+{
+    QObject object1;
+    object1.setObjectName(QStringLiteral("object1"));
+    QObject object2;
+    object2.setObjectName(QStringLiteral("object2"));
+    QCOMPARE(&object1, &object1);
+    QCOMPARE(&object1, &object2);
+    QCOMPARE(&object1, nullptr);
+    QCOMPARE(nullptr, &object2);
+}
 
 struct PhonyClass
 {
