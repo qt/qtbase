@@ -87,18 +87,7 @@ function(qt_internal_add_cmake_library target)
 
     qt_internal_add_common_qt_library_helper(${target} ${library_helper_args})
 
-    if (NOT arg_ARCHIVE_INSTALL_DIRECTORY AND arg_INSTALL_DIRECTORY)
-        set(arg_ARCHIVE_INSTALL_DIRECTORY "${arg_INSTALL_DIRECTORY}")
-    endif()
-
     qt_skip_warnings_are_errors_when_repo_unclean("${target}")
-
-    if (arg_INSTALL_DIRECTORY)
-        set(install_arguments
-            ARCHIVE_INSTALL_DIRECTORY ${arg_ARCHIVE_INSTALL_DIRECTORY}
-            INSTALL_DIRECTORY ${arg_INSTALL_DIRECTORY}
-        )
-    endif()
 
     if (arg_OUTPUT_DIRECTORY)
         set_target_properties(${target} PROPERTIES
@@ -127,7 +116,6 @@ function(qt_internal_add_cmake_library target)
         MOC_OPTIONS ${arg_MOC_OPTIONS}
         ENABLE_AUTOGEN_TOOLS ${arg_ENABLE_AUTOGEN_TOOLS}
         DISABLE_AUTOGEN_TOOLS ${arg_DISABLE_AUTOGEN_TOOLS}
-        ${install_arguments}
     )
 endfunction()
 
@@ -175,10 +163,6 @@ function(qt_internal_add_3rdparty_library target)
 
     if(NOT arg_INTERFACE)
         qt_set_common_target_properties(${target})
-    endif()
-
-    if (NOT arg_ARCHIVE_INSTALL_DIRECTORY AND arg_INSTALL_DIRECTORY)
-        set(arg_ARCHIVE_INSTALL_DIRECTORY "${arg_INSTALL_DIRECTORY}")
     endif()
 
     set_target_properties(${target} PROPERTIES
@@ -234,7 +218,6 @@ function(qt_internal_add_3rdparty_library target)
         MOC_OPTIONS ${arg_MOC_OPTIONS}
         ENABLE_AUTOGEN_TOOLS ${arg_ENABLE_AUTOGEN_TOOLS}
         DISABLE_AUTOGEN_TOOLS ${arg_DISABLE_AUTOGEN_TOOLS}
-        ${install_arguments}
     )
 
     if(NOT BUILD_SHARED_LIBS OR arg_INSTALL)
