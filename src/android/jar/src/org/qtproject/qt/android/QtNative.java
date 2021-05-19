@@ -1026,6 +1026,7 @@ public class QtNative
     {
         if (Build.VERSION.SDK_INT >= 28 && m_clipboardManager != null)
             m_clipboardManager.clearPrimaryClip();
+         m_usePrimaryClip = false;
     }
     private static void setClipboardText(String text)
     {
