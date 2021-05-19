@@ -1,27 +1,7 @@
-cmake_minimum_required(VERSION 3.16)
-
-if(DEFINED CMAKE_Core_MODULE_MAJOR_VERSION)
-    set(project_version "${CMAKE_Core_MODULE_MAJOR_VERSION}.\
-${CMAKE_Core_MODULE_MINOR_VERSION}.${CMAKE_Core_MODULE_PATCH_VERSION}"
-    )
-else()
-    set(project_version "6.0.0")
-endif()
-
-project(TestInitResourcesStaticPlugin
-        LANGUAGES CXX
-        VERSION "${project_version}"
-)
-
-find_package(Qt6 COMPONENTS Core BuildInternals CONFIG REQUIRED)
-qt_prepare_standalone_project()
-
-find_package(Qt6 COMPONENTS Gui Test CONFIG REQUIRED) # Add gui since Core have no plugin types
-
 qt_internal_add_plugin(TestInitResourcesStaticPlugin STATIC
     OUTPUT_NAME
         testinitresourcesstaticplugin
-    TYPE generic
+    TYPE mockstaticresources
     SOURCES
         pluginmain.cpp
     SKIP_INSTALL

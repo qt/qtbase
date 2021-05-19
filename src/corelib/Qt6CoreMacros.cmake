@@ -596,6 +596,7 @@ function(_qt_internal_finalize_executable target)
     get_target_property(is_immediately_finalized "${target}" _qt_is_immediately_finalized)
     if(NOT is_immediately_finalized)
         __qt_internal_apply_plugin_imports_finalizer_mode("${target}")
+        __qt_internal_process_dependency_resource_objects("${target}")
     endif()
 
     set_target_properties(${target} PROPERTIES _qt_executable_is_finalized TRUE)
@@ -910,6 +911,20 @@ if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
     endfunction()
 endif()
 
+# This function allows enabling or disabling the finalizer mode of resource objects linking in
+# static Qt builds.
+# It makes sense to manually disable the finalizer of the resource object if you are using
+# linkers other than ld, since the dependencies between resource objects and static libraries
+# are resolved correctly by them.
+function(qt6_enable_resource_objects_finalizer_mode target enabled)
+    __qt_internal_enable_finalizer_mode(${target} resource_objects ${enabled})
+endfunction()
+
+if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
+    function(qt_enable_resource_objects_finalizer_mode)
+        qt6_enable_resource_objects_finalizer_mode(${ARGV})
+    endfunction()
+endif()
 
 # Extracts metatypes from a Qt target and generates a metatypes.json for it.
 # By default we check whether AUTOMOC has been enabled and we extract the information from the
@@ -1434,12 +1449,36 @@ function(__qt_propagate_generated_resource target resource_name generated_source
         set_property(TARGET ${resource_target} APPEND PROPERTY
             _qt_resource_generated_cpp_relative_path "${generated_cpp_file_relative_path}")
 
-        # Use TARGET_NAME genex to map to the correct prefixed target name when it is exported
-        # via qt_install(EXPORT), so that the consumers of the target can find the object library
-        # as well.
-        target_sources(${target} INTERFACE
-            "$<TARGET_OBJECTS:$<TARGET_NAME:${resource_target}>>"
+        # After internal discussion we decided to not rely on the linker order that CMake
+        # offers, until CMake provides the guaranteed linking order that suites our needs in a
+        # future CMake version.
+        # The _qt_resource_object_libraries collects all resource targets owned by the 'target'
+        # instead of the implicit propagating and is used by the executable finalizer to expose
+        # objects as the end-point sources. If the user prefers not to use a finalizer or the CMake
+        # version does not support DEFER calls, fall back to interface linking of the resource
+        # objects.
+        # target_link_libraries works well with linkers other than ld. If user didn't enforce
+        # a finalizer we rely on linker to resolve circular dependencies between resource
+        # objects and static libraries.
+        set_property(TARGET ${target} APPEND PROPERTY
+            _qt_resource_object_libraries ${resource_target}
         )
+        set_property(TARGET ${target} APPEND PROPERTY
+            EXPORT_PROPERTIES _qt_resource_object_libraries
+        )
+        # Keep the implicit linking if finalizers are not used.
+        set(finalizer_mode_condition
+            "$<NOT:$<BOOL:$<TARGET_PROPERTY:_qt_resource_objects_finalizer_mode>>>"
+        )
+        # Do not litter the static libraries
+        set(not_static_condition
+            "$<NOT:$<STREQUAL:$<TARGET_PROPERTY:TYPE>,STATIC_LIBRARY>>"
+        )
+        set(resource_objects "$<TARGET_OBJECTS:$<TARGET_NAME:${resource_target}>>")
+        target_link_libraries(${target} INTERFACE
+            "$<$<AND:${finalizer_mode_condition},${not_static_condition}>:${resource_objects}>"
+        )
+
         if(NOT target STREQUAL "Core")
             # It's necessary to link the object library target, since we want to pass
             # the object library dependencies to the 'target'. Interface linking doesn't

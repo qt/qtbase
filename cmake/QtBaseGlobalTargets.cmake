@@ -245,6 +245,7 @@ qt_copy_or_install(FILES
 set(__public_cmake_helpers
     cmake/QtFeature.cmake
     cmake/QtFeatureCommon.cmake
+    cmake/QtPublicFinalizerHelpers.cmake
     cmake/QtPublicPluginHelpers.cmake
     cmake/QtPublicTargetHelpers.cmake
     cmake/QtPublicWalkLibsHelpers.cmake
