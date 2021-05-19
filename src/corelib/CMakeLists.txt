@@ -1348,7 +1348,7 @@ qt_internal_add_docs(Core
 # Handle qtzlib.pro to create headers for the
 # QtZlibPrivate target, equivalent to Qt += zlib-private
 if(NOT QT_FEATURE_system_zlib)
-    qt_internal_add_module(Zlib
+    qt_internal_add_module(ZlibPrivate
         INTERNAL_MODULE
         HEADER_MODULE
         NO_CONFIG_HEADER_FILE
