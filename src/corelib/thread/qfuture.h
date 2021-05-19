@@ -59,10 +59,9 @@ class QFutureWatcher;
 template <typename T>
 class QFuture
 {
-    static_assert (std::is_copy_constructible_v<T>
-                   || std::is_move_constructible_v<T>
+    static_assert (std::is_move_constructible_v<T>
                    || std::is_same_v<T, void>,
-                   "Type with copy or move constructors or type void is required");
+                   "A move-constructible type or type void is required");
 public:
     QFuture()
         : d(QFutureInterface<T>::canceledResult())
