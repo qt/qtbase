@@ -95,6 +95,10 @@ public:
 
     QFutureInterfaceBase(State initialState = NoState);
     QFutureInterfaceBase(const QFutureInterfaceBase &other);
+    QFutureInterfaceBase(QFutureInterfaceBase &&other) noexcept
+        : d(std::exchange(other.d, nullptr)) {}
+    QFutureInterfaceBase &operator=(const QFutureInterfaceBase &other);
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QFutureInterfaceBase)
     virtual ~QFutureInterfaceBase();
 
     // reporting functions available to the engine author:
@@ -165,8 +169,8 @@ public:
 
     inline bool operator==(const QFutureInterfaceBase &other) const { return d == other.d; }
     inline bool operator!=(const QFutureInterfaceBase &other) const { return d != other.d; }
-    QFutureInterfaceBase &operator=(const QFutureInterfaceBase &other);
 
+    // ### Qt 7: inline
     void swap(QFutureInterfaceBase &other) noexcept;
 
 protected:
@@ -206,6 +210,11 @@ protected:
     bool isRunningOrPending() const;
 };
 
+inline void swap(QFutureInterfaceBase &lhs, QFutureInterfaceBase &rhs) noexcept
+{
+    lhs.swap(rhs);
+}
+
 template <typename T>
 class QFutureInterface : public QFutureInterfaceBase
 {
@@ -221,6 +230,16 @@ public:
         refT();
     }
     QFutureInterface(const QFutureInterfaceBase &dd) : QFutureInterfaceBase(dd) { refT(); }
+    QFutureInterface(QFutureInterfaceBase &&dd) : QFutureInterfaceBase(std::move(dd)) { refT(); }
+    QFutureInterface &operator=(const QFutureInterface &other)
+    {
+        QFutureInterface copy(other);
+        swap(copy);
+        return *this;
+    }
+    QFutureInterface(QFutureInterface &&other) = default;
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QFutureInterface)
+
     ~QFutureInterface()
     {
         if (!derefT())
@@ -229,15 +248,6 @@ public:
 
     static QFutureInterface canceledResult()
     { return QFutureInterface(State(Started | Finished | Canceled)); }
-
-    QFutureInterface &operator=(const QFutureInterface &other)
-    {
-        other.refT();
-        if (!derefT())
-            resultStoreBase().template clear<T>();
-        QFutureInterfaceBase::operator=(other);
-        return *this;
-    }
 
     inline QFuture<T> future(); // implemented in qfuture.h
 

@@ -78,7 +78,8 @@
     \sa operator=()
 */
 
-/*! \fn template <typename T> QPromise<T>::QPromise(QFutureInterface<T> &other)
+/*! \fn template <typename T> QPromise<T>::QPromise(const QFutureInterface<T> &other)
+    \fn template <typename T> QPromise<T>::QPromise(QFutureInterface<T> &&other)
 
     \internal
     Constructs a QPromise with a passed QFutureInterface \a other.

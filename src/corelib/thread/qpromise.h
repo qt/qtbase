@@ -58,17 +58,10 @@ class QPromise
 public:
     QPromise() = default;
     Q_DISABLE_COPY(QPromise)
-    QPromise(QPromise<T> &&other) : d(other.d)
-    {
-        other.d = QFutureInterface<T>();
-    }
-    QPromise(QFutureInterface<T> &other) : d(other) {}
-    QPromise& operator=(QPromise<T> &&other)
-    {
-        QPromise<T> tmp(std::move(other));
-        tmp.swap(*this);
-        return *this;
-    }
+    QPromise(QPromise<T> &&other) = default;
+    QPromise(const QFutureInterface<T> &other) : d(other) {}
+    QPromise(QFutureInterface<T> &&other) noexcept : d(std::move(other)) {}
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QPromise)
     ~QPromise()
     {
         const int state = d.loadState();
