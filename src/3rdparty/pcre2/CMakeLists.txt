@@ -67,10 +67,9 @@ qt_internal_extend_target(BundledPcre2 CONDITION (TEST_architecture_arch STREQUA
         PCRE2_DISABLE_JIT
 )
 
-qt_internal_extend_target(BundledPcre2 CONDITION MACOS AND (TEST_architecture_arch STREQUAL "arm64")
-    DEFINES
-        PCRE2_DISABLE_JIT
-)
+if (APPLE)
+    target_compile_options(BundledPcre2 PRIVATE "SHELL:-Xarch_arm64 -DPCRE2_DISABLE_JIT")
+endif()
 
 qt_internal_extend_target(BundledPcre2 CONDITION WIN32
     PUBLIC_DEFINES
