@@ -120,11 +120,10 @@ struct QMetaTypeCustomRegistry
             QWriteLocker l(&lock);
             if (ti->typeId)
                 return ti->typeId;
-            QByteArray name =
+            QByteArray name = ti->name;
 #ifndef QT_NO_QOBJECT
-                    QMetaObject::normalizedType
+            Q_ASSERT(name == QMetaObject::normalizedType(ti->name));
 #endif
-                    (ti->name);
             if (auto ti2 = aliases.value(name)) {
                 ti->typeId.storeRelaxed(ti2->typeId.loadRelaxed());
                 return ti2->typeId;
