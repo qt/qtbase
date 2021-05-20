@@ -384,7 +384,8 @@ public:
         ActionInterface,
         ImageInterface,
         TableInterface,
-        TableCellInterface
+        TableCellInterface,
+        HyperlinkInterface
     };
 
     enum TextBoundaryType {
@@ -451,6 +452,7 @@ class QAccessibleActionInterface;
 class QAccessibleImageInterface;
 class QAccessibleTableInterface;
 class QAccessibleTableCellInterface;
+class QAccessibleHyperlinkInterface;
 class QAccessibleTableModelChangeEvent;
 
 class Q_GUI_EXPORT QAccessibleInterface
@@ -507,6 +509,9 @@ public:
 
     inline QAccessibleTableCellInterface *tableCellInterface()
     { return reinterpret_cast<QAccessibleTableCellInterface *>(interface_cast(QAccessible::TableCellInterface)); }
+
+    inline QAccessibleHyperlinkInterface *hyperlinkInterface()
+    { return reinterpret_cast<QAccessibleHyperlinkInterface *>(interface_cast(QAccessible::HyperlinkInterface)); }
 
     virtual void virtual_hook(int id, void *data);
 
@@ -659,6 +664,17 @@ public:
     virtual QPoint imagePosition() const = 0;
 };
 
+class Q_GUI_EXPORT QAccessibleHyperlinkInterface
+{
+public:
+    virtual ~QAccessibleHyperlinkInterface();
+
+    virtual QString anchor() const = 0;
+    virtual QString anchorTarget() const = 0;
+    virtual int startIndex() const = 0;
+    virtual int endIndex() const = 0;
+    virtual bool isValid() const = 0;
+};
 
 class Q_GUI_EXPORT QAccessibleEvent
 {

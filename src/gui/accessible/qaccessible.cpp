@@ -448,6 +448,7 @@ Q_LOGGING_CATEGORY(lcAccessibilityCore, "qt.accessibility.core");
     \omitvalue ImageInterface       \omit For objects that represent an image. This interface is generally less important. \endomit
     \value TableInterface           For lists, tables and trees.
     \value TableCellInterface       For cells in a TableInterface object.
+    \value HyperlinkInterface       For hyperlink nodes (usually embedded as children of text nodes)
 
     \sa QAccessibleInterface::interface_cast(), QAccessibleTextInterface, QAccessibleValueInterface, QAccessibleActionInterface, QAccessibleTableInterface, QAccessibleTableCellInterface
 */
@@ -2956,6 +2957,44 @@ QString QAccessibleActionInterface::nextPageAction()
 QString qAccessibleLocalizedActionDescription(const QString &actionName)
 {
     return accessibleActionStrings()->localizedDescription(actionName);
+}
+
+/*!
+    \internal
+    \fn QString QAccessibleHyperlinkInterface::anchor() const
+
+    The logical/human readable name of the hyperlink
+*/
+
+/*!
+    \internal
+    \fn QString QAccessibleHyperlinkInterface::anchorTarget() const
+
+    The target url of the hyperlink
+*/
+
+/*!
+    \internal
+    \fn int QAccessibleHyperlinkInterface::startIndex() const
+
+    Returns the start index that will refer to the first character in the text where the hyperlink
+    begins. The index corresponds to the index that the QAccessibleTextInterface needs in order
+    to find the start of the hyperlink.
+
+*/
+
+/*!
+    \internal
+    \fn int QAccessibleHyperlinkInterface::endIndex() const
+
+    Returns the end index that will refer to the first character in the text where the hyperlink
+    begins. The index corresponds to the index that the QAccessibleTextInterface needs in order
+    to find the end of the hyperlink.
+*/
+
+QAccessibleHyperlinkInterface::~QAccessibleHyperlinkInterface()
+{
+
 }
 
 #endif // QT_NO_ACCESSIBILITY
