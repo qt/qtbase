@@ -389,7 +389,7 @@ static uint siphash(const uint8_t *in, uint inlen, const uint seed)
 
 #if defined(__SANITIZE_ADDRESS__) || defined(__SANITIZE_THREAD__)  // GCC
 #  define QHASH_AES_SANITIZER_BUILD
-#elif QT_HAS_FEATURE(address_sanitizer) || QT_HAS_FEATURE(thread_sanitizer)  // Clang
+#elif __has_feature(address_sanitizer) || __has_feature(thread_sanitizer)  // Clang
 #  define QHASH_AES_SANITIZER_BUILD
 #endif
 

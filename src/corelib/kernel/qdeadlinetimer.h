@@ -192,7 +192,7 @@ public:
     QPair<qint64, unsigned> _q_data() const { return qMakePair(t1, t2); }
 };
 
-#if QT_HAS_INCLUDE(<chrono>) && (defined(Q_OS_DARWIN) || defined(Q_OS_LINUX) || (defined(Q_CC_MSVC) && Q_CC_MSVC >= 1900))
+#if __has_include(<chrono>) && (defined(Q_OS_DARWIN) || defined(Q_OS_LINUX) || (defined(Q_CC_MSVC) && Q_CC_MSVC >= 1900))
 // We know for these OS/compilers that the std::chrono::steady_clock uses the same
 // reference time as QDeadlineTimer
 
