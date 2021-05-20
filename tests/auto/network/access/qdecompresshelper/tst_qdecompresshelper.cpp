@@ -67,9 +67,7 @@ private Q_SLOTS:
     void archiveBomb_data();
     void archiveBomb();
 
-#if QT_POINTER_SIZE >= 8
     void bigZlib();
-#endif
 };
 
 void tst_QDecompressHelper::initTestCase()
@@ -432,9 +430,11 @@ void tst_QDecompressHelper::archiveBomb()
         QVERIFY(bytesRead > 0);
 }
 
-#if QT_POINTER_SIZE >= 8
 void tst_QDecompressHelper::bigZlib()
 {
+#if QT_POINTER_SIZE < 8
+    QSKIP("This cannot be tested on 32-bit systems");
+#else
     // ZLib uses unsigned integers as their size type internally which creates some special
     // cases in the internal code that should be tested!
     QFile file(":/5GiB.txt.inflate");
@@ -454,8 +454,8 @@ void tst_QDecompressHelper::bigZlib()
     std::unique_ptr<char[]> output(new char[expected]);
     qsizetype size = helper.read(output.get(), expected);
     QCOMPARE(size, expected);
-}
 #endif
+}
 
 QTEST_MAIN(tst_QDecompressHelper)
 
