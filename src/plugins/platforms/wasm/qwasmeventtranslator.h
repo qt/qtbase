@@ -42,6 +42,7 @@
 #endif
 #include <QHash>
 #include <QCursor>
+#include <QPointer>
 
 QT_BEGIN_NAMESPACE
 
@@ -86,9 +87,9 @@ private:
     QMap <int, QPointF> pressedTouchIds;
 
 private:
-    QWindow *draggedWindow;
-    QWindow *pressedWindow;
-    QWindow *lastWindow;
+    QPointer<QWindow> draggedWindow;
+    QPointer<QWindow> pressedWindow;
+    QPointer<QWindow> lastWindow;
     Qt::MouseButtons pressedButtons;
 
     QWasmWindow::ResizeMode resizeMode;
