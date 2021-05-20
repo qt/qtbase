@@ -95,6 +95,8 @@ public:
 
     bool shouldHideWithText() const;
     void setHideWithText(bool hide);
+    // m_wasHidden is true unless the button is fading out
+    bool needsSpace() const { return m_wasHidden; }
 #endif
 
 protected:
