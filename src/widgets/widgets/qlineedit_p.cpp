@@ -664,10 +664,18 @@ static int effectiveTextMargin(int defaultMargin, const QLineEditPrivate::SideWi
     if (widgets.empty())
         return defaultMargin;
 
-    return defaultMargin + (parameters.margin + parameters.widgetWidth) *
-           int(std::count_if(widgets.begin(), widgets.end(),
+    const auto visibleSideWidgetCount = std::count_if(widgets.begin(), widgets.end(),
                              [](const QLineEditPrivate::SideWidgetEntry &e) {
-                                 return e.widget->isVisibleTo(e.widget->parentWidget()); }));
+#if QT_CONFIG(animation)
+        // a button that's fading out doesn't get any space
+        if (auto* iconButton = qobject_cast<QLineEditIconButton*>(e.widget))
+            return iconButton->needsSpace();
+
+#endif
+        return e.widget->isVisibleTo(e.widget->parentWidget());
+    });
+
+    return defaultMargin + (parameters.margin + parameters.widgetWidth) * visibleSideWidgetCount;
 }
 
 QMargins QLineEditPrivate::effectiveTextMargins() const
