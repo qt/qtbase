@@ -384,6 +384,19 @@ function(qt6_add_big_resources outfiles )
 
     foreach(it ${rcc_files})
         get_filename_component(outfilename ${it} NAME_WE)
+
+        # Provide unique targets and output file names
+        # in case we add multiple .qrc files with the same base name.
+        string(MAKE_C_IDENTIFIER "_qt_big_resource_count_${outfilename}" prop)
+        get_property(count GLOBAL PROPERTY ${prop})
+        if(count)
+            string(APPEND outfilename "_${count}")
+        else()
+            set(count 0)
+        endif()
+        math(EXPR count "${count} + 1")
+        set_property(GLOBAL PROPERTY ${prop} ${count})
+
         get_filename_component(infile ${it} ABSOLUTE)
         set(tmpoutfile ${CMAKE_CURRENT_BINARY_DIR}/qrc_${outfilename}tmp.cpp)
         set(outfile ${CMAKE_CURRENT_BINARY_DIR}/qrc_${outfilename}.o)
