@@ -404,8 +404,20 @@ void QWasmWindow::requestUpdate()
 
 bool QWasmWindow::hasTitleBar() const
 {
-    return !(m_windowState & Qt::WindowFullScreen) && (window()->flags().testFlag(Qt::WindowTitleHint) && m_needsCompositor)
-            && !window()->flags().testFlag(Qt::Popup);
+    auto flags = window()->flags();
+    return !(m_windowState & Qt::WindowFullScreen)
+        && flags.testFlag(Qt::WindowTitleHint)
+        && !flags.testFlag(Qt::Popup)
+        && !flags.testFlag(Qt::ToolTip)
+        && m_needsCompositor;
+}
+
+bool QWasmWindow::windowIsPopupType(Qt::WindowType type) const
+{
+    if (type == Qt::Widget)
+        type = window()->type();
+    if (type == Qt::Tool)
+        return false;
 }
 
 QT_END_NAMESPACE
