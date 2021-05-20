@@ -389,7 +389,7 @@ function(qt6_add_big_resources outfiles )
         set(outfile ${CMAKE_CURRENT_BINARY_DIR}/qrc_${outfilename}.o)
 
         _qt6_parse_qrc_file(${infile} _out_depends _rc_depends)
-        set_source_files_properties(${infile} PROPERTIES SKIP_AUTORCC ON)
+        set_source_files_properties(${infile} PROPERTIES SKIP_AUTOGEN ON)
         add_custom_command(OUTPUT ${tmpoutfile}
                            COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::rcc ${rcc_options} --name ${outfilename} --pass 1 --output ${tmpoutfile} ${infile}
                            DEPENDS ${infile} ${_rc_depends} "${out_depends}" ${QT_CMAKE_EXPORT_NAMESPACE}::rcc

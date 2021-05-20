@@ -1,7 +1,9 @@
-
 cmake_minimum_required(VERSION 3.14)
 
 project(test_add_big_resource)
+
+# Make sure that AUTOMOC does not interfere with qt_add_big_resources
+set(CMAKE_AUTOMOC ON)
 
 find_package(Qt6Core REQUIRED)
 
