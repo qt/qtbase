@@ -57,6 +57,7 @@ QHttpNetworkRequestPrivate::QHttpNetworkRequestPrivate(const QHttpNetworkRequest
       customVerb(other.customVerb),
       priority(other.priority),
       uploadByteDevice(other.uploadByteDevice),
+      minimumArchiveBombSize(other.minimumArchiveBombSize),
       autoDecompress(other.autoDecompress),
       pipeliningAllowed(other.pipeliningAllowed),
       http2Allowed(other.http2Allowed),
@@ -64,7 +65,6 @@ QHttpNetworkRequestPrivate::QHttpNetworkRequestPrivate(const QHttpNetworkRequest
       withCredentials(other.withCredentials),
       ssl(other.ssl),
       preConnect(other.preConnect),
-      ignoreDecompressionRatio(other.ignoreDecompressionRatio),
       needResendWithCredentials(other.needResendWithCredentials),
       redirectCount(other.redirectCount),
       redirectPolicy(other.redirectPolicy),
@@ -93,7 +93,8 @@ bool QHttpNetworkRequestPrivate::operator==(const QHttpNetworkRequestPrivate &ot
         && (preConnect == other.preConnect)
         && (redirectPolicy == other.redirectPolicy)
         && (peerVerifyName == other.peerVerifyName)
-        && (needResendWithCredentials == other.needResendWithCredentials);
+        && (needResendWithCredentials == other.needResendWithCredentials)
+        && (minimumArchiveBombSize == other.minimumArchiveBombSize);
 }
 
 QByteArray QHttpNetworkRequest::methodName() const
@@ -405,14 +406,14 @@ void QHttpNetworkRequest::setPeerVerifyName(const QString &peerName)
     d->peerVerifyName = peerName;
 }
 
-bool QHttpNetworkRequest::ignoreDecompressionRatio()
+qint64 QHttpNetworkRequest::minimumArchiveBombSize() const
 {
-    return d->ignoreDecompressionRatio;
+    return d->minimumArchiveBombSize;
 }
 
-void QHttpNetworkRequest::setIgnoreDecompressionRatio(bool enabled)
+void QHttpNetworkRequest::setMinimumArchiveBombSize(qint64 threshold)
 {
-    d->ignoreDecompressionRatio = enabled;
+    d->minimumArchiveBombSize = threshold;
 }
 
 QT_END_NAMESPACE

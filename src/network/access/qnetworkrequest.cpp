@@ -441,6 +441,7 @@ public:
         peerVerifyName = other.peerVerifyName;
 #if QT_CONFIG(http)
         h2Configuration = other.h2Configuration;
+        minimumArchiveBombSize = other.minimumArchiveBombSize;
 #endif
         transferTimeout = other.transferTimeout;
     }
@@ -455,6 +456,7 @@ public:
             peerVerifyName == other.peerVerifyName
 #if QT_CONFIG(http)
             && h2Configuration == other.h2Configuration
+            && minimumArchiveBombSize == other.minimumArchiveBombSize
 #endif
             && transferTimeout == other.transferTimeout
             ;
@@ -470,6 +472,7 @@ public:
     QString peerVerifyName;
 #if QT_CONFIG(http)
     QHttp2Configuration h2Configuration;
+    qint64 minimumArchiveBombSize = 10ll * 1024ll * 1024ll;
 #endif
     int transferTimeout;
 };
@@ -896,7 +899,50 @@ void QNetworkRequest::setHttp2Configuration(const QHttp2Configuration &configura
 {
     d->h2Configuration = configuration;
 }
+
+/*!
+    \since 6.2
+
+    Returns the threshold for archive bomb checks.
+
+    If the decompressed size of a reply is smaller than this, Qt will simply
+    decompress it, without further checking.
+
+    \sa setMinimumArchiveBombSize()
+*/
+qint64 QNetworkRequest::minimumArchiveBombSize() const
+{
+    return d->minimumArchiveBombSize;
+}
+
+/*!
+    \since 6.2
+
+    Sets the \a threshold for archive bomb checks.
+
+    Some supported compression algorithms can, in a tiny compressed file, encode
+    a spectacularly huge decompressed file. This is only possible if the
+    decompressed content is extremely monotonous, which is seldom the case for
+    real files being transmitted in good faith: files exercising such insanely
+    high compression ratios are typically payloads of buffer-overrun attacks, or
+    denial-of-service (by using up too much memory) attacks. Consequently, files
+    that decompress to huge sizes, particularly from tiny compressed forms, are
+    best rejected as suspected malware.
+
+    If a reply's decompressed size is bigger than this threshold (by default,
+    10 MiB, i.e. 10 * 1024 * 1024), Qt will check the compression ratio: if that
+    is unreasonably large (40:1 for GZip and Deflate, or 100:1 for Brotli and
+    ZStandard), the reply will be treated as an error. Setting the threshold
+    to \c{-1} disables this check.
+
+    \sa minimumArchiveBombSize()
+*/
+void QNetworkRequest::setMinimumArchiveBombSize(qint64 threshold)
+{
+    d->minimumArchiveBombSize = threshold;
+}
 #endif // QT_CONFIG(http) || defined(Q_CLANG_QDOC)
+
 #if QT_CONFIG(http) || defined(Q_CLANG_QDOC) || defined (Q_OS_WASM)
 /*!
     \since 5.15

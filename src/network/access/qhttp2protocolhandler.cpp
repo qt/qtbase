@@ -1237,8 +1237,8 @@ void QHttp2ProtocolHandler::updateStream(Stream &stream, const HPack::HttpHeader
         httpReplyPrivate->removeAutoDecompressHeader();
         httpReplyPrivate->decompressHelper.setEncoding(
                 httpReplyPrivate->headerField("content-encoding"));
-        if (httpReplyPrivate->request.ignoreDecompressionRatio())
-            httpReplyPrivate->decompressHelper.setArchiveBombDetectionEnabled(false);
+        httpReplyPrivate->decompressHelper.setMinimumArchiveBombSize(
+                httpReplyPrivate->request.minimumArchiveBombSize());
     }
 
     if (QHttpNetworkReply::isHttpRedirect(statusCode)) {

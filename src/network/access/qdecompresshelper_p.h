@@ -91,7 +91,6 @@ public:
 
     void clear();
 
-    void setArchiveBombDetectionEnabled(bool enable);
     void setMinimumArchiveBombSize(qint64 threshold);
 
     static bool isSupportedEncoding(const QByteArray &encoding);
@@ -119,7 +118,6 @@ private:
     qint64 uncompressedBytes = 0;
 
     // Used for calculating the ratio
-    bool archiveBombDetectionEnabled = true;
     qint64 minimumArchiveBombSize = 10 * 1024 * 1024;
     qint64 totalUncompressedBytes = 0;
     qint64 totalCompressedBytes = 0;

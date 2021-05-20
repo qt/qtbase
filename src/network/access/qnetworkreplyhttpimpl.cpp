@@ -774,14 +774,7 @@ void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpReq
     if (request.attribute(QNetworkRequest::EmitAllUploadProgressSignalsAttribute).toBool())
         emitAllUploadProgressSignals = true;
 
-    // For internal use/testing
-    auto ignoreDownloadRatio =
-            request.attribute(QNetworkRequest::Attribute(QNetworkRequest::User - 1));
-    if (!ignoreDownloadRatio.isNull() && ignoreDownloadRatio.canConvert<QByteArray>()
-        && ignoreDownloadRatio.toByteArray() == "__qdecompresshelper_ignore_download_ratio") {
-        httpRequest.setIgnoreDecompressionRatio(true);
-    }
-
+    httpRequest.setMinimumArchiveBombSize(newHttpRequest.minimumArchiveBombSize());
     httpRequest.setPeerVerifyName(newHttpRequest.peerVerifyName());
 
     // Create the HTTP thread delegate

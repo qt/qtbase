@@ -150,8 +150,9 @@ public:
     QString peerVerifyName() const;
     void setPeerVerifyName(const QString &peerName);
 
-    bool ignoreDecompressionRatio();
-    void setIgnoreDecompressionRatio(bool enabled);
+    qint64 minimumArchiveBombSize() const;
+    void setMinimumArchiveBombSize(qint64 threshold);
+
 private:
     QSharedDataPointer<QHttpNetworkRequestPrivate> d;
     friend class QHttpNetworkRequestPrivate;
@@ -177,6 +178,7 @@ public:
     QByteArray customVerb;
     QHttpNetworkRequest::Priority priority;
     mutable QNonContiguousByteDevice* uploadByteDevice;
+    qint64 minimumArchiveBombSize = 0;
     bool autoDecompress;
     bool pipeliningAllowed;
     bool http2Allowed;
@@ -184,7 +186,6 @@ public:
     bool withCredentials;
     bool ssl;
     bool preConnect;
-    bool ignoreDecompressionRatio = false;
     bool needResendWithCredentials = false;
     int redirectCount;
     QNetworkRequest::RedirectPolicy redirectPolicy;
