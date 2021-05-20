@@ -2,7 +2,7 @@
     "Id": "md5",
     "Name": "MD5",
     "QDocModule": "qtcore",
-    "QtUsage": "Used in Qt Core (QCryptographicHash). Configure with -DQT_CRYPTOGRAPHICHASH_ONLY_SHA1 to avoid.",
+    "QtUsage": "Used in Qt Core (QCryptographicHash).",
 
     "Description": "Treat as final version; no upstream known",
     "Description": "MD5 message-digest algorithm.",

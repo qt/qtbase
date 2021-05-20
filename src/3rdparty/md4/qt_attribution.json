@@ -2,7 +2,7 @@
     "Id": "md4",
     "Name": "MD4",
     "QDocModule": "qtcore",
-    "QtUsage": "Used in Qt Core (QCryptographicHash). Configure with -DQT_CRYPTOGRAPHICHASH_ONLY_SHA1 to avoid.",
+    "QtUsage": "Used in Qt Core (QCryptographicHash).",
 
     "Description": "Treat as final version; no upstream known",
     "Description": "An OpenSSL-compatible implementation of the RSA Data Security, Inc. MD4 Message-Digest Algorithm.",
