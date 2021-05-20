@@ -343,7 +343,7 @@ function(qt_internal_add_plugin target)
         qt_path_join(config_install_dir ${QT_CONFIG_INSTALL_DIR} ${path_suffix})
 
         qt_internal_export_additional_targets_file(
-            TARGETS ${target}
+            TARGETS ${target} ${plugin_init_target}
             EXPORT_NAME_PREFIX ${INSTALL_CMAKE_NAMESPACE}${target}
             CONFIG_INSTALL_DIR "${config_install_dir}")
 

@@ -159,8 +159,7 @@ macro(qt_find_package)
                 qt_internal_should_not_promote_package_target_to_global(
                     "${qt_find_package_target_name}" should_not_promote)
                 if(NOT is_global AND NOT should_not_promote)
-                    set_property(TARGET ${qt_find_package_target_name} PROPERTY
-                                                                       IMPORTED_GLOBAL TRUE)
+                    __qt_internal_promote_target_to_global(${qt_find_package_target_name})
                     qt_find_package_promote_targets_to_global_scope(
                         "${qt_find_package_target_name}")
                 endif()

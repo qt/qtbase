@@ -114,3 +114,17 @@ function(__qt_internal_collect_resource_objects_recursively out_var target initi
     endforeach()
     set(${out_var} "${resource_targets}" PARENT_SCOPE)
 endfunction()
+
+function(__qt_internal_promote_target_to_global target)
+    get_property(is_global TARGET ${target} PROPERTY IMPORTED_GLOBAL)
+    if(NOT is_global)
+        message(DEBUG "Promoting target to global: '${target}'")
+        set_property(TARGET ${target} PROPERTY IMPORTED_GLOBAL TRUE)
+    endif()
+endfunction()
+
+function(__qt_internal_promote_target_to_global_checked target)
+    if(QT_PROMOTE_TO_GLOBAL_TARGETS)
+        __qt_internal_promote_target_to_global(${target})
+    endif()
+endfunction()
