@@ -21,6 +21,10 @@ function(qt_internal_add_resource target resourceName)
             EXPORT "${INSTALL_CMAKE_NAMESPACE}${target}Targets"
             DESTINATION "${INSTALL_LIBDIR}"
         )
+        qt_internal_add_targets_to_additional_targets_export_file(
+            TARGETS ${out_targets}
+            EXPORT_NAME_PREFIX "${INSTALL_CMAKE_NAMESPACE}${target}"
+        )
 
         qt_internal_record_rcc_object_files("${target}" "${out_targets}"
                                             INSTALL_DIRECTORY "${INSTALL_LIBDIR}")

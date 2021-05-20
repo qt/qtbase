@@ -264,8 +264,25 @@ function(qt_internal_check_directory_or_type name dir type default result_var)
     endif()
 endfunction()
 
+macro(qt_internal_get_export_additional_targets_keywords option_args single_args multi_args)
+    set(${option_args}
+    )
+    set(${single_args}
+        EXPORT_NAME_PREFIX
+    )
+    set(${multi_args}
+        TARGETS
+        TARGET_EXPORT_NAMES
+    )
+endmacro()
+
 # Create a Qt*AdditionalTargetInfo.cmake file that is included by Qt*Config.cmake
 # and sets IMPORTED_*_<CONFIG> properties on the exported targets.
+#
+# The file also makes the targets global if the QT_PROMOTE_TO_GLOBAL_TARGETS property is set in the
+# consuming project.
+# Only the specified TARGETS are made global. Transitive 3rd party targets are not made global, due
+# to limitations in CMake. See https://gitlab.kitware.com/cmake/cmake/-/issues/22291
 #
 # EXPORT_NAME_PREFIX:
 #    The portion of the file name before AdditionalTargetInfo.cmake
@@ -283,14 +300,75 @@ endfunction()
 #          TARGET_EXPORT_NAMES = Qt6::qmljs
 #
 function(qt_internal_export_additional_targets_file)
-    cmake_parse_arguments(arg "" "EXPORT_NAME_PREFIX;CONFIG_INSTALL_DIR"
-        "TARGETS;TARGET_EXPORT_NAMES" ${ARGN})
+    qt_internal_get_export_additional_targets_keywords(option_args single_args multi_args)
+    cmake_parse_arguments(arg
+        "${option_args}"
+        "${single_args};CONFIG_INSTALL_DIR"
+        "${multi_args}"
+        ${ARGN})
+
+    qt_internal_append_export_additional_targets()
+
+    set_property(GLOBAL APPEND PROPERTY _qt_export_additional_targets_ids "${id}")
+    set_property(GLOBAL APPEND
+        PROPERTY _qt_export_additional_targets_export_name_prefix_${id} "${arg_EXPORT_NAME_PREFIX}")
+    set_property(GLOBAL APPEND
+        PROPERTY _qt_export_additional_targets_config_install_dir_${id} "${arg_CONFIG_INSTALL_DIR}")
+
+    qt_add_list_file_finalizer(qt_internal_export_additional_targets_file_finalizer)
+endfunction()
+
+function(qt_internal_get_export_additional_targets_id export_name out_var)
+    string(MAKE_C_IDENTIFIER "${export_name}" id)
+    set(${out_var} "${id}" PARENT_SCOPE)
+endfunction()
+
+# Uses outer-scope variables to keep the implementation less verbose.
+macro(qt_internal_append_export_additional_targets)
+    qt_internal_validate_export_additional_targets(
+        EXPORT_NAME_PREFIX "${arg_EXPORT_NAME_PREFIX}"
+        TARGETS ${arg_TARGETS}
+        TARGET_EXPORT_NAMES ${arg_TARGET_EXPORT_NAMES})
+
+    qt_internal_get_export_additional_targets_id("${arg_EXPORT_NAME_PREFIX}" id)
+
+    set_property(GLOBAL APPEND
+        PROPERTY _qt_export_additional_targets_${id} "${arg_TARGETS}")
+    set_property(GLOBAL APPEND
+        PROPERTY _qt_export_additional_target_export_names_${id} "${arg_TARGET_EXPORT_NAMES}")
+endmacro()
+
+# Can be called to add additional targets to the file after the initial setup call.
+# Used for resources.
+function(qt_internal_add_targets_to_additional_targets_export_file)
+    qt_internal_get_export_additional_targets_keywords(option_args single_args multi_args)
+    cmake_parse_arguments(arg
+        "${option_args}"
+        "${single_args}"
+        "${multi_args}"
+        ${ARGN})
+
+    qt_internal_append_export_additional_targets()
+endfunction()
+
+function(qt_internal_validate_export_additional_targets)
+    qt_internal_get_export_additional_targets_keywords(option_args single_args multi_args)
+    cmake_parse_arguments(arg
+        "${option_args}"
+        "${single_args}"
+        "${multi_args}"
+        ${ARGN})
+
+    if(NOT arg_EXPORT_NAME_PREFIX)
+        message(FATAL_ERROR "qt_internal_validate_export_additional_targets: "
+            "Missing EXPORT_NAME_PREFIX argument.")
+    endif()
 
     list(LENGTH arg_TARGETS num_TARGETS)
     list(LENGTH arg_TARGET_EXPORT_NAMES num_TARGET_EXPORT_NAMES)
     if(num_TARGET_EXPORT_NAMES GREATER 0)
         if(NOT num_TARGETS EQUAL num_TARGET_EXPORT_NAMES)
-            message(FATAL_ERROR "qt_internal_export_additional_targets_file: "
+            message(FATAL_ERROR "qt_internal_validate_export_additional_targets: "
                 "TARGET_EXPORT_NAMES is set but has ${num_TARGET_EXPORT_NAMES} elements while "
                 "TARGETS has ${num_TARGETS} elements. "
                 "They must contain the same number of elements.")
@@ -298,6 +376,34 @@ function(qt_internal_export_additional_targets_file)
     else()
         set(arg_TARGET_EXPORT_NAMES ${arg_TARGETS})
     endif()
+
+    set(arg_TARGETS "${arg_TARGETS}" PARENT_SCOPE)
+    set(arg_TARGET_EXPORT_NAMES "${arg_TARGET_EXPORT_NAMES}" PARENT_SCOPE)
+endfunction()
+
+# The finalizer might be called multiple times in the same scope, but only the first one will
+# process all the ids.
+function(qt_internal_export_additional_targets_file_finalizer)
+    get_property(ids GLOBAL PROPERTY _qt_export_additional_targets_ids)
+
+    foreach(id ${ids})
+        qt_internal_export_additional_targets_file_handler("${id}")
+    endforeach()
+
+    set_property(GLOBAL PROPERTY _qt_export_additional_targets_ids "")
+endfunction()
+
+function(qt_internal_export_additional_targets_file_handler id)
+    get_property(arg_EXPORT_NAME_PREFIX GLOBAL PROPERTY
+        _qt_export_additional_targets_export_name_prefix_${id})
+    get_property(arg_CONFIG_INSTALL_DIR GLOBAL PROPERTY
+        _qt_export_additional_targets_config_install_dir_${id})
+    get_property(arg_TARGETS GLOBAL PROPERTY
+        _qt_export_additional_targets_${id})
+    get_property(arg_TARGET_EXPORT_NAMES GLOBAL PROPERTY
+        _qt_export_additional_target_export_names_${id})
+
+    list(LENGTH arg_TARGETS num_TARGETS)
 
     # Determine the release configurations we're currently building
     if(QT_GENERATOR_IS_MULTI_CONFIG)
@@ -337,18 +443,33 @@ if(NOT DEFINED QT_DEFAULT_IMPORT_CONFIGURATION)
     set(QT_DEFAULT_IMPORT_CONFIGURATION ${uc_default_cfg})
 endif()
 ")
+
     math(EXPR n "${num_TARGETS} - 1")
     foreach(i RANGE ${n})
         list(GET arg_TARGETS ${i} target)
         list(GET arg_TARGET_EXPORT_NAMES ${i} target_export_name)
-        get_target_property(target_type ${target} TYPE)
-        if(target_type STREQUAL "INTERFACE_LIBRARY")
-            continue()
-        endif()
+
         set(full_target ${target_export_name})
         if(NOT full_target MATCHES "^${QT_CMAKE_EXPORT_NAMESPACE}::")
             string(PREPEND full_target "${QT_CMAKE_EXPORT_NAMESPACE}::")
         endif()
+
+        # Tools are already made global unconditionally in QtFooToolsConfig.cmake.
+        # And the
+        get_target_property(target_type ${target} TYPE)
+        if(NOT target_type STREQUAL "EXECUTABLE")
+            string(APPEND content
+                "__qt_internal_promote_target_to_global_checked(${full_target})\n")
+        endif()
+
+        # INTERFACE libraries don't have IMPORTED_LOCATION-like properties.
+        # OBJECT libraries have properties like IMPORTED_OBJECTS instead.
+        # Skip the rest of the procesing for those.
+        if(target_type STREQUAL "INTERFACE_LIBRARY" OR target_type STREQUAL "OBJECT_LIBRARY")
+            continue()
+        endif()
+
+        # FIXME: Don't add IMPORTED_SOLIB and IMPORTED_SONAME properties for executables.
         set(properties_retrieved TRUE)
         if(NOT "${uc_release_cfg}" STREQUAL "")
             string(APPEND content "get_target_property(_qt_imported_location ${full_target} IMPORTED_LOCATION_${uc_release_cfg})\n")

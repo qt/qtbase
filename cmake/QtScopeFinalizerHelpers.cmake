@@ -74,6 +74,9 @@ function(qt_watch_current_list_dir variable access value current_list_file stack
                     qt_finalize_plugin(${a1} ${a2} ${a3} ${a4} ${a5} ${a6} ${a7} ${a8} ${a9})
                 elseif(func STREQUAL "qt_internal_finalize_app")
                     qt_internal_finalize_app(${a1} ${a2} ${a3} ${a4} ${a5} ${a6} ${a7} ${a8} ${a9})
+                elseif(func STREQUAL "qt_internal_export_additional_targets_file_finalizer")
+                    qt_internal_export_additional_targets_file_finalizer(
+                        ${a1} ${a2} ${a3} ${a4} ${a5} ${a6} ${a7} ${a8} ${a9})
                 else()
                     message(FATAL_ERROR "qt_watch_current_list_dir doesn't know about ${func}. Consider adding it.")
                 endif()

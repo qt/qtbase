@@ -222,14 +222,13 @@ function(__qt_internal_walk_libs
                     endif()
 
                     get_property(is_imported TARGET ${lib_target_unaliased} PROPERTY IMPORTED)
-                    get_property(is_global TARGET ${lib_target_unaliased} PROPERTY IMPORTED_GLOBAL)
 
                     # Allow opting out of promotion. This is useful in certain corner cases
                     # like with WrapLibClang and Threads in qttools.
                     qt_internal_should_not_promote_package_target_to_global(
                         "${lib_target_unaliased}" should_not_promote)
-                    if(NOT is_global AND is_imported AND NOT should_not_promote)
-                        set_property(TARGET ${lib_target_unaliased} PROPERTY IMPORTED_GLOBAL TRUE)
+                    if(is_imported AND NOT should_not_promote)
+                        __qt_internal_promote_target_to_global(${lib_target_unaliased})
                     endif()
                 endif()
             elseif("${lib_target}" MATCHES "^Qt::(.*)")

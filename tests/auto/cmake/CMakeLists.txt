@@ -247,6 +247,10 @@ set_tests_properties(test_import_plugins PROPERTIES FIXTURES_REQUIRED build_mock
 
 _qt_internal_test_expect_pass(test_versionless_targets)
 
+if(NOT NO_GUI)
+  _qt_internal_test_expect_pass(test_global_promotion)
+endif()
+
 _qt_internal_test_expect_pass(test_add_resources_binary_generated
                               BINARY test_add_resources_binary_generated)
 
