@@ -440,6 +440,7 @@ function(qt_internal_add_module target)
             QT_BUILD_${module_define_infix}_LIB ### FIXME: use QT_BUILD_ADDON for Add-ons or remove if we don't have add-ons anymore
             ${deprecation_define}
             )
+        list(APPEND arg_LIBRARIES Qt::PlatformModuleInternal)
     endif()
 
     qt_internal_extend_target("${target}"
@@ -455,7 +456,7 @@ function(qt_internal_add_module target)
             ${arg_DEFINES}
             ${defines_for_extend_target}
         PUBLIC_LIBRARIES ${arg_PUBLIC_LIBRARIES}
-        LIBRARIES ${arg_LIBRARIES} Qt::PlatformModuleInternal
+        LIBRARIES ${arg_LIBRARIES}
         PRIVATE_MODULE_INTERFACE ${arg_PRIVATE_MODULE_INTERFACE}
         FEATURE_DEPENDENCIES ${arg_FEATURE_DEPENDENCIES}
         DBUS_ADAPTOR_SOURCES ${arg_DBUS_ADAPTOR_SOURCES}
