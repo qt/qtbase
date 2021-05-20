@@ -3241,9 +3241,9 @@ QCoreApplication::checkPermission(const QString &permission)
 #endif // future && QT_NO_QOBJECT
 
 template <>
-Q_NATIVE_INTERFACE_EXPORT void *QNativeInterface::Private::resolveInterface(const QCoreApplication *that, const std::type_info &type, int revision)
+Q_NATIVE_INTERFACE_EXPORT void *QNativeInterface::Private::resolveInterface(const QCoreApplication *that, const char *name, int revision)
 {
-    Q_UNUSED(that); Q_UNUSED(type); Q_UNUSED(revision);
+    Q_UNUSED(that); Q_UNUSED(name); Q_UNUSED(revision);
     return nullptr;
 }
 

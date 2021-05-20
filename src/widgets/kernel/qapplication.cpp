@@ -4101,9 +4101,9 @@ QPixmap QApplicationPrivate::applyQIconStyleHelper(QIcon::Mode mode, const QPixm
 }
 
 template <>
-Q_NATIVE_INTERFACE_EXPORT void *QNativeInterface::Private::resolveInterface(const QApplication *that, const std::type_info &type, int revision)
+Q_NATIVE_INTERFACE_EXPORT void *QNativeInterface::Private::resolveInterface(const QApplication *that, const char *name, int revision)
 {
-    return resolveInterface<QGuiApplication>(that, type, revision);
+    return resolveInterface<QGuiApplication>(that, name, revision);
 }
 
 QT_END_NAMESPACE

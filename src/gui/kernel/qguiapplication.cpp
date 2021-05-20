@@ -4197,7 +4197,7 @@ QInputDeviceManager *QGuiApplicationPrivate::inputDeviceManager()
 }
 
 template <>
-Q_NATIVE_INTERFACE_EXPORT void *QNativeInterface::Private::resolveInterface(const QGuiApplication *that, const std::type_info &type, int revision)
+Q_NATIVE_INTERFACE_EXPORT void *QNativeInterface::Private::resolveInterface(const QGuiApplication *that, const char *name, int revision)
 {
     using namespace QNativeInterface::Private;
 
@@ -4208,7 +4208,7 @@ Q_NATIVE_INTERFACE_EXPORT void *QNativeInterface::Private::resolveInterface(cons
     QT_NATIVE_INTERFACE_RETURN_IF(QWindowsApplication, platformIntegration);
 #endif
 
-    return resolveInterface<QCoreApplication>(that, type, revision);
+    return resolveInterface<QCoreApplication>(that, name, revision);
 }
 
 #include "moc_qguiapplication.cpp"

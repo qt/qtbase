@@ -372,9 +372,9 @@ QPlatformSurface *QOffscreenSurface::surfaceHandle() const
 using namespace QNativeInterface;
 
 template <>
-Q_NATIVE_INTERFACE_EXPORT void *QNativeInterface::Private::resolveInterface(const QOffscreenSurface *that, const std::type_info &type, int revision)
+Q_NATIVE_INTERFACE_EXPORT void *QNativeInterface::Private::resolveInterface(const QOffscreenSurface *that, const char *name, int revision)
 {
-    Q_UNUSED(that); Q_UNUSED(type); Q_UNUSED(revision);
+    Q_UNUSED(that); Q_UNUSED(name); Q_UNUSED(revision);
 
     auto *surfacePrivate = QOffscreenSurfacePrivate::get(const_cast<QOffscreenSurface*>(that));
     Q_UNUSED(surfacePrivate);
