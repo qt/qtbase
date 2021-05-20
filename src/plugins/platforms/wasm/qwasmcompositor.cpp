@@ -110,6 +110,9 @@ void QWasmCompositor::addWindow(QWasmWindow *window, QWasmWindow *parentWindow)
     else
         m_compositedWindows[parentWindow].childWindows.append(window);
 
+    if (!QGuiApplication::focusWindow()) {
+        window->requestActivateWindow();
+    }
     notifyTopWindowChanged(window);
 }
 
@@ -125,6 +128,10 @@ void QWasmCompositor::removeWindow(QWasmWindow *window)
     m_windowStack.removeAll(window);
     m_compositedWindows.remove(window);
 
+    if (!m_windowStack.isEmpty() && !QGuiApplication::focusWindow()) {
+        auto lastWindow = m_windowStack.last();
+        lastWindow->requestActivateWindow();
+    }
     notifyTopWindowChanged(window);
 }
 
@@ -734,12 +741,13 @@ void QWasmCompositor::notifyTopWindowChanged(QWasmWindow *window)
     bool blocked = QGuiApplicationPrivate::instance()->isWindowBlocked(window->window(), &modalWindow);
 
     if (blocked) {
+        modalWindow->requestActivate();
         raise(static_cast<QWasmWindow*>(modalWindow->handle()));
         return;
     }
 
     requestRedraw();
-    QWindowSystemInterface::handleWindowActivated(window->window());
+
 }
 
 QWasmScreen *QWasmCompositor::screen()
