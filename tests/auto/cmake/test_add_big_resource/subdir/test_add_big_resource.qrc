@@ -1,0 +1,5 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource prefix="/">
+    <file>subdir_resource_file.txt</file>
+</qresource>
+</RCC>

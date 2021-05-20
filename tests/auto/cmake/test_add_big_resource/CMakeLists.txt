@@ -9,7 +9,8 @@ find_package(Qt6Core REQUIRED)
 
 qt_wrap_cpp(moc_files myobject.h)
 
-qt_add_big_resources(rcc_files "test_add_big_resource.qrc" "test_add_big_resource2.qrc")
+qt_add_big_resources(rcc_files "test_add_big_resource.qrc" "test_add_big_resource2.qrc"
+    "subdir/test_add_big_resource.qrc")
 
 add_executable(myobject myobject.cpp ${moc_files} ${rcc_files})
 target_link_libraries(myobject PRIVATE Qt::Core)
