@@ -393,6 +393,14 @@ bool QCocoaGLContext::setDrawable(QPlatformSurface *surface)
     if (view == QT_IGNORE_DEPRECATIONS(m_context.view))
         return true;
 
+    // We generally want high-DPI GL surfaces, unless the user has explicitly disabled them.
+    // According to the documentation, layer-backed views ignore wantsBestResolutionOpenGLSurface
+    // and configure their own backing surface at an appropriate resolution, but in some cases
+    // we've seen this fail (plugin views embedded in surface-backed hosts), so we do it anyways.
+    QT_IGNORE_DEPRECATIONS(view.wantsBestResolutionOpenGLSurface) = qt_mac_resolveOption(YES,
+        cocoaWindow->window(), "_q_mac_wantsBestResolutionOpenGLSurface",
+        "QT_MAC_WANTS_BEST_RESOLUTION_OPENGL_SURFACE");
+
     // Setting the drawable may happen on a separate thread as a result of
     // a call to makeCurrent, so we need to set up the observers before we
     // associate the view with the context. That way we will guarantee that
