@@ -420,7 +420,7 @@ int runRcc(int argc, char *argv[])
         temp.setFileName(tempFilename);
         if (!temp.open(QIODevice::ReadOnly)) {
             const QString msg = QString::fromUtf8("Unable to open temporary file %1 for reading: %2\n")
-                    .arg(outFilename, out.errorString());
+                    .arg(tempFilename, out.errorString());
             errorDevice.write(msg.toUtf8());
             return 1;
         }
