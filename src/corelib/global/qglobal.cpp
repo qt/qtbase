@@ -651,18 +651,7 @@ static_assert(sizeof(qint64) == 8, "Internal error, qint64 is misdefined");
   application would probably crash when you called a member function
   of \c{w}.
 
-  \sa Q_DISABLE_COPY_MOVE, Q_DISABLE_MOVE
-*/
-
-/*!
-  \macro Q_DISABLE_MOVE(Class)
-  \relates QObject
-
-  Disables the use of move constructors and move assignment operators
-  for the given \a Class.
-
-  \sa Q_DISABLE_COPY, Q_DISABLE_COPY_MOVE
-  \since 5.13
+  \sa Q_DISABLE_COPY_MOVE
 */
 
 /*!
@@ -671,9 +660,9 @@ static_assert(sizeof(qint64) == 8, "Internal error, qint64 is misdefined");
 
   A convenience macro that disables the use of copy constructors, assignment
   operators, move constructors and move assignment operators for the given
-  \a Class, combining Q_DISABLE_COPY and Q_DISABLE_MOVE.
+  \a Class.
 
-  \sa Q_DISABLE_COPY, Q_DISABLE_MOVE
+  \sa Q_DISABLE_COPY
   \since 5.13
 */
 

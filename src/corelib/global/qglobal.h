@@ -491,13 +491,10 @@ constexpr inline Deprecated_t Deprecated = {};
     Class(const Class &) = delete;\
     Class &operator=(const Class &) = delete;
 
-#define Q_DISABLE_MOVE(Class) \
-    Class(Class &&) = delete; \
-    Class &operator=(Class &&) = delete;
-
 #define Q_DISABLE_COPY_MOVE(Class) \
     Q_DISABLE_COPY(Class) \
-    Q_DISABLE_MOVE(Class)
+    Class(Class &&) = delete; \
+    Class &operator=(Class &&) = delete;
 
 /*
     Implementing a move assignment operator using an established
