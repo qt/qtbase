@@ -598,6 +598,13 @@ QT_PATCH_VERSION = ${PROJECT_VERSION_PATCH}
         list(APPEND extra_statements "QT_MAC_SDK_VERSION = ${QT_MAC_SDK_VERSION}")
         list(APPEND extra_statements
              "QMAKE_MACOSX_DEPLOYMENT_TARGET = ${CMAKE_OSX_DEPLOYMENT_TARGET}")
+        if (CMAKE_OSX_ARCHITECTURES)
+            list(APPEND architectures "${CMAKE_OSX_ARCHITECTURES}")
+            string (REPLACE ";" " " architectures "${architectures}")
+        else()
+            set(architectures "$$QT_ARCH")
+        endif()
+        list(APPEND extra_statements "QT_ARCHS = ${architectures}")
     endif()
 
     list(APPEND extra_statements "QT_EDITION = Open Source")
