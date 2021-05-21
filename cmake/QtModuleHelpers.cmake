@@ -193,15 +193,12 @@ function(qt_internal_add_module target)
         set_property(TARGET "${target_private}" APPEND PROPERTY
                      EXPORT_PROPERTIES _qt_config_module_name)
     elseif(arg_INTERNAL_MODULE)
-        # TODO: We need to create temporary alias targets for the internal modules to keep the
+        # TODO: We need to create temporary private targets for the internal modules to keep the
         # existing code compatible to the internal modules that don't have the 'Private' suffix yet.
         # Remove this once the migration is complete.
-        set(versionless_private_alias "Qt::${target_private}")
-        set(versionfull_private_alias "Qt${PROJECT_VERSION_MAJOR}::${target_private}")
-        add_library("${versionless_private_alias}" ALIAS "${target}")
-        add_library("${versionfull_private_alias}" ALIAS "${target}")
-        unset(versionless_private_alias)
-        unset(versionfull_private_alias)
+        add_library("${target_private}" INTERFACE)
+        qt_internal_add_target_aliases("${target_private}")
+        target_link_libraries(${target_private} INTERFACE ${target})
     endif()
 
     if(NOT arg_HEADER_MODULE)
@@ -629,7 +626,8 @@ set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
 
     file(COPY ${extra_cmake_files} DESTINATION "${config_build_dir}")
     set(exported_targets ${target})
-    if(NOT ${arg_NO_PRIVATE_MODULE})
+    #TODO: remove the 'OR arg_INTERNAL_MODULE' part once renaming of internal modules is finished.
+    if(NOT ${arg_NO_PRIVATE_MODULE} OR arg_INTERNAL_MODULE)
         list(APPEND exported_targets ${target_private})
     endif()
     set(export_name "${INSTALL_CMAKE_NAMESPACE}${target}Targets")
