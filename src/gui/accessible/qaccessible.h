@@ -715,6 +715,7 @@ protected:
         QAccessible::Id m_uniqueId;
     };
 
+    friend class QTestAccessibility;
 };
 
 class Q_GUI_EXPORT QAccessibleStateChangeEvent :public QAccessibleEvent

@@ -185,7 +185,16 @@ private:
 
     static void updateHandler(QAccessibleEvent *event)
     {
-        eventList().append(copyEvent(event));
+        auto ev = copyEvent(event);
+        if (ev->object()) {
+            QObject::connect(ev->object(), &QObject::destroyed, [&, ev](){
+                auto index= eventList().indexOf(ev);
+                if (index == -1)
+                    return;
+                eventList().at(index)->m_object = nullptr;
+            });
+        }
+        eventList().append(ev);
     }
     static QAccessibleEvent *copyEvent(QAccessibleEvent *event)
     {
