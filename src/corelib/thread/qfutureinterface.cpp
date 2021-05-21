@@ -586,12 +586,12 @@ void QFutureInterfaceBase::swap(QFutureInterfaceBase &other) noexcept
     qSwap(d, other.d);
 }
 
-bool QFutureInterfaceBase::refT() const
+bool QFutureInterfaceBase::refT() const noexcept
 {
     return d->refCount.refT();
 }
 
-bool QFutureInterfaceBase::derefT() const
+bool QFutureInterfaceBase::derefT() const noexcept
 {
     // Called from ~QFutureInterface
     return !d || d->refCount.derefT();

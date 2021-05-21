@@ -178,8 +178,9 @@ public:
     void swap(QFutureInterfaceBase &other) noexcept;
 
 protected:
-    bool refT() const;
-    bool derefT() const;
+    // ### Qt 7: remove const from refT/derefT
+    bool refT() const noexcept;
+    bool derefT() const noexcept;
     void reset();
     void rethrowPossibleException();
 public:
@@ -234,7 +235,7 @@ public:
         refT();
     }
     QFutureInterface(const QFutureInterfaceBase &dd) : QFutureInterfaceBase(dd) { refT(); }
-    QFutureInterface(QFutureInterfaceBase &&dd) : QFutureInterfaceBase(std::move(dd)) { refT(); }
+    QFutureInterface(QFutureInterfaceBase &&dd) noexcept : QFutureInterfaceBase(std::move(dd)) { refT(); }
     QFutureInterface &operator=(const QFutureInterface &other)
     {
         QFutureInterface copy(other);
