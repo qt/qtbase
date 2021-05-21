@@ -283,7 +283,8 @@ namespace QTest
     Q_TESTLIB_EXPORT char *toPrettyCString(const char *unicode, int length);
     Q_TESTLIB_EXPORT char *toPrettyUnicode(QStringView string);
     Q_TESTLIB_EXPORT char *toString(const char *);
-    Q_TESTLIB_EXPORT char *toString(const void *);
+    Q_TESTLIB_EXPORT char *toString(const volatile void *);
+    Q_TESTLIB_EXPORT char *toString(const void *); // ### FIXME: Qt 7: Remove
 
     Q_TESTLIB_EXPORT void qInit(QObject *testObject, int argc = 0, char **argv = nullptr);
     Q_TESTLIB_EXPORT int qRun();
