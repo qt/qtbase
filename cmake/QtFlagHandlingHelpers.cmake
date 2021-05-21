@@ -256,6 +256,15 @@ function(qt_enable_utf8_sources target)
     endif()
 endfunction()
 
+function(qt_internal_enable_unicode_defines)
+    if(WIN32)
+        set(no_unicode_condition
+            "$<NOT:$<BOOL:$<TARGET_PROPERTY:QT_NO_UNICODE_DEFINES>>>")
+        target_compile_definitions(Platform
+            INTERFACE "$<${no_unicode_condition}:UNICODE;_UNICODE>")
+    endif()
+endfunction()
+
 # Saves the list of known optimization flags for the current compiler in out_var.
 #
 # Mostly used for removing them before adding new ones.
