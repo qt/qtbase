@@ -38,6 +38,8 @@ opensuse-leap
 b2qt
 ubuntu
 windows-10
+sles-15
+opensuse-15.1
 [putToFtp]
 windows-10
 [putWithServerClosingConnectionImmediately]
