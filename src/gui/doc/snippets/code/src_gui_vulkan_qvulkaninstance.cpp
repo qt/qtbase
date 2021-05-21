@@ -85,14 +85,14 @@ void wrapper0() {
     QVulkanInstance inst;
 
     // Enable validation layer, if supported. Messages go to qDebug by default.
-    inst.setLayers(QByteArrayList() << "VK_LAYER_LUNARG_standard_validation");
+    inst.setLayers({ "VK_LAYER_KHRONOS_validation" });
 
     bool ok = inst.create();
     if (!ok) {
         // ... Vulkan not available
     }
 
-    if (!inst.layers().contains("VK_LAYER_LUNARG_standard_validation")) {
+    if (!inst.layers().contains("VK_LAYER_KHRONOS_validation")) {
         // ... validation layer not available
     }
 //! [1]
@@ -103,7 +103,7 @@ void wrapper1() {
 //! [2]
     QVulkanInstance inst;
 
-    if (inst.supportedLayers().contains("VK_LAYER_LUNARG_standard_validation")) {
+    if (inst.supportedLayers().contains("VK_LAYER_KHRONOS_validation")) {
         // ...
     }
     bool ok = inst.create();

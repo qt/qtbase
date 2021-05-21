@@ -722,7 +722,7 @@ void QVulkanWindowPrivate::init()
         && VK_VERSION_PATCH(apiVersion) <= 13)
     {
         // Make standard validation work at least.
-        const QByteArray stdValName = QByteArrayLiteral("VK_LAYER_LUNARG_standard_validation");
+        const QByteArray stdValName = QByteArrayLiteral("VK_LAYER_KHRONOS_validation");
         const char *stdValNamePtr = stdValName.constData();
         if (inst->layers().contains(stdValName)) {
             uint32_t count = 0;

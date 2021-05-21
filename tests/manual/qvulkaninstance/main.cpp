@@ -222,8 +222,8 @@ void VWindow::init()
     }
 
     QList<const char *> devLayers;
-    if (inst->layers().contains("VK_LAYER_LUNARG_standard_validation"))
-        devLayers.append("VK_LAYER_LUNARG_standard_validation");
+    if (inst->layers().contains("VK_LAYER_KHRONOS_validation"))
+        devLayers.append("VK_LAYER_KHRONOS_validation");
 
     QList<const char *> devExts;
     devExts.append("VK_KHR_swapchain");
@@ -697,7 +697,7 @@ int main(int argc, char *argv[])
     qDebug() << inst.supportedLayers() << inst.supportedExtensions();
 
     // Enable validation layer, if supported.
-    inst.setLayers(QByteArrayList() << "VK_LAYER_LUNARG_standard_validation");
+    inst.setLayers(QByteArrayList() << "VK_LAYER_KHRONOS_validation");
 
     bool ok = inst.create();
     qDebug("QVulkanInstance::create() returned %d", ok);

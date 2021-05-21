@@ -472,7 +472,7 @@ void tst_QVulkan::vulkanWindowRenderer()
 void tst_QVulkan::vulkanWindowGrab()
 {
     QVulkanInstance inst;
-    inst.setLayers(QByteArrayList() << "VK_LAYER_LUNARG_standard_validation");
+    inst.setLayers(QByteArrayList() << "VK_LAYER_KHRONOS_validation");
     if (!inst.create())
         QSKIP("Vulkan init failed; skip");
 

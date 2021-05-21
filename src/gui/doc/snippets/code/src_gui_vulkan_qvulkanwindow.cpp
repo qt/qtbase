@@ -98,7 +98,7 @@ int main(int argc, char *argv[])
 
     QVulkanInstance inst;
     // enable the standard validation layers, when available
-    inst.setLayers(QByteArrayList() << "VK_LAYER_LUNARG_standard_validation");
+    inst.setLayers({ "VK_LAYER_KHRONOS_validation" });
     if (!inst.create())
         qFatal("Failed to create Vulkan instance: %d", inst.errorCode());
 
