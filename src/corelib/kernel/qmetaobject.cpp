@@ -2144,7 +2144,7 @@ int QMetaMethod::revision() const
 
     Returns whether the method is const qualified.
 
-    \note This method might errorneously return \false for a const method
+    \note This method might errorneously return \c false for a const method
     if it belongs to a library compiled against an older version of Qt.
  */
 bool QMetaMethod::isConst() const

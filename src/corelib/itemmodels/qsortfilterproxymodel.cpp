@@ -282,7 +282,7 @@ public:
 
     void remove_from_mapping(const QModelIndex &source_parent);
 
-    /*!
+    /*
      * Legacy: changing the pattern through a string does not change the
      * case sensitivity.
      */
