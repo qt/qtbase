@@ -221,7 +221,7 @@ void QSequentialAnimationGroupPrivate::rewindForwards(const AnimationIndex &newA
 }
 
 /*!
-    \fn QSequentialAnimationGroup::currentAnimationChanged(QAbstractAnimation *current)
+    \fn QSequentialAnimationGroup::currentAnimationChanged(QAbstractAnimation *current) const
 
     QSequentialAnimationGroup emits this signal when currentAnimation
     has been changed. \a current is the current animation.
