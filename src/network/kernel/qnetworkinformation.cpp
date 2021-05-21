@@ -471,6 +471,21 @@ QNetworkInformationBackendFactory::~QNetworkInformationBackendFactory()
 */
 
 /*!
+    \enum QNetworkInformation::TriState
+    \since 6.2
+
+    A bool with a 3rd, unknown, state.
+
+    \value False
+        Known to be \c{false}.
+    \value True
+        Known to be \c{true}.
+    \value Unknown
+        The state cannot be determined at present, either because the query is
+        not supported on this platform or because the OS lacks the information.
+*/
+
+/*!
     \internal ctor
 */
 QNetworkInformation::QNetworkInformation(QNetworkInformationBackend *backend)
@@ -478,6 +493,9 @@ QNetworkInformation::QNetworkInformation(QNetworkInformationBackend *backend)
 {
     connect(backend, &QNetworkInformationBackend::reachabilityChanged, this,
             [this]() { emit reachabilityChanged(d_func()->backend->reachability()); });
+    connect(backend, &QNetworkInformationBackend::behindCaptivePortalChanged, this, [this]() {
+        emit behindCaptivePortalChanged(d_func()->backend->behindCaptivePortal());
+    });
 }
 
 /*!
@@ -502,6 +520,24 @@ QNetworkInformation::~QNetworkInformation() = default;
 QNetworkInformation::Reachability QNetworkInformation::reachability() const
 {
     return d_func()->backend->reachability();
+}
+
+/*!
+    \property QNetworkInformation::behindCaptivePortal
+    \brief Lets you know if the user's device is behind a captive portal.
+    \since 6.2
+
+    This property indicates if the user's device is currently behind a captive
+    portal. This functionality relies on the operating system's detection of
+    captive portals and is not supported on systems that don't report this.
+    On systems where this is not supported this will always return
+    TriState::Unknown.
+
+    \sa TriState
+*/
+QNetworkInformation::TriState QNetworkInformation::behindCaptivePortal() const
+{
+    return d_func()->backend->behindCaptivePortal();
 }
 
 /*!

@@ -55,6 +55,7 @@ class Q_NETWORK_EXPORT QNetworkInformation : public QObject
     Q_OBJECT
     Q_DECLARE_PRIVATE(QNetworkInformation)
     Q_PROPERTY(Reachability reachability READ reachability NOTIFY reachabilityChanged)
+    Q_PROPERTY(TriState behindCaptivePortal READ behindCaptivePortal NOTIFY behindCaptivePortalChanged)
 public:
     enum class Reachability {
         Unknown,
@@ -65,13 +66,23 @@ public:
     };
     Q_ENUM(Reachability)
 
+    enum class TriState {
+        False,
+        True,
+        Unknown,
+    };
+    Q_ENUM(TriState)
+
     enum class Feature {
         Reachability = 0x1,
+        CaptivePortal = 0x2,
     };
     Q_DECLARE_FLAGS(Features, Feature)
     Q_FLAG(Features)
 
     Reachability reachability() const;
+
+    TriState behindCaptivePortal() const;
 
     QString backendName() const;
 
@@ -84,6 +95,7 @@ public:
 
 Q_SIGNALS:
     void reachabilityChanged(Reachability newReachability);
+    void behindCaptivePortalChanged(TriState state);
 
 private:
     friend struct QNetworkInformationDeleter;

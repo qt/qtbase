@@ -40,6 +40,7 @@ class tst_QNetworkInformation : public QObject
 private slots:
     void initTestCase();
     void reachability();
+    void behindCaptivePortal();
     void cleanupTestCase();
 
 private:
@@ -56,6 +57,7 @@ public:
         Q_ASSERT(!instance);
         instance = this;
         setReachability(QNetworkInformation::Reachability::Online);
+        setNewBehindCaptivePortal(QNetworkInformation::TriState::False);
     }
     ~MockBackend() { instance = nullptr; }
 
@@ -72,9 +74,16 @@ public:
         instance->setReachability(value);
     }
 
+    static void setNewBehindCaptivePortal(QNetworkInformation::TriState value)
+    {
+        Q_ASSERT(instance);
+        instance->setBehindCaptivePortal(value);
+    }
+
     static QNetworkInformation::Features featuresSupportedStatic()
     {
-        return { QNetworkInformation::Feature::Reachability };
+        return { QNetworkInformation::Feature::Reachability,
+                 QNetworkInformation::Feature::CaptivePortal };
     }
 
 private:
@@ -150,6 +159,32 @@ void tst_QNetworkInformation::reachability()
     MockBackend::setNewReachability(QNetworkInformation::Reachability::Site);
     QCOMPARE(info->reachability(), QNetworkInformation::Reachability::Site);
     QCOMPARE(boundIsOnline, QNetworkInformation::Reachability::Site);
+}
+
+void tst_QNetworkInformation::behindCaptivePortal()
+{
+    auto info = QNetworkInformation::instance();
+    QNetworkInformation::TriState behindPortal = QNetworkInformation::TriState::Unknown;
+    bool signalEmitted = false;
+
+    connect(info, &QNetworkInformation::behindCaptivePortalChanged, this,
+            [&, info](QNetworkInformation::TriState state) {
+                signalEmitted = true;
+                QCOMPARE(state, info->behindCaptivePortal());
+                behindPortal = info->behindCaptivePortal();
+            });
+    QCOMPARE(info->behindCaptivePortal(), QNetworkInformation::TriState::False);
+    MockBackend::setNewBehindCaptivePortal(QNetworkInformation::TriState::True);
+    QCoreApplication::processEvents();
+    QVERIFY(signalEmitted);
+    QCOMPARE(info->behindCaptivePortal(), QNetworkInformation::TriState::True);
+    QCOMPARE(behindPortal, QNetworkInformation::TriState::True);
+
+    // Set the same value again, signal should not be emitted again
+    signalEmitted = false;
+    MockBackend::setNewBehindCaptivePortal(QNetworkInformation::TriState::True);
+    QCoreApplication::processEvents();
+    QVERIFY(!signalEmitted);
 }
 
 QTEST_MAIN(tst_QNetworkInformation);

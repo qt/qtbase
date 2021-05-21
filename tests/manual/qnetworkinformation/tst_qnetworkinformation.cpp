@@ -48,7 +48,13 @@ int main(int argc, char **argv)
                          qDebug() << "Updated:" << newStatus;
                      });
 
-    qDebug() << "Initial:" << info->reachability();
+    QObject::connect(info, &QNetworkInformation::behindCaptivePortalChanged,
+                     [](QNetworkInformation::TriState status) {
+                         qDebug() << "Updated, behind captive portal:" << status;
+                     });
+
+    qDebug() << "Initial reachability:" << info->reachability();
+    qDebug() << "Behind captive portal:" << info->behindCaptivePortal();
 
     return app.exec();
 }
