@@ -36,7 +36,7 @@ using namespace emscripten;
 val QWasmString::fromQString(const QString &str)
 {
     static const val UTF16ToString(
-        val::global("Module")["UTF16ToString"]);
+        val::module_property("UTF16ToString"));
 
     auto ptr = quintptr(str.utf16());
     return UTF16ToString(val(ptr));
@@ -49,7 +49,7 @@ QString QWasmString::toQString(const val &v)
         return result;
 
     static const val stringToUTF16(
-        val::global("Module")["stringToUTF16"]);
+        val::module_property("stringToUTF16"));
     static const val length("length");
 
     int len = v[length].as<int>();
