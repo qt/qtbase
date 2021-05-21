@@ -7,6 +7,16 @@ function (qt_internal_setup_wasm_target_properties wasmTarget)
     "SHELL:-s USE_WEBGL2=1"
     "--bind"
     "SHELL:-s FETCH=1")
+
+    # Enable MODULARIZE and set EXPORT_NAME, which makes it possible to
+    # create application instances using a global constructor function,
+    # e.g. let app_instance = await createQtAppInstance().
+    # (as opposed to MODULARIZE=0, where Emscripten creates a global app
+    # instance object at Javascript eval time)
+    target_link_options("${wasmTarget}" INTERFACE
+    "SHELL:-s MODULARIZE=1"
+    "SHELL:-s EXPORT_NAME=createQtAppInstance")
+
     target_compile_options("${wasmTarget}" INTERFACE --bind)
 
     # Hardcode wasm memory size. Emscripten does not currently support memory growth

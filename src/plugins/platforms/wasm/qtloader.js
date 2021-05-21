@@ -128,10 +128,18 @@
 //      Sets the logical font dpi for the application.
 
 
-var Module = {}
-
 function QtLoader(config)
 {
+    // The Emscripten module and module configuration object. The module
+    // object is created in completeLoadEmscriptenModule().
+    self.module = undefined;
+    self.moduleConfig = {};
+
+    // Qt properties. These are propagated to the Emscripten module after
+    // it has been created.
+    self.qtCanvasElements = undefined;
+    self.qtFontDpi = 96;
+
     function webAssemblySupported() {
         return typeof WebAssembly !== "undefined"
     }
@@ -341,7 +349,7 @@ function QtLoader(config)
         // The wasm binary has been compiled into a module during resource download,
         // and is ready to be instantiated. Define the instantiateWasm callback which
         // emscripten will call to create the instance.
-        Module.instantiateWasm = function(imports, successCallback) {
+        self.moduleConfig.instantiateWasm = function(imports, successCallback) {
             WebAssembly.instantiate(wasmModule, imports).then(function(instance) {
                 successCallback(instance, wasmModule);
             }, function(error) {
@@ -351,27 +359,27 @@ function QtLoader(config)
             return {};
         };
 
-        Module.locateFile = Module.locateFile || function(filename) {
+        self.moduleConfig.locateFile = self.moduleConfig.locateFile || function(filename) {
             return config.path + filename;
         };
 
         // Attach status callbacks
-        Module.setStatus = Module.setStatus || function(text) {
+        self.moduleConfig.setStatus = self.moduleConfig.setStatus || function(text) {
             // Currently the only usable status update from this function
             // is "Running..."
             if (text.startsWith("Running"))
                 setStatus("Running");
         };
-        Module.monitorRunDependencies = Module.monitorRunDependencies || function(left) {
+        self.moduleConfig.monitorRunDependencies = self.moduleConfig.monitorRunDependencies || function(left) {
           //  console.log("monitorRunDependencies " + left)
         };
 
         // Attach standard out/err callbacks.
-        Module.print = Module.print || function(text) {
+        self.moduleConfig.print = self.moduleConfig.print || function(text) {
             if (config.stdoutEnabled)
                 console.log(text)
         };
-        Module.printErr = Module.printErr || function(text) {
+        self.moduleConfig.printErr = self.moduleConfig.printErr || function(text) {
             // Filter out OpenGL getProcAddress warnings. Qt tries to resolve
             // all possible function/extension names at startup which causes
             // emscripten to spam the console log with warnings.
@@ -387,12 +395,12 @@ function QtLoader(config)
         // Emscripten will typically call printErr with the error text
         // as well. Note that emscripten may also throw exceptions from
         // async callbacks. These should be handled in window.onerror by user code.
-        Module.onAbort = Module.onAbort || function(text) {
+        self.moduleConfig.onAbort = self.moduleConfig.onAbort || function(text) {
             publicAPI.crashed = true;
             publicAPI.exitText = text;
             setStatus("Exited");
         };
-        Module.quit = Module.quit || function(code, exception) {
+        self.moduleConfig.quit = self.moduleConfig.quit || function(code, exception) {
             if (exception.name == "ExitStatus") {
                 // Clean exit with code
                 publicAPI.exitText = undefined
@@ -404,17 +412,20 @@ function QtLoader(config)
             setStatus("Exited");
         };
 
-        // Set environment variables
-        Module.preRun = Module.preRun || []
-        Module.preRun.push(function() {
+        self.moduleConfig.preRun = self.moduleConfig.preRun || []
+        self.moduleConfig.preRun.push(function(module) {
+            // Set environment variables
             for (var [key, value] of Object.entries(config.environment)) {
                 ENV[key.toUpperCase()] = value;
             }
+            // Propagate Qt module properties
+            module.qtCanvasElements = self.qtCanvasElements;
+            module.qtFontDpi = self.qtFontDpi;
         });
 
-        Module.mainScriptUrlOrBlob = new Blob([emscriptenModuleSource], {type: 'text/javascript'});
+        self.moduleConfig.mainScriptUrlOrBlob = new Blob([emscriptenModuleSource], {type: 'text/javascript'});
 
-        Module.qtCanvasElements = config.canvasElements;
+        self.qtCanvasElements = config.canvasElements;
 
         config.restart = function() {
 
@@ -438,9 +449,13 @@ function QtLoader(config)
         publicAPI.exitText = undefined;
         publicAPI.crashed = false;
 
-        // Finally evaluate the emscripten application script, which will
-        // reference the global Module object created above.
-        self.eval(emscriptenModuleSource); // ES5 indirect global scope eval
+        // Load the Emscripten application module. This is done by eval()'ing the
+        // javascript runtime generated by Emscripten, and then calling
+        // createQtAppInstance(), which was added to the global scope.
+        eval(emscriptenModuleSource);
+        createQtAppInstance(self.moduleConfig).then(function(module) {
+            self.module = module;
+        });
     }
 
     function setErrorContent() {
@@ -544,31 +559,31 @@ function QtLoader(config)
 
     function addCanvasElement(element) {
         if (publicAPI.status == "Running")
-            Module.qtAddCanvasElement(element);
+            self.module.qtAddCanvasElement(element);
         else
             console.log("Error: addCanvasElement can only be called in the Running state");
     }
 
     function removeCanvasElement(element) {
         if (publicAPI.status == "Running")
-            Module.qtRemoveCanvasElement(element);
+            self.module.qtRemoveCanvasElement(element);
         else
             console.log("Error: removeCanvasElement can only be called in the Running state");
     }
 
     function resizeCanvasElement(element) {
         if (publicAPI.status == "Running")
-            Module.qtResizeCanvasElement(element);
+            self.module.qtResizeCanvasElement(element);
     }
 
     function setFontDpi(dpi) {
-        Module.qtFontDpi = dpi;
+        self.qtFontDpi = dpi;
         if (publicAPI.status == "Running")
-            Module.qtSetFontDpi(dpi);
+            self.qtSetFontDpi(dpi);
     }
 
     function fontDpi() {
-        return Module.qtFontDpi;
+        return self.qtFontDpi;
     }
 
     setStatus("Created");
