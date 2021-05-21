@@ -30,4 +30,6 @@ function(qt_internal_setup_public_platform_target)
     # By default enable utf8 sources for both Qt and Qt consumers. Can be opted out.
     qt_enable_utf8_sources(Platform)
 
+    # By default enable unicode on WIN32 platforms for both Qt and Qt consumers. Can be opted out.
+    qt_internal_enable_unicode_defines(Platform)
 endfunction()
