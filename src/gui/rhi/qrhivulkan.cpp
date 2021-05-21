@@ -104,18 +104,7 @@ QT_BEGIN_NAMESPACE
         ...
 
         QVulkanInstance inst;
-    #ifndef Q_OS_ANDROID
-        inst.setLayers(QByteArrayList() << "VK_LAYER_LUNARG_standard_validation");
-    #else
-        inst.setLayers(QByteArrayList()
-                       << "VK_LAYER_GOOGLE_threading"
-                       << "VK_LAYER_LUNARG_parameter_validation"
-                       << "VK_LAYER_LUNARG_object_tracker"
-                       << "VK_LAYER_LUNARG_core_validation"
-                       << "VK_LAYER_LUNARG_image"
-                       << "VK_LAYER_LUNARG_swapchain"
-                       << "VK_LAYER_GOOGLE_unique_objects");
-    #endif
+        inst.setLayers({ "VK_LAYER_KHRONOS_validation" }); // for debugging only, not for release builds
         inst.setExtensions(QRhiVulkanInitParams::preferredInstanceExtensions());
         if (!inst.create())
             qFatal("Vulkan not available");
@@ -549,8 +538,8 @@ bool QRhiVulkan::create(QRhi::Flags flags)
         queueInfo[0].pQueuePriorities = prio;
 
         QList<const char *> devLayers;
-        if (inst->layers().contains("VK_LAYER_LUNARG_standard_validation"))
-            devLayers.append("VK_LAYER_LUNARG_standard_validation");
+        if (inst->layers().contains("VK_LAYER_KHRONOS_validation"))
+            devLayers.append("VK_LAYER_KHRONOS_validation");
 
         QVulkanInfoVector<QVulkanExtension> devExts;
         uint32_t devExtCount = 0;

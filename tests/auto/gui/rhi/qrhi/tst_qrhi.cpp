@@ -169,17 +169,7 @@ void tst_QRhi::initTestCase()
 #endif
 
 #ifdef TST_VK
-#ifndef Q_OS_ANDROID
-    vulkanInstance.setLayers({ QByteArrayLiteral("VK_LAYER_LUNARG_standard_validation") });
-#else
-    vulkanInstance.setLayers({ QByteArrayLiteral("VK_LAYER_GOOGLE_threading"),
-                               QByteArrayLiteral("VK_LAYER_LUNARG_parameter_validation"),
-                               QByteArrayLiteral("VK_LAYER_LUNARG_object_tracker"),
-                               QByteArrayLiteral("VK_LAYER_LUNARG_core_validation"),
-                               QByteArrayLiteral("VK_LAYER_LUNARG_image"),
-                               QByteArrayLiteral("VK_LAYER_LUNARG_swapchain"),
-                               QByteArrayLiteral("VK_LAYER_GOOGLE_unique_objects") });
-#endif
+    vulkanInstance.setLayers({ "VK_LAYER_KHRONOS_validation" });
     vulkanInstance.setExtensions(QRhiVulkanInitParams::preferredInstanceExtensions());
     vulkanInstance.create();
     initParams.vk.inst = &vulkanInstance;
