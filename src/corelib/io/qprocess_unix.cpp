@@ -630,7 +630,7 @@ bool QProcessPrivate::processStarted(QString *errorMessage)
     childStartedPipe[0] = -1;
 
 #if defined (QPROCESS_DEBUG)
-    qDebug("QProcessPrivate::processStarted() == %s", i <= 0 ? "true" : "false");
+    qDebug("QProcessPrivate::processStarted() == %s", ret <= 0 ? "true" : "false");
 #endif
 
     if (ret <= 0) {  // process successfully started
