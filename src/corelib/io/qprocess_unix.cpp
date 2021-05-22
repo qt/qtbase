@@ -276,6 +276,21 @@ void QProcessPrivate::closeChannel(Channel *channel)
     destroyPipe(channel->pipe);
 }
 
+void QProcessPrivate::cleanup()
+{
+    q_func()->setProcessState(QProcess::NotRunning);
+
+    closeChannels();
+    delete stateNotifier;
+    stateNotifier = nullptr;
+    destroyPipe(childStartedPipe);
+    pid = 0;
+    if (forkfd != -1) {
+        qt_safe_close(forkfd);
+        forkfd = -1;
+    }
+}
+
 /*
     Create the pipes to a QProcessPrivate::Channel.
 */
@@ -640,6 +655,52 @@ qint64 QProcessPrivate::readFromChannel(const Channel *channel, char *data, qint
     if (bytesRead == -1 && errno == EWOULDBLOCK)
         return -2;
     return bytesRead;
+}
+
+/*! \reimp
+*/
+qint64 QProcess::writeData(const char *data, qint64 len)
+{
+    Q_D(QProcess);
+
+    if (d->stdinChannel.closed) {
+#if defined QPROCESS_DEBUG
+        qDebug("QProcess::writeData(%p \"%s\", %lld) == 0 (write channel closing)",
+               data, QtDebugUtils::toPrintable(data, len, 16).constData(), len);
+#endif
+        return 0;
+    }
+
+    d->write(data, len);
+    if (d->stdinChannel.notifier)
+        d->stdinChannel.notifier->setEnabled(true);
+
+#if defined QPROCESS_DEBUG
+    qDebug("QProcess::writeData(%p \"%s\", %lld) == %lld (written to buffer)",
+           data, QtDebugUtils::toPrintable(data, len, 16).constData(), len, len);
+#endif
+    return len;
+}
+
+bool QProcessPrivate::_q_canWrite()
+{
+    if (writeBuffer.isEmpty()) {
+        if (stdinChannel.notifier)
+            stdinChannel.notifier->setEnabled(false);
+#if defined QPROCESS_DEBUG
+        qDebug("QProcessPrivate::canWrite(), not writing anything (empty write buffer).");
+#endif
+        return false;
+    }
+
+    const bool writeSucceeded = writeToStdin();
+
+    if (writeBuffer.isEmpty() && stdinChannel.closed)
+        closeWriteChannel();
+    else if (stdinChannel.notifier)
+        stdinChannel.notifier->setEnabled(!writeBuffer.isEmpty());
+
+    return writeSucceeded;
 }
 
 bool QProcessPrivate::writeToStdin()

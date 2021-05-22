@@ -330,14 +330,11 @@ public:
 #endif
     QProcessEnvironment environment;
 
+#ifdef Q_OS_UNIX
     Q_PIPE childStartedPipe[2] = {INVALID_Q_PIPE, INVALID_Q_PIPE};
-    void destroyPipe(Q_PIPE pipe[2]);
-
     QSocketNotifier *stateNotifier = nullptr;
-
     int forkfd = -1;
-
-#ifdef Q_OS_WIN
+#else
     QTimer *stdinWriteTrigger = nullptr;
     QWinEventNotifier *processFinishedNotifier = nullptr;
 #endif
@@ -378,6 +375,7 @@ public:
     qint64 readFromChannel(const Channel *channel, char *data, qint64 maxlen);
     bool writeToStdin();
 
+    void destroyPipe(Q_PIPE pipe[2]);
     void cleanup();
     void setError(QProcess::ProcessError error, const QString &description = QString());
     void setErrorAndEmit(QProcess::ProcessError error, const QString &description = QString());

@@ -39,6 +39,9 @@
 ****************************************************************************/
 
 //#define QPROCESS_DEBUG
+#include <qdebug.h>
+#include <private/qdebug_p.h>
+
 #include "qprocess.h"
 #include "qprocess_p.h"
 #include "qwindowspipereader_p.h"
@@ -50,9 +53,9 @@
 #include <qrandom.h>
 #include <qwineventnotifier.h>
 #include <qscopedvaluerollback.h>
+#include <qtimer.h>
 #include <private/qsystemlibrary_p.h>
 #include <private/qthread_p.h>
-#include <qdebug.h>
 
 #include "private/qfsfileengine_p.h" // for longFileName
 
@@ -373,6 +376,23 @@ void QProcessPrivate::closeChannel(Channel *channel)
     else
         deleteWorker(channel->reader);
     destroyPipe(channel->pipe);
+}
+
+void QProcessPrivate::cleanup()
+{
+    q_func()->setProcessState(QProcess::NotRunning);
+
+    closeChannels();
+    delete stdinWriteTrigger;
+    stdinWriteTrigger = nullptr;
+    delete processFinishedNotifier;
+    processFinishedNotifier = nullptr;
+    if (pid) {
+        CloseHandle(pid->hThread);
+        CloseHandle(pid->hProcess);
+        delete pid;
+        pid = nullptr;
+    }
 }
 
 static QString qt_create_commandline(const QString &program, const QStringList &arguments,
@@ -816,7 +836,6 @@ bool QProcessPrivate::waitForFinished(const QDeadlineTimer &deadline)
     return false;
 }
 
-
 void QProcessPrivate::findExitCode()
 {
     DWORD theExitCode;
@@ -826,6 +845,38 @@ void QProcessPrivate::findExitCode()
         crashed = (exitCode == 0xf291   // our magic number, see killProcess
                    || (theExitCode >= 0x80000000 && theExitCode < 0xD0000000));
     }
+}
+
+/*! \reimp
+*/
+qint64 QProcess::writeData(const char *data, qint64 len)
+{
+    Q_D(QProcess);
+
+    if (d->stdinChannel.closed) {
+#if defined QPROCESS_DEBUG
+        qDebug("QProcess::writeData(%p \"%s\", %lld) == 0 (write channel closing)",
+               data, QtDebugUtils::toPrintable(data, len, 16).constData(), len);
+#endif
+        return 0;
+    }
+
+    if (!d->stdinWriteTrigger) {
+        d->stdinWriteTrigger = new QTimer;
+        d->stdinWriteTrigger->setSingleShot(true);
+        QObjectPrivate::connect(d->stdinWriteTrigger, &QTimer::timeout,
+                                d, &QProcessPrivate::_q_canWrite);
+    }
+
+    d->write(data, len);
+    if (!d->stdinWriteTrigger->isActive())
+        d->stdinWriteTrigger->start();
+
+#if defined QPROCESS_DEBUG
+    qDebug("QProcess::writeData(%p \"%s\", %lld) == %lld (written to buffer)",
+           data, QtDebugUtils::toPrintable(data, len, 16).constData(), len, len);
+#endif
+    return len;
 }
 
 qint64 QProcessPrivate::pipeWriterBytesToWrite() const
@@ -842,6 +893,20 @@ void QProcessPrivate::_q_bytesWritten(qint64 bytes)
         emit q->bytesWritten(bytes);
     }
     _q_canWrite();
+}
+
+bool QProcessPrivate::_q_canWrite()
+{
+    if (writeBuffer.isEmpty()) {
+        if (stdinChannel.closed && pipeWriterBytesToWrite() == 0)
+            closeWriteChannel();
+#if defined QPROCESS_DEBUG
+        qDebug("QProcessPrivate::canWrite(), not writing anything (empty write buffer).");
+#endif
+        return false;
+    }
+
+    return writeToStdin();
 }
 
 bool QProcessPrivate::writeToStdin()
