@@ -136,6 +136,9 @@ function(qt_internal_add_3rdparty_library target)
         set(arg_ARCHIVE_INSTALL_DIRECTORY "${arg_INSTALL_DIRECTORY}")
     endif()
 
+    set_target_properties(${target} PROPERTIES
+        _qt_module_interface_name "${target}"
+    )
     qt_internal_add_qt_repo_known_module(${target})
     qt_internal_add_target_aliases(${target})
     _qt_internal_apply_strict_cpp(${target})
