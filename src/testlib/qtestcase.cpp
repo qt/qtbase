@@ -213,7 +213,7 @@ static void stackTrace()
     if (debuggerPresent() || hasSystemCrashReporter())
         return;
 
-#if defined(Q_OS_LINUX) || defined(Q_OS_MACOS)
+#if defined(Q_OS_LINUX) || (defined(Q_OS_MACOS) && !defined(Q_PROCESSOR_ARM_64))
     const int msecsFunctionTime = qRound(QTestLog::msecsFunctionTime());
     const int msecsTotalTime = qRound(QTestLog::msecsTotalTime());
     fprintf(stderr, "\n=== Received signal at function time: %dms, total time: %dms, dumping stack ===\n",
