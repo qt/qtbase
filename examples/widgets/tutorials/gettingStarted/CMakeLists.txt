@@ -1,2 +1,1 @@
-# Generated from gettingStarted.pro.
-
+add_subdirectory(gsQt)

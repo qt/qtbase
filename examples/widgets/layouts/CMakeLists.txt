@@ -1,6 +1,6 @@
 # Generated from layouts.pro.
 
-add_subdirectory(basiclayouts)
-add_subdirectory(borderlayout)
-add_subdirectory(dynamiclayouts)
-add_subdirectory(flowlayout)
+qt_internal_add_example(basiclayouts)
+qt_internal_add_example(borderlayout)
+qt_internal_add_example(dynamiclayouts)
+qt_internal_add_example(flowlayout)

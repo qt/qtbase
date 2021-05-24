@@ -1,11 +1,11 @@
 # Generated from vulkan.pro.
 
-add_subdirectory(hellovulkanwindow)
-add_subdirectory(hellovulkantriangle)
-add_subdirectory(hellovulkantexture)
+qt_internal_add_example(hellovulkanwindow)
+qt_internal_add_example(hellovulkantriangle)
+qt_internal_add_example(hellovulkantexture)
 if(TARGET Qt::Widgets)
-    add_subdirectory(hellovulkanwidget)
+    qt_internal_add_example(hellovulkanwidget)
 endif()
 if(TARGET Qt::Concurrent AND TARGET Qt::Widgets)
-    add_subdirectory(hellovulkancubes)
+    qt_internal_add_example(hellovulkancubes)
 endif()

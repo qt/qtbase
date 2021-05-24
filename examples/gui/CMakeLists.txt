@@ -3,5 +3,5 @@
 if(NOT TARGET Qt::Gui)
     return()
 endif()
-add_subdirectory(analogclock)
-add_subdirectory(rasterwindow)
+qt_internal_add_example(analogclock)
+qt_internal_add_example(rasterwindow)

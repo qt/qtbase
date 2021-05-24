@@ -1,7 +1,7 @@
 # Generated from part3.pro.
 
 cmake_minimum_required(VERSION 3.14)
-project(part3 LANGUAGES CXX)
+project(getting_started_part3 LANGUAGES CXX)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
@@ -19,20 +19,20 @@ find_package(Qt6 COMPONENTS Core)
 find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 
-qt_add_executable(part3
+qt_add_executable(getting_started_part3
     main.cpp
 )
-set_target_properties(part3 PROPERTIES
+set_target_properties(getting_started_part3 PROPERTIES
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
 )
-target_link_libraries(part3 PUBLIC
+target_link_libraries(getting_started_part3 PUBLIC
     Qt::Core
     Qt::Gui
     Qt::Widgets
 )
 
-install(TARGETS part3
+install(TARGETS getting_started_part3
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
     LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"

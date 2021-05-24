@@ -1,8 +1,8 @@
 # Generated from threads.pro.
 
-add_subdirectory(semaphores)
-add_subdirectory(waitconditions)
+qt_internal_add_example(semaphores)
+qt_internal_add_example(waitconditions)
 if(TARGET Qt::Widgets)
-    add_subdirectory(mandelbrot)
-    add_subdirectory(queuedcustomtype)
+    qt_internal_add_example(mandelbrot)
+    qt_internal_add_example(queuedcustomtype)
 endif()

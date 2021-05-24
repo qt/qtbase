@@ -1,4 +1,4 @@
 # Generated from remotecontrolledcar.pro.
 
-add_subdirectory(car)
-add_subdirectory(controller)
+qt_internal_add_example(car)
+qt_internal_add_example(controller)

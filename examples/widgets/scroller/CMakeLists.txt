@@ -1,3 +1,3 @@
 # Generated from scroller.pro.
 
-add_subdirectory(graphicsview)
+qt_internal_add_example(graphicsview)

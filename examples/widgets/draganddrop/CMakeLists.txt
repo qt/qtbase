@@ -1,7 +1,7 @@
 # Generated from draganddrop.pro.
 
-add_subdirectory(draggableicons)
-add_subdirectory(draggabletext)
-add_subdirectory(dropsite)
-add_subdirectory(fridgemagnets)
-add_subdirectory(puzzle)
+qt_internal_add_example(draggableicons)
+qt_internal_add_example(draggabletext)
+qt_internal_add_example(dropsite)
+qt_internal_add_example(fridgemagnets)
+qt_internal_add_example(puzzle)

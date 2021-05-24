@@ -1,11 +1,11 @@
 # Generated from xml.pro.
 
-add_subdirectory(htmlinfo)
-add_subdirectory(xmlstreamlint)
+qt_internal_add_example(htmlinfo)
+qt_internal_add_example(xmlstreamlint)
 if(TARGET Qt::Widgets)
-    add_subdirectory(dombookmarks)
-    add_subdirectory(streambookmarks)
+    qt_internal_add_example(dombookmarks)
+    qt_internal_add_example(streambookmarks)
 endif()
 if(TARGET Qt::Network AND TARGET Qt::Widgets)
-    add_subdirectory(rsslisting)
+    qt_internal_add_example(rsslisting)
 endif()

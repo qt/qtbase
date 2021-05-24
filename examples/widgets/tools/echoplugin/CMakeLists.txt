@@ -1,4 +1,4 @@
 # Generated from echoplugin.pro.
 
-add_subdirectory(echowindow)
-add_subdirectory(plugin)
+qt_internal_add_example(echowindow)
+qt_internal_add_example(plugin)

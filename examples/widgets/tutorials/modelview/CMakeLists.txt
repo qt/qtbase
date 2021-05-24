@@ -1,9 +1,9 @@
 # Generated from modelview.pro.
 
-add_subdirectory(1_readonly)
-add_subdirectory(2_formatting)
-add_subdirectory(3_changingmodel)
-add_subdirectory(4_headers)
-add_subdirectory(5_edit)
-add_subdirectory(6_treeview)
-add_subdirectory(7_selections)
+qt_internal_add_example(1_readonly)
+qt_internal_add_example(2_formatting)
+qt_internal_add_example(3_changingmodel)
+qt_internal_add_example(4_headers)
+qt_internal_add_example(5_edit)
+qt_internal_add_example(6_treeview)
+qt_internal_add_example(7_selections)

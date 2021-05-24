@@ -466,10 +466,10 @@ macro(qt_build_repo_end)
         endif()
     endif()
 
+    qt_build_internals_add_toplevel_targets()
+
     if(NOT QT_SUPERBUILD)
         qt_print_build_instructions()
-    else()
-        qt_build_internals_add_toplevel_targets()
     endif()
 endmacro()
 
@@ -521,13 +521,10 @@ macro(qt_build_repo_impl_tests)
 endmacro()
 
 macro(qt_build_repo_impl_examples)
-    if(QT_BUILD_EXAMPLES AND BUILD_SHARED_LIBS
+    if(QT_BUILD_EXAMPLES
             AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/examples/CMakeLists.txt"
             AND NOT QT_BUILD_STANDALONE_TESTS)
         add_subdirectory(examples)
-        if(NOT QT_BUILD_EXAMPLES_BY_DEFAULT)
-            set_property(DIRECTORY examples PROPERTY EXCLUDE_FROM_ALL TRUE)
-        endif()
     endif()
 endmacro()
 
@@ -659,6 +656,58 @@ macro(qt_internal_set_up_build_dir_package_paths)
 endmacro()
 
 macro(qt_examples_build_begin)
+    set(options EXTERNAL_BUILD)
+    set(singleOpts "")
+    set(multiOpts DEPENDS)
+
+    cmake_parse_arguments(arg "${options}" "${singleOpts}" "${multiOpts}" ${ARGN})
+
+    # FIXME: Support prefix builds as well
+    if(arg_EXTERNAL_BUILD AND NOT QT_WILL_INSTALL)
+        # Examples will be built using ExternalProject.
+        # We always depend on all plugins so as to prevent opportunities for
+        # weird errors associated with loading out-of-date plugins from
+        # unrelated Qt modules. We also depend on all targets from this repo
+        # to ensure that we've built anything that a find_package() call within
+        # an example might use. Projects can add further dependencies if needed,
+        # but that should rarely be necessary.
+        set(QT_EXAMPLE_DEPENDENCIES qt_plugins ${qt_repo_targets_name} ${arg_DEPENDS})
+        set(QT_EXAMPLE_BASE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+
+        string(TOLOWER ${PROJECT_NAME} project_name_lower)
+        if(NOT TARGET examples)
+            if(QT_BUILD_EXAMPLES_BY_DEFAULT)
+                add_custom_target(examples ALL)
+            else()
+                add_custom_target(examples)
+            endif()
+        endif()
+        if(NOT TARGET examples_${project_name_lower})
+            add_custom_target(examples_${project_name_lower})
+            add_dependencies(examples examples_${project_name_lower})
+        endif()
+
+        include(ExternalProject)
+    else()
+        # This repo has not yet been updated to build examples in a separate
+        # build from this main build, or we can't use that arrangement yet.
+        # Build them directly as part of the main build instead for backward
+        # compatibility.
+        if(NOT BUILD_SHARED_LIBS)
+            # Ordinarily, it would be an error to call return() from within a
+            # macro(), but in this case we specifically want to return from the
+            # caller's scope if we are doing a static build and the project
+            # isn't building examples in a separate build from the main build.
+            # Configuring static builds requires tools that are not available
+            # until build time.
+            return()
+        endif()
+
+        if(NOT QT_BUILD_EXAMPLES_BY_DEFAULT)
+            set_directory_properties(PROPERTIES EXCLUDE_FROM_ALL TRUE)
+        endif()
+    endif()
+
     # Examples that are built as part of the Qt build need to use the CMake config files from the
     # build dir, because they are not installed yet in a prefix build.
     # Appending to CMAKE_PREFIX_PATH helps find the initial Qt6Config.cmake.
@@ -677,16 +726,28 @@ macro(qt_examples_build_begin)
 endmacro()
 
 macro(qt_examples_build_end)
-    # We use AUTOMOC/UIC/RCC in the examples. Make sure to not fail on a fresh Qt build, that e.g. the moc binary does not exist yet.
+    # We use AUTOMOC/UIC/RCC in the examples. When the examples are part of the
+    # main build rather than being built in their own separate project, make
+    # sure we do not fail on a fresh Qt build (e.g. the moc binary won't exist
+    # yet because it is created at build time).
 
-    # This function gets all targets below this directory
+    # This function gets all targets below this directory (excluding custom targets and aliases)
     function(get_all_targets _result _dir)
         get_property(_subdirs DIRECTORY "${_dir}" PROPERTY SUBDIRECTORIES)
         foreach(_subdir IN LISTS _subdirs)
             get_all_targets(${_result} "${_subdir}")
         endforeach()
         get_property(_sub_targets DIRECTORY "${_dir}" PROPERTY BUILDSYSTEM_TARGETS)
-        set(${_result} ${${_result}} ${_sub_targets} PARENT_SCOPE)
+        set(_real_targets "")
+        if(_sub_targets)
+            foreach(__target IN LISTS _sub_targets)
+                get_target_property(target_type ${__target} TYPE)
+                if(NOT target_type STREQUAL "UTILITY" AND NOT target_type STREQUAL "ALIAS")
+                    list(APPEND _real_targets ${__target})
+                endif()
+            endforeach()
+        endif()
+        set(${_result} ${${_result}} ${_real_targets} PARENT_SCOPE)
     endfunction()
 
     get_all_targets(targets "${CMAKE_CURRENT_SOURCE_DIR}")
@@ -700,6 +761,156 @@ macro(qt_examples_build_end)
 
     set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ${BACKUP_CMAKE_FIND_ROOT_PATH_MODE_PACKAGE})
 endmacro()
+
+function(qt_internal_add_example subdir)
+    # FIXME: Support building examples externally for prefix builds as well.
+    if(QT_WILL_INSTALL)
+        # Use old non-external approach
+        add_subdirectory(${subdir} ${ARGN})
+        return()
+    endif()
+
+    set(options "")
+    set(singleOpts NAME)
+    set(multiOpts "")
+
+    cmake_parse_arguments(PARSE_ARGV 1 arg "${options}" "${singleOpts}" "${multiOpts}")
+
+    if(NOT arg_NAME)
+        file(RELATIVE_PATH rel_path ${QT_EXAMPLE_BASE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/${subdir})
+        string(REPLACE "/" "_" arg_NAME "${rel_path}")
+    endif()
+
+    if(QtBase_BINARY_DIR)
+        # Always use the copy in the build directory, even for prefix builds.
+        # We may build examples without installing, so we can't use the
+        # install or staging area.
+        set(qt_cmake_dir ${QtBase_BINARY_DIR}/lib/cmake/${QT_CMAKE_EXPORT_NAMESPACE})
+    else()
+        # This is a per-repo build that isn't the qtbase repo, so we know that
+        # qtbase was found via find_package() and Qt6_DIR must be set
+        set(qt_cmake_dir ${${QT_CMAKE_EXPORT_NAMESPACE}_DIR})
+    endif()
+
+    set(vars_to_pass_if_defined)
+    set(var_defs)
+    if(QT_HOST_PATH OR CMAKE_CROSSCOMPILING)
+        # Android NDK forces CMAKE_FIND_ROOT_PATH_MODE_PACKAGE to ONLY, so we
+        # can't rely on this setting here making it through to the example
+        # project.
+        # TODO: We should probably leave CMAKE_FIND_ROOT_PATH_MODE_PACKAGE
+        #       alone. It may be a leftover from earlier methods that are no
+        #       longer used or that no longer need this.
+        list(APPEND var_defs
+            -DCMAKE_TOOLCHAIN_FILE:FILEPATH=${qt_cmake_dir}/qt.toolchain.cmake
+            -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE:STRING=BOTH
+        )
+    else()
+        get_filename_component(prefix_dir ${qt_cmake_dir}/../../.. ABSOLUTE)
+        list(PREPEND CMAKE_PREFIX_PATH ${prefix_dir})
+
+        # Setting CMAKE_SYSTEM_NAME affects CMAKE_CROSSCOMPILING, even if it is
+        # set to the same as the host, so it should only be set if it is different.
+        # See https://gitlab.kitware.com/cmake/cmake/-/issues/21744
+        if(NOT DEFINED CMAKE_TOOLCHAIN_FILE AND
+           NOT CMAKE_SYSTEM_NAME STREQUAL CMAKE_HOST_SYSTEM_NAME)
+            list(APPEND vars_to_pass_if_defined CMAKE_SYSTEM_NAME:STRING)
+        endif()
+    endif()
+
+    list(APPEND vars_to_pass_if_defined
+        CMAKE_BUILD_TYPE:STRING
+        CMAKE_PREFIX_PATH:STRING
+        CMAKE_FIND_ROOT_PATH:STRING
+        CMAKE_FIND_ROOT_PATH_MODE_PACKAGE:STRING
+        BUILD_SHARED_LIBS:BOOL
+        CMAKE_OSX_ARCHITECTURES:STRING
+        CMAKE_OSX_DEPLOYMENT_TARGET:STRING
+        CMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED:BOOL
+        CMAKE_XCODE_ATTRIBUTE_ONLY_ACTIVE_ARCH:BOOL
+        CMAKE_C_COMPILER_LAUNCHER:STRING
+        CMAKE_CXX_COMPILER_LAUNCHER:STRING
+        CMAKE_OBJC_COMPILER_LAUNCHER:STRING
+        CMAKE_OBJCXX_COMPILER_LAUNCHER:STRING
+    )
+
+    foreach(var_with_type IN LISTS vars_to_pass_if_defined)
+        string(REPLACE ":" ";" key_as_list "${var_with_type}")
+        list(GET key_as_list 0 var)
+        if(NOT DEFINED ${var})
+            continue()
+        endif()
+
+        # Preserve lists
+        string(REPLACE ";" "$<SEMICOLON>" varForGenex "${${var}}")
+
+        list(APPEND var_defs -D${var_with_type}=${varForGenex})
+    endforeach()
+
+
+    set(deps "")
+    list(REMOVE_DUPLICATES QT_EXAMPLE_DEPENDENCIES)
+    foreach(dep IN LISTS QT_EXAMPLE_DEPENDENCIES)
+        if(TARGET ${dep})
+            list(APPEND deps ${dep})
+        endif()
+    endforeach()
+
+    set(independent_args)
+    cmake_policy(PUSH)
+    if(POLICY CMP0114)
+        set(independent_args INDEPENDENT TRUE)
+        cmake_policy(SET CMP0114 NEW)
+    endif()
+
+    # The USES_TERMINAL_BUILD setting forces the build step to the console pool
+    # when using Ninja. This has two benefits:
+    #
+    #   - You see build output as it is generated instead of at the end of the
+    #     build step.
+    #   - Only one task can use the console pool at a time, so it effectively
+    #     serializes all example build steps, thereby preventing CPU
+    #     over-commitment.
+    #
+    # If the loss of interactivity is not so important, one can allow CPU
+    # over-commitment for Ninja builds. This may result in better throughput,
+    # but is not allowed by default because it can make a machine almost
+    # unusable while a compilation is running.
+    set(terminal_args USES_TERMINAL_BUILD TRUE)
+    if(CMAKE_GENERATOR MATCHES "Ninja")
+        option(QT_BUILD_EXAMPLES_WITH_CPU_OVERCOMMIT
+            "Allow CPU over-commitment when building examples (Ninja only)"
+        )
+        if(QT_BUILD_EXAMPLES_WITH_CPU_OVERCOMMIT)
+            set(terminal_args)
+        endif()
+    endif()
+
+    ExternalProject_Add(${arg_NAME}
+        EXCLUDE_FROM_ALL TRUE
+        SOURCE_DIR       ${CMAKE_CURRENT_SOURCE_DIR}/${subdir}
+        INSTALL_COMMAND  ""
+        TEST_COMMAND     ""
+        DEPENDS          ${deps}
+        CMAKE_CACHE_ARGS ${var_defs}
+        ${terminal_args}
+    )
+
+    # Force configure step to re-run after we configure the main project
+    set(reconfigure_check_file ${CMAKE_CURRENT_BINARY_DIR}/reconfigure_${arg_NAME}.txt)
+    file(TOUCH ${reconfigure_check_file})
+    ExternalProject_Add_Step(${arg_NAME} reconfigure-check
+        DEPENDERS configure
+        DEPENDS   ${reconfigure_check_file}
+        ${independent_args}
+    )
+
+    cmake_policy(POP)
+
+    string(TOLOWER ${PROJECT_NAME} project_name_lower)
+    add_dependencies(examples_${project_name_lower} ${arg_NAME})
+
+endfunction()
 
 if ("STANDALONE_TEST" IN_LIST Qt6BuildInternals_FIND_COMPONENTS)
     include(${CMAKE_CURRENT_LIST_DIR}/QtStandaloneTestTemplateProject/Main.cmake)

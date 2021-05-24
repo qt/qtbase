@@ -1,4 +1,4 @@
 # Generated from effects.pro.
 
-add_subdirectory(blurpicker)
-add_subdirectory(fademessage)
+qt_internal_add_example(blurpicker)
+qt_internal_add_example(fademessage)

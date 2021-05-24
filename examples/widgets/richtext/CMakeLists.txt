@@ -1,6 +1,6 @@
 # Generated from richtext.pro.
 
-add_subdirectory(calendar)
-add_subdirectory(orderform)
-add_subdirectory(syntaxhighlighter)
-add_subdirectory(textedit)
+qt_internal_add_example(calendar)
+qt_internal_add_example(orderform)
+qt_internal_add_example(syntaxhighlighter)
+qt_internal_add_example(textedit)

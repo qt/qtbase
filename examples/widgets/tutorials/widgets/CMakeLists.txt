@@ -1,6 +1,6 @@
 # Generated from widgets.pro.
 
-add_subdirectory(toplevel)
-add_subdirectory(childwidget)
-add_subdirectory(windowlayout)
-add_subdirectory(nestedlayouts)
+qt_internal_add_example(toplevel)
+qt_internal_add_example(childwidget)
+qt_internal_add_example(windowlayout)
+qt_internal_add_example(nestedlayouts)

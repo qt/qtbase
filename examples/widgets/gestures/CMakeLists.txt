@@ -3,4 +3,4 @@
 if(NOT TARGET Qt::Widgets)
     return()
 endif()
-add_subdirectory(imagegestures)
+qt_internal_add_example(imagegestures)

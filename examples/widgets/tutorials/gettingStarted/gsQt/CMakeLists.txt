@@ -1,7 +1,7 @@
 # Generated from gsqt.pro.
 
-add_subdirectory(part1)
-add_subdirectory(part2)
-add_subdirectory(part3)
-add_subdirectory(part4)
-add_subdirectory(part5)
+qt_internal_add_example(part1)
+qt_internal_add_example(part2)
+qt_internal_add_example(part3)
+qt_internal_add_example(part4)
+qt_internal_add_example(part5)

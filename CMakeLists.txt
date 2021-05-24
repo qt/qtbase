@@ -169,7 +169,4 @@ qt_build_repo_end()
 
 if(NOT QT_BUILD_STANDALONE_TESTS AND QT_BUILD_EXAMPLES)
     add_subdirectory(examples)
-    if(NOT QT_BUILD_EXAMPLES_BY_DEFAULT)
-        set_property(DIRECTORY examples PROPERTY EXCLUDE_FROM_ALL TRUE)
-    endif()
 endif()

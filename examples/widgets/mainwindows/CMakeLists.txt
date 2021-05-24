@@ -1,8 +1,8 @@
 # Generated from mainwindows.pro.
 
-add_subdirectory(application)
-add_subdirectory(dockwidgets)
-add_subdirectory(mainwindow)
-add_subdirectory(mdi)
-add_subdirectory(menus)
-add_subdirectory(sdi)
+qt_internal_add_example(application)
+qt_internal_add_example(dockwidgets)
+qt_internal_add_example(mainwindow)
+qt_internal_add_example(mdi)
+qt_internal_add_example(menus)
+qt_internal_add_example(sdi)

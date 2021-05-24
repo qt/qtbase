@@ -1,22 +1,22 @@
 # Generated from tools.pro.
 
-add_subdirectory(completer)
-add_subdirectory(customcompleter)
+qt_internal_add_example(completer)
+qt_internal_add_example(customcompleter)
 if(QT_FEATURE_translation) # special case
-    add_subdirectory(i18n)
+    qt_internal_add_example(i18n)
 endif()
-add_subdirectory(regularexpression)
-add_subdirectory(settingseditor)
-add_subdirectory(styleplugin)
-add_subdirectory(treemodelcompleter)
-add_subdirectory(undo)
-add_subdirectory(undoframework)
+qt_internal_add_example(regularexpression)
+qt_internal_add_example(settingseditor)
+qt_internal_add_example(styleplugin)
+qt_internal_add_example(treemodelcompleter)
+qt_internal_add_example(undo)
+qt_internal_add_example(undoframework)
 
 if(QT_FEATURE_library) # special case
     add_subdirectory(echoplugin)
     # special case begin
     if(QT_FEATURE_inputdialog)
-        add_subdirectory(plugandpaint)
+        qt_internal_add_example(plugandpaint)
     endif()
     # special case end
 endif()
