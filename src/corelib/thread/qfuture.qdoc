@@ -116,9 +116,6 @@
     the isCanceled(), isStarted(), isFinished(), isRunning(), isSuspending()
     or isSuspended() functions.
 
-    QFuture is a lightweight reference counted class that can be passed by
-    value.
-
     QFuture<void> is specialized to not contain any of the result fetching
     functions. Any QFuture<T> can be assigned or copied into a QFuture<void>
     as well. This is useful if only status or progress information is needed
