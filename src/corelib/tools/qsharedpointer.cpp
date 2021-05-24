@@ -1400,7 +1400,7 @@ QtSharedPointer::ExternalRefCountData *QtSharedPointer::ExternalRefCountData::ge
     }
 
     // we can create the refcount data because it doesn't exist
-    ExternalRefCountData *x = new ExternalRefCountData(Qt::Uninitialized);
+    ExternalRefCountData *x = ::new ExternalRefCountData(Qt::Uninitialized);
     x->strongref.storeRelaxed(-1);
     x->weakref.storeRelaxed(2);  // the QWeakPointer that called us plus the QObject itself
 
@@ -1411,7 +1411,7 @@ QtSharedPointer::ExternalRefCountData *QtSharedPointer::ExternalRefCountData::ge
         // ~ExternalRefCountData has a Q_ASSERT, so we use this trick to
         // only execute this if Q_ASSERTs are enabled
         Q_ASSERT((x->weakref.storeRelaxed(0), true));
-        delete x;
+        ::delete x;
         ret->weakref.ref();
     }
     return ret;
