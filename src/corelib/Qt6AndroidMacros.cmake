@@ -297,10 +297,10 @@ function(qt6_android_add_apk_target target)
 
     set(deployment_tool "${QT_HOST_PATH}/${QT6_HOST_INFO_BINDIR}/androiddeployqt")
     set(apk_dir "$<TARGET_PROPERTY:${target},BINARY_DIR>/android-build")
-    add_custom_target(${target}_prepare_apk_dir
+    add_custom_target(${target}_prepare_apk_dir ALL
         DEPENDS ${target}
         COMMAND ${CMAKE_COMMAND}
-            -E copy $<TARGET_FILE:${target}>
+            -E copy_if_different $<TARGET_FILE:${target}>
             "${apk_dir}/libs/${CMAKE_ANDROID_ARCH_ABI}/$<TARGET_FILE_NAME:${target}>"
         COMMENT "Copying ${target} binary to apk folder"
     )
