@@ -95,6 +95,8 @@
 
 #include "qnetconmonitor_p.h"
 
+#include <mutex>
+
 QT_BEGIN_NAMESPACE
 
 Q_GLOBAL_STATIC(QNetworkAccessFileBackendFactory, fileBackend)
