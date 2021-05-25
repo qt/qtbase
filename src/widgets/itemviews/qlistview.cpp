@@ -214,8 +214,8 @@ QListView::~QListView()
     grid, or cannot be moved at all.
 
     This property determines how the user can move the items in the
-    view. \l Static means that the items can't be moved the user. \l
-    Free means that the user can drag and drop the items to any
+    view. \l Static means that the items can't be moved by the user.
+    \l Free means that the user can drag and drop the items to any
     position in the view. \l Snap means that the user can drag and
     drop the items, but only to the positions in a notional grid
     signified by the gridSize property.
