@@ -119,7 +119,7 @@ void tst_QScrollBar::task_209492()
 
     // Simulate a mouse click on the "scroll down button".
     const QPoint pressPoint(verticalScrollBar->width() / 2, verticalScrollBar->height() - 10);
-    const QPoint globalPressPoint = verticalScrollBar->mapToGlobal(globalPressPoint);
+    const QPoint globalPressPoint = verticalScrollBar->mapToGlobal(pressPoint);
     QMouseEvent mousePressEvent(QEvent::MouseButtonPress, pressPoint, globalPressPoint,
                                 Qt::LeftButton, Qt::LeftButton, {});
     QApplication::sendEvent(verticalScrollBar, &mousePressEvent);
