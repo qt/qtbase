@@ -51,3 +51,5 @@ windows-10 gcc developer-build
 windows-10 gcc developer-build
 [connectToHostError:WithHttpProxyBasicAuth SSL:localhost no service]
 windows-10 gcc developer-build
+[bind]
+macos arm

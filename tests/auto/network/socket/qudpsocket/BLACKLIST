@@ -10,3 +10,6 @@ opensuse-42.3
 linux
 [multicast]
 centos
+macos arm
+[linkLocalIPv6]
+macos arm
