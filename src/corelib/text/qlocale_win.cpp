@@ -391,8 +391,7 @@ QVariant QSystemLocalePrivate::monthName(int month, QLocale::FormatType type)
 
 QVariant QSystemLocalePrivate::toString(QDate date, QLocale::FormatType type)
 {
-    SYSTEMTIME st;
-    memset(&st, 0, sizeof(SYSTEMTIME));
+    SYSTEMTIME st = {};
     st.wYear = date.year();
     st.wMonth = date.month();
     st.wDay = date.day();
@@ -410,8 +409,7 @@ QVariant QSystemLocalePrivate::toString(QDate date, QLocale::FormatType type)
 
 QVariant QSystemLocalePrivate::toString(QTime time, QLocale::FormatType type)
 {
-    SYSTEMTIME st;
-    memset(&st, 0, sizeof(SYSTEMTIME));
+    SYSTEMTIME st = {};
     st.wHour = time.hour();
     st.wMinute = time.minute();
     st.wSecond = time.second();
