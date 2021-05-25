@@ -255,7 +255,7 @@ static void ensureInitialized()
     \fn void QNetworkAccessManager::networkSessionConnected()
 
     \since 4.7
-    \obsolete
+    \deprecated
 
     \internal
 
@@ -1300,7 +1300,7 @@ QStringList QNetworkAccessManager::supportedSchemes() const
 
 /*!
     \since 5.2
-    \obsolete
+    \deprecated
 
     Lists all the URL schemes supported by the access manager.
 

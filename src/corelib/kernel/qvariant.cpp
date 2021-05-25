@@ -379,7 +379,7 @@ static void customClear(QVariant::Private *d)
 */
 
 /*!
-    \obsolete Use QMetaType::Type instead
+    \deprecated Use QMetaType::Type instead.
     \enum QVariant::Type
 
     This enum type defines the types of variable that a QVariant can
@@ -1981,7 +1981,7 @@ QVariantList QVariant::toList() const
 /*!
     \fn bool QVariant::canConvert(int targetTypeId) const
     \overload
-    \obsolete
+    \deprecated
 
     \sa QMetaType::canConvert()
 */
@@ -2000,7 +2000,7 @@ QVariantList QVariant::toList() const
 
 /*!
     \fn bool QVariant::convert(int targetTypeId)
-    \obsolete
+    \deprecated
 
     Casts the variant to the requested type, \a targetTypeId. If the cast cannot be
     done, the variant is still changed to the requested type, but is left in a cleared
@@ -2651,7 +2651,7 @@ QT_WARNING_POP
 
 /*! \fn template<typename T> T qVariantValue(const QVariant &value)
     \relates QVariant
-    \obsolete
+    \deprecated
 
     Returns the given \a value converted to the template type \c{T}.
 
@@ -2667,7 +2667,7 @@ QT_WARNING_POP
 
 /*! \fn bool qVariantCanConvert(const QVariant &value)
     \relates QVariant
-    \obsolete
+    \deprecated
 
     Returns \c true if the given \a value can be converted to the
     template type specified; otherwise returns \c false.

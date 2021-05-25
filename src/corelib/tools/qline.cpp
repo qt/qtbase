@@ -366,7 +366,7 @@ QDataStream &operator>>(QDataStream &stream, QLine &line)
 
 /*!
     \typealias QLineF::IntersectType
-    \obsolete Use QLineF::IntersectionType instead.
+    \deprecated Use QLineF::IntersectionType instead.
 */
 
 /*!

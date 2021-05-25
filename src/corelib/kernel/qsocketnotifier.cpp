@@ -206,7 +206,7 @@ QSocketNotifier::~QSocketNotifier()
 
 /*!
     \fn void QSocketNotifier::activated(int socket)
-    \obsolete To avoid unintended truncation of the descriptor, use
+    \deprecated To avoid unintended truncation of the descriptor, use
     the QSocketDescriptor overload of this function. If you need
     compatibility with versions older than 5.15 you need to change
     the slot to accept qintptr if it currently accepts an int, and

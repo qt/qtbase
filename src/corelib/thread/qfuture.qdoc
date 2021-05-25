@@ -202,7 +202,7 @@
 #if QT_DEPRECATED_SINCE(6, 0)
 /*! \fn template <typename T> void QFuture<T>::setPaused(bool paused)
 
-    \obsolete
+    \deprecated
     Use setSuspended() instead.
 
     If \a paused is true, this function pauses the asynchronous computation
@@ -224,7 +224,7 @@
 
 /*! \fn template <typename T> bool QFuture<T>::isPaused() const
 
-    \obsolete
+    \deprecated
     Use isSuspending() or isSuspended() instead.
 
     Returns \c true if the asynchronous computation has been paused with the
@@ -239,7 +239,7 @@
 
 /*! \fn template <typename T> void QFuture<T>::pause()
 
-    \obsolete
+    \deprecated
     Use suspend() instead.
 
     Pauses the asynchronous computation represented by this future. This is a
@@ -250,7 +250,7 @@
 
 /*! \fn template <typename T> void QFuture<T>::togglePaused()
 
-    \obsolete
+    \deprecated
     Use toggleSuspended() instead.
 
     Toggles the paused state of the asynchronous computation. In other words,

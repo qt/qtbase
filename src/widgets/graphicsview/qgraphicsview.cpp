@@ -3741,7 +3741,7 @@ void QGraphicsView::drawForeground(QPainter *painter, const QRectF &rect)
 }
 
 /*!
-    \obsolete
+    \deprecated
 
     Draws the items \a items in the scene using \a painter, after the
     background and before the foreground are drawn. \a numItems is the number

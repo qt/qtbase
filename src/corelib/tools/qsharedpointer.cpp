@@ -848,7 +848,7 @@
 /*!
     \fn template <class T> T *QWeakPointer<T>::data() const
     \since 4.6
-    \obsolete Use toStrongRef() instead, and data() on the returned QSharedPointer.
+    \deprecated Use toStrongRef() instead, and data() on the returned QSharedPointer.
 
     Returns the value of the pointer being tracked by this QWeakPointer,
     \b without ensuring that it cannot get deleted. To have that guarantee,

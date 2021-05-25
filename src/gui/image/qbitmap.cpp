@@ -277,7 +277,7 @@ QBitmap QBitmap::fromPixmap(const QPixmap &pixmap)
 
 #if QT_DEPRECATED_SINCE(6, 0)
 /*!
-    \obsolete Use fromPixmap instead.
+    \deprecated Use fromPixmap instead.
     Constructs a bitmap that is a copy of the given \a pixmap.
 
     If the pixmap has a depth greater than 1, the resulting bitmap
@@ -292,7 +292,7 @@ QBitmap::QBitmap(const QPixmap &pixmap)
 }
 
 /*!
-    \obsolete Use fromPixmap instead.
+    \deprecated Use fromPixmap instead.
     \overload
 
     Assigns the given \a pixmap to this bitmap and returns a reference

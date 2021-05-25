@@ -420,7 +420,7 @@ void QSqlQueryModel::queryChange()
 
 
 /*!
-    \obsolete
+    \deprecated
     \overload
     \since 4.5
 

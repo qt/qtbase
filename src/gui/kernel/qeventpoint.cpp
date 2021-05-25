@@ -142,7 +142,7 @@ bool QEventPoint::operator==(const QEventPoint &other) const noexcept
 QEventPoint::~QEventPoint() = default;
 
 /*! \fn QPointF QEventPoint::pos() const
-    \obsolete
+    \deprecated
     Deprecated since Qt 6.0. Use position() instead.
 
     Returns the position of this point, relative to the widget
@@ -443,7 +443,7 @@ bool QEventPoint::isAccepted() const
 
 
 /*!
-    \obsolete
+    \deprecated
     \fn QPointF QEventPoint::normalizedPos() const
 
     Deprecated since Qt 6.0. Use normalizedPosition() instead.
@@ -470,7 +470,7 @@ QPointF QEventPoint::normalizedPosition() const
 }
 
 /*!
-    \obsolete
+    \deprecated
     Deprecated since Qt 6.0. Use globalPressPosition() instead.
 
     Returns the normalized press position of this point.
@@ -487,7 +487,7 @@ QPointF QEventPoint::startNormalizedPos() const
 }
 
 /*!
-    \obsolete
+    \deprecated
     Deprecated since Qt 6.0. Use globalLastPosition() instead.
 
     Returns the normalized position of this point from the previous press or

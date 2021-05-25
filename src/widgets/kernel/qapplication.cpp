@@ -1563,7 +1563,7 @@ QWidget *QApplication::activeWindow()
 
 #if QT_DEPRECATED_SINCE(6,0)
 /*!
-    \obsolete Use the QFontMetricsF constructor instead
+    \deprecated Use the QFontMetricsF constructor instead.
     Returns display (screen) font metrics for the application font.
 
     \sa font(), setFont(), QWidget::fontMetrics(), QPainter::fontMetrics()

@@ -1509,7 +1509,7 @@
 
 /*! \fn template <typename T> QList<T> QList<T>::toList() const
     \fn template <typename T> QList<T> QList<T>::toVector() const
-    \obsolete
+    \deprecated
 
     A no-op in Qt 6. Provided for backwards compatibility with
     Qt 5, where QList and QVector where two different types.
@@ -1519,7 +1519,7 @@
 
 /*! \fn template <typename T> QList<T> QList<T>::fromList(const QList<T> &list)
     \fn template <typename T> QList<T> QList<T>::fromVector(const QList<T> &list)
-    \obsolete
+    \deprecated
 
     A no-op in Qt 6. Provided for backwards compatibility with
     Qt 5, where QList and QVector were two different types.

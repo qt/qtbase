@@ -595,7 +595,8 @@ QPalette::QPalette(const QBrush &windowText, const QBrush &button,
 }
 
 
-/*!\obsolete
+/*!
+  \deprecated
 
   Constructs a palette with the specified \a windowText, \a
   window, \a light, \a dark, \a mid, \a text, and \a base colors.

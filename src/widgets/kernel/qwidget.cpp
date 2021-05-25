@@ -4182,7 +4182,7 @@ QWidget *QWidget::nativeParentWidget() const
 }
 
 /*! \fn QWidget *QWidget::topLevelWidget() const
-    \obsolete
+    \deprecated
 
     Use window() instead.
 */
@@ -5921,7 +5921,7 @@ void QWidgetPrivate::setWindowIconText_sys(const QString &iconText)
     new \a iconText as an argument.
 
     \since 5.2
-    \obsolete
+    \deprecated
 
     This signal is deprecated.
 */
@@ -6053,7 +6053,7 @@ void QWidgetPrivate::setWindowIcon_sys()
     It is only implemented on the X11 platform, and only certain
     window managers use this window property.
 
-    \obsolete
+    \deprecated
     This property is deprecated.
 
     \sa windowIcon, windowTitle
@@ -11648,7 +11648,7 @@ void QWidgetPrivate::stackUnder_sys(QWidget*)
 
 /*!
     \fn bool QWidget::isTopLevel() const
-    \obsolete
+    \deprecated
 
     Use isWindow() instead.
 */

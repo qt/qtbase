@@ -190,7 +190,7 @@ QLabelPrivate::~QLabelPrivate()
 #ifndef QT_NO_PICTURE
 /*!
     \fn QPicture QLabel::picture(Qt::ReturnByValueConstant) const
-    \obsolete Use the overload without argument instead.
+    \deprecated Use the overload without argument instead.
     \since 5.15
 
     Returns the label's picture.
@@ -396,7 +396,7 @@ QPixmap QLabel::pixmap() const
 /*!
     \fn QPixmap QLabel::pixmap(Qt::ReturnByValueConstant) const
 
-    \obsolete Use the overload without argument instead.
+    \deprecated Use the overload without argument instead.
     \since 5.15
 
     Returns the label's pixmap.

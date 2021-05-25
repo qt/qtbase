@@ -531,7 +531,7 @@ void QLibraryInfoPrivate::keyAndDefault(QLibraryInfo::LibraryPath loc, QString *
 }
 
 /*! \fn QString QLibraryInfo::location(LibraryLocation loc)
-    \obsolete Use path() instead.
+    \deprecated Use path() instead.
 
     Returns the path specified by \a loc.
     \sa path()
@@ -678,7 +678,7 @@ QStringList QLibraryInfo::platformPluginArguments(const QString &platformName)
 
 /*!
     \typealias QLibraryInfo::LibraryLocation
-    \obsolete Use LibraryPath with QLibraryInfo::path() instead.
+    \deprecated Use LibraryPath with QLibraryInfo::path() instead.
 */
 
 QT_END_NAMESPACE

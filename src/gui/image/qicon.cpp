@@ -885,7 +885,7 @@ QPixmap QIcon::pixmap(const QSize &size, qreal devicePixelRatio, Mode mode, Stat
   a high-dpi display the pixmap can be larger. In that case it will have
   a devicePixelRatio larger than 1.
 
-  \obsolete Use the overload which takes qreal devicePixelRatio instead.
+  \deprecated Use the overload which takes qreal devicePixelRatio instead.
 
   \sa  actualSize(), paint()
 */

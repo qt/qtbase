@@ -1457,7 +1457,7 @@ QTextCharFormat::QTextCharFormat(const QTextFormat &fmt)
 
 /*!
     \fn void QTextCharFormat::setFontFamily(const QString &family)
-    \obsolete Use setFontFamilies() instead.
+    \deprecated Use setFontFamilies() instead.
 
     Sets the text format's font \a family.
 
@@ -1467,7 +1467,7 @@ QTextCharFormat::QTextCharFormat(const QTextFormat &fmt)
 
 /*!
     \fn QString QTextCharFormat::fontFamily() const
-    \obsolete Use fontFamilies() instead.
+    \deprecated Use fontFamilies() instead.
 
     Returns the text format's font family.
 

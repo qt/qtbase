@@ -1942,7 +1942,7 @@ void QObject::killTimer(int id)
     \fn template<typename T> T qFindChild(const QObject *obj, const QString &name)
     \relates QObject
     \overload qFindChildren()
-    \obsolete
+    \deprecated
 
     This function is equivalent to
     \a{obj}->\l{QObject::findChild()}{findChild}<T>(\a name).
@@ -1958,7 +1958,7 @@ void QObject::killTimer(int id)
     \fn template<typename T> QList<T> qFindChildren(const QObject *obj, const QString &name)
     \relates QObject
     \overload qFindChildren()
-    \obsolete
+    \deprecated
 
     This function is equivalent to
     \a{obj}->\l{QObject::findChildren()}{findChildren}<T>(\a name).
@@ -4283,7 +4283,7 @@ QDebug operator<<(QDebug dbg, const QObject *o)
 /*!
     \macro Q_ENUMS(...)
     \relates QObject
-    \obsolete
+    \deprecated
 
     In new code, you should prefer the use of the Q_ENUM() macro, which makes the
     type available also to the meta type system.
@@ -4303,7 +4303,7 @@ QDebug operator<<(QDebug dbg, const QObject *o)
 /*!
     \macro Q_FLAGS(...)
     \relates QObject
-    \obsolete
+    \deprecated
 
     This macro registers one or several \l{QFlags}{flags types} with the
     meta-object system. It is typically used in a class definition to declare

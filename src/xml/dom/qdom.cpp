@@ -6239,7 +6239,7 @@ bool QDomDocument::setContent(const QByteArray& buffer, QString *errorMsg, int *
 
 /*!
     \overload
-    \obsolete
+    \deprecated
 
     This function reads the XML document from the IO device \a dev, returning
     true if the content was successfully parsed; otherwise returns \c false.

@@ -2051,7 +2051,7 @@ void QMessageBoxPrivate::retranslateStrings()
 
 #if QT_DEPRECATED_SINCE(6,2)
 /*!
-    \obsolete
+    \deprecated
 
     Constructs a message box with a \a title, a \a text, an \a icon,
     and up to three buttons.
@@ -2115,7 +2115,7 @@ QMessageBox::QMessageBox(const QString &title, const QString &text, Icon icon,
 }
 
 /*!
-    \obsolete
+    \deprecated
 
     Opens an information message box with the given \a title and the
     \a text. The dialog may have up to three buttons. Each of the
@@ -2161,7 +2161,7 @@ int QMessageBox::information(QWidget *parent, const QString &title, const QStrin
 }
 
 /*!
-    \obsolete
+    \deprecated
     \overload
 
     Displays an information message box with the given \a title and
@@ -2201,7 +2201,7 @@ int QMessageBox::information(QWidget *parent, const QString &title, const QStrin
 }
 
 /*!
-    \obsolete
+    \deprecated
 
     Opens a question message box with the given \a title and \a text.
     The dialog may have up to three buttons. Each of the buttons, \a
@@ -2247,7 +2247,7 @@ int QMessageBox::question(QWidget *parent, const QString &title, const QString& 
 }
 
 /*!
-    \obsolete
+    \deprecated
     \overload
 
     Displays a question message box with the given \a title and \a
@@ -2287,7 +2287,7 @@ int QMessageBox::question(QWidget *parent, const QString &title, const QString& 
 
 
 /*!
-    \obsolete
+    \deprecated
 
     Opens a warning message box with the given \a title and \a text.
     The dialog may have up to three buttons. Each of the button
@@ -2333,7 +2333,7 @@ int QMessageBox::warning(QWidget *parent, const QString &title, const QString& t
 }
 
 /*!
-    \obsolete
+    \deprecated
     \overload
 
     Displays a warning message box with the given \a title and \a
@@ -2372,7 +2372,7 @@ int QMessageBox::warning(QWidget *parent, const QString &title, const QString& t
 }
 
 /*!
-    \obsolete
+    \deprecated
 
     Opens a critical message box with the given \a title and \a text.
     The dialog may have up to three buttons. Each of the button
@@ -2419,7 +2419,7 @@ int QMessageBox::critical(QWidget *parent, const QString &title, const QString& 
 }
 
 /*!
-    \obsolete
+    \deprecated
     \overload
 
     Displays a critical error message box with the given \a title and
@@ -2459,7 +2459,7 @@ int QMessageBox::critical(QWidget *parent, const QString &title, const QString& 
 
 
 /*!
-    \obsolete
+    \deprecated
 
     Returns the text of the message box button \a button, or
     an empty string if the message box does not contain the button.
@@ -2480,7 +2480,7 @@ QString QMessageBox::buttonText(int button) const
 }
 
 /*!
-    \obsolete
+    \deprecated
 
     Sets the text of the message box button \a button to \a text.
     Setting the text of a button that is not in the message box is
@@ -2729,7 +2729,7 @@ void QMessageBoxPrivate::helperDone(QDialog::DialogCode code, QPlatformDialogHel
 
 #if QT_DEPRECATED_SINCE(6,2)
 /*!
-    \obsolete
+    \deprecated
 
     Returns the pixmap used for a standard icon. This allows the
     pixmaps to be used in more complex message boxes. \a icon
@@ -2749,7 +2749,7 @@ QPixmap QMessageBox::standardIcon(Icon icon)
 
 /*!
     \typedef QMessageBox::Button
-    \obsolete
+    \deprecated
 
     Use QMessageBox::StandardButton instead.
 */

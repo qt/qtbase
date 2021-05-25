@@ -5260,7 +5260,7 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
 }
 
 /*!
-    \obsolete
+    \deprecated
 
     Paints the given \a items using the provided \a painter, after the
     background has been drawn, and before the foreground has been

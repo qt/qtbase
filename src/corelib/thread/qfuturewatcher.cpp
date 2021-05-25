@@ -136,7 +136,7 @@ void QFutureWatcherBase::cancel()
 #if QT_DEPRECATED_SINCE(6, 0)
 /*! \fn template <typename T> void QFutureWatcher<T>::setPaused(bool paused)
 
-    \obsolete
+    \deprecated
     Use setSuspended() instead.
 
     If \a paused is true, this function pauses the asynchronous computation
@@ -163,7 +163,7 @@ void QFutureWatcherBase::setPaused(bool paused)
 
 /*! \fn template <typename T> void QFutureWatcher<T>::pause()
 
-    \obsolete
+    \deprecated
     Use suspend() instead.
 
     Pauses the asynchronous computation represented by the future(). This is a
@@ -233,7 +233,7 @@ void QFutureWatcherBase::resume()
 #if QT_DEPRECATED_SINCE(6, 0)
 /*! \fn template <typename T> void QFutureWatcher<T>::togglePaused()
 
-    \obsolete
+    \deprecated
     Use toggleSuspended() instead.
 
     Toggles the paused state of the asynchronous computation. In other words,
@@ -360,7 +360,7 @@ bool QFutureWatcherBase::isCanceled() const
 
 /*! \fn template <typename T> bool QFutureWatcher<T>::isPaused() const
 
-    \obsolete
+    \deprecated
     Use isSuspending() or isSuspended() instead.
 
     Returns \c true if the asynchronous computation has been paused with the
@@ -665,7 +665,7 @@ QT_WARNING_POP
 #if QT_DEPRECATED_SINCE(6, 0)
 /*! \fn template <typename T> void QFutureWatcher<T>::paused()
 
-    \obsolete
+    \deprecated
     Use suspending() instead.
 
     This signal is emitted when the state of the watched future is

@@ -2145,7 +2145,7 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
 /*!
     \fn QPixmap QStyle::standardPixmap(StandardPixmap standardPixmap, const QStyleOption *option, const QWidget *widget) const
 
-    \obsolete
+    \deprecated
     Returns a pixmap for the given \a standardPixmap.
 
     A standard pixmap is a pixmap that can follow some existing GUI

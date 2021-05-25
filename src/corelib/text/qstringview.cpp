@@ -629,7 +629,7 @@ QT_BEGIN_NAMESPACE
     Returns the substring of length \a length starting at position
     \a start in this object.
 
-    \obsolete Use sliced() instead in new code.
+    \deprecated Use sliced() instead in new code.
 
     Returns an empty string view if \a start exceeds the
     length of the string. If there are less than \a length characters
@@ -643,7 +643,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn QStringView QStringView::left(qsizetype length) const
 
-    \obsolete Use first() instead in new code.
+    \deprecated Use first() instead in new code.
 
     Returns the substring of length \a length starting at position
     0 in this object.
@@ -657,7 +657,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn QStringView QStringView::right(qsizetype length) const
 
-    \obsolete Use last() instead in new code.
+    \deprecated Use last() instead in new code.
 
     Returns the substring of length \a length starting at position
     size() - \a length in this object.

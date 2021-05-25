@@ -4745,7 +4745,7 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
 /*!
     \macro qMove(x)
     \relates <QtGlobal>
-    \obsolete
+    \deprecated
 
     Use \c std::move instead.
 
@@ -4850,7 +4850,7 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
 /*!
     \macro Q_DECL_OVERRIDE
     \since 5.0
-    \obsolete
+    \deprecated
     \relates <QtGlobal>
 
     This macro can be used to declare an overriding virtual
@@ -4870,7 +4870,7 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
 /*!
     \macro Q_DECL_FINAL
     \since 5.0
-    \obsolete
+    \deprecated
     \relates <QtGlobal>
 
     This macro can be used to declare an overriding virtual or a class

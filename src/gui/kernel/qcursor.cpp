@@ -565,7 +565,7 @@ void QCursor::setShape(Qt::CursorShape shape)
 /*!
     \fn QBitmap QCursor::bitmap(Qt::ReturnByValueConstant) const
     \since 5.15
-    \obsolete Use the overload without argument instead.
+    \deprecated Use the overload without argument instead.
 
     Returns the cursor bitmap, or a null bitmap if it is one of the
     standard cursors.
@@ -592,7 +592,7 @@ QBitmap QCursor::bitmap() const
 /*!
     \fn QBitmap QCursor::mask(Qt::ReturnByValueConstant) const
     \since 5.15
-    \obsolete Use the overload without argument instead.
+    \deprecated Use the overload without argument instead.
 
     Returns the cursor bitmap mask, or a null bitmap if it is one of the
     standard cursors.

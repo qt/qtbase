@@ -1260,7 +1260,7 @@ QLocale::Territory QLocale::territory() const
 
 #if QT_DEPRECATED_SINCE(6, 6)
 /*!
-    \obsolete Use territory() instead.
+    \deprecated Use territory() instead.
 
     Returns the territory of this locale.
 
@@ -1407,7 +1407,7 @@ QLocale::Territory QLocale::codeToTerritory(QStringView territoryCode) noexcept
 
 #if QT_DEPRECATED_SINCE(6, 6)
 /*!
-    \obsolete Use territoryToCode(Territory) instead.
+    \deprecated Use territoryToCode(Territory) instead.
 
     Returns the two-letter territory code for \a country, as defined
     in the ISO 3166 standard.
@@ -1427,7 +1427,7 @@ QString QLocale::countryToCode(Country country)
 
     If the code is invalid or not known QLocale::AnyTerritory is returned.
 
-    \obsolete Use codeToTerritory(QStringView) instead.
+    \deprecated Use codeToTerritory(QStringView) instead.
     \since 6.1
     \sa territoryToCode(), codeToLanguage(), codeToScript()
 */
@@ -1494,7 +1494,7 @@ QString QLocale::territoryToString(QLocale::Territory territory)
 
 #if QT_DEPRECATED_SINCE(6, 6)
 /*!
-    \obsolete Use territoryToString(Territory) instead.
+    \deprecated Use territoryToString(Territory) instead.
 
     Returns a QString containing the name of \a country.
 
@@ -2655,7 +2655,7 @@ QList<QLocale> QLocale::matchingLocales(QLocale::Language language, QLocale::Scr
 
 #if QT_DEPRECATED_SINCE(6, 6)
 /*!
-    \obsolete Use matchingLocales() instead and consult the territory() of each.
+    \deprecated Use matchingLocales() instead and consult the territory() of each.
     \since 4.3
 
     Returns the list of countries that have entries for \a language in Qt's locale
@@ -4392,7 +4392,7 @@ QString QLocale::nativeTerritoryName() const
 
 #if QT_DEPRECATED_SINCE(6, 6)
 /*!
-    \obsolete Use nativeTerritoryName() instead.
+    \deprecated Use nativeTerritoryName() instead.
     \since 4.8
 
     Returns a native name of the territory for the locale. For example

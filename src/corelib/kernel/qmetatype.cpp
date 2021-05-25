@@ -1728,12 +1728,12 @@ bool QMetaType::debugStream(QDebug& dbg, const void *rhs)
 /*!
     \fn bool QMetaType::debugStream(QDebug& dbg, const void *rhs, int typeId)
     \overload
-    \obsolete
+    \deprecated
 */
 
 /*!
     \fn bool QMetaType::hasRegisteredDebugStreamOperator()
-    \obsolete
+    \deprecated
     \since 5.2
 
     Returns \c true, if the meta type system has a registered debug stream operator for type T.
@@ -1741,7 +1741,7 @@ bool QMetaType::debugStream(QDebug& dbg, const void *rhs)
 
 /*!
     \fn bool QMetaType::hasRegisteredDebugStreamOperator(int typeId)
-    \obsolete Use QMetaType::hasRegisteredDebugStreamOperator() instead.
+    \deprecated Use QMetaType::hasRegisteredDebugStreamOperator() instead.
 
     Returns \c true, if the meta type system has a registered debug stream operator for type
     id \a typeId.
@@ -2174,7 +2174,7 @@ static bool convertQObject(QMetaType fromType, const void *from, QMetaType toTyp
 
 /*!
     \fn bool QMetaType::convert(const void *from, int fromTypeId, void *to, int toTypeId)
-    \obsolete
+    \deprecated
 
     Converts the object at \a from from \a fromTypeId to the preallocated space at \a to
     typed \a toTypeId. Returns \c true, if the conversion succeeded, otherwise false.
@@ -2688,7 +2688,7 @@ bool QMetaType::save(QDataStream &stream, const void *data) const
 /*!
    \fn bool QMetaType::save(QDataStream &stream, int type, const void *data)
    \overload
-   \obsolete
+   \deprecated
 */
 
 /*!
@@ -2746,7 +2746,7 @@ bool QMetaType::hasRegisteredDataStreamOperators() const
 /*!
    \fn bool QMetaType::load(QDataStream &stream, int type, void *data)
    \overload
-   \obsolete
+   \deprecated
 */
 #endif // QT_NO_DATASTREAM
 

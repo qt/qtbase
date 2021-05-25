@@ -3265,7 +3265,7 @@ void QGraphicsItem::setFiltersChildEvents(bool enabled)
 }
 
 /*!
-    \obsolete
+    \deprecated
 
     Returns \c true if this item handles child events (i.e., all events
     intended for any of its children are instead sent to this item);
@@ -3287,7 +3287,7 @@ bool QGraphicsItem::handlesChildEvents() const
 }
 
 /*!
-    \obsolete
+    \deprecated
 
     If \a enabled is true, this item is set to handle all events for
     all its children (i.e., all events intented for any of its

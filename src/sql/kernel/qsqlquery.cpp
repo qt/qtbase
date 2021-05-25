@@ -251,7 +251,7 @@ QSqlQuery::~QSqlQuery()
 /*!
     Constructs a copy of \a other.
 
-    \obsolete QSqlQuery cannot be meaningfully copied. Prepared
+    \deprecated QSqlQuery cannot be meaningfully copied. Prepared
     statements, bound values and so on will not work correctly, depending
     on your database driver (for instance, changing the copy will affect
     the original). Treat QSqlQuery as a move-only type instead.
@@ -266,7 +266,7 @@ QSqlQuery::QSqlQuery(const QSqlQuery& other)
 /*!
     Assigns \a other to this object.
 
-    \obsolete QSqlQuery cannot be meaningfully copied. Prepared
+    \deprecated QSqlQuery cannot be meaningfully copied. Prepared
     statements, bound values and so on will not work correctly, depending
     on your database driver (for instance, changing the copy will affect
     the original). Treat QSqlQuery as a move-only type instead.

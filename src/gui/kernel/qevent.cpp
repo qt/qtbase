@@ -2770,7 +2770,7 @@ QTabletEvent::~QTabletEvent()
 */
 
 /*!
-    \obsolete
+    \deprecated
     Use the other constructor, because \a intValue is no longer stored separately.
 
     Constructs a native gesture event of type \a type originating from \a device.
@@ -4462,7 +4462,7 @@ QTouchEvent::QTouchEvent(QEvent::Type eventType,
 }
 
 /*!
-    \obsolete
+    \deprecated
     Try to use another constructor, because \a touchPointStates
     can be calculated from the given \a touchPoints.
 
@@ -4527,7 +4527,7 @@ bool QTouchEvent::isEndEvent() const
 */
 
 /*! \fn const QList<QEventPoint> &QTouchEvent::touchPoints() const
-    \obsolete
+    \deprecated
     Deprecated since Qt 6.0. Use points() instead.
 
     Returns a reference to the list of touch points contained in the touch event.

@@ -1008,7 +1008,7 @@ QAbstractItemDelegate *QAbstractItemView::itemDelegateForColumn(int column) cons
 
 /*!
     \fn QAbstractItemDelegate *QAbstractItemView::itemDelegate(const QModelIndex &index) const
-    \obsolete Use itemDelegateForIndex() instead.
+    \deprecated Use itemDelegateForIndex() instead.
     Returns the item delegate used by this view and model for
     the given \a index.
 */

@@ -878,7 +878,7 @@ void QHashSeed::resetRandomGlobalSeed()
 #if QT_DEPRECATED_SINCE(6,6)
 /*! \relates QHash
     \since 5.6
-    \obsolete Use QHashSeed::globalSeed() instead.
+    \deprecated Use QHashSeed::globalSeed() instead.
 
     Returns the current global QHash seed.
 
@@ -894,7 +894,7 @@ int qGlobalQHashSeed()
 
 /*! \relates QHash
     \since 5.6
-    \obsolete Use QHashSeed instead.
+    \deprecated Use QHashSeed instead.
 
     Sets the global QHash seed to \a newSeed.
 

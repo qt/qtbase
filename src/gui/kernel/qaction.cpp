@@ -548,14 +548,14 @@ QList<QObject*> QAction::associatedObjects() const
 
 /*!
     \fn QWidget *QAction::parentWidget() const
-    \obsolete Use parent() with qobject_cast() instead.
+    \deprecated Use parent() with qobject_cast() instead.
 
     Returns the parent widget.
 */
 
 /*!
     \fn QList<QWidget*> QAction::associatedWidgets() const
-    \obsolete Use associatedObjects() with qobject_cast() instead.
+    \deprecated Use associatedObjects() with qobject_cast() instead.
 
     Returns a list of widgets this action has been added to.
 
@@ -564,7 +564,7 @@ QList<QObject*> QAction::associatedObjects() const
 
 /*!
     \fn QList<QWidget*> QAction::associatedGraphicsWidgets() const
-    \obsolete Use associatedObjects() with qobject_cast() instead.
+    \deprecated Use associatedObjects() with qobject_cast() instead.
 
     Returns a list of graphics widgets this action has been added to.
 
@@ -1225,7 +1225,7 @@ QAction::MenuRole QAction::menuRole() const
 
 /*!
     \fn QMenu *QAction::menu() const
-    \obsolete
+    \deprecated
 
     Returns the menu contained by this action.
 
@@ -1242,7 +1242,7 @@ QObject* QAction::menuObject() const
 
 /*!
     \fn void QAction::setMenu(QMenu *menu)
-    \obsolete
+    \deprecated
 
     Sets the menu contained by this action to the specified \a menu.
 */
