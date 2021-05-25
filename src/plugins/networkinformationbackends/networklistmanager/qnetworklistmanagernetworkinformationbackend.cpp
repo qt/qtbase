@@ -41,6 +41,7 @@
 
 #include <QtCore/qglobal.h>
 #include <QtCore/private/qobject_p.h>
+#include <QtCore/qscopeguard.h>
 
 #include <objbase.h>
 #include <netlistmgr.h>
@@ -120,7 +121,8 @@ public:
 
     static QNetworkInformation::Features featuresSupportedStatic()
     {
-        return QNetworkInformation::Features(QNetworkInformation::Feature::Reachability);
+        return QNetworkInformation::Features(QNetworkInformation::Feature::Reachability
+                                             | QNetworkInformation::Feature::CaptivePortal);
     }
 
     [[nodiscard]] bool start();
@@ -131,6 +133,7 @@ private:
 
     bool event(QEvent *event) override;
     void setConnectivity(NLM_CONNECTIVITY newConnectivity);
+    void checkCaptivePortal();
 
     ComPtr<QNetworkListManagerEvents> managerEvents;
 
@@ -192,6 +195,8 @@ public:
 
     [[nodiscard]] bool start();
     bool stop();
+
+    [[nodiscard]] bool checkBehindCaptivePortal();
 
 signals:
     void connectivityChanged(NLM_CONNECTIVITY);
@@ -288,6 +293,44 @@ bool QNetworkListManagerEvents::stop()
     return true;
 }
 
+bool QNetworkListManagerEvents::checkBehindCaptivePortal()
+{
+    if (!networkListManager)
+        return false;
+    ComPtr<IEnumNetworks> networks;
+    HRESULT hr =
+            networkListManager->GetNetworks(NLM_ENUM_NETWORK_CONNECTED, networks.GetAddressOf());
+    if (FAILED(hr) || networks == nullptr)
+        return false;
+
+    // @note: This checks all connected networks, but that might not be necessary
+    ComPtr<INetwork> network;
+    hr = networks->Next(1, network.GetAddressOf(), nullptr);
+    while (SUCCEEDED(hr) && network != nullptr) {
+        ComPtr<IPropertyBag> propertyBag;
+        hr = network.As(&propertyBag);
+        if (SUCCEEDED(hr) && propertyBag != nullptr) {
+            VARIANT variant;
+            VariantInit(&variant);
+            const auto scopedVariantClear = qScopeGuard([&variant]() { VariantClear(&variant); });
+
+            const wchar_t *versions[] = { NA_InternetConnectivityV6, NA_InternetConnectivityV4 };
+            for (const auto version : versions) {
+                hr = propertyBag->Read(version, &variant, nullptr);
+                if (SUCCEEDED(hr)
+                    && (V_UINT(&variant) & NLM_INTERNET_CONNECTIVITY_WEBHIJACK)
+                            == NLM_INTERNET_CONNECTIVITY_WEBHIJACK) {
+                    return true;
+                }
+            }
+        }
+
+        hr = networks->Next(1, network.GetAddressOf(), nullptr);
+    }
+
+    return false;
+}
+
 QNetworkListManagerNetworkInformationBackend::QNetworkListManagerNetworkInformationBackend()
 {
     auto hr = CoInitialize(nullptr);
@@ -314,7 +357,18 @@ void QNetworkListManagerNetworkInformationBackend::setConnectivity(NLM_CONNECTIV
         != reachabilityFromNLM_CONNECTIVITY(newConnectivity)) {
         connectivity = newConnectivity;
         setReachability(reachabilityFromNLM_CONNECTIVITY(newConnectivity));
+
+        // @future: only check if signal is connected
+        checkCaptivePortal();
     }
+}
+
+void QNetworkListManagerNetworkInformationBackend::checkCaptivePortal()
+{
+    const bool behindPortal = managerEvents->checkBehindCaptivePortal();
+    using TriState = QNetworkInformation::TriState;
+    const auto triState = behindPortal ? TriState::True : TriState::False;
+    setBehindCaptivePortal(triState);
 }
 
 bool QNetworkListManagerNetworkInformationBackend::event(QEvent *event)
