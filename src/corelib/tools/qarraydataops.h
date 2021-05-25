@@ -84,7 +84,7 @@ public:
         Q_ASSERT(newSize - this->size <= this->freeSpaceAtEnd());
 
         T *where = this->end();
-        this->size = qsizetype(newSize);
+        this->size = newSize;
         const T *e = this->end();
         while (where != e)
             *where++ = T();

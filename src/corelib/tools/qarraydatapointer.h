@@ -228,7 +228,6 @@ public:
         if (n > 0)
             Q_CHECK_PTR(dp.data());
         if (where == QArrayData::GrowsAtBeginning) {
-            Q_ASSERT(dp.ptr);
             Q_ASSERT(dp.freeSpaceAtBegin() >= n);
         } else {
             Q_ASSERT(dp.freeSpaceAtEnd() >= n);
