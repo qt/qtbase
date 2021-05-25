@@ -156,7 +156,8 @@ namespace QSsl {
         Socket,
         DiffieHellman,
         EllipticCurve,
-        Dtls
+        Dtls,
+        DtlsCookie
     };
 
     enum class SupportedFeature

@@ -337,6 +337,7 @@ QList<QSsl::ImplementedClass> QTlsBackendOpenSSL::implementedClasses() const
     classes << QSsl::ImplementedClass::Socket;
 #if QT_CONFIG(dtls)
     classes << QSsl::ImplementedClass::Dtls;
+    classes << QSsl::ImplementedClass::DtlsCookie;
 #endif
     classes << QSsl::ImplementedClass::EllipticCurve;
     classes << QSsl::ImplementedClass::DiffieHellman;

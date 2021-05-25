@@ -260,9 +260,10 @@ Q_LOGGING_CATEGORY(lcSsl, "qt.network.ssl");
     \value Key Class QSslKey.
     \value Certificate Class QSslCertificate.
     \value Socket Class QSslSocket.
-    \value DiffieHellman Class QSslDiffieHellmanParameters
-    \value EllipticCurve Class QSslEllipticCurve
-    \value Dtls Classes QDtls and QDtlsClientVerifier
+    \value DiffieHellman Class QSslDiffieHellmanParameters.
+    \value EllipticCurve Class QSslEllipticCurve.
+    \value Dtls Class QDtls.
+    \value DtlsCookie Class QDtlsClientVerifier.
 */
 
 /*!
