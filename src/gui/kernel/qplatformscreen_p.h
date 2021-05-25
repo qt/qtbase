@@ -91,6 +91,19 @@ struct Q_GUI_EXPORT QVsp2Screen
 };
 #endif
 
+#if defined(Q_OS_WEBOS) || defined(Q_CLANG_QDOC)
+struct Q_GUI_EXPORT QWebOSScreen
+{
+    QT_DECLARE_NATIVE_INTERFACE(QWebOSScreen)
+    virtual int addLayer(void *gbm_bo, const QRectF &geometry) = 0;
+    virtual void setLayerBuffer(int id, void *gbm_bo) = 0;
+    virtual void setLayerGeometry(int id, const QRectF &geometry) = 0;
+    virtual void setLayerAlpha(int id, qreal alpha) = 0;
+    virtual bool removeLayer(int id) = 0;
+    virtual void addFlipListener(void (*callback)()) = 0;
+};
+#endif
+
 } // QNativeInterface::Private
 
 QT_END_NAMESPACE
