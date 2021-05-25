@@ -302,10 +302,10 @@ function(qt6_android_add_apk_target target)
     set(apk_intermediate_file_path "${apk_intermediate_dir}/${apk_file_name}")
 
     # This target is used by Qt Creator's Android support.
-    add_custom_target(${target}_prepare_apk_dir
+    add_custom_target(${target}_prepare_apk_dir ALL
         DEPENDS ${target}
         COMMAND ${CMAKE_COMMAND}
-            -E copy $<TARGET_FILE:${target}>
+            -E copy_if_different $<TARGET_FILE:${target}>
             "${apk_final_dir}/libs/${CMAKE_ANDROID_ARCH_ABI}/$<TARGET_FILE_NAME:${target}>"
         COMMENT "Copying ${target} binary to apk folder"
     )
