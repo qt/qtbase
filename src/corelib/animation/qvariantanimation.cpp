@@ -439,8 +439,8 @@ void QVariantAnimation::registerInterpolator(QVariantAnimation::Interpolator fun
     // to continue causes the app to crash on exit with a SEGV
     if (interpolators) {
         const auto locker = qt_scoped_lock(registeredInterpolatorsMutex);
-        if (int(interpolationType) >= interpolators->count())
-            interpolators->resize(int(interpolationType) + 1);
+        if (interpolationType >= interpolators->count())
+            interpolators->resize(interpolationType + 1);
         interpolators->replace(interpolationType, func);
     }
 }
