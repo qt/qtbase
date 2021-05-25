@@ -2745,13 +2745,15 @@ void QComboBox::showPopup()
         QGuiApplication::inputMethod()->reset();
     }
 
-    QScrollBar *sb = view()->horizontalScrollBar();
-    Qt::ScrollBarPolicy policy = view()->horizontalScrollBarPolicy();
-    bool needHorizontalScrollBar = (policy == Qt::ScrollBarAsNeeded || policy == Qt::ScrollBarAlwaysOn)
-                                   && sb->minimum() < sb->maximum();
-    if (needHorizontalScrollBar) {
+    const QScrollBar *sb = view()->horizontalScrollBar();
+    const auto needHorizontalScrollBar = [this, sb]{
+        const Qt::ScrollBarPolicy policy = view()->horizontalScrollBarPolicy();
+        return (policy == Qt::ScrollBarAsNeeded || policy == Qt::ScrollBarAlwaysOn)
+               && sb->minimum() < sb->maximum();
+    };
+    const bool neededHorizontalScrollBar = needHorizontalScrollBar();
+    if (neededHorizontalScrollBar)
         listRect.adjust(0, 0, 0, sb->height());
-    }
 
     // Hide the scrollers here, so that the listrect gets the full height of the container
     // If the scrollers are truly needed, the later call to container->updateScrollers()
@@ -2794,6 +2796,11 @@ void QComboBox::showPopup()
         }
     }
     container->show();
+    if (!neededHorizontalScrollBar && needHorizontalScrollBar()) {
+        listRect.adjust(0, 0, 0, sb->height());
+        container->setGeometry(listRect);
+    }
+
     container->updateScrollers();
     view()->setFocus();
 
