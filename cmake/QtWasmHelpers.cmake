@@ -3,7 +3,7 @@ function (qt_internal_setup_wasm_target_properties wasmTarget)
 
     target_link_options("${wasmTarget}" INTERFACE "SHELL:-s EXIT_RUNTIME=1"
     "SHELL:-s ERROR_ON_UNDEFINED_SYMBOLS=1"
-    "SHELL:-s EXTRA_EXPORTED_RUNTIME_METHODS=[UTF16ToString,stringToUTF16]"
+    "SHELL:-s EXTRA_EXPORTED_RUNTIME_METHODS=UTF16ToString,stringToUTF16"
     "SHELL:-s USE_WEBGL2=1"
     "--bind"
     "SHELL:-s FETCH=1")
@@ -68,9 +68,9 @@ function (qt_internal_setup_wasm_target_properties wasmTarget)
 
     # a few good defaults to make console more verbose while debugging
     target_link_options("${wasmTarget}" INTERFACE $<$<CONFIG:Debug>:
-        SHELL:"-s DEMANGLE_SUPPORT=1"
-        SHELL:"-s GL_DEBUG=1"
-        SHELL:"-s ASSERTIONS=2"
+        "SHELL:-s DEMANGLE_SUPPORT=1"
+        "SHELL:-s GL_DEBUG=1"
+        "SHELL:-s ASSERTIONS=2"
         --profiling-funcs>)
 
     # target_link_options("${wasmTarget}" INTERFACE "SHELL:-s LIBRARY_DEBUG=1") # print out library calls, verbose
