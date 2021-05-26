@@ -213,8 +213,7 @@ public:
     void grabServer();
     void ungrabServer();
 
-    bool isUnity() const { return m_xdgCurrentDesktop == "unity"; }
-    bool isGnome() const { return m_xdgCurrentDesktop == "gnome"; }
+    QString windowManagerName() const;
 
     QXcbNativeInterface *nativeInterface() const { return m_nativeInterface; }
 
@@ -378,7 +377,6 @@ private:
 
     friend class QXcbEventQueue;
 
-    QByteArray m_xdgCurrentDesktop;
     QTimer m_focusInTimer;
 
 };

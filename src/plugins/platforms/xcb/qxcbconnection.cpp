@@ -96,8 +96,6 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
 
     m_eventQueue = new QXcbEventQueue(this);
 
-    m_xdgCurrentDesktop = qgetenv("XDG_CURRENT_DESKTOP").toLower();
-
     if (hasXRandr())
         xrandrSelectEvents();
 
@@ -793,6 +791,15 @@ void QXcbConnection::ungrabServer()
 {
     if (m_canGrabServer)
         xcb_ungrab_server(xcb_connection());
+}
+
+QString QXcbConnection::windowManagerName() const
+{
+    QXcbVirtualDesktop *pvd = primaryVirtualDesktop();
+    if (pvd)
+        return pvd->windowManagerName().toLower();
+
+    return QString();
 }
 
 xcb_timestamp_t QXcbConnection::getTimestamp()

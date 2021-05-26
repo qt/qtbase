@@ -648,6 +648,9 @@ void QXcbConnection::xi2HandleEvent(xcb_ge_event_t *event)
         if (xiEvent->event_type == XCB_INPUT_BUTTON_RELEASE
             && xiEvent->detail == XCB_BUTTON_INDEX_1 ) {
             abortSystemMoveResize(xiEvent->event);
+        } else if (xiEvent->event_type == XCB_INPUT_TOUCH_END) {
+            abortSystemMoveResize(xiEvent->event);
+            return;
         } else {
             return;
         }
@@ -921,6 +924,8 @@ bool QXcbConnection::startSystemMoveResizeForTouch(xcb_window_t window, int edge
                     m_startSystemMoveResizeInfo.deviceid = devIt.key();
                     m_startSystemMoveResizeInfo.pointid = pointIt.key();
                     m_startSystemMoveResizeInfo.edges = edges;
+                    setDuringSystemMoveResize(true);
+                    qCDebug(lcQpaXInputDevices) << "triggered system move or resize from touch";
                     return true;
                 }
             }

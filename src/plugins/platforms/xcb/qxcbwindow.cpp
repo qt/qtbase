@@ -2332,8 +2332,10 @@ bool QXcbWindow::startSystemMoveResize(const QPoint &pos, int edges)
     // ### FIXME QTBUG-53389
     bool startedByTouch = connection()->startSystemMoveResizeForTouch(m_window, edges);
     if (startedByTouch) {
-        if (connection()->isUnity()) {
-            // Unity fails to move/resize via _NET_WM_MOVERESIZE (WM bug?).
+        const QString wmname = connection()->windowManagerName();
+        if (wmname != QLatin1String("kwin") && wmname != QLatin1String("openbox")) {
+            qCDebug(lcQpaXInputDevices) << "only KDE and OpenBox support startSystemMove/Resize which is triggered from touch events: XDG_CURRENT_DESKTOP="
+                                        << qgetenv("XDG_CURRENT_DESKTOP");
             connection()->abortSystemMoveResize(m_window);
             return false;
         }
