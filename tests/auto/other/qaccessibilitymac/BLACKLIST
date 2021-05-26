@@ -1,0 +1,4 @@
+# See qtbase/src/testlib/qtestblacklist.cpp for format
+[notificationsTest]
+macos-10.15
+
