@@ -434,7 +434,7 @@ language_aliases = {
     'Navaho': 'Navajo',
     'Oriya': 'Odia',
     'Kirghiz': 'Kyrgyz'
-    }
+}
 
 territory_map = {
       0: ("AnyTerritory",                                 "ZZ"),

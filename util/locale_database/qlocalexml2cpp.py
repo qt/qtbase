@@ -283,7 +283,7 @@ class LocaleDataWriter (LocaleSourceEditor):
                              locale.minus, locale.plus, locale.exp,
                              locale.quotationStart, locale.quotationEnd,
                              locale.alternateQuotationStart, locale.alternateQuotationEnd)) +
-                      tuple (date_format_data.append(f) for f in # 2 entries:
+                      tuple(date_format_data.append(f) for f in # 2 entries:
                              (locale.longDateFormat, locale.shortDateFormat)) +
                       tuple(time_format_data.append(f) for f in # 2 entries:
                             (locale.longTimeFormat, locale.shortTimeFormat)) +

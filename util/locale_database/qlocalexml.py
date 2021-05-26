@@ -619,7 +619,7 @@ class Locale (object):
                        (fullName, fullName),
                        (fullName, fullName),
                        (number, number)),
-            },
+                     },
                      sizes=('long', 'short', 'narrow')):
         for cal in calendars:
             try:

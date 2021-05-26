@@ -417,7 +417,7 @@ class LocaleScanner (object):
         ('long', 'format', 'wide'),
         ('short', 'format', 'abbreviated'),
         ('narrow', 'format', 'narrow'),
-        ) # Used for month and day names
+    ) # Used for month and day names
 
     def __find(self, xpath):
         retries, foundNone = [ xpath.split('/') ], True
@@ -485,7 +485,7 @@ class LocaleScanner (object):
             return self.find(stem + 'displayName')
         except Error:
             pass
-        for x in  ('zero', 'one', 'two', 'few', 'many', 'other'):
+        for x in ('zero', 'one', 'two', 'few', 'many', 'other'):
             try:
                 return self.find(f'{stem}displayName[count={x}]')
             except Error:
