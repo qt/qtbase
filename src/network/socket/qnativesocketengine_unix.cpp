@@ -63,8 +63,7 @@
 #endif
 
 #if defined QNATIVESOCKETENGINE_DEBUG
-#include <qstring.h>
-#include <ctype.h>
+#include <private/qdebug_p.h>
 #endif
 
 #include <netinet/tcp.h>
@@ -75,38 +74,6 @@
 #endif
 
 QT_BEGIN_NAMESPACE
-
-#if defined QNATIVESOCKETENGINE_DEBUG
-
-/*
-    Returns a human readable representation of the first \a len
-    characters in \a data.
-*/
-static QByteArray qt_prettyDebug(const char *data, int len, int maxSize)
-{
-    if (!data) return "(null)";
-    QByteArray out;
-    for (int i = 0; i < len; ++i) {
-        char c = data[i];
-        if (isprint(c)) {
-            out += c;
-        } else switch (c) {
-        case '\n': out += "\\n"; break;
-        case '\r': out += "\\r"; break;
-        case '\t': out += "\\t"; break;
-        default:
-            QString tmp;
-            tmp.sprintf("\\%o", c);
-            out += tmp.toLatin1();
-        }
-    }
-
-    if (len < maxSize)
-        out += "...";
-
-    return out;
-}
-#endif
 
 /*
     Extracts the port and address from a sockaddr, and stores them in
@@ -1063,7 +1030,7 @@ qint64 QNativeSocketEnginePrivate::nativeReceiveDatagram(char *data, qint64 maxS
 
 #if defined (QNATIVESOCKETENGINE_DEBUG)
     qDebug("QNativeSocketEnginePrivate::nativeReceiveDatagram(%p \"%s\", %lli, %s, %i) == %lli",
-           data, qt_prettyDebug(data, qMin(recvResult, ssize_t(16)), recvResult).data(), maxSize,
+           data, QtDebugUtils::toPrintable(data, recvResult, 16).constData(), maxSize,
            (recvResult != -1 && options != QAbstractSocketEngine::WantNone)
            ? header->senderAddress.toString().toLatin1().constData() : "(unknown)",
            (recvResult != -1 && options != QAbstractSocketEngine::WantNone)
@@ -1192,7 +1159,7 @@ qint64 QNativeSocketEnginePrivate::nativeSendDatagram(const char *data, qint64 l
 
 #if defined (QNATIVESOCKETENGINE_DEBUG)
     qDebug("QNativeSocketEngine::sendDatagram(%p \"%s\", %lli, \"%s\", %i) == %lli", data,
-           qt_prettyDebug(data, qMin<int>(len, 16), len).data(), len,
+           QtDebugUtils::toPrintable(data, len, 16).constData(), len,
            header.destinationAddress.toString().toLatin1().constData(),
            header.destinationPort, (qint64) sentBytes);
 #endif
@@ -1358,9 +1325,8 @@ qint64 QNativeSocketEnginePrivate::nativeWrite(const char *data, qint64 len)
     }
 
 #if defined (QNATIVESOCKETENGINE_DEBUG)
-    qDebug("QNativeSocketEnginePrivate::nativeWrite(%p \"%s\", %llu) == %i",
-           data, qt_prettyDebug(data, qMin((int) len, 16),
-                                (int) len).data(), len, (int) writtenBytes);
+    qDebug("QNativeSocketEnginePrivate::nativeWrite(%p \"%s\", %llu) == %i", data,
+           QtDebugUtils::toPrintable(data, len, 16).constData(), len, (int) writtenBytes);
 #endif
 
     return qint64(writtenBytes);
@@ -1409,9 +1375,8 @@ qint64 QNativeSocketEnginePrivate::nativeRead(char *data, qint64 maxSize)
     }
 
 #if defined (QNATIVESOCKETENGINE_DEBUG)
-    qDebug("QNativeSocketEnginePrivate::nativeRead(%p \"%s\", %llu) == %zd",
-           data, qt_prettyDebug(data, qMin(r, ssize_t(16)), r).data(),
-           maxSize, r);
+    qDebug("QNativeSocketEnginePrivate::nativeRead(%p \"%s\", %llu) == %zd", data,
+           QtDebugUtils::toPrintable(data, r, 16).constData(), maxSize, r);
 #endif
 
     return qint64(r);

@@ -46,14 +46,62 @@
 #endif
 
 #include "qdebug.h"
+#include "private/qdebug_p.h"
 #include "qmetaobject.h"
 #include <private/qtextstream_p.h>
 #include <private/qtools_p.h>
+#include <ctype.h>
 
 QT_BEGIN_NAMESPACE
 
 using QtMiscUtils::toHexUpper;
+using QtMiscUtils::toHexLower;
 using QtMiscUtils::fromHex;
+
+/*
+    Returns a human readable representation of the first \a maxSize
+    characters in \a data.
+*/
+QByteArray QtDebugUtils::toPrintable(const char *data, int len, int maxSize)
+{
+    if (!data)
+        return "(null)";
+
+    QByteArray out;
+    for (int i = 0; i < qMin(len, maxSize); ++i) {
+        char c = data[i];
+        if (isprint(c)) {
+            out += c;
+        } else {
+            switch (c) {
+            case '\n':
+                out += "\\n";
+                break;
+            case '\r':
+                out += "\\r";
+                break;
+            case '\t':
+                out += "\\t";
+                break;
+            default: {
+                const char buf[] = {
+                    '\\',
+                    'x',
+                    toHexLower(uchar(c) / 16),
+                    toHexLower(uchar(c) % 16),
+                    0
+                };
+                out += buf;
+            }
+            }
+        }
+    }
+
+    if (maxSize < len)
+        out += "...";
+
+    return out;
+}
 
 // This file is needed to force compilation of QDebug into the kernel library.
 

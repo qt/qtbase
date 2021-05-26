@@ -41,49 +41,7 @@
 
 //#define QPROCESS_DEBUG
 #include "qdebug.h"
-
-#if QT_CONFIG(process) && defined(QPROCESS_DEBUG)
-#include "private/qtools_p.h"
-#include <ctype.h>
-
-/*
-    Returns a human readable representation of the first \a len
-    characters in \a data.
-*/
-QT_BEGIN_NAMESPACE
-static QByteArray qt_prettyDebug(const char *data, int len, int maxSize)
-{
-    if (!data) return "(null)";
-    QByteArray out;
-    for (int i = 0; i < len; ++i) {
-        char c = data[i];
-        if (isprint(c)) {
-            out += c;
-        } else switch (c) {
-        case '\n': out += "\\n"; break;
-        case '\r': out += "\\r"; break;
-        case '\t': out += "\\t"; break;
-        default: {
-            const char buf[] =  {
-                '\\',
-                QtMiscUtils::toOct(uchar(c) / 64),
-                QtMiscUtils::toOct(uchar(c) % 64 / 8),
-                QtMiscUtils::toOct(uchar(c) % 8),
-                0
-            };
-            out += buf;
-            }
-        }
-    }
-
-    if (len < maxSize)
-        out += "...";
-
-    return out;
-}
-QT_END_NAMESPACE
-#endif
-
+#include <private/qdebug_p.h>
 #include "qplatformdefs.h"
 
 #include "qprocess.h"
@@ -676,7 +634,7 @@ qint64 QProcessPrivate::readFromChannel(const Channel *channel, char *data, qint
     int save_errno = errno;
     qDebug("QProcessPrivate::readFromChannel(%d, %p \"%s\", %lld) == %lld",
            int(channel - &stdinChannel),
-           data, qt_prettyDebug(data, bytesRead, 16).constData(), maxlen, bytesRead);
+           data, QtDebugUtils::toPrintable(data, bytesRead, 16).constData(), maxlen, bytesRead);
     errno = save_errno;
 #endif
     if (bytesRead == -1 && errno == EWOULDBLOCK)
@@ -691,8 +649,8 @@ bool QProcessPrivate::writeToStdin()
 
     qint64 written = qt_safe_write_nosignal(stdinChannel.pipe[1], data, bytesToWrite);
 #if defined QPROCESS_DEBUG
-    qDebug("QProcessPrivate::writeToStdin(), write(%p \"%s\", %lld) == %lld",
-           data, qt_prettyDebug(data, bytesToWrite, 16).constData(), bytesToWrite, written);
+    qDebug("QProcessPrivate::writeToStdin(), write(%p \"%s\", %lld) == %lld", data,
+           QtDebugUtils::toPrintable(data, bytesToWrite, 16).constData(), bytesToWrite, written);
     if (written == -1)
         qDebug("QProcessPrivate::writeToStdin(), failed to write (%ls)", qUtf16Printable(qt_error_string(errno)));
 #endif

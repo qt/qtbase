@@ -230,6 +230,7 @@ static const int QTEXTSTREAM_BUFFERSIZE = 16384;
 #include "qfile.h"
 #include "qnumeric.h"
 #include "qvarlengtharray.h"
+#include <private/qdebug_p.h>
 
 #include <locale.h>
 #include "private/qlocale_p.h"
@@ -238,48 +239,6 @@ static const int QTEXTSTREAM_BUFFERSIZE = 16384;
 #include <stdlib.h>
 #include <limits.h>
 #include <new>
-
-#if defined QTEXTSTREAM_DEBUG
-#include <ctype.h>
-#include "private/qtools_p.h"
-
-QT_BEGIN_NAMESPACE
-
-// Returns a human readable representation of the first \a len
-// characters in \a data.
-static QByteArray qt_prettyDebug(const char *data, int len, int maxSize)
-{
-    if (!data) return "(null)";
-    QByteArray out;
-    for (int i = 0; i < len; ++i) {
-        char c = data[i];
-        if (isprint(int(uchar(c)))) {
-            out += c;
-        } else switch (c) {
-        case '\n': out += "\\n"; break;
-        case '\r': out += "\\r"; break;
-        case '\t': out += "\\t"; break;
-        default: {
-            const char buf[] = {
-                '\\',
-                'x',
-                QtMiscUtils::toHexLower(uchar(c) / 16),
-                QtMiscUtils::toHexLower(uchar(c) % 16),
-                0
-            };
-            out += buf;
-            }
-        }
-    }
-
-    if (len < maxSize)
-        out += "...";
-
-    return out;
-}
-QT_END_NAMESPACE
-
-#endif
 
 // A precondition macro
 #define Q_VOID
@@ -448,7 +407,7 @@ bool QTextStreamPrivate::fillReadBuffer(qint64 maxBytes)
 
 #if defined (QTEXTSTREAM_DEBUG)
     qDebug("QTextStreamPrivate::fillReadBuffer(), device->read(\"%s\", %d) == %d",
-           qt_prettyDebug(buf, qMin(32,int(bytesRead)) , int(bytesRead)).constData(), int(sizeof(buf)), int(bytesRead));
+           QtDebugUtils::toPrintable(buf, bytesRead, 32).constData(), int(sizeof(buf)), int(bytesRead));
 #endif
 
     int oldReadBufferSize = readBuffer.size();
@@ -486,7 +445,7 @@ bool QTextStreamPrivate::fillReadBuffer(qint64 maxBytes)
 
 #if defined (QTEXTSTREAM_DEBUG)
     qDebug("QTextStreamPrivate::fillReadBuffer() read %d bytes from device. readBuffer = [%s]", int(bytesRead),
-           qt_prettyDebug(readBuffer.toLatin1(), readBuffer.size(), readBuffer.size()).data());
+           QtDebugUtils::toPrintable(readBuffer.toLatin1(), readBuffer.size(), readBuffer.size()).constData());
 #endif
     return true;
 }
@@ -536,7 +495,7 @@ void QTextStreamPrivate::flushWriteBuffer()
     qint64 bytesWritten = device->write(data);
 #if defined (QTEXTSTREAM_DEBUG)
     qDebug("QTextStreamPrivate::flushWriteBuffer(), device->write(\"%s\") == %d",
-           qt_prettyDebug(data.constData(), qMin(data.size(),32), data.size()).constData(), int(bytesWritten));
+           QtDebugUtils::toPrintable(data.constData(), data.size(), 32).constData(), int(bytesWritten));
 #endif
 
 #if defined (Q_OS_WIN)

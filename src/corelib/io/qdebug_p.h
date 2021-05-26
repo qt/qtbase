@@ -55,10 +55,13 @@
 #include "QtCore/qdebug.h"
 #include "QtCore/qmetaobject.h"
 #include "QtCore/qflags.h"
+#include "QtCore/qbytearray.h"
 
 QT_BEGIN_NAMESPACE
 
 namespace QtDebugUtils {
+
+Q_CORE_EXPORT QByteArray toPrintable(const char *data, int len, int maxSize);
 
 // inline helpers for formatting basic classes.
 

@@ -483,6 +483,7 @@
 
 #ifdef QABSTRACTSOCKET_DEBUG
 #include <qdebug.h>
+#include <private/qdebug_p.h>
 #endif
 
 #include <time.h>
@@ -500,42 +501,6 @@
 QT_BEGIN_NAMESPACE
 
 static const int DefaultConnectTimeout = 30000;
-
-#if defined QABSTRACTSOCKET_DEBUG
-QT_BEGIN_INCLUDE_NAMESPACE
-#include <qstring.h>
-#include <ctype.h>
-QT_END_INCLUDE_NAMESPACE
-
-/*
-    Returns a human readable representation of the first \a len
-    characters in \a data.
-*/
-static QByteArray qt_prettyDebug(const char *data, int len, int maxLength)
-{
-    if (!data) return "(null)";
-    QByteArray out;
-    for (int i = 0; i < qMin(len, maxLength); ++i) {
-        char c = data[i];
-        if (isprint(int(uchar(c)))) {
-            out += c;
-        } else switch (c) {
-        case '\n': out += "\\n"; break;
-        case '\r': out += "\\r"; break;
-        case '\t': out += "\\t"; break;
-        default:
-            QString tmp;
-            tmp.sprintf("\\%o", c);
-            out += tmp.toLatin1();
-        }
-    }
-
-    if (len < maxLength)
-        out += "...";
-
-    return out;
-}
-#endif
 
 static bool isProxyError(QAbstractSocket::SocketError error)
 {
@@ -2459,9 +2424,8 @@ qint64 QAbstractSocket::readData(char *data, qint64 maxSize)
     }
 
 #if defined (QABSTRACTSOCKET_DEBUG)
-    qDebug("QAbstractSocket::readData(%p \"%s\", %lli) == %lld [engine]",
-           data, qt_prettyDebug(data, 32, readBytes).data(), maxSize,
-           readBytes);
+    qDebug("QAbstractSocket::readData(%p \"%s\", %lli) == %lld [engine]", data,
+           QtDebugUtils::toPrintable(data, readBytes, 32).constData(), maxSize, readBytes);
 #endif
     return readBytes;
 }
@@ -2499,8 +2463,7 @@ qint64 QAbstractSocket::writeData(const char *data, qint64 size)
 
 #if defined (QABSTRACTSOCKET_DEBUG)
         qDebug("QAbstractSocket::writeData(%p \"%s\", %lli) == %lli", data,
-               qt_prettyDebug(data, qMin((int)size, 32), size).data(),
-               size, written);
+               QtDebugUtils::toPrintable(data, size, 32).constData(), size, written);
 #endif
         return written; // written = actually written + what has been buffered
     } else if (!d->isBuffered && d->socketType != TcpSocket) {
@@ -2511,8 +2474,7 @@ qint64 QAbstractSocket::writeData(const char *data, qint64 size)
 
 #if defined (QABSTRACTSOCKET_DEBUG)
     qDebug("QAbstractSocket::writeData(%p \"%s\", %lli) == %lli", data,
-           qt_prettyDebug(data, qMin((int)size, 32), size).data(),
-           size, written);
+           QtDebugUtils::toPrintable(data, size, 32).constData(), size, written);
 #endif
         if (written >= 0)
             d->emitBytesWritten(written);
@@ -2533,8 +2495,7 @@ qint64 QAbstractSocket::writeData(const char *data, qint64 size)
 
 #if defined (QABSTRACTSOCKET_DEBUG)
     qDebug("QAbstractSocket::writeData(%p \"%s\", %lli) == %lli", data,
-           qt_prettyDebug(data, qMin((int)size, 32), size).data(),
-           size, written);
+           QtDebugUtils::toPrintable(data, size, 32).constData(), size, written);
 #endif
     return written;
 }

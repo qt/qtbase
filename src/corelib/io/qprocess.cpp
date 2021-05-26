@@ -41,48 +41,11 @@
 //#define QPROCESS_DEBUG
 
 #include <qdebug.h>
+#include <private/qdebug_p.h>
 #include <qdir.h>
 #include <qscopedvaluerollback.h>
 #if defined(Q_OS_WIN)
 #include <qtimer.h>
-#endif
-#if defined QPROCESS_DEBUG
-#include <qstring.h>
-#include <ctype.h>
-
-QT_BEGIN_NAMESPACE
-/*
-    Returns a human readable representation of the first \a len
-    characters in \a data.
-*/
-static QByteArray qt_prettyDebug(const char *data, int len, int maxSize)
-{
-    if (!data) return "(null)";
-    QByteArray out;
-    for (int i = 0; i < len && i < maxSize; ++i) {
-        char c = data[i];
-        if (isprint(c)) {
-            out += c;
-        } else switch (c) {
-        case '\n': out += "\\n"; break;
-        case '\r': out += "\\r"; break;
-        case '\t': out += "\\t"; break;
-        default:
-            char buf[5];
-            qsnprintf(buf, sizeof(buf), "\\%3o", c);
-            buf[4] = '\0';
-            out += QByteArray(buf);
-        }
-    }
-
-    if (len < maxSize)
-        out += "...";
-
-    return out;
-}
-
-QT_END_NAMESPACE
-
 #endif
 
 #include "qprocess.h"
@@ -1940,8 +1903,8 @@ qint64 QProcess::writeData(const char *data, qint64 len)
 
     if (d->stdinChannel.closed) {
 #if defined QPROCESS_DEBUG
-    qDebug("QProcess::writeData(%p \"%s\", %lld) == 0 (write channel closing)",
-           data, qt_prettyDebug(data, len, 16).constData(), len);
+        qDebug("QProcess::writeData(%p \"%s\", %lld) == 0 (write channel closing)",
+               data, QtDebugUtils::toPrintable(data, len, 16).constData(), len);
 #endif
         return 0;
     }
@@ -1965,7 +1928,7 @@ qint64 QProcess::writeData(const char *data, qint64 len)
 #endif
 #if defined QPROCESS_DEBUG
     qDebug("QProcess::writeData(%p \"%s\", %lld) == %lld (written to buffer)",
-           data, qt_prettyDebug(data, len, 16).constData(), len, len);
+           data, QtDebugUtils::toPrintable(data, len, 16).constData(), len, len);
 #endif
     return len;
 }
