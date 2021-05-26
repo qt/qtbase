@@ -64,7 +64,8 @@ public:
 
     static QNetworkInformation::Features featuresSupportedStatic()
     {
-        return QNetworkInformation::Features(QNetworkInformation::Feature::Reachability);
+        using Feature = QNetworkInformation::Feature;
+        return QNetworkInformation::Features(Feature::Reachability | Feature::CaptivePortal);
     }
 
     bool isValid() { return m_valid; }
@@ -125,6 +126,12 @@ QAndroidNetworkInformationBackend::QAndroidNetworkInformationBackend()
 
         setReachability(mapState(conman->networkConnectivity()));
     });
+
+    connect(conman, &AndroidConnectivityManager::captivePortalChanged, this,
+            [this](bool state) {
+                using TriState = QNetworkInformation::TriState;
+                setBehindCaptivePortal(state ? TriState::True : TriState::False);
+            });
 }
 
 QT_END_NAMESPACE

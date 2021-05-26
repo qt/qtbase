@@ -53,6 +53,7 @@ public class QtAndroidNetworkInformation {
     private static final String LOG_TAG = "QtAndroidNetworkInformation";
 
     private static native void connectivityChanged();
+    private static native void behindCaptivePortalChanged(boolean state);
 
     private static QtNetworkInformationCallback m_callback = null;
     private static final Object m_lock = new Object();
@@ -77,6 +78,10 @@ public class QtAndroidNetworkInformation {
             else
                 s = AndroidConnectivity.Unknown; // = we _may_ have Internet access
             setState(s);
+
+            final boolean captive
+                    = capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_CAPTIVE_PORTAL);
+            behindCaptivePortalChanged(captive);
         }
 
         private void setState(AndroidConnectivity s) {

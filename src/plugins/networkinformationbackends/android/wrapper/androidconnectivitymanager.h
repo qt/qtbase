@@ -59,6 +59,7 @@ public:
 
 Q_SIGNALS:
     void connectivityChanged();
+    void captivePortalChanged(bool state);
 
 private:
     friend struct AndroidConnectivityManagerInstance;

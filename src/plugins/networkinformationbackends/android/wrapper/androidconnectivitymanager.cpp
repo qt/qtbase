@@ -56,9 +56,18 @@ Q_GLOBAL_STATIC(AndroidConnectivityManagerInstance, androidConnManagerInstance)
 static const char networkInformationClass[] =
         "org/qtproject/qt/android/networkinformation/QtAndroidNetworkInformation";
 
-static void networkConnectivityChanged()
+static void networkConnectivityChanged(JNIEnv *env, jobject obj)
 {
+    Q_UNUSED(env);
+    Q_UNUSED(obj);
     Q_EMIT androidConnManagerInstance->connManager->connectivityChanged();
+}
+
+static void behindCaptivePortalChanged(JNIEnv *env, jobject obj, jboolean state)
+{
+    Q_UNUSED(env);
+    Q_UNUSED(obj);
+    Q_EMIT androidConnManagerInstance->connManager->captivePortalChanged(state);
 }
 
 AndroidConnectivityManager::AndroidConnectivityManager()
@@ -124,9 +133,12 @@ bool AndroidConnectivityManager::registerNatives()
         return false;
 
     jclass clazz = env->GetObjectClass(networkReceiver.object());
-    static JNINativeMethod method = { "connectivityChanged", "()V",
-                                      reinterpret_cast<void *>(networkConnectivityChanged) };
-    const bool ret = (env->RegisterNatives(clazz, &method, 1) == JNI_OK);
+    static JNINativeMethod methods[] = {
+        { "connectivityChanged", "()V", reinterpret_cast<void *>(networkConnectivityChanged) },
+        { "behindCaptivePortalChanged", "(Z)V",
+          reinterpret_cast<void *>(behindCaptivePortalChanged) }
+    };
+    const bool ret = (env->RegisterNatives(clazz, methods, std::size(methods)) == JNI_OK);
     env->DeleteLocalRef(clazz);
     return ret;
 }
