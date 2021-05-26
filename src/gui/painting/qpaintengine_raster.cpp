@@ -1649,17 +1649,18 @@ void QRasterPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
         const QLineF *lines = reinterpret_cast<const QLineF *>(path.points());
 
         for (int i = 0; i < lineCount; ++i) {
-            if (lines[i].p1() == lines[i].p2()) {
+            const QLineF line = s->matrix.map(lines[i]);
+            if (line.p1() == line.p2()) {
                 if (s->lastPen.capStyle() != Qt::FlatCap) {
                     QPointF p = lines[i].p1();
-                    QLineF line = s->matrix.map(QLineF(QPointF(p.x() - width*0.5, p.y()),
+                    QLineF mappedline = s->matrix.map(QLineF(QPointF(p.x() - width*0.5, p.y()),
                                                        QPointF(p.x() + width*0.5, p.y())));
-                    d->rasterizer->rasterizeLine(line.p1(), line.p2(), width / line.length());
+                    d->rasterizer->rasterizeLine(mappedline.p1(), mappedline.p2(),
+                                                 width / mappedline.length());
                 }
                 continue;
             }
 
-            const QLineF line = s->matrix.map(lines[i]);
             if (qpen_style(s->lastPen) == Qt::SolidLine) {
                 d->rasterizer->rasterizeLine(line.p1(), line.p2(),
                                             width / line.length(),
