@@ -818,10 +818,12 @@ fprintf(stderr, "++ op=%d\n", *Fecode);
 
       /* N is now the frame of the recursion; the previous frame is at the
       OP_RECURSE position. Go back there, copying the current subject position
-      and mark, and move on past the OP_RECURSE. */
+      and mark, and the start_match position (\K might have changed it), and
+      then move on past the OP_RECURSE. */
 
       P->eptr = Feptr;
       P->mark = Fmark;
+      P->start_match = Fstart_match;
       F = P;
       Fecode += 1 + LINK_SIZE;
       continue;

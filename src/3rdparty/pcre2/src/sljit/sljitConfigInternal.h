@@ -158,6 +158,8 @@ extern "C" {
 #define SLJIT_CONFIG_MIPS_64 1
 #elif defined(__sparc__) || defined(__sparc)
 #define SLJIT_CONFIG_SPARC_32 1
+#elif defined(__s390x__)
+#define SLJIT_CONFIG_S390X 1
 #else
 /* Unsupported architecture */
 #define SLJIT_CONFIG_UNSUPPORTED 1
