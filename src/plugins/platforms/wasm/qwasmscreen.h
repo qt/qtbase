@@ -86,8 +86,8 @@ public slots:
 
 private:
     emscripten::val m_canvas;
-    QWasmCompositor *m_compositor = nullptr;
-    QWasmEventTranslator *m_eventTranslator = nullptr;
+    std::unique_ptr<QWasmCompositor> m_compositor;
+    std::unique_ptr<QWasmEventTranslator> m_eventTranslator;
     QRect m_geometry = QRect(0, 0, 100, 100);
     int m_depth = 32;
     QImage::Format m_format = QImage::Format_RGB32;
