@@ -179,7 +179,7 @@ QGesture *QMacPanGestureRecognizer::create(QObject *target)
         w->setAttribute(Qt::WA_TouchPadAcceptSingleTouchEvents);
         return new QPanGesture;
     }
-    return 0;
+    return nullptr;
 }
 
 void QMacPanGestureRecognizer::timerEvent(QTimerEvent *ev)

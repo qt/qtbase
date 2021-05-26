@@ -767,7 +767,7 @@ ControlContainer::~ControlContainer()
 QMenuBar *QMdiSubWindowPrivate::menuBar() const
 {
 #if !QT_CONFIG(mainwindow)
-    return 0;
+    return nullptr;
 #else
     Q_Q(const QMdiSubWindow);
     if (!q->isMaximized() || drawTitleBarWhenMaximized() || isChildOfTabbedQMdiArea(q))

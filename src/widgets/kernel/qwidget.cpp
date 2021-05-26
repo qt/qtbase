@@ -11977,7 +11977,7 @@ void QWidgetPrivate::adjustQuitOnCloseAttribute()
 QOpenGLContext *QWidgetPrivate::shareContext() const
 {
 #ifdef QT_NO_OPENGL
-    return 0;
+    return nullptr;
 #else
     if (!extra || !extra->topextra || !extra->topextra->window)
         return nullptr;
