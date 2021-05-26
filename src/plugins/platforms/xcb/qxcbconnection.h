@@ -231,9 +231,12 @@ public:
 
     Qt::MouseButton xiToQtMouseButton(uint32_t b);
     void xi2UpdateScrollingDevices();
-    bool startSystemMoveResizeForTouch(xcb_window_t window, int edges);
-    void abortSystemMoveResizeForTouch();
     bool isTouchScreen(int id);
+
+    bool startSystemMoveResizeForTouch(xcb_window_t window, int edges);
+    void abortSystemMoveResize(xcb_window_t window);
+    bool isDuringSystemMoveResize() const;
+    void setDuringSystemMoveResize(bool during);
 
     bool canGrab() const { return m_canGrabServer; }
 
@@ -323,12 +326,14 @@ private:
     static bool xi2GetValuatorValueIfSet(const void *event, int valuatorNum, double *value);
 
     QHash<int, TouchDeviceData> m_touchDevices;
+
     struct StartSystemMoveResizeInfo {
         xcb_window_t window = XCB_NONE;
         uint16_t deviceid;
         uint32_t pointid;
         int edges;
     } m_startSystemMoveResizeInfo;
+    bool m_duringSystemMoveResize;
 
     const bool m_canGrabServer;
     const xcb_visualid_t m_defaultVisualId;
@@ -367,6 +372,7 @@ private:
     mutable bool m_glIntegrationInitialized = false;
     bool m_xiGrab = false;
     QList<int> m_xiMasterPointerIds;
+    QList<int> m_xiSlavePointerIds;
 
     xcb_window_t m_qtSelectionOwner = 0;
 

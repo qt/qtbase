@@ -86,6 +86,7 @@ Q_LOGGING_CATEGORY(lcQpaXDnd, "qt.qpa.xdnd")
 
 QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGrabServer, xcb_visualid_t defaultVisualId, const char *displayName)
     : QXcbBasicConnection(displayName)
+    , m_duringSystemMoveResize(false)
     , m_canGrabServer(canGrabServer)
     , m_defaultVisualId(defaultVisualId)
     , m_nativeInterface(nativeInterface)
@@ -592,6 +593,8 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
     }
     case XCB_BUTTON_RELEASE: {
         auto ev = reinterpret_cast<xcb_button_release_event_t *>(event);
+        if (m_duringSystemMoveResize && ev->root != XCB_NONE)
+            abortSystemMoveResize(ev->root);
         m_keyboard->updateXKBStateFromCore(ev->state);
         m_buttonState = (m_buttonState & ~0x7) | translateMouseButtons(ev->state);
         setButtonState(translateMouseButton(ev->detail), false);

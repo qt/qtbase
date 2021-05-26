@@ -90,7 +90,7 @@ void QXcbConnection::xi2SelectDeviceEvents(xcb_window_t window)
     }
 
     qt_xcb_input_event_mask_t mask;
-    mask.header.deviceid = XCB_INPUT_DEVICE_ALL_MASTER;
+    mask.header.deviceid = XCB_INPUT_DEVICE_ALL;
     mask.header.mask_len = 1;
     mask.mask = bitMask;
     xcb_void_cookie_t cookie =
@@ -493,6 +493,7 @@ void QXcbConnection::xi2SetupDevices()
             // already registered
             break;
         case XCB_INPUT_DEVICE_TYPE_SLAVE_POINTER: {
+            m_xiSlavePointerIds.append(deviceInfo->deviceid);
             QInputDevice *master = const_cast<QInputDevice *>(QInputDevicePrivate::fromId(deviceInfo->attachment));
             Q_ASSERT(master);
             xi2SetupSlavePointerDevice(deviceInfo, false, qobject_cast<QPointingDevice *>(master));
@@ -638,6 +639,19 @@ static inline qreal fixed1616ToReal(xcb_input_fp1616_t val)
 void QXcbConnection::xi2HandleEvent(xcb_ge_event_t *event)
 {
     auto *xiEvent = reinterpret_cast<qt_xcb_input_device_event_t *>(event);
+    if (m_xiSlavePointerIds.contains(xiEvent->deviceid)) {
+        if (!m_duringSystemMoveResize)
+            return;
+        if (xiEvent->event == XCB_NONE)
+            return;
+
+        if (xiEvent->event_type == XCB_INPUT_BUTTON_RELEASE
+            && xiEvent->detail == XCB_BUTTON_INDEX_1 ) {
+            abortSystemMoveResize(xiEvent->event);
+        } else {
+            return;
+        }
+    }
     int sourceDeviceId = xiEvent->deviceid; // may be the master id
     qt_xcb_input_device_event_t *xiDeviceEvent = nullptr;
     xcb_input_enter_event_t *xiEnterEvent = nullptr;
@@ -915,9 +929,38 @@ bool QXcbConnection::startSystemMoveResizeForTouch(xcb_window_t window, int edge
     return false;
 }
 
-void QXcbConnection::abortSystemMoveResizeForTouch()
+void QXcbConnection::abortSystemMoveResize(xcb_window_t window)
 {
+    qCDebug(lcQpaXInputDevices) << "sending client message NET_WM_MOVERESIZE_CANCEL to window: " << window;
     m_startSystemMoveResizeInfo.window = XCB_NONE;
+
+    const xcb_atom_t moveResize = connection()->atom(QXcbAtom::_NET_WM_MOVERESIZE);
+    xcb_client_message_event_t xev;
+    xev.response_type = XCB_CLIENT_MESSAGE;
+    xev.type = moveResize;
+    xev.sequence = 0;
+    xev.window = window;
+    xev.format = 32;
+    xev.data.data32[0] = 0;
+    xev.data.data32[1] = 0;
+    xev.data.data32[2] = 11; // _NET_WM_MOVERESIZE_CANCEL
+    xev.data.data32[3] = 0;
+    xev.data.data32[4] = 0;
+    xcb_send_event(xcb_connection(), false, primaryScreen()->root(),
+                   XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT | XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY,
+                   (const char *)&xev);
+
+    m_duringSystemMoveResize = false;
+}
+
+bool QXcbConnection::isDuringSystemMoveResize() const
+{
+    return m_duringSystemMoveResize;
+}
+
+void QXcbConnection::setDuringSystemMoveResize(bool during)
+{
+    m_duringSystemMoveResize = during;
 }
 
 bool QXcbConnection::xi2SetMouseGrabEnabled(xcb_window_t w, bool grab)
