@@ -2630,6 +2630,30 @@ void tst_QLocale::dateFormat()
     const auto sys = QLocale::system(); // QTBUG-92018, ru_RU on MS
     const QDate date(2021, 3, 17);
     QCOMPARE(sys.toString(date, sys.dateFormat(QLocale::LongFormat)), sys.toString(date));
+
+    // Check that system locale can format a date with year < 1601 (MS cut-off):
+    QString old = sys.toString(QDate(1564, 2, 15), QLocale::LongFormat);
+    QVERIFY(!old.isEmpty());
+    QVERIFY2(old.contains(u"1564"), qPrintable(old + QLatin1String(" for locale ") + sys.name()));
+    old = sys.toString(QDate(1564, 2, 15), QLocale::ShortFormat);
+    QVERIFY(!old.isEmpty());
+    QVERIFY2(old.contains(u"64"), qPrintable(old + QLatin1String(" for locale ") + sys.name()));
+
+    // Including one with year % 100 < 12 (lest we substitute year for month or day)
+    old = sys.toString(QDate(1511, 11, 11), QLocale::LongFormat);
+    QVERIFY(!old.isEmpty());
+    QVERIFY2(old.contains(u"1511"), qPrintable(old + QLatin1String(" for locale ") + sys.name()));
+    old = sys.toString(QDate(1511, 11, 11), QLocale::ShortFormat);
+    QVERIFY(!old.isEmpty());
+    QVERIFY2(old.contains(u"11"), qPrintable(old + QLatin1String(" for locale ") + sys.name()));
+
+    // And, indeed, one for a negative year:
+    old = sys.toString(QDate(-1173, 5, 1), QLocale::LongFormat);
+    QVERIFY(!old.isEmpty());
+#ifdef Q_OS_DARWIN // bug in qlocale_mac.mm, fix coming shortly
+    QEXPECT_FAIL("", "Darwin converts year to positive", Continue);
+#endif
+    QVERIFY2(old.contains(u"-1173"), qPrintable(old + QLatin1String(" for locale ") + sys.name()));
 }
 
 void tst_QLocale::timeFormat()
