@@ -1877,7 +1877,9 @@ function(_qt_internal_add_library target)
 
     add_library(${target} ${type_to_create} ${arg_UNPARSED_ARGUMENTS})
 
-    _qt_internal_apply_win_prefix_and_suffix("${target}")
+    if(NOT type_to_create STREQUAL "INTERFACE" AND NOT type_to_create STREQUAL "OBJECT")
+        _qt_internal_apply_win_prefix_and_suffix("${target}")
+    endif()
 
     if(arg_MODULE AND APPLE)
         # CMake defaults to using .so extensions for loadable modules, aka plugins,
