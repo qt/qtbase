@@ -591,8 +591,8 @@ function(_qt_internal_finalize_executable target)
     # For finalizer mode of plugin importing to work safely, we need to know the list of Qt
     # dependencies the target has, but those might be added later than the qt_add_executable call.
     # Most of our examples are like that. Only enable finalizer mode when we are sure that the user
-    # manually finalized the executable, or it was automatically done via a deferred call.
-    # A project can still do it manually by calling qt_import_plugins() explicitly.
+    # manually called qt_finalize_target at the end of their CMake project, or it was automatically
+    # done via a deferred call.
     get_target_property(is_immediately_finalized "${target}" _qt_is_immediately_finalized)
     if(NOT is_immediately_finalized)
         __qt_internal_apply_plugin_imports_finalizer_mode("${target}")
@@ -868,15 +868,6 @@ function(qt6_import_plugins target)
         string(REGEX REPLACE "[-/]" "_" _plugin_type "${_arg}")
         set_property(TARGET "${target}" PROPERTY "QT_PLUGINS_${_plugin_type}" "-")
     endforeach()
-
-    # If the project called qt_import_plugins, use this as an event to enable finalizer mode for
-    # plugin importing.
-    #
-    # This is done in addition to the code in qt_finalize_target, to ensure pre-existing
-    # projects that use qt_import_plugins activate finalizer mode even with an older CMake version
-    # that doesn't support deferred calls (and projects that don't explicitly call
-    # qt_finalize_target).
-    __qt_internal_apply_plugin_imports_finalizer_mode(${target})
 endfunction()
 
 if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
@@ -901,8 +892,7 @@ endif()
 # of its associated module.
 #
 # Finalizer mode is enabled by default if:
-#   - the project calls qt_import_plugins explicitly or
-#   - the project calls qt_finalize_target explicitly or
+#   - the project calls qt_finalize_target explicitly at the end of the project file or
 #   - the project uses qt_add_executable and a CMake version greater than or equal to 3.19
 #     (which will DEFER CALL qt_finalize_target)
 function(qt6_enable_import_plugins_finalizer_mode target enabled)

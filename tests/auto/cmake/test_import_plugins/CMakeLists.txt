@@ -72,43 +72,52 @@ create_test_executable(default_link QMock1Plugin QMock2Plugin
 target_link_libraries(${target} PRIVATE Qt6::MockPlugins2)
 
 # Check that both regular and finalizer mode plugin importing pulls in the same set of plugins.
+# In regular mode, qt_finalize_target won't execute the finalizer plugin importing, because
+# we opt out via qt_enable_import_plugins_finalizer_mode(target FALSE).
 foreach(import_mode "" "FINALIZER_MODE")
     create_test_executable(manual QMock1Plugin QMock2Plugin QMock3Plugin QMock4Plugin
         ${import_mode})
     qt_import_plugins(${target}
         INCLUDE Qt6::QMock3Plugin Qt6::QMock4Plugin
     )
+    qt_finalize_target(${target})
 
     create_test_executable(manual_genex QMock1Plugin QMock2Plugin QMock3Plugin ${import_mode})
     qt_import_plugins(${target}
         INCLUDE $<1:Qt6::QMock3Plugin> $<0:Qt6::QMock4Plugin>
     )
+    qt_finalize_target(${target})
 
     create_test_executable(blacklist QMock1Plugin ${import_mode})
     qt_import_plugins(${target}
         EXCLUDE Qt6::QMock2Plugin Qt6::QMock3Plugin
     )
+    qt_finalize_target(${target})
 
     create_test_executable(blacklist_genex QMock1Plugin ${import_mode})
     qt_import_plugins(${target}
         EXCLUDE $<1:Qt6::QMock2Plugin> $<1:Qt6::QMock3Plugin> $<0:Qt6::QMock1Plugin>
     )
+    qt_finalize_target(${target})
 
     create_test_executable(override QMock3Plugin QMock4Plugin ${import_mode})
     qt_import_plugins(${target}
         INCLUDE_BY_TYPE mockplugin Qt6::QMock3Plugin Qt6::QMock4Plugin
     )
+    qt_finalize_target(${target})
 
     create_test_executable(override_genex QMock3Plugin ${import_mode})
     qt_import_plugins(${target}
         INCLUDE_BY_TYPE mockplugin $<1:Qt6::QMock3Plugin> $<0:Qt6::QMock4Plugin>
     )
+    qt_finalize_target(${target})
 
     create_test_executable(override_mix QMock2Plugin QMock3Plugin ${import_mode})
     qt_import_plugins(${target}
         INCLUDE Qt6::QMock2Plugin
         INCLUDE_BY_TYPE mockplugin Qt6::QMock3Plugin
     )
+    qt_finalize_target(${target})
 
     if(NOT WIN32)
         # Compiling an empty static array fails on Windows.
@@ -116,6 +125,7 @@ foreach(import_mode "" "FINALIZER_MODE")
         qt_import_plugins(${target}
             EXCLUDE_BY_TYPE mockplugin
         )
+        qt_finalize_target(${target})
     endif()
 
     create_test_executable(none_mix QMock3Plugin QMock4Plugin ${import_mode})
@@ -123,6 +133,7 @@ foreach(import_mode "" "FINALIZER_MODE")
         INCLUDE Qt6::QMock3Plugin Qt6::QMock4Plugin
         EXCLUDE_BY_TYPE mockplugin
     )
+    qt_finalize_target(${target})
 
     # QMock5Plugin links against the Qt::MockPlugins3 module, which provides the default plugin
     # QMock6Plugin which is why it is pulled in.
@@ -130,10 +141,11 @@ foreach(import_mode "" "FINALIZER_MODE")
     qt_import_plugins(${target}
         INCLUDE_BY_TYPE mockplugin Qt6::QMock5Plugin
     )
+    qt_finalize_target(${target})
 endforeach()
 
-
-# No call to qt_import_plugins() in finalizer mode means nothing will be linked.
+# No call to qt_finalize_target() in finalizer mode means nothing will be
+# linked.
 if(NOT WIN32)
     # Compiling an empty static array fails on Windows.
     create_test_executable(default_finalizer_missing_import_call FINALIZER_MODE)
@@ -145,18 +157,18 @@ create_test_executable(default_finalizer
     QMock3Plugin # TODO: Should not be linked based on .pro file, see QTBUG-93501
     FINALIZER_MODE)
 qt_import_plugins(${target})
+qt_finalize_target(${target})
 
-# Check that plugin importing with manual finalization works.
+# Check that plugin importing with the qt_add_executable wrapper and manual finalization mode works.
 create_test_executable(default_qt_add_executable_manually_finalized
     QMock1Plugin QMock2Plugin
     QMock3Plugin # TODO: Should not be linked based on .pro file, see QTBUG-93501
     FINALIZER_MODE QT_WRAPPER
     ADD_EXECUTABLE_ARGS MANUAL_FINALIZATION)
-
 qt_finalize_target(${target})
 
-# Check that plugin importing with automatic finalization works when the CMake version is high
-# enough.
+# Check that plugin importing with automatic deferred finalization works when the CMake version is
+# high enough.
 if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.19)
     create_test_executable(default_qt_add_executable_auto_finalized
         QMock1Plugin QMock2Plugin

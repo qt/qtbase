@@ -365,6 +365,8 @@ function(__qt_internal_apply_plugin_imports_finalizer_mode target)
     __qt_internal_get_plugin_imports_finalizer_mode(${target} use_finalizer_mode)
 
     # By default if the project hasn't explicitly opted in or out, use finalizer mode.
+    # The precondition for this is that qt_finalize_target was called (either explicitly by the user
+    # or auto-deferred by CMake 3.19+).
     if("${use_finalizer_mode}" STREQUAL "")
         qt_enable_import_plugins_finalizer_mode(${target} TRUE)
     endif()
