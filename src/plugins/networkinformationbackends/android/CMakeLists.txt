@@ -28,21 +28,16 @@ qt_internal_add_plugin(QAndroidNetworkInformationBackend
         QT_USE_QSTRINGBUILDER
 )
 
-# @todo: androiddeployqt doesn't deploy JARs bundled with plugins, needs fix, temporarily bundle with Network
-# QTBUG-90812
 set_property(
     TARGET
-        # QAndroidNetworkInformationBackend
-        Network
+        QAndroidNetworkInformationBackend
     APPEND PROPERTY QT_ANDROID_BUNDLED_JAR_DEPENDENCIES
         jar/Qt${QtBase_VERSION_MAJOR}AndroidNetworkInformationBackend.jar
 )
 
-# @todo: same as above, but for permissions
 set_property(
     TARGET
-        # QAndroidNetworkInformationBackend
-        Network
+        QAndroidNetworkInformationBackend
     APPEND PROPERTY QT_ANDROID_PERMISSIONS
         android.permission.ACCESS_NETWORK_STATE
 )
