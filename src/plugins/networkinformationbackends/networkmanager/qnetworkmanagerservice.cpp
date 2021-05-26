@@ -98,7 +98,7 @@ QNetworkManagerInterface::~QNetworkManagerInterface()
             SLOT(setProperties(QMap<QString, QVariant>)));
 }
 
-QNetworkManagerInterface::NMState QNetworkManagerInterface::state()
+QNetworkManagerInterface::NMState QNetworkManagerInterface::state() const
 {
     if (propertyMap.contains("State"))
         return static_cast<QNetworkManagerInterface::NMState>(propertyMap.value("State").toUInt());
@@ -131,7 +131,7 @@ void QNetworkManagerInterface::setProperties(const QMap<QString, QVariant> &map)
 
         if (stateUpdate) {
             quint32 state = i.value().toUInt();
-            Q_EMIT stateChanged(state);
+            Q_EMIT stateChanged(static_cast<NMState>(state));
         } else if (connectivityUpdate) {
             quint32 state = i.value().toUInt();
             Q_EMIT connectivityChanged(static_cast<NMConnectivityState>(state));

@@ -101,7 +101,6 @@ private:
     Q_DISABLE_COPY_MOVE(QNetworkManagerNetworkInformationBackend)
 
     QNetworkManagerInterface iface;
-    QNetworkManagerInterface::NMState prevState;
 };
 
 class QNetworkManagerNetworkInformationBackendFactory : public QNetworkInformationBackendFactory
@@ -137,15 +136,12 @@ private:
 
 QNetworkManagerNetworkInformationBackend::QNetworkManagerNetworkInformationBackend()
 {
-    prevState = iface.state();
-    setReachability(reachabilityFromNMState(prevState));
-    connect(&iface, &QNetworkManagerInterface::stateChanged, this, [this]() {
-        auto newState = iface.state();
-        if (newState != prevState) {
-            prevState = newState;
-            setReachability(reachabilityFromNMState(prevState));
-        }
-    });
+    using NMState = QNetworkManagerInterface::NMState;
+    setReachability(reachabilityFromNMState(iface.state()));
+    connect(&iface, &QNetworkManagerInterface::stateChanged, this,
+            [this](NMState newState) {
+                setReachability(reachabilityFromNMState(newState));
+            });
 
     using ConnectivityState = QNetworkManagerInterface::NMConnectivityState;
     using TriState = QNetworkInformation::TriState;

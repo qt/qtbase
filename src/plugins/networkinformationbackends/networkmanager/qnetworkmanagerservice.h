@@ -123,11 +123,11 @@ public:
     QNetworkManagerInterface(QObject *parent = nullptr);
     ~QNetworkManagerInterface();
 
-    NMState state();
+    NMState state() const;
     NMConnectivityState connectivityState() const;
 
 Q_SIGNALS:
-    void stateChanged(quint32);
+    void stateChanged(NMState);
     void connectivityChanged(NMConnectivityState);
 
 private Q_SLOTS:
