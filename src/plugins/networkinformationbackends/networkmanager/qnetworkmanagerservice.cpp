@@ -105,14 +105,25 @@ QNetworkManagerInterface::NMState QNetworkManagerInterface::state()
     return QNetworkManagerInterface::NM_STATE_UNKNOWN;
 }
 
+QNetworkManagerInterface::NMConnectivityState QNetworkManagerInterface::connectivityState() const
+{
+    if (propertyMap.contains("Connectivity"))
+        return static_cast<NMConnectivityState>(propertyMap.value("Connectivity").toUInt());
+    return QNetworkManagerInterface::NM_CONNECTIVITY_UNKNOWN;
+}
+
 void QNetworkManagerInterface::setProperties(const QMap<QString, QVariant> &map)
 {
     for (auto i = map.cbegin(), end = map.cend(); i != end; ++i) {
         const bool isState = i.key() == QLatin1String("State");
+        const bool isConnectivity = i.key() == QLatin1String("Connectivity");
         bool stateUpdate = isState;
+        bool connectivityUpdate = isConnectivity;
+
         auto it = propertyMap.lowerBound(i.key());
         if (it != propertyMap.end() && it.key() == i.key()) {
             stateUpdate &= (it.value() != i.value());
+            connectivityUpdate &= (it.value() != i.value());
             *it = *i;
         } else {
             propertyMap.insert(it, i.key(), i.value());
@@ -121,6 +132,9 @@ void QNetworkManagerInterface::setProperties(const QMap<QString, QVariant> &map)
         if (stateUpdate) {
             quint32 state = i.value().toUInt();
             Q_EMIT stateChanged(state);
+        } else if (connectivityUpdate) {
+            quint32 state = i.value().toUInt();
+            Q_EMIT connectivityChanged(static_cast<NMConnectivityState>(state));
         }
     }
 }

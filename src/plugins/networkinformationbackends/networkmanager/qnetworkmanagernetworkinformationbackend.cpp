@@ -91,7 +91,8 @@ public:
 
     static QNetworkInformation::Features featuresSupportedStatic()
     {
-        return QNetworkInformation::Features(QNetworkInformation::Feature::Reachability);
+        using Feature = QNetworkInformation::Feature;
+        return QNetworkInformation::Features(Feature::Reachability | Feature::CaptivePortal);
     }
 
     bool isValid() const { return iface.isValid(); }
@@ -145,6 +146,19 @@ QNetworkManagerNetworkInformationBackend::QNetworkManagerNetworkInformationBacke
             setReachability(reachabilityFromNMState(prevState));
         }
     });
+
+    using ConnectivityState = QNetworkManagerInterface::NMConnectivityState;
+    using TriState = QNetworkInformation::TriState;
+
+    const auto connectivityState = iface.connectivityState();
+    const bool behindPortal = (connectivityState == ConnectivityState::NM_CONNECTIVITY_PORTAL);
+    setBehindCaptivePortal(behindPortal ? TriState::True : TriState::False);
+
+    connect(&iface, &QNetworkManagerInterface::connectivityChanged, this,
+            [this](ConnectivityState state) {
+                const bool behindPortal = (state == ConnectivityState::NM_CONNECTIVITY_PORTAL);
+                setBehindCaptivePortal(behindPortal ? TriState::True : TriState::False);
+            });
 }
 
 QT_END_NAMESPACE

@@ -109,14 +109,26 @@ public:
         NM_STATE_CONNECTED_GLOBAL = 70
     };
     Q_ENUM(NMState);
+    // Matches 'NMConnectivityState' from
+    // https://developer.gnome.org/NetworkManager/stable/nm-dbus-types.html#NMConnectivityState
+    enum NMConnectivityState {
+        NM_CONNECTIVITY_UNKNOWN = 0,
+        NM_CONNECTIVITY_NONE = 1,
+        NM_CONNECTIVITY_PORTAL = 2,
+        NM_CONNECTIVITY_LIMITED = 3,
+        NM_CONNECTIVITY_FULL = 4,
+    };
+    Q_ENUM(NMConnectivityState);
 
     QNetworkManagerInterface(QObject *parent = nullptr);
     ~QNetworkManagerInterface();
 
     NMState state();
+    NMConnectivityState connectivityState() const;
 
 Q_SIGNALS:
     void stateChanged(quint32);
+    void connectivityChanged(NMConnectivityState);
 
 private Q_SLOTS:
     void setProperties(const QMap<QString, QVariant> &map);
