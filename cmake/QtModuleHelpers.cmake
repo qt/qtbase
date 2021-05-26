@@ -697,7 +697,7 @@ set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
 
             if(is_framework)
                 set(fw_headers_dir
-                    "${INSTALL_LIBDIR}/${module}.framework/Headers/")
+                    "${INSTALL_LIBDIR}/Qt${target}.framework/Headers/")
                 list(APPEND interface_includes
                             "$<INSTALL_INTERFACE:${fw_headers_dir}${PROJECT_VERSION}>"
                             "$<INSTALL_INTERFACE:${fw_headers_dir}${PROJECT_VERSION}/${module}>")
