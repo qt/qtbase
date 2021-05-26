@@ -76,15 +76,18 @@ bool Window::event(QEvent *event)
     switch (event->type()) {
     case QEvent::MouseButtonPress:
         qDebug() << "Mouse press";
-        resizeOrMove(static_cast<QMouseEvent *>(event)->localPos());
+        resizeOrMove(static_cast<QMouseEvent *>(event)->position());
         return true;
     case QEvent::TouchUpdate:
         qDebug() << "Touch update";
-        resizeOrMove(static_cast<QTouchEvent *>(event)->touchPoints().first().pos());
+        resizeOrMove(static_cast<QTouchEvent *>(event)->points().first().position());
         return true;
     case QEvent::TouchBegin:
         qDebug() << "Touch begin";
-        resizeOrMove(static_cast<QTouchEvent *>(event)->touchPoints().first().pos());
+        resizeOrMove(static_cast<QTouchEvent *>(event)->points().first().position());
+        return true;
+    case QEvent::TouchEnd:
+        qDebug() << "Touch end";
         return true;
     default:
         return QRasterWindow::event(event);
