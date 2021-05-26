@@ -142,7 +142,7 @@ QWasmIntegration::QWasmIntegration()
             integration->resizeAllScreens();
         return 0;
     };
-    emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, 1, onWindowResize);
+    emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, EM_TRUE, onWindowResize);
 
     // install visualViewport resize handler which picks up size and scale change on mobile.
     emscripten::val visualViewport = emscripten::val::global("window")["visualViewport"];
@@ -154,6 +154,14 @@ QWasmIntegration::QWasmIntegration()
 
 QWasmIntegration::~QWasmIntegration()
 {
+    // Remove event listenes
+    emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, EM_TRUE, nullptr);
+    emscripten::val visualViewport = emscripten::val::global("window")["visualViewport"];
+    if (!visualViewport.isUndefined()) {
+        visualViewport.call<void>("removeEventListener", val("resize"),
+                          val::module_property("qtResizeAllScreens"));
+    }
+
     delete m_fontDb;
     delete m_desktopServices;
 
