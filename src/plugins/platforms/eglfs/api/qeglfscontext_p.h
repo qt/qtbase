@@ -62,6 +62,7 @@ class Q_EGLFS_EXPORT QEglFSContext : public QEGLPlatformContext
 {
 public:
     using QEGLPlatformContext::QEGLPlatformContext;
+    QEglFSContext() = default; // workaround for INTEGRITY compiler
     QEglFSContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display,
                   EGLConfig *config);
     EGLSurface eglSurfaceForPlatformSurface(QPlatformSurface *surface) override;
