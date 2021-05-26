@@ -41,7 +41,6 @@
 
 #include <QObject>
 #include <QList>
-#include <QtDBus/QtDBus>
 #include <QtDBus/QDBusConnection>
 #include <QtDBus/QDBusError>
 #include <QtDBus/QDBusInterface>
