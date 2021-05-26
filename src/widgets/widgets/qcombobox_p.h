@@ -223,6 +223,7 @@ public:
     int topMargin() const;
     int bottomMargin() const { return topMargin(); }
     void updateTopBottomMargin();
+    void updateStyleSettings();
 
     QTimer blockMouseReleaseTimer;
     QBasicTimer adjustSizeTimer;
