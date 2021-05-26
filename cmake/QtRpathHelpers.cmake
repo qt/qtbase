@@ -86,12 +86,13 @@ function(qt_apply_rpaths)
     # Modify the install path to contain the nested structure of a framework.
     get_target_property(is_framework "${target}" FRAMEWORK)
     if(is_framework)
+        qt_internal_get_framework_info(fw ${target})
         if(UIKIT)
             # Shallow framework
-            string(APPEND arg_INSTALL_PATH "/Qt${target}.framework")
+            string(APPEND arg_INSTALL_PATH "/${fw_dir}")
         else()
             # Full framework
-            string(APPEND arg_INSTALL_PATH "/Qt${target}.framework/Versions/Current")
+            string(APPEND arg_INSTALL_PATH "/${fw_dir}/Versions/Current")
         endif()
     endif()
 
