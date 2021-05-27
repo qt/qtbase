@@ -639,7 +639,7 @@ private:
     char16_t ucs;
 };
 
-Q_DECLARE_TYPEINFO(QChar, Q_RELOCATABLE_TYPE);
+Q_DECLARE_TYPEINFO(QChar, Q_PRIMITIVE_TYPE);
 
 #ifndef QT_NO_DATASTREAM
 Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, QChar);
