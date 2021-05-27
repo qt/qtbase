@@ -19,6 +19,9 @@
 #     EXTRA_CMAKE_FILES
 #         List of additional CMake files that will be installed alongside the tool's exported CMake
 #         files.
+#     EXTRA_CMAKE_INCLUDES
+#         List of files that will be included in the Qt6${module}Tools.cmake file.
+#         Also see TOOLS_TARGET.
 #     INSTALL_DIR
 #         Takes a path, relative to the install prefix, like INSTALL_LIBEXECDIR.
 #         If this argument is omitted, the default is INSTALL_BINDIR.
@@ -29,11 +32,17 @@
 function(qt_internal_add_tool target_name)
     qt_tool_target_to_name(name ${target_name})
     set(option_keywords BOOTSTRAP NO_INSTALL USER_FACING INSTALL_VERSIONED_LINK)
-    set(one_value_keywords TOOLS_TARGET EXTRA_CMAKE_FILES INSTALL_DIR
-                           ${__default_target_info_args})
+    set(one_value_keywords
+        TOOLS_TARGET
+        INSTALL_DIR
+        ${__default_target_info_args})
+    set(multi_value_keywords
+        EXTRA_CMAKE_FILES
+        EXTRA_CMAKE_INCLUDES
+        ${__default_private_args})
     qt_parse_all_arguments(arg "qt_internal_add_tool" "${option_keywords}"
                                "${one_value_keywords}"
-                               "${__default_private_args}" ${ARGN})
+                               "${multi_value_keywords}" ${ARGN})
 
     # Handle case when a tool does not belong to a module and it can't be built either (like
     # during a cross-compile).
@@ -184,6 +193,12 @@ function(qt_internal_add_tool target_name)
         )
     endif()
 
+    if(arg_EXTRA_CMAKE_INCLUDES)
+        set_target_properties(${target_name} PROPERTIES
+            EXTRA_CMAKE_INCLUDES "${arg_EXTRA_CMAKE_INCLUDES}"
+            )
+    endif()
+
     if(arg_USER_FACING)
         set_property(GLOBAL APPEND PROPERTY QT_USER_FACING_TOOL_TARGETS ${target_name})
     endif()
@@ -272,6 +287,7 @@ function(qt_export_tools module_name)
 
     # Additional cmake files to install
     set(extra_cmake_files "")
+    set(extra_cmake_includes "")
 
     foreach(tool_name ${QT_KNOWN_MODULE_${module_name}_TOOLS})
         # Specific tools can have package dependencies.
@@ -287,6 +303,11 @@ function(qt_export_tools module_name)
                 file(COPY "${cmake_file}" DESTINATION "${config_build_dir}")
                 list(APPEND extra_cmake_files "${cmake_file}")
             endforeach()
+        endif()
+
+        get_target_property(_extra_cmake_includes "${tool_name}" EXTRA_CMAKE_INCLUDES)
+        if(_extra_cmake_includes)
+            list(APPEND extra_cmake_includes "${_extra_cmake_includes}")
         endif()
 
         if (CMAKE_CROSSCOMPILING AND QT_BUILD_TOOLS_WHEN_CROSSCOMPILING)
@@ -306,12 +327,6 @@ endif()
 
     string(APPEND extra_cmake_statements
 "set(${QT_CMAKE_EXPORT_NAMESPACE}${module_name}Tools_TARGETS \"${tool_targets}\")")
-
-    set(extra_cmake_includes "")
-    foreach(extra_cmake_file ${extra_cmake_files})
-        get_filename_component(extra_cmake_include "${extra_cmake_file}" NAME)
-        list(APPEND extra_cmake_includes "${extra_cmake_include}")
-    endforeach()
 
     # Extract package dependencies that were determined in QtPostProcess, but only if ${module_name}
     # is an actual target.
