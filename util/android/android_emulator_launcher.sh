@@ -1,7 +1,7 @@
 #!/bin/bash
 #############################################################################
 ##
-## Copyright (C) 2020 The Qt Company Ltd.
+## Copyright (C) 2021 The Qt Company Ltd.
 ## Contact: https://www.qt.io/licensing/
 ##
 ## This file is part of the plugins of the Qt Toolkit.
@@ -35,7 +35,11 @@ EMULATOR_TIMEOUT=30
 EMULATOR_MAX_RETRIES=5
 EMULATOR_EXEC="$ANDROID_SDK_HOME/tools/emulator"
 ADB_EXEC="$ANDROID_SDK_HOME/platform-tools/adb"
-EMULATOR_NAME="@x86emulator"
+if [[ -z "${ANDROID_EMULATOR}" ]]; then
+    EMULATOR_NAME="@x86emulator"
+else
+    EMULATOR_NAME="$ANDROID_EMULATOR"
+fi
 RESULT=0
 
 for counter in `seq 1 ${EMULATOR_MAX_RETRIES}`; do
