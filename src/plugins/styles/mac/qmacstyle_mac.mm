@@ -4332,9 +4332,25 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             if (!rightMarginText.isEmpty()) {
                 p->setFont(qt_app_fonts_hash()->value("QMenuItem", p->font()));
                 int xp = mi->rect.right() - tabwidth - macRightBorder + 2;
-                if (!isSubMenu)
+                if (isSubMenu) {
+                    p->drawText(xp, yPos, tabwidth, mi->rect.height(), text_flags | Qt::AlignRight, rightMarginText);
+                } else {
                     xp -= macItemHMargin + macItemFrame + 3; // Adjust for shortcut
-                p->drawText(xp, yPos, tabwidth, mi->rect.height(), text_flags | Qt::AlignRight, rightMarginText);
+                    // try to render modifier part of shortcut string right aligned, key part left aligned
+                    const QKeySequence seq = QKeySequence::fromString(rightMarginText, QKeySequence::NativeText);
+                    if (seq.count() == 1) { // one-combo sequence, the right most character is the key
+                        // we don't know which key of all menu items is the widest, so use the widest possible
+                        const int maxKeyWidth = p->fontMetrics().maxWidth();
+                        const QChar key = rightMarginText.at(rightMarginText.length() - 1);
+                        const QString modifiers = rightMarginText.left(rightMarginText.size() - 1);
+                        p->drawText(xp + tabwidth - maxKeyWidth, yPos, maxKeyWidth, mi->rect.height(), text_flags, key);
+                        // don't clip the shortcuts; maxKeyWidth might be more than what we have been alotted by the menu
+                        p->drawText(xp, yPos, tabwidth - maxKeyWidth, mi->rect.height(),
+                                    text_flags | Qt::AlignRight | Qt::TextDontClip, modifiers);
+                    } else { // draw the whole thing left-aligned for complex or unparsable cases
+                        p->drawText(xp, yPos, tabwidth, mi->rect.height(), text_flags, rightMarginText);
+                    }
+                }
             }
 
             if (!s.isEmpty()) {
