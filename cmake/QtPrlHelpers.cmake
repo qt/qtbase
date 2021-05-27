@@ -151,6 +151,11 @@ ${prl_step1_content_libs}
         qt_path_join(prl_meta_info_path
                      "${CMAKE_CURRENT_BINARY_DIR}"
                      "${prl_meta_info_name_prefix}${config}${prl_meta_info_name_suffix}")
+        if(MSVC)
+            set(link_library_flag "-l")
+        else()
+            set(link_library_flag ${CMAKE_LINK_LIBRARY_FLAG})
+        endif()
         add_custom_command(
             OUTPUT  "${prl_step2_path}"
             DEPENDS "${prl_step1_path}"
@@ -163,8 +168,9 @@ ${prl_step1_content_libs}
                     "-DOUT_FILE=${prl_step2_path}"
                     "-DLIBRARY_PREFIXES=${library_prefixes}"
                     "-DLIBRARY_SUFFIXES=${library_suffixes}"
-                    "-DLINK_LIBRARY_FLAG=${CMAKE_LINK_LIBRARY_FLAG}"
+                    "-DLINK_LIBRARY_FLAG=${link_library_flag}"
                     "-DQT_LIB_DIRS=${qt_lib_dirs}"
+                    "-DIMPLICIT_LINK_DIRECTORIES=${CMAKE_CXX_IMPLICIT_LINK_DIRECTORIES}"
                     -P "${QT_CMAKE_DIR}/QtFinishPrlFile.cmake"
             VERBATIM
             COMMENT "Generating prl file for target ${target}"
