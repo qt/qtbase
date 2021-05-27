@@ -2548,7 +2548,7 @@ void QRhiD3D11::executeCommandBuffer(QD3D11CommandBuffer *cbD, QD3D11SwapChain *
             context->VSSetShader(psD->vs.shader, nullptr, 0);
             context->PSSetShader(psD->fs.shader, nullptr, 0);
             context->IASetPrimitiveTopology(psD->d3dTopology);
-            context->IASetInputLayout(psD->inputLayout);
+            context->IASetInputLayout(psD->inputLayout); // may be null, that's ok
             context->OMSetDepthStencilState(psD->dsState, stencilRef);
             context->OMSetBlendState(psD->blendState, blendConstants, 0xffffffff);
             context->RSSetState(psD->rastState);
@@ -4142,12 +4142,14 @@ bool QD3D11GraphicsPipeline::create()
             }
             inputDescs.append(desc);
         }
-        hr = rhiD->dev->CreateInputLayout(inputDescs.constData(), UINT(inputDescs.count()),
-                                          vsByteCode, SIZE_T(vsByteCode.size()), &inputLayout);
-        if (FAILED(hr)) {
-            qWarning("Failed to create input layout: %s", qPrintable(comErrorMessage(hr)));
-            return false;
-        }
+        if (!inputDescs.isEmpty()) {
+            hr = rhiD->dev->CreateInputLayout(inputDescs.constData(), UINT(inputDescs.count()),
+                                              vsByteCode, SIZE_T(vsByteCode.size()), &inputLayout);
+            if (FAILED(hr)) {
+                qWarning("Failed to create input layout: %s", qPrintable(comErrorMessage(hr)));
+                return false;
+            }
+        } // else leave inputLayout set to nullptr; that's valid and it avoids a debug layer warning about an input layout with 0 elements
     }
 
     generation += 1;
