@@ -103,6 +103,8 @@ int QWindowsDirect2DPaintDevice::metric(QPaintDevice::PaintDeviceMetric metric) 
     case QPaintDevice::PdmDpiX:
     case QPaintDevice::PdmPhysicalDpiX:
     {
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED // See QTBUG-94043
         FLOAT x, y;
         QWindowsDirect2DContext::instance()->d2dFactory()->GetDesktopDpi(&x, &y);
         return qRound(x);
@@ -113,6 +115,7 @@ int QWindowsDirect2DPaintDevice::metric(QPaintDevice::PaintDeviceMetric metric) 
         FLOAT x, y;
         QWindowsDirect2DContext::instance()->d2dFactory()->GetDesktopDpi(&x, &y);
         return qRound(y);
+QT_WARNING_POP
     }
     case QPaintDevice::PdmDevicePixelRatio:
         return 1;

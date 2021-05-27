@@ -65,8 +65,11 @@ public:
 
     D2D1_BITMAP_PROPERTIES1 bitmapProperties() const
     {
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED // see QTBUG-94043
         FLOAT dpiX, dpiY;
         QWindowsDirect2DContext::instance()->d2dFactory()->GetDesktopDpi(&dpiX, &dpiY);
+QT_WARNING_POP
 
         return D2D1::BitmapProperties1(
                     D2D1_BITMAP_OPTIONS_TARGET,
