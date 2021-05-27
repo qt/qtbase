@@ -45,6 +45,12 @@ macro(qt_find_package)
         endif()
     endif()
 
+    # When configure.cmake is included only to record summary entries, there's no point in looking
+    # for the packages.
+    if(__QtFeature_only_record_summary_entries)
+        set(_qt_find_package_skip_find_package TRUE)
+    endif()
+
     # Get the version if specified.
     set(package_version "")
     if(${ARGC} GREATER_EQUAL 2)

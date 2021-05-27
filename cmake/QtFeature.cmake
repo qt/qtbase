@@ -522,6 +522,17 @@ function(qt_feature_evaluate_features list_of_paths)
     qt_feature_module_end(ONLY_EVALUATE_FEATURES)
 endfunction()
 
+function(qt_feature_record_summary_entries list_of_paths)
+    # Clean up any stale state just in case.
+    qt_feature_unset_state_vars()
+
+    set(__QtFeature_only_record_summary_entries TRUE)
+    foreach(path ${list_of_paths})
+        include("${path}")
+    endforeach()
+    qt_feature_unset_state_vars()
+endfunction()
+
 function(qt_feature_module_end)
     set(flags ONLY_EVALUATE_FEATURES)
     set(options OUT_VAR_PREFIX)
@@ -660,6 +671,10 @@ function(qt_feature_module_end)
         qt_feature_copy_global_config_features_to_core(${target})
     endif()
 
+    qt_feature_unset_state_vars()
+endfunction()
+
+macro(qt_feature_unset_state_vars)
     unset(__QtFeature_library PARENT_SCOPE)
     unset(__QtFeature_public_features PARENT_SCOPE)
     unset(__QtFeature_private_features PARENT_SCOPE)
@@ -675,7 +690,8 @@ function(qt_feature_module_end)
     unset(__QtFeature_custom_enabled_features PARENT_SCOPE)
     unset(__QtFeature_custom_disabled_features PARENT_SCOPE)
     unset(__QtFeature_only_evaluate_features PARENT_SCOPE)
-endfunction()
+    unset(__QtFeature_only_record_summary_entries PARENT_SCOPE)
+endmacro()
 
 function(qt_feature_copy_global_config_features_to_core target)
     # CMake doesn't support setting custom properties on exported INTERFACE libraries
