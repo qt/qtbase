@@ -6,3 +6,9 @@ qt_internal_add_manual_test(qnetworkinformation
         Qt::Network
         Qt::Test
 )
+
+qt_internal_extend_target(qnetworkinformation CONDITION ANDROID OR UIKIT
+    PUBLIC_LIBRARIES
+        Qt::Widgets
+    DEFINES
+        MOBILE)
