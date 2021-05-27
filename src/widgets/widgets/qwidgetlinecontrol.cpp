@@ -419,7 +419,7 @@ QRect QWidgetLineControl::rectForPos(int pos) const
     int w = m_cursorWidth;
     int ch = l.height() + 1;
 
-    return QRect(cix-5, 0, w+9, ch);
+    return QRect(cix - 5, 0, w + 9, ch);
 }
 
 /*!
