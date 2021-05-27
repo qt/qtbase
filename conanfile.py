@@ -316,36 +316,33 @@ class QtOptionParser:
         return ret
 
 
+def _parse_qt_version_by_key(key: str) -> str:
+    with open(Path(Path(__file__).parent.resolve() / ".cmake.conf")) as f:
+        ret = [m.group(1) for m in [re.search(r"{0} .*\"(.*)\"".format(key), f.read())] if m]
+    return ret.pop() if ret else ""
+
+
 class QtBase(ConanFile):
     name = "qtbase"
     license = "GPL-3.0+, Commercial Qt License Agreement"
     author = "The Qt Company <https://www.qt.io/contact-us>"
     url = "https://code.qt.io/cgit/qt/qtbase.git/"
     description = "Qt6 core framework libraries and tools."
-    topics = ("status:rc1", "qt", "qt6")
+    topics = ("qt", "qt6")
     settings = "os", "compiler", "arch", "build_type"
     _qt_option_parser = QtOptionParser()
     options = _qt_option_parser.get_qt_conan_options()
     default_options = _qt_option_parser.get_default_qt_conan_options()
-    exports = "configure_options.json", "configure_features.txt"
+    exports = "configure_options.json", "configure_features.txt", ".cmake.conf"
     exports_sources = "*", "!conan*.*"
     # use commit ID as the RREV (recipe revision) if this is exported from .git repository
     revision_mode = "scm" if Path(Path(__file__).parent.resolve() / ".git").exists() else "hash"
 
-    def _parse_qt_version(self, source_path: Path) -> str:
-        cmake_conf = Path(source_path / ".cmake.conf").resolve(strict=True)
-        print(f"Parsing Qt version from: {cmake_conf}")
-        with open(str(cmake_conf)) as f:
-            for line in f:
-                match = re.search(r"QT_REPO_MODULE_VERSION.*\"([\d.]+)\"", line)
-                if match:
-                    return match.group(1)
-            else:
-                raise QtConanError(f"Unable to parse Qt version from: {cmake_conf}")
-
     def set_version(self):
         # Executed during "conan export" i.e. in source tree
-        self.version = self._parse_qt_version(Path(__file__).parent.absolute())
+        _ver = _parse_qt_version_by_key("QT_REPO_MODULE_VERSION")
+        _prerelease = _parse_qt_version_by_key("QT_REPO_MODULE_PRERELEASE_VERSION_SEGMENT")
+        self.version = _ver + "-" + _prerelease if _prerelease else _ver
 
     def source(self):
         # sources are installed next to recipe, no need to clone sources here
