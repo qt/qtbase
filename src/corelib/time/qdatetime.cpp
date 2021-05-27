@@ -735,14 +735,12 @@ int QDate::weekNumber(int *yearNumber) const
 
     // This could be replaced by use of QIso8601Calendar, once we implement it.
     // The Thursday of the same week determines our answer:
-    QDate thursday(addDays(4 - dayOfWeek()));
-    int year = thursday.year();
-    // Week n's Thurs's DOY has 1 <= DOY - 7*(n-1) < 8, so 0 <= DOY + 6 - 7*n < 7:
-    int week = (thursday.dayOfYear() + 6) / 7;
-
+    const QDate thursday(addDays(4 - dayOfWeek()));
     if (yearNumber)
-        *yearNumber = year;
-    return week;
+        *yearNumber = thursday.year();
+
+    // Week n's Thurs's DOY has 1 <= DOY - 7*(n-1) < 8, so 0 <= DOY + 6 - 7*n < 7:
+    return (thursday.dayOfYear() + 6) / 7;
 }
 
 static bool inDateTimeRange(qint64 jd, bool start)
