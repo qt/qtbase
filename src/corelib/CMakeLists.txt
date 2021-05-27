@@ -1010,7 +1010,7 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_concatenatetablesproxymodel 
 
 qt_internal_extend_target(Core CONDITION QT_FEATURE_identityproxymodel AND QT_FEATURE_proxymodel
     SOURCES
-        itemmodels/qidentityproxymodel.cpp itemmodels/qidentityproxymodel.h
+        itemmodels/qidentityproxymodel.cpp itemmodels/qidentityproxymodel.h itemmodels/qidentityproxymodel_p.h
 )
 
 qt_internal_extend_target(Core CONDITION QT_FEATURE_proxymodel AND QT_FEATURE_sortfilterproxymodel

@@ -38,46 +38,11 @@
 ****************************************************************************/
 
 #include "qidentityproxymodel.h"
+#include "qidentityproxymodel_p.h"
 #include "qitemselectionmodel.h"
 #include <private/qabstractproxymodel_p.h>
 
 QT_BEGIN_NAMESPACE
-
-class QIdentityProxyModelPrivate : public QAbstractProxyModelPrivate
-{
-    QIdentityProxyModelPrivate()
-    {
-
-    }
-
-    Q_DECLARE_PUBLIC(QIdentityProxyModel)
-
-    QList<QPersistentModelIndex> layoutChangePersistentIndexes;
-    QModelIndexList proxyIndexes;
-
-    void _q_sourceRowsAboutToBeInserted(const QModelIndex &parent, int start, int end);
-    void _q_sourceRowsInserted(const QModelIndex &parent, int start, int end);
-    void _q_sourceRowsAboutToBeRemoved(const QModelIndex &parent, int start, int end);
-    void _q_sourceRowsRemoved(const QModelIndex &parent, int start, int end);
-    void _q_sourceRowsAboutToBeMoved(const QModelIndex &sourceParent, int sourceStart, int sourceEnd, const QModelIndex &destParent, int dest);
-    void _q_sourceRowsMoved(const QModelIndex &sourceParent, int sourceStart, int sourceEnd, const QModelIndex &destParent, int dest);
-
-    void _q_sourceColumnsAboutToBeInserted(const QModelIndex &parent, int start, int end);
-    void _q_sourceColumnsInserted(const QModelIndex &parent, int start, int end);
-    void _q_sourceColumnsAboutToBeRemoved(const QModelIndex &parent, int start, int end);
-    void _q_sourceColumnsRemoved(const QModelIndex &parent, int start, int end);
-    void _q_sourceColumnsAboutToBeMoved(const QModelIndex &sourceParent, int sourceStart, int sourceEnd, const QModelIndex &destParent, int dest);
-    void _q_sourceColumnsMoved(const QModelIndex &sourceParent, int sourceStart, int sourceEnd, const QModelIndex &destParent, int dest);
-
-    void _q_sourceDataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QList<int> &roles);
-    void _q_sourceHeaderDataChanged(Qt::Orientation orientation, int first, int last);
-
-    void _q_sourceLayoutAboutToBeChanged(const QList<QPersistentModelIndex> &sourceParents, QAbstractItemModel::LayoutChangeHint hint);
-    void _q_sourceLayoutChanged(const QList<QPersistentModelIndex> &sourceParents, QAbstractItemModel::LayoutChangeHint hint);
-    void _q_sourceModelAboutToBeReset();
-    void _q_sourceModelReset();
-
-};
 
 /*!
     \since 4.8
