@@ -1,30 +1,33 @@
-# Generated from fromiccprofile.pro.
+cmake_minimum_required(VERSION 3.14)
+project(fromiccprofile LANGUAGES CXX)
 
-#####################################################################
-## fromiccprofile Binary:
-#####################################################################
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-qt_internal_add_executable(fromiccprofile
-    GUI
-    SOURCES
-        main.cpp
-    PUBLIC_LIBRARIES
-        Qt::Gui
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
+
+qt_add_executable(fromiccprofile
+    main.cpp
 )
 
-#### Keys ignored in scope 1:.:.:fromiccprofile.pro:<TRUE>:
-# FUZZ_ENGINE = "$$(LIB_FUZZING_ENGINE)"
-# QTPLUGIN = "qminimal"
-
-## Scopes:
-#####################################################################
-
-qt_internal_extend_target(fromiccprofile CONDITION FUZZ_ENGINE_ISEMPTY
-    LINK_OPTIONS
-        "-fsanitize=fuzzer"
+target_link_libraries(fromiccprofile PUBLIC
+    Qt::Core
+    Qt::Gui
 )
-
-qt_internal_extend_target(fromiccprofile CONDITION NOT FUZZ_ENGINE_ISEMPTY
-    PUBLIC_LIBRARIES
+if(DEFINED ENV{LIB_FUZZING_ENGINE})
+    target_link_libraries(fromiccprofile PRIVATE
         $ENV{LIB_FUZZING_ENGINE}
+    )
+else()
+    target_link_libraries(fromiccprofile PRIVATE
+        -fsanitize=fuzzer
+    )
+endif()
+
+qt_import_plugins(fromiccprofile
+    INCLUDE Qt::QMinimalIntegrationPlugin
 )

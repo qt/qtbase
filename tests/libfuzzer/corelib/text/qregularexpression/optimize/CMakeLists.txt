@@ -1,27 +1,27 @@
-# Generated from optimize.pro.
+cmake_minimum_required(VERSION 3.14)
+project(optimize LANGUAGES CXX)
 
-#####################################################################
-## optimize Binary:
-#####################################################################
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-qt_internal_add_executable(optimize
-    GUI
-    SOURCES
-        main.cpp
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+find_package(Qt6 COMPONENTS Core)
+
+qt_add_executable(optimize
+    main.cpp
 )
 
-#### Keys ignored in scope 1:.:.:optimize.pro:<TRUE>:
-# FUZZ_ENGINE = "$$(LIB_FUZZING_ENGINE)"
-
-## Scopes:
-#####################################################################
-
-qt_internal_extend_target(optimize CONDITION FUZZ_ENGINE_ISEMPTY
-    LINK_OPTIONS
-        "-fsanitize=fuzzer"
+target_link_libraries(optimize PUBLIC
+    Qt::Core
 )
-
-qt_internal_extend_target(optimize CONDITION NOT FUZZ_ENGINE_ISEMPTY
-    PUBLIC_LIBRARIES
+if(DEFINED ENV{LIB_FUZZING_ENGINE})
+    target_link_libraries(optimize PRIVATE
         $ENV{LIB_FUZZING_ENGINE}
-)
+    )
+else()
+    target_link_libraries(optimize PRIVATE
+        -fsanitize=fuzzer
+    )
+endif()

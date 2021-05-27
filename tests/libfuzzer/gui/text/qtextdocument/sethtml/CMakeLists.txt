@@ -1,30 +1,33 @@
-# Generated from sethtml.pro.
+cmake_minimum_required(VERSION 3.14)
+project(sethtml LANGUAGES CXX)
 
-#####################################################################
-## sethtml Binary:
-#####################################################################
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-qt_internal_add_executable(sethtml
-    GUI
-    SOURCES
-        main.cpp
-    PUBLIC_LIBRARIES
-        Qt::Gui
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui)
+
+qt_add_executable(sethtml
+    main.cpp
 )
 
-#### Keys ignored in scope 1:.:.:sethtml.pro:<TRUE>:
-# FUZZ_ENGINE = "$$(LIB_FUZZING_ENGINE)"
-# QTPLUGIN = "qminimal"
-
-## Scopes:
-#####################################################################
-
-qt_internal_extend_target(sethtml CONDITION FUZZ_ENGINE_ISEMPTY
-    LINK_OPTIONS
-        "-fsanitize=fuzzer"
+target_link_libraries(sethtml PUBLIC
+    Qt::Core
+    Qt::Gui
 )
-
-qt_internal_extend_target(sethtml CONDITION NOT FUZZ_ENGINE_ISEMPTY
-    PUBLIC_LIBRARIES
+if(DEFINED ENV{LIB_FUZZING_ENGINE})
+    target_link_libraries(sethtml PRIVATE
         $ENV{LIB_FUZZING_ENGINE}
+    )
+else()
+    target_link_libraries(sethtml PRIVATE
+        -fsanitize=fuzzer
+    )
+endif()
+
+qt_import_plugins(sethtml
+    INCLUDE Qt::QMinimalIntegrationPlugin
 )
