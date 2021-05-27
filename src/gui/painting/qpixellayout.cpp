@@ -289,6 +289,7 @@ inline uint QT_FASTCALL fetchPixel<QPixelLayout::BPP32>(const uchar *src, int in
 }
 
 template <>
+[[maybe_unused]]
 inline uint QT_FASTCALL fetchPixel<QPixelLayout::BPP64>(const uchar *src, int index)
 {
     // We have to do the conversion in fetch to fit into a 32bit uint
@@ -297,6 +298,7 @@ inline uint QT_FASTCALL fetchPixel<QPixelLayout::BPP64>(const uchar *src, int in
 }
 
 template <>
+[[maybe_unused]]
 inline uint QT_FASTCALL fetchPixel<QPixelLayout::BPP16FPx4>(const uchar *src, int index)
 {
     // We have to do the conversion in fetch to fit into a 32bit uint
@@ -305,6 +307,7 @@ inline uint QT_FASTCALL fetchPixel<QPixelLayout::BPP16FPx4>(const uchar *src, in
 }
 
 template <>
+[[maybe_unused]]
 inline uint QT_FASTCALL fetchPixel<QPixelLayout::BPP32FPx4>(const uchar *src, int index)
 {
     // We have to do the conversion in fetch to fit into a 32bit uint
