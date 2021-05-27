@@ -1295,7 +1295,10 @@ static void init_platform(const QString &pluginNamesWithArguments, const QString
     }
 #endif
 
-    fontSmoothingGamma = QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::FontSmoothingGamma).toReal();
+    const auto platformIntegration = QGuiApplicationPrivate::platformIntegration();
+    fontSmoothingGamma = platformIntegration->styleHint(QPlatformIntegration::FontSmoothingGamma).toReal();
+    QCoreApplication::setAttribute(Qt::AA_DontShowShortcutsInContextMenus,
+        !platformIntegration->styleHint(QPlatformIntegration::ShowShortcutsInContextMenus).toBool());
 }
 
 static void init_plugins(const QList<QByteArray> &pluginList)
