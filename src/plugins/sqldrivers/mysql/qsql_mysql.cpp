@@ -1451,7 +1451,7 @@ QString QMYSQLDriver::formatValue(const QSqlField &field, bool trimStrings) cons
             } else {
                 qWarning("QMYSQLDriver::formatValue: Database not open");
             }
-            // fall through
+            Q_FALLTHROUGH();
         default:
             r = QSqlDriver::formatValue(field, trimStrings);
         }

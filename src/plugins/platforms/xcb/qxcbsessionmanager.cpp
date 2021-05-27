@@ -242,7 +242,7 @@ static void sm_performSaveYourself(QXcbSessionManager *sm)
         sm->appCommitData();
         if (sm_isshutdown && sm_cancel)
             break; // we cancelled the shutdown, no need to save state
-    // fall through
+    Q_FALLTHROUGH();
     case SmSaveLocal:
         sm->appSaveState();
         break;
