@@ -76,17 +76,15 @@ QT_BEGIN_NAMESPACE
   Date/Time Constants
  *****************************************************************************/
 
-enum : qint64 {
-    SECS_PER_DAY = 86400,
-    MSECS_PER_DAY = 86400000,
-    SECS_PER_HOUR = 3600,
-    MSECS_PER_HOUR = 3600000,
-    SECS_PER_MIN = 60,
-    MSECS_PER_MIN = 60000,
-    MSECS_PER_SEC = 1000,
-    TIME_T_MAX = std::numeric_limits<time_t>::max(),
-    JULIAN_DAY_FOR_EPOCH = 2440588 // result of julianDayFromDate(1970, 1, 1)
-};
+constexpr qint64 SECS_PER_DAY = 86400;
+constexpr qint64 MSECS_PER_DAY = 86400000;
+constexpr qint64 SECS_PER_HOUR = 3600;
+constexpr qint64 MSECS_PER_HOUR = 3600000;
+constexpr qint64 SECS_PER_MIN = 60;
+constexpr qint64 MSECS_PER_MIN = 60000;
+constexpr qint64 MSECS_PER_SEC = 1000;
+constexpr qint64 TIME_T_MAX = std::numeric_limits<time_t>::max();
+constexpr qint64 JULIAN_DAY_FOR_EPOCH = 2440588; // result of julianDayFromDate(1970, 1, 1)
 
 /*****************************************************************************
   QDate static helper functions

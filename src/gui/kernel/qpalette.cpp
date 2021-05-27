@@ -52,7 +52,7 @@ static int qt_palette_count = 1;
 
 static constexpr QPalette::ResolveMask colorRoleOffset(QPalette::ColorGroup colorGroup)
 {
-    return QPalette::NColorRoles * colorGroup;
+    return qToUnderlying(QPalette::NColorRoles) * qToUnderlying(colorGroup);
 }
 
 static constexpr QPalette::ResolveMask bitPosition(QPalette::ColorGroup colorGroup,

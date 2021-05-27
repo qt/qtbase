@@ -71,10 +71,8 @@ Q_LOGGING_CATEGORY(lcQtGuiDrawHelper, "qt.gui.drawhelper")
   constants and structures
 */
 
-enum {
-    fixed_scale = 1 << 16,
-    half_point = 1 << 15
-};
+constexpr int fixed_scale = 1 << 16;
+constexpr int half_point = 1 << 15;
 
 template <QPixelLayout::BPP bpp> static
 inline uint QT_FASTCALL fetch1Pixel(const uchar *, int)

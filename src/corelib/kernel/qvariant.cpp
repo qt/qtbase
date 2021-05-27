@@ -1155,17 +1155,17 @@ static const ushort mapIdFromQt3ToCurrent[MapFromThreeCount] =
 #endif
 };
 
-// enum values needed to map Qt5 based type id's to Qt6 based ones
-enum Qt5Types {
-    Qt5UserType = 1024,
-    Qt5LastCoreType = QMetaType::QCborMap,
-    Qt5FirstGuiType = 64,
-    Qt5LastGuiType = 87,
-    Qt5SizePolicy = 121,
-    Qt5RegExp = 27,
-    Qt5KeySequence = 75,
-    Qt5QQuaternion = 85
-};
+// values needed to map Qt5 based type id's to Qt6 based ones
+constexpr int Qt5UserType = 1024;
+constexpr int Qt5LastCoreType = QMetaType::QCborMap;
+constexpr int Qt5FirstGuiType = 64;
+constexpr int Qt5LastGuiType = 87;
+constexpr int Qt5SizePolicy = 121;
+constexpr int Qt5RegExp = 27;
+constexpr int Qt5KeySequence = 75;
+constexpr int Qt5QQuaternion = 85;
+
+constexpr int Qt6ToQt5GuiTypeDelta = qToUnderlying(QMetaType::FirstGuiType) - Qt5FirstGuiType;
 
 /*!
     Internal function for loading a variant from stream \a s. Use the
@@ -1205,7 +1205,7 @@ void QVariant::load(QDataStream &s)
         if (typeId == Qt5UserType) {
             typeId = QMetaType::User;
         } else if (typeId >= Qt5FirstGuiType && typeId <= Qt5LastGuiType) {
-            typeId += QMetaType::FirstGuiType - Qt5FirstGuiType;
+            typeId += Qt6ToQt5GuiTypeDelta;
         } else if (typeId == Qt5SizePolicy) {
             typeId = QMetaType::QSizePolicy;
         } else if (typeId == Qt5RegExp) {
@@ -1273,7 +1273,7 @@ void QVariant::save(QDataStream &s) const
             typeId = Qt5UserType;
             saveAsUserType = true;
         } else if (typeId >= QMetaType::FirstGuiType && typeId <= QMetaType::LastGuiType) {
-            typeId -= QMetaType::FirstGuiType - Qt5FirstGuiType;
+            typeId -= Qt6ToQt5GuiTypeDelta;
             if (typeId > Qt5LastGuiType) {
                 typeId = Qt5UserType;
                 saveAsUserType = true;
