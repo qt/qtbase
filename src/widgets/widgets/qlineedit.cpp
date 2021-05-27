@@ -166,7 +166,8 @@ void QLineEdit::initStyleOption(QStyleOptionFrame *option) const
 
     When editing is finished, either because the line edit lost focus
     or Return/Enter is pressed the editingFinished() signal is
-    emitted.
+    emitted. Note that if focus is lost without any changes done,
+    the editingFinished() signal won't be emitted.
 
     Note that if there is a validator set on the line edit, the
     returnPressed()/editingFinished() signals will only be emitted if
