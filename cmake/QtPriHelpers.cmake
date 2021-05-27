@@ -55,8 +55,10 @@ function(qt_generate_qmake_libraries_pri_content module_name output_root_dir out
         endforeach()
 
         # Filter out implicit include directories
-        string(PREPEND lib_incdir "$<FILTER:")
-        string(APPEND lib_incdir ",EXCLUDE,${implicit_include_dirs_regex}>")
+        if(implicit_include_dirs_regex)
+            string(PREPEND lib_incdir "$<FILTER:")
+            string(APPEND lib_incdir ",EXCLUDE,${implicit_include_dirs_regex}>")
+        endif()
 
         set(uccfg $<UPPER_CASE:$<CONFIG>>)
         string(APPEND content "list(APPEND known_libs ${uclib})
@@ -375,6 +377,11 @@ QT.${config_module_name}_private.disabled_features = ${disabled_private_features
             ${CMAKE_SHARED_LIBRARY_SUFFIX}
             ${CMAKE_EXTRA_SHARED_LIBRARY_SUFFIXES}
             ${CMAKE_STATIC_LIBRARY_SUFFIX})
+        if(MSVC)
+            set(link_library_flag "-l")
+        else()
+            set(link_library_flag ${CMAKE_LINK_LIBRARY_FLAG})
+        endif()
         add_custom_command(
             OUTPUT "${private_pri_file_path}"
             DEPENDS ${inputs}
@@ -383,8 +390,9 @@ QT.${config_module_name}_private.disabled_features = ${disabled_private_features
             COMMAND ${CMAKE_COMMAND} "-DIN_FILES=${inputs}" "-DOUT_FILE=${private_pri_file_path}"
                     "-DLIBRARY_PREFIXES=${library_prefixes}"
                     "-DLIBRARY_SUFFIXES=${library_suffixes}"
-                    "-DLINK_LIBRARY_FLAG=${CMAKE_LINK_LIBRARY_FLAG}"
+                    "-DLINK_LIBRARY_FLAG=${link_library_flag}"
                     "-DCONFIGS=${configs}"
+                    "-DIMPLICIT_LINK_DIRECTORIES=${CMAKE_CXX_IMPLICIT_LINK_DIRECTORIES}"
                     -P "${QT_CMAKE_DIR}/QtGenerateLibPri.cmake"
             VERBATIM)
         add_custom_target(${target}_lib_pri DEPENDS "${private_pri_file_path}")
@@ -782,6 +790,11 @@ CONFIG += ${private_config_joined}
         ${CMAKE_SHARED_LIBRARY_SUFFIX}
         ${CMAKE_EXTRA_SHARED_LIBRARY_SUFFIXES}
         ${CMAKE_STATIC_LIBRARY_SUFFIX})
+    if(MSVC)
+        set(link_library_flag "-l")
+    else()
+        set(link_library_flag ${CMAKE_LINK_LIBRARY_FLAG})
+    endif()
     add_custom_command(
         OUTPUT "${qmodule_pri_target_path}"
         DEPENDS ${inputs}
@@ -790,8 +803,9 @@ CONFIG += ${private_config_joined}
         COMMAND ${CMAKE_COMMAND} "-DIN_FILES=${inputs}" "-DOUT_FILE=${qmodule_pri_target_path}"
                 "-DLIBRARY_PREFIXES=${library_prefixes}"
                 "-DLIBRARY_SUFFIXES=${library_suffixes}"
-                "-DLINK_LIBRARY_FLAG=${CMAKE_LINK_LIBRARY_FLAG}"
+                "-DLINK_LIBRARY_FLAG=${link_library_flag}"
                 "-DCONFIGS=${configs}"
+                "-DIMPLICIT_LINK_DIRECTORIES=${CMAKE_CXX_IMPLICIT_LINK_DIRECTORIES}"
                 -P "${QT_CMAKE_DIR}/QtGenerateLibPri.cmake"
         VERBATIM)
     add_custom_target(qmodule_pri DEPENDS "${qmodule_pri_target_path}")

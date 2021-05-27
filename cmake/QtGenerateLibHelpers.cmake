@@ -64,6 +64,12 @@ function(qt_transform_absolute_library_paths_to_link_flags out_var library_path_
     foreach(library_path ${library_path_list})
         qt_get_library_with_link_flag(lib_name_with_link_flag "${library_path}")
         if(lib_name_with_link_flag)
+            get_filename_component(dir "${library_path}" DIRECTORY)
+            # If library_path isn't in default link directories, we should add it to link flags.
+            list(FIND IMPLICIT_LINK_DIRECTORIES ${dir} index)
+            if(${index} EQUAL -1)
+                list(APPEND out_list "-L${dir} ")
+            endif()
             list(APPEND out_list "${lib_name_with_link_flag}")
         else()
             list(APPEND out_list "${library_path}")

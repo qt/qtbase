@@ -7,6 +7,7 @@
 # LIBRARY_SUFFIXES: list of known library extensions, e.g. .so;.a on Linux
 # LIBRARY_PREFIXES: list of known library prefies, e.g. the "lib" in "libz" on on Linux
 # LINK_LIBRARY_FLAG: flag used to link a shared library to an executable, e.g. -l on UNIX
+# IMPLICIT_LINK_DIRECTORIES: list of implicit linker search paths
 #
 # QMAKE_LIBS_XXX values are split into QMAKE_LIBS_XXX_DEBUG and QMAKE_LIBS_XXX_RELEASE if
 # debug_and_release was detected. The CMake configuration "Debug" is considered for the _DEBUG
