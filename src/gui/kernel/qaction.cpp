@@ -1301,8 +1301,7 @@ bool QAction::isIconVisibleInMenu() const
     shown via a context menu, when it is false, it is not shown.
 
     The default is to follow whether the Qt::AA_DontShowShortcutsInContextMenus attribute
-    is set for the application, falling back to the widget style hint.
-    Explicitly setting this property overrides the presence (or abscence) of the attribute.
+    is set for the application. Explicitly setting this property overrides the attribute.
 
     \sa shortcut, QCoreApplication::setAttribute()
 */
@@ -1323,10 +1322,8 @@ void QAction::setShortcutVisibleInContextMenu(bool visible)
 bool QAction::isShortcutVisibleInContextMenu() const
 {
     Q_D(const QAction);
-    if (d->shortcutVisibleInContextMenu == -1) {
-        return !QCoreApplication::testAttribute(Qt::AA_DontShowShortcutsInContextMenus)
-            && QGuiApplication::styleHints()->showShortcutsInContextMenus();
-    }
+    if (d->shortcutVisibleInContextMenu == -1)
+        return !QCoreApplication::testAttribute(Qt::AA_DontShowShortcutsInContextMenus);
     return d->shortcutVisibleInContextMenu;
 }
 
