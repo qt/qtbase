@@ -117,7 +117,9 @@
     \value AA_DontShowShortcutsInContextMenus Actions with the Shortcut property
            won't be shown in any shortcut menus unless specifically set by the
            QAction::shortcutVisibleInContextMenu property. This value was added
-           in Qt 5.10.
+           in Qt 5.10, and defaults to the preference reported by the implementation
+           of QPlatformIntegration::styleHint. To override the platform integration,
+           set this attribute after QCoreApplication has been instantiated.
 
     \value AA_NativeWindows Ensures that widgets have native windows.
 
