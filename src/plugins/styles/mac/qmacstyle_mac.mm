@@ -4380,8 +4380,10 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                     // line-break the string if it doesn't fit the given rect. It's better to draw outside
                     // the rect and possibly overlap something than to have part of the text disappear.
                     [s.toNSString() drawAtPoint:CGPointMake(xpos, yPos)
-                                withAttributes:@{ NSFontAttributeName:f, NSForegroundColorAttributeName:c,
-                                                  NSObliquenessAttributeName: [NSNumber numberWithDouble: myFont.italic() ? 0.3 : 0.0]}];
+                            withAttributes:@{ NSFontAttributeName:f, NSForegroundColorAttributeName:c,
+                                                NSObliquenessAttributeName: [NSNumber numberWithDouble: myFont.italic() ? 0.3 : 0.0],
+                                                NSUnderlineStyleAttributeName: [NSNumber numberWithInt: myFont.underline() ? NSUnderlineStyleSingle
+                                                                                                                           : NSUnderlineStyleNone]}];
 
                     d->restoreNSGraphicsContext(cgCtx);
                 } else {
