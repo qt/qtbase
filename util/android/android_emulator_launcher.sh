@@ -41,7 +41,7 @@ RESULT=0
 for counter in `seq 1 ${EMULATOR_MAX_RETRIES}`; do
     $ADB_EXEC start-server
     echo "Starting emulator, try ${counter}/${EMULATOR_MAX_RETRIES}"
-    $EMULATOR_EXEC $EMULATOR_NAME -no-audio -partition-size 4096 -cores 4 -memory 3500 -no-snapshot-load -no-snapshot-save &>/dev/null &
+    $EMULATOR_EXEC $EMULATOR_NAME -gpu swiftshader_indirect -no-audio -partition-size 4096 -cores 4 -memory 3500 -no-snapshot-load -no-snapshot-save &>/dev/null &
     emulator_pid=$!
 
     # Give emulator time to start
