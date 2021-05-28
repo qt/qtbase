@@ -4166,7 +4166,7 @@ QT_WARNING_POP
         const QNativeGestureEvent *ne = static_cast<const QNativeGestureEvent *>(e);
         dbg << "QNativeGestureEvent(";
         QtDebugUtils::formatQEnum(dbg, ne->gestureType());
-        dbg << ", localPos=";
+        dbg << ", fingerCount=" << ne->fingerCount() << ", localPos=";
         QtDebugUtils::formatQPoint(dbg, ne->position());
         if (!qIsNull(ne->value()))
             dbg << ", value=" << ne->value();
