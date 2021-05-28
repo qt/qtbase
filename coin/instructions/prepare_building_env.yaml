@@ -60,6 +60,15 @@ instructions:
           condition: property
           property: host.compiler
           contains_value: Clang
+    disable_if:
+      condition: and
+      conditions:
+        - condition: runtime
+          env_var: CONFIGURE_ARGS
+          contains_value: "-DCMAKE_C_COMPILER="
+        - condition: runtime
+          env_var: CONFIGURE_ARGS
+          contains_value: "-DCMAKE_CXX_COMPILER="
 
 
   # Export TARGET_ARCHITECTURE and WINDOWS_SDK_VERSION for MSVC cross compilation
