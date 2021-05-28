@@ -836,7 +836,7 @@ QWidgetList QAbstractScrollArea::scrollBarWidgets(Qt::Alignment alignment)
 /*!
     Sets the margins around the scrolling area to \a left, \a top, \a
     right and \a bottom. This is useful for applications such as
-    spreadsheets with "locked" rows and columns. The marginal space is
+    spreadsheets with "locked" rows and columns. The marginal space
     is left blank; put widgets in the unused area.
 
     Note that this function is frequently called by QTreeView and
