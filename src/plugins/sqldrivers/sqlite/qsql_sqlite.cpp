@@ -501,7 +501,7 @@ bool QSQLiteResult::exec()
     if (paramCountIsValid) {
         for (int i = 0; i < paramCount; ++i) {
             res = SQLITE_OK;
-            const QVariant value = values.at(i);
+            const QVariant &value = values.at(i);
 
             if (value.isNull()) {
                 res = sqlite3_bind_null(d->stmt, i + 1);
