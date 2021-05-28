@@ -140,6 +140,7 @@ struct PropertyDef
     bool constant = false;
     bool final = false;
     bool required = false;
+    int relativeIndex = -1; // property index in current metaobject
 
     int location = -1; // token index, used for error reporting
 
@@ -263,7 +264,7 @@ public:
     void parseSignals(ClassDef *def);
     void parseProperty(ClassDef *def);
     void parsePluginData(ClassDef *def);
-    void createPropertyDef(PropertyDef &def);
+    void createPropertyDef(PropertyDef &def, int propertyIndex);
     void parsePropertyAttributes(PropertyDef &propDef);
     void parseEnumOrFlag(BaseDef *def, bool isFlag);
     void parseFlag(BaseDef *def);

@@ -1242,9 +1242,10 @@ void Moc::parseSignals(ClassDef *def)
     }
 }
 
-void Moc::createPropertyDef(PropertyDef &propDef)
+void Moc::createPropertyDef(PropertyDef &propDef, int propertyIndex)
 {
     propDef.location = index;
+    propDef.relativeIndex = propertyIndex;
 
     QByteArray type = parseType().name;
     if (type.isEmpty())
@@ -1401,7 +1402,7 @@ void Moc::parseProperty(ClassDef *def)
 {
     next(LPAREN);
     PropertyDef propDef;
-    createPropertyDef(propDef);
+    createPropertyDef(propDef, int(def->propertyList.size()));
     next(RPAREN);
 
     def->propertyList += propDef;
@@ -1495,7 +1496,7 @@ void Moc::parsePrivateProperty(ClassDef *def)
 
     next(COMMA);
 
-    createPropertyDef(propDef);
+    createPropertyDef(propDef, int(def->propertyList.size()));
 
     def->propertyList += propDef;
 }
@@ -2068,7 +2069,7 @@ QJsonObject PropertyDef::toJson() const
     prop[QLatin1String("constant")] = constant;
     prop[QLatin1String("final")] = final;
     prop[QLatin1String("required")] = required;
-
+    prop[QLatin1String("index")] = relativeIndex;
     if (revision > 0)
         prop[QLatin1String("revision")] = revision;
 
