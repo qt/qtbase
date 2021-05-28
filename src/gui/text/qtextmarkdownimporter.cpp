@@ -48,7 +48,11 @@
 #include <QTextDocumentFragment>
 #include <QTextList>
 #include <QTextTable>
+#if QT_CONFIG(system_textmarkdownreader)
+#include <md4c.h>
+#else
 #include "../../3rdparty/md4c/md4c.h"
+#endif
 
 QT_BEGIN_NAMESPACE
 

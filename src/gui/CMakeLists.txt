@@ -682,7 +682,7 @@ qt_internal_extend_target(Gui CONDITION QT_FEATURE_textmarkdownreader
 
 qt_internal_extend_target(Gui CONDITION QT_FEATURE_system_textmarkdownreader AND QT_FEATURE_textmarkdownreader
     LIBRARIES
-        libmd4c
+        WrapSystemMd4c::WrapSystemMd4c
 )
 
 qt_internal_extend_target(Gui CONDITION QT_FEATURE_textmarkdownreader AND NOT QT_FEATURE_system_textmarkdownreader

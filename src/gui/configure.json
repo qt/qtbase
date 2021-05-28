@@ -1452,7 +1452,7 @@
             "disable": "input.libmd4c == 'qt'",
             "enable": "input.libmd4c == 'system'",
             "section": "Kernel",
-            "condition": "libs.libmd4c",
+            "condition": "features.textmarkdownreader && libs.libmd4c",
             "output": [ "publicFeature" ]
         },
         "textmarkdownwriter": {

@@ -457,6 +457,7 @@ _library_map = [
     LibraryMapping("librt", "WrapRt", "WrapRt::WrapRt"),
     LibraryMapping("libudev", "Libudev", "PkgConfig::Libudev"),
     LibraryMapping("lttng-ust", "LTTngUST", "LTTng::UST", resultVariable="LTTNGUST"),
+    LibraryMapping("libmd4c", "WrapMd4c", "WrapMd4c::WrapMd4c", is_bundled_with_qt=True),
     LibraryMapping("mtdev", "Mtdev", "PkgConfig::Mtdev"),
     LibraryMapping("mysql", "MySQL", "MySQL::MySQL"),
     LibraryMapping("odbc", "ODBC", "ODBC::ODBC"),

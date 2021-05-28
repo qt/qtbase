@@ -41,6 +41,7 @@ qt_find_package(gbm PROVIDED_TARGETS gbm::gbm MODULE_NAME gui QMAKE_LIB gbm)
 qt_find_package(WrapSystemHarfbuzz 2.6.0 PROVIDED_TARGETS WrapSystemHarfbuzz::WrapSystemHarfbuzz MODULE_NAME gui QMAKE_LIB harfbuzz)
 qt_find_package(Libinput PROVIDED_TARGETS Libinput::Libinput MODULE_NAME gui QMAKE_LIB libinput)
 qt_find_package(JPEG PROVIDED_TARGETS JPEG::JPEG MODULE_NAME gui QMAKE_LIB libjpeg)
+qt_find_package(WrapSystemMd4c PROVIDED_TARGETS WrapSystemMd4c::WrapSystemMd4c MODULE_NAME gui QMAKE_LIB libmd4c)
 qt_find_package(WrapSystemPNG PROVIDED_TARGETS WrapSystemPNG::WrapSystemPNG MODULE_NAME gui QMAKE_LIB libpng)
 if(QT_FEATURE_system_zlib)
     qt_add_qmake_lib_dependency(libpng zlib)
@@ -945,7 +946,7 @@ qt_feature("textmarkdownreader" PUBLIC
 qt_feature("system-textmarkdownreader" PUBLIC
     SECTION "Kernel"
     LABEL "  Using system libmd4c"
-    CONDITION libs.libmd4c OR FIXME
+    CONDITION QT_FEATURE_textmarkdownreader AND WrapSystemMd4c_FOUND
     ENABLE INPUT_libmd4c STREQUAL 'system'
     DISABLE INPUT_libmd4c STREQUAL 'qt'
 )
