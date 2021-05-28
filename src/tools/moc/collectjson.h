@@ -35,7 +35,7 @@
 
 QT_BEGIN_NAMESPACE
 
-int collectJson(const QStringList &jsonFiles, const QString &outputFile);
+int collectJson(const QStringList &jsonFiles, const QString &outputFile, bool skipStdIn);
 
 QT_END_NAMESPACE
 
