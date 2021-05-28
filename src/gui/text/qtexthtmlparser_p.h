@@ -310,6 +310,9 @@ public:
     void parse(const QString &text, const QTextDocument *resourceProvider);
 
     static int lookupElement(const QString &element);
+
+    Q_GUI_EXPORT static QString parseEntity(QStringView entity);
+
 protected:
     QTextHtmlParserNode *newNode(int parent);
     QList<QTextHtmlParserNode *> nodes;

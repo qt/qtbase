@@ -800,12 +800,38 @@ void QTextHtmlParser::parseExclamationTag()
     }
 }
 
+QString QTextHtmlParser::parseEntity(QStringView entity)
+{
+    QChar resolved = resolveEntity(entity);
+    if (!resolved.isNull())
+        return QString(resolved);
+
+    if (entity.length() > 1 && entity.at(0) == QLatin1Char('#')) {
+        entity = entity.mid(1); // removing leading #
+
+        int base = 10;
+        bool ok = false;
+
+        if (entity.at(0).toLower() == QLatin1Char('x')) { // hex entity?
+            entity = entity.mid(1);
+            base = 16;
+        }
+
+        uint uc = entity.toUInt(&ok, base);
+        if (ok) {
+            if (uc >= 0x80 && uc < 0x80 + (sizeof(windowsLatin1ExtendedCharacters)/sizeof(windowsLatin1ExtendedCharacters[0])))
+                uc = windowsLatin1ExtendedCharacters[uc - 0x80];
+            return QStringView{QChar::fromUcs4(uc)}.toString();
+        }
+    }
+    return {};
+}
+
 // parses an entity after "&", and returns it
 QString QTextHtmlParser::parseEntity()
 {
     const int recover = pos;
     int entityLen = 0;
-    QStringView entity;
     while (pos < len) {
         QChar c = txt.at(pos++);
         if (c.isSpace() || pos - recover > 9) {
@@ -816,28 +842,10 @@ QString QTextHtmlParser::parseEntity()
         ++entityLen;
     }
     if (entityLen) {
-        entity = QStringView(txt).mid(recover, entityLen);
-        QChar resolved = resolveEntity(entity);
-        if (!resolved.isNull())
-            return QString(resolved);
-
-        if (entityLen > 1 && entity.at(0) == QLatin1Char('#')) {
-            entity = entity.mid(1); // removing leading #
-
-            int base = 10;
-            bool ok = false;
-
-            if (entity.at(0).toLower() == QLatin1Char('x')) { // hex entity?
-                entity = entity.mid(1);
-                base = 16;
-            }
-
-            uint uc = entity.toUInt(&ok, base);
-            if (ok) {
-                if (uc >= 0x80 && uc < 0x80 + (sizeof(windowsLatin1ExtendedCharacters)/sizeof(windowsLatin1ExtendedCharacters[0])))
-                    uc = windowsLatin1ExtendedCharacters[uc - 0x80];
-                return QStringView{QChar::fromUcs4(uc)}.toString();
-            }
+        const QStringView entity = QStringView(txt).mid(recover, entityLen);
+        const QString parsedEntity = parseEntity(entity);
+        if (!parsedEntity.isNull()) {
+            return parsedEntity;
         }
     }
 error:
