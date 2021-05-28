@@ -2850,11 +2850,11 @@ void tst_QAbstractItemView::mouseSelection_data()
     // Extended selection: press with Ctrl toggles item
     QTest::addRow("Extended:Press,Toggle") << QAbstractItemView::ExtendedSelection << false
         << QList{SelectionEvent(SelectionEvent::Press, 3),
-                 SelectionEvent(SelectionEvent::Press, Qt::ControlModifier, 3)}
+                 SelectionEvent(SelectionEvent::Click, Qt::ControlModifier, 3)}
         << QList<int>{};
     QTest::addRow("Extended:Press,Add") << QAbstractItemView::ExtendedSelection << false
         << QList{SelectionEvent(SelectionEvent::Press, 1),
-                 SelectionEvent(SelectionEvent::Press, Qt::ControlModifier, 3)}
+                 SelectionEvent(SelectionEvent::Click, Qt::ControlModifier, 3)}
         << QList{1, 3};
     // Extended selection: Shift creates a range between first and last pressed
     QTest::addRow("Extended:Press,Range") << QAbstractItemView::ExtendedSelection << false
@@ -2871,6 +2871,15 @@ void tst_QAbstractItemView::mouseSelection_data()
         << QList{SelectionEvent(SelectionEvent::Press, 2),
                  SelectionEvent(SelectionEvent::Move, 5)}
         << QList{2, 3, 4, 5};
+    // Extended: Ctrl+Press-dragging extends the selection
+    QTest::addRow("Extended:Press,Drag;Ctrl-Press,Drag") << QAbstractItemView::ExtendedSelection << false
+        << QList{SelectionEvent(SelectionEvent::Press, 2),
+                 SelectionEvent(SelectionEvent::Move, 5),
+                 SelectionEvent(SelectionEvent::Release),
+                 SelectionEvent(SelectionEvent::Press, Qt::ControlModifier, 6),
+                 SelectionEvent(SelectionEvent::Move, Qt::ControlModifier, 8),
+                 SelectionEvent(SelectionEvent::Release, Qt::ControlModifier, 8)}
+        << QList{2, 3, 4, 5, 6, 7, 8};
     // Extended: Ctrl+Press-dragging in a selection should not deselect #QTBUG-59888
     QTest::addRow("Extended:Ctrl-Drag selection") << QAbstractItemView::ExtendedSelection << true
         << QList{SelectionEvent(SelectionEvent::Click, 2),
@@ -2880,6 +2889,15 @@ void tst_QAbstractItemView::mouseSelection_data()
                  // two moves needed because of distance and state logic in QAbstractItemView
                  SelectionEvent(SelectionEvent::Move, Qt::ControlModifier, 6)}
         << QList{2, 3, 4, 5};
+    // Extended: Ctrl+Press-dragging with a selection extends, then drags #QTBUG-59888
+    QTest::addRow("Extended:Ctrl-Drag selection") << QAbstractItemView::ExtendedSelection << true
+        << QList{SelectionEvent(SelectionEvent::Click, 2),
+                 SelectionEvent(SelectionEvent::Click, Qt::ShiftModifier, 5),
+                 SelectionEvent(SelectionEvent::Press, Qt::ControlModifier, 6),
+                 SelectionEvent(SelectionEvent::Move, Qt::ControlModifier, 7),
+                 // two moves needed because of distance and state logic in 7QAbstractItemView
+                 SelectionEvent(SelectionEvent::Move, Qt::ControlModifier, 8)}
+        << QList{2, 3, 4, 5, 6};
 }
 
 void tst_QAbstractItemView::mouseSelection()
@@ -2950,7 +2968,6 @@ void tst_QAbstractItemView::mouseSelection()
         actualSelected << index.row();
 
     QEXPECT_FAIL("Multi:Press-Drag selection", "QTBUG-59889", Continue);
-    QEXPECT_FAIL("Extended:Ctrl-Drag selection", "QTBUG-59889", Continue);
     QCOMPARE(actualSelected, selectedRows);
 }
 

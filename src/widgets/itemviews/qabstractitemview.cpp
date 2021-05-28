@@ -4028,6 +4028,11 @@ QItemSelectionModel::SelectionFlags QAbstractItemViewPrivate::extendedSelectionC
                 return QItemSelectionModel::Clear;
             if (!index.isValid())
                 return QItemSelectionModel::NoUpdate;
+            // since the press might start a drag, deselect only on release
+            if (controlKeyPressed && !rightButtonPressed && pressedAlreadySelected
+                && dragEnabled && isIndexDragEnabled(index)) {
+                return QItemSelectionModel::NoUpdate;
+            }
             break;
         }
         case QEvent::MouseButtonRelease: {
@@ -4040,6 +4045,10 @@ QItemSelectionModel::SelectionFlags QAbstractItemViewPrivate::extendedSelectionC
                 || !index.isValid()) && state != QAbstractItemView::DragSelectingState
                 && !shiftKeyPressed && !controlKeyPressed && (!rightButtonPressed || !index.isValid()))
                 return QItemSelectionModel::ClearAndSelect|selectionBehaviorFlags();
+            if (index == pressedIndex && controlKeyPressed && !rightButtonPressed
+                && dragEnabled && isIndexDragEnabled(index)) {
+                break;
+            }
             return QItemSelectionModel::NoUpdate;
         }
         case QEvent::KeyPress: {

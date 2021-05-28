@@ -1394,6 +1394,7 @@ void tst_QItemDelegate::QTBUG4435_keepSelectionOnCheck()
     }
     QTableView view;
     view.setModel(&model);
+    view.setSelectionMode(QAbstractItemView::MultiSelection);
     view.setItemDelegate(new TestItemDelegate(&view));
     view.show();
     view.selectAll();
@@ -1404,11 +1405,16 @@ void tst_QItemDelegate::QTBUG4435_keepSelectionOnCheck()
     option.features = QStyleOptionViewItem::HasDisplay | QStyleOptionViewItem::HasCheckIndicator;
     option.checkState = Qt::CheckState(model.index(0, 0).data(Qt::CheckStateRole).toInt());
     const int checkMargin = qApp->style()->pixelMetric(QStyle::PM_FocusFrameHMargin, 0, 0) + 1;
-    QPoint pos = qApp->style()->subElementRect(QStyle::SE_ItemViewItemCheckIndicator, &option, 0).center()
-                 + QPoint(checkMargin, 0);
-    QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::ControlModifier, pos);
-    QTRY_VERIFY(view.selectionModel()->isColumnSelected(0, QModelIndex()));
+    QRect checkRect = qApp->style()->subElementRect(QStyle::SE_ItemViewItemCheckIndicator, &option, 0);
+    checkRect.translate(checkMargin, 0);
+    // click into the check mark checks, but doesn't change selection
+    QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::NoModifier, checkRect.center());
     QCOMPARE(model.item(0)->checkState(), Qt::Checked);
+    QTRY_VERIFY(view.selectionModel()->isColumnSelected(0, QModelIndex()));
+    // click outside the check mark doesn't check, and changes selection
+    QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::NoModifier,
+                      checkRect.center() + QPoint(checkRect.width(), 0));
+    QTRY_VERIFY(!view.selectionModel()->isColumnSelected(0, QModelIndex()));
 }
 
 void tst_QItemDelegate::comboBox()
