@@ -150,6 +150,8 @@ private slots:
     void checkFocusAfterActivationChanges_data();
     void checkFocusAfterActivationChanges();
     void dragSelectAfterNewPress();
+    void dragWithSecondClick_data();
+    void dragWithSecondClick();
 private:
     static QAbstractItemView *viewFromString(const QByteArray &viewType, QWidget *parent = nullptr)
     {
@@ -2509,6 +2511,99 @@ void tst_QAbstractItemView::dragSelectAfterNewPress()
     QCOMPARE(selected.count(), 6);
     for (int i = 0; i < 5; ++i)
         QVERIFY(selected.contains(model.index(i, 0)));
+}
+
+void tst_QAbstractItemView::dragWithSecondClick_data()
+{
+    QTest::addColumn<QString>("viewClass");
+    QTest::addColumn<bool>("doubleClick");
+    for (QString viewClass : {"QListView", "QTreeView"}) {
+        QTest::addRow("DoubleClick") << viewClass << true;
+        QTest::addRow("Two Single Clicks") << viewClass << false;
+    }
+}
+
+// inject the ability to record which indexes get dragged into any QAbstractItemView class
+struct DragRecorder
+{
+    virtual ~DragRecorder() = default;
+    bool dragStarted = false;
+    QModelIndexList draggedIndexes;
+    QAbstractItemView *view;
+};
+
+template<class ViewClass>
+class DragRecorderView : public ViewClass, public DragRecorder
+{
+public:
+    DragRecorderView()
+    { view = this; }
+protected:
+    void startDrag(Qt::DropActions) override
+    {
+        draggedIndexes = ViewClass::selectedIndexes();
+        dragStarted = true;
+    }
+};
+
+void tst_QAbstractItemView::dragWithSecondClick()
+{
+    QFETCH(QString, viewClass);
+    QFETCH(bool, doubleClick);
+
+    QStandardItemModel model;
+    QStandardItem *parentItem = model.invisibleRootItem();
+    for (int i = 0; i < 10; ++i) {
+        QStandardItem *item = new QStandardItem(QString("item %0").arg(i));
+        item->setDragEnabled(true);
+        item->setEditable(false);
+        parentItem->appendRow(item);
+    }
+
+    std::unique_ptr<DragRecorder> dragRecorder;
+    if (viewClass == "QTreeView")
+        dragRecorder.reset(new DragRecorderView<QTreeView>);
+    else if (viewClass == "QListView")
+        dragRecorder.reset(new DragRecorderView<QListView>);
+
+    QAbstractItemView *view = dragRecorder->view;
+    view->setModel(&model);
+    view->setFixedSize(160, 650); // Minimum width for windows with frame on Windows 8
+    view->setSelectionMode(QAbstractItemView::MultiSelection);
+    view->setDragDropMode(QAbstractItemView::InternalMove);
+    centerOnScreen(view);
+    moveCursorAway(view);
+    view->show();
+    QVERIFY(QTest::qWaitForWindowExposed(view));
+
+    QModelIndex index0 = model.index(0, 0);
+    QModelIndex index1 = model.index(1, 0);
+    // Select item 0 using a single click
+    QTest::mouseClick(view->viewport(), Qt::LeftButton, Qt::NoModifier,
+                      view->visualRect(index0).center());
+    QCOMPARE(view->currentIndex(), index0);
+
+    if (doubleClick) {
+        // press on same item within the double click interval
+        QTest::mouseDClick(view->viewport(), Qt::LeftButton, Qt::NoModifier,
+                           view->visualRect(index0).center());
+    } else {
+        // or on different item with a slow second press
+        QTest::mousePress(view->viewport(), Qt::LeftButton, Qt::NoModifier,
+                          view->visualRect(index1).center());
+    }
+    // then drag far enough with left button held
+    const QPoint dragTo = view->visualRect(index1).center()
+                        + QPoint(2 * QApplication::startDragDistance(),
+                                 2 * QApplication::startDragDistance());
+    QMouseEvent mouseMoveEvent(QEvent::MouseMove, dragTo,
+                            Qt::NoButton, Qt::LeftButton, Qt::NoModifier);
+    QVERIFY(QApplication::sendEvent(view->viewport(), &mouseMoveEvent));
+    // twice since the view will first enter dragging state, then start the drag
+    // (not necessary to actually move the mouse)
+    QVERIFY(QApplication::sendEvent(view->viewport(), &mouseMoveEvent));
+    QVERIFY(dragRecorder->dragStarted);
+    QTest::mouseRelease(view->viewport(), Qt::LeftButton, Qt::NoModifier, dragTo);
 }
 
 QTEST_MAIN(tst_QAbstractItemView)
