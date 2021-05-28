@@ -1452,20 +1452,19 @@ function(__qt_propagate_generated_resource target resource_name generated_source
         # After internal discussion we decided to not rely on the linker order that CMake
         # offers, until CMake provides the guaranteed linking order that suites our needs in a
         # future CMake version.
-        # The _qt_resource_object_libraries collects all resource targets owned by the 'target'
-        # instead of the implicit propagating and is used by the executable finalizer to expose
-        # objects as the end-point sources. If the user prefers not to use a finalizer or the CMake
-        # version does not support DEFER calls, fall back to interface linking of the resource
-        # objects.
+        # All resource object libraries mark themselves with the _is_qt_resource_target property.
+        # Using a finalizer approach we walk through the target dependencies and look for
+        # resource libraries using the _is_qt_resource_target property. Then, resource objects of
+        # the collected libraries are moved to the beginnig of the linker line using target_sources.
+        #
         # target_link_libraries works well with linkers other than ld. If user didn't enforce
         # a finalizer we rely on linker to resolve circular dependencies between resource
         # objects and static libraries.
-        set_property(TARGET ${target} APPEND PROPERTY
-            _qt_resource_object_libraries ${resource_target}
+        set_property(TARGET ${resource_target} PROPERTY _is_qt_resource_target TRUE)
+        set_property(TARGET ${resource_target} APPEND PROPERTY
+            EXPORT_PROPERTIES _is_qt_resource_target
         )
-        set_property(TARGET ${target} APPEND PROPERTY
-            EXPORT_PROPERTIES _qt_resource_object_libraries
-        )
+
         # Keep the implicit linking if finalizers are not used.
         set(finalizer_mode_condition
             "$<NOT:$<BOOL:$<TARGET_PROPERTY:_qt_resource_objects_finalizer_mode>>>"
