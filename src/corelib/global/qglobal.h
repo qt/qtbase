@@ -97,6 +97,15 @@
 #  endif
 #endif // __cplusplus
 
+#if defined(__cplusplus) && defined(Q_CC_MSVC)
+// On MSVC we require /permissive- set by user code. Check that we are
+// under its rules -- for instance, check that std::nullptr_t->bool is
+// not an implicit conversion, as per
+// https://docs.microsoft.com/en-us/cpp/overview/cpp-conformance-improvements?view=msvc-160#nullptr_t-is-only-convertible-to-bool-as-a-direct-initialization
+static_assert(!std::is_convertible_v<std::nullptr_t, bool>,
+              "On MSVC you must pass the /permissive- option to the compiler.");
+#endif
+
 #if defined (__ELF__)
 #  define Q_OF_ELF
 #endif
