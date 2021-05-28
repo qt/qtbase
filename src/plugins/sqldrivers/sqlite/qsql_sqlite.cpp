@@ -540,7 +540,7 @@ bool QSQLiteResult::exec()
                 case QMetaType::QString: {
                     // lifetime of string == lifetime of its qvariant
                     const QString *str = static_cast<const QString*>(value.constData());
-                    res = sqlite3_bind_text16(d->stmt, i + 1, str->utf16(),
+                    res = sqlite3_bind_text16(d->stmt, i + 1, str->unicode(),
                                               int(str->size()) * sizeof(QChar),
                                               SQLITE_STATIC);
                     break; }
