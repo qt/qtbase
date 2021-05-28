@@ -502,52 +502,52 @@ inline void QPainter::drawLine(const QPointF &p1, const QPointF &p2)
 
 inline void QPainter::drawLines(const QList<QLineF> &lines)
 {
-    drawLines(lines.constData(), lines.size());
+    drawLines(lines.constData(), int(lines.size()));
 }
 
 inline void QPainter::drawLines(const QList<QLine> &lines)
 {
-    drawLines(lines.constData(), lines.size());
+    drawLines(lines.constData(), int(lines.size()));
 }
 
 inline void QPainter::drawLines(const QList<QPointF> &pointPairs)
 {
-    drawLines(pointPairs.constData(), pointPairs.size() / 2);
+    drawLines(pointPairs.constData(), int(pointPairs.size() / 2));
 }
 
 inline void QPainter::drawLines(const QList<QPoint> &pointPairs)
 {
-    drawLines(pointPairs.constData(), pointPairs.size() / 2);
+    drawLines(pointPairs.constData(), int(pointPairs.size() / 2));
 }
 
 inline void QPainter::drawPolyline(const QPolygonF &polyline)
 {
-    drawPolyline(polyline.constData(), polyline.size());
+    drawPolyline(polyline.constData(), int(polyline.size()));
 }
 
 inline void QPainter::drawPolyline(const QPolygon &polyline)
 {
-    drawPolyline(polyline.constData(), polyline.size());
+    drawPolyline(polyline.constData(), int(polyline.size()));
 }
 
 inline void QPainter::drawPolygon(const QPolygonF &polygon, Qt::FillRule fillRule)
 {
-    drawPolygon(polygon.constData(), polygon.size(), fillRule);
+    drawPolygon(polygon.constData(), int(polygon.size()), fillRule);
 }
 
 inline void QPainter::drawPolygon(const QPolygon &polygon, Qt::FillRule fillRule)
 {
-    drawPolygon(polygon.constData(), polygon.size(), fillRule);
+    drawPolygon(polygon.constData(), int(polygon.size()), fillRule);
 }
 
 inline void QPainter::drawConvexPolygon(const QPolygonF &poly)
 {
-    drawConvexPolygon(poly.constData(), poly.size());
+    drawConvexPolygon(poly.constData(), int(poly.size()));
 }
 
 inline void QPainter::drawConvexPolygon(const QPolygon &poly)
 {
-    drawConvexPolygon(poly.constData(), poly.size());
+    drawConvexPolygon(poly.constData(), int(poly.size()));
 }
 
 inline void QPainter::drawRect(const QRectF &rect)
@@ -568,12 +568,12 @@ inline void QPainter::drawRect(const QRect &r)
 
 inline void QPainter::drawRects(const QList<QRectF> &rects)
 {
-    drawRects(rects.constData(), rects.size());
+    drawRects(rects.constData(), int(rects.size()));
 }
 
 inline void QPainter::drawRects(const QList<QRect> &rects)
 {
-    drawRects(rects.constData(), rects.size());
+    drawRects(rects.constData(), int(rects.size()));
 }
 
 inline void QPainter::drawPoint(const QPointF &p)
@@ -594,12 +594,12 @@ inline void QPainter::drawPoint(const QPoint &p)
 
 inline void QPainter::drawPoints(const QPolygonF &points)
 {
-    drawPoints(points.constData(), points.size());
+    drawPoints(points.constData(), int(points.size()));
 }
 
 inline void QPainter::drawPoints(const QPolygon &points)
 {
-    drawPoints(points.constData(), points.size());
+    drawPoints(points.constData(), int(points.size()));
 }
 
 inline void QPainter::drawRoundedRect(int x, int y, int w, int h, qreal xRadius, qreal yRadius,
