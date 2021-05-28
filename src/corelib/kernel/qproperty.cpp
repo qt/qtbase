@@ -927,7 +927,7 @@ QString QPropertyBindingError::description() const
  */
 
 /*!
-  \fn QUntypedPropertyBinding QUntypedBindable::makeBinding(const QPropertyBindingSourceLocation &location)
+  \fn QUntypedPropertyBinding QUntypedBindable::makeBinding(const QPropertyBindingSourceLocation &location) const
 
   Creates a binding returning the underlying properties' value, using a specified source \a location.
 */
@@ -940,7 +940,7 @@ QString QPropertyBindingError::description() const
 */
 
 /*!
-  \fn template<typename Functor> QPropertyChangeHandler<Functor> QUntypedBindable::onValueChanged(Functor f)
+  \fn template<typename Functor> QPropertyChangeHandler<Functor> QUntypedBindable::onValueChanged(Functor f) const
 
   Installs \a f as a change handler. Whenever the underlying property changes, \a f will be called, as
   long as the returned \c QPropertyChangeHandler and the property are kept alive.
@@ -950,7 +950,7 @@ QString QPropertyBindingError::description() const
 */
 
 /*!
-    \fn template<typename Functor> QPropertyChangeHandler<Functor> QUntypedBindable::subscribe(Functor f)
+    \fn template<typename Functor> QPropertyChangeHandler<Functor> QUntypedBindable::subscribe(Functor f) const
 
     Behaves like a call to \a f followed by \c onValueChanged(f),
 
@@ -1027,7 +1027,7 @@ QString QPropertyBindingError::description() const
 */
 
 /*!
-  \fn template<typename T> QPropertyBinding<T> QBindable<T>::makeBinding(const QPropertyBindingSourceLocation &location)
+  \fn template<typename T> QPropertyBinding<T> QBindable<T>::makeBinding(const QPropertyBindingSourceLocation &location) const
 
   Constructs a binding evaluating to the underlying property's value, using a specified source
   \a location.
@@ -1185,31 +1185,6 @@ QString QPropertyBindingError::description() const
   property value is read, the binding is evaluated. Whenever a dependency of the
   binding changes, the binding will be re-evaluated the next time the value of
   this property is read.
-*/
-
-/*!
-  \fn template <typename T> void QProperty<T>::markDirty()
-
-  Programatically sets the property dirty. Any binding which depends on it will
-  be notified.
-  This can be useful for properties which do not only depend on bindable properties,
-  but also on non-bindable properties or some other state.
-
-  For example, assume we have a \c Circle class, with a non-bindable \c radius property
-  and a corresponding \c radiusChanged signal. We now want to create a property for a
-  cylinders volume, based on a height \c QProperty and an instance of Circle. To ensure
-  that the volume changes, we can call setDirty in a slot  connected to radiusChanged.
-  \code
-  Circle circle;
-  QProperty<double> height;
-
-  QProperty<double> volume;
-  volume.setBinding([&]() {return height * std::pi_v<double> * circle.radius() * circle.radius()};
-  QOBject::connect(&circle, &Circle::radiusChanged, [&](){volume.markDirty();});
-  \endcode
-
-  \note Binding to a QObjectBindableProperty's signal does not make sense in general. Bindings
-  across bindable properties get marked dirty automatically.
 */
 
 /*!

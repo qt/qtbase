@@ -58,5 +58,7 @@ struct _jclass;
 typedef _jclass* jclass;
 struct _jobject;
 typedef _jobject* jobject;
+typedef int jint;
+typedef int jmethodID;
 typedef void* JavaVM;
 #endif

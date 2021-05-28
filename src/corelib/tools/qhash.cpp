@@ -780,7 +780,6 @@ static size_t qt_initialize_qhash_seed()
 
 /*!
     \class QHashSeed
-    \relates QHash
     \since 6.2
 
     The QHashSeed class is used to convey the QHash seed. This is used

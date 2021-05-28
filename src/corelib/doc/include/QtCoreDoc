@@ -1,0 +1,2 @@
+#include <QtCore/QtCore>
+#include "../../platform/android/qandroidextras_p.h"

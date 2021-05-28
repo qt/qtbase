@@ -54,8 +54,8 @@
 */
 
 /*!
-    \fn int qCeil(qreal v)
-    Return the ceiling of the value \a v.
+    \fn template <typename T> int qCeil(T v)
+    Returns the ceiling of the value \a v.
 
     The ceiling is the smallest integer that is not less than \a v.
     For example, if \a v is 41.2, then the ceiling is 42.
@@ -65,8 +65,8 @@
 */
 
 /*!
-    \fn int qFloor(qreal v)
-    Return the floor of the value \a v.
+    \fn template <typename T> int qFloor(T v)
+    Returns the floor of the value \a v.
 
     The floor is the largest integer that is not greater than \a v.
     For example, if \a v is 41.2, then the floor is 41.

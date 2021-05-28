@@ -811,7 +811,8 @@ QJniObject QAndroidIntent::handle() const
 
 
 /*!
-    \namespace QtAndroid
+    \namespace QtAndroidPrivate
+    \preliminary
     \inmodule QtCore
     \since 6.2
     \brief The QtAndroid namespace provides miscellaneous functions to aid Android development.
