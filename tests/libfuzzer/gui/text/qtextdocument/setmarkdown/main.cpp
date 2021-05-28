@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -28,6 +28,11 @@
 
 #include <QGuiApplication>
 #include <QTextDocument>
+#include <QtGlobal>
+
+// silence warnings
+static QtMessageHandler mh = qInstallMessageHandler([](QtMsgType, const QMessageLogContext &,
+                                                       const QString &) {});
 
 extern "C" int LLVMFuzzerTestOneInput(const char *Data, size_t Size) {
     static int argc = 3;
