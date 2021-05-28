@@ -145,9 +145,10 @@ QByteArray composePreprocessorOutput(const Symbols &symbols) {
     return output;
 }
 
-static QStringList argumentsFromCommandLineAndFile(const QStringList &arguments)
+static QStringList argumentsFromCommandLineAndFile(const QStringList &arguments, bool &hasOptionFiles)
 {
     QStringList allArguments;
+    hasOptionFiles = false;
     allArguments.reserve(arguments.size());
     for (const QString &argument : arguments) {
         // "@file" doesn't start with a '-' so we can't use QCommandLineParser for it
@@ -163,6 +164,7 @@ static QStringList argumentsFromCommandLineAndFile(const QStringList &arguments)
                 error("Cannot open options file specified with @");
                 return QStringList();
             }
+            hasOptionFiles = true;
             while (!f.atEnd()) {
                 QString line = QString::fromLocal8Bit(f.readLine().trimmed());
                 if (!line.isEmpty())
@@ -378,7 +380,8 @@ int runMoc(int argc, char **argv)
     parser.addPositionalArgument(QStringLiteral("[MOC generated json file]"),
                                  QStringLiteral("MOC generated json output"));
 
-    const QStringList arguments = argumentsFromCommandLineAndFile(app.arguments());
+    bool hasOptionFiles = false;
+    const QStringList arguments = argumentsFromCommandLineAndFile(app.arguments(), hasOptionFiles);
     if (arguments.isEmpty())
         return 1;
 
@@ -387,7 +390,7 @@ int runMoc(int argc, char **argv)
     const QStringList files = parser.positionalArguments();
     output = parser.value(outputOption);
     if (parser.isSet(collectOption))
-        return collectJson(files, output);
+        return collectJson(files, output, hasOptionFiles);
 
     if (files.count() > 1) {
         error(qPrintable(QLatin1String("Too many input files specified: '") + files.join(QLatin1String("' '")) + QLatin1Char('\'')));
