@@ -141,7 +141,10 @@ QHostAddress tst_QDtlsCookie::toNonAny(const QHostAddress &addr)
 
 void tst_QDtlsCookie::initTestCase()
 {
-    if (!TlsAux::activeBackendSupportsDtls())
+    using TlsCl = QSsl::ImplementedClass;
+    using TlsAux::classImplemented;
+
+    if (!classImplemented(TlsCl::DtlsCookie) || !classImplemented(TlsCl::Dtls))
         QSKIP("The active TLS backend does not support DTLS");
 
     QVERIFY(noiseMaker.bind());

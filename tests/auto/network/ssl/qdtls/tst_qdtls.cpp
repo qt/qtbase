@@ -171,7 +171,7 @@ QT_BEGIN_NAMESPACE
 
 void tst_QDtls::initTestCase()
 {
-    if (!TlsAux::activeBackendSupportsDtls())
+    if (!TlsAux::classImplemented(QSsl::ImplementedClass::Dtls))
         QSKIP("The active TLS backend does not support DTLS");
 
     certDirPath = QFileInfo(QFINDTESTDATA("certs")).absolutePath();

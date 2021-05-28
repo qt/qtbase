@@ -42,24 +42,20 @@
 
 QT_BEGIN_NAMESPACE
 
-#if QT_CONFIG(ssl)
+
 
 namespace TlsAux {
 
-inline bool activeBackendSupportsDtls()
+inline bool classImplemented(QSsl::ImplementedClass cl)
 {
-    // In case Qt was built with OpenSSL (the only DTLS-capable backend
-    // at the moment) and some other backend, and later when running
-    // the test OpenSSL library is not available, skip the whole
-    // test.
-    // IMPORTANT: extend this definition, if a new backend supporting
-    // DTLS is introduced or if one of the already-supported backends
-    // adds DTLS support.
-    return QSslSocket::activeBackend() == QStringLiteral("openssl");
+#if QT_CONFIG(ssl)
+    return QSslSocket::implementedClasses().contains(cl);
+#endif
+    return cl == QSsl::ImplementedClass::Certificate; // This is the only thing our 'cert-only' supports.
 }
 
 } // namespace TlsAux
 
-#endif // QT_CONFIG(ssl)
+
 
 QT_END_NAMESPACE
