@@ -89,6 +89,7 @@ QAbstractItemViewPrivate::QAbstractItemViewPrivate()
         pressedModifiers(Qt::NoModifier),
         pressedPosition(QPoint(-1, -1)),
         pressedAlreadySelected(false),
+        releaseFromDoubleClick(false),
         viewportEnteredNeeded(false),
         state(QAbstractItemView::NoState),
         stateBeforeAnimation(QAbstractItemView::NoState),
@@ -1913,6 +1914,8 @@ void QAbstractItemView::mouseMoveEvent(QMouseEvent *event)
 void QAbstractItemView::mouseReleaseEvent(QMouseEvent *event)
 {
     Q_D(QAbstractItemView);
+    const bool releaseFromDoubleClick = d->releaseFromDoubleClick;
+    d->releaseFromDoubleClick = false;
 
     QPoint pos = event->position().toPoint();
     QPersistentModelIndex index = indexAt(pos);
@@ -1925,7 +1928,7 @@ void QAbstractItemView::mouseReleaseEvent(QMouseEvent *event)
         return;
     }
 
-    bool click = (index == d->pressedIndex && index.isValid());
+    bool click = (index == d->pressedIndex && index.isValid() && !releaseFromDoubleClick);
     bool selectedClicked = click && (event->button() == Qt::LeftButton) && d->pressedAlreadySelected;
     EditTrigger trigger = (selectedClicked ? SelectedClicked : NoEditTriggers);
     const bool edited = click ? edit(index, trigger, event) : false;
@@ -1980,7 +1983,7 @@ void QAbstractItemView::mouseDoubleClickEvent(QMouseEvent *event)
     if ((event->button() == Qt::LeftButton) && !edit(persistent, DoubleClicked, event)
         && !style()->styleHint(QStyle::SH_ItemView_ActivateItemOnSingleClick, nullptr, this))
         emit activated(persistent);
-    d->pressedIndex = QModelIndex();
+    d->releaseFromDoubleClick = true;
 }
 
 #if QT_CONFIG(draganddrop)
