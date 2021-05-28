@@ -206,7 +206,7 @@ function(qt6_android_generate_deployment_settings target)
     endif()
 
     # Override qmlimportscanner binary path
-    set(qml_importscanner_binary_path "${QT_HOST_PATH}/${QT6_HOST_INFO_BINDIR}/qmlimportscanner")
+    set(qml_importscanner_binary_path "${QT_HOST_PATH}/${QT6_HOST_INFO_LIBEXECDIR}/qmlimportscanner")
     if (WIN32)
         string(APPEND qml_importscanner_binary_path ".exe")
     endif()
