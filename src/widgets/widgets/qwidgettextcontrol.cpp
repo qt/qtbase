@@ -1282,7 +1282,7 @@ void QWidgetTextControlPrivate::keyPressEvent(QKeyEvent *e)
     // example)
     repaintSelection();
 
-    if (e->key() == Qt::Key_Backspace && !(e->modifiers() & ~Qt::ShiftModifier)) {
+    if (e->key() == Qt::Key_Backspace && !(e->modifiers() & ~(Qt::ShiftModifier | Qt::GroupSwitchModifier))) {
         QTextBlockFormat blockFmt = cursor.blockFormat();
         QTextList *list = cursor.currentList();
         if (list && cursor.atBlockStart() && !cursor.hasSelection()) {
