@@ -1,9 +1,9 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource prefix="/qt-project.org/dialogs/qprintpreviewdialog">
-<file>images/fit-page-24.png</file>
-<file>images/fit-page-32.png</file>
-<file>images/fit-width-24.png</file>
-<file>images/fit-width-32.png</file>
+<file>images/zoom-fit-page-24.png</file>
+<file>images/zoom-fit-page-32.png</file>
+<file>images/zoom-fit-width-24.png</file>
+<file>images/zoom-fit-width-32.png</file>
 <file>images/go-first-24.png</file>
 <file>images/go-first-32.png</file>
 <file>images/go-last-24.png</file>
@@ -18,14 +18,14 @@
 <file>images/layout-portrait-32.png</file>
 <file>images/page-setup-24.png</file>
 <file>images/page-setup-32.png</file>
-<file>images/print-24.png</file>
-<file>images/print-32.png</file>
-<file>images/view-page-multi-24.png</file>
-<file>images/view-page-multi-32.png</file>
-<file>images/view-page-one-24.png</file>
-<file>images/view-page-one-32.png</file>
-<file>images/view-page-sided-24.png</file>
-<file>images/view-page-sided-32.png</file>
+<file>images/printer-24.png</file>
+<file>images/printer-32.png</file>
+<file>images/view-pages-overview-24.png</file>
+<file>images/view-pages-overview-32.png</file>
+<file>images/view-pages-single-24.png</file>
+<file>images/view-pages-single-32.png</file>
+<file>images/view-pages-facing-24.png</file>
+<file>images/view-pages-facing-32.png</file>
 <file>images/zoom-in-24.png</file>
 <file>images/zoom-in-32.png</file>
 <file>images/zoom-out-24.png</file>

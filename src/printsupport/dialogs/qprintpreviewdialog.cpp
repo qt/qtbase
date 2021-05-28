@@ -353,7 +353,7 @@ void QPrintPreviewDialogPrivate::init(QPrinter *_printer)
 static inline void qt_setupActionIcon(QAction *action, QLatin1String name)
 {
     QLatin1String imagePrefix(":/qt-project.org/dialogs/qprintpreviewdialog/images/");
-    QIcon icon;
+    QIcon icon = QIcon::fromTheme(name);
     icon.addFile(imagePrefix + name + QLatin1String("-24.png"), QSize(24, 24));
     icon.addFile(imagePrefix + name + QLatin1String("-32.png"), QSize(32, 32));
     action->setIcon(icon);
@@ -384,8 +384,8 @@ void QPrintPreviewDialogPrivate::setupActions()
     fitPageAction->setObjectName(QLatin1String("fitPageAction"));
     fitWidthAction->setCheckable(true);
     fitPageAction->setCheckable(true);
-    qt_setupActionIcon(fitWidthAction, QLatin1String("fit-width"));
-    qt_setupActionIcon(fitPageAction, QLatin1String("fit-page"));
+    qt_setupActionIcon(fitWidthAction, QLatin1String("zoom-fit-width"));
+    qt_setupActionIcon(fitPageAction, QLatin1String("zoom-fit-page"));
     QObject::connect(fitGroup, SIGNAL(triggered(QAction*)), q, SLOT(_q_fit(QAction*)));
 
     // Zoom
@@ -411,9 +411,9 @@ void QPrintPreviewDialogPrivate::setupActions()
     singleModeAction = modeGroup->addAction(QCoreApplication::translate("QPrintPreviewDialog", "Show single page"));
     facingModeAction = modeGroup->addAction(QCoreApplication::translate("QPrintPreviewDialog", "Show facing pages"));
     overviewModeAction = modeGroup->addAction(QCoreApplication::translate("QPrintPreviewDialog", "Show overview of all pages"));
-    qt_setupActionIcon(singleModeAction, QLatin1String("view-page-one"));
-    qt_setupActionIcon(facingModeAction, QLatin1String("view-page-sided"));
-    qt_setupActionIcon(overviewModeAction, QLatin1String("view-page-multi"));
+    qt_setupActionIcon(singleModeAction, QLatin1String("view-pages-single"));
+    qt_setupActionIcon(facingModeAction, QLatin1String("view-pages-facing"));
+    qt_setupActionIcon(overviewModeAction, QLatin1String("view-pages-overview"));
     singleModeAction->setObjectName(QLatin1String("singleModeAction"));
     facingModeAction->setObjectName(QLatin1String("facingModeAction"));
     overviewModeAction->setObjectName(QLatin1String("overviewModeAction"));
@@ -427,7 +427,7 @@ void QPrintPreviewDialogPrivate::setupActions()
     printerGroup = new QActionGroup(q);
     printAction = printerGroup->addAction(QCoreApplication::translate("QPrintPreviewDialog", "Print"));
     pageSetupAction = printerGroup->addAction(QCoreApplication::translate("QPrintPreviewDialog", "Page setup"));
-    qt_setupActionIcon(printAction, QLatin1String("print"));
+    qt_setupActionIcon(printAction, QLatin1String("printer"));
     qt_setupActionIcon(pageSetupAction, QLatin1String("page-setup"));
     QObject::connect(printAction, SIGNAL(triggered(bool)), q, SLOT(_q_print()));
     QObject::connect(pageSetupAction, SIGNAL(triggered(bool)), q, SLOT(_q_pageSetup()));
