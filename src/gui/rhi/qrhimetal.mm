@@ -1854,15 +1854,13 @@ void QRhiMetal::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
             QMetalSwapChain *swapChainD = nullptr;
             id<MTLTexture> src;
             QSize srcSize;
+            bool is3D = false;
             if (texD) {
                 if (texD->samples > 1) {
                     qWarning("Multisample texture cannot be read back");
                     continue;
                 }
-                if (texD->m_flags.testFlag(QRhiTexture::ThreeDimensional)) {
-                    qWarning("3D texture readback is not implemented");
-                    continue;
-                }
+                is3D = texD->m_flags.testFlag(QRhiTexture::ThreeDimensional);
                 readback.pixelSize = q->sizeForMipLevel(u.rb.level(), texD->m_pixelSize);
                 readback.format = texD->m_format;
                 src = texD->d->tex;
@@ -1890,9 +1888,9 @@ void QRhiMetal::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
 
             ensureBlit();
             [blitEnc copyFromTexture: src
-                                      sourceSlice: NSUInteger(u.rb.layer())
+                                      sourceSlice: NSUInteger(is3D ? 0 : u.rb.layer())
                                       sourceLevel: NSUInteger(u.rb.level())
-                                      sourceOrigin: MTLOriginMake(0, 0, 0)
+                                      sourceOrigin: MTLOriginMake(0, 0, is3D ? u.rb.layer() : 0)
                                       sourceSize: MTLSizeMake(NSUInteger(srcSize.width()), NSUInteger(srcSize.height()), 1)
                                       toBuffer: readback.buf
                                       destinationOffset: 0

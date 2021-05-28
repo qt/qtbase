@@ -2045,14 +2045,20 @@ void QRhiGles2::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
             if (texD)
                 trackedImageBarrier(cbD, texD, QGles2Texture::AccessRead);
             cmd.args.readPixels.texture = texD ? texD->texture : 0;
+            cmd.args.readPixels.slice3D = -1;
             if (texD) {
                 const QSize readImageSize = q->sizeForMipLevel(u.rb.level(), texD->m_pixelSize);
                 cmd.args.readPixels.w = readImageSize.width();
                 cmd.args.readPixels.h = readImageSize.height();
                 cmd.args.readPixels.format = texD->m_format;
-                const GLenum faceTargetBase = texD->m_flags.testFlag(QRhiTexture::CubeMap)
-                        ? GL_TEXTURE_CUBE_MAP_POSITIVE_X : texD->target;
-                cmd.args.readPixels.readTarget = faceTargetBase + uint(u.rb.layer());
+                if (texD->m_flags.testFlag(QRhiTexture::ThreeDimensional)) {
+                    cmd.args.readPixels.readTarget = texD->target;
+                    cmd.args.readPixels.slice3D = u.rb.layer();
+                } else {
+                    const GLenum faceTargetBase = texD->m_flags.testFlag(QRhiTexture::CubeMap)
+                            ? GL_TEXTURE_CUBE_MAP_POSITIVE_X : texD->target;
+                    cmd.args.readPixels.readTarget = faceTargetBase + uint(u.rb.layer());
+                }
                 cmd.args.readPixels.level = u.rb.level();
             }
         } else if (u.type == QRhiResourceUpdateBatchPrivate::TextureOp::GenMips) {
@@ -2802,8 +2808,13 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
                 if (mipLevel == 0 || caps.nonBaseLevelFramebufferTexture) {
                     f->glGenFramebuffers(1, &fbo);
                     f->glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-                    f->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                                              cmd.args.readPixels.readTarget, cmd.args.readPixels.texture, mipLevel);
+                    if (cmd.args.readPixels.slice3D >= 0) {
+                        f->glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                                                     tex, mipLevel, cmd.args.readPixels.slice3D);
+                    } else {
+                        f->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                                                  cmd.args.readPixels.readTarget, tex, mipLevel);
+                    }
                 }
             } else {
                 result->pixelSize = currentSwapChain->pixelSize;

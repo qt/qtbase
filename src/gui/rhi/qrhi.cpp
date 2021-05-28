@@ -2426,8 +2426,7 @@ bool QRhiRenderBuffer::createFrom(NativeRenderBuffer src)
      \value ThreeDimensional The texture is a 3D texture. Such textures should
      be created with the QRhi::newTexture() overload taking a depth in addition
      to width and height. A 3D texture can have mipmaps but cannot be
-     multisample. Reading back the contents of a 3D texture is not currently
-     supported. When rendering into a 3D texture, the layer specified in the
+     multisample. When rendering into a 3D texture, the layer specified in the
      render target's color attachment refers to a slice in range [0..depth-1].
      The underlying graphics API may not support 3D textures at run time.
      Support is indicated by the QRhi::ThreeDimensionalTextures feature.
@@ -5322,8 +5321,6 @@ void QRhiResourceUpdateBatch::copyTexture(QRhiTexture *dst, QRhiTexture *src, co
 
    \note Multisample textures cannot be read back.
 
-   \note 3D textures cannot be read back.
-
    \note The readback returns raw byte data, in order to allow the applications
    to interpret it in any way they see fit. Be aware of the blending settings
    of rendering code: if the blending is set up to rely on premultiplied alpha,
@@ -5341,6 +5338,10 @@ void QRhiResourceUpdateBatch::copyTexture(QRhiTexture *dst, QRhiTexture *src, co
    \l{QRhi::beginFrame()}{recording of a new frame} has been started, where \c
    N is the \l{QRhi::resourceLimit()}{resource limit value} returned for
    QRhi::MaxAsyncReadbackFrames.
+
+   A single readback operation copies one mip level of one layer (cubemap face
+   or 3D slice) at a time. The level and layer are specified by the respective
+   fields in \a rb.
 
    \sa readBackBuffer(), QRhi::resourceLimit()
  */

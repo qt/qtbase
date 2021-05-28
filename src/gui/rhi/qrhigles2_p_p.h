@@ -467,6 +467,7 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
                 QRhiTexture::Format format;
                 GLenum readTarget;
                 int level;
+                int slice3D;
             } readPixels;
             struct {
                 GLenum target;

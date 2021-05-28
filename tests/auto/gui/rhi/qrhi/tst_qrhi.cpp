@@ -910,10 +910,8 @@ void tst_QRhi::resourceUpdateBatchBuffer()
     }
 }
 
-inline bool imageRGBAEquals(const QImage &a, const QImage &b)
+inline bool imageRGBAEquals(const QImage &a, const QImage &b, int maxFuzz = 1)
 {
-    const int maxFuzz = 1;
-
     if (a.size() != b.size())
         return false;
 
@@ -3882,6 +3880,33 @@ void tst_QRhi::threeDimTexture()
         batch->generateMips(texture.data());
 
         QVERIFY(submitResourceUpdates(rhi.data(), batch));
+
+        // read back slice 63 of level 1 (256x128, almost red)
+        batch = rhi->nextResourceUpdateBatch();
+        QRhiReadbackResult readResult;
+        QImage result;
+        readResult.completed = [&readResult, &result] {
+            result = QImage(reinterpret_cast<const uchar *>(readResult.data.constData()),
+                            readResult.pixelSize.width(), readResult.pixelSize.height(),
+                            QImage::Format_RGBA8888);
+        };
+        QRhiReadbackDescription readbackDescription(texture.data());
+        readbackDescription.setLevel(1);
+        readbackDescription.setLayer(63);
+        batch->readBackTexture(readbackDescription, &readResult);
+        QVERIFY(submitResourceUpdates(rhi.data(), batch));
+        QVERIFY(!result.isNull());
+        QImage referenceImage(WIDTH / 2, HEIGHT / 2, result.format());
+        referenceImage.fill(QColor::fromRgb(253, 0, 0));
+
+        // Now restrict the test a bit. The Null QRhi backend has broken support for
+        // mipmap generation of 3D textures (it ignores the depth, effectively behaving as
+        // if the 3D texture was a 2D array which is incorrect wrt mipmapping)
+        // Some software-based OpenGL implementations, such as Mesa llvmpipe builds that are
+        // used both in Qt CI and are shipped with the official Qt binaries also seem to have
+        // problems with this.
+        if (impl != QRhi::Null && impl != QRhi::OpenGLES2)
+            QVERIFY(imageRGBAEquals(result, referenceImage, 2));
     }
 
     // render target (one slice)
@@ -3889,7 +3914,7 @@ void tst_QRhi::threeDimTexture()
     {
         const int SLICE = 23;
         QScopedPointer<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGBA8, WIDTH, HEIGHT, DEPTH,
-                                                            1, QRhiTexture::RenderTarget));
+                                                            1, QRhiTexture::RenderTarget | QRhiTexture::UsedAsTransferSource));
         QVERIFY(texture->create());
 
         QRhiColorAttachment att(texture.data());
@@ -3917,6 +3942,46 @@ void tst_QRhi::threeDimTexture()
         // slice 23 is now blue
         cb->endPass();
         rhi->endOffscreenFrame();
+
+        // read back slice 23 (blue)
+        batch = rhi->nextResourceUpdateBatch();
+        QRhiReadbackResult readResult;
+        QImage result;
+        readResult.completed = [&readResult, &result] {
+            result = QImage(reinterpret_cast<const uchar *>(readResult.data.constData()),
+                            readResult.pixelSize.width(), readResult.pixelSize.height(),
+                            QImage::Format_RGBA8888);
+        };
+        QRhiReadbackDescription readbackDescription(texture.data());
+        readbackDescription.setLayer(23);
+        batch->readBackTexture(readbackDescription, &readResult);
+        QVERIFY(submitResourceUpdates(rhi.data(), batch));
+        QVERIFY(!result.isNull());
+        QImage referenceImage(WIDTH, HEIGHT, result.format());
+        referenceImage.fill(QColor::fromRgbF(0.0f, 0.0f, 1.0f));
+        // the Null backend does not render so skip the verification for that
+        if (impl != QRhi::Null)
+            QVERIFY(imageRGBAEquals(result, referenceImage));
+
+        // read back slice 0 (black)
+        batch = rhi->nextResourceUpdateBatch();
+        result = QImage();
+        readbackDescription.setLayer(0);
+        batch->readBackTexture(readbackDescription, &readResult);
+        QVERIFY(submitResourceUpdates(rhi.data(), batch));
+        QVERIFY(!result.isNull());
+        referenceImage.fill(QColor::fromRgbF(0.0f, 0.0f, 0.0f));
+        QVERIFY(imageRGBAEquals(result, referenceImage));
+
+        // read back slice 127 (almost red)
+        batch = rhi->nextResourceUpdateBatch();
+        result = QImage();
+        readbackDescription.setLayer(127);
+        batch->readBackTexture(readbackDescription, &readResult);
+        QVERIFY(submitResourceUpdates(rhi.data(), batch));
+        QVERIFY(!result.isNull());
+        referenceImage.fill(QColor::fromRgb(254, 0, 0));
+        QVERIFY(imageRGBAEquals(result, referenceImage));
     }
 }
 

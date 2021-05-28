@@ -1564,23 +1564,19 @@ void QRhiD3D11::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
             UINT subres = 0;
             QD3D11Texture *texD = QRHI_RES(QD3D11Texture, u.rb.texture());
             QD3D11SwapChain *swapChainD = nullptr;
+            bool is3D = false;
 
             if (texD) {
                 if (texD->sampleDesc.Count > 1) {
                     qWarning("Multisample texture cannot be read back");
                     continue;
                 }
-                // No support for reading back 3D, not because it is not
-                // possible technically, but we need to draw the line somewhere.
-                if (texD->m_flags.testFlag(QRhiTexture::ThreeDimensional)) {
-                    qWarning("3D texture cannot be read back");
-                    continue;
-                }
                 src = texD->textureResource();
                 dxgiFormat = texD->dxgiFormat;
                 pixelSize = q->sizeForMipLevel(u.rb.level(), texD->m_pixelSize);
                 format = texD->m_format;
-                subres = D3D11CalcSubresource(UINT(u.rb.level()), UINT(u.rb.layer()), texD->mipLevelCount);
+                is3D = texD->m_flags.testFlag(QRhiTexture::ThreeDimensional);
+                subres = D3D11CalcSubresource(UINT(u.rb.level()), UINT(is3D ? 0 : u.rb.layer()), texD->mipLevelCount);
             } else {
                 Q_ASSERT(contextState.currentSwapChain);
                 swapChainD = QRHI_RES(QD3D11SwapChain, contextState.currentSwapChain);
@@ -1635,7 +1631,18 @@ void QRhiD3D11::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
             cmd.args.copySubRes.dstZ = 0;
             cmd.args.copySubRes.src = src;
             cmd.args.copySubRes.srcSubRes = subres;
-            cmd.args.copySubRes.hasSrcBox = false;
+            if (is3D) {
+                D3D11_BOX srcBox;
+                memset(&srcBox, 0, sizeof(srcBox));
+                srcBox.front = UINT(u.rb.layer());
+                srcBox.right = desc.Width; // exclusive
+                srcBox.bottom = desc.Height;
+                srcBox.back = srcBox.front + 1;
+                cmd.args.copySubRes.hasSrcBox = true;
+                cmd.args.copySubRes.srcBox = srcBox;
+            } else {
+                cmd.args.copySubRes.hasSrcBox = false;
+            }
 
             readback.stagingTex = stagingTex;
             readback.byteSize = byteSize;

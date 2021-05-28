@@ -3347,15 +3347,13 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
 
             QVkTexture *texD = QRHI_RES(QVkTexture, u.rb.texture());
             QVkSwapChain *swapChainD = nullptr;
+            bool is3D = false;
             if (texD) {
                 if (texD->samples > VK_SAMPLE_COUNT_1_BIT) {
                     qWarning("Multisample texture cannot be read back");
                     continue;
                 }
-                if (texD->m_flags.testFlag(QRhiTexture::ThreeDimensional)) {
-                    qWarning("3D texture cannot be read back");
-                    continue;
-                }
+                is3D = texD->m_flags.testFlag(QRhiTexture::ThreeDimensional);
                 readback.pixelSize = q->sizeForMipLevel(u.rb.level(), texD->m_pixelSize);
                 readback.format = texD->m_format;
                 texD->lastActiveFrameSlot = currentFrameSlot;
@@ -3405,8 +3403,10 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
             copyDesc.bufferOffset = 0;
             copyDesc.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
             copyDesc.imageSubresource.mipLevel = uint32_t(u.rb.level());
-            copyDesc.imageSubresource.baseArrayLayer = uint32_t(u.rb.layer());
+            copyDesc.imageSubresource.baseArrayLayer = is3D ? 0 : uint32_t(u.rb.layer());
             copyDesc.imageSubresource.layerCount = 1;
+            if (is3D)
+                copyDesc.imageOffset.z = u.rb.layer();
             copyDesc.imageExtent.width = uint32_t(readback.pixelSize.width());
             copyDesc.imageExtent.height = uint32_t(readback.pixelSize.height());
             copyDesc.imageExtent.depth = 1;
