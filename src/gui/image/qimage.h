@@ -47,6 +47,7 @@
 #include <QtGui/qpixelformat.h>
 #include <QtGui/qtransform.h>
 #include <QtCore/qbytearray.h>
+#include <QtCore/qbytearrayview.h>
 #include <QtCore/qrect.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qcontainerfwd.h>
@@ -273,16 +274,18 @@ public:
 
     bool load(QIODevice *device, const char *format);
     bool load(const QString &fileName, const char *format = nullptr);
-    bool loadFromData(const uchar *buf, int len, const char *format = nullptr);
-    bool loadFromData(const QByteArray &data, const char *aformat = nullptr)
-    { return loadFromData(reinterpret_cast<const uchar *>(data.constData()), data.size(), aformat); }
+    bool loadFromData(QByteArrayView data, const char *format = nullptr);
+    bool loadFromData(const uchar *buf, int len, const char *format = nullptr); // ### Qt 7: qsizetype
+    bool loadFromData(const QByteArray &data, const char *format = nullptr) // ### Qt 7: drop
+    { return loadFromData(QByteArrayView(data), format); }
 
     bool save(const QString &fileName, const char *format = nullptr, int quality = -1) const;
     bool save(QIODevice *device, const char *format = nullptr, int quality = -1) const;
 
-    static QImage fromData(const uchar *data, int size, const char *format = nullptr);
-    static QImage fromData(const QByteArray &data, const char *format = nullptr)
-    { return fromData(reinterpret_cast<const uchar *>(data.constData()), data.size(), format); }
+    static QImage fromData(QByteArrayView data, const char *format = nullptr);
+    static QImage fromData(const uchar *data, int size, const char *format = nullptr); // ### Qt 7: qsizetype
+    static QImage fromData(const QByteArray &data, const char *format = nullptr)  // ### Qt 7: drop
+    { return fromData(QByteArrayView(data), format); }
 
     qint64 cacheKey() const;
 

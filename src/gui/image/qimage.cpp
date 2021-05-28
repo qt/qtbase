@@ -3741,11 +3741,10 @@ bool QImage::load(QIODevice* device, const char* format)
 }
 
 /*!
-    \fn bool QImage::loadFromData(const uchar *data, int len, const char *format)
+    \since 6.2
 
-    Loads an image from the first \a len bytes of the given binary \a
-    data. Returns \c true if the image was successfully loaded; otherwise
-    invalidates the image and returns \c false.
+    Loads an image from the given QByteArrayView \a data. Returns \c true if the image was
+    successfully loaded; otherwise invalidates the image and returns \c false.
 
     The loader attempts to read the image using the specified \a format, e.g.,
     PNG or JPG. If \a format is not specified (which is the default), the
@@ -3754,10 +3753,23 @@ bool QImage::load(QIODevice* device, const char* format)
     \sa {QImage#Reading and Writing Image Files}{Reading and Writing Image Files}
 */
 
-bool QImage::loadFromData(const uchar *data, int len, const char *format)
+bool QImage::loadFromData(QByteArrayView data, const char *format)
 {
-    *this = fromData(data, len, format);
+    *this = fromData(data, format);
     return !isNull();
+}
+
+/*!
+    \fn bool QImage::loadFromData(const uchar *data, int len, const char *format)
+
+    \overload
+
+    Loads an image from the first \a len bytes of the given binary \a data.
+*/
+
+bool QImage::loadFromData(const uchar *buf, int len, const char *format)
+{
+    return loadFromData(QByteArrayView(buf, len), format);
 }
 
 /*!
@@ -3769,12 +3781,11 @@ bool QImage::loadFromData(const uchar *data, int len, const char *format)
 */
 
 /*!
-    \fn QImage QImage::fromData(const uchar *data, int size, const char *format)
+    \since 6.2
 
-    Constructs a QImage from the first \a size bytes of the given
-    binary \a data. The loader attempts to read the image using the
-    specified \a format. If \a format is not specified (which is the default),
-    the loader probes the data for a header to guess the file format.
+    Constructs an image from the given QByteArrayView \a data. The loader attempts to read the image
+    using the specified \a format. If \a format is not specified (which is the default), the loader
+    probes the data for a header to guess the file format.
 
     If \a format is specified, it must be one of the values returned by
     QImageReader::supportedImageFormats().
@@ -3784,9 +3795,9 @@ bool QImage::loadFromData(const uchar *data, int len, const char *format)
     \sa load(), save(), {QImage#Reading and Writing Image Files}{Reading and Writing Image Files}
  */
 
-QImage QImage::fromData(const uchar *data, int size, const char *format)
+QImage QImage::fromData(QByteArrayView data, const char *format)
 {
-    QByteArray a = QByteArray::fromRawData(reinterpret_cast<const char *>(data), size);
+    QByteArray a = QByteArray::fromRawData(data.constData(), data.size());
     QBuffer b;
     b.setData(a);
     b.open(QIODevice::ReadOnly);
@@ -3794,11 +3805,25 @@ QImage QImage::fromData(const uchar *data, int size, const char *format)
 }
 
 /*!
+    \fn QImage QImage::fromData(const uchar *data, int size, const char *format)
+
+    \overload
+
+    Constructs a QImage from the first \a size bytes of the given binary \a data.
+*/
+
+QImage QImage::fromData(const uchar *data, int size, const char *format)
+{
+    return fromData(QByteArrayView(data, size), format);
+}
+
+/*!
     \fn QImage QImage::fromData(const QByteArray &data, const char *format)
 
     \overload
 
-    Loads an image from the given QByteArray \a data.
+    Constructs a QImage from the given QByteArray \a data.
+
 */
 
 /*!

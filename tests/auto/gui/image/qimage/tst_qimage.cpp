@@ -1269,15 +1269,36 @@ void tst_QImage::loadFromData()
         QVERIFY(original.save(&buf, "BMP"));
     }
     QVERIFY(!ba.isEmpty());
+    const uchar *baPtr = reinterpret_cast<const uchar *>(ba.constData());
 
-    QImage dest;
-    QVERIFY(dest.loadFromData(ba, "BMP"));
-    QVERIFY(!dest.isNull());
+    {
+        QImage dest;
+        QVERIFY(dest.loadFromData(QByteArrayView(ba), "BMP"));
+        QCOMPARE(original, dest);
 
-    QCOMPARE(original, dest);
+        QVERIFY(!dest.loadFromData(QByteArrayView()));
+        QVERIFY(dest.isNull());
+    }
+    {
+        QImage dest;
+        QVERIFY(dest.loadFromData(ba, "BMP"));
+        QCOMPARE(original, dest);
 
-    QVERIFY(!dest.loadFromData(QByteArray()));
-    QVERIFY(dest.isNull());
+        QVERIFY(!dest.loadFromData(QByteArray()));
+        QVERIFY(dest.isNull());
+    }
+    {
+        QImage dest;
+        QVERIFY(dest.loadFromData(baPtr, int(ba.size()), "BMP"));
+        QCOMPARE(original, dest);
+
+        QVERIFY(!dest.loadFromData(nullptr, 0));
+        QVERIFY(dest.isNull());
+    }
+
+    QCOMPARE(original, QImage::fromData(QByteArrayView(ba), "BMP"));
+    QCOMPARE(original, QImage::fromData(ba, "BMP"));
+    QCOMPARE(original, QImage::fromData(baPtr, int(ba.size()), "BMP"));
 }
 
 #if !defined(QT_NO_DATASTREAM)
