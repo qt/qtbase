@@ -1042,16 +1042,24 @@ void QWindowSystemInterface::handleTabletLeaveProximityEvent(int deviceType, int
 bool QWindowSystemInterface::handleGestureEvent(QWindow *window, ulong timestamp, const QPointingDevice *device,
                                                 Qt::NativeGestureType type, const QPointF &local, const QPointF &global, int fingerCount)
 {
+    auto localPos = QHighDpi::fromNativeLocalPosition(local, window);
+    auto globalPos = QHighDpi::fromNativeGlobalPosition(global, window);
+
     QWindowSystemInterfacePrivate::GestureEvent *e =
-        new QWindowSystemInterfacePrivate::GestureEvent(window, timestamp, type, device, fingerCount, local, global);
+        new QWindowSystemInterfacePrivate::GestureEvent(window, timestamp, type, device,
+                                                        fingerCount, localPos, globalPos);
        return QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
 
 bool QWindowSystemInterface::handleGestureEventWithRealValue(QWindow *window, ulong timestamp, const QPointingDevice *device,
                                                              Qt::NativeGestureType type, qreal value, const QPointF &local, const QPointF &global, int fingerCount)
 {
+    auto localPos = QHighDpi::fromNativeLocalPosition(local, window);
+    auto globalPos = QHighDpi::fromNativeGlobalPosition(global, window);
+
     QWindowSystemInterfacePrivate::GestureEvent *e =
-        new QWindowSystemInterfacePrivate::GestureEvent(window, timestamp, type, device, fingerCount, local, global);
+        new QWindowSystemInterfacePrivate::GestureEvent(window, timestamp, type, device,
+                                                        fingerCount, localPos, globalPos);
     e->realValue = value;
     return QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
@@ -1060,8 +1068,12 @@ bool QWindowSystemInterface::handleGestureEventWithValueAndDelta(QWindow *window
                                                                  Qt::NativeGestureType type, qreal value, const QPointF &delta,
                                                                  const QPointF &local, const QPointF &global, int fingerCount)
 {
+    auto localPos = QHighDpi::fromNativeLocalPosition(local, window);
+    auto globalPos = QHighDpi::fromNativeGlobalPosition(global, window);
+
     QWindowSystemInterfacePrivate::GestureEvent *e =
-            new QWindowSystemInterfacePrivate::GestureEvent(window, timestamp, type, device, fingerCount, local, global);
+            new QWindowSystemInterfacePrivate::GestureEvent(window, timestamp, type, device,
+                                                            fingerCount, localPos, globalPos);
     e->realValue = value;
     e->delta = delta;
     return QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
