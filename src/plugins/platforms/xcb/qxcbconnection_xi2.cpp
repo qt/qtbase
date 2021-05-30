@@ -929,10 +929,12 @@ bool QXcbConnection::xi2SetMouseGrabEnabled(xcb_window_t w, bool grab)
                 | XCB_INPUT_XI_EVENT_MASK_BUTTON_RELEASE
                 | XCB_INPUT_XI_EVENT_MASK_MOTION
                 | XCB_INPUT_XI_EVENT_MASK_ENTER
-                | XCB_INPUT_XI_EVENT_MASK_LEAVE
-                | XCB_INPUT_XI_EVENT_MASK_TOUCH_BEGIN
-                | XCB_INPUT_XI_EVENT_MASK_TOUCH_UPDATE
-                | XCB_INPUT_XI_EVENT_MASK_TOUCH_END;
+                | XCB_INPUT_XI_EVENT_MASK_LEAVE;
+        if (isAtLeastXI22()) {
+            mask |= XCB_INPUT_XI_EVENT_MASK_TOUCH_BEGIN;
+            mask |= XCB_INPUT_XI_EVENT_MASK_TOUCH_UPDATE;
+            mask |= XCB_INPUT_XI_EVENT_MASK_TOUCH_END;
+        }
 
         for (int id : qAsConst(m_xiMasterPointerIds)) {
             xcb_generic_error_t *error = nullptr;
