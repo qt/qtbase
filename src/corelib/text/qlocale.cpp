@@ -407,22 +407,6 @@ QByteArray QLocalePrivate::bcp47Name(char separator) const
     return m_data->id().withLikelySubtagsRemoved().name(separator);
 }
 
-/*!
-  \internal
- */
-QByteArray QLocalePrivate::rawName(char separator) const
-{
-    QByteArrayList parts;
-    if (m_data->m_language_id != QLocale::AnyLanguage)
-        parts.append(languageCode().latin1());
-    if (m_data->m_script_id != QLocale::AnyScript)
-        parts.append(scriptCode().latin1());
-    if (m_data->m_territory_id != QLocale::AnyTerritory)
-        parts.append(territoryCode().latin1());
-
-    return parts.join(separator);
-}
-
 static int findLocaleIndexById(const QLocaleId &localeId)
 {
     quint16 idx = locale_index[localeId.language_id];
@@ -4291,13 +4275,8 @@ QStringList QLocale::uiLanguages() const
         if (i < uiLanguages.size()) {
             // Adding likely-adjusted forms to system locale's list.
             // Name the locale is derived from:
-            const QString &name = uiLanguages.at(i);
-            prior = name.toLatin1();
-            // Don't try to likely-adjust if construction's likely-adjustments
-            // were so drastic the result doesn't match the prior name:
-            if (locale.name() != name && locale.d->rawName() != prior)
-                continue;
-            // Insert just after prior:
+            prior = uiLanguages.at(i).toLatin1();
+            // Insert just after the entry we're supplementing:
             j = i + 1;
         } else {
             // Plain locale, not system locale; just append.

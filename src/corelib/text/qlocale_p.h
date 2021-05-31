@@ -404,7 +404,6 @@ public:
     quint16 territoryId() const { return m_data->m_territory_id; }
 
     QByteArray bcp47Name(char separator = '-') const;
-    QByteArray rawName(char separator = '-') const;
 
     inline QLatin1String languageCode() const { return languageToCode(QLocale::Language(m_data->m_language_id)); }
     inline QLatin1String scriptCode() const { return scriptToCode(QLocale::Script(m_data->m_script_id)); }
