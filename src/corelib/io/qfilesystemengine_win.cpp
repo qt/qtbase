@@ -536,6 +536,26 @@ QFileSystemEntry QFileSystemEngine::getLinkTarget(const QFileSystemEntry &link,
 }
 
 //static
+QFileSystemEntry QFileSystemEngine::junctionTarget(const QFileSystemEntry &link,
+                                                   QFileSystemMetaData &data)
+{
+    Q_CHECK_FILE_NAME(link, link);
+
+    if (data.missingFlags(QFileSystemMetaData::JunctionType))
+       QFileSystemEngine::fillMetaData(link, data, QFileSystemMetaData::LinkType);
+
+    QString target;
+    if (data.isJunction())
+        target = readSymLink(link);
+    QFileSystemEntry ret(target);
+    if (!target.isEmpty() && ret.isRelative()) {
+        target.prepend(absoluteName(link).path() + QLatin1Char('/'));
+        ret = QFileSystemEntry(QDir::cleanPath(target));
+    }
+    return ret;
+}
+
+//static
 QFileSystemEntry QFileSystemEngine::canonicalName(const QFileSystemEntry &entry, QFileSystemMetaData &data)
 {
     Q_CHECK_FILE_NAME(entry, entry);

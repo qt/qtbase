@@ -106,7 +106,8 @@ public:
         CanonicalName,
         CanonicalPathName,
         BundleName,
-        NFileNames = 9
+        JunctionName,
+        NFileNames  // Must be last.
     };
     enum FileOwner {
         OwnerUser,

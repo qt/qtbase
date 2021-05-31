@@ -1782,13 +1782,35 @@ void tst_QFileInfo::ntfsJunctionPointsAndSymlinks()
             }
         }
     });
-    const QString actualSymLinkTarget = isSymLink ? fi.symLinkTarget() : QString();
-    const QString actualCanonicalFilePath = isSymLink ? fi.canonicalFilePath() : QString();
+    const QString actualCanonicalFilePath = fi.canonicalFilePath();
     QCOMPARE(fi.isJunction(), isJunction);
     QCOMPARE(fi.isSymbolicLink(), isSymLink);
     if (isSymLink) {
-        QCOMPARE(actualSymLinkTarget, linkTarget);
+        QCOMPARE(fi.symLinkTarget(), linkTarget);
         QCOMPARE(actualCanonicalFilePath, canonicalFilePath);
+    }
+
+    if (isJunction) {
+        if (creationResult.target.startsWith(uR"(\??\)"))
+            creationResult.target = creationResult.target.sliced(4);
+
+        // resolve volume to drive letter
+        static const QRegularExpression matchVolumeRe(uR"(^Volume\{([a-z]|[0-9]|-)+\}\\)"_qs,
+            QRegularExpression::CaseInsensitiveOption);
+        auto matchVolume = matchVolumeRe.match(creationResult.target);
+        if (matchVolume.hasMatch()) {
+            Q_ASSERT(matchVolume.capturedStart() == 0);
+            DWORD len;
+            wchar_t buffer[MAX_PATH];
+            const QString volumeName = uR"(\\?\)"_qs + matchVolume.captured();
+            if (GetVolumePathNamesForVolumeName(reinterpret_cast<LPCWSTR>(volumeName.utf16()),
+                                                buffer, MAX_PATH, &len) != 0) {
+                creationResult.target.replace(0, matchVolume.capturedLength(),
+                                              QString::fromWCharArray(buffer));
+            }
+        }
+        QCOMPARE(fi.junctionTarget(), QDir::fromNativeSeparators(creationResult.target));
+        QCOMPARE(actualCanonicalFilePath, QFileInfo(creationResult.link).canonicalFilePath());
     }
 }
 

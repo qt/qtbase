@@ -647,6 +647,8 @@ QString QFSFileEngine::fileName(FileName file) const
         return QFileSystemEngine::getLinkTarget(d->fileEntry, d->metaData).filePath();
     } else if (file == BundleName) {
         return QString();
+    } else if (file == JunctionName) {
+        return QFileSystemEngine::getJunctionTarget(d->fileEntry, d->metaData).filePath();
     }
     return d->fileEntry.filePath();
 }

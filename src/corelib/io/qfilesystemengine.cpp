@@ -232,4 +232,17 @@ QString QFileSystemEngine::resolveGroupName(const QFileSystemEntry &entry, QFile
 #endif
 }
 
+//static
+QFileSystemEntry QFileSystemEngine::getJunctionTarget(const QFileSystemEntry &link,
+                                                      QFileSystemMetaData &data)
+{
+#if defined(Q_OS_WIN)
+    return junctionTarget(link, data);
+#else
+    Q_UNUSED(link);
+    Q_UNUSED(data);
+    return {};
+#endif
+}
+
 QT_END_NAMESPACE

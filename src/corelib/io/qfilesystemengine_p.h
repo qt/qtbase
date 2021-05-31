@@ -101,6 +101,7 @@ public:
     }
 
     static QFileSystemEntry getLinkTarget(const QFileSystemEntry &link, QFileSystemMetaData &data);
+    static QFileSystemEntry getJunctionTarget(const QFileSystemEntry &link, QFileSystemMetaData &data);
     static QFileSystemEntry canonicalName(const QFileSystemEntry &entry, QFileSystemMetaData &data);
     static QFileSystemEntry absoluteName(const QFileSystemEntry &entry);
     static QByteArray id(const QFileSystemEntry &entry);
@@ -130,7 +131,7 @@ public:
                                QFileSystemMetaData *data = nullptr);
 #endif
 #if defined(Q_OS_WIN)
-
+    static QFileSystemEntry junctionTarget(const QFileSystemEntry &link, QFileSystemMetaData &data);
     static bool uncListSharesOnServer(const QString &server, QStringList *list); //Used also by QFSFileEngineIterator::hasNext()
     static bool fillMetaData(int fd, QFileSystemMetaData &data,
                              QFileSystemMetaData::MetaDataFlags what);

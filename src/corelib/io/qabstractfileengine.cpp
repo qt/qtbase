@@ -267,6 +267,8 @@ QAbstractFileEngine *QAbstractFileEngine::create(const QString &fileName)
     \value CanonicalName Often very similar to LinkName. Will return the true path to the file.
     \value CanonicalPathName Same as CanonicalName, excluding the base name.
     \value BundleName Returns the name of the bundle implies BundleType is set.
+    \value JunctionName The full name of the directory that this NTFS junction
+    is linked to. (This will be empty if this file is not an NTFS junction.)
 
     \omitvalue NFileNames
 

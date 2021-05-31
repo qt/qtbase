@@ -161,9 +161,14 @@ public:
     bool isBundle() const;
 
     QString symLinkTarget() const;
+    QString junctionTarget() const;
+
 #if QT_CONFIG(cxx17_filesystem) || defined(Q_CLANG_QDOC)
     std::filesystem::path filesystemSymLinkTarget() const
     { return QtPrivate::toFilesystemPath(symLinkTarget()); }
+
+    std::filesystem::path filesystemJunctionTarget() const
+    { return QtPrivate::toFilesystemPath(junctionTarget()); }
 #endif // QT_CONFIG(cxx17_filesystem)
 
     QString owner() const;

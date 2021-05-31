@@ -43,7 +43,7 @@ private slots:
     void existsStatic();
 #if defined(Q_OS_WIN)
     void symLinkTargetPerformanceLNK();
-    void symLinkTargetPerformanceMounpoint();
+    void junctionTargetPerformanceMountpoint();
 #endif
     void initTestCase();
     void cleanupTestCase();
@@ -86,7 +86,7 @@ void qfileinfo::symLinkTargetPerformanceLNK()
     QVERIFY(QFile::remove("link.lnk"));
 }
 
-void qfileinfo::symLinkTargetPerformanceMounpoint()
+void qfileinfo::junctionTargetPerformanceMountpoint()
 {
     wchar_t buffer[MAX_PATH];
     QString rootPath = QDir::toNativeSeparators(QDir::rootPath());
@@ -99,11 +99,11 @@ void qfileinfo::symLinkTargetPerformanceMounpoint()
 
     QFileInfo info(mountpoint);
     info.setCaching(false);
-    QVERIFY(info.isSymLink());
-    QString linkTarget;
+    QVERIFY(info.isJunction());
+    QString junctionTarget;
     QBENCHMARK {
         for(int i=0; i<100; i++)
-            linkTarget = info.symLinkTarget();
+            junctionTarget = info.junctionTarget();
     }
     QVERIFY(QDir().rmdir(mountpoint));
 }

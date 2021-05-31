@@ -476,6 +476,8 @@ QString QFSFileEngine::fileName(FileName file) const
             return entry.filePath();
         }
         return QString();
+    case JunctionName:
+        return QString();
     case DefaultName:
     case NFileNames:
         break;
