@@ -834,9 +834,7 @@ void QProcessPrivate::cleanup()
         delete stateNotifier;
         stateNotifier = nullptr;
     }
-    closeChannel(&stdoutChannel);
-    closeChannel(&stderrChannel);
-    closeChannel(&stdinChannel);
+    closeChannels();
     destroyPipe(childStartedPipe);
 #ifdef Q_OS_UNIX
     if (forkfd != -1)
@@ -921,6 +919,16 @@ bool QProcessPrivate::openChannels()
     }
 
     return true;
+}
+
+/*!
+    \internal
+*/
+void QProcessPrivate::closeChannels()
+{
+    closeChannel(&stdoutChannel);
+    closeChannel(&stderrChannel);
+    closeChannel(&stdinChannel);
 }
 
 /*!

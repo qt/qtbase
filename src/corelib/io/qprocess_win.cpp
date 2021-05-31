@@ -905,9 +905,7 @@ bool QProcessPrivate::startDetached(qint64 *pid)
 
     if (!openChannelsForDetached()) {
         // openChannel sets the error string
-        closeChannel(&stdinChannel);
-        closeChannel(&stdoutChannel);
-        closeChannel(&stderrChannel);
+        closeChannels();
         return false;
     }
 
@@ -955,9 +953,7 @@ bool QProcessPrivate::startDetached(qint64 *pid)
         setErrorAndEmit(QProcess::FailedToStart);
     }
 
-    closeChannel(&stdinChannel);
-    closeChannel(&stdoutChannel);
-    closeChannel(&stderrChannel);
+    closeChannels();
     return success;
 }
 

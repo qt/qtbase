@@ -885,9 +885,7 @@ bool QProcessPrivate::startDetached(qint64 *pid)
 
     if (!openChannelsForDetached()) {
         // openChannel sets the error string
-        closeChannel(&stdinChannel);
-        closeChannel(&stdoutChannel);
-        closeChannel(&stderrChannel);
+        closeChannels();
         return false;
     }
 
@@ -935,9 +933,7 @@ bool QProcessPrivate::startDetached(qint64 *pid)
     }
 
     int savedErrno = errno;
-    closeChannel(&stdinChannel);
-    closeChannel(&stdoutChannel);
-    closeChannel(&stderrChannel);
+    closeChannels();
 
     if (childPid == -1) {
         setErrorAndEmit(QProcess::FailedToStart, QLatin1String("fork: ") + qt_error_string(savedErrno));

@@ -326,6 +326,7 @@ public:
 #endif
     void closeChannel(Channel *channel);
     void closeWriteChannel();
+    void closeChannels();
     bool tryReadFromChannel(Channel *channel); // obviously, only stdout and stderr
 
     QString program;
