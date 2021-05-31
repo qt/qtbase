@@ -51,7 +51,7 @@
 // We mean it.
 //
 
-#include <qtguiglobal.h>
+#include <QtGui/qtguiglobal.h>
 
 #include <xcb/xcb.h>
 

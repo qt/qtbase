@@ -53,6 +53,7 @@
 
 #include <QtGui/private/qtguiglobal_p.h>
 #include <QtGui/qguiapplication.h>
+#include <QtGui/qicon.h>
 
 #include <QtCore/QPointF>
 #include <QtCore/QSharedPointer>
@@ -66,8 +67,6 @@
 #if QT_CONFIG(shortcut)
 #  include "private/qshortcutmap_p.h"
 #endif
-
-#include <qicon.h>
 
 QT_BEGIN_NAMESPACE
 
