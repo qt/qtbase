@@ -1637,7 +1637,6 @@ void tst_QFileInfo::ntfsJunctionPointsAndSymlinks_data()
 {
     QTest::addColumn<NtfsTestResource>("resource");
     QTest::addColumn<QString>("path");
-    QTest::addColumn<bool>("isSymLink");
     QTest::addColumn<QString>("linkTarget");
     QTest::addColumn<QString>("canonicalFilePath");
 
@@ -1665,13 +1664,13 @@ void tst_QFileInfo::ntfsJunctionPointsAndSymlinks_data()
 
         QTest::newRow("absolute dir symlink")
             << NtfsTestResource(NtfsTestResource::SymLink, absSymlink, absTarget)
-            << absSymlink << true << QDir::fromNativeSeparators(absTarget) << target.canonicalPath();
+            << absSymlink << QDir::fromNativeSeparators(absTarget) << target.canonicalPath();
         QTest::newRow("relative dir symlink")
             << NtfsTestResource(NtfsTestResource::SymLink, relSymlink, relTarget)
-            << relSymlink << true << QDir::fromNativeSeparators(absTarget) << target.canonicalPath();
+            << relSymlink << QDir::fromNativeSeparators(absTarget) << target.canonicalPath();
         QTest::newRow("file in symlink dir")
             << NtfsTestResource()
-            << fileInSymlink << false << "" << target.canonicalPath().append("/file");
+            << fileInSymlink << "" << target.canonicalPath().append("/file");
     }
     {
         //File symlinks
@@ -1687,13 +1686,13 @@ void tst_QFileInfo::ntfsJunctionPointsAndSymlinks_data()
 
         QTest::newRow("absolute file symlink")
             << NtfsTestResource(NtfsTestResource::SymLink, absSymlink, absTarget)
-            << absSymlink << true << QDir::fromNativeSeparators(absTarget) << target.canonicalFilePath();
+            << absSymlink << QDir::fromNativeSeparators(absTarget) << target.canonicalFilePath();
         QTest::newRow("relative file symlink")
             << NtfsTestResource(NtfsTestResource::SymLink, relSymlink, relTarget)
-            << relSymlink << true << QDir::fromNativeSeparators(absTarget) << target.canonicalFilePath();
+            << relSymlink << QDir::fromNativeSeparators(absTarget) << target.canonicalFilePath();
         QTest::newRow("relative to relative file symlink")
             << NtfsTestResource(NtfsTestResource::SymLink, relToRelSymlink, relToRelTarget)
-            << relToRelSymlink << true << QDir::fromNativeSeparators(absTarget) << target.canonicalFilePath();
+            << relToRelSymlink << QDir::fromNativeSeparators(absTarget) << target.canonicalFilePath();
     }
     {
         // Symlink to UNC share
@@ -1702,7 +1701,7 @@ void tst_QFileInfo::ntfsJunctionPointsAndSymlinks_data()
         QString uncSymlink = QDir::toNativeSeparators(pwd.absolutePath().append("\\unc\\link_to_unc"));
         QTest::newRow("UNC symlink")
             << NtfsTestResource(NtfsTestResource::SymLink, uncSymlink, uncTarget)
-            << QDir::fromNativeSeparators(uncSymlink) << true << QDir::fromNativeSeparators(uncTarget) << uncTarget;
+            << QDir::fromNativeSeparators(uncSymlink) << QDir::fromNativeSeparators(uncTarget) << uncTarget;
     }
 
     //Junctions
@@ -1711,7 +1710,7 @@ void tst_QFileInfo::ntfsJunctionPointsAndSymlinks_data()
     QFileInfo targetInfo(target);
     QTest::newRow("junction_pwd")
         << NtfsTestResource(NtfsTestResource::Junction, junction, target)
-        << junction << false << QString() << QString();
+        << junction << QString() << QString();
 
     QFileInfo fileInJunction(targetInfo.absoluteFilePath().append("/file"));
     QFile file(fileInJunction.absoluteFilePath());
@@ -1720,14 +1719,14 @@ void tst_QFileInfo::ntfsJunctionPointsAndSymlinks_data()
     QVERIFY2(file.exists(), msgDoesNotExist(file.fileName()).constData());
     QTest::newRow("file in junction")
         << NtfsTestResource()
-        << fileInJunction.absoluteFilePath() << false << QString() << fileInJunction.canonicalFilePath();
+        << fileInJunction.absoluteFilePath() << QString() << fileInJunction.canonicalFilePath();
 
     target = QDir::rootPath();
     junction = "junction_root";
     targetInfo.setFile(target);
     QTest::newRow("junction_root")
         << NtfsTestResource(NtfsTestResource::Junction, junction, target)
-        << junction << false << QString() << QString();
+        << junction << QString() << QString();
 
     //Mountpoint
     wchar_t buffer[MAX_PATH];
@@ -1738,25 +1737,28 @@ void tst_QFileInfo::ntfsJunctionPointsAndSymlinks_data()
     rootVolume.replace("\\\\?\\","\\??\\");
     QTest::newRow("mountpoint")
         << NtfsTestResource(NtfsTestResource::Junction, junction, rootVolume)
-        << junction << false << QString() << QString();
+        << junction << QString() << QString();
 }
 
 void tst_QFileInfo::ntfsJunctionPointsAndSymlinks()
 {
     QFETCH(NtfsTestResource, resource);
     QFETCH(QString, path);
-    QFETCH(bool, isSymLink);
     QFETCH(QString, linkTarget);
     QFETCH(QString, canonicalFilePath);
 
+    bool isSymLink = false;
+    bool isJunction = false;
     FileSystem::Result creationResult;
     switch (resource.type) {
     case NtfsTestResource::None:
         break;
     case NtfsTestResource::SymLink:
+        isSymLink = true;
         creationResult = FileSystem::createSymbolicLink(resource.source, resource.target);
         break;
     case NtfsTestResource::Junction:
+        isJunction = true;
         creationResult = FileSystem::createNtfsJunction(resource.target, resource.source);
         if (creationResult.dwErr == ERROR_NOT_SUPPORTED) // Special value indicating non-NTFS drive
             QSKIP(qPrintable(creationResult.errorMessage));
@@ -1782,7 +1784,7 @@ void tst_QFileInfo::ntfsJunctionPointsAndSymlinks()
     });
     const QString actualSymLinkTarget = isSymLink ? fi.symLinkTarget() : QString();
     const QString actualCanonicalFilePath = isSymLink ? fi.canonicalFilePath() : QString();
-    QCOMPARE(fi.isJunction(), resource.type == NtfsTestResource::Junction);
+    QCOMPARE(fi.isJunction(), isJunction);
     QCOMPARE(fi.isSymbolicLink(), isSymLink);
     if (isSymLink) {
         QCOMPARE(actualSymLinkTarget, linkTarget);
