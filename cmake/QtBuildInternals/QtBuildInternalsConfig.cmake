@@ -678,6 +678,7 @@ macro(qt_examples_build_begin)
         # but that should rarely be necessary.
         set(QT_EXAMPLE_DEPENDENCIES qt_plugins ${qt_repo_targets_name} ${arg_DEPENDS})
         set(QT_EXAMPLE_BASE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+        set(QT_IS_EXTERNAL_EXAMPLES_BUILD TRUE)
 
         string(TOLOWER ${PROJECT_NAME} project_name_lower)
         if(NOT TARGET examples)
@@ -769,7 +770,8 @@ endmacro()
 
 function(qt_internal_add_example subdir)
     # FIXME: Support building examples externally for prefix builds as well.
-    if(QT_WILL_INSTALL)
+
+    if(NOT QT_IS_EXTERNAL_EXAMPLES_BUILD)
         # Use old non-external approach
         add_subdirectory(${subdir} ${ARGN})
         return()
