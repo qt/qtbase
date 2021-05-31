@@ -96,31 +96,6 @@ inline bool qIsLikelyToBeNfs(const QString &path)
 }
 
 #if defined(Q_OS_WIN)
-#  ifndef SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE // MinGW
-#    define SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE (0x2)
-#  endif
-
-static DWORD createSymbolicLink(const QString &symLinkName, const QString &target,
-                                QString *errorMessage)
-{
-    DWORD result = ERROR_SUCCESS;
-    const QString nativeSymLinkName = QDir::toNativeSeparators(symLinkName);
-    const QString nativeTarget = QDir::toNativeSeparators(target);
-    DWORD flags = 0;
-    if (QOperatingSystemVersion::current() >= QOperatingSystemVersion(QOperatingSystemVersion::Windows, 10, 0, 14972))
-        flags |= SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE;
-    if (QFileInfo(target).isDir())
-        flags |= SYMBOLIC_LINK_FLAG_DIRECTORY;
-    if (CreateSymbolicLink(reinterpret_cast<const wchar_t*>(nativeSymLinkName.utf16()),
-                           reinterpret_cast<const wchar_t*>(nativeTarget.utf16()), flags) == FALSE) {
-        result = GetLastError();
-        QTextStream(errorMessage) << "CreateSymbolicLink(" <<  nativeSymLinkName << ", "
-            << nativeTarget << ", 0x" << Qt::hex << flags << Qt::dec << ") failed with error " << result
-            << ": " << qt_error_string(int(result));
-    }
-    return result;
-}
-
 static QByteArray msgInsufficientPrivileges(const QString &errorMessage)
 {
     return "Insufficient privileges (" + errorMessage.toLocal8Bit() + ')';
@@ -742,7 +717,7 @@ void tst_QFileInfo::canonicalFilePath()
     {
         QString errorMessage;
         const QString linkTarget = QStringLiteral("res");
-        const DWORD dwErr = createSymbolicLink(linkTarget, m_resourcesDir, &errorMessage);
+        const DWORD dwErr = FileSystem::createSymbolicLink(linkTarget, m_resourcesDir, &errorMessage);
         if (dwErr == ERROR_PRIVILEGE_NOT_HELD)
             QSKIP(msgInsufficientPrivileges(errorMessage));
         QVERIFY2(dwErr == ERROR_SUCCESS, qPrintable(errorMessage));
@@ -1385,7 +1360,7 @@ void tst_QFileInfo::isSymbolicLink_data()
 #ifndef Q_NO_SYMLINKS
 #if defined(Q_OS_WIN)
     QString errorMessage;
-    const DWORD creationResult = createSymbolicLink("symlink", m_sourceFile, &errorMessage);
+    const DWORD creationResult = FileSystem::createSymbolicLink("symlink", m_sourceFile, &errorMessage);
     if (creationResult == ERROR_PRIVILEGE_NOT_HELD) {
         QWARN(msgInsufficientPrivileges(errorMessage));
     } else {
@@ -1449,7 +1424,7 @@ void tst_QFileInfo::link_data()
 #ifndef Q_NO_SYMLINKS
 #if defined(Q_OS_WIN)
     QString errorMessage;
-    DWORD creationResult = createSymbolicLink("link", m_sourceFile, &errorMessage);
+    DWORD creationResult = FileSystem::createSymbolicLink("link", m_sourceFile, &errorMessage);
     if (creationResult == ERROR_PRIVILEGE_NOT_HELD) {
         QWARN(msgInsufficientPrivileges(errorMessage));
     } else {
@@ -1458,7 +1433,7 @@ void tst_QFileInfo::link_data()
             << "link" << false << true << QFileInfo(m_sourceFile).absoluteFilePath();
     }
 
-    creationResult = createSymbolicLink("brokenlink", "dummyfile", &errorMessage);
+    creationResult = FileSystem::createSymbolicLink("brokenlink", "dummyfile", &errorMessage);
     if (creationResult == ERROR_PRIVILEGE_NOT_HELD) {
         QWARN(msgInsufficientPrivileges(errorMessage));
     } else {
@@ -1784,7 +1759,7 @@ void tst_QFileInfo::ntfsJunctionPointsAndSymlinks()
     case NtfsTestResource::None:
         break;
     case NtfsTestResource::SymLink:
-        creationResult = createSymbolicLink(resource.source, resource.target, &errorMessage);
+        creationResult = FileSystem::createSymbolicLink(resource.source, resource.target, &errorMessage);
         break;
     case NtfsTestResource::Junction:
         creationResult = FileSystem::createNtfsJunction(resource.target, resource.source, &errorMessage);

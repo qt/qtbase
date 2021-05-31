@@ -46,6 +46,9 @@
 #ifndef FSCTL_SET_REPARSE_POINT
 #define FSCTL_SET_REPARSE_POINT CTL_CODE(FILE_DEVICE_FILE_SYSTEM, 41, METHOD_BUFFERED, FILE_SPECIAL_ACCESS)
 #endif
+#ifndef SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE // MinGW
+#define SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE (0x2)
+#endif
 #endif
 
 // QTemporaryDir-based helper class for creating file-system hierarchies and cleaning up.
@@ -80,6 +83,27 @@ public:
     }
 
 #if defined(Q_OS_WIN)
+    static DWORD createSymbolicLink(const QString &symLinkName, const QString &target,
+                                    QString *errorMessage)
+    {
+        DWORD result = ERROR_SUCCESS;
+        const QString nativeSymLinkName = QDir::toNativeSeparators(symLinkName);
+        const QString nativeTarget = QDir::toNativeSeparators(target);
+        DWORD flags = 0;
+        if (QOperatingSystemVersion::current() >= QOperatingSystemVersion(QOperatingSystemVersion::Windows, 10, 0, 14972))
+            flags |= SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE;
+        if (QFileInfo(target).isDir())
+            flags |= SYMBOLIC_LINK_FLAG_DIRECTORY;
+        if (CreateSymbolicLink(reinterpret_cast<const wchar_t*>(nativeSymLinkName.utf16()),
+                               reinterpret_cast<const wchar_t*>(nativeTarget.utf16()), flags) == FALSE) {
+            result = GetLastError();
+            QTextStream(errorMessage) << "CreateSymbolicLink(" <<  nativeSymLinkName << ", "
+                << nativeTarget << ", 0x" << Qt::hex << flags << Qt::dec << ") failed with error " << result
+                << ": " << qt_error_string(int(result));
+        }
+        return result;
+    }
+
     static DWORD createNtfsJunction(QString target, QString linkName, QString *errorMessage)
     {
         typedef struct {
