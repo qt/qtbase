@@ -715,12 +715,11 @@ void tst_QFileInfo::canonicalFilePath()
 
 #if defined(Q_OS_WIN)
     {
-        QString errorMessage;
         const QString linkTarget = QStringLiteral("res");
-        const DWORD dwErr = FileSystem::createSymbolicLink(linkTarget, m_resourcesDir, &errorMessage);
-        if (dwErr == ERROR_PRIVILEGE_NOT_HELD)
-            QSKIP(msgInsufficientPrivileges(errorMessage));
-        QVERIFY2(dwErr == ERROR_SUCCESS, qPrintable(errorMessage));
+        const auto result = FileSystem::createSymbolicLink(linkTarget, m_resourcesDir);
+        if (result.dwErr == ERROR_PRIVILEGE_NOT_HELD)
+            QSKIP(msgInsufficientPrivileges(result.errorMessage));
+        QVERIFY2(result.dwErr == ERROR_SUCCESS, qPrintable(result.errorMessage));
         QString currentPath = QDir::currentPath();
         QVERIFY(QDir::setCurrent(linkTarget));
         const QString actualCanonicalPath = QFileInfo("file1").canonicalFilePath();
@@ -1359,12 +1358,11 @@ void tst_QFileInfo::isSymbolicLink_data()
 
 #ifndef Q_NO_SYMLINKS
 #if defined(Q_OS_WIN)
-    QString errorMessage;
-    const DWORD creationResult = FileSystem::createSymbolicLink("symlink", m_sourceFile, &errorMessage);
-    if (creationResult == ERROR_PRIVILEGE_NOT_HELD) {
-        QWARN(msgInsufficientPrivileges(errorMessage));
+    const auto creationResult = FileSystem::createSymbolicLink("symlink", m_sourceFile);
+    if (creationResult.dwErr == ERROR_PRIVILEGE_NOT_HELD) {
+        QWARN(msgInsufficientPrivileges(creationResult.errorMessage));
     } else {
-        QVERIFY2(creationResult == ERROR_SUCCESS, qPrintable(errorMessage));
+        QVERIFY2(creationResult.dwErr == ERROR_SUCCESS, qPrintable(creationResult.errorMessage));
         QTest::newRow("NTFS-symlink")
             << "symlink" << true;
     }
@@ -1423,21 +1421,20 @@ void tst_QFileInfo::link_data()
 
 #ifndef Q_NO_SYMLINKS
 #if defined(Q_OS_WIN)
-    QString errorMessage;
-    DWORD creationResult = FileSystem::createSymbolicLink("link", m_sourceFile, &errorMessage);
-    if (creationResult == ERROR_PRIVILEGE_NOT_HELD) {
-        QWARN(msgInsufficientPrivileges(errorMessage));
+    auto creationResult = FileSystem::createSymbolicLink("link", m_sourceFile);
+    if (creationResult.dwErr == ERROR_PRIVILEGE_NOT_HELD) {
+        QWARN(msgInsufficientPrivileges(creationResult.errorMessage));
     } else {
-        QVERIFY2(creationResult == ERROR_SUCCESS, qPrintable(errorMessage));
+        QVERIFY2(creationResult.dwErr == ERROR_SUCCESS, qPrintable(creationResult.errorMessage));
         QTest::newRow("link")
             << "link" << false << true << QFileInfo(m_sourceFile).absoluteFilePath();
     }
 
-    creationResult = FileSystem::createSymbolicLink("brokenlink", "dummyfile", &errorMessage);
-    if (creationResult == ERROR_PRIVILEGE_NOT_HELD) {
-        QWARN(msgInsufficientPrivileges(errorMessage));
+    creationResult = FileSystem::createSymbolicLink("brokenlink", "dummyfile");
+    if (creationResult.dwErr == ERROR_PRIVILEGE_NOT_HELD) {
+        QWARN(msgInsufficientPrivileges(creationResult.errorMessage));
     } else {
-        QVERIFY2(creationResult == ERROR_SUCCESS, qPrintable(errorMessage));
+        QVERIFY2(creationResult.dwErr == ERROR_SUCCESS, qPrintable(creationResult.errorMessage));
         QTest::newRow("broken link")
             << "brokenlink" << false << true  << QFileInfo("dummyfile").absoluteFilePath();
     }
@@ -1701,7 +1698,6 @@ void tst_QFileInfo::ntfsJunctionPointsAndSymlinks_data()
     {
         // Symlink to UNC share
         pwd.mkdir("unc");
-        QString errorMessage;
         QString uncTarget = QStringLiteral("//") + QtNetworkSettings::winServerName() + "/testshare";
         QString uncSymlink = QDir::toNativeSeparators(pwd.absolutePath().append("\\unc\\link_to_unc"));
         QTest::newRow("UNC symlink")
@@ -1753,24 +1749,23 @@ void tst_QFileInfo::ntfsJunctionPointsAndSymlinks()
     QFETCH(QString, linkTarget);
     QFETCH(QString, canonicalFilePath);
 
-    QString errorMessage;
-    DWORD creationResult = ERROR_SUCCESS;
+    FileSystem::Result creationResult;
     switch (resource.type) {
     case NtfsTestResource::None:
         break;
     case NtfsTestResource::SymLink:
-        creationResult = FileSystem::createSymbolicLink(resource.source, resource.target, &errorMessage);
+        creationResult = FileSystem::createSymbolicLink(resource.source, resource.target);
         break;
     case NtfsTestResource::Junction:
-        creationResult = FileSystem::createNtfsJunction(resource.target, resource.source, &errorMessage);
-        if (creationResult == ERROR_NOT_SUPPORTED) // Special value indicating non-NTFS drive
-            QSKIP(qPrintable(errorMessage));
+        creationResult = FileSystem::createNtfsJunction(resource.target, resource.source);
+        if (creationResult.dwErr == ERROR_NOT_SUPPORTED) // Special value indicating non-NTFS drive
+            QSKIP(qPrintable(creationResult.errorMessage));
         break;
     }
 
-    if (creationResult == ERROR_PRIVILEGE_NOT_HELD)
-        QSKIP(msgInsufficientPrivileges(errorMessage));
-    QVERIFY2(creationResult == ERROR_SUCCESS, qPrintable(errorMessage));
+    if (creationResult.dwErr == ERROR_PRIVILEGE_NOT_HELD)
+        QSKIP(msgInsufficientPrivileges(creationResult.errorMessage));
+    QVERIFY2(creationResult.dwErr == ERROR_SUCCESS, qPrintable(creationResult.errorMessage));
 
     QFileInfo fi(path);
     auto guard = qScopeGuard([&fi, this]() {

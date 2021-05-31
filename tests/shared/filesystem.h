@@ -83,10 +83,16 @@ public:
     }
 
 #if defined(Q_OS_WIN)
-    static DWORD createSymbolicLink(const QString &symLinkName, const QString &target,
-                                    QString *errorMessage)
+    struct Result {
+        DWORD dwErr = ERROR_SUCCESS;
+        QString link;
+        QString target;
+        QString errorMessage;
+    };
+
+    static Result createSymbolicLink(const QString &symLinkName, const QString &target)
     {
-        DWORD result = ERROR_SUCCESS;
+        Result result;
         const QString nativeSymLinkName = QDir::toNativeSeparators(symLinkName);
         const QString nativeTarget = QDir::toNativeSeparators(target);
         DWORD flags = 0;
@@ -96,15 +102,18 @@ public:
             flags |= SYMBOLIC_LINK_FLAG_DIRECTORY;
         if (CreateSymbolicLink(reinterpret_cast<const wchar_t*>(nativeSymLinkName.utf16()),
                                reinterpret_cast<const wchar_t*>(nativeTarget.utf16()), flags) == FALSE) {
-            result = GetLastError();
-            QTextStream(errorMessage) << "CreateSymbolicLink(" <<  nativeSymLinkName << ", "
-                << nativeTarget << ", 0x" << Qt::hex << flags << Qt::dec << ") failed with error " << result
-                << ": " << qt_error_string(int(result));
+            result.dwErr = GetLastError();
+            QTextStream(&result.errorMessage) << "CreateSymbolicLink(" <<  nativeSymLinkName << ", "
+                << nativeTarget << ", 0x" << Qt::hex << flags << Qt::dec << ") failed with error "
+                << result.dwErr << ": " << qt_error_string(int(result.dwErr));
+        } else {
+            result.link = nativeSymLinkName;
+            result.target = nativeTarget;
         }
         return result;
     }
 
-    static DWORD createNtfsJunction(QString target, QString linkName, QString *errorMessage)
+    static Result createNtfsJunction(QString target, QString linkName)
     {
         typedef struct {
             DWORD   ReparseTag;
@@ -121,7 +130,7 @@ public:
         DWORD   returnedLength;
         wchar_t fileSystem[MAX_PATH] = L"";
         PREPARSE_MOUNTPOINT_DATA_BUFFER reparseInfo = (PREPARSE_MOUNTPOINT_DATA_BUFFER) reparseBuffer;
-        DWORD result = ERROR_SUCCESS;
+        Result result;
 
         QFileInfo junctionInfo(linkName);
         linkName = QDir::toNativeSeparators(junctionInfo.absoluteFilePath());
@@ -129,13 +138,14 @@ public:
         if (GetVolumeInformationW(reinterpret_cast<const wchar_t *>(drive.utf16()),
                                   NULL, 0, NULL, NULL, NULL,
                                   fileSystem, sizeof(fileSystem)/sizeof(WCHAR)) == FALSE) {
-            result = GetLastError();
-            *errorMessage = "GetVolumeInformationW() failed: " + qt_error_string(int(result));
+            result.dwErr = GetLastError();
+            result.errorMessage = "GetVolumeInformationW() failed: " + qt_error_string(int(result.dwErr));
             return result;
         }
         if (QString::fromWCharArray(fileSystem) != "NTFS") {
-            *errorMessage = "This seems not to be an NTFS volume. Junctions are not allowed.";
-            return ERROR_NOT_SUPPORTED;
+            result.errorMessage = "This seems not to be an NTFS volume. Junctions are not allowed.";
+            result.dwErr = ERROR_NOT_SUPPORTED;
+            return result;
         }
 
         if (!target.startsWith("\\??\\") && !target.startsWith("\\\\?\\")) {
@@ -149,8 +159,8 @@ public:
         hFile = CreateFileW( (wchar_t*)linkName.utf16(), GENERIC_WRITE, 0, NULL, OPEN_EXISTING,
                              FILE_FLAG_OPEN_REPARSE_POINT|FILE_FLAG_BACKUP_SEMANTICS, NULL );
         if (hFile == INVALID_HANDLE_VALUE) {
-            result = GetLastError();
-            *errorMessage = "CreateFileW(" + linkName + ") failed: " + qt_error_string(int(result));
+            result.dwErr = GetLastError();
+            result.errorMessage = "CreateFileW(" + linkName + ") failed: " + qt_error_string(int(result.dwErr));
             return result;
         }
 
@@ -165,8 +175,11 @@ public:
                                  reparseInfo->ReparseDataLength + REPARSE_MOUNTPOINT_HEADER_SIZE,
                                  NULL, 0, &returnedLength, NULL);
         if (!ioc) {
-            result = GetLastError();
-            *errorMessage = "DeviceIoControl() failed: " + qt_error_string(int(result));
+            result.dwErr = GetLastError();
+            result.errorMessage = "DeviceIoControl() failed: " + qt_error_string(int(result.dwErr));
+        } else {
+            result.link = linkName;
+            result.target = target;
         }
         CloseHandle( hFile );
         return result;
