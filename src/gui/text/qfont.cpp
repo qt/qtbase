@@ -691,8 +691,10 @@ QFont::QFont()
 {
 }
 
+#if QT_DEPRECATED_SINCE(6, 2)
 /*!
-    \deprecated
+    \deprecated [6.2] Use the overload taking a QStringList instead.
+
     Constructs a font object with the specified \a family, \a
     pointSize, \a weight and \a italic settings.
 
@@ -738,6 +740,7 @@ QFont::QFont(const QString &family, int pointSize, int weight, bool italic)
     d->request.weight = weight;
     d->request.style = italic ? QFont::StyleItalic : QFont::StyleNormal;
 }
+#endif
 
 /*!
      Constructs a font object with the specified \a families, \a
@@ -1183,7 +1186,7 @@ QFont::Weight QFont::weight() const
 
 #if QT_DEPRECATED_SINCE(6, 0)
 /*!
-    \deprecated Use setWeight() instead.
+    \deprecated [6.0] Use setWeight() instead.
 
     Sets the weight of the font to \a legacyWeight using the legacy font
     weight scale of Qt 5 and previous versions.
@@ -1195,7 +1198,7 @@ QFont::Weight QFont::weight() const
 
     \note If styleName() is set, this value may be ignored for font selection.
 
-    \sa setWeight(), weight(), legacyWeight(), QFontInfo
+    \sa setWeight(), weight(), QFontInfo
 */
 void QFont::setLegacyWeight(int legacyWeight)
 {
@@ -1203,7 +1206,7 @@ void QFont::setLegacyWeight(int legacyWeight)
 }
 
 /*!
-    \deprecated Use weight() instead.
+    \deprecated [6.0] Use weight() instead.
 
     Returns the weight of the font converted to the non-standard font
     weight scale used in Qt 5 and earlier versions.

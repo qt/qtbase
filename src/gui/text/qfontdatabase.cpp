@@ -1239,7 +1239,7 @@ QString QFontDatabase::styleString(const QFontInfo &fontInfo)
 
 /*!
     \fn QFontDatabase::QFontDatabase()
-    \deprecated Call the class methods as static functions instead.
+    \deprecated [6.0] Call the class methods as static functions instead.
 
     Creates a font database object.
 */

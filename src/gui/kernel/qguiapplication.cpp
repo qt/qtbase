@@ -3288,7 +3288,7 @@ QClipboard * QGuiApplication::clipboard()
 /*!
     \since 5.4
     \fn void QGuiApplication::paletteChanged(const QPalette &palette)
-    \deprecated
+    \deprecated [6.0] Handle QEvent::ApplicationPaletteChange instead.
 
     This signal is emitted when the \a palette of the application changes. Use
     QEvent::ApplicationPaletteChanged instead.
@@ -3399,7 +3399,7 @@ void QGuiApplicationPrivate::applyWindowGeometrySpecificationTo(QWindow *window)
 /*!
     \since 5.11
     \fn void QGuiApplication::fontChanged(const QFont &font)
-    \deprecated
+    \deprecated [6.0] Handle QEvent::ApplicationFontChange instead.
 
     This signal is emitted when the \a font of the application changes. Use
     QEvent::ApplicationFontChanged instead.
