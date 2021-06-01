@@ -140,17 +140,17 @@ public:
     void initCalendarPopup(QCalendarWidget *cw = nullptr);
     void positionCalendarPopup();
 
-    QDateTimeEdit::Sections sections;
-    mutable bool cacheGuard;
+    QDateTimeEdit::Sections sections = {};
+    mutable bool cacheGuard = false;
 
     QString defaultDateFormat, defaultTimeFormat, defaultDateTimeFormat, unreversedFormat;
     mutable QVariant conflictGuard;
-    bool hasHadFocus, formatExplicitlySet, calendarPopup;
-    QStyle::StateFlag arrowState;
-    QCalendarPopup *monthCalendar;
+    bool hasHadFocus = false, formatExplicitlySet = false, calendarPopup = false;
+    QStyle::StateFlag arrowState = QStyle::State_None;
+    QCalendarPopup *monthCalendar = nullptr;
 
 #ifdef QT_KEYPAD_NAVIGATION
-    bool focusOnButton;
+    bool focusOnButton = false;
 #endif
 
     Qt::TimeSpec spec = Qt::LocalTime;

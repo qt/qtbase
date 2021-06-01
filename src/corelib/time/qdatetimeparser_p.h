@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -83,8 +83,7 @@ public:
         DateTimeEdit
     };
     QDateTimeParser(QMetaType::Type t, Context ctx, const QCalendar &cal = QCalendar())
-        : currentSectionIndex(-1), cachedDay(-1), parserType(t),
-        fixday(false), context(ctx), calendar(cal)
+        : parserType(t), context(ctx), calendar(cal)
     {
         defaultLocale = QLocale::system();
         first.type = FirstSection;
@@ -270,7 +269,7 @@ protected: // for the benefit of QDateTimeEditPrivate
     virtual int cursorPosition() const { return -1; }
     virtual QLocale locale() const { return defaultLocale; }
 
-    mutable int currentSectionIndex;
+    mutable int currentSectionIndex = int(NoSectionIndex);
     Sections display;
     /*
         This stores the most recently selected day.
@@ -285,7 +284,7 @@ protected: // for the benefit of QDateTimeEditPrivate
         This is good for when users have selected their desired day and are scrolling up or down in the month or year section
         and do not want smaller months (or non-leap years) to alter the day that they chose.
     */
-    mutable int cachedDay;
+    mutable int cachedDay = -1;
     mutable QString m_text;
     QList<SectionNode> sectionNodes;
     SectionNode first, last, none, popup;
@@ -293,7 +292,7 @@ protected: // for the benefit of QDateTimeEditPrivate
     QString displayFormat;
     QLocale defaultLocale;
     QMetaType::Type parserType;
-    bool fixday;
+    bool fixday = false;
     Context context;
     QCalendar calendar;
 };

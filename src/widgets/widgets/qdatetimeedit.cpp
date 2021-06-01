@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
@@ -1737,26 +1737,14 @@ QDateEdit::~QDateEdit()
 QDateTimeEditPrivate::QDateTimeEditPrivate()
     : QDateTimeParser(QMetaType::QDateTime, QDateTimeParser::DateTimeEdit, QCalendar())
 {
-    hasHadFocus = false;
-    formatExplicitlySet = false;
-    cacheGuard = false;
     fixday = true;
     type = QMetaType::QDateTime;
-    sections = { };
-    cachedDay = -1;
     currentSectionIndex = FirstSectionIndex;
 
     first.pos = 0;
-    calendarPopup = false;
     minimum = QDATETIMEEDIT_COMPAT_DATE_MIN.startOfDay();
     maximum = QDATETIMEEDIT_DATE_MAX.endOfDay();
-    arrowState = QStyle::State_None;
-    monthCalendar = nullptr;
     readLocaleSettings();
-
-#ifdef QT_KEYPAD_NAVIGATION
-    focusOnButton = false;
-#endif
 }
 
 QDateTime QDateTimeEditPrivate::convertTimeSpec(const QDateTime &datetime)
