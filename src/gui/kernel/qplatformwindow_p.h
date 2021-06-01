@@ -74,7 +74,7 @@ namespace QNativeInterface::Private {
 #if defined(Q_OS_MACOS) || defined(Q_CLANG_QDOC)
 struct Q_GUI_EXPORT QCocoaWindow
 {
-    QT_DECLARE_NATIVE_INTERFACE(QCocoaWindow)
+    QT_DECLARE_NATIVE_INTERFACE(QCocoaWindow, 1, QWindow)
     virtual void setContentBorderEnabled(bool enable) = 0;
     virtual QPoint bottomLeftClippedByNSWindowOffset() const = 0;
 };
@@ -83,7 +83,7 @@ struct Q_GUI_EXPORT QCocoaWindow
 #if QT_CONFIG(xcb) || defined(Q_CLANG_QDOC)
 struct Q_GUI_EXPORT QXcbWindow
 {
-    QT_DECLARE_NATIVE_INTERFACE(QXcbWindow)
+    QT_DECLARE_NATIVE_INTERFACE(QXcbWindow, 1, QWindow)
 
     enum WindowType {
         None         = 0x000000,
@@ -115,7 +115,7 @@ struct Q_GUI_EXPORT QXcbWindow
 #if defined(Q_OS_WIN) || defined(Q_CLANG_QDOC)
 struct Q_GUI_EXPORT QWindowsWindow
 {
-    QT_DECLARE_NATIVE_INTERFACE(QWindowsWindow)
+    QT_DECLARE_NATIVE_INTERFACE(QWindowsWindow, 1, QWindow)
 
     virtual void setHasBorderInFullScreen(bool border) = 0;
     virtual bool hasBorderInFullScreen() const = 0;

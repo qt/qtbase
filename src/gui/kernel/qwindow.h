@@ -47,6 +47,7 @@
 #include <QtCore/QRect>
 
 #include <QtCore/qnamespace.h>
+#include <QtCore/qnativeinterface.h>
 
 #include <QtGui/qsurface.h>
 #include <QtGui/qsurfaceformat.h>
@@ -282,6 +283,8 @@ public:
     void setVulkanInstance(QVulkanInstance *instance);
     QVulkanInstance *vulkanInstance() const;
 #endif
+
+    QT_DECLARE_NATIVE_INTERFACE_ACCESSOR
 
 public Q_SLOTS:
     Q_REVISION(2, 1) void requestActivate();

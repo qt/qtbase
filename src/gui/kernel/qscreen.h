@@ -50,6 +50,7 @@
 #include <QtGui/QTransform>
 
 #include <QtCore/qnamespace.h>
+#include <QtCore/qnativeinterface.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -147,6 +148,8 @@ public:
     QPixmap grabWindow(WId window = 0, int x = 0, int y = 0, int w = -1, int h = -1);
 
     qreal refreshRate() const;
+
+    QT_DECLARE_NATIVE_INTERFACE_ACCESSOR
 
 Q_SIGNALS:
     void geometryChanged(const QRect &geometry);

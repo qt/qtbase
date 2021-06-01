@@ -69,6 +69,7 @@
 
 #include <QStyleHints>
 #include <qpa/qplatformcursor.h>
+#include <qpa/qplatformwindow_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -3002,6 +3003,31 @@ bool QWindowPrivate::applyCursor()
     return false;
 }
 #endif // QT_NO_CURSOR
+
+template <>
+Q_NATIVE_INTERFACE_EXPORT void *QNativeInterface::Private::resolveInterface(const QWindow *that, const char *name, int revision)
+{
+    using namespace QNativeInterface::Private;
+
+    auto *platformWindow = that->handle();
+    Q_UNUSED(platformWindow);
+    Q_UNUSED(name);
+    Q_UNUSED(revision);
+
+#if defined(Q_OS_WIN)
+    QT_NATIVE_INTERFACE_RETURN_IF(QWindowsWindow, platformWindow);
+#endif
+
+#if QT_CONFIG(xcb)
+    QT_NATIVE_INTERFACE_RETURN_IF(QXcbWindow, platformWindow);
+#endif
+
+#if defined(Q_OS_MACOS)
+    QT_NATIVE_INTERFACE_RETURN_IF(QCocoaWindow, platformWindow);
+#endif
+
+    return nullptr;
+}
 
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug debug, const QWindow *window)

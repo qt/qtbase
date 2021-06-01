@@ -786,6 +786,31 @@ QPixmap QScreen::grabWindow(WId window, int x, int y, int width, int height)
     return result;
 }
 
+template <>
+Q_NATIVE_INTERFACE_EXPORT void *QNativeInterface::Private::resolveInterface(const QScreen *that, const char *name, int revision)
+{
+    using namespace QNativeInterface::Private;
+
+    auto *platformScreen = that->handle();
+    Q_UNUSED(platformScreen);
+    Q_UNUSED(name);
+    Q_UNUSED(revision);
+
+#if QT_CONFIG(xcb)
+    QT_NATIVE_INTERFACE_RETURN_IF(QXcbScreen, platformScreen);
+#endif
+
+#if QT_CONFIG(vsp2)
+    QT_NATIVE_INTERFACE_RETURN_IF(QVsp2Screen, platformScreen);
+#endif
+
+#if defined(Q_OS_WEBOS)
+    QT_NATIVE_INTERFACE_RETURN_IF(QWebOSScreen, platformScreen);
+#endif
+
+    return nullptr;
+}
+
 #ifndef QT_NO_DEBUG_STREAM
 
 static inline void formatRect(QDebug &debug, const QRect r)
