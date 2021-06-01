@@ -1211,7 +1211,7 @@ void QLocale::setDefault(const QLocale &locale)
 /*!
     Returns the language of this locale.
 
-    \sa script(), country(), languageToString(), bcp47Name()
+    \sa script(), territory(), languageToString(), bcp47Name()
 */
 QLocale::Language QLocale::language() const
 {
@@ -1223,7 +1223,7 @@ QLocale::Language QLocale::language() const
 
     Returns the script of this locale.
 
-    \sa language(), country(), languageToString(), scriptToString(), bcp47Name()
+    \sa language(), territory(), languageToString(), scriptToString(), bcp47Name()
 */
 QLocale::Script QLocale::script() const
 {
@@ -1244,7 +1244,7 @@ QLocale::Territory QLocale::territory() const
 
 #if QT_DEPRECATED_SINCE(6, 6)
 /*!
-    \deprecated Use territory() instead.
+    \deprecated [6.6] Use \l territory() instead.
 
     Returns the territory of this locale.
 
@@ -1263,10 +1263,10 @@ QLocale::Country QLocale::country() const
     and country is an uppercase, two- or three-letter ISO 3166 country code.
 
     Note that even if QLocale object was constructed with an explicit script,
-    name() will not contain it for compatibility reasons. Use bcp47Name() instead
+    name() will not contain it for compatibility reasons. Use \l bcp47Name() instead
     if you need a full locale name.
 
-    \sa QLocale(), language(), script(), country(), bcp47Name()
+    \sa QLocale(), language(), script(), territory(), bcp47Name()
 */
 
 QString QLocale::name() const
@@ -1323,7 +1323,7 @@ T toIntegral_helper(const QLocalePrivate *d, QStringView str, bool *ok)
 
     This function tries to conform the locale name to BCP47.
 
-    \sa language(), country(), script(), uiLanguages()
+    \sa language(), territory(), script(), uiLanguages()
 */
 QString QLocale::bcp47Name() const
 {
@@ -1338,7 +1338,7 @@ QString QLocale::bcp47Name() const
     For \c QLocale::AnyLanguage an empty string is returned.
 
     \since 6.1
-    \sa codeToLanguage(), language(), name(), bcp47Name(), countryToCode(), scriptToCode()
+    \sa codeToLanguage(), language(), name(), bcp47Name(), territoryToCode(), scriptToCode()
 */
 QString QLocale::languageToCode(Language language)
 {
@@ -1352,7 +1352,7 @@ QString QLocale::languageToCode(Language language)
     If the code is invalid or not known QLocale::AnyLanguage is returned.
 
     \since 6.1
-    \sa languageToCode(), codeToCountry(), codeToScript()
+    \sa languageToCode(), codeToTerritory(), codeToScript()
 */
 QLocale::Language QLocale::codeToLanguage(QStringView languageCode) noexcept
 {
@@ -1391,7 +1391,7 @@ QLocale::Territory QLocale::codeToTerritory(QStringView territoryCode) noexcept
 
 #if QT_DEPRECATED_SINCE(6, 6)
 /*!
-    \deprecated Use territoryToCode(Territory) instead.
+    \deprecated [6.6] Use \l territoryToCode() instead.
 
     Returns the two-letter territory code for \a country, as defined
     in the ISO 3166 standard.
@@ -1411,7 +1411,7 @@ QString QLocale::countryToCode(Country country)
 
     If the code is invalid or not known QLocale::AnyTerritory is returned.
 
-    \deprecated Use codeToTerritory(QStringView) instead.
+    \deprecated [6.6] Use codeToTerritory(QStringView) instead.
     \since 6.1
     \sa territoryToCode(), codeToLanguage(), codeToScript()
 */
@@ -1428,7 +1428,7 @@ QLocale::Country QLocale::codeToCountry(QStringView countryCode) noexcept
     \note For \c{QLocale::AnyScript} an empty string is returned.
 
     \since 6.1
-    \sa script(), name(), bcp47Name(), languageToCode(), countryToCode()
+    \sa script(), name(), bcp47Name(), languageToCode(), territoryToCode()
 */
 QString QLocale::scriptToCode(Script script)
 {
@@ -1442,7 +1442,7 @@ QString QLocale::scriptToCode(Script script)
     If the code is invalid or not known QLocale::AnyScript is returned.
 
     \since 6.1
-    \sa scriptToCode(), codeToLanguage(), codeToCountry()
+    \sa scriptToCode(), codeToLanguage(), codeToTerritory()
 */
 QLocale::Script QLocale::codeToScript(QStringView scriptCode) noexcept
 {
@@ -1452,7 +1452,7 @@ QLocale::Script QLocale::codeToScript(QStringView scriptCode) noexcept
 /*!
     Returns a QString containing the name of \a language.
 
-    \sa countryToString(), scriptToString(), bcp47Name()
+    \sa territoryToString(), scriptToString(), bcp47Name()
 */
 
 QString QLocale::languageToString(Language language)
@@ -1478,7 +1478,7 @@ QString QLocale::territoryToString(QLocale::Territory territory)
 
 #if QT_DEPRECATED_SINCE(6, 6)
 /*!
-    \deprecated Use territoryToString(Territory) instead.
+    \deprecated [6.6] Use \l territoryToString() instead.
 
     Returns a QString containing the name of \a country.
 
@@ -1495,7 +1495,7 @@ QString QLocale::countryToString(Country country)
 
     Returns a QString containing the name of \a script.
 
-    \sa languageToString(), countryToString(), script(), bcp47Name()
+    \sa languageToString(), territoryToString(), script(), bcp47Name()
 */
 QString QLocale::scriptToString(QLocale::Script script)
 {
@@ -2639,7 +2639,7 @@ QList<QLocale> QLocale::matchingLocales(QLocale::Language language, QLocale::Scr
 
 #if QT_DEPRECATED_SINCE(6, 6)
 /*!
-    \deprecated Use matchingLocales() instead and consult the territory() of each.
+    \deprecated [6.6] Use \l matchingLocales() instead and consult the \l territory() of each.
     \since 4.3
 
     Returns the list of countries that have entries for \a language in Qt's locale
@@ -4379,7 +4379,7 @@ QString QLocale::nativeTerritoryName() const
 
 #if QT_DEPRECATED_SINCE(6, 6)
 /*!
-    \deprecated Use nativeTerritoryName() instead.
+    \deprecated [6.6] Use \l nativeTerritoryName() instead.
     \since 4.8
 
     Returns a native name of the territory for the locale. For example

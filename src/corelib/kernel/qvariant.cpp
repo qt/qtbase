@@ -378,7 +378,7 @@ static void customClear(QVariant::Private *d)
 */
 
 /*!
-    \deprecated Use QMetaType::Type instead.
+    \deprecated Use \l QMetaType::Type instead.
     \enum QVariant::Type
 
     This enum type defines the types of variable that a QVariant can
@@ -795,7 +795,7 @@ QVariant::QVariant(const QVariant &p)
 */
 
 /*! \fn QVariant::QVariant(Type type)
-    \deprecated
+    \deprecated [6.0] Use the constructor taking a QMetaType instead.
 
     Constructs an uninitialized variant of type \a type. This will create a
     variant in a special null state that if accessed will return a default
@@ -951,7 +951,7 @@ QVariant::QVariant(const QPersistentModelIndex &modelIndex)
 #endif
 
 /*! \fn QVariant::Type QVariant::type() const
-    \deprecated
+    \deprecated [6.0] Use typeId() or metaType() instead.
 
     Returns the storage type of the value stored in the variant.
     Although this function is declared as returning QVariant::Type,
@@ -1088,7 +1088,7 @@ void QVariant::clear()
 
 /*!
     \fn const char *QVariant::typeToName(int typeId)
-    \deprecated Use QMetaType instead
+    \deprecated [6.0] Use \c QMetaType(typeId).name() instead.
 
     Converts the int representation of the storage type, \a typeId, to
     its string representation.
@@ -1098,7 +1098,7 @@ void QVariant::clear()
 
 /*!
     \fn QVariant::Type QVariant::nameToType(const char *name)
-    \deprecated Use QMetaType instead
+    \deprecated [6.0] Use \c QMetaType.fromName(name).id() instead
 
     Converts the string representation of the storage type given in \a
     name, to its enum representation.
@@ -1360,13 +1360,13 @@ QDataStream &operator<<(QDataStream &s, const QVariant &p)
 }
 
 /*! \fn QDataStream& operator>>(QDataStream &s, QVariant::Type &p)
-    \deprecated
+    \deprecated [6.0] Stream QMetaType::Type instead.
 
     Reads a variant type \a p in enum representation from the stream \a s.
 */
 
 /*! \fn QDataStream& operator<<(QDataStream &s, const QVariant::Type p)
-    \deprecated
+    \deprecated [6.0] Stream QMetaType::Type instead.
 
     Writes a variant type \a p to the stream \a s.
 */
@@ -1980,7 +1980,7 @@ QVariantList QVariant::toList() const
 /*!
     \fn bool QVariant::canConvert(int targetTypeId) const
     \overload
-    \deprecated
+    \deprecated [6.0] Use \c canConvert(QMetaType(targetTypeId)) instead.
 
     \sa QMetaType::canConvert()
 */
@@ -1999,7 +1999,7 @@ QVariantList QVariant::toList() const
 
 /*!
     \fn bool QVariant::convert(int targetTypeId)
-    \deprecated
+    \deprecated [6.0] Use \c convert(QMetaType(targetTypeId)) instead.
 
     Casts the variant to the requested type, \a targetTypeId. If the cast cannot be
     done, the variant is still changed to the requested type, but is left in a cleared
@@ -2017,7 +2017,7 @@ QVariantList QVariant::toList() const
     failed a previous conversion will always fail, changing the type, remaining null,
     and returning \c false.
 
-    \sa canConvert(int targetTypeId), clear()
+    \sa canConvert(), clear()
 */
 
 /*!

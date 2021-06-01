@@ -5395,17 +5395,13 @@ QString QString::fromUtf16(const char16_t *unicode, qsizetype size)
 
 /*!
     \fn QString QString::fromUtf16(const ushort *str, qsizetype size)
-    \deprecated
-
-    Use the \c char16_t overload.
+    \deprecated [6.0] Use the \c char16_t overload instead.
 */
 
 /*!
     \fn QString QString::fromUcs4(const uint *str, qsizetype size)
     \since 4.2
-    \deprecated
-
-    Use the \c char32_t overload instead.
+    \deprecated [6.0] Use the \c char32_t overload instead.
 */
 
 /*!

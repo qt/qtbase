@@ -323,8 +323,6 @@ JavaVM *QJniEnvironment::javaVM()
 }
 
 /*!
-    \fn bool QJniEnvironment::registerNativeMethods(const char *className, const JNINativeMethod methods[], int size)
-
     Registers the Java methods in the array \a methods of size \a size, each of
     which can call native C++ functions from class \a className. These methods
     must be registered before any attempt to call them.
@@ -355,10 +353,10 @@ bool QJniEnvironment::registerNativeMethods(const char *className, const JNINati
         return false;
     return registerNativeMethods(classObject.objectClass(), methods, size);
 }
-
+#if QT_DEPRECATED_SINCE(6, 2)
 /*!
     \overload
-    \obsolete Use the overload with a const JNINativeMethod[] instead.
+    \deprecated [6.2] Use the overload with a const JNINativeMethod[] instead.
 
     Registers the Java methods in the array \a methods of size \a size, each of
     which can call native C++ functions from class \a className. These methods
@@ -380,7 +378,6 @@ bool QJniEnvironment::registerNativeMethods(const char *className, const JNINati
     env.registerNativeMethods("org/qtproject/android/TestJavaClass", methods, 2);
     \endcode
 */
-#if QT_DEPRECATED_SINCE(6, 2)
 bool QJniEnvironment::registerNativeMethods(const char *className, JNINativeMethod methods[],
                                             int size)
 {

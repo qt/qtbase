@@ -531,10 +531,9 @@ void QLibraryInfoPrivate::keyAndDefault(QLibraryInfo::LibraryPath loc, QString *
 }
 
 /*! \fn QString QLibraryInfo::location(LibraryLocation loc)
-    \deprecated Use path() instead.
+    \deprecated [6.0] Use path() instead.
 
     Returns the path specified by \a loc.
-    \sa path()
 */
 
 /*!
