@@ -1,4 +1,4 @@
-qt_internal_add_plugin(QSchannelBackend
+qt_internal_add_plugin(QSchannelBackendPlugin
     OUTPUT_NAME schannelbackend
     CLASS_NAME QSchannelBackend
     TYPE tls

@@ -1,4 +1,4 @@
-qt_internal_add_plugin(QNetworkManagerNetworkInformationBackend
+qt_internal_add_plugin(QNetworkManagerNetworkInformationBackendPlugin
     OUTPUT_NAME networkmanagernetworkinformationbackend
     CLASS_NAME QNetworkManagerNetworkInformationBackendFactory
     TYPE networkinformationbackends

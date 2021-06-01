@@ -1,4 +1,4 @@
-qt_internal_add_plugin(QTlsBackendOpenSSL
+qt_internal_add_plugin(QTlsBackendOpenSSLPlugin
     OUTPUT_NAME opensslbackend
     CLASS_NAME QTlsBackendOpenSSL
     TYPE tls
@@ -21,13 +21,13 @@ qt_internal_add_plugin(QTlsBackendOpenSSL
         OPENSSL_API_COMPAT=0x10100000L
 )
 
-qt_internal_extend_target(QTlsBackendOpenSSL CONDITION QT_FEATURE_dtls
+qt_internal_extend_target(QTlsBackendOpenSSLPlugin CONDITION QT_FEATURE_dtls
     SOURCES
         qdtls_openssl.cpp qdtls_openssl_p.h
         ../shared/qdtls_base.cpp ../shared/qdtls_base_p.h
 )
 
-qt_internal_extend_target(QTlsBackendOpenSSL CONDITION APPLE
+qt_internal_extend_target(QTlsBackendOpenSSLPlugin CONDITION APPLE
     SOURCES
         ../shared/qsslsocket_mac_shared.cpp
     LIBRARIES
@@ -35,12 +35,12 @@ qt_internal_extend_target(QTlsBackendOpenSSL CONDITION APPLE
         ${FWSecurity}
 )
 
-qt_internal_extend_target(QTlsBackendOpenSSL CONDITION ANDROID AND NOT ANDROID_EMBEDDED
+qt_internal_extend_target(QTlsBackendOpenSSLPlugin CONDITION ANDROID AND NOT ANDROID_EMBEDDED
     SOURCES
         qsslsocket_openssl_android.cpp
 )
 
-qt_internal_extend_target(QTlsBackendOpenSSL CONDITION QT_FEATURE_openssl
+qt_internal_extend_target(QTlsBackendOpenSSLPlugin CONDITION QT_FEATURE_openssl
                           AND QT_FEATURE_ssl AND WIN32
     SOURCES
         qwindowscarootfetcher.cpp qwindowscarootfetcher_p.h

@@ -1,4 +1,4 @@
-qt_internal_add_plugin(QSecureTransportBackend
+qt_internal_add_plugin(QSecureTransportBackendPlugin
     OUTPUT_NAME securetransportbackend
     CLASS_NAME QSecureTransportBackend
     TYPE tls

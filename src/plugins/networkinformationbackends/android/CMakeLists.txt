@@ -14,7 +14,7 @@ install_jar(Qt${QtBase_VERSION_MAJOR}AndroidNetworkInformationBackend
     COMPONENT Devel
 )
 
-qt_internal_add_plugin(QAndroidNetworkInformationBackend
+qt_internal_add_plugin(QAndroidNetworkInformationBackendPlugin
     OUTPUT_NAME androidnetworkinformationbackend
     CLASS_NAME QAndroidNetworkInformationBackendFactory
     TYPE networkinformationbackends
@@ -30,14 +30,14 @@ qt_internal_add_plugin(QAndroidNetworkInformationBackend
 
 set_property(
     TARGET
-        QAndroidNetworkInformationBackend
+        QAndroidNetworkInformationBackendPlugin
     APPEND PROPERTY QT_ANDROID_BUNDLED_JAR_DEPENDENCIES
         jar/Qt${QtBase_VERSION_MAJOR}AndroidNetworkInformationBackend.jar
 )
 
 set_property(
     TARGET
-        QAndroidNetworkInformationBackend
+        QAndroidNetworkInformationBackendPlugin
     APPEND PROPERTY QT_ANDROID_PERMISSIONS
         android.permission.ACCESS_NETWORK_STATE
 )

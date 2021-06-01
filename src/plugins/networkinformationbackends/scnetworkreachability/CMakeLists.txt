@@ -1,4 +1,4 @@
-qt_internal_add_plugin(QSCNetworkReachabilityNetworkInformationBackend
+qt_internal_add_plugin(QSCNetworkReachabilityNetworkInformationBackendPlugin
     OUTPUT_NAME scnetworkreachabilitynetworkinformationbackend
     CLASS_NAME QSCNetworkReachabilityNetworkInformationBackendFactory
     TYPE networkinformationbackends
