@@ -2198,21 +2198,25 @@ QString QDateTimeParser::stateName(State s) const
     }
 }
 
+// Only called when we want only one of date or time; use UTC to avoid bogus DST issues.
 bool QDateTimeParser::fromString(const QString &t, QDate *date, QTime *time) const
 {
-    QDateTime datetime;
-    if (!fromString(t, &datetime))
+    QDateTime val(QDate(1900, 1, 1).startOfDay(Qt::UTC));
+    const StateNode tmp = parse(t, -1, val, false);
+    if (tmp.state != Acceptable || tmp.conflicts)
         return false;
 
     if (time) {
-        const QTime t = datetime.time();
+        Q_ASSERT(!date);
+        const QTime t = tmp.value.time();
         if (!t.isValid())
             return false;
         *time = t;
     }
 
     if (date) {
-        const QDate d = datetime.date();
+        Q_ASSERT(!time);
+        const QDate d = tmp.value.date();
         if (!d.isValid())
             return false;
         *date = d;
@@ -2220,7 +2224,8 @@ bool QDateTimeParser::fromString(const QString &t, QDate *date, QTime *time) con
     return true;
 }
 
-bool QDateTimeParser::fromString(const QString &t, QDateTime* datetime) const
+// Only called when we want both date and time; default to local time.
+bool QDateTimeParser::fromString(const QString &t, QDateTime *datetime) const
 {
     QDateTime val(QDate(1900, 1, 1).startOfDay());
     const StateNode tmp = parse(t, -1, val, false);

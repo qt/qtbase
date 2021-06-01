@@ -223,7 +223,9 @@ QDateTimeEdit::QDateTimeEdit(QTime time, QWidget *parent)
   \internal
 */
 QDateTimeEdit::QDateTimeEdit(const QVariant &var, QMetaType::Type parserType, QWidget *parent)
-    : QAbstractSpinBox(*new QDateTimeEditPrivate, parent)
+    : QAbstractSpinBox(*new QDateTimeEditPrivate(
+                           parserType == QMetaType::QDateTime ? Qt::LocalTime : Qt::UTC),
+                       parent)
 {
     Q_D(QDateTimeEdit);
     d->parserType = parserType;
@@ -1734,16 +1736,17 @@ QDateEdit::~QDateEdit()
 */
 
 
-QDateTimeEditPrivate::QDateTimeEditPrivate()
-    : QDateTimeParser(QMetaType::QDateTime, QDateTimeParser::DateTimeEdit, QCalendar())
+QDateTimeEditPrivate::QDateTimeEditPrivate(Qt::TimeSpec timeSpec)
+    : QDateTimeParser(QMetaType::QDateTime, QDateTimeParser::DateTimeEdit, QCalendar()),
+      spec(timeSpec)
 {
     fixday = true;
     type = QMetaType::QDateTime;
     currentSectionIndex = FirstSectionIndex;
 
     first.pos = 0;
-    minimum = QDATETIMEEDIT_COMPAT_DATE_MIN.startOfDay();
-    maximum = QDATETIMEEDIT_DATE_MAX.endOfDay();
+    minimum = QDATETIMEEDIT_COMPAT_DATE_MIN.startOfDay(spec);
+    maximum = QDATETIMEEDIT_DATE_MAX.endOfDay(spec);
     readLocaleSettings();
 }
 

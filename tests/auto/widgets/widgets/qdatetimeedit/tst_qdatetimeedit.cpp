@@ -1358,7 +1358,7 @@ void tst_QDateTimeEdit::editingRanged_data()
         << QDate(2010, 12, 30) << QTime()
         << QDate(2011, 1, 2) << QTime()
         << QString::fromLatin1("01012011")
-        << QDateTime(QDate(2011, 1, 1), QTime());
+        << QDateTime(QDate(2011, 1, 1), QTime(), Qt::UTC);
 }
 
 void tst_QDateTimeEdit::editingRanged()
@@ -3141,9 +3141,9 @@ void tst_QDateTimeEdit::hour12Test()
 void tst_QDateTimeEdit::yyTest()
 {
     testWidget->setDisplayFormat("dd-MMM-yy");
-    testWidget->setTime(QTime(0, 0, 0));
     testWidget->setDateRange(QDate(2005, 1, 1), QDate(2010, 12, 31));
     testWidget->setDate(testWidget->minimumDate());
+    testWidget->setTime(QTime(12, 0, 0)); // Mid-day to avoid DST artefacts.
     testWidget->setCurrentSection(QDateTimeEdit::YearSection);
 
     QString jan = QLocale::system().monthName(1, QLocale::ShortFormat);
