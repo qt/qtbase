@@ -167,7 +167,11 @@ public:
     Q_ENUM(ResolveProperties)
 
     QFont();
+
+#if QT_DEPRECATED_SINCE(6, 2)
+    QT_DEPRECATED_VERSION_X_6_2("Pass QStringList{family} or family.split(QLatin1Char(',')) instead of family")
     QFont(const QString &family, int pointSize = -1, int weight = -1, bool italic = false);
+#endif
     explicit QFont(const QStringList &families, int pointSize = -1, int weight = -1, bool italic = false);
     QFont(const QFont &font, const QPaintDevice *pd);
     QFont(const QFont &font);

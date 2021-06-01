@@ -876,7 +876,7 @@ QPixmap QIcon::pixmap(const QSize &size, qreal devicePixelRatio, Mode mode, Stat
 #if QT_DEPRECATED_SINCE(6, 0)
 /*!
   \since 5.1
-  \deprecated
+  \deprecated [6.0] Use pixmap(size, devicePixelRatio) instead.
 
   Returns a pixmap with the requested \a window \a size, \a mode, and \a
   state, generating one if necessary.
@@ -884,8 +884,6 @@ QPixmap QIcon::pixmap(const QSize &size, qreal devicePixelRatio, Mode mode, Stat
   The pixmap can be smaller than the requested size. If \a window is on
   a high-dpi display the pixmap can be larger. In that case it will have
   a devicePixelRatio larger than 1.
-
-  \deprecated Use the overload which takes qreal devicePixelRatio instead.
 
   \sa  actualSize(), paint()
 */
@@ -926,6 +924,7 @@ QSize QIcon::actualSize(const QSize &size, Mode mode, State state) const
 #if QT_DEPRECATED_SINCE(6, 0)
 /*!
   \since 5.1
+  \deprecated [6.0] Use actualSize(size) instead.
 
   Returns the actual size of the icon for the requested \a window  \a size, \a
   mode, and \a state.

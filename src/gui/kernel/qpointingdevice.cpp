@@ -179,7 +179,7 @@ QPointingDevice::QPointingDevice(QPointingDevicePrivate &d, QObject *parent)
 
 /*!
     \internal
-    \deprecated Please use the constructor rather than setters.
+    \deprecated [6.0] Please use the constructor rather than setters.
 
     Sets the device type \a devType and infers the pointer type.
 */
@@ -210,7 +210,7 @@ void QPointingDevice::setType(DeviceType devType)
 
 /*!
     \internal
-    \deprecated Please use the constructor rather than setters.
+    \deprecated [6.0] Please use the constructor rather than setters.
 */
 void QPointingDevice::setCapabilities(QInputDevice::Capabilities caps)
 {
@@ -220,7 +220,7 @@ void QPointingDevice::setCapabilities(QInputDevice::Capabilities caps)
 
 /*!
     \internal
-    \deprecated Please use the constructor rather than setters.
+    \deprecated [6.0] Please use the constructor rather than setters.
 */
 void QPointingDevice::setMaximumTouchPoints(int c)
 {

@@ -1373,7 +1373,7 @@ bool QTextFormat::operator==(const QTextFormat &rhs) const
 
     The font used can be set by supplying a font to the setFont() function, and
     each aspect of its appearance can be adjusted to give the desired effect.
-    setFontFamily() and setFontPointSize() define the font's family (e.g. Times)
+    setFontFamilies() and setFontPointSize() define the font's family (e.g. Times)
     and printed size; setFontWeight() and setFontItalic() provide control over
     the style of the font. setFontUnderline(), setFontOverline(),
     setFontStrikeOut(), and setFontFixedPitch() provide additional effects for
@@ -1457,7 +1457,7 @@ QTextCharFormat::QTextCharFormat(const QTextFormat &fmt)
 
 /*!
     \fn void QTextCharFormat::setFontFamily(const QString &family)
-    \deprecated Use setFontFamilies() instead.
+    \deprecated [6.1] Use setFontFamilies() instead.
 
     Sets the text format's font \a family.
 
@@ -1467,7 +1467,7 @@ QTextCharFormat::QTextCharFormat(const QTextFormat &fmt)
 
 /*!
     \fn QString QTextCharFormat::fontFamily() const
-    \deprecated Use fontFamilies() instead.
+    \deprecated [6.1] Use fontFamilies() instead.
 
     Returns the text format's font family.
 
