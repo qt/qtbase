@@ -49,6 +49,8 @@ private slots:
     void registerNativeMethodsByJclass();
     void findMethod();
     void findStaticMethod();
+    void findField();
+    void findStaticField();
 };
 
 void tst_QJniEnvironment::jniEnv()
@@ -199,6 +201,52 @@ void tst_QJniEnvironment::findStaticMethod()
     // invalid method
     jmethodID invalid = env.findStaticMethod(clazz, "unknown", "()I");
     QVERIFY(invalid == nullptr);
+    // check that all exceptions are already cleared
+    QVERIFY(!env.checkAndClearExceptions());
+}
+
+void tst_QJniEnvironment::findField()
+{
+    QJniEnvironment env;
+    jclass clazz = env.findClass(javaTestClass);
+    QVERIFY(clazz != nullptr);
+
+    // valid field
+    jfieldID validId = env.findField(clazz, "INT_FIELD", "I");
+    QVERIFY(validId != nullptr);
+
+    jmethodID constructorId = env.findMethod(clazz, "<init>", "()V");
+    QVERIFY(constructorId != nullptr);
+    jobject obj = env->NewObject(clazz, constructorId);
+    QVERIFY(!env.checkAndClearExceptions());
+    int value = env->GetIntField(obj, validId);
+    QVERIFY(!env.checkAndClearExceptions());
+    QVERIFY(value == 123);
+
+    // invalid signature
+    jfieldID invalidId = env.findField(clazz, "unknown", "I");
+    QVERIFY(invalidId == nullptr);
+    // check that all exceptions are already cleared
+    QVERIFY(!env.checkAndClearExceptions());
+}
+
+void tst_QJniEnvironment::findStaticField()
+{
+    QJniEnvironment env;
+    jclass clazz = env.findClass(javaTestClass);
+    QVERIFY(clazz != nullptr);
+
+    // valid field
+    jfieldID validId = env.findStaticField(clazz, "S_INT_FIELD", "I");
+    QVERIFY(validId != nullptr);
+
+    int size = env->GetStaticIntField(clazz, validId);
+    QVERIFY(!env.checkAndClearExceptions());
+    QVERIFY(size == 321);
+
+    // invalid signature
+    jfieldID invalidId = env.findStaticField(clazz, "unknown", "I");
+    QVERIFY(invalidId == nullptr);
     // check that all exceptions are already cleared
     QVERIFY(!env.checkAndClearExceptions());
 }

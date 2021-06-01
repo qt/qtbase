@@ -61,6 +61,8 @@ public:
     jclass findClass(const char *className);
     jmethodID findMethod(jclass clazz, const char *methodName, const char *signature);
     jmethodID findStaticMethod(jclass clazz, const char *methodName, const char *signature);
+    jfieldID findField(jclass clazz, const char *fieldName, const char *signature);
+    jfieldID findStaticField(jclass clazz, const char *fieldName, const char *signature);
     static JavaVM *javaVM();
     bool registerNativeMethods(const char *className, const JNINativeMethod methods[], int size);
     bool registerNativeMethods(jclass clazz, const JNINativeMethod methods[], int size);

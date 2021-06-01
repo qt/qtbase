@@ -255,6 +255,51 @@ jmethodID QJniEnvironment::findStaticMethod(jclass clazz, const char *methodName
     return id;
 }
 
+
+/*!
+    Searches for an member field of a class \a clazz. The field is specified
+    by its \a fieldName and \a signature.
+
+    Returns the field ID or \c nullptr if the field is not found.
+
+    A usecase for this method is searching for class fields and caching their
+    IDs, so that they could later be used for getting/setting the fields.
+
+    \since 6.2
+*/
+jfieldID QJniEnvironment::findField(jclass clazz, const char *fieldName, const char *signature)
+{
+    if (clazz) {
+        jfieldID id = d->jniEnv->GetFieldID(clazz, fieldName, signature);
+        if (!checkAndClearExceptions())
+            return id;
+    }
+
+    return nullptr;
+}
+
+/*!
+    Searches for a static field of a class \a clazz. The field is specified
+    by its \a fieldName and \a signature.
+
+    Returns the field ID or \c nullptr if the field is not found.
+
+    A usecase for this method is searching for class fields and caching their
+    IDs, so that they could later be used for getting/setting the fields.
+
+    \since 6.2
+*/
+jfieldID QJniEnvironment::findStaticField(jclass clazz, const char *fieldName, const char *signature)
+{
+    if (clazz) {
+        jfieldID id = d->jniEnv->GetStaticFieldID(clazz, fieldName, signature);
+        if (!checkAndClearExceptions())
+            return id;
+    }
+
+    return nullptr;
+}
+
 /*!
     \fn JavaVM *QJniEnvironment::javaVM()
 
