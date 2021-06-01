@@ -217,14 +217,18 @@ jclass QJniEnvironment::findClass(const char *className)
 
     A usecase for this method is searching for class methods and caching their
     IDs, so that they could later be used for calling the methods.
+
+    \since 6.2
 */
 jmethodID QJniEnvironment::findMethod(jclass clazz, const char *methodName, const char *signature)
 {
-    jmethodID id = d->jniEnv->GetMethodID(clazz, methodName, signature);
-    if (checkAndClearExceptions(d->jniEnv))
-        return nullptr;
+    if (clazz) {
+        jmethodID id = d->jniEnv->GetMethodID(clazz, methodName, signature);
+        if (!checkAndClearExceptions(d->jniEnv))
+            return id;
+    }
 
-    return id;
+    return nullptr;
 }
 
 /*!
@@ -247,14 +251,18 @@ jmethodID QJniEnvironment::findMethod(jclass clazz, const char *methodName, cons
                                        methodId,
                                        javaMessage.object<jstring>());
     \endcode
+
+    \since 6.2
 */
 jmethodID QJniEnvironment::findStaticMethod(jclass clazz, const char *methodName, const char *signature)
 {
-    jmethodID id = d->jniEnv->GetStaticMethodID(clazz, methodName, signature);
-    if (checkAndClearExceptions(d->jniEnv))
-        return nullptr;
+    if (clazz) {
+        jmethodID id = d->jniEnv->GetStaticMethodID(clazz, methodName, signature);
+        if (!checkAndClearExceptions(d->jniEnv))
+            return id;
+    }
 
-    return id;
+    return nullptr;
 }
 
 
