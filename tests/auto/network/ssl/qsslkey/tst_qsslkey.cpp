@@ -45,10 +45,9 @@
         #include "private/qsslkey_p.h"
         #define TEST_CRYPTO
     #endif
-    // TLSTODO: find another solution, for now this code
-    // (OpenSSL specific) is a part of plugin, not in
-    // QtNetwork anymore.
-    //    #include "private/qsslsocket_openssl_symbols_p.h"
+    #ifndef QT_NO_OPENSSL
+        #include "../shared/qopenssl_symbols.h"
+    #endif
 #endif
 
 #if QT_CONFIG(ssl)
@@ -119,6 +118,7 @@ private:
     QVector<QString> unsupportedCurves;
 
     bool isOpenSsl = false;
+    bool isOpenSslResolved = false;
     bool isSecureTransport = false;
     bool isSchannel = false;
 };
@@ -151,8 +151,17 @@ tst_QSslKey::tst_QSslKey()
     // Alas, we don't use network-private (and why?).
     const auto backendName = QSslSocket::activeBackend();
     isOpenSsl = backendName == QStringLiteral("openssl");
-    if (!isOpenSsl)
+
+    if (isOpenSsl) {
+#if !defined(QT_NO_OPENSSL) && defined(QT_BUILD_INTERNAL)
+        isOpenSslResolved = qt_auto_test_resolve_OpenSSL_symbols();
+#else
+        isOpenSslResolved = false; // not 'unused variable' anymore.
+#endif
+    } else {
         isSecureTransport = backendName == QStringLiteral("securetransport");
+    }
+
     if (!isOpenSsl && !isSecureTransport)
         isSchannel = backendName == QStringLiteral("schannel");
 #else
@@ -289,13 +298,8 @@ void tst_QSslKey::constructorHandle()
 {
 #ifndef QT_BUILD_INTERNAL
     QSKIP("This test requires -developer-build.");
-#endif // previously, else, see if 0 below.
-
-// TLSTODO: OpenSSL-specific code and symbols are now
-// part of 'openssl' plugin, not in QtNetwork anymore.
-// For now - disabling.
-#if 0
-    if (!QSslSocket::supportsSsl())
+#else
+    if (!isOpenSslResolved)
         return;
 
     QFETCH(QString, absFilePath);
@@ -350,8 +354,7 @@ void tst_QSslKey::constructorHandle()
     QCOMPARE(key.type(), type);
     QCOMPARE(key.length(), length);
     QCOMPARE(q_EVP_PKEY_cmp(origin, handle), 1);
-
-#endif // if 0
+#endif
 }
 
 #endif // !QT_NO_OPENSSL

@@ -27,6 +27,8 @@
 **
 ****************************************************************************/
 
+#include <QtNetwork/private/qtnetworkglobal_p.h>
+
 #include <QtCore/qglobal.h>
 #include <QtCore/qthread.h>
 #include <QtCore/qelapsedtimer.h>
@@ -55,6 +57,10 @@
 #include "../../../network-settings.h"
 #include "../shared/tlshelpers.h"
 
+#if QT_CONFIG(openssl)
+#include "../shared/qopenssl_symbols.h"
+#endif
+
 #include "private/qtlsbackend_p.h"
 
 #include "private/qsslsocket_p.h"
@@ -78,6 +84,7 @@ typedef QSharedPointer<QSslSocket> QSslSocketPtr;
 #endif
 
 #if QT_CONFIG(schannel) && !defined(Q_CC_MINGW)
+// TLSTODO: move this check into Schannel plugin.
 #define ALPN_SUPPORTED 1
 #endif
 
@@ -306,6 +313,7 @@ private:
     QSslSocket *socket;
     QList<QSslError> storedExpectedSslErrors;
     bool isTestingOpenSsl = false;
+    bool opensslResolved = false;
     bool isTestingSecureTransport = false;
     bool isTestingSchannel = false;
     QSslError::SslError flukeCertificateError = QSslError::CertificateUntrusted;
@@ -420,6 +428,11 @@ void tst_QSslSocket::initTestCase()
     if (tlsBackends.contains(QTlsBackend::builtinBackendNames[QTlsBackend::nameIndexOpenSSL])) {
         isTestingOpenSsl = true;
         flukeCertificateError = QSslError::SelfSignedCertificate;
+#if QT_CONFIG(openssl)
+        opensslResolved = qt_auto_test_resolve_OpenSSL_symbols();
+#else
+        opensslResolved = false; // Not 'unused variable' anymore.
+#endif
     } else if (tlsBackends.contains(QTlsBackend::builtinBackendNames[QTlsBackend::nameIndexSchannel])) {
         isTestingSchannel = true;
     } else {
@@ -1267,9 +1280,9 @@ void tst_QSslSocket::privateKeyOpaque()
     if (!isTestingOpenSsl)
         QSKIP("The active TLS backend does not support private opaque keys");
 
-    // TLSTODO: OpenSSL symbols are now a part of 'openssl' plugin,
-    // not QtNetwork anymore.
-#if 0
+    if (!opensslResolved)
+        QSKIP("Failed to resolve OpenSSL symbols, required by this test");
+
     QFile file(testDataDir + "certs/fluke.key");
     QVERIFY(file.open(QIODevice::ReadOnly));
     QSslKey key(file.readAll(), QSsl::Rsa, QSsl::Pem, QSsl::PrivateKey);
@@ -1297,7 +1310,6 @@ void tst_QSslSocket::privateKeyOpaque()
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy && !socket->waitForEncrypted(10000))
         QSKIP("Skipping flaky test - See QTBUG-29941");
-#endif // if 0
 }
 #endif // Feature 'openssl'.
 
@@ -3737,11 +3749,13 @@ void tst_QSslSocket::setEmptyDefaultConfiguration() // this test should be last,
 
 void tst_QSslSocket::allowedProtocolNegotiation()
 {
+    // TLSTODO: check feature Cleint/ServerSideAlpn supported insted!
 #ifndef ALPN_SUPPORTED
     QSKIP("ALPN is unsupported, skipping test");
 #endif
 
     if (isTestingSchannel) {
+        // TODO: move this check into the plugin (not to report ALPN as supported).
         if (QOperatingSystemVersion::current() < QOperatingSystemVersion::Windows8_1)
             QSKIP("ALPN is not supported on this version of Windows using Schannel.");
     }

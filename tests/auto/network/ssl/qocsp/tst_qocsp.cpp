@@ -31,7 +31,10 @@
 
 #include <QtNetwork/private/qtnetworkglobal_p.h>
 
+#include "../shared/qopenssl_symbols.h"
+
 #include <QtNetwork/qsslcertificate.h>
+#include <QtNetwork/qocspresponse.h>
 #include <QtNetwork/qtcpserver.h>
 #include <QtNetwork/qsslerror.h>
 #include <QtNetwork/qsslkey.h>
@@ -64,9 +67,6 @@ QT_BEGIN_NAMESPACE
 
 namespace {
 
-// TLSTODO: the test is temporarily disabled due to openssl code
-// moved into plugin and not in QtNetwork anymore.
-#if 0
 using OcspResponse = QSharedPointer<OCSP_RESPONSE>;
 using BasicResponse = QSharedPointer<OCSP_BASICRESP>;
 using SingleResponse = QSharedPointer<OCSP_SINGLERESP>;
@@ -74,10 +74,6 @@ using CertId = QSharedPointer<OCSP_CERTID>;
 using EvpKey = QSharedPointer<EVP_PKEY>;
 using Asn1Time = QSharedPointer<ASN1_TIME>;
 using CertificateChain = QList<QSslCertificate>;
-
-// TLSTODO: test temporarily disabled due to openssl code moved
-// into plugin and not in QtNetwork anymore.
-
 using NativeX509Ptr = X509 *;
 
 class X509Stack {
@@ -376,16 +372,11 @@ void OcspServer::incomingConnection(qintptr socketDescriptor)
     serverSocket.startServerEncryption();
 }
 
-#endif // if 0
-
 } // unnamed namespace
 
 class tst_QOcsp : public QObject
 {
     Q_OBJECT
-// TLSTODO: test temporarily disabled due to openssl code moved
-// into plugin and not in QtNetwork anymore.
-#if 0
 public slots:
     void initTestCase();
 
@@ -434,7 +425,6 @@ private:
                                                        QSslError::OcspResponseCertIdUnknown,
                                                        QSslError::OcspResponseExpired,
                                                        QSslError::OcspStatusUnknown};
-#endif // if 0
 };
 
 #define QCOMPARE_SINGLE_ERROR(sslSocket, expectedError) \
@@ -455,14 +445,17 @@ private:
     QSslKey key; \
     QVERIFY(loadPrivateKey(QLatin1String(keyFileName), key))
 
-// TLSTODO: test temporarily disabled due to openssl code moved
-// into plugin and not in QtNetwork anymore.
-#if 0
 QString tst_QOcsp::certDirPath;
 
 void tst_QOcsp::initTestCase()
 {
-    QVERIFY(QSslSocket::supportsSsl());
+    // I'm not testing feature here, I need 'openssl', since the test
+    // is very OpenSSL-oriented:
+    if (QSslSocket::activeBackend() != QStringLiteral("openssl"))
+        QSKIP("This test requires the OpenSSL backend");
+
+    if (!qt_auto_test_resolve_OpenSSL_symbols())
+        QSKIP("Failed to resolve OpenSSL symbols required by this test");
 
     certDirPath = QFileInfo(QFINDTESTDATA("certs")).absolutePath();
     QVERIFY(certDirPath.size() > 0);
@@ -838,8 +831,6 @@ CertificateChain tst_QOcsp::subjectToChain(const CertificateChain &chain)
     Q_ASSERT(chain.size());
     return CertificateChain() << chain[0];
 }
-
-#endif // if 0
 
 QT_END_NAMESPACE
 
