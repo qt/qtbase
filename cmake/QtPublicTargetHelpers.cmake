@@ -47,10 +47,16 @@ endfunction()
 
 function(__qt_internal_collect_resource_objects_recursively out_var target initial_target)
     get_property(resource_processed_targets GLOBAL PROPERTY _qt_resource_processed_targets)
+
+    set(interface_libs "")
+    set(libs "")
     if(NOT "${target}" STREQUAL "${initial_target}")
         get_target_property(interface_libs ${target} INTERFACE_LINK_LIBRARIES)
     endif()
-    get_target_property(libs ${target} LINK_LIBRARIES)
+    get_target_property(type ${target} TYPE)
+    if(NOT type STREQUAL "INTERFACE_LIBRARY")
+        get_target_property(libs ${target} LINK_LIBRARIES)
+    endif()
 
     set(resource_targets "")
     foreach(lib IN LISTS libs interface_libs)
