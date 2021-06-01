@@ -1349,12 +1349,6 @@ struct QMetaTypeIdQObject<T, QMetaType::IsEnumeration>
     } QT_END_NAMESPACE                                                  \
     /**/
 
-template <typename T>
-int qRegisterMetatypeIndirection()
-{
-    return qRegisterNormalizedMetaType<T>(QMetaType::fromType<T>().name());
-}
-
 #ifndef Q_MOC_RUN
 #define Q_DECLARE_METATYPE(TYPE) Q_DECLARE_METATYPE_IMPL(TYPE)
 #define Q_DECLARE_METATYPE_IMPL(TYPE)                                   \
@@ -1368,11 +1362,12 @@ int qRegisterMetatypeIndirection()
                 static QBasicAtomicInt metatype_id = Q_BASIC_ATOMIC_INITIALIZER(0); \
                 if (const int id = metatype_id.loadAcquire())           \
                     return id;                                          \
-                const auto mt = QMetaType::fromType<TYPE>();            \
-                if (QByteArrayView(mt.name()) == (#TYPE)) {             \
-                    qRegisterMetatypeIndirection<TYPE>();               \
-                    metatype_id.storeRelease(mt.id());                  \
-                    return mt.id();                                     \
+                constexpr auto arr = QtPrivate::typenameHelper<TYPE>(); \
+                auto name = arr.data();                                 \
+                if (QByteArrayView(name) == (#TYPE)) {                  \
+                    const int id = qRegisterNormalizedMetaType<TYPE>(name); \
+                    metatype_id.storeRelease(id);                       \
+                    return id;                                          \
                 }                                                       \
                 const int newId = qRegisterMetaType< TYPE >(#TYPE);     \
                 metatype_id.storeRelease(newId);                        \
@@ -1576,7 +1571,6 @@ QT_END_NAMESPACE
 
 QT_FOR_EACH_STATIC_TYPE(Q_DECLARE_BUILTIN_METATYPE)
 
-Q_DECLARE_METATYPE(QtMetaTypePrivate::QPairVariantInterfaceImpl)
 
 QT_BEGIN_NAMESPACE
 
@@ -2464,5 +2458,7 @@ constexpr const QtPrivate::QMetaTypeInterface *const qt_incomplete_metaTypeArray
 };
 
 QT_END_NAMESPACE
+
+Q_DECLARE_METATYPE(QtMetaTypePrivate::QPairVariantInterfaceImpl)
 
 #endif // QMETATYPE_H
