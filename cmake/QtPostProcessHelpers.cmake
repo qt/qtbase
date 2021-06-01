@@ -632,6 +632,14 @@ endif()
 ")
         endif()
 
+        if(DEFINED OpenGL_GL_PREFERENCE)
+            string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
+                "
+# Use the OpenGL_GL_PREFERENCE value qtbase was built with. But do not FORCE it.
+set(OpenGL_GL_PREFERENCE \"${OpenGL_GL_PREFERENCE}\" CACHE STRING \"\")
+")
+        endif()
+
         qt_compute_relative_path_from_cmake_config_dir_to_prefix()
         configure_file(
             "${CMAKE_CURRENT_LIST_DIR}/QtBuildInternalsExtra.cmake.in"
