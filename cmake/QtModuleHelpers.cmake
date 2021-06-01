@@ -153,10 +153,11 @@ function(qt_internal_add_module target)
         set_target_properties(${target} PROPERTIES
             FRAMEWORK TRUE
             FRAMEWORK_VERSION "A" # Not based on Qt major version
-            MACOSX_FRAMEWORK_IDENTIFIER org.qt-project.Qt${target}
+            MACOSX_FRAMEWORK_IDENTIFIER org.qt-project.${module}
             MACOSX_FRAMEWORK_BUNDLE_VERSION ${PROJECT_VERSION}
             MACOSX_FRAMEWORK_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
         )
+        qt_internal_get_framework_info(fw ${target})
     endif()
 
     if(QT_FEATURE_reduce_relocations AND UNIX AND NOT is_interface_lib)
@@ -246,7 +247,7 @@ function(qt_internal_add_module target)
         endif()
         if(is_framework)
             set_target_properties(${target} PROPERTIES
-                OUTPUT_NAME Qt${target}
+                OUTPUT_NAME ${fw_name}
             )
         else()
             set_target_properties(${target} PROPERTIES
@@ -387,7 +388,6 @@ function(qt_internal_add_module target)
     endif()
 
     if(is_framework)
-        qt_internal_get_framework_info(fw ${target})
         set(fw_install_dir "${INSTALL_LIBDIR}/${fw_dir}")
         set(fw_install_header_dir "${INSTALL_LIBDIR}/${fw_header_dir}")
         set(fw_output_header_dir "${QT_BUILD_DIR}/${fw_install_header_dir}")
@@ -699,11 +699,11 @@ set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
                         "$<BUILD_INTERFACE:${module_include_dir}/${PROJECT_VERSION}/${module}>")
 
             if(is_framework)
-                qt_internal_get_framework_info(fw ${target})
                 set(fw_install_private_header_dir "${INSTALL_LIBDIR}/${fw_private_header_dir}")
+                set(fw_install_private_module_header_dir "${INSTALL_LIBDIR}/${fw_private_module_header_dir}")
                 list(APPEND interface_includes
                             "$<INSTALL_INTERFACE:${fw_install_private_header_dir}>"
-                            "$<INSTALL_INTERFACE:${fw_install_private_header_dir}/${module}>")
+                            "$<INSTALL_INTERFACE:${fw_install_private_module_header_dir}>")
             else()
                 list(APPEND interface_includes
                             "$<INSTALL_INTERFACE:${INSTALL_INCLUDEDIR}/${module}/${PROJECT_VERSION}>"

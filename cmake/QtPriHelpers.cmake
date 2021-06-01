@@ -220,7 +220,7 @@ function(qt_generate_module_pri_file target)
         set(public_module_includes "${framework_base_path}/${fw_header_dir}")
         set(public_module_frameworks "${framework_base_path}")
         set(private_module_includes "${framework_base_path}/${fw_private_header_dir} \
-${framework_base_path}/${fw_private_header_dir}/${module}")
+${framework_base_path}/${fw_private_module_header_dir}")
         set(module_name_in_pri "${module}")
     else()
         set(public_module_includes "$$QT_MODULE_INCLUDE_BASE $$QT_MODULE_INCLUDE_BASE/${module}")

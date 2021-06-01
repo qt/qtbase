@@ -64,20 +64,12 @@ function(qt_copy_framework_headers target)
     set(multiValueArgs)
     cmake_parse_arguments(ARG "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
-    # The module name might be different of the actual target name.
-    get_target_property(module_interface_name ${target} _qt_module_interface_name)
-    if(module_interface_name)
-        set(module "Qt${module_interface_name}")
-    else()
-        set(module "Qt${target}")
-    endif()
-
     qt_internal_get_framework_info(fw ${target})
     set(fw_output_header_dir "${fw_versioned_header_dir}")
     if(ARG_PRIVATE)
-        set(fw_output_header_dir "${fw_private_header_dir}/${module}/private")
+        set(fw_output_header_dir "${fw_private_module_header_dir}/private")
     elseif(ARG_QPA)
-        set(fw_output_header_dir "${fw_private_header_dir}/${module}/qpa")
+        set(fw_output_header_dir "${fw_private_module_header_dir}/qpa")
     endif()
 
     get_target_property(output_dir ${target} LIBRARY_OUTPUT_DIRECTORY)
@@ -144,15 +136,28 @@ endfunction()
 #        e.g. 'QtCore.framework/Versions/A/Headers'
 #    <out_var>_private_header_dir header directory for the specific framework version and
 #       framework bundle version e.g. 'QtCore.framework/Versions/A/Headers/6.0.0'
+#    <out_var>_private_module_header_dir private header directory for the specific framework
+#       version, framework bundle version and tailing module name, e.g.
+#       'QtCore.framework/Versions/A/Headers/6.0.0/Core'
 function(qt_internal_get_framework_info out_var target)
     get_target_property(${out_var}_version ${target} FRAMEWORK_VERSION)
     get_target_property(${out_var}_bundle_version ${target} MACOSX_FRAMEWORK_BUNDLE_VERSION)
 
-    set(${out_var}_name "Qt${target}")
+    # The module name might be different of the actual target name
+    # and we want to use the Qt'fied module name as a framework identifier.
+    get_target_property(module_interface_name ${target} _qt_module_interface_name)
+    if(module_interface_name)
+        qt_internal_qtfy_target(module ${module_interface_name})
+    else()
+        qt_internal_qtfy_target(module ${target})
+    endif()
+
+    set(${out_var}_name "${module}")
     set(${out_var}_dir "${${out_var}_name}.framework")
     set(${out_var}_header_dir "${${out_var}_dir}/Headers")
     set(${out_var}_versioned_header_dir "${${out_var}_dir}/Versions/${${out_var}_version}/Headers")
     set(${out_var}_private_header_dir "${${out_var}_header_dir}/${${out_var}_bundle_version}")
+    set(${out_var}_private_module_header_dir "${${out_var}_private_header_dir}/${module}")
 
     set(${out_var}_name "${${out_var}_name}" PARENT_SCOPE)
     set(${out_var}_dir "${${out_var}_dir}" PARENT_SCOPE)
@@ -161,4 +166,5 @@ function(qt_internal_get_framework_info out_var target)
     set(${out_var}_bundle_version "${${out_var}_bundle_version}" PARENT_SCOPE)
     set(${out_var}_versioned_header_dir "${${out_var}_versioned_header_dir}" PARENT_SCOPE)
     set(${out_var}_private_header_dir "${${out_var}_private_header_dir}" PARENT_SCOPE)
+    set(${out_var}_private_module_header_dir "${${out_var}_private_module_header_dir}" PARENT_SCOPE)
 endfunction()
