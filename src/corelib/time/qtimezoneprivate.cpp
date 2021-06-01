@@ -79,7 +79,7 @@ static const QUtcData *utcData(quint16 index)
 }
 
 // Return the Windows ID literal for a given QWindowsData
-static QByteArray windowsId(const QWindowsData *windowsData)
+static QByteArrayView windowsId(const QWindowsData *windowsData)
 {
     return (windowsIdData + windowsData->windowsIdIndex);
 }
@@ -121,7 +121,7 @@ static QByteArray toWindowsIdLiteral(quint16 windowsIdKey)
     for (quint16 i = 0; i < windowsDataTableSize; ++i) {
         const QWindowsData *data = windowsData(i);
         if (data->windowsIdKey == windowsIdKey)
-            return windowsId(data);
+            return windowsId(data).toByteArray();
     }
     return QByteArray();
 }
