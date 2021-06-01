@@ -152,8 +152,7 @@ void MainWindow::writeSettings()
     QSettings settings("Moose Soft", "Clipper");
 
     settings.beginGroup("MainWindow");
-    settings.setValue("size", size());
-    settings.setValue("pos", pos());
+    settings.setValue("geometry", saveGeometry());
     settings.endGroup();
 }
 //! [16]
@@ -164,8 +163,11 @@ void MainWindow::readSettings()
     QSettings settings("Moose Soft", "Clipper");
 
     settings.beginGroup("MainWindow");
-    resize(settings.value("size", QSize(400, 400)).toSize());
-    move(settings.value("pos", QPoint(200, 200)).toPoint());
+    const auto geometry = settings.value("geometry", QByteArray()).toByteArray();
+    if (geometry.isEmpty())
+        setGeometry(200, 200, 400, 400);
+    else
+        restoreGeometry(geometry)
     settings.endGroup();
 }
 //! [17]
