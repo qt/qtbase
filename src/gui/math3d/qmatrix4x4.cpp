@@ -633,7 +633,7 @@ QMatrix4x4& QMatrix4x4::operator/=(float divisor)
     \fn QVector3D operator*(const QVector3D& vector, const QMatrix4x4& matrix)
     \relates QMatrix4x4
 
-    \obsolete Convert the QVector3D to a QVector4D first, then multiply.
+    \deprecated Convert the QVector3D to a QVector4D first, then multiply.
 
     Returns the result of transforming \a vector according to \a matrix,
     with the matrix applied post-vector. The vector is transformed as a point.
@@ -643,7 +643,7 @@ QMatrix4x4& QMatrix4x4::operator/=(float divisor)
     \fn QVector3D operator*(const QMatrix4x4& matrix, const QVector3D& vector)
     \relates QMatrix4x4
 
-    \obsolete Use QMatrix4x4::map() or QMatrix4x4::mapVector() instead.
+    \deprecated Use QMatrix4x4::map() or QMatrix4x4::mapVector() instead.
 
     Returns the result of transforming \a vector according to \a matrix,
     with the matrix applied pre-vector. The vector is transformed as a
@@ -696,7 +696,7 @@ QMatrix4x4& QMatrix4x4::operator/=(float divisor)
     \fn QPoint operator*(const QMatrix4x4& matrix, const QPoint& point)
     \relates QMatrix4x4
 
-    \obsolete Use QMatrix4x4::map() instead.
+    \deprecated Use QMatrix4x4::map() instead.
 
     Returns the result of transforming \a point according to \a matrix,
     with the matrix applied pre-point.
@@ -706,7 +706,7 @@ QMatrix4x4& QMatrix4x4::operator/=(float divisor)
     \fn QPointF operator*(const QMatrix4x4& matrix, const QPointF& point)
     \relates QMatrix4x4
 
-    \obsolete Use QMatrix4x4::map() instead.
+    \deprecated Use QMatrix4x4::map() instead.
 
     Returns the result of transforming \a point according to \a matrix,
     with the matrix applied pre-point.

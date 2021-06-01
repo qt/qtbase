@@ -114,19 +114,19 @@ QBitmap::QBitmap()
 
     \sa clear()
 */
-
 QBitmap::QBitmap(int w, int h)
     : QPixmap(QSize(w, h), QPlatformPixmap::BitmapType)
 {
 }
 
 /*!
+    \deprecated Use fromPixmap instead.
+
     Constructs a bitmap with the given \a size.  The pixels in the
     bitmap are uninitialized.
 
     \sa clear()
 */
-
 QBitmap::QBitmap(const QSize &size)
     : QPixmap(size, QPlatformPixmap::BitmapType)
 {
@@ -149,7 +149,6 @@ QBitmap::QBitmap(const QSize &size)
 
     \sa QPixmap::isNull(), QImageReader::imageFormat()
 */
-
 QBitmap::QBitmap(const QString& fileName, const char *format)
     : QPixmap(QSize(0, 0), QPlatformPixmap::BitmapType)
 {
@@ -277,7 +276,7 @@ QBitmap QBitmap::fromPixmap(const QPixmap &pixmap)
 
 #if QT_DEPRECATED_SINCE(6, 0)
 /*!
-    \obsolete Use fromPixmap instead.
+    \deprecated Use fromPixmap instead.
     Constructs a bitmap that is a copy of the given \a pixmap.
 
     If the pixmap has a depth greater than 1, the resulting bitmap
@@ -285,14 +284,13 @@ QBitmap QBitmap::fromPixmap(const QPixmap &pixmap)
 
     \sa QPixmap::depth(), fromImage(), fromData()
 */
-
 QBitmap::QBitmap(const QPixmap &pixmap)
 {
     *this = QBitmap::fromPixmap(pixmap);
 }
 
 /*!
-    \obsolete Use fromPixmap instead.
+    \deprecated Use fromPixmap instead.
     \overload
 
     Assigns the given \a pixmap to this bitmap and returns a reference
@@ -303,7 +301,6 @@ QBitmap::QBitmap(const QPixmap &pixmap)
 
     \sa QPixmap::depth()
  */
-
 QBitmap &QBitmap::operator=(const QPixmap &pixmap)
 {
     *this = QBitmap::fromPixmap(pixmap);

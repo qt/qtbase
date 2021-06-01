@@ -167,6 +167,7 @@ public:
     Q_ENUM(ResolveProperties)
 
     QFont();
+
     QFont(const QString &family, int pointSize = -1, int weight = -1, bool italic = false);
     explicit QFont(const QStringList &families, int pointSize = -1, int weight = -1, bool italic = false);
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)

@@ -142,8 +142,7 @@ bool QEventPoint::operator==(const QEventPoint &other) const noexcept
 QEventPoint::~QEventPoint() = default;
 
 /*! \fn QPointF QEventPoint::pos() const
-    \obsolete
-    Deprecated since Qt 6.0. Use position() instead.
+    \deprecated Use position() instead.
 
     Returns the position of this point, relative to the widget
     or item that received the event.
@@ -443,10 +442,8 @@ bool QEventPoint::isAccepted() const
 
 
 /*!
-    \obsolete
     \fn QPointF QEventPoint::normalizedPos() const
-
-    Deprecated since Qt 6.0. Use normalizedPosition() instead.
+    \deprecated Use normalizedPosition() instead.
 */
 
 /*!
@@ -470,8 +467,7 @@ QPointF QEventPoint::normalizedPosition() const
 }
 
 /*!
-    \obsolete
-    Deprecated since Qt 6.0. Use globalPressPosition() instead.
+    \deprecated Use globalPressPosition() instead.
 
     Returns the normalized press position of this point.
 */
@@ -487,8 +483,7 @@ QPointF QEventPoint::startNormalizedPos() const
 }
 
 /*!
-    \obsolete
-    Deprecated since Qt 6.0. Use globalLastPosition() instead.
+    \deprecated Use globalLastPosition() instead.
 
     Returns the normalized position of this point from the previous press or
     move event.
@@ -496,7 +491,7 @@ QPointF QEventPoint::startNormalizedPos() const
     The coordinates are normalized to QInputDevice::availableVirtualGeometry(),
     i.e. \c (0, 0) is the top-left corner and \c (1, 1) is the bottom-right corner.
 
-    \sa normalizedPos(), startNormalizedPos()
+    \sa normalizedPosition(), globalPressPosition()
 */
 QPointF QEventPoint::lastNormalizedPos() const
 {
