@@ -877,14 +877,14 @@ void QHashSeed::resetRandomGlobalSeed()
 #if QT_DEPRECATED_SINCE(6,6)
 /*! \relates QHash
     \since 5.6
-    \deprecated Use QHashSeed::globalSeed() instead.
+    \deprecated [6.6] Use QHashSeed::globalSeed() instead.
 
     Returns the current global QHash seed.
 
     The seed is set in any newly created QHash. See \l{qHash} about how this seed
     is being used by QHash.
 
-    \sa qSetGlobalQHashSeed, QHashSeed::globalSeed()
+    \sa QHashSeed, QHashSeed::globalSeed()
  */
 int qGlobalQHashSeed()
 {
@@ -893,7 +893,7 @@ int qGlobalQHashSeed()
 
 /*! \relates QHash
     \since 5.6
-    \deprecated Use QHashSeed instead.
+    \deprecated [6.6] Use QHashSeed instead.
 
     Sets the global QHash seed to \a newSeed.
 
@@ -913,7 +913,7 @@ int qGlobalQHashSeed()
     If the environment variable \c QT_HASH_SEED is set, calling this function will
     result in a no-op.
 
-    \sa qGlobalQHashSeed, QHashSeed
+    \sa qHashSeed::globalSeed, QHashSeed
  */
 void qSetGlobalQHashSeed(int newSeed)
 {

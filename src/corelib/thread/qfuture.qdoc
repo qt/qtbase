@@ -199,8 +199,7 @@
 #if QT_DEPRECATED_SINCE(6, 0)
 /*! \fn template <typename T> void QFuture<T>::setPaused(bool paused)
 
-    \deprecated
-    Use setSuspended() instead.
+    \deprecated [6.0] Use setSuspended() instead.
 
     If \a paused is true, this function pauses the asynchronous computation
     represented by the future. If the computation is  already paused, this
@@ -216,13 +215,12 @@
     returned by QtConcurrent::run() cannot be paused; but the future returned
     by QtConcurrent::mappedReduced() can.
 
-    \sa pause(), resume(), togglePaused()
+    \sa suspend(), resume(), toggleSuspended()
 */
 
 /*! \fn template <typename T> bool QFuture<T>::isPaused() const
 
-    \deprecated
-    Use isSuspending() or isSuspended() instead.
+    \deprecated [6.0] Use isSuspending() or isSuspended() instead.
 
     Returns \c true if the asynchronous computation has been paused with the
     pause() function; otherwise returns \c false.
@@ -231,13 +229,12 @@
     function returns \c true. See setPaused() for more details. To check
     if pause actually took effect, use isSuspended() instead.
 
-    \sa setPaused(), togglePaused(), isSuspended()
+    \sa toggleSuspended(), isSuspended()
 */
 
 /*! \fn template <typename T> void QFuture<T>::pause()
 
-    \deprecated
-    Use suspend() instead.
+    \deprecated [6.0] Use suspend() instead.
 
     Pauses the asynchronous computation represented by this future. This is a
     convenience method that simply calls setPaused(true).
@@ -247,15 +244,14 @@
 
 /*! \fn template <typename T> void QFuture<T>::togglePaused()
 
-    \deprecated
-    Use toggleSuspended() instead.
+    \deprecated [6.0] Use toggleSuspended() instead.
 
     Toggles the paused state of the asynchronous computation. In other words,
     if the computation is currently paused, calling this function resumes it;
     if the computation is running, it is paused. This is a convenience method
     for calling setPaused(!isPaused()).
 
-    \sa setPaused(), pause(), resume()
+    \sa setSuspended(), suspend(), resume()
 */
 #endif // QT_DEPRECATED_SINCE(6, 0)
 

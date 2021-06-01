@@ -502,7 +502,7 @@ QLocale::Territory QTimeZone::territory() const
 
 #if QT_DEPRECATED_SINCE(6, 6)
 /*!
-    \deprecated Use territory() instead.
+    \deprecated [6.6] Use territory() instead.
 
     Returns the territory for the time zone.
 */
