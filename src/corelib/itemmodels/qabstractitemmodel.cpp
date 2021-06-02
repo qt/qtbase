@@ -3018,6 +3018,13 @@ bool QAbstractItemModelPrivate::allowMove(const QModelIndex &srcParent, int star
 }
 
 /*!
+    \internal
+
+    see QTBUG-94546
+ */
+void QAbstractItemModelPrivate::executePendingOperations() const { }
+
+/*!
     \since 4.6
 
     Begins a row move operation.

@@ -181,6 +181,7 @@ QT_END_INCLUDE_NAMESPACE
 class QTreeModelPrivate : public QAbstractItemModelPrivate
 {
     Q_DECLARE_PUBLIC(QTreeModel)
+    void executePendingOperations() const override;
 };
 
 class QTreeWidgetItemPrivate

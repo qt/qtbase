@@ -112,7 +112,7 @@ public:
 */
 
 QTreeModel::QTreeModel(int columns, QTreeWidget *parent)
-    : QAbstractItemModel(parent), rootItem(new QTreeWidgetItem),
+    : QAbstractItemModel(*new QTreeModelPrivate, parent), rootItem(new QTreeWidgetItem),
       headerItem(new QTreeWidgetItem), skipPendingSort(false)
 {
     rootItem->view = parent;
@@ -3417,6 +3417,14 @@ bool QTreeWidget::event(QEvent *e)
     if (e->type() == QEvent::Polish)
         d->treeModel()->executePendingSort();
     return QTreeView::event(e);
+}
+
+/*!
+    see QTBUG-94546
+*/
+void QTreeModelPrivate::executePendingOperations() const
+{
+    q_func()->executePendingSort();
 }
 
 QT_END_NAMESPACE

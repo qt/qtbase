@@ -99,6 +99,9 @@ public:
     void itemsMoved(const QModelIndex &srcParent, int srcFirst, int srcLast, const QModelIndex &destinationParent, int destinationChild, Qt::Orientation orientation);
     bool allowMove(const QModelIndex &srcParent, int srcFirst, int srcLast, const QModelIndex &destinationParent, int destinationChild, Qt::Orientation orientation);
 
+    // ugly hack for QTreeModel, see QTBUG-94546
+    virtual void executePendingOperations() const;
+
     inline QModelIndex createIndex(int row, int column, void *data = nullptr) const {
         return q_func()->createIndex(row, column, data);
     }
