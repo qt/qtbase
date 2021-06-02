@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -1370,19 +1370,19 @@ void tst_QDateTimeEdit::editingRanged()
     QFETCH(QString, userInput);
     QFETCH(QDateTime, expected);
 
-    QDateTimeEdit *edit;
+    QScopedPointer<QDateTimeEdit> edit;
     if (minTime.isValid()) {
-        edit = new QDateTimeEdit;
+        edit.reset(new QDateTimeEdit);
         edit->setDisplayFormat("dd.MM.yyyy hh:mm");
         edit->setDateTimeRange(QDateTime(minDate, minTime), QDateTime(maxDate, maxTime));
     } else {
-        edit = new QDateEdit;
+        edit.reset(new QDateEdit);
         edit->setDisplayFormat("dd.MM.yyyy");
         edit->setDateRange(minDate, maxDate);
     }
 
     int callCount = 0;
-    connect(edit, &QDateTimeEdit::dateTimeChanged, [&](const QDateTime &dateTime) {
+    connect(edit.get(), &QDateTimeEdit::dateTimeChanged, [&](const QDateTime &dateTime) {
         ++callCount;
         if (minTime.isValid()) {
             QVERIFY(dateTime >= QDateTime(minDate, minTime));
@@ -1394,15 +1394,15 @@ void tst_QDateTimeEdit::editingRanged()
     });
 
     edit->show();
-    QApplication::setActiveWindow(edit);
-    if (!QTest::qWaitForWindowActive(edit))
+    QApplication::setActiveWindow(edit.get());
+    if (!QTest::qWaitForWindowActive(edit.get()))
         QSKIP("Failed to make window active, aborting");
     edit->setFocus();
 
     // with keyboard tracking, never get a signal with an out-of-range value
     edit->setKeyboardTracking(true);
-    QTest::keyClicks(edit, userInput);
-    QTest::keyClick(edit, Qt::Key_Return);
+    QTest::keyClicks(edit.get(), userInput);
+    QTest::keyClick(edit.get(), Qt::Key_Return);
     QVERIFY(callCount > 0);
 
     // QDateTimeEdit blocks these dates from being entered - see QTBUG-65
@@ -1418,12 +1418,10 @@ void tst_QDateTimeEdit::editingRanged()
     callCount = 0;
 
     edit->setKeyboardTracking(false);
-    QTest::keyClicks(edit, userInput);
-    QTest::keyClick(edit, Qt::Key_Return);
+    QTest::keyClicks(edit.get(), userInput);
+    QTest::keyClick(edit.get(), Qt::Key_Return);
     QCOMPARE(edit->dateTime(), expected);
     QCOMPARE(callCount, 1);
-
-    delete edit;
 }
 
 void tst_QDateTimeEdit::wrappingTime_data()
@@ -3807,7 +3805,6 @@ void tst_QDateTimeEdit::deleteCalendarWidget()
 {
     {
         // setup
-        QCalendarWidget *cw = 0;
         QDateEdit edit;
         QVERIFY(!edit.calendarWidget());
         edit.setCalendarPopup(true);
@@ -3815,8 +3812,7 @@ void tst_QDateTimeEdit::deleteCalendarWidget()
         edit.calendarWidget()->setObjectName("cw1");;
 
         // delete
-        cw = edit.calendarWidget();
-        delete cw;
+        delete edit.calendarWidget();
 
         // it should create a new widget
         QVERIFY(edit.calendarWidget());
