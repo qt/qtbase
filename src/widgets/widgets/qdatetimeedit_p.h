@@ -107,7 +107,7 @@ public:
         if (keyboardTracking)
             return maximum.toDateTime();
         if (spec != Qt::LocalTime)
-            return QDateTime(QDATETIMEEDIT_DATE_MIN.startOfDay(spec));
+            return QDateTime(QDATETIMEEDIT_DATE_MAX.endOfDay(spec));
         return QDateTimeParser::getMaximum();
     }
     QLocale locale() const override { return q_func()->locale(); }
