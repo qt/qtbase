@@ -177,12 +177,10 @@ QLocale::Territory QTimeZonePrivate::territory() const
     for (int i = 0; i < zoneDataTableSize; ++i) {
         const QZoneData *data = zoneData(i);
         QByteArrayView idView = ianaIdView(data);
-        while (!idView.isEmpty()) {
-            qsizetype index = idView.indexOf(' ');
-            QByteArrayView next = index == -1 ? idView : idView.first(index);
-            if (next == m_id)
-                return (QLocale::Territory)data->territory;
-            idView = index == -1 ? QByteArrayView() : idView.sliced(index + 1);
+        QLatin1String view(idView.data(), idView.size());
+        for (QLatin1String token : view.tokenize(QLatin1String(" "))) {
+            if (token == QLatin1String(m_id.data(), m_id.size()))
+                return QLocale::Territory(data->territory);
         }
     }
     return QLocale::AnyTerritory;
