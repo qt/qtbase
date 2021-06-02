@@ -1346,6 +1346,12 @@ void QAbstractAnimation::setCurrentTime(int msecs)
     if (d->currentLoop != oldLoop)
         d->currentLoop.notify();
 
+    /* Notify before calling stop: As seen in tst_QSequentialAnimationGroup::clear
+     * we might delete the animation when stop is called. Thus after stop no member
+     * of the object must be used anymore.
+     */
+    if (oldCurrentTime != d->totalCurrentTime)
+        d->totalCurrentTime.notify();
     // All animations are responsible for stopping the animation when their
     // own end state is reached; in this case the animation is time driven,
     // and has reached the end.
@@ -1353,8 +1359,6 @@ void QAbstractAnimation::setCurrentTime(int msecs)
         || (d->direction == Backward && d->totalCurrentTime == 0)) {
         stop();
     }
-    if (oldCurrentTime != d->totalCurrentTime)
-        d->totalCurrentTime.notify();
 }
 
 /*!

@@ -1614,7 +1614,7 @@ void tst_QSequentialAnimationGroup::clear()
 {
     SequentialAnimationGroup group;
     QPointer<QAbstractAnimation> anim1 = new DummyPropertyAnimation(&group);
-    group.connect(anim1, SIGNAL(finished()), SLOT(clear()));
+    connect(anim1, &QAbstractAnimation::finished, &group, &QSequentialAnimationGroup::clear);
     new DummyPropertyAnimation(&group);
     QCOMPARE(group.animationCount(), 2);
 
