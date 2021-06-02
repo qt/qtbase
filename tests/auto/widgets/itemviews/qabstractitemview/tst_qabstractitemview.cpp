@@ -2790,9 +2790,14 @@ void tst_QAbstractItemView::mouseSelection_data()
         << QList{SelectionEvent(SelectionEvent::Press, 1),
                  SelectionEvent(SelectionEvent::Press, 1)}
         << QList<int>{};
-    QTest::addRow("Multi:Click") << QAbstractItemView::MultiSelection << false
-        << QList{SelectionEvent(SelectionEvent::Click, 2)}
-        << QList{2};
+    QTest::addRow("Multi:Press twice with drag enabled") << QAbstractItemView::MultiSelection << true
+        << QList{SelectionEvent(SelectionEvent::Click, 1),
+                 SelectionEvent(SelectionEvent::Press, 1)}
+        << QList{1};
+    QTest::addRow("Multi:Press and click with drag enabled") << QAbstractItemView::MultiSelection << true
+        << QList{SelectionEvent(SelectionEvent::Press, 1),
+                 SelectionEvent(SelectionEvent::Click, 1)}
+        << QList<int>{};
     QTest::addRow("Multi:Press,Press") << QAbstractItemView::MultiSelection << false
         << QList{SelectionEvent(SelectionEvent::Press, 2),
                  SelectionEvent(SelectionEvent::Press, 3)}
@@ -2828,11 +2833,15 @@ void tst_QAbstractItemView::mouseSelection_data()
         << QList{3, 4};
     // Multi: Press-dragging a selection should not deselect #QTBUG-59888
     QTest::addRow("Multi:Press-Drag selection") << QAbstractItemView::MultiSelection << true
-        << QList{SelectionEvent(SelectionEvent::Press, 2),
-                 SelectionEvent(SelectionEvent::Move, 5),
-                 SelectionEvent(SelectionEvent::Release),
+        // with drag'n'drop enabled, we cannot drag a selection
+        << QList{SelectionEvent(SelectionEvent::Click, 2),
+                 SelectionEvent(SelectionEvent::Click, 3),
+                 SelectionEvent(SelectionEvent::Click, 4),
+                 SelectionEvent(SelectionEvent::Click, 5),
                  SelectionEvent(SelectionEvent::Press, 3),
-                 SelectionEvent(SelectionEvent::Move, 5)}
+                 // two moves needed because of distance and state logic in QAbstractItemView
+                 SelectionEvent(SelectionEvent::Move, 5),
+                 SelectionEvent(SelectionEvent::Move, 6)}
         << QList{2, 3, 4, 5};
 
     // Extended selection: Press selects a single item
@@ -2962,12 +2971,12 @@ void tst_QAbstractItemView::mouseSelection()
     }
 
     QList<int> actualSelected;
-    const auto selectedIndexes = dragEnabled ? dragRecorder->draggedIndexes
-                                             : view->selectionModel()->selectedIndexes();
+    const auto selectedIndexes = dragRecorder->dragStarted
+                               ? dragRecorder->draggedIndexes
+                               : view->selectionModel()->selectedIndexes();
     for (auto index : selectedIndexes)
         actualSelected << index.row();
 
-    QEXPECT_FAIL("Multi:Press-Drag selection", "QTBUG-59889", Continue);
     QCOMPARE(actualSelected, selectedRows);
 }
 
