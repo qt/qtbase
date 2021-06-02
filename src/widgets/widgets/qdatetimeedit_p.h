@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
@@ -107,7 +107,7 @@ public:
         if (keyboardTracking)
             return maximum.toDateTime();
         if (spec != Qt::LocalTime)
-            return QDateTime(QDATETIMEEDIT_DATE_MIN.startOfDay(spec));
+            return QDateTime(QDATETIMEEDIT_DATE_MAX.endOfDay(spec));
         return QDateTimeParser::getMaximum();
     }
     QLocale locale() const override { return q_func()->locale(); }
