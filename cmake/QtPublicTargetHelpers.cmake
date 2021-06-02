@@ -33,7 +33,16 @@ endfunction()
 
 function(__qt_internal_collect_dependency_resource_objects target out_var)
     set_property(GLOBAL PROPERTY _qt_resource_processed_targets "")
+
     __qt_internal_collect_resource_objects_recursively(resource_targets ${target} ${target})
+
+    # Collect resource objects of plugins and plugin dependencies.
+    __qt_internal_collect_plugin_targets_from_dependencies(${target} plugin_targets)
+    __qt_internal_collect_dependency_plugin_resource_objects(${target}
+        "${plugin_targets}"
+        plugin_resource_objects
+    )
+
     set_property(GLOBAL PROPERTY _qt_resource_processed_targets "")
 
     list(REMOVE_DUPLICATES resource_targets)
@@ -42,7 +51,25 @@ function(__qt_internal_collect_dependency_resource_objects target out_var)
         list(PREPEND resource_objects "$<TARGET_OBJECTS:${dep}>")
     endforeach()
 
-    set(${out_var} "${resource_objects}" PARENT_SCOPE)
+    set(${out_var} "${plugin_resource_objects};${resource_objects}" PARENT_SCOPE)
+endfunction()
+
+function(__qt_internal_collect_dependency_plugin_resource_objects target plugin_targets out_var)
+    set(plugin_resource_objects "")
+    foreach(plugin_target IN LISTS plugin_targets)
+        __qt_internal_collect_resource_objects_recursively(plugin_resource_targets
+            "${QT_CMAKE_EXPORT_NAMESPACE}::${plugin_target}"
+            ${target}
+        )
+        __qt_internal_get_static_plugin_condition_genex("${plugin_target}" plugin_condition)
+
+        foreach(plugin_resource_target IN LISTS plugin_resource_targets)
+            list(APPEND plugin_resource_objects
+                "$<${plugin_condition}:$<TARGET_OBJECTS:${plugin_resource_target}>>"
+            )
+        endforeach()
+    endforeach()
+    set(${out_var} "${plugin_resource_objects}" PARENT_SCOPE)
 endfunction()
 
 function(__qt_internal_collect_resource_objects_recursively out_var target initial_target)
@@ -77,7 +104,10 @@ function(__qt_internal_collect_resource_objects_recursively out_var target initi
             if(is_qt_resource)
                 list(APPEND resource_targets ${lib})
             else()
-                __qt_internal_collect_resource_objects_recursively(next_level_resources ${lib} ${initial_target})
+                __qt_internal_collect_resource_objects_recursively(next_level_resources
+                    ${lib}
+                    ${initial_target}
+                )
                 list(APPEND resource_targets ${next_level_resources})
             endif()
         endif()
