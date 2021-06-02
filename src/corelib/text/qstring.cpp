@@ -1237,7 +1237,6 @@ static int latin1nicmp(const char *lhsChar, qsizetype lSize, const char *rhsChar
     const uchar *rhs = reinterpret_cast<const uchar *>(rhsChar);
     Q_ASSERT(lhs && rhs); // since both lSize and rSize are positive
     for (qsizetype i = 0; i < size; i++) {
-        Q_ASSERT(lhs[i] && rhs[i]);
         if (int res = latin1Lower[lhs[i]] - latin1Lower[rhs[i]])
             return res;
     }
