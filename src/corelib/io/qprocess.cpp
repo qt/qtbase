@@ -391,6 +391,8 @@ void QProcessPrivate::Channel::clear()
         process->stdoutChannel.type = Normal;
         process->stdoutChannel.process = nullptr;
         break;
+    default:
+        break;
     }
 
     type = Normal;
