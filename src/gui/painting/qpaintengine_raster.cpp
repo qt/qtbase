@@ -2596,6 +2596,8 @@ void QRasterPaintEngine::alphaPenBlt(const void* src, int bpl, int depth, int rx
         return;
 
     QRasterBuffer *rb = d->rasterBuffer.data();
+    if (rb->colorSpace.transferFunction() == QColorSpace::TransferFunction::Linear)
+        useGammaCorrection = false;
 
     const QRect rect(rx, ry, w, h);
     const QClipData *clip = d->clip();
