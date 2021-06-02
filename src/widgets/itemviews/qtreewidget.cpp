@@ -112,7 +112,9 @@ public:
 */
 
 QTreeModel::QTreeModel(int columns, QTreeWidget *parent)
-    : QAbstractItemModel(parent), rootItem(new QTreeWidgetItem), headerItem(new QTreeWidgetItem)
+    : QAbstractItemModel(*new QTreeModelPrivate, parent),
+      rootItem(new QTreeWidgetItem),
+      headerItem(new QTreeWidgetItem)
 {
     rootItem->view = parent;
     rootItem->itemFlags = Qt::ItemIsDropEnabled;
@@ -3363,6 +3365,14 @@ bool QTreeWidget::event(QEvent *e)
     if (e->type() == QEvent::Polish)
         d->treeModel()->executePendingSort();
     return QTreeView::event(e);
+}
+
+/*!
+    see QTBUG-94546
+*/
+void QTreeModelPrivate::executePendingOperations() const
+{
+    q_func()->executePendingSort();
 }
 
 QT_END_NAMESPACE

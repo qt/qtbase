@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -41,6 +41,7 @@
 #include "qitemselectionmodel_p.h"
 
 #include <private/qitemselectionmodel_p.h>
+#include <private/qabstractitemmodel_p.h>
 #include <private/qduplicatetracker_p.h>
 #include <qdebug.h>
 
@@ -285,6 +286,11 @@ static void rowLengthsFromRange(const QItemSelectionRange &range, QList<QPair<QP
     }
 }
 
+static bool isSelectableAndEnabled(Qt::ItemFlags flags)
+{
+    return flags.testFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+}
+
 template<typename ModelIndexContainer>
 static void indexesFromRange(const QItemSelectionRange &range, ModelIndexContainer &result)
 {
@@ -296,8 +302,7 @@ static void indexesFromRange(const QItemSelectionRange &range, ModelIndexContain
             const QModelIndex columnLeader = topLeft.sibling(row, topLeft.column());
             for (int column = topLeft.column(); column <= right; ++column) {
                 QModelIndex index = columnLeader.sibling(row, column);
-                Qt::ItemFlags flags = range.model()->flags(index);
-                if ((flags & Qt::ItemIsSelectable) && (flags & Qt::ItemIsEnabled))
+                if (isSelectableAndEnabled(range.model()->flags(index)))
                     result.push_back(index);
             }
         }
@@ -314,7 +319,9 @@ static ModelIndexContainer qSelectionIndexes(const QItemSelection &selection)
 }
 
 /*!
-    Returns \c true if the selection range contains no selectable item
+    Returns \c true if the selection range contains either no items
+    or only items which are either disabled or marked as not selectable.
+
     \since 4.7
 */
 
@@ -326,8 +333,7 @@ bool QItemSelectionRange::isEmpty() const
     for (int column = left(); column <= right(); ++column) {
         for (int row = top(); row <= bottom(); ++row) {
             QModelIndex index = model()->index(row, column, parent());
-            Qt::ItemFlags flags = model()->flags(index);
-            if ((flags & Qt::ItemIsSelectable) && (flags & Qt::ItemIsEnabled))
+            if (isSelectableAndEnabled(model()->flags(index)))
                 return false;
         }
     }
@@ -440,7 +446,7 @@ void QItemSelection::select(const QModelIndex &topLeft, const QModelIndex &botto
 
 bool QItemSelection::contains(const QModelIndex &index) const
 {
-    if (index.flags() & Qt::ItemIsSelectable) {
+    if (isSelectableAndEnabled(index.flags())) {
         QList<QItemSelectionRange>::const_iterator it = begin();
         for (; it != end(); ++it)
             if ((*it).contains(index))
@@ -1475,10 +1481,8 @@ bool QItemSelectionModel::isSelected(const QModelIndex &index) const
             selected = d->currentSelection.contains(index);
     }
 
-    if (selected) {
-        Qt::ItemFlags flags = d->model->flags(index);
-        return flags.testAnyFlag(Qt::ItemIsSelectable);
-    }
+    if (selected)
+        return isSelectableAndEnabled(d->model->flags(index));
 
     return false;
 }
@@ -1524,8 +1528,7 @@ bool QItemSelectionModel::isRowSelected(int row, const QModelIndex &parent) cons
     }
 
     auto isSelectable = [&](int row, int column) {
-        Qt::ItemFlags flags = d->model->index(row, column, parent).flags();
-        return (flags & Qt::ItemIsSelectable);
+        return isSelectableAndEnabled(d->model->index(row, column, parent).flags());
     };
 
     const int colCount = d->model->columnCount(parent);
@@ -1603,8 +1606,7 @@ bool QItemSelectionModel::isColumnSelected(int column, const QModelIndex &parent
     }
 
     auto isSelectable = [&](int row, int column) {
-        Qt::ItemFlags flags = d->model->index(row, column, parent).flags();
-        return (flags & Qt::ItemIsSelectable);
+        return isSelectableAndEnabled(d->model->index(row, column, parent).flags());
     };
     const int rowCount = d->model->rowCount(parent);
     int unselectable = 0;
@@ -1662,8 +1664,7 @@ bool QItemSelectionModel::rowIntersectsSelection(int row, const QModelIndex &par
         int right = range.right();
         if (top <= row && bottom >= row) {
             for (int j = left; j <= right; j++) {
-                const Qt::ItemFlags flags = d->model->index(row, j, parent).flags();
-                if ((flags & Qt::ItemIsSelectable) && (flags & Qt::ItemIsEnabled))
+                if (isSelectableAndEnabled(d->model->index(row, j, parent).flags()))
                     return true;
             }
         }
@@ -1698,8 +1699,7 @@ bool QItemSelectionModel::columnIntersectsSelection(int column, const QModelInde
         int right = range.right();
         if (left <= column && right >= column) {
             for (int j = top; j <= bottom; j++) {
-                const Qt::ItemFlags flags = d->model->index(j, column, parent).flags();
-                if ((flags & Qt::ItemIsSelectable) && (flags & Qt::ItemIsEnabled))
+                if (isSelectableAndEnabled(d->model->index(j, column, parent).flags()))
                     return true;
             }
         }
@@ -1709,20 +1709,44 @@ bool QItemSelectionModel::columnIntersectsSelection(int column, const QModelInde
 }
 
 /*!
+    \internal
+
+    Check whether the selection is empty.
+    In contrast to selection.isEmpty(), this takes into account
+    whether items are enabled and whether they are selectable.
+*/
+static bool selectionIsEmpty(const QItemSelection &selection)
+{
+    return std::all_of(selection.begin(), selection.end(),
+                       [](const QItemSelectionRange &r) { return r.isEmpty(); });
+}
+
+/*!
     \since 4.2
 
-    Returns \c true if the selection model contains any selection ranges;
+    Returns \c true if the selection model contains any selected item,
     otherwise returns \c false.
 */
 bool QItemSelectionModel::hasSelection() const
 {
     Q_D(const QItemSelectionModel);
+
+    // QTreeModel unfortunately sorts itself lazily.
+    // When it sorts itself, it emits are layoutChanged signal.
+    // This layoutChanged signal invalidates d->ranges here.
+    // So QTreeModel must not sort itself while we are iterating over
+    // d->ranges here. It sorts itself in executePendingOperations,
+    // thus preventing the sort to happen inside of selectionIsEmpty below.
+    // Sad story, read more in QTBUG-94546
+    auto model_p = static_cast<const QAbstractItemModelPrivate *>(QObjectPrivate::get(model()));
+    model_p->executePendingOperations();
+
     if (d->currentCommand & (Toggle | Deselect)) {
         QItemSelection sel = d->ranges;
         sel.merge(d->currentSelection, d->currentCommand);
-        return !sel.isEmpty();
+        return !selectionIsEmpty(sel);
     } else {
-        return !(d->ranges.isEmpty() && d->currentSelection.isEmpty());
+        return !(selectionIsEmpty(d->ranges) && selectionIsEmpty(d->currentSelection));
     }
 }
 

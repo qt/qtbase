@@ -2070,8 +2070,10 @@ void tst_QItemSelectionModel::unselectable()
     selectionModel.select(QItemSelection(model.index(0, 0), model.index(9, 0)), QItemSelectionModel::Select);
     QCOMPARE(selectionModel.selectedIndexes().count(), 10);
     QCOMPARE(selectionModel.selectedRows().count(), 10);
+    QVERIFY(selectionModel.hasSelection());
     for (int j = 0; j < 10; ++j)
         model.item(j)->setFlags({ });
+    QVERIFY(!selectionModel.hasSelection());
     QCOMPARE(selectionModel.selectedIndexes().count(), 0);
     QCOMPARE(selectionModel.selectedRows().count(), 0);
 }
