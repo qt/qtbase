@@ -40,6 +40,18 @@
 #ifndef QIDENTITYPROXYMODEL_P_H
 #define QIDENTITYPROXYMODEL_P_H
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists for the convenience
+// of QAbstractItemModel*.  This header file may change from version
+// to version without notice, or even be removed.
+//
+// We mean it.
+//
+//
+
 #include <QtCore/private/qabstractproxymodel_p.h>
 #include <QtCore/qidentityproxymodel.h>
 
