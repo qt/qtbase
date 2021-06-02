@@ -337,6 +337,8 @@ private Q_SLOTS:
     void member_compare_QLatin1String_QChar() { member_compare_impl<QLatin1String, QChar>(); }
     void member_compare_QLatin1String_char16_t_data() { member_compare_data(false); }
     void member_compare_QLatin1String_char16_t() { member_compare_impl<QLatin1String, char16_t>(); }
+    void member_compare_QLatin1String_QLatin1Char_data() { member_compare_data(false); }
+    void member_compare_QLatin1String_QLatin1Char() { member_compare_impl<QLatin1String, QLatin1Char>(); }
     void member_compare_QLatin1String_QString_data() { member_compare_data(); }
     void member_compare_QLatin1String_QString() { member_compare_impl<QLatin1String, QString>(); }
     void member_compare_QLatin1String_QStringView_data() { member_compare_data(); }
@@ -404,6 +406,8 @@ private Q_SLOTS:
     void startsWith_QLatin1String_QChar() { startsWith_impl<QLatin1String, QChar>(); }
     void startsWith_QLatin1String_char16_t_data() { startsWith_data(false); }
     void startsWith_QLatin1String_char16_t() { startsWith_impl<QLatin1String, char16_t>(); }
+    void startsWith_QLatin1String_QLatin1Char_data() { startsWith_data(false); }
+    void startsWith_QLatin1String_QLatin1Char() { startsWith_impl<QLatin1String, QLatin1Char>(); }
 
     void endsWith_QString_QString_data() { endsWith_data(); }
     void endsWith_QString_QString() { endsWith_impl<QString, QString>(); }
@@ -437,6 +441,8 @@ private Q_SLOTS:
     void endsWith_QLatin1String_QChar() { endsWith_impl<QLatin1String, QChar>(); }
     void endsWith_QLatin1String_char16_t_data() { endsWith_data(false); }
     void endsWith_QLatin1String_char16_t() { endsWith_impl<QLatin1String, char16_t>(); }
+    void endsWith_QLatin1String_QLatin1Char_data() { endsWith_data(false); }
+    void endsWith_QLatin1String_QLatin1Char() { endsWith_impl<QLatin1String, QLatin1Char>(); }
 
 private:
     void split_data(bool rhsHasVariableLength = true);
@@ -505,6 +511,8 @@ private Q_SLOTS:
     void tok_QLatin1String_QChar() { tok_impl<QLatin1String, QChar>(); }
     void tok_QLatin1String_char16_t_data() { tok_data(false); }
     void tok_QLatin1String_char16_t() { tok_impl<QLatin1String, char16_t>(); }
+    void tok_QLatin1String_QLatin1Char_data() { tok_data(false); }
+    void tok_QLatin1String_QLatin1Char() { tok_impl<QLatin1String, QLatin1Char>(); }
 
     void tok_const_char16_t_star_QString_data() { tok_data(); }
     void tok_const_char16_t_star_QString() { tok_impl<const char16_t*, QString>(); }
@@ -741,6 +749,8 @@ private Q_SLOTS:
     void indexOf_QLatin1String_QChar() { indexOf_impl<QLatin1String, QChar>(); }
     void indexOf_QLatin1String_char16_t_data() { indexOf_data(false); }
     void indexOf_QLatin1String_char16_t() { indexOf_impl<QLatin1String, char16_t>(); }
+    void indexOf_QLatin1String_QLatin1Char_data() { indexOf_data(false); }
+    void indexOf_QLatin1String_QLatin1Char() { indexOf_impl<QLatin1String, QLatin1Char>(); }
 
     void indexOf_QStringView_QString_data() { indexOf_data(); }
     void indexOf_QStringView_QString() { indexOf_impl<QStringView, QString>(); }
@@ -780,6 +790,8 @@ private Q_SLOTS:
     void contains_QLatin1String_QChar() { contains_impl<QLatin1String, QChar>(); }
     void contains_QLatin1String_char16_t_data() { contains_data(false); }
     void contains_QLatin1String_char16_t() { contains_impl<QLatin1String, char16_t>(); }
+    void contains_QLatin1String_QLatin1Char_data() { contains_data(false); }
+    void contains_QLatin1String_QLatin1Char() { contains_impl<QLatin1String, QLatin1Char>(); }
 
     void contains_QStringView_QString_data() { contains_data(); }
     void contains_QStringView_QString() { contains_impl<QStringView, QString>(); }
@@ -819,6 +831,8 @@ private Q_SLOTS:
     void lastIndexOf_QLatin1String_QChar() { lastIndexOf_impl<QLatin1String, QChar>(); }
     void lastIndexOf_QLatin1String_char16_t_data() { lastIndexOf_data(false); }
     void lastIndexOf_QLatin1String_char16_t() { lastIndexOf_impl<QLatin1String, char16_t>(); }
+    void lastIndexOf_QLatin1String_QLatin1Char_data() { lastIndexOf_data(false); }
+    void lastIndexOf_QLatin1String_QLatin1Char() { lastIndexOf_impl<QLatin1String, QLatin1Char>(); }
 
     void lastIndexOf_QStringView_QString_data() { lastIndexOf_data(); }
     void lastIndexOf_QStringView_QString() { lastIndexOf_impl<QStringView, QString>(); }
@@ -907,6 +921,7 @@ template <class Str> Str  make(QStringView sf, QLatin1String l1, const QByteArra
     /*end*/
 MAKE(QChar)                  { return sv.isEmpty() ? QChar() : sv.at(0); }
 MAKE(char16_t)               { return sv.isEmpty() ? char16_t() : char16_t{sv.at(0).unicode()}; }
+MAKE(QLatin1Char)            { return l1.isEmpty() ? QLatin1Char('\0') : l1.at(0); }
 MAKE(QString)                { return sv.toString(); }
 MAKE(QStringView)            { return sv; }
 MAKE(QLatin1String)          { return l1; }
