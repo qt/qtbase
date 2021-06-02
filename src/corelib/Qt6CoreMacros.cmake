@@ -757,6 +757,11 @@ if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
     function(qt_finalize_target)
         qt6_finalize_target(${ARGV})
     endfunction()
+
+    # Kept for compatibility with Qt Creator 4.15 wizards
+    function(qt_finalize_executable)
+        qt6_finalize_target(${ARGV})
+    endfunction()
 endif()
 
 # Temporarily keep compatibility, until all repositories are migrated.
