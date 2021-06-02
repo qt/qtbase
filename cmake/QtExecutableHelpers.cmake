@@ -243,7 +243,7 @@ function(qt_internal_add_executable name)
             set(class_names
                 "${class_names_regular}${class_names_separator}${class_names_current_project}")
 
-            file(GENERATE OUTPUT ${out_file} CONTENT
+            file(GENERATE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${out_file} CONTENT
 "// This file is auto-generated. Do not edit.
 #include <QtPlugin>
 
@@ -252,7 +252,7 @@ Q_IMPORT_PLUGIN($<JOIN:${class_names},)\nQ_IMPORT_PLUGIN(>)
                 CONDITION "$<NOT:$<STREQUAL:${class_names},>>"
             )
             target_sources(${name} PRIVATE
-                "$<$<NOT:$<STREQUAL:${class_names},>>:${out_file}>"
+                "$<$<NOT:$<STREQUAL:${class_names},>>:${CMAKE_CURRENT_BINARY_DIR}/${out_file}>"
             )
             target_link_libraries(${name} PRIVATE
                 "$<TARGET_PROPERTY:${lib},_qt_initial_repo_plugins>"
