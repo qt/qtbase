@@ -139,6 +139,7 @@ qt_internal_setup_public_platform_target()
 
 # defines PlatformCommonInternal PlatformModuleInternal PlatformPluginInternal PlatformToolInternal
 include(QtInternalTargets)
+qt_internal_run_common_config_tests()
 
 set(__export_targets Platform
                      GlobalConfig
@@ -234,6 +235,12 @@ qt_copy_or_install(FILES
                    cmake/QtWasmHelpers.cmake
                    cmake/QtWrapperScriptHelpers.cmake
                    cmake/QtWriteArgsFile.cmake
+    DESTINATION "${__GlobalConfig_install_dir}"
+)
+
+# Install public config.tests files.
+qt_copy_or_install(DIRECTORY
+    "cmake/config.tests"
     DESTINATION "${__GlobalConfig_install_dir}"
 )
 
