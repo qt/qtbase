@@ -62,19 +62,24 @@
 # define _POSIX_
 # include <limits.h>
 # undef _POSIX_
-#endif
-#include <qcoreapplication.h>
-#include <qcoreevent.h>
-#include <qiodevice.h>
-#include <qlist.h>
-#include <qvariant.h>  /* All moc genereated code has this include */
-#include <qobject.h>
-#if QT_CONFIG(regularexpression)
-#    include <qregularexpression.h>
-#endif
-#include <qscopedpointer.h>
-#include <qshareddata.h>
-#include <qstring.h>
-#include <qstringlist.h>
-#include <qtimer.h>
+#        if defined(Q_CC_CLANG) && defined(Q_CC_MSVC)
+// See https://bugs.llvm.org/show_bug.cgi?id=41226
+#            include <wchar.h>
+__declspec(selectany) auto *__wmemchr_symbol_loader_value = wmemchr(L"", L'0', 0);
+#        endif
+#    endif
+#    include <qcoreapplication.h>
+#    include <qcoreevent.h>
+#    include <qiodevice.h>
+#    include <qlist.h>
+#    include <qvariant.h> /* All moc genereated code has this include */
+#    include <qobject.h>
+#    if QT_CONFIG(regularexpression)
+#        include <qregularexpression.h>
+#    endif
+#    include <qscopedpointer.h>
+#    include <qshareddata.h>
+#    include <qstring.h>
+#    include <qstringlist.h>
+#    include <qtimer.h>
 #endif

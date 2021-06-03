@@ -577,6 +577,15 @@ if(NOT ANDROID)
         )
     endif()
 
+    if (MSVC AND CLANG AND TEST_subarch_sse4_1)
+        qt_internal_add_simd_part(Gui SIMD sse4_1
+            SOURCES
+                painting/qdrawhelper.cpp
+                painting/qdrawhelper_sse2.cpp
+                painting/qdrawhelper_ssse3.cpp
+        )
+    endif()
+
     qt_internal_add_simd_part(Gui SIMD ssse3
         SOURCES
             image/qimage_ssse3.cpp

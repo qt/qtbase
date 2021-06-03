@@ -271,6 +271,26 @@ qt_internal_add_module(Core
     # special case end
 )
 
+if (MSVC AND CLANG)
+    foreach(subarch sse4_1 rdrnd rdseed)
+        if (TEST_subarch_${subarch})
+            qt_internal_add_simd_part(Core SIMD ${subarch}
+                SOURCES
+                    global/qsimd.cpp
+            )
+        endif()
+    endforeach()
+
+    foreach(subarch sse4_1 aesni)
+        if (TEST_subarch_${subarch})
+            qt_internal_add_simd_part(Core SIMD ${subarch}
+                SOURCES
+                    tools/qhash.cpp
+            )
+        endif()
+    endforeach()
+endif()
+
 qt_update_ignore_pch_source(Core kernel/qmetatype.cpp )
 
 # special case begin

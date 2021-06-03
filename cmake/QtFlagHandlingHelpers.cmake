@@ -235,7 +235,7 @@ endfunction()
 function(qt_set_msvc_cplusplus_options target visibility)
     # For MSVC we need to explicitly pass -Zc:__cplusplus to get correct __cplusplus.
     # Check qt_config_compile_test for more info.
-    if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" AND MSVC_VERSION GREATER_EQUAL 1913)
+    if(MSVC AND MSVC_VERSION GREATER_EQUAL 1913)
         target_compile_options("${target}" ${visibility} "-Zc:__cplusplus" "-permissive-")
     endif()
 endfunction()
