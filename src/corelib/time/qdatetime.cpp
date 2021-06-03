@@ -2404,6 +2404,119 @@ int QDateTimeParser::startsWithLocalTimeZone(QStringView name)
 static constexpr int tmYearFromQYear(int year) { return year - (year < 0 ? 1899 : 1900); }
 static constexpr int qYearFromTmYear(int year) { return year + (year < -1899 ? 1899 : 1900); }
 
+/* If mktime() returns -1, is it really an error ?
+
+   It might return -1 because we're looking at the last second of 1969 and
+   mktime does support times before 1970 (POSIX says "If the year is <1970 or
+   the value is negative, the relationship is undefined" and MS rejects the
+   value, consistent with that; so we don't call qt_mktime() on MS in this case
+   and can't get -1 unless it's a real error). However, on UNIX, that's -1 UTC
+   time and all we know, aside from mktime's return, is the local time. (We
+   could check errno, but we call mktime from within a
+   qt_scoped_lock(QBasicMutex), whose unlocking and destruction of the locker
+   might frob errno.)
+
+   We can assume the zone offset is a multiple of five minutes and less than a
+   day, so this can only arise for the last second of a minute that differs from
+   59 by a multiple of 5 on the last day of 1969 or the first day of 1970.  That
+   makes for a cheap pre-test; if it holds, we can ask mktime about the first
+   second of the same minute; if it gives us -60, then the -1 we originally saw
+   is not an error (or was an error, but needn't have been).
+*/
+static inline bool meansEnd1969(tm *local)
+{
+#ifdef Q_OS_WIN
+    Q_UNUSED(local);
+    return false;
+#else
+    if (local->tm_sec < 59 || local->tm_year < 69 || local->tm_year > 70
+        || local->tm_min % 5 != 4 // Assume zone offset is a multiple of 5 mins
+        || (local->tm_year == 69
+            ? local->tm_mon < 11 || local->tm_mday < 31
+            : local->tm_mon > 0 || local->tm_mday > 1)) {
+        return false;
+    }
+    tm copy = *local;
+    copy.tm_sec--; // Preceding second should get -2, not -1
+    if (qMkTime(&copy) != -2)
+        return false;
+    // The original call to qMkTime() may have returned -1 as failure, not
+    // updating local, even though it could have; so fake it here. Assumes there
+    // was no transition in the last minute of the day !
+    *local = copy;
+    local->tm_sec++; // Advance back to the intended second
+    return true;
+#endif
+}
+
+/*
+    Call mktime but bypass its fixing of denormal times.
+
+    The POSIX spec says mktime() accepts a struct tm whose fields lie outside
+    the usual ranges; the parameter is not const-qualified and will be updated
+    to have values in those ranges. However, MS's implementation doesn't do that
+    (or hasn't always done it); and the only member we actually want updated is
+    the tm_isdst flag.  (Aside: MS's implementation also only works for tm_year
+    >= 70; this is, in fact, in accordance with the POSIX spec; but all known
+    UNIX libc implementations in fact have a signed time_t and Do The Sensible
+    Thing, to the best of their ability, at least for 0 <= tm_year < 70; see
+    meansEnd1969 for the handling of the last second of UTC's 1969.)
+
+    If we thought we knew tm_isdst and mktime() disagrees, it'll let us know
+    either by correcting it - in which case it adjusts the struct tm to reflect
+    the same time, but represented using the right tm_isdst, so typically an
+    hour earlier or later - or by returning -1. When this happens, the way we
+    actually use qt_mktime(), we don't want a revised time with corrected DST,
+    we want the original time with its corrected DST; so we retry the call, this
+    time not claiming to know the DST-ness.
+
+    POSIX doesn't actually say what to do if the specified struct tm describes a
+    time in a spring-forward gap: read literally, this is an unrepresentable
+    time and it could return -1, setting errno to EOVERFLOW. However, actual
+    implementations chose a time one side or the other of the gap. For example,
+    if we claim to know DST, glibc pushes to the other side of the gap (changing
+    tm_isdst), but stays on the indicated branch of a repetition (no change to
+    tm_isdst); this matches how QTimeZonePrivate::dataForLocalTime() uses its
+    hint; in either case, if we don't claim to know DST, glibc picks the DST
+    candidate. (Experiments conducted with glibc 2.31-9.)
+*/
+static inline bool callMkTime(tm *local, time_t *secs)
+{
+    constexpr time_t maybeError = -1; // mktime()'s return on error; or last second of 1969 UTC.
+    const tm copy = *local;
+    *secs = qMkTime(local);
+    bool good = *secs != maybeError || meansEnd1969(local);
+    if (copy.tm_isdst >= 0 && (!good || local->tm_isdst != copy.tm_isdst)) {
+        // We thought we knew DST-ness, but were wrong:
+        *local = copy;
+        local->tm_isdst = -1;
+        *secs = qMkTime(local);
+        good = *secs != maybeError || meansEnd1969(local);
+    }
+#if defined(Q_OS_WIN)
+    // Windows mktime for the missing hour backs up 1 hour instead of advancing
+    // 1 hour. If time differs and is standard time then this has happened, so
+    // add 2 hours to the time and 1 hour to the secs
+    if (local->tm_isdst == 0 && local->tm_hour != copy.tm_hour) {
+        local->tm_hour += 2;
+        if (local->tm_hour > 23) {
+            local->tm_hour -= 24;
+            if (++local->tm_mday > QGregorianCalendar::monthLength(
+                    local->tm_mon + 1, qYearFromTmYear(local->tm_year))) {
+                local->tm_mday = 1;
+                if (++local->tm_mon > 11) {
+                    local->tm_mon = 0;
+                    ++local->tm_year;
+                }
+            }
+        }
+        *secs += SECS_PER_HOUR;
+        local->tm_isdst = 1;
+    }
+#endif // Q_OS_WIN
+    return good;
+}
+
 // Calls the platform variant of mktime for the given date, time and
 // daylightStatus, and updates the date, time, daylightStatus and abbreviation
 // with the returned values. If the date falls outside the time_t range
@@ -2411,12 +2524,12 @@ static constexpr int qYearFromTmYear(int year) { return year + (year < -1899 ? 1
 static qint64 qt_mktime(QDate *date, QTime *time, QDateTimePrivate::DaylightStatus *daylightStatus,
                         QString *abbreviation, bool *ok)
 {
-    Q_ASSERT(ok);
+    Q_ASSERT(ok && date && time);
     qint64 msec = time->msec();
+    Q_ASSERT(msec < MSECS_PER_SEC);
     int yy, mm, dd;
     date->getDate(&yy, &mm, &dd);
 
-    // All other platforms provide standard C library time functions
     tm local = {};
     local.tm_sec = time->second();
     local.tm_min = time->minute();
@@ -2426,52 +2539,8 @@ static qint64 qt_mktime(QDate *date, QTime *time, QDateTimePrivate::DaylightStat
     local.tm_year = tmYearFromQYear(yy);
     local.tm_isdst = daylightStatus ? int(*daylightStatus) : -1;
 
-#if defined(Q_OS_WIN)
-    int hh = local.tm_hour;
-#endif // Q_OS_WIN
-    time_t secsSinceEpoch = qMkTime(&local);
-    // That can fail if we thought we knew DST-ness, but were wrong:
-    if (secsSinceEpoch == time_t(-1) && local.tm_isdst >= 0) {
-        local.tm_isdst = -1;
-        secsSinceEpoch = qMkTime(&local);
-    }
-
-    if (secsSinceEpoch != time_t(-1)) {
-        *date = QDate(qYearFromTmYear(local.tm_year), local.tm_mon + 1, local.tm_mday);
-        *time = QTime(local.tm_hour, local.tm_min, local.tm_sec, msec);
-#if defined(Q_OS_WIN)
-        // Windows mktime for the missing hour subtracts 1 hour from the time
-        // instead of adding 1 hour.  If time differs and is standard time then
-        // this has happened, so add 2 hours to the time and 1 hour to the msecs
-        if (local.tm_isdst == 0 && local.tm_hour != hh) {
-            if (time->hour() >= 22)
-                *date = date->addDays(1);
-            *time = time->addSecs(2 * SECS_PER_HOUR);
-            secsSinceEpoch += SECS_PER_HOUR;
-            local.tm_isdst = 1;
-        }
-#endif // Q_OS_WIN
-        if (local.tm_isdst > 0) {
-            if (daylightStatus)
-                *daylightStatus = QDateTimePrivate::DaylightTime;
-            if (abbreviation)
-                *abbreviation = qt_tzname(QDateTimePrivate::DaylightTime);
-        } else {
-            if (daylightStatus) {
-                *daylightStatus = (local.tm_isdst == 0
-                                   ? QDateTimePrivate::StandardTime
-                                   : QDateTimePrivate::UnknownDaylightTime);
-            }
-            if (abbreviation)
-                *abbreviation = qt_tzname(QDateTimePrivate::StandardTime);
-        }
-    } else if (yy == 1969 && mm == 12 && dd == 31
-               && QTime(0, 0).secsTo(*time) == SECS_PER_DAY - 1) {
-        // There was, of course, a last second in 1969, at time_t(-1); we won't
-        // rescue it if it's not in normalised form, and we don't know its DST
-        // status (unless we did already), but let's not wantonly declare it
-        // invalid.
-    } else {
+    time_t secsSinceEpoch;
+    if (!callMkTime(&local, &secsSinceEpoch)) {
         *date = QDate();
         *time = QTime();
         if (daylightStatus)
@@ -2481,6 +2550,28 @@ static qint64 qt_mktime(QDate *date, QTime *time, QDateTimePrivate::DaylightStat
         *ok = false;
         return 0;
     }
+
+    // Store date and time:
+    *date = QDate(qYearFromTmYear(local.tm_year), local.tm_mon + 1, local.tm_mday);
+    *time = QTime(local.tm_hour, local.tm_min, local.tm_sec, msec);
+
+    // Store zone details:
+    if (local.tm_isdst > 0) {
+        if (daylightStatus)
+            *daylightStatus = QDateTimePrivate::DaylightTime;
+        if (abbreviation)
+            *abbreviation = qt_tzname(QDateTimePrivate::DaylightTime);
+    } else {
+        if (daylightStatus) {
+            *daylightStatus = (local.tm_isdst == 0
+                               ? QDateTimePrivate::StandardTime
+                               : QDateTimePrivate::UnknownDaylightTime);
+        }
+        if (abbreviation)
+            *abbreviation = qt_tzname(QDateTimePrivate::StandardTime);
+    }
+
+    // Compute final UTC milliseconds since epoch:
     if (secsSinceEpoch < 0 && msec > 0) {
         secsSinceEpoch++;
         msec -= MSECS_PER_SEC;

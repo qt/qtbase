@@ -1133,10 +1133,13 @@ void tst_QDateTime::addDays()
     QCOMPARE(dt2.timeSpec(), Qt::OffsetFromUTC);
     QCOMPARE(dt2.offsetFromUtc(), 60 * 60);
 
-    // test last second of 1969 *is* valid (despite being time_t(-1))
-    dt1 = QDateTime(QDate(1970, 1, 1), QTime(23, 59, 59));
-    dt2 = dt1.addDays(-1);
+    // Test last UTC second of 1969 *is* valid (despite being time_t(-1))
+    dt1 = QDateTime(QDate(1969, 12, 30), QTime(23, 59, 59), Qt::UTC).toLocalTime().addDays(1);
+    QVERIFY(dt1.isValid());
+    QCOMPARE(dt1.toSecsSinceEpoch(), -1);
+    dt2 = QDateTime(QDate(1970, 1, 1), QTime(23, 59, 59), Qt::UTC).toLocalTime().addDays(-1);
     QVERIFY(dt2.isValid());
+    QCOMPARE(dt2.toSecsSinceEpoch(), -1);
 }
 
 void tst_QDateTime::addInvalid()
@@ -1397,6 +1400,9 @@ void tst_QDateTime::addMSecs_data()
     QTest::newRow("epoch-1s-local")
         << QDateTime(QDate(1970, 1, 1), QTime(0, 0)) << qint64(-1)
         << QDateTime(QDate(1969, 12, 31), QTime(23, 59, 59));
+    QTest::newRow("epoch-1s-utc-as-local")
+        << QDate(1970, 1, 1).startOfDay(Qt::UTC).toLocalTime() << qint64(-1)
+        << QDateTime(QDate(1969, 12, 31), QTime(23, 59, 59), Qt::UTC).toLocalTime();
 
     // Overflow and Underflow
     const qint64 maxSeconds = std::numeric_limits<qint64>::max() / 1000;
@@ -1485,6 +1491,9 @@ void tst_QDateTime::toTimeSpec_data()
     QTest::newRow("1969/12/31 23:00 UTC")
         << QDateTime(QDate(1969, 12, 31), QTime(23, 0), Qt::UTC)
         << QDateTime(QDate(1970, 1, 1), QTime(0, 0), Qt::LocalTime);
+    QTest::newRow("1969/12/31 23:59:59 UTC")
+        << QDateTime(QDate(1969, 12, 31), QTime(23, 59, 59), Qt::UTC)
+        << QDateTime(QDate(1970, 1, 1), QTime(0, 59, 59), Qt::LocalTime);
     QTest::newRow("2037/12/31 23:00 UTC")
         << QDateTime(QDate(2037, 12, 31), QTime(23, 0), Qt::UTC)
         << QDateTime(QDate(2038, 1, 1), QTime(0, 0), Qt::LocalTime);
