@@ -1937,7 +1937,8 @@ void QAbstractItemView::mouseReleaseEvent(QMouseEvent *event)
 
     if (d->selectionModel && d->noSelectionOnMousePress) {
         d->noSelectionOnMousePress = false;
-        d->selectionModel->select(index, selectionCommand(index, event));
+        if (!edited)
+            d->selectionModel->select(index, selectionCommand(index, event));
     }
 
     setState(NoState);
