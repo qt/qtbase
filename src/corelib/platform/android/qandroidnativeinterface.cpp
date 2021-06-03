@@ -178,7 +178,7 @@ void QNativeInterface::QAndroidApplication::hideSplashScreen(int duration)
     \note Becareful about the type of operations you do on the Android's main
     thread, as any long operation can block the app's UI rendering and input
     handling. If the function is expected to have long execution time, it's
-    also good to use a \l QDeadlineTimer() in your \a runnable to manage
+    also good to use a \l QDeadlineTimer in your \a runnable to manage
     the execution and make sure it doesn't block the UI thread. Usually,
     any operation longer than 5 seconds might block the app's UI. For more
     information, see \l {Android: Keeping your app responsive}{Keeping your app responsive}.

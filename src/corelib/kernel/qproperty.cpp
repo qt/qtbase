@@ -1001,7 +1001,7 @@ QString QPropertyBindingError::description() const
 
   \return \c true when the binding was successfully set.
 
-  \sa QUntypedPropertyBinding::valueMetaType()
+  //! \sa QUntypedPropertyBinding::valueMetaType()
 */
 
 /*!
@@ -1017,7 +1017,7 @@ QString QPropertyBindingError::description() const
   Returns the metatype of the property from which the QUntypedBindable was created.
   If the bindable is invalid, an invalid metatype will be returned.
 
-  \sa isValid(), QUntypedPropertyBinding::valueMetaType()
+  \sa isValid() //!, QUntypedPropertyBinding::valueMetaType()
 */
 
 /*!
@@ -1287,7 +1287,7 @@ QString QPropertyBindingError::description() const
 */
 
 /*!
-  \fn QPropertyNotifier QProperty<T>::addNotifier(Functor f)
+  \fn template <typename T> template <typename Functor> QPropertyNotifier QProperty<T>::addNotifier(Functor f)
 
   Subscribes the given functor \a f as a callback that is called whenever
   the value of the property changes.
@@ -1628,7 +1628,7 @@ QString QPropertyBindingError::description() const
   \note If this property has a binding (i.e. hasBinding() returns true), that binding is not reevaluated when
   notify() is called. Any binding depending on this property is still reevaluated as usual.
 
-  \sa Qt::beginProperytUpdateGroup(), setValueBypassingBindings()
+  \sa Qt::beginPropertyUpdateGroup(), setValueBypassingBindings()
 */
 
 /*!
@@ -1973,7 +1973,7 @@ QString QPropertyBindingError::description() const
 */
 
 /*!
-  \fn template <typename T> QPropertyNotifier QPropertyAlias<T>::addNotifier(Functor f)
+  \fn template <typename T> template <typename Functor> QPropertyNotifier QPropertyAlias<T>::addNotifier(Functor f)
 
   Subscribes the given functor \a f as a callback that is called whenever
   the value of the aliased property changes.

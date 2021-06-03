@@ -74,6 +74,8 @@
     \value WriteCalendar Write to the user's calendar.
            Maps to \c "android.permission.WRITE_CALENDAR" on Android.
 
+    \omitvalue Bluetooth
+
     \note Both Android and iOS require the native permission values to be added
     to the \c AndroidManifest.xml and \c info.plist respectively. For more
     information on Android permissions, see \c {Qt Creator: Editing Manifest Files}.

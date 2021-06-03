@@ -739,7 +739,7 @@ QAndroidIntent::QAndroidIntent(const QString &action)
         auto serviceIntent = QAndroidIntent(QtAndroidPrivate::androidActivity().object(), "com.example.MyService");
     \endcode
 
-    \sa QtAndroidPrivate::androidActivity, QtAndroidPrivate::bindService
+    \sa QtAndroidPrivate::bindService
  */
 QAndroidIntent::QAndroidIntent(const QJniObject &packageContext, const char *className)
     : m_handle("android/content/Intent", "(Landroid/content/Context;Ljava/lang/Class;)V",

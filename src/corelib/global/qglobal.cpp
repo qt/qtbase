@@ -3871,7 +3871,7 @@ bool qunsetenv(const char *varName)
     \relates <QtGlobal>
     \since 6.2
 
-    Converts the enumerator \e to the equivalent value expressed in its
+    Converts the enumerator \a e to the equivalent value expressed in its
     enumeration's underlying type.
 */
 
