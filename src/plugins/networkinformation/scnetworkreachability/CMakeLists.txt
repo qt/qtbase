@@ -1,7 +1,7 @@
-qt_internal_add_plugin(QSCNetworkReachabilityNetworkInformationBackendPlugin
-    OUTPUT_NAME scnetworkreachabilitynetworkinformationbackend
+qt_internal_add_plugin(QSCNetworkReachabilityNetworkInformationPlugin
+    OUTPUT_NAME scnetworkreachability
     CLASS_NAME QSCNetworkReachabilityNetworkInformationBackendFactory
-    TYPE networkinformationbackends
+    TYPE networkinformation
     DEFAULT_IF APPLE
     SOURCES
         qscnetworkreachabilitynetworkinformationbackend.mm

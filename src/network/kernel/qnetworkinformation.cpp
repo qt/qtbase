@@ -64,7 +64,7 @@ struct QNetworkInformationDeleter
 
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
                           (QNetworkInformationBackendFactory_iid,
-                           QStringLiteral("/networkinformationbackends")))
+                           QStringLiteral("/networkinformation")))
 
 struct QStaticNetworkInformationDataHolder
 {
