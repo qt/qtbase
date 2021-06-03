@@ -14,7 +14,7 @@ instructions:
     command: "{{.Env.TESTS_ENV_PREFIX}} ctest {{.Env.CTEST_ARGS}}"
     executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
     ignoreExitCode: false
-    maxTimeInSeconds: 7200
+    maxTimeInSeconds: 10800
     maxTimeBetweenOutput: 900
     userMessageOnFailure: >
       Failed to run tests.
