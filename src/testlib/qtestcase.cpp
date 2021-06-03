@@ -1074,7 +1074,9 @@ public:
             case TestFunctionStart:
             case TestFunctionEnd:
                 if (Q_UNLIKELY(!waitFor(locker, e))) {
+#ifndef Q_OS_WASM
                     stackTrace();
+#endif
                     qFatal("Test function timed out");
                 }
             }
