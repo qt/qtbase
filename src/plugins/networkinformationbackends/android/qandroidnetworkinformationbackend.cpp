@@ -128,10 +128,7 @@ QAndroidNetworkInformationBackend::QAndroidNetworkInformationBackend()
     });
 
     connect(conman, &AndroidConnectivityManager::captivePortalChanged, this,
-            [this](bool state) {
-                using TriState = QNetworkInformation::TriState;
-                setBehindCaptivePortal(state ? TriState::True : TriState::False);
-            });
+            &QAndroidNetworkInformationBackend::setBehindCaptivePortal);
 }
 
 QT_END_NAMESPACE

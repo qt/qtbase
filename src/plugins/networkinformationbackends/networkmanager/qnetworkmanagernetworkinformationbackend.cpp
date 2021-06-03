@@ -144,16 +144,15 @@ QNetworkManagerNetworkInformationBackend::QNetworkManagerNetworkInformationBacke
             });
 
     using ConnectivityState = QNetworkManagerInterface::NMConnectivityState;
-    using TriState = QNetworkInformation::TriState;
 
     const auto connectivityState = iface.connectivityState();
     const bool behindPortal = (connectivityState == ConnectivityState::NM_CONNECTIVITY_PORTAL);
-    setBehindCaptivePortal(behindPortal ? TriState::True : TriState::False);
+    setBehindCaptivePortal(behindPortal);
 
     connect(&iface, &QNetworkManagerInterface::connectivityChanged, this,
             [this](ConnectivityState state) {
                 const bool behindPortal = (state == ConnectivityState::NM_CONNECTIVITY_PORTAL);
-                setBehindCaptivePortal(behindPortal ? TriState::True : TriState::False);
+                setBehindCaptivePortal(behindPortal);
             });
 }
 

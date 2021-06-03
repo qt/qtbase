@@ -70,7 +70,7 @@ public:
     virtual QNetworkInformation::Features featuresSupported() const = 0;
 
     QNetworkInformation::Reachability reachability() const { return m_reachability; }
-    QNetworkInformation::TriState behindCaptivePortal() const { return m_behindCaptivePortal; }
+    bool behindCaptivePortal() const { return m_behindCaptivePortal; }
 
 Q_SIGNALS:
     void reachabilityChanged();
@@ -85,7 +85,7 @@ protected:
         }
     }
 
-    void setBehindCaptivePortal(QNetworkInformation::TriState behindPortal)
+    void setBehindCaptivePortal(bool behindPortal)
     {
         if (m_behindCaptivePortal != behindPortal) {
             m_behindCaptivePortal = behindPortal;
@@ -95,8 +95,7 @@ protected:
 
 private:
     QNetworkInformation::Reachability m_reachability = QNetworkInformation::Reachability::Unknown;
-    QNetworkInformation::TriState m_behindCaptivePortal =
-            QNetworkInformation::TriState::Unknown;
+    bool m_behindCaptivePortal = false;
 
     Q_DISABLE_COPY_MOVE(QNetworkInformationBackend)
     friend class QNetworkInformation;

@@ -365,10 +365,7 @@ void QNetworkListManagerNetworkInformationBackend::setConnectivity(NLM_CONNECTIV
 
 void QNetworkListManagerNetworkInformationBackend::checkCaptivePortal()
 {
-    const bool behindPortal = managerEvents->checkBehindCaptivePortal();
-    using TriState = QNetworkInformation::TriState;
-    const auto triState = behindPortal ? TriState::True : TriState::False;
-    setBehindCaptivePortal(triState);
+    setBehindCaptivePortal(managerEvents->checkBehindCaptivePortal());
 }
 
 bool QNetworkListManagerNetworkInformationBackend::event(QEvent *event)
