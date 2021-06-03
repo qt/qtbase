@@ -3647,6 +3647,18 @@ void tst_QSslSocket::verifyClientCertificate()
 
 void tst_QSslSocket::readBufferMaxSize()
 {
+    // QTBUG-94186: originally, only SecureTransport was
+    // running this test (since it was a bug in that backend,
+    // see comment below), after TLS plugins were introduced,
+    // we enabled this test on all backends, as a part of
+    // the clean up. This revealed the fact that this test
+    // is flaky, and it started to fail on Windows.
+    // TODO: this is a temporary solution, to be removed
+    // as soon as 94186 fixed for good.
+    if (!isTestingSecureTransport)
+        QSKIP("This test is flaky with TLS backend other than SecureTransport");
+
+
     // QTBUG-55170:
     // SecureTransport back-end was ignoring read-buffer
     // size limit, resulting (potentially) in a constantly
