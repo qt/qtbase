@@ -178,29 +178,31 @@ JNIEnv *QJniEnvironment::jniEnv() const
 }
 
 /*!
-    \fn jclass QJniEnvironment::findClass(const char *className)
-
     Searches for \a className using all available class loaders. Qt on Android
     uses a custom class loader to load all the .jar files and it must be used
     to find any classes that are created by that class loader because these
     classes are not visible when using the default class loader.
 
-    Returns the class pointer or null if is not found.
+    Returns the class pointer or null if \a className is not found.
 
-    A use case for this function is searching for a custom class then calling
-    its member method. The following code snippet creates an instance of the
-    class \c CustomClass and then calls the \c printFromJava() method:
+    A use case for this function is searching for a class to call a JNI method
+    that takes a \c jclass. This can be useful when doing multiple JNI calls on
+    the same class object which can a bit faster than using a class name in each
+    call. Additionally, this call looks for internally cached classes first before
+    doing a JNI call, and returns such a class if found. The following code snippet
+    creates an instance of the class \c CustomClass and then calls the
+    \c printFromJava() method:
 
     \code
     QJniEnvironment env;
     jclass javaClass = env.findClass("org/qtproject/example/android/CustomClass");
-    QJniObject classObject(javaClass);
-
     QJniObject javaMessage = QJniObject::fromString("findClass example");
-    classObject.callMethod<void>("printFromJava",
-                                 "(Ljava/lang/String;)V",
-                                 javaMessage.object<jstring>());
+    QJniObject::callStaticMethod<void>(javaClass, "printFromJava",
+                                       "(Ljava/lang/String;)V", javaMessage.object<jstring>());
     \endcode
+
+    \note This call returns a global reference to the class object from the
+    internally cached classes.
 */
 jclass QJniEnvironment::findClass(const char *className)
 {
