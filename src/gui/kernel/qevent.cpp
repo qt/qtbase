@@ -2829,19 +2829,6 @@ QNativeGestureEvent::QNativeGestureEvent(Qt::NativeGestureType type, const QPoin
       m_sequenceId(sequenceId), m_deltas(deltas), m_realValue(value), m_gestureType(type), m_fingerCount(fingerCount)
 {
     Q_ASSERT(fingerCount < 16); // we store it in 4 bits unsigned
-
-    // make correction to QEventPoint::state(): the QSinglePointEvent ctor doesn't get gesture type, defaults to Updated
-    auto &pt = QMutableEventPoint::from(m_points.first());
-    switch (type) {
-    case Qt::BeginNativeGesture:
-        pt.setState(QEventPoint::State::Pressed);
-        break;
-    case Qt::EndNativeGesture:
-        pt.setState(QEventPoint::State::Released);
-        break;
-    default:
-        break;
-    }
 }
 
 QNativeGestureEvent::~QNativeGestureEvent() = default;
