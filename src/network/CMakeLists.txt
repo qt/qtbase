@@ -5,7 +5,7 @@
 #####################################################################
 
 qt_internal_add_module(Network
-    PLUGIN_TYPES networkaccessbackends networkinformationbackends tls
+    PLUGIN_TYPES networkaccessbackends networkinformation tls
     SOURCES
         access/qabstractnetworkcache.cpp access/qabstractnetworkcache.h access/qabstractnetworkcache_p.h
         access/qhsts.cpp access/qhsts_p.h

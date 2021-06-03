@@ -1,7 +1,7 @@
-qt_internal_add_plugin(QNetworkManagerNetworkInformationBackendPlugin
-    OUTPUT_NAME networkmanagernetworkinformationbackend
+qt_internal_add_plugin(QNetworkManagerNetworkInformationPlugin
+    OUTPUT_NAME networkmanager
     CLASS_NAME QNetworkManagerNetworkInformationBackendFactory
-    TYPE networkinformationbackends
+    TYPE networkinformation
     DEFAULT_IF LINUX
     SOURCES
         qnetworkmanagernetworkinformationbackend.cpp
