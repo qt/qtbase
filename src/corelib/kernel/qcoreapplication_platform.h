@@ -78,7 +78,7 @@ struct Q_CORE_EXPORT QAndroidApplication
                                                  const QDeadlineTimer
                                                  &timeout = QDeadlineTimer(-1))
     {
-        std::function<QVariant()> func = [&](){ runnable(); return QVariant(); };
+        std::function<QVariant()> func = [runnable](){ runnable(); return QVariant(); };
         return static_cast<QFuture<void>>(runOnAndroidMainThread(func, timeout));
     }
 #endif

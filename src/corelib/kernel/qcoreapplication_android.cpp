@@ -178,7 +178,7 @@ QFuture<QPermission::PermissionResult> requestPermissionsInternal(const QStringL
     QMutexLocker locker(&g_pendingPermissionRequestsMutex);
     g_pendingPermissionRequests->insert(requestCode, promise);
 
-    QtAndroidPrivate::runOnAndroidThread([permissions, requestCode] {
+    QNativeInterface::QAndroidApplication::runOnAndroidMainThread([permissions, requestCode] {
         QJniEnvironment env;
         jclass clazz = env.findClass("java/lang/String");
         auto array = env->NewObjectArray(permissions.size(), clazz, nullptr);
@@ -192,7 +192,7 @@ QFuture<QPermission::PermissionResult> requestPermissionsInternal(const QStringL
                                                                   array,
                                                                   requestCode);
         env->DeleteLocalRef(array);
-    }, QJniEnvironment().jniEnv());
+    });
 
     return future;
 }
