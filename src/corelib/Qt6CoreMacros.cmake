@@ -1479,9 +1479,23 @@ function(__qt_propagate_generated_resource target resource_name generated_source
             "$<NOT:$<STREQUAL:$<TARGET_PROPERTY:TYPE>,STATIC_LIBRARY>>"
         )
         set(resource_objects "$<TARGET_OBJECTS:$<TARGET_NAME:${resource_target}>>")
-        target_link_libraries(${target} INTERFACE
+
+        set(resource_linking_args ${target} INTERFACE
             "$<$<AND:${finalizer_mode_condition},${not_static_condition}>:${resource_objects}>"
         )
+
+        # TODO: The QT_LINK_ORDER_MATTERS flag is not defined for user projects.
+        # It makes sense to disable finalizers if linker may resolve circular dependencies
+        # between objects and static libraries.
+        # Follow-up changes should set _qt_resource_objects_finalizer_mode to FALSE by default
+        # and use target_link_libraries for user projects if the order doesn't affect the
+        # linker work.
+        get_property(link_order_matters GLOBAL PROPERTY QT_LINK_ORDER_MATTERS)
+        if(link_order_matters)
+            target_sources(${resource_linking_args})
+        else()
+            target_link_libraries(${resource_linking_args})
+        endif()
 
         if(NOT target STREQUAL "Core")
             # It's necessary to link the object library target, since we want to pass

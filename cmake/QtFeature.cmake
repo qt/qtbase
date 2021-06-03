@@ -736,7 +736,7 @@ function(qt_config_compile_test name)
     endif()
 
     cmake_parse_arguments(arg "" "LABEL;PROJECT_PATH;C_STANDARD;CXX_STANDARD"
-        "COMPILE_OPTIONS;LIBRARIES;CODE;PACKAGES" ${ARGN})
+        "COMPILE_OPTIONS;LIBRARIES;CODE;PACKAGES;CMAKE_FLAGS" ${ARGN})
 
     if(arg_PROJECT_PATH)
         message(STATUS "Performing Test ${arg_LABEL}")
@@ -815,8 +815,12 @@ function(qt_config_compile_test name)
             endif()
         endif()
 
+        if(NOT arg_CMAKE_FLAGS)
+            set(arg_CMAKE_FLAGS "")
+        endif()
+
         try_compile(HAVE_${name} "${CMAKE_BINARY_DIR}/config.tests/${name}" "${arg_PROJECT_PATH}"
-                    "${name}" CMAKE_FLAGS ${flags})
+                    "${name}" CMAKE_FLAGS ${flags} ${arg_CMAKE_FLAGS})
 
         if(${HAVE_${name}})
             set(status_label "Success")

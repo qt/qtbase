@@ -372,6 +372,11 @@ macro(qt_build_repo_begin)
     qt_build_internals_set_up_private_api()
     qt_enable_cmake_languages()
 
+    # QtBase has own call right after definition of internal platform-specific targets.
+    if(NOT PROJECT_NAME STREQUAL "QtBase")
+        qt_internal_run_common_config_tests()
+    endif()
+
     # Add global docs targets that will work both for per-repo builds, and super builds.
     if(NOT TARGET docs)
         add_custom_target(docs)
@@ -941,3 +946,36 @@ if ("STANDALONE_TEST" IN_LIST Qt6BuildInternals_FIND_COMPONENTS)
         list(GET _qt_core_version_list 2 PROJECT_VERSION_PATCH)
     endif()
 endif()
+
+function(qt_internal_static_link_order_test)
+    if(TARGET ${QT_CMAKE_EXPORT_NAMESPACE}::PlatformCommonInternal)
+        get_target_property(linker_options
+            ${QT_CMAKE_EXPORT_NAMESPACE}::PlatformCommonInternal INTERFACE_LINK_OPTIONS
+        )
+        string(JOIN " " linker_options ${linker_options})
+    endif()
+
+    qt_config_compile_test(static_link_order
+        LABEL "Check if linker can resolve circular dependencies"
+        PROJECT_PATH "${QT_CMAKE_DIR}/config.tests/static_link_order"
+        CMAKE_FLAGS "-DCMAKE_EXE_LINKER_FLAGS:STRING=${linker_options}"
+    )
+
+    if(TEST_static_link_order)
+        set_property(GLOBAL PROPERTY QT_LINK_ORDER_MATTERS FALSE)
+        set(summary_message "no")
+    else()
+        set_property(GLOBAL PROPERTY QT_LINK_ORDER_MATTERS TRUE)
+        set(summary_message "yes")
+    endif()
+    qt_configure_add_summary_entry(TYPE "message"
+        ARGS "Linker can resolve circular dependencies"
+        MESSAGE "${summary_message}"
+    )
+endfunction()
+
+function(qt_internal_run_common_config_tests)
+    qt_configure_add_summary_section(NAME "Common build options")
+    qt_internal_static_link_order_test()
+    qt_configure_end_summary_section()
+endfunction()

@@ -58,8 +58,8 @@ add_test(NAME test_static_resources_propagation_non_qt
     COMMAND test_static_resources_propagation_non_qt
 )
 
-
-if(NOT GCC AND NOT MINGW AND NOT CLANG)
+get_property(link_order_matters GLOBAL PROPERTY QT_LINK_ORDER_MATTERS)
+if(NOT link_order_matters)
     ## Add the executable using add_executable, expecting resources to be linked regardless of order.
     add_executable(test_static_resources_propagation_non_ld main.cpp)
     set_target_properties(test_static_resources_propagation_non_ld PROPERTIES
