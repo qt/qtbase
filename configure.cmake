@@ -1150,7 +1150,7 @@ qt_configure_add_report_entry(
 )
 qt_configure_add_report_entry(
     TYPE WARNING
-    MESSAGE "You should use the recommended Wasm version ${QT_EMCC_RECOMMENDED_VERSION} with this Qt. You have ${EMCC_VERSION}."
+    MESSAGE "You should use the recommended Emscripten version ${QT_EMCC_RECOMMENDED_VERSION} with this Qt. You have ${EMCC_VERSION}."
     CONDITION WASM AND NOT ${EMCC_VERSION} MATCHES ${QT_EMCC_RECOMMENDED_VERSION}
 )
 if(WASM)
