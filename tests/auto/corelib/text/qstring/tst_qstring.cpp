@@ -2048,11 +2048,6 @@ void tst_QString::toUpper()
     upper += QChar(QChar::highSurrogate(0x10428));
     QCOMPARE(lower.toUpper(), upper);
 
-#if QT_CONFIG(icu)
-    // test doesn't work with ICU support, since QChar is unaware of any locale
-    QEXPECT_FAIL("", "test doesn't work with ICU support, since QChar is unaware of any locale", Continue);
-    QVERIFY(false);
-#else
     for (int i = 0; i < 65536; ++i) {
         QString str(1, QChar(i));
         QString upper = str.toUpper();
@@ -2060,7 +2055,6 @@ void tst_QString::toUpper()
         if (upper.length() == 1)
             QVERIFY(upper == QString(1, QChar(i).toUpper()));
     }
-#endif // icu
 }
 
 void tst_QString::toLower()
@@ -2108,11 +2102,6 @@ void tst_QString::toLower()
     upper += QChar(QChar::highSurrogate(0x10400));
     QCOMPARE( upper.toLower(), lower);
 
-#if QT_CONFIG(icu)
-    // test doesn't work with ICU support, since QChar is unaware of any locale
-    QEXPECT_FAIL("", "test doesn't work with ICU support, since QChar is unaware of any locale", Continue);
-    QVERIFY(false);
-#else
     for (int i = 0; i < 65536; ++i) {
         QString str(1, QChar(i));
         QString lower = str.toLower();
@@ -2120,7 +2109,6 @@ void tst_QString::toLower()
         if (lower.length() == 1)
             QVERIFY(str.toLower() == QString(1, QChar(i).toLower()));
     }
-#endif // icu
 }
 
 void tst_QString::isLower_isUpper_data()
