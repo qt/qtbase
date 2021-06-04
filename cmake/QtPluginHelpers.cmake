@@ -20,8 +20,9 @@ macro(qt_internal_get_internal_add_plugin_keywords option_args single_args multi
 endmacro()
 
 # This is the main entry point for defining Qt plugins.
-# A CMake target is created with the given target. The PLUGIN_TYPE parameter is needed to place the
-# plugin into the correct plugins/ sub-directory.
+# A CMake target is created with the given target.
+# The target name should end with "Plugin" so static plugins are linked automatically.
+# The PLUGIN_TYPE parameter is needed to place the plugin into the correct plugins/ sub-directory.
 function(qt_internal_add_plugin target)
     qt_internal_set_qt_known_plugins("${QT_KNOWN_PLUGINS}" "${target}")
 
@@ -85,6 +86,10 @@ function(qt_internal_add_plugin target)
         set(plugin_type "${arg_TYPE}")
     elseif(arg_PLUGIN_TYPE)
         set(plugin_type "${arg_PLUGIN_TYPE}")
+    endif()
+
+    if((NOT plugin_type STREQUAL "qml_plugin") AND (NOT target MATCHES "(.*)Plugin$"))
+        message(AUTHOR_WARNING "The internal plugin target name '${target}' should end with the 'Plugin' suffix.")
     endif()
 
     qt_get_sanitized_plugin_type("${plugin_type}" plugin_type_escaped)
