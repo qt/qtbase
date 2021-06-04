@@ -843,7 +843,7 @@ QString QTextHtmlParser::parseEntity()
     }
     if (entityLen) {
         const QStringView entity = QStringView(txt).mid(recover, entityLen);
-        const QString parsedEntity = parseEntity(entity);
+        QString parsedEntity = parseEntity(entity);
         if (!parsedEntity.isNull()) {
             return parsedEntity;
         }
