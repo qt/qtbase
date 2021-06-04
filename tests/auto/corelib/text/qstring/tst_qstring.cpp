@@ -4106,13 +4106,14 @@ void tst_QString::setRawData()
     QVERIFY(cstr.constData() == ptr);
     QVERIFY(cstr == QString(ptr, 1));
 
-    QSKIP("This is currently not working.");
     // This actually tests the recycling of the shared data object
     QString::DataPointer csd = cstr.data_ptr();
     cstr.setRawData(ptr2, 1);
+    QEXPECT_FAIL("", "This is currently not working: QTBUG-94450.", Continue);
     QVERIFY(cstr.isDetached());
     QVERIFY(cstr.constData() == ptr2);
     QVERIFY(cstr == QString(ptr2, 1));
+    QEXPECT_FAIL("", "This is currently not working: QTBUG-94450.", Continue);
     QVERIFY(cstr.data_ptr() == csd);
 
     // This tests the discarding of the shared data object
@@ -4123,6 +4124,7 @@ void tst_QString::setRawData()
     // Another test of the fallback
     csd = cstr.data_ptr();
     cstr.setRawData(ptr2, 1);
+    QEXPECT_FAIL("", "This is currently not working: QTBUG-94450.", Continue);
     QVERIFY(cstr.isDetached());
     QVERIFY(cstr.constData() == ptr2);
     QVERIFY(cstr == QString(ptr2, 1));
