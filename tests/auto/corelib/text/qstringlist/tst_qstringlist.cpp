@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -30,6 +30,7 @@
 #include <qlist.h>
 #include <qregularexpression.h>
 #include <qstringlist.h>
+#include <QScopeGuard>
 
 #include <locale.h>
 
@@ -188,7 +189,10 @@ void tst_QStringList::sort()
     list2 << "BETA" << "Gamma" << "alpha" << "beta" << "epsilon" << "gAmma" << "gamma";
     QCOMPARE( list1, list2 );
 
-    char *current_locale = setlocale(LC_ALL, "C");
+    const char *const currentLocale = setlocale(LC_ALL, "C.UTF-8");
+    if (!currentLocale)
+        QSKIP("Failed to set C locale, needed for testing");
+    const QScopeGuard restore([currentLocale]() { setlocale(LC_ALL, currentLocale); });
     QStringList list3, list4;
     list3 << "alpha" << "beta" << "BETA" << "gamma" << "Gamma" << "gAmma" << "epsilon";
     list3.sort(Qt::CaseInsensitive);
@@ -201,7 +205,6 @@ void tst_QStringList::sort()
     QCOMPARE(list4.at(0), QString("alpha"));
     QVERIFY(list4.indexOf("epsilon") > 0);
     QVERIFY(list4.indexOf("epsilon") < (list4.count() - 1));
-    setlocale(LC_ALL, current_locale);
 }
 
 void tst_QStringList::replaceInStrings()
