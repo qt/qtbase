@@ -2550,6 +2550,7 @@ void tst_QListView::internalDragDropMove_data()
                                      | Qt::ItemIsEditable
                                      | Qt::ItemIsDragEnabled;
 
+    const QStringList unchanged = QStringList{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
     const QStringList reordered = QStringList{"0", "2", "3", "4", "5", "6", "7", "8", "9", "1"};
     const QStringList replaced = QStringList{"0", "2", "3", "4", "1", "6", "7", "8", "9"};
 
@@ -2564,7 +2565,8 @@ void tst_QListView::internalDragDropMove_data()
                 << Qt::MoveAction
                 << defaultFlags
                 << modelMoves
-                << reordered;
+                // listview in IconMode doesn't change the model
+                << ((viewMode == QListView::IconMode && !modelMoves) ? unchanged : reordered);
 
             QTest::newRow((rowName + ", only move").constData())
                 << viewMode
@@ -2573,7 +2575,8 @@ void tst_QListView::internalDragDropMove_data()
                 << Qt::MoveAction
                 << defaultFlags
                 << modelMoves
-                << reordered;
+                // listview in IconMode doesn't change the model
+                << ((viewMode == QListView::IconMode && !modelMoves) ? unchanged : reordered);
 
             QTest::newRow((rowName + ", replace item").constData())
                 << viewMode
