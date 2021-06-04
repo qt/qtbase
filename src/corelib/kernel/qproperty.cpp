@@ -83,8 +83,8 @@ void QPropertyBindingDataPointer::addObserver(QPropertyObserver *observer)
         observer->next = firstObserver;
         if (observer->next)
             observer->next->prev = &observer->next;
+        d = reinterpret_cast<quintptr>(observer);
     }
-    setFirstObserver(observer);
 }
 
 /*!
