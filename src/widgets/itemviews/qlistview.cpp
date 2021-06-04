@@ -2972,6 +2972,8 @@ bool QIconModeViewBase::filterDropEvent(QDropEvent *e)
     dd->stopAutoScroll();
     draggedItems.clear();
     dd->emitIndexesMoved(indexes);
+    // do not delete item on internal move, see filterStartDrag()
+    dd->dropEventMoved = true;
     e->accept(); // we have handled the event
     // if the size has not grown, we need to check if it has shrinked
     if (contentsSize != contents) {
