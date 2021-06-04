@@ -5185,18 +5185,19 @@ QSize QStyleSheetStyle::sizeFromContents(ContentsType ct, const QStyleOption *op
                 QSize sz(csz);
                 if (mi->text.contains(QLatin1Char('\t')))
                     sz.rwidth() += 12; //as in QCommonStyle
-                bool checkable = mi->checkType != QStyleOptionMenuItem::NotCheckable;
                 if (!mi->icon.isNull()) {
                     const int pmSmall = pixelMetric(PM_SmallIconSize);
                     const QSize pmSize = mi->icon.actualSize(QSize(pmSmall, pmSmall));
-                    sz.rwidth() += pmSize.width() + 4;
-                } else if (checkable) {
+                    sz.rwidth() += std::max(mi->maxIconWidth, pmSize.width()) + 4;
+                } else if (mi->menuHasCheckableItems) {
                     QRenderRule subSubRule = renderRule(w, opt, PseudoElement_MenuCheckMark);
                     QRect checkmarkRect = positionRect(w, subRule, subSubRule, PseudoElement_MenuCheckMark, opt->rect, opt->direction);
                     sz.rwidth() += std::max(mi->maxIconWidth, checkmarkRect.width()) + 4;
+                } else {
+                    sz.rwidth() += mi->maxIconWidth;
                 }
                 if (subRule.hasFont) {
-                    QFontMetrics fm(subRule.font);
+                    QFontMetrics fm(subRule.font.resolve(mi->font));
                     const QRect r = fm.boundingRect(QRect(), Qt::TextSingleLine | Qt::TextShowMnemonic, mi->text);
                     sz = sz.expandedTo(r.size());
                 }
