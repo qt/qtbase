@@ -591,64 +591,72 @@ QByteArray QFSFileEngine::id() const
 QString QFSFileEngine::fileName(FileName file) const
 {
     Q_D(const QFSFileEngine);
-    if (file == BaseName) {
+    switch (file) {
+    case BaseName:
         return d->fileEntry.fileName();
-    } else if (file == PathName) {
+    case PathName:
         return d->fileEntry.path();
-    } else if (file == AbsoluteName || file == AbsolutePathName) {
-        QString ret;
-
-        if (!isRelativePath()) {
-            if (d->fileEntry.filePath().startsWith(QLatin1Char('/')) || // It's a absolute path to the current drive, so \a.txt -> Z:\a.txt
-                d->fileEntry.filePath().size() == 2 ||                  // It's a drive letter that needs to get a working dir appended
-                (d->fileEntry.filePath().size() > 2 && d->fileEntry.filePath().at(2) != QLatin1Char('/')) || // It's a drive-relative path, so Z:a.txt -> Z:\currentpath\a.txt
-                d->fileEntry.filePath().contains(QLatin1String("/../")) || d->fileEntry.filePath().contains(QLatin1String("/./")) ||
-                d->fileEntry.filePath().endsWith(QLatin1String("/..")) || d->fileEntry.filePath().endsWith(QLatin1String("/.")))
-            {
-                ret = QDir::fromNativeSeparators(QFileSystemEngine::nativeAbsoluteFilePath(d->fileEntry.filePath()));
-            } else {
-                ret = d->fileEntry.filePath();
-            }
-        } else {
-            ret = QDir::cleanPath(QDir::currentPath() + QLatin1Char('/') + d->fileEntry.filePath());
+    case AbsoluteName:
+    case AbsolutePathName: {
+        QString ret = d->fileEntry.filePath();
+        if (isRelativePath()) {
+            ret = QDir::cleanPath(QDir::currentPath() + u'/' + ret);
+        } else if (ret.startsWith(u'/') // absolute path to the current drive, so \a.txt -> Z:\a.txt
+                   || ret.size() == 2 // or a drive letter that needs to get a working dir appended
+                   // or a drive-relative path, so Z:a.txt -> Z:\currentpath\a.txt
+                   || (ret.size() > 2 && ret.at(2) != u'/')
+                   || ret.contains(QStringView(u"/../"))
+                   || ret.contains(QStringView(u"/./"))
+                   || ret.endsWith(QStringView(u"/.."))
+                   || ret.endsWith(QStringView(u"/."))) {
+            ret = QDir::fromNativeSeparators(QFileSystemEngine::nativeAbsoluteFilePath(ret));
         }
 
         // The path should be absolute at this point.
         // From the docs :
         // Absolute paths begin with the directory separator "/"
         // (optionally preceded by a drive specification under Windows).
-        if (ret.at(0) != QLatin1Char('/')) {
+        if (ret.at(0) != u'/') {
             Q_ASSERT(ret.length() >= 2);
             Q_ASSERT(ret.at(0).isLetter());
-            Q_ASSERT(ret.at(1) == QLatin1Char(':'));
+            Q_ASSERT(ret.at(1) == u':');
 
             // Force uppercase drive letters.
             ret[0] = ret.at(0).toUpper();
         }
 
         if (file == AbsolutePathName) {
-            int slash = ret.lastIndexOf(QLatin1Char('/'));
+            int slash = ret.lastIndexOf(u'/');
             if (slash < 0)
                 return ret;
-            if (ret.at(0) != QLatin1Char('/') && slash == 2)
+            if (ret.at(0) != u'/' && slash == 2)
                 return ret.left(3);      // include the slash
             return ret.left(slash > 0 ? slash : 1);
         }
         return ret;
-    } else if (file == CanonicalName || file == CanonicalPathName) {
+    }
+    case CanonicalName:
+    case CanonicalPathName: {
         if (!(fileFlags(ExistsFlag) & ExistsFlag))
             return QString();
-        QFileSystemEntry entry(QFileSystemEngine::canonicalName(QFileSystemEntry(fileName(AbsoluteName)), d->metaData));
+        const QFileSystemEntry entry =
+            QFileSystemEngine::canonicalName(QFileSystemEntry(fileName(AbsoluteName)), d->metaData);
 
         if (file == CanonicalPathName)
             return entry.path();
         return entry.filePath();
-    } else if (file == LinkName) {
+    }
+    case LinkName:
         return QFileSystemEngine::getLinkTarget(d->fileEntry, d->metaData).filePath();
-    } else if (file == BundleName) {
+    case BundleName:
         return QString();
-    } else if (file == JunctionName) {
+    case JunctionName:
         return QFileSystemEngine::getJunctionTarget(d->fileEntry, d->metaData).filePath();
+    case DefaultName:
+        break;
+    case NFileNames:
+        Q_ASSERT(false);
+        break;
     }
     return d->fileEntry.filePath();
 }
