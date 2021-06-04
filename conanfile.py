@@ -32,6 +32,7 @@ import os
 import re
 import json
 import subprocess
+from functools import lru_cache
 from pathlib import Path
 from typing import Dict, List, Any, Optional
 
@@ -124,20 +125,6 @@ class QtOptionParser:
         self.extra_options: Dict[str, Any] = {"extra_cmake_args": "ANY"}
         self.extra_options_default_values = {"extra_cmake_args": None}
 
-    def get_recipe_path_from_current_context(self) -> Path:
-        def _recipe_exists(recipe_path: Path) -> bool:
-            return Path(recipe_path / "conanfile.py").exists()
-
-        current_path = Path(__file__).parent.resolve()
-        if _recipe_exists(current_path):
-            return current_path
-
-        root_path = Path(current_path / ".." / "export").resolve()
-        if _recipe_exists(root_path):
-            return root_path
-
-        raise QtConanError(f"Unable to locate recipe path from current context: {current_path}")
-
     def load_configure_options(self) -> None:
         """Read the configure options and features dynamically via configure(.bat).
         There are two contexts where the ConanFile is initialized:
@@ -145,7 +132,7 @@ class QtOptionParser:
           - inside conan's cache when invoking: 'conan install, conan info, conan inspect, ..'
         """
         print("QtOptionParser: load configure options ..")
-        recipe_folder = self.get_recipe_path_from_current_context()
+        recipe_folder = Path(__file__).parent.resolve()
         configure_options = Path(recipe_folder) / "configure_options.json"
         configure_features = Path(recipe_folder) / "configure_features.txt"
         if not configure_options.exists() or not configure_features.exists():
@@ -316,6 +303,26 @@ class QtOptionParser:
         return ret
 
 
+def _build_qtbase(conan_file: ConanFile):
+    # we call the Qt's configure(.bat) directly
+    script = Path("configure.bat") if tools.os_info.is_windows else Path("configure")
+    configure = Path(Path(conan_file.build_folder).resolve() / script).resolve(strict=True)
+
+    # convert the Conan options to Qt configure(.bat) arguments
+    qt_configure_options = conan_file._qt_option_parser.convert_conan_options_to_qt_options(conan_file.options)
+    cmd = " ".join([str(configure), " ".join(qt_configure_options), "-prefix", conan_file.package_folder])
+    cmake_args = conan_file._qt_option_parser.get_extra_cmake_args_for_configure(conan_file.options)
+    if cmake_args:
+        cmd += f" -- {' '.join(cmake_args)}"
+    conan_file.output.info(f"Calling: {cmd}")
+    conan_file.run(cmd)
+
+    cmd = " ".join(["cmake", "--build", ".", "--parallel"])
+    conan_file.output.info(f"Calling: {cmd}")
+    conan_file.run(cmd)
+
+
+@lru_cache(maxsize=8)
 def _parse_qt_version_by_key(key: str) -> str:
     with open(Path(Path(__file__).parent.resolve() / ".cmake.conf")) as f:
         ret = [m.group(1) for m in [re.search(r"{0} .*\"(.*)\"".format(key), f.read())] if m]
@@ -337,6 +344,7 @@ class QtBase(ConanFile):
     exports_sources = "*", "!conan*.*"
     # use commit ID as the RREV (recipe revision) if this is exported from .git repository
     revision_mode = "scm" if Path(Path(__file__).parent.resolve() / ".git").exists() else "hash"
+    python_requires = f"qt-conan-common/{_parse_qt_version_by_key('QT_REPO_MODULE_VERSION')[0:3]}@qt/everywhere"
 
     def set_version(self):
         # Executed during "conan export" i.e. in source tree
@@ -387,27 +395,7 @@ class QtBase(ConanFile):
             self.options.force_debug_info = "yes"
 
     def build(self):
-        # This context manager tool has no effect if used in a platform different from Windows
-        with tools.vcvars(self):
-            self._build()
-
-    def _build(self):
-        # we call the Qt's configure(.bat) directly
-        script = Path("configure.bat") if tools.os_info.is_windows else Path("configure")
-        configure = Path(Path(self.build_folder).resolve() / script).resolve(strict=True)
-
-        # convert the Conan options to Qt configure(.bat) arguments
-        qt_configure_options = self._qt_option_parser.convert_conan_options_to_qt_options(self.options)
-        cmd = " ".join([str(configure), " ".join(qt_configure_options), "-prefix", self.package_folder])
-        cmake_args = self._qt_option_parser.get_extra_cmake_args_for_configure(self.options)
-        if cmake_args:
-            cmd += f" -- {' '.join(cmake_args)}"
-        self.output.info(f"Calling: {cmd}")
-        self.run(cmd)
-
-        cmd = " ".join(["cmake", "--build", ".", "--parallel"])
-        self.output.info(f"Calling: {cmd}")
-        self.run(cmd)
+        self.python_requires["qt-conan-common"].module.build_env_wrap(self, _build_qtbase)
 
     def package(self):
         cmd = ["cmake", "--install", "."]
@@ -417,18 +405,7 @@ class QtBase(ConanFile):
             f.write("[Paths]\nPrefix = ..\n")
 
     def package_info(self):
-        self.cpp_info.libs = tools.collect_libs(self)
-
-        # For virtualenv generator: build and run environment for qmake, CMake
-        self.env_info.CMAKE_PREFIX_PATH.append(self.package_folder)
-        if tools.os_info.is_windows:
-            self.env_info.PATH.append(os.path.join(self.package_folder, "bin"))
-        self.env_info.QMAKEPATH.append(self.package_folder)
-        self.env_info.QT_ADDITIONAL_PACKAGES_PREFIX_PATH.append(self.package_folder)
-
-        for item in Path(Path(self.package_folder) / "lib" / "cmake").resolve().glob("Qt6*"):
-            if item.is_dir():
-                setattr(self.env_info, str(item.name) + "_DIR", str(item))
+        self.python_requires["qt-conan-common"].module.package_info(self)
 
     def package_id(self):
         # https://docs.conan.io/en/latest/creating_packages/define_abi_compatibility.html
