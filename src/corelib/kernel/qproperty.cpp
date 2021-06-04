@@ -546,16 +546,21 @@ void QPropertyBindingData::notifyObservers(QUntypedPropertyData *propertyDataPtr
     if (isNotificationDelayed())
         return;
     QPropertyBindingDataPointer d{this};
-    QPropertyObserverPointer observer = d.firstObserver();
-    if (!observer)
-        return;
-    auto *delay = groupUpdateData;
-    if (delay) {
-        delay->addProperty(this, propertyDataPtr);
+
+    if (QPropertyObserverPointer observer = d.firstObserver()) {
+        auto *delay = groupUpdateData;
+        if (delay) {
+            delay->addProperty(this, propertyDataPtr);
+            return;
+        }
+        observer.evaluateBindings();
+    } else {
         return;
     }
-    observer.evaluateBindings();
-    observer.notify(propertyDataPtr);
+
+    // evaluateBindings() can trash the observers. We need to re-fetch here.
+    if (QPropertyObserverPointer observer = d.firstObserver())
+        observer.notify(propertyDataPtr);
 }
 
 int QPropertyBindingDataPointer::observerCount() const
