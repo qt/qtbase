@@ -1833,6 +1833,20 @@ void QTabBar::paintEvent(QPaintEvent *)
     if (d->drawBase)
         p.drawPrimitive(QStyle::PE_FrameTabBarBase, optTabBase);
 
+    // the buttons might be semi-transparent or not fill their rect, but we don't
+    // want the tab underneath to shine through, so clip the button area; QTBUG-50866
+    if (d->leftB->isVisible() || d->rightB->isVisible()) {
+        QStyleOption opt;
+        opt.initFrom(this);
+        QRegion buttonRegion;
+        if (d->leftB->isVisible())
+            buttonRegion |= style()->subElementRect(QStyle::SE_TabBarScrollLeftButton, &opt, this);
+        if (d->rightB->isVisible())
+            buttonRegion |= style()->subElementRect(QStyle::SE_TabBarScrollRightButton, &opt, this);
+        if (!buttonRegion.isEmpty())
+            p.setClipRegion(QRegion(rect()) - buttonRegion);
+    }
+
     for (int i = 0; i < d->tabList.count(); ++i) {
         const auto tab = d->tabList.at(i);
         if (!tab->visible)
