@@ -945,6 +945,7 @@ class Q_CORE_EXPORT QBindingStorage
 
     template<typename Class, typename T, auto Offset, auto Setter, auto Signal>
     friend class QObjectCompatProperty;
+    friend class QObjectPrivate;
 public:
     QBindingStorage();
     ~QBindingStorage();
@@ -973,6 +974,7 @@ public:
         return bindingData_helper(data, create);
     }
 private:
+    void clear();
     void registerDependency_helper(const QUntypedPropertyData *data) const;
     // ### Unused, but keep for BC
     void maybeUpdateBindingAndRegister_helper(const QUntypedPropertyData *data) const;

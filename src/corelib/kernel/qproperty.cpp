@@ -2138,6 +2138,12 @@ QBindingStorage::~QBindingStorage()
     QBindingStoragePrivate(d).destroy();
 }
 
+void QBindingStorage::clear()
+{
+    QBindingStoragePrivate(d).destroy();
+    d = nullptr;
+}
+
 // ### Unused, retained for BC with 6.0
 void QBindingStorage::maybeUpdateBindingAndRegister_helper(const QUntypedPropertyData *data) const
 {

@@ -326,6 +326,8 @@ public:
     QObjectPrivate(int version = QObjectPrivateVersion);
     virtual ~QObjectPrivate();
     void deleteChildren();
+    // used to clear binding storage early in ~QObject
+    void clearBindingStorage();
 
     inline void checkForIncompatibleLibraryVersion(int version) const;
 

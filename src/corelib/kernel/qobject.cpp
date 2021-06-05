@@ -943,6 +943,11 @@ QObject::QObject(QObjectPrivate &dd, QObject *parent)
     Q_TRACE(QObject_ctor, this);
 }
 
+void QObjectPrivate::clearBindingStorage()
+{
+    bindingStorage.clear();
+}
+
 /*!
     Destroys the object, deleting all its child objects.
 
@@ -972,6 +977,10 @@ QObject::~QObject()
     Q_D(QObject);
     d->wasDeleted = true;
     d->blockSig = 0; // unblock signals so we always emit destroyed()
+
+    // If we reached this point, we need to clear the binding data
+    // as the corresponding properties are no longer useful
+    d->clearBindingStorage();
 
     QtSharedPointer::ExternalRefCountData *sharedRefcount = d->sharedRefcount.loadRelaxed();
     if (sharedRefcount) {

@@ -57,6 +57,7 @@ private slots:
     void basicDependencies();
     void multipleDependencies();
     void bindingWithDeletedDependency();
+    void dependencyChangeDuringDestruction();
     void recursiveDependency();
     void bindingAfterUse();
     void bindingFunctionDtorCalled();
@@ -197,6 +198,35 @@ void tst_QProperty::bindingWithDeletedDependency()
     bindingReturnsDynamicProperty = false;
 
     QCOMPARE(propertySelector.value(), staticProperty.value());
+}
+
+class ChangeDuringDtorTester : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(int prop READ prop WRITE setProp BINDABLE bindableProp)
+
+public:
+    void setProp(int i) { m_prop = i;}
+    int prop() const { return m_prop; }
+    QBindable<int> bindableProp() { return &m_prop; }
+private:
+    Q_OBJECT_COMPAT_PROPERTY(ChangeDuringDtorTester, int, m_prop, &ChangeDuringDtorTester::setProp)
+};
+
+void tst_QProperty::dependencyChangeDuringDestruction()
+{
+    auto tester = std::make_unique<ChangeDuringDtorTester>();
+    QProperty<int> iprop {42};
+    tester->bindableProp().setBinding(Qt::makePropertyBinding(iprop));
+    QObject::connect(tester.get(), &QObject::destroyed, [&](){
+        iprop = 12;
+    });
+    bool failed = false;
+    auto handler = tester->bindableProp().onValueChanged([&](){
+        failed = true;
+    });
+    tester.reset();
+    QVERIFY(!failed);
 }
 
 void tst_QProperty::recursiveDependency()
