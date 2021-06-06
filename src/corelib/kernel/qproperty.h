@@ -51,15 +51,23 @@
 
 #if __has_include(<source_location>) && __cplusplus >= 202002L && !defined(Q_CLANG_QDOC)
 #include <source_location>
+#if defined(__cpp_lib_source_location)
 #define QT_SOURCE_LOCATION_NAMESPACE std
 #define QT_PROPERTY_COLLECT_BINDING_LOCATION
 #define QT_PROPERTY_DEFAULT_BINDING_LOCATION QPropertyBindingSourceLocation(std::source_location::current())
-#elif __has_include(<experimental/source_location>) && __cplusplus >= 201703L && !defined(Q_CLANG_QDOC)
+#endif
+#endif
+
+#if !defined(QT_PROPERTY_COLLECT_BINDING_LOCATION) && __has_include(<experimental/source_location>) && __cplusplus >= 201703L && !defined(Q_CLANG_QDOC)
 #include <experimental/source_location>
+#if defined(__cpp_lib_experimental_source_location)
 #define QT_SOURCE_LOCATION_NAMESPACE std::experimental
 #define QT_PROPERTY_COLLECT_BINDING_LOCATION
 #define QT_PROPERTY_DEFAULT_BINDING_LOCATION QPropertyBindingSourceLocation(std::experimental::source_location::current())
-#else
+#endif
+#endif
+
+#if !defined(QT_PROPERTY_COLLECT_BINDING_LOCATION)
 #define QT_PROPERTY_DEFAULT_BINDING_LOCATION QPropertyBindingSourceLocation()
 #endif
 
