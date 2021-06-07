@@ -96,6 +96,7 @@ public:
     bool hasException() const;
     std::exception_ptr exception() const;
     void throwPossibleException();
+    Q_NORETURN void rethrowException() const;
     std::exception_ptr exceptionHolder;
 };
 
@@ -110,6 +111,7 @@ class Q_CORE_EXPORT ExceptionStore
 public:
     ExceptionStore() { }
     inline void throwPossibleException() {}
+    inline void rethrowException() const { }
 };
 
 } // namespace QtPrivate

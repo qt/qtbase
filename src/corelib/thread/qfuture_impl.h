@@ -427,7 +427,7 @@ bool Continuation<Function, ResultType, ParentResultType>::execute()
 
     if (parentFuture.isCanceled()) {
 #ifndef QT_NO_EXCEPTIONS
-        if (parentFuture.d.exceptionStore().hasException()) {
+        if (parentFuture.d.hasException()) {
             // If the continuation doesn't take a QFuture argument, propagate the exception
             // to the caller, by reporting it. If the continuation takes a QFuture argument,
             // the user may want to catch the exception inside the continuation, to not
@@ -663,7 +663,7 @@ void FailureHandler<Function, ResultType>::run()
 
     promise.reportStarted();
 
-    if (parentFuture.d.exceptionStore().hasException()) {
+    if (parentFuture.d.hasException()) {
         using ArgType = typename QtPrivate::ArgResolver<Function>::First;
         if constexpr (std::is_void_v<ArgType>) {
             handleAllExceptions();
@@ -681,7 +681,8 @@ template<class ArgType>
 void FailureHandler<Function, ResultType>::handleException()
 {
     try {
-        parentFuture.d.exceptionStore().throwPossibleException();
+        Q_ASSERT(parentFuture.d.hasException());
+        parentFuture.d.exceptionStore().rethrowException();
     } catch (const ArgType &e) {
         try {
             // Handle exceptions matching with the handler's argument type
@@ -707,7 +708,8 @@ template<class Function, class ResultType>
 void FailureHandler<Function, ResultType>::handleAllExceptions()
 {
     try {
-        parentFuture.d.exceptionStore().throwPossibleException();
+        Q_ASSERT(parentFuture.d.hasException());
+        parentFuture.d.exceptionStore().rethrowException();
     } catch (...) {
         try {
             QtPrivate::fulfillPromise(promise, std::forward<Function>(handler));
@@ -766,7 +768,7 @@ public:
 
         if (parentFuture.isCanceled()) {
 #ifndef QT_NO_EXCEPTIONS
-            if (parentFuture.d.exceptionStore().hasException()) {
+            if (parentFuture.d.hasException()) {
                 // Propagate the exception to the result future
                 promise.reportException(parentFuture.d.exceptionStore().exception());
             } else {

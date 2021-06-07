@@ -134,6 +134,7 @@ class QFutureInterfaceBasePrivate
 {
 public:
     QFutureInterfaceBasePrivate(QFutureInterfaceBase::State initialState);
+    ~QFutureInterfaceBasePrivate();
 
     // When the last QFuture<T> reference is removed, we need to make
     // sure that data stored in the ResultStore is cleaned out.
@@ -167,9 +168,22 @@ public:
     QElapsedTimer progressTime;
     QWaitCondition waitCondition;
     QWaitCondition pausedWaitCondition;
-    // ### TODO: put m_results and m_exceptionStore into a union (see QTBUG-92045)
-    QtPrivate::ResultStoreBase m_results;
-    QtPrivate::ExceptionStore m_exceptionStore;
+
+    union Data {
+        QtPrivate::ResultStoreBase m_results;
+        QtPrivate::ExceptionStore m_exceptionStore;
+
+        void setException(const std::exception_ptr &e)
+        {
+            m_results.~ResultStoreBase();
+            new (&m_exceptionStore) QtPrivate::ExceptionStore();
+            m_exceptionStore.setException(e);
+        }
+
+        ~Data() { }
+    };
+    Data data = { QtPrivate::ResultStoreBase() };
+
     QString m_progressText;
     QRunnable *runnable = nullptr;
     QThreadPool *m_pool = nullptr;
@@ -185,6 +199,7 @@ public:
     bool manualProgress = false; // only accessed from executing thread
     bool launchAsync = false;
     bool isValid = false;
+    bool hasException = false;
 
     inline QThreadPool *pool() const
     { return m_pool ? m_pool : QThreadPool::globalInstance(); }

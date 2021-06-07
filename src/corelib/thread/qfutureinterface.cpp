@@ -361,7 +361,8 @@ void QFutureInterfaceBase::reportException(const std::exception_ptr &exception)
     if (d->state.loadRelaxed() & (Canceled|Finished))
         return;
 
-    d->m_exceptionStore.setException(exception);
+    d->hasException = true;
+    d->data.setException(exception);
     switch_on(d->state, Canceled);
     d->waitCondition.wakeAll();
     d->pausedWaitCondition.wakeAll();
@@ -406,7 +407,8 @@ int QFutureInterfaceBase::loadState() const
 
 void QFutureInterfaceBase::waitForResult(int resultIndex)
 {
-    d->m_exceptionStore.throwPossibleException();
+    if (d->hasException)
+        d->data.m_exceptionStore.rethrowException();
 
     QMutexLocker lock(&d->m_mutex);
     if (!isRunningOrPending())
@@ -423,7 +425,8 @@ void QFutureInterfaceBase::waitForResult(int resultIndex)
     while (isRunningOrPending() && !d->internal_isResultReadyAt(waitIndex))
         d->waitCondition.wait(&d->m_mutex);
 
-    d->m_exceptionStore.throwPossibleException();
+    if (d->hasException)
+        d->data.m_exceptionStore.rethrowException();
 }
 
 void QFutureInterfaceBase::waitForFinished()
@@ -441,7 +444,8 @@ void QFutureInterfaceBase::waitForFinished()
             d->waitCondition.wait(&d->m_mutex);
     }
 
-    d->m_exceptionStore.throwPossibleException();
+    if (d->hasException)
+        d->data.m_exceptionStore.rethrowException();
 }
 
 void QFutureInterfaceBase::reportResultsReady(int beginIndex, int endIndex)
@@ -488,7 +492,8 @@ QThreadPool *QFutureInterfaceBase::threadPool() const
 void QFutureInterfaceBase::setFilterMode(bool enable)
 {
     QMutexLocker locker(&d->m_mutex);
-    resultStoreBase().setFilterMode(enable);
+    if (!hasException())
+        resultStoreBase().setFilterMode(enable);
 }
 
 /*!
@@ -558,19 +563,27 @@ QMutex &QFutureInterfaceBase::mutex() const
     return d->m_mutex;
 }
 
+bool QFutureInterfaceBase::hasException() const
+{
+    return d->hasException;
+}
+
 QtPrivate::ExceptionStore &QFutureInterfaceBase::exceptionStore()
 {
-    return d->m_exceptionStore;
+    Q_ASSERT(d->hasException);
+    return d->data.m_exceptionStore;
 }
 
 QtPrivate::ResultStoreBase &QFutureInterfaceBase::resultStoreBase()
 {
-    return d->m_results;
+    Q_ASSERT(!d->hasException);
+    return d->data.m_results;
 }
 
 const QtPrivate::ResultStoreBase &QFutureInterfaceBase::resultStoreBase() const
 {
-    return d->m_results;
+    Q_ASSERT(!d->hasException);
+    return d->data.m_results;
 }
 
 QFutureInterfaceBase &QFutureInterfaceBase::operator=(const QFutureInterfaceBase &other)
@@ -609,7 +622,8 @@ void QFutureInterfaceBase::reset()
 
 void QFutureInterfaceBase::rethrowPossibleException()
 {
-    exceptionStore().throwPossibleException();
+    if (hasException())
+        exceptionStore().rethrowException();
 }
 
 QFutureInterfaceBasePrivate::QFutureInterfaceBasePrivate(QFutureInterfaceBase::State initialState)
@@ -618,25 +632,38 @@ QFutureInterfaceBasePrivate::QFutureInterfaceBasePrivate(QFutureInterfaceBase::S
     progressTime.invalidate();
 }
 
+QFutureInterfaceBasePrivate::~QFutureInterfaceBasePrivate()
+{
+    if (hasException)
+        data.m_exceptionStore.~ExceptionStore();
+    else
+        data.m_results.~ResultStoreBase();
+}
+
 int QFutureInterfaceBasePrivate::internal_resultCount() const
 {
-    return m_results.count(); // ### subtract canceled results.
+    return hasException ? 0 : data.m_results.count(); // ### subtract canceled results.
 }
 
 bool QFutureInterfaceBasePrivate::internal_isResultReadyAt(int index) const
 {
-    return (m_results.contains(index));
+    return hasException ? false : (data.m_results.contains(index));
 }
 
 bool QFutureInterfaceBasePrivate::internal_waitForNextResult()
 {
-    if (m_results.hasNextResult())
+    if (hasException)
+        return false;
+
+    if (data.m_results.hasNextResult())
         return true;
 
-    while ((state.loadRelaxed() & QFutureInterfaceBase::Running) && m_results.hasNextResult() == false)
+    while ((state.loadRelaxed() & QFutureInterfaceBase::Running)
+           && data.m_results.hasNextResult() == false)
         waitCondition.wait(&m_mutex);
 
-    return !(state.loadRelaxed() & QFutureInterfaceBase::Canceled) && m_results.hasNextResult();
+    return !(state.loadRelaxed() & QFutureInterfaceBase::Canceled)
+            && data.m_results.hasNextResult();
 }
 
 bool QFutureInterfaceBasePrivate::internal_updateProgress(int progress,
@@ -714,14 +741,16 @@ void QFutureInterfaceBasePrivate::connectOutputInterface(QFutureCallOutInterface
                                                         m_progressText));
     }
 
-    QtPrivate::ResultIteratorBase it = m_results.begin();
-    while (it != m_results.end()) {
-        const int begin = it.resultIndex();
-        const int end = begin + it.batchSize();
-        interface->postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::ResultsReady,
-                                                        begin,
-                                                        end));
-        it.batchedAdvance();
+    if (!hasException) {
+        QtPrivate::ResultIteratorBase it = data.m_results.begin();
+        while (it != data.m_results.end()) {
+            const int begin = it.resultIndex();
+            const int end = begin + it.batchSize();
+            interface->postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::ResultsReady,
+                                                            begin,
+                                                            end));
+            it.batchedAdvance();
+        }
     }
 
     if (currentState & QFutureInterfaceBase::Suspended)

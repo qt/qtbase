@@ -167,6 +167,7 @@ public:
     void suspendIfRequested();
 
     QMutex &mutex() const;
+    bool hasException() const;
     QtPrivate::ExceptionStore &exceptionStore();
     QtPrivate::ResultStoreBase &resultStoreBase();
     const QtPrivate::ResultStoreBase &resultStoreBase() const;
@@ -247,7 +248,7 @@ public:
 
     ~QFutureInterface()
     {
-        if (!derefT())
+        if (!derefT() && !hasException())
             resultStoreBase().template clear<T>();
     }
 
@@ -277,6 +278,25 @@ public:
     // TODO: Enable and make it return a QList, when QList is fixed to support move-only types
     std::vector<T> takeResults();
 #endif
+
+#ifndef QT_NO_EXCEPTIONS
+    void reportException(const std::exception_ptr &e)
+    {
+        if (hasException())
+            return;
+
+        resultStoreBase().template clear<T>();
+        QFutureInterfaceBase::reportException(e);
+    }
+    void reportException(const QException &e)
+    {
+        if (hasException())
+            return;
+
+        resultStoreBase().template clear<T>();
+        QFutureInterfaceBase::reportException(e);
+    }
+#endif
 };
 
 template <typename T>
@@ -286,6 +306,7 @@ inline bool QFutureInterface<T>::reportResult(const T *result, int index)
     if (this->queryState(Canceled) || this->queryState(Finished))
         return false;
 
+    Q_ASSERT(!hasException());
     QtPrivate::ResultStoreBase &store = resultStoreBase();
 
     const int resultCountBefore = store.count();
@@ -307,6 +328,7 @@ bool QFutureInterface<T>::reportAndMoveResult(T &&result, int index)
     if (queryState(Canceled) || queryState(Finished))
         return false;
 
+    Q_ASSERT(!hasException());
     QtPrivate::ResultStoreBase &store = resultStoreBase();
 
     const int oldResultCount = store.count();
@@ -336,6 +358,7 @@ inline bool QFutureInterface<T>::reportResults(const QList<T> &_results, int beg
     if (this->queryState(Canceled) || this->queryState(Finished))
         return false;
 
+    Q_ASSERT(!hasException());
     auto &store = resultStoreBase();
 
     const int resultCountBefore = store.count();
@@ -363,6 +386,8 @@ inline bool QFutureInterface<T>::reportFinished(const T *result)
 template <typename T>
 inline const T &QFutureInterface<T>::resultReference(int index) const
 {
+    Q_ASSERT(!hasException());
+
     QMutexLocker<QMutex> locker{&mutex()};
     return resultStoreBase().resultAt(index).template value<T>();
 }
@@ -370,6 +395,8 @@ inline const T &QFutureInterface<T>::resultReference(int index) const
 template <typename T>
 inline const T *QFutureInterface<T>::resultPointer(int index) const
 {
+    Q_ASSERT(!hasException());
+
     QMutexLocker<QMutex> locker{&mutex()};
     return resultStoreBase().resultAt(index).template pointer<T>();
 }
@@ -405,6 +432,8 @@ T QFutureInterface<T>::takeResult()
     // not to mess with other unready results.
     waitForResult(-1);
 
+    Q_ASSERT(!hasException());
+
     const QMutexLocker<QMutex> locker{&mutex()};
     QtPrivate::ResultIteratorBase position = resultStoreBase().resultAt(0);
     T ret(std::move_if_noexcept(position.value<T>()));
@@ -421,6 +450,9 @@ std::vector<T> QFutureInterface<T>::takeResults()
     Q_ASSERT(isValid());
 
     waitForResult(-1);
+
+    Q_ASSERT(!hasException());
+
     std::vector<T> res;
     res.reserve(resultCount());
 

@@ -252,6 +252,12 @@ void ExceptionStore::throwPossibleException()
         std::rethrow_exception(exceptionHolder);
 }
 
+void ExceptionStore::rethrowException() const
+{
+    Q_ASSERT(hasException());
+    std::rethrow_exception(exceptionHolder);
+}
+
 } // namespace QtPrivate
 
 #endif //Q_CLANG_QDOC
