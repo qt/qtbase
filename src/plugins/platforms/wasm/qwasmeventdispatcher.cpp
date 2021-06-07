@@ -91,6 +91,16 @@ bool QWasmEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
     if (!(flags & QEventLoop::EventLoopExec))
         return QUnixEventDispatcherQPA::processEvents(flags);
 
+    if (flags & QEventLoop::DialogExec) {
+        qWarning() << "Warning: dialog exec() is not supported on Qt for WebAssembly, please use"
+                   << "show() instead. When using exec() the dialog will show, the user can interact"
+                   << "with it and the appropriate signals will be emitted on close. However, the"
+                   << "exec() call never returns, stack content at the time of the exec() call"
+                   << "is leaked, and the exec() call may interfere with input event processing";
+
+        emscripten_sleep(1); // This call never returns
+    }
+
     // Handle processEvents from QEventLoop::exec():
     //
     // At this point the application has created its root objects on
