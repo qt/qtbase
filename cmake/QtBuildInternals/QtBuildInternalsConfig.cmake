@@ -905,6 +905,23 @@ function(qt_internal_add_example subdir)
         ${independent_args}
     )
 
+    # Create an apk external project step and custom target that invokes the apk target
+    # within the external project.
+    # Make the global apk target depend on that custom target.
+    if(ANDROID)
+        ExternalProject_Add_Step(${arg_NAME} apk
+            COMMAND ${CMAKE_COMMAND} --build <BINARY_DIR> --target apk
+            DEPENDEES configure
+            EXCLUDE_FROM_MAIN YES
+            ${terminal_args}
+        )
+        ExternalProject_Add_StepTargets(${arg_NAME} apk)
+
+        if(TARGET apk)
+            add_dependencies(apk ${arg_NAME}-apk)
+        endif()
+    endif()
+
     cmake_policy(POP)
 
     string(TOLOWER ${PROJECT_NAME} project_name_lower)
