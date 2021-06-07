@@ -1885,7 +1885,7 @@ inline bool operator<(const UCS2SurrogatePair &ligature, uint u1)
 
 static uint inline ligatureHelper(uint u1, uint u2)
 {
-    if (u1 >= Hangul_LBase && u1 <= Hangul_SBase + Hangul_SCount) {
+    if (u1 >= Hangul_LBase && u1 < Hangul_SBase + Hangul_SCount) {
         // compute Hangul syllable composition as per UAX #15
         // hangul L-V pair
         const uint LIndex = u1 - Hangul_LBase;
@@ -1898,7 +1898,7 @@ static uint inline ligatureHelper(uint u1, uint u2)
         const uint SIndex = u1 - Hangul_SBase;
         if (SIndex < Hangul_SCount && (SIndex % Hangul_TCount) == 0) {
             const uint TIndex = u2 - Hangul_TBase;
-            if (TIndex <= Hangul_TCount)
+            if (TIndex < Hangul_TCount && TIndex)
                 return u1 + TIndex;
         }
     }
