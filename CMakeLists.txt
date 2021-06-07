@@ -105,7 +105,10 @@ if(NOT QT_BUILD_STANDALONE_TESTS)
     include(src/corelib/Qt6CoreMacros.cmake)
 
     # Needed when building qtbase for android.
-    include(src/corelib/Qt6AndroidMacros.cmake)
+    if(ANDROID)
+        include(src/corelib/Qt6AndroidMacros.cmake)
+        _qt_internal_create_global_apk_target()
+    endif()
 
     # Set up optimization flags like in qmake.
     # This function must be called after the global QT_FEATURE_xxx variables have been set up,

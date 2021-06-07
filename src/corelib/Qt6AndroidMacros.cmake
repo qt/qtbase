@@ -281,17 +281,9 @@ function(qt6_android_add_apk_target target)
         message(FATAL_ERROR "Target ${target} is not a valid android executable target\n")
     endif()
 
-    # Create a top-level "apk" target for convenience, so that users can call 'ninja apk'.
-    # It will trigger building all the target specific apk build targets that are added via this
-    # function.
-    # Allow opt-out.
-    if(NOT QT_NO_GLOBAL_APK_TARGET)
-        if(NOT TARGET apk)
-            add_custom_target(apk
-                DEPENDS ${target}_make_apk
-                COMMENT "Building all apks"
-            )
-        endif()
+    # Make global apk target depend on the current apk target.
+    if(TARGET apk)
+        add_dependencies(apk ${target}_make_apk)
     endif()
 
     set(deployment_tool "${QT_HOST_PATH}/${QT6_HOST_INFO_BINDIR}/androiddeployqt")
@@ -330,6 +322,32 @@ function(qt6_android_add_apk_target target)
         COMMAND "${CMAKE_COMMAND}"
             -E copy_if_different "${apk_intermediate_file_path}" "${apk_final_file_path}"
         DEPENDS "${apk_intermediate_file_path}")
+endfunction()
+
+function(_qt_internal_create_global_apk_target)
+    # Create a top-level "apk" target for convenience, so that users can call 'ninja apk'.
+    # It will trigger building all the apk build targets that are added as part of the project.
+    # Allow opting out.
+    if(NOT QT_NO_GLOBAL_APK_TARGET)
+        if(NOT TARGET apk)
+            # Some Qt tests helper executables have their apk build process failing.
+            # Don't build apks by default when doing a Qt build.
+            set(skip_add_to_all FALSE)
+            if(QT_BUILDING_QT)
+                set(skip_add_to_all TRUE)
+            endif()
+
+            option(QT_NO_GLOBAL_APK_TARGET_PART_OF_ALL
+                "Skip building apks as part of the default 'ALL' target" ${skip_add_to_all})
+
+            set(part_of_all "ALL")
+            if(QT_NO_GLOBAL_APK_TARGET_PART_OF_ALL)
+                set(part_of_all "")
+            endif()
+
+            add_custom_target(apk ${part_of_all} COMMENT "Building all apks")
+        endif()
+    endif()
 endfunction()
 
 if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
