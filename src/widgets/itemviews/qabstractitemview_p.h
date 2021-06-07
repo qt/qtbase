@@ -364,6 +364,9 @@ public:
     QIndexEditorHash indexEditorHash;
     QSet<QWidget*> persistent;
     QWidget *currentlyCommittingEditor;
+    QBasicTimer pressClosedEditorWatcher;
+    QPersistentModelIndex lastEditedIndex;
+    bool pressClosedEditor;
 
     QPersistentModelIndex enteredIndex;
     QPersistentModelIndex pressedIndex;
