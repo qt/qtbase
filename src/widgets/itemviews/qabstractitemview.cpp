@@ -86,6 +86,7 @@ QAbstractItemViewPrivate::QAbstractItemViewPrivate()
         selectionMode(QAbstractItemView::ExtendedSelection),
         selectionBehavior(QAbstractItemView::SelectItems),
         currentlyCommittingEditor(nullptr),
+        pressClosedEditor(false),
         pressedModifiers(Qt::NoModifier),
         pressedPosition(QPoint(-1, -1)),
         pressedAlreadySelected(false),
@@ -1777,6 +1778,9 @@ void QAbstractItemView::mousePressEvent(QMouseEvent *event)
     QPoint pos = event->position().toPoint();
     QPersistentModelIndex index = indexAt(pos);
 
+    // this is the mouse press event that closed the last editor (via focus event)
+    d->pressClosedEditor = d->pressClosedEditorWatcher.isActive() && d->lastEditedIndex == index;
+
     if (!d->selectionModel
         || (d->state == EditingState && d->hasEditor(index)))
         return;
@@ -1935,16 +1939,17 @@ void QAbstractItemView::mouseReleaseEvent(QMouseEvent *event)
     bool click = (index == d->pressedIndex && index.isValid() && !releaseFromDoubleClick);
     bool selectedClicked = click && (event->button() == Qt::LeftButton) && d->pressedAlreadySelected;
     EditTrigger trigger = (selectedClicked ? SelectedClicked : NoEditTriggers);
-    const bool edited = click ? edit(index, trigger, event) : false;
+    const bool edited = click && !d->pressClosedEditor ? edit(index, trigger, event) : false;
 
     d->ctrlDragSelectionFlag = QItemSelectionModel::NoUpdate;
 
     if (d->selectionModel && d->noSelectionOnMousePress) {
         d->noSelectionOnMousePress = false;
-        if (!edited)
+        if (!edited && !d->pressClosedEditor)
             d->selectionModel->select(index, selectionCommand(index, event));
     }
 
+    d->pressClosedEditor = false;
     setState(NoState);
 
     if (click) {
@@ -2584,6 +2589,8 @@ void QAbstractItemView::timerEvent(QTimerEvent *event)
         //we only get here if there was no double click
         if (d->pressedIndex.isValid() && d->pressedIndex == currentIndex())
             scrollTo(d->pressedIndex);
+    } else if (event->timerId() == d->pressClosedEditorWatcher.timerId()) {
+        d->pressClosedEditorWatcher.stop();
     }
 }
 
@@ -2853,6 +2860,12 @@ void QAbstractItemView::closeEditor(QWidget *editor, QAbstractItemDelegate::EndE
         QModelIndex index = d->indexForEditor(editor);
         if (!index.isValid())
             return; // the editor was not registered
+
+        // start a timer that expires immediately when we return to the event loop
+        // to identify whether this close was triggered by a mousepress-initiated
+        // focus event
+        d->pressClosedEditorWatcher.start(0, this);
+        d->lastEditedIndex = index;
 
         if (!isPersistent) {
             setState(NoState);

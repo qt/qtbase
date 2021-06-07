@@ -102,6 +102,7 @@ private slots:
     void selectAll();
     void ctrlA();
     void persistentEditorFocus();
+    void pressClosesReleaseDoesntOpenEditor();
     void setItemDelegate();
     void setItemDelegate_data();
     // The dragAndDrop() test doesn't work, and is thus disabled on Mac and Windows
@@ -730,6 +731,63 @@ void tst_QAbstractItemView::persistentEditorFocus()
             QSKIP("Some window managers don't handle focus that well");
         QTRY_COMPARE(QApplication::focusWidget(), sb);
     }
+}
+
+/*!
+    A press into the selection area of an item being edited, but outside the editor,
+    closes the editor by transferring focus to the view. The corresponding release
+    should then not re-open the editor.
+
+    QTBUG-20456.
+*/
+void tst_QAbstractItemView::pressClosesReleaseDoesntOpenEditor()
+{
+    QStandardItemModel model(0, 1);
+    auto *parent = new QStandardItem("parent");
+    for (const auto &childText : {"child1", "child2"}) {
+        auto *child = new QStandardItem(childText);
+        child->setFlags(Qt::ItemFlag::ItemIsEnabled | Qt::ItemFlag::ItemIsEditable | Qt::ItemIsSelectable);
+        parent->appendRow(child);
+    }
+    model.appendRow(parent);
+
+    QTreeView view;
+    view.setModel(&model);
+    view.setExpanded(model.indexFromItem(parent), true);
+    view.setSelectionMode(QAbstractItemView::SingleSelection);
+    view.setEditTriggers(QAbstractItemView::SelectedClicked | QAbstractItemView::DoubleClicked);
+
+    view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+
+    const QRect childRect = view.visualRect(model.indexFromItem(parent->child(0)));
+    QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::NoModifier, childRect.center()); // select
+    QVERIFY(view.selectionModel()->selectedIndexes().contains(model.indexFromItem(parent->child(0))));
+    QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::NoModifier, childRect.center()); // edit
+    QTRY_COMPARE(view.state(), QAbstractItemView::EditingState);
+    QPoint inChildOutsideEditor = QPoint(view.indentation() / 2, childRect.center().y());
+    QTest::mousePress(view.viewport(), Qt::LeftButton, Qt::NoModifier, inChildOutsideEditor); // focus itemview, editor closes
+    QCOMPARE(view.state(), QAbstractItemView::NoState);
+    QTest::qWait(10); // process some events, let the internal timer time out
+    QTest::mouseRelease(view.viewport(), Qt::LeftButton, Qt::NoModifier, inChildOutsideEditor); // should not reopen editor
+    QTest::qWait(QApplication::doubleClickInterval() * 2);
+    QCOMPARE(view.state(), QAbstractItemView::NoState);
+
+    // with multiple items selected, clicking from the currently edited item into another
+    // selected item closes the current and reopens a new editor
+    view.setSelectionMode(QAbstractItemView::ExtendedSelection);
+    const QRect child2Rect = view.visualRect(model.indexFromItem(parent->child(1)));
+    QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::ControlModifier, child2Rect.center()); // select
+    QVERIFY(view.selectionModel()->selectedIndexes().contains(model.indexFromItem(parent->child(0))));
+    QVERIFY(view.selectionModel()->selectedIndexes().contains(model.indexFromItem(parent->child(1))));
+    QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::NoModifier, child2Rect.center()); // edit
+    QTRY_COMPARE(view.state(), QAbstractItemView::EditingState);
+    QTest::mousePress(view.viewport(), Qt::LeftButton, Qt::NoModifier, inChildOutsideEditor); // editor closes
+    QCOMPARE(view.state(), QAbstractItemView::NoState);
+    QTest::qWait(10); // process some events, let the internal timer time out
+    QTest::mouseRelease(view.viewport(), Qt::LeftButton, Qt::NoModifier, inChildOutsideEditor); // should open editor
+    QTest::qWait(QApplication::doubleClickInterval() * 2);
+    QCOMPARE(view.state(), QAbstractItemView::EditingState);
 }
 
 
