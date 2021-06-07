@@ -1369,6 +1369,8 @@ quint32 QHttp2ProtocolHandler::createNewStream(const HttpMessagePair &message, b
         }
     }
 
+    QMetaObject::invokeMethod(reply, "requestSent", Qt::QueuedConnection);
+
     activeStreams.insert(newStreamID, newStream);
 
     return newStreamID;

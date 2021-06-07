@@ -154,6 +154,8 @@ public Q_SLOTS:
     virtual void ignoreSslErrors();
 
 Q_SIGNALS:
+    void socketConnecting();
+    void requestSent();
     void metaDataChanged();
     void finished();
     void errorOccurred(QNetworkReply::NetworkError);

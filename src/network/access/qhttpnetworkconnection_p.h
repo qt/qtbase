@@ -214,6 +214,7 @@ public:
     void prepareRequest(HttpMessagePair &request);
     void updateChannel(int i, const HttpMessagePair &messagePair);
     QHttpNetworkRequest predictNextRequest() const;
+    QHttpNetworkReply* predictNextRequestsReply() const;
 
     void fillPipeline(QAbstractSocket *socket);
     bool fillPipeline(QList<HttpMessagePair> &queue, QHttpNetworkConnectionChannel &channel);

@@ -749,6 +749,15 @@ QHttpNetworkRequest QHttpNetworkConnectionPrivate::predictNextRequest() const
     return QHttpNetworkRequest();
 }
 
+QHttpNetworkReply* QHttpNetworkConnectionPrivate::predictNextRequestsReply() const
+{
+    if (!highPriorityQueue.isEmpty())
+        return highPriorityQueue.last().second;
+    if (!lowPriorityQueue.isEmpty())
+        return lowPriorityQueue.last().second;
+    return nullptr;
+}
+
 // this is called from _q_startNextRequest and when a request has been sent down a socket from the channel
 void QHttpNetworkConnectionPrivate::fillPipeline(QAbstractSocket *socket)
 {

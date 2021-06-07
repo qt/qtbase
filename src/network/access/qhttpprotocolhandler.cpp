@@ -319,6 +319,8 @@ bool QHttpProtocolHandler::sendRequest()
 #else
         m_header = QHttpNetworkRequestPrivate::header(m_channel->request, false);
 #endif
+        QMetaObject::invokeMethod(m_reply, "requestSent", Qt::QueuedConnection);
+
         // flushing is dangerous (QSslSocket calls transmit which might read or error)
 //        m_socket->flush();
         QNonContiguousByteDevice* uploadByteDevice = m_channel->request.uploadByteDevice();

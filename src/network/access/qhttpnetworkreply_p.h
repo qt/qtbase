@@ -170,6 +170,8 @@ Q_SIGNALS:
 #endif
 
 Q_SIGNALS:
+    void socketConnecting();
+    void requestSent();
     void readyRead();
     void finished();
     void finishedWithError(QNetworkReply::NetworkError errorCode, const QString &detail = QString());

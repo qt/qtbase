@@ -143,6 +143,8 @@ signals:
     void sslConfigurationChanged(const QSslConfiguration &);
     void preSharedKeyAuthenticationRequired(QSslPreSharedKeyAuthenticator *);
 #endif
+    void socketConnecting();
+    void requestSent();
     void downloadMetaData(const QList<QPair<QByteArray,QByteArray> > &, int, const QString &, bool,
                           QSharedPointer<char>, qint64, qint64, bool, bool);
     void downloadProgress(qint64, qint64);

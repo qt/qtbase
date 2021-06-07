@@ -105,6 +105,9 @@ private slots:
     void connectToHost();
     void maxFrameSize();
 
+    void moreActivitySignals_data();
+    void moreActivitySignals();
+
     void contentEncoding_data();
     void contentEncoding();
 
@@ -783,6 +786,77 @@ void tst_Http2::maxFrameSize()
     QVERIFY(nRequests == 0);
     QVERIFY(prefaceOK);
     QVERIFY(serverGotSettingsACK);
+}
+
+void tst_Http2::moreActivitySignals_data()
+{
+    QTest::addColumn<QNetworkRequest::Attribute>("h2Attribute");
+    QTest::addColumn<H2Type>("connectionType");
+
+    QTest::addRow("h2c-upgrade")
+            << QNetworkRequest::Http2AllowedAttribute << H2Type::h2c;
+    QTest::addRow("h2c-direct")
+            << QNetworkRequest::Http2DirectAttribute << H2Type::h2cDirect;
+
+    if (!clearTextHTTP2)
+        QTest::addRow("h2-ALPN")
+                << QNetworkRequest::Http2AllowedAttribute << H2Type::h2Alpn;
+
+#if QT_CONFIG(ssl)
+    QTest::addRow("h2-direct")
+            << QNetworkRequest::Http2DirectAttribute << H2Type::h2Direct;
+#endif
+}
+
+void tst_Http2::moreActivitySignals()
+{
+    clearHTTP2State();
+
+#if QT_CONFIG(securetransport)
+    // Normally on macOS we use plain text only for SecureTransport
+    // does not support ALPN on the server side. With 'direct encrytped'
+    // we have to use TLS sockets (== private key) and thus suppress a
+    // keychain UI asking for permission to use a private key.
+    // Our CI has this, but somebody testing locally - will have a problem.
+    qputenv("QT_SSL_USE_TEMPORARY_KEYCHAIN", QByteArray("1"));
+    auto envRollback = qScopeGuard([]() { qunsetenv("QT_SSL_USE_TEMPORARY_KEYCHAIN"); });
+#endif
+
+    serverPort = 0;
+    QFETCH(H2Type, connectionType);
+    ServerPtr srv(newServer(defaultServerSettings, connectionType));
+    QMetaObject::invokeMethod(srv.data(), "startServer", Qt::QueuedConnection);
+    runEventLoop(100);
+    QVERIFY(serverPort != 0);
+    auto url = requestUrl(connectionType);
+    url.setPath(QString("/stream1.html"));
+    QNetworkRequest request(url);
+    QFETCH(const QNetworkRequest::Attribute, h2Attribute);
+    request.setAttribute(h2Attribute, QVariant(true));
+    request.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("text/plain"));
+    QSharedPointer<QNetworkReply> reply(manager->get(request));
+    nRequests = 1;
+    connect(reply.data(), &QNetworkReply::finished, this, &tst_Http2::replyFinished);
+    QSignalSpy spy1(reply.data(), SIGNAL(socketConnecting()));
+    QSignalSpy spy2(reply.data(), SIGNAL(requestSent()));
+    QSignalSpy spy3(reply.data(), SIGNAL(metaDataChanged()));
+    // Since we're using self-signed certificates,
+    // ignore SSL errors:
+    reply->ignoreSslErrors();
+
+    spy1.wait();
+    spy2.wait();
+    spy3.wait();
+
+    runEventLoop();
+    STOP_ON_FAILURE
+
+    QVERIFY(nRequests == 0);
+    QVERIFY(prefaceOK);
+    QVERIFY(serverGotSettingsACK);
+
+    QVERIFY(reply->error() == QNetworkReply::NoError);
+    QVERIFY(reply->isFinished());
 }
 
 void tst_Http2::contentEncoding_data()

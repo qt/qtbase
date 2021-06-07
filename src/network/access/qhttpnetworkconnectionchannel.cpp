@@ -356,6 +356,13 @@ bool QHttpNetworkConnectionChannel::ensureConnection()
         QString connectHost = connection->d_func()->hostName;
         quint16 connectPort = connection->d_func()->port;
 
+        QHttpNetworkReply *potentialReply = connection->d_func()->predictNextRequestsReply();
+        if (potentialReply) {
+            QMetaObject::invokeMethod(potentialReply, "socketConnecting", Qt::QueuedConnection);
+        } else if (h2RequestsToSend.count() > 0) {
+            QMetaObject::invokeMethod(h2RequestsToSend.values().at(0).second, "socketConnecting", Qt::QueuedConnection);
+        }
+
 #ifndef QT_NO_NETWORKPROXY
         // HTTPS always use transparent proxy.
         if (connection->d_func()->networkProxy.type() != QNetworkProxy::NoProxy && !ssl) {

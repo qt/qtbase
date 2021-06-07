@@ -377,6 +377,8 @@ void QHttpThreadDelegate::startRequest()
 
         // Don't care about ignored SSL errors for now in the synchronous HTTP case.
     } else if (!synchronous) {
+        connect(httpReply,SIGNAL(socketConnecting()), this, SIGNAL(socketConnecting()));
+        connect(httpReply,SIGNAL(requestSent()), this, SIGNAL(requestSent()));
         connect(httpReply,SIGNAL(headerChanged()), this, SLOT(headerChangedSlot()));
         connect(httpReply,SIGNAL(finished()), this, SLOT(finishedSlot()));
         connect(httpReply,SIGNAL(finishedWithError(QNetworkReply::NetworkError,QString)),
