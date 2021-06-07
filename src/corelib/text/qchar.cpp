@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -1380,31 +1380,28 @@ char32_t QChar::mirroredChar(char32_t ucs4) noexcept
     return ucs4 + qGetProp(ucs4)->mirrorDiff;
 }
 
-
-// constants for Hangul (de)composition, see UAX #15
-enum {
-    Hangul_SBase = 0xac00,
-    Hangul_LBase = 0x1100,
-    Hangul_VBase = 0x1161,
-    Hangul_TBase = 0x11a7,
-    Hangul_LCount = 19,
-    Hangul_VCount = 21,
-    Hangul_TCount = 28,
-    Hangul_NCount = Hangul_VCount * Hangul_TCount,
-    Hangul_SCount = Hangul_LCount * Hangul_NCount
-};
+// Constants for Hangul (de)composition, see UAX #15:
+static constexpr char32_t Hangul_SBase = 0xac00;
+static constexpr char32_t Hangul_LBase = 0x1100;
+static constexpr char32_t Hangul_VBase = 0x1161;
+static constexpr char32_t Hangul_TBase = 0x11a7;
+static constexpr quint32 Hangul_LCount = 19;
+static constexpr quint32 Hangul_VCount = 21;
+static constexpr quint32 Hangul_TCount = 28;
+static constexpr quint32 Hangul_NCount = Hangul_VCount * Hangul_TCount;
+static constexpr quint32 Hangul_SCount = Hangul_LCount * Hangul_NCount;
 
 // buffer has to have a length of 3. It's needed for Hangul decomposition
-static const unsigned short * QT_FASTCALL decompositionHelper
-    (uint ucs4, qsizetype *length, int *tag, unsigned short *buffer)
+static const QChar * QT_FASTCALL decompositionHelper(
+    char32_t ucs4, qsizetype *length, QChar::Decomposition  *tag, QChar *buffer)
 {
     if (ucs4 >= Hangul_SBase && ucs4 < Hangul_SBase + Hangul_SCount) {
         // compute Hangul syllable decomposition as per UAX #15
         const uint SIndex = ucs4 - Hangul_SBase;
-        buffer[0] = Hangul_LBase + SIndex / Hangul_NCount; // L
-        buffer[1] = Hangul_VBase + (SIndex % Hangul_NCount) / Hangul_TCount; // V
-        buffer[2] = Hangul_TBase + SIndex % Hangul_TCount; // T
-        *length = buffer[2] == Hangul_TBase ? 2 : 3;
+        buffer[0] = QChar(Hangul_LBase + SIndex / Hangul_NCount); // L
+        buffer[1] = QChar(Hangul_VBase + (SIndex % Hangul_NCount) / Hangul_TCount); // V
+        buffer[2] = QChar(Hangul_TBase + SIndex % Hangul_TCount); // T
+        *length = buffer[2].unicode() == Hangul_TBase ? 2 : 3;
         *tag = QChar::Canonical;
         return buffer;
     }
@@ -1417,9 +1414,9 @@ static const unsigned short * QT_FASTCALL decompositionHelper
     }
 
     const unsigned short *decomposition = uc_decomposition_map+index;
-    *tag = (*decomposition) & 0xff;
+    *tag = QChar::Decomposition((*decomposition) & 0xff);
     *length = (*decomposition) >> 8;
-    return decomposition+1;
+    return reinterpret_cast<const QChar *>(decomposition + 1);
 }
 
 /*!
@@ -1440,11 +1437,11 @@ QString QChar::decomposition() const
 */
 QString QChar::decomposition(char32_t ucs4)
 {
-    unsigned short buffer[3];
+    QChar buffer[3];
     qsizetype length;
-    int tag;
-    const unsigned short *d = decompositionHelper(ucs4, &length, &tag, buffer);
-    return QString(reinterpret_cast<const QChar *>(d), length);
+    QChar::Decomposition tag;
+    const QChar *d = decompositionHelper(ucs4, &length, &tag, buffer);
+    return QString(d, length);
 }
 
 /*!
@@ -1827,15 +1824,15 @@ QDataStream &operator>>(QDataStream &in, QChar &chr)
 static void decomposeHelper(QString *str, bool canonical, QChar::UnicodeVersion version, qsizetype from)
 {
     qsizetype length;
-    int tag;
-    unsigned short buffer[3];
+    QChar::Decomposition tag;
+    QChar buffer[3];
 
     QString &s = *str;
 
     const unsigned short *utf16 = reinterpret_cast<unsigned short *>(s.data());
     const unsigned short *uc = utf16 + s.length();
     while (uc != utf16 + from) {
-        uint ucs4 = *(--uc);
+        char32_t ucs4 = *(--uc);
         if (QChar(ucs4).isLowSurrogate() && uc != utf16) {
             ushort high = *(uc - 1);
             if (QChar(high).isHighSurrogate()) {
@@ -1847,12 +1844,12 @@ static void decomposeHelper(QString *str, bool canonical, QChar::UnicodeVersion 
         if (QChar::unicodeVersion(ucs4) > version)
             continue;
 
-        const unsigned short *d = decompositionHelper(ucs4, &length, &tag, buffer);
+        const QChar *d = decompositionHelper(ucs4, &length, &tag, buffer);
         if (!d || (canonical && tag != QChar::Canonical))
             continue;
 
         qsizetype pos = uc - utf16;
-        s.replace(pos, QChar::requiresSurrogates(ucs4) ? 2 : 1, reinterpret_cast<const QChar *>(d), length);
+        s.replace(pos, QChar::requiresSurrogates(ucs4) ? 2 : 1, d, length);
         // since the replace invalidates the pointers and we do decomposition recursive
         utf16 = reinterpret_cast<unsigned short *>(s.data());
         uc = utf16 + pos + length;
