@@ -48,6 +48,7 @@
 #include <QtCore/qtextstream.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qset.h>
+#include <QtCore/qvarlengtharray.h>
 #include <QtCore/qcontiguouscache.h>
 #include <QtCore/qsharedpointer.h>
 
@@ -247,6 +248,12 @@ template<typename T>
 inline QDebugIfHasDebugStream<T> operator<<(QDebug debug, const QList<T> &vec)
 {
     return QtPrivate::printSequentialContainer(debug, "QList", vec);
+}
+
+template<typename T, qsizetype P>
+inline QDebugIfHasDebugStream<T> operator<<(QDebug debug, const QVarLengthArray<T, P> &vec)
+{
+    return QtPrivate::printSequentialContainer(debug, "QVarLengthArray", vec);
 }
 
 template <typename T, typename Alloc>
