@@ -1,0 +1,40 @@
+diff --git a/src/3rdparty/md4c/md4c.c b/src/3rdparty/md4c/md4c.c
+index 6aeef112e5..9d0d1b7d7b 100644
+--- a/src/3rdparty/md4c/md4c.c
++++ b/src/3rdparty/md4c/md4c.c
+@@ -916,7 +916,7 @@ md_merge_lines(MD_CTX* ctx, OFF beg, OFF end, const MD_LINE* lines, int n_lines,
+         }
+ 
+         if(off >= end) {
+-            *p_size = ptr - buffer;
++            *p_size = (MD_SIZE)(ptr - buffer);
+             return;
+         }
+ 
+@@ -2229,7 +2229,7 @@ md_is_link_reference(MD_CTX* ctx, const MD_LINE* lines, int n_lines,
+ 
+     if(beg_line != end_line) {
+         MD_CHECK(md_merge_lines_alloc(ctx, beg, end, beg_line,
+-                 n_lines - (beg_line - lines), _T(' '), &label, &label_size));
++                 (int)(n_lines - (beg_line - lines)), _T(' '), &label, &label_size));
+     } else {
+         label = (CHAR*) STR(beg);
+         label_size = end - beg;
+@@ -4265,7 +4265,7 @@ md_process_inlines(MD_CTX* ctx, const MD_LINE* lines, int n_lines)
+                     MD_CHECK(md_enter_leave_span_a(ctx, (mark->ch != ']'),
+                                 (opener->ch == '!' ? MD_SPAN_IMG : MD_SPAN_A),
+                                 STR(dest_mark->beg), dest_mark->end - dest_mark->beg, FALSE,
+-                                md_mark_get_ptr(ctx, title_mark - ctx->marks), title_mark->prev));
++                                md_mark_get_ptr(ctx, (int)(title_mark - ctx->marks)), title_mark->prev));
+ 
+                     /* link/image closer may span multiple lines. */
+                     if(mark->ch == ']') {
+@@ -4908,7 +4908,7 @@ md_push_block_bytes(MD_CTX* ctx, int n_bytes)
+ 
+         /* Fix the ->current_block after the reallocation. */
+         if(ctx->current_block != NULL) {
+-            OFF off_current_block = (char*) ctx->current_block - (char*) ctx->block_bytes;
++            OFF off_current_block = (OFF)((char*) ctx->current_block - (char*) ctx->block_bytes);
+             ctx->current_block = (MD_BLOCK*) ((char*) new_block_bytes + off_current_block);
+         }
+ 
