@@ -1541,43 +1541,17 @@ function(_qt_internal_process_resource target resourceName)
     string(REPLACE "." "_" resourceName ${resourceName})
 
     set(output_targets "")
-    if(NOT DEFINED QT_REPO_MODULE_VERSION OR QT_USE_FIXED_QT_ADD_RESOURCE_BASE)
-        # Use the fixed BASE argument instead of the slightly broken one from 6.0.
-        set(resource_files ${rcc_FILES})
-        if(NOT "${rcc_BASE}" STREQUAL "")
-            get_filename_component(abs_base "${rcc_BASE}" ABSOLUTE)
-            foreach(file_path IN LISTS resource_files)
-                get_source_file_property(alias "${file_path}" QT_RESOURCE_ALIAS)
-                if(alias STREQUAL "NOTFOUND")
-                    get_filename_component(abs_file "${file_path}" ABSOLUTE)
-                    file(RELATIVE_PATH rel_file "${abs_base}" "${abs_file}")
-                    set_property(SOURCE "${file_path}" PROPERTY QT_RESOURCE_ALIAS "${rel_file}")
-                endif()
-            endforeach()
-        endif()
-    else()
-        # TODO: Remove this else branch, once every Qt module defines
-        #       QT_USE_FIXED_QT_ADD_RESOURCE_BASE.
-
-        # Apply base to all files
-        if (rcc_BASE)
-            foreach(file_path IN LISTS rcc_FILES)
-                set(resource_file "${rcc_BASE}/${file_path}")
-                __qt_get_relative_resource_path_for_file(alias ${resource_file})
-                # Handle case where resources were generated from a directory
-                # different than the one where the main .pro file resides.
-                # Unless otherwise specified, we should use the original file path
-                # as alias.
-                if (alias STREQUAL resource_file)
-                    set_source_files_properties(${resource_file} PROPERTIES
-                        QT_RESOURCE_ALIAS ${file_path})
-                endif()
-                file(TO_CMAKE_PATH ${resource_file} resource_file)
-                list(APPEND resource_files ${resource_file})
-            endforeach()
-        else()
-            set(resource_files ${rcc_FILES})
-        endif()
+    set(resource_files ${rcc_FILES})
+    if(NOT "${rcc_BASE}" STREQUAL "")
+        get_filename_component(abs_base "${rcc_BASE}" ABSOLUTE)
+        foreach(file_path IN LISTS resource_files)
+            get_source_file_property(alias "${file_path}" QT_RESOURCE_ALIAS)
+            if(alias STREQUAL "NOTFOUND")
+                get_filename_component(abs_file "${file_path}" ABSOLUTE)
+                file(RELATIVE_PATH rel_file "${abs_base}" "${abs_file}")
+                set_property(SOURCE "${file_path}" PROPERTY QT_RESOURCE_ALIAS "${rel_file}")
+            endif()
+        endforeach()
     endif()
 
     if(NOT rcc_PREFIX)
