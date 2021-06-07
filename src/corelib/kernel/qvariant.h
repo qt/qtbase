@@ -666,6 +666,7 @@ namespace QtPrivate {
 class Q_CORE_EXPORT QVariantTypeCoercer
 {
 public:
+    // ### Qt7: Pass QMetaType as value rather than const ref.
     const void *convert(const QVariant &value, const QMetaType &type);
     const void *coerce(const QVariant &value, const QMetaType &type);
 

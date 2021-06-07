@@ -59,7 +59,7 @@ QT_BEGIN_NAMESPACE
 namespace QIterablePrivate {
 
 template<typename Callback>
-static QVariant retrieveElement(const QMetaType &type, Callback callback)
+static QVariant retrieveElement(QMetaType type, Callback callback)
 {
     QVariant v(type);
     void *dataPtr;

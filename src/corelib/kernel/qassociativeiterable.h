@@ -122,12 +122,14 @@ public:
     {
     }
 
+    // ### Qt7: Pass QMetaType as value rather than const ref.
     QAssociativeIterable(const QMetaAssociation &metaAssociation, const QMetaType &metaType,
                          void *iterable)
         : QIterable(metaAssociation, metaType.alignOf(), iterable)
     {
     }
 
+    // ### Qt7: Pass QMetaType as value rather than const ref.
     QAssociativeIterable(const QMetaAssociation &metaAssociation, const QMetaType &metaType,
                          const void *iterable)
         : QIterable(metaAssociation, metaType.alignOf(), iterable)

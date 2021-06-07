@@ -115,12 +115,14 @@ public:
     {
     }
 
+    // ### Qt7: Pass QMetaType as value rather than const ref.
     QSequentialIterable(const QMetaSequence &metaSequence, const QMetaType &metaType,
                         void *iterable)
         : QIterable(metaSequence, metaType.alignOf(), iterable)
     {
     }
 
+    // ### Qt7: Pass QMetaType as value rather than const ref.
     QSequentialIterable(const QMetaSequence &metaSequence, const QMetaType &metaType,
                         const void *iterable)
         : QIterable(metaSequence, metaType.alignOf(), iterable)
