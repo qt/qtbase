@@ -1879,12 +1879,21 @@ private:
     }
 
 public:
-#ifndef Q_CC_MSVC
+#if defined(Q_CC_CLANG) || defined (Q_CC_GNU)
     // this is much simpler than the full type normalization below
     // the reason is that the signature returned by Q_FUNC_INFO is already
     // normalized to the largest degree, and we need to do only small adjustments
     constexpr int normalizeTypeFromSignature(const char *begin, const char *end)
     {
+        // bail out if there is an anonymous struct
+        std::string_view name(begin, end-begin);
+#if defined (Q_CC_CLANG)
+        if (name.find("anonymous ") != std::string_view::npos)
+            return normalizeType(begin, end);
+#else
+        if (name.find("unnamed ") != std::string_view::npos)
+            return normalizeType(begin, end);
+#endif
         while (begin < end) {
             if (*begin == ' ') {
                 if (last == ',' || last == '>' || last == '<' || last == '*' || last == '&') {
@@ -1893,7 +1902,7 @@ public:
                 }
             }
             if (last == ' ') {
-                if (*begin == '*' || *begin == '&') {
+                if (*begin == '*' || *begin == '&' || *begin == '(') {
                     replaceLast(*begin);
                     ++begin;
                     continue;

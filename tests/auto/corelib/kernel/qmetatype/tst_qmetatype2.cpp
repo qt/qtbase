@@ -385,6 +385,11 @@ struct CharTemplate
     {
         int a;
     } x;
+
+    union
+    {
+        int a;
+    } y;
 };
 
 void tst_QMetaType::operatorEq_data()
@@ -479,6 +484,16 @@ void tst_QMetaType::typeNameNormalization()
     // The string based normalization doesn't handle aliases, QMetaType::fromType() does
 //    CHECK_TYPE_NORMALIZATION("qulonglong", quint64);
     QCOMPARE(QMetaType::fromType<quint64>().name(), "qulonglong");
+
+    // noramlizedType and metatype name agree
+    {
+        auto type = QMetaType::fromType<decltype(CharTemplate<'<'>::x)>();
+        QCOMPARE(type.name(), QMetaObject::normalizedType(type.name()));
+    }
+    {
+        auto type = QMetaType::fromType<decltype(CharTemplate<'<'>::y)>();
+        QCOMPARE(type.name(), QMetaObject::normalizedType(type.name()));
+    }
 }
 
 // Compile-time test, it should be possible to register function pointer types
