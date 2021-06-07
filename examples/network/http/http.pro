@@ -1,8 +1,4 @@
 QT += network widgets
-android: qtHaveModule(androidextras) {
-    QT += androidextras
-    DEFINES += REQUEST_PERMISSIONS_ON_ANDROID
-}
 
 HEADERS += httpwindow.h
 SOURCES += httpwindow.cpp \
