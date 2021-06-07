@@ -224,7 +224,11 @@ void QAbstractItemViewPrivate::_q_scrollerStateChanged()
             // restore the old selection if we really start scrolling
             if (q->selectionModel()) {
                 q->selectionModel()->select(oldSelection, QItemSelectionModel::ClearAndSelect);
+                // block autoScroll logic while we are already handling scrolling
+                const bool wasAutoScroll = autoScroll;
+                autoScroll = false;
                 q->selectionModel()->setCurrentIndex(oldCurrent, QItemSelectionModel::NoUpdate);
+                autoScroll = wasAutoScroll;
             }
             Q_FALLTHROUGH();
 

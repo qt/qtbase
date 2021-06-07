@@ -35,11 +35,13 @@
 #include <QHeaderView>
 #include <QIdentityProxyModel>
 #include <QItemDelegate>
+#include <QLabel>
 #include <QLineEdit>
 #include <QListWidget>
 #include <QProxyStyle>
 #include <QPushButton>
 #include <QScrollBar>
+#include <QScroller>
 #include <QSignalSpy>
 #include <QSortFilterProxyModel>
 #include <QSpinBox>
@@ -158,6 +160,8 @@ private slots:
     void dragWithSecondClick();
     void selectionCommand_data();
     void selectionCommand();
+    void scrollerSmoothScroll();
+
 private:
     static QAbstractItemView *viewFromString(const QByteArray &viewType, QWidget *parent = nullptr)
     {
@@ -2737,6 +2741,65 @@ void tst_QAbstractItemView::selectionCommand()
     view.setSelectionMode(selectionMode);
     QTest::keyPress(&view, Qt::Key_A, keyboardModifier);
     QCOMPARE(selectionFlag, view.selectionCommand(QModelIndex(), nullptr));
+}
+
+/*!
+    Verify that scrolling an autoScroll enabled itemview with a QScroller
+    produces a continuous, smooth scroll without any jumping around due to
+    the currentItem negotiation between QAbstractItemView and QScroller.
+    QTBUG-64543.
+*/
+void tst_QAbstractItemView::scrollerSmoothScroll()
+{
+    QListWidget view;
+    view.setAutoScroll(true);
+    view.setVerticalScrollMode(QListView::ScrollPerPixel);
+
+    QScroller::grabGesture(view.viewport(), QScroller::TouchGesture);
+    QScroller::grabGesture(view.viewport(), QScroller::LeftMouseButtonGesture);
+
+    for (int i = 0; i < 50; i++) {
+        QListWidgetItem* item = new QListWidgetItem("item " + QString::number(i), &view);
+        // gives items a touch friendly size so that only a few fit into the viewport
+        item->setSizeHint(QSize(100,50));
+    }
+
+    // make sure we have space for only a few items
+    view.setFixedSize(120, 200);
+    view.show();
+    QVERIFY(QTest::qWaitForWindowActive(&view));
+
+    // we flick up, so we should never scroll back
+    int lastScrollPosition = 0;
+    bool scrollBack = false;
+    connect(view.verticalScrollBar(), &QScrollBar::valueChanged, [&](int value){
+        scrollBack |= (value < lastScrollPosition);
+        lastScrollPosition = value;
+    });
+
+    // start in the middle
+    view.scrollToItem(view.item(25));
+    QCOMPARE(view.currentItem(), view.item(0));
+    QListWidgetItem *pressItem = view.item(23);
+    QPoint dragPosition = view.visualRect(view.indexFromItem(pressItem)).center();
+    // the mouse press changes the current item temporarily, but the press is delayed
+    // by the gesture machinery
+    QTest::mousePress(view.viewport(), Qt::LeftButton, Qt::NoModifier, dragPosition);
+    QTRY_COMPARE(view.currentItem(), pressItem);
+
+    // QAIV will reset the current item when the scroller changes state to Dragging
+    for (int y = 0; y < QApplication::startDragDistance() * 2; ++y) {
+        // gesture recognizer needs some throttling
+        QTest::qWait(10);
+        dragPosition -= QPoint(0, 10);
+        const QPoint globalPos = view.viewport()->mapToGlobal(dragPosition);
+        QMouseEvent mouseMoveEvent(QEvent::MouseMove, dragPosition, dragPosition, globalPos,
+                                    Qt::NoButton, Qt::LeftButton, Qt::NoModifier);
+        QApplication::sendEvent(view.viewport(), &mouseMoveEvent);
+        QVERIFY(!scrollBack);
+    }
+
+    QTest::mouseRelease(view.viewport(), Qt::LeftButton, Qt::NoModifier, dragPosition);
 }
 
 QTEST_MAIN(tst_QAbstractItemView)
