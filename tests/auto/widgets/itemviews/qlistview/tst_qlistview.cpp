@@ -37,6 +37,7 @@
 #include <QTest>
 #include <QTimer>
 #include <QtMath>
+#include <QProxyStyle>
 
 #include <QtTest/private/qtesthelpers_p.h>
 #include <QtWidgets/private/qlistview_p.h>
@@ -170,6 +171,7 @@ private slots:
     void itemAlignment();
     void internalDragDropMove_data();
     void internalDragDropMove();
+    void spacingWithWordWrap_data();
     void spacingWithWordWrap();
 };
 
@@ -2765,8 +2767,37 @@ void tst_QListView::internalDragDropMove()
 /*!
     Verify fix for QTBUG-92366
 */
+void tst_QListView::spacingWithWordWrap_data()
+{
+    QTest::addColumn<bool>("scrollBarOverlap");
+
+    QTest::addRow("Without overlap") << false;
+    QTest::addRow("With overlap") << true;
+}
+
 void tst_QListView::spacingWithWordWrap()
 {
+    QFETCH(bool, scrollBarOverlap);
+
+    class MyStyle : public QProxyStyle
+    {
+        bool scrollBarOverlap;
+    public:
+        MyStyle(bool scrollBarOverlap) : scrollBarOverlap(scrollBarOverlap) {}
+
+        int pixelMetric(PixelMetric metric, const QStyleOption *option = nullptr,
+                        const QWidget *widget = nullptr) const override{
+            switch (metric) {
+                case QStyle::PM_ScrollView_ScrollBarOverlap: return scrollBarOverlap;
+                default:
+                    break;
+                }
+                return QProxyStyle::pixelMetric(metric, option, widget);
+        }
+    };
+
+    QApplication::setStyle(new MyStyle(scrollBarOverlap));
+
     const int listViewResizeCount = 200;
     QWidget window;
     window.resize(300, 200);
