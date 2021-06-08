@@ -1301,7 +1301,10 @@ bool QWindowsGLContext::makeCurrent(QPlatformSurface *surface)
                 && QOpenGLStaticContext::opengl32.wglGetCurrentDC() == contextData->hdc) {
             return true;
         }
-        return QOpenGLStaticContext::opengl32.wglMakeCurrent(contextData->hdc, contextData->renderingContext);
+        const bool success = QOpenGLStaticContext::opengl32.wglMakeCurrent(contextData->hdc, contextData->renderingContext);
+        if (!success)
+            qErrnoWarning("%s: wglMakeCurrent() failed for existing context data", __FUNCTION__);
+        return success;
     }
     // Create a new entry.
     const QOpenGLContextData newContext(m_renderingContext, hwnd, GetDC(hwnd));
@@ -1329,6 +1332,8 @@ bool QWindowsGLContext::makeCurrent(QPlatformSurface *surface)
             qCDebug(lcQpaGl) << "makeCurrent(): context loss detected" << this;
             // Drop the surface. Will recreate on the next makeCurrent.
             window->invalidateSurface();
+        } else {
+            qErrnoWarning("%s: wglMakeCurrent() failed", __FUNCTION__);
         }
     }
 
