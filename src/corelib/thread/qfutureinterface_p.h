@@ -184,7 +184,6 @@ public:
     };
     Data data = { QtPrivate::ResultStoreBase() };
 
-    QString m_progressText;
     QRunnable *runnable = nullptr;
     QThreadPool *m_pool = nullptr;
     // Wrapper for continuation
@@ -192,11 +191,17 @@ public:
 
     RefCount refCount = 1;
     QAtomicInt state; // reads and writes can happen unprotected, both must be atomic
+
     int m_progressValue = 0; // TQ
-    int m_progressMinimum = 0; // TQ
-    int m_progressMaximum = 0; // TQ
+    struct ProgressData
+    {
+        int minimum = 0; // TQ
+        int maximum = 0; // TQ
+        QString text;
+    };
+    QScopedPointer<ProgressData> m_progress;
+
     int m_expectedResultCount = 0;
-    bool manualProgress = false; // only accessed from executing thread
     bool launchAsync = false;
     bool isValid = false;
     bool hasException = false;
@@ -209,6 +214,7 @@ public:
     int internal_resultCount() const;
     bool internal_isResultReadyAt(int index) const;
     bool internal_waitForNextResult();
+    bool internal_updateProgressValue(int progress);
     bool internal_updateProgress(int progress, const QString &progressText = QString());
     void internal_setThrottled(bool enable);
     void sendCallOut(const QFutureCallOutEvent &callOut);
@@ -217,7 +223,6 @@ public:
     void disconnectOutputInterface(QFutureCallOutInterface *iface);
 
     void setState(QFutureInterfaceBase::State state);
-
 };
 
 QT_END_NAMESPACE
