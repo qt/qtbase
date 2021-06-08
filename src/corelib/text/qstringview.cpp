@@ -880,9 +880,34 @@ QT_BEGIN_NAMESPACE
 
     Returns the index position of the last occurrence of the string view \a str,
     Latin-1 string \a l1, or character \a ch, respectively, in this string view,
-    searching backward from index position \a from. If \a from is -1 (default),
+    searching backward from index position \a from. If \a from is -1,
     the search starts at the last character; if \a from is -2, at the next to last
     character and so on. Returns -1 if \a str is not found.
+
+    If \a cs is Qt::CaseSensitive (default), the search is case
+    sensitive; otherwise the search is case insensitive.
+
+    \note When searching for a 0-length \a str or \a l1, the match at
+    the end of the data is excluded from the search by a negative \a
+    from, even though \c{-1} is normally thought of as searching from
+    the end of the string view: the match at the end is \e after the
+    last character, so it is excluded. To include such a final empty
+    match, either give a positive value for \a from or omit the \a from
+    parameter entirely.
+
+    \sa QString::lastIndexOf()
+*/
+
+/*!
+    \fn qsizetype QStringView::lastIndexOf(QStringView str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
+    \fn qsizetype QStringView::lastIndexOf(QLatin1String l1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
+    \since 6.2
+    \overload lastIndexOf()
+
+    Returns the index position of the last occurrence of the string view \a str
+    or Latin-1 string \a l1, respectively, in this string view,
+    searching backward from the last character of this string view.
+    Returns -1 if \a str is not found.
 
     If \a cs is Qt::CaseSensitive (default), the search is case
     sensitive; otherwise the search is case insensitive.
@@ -914,11 +939,42 @@ QT_BEGIN_NAMESPACE
 
     Returns the index position of the last match of the regular
     expression \a re in the string view, which starts before the index
+    position \a from. If \a from is -1, the search starts at the last
+    character; if \a from is -2, at the next to last character and so
+    on. Returns -1 if \a re didn't match anywhere.
+
+    If the match is successful and \a rmatch is not \nullptr, it also
+    writes the results of the match into the QRegularExpressionMatch object
+    pointed to by \a rmatch.
+
+    \note Due to how the regular expression matching algorithm works,
+    this function will actually match repeatedly from the beginning of
+    the string view until the position \a from is reached.
+
+    \note When searching for a regular expression \a re that may match
+    0 characters, the match at the end of the data is excluded from the
+    search by a negative \a from, even though \c{-1} is normally
+    thought of as searching from the end of the string view: the match
+    at the end is \e after the last character, so it is excluded. To
+    include such a final empty match, either give a positive value for
+    \a from or omit the \a from parameter entirely.
+*/
+
+/*!
+    \fn qsizetype QStringView::lastIndexOf(const QRegularExpression &re, QRegularExpressionMatch *rmatch = nullptr) const
+    \since 6.2
+
+    Returns the index position of the last match of the regular
+    expression \a re in the string view, which starts before the index
     position \a from. Returns -1 if \a re didn't match anywhere.
 
     If the match is successful and \a rmatch is not \nullptr, it also
     writes the results of the match into the QRegularExpressionMatch object
     pointed to by \a rmatch.
+
+    \note Due to how the regular expression matching algorithm works,
+    this function will actually match repeatedly from the beginning of
+    the string view until the end of the string view is reached.
 */
 
 /*!

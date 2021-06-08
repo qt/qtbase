@@ -161,7 +161,9 @@ public:
     { return QtPrivate::findByteArray(qToByteArrayViewIgnoringNull(*this), from, bv); }
 
     qsizetype lastIndexOf(char c, qsizetype from = -1) const;
-    qsizetype lastIndexOf(QByteArrayView bv, qsizetype from = -1) const
+    qsizetype lastIndexOf(QByteArrayView bv) const
+    { return lastIndexOf(bv, size()); }
+    qsizetype lastIndexOf(QByteArrayView bv, qsizetype from) const
     { return QtPrivate::lastIndexOf(qToByteArrayViewIgnoringNull(*this), from, bv); }
 
     inline bool contains(char c) const;

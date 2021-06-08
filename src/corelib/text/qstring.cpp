@@ -4012,7 +4012,7 @@ qsizetype QString::indexOf(QChar ch, qsizetype from, Qt::CaseSensitivity cs) con
 /*!
   Returns the index position of the last occurrence of the string \a
   str in this string, searching backward from index position \a
-  from. If \a from is -1 (default), the search starts at the last
+  from. If \a from is -1, the search starts at the last
   character; if \a from is -2, at the next to last character and so
   on. Returns -1 if \a str is not found.
 
@@ -4023,12 +4023,38 @@ qsizetype QString::indexOf(QChar ch, qsizetype from, Qt::CaseSensitivity cs) con
 
   \snippet qstring/main.cpp 29
 
+  \note When searching for a 0-length \a str, the match at the end of
+  the data is excluded from the search by a negative \a from, even
+  though \c{-1} is normally thought of as searching from the end of the
+  string: the match at the end is \e after the last character, so it is
+  excluded. To include such a final empty match, either give a positive
+  value for \a from or omit the \a from parameter entirely.
+
   \sa indexOf(), contains(), count()
 */
 qsizetype QString::lastIndexOf(const QString &str, qsizetype from, Qt::CaseSensitivity cs) const
 {
     return QtPrivate::lastIndexOf(QStringView(*this), from, str, cs);
 }
+
+/*!
+  \fn qsizetype QString::lastIndexOf(const QString &str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
+  \since 6.2
+  \overload lastIndexOf()
+
+  Returns the index position of the last occurrence of the string \a
+  str in this string, searching backward from index position \a
+  from. Returns -1 if \a str is not found.
+
+  If \a cs is Qt::CaseSensitive (default), the search is case
+  sensitive; otherwise the search is case insensitive.
+
+  Example:
+
+  \snippet qstring/main.cpp 29
+
+  \sa indexOf(), contains(), count()
+*/
 
 #endif // QT_STRINGVIEW_LEVEL < 2
 
@@ -4038,7 +4064,7 @@ qsizetype QString::lastIndexOf(const QString &str, qsizetype from, Qt::CaseSensi
 
   Returns the index position of the last occurrence of the string \a
   str in this string, searching backward from index position \a
-  from. If \a from is -1 (default), the search starts at the last
+  from. If \a from is -1, the search starts at the last
   character; if \a from is -2, at the next to last character and so
   on. Returns -1 if \a str is not found.
 
@@ -4049,12 +4075,38 @@ qsizetype QString::lastIndexOf(const QString &str, qsizetype from, Qt::CaseSensi
 
   \snippet qstring/main.cpp 29
 
+  \note When searching for a 0-length \a str, the match at the end of
+  the data is excluded from the search by a negative \a from, even
+  though \c{-1} is normally thought of as searching from the end of the
+  string: the match at the end is \e after the last character, so it is
+  excluded. To include such a final empty match, either give a positive
+  value for \a from or omit the \a from parameter entirely.
+
   \sa indexOf(), contains(), count()
 */
 qsizetype QString::lastIndexOf(QLatin1String str, qsizetype from, Qt::CaseSensitivity cs) const
 {
     return QtPrivate::lastIndexOf(*this, from, str, cs);
 }
+
+/*!
+  \fn qsizetype QString::lastIndexOf(QLatin1String str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
+  \since 6.2
+  \overload lastIndexOf()
+
+  Returns the index position of the last occurrence of the string \a
+  str in this string, searching backward from index position \a
+  from. Returns -1 if \a str is not found.
+
+  If \a cs is Qt::CaseSensitive (default), the search is case
+  sensitive; otherwise the search is case insensitive.
+
+  Example:
+
+  \snippet qstring/main.cpp 29
+
+  \sa indexOf(), contains(), count()
+*/
 
 /*!
   \overload lastIndexOf()
@@ -4074,16 +4126,37 @@ qsizetype QString::lastIndexOf(QChar ch, qsizetype from, Qt::CaseSensitivity cs)
 
   Returns the index position of the last occurrence of the string view \a
   str in this string, searching backward from index position \a
-  from. If \a from is -1 (default), the search starts at the last
+  from. If \a from is -1, the search starts at the last
   character; if \a from is -2, at the next to last character and so
   on. Returns -1 if \a str is not found.
 
   If \a cs is Qt::CaseSensitive (default), the search is case
   sensitive; otherwise the search is case insensitive.
 
+  \note When searching for a 0-length \a str, the match at the end of
+  the data is excluded from the search by a negative \a from, even
+  though \c{-1} is normally thought of as searching from the end of the
+  string: the match at the end is \e after the last character, so it is
+  excluded. To include such a final empty match, either give a positive
+  value for \a from or omit the \a from parameter entirely.
+
   \sa indexOf(), contains(), count()
 */
 
+/*!
+  \fn qsizetype QString::lastIndexOf(QStringView str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
+  \since 6.2
+  \overload lastIndexOf()
+
+  Returns the index position of the last occurrence of the string view \a
+  str in this string, searching backward from index position \a
+  from. Returns -1 if \a str is not found.
+
+  If \a cs is Qt::CaseSensitive (default), the search is case
+  sensitive; otherwise the search is case insensitive.
+
+  \sa indexOf(), contains(), count()
+*/
 
 #if QT_CONFIG(regularexpression)
 struct QStringCapture
@@ -4356,7 +4429,9 @@ qsizetype QString::indexOf(const QRegularExpression &re, qsizetype from, QRegula
 
     Returns the index position of the last match of the regular
     expression \a re in the string, which starts before the index
-    position \a from. Returns -1 if \a re didn't match anywhere.
+    position \a from. If \a from is -1, the search starts at the last
+    character; if \a from is -2, at the next to last character and so
+    on. Returns -1 if \a re didn't match anywhere.
 
     If the match is successful and \a rmatch is not \nullptr, it also
     writes the results of the match into the QRegularExpressionMatch object
@@ -4369,6 +4444,14 @@ qsizetype QString::indexOf(const QRegularExpression &re, qsizetype from, QRegula
     \note Due to how the regular expression matching algorithm works,
     this function will actually match repeatedly from the beginning of
     the string until the position \a from is reached.
+
+    \note When searching for a regular expression \a re that may match
+    0 characters, the match at the end of the data is excluded from the
+    search by a negative \a from, even though \c{-1} is normally
+    thought of as searching from the end of the string: the match at
+    the end is \e after the last character, so it is excluded. To
+    include such a final empty match, either give a positive value for
+    \a from or omit the \a from parameter entirely.
 */
 qsizetype QString::lastIndexOf(const QRegularExpression &re, qsizetype from, QRegularExpressionMatch *rmatch) const
 {
@@ -4377,13 +4460,13 @@ qsizetype QString::lastIndexOf(const QRegularExpression &re, qsizetype from, QRe
         return -1;
     }
 
-    qsizetype endpos = (from < 0) ? (size() + from + 1) : (from);
+    qsizetype endpos = (from < 0) ? (size() + from + 1) : (from + 1);
     QRegularExpressionMatchIterator iterator = re.globalMatch(*this);
     qsizetype lastIndex = -1;
     while (iterator.hasNext()) {
         QRegularExpressionMatch match = iterator.next();
         qsizetype start = match.capturedStart();
-        if (start <= endpos) {
+        if (start < endpos) {
             lastIndex = start;
             if (rmatch)
                 *rmatch = std::move(match);
@@ -4394,6 +4477,27 @@ qsizetype QString::lastIndexOf(const QRegularExpression &re, qsizetype from, QRe
 
     return lastIndex;
 }
+
+/*!
+    \fn qsizetype QString::lastIndexOf(const QRegularExpression &re, QRegularExpressionMatch *rmatch = nullptr) const
+    \since 6.2
+    \overload lastIndexOf()
+
+    Returns the index position of the last match of the regular
+    expression \a re in the string. Returns -1 if \a re didn't match anywhere.
+
+    If the match is successful and \a rmatch is not \nullptr, it also
+    writes the results of the match into the QRegularExpressionMatch object
+    pointed to by \a rmatch.
+
+    Example:
+
+    \snippet qstring/main.cpp 94
+
+    \note Due to how the regular expression matching algorithm works,
+    this function will actually match repeatedly from the beginning of
+    the string until the end of the string is reached.
+*/
 
 /*!
     \since 5.1
@@ -9157,14 +9261,36 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     string, searching backward from index position \a from.
     Returns -1 if \a str is not found.
 
-    If \a from is -1 (default), the search starts at the last character;
+    If \a from is -1, the search starts at the last character;
     if \a from is -2, at the next to last character and so on.
 
     If \a cs is Qt::CaseSensitive (default), the search is case
     sensitive; otherwise the search is case insensitive.
 
+    \note When searching for a 0-length \a str or \a l1, the match at
+    the end of the data is excluded from the search by a negative \a
+    from, even though \c{-1} is normally thought of as searching from
+    the end of the string: the match at the end is \e after the last
+    character, so it is excluded. To include such a final empty match,
+    either give a positive value for \a from or omit the \a from
+    parameter entirely.
+
     \sa indexOf(), QStringView::lastIndexOf(), QStringView::indexOf(),
     QString::indexOf()
+*/
+
+/*!
+    \fn qsizetype QLatin1String::lastIndexOf(QStringView str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
+    \fn qsizetype QLatin1String::lastIndexOf(QLatin1String l1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
+    \since 6.2
+    \overload lastIndexOf()
+
+    Returns the index position of the last occurrence of the
+    string-view \a str or Latin-1 string \a l1, respectively, in this
+    Latin-1 string. Returns -1 if \a str is not found.
+
+    If \a cs is Qt::CaseSensitive (default), the search is case
+    sensitive; otherwise the search is case insensitive.
 */
 
 /*!
@@ -10309,7 +10435,7 @@ static qsizetype qLastIndexOf(Haystack haystack0, qsizetype from,
     if (from == l && sl == 0)
         return from;
     const qsizetype delta = l - sl;
-    if (std::size_t(from) >= std::size_t(l) || delta < 0)
+    if (std::size_t(from) > std::size_t(l) || delta < 0)
         return -1;
     if (from > delta)
         from = delta;
@@ -10497,13 +10623,13 @@ qsizetype QtPrivate::lastIndexOf(QStringView haystack, const QRegularExpression 
         return -1;
     }
 
-    qsizetype endpos = (from < 0) ? (haystack.size() + from + 1) : (from);
+    qsizetype endpos = (from < 0) ? (haystack.size() + from + 1) : (from + 1);
     QRegularExpressionMatchIterator iterator = re.globalMatch(haystack);
     qsizetype lastIndex = -1;
     while (iterator.hasNext()) {
         QRegularExpressionMatch match = iterator.next();
         qsizetype start = match.capturedStart();
-        if (start <= endpos) {
+        if (start < endpos) {
             lastIndex = start;
             if (rmatch)
                 *rmatch = std::move(match);

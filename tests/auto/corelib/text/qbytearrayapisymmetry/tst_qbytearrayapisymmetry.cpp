@@ -430,10 +430,14 @@ void tst_QByteArrayApiSymmetry::lastIndexOf_data()
     QTest::newRow("null from 0") << QByteArray() << QByteArray("x") << 0 << -1;
     QTest::newRow("null from -1") << QByteArray() << QByteArray("x") << -1 << -1;
     QTest::newRow("null from 1") << QByteArray() << QByteArray("x") << 1 << -1;
-    QTest::newRow("null-in-null") << QByteArray() << QByteArray() << -1 << 0;
-    QTest::newRow("empty-in-null") << QByteArray() << QByteArray("") << -1 << 0;
-    QTest::newRow("null-in-empty") << QByteArray("") << QByteArray() << -1 << 0;
-    QTest::newRow("empty-in-empty") << QByteArray("") << QByteArray("") << -1 << 0;
+    QTest::newRow("null-in-null-off--1") << QByteArray() << QByteArray() << -1 << -1;
+    QTest::newRow("null-in-null-off-0") << QByteArray() << QByteArray() << 0 << 0;
+    QTest::newRow("empty-in-null-off--1") << QByteArray() << QByteArray("") << -1 << -1;
+    QTest::newRow("empty-in-null-off-0") << QByteArray() << QByteArray("") << 0 << 0;
+    QTest::newRow("null-in-empty-off--1") << QByteArray("") << QByteArray() << -1 << -1;
+    QTest::newRow("null-in-empty-off-0") << QByteArray("") << QByteArray() << 0 << 0;
+    QTest::newRow("empty-in-empty-off--1") << QByteArray("") << QByteArray("") << -1 << -1;
+    QTest::newRow("empty-in-empty-off-0") << QByteArray("") << QByteArray("") << 0 << 0;
     QTest::newRow("empty in abc from 0") << abc << QByteArray() << 0 << 0;
     QTest::newRow("empty in abc from 2") << abc << QByteArray() << 2 << 2;
     QTest::newRow("empty in abc from 5")
@@ -462,7 +466,7 @@ void tst_QByteArrayApiSymmetry::lastIndexOf_impl()
     if (needle.size() == 1)
         QCOMPARE(haystack.lastIndexOf(needle.at(0), startpos), expected);
 
-    if (startpos == -1) {
+    if (startpos == haystack.size()) {
         QCOMPARE(haystack.lastIndexOf(needle), expected);
         if (!hasNull)
             QCOMPARE(haystack.lastIndexOf(needle.data()), expected);
