@@ -25,17 +25,9 @@ defineTest(addInstallFiles) {
     export($$1)
 }
 
-moduleRoot = $$dirname(_QMAKE_CONF_)
-probase = $$relative_path($$_PRO_FILE_PWD_, $$moduleRoot/examples)
+probase = $$relative_path($$_PRO_FILE_PWD_, $$dirname(_QMAKE_CONF_)/examples)
 isEmpty(probase)|contains(probase, ^\\..*): \
     return()
-
-isEmpty(_QMAKE_CACHE_) {
-    moduleRootRelativeToBuildDir = $$relative_path($$moduleRoot, $$OUT_PWD)
-    # Check if OUT_PWD is inside module root
-    equals(moduleRootRelativeToBuildDir, .)|contains(moduleRootRelativeToBuildDir, \(\.\./\)+\(\.\.\)?): \
-        error("You cannot build examples inside the Qt source tree, except as part of a proper Qt build.")
-}
 
 contains(TEMPLATE, "vc.*"): \
     return()
