@@ -1687,14 +1687,14 @@ void tst_QString::indexOf2()
 #if QT_CONFIG(regularexpression)
 void tst_QString::indexOfInvalidRegex()
 {
-    QTest::ignoreMessage(QtWarningMsg, "QString::indexOf: invalid QRegularExpression object");
+    QTest::ignoreMessage(QtWarningMsg, "QString(View)::indexOf: invalid QRegularExpression object");
     QCOMPARE(QString("invalid regex\\").indexOf(QRegularExpression("invalid regex\\")), -1);
-    QTest::ignoreMessage(QtWarningMsg, "QString::indexOf: invalid QRegularExpression object");
+    QTest::ignoreMessage(QtWarningMsg, "QString(View)::indexOf: invalid QRegularExpression object");
     QCOMPARE(QString("invalid regex\\").indexOf(QRegularExpression("invalid regex\\"), -1, nullptr), -1);
 
     QRegularExpressionMatch match;
     QVERIFY(!match.hasMatch());
-    QTest::ignoreMessage(QtWarningMsg, "QString::indexOf: invalid QRegularExpression object");
+    QTest::ignoreMessage(QtWarningMsg, "QString(View)::indexOf: invalid QRegularExpression object");
     QCOMPARE(QString("invalid regex\\").indexOf(QRegularExpression("invalid regex\\"), -1, &match), -1);
     QVERIFY(!match.hasMatch());
 }
@@ -1813,14 +1813,14 @@ void tst_QString::lastIndexOf()
 #if QT_CONFIG(regularexpression)
 void tst_QString::lastIndexOfInvalidRegex()
 {
-    QTest::ignoreMessage(QtWarningMsg, "QString::lastIndexOf: invalid QRegularExpression object");
+    QTest::ignoreMessage(QtWarningMsg, "QString(View)::lastIndexOf: invalid QRegularExpression object");
     QCOMPARE(QString("invalid regex\\").lastIndexOf(QRegularExpression("invalid regex\\"), 0), -1);
-    QTest::ignoreMessage(QtWarningMsg, "QString::lastIndexOf: invalid QRegularExpression object");
+    QTest::ignoreMessage(QtWarningMsg, "QString(View)::lastIndexOf: invalid QRegularExpression object");
     QCOMPARE(QString("invalid regex\\").lastIndexOf(QRegularExpression("invalid regex\\"), -1, nullptr), -1);
 
     QRegularExpressionMatch match;
     QVERIFY(!match.hasMatch());
-    QTest::ignoreMessage(QtWarningMsg, "QString::lastIndexOf: invalid QRegularExpression object");
+    QTest::ignoreMessage(QtWarningMsg, "QString(View)::lastIndexOf: invalid QRegularExpression object");
     QCOMPARE(QString("invalid regex\\").lastIndexOf(QRegularExpression("invalid regex\\"), -1, &match), -1);
     QVERIFY(!match.hasMatch());
 }
@@ -1843,7 +1843,7 @@ void tst_QString::count()
     QCOMPARE(a.count(QRegularExpression("")), 16);
     QCOMPARE(a.count(QRegularExpression("[FG][HI]")), 1);
     QCOMPARE(a.count(QRegularExpression("[G][HE]")), 2);
-    QTest::ignoreMessage(QtWarningMsg, "QString::count: invalid QRegularExpression object");
+    QTest::ignoreMessage(QtWarningMsg, "QString(View)::count: invalid QRegularExpression object");
     QCOMPARE(a.count(QRegularExpression("invalid regex\\")), 0);
 #endif
 
@@ -1862,7 +1862,7 @@ void tst_QString::count()
 #if QT_CONFIG(regularexpression)
     QCOMPARE(nullStr.count(QRegularExpression("")), 1);
     QCOMPARE(nullStr.count(QRegularExpression("[FG][HI]")), 0);
-    QTest::ignoreMessage(QtWarningMsg, "QString::count: invalid QRegularExpression object");
+    QTest::ignoreMessage(QtWarningMsg, "QString(View)::count: invalid QRegularExpression object");
     QCOMPARE(nullStr.count(QRegularExpression("invalid regex\\")), 0);
 #endif
 
@@ -1876,7 +1876,7 @@ void tst_QString::count()
 #if QT_CONFIG(regularexpression)
     QCOMPARE(emptyStr.count(QRegularExpression("")), 1);
     QCOMPARE(emptyStr.count(QRegularExpression("[FG][HI]")), 0);
-    QTest::ignoreMessage(QtWarningMsg, "QString::count: invalid QRegularExpression object");
+    QTest::ignoreMessage(QtWarningMsg, "QString(View)::count: invalid QRegularExpression object");
     QCOMPARE(emptyStr.count(QRegularExpression("invalid regex\\")), 0);
 #endif
 }
@@ -1949,7 +1949,7 @@ void tst_QString::contains()
         QVERIFY(!a.contains(QRegularExpression("ZZZ"), 0));
     }
 
-    QTest::ignoreMessage(QtWarningMsg, "QString::contains: invalid QRegularExpression object");
+    QTest::ignoreMessage(QtWarningMsg, "QString(View)::contains: invalid QRegularExpression object");
     QVERIFY(!a.contains(QRegularExpression("invalid regex\\")));
 #endif
 
