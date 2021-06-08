@@ -84,8 +84,8 @@ QT_BEGIN_NAMESPACE
     \list
 
     \li For a line edit that accepts integers from 10 to 1000 inclusive,
-    42 and 123 are \l Acceptable, the empty string and 5 are \l
-    Intermediate, and "asdf" and 1114 is \l Invalid.
+    42 and 123 are \l Acceptable, the empty string, 5, or 1234 are \l
+    Intermediate, and "asdf" and 10114 is \l Invalid.
 
     \li For an editable combobox that accepts URLs, any well-formed URL
     is \l Acceptable, "http://example.com/," is \l Intermediate
