@@ -71,6 +71,7 @@
 #include <qtcore_tracepoints_p.h>
 
 #include <new>
+#include <mutex>
 
 #include <ctype.h>
 #include <limits.h>
@@ -406,11 +407,14 @@ void QObjectPrivate::ConnectionData::removeConnection(QObjectPrivate::Connection
 
 }
 
-void QObjectPrivate::ConnectionData::cleanOrphanedConnectionsImpl(QObject *sender)
+void QObjectPrivate::ConnectionData::cleanOrphanedConnectionsImpl(QObject *sender, LockPolicy lockPolicy)
 {
+    QBasicMutex *senderMutex = signalSlotLock(sender);
     ConnectionOrSignalVector *c = nullptr;
     {
-        QBasicMutexLocker l(signalSlotLock(sender));
+        std::unique_lock<QBasicMutex> lock(*senderMutex, std::defer_lock_t{});
+        if (lockPolicy == NeedToLock)
+            lock.lock();
         if (ref.loadAcquire() > 1)
             return;
 
@@ -420,7 +424,16 @@ void QObjectPrivate::ConnectionData::cleanOrphanedConnectionsImpl(QObject *sende
         c = orphaned.loadRelaxed();
         orphaned.storeRelaxed(nullptr);
     }
-    deleteOrphaned(c);
+    if (c) {
+        // Deleting c might run arbitrary user code, so we must not hold the lock
+        if (lockPolicy == AlreadyLockedAndTemporarilyReleasingLock) {
+            senderMutex->unlock();
+            deleteOrphaned(c);
+            senderMutex->lock();
+        } else {
+            deleteOrphaned(c);
+        }
+    }
 }
 
 void QObjectPrivate::ConnectionData::deleteOrphaned(QObjectPrivate::ConnectionOrSignalVector *o)
