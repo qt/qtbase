@@ -1823,6 +1823,7 @@ void QListViewPrivate::prepareItemsLayout()
     // Qt::ScrollBarAlwaysOn but scrollbar extent must be deduced if policy
     // is Qt::ScrollBarAsNeeded
     int verticalMargin = (vbarpolicy == Qt::ScrollBarAsNeeded) && (flow == QListView::LeftToRight || vbar->isVisible())
+                        && !q->style()->pixelMetric(QStyle::PM_ScrollView_ScrollBarOverlap, nullptr, vbar)
         ? q->style()->pixelMetric(QStyle::PM_ScrollBarExtent, nullptr, vbar) + frameAroundContents
         : 0;
     int horizontalMargin =  hbarpolicy==Qt::ScrollBarAsNeeded
