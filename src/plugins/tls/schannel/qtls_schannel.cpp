@@ -210,7 +210,7 @@ long QSchannelBackend::tlsLibraryVersionNumber() const
 QString QSchannelBackend::tlsLibraryVersionString() const
 {
     const auto os = QOperatingSystemVersion::current();
-    return QString::fromLatin1("Secure Channel, %1 %2.%3.%4")
+    return QLatin1String("Secure Channel, %1 %2.%3.%4")
             .arg(os.name(),
                  QString::number(os.majorVersion()),
                  QString::number(os.minorVersion()),
@@ -219,16 +219,13 @@ QString QSchannelBackend::tlsLibraryVersionString() const
 
 long QSchannelBackend::tlsLibraryBuildVersionNumber() const
 {
-    return tlsLibraryVersionNumber();
+    return NTDDI_VERSION;
 }
 
 QString QSchannelBackend::tlsLibraryBuildVersionString() const
 {
-    const auto os = QOperatingSystemVersion::current();
-    return QString::fromLatin1("%1.%2.%3")
-            .arg(QString::number(os.majorVersion()),
-                 QString::number(os.minorVersion()),
-                 QString::number(os.microVersion()));
+    return QLatin1String("Secure Channel (NTDDI: 0x%1)")
+            .arg(QString::number(NTDDI_VERSION, 16).toUpper());
 }
 
 void QSchannelBackend::ensureInitialized() const
