@@ -1726,7 +1726,7 @@ void tst_QString::lastIndexOf_data()
     QTest::newRow("14") << a << "A" <<  -1*int(a.size()) <<  0 << true;
 
     QTest::newRow("15") << a << "efg" << 0 << -1 << false;
-    QTest::newRow("16") << a << "efg" << int(a.size()) << -1 << false;
+    QTest::newRow("16") << a << "efg" << int(a.size()) << 12 << false;
     QTest::newRow("17") << a << "efg" << -1 * int(a.size()) << -1 << false;
     QTest::newRow("19") << a << "efg" << int(a.size()) - 1 << 12 << false;
     QTest::newRow("20") << a << "efg" << 12 << 12 << false;
@@ -1795,7 +1795,7 @@ void tst_QString::lastIndexOf()
         QCOMPARE(haystack.lastIndexOf(view, from), expected);
         QCOMPARE(haystack.lastIndexOf(needle.toLatin1(), from), expected);
         QCOMPARE(haystack.lastIndexOf(needle.toLatin1().data(), from), expected);
-        if (from == -1) {
+        if (from == haystack.size()) {
             QCOMPARE(haystack.lastIndexOf(needle), expected);
             QCOMPARE(haystack.lastIndexOf(view), expected);
             QCOMPARE(haystack.lastIndexOf(needle.toLatin1()), expected);

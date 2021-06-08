@@ -260,7 +260,9 @@ public:
     [[nodiscard]] bool contains(char c) const noexcept
     { return indexOf(c) != qsizetype(-1); }
 
-    [[nodiscard]] qsizetype lastIndexOf(QByteArrayView a, qsizetype from = -1) const noexcept
+    [[nodiscard]] qsizetype lastIndexOf(QByteArrayView a) const noexcept
+    { return lastIndexOf(a, size()); }
+    [[nodiscard]] qsizetype lastIndexOf(QByteArrayView a, qsizetype from) const noexcept
     { return QtPrivate::lastIndexOf(*this, from, a); }
     [[nodiscard]] qsizetype lastIndexOf(char ch, qsizetype from = -1) const noexcept
     { return QtPrivate::lastIndexOf(*this, from, QByteArrayView(&ch, 1)); }

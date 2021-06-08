@@ -2523,8 +2523,11 @@ static inline qsizetype lastIndexOfCharHelper(QByteArrayView haystack, qsizetype
 
 qsizetype QtPrivate::lastIndexOf(QByteArrayView haystack, qsizetype from, QByteArrayView needle) noexcept
 {
-    if (haystack.isEmpty())
-        return !needle.size() ? 0 : -1;
+    if (haystack.isEmpty()) {
+        if (needle.isEmpty() && from == 0)
+            return 0;
+        return -1;
+    }
     const auto ol = needle.size();
     if (ol == 1)
         return lastIndexOfCharHelper(haystack, from, needle.front());
@@ -2537,8 +2540,30 @@ qsizetype QtPrivate::lastIndexOf(QByteArrayView haystack, qsizetype from, QByteA
 
     Returns the index position of the start of the last occurrence of the
     sequence of bytes viewed by \a bv in this byte array, searching backward
-    from index position \a from. If \a from is -1 (the default), the search
-    starts from the end of the byte array. Returns -1 if no match is found.
+    from index position \a from. If \a from is -1, the search starts at
+    the last character; if \a from is -2, at the next to last character
+    and so on. Returns -1 if no match is found.
+
+    Example:
+    \snippet code/src_corelib_text_qbytearray.cpp 23
+
+    \note When searching for a 0-length \a bv, the match at the end of
+    the data is excluded from the search by a negative \a from, even
+    though \c{-1} is normally thought of as searching from the end of
+    the byte array: the match at the end is \e after the last character, so
+    it is excluded. To include such a final empty match, either give a
+    positive value for \a from or omit the \a from parameter entirely.
+
+    \sa indexOf(), contains(), count()
+*/
+
+/*! \fn qsizetype QByteArray::lastIndexOf(QByteArrayView bv) const
+    \since 6.2
+    \overload
+
+    Returns the index position of the start of the last occurrence of the
+    sequence of bytes viewed by \a bv in this byte array, searching backward
+    from the end of the byte array. Returns -1 if no match is found.
 
     Example:
     \snippet code/src_corelib_text_qbytearray.cpp 23
@@ -2577,6 +2602,9 @@ static inline qsizetype countCharHelper(QByteArrayView haystack, char needle) no
 
 qsizetype QtPrivate::count(QByteArrayView haystack, QByteArrayView needle) noexcept
 {
+    if (needle.size() == 0)
+        return haystack.size() + 1;
+
     if (needle.size() == 1)
         return countCharHelper(haystack, needle[0]);
 

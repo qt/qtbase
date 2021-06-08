@@ -150,9 +150,13 @@ public:
     [[nodiscard]] inline bool contains(QChar c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return indexOf(QStringView(&c, 1), 0, cs) != -1; }
 
-    [[nodiscard]] qsizetype lastIndexOf(QStringView s, qsizetype from = -1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
+    [[nodiscard]] qsizetype lastIndexOf(QStringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
+    { return lastIndexOf(s, size(), cs); }
+    [[nodiscard]] qsizetype lastIndexOf(QStringView s, qsizetype from, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return QtPrivate::lastIndexOf(*this, from, s, cs); }
-    [[nodiscard]] qsizetype lastIndexOf(QLatin1String s, qsizetype from = -1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
+    [[nodiscard]] qsizetype lastIndexOf(QLatin1String s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
+    { return lastIndexOf(s, size(), cs); }
+    [[nodiscard]] qsizetype lastIndexOf(QLatin1String s, qsizetype from, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return QtPrivate::lastIndexOf(*this, from, s, cs); }
     [[nodiscard]] qsizetype lastIndexOf(QChar c, qsizetype from = -1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return QtPrivate::lastIndexOf(*this, from, QStringView(&c, 1), cs); }
@@ -334,6 +338,8 @@ qsizetype QStringView::indexOf(QLatin1String s, qsizetype from, Qt::CaseSensitiv
 { return QtPrivate::findString(*this, from, s, cs); }
 bool QStringView::contains(QLatin1String s, Qt::CaseSensitivity cs) const noexcept
 { return indexOf(s, 0, cs) != qsizetype(-1); }
+qsizetype QStringView::lastIndexOf(QLatin1String s, Qt::CaseSensitivity cs) const noexcept
+{ return QtPrivate::lastIndexOf(*this, size(), s, cs); }
 qsizetype QStringView::lastIndexOf(QLatin1String s, qsizetype from, Qt::CaseSensitivity cs) const noexcept
 { return QtPrivate::lastIndexOf(*this, from, s, cs); }
 
@@ -503,12 +509,18 @@ public:
     [[nodiscard]] qsizetype indexOf(QStringView s, qsizetype from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return QtPrivate::findString(*this, from, s, cs); }
     [[nodiscard]] qsizetype lastIndexOf(QChar c, qsizetype from = -1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
-    [[nodiscard]] qsizetype lastIndexOf(QLatin1String s, qsizetype from = -1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    [[nodiscard]] qsizetype lastIndexOf(QLatin1String s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
+    { return lastIndexOf(s, size(), cs); }
+    [[nodiscard]] qsizetype lastIndexOf(QLatin1String s, qsizetype from, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
 #if QT_STRINGVIEW_LEVEL < 2
-    [[nodiscard]] qsizetype lastIndexOf(const QString &s, qsizetype from = -1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    [[nodiscard]] qsizetype lastIndexOf(const QString &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
+    { return lastIndexOf(s, size(), cs); }
+    [[nodiscard]] qsizetype lastIndexOf(const QString &s, qsizetype from, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
 #endif
 
-    [[nodiscard]] qsizetype lastIndexOf(QStringView s, qsizetype from = -1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
+    [[nodiscard]] qsizetype lastIndexOf(QStringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
+    { return lastIndexOf(s, size(), cs); }
+    [[nodiscard]] qsizetype lastIndexOf(QStringView s, qsizetype from, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return QtPrivate::lastIndexOf(*this, from, s, cs); }
 
     [[nodiscard]] inline bool contains(QChar c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
@@ -524,7 +536,15 @@ public:
 #if QT_CONFIG(regularexpression)
     [[nodiscard]] qsizetype indexOf(const QRegularExpression &re, qsizetype from = 0,
                                     QRegularExpressionMatch *rmatch = nullptr) const;
-    [[nodiscard]] qsizetype lastIndexOf(const QRegularExpression &re, qsizetype from = -1,
+#ifdef Q_QDOC
+    [[nodiscard]] qsizetype lastIndexOf(const QRegularExpression &re, QRegularExpressionMatch *rmatch = nullptr) const;
+#else
+    // prevent an ambiguity when called like this: lastIndexOf(re, 0)
+    template <typename T = QRegularExpressionMatch, std::enable_if_t<std::is_same_v<T, QRegularExpressionMatch>, bool> = false>
+    [[nodiscard]] qsizetype lastIndexOf(const QRegularExpression &re, T *rmatch = nullptr) const
+    { return lastIndexOf(re, size(), rmatch); }
+#endif
+    [[nodiscard]] qsizetype lastIndexOf(const QRegularExpression &re, qsizetype from,
                                         QRegularExpressionMatch *rmatch = nullptr) const;
     [[nodiscard]] bool contains(const QRegularExpression &re, QRegularExpressionMatch *rmatch = nullptr) const;
     [[nodiscard]] qsizetype count(const QRegularExpression &re) const;

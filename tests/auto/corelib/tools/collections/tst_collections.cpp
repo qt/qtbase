@@ -978,6 +978,16 @@ void tst_Collections::byteArray()
     QVERIFY(hello.indexOf('l',2) == 2);
     QVERIFY(hello.indexOf('l',3) == 3);
 
+    QByteArray empty;
+    QCOMPARE(empty.indexOf("x"), -1);
+    QCOMPARE(empty.lastIndexOf("x"), -1);
+    QCOMPARE(empty.lastIndexOf("x", 0), -1);
+    QCOMPARE(empty.count("x"), 0);
+    QCOMPARE(empty.indexOf(""), 0);
+    QCOMPARE(empty.lastIndexOf(""), 0);
+    QCOMPARE(empty.lastIndexOf("", -1), -1);
+    QCOMPARE(empty.count(""), 1);
+
     QByteArray large = "000 100 200 300 400 500 600 700 800 900";
 
     QVERIFY(large.indexOf("700") == 28);
@@ -1715,6 +1725,16 @@ void tst_Collections::qstring()
     QVERIFY(hello.indexOf('l',2) == 2);
     QVERIFY(hello.indexOf('l',3) == 3);
 
+    QString empty;
+    QCOMPARE(empty.indexOf("x"), -1);
+    QCOMPARE(empty.lastIndexOf("x"), -1);
+    QCOMPARE(empty.lastIndexOf("x", 0), -1);
+    QCOMPARE(empty.count("x"), 0);
+    QCOMPARE(empty.indexOf(""), 0);
+    QCOMPARE(empty.lastIndexOf(""), 0);
+    QCOMPARE(empty.lastIndexOf("", -1), -1);
+    QCOMPARE(empty.count(""), 1);
+
     QString large = "000 100 200 300 400 500 600 700 800 900";
 
     QVERIFY(large.indexOf("700") == 28);
@@ -1723,6 +1743,20 @@ void tst_Collections::qstring()
     QVERIFY(large.lastIndexOf("700") == 28);
     QVERIFY(large.lastIndexOf("700", 28) == 28);
     QVERIFY(large.lastIndexOf("700", 27) == -1);
+
+    QCOMPARE(large.indexOf(""), 0);
+    QCOMPARE(large.indexOf(QString()), 0);
+    QCOMPARE(large.indexOf(QLatin1String()), 0);
+    QCOMPARE(large.indexOf(QStringView()), 0);
+    QCOMPARE(large.lastIndexOf(""), large.size());
+    QCOMPARE(large.lastIndexOf("", -1), large.size() - 1);
+    QCOMPARE(large.lastIndexOf(QString()), large.size());
+    QCOMPARE(large.lastIndexOf(QLatin1String()), large.size());
+    QCOMPARE(large.lastIndexOf(QStringView()), large.size());
+    QCOMPARE(large.count(""), large.size() + 1);
+    QCOMPARE(large.count(QString()), large.size() + 1);
+    QCOMPARE(large.count(QLatin1String()), large.size() + 1);
+    QCOMPARE(large.count(QStringView()), large.size() + 1);
 
     QVERIFY(large.contains("200"));
     QVERIFY(!large.contains("201"));
