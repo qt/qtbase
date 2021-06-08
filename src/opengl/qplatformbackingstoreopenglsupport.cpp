@@ -174,7 +174,8 @@ void QPlatformBackingStoreOpenGLSupport::composeAndFlush(QWindow *window, const 
 
     bool current = context->makeCurrent(window);
 
-    if (!current && context->isValid()) {
+    if (!current && !context->isValid()) {
+        // release resources and attempt to reinitialize upon context loss
         delete blitter;
         blitter = nullptr;
         textureId = 0;
