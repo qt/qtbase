@@ -37,6 +37,7 @@
 #include <qset.h>
 #include <QtTest/private/qtesthelpers_p.h>
 #ifdef Q_OS_WIN
+# include <shlwapi.h>
 # include <windows.h>
 #endif
 #ifdef Q_OS_UNIX // for geteuid()
@@ -159,9 +160,25 @@ void tst_QTemporaryDir::fileTemplate_data()
     }
 
 #ifdef Q_OS_WIN
-    const auto tmp = QDir::toNativeSeparators(QDir::tempPath()).sliced(QDir::rootPath().size());
-    QTest::newRow("UNC") << "\\\\localhost\\C$\\" + tmp + "\\UNC.XXXXXX.tmpDir"
-                         << "UNC." << ".tmpDir";
+    auto tmp = QDir::toNativeSeparators(QDir::tempPath());
+    if (PathGetDriveNumber((const wchar_t *) tmp.utf16()) < 0)
+        return; // skip if we have no drive letter
+
+    tmp.data()[1] = u'$';
+    const auto tmpPath = tmp + QLatin1String(R"(\UNC.XXXXXX.tmpDir)");
+
+    QTest::newRow("UNC-backslash")
+            << "\\\\localhost\\" + tmpPath << "UNC."
+            << ".tmpDir";
+    QTest::newRow("UNC-prefix")
+            << "\\\\?\\UNC\\localhost\\" + tmpPath << "UNC."
+            << ".tmpDir";
+    QTest::newRow("UNC-slash")
+            << "//localhost/" + QDir::fromNativeSeparators(tmpPath) << "UNC."
+            << ".tmpDir";
+    QTest::newRow("UNC-prefix-slash")
+            << "//?/UNC/localhost/" + QDir::fromNativeSeparators(tmpPath) << "UNC."
+            << ".tmpDir";
 #endif
 }
 

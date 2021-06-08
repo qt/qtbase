@@ -290,6 +290,34 @@ bool QFileSystemEntry::isDriveRootPath(const QString &path)
            && path.at(0).isLetter() && path.at(1) == QLatin1Char(':')
            && path.at(2) == QLatin1Char('/'));
 }
+
+QString QFileSystemEntry::removeUncOrLongPathPrefix(QString path)
+{
+    constexpr qsizetype minPrefixSize = 4;
+    if (path.size() < minPrefixSize)
+        return path;
+
+    auto data = path.data();
+    const auto slash = path[0];
+    if (slash != u'\\' && slash != u'/')
+        return path;
+
+    // check for "//?/" or "/??/"
+    if (data[2] == u'?' && data[3] == slash && (data[1] == slash || data[1] == u'?')) {
+        path = path.sliced(minPrefixSize);
+
+        // check for a possible "UNC/" prefix left-over
+        if (path.size() >= 4) {
+            data = path.data();
+            if (data[0] == u'U' && data[1] == u'N' && data[2] == u'C' && data[3] == slash) {
+                data[2] = slash;
+                return path.sliced(2);
+            }
+        }
+    }
+
+    return path;
+}
 #endif // Q_OS_WIN
 
 bool QFileSystemEntry::isRootPath(const QString &path)

@@ -95,6 +95,7 @@ public:
 #if defined(Q_OS_WIN)
     bool isDriveRoot() const;
     static bool isDriveRootPath(const QString &path);
+    static QString removeUncOrLongPathPrefix(QString path);
 #endif
     bool isRoot() const;
 

@@ -40,6 +40,7 @@
 #include <QtTest/private/qtesthelpers_p.h>
 
 #if defined(Q_OS_WIN)
+# include <shlwapi.h>
 # include <windows.h>
 #endif
 #if defined(Q_OS_UNIX)
@@ -208,9 +209,29 @@ void tst_QTemporaryFile::fileTemplate_data()
     }
 
 #ifdef Q_OS_WIN
-    const auto tmp = QDir::toNativeSeparators(QDir::tempPath()).sliced(QDir::rootPath().size());
-    QTest::newRow("UNC") << "\\\\localhost\\C$\\" + tmp + "\\QTBUG-74291.XXXXXX.tmpFile"
-                         << "QTBUG-74291." << ".tmpFile" << "";
+    auto tmp = QDir::toNativeSeparators(QDir::tempPath());
+    if (PathGetDriveNumber((const wchar_t *) tmp.utf16()) < 0)
+        return; // skip if we have no drive letter
+
+    tmp.data()[1] = u'$';
+    const auto tmpPath = tmp + QLatin1String(R"(\QTBUG-74291.XXXXXX.tmpFile)");
+
+    QTest::newRow("UNC-backslash")
+            << "\\\\localhost\\" + tmpPath << "QTBUG-74291."
+            << ".tmpFile"
+            << "";
+    QTest::newRow("UNC-prefix")
+            << "\\\\?\\UNC\\localhost\\" + tmpPath << "QTBUG-74291."
+            << ".tmpFile"
+            << "";
+    QTest::newRow("UNC-slash")
+            << "//localhost/" + QDir::fromNativeSeparators(tmpPath) << "QTBUG-74291."
+            << ".tmpFile"
+            << "";
+    QTest::newRow("UNC-prefix-slash")
+            << "//?/UNC/localhost/" + QDir::fromNativeSeparators(tmpPath) << "QTBUG-74291."
+            << ".tmpFile"
+            << "";
 #endif
 }
 

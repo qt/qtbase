@@ -297,18 +297,8 @@ static QString readSymLink(const QFileSystemEntry &link)
                 const wchar_t* PathBuffer = &rdb->SymbolicLinkReparseBuffer.PathBuffer[offset];
                 result = QString::fromWCharArray(PathBuffer, length);
             }
-            // cut-off "\\?\" and "\??\"
-            if (result.size() > 4
-                    && result.at(0) == QLatin1Char('\\')
-                    && result.at(2) == QLatin1Char('?')
-                    && result.at(3) == QLatin1Char('\\')) {
-                result = result.mid(4);
-                // cut off UNC in addition when the link points at a UNC share
-                // in which case we need to prepend another backslash to get \\server\share
-                if (QStringView{result}.left(3) == QLatin1String("UNC")) {
-                    result.replace(0, 3, QLatin1Char('\\'));
-                }
-            }
+            // remove "\\?\", "\??\" or "\\?\UNC\"
+            result = QFileSystemEntry::removeUncOrLongPathPrefix(result);
         }
         free(rdb);
         CloseHandle(handle);

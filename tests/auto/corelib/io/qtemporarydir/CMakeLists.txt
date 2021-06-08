@@ -10,3 +10,8 @@ qt_internal_add_test(tst_qtemporarydir
     PUBLIC_LIBRARIES
         Qt::TestPrivate
 )
+
+qt_internal_extend_target(tst_qtemporarydir CONDITION WIN32
+    LIBRARIES
+        shlwapi
+)
