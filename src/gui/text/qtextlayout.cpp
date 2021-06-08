@@ -1950,7 +1950,8 @@ void QTextLine::layout_helper(int maxGlyphs)
 
                 if (lbh.currentPosition >= eng->layoutData->string.length()
                     || isBreakableSpace
-                    || attributes[lbh.currentPosition].lineBreak) {
+                    || attributes[lbh.currentPosition].lineBreak
+                    || lbh.tmpData.textWidth >= QFIXED_MAX) {
                     sb_or_ws = true;
                     break;
                 } else if (attributes[lbh.currentPosition].graphemeBoundary) {
