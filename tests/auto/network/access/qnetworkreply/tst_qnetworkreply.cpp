@@ -92,14 +92,6 @@ Q_DECLARE_METATYPE(QSharedPointer<char>)
 
 #include "../../../network-settings.h"
 
-// Non-OpenSSL backends are not able to report a specific error code
-// for self-signed certificates.
-#ifndef QT_NO_OPENSSL
-#define FLUKE_CERTIFICATE_ERROR QSslError::SelfSignedCertificate
-#else
-#define FLUKE_CERTIFICATE_ERROR QSslError::CertificateUntrusted
-#endif
-
 Q_DECLARE_METATYPE(QAuthenticator*)
 #if QT_CONFIG(networkproxy)
 Q_DECLARE_METATYPE(QNetworkProxyQuery)
@@ -527,6 +519,9 @@ private:
     bool notEnoughDataForFastSender;
 
     bool ftpSupported = false;
+#if QT_CONFIG(ssl)
+    QSslError::SslError flukeCertTlsError = QSslError::CertificateUntrusted;
+#endif
 };
 
 const QByteArray tst_QNetworkReply::httpEmpty200Response =
@@ -1589,6 +1584,9 @@ void tst_QNetworkReply::initTestCase()
     cleanupTestData();
 #if QT_CONFIG(ssl)
     QT_PREPEND_NAMESPACE(qt_ForceTlsSecurityLevel)();
+
+    if (QSslSocket::activeBackend() == QStringLiteral("openssl"))
+        flukeCertTlsError = QSslError::SelfSignedCertificate;
 #endif
 }
 
@@ -6408,8 +6406,8 @@ void tst_QNetworkReply::ignoreSslErrorsList_data()
 
     QList<QSslError> expectedSslErrors;
     QList<QSslCertificate> certs = QSslCertificate::fromPath(testDataDir + certsFilePath);
-    QSslError rightError(FLUKE_CERTIFICATE_ERROR, certs.at(0));
-    QSslError wrongError(FLUKE_CERTIFICATE_ERROR);
+    QSslError rightError(flukeCertTlsError, certs.at(0));
+    QSslError wrongError(flukeCertTlsError);
 
     QTest::newRow("SSL-failure-empty-list") << expectedSslErrors << QNetworkReply::SslHandshakeFailedError;
     expectedSslErrors.append(wrongError);
