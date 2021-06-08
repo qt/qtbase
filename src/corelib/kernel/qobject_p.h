@@ -280,12 +280,19 @@ public:
         // must be called on the senders connection data
         // assumes the senders and receivers lock are held
         void removeConnection(Connection *c);
-        void cleanOrphanedConnections(QObject *sender)
+        enum LockPolicy {
+            NeedToLock,
+            // Beware that we need to temporarily release the lock
+            // and thus calling code must carefully consider whether
+            // invariants still hold.
+            AlreadyLockedAndTemporarilyReleasingLock
+        };
+        void cleanOrphanedConnections(QObject *sender, LockPolicy lockPolicy = NeedToLock)
         {
             if (orphaned.loadRelaxed() && ref.loadAcquire() == 1)
-                cleanOrphanedConnectionsImpl(sender);
+                cleanOrphanedConnectionsImpl(sender, lockPolicy);
         }
-        void cleanOrphanedConnectionsImpl(QObject *sender);
+        void cleanOrphanedConnectionsImpl(QObject *sender, LockPolicy lockPolicy);
 
         ConnectionList &connectionsForSignal(int signal)
         {
