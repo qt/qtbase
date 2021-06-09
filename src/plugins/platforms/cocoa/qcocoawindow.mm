@@ -1305,10 +1305,19 @@ void QCocoaWindow::windowWillClose()
 bool QCocoaWindow::windowShouldClose()
 {
     qCDebug(lcQpaWindow) << "QCocoaWindow::windowShouldClose" << window();
+
     // This callback should technically only determine if the window
     // should (be allowed to) close, but since our QPA API to determine
     // that also involves actually closing the window we do both at the
     // same time, instead of doing the latter in windowWillClose.
+
+    // If the window is closed, we will release and deallocate the NSWindow.
+    // But frames higher up in the stack might still expect the window to
+    // be alive, since the windowShouldClose: callback is technically only
+    // supposed to answer YES or NO. To ensure the window is still alive
+    // we put an autorelease in the closest pool (typically the runloop).
+    [[m_view.window retain] autorelease];
+
     return QWindowSystemInterface::handleCloseEvent<QWindowSystemInterface::SynchronousDelivery>(window());
 }
 
