@@ -53,7 +53,6 @@
 #include <qrandom.h>
 #include <qwineventnotifier.h>
 #include <qscopedvaluerollback.h>
-#include <qtimer.h>
 #include <private/qsystemlibrary_p.h>
 #include <private/qthread_p.h>
 
@@ -376,8 +375,6 @@ void QProcessPrivate::cleanup()
     q_func()->setProcessState(QProcess::NotRunning);
 
     closeChannels();
-    delete stdinWriteTrigger;
-    stdinWriteTrigger = nullptr;
     delete processFinishedNotifier;
     processFinishedNotifier = nullptr;
     if (pid) {
@@ -618,6 +615,12 @@ void QProcessPrivate::startProcess()
         return;
     }
 
+    // The pipe writer may have already been created before we had
+    // the pipe handle, specifically if the user wrote data from the
+    // stateChanged() slot.
+    if (stdinChannel.writer)
+        stdinChannel.writer->setHandle(stdinChannel.pipe[1]);
+
     q->setProcessState(QProcess::Running);
     // User can call kill()/terminate() from the stateChanged() slot
     // so check before proceeding
@@ -713,9 +716,6 @@ bool QProcessPrivate::drainOutputPipes()
 bool QProcessPrivate::waitForReadyRead(const QDeadlineTimer &deadline)
 {
     forever {
-        if (!writeBuffer.isEmpty() && !_q_canWrite())
-            return false;
-
         QProcessPoller poller(*this);
         int ret = poller.poll(deadline);
         if (ret < 0)
@@ -748,10 +748,11 @@ bool QProcessPrivate::waitForReadyRead(const QDeadlineTimer &deadline)
 bool QProcessPrivate::waitForBytesWritten(const QDeadlineTimer &deadline)
 {
     forever {
-        // If no write is pending, try to start one. However, at entry into
-        // the loop the write buffer can be empty to start with, in which
-        // case _q_caWrite() fails immediately.
-        if (pipeWriterBytesToWrite() == 0 && !_q_canWrite())
+        // At entry into the loop the pipe writer's buffer can be empty to
+        // start with, in which case we fail immediately. Also, if the input
+        // pipe goes down somewhere in the code below, we avoid waiting for
+        // a full timeout.
+        if (pipeWriterBytesToWrite() == 0)
             return false;
 
         QProcessPoller poller(*this);
@@ -797,9 +798,6 @@ bool QProcessPrivate::waitForFinished(const QDeadlineTimer &deadline)
 #endif
 
     forever {
-        if (!writeBuffer.isEmpty() && !_q_canWrite())
-            return false;
-
         QProcessPoller poller(*this);
         int ret = poller.poll(deadline);
         if (ret < 0)
@@ -854,16 +852,16 @@ qint64 QProcess::writeData(const char *data, qint64 len)
         return 0;
     }
 
-    if (!d->stdinWriteTrigger) {
-        d->stdinWriteTrigger = new QTimer;
-        d->stdinWriteTrigger->setSingleShot(true);
-        QObjectPrivate::connect(d->stdinWriteTrigger, &QTimer::timeout,
-                                d, &QProcessPrivate::_q_canWrite);
+    if (!d->stdinChannel.writer) {
+        d->stdinChannel.writer = new QWindowsPipeWriter(d->stdinChannel.pipe[1], this);
+        QObjectPrivate::connect(d->stdinChannel.writer, &QWindowsPipeWriter::bytesWritten,
+                                d, &QProcessPrivate::_q_bytesWritten);
     }
 
-    d->write(data, len);
-    if (!d->stdinWriteTrigger->isActive())
-        d->stdinWriteTrigger->start();
+    if (d->isWriteChunkCached(data, len))
+        d->stdinChannel.writer->write(*(d->currentWriteChunk));
+    else
+        d->stdinChannel.writer->write(data, len);
 
 #if defined QPROCESS_DEBUG
     qDebug("QProcess::writeData(%p \"%s\", %lld) == %lld (written to buffer)",
@@ -885,38 +883,8 @@ void QProcessPrivate::_q_bytesWritten(qint64 bytes)
         QScopedValueRollback<bool> guard(emittedBytesWritten, true);
         emit q->bytesWritten(bytes);
     }
-    _q_canWrite();
-}
-
-bool QProcessPrivate::_q_canWrite()
-{
-    if (writeBuffer.isEmpty()) {
-        if (stdinChannel.closed && pipeWriterBytesToWrite() == 0)
-            closeWriteChannel();
-#if defined QPROCESS_DEBUG
-        qDebug("QProcessPrivate::canWrite(), not writing anything (empty write buffer).");
-#endif
-        return false;
-    }
-
-    return writeToStdin();
-}
-
-bool QProcessPrivate::writeToStdin()
-{
-    Q_Q(QProcess);
-
-    if (!stdinChannel.writer) {
-        stdinChannel.writer = new QWindowsPipeWriter(stdinChannel.pipe[1], q);
-        QObjectPrivate::connect(stdinChannel.writer, &QWindowsPipeWriter::bytesWritten,
-                                this, &QProcessPrivate::_q_bytesWritten);
-    } else {
-        if (stdinChannel.writer->isWriteOperationActive())
-            return true;
-    }
-
-    stdinChannel.writer->write(writeBuffer.read());
-    return true;
+    if (stdinChannel.closed && pipeWriterBytesToWrite() == 0)
+        closeWriteChannel();
 }
 
 // Use ShellExecuteEx() to trigger an UAC prompt when CreateProcess()fails

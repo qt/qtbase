@@ -73,6 +73,19 @@ QWindowsPipeWriter::~QWindowsPipeWriter()
 }
 
 /*!
+    Assigns the handle to this writer. The handle must be valid.
+    Call this function if data was buffered before getting the handle.
+ */
+void QWindowsPipeWriter::setHandle(HANDLE hPipeWriteEnd)
+{
+    Q_ASSERT(!stopped);
+
+    handle = hPipeWriteEnd;
+    QMutexLocker locker(&mutex);
+    startAsyncWriteLocked(&locker);
+}
+
+/*!
     Stops the asynchronous write sequence.
     If the write sequence is running then the I/O operation is canceled.
  */
@@ -150,6 +163,12 @@ inline bool QWindowsPipeWriter::writeImpl(Args... args)
         return true;
 
     stopped = false;
+
+    // If we don't have an assigned handle yet, defer writing until
+    // setHandle() is called.
+    if (handle == INVALID_HANDLE_VALUE)
+        return true;
+
     startAsyncWriteLocked(&locker);
     return true;
 }

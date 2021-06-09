@@ -68,6 +68,7 @@ public:
     explicit QWindowsPipeWriter(HANDLE pipeWriteEnd, QObject *parent = nullptr);
     ~QWindowsPipeWriter();
 
+    void setHandle(HANDLE hPipeWriteEnd);
     bool write(const QByteArray &ba);
     bool write(const char *data, qint64 size);
     void stop();

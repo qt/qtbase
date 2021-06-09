@@ -782,7 +782,9 @@ void QProcessPrivate::Channel::clear()
 QProcessPrivate::QProcessPrivate()
 {
     readBufferChunkSize = QRINGBUFFER_CHUNKSIZE;
+#ifndef Q_OS_WIN
     writeBufferChunkSize = QRINGBUFFER_CHUNKSIZE;
+#endif
 }
 
 /*!
@@ -1585,11 +1587,11 @@ bool QProcess::isSequential() const
 */
 qint64 QProcess::bytesToWrite() const
 {
-    qint64 size = QIODevice::bytesToWrite();
 #ifdef Q_OS_WIN
-    size += d_func()->pipeWriterBytesToWrite();
+    return d_func()->pipeWriterBytesToWrite();
+#else
+    return QIODevice::bytesToWrite();
 #endif
-    return size;
 }
 
 /*!
