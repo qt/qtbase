@@ -194,7 +194,7 @@ enum PseudoElement {
     PseudoElement_GroupBoxIndicator,
     PseudoElement_ToolButtonMenu,
     PseudoElement_ToolButtonMenuArrow,
-    PseudoElement_ToolButtonDownArrow,
+    PseudoElement_ToolButtonMenuIndicator,
     PseudoElement_ToolBoxTab,
     PseudoElement_ScrollBarSlider,
     PseudoElement_ScrollBarAddPage,
@@ -1899,7 +1899,7 @@ QRenderRule QStyleSheetStyle::renderRule(const QObject *obj, const QStyleOption 
             break;
         case PseudoElement_ToolButtonMenu:
         case PseudoElement_ToolButtonMenuArrow:
-        case PseudoElement_ToolButtonDownArrow:
+        case PseudoElement_ToolButtonMenuIndicator:
             state |= complex->state & QStyle::State_MouseOver;
             if (complex->state & QStyle::State_Sunken ||
                 complex->activeSubControls & QStyle::SC_ToolButtonMenu)
@@ -2188,7 +2188,7 @@ static Origin defaultOrigin(int pe)
     case PseudoElement_SpinBoxDownButton:
     case PseudoElement_PushButtonMenuIndicator:
     case PseudoElement_ComboBoxDropDown:
-    case PseudoElement_ToolButtonDownArrow:
+    case PseudoElement_ToolButtonMenuIndicator:
     case PseudoElement_MenuCheckMark:
     case PseudoElement_MenuIcon:
     case PseudoElement_MenuRightArrow:
@@ -2229,7 +2229,7 @@ static Qt::Alignment defaultPosition(int pe)
     case PseudoElement_ScrollBarLast:
     case PseudoElement_SpinBoxDownButton:
     case PseudoElement_PushButtonMenuIndicator:
-    case PseudoElement_ToolButtonDownArrow:
+    case PseudoElement_ToolButtonMenuIndicator:
         return Qt::AlignRight | Qt::AlignBottom;
 
     case PseudoElement_ScrollBarSubLine:
@@ -2249,6 +2249,9 @@ static Qt::Alignment defaultPosition(int pe)
     case PseudoElement_SpinBoxDownArrow:
     case PseudoElement_ComboBoxArrow:
     case PseudoElement_DownArrow:
+    case PseudoElement_UpArrow:
+    case PseudoElement_LeftArrow:
+    case PseudoElement_RightArrow:
     case PseudoElement_ToolButtonMenuArrow:
     case PseudoElement_SliderGroove:
         return Qt::AlignCenter;
@@ -2304,8 +2307,11 @@ QSize QStyleSheetStyle::defaultSize(const QWidget *w, QSize sz, const QRect& rec
 
     case PseudoElement_ComboBoxArrow:
     case PseudoElement_DownArrow:
+    case PseudoElement_UpArrow:
+    case PseudoElement_LeftArrow:
+    case PseudoElement_RightArrow:
     case PseudoElement_ToolButtonMenuArrow:
-    case PseudoElement_ToolButtonDownArrow:
+    case PseudoElement_ToolButtonMenuIndicator:
     case PseudoElement_MenuRightArrow:
         if (sz.width() == -1)
             sz.setWidth(13);
@@ -3237,8 +3243,20 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
             rule.configurePalette(&toolOpt.palette, QPalette::ButtonText, QPalette::Button);
             toolOpt.font = rule.font.resolve(toolOpt.font);
             toolOpt.rect = rule.borderRect(opt->rect);
-            bool customArrow = (tool->features & (QStyleOptionToolButton::HasMenu | QStyleOptionToolButton::MenuButtonPopup));
+            bool customArrow = tool->features & QStyleOptionToolButton::Arrow;
+            const auto customArrowElement = [tool]{
+                switch (tool->arrowType) {
+                case Qt::DownArrow: return PseudoElement_DownArrow;
+                case Qt::UpArrow: return PseudoElement_UpArrow;
+                case Qt::LeftArrow: return PseudoElement_LeftArrow;
+                case Qt::RightArrow: return PseudoElement_RightArrow;
+                default: break;
+                }
+                return PseudoElement_None;
+            };
             bool customDropDown = tool->features & QStyleOptionToolButton::MenuButtonPopup;
+            bool customDropDownArrow = false;
+            bool customMenuIndicator = !customDropDown && (tool->features & QStyleOptionToolButton::HasMenu);
             if (rule.hasNativeBorder()) {
                 if (tool->subControls & SC_ToolButton) {
                     //in some case (eg. the button is "auto raised") the style doesn't draw the background
@@ -3252,12 +3270,19 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
                     if (!(bflags & (State_Sunken | State_On | State_Raised)))
                         rule.drawBackground(p, toolOpt.rect);
                 }
-                customArrow = customArrow && hasStyleRule(w, PseudoElement_ToolButtonDownArrow);
+                customArrow = customArrow && hasStyleRule(w, customArrowElement());
                 if (customArrow)
-                    toolOpt.features &= ~QStyleOptionToolButton::HasMenu;
+                    toolOpt.features &= ~QStyleOptionToolButton::Arrow;
                 customDropDown = customDropDown && hasStyleRule(w, PseudoElement_ToolButtonMenu);
-                if (customDropDown)
+                if (customDropDown) {
                     toolOpt.subControls &= ~QStyle::SC_ToolButtonMenu;
+                    customDropDownArrow = hasStyleRule(w, PseudoElement_ToolButtonMenuArrow);
+                    if (customDropDownArrow)
+                        toolOpt.features &= ~(QStyleOptionToolButton::Menu | QStyleOptionToolButton::HasMenu);
+                }
+                customMenuIndicator = customMenuIndicator && hasStyleRule(w, PseudoElement_ToolButtonMenuIndicator);
+                if (customMenuIndicator)
+                    toolOpt.features &= ~QStyleOptionToolButton::HasMenu;
 
                 if (rule.baseStyleCanDraw() && !(tool->features & QStyleOptionToolButton::Arrow)) {
                     baseStyle()->drawComplexControl(cc, &toolOpt, p, w);
@@ -3265,7 +3290,7 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
                     QWindowsStyle::drawComplexControl(cc, &toolOpt, p, w);
                 }
 
-                if (!customArrow && !customDropDown)
+                if (!customArrow && !customDropDown && !customMenuIndicator)
                     return;
             } else {
                 rule.drawRule(p, opt->rect);
@@ -3275,30 +3300,65 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
                 drawControl(CE_ToolButtonLabel, &toolOpt, p, w);
             }
 
-            QRenderRule subRule = renderRule(w, opt, PseudoElement_ToolButtonMenu);
-            QRect r = subControlRect(CC_ToolButton, opt, QStyle::SC_ToolButtonMenu, w);
+            const QRect cr = toolOpt.rect;
             if (customDropDown) {
                 if (opt->subControls & QStyle::SC_ToolButtonMenu) {
+                    QRenderRule subRule = renderRule(w, opt, PseudoElement_ToolButtonMenu);
+                    QRect menuButtonRect = subControlRect(CC_ToolButton, opt, QStyle::SC_ToolButtonMenu, w);
                     if (subRule.hasDrawable()) {
-                        subRule.drawRule(p, r);
+                        subRule.drawRule(p, menuButtonRect);
                     } else {
-                        toolOpt.rect = r;
+                        toolOpt.rect = menuButtonRect;
                         baseStyle()->drawPrimitive(PE_IndicatorButtonDropDown, &toolOpt, p, w);
                     }
+
+                    if (customDropDownArrow) {
+                        QRenderRule arrowRule = renderRule(w, opt, PseudoElement_ToolButtonMenuArrow);
+                        QRect arrowRect = arrowRule.hasGeometry()
+                                        ? positionRect(w, arrowRule, PseudoElement_ToolButtonMenuArrow, menuButtonRect, toolOpt.direction)
+                                        : arrowRule.contentsRect(menuButtonRect);
+                        if (arrowRule.hasDrawable()) {
+                            arrowRule.drawRule(p, arrowRect);
+                        } else {
+                            toolOpt.rect = arrowRect;
+                            baseStyle()->drawPrimitive(QStyle::PE_IndicatorArrowDown, &toolOpt, p, w);
+                        }
+                    }
+                }
+            } else if (customMenuIndicator) {
+                QRenderRule subRule = renderRule(w, opt, PseudoElement_ToolButtonMenuIndicator);
+                QRect r = subRule.hasGeometry()
+                        ? positionRect(w, subRule, PseudoElement_ToolButtonMenuIndicator, toolOpt.rect, toolOpt.direction)
+                        : subRule.contentsRect(opt->rect);
+                if (subRule.hasDrawable()) {
+                    subRule.drawRule(p, r);
+                } else {
+                    toolOpt.rect = r;
+                    baseStyle()->drawPrimitive(QStyle::PE_IndicatorArrowDown, &toolOpt, p, w);
                 }
             }
+            toolOpt.rect = cr;
 
             if (customArrow) {
-                QRenderRule subRule2 = customDropDown ? renderRule(w, opt, PseudoElement_ToolButtonMenuArrow)
-                                                      : renderRule(w, opt, PseudoElement_ToolButtonDownArrow);
-                QRect r2 = customDropDown
-                          ? positionRect(w, subRule, subRule2, PseudoElement_ToolButtonMenuArrow, r, opt->direction)
-                          : positionRect(w, rule, subRule2, PseudoElement_ToolButtonDownArrow, opt->rect, opt->direction);
-                if (subRule2.hasDrawable()) {
-                    subRule2.drawRule(p, r2);
+                const auto arrowElement = customArrowElement();
+                QRenderRule subRule = renderRule(w, opt, arrowElement);
+                QRect r = subRule.hasGeometry() ? positionRect(w, subRule, arrowElement, toolOpt.rect, toolOpt.direction)
+                                                : subRule.contentsRect(toolOpt.rect);
+                if (subRule.hasDrawable()) {
+                    subRule.drawRule(p, r);
                 } else {
-                    toolOpt.rect = r2;
-                    baseStyle()->drawPrimitive(QStyle::PE_IndicatorArrowDown, &toolOpt, p, w);
+                    toolOpt.rect = r;
+                    const auto arrowElement = [&toolOpt] {
+                        switch (toolOpt.arrowType) {
+                        case Qt::DownArrow: return QStyle::PE_IndicatorArrowDown;
+                        case Qt::UpArrow: return QStyle::PE_IndicatorArrowUp;
+                        case Qt::LeftArrow: return QStyle::PE_IndicatorArrowLeft;
+                        case Qt::RightArrow: return QStyle::PE_IndicatorArrowRight;
+                        case Qt::NoArrow: break;
+                        }
+                        return QStyle::PE_IndicatorArrowDown; // never happens
+                    };
+                    baseStyle()->drawPrimitive(arrowElement(), &toolOpt, p, w);
                 }
             }
 
@@ -4786,8 +4846,19 @@ int QStyleSheetStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const 
     case PM_MenuButtonIndicator:
 #if QT_CONFIG(toolbutton)
         // QToolButton adds this directly to the width
-        if (qobject_cast<const QToolButton *>(w) && (rule.hasBox() || !rule.hasNativeBorder()))
-            return 0;
+        if (qobject_cast<const QToolButton *>(w)) {
+            if (rule.hasBox() || !rule.hasNativeBorder())
+                return 0;
+            if (const auto *tbOpt = qstyleoption_cast<const QStyleOptionToolButton*>(opt)) {
+                if (tbOpt->features & QStyleOptionToolButton::MenuButtonPopup)
+                    subRule = renderRule(w, opt, PseudoElement_ToolButtonMenu);
+                else
+                    subRule = renderRule(w, opt, PseudoElement_ToolButtonMenuIndicator);
+                if (subRule.hasContentsSize())
+                    return subRule.size().width();
+            }
+            break;
+        }
 #endif
         subRule = renderRule(w, opt, PseudoElement_PushButtonMenuIndicator);
         if (subRule.hasContentsSize())
