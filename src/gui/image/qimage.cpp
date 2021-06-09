@@ -5013,6 +5013,13 @@ QColorSpace QImage::colorSpace() const
 */
 void QImage::applyColorTransform(const QColorTransform &transform)
 {
+    if (!d)
+        return;
+    if (pixelFormat().colorModel() == QPixelFormat::Indexed) {
+        for (int i = 0; i < d->colortable.size(); ++i)
+            d->colortable[i] = transform.map(d->colortable[i]);
+        return;
+    }
     QImage::Format oldFormat = format();
     if (depth() > 32) {
         if (format() != QImage::Format_RGBX64 && format() != QImage::Format_RGBA64
