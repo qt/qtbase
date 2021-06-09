@@ -4044,6 +4044,14 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
         if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(opt)) {
             QStyleOptionHeader hdr(*header);
             QRenderRule subRule = renderRule(w, opt, PseudoElement_HeaderViewSection);
+            if (hasStyleRule(w, PseudoElement_HeaderViewUpArrow)
+             || hasStyleRule(w, PseudoElement_HeaderViewDownArrow)) {
+                const QRect arrowRect = subElementRect(SE_HeaderArrow, opt, w);
+                if (hdr.orientation == Qt::Horizontal)
+                    hdr.rect.setWidth(hdr.rect.width() - arrowRect.width());
+                else
+                    hdr.rect.setHeight(hdr.rect.height() - arrowRect.height());
+            }
             subRule.configurePalette(&hdr.palette, QPalette::ButtonText, QPalette::Button);
             if (subRule.hasFont) {
                 QFont oldFont = p->font();
@@ -5203,8 +5211,17 @@ QSize QStyleSheetStyle::sizeFromContents(ContentsType ct, const QStyleOption *op
                     }
                     return subRule.size(sz);
                 }
-                return subRule.baseStyleCanDraw() ? baseStyle()->sizeFromContents(ct, opt, sz, w)
-                                                  : QWindowsStyle::sizeFromContents(ct, opt, sz, w);
+                sz = subRule.baseStyleCanDraw() ? baseStyle()->sizeFromContents(ct, opt, sz, w)
+                                                : QWindowsStyle::sizeFromContents(ct, opt, sz, w);
+                if (hasStyleRule(w, PseudoElement_HeaderViewDownArrow)
+                 || hasStyleRule(w, PseudoElement_HeaderViewUpArrow)) {
+                    const QRect arrowRect = subElementRect(SE_HeaderArrow, opt, w);
+                    if (hdr->orientation == Qt::Horizontal)
+                        sz.rwidth() += arrowRect.width();
+                    else
+                        sz.rheight() += arrowRect.height();
+                }
+                return sz;
             }
         }
         break;
