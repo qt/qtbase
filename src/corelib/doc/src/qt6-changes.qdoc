@@ -529,6 +529,10 @@
 
     \endlist
 
+    Furthermore, QVariant::operator<, QVariant::operator<=, QVariant::operator> and
+    QVariant::operator>= were removed, because different variants are not always orderable. This
+    also means that QVariant cannot be used anymore as a key in a QMap.
+
     \section2 The QMetaType class
 
     In Qt 6, registration of comparators, and \cQDebug and \QDataStream streaming operators is
