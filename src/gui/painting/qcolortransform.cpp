@@ -594,16 +594,27 @@ void loadUnpremultiplied<QRgba64>(QColorVector *buffer, const QRgba64 *src, cons
 
 #if defined(__SSE2__)
 template<typename T>
-static inline void storeP(T &p, const __m128i &v);
+static inline void storeP(T &p, __m128i &v, int a);
 template<>
-inline void storeP<QRgb>(QRgb &p, const __m128i &v)
+inline void storeP<QRgb>(QRgb &p, __m128i &v, int a)
 {
+    v = _mm_packs_epi32(v, v);
+    v = _mm_insert_epi16(v, a, 3);
     p = _mm_cvtsi128_si32(_mm_packus_epi16(v, v));
 }
 template<>
-inline void storeP<QRgba64>(QRgba64 &p, const __m128i &v)
+inline void storeP<QRgba64>(QRgba64 &p, __m128i &v, int a)
 {
+#if defined(__SSE4_1__)
+    v = _mm_packus_epi32(v, v);
+    v = _mm_insert_epi16(v, a, 3);
     _mm_storel_epi64((__m128i *)&p, v);
+#else
+    const int r = _mm_extract_epi16(v, 0);
+    const int g = _mm_extract_epi16(v, 2);
+    const int b = _mm_extract_epi16(v, 4);
+    p = qRgba64(r, g, b, a);
+#endif
 }
 
 template<typename T>
@@ -627,9 +638,7 @@ static void storePremultiplied(T *dst, const T *src, const QColorVector *buffer,
         vf = _mm_cvtepi32_ps(v);
         vf = _mm_mul_ps(vf, va);
         v = _mm_cvtps_epi32(vf);
-        v = _mm_packs_epi32(v, v);
-        v = _mm_insert_epi16(v, a, 3);
-        storeP<T>(dst[i], v);
+        storeP<T>(dst[i], v, a);
     }
 }
 
