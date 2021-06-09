@@ -59,6 +59,11 @@ QT_BEGIN_NAMESPACE
 struct QShaderPrivate;
 class QShaderKey;
 
+#ifdef Q_OS_INTEGRITY
+  class QShaderVersion;
+  size_t qHash(const QShaderVersion &, size_t = 0) noexcept;
+#endif
+
 class Q_GUI_EXPORT QShaderVersion
 {
 public:
