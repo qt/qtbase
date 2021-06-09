@@ -38,6 +38,8 @@
   printing system also supports PDF file generation, providing the foundation
   for basic report generation facilities.
 
+  Qt Print Support is not available on iOS.
+
   \tableofcontents
 
   \section1 Classes Supporting Printing

@@ -36,4 +36,5 @@
 
     The \l{Qt Print Support} page contains information about using the module.
 
+    Qt Print Support is not available on iOS.
 */
