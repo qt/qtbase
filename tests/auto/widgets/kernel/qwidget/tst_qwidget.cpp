@@ -9310,10 +9310,15 @@ void tst_QWidget::translucentWidget()
     QCOMPARE(actual,expected);
 
     const QWindow *window = label.windowHandle();
-    const QSurfaceFormat translucentFormat = window->requestedFormat();
+    const QSurfaceFormat translucentFormat = window->format();
     label.setAttribute(Qt::WA_TranslucentBackground, false);
-    const QSurfaceFormat opaqueFormat = window->requestedFormat();
-    QVERIFY(translucentFormat != opaqueFormat);
+    // Changing WA_TranslucentBackground with an already created native window
+    // has no effect since Qt 5.0 due to the introduction of QWindow et al.
+    // This means that the change must *not* be reflected in the
+    // QSurfaceFormat, because there is no change when it comes to the
+    // underlying native window. Otherwise the state would no longer
+    // describe reality (the native window) See QTBUG-85714.
+    QVERIFY(translucentFormat == window->format());
 }
 
 class MaskResizeTestWidget : public QWidget
