@@ -66,16 +66,9 @@ public:
 
 void tst_QtConcurrentThreadEngine::runDirectly()
 {
-    {
-        PrintUser engine;
-        engine.startSingleThreaded();
-        engine.startBlocking();
-    }
-    {
-        PrintUser *engine = new PrintUser();
-        QFuture<void> f = engine->startAsynchronously();
-        f.waitForFinished();
-    }
+    PrintUser *engine = new PrintUser();
+    QFuture<void> f = engine->startAsynchronously();
+    f.waitForFinished();
 }
 
 class StringResultUser : public ThreadEngine<QString>
@@ -108,8 +101,10 @@ public:
 
 void tst_QtConcurrentThreadEngine::result()
 {
-    StringResultUser engine;
-    QCOMPARE(*engine.startBlocking(), QString("Foo"));
+    // ThreadEngine will delete 'engine' when it finishes
+    auto engine = new StringResultUser();
+    auto future = engine->startAsynchronously();
+    QCOMPARE(future.result(), QString("Foo"));
 }
 
 class VoidResultUser : public ThreadEngine<void>
@@ -137,17 +132,9 @@ public:
 
 void tst_QtConcurrentThreadEngine::runThroughStarter()
 {
-    {
-        ThreadEngineStarter<QString> starter = startThreadEngine(new StringResultUser());
-        QFuture<QString>  f = starter.startAsynchronously();
-        QCOMPARE(f.result(), QString("Foo"));
-    }
-
-    {
-        ThreadEngineStarter<QString> starter = startThreadEngine(new StringResultUser());
-        QString str = starter.startBlocking();
-        QCOMPARE(str, QString("Foo"));
-    }
+    ThreadEngineStarter<QString> starter = startThreadEngine(new StringResultUser());
+    QFuture<QString> f = starter.startAsynchronously();
+    QCOMPARE(f.result(), QString("Foo"));
 }
 
 class CancelUser : public ThreadEngine<void>
@@ -233,12 +220,6 @@ void tst_QtConcurrentThreadEngine::throttle()
         f.waitForFinished();
         QCOMPARE(count.loadRelaxed(), 0);
     }
-
-    for (int i = 0; i < repeats; ++i) {
-        ThrottleAlwaysUser t;
-        t.startBlocking();
-        QCOMPARE(count.loadRelaxed(), 0);
-    }
 }
 
 QSet<QThread *> threads;
@@ -278,17 +259,9 @@ void tst_QtConcurrentThreadEngine::threadCount()
 
     const int repeats = 10;
     for (int i = 0; i < repeats; ++i) {
-        ThreadCountUser t;
-        t.startBlocking();
-        int count = threads.count();
-        int count_expected = QThreadPool::globalInstance()->maxThreadCount() + 1; // +1 for the main thread.
-        if (count != count_expected)
-            QEXPECT_FAIL("", "QTBUG-23333", Abort);
-        QCOMPARE(count, count_expected);
-
         (new ThreadCountUser())->startAsynchronously().waitForFinished();
-        count = threads.count();
-        count_expected = QThreadPool::globalInstance()->maxThreadCount();
+        const auto count = threads.count();
+        const auto count_expected = QThreadPool::globalInstance()->maxThreadCount();
         if (count != count_expected)
             QEXPECT_FAIL("", "QTBUG-23333", Abort);
         QCOMPARE(count, count_expected);
@@ -296,15 +269,8 @@ void tst_QtConcurrentThreadEngine::threadCount()
 
     // Set the finish flag immediately, this should give us one thread only.
     for (int i = 0; i < repeats; ++i) {
-        ThreadCountUser t(true /*finishImmediately*/);
-        t.startBlocking();
-        int count = threads.count();
-        if (count != 1)
-            QEXPECT_FAIL("", "QTBUG-23333", Abort);
-        QCOMPARE(count, 1);
-
         (new ThreadCountUser(true /*finishImmediately*/))->startAsynchronously().waitForFinished();
-        count = threads.count();
+        const auto count = threads.count();
         if (count != 1)
             QEXPECT_FAIL("", "QTBUG-23333", Abort);
         QCOMPARE(count, 1);
@@ -450,7 +416,6 @@ public:
 
 void tst_QtConcurrentThreadEngine::exceptions()
 {
-    // Asynchronous mode:
     {
         bool caught = false;
         try  {
@@ -463,75 +428,12 @@ void tst_QtConcurrentThreadEngine::exceptions()
         QVERIFY2(caught, "did not get exception");
     }
 
-    // Blocking mode:
-    // test throwing the exception from a worker thread.
-    {
-        bool caught = false;
-        try  {
-            QtConcurrentExceptionThrower e(QThread::currentThread());
-            e.startBlocking();
-        } catch (const QException &) {
-            caught = true;
-        }
-        QVERIFY2(caught, "did not get exception");
-    }
-
-    // test throwing the exception from the main thread (different code path)
-    {
-        bool caught = false;
-        try  {
-            QtConcurrentExceptionThrower e(nullptr);
-            e.startBlocking();
-        } catch (const QException &) {
-            caught = true;
-        }
-        QVERIFY2(caught, "did not get exception");
-    }
-
-    // Asynchronous mode:
     {
         bool caught = false;
         try  {
             IntExceptionThrower *e = new IntExceptionThrower();
             QFuture<void> f = e->startAsynchronously();
             f.waitForFinished();
-        } catch (const QUnhandledException &ex) {
-            // Make sure the exception info is not lost
-            try {
-                if (ex.exception())
-                    std::rethrow_exception(ex.exception());
-            } catch (int) {
-                caught = true;
-            }
-        }
-        QVERIFY2(caught, "did not get exception");
-    }
-
-    // Blocking mode:
-    // test throwing the exception from a worker thread.
-    {
-        bool caught = false;
-        try  {
-            IntExceptionThrower e(QThread::currentThread());
-            e.startBlocking();
-        } catch (const QUnhandledException &ex) {
-            // Make sure the exception info is not lost
-            try {
-                if (ex.exception())
-                    std::rethrow_exception(ex.exception());
-            } catch (int) {
-                caught = true;
-            }
-        }
-        QVERIFY2(caught, "did not get exception");
-    }
-
-    // test throwing the exception from the main thread (different code path)
-    {
-        bool caught = false;
-        try  {
-            IntExceptionThrower e(nullptr);
-            e.startBlocking();
         } catch (const QUnhandledException &ex) {
             // Make sure the exception info is not lost
             try {
