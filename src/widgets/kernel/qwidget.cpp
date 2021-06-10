@@ -2191,8 +2191,26 @@ void QWidgetPrivate::updateIsTranslucent()
         const int oldAlpha = format.alphaBufferSize();
         const int newAlpha = q->testAttribute(Qt::WA_TranslucentBackground)? 8 : 0;
         if (oldAlpha != newAlpha) {
-            format.setAlphaBufferSize(newAlpha);
-            window->setFormat(format);
+            // QTBUG-85714: Do this only when the QWindow has not yet been create()'ed yet.
+            //
+            // If that is not the case, then the setFormat() is not just futile
+            // but downright dangerous. Futile because the format matters only
+            // when creating the native window, no point in changing it
+            // afterwards. Dangerous because a QOpenGLContext or something else
+            // may eventually query the QWindow's format(), in order to ensure
+            // compatibility (in terms of native concepts such as pixel format,
+            // EGLConfig, etc.), and if we change it here, then the returned
+            // format does not describe reality anymore. (reality being the
+            // settings with which the native resource was created).
+            //
+            // Whereas if one does a destroy()-create() then this all here
+            // won't matter because the format is updated in
+            // QWidgetPrivate::create() again.
+            //
+            if (!window->handle()) {
+                format.setAlphaBufferSize(newAlpha);
+                window->setFormat(format);
+            }
         }
     }
 }
