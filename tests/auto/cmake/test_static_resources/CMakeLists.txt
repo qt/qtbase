@@ -10,7 +10,6 @@ project(TestStaticResources
 )
 
 find_package(Qt6 COMPONENTS Core BuildInternals Test CONFIG REQUIRED)
-set(QT_NO_INTERNAL_COMPATIBILITY_FUNCTIONS TRUE)
 
 qt_build_repo_begin()
 
