@@ -372,11 +372,6 @@ macro(qt_build_repo_begin)
     qt_build_internals_set_up_private_api()
     qt_enable_cmake_languages()
 
-    # QtBase has own call right after definition of internal platform-specific targets.
-    if(NOT PROJECT_NAME STREQUAL "QtBase")
-        qt_internal_run_common_config_tests()
-    endif()
-
     # Add global docs targets that will work both for per-repo builds, and super builds.
     if(NOT TARGET docs)
         add_custom_target(docs)
@@ -950,24 +945,20 @@ if ("STANDALONE_TEST" IN_LIST Qt6BuildInternals_FIND_COMPONENTS)
 endif()
 
 function(qt_internal_static_link_order_test)
-    if(TARGET ${QT_CMAKE_EXPORT_NAMESPACE}::PlatformCommonInternal)
-        get_target_property(linker_options
-            ${QT_CMAKE_EXPORT_NAMESPACE}::PlatformCommonInternal INTERFACE_LINK_OPTIONS
-        )
-        string(JOIN " " linker_options ${linker_options})
-    endif()
-
-    qt_config_compile_test(static_link_order
-        LABEL "Check if linker can resolve circular dependencies"
-        PROJECT_PATH "${QT_CMAKE_DIR}/config.tests/static_link_order"
-        CMAKE_FLAGS "-DCMAKE_EXE_LINKER_FLAGS:STRING=${linker_options}"
-    )
-
-    if(TEST_static_link_order)
-        set_property(GLOBAL PROPERTY QT_LINK_ORDER_MATTERS FALSE)
-        set(summary_message "no")
+    # The CMake versions greater than 3.21 take care about the resource object files order in a
+    # linker line, it's expected that all object files are located at the beginning of the linker
+    # line.
+    # No need to run the test.
+    # TODO: This check is added before the actual release of CMake 3.21. So need to check if the
+    # target version meets the expectations.
+    if(CMAKE_VERSION VERSION_LESS 3.21)
+        __qt_internal_check_link_order_matters(${QT_CMAKE_EXPORT_NAMESPACE}::Platform)
+        if(link_order_matters)
+            set(summary_message "no")
+        else()
+            set(summary_message "yes")
+        endif()
     else()
-        set_property(GLOBAL PROPERTY QT_LINK_ORDER_MATTERS TRUE)
         set(summary_message "yes")
     endif()
     qt_configure_add_summary_entry(TYPE "message"

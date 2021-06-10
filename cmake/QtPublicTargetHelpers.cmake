@@ -15,14 +15,115 @@ function(__qt_internal_strip_target_directory_scope_token target out_var)
     set("${out_var}" "${target}" PARENT_SCOPE)
 endfunction()
 
+# Tests if linker could resolve circular dependencies between object files and static libraries.
+function(__qt_internal_static_link_order_public_test target result)
+    # We could trust iOS linker
+    if(IOS)
+        set(QT_HAVE_LINK_ORDER_MATTERS_${target} "FALSE" CACHE BOOL "Link order matters")
+    endif()
+
+    if(DEFINED QT_HAVE_LINK_ORDER_MATTERS_${target})
+        set(${result} "${QT_HAVE_LINK_ORDER_MATTERS_${target}}" PARENT_SCOPE)
+        return()
+    endif()
+
+    set(link_options_property LINK_OPTIONS)
+    set(compile_definitions_property COMPILE_DEFINITIONS)
+    get_target_property(type ${target} TYPE)
+    if(type STREQUAL "INTERFACE_LIBRARY")
+        set(link_options_property INTERFACE_LINK_OPTIONS)
+        set(compile_definitions_property INTERFACE_COMPILE_DEFINITIONS)
+    endif()
+
+    get_target_property(linker_options ${target} ${link_options_property})
+    get_target_property(compile_definitions ${target} ${compile_definitions_property})
+    set(linker_options "${CMAKE_EXE_LINKER_FLAGS} ${linker_options}")
+    set(compile_definitions "${CMAKE_CXX_FLAGS} ${compile_definitions}")
+
+    if(EXISTS "${QT_CMAKE_DIR}")
+        set(test_source_basedir "${QT_CMAKE_DIR}")
+    else()
+        set(test_source_basedir "${_qt_cmake_dir}/${QT_CMAKE_EXPORT_NAMESPACE}")
+    endif()
+
+    set(test_subdir "${target}")
+    string(TOLOWER "${test_subdir}" test_subdir)
+    string(MAKE_C_IDENTIFIER "${test_subdir}" test_subdir)
+    try_compile(${result}
+        "${CMAKE_CURRENT_BINARY_DIR}/${test_subdir}/config.tests/static_link_order"
+        "${test_source_basedir}/config.tests/static_link_order"
+        static_link_order_test
+        static_link_order_test
+        CMAKE_FLAGS "-DCMAKE_EXE_LINKER_FLAGS:STRING=${linker_options}"
+        "-DCMAKE_CXX_FLAGS:STRING=${compile_definitions}"
+    )
+    message(STATUS "Check if linker can resolve circular dependencies for target ${target} \
+- ${${result}}")
+
+    # Invert the result
+    if(${result})
+        set(${result} FALSE)
+    else()
+        set(${result} TRUE)
+    endif()
+
+    set(QT_HAVE_LINK_ORDER_MATTERS_${target} "${${result}}" CACHE BOOL "Link order matters")
+
+    set(${result} "${${result}}" PARENT_SCOPE)
+endfunction()
+
+# Sets _qt_link_order_matters flag for the target.
+function(__qt_internal_set_link_order_matters target link_order_matters)
+    if(NOT TARGET ${target})
+        message(FATAL_ERROR "Unable to set _qt_link_order_matters flag. ${target} is not a target.")
+    endif()
+
+    get_target_property(aliased_target ${target} ALIASED_TARGET)
+    if(aliased_target)
+        set(target "${aliased_target}")
+    endif()
+
+    if(link_order_matters)
+        set(link_order_matters TRUE)
+    else()
+        set(link_order_matters FALSE)
+    endif()
+    set_target_properties(${target} PROPERTIES _qt_link_order_matters "${link_order_matters}")
+endfunction()
+
+# Function combines __qt_internal_static_link_order_public_test and
+# __qt_internal_set_link_order_matters calls for the target.
+function(__qt_internal_check_link_order_matters target)
+    __qt_internal_static_link_order_public_test(
+        ${target} link_order_matters
+    )
+    __qt_internal_set_link_order_matters(
+        ${target} "${link_order_matters}"
+    )
+endfunction()
+
 function(__qt_internal_process_dependency_resource_objects target)
+    # The CMake versions greater than 3.21 take care about the resource object files order in a
+    # linker line, it's expected that all object files are located at the beginning of the linker
+    # line.
+    # So circular dependencies between static libraries and object files are resolved and no need
+    # to call the finalizer code.
+    # TODO: This check is added before the actual release of CMake 3.21. So need to confirm that the
+    # target version meets the expectations.
+    if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.21)
+        return()
+    endif()
     get_target_property(processed ${target} _qt_resource_object_finalizers_processed)
     if(processed)
         return()
     endif()
     set_target_properties(${target} PROPERTIES _qt_resource_object_finalizers_processed TRUE)
 
-    __qt_internal_check_finalizer_mode(${target} use_finalizer_mode resource_objects)
+    __qt_internal_check_finalizer_mode(${target}
+        use_finalizer_mode
+        resource_objects
+    )
+
     if(NOT use_finalizer_mode)
         return()
     endif()

@@ -58,9 +58,13 @@ add_test(NAME test_static_resources_propagation_non_qt
     COMMAND test_static_resources_propagation_non_qt
 )
 
-get_property(link_order_matters GLOBAL PROPERTY QT_LINK_ORDER_MATTERS)
+get_target_property(link_order_matters
+    ${QT_CMAKE_EXPORT_NAMESPACE}::Platform
+    _qt_link_order_matters
+)
+
 if(NOT link_order_matters)
-    ## Add the executable using add_executable, expecting resources to be linked regardless of order.
+    # Add the executable using add_executable, expecting resources to be linked regardless of order.
     add_executable(test_static_resources_propagation_non_ld main.cpp)
     set_target_properties(test_static_resources_propagation_non_ld PROPERTIES
         AUTOMOC TRUE
