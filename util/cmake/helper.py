@@ -98,7 +98,7 @@ _qt_library_map = [
     LibraryMapping(
         "application-lib", "Qt6", "Qt::AppManApplication", extra=["COMPONENTS", "AppManApplication"]
     ),
-    LibraryMapping("axbase", "Qt6", "Qt::AxBase", extra=["COMPONENTS", "AxBase"]),
+    LibraryMapping("axbase", "Qt6", "Qt::AxBasePrivate", extra=["COMPONENTS", "AxBasePrivate"]),
     LibraryMapping("axcontainer", "Qt6", "Qt::AxContainer", extra=["COMPONENTS", "AxContainer"]),
     LibraryMapping("axserver", "Qt6", "Qt::AxServer", extra=["COMPONENTS", "AxServer"]),
     LibraryMapping("bluetooth", "Qt6", "Qt::Bluetooth", extra=["COMPONENTS", "Bluetooth"]),
@@ -123,8 +123,8 @@ _qt_library_map = [
     LibraryMapping(
         "designercomponents",
         "Qt6",
-        "Qt::DesignerComponents",
-        extra=["COMPONENTS", "DesignerComponents"],
+        "Qt::DesignerComponentsPrivate",
+        extra=["COMPONENTS", "DesignerComponentsPrivate"],
     ),
     LibraryMapping(
         "devicediscovery",
@@ -192,8 +192,8 @@ _qt_library_map = [
     LibraryMapping(
         "hunspellinputmethod",
         "Qt6",
-        "Qt::HunspellInputMethod",
-        extra=["COMPONENTS", "HunspellInputMethod"],
+        "Qt::HunspellInputMethodPrivate",
+        extra=["COMPONENTS", "HunspellInputMethodPrivate"],
     ),
     LibraryMapping("input", "Qt6", "Qt::InputSupportPrivate", extra=["COMPONENTS", "InputSupportPrivate"]),
     LibraryMapping(
