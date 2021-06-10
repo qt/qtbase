@@ -919,7 +919,7 @@ void QTabBar::setShape(Shape shape)
     \property QTabBar::drawBase
     \brief defines whether or not tab bar should draw its base.
 
-    If true then QTabBar draws a base in relation to the styles overlab.
+    If true then QTabBar draws a base in relation to the styles overlap.
     Otherwise only the tabs are drawn.
 
     \sa QStyle::pixelMetric(), QStyle::PM_TabBarBaseOverlap, QStyleOptionTabBarBase
