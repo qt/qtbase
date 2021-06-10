@@ -575,14 +575,6 @@ set(QT_LIBINFIX \"${QT_LIBINFIX}\")")
 
     set(extra_cmake_code "")
 
-    if(target STREQUAL Core)
-        # Propagate non-build related variables that are needed for consuming Qt packages.
-        # Do this in CoreConfig instead of Qt6Config, so that consumers can also use
-        # find_package(Qt6Core) instead of find_package(Qt6 COMPONENTS Core)
-        string(APPEND extra_cmake_code "
-set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
-    endif()
-
     # Generate metatypes
     if(${arg_GENERATE_METATYPES})
         # No mention of NO_GENERATE_METATYPES. You should not use it.

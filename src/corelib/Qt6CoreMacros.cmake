@@ -592,7 +592,7 @@ function(_qt_internal_finalize_executable target)
     # dependencies the target has, but those might be added later than the qt_add_executable call.
     # Most of our examples are like that. Only enable finalizer mode when we are sure that the user
     # manually called qt_finalize_target at the end of their CMake project, or it was automatically
-    # done via a deferred call.
+    # done via a deferred call. This is also applicable to the resource object finalizer.
     get_target_property(is_immediately_finalized "${target}" _qt_is_immediately_finalized)
     if(NOT is_immediately_finalized)
         __qt_internal_apply_plugin_imports_finalizer_mode("${target}")
@@ -1471,7 +1471,7 @@ function(__qt_propagate_generated_resource target resource_name generated_source
         )
 
         # Keep the implicit linking if finalizers are not used.
-        set(finalizer_mode_condition
+        set(not_finalizer_mode_condition
             "$<NOT:$<BOOL:$<TARGET_PROPERTY:_qt_resource_objects_finalizer_mode>>>"
         )
         # Do not litter the static libraries
@@ -1480,22 +1480,38 @@ function(__qt_propagate_generated_resource target resource_name generated_source
         )
         set(resource_objects "$<TARGET_OBJECTS:$<TARGET_NAME:${resource_target}>>")
 
-        set(resource_linking_args ${target} INTERFACE
-            "$<$<AND:${finalizer_mode_condition},${not_static_condition}>:${resource_objects}>"
+        set(platform_link_order_property
+            "$<TARGET_PROPERTY:${QT_CMAKE_EXPORT_NAMESPACE}::Platform,_qt_link_order_matters>"
+        )
+        set(platform_link_order_condition
+            "$<BOOL:${platform_link_order_property}>"
         )
 
-        # TODO: The QT_LINK_ORDER_MATTERS flag is not defined for user projects.
-        # It makes sense to disable finalizers if linker may resolve circular dependencies
-        # between objects and static libraries.
-        # Follow-up changes should set _qt_resource_objects_finalizer_mode to FALSE by default
-        # and use target_link_libraries for user projects if the order doesn't affect the
-        # linker work.
-        get_property(link_order_matters GLOBAL PROPERTY QT_LINK_ORDER_MATTERS)
-        if(link_order_matters)
-            target_sources(${resource_linking_args})
-        else()
-            target_link_libraries(${resource_linking_args})
-        endif()
+        string(JOIN "" target_sources_genex
+            "$<"
+                "$<AND:"
+                    "${not_finalizer_mode_condition},"
+                    "${not_static_condition},"
+                    "${platform_link_order_condition}"
+                ">"
+            ":${resource_objects}>"
+        )
+        target_sources(${target} INTERFACE
+            "${target_sources_genex}"
+        )
+
+        string(JOIN "" target_link_libraries_genex
+            "$<"
+                "$<AND:"
+                    "${not_finalizer_mode_condition},"
+                    "${not_static_condition},"
+                    "$<NOT:${platform_link_order_condition}>"
+                ">"
+            ":${resource_objects}>"
+        )
+        target_link_libraries(${target} INTERFACE
+            "${target_link_libraries_genex}"
+        )
 
         if(NOT target STREQUAL "Core")
             # It's necessary to link the object library target, since we want to pass

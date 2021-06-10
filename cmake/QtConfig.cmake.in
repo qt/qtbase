@@ -61,6 +61,10 @@ include("${CMAKE_CURRENT_LIST_DIR}/QtPublicTargetHelpers.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/QtPublicWalkLibsHelpers.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/QtPublicFindPackageHelpers.cmake")
 
+if(NOT DEFINED QT_CMAKE_EXPORT_NAMESPACE)
+    set(QT_CMAKE_EXPORT_NAMESPACE @QT_CMAKE_EXPORT_NAMESPACE@)
+endif()
+
 # Find required dependencies, if any.
 include(CMakeFindDependencyMacro)
 if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@Dependencies.cmake")
@@ -107,3 +111,4 @@ if (_Qt_NOTFOUND_MESSAGE)
 endif()
 
 __qt_internal_defer_promote_targets_in_dir_scope_to_global()
+__qt_internal_check_link_order_matters(@INSTALL_CMAKE_NAMESPACE@::Platform)
