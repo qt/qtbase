@@ -89,6 +89,7 @@ public:
         : QLatin1String(f, qsizetype(l - f)) {}
     constexpr inline explicit QLatin1String(const char *s, qsizetype sz) noexcept : m_size(sz), m_data(s) {}
     explicit QLatin1String(const QByteArray &s) noexcept : m_size(qsizetype(qstrnlen(s.constData(), s.size()))), m_data(s.constData()) {}
+    constexpr explicit QLatin1String(QByteArrayView s) noexcept : m_size(s.size()), m_data(s.data()) {}
 
     inline QString toString() const;
 

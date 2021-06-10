@@ -44,6 +44,7 @@ class tst_QLatin1String : public QObject
     Q_OBJECT
 
 private Q_SLOTS:
+    void construction();
     void at();
     void arg() const;
     void midLeftRight();
@@ -54,6 +55,36 @@ private Q_SLOTS:
     void relationalOperators();
 };
 
+void tst_QLatin1String::construction()
+{
+    {
+        const char str[6] = "hello";
+        QLatin1String l1s(str);
+        QCOMPARE(l1s.size(), 5);
+        QCOMPARE(l1s.latin1(), reinterpret_cast<const void *>(&str[0]));
+        QCOMPARE(l1s.latin1(), "hello");
+
+        QByteArrayView helloView(str);
+        helloView = helloView.first(4);
+        l1s = QLatin1String(helloView);
+        QCOMPARE(l1s.latin1(), helloView.data());
+        QCOMPARE(l1s.latin1(), reinterpret_cast<const void *>(helloView.data()));
+        QCOMPARE(l1s.size(), helloView.size());
+    }
+
+    {
+        const QByteArray helloArray("hello");
+        QLatin1String l1s(helloArray);
+        QCOMPARE(l1s.latin1(), helloArray.data());
+        QCOMPARE(l1s.size(), helloArray.size());
+
+        QByteArrayView helloView(helloArray);
+        helloView = helloView.first(4);
+        l1s = QLatin1String(helloView);
+        QCOMPARE(l1s.latin1(), helloView.data());
+        QCOMPARE(l1s.size(), helloView.size());
+    }
+}
 
 void tst_QLatin1String::at()
 {

@@ -8910,6 +8910,20 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     \sa latin1()
 */
 
+/*! \fn QLatin1String::QLatin1String(QByteArrayView str)
+    \since 6.3
+
+    Constructs a QLatin1String object that stores \a str.
+
+    The string data is \e not copied. The caller must be able to
+    guarantee that the data which \a str is pointing to will not
+    be deleted or modified as long as the QLatin1String object
+    exists. The size is obtained from \a str as-is, without checking
+    for a null-terminator.
+
+    \sa latin1()
+*/
+
 /*!
     \fn QString QLatin1String::toString() const
     \since 6.0
