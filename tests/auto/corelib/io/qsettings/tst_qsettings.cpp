@@ -2177,6 +2177,8 @@ void tst_QSettings::testEmptyData()
     vList2 << emptyString << nullString;
     vList3 << QString("foo");
 
+    const auto rm = QScopeGuard([=] { QFile::remove(filename); });
+
     {
         QSettings settings(filename, QSettings::IniFormat);
         settings.setValue("nullString", nullString);
@@ -2230,7 +2232,6 @@ void tst_QSettings::testEmptyData()
         QCOMPARE(settings.value("vList3").toList(), vList3);
         QCOMPARE(settings.status(), QSettings::NoError);
     }
-    QFile::remove(filename);
 }
 
 void tst_QSettings::testEmptyKey()
