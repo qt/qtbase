@@ -222,6 +222,7 @@ static void nanWarning(const char *func)
     transformation is achieved by setting both the projection factors and
     the scaling factors.
 
+    \section2 Combining Transforms
     Here's the combined transformations example using basic matrix
     operations:
 
@@ -231,6 +232,26 @@ static void nanWarning(const char *func)
     \li
     \snippet transform/main.cpp 2
     \endtable
+
+    The combined transform first scales each operand, then rotates it, and
+    finally translates it, just as in the order in which the product of its
+    factors is written. This means the point to which the transforms are
+    applied is implicitly multiplied on the left with the transform
+    to its right.
+
+    \section2 Relation to Matrix Notation
+    The matrix notation in QTransform is the transpose of a commonly-taught
+    convention which represents transforms and points as matrices and vectors.
+    That convention multiplies its matrix on the left and column vector to the
+    right. In other words, when several transforms are applied to a point, the
+    right-most matrix acts directly on the vector first. Then the next matrix
+    to the left acts on the result of the first operation - and so on. As a
+    result, that convention multiplies the matrices that make up a composite
+    transform in the reverse of the order in QTransform, as you can see in
+    \l {Combining Transforms}. Transposing the matrices, and combining them to
+    the right of a row vector that represents the point, lets the matrices of
+    transforms appear, in their product, in the order in which we think of the
+    transforms being applied to the point.
 
     \sa QPainter, {Coordinate System}, {painting/affine}{Affine
     Transformations Example}, {Transformations Example}

@@ -51,7 +51,7 @@
 //! [0]
 x' = m11*x + m21*y + dx
 y' = m22*y + m12*x + dy
-if (is not affine) {
+if (!isAffine()) {
     w' = m13*x + m23*y + m33
     x' /= w'
     y' /= w'
@@ -62,7 +62,7 @@ if (is not affine) {
 //! [1]
 x' = m11*x + m21*y + dx
 y' = m22*y + m12*x + dy
-if (is not affine) {
+if (!isAffine()) {
     w' = m13*x + m23*y + m33
     x' /= w'
     y' /= w'
@@ -73,7 +73,7 @@ if (is not affine) {
 //! [2]
 x' = m11*x + m21*y + dx
 y' = m22*y + m12*x + dy
-if (is not affine) {
+if (!isAffine()) {
     w' = m13*x + m23*y + m33
     x' /= w'
     y' /= w'
@@ -84,7 +84,7 @@ if (is not affine) {
 //! [3]
 x' = m11*x + m21*y + dx
 y' = m22*y + m12*x + dy
-if (is not affine) {
+if (!isAffine()) {
     w' = m13*x + m23*y + m33
     x' /= w'
     y' /= w'
