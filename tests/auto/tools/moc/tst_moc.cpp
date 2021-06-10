@@ -41,7 +41,6 @@
 #include "single_function_keyword.h"
 #include "backslash-newlines.h"
 #include "slots-with-void-template.h"
-#include "pure-virtual-signals.h"
 #include "qinvokable.h"
 // msvc and friends crap out on it
 #if !defined(Q_CC_GNU) || defined(Q_OS_WIN)
