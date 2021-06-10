@@ -3036,7 +3036,7 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
             }
 #if QT_CONFIG(tabwidget)
             QRegion region(tbb->rect);
-            region -= tbb->tabBarRect;
+            region -= tbb->tabBarRect.adjusted(3, 0, -3, 0);
             p->save();
             p->setClipRegion(region);
             QStyleOptionTabWidgetFrame twf;
