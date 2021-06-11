@@ -1331,10 +1331,10 @@ qt_internal_apply_gc_binaries_conditional(Core PUBLIC)
 # Add entry-point on platforms that need it. A project can opt-out of using the
 # entrypoint by setting the qt_no_entrypoint property to TRUE on a target.
 if(WIN32 OR CMAKE_SYSTEM_NAME STREQUAL "iOS")
-    # find_package(Qt6Core) should call find_package(Qt6EntryPoint) so that we can
-    # link against EntryPoint. Normally this is handled automatically for deps, but
-    # for some reason it doesn't work for the EntryPoint, so we need to add it manually.
-    qt_record_extra_qt_package_dependency(Core EntryPoint "${PROJECT_VERSION}")
+    # find_package(Qt6Core) should call find_package(Qt6EntryPointPrivate) so that we can
+    # link against EntryPointPrivate. Normally this is handled automatically for deps, but
+    # for some reason it doesn't work for the EntryPointPrivate, so we need to add it manually.
+    qt_record_extra_qt_package_dependency(Core EntryPointPrivate "${PROJECT_VERSION}")
 
     set(entrypoint_conditions "$<NOT:$<BOOL:$<TARGET_PROPERTY:qt_no_entrypoint>>>")
     list(APPEND entrypoint_conditions "$<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>")
@@ -1346,7 +1346,9 @@ if(WIN32 OR CMAKE_SYSTEM_NAME STREQUAL "iOS")
     list(JOIN entrypoint_conditions "," entrypoint_conditions)
     set(entrypoint_conditions "$<AND:${entrypoint_conditions}>")
 
-    target_link_libraries(Core INTERFACE "$<${entrypoint_conditions}:${QT_CMAKE_EXPORT_NAMESPACE}::EntryPoint>")
+    target_link_libraries(Core INTERFACE
+        "$<${entrypoint_conditions}:${QT_CMAKE_EXPORT_NAMESPACE}::EntryPointPrivate>"
+    )
 endif()
 
 # Record darwin minimum deployment target.
