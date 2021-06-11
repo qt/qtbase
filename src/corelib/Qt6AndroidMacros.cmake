@@ -284,6 +284,7 @@ function(qt6_android_add_apk_target target)
     # Make global apk target depend on the current apk target.
     if(TARGET apk)
         add_dependencies(apk ${target}_make_apk)
+        _qt_internal_create_global_apk_all_target_if_needed()
     endif()
 
     set(deployment_tool "${QT_HOST_PATH}/${QT6_HOST_INFO_BINDIR}/androiddeployqt")
@@ -330,23 +331,41 @@ function(_qt_internal_create_global_apk_target)
     # Allow opting out.
     if(NOT QT_NO_GLOBAL_APK_TARGET)
         if(NOT TARGET apk)
-            # Some Qt tests helper executables have their apk build process failing.
-            # Don't build apks by default when doing a Qt build.
-            set(skip_add_to_all FALSE)
-            if(QT_BUILDING_QT)
-                set(skip_add_to_all TRUE)
-            endif()
-
-            option(QT_NO_GLOBAL_APK_TARGET_PART_OF_ALL
-                "Skip building apks as part of the default 'ALL' target" ${skip_add_to_all})
-
-            set(part_of_all "ALL")
-            if(QT_NO_GLOBAL_APK_TARGET_PART_OF_ALL)
-                set(part_of_all "")
-            endif()
-
-            add_custom_target(apk ${part_of_all} COMMENT "Building all apks")
+            add_custom_target(apk COMMENT "Building all apks")
         endif()
+    endif()
+endfunction()
+
+# This function allows deciding whether apks should be built as part of the ALL target at first
+# add_executable call point, rather than when the 'apk' target is created as part of the
+# find_package(Core) call.
+#
+# It does so by creating a custom 'apk_all' target as an implementation detail.
+#
+# This is needed to ensure that the decision is made only when the value of QT_BUILDING_QT is
+# available, which is defined in qt_repo_build() -> include(QtSetup), which is included after the
+# execution of _qt_internal_create_global_apk_target.
+function(_qt_internal_create_global_apk_all_target_if_needed)
+    if(TARGET apk AND NOT TARGET apk_all)
+        # Some Qt tests helper executables have their apk build process failing.
+        # qt_internal_add_executables that are excluded from ALL should also not have apks built
+        # for them.
+        # Don't build apks by default when doing a Qt build.
+        set(skip_add_to_all FALSE)
+        if(QT_BUILDING_QT)
+            set(skip_add_to_all TRUE)
+        endif()
+
+        option(QT_NO_GLOBAL_APK_TARGET_PART_OF_ALL
+            "Skip building apks as part of the default 'ALL' target" ${skip_add_to_all})
+
+        set(part_of_all "ALL")
+        if(QT_NO_GLOBAL_APK_TARGET_PART_OF_ALL)
+            set(part_of_all "")
+        endif()
+
+        add_custom_target(apk_all ${part_of_all})
+        add_dependencies(apk_all apk)
     endif()
 endfunction()
 
