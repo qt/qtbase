@@ -6945,6 +6945,7 @@ void tst_QString::isValidUtf16()
     QTEST(string.isValidUtf16(), "valid");
 }
 
-QTEST_APPLESS_MAIN(tst_QString)
+// QString's collation order is only supported during the lifetime as QCoreApplication
+QTEST_GUILESS_MAIN(tst_QString)
 
 #include "tst_qstring.moc"
