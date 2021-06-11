@@ -320,7 +320,11 @@ function(qt_internal_add_plugin target)
     qt_register_target_dependencies("${target}" "${arg_PUBLIC_LIBRARIES}" "${qt_libs_private}")
     set(plugin_init_target "")
     if (NOT BUILD_SHARED_LIBS)
-        qt_generate_plugin_pri_file("${target}" pri_file)
+
+        # There's no point in generating pri files for qml plugins. We didn't do it in Qt5 times.
+        if(NOT plugin_type_escaped STREQUAL "qml_plugin")
+            qt_generate_plugin_pri_file("${target}" pri_file)
+        endif()
 
         if(qt_module_target)
             __qt_internal_add_static_plugin_init_object_library("${target}" plugin_init_target)
