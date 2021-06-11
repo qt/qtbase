@@ -3648,6 +3648,37 @@ void QMetaObject::connectSlotsByName(QObject *o)
 }
 
 /*!
+     \internal
+     A small RAII helper for QSlotObjectBase.
+     Calls ref on construction and destroyLastRef in its dtor.
+     Allows construction from a nullptr in which case it does nothing.
+ */
+struct SlotObjectGuard {
+    SlotObjectGuard() = default;
+    // move would be fine, but we do not need it currently
+    Q_DISABLE_COPY_MOVE(SlotObjectGuard)
+    explicit SlotObjectGuard(QtPrivate::QSlotObjectBase *slotObject)
+        : m_slotObject(slotObject)
+    {
+        if (m_slotObject)
+            m_slotObject->ref();
+    }
+
+    QtPrivate::QSlotObjectBase const *operator->() const
+    { return m_slotObject; }
+
+    QtPrivate::QSlotObjectBase *operator->()
+    { return m_slotObject; }
+
+    ~SlotObjectGuard() {
+        if (m_slotObject)
+            m_slotObject->destroyIfLastRef();
+    }
+private:
+    QtPrivate::QSlotObjectBase *m_slotObject = nullptr;
+};
+
+/*!
     \internal
 
     \a signal must be in the signal index range (see QObjectPrivate::signalIndex()).
@@ -3678,8 +3709,8 @@ static void queued_activate(QObject *sender, int signal, QObjectPrivate::Connect
         // the connection has been disconnected before we got the lock
         return;
     }
-    if (c->isSlotObject)
-        c->slotObj->ref();
+
+    SlotObjectGuard slotObjectGuard { c->isSlotObject ? c->slotObj : nullptr };
     locker.unlock();
 
     QMetaCallEvent *ev = c->isSlotObject ?
@@ -3706,8 +3737,6 @@ static void queued_activate(QObject *sender, int signal, QObjectPrivate::Connect
     }
 
     locker.relock();
-    if (c->isSlotObject)
-        c->slotObj->destroyIfLastRef();
     if (!c->isSingleShot && !c->receiver.loadRelaxed()) {
         // the connection has been disconnected while we were unlocked
         locker.unlock();
@@ -3835,14 +3864,7 @@ void doActivate(QObject *sender, int signal_index, void **argv)
             QObjectPrivate::Sender senderData(receiverInSameThread ? receiver : nullptr, sender, signal_index);
 
             if (c->isSlotObject) {
-                c->slotObj->ref();
-
-                struct Deleter {
-                    void operator()(QtPrivate::QSlotObjectBase *slot) const {
-                        if (slot) slot->destroyIfLastRef();
-                    }
-                };
-                const std::unique_ptr<QtPrivate::QSlotObjectBase, Deleter> obj{c->slotObj};
+                SlotObjectGuard obj{c->slotObj};
 
                 {
                     Q_TRACE_SCOPE(QMetaObject_activate_slot_functor, obj.get());
