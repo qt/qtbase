@@ -139,6 +139,45 @@ namespace QtAndroidPrivate
     Q_CORE_EXPORT jobject callOnBindListener(jobject intent);
 }
 
+#define Q_JNI_FIND_AND_CHECK_CLASS(CLASS_NAME) \
+    clazz = env.findClass(CLASS_NAME); \
+    if (!clazz) { \
+        __android_log_print(ANDROID_LOG_FATAL, m_qtTag, QtAndroid::classErrorMsgFmt(), CLASS_NAME);\
+        return JNI_FALSE; \
+    }
+
+#define Q_JNI_GET_AND_CHECK_METHOD(ID, CLASS, METHOD_NAME, METHOD_SIGNATURE) \
+    ID = env.findMethod(CLASS, METHOD_NAME, METHOD_SIGNATURE); \
+    if (!ID) { \
+        __android_log_print(ANDROID_LOG_FATAL, m_qtTag, QtAndroid::methodErrorMsgFmt(), \
+                            METHOD_NAME, METHOD_SIGNATURE); \
+        return JNI_FALSE; \
+    }
+
+#define Q_JNI_GET_AND_CHECK_STATIC_METHOD(ID, CLASS, METHOD_NAME, METHOD_SIGNATURE) \
+    ID = env.findStaticMethod(CLASS, METHOD_NAME, METHOD_SIGNATURE); \
+    if (!ID) { \
+        __android_log_print(ANDROID_LOG_FATAL, m_qtTag, QtAndroid::methodErrorMsgFmt(), \
+                            METHOD_NAME, METHOD_SIGNATURE); \
+        return JNI_FALSE; \
+    }
+
+#define Q_JNI_GET_AND_CHECK_FIELD(ID, CLASS, FIELD_NAME, FIELD_SIGNATURE) \
+    ID = env.findField(CLASS, FIELD_NAME, FIELD_SIGNATURE); \
+    if (!ID) { \
+        __android_log_print(ANDROID_LOG_FATAL, m_qtTag, QtAndroid::fieldErrorMsgFmt(), \
+                            FIELD_NAME, FIELD_SIGNATURE); \
+        return JNI_FALSE; \
+    }
+
+#define Q_JNI_GET_AND_CHECK_STATIC_FIELD(ID, CLASS, FIELD_NAME, FIELD_SIGNATURE) \
+    ID = env.findStaticField(CLASS, FIELD_NAME, FIELD_SIGNATURE); \
+    if (!ID) { \
+        __android_log_print(ANDROID_LOG_FATAL, m_qtTag, QtAndroid::fieldErrorMsgFmt(), \
+                            FIELD_NAME, FIELD_SIGNATURE); \
+        return JNI_FALSE; \
+    }
+
 QT_END_NAMESPACE
 
 #endif // QJNIHELPERS_H
