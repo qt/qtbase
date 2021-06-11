@@ -124,7 +124,41 @@ function(__qt_internal_promote_target_to_global target)
 endfunction()
 
 function(__qt_internal_promote_target_to_global_checked target)
-    if(QT_PROMOTE_TO_GLOBAL_TARGETS)
+    # With CMake version 3.21 we use a different mechanism that allows us to promote all targets
+    # within a scope.
+    if(QT_PROMOTE_TO_GLOBAL_TARGETS AND CMAKE_VERSION VERSION_LESS 3.21)
         __qt_internal_promote_target_to_global(${target})
+    endif()
+endfunction()
+
+function(__qt_internal_promote_targets_in_dir_scope_to_global)
+    # IMPORTED_TARGETS got added in 3.21.
+    if(CMAKE_VERSION VERSION_LESS 3.21)
+        return()
+    endif()
+
+    get_directory_property(targets IMPORTED_TARGETS)
+    foreach(target IN LISTS targets)
+        __qt_internal_promote_target_to_global(${target})
+    endforeach()
+endfunction()
+
+function(__qt_internal_promote_targets_in_dir_scope_to_global_checked)
+    if(QT_PROMOTE_TO_GLOBAL_TARGETS)
+        __qt_internal_promote_targets_in_dir_scope_to_global()
+    endif()
+endfunction()
+
+# This function ends up being called multiple times as part of a find_package(Qt6Foo) call,
+# due sub-packages depending on the Qt6 package. Ensure the finalizer is ran only once per
+# directory scope.
+function(__qt_internal_defer_promote_targets_in_dir_scope_to_global)
+    get_directory_property(is_deferred _qt_promote_targets_is_deferred)
+    if(NOT is_deferred)
+        set_property(DIRECTORY PROPERTY _qt_promote_targets_is_deferred TRUE)
+
+        if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.19)
+            cmake_language(DEFER CALL __qt_internal_promote_targets_in_dir_scope_to_global_checked)
+        endif()
     endif()
 endfunction()
