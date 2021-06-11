@@ -154,7 +154,7 @@ static bool futexNeedsWake(quintptr v)
     // low 31 bits of the high word (that is, bits 32-62). If we're not, then we only
     // use futexNeedsWakeAllBit to indicate anyone is waiting.
     if constexpr (futexHasWaiterCount)
-        return (v >> 32) > (unsigned(v));
+        return unsigned(quint64(v) >> 32) > unsigned(v);
     return v >> 31;
 }
 
