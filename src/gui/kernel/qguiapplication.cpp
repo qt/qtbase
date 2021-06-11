@@ -3478,8 +3478,16 @@ void QGuiApplicationPrivate::notifyLayoutDirectionChange()
     }
 }
 
-void QGuiApplicationPrivate::notifyActiveWindowChange(QWindow *)
+void QGuiApplicationPrivate::notifyActiveWindowChange(QWindow *prev)
 {
+    if (prev) {
+        QEvent de(QEvent::WindowDeactivate);
+        QCoreApplication::sendEvent(prev, &de);
+    }
+    if (self->focus_window) {
+        QEvent ae(QEvent::WindowActivate);
+        QCoreApplication::sendEvent(focus_window, &ae);
+    }
 }
 
 /*!
