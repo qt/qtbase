@@ -1555,132 +1555,129 @@ void TlsCryptographSchannel::transmit()
         }
     }
 
-    if (q->isEncrypted()) { // Decrypt data from remote
-        int totalRead = 0;
-        bool hadIncompleteData = false;
-        const auto readBufferMaxSize = d->maxReadBufferSize();
-        while (!readBufferMaxSize || buffer.size() < readBufferMaxSize) {
-            if (missingData > plainSocket->bytesAvailable()
-                && (!readBufferMaxSize || readBufferMaxSize >= missingData)) {
+    int totalRead = 0;
+    bool hadIncompleteData = false;
+    const auto readBufferMaxSize = d->maxReadBufferSize();
+    while (!readBufferMaxSize || buffer.size() < readBufferMaxSize) {
+        if (missingData > plainSocket->bytesAvailable()
+            && (!readBufferMaxSize || readBufferMaxSize >= missingData)) {
 #ifdef QSSLSOCKET_DEBUG
-                qCDebug(lcTlsBackendSchannel, "We're still missing %lld bytes, will check later.",
-                        missingData);
+            qCDebug(lcTlsBackendSchannel, "We're still missing %lld bytes, will check later.",
+                    missingData);
 #endif
-                break;
+            break;
+        }
+
+        missingData = 0;
+        const qint64 bytesRead = readToBuffer(intermediateBuffer, plainSocket);
+#ifdef QSSLSOCKET_DEBUG
+        qCDebug(lcTlsBackendSchannel, "Read %lld encrypted bytes from the socket", bytesRead);
+#endif
+        if (intermediateBuffer.length() == 0 || (hadIncompleteData && bytesRead == 0)) {
+#ifdef QSSLSOCKET_DEBUG
+            qCDebug(lcTlsBackendSchannel,
+                    hadIncompleteData ? "No new data received, leaving loop!"
+                                      : "Nothing to decrypt, leaving loop!");
+#endif
+            break;
+        }
+        hadIncompleteData = false;
+#ifdef QSSLSOCKET_DEBUG
+        qCDebug(lcTlsBackendSchannel, "Total amount of bytes to decrypt: %d",
+                intermediateBuffer.length());
+#endif
+
+        SecBuffer dataBuffer[4]{
+            createSecBuffer(intermediateBuffer, SECBUFFER_DATA),
+            createSecBuffer(nullptr, 0, SECBUFFER_EMPTY),
+            createSecBuffer(nullptr, 0, SECBUFFER_EMPTY),
+            createSecBuffer(nullptr, 0, SECBUFFER_EMPTY)
+        };
+        SecBufferDesc message{
+            SECBUFFER_VERSION,
+            ARRAYSIZE(dataBuffer),
+            dataBuffer
+        };
+        auto status = DecryptMessage(&contextHandle, &message, 0, nullptr);
+        if (status == SEC_E_OK || status == SEC_I_RENEGOTIATE || status == SEC_I_CONTEXT_EXPIRED) {
+            // There can still be 0 output even if it succeeds, this is fine
+            if (dataBuffer[1].cbBuffer > 0) {
+                // It is always decrypted in-place.
+                // But [0] is the STREAM_HEADER, [1] is the DATA and [2] is the STREAM_TRAILER.
+                // The pointers in all of those still point into 'intermediateBuffer'.
+                buffer.append(static_cast<char *>(dataBuffer[1].pvBuffer),
+                                dataBuffer[1].cbBuffer);
+                totalRead += dataBuffer[1].cbBuffer;
+#ifdef QSSLSOCKET_DEBUG
+                qCDebug(lcTlsBackendSchannel, "Decrypted %lu bytes. New read buffer size: %d",
+                        dataBuffer[1].cbBuffer, buffer.size());
+#endif
             }
-
-            missingData = 0;
-            const qint64 bytesRead = readToBuffer(intermediateBuffer, plainSocket);
-#ifdef QSSLSOCKET_DEBUG
-            qCDebug(lcTlsBackendSchannel, "Read %lld encrypted bytes from the socket", bytesRead);
-#endif
-            if (intermediateBuffer.length() == 0 || (hadIncompleteData && bytesRead == 0)) {
-#ifdef QSSLSOCKET_DEBUG
-                qCDebug(lcTlsBackendSchannel,
-                        (hadIncompleteData ? "No new data received, leaving loop!"
-                                           : "Nothing to decrypt, leaving loop!"));
-#endif
-                break;
-            }
-            hadIncompleteData = false;
-#ifdef QSSLSOCKET_DEBUG
-            qCDebug(lcTlsBackendSchannel, "Total amount of bytes to decrypt: %d",
-                    intermediateBuffer.length());
-#endif
-
-            SecBuffer dataBuffer[4]{
-                createSecBuffer(intermediateBuffer, SECBUFFER_DATA),
-                createSecBuffer(nullptr, 0, SECBUFFER_EMPTY),
-                createSecBuffer(nullptr, 0, SECBUFFER_EMPTY),
-                createSecBuffer(nullptr, 0, SECBUFFER_EMPTY)
-            };
-            SecBufferDesc message{
-                SECBUFFER_VERSION,
-                ARRAYSIZE(dataBuffer),
-                dataBuffer
-            };
-            auto status = DecryptMessage(&contextHandle, &message, 0, nullptr);
-            if (status == SEC_E_OK || status == SEC_I_RENEGOTIATE || status == SEC_I_CONTEXT_EXPIRED) {
-                // There can still be 0 output even if it succeeds, this is fine
-                if (dataBuffer[1].cbBuffer > 0) {
-                    // It is always decrypted in-place.
-                    // But [0] is the STREAM_HEADER, [1] is the DATA and [2] is the STREAM_TRAILER.
-                    // The pointers in all of those still point into 'intermediateBuffer'.
-                    buffer.append(static_cast<char *>(dataBuffer[1].pvBuffer),
-                                  dataBuffer[1].cbBuffer);
-                    totalRead += dataBuffer[1].cbBuffer;
-#ifdef QSSLSOCKET_DEBUG
-                    qCDebug(lcTlsBackendSchannel, "Decrypted %lu bytes. New read buffer size: %d",
-                            dataBuffer[1].cbBuffer, buffer.size());
-#endif
-                }
-                if (dataBuffer[3].BufferType == SECBUFFER_EXTRA) {
-                    // https://docs.microsoft.com/en-us/windows/desktop/secauthn/extra-buffers-returned-by-schannel
-                    // dataBuffer[3].cbBuffer indicates the amount of bytes _NOT_ processed,
-                    // the rest need to be stored.
-                    retainExtraData(intermediateBuffer, dataBuffer[3]);
-                } else {
-                    intermediateBuffer.resize(0);
-                }
-            }
-
-            if (status == SEC_E_INCOMPLETE_MESSAGE) {
-                missingData = checkIncompleteData(dataBuffer[0]);
-#ifdef QSSLSOCKET_DEBUG
-                qCDebug(lcTlsBackendSchannel,
-                        "We didn't have enough data to decrypt anything, will try again!");
-#endif
-                // We try again, but if we don't get any more data then we leave
-                hadIncompleteData = true;
-            } else if (status == SEC_E_INVALID_HANDLE) {
-                // I don't think this should happen, if it does we're done...
-                qCWarning(lcTlsBackendSchannel, "The internal SSPI handle is invalid!");
-                Q_UNREACHABLE();
-            } else if (status == SEC_E_INVALID_TOKEN) {
-                qCWarning(lcTlsBackendSchannel, "Got SEC_E_INVALID_TOKEN!");
-                Q_UNREACHABLE(); // Happened once due to a bug, but shouldn't generally happen(?)
-            } else if (status == SEC_E_MESSAGE_ALTERED) {
-                // The message has been altered, disconnect now.
-                shutdown = true; // skips sending the shutdown alert
-                disconnectFromHost();
-                setErrorAndEmit(d, QAbstractSocket::SslInternalError,
-                                schannelErrorToString(status));
-                break;
-            } else if (status == SEC_E_OUT_OF_SEQUENCE) {
-                // @todo: I don't know if this one is actually "fatal"..
-                // This path might never be hit as it seems this is for connection-oriented connections,
-                // while SEC_E_MESSAGE_ALTERED is for stream-oriented ones (what we use).
-                shutdown = true; // skips sending the shutdown alert
-                disconnectFromHost();
-                setErrorAndEmit(d, QAbstractSocket::SslInternalError,
-                                schannelErrorToString(status));
-                break;
-            } else if (status == SEC_I_CONTEXT_EXPIRED) {
-                // 'remote' has initiated a shutdown
-                disconnectFromHost();
-                setErrorAndEmit(d, QAbstractSocket::RemoteHostClosedError,
-                                schannelErrorToString(status));
-                break;
-            } else if (status == SEC_I_RENEGOTIATE) {
-                // 'remote' wants to renegotiate
-#ifdef QSSLSOCKET_DEBUG
-                qCDebug(lcTlsBackendSchannel, "The peer wants to renegotiate.");
-#endif
-                schannelState = SchannelState::Renegotiate;
-                renegotiating = true;
-
-                // We need to call 'continueHandshake' or else there's no guarantee it ever gets called
-                continueHandshake();
-                break;
+            if (dataBuffer[3].BufferType == SECBUFFER_EXTRA) {
+                // https://docs.microsoft.com/en-us/windows/desktop/secauthn/extra-buffers-returned-by-schannel
+                // dataBuffer[3].cbBuffer indicates the amount of bytes _NOT_ processed,
+                // the rest need to be stored.
+                retainExtraData(intermediateBuffer, dataBuffer[3]);
+            } else {
+                intermediateBuffer.resize(0);
             }
         }
 
-        if (totalRead) {
-            if (bool *readyReadEmittedPointer = d->readyReadPointer())
-                *readyReadEmittedPointer = true;
-            emit q->readyRead();
-            emit q->channelReadyRead(0);
+        if (status == SEC_E_INCOMPLETE_MESSAGE) {
+            missingData = checkIncompleteData(dataBuffer[0]);
+#ifdef QSSLSOCKET_DEBUG
+            qCDebug(lcTlsBackendSchannel, "We didn't have enough data to decrypt anything, will try again!");
+#endif
+            // We try again, but if we don't get any more data then we leave
+            hadIncompleteData = true;
+        } else if (status == SEC_E_INVALID_HANDLE) {
+            // I don't think this should happen, if it does we're done...
+            qCWarning(lcTlsBackendSchannel, "The internal SSPI handle is invalid!");
+            Q_UNREACHABLE();
+        } else if (status == SEC_E_INVALID_TOKEN) {
+            qCWarning(lcTlsBackendSchannel, "Got SEC_E_INVALID_TOKEN!");
+            Q_UNREACHABLE(); // Happened once due to a bug, but shouldn't generally happen(?)
+        } else if (status == SEC_E_MESSAGE_ALTERED) {
+            // The message has been altered, disconnect now.
+            shutdown = true; // skips sending the shutdown alert
+            disconnectFromHost();
+            setErrorAndEmit(d, QAbstractSocket::SslInternalError,
+                            schannelErrorToString(status));
+            break;
+        } else if (status == SEC_E_OUT_OF_SEQUENCE) {
+            // @todo: I don't know if this one is actually "fatal"..
+            // This path might never be hit as it seems this is for connection-oriented connections,
+            // while SEC_E_MESSAGE_ALTERED is for stream-oriented ones (what we use).
+            shutdown = true; // skips sending the shutdown alert
+            disconnectFromHost();
+            setErrorAndEmit(d, QAbstractSocket::SslInternalError,
+                            schannelErrorToString(status));
+            break;
+        } else if (status == SEC_I_CONTEXT_EXPIRED) {
+            // 'remote' has initiated a shutdown
+            disconnectFromHost();
+            setErrorAndEmit(d, QAbstractSocket::RemoteHostClosedError,
+                            schannelErrorToString(status));
+            break;
+        } else if (status == SEC_I_RENEGOTIATE) {
+            // 'remote' wants to renegotiate
+#ifdef QSSLSOCKET_DEBUG
+            qCDebug(lcTlsBackendSchannel, "The peer wants to renegotiate.");
+#endif
+            schannelState = SchannelState::Renegotiate;
+            renegotiating = true;
+
+            // We need to call 'continueHandshake' or else there's no guarantee it ever gets called
+            continueHandshake();
+            break;
         }
+    }
+
+    if (totalRead) {
+        if (bool *readyReadEmittedPointer = d->readyReadPointer())
+            *readyReadEmittedPointer = true;
+        emit q->readyRead();
+        emit q->channelReadyRead(0);
     }
 }
 
@@ -1775,30 +1772,36 @@ void TlsCryptographSchannel::disconnectFromHost()
     if (SecIsValidHandle(&contextHandle)) {
         if (!shutdown) {
             shutdown = true;
-            if (plainSocket->state() != QAbstractSocket::UnconnectedState) {
-                if (q->isEncrypted()) {
-                    // Read as much as possible because this is likely our last chance
-                    qint64 tempMax = d->maxReadBufferSize();
-                    d->setMaxReadBufferSize(0);
-                    transmit();
-                    d->setMaxReadBufferSize(tempMax);
-                    sendShutdown();
-                }
+            if (plainSocket->state() != QAbstractSocket::UnconnectedState && q->isEncrypted()) {
+                sendShutdown();
+                transmit();
             }
         }
     }
-    if (plainSocket->state() != QAbstractSocket::UnconnectedState)
-        plainSocket->disconnectFromHost();
+    plainSocket->disconnectFromHost();
 }
 
 void TlsCryptographSchannel::disconnected()
 {
     Q_ASSERT(d);
+    auto *plainSocket = d->plainTcpSocket();
+    Q_ASSERT(plainSocket);
+    d->setEncrypted(false);
 
     shutdown = true;
-    d->setEncrypted(false);
-    deallocateContext();
-    freeCredentialsHandle();
+    if (plainSocket->bytesAvailable() > 0 || hasUndecryptedData()) {
+        // Read as much as possible because this is likely our last chance
+        qint64 tempMax = d->maxReadBufferSize();
+        d->setMaxReadBufferSize(0); // Unlimited
+        transmit();
+        d->setMaxReadBufferSize(tempMax);
+        // Since there were bytes still available we don't want to deallocate
+        // our context yet. It will happen later, when the socket is re-used or
+        // destroyed.
+    } else {
+        deallocateContext();
+        freeCredentialsHandle();
+    }
 }
 
 QSslCipher TlsCryptographSchannel::sessionCipher() const
