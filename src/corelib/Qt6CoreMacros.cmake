@@ -1807,7 +1807,6 @@ function(qt6_add_plugin target)
     endif()
 
     # Derive the class name from the target name if it's not explicitly specified.
-    # Don't set it for qml plugins though.
     set(plugin_class_name "")
     if (NOT "${arg_TYPE}" STREQUAL "qml_plugin")
         if (NOT arg_CLASS_NAME)
@@ -1815,7 +1814,16 @@ function(qt6_add_plugin target)
         else()
             set(plugin_class_name "${arg_CLASS_NAME}")
         endif()
+    else()
+        # Make sure to set any passed-in class name for qml plugins as well, because it's used for
+        # building the qml plugin foo_init object libraries.
+        if(arg_CLASS_NAME)
+            set(plugin_class_name "${arg_CLASS_NAME}")
+        else()
+            message(FATAL_ERROR "Qml plugin target has no CLASS_NAME specified: '${target}'")
+        endif()
     endif()
+
     set_target_properties(${target} PROPERTIES QT_PLUGIN_CLASS_NAME "${plugin_class_name}")
 
     target_compile_definitions(${target} PRIVATE
