@@ -1921,6 +1921,7 @@ void QApplicationPrivate::notifyActiveWindowChange(QWindow *previous)
                 if (widget->inherits("QAxHostWidget"))
                     widget->setFocus(Qt::ActiveWindowFocusReason);
     }
+    // don't call base class to avoid double delivery of WindowActivate/Deactivate events
 }
 
 /*!internal
