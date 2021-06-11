@@ -195,6 +195,9 @@ function(__qt_internal_add_static_plugin_import_macro
     __qt_internal_get_static_plugin_init_target_name("${plugin_target}" plugin_init_target)
     set(objs_genex "$<TARGET_OBJECTS:${QT_CMAKE_EXPORT_NAMESPACE}::${plugin_init_target}>")
 
+    # TODO: Replace the target_sources call here with the more generalized approach that will be
+    # added to __qt_propagate_generated_resource (the one that determines whether to use
+    # target_sources or target_link_libraries depending on the CMake version).
     target_sources(${QT_CMAKE_EXPORT_NAMESPACE}::${plugin_target} INTERFACE
                    "${objs_genex}")
 endfunction()
