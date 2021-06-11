@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -956,13 +956,13 @@ void tst_QtJson::testObjectIteration()
     QJsonObject object;
 
     for (QJsonObject::iterator it = object.begin(); it != object.end(); ++it)
-        QVERIFY(false);
+        QFAIL("Iterator of default-initialized object should be empty");
 
     const QString property = "kkk";
     object.insert(property, 11);
     object.take(property);
     for (QJsonObject::iterator it = object.begin(); it != object.end(); ++it)
-        QVERIFY(false);
+        QFAIL("Iterator after property add-and-remove should be empty");
 
     for (int i = 0; i < 10; ++i)
         object[QString::number(i)] = (double)i;

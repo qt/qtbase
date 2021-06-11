@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -165,10 +165,10 @@ void tst_QFlags::constExpr()
 {
     Qt::MouseButtons btn = Qt::LeftButton | Qt::RightButton;
     switch (btn) {
-        case Qt::LeftButton: QVERIFY(false); break;
-        case Qt::RightButton: QVERIFY(false); break;
-        case int(Qt::LeftButton | Qt::RightButton): QVERIFY(true); break;
-        default: QVERIFY(false);
+    case Qt::LeftButton: QVERIFY(false); break;
+    case Qt::RightButton: QVERIFY(false); break;
+    case int(Qt::LeftButton | Qt::RightButton): QVERIFY(true); break;
+    default: QFAIL(qPrintable(QStringLiteral("Unexpected button: %1").arg(btn)));
     }
 
     QVERIFY(verifyConstExpr<uint((Qt::LeftButton | Qt::RightButton) & Qt::LeftButton)>(Qt::LeftButton));

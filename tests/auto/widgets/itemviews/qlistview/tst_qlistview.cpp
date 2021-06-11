@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -438,7 +438,7 @@ void tst_QListView::cursorMove()
             }
             break;
         default:
-            QVERIFY(false);
+            QFAIL(qPrintable(QStringLiteral("Unexpected key: %1").arg(key)));
         }
 
         QCoreApplication::processEvents();

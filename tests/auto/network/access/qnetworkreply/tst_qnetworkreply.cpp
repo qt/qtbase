@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -6539,8 +6539,7 @@ void tst_QNetworkReply::abortOnEncrypted()
     server.connect(&server, &SslServer::newEncryptedConnection, [&server]() {
             // MSVC 201X C4573-misunderstands connect() or QObject::connect(), so use server.connect():
             server.connect(server.socket, &QTcpSocket::readyRead, server.socket, []() {
-                // This slot must not be invoked!
-                QVERIFY(false);
+                QFAIL("This slot must not be invoked!");
             });
         });
 

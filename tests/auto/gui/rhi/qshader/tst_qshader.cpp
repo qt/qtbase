@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -101,7 +101,7 @@ void tst_QShader::simpleCompileCheckResults()
             QCOMPARE(v.type, QShaderDescription::Vec3);
             break;
         default:
-            QVERIFY(false);
+            QFAIL(qPrintable(QStringLiteral("Bad location: %1").arg(v.location)));
             break;
         }
     }
@@ -113,7 +113,7 @@ void tst_QShader::simpleCompileCheckResults()
             QCOMPARE(v.type, QShaderDescription::Vec3);
             break;
         default:
-            QVERIFY(false);
+            QFAIL(qPrintable(QStringLiteral("Bad location: %1").arg(v.location)));
             break;
         }
     }
@@ -142,7 +142,7 @@ void tst_QShader::simpleCompileCheckResults()
             QCOMPARE(v.type, QShaderDescription::Float);
             break;
         default:
-            QVERIFY(false);
+            QFAIL(qPrintable(QStringLiteral("Too many blocks: %1").arg(blk.members.count())));
             break;
         }
     }
@@ -409,7 +409,7 @@ void tst_QShader::loadV4()
             QCOMPARE(v.type, QShaderDescription::Vec2);
             break;
         default:
-            QVERIFY(false);
+            QFAIL(qPrintable(QStringLiteral("Bad location: %1").arg(v.location)));
             break;
         }
     }
@@ -421,7 +421,7 @@ void tst_QShader::loadV4()
             QCOMPARE(v.type, QShaderDescription::Vec4);
             break;
         default:
-            QVERIFY(false);
+            QFAIL(qPrintable(QStringLiteral("Bad location: %1").arg(v.location)));
             break;
         }
     }
@@ -450,7 +450,7 @@ void tst_QShader::loadV4()
             QCOMPARE(v.type, QShaderDescription::Float);
             break;
         default:
-            QVERIFY(false);
+            QFAIL(qPrintable(QStringLiteral("Bad many blocks: %1").arg(blk.members.count())));
             break;
         }
     }
