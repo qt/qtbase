@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Copyright (C) 2017 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -442,7 +442,6 @@ void tst_QUdpSocket::broadcasting()
                 QEXPECT_FAIL("",
                              "Broadcasting to 255.255.255.255 does not work on FreeBSD",
                              Abort);
-                QVERIFY(false); // seems that QFAIL() doesn't respect the QEXPECT_FAIL() :/
 #endif
                 QFAIL("Network operation timed out");
             }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtTest module of the Qt Toolkit.
@@ -123,6 +123,7 @@ public:
     static void addSkip(const char *message, const char *file, int line);
     static bool expectFail(const char *dataIndex, const char *comment,
                            QTest::TestFailMode mode, const char *file, int line);
+    static void fail(const char *message, const char *file, int line);
     static bool verify(bool statement, const char *statementStr, const char *extraInfo,
                        const char *file, int line);
     static void setSkipCurrentTest(bool value);

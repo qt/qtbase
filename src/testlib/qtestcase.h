@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtTest module of the Qt Toolkit.
@@ -310,7 +310,7 @@ namespace QTest
 
     Q_TESTLIB_EXPORT bool qVerify(bool statement, const char *statementStr, const char *description,
                                  const char *file, int line);
-    Q_TESTLIB_EXPORT void qFail(const char *statementStr, const char *file, int line);
+    Q_TESTLIB_EXPORT void qFail(const char *message, const char *file, int line);
     Q_TESTLIB_EXPORT void qSkip(const char *message, const char *file, int line);
     Q_TESTLIB_EXPORT bool qExpectFail(const char *dataIndex, const char *comment, TestFailMode mode,
                            const char *file, int line);

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -2019,9 +2019,9 @@ int QTest::qExec(QObject *testObject, const QStringList &arguments)
 
 /*! \internal
  */
-void QTest::qFail(const char *statementStr, const char *file, int line)
+void QTest::qFail(const char *message, const char *file, int line)
 {
-    QTestResult::addFailure(statementStr, file, line);
+    QTestResult::fail(message, file, line);
 }
 
 /*! \internal
