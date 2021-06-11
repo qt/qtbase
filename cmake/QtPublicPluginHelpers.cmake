@@ -150,8 +150,30 @@ endfunction()
 
 # Generates C++ import macro source code for given plugin
 function(__qt_internal_get_plugin_import_macro plugin_target out_var)
-    set(plugin_target_versioned "${QT_CMAKE_EXPORT_NAMESPACE}::${plugin_target}")
-    get_target_property(class_name "${plugin_target_versioned}" QT_PLUGIN_CLASS_NAME)
+    set(plugin_target_prefixed "${QT_CMAKE_EXPORT_NAMESPACE}::${plugin_target}")
+
+    # Query the class name of plugin targets prefixed with a Qt namespace and without, this is
+    # needed to support plugin object initializers created by user projects.
+    set(class_name"")
+    set(class_name_prefixed "")
+
+    if(TARGET ${plugin_target})
+        get_target_property(class_name "${plugin_target}" QT_PLUGIN_CLASS_NAME)
+    endif()
+
+    if(TARGET ${plugin_target_prefixed})
+        get_target_property(class_name_prefixed "${plugin_target_prefixed}" QT_PLUGIN_CLASS_NAME)
+    endif()
+
+    if(NOT class_name AND NOT class_name_prefixed)
+        message(FATAL_ERROR "No QT_PLUGIN_CLASS_NAME value on target: '${plugin_target}'")
+    endif()
+
+    # Qt prefixed target takes priority.
+    if(class_name_prefixed)
+        set(class_name "${class_name_prefixed}")
+    endif()
+
     set(${out_var} "Q_IMPORT_PLUGIN(${class_name})" PARENT_SCOPE)
 endfunction()
 
