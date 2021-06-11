@@ -1161,9 +1161,12 @@
     \value WA_TranslucentBackground Indicates that the widget should have a
     translucent background, i.e., any non-opaque regions of the widgets will be
     translucent because the widget will have an alpha channel. Setting this
-    flag causes WA_NoSystemBackground to be set. On Windows the
-    widget also needs the Qt::FramelessWindowHint window flag to be set.
-    This flag is set or cleared by the widget's author.
+    flag causes WA_NoSystemBackground to be set. On Windows the widget also
+    needs the Qt::FramelessWindowHint window flag to be set. This flag is set
+    or cleared by the widget's author. As of Qt 5.0, toggling this attribute
+    after the widget has been shown is not uniformly supported across
+    platforms. When translucent background is desired, set the attribute early
+    when creating the widget, and avoid altering it afterwards.
 
     \value WA_UnderMouse Indicates that the widget is under the mouse cursor.
     The value is not updated correctly during drag and drop operations. There
