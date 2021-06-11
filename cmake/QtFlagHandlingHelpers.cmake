@@ -425,7 +425,7 @@ function(qt_internal_remove_flags_impl flag_var_name flag_values IN_CACHE)
     # cache variable with FORCE will overwrite the non-cache variable in this
     # function scope, but we need to use the original value before that change.
     foreach(flag_value IN LISTS flag_values)
-        string(${replace_type} "${flag_value}" "" ${flag_var_name} "${${flag_var_name}}")
+        string(${replace_type} "${flag_value}" " " ${flag_var_name} "${${flag_var_name}}")
     endforeach()
     string(STRIP "${${flag_var_name}}" ${flag_var_name})
     set(${flag_var_name} "${${flag_var_name}}" PARENT_SCOPE)
@@ -437,7 +437,7 @@ function(qt_internal_remove_flags_impl flag_var_name flag_values IN_CACHE)
         # Work exclusively on cache variable value only.
         set(mod_flags $CACHE{${flag_var_name}})
         foreach(flag_value IN LISTS flag_values)
-            string(${replace_type} "${flag_value}" "" mod_flags "${mod_flags}")
+            string(${replace_type} "${flag_value}" " " mod_flags "${mod_flags}")
         endforeach()
         string(STRIP "${mod_flags}" mod_flags)
         get_property(help_text CACHE ${flag_var_name} PROPERTY HELPSTRING)
