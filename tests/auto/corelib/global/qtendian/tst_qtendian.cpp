@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -156,6 +156,9 @@ void tst_QtEndian::fromLittleEndian()
 
 #undef ENDIAN_TEST
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_GCC("-Wmemset-elt-size")
+
 template <typename T>
 void transformRegion_template(T (*transformOne)(T), void (*transformRegion)(const void *, qsizetype, void *))
 {
@@ -225,6 +228,7 @@ void transformRegion_template(T (*transformOne)(T), void (*transformRegion)(cons
     for (int i = 0; i < 64; ++i)
         QCOMPARE(dest[i], expected);
 }
+QT_WARNING_POP
 
 void tst_QtEndian::fromBigEndianRegion_data()
 {
