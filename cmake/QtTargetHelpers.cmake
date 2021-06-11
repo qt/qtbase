@@ -281,8 +281,8 @@ endmacro()
 #
 # The file also makes the targets global if the QT_PROMOTE_TO_GLOBAL_TARGETS property is set in the
 # consuming project.
-# Only the specified TARGETS are made global. Transitive 3rd party targets are not made global, due
-# to limitations in CMake. See https://gitlab.kitware.com/cmake/cmake/-/issues/22291
+# When using a CMake version lower than 3.21, only the specified TARGETS are made global.
+# E.g. transitive non-Qt 3rd party targets of the specified targets are not made global.
 #
 # EXPORT_NAME_PREFIX:
 #    The portion of the file name before AdditionalTargetInfo.cmake

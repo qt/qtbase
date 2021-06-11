@@ -105,3 +105,5 @@ if (_Qt_NOTFOUND_MESSAGE)
     set(@INSTALL_CMAKE_NAMESPACE@_NOT_FOUND_MESSAGE "${_Qt_NOTFOUND_MESSAGE}")
     set(@INSTALL_CMAKE_NAMESPACE@_FOUND False)
 endif()
+
+__qt_internal_defer_promote_targets_in_dir_scope_to_global()
