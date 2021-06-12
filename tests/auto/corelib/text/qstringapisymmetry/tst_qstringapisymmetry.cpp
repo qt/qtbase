@@ -121,10 +121,54 @@ static QByteArray rowName(const QByteArray &data)
     return result;
 }
 
+#ifdef __cpp_char8_t
+#  define IF_CHAR8T(x) do { x; } while (false)
+#else
+#  define IF_CHAR8T(x) QSKIP("This test requires C++20 char8_t support enabled in the compiler.")
+#endif
+
 class tst_QStringApiSymmetry : public QObject
 {
     Q_OBJECT
 
+    //
+    // Overload set checks
+    //
+
+private:
+    template <typename T>
+    void overload();
+
+private Q_SLOTS:
+    void overload_char() { overload<char>(); }
+    void overload_QChar() { overload<QChar>(); }
+    void overload_char16_t() { overload<char16_t>(); }
+    void overload_QString() { overload<QString>(); }
+    void overload_QStringView() { overload<QStringView>(); }
+    void overload_QUtf8StringView() { overload<QUtf8StringView>(); }
+    void overload_QAnyStringView() { overload<QAnyStringView>(); }
+    void overload_QLatin1String() { overload<QLatin1String>(); }
+    void overload_QByteArray() { overload<QByteArray>(); }
+    void overload_const_char_star() { overload<const char*>(); }
+    void overload_const_char8_t_star() { IF_CHAR8T(overload<const char8_t*>()); }
+    void overload_const_char16_t_star() { overload<const char16_t*>(); }
+    void overload_char_array() { overload<char[10]>(); }
+    void overload_char8_t_array() { IF_CHAR8T(overload<char8_t[10]>()); }
+    void overload_char16_t_array() { overload<char16_t[10]>(); }
+    void overload_QChar_array() { overload<QChar[10]>(); }
+    void overload_std_string() { overload<std::string>(); }
+    void overload_std_u8string() { IF_CHAR8T(overload<std::u8string>()); }
+    void overload_std_u16string() { overload<std::u16string>(); }
+    void overload_QVarLengthArray_char() { overload<QVarLengthArray<char, 123>>(); }
+    void overload_QVarLengthArray_char8_t() { IF_CHAR8T((overload<QVarLengthArray<char, 321>>())); }
+    void overload_QVarLengthArray_char16_t() { overload<QVarLengthArray<char, 456>>(); }
+    void overload_QVarLengthArray_QChar() { overload<QVarLengthArray<QChar, 1023>>(); }
+    void overload_vector_char() { overload<std::vector<char>>(); }
+    void overload_vector_char8_t() { IF_CHAR8T(overload<std::vector<char8_t>>()); }
+    void overload_vector_char16_t() { overload<std::vector<char16_t>>(); }
+    void overload_vector_QChar() { overload<std::vector<QChar>>(); }
+
+private:
     //
     // Mixed UTF-16, UTF-8, Latin-1 checks:
     //
@@ -855,6 +899,68 @@ private Q_SLOTS:
     void indexOf_regexp_QStringView_data() { indexOf_contains_lastIndexOf_count_regexp_data(); }
     void indexOf_regexp_QStringView() { indexOf_contains_lastIndexOf_count_regexp_impl<QStringView>(); }
 };
+
+namespace {
+
+void overload_s_a(const QString &) {}
+Q_WEAK_OVERLOAD
+void overload_s_a(QAnyStringView) {}
+
+void overload_sr_a(QString &&) {}
+Q_WEAK_OVERLOAD
+void overload_sr_a(QAnyStringView) {}
+
+void overload_s_v(const QString &) {}
+void overload_s_v(QStringView) {}
+
+void overload_sr_v(QString &&) {}
+void overload_sr_v(QStringView) {}
+
+} // unnamed namespace
+
+template<typename T>
+void tst_QStringApiSymmetry::overload()
+{
+    // compile-only test:
+    //
+    // check the common overload sets defined above to be free of ambiguities
+    // for arguments of type T
+
+    using CT = const T;
+
+    T t = {};
+    CT ct = {};
+
+    overload_s_a(t);
+    overload_s_a(ct);
+    if constexpr (!std::is_array_v<T>) {
+        overload_s_a(T());
+        overload_s_a(CT());
+    }
+
+    overload_sr_a(t);
+    overload_sr_a(ct);
+    if constexpr (!std::is_array_v<T>) {
+        overload_sr_a(T());
+        overload_sr_a(CT());
+    }
+
+    if constexpr (std::is_convertible_v<T, QStringView> || std::is_convertible_v<T, QString>) {
+        overload_s_v(t);
+        overload_s_v(ct);
+        if constexpr (!std::is_array_v<T>) {
+            overload_s_v(T());
+            overload_s_v(CT());
+        }
+
+        overload_sr_v(t);
+        overload_sr_v(ct);
+        if constexpr (!std::is_array_v<T>) {
+            overload_sr_v(T());
+            overload_sr_v(CT());
+        }
+    }
+}
 
 void tst_QStringApiSymmetry::compare_data(bool hasConceptOfNullAndEmpty)
 {
