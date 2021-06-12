@@ -231,7 +231,7 @@ QSettingsPrivate::~QSettingsPrivate()
 
 QString QSettingsPrivate::actualKey(const QString &key) const
 {
-    QString n = normalizedKey(key);
+    auto n = normalizedKey(key);
     Q_ASSERT_X(!n.isEmpty(), "QSettings", "empty key");
     return groupPrefix + n;
 }
@@ -3148,8 +3148,7 @@ void QSettings::setValue(const QString &key, const QVariant &value)
         qWarning("QSettings::setValue: Empty key passed");
         return;
     }
-    QString k = d->actualKey(key);
-    d->set(k, value);
+    d->set(d->actualKey(key), value);
     d->requestUpdate();
 }
 
@@ -3214,8 +3213,7 @@ void QSettings::remove(const QString &key)
 bool QSettings::contains(const QString &key) const
 {
     Q_D(const QSettings);
-    QString k = d->actualKey(key);
-    return d->get(k, nullptr);
+    return d->get(d->actualKey(key), nullptr);
 }
 
 /*!
@@ -3285,8 +3283,7 @@ QVariant QSettings::value(const QString &key, const QVariant &defaultValue) cons
         return QVariant();
     }
     QVariant result = defaultValue;
-    QString k = d->actualKey(key);
-    d->get(k, &result);
+    d->get(d->actualKey(key), &result);
     return result;
 }
 
