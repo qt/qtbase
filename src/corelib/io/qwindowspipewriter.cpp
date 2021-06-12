@@ -145,37 +145,19 @@ inline bool QWindowsPipeWriter::writeImpl(Args... args)
         return false;
 
     writeBuffer.append(args...);
-    return writeImplTail(&locker);
-}
 
-bool QWindowsPipeWriter::writeImplTail(QMutexLocker<QMutex> *locker)
-{
     if (writeSequenceStarted)
         return true;
 
     stopped = false;
-    startAsyncWriteLocked();
-
-    // Do not post the event, if the write operation will be completed asynchronously.
-    if (!bytesWrittenPending)
-        return true;
-
-    if (!winEventActPosted) {
-        winEventActPosted = true;
-        locker->unlock();
-        QCoreApplication::postEvent(this, new QEvent(QEvent::WinEventAct));
-    } else {
-        locker->unlock();
-    }
-
-    SetEvent(syncHandle);
+    startAsyncWriteLocked(&locker);
     return true;
 }
 
 /*!
-    Starts a new write sequence. Thread-safety should be ensured by the caller.
+    Starts a new write sequence.
  */
-void QWindowsPipeWriter::startAsyncWriteLocked()
+void QWindowsPipeWriter::startAsyncWriteLocked(QMutexLocker<QMutex> *locker)
 {
     while (!writeBuffer.isEmpty()) {
         // WriteFile() returns true, if the write operation completes synchronously.
@@ -190,13 +172,29 @@ void QWindowsPipeWriter::startAsyncWriteLocked()
                 // Operation has been queued and will complete in the future.
                 writeSequenceStarted = true;
                 SetThreadpoolWait(waitObject, eventHandle, NULL);
-                return;
+                break;
             }
         }
 
         if (!writeCompleted(errorCode, numberOfBytesWritten))
-            return;
+            break;
     }
+
+    // Do not post the event, if the write operation will be completed asynchronously.
+    if (!bytesWrittenPending)
+        return;
+
+    if (!winEventActPosted) {
+        winEventActPosted = true;
+        locker->unlock();
+        QCoreApplication::postEvent(this, new QEvent(QEvent::WinEventAct));
+    } else {
+        locker->unlock();
+    }
+
+    // We set the event only after unlocking to avoid additional context
+    // switches due to the released thread immediately running into the lock.
+    SetEvent(syncHandle);
 }
 
 /*!
@@ -228,20 +226,16 @@ void QWindowsPipeWriter::waitCallback(PTP_CALLBACK_INSTANCE instance, PVOID cont
 
     pipeWriter->writeSequenceStarted = false;
 
-    if (pipeWriter->writeCompleted(errorCode, numberOfBytesTransfered))
-        pipeWriter->startAsyncWriteLocked();
-
-    if (pipeWriter->lastError == ERROR_SUCCESS && !pipeWriter->winEventActPosted) {
-        pipeWriter->winEventActPosted = true;
-        locker.unlock();
-        QCoreApplication::postEvent(pipeWriter, new QEvent(QEvent::WinEventAct));
+    if (pipeWriter->writeCompleted(errorCode, numberOfBytesTransfered)) {
+        pipeWriter->startAsyncWriteLocked(&locker);
     } else {
+        // The write operation failed, so we must unblock the main thread,
+        // which can wait for the event. We set the event only after unlocking
+        // to avoid additional context switches due to the released thread
+        // immediately running into the lock.
         locker.unlock();
+        SetEvent(pipeWriter->syncHandle);
     }
-
-    // We set the event only after unlocking to avoid additional context
-    // switches due to the released thread immediately running into the lock.
-    SetEvent(pipeWriter->syncHandle);
 }
 
 /*!

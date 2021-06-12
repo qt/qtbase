@@ -86,9 +86,8 @@ protected:
 private:
     template <typename... Args>
     inline bool writeImpl(Args... args);
-    bool writeImplTail(QMutexLocker<QMutex> *locker);
 
-    void startAsyncWriteLocked();
+    void startAsyncWriteLocked(QMutexLocker<QMutex> *locker);
     static void CALLBACK waitCallback(PTP_CALLBACK_INSTANCE instance, PVOID context,
                                       PTP_WAIT wait, TP_WAIT_RESULT waitResult);
     bool writeCompleted(DWORD errorCode, DWORD numberOfBytesWritten);
