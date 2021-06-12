@@ -74,6 +74,18 @@ void tst_QWidgetAction::cleanup()
 
 void tst_QWidgetAction::defaultWidget()
 {
+    // check that QWidgetAction deals with the widget being deleted before itself:
+    {
+        QToolBar tb1;
+
+        QComboBox combo(&tb1);
+
+        auto action = new QWidgetAction(&tb1);
+        action->setDefaultWidget(&combo);
+
+        tb1.addAction(action);
+    }
+    // check that QWidgetAction takes ownership of the widget:
     {
         QToolBar tb1;
 
