@@ -173,12 +173,14 @@ public:
         QtPrivate::ResultStoreBase m_results;
         QtPrivate::ExceptionStore m_exceptionStore;
 
+#ifndef QT_NO_EXCEPTIONS
         void setException(const std::exception_ptr &e)
         {
             m_results.~ResultStoreBase();
             new (&m_exceptionStore) QtPrivate::ExceptionStore();
             m_exceptionStore.setException(e);
         }
+#endif
 
         ~Data() { }
     };
