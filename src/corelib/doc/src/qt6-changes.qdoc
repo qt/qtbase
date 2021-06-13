@@ -859,4 +859,6 @@
 
     Call QCoreApplication::exit() to keep the non-conditional behavior.
 
+    QLibraryInfo::location() and QLibraryInfo::Location were deprecated due to inconsistent
+    naming. Use the new API QLibraryInfo::path() and QLibraryInfo::LibraryPath instead.
 */
