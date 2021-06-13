@@ -353,6 +353,9 @@ void tst_QColorSpace::imageConversion64()
         lastGreen = qGreen(p);
         lastBlue = qBlue(p);
     }
+    QCOMPARE(lastRed, 255);
+    QCOMPARE(lastGreen, 255);
+    QCOMPARE(lastBlue, 255);
 }
 
 void tst_QColorSpace::imageConversion64PM_data()
@@ -383,19 +386,20 @@ void tst_QColorSpace::imageConversion64PM()
     int lastGreen = 0;
     int lastBlue = 0;
     for (int j = 0; j < 16; ++j) {
+        const int expectedAlpha = j * 15;
         for (int i = 0; i < 256; ++i) {
             QRgb p = testImage.pixel(i, j);
             QVERIFY(qRed(p) >= lastRed);
             QVERIFY(qGreen(p) >= lastGreen);
             QVERIFY(qBlue(p) >= lastBlue);
-            QCOMPARE(qAlpha(p), j * 15);
+            QCOMPARE(qAlpha(p), expectedAlpha);
             lastRed = qRed(p);
             lastGreen = qGreen(p);
             lastBlue = qBlue(p);
         }
-        QVERIFY(lastRed <= j * 15);
-        QVERIFY(lastGreen <= j * 15);
-        QVERIFY(lastBlue <= j * 15);
+        QVERIFY(lastRed <= expectedAlpha);
+        QVERIFY(lastGreen <= expectedAlpha);
+        QVERIFY(lastBlue <= expectedAlpha);
         lastRed = 0;
         lastGreen = 0;
         lastBlue = 0;
@@ -404,21 +408,26 @@ void tst_QColorSpace::imageConversion64PM()
     testImage.convertToColorSpace(fromColorSpace);
     QCOMPARE(testImage.colorSpace(), QColorSpace(fromColorSpace));
     for (int j = 0; j < 16; ++j) {
+        const int expectedAlpha = j * 15;
         for (int i = 0; i < 256; ++i) {
+            QRgb expected = qPremultiply(qRgba(i, i, i, expectedAlpha));
             QRgb p = testImage.pixel(i, j);
             QCOMPARE(qRed(p),  qGreen(p));
             QCOMPARE(qRed(p),  qBlue(p));
-            QCOMPARE(qAlpha(p), j * 15);
+            QCOMPARE(qAlpha(p), expectedAlpha);
             QVERIFY((lastRed   - qRed(p))   <= 0);
             QVERIFY((lastGreen - qGreen(p)) <= 0);
             QVERIFY((lastBlue  - qBlue(p))  <= 0);
+            QVERIFY(qAbs(qRed(p) - qRed(expected)) <= 1);
+            QVERIFY(qAbs(qGreen(p) - qGreen(expected)) <= 1);
+            QVERIFY(qAbs(qBlue(p) - qBlue(expected)) <= 1);
             lastRed = qRed(p);
             lastGreen = qGreen(p);
             lastBlue = qBlue(p);
         }
-        QVERIFY(lastRed <= j * 15);
-        QVERIFY(lastGreen <= j * 15);
-        QVERIFY(lastBlue <= j * 15);
+        QCOMPARE(lastRed, expectedAlpha);
+        QCOMPARE(lastGreen, expectedAlpha);
+        QCOMPARE(lastBlue, expectedAlpha);
         lastRed = 0;
         lastGreen = 0;
         lastBlue = 0;
