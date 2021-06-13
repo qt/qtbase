@@ -813,6 +813,15 @@ QDebug &QDebug::resetFormat()
 */
 
 /*!
+    \fn template <class T, qsizetype P> QDebug operator<<(QDebug debug, const QVarLengthArray<T,P> &array)
+    \relates QDebug
+    \since 6.3
+
+    Writes the contents of \a array to \a debug. \c T needs to
+    support streaming into QDebug.
+*/
+
+/*!
     \fn template <typename T, typename Alloc> QDebug operator<<(QDebug debug, const std::list<T, Alloc> &vec)
     \relates QDebug
     \since 5.7
