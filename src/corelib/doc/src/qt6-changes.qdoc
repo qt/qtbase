@@ -847,4 +847,16 @@
     Note that if your MyEvent class allocates memory (e.g. through a
     pointer-to-implementation pattern), then you will have to implement
     custom copy semantics.
+
+    \section1 Other classes
+
+    In Qt 5, QCoreApplication::quit() was equivalent to calling
+    \l{QCoreApplication::exit()}. This just exited the main event loop.
+
+    In Qt 6, the method will instead try to close all top-level windows by posting
+    a close event. The windows are free to cancel the shutdown process by
+    ignoring the event.
+
+    Call QCoreApplication::exit() to keep the non-conditional behavior.
+
 */
