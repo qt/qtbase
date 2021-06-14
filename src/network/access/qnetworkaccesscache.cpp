@@ -148,18 +148,46 @@ void QNetworkAccessCache::linkEntry(const QByteArray &key)
     Q_ASSERT(node->older == nullptr && node->newer == nullptr);
     Q_ASSERT(node->useCount == 0);
 
+
+    node->timestamp = QDateTime::currentDateTimeUtc().addSecs(node->object->expiryTimeoutSeconds);
+#ifdef QT_DEBUG
+    qDebug() << "QNetworkAccessCache case trying to insert=" <<QString::fromUtf8(key) << node->timestamp;
+    Node *current = newest;
+    while (current) {
+        qDebug() << "QNetworkAccessCache item=" << QString::fromUtf8(current->key) << current->timestamp << (current==newest? "newest":"") <<  (current==oldest? "oldest":"");
+        current = current->older;
+    }
+#endif
+
     if (newest) {
         Q_ASSERT(newest->newer == nullptr);
-        newest->newer = node;
-        node->older = newest;
+        if (newest->timestamp < node->timestamp) {
+            // Insert as new newest.
+            node->older = newest;
+            newest->newer = node;
+            newest = node;
+            Q_ASSERT(newest->newer == nullptr);
+        } else {
+            // Insert in a sorted way, as different nodes might have had different expiryTimeoutSeconds set.
+            Node *current = newest;
+            while (current->older != nullptr && current->older->timestamp >= node->timestamp) {
+                current = current->older;
+            }
+            node->older = current->older;
+            current->older = node;
+            if (node->older == nullptr) {
+                oldest = node;
+                Q_ASSERT(oldest->older == nullptr);
+            }
+        }
+    } else {
+        // no newest yet
+        newest = node;
     }
     if (!oldest) {
         // there are no entries, so this is the oldest one too
         oldest = node;
     }
-
-    node->timestamp = QDateTime::currentDateTimeUtc().addSecs(ExpiryTime);
-    newest = node;
 }
 
 /*!
@@ -195,15 +223,16 @@ void QNetworkAccessCache::updateTimer()
     if (!oldest)
         return;
 
-    int interval = QDateTime::currentDateTimeUtc().secsTo(oldest->timestamp);
+    qint64 interval = QDateTime::currentDateTimeUtc().msecsTo(oldest->timestamp);
     if (interval <= 0) {
         interval = 0;
-    } else {
-        // round up the interval
-        interval = (interval + 15) & ~16;
     }
 
-    timer.start(interval * 1000, this);
+    // Plus 10 msec so we don't spam timer events if date comparisons are too fuzzy.
+    // This code used to do (broken) rounding, but for ConnectionCacheExpiryTimeoutSecondsAttribute
+    // to work we cannot do this.
+    // See discussion in https://codereview.qt-project.org/c/qt/qtbase/+/337464
+    timer.start(interval + 10, this);
 }
 
 bool QNetworkAccessCache::emitEntryReady(Node *node, QObject *target, const char *member)
@@ -226,7 +255,6 @@ void QNetworkAccessCache::timerEvent(QTimerEvent *)
     while (oldest && oldest->timestamp < now) {
         Node *next = oldest->newer;
         oldest->object->dispose();
-
         hash.remove(oldest->key); // oldest gets deleted
         delete oldest;
         oldest = next;
@@ -241,7 +269,7 @@ void QNetworkAccessCache::timerEvent(QTimerEvent *)
     updateTimer();
 }
 
-void QNetworkAccessCache::addEntry(const QByteArray &key, CacheableObject *entry)
+void QNetworkAccessCache::addEntry(const QByteArray &key, CacheableObject *entry, qint64 connectionCacheExpiryTimeoutSeconds)
 {
     Q_ASSERT(!key.isEmpty());
 
@@ -260,8 +288,15 @@ void QNetworkAccessCache::addEntry(const QByteArray &key, CacheableObject *entry
         node->object->dispose();
     node->object = entry;
     node->object->key = key;
+    if (connectionCacheExpiryTimeoutSeconds > -1) {
+        node->object->expiryTimeoutSeconds = connectionCacheExpiryTimeoutSeconds; // via ConnectionCacheExpiryTimeoutSecondsAttribute
+    } else {
+        node->object->expiryTimeoutSeconds = ExpiryTime;
+    }
     node->key = key;
     node->useCount = 1;
+
+    // It gets only put into the expiry list in linkEntry (from releaseEntry), when it is not used anymore.
 }
 
 bool QNetworkAccessCache::hasEntry(const QByteArray &key) const

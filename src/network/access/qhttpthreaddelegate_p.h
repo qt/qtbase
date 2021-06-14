@@ -105,6 +105,7 @@ public:
 #endif
     QSharedPointer<QNetworkAccessAuthenticationManager> authenticationManager;
     bool synchronous;
+    qint64 connectionCacheExpiryTimeoutSeconds;
 
     // outgoing, Retrieved in the synchronous HTTP case
     QByteArray synchronousDownloadData;

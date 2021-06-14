@@ -319,6 +319,12 @@ QT_BEGIN_NAMESPACE
         the QNetworkReply after having emitted "finished".
         (This value was introduced in 5.14.)
 
+    \value ConnectionCacheExpiryTimeoutSecondsAttribute
+        Requests only, type: QMetaType::Int
+        To set when the TCP connections to a server (HTTP1 and HTTP2) should
+        be closed after the last pending request had been processed.
+        (This value was introduced in 6.3.)
+
     \value User
         Special type. Additional information can be passed in
         QVariants with types ranging from User to UserMax. The default

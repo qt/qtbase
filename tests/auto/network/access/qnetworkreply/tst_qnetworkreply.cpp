@@ -452,6 +452,8 @@ private Q_SLOTS:
 
     void httpAbort();
 
+    void closeClientSideConnectionEagerlyQtbug20726();
+
     void dontInsertPartialContentIntoTheCache();
 
     void httpUserAgent();
@@ -7934,6 +7936,56 @@ void tst_QNetworkReply::httpAbort()
     QVERIFY(reply3->isFinished());
     reply3->abort();
     QCOMPARE(reply3->error(), QNetworkReply::NoError);
+}
+
+void tst_QNetworkReply::closeClientSideConnectionEagerlyQtbug20726()
+{
+    QNetworkAccessManager manager; // function local instance
+    // Setup HTTP servers
+    MiniHttpServer server("HTTP/1.1 200 OK\r\nContent-Length: 0\r\nConnection: Keep-Alive\r\n\r\n", false);
+    server.doClose = false; // server should not disconnect.
+
+    MiniHttpServer serverNotEagerClientClose("HTTP/1.1 200 OK\r\nContent-Length: 0\r\nConnection: Keep-Alive\r\n\r\n", false);
+    serverNotEagerClientClose.doClose = false; // server should not disconnect.
+    QUrl urlNotEager(QLatin1String("http://localhost"));
+    urlNotEager.setPort(serverNotEagerClientClose.serverPort());
+    QNetworkRequest requestNotEager(urlNotEager);
+    QNetworkReplyPtr replyNotEager(manager.get(requestNotEager));
+    QCOMPARE(waitForFinish(replyNotEager), Success);
+    // The reply was finished, the connection should be hanging and waiting to be expired
+
+    // Another server not eager to close, the connection should be hanging and waiting to be expired
+    MiniHttpServer serverNotEagerClientClose2("HTTP/1.1 200 OK\r\nContent-Length: 0\r\nConnection: Keep-Alive\r\n\r\n", false);
+    serverNotEagerClientClose2.doClose = false; // server should not disconnect.
+    QUrl urlNotEager2(QLatin1String("http://localhost"));
+    urlNotEager2.setPort(serverNotEagerClientClose2.serverPort());
+    QNetworkRequest requestNotEager2(urlNotEager2);
+    QNetworkReplyPtr replyNotEager2(manager.get(requestNotEager2));
+    QCOMPARE(waitForFinish(replyNotEager2), Success);
+
+    // However for this one we want to eagerly close.
+    QUrl url(QLatin1String("http://localhost"));
+    url.setPort(server.serverPort());
+    QNetworkRequest request(url);
+    request.setAttribute(QNetworkRequest::ConnectionCacheExpiryTimeoutSecondsAttribute, 0);
+    QNetworkReplyPtr reply(manager.get(request));
+    qDebug() << reply->request().url() << replyNotEager->request().url();
+    QCOMPARE(waitForFinish(reply), Success);
+    QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 200);
+    // Socket from server to QNAM still connected?
+    QVERIFY (!server.client.isNull());
+    QVERIFY (server.client->state() == QTcpSocket::ConnectedState);
+    // Wait a bit
+    QTest::qWait(1*1000);
+    // The QNAM should have disconnected the socket, so on our server it's disconnected now.
+    QVERIFY (!server.client.isNull());
+    QVERIFY (server.client->state() != QTcpSocket::ConnectedState);
+
+    // Now we check the not eager reply, it should still be connected.
+    QCOMPARE(replyNotEager->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 200);
+    QCOMPARE(serverNotEagerClientClose.client->state(), QTcpSocket::ConnectedState);
+    QCOMPARE(replyNotEager2->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 200);
+    QCOMPARE(serverNotEagerClientClose2.client->state(), QTcpSocket::ConnectedState);
 }
 
 void tst_QNetworkReply::dontInsertPartialContentIntoTheCache()

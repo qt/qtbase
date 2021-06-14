@@ -226,6 +226,7 @@ QHttpThreadDelegate::QHttpThreadDelegate(QObject *parent) :
     , pendingDownloadData()
     , pendingDownloadProgress()
     , synchronous(false)
+    , connectionCacheExpiryTimeoutSeconds(-1)
     , incomingStatusCode(0)
     , isPipeliningUsed(false)
     , isHttp2Used(false)
@@ -344,7 +345,7 @@ void QHttpThreadDelegate::startRequest()
 #endif
         httpConnection->setPeerVerifyName(httpRequest.peerVerifyName());
         // cache the QHttpNetworkConnection corresponding to this cache key
-        connections.localData()->addEntry(cacheKey, httpConnection);
+        connections.localData()->addEntry(cacheKey, httpConnection, connectionCacheExpiryTimeoutSeconds);
     } else {
         if (httpRequest.withCredentials()) {
             QNetworkAuthenticationCredential credential = authenticationManager->fetchCachedCredentials(httpRequest.url(), nullptr);

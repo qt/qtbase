@@ -812,6 +812,9 @@ void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpReq
     // Propagate Http/2 settings:
     delegate->http2Parameters = request.http2Configuration();
 
+    if (request.attribute(QNetworkRequest::ConnectionCacheExpiryTimeoutSecondsAttribute).isValid())
+        delegate->connectionCacheExpiryTimeoutSeconds = request.attribute(QNetworkRequest::ConnectionCacheExpiryTimeoutSecondsAttribute).toInt();
+
     // For the synchronous HTTP, this is the normal way the delegate gets deleted
     // For the asynchronous HTTP this is a safety measure, the delegate deletes itself when HTTP is finished
     QMetaObject::Connection threadFinishedConnection =
