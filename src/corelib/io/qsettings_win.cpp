@@ -43,6 +43,7 @@
 #include "qlist.h"
 #include "qmap.h"
 #include "qdebug.h"
+#include "qscopeguard.h"
 #include <qt_windows.h>
 
 // See "Accessing an Alternate Registry View" at:
@@ -487,14 +488,14 @@ bool QWinSettingsPrivate::readKey(HKEY parentHandle, const QString &rSubKey, QVa
     if (handle == 0)
         return false;
 
+    const auto closeKey = qScopeGuard([handle] { RegCloseKey(handle); });
+
     // get the size and type of the value
     DWORD dataType;
     DWORD dataSize;
     LONG res = RegQueryValueEx(handle, reinterpret_cast<const wchar_t *>(rSubkeyName.utf16()), 0, &dataType, 0, &dataSize);
-    if (res != ERROR_SUCCESS) {
-        RegCloseKey(handle);
+    if (res != ERROR_SUCCESS)
         return false;
-    }
 
     // workaround for rare cases where trailing '\0' are missing in registry
     if (dataType == REG_SZ || dataType == REG_EXPAND_SZ)
@@ -506,10 +507,8 @@ bool QWinSettingsPrivate::readKey(HKEY parentHandle, const QString &rSubKey, QVa
     QByteArray data(dataSize, 0);
     res = RegQueryValueEx(handle, reinterpret_cast<const wchar_t *>(rSubkeyName.utf16()), 0, 0,
                            reinterpret_cast<unsigned char*>(data.data()), &dataSize);
-    if (res != ERROR_SUCCESS) {
-        RegCloseKey(handle);
+    if (res != ERROR_SUCCESS)
         return false;
-    }
 
     switch (dataType) {
         case REG_EXPAND_SZ:
@@ -578,7 +577,6 @@ bool QWinSettingsPrivate::readKey(HKEY parentHandle, const QString &rSubKey, QVa
             break;
     }
 
-    RegCloseKey(handle);
     return true;
 }
 
