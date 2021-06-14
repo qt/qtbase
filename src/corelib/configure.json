@@ -623,8 +623,8 @@
         },
         "ipc_posix": {
             "label": "Using POSIX IPC",
-            "autoDetect": "!config.win32",
-            "condition": "!tests.ipc_sysv && tests.ipc_posix",
+            "autoDetect": "!config.win32 && ((config.darwin && features.appstore-compliant) || !tests.ipc_sysv)",
+            "condition": "tests.ipc_posix",
             "output": [ { "type": "define", "name": "QT_POSIX_IPC" } ]
         },
         "journald": {

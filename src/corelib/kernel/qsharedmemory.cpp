@@ -47,6 +47,17 @@
 #  include <qt_windows.h>
 #endif
 
+#if defined(Q_OS_DARWIN)
+#  include "qcore_mac_p.h"
+#  if !defined(SHM_NAME_MAX)
+     // Based on PSEMNAMLEN in XNU's posix_sem.c, which would
+     // indicate the max length is 31, _excluding_ the zero
+     // terminator. But in practice (possibly due to an off-
+     // by-one bug in the kernel) the usable bytes are only 30.
+#    define SHM_NAME_MAX 30
+#  endif
+#endif
+
 QT_BEGIN_NAMESPACE
 
 #if !(defined(QT_NO_SHAREDMEMORY) && defined(QT_NO_SYSTEMSEMAPHORE))
@@ -65,16 +76,32 @@ QSharedMemoryPrivate::makePlatformSafeKey(const QString &key,
     if (key.isEmpty())
         return QString();
 
-    QString result = prefix;
+    QByteArray hex = QCryptographicHash::hash(key.toUtf8(), QCryptographicHash::Sha1).toHex();
 
+#if defined(Q_OS_DARWIN) && defined(QT_POSIX_IPC)
+    if (qt_apple_isSandboxed()) {
+        // Sandboxed applications on Apple platforms require the shared memory name
+        // to be in the form <application group identifier>/<custom identifier>.
+        // Since we don't know which application group identifier the user wants
+        // to apply, we instead document that requirement, and use the key directly.
+        return key;
+    } else {
+        // The shared memory name limit on Apple platforms is very low (30 characters),
+        // so we can't use the logic below of combining the prefix, key, and a hash,
+        // to ensure a unique and valid name. Instead we use the first part of the
+        // hash, which should still long enough to avoid collisions in practice.
+        return QLatin1Char('/') + hex.left(SHM_NAME_MAX - 1);
+    }
+#endif
+
+    QString result = prefix;
     for (QChar ch : key) {
         if ((ch >= QLatin1Char('a') && ch <= QLatin1Char('z')) ||
            (ch >= QLatin1Char('A') && ch <= QLatin1Char('Z')))
            result += ch;
     }
-
-    QByteArray hex = QCryptographicHash::hash(key.toUtf8(), QCryptographicHash::Sha1).toHex();
     result.append(QLatin1String(hex));
+
 #ifdef Q_OS_WIN
     return result;
 #elif defined(QT_POSIX_IPC)
@@ -120,6 +147,36 @@ QSharedMemoryPrivate::makePlatformSafeKey(const QString &key,
   \li HP-UX: Only one attach to a shared memory segment is allowed per
   process. This means that QSharedMemory should not be used across
   multiple threads in the same process in HP-UX.
+
+  \li Apple platforms: Sandboxed applications (including apps
+  shipped through the Apple App Store) require the use of POSIX
+  shared memory (instead of System V shared memory), which adds
+  a number of limitations, including:
+
+    \list
+
+    \li The key must be in the form \c {<application group identifier>/<custom identifier>},
+    as documented \l {https://developer.apple.com/library/archive/documentation/Security/Conceptual/AppSandboxDesignGuide/AppSandboxInDepth/AppSandboxInDepth.html#//apple_ref/doc/uid/TP40011183-CH3-SW24}
+    {here} and \l {https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_application-groups}
+    {here}.
+
+    \li The key length is limited to 30 characters.
+
+    \li On process exit, the named shared memory entries are not
+    cleaned up, so restarting the application and re-creating the
+    shared memory under the same name will fail. To work around this,
+    fall back to attaching to the existing shared memory entry:
+
+    \code
+
+        QSharedMemory shm("DEVTEAMID.app-group/shared");
+        if (!shm.create(42) && shm.error() == QSharedMemory::AlreadyExists)
+            shm.attach();
+
+    \endcode
+
+
+    \endlist
 
   \endlist
 

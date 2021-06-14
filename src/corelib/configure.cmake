@@ -593,8 +593,8 @@ qt_feature("inotify" PUBLIC PRIVATE
 qt_feature_definition("inotify" "QT_NO_INOTIFY" NEGATE VALUE "1")
 qt_feature("ipc_posix"
     LABEL "Using POSIX IPC"
-    AUTODETECT NOT WIN32
-    CONDITION NOT TEST_ipc_sysv AND TEST_ipc_posix
+    AUTODETECT NOT WIN32 AND ( ( APPLE AND QT_FEATURE_appstore_compliant ) OR NOT TEST_ipc_sysv )
+    CONDITION TEST_ipc_posix
 )
 qt_feature_definition("ipc_posix" "QT_POSIX_IPC")
 qt_feature("journald" PRIVATE

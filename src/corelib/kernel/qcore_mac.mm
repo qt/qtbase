@@ -396,9 +396,9 @@ AppleApplication *qt_apple_sharedApplication()
 }
 #endif
 
-#if defined(Q_OS_MACOS) && !defined(QT_BOOTSTRAPPED)
 bool qt_apple_isSandboxed()
 {
+#if defined(Q_OS_MACOS)
     static bool isSandboxed = []() {
         QCFType<SecStaticCodeRef> staticCode = nullptr;
         NSURL *executableUrl = NSBundle.mainBundle.executableURL;
@@ -418,8 +418,12 @@ bool qt_apple_isSandboxed()
         return true;
     }();
     return isSandboxed;
+#else
+    return true; // All other Apple platforms
+#endif
 }
 
+#if !defined(QT_BOOTSTRAPPED)
 QT_END_NAMESPACE
 @implementation NSObject (QtSandboxHelpers)
 - (id)qt_valueForPrivateKey:(NSString *)key
