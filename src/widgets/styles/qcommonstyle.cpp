@@ -6092,11 +6092,13 @@ QIcon QCommonStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption
         case SP_TitleBarCloseButton: {
             QIcon titleBarIcon;
             if (standardIcon == SP_TitleBarCloseButton) {
-                titleBarIcon.addFile(QLatin1String(":/qt-project.org/styles/macstyle/images/closedock-16.png"));
-                titleBarIcon.addFile(QLatin1String(":/qt-project.org/styles/macstyle/images/closedock-down-16.png"), QSize(16, 16), QIcon::Normal, QIcon::On);
+                titleBarIcon.addFile(QStringLiteral(":/qt-project.org/styles/macstyle/images/closedock-macstyle-16.png"));
+                titleBarIcon.addFile(QStringLiteral(":/qt-project.org/styles/macstyle/images/closedock-down-macstyle-16.png"),
+                                     QSize(16, 16), QIcon::Normal, QIcon::On);
             } else {
-                titleBarIcon.addFile(QLatin1String(":/qt-project.org/styles/macstyle/images/dockdock-16.png"));
-                titleBarIcon.addFile(QLatin1String(":/qt-project.org/styles/macstyle/images/dockdock-down-16.png"), QSize(16, 16), QIcon::Normal, QIcon::On);
+                titleBarIcon.addFile(QStringLiteral(":/qt-project.org/styles/macstyle/images/dockdock-macstyle-16.png"));
+                titleBarIcon.addFile(QStringLiteral(":/qt-project.org/styles/macstyle/images/dockdock-down-macstyle-16.png"),
+                                     QSize(16, 16), QIcon::Normal, QIcon::On);
             }
             return titleBarIcon;
         }
