@@ -54,6 +54,10 @@
 #include <fcntl.h>
 #include <errno.h>
 
+#if defined(Q_OS_DARWIN)
+#include "qcore_mac_p.h"
+#endif
+
 #include "private/qcore_unix_p.h"
 
 // OpenBSD 4.2 doesn't define EIDRM, see BUGS section:
@@ -71,6 +75,16 @@ QT_BEGIN_NAMESPACE
  */
 key_t QSystemSemaphorePrivate::handle(QSystemSemaphore::AccessMode mode)
 {
+#if defined(Q_OS_DARWIN)
+    if (qt_apple_isSandboxed()) {
+        errorString = QSystemSemaphore::tr("%1: System V semaphores are not available " \
+            "for sandboxed applications. Please build Qt with -feature-ipc_posix")
+                      .arg(QLatin1String("QSystemSemaphore::handle:"));
+        error = QSystemSemaphore::PermissionDenied;
+        return -1;
+    }
+#endif
+
     if (key.isEmpty()){
         errorString = QSystemSemaphore::tr("%1: key is empty")
                       .arg(QLatin1String("QSystemSemaphore::handle:"));

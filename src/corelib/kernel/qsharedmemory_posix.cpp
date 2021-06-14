@@ -102,7 +102,6 @@ bool QSharedMemoryPrivate::create(qsizetype size)
         const int errorNumber = errno;
         const QLatin1String function("QSharedMemory::attach (shm_open)");
         switch (errorNumber) {
-        case ENAMETOOLONG:
         case EINVAL:
             errorString = QSharedMemory::tr("%1: bad name").arg(function);
             error = QSharedMemory::KeyError;
@@ -146,7 +145,6 @@ bool QSharedMemoryPrivate::attach(QSharedMemory::AccessMode mode)
         const int errorNumber = errno;
         const QLatin1String function("QSharedMemory::attach (shm_open)");
         switch (errorNumber) {
-        case ENAMETOOLONG:
         case EINVAL:
             errorString = QSharedMemory::tr("%1: bad name").arg(function);
             error = QSharedMemory::KeyError;

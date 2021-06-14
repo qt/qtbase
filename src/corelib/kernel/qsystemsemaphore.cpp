@@ -124,6 +124,13 @@ QT_BEGIN_NAMESPACE
 
   \endlist
 
+  \b{Apple platforms:} Sandboxed applications (including apps
+  shipped through the Apple App Store) require the key to
+  be in the form \c {<application group identifier>/<custom identifier>},
+  as documented \l {https://developer.apple.com/library/archive/documentation/Security/Conceptual/AppSandboxDesignGuide/AppSandboxInDepth/AppSandboxInDepth.html#//apple_ref/doc/uid/TP40011183-CH3-SW24}
+  {here} and \l {https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_application-groups}
+  {here}, and the key length is limited to 30 characters.
+
   \sa QSharedMemory, QSemaphore
  */
 

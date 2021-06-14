@@ -182,14 +182,15 @@ int tst_QSharedMemory::remove(const QString &key)
     if (key.isEmpty())
         return -1;
 
-    // ftok requires that an actual file exists somewhere
     QString fileName = QSharedMemoryPrivate::makePlatformSafeKey(key);
+
+#ifndef QT_POSIX_IPC
+    // ftok requires that an actual file exists somewhere
     if (!QFile::exists(fileName)) {
         //qDebug() << "exits failed";
         return -2;
     }
 
-#ifndef QT_POSIX_IPC
     int unix_key = ftok(fileName.toLatin1().constData(), 'Q');
     if (-1 == unix_key) {
         qDebug() << "ftok failed";
@@ -209,8 +210,10 @@ int tst_QSharedMemory::remove(const QString &key)
     }
 #else
     if (shm_unlink(QFile::encodeName(fileName).constData()) == -1) {
-        qDebug() << "shm_unlink failed";
-        return -5;
+        if (errno != ENOENT) {
+            qDebug() << "shm_unlink failed";
+            return -5;
+        }
     }
 #endif // QT_POSIX_IPC
 
@@ -374,7 +377,7 @@ void tst_QSharedMemory::lock()
     QVERIFY(!shm.lock());
     QCOMPARE(shm.error(), QSharedMemory::LockError);
 
-    shm.setKey(QLatin1String("qsharedmemory"));
+    shm.setKey(rememberKey(QLatin1String("qsharedmemory")));
 
     QVERIFY(!shm.lock());
     QCOMPARE(shm.error(), QSharedMemory::LockError);
@@ -410,6 +413,11 @@ void tst_QSharedMemory::removeWhileAttached()
     // detach 1 and remove, remove one first to catch another error.
     delete smOne;
     delete smTwo;
+
+#ifdef QT_POSIX_IPC
+    // POSIX IPC doesn't guarantee that the shared memory is removed
+    remove("one");
+#endif
 
     // three shouldn't be able to attach
     QSharedMemory smThree(QLatin1String("one"));
@@ -580,6 +588,10 @@ void tst_QSharedMemory::simpleDoubleProducerConsumer()
     int size = 512;
     QVERIFY(producer.create(size));
     QVERIFY(producer.detach());
+#ifdef QT_POSIX_IPC
+    // POSIX IPC doesn't guarantee that the shared memory is removed
+    remove("market");
+#endif
     QVERIFY(producer.create(size));
 
     {
