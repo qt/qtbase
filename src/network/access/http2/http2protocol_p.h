@@ -133,9 +133,6 @@ enum Http2PredefinedParameters
     maxPayloadSize = (1 << 24) - 1, // HTTP/2 6.5.2
 
     defaultSessionWindowSize = 65535, // HTTP/2 6.5.2
-    // Using 1000 (rather arbitrarily), just to
-    // impose *some* upper limit:
-    maxPeerConcurrentStreams  = 1000,
     maxConcurrentStreams = 100 // HTTP/2, 6.5.2
 };
 

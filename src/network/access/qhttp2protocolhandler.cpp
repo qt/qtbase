@@ -393,7 +393,8 @@ bool QHttp2ProtocolHandler::sendRequest()
         initReplyFromPushPromise(message, key);
     }
 
-    const auto streamsToUse = std::min<quint32>(maxConcurrentStreams - activeStreams.size(),
+    const auto streamsToUse = std::min<quint32>(maxConcurrentStreams > activeStreams.size()
+                                                ? maxConcurrentStreams - activeStreams.size() : 0,
                                                 requests.size());
     auto it = requests.begin();
     for (quint32 i = 0; i < streamsToUse; ++i) {
@@ -1085,13 +1086,8 @@ bool QHttp2ProtocolHandler::acceptSetting(Http2::Settings identifier, quint32 ne
         QMetaObject::invokeMethod(this, "resumeSuspendedStreams", Qt::QueuedConnection);
     }
 
-    if (identifier == Settings::MAX_CONCURRENT_STREAMS_ID) {
-        if (newValue > maxPeerConcurrentStreams) {
-            connectionError(PROTOCOL_ERROR, "SETTINGS invalid number of concurrent streams");
-            return false;
-        }
+    if (identifier == Settings::MAX_CONCURRENT_STREAMS_ID)
         maxConcurrentStreams = newValue;
-    }
 
     if (identifier == Settings::MAX_FRAME_SIZE_ID) {
         if (newValue < Http2::minPayloadLimit || newValue > Http2::maxPayloadSize) {
