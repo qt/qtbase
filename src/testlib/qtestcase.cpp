@@ -310,7 +310,7 @@ public:
 
     using MetaMethods = std::vector<QMetaMethod>;
 
-    explicit TestMethods(const QObject *o, const MetaMethods &m = MetaMethods());
+    explicit TestMethods(const QObject *o, MetaMethods m = {});
 
     void invokeTests(QObject *testObject) const;
 
@@ -329,15 +329,15 @@ private:
     MetaMethods m_methods;
 };
 
-TestMethods::TestMethods(const QObject *o, const MetaMethods &m)
+TestMethods::TestMethods(const QObject *o, MetaMethods m)
     : m_initTestCaseMethod(TestMethods::findMethod(o, "initTestCase()"))
     , m_initTestCaseDataMethod(TestMethods::findMethod(o, "initTestCase_data()"))
     , m_cleanupTestCaseMethod(TestMethods::findMethod(o, "cleanupTestCase()"))
     , m_initMethod(TestMethods::findMethod(o, "init()"))
     , m_cleanupMethod(TestMethods::findMethod(o, "cleanup()"))
-    , m_methods(m)
+    , m_methods(std::move(m))
 {
-    if (m.empty()) {
+    if (m_methods.empty()) {
         const QMetaObject *metaObject = o->metaObject();
         const int count = metaObject->methodCount();
         m_methods.reserve(count);
@@ -1935,6 +1935,7 @@ int QTest::qRun()
             handler.reset(new FatalSignalHandler);
 
         TestMethods::MetaMethods commandLineMethods;
+        commandLineMethods.reserve(static_cast<size_t>(QTest::testFunctions.size()));
         for (const QString &tf : qAsConst(QTest::testFunctions)) {
                 const QByteArray tfB = tf.toLatin1();
                 const QByteArray signature = tfB + QByteArrayLiteral("()");
@@ -1947,7 +1948,7 @@ int QTest::qRun()
                 }
                 commandLineMethods.push_back(m);
         }
-        TestMethods test(currentTestObject, commandLineMethods);
+        TestMethods test(currentTestObject, std::move(commandLineMethods));
         test.invokeTests(currentTestObject);
     }
 
