@@ -1174,7 +1174,19 @@ void QRegularExpressionPrivate::doMatch(QRegularExpressionMatchPrivate *priv,
     pcre2_jit_stack_assign_16(matchContext, &qtPcreCallback, nullptr);
     pcre2_match_data_16 *matchData = pcre2_match_data_create_from_pattern_16(compiledPattern, nullptr);
 
-    const char16_t * const subjectUtf16 = priv->subject.utf16();
+    // PCRE does not accept a null pointer as subject string, even if
+    // its length is zero. We however allow it in input: a QStringView
+    // subject may have data == nullptr. In this case, to keep PCRE
+    // happy, pass a pointer to a dummy character.
+    constexpr char16_t dummySubject = 0;
+    const char16_t * const subjectUtf16 = [&]()
+    {
+        const auto subjectUtf16 = priv->subject.utf16();
+        if (subjectUtf16)
+            return subjectUtf16;
+        Q_ASSERT(subjectLength == 0);
+        return &dummySubject;
+    }();
 
     int result;
 
@@ -1610,7 +1622,7 @@ QRegularExpressionMatch QRegularExpression::match(const QString &subject,
     d.data()->compilePattern();
     auto priv = new QRegularExpressionMatchPrivate(*this,
                                                    subject,
-                                                   qToStringViewIgnoringNull(subject),
+                                                   QStringView(subject),
                                                    matchType,
                                                    matchOptions);
     d->doMatch(priv, offset);
