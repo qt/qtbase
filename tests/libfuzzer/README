@@ -41,7 +41,8 @@ To run a test with libFuzzer:
 
 For further info about libFuzzer, see https://llvm.org/docs/LibFuzzer.html
 
-Some of these tests are continuously being run on oss-fuzz which is documented at
+Some of these tests are continuously being run on oss-fuzz, a service by Google for fuzzing free
+software. It is documented at:
 https://google.github.io/oss-fuzz/
 
 You can find:
@@ -52,3 +53,24 @@ You can find:
    Update the date in the URL to get more recent data.
  - The found issues which were already published at:
    https://bugs.chromium.org/p/oss-fuzz/issues/list?q=proj%3Dqt
+
+You can reproduce issues found by oss-fuzz using their Docker images, see
+https://google.github.io/oss-fuzz/advanced-topics/reproducing/
+Alternatively, you can also reproduce it locally with a native build:
+
+1. Read the tested submodule, the test's project and the architecture from the report.
+   For all findings since November 2020, you get the former from the "Fuzz Target". For example,
+   "qtbase_gui_text_qtextdocument_sethtml" is fuzzing qtbase using the project in
+   qtbase/tests/libfuzzer/gui/text/qtextdocument/sethtml/
+   The architecture you can find in "Job Type". If it contains "i386" it is a 32-bit x86 build,
+   otherwise it is an x86_64 build. Sometimes you can reproduce issues on both architectures.
+2. Build Qt including the tested submodule and its dependencies on the respective architecture with
+   the used sanitizer (see above).
+   The sanitizer is also written in the report. It is usually needed to reproduce the issue.
+3. Use this Qt build to build the test's project. For example:
+   <qt-build>/qtbase/bin/qt-cmake -S "<src>/qtbase/tests/libfuzzer/gui/text/qtextdocument/sethtml/"
+   cmake --build .
+4. Download the "Reproducer Testcase" from the report.
+5. Start the binary resulting from step 3 and pass the testcase. For example:
+   ./sethtml input.html
+   You should get the same symptoms as described in the report.
