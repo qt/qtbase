@@ -252,8 +252,11 @@ void consistencyCheck(const QRegularExpressionMatch &match)
                     QVERIFY((endPos - startPos) == length);
                     QVERIFY(captured == capturedView);
                 } else {
-                    QVERIFY(startPos == -1);
-                    QVERIFY(endPos == -1);
+                    // A null capture can either mean no capture at all,
+                    // or capture of length 0 over a null subject.
+                    QVERIFY(startPos == endPos);
+                    QVERIFY(((startPos == -1) && (endPos == -1)) // no capture
+                            || ((startPos == 0) && (endPos == 0))); // null subject
                     QVERIFY((endPos - startPos) == length);
                     QVERIFY(capturedView.isNull());
                 }
@@ -856,6 +859,24 @@ void tst_QRegularExpression::normalMatch_data()
     m.captured << QString("a string") << QString("") << QString("a string");
     QTest::newRow("match09") << QRegularExpression("(.*?)(.*)")
                              << "a string"
+                             << qsizetype(0)
+                             << QRegularExpression::MatchOptions(QRegularExpression::NoMatchOption)
+                             << m;
+
+    m.clear();
+    m.isValid = true; m.hasMatch = true;
+    m.captured << QString();
+    QTest::newRow("empty-in-null-string") << QRegularExpression("")
+                             << QString()
+                             << qsizetype(0)
+                             << QRegularExpression::MatchOptions(QRegularExpression::NoMatchOption)
+                             << m;
+
+    m.clear();
+    m.isValid = true; m.hasMatch = true;
+    m.captured << QString("");
+    QTest::newRow("empty-in-empty-string") << QRegularExpression("")
+                             << QString("")
                              << qsizetype(0)
                              << QRegularExpression::MatchOptions(QRegularExpression::NoMatchOption)
                              << m;
