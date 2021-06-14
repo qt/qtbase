@@ -70,12 +70,12 @@
 
     \section3 Stability of References
 
-    The implementation of QHash and QMultiHash in Qt 6 got changed from
+    The implementation of QHash, QMultiHash and QSet in Qt 6 got changed from
     a node based approach to a two stage lookup table. This design allows
     to keep the memory overhead of a hash instance very small, while
     at the same time giving good performance.
 
-    One behavioral change to note is that the new QHash implementation
+    One behavioral change to note is that the new implementation
     will not provide stable references to elements in the hash when the
     table needs to grow, or when entries are removed. Applications that
     rely on such stability might now run into undefined behavior.
