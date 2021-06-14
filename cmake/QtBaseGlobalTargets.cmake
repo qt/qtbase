@@ -255,6 +255,7 @@ set(__public_cmake_helpers
     cmake/QtPublicPluginHelpers.cmake
     cmake/QtPublicTargetHelpers.cmake
     cmake/QtPublicWalkLibsHelpers.cmake
+    cmake/QtPublicFindPackageHelpers.cmake
 )
 
 qt_copy_or_install(FILES ${__public_cmake_helpers} DESTINATION "${__GlobalConfig_install_dir}")

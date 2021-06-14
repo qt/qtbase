@@ -299,7 +299,3 @@ function(qt_internal_should_not_promote_package_target_to_global target out_var)
     get_property(should_not_promote TARGET "${target}" PROPERTY _qt_no_promote_global)
     set("${out_var}" "${should_not_promote}" PARENT_SCOPE)
 endfunction()
-
-function(qt_internal_disable_find_package_global_promotion target)
-    set_target_properties("${target}" PROPERTIES _qt_no_promote_global TRUE)
-endfunction()
