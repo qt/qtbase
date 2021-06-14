@@ -294,15 +294,6 @@ static inline QAbstractSocket::SocketType qt_socket_getType(qintptr socketDescri
 
 bool QNativeSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType socketType, QAbstractSocket::NetworkLayerProtocol &socketProtocol)
 {
-
-    //### no ip6 support on winsocket 1.1 but we will try not to use this !!!!!!!!!!!!1
-    /*
-    if (winsockVersion < 0x20 && socketProtocol == QAbstractSocket::IPv6Protocol) {
-        //### no ip6 support
-        return -1;
-    }
-    */
-
     //### SCTP not implemented
     if (socketType == QAbstractSocket::SctpSocket) {
         setError(QAbstractSocket::UnsupportedSocketOperationError,
@@ -315,34 +306,15 @@ bool QNativeSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType soc
         || (socketProtocol == QAbstractSocket::AnyIPProtocol)) ? AF_INET6 : AF_INET;
     int type = (socketType == QAbstractSocket::UdpSocket) ? SOCK_DGRAM : SOCK_STREAM;
 
-    // MSDN KB179942 states that on winnt 4 WSA_FLAG_OVERLAPPED is needed if socket is to be non blocking
-    // and recomends alwasy doing it for cross windows version comapablity.
+    // MSDN KB179942 states that on winnt 4 WSA_FLAG_OVERLAPPED is needed if socket is to be non
+    // blocking and recommends always doing it for cross-windows-version compatibility.
 
-    // WSA_FLAG_NO_HANDLE_INHERIT is atomic (like linux O_CLOEXEC), but requires windows 7 SP 1 or later
-    // SetHandleInformation is supported since W2K but isn't atomic
+    // WSA_FLAG_NO_HANDLE_INHERIT is atomic (like linux O_CLOEXEC)
 #ifndef WSA_FLAG_NO_HANDLE_INHERIT
 #define WSA_FLAG_NO_HANDLE_INHERIT 0x80
 #endif
 
     SOCKET socket = ::WSASocket(protocol, type, 0, NULL, 0, WSA_FLAG_NO_HANDLE_INHERIT | WSA_FLAG_OVERLAPPED);
-    // previous call fails if the windows 7 service pack 1 or hot fix isn't installed.
-
-    // Try the old API if the new one failed on Windows 7
-    if (socket == INVALID_SOCKET && QOperatingSystemVersion::current() < QOperatingSystemVersion::Windows8) {
-        socket = ::WSASocket(protocol, type, 0, NULL, 0, WSA_FLAG_OVERLAPPED);
-#ifdef HANDLE_FLAG_INHERIT
-        if (socket != INVALID_SOCKET) {
-            // make non inheritable the old way
-            BOOL handleFlags = SetHandleInformation(reinterpret_cast<HANDLE>(socket), HANDLE_FLAG_INHERIT, 0);
-#ifdef QNATIVESOCKETENGINE_DEBUG
-            qDebug() << "QNativeSocketEnginePrivate::createNewSocket - set inheritable" << handleFlags;
-#else
-            Q_UNUSED(handleFlags);
-#endif
-        }
-#endif
-    }
-
     if (socket == INVALID_SOCKET) {
         int err = WSAGetLastError();
         WS_ERROR_DEBUG(err);
