@@ -1202,7 +1202,7 @@ void QConfFileSettingsPrivate::set(const QString &key, const QVariant &value)
     confFile->addedKeys.insert(theKey, value);
 }
 
-bool QConfFileSettingsPrivate::get(const QString &key, QVariant *value) const
+std::optional<QVariant> QConfFileSettingsPrivate::get(const QString &key) const
 {
     QSettingsKey theKey(key, caseSensitivity);
     ParsedSettingsMap::const_iterator j;
@@ -1222,15 +1222,12 @@ bool QConfFileSettingsPrivate::get(const QString &key, QVariant *value) const
                      && !confFile->removedKeys.contains(theKey));
         }
 
-        if (found && value)
-            *value = *j;
-
         if (found)
-            return true;
+            return *j;
         if (!fallbacks)
             break;
     }
-    return false;
+    return std::nullopt;
 }
 
 QStringList QConfFileSettingsPrivate::children(const QString &prefix, ChildSpec spec) const
@@ -3213,7 +3210,7 @@ void QSettings::remove(const QString &key)
 bool QSettings::contains(const QString &key) const
 {
     Q_D(const QSettings);
-    return d->get(d->actualKey(key), nullptr);
+    return d->get(d->actualKey(key)) != std::nullopt;
 }
 
 /*!
@@ -3282,9 +3279,7 @@ QVariant QSettings::value(const QString &key, const QVariant &defaultValue) cons
         qWarning("QSettings::value: Empty key passed");
         return QVariant();
     }
-    QVariant result = defaultValue;
-    d->get(d->actualKey(key), &result);
-    return result;
+    return d->get(d->actualKey(key)).value_or(defaultValue);
 }
 
 /*!

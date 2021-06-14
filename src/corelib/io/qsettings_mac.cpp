@@ -332,7 +332,7 @@ public:
 
     void remove(const QString &key) override;
     void set(const QString &key, const QVariant &value) override;
-    bool get(const QString &key, QVariant *value) const override;
+    std::optional<QVariant> get(const QString &key) const override;
     QStringList children(const QString &prefix, ChildSpec spec) const override;
     void clear() override;
     void sync() override;
@@ -448,7 +448,7 @@ void QMacSettingsPrivate::set(const QString &key, const QVariant &value)
                           domains[0].userName, hostName);
 }
 
-bool QMacSettingsPrivate::get(const QString &key, QVariant *value) const
+std::optional<QVariant> QMacSettingsPrivate::get(const QString &key) const
 {
     QCFString k = macKey(key);
     for (int i = 0; i < numDomains; ++i) {
@@ -456,17 +456,14 @@ bool QMacSettingsPrivate::get(const QString &key, QVariant *value) const
             QCFType<CFPropertyListRef> ret =
                     CFPreferencesCopyValue(k, domains[i].applicationOrSuiteId, domains[i].userName,
                                            hostNames[j]);
-            if (ret) {
-                if (value)
-                    *value = qtValue(ret);
-                return true;
-            }
+            if (ret)
+                return qtValue(ret);
         }
 
         if (!fallbacks)
             break;
     }
-    return false;
+    return std::nullopt;
 }
 
 QStringList QMacSettingsPrivate::children(const QString &prefix, ChildSpec spec) const
@@ -536,7 +533,7 @@ bool QMacSettingsPrivate::isWritable() const
 
     that->set(impossibleKey, QVariant());
     that->sync();
-    bool writable = (status == QSettings::NoError) && that->get(impossibleKey, 0);
+    bool writable = (status == QSettings::NoError) && that->get(impossibleKey).has_value();
     that->remove(impossibleKey);
     that->sync();
 

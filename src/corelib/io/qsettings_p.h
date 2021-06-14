@@ -197,7 +197,7 @@ public:
 
     virtual void remove(const QString &key) = 0;
     virtual void set(const QString &key, const QVariant &value) = 0;
-    virtual bool get(const QString &key, QVariant *value) const = 0;
+    virtual std::optional<QVariant> get(const QString &key) const = 0;
 
     enum ChildSpec { AllKeys, ChildKeys, ChildGroups };
     virtual QStringList children(const QString &prefix, ChildSpec spec) const = 0;
@@ -264,7 +264,7 @@ public:
 
     void remove(const QString &key) override;
     void set(const QString &key, const QVariant &value) override;
-    bool get(const QString &key, QVariant *value) const override;
+    std::optional<QVariant> get(const QString &key) const override;
 
     QStringList children(const QString &prefix, ChildSpec spec) const override;
 

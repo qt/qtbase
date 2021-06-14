@@ -387,7 +387,7 @@ public:
 
     void remove(const QString &uKey) override;
     void set(const QString &uKey, const QVariant &value) override;
-    bool get(const QString &uKey, QVariant *value) const override;
+    std::optional<QVariant> get(const QString &uKey) const override;
     QStringList children(const QString &uKey, ChildSpec spec) const override;
     void clear() override;
     void sync() override;
@@ -747,20 +747,22 @@ void QWinSettingsPrivate::set(const QString &uKey, const QVariant &value)
     RegCloseKey(handle);
 }
 
-bool QWinSettingsPrivate::get(const QString &uKey, QVariant *value) const
+std::optional<QVariant> QWinSettingsPrivate::get(const QString &uKey) const
 {
     QString rKey = escapedKey(uKey);
 
+    QVariant value;
+
     for (const RegistryKey &r : regList) {
         HKEY handle = r.handle();
-        if (handle != 0 && readKey(handle, rKey, value))
-            return true;
+        if (handle != 0 && readKey(handle, rKey, &value))
+            return value;
 
         if (!fallbacks)
-            return false;
+            return std::nullopt;
     }
 
-    return false;
+    return std::nullopt;
 }
 
 QStringList QWinSettingsPrivate::children(const QString &uKey, ChildSpec spec) const

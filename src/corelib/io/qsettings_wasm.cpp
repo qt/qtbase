@@ -62,7 +62,7 @@ public:
                         const QString &application);
     ~QWasmSettingsPrivate();
 
-    bool get(const QString &key, QVariant *value) const override;
+    std::optional<QVariant> get(const QString &key) const override;
     QStringList children(const QString &prefix, ChildSpec spec) const override;
     void clear() override;
     void sync() override;
@@ -169,12 +169,12 @@ QWasmSettingsPrivate::~QWasmSettingsPrivate()
          QConfFileSettingsPrivate::initAccess();
 }
 
-bool QWasmSettingsPrivate::get(const QString &key, QVariant *value) const
+std::optional<QVariant> QWasmSettingsPrivate::get(const QString &key) const
 {
     if (isReadReady)
-        return QConfFileSettingsPrivate::get(key, value);
+        return QConfFileSettingsPrivate::get(key);
 
-    return false;
+    return std::nullopt;
 }
 
 QStringList QWasmSettingsPrivate::children(const QString &prefix, ChildSpec spec) const
