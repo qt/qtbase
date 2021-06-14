@@ -31,7 +31,7 @@
 #
 function(qt_internal_add_tool target_name)
     qt_tool_target_to_name(name ${target_name})
-    set(option_keywords BOOTSTRAP NO_INSTALL USER_FACING INSTALL_VERSIONED_LINK)
+    set(option_keywords BOOTSTRAP NO_INSTALL USER_FACING INSTALL_VERSIONED_LINK EXCEPTIONS)
     set(one_value_keywords
         TOOLS_TARGET
         INSTALL_DIR
@@ -139,6 +139,11 @@ function(qt_internal_add_tool target_name)
         set(bootstrap BOOTSTRAP)
     endif()
 
+    set(exceptions "")
+    if(arg_EXCEPTIONS)
+        set(exceptions EXCEPTIONS)
+    endif()
+
     set(install_dir "${INSTALL_BINDIR}")
     if(arg_INSTALL_DIR)
         set(install_dir "${arg_INSTALL_DIR}")
@@ -146,6 +151,7 @@ function(qt_internal_add_tool target_name)
 
     qt_internal_add_executable("${target_name}" OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${install_dir}"
         ${bootstrap}
+        ${exceptions}
         NO_INSTALL
         SOURCES ${arg_SOURCES}
         INCLUDE_DIRECTORIES
