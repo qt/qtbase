@@ -143,9 +143,7 @@ do {\
     if (!(expr)) { \
         QTRY_LOOP_IMPL((expr), (2 * timeoutValue), step);\
         if (expr) { \
-            QString msg = QString::fromUtf8("QTestLib: This test case check (\"%1\") failed because the requested timeout (%2 ms) was too short, %3 ms would have been sufficient this time."); \
-            msg = msg.arg(QString::fromUtf8(#expr)).arg(timeoutValue).arg(timeoutValue + qt_test_i); \
-            QFAIL(qPrintable(msg)); \
+            QFAIL(qPrintable(QTest::Internal::formatTryTimeoutDebugMessage(u8"" #expr, timeoutValue, timeoutValue + qt_test_i))); \
         } \
     }
 
@@ -238,6 +236,8 @@ class QTestData;
 namespace QTest
 {
     namespace Internal {
+
+    Q_TESTLIB_EXPORT QString formatTryTimeoutDebugMessage(q_no_char8_t::QUtf8StringView expr, int timeout, int actual);
 
     template<typename T> // Output registered enums
     inline typename std::enable_if<QtPrivate::IsQEnumHelper<T>::Value, char*>::type toString(T e)

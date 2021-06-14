@@ -285,6 +285,14 @@ namespace QTestPrivate
 
 namespace QTest
 {
+
+QString Internal::formatTryTimeoutDebugMessage(q_no_char8_t::QUtf8StringView expr, int timeout, int actual)
+{
+    return QLatin1String("QTestLib: This test case check (\"%1\") failed because the requested timeout (%2 ms) was too short, %3 ms would have been sufficient this time.")
+            // ### Qt 7: remove the toString() (or earlier, when arg() can handle QUtf8StringView), passing the view directly
+            .arg(expr.toString(), QString::number(timeout), QString::number(actual));
+}
+
 extern Q_TESTLIB_EXPORT int lastMouseTimestamp;
 
 class WatchDog;
