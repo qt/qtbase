@@ -105,9 +105,9 @@ QT_BEGIN_NAMESPACE
     \list
     \li \e {Mastering Regular Expressions} (Third Edition) by Jeffrey E. F.
     Friedl, ISBN 0-596-52812-4;
-    \li the \l{http://pcre.org/pcre.txt} {pcrepattern(3)} man page, describing
-    the pattern syntax supported by PCRE (the reference implementation of
-    Perl-compatible regular expressions);
+    \li the \l{https://pcre.org/original/doc/html/pcrepattern.html}
+    {pcrepattern(3)} man page, describing the pattern syntax supported by PCRE
+    (the reference implementation of Perl-compatible regular expressions);
     \li the \l{http://perldoc.perl.org/perlre.html} {Perl's regular expression
     documentation} and the \l{http://perldoc.perl.org/perlretut.html} {Perl's
     regular expression tutorial}.
