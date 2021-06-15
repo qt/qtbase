@@ -70,6 +70,7 @@ const QString MenuBarPath = QLatin1String("/MenuBar");
 */
 QDBusMenuConnection::QDBusMenuConnection(QObject *parent, const QString &serviceName)
     : QObject(parent)
+    , m_serviceName(serviceName)
     , m_connection(serviceName.isNull() ? QDBusConnection::sessionBus()
                                         : QDBusConnection::connectToBus(QDBusConnection::SessionBus, serviceName))
     , m_dbusWatcher(new QDBusServiceWatcher(StatusNotifierWatcherService, m_connection, QDBusServiceWatcher::WatchForRegistration, this))
@@ -82,6 +83,12 @@ QDBusMenuConnection::QDBusMenuConnection(QObject *parent, const QString &service
     else
         qCDebug(qLcMenu) << "StatusNotifierHost is not registered";
 #endif
+}
+
+QDBusMenuConnection::~QDBusMenuConnection()
+{
+  if (!m_serviceName.isEmpty() && m_connection.isConnected())
+      QDBusConnection::disconnectFromBus(m_serviceName);
 }
 
 void QDBusMenuConnection::dbusError(const QDBusError &error)
