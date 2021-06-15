@@ -81,7 +81,7 @@ if(NOT link_order_matters)
 
     if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.19)
         qt_add_executable(test_static_resources_propagation_not_finalize main.cpp)
-        qt6_enable_resource_objects_finalizer_mode(
+        qt6_enable_object_libraries_finalizer_mode(
             test_static_resources_propagation_not_finalize FALSE
         )
         set_target_properties(test_static_resources_propagation_not_finalize PROPERTIES

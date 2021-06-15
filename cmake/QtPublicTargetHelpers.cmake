@@ -87,8 +87,8 @@ function(__qt_internal_check_link_order_matters)
     endif()
 endfunction()
 
-function(__qt_internal_process_dependency_resource_objects target)
-    # The CMake versions greater than 3.21 take care about the resource object files order in a
+function(__qt_internal_process_dependency_object_libraries target)
+    # The CMake versions greater than 3.21 take care about the order of object files in a
     # linker line, it's expected that all object files are located at the beginning of the linker
     # line.
     # So circular dependencies between static libraries and object files are resolved and no need
@@ -98,68 +98,68 @@ function(__qt_internal_process_dependency_resource_objects target)
     if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.21)
         return()
     endif()
-    get_target_property(processed ${target} _qt_resource_object_finalizers_processed)
+    get_target_property(processed ${target} _qt_object_libraries_finalizer_processed)
     if(processed)
         return()
     endif()
-    set_target_properties(${target} PROPERTIES _qt_resource_object_finalizers_processed TRUE)
+    set_target_properties(${target} PROPERTIES _qt_object_libraries_finalizer_processed TRUE)
 
     __qt_internal_check_finalizer_mode(${target}
         use_finalizer_mode
-        resource_objects
+        object_libraries
     )
 
     if(NOT use_finalizer_mode)
         return()
     endif()
 
-    __qt_internal_collect_dependency_resource_objects(${target} resource_objects)
-    target_sources(${target} PRIVATE "${resource_objects}")
+    __qt_internal_collect_dependency_object_libraries(${target} objects)
+    target_sources(${target} PRIVATE "${objects}")
 endfunction()
 
-function(__qt_internal_collect_dependency_resource_objects target out_var)
-    set_property(GLOBAL PROPERTY _qt_resource_processed_targets "")
+function(__qt_internal_collect_dependency_object_libraries target out_var)
+    set_property(GLOBAL PROPERTY _qt_processed_object_libraries "")
 
-    __qt_internal_collect_resource_objects_recursively(resource_targets ${target} ${target})
+    __qt_internal_collect_object_libraries_recursively(object_libraries ${target} ${target})
 
-    # Collect resource objects of plugins and plugin dependencies.
+    # Collect object libraries of plugins and plugin dependencies.
     __qt_internal_collect_plugin_targets_from_dependencies(${target} plugin_targets)
-    __qt_internal_collect_dependency_plugin_resource_objects(${target}
+    __qt_internal_collect_dependency_plugin_object_libraries(${target}
         "${plugin_targets}"
-        plugin_resource_objects
+        plugin_objects
     )
 
-    set_property(GLOBAL PROPERTY _qt_resource_processed_targets "")
+    set_property(GLOBAL PROPERTY _qt_processed_object_libraries "")
 
-    list(REMOVE_DUPLICATES resource_targets)
-    set(resource_objects "")
-    foreach(dep IN LISTS resource_targets)
-        list(PREPEND resource_objects "$<TARGET_OBJECTS:${dep}>")
+    list(REMOVE_DUPLICATES object_libraries)
+    set(objects "")
+    foreach(dep IN LISTS object_libraries)
+        list(PREPEND objects "$<TARGET_OBJECTS:${dep}>")
     endforeach()
 
-    set(${out_var} "${plugin_resource_objects};${resource_objects}" PARENT_SCOPE)
+    set(${out_var} "${plugin_objects};${objects}" PARENT_SCOPE)
 endfunction()
 
-function(__qt_internal_collect_dependency_plugin_resource_objects target plugin_targets out_var)
-    set(plugin_resource_objects "")
+function(__qt_internal_collect_dependency_plugin_object_libraries target plugin_targets out_var)
+    set(plugin_objects "")
     foreach(plugin_target IN LISTS plugin_targets)
-        __qt_internal_collect_resource_objects_recursively(plugin_resource_targets
+        __qt_internal_collect_object_libraries_recursively(plugin_object_libraries
             "${QT_CMAKE_EXPORT_NAMESPACE}::${plugin_target}"
             ${target}
         )
         __qt_internal_get_static_plugin_condition_genex("${plugin_target}" plugin_condition)
 
-        foreach(plugin_resource_target IN LISTS plugin_resource_targets)
-            list(APPEND plugin_resource_objects
-                "$<${plugin_condition}:$<TARGET_OBJECTS:${plugin_resource_target}>>"
+        foreach(plugin_object_library IN LISTS plugin_object_libraries)
+            list(APPEND plugin_objects
+                "$<${plugin_condition}:$<TARGET_OBJECTS:${plugin_object_library}>>"
             )
         endforeach()
     endforeach()
-    set(${out_var} "${plugin_resource_objects}" PARENT_SCOPE)
+    set(${out_var} "${plugin_objects}" PARENT_SCOPE)
 endfunction()
 
-function(__qt_internal_collect_resource_objects_recursively out_var target initial_target)
-    get_property(resource_processed_targets GLOBAL PROPERTY _qt_resource_processed_targets)
+function(__qt_internal_collect_object_libraries_recursively out_var target initial_target)
+    get_property(processed_object_libraries GLOBAL PROPERTY _qt_processed_object_libraries)
 
     set(interface_libs "")
     set(libs "")
@@ -171,7 +171,7 @@ function(__qt_internal_collect_resource_objects_recursively out_var target initi
         get_target_property(libs ${target} LINK_LIBRARIES)
     endif()
 
-    set(resource_targets "")
+    set(object_libraries "")
     foreach(lib IN LISTS libs interface_libs)
         if(TARGET ${lib})
             get_target_property(aliased_target ${lib} ALIASED_TARGET)
@@ -179,26 +179,28 @@ function(__qt_internal_collect_resource_objects_recursively out_var target initi
                 set(lib ${aliased_target})
             endif()
 
-            if(${lib} IN_LIST resource_processed_targets)
+            if(${lib} IN_LIST processed_object_libraries)
                 continue()
             else()
-                list(APPEND resource_processed_targets ${lib})
-                set_property(GLOBAL APPEND PROPERTY _qt_resource_processed_targets ${lib})
+                list(APPEND processed_object_libraries ${lib})
+                set_property(GLOBAL APPEND PROPERTY _qt_processed_object_libraries ${lib})
             endif()
 
-            get_target_property(is_qt_resource ${lib} _is_qt_resource_target)
-            if(is_qt_resource)
-                list(APPEND resource_targets ${lib})
+            get_target_property(is_qt_propagated_object_library ${lib}
+                _is_qt_propagated_object_library
+            )
+            if(is_qt_propagated_object_library)
+                list(APPEND object_libraries ${lib})
             else()
-                __qt_internal_collect_resource_objects_recursively(next_level_resources
+                __qt_internal_collect_object_libraries_recursively(next_level_object_libraries
                     ${lib}
                     ${initial_target}
                 )
-                list(APPEND resource_targets ${next_level_resources})
+                list(APPEND object_libraries ${next_level_object_libraries})
             endif()
         endif()
     endforeach()
-    set(${out_var} "${resource_targets}" PARENT_SCOPE)
+    set(${out_var} "${object_libraries}" PARENT_SCOPE)
 endfunction()
 
 function(__qt_internal_promote_target_to_global target)
