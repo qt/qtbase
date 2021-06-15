@@ -71,6 +71,7 @@ class QDBusMenuConnection : public QObject
 
 public:
     QDBusMenuConnection(QObject *parent = nullptr, const QString &serviceName = QString());
+    ~QDBusMenuConnection();
     QDBusConnection connection() const { return m_connection; }
     QDBusServiceWatcher *dbusWatcher() const { return m_dbusWatcher; }
     bool isStatusNotifierHostRegistered() const { return m_statusNotifierHostRegistered; }
@@ -91,6 +92,7 @@ private Q_SLOTS:
     void dbusError(const QDBusError &error);
 
 private:
+    QString m_serviceName;
     QDBusConnection m_connection;
     QDBusServiceWatcher *m_dbusWatcher;
     bool m_statusNotifierHostRegistered;
