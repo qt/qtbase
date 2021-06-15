@@ -474,7 +474,7 @@ void QPointerEvent::clearPassiveGrabbers(const QEventPoint &point)
     Returns the button state when the event was generated.
 
     The button state is a combination of Qt::LeftButton, Qt::RightButton,
-    and Qt::MidButton using the OR operator.
+    and Qt::MiddleButton using the OR operator.
 
     For mouse move or \l TabletMove events, this is all buttons that are
     pressed down.
