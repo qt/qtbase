@@ -596,7 +596,7 @@ function(_qt_internal_finalize_executable target)
     get_target_property(is_immediately_finalized "${target}" _qt_is_immediately_finalized)
     if(NOT is_immediately_finalized)
         __qt_internal_apply_plugin_imports_finalizer_mode("${target}")
-        __qt_internal_process_dependency_resource_objects("${target}")
+        __qt_internal_process_dependency_object_libraries("${target}")
     endif()
 
     set_target_properties(${target} PROPERTIES _qt_executable_is_finalized TRUE)
@@ -914,13 +914,13 @@ endif()
 # It makes sense to manually disable the finalizer of the resource object if you are using
 # linkers other than ld, since the dependencies between resource objects and static libraries
 # are resolved correctly by them.
-function(qt6_enable_resource_objects_finalizer_mode target enabled)
-    __qt_internal_enable_finalizer_mode(${target} resource_objects ${enabled})
+function(qt6_enable_object_libraries_finalizer_mode target enabled)
+    __qt_internal_enable_finalizer_mode(${target} object_libraries ${enabled})
 endfunction()
 
 if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
-    function(qt_enable_resource_objects_finalizer_mode)
-        qt6_enable_resource_objects_finalizer_mode(${ARGV})
+    function(qt_enable_object_libraries_finalizer_mode)
+        qt6_enable_object_libraries_finalizer_mode(${ARGV})
     endfunction()
 endif()
 
@@ -1408,6 +1408,107 @@ function(__qt_get_relative_resource_path_for_file output_alias file)
     set(${output_alias} ${alias} PARENT_SCOPE)
 endfunction()
 
+# Performs linking and propagation of the object library via the target's usage requirements.
+# Arguments:
+# NO_LINK_OBJECT_LIBRARY_REQUIREMENTS_TO_TARGET skip linking of ${object_library} to ${target}, only
+#   propagate $<TARGET_OBJECTS:${object_library}> by linking it to ${target}. It's useful in case
+#   if ${object_library} depends on the ${target}. E.g. resource libraries depend on the Core
+#   library so linking them back to Core will cause a CMake error.
+#
+# EXTRA_CONDITIONS object library specific conditions to be checked before link the object library
+#   to the end-point executable.
+function(__qt_internal_propagate_object_library target object_library)
+    set(options NO_LINK_OBJECT_LIBRARY_REQUIREMENTS_TO_TARGET)
+    set(single_args "")
+    set(multi_args EXTRA_CONDITIONS)
+    cmake_parse_arguments(arg "${options}" "${single_args}" "${multi_args}" ${ARGN})
+
+    target_link_libraries(${object_library} PRIVATE ${QT_CMAKE_EXPORT_NAMESPACE}::Platform)
+    _qt_internal_copy_dependency_properties(${object_library} ${target} PRIVATE_ONLY)
+
+    # After internal discussion we decided to not rely on the linker order that CMake
+    # offers, until CMake provides the guaranteed linking order that suites our needs in a
+    # future CMake version.
+    # All object libraries mark themselves with the _is_qt_propagated_object_library property.
+    # Using a finalizer approach we walk through the target dependencies and look for libraries
+    # using the _is_qt_propagated_object_library property. Then, objects of the collected libraries
+    # are moved to the beginnig of the linker line using target_sources.
+    #
+    # Note: target_link_libraries works well with linkers other than ld. If user didn't enforce
+    # a finalizer we rely on linker to resolve circular dependencies between objects and static
+    # libraries.
+    set_property(TARGET ${object_library} PROPERTY _is_qt_propagated_object_library TRUE)
+    set_property(TARGET ${object_library} APPEND PROPERTY
+        EXPORT_PROPERTIES _is_qt_propagated_object_library
+    )
+
+    # Keep the implicit linking if finalizers are not used.
+    set(not_finalizer_mode_condition
+        "$<NOT:$<BOOL:$<TARGET_PROPERTY:_qt_object_libraries_finalizer_mode>>>"
+    )
+
+    # Collect object library specific conditions.
+    if(arg_EXTRA_CONDITIONS)
+        list(JOIN arg_EXTRA_CONDITIONS "," extra_conditions)
+    else()
+        set(extra_conditions "$<BOOL:TRUE>")
+    endif()
+
+    # Do not litter the static libraries
+    set(not_static_condition
+        "$<NOT:$<STREQUAL:$<TARGET_PROPERTY:TYPE>,STATIC_LIBRARY>>"
+    )
+
+    # Check if link order matters for the Platform.
+    set(platform_link_order_property
+        "$<TARGET_PROPERTY:${QT_CMAKE_EXPORT_NAMESPACE}::Platform,_qt_link_order_matters>"
+    )
+    set(platform_link_order_condition
+        "$<BOOL:${platform_link_order_property}>"
+    )
+
+    # Use TARGET_NAME to have the correct namespaced name in the exports.
+    set(objects "$<TARGET_OBJECTS:$<TARGET_NAME:${object_library}>>")
+
+    # Collect link conditions for the target_sources call.
+    string(JOIN "" target_sources_genex
+        "$<"
+            "$<AND:"
+                "${not_finalizer_mode_condition},"
+                "${not_static_condition},"
+                "${platform_link_order_condition},"
+                "${extra_conditions}"
+            ">"
+        ":${objects}>"
+    )
+    target_sources(${target} INTERFACE
+        "${target_sources_genex}"
+    )
+
+    # Collect link conditions for the target_link_libraries call.
+    string(JOIN "" target_link_libraries_genex
+        "$<"
+            "$<AND:"
+                "${not_finalizer_mode_condition},"
+                "${not_static_condition},"
+                "$<NOT:${platform_link_order_condition}>,"
+                "${extra_conditions}"
+            ">"
+        ":${objects}>"
+    )
+    target_link_libraries(${target} INTERFACE
+        "${target_link_libraries_genex}"
+    )
+
+    if(NOT arg_NO_LINK_OBJECT_LIBRARY_REQUIREMENTS_TO_TARGET)
+        # It's necessary to link the object library target, since we want to pass the object library
+        # dependencies to the 'target'. Interface linking doesn't add the objects of the library to
+        # the end-point linker line but propagates all the dependencies of the object_library added
+        # before or AFTER the line below.
+        target_link_libraries(${target} INTERFACE ${object_library})
+    endif()
+endfunction()
+
 function(__qt_propagate_generated_resource target resource_name generated_source_code output_generated_target)
     get_target_property(type ${target} TYPE)
     if(type STREQUAL STATIC_LIBRARY)
@@ -1424,13 +1525,10 @@ function(__qt_propagate_generated_resource target resource_name generated_source
             "$<TARGET_PROPERTY:${QT_CMAKE_EXPORT_NAMESPACE}::Core,INTERFACE_COMPILE_DEFINITIONS>"
         )
 
-        target_link_libraries(${resource_target} PRIVATE ${QT_CMAKE_EXPORT_NAMESPACE}::Platform)
-        _qt_internal_copy_dependency_properties(${resource_target} ${target} PRIVATE_ONLY)
-
         # Special handling is required for the Core library resources. The linking of the Core
         # library to the resources adds a circular dependency. This leads to the wrong
-        # objects/library order in the linker command line, since the Core library target is resolved
-        # first.
+        # objects/library order in the linker command line, since the Core library target is
+        # resolved first.
         if(NOT target STREQUAL "Core")
             target_link_libraries(${resource_target} INTERFACE ${QT_CMAKE_EXPORT_NAMESPACE}::Core)
         endif()
@@ -1447,73 +1545,13 @@ function(__qt_propagate_generated_resource target resource_name generated_source
         set_property(TARGET ${resource_target} APPEND PROPERTY
             _qt_resource_generated_cpp_relative_path "${generated_cpp_file_relative_path}")
 
-        # After internal discussion we decided to not rely on the linker order that CMake
-        # offers, until CMake provides the guaranteed linking order that suites our needs in a
-        # future CMake version.
-        # All resource object libraries mark themselves with the _is_qt_resource_target property.
-        # Using a finalizer approach we walk through the target dependencies and look for
-        # resource libraries using the _is_qt_resource_target property. Then, resource objects of
-        # the collected libraries are moved to the beginnig of the linker line using target_sources.
-        #
-        # target_link_libraries works well with linkers other than ld. If user didn't enforce
-        # a finalizer we rely on linker to resolve circular dependencies between resource
-        # objects and static libraries.
-        set_property(TARGET ${resource_target} PROPERTY _is_qt_resource_target TRUE)
-        set_property(TARGET ${resource_target} APPEND PROPERTY
-            EXPORT_PROPERTIES _is_qt_resource_target
-        )
-
-        # Keep the implicit linking if finalizers are not used.
-        set(not_finalizer_mode_condition
-            "$<NOT:$<BOOL:$<TARGET_PROPERTY:_qt_resource_objects_finalizer_mode>>>"
-        )
-        # Do not litter the static libraries
-        set(not_static_condition
-            "$<NOT:$<STREQUAL:$<TARGET_PROPERTY:TYPE>,STATIC_LIBRARY>>"
-        )
-        set(resource_objects "$<TARGET_OBJECTS:$<TARGET_NAME:${resource_target}>>")
-
-        set(platform_link_order_property
-            "$<TARGET_PROPERTY:${QT_CMAKE_EXPORT_NAMESPACE}::Platform,_qt_link_order_matters>"
-        )
-        set(platform_link_order_condition
-            "$<BOOL:${platform_link_order_property}>"
-        )
-
-        string(JOIN "" target_sources_genex
-            "$<"
-                "$<AND:"
-                    "${not_finalizer_mode_condition},"
-                    "${not_static_condition},"
-                    "${platform_link_order_condition}"
-                ">"
-            ":${resource_objects}>"
-        )
-        target_sources(${target} INTERFACE
-            "${target_sources_genex}"
-        )
-
-        string(JOIN "" target_link_libraries_genex
-            "$<"
-                "$<AND:"
-                    "${not_finalizer_mode_condition},"
-                    "${not_static_condition},"
-                    "$<NOT:${platform_link_order_condition}>"
-                ">"
-            ":${resource_objects}>"
-        )
-        target_link_libraries(${target} INTERFACE
-            "${target_link_libraries_genex}"
-        )
-
-        if(NOT target STREQUAL "Core")
-            # It's necessary to link the object library target, since we want to pass
-            # the object library dependencies to the 'target'. Interface linking doesn't
-            # add the objects of the resource library to the end-point linker line
-            # but propagates all the dependencies of the resource_target added before
-            # or AFTER the line below.
-            target_link_libraries(${target} INTERFACE ${resource_target})
+        if(target STREQUAL "Core")
+            set(skip_direct_linking NO_LINK_OBJECT_LIBRARY_REQUIREMENTS_TO_TARGET)
         endif()
+        __qt_internal_propagate_object_library(${target} ${resource_target}
+            ${skip_direct_linking}
+        )
+
         set(${output_generated_target} "${resource_target}" PARENT_SCOPE)
     else()
         set(${output_generated_target} "" PARENT_SCOPE)
