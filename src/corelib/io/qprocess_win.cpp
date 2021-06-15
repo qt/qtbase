@@ -359,22 +359,15 @@ void QProcessPrivate::destroyPipe(Q_PIPE pipe[2])
     }
 }
 
-template <class T>
-void deleteWorker(T *&worker)
-{
-    if (!worker)
-        return;
-    worker->stop();
-    worker->deleteLater();
-    worker = nullptr;
-}
-
 void QProcessPrivate::closeChannel(Channel *channel)
 {
-    if (channel == &stdinChannel)
-        deleteWorker(channel->writer);
-    else
-        deleteWorker(channel->reader);
+    if (channel == &stdinChannel) {
+        delete channel->writer;
+        channel->writer = nullptr;
+    } else {
+        delete channel->reader;
+        channel->reader = nullptr;
+    }
     destroyPipe(channel->pipe);
 }
 

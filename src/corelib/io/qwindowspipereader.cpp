@@ -41,6 +41,7 @@
 #include "qwindowspipereader_p.h"
 #include <qcoreapplication.h>
 #include <QMutexLocker>
+#include <QPointer>
 
 QT_BEGIN_NAMESPACE
 
@@ -425,12 +426,17 @@ bool QWindowsPipeReader::consumePendingAndEmit(bool allowWinActPosting)
     if (state != Running)
         return false;
 
-    if (emitReadyRead)
-        emit readyRead();
-    if (emitPipeClosed) {
-        if (dwError != ERROR_BROKEN_PIPE && dwError != ERROR_PIPE_NOT_CONNECTED)
+    if (!emitPipeClosed) {
+        if (emitReadyRead)
+            emit readyRead();
+    } else {
+        QPointer<QWindowsPipeReader> alive(this);
+        if (emitReadyRead)
+            emit readyRead();
+        if (alive && dwError != ERROR_BROKEN_PIPE && dwError != ERROR_PIPE_NOT_CONNECTED)
             emit winError(dwError, QLatin1String("QWindowsPipeReader::consumePendingAndEmit"));
-        emit pipeClosed();
+        if (alive)
+            emit pipeClosed();
     }
 
     return emitReadyRead;
