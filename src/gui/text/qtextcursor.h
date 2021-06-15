@@ -43,12 +43,11 @@
 #include <QtGui/qtguiglobal.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qshareddata.h>
+#include <QtGui/qtextdocument.h>
 #include <QtGui/qtextformat.h>
 
 QT_BEGIN_NAMESPACE
 
-
-class QTextDocument;
 class QTextCursorPrivate;
 class QTextDocumentFragment;
 class QTextCharFormat;
@@ -201,6 +200,10 @@ public:
 #ifndef QT_NO_TEXTHTMLPARSER
     void insertHtml(const QString &html);
 #endif // QT_NO_TEXTHTMLPARSER
+#if QT_CONFIG(textmarkdownreader)
+    void insertMarkdown(const QString &markdown,
+                        QTextDocument::MarkdownFeatures features = QTextDocument::MarkdownDialectGitHub);
+#endif // textmarkdownreader
 
     void insertImage(const QTextImageFormat &format, QTextFrameFormat::Position alignment);
     void insertImage(const QTextImageFormat &format);

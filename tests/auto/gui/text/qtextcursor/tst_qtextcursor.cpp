@@ -28,7 +28,9 @@
 
 
 #include <QTest>
+#include <QLoggingCategory>
 
+#include <qfontinfo.h>
 #include <qtextdocument.h>
 #include <qtexttable.h>
 #include <qvariant.h>
@@ -40,6 +42,8 @@
 #include <qdebug.h>
 
 #include <private/qtextcursor_p.h>
+
+Q_LOGGING_CATEGORY(lcTests, "qt.gui.tests")
 
 QT_FORWARD_DECLARE_CLASS(QTextDocument)
 
@@ -110,6 +114,14 @@ private slots:
     void selectVisually();
 
     void insertText();
+#ifndef QT_NO_TEXTHTMLPARSER
+    void insertHtml_data();
+    void insertHtml();
+#endif
+#if QT_CONFIG(textmarkdownreader)
+    void insertMarkdown_data();
+    void insertMarkdown();
+#endif
 
     void insertFragmentShouldUseCurrentCharFormat();
 
@@ -1427,6 +1439,216 @@ void tst_QTextCursor::insertText()
     cursor.movePosition(QTextCursor::NextBlock);
     QCOMPARE(cursor.block().text(), QString("yoyodyne"));
 }
+
+
+#ifndef QT_NO_TEXTHTMLPARSER
+
+void tst_QTextCursor::insertHtml_data()
+{
+    QTest::addColumn<QString>("initialText");
+    QTest::addColumn<int>("expectedInitialBlockCount");
+    QTest::addColumn<bool>("insertBlock");
+    QTest::addColumn<bool>("insertAsPlainText");
+    QTest::addColumn<int>("insertPosition");
+    QTest::addColumn<QString>("insertText");
+    QTest::addColumn<QString>("expectedSelText");
+    QTest::addColumn<QString>("expectedText");
+    QTest::addColumn<QString>("expectedMarkdown");
+
+    const QString htmlHeadingString("<h1>Hello World</h1>");
+
+    QTest::newRow("insert as html at end of heading")
+            << htmlHeadingString << 1
+            << false << false << 11 << QString("Other\ntext")
+            << QString("Hello WorldOther text")
+            << QString("Hello WorldOther text")
+            << QString("# Hello WorldOther text\n\n");
+
+    QTest::newRow("insert as html in new block at end of heading")
+            << htmlHeadingString << 1
+            << false << true << 11 << QString("Other\ntext")
+            << QString("Hello WorldOther\u2029text")
+            << QString("Hello WorldOther\ntext")
+            << QString("# Hello WorldOther\n\n# text\n\n");
+
+    QTest::newRow("insert as html in middle of heading")
+            << htmlHeadingString << 1
+            << false << false << 6 << QString("\n\nOther\ntext\n\n")
+            << QString("Hello Other text World")
+            << QString("Hello Other text World")
+            << QString("# Hello Other text World\n\n");
+
+    QTest::newRow("insert as text at end of heading")
+            << htmlHeadingString << 1
+            << true << false << 11 << QString("\n\nOther\ntext")
+            << QString("Hello World\u2029Other text")
+            << QString("Hello World\nOther text")
+            << QString("# Hello World\n\nOther text\n\n");
+
+    QTest::newRow("insert as text in new block at end of heading")
+            << htmlHeadingString << 1
+            << true << true << 11 << QString("\n\nOther\ntext")
+            << QString("Hello World\u2029\u2029\u2029Other\u2029text")
+            << QString("Hello World\n\n\nOther\ntext")
+            << QString("# Hello World\n\n**Other**\n\n**text**\n\n");
+
+    QTest::newRow("insert as text in middle of heading")
+            << htmlHeadingString << 1
+            << true << false << 6 << QString("Other\ntext")
+            << QString("Hello \u2029Other textWorld")
+            << QString("Hello \nOther textWorld")
+            << QString("# Hello \n\nOther text**World**\n\n");
+}
+
+void tst_QTextCursor::insertHtml()
+{
+    QFETCH(QString, initialText);
+    QFETCH(int, expectedInitialBlockCount);
+    QFETCH(bool, insertBlock);
+    QFETCH(bool, insertAsPlainText);
+    QFETCH(int, insertPosition);
+    QFETCH(QString, insertText);
+    QFETCH(QString, expectedSelText);
+    QFETCH(QString, expectedText);
+    QFETCH(QString, expectedMarkdown);
+
+    cursor.insertHtml(initialText);
+    QCOMPARE(blockCount(), expectedInitialBlockCount);
+    cursor.setPosition(insertPosition);
+    if (insertBlock)
+        cursor.insertBlock(QTextBlockFormat());
+    qCDebug(lcTests) << "pos" << cursor.position() << "block" << cursor.blockNumber()
+                     << "heading" << cursor.blockFormat().headingLevel();
+    if (insertAsPlainText)
+        cursor.insertText(insertText);
+    else
+        cursor.insertHtml(insertText);
+    cursor.select(QTextCursor::Document);
+    qCDebug(lcTests) << "sel text after insertion" << cursor.selectedText();
+    qCDebug(lcTests) << "text after insertion" << cursor.document()->toPlainText();
+    qCDebug(lcTests) << "html after insertion" << cursor.document()->toHtml();
+    qCDebug(lcTests) << "markdown after insertion" << cursor.document()->toMarkdown();
+    QCOMPARE(cursor.selectedText(), expectedSelText);
+    QCOMPARE(cursor.document()->toPlainText(), expectedText);
+    if (auto defaultFont = QFontDatabase::systemFont(QFontDatabase::GeneralFont); QFontInfo(defaultFont).fixedPitch()) {
+        qWarning() << defaultFont << "is QFontDatabase::GeneralFont, and is fixedPitch";
+        QSKIP("cannot reliably distinguish normal and monospace markdown spans on this system (QTBUG-103484)");
+    }
+    QCOMPARE(cursor.document()->toMarkdown(), expectedMarkdown);
+}
+
+#endif // QT_NO_TEXTHTMLPARSER
+
+#if QT_CONFIG(textmarkdownreader)
+
+void tst_QTextCursor::insertMarkdown_data()
+{
+    QTest::addColumn<QString>("initialText");
+    QTest::addColumn<int>("expectedInitialBlockCount");
+    QTest::addColumn<int>("insertPosition");
+    QTest::addColumn<QString>("insertText");
+    QTest::addColumn<QString>("expectedSelText");
+    QTest::addColumn<QString>("expectedText");
+    QTest::addColumn<QString>("expectedMarkdown");
+
+    QTest::newRow("bold fragment in italic span")
+            << "someone said *hello world*" << 1
+            << 19 << QString(" **crazy** ")
+            << QString("someone said hello crazyworld")
+            << QString("someone said hello crazyworld")
+            << QString("someone said *hello ***crazy***world*\n\n"); // explicit B+I: not necessary but OK
+
+    QTest::newRow("list in a paragraph")
+            << "hello list with 3 items" << 1
+            << 10 << QString("1. one\n2. two\n")
+            << QString("hello list\u2029one\u2029two\u2029 with 3 items")
+            << QString("hello list\none\ntwo\n with 3 items")
+            << QString("hello list\n\n1.  one\n2.  two\n3.   with 3 items\n");
+
+    QTest::newRow("list in a list")
+            << "1) bread\n2) milk\n" << 2
+            << 6 << QString("0) eggs\n1) maple syrup\n")
+            << QString("bread\u2029eggs\u2029maple syrup\u2029milk")
+            << QString("bread\neggs\nmaple syrup\nmilk")
+            << QString("1)  bread\n2)  eggs\n1)  maple syrup\n2)  milk\n");
+            // renumbering would happen if we re-read the whole document
+
+    QTest::newRow("list after a list")
+            << "1) bread\n2) milk\n\n" << 2
+            << 13 << QString("\n0) eggs\n1) maple syrup\n")
+            << QString("bread\u2029milk\u2029eggs\u2029maple syrup")
+            << QString("bread\nmilk\neggs\nmaple syrup")
+            << QString("1)  bread\n2)  milk\n3)  eggs\n1)  maple syrup\n");
+
+    const QString markdownHeadingString("# Hello\nWorld\n");
+
+    QTest::newRow("markdown heading at end of markdown heading")
+            << markdownHeadingString << 2
+            << 11 << QString("\n\n## Other text")
+            << QString("Hello\u2029World\u2029Other text")
+            << QString("Hello\nWorld\nOther text")
+            << QString("# Hello\n\nWorld\n\n## Other text\n\n");
+
+    QTest::newRow("markdown heading into middle of markdown heading")
+            << markdownHeadingString << 2
+            << 6 << QString("## Other\ntext\n\n")
+            << QString("Hello\u2029Other\u2029text\u2029World")
+            << QString("Hello\nOther\ntext\nWorld")
+            << QString("# Hello\n\n**Other**\n\ntext\n\nWorld\n\n");
+
+    QTest::newRow("markdown heading without trailing newline into middle of markdown heading")
+            << markdownHeadingString << 2
+            << 6 << QString("## Other\ntext")
+            << QString("Hello\u2029Other\u2029textWorld")
+            << QString("Hello\nOther\ntextWorld")
+            << QString("# Hello\n\n**Other**\n\ntextWorld\n\n");
+
+    QTest::newRow("text into middle of markdown heading after newline")
+            << markdownHeadingString << 2
+            << 6 << QString("Other ")
+            << QString("Hello\u2029OtherWorld")
+            << QString("Hello\nOtherWorld")
+            << QString("# Hello\n\nOtherWorld\n\n");
+
+    QTest::newRow("text into middle of markdown heading before newline")
+            << markdownHeadingString << 2
+            << 5 << QString(" Other ")
+            << QString("HelloOther\u2029World")
+            << QString("HelloOther\nWorld")
+            << QString("# HelloOther\n\nWorld\n\n");
+}
+
+void tst_QTextCursor::insertMarkdown()
+{
+    QFETCH(QString, initialText);
+    QFETCH(int, expectedInitialBlockCount);
+    QFETCH(int, insertPosition);
+    QFETCH(QString, insertText);
+    QFETCH(QString, expectedSelText);
+    QFETCH(QString, expectedText);
+    QFETCH(QString, expectedMarkdown);
+
+    cursor.insertMarkdown(initialText);
+    QCOMPARE(blockCount(), expectedInitialBlockCount);
+    cursor.setPosition(insertPosition);
+    qCDebug(lcTests) << "pos" << cursor.position() << "block" << cursor.blockNumber()
+                     << "heading" << cursor.blockFormat().headingLevel();
+    cursor.insertMarkdown(insertText);
+    cursor.select(QTextCursor::Document);
+    qCDebug(lcTests) << "sel text after insertion" << cursor.selectedText();
+    qCDebug(lcTests) << "text after insertion" << cursor.document()->toPlainText();
+    qCDebug(lcTests) << "html after insertion" << cursor.document()->toHtml();
+    qCDebug(lcTests) << "markdown after insertion" << cursor.document()->toMarkdown();
+    QCOMPARE(cursor.selectedText(), expectedSelText);
+    QCOMPARE(cursor.document()->toPlainText(), expectedText);
+    if (auto defaultFont = QFontDatabase::systemFont(QFontDatabase::GeneralFont); QFontInfo(defaultFont).fixedPitch()) {
+        qWarning() << defaultFont << "is QFontDatabase::GeneralFont, and is fixedPitch";
+        QSKIP("cannot reliably distinguish normal and monospace markdown spans on this system (QTBUG-103484)");
+    }
+    QCOMPARE(cursor.document()->toMarkdown(), expectedMarkdown);
+}
+
+#endif // textmarkdownreader
 
 void tst_QTextCursor::insertFragmentShouldUseCurrentCharFormat()
 {

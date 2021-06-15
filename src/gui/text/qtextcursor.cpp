@@ -2291,6 +2291,28 @@ void QTextCursor::insertHtml(const QString &html)
 #endif // QT_NO_TEXTHTMLPARSER
 
 /*!
+    \since 6.4
+    Inserts the \a markdown text at the current position(),
+    with the specified Markdown \a features. The default is GitHub dialect.
+*/
+
+#if QT_CONFIG(textmarkdownreader)
+
+void QTextCursor::insertMarkdown(const QString &markdown, QTextDocument::MarkdownFeatures features)
+{
+    if (!d || !d->priv)
+        return;
+    QTextDocumentFragment fragment = QTextDocumentFragment::fromMarkdown(markdown, features);
+    if (markdown.startsWith(QLatin1Char('\n')))
+        insertBlock(fragment.d->doc->firstBlock().blockFormat());
+    insertFragment(fragment);
+    if (!atEnd() && markdown.endsWith(QLatin1Char('\n')))
+        insertText(QLatin1String("\n"));
+}
+
+#endif // textmarkdownreader
+
+/*!
     \overload
     \since 4.2
 

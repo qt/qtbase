@@ -41,13 +41,13 @@
 #define QTEXTDOCUMENTFRAGMENT_H
 
 #include <QtGui/qtguiglobal.h>
+#include <QtGui/qtextdocument.h>
 #include <QtCore/qstring.h>
 
 QT_BEGIN_NAMESPACE
 
 
 class QTextStream;
-class QTextDocument;
 class QTextDocumentFragmentPrivate;
 class QTextCursor;
 
@@ -68,11 +68,18 @@ public:
 #ifndef QT_NO_TEXTHTMLPARSER
     QString toHtml() const;
 #endif // QT_NO_TEXTHTMLPARSER
+#if QT_CONFIG(textmarkdownwriter)
+    QString toMarkdown(QTextDocument::MarkdownFeatures features = QTextDocument::MarkdownDialectGitHub) const;
+#endif
 
     static QTextDocumentFragment fromPlainText(const QString &plainText);
 #ifndef QT_NO_TEXTHTMLPARSER
     static QTextDocumentFragment fromHtml(const QString &html, const QTextDocument *resourceProvider = nullptr);
 #endif // QT_NO_TEXTHTMLPARSER
+#if QT_CONFIG(textmarkdownreader)
+    static QTextDocumentFragment fromMarkdown(const QString &markdown,
+                                              QTextDocument::MarkdownFeatures features = QTextDocument::MarkdownDialectGitHub);
+#endif
 
 private:
     QTextDocumentFragmentPrivate *d;

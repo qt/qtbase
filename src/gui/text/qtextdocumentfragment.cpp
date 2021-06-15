@@ -41,6 +41,12 @@
 #include "qtextdocumentfragment_p.h"
 #include "qtextcursor_p.h"
 #include "qtextlist.h"
+#if QT_CONFIG(textmarkdownreader)
+#include "qtextmarkdownimporter_p.h"
+#endif
+#if QT_CONFIG(textmarkdownwriter)
+#include "qtextmarkdownwriter_p.h"
+#endif
 
 #include <qdebug.h>
 #include <qbytearray.h>
@@ -411,6 +417,26 @@ QString QTextDocumentFragment::toHtml() const
 }
 
 #endif // QT_NO_TEXTHTMLPARSER
+
+#if QT_CONFIG(textmarkdownwriter)
+
+/*!
+    \since 6.4
+
+    Returns the contents of the document fragment as Markdown,
+    with the specified \a features. The default is GitHub dialect.
+
+    \sa toPlainText(), QTextDocument::toMarkdown()
+*/
+QString QTextDocumentFragment::toMarkdown(QTextDocument::MarkdownFeatures features) const
+{
+    if (!d)
+        return QString();
+
+    return d->doc->toMarkdown(features);
+}
+
+#endif // textmarkdownwriter
 
 /*!
     Returns a document fragment that contains the given \a plainText.
@@ -1277,9 +1303,6 @@ void QTextHtmlImporter::appendBlock(const QTextBlockFormat &format, QTextCharFor
         compressNextWhitespace = RemoveWhiteSpace;
 }
 
-#endif // QT_NO_TEXTHTMLPARSER
-
-#ifndef QT_NO_TEXTHTMLPARSER
 /*!
     \fn QTextDocumentFragment QTextDocumentFragment::fromHtml(const QString &text, const QTextDocument *resourceProvider)
     \since 4.2
@@ -1304,5 +1327,32 @@ QTextDocumentFragment QTextDocumentFragment::fromHtml(const QString &html, const
 }
 
 #endif // QT_NO_TEXTHTMLPARSER
+
+#if QT_CONFIG(textmarkdownreader)
+
+/*!
+    \fn QTextDocumentFragment QTextDocumentFragment::fromMarkdown(const QString &markdown, QTextDocument::MarkdownFeatures features)
+    \since 6.4
+
+    Returns a QTextDocumentFragment based on the given \a markdown text with
+    the specified \a features. The default is GitHub dialect.
+
+    The formatting is preserved as much as possible; for example, \c {**bold**}
+    will become a document fragment containing the text "bold" with a bold
+    character style.
+
+    \note Loading external resources is not supported.
+*/
+QTextDocumentFragment QTextDocumentFragment::fromMarkdown(const QString &markdown, QTextDocument::MarkdownFeatures features)
+{
+    QTextDocumentFragment res;
+    res.d = new QTextDocumentFragmentPrivate;
+
+    QTextMarkdownImporter importer(features);
+    importer.import(res.d->doc, markdown);
+    return res;
+}
+
+#endif // textmarkdownreader
 
 QT_END_NAMESPACE
