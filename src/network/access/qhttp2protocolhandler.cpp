@@ -393,8 +393,8 @@ bool QHttp2ProtocolHandler::sendRequest()
         initReplyFromPushPromise(message, key);
     }
 
-    const auto streamsToUse = std::min<quint32>(maxConcurrentStreams > activeStreams.size()
-                                                ? maxConcurrentStreams - activeStreams.size() : 0,
+    const auto streamsToUse = std::min<quint32>(maxConcurrentStreams > quint32(activeStreams.size())
+                                                ? maxConcurrentStreams - quint32(activeStreams.size()) : 0,
                                                 requests.size());
     auto it = requests.begin();
     for (quint32 i = 0; i < streamsToUse; ++i) {
