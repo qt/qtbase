@@ -622,9 +622,16 @@ void QEventDispatcherWin32::registerSocketNotifier(QSocketNotifier *notifier)
         }
         sd.event |= event;
     } else {
-        // Disable the events which could be implicitly re-enabled. Next activation
-        // of socket notifiers will reset the mask.
-        d->active_fd.insert(sockfd, QSockFd(event, FD_READ | FD_ACCEPT | FD_WRITE | FD_OOB));
+        // Although WSAAsyncSelect(..., 0), which is called from
+        // unregisterSocketNotifier(), immediately disables event message
+        // posting for the socket, it is possible that messages could be
+        // waiting in the application message queue even if the socket was
+        // closed. Also, some events could be implicitly re-enabled due
+        // to system calls. Ignore these superfluous events until all
+        // pending notifications have been suppressed. Next activation of
+        // socket notifiers will reset the mask.
+        d->active_fd.insert(sockfd, QSockFd(event, FD_READ | FD_CLOSE | FD_ACCEPT | FD_WRITE
+                                                   | FD_CONNECT | FD_OOB));
     }
 
     d->postActivateSocketNotifiers();
