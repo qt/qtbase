@@ -2186,9 +2186,11 @@ void QTextDocumentLayoutPrivate::drawListItem(const QPointF &offset, QPainter *p
 
     painter->setRenderHint(QPainter::Antialiasing);
 
+    const bool marker = bl.blockFormat().marker() != QTextBlockFormat::MarkerType::NoMarker;
     if (selectionFormat) {
         painter->setPen(QPen(selectionFormat->foreground(), 0));
-        painter->fillRect(r, selectionFormat->background());
+        if (!marker)
+            painter->fillRect(r, selectionFormat->background());
     } else {
         QBrush fg = charFormat.foreground();
         if (fg == Qt::NoBrush)
@@ -2198,19 +2200,21 @@ void QTextDocumentLayoutPrivate::drawListItem(const QPointF &offset, QPainter *p
 
     QBrush brush = context.palette.brush(QPalette::Text);
 
-    bool marker = bl.blockFormat().marker() != QTextBlockFormat::MarkerType::NoMarker;
     if (marker) {
         int adj = fontMetrics.lineSpacing() / 6;
         r.adjust(-adj, 0, -adj, 0);
+        const QRectF outer = r.adjusted(-adj, -adj, adj, adj);
+        if (selectionFormat)
+            painter->fillRect(outer, selectionFormat->background());
         if (bl.blockFormat().marker() == QTextBlockFormat::MarkerType::Checked) {
-            // ### Qt6: render with QStyle / PE_IndicatorCheckBox. We don't currently
+            // ### Qt7: render with QStyle / PE_IndicatorCheckBox. We don't currently
             // have access to that here, because it would be a widget dependency.
             painter->setPen(QPen(painter->pen().color(), 2));
             painter->drawLine(r.topLeft(), r.bottomRight());
             painter->drawLine(r.topRight(), r.bottomLeft());
             painter->setPen(QPen(painter->pen().color(), 0));
         }
-        painter->drawRect(r.adjusted(-adj, -adj, adj, adj));
+        painter->drawRect(outer);
     }
 
     switch (style) {
