@@ -130,6 +130,10 @@ VERS_1;
     if(APPLE)
         set(HAVE_LD_VERSION_SCRIPT OFF)
     endif()
+    # Also makes no sense with MSVC-style command-line
+    if(MSVC)
+        set(HAVE_LD_VERSION_SCRIPT OFF)
+    endif()
 
     set(TEST_ld_version_script "${HAVE_LD_VERSION_SCRIPT}" CACHE INTERNAL "linker version script support")
 endfunction()

@@ -1,7 +1,7 @@
 
 function(qt_internal_set_warnings_are_errors_flags target)
     set(flags "")
-    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" AND NOT MSVC)
         # Regular clang 3.0+
         if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "3.0.0")
             list(APPEND flags -Werror -Wno-error=\#warnings -Wno-error=deprecated-declarations)
