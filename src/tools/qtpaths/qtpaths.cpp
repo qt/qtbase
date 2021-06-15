@@ -148,7 +148,7 @@ static const StringEnum &parseLocationOrError(const QString &locationString)
         if (locationString == QLatin1String(se.stringvalue))
             return se;
 
-    QString message = QCoreApplication::translate("qtpaths", "Unknown location: %1");
+    QString message = QStringLiteral("Unknown location: %1");
     error(message.arg(locationString));
 }
 
@@ -162,7 +162,7 @@ static QString searchStringOrError(QCommandLineParser *parser)
 {
     int positionalArgumentCount = parser->positionalArguments().size();
     if (positionalArgumentCount != 1)
-        error(QCoreApplication::translate("qtpaths", "Exactly one argument needed as searchitem"));
+        error(QStringLiteral("Exactly one argument needed as searchitem"));
     return parser->positionalArguments().constFirst();
 }
 
@@ -178,86 +178,85 @@ int main(int argc, char **argv)
 #endif
 
     QCommandLineParser parser;
-    parser.setApplicationDescription(QCoreApplication::translate("qtpaths", "Command line client to QStandardPaths and QLibraryInfo"));
-    parser.addPositionalArgument(QCoreApplication::translate("qtpaths", "[name]"), QCoreApplication::tr("Name of file or directory"));
-    parser.addPositionalArgument(QCoreApplication::translate("qtpaths", "[properties]"), QCoreApplication::tr("List of the Qt properties to query by the --qt-query argument."));
+    parser.setApplicationDescription(QStringLiteral("Command line client to QStandardPaths and QLibraryInfo"));
+    parser.addPositionalArgument(QStringLiteral("[name]"), QStringLiteral("Name of file or directory"));
+    parser.addPositionalArgument(QStringLiteral("[properties]"), QStringLiteral("List of the Qt properties to query by the --qt-query argument."));
     parser.setSingleDashWordOptionMode(QCommandLineParser::ParseAsLongOptions);
     parser.addHelpOption();
     parser.addVersionOption();
 
     //setting up options
-    QCommandLineOption types(QStringLiteral("types"), QCoreApplication::translate("qtpaths", "Available location types."));
+    QCommandLineOption types(QStringLiteral("types"), QStringLiteral("Available location types."));
     parser.addOption(types);
 
-    QCommandLineOption paths(QStringLiteral("paths"), QCoreApplication::translate("qtpaths", "Find paths for <type>."), QStringLiteral("type"));
+    QCommandLineOption paths(QStringLiteral("paths"), QStringLiteral("Find paths for <type>."), QStringLiteral("type"));
     parser.addOption(paths);
 
     QCommandLineOption writablePath(QStringLiteral("writable-path"),
-                                    QCoreApplication::translate("qtpaths", "Find writable path for <type>."), QStringLiteral("type"));
+                                    QStringLiteral("Find writable path for <type>."), QStringLiteral("type"));
     parser.addOption(writablePath);
 
     QCommandLineOption locateDir(QStringList() << QStringLiteral("locate-dir") << QStringLiteral("locate-directory"),
-                                 QCoreApplication::translate("qtpaths", "Locate directory [name] in <type>."), QStringLiteral("type"));
+                                 QStringLiteral("Locate directory [name] in <type>."), QStringLiteral("type"));
     parser.addOption(locateDir);
 
     QCommandLineOption locateDirs(QStringList() << QStringLiteral("locate-dirs") << QStringLiteral("locate-directories"),
-                                  QCoreApplication::translate("qtpaths", "Locate directories [name] in all paths for <type>."), QStringLiteral("type"));
+                                  QStringLiteral("Locate directories [name] in all paths for <type>."), QStringLiteral("type"));
     parser.addOption(locateDirs);
 
     QCommandLineOption locateFile(QStringLiteral("locate-file"),
-                                  QCoreApplication::translate("qtpaths", "Locate file [name] for <type>."), QStringLiteral("type"));
+                                  QStringLiteral("Locate file [name] for <type>."), QStringLiteral("type"));
     parser.addOption(locateFile);
 
     QCommandLineOption locateFiles(QStringLiteral("locate-files"),
-                                   QCoreApplication::translate("qtpaths", "Locate files [name] in all paths for <type>."), QStringLiteral("type"));
+                                   QStringLiteral("Locate files [name] in all paths for <type>."), QStringLiteral("type"));
     parser.addOption(locateFiles);
 
     QCommandLineOption findExe(QStringList() << QStringLiteral("find-exe") << QStringLiteral("find-executable"),
-                               QCoreApplication::translate("qtpaths", "Find executable with [name]."));
+                               QStringLiteral("Find executable with [name]."));
     parser.addOption(findExe);
 
     QCommandLineOption display(QStringList() << QStringLiteral("display"),
-                               QCoreApplication::translate("qtpaths", "Prints user readable name for <type>."), QStringLiteral("type"));
+                               QStringLiteral("Prints user readable name for <type>."), QStringLiteral("type"));
     parser.addOption(display);
 
     QCommandLineOption testmode(QStringList() << QStringLiteral("testmode") << QStringLiteral("test-mode"),
-                                QCoreApplication::translate("qtpaths", "Use paths specific for unit testing."));
+                                QStringLiteral("Use paths specific for unit testing."));
     parser.addOption(testmode);
 
-    QCommandLineOption qtversion(QStringLiteral("qt-version"), QCoreApplication::translate("qtpaths", "Qt version."));
+    QCommandLineOption qtversion(QStringLiteral("qt-version"), QStringLiteral("Qt version."));
     qtversion.setFlags(QCommandLineOption::HiddenFromHelp);
     parser.addOption(qtversion);
 
-    QCommandLineOption installprefix(QStringLiteral("install-prefix"), QCoreApplication::translate("qtpaths", "Installation prefix for Qt."));
+    QCommandLineOption installprefix(QStringLiteral("install-prefix"), QStringLiteral("Installation prefix for Qt."));
     installprefix.setFlags(QCommandLineOption::HiddenFromHelp);
     parser.addOption(installprefix);
 
     QCommandLineOption bindir(QStringList() << QStringLiteral("binaries-dir") << QStringLiteral("binaries-directory"),
-                              QCoreApplication::translate("qtpaths", "Location of Qt executables."));
+                              QStringLiteral("Location of Qt executables."));
     bindir.setFlags(QCommandLineOption::HiddenFromHelp);
     parser.addOption(bindir);
 
     QCommandLineOption plugindir(QStringList() << QStringLiteral("plugin-dir") << QStringLiteral("plugin-directory"),
-                                 QCoreApplication::translate("qtpaths", "Location of Qt plugins."));
+                                 QStringLiteral("Location of Qt plugins."));
     plugindir.setFlags(QCommandLineOption::HiddenFromHelp);
     parser.addOption(plugindir);
 
     QCommandLineOption query(
             QStringList() << QStringLiteral("qt-query") << QStringLiteral("query"),
-            QCoreApplication::translate("qtpaths",
-                                        "List of Qt properties. Can be used standalone or with the "
-                                        "--query-format and --qtconf options."));
+            QStringLiteral("List of Qt properties. Can be used standalone or with the "
+                           "--query-format and --qtconf options."));
     parser.addOption(query);
 
     QCommandLineOption queryformat(QStringLiteral("query-format"),
-                                   QCoreApplication::translate("qtpaths", "Output format for --qt-query.\nSupported formats: qmake (default), json"),
-                                   QCoreApplication::translate("qtpaths", "format"));
+                                   QStringLiteral("Output format for --qt-query.\nSupported formats: qmake (default), json"),
+                                   QStringLiteral("format"));
     queryformat.setDefaultValue("qmake");
     parser.addOption(queryformat);
 
     QCommandLineOption qtconf(QStringLiteral("qtconf"),
-                                   QCoreApplication::translate("qtpaths", "Path to qt.conf file that will be used to override the queried Qt properties."),
-                                   QCoreApplication::translate("qtpaths", "path"));
+                                   QStringLiteral("Path to qt.conf file that will be used to override the queried Qt properties."),
+                                   QStringLiteral("path"));
     parser.addOption(qtconf);
 
     parser.process(app);
@@ -355,7 +354,7 @@ int main(int argc, char **argv)
 #else
     if (parser.isSet(query)) {
         if (!results.isEmpty()) {
-            QString errorMessage = QCoreApplication::translate("qtpaths", "Several options given, only one is supported at a time.");
+            QString errorMessage = QStringLiteral("Several options given, only one is supported at a time.");
             error(errorMessage);
         }
 
@@ -365,7 +364,7 @@ int main(int argc, char **argv)
             if (formatValue == "json") {
                   printer = jsonPropertyPrinter;
             } else if (formatValue != "qmake") {
-                QString errorMessage = QCoreApplication::translate("qtpaths", "Invalid output format %1. Supported formats: qmake, json").arg(formatValue);
+                QString errorMessage = QStringLiteral("Invalid output format %1. Supported formats: qmake, json").arg(formatValue);
                 error(errorMessage);
             }
         }
@@ -377,7 +376,7 @@ int main(int argc, char **argv)
         }
         return prop.queryProperty(optionProperties);
     } else if (parser.isSet(queryformat)) {
-        error(QCoreApplication::translate("qtpaths", "--query-format is set, but --qt-query is not requested."));
+        error(QStringLiteral("--query-format is set, but --qt-query is not requested."));
     }
 #endif
 
@@ -389,7 +388,7 @@ int main(int argc, char **argv)
         if (item.isEmpty())
             return EXIT_FAILURE;
     } else {
-        QString errorMessage = QCoreApplication::translate("qtpaths", "Several options given, only one is supported at a time.");
+        QString errorMessage = QStringLiteral("Several options given, only one is supported at a time.");
         error(errorMessage);
     }
     return EXIT_SUCCESS;
