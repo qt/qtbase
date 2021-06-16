@@ -2115,7 +2115,7 @@ QMessageBox::QMessageBox(const QString &title, const QString &text, Icon icon,
 }
 
 /*!
-    \deprecated
+    \deprecated [6.2]. Use the overload taking StandardButtons instead.
 
     Opens an information message box with the given \a title and the
     \a text. The dialog may have up to three buttons. Each of the
@@ -2161,7 +2161,7 @@ int QMessageBox::information(QWidget *parent, const QString &title, const QStrin
 }
 
 /*!
-    \deprecated
+    \deprecated since 6.2. Use the overload taking StandardButtons instead.
     \overload
 
     Displays an information message box with the given \a title and
@@ -2201,7 +2201,8 @@ int QMessageBox::information(QWidget *parent, const QString &title, const QStrin
 }
 
 /*!
-    \deprecated
+    \deprecated [6.2]. Use the overload taking StandardButtons
+    instead.
 
     Opens a question message box with the given \a title and \a text.
     The dialog may have up to three buttons. Each of the buttons, \a
@@ -2247,7 +2248,7 @@ int QMessageBox::question(QWidget *parent, const QString &title, const QString& 
 }
 
 /*!
-    \deprecated
+    \deprecated [6.2]. Use the overload taking StandardButtons instead.
     \overload
 
     Displays a question message box with the given \a title and \a
@@ -2287,7 +2288,7 @@ int QMessageBox::question(QWidget *parent, const QString &title, const QString& 
 
 
 /*!
-    \deprecated
+    \deprecated [6.2]. Use the overload taking StandardButtons instead.
 
     Opens a warning message box with the given \a title and \a text.
     The dialog may have up to three buttons. Each of the button
@@ -2333,7 +2334,7 @@ int QMessageBox::warning(QWidget *parent, const QString &title, const QString& t
 }
 
 /*!
-    \deprecated
+    \deprecated [6.2]. Use the overload taking StandardButtons instead.
     \overload
 
     Displays a warning message box with the given \a title and \a
@@ -2372,7 +2373,7 @@ int QMessageBox::warning(QWidget *parent, const QString &title, const QString& t
 }
 
 /*!
-    \deprecated
+    \deprecated [6.2]. Use the overload taking StandardButtons instead.
 
     Opens a critical message box with the given \a title and \a text.
     The dialog may have up to three buttons. Each of the button
@@ -2419,7 +2420,7 @@ int QMessageBox::critical(QWidget *parent, const QString &title, const QString& 
 }
 
 /*!
-    \deprecated
+    \deprecated [6.2]. Use the overload taking StandardButtons instead.
     \overload
 
     Displays a critical error message box with the given \a title and
