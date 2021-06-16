@@ -962,7 +962,7 @@ function(qt_internal_static_link_order_test)
     # TODO: This check is added before the actual release of CMake 3.21. So need to check if the
     # target version meets the expectations.
     if(CMAKE_VERSION VERSION_LESS 3.21)
-        __qt_internal_check_link_order_matters(${QT_CMAKE_EXPORT_NAMESPACE}::Platform)
+        __qt_internal_check_link_order_matters(link_order_matters)
         if(link_order_matters)
             set(summary_message "no")
         else()

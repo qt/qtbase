@@ -240,8 +240,8 @@ qt_copy_or_install(FILES
 
 # Install public config.tests files.
 qt_copy_or_install(DIRECTORY
-    "cmake/config.tests"
-    DESTINATION "${__GlobalConfig_install_dir}"
+    "config.tests/static_link_order"
+    DESTINATION "${__GlobalConfig_install_dir}/config.tests"
 )
 
 # Install public CMake files.

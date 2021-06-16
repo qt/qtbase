@@ -111,4 +111,4 @@ if (_Qt_NOTFOUND_MESSAGE)
 endif()
 
 __qt_internal_defer_promote_targets_in_dir_scope_to_global()
-__qt_internal_check_link_order_matters(@INSTALL_CMAKE_NAMESPACE@::Platform)
+__qt_internal_check_link_order_matters()
