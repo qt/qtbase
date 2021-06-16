@@ -534,6 +534,8 @@ bool updateCursorTheme(void *dpy, const QByteArray &theme) {
     Q_UNUSED(screen);
     Q_UNUSED(name);
     QXcbCursor *self = static_cast<QXcbCursor *>(handle);
+    self->m_cursorHash.clear();
+
     updateCursorTheme(self->connection()->xlib_display(),property.toByteArray());
 }
 
@@ -559,14 +561,16 @@ xcb_cursor_t QXcbCursor::createFontCursor(int cshape)
     int cursorId = cursorIdForShape(cshape);
     xcb_cursor_t cursor = XCB_NONE;
 
-    // Try Xcursor first
 #if QT_CONFIG(xcb_xlib) && QT_CONFIG(library)
+    if (m_screen->xSettings()->initialized())
+        m_screen->xSettings()->registerCallbackForProperty("Gtk/CursorThemeName",cursorThemePropertyChanged,this);
+
+    // Try Xcursor first
     if (cshape >= 0 && cshape <= Qt::LastCursor) {
         void *dpy = connection()->xlib_display();
         cursor = loadCursor(dpy, cshape);
         if (!cursor && !m_gtkCursorThemeInitialized && m_screen->xSettings()->initialized()) {
             QByteArray gtkCursorTheme = m_screen->xSettings()->setting("Gtk/CursorThemeName").toByteArray();
-            m_screen->xSettings()->registerCallbackForProperty("Gtk/CursorThemeName",cursorThemePropertyChanged,this);
             if (updateCursorTheme(dpy,gtkCursorTheme)) {
                 cursor = loadCursor(dpy, cshape);
             }
