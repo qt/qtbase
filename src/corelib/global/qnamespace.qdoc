@@ -2845,6 +2845,11 @@
     \value MatchRecursive          Searches the entire hierarchy.
     \omitvalue MatchTypeMask
 
+    \note Qt::MatchExactly, Qt::MatchContains, Qt::MatchStartsWith,
+          Qt::MatchEndsWith, Qt::MatchRegularExpression, Qt::MatchWildcard, and
+          Qt::MatchFixedString are mutually exclusive. The behavior achieved by
+          setting several of them in a Qt::MatchFlags argument is undefined.
+
     \sa QString::compare(), QRegularExpression
 */
 
