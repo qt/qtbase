@@ -179,7 +179,7 @@ uint QFileInfoPrivate::getFileFlags(QAbstractFileEngine::FileFlags request) cons
             req |= QAbstractFileEngine::Refresh;
 
         QAbstractFileEngine::FileFlags flags = fileEngine->fileFlags(req);
-        fileFlags |= uint(flags);
+        fileFlags |= uint(flags.toInt());
         setCachedFlag(cachedFlags);
     }
 
@@ -1361,7 +1361,7 @@ bool QFileInfo::permission(QFile::Permissions permissions) const
                 fseFlags,
                 [=]() { return (d->metaData.permissions() & permissions) == permissions; },
         [=]() {
-            return d->getFileFlags(feFlags) == uint(permissions);
+            return d->getFileFlags(feFlags) == uint(permissions.toInt());
         });
 }
 
