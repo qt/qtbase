@@ -1029,7 +1029,7 @@ function(qt6_extract_metatypes target)
                     --cmake-autogen-info-file "${cmake_autogen_info_file}"
                     --output-file-path "${type_list_file}"
                     ${mutli_config_args}
-                COMMENT "Running Automoc file extraction"
+                COMMENT "Running AUTOMOC file extraction for target ${target}"
                 COMMAND_EXPAND_LISTS
             )
             add_dependencies(${target}_automoc_json_extraction ${target}_autogen)
@@ -1047,7 +1047,7 @@ function(qt6_extract_metatypes target)
                     --cmake-autogen-info-file "${cmake_autogen_info_file}"
                     --output-file-path "${type_list_file}"
                     ${mutli_config_args}
-                COMMENT "Running Automoc file extraction"
+                COMMENT "Running AUTOMOC file extraction for target ${target}"
                 COMMAND_EXPAND_LISTS
             )
 
@@ -1117,7 +1117,7 @@ function(qt6_extract_metatypes target)
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
             ${metatypes_file_gen}
             ${metatypes_file}
-        COMMENT "Running automoc with --collect-json"
+        COMMENT "Running moc --collect-json for target ${target}"
     )
 
     # We still need to add this file as a source of Core, otherwise the file
