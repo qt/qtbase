@@ -473,7 +473,7 @@ qt_feature_definition("developer-build" "QT_BUILD_INTERNAL")
 qt_feature_config("developer-build" QMAKE_PUBLIC_QT_CONFIG
     NAME "private_tests"
 )
-qt_feature("debug"
+qt_feature("debug" PRIVATE
     LABEL "Build for debugging"
     AUTODETECT ON
     CONDITION CMAKE_BUILD_TYPE STREQUAL Debug OR Debug IN_LIST CMAKE_CONFIGURATION_TYPES
