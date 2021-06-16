@@ -42,6 +42,7 @@ class tst_QHash : public QObject
 private slots:
     void insert1();
     void erase();
+    void erase_edge_case();
     void key();
 
     void swap();
@@ -530,6 +531,24 @@ void tst_QHash::erase()
     auto mit = h2.erase(bit);
     mit = h2.erase(h2.begin());
     QVERIFY(mit == h2.end());
+}
+
+/*
+    With a specific seed we could end up in a situation where, upon deleting the
+    last entry in a QHash, the returned iterator would not point to the end()
+    iterator.
+*/
+void tst_QHash::erase_edge_case()
+{
+    QHash<int, int> h1;
+    h1.reserve(2);
+    h1.d->seed = 10230148258692185509ull;
+    h1.insert(3, 4);
+    h1.insert(5, 6);
+    QHash<int, int>::iterator it1 = h1.begin();
+    ++it1;
+    it1 = h1.erase(it1);
+    QVERIFY(it1 == h1.end());
 }
 
 void tst_QHash::key()
