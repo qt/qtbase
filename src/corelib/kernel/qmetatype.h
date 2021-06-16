@@ -457,7 +457,7 @@ public:
             return idHelper();
         }
         return 0;
-    };
+    }
 #endif
     constexpr qsizetype sizeOf() const;
     constexpr qsizetype alignOf() const;
@@ -1731,7 +1731,7 @@ private:
         if (x != e)
             x++;
         return x;
-    };
+    }
     static constexpr const char *skipTemplate(const char *x, const char *e, bool stopAtComa = false)
     {
         int scopeDepth = 0;
@@ -1772,7 +1772,7 @@ private:
             x++;
         }
         return x;
-    };
+    }
 
     constexpr void append(char x)
     {
@@ -1793,7 +1793,7 @@ private:
     {
         while (*x)
             append(*x++);
-    };
+    }
 
     constexpr void normalizeIntegerTypes(const char *&begin, const char *end)
     {
