@@ -51,6 +51,8 @@
 #include <initializer_list>
 #include <functional> // for std::hash
 
+class tst_QHash; // for befriending
+
 QT_BEGIN_NAMESPACE
 
 struct QHashDummyValue
@@ -680,7 +682,7 @@ struct Data
         }
 
         // return correct position of the next element
-        if (!spans[span].hasNode(index))
+        if (bucket == numBuckets - 1 || !spans[span].hasNode(index))
             ++it;
         return it;
     }
@@ -740,6 +742,7 @@ class QHash
     using Data = QHashPrivate::Data<Node>;
     friend class QSet<Key>;
     friend class QMultiHash<Key, T>;
+    friend tst_QHash;
 
     Data *d = nullptr;
 
