@@ -485,9 +485,10 @@
     \note a statically allocated list will report a capacity of 0,
     even if it's not empty.
 
-    \note The free space position in the allocated memory block is undefined. In
-    other words, one should not assume that the free memory is always located
-    after the initialized elements.
+    \warning The free space position in the allocated memory block is undefined.
+    In other words, you should not assume that the free memory is always located
+    at the end of the list. You can call reserve() to ensure that there is
+    enough space at the end.
 
     \sa reserve(), squeeze()
 */
