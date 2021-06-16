@@ -2676,7 +2676,7 @@ QtPrivate::QRegularExpressionMatchIteratorRangeBasedForIterator begin(const QReg
 */
 QDataStream &operator<<(QDataStream &out, const QRegularExpression &re)
 {
-    out << re.pattern() << quint32(re.patternOptions());
+    out << re.pattern() << quint32(re.patternOptions().toInt());
     return out;
 }
 
@@ -2693,7 +2693,7 @@ QDataStream &operator>>(QDataStream &in, QRegularExpression &re)
     quint32 patternOptions;
     in >> pattern >> patternOptions;
     re.setPattern(pattern);
-    re.setPatternOptions(QRegularExpression::PatternOptions(patternOptions));
+    re.setPatternOptions(QRegularExpression::PatternOptions::fromInt(patternOptions));
     return in;
 }
 #endif
