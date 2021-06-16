@@ -416,8 +416,9 @@ bool QWasmWindow::windowIsPopupType(Qt::WindowType type) const
 {
     if (type == Qt::Widget)
         type = window()->type();
-    if (type == Qt::Tool)
-        return false;
+    if (type != Qt::Tool)
+        return true;
+    return false;
 }
 
 QT_END_NAMESPACE
