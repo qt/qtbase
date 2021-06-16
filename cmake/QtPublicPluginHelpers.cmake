@@ -244,6 +244,11 @@ function(__qt_internal_add_static_plugin_init_object_library
         ${QT_CMAKE_EXPORT_NAMESPACE}::Core
     )
 
+    set_property(TARGET ${plugin_init_target} PROPERTY _is_qt_plugin_init_target TRUE)
+    set_property(TARGET ${plugin_init_target} APPEND PROPERTY
+        EXPORT_PROPERTIES _is_qt_plugin_init_target
+    )
+
     set(${out_var_plugin_init_target} "${plugin_init_target}" PARENT_SCOPE)
 endfunction()
 
