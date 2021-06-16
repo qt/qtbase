@@ -388,16 +388,15 @@ static const QMarginsF pushButtonShadowMargins[3] = {
     { 1.5, 0.5, 1.5, 2.5 }
 };
 
-// These are frame heights as reported by Xcode 9's Interface Builder.
-// Alignemnet rectangle's heights match for push and popup buttons
-// with respective values 21, 18 and 15.
+// These are frame heights as reported by Xcode 9's Interface Builder
+// and determined experimentally.
 
 static const qreal comboBoxDefaultHeight[3] = {
     26, 22, 19
 };
 
 static const qreal pushButtonDefaultHeight[3] = {
-    32, 28, 16
+    32, 28, 24
 };
 
 static const qreal popupButtonDefaultHeight[3] = {
@@ -1207,8 +1206,9 @@ void QMacStylePrivate::drawFocusRing(QPainter *p, const QRectF &targetRect, int 
         focusRect = QRectF::fromCGRect([pb alignmentRectForFrame:pb.frame]);
         if (cw.type == QMacStylePrivate::Button_PushButton) {
             focusRect -= pushButtonShadowMargins[cw.size];
-        }
-        else if (cw.type == QMacStylePrivate::Button_PullDown) {
+            if (cw.size == QStyleHelper::SizeMini)
+                focusRect.adjust(0, 3, 0, -3);
+        } else if (cw.type == QMacStylePrivate::Button_PullDown) {
             focusRect -= pullDownButtonShadowMargins[cw.size];
             //fix focus ring drawn slightly off for pull downs
             if (cw.size == QStyleHelper::SizeLarge)
@@ -1598,9 +1598,9 @@ QRectF QMacStylePrivate::CocoaControl::adjustedControlFrame(const QRectF &rect) 
         frameRect = QRectF(rect.topLeft(),
                            QSizeF(rect.width(), frameSize.height()));
         if (size == QStyleHelper::SizeSmall)
-            frameRect = frameRect.translated(0, 1.5);
+            frameRect.translate(0, 0.5);
         else if (size == QStyleHelper::SizeMini)
-            frameRect = frameRect.adjusted(0, 0, -8, 0).translated(4, 4);
+            frameRect = frameRect.adjusted(0, 0, -8, 0).translated(4, -0.5);
         frameRect = frameRect.adjusted(-pushButtonBevelRectOffsets[size], 0,
                                         pushButtonBevelRectOffsets[size], 0);
     } else {
@@ -1686,13 +1686,15 @@ QMacStylePrivate::CocoaControlType cocoaControlType(const QStyleOption *opt, con
 {
     if (const auto *btn = qstyleoption_cast<const QStyleOptionButton *>(opt)) {
         const bool hasMenu = btn->features & QStyleOptionButton::HasMenu;
-        // When the contents won't fit in a large sized button,
-        // and WA_MacNormalSize is not set, make the button square.
+        // Buttons that don't fit (or don't get filled by) the default bevel
+        // will be made of square type, unless WA_MacNormalSize is not set.
         // Threshold used to be at 34, not 32.
-        const auto maxNonSquareHeight = pushButtonDefaultHeight[QStyleHelper::SizeLarge];
+        // Needs to be in sync with similar logic in CE_FocusFrame handling
+        QStyleHelper::WidgetSizePolicy sizePolicy = QStyleHelper::widgetSizePolicy(w, opt);
+        if (sizePolicy == QStyleHelper::SizeDefault)
+            sizePolicy = QStyleHelper::SizeLarge;
         const bool isSquare = (btn->features & QStyleOptionButton::Flat)
-                || (btn->rect.height() > maxNonSquareHeight
-                    && !(w && w->testAttribute(Qt::WA_MacNormalSize)));
+                || (btn->rect.height() != pushButtonDefaultHeight[sizePolicy]);
         return (isSquare? QMacStylePrivate::Button_SquareButton :
                 hasMenu ? QMacStylePrivate::Button_PullDown :
                 QMacStylePrivate::Button_PushButton);
@@ -3155,7 +3157,7 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
         break;
     case PE_FrameWindow:
         if (const QStyleOptionFrame *frame = qstyleoption_cast<const QStyleOptionFrame *>(opt)) {
-            if (w && w->inherits("QMdiSubWindow")) {
+            if (qobject_cast<const QMdiSubWindow*>(w)) {
                 p->save();
                 p->setPen(QPen(frame->palette.dark().color(), frame->lineWidth));
                 p->setBrush(frame->palette.window());
@@ -3767,7 +3769,13 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             const bool isActive = btn.state & State_Active;
             const bool isPressed = btn.state & State_Sunken;
 
+            // cocoaControlType evaluates the type based on the control's geometry, not on the
+            // label's geometry
+            const QRect oldRect = btn.rect;
+            if (w)
+                btn.rect = w->rect();
             const auto ct = cocoaControlType(&btn, w);
+            btn.rect = oldRect;
 
             if (!hasMenu && ct != QMacStylePrivate::Button_SquareButton) {
                 if (isPressed
@@ -4173,17 +4181,21 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
         const auto *ffw = ff ? ff->widget() : nullptr;
         const auto ct = [=] {
             if (ffw) {
-                if (ffw->inherits("QCheckBox"))
+                if (qobject_cast<const QCheckBox*>(ffw))
                     return QMacStylePrivate::Button_CheckBox;
-                if (ffw->inherits("QRadioButton"))
+                if (qobject_cast<const QRadioButton*>(ffw))
                     return QMacStylePrivate::Button_RadioButton;
-                if (ffw->inherits("QLineEdit") || ffw->inherits("QTextEdit"))
+                if (qobject_cast<const QLineEdit*>(ffw) || qobject_cast<const QTextEdit*>(ffw))
                     return QMacStylePrivate::TextField;
                 if (const auto *pb = qobject_cast<const QPushButton *>(ffw)) {
-                    if (pb->isFlat() || (pb->rect().height()
-                        > pushButtonDefaultHeight[QStyleHelper::SizeLarge]
-                        && !(pb->testAttribute(Qt::WA_MacNormalSize))))
-                            return QMacStylePrivate::Button_SquareButton;
+                    // keep in sync with cocoaControlType
+                    auto sizePolicy = QStyleHelper::widgetSizePolicy(ffw, opt);
+                    if (sizePolicy == QStyleHelper::SizeDefault)
+                        sizePolicy = QStyleHelper::SizeLarge;
+                    if (pb->isFlat()
+                        || (pb->rect().height() != pushButtonDefaultHeight[sizePolicy])) {
+                        return QMacStylePrivate::Button_SquareButton;
+                    }
                     if (pb->menu() != nullptr)
                         return QMacStylePrivate::Button_PullDown;
                     return QMacStylePrivate::Button_PushButton;
@@ -4192,10 +4204,9 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
 
             return QMacStylePrivate::Box; // Not really, just make it the default
         } ();
-        const auto cs = ffw ? (ffw->testAttribute(Qt::WA_MacMiniSize) ? QStyleHelper::SizeMini :
-                               ffw->testAttribute(Qt::WA_MacSmallSize) ? QStyleHelper::SizeSmall :
-                               QStyleHelper::SizeLarge) :
-                        QStyleHelper::SizeLarge;
+        auto cs = QStyleHelper::widgetSizePolicy(ffw, opt);
+        if (cs == QStyleHelper::SizeDefault)
+            cs = QStyleHelper::SizeLarge;
         const int hMargin = proxy()->pixelMetric(QStyle::PM_FocusFrameHMargin, opt, w);
         const int vMargin = proxy()->pixelMetric(QStyle::PM_FocusFrameVMargin, opt, w);
         d->drawFocusRing(p, opt->rect, hMargin, vMargin, QMacStylePrivate::CocoaControl(ct, cs));
