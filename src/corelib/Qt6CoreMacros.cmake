@@ -1704,7 +1704,7 @@ function(_qt_internal_process_resource target resourceName)
                         ${resource_dependencies}
                         ${generatedResourceFile}
                         "${QT_CMAKE_EXPORT_NAMESPACE}::rcc"
-                       COMMENT "RCC ${newResourceName}"
+                       COMMENT "Running rcc for resource ${newResourceName}"
                        VERBATIM)
 
     if(isBinary)
