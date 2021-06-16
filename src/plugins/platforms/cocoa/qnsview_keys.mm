@@ -117,6 +117,11 @@
                     // pass the key event to the input method. note that m_sendKeyEvent may be set to false during this call
                     m_currentlyInterpretedKeyEvent = nsevent;
                     [self interpretKeyEvents:@[nsevent]];
+                    // If the receiver opens an editor in response to a key press, then the focus will change, the input
+                    // method will be reset, and the first key press will be gone. If the focus object changes, then we
+                    // need to pass the key event to the input method once more.
+                    if (qApp->focusObject() != fo)
+                        [self interpretKeyEvents:@[nsevent]];
                     m_currentlyInterpretedKeyEvent = 0;
                     // if the last key we sent was dead, then pass the next key to the IM as well to complete composition
                     m_lastKeyDead = text.isEmpty();
