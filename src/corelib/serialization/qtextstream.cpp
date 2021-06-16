@@ -560,7 +560,6 @@ bool QTextStreamPrivate::scan(const QChar **ptr, int *length, int maxlen, TokenD
     int startOffset = device ? readBufferOffset : stringOffset;
     QChar lastChar;
 
-    bool canStillReadFromDevice = true;
     do {
         int endOffset;
         const QChar *chPtr;
@@ -602,7 +601,7 @@ bool QTextStreamPrivate::scan(const QChar **ptr, int *length, int maxlen, TokenD
         }
     } while (!foundToken
              && (!maxlen || totalSize < maxlen)
-             && (device && (canStillReadFromDevice = fillReadBuffer())));
+             && device && fillReadBuffer());
 
     if (totalSize == 0) {
 #if defined (QTEXTSTREAM_DEBUG)
