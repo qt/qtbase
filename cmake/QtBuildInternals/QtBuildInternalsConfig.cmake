@@ -672,11 +672,21 @@ macro(qt_examples_build_begin)
         # Examples will be built using ExternalProject.
         # We always depend on all plugins so as to prevent opportunities for
         # weird errors associated with loading out-of-date plugins from
-        # unrelated Qt modules. We also depend on all targets from this repo
+        # unrelated Qt modules.
+        # We also depend on all targets from this repo's src and tools subdirectories
         # to ensure that we've built anything that a find_package() call within
         # an example might use. Projects can add further dependencies if needed,
         # but that should rarely be necessary.
-        set(QT_EXAMPLE_DEPENDENCIES qt_plugins ${qt_repo_targets_name} ${arg_DEPENDS})
+        set(QT_EXAMPLE_DEPENDENCIES qt_plugins ${arg_DEPENDS})
+
+        if(TARGET ${qt_repo_targets_name}_src)
+            list(APPEND QT_EXAMPLE_DEPENDENCIES ${qt_repo_targets_name}_src)
+        endif()
+
+        if(TARGET ${qt_repo_targets_name}_tools)
+            list(APPEND QT_EXAMPLE_DEPENDENCIES ${qt_repo_targets_name}_tools)
+        endif()
+
         set(QT_EXAMPLE_BASE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
         string(TOLOWER ${PROJECT_NAME} project_name_lower)
