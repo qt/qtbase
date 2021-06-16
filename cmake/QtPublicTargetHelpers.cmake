@@ -16,49 +16,30 @@ function(__qt_internal_strip_target_directory_scope_token target out_var)
 endfunction()
 
 # Tests if linker could resolve circular dependencies between object files and static libraries.
-function(__qt_internal_static_link_order_public_test target result)
+function(__qt_internal_static_link_order_public_test result)
     # We could trust iOS linker
     if(IOS)
-        set(QT_HAVE_LINK_ORDER_MATTERS_${target} "FALSE" CACHE BOOL "Link order matters")
+        set(QT_HAVE_LINK_ORDER_MATTERS "FALSE" CACHE BOOL "Link order matters")
     endif()
 
-    if(DEFINED QT_HAVE_LINK_ORDER_MATTERS_${target})
-        set(${result} "${QT_HAVE_LINK_ORDER_MATTERS_${target}}" PARENT_SCOPE)
+    if(DEFINED QT_HAVE_LINK_ORDER_MATTERS)
+        set(${result} "${QT_HAVE_LINK_ORDER_MATTERS}" PARENT_SCOPE)
         return()
     endif()
 
-    set(link_options_property LINK_OPTIONS)
-    set(compile_definitions_property COMPILE_DEFINITIONS)
-    get_target_property(type ${target} TYPE)
-    if(type STREQUAL "INTERFACE_LIBRARY")
-        set(link_options_property INTERFACE_LINK_OPTIONS)
-        set(compile_definitions_property INTERFACE_COMPILE_DEFINITIONS)
-    endif()
-
-    get_target_property(linker_options ${target} ${link_options_property})
-    get_target_property(compile_definitions ${target} ${compile_definitions_property})
-    set(linker_options "${CMAKE_EXE_LINKER_FLAGS} ${linker_options}")
-    set(compile_definitions "${CMAKE_CXX_FLAGS} ${compile_definitions}")
-
     if(EXISTS "${QT_CMAKE_DIR}")
-        set(test_source_basedir "${QT_CMAKE_DIR}")
+        set(test_source_basedir "${QT_CMAKE_DIR}/..")
     else()
         set(test_source_basedir "${_qt_cmake_dir}/${QT_CMAKE_EXPORT_NAMESPACE}")
     endif()
 
-    set(test_subdir "${target}")
-    string(TOLOWER "${test_subdir}" test_subdir)
-    string(MAKE_C_IDENTIFIER "${test_subdir}" test_subdir)
     try_compile(${result}
-        "${CMAKE_CURRENT_BINARY_DIR}/${test_subdir}/config.tests/static_link_order"
+        "${CMAKE_CURRENT_BINARY_DIR}/config.tests/static_link_order"
         "${test_source_basedir}/config.tests/static_link_order"
         static_link_order_test
         static_link_order_test
-        CMAKE_FLAGS "-DCMAKE_EXE_LINKER_FLAGS:STRING=${linker_options}"
-        "-DCMAKE_CXX_FLAGS:STRING=${compile_definitions}"
     )
-    message(STATUS "Check if linker can resolve circular dependencies for target ${target} \
-- ${${result}}")
+    message(STATUS "Check if linker can resolve circular dependencies - ${${result}}")
 
     # Invert the result
     if(${result})
@@ -67,7 +48,7 @@ function(__qt_internal_static_link_order_public_test target result)
         set(${result} TRUE)
     endif()
 
-    set(QT_HAVE_LINK_ORDER_MATTERS_${target} "${${result}}" CACHE BOOL "Link order matters")
+    set(QT_HAVE_LINK_ORDER_MATTERS "${${result}}" CACHE BOOL "Link order matters")
 
     set(${result} "${${result}}" PARENT_SCOPE)
 endfunction()
@@ -92,14 +73,18 @@ function(__qt_internal_set_link_order_matters target link_order_matters)
 endfunction()
 
 # Function combines __qt_internal_static_link_order_public_test and
-# __qt_internal_set_link_order_matters calls for the target.
-function(__qt_internal_check_link_order_matters target)
+# __qt_internal_set_link_order_matters calls on Qt::Platform target.
+function(__qt_internal_check_link_order_matters)
     __qt_internal_static_link_order_public_test(
-        ${target} link_order_matters
+         link_order_matters
     )
     __qt_internal_set_link_order_matters(
-        ${target} "${link_order_matters}"
+        ${QT_CMAKE_EXPORT_NAMESPACE}::Platform "${link_order_matters}"
     )
+
+    if("${ARGC}" GREATER "0" AND NOT ARGV0 STREQUAL "")
+        set(${ARGV0} ${link_order_matters} PARENT_SCOPE)
+    endif()
 endfunction()
 
 function(__qt_internal_process_dependency_resource_objects target)
