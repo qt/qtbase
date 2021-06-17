@@ -535,7 +535,7 @@
 
     \section2 The QMetaType class
 
-    In Qt 6, registration of comparators, and \cQDebug and \QDataStream streaming operators is
+    In Qt 6, registration of comparators, and QDebug and QDataStream streaming operators is
     done automatically. Consequently, \c QMetaType::registerEqualsComparator(),
     \c QMetaType::registerComparators(), \c qRegisterMetaTypeStreamOperators() and
     \c QMetaType::registerDebugStreamOperator() do no longer exist. Calls to those methods
