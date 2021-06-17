@@ -585,7 +585,7 @@ function(_qt_internal_finalize_executable target)
         qt_wasm_add_target_helpers("${target}")
     endif()
     if(IOS)
-        qt6_finalize_ios_app("${target}")
+        _qt_internal_finalize_ios_app("${target}")
     endif()
 
     # For finalizer mode of plugin importing to work safely, we need to know the list of Qt
@@ -713,8 +713,7 @@ function(_qt_internal_get_default_ios_bundle_identifier out_var)
     set("${out_var}" "${prefix}.\${PRODUCT_NAME:rfc1034identifier}" PARENT_SCOPE)
 endfunction()
 
-
-function(qt6_finalize_ios_app target)
+function(_qt_internal_finalize_ios_app target)
     # If user hasn't provided a development team id, try to find the first one specified
     # in the Xcode preferences.
     if(NOT CMAKE_XCODE_ATTRIBUTE_DEVELOPMENT_TEAM AND NOT QT_NO_SET_XCODE_DEVELOPMENT_TEAM_ID)
