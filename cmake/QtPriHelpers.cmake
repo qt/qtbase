@@ -246,7 +246,6 @@ ${framework_base_path}/${fw_private_module_header_dir}")
     set(config_module_name_base "${config_module_name}")
 
     if (arg_INTERNAL_MODULE)
-        string(APPEND config_module_name "_private")
         # Internal module pri needs to provide private headers
         set(public_module_includes "${private_module_includes}")
     endif()

@@ -142,6 +142,9 @@ function(qt_internal_add_module target)
         set(property_prefix "")
     endif()
 
+    if(arg_INTERNAL_MODULE)
+        string(APPEND arg_CONFIG_MODULE_NAME "_private")
+    endif()
     set_target_properties(${target} PROPERTIES
         _qt_config_module_name "${arg_CONFIG_MODULE_NAME}"
         ${property_prefix}QT_QMAKE_MODULE_CONFIG "${arg_QMAKE_MODULE_CONFIG}")
