@@ -37,6 +37,7 @@ function(qt_internal_create_toolchain_file)
     endif()
 
     if(VCPKG_CHAINLOAD_TOOLCHAIN_FILE)
+        file(TO_CMAKE_PATH "${VCPKG_CHAINLOAD_TOOLCHAIN_FILE}" VCPKG_CHAINLOAD_TOOLCHAIN_FILE)
         list(APPEND init_vcpkg
              "set(VCPKG_CHAINLOAD_TOOLCHAIN_FILE \"${VCPKG_CHAINLOAD_TOOLCHAIN_FILE}\")")
     endif()
