@@ -104,9 +104,13 @@ function(__qt_internal_process_dependency_object_libraries target)
     endif()
     set_target_properties(${target} PROPERTIES _qt_object_libraries_finalizer_processed TRUE)
 
+    get_target_property(qt_link_order_matters
+        ${QT_CMAKE_EXPORT_NAMESPACE}::Platform _qt_link_order_matters
+    )
     __qt_internal_check_finalizer_mode(${target}
         use_finalizer_mode
         object_libraries
+        DEFAULT_VALUE "${qt_link_order_matters}"
     )
 
     if(NOT use_finalizer_mode)
