@@ -66,6 +66,8 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QColor &);
 class Q_GUI_EXPORT QColor
 {
 public:
+    // ### Qt7: make this "enum Spec: quint8 {...}" and reorder the members below for tighter
+    //          struct packing. QColor could fit into the inline storage of a QVariant on 32bit.
     enum Spec { Invalid, Rgb, Hsv, Cmyk, Hsl, ExtendedRgb };
     enum NameFormat { HexRgb, HexArgb };
 

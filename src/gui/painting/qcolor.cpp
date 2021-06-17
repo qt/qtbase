@@ -54,6 +54,12 @@
 
 QT_BEGIN_NAMESPACE
 
+// QColor fits into QVariant's internal storage on 64bit systems.
+// It could also fit on 32bit systems, but we cannot make it happen in Qt6, due to BC.
+#if QT_VERSION >= QT_VERSION_CHECK(7,0,0) || QT_POINTER_SIZE > 4
+static_assert(sizeof(QColor) <= QVariant::Private::MaxInternalSize);
+#endif
+
 /*!
     \internal
     If s[0..n] is a valid hex number, returns its integer value,
