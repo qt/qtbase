@@ -34,7 +34,7 @@ from distutils.version import LooseVersion
 
 MODULE_NAME = 'qt'
 
-def import_bridge(path, debugger, session_dict, reload_module = False):
+def import_bridge(path, debugger, session_dict, reload_module=False):
     if not reload_module and MODULE_NAME in sys.modules:
         del sys.modules[MODULE_NAME]
 
@@ -58,8 +58,8 @@ def import_bridge(path, debugger, session_dict, reload_module = False):
     return bridge
 
 def report_success(bridge):
-    print "Using Qt summary providers from Creator %s in '%s'" \
-        % (bridge.CREATOR_VERSION, bridge.CREATOR_PATH)
+    print("Using Qt summary providers from Creator {} in '{}'".format(
+          bridge.CREATOR_VERSION, bridge.CREATOR_PATH))
 
 def __lldb_init_module(debugger, session_dict):
     # Check if the module has already been imported globally. This ensures
@@ -87,7 +87,7 @@ def __lldb_init_module(debugger, session_dict):
     for version in sorted(versions, key=LooseVersion, reverse=True):
         path = versions[version]
 
-        bridge_path = path + '/Contents/Resources/debugger/lldbbridge.py'
+        bridge_path = '{}/Contents/Resources/debugger/lldbbridge.py'.format(path)
         bridge = import_bridge(bridge_path, debugger, session_dict)
         if bridge:
             bridge.CREATOR_VERSION = version
@@ -95,4 +95,4 @@ def __lldb_init_module(debugger, session_dict):
             report_success(bridge)
             return
 
-    print "Could not find Qt Creator installation, no Qt summary providers installed"
+    print("Could not find Qt Creator installation, no Qt summary providers installed")
