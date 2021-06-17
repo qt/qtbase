@@ -396,6 +396,9 @@ namespace QtPrivate {
 template<typename Class, typename T, auto Offset, auto Setter, auto Signal=nullptr>
 class QObjectCompatProperty : public QPropertyData<T>
 {
+    template<typename Property, typename>
+    friend class QtPrivate::QBindableInterfaceForProperty;
+
     using ThisType = QObjectCompatProperty<Class, T, Offset, Setter, Signal>;
     using SignalTakesValue = std::is_invocable<decltype(Signal), Class, T>;
     Class *owner()
@@ -408,6 +411,7 @@ class QObjectCompatProperty : public QPropertyData<T>
         char *that = const_cast<char *>(reinterpret_cast<const char *>(this));
         return reinterpret_cast<Class *>(that - QtPrivate::detail::getOffset(Offset));
     }
+
     static bool bindingWrapper(QMetaType type, QUntypedPropertyData *dataPtr, QtPrivate::QPropertyBindingFunction binding)
     {
         auto *thisData = static_cast<ThisType *>(dataPtr);
@@ -590,6 +594,33 @@ private:
             binding->notifyObservers(this);
     }
 };
+
+namespace QtPrivate {
+template<typename Class, typename Ty, auto Offset, auto Setter, auto Signal>
+class QBindableInterfaceForProperty<QObjectCompatProperty<Class, Ty, Offset, Setter, Signal>, std::void_t<Class>>
+{
+    using Property = QObjectCompatProperty<Class, Ty, Offset, Setter, Signal>;
+    using T = typename Property::value_type;
+public:
+    static constexpr QBindableInterface iface = {
+        [](const QUntypedPropertyData *d, void *value) -> void
+        { *static_cast<T*>(value) = static_cast<const Property *>(d)->value(); },
+        [](QUntypedPropertyData *d, const void *value) -> void
+        {
+            (static_cast<Property *>(d)->owner()->*Setter)(*static_cast<const T*>(value));
+        },
+        [](const QUntypedPropertyData *d) -> QUntypedPropertyBinding
+        { return static_cast<const Property *>(d)->binding(); },
+        [](QUntypedPropertyData *d, const QUntypedPropertyBinding &binding) -> QUntypedPropertyBinding
+        { return static_cast<Property *>(d)->setBinding(static_cast<const QPropertyBinding<T> &>(binding)); },
+        [](const QUntypedPropertyData *d, const QPropertyBindingSourceLocation &location) -> QUntypedPropertyBinding
+        { return Qt::makePropertyBinding([d]() -> T { return static_cast<const Property *>(d)->value(); }, location); },
+        [](const QUntypedPropertyData *d, QPropertyObserver *observer) -> void
+        { observer->setSource(static_cast<const Property *>(d)->bindingData()); },
+        []() { return QMetaType::fromType<T>(); }
+    };
+};
+}
 
 #define QT_OBJECT_COMPAT_PROPERTY_4(Class, Type, name,  setter) \
     static constexpr size_t _qt_property_##name##_offset() { \

@@ -111,6 +111,8 @@ private slots:
     void uninstalledBindingDoesNotEvaluate();
 
     void notify();
+
+    void bindableInterfaceOfCompatPropertyUsesSetter();
 };
 
 void tst_QProperty::functorBinding()
@@ -1834,6 +1836,15 @@ void tst_QProperty::notify()
     QCOMPARE(recordedValues.count(), 2);
     QCOMPARE(recordedValues.at(0), 1);
     QCOMPARE(recordedValues.at(1), 2);
+}
+
+void tst_QProperty::bindableInterfaceOfCompatPropertyUsesSetter()
+{
+    MyQObject obj;
+    QBindable<int> bindable = obj.bindableCompat();
+    QCOMPARE(obj.setCompatCalled, 0);
+    bindable.setValue(42);
+    QCOMPARE(obj.setCompatCalled, 1);
 }
 
 QTEST_MAIN(tst_QProperty);
