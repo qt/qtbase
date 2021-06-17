@@ -18,7 +18,7 @@ macro(qt_find_package)
     set(find_package_options CONFIG NO_MODULE MODULE REQUIRED)
     set(options ${find_package_options} MARK_OPTIONAL)
     set(oneValueArgs MODULE_NAME QMAKE_LIB)
-    set(multiValueArgs PROVIDED_TARGETS COMPONENTS)
+    set(multiValueArgs PROVIDED_TARGETS COMPONENTS OPTIONAL_COMPONENTS)
     cmake_parse_arguments(arg "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
     # If some Qt internal project calls qt_find_package(WrapFreeType), but WrapFreeType was already
@@ -63,7 +63,10 @@ macro(qt_find_package)
         # Re-append components to forward them.
         list(APPEND arg_UNPARSED_ARGUMENTS "COMPONENTS;${arg_COMPONENTS}")
     endif()
-    # TODO: Handle REQUIRED_COMPONENTS.
+    if(arg_OPTIONAL_COMPONENTS)
+        # Re-append optional components to forward them.
+        list(APPEND arg_UNPARSED_ARGUMENTS "OPTIONAL_COMPONENTS;${arg_OPTIONAL_COMPONENTS}")
+    endif()
 
     # Don't look for packages in PATH if requested to.
     if(QT_NO_USE_FIND_PACKAGE_SYSTEM_ENVIRONMENT_PATH)
@@ -152,6 +155,13 @@ macro(qt_find_package)
                     string(REPLACE ";" " " components_as_string "${arg_COMPONENTS}")
                     set_property(TARGET ${qt_find_package_target_name}
                                  PROPERTY INTERFACE_QT_PACKAGE_COMPONENTS ${components_as_string})
+                endif()
+
+                if(arg_OPTIONAL_COMPONENTS)
+                    string(REPLACE ";" " " components_as_string "${arg_OPTIONAL_COMPONENTS}")
+                    set_property(TARGET ${qt_find_package_target_name}
+                                 PROPERTY INTERFACE_QT_PACKAGE_OPTIONAL_COMPONENTS
+                                 ${components_as_string})
                 endif()
 
                 get_property(is_global TARGET ${qt_find_package_target_name} PROPERTY
