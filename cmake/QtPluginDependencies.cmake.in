@@ -37,31 +37,9 @@ if(QT_DISABLE_NO_DEFAULT_PATH_IN_QT_PACKAGES)
     set(__qt_use_no_default_path_for_qt_packages "")
 endif()
 
-# TODO: The dependencies lookup mechanism is common for Modules and Plugins.
-# It should be moved to the common public helper file.
-#
 # note: target_deps example: "Qt6Core\;5.12.0;Qt6Gui\;5.12.0"
-set(_target_deps "@target_deps@")
-foreach(_target_dep ${_target_deps})
-    list(GET _target_dep 0 pkg)
-    list(GET _target_dep 1 version)
-
-    if (NOT ${pkg}_FOUND)
-        set(pkg_names ${pkg})
-        if(pkg MATCHES "(.*)Private$")
-            set(pkg_names "${CMAKE_MATCH_1};${pkg}")
-        endif()
-        find_dependency(${pkg} ${version}
-            NAMES
-                ${pkg_names}
-            PATHS
-                @find_dependency_paths@
-                ${_qt_additional_packages_prefix_path}
-                ${_qt_additional_packages_prefix_path_env}
-                ${QT_EXAMPLES_CMAKE_PREFIX_PATH}
-            ${__qt_use_no_default_path_for_qt_packages}
-        )
-    endif()
-endforeach()
+set(_@target@_target_deps "@target_deps@")
+set(_@target@_find_dependency_paths "@find_dependency_paths@")
+_qt_internal_find_dependencies(_@target@_target_deps _@target@_find_dependency_paths)
 
 set(@target@_FOUND TRUE)

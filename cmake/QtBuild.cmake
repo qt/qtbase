@@ -552,7 +552,7 @@ include(QtPublicPluginHelpers)
 include(QtPublicTargetHelpers)
 include(QtPublicWalkLibsHelpers)
 include(QtPublicFindPackageHelpers)
-
+include(QtPublicDependencyHelpers)
 
 # TODO: This block provides support for old variables. It should be removed once
 #       we remove all references to these variables in other Qt module repos.
