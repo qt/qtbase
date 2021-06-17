@@ -57,8 +57,14 @@ macro(qt_collect_third_party_deps target)
                     set(package_components "")
                 endif()
 
+                get_target_property(package_optional_components ${dep}
+                    INTERFACE_QT_PACKAGE_OPTIONAL_COMPONENTS)
+                if(NOT package_optional_components)
+                    set(package_optional_components "")
+                endif()
+
                 list(APPEND third_party_deps
-                    "${package_name}\;${package_is_optional}\;${package_version}\;${package_components}")
+                    "${package_name}\;${package_is_optional}\;${package_version}\;${package_components}\;${package_optional_components}")
             endif()
         endif()
     endforeach()
