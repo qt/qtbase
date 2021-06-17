@@ -95,18 +95,7 @@ int main(void)
 # precompile_header
 qt_config_compile_test(precompile_header
     LABEL "precompiled header support"
-    CODE
-"#ifndef HEADER_H
-#error no go
-#endif
-
-int main(void)
-{
-    /* BEGIN TEST: */
-    /* END TEST: */
-    return 0;
-}
-"# FIXME: qmake: ['CONFIG += precompile_header', 'PRECOMPILED_DIR = .pch', 'PRECOMPILED_HEADER = header.h']
+    PROJECT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/config.tests/precompile_header"
 )
 
 qt_config_compiler_supports_flag_test(use_bfd_linker
@@ -614,7 +603,7 @@ qt_feature("c11" PUBLIC
 )
 qt_feature("precompile_header"
     LABEL "Using precompiled headers"
-    CONDITION BUILD_WITH_PCH
+    CONDITION BUILD_WITH_PCH AND TEST_precompile_header
     AUTODETECT NOT WASM
 )
 qt_feature_config("precompile_header" QMAKE_PRIVATE_CONFIG)
