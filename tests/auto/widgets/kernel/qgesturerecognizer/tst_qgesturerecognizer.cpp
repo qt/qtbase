@@ -294,7 +294,7 @@ void tst_QGestureRecognizer::swipeGesture()
 
     // Press point #3
     points.append(points.last() + fingerDistance);
-    swipeSequence.press(points.size() - 1, points.last(), &widget);
+    swipeSequence.stationary(0).stationary(1).press(points.size() - 1, points.last(), &widget);
     swipeSequence.commit();
     Q_ASSERT(points.size() == swipePoints);
 
