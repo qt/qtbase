@@ -42,6 +42,8 @@
 #include <QDirIterator>
 #include <QRegularExpression>
 
+#include <depfile_shared.h>
+
 #include <algorithm>
 
 #if defined(Q_OS_WIN32)
@@ -72,6 +74,8 @@ public:
 };
 
 static const bool mustReadOutputAnyway = true; // pclose seems to return the wrong error code unless we read the output
+
+static QStringList dependenciesForDepfile;
 
 void deleteRecursively(const QString &dirName)
 {
@@ -169,6 +173,8 @@ struct Options
     QString applicationArguments;
     QString rootPath;
     QString rccBinaryPath;
+    QString depFilePath;
+    QString buildDirectory;
     QStringList qmlImportPaths;
     QStringList qrcFiles;
 
@@ -474,6 +480,16 @@ Options parseOptions()
                 options.helpRequested = true;
             else
                 options.apkPath = arguments.at(++i);
+        } else if (argument.compare(QLatin1String("--depfile"), Qt::CaseInsensitive) == 0) {
+            if (i + 1 == arguments.size())
+                options.helpRequested = true;
+            else
+                options.depFilePath = arguments.at(++i);
+        } else if (argument.compare(QLatin1String("--builddir"), Qt::CaseInsensitive) == 0) {
+            if (i + 1 == arguments.size())
+                options.helpRequested = true;
+            else
+                options.buildDirectory = arguments.at(++i);
         } else if (argument.compare(QLatin1String("--sign"), Qt::CaseInsensitive) == 0) {
             if (i + 2 >= arguments.size()) {
                 const QString keyStore = qEnvironmentVariable("QT_ANDROID_KEYSTORE_PATH");
@@ -559,6 +575,9 @@ Options parseOptions()
             options.qmlImportScannerBinaryPath = arguments.at(++i).trimmed();
         }
     }
+
+    if (options.buildDirectory.isEmpty() && !options.depFilePath.isEmpty())
+        options.helpRequested = true;
 
     if (options.inputFileName.isEmpty())
         options.inputFileName = QLatin1String("android-%1-deployment-settings.json").arg(QDir::current().dirName());
@@ -668,6 +687,11 @@ void printHelp()
                     "       qmlimportscanner binary is located using the Qt directory\n"
                     "       specified in the input file.\n"
                     "\n"
+                    "   --depfile <path/to/depfile>: Output a dependency file.\n"
+                    "\n"
+                    "   --builddir <path/to/build/directory>: build directory. Necessary when\n"
+                    "       generating a depfile because ninja requires relative paths.\n"
+                    "\n"
                     "    --help: Displays this information.\n",
                     qPrintable(QCoreApplication::arguments().at(0))
             );
@@ -703,6 +727,7 @@ bool copyFileIfNewer(const QString &sourceFileName,
                      const Options &options,
                      bool forceOverwrite = false)
 {
+    dependenciesForDepfile << sourceFileName;
     if (QFile::exists(destinationFileName)) {
         QFileInfo destinationFileInfo(destinationFileName);
         QFileInfo sourceFileInfo(sourceFileName);
@@ -840,6 +865,7 @@ bool readInputFile(Options *options)
         fprintf(stderr, "Cannot read from input file: %s\n", qPrintable(options->inputFileName));
         return false;
     }
+    dependenciesForDepfile << options->inputFileName;
 
     QJsonDocument jsonDocument = QJsonDocument::fromJson(file.readAll());
     if (jsonDocument.isNull()) {
@@ -2950,6 +2976,29 @@ enum ErrorCode
     CannotCreateRcc = 21
 };
 
+bool writeDependencyFile(const Options &options)
+{
+    if (options.verbose)
+        fprintf(stdout, "Writing dependency file.\n");
+
+    QFile depFile(options.depFilePath);
+
+    QString relativeApkPath = QDir(options.buildDirectory).relativeFilePath(options.apkPath);
+
+    if (depFile.open(QIODevice::WriteOnly)) {
+        depFile.write(escapeAndEncodeDependencyPath(relativeApkPath));
+        depFile.write(u8": ");
+
+        for (const auto &file : dependenciesForDepfile) {
+            depFile.write(u8" \\\n    ");
+            depFile.write(escapeAndEncodeDependencyPath(file));
+        }
+
+        depFile.write(u8"\n");
+    }
+    return true;
+}
+
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
@@ -3089,6 +3138,9 @@ int main(int argc, char *argv[])
 
     if (Q_UNLIKELY(options.timing))
         fprintf(stdout, "[TIMING] %d ms: Installed APK\n", options.timer.elapsed());
+
+    if (!options.depFilePath.isEmpty())
+        writeDependencyFile(options);
 
     fprintf(stdout, "Android package built successfully in %.3f ms.\n", options.timer.elapsed() / 1000.);
 

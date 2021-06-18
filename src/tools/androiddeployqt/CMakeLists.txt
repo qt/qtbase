@@ -13,6 +13,8 @@ qt_internal_add_app(androiddeployqt
         QT_NO_FOREACH
     PUBLIC_LIBRARIES
         Qt::Core # special case
+    INCLUDE_DIRECTORIES
+        ../shared
 )
 set_target_properties(androiddeployqt PROPERTIES
     WIN32_EXECUTABLE FALSE
