@@ -420,11 +420,10 @@ void QSqlQueryModel::queryChange()
 
 
 /*!
-    \deprecated
+    \deprecated [6.2] Use the \c{setQuery(QSqlQuery &&query)} overload instead.
     \overload
     \since 4.5
 
-    Use the \c{setQuery(QSqlQuery &&query)} overload instead.
 */
 void QSqlQueryModel::setQuery(const QSqlQuery &query)
 {
