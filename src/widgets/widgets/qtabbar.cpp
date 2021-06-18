@@ -1435,9 +1435,10 @@ void QTabBar::setCurrentIndex(int index)
         d->currentIndex = index;
         update();
         d->makeVisible(index);
-        tab->lastTab = oldIndex;
-        if (oldIndex >= 0 && oldIndex < count())
+        if (d->validIndex(oldIndex)) {
+            tab->lastTab = oldIndex;
             d->layoutTab(oldIndex);
+        }
         d->layoutTab(index);
 #ifndef QT_NO_ACCESSIBILITY
         if (QAccessible::isActive()) {
