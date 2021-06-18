@@ -6774,13 +6774,17 @@ QString QString::vasprintf(const char *cformat, va_list ap)
                 if (length_mod == lm_l) {
                     const ushort *buff = va_arg(ap, const ushort*);
                     const ushort *ch = buff;
-                    while (*ch != 0)
+                    while (precision != 0 && *ch != 0) {
                         ++ch;
+                        --precision;
+                    }
                     subst.setUtf16(buff, ch - buff);
-                } else
+                } else if (precision == -1) {
                     subst = QString::fromUtf8(va_arg(ap, const char*));
-                if (precision != -1)
-                    subst.truncate(precision);
+                } else {
+                    const char *buff = va_arg(ap, const char*);
+                    subst = QString::fromUtf8(buff, qstrnlen(buff, precision));
+                }
                 ++c;
                 break;
             }
