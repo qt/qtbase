@@ -6091,14 +6091,14 @@ QIcon QCommonStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption
         case SP_TitleBarNormalButton:
         case SP_TitleBarCloseButton: {
             QIcon titleBarIcon;
-            if (standardIcon == SP_TitleBarCloseButton) {
-                titleBarIcon.addFile(QStringLiteral(":/qt-project.org/styles/macstyle/images/closedock-macstyle-16.png"));
-                titleBarIcon.addFile(QStringLiteral(":/qt-project.org/styles/macstyle/images/closedock-down-macstyle-16.png"),
-                                     QSize(16, 16), QIcon::Normal, QIcon::On);
-            } else {
-                titleBarIcon.addFile(QStringLiteral(":/qt-project.org/styles/macstyle/images/dockdock-macstyle-16.png"));
-                titleBarIcon.addFile(QStringLiteral(":/qt-project.org/styles/macstyle/images/dockdock-down-macstyle-16.png"),
-                                     QSize(16, 16), QIcon::Normal, QIcon::On);
+            QString prefix = standardIcon == SP_TitleBarCloseButton
+                            ? QStringLiteral(":/qt-project.org/styles/macstyle/images/closedock-")
+                            : QStringLiteral(":/qt-project.org/styles/macstyle/images/dockdock-");
+            for (const auto size : dockTitleIconSizes) {
+                titleBarIcon.addFile(prefix + QStringLiteral("macstyle-") + QString::number(size) + iconPngSuffix(),
+                                     QSize(size, size), QIcon::Normal, QIcon::Off);
+                titleBarIcon.addFile(prefix + QStringLiteral("down-macstyle-") + QString::number(size) + iconPngSuffix(),
+                                     QSize(size, size), QIcon::Normal, QIcon::On);
             }
             return titleBarIcon;
         }
