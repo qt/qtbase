@@ -131,6 +131,9 @@ function(qt_internal_add_module target)
         set(arg_CONFIG_MODULE_NAME "${module_lower}")
     endif()
 
+    set(module_config_header "qt${arg_CONFIG_MODULE_NAME}-config.h")
+    set(module_config_private_header "qt${arg_CONFIG_MODULE_NAME}-config_p.h")
+
     # Module define needs to take into account the config module name.
     string(TOUPPER "${arg_CONFIG_MODULE_NAME}" module_define_infix)
     string(REPLACE "-" "_" module_define_infix "${module_define_infix}")
@@ -499,16 +502,20 @@ function(qt_internal_add_module target)
     if(EXISTS "${configureFile}" AND NOT arg_NO_CONFIG_HEADER_FILE)
         qt_feature_module_begin(
             LIBRARY "${target}"
-            PUBLIC_FILE "qt${arg_CONFIG_MODULE_NAME}-config.h"
-            PRIVATE_FILE "qt${arg_CONFIG_MODULE_NAME}-config_p.h"
+            PUBLIC_FILE "${module_config_header}"
+            PRIVATE_FILE "${module_config_private_header}"
             PUBLIC_DEPENDENCIES ${arg_FEATURE_DEPENDENCIES}
             PRIVATE_DEPENDENCIES ${arg_FEATURE_DEPENDENCIES}
         )
         include(${configureFile})
         qt_feature_module_end("${target}")
 
-        set_property(TARGET "${target}" APPEND PROPERTY PUBLIC_HEADER "${CMAKE_CURRENT_BINARY_DIR}/qt${arg_CONFIG_MODULE_NAME}-config.h")
-        set_property(TARGET "${target}" APPEND PROPERTY PRIVATE_HEADER "${CMAKE_CURRENT_BINARY_DIR}/qt${arg_CONFIG_MODULE_NAME}-config_p.h")
+        set_property(TARGET "${target}" APPEND PROPERTY
+            PUBLIC_HEADER "${CMAKE_CURRENT_BINARY_DIR}/${module_config_header}"
+        )
+        set_property(TARGET "${target}" APPEND PROPERTY
+            PRIVATE_HEADER "${CMAKE_CURRENT_BINARY_DIR}/${module_config_private_header}"
+        )
     endif()
 
     if(NOT arg_HEADER_MODULE)
