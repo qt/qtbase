@@ -27,6 +27,7 @@
 **
 ****************************************************************************/
 
+#include <depfile_shared.h>
 #include "preprocessor.h"
 #include "moc.h"
 #include "outputrevision.h"
@@ -175,50 +176,6 @@ static QStringList argumentsFromCommandLineAndFile(const QStringList &arguments,
         }
     }
     return allArguments;
-}
-
-// Escape characters in given path. Dependency paths are Make-style, not NMake/Jom style.
-// The paths can also be consumed by Ninja.
-// "$" replaced by "$$"
-// "#" replaced by "\#"
-// " " replaced by "\ "
-// "\#" replaced by "\\#"
-// "\ " replaced by "\\\ "
-//
-// The escape rules are according to what clang / llvm escapes when generating a Make-style
-// dependency file.
-// Is a template function, because input param can be either a QString or a QByteArray.
-template <typename T> struct CharType;
-template <> struct CharType<QString> { using type = QLatin1Char; };
-template <> struct CharType<QByteArray> { using type = char; };
-template <typename StringType>
-StringType escapeDependencyPath(const StringType &path)
-{
-    using CT = typename CharType<StringType>::type;
-    StringType escapedPath;
-    int size = path.size();
-    escapedPath.reserve(size);
-    for (int i = 0; i < size; ++i) {
-        if (path[i] == CT('$')) {
-            escapedPath.append(CT('$'));
-        } else if (path[i] == CT('#')) {
-            escapedPath.append(CT('\\'));
-        } else if (path[i] == CT(' ')) {
-            escapedPath.append(CT('\\'));
-            int backwards_it = i - 1;
-            while (backwards_it > 0 && path[backwards_it] == CT('\\')) {
-                escapedPath.append(CT('\\'));
-                --backwards_it;
-            }
-        }
-        escapedPath.append(path[i]);
-    }
-    return escapedPath;
-}
-
-QByteArray escapeAndEncodeDependencyPath(const QString &path)
-{
-    return QFile::encodeName(escapeDependencyPath(path));
 }
 
 int runMoc(int argc, char **argv)

@@ -32,6 +32,7 @@ qt_internal_add_tool(${target_name}
     INCLUDE_DIRECTORIES
         ${CMAKE_CURRENT_SOURCE_DIR}
         ../../3rdparty/tinycbor/src
+        ../shared
 )
 
 #### Keys ignored in scope 1:.:.:moc.pro:<TRUE>:

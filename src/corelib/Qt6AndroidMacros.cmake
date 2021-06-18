@@ -291,10 +291,13 @@ function(qt6_android_add_apk_target target)
     set(apk_final_dir "$<TARGET_PROPERTY:${target},BINARY_DIR>/android-build")
     set(apk_intermediate_dir "${CMAKE_CURRENT_BINARY_DIR}/android-build")
     set(apk_file_name "${target}.apk")
+    set(dep_file_name "${target}.d")
     set(apk_final_file_path "${apk_final_dir}/${apk_file_name}")
     set(apk_intermediate_file_path "${apk_intermediate_dir}/${apk_file_name}")
+    set(dep_intermediate_file_path "${apk_intermediate_dir}/${dep_file_name}")
 
-    # This target is used by Qt Creator's Android support.
+    # This target is used by Qt Creator's Android support and by the ${target}_make_apk target
+    # in case DEPFILEs are not supported.
     add_custom_target(${target}_prepare_apk_dir ALL
         DEPENDS ${target}
         COMMAND ${CMAKE_COMMAND}
@@ -303,26 +306,42 @@ function(qt6_android_add_apk_target target)
         COMMENT "Copying ${target} binary to apk folder"
     )
 
-    # Add custom command that creates the apk in an intermediate location.
-    # We need the intermediate location, because we cannot have target-dependent generator
-    # expressions in OUTPUT.
-    add_custom_command(OUTPUT "${apk_intermediate_file_path}"
-        COMMAND ${CMAKE_COMMAND}
-            -E copy "$<TARGET_FILE:${target}>"
-            "${apk_intermediate_dir}/libs/${CMAKE_ANDROID_ARCH_ABI}/$<TARGET_FILE_NAME:${target}>"
-        COMMAND "${deployment_tool}"
-            --input "${deployment_file}"
-            --output "${apk_intermediate_dir}"
-            --apk "${apk_intermediate_file_path}"
-        COMMENT "Creating APK for ${target}"
-        DEPENDS "${target}" "${deployment_file}")
+    # The DEPFILE argument to add_custom_command is only available with Ninja or CMake>=3.20 and make.
+    if (CMAKE_GENERATOR MATCHES "Ninja" OR
+        (CMAKE_VERSION VERSION_GREATER_EQUAL 3.20 AND CMAKE_GENERATOR MATCHES "Makefiles"))
+        # Add custom command that creates the apk in an intermediate location.
+        # We need the intermediate location, because we cannot have target-dependent generator
+        # expressions in OUTPUT.
+        add_custom_command(OUTPUT "${apk_intermediate_file_path}"
+            COMMAND ${CMAKE_COMMAND}
+                -E copy "$<TARGET_FILE:${target}>"
+                "${apk_intermediate_dir}/libs/${CMAKE_ANDROID_ARCH_ABI}/$<TARGET_FILE_NAME:${target}>"
+            COMMAND "${deployment_tool}"
+                --input "${deployment_file}"
+                --output "${apk_intermediate_dir}"
+                --apk "${apk_intermediate_file_path}"
+                --depfile "${dep_intermediate_file_path}"
+                --builddir "${CMAKE_BINARY_DIR}"
+            COMMENT "Creating APK for ${target}"
+            DEPENDS "${target}" "${deployment_file}"
+            DEPFILE "${dep_intermediate_file_path}")
 
-    # Create a ${target}_make_apk target to copy the apk from the intermediate to its final
-    # location.  If the final and intermediate locations are identical, this is a no-op.
-    add_custom_target(${target}_make_apk
-        COMMAND "${CMAKE_COMMAND}"
-            -E copy_if_different "${apk_intermediate_file_path}" "${apk_final_file_path}"
-        DEPENDS "${apk_intermediate_file_path}")
+        # Create a ${target}_make_apk target to copy the apk from the intermediate to its final
+        # location.  If the final and intermediate locations are identical, this is a no-op.
+        add_custom_target(${target}_make_apk
+            COMMAND "${CMAKE_COMMAND}"
+                -E copy_if_different "${apk_intermediate_file_path}" "${apk_final_file_path}"
+            DEPENDS "${apk_intermediate_file_path}")
+    else()
+        add_custom_target(${target}_make_apk
+            DEPENDS ${target}_prepare_apk_dir
+            COMMAND  ${deployment_tool}
+                --input ${deployment_file}
+                --output ${apk_final_dir}
+                --apk ${apk_final_file_path}
+            COMMENT "Creating APK for ${target}"
+        )
+    endif()
 endfunction()
 
 function(_qt_internal_create_global_apk_target)
