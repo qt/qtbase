@@ -782,8 +782,12 @@ void QXcbConnection::xi2HandleEvent(xcb_ge_event_t *event)
                         event->event_type, xiDeviceEvent->sequence, xiDeviceEvent->detail,
                         fixed1616ToReal(xiDeviceEvent->event_x), fixed1616ToReal(xiDeviceEvent->event_y),
                         fixed1616ToReal(xiDeviceEvent->root_x), fixed1616ToReal(xiDeviceEvent->root_y),xiDeviceEvent->event);
-            if (QXcbWindow *platformWindow = platformWindowFromId(xiDeviceEvent->event))
+            if (QXcbWindow *platformWindow = platformWindowFromId(xiDeviceEvent->event)) {
                 xi2ProcessTouch(xiDeviceEvent, platformWindow);
+            } else { // When the window cannot be matched, delete it from touchPoints
+                if (TouchDeviceData *dev = touchDeviceForId(xiDeviceEvent->sourceid))
+                    dev->touchPoints.remove((xiDeviceEvent->detail % INT_MAX));
+            }
             break;
         }
     } else if (xiEnterEvent && eventListener) {

@@ -2997,7 +2997,7 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
                 QEvent::Type mouseEventType = QEvent::MouseMove;
                 Qt::MouseButton button = Qt::NoButton;
                 Qt::MouseButtons buttons = Qt::LeftButton;
-                if (eventType == QEvent::TouchBegin  && m_fakeMouseSourcePointId < 0) {
+                if (eventType == QEvent::TouchBegin || m_fakeMouseSourcePointId < 0) {
                     m_fakeMouseSourcePointId = touchEvent.point(0).id();
                     qCDebug(lcPtrDispatch) << "synthesizing mouse events from touchpoint" << m_fakeMouseSourcePointId;
                 }
