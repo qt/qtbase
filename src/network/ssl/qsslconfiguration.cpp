@@ -107,7 +107,7 @@ const char QSslConfiguration::NextProtocolHttp1_1[] = "http/1.1";
     change the settings in the related SSL connection. You must call
     setSslConfiguration on a modified QSslConfiguration object to
     achieve that. The following example illustrates how to change the
-    protocol to TLSv1_0 in a QSslSocket object:
+    protocol to TLSv1_2 in a QSslSocket object:
 
     \snippet code/src_network_ssl_qsslconfiguration.cpp 0
 

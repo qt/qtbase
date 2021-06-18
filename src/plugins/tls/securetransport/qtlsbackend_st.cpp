@@ -294,10 +294,13 @@ QList<QSsl::SslProtocol> QSecureTransportBackend::supportedProtocols() const
 
     protocols << QSsl::AnyProtocol;
     protocols << QSsl::SecureProtocols;
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     protocols << QSsl::TlsV1_0;
     protocols << QSsl::TlsV1_0OrLater;
     protocols << QSsl::TlsV1_1;
     protocols << QSsl::TlsV1_1OrLater;
+QT_WARNING_POP
     protocols << QSsl::TlsV1_2;
     protocols << QSsl::TlsV1_2OrLater;
 

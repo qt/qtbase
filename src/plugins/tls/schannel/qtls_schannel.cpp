@@ -176,8 +176,11 @@ QList<QSslCipher> defaultCiphers()
     // @temp (I hope), stolen from qsslsocket_winrt.cpp
     const QString protocolStrings[] = { QStringLiteral("TLSv1"), QStringLiteral("TLSv1.1"),
                                         QStringLiteral("TLSv1.2"), QStringLiteral("TLSv1.3") };
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     const QSsl::SslProtocol protocols[] = { QSsl::TlsV1_0, QSsl::TlsV1_1,
                                             QSsl::TlsV1_2, QSsl::TlsV1_3 };
+QT_WARNING_POP
     const int size = ARRAYSIZE(protocols);
     static_assert(size == ARRAYSIZE(protocolStrings));
     ciphers.reserve(size);
@@ -264,10 +267,13 @@ QList<QSsl::SslProtocol> QSchannelBackend::supportedProtocols() const
 
     protocols << QSsl::AnyProtocol;
     protocols << QSsl::SecureProtocols;
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     protocols << QSsl::TlsV1_0;
     protocols << QSsl::TlsV1_0OrLater;
     protocols << QSsl::TlsV1_1;
     protocols << QSsl::TlsV1_1OrLater;
+QT_WARNING_POP
     protocols << QSsl::TlsV1_2;
     protocols << QSsl::TlsV1_2OrLater;
 
@@ -430,9 +436,12 @@ DWORD toSchannelProtocol(QSsl::SslProtocol protocol)
     switch (protocol) {
     case QSsl::UnknownProtocol:
         return DWORD(-1);
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     case QSsl::DtlsV1_0:
-    case QSsl::DtlsV1_2:
     case QSsl::DtlsV1_0OrLater:
+QT_WARNING_POP
+    case QSsl::DtlsV1_2:
     case QSsl::DtlsV1_2OrLater:
         return DWORD(-1); // Not supported at the moment (@future)
     case QSsl::AnyProtocol:
@@ -440,12 +449,15 @@ DWORD toSchannelProtocol(QSsl::SslProtocol protocol)
         if (supportsTls13())
             protocols |= SP_PROT_TLS1_3;
         break;
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     case QSsl::TlsV1_0:
         protocols = SP_PROT_TLS1_0;
         break;
     case QSsl::TlsV1_1:
         protocols = SP_PROT_TLS1_1;
         break;
+QT_WARNING_POP
     case QSsl::TlsV1_2:
         protocols = SP_PROT_TLS1_2;
         break;
@@ -455,7 +467,8 @@ DWORD toSchannelProtocol(QSsl::SslProtocol protocol)
         else
             protocols = DWORD(-1);
         break;
-    case QSsl::SecureProtocols: // TLS v1.0 and later is currently considered secure
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     case QSsl::TlsV1_0OrLater:
         // For the "OrLater" protocols we fall through from one to the next, adding all of them
         // in ascending order
@@ -464,6 +477,8 @@ DWORD toSchannelProtocol(QSsl::SslProtocol protocol)
     case QSsl::TlsV1_1OrLater:
         protocols |= SP_PROT_TLS1_1;
         Q_FALLTHROUGH();
+QT_WARNING_POP
+    case QSsl::SecureProtocols: // TLS v1.2 and later is currently considered secure
     case QSsl::TlsV1_2OrLater:
         protocols |= SP_PROT_TLS1_2;
         Q_FALLTHROUGH();
@@ -504,8 +519,11 @@ QSsl::SslProtocol toQtSslProtocol(DWORD protocol)
         return q_protocol;                    \
     }
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     MAP_PROTOCOL(SP_PROT_TLS1_0, QSsl::TlsV1_0)
     MAP_PROTOCOL(SP_PROT_TLS1_1, QSsl::TlsV1_1)
+QT_WARNING_POP
     MAP_PROTOCOL(SP_PROT_TLS1_2, QSsl::TlsV1_2)
     MAP_PROTOCOL(SP_PROT_TLS1_3, QSsl::TlsV1_3)
 #undef MAP_PROTOCOL

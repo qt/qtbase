@@ -2092,6 +2092,8 @@ bool QSslSocketPrivate::verifyProtocolSupported(const char *where)
         // Should not be used when configuring QSslSocket.
         protocolName = QLatin1String("UnknownProtocol");
         Q_FALLTHROUGH();
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     case QSsl::DtlsV1_0:
     case QSsl::DtlsV1_2:
     case QSsl::DtlsV1_0OrLater:
@@ -2100,6 +2102,7 @@ bool QSslSocketPrivate::verifyProtocolSupported(const char *where)
         setErrorAndEmit(QAbstractSocket::SslInvalidUserDataError,
                         QSslSocket::tr("Attempted to use an unsupported protocol."));
         return false;
+QT_WARNING_POP
     default:
         return true;
     }

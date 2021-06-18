@@ -1159,10 +1159,13 @@ QSsl::SslProtocol TlsCryptographOpenSSL::sessionProtocol() const
 
     const int ver = q_SSL_version(ssl);
     switch (ver) {
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     case 0x301:
         return QSsl::TlsV1_0;
     case 0x302:
         return QSsl::TlsV1_1;
+QT_WARNING_POP
     case 0x303:
         return QSsl::TlsV1_2;
     case 0x304:

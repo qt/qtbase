@@ -439,10 +439,13 @@ QSsl::SslProtocol TlsCryptographSecureTransport::sessionProtocol() const
     }
 
     switch (protocol) {
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     case kTLSProtocol1:
         return QSsl::TlsV1_0;
     case kTLSProtocol11:
         return QSsl::TlsV1_1;
+QT_WARNING_POP
     case kTLSProtocol12:
         return QSsl::TlsV1_2;
     case kTLSProtocol13:
@@ -922,6 +925,8 @@ bool TlsCryptographSecureTransport::setSessionProtocol()
 
     OSStatus err = errSecSuccess;
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     if (configuration.protocol() == QSsl::TlsV1_0) {
     #ifdef QSSLSOCKET_DEBUG
         qCDebug(lcTlsBackend) << plainSocket << "requesting : TLSv1.0";
@@ -936,6 +941,7 @@ bool TlsCryptographSecureTransport::setSessionProtocol()
         err = SSLSetProtocolVersionMin(context, kTLSProtocol11);
         if (err == errSecSuccess)
             err = SSLSetProtocolVersionMax(context, kTLSProtocol11);
+QT_WARNING_POP
     } else if (configuration.protocol() == QSsl::TlsV1_2) {
     #ifdef QSSLSOCKET_DEBUG
         qCDebug(lcTlsBackend) << plainSocket << "requesting : TLSv1.2";
@@ -950,9 +956,11 @@ bool TlsCryptographSecureTransport::setSessionProtocol()
         err = SSLSetProtocolVersionMin(context, kTLSProtocol1);
     } else if (configuration.protocol() == QSsl::SecureProtocols) {
     #ifdef QSSLSOCKET_DEBUG
-        qCDebug(lcTlsBackend) << plainSocket << "requesting : TLSv1 - TLSv1.2";
+        qCDebug(lcTlsBackend) << plainSocket << "requesting : TLSv1.2";
     #endif
-        err = SSLSetProtocolVersionMin(context, kTLSProtocol1);
+        err = SSLSetProtocolVersionMin(context, kTLSProtocol12);
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     } else if (configuration.protocol() == QSsl::TlsV1_0OrLater) {
     #ifdef QSSLSOCKET_DEBUG
         qCDebug(lcTlsBackend) << plainSocket << "requesting : TLSv1 - TLSv1.2";
@@ -963,6 +971,7 @@ bool TlsCryptographSecureTransport::setSessionProtocol()
         qCDebug(lcTlsBackend) << plainSocket << "requesting : TLSv1.1 - TLSv1.2";
     #endif
         err = SSLSetProtocolVersionMin(context, kTLSProtocol11);
+QT_WARNING_POP
     } else if (configuration.protocol() == QSsl::TlsV1_2OrLater) {
     #ifdef QSSLSOCKET_DEBUG
         qCDebug(lcTlsBackend) << plainSocket << "requesting : TLSv1.2";
@@ -999,11 +1008,14 @@ bool TlsCryptographSecureTransport::verifySessionProtocol() const
     if (configuration.protocol() == QSsl::AnyProtocol)
         protocolOk = true;
     else if (configuration.protocol() == QSsl::SecureProtocols)
-        protocolOk = (sessionProtocol() >= QSsl::TlsV1_0);
+        protocolOk = (sessionProtocol() >= QSsl::TlsV1_2);
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     else if (configuration.protocol() == QSsl::TlsV1_0OrLater)
         protocolOk = (sessionProtocol() >= QSsl::TlsV1_0);
     else if (configuration.protocol() == QSsl::TlsV1_1OrLater)
         protocolOk = (sessionProtocol() >= QSsl::TlsV1_1);
+QT_WARNING_POP
     else if (configuration.protocol() == QSsl::TlsV1_2OrLater)
         protocolOk = (sessionProtocol() >= QSsl::TlsV1_2);
     else if (configuration.protocol() == QSsl::TlsV1_3OrLater)

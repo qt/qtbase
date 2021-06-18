@@ -73,18 +73,18 @@ namespace QSsl {
     };
 
     enum SslProtocol {
-        TlsV1_0,
-        TlsV1_1,
+        TlsV1_0 QT_DEPRECATED_VERSION_X_6_3("Use TlsV1_2OrLater instead."),
+        TlsV1_1 QT_DEPRECATED_VERSION_X_6_3("Use TlsV1_2OrLater instead."),
         TlsV1_2,
         AnyProtocol,
         SecureProtocols,
 
-        TlsV1_0OrLater,
-        TlsV1_1OrLater,
+        TlsV1_0OrLater QT_DEPRECATED_VERSION_X_6_3("Use TlsV1_2OrLater instead."),
+        TlsV1_1OrLater QT_DEPRECATED_VERSION_X_6_3("Use TlsV1_2OrLater instead."),
         TlsV1_2OrLater,
 
-        DtlsV1_0,
-        DtlsV1_0OrLater,
+        DtlsV1_0 QT_DEPRECATED_VERSION_X_6_3("Use DtlsV1_2OrLater instead."),
+        DtlsV1_0OrLater QT_DEPRECATED_VERSION_X_6_3("Use DtlsV1_2OrLater instead."),
         DtlsV1_2,
         DtlsV1_2OrLater,
 

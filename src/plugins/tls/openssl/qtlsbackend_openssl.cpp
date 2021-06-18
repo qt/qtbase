@@ -291,10 +291,13 @@ QList<QSsl::SslProtocol> QTlsBackendOpenSSL::supportedProtocols() const
 
     protocols << QSsl::AnyProtocol;
     protocols << QSsl::SecureProtocols;
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     protocols << QSsl::TlsV1_0;
     protocols << QSsl::TlsV1_0OrLater;
     protocols << QSsl::TlsV1_1;
     protocols << QSsl::TlsV1_1OrLater;
+QT_WARNING_POP
     protocols << QSsl::TlsV1_2;
     protocols << QSsl::TlsV1_2OrLater;
 
@@ -304,8 +307,11 @@ QList<QSsl::SslProtocol> QTlsBackendOpenSSL::supportedProtocols() const
 #endif // TLS1_3_VERSION
 
 #if QT_CONFIG(dtls)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     protocols << QSsl::DtlsV1_0;
     protocols << QSsl::DtlsV1_0OrLater;
+QT_WARNING_POP
     protocols << QSsl::DtlsV1_2;
     protocols << QSsl::DtlsV1_2OrLater;
 #endif // dtls

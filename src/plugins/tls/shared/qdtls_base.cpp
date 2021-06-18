@@ -99,8 +99,11 @@ QDtlsBasePrivate::cookieGeneratorParameters() const
 bool QDtlsBasePrivate::isDtlsProtocol(QSsl::SslProtocol protocol)
 {
     switch (protocol) {
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     case QSsl::DtlsV1_0:
     case QSsl::DtlsV1_0OrLater:
+QT_WARNING_POP
     case QSsl::DtlsV1_2:
     case QSsl::DtlsV1_2OrLater:
         return true;

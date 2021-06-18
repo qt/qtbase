@@ -808,6 +808,8 @@ QSslCipher QTlsBackend::createCiphersuite(const QString &descriptionOneLine, int
         QString protoString = descriptionList.at(1).toString();
         ciph.d->protocolString = protoString;
         ciph.d->protocol = QSsl::UnknownProtocol;
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
         if (protoString == QLatin1String("TLSv1"))
             ciph.d->protocol = QSsl::TlsV1_0;
         else if (protoString == QLatin1String("TLSv1.1"))
@@ -816,6 +818,7 @@ QSslCipher QTlsBackend::createCiphersuite(const QString &descriptionOneLine, int
             ciph.d->protocol = QSsl::TlsV1_2;
         else if (protoString == QLatin1String("TLSv1.3"))
             ciph.d->protocol = QSsl::TlsV1_3;
+QT_WARNING_POP
 
         if (descriptionList.at(2).startsWith(QLatin1String("Kx=")))
             ciph.d->keyExchangeMethod = descriptionList.at(2).mid(3).toString();

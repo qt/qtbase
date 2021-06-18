@@ -1421,9 +1421,12 @@ void QDtlsPrivateOpenSSL::fetchNegotiatedParameters()
     // TLS 1.2, that's how it's set by OpenSSL (and that's what they are?).
 
     switch (q_SSL_version(dtls.tlsConnection.data())) {
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     case DTLS1_VERSION:
         sessionProtocol = QSsl::DtlsV1_0;
         break;
+QT_WARNING_POP
     case DTLS1_2_VERSION:
         sessionProtocol = QSsl::DtlsV1_2;
         break;
