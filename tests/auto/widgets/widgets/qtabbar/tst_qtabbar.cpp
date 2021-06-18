@@ -602,6 +602,8 @@ void tst_QTabBar::selectionBehaviorOnRemove_data()
     // every other one
     QTest::newRow("previous-10") << QTabBar::SelectPreviousTab << 7 << (IntList() << 0 << 2 << 4 << 6) << (IntList() << 6 << 4) << 2;
 
+    // QTBUG-94352
+    QTest::newRow("QTBUG-94352") << QTabBar::SelectPreviousTab << 4 << (IntList() << 3) << (IntList() << 2 << 2) << 0;
 
 }
 
