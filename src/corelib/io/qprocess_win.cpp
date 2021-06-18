@@ -550,14 +550,6 @@ void QProcessPrivate::startProcess()
 {
     Q_Q(QProcess);
 
-    bool success = false;
-
-    if (pid) {
-        CloseHandle(pid->hThread);
-        CloseHandle(pid->hProcess);
-        delete pid;
-        pid = 0;
-    }
     pid = new PROCESS_INFORMATION;
     memset(pid, 0, sizeof(PROCESS_INFORMATION));
 
@@ -567,7 +559,6 @@ void QProcessPrivate::startProcess()
         QString errorString = QProcess::tr("Process failed to start: %1").arg(qt_error_string());
         cleanup();
         setErrorAndEmit(QProcess::FailedToStart, errorString);
-        q->setProcessState(QProcess::NotRunning);
         return;
     }
 
@@ -600,18 +591,12 @@ void QProcessPrivate::startProcess()
             ? nullptr : reinterpret_cast<const wchar_t *>(nativeWorkingDirectory.utf16()),
         &startupInfo, pid
     };
-    success = callCreateProcess(&cpargs);
 
-    QString errorString;
-    if (!success) {
+    if (!callCreateProcess(&cpargs)) {
         // Capture the error string before we do CloseHandle below
-        errorString = QProcess::tr("Process failed to start: %1").arg(qt_error_string());
-    }
-
-    if (!success) {
+        QString errorString = QProcess::tr("Process failed to start: %1").arg(qt_error_string());
         cleanup();
         setErrorAndEmit(QProcess::FailedToStart, errorString);
-        q->setProcessState(QProcess::NotRunning);
         return;
     }
 
