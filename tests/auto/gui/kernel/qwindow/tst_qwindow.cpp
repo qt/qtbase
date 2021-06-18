@@ -1113,14 +1113,18 @@ void tst_QWindow::touchToMouseTranslation()
     QVERIFY(QTest::qWaitForWindowExposed(&window));
 
     QList<QWindowSystemInterface::TouchPoint> points;
-    QWindowSystemInterface::TouchPoint tp1, tp2;
+    QWindowSystemInterface::TouchPoint tp1, tp2, tp3;
     const QRectF pressArea(101, 102, 4, 4);
+    const QRectF pressArea1(107, 110, 4, 4);
     const QRectF moveArea(105, 108, 4, 4);
     tp1.id = 1;
     tp1.state = Qt::TouchPointPressed;
     tp1.area = QHighDpi::toNativePixels(pressArea, &window);
     tp2.id = 2;
     tp2.state = Qt::TouchPointPressed;
+    tp3.id = 3;
+    tp3.state = Qt::TouchPointPressed;
+    tp3.area = QHighDpi::toNativePixels(pressArea1, &window);
     points << tp1 << tp2;
     QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
     // Now an update but with changed list order. The mouse event should still
@@ -1185,12 +1189,50 @@ void tst_QWindow::touchToMouseTranslation()
     points.clear();
     points.append(tp1);
     points[0].state = Qt::TouchPointPressed;
+    points.append(tp2);
+    points[1].state = Qt::TouchPointStationary;
     QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
     QCoreApplication::processEvents();
     QTRY_COMPARE(window.mousePressButton, 1);
 
     points.clear();
     points.append(tp2);
+    points[0].state = Qt::TouchPointReleased;
+    points.append(tp1);
+    points[1].state = Qt::TouchPointStationary;
+    QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
+    QCoreApplication::processEvents();
+    points.clear();
+    points.append(tp1);
+    points[0].state = Qt::TouchPointReleased;
+    QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
+    QCoreApplication::processEvents();
+    QTRY_COMPARE(window.mouseReleaseButton, 1);
+
+    points.clear();
+    points.append(tp1);
+    points[0].state = Qt::TouchPointPressed;
+    QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
+    QCoreApplication::processEvents();
+    points.clear();
+    points.append(tp2);
+    points[0].state = Qt::TouchPointPressed;
+    QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
+    QCoreApplication::processEvents();
+    points.clear();
+    points.append(tp3);
+    points[0].state = Qt::TouchPointPressed;
+    QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
+    QCoreApplication::processEvents();
+    QTRY_COMPARE(window.mousePressButton, 1);
+
+    points.clear();
+    points.append(tp2);
+    points[0].state = Qt::TouchPointReleased;
+    QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
+    QCoreApplication::processEvents();
+    points.clear();
+    points.append(tp3);
     points[0].state = Qt::TouchPointReleased;
     QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
     QCoreApplication::processEvents();
