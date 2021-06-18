@@ -584,6 +584,7 @@ private slots:
     void isValidUtf16_data();
     void isValidUtf16();
     void unicodeStrings();
+    void vasprintfWithPrecision();
 };
 
 template <class T> const T &verifyZeroTermination(const T &t) { return t; }
@@ -6935,6 +6936,35 @@ void tst_QString::isValidUtf16()
 {
     QFETCH(QString, string);
     QTEST(string.isValidUtf16(), "valid");
+}
+
+static QString doVasprintf(const char *msg, ...) {
+    va_list args;
+    va_start(args, msg);
+    const QString result = QString::vasprintf(msg, args);
+    va_end(args);
+    return result;
+}
+
+void tst_QString::vasprintfWithPrecision()
+{
+    {
+        const char *msg = "Endpoint %.*s with";
+        static const char arg0[3] = { 'a', 'b', 'c' };
+        static const char arg1[4] = { 'a', 'b', 'c', '\0' };
+        QCOMPARE(doVasprintf(msg, 3, arg0), QStringLiteral("Endpoint abc with"));
+        QCOMPARE(doVasprintf(msg, 9, arg1), QStringLiteral("Endpoint abc with"));
+        QCOMPARE(doVasprintf(msg, 0, nullptr), QStringLiteral("Endpoint  with"));
+    }
+
+    {
+        const char *msg = "Endpoint %.*ls with";
+        static const ushort arg0[3] = { 'a', 'b', 'c' };
+        static const ushort arg1[4] = { 'a', 'b', 'c', '\0' };
+        QCOMPARE(doVasprintf(msg, 3, arg0), QStringLiteral("Endpoint abc with"));
+        QCOMPARE(doVasprintf(msg, 9, arg1), QStringLiteral("Endpoint abc with"));
+        QCOMPARE(doVasprintf(msg, 0, nullptr), QStringLiteral("Endpoint  with"));
+    }
 }
 
 QTEST_APPLESS_MAIN(tst_QString)
