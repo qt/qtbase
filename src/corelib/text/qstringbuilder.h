@@ -335,7 +335,7 @@ template <qsizetype N> struct QConcatenable<const char16_t[N]> : private QAbstra
     static qsizetype size(const char16_t[N]) { return N - 1; }
     static void appendTo(const char16_t a[N], QChar *&out)
     {
-        memcpy(out, a, (N - 1) * sizeof(char16_t));
+        memcpy(static_cast<void *>(out), a, (N - 1) * sizeof(char16_t));
         out += N - 1;
     }
 };
