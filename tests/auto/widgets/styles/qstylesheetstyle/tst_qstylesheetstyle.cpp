@@ -77,6 +77,7 @@ private slots:
     void cleanup();
     void repolish();
     void repolish_without_crashing();
+    void repolish_children();
     void numinstances();
     void widgetsBeforeAppStyleSheet();
     void widgetsAfterAppStyleSheet();
@@ -436,6 +437,19 @@ void tst_QStyleSheetStyle::repolish_without_crashing()
     splitter1->addWidget(splitter2.data());
     w.show();
     QCOMPARE(COLOR(*label), QColor(Qt::red));
+}
+
+void tst_QStyleSheetStyle::repolish_children()
+{
+    QWidget parent;
+    parent.setStyleSheet("QPushButton { color: red; background: white }");
+    QPushButton p2(&parent);
+    // a layout would call show, triggering a polish of the child while
+    // the parent on which the style sheet is set remains unpolished
+    p2.show();
+    QCOMPARE(BACKGROUND(p2), Qt::white);
+    parent.setStyleSheet("QPushButton { color: red; background: red }");
+    QCOMPARE(BACKGROUND(p2), Qt::red);
 }
 
 void tst_QStyleSheetStyle::widgetStyle()

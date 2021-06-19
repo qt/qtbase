@@ -2575,7 +2575,16 @@ void QWidget::setStyleSheet(const QString& styleSheet)
     }
 
     if (proxy) { // style sheet update
-        if (d->polished)
+        bool repolish = d->polished;
+        if (!repolish) {
+            const auto childWidgets = findChildren<QWidget*>();
+            for (auto child : childWidgets) {
+                repolish = child->d_func()->polished;
+                if (repolish)
+                    break;
+            }
+        }
+        if (repolish)
             proxy->repolish(this);
         return;
     }
