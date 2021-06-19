@@ -32,6 +32,14 @@ function(qt_internal_set_warnings_are_errors_flags target)
             list(APPEND flags -Wno-error=format-overflow)
         endif()
 
+        if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "10.0.0")
+            # GCC 10 has a number of bugs in -Wstringop-overflow. Do not make them an error.
+            # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=92955
+            # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=94335
+            # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=101134
+            list(APPEND flags -Wno-error=stringop-overflow)
+        endif()
+
         if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "11.0.0")
             # We do mixed enum arithmetic all over the place:
             list(APPEND flags -Wno-error=deprecated-enum-enum-conversion -Wno-error=deprecated-enum-float-conversion)
