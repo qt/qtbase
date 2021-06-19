@@ -125,6 +125,8 @@ struct QTestCharBuffer
         staticBuf[0] = '\0';
     }
 
+    Q_DISABLE_COPY_MOVE(QTestCharBuffer)
+
     inline ~QTestCharBuffer()
     {
         if (buf != staticBuf)
