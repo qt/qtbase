@@ -1559,7 +1559,7 @@ bool QFileSystemEngine::setPermissions(const QFileSystemEntry &entry, QFile::Per
     bool success = ::chmod(entry.nativeFilePath().constData(), mode) == 0;
     if (success && data) {
         data->entryFlags &= ~QFileSystemMetaData::Permissions;
-        data->entryFlags |= QFileSystemMetaData::MetaDataFlag(uint(permissions));
+        data->entryFlags |= QFileSystemMetaData::MetaDataFlag(uint(permissions.toInt()));
         data->knownFlagsMask |= QFileSystemMetaData::Permissions;
     }
     if (!success)
@@ -1575,7 +1575,7 @@ bool QFileSystemEngine::setPermissions(int fd, QFile::Permissions permissions, Q
     bool success = ::fchmod(fd, mode) == 0;
     if (success && data) {
         data->entryFlags &= ~QFileSystemMetaData::Permissions;
-        data->entryFlags |= QFileSystemMetaData::MetaDataFlag(uint(permissions));
+        data->entryFlags |= QFileSystemMetaData::MetaDataFlag(uint(permissions.toInt()));
         data->knownFlagsMask |= QFileSystemMetaData::Permissions;
     }
     if (!success)

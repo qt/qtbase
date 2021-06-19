@@ -383,7 +383,7 @@ QAbstractFileEngine::FileFlags QFSFileEngine::fileFlags(FileFlags type) const
     {
         QFileSystemMetaData::MetaDataFlags queryFlags = { };
 
-        queryFlags |= QFileSystemMetaData::MetaDataFlags(uint(type))
+        queryFlags |= QFileSystemMetaData::MetaDataFlags(uint(type.toInt()))
                 & QFileSystemMetaData::Permissions;
 
         if (type & TypesMask)
@@ -409,7 +409,7 @@ QAbstractFileEngine::FileFlags QFSFileEngine::fileFlags(FileFlags type) const
         return ret;
 
     if (exists && (type & PermsMask))
-        ret |= FileFlags(uint(d->metaData.permissions()));
+        ret |= FileFlags(uint(d->metaData.permissions().toInt()));
 
     if (type & TypesMask) {
         if (d->metaData.isAlias()) {
