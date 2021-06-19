@@ -58,11 +58,6 @@ template <class T> struct QArrayDataPointer;
 
 namespace QtPrivate {
 
-QT_WARNING_PUSH
-#if defined(Q_CC_GNU) && Q_CC_GNU >= 700
-QT_WARNING_DISABLE_GCC("-Wstringop-overflow")
-#endif
-
 template <class T>
 struct QPodArrayOps
         : public QArrayDataPointer<T>
@@ -293,7 +288,6 @@ public:
         this->ptr = pair.second;
     }
 };
-QT_WARNING_POP
 
 template <class T>
 struct QGenericArrayOps
