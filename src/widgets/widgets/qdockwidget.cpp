@@ -225,8 +225,7 @@ void QDockWidgetTitleButton::paintEvent(QPaintEvent *)
     opt.initFrom(this);
     opt.state |= QStyle::State_AutoRaise;
 
-    if (style()->styleHint(QStyle::SH_DockWidget_ButtonsHaveFrame, nullptr, this))
-    {
+    if (style()->styleHint(QStyle::SH_DockWidget_ButtonsHaveFrame, nullptr, this)) {
         if (isEnabled() && underMouse() && !isChecked() && !isDown())
             opt.state |= QStyle::State_Raised;
         if (isChecked())
@@ -234,6 +233,9 @@ void QDockWidgetTitleButton::paintEvent(QPaintEvent *)
         if (isDown())
             opt.state |= QStyle::State_Sunken;
         style()->drawPrimitive(QStyle::PE_PanelButtonTool, &opt, &p, this);
+    } else if (isDown() || isChecked()) {
+        // no frame, but the icon might have explicit pixmaps for QIcon::On
+        opt.state |= QStyle::State_On | QStyle::State_Sunken;
     }
 
     opt.icon = icon();
