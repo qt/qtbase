@@ -1423,8 +1423,11 @@ function(__qt_internal_propagate_object_library target object_library)
     set(multi_args EXTRA_CONDITIONS)
     cmake_parse_arguments(arg "${options}" "${single_args}" "${multi_args}" ${ARGN})
 
-    target_link_libraries(${object_library} PRIVATE ${QT_CMAKE_EXPORT_NAMESPACE}::Platform)
-    _qt_internal_copy_dependency_properties(${object_library} ${target} PRIVATE_ONLY)
+    get_target_property(is_imported ${object_library} IMPORTED)
+    if(NOT is_imported)
+        target_link_libraries(${object_library} PRIVATE ${QT_CMAKE_EXPORT_NAMESPACE}::Platform)
+        _qt_internal_copy_dependency_properties(${object_library} ${target} PRIVATE_ONLY)
+    endif()
 
     # After internal discussion we decided to not rely on the linker order that CMake
     # offers, until CMake provides the guaranteed linking order that suites our needs in a
@@ -1438,9 +1441,11 @@ function(__qt_internal_propagate_object_library target object_library)
     # a finalizer we rely on linker to resolve circular dependencies between objects and static
     # libraries.
     set_property(TARGET ${object_library} PROPERTY _is_qt_propagated_object_library TRUE)
-    set_property(TARGET ${object_library} APPEND PROPERTY
-        EXPORT_PROPERTIES _is_qt_propagated_object_library
-    )
+    if(NOT is_imported)
+        set_property(TARGET ${object_library} APPEND PROPERTY
+            EXPORT_PROPERTIES _is_qt_propagated_object_library
+        )
+    endif()
 
     # Keep the implicit linking if finalizers are not used.
     set(not_finalizer_mode_condition
