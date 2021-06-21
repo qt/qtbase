@@ -186,9 +186,6 @@ qint64 QWindowsPipeReader::bytesAvailable() const
  */
 qint64 QWindowsPipeReader::read(char *data, qint64 maxlen)
 {
-    if (pipeBroken && actualReadBufferSize == 0)
-        return 0;  // signal EOF
-
     mutex.lock();
     qint64 readSoFar;
     // If startAsyncRead() has read data, copy it to its destination.
@@ -203,8 +200,7 @@ qint64 QWindowsPipeReader::read(char *data, qint64 maxlen)
     mutex.unlock();
 
     if (!pipeBroken) {
-        if (state == Running)
-            startAsyncRead();
+        startAsyncRead();
         if (readSoFar == 0)
             return -2;      // signal EWOULDBLOCK
     }
