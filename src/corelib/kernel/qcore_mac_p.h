@@ -188,6 +188,7 @@ private:
 
 #ifdef Q_OS_MACOS
 Q_CORE_EXPORT bool qt_mac_applicationIsInDarkMode();
+Q_CORE_EXPORT bool qt_mac_runningUnderRosetta();
 #endif
 
 #ifndef QT_NO_DEBUG_STREAM
