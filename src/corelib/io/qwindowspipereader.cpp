@@ -186,8 +186,9 @@ qint64 QWindowsPipeReader::bytesAvailable() const
  */
 qint64 QWindowsPipeReader::read(char *data, qint64 maxlen)
 {
-    mutex.lock();
+    QMutexLocker locker(&mutex);
     qint64 readSoFar;
+
     // If startAsyncRead() has read data, copy it to its destination.
     if (maxlen == 1 && actualReadBufferSize > 0) {
         *data = readBuffer.getChar();
@@ -197,10 +198,9 @@ qint64 QWindowsPipeReader::read(char *data, qint64 maxlen)
         readSoFar = readBuffer.read(data, qMin(actualReadBufferSize, maxlen));
         actualReadBufferSize -= readSoFar;
     }
-    mutex.unlock();
 
     if (!pipeBroken) {
-        startAsyncRead();
+        startAsyncReadHelper(&locker);
         if (readSoFar == 0)
             return -2;      // signal EWOULDBLOCK
     }
@@ -223,7 +223,11 @@ bool QWindowsPipeReader::canReadLine() const
 void QWindowsPipeReader::startAsyncRead()
 {
     QMutexLocker locker(&mutex);
+    startAsyncReadHelper(&locker);
+}
 
+void QWindowsPipeReader::startAsyncReadHelper(QMutexLocker<QMutex> *locker)
+{
     if (readSequenceStarted || lastError != ERROR_SUCCESS)
         return;
 
@@ -236,10 +240,10 @@ void QWindowsPipeReader::startAsyncRead()
 
     if (!winEventActPosted) {
         winEventActPosted = true;
-        locker.unlock();
+        locker->unlock();
         QCoreApplication::postEvent(this, new QEvent(QEvent::WinEventAct));
     } else {
-        locker.unlock();
+        locker->unlock();
     }
 
     SetEvent(syncHandle);

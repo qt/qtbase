@@ -96,6 +96,7 @@ protected:
 private:
     enum State { Stopped, Running, Draining };
 
+    void startAsyncReadHelper(QMutexLocker<QMutex> *locker);
     void startAsyncReadLocked();
     void cancelAsyncRead(State newState);
     static void CALLBACK waitCallback(PTP_CALLBACK_INSTANCE instance, PVOID context,
