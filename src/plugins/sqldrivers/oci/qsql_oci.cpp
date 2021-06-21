@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtSql module of the Qt Toolkit.
@@ -226,6 +226,7 @@ public:
     OCISvcCtx *svc;
     OCIServer *srvhp;
     OCISession *authp;
+    OCITrans *trans = nullptr;
     OCIError *err;
     bool transaction;
     int serverVersion;
@@ -2296,11 +2297,12 @@ bool QOCIDriver::open(const QString & db,
         r = OCIAttrSet(d->authp, OCI_HTYPE_SESSION, const_cast<ushort *>(password.utf16()),
                        password.length() * sizeof(QChar), OCI_ATTR_PASSWORD, d->err);
 
-    OCITrans* trans;
+    if (r == OCI_SUCCESS) {
+        r = OCIHandleAlloc(d->env, reinterpret_cast<void **>(&d->trans), OCI_HTYPE_TRANS,
+                           0, nullptr);
+    }
     if (r == OCI_SUCCESS)
-        r = OCIHandleAlloc(d->env, reinterpret_cast<void **>(&trans), OCI_HTYPE_TRANS, 0, 0);
-    if (r == OCI_SUCCESS)
-        r = OCIAttrSet(d->svc, OCI_HTYPE_SVCCTX, trans, 0, OCI_ATTR_TRANS, d->err);
+        r = OCIAttrSet(d->svc, OCI_HTYPE_SVCCTX, d->trans, 0, OCI_ATTR_TRANS, d->err);
 
     if (r == OCI_SUCCESS) {
         if (user.isEmpty() && password.isEmpty())
@@ -2314,12 +2316,18 @@ bool QOCIDriver::open(const QString & db,
     if (r != OCI_SUCCESS) {
         setLastError(qMakeError(tr("Unable to logon"), QSqlError::ConnectionError, d->err));
         setOpenError(true);
+        if (d->trans)
+            OCIHandleFree(d->trans, OCI_HTYPE_TRANS);
+        d->trans = nullptr;
         if (d->authp)
             OCIHandleFree(d->authp, OCI_HTYPE_SESSION);
-        d->authp = 0;
+        d->authp = nullptr;
+        if (d->svc)
+            OCIHandleFree(d->svc, OCI_HTYPE_SVCCTX);
+        d->svc = nullptr;
         if (d->srvhp)
             OCIHandleFree(d->srvhp, OCI_HTYPE_SERVER);
-        d->srvhp = 0;
+        d->srvhp = nullptr;
         return false;
     }
 
@@ -2359,12 +2367,14 @@ void QOCIDriver::close()
 
     OCISessionEnd(d->svc, d->err, d->authp, OCI_DEFAULT);
     OCIServerDetach(d->srvhp, d->err, OCI_DEFAULT);
+    OCIHandleFree(d->trans, OCI_HTYPE_TRANS);
+    d->trans = nullptr;
     OCIHandleFree(d->authp, OCI_HTYPE_SESSION);
-    d->authp = 0;
-    OCIHandleFree(d->srvhp, OCI_HTYPE_SERVER);
-    d->srvhp = 0;
+    d->authp = nullptr;
     OCIHandleFree(d->svc, OCI_HTYPE_SVCCTX);
-    d->svc = 0;
+    d->svc = nullptr;
+    OCIHandleFree(d->srvhp, OCI_HTYPE_SERVER);
+    d->srvhp = nullptr;
     setOpen(false);
     setOpenError(false);
 }
