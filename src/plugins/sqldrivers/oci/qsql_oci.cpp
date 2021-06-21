@@ -1983,7 +1983,9 @@ bool QOCIResult::prepare(const QString& query)
 
     if (d->sql) {
         r = OCIHandleFree(d->sql, OCI_HTYPE_STMT);
-        if (r != OCI_SUCCESS)
+        if (r == OCI_SUCCESS)
+            d->sql = nullptr;
+        else
             qOraWarning("QOCIResult::prepare: unable to free statement handle:", d->err);
     }
     if (query.isEmpty())
