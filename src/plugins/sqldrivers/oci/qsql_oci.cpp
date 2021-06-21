@@ -222,16 +222,16 @@ class QOCIDriverPrivate : public QSqlDriverPrivate
 public:
     QOCIDriverPrivate();
 
-    OCIEnv *env;
-    OCISvcCtx *svc;
-    OCIServer *srvhp;
-    OCISession *authp;
+    OCIEnv *env = nullptr;
+    OCISvcCtx *svc = nullptr;
+    OCIServer *srvhp = nullptr;
+    OCISession *authp = nullptr;
     OCITrans *trans = nullptr;
-    OCIError *err;
-    bool transaction;
-    int serverVersion;
-    int prefetchRows;
-    int prefetchMem;
+    OCIError *err = nullptr;
+    bool transaction = false;
+    int serverVersion = -1;
+    int prefetchRows = -1;
+    int prefetchMem = QOCI_PREFETCH_MEM;
     QString user;
 
     void allocErrorHandle();
@@ -272,11 +272,11 @@ public:
     QOCIResultPrivate(QOCIResult *q, const QOCIDriver *drv);
     ~QOCIResultPrivate();
 
-    QOCICols *cols;
+    QOCICols *cols = nullptr;
     OCIEnv *env;
-    OCIError *err;
+    OCIError *err = nullptr;
     OCISvcCtx *&svc;
-    OCIStmt *sql;
+    OCIStmt *sql = nullptr;
     bool transaction;
     int serverVersion;
     int prefetchRows, prefetchMem;
@@ -573,20 +573,19 @@ void QOCIResultPrivate::outValues(QVariantList &values, IndicatorArray &indicato
 
 
 QOCIDriverPrivate::QOCIDriverPrivate()
-    : QSqlDriverPrivate(), env(0), svc(0), srvhp(0), authp(0), err(0), transaction(false),
-      serverVersion(-1), prefetchRows(-1), prefetchMem(QOCI_PREFETCH_MEM)
+    : QSqlDriverPrivate()
 {
     dbmsType = QSqlDriver::Oracle;
 }
 
 void QOCIDriverPrivate::allocErrorHandle()
 {
+    Q_ASSERT(!err);
     int r = OCIHandleAlloc(env,
                            reinterpret_cast<void **>(&err),
                            OCI_HTYPE_ERROR,
-                           0,
-                           0);
-    if (r != 0)
+                           0, nullptr);
+    if (r != OCI_SUCCESS)
         qWarning("QOCIDriver: unable to allocate error handle");
 }
 
@@ -1839,22 +1838,19 @@ void QOCICols::getValues(QVariantList &v, int index)
 
 QOCIResultPrivate::QOCIResultPrivate(QOCIResult *q, const QOCIDriver *drv)
     : QSqlCachedResultPrivate(q, drv),
-      cols(0),
       env(drv_d_func()->env),
-      err(0),
       svc(const_cast<OCISvcCtx*&>(drv_d_func()->svc)),
-      sql(0),
       transaction(drv_d_func()->transaction),
       serverVersion(drv_d_func()->serverVersion),
       prefetchRows(drv_d_func()->prefetchRows),
       prefetchMem(drv_d_func()->prefetchMem)
 {
+    Q_ASSERT(!err);
     int r = OCIHandleAlloc(env,
                            reinterpret_cast<void **>(&err),
                            OCI_HTYPE_ERROR,
-                           0,
-                           0);
-    if (r != 0)
+                           0, nullptr);
+    if (r != OCI_SUCCESS)
         qWarning("QOCIResult: unable to alloc error handle");
 }
 
@@ -1974,7 +1970,7 @@ bool QOCIResult::prepare(const QString& query)
     QSqlResult::prepare(query);
 
     delete d->cols;
-    d->cols = 0;
+    d->cols = nullptr;
     QSqlCachedResult::cleanup();
 
     if (d->sql) {
@@ -1989,8 +1985,7 @@ bool QOCIResult::prepare(const QString& query)
     r = OCIHandleAlloc(d->env,
                        reinterpret_cast<void **>(&d->sql),
                        OCI_HTYPE_STMT,
-                       0,
-                       0);
+                       0, nullptr);
     if (r != OCI_SUCCESS) {
         qOraWarning("QOCIResult::prepare: unable to alloc statement:", d->err);
         setLastError(qMakeError(QCoreApplication::translate("QOCIResult",
@@ -2278,23 +2273,34 @@ bool QOCIDriver::open(const QString & db,
         QString::fromLatin1("(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(Host=%1)(Port=%2))"
                 "(CONNECT_DATA=(SID=%3)))").arg(hostname).arg((port > -1 ? port : 1521)).arg(db);
 
-    r = OCIHandleAlloc(d->env, reinterpret_cast<void **>(&d->srvhp), OCI_HTYPE_SERVER, 0, 0);
-    if (r == OCI_SUCCESS)
-        r = OCIServerAttach(d->srvhp, d->err, reinterpret_cast<const OraText *>(connectionString.utf16()),
+    Q_ASSERT(!d->srvhp);
+    r = OCIHandleAlloc(d->env, reinterpret_cast<void **>(&d->srvhp), OCI_HTYPE_SERVER, 0, nullptr);
+    if (r == OCI_SUCCESS) {
+        r = OCIServerAttach(d->srvhp, d->err,
+                            reinterpret_cast<const OraText *>(connectionString.utf16()),
                             connectionString.length() * sizeof(QChar), OCI_DEFAULT);
-    if (r == OCI_SUCCESS || r == OCI_SUCCESS_WITH_INFO)
-        r = OCIHandleAlloc(d->env, reinterpret_cast<void **>(&d->svc), OCI_HTYPE_SVCCTX, 0, 0);
+    }
+    Q_ASSERT(!d->svc);
+    if (r == OCI_SUCCESS || r == OCI_SUCCESS_WITH_INFO) {
+        r = OCIHandleAlloc(d->env, reinterpret_cast<void **>(&d->svc), OCI_HTYPE_SVCCTX,
+                           0, nullptr);
+    }
     if (r == OCI_SUCCESS)
         r = OCIAttrSet(d->svc, OCI_HTYPE_SVCCTX, d->srvhp, 0, OCI_ATTR_SERVER, d->err);
-    if (r == OCI_SUCCESS)
-        r = OCIHandleAlloc(d->env, reinterpret_cast<void **>(&d->authp), OCI_HTYPE_SESSION, 0, 0);
-    if (r == OCI_SUCCESS)
+    Q_ASSERT(!d->authp);
+    if (r == OCI_SUCCESS) {
+        r = OCIHandleAlloc(d->env, reinterpret_cast<void **>(&d->authp), OCI_HTYPE_SESSION,
+                           0, nullptr);
+    }
+    if (r == OCI_SUCCESS) {
         r = OCIAttrSet(d->authp, OCI_HTYPE_SESSION, const_cast<ushort *>(user.utf16()),
                        user.length() * sizeof(QChar), OCI_ATTR_USERNAME, d->err);
-    if (r == OCI_SUCCESS)
+    }
+    if (r == OCI_SUCCESS) {
         r = OCIAttrSet(d->authp, OCI_HTYPE_SESSION, const_cast<ushort *>(password.utf16()),
                        password.length() * sizeof(QChar), OCI_ATTR_PASSWORD, d->err);
-
+    }
+    Q_ASSERT(!d->trans);
     if (r == OCI_SUCCESS) {
         r = OCIHandleAlloc(d->env, reinterpret_cast<void **>(&d->trans), OCI_HTYPE_TRANS,
                            0, nullptr);
