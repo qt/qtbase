@@ -172,6 +172,7 @@ private:
 Q_CORE_EXPORT QChar qt_mac_qtKey2CocoaKey(Qt::Key key);
 Q_CORE_EXPORT Qt::Key qt_mac_cocoaKey2QtKey(QChar keyCode);
 Q_CORE_EXPORT bool qt_mac_applicationIsInDarkMode();
+Q_CORE_EXPORT bool qt_mac_runningUnderRosetta();
 #endif
 
 #ifndef QT_NO_DEBUG_STREAM

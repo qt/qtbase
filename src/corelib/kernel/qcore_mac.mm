@@ -54,6 +54,7 @@
 #include <cxxabi.h>
 #include <objc/runtime.h>
 #include <mach-o/dyld.h>
+#include <sys/sysctl.h>
 
 #include <qdebug.h>
 
@@ -349,6 +350,15 @@ bool qt_mac_applicationIsInDarkMode()
         return [appearance isEqualToString:NSAppearanceNameDarkAqua];
     }
 #endif
+    return false;
+}
+
+bool qt_mac_runningUnderRosetta()
+{
+    int translated = 0;
+    auto size = sizeof(translated);
+    if (sysctlbyname("sysctl.proc_translated", &translated, &size, nullptr, 0) == 0)
+        return translated;
     return false;
 }
 #endif
