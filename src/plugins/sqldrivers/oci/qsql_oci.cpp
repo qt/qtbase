@@ -1862,9 +1862,11 @@ QOCIResultPrivate::~QOCIResultPrivate()
 {
     delete cols;
 
-    int r = OCIHandleFree(err, OCI_HTYPE_ERROR);
-    if (r != 0)
+    if (sql && OCIHandleFree(sql, OCI_HTYPE_STMT) != OCI_SUCCESS)
         qWarning("~QOCIResult: unable to free statement handle");
+
+    if (OCIHandleFree(err, OCI_HTYPE_ERROR) != OCI_SUCCESS)
+        qWarning("~QOCIResult: unable to free error report handle");
 }
 
 
@@ -1877,12 +1879,6 @@ QOCIResult::QOCIResult(const QOCIDriver *db)
 
 QOCIResult::~QOCIResult()
 {
-    Q_D(QOCIResult);
-    if (d->sql) {
-        int r = OCIHandleFree(d->sql, OCI_HTYPE_STMT);
-        if (r != 0)
-            qWarning("~QOCIResult: unable to free statement handle");
-    }
 }
 
 QVariant QOCIResult::handle() const
