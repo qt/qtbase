@@ -1110,8 +1110,11 @@ static inline bool resizeOnDpiChanged(const QWindow *w)
 
 bool QWindowsContext::shouldHaveNonClientDpiScaling(const QWindow *window)
 {
+    // DPI aware V2 processes always have NonClientDpiScaling enabled.
+    if (QWindowsContextPrivate::m_v2DpiAware)
+        return true;
+
     return QOperatingSystemVersion::current() >= QOperatingSystemVersion::Windows10
-        && !QWindowsContextPrivate::m_v2DpiAware // V2 implies NonClientDpiScaling; no need to enable
         && window->isTopLevel()
         && !window->property(QWindowsWindow::embeddedNativeParentHandleProperty).isValid()
 #if QT_CONFIG(opengl) // /QTBUG-62901, EnableNonClientDpiScaling has problems with GL
@@ -1288,8 +1291,12 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
             d->m_creationContext->obtainedPos = QPoint(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
             return true;
         case QtWindows::NonClientCreate:
-            if (shouldHaveNonClientDpiScaling(d->m_creationContext->window))
-                enableNonClientDpiScaling(msg.hwnd);
+            if (shouldHaveNonClientDpiScaling(d->m_creationContext->window) &&
+                // DPI aware V2 processes always have NonClientDpiScaling enabled
+                // and there is no need to make an API call to manually enable.
+                !QWindowsContextPrivate::m_v2DpiAware) {
+                    enableNonClientDpiScaling(msg.hwnd);
+                }
             return false;
         case QtWindows::CalculateSize:
             return QWindowsGeometryHint::handleCalculateSize(d->m_creationContext->customMargins, msg, result);
