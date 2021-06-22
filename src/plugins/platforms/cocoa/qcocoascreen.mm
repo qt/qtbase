@@ -73,12 +73,14 @@ namespace CoreGraphics {
 }
 
 NSArray *QCocoaScreen::s_screenConfigurationBeforeUpdate = nil;
+QMacNotificationObserver QCocoaScreen::s_screenParameterObserver;
+CGDisplayReconfigurationCallBack QCocoaScreen::s_displayReconfigurationCallBack = nullptr;
 
 void QCocoaScreen::initializeScreens()
 {
     updateScreens();
 
-    CGDisplayRegisterReconfigurationCallback([](CGDirectDisplayID displayId, CGDisplayChangeSummaryFlags flags, void *userInfo) {
+    s_displayReconfigurationCallBack = [](CGDirectDisplayID displayId, CGDisplayChangeSummaryFlags flags, void *userInfo) {
         Q_UNUSED(userInfo);
 
         // Displays are reconfigured in batches, and we want to update our screens
@@ -129,9 +131,10 @@ void QCocoaScreen::initializeScreens()
                 updateScreensIfNeeded();
             }
         }
-    }, nullptr);
+    };
+    CGDisplayRegisterReconfigurationCallback(s_displayReconfigurationCallBack, nullptr);
 
-    static QMacNotificationObserver screenParameterObserver(NSApplication.sharedApplication,
+    s_screenParameterObserver = QMacNotificationObserver(NSApplication.sharedApplication,
         NSApplicationDidChangeScreenParametersNotification, [&]() {
             qCDebug(lcQpaScreen) << "Received screen parameter change notification";
             updateScreensIfNeeded(); // As a last resort we update screens here
@@ -239,6 +242,12 @@ void QCocoaScreen::cleanupScreens()
     // Remove screens in reverse order to avoid crash in case of multiple screens
     for (QScreen *screen : backwards(QGuiApplication::screens()))
         static_cast<QCocoaScreen*>(screen->handle())->remove();
+
+    Q_ASSERT(s_displayReconfigurationCallBack);
+    CGDisplayRemoveReconfigurationCallback(s_displayReconfigurationCallBack, nullptr);
+    s_displayReconfigurationCallBack = nullptr;
+
+    s_screenParameterObserver.remove();
 }
 
 void QCocoaScreen::remove()
