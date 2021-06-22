@@ -278,8 +278,8 @@ _qt_library_map = [
     LibraryMapping(
         "qtmultimediaquicktools",
         "Qt6",
-        "Qt::MultimediaQuick",
-        extra=["COMPONENTS", "MultimediaQuick"],
+        "Qt::MultimediaQuickPrivate",
+        extra=["COMPONENTS", "MultimediaQuickPrivate"],
     ),
     LibraryMapping(
         "quick3dassetimport",
