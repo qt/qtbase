@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Copyright (C) 2018 Intel Corporation.
 ** Copyright (C) 2014 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: https://www.qt.io/licensing/
@@ -1203,7 +1203,10 @@ template <typename T>
 int qRegisterNormalizedMetaType(const QT_PREPEND_NAMESPACE(QByteArray) &normalizedTypeName)
 {
 #ifndef QT_NO_QOBJECT
-    Q_ASSERT_X(normalizedTypeName == QMetaObject::normalizedType(normalizedTypeName.constData()), "qRegisterNormalizedMetaType", "qRegisterNormalizedMetaType was called with a not normalized type name, please call qRegisterMetaType instead.");
+    Q_ASSERT_X(normalizedTypeName == QMetaObject::normalizedType(normalizedTypeName.constData()),
+               "qRegisterNormalizedMetaType",
+               "qRegisterNormalizedMetaType was called with a not normalized type name, "
+               "please call qRegisterMetaType instead.");
 #endif
 
     const QMetaType metaType = QMetaType::fromType<T>();
@@ -1216,9 +1219,8 @@ int qRegisterNormalizedMetaType(const QT_PREPEND_NAMESPACE(QByteArray) &normaliz
     QtPrivate::MetaTypePairHelper<T>::registerConverter();
     QtPrivate::MetaTypeSmartPointerHelper<T>::registerConverter();
 
-    if (normalizedTypeName != metaType.name()) {
+    if (normalizedTypeName != metaType.name())
         QMetaType::registerNormalizedTypedef(normalizedTypeName, metaType);
-    }
 
     return id;
 }
