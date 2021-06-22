@@ -165,11 +165,11 @@ public:
 #ifndef QT_NO_QOBJECT
 #if QT_CONFIG(future)
     static QFuture<QPermission::PermissionResult> requestPermission(
-                                                        QPermission::PermisionType permission);
+                                                        QPermission::PermissionType permission);
     static QFuture<QPermission::PermissionResult> requestPermission(const QString &permission);
 
     static QFuture<QPermission::PermissionResult> checkPermission(
-                                                        QPermission::PermisionType permission);
+                                                        QPermission::PermissionType permission);
     static QFuture<QPermission::PermissionResult> checkPermission(const QString &permission);
 #endif
     void installNativeEventFilter(QAbstractNativeEventFilter *filterObj);

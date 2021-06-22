@@ -47,7 +47,7 @@ QT_BEGIN_NAMESPACE
 namespace QPermission
 {
 
-enum PermisionType {
+enum PermissionType {
     Camera,
     Microphone,
     Bluetooth,
@@ -64,6 +64,9 @@ enum PermisionType {
     ReadCalendar,
     WriteCalendar
 };
+
+// ### 6.2 remove as soon as multimedia merges its typo fix
+using PermisionType = PermissionType;
 
 enum PermissionResult {
     Authorized,

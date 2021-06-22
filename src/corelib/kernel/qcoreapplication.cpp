@@ -3101,7 +3101,7 @@ void QCoreApplication::setEventDispatcher(QAbstractEventDispatcher *eventDispatc
     }
 
     QFuture<QPermission::PermissionResult>
-    QCoreApplicationPrivate::requestPermission(QPermission::PermisionType permission)
+    QCoreApplicationPrivate::requestPermission(QPermission::PermissionType permission)
     {
         Q_UNUSED(permission)
         return defaultPermissionFuture();
@@ -3115,7 +3115,7 @@ void QCoreApplication::setEventDispatcher(QAbstractEventDispatcher *eventDispatc
     }
 
     QFuture<QPermission::PermissionResult>
-    QCoreApplicationPrivate::checkPermission(QPermission::PermisionType permission)
+    QCoreApplicationPrivate::checkPermission(QPermission::PermissionType permission)
     {
         Q_UNUSED(permission)
         return defaultPermissionFuture();
@@ -3155,7 +3155,7 @@ void QCoreApplication::setEventDispatcher(QAbstractEventDispatcher *eventDispatc
     \sa checkPermission()
 */
 QFuture<QPermission::PermissionResult>
-QCoreApplication::requestPermission(QPermission::PermisionType permission)
+QCoreApplication::requestPermission(QPermission::PermissionType permission)
 {
     return QCoreApplicationPrivate::requestPermission(permission);
 }
@@ -3213,7 +3213,7 @@ QCoreApplication::requestPermission(const QString &permission)
     \sa requestPermission()
 */
 QFuture<QPermission::PermissionResult>
-QCoreApplication::checkPermission(QPermission::PermisionType permission)
+QCoreApplication::checkPermission(QPermission::PermissionType permission)
 {
     return QCoreApplicationPrivate::checkPermission(permission);
 }

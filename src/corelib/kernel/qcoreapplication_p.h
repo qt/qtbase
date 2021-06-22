@@ -205,11 +205,11 @@ public:
     inline QString qmljsDebugArgumentsString() const { return qmljs_debug_arguments; }
 #if QT_CONFIG(future) && !defined QT_NO_QOBJECT
     static QFuture<QPermission::PermissionResult> requestPermission(
-                                                        QPermission::PermisionType permission);
+                                                        QPermission::PermissionType permission);
     static QFuture<QPermission::PermissionResult> requestPermission(const QString &permission);
 
     static QFuture<QPermission::PermissionResult> checkPermission(
-                                                        QPermission::PermisionType permission);
+                                                        QPermission::PermissionType permission);
     static QFuture<QPermission::PermissionResult> checkPermission(const QString &permission);
 #endif
 
