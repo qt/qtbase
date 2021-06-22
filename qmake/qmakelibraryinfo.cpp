@@ -182,7 +182,12 @@ static QString storedPath(int loc)
     if (loc < QMakeLibraryInfo::FirstHostPath) {
         result = QLibraryInfo::path(static_cast<QLibraryInfo::LibraryPath>(loc));
     } else if (loc <= QMakeLibraryInfo::LastHostPath) {
-        result = QLibraryInfo::path(hostToTargetPathEnum(loc));
+        if (loc == QMakeLibraryInfo::HostDataPath) {
+            // Handle QT_HOST_DATADIR specially. It is not necessarily equal to QT_INSTALL_DATA.
+            result = QT_HOST_DATADIR;
+        } else {
+            result = QLibraryInfo::path(hostToTargetPathEnum(loc));
+        }
     } else if (loc == QMakeLibraryInfo::SysrootPath) {
         // empty result
     } else if (loc == QMakeLibraryInfo::SysrootifyPrefixPath) {

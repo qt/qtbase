@@ -22,6 +22,13 @@ target_include_directories(QtLibraryInfo PUBLIC
     "${CMAKE_CURRENT_SOURCE_DIR}"
     "${CMAKE_CURRENT_SOURCE_DIR}/library"
 )
+
+# Chop off the "/mkspecs" part of INSTALL_MKSPECSDIR
+get_filename_component(hostdatadir "${INSTALL_MKSPECSDIR}" DIRECTORY)
+if("${hostdatadir}" STREQUAL "")
+    set(hostdatadir ".")
+endif()
+
 target_compile_definitions(QtLibraryInfo PUBLIC
     PROEVALUATOR_FULL
     QT_BUILD_QMAKE
@@ -33,6 +40,7 @@ target_compile_definitions(QtLibraryInfo PUBLIC
     QT_VERSION_PATCH=${PROJECT_VERSION_PATCH} # special case
     QT_HOST_MKSPEC="${QT_QMAKE_HOST_MKSPEC}"
     QT_TARGET_MKSPEC="${QT_QMAKE_TARGET_MKSPEC}"
+    QT_HOST_DATADIR="${hostdatadir}"
 )
 qt_set_common_target_properties(QtLibraryInfo)
 

@@ -25,12 +25,6 @@ function(qt_generate_qconfig_cpp in_file out_file)
     set(QT_CONFIG_STR_OFFSETS "")
     set(QT_CONFIG_STRS "")
 
-    # Chop off the "/mkspecs" part of INSTALL_MKSPECSDIR
-    get_filename_component(hostdatadir "${INSTALL_MKSPECSDIR}" DIRECTORY)
-    if("${hostdatadir}" STREQUAL "")
-        set(hostdatadir ".")
-    endif()
-
     # Start first part.
     qt_add_string_to_qconfig_cpp("${INSTALL_DOCDIR}")
     qt_add_string_to_qconfig_cpp("${INSTALL_INCLUDEDIR}")
