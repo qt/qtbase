@@ -1,4 +1,5 @@
 /*
+    Copyright (C) 2021 The Qt Company Ltd.
     Copyright (c) 2019, BogDan Vatra <bogdan@kde.org>
     Contact: http://www.qt.io/licensing/
 
@@ -42,6 +43,7 @@ import android.content.ContextWrapper;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ComponentInfo;
+import android.content.res.Resources;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -170,28 +172,29 @@ public abstract class QtLoader {
     // this function is used to load and start the loader
     private void loadApplication(Bundle loaderParams)
     {
+        final Resources resources = m_context.getResources();
+        final String packageName = m_context.getPackageName();
         try {
             final int errorCode = loaderParams.getInt(ERROR_CODE_KEY);
             if (errorCode != 0) {
                 // fatal error, show the error and quit
                 AlertDialog errorDialog = new AlertDialog.Builder(m_context).create();
                 errorDialog.setMessage(loaderParams.getString(ERROR_MESSAGE_KEY));
-                errorDialog.setButton(m_context.getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        finish();
-                    }
-                });
+                errorDialog.setButton(resources.getString(android.R.string.ok),
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                finish();
+                            }
+                        });
                 errorDialog.show();
                 return;
             }
 
             // add all bundled Qt libs to loader params
-            ArrayList<String> libs = new ArrayList<String>();
-            if (m_contextInfo.metaData.containsKey("android.app.bundled_libs_resource_id")) {
-                int resourceId = m_contextInfo.metaData.getInt("android.app.bundled_libs_resource_id");
-                libs.addAll(prefferedAbiLibs(m_context.getResources().getStringArray(resourceId)));
-            }
+            int id = resources.getIdentifier("bundled_libs", "array", packageName);
+            final String[] bundledLibs = resources.getStringArray(id);
+            ArrayList<String> libs = new ArrayList<>(prefferedAbiLibs(bundledLibs));
 
             String libName = null;
             if (m_contextInfo.metaData.containsKey("android.app.lib_name")) {
@@ -225,17 +228,16 @@ public abstract class QtLoader {
         } catch (Exception e) {
             e.printStackTrace();
             AlertDialog errorDialog = new AlertDialog.Builder(m_context).create();
-            if (m_contextInfo.metaData.containsKey("android.app.fatal_error_msg"))
-                errorDialog.setMessage(m_contextInfo.metaData.getString("android.app.fatal_error_msg"));
-            else
-                errorDialog.setMessage("Fatal error, your application can't be started.");
-
-            errorDialog.setButton(m_context.getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    finish();
-                }
-            });
+            int id = resources.getIdentifier("fatal_error_msg", "string",
+                    packageName);
+            errorDialog.setMessage(resources.getString(id));
+            errorDialog.setButton(resources.getString(android.R.string.ok),
+                    new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            finish();
+                        }
+                    });
             errorDialog.show();
         }
     }
@@ -243,14 +245,16 @@ public abstract class QtLoader {
     public void startApp(final boolean firstStart)
     {
         try {
-            if (m_contextInfo.metaData.containsKey("android.app.qt_libs_resource_id")) {
-                int resourceId = m_contextInfo.metaData.getInt("android.app.qt_libs_resource_id");
-                m_qtLibs = prefferedAbiLibs(m_context.getResources().getStringArray(resourceId));
-            }
+            final Resources resources = m_context.getResources();
+            final String packageName = m_context.getPackageName();
+            int id = resources.getIdentifier("qt_libs", "array", packageName);
+            m_qtLibs =  prefferedAbiLibs(resources.getStringArray(id));
 
-            if (m_contextInfo.metaData.containsKey("android.app.use_local_qt_libs")
-                    && m_contextInfo.metaData.getInt("android.app.use_local_qt_libs") == 1) {
-                ArrayList<String> libraryList = new ArrayList<String>();
+            id = resources.getIdentifier("use_local_qt_libs", "string", packageName);
+            final int useLocalLibs = Integer.parseInt(resources.getString(id));
+
+            if (useLocalLibs == 1) {
+                ArrayList<String> libraryList = new ArrayList<>();
 
                 boolean apkDeployFromSystem = false;
                 String apkPath = m_context.getApplicationInfo().publicSourceDir;
@@ -293,10 +297,13 @@ public abstract class QtLoader {
                         libraryList.add(libPrefix + lib + ".so");
                 }
 
-                if (m_contextInfo.metaData.containsKey("android.app.bundle_local_qt_libs")
-                        && m_contextInfo.metaData.getInt("android.app.bundle_local_qt_libs") == 1) {
-                    int resourceId = m_contextInfo.metaData.getInt("android.app.load_local_libs_resource_id");
-                    for (String libs : prefferedAbiLibs(m_context.getResources().getStringArray(resourceId))) {
+                id = resources.getIdentifier("bundle_local_qt_libs", "string", packageName);
+                final int bundleLocalLibs = Integer.parseInt(resources.getString(id));
+
+                if (bundleLocalLibs == 1) {
+                    id = resources.getIdentifier("load_local_libs", "array", packageName);
+                    ArrayList<String> localLibs = prefferedAbiLibs(resources.getStringArray(id));
+                    for (String libs : localLibs) {
                         for (String lib : libs.split(":")) {
                             if (!lib.isEmpty())
                                 libraryList.add(libsDir + lib);
@@ -310,10 +317,11 @@ public abstract class QtLoader {
                 loaderParams.putInt(ERROR_CODE_KEY, 0);
                 loaderParams.putString(DEX_PATH_KEY, new String());
                 loaderParams.putString(LOADER_CLASS_NAME_KEY, loaderClassName());
-                if (m_contextInfo.metaData.containsKey("android.app.static_init_classes")) {
-                    loaderParams.putStringArray(STATIC_INIT_CLASSES_KEY,
-                            m_contextInfo.metaData.getString("android.app.static_init_classes").split(":"));
-                }
+
+                id = resources.getIdentifier("static_init_classes", "string", packageName);
+                loaderParams.putStringArray(STATIC_INIT_CLASSES_KEY, resources.getString(id)
+                        .split(":"));
+
                 loaderParams.putStringArrayList(NATIVE_LIBRARIES_KEY, libraryList);
 
 
