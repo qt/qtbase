@@ -235,7 +235,6 @@ struct Options
     bool usesOpenGL = false;
 
     // Per package collected information
-    QStringList localJars;
     QStringList initClasses;
     QStringList permissions;
     QStringList features;
@@ -1411,10 +1410,20 @@ bool updateLibsXml(Options *options)
         allLocalLibs += QLatin1String("        <item>%1;%2</item>\n").arg(it.key(), localLibs.join(QLatin1Char(':')));
     }
 
+    options->initClasses.removeDuplicates();
+
     QHash<QString, QString> replacements;
     replacements[QStringLiteral("<!-- %%INSERT_QT_LIBS%% -->")] += qtLibs.trimmed();
     replacements[QStringLiteral("<!-- %%INSERT_LOCAL_LIBS%% -->")] = allLocalLibs.trimmed();
     replacements[QStringLiteral("<!-- %%INSERT_EXTRA_LIBS%% -->")] = extraLibs.trimmed();
+    const QString initClasses = options->initClasses.join(QLatin1Char(':'));
+    replacements[QStringLiteral("<!-- %%INSERT_INIT_CLASSES%% -->")] = initClasses;
+
+    // Bundle and use libs from the apk because currently we don't have a way avoid
+    // duplicating them.
+    replacements[QStringLiteral("<!-- %%BUNDLE_LOCAL_QT_LIBS%% -->")] = QLatin1String("1");
+    replacements[QStringLiteral("<!-- %%USE_LOCAL_QT_LIBS%% -->")] = QLatin1String("1");
+
 
     if (!updateFile(fileName, replacements))
         return false;
@@ -1456,22 +1465,13 @@ bool updateAndroidManifest(Options &options)
     if (options.verbose)
         fprintf(stdout, "  -- AndroidManifest.xml \n");
 
-    options.localJars.removeDuplicates();
-    options.initClasses.removeDuplicates();
-
     QHash<QString, QString> replacements;
     replacements[QStringLiteral("-- %%INSERT_APP_NAME%% --")] = options.applicationBinary;
     replacements[QStringLiteral("-- %%INSERT_APP_ARGUMENTS%% --")] = options.applicationArguments;
     replacements[QStringLiteral("-- %%INSERT_APP_LIB_NAME%% --")] = options.applicationBinary;
-    replacements[QStringLiteral("-- %%INSERT_LOCAL_JARS%% --")] = options.localJars.join(QLatin1Char(':'));
-    replacements[QStringLiteral("-- %%INSERT_INIT_CLASSES%% --")] = options.initClasses.join(QLatin1Char(':'));
     replacements[QStringLiteral("-- %%INSERT_VERSION_NAME%% --")] = options.versionName;
     replacements[QStringLiteral("-- %%INSERT_VERSION_CODE%% --")] = options.versionCode;
     replacements[QStringLiteral("package=\"org.qtproject.example\"")] = QLatin1String("package=\"%1\"").arg(options.packageName);
-    replacements[QStringLiteral("-- %%BUNDLE_LOCAL_QT_LIBS%% --")]
-            = (options.deploymentMechanism == Options::Bundled) ? QLatin1String("1") : QLatin1String("0");
-     // use libs from the apk
-    replacements[QStringLiteral("-- %%USE_LOCAL_QT_LIBS%% --")] = QLatin1String("1");
 
     QString permissions;
     for (const QString &permission : qAsConst(options.permissions))
@@ -1663,9 +1663,6 @@ bool readAndroidDependencyXml(Options *options,
                             usedDependencies->insert(dependency.absolutePath);
                         }
                     }
-
-                    if (!fileName.isEmpty())
-                        options->localJars.append(fileName);
 
                     if (reader.attributes().hasAttribute(QLatin1String("initClass"))) {
                         options->initClasses.append(reader.attributes().value(QLatin1String("initClass")).toString());
