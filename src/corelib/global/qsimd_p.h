@@ -204,18 +204,17 @@
 
 // AVX intrinsics
 #  if defined(__AVX__) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS) && (defined(Q_CC_INTEL) || defined(Q_CC_MSVC))
-// AES, PCLMULQDQ instructions:
+// PCLMULQDQ instructions:
 // All processors that support AVX support PCLMULQDQ
 // (but neither MSVC nor the Intel compiler define this macro)
 #    define __PCLMUL__                      1
 #  endif
 
 #  if defined(__AVX2__) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS) && (defined(Q_CC_INTEL) || defined(Q_CC_MSVC))
-// F16C & RDRAND instructions:
-// All processors that support AVX2 support F16C & RDRAND:
-// (but neither MSVC nor the Intel compiler define these macros)
+// F16C instructions:
+// All processors that support AVX2 support F16C:
+// (but neither MSVC nor the Intel compiler define this macro)
 #    define __F16C__                        1
-#    define __RDRND__                       1
 #  endif
 
 #  if defined(__BMI__) && !defined(__BMI2__) && defined(Q_CC_INTEL)
