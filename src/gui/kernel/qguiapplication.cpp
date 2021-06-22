@@ -2526,11 +2526,16 @@ void QGuiApplicationPrivate::processWindowScreenChangedEvent(QWindowSystemInterf
             else // Fall back to default behavior, and try to find some appropriate screen
                 topLevelWindow->setScreen(nullptr);
         }
-        // we may have changed scaling, so trigger resize event if needed
+
+        // We may have changed scaling; trigger resize event if needed,
+        // except on Windows, where we send resize events during WM_DPICHANGED
+        // event handling. FIXME: unify DPI change handling across all platforms.
+#ifndef Q_OS_WIN
         if (window->handle()) {
             QWindowSystemInterfacePrivate::GeometryChangeEvent gce(window, QHighDpi::fromNativePixels(window->handle()->geometry(), window));
             processGeometryChangeEvent(&gce);
         }
+#endif
     }
 }
 
