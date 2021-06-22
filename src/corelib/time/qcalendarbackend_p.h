@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -93,7 +93,7 @@ public:
     virtual ~QCalendarBackend();
     virtual QString name() const = 0;
     QCalendar::System calendarSystem() const;
-    size_t calendarId() const { return m_id; }
+    QCalendar::SystemId calendarId() const { return m_id; }
     // Date queries:
     virtual int daysInMonth(int month, int year = QCalendar::Unspecified) const = 0;
     virtual int daysInYear(int year) const;
@@ -143,11 +143,11 @@ protected:
     bool registerAlias(const QString &name);
 
 private:
-    const size_t m_id = ~size_t(0);
+    const QCalendar::SystemId m_id;
     // QCalendar's access to its registry:
     static const QCalendarBackend *fromName(QStringView name);
     static const QCalendarBackend *fromName(QLatin1String name);
-    static const QCalendarBackend *fromId(size_t id);
+    static const QCalendarBackend *fromId(QCalendar::SystemId id);
     // QCalendar's access to singletons:
     static const QCalendarBackend *fromEnum(QCalendar::System system);
 };

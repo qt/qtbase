@@ -63,7 +63,7 @@ using namespace QRoundingDown;
 QGregorianCalendar::QGregorianCalendar()
     : QRomanCalendar(QStringLiteral("Gregorian"), QCalendar::System::Gregorian)
 {
-    if (~calendarId()) {
+    if (calendarId().isValid()) {
         Q_ASSERT(calendarSystem() == QCalendar::System::Gregorian);
         registerAlias(QStringLiteral("gregory"));
     } // else: being ignored in favor of a duplicate created at the same time

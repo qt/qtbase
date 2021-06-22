@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -76,7 +76,7 @@ using namespace QRoundingDown;
 QMilankovicCalendar::QMilankovicCalendar()
     : QRomanCalendar(QStringLiteral("Milankovic"), QCalendar::System::Milankovic)
 {
-    Q_ASSERT(calendarSystem() == QCalendar::System::Milankovic || !~calendarId());
+    Q_ASSERT(calendarSystem() == QCalendar::System::Milankovic || !calendarId().isValid());
 }
 
 QString QMilankovicCalendar::name() const
