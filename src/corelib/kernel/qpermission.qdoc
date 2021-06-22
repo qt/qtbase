@@ -35,7 +35,7 @@
 */
 
 /*!
-    \enum QPermission::PermisionType
+    \enum QPermission::PermissionType
 
     Predefined sets of permission values.
 

@@ -75,7 +75,7 @@ static int nextRequestCode()
     return counter.fetchAndAddRelaxed(1);
 }
 
-static QStringList nativeStringsFromPermission(QPermission::PermisionType permission)
+static QStringList nativeStringsFromPermission(QPermission::PermissionType permission)
 {
     static const auto precisePerm = QStringLiteral("android.permission.ACCESS_FINE_LOCATION");
     static const auto coarsePerm = QStringLiteral("android.permission.ACCESS_COARSE_LOCATION");
@@ -236,7 +236,7 @@ QFuture<QPermission::PermissionResult> groupRequestToSingleResult(const QStringL
 }
 
 QFuture<QPermission::PermissionResult>
-QCoreApplicationPrivate::requestPermission(QPermission::PermisionType permission)
+QCoreApplicationPrivate::requestPermission(QPermission::PermissionType permission)
 {
     const auto nativePermissions = nativeStringsFromPermission(permission);
 
@@ -282,7 +282,7 @@ QCoreApplicationPrivate::checkPermission(const QString &permission)
 }
 
 QFuture<QPermission::PermissionResult>
-QCoreApplicationPrivate::checkPermission(QPermission::PermisionType permission)
+QCoreApplicationPrivate::checkPermission(QPermission::PermissionType permission)
 {
     const auto nativePermissions = nativeStringsFromPermission(permission);
 
