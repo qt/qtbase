@@ -12,6 +12,7 @@ macro(qt_internal_get_internal_add_module_keywords option_args single_args multi
         NO_CONFIG_HEADER_FILE
         NO_ADDITIONAL_TARGET_INFO
         NO_GENERATE_METATYPES
+        GENERATE_CPP_EXPORTS # TODO: Rename to NO_GENERATE_CPP_EXPORTS once migration is done
         GENERATE_METATYPES          # TODO: Remove once it is not used anymore
     )
     set(${single_args}
@@ -20,6 +21,7 @@ macro(qt_internal_get_internal_add_module_keywords option_args single_args multi
         CONFIG_MODULE_NAME
         PRECOMPILED_HEADER
         CONFIGURE_FILE_PATH
+        CPP_EXPORT_HEADER_NAME
         ${__default_target_info_args}
     )
     set(${multi_args}
@@ -139,6 +141,22 @@ function(qt_internal_add_module target)
     string(REPLACE "-" "_" module_define_infix "${module_define_infix}")
     string(REPLACE "." "_" module_define_infix "${module_define_infix}")
 
+    if(arg_MODULE_INCLUDE_NAME)
+        set(module_include_name ${arg_MODULE_INCLUDE_NAME})
+    else()
+        set(module_include_name ${module})
+    endif()
+
+    if(arg_GENERATE_CPP_EXPORTS)
+        if(arg_CPP_EXPORT_HEADER_NAME)
+            set(cpp_export_header_name "CPP_EXPORT_HEADER_NAME;${arg_CPP_EXPORT_HEADER_NAME}")
+        endif()
+        qt_internal_generate_cpp_global_exports(${target} ${module_define_infix}
+            ${module_include_name}
+            "${cpp_export_header_name}"
+        )
+    endif()
+
     set(property_prefix "INTERFACE_")
     if(NOT arg_HEADER_MODULE)
         qt_set_common_target_properties(${target})
@@ -257,12 +275,6 @@ function(qt_internal_add_module target)
         if (WIN32 AND BUILD_SHARED_LIBS)
             _qt_internal_generate_win32_rc_file(${target})
         endif()
-    endif()
-
-    if(arg_MODULE_INCLUDE_NAME)
-        set(module_include_name ${arg_MODULE_INCLUDE_NAME})
-    else()
-        set(module_include_name ${module})
     endif()
 
     # Module headers:
@@ -795,4 +807,26 @@ function(qt_describe_module target)
     configure_file("${descfile_in}" "${descfile_out}")
 
     qt_install(FILES "${descfile_out}" DESTINATION "${install_dir}")
+endfunction()
+
+function(qt_internal_generate_cpp_global_exports target module_define_infix module_include_name)
+    cmake_parse_arguments(arg
+        ""
+        "CPP_EXPORT_HEADER_NAME"
+        "" ${ARGN})
+    qt_internal_module_info(module "${target}")
+    if(NOT arg_CPP_EXPORT_HEADER_NAME)
+        set(arg_CPP_EXPORT_HEADER_NAME "qt${module_lower}exports.h")
+    endif()
+
+    set(generated_header_path
+        "${QT_BUILD_DIR}/include/${module_include_name}/${arg_CPP_EXPORT_HEADER_NAME}"
+    )
+
+    configure_file("${QT_CMAKE_DIR}/modulecppexports.h.in"
+        "${generated_header_path}" @ONLY
+    )
+
+    target_sources(${target} PRIVATE "${generated_header_path}")
+    set_property(TARGET ${target} APPEND PROPERTY PUBLIC_HEADER "${generated_header_path}")
 endfunction()

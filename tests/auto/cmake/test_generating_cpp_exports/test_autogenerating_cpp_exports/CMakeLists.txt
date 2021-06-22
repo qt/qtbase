@@ -1,0 +1,17 @@
+qt_internal_add_module(TestAutogeneratingCppExports
+    GENERATE_CPP_EXPORTS
+    SOURCES
+        module_api.h
+        module_api.cpp
+    PUBLIC_LIBRARIES
+        Qt::Core
+)
+
+qt_internal_extend_target(TestAutogeneratingCppExports
+    CONDITION GCC OR MINGW
+    COMPILE_OPTIONS
+        -fvisibility=hidden
+)
+
+add_executable(TestAutogeneratingCppExportsApp use_api.cpp)
+target_link_libraries(TestAutogeneratingCppExportsApp PRIVATE TestAutogeneratingCppExports)

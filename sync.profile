@@ -23,6 +23,8 @@
     "QtMockPlugins2" => "$basedir/tests/auto/cmake/mockplugins/mockplugins2",
     "QtMockPlugins3" => "$basedir/tests/auto/cmake/mockplugins/mockplugins3",
     "QtMockStaticResources1" => "$basedir/tests/auto/cmake/test_static_resources/mock_static_resources1",
+    "QtTestAutogeneratingCppExports" => "$basedir/tests/auto/cmake/test_generating_cpp_exports/test_autogenerating_cpp_exports",
+    "QtTestAutogeneratingCppExportsCustomName" => "$basedir/tests/auto/cmake/test_generating_cpp_exports/test_autogenerating_cpp_exports_custom_name",
 );
 %moduleheaders = ( # restrict the module headers to those found in relative path
     "QtEglFSDeviceIntegration" => "api",
