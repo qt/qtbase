@@ -1999,10 +1999,6 @@ void QWindowsWindow::handleGeometryChange()
 {
     const QRect previousGeometry = m_data.geometry;
     m_data.geometry = geometry_sys();
-    if (testFlag(WithinDpiChanged)
-        && QWindowsContext::instance()->screenManager().screenForHwnd(m_data.hwnd) != screen()) {
-        return; // QGuiApplication will send resize when screen actually changes
-    }
     QWindowSystemInterface::handleGeometryChange(window(), m_data.geometry);
     // QTBUG-32121: OpenGL/normal windows (with exception of ANGLE
     // which we no longer support in Qt 6) do not receive expose
@@ -2699,11 +2695,6 @@ static int getBorderWidth(const QPlatformScreen *screen)
 
 void QWindowsWindow::getSizeHints(MINMAXINFO *mmi) const
 {
-    // We don't apply the min/max size hint as we change the dpi, because we did not adjust the
-    // QScreen of the window yet so we don't have the min/max with the right ratio
-    if (!testFlag(QWindowsWindow::WithinDpiChanged))
-        QWindowsGeometryHint::applyToMinMaxInfo(window(), fullFrameMargins(), mmi);
-
     // This block fixes QTBUG-8361, QTBUG-4362: Frameless/title-less windows shouldn't cover the
     // taskbar when maximized
     if ((testFlag(WithinMaximize) || window()->windowStates().testFlag(Qt::WindowMinimized))

@@ -235,11 +235,10 @@ public:
         MaximizeToFullScreen = 0x80000,
         Compositing = 0x100000,
         HasBorderInFullScreen = 0x200000,
-        WithinDpiChanged = 0x400000,
-        VulkanSurface = 0x800000,
-        ResizeMoveActive = 0x1000000,
-        DisableNonClientScaling = 0x2000000,
-        Direct3DSurface = 0x4000000
+        VulkanSurface = 0x400000,
+        ResizeMoveActive = 0x800000,
+        DisableNonClientScaling = 0x1000000,
+        Direct3DSurface = 0x2000000
     };
 
     QWindowsWindow(QWindow *window, const QWindowsWindowData &data);

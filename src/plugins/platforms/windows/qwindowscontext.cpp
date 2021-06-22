@@ -1088,27 +1088,6 @@ static inline QWindowsInputContext *windowsInputContext()
     return qobject_cast<QWindowsInputContext *>(QWindowsIntegration::instance()->inputContext());
 }
 
-
-// Child windows, fixed-size windows or pop-ups and similar should not be resized
-static inline bool resizeOnDpiChanged(const QWindow *w)
-{
-    bool result = false;
-    if (w->isTopLevel()) {
-        switch (w->type()) {
-        case Qt::Window:
-        case Qt::Dialog:
-        case Qt::Sheet:
-        case Qt::Drawer:
-        case Qt::Tool:
-            result = !w->flags().testFlag(Qt::MSWindowsFixedSizeDialogHint);
-            break;
-        default:
-            break;
-        }
-    }
-    return result;
-}
-
 bool QWindowsContext::shouldHaveNonClientDpiScaling(const QWindow *window)
 {
     // DPI aware V2 processes always have NonClientDpiScaling enabled.
@@ -1477,26 +1456,30 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
     case QtWindows::DpiChangedEvent: {
 
         const UINT dpi = HIWORD(wParam);
+        const qreal scale = qreal(dpi) / qreal(platformWindow->savedDpi());
         platformWindow->setSavedDpi(dpi);
 
-        // Try to apply the suggested size first and then notify ScreenChanged
-        // so that the resize event sent from QGuiApplication incorporates it
-        // WM_DPICHANGED is sent with a size that avoids resize loops (by
-        // snapping back to the previous screen, see QTBUG-65580).
-        const bool doResize = resizeOnDpiChanged(platformWindow->window());
-        if (doResize) {
-            platformWindow->setFlag(QWindowsWindow::WithinDpiChanged);
-            platformWindow->updateFullFrameMargins();
-            const auto prcNewWindow = reinterpret_cast<RECT *>(lParam);
-            qCDebug(lcQpaWindows) << __FUNCTION__ << "WM_DPICHANGED"
-                << platformWindow->window() << *prcNewWindow;
-            SetWindowPos(hwnd, nullptr, prcNewWindow->left, prcNewWindow->top,
-                         prcNewWindow->right - prcNewWindow->left,
-                         prcNewWindow->bottom - prcNewWindow->top, SWP_NOZORDER | SWP_NOACTIVATE);
-            platformWindow->clearFlag(QWindowsWindow::WithinDpiChanged);
-        }
+        // Send screen change first, so that the new sceen is set during any following resize
         platformWindow->checkForScreenChanged(QWindowsWindow::FromDpiChange);
-        return doResize;
+
+        // Apply the suggested window geometry to the native window. This will make
+        // sure the window tracks the mouse cursor during screen change, and also
+        // that the window size is scaled according to the DPI change.
+        platformWindow->updateFullFrameMargins();
+        const auto prcNewWindow = reinterpret_cast<RECT *>(lParam);
+        SetWindowPos(hwnd, nullptr, prcNewWindow->left, prcNewWindow->top,
+                     prcNewWindow->right - prcNewWindow->left,
+                     prcNewWindow->bottom - prcNewWindow->top, SWP_NOZORDER | SWP_NOACTIVATE);
+
+        // Scale child QPlatformWindow size. Windows sends WM_DPICHANGE to top-level windows only.
+        for (QWindow *childWindow : platformWindow->window()->findChildren<QWindow *>()) {
+            QWindowsWindow *platformChildWindow = static_cast<QWindowsWindow *>(childWindow->handle());
+            QRect currentGeometry = platformChildWindow->geometry();
+            QRect scaledGeometry = QRect(currentGeometry.topLeft() * scale, currentGeometry.size() * scale);
+            platformChildWindow->setGeometry(scaledGeometry);
+        }
+
+        return true;
     }
 #if QT_CONFIG(sessionmanager)
     case QtWindows::QueryEndSessionApplicationEvent: {
