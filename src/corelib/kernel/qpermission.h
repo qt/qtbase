@@ -65,9 +65,6 @@ enum PermissionType {
     WriteCalendar
 };
 
-// ### 6.2 remove as soon as multimedia merges its typo fix
-using PermisionType = PermissionType;
-
 enum PermissionResult {
     Authorized,
     Denied,
