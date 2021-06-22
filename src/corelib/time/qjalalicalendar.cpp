@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -116,7 +116,7 @@ qint64 firstDayOfYear(int year, int cycleNo)
 QJalaliCalendar::QJalaliCalendar()
     : QCalendarBackend(QStringLiteral("Jalali"), QCalendar::System::Jalali)
 {
-    if (~calendarId()) {
+    if (calendarId().isValid()) {
         Q_ASSERT(calendarSystem() == QCalendar::System::Jalali);
         registerAlias(QStringLiteral("Persian"));
     } // else: being ignored in favor of a duplicate created at the same time

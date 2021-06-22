@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -78,7 +78,7 @@ using namespace QRoundingDown;
 QJulianCalendar::QJulianCalendar()
     : QRomanCalendar(QStringLiteral("Julian"), QCalendar::System::Julian)
 {
-    Q_ASSERT(calendarSystem() == QCalendar::System::Julian || !~calendarId());
+    Q_ASSERT(calendarSystem() == QCalendar::System::Julian || !calendarId().isValid());
 }
 
 QString QJulianCalendar::name() const

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -75,7 +75,7 @@ using namespace QRoundingDown;
 QIslamicCivilCalendar::QIslamicCivilCalendar()
     : QHijriCalendar(QStringLiteral("Islamic Civil"), QCalendar::System::IslamicCivil)
 {
-    if (~calendarId()) {
+    if (calendarId().isValid()) {
         Q_ASSERT(calendarSystem() == QCalendar::System::IslamicCivil);
         registerAlias(QStringLiteral("islamic-civil")); // CLDR name
         registerAlias(QStringLiteral("islamicc")); // old CLDR name, still (2018) used by Mozilla

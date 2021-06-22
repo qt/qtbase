@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -130,12 +130,24 @@ public:
     // New entries must be added to the \enum doc in qcalendar.cpp and
     // handled in QCalendarBackend::fromEnum()
     Q_ENUM(System)
+    class SystemId
+    {
+        const size_t id;
+        friend class QCalendarBackend;
+        constexpr bool isInEnum() const { return id <= size_t(QCalendar::System::Last); }
+        constexpr SystemId(QCalendar::System e) : id(size_t(e)) {}
+        constexpr SystemId(size_t i) : id(i) {}
+    public:
+        constexpr SystemId() : id(~size_t(0)) {}
+        constexpr size_t index() const noexcept { return id; }
+        constexpr bool isValid() const noexcept { return ~id; }
+    };
 
     explicit QCalendar(); // Gregorian, optimised
     explicit QCalendar(System system);
     explicit QCalendar(QLatin1String name);
     explicit QCalendar(QStringView name);
-    explicit QCalendar(size_t id);
+    explicit QCalendar(SystemId id);
 
     // QCalendar is a trivially copyable value type.
     bool isValid() const { return d != nullptr; }
