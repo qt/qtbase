@@ -3180,14 +3180,6 @@ bool QObject::disconnect(const QObject *sender, const QMetaMethod &signal,
         }
     }
 
-    // Reconstructing SIGNAL() macro result for signal.methodSignature() string
-    QByteArray signalSignature;
-    if (signal.mobj) {
-        signalSignature.reserve(signal.methodSignature().size() + 1);
-        signalSignature.append((char)(QSIGNAL_CODE + '0'));
-        signalSignature.append(signal.methodSignature());
-    }
-
     int signal_index;
     int method_index;
     {
