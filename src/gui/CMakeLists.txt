@@ -277,6 +277,7 @@ qt_internal_add_module(Gui
         "painting/qdrawhelper.cpp" # special case
     PRECOMPILED_HEADER
         "kernel/qt_gui_pch.h"
+    GENERATE_CPP_EXPORTS
 )
 
 # Resources:
