@@ -990,17 +990,6 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
 
     case PE_FrameStatusBarItem:
         break;
-    case PE_IndicatorTabClose:
-    {
-        Q_D(const QFusionStyle);
-        if (d->tabBarcloseButtonIcon.isNull())
-            d->tabBarcloseButtonIcon = proxy()->standardIcon(SP_DialogCloseButton, option, widget);
-        if ((option->state & State_Enabled) && (option->state & State_MouseOver))
-            proxy()->drawPrimitive(PE_PanelButtonCommand, option, painter, widget);
-        QPixmap pixmap = d->tabBarcloseButtonIcon.pixmap(QSize(16, 16), painter->device()->devicePixelRatio(), QIcon::Normal, QIcon::On);
-        proxy()->drawItemPixmap(painter, option->rect, Qt::AlignCenter, pixmap);
-    }
-        break;
     case PE_PanelMenu: {
         painter->save();
         const QBrush menuBackground = option->palette.base().color().lighter(108);
