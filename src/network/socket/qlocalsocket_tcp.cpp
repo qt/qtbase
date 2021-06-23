@@ -301,6 +301,16 @@ qint64 QLocalSocket::readData(char *data, qint64 c)
     return d->tcpSocket->read(data, c);
 }
 
+qint64 QLocalSocket::readLineData(char *data, qint64 maxSize)
+{
+    if (!maxSize)
+        return 0;
+
+    // QIODevice::readLine() reserves space for the trailing '\0' byte,
+    // so we must read 'maxSize + 1' bytes.
+    return d_func()->tcpSocket->readLine(data, maxSize + 1);
+}
+
 qint64 QLocalSocket::skipData(qint64 maxSize)
 {
     return d_func()->tcpSocket->skip(maxSize);

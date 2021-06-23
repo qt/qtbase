@@ -209,6 +209,30 @@ qint64 QWindowsPipeReader::read(char *data, qint64 maxlen)
 }
 
 /*!
+    Reads a line from the internal buffer, but no more than \c{maxlen}
+    characters. A terminating '\0' byte is always appended to \c{data},
+    so \c{maxlen} must be larger than 1.
+ */
+qint64 QWindowsPipeReader::readLine(char *data, qint64 maxlen)
+{
+    QMutexLocker locker(&mutex);
+    qint64 readSoFar = 0;
+
+    if (actualReadBufferSize > 0) {
+        readSoFar = readBuffer.readLine(data, qMin(actualReadBufferSize + 1, maxlen));
+        actualReadBufferSize -= readSoFar;
+    }
+
+    if (!pipeBroken) {
+        startAsyncReadHelper(&locker);
+        if (readSoFar == 0)
+            return -2;      // signal EWOULDBLOCK
+    }
+
+    return readSoFar;
+}
+
+/*!
     Returns \c true if a complete line of data can be read from the buffer.
  */
 bool QWindowsPipeReader::canReadLine() const

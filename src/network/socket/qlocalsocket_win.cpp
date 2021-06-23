@@ -238,6 +238,20 @@ void QLocalSocket::connectToServer(OpenMode openMode)
         emit connected();
 }
 
+static qint64 tranformPipeReaderResult(qint64 res)
+{
+    // QWindowsPipeReader's reading functions return error codes
+    // that don't match what we need.
+    switch (res) {
+    case 0:     // EOF -> transform to error
+        return -1;
+    case -2:    // EWOULDBLOCK -> no error, just no bytes
+        return 0;
+    default:
+        return res;
+    }
+}
+
 // This is reading from the buffer
 qint64 QLocalSocket::readData(char *data, qint64 maxSize)
 {
@@ -246,17 +260,19 @@ qint64 QLocalSocket::readData(char *data, qint64 maxSize)
     if (!maxSize)
         return 0;
 
-    qint64 ret = d->pipeReader->read(data, maxSize);
+    return tranformPipeReaderResult(d->pipeReader->read(data, maxSize));
+}
 
-    // QWindowsPipeReader::read() returns error codes that don't match what we need
-    switch (ret) {
-    case 0:     // EOF -> transform to error
-        return -1;
-    case -2:    // EWOULDBLOCK -> no error, just no bytes
+qint64 QLocalSocket::readLineData(char *data, qint64 maxSize)
+{
+    Q_D(QLocalSocket);
+
+    if (!maxSize)
         return 0;
-    default:
-        return ret;
-    }
+
+    // QIODevice::readLine() reserves space for the trailing '\0' byte,
+    // so we must read 'maxSize + 1' bytes.
+    return tranformPipeReaderResult(d->pipeReader->readLine(data, maxSize + 1));
 }
 
 qint64 QLocalSocket::skipData(qint64 maxSize)

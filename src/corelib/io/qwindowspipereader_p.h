@@ -78,6 +78,7 @@ public:
     bool isPipeClosed() const { return pipeBroken; }
     qint64 bytesAvailable() const;
     qint64 read(char *data, qint64 maxlen);
+    qint64 readLine(char *data, qint64 maxlen);
     bool canReadLine() const;
     DWORD checkPipeState();
     bool checkForReadyRead() { return consumePendingAndEmit(false); }
