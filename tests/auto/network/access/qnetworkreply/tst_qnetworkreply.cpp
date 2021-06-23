@@ -9551,7 +9551,7 @@ void tst_QNetworkReply::downloadProgressWithContentEncoding()
 
     qint64 bytesReceived = -1;
     connect(reply.data(), &QNetworkReply::downloadProgress, this,
-            [reply = reply.data(), &expected, &bytesReceived](qint64 recv, qint64 total) {
+            [reply = reply.data(), &expected, &bytesReceived](qint64 recv, qint64 /*total*/) {
                 qint64 previous = bytesReceived;
                 bytesReceived = recv;
                 if (bytesReceived > expected.size()) {
