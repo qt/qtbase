@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Copyright (C) 2016 Olivier Goffart <ogoffart@woboq.com>
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
@@ -410,9 +410,11 @@ void tst_QVariant::isNull()
     QVariant var;
     QVERIFY( var.isNull() );
 
-    QString str1;
-    QVariant var1( str1 );
-    QVERIFY( !var1.isNull() );
+    QVariant empty = QString();
+    QVERIFY(empty.toString().isNull());
+    QVERIFY(!empty.isNull());
+    QVERIFY(empty.isValid());
+    QCOMPARE(empty.typeName(), "QString");
 
     QVariant var3( QString( "blah" ) );
     QVERIFY( !var3.isNull() );
