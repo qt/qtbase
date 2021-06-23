@@ -243,7 +243,9 @@ function(qt_internal_add_executable name)
             set(class_names
                 "${class_names_regular}${class_names_separator}${class_names_current_project}")
 
-            file(GENERATE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${out_file} CONTENT
+            set(out_file_path "${CMAKE_CURRENT_BINARY_DIR}/${out_file}")
+
+            file(GENERATE OUTPUT "${out_file_path}" CONTENT
 "// This file is auto-generated. Do not edit.
 #include <QtPlugin>
 
@@ -251,8 +253,14 @@ Q_IMPORT_PLUGIN($<JOIN:${class_names},)\nQ_IMPORT_PLUGIN(>)
 "
                 CONDITION "$<NOT:$<STREQUAL:${class_names},>>"
             )
+
+            # CMake versions earlier than 3.18.0 can't find the generated file for some reason,
+            # failing at generation phase.
+            # Explicitly marking the file as GENERATED fixes the issue.
+            set_source_files_properties("${out_file_path}" PROPERTIES GENERATED TRUE)
+
             target_sources(${name} PRIVATE
-                "$<$<NOT:$<STREQUAL:${class_names},>>:${CMAKE_CURRENT_BINARY_DIR}/${out_file}>"
+                "$<$<NOT:$<STREQUAL:${class_names},>>:${out_file_path}>"
             )
             target_link_libraries(${name} PRIVATE
                 "$<TARGET_PROPERTY:${lib},_qt_initial_repo_plugins>"
