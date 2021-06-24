@@ -289,8 +289,10 @@ QList<QSsl::SupportedFeature> QSchannelBackend::supportedFeatures() const
 {
     QList<QSsl::SupportedFeature> features;
 
+#ifdef SUPPORTS_ALPN
     features << QSsl::SupportedFeature::ClientSideAlpn;
     features << QSsl::SupportedFeature::ServerSideAlpn;
+#endif
 
     return features;
 }
@@ -632,15 +634,10 @@ Required const_reinterpret_cast(Actual *p)
 }
 
 #ifdef SUPPORTS_ALPN
-bool supportsAlpn()
-{
-    return QOperatingSystemVersion::current() >= QOperatingSystemVersion::Windows8_1;
-}
-
 QByteArray createAlpnString(const QByteArrayList &nextAllowedProtocols)
 {
     QByteArray alpnString;
-    if (!nextAllowedProtocols.isEmpty() && supportsAlpn()) {
+    if (!nextAllowedProtocols.isEmpty()) {
         const QByteArray names = [&nextAllowedProtocols]() {
             QByteArray protocolString;
             for (QByteArray proto : nextAllowedProtocols) {
@@ -1323,7 +1320,7 @@ bool TlsCryptographSchannel::verifyHandshake()
 
 #ifdef SUPPORTS_ALPN
     const auto allowedProtos = configuration.allowedNextProtocols();
-    if (!allowedProtos.isEmpty() && supportsAlpn()) {
+    if (!allowedProtos.isEmpty()) {
         SecPkgContext_ApplicationProtocol alpn;
         status = QueryContextAttributes(&contextHandle,
                                         SECPKG_ATTR_APPLICATION_PROTOCOL,
