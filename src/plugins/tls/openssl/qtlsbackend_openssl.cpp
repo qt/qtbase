@@ -318,8 +318,12 @@ QList<QSsl::SupportedFeature> QTlsBackendOpenSSL::supportedFeatures() const
     QList<QSsl::SupportedFeature> features;
 
     features << QSsl::SupportedFeature::CertificateVerification;
+
+#if !defined(OPENSSL_NO_TLSEXT)
     features << QSsl::SupportedFeature::ClientSideAlpn;
     features << QSsl::SupportedFeature::ServerSideAlpn;
+#endif // !OPENSSL_NO_TLSEXT
+
     features << QSsl::SupportedFeature::Ocsp;
     features << QSsl::SupportedFeature::Psk;
     features << QSsl::SupportedFeature::SessionTicket;
