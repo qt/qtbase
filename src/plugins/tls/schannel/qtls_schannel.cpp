@@ -1367,7 +1367,7 @@ bool TlsCryptographSchannel::verifyHandshake()
 
     if (!checkSslErrors() || q->state() != QAbstractSocket::ConnectedState) {
 #ifdef QSSLSOCKET_DEBUG
-        qCDebug(lcTlsBackend) << __func__ << "was unsuccessful. Paused:" << paused;
+        qCDebug(lcTlsBackend) << __func__ << "was unsuccessful. Paused:" << d->isPaused();
 #endif
         // If we're paused then checkSslErrors returned false, but it's not an error
         return d->isPaused() && q->state() == QAbstractSocket::ConnectedState;
