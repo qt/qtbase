@@ -139,7 +139,8 @@ protected:
 class Q_GUI_EXPORT QSinglePointEvent : public QPointerEvent
 {
     Q_GADGET
-    Q_PROPERTY(QObject *exclusivePointGrabber READ exclusivePointGrabber WRITE setExclusivePointGrabber)
+    Q_PROPERTY(QObject *exclusivePointGrabber READ exclusivePointGrabber
+               WRITE setExclusivePointGrabber)
 
     Q_EVENT_DISABLE_COPY(QSinglePointEvent);
 public:

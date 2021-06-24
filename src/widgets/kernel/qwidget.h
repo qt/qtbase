@@ -152,10 +152,14 @@ class Q_WIDGETS_EXPORT QWidget : public QObject, public QPaintDevice
     Q_PROPERTY(QSizePolicy sizePolicy READ sizePolicy WRITE setSizePolicy)
     Q_PROPERTY(QSize minimumSize READ minimumSize WRITE setMinimumSize)
     Q_PROPERTY(QSize maximumSize READ maximumSize WRITE setMaximumSize)
-    Q_PROPERTY(int minimumWidth READ minimumWidth WRITE setMinimumWidth STORED false DESIGNABLE false)
-    Q_PROPERTY(int minimumHeight READ minimumHeight WRITE setMinimumHeight STORED false DESIGNABLE false)
-    Q_PROPERTY(int maximumWidth READ maximumWidth WRITE setMaximumWidth STORED false DESIGNABLE false)
-    Q_PROPERTY(int maximumHeight READ maximumHeight WRITE setMaximumHeight STORED false DESIGNABLE false)
+    Q_PROPERTY(int minimumWidth READ minimumWidth WRITE setMinimumWidth STORED false
+               DESIGNABLE false)
+    Q_PROPERTY(int minimumHeight READ minimumHeight WRITE setMinimumHeight STORED false
+               DESIGNABLE false)
+    Q_PROPERTY(int maximumWidth READ maximumWidth WRITE setMaximumWidth STORED false
+               DESIGNABLE false)
+    Q_PROPERTY(int maximumHeight READ maximumHeight WRITE setMaximumHeight STORED false
+               DESIGNABLE false)
     Q_PROPERTY(QSize sizeIncrement READ sizeIncrement WRITE setSizeIncrement)
     Q_PROPERTY(QSize baseSize READ baseSize WRITE setBaseSize)
     Q_PROPERTY(QPalette palette READ palette WRITE setPalette)

@@ -58,7 +58,8 @@ class Q_GUI_EXPORT QInputDevice : public QObject
     Q_PROPERTY(Capabilities capabilities READ capabilities CONSTANT)
     Q_PROPERTY(qint64 systemId READ systemId CONSTANT)
     Q_PROPERTY(QString seatName READ seatName CONSTANT)
-    Q_PROPERTY(QRect availableVirtualGeometry READ availableVirtualGeometry NOTIFY availableVirtualGeometryChanged)
+    Q_PROPERTY(QRect availableVirtualGeometry READ availableVirtualGeometry
+               NOTIFY availableVirtualGeometryChanged)
 
 public:
     enum class DeviceType {

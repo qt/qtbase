@@ -68,7 +68,8 @@ class Q_GUI_EXPORT QAction : public QObject
 
     Q_PROPERTY(bool checkable READ isCheckable WRITE setCheckable NOTIFY checkableChanged FINAL)
     Q_PROPERTY(bool checked READ isChecked WRITE setChecked NOTIFY toggled)
-    Q_PROPERTY(bool enabled READ isEnabled WRITE setEnabled NOTIFY enabledChanged RESET resetEnabled FINAL)
+    Q_PROPERTY(bool enabled READ isEnabled WRITE setEnabled NOTIFY enabledChanged
+               RESET resetEnabled FINAL)
     Q_PROPERTY(QIcon icon READ icon WRITE setIcon NOTIFY changed)
     Q_PROPERTY(QString text READ text WRITE setText NOTIFY changed)
     Q_PROPERTY(QString iconText READ iconText WRITE setIconText NOTIFY changed)
@@ -78,13 +79,16 @@ class Q_GUI_EXPORT QAction : public QObject
     Q_PROPERTY(QFont font READ font WRITE setFont NOTIFY changed)
 #if QT_CONFIG(shortcut)
     Q_PROPERTY(QKeySequence shortcut READ shortcut WRITE setShortcut NOTIFY changed)
-    Q_PROPERTY(Qt::ShortcutContext shortcutContext READ shortcutContext WRITE setShortcutContext NOTIFY changed)
+    Q_PROPERTY(Qt::ShortcutContext shortcutContext READ shortcutContext WRITE setShortcutContext
+               NOTIFY changed)
     Q_PROPERTY(bool autoRepeat READ autoRepeat WRITE setAutoRepeat NOTIFY changed)
 #endif // QT_CONFIG(shortcut)
     Q_PROPERTY(bool visible READ isVisible WRITE setVisible NOTIFY visibleChanged FINAL)
     Q_PROPERTY(MenuRole menuRole READ menuRole WRITE setMenuRole NOTIFY changed)
-    Q_PROPERTY(bool iconVisibleInMenu READ isIconVisibleInMenu WRITE setIconVisibleInMenu NOTIFY changed)
-    Q_PROPERTY(bool shortcutVisibleInContextMenu READ isShortcutVisibleInContextMenu WRITE setShortcutVisibleInContextMenu NOTIFY changed)
+    Q_PROPERTY(bool iconVisibleInMenu READ isIconVisibleInMenu WRITE setIconVisibleInMenu
+               NOTIFY changed)
+    Q_PROPERTY(bool shortcutVisibleInContextMenu READ isShortcutVisibleInContextMenu
+               WRITE setShortcutVisibleInContextMenu NOTIFY changed)
     Q_PROPERTY(Priority priority READ priority WRITE setPriority)
 
 public:

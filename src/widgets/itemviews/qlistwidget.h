@@ -188,7 +188,8 @@ class Q_WIDGETS_EXPORT QListWidget : public QListView
 {
     Q_OBJECT
     Q_PROPERTY(int count READ count)
-    Q_PROPERTY(int currentRow READ currentRow WRITE setCurrentRow NOTIFY currentRowChanged USER true)
+    Q_PROPERTY(int currentRow READ currentRow WRITE setCurrentRow NOTIFY currentRowChanged
+               USER true)
     Q_PROPERTY(bool sortingEnabled READ isSortingEnabled WRITE setSortingEnabled)
 
     friend class QListWidgetItem;

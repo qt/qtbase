@@ -68,13 +68,17 @@ class Q_WIDGETS_EXPORT QGraphicsView : public QAbstractScrollArea
     Q_PROPERTY(QPainter::RenderHints renderHints READ renderHints WRITE setRenderHints)
     Q_PROPERTY(DragMode dragMode READ dragMode WRITE setDragMode)
     Q_PROPERTY(CacheMode cacheMode READ cacheMode WRITE setCacheMode)
-    Q_PROPERTY(ViewportAnchor transformationAnchor READ transformationAnchor WRITE setTransformationAnchor)
+    Q_PROPERTY(ViewportAnchor transformationAnchor READ transformationAnchor
+               WRITE setTransformationAnchor)
     Q_PROPERTY(ViewportAnchor resizeAnchor READ resizeAnchor WRITE setResizeAnchor)
-    Q_PROPERTY(ViewportUpdateMode viewportUpdateMode READ viewportUpdateMode WRITE setViewportUpdateMode)
+    Q_PROPERTY(ViewportUpdateMode viewportUpdateMode READ viewportUpdateMode
+               WRITE setViewportUpdateMode)
 #if QT_CONFIG(rubberband)
-    Q_PROPERTY(Qt::ItemSelectionMode rubberBandSelectionMode READ rubberBandSelectionMode WRITE setRubberBandSelectionMode)
+    Q_PROPERTY(Qt::ItemSelectionMode rubberBandSelectionMode READ rubberBandSelectionMode
+               WRITE setRubberBandSelectionMode)
 #endif
-    Q_PROPERTY(OptimizationFlags optimizationFlags READ optimizationFlags WRITE setOptimizationFlags)
+    Q_PROPERTY(OptimizationFlags optimizationFlags READ optimizationFlags
+               WRITE setOptimizationFlags)
 
 public:
     enum ViewportAnchor {

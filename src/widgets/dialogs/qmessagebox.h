@@ -65,7 +65,8 @@ class Q_WIDGETS_EXPORT QMessageBox : public QDialog
     Q_PROPERTY(QString detailedText READ detailedText WRITE setDetailedText)
 #endif
     Q_PROPERTY(QString informativeText READ informativeText WRITE setInformativeText)
-    Q_PROPERTY(Qt::TextInteractionFlags textInteractionFlags READ textInteractionFlags WRITE setTextInteractionFlags)
+    Q_PROPERTY(Qt::TextInteractionFlags textInteractionFlags READ textInteractionFlags
+               WRITE setTextInteractionFlags)
 
 public:
     enum Icon {

@@ -60,8 +60,10 @@ class Q_WIDGETS_EXPORT QToolBar : public QWidget
     Q_OBJECT
 
     Q_PROPERTY(bool movable READ isMovable WRITE setMovable NOTIFY movableChanged)
-    Q_PROPERTY(Qt::ToolBarAreas allowedAreas READ allowedAreas WRITE setAllowedAreas NOTIFY allowedAreasChanged)
-    Q_PROPERTY(Qt::Orientation orientation READ orientation WRITE setOrientation NOTIFY orientationChanged)
+    Q_PROPERTY(Qt::ToolBarAreas allowedAreas READ allowedAreas WRITE setAllowedAreas
+               NOTIFY allowedAreasChanged)
+    Q_PROPERTY(Qt::Orientation orientation READ orientation WRITE setOrientation
+               NOTIFY orientationChanged)
     Q_PROPERTY(QSize iconSize READ iconSize WRITE setIconSize NOTIFY iconSizeChanged)
     Q_PROPERTY(Qt::ToolButtonStyle toolButtonStyle READ toolButtonStyle WRITE setToolButtonStyle
                NOTIFY toolButtonStyleChanged)

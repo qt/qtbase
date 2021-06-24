@@ -64,7 +64,8 @@ class Q_WIDGETS_EXPORT QLabel : public QFrame
     Q_PROPERTY(int margin READ margin WRITE setMargin)
     Q_PROPERTY(int indent READ indent WRITE setIndent)
     Q_PROPERTY(bool openExternalLinks READ openExternalLinks WRITE setOpenExternalLinks)
-    Q_PROPERTY(Qt::TextInteractionFlags textInteractionFlags READ textInteractionFlags WRITE setTextInteractionFlags)
+    Q_PROPERTY(Qt::TextInteractionFlags textInteractionFlags READ textInteractionFlags
+               WRITE setTextInteractionFlags)
     Q_PROPERTY(bool hasSelectedText READ hasSelectedText)
     Q_PROPERTY(QString selectedText READ selectedText)
 

@@ -55,7 +55,8 @@ class Q_NETWORK_EXPORT QNetworkInformation : public QObject
     Q_OBJECT
     Q_DECLARE_PRIVATE(QNetworkInformation)
     Q_PROPERTY(Reachability reachability READ reachability NOTIFY reachabilityChanged)
-    Q_PROPERTY(bool isBehindCaptivePortal READ isBehindCaptivePortal NOTIFY isBehindCaptivePortalChanged)
+    Q_PROPERTY(bool isBehindCaptivePortal READ isBehindCaptivePortal
+               NOTIFY isBehindCaptivePortalChanged)
 public:
     enum class Reachability {
         Unknown,

@@ -56,25 +56,34 @@ class Q_GUI_EXPORT QStyleHints : public QObject
     Q_PROPERTY(int cursorFlashTime READ cursorFlashTime NOTIFY cursorFlashTimeChanged FINAL)
     Q_PROPERTY(qreal fontSmoothingGamma READ fontSmoothingGamma STORED false CONSTANT FINAL)
     Q_PROPERTY(int keyboardAutoRepeatRate READ keyboardAutoRepeatRate STORED false CONSTANT FINAL)
-    Q_PROPERTY(int keyboardInputInterval READ keyboardInputInterval NOTIFY keyboardInputIntervalChanged FINAL)
-    Q_PROPERTY(int mouseDoubleClickInterval READ mouseDoubleClickInterval NOTIFY mouseDoubleClickIntervalChanged FINAL)
-    Q_PROPERTY(int mousePressAndHoldInterval READ mousePressAndHoldInterval NOTIFY mousePressAndHoldIntervalChanged FINAL)
+    Q_PROPERTY(int keyboardInputInterval READ keyboardInputInterval
+               NOTIFY keyboardInputIntervalChanged FINAL)
+    Q_PROPERTY(int mouseDoubleClickInterval READ mouseDoubleClickInterval
+               NOTIFY mouseDoubleClickIntervalChanged FINAL)
+    Q_PROPERTY(int mousePressAndHoldInterval READ mousePressAndHoldInterval
+               NOTIFY mousePressAndHoldIntervalChanged FINAL)
     Q_PROPERTY(QChar passwordMaskCharacter READ passwordMaskCharacter STORED false CONSTANT FINAL)
     Q_PROPERTY(int passwordMaskDelay READ passwordMaskDelay STORED false CONSTANT FINAL)
     Q_PROPERTY(bool setFocusOnTouchRelease READ setFocusOnTouchRelease STORED false CONSTANT FINAL)
     Q_PROPERTY(bool showIsFullScreen READ showIsFullScreen STORED false CONSTANT FINAL)
     Q_PROPERTY(bool showIsMaximized READ showIsMaximized STORED false CONSTANT FINAL)
-    Q_PROPERTY(bool showShortcutsInContextMenus READ showShortcutsInContextMenus WRITE setShowShortcutsInContextMenus NOTIFY showShortcutsInContextMenusChanged FINAL)
+    Q_PROPERTY(bool showShortcutsInContextMenus READ showShortcutsInContextMenus
+               WRITE setShowShortcutsInContextMenus NOTIFY showShortcutsInContextMenusChanged FINAL)
     Q_PROPERTY(int startDragDistance READ startDragDistance NOTIFY startDragDistanceChanged FINAL)
     Q_PROPERTY(int startDragTime READ startDragTime NOTIFY startDragTimeChanged FINAL)
     Q_PROPERTY(int startDragVelocity READ startDragVelocity STORED false CONSTANT FINAL)
     Q_PROPERTY(bool useRtlExtensions READ useRtlExtensions STORED false CONSTANT FINAL)
-    Q_PROPERTY(Qt::TabFocusBehavior tabFocusBehavior READ tabFocusBehavior NOTIFY tabFocusBehaviorChanged FINAL)
+    Q_PROPERTY(Qt::TabFocusBehavior tabFocusBehavior READ tabFocusBehavior
+               NOTIFY tabFocusBehaviorChanged FINAL)
     Q_PROPERTY(bool singleClickActivation READ singleClickActivation STORED false CONSTANT FINAL)
-    Q_PROPERTY(bool useHoverEffects READ useHoverEffects WRITE setUseHoverEffects NOTIFY useHoverEffectsChanged FINAL)
+    Q_PROPERTY(bool useHoverEffects READ useHoverEffects WRITE setUseHoverEffects
+               NOTIFY useHoverEffectsChanged FINAL)
     Q_PROPERTY(int wheelScrollLines READ wheelScrollLines NOTIFY wheelScrollLinesChanged FINAL)
-    Q_PROPERTY(int mouseQuickSelectionThreshold READ mouseQuickSelectionThreshold WRITE setMouseQuickSelectionThreshold NOTIFY mouseQuickSelectionThresholdChanged FINAL)
-    Q_PROPERTY(int mouseDoubleClickDistance READ mouseDoubleClickDistance STORED false CONSTANT FINAL)
+    Q_PROPERTY(int mouseQuickSelectionThreshold READ mouseQuickSelectionThreshold
+               WRITE setMouseQuickSelectionThreshold NOTIFY mouseQuickSelectionThresholdChanged
+               FINAL)
+    Q_PROPERTY(int mouseDoubleClickDistance READ mouseDoubleClickDistance STORED false CONSTANT
+               FINAL)
     Q_PROPERTY(int touchDoubleTapDistance READ touchDoubleTapDistance STORED false CONSTANT FINAL)
 
 public:

@@ -82,7 +82,8 @@ class Q_WIDGETS_EXPORT QTextEdit : public QAbstractScrollArea
     Q_PROPERTY(qreal tabStopDistance READ tabStopDistance WRITE setTabStopDistance)
     Q_PROPERTY(bool acceptRichText READ acceptRichText WRITE setAcceptRichText)
     Q_PROPERTY(int cursorWidth READ cursorWidth WRITE setCursorWidth)
-    Q_PROPERTY(Qt::TextInteractionFlags textInteractionFlags READ textInteractionFlags WRITE setTextInteractionFlags)
+    Q_PROPERTY(Qt::TextInteractionFlags textInteractionFlags READ textInteractionFlags
+               WRITE setTextInteractionFlags)
     Q_PROPERTY(QTextDocument *document READ document WRITE setDocument DESIGNABLE false)
     Q_PROPERTY(QString placeholderText READ placeholderText WRITE setPlaceholderText)
 public:
