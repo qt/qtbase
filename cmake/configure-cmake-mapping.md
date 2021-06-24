@@ -54,7 +54,8 @@ The effort of this is tracked in QTBUG-85373 and QTBUG-85349.
 | -gcov                                 |                                                   |                                                                 |
 | -trace [backend]                      | -DINPUT_trace=yes or -DINPUT_trace=<backend>      |                                                                 |
 |                                       | or -DFEATURE_<backend>                            |                                                                 |
-| -sanitize address -sanitize undefined | -DECM_ENABLE_SANITIZERS=address;undefined         |                                                                 |
+| -sanitize address -sanitize undefined | -DFEATURE_sanitize_address=ON                     | Directly setting -DECM_ENABLE_SANITIZERS=foo is not supported   |
+|                                       | -DFEATURE_sanitize_undefined=ON                   |                                                                 |
 | -coverage <arg>                       |                                                   |                                                                 |
 | -c++std c++20                         | -DFEATURE_cxx20=ON                                |                                                                 |
 | -sse2/-sse3/-ssse3/-sse4.1            | -DFEATURE_sse4=ON                                 |                                                                 |
