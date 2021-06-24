@@ -398,6 +398,7 @@ void TlsCryptographSecureTransport::continueHandshake()
 void TlsCryptographSecureTransport::disconnected()
 {
     Q_ASSERT(d && d->plainTcpSocket());
+    d->setEncrypted(false);
     if (d->plainTcpSocket()->bytesAvailable() <= 0)
         destroySslContext();
     // If there is still buffered data in the plain socket, don't destroy the ssl context yet.

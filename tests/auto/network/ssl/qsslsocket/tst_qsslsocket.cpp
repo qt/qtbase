@@ -1092,6 +1092,7 @@ void tst_QSslSocket::connectToHostEncrypted()
 
     socket->disconnectFromHost();
     QVERIFY(socket->waitForDisconnected());
+    QVERIFY(!socket->isEncrypted());
 
     QCOMPARE(socket->mode(), QSslSocket::SslClientMode);
 
