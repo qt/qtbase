@@ -44,6 +44,7 @@ The options are:
 - thread
 - leak
 - undefined
+- fuzzer-no-link
 - fuzzer
 
 The sanitizers "address", "memory" and "thread" are mutually exclusive.  You
@@ -130,7 +131,11 @@ macro (enable_sanitizer_flags sanitize_option)
         set(XSAN_LINKER_FLAGS "lsan")
     elseif (${sanitize_option} MATCHES "undefined")
         check_compiler_version("4.9" "3.1" "99.99")
-        set(XSAN_COMPILE_FLAGS "-fsanitize=undefined -fno-omit-frame-pointer -fno-optimize-sibling-calls")
+        set(XSAN_COMPILE_FLAGS "-fsanitize=undefined -fsanitize=float-divide-by-zero -fno-omit-frame-pointer -fno-optimize-sibling-calls")
+    elseif (${sanitize_option} MATCHES "fuzzer-no-link")
+        check_compiler_version("99.99" "6.0" "99.99")
+        set(XSAN_COMPILE_FLAGS "-fsanitize=fuzzer-no-link")
+        set(XSAN_LINKER_FLAGS "-fsanitize=fuzzer-no-link")
     elseif (${sanitize_option} MATCHES "fuzzer")
         check_compiler_version("99.99" "6.0" "99.99")
         set(XSAN_COMPILE_FLAGS "-fsanitize=fuzzer")
