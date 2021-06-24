@@ -169,6 +169,8 @@ Q_DECLARE_METATYPE(QSslKey)
 
 QT_BEGIN_NAMESPACE
 
+void qt_ForceTlsSecurityLevel();
+
 void tst_QDtls::initTestCase()
 {
     if (!TlsAux::classImplemented(QSsl::ImplementedClass::Dtls))
@@ -196,7 +198,6 @@ void tst_QDtls::initTestCase()
 
     hostName = QStringLiteral("bob.org");
 
-    void qt_ForceTlsSecurityLevel();
     qt_ForceTlsSecurityLevel();
 }
 
