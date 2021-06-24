@@ -69,18 +69,6 @@ Q_DECLARE_METATYPE(QSsl::SslProtocol)
 Q_DECLARE_METATYPE(QSslSocket::PeerVerifyMode);
 typedef QSharedPointer<QSslSocket> QSslSocketPtr;
 
-// Detect ALPN (Application-Layer Protocol Negotiation) support
-// AUTOTESTTODO: fix the way we identify ALPN support, it now depends on
-// what TLS backend we managed to load, not compile time macros.
-#undef ALPN_SUPPORTED // Undef the variable first to be safe
-#if defined(OPENSSL_VERSION_NUMBER) && !defined(OPENSSL_NO_TLSEXT)
-#define ALPN_SUPPORTED 1
-#endif
-
-#if QT_CONFIG(schannel) && !defined(Q_CC_MINGW)
-#define ALPN_SUPPORTED 1
-#endif
-
 #if defined Q_OS_HPUX && defined Q_CC_GNU
 // This error is delivered every time we try to use the fluke CA
 // certificate. For now we work around this bug. Task 202317.
@@ -307,6 +295,7 @@ private:
     bool isTestingSecureTransport = false;
     bool isTestingSchannel = false;
     QSslError::SslError flukeCertificateError = QSslError::CertificateUntrusted;
+    bool hasServerAlpn = false;
 #endif // QT_CONFIG(ssl)
 private:
     static int loopLevel;
@@ -411,6 +400,7 @@ void tst_QSslSocket::initTestCase()
     if (!testDataDir.endsWith(QLatin1String("/")))
         testDataDir += QLatin1String("/");
 
+    hasServerAlpn = QSslSocket::supportedFeatures().contains(QSsl::SupportedFeature::ServerSideAlpn);
     // Several plugins (TLS-backends) can co-exist. QSslSocket would implicitly
     // select 'openssl' if available, and if not: 'securetransport' (Darwin) or
     // 'schannel' (Windows). Check what we actually have:
@@ -3736,9 +3726,8 @@ void tst_QSslSocket::setEmptyDefaultConfiguration() // this test should be last,
 
 void tst_QSslSocket::allowedProtocolNegotiation()
 {
-#ifndef ALPN_SUPPORTED
-    QSKIP("ALPN is unsupported, skipping test");
-#endif
+    if (!hasServerAlpn)
+        QSKIP("Server-side ALPN is unsupported, skipping test");
 
     if (isTestingSchannel) {
         if (QOperatingSystemVersion::current() < QOperatingSystemVersion::Windows8_1)
