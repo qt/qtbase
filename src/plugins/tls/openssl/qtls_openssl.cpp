@@ -1127,6 +1127,7 @@ void TlsCryptographOpenSSL::disconnected()
     Q_ASSERT(d);
     auto *plainSocket = d->plainTcpSocket();
     Q_ASSERT(plainSocket);
+    d->setEncrypted(false);
 
     if (plainSocket->bytesAvailable() <= 0) {
         destroySslContext();
