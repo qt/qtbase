@@ -59,6 +59,7 @@ import android.os.Looper;
 import android.content.ClipboardManager;
 import android.content.ClipboardManager.OnPrimaryClipChangedListener;
 import android.content.ClipData;
+import android.content.ClipDescription;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.KeyEvent;
@@ -726,10 +727,8 @@ public class QtNative
     {
         try {
             if (m_clipboardManager != null && m_clipboardManager.hasPrimaryClip()) {
-                ClipData primaryClip = m_clipboardManager.getPrimaryClip();
-                for (int i = 0; i < primaryClip.getItemCount(); ++i)
-                    if (primaryClip.getItemAt(i).getText() != null)
-                        return true;
+                ClipDescription primaryClipDescription = m_clipboardManager.getPrimaryClipDescription();
+                return primaryClipDescription.hasMimeType("text/*");
             }
         } catch (Exception e) {
             Log.e(QtTAG, "Failed to get clipboard data", e);
@@ -799,10 +798,8 @@ public class QtNative
     {
         try {
             if (m_clipboardManager != null && m_clipboardManager.hasPrimaryClip()) {
-                ClipData primaryClip = m_clipboardManager.getPrimaryClip();
-                for (int i = 0; i < primaryClip.getItemCount(); ++i)
-                    if (primaryClip.getItemAt(i).getHtmlText() != null)
-                        return true;
+                ClipDescription primaryClipDescription = m_clipboardManager.getPrimaryClipDescription();
+                return primaryClipDescription.hasMimeType("text/html");
             }
         } catch (Exception e) {
             Log.e(QtTAG, "Failed to get clipboard data", e);
@@ -838,10 +835,8 @@ public class QtNative
     {
         try {
             if (m_clipboardManager != null && m_clipboardManager.hasPrimaryClip()) {
-                ClipData primaryClip = m_clipboardManager.getPrimaryClip();
-                for (int i = 0; i < primaryClip.getItemCount(); ++i)
-                    if (primaryClip.getItemAt(i).getUri() != null)
-                        return true;
+                ClipDescription primaryClipDescription = m_clipboardManager.getPrimaryClipDescription();
+                return primaryClipDescription.hasMimeType("text/uri-list");
             }
         } catch (Exception e) {
             Log.e(QtTAG, "Failed to get clipboard data", e);
