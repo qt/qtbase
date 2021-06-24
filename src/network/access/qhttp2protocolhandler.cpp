@@ -1233,7 +1233,7 @@ void QHttp2ProtocolHandler::updateStream(Stream &stream, const HPack::HttpHeader
         httpReplyPrivate->removeAutoDecompressHeader();
         httpReplyPrivate->decompressHelper.setEncoding(
                 httpReplyPrivate->headerField("content-encoding"));
-        httpReplyPrivate->decompressHelper.setMinimumArchiveBombSize(
+        httpReplyPrivate->decompressHelper.setDecompressedSafetyCheckThreshold(
                 httpReplyPrivate->request.minimumArchiveBombSize());
     }
 

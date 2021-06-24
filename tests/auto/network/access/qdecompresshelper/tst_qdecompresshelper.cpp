@@ -373,7 +373,7 @@ void tst_QDecompressHelper::decompressBigData()
     const qint64 third = file.bytesAvailable() / 3;
 
     QDecompressHelper helper;
-    helper.setMinimumArchiveBombSize(-1);
+    helper.setDecompressedSafetyCheckThreshold(-1);
     QFETCH(QByteArray, encoding);
     helper.setEncoding(encoding);
 
@@ -442,7 +442,7 @@ void tst_QDecompressHelper::bigZlib()
     QByteArray compressedData = file.readAll();
 
     QDecompressHelper helper;
-    helper.setMinimumArchiveBombSize(-1);
+    helper.setDecompressedSafetyCheckThreshold(-1);
     helper.setEncoding("deflate");
     auto firstHalf = compressedData.left(compressedData.size() - 2);
     helper.feed(firstHalf);

@@ -329,7 +329,7 @@ bool QDecompressHelper::countInternal(const QByteArray &data)
     if (countDecompressed) {
         if (!countHelper) {
             countHelper = std::make_unique<QDecompressHelper>();
-            countHelper->setMinimumArchiveBombSize(minimumArchiveBombSize);
+            countHelper->setDecompressedSafetyCheckThreshold(archiveBombCheckThreshold);
             countHelper->setEncoding(contentEncoding);
         }
         countHelper->feed(data);
@@ -347,7 +347,7 @@ bool QDecompressHelper::countInternal(const QByteDataBuffer &buffer)
     if (countDecompressed) {
         if (!countHelper) {
             countHelper = std::make_unique<QDecompressHelper>();
-            countHelper->setMinimumArchiveBombSize(minimumArchiveBombSize);
+            countHelper->setDecompressedSafetyCheckThreshold(archiveBombCheckThreshold);
             countHelper->setEncoding(contentEncoding);
         }
         countHelper->feed(buffer);
@@ -398,11 +398,11 @@ qsizetype QDecompressHelper::read(char *data, qsizetype maxSize)
     By default this is 10MB. Setting it to -1 is treated as disabling the
     feature.
 */
-void QDecompressHelper::setMinimumArchiveBombSize(qint64 threshold)
+void QDecompressHelper::setDecompressedSafetyCheckThreshold(qint64 threshold)
 {
     if (threshold == -1)
         threshold = std::numeric_limits<qint64>::max();
-    minimumArchiveBombSize = threshold;
+    archiveBombCheckThreshold = threshold;
 }
 
 bool QDecompressHelper::isPotentialArchiveBomb() const
@@ -410,7 +410,7 @@ bool QDecompressHelper::isPotentialArchiveBomb() const
     if (totalCompressedBytes == 0)
         return false;
 
-    if (totalUncompressedBytes <= minimumArchiveBombSize)
+    if (totalUncompressedBytes <= archiveBombCheckThreshold)
         return false;
 
     // Some protection against malicious or corrupted compressed files that expand far more than

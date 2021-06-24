@@ -441,7 +441,7 @@ public:
         peerVerifyName = other.peerVerifyName;
 #if QT_CONFIG(http)
         h2Configuration = other.h2Configuration;
-        minimumArchiveBombSize = other.minimumArchiveBombSize;
+        decompressedSafetyCheckThreshold = other.decompressedSafetyCheckThreshold;
 #endif
         transferTimeout = other.transferTimeout;
     }
@@ -456,7 +456,7 @@ public:
             peerVerifyName == other.peerVerifyName
 #if QT_CONFIG(http)
             && h2Configuration == other.h2Configuration
-            && minimumArchiveBombSize == other.minimumArchiveBombSize
+            && decompressedSafetyCheckThreshold == other.decompressedSafetyCheckThreshold
 #endif
             && transferTimeout == other.transferTimeout
             ;
@@ -472,7 +472,7 @@ public:
     QString peerVerifyName;
 #if QT_CONFIG(http)
     QHttp2Configuration h2Configuration;
-    qint64 minimumArchiveBombSize = 10ll * 1024ll * 1024ll;
+    qint64 decompressedSafetyCheckThreshold = 10ll * 1024ll * 1024ll;
 #endif
     int transferTimeout;
 };
@@ -910,9 +910,9 @@ void QNetworkRequest::setHttp2Configuration(const QHttp2Configuration &configura
 
     \sa setMinimumArchiveBombSize()
 */
-qint64 QNetworkRequest::minimumArchiveBombSize() const
+qint64 QNetworkRequest::decompressedSafetyCheckThreshold() const
 {
-    return d->minimumArchiveBombSize;
+    return d->decompressedSafetyCheckThreshold;
 }
 
 /*!
@@ -937,9 +937,9 @@ qint64 QNetworkRequest::minimumArchiveBombSize() const
 
     \sa minimumArchiveBombSize()
 */
-void QNetworkRequest::setMinimumArchiveBombSize(qint64 threshold)
+void QNetworkRequest::setDecompressedSafetyCheckThreshold(qint64 threshold)
 {
-    d->minimumArchiveBombSize = threshold;
+    d->decompressedSafetyCheckThreshold = threshold;
 }
 #endif // QT_CONFIG(http) || defined(Q_CLANG_QDOC)
 

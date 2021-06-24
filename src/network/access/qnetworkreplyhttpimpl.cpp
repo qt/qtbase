@@ -774,7 +774,7 @@ void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpReq
     if (request.attribute(QNetworkRequest::EmitAllUploadProgressSignalsAttribute).toBool())
         emitAllUploadProgressSignals = true;
 
-    httpRequest.setMinimumArchiveBombSize(newHttpRequest.minimumArchiveBombSize());
+    httpRequest.setMinimumArchiveBombSize(newHttpRequest.decompressedSafetyCheckThreshold());
     httpRequest.setPeerVerifyName(newHttpRequest.peerVerifyName());
 
     // Create the HTTP thread delegate
