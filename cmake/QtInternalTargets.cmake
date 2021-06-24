@@ -48,7 +48,8 @@ function(qt_internal_set_warnings_are_errors_flags target)
         if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "11.0.0" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "11.2.0")
             # GCC 11.1 has a regression in the integrated preprocessor, so disable it as a workaround (QTBUG-93360)
             # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=100796
-            list(APPEND flags -no-integrated-cpp)
+            # This in turn triggers a fallthrough warning in cborparser.c, so we disable this warning.
+            list(APPEND flags -no-integrated-cpp -Wno-implicit-fallthrough)
         endif()
 
         # Work-around for bug https://code.google.com/p/android/issues/detail?id=58135
