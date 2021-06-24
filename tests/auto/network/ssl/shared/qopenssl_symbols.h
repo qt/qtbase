@@ -206,43 +206,40 @@ void qsslSocketCannotResolveSymbolWarning(const char *functionName)
 
 #define DUMMYARG
 
-#define FUNC_UNUSED(func) \
-    []() {Q_UNUSED(q_##func);}()
-
 #if defined(QT_LINKED_OPENSSL)
 // **************** Static declarations ******************
 
 // ret func(arg)
 #  define DEFINEFUNC(ret, func, arg, a, err, funcret) \
-    ret q_##func(arg) { FUNC_UNUSED(func); funcret func(a); }
+    [[maybe_unused]] ret q_##func(arg) { funcret func(a); }
 
 // ret func(arg1, arg2)
 #  define DEFINEFUNC2(ret, func, arg1, a, arg2, b, err, funcret) \
-    ret q_##func(arg1, arg2) { FUNC_UNUSED(func); funcret func(a, b); }
+    [[maybe_unused]] ret q_##func(arg1, arg2) { funcret func(a, b); }
 
 // ret func(arg1, arg2, arg3)
 #  define DEFINEFUNC3(ret, func, arg1, a, arg2, b, arg3, c, err, funcret) \
-    ret q_##func(arg1, arg2, arg3) { FUNC_UNUSED(func); funcret func(a, b, c); }
+    [[maybe_unused]] ret q_##func(arg1, arg2, arg3) { funcret func(a, b, c); }
 
 // ret func(arg1, arg2, arg3, arg4)
 #  define DEFINEFUNC4(ret, func, arg1, a, arg2, b, arg3, c, arg4, d, err, funcret) \
-    ret q_##func(arg1, arg2, arg3, arg4) { FUNC_UNUSED(func); funcret func(a, b, c, d); }
+    [[maybe_unused]] ret q_##func(arg1, arg2, arg3, arg4) { funcret func(a, b, c, d); }
 
 // ret func(arg1, arg2, arg3, arg4, arg5)
 #  define DEFINEFUNC5(ret, func, arg1, a, arg2, b, arg3, c, arg4, d, arg5, e, err, funcret) \
-    ret q_##func(arg1, arg2, arg3, arg4, arg5) { FUNC_UNUSED(func); funcret func(a, b, c, d, e); }
+    [[maybe_unused]] ret q_##func(arg1, arg2, arg3, arg4, arg5) { funcret func(a, b, c, d, e); }
 
 // ret func(arg1, arg2, arg3, arg4, arg6)
 #  define DEFINEFUNC6(ret, func, arg1, a, arg2, b, arg3, c, arg4, d, arg5, e, arg6, f, err, funcret) \
-    ret q_##func(arg1, arg2, arg3, arg4, arg5, arg6) { FUNC_UNUSED(func); funcret func(a, b, c, d, e, f); }
+    [[maybe_unused]] ret q_##func(arg1, arg2, arg3, arg4, arg5, arg6) { funcret func(a, b, c, d, e, f); }
 
 // ret func(arg1, arg2, arg3, arg4, arg6, arg7)
 #  define DEFINEFUNC7(ret, func, arg1, a, arg2, b, arg3, c, arg4, d, arg5, e, arg6, f, arg7, g, err, funcret) \
-    ret q_##func(arg1, arg2, arg3, arg4, arg5, arg6, arg7) { FUNC_UNUSED(func); funcret func(a, b, c, d, e, f, g); }
+    [[maybe_unused]] ret q_##func(arg1, arg2, arg3, arg4, arg5, arg6, arg7) { funcret func(a, b, c, d, e, f, g); }
 
 // ret func(arg1, arg2, arg3, arg4, arg6, arg7, arg8, arg9)
 #  define DEFINEFUNC9(ret, func, arg1, a, arg2, b, arg3, c, arg4, d, arg5, e, arg6, f, arg7, g, arg8, h, arg9, i, err, funcret) \
-    ret q_##func(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9) { FUNC_UNUSED(func); funcret func(a, b, c, d, e, f, g, h, i); }
+    [[maybe_unused]] ret q_##func(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9) { funcret func(a, b, c, d, e, f, g, h, i); }
 
 // **************** Static declarations ******************
 
@@ -254,8 +251,7 @@ void qsslSocketCannotResolveSymbolWarning(const char *functionName)
 #  define DEFINEFUNC(ret, func, arg, a, err, funcret) \
     typedef ret (*_q_PTR_##func)(arg); \
     static _q_PTR_##func _q_##func = 0; \
-    ret q_##func(arg) { \
-        FUNC_UNUSED(func); \
+    [[maybe_unused]] ret q_##func(arg) { \
         if (Q_UNLIKELY(!_q_##func)) { \
             qsslSocketUnresolvedSymbolWarning(#func); \
             err; \
@@ -267,8 +263,7 @@ void qsslSocketCannotResolveSymbolWarning(const char *functionName)
 #  define DEFINEFUNC2(ret, func, arg1, a, arg2, b, err, funcret) \
     typedef ret (*_q_PTR_##func)(arg1, arg2);         \
     static _q_PTR_##func _q_##func = 0;               \
-    ret q_##func(arg1, arg2) { \
-        FUNC_UNUSED(func); \
+    [[maybe_unused]] ret q_##func(arg1, arg2) { \
         if (Q_UNLIKELY(!_q_##func)) { \
             qsslSocketUnresolvedSymbolWarning(#func);\
             err; \
@@ -280,8 +275,7 @@ void qsslSocketCannotResolveSymbolWarning(const char *functionName)
 #  define DEFINEFUNC3(ret, func, arg1, a, arg2, b, arg3, c, err, funcret) \
     typedef ret (*_q_PTR_##func)(arg1, arg2, arg3);            \
     static _q_PTR_##func _q_##func = 0;                        \
-    ret q_##func(arg1, arg2, arg3) { \
-        FUNC_UNUSED(func); \
+    [[maybe_unused]] ret q_##func(arg1, arg2, arg3) { \
         if (Q_UNLIKELY(!_q_##func)) { \
             qsslSocketUnresolvedSymbolWarning(#func); \
             err; \
@@ -293,8 +287,7 @@ void qsslSocketCannotResolveSymbolWarning(const char *functionName)
 #  define DEFINEFUNC4(ret, func, arg1, a, arg2, b, arg3, c, arg4, d, err, funcret) \
     typedef ret (*_q_PTR_##func)(arg1, arg2, arg3, arg4);               \
     static _q_PTR_##func _q_##func = 0;                                 \
-    ret q_##func(arg1, arg2, arg3, arg4) { \
-         FUNC_UNUSED(func); \
+    [[maybe_unused]] ret q_##func(arg1, arg2, arg3, arg4) { \
          if (Q_UNLIKELY(!_q_##func)) { \
              qsslSocketUnresolvedSymbolWarning(#func); \
              err; \
@@ -306,8 +299,7 @@ void qsslSocketCannotResolveSymbolWarning(const char *functionName)
 #  define DEFINEFUNC5(ret, func, arg1, a, arg2, b, arg3, c, arg4, d, arg5, e, err, funcret) \
     typedef ret (*_q_PTR_##func)(arg1, arg2, arg3, arg4, arg5);         \
     static _q_PTR_##func _q_##func = 0;                                 \
-    ret q_##func(arg1, arg2, arg3, arg4, arg5) { \
-        FUNC_UNUSED(func); \
+    [[maybe_unused]] ret q_##func(arg1, arg2, arg3, arg4, arg5) { \
         if (Q_UNLIKELY(!_q_##func)) { \
             qsslSocketUnresolvedSymbolWarning(#func); \
             err; \
@@ -319,8 +311,7 @@ void qsslSocketCannotResolveSymbolWarning(const char *functionName)
 #  define DEFINEFUNC6(ret, func, arg1, a, arg2, b, arg3, c, arg4, d, arg5, e, arg6, f, err, funcret) \
     typedef ret (*_q_PTR_##func)(arg1, arg2, arg3, arg4, arg5, arg6);   \
     static _q_PTR_##func _q_##func = 0;                                 \
-    ret q_##func(arg1, arg2, arg3, arg4, arg5, arg6) { \
-        FUNC_UNUSED(func); \
+    [[maybe_unused]] ret q_##func(arg1, arg2, arg3, arg4, arg5, arg6) { \
         if (Q_UNLIKELY(!_q_##func)) { \
             qsslSocketUnresolvedSymbolWarning(#func); \
             err; \
@@ -332,8 +323,7 @@ void qsslSocketCannotResolveSymbolWarning(const char *functionName)
 #  define DEFINEFUNC7(ret, func, arg1, a, arg2, b, arg3, c, arg4, d, arg5, e, arg6, f, arg7, g, err, funcret) \
     typedef ret (*_q_PTR_##func)(arg1, arg2, arg3, arg4, arg5, arg6, arg7);   \
     static _q_PTR_##func _q_##func = 0;                                       \
-    ret q_##func(arg1, arg2, arg3, arg4, arg5, arg6, arg7) { \
-        FUNC_UNUSED(func); \
+    [[maybe_unused]] ret q_##func(arg1, arg2, arg3, arg4, arg5, arg6, arg7) { \
         if (Q_UNLIKELY(!_q_##func)) { \
             qsslSocketUnresolvedSymbolWarning(#func); \
             err; \
@@ -345,8 +335,7 @@ void qsslSocketCannotResolveSymbolWarning(const char *functionName)
 #  define DEFINEFUNC9(ret, func, arg1, a, arg2, b, arg3, c, arg4, d, arg5, e, arg6, f, arg7, g, arg8, h, arg9, i, err, funcret) \
     typedef ret (*_q_PTR_##func)(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);   \
     static _q_PTR_##func _q_##func = 0;                                                   \
-    ret q_##func(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9) { \
-        FUNC_UNUSED(func); \
+    [[maybe_unused]] ret q_##func(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9) { \
         if (Q_UNLIKELY(!_q_##func)) { \
             qsslSocketUnresolvedSymbolWarning(#func); \
             err; \
@@ -409,8 +398,6 @@ DEFINEFUNC3(OCSP_CERTID *, OCSP_cert_to_id, const EVP_MD *dgst, dgst, X509 *subj
 DEFINEFUNC(void, OCSP_CERTID_free, OCSP_CERTID *cid, cid, return, DUMMYARG)
 
 #endif // QT_CONFIG(ocsp)
-
-#undef FUNC_UNUSED
 
 #ifndef QT_LINKED_OPENSSL
 
