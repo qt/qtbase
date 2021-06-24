@@ -67,7 +67,7 @@ public:
     int duration() const override;
 
 Q_SIGNALS:
-    void currentAnimationChanged(QAbstractAnimation *current) const;
+    void currentAnimationChanged(QAbstractAnimation *current);
 
 protected:
     QSequentialAnimationGroup(QSequentialAnimationGroupPrivate &dd, QObject *parent);
