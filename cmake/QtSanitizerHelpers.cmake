@@ -1,6 +1,7 @@
 function(qt_internal_set_up_sanitizer_features)
     set(ECM_ENABLE_SANITIZERS "" CACHE STRING "Enable sanitizers")
-    set_property(CACHE ECM_ENABLE_SANITIZERS PROPERTY STRINGS "address;memory;thread;undefined")
+    set_property(CACHE ECM_ENABLE_SANITIZERS PROPERTY STRINGS
+        "address;memory;thread;undefined;fuzzer;fuzzer-no-link")
 
     # If FEATURE_sanitize_foo is set on the command line, make sure to set the appropriate
     # ECM_ENABLE_SANITIZERS value. Also the other way around. This basically allows setting either
@@ -15,6 +16,12 @@ function(qt_internal_set_up_sanitizer_features)
             list(APPEND enabled_sanitizer_features "${sanitizer_type}")
         endif()
     endforeach()
+
+    # There's a mismatch between fuzzer-no-link ECM option and fuzzer_no_link Qt feature.
+    if(FEATURE_sanitize_fuzzer_no_link)
+        list(APPEND enabled_sanitizer_features "fuzzer-no-link")
+    endif()
+
     if(enabled_sanitizer_features)
         set(ECM_ENABLE_SANITIZERS
             "${enabled_sanitizer_features}" CACHE STRING "Enable sanitizers" FORCE)
@@ -24,6 +31,10 @@ function(qt_internal_set_up_sanitizer_features)
         foreach(sanitizer_type ${ECM_ENABLE_SANITIZERS})
             message(STATUS "Enabling sanitizer: ${sanitizer_type}")
             set(feature_name "FEATURE_sanitize_${sanitizer_type}")
+
+            # Transform fuzzer-no-link dashes to underscores.
+            string(REGEX REPLACE "-" "_" feature_name "${feature_name}")
+
             set(${feature_name} "ON" CACHE BOOL "Enable ${sanitizer_type} sanitizer" FORCE)
             set(QT_${feature_name} "ON" CACHE BOOL "Enable ${sanitizer_type} sanitizer" FORCE)
         endforeach()
