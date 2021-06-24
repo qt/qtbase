@@ -385,6 +385,17 @@ elseif(QT_QMAKE_TARGET_MKSPEC)
     set(QT_DEFAULT_PLATFORM_DEFINITION_DIR "${INSTALL_MKSPECSDIR}/${QT_QMAKE_TARGET_MKSPEC}")
     # Used by qtbase itself and consumers of non-prefix builds via BUILD_INTERFACE (absolute path).
     set(QT_DEFAULT_PLATFORM_DEFINITION_DIR_ABSOLUTE "${QT_MKSPECS_DIR}/${QT_QMAKE_TARGET_MKSPEC}")
+
+    if(NOT EXISTS "${QT_DEFAULT_PLATFORM_DEFINITION_DIR_ABSOLUTE}")
+        file(GLOB known_platforms
+            LIST_DIRECTORIES true
+            RELATIVE "${QT_MKSPECS_DIR}"
+            "${QT_MKSPECS_DIR}/*"
+        )
+        list(JOIN known_platforms "\n    " known_platforms)
+        message(FATAL_ERROR "Unknown platform ${QT_QMAKE_TARGET_MKSPEC}\n\
+Known platforms:\n    ${known_platforms}")
+    endif()
 endif()
 
 if(NOT DEFINED QT_DEFAULT_PLATFORM_DEFINITIONS)
