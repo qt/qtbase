@@ -805,19 +805,25 @@ QSslCipher QTlsBackend::createCiphersuite(const QString &descriptionOneLine, int
         ciph.d->isNull = false;
         ciph.d->name = descriptionList.at(0).toString();
 
-        QString protoString = descriptionList.at(1).toString();
-        ciph.d->protocolString = protoString;
+        QStringView protoString = descriptionList.at(1);
+        ciph.d->protocolString = protoString.toString();
         ciph.d->protocol = QSsl::UnknownProtocol;
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
-        if (protoString == QLatin1String("TLSv1"))
-            ciph.d->protocol = QSsl::TlsV1_0;
-        else if (protoString == QLatin1String("TLSv1.1"))
-            ciph.d->protocol = QSsl::TlsV1_1;
-        else if (protoString == QLatin1String("TLSv1.2"))
-            ciph.d->protocol = QSsl::TlsV1_2;
-        else if (protoString == QLatin1String("TLSv1.3"))
-            ciph.d->protocol = QSsl::TlsV1_3;
+        if (protoString.startsWith(u"TLSv1")) {
+            QStringView tail = protoString.sliced(5);
+            if (tail.startsWith(u'.')) {
+                tail = tail.sliced(1);
+                if (tail == u"3")
+                    ciph.d->protocol = QSsl::TlsV1_3;
+                else if (tail == u"2")
+                    ciph.d->protocol = QSsl::TlsV1_2;
+                else if (tail == u"1")
+                    ciph.d->protocol = QSsl::TlsV1_1;
+            } else if (tail.isEmpty()) {
+                ciph.d->protocol = QSsl::TlsV1_0;
+            }
+        }
 QT_WARNING_POP
 
         if (descriptionList.at(2).startsWith(QLatin1String("Kx=")))
