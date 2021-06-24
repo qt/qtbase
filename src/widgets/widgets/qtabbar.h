@@ -63,7 +63,8 @@ class Q_WIDGETS_EXPORT QTabBar: public QWidget
     Q_PROPERTY(Qt::TextElideMode elideMode READ elideMode WRITE setElideMode)
     Q_PROPERTY(bool usesScrollButtons READ usesScrollButtons WRITE setUsesScrollButtons)
     Q_PROPERTY(bool tabsClosable READ tabsClosable WRITE setTabsClosable)
-    Q_PROPERTY(SelectionBehavior selectionBehaviorOnRemove READ selectionBehaviorOnRemove WRITE setSelectionBehaviorOnRemove)
+    Q_PROPERTY(SelectionBehavior selectionBehaviorOnRemove READ selectionBehaviorOnRemove
+               WRITE setSelectionBehaviorOnRemove)
     Q_PROPERTY(bool expanding READ expanding WRITE setExpanding)
     Q_PROPERTY(bool movable READ isMovable WRITE setMovable)
     Q_PROPERTY(bool documentMode READ documentMode WRITE setDocumentMode)

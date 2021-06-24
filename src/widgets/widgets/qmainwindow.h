@@ -75,7 +75,8 @@ class Q_WIDGETS_EXPORT QMainWindow : public QWidget
 #endif // QT_CONFIG(dockwidget)
     Q_PROPERTY(DockOptions dockOptions READ dockOptions WRITE setDockOptions)
 #if QT_CONFIG(toolbar)
-    Q_PROPERTY(bool unifiedTitleAndToolBarOnMac READ unifiedTitleAndToolBarOnMac WRITE setUnifiedTitleAndToolBarOnMac)
+    Q_PROPERTY(bool unifiedTitleAndToolBarOnMac READ unifiedTitleAndToolBarOnMac
+               WRITE setUnifiedTitleAndToolBarOnMac)
 #endif
 
 public:

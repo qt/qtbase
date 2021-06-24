@@ -74,11 +74,14 @@ class Q_WIDGETS_EXPORT QAbstractItemView : public QAbstractScrollArea
 #endif
     Q_PROPERTY(bool alternatingRowColors READ alternatingRowColors WRITE setAlternatingRowColors)
     Q_PROPERTY(SelectionMode selectionMode READ selectionMode WRITE setSelectionMode)
-    Q_PROPERTY(SelectionBehavior selectionBehavior READ selectionBehavior WRITE setSelectionBehavior)
+    Q_PROPERTY(SelectionBehavior selectionBehavior READ selectionBehavior
+               WRITE setSelectionBehavior)
     Q_PROPERTY(QSize iconSize READ iconSize WRITE setIconSize NOTIFY iconSizeChanged)
     Q_PROPERTY(Qt::TextElideMode textElideMode READ textElideMode WRITE setTextElideMode)
-    Q_PROPERTY(ScrollMode verticalScrollMode READ verticalScrollMode WRITE setVerticalScrollMode RESET resetVerticalScrollMode)
-    Q_PROPERTY(ScrollMode horizontalScrollMode READ horizontalScrollMode WRITE setHorizontalScrollMode RESET resetHorizontalScrollMode)
+    Q_PROPERTY(ScrollMode verticalScrollMode READ verticalScrollMode WRITE setVerticalScrollMode
+               RESET resetVerticalScrollMode)
+    Q_PROPERTY(ScrollMode horizontalScrollMode READ horizontalScrollMode
+               WRITE setHorizontalScrollMode RESET resetHorizontalScrollMode)
 
 public:
     enum SelectionMode {

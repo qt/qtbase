@@ -57,12 +57,15 @@ class Q_WIDGETS_EXPORT QHeaderView : public QAbstractItemView
     Q_PROPERTY(bool showSortIndicator READ isSortIndicatorShown WRITE setSortIndicatorShown)
     Q_PROPERTY(bool highlightSections READ highlightSections WRITE setHighlightSections)
     Q_PROPERTY(bool stretchLastSection READ stretchLastSection WRITE setStretchLastSection)
-    Q_PROPERTY(bool cascadingSectionResizes READ cascadingSectionResizes WRITE setCascadingSectionResizes)
-    Q_PROPERTY(int defaultSectionSize READ defaultSectionSize WRITE setDefaultSectionSize RESET resetDefaultSectionSize)
+    Q_PROPERTY(bool cascadingSectionResizes READ cascadingSectionResizes
+               WRITE setCascadingSectionResizes)
+    Q_PROPERTY(int defaultSectionSize READ defaultSectionSize WRITE setDefaultSectionSize
+               RESET resetDefaultSectionSize)
     Q_PROPERTY(int minimumSectionSize READ minimumSectionSize WRITE setMinimumSectionSize)
     Q_PROPERTY(int maximumSectionSize READ maximumSectionSize WRITE setMaximumSectionSize)
     Q_PROPERTY(Qt::Alignment defaultAlignment READ defaultAlignment WRITE setDefaultAlignment)
-    Q_PROPERTY(bool sortIndicatorClearable READ isSortIndicatorClearable WRITE setSortIndicatorClearable NOTIFY sortIndicatorClearableChanged)
+    Q_PROPERTY(bool sortIndicatorClearable READ isSortIndicatorClearable
+               WRITE setSortIndicatorClearable NOTIFY sortIndicatorClearableChanged)
 
 public:
 

@@ -54,10 +54,14 @@ class Q_WIDGETS_EXPORT QFormLayout : public QLayout
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QFormLayout)
-    Q_PROPERTY(FieldGrowthPolicy fieldGrowthPolicy READ fieldGrowthPolicy WRITE setFieldGrowthPolicy RESET resetFieldGrowthPolicy)
-    Q_PROPERTY(RowWrapPolicy rowWrapPolicy READ rowWrapPolicy WRITE setRowWrapPolicy RESET resetRowWrapPolicy)
-    Q_PROPERTY(Qt::Alignment labelAlignment READ labelAlignment WRITE setLabelAlignment RESET resetLabelAlignment)
-    Q_PROPERTY(Qt::Alignment formAlignment READ formAlignment WRITE setFormAlignment RESET resetFormAlignment)
+    Q_PROPERTY(FieldGrowthPolicy fieldGrowthPolicy READ fieldGrowthPolicy WRITE setFieldGrowthPolicy
+               RESET resetFieldGrowthPolicy)
+    Q_PROPERTY(RowWrapPolicy rowWrapPolicy READ rowWrapPolicy WRITE setRowWrapPolicy
+               RESET resetRowWrapPolicy)
+    Q_PROPERTY(Qt::Alignment labelAlignment READ labelAlignment WRITE setLabelAlignment
+               RESET resetLabelAlignment)
+    Q_PROPERTY(Qt::Alignment formAlignment READ formAlignment WRITE setFormAlignment
+               RESET resetFormAlignment)
     Q_PROPERTY(int horizontalSpacing READ horizontalSpacing WRITE setHorizontalSpacing)
     Q_PROPERTY(int verticalSpacing READ verticalSpacing WRITE setVerticalSpacing)
 

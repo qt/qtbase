@@ -82,10 +82,14 @@ class Q_CORE_EXPORT QCoreApplication
 {
 #ifndef QT_NO_QOBJECT
     Q_OBJECT
-    Q_PROPERTY(QString applicationName READ applicationName WRITE setApplicationName NOTIFY applicationNameChanged)
-    Q_PROPERTY(QString applicationVersion READ applicationVersion WRITE setApplicationVersion NOTIFY applicationVersionChanged)
-    Q_PROPERTY(QString organizationName READ organizationName WRITE setOrganizationName NOTIFY organizationNameChanged)
-    Q_PROPERTY(QString organizationDomain READ organizationDomain WRITE setOrganizationDomain NOTIFY organizationDomainChanged)
+    Q_PROPERTY(QString applicationName READ applicationName WRITE setApplicationName
+               NOTIFY applicationNameChanged)
+    Q_PROPERTY(QString applicationVersion READ applicationVersion WRITE setApplicationVersion
+               NOTIFY applicationVersionChanged)
+    Q_PROPERTY(QString organizationName READ organizationName WRITE setOrganizationName
+               NOTIFY organizationNameChanged)
+    Q_PROPERTY(QString organizationDomain READ organizationDomain WRITE setOrganizationDomain
+               NOTIFY organizationDomainChanged)
     Q_PROPERTY(bool quitLockEnabled READ isQuitLockEnabled WRITE setQuitLockEnabled)
 #endif
 

@@ -76,7 +76,8 @@ class Q_WIDGETS_EXPORT QPlainTextEdit : public QAbstractScrollArea
     Q_PROPERTY(bool overwriteMode READ overwriteMode WRITE setOverwriteMode)
     Q_PROPERTY(qreal tabStopDistance READ tabStopDistance WRITE setTabStopDistance)
     Q_PROPERTY(int cursorWidth READ cursorWidth WRITE setCursorWidth)
-    Q_PROPERTY(Qt::TextInteractionFlags textInteractionFlags READ textInteractionFlags WRITE setTextInteractionFlags)
+    Q_PROPERTY(Qt::TextInteractionFlags textInteractionFlags READ textInteractionFlags
+               WRITE setTextInteractionFlags)
     Q_PROPERTY(int blockCount READ blockCount)
     Q_PROPERTY(int maximumBlockCount READ maximumBlockCount WRITE setMaximumBlockCount)
     Q_PROPERTY(bool backgroundVisible READ backgroundVisible WRITE setBackgroundVisible)

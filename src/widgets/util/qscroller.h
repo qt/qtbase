@@ -62,7 +62,8 @@ class Q_WIDGETS_EXPORT QScroller : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(State state READ state NOTIFY stateChanged)
-    Q_PROPERTY(QScrollerProperties scrollerProperties READ scrollerProperties WRITE setScrollerProperties NOTIFY scrollerPropertiesChanged)
+    Q_PROPERTY(QScrollerProperties scrollerProperties READ scrollerProperties
+               WRITE setScrollerProperties NOTIFY scrollerPropertiesChanged)
 
 public:
     enum State
