@@ -121,7 +121,7 @@ class Q_CORE_EXPORT QObject
     Q_OBJECT
 
     Q_PROPERTY(QString objectName READ objectName WRITE setObjectName NOTIFY objectNameChanged
-                       BINDABLE bindableObjectName)
+               BINDABLE bindableObjectName)
     Q_DECLARE_PRIVATE(QObject)
 
 public:

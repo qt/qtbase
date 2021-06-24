@@ -56,7 +56,8 @@ class Q_NETWORK_EXPORT QLocalServer : public QObject
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QLocalServer)
-    Q_PROPERTY(SocketOptions socketOptions READ socketOptions WRITE setSocketOptions BINDABLE bindableSocketOptions)
+    Q_PROPERTY(SocketOptions socketOptions READ socketOptions WRITE setSocketOptions
+               BINDABLE bindableSocketOptions)
 
 Q_SIGNALS:
     void newConnection();
