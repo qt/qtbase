@@ -211,9 +211,7 @@ private slots:
     void waitForMinusOne();
     void verifyMode();
     void verifyDepth();
-#if QT_CONFIG(openssl)
     void verifyAndDefaultConfiguration();
-#endif
     void disconnectFromHostWhenConnecting();
     void disconnectFromHostWhenConnected();
 #if QT_CONFIG(openssl)
@@ -2611,12 +2609,13 @@ void tst_QSslSocket::verifyDepth()
     QCOMPARE(socket.peerVerifyDepth(), 1);
 }
 
-#if QT_CONFIG(openssl)
 void tst_QSslSocket::verifyAndDefaultConfiguration()
 {
     QFETCH_GLOBAL(const bool, setProxy);
     if (setProxy)
         return;
+    if (!QSslSocket::supportedFeatures().contains(QSsl::SupportedFeature::CertificateVerification))
+        QSKIP("This backend doesn't support manual certificate verification");
     const auto defaultCACertificates = QSslConfiguration::defaultConfiguration().caCertificates();
     const auto chainGuard = qScopeGuard([&defaultCACertificates]{
         auto conf = QSslConfiguration::defaultConfiguration();
@@ -2646,7 +2645,6 @@ void tst_QSslSocket::verifyAndDefaultConfiguration()
     QCOMPARE(QSslConfiguration::defaultConfiguration().caCertificates(), QList{caCert});
 #endif
 }
-#endif // QT_CONFIG(openssl)
 
 void tst_QSslSocket::disconnectFromHostWhenConnecting()
 {
