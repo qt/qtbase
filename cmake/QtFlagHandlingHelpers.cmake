@@ -671,6 +671,11 @@ function(qt_internal_add_optimize_full_flags)
         ""
         ${ARGN})
 
+    # QT_USE_DEFAULT_CMAKE_OPTIMIZATION_FLAGS disables forced full optimization.
+    if(QT_USE_DEFAULT_CMAKE_OPTIMIZATION_FLAGS)
+        return()
+    endif()
+
     # Assume that FEATURE_optimize_full has higher priority. But if FEATURE_optimize_full is OFF,
     # flags are set by FEATURE_optimize_size should remain unchanged.
     if(QT_FEATURE_optimize_size AND NOT QT_FEATURE_optimize_full)
