@@ -58,7 +58,8 @@ class Q_NETWORK_EXPORT QLocalSocket : public QIODevice
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QLocalSocket)
-    Q_PROPERTY(SocketOptions socketOptions READ socketOptions WRITE setSocketOptions BINDABLE bindableSocketOptions)
+    Q_PROPERTY(SocketOptions socketOptions READ socketOptions WRITE setSocketOptions
+               BINDABLE bindableSocketOptions)
 
 public:
     enum LocalSocketError

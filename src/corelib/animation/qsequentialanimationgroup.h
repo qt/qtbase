@@ -52,8 +52,8 @@ class QSequentialAnimationGroupPrivate;
 class Q_CORE_EXPORT QSequentialAnimationGroup : public QAnimationGroup
 {
     Q_OBJECT
-    Q_PROPERTY(QAbstractAnimation *currentAnimation READ currentAnimation NOTIFY
-                       currentAnimationChanged BINDABLE bindableCurrentAnimation)
+    Q_PROPERTY(QAbstractAnimation *currentAnimation READ currentAnimation
+               NOTIFY currentAnimationChanged BINDABLE bindableCurrentAnimation)
 
 public:
     QSequentialAnimationGroup(QObject *parent = nullptr);

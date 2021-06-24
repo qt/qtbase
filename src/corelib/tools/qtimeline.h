@@ -56,12 +56,12 @@ class Q_CORE_EXPORT QTimeLine : public QObject
     Q_OBJECT
     Q_PROPERTY(int duration READ duration WRITE setDuration BINDABLE bindableDuration)
     Q_PROPERTY(int updateInterval READ updateInterval WRITE setUpdateInterval
-                       BINDABLE bindableUpdateInterval)
+               BINDABLE bindableUpdateInterval)
     Q_PROPERTY(int currentTime READ currentTime WRITE setCurrentTime BINDABLE bindableCurrentTime)
     Q_PROPERTY(Direction direction READ direction WRITE setDirection BINDABLE bindableDirection)
     Q_PROPERTY(int loopCount READ loopCount WRITE setLoopCount BINDABLE bindableLoopCount)
     Q_PROPERTY(QEasingCurve easingCurve READ easingCurve WRITE setEasingCurve
-                       BINDABLE bindableEasingCurve)
+               BINDABLE bindableEasingCurve)
 public:
     enum State {
         NotRunning,

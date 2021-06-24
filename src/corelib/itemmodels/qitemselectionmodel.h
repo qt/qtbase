@@ -120,11 +120,16 @@ class QItemSelectionModelPrivate;
 class Q_CORE_EXPORT QItemSelectionModel : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QAbstractItemModel *model READ model WRITE setModel NOTIFY modelChanged BINDABLE bindableModel)
-    Q_PROPERTY(bool hasSelection READ hasSelection NOTIFY selectionChanged STORED false DESIGNABLE false)
-    Q_PROPERTY(QModelIndex currentIndex READ currentIndex NOTIFY currentChanged STORED false DESIGNABLE false)
-    Q_PROPERTY(QItemSelection selection READ selection NOTIFY selectionChanged STORED false DESIGNABLE false)
-    Q_PROPERTY(QModelIndexList selectedIndexes READ selectedIndexes NOTIFY selectionChanged STORED false DESIGNABLE false)
+    Q_PROPERTY(QAbstractItemModel *model READ model WRITE setModel NOTIFY modelChanged
+               BINDABLE bindableModel)
+    Q_PROPERTY(bool hasSelection READ hasSelection NOTIFY selectionChanged STORED false
+               DESIGNABLE false)
+    Q_PROPERTY(QModelIndex currentIndex READ currentIndex NOTIFY currentChanged STORED false
+               DESIGNABLE false)
+    Q_PROPERTY(QItemSelection selection READ selection NOTIFY selectionChanged STORED false
+               DESIGNABLE false)
+    Q_PROPERTY(QModelIndexList selectedIndexes READ selectedIndexes NOTIFY selectionChanged
+               STORED false DESIGNABLE false)
 
     Q_DECLARE_PRIVATE(QItemSelectionModel)
 

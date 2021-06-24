@@ -4116,7 +4116,8 @@ void tst_Moc::requiredProperties()
 class ClassWithQPropertyMembers : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(int publicProperty MEMBER publicProperty BINDABLE bindablePublicProperty NOTIFY publicPropertyChanged)
+    Q_PROPERTY(int publicProperty MEMBER publicProperty BINDABLE bindablePublicProperty
+               NOTIFY publicPropertyChanged)
     Q_PROPERTY(int privateExposedProperty MEMBER privateExposedProperty)
 public:
 
@@ -4223,8 +4224,10 @@ class ClassWithPrivateQPropertyShim :public QObject
 {
     Q_OBJECT
 public:
-    Q_PROPERTY(int testProperty READ testProperty WRITE setTestProperty BINDABLE bindableTestProperty NOTIFY testPropertyChanged)
-    Q_PROPERTY(int testProperty2 READ testProperty2 WRITE setTestProperty2 BINDABLE bindableTestProperty2)
+    Q_PROPERTY(int testProperty READ testProperty WRITE setTestProperty
+               BINDABLE bindableTestProperty NOTIFY testPropertyChanged)
+    Q_PROPERTY(int testProperty2 READ testProperty2 WRITE setTestProperty2
+               BINDABLE bindableTestProperty2)
     //Q_PROPERTY(d_func(), int, lazyTestProperty, setLazyTestProperty, NOTIFY lazyTestPropertyChanged)
 
 signals:

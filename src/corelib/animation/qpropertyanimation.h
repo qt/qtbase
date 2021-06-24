@@ -51,9 +51,9 @@ class Q_CORE_EXPORT QPropertyAnimation : public QVariantAnimation
 {
     Q_OBJECT
     Q_PROPERTY(QByteArray propertyName READ propertyName WRITE setPropertyName
-                        BINDABLE bindablePropertyName)
+               BINDABLE bindablePropertyName)
     Q_PROPERTY(QObject* targetObject READ targetObject WRITE setTargetObject
-                        BINDABLE bindableTargetObject)
+               BINDABLE bindableTargetObject)
 
 public:
     QPropertyAnimation(QObject *parent = nullptr);
