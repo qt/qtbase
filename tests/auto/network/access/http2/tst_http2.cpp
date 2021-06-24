@@ -26,6 +26,8 @@
 **
 ****************************************************************************/
 
+#include <QtNetwork/qtnetworkglobal.h>
+
 #include <QTest>
 #include <QTestEventLoop>
 #include <QScopeGuard>
@@ -40,6 +42,10 @@
 #include <QtNetwork/qnetworkrequest.h>
 #include <QtNetwork/qnetworkreply.h>
 
+#if QT_CONFIG(ssl)
+#include <QtNetwork/qsslsocket.h>
+#endif
+
 #include <QtCore/qglobal.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qthread.h>
@@ -50,16 +56,6 @@
 #include <string>
 
 #include <QtTest/private/qemulationdetector_p.h>
-
-#if (!defined(QT_NO_OPENSSL) && OPENSSL_VERSION_NUMBER >= 0x10002000L && !defined(OPENSSL_NO_TLSEXT)) \
-        || QT_CONFIG(schannel)
-// HTTP/2 over TLS requires ALPN/NPN to negotiate the protocol version.
-const bool clearTextHTTP2 = false;
-#else
-// No ALPN/NPN support to negotiate HTTP/2, we'll use cleartext 'h2c' with
-// a protocol upgrade procedure.
-const bool clearTextHTTP2 = true;
-#endif
 
 Q_DECLARE_METATYPE(H2Type)
 Q_DECLARE_METATYPE(QNetworkRequest::Attribute)
@@ -184,6 +180,8 @@ struct ServerDeleter
     }
 };
 
+bool clearTextHTTP2 = false;
+
 using ServerPtr = QScopedPointer<Http2Server, ServerDeleter>;
 
 H2Type defaultConnectionType()
@@ -196,6 +194,12 @@ H2Type defaultConnectionType()
 tst_Http2::tst_Http2()
     : workerThread(new QThread)
 {
+#if QT_CONFIG(ssl)
+    const auto features = QSslSocket::supportedFeatures();
+    clearTextHTTP2 = !features.contains(QSsl::SupportedFeature::ServerSideAlpn);
+#else
+    clearTextHTTP2 = true;
+#endif
     workerThread->start();
 }
 
