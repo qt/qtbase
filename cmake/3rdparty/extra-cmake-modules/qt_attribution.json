@@ -6,7 +6,7 @@
 
     "Description": "Additional CMake modules.",
     "Homepage": "https://api.kde.org/ecm/",
-    "Version": "5.50.0",
+    "Version": "5.84.0",
 
     "License": "BSD-3-Clause",
     "LicenseId": "BSD 3-Clause License",
