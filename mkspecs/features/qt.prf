@@ -218,28 +218,35 @@ for(ever) {
                 # Linking frameworks by absolute path does not work.
                 LIBS$$var_sfx += -framework $$framework
             } else {
-                lib = $$MODULE_MODULE$$qtPlatformTargetSuffix()
+                lib_bases = $$MODULE_MODULE$$qtPlatformTargetSuffix()
+                darwin: lib_bases *= $$MODULE_MODULE
                 win32|contains(MODULE_CONFIG, staticlib) {
-                    lib_missing = true
-                    lib_extensions = $$QMAKE_EXTENSION_STATICLIB
-                    lib_extensions *= $$QMAKE_LIB_EXTENSIONS
-                    candidates =
-                    for(ext, lib_extensions) {
-                        candidate = $$MODULE_LIBS/$$QMAKE_PREFIX_STATICLIB$${lib}.$$ext
-                        candidates += $$candidate
-                        exists($$candidate) {
-                            lib = $$candidate
-                            lib_missing = false
-                            break()
-                        }
-                    }
-                    $$lib_missing {
-                        lib = $$first(candidates)
-                    }
-                    PRE_TARGETDEPS += $$lib
+                    lib_prefix = $$MODULE_LIBS/$$QMAKE_PREFIX_STATICLIB
+                    lib_suffixes = $$QMAKE_EXTENSION_STATICLIB
+                    lib_suffixes *= $$QMAKE_LIB_EXTENSIONS
+                    add_lib_to_pretargetdeps = true
                 } else {
-                    lib = $$MODULE_LIBS/$$QMAKE_PREFIX_SHLIB$${lib}.$$QMAKE_EXTENSION_SHLIB
+                    lib_prefix = $$MODULE_LIBS/$$QMAKE_PREFIX_SHLIB
+                    lib_suffixes = $$QMAKE_EXTENSION_SHLIB
+                    add_lib_to_pretargetdeps = false
                 }
+                candidates =
+                for(lib_base, lib_bases) {
+                    for(lib_suffix, lib_suffixes) {
+                        candidates += $${lib_prefix}$${lib_base}.$${lib_suffix}
+                    }
+                }
+                lib =
+                for(candidate, candidates) {
+                    exists("$$candidate") {
+                        lib = "$$candidate"
+                        break()
+                    }
+                }
+                isEmpty(lib): \
+                    lib = $$first(candidates)
+                $$add_lib_to_pretargetdeps: \
+                    PRE_TARGETDEPS += $$lib
                 LIBS$$var_sfx += $$lib
             }
         }
