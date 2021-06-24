@@ -7064,7 +7064,7 @@ void tst_QNetworkReply::qtbug12908compressedHttpReply()
     QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
     // QDecompressHelper will abort the download if the compressed to decompressed size ratio
     // differs too much, so we override it
-    request.setMinimumArchiveBombSize(-1);
+    request.setDecompressedSafetyCheckThreshold(-1);
     QNetworkReplyPtr reply(manager.get(request));
 
     QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
@@ -9471,7 +9471,7 @@ void tst_QNetworkReply::contentEncodingBigPayload()
     QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
     // QDecompressHelper will abort the download if the compressed to decompressed size ratio
     // differs too much, so we override it
-    request.setMinimumArchiveBombSize(-1);
+    request.setDecompressedSafetyCheckThreshold(-1);
     QNetworkReplyPtr reply(manager.get(request));
 
     QTRY_VERIFY2_WITH_TIMEOUT(reply->isFinished(), qPrintable(reply->errorString()), 15000);

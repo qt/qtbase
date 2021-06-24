@@ -1366,7 +1366,8 @@ void QNetworkReplyHttpImplPrivate::replyDownloadMetaData(const QList<QPair<QByte
                 error(QNetworkReplyImpl::NetworkError::ProtocolFailure,
                       QCoreApplication::translate("QHttp", "Data corrupted"));
             }
-            decompressHelper.setMinimumArchiveBombSize(request.minimumArchiveBombSize());
+            decompressHelper.setDecompressedSafetyCheckThreshold(
+                    request.decompressedSafetyCheckThreshold());
         }
 
         if (!value.isEmpty()) {
