@@ -208,10 +208,6 @@ qt_set_up_nonprefix_build()
 
 qt_set_language_standards()
 
-## Enable support for sanitizers:
-qt_internal_set_up_sanitizer_features()
-include(${CMAKE_CURRENT_LIST_DIR}/3rdparty/extra-cmake-modules/modules/ECMEnableSanitizers.cmake)
-
 option(QT_USE_CCACHE "Enable the use of ccache")
 if(QT_USE_CCACHE)
     find_program(CCACHE_PROGRAM ccache)

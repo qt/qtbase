@@ -194,6 +194,5 @@ function(qt_commandline_sanitize arg val nextok)
     else()
         qtConfAddError("Invalid argument '${val}' to command line parameter '${arg}'")
     endif()
-    qtConfCommandlineAppendInput(sanitize "${val}")
 endfunction()
 # special case end

@@ -21,28 +21,6 @@ file(RELATIVE_PATH
      __GlobalConfig_relative_path_from_bin_dir_to_cmake_config_dir
      ${__qt_bin_dir_absolute} ${__GlobalConfig_install_dir_absolute})
 
-# Generate and install Qt6 config file.
-qt_internal_get_min_new_policy_cmake_version(min_new_policy_version)
-qt_internal_get_max_new_policy_cmake_version(max_new_policy_version)
-configure_package_config_file(
-    "${PROJECT_SOURCE_DIR}/cmake/QtConfig.cmake.in"
-    "${__GlobalConfig_build_dir}/${INSTALL_CMAKE_NAMESPACE}Config.cmake"
-    INSTALL_DESTINATION "${__GlobalConfig_install_dir}"
-)
-
-write_basic_package_version_file(
-    ${__GlobalConfig_build_dir}/${INSTALL_CMAKE_NAMESPACE}ConfigVersion.cmake
-    VERSION ${PROJECT_VERSION}
-    COMPATIBILITY AnyNewerVersion
-)
-
-qt_install(FILES
-    "${__GlobalConfig_build_dir}/${INSTALL_CMAKE_NAMESPACE}Config.cmake"
-    "${__GlobalConfig_build_dir}/${INSTALL_CMAKE_NAMESPACE}ConfigVersion.cmake"
-    DESTINATION "${__GlobalConfig_install_dir}"
-    COMPONENT Devel
-)
-
 # Configure and install the QtBuildInternals package.
 set(__build_internals_path_suffix "${INSTALL_CMAKE_NAMESPACE}BuildInternals")
 qt_path_join(__build_internals_build_dir ${QT_CONFIG_BUILD_DIR} ${__build_internals_path_suffix})
@@ -141,6 +119,10 @@ qt_internal_setup_public_platform_target()
 include(QtInternalTargets)
 qt_internal_run_common_config_tests()
 
+# Setup sanitizer options for qtbase directory scope based on features computed above.
+qt_internal_set_up_sanitizer_options()
+include("${CMAKE_CURRENT_LIST_DIR}/3rdparty/extra-cmake-modules/modules/ECMEnableSanitizers.cmake")
+
 set(__export_targets Platform
                      GlobalConfig
                      GlobalConfigPrivate
@@ -159,6 +141,29 @@ qt_internal_export_modern_cmake_config_targets_file(TARGETS ${__export_targets}
                                                     EXPORT_NAME_PREFIX ${INSTALL_CMAKE_NAMESPACE}
                                                     CONFIG_INSTALL_DIR
                                                     ${__GlobalConfig_install_dir})
+
+# Generate and install Qt6 config file. Make sure it happens after the global feature evaluation so
+# they can be accessed in the Config file if needed.
+qt_internal_get_min_new_policy_cmake_version(min_new_policy_version)
+qt_internal_get_max_new_policy_cmake_version(max_new_policy_version)
+configure_package_config_file(
+    "${PROJECT_SOURCE_DIR}/cmake/QtConfig.cmake.in"
+    "${__GlobalConfig_build_dir}/${INSTALL_CMAKE_NAMESPACE}Config.cmake"
+    INSTALL_DESTINATION "${__GlobalConfig_install_dir}"
+)
+
+write_basic_package_version_file(
+    "${__GlobalConfig_build_dir}/${INSTALL_CMAKE_NAMESPACE}ConfigVersion.cmake"
+    VERSION ${PROJECT_VERSION}
+    COMPATIBILITY AnyNewerVersion
+)
+
+qt_install(FILES
+    "${__GlobalConfig_build_dir}/${INSTALL_CMAKE_NAMESPACE}Config.cmake"
+    "${__GlobalConfig_build_dir}/${INSTALL_CMAKE_NAMESPACE}ConfigVersion.cmake"
+    DESTINATION "${__GlobalConfig_install_dir}"
+    COMPONENT Devel
+)
 
 # Install internal CMake files.
 # The functions defined inside can not be used in public projects.
@@ -270,7 +275,13 @@ if(QT_WILL_INSTALL)
 endif()
 
 # TODO: Check whether this is the right place to install these
-qt_copy_or_install(DIRECTORY cmake/3rdparty DESTINATION "${__GlobalConfig_install_dir}")
+qt_copy_or_install(DIRECTORY "cmake/3rdparty" DESTINATION "${__GlobalConfig_install_dir}")
+
+# In prefix builds we also need to copy the files into the build config directory, so that the
+# build-dir Qt6Config.cmake finds the files when building other repos in a top-level build.
+if(QT_WILL_INSTALL)
+    file(COPY "cmake/3rdparty" DESTINATION "${__GlobalConfig_build_dir}")
+endif()
 
 # Install our custom Find modules, which will be used by the find_dependency() calls
 # inside the generated ModuleDependencies cmake files.

@@ -541,11 +541,6 @@ endif()\n")
                 "set(QT_BUILD_TOOLS_WHEN_CROSSCOMPILING \"TRUE\" CACHE BOOL \"\" FORCE)\n")
         endif()
 
-        if(ECM_ENABLE_SANITIZERS)
-            string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
-                "set(ECM_ENABLE_SANITIZERS \"${ECM_ENABLE_SANITIZERS}\" CACHE BOOL \"\" FORCE)\n")
-        endif()
-
         # Save the default qpa platform.
         # Used by qtwayland/src/plugins/platforms/qwayland-generic/CMakeLists.txt. Otherwise
         # the DEFAULT_IF condition is evaluated incorrectly.
