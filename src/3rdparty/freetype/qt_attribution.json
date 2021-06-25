@@ -7,12 +7,12 @@
 
         "Description": "FreeType is a freely available software library to render fonts.",
         "Homepage": "http://www.freetype.org",
-        "Version": "2.10.1",
+        "Version": "2.10.4",
 
         "License": "Freetype Project License or GNU General Public License v2.0 only",
         "LicenseId": "FTL OR GPL-2.0",
         "LicenseFile": "LICENSE.txt",
-        "Copyright": "Copyright 2006-2015 by David Turner, Robert Wilhelm, and Werner Lemberg."
+        "Copyright": "Copyright 2006-2020 by David Turner, Robert Wilhelm, and Werner Lemberg."
     },
     {
         "Id": "freetype-zlib",
