@@ -592,7 +592,7 @@ private:
     void notify(const QtPrivate::QPropertyBindingData *binding)
     {
         if (binding)
-            binding->notifyObservers(this);
+            binding->notifyObservers(this, qGetBindingStorage(owner()));
     }
 };
 

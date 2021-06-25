@@ -944,7 +944,9 @@ struct QBindingStatus
     QtPrivate::BindingEvaluationState *currentlyEvaluatingBinding = nullptr;
     QtPrivate::CompatPropertySafePoint *currentCompatProperty = nullptr;
     Qt::HANDLE threadId = nullptr;
+    QPropertyDelayedNotifications *groupUpdateData = nullptr;
 };
+
 
 struct QBindingStorageData;
 class Q_CORE_EXPORT QBindingStorage
@@ -955,6 +957,7 @@ class Q_CORE_EXPORT QBindingStorage
     template<typename Class, typename T, auto Offset, auto Setter, auto Signal>
     friend class QObjectCompatProperty;
     friend class QObjectPrivate;
+    friend class QtPrivate::QPropertyBindingData;
 public:
     QBindingStorage();
     ~QBindingStorage();
@@ -1184,7 +1187,7 @@ private:
     void notify(const QtPrivate::QPropertyBindingData *binding)
     {
         if (binding)
-            binding->notifyObservers(this);
+            binding->notifyObservers(this, qGetBindingStorage(owner()));
         if constexpr (HasSignal) {
             if constexpr (SignalTakesValue::value)
                 (owner()->*Signal)(this->valueBypassingBindings());
@@ -1322,7 +1325,7 @@ public:
         auto *storage = const_cast<QBindingStorage *>(qGetBindingStorage(owner()));
         auto bd = storage->bindingData(const_cast<QObjectComputedProperty *>(this), false);
         if (bd)
-            bd->notifyObservers(this);
+            bd->notifyObservers(this, qGetBindingStorage(owner()));
     }
 };
 
