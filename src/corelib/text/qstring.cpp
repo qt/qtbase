@@ -8235,7 +8235,7 @@ QVector<QStringRef> QString::splitRef(const QRegularExpression &re, SplitBehavio
     \value NormalizationForm_KC  Compatibility Decomposition followed by Canonical Composition
 
     \sa normalized(),
-        {http://www.unicode.org/reports/tr15/}{Unicode Standard Annex #15}
+        {https://www.unicode.org/reports/tr15/}{Unicode Standard Annex #15}
 */
 
 /*!
