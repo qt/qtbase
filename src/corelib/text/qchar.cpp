@@ -165,7 +165,7 @@ QT_BEGIN_NAMESPACE
     QT_IMPLICIT_QCHAR_CONSTRUCTION.
 
     For more information see
-    \l{http://www.unicode.org/ucd/}{"About the Unicode Character Database"}.
+    \l{https://www.unicode.org/ucd/}{"About the Unicode Character Database"}.
 
     \sa Unicode, QString, QLatin1Char
 */
@@ -173,8 +173,8 @@ QT_BEGIN_NAMESPACE
 /*!
     \enum QChar::UnicodeVersion
 
-    Specifies which version of the \l{http://www.unicode.org/}{Unicode standard}
-    introduced a certain character.
+    Specifies which version of the \l{Unicode standard} introduced a certain
+    character.
 
     \value Unicode_1_1  Version 1.1
     \value Unicode_2_0  Version 2.0
@@ -285,7 +285,7 @@ QT_BEGIN_NAMESPACE
     This enum type defines the Unicode script property values.
 
     For details about the Unicode script property values see
-    \l{http://www.unicode.org/reports/tr24/}{Unicode Standard Annex #24}.
+    \l{https://www.unicode.org/reports/tr24/}{Unicode Standard Annex #24}.
 
     In order to conform to C/C++ naming conventions "Script_" is prepended
     to the codes used in the Unicode Standard.
@@ -462,8 +462,8 @@ QT_BEGIN_NAMESPACE
     \enum QChar::Direction
 
     This enum type defines the Unicode direction attributes. See the
-    \l{http://www.unicode.org/reports/tr9/tr9-35.html#Table_Bidirectional_Character_Types}{Unicode Standard} for a description
-    of the values.
+    \l{https://www.unicode.org/reports/tr9/tr9-35.html#Table_Bidirectional_Character_Types}{Unicode
+    Standard} for a description of the values.
 
     In order to conform to C/C++ naming conventions "Dir" is prepended
     to the codes used in the Unicode Standard.
@@ -499,8 +499,7 @@ QT_BEGIN_NAMESPACE
     \enum QChar::Decomposition
 
     This enum type defines the Unicode decomposition attributes. See
-    the \l{http://www.unicode.org/}{Unicode Standard} for a
-    description of the values.
+    the \l{Unicode Standard} for a description of the values.
 
     \value NoDecomposition
     \value Canonical
@@ -529,7 +528,7 @@ QT_BEGIN_NAMESPACE
     since 5.3
 
     This enum type defines the Unicode joining type attributes. See the
-    \l{http://www.unicode.org/}{Unicode Standard} for a description of the values.
+    \l{Unicode Standard} for a description of the values.
 
     In order to conform to C/C++ naming conventions "Joining_" is prepended
     to the codes used in the Unicode Standard.
@@ -550,8 +549,7 @@ QT_BEGIN_NAMESPACE
     \internal
 
     This enum type defines names for some of the Unicode combining
-    classes. See the \l{http://www.unicode.org/}{Unicode Standard}
-    for a description of the values.
+    classes. See the \l{Unicode Standard} for a description of the values.
 
     \value Combining_Above
     \value Combining_AboveAttached

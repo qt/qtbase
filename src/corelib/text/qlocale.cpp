@@ -245,7 +245,7 @@ bool operator<(const LikelyPair &lhs, const LikelyPair &rhs)
     is no more specific recommendation available.
 
     For the formal specification, see
-    http://www.unicode.org/reports/tr35/#Likely_Subtags
+    https://www.unicode.org/reports/tr35/#Likely_Subtags
 
     \note We also search und_script_region and und_region; they're not mentioned
     in the spec, but the examples clearly presume them and CLDR does provide

@@ -7553,7 +7553,7 @@ QList<QStringView> QStringView::split(const QRegularExpression &re, Qt::SplitBeh
     \value NormalizationForm_KC  Compatibility Decomposition followed by Canonical Composition
 
     \sa normalized(),
-        {http://www.unicode.org/reports/tr15/}{Unicode Standard Annex #15}
+        {https://www.unicode.org/reports/tr15/}{Unicode Standard Annex #15}
 */
 
 /*!
