@@ -1410,7 +1410,10 @@ QString qFormatLogMessage(QtMsgType type, const QMessageLogContext &context, con
         } else if (token == messageTokenC) {
             message.append(str);
         } else if (token == categoryTokenC) {
+#ifndef Q_OS_ANDROID
+            // Don't add the category to the message on Android
             message.append(QLatin1String(context.category));
+#endif
         } else if (token == typeTokenC) {
             switch (type) {
             case QtDebugMsg:   message.append(QLatin1String("debug")); break;
@@ -1658,7 +1661,10 @@ static bool android_default_message_handler(QtMsgType type,
         break;
     };
 
-    __android_log_print(priority, qPrintable(QCoreApplication::applicationName()), "%s\n", qPrintable(formattedMessage));
+    // If a category is defined, use it as an Android logging tag
+    __android_log_print(priority, isDefaultCategory(context.category) ?
+                            qPrintable(QCoreApplication::applicationName()) : context.category,
+                        "%s\n", qPrintable(formattedMessage));
 
     return true; // Prevent further output to stderr
 }
