@@ -59,6 +59,8 @@
 
 QT_BEGIN_NAMESPACE
 
+class QBindingStorage;
+
 namespace QtPrivate {
 // QPropertyBindingPrivatePtr operates on a RefCountingMixin solely so that we can inline
 // the constructor and copy constructor
@@ -302,6 +304,7 @@ public:
     }
     void registerWithCurrentlyEvaluatingBinding() const;
     void notifyObservers(QUntypedPropertyData *propertyDataPtr) const;
+    void notifyObservers(QUntypedPropertyData *propertyDataPtr, QBindingStorage *storage) const;
 private:
     /*!
         \internal

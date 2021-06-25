@@ -198,7 +198,7 @@ struct QPropertyDelayedNotifications
     }
 };
 
-static thread_local QPropertyDelayedNotifications *groupUpdateData = nullptr;
+static thread_local QBindingStatus bindingStatus;
 
 /*!
     \since 6.2
@@ -222,6 +222,7 @@ static thread_local QPropertyDelayedNotifications *groupUpdateData = nullptr;
  */
 void Qt::beginPropertyUpdateGroup()
 {
+    QPropertyDelayedNotifications *& groupUpdateData = bindingStatus.groupUpdateData;
     if (!groupUpdateData)
         groupUpdateData = new QPropertyDelayedNotifications;
     ++groupUpdateData->ref;
@@ -241,6 +242,7 @@ void Qt::beginPropertyUpdateGroup()
  */
 void Qt::endPropertyUpdateGroup()
 {
+    QPropertyDelayedNotifications *& groupUpdateData = bindingStatus.groupUpdateData;
     auto *data = groupUpdateData;
     Q_ASSERT(data->ref);
     if (--data->ref)
@@ -467,8 +469,6 @@ QPropertyBindingData::QPropertyBindingData(QPropertyBindingData &&other) : d_ptr
     QPropertyBindingDataPointer::fixupAfterMove(this);
 }
 
-static thread_local QBindingStatus bindingStatus;
-
 BindingEvaluationState::BindingEvaluationState(QPropertyBindingPrivate *binding, QBindingStatus *status)
     : binding(binding)
 {
@@ -545,12 +545,22 @@ void QPropertyBindingData::registerWithCurrentlyEvaluatingBinding_helper(Binding
 
 void QPropertyBindingData::notifyObservers(QUntypedPropertyData *propertyDataPtr) const
 {
+    notifyObservers(propertyDataPtr, nullptr);
+}
+
+void QPropertyBindingData::notifyObservers(QUntypedPropertyData *propertyDataPtr, QBindingStorage *storage) const
+{
     if (isNotificationDelayed())
         return;
     QPropertyBindingDataPointer d{this};
 
     if (QPropertyObserverPointer observer = d.firstObserver()) {
-        auto *delay = groupUpdateData;
+        auto status = storage ? storage->bindingStatus : nullptr;
+        QPropertyDelayedNotifications *delay;
+        if (status && status->threadId == QThread::currentThreadId())
+            delay = status->groupUpdateData;
+        else
+            delay = bindingStatus.groupUpdateData;
         if (delay) {
             delay->addProperty(this, propertyDataPtr);
             return;
