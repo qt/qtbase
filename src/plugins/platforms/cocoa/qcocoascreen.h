@@ -106,9 +106,6 @@ private:
     static QMacNotificationObserver s_screenParameterObserver;
     static CGDisplayReconfigurationCallBack s_displayReconfigurationCallBack;
 
-    static bool updateScreensIfNeeded();
-    static NSArray *s_screenConfigurationBeforeUpdate;
-
     static void add(CGDirectDisplayID displayId);
     QCocoaScreen(CGDirectDisplayID displayId);
     void update(CGDirectDisplayID displayId);
