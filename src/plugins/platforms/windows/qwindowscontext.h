@@ -108,6 +108,7 @@ struct QWindowsUser32DLL
     typedef int  (WINAPI *GetWindowDpiAwarenessContext)(HWND);
     typedef int  (WINAPI *GetAwarenessFromDpiAwarenessContext)(int);
     typedef BOOL (WINAPI *SystemParametersInfoForDpi)(UINT, UINT, PVOID, UINT, UINT);
+    typedef int  (WINAPI *GetDpiForWindow)(HWND);
 
     // Windows pointer functions (Windows 8 or later).
     EnableMouseInPointer enableMouseInPointer = nullptr;
@@ -123,6 +124,9 @@ struct QWindowsUser32DLL
 
     // Windows Vista onwards
     SetProcessDPIAware setProcessDPIAware = nullptr;
+
+    // Windows 10 version 1607 onwards
+    GetDpiForWindow getDpiForWindow = nullptr;
 
     // Windows 10 version 1703 onwards
     SetProcessDpiAwarenessContext setProcessDpiAwarenessContext = nullptr;
