@@ -177,6 +177,11 @@ function(__qt_internal_collect_object_libraries_recursively out_var target initi
 
     set(object_libraries "")
     foreach(lib IN LISTS libs interface_libs)
+        # Extract possible target from exported LINK_ONLY dependencies.
+        # This is super important for traversing backing library dependencies of qml plugins.
+        if(lib MATCHES "^\\$<LINK_ONLY:(.*)>$")
+            set(lib "${CMAKE_MATCH_1}")
+        endif()
         if(TARGET ${lib})
             get_target_property(aliased_target ${lib} ALIASED_TARGET)
             if(aliased_target)
