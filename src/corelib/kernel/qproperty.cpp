@@ -540,7 +540,7 @@ void QPropertyBindingData::registerWithCurrentlyEvaluatingBinding_helper(Binding
 
     QPropertyObserverPointer dependencyObserver = currentState->binding->allocateDependencyObserver();
     dependencyObserver.setBindingToNotify(currentState->binding);
-    dependencyObserver.observeProperty(d);
+    d.addObserver(dependencyObserver.ptr);
 }
 
 void QPropertyBindingData::notifyObservers(QUntypedPropertyData *propertyDataPtr) const
