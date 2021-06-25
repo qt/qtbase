@@ -293,12 +293,17 @@ public:
             heapObservers->clear();
         dependencyObserverCount = 0;
     }
-    QPropertyObserverPointer allocateDependencyObserver()
-    {
+
+    Q_ALWAYS_INLINE QPropertyObserverPointer allocateDependencyObserver() {
         if (dependencyObserverCount < inlineDependencyObservers.size()) {
             ++dependencyObserverCount;
             return {&inlineDependencyObservers[dependencyObserverCount - 1]};
         }
+        return allocateDependencyObserver_slow();
+    }
+
+    Q_NEVER_INLINE QPropertyObserverPointer allocateDependencyObserver_slow()
+    {
         ++dependencyObserverCount;
         if (!heapObservers)
             heapObservers.reset(new std::vector<QPropertyObserver>());
