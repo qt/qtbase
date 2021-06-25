@@ -47,6 +47,7 @@
 #include "qeventloop.h"
 #endif
 #include "qmetaobject.h"
+#include <private/qproperty_p.h>
 #include "qcorecmdlineargs_p.h"
 #include <qdatastream.h>
 #include <qdebug.h>
@@ -861,6 +862,7 @@ void QCoreApplicationPrivate::init()
     qt_call_pre_routines();
     qt_startup_hook();
 #ifndef QT_BOOTSTRAPPED
+    QtPrivate::initBindingStatusThreadId();
     if (Q_UNLIKELY(qtHookData[QHooks::Startup]))
         reinterpret_cast<QHooks::StartupCallback>(qtHookData[QHooks::Startup])();
 #endif

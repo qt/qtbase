@@ -943,6 +943,7 @@ struct QBindingStatus
 {
     QtPrivate::BindingEvaluationState *currentlyEvaluatingBinding = nullptr;
     QtPrivate::CompatPropertySafePoint *currentCompatProperty = nullptr;
+    Qt::HANDLE threadId = nullptr;
 };
 
 struct QBindingStorageData;
