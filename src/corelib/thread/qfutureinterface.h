@@ -41,7 +41,6 @@
 #define QFUTUREINTERFACE_H
 
 #include <QtCore/qmutex.h>
-#include <QtCore/QMutexLocker>
 #include <QtCore/qresultstore.h>
 #ifndef QT_NO_EXCEPTIONS
 #include <exception>
