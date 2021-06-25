@@ -49,7 +49,7 @@
 ****************************************************************************/
 
 //! [1]
-QString url = QLatin1String("http://www.unicode.org/");
+QString url = QLatin1String("https://www.unicode.org/");
 //! [1]
 
 
