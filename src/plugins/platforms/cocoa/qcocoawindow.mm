@@ -1270,11 +1270,15 @@ void QCocoaWindow::windowDidChangeScreen()
         return;
 
     // Note: When a window is resized to 0x0 Cocoa will report the window's screen as nil
-    auto *currentScreen = QCocoaScreen::get(m_view.window.screen);
-    auto *previousScreen = static_cast<QCocoaScreen*>(screen());
+    NSScreen *nsScreen = m_view.window.screen;
 
-    Q_ASSERT_X(!m_view.window.screen || currentScreen,
-        "QCocoaWindow", "Failed to get QCocoaScreen for NSScreen");
+    qCDebug(lcQpaWindow) << window() << "did change" << nsScreen;
+    QCocoaScreen::updateScreens();
+
+    auto *previousScreen = static_cast<QCocoaScreen*>(screen());
+    auto *currentScreen = QCocoaScreen::get(nsScreen);
+
+    qCDebug(lcQpaWindow) << "Screen changed for" << window() << "from" << previousScreen << "to" << currentScreen;
 
     // Note: The previous screen may be the same as the current screen, either because
     // a) the screen was just reconfigured, which still results in AppKit sending an
@@ -1287,7 +1291,6 @@ void QCocoaWindow::windowDidChangeScreen()
     // device-pixel ratio may have changed, and needs to be delivered to all
     // windows, both top level and child windows.
 
-    qCDebug(lcQpaWindow) << "Screen changed for" << window() << "from" << previousScreen << "to" << currentScreen;
     QWindowSystemInterface::handleWindowScreenChanged<QWindowSystemInterface::SynchronousDelivery>(
         window(), currentScreen ? currentScreen->screen() : nullptr);
 
