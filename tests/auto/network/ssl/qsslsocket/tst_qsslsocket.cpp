@@ -158,8 +158,6 @@ private slots:
     void connectToHostEncrypted();
     void connectToHostEncryptedWithVerificationPeerName();
     void sessionCipher();
-    void flush();
-    void isEncrypted();
     void localCertificate();
     void mode();
     void peerCertificate();
@@ -1166,14 +1164,6 @@ void tst_QSslSocket::sessionCipher()
     QVERIFY(QSslConfiguration::supportedCiphers().contains(socket->sessionCipher()));
     socket->disconnectFromHost();
     QVERIFY(socket->waitForDisconnected());
-}
-
-void tst_QSslSocket::flush()
-{
-}
-
-void tst_QSslSocket::isEncrypted()
-{
 }
 
 void tst_QSslSocket::localCertificate()
