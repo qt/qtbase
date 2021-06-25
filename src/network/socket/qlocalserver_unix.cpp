@@ -52,6 +52,8 @@
 #include <qdir.h>
 #include <qdatetime.h>
 
+#include <optional>
+
 #ifdef Q_OS_VXWORKS
 #  include <selectLib.h>
 #endif
@@ -113,11 +115,11 @@ bool QLocalServerPrivate::listen(const QString &requestedServerName)
 
     QByteArray encodedTempPath;
     const QByteArray encodedFullServerName = QFile::encodeName(fullServerName);
-    QScopedPointer<QTemporaryDir> tempDir;
+    std::optional<QTemporaryDir> tempDir;
 
     if (options & QLocalServer::WorldAccessOption) {
         QFileInfo serverNameFileInfo(fullServerName);
-        tempDir.reset(new QTemporaryDir(serverNameFileInfo.absolutePath() + QLatin1Char('/')));
+        tempDir.emplace(serverNameFileInfo.absolutePath() + u'/');
         if (!tempDir->isValid()) {
             setError(QLatin1String("QLocalServer::listen"));
             return false;
