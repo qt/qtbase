@@ -647,8 +647,8 @@ Q_OUTOFLINE_TEMPLATE typename QVarLengthArray<T, Prealloc>::iterator QVarLengthA
 
     qsizetype offset = qsizetype(before - ptr);
     if (n != 0) {
+        const T copy(t); // `t` could alias an element in [begin(), end()[
         resize(s + n);
-        const T copy(t);
         if (!QTypeInfo<T>::isRelocatable) {
             T *b = ptr + offset;
             T *j = ptr + s;
