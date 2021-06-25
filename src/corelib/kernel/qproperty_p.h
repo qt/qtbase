@@ -391,6 +391,7 @@ inline QPropertyObserverPointer QPropertyBindingDataPointer::firstObserver() con
 
 namespace QtPrivate {
     Q_CORE_EXPORT bool isPropertyInBindingWrapper(const QUntypedPropertyData *property);
+    void Q_CORE_EXPORT initBindingStatusThreadId();
 }
 
 template<typename Class, typename T, auto Offset, auto Setter, auto Signal=nullptr>

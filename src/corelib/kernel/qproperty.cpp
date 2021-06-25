@@ -43,6 +43,7 @@
 #include <qscopedvaluerollback.h>
 #include <QScopeGuard>
 #include <QtCore/qloggingcategory.h>
+#include <QThread>
 
 QT_BEGIN_NAMESPACE
 
@@ -2184,7 +2185,12 @@ void QBindingStorage::registerDependency_helper(const QUntypedPropertyData *data
     Q_ASSERT(bindingStatus);
     // Use ::bindingStatus to get the binding from TLS. This is required, so that reads from
     // another thread do not register as dependencies
-    auto *currentBinding = QT_PREPEND_NAMESPACE(bindingStatus).currentlyEvaluatingBinding;
+    const bool threadMatches = (QThread::currentThreadId() == bindingStatus->threadId);
+    QtPrivate::BindingEvaluationState *currentBinding;
+    if (Q_LIKELY(threadMatches))
+        currentBinding = bindingStatus->currentlyEvaluatingBinding;
+    else
+        currentBinding = QT_PREPEND_NAMESPACE(bindingStatus).currentlyEvaluatingBinding;
     QUntypedPropertyData *dd = const_cast<QUntypedPropertyData *>(data);
     auto storage = QBindingStoragePrivate(d).get(dd, /*create=*/ currentBinding != nullptr);
     if (!storage)
@@ -2205,6 +2211,13 @@ QPropertyBindingData *QBindingStorage::bindingData_helper(QUntypedPropertyData *
 
 
 namespace QtPrivate {
+
+
+void initBindingStatusThreadId()
+{
+    bindingStatus.threadId = QThread::currentThreadId();
+}
+
 BindingEvaluationState *suspendCurrentBindingStatus()
 {
     auto ret = bindingStatus.currentlyEvaluatingBinding;
