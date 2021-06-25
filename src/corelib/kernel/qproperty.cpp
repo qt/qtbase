@@ -2202,7 +2202,9 @@ void QBindingStorage::registerDependency_helper(const QUntypedPropertyData *data
     else
         currentBinding = QT_PREPEND_NAMESPACE(bindingStatus).currentlyEvaluatingBinding;
     QUntypedPropertyData *dd = const_cast<QUntypedPropertyData *>(data);
-    auto storage = QBindingStoragePrivate(d).get(dd, /*create=*/ currentBinding != nullptr);
+    if (!currentBinding)
+        return;
+    auto storage = QBindingStoragePrivate(d).get(dd, true);
     if (!storage)
         return;
     storage->registerWithCurrentlyEvaluatingBinding(currentBinding);
