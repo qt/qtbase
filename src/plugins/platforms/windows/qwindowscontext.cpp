@@ -218,6 +218,7 @@ void QWindowsUser32DLL::init()
         getWindowDpiAwarenessContext = (GetWindowDpiAwarenessContext)library.resolve("GetWindowDpiAwarenessContext");
         getAwarenessFromDpiAwarenessContext = (GetAwarenessFromDpiAwarenessContext)library.resolve("GetAwarenessFromDpiAwarenessContext");
         systemParametersInfoForDpi = (SystemParametersInfoForDpi)library.resolve("SystemParametersInfoForDpi");
+        getDpiForWindow = (GetDpiForWindow)library.resolve("GetDpiForWindow");
     }
 }
 
@@ -1474,6 +1475,10 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
 #endif
     }   break;
     case QtWindows::DpiChangedEvent: {
+
+        const UINT dpi = HIWORD(wParam);
+        platformWindow->setSavedDpi(dpi);
+
         // Try to apply the suggested size first and then notify ScreenChanged
         // so that the resize event sent from QGuiApplication incorporates it
         // WM_DPICHANGED is sent with a size that avoids resize loops (by

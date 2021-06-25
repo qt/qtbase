@@ -1419,6 +1419,8 @@ void QWindowsWindow::initialize()
         if (obtainedScreen && screen() != obtainedScreen)
             QWindowSystemInterface::handleWindowScreenChanged<QWindowSystemInterface::SynchronousDelivery>(w, obtainedScreen->screen());
     }
+    QWindowsWindow::setSavedDpi(QWindowsContext::user32dll.getDpiForWindow ?
+        QWindowsContext::user32dll.getDpiForWindow(handle()) : 96);
 }
 
 QSurfaceFormat QWindowsWindow::format() const

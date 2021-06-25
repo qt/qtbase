@@ -372,6 +372,9 @@ public:
     static const char *embeddedNativeParentHandleProperty;
     static const char *hasBorderInFullScreenProperty;
 
+    void setSavedDpi(int dpi) { m_savedDpi = dpi; }
+    int savedDpi() const { return m_savedDpi; }
+
 private:
     inline void show_sys() const;
     inline QWindowsWindowData setWindowFlags_sys(Qt::WindowFlags wt, unsigned flags = 0) const;
@@ -405,6 +408,7 @@ private:
     HICON m_iconSmall = nullptr;
     HICON m_iconBig = nullptr;
     void *m_surface = nullptr;
+    int m_savedDpi = 96;
 
     static bool m_screenForGLInitialized;
 
