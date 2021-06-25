@@ -45,18 +45,6 @@
 #  include <QtXml/qtxml-config.h>
 #endif
 
-QT_BEGIN_NAMESPACE
-
-#ifndef QT_STATIC
-#  if defined(QT_BUILD_XML_LIB)
-#    define Q_XML_EXPORT Q_DECL_EXPORT
-#  else
-#    define Q_XML_EXPORT Q_DECL_IMPORT
-#  endif
-#else
-#  define Q_XML_EXPORT
-#endif
-
-QT_END_NAMESPACE
+#include <QtXml/qtxmlexports.h>
 
 #endif // QTXMLGLOBAL_H

@@ -53,22 +53,8 @@
 #include <QtCore/qset.h>
 #endif
 
-QT_BEGIN_NAMESPACE
-
 #ifndef QT_NO_DBUS
-
-#ifndef QT_STATIC
-#  if defined(QT_BUILD_DBUS_LIB)
-#    define Q_DBUS_EXPORT Q_DECL_EXPORT
-#  else
-#    define Q_DBUS_EXPORT Q_DECL_IMPORT
-#  endif
-#else
-#  define Q_DBUS_EXPORT
-#endif
-
+#include <QtDBus/qtdbusexports.h>
 #endif // QT_NO_DBUS
-
-QT_END_NAMESPACE
 
 #endif

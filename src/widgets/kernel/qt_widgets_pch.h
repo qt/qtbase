@@ -48,6 +48,7 @@
 #include "../../gui/kernel/qt_gui_pch.h"
 
 #if defined __cplusplus
+#include <qtwidgetsexports.h>
 #include <qtwidgetsglobal.h>
 #include <qapplication.h>
 #include <qabstractbutton.h>

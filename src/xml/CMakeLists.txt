@@ -18,6 +18,7 @@ qt_internal_add_module(Xml
         Qt::Core
     PRIVATE_MODULE_INTERFACE
         Qt::CorePrivate
+    GENERATE_CPP_EXPORTS
 )
 
 ## Scopes:

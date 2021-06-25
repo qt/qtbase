@@ -68,6 +68,7 @@ qt_internal_add_module(Test
         Qt::Core
     PRIVATE_MODULE_INTERFACE
         Qt::CorePrivate
+    GENERATE_CPP_EXPORTS
 )
 
 #### Keys ignored in scope 1:.:.:testlib.pro:<TRUE>:

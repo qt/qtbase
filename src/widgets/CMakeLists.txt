@@ -63,6 +63,7 @@ qt_internal_add_module(Widgets
         Qt::GuiPrivate
     PRECOMPILED_HEADER
         "kernel/qt_widgets_pch.h"
+    GENERATE_CPP_EXPORTS
 )
 
 # Resources:

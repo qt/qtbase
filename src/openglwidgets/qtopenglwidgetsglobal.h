@@ -41,19 +41,6 @@
 #define QTOPENGLWIDGETSGLOBAL_H
 
 #include <QtCore/qglobal.h>
-
-QT_BEGIN_NAMESPACE
-
-#ifndef QT_STATIC
-#  if defined(QT_BUILD_OPENGLWIDGETS_LIB)
-#    define Q_OPENGLWIDGETS_EXPORT Q_DECL_EXPORT
-#  else
-#    define Q_OPENGLWIDGETS_EXPORT Q_DECL_IMPORT
-#  endif
-#else
-#  define Q_OPENGLWIDGETS_EXPORT
-#endif
-
-QT_END_NAMESPACE
+#include <QtOpenGLWidgets/qtopenglwidgetsexports.h>
 
 #endif // QTOPENGLWIDGETSGLOBAL_H

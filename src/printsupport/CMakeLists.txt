@@ -36,6 +36,7 @@ qt_internal_add_module(PrintSupport
         Qt::CorePrivate
         Qt::GuiPrivate
         Qt::WidgetsPrivate
+    GENERATE_CPP_EXPORTS
 )
 
 #### Keys ignored in scope 1:.:.:printsupport.pro:<TRUE>:

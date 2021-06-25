@@ -31,6 +31,7 @@ qt_internal_add_module(Sql
         Qt::CorePrivate
     PRECOMPILED_HEADER
         "../corelib/global/qt_pch.h"
+    GENERATE_CPP_EXPORTS
 )
 
 #### Keys ignored in scope 1:.:.:sql.pro:<TRUE>:

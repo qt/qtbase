@@ -59,6 +59,7 @@ qt_internal_add_module(Network
         Qt::CorePrivate
     PRECOMPILED_HEADER
         "../corelib/global/qt_pch.h"
+    GENERATE_CPP_EXPORTS
 )
 
 #### Keys ignored in scope 1:.:.:network.pro:<TRUE>:

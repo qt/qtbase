@@ -48,6 +48,7 @@ qt_internal_add_module(DBus
         Qt::Core
     PRIVATE_MODULE_INTERFACE
         Qt::CorePrivate
+    GENERATE_CPP_EXPORTS
 )
 
 set_source_files_properties(qdbusmarshaller.cpp

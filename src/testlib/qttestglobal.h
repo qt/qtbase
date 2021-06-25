@@ -42,18 +42,9 @@
 
 #include <QtCore/qglobal.h>
 #include <QtTest/qttestlib-config.h>
+#include <QtTest/qttestexports.h>
 
 QT_BEGIN_NAMESPACE
-
-#if defined(QT_STATIC)
-# define Q_TESTLIB_EXPORT
-#else
-# ifdef QT_BUILD_TESTLIB_LIB
-#  define Q_TESTLIB_EXPORT Q_DECL_EXPORT
-# else
-#  define Q_TESTLIB_EXPORT Q_DECL_IMPORT
-# endif
-#endif
 
 #if (defined Q_CC_HPACC) && (defined __ia64)
 # ifdef Q_TESTLIB_EXPORT

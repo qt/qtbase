@@ -16,4 +16,5 @@ qt_internal_add_module(OpenGLWidgets
     PUBLIC_LIBRARIES
         Qt::OpenGL
         Qt::Widgets
+    GENERATE_CPP_EXPORTS
 )
