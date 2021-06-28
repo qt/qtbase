@@ -83,7 +83,7 @@ struct Q_AUTOTEST_EXPORT QPropertyBindingDataPointer
         d = reinterpret_cast<quintptr>(observer);
     }
     static void fixupAfterMove(QtPrivate::QPropertyBindingData *ptr);
-    void addObserver(QPropertyObserver *observer);
+    void Q_ALWAYS_INLINE addObserver(QPropertyObserver *observer);
     void setFirstObserver(QPropertyObserver *observer);
     QPropertyObserverPointer firstObserver() const;
 
