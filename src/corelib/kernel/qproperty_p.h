@@ -55,6 +55,7 @@
 #include <qproperty.h>
 
 #include <qscopedpointer.h>
+#include <qscopedvaluerollback.h>
 #include <vector>
 
 QT_BEGIN_NAMESPACE
@@ -104,6 +105,7 @@ struct QPropertyObserverPointer
     void unlink();
 
     void setBindingToNotify(QPropertyBindingPrivate *binding);
+    void setBindingToNotify_unsafe(QPropertyBindingPrivate *binding);
     void setChangeHandler(QPropertyObserver::ChangeHandler changeHandler);
 
     void notify(QUntypedPropertyData *propertyDataPtr);
@@ -325,6 +327,8 @@ public:
     void unlinkAndDeref();
 
     void evaluateRecursive(QBindingStatus *status = nullptr);
+    void Q_ALWAYS_INLINE evaluateRecursive_inline(QBindingStatus *status = nullptr);
+
     void notifyRecursive();
 
     static QPropertyBindingPrivate *get(const QUntypedPropertyBinding &binding)
@@ -692,6 +696,48 @@ struct QUntypedBindablePrivate
         return bindable.data;
     }
 };
+
+inline void QPropertyBindingPrivate::evaluateRecursive_inline(QBindingStatus *status)
+{
+    if (updating) {
+        error = QPropertyBindingError(QPropertyBindingError::BindingLoop);
+        if (isQQmlPropertyBinding)
+            errorCallBack(this);
+        return;
+    }
+
+    QScopedValueRollback<bool> updateGuard(updating, true);
+
+    /*
+         * Evaluating the binding might lead to the binding being broken. This can
+         * cause ref to reach zero at the end of the function.  However, the
+         * updateGuard's destructor will then still trigger, trying to set the
+         * updating bool to its old value
+         * To prevent this, we create a QPropertyBindingPrivatePtr which ensures
+         * that the object is still alive when updateGuard's dtor runs.
+         */
+    QPropertyBindingPrivatePtr keepAlive {this};
+
+    QtPrivate::BindingEvaluationState evaluationFrame(this, status);
+
+    auto bindingFunctor =  reinterpret_cast<std::byte *>(this) +
+            QPropertyBindingPrivate::getSizeEnsuringAlignment();
+    bool changed = false;
+    if (hasBindingWrapper) {
+        changed = staticBindingWrapper(metaType, propertyDataPtr,
+                                       {vtable, bindingFunctor});
+    } else {
+        changed = vtable->call(metaType, propertyDataPtr, bindingFunctor);
+    }
+    // If there was a change, we must set pendingNotify.
+    // If there was not, we must not clear it, as that only should happen in notifyRecursive
+    pendingNotify = pendingNotify || changed;
+    if (!changed || !firstObserver)
+        return;
+
+    firstObserver.noSelfDependencies(this);
+    firstObserver.evaluateBindings(status);
+}
 
 QT_END_NAMESPACE
 
