@@ -47,7 +47,7 @@
 #include <private/qimage_p.h>
 
 #include <qendian.h>
-#include <qrgbaf.h>
+#include <qrgbafloat.h>
 #if QT_CONFIG(thread)
 #include <qsemaphore.h>
 #include <qthreadpool.h>
@@ -324,8 +324,8 @@ void convert_generic_over_rgba32f(QImageData *dest, const QImageData *src, Qt::I
     const ConvertAndStorePixelsFuncFP store = qStoreFromRGBA32F[dest->format];
 
     auto convertSegment = [=](int yStart, int yEnd) {
-        QRgba32F buf[BufferSize];
-        QRgba32F *buffer = buf;
+        QRgbaFloat32 buf[BufferSize];
+        QRgbaFloat32 *buffer = buf;
         const uchar *srcData = src->data + yStart * src->bytes_per_line;
         uchar *destData = dest->data + yStart * dest->bytes_per_line;
         for (int y = yStart; y < yEnd; ++y) {
@@ -333,10 +333,10 @@ void convert_generic_over_rgba32f(QImageData *dest, const QImageData *src, Qt::I
             while (x < src->width) {
                 int l = src->width - x;
                 if (dest->depth == 128)
-                    buffer = reinterpret_cast<QRgba32F *>(destData) + x;
+                    buffer = reinterpret_cast<QRgbaFloat32 *>(destData) + x;
                 else
                     l = qMin(l, BufferSize);
-                const QRgba32F *ptr = fetch(buffer, srcData, x, l, nullptr, nullptr);
+                const QRgbaFloat32 *ptr = fetch(buffer, srcData, x, l, nullptr, nullptr);
                 store(destData, ptr, x, l, nullptr, nullptr);
                 x += l;
             }
@@ -621,8 +621,8 @@ bool convert_generic_inplace_over_rgba32f(QImageData *data, QImage::Format dst_f
     }
 
     auto convertSegment = [=](int yStart, int yEnd) {
-        QRgba32F buf[BufferSize];
-        QRgba32F *buffer = buf;
+        QRgbaFloat32 buf[BufferSize];
+        QRgbaFloat32 *buffer = buf;
         uchar *srcData = data->data + yStart * data->bytes_per_line;
         uchar *destData = srcData;
         for (int y = yStart; y < yEnd; ++y) {
@@ -630,10 +630,10 @@ bool convert_generic_inplace_over_rgba32f(QImageData *data, QImage::Format dst_f
             while (x < data->width) {
                 int l = data->width - x;
                 if (srcLayout->bpp == QPixelLayout::BPP32FPx4)
-                    buffer = reinterpret_cast<QRgba32F *>(srcData) + x;
+                    buffer = reinterpret_cast<QRgbaFloat32 *>(srcData) + x;
                 else
                     l = qMin(l, BufferSize);
-                const QRgba32F *ptr = fetch(buffer, srcData, x, l, nullptr, nullptr);
+                const QRgbaFloat32 *ptr = fetch(buffer, srcData, x, l, nullptr, nullptr);
                 store(destData, ptr, x, l, nullptr, nullptr);
                 x += l;
             }
@@ -1586,11 +1586,11 @@ static void convert_RGBA16FPM_to_RGBA16F(QImageData *dest, const QImageData *src
 
     const int src_pad = (src->bytes_per_line >> 3) - src->width;
     const int dest_pad = (dest->bytes_per_line >> 3) - dest->width;
-    const QRgba16F *src_data = reinterpret_cast<const QRgba16F *>(src->data);
-    QRgba16F *dest_data = reinterpret_cast<QRgba16F *>(dest->data);
+    const QRgbaFloat16 *src_data = reinterpret_cast<const QRgbaFloat16 *>(src->data);
+    QRgbaFloat16 *dest_data = reinterpret_cast<QRgbaFloat16 *>(dest->data);
 
     for (int i = 0; i < src->height; ++i) {
-        const QRgba16F *end = src_data + src->width;
+        const QRgbaFloat16 *end = src_data + src->width;
         while (src_data < end) {
             *dest_data = src_data->unpremultiplied();
             if (MaskAlpha)
@@ -1609,10 +1609,10 @@ static bool convert_RGBA16FPM_to_RGBA16F_inplace(QImageData *data, Qt::ImageConv
     Q_ASSERT(data->format == QImage::Format_RGBA16FPx4_Premultiplied);
 
     const int pad = (data->bytes_per_line >> 3) - data->width;
-    QRgba16F *rgb_data = reinterpret_cast<QRgba16F *>(data->data);
+    QRgbaFloat16 *rgb_data = reinterpret_cast<QRgbaFloat16 *>(data->data);
 
     for (int i = 0; i < data->height; ++i) {
-        const QRgba16F *end = rgb_data + data->width;
+        const QRgbaFloat16 *end = rgb_data + data->width;
         while (rgb_data < end) {
             *rgb_data = rgb_data->unpremultiplied();
             if (MaskAlpha)

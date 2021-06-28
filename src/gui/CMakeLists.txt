@@ -195,7 +195,7 @@ qt_internal_add_module(Gui
         painting/qregion.cpp painting/qregion.h
         painting/qrgb.h
         painting/qrgba64.h painting/qrgba64_p.h
-        painting/qrgbaf.h
+        painting/qrgbafloat.h
         painting/qstroker.cpp painting/qstroker_p.h
         painting/qtextureglyphcache.cpp painting/qtextureglyphcache_p.h
         painting/qtransform.cpp painting/qtransform.h
