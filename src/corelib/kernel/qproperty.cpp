@@ -285,44 +285,7 @@ void QPropertyBindingPrivate::unlinkAndDeref()
 
 void QPropertyBindingPrivate::evaluateRecursive(QBindingStatus *status)
 {
-    if (updating) {
-        error = QPropertyBindingError(QPropertyBindingError::BindingLoop);
-        if (isQQmlPropertyBinding)
-            errorCallBack(this);
-        return;
-    }
-
-    QScopedValueRollback<bool> updateGuard(updating, true);
-
-    /*
-     * Evaluating the binding might lead to the binding being broken. This can
-     * cause ref to reach zero at the end of the function.  However, the
-     * updateGuard's destructor will then still trigger, trying to set the
-     * updating bool to its old value
-     * To prevent this, we create a QPropertyBindingPrivatePtr which ensures
-     * that the object is still alive when updateGuard's dtor runs.
-     */
-    QPropertyBindingPrivatePtr keepAlive {this};
-
-    BindingEvaluationState evaluationFrame(this, status);
-
-    auto bindingFunctor =  reinterpret_cast<std::byte *>(this) +
-        QPropertyBindingPrivate::getSizeEnsuringAlignment();
-    bool changed = false;
-    if (hasBindingWrapper) {
-        changed = staticBindingWrapper(metaType, propertyDataPtr,
-                {vtable, bindingFunctor});
-    } else {
-        changed = vtable->call(metaType, propertyDataPtr, bindingFunctor);
-    }
-    // If there was a change, we must set pendingNotify.
-    // If there was not, we must not clear it, as that only should happen in notifyRecursive
-    pendingNotify = pendingNotify || changed;
-    if (!changed || !firstObserver)
-        return;
-
-    firstObserver.noSelfDependencies(this);
-    firstObserver.evaluateBindings(status);
+    return evaluateRecursive_inline(status);
 }
 
 void QPropertyBindingPrivate::notifyRecursive()
@@ -539,7 +502,8 @@ void QPropertyBindingData::registerWithCurrentlyEvaluatingBinding_helper(Binding
     QPropertyBindingDataPointer d{this};
 
     QPropertyObserverPointer dependencyObserver = currentState->binding->allocateDependencyObserver();
-    dependencyObserver.setBindingToNotify(currentState->binding);
+    Q_ASSERT(QPropertyObserver::ObserverNotifiesBinding == 0);
+    dependencyObserver.setBindingToNotify_unsafe(currentState->binding);
     d.addObserver(dependencyObserver.ptr);
 }
 
@@ -664,6 +628,16 @@ void QPropertyObserverPointer::setBindingToNotify(QPropertyBindingPrivate *bindi
 }
 
 /*!
+    \internal
+    The same as as setBindingToNotify, but assumes that the tag is already correct.
+ */
+void QPropertyObserverPointer::setBindingToNotify_unsafe(QPropertyBindingPrivate *binding)
+{
+    Q_ASSERT(ptr->next.tag() == QPropertyObserver::ObserverNotifiesBinding);
+    ptr->binding = binding;
+}
+
+/*!
  \internal
  QPropertyObserverNodeProtector is a RAII wrapper which takes care of the internal switching logic
  for QPropertyObserverPointer::notify (described ibidem)
@@ -775,7 +749,7 @@ void QPropertyObserverPointer::evaluateBindings(QBindingStatus *status)
         if (QPropertyObserver::ObserverTag(observer->next.tag()) == QPropertyObserver::ObserverNotifiesBinding) {
             auto bindingToEvaluate =  observer->binding;
             QPropertyObserverNodeProtector protector(observer);
-            bindingToEvaluate->evaluateRecursive(status);
+            bindingToEvaluate->evaluateRecursive_inline(status);
             next = protector.next();
         }
 
