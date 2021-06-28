@@ -283,7 +283,7 @@ void QPropertyBindingPrivate::unlinkAndDeref()
         destroyAndFreeMemory(this);
 }
 
-void QPropertyBindingPrivate::evaluateRecursive()
+void QPropertyBindingPrivate::evaluateRecursive(QBindingStatus *status)
 {
     if (updating) {
         error = QPropertyBindingError(QPropertyBindingError::BindingLoop);
@@ -304,7 +304,7 @@ void QPropertyBindingPrivate::evaluateRecursive()
      */
     QPropertyBindingPrivatePtr keepAlive {this};
 
-    BindingEvaluationState evaluationFrame(this);
+    BindingEvaluationState evaluationFrame(this, status);
 
     auto bindingFunctor =  reinterpret_cast<std::byte *>(this) +
         QPropertyBindingPrivate::getSizeEnsuringAlignment();
@@ -322,7 +322,7 @@ void QPropertyBindingPrivate::evaluateRecursive()
         return;
 
     firstObserver.noSelfDependencies(this);
-    firstObserver.evaluateBindings();
+    firstObserver.evaluateBindings(status);
 }
 
 void QPropertyBindingPrivate::notifyRecursive()
@@ -557,15 +557,14 @@ void QPropertyBindingData::notifyObservers(QUntypedPropertyData *propertyDataPtr
     if (QPropertyObserverPointer observer = d.firstObserver()) {
         auto status = storage ? storage->bindingStatus : nullptr;
         QPropertyDelayedNotifications *delay;
-        if (status && status->threadId == QThread::currentThreadId())
-            delay = status->groupUpdateData;
-        else
-            delay = bindingStatus.groupUpdateData;
+        if (!status || status->threadId != QThread::currentThreadId())
+            status = &bindingStatus;
+        delay = status->groupUpdateData;
         if (delay) {
             delay->addProperty(this, propertyDataPtr);
             return;
         }
-        observer.evaluateBindings();
+        observer.evaluateBindings(status);
     } else {
         return;
     }
@@ -766,7 +765,7 @@ void QPropertyObserverPointer::noSelfDependencies(QPropertyBindingPrivate *bindi
 }
 #endif
 
-void QPropertyObserverPointer::evaluateBindings()
+void QPropertyObserverPointer::evaluateBindings(QBindingStatus *status)
 {
     auto observer = const_cast<QPropertyObserver*>(ptr);
     // See also comment in notify()
@@ -776,7 +775,7 @@ void QPropertyObserverPointer::evaluateBindings()
         if (QPropertyObserver::ObserverTag(observer->next.tag()) == QPropertyObserver::ObserverNotifiesBinding) {
             auto bindingToEvaluate =  observer->binding;
             QPropertyObserverNodeProtector protector(observer);
-            bindingToEvaluate->evaluateRecursive();
+            bindingToEvaluate->evaluateRecursive(status);
             next = protector.next();
         }
 
