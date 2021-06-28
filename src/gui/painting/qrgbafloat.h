@@ -37,29 +37,34 @@
 **
 ****************************************************************************/
 
-#ifndef QRGBAF_H
-#define QRGBAF_H
+#ifndef QRGBAFLOAT_H
+#define QRGBAFLOAT_H
 
 #include <QtGui/qtguiglobal.h>
 #include <QtCore/qfloat16.h>
 
 #include <algorithm>
 #include <cmath>
+#include <type_traits>
 
 QT_BEGIN_NAMESPACE
 
 template<typename F>
-class alignas(sizeof(F) * 4) QRgbaF {
+class alignas(sizeof(F) * 4) QRgbaFloat
+{
+    static_assert(std::is_same<F, qfloat16>::value || std::is_same<F, float>::value);
 public:
+    using Type = F;
+    using FastType = float;
     F r;
     F g;
     F b;
     F a;
 
     static constexpr
-    QRgbaF fromRgba64(quint16 red, quint16 green, quint16 blue, quint16 alpha)
+    QRgbaFloat fromRgba64(quint16 red, quint16 green, quint16 blue, quint16 alpha)
     {
-        return QRgbaF{
+        return QRgbaFloat{
             red   * (1.0f / 65535.0f),
             green * (1.0f / 65535.0f),
             blue  * (1.0f / 65535.0f),
@@ -67,16 +72,16 @@ public:
     }
 
     static constexpr
-    QRgbaF fromRgba(quint8 red, quint8 green, quint8 blue, quint8 alpha)
+    QRgbaFloat fromRgba(quint8 red, quint8 green, quint8 blue, quint8 alpha)
     {
-        return QRgbaF{
+        return QRgbaFloat{
             red   * (1.0f / 255.0f),
             green * (1.0f / 255.0f),
             blue  * (1.0f / 255.0f),
             alpha * (1.0f / 255.0f) };
     }
     static constexpr
-    QRgbaF fromArgb32(uint rgb)
+    QRgbaFloat fromArgb32(uint rgb)
     {
         return fromRgba(quint8(rgb >> 16), quint8(rgb >> 8), quint8(rgb), quint8(rgb >> 24));
     }
@@ -84,19 +89,19 @@ public:
     constexpr bool isOpaque() const { return a >= 1.0f; }
     constexpr bool isTransparent() const { return a <= 0.0f; }
 
-    constexpr float red()   const { return r; }
-    constexpr float green() const { return g; }
-    constexpr float blue()  const { return b; }
-    constexpr float alpha() const { return a; }
-    void setRed(float _red)     { r = _red; }
-    void setGreen(float _green) { g = _green; }
-    void setBlue(float _blue)   { b = _blue; }
-    void setAlpha(float _alpha) { a = _alpha; }
+    constexpr FastType red()   const { return r; }
+    constexpr FastType green() const { return g; }
+    constexpr FastType blue()  const { return b; }
+    constexpr FastType alpha() const { return a; }
+    void setRed(FastType _red)     { r = _red; }
+    void setGreen(FastType _green) { g = _green; }
+    void setBlue(FastType _blue)   { b = _blue; }
+    void setAlpha(FastType _alpha) { a = _alpha; }
 
-    constexpr float redNormalized()   const { return std::clamp(static_cast<float>(r), 0.0f, 1.0f); }
-    constexpr float greenNormalized() const { return std::clamp(static_cast<float>(g), 0.0f, 1.0f); }
-    constexpr float blueNormalized()  const { return std::clamp(static_cast<float>(b), 0.0f, 1.0f); }
-    constexpr float alphaNormalized() const { return std::clamp(static_cast<float>(a), 0.0f, 1.0f); }
+    constexpr FastType redNormalized()   const { return std::clamp(static_cast<FastType>(r), 0.0f, 1.0f); }
+    constexpr FastType greenNormalized() const { return std::clamp(static_cast<FastType>(g), 0.0f, 1.0f); }
+    constexpr FastType blueNormalized()  const { return std::clamp(static_cast<FastType>(b), 0.0f, 1.0f); }
+    constexpr FastType alphaNormalized() const { return std::clamp(static_cast<FastType>(a), 0.0f, 1.0f); }
 
     constexpr quint8 red8()   const { return std::lround(redNormalized()   * 255.0f); }
     constexpr quint8 green8() const { return std::lround(greenNormalized() * 255.0f); }
@@ -112,24 +117,24 @@ public:
     constexpr quint16 blue16()  const { return std::lround(blueNormalized()  * 65535.0f); }
     constexpr quint16 alpha16() const { return std::lround(alphaNormalized() * 65535.0f); }
 
-    constexpr Q_ALWAYS_INLINE QRgbaF premultiplied() const
+    constexpr Q_ALWAYS_INLINE QRgbaFloat premultiplied() const
     {
-        return QRgbaF{r * a, g * a, b * a, a};
+        return QRgbaFloat{r * a, g * a, b * a, a};
     }
-    constexpr Q_ALWAYS_INLINE QRgbaF unpremultiplied() const
+    constexpr Q_ALWAYS_INLINE QRgbaFloat unpremultiplied() const
     {
         if (a <= 0.0f)
-            return QRgbaF{0.0f, 0.0f, 0.0f, 0.0f};
+            return QRgbaFloat{0.0f, 0.0f, 0.0f, 0.0f};
         if (a >= 1.0f)
             return *this;
-        const float ia = 1.0f / a;
-        return QRgbaF{r * ia, g * ia, b * ia, a};
+        const FastType ia = 1.0f / a;
+        return QRgbaFloat{r * ia, g * ia, b * ia, a};
     }
 };
 
-typedef QRgbaF<float> QRgba32F;
-typedef QRgbaF<qfloat16> QRgba16F;
+typedef QRgbaFloat<qfloat16> QRgbaFloat16;
+typedef QRgbaFloat<float> QRgbaFloat32;
 
 QT_END_NAMESPACE
 
-#endif // QRGBAF_H
+#endif // QRGBAFLOAT_H

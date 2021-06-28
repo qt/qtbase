@@ -108,8 +108,8 @@ class QRasterBuffer;
 class QClipData;
 class QRasterPaintEngineState;
 
-template<typename F> class QRgbaF;
-typedef QRgbaF<float> QRgba32F;
+template<typename F> class QRgbaFloat;
+typedef QRgbaFloat<float> QRgbaFloat32;
 
 typedef QT_FT_SpanFunc ProcessSpans;
 typedef void (*BitmapBlitFunc)(QRasterBuffer *rasterBuffer,
@@ -197,10 +197,10 @@ extern void qt_memfill16(quint16 *dest, quint16 value, qsizetype count);
 
 typedef void (QT_FASTCALL *CompositionFunction)(uint *Q_DECL_RESTRICT dest, const uint *Q_DECL_RESTRICT src, int length, uint const_alpha);
 typedef void (QT_FASTCALL *CompositionFunction64)(QRgba64 *Q_DECL_RESTRICT dest, const QRgba64 *Q_DECL_RESTRICT src, int length, uint const_alpha);
-typedef void (QT_FASTCALL *CompositionFunctionFP)(QRgba32F *Q_DECL_RESTRICT dest, const QRgba32F *Q_DECL_RESTRICT src, int length, uint const_alpha);
+typedef void (QT_FASTCALL *CompositionFunctionFP)(QRgbaFloat32 *Q_DECL_RESTRICT dest, const QRgbaFloat32 *Q_DECL_RESTRICT src, int length, uint const_alpha);
 typedef void (QT_FASTCALL *CompositionFunctionSolid)(uint *dest, int length, uint color, uint const_alpha);
 typedef void (QT_FASTCALL *CompositionFunctionSolid64)(QRgba64 *dest, int length, QRgba64 color, uint const_alpha);
-typedef void (QT_FASTCALL *CompositionFunctionSolidFP)(QRgba32F *dest, int length, QRgba32F color, uint const_alpha);
+typedef void (QT_FASTCALL *CompositionFunctionSolidFP)(QRgbaFloat32 *dest, int length, QRgbaFloat32 color, uint const_alpha);
 
 struct LinearGradientValues
 {
@@ -224,13 +224,13 @@ struct RadialGradientValues
 struct Operator;
 typedef uint* (QT_FASTCALL *DestFetchProc)(uint *buffer, QRasterBuffer *rasterBuffer, int x, int y, int length);
 typedef QRgba64* (QT_FASTCALL *DestFetchProc64)(QRgba64 *buffer, QRasterBuffer *rasterBuffer, int x, int y, int length);
-typedef QRgba32F* (QT_FASTCALL *DestFetchProcFP)(QRgba32F *buffer, QRasterBuffer *rasterBuffer, int x, int y, int length);
+typedef QRgbaFloat32* (QT_FASTCALL *DestFetchProcFP)(QRgbaFloat32 *buffer, QRasterBuffer *rasterBuffer, int x, int y, int length);
 typedef void (QT_FASTCALL *DestStoreProc)(QRasterBuffer *rasterBuffer, int x, int y, const uint *buffer, int length);
 typedef void (QT_FASTCALL *DestStoreProc64)(QRasterBuffer *rasterBuffer, int x, int y, const QRgba64 *buffer, int length);
-typedef void (QT_FASTCALL *DestStoreProcFP)(QRasterBuffer *rasterBuffer, int x, int y, const QRgba32F *buffer, int length);
+typedef void (QT_FASTCALL *DestStoreProcFP)(QRasterBuffer *rasterBuffer, int x, int y, const QRgbaFloat32 *buffer, int length);
 typedef const uint* (QT_FASTCALL *SourceFetchProc)(uint *buffer, const Operator *o, const QSpanData *data, int y, int x, int length);
 typedef const QRgba64* (QT_FASTCALL *SourceFetchProc64)(QRgba64 *buffer, const Operator *o, const QSpanData *data, int y, int x, int length);
-typedef const QRgba32F* (QT_FASTCALL *SourceFetchProcFP)(QRgba32F *buffer, const Operator *o, const QSpanData *data, int y, int x, int length);
+typedef const QRgbaFloat32* (QT_FASTCALL *SourceFetchProcFP)(QRgbaFloat32 *buffer, const Operator *o, const QSpanData *data, int y, int x, int length);
 
 struct Operator
 {
@@ -860,16 +860,16 @@ static inline QRgba64 interpolate_4_pixels_rgb64(const QRgba64 t[], const QRgba6
 #endif // __SSE2__
 
 #if QT_CONFIG(raster_fp)
-static inline QRgba32F multiplyAlpha_rgba32f(QRgba32F c, float a)
+static inline QRgbaFloat32 multiplyAlpha_rgba32f(QRgbaFloat32 c, float a)
 {
-    return QRgba32F { c.r * a, c.g * a, c.b * a, c.a * a };
+    return QRgbaFloat32 { c.r * a, c.g * a, c.b * a, c.a * a };
 }
 
-static inline QRgba32F interpolate_rgba32f(QRgba32F x, float alpha1, QRgba32F y, float alpha2)
+static inline QRgbaFloat32 interpolate_rgba32f(QRgbaFloat32 x, float alpha1, QRgbaFloat32 y, float alpha2)
 {
     x = multiplyAlpha_rgba32f(x, alpha1);
     y = multiplyAlpha_rgba32f(y, alpha2);
-    return QRgba32F { x.r + y.r, x.g + y.g, x.b + y.b, x.a + y.a };
+    return QRgbaFloat32 { x.r + y.r, x.g + y.g, x.b + y.b, x.a + y.a };
 }
 #ifdef __SSE2__
 static inline __m128 Q_DECL_VECTORCALL interpolate_rgba32f(__m128 x, __m128 alpha1, __m128 y, __m128 alpha2)
@@ -878,7 +878,7 @@ static inline __m128 Q_DECL_VECTORCALL interpolate_rgba32f(__m128 x, __m128 alph
 }
 #endif
 
-static inline QRgba32F interpolate_4_pixels_rgba32f(const QRgba32F t[], const QRgba32F b[], uint distx, uint disty)
+static inline QRgbaFloat32 interpolate_4_pixels_rgba32f(const QRgbaFloat32 t[], const QRgbaFloat32 b[], uint distx, uint disty)
 {
     constexpr float f = 1.0f / 65536.0f;
     const float dx = distx * f;
@@ -898,12 +898,12 @@ static inline QRgba32F interpolate_4_pixels_rgba32f(const QRgba32F t[], const QR
     const __m128 vdy = _mm_set1_ps(dy);
     const __m128 vidy = _mm_set1_ps(idy);
     vt = interpolate_rgba32f(vt, vidy, vb, vdy);
-    QRgba32F res;
+    QRgbaFloat32 res;
     _mm_store_ps((float*)&res, vt);
     return res;
 #else
-    QRgba32F xtop = interpolate_rgba32f(t[0], idx, t[1], dx);
-    QRgba32F xbot = interpolate_rgba32f(b[0], idx, b[1], dx);
+    QRgbaFloat32 xtop = interpolate_rgba32f(t[0], idx, t[1], dx);
+    QRgbaFloat32 xbot = interpolate_rgba32f(b[0], idx, b[1], dx);
     xtop = interpolate_rgba32f(xtop, idy, xbot, dy);
     return xtop;
 #endif

@@ -457,7 +457,7 @@ void QT_FASTCALL comp_func_SourceOver_rgb64_avx2(QRgba64 *dst, const QRgba64 *sr
 #endif
 
 #if QT_CONFIG(raster_fp)
-void QT_FASTCALL comp_func_SourceOver_rgbafp_avx2(QRgba32F *dst, const QRgba32F *src, int length, uint const_alpha)
+void QT_FASTCALL comp_func_SourceOver_rgbafp_avx2(QRgbaFloat32 *dst, const QRgbaFloat32 *src, int length, uint const_alpha)
 {
     Q_ASSERT(const_alpha < 256); // const_alpha is in [0-255]
 
@@ -557,11 +557,11 @@ void QT_FASTCALL comp_func_Source_rgb64_avx2(QRgba64 *dst, const QRgba64 *src, i
 #endif
 
 #if QT_CONFIG(raster_fp)
-void QT_FASTCALL comp_func_Source_rgbafp_avx2(QRgba32F *dst, const QRgba32F *src, int length, uint const_alpha)
+void QT_FASTCALL comp_func_Source_rgbafp_avx2(QRgbaFloat32 *dst, const QRgbaFloat32 *src, int length, uint const_alpha)
 {
     Q_ASSERT(const_alpha < 256); // const_alpha is in [0-255]
     if (const_alpha == 255) {
-        ::memcpy(dst, src, length * sizeof(QRgba32F));
+        ::memcpy(dst, src, length * sizeof(QRgbaFloat32));
     } else {
         const float ca = const_alpha / 255.f;
         const float cia = 1.0f - ca;
@@ -656,7 +656,7 @@ void QT_FASTCALL comp_func_solid_SourceOver_rgb64_avx2(QRgba64 *destPixels, int 
 #endif
 
 #if QT_CONFIG(raster_fp)
-void QT_FASTCALL comp_func_solid_Source_rgbafp_avx2(QRgba32F *dst, int length, QRgba32F color, uint const_alpha)
+void QT_FASTCALL comp_func_solid_Source_rgbafp_avx2(QRgbaFloat32 *dst, int length, QRgbaFloat32 color, uint const_alpha)
 {
     Q_ASSERT(const_alpha < 256); // const_alpha is in [0-255]
     if (const_alpha == 255) {
@@ -686,7 +686,7 @@ void QT_FASTCALL comp_func_solid_Source_rgbafp_avx2(QRgba32F *dst, int length, Q
     }
 }
 
-void QT_FASTCALL comp_func_solid_SourceOver_rgbafp_avx2(QRgba32F *dst, int length, QRgba32F color, uint const_alpha)
+void QT_FASTCALL comp_func_solid_SourceOver_rgbafp_avx2(QRgbaFloat32 *dst, int length, QRgbaFloat32 color, uint const_alpha)
 {
     Q_ASSERT(const_alpha < 256); // const_alpha is in [0-255]
     if (const_alpha == 255 && color.a >= 1.0f) {
@@ -1573,7 +1573,7 @@ void QT_FASTCALL storeRGBA16FFromARGB32PM_avx2(uchar *dest, const uint *src, int
 }
 
 #if QT_CONFIG(raster_fp)
-const QRgba32F *QT_FASTCALL fetchRGBA16FToRGBA32F_avx2(QRgba32F *buffer, const uchar *src, int index, int count,
+const QRgbaFloat32 *QT_FASTCALL fetchRGBA16FToRGBA32F_avx2(QRgbaFloat32 *buffer, const uchar *src, int index, int count,
                                                        const QList<QRgb> *, QDitherInfo *)
 {
     const quint64 *s = reinterpret_cast<const quint64 *>(src) + index;
@@ -1595,7 +1595,7 @@ const QRgba32F *QT_FASTCALL fetchRGBA16FToRGBA32F_avx2(QRgba32F *buffer, const u
     return buffer;
 }
 
-void QT_FASTCALL storeRGBX16FFromRGBA32F_avx2(uchar *dest, const QRgba32F *src, int index, int count,
+void QT_FASTCALL storeRGBX16FFromRGBA32F_avx2(uchar *dest, const QRgbaFloat32 *src, int index, int count,
                                               const QList<QRgb> *, QDitherInfo *)
 {
     quint64 *d = reinterpret_cast<quint64 *>(dest) + index;
@@ -1619,7 +1619,7 @@ void QT_FASTCALL storeRGBX16FFromRGBA32F_avx2(uchar *dest, const QRgba32F *src, 
     }
 }
 
-void QT_FASTCALL storeRGBA16FFromRGBA32F_avx2(uchar *dest, const QRgba32F *src, int index, int count,
+void QT_FASTCALL storeRGBA16FFromRGBA32F_avx2(uchar *dest, const QRgbaFloat32 *src, int index, int count,
                                               const QList<QRgb> *, QDitherInfo *)
 {
     quint64 *d = reinterpret_cast<quint64 *>(dest) + index;

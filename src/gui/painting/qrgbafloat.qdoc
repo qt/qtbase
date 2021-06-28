@@ -26,45 +26,56 @@
 ****************************************************************************/
 
 /*!
-    \class QRgbaF
-    \brief The QRgbaF struct contains a four part RGBA floating-point color.
+    \class QRgbaFloat
+    \brief The QRgbaFloat struct contains a four part RGBA floating-point color.
     \since 6.2
 
     \ingroup painting
     \inmodule QtGui
 
-    QRgba16F is a 64-bit data-structure containing four 16-bit floating point color channels: Red, green, blue and alpha.
-    QRgba32F is a 128-bit data-structure containing four 32-bit floating point color channels: Red, green, blue and alpha.
-
     \sa QRgb, QRgba64, QColor
 */
 
 /*!
-    \fn template<typename F> QRgbaF<F>::fromRgba64(quint16 r, quint16 g, quint16 b, quint16 a)
+    \typedef QRgbaFloat16
+    \relates QRgbaFloat
 
-    Constructs a QRgbaF value from the four 16-bit integer color channels \a red, \a green, \a blue and \a alpha.
+    A 64-bit data-structure containing four 16-bit floating point color channels: Red, green, blue and alpha.
+*/
+
+/*!
+    \typedef QRgbaFloat32
+    \relates QRgbaFloat
+
+    A 128-bit data-structure containing four 32-bit floating point color channels: Red, green, blue and alpha.
+*/
+
+/*!
+    \fn template<typename F> QRgbaFloat<F>::fromRgba64(quint16 r, quint16 g, quint16 b, quint16 a)
+
+    Constructs a QRgbaFloat  value from the four 16-bit integer color channels \a red, \a green, \a blue and \a alpha.
 
     \sa fromRgba()
 */
 
 /*!
-    \fn template<typename F> QRgbaF<F>::fromRgba(quint8 red, quint8 green, quint8 blue, quint8 alpha)
+    \fn template<typename F> QRgbaFloat<F>::fromRgba(quint8 red, quint8 green, quint8 blue, quint8 alpha)
 
-    Constructs a QRgbaF value from the four 8-bit color channels \a red, \a green, \a blue and \a alpha.
+    Constructs a QRgbaFloat  value from the four 8-bit color channels \a red, \a green, \a blue and \a alpha.
 
     \sa fromArgb32()
 */
 
 /*!
-    \fn template<typename F> QRgbaF<F>::fromArgb32(uint rgb)
+    \fn template<typename F> QRgbaFloat<F>::fromArgb32(uint rgb)
 
-    Constructs a QRgbaF value from the 32bit ARGB value \a rgb.
+    Constructs a QRgbaFloat  value from the 32bit ARGB value \a rgb.
 
     \sa fromRgba(), toArgb32()
 */
 
 /*!
-    \fn template<typename F> bool QRgbaF<F>::isOpaque() const
+    \fn template<typename F> bool QRgbaFloat<F>::isOpaque() const
 
     Returns whether the color is fully opaque.
 
@@ -72,7 +83,7 @@
 */
 
 /*!
-    \fn template<typename F> bool QRgbaF<F>::isTransparent() const
+    \fn template<typename F> bool QRgbaFloat<F>::isTransparent() const
 
     Returns whether the color is fully transparent.
 
@@ -80,7 +91,7 @@
 */
 
 /*!
-    \fn template<typename F> float QRgbaF<F>::red() const
+    \fn template<typename F> float QRgbaFloat<F>::red() const
 
     Returns the red color component.
 
@@ -88,7 +99,7 @@
 */
 
 /*!
-    \fn template<typename F> void QRgbaF<F>::setRed(float red)
+    \fn template<typename F> void QRgbaFloat<F>::setRed(float red)
 
     Sets the red color component of this color to \a red.
 
@@ -96,7 +107,7 @@
 */
 
 /*!
-    \fn template<typename F> float QRgbaF<F>::green() const
+    \fn template<typename F> float QRgbaFloat<F>::green() const
 
     Returns the green color component.
 
@@ -104,7 +115,7 @@
 */
 
 /*!
-    \fn template<typename F> void QRgbaF<F>::setGreen(float green)
+    \fn template<typename F> void QRgbaFloat<F>::setGreen(float green)
 
     Sets the green color component of this color to \a green.
 
@@ -112,7 +123,7 @@
 */
 
 /*!
-    \fn template<typename F> float QRgbaF<F>::blue() const
+    \fn template<typename F> float QRgbaFloat<F>::blue() const
 
     Returns the blue color component.
 
@@ -120,7 +131,7 @@
 */
 
 /*!
-    \fn template<typename F> void QRgbaF<F>::setBlue(float blue)
+    \fn template<typename F> void QRgbaFloat<F>::setBlue(float blue)
 
     Sets the blue color component of this color to \a blue.
 
@@ -128,7 +139,7 @@
 */
 
 /*!
-    \fn template<typename F> float QRgbaF<F>::alpha() const
+    \fn template<typename F> float QRgbaFloat<F>::alpha() const
 
     Returns the alpha channel.
 
@@ -136,7 +147,7 @@
 */
 
 /*!
-    \fn template<typename F> void QRgbaF<F>::setAlpha(float alpha)
+    \fn template<typename F> void QRgbaFloat<F>::setAlpha(float alpha)
 
     Sets the alpha of this color to \a alpha.
 
@@ -144,7 +155,7 @@
 */
 
 /*!
-    \fn template<typename F> float QRgbaF<F>::redNormalized() const
+    \fn template<typename F> float QRgbaFloat<F>::redNormalized() const
 
     Returns the red color component normalized to values between \c 0.0f and \c 1.0f.
 
@@ -152,7 +163,7 @@
 */
 
 /*!
-    \fn template<typename F> float QRgbaF<F>::greenNormalized() const
+    \fn template<typename F> float QRgbaFloat<F>::greenNormalized() const
 
     Returns the green color component normalized to values between \c 0.0f and \c 1.0f.
 
@@ -160,7 +171,7 @@
 */
 
 /*!
-    \fn template<typename F> float QRgbaF<F>::blueNormalized() const
+    \fn template<typename F> float QRgbaFloat<F>::blueNormalized() const
 
     Returns the blue color component normalized to values between \c 0.0f and \c 1.0f.
 
@@ -168,7 +179,7 @@
 */
 
 /*!
-    \fn template<typename F> float QRgbaF<F>::alphaNormalized() const
+    \fn template<typename F> float QRgbaFloat<F>::alphaNormalized() const
 
     Returns the alpha channel normalized to values between \c 0.0f and \c 1.0f.
 
@@ -176,31 +187,31 @@
 */
 
 /*!
-    \fn template<typename F> quint8 QRgbaF<F>::red8() const
+    \fn template<typename F> quint8 QRgbaFloat<F>::red8() const
 
     Returns the red color component as an 8-bit.
 */
 
 /*!
-    \fn template<typename F> quint8 QRgbaF<F>::green8() const
+    \fn template<typename F> quint8 QRgbaFloat<F>::green8() const
 
     Returns the green color component as an 8-bit.
 */
 
 /*!
-    \fn template<typename F> quint8 QRgbaF<F>::blue8() const
+    \fn template<typename F> quint8 QRgbaFloat<F>::blue8() const
 
     Returns the blue color component as an 8-bit.
 */
 
 /*!
-    \fn template<typename F> quint8 QRgbaF<F>::alpha8() const
+    \fn template<typename F> quint8 QRgbaFloat<F>::alpha8() const
 
     Returns the alpha channel as an 8-bit.
 */
 
 /*!
-    \fn template<typename F> uint QRgbaF<F>::toArgb32() const
+    \fn template<typename F> uint QRgbaFloat<F>::toArgb32() const
 
     Returns the color as a 32-bit ARGB value.
 
@@ -208,31 +219,31 @@
 */
 
 /*!
-    \fn template<typename F> quint16 QRgbaF<F>::red16() const
+    \fn template<typename F> quint16 QRgbaFloat<F>::red16() const
 
     Returns the red color component as a 16-bit integer.
 */
 
 /*!
-    \fn template<typename F> quint16 QRgbaF<F>::green16() const
+    \fn template<typename F> quint16 QRgbaFloat<F>::green16() const
 
     Returns the green color component as a 16-bit integer.
 */
 
 /*!
-    \fn template<typename F> quint16 QRgbaF<F>::blue16() const
+    \fn template<typename F> quint16 QRgbaFloat<F>::blue16() const
 
     Returns the blue color component as a 16-bit integer.
 */
 
 /*!
-    \fn template<typename F> quint16 QRgbaF<F>::alpha16() const
+    \fn template<typename F> quint16 QRgbaFloat<F>::alpha16() const
 
     Returns the alpha channel as a 16-bit integer.
 */
 
 /*!
-    \fn template<typename F> QRgbaF QRgbaF<F>::premultiplied() const
+    \fn template<typename F> QRgbaFloat QRgbaFloat<F>::premultiplied() const
 
     Returns the color with the alpha premultiplied.
 
@@ -240,7 +251,7 @@
 */
 
 /*!
-    \fn template<typename F> QRgbaF QRgbaF<F>::unpremultiplied() const
+    \fn template<typename F> QRgbaFloat QRgbaFloat<F>::unpremultiplied() const
 
     Returns the color with the alpha unpremultiplied.
 

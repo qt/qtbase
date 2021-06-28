@@ -296,7 +296,7 @@ Q_GUI_EXPORT void qt_memrotate270(const type *src, int w, int h, int sstride, \
     qt_memrotate270_tiled_unpacked(src, w, h, sstride, dest, dstride); \
 }
 
-QT_IMPL_SIMPLE_MEMROTATE(QRgba32F)
+QT_IMPL_SIMPLE_MEMROTATE(QRgbaFloat32)
 QT_IMPL_SIMPLE_MEMROTATE(quint64)
 QT_IMPL_SIMPLE_MEMROTATE(quint32)
 QT_IMPL_SIMPLE_MEMROTATE(quint24)
@@ -381,17 +381,17 @@ void qt_memrotate270_64(const uchar *srcPixels, int w, int h, int sbpl, uchar *d
 
 void qt_memrotate90_128(const uchar *srcPixels, int w, int h, int sbpl, uchar *destPixels, int dbpl)
 {
-    qt_memrotate90((const QRgba32F *)srcPixels, w, h, sbpl, (QRgba32F *)destPixels, dbpl);
+    qt_memrotate90((const QRgbaFloat32 *)srcPixels, w, h, sbpl, (QRgbaFloat32 *)destPixels, dbpl);
 }
 
 void qt_memrotate180_128(const uchar *srcPixels, int w, int h, int sbpl, uchar *destPixels, int dbpl)
 {
-    qt_memrotate180((const QRgba32F *)srcPixels, w, h, sbpl, (QRgba32F *)destPixels, dbpl);
+    qt_memrotate180((const QRgbaFloat32 *)srcPixels, w, h, sbpl, (QRgbaFloat32 *)destPixels, dbpl);
 }
 
 void qt_memrotate270_128(const uchar *srcPixels, int w, int h, int sbpl, uchar *destPixels, int dbpl)
 {
-    qt_memrotate270((const QRgba32F *)srcPixels, w, h, sbpl, (QRgba32F *)destPixels, dbpl);
+    qt_memrotate270((const QRgbaFloat32 *)srcPixels, w, h, sbpl, (QRgbaFloat32 *)destPixels, dbpl);
 }
 
 MemRotateFunc qMemRotateFunctions[QPixelLayout::BPPCount][3] =

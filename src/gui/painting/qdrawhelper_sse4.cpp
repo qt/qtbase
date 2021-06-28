@@ -552,10 +552,10 @@ void QT_FASTCALL storeRGBx64FromRGBA64PM_sse4(uchar *dest, const QRgba64 *src, i
 }
 
 #if QT_CONFIG(raster_fp)
-const QRgba32F *QT_FASTCALL fetchRGBA32FToRGBA32F_sse4(QRgba32F *buffer, const uchar *src, int index, int count,
+const QRgbaFloat32 *QT_FASTCALL fetchRGBA32FToRGBA32F_sse4(QRgbaFloat32 *buffer, const uchar *src, int index, int count,
                                                        const QList<QRgb> *, QDitherInfo *)
 {
-    const QRgba32F *s = reinterpret_cast<const QRgba32F *>(src) + index;
+    const QRgbaFloat32 *s = reinterpret_cast<const QRgbaFloat32 *>(src) + index;
     for (int i = 0; i < count; ++i) {
         __m128 vsf = _mm_load_ps(reinterpret_cast<const float *>(s + i));
         __m128 vsa = _mm_shuffle_ps(vsf, vsf, _MM_SHUFFLE(3, 3, 3, 3));
@@ -566,10 +566,10 @@ const QRgba32F *QT_FASTCALL fetchRGBA32FToRGBA32F_sse4(QRgba32F *buffer, const u
     return buffer;
 }
 
-void QT_FASTCALL storeRGBX32FFromRGBA32F_sse4(uchar *dest, const QRgba32F *src, int index, int count,
+void QT_FASTCALL storeRGBX32FFromRGBA32F_sse4(uchar *dest, const QRgbaFloat32 *src, int index, int count,
                                               const QList<QRgb> *, QDitherInfo *)
 {
-    QRgba32F *d = reinterpret_cast<QRgba32F *>(dest) + index;
+    QRgbaFloat32 *d = reinterpret_cast<QRgbaFloat32 *>(dest) + index;
     const __m128 zero = _mm_set_ps(1.0f, 0.0f, 0.0f, 0.0f);
     for (int i = 0; i < count; ++i) {
         __m128 vsf = _mm_load_ps(reinterpret_cast<const float *>(src + i));
@@ -589,10 +589,10 @@ void QT_FASTCALL storeRGBX32FFromRGBA32F_sse4(uchar *dest, const QRgba32F *src, 
     }
 }
 
-void QT_FASTCALL storeRGBA32FFromRGBA32F_sse4(uchar *dest, const QRgba32F *src, int index, int count,
+void QT_FASTCALL storeRGBA32FFromRGBA32F_sse4(uchar *dest, const QRgbaFloat32 *src, int index, int count,
                                               const QList<QRgb> *, QDitherInfo *)
 {
-    QRgba32F *d = reinterpret_cast<QRgba32F *>(dest) + index;
+    QRgbaFloat32 *d = reinterpret_cast<QRgbaFloat32 *>(dest) + index;
     const __m128 zero = _mm_set1_ps(0.0f);
     for (int i = 0; i < count; ++i) {
         __m128 vsf = _mm_load_ps(reinterpret_cast<const float *>(src + i));

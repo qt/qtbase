@@ -47,7 +47,7 @@
 #include "qtransform.h"
 #include "qimagereader.h"
 #include "qimagewriter.h"
-#include "qrgbaf.h"
+#include "qrgbafloat.h"
 #include "qstringlist.h"
 #include "qvariant.h"
 #include "qimagepixmapcleanuphooks_p.h"
@@ -1779,16 +1779,16 @@ void QImage::fill(uint pixel)
         return;
     } else if (d->format >= QImage::Format_RGBX16FPx4 && d->format <= QImage::Format_RGBA16FPx4_Premultiplied) {
         quint64 cu;
-        QRgba16F cf = QRgba16F::fromArgb32(pixel);
+        QRgbaFloat16 cf = QRgbaFloat16::fromArgb32(pixel);
         ::memcpy(&cu, &cf, sizeof(quint64));
         qt_rectfill<quint64>(reinterpret_cast<quint64*>(d->data), cu,
                              0, 0, d->width, d->height, d->bytes_per_line);
         return;
     } else if (d->format >= QImage::Format_RGBX32FPx4 && d->format <= QImage::Format_RGBA32FPx4_Premultiplied) {
-        QRgba32F cf = QRgba32F::fromArgb32(pixel);
+        QRgbaFloat32 cf = QRgbaFloat32::fromArgb32(pixel);
         uchar *data = d->data;
         for (int y = 0; y < d->height; ++y) {
-            QRgba32F *line = reinterpret_cast<QRgba32F *>(data);
+            QRgbaFloat32 *line = reinterpret_cast<QRgbaFloat32 *>(data);
             for (int x = 0; x < d->width; ++x)
                 line[x] = cf;
             data += d->bytes_per_line;
@@ -2506,11 +2506,11 @@ QRgb QImage::pixel(int x, int y) const
     case Format_RGBX16FPx4:
     case Format_RGBA16FPx4: // Match ARGB32 behavior.
     case Format_RGBA16FPx4_Premultiplied:
-        return reinterpret_cast<const QRgba16F *>(s)[x].toArgb32();
+        return reinterpret_cast<const QRgbaFloat16 *>(s)[x].toArgb32();
     case Format_RGBX32FPx4:
     case Format_RGBA32FPx4: // Match ARGB32 behavior.
     case Format_RGBA32FPx4_Premultiplied:
-        return reinterpret_cast<const QRgba32F *>(s)[x].toArgb32();
+        return reinterpret_cast<const QRgbaFloat32 *>(s)[x].toArgb32();
     default:
         break;
     }
@@ -2613,18 +2613,18 @@ void QImage::setPixel(int x, int y, uint index_or_rgb)
         ((QRgba64 *)s)[x] = QRgba64::fromArgb32(index_or_rgb);
         return;
     case Format_RGBX16FPx4:
-        ((QRgba16F *)s)[x] = QRgba16F::fromArgb32(index_or_rgb | 0xff000000);
+        ((QRgbaFloat16 *)s)[x] = QRgbaFloat16::fromArgb32(index_or_rgb | 0xff000000);
         return;
     case Format_RGBA16FPx4:
     case Format_RGBA16FPx4_Premultiplied:
-        ((QRgba16F *)s)[x] = QRgba16F::fromArgb32(index_or_rgb);
+        ((QRgbaFloat16 *)s)[x] = QRgbaFloat16::fromArgb32(index_or_rgb);
         return;
     case Format_RGBX32FPx4:
-        ((QRgba32F *)s)[x] = QRgba32F::fromArgb32(index_or_rgb | 0xff000000);
+        ((QRgbaFloat32 *)s)[x] = QRgbaFloat32::fromArgb32(index_or_rgb | 0xff000000);
         return;
     case Format_RGBA32FPx4:
     case Format_RGBA32FPx4_Premultiplied:
-        ((QRgba32F *)s)[x] = QRgba32F::fromArgb32(index_or_rgb);
+        ((QRgbaFloat32 *)s)[x] = QRgbaFloat32::fromArgb32(index_or_rgb);
         return;
     case Format_Invalid:
     case NImageFormats:
@@ -2693,7 +2693,7 @@ QColor QImage::pixelColor(int x, int y) const
     case Format_RGBX16FPx4:
     case Format_RGBA16FPx4:
     case Format_RGBA16FPx4_Premultiplied: {
-        QRgba16F p = reinterpret_cast<const QRgba16F *>(s)[x];
+        QRgbaFloat16 p = reinterpret_cast<const QRgbaFloat16 *>(s)[x];
         if (d->format == Format_RGBA16FPx4_Premultiplied)
             p = p.unpremultiplied();
         QColor color;
@@ -2703,7 +2703,7 @@ QColor QImage::pixelColor(int x, int y) const
     case Format_RGBX32FPx4:
     case Format_RGBA32FPx4:
     case Format_RGBA32FPx4_Premultiplied: {
-        QRgba32F p = reinterpret_cast<const QRgba32F *>(s)[x];
+        QRgbaFloat32 p = reinterpret_cast<const QRgbaFloat32 *>(s)[x];
         if (d->format == Format_RGBA32FPx4_Premultiplied)
             p = p.unpremultiplied();
         QColor color;
@@ -2792,10 +2792,10 @@ void QImage::setPixelColor(int x, int y, const QColor &color)
         color.getRgbF(&r, &g, &b, &a);
         if (d->format == Format_RGBX16FPx4)
             a = 1.0f;
-        QRgba16F c16f{r, g, b, a};
+        QRgbaFloat16 c16f{r, g, b, a};
         if (d->format == Format_RGBA16FPx4_Premultiplied)
             c16f = c16f.premultiplied();
-        ((QRgba16F *)s)[x] = c16f;
+        ((QRgbaFloat16 *)s)[x] = c16f;
         return;
     }
     case Format_RGBX32FPx4:
@@ -2805,10 +2805,10 @@ void QImage::setPixelColor(int x, int y, const QColor &color)
         color.getRgbF(&r, &g, &b, &a);
         if (d->format == Format_RGBX32FPx4)
             a = 1.0f;
-        QRgba32F c32f{r, g, b, a};
+        QRgbaFloat32 c32f{r, g, b, a};
         if (d->format == Format_RGBA32FPx4_Premultiplied)
             c32f = c32f.premultiplied();
-        ((QRgba32F *)s)[x] = c32f;
+        ((QRgbaFloat32 *)s)[x] = c32f;
         return;
     }
     default:
@@ -3372,7 +3372,7 @@ inline void do_mirror(QImageData *dst, QImageData *src, bool horizontal, bool ve
 
     switch (depth) {
     case 128:
-        do_mirror_data<QRgba32F>(dst, src, dstX0, dstY0, dstXIncr, dstYIncr, w, h);
+        do_mirror_data<QRgbaFloat32>(dst, src, dstX0, dstY0, dstXIncr, dstYIncr, w, h);
         break;
     case 64:
         do_mirror_data<quint64>(dst, src, dstX0, dstY0, dstXIncr, dstYIncr, w, h);
