@@ -154,7 +154,7 @@ struct QPropertyDelayedNotifications
         Change notifications are sent later with notify (following the logic of separating
         binding updates and notifications used in non-deferred updates).
      */
-    void evaluateBindings(int index) {
+    void evaluateBindings(int index, QBindingStatus *status) {
         auto *delayed = delayedProperties + index;
         auto *bindingData = delayed->originalBindingData;
         if (!bindingData)
@@ -170,7 +170,7 @@ struct QPropertyDelayedNotifications
         QPropertyBindingDataPointer bindingDataPointer{bindingData};
         QPropertyObserverPointer observer = bindingDataPointer.firstObserver();
         if (observer)
-            observer.evaluateBindings();
+            observer.evaluateBindings(status);
     }
 
     /*!
@@ -242,7 +242,8 @@ void Qt::beginPropertyUpdateGroup()
  */
 void Qt::endPropertyUpdateGroup()
 {
-    QPropertyDelayedNotifications *& groupUpdateData = bindingStatus.groupUpdateData;
+    auto status = &bindingStatus;
+    QPropertyDelayedNotifications *& groupUpdateData = status->groupUpdateData;
     auto *data = groupUpdateData;
     Q_ASSERT(data->ref);
     if (--data->ref)
@@ -252,7 +253,7 @@ void Qt::endPropertyUpdateGroup()
     auto start = data;
     while (data) {
         for (int i = 0; i < data->used; ++i)
-            data->evaluateBindings(i);
+            data->evaluateBindings(i, status);
         data = data->next;
     }
     // notify all delayed properties
@@ -285,6 +286,8 @@ void QPropertyBindingPrivate::unlinkAndDeref()
 
 void QPropertyBindingPrivate::evaluateRecursive(QBindingStatus *status)
 {
+    if (!status)
+        status = &bindingStatus;
     return evaluateRecursive_inline(status);
 }
 
@@ -435,9 +438,8 @@ QPropertyBindingData::QPropertyBindingData(QPropertyBindingData &&other) : d_ptr
 BindingEvaluationState::BindingEvaluationState(QPropertyBindingPrivate *binding, QBindingStatus *status)
     : binding(binding)
 {
+    Q_ASSERT(status);
     QBindingStatus *s = status;
-    if (!s)
-        s = &bindingStatus;
     // store a pointer to the currentBindingEvaluationState to avoid a TLS lookup in
     // the destructor (as these come with a non zero cost)
     currentState = &s->currentlyEvaluatingBinding;
@@ -741,6 +743,7 @@ void QPropertyObserverPointer::noSelfDependencies(QPropertyBindingPrivate *bindi
 
 void QPropertyObserverPointer::evaluateBindings(QBindingStatus *status)
 {
+    Q_ASSERT(status);
     auto observer = const_cast<QPropertyObserver*>(ptr);
     // See also comment in notify()
     while (observer) {

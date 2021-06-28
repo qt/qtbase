@@ -114,7 +114,7 @@ struct QPropertyObserverPointer
 #else
     void noSelfDependencies(QPropertyBindingPrivate *) {}
 #endif
-    void evaluateBindings(QBindingStatus *status = nullptr);
+    void evaluateBindings(QBindingStatus *status);
     void observeProperty(QPropertyBindingDataPointer property);
 
     explicit operator bool() const { return ptr != nullptr; }
@@ -133,7 +133,7 @@ namespace QtPrivate {
 
 struct BindingEvaluationState
 {
-    BindingEvaluationState(QPropertyBindingPrivate *binding, QBindingStatus *status = nullptr);
+    BindingEvaluationState(QPropertyBindingPrivate *binding, QBindingStatus *status);
     ~BindingEvaluationState()
     {
         *currentState = previousState;
@@ -327,7 +327,7 @@ public:
     void unlinkAndDeref();
 
     void evaluateRecursive(QBindingStatus *status = nullptr);
-    void Q_ALWAYS_INLINE evaluateRecursive_inline(QBindingStatus *status = nullptr);
+    void Q_ALWAYS_INLINE evaluateRecursive_inline(QBindingStatus *status);
 
     void notifyRecursive();
 
