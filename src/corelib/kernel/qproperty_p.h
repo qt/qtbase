@@ -112,7 +112,7 @@ struct QPropertyObserverPointer
 #else
     void noSelfDependencies(QPropertyBindingPrivate *) {}
 #endif
-    void evaluateBindings();
+    void evaluateBindings(QBindingStatus *status = nullptr);
     void observeProperty(QPropertyBindingDataPointer property);
 
     explicit operator bool() const { return ptr != nullptr; }
@@ -324,7 +324,7 @@ public:
 
     void unlinkAndDeref();
 
-    void evaluateRecursive();
+    void evaluateRecursive(QBindingStatus *status = nullptr);
     void notifyRecursive();
 
     static QPropertyBindingPrivate *get(const QUntypedPropertyBinding &binding)
