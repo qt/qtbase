@@ -54,12 +54,8 @@
 #include <jni.h>
 #include <functional>
 #include <QtCore/private/qglobal_p.h>
-#include <QHash>
-#include <QMetaType>
 
 QT_BEGIN_NAMESPACE
-
-class QRunnable;
 
 namespace QtAndroidPrivate
 {
@@ -106,14 +102,6 @@ namespace QtAndroidPrivate
         virtual jobject onBind(jobject intent) = 0;
     };
 
-    enum class PermissionsResult {
-        Granted,
-        Denied
-    };
-    typedef QHash<QString,  QtAndroidPrivate::PermissionsResult> PermissionsHash;
-    typedef std::function<void()> Runnable;
-    typedef std::function<void(const PermissionsHash &)> PermissionsResultFunc;
-
     Q_CORE_EXPORT jobject activity();
     Q_CORE_EXPORT jobject service();
     Q_CORE_EXPORT jobject context();
@@ -122,12 +110,6 @@ namespace QtAndroidPrivate
     Q_CORE_EXPORT jclass findClass(const char *className, JNIEnv *env);
     jobject classLoader();
     Q_CORE_EXPORT jint androidSdkVersion();
-    Q_CORE_EXPORT void runOnAndroidThread(const Runnable &runnable, JNIEnv *env);
-    Q_CORE_EXPORT void runOnAndroidThreadSync(const Runnable &runnable, JNIEnv *env, int timeoutMs = INT_MAX);
-    Q_CORE_EXPORT void requestPermissions(JNIEnv *env, const QStringList &permissions, const PermissionsResultFunc &callbackFunc, bool directCall = false);
-    Q_CORE_EXPORT PermissionsHash requestPermissionsSync(JNIEnv *env, const QStringList &permissions, int timeoutMs = INT_MAX);
-    Q_CORE_EXPORT PermissionsResult checkPermission(const QString &permission);
-    Q_CORE_EXPORT bool shouldShowRequestPermissionRationale(const QString &permission);
 
     bool registerPermissionNatives();
     bool registerNativeInterfaceNatives();
@@ -150,9 +132,6 @@ namespace QtAndroidPrivate
 
     Q_CORE_EXPORT void registerKeyEventListener(KeyEventListener *listener);
     Q_CORE_EXPORT void unregisterKeyEventListener(KeyEventListener *listener);
-
-    // TODO: Remove once other modules refectoring is done and androidextras is not needed.
-    Q_CORE_EXPORT void hideSplashScreen(JNIEnv *env, int duration = 0);
 
     Q_CORE_EXPORT void waitForServiceSetup();
     Q_CORE_EXPORT int acuqireServiceSetup(int flags);
@@ -200,7 +179,5 @@ namespace QtAndroidPrivate
     }
 
 QT_END_NAMESPACE
-
-Q_DECLARE_METATYPE(QtAndroidPrivate::PermissionsHash)
 
 #endif // QJNIHELPERS_H
