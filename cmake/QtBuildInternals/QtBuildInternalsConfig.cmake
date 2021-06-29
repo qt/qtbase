@@ -975,8 +975,27 @@ function(qt_internal_static_link_order_test)
     )
 endfunction()
 
+function(qt_internal_check_cmp0099_available)
+    # Don't care about CMP0099 in CMake versions greater than or equal to 3.21
+    if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.21)
+        return()
+    endif()
+
+    __qt_internal_check_cmp0099_available(result)
+    if(result)
+        set(summary_message "yes")
+    else()
+        set(summary_message "no")
+    endif()
+    qt_configure_add_summary_entry(TYPE "message"
+        ARGS "CMake policy CMP0099 is supported"
+        MESSAGE "${summary_message}"
+    )
+endfunction()
+
 function(qt_internal_run_common_config_tests)
     qt_configure_add_summary_section(NAME "Common build options")
     qt_internal_static_link_order_test()
+    qt_internal_check_cmp0099_available()
     qt_configure_end_summary_section()
 endfunction()

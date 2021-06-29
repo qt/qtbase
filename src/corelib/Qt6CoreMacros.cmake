@@ -1472,6 +1472,17 @@ function(__qt_internal_propagate_object_library target object_library)
         "$<BOOL:${platform_link_order_property}>"
     )
 
+    # Check if link options are propagated according to CMP0099
+    # In user builds the _qt_cmp0099_policy_check is set to FALSE or $<TARGET_POLICY:CMP0099>
+    # depending on the used CMake version.
+    # See __qt_internal_check_cmp0099_available for details.
+    set(cmp0099_policy_check_property
+        "$<TARGET_PROPERTY:${QT_CMAKE_EXPORT_NAMESPACE}::Platform,_qt_cmp0099_policy_check>"
+    )
+    set(link_objects_using_link_options_condition
+        "$<BOOL:$<GENEX_EVAL:${cmp0099_policy_check_property}>>"
+    )
+
     # Use TARGET_NAME to have the correct namespaced name in the exports.
     set(objects "$<TARGET_OBJECTS:$<TARGET_NAME:${object_library}>>")
 
@@ -1482,12 +1493,33 @@ function(__qt_internal_propagate_object_library target object_library)
                 "${not_finalizer_mode_condition},"
                 "${not_static_condition},"
                 "${platform_link_order_condition},"
+                "$<NOT:${link_objects_using_link_options_condition}>,"
                 "${extra_conditions}"
             ">"
         ":${objects}>"
     )
     target_sources(${target} INTERFACE
         "${target_sources_genex}"
+    )
+
+    # Collect link conditions for the target_link_options call.
+    string(JOIN "" target_link_options_genex
+        "$<"
+            "$<AND:"
+                "${not_static_condition},"
+                "${platform_link_order_condition},"
+                "${link_objects_using_link_options_condition},"
+                "${extra_conditions}"
+            ">"
+        ":${objects}>"
+    )
+    # target_link_options works well since CMake 3.17 which has policy CMP0099 set to NEW for the
+    # minimum required CMake version greated than or equal 3.17. The default is OLD. See
+    # https://cmake.org/cmake/help/git-master/policy/CMP0099.html for details.
+    # This provides yet another way of linking object libraries if user sets the policy to NEW
+    # before calling find_package(Qt...).
+    target_link_options(${target} INTERFACE
+        "${target_link_options_genex}"
     )
 
     # Collect link conditions for the target_link_libraries call.
