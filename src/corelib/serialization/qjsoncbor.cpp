@@ -876,6 +876,18 @@ QCborArray QCborArray::fromJsonArray(const QJsonArray &array)
 }
 
 /*!
+    \overload
+    \since 6.3
+ */
+QCborArray QCborArray::fromJsonArray(QJsonArray &&array) noexcept
+{
+    QCborArray result;
+    result.d = std::exchange(array.a, {});
+    return result;
+
+}
+
+/*!
     Converts the CBOR values to QVariant using QCborValue::toVariant() and
     "stringifies" all the CBOR keys in this map, returning the QVariantMap that
     results from that association list.
@@ -986,6 +998,17 @@ QCborMap QCborMap::fromJsonObject(const QJsonObject &obj)
 {
     QCborMap result;
     result.d = obj.o;
+    return result;
+}
+
+/*!
+    \overload
+    \since 6.3
+ */
+QCborMap QCborMap::fromJsonObject(QJsonObject &&obj) noexcept
+{
+    QCborMap result;
+    result.d = std::exchange(obj.o, {});
     return result;
 }
 

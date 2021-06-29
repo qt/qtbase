@@ -318,6 +318,7 @@ public:
     static QCborMap fromVariantMap(const QVariantMap &map);
     static QCborMap fromVariantHash(const QVariantHash &hash);
     static QCborMap fromJsonObject(const QJsonObject &o);
+    static QCborMap fromJsonObject(QJsonObject &&o) noexcept;
     QVariantMap toVariantMap() const;
     QVariantHash toVariantHash() const;
     QJsonObject toJsonObject() const;

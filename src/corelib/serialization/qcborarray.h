@@ -267,6 +267,7 @@ public:
     static QCborArray fromStringList(const QStringList &list);
     static QCborArray fromVariantList(const QVariantList &list);
     static QCborArray fromJsonArray(const QJsonArray &array);
+    static QCborArray fromJsonArray(QJsonArray &&array) noexcept;
     QVariantList toVariantList() const;
     QJsonArray toJsonArray() const;
 

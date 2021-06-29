@@ -223,10 +223,28 @@ QJsonValue::QJsonValue(const QJsonArray &a)
 }
 
 /*!
+    \overload
+    \since 6.3
+ */
+QJsonValue::QJsonValue(QJsonArray &&a) noexcept
+    : value(QCborArray::fromJsonArray(std::move(a)))
+{
+}
+
+/*!
     Creates a value of type Object, with value \a o.
  */
 QJsonValue::QJsonValue(const QJsonObject &o)
     : value(QCborMap::fromJsonObject(o))
+{
+}
+
+/*!
+    \overload
+    \since 6.3
+ */
+QJsonValue::QJsonValue(QJsonObject &&o) noexcept
+    : value(QCborMap::fromJsonObject(std::move(o)))
 {
 }
 

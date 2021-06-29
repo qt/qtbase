@@ -81,7 +81,9 @@ public:
         : QJsonValue(QString::fromUtf8(s)) {}
 #endif
     QJsonValue(const QJsonArray &a);
+    QJsonValue(QJsonArray &&a) noexcept;
     QJsonValue(const QJsonObject &o);
+    QJsonValue(QJsonObject &&o) noexcept;
 
     ~QJsonValue();
 
