@@ -87,6 +87,37 @@ function(__qt_internal_check_link_order_matters)
     endif()
 endfunction()
 
+# Constructs a TARGET_POLICY genex expression if the policy is available.
+function(__qt_internal_get_cmp0099_genex_check result)
+    if(POLICY CMP0099)
+        set(${result} "$<BOOL:$<TARGET_POLICY:CMP0099>>" PARENT_SCOPE)
+    else()
+        set(${result} "$<BOOL:FALSE>" PARENT_SCOPE)
+    endif()
+endfunction()
+
+function(__qt_internal_check_cmp0099_available)
+    set(platform_target ${QT_CMAKE_EXPORT_NAMESPACE}::Platform)
+    get_target_property(aliased_target ${platform_target} ALIASED_TARGET)
+    if(aliased_target)
+        set(platform_target "${aliased_target}")
+    endif()
+
+    __qt_internal_get_cmp0099_genex_check(cmp0099_check)
+    set_target_properties(${platform_target} PROPERTIES
+        _qt_cmp0099_policy_check "${cmp0099_check}"
+    )
+
+    set(result TRUE)
+    if(NOT POLICY CMP0099)
+        set(result FALSE)
+    endif()
+
+    if("${ARGC}" GREATER "0" AND NOT ARGV0 STREQUAL "")
+        set(${ARGV0} ${result} PARENT_SCOPE)
+    endif()
+endfunction()
+
 function(__qt_internal_process_dependency_object_libraries target)
     # The CMake versions greater than 3.21 take care about the order of object files in a
     # linker line, it's expected that all object files are located at the beginning of the linker
@@ -134,17 +165,19 @@ function(__qt_internal_collect_dependency_object_libraries target out_var)
     )
 
     set_property(GLOBAL PROPERTY _qt_processed_object_libraries "")
+    __qt_internal_get_cmp0099_genex_check(cmp0099_check)
 
     list(REMOVE_DUPLICATES object_libraries)
     set(objects "")
     foreach(dep IN LISTS object_libraries)
-        list(PREPEND objects "$<TARGET_OBJECTS:${dep}>")
+        list(PREPEND objects "$<$<NOT:${cmp0099_check}>:$<TARGET_OBJECTS:${dep}>>")
     endforeach()
 
     set(${out_var} "${plugin_objects};${objects}" PARENT_SCOPE)
 endfunction()
 
 function(__qt_internal_collect_dependency_plugin_object_libraries target plugin_targets out_var)
+    __qt_internal_get_cmp0099_genex_check(cmp0099_check)
     set(plugin_objects "")
     foreach(plugin_target IN LISTS plugin_targets)
         __qt_internal_collect_object_libraries_recursively(plugin_object_libraries
@@ -154,9 +187,16 @@ function(__qt_internal_collect_dependency_plugin_object_libraries target plugin_
         __qt_internal_get_static_plugin_condition_genex("${plugin_target}" plugin_condition)
 
         foreach(plugin_object_library IN LISTS plugin_object_libraries)
-            list(APPEND plugin_objects
-                "$<${plugin_condition}:$<TARGET_OBJECTS:${plugin_object_library}>>"
+            string(JOIN "" plugin_objects_genex
+                "$<"
+                    "$<AND:"
+                        "$<NOT:${cmp0099_check}>,"
+                        "${plugin_condition}"
+                    ">"
+                    ":$<TARGET_OBJECTS:${plugin_object_library}>"
+                ">"
             )
+            list(APPEND plugin_objects "${plugin_objects_genex}")
         endforeach()
     endforeach()
     set(${out_var} "${plugin_objects}" PARENT_SCOPE)

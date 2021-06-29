@@ -3,7 +3,6 @@ file(GENERATE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/dummy.cpp" CONTENT "void dummy
 add_library(dummy STATIC "${CMAKE_CURRENT_BINARY_DIR}/dummy.cpp")
 target_link_libraries(dummy PRIVATE MockStaticResources1)
 
-
 # Add the executable using qt_add_executable that needs to initialize the propagated resources.
 # Finalize it implicitly(since CMake version 3.19).
 if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.19)
@@ -35,11 +34,10 @@ target_link_libraries(test_static_resources_propagation_manual_finalize
         Qt::Core
         Qt::Test
 )
+qt_finalize_target(test_static_resources_propagation_manual_finalize)
 add_test(NAME test_static_resources_propagation_manual_finalize
     COMMAND test_static_resources_propagation_manual_finalize
 )
-qt_finalize_target(test_static_resources_propagation_manual_finalize)
-
 
 # Add the executable using add_executable that needs to initialize the propagated resources.
 # Finalize it explicitly.
@@ -97,4 +95,66 @@ if(NOT link_order_matters)
             COMMAND test_static_resources_propagation_not_finalize
         )
     endif()
+endif()
+
+# Add the executable using add_executable, expecting resources are propagated using
+# target_link_options approach. The test is not applicable for qt_add_executable call since
+# we use the CMP0099 policy NEW unless the actual version of CMake is lower than 3.17, that means
+# target_link_options will always be preferable to finalizers.
+if(POLICY CMP0099)
+    cmake_policy(PUSH)
+
+    cmake_policy(SET CMP0099 OLD)
+    # When CMP0099 is set to OLD target_link_options doesn't propagate the linker options when
+    # linking static libraries with a PRIVATE visibility but we finalize it explicitly. This
+    # is a pure finalizer use case for platforms where link order matters.
+    add_executable(test_static_resources_propagation_cmp0099_old_finalize main.cpp)
+    set_target_properties(test_static_resources_propagation_cmp0099_old_finalize PROPERTIES
+        AUTOMOC TRUE
+    )
+    target_link_libraries(test_static_resources_propagation_cmp0099_old_finalize
+        PRIVATE
+            dummy
+            Qt::Core
+            Qt::Test
+    )
+    qt_finalize_target(test_static_resources_propagation_cmp0099_old_finalize)
+    add_test(NAME test_static_resources_propagation_cmp0099_old_finalize
+        COMMAND test_static_resources_propagation_cmp0099_old_finalize
+    )
+
+    # When CMP0099 is set to NEW target_link_options propagates the linker options when linking
+    # static libraries with a PRIVATE visibility. This is a pure target_link_options use case for
+    # platforms where link order matters.
+    cmake_policy(SET CMP0099 NEW)
+    add_executable(test_static_resources_propagation_cmp0099_new main.cpp)
+    set_target_properties(test_static_resources_propagation_cmp0099_new PROPERTIES
+        AUTOMOC TRUE
+    )
+    target_link_libraries(test_static_resources_propagation_cmp0099_new
+        PRIVATE
+            dummy
+            Qt::Core
+            Qt::Test
+    )
+    add_test(NAME test_static_resources_propagation_cmp0099_new
+        COMMAND test_static_resources_propagation_cmp0099_new
+    )
+
+    # Check if linking libraries using genex propagates resource objects when CMP0099 is enabled
+    add_executable(test_static_resources_propagation_cmp0099_new_genex main.cpp)
+    set_target_properties(test_static_resources_propagation_cmp0099_new_genex PROPERTIES
+        AUTOMOC TRUE
+    )
+    target_link_libraries(test_static_resources_propagation_cmp0099_new_genex
+        PRIVATE
+            $<1:dummy>
+            Qt::Core
+            Qt::Test
+    )
+    add_test(NAME test_static_resources_propagation_cmp0099_new_genex
+        COMMAND test_static_resources_propagation_cmp0099_new_genex
+    )
+
+    cmake_policy(POP)
 endif()

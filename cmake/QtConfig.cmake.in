@@ -126,4 +126,7 @@ if (_Qt_NOTFOUND_MESSAGE)
 endif()
 
 __qt_internal_defer_promote_targets_in_dir_scope_to_global()
-__qt_internal_check_link_order_matters()
+if(CMAKE_VERSION VERSION_LESS 3.21)
+    __qt_internal_check_link_order_matters()
+    __qt_internal_check_cmp0099_available()
+endif()
