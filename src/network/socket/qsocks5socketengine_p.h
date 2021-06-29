@@ -81,7 +81,7 @@ public:
     bool connectToHost(const QHostAddress &address, quint16 port) override;
     bool connectToHostByName(const QString &name, quint16 port) override;
     bool bind(const QHostAddress &address, quint16 port) override;
-    bool listen() override;
+    bool listen(int backlog) override;
     int accept() override;
     void close() override;
 

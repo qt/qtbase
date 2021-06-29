@@ -133,7 +133,7 @@ public:
     virtual bool connectToHost(const QHostAddress &address, quint16 port) = 0;
     virtual bool connectToHostByName(const QString &name, quint16 port) = 0;
     virtual bool bind(const QHostAddress &address, quint16 port) = 0;
-    virtual bool listen() = 0;
+    virtual bool listen(int backlog) = 0;
     virtual int accept() = 0;
     virtual void close() = 0;
 

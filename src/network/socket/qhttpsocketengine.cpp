@@ -191,8 +191,9 @@ bool QHttpSocketEngine::bind(const QHostAddress &, quint16)
     return false;
 }
 
-bool QHttpSocketEngine::listen()
+bool QHttpSocketEngine::listen(int backlog)
 {
+    Q_UNUSED(backlog);
     qWarning("Operation is not supported");
     setError(QAbstractSocket::UnsupportedSocketOperationError,
              QLatin1String("Unsupported socket operation"));

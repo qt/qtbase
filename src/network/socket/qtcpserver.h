@@ -69,6 +69,9 @@ public:
     void setMaxPendingConnections(int numConnections);
     int maxPendingConnections() const;
 
+    void setListenBacklog(int size);
+    int listenBacklog() const;
+
     quint16 serverPort() const;
     QHostAddress serverAddress() const;
 

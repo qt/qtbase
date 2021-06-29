@@ -331,7 +331,7 @@ bool QTcpServer::listen(const QHostAddress &address, quint16 port)
         return false;
     }
 
-    if (!d->socketEngine->listen()) {
+    if (!d->socketEngine->listen(d->listenBacklog)) {
         d->serverSocketError = d->socketEngine->error();
         d->serverSocketErrorString = d->socketEngine->errorString();
         return false;
@@ -647,6 +647,35 @@ void QTcpServer::setMaxPendingConnections(int numConnections)
 int QTcpServer::maxPendingConnections() const
 {
     return d_func()->maxConnections;
+}
+
+/*!
+    Sets the backlog queue size of to be accepted connections to \a
+    size. The operating system might reduce or ignore this value.
+    By default, the queue size is 50.
+
+    \note This setting is only used when listen() is called.
+
+    \since 6.3
+
+    \sa listenBacklog()
+*/
+void QTcpServer::setListenBacklog(int size)
+{
+    d_func()->listenBacklog = size;
+}
+
+/*!
+    Returns the backlog queue size of to be accepted connections. The
+    default is 50.
+
+    \since 6.3
+
+    \sa setListenBacklog()
+*/
+int QTcpServer::listenBacklog() const
+{
+    return d_func()->listenBacklog;
 }
 
 /*!

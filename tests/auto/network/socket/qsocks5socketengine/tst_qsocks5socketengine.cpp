@@ -453,7 +453,7 @@ void tst_QSocks5SocketEngine::serverTest()
     QCOMPARE(server.state(), QAbstractSocket::BoundState);
 
     // Listen for incoming connections
-    QVERIFY(server.listen());
+    QVERIFY(server.listen(50));
     QCOMPARE(server.state(), QAbstractSocket::ListeningState);
 
     // Initialize a Tcp socket

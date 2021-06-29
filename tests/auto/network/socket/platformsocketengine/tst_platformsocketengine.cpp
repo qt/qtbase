@@ -324,7 +324,7 @@ void tst_PlatformSocketEngine::serverTest()
     quint16 port = server.localPort();
 
     // Listen for incoming connections
-    QVERIFY(server.listen());
+    QVERIFY(server.listen(50));
     QCOMPARE(server.state(), QAbstractSocket::ListeningState);
 
     // Initialize a Tcp socket
@@ -429,7 +429,7 @@ void tst_PlatformSocketEngine::tcpLoopbackPerformance()
     quint16 port = server.localPort();
 
     // Listen for incoming connections
-    QVERIFY(server.listen());
+    QVERIFY(server.listen(50));
     QCOMPARE(server.state(), QAbstractSocket::ListeningState);
 
     // Initialize a Tcp socket
@@ -620,7 +620,7 @@ void tst_PlatformSocketEngine::receiveUrgentData()
     QCOMPARE(server.state(), QAbstractSocket::BoundState);
     quint16 port = server.localPort();
 
-    QVERIFY(server.listen());
+    QVERIFY(server.listen(50));
     QCOMPARE(server.state(), QAbstractSocket::ListeningState);
 
     PLATFORMSOCKETENGINE client;
