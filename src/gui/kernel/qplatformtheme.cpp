@@ -401,6 +401,11 @@ QPlatformDialogHelper *QPlatformTheme::createPlatformDialogHelper(DialogType typ
     return nullptr;
 }
 
+QPlatformTheme::Appearance QPlatformTheme::appearance() const
+{
+    return Appearance::Unknown;
+}
+
 const QPalette *QPlatformTheme::palette(Palette type) const
 {
     Q_D(const QPlatformTheme);

@@ -64,6 +64,9 @@ public:
     QPlatformSystemTrayIcon *createPlatformSystemTrayIcon() const override;
 #endif
     QVariant themeHint(ThemeHint) const override;
+
+    Appearance appearance() const override;
+
     const QPalette *palette(Palette type = SystemPalette) const override
         { return m_palettes[type]; }
     const QFont *font(Font type = SystemFont) const override
