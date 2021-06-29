@@ -335,7 +335,8 @@ sub check_header {
 
     return if ($ignore_for_include_check{$header});
     if ($public_header) {
-        $header_skip_qt_begin_namespace_test = 1 if ($ignore_for_qt_begin_namespace_check{$header});
+        $header_skip_qt_begin_namespace_test = $header &&
+             ($ignore_for_qt_begin_namespace_check{$header} || $header =~ /qt\w+global.h/);
     }
 
     local $/ = "\x0a";
