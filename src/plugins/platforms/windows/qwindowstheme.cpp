@@ -529,6 +529,11 @@ QVariant QWindowsTheme::themeHint(ThemeHint hint) const
     return QPlatformTheme::themeHint(hint);
 }
 
+QPlatformTheme::Appearance QWindowsTheme::appearance() const
+{
+    return QWindowsContext::isDarkMode() ? Appearance::Dark : Appearance::Light;
+}
+
 void QWindowsTheme::clearPalettes()
 {
     qDeleteAll(m_palettes, m_palettes + NPalettes);
