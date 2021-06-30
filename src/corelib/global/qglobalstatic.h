@@ -44,6 +44,8 @@
 
 #include <QtCore/qatomic.h>
 
+#include <type_traits>
+
 QT_BEGIN_NAMESPACE
 
 namespace QtGlobalStatic {
@@ -86,7 +88,7 @@ enum GuardValues {
         static struct Holder : public HolderBase {              \
             Type value;                                         \
             Holder()                                            \
-                noexcept(noexcept(Type ARGS))       \
+                noexcept(noexcept(typename std::remove_cv<Type>::type ARGS)) \
                 : value ARGS                                    \
             { guard.storeRelaxed(QtGlobalStatic::Initialized); }       \
         } holder;                                               \
