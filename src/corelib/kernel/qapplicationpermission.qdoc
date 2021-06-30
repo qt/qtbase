@@ -45,7 +45,7 @@
     \value Microphone Access the microphone, receive the sound signal (e.g. to
            analyze or record it). Maps to \c "android.permission.RECORD_AUDIO"
            on Android.
-    \value CoarseLocation Access approximate location provider (wifi, cell tower).
+    \value Location Access approximate location provider (wifi, cell tower).
            Maps to \c "android.permission.ACCESS_COARSE_LOCATION" on Android.
     \value PreciseLocation Location Access accurate location provider (satellite).
            Maps to \c "android.permission.ACCESS_FINE_LOCATION" on Android.
@@ -53,27 +53,24 @@
            the app is in the background. Maps to
            \c "android.permission.ACCESS_BACKGROUND_LOCATION" on Android, and
            implies \l PreciseLocation.
-    \value CoarseBackgroundLocation Access the approximate location services when
+    \value BackgroundLocation Access the approximate location services when
            the app is in the background. Maps to
            \c "android.permission.ACCESS_BACKGROUND_LOCATION" on Android, and
-           implies \l CoarseLocation.
+           implies \l Location.
     \value BodySensors Access body sensors such as a heart rate sensor.
            Maps to \c "android.permission.BODY_SENSORS" on Android.
     \value PhysicalActivity Access to data about physical activity and body
            movements. Maps to \c "android.permission.ACTIVITY_RECOGNITION"
            on Android.
-    \value ReadContacts Read user contacts. Maps to
-           \c "android.permission.READ_CONTACTS" on Android.
-    \value WriteContacts Write user contacts. Maps to
-           \c "android.permission.WRITE_CONTACTS" on Android.
-    \value ReadStorage Access device storage with read permissions.
-           Maps to \c "android.permission.READ_EXTERNAL_STORAGE" on Android.
-    \value WriteStorage Access device storage with write permissions.
-           Maps to \c "android.permission.WRITE_EXTERNAL_STORAGE" on Android.
-    \value ReadCalendar Read the user's calendar.
-           Maps to \c "android.permission.READ_CALENDAR" on Android.
-    \value WriteCalendar Write to the user's calendar.
-           Maps to \c "android.permission.WRITE_CALENDAR" on Android.
+    \value Contacts Read and write user contacts. Maps to
+           \c "android.permission.READ_CONTACTS" and \c "android.permission.WRITE_CONTACTS"
+           on Android.
+    \value Storage Access device storage with read and write permissions.
+           Maps to \c "android.permission.READ_EXTERNAL_STORAGE" and
+           \c "android.permission.WRITE_EXTERNAL_STORAGE"on Android.
+    \value Calendar Read and write the user's calendar.
+           Maps to \c "android.permission.READ_CALENDAR" and
+            \c "android.permission.WRITE_CALENDAR" on Android.
 
     \omitvalue Bluetooth
 
