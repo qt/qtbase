@@ -554,6 +554,36 @@ bool QLocalServer::waitForNewConnection(int msec, bool *timedOut)
     return !d->pendingConnections.isEmpty();
 }
 
+/*!
+    Sets the backlog queue size of to be accepted connections to \a
+    size. The operating system might reduce or ignore this value.
+    By default, the queue size is 50.
+
+    \note This property must be set prior to calling listen().
+
+    \since 6.3
+
+    \sa listenBacklogSize()
+*/
+void QLocalServer::setListenBacklogSize(int size)
+{
+    Q_D(QLocalServer);
+    d->listenBacklog = size;
+}
+
+/*!
+    Returns the backlog queue size of to be accepted connections.
+
+    \since 6.3
+
+    \sa setListenBacklogSize()
+*/
+int QLocalServer::listenBacklogSize() const
+{
+    Q_D(const QLocalServer);
+    return d->listenBacklog;
+}
+
 QT_END_NAMESPACE
 
 #include "moc_qlocalserver.cpp"

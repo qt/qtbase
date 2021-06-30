@@ -654,26 +654,25 @@ int QTcpServer::maxPendingConnections() const
     size. The operating system might reduce or ignore this value.
     By default, the queue size is 50.
 
-    \note This setting is only used when listen() is called.
+    \note This property must be set prior to calling listen().
 
     \since 6.3
 
-    \sa listenBacklog()
+    \sa listenBacklogSize()
 */
-void QTcpServer::setListenBacklog(int size)
+void QTcpServer::setListenBacklogSize(int size)
 {
     d_func()->listenBacklog = size;
 }
 
 /*!
-    Returns the backlog queue size of to be accepted connections. The
-    default is 50.
+    Returns the backlog queue size of to be accepted connections.
 
     \since 6.3
 
-    \sa setListenBacklog()
+    \sa setListenBacklogSize()
 */
-int QTcpServer::listenBacklog() const
+int QTcpServer::listenBacklogSize() const
 {
     return d_func()->listenBacklog;
 }

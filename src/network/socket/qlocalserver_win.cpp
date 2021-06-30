@@ -53,9 +53,6 @@
 // before it is read.  Pipewriter is used for write buffering.
 #define BUFSIZE 0
 
-// ###: This should be a property. Should replace the insane 50 on unix as well.
-#define SYSTEM_MAX_PENDING_SOCKETS 8
-
 QT_BEGIN_NAMESPACE
 
 bool QLocalServerPrivate::addListener()
@@ -256,7 +253,7 @@ bool QLocalServerPrivate::listen(const QString &name)
     connectionEventNotifier = new QWinEventNotifier(eventHandle , q);
     q->connect(connectionEventNotifier, SIGNAL(activated(HANDLE)), q, SLOT(_q_onNewConnection()));
 
-    for (int i = 0; i < SYSTEM_MAX_PENDING_SOCKETS; ++i)
+    for (int i = 0; i < listenBacklog; ++i)
         if (!addListener())
             return false;
 

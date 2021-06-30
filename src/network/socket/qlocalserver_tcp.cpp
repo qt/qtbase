@@ -56,6 +56,8 @@ void QLocalServerPrivate::init()
 
 bool QLocalServerPrivate::listen(const QString &requestedServerName)
 {
+    tcpServer.setListenBacklogSize(listenBacklog);
+
     if (!tcpServer.listen(QHostAddress::LocalHost))
         return false;
 

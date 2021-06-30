@@ -184,7 +184,7 @@ bool QLocalServerPrivate::listen(const QString &requestedServerName)
     }
 
     // listen for connections
-    if (-1 == qt_safe_listen(listenSocket, 50)) {
+    if (-1 == qt_safe_listen(listenSocket, listenBacklog)) {
         setError(QLatin1String("QLocalServer::listen"));
         closeServer();
         return false;
