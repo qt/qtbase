@@ -81,7 +81,13 @@ function(qt6_android_generate_deployment_settings target)
         endif()
     endif()
 
-    set(qt_android_install_dir "${QT6_INSTALL_PREFIX}")
+    # Required to build unit tests in developer build
+    if(QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX)
+        set(qt_android_install_dir "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}")
+    else()
+        set(qt_android_install_dir "${QT6_INSTALL_PREFIX}")
+    endif()
+
     file(TO_CMAKE_PATH "${qt_android_install_dir}" qt_android_install_dir_native)
     string(APPEND file_contents
         "   \"qt\": \"${qt_android_install_dir_native}\",\n")
