@@ -83,7 +83,7 @@ public:
 
     quint32 generate()
     {
-        return _fillRange(nullptr, 1);
+        return quint32(_fillRange(nullptr, 1));
     }
 
     quint64 generate64()
