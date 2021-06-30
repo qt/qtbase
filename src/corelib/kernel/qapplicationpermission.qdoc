@@ -26,16 +26,17 @@
 ****************************************************************************/
 
 /*!
-    \namespace QPermission
+    \namespace QApplicationPermission
 
-    \brief The QPermission namespace contains enums for app permission types and results.
+    \brief The QApplicationPermission namespace contains enums for app permission
+    types and results.
 
     This namespace's enums are used by \l {QCoreApplication::requestPermission()} and
     \l {QCoreApplication::checkPermission()}.
 */
 
 /*!
-    \enum QPermission::PermissionType
+    \enum QApplicationPermission::PermissionType
 
     Predefined sets of permission values.
 
@@ -87,7 +88,7 @@
 */
 
 /*!
-    \enum QPermission::PermissionResult
+    \enum QApplicationPermission::PermissionResult
 
     The result values for a permission check or request.
 

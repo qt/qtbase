@@ -37,14 +37,14 @@
 **
 ****************************************************************************/
 
-#ifndef QPERMISSION_H
-#define QPERMISSION_H
+#ifndef QAPPLICATIONPERMISSION_H
+#define QAPPLICATIONPERMISSION_H
 
 #include <QtCore/qglobal.h>
 
 QT_BEGIN_NAMESPACE
 
-namespace QPermission
+namespace QApplicationPermission
 {
 
 enum PermissionType {
@@ -71,8 +71,11 @@ enum PermissionResult {
     Restricted,
     Undetermined
 };
-} // QPermission
+} // QApplicationPermission
+
+// TODO: remove after usages in other modules are renamed.
+namespace QPermission = QApplicationPermission;
 
 QT_END_NAMESPACE
 
-#endif // QPERMISSION_H
+#endif // QAPPLICATIONPERMISSION_H

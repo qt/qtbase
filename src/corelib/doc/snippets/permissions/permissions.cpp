@@ -58,8 +58,8 @@ void requestCameraPermissionAndroid()
 {
 //! [Request camera permission on Android]
      QCoreApplication::requestPermission(QStringLiteral("android.permission.CAMERA"))
-             .then([=](QPermission::PermissionResult result) {
-        if (result == QPermission::Authorized)
+             .then([=](QApplicationPermission::PermissionResult result) {
+        if (result == QApplicationPermission::Authorized)
             takeSelfie();
     });
 //! [Request camera permission on Android]
@@ -68,9 +68,9 @@ void requestCameraPermissionAndroid()
 void requestCameraPermission()
 {
 //! [Request camera permission]
-     QCoreApplication::requestPermission(QPermission::Camera)
-             .then([=](QPermission::PermissionResult result) {
-        if (result == QPermission::Authorized)
+     QCoreApplication::requestPermission(QApplicationPermission::Camera)
+             .then([=](QApplicationPermission::PermissionResult result) {
+        if (result == QApplicationPermission::Authorized)
             takeSelfie();
     });
 //! [Request camera permission]
@@ -81,7 +81,7 @@ void requestCameraPermissionSyncAndroid()
 //! [Request camera permission sync on Android]
     auto future = QCoreApplication::requestPermission(QStringLiteral("android.permission.CAMERA"));
     auto result = future.result(); // blocks and waits for the result to be ready
-    if (result == QPermission::Authorized)
+    if (result == QApplicationPermission::Authorized)
         takeSelfie();
 //! [Request camera permission sync on Android]
 }
@@ -89,9 +89,9 @@ void requestCameraPermissionSyncAndroid()
 void requestCameraPermissionSync()
 {
 //! [Request camera permission sync]
-    auto future = QCoreApplication::requestPermission(QPermission::Camera);
+    auto future = QCoreApplication::requestPermission(QApplicationPermission::Camera);
     auto result = future.result(); // blocks and waits for the result to be ready
-    if (result == QPermission::Authorized)
+    if (result == QApplicationPermission::Authorized)
         takeSelfie();
 //! [Request camera permission sync]
 }
@@ -100,8 +100,8 @@ void checkCameraPermissionAndroid()
 {
 //! [Check camera permission on Android]
     QCoreApplication::checkPermission(QStringLiteral("android.permission.CAMERA"))
-            .then([=](QPermission::PermissionResult result) {
-        if (result == QPermission::Authorized)
+            .then([=](QApplicationPermission::PermissionResult result) {
+        if (result == QApplicationPermission::Authorized)
             takeSelfie();
     });
 //! [Check camera permission on Android]
@@ -110,9 +110,9 @@ void checkCameraPermissionAndroid()
 void checkCameraPermission()
 {
 //! [Check camera permission]
-    QCoreApplication::checkPermission(QPermission::Camera)
-            .then([=](QPermission::PermissionResult result) {
-        if (result == QPermission::Authorized)
+    QCoreApplication::checkPermission(QApplicationPermission::Camera)
+            .then([=](QApplicationPermission::PermissionResult result) {
+        if (result == QApplicationPermission::Authorized)
             takeSelfie();
     });
 //! [Check camera permission]
@@ -124,7 +124,7 @@ void checkCameraPermissionAndroidSync()
     auto future = QCoreApplication::checkPermission(QStringLiteral("android.permission.CAMERA"));
     // may block and wait for the result to be ready on some platforms
     auto result = future.result();
-    if (result == QPermission::Authorized)
+    if (result == QApplicationPermission::Authorized)
         takeSelfie();
 //! [Check camera permission sync on Android]
 }
@@ -132,10 +132,10 @@ void checkCameraPermissionAndroidSync()
 void checkCameraPermissionSync()
 {
 //! [Check camera permission sync]
-    auto future = QCoreApplication::checkPermission(QPermission::Camera);
+    auto future = QCoreApplication::checkPermission(QApplicationPermission::Camera);
     // may block and wait for the result to be ready on some platforms
     auto result = future.result();
-    if (result == QPermission::Authorized)
+    if (result == QApplicationPermission::Authorized)
         takeSelfie();
 //! [Check camera permission sync]
 }
