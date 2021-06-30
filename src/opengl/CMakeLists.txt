@@ -91,7 +91,7 @@ qt_internal_extend_target(OpenGL CONDITION QT_FEATURE_vulkan
     SOURCES
         qvkconvenience.cpp qvkconvenience_p.h
     PUBLIC_LIBRARIES
-        Vulkan::Vulkan_nolink
+        WrapVulkanHeaders::WrapVulkanHeaders
 )
 
 qt_internal_extend_target(OpenGL CONDITION QT_FEATURE_egl

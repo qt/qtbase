@@ -500,7 +500,7 @@ _library_map = [
     LibraryMapping("tslib", "Tslib", "PkgConfig::Tslib"),
     LibraryMapping("udev", "Libudev", "PkgConfig::Libudev"),
     LibraryMapping("udev", "Libudev", "PkgConfig::Libudev"),  # see also libudev!
-    LibraryMapping("vulkan", "Vulkan", "Vulkan::Vulkan"),
+    LibraryMapping("vulkan", "WrapVulkanHeaders", "WrapVulkanHeaders::WrapVulkanHeaders"),
     LibraryMapping("wayland_server", "Wayland", "Wayland::Server"),  # used in qtbase/src/gui
     LibraryMapping("wayland-server", "Wayland", "Wayland::Server"),  # used in qtwayland
     LibraryMapping("wayland-client", "Wayland", "Wayland::Client"),
