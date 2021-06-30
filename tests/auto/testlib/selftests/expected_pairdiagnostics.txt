@@ -2,12 +2,12 @@
 Config: Using QtTest library
 PASS   : tst_PairDiagnostics::initTestCase()
 FAIL!  : tst_PairDiagnostics::testQPair() Compared values are not the same
-   Actual   (pair1): "std::pair(1,1)"
-   Expected (pair2): "std::pair(1,2)"
+   Actual   (pair1): std::pair(1, 1)
+   Expected (pair2): std::pair(1, 2)
    Loc: [qtbase/tests/auto/testlib/selftests/pairdiagnostics/tst_pairdiagnostics.cpp(0)]
 FAIL!  : tst_PairDiagnostics::testStdPair() Compared values are not the same
-   Actual   (pair1): "std::pair(1,1)"
-   Expected (pair2): "std::pair(1,2)"
+   Actual   (pair1): std::pair(1, 1)
+   Expected (pair2): std::pair(1, 2)
    Loc: [qtbase/tests/auto/testlib/selftests/pairdiagnostics/tst_pairdiagnostics.cpp(0)]
 PASS   : tst_PairDiagnostics::cleanupTestCase()
 Totals: 2 passed, 2 failed, 0 skipped, 0 blacklisted, 0ms

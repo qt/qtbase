@@ -380,7 +380,7 @@ inline char *toString(const std::pair<T1, T2> &pair)
 {
     const QScopedArrayPointer<char> first(toString(pair.first));
     const QScopedArrayPointer<char> second(toString(pair.second));
-    return toString(QString::asprintf("std::pair(%s,%s)", first.data(), second.data()));
+    return formatString("std::pair(", ")", 2, first.data(), second.data());
 }
 
 template <typename Tuple, int... I>

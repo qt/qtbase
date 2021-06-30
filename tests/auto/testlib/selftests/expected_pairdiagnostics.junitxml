@@ -8,13 +8,13 @@
   <testcase name="initTestCase" result="pass" time="@TEST_DURATION@"/>
   <testcase name="testQPair" result="fail" time="@TEST_DURATION@">
     <failure result="fail" message="Compared values are not the same
-   Actual   (pair1): &quot;std::pair(1,1)&quot;
-   Expected (pair2): &quot;std::pair(1,2)&quot;"/>
+   Actual   (pair1): std::pair(1, 1)
+   Expected (pair2): std::pair(1, 2)"/>
   </testcase>
   <testcase name="testStdPair" result="fail" time="@TEST_DURATION@">
     <failure result="fail" message="Compared values are not the same
-   Actual   (pair1): &quot;std::pair(1,1)&quot;
-   Expected (pair2): &quot;std::pair(1,2)&quot;"/>
+   Actual   (pair1): std::pair(1, 1)
+   Expected (pair2): std::pair(1, 2)"/>
   </testcase>
   <testcase name="cleanupTestCase" result="pass" time="@TEST_DURATION@"/>
   <system-err/>
