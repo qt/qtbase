@@ -51,25 +51,23 @@ enum PermissionType {
     Camera,
     Microphone,
     Bluetooth,
-    CoarseLocation,
+    Location,
     PreciseLocation,
-    CoarseBackgroundLocation,
+    BackgroundLocation,
     PreciseBackgroundLocation,
     BodySensors,
     PhysicalActivity,
-    ReadContacts,
-    WriteContacts,
-    ReadStorage,
+    Contacts,
+    Storage,
+    // TODO: remove after usages in other modules are renamed.
     WriteStorage,
-    ReadCalendar,
-    WriteCalendar
+    Calendar
 };
 
 enum PermissionResult {
+    Undetermined,
     Authorized,
-    Denied,
-    Restricted,
-    Undetermined
+    Denied
 };
 } // QApplicationPermission
 
