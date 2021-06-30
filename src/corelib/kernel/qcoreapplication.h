@@ -47,7 +47,7 @@
 #include <QtCore/qeventloop.h>
 #if QT_CONFIG(future)
 #include <QtCore/qfuture.h>
-#include <QtCore/qpermission.h>
+#include <QtCore/qapplicationpermission.h>
 #endif
 #include <QtCore/qobject.h>
 #else
@@ -168,13 +168,15 @@ public:
 
 #ifndef QT_NO_QOBJECT
 #if QT_CONFIG(future)
-    static QFuture<QPermission::PermissionResult> requestPermission(
-                                                        QPermission::PermissionType permission);
-    static QFuture<QPermission::PermissionResult> requestPermission(const QString &permission);
+    static QFuture<QApplicationPermission::PermissionResult>
+    requestPermission(QApplicationPermission::PermissionType permission);
+    static QFuture<QApplicationPermission::PermissionResult>
+    requestPermission(const QString &permission);
 
-    static QFuture<QPermission::PermissionResult> checkPermission(
-                                                        QPermission::PermissionType permission);
-    static QFuture<QPermission::PermissionResult> checkPermission(const QString &permission);
+    static QFuture<QApplicationPermission::PermissionResult>
+    checkPermission(QApplicationPermission::PermissionType permission);
+    static QFuture<QApplicationPermission::PermissionResult>
+    checkPermission(const QString &permission);
 #endif
     void installNativeEventFilter(QAbstractNativeEventFilter *filterObj);
     void removeNativeEventFilter(QAbstractNativeEventFilter *filterObj);

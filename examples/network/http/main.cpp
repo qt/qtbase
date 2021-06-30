@@ -58,8 +58,9 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
-    auto permission = QPermission::WriteStorage;
-    if (QCoreApplication::requestPermission(permission).result() != QPermission::Authorized) {
+    auto permission = QApplicationPermission::WriteStorage;
+    if (QCoreApplication::requestPermission(permission).result()
+            != QApplicationPermission::Authorized) {
         qWarning() << "Couldn't get 'WriteStorage' permission!";
         return -1;
     }

@@ -59,13 +59,13 @@ static const char invalidNativePermissionExcept[] =
         "Coudn't convert the provided permission type to a native Android permission string.";
 #endif
 
-QPermission::PermissionResult resultFromAndroid(jint value)
+QApplicationPermission::PermissionResult resultFromAndroid(jint value)
 {
-    return value == 0 ? QPermission::Authorized : QPermission::Denied;
+    return value == 0 ? QApplicationPermission::Authorized : QApplicationPermission::Denied;
 }
 
 using PendingPermissionRequestsHash
-            = QHash<int, QSharedPointer<QPromise<QPermission::PermissionResult>>>;
+            = QHash<int, QSharedPointer<QPromise<QApplicationPermission::PermissionResult>>>;
 Q_GLOBAL_STATIC(PendingPermissionRequestsHash, g_pendingPermissionRequests);
 static QBasicMutex g_pendingPermissionRequestsMutex;
 
@@ -75,7 +75,7 @@ static int nextRequestCode()
     return counter.fetchAndAddRelaxed(1);
 }
 
-static QStringList nativeStringsFromPermission(QPermission::PermissionType permission)
+static QStringList nativeStringsFromPermission(QApplicationPermission::PermissionType permission)
 {
     static const auto precisePerm = QStringLiteral("android.permission.ACCESS_FINE_LOCATION");
     static const auto coarsePerm = QStringLiteral("android.permission.ACCESS_COARSE_LOCATION");
@@ -83,39 +83,39 @@ static QStringList nativeStringsFromPermission(QPermission::PermissionType permi
             QStringLiteral("android.permission.ACCESS_BACKGROUND_LOCATION");
 
     switch (permission) {
-    case QPermission::CoarseLocation:
+    case QApplicationPermission::CoarseLocation:
         return {coarsePerm};
-    case QPermission::PreciseLocation:
+    case QApplicationPermission::PreciseLocation:
         return {precisePerm};
-    case QPermission::CoarseBackgroundLocation:
+    case QApplicationPermission::CoarseBackgroundLocation:
         // Keep the background permission first to be able to use .first()
         // in checkPermission because it takes single permission
         if (QtAndroidPrivate::androidSdkVersion() >= 29)
             return {backgroundPerm, coarsePerm};
         return {coarsePerm};
-    case QPermission::PreciseBackgroundLocation:
+    case QApplicationPermission::PreciseBackgroundLocation:
         if (QtAndroidPrivate::androidSdkVersion() >= 29)
             return {backgroundPerm, precisePerm};
         return {precisePerm};
-    case QPermission::Camera:
+    case QApplicationPermission::Camera:
         return {QStringLiteral("android.permission.CAMERA")};
-    case QPermission::Microphone:
+    case QApplicationPermission::Microphone:
         return {QStringLiteral("android.permission.RECORD_AUDIO")};
-    case QPermission::BodySensors:
+    case QApplicationPermission::BodySensors:
         return {QStringLiteral("android.permission.BODY_SENSORS")};
-    case QPermission::PhysicalActivity:
+    case QApplicationPermission::PhysicalActivity:
         return {QStringLiteral("android.permission.ACTIVITY_RECOGNITION")};
-    case QPermission::ReadContacts:
+    case QApplicationPermission::ReadContacts:
         return {QStringLiteral("android.permission.READ_CONTACTS")};
-    case QPermission::WriteContacts:
+    case QApplicationPermission::WriteContacts:
         return {QStringLiteral("android.permission.WRITE_CONTACTS")};
-    case QPermission::ReadStorage:
+    case QApplicationPermission::ReadStorage:
         return {QStringLiteral("android.permission.READ_EXTERNAL_STORAGE")};
-    case QPermission::WriteStorage:
+    case QApplicationPermission::WriteStorage:
         return {QStringLiteral("android.permission.WRITE_EXTERNAL_STORAGE")};
-    case QPermission::ReadCalendar:
+    case QApplicationPermission::ReadCalendar:
         return {QStringLiteral("android.permission.READ_CALENDAR")};
-    case QPermission::WriteCalendar:
+    case QApplicationPermission::WriteCalendar:
         return {QStringLiteral("android.permission.WRITE_CALENDAR")};
 
     default:
@@ -151,18 +151,18 @@ static void sendRequestPermissionsResult(JNIEnv *env, jobject *obj, jint request
     env->GetIntArrayRegion(grantResults, 0, size, results.get());
 
     for (int i = 0 ; i < size; ++i) {
-        QPermission::PermissionResult result = resultFromAndroid(results[i]);
+        QApplicationPermission::PermissionResult result = resultFromAndroid(results[i]);
         request->addResult(result, i);
     }
 
     request->finish();
 }
 
-QFuture<QPermission::PermissionResult> requestPermissionsInternal(const QStringList &permissions)
+QFuture<QApplicationPermission::PermissionResult> requestPermissionsInternal(const QStringList &permissions)
 {
-    QSharedPointer<QPromise<QPermission::PermissionResult>> promise;
-    promise.reset(new QPromise<QPermission::PermissionResult>());
-    QFuture<QPermission::PermissionResult> future = promise->future();
+    QSharedPointer<QPromise<QApplicationPermission::PermissionResult>> promise;
+    promise.reset(new QPromise<QApplicationPermission::PermissionResult>());
+    QFuture<QApplicationPermission::PermissionResult> future = promise->future();
     promise->start();
 
     // No mechanism to request permission for SDK version below 23, because
@@ -197,70 +197,70 @@ QFuture<QPermission::PermissionResult> requestPermissionsInternal(const QStringL
     return future;
 }
 
-QFuture<QPermission::PermissionResult>
+QFuture<QApplicationPermission::PermissionResult>
 QCoreApplicationPrivate::requestPermission(const QString &permission)
 {
     // avoid the uneccessary call and response to an empty permission string
     if (permission.size() > 0)
         return requestPermissionsInternal({permission});
 
-    QPromise<QPermission::PermissionResult> promise;
-    QFuture<QPermission::PermissionResult> future = promise.future();
+    QPromise<QApplicationPermission::PermissionResult> promise;
+    QFuture<QApplicationPermission::PermissionResult> future = promise.future();
     promise.start();
 #ifndef QT_NO_EXCEPTIONS
     promise.setException(std::make_exception_ptr(std::runtime_error(emptyPermissionExcept)));
 #else
-    promise.addResult(QPermission::Denied);
+    promise.addResult(QApplicationPermission::Denied);
 #endif
     promise.finish();
     return future;
 }
 
-QFuture<QPermission::PermissionResult> groupRequestToSingleResult(const QStringList &permissions)
+QFuture<QApplicationPermission::PermissionResult> groupRequestToSingleResult(const QStringList &permissions)
 {
-    QSharedPointer<QPromise<QPermission::PermissionResult>> promise;
-    promise.reset(new QPromise<QPermission::PermissionResult>());
-    QFuture<QPermission::PermissionResult> future = promise->future();
+    QSharedPointer<QPromise<QApplicationPermission::PermissionResult>> promise;
+    promise.reset(new QPromise<QApplicationPermission::PermissionResult>());
+    QFuture<QApplicationPermission::PermissionResult> future = promise->future();
     promise->start();
     requestPermissionsInternal(permissions).then(
-                [promise](QFuture<QPermission::PermissionResult> future) {
+                [promise](QFuture<QApplicationPermission::PermissionResult> future) {
         auto results = future.results();
-        if (results.count(QPermission::Authorized) == results.count())
-            promise->addResult(QPermission::Authorized, 0);
+        if (results.count(QApplicationPermission::Authorized) == results.count())
+            promise->addResult(QApplicationPermission::Authorized, 0);
         else
-            promise->addResult(QPermission::Denied, 0);
+            promise->addResult(QApplicationPermission::Denied, 0);
         promise->finish();
     });
 
     return future;
 }
 
-QFuture<QPermission::PermissionResult>
-QCoreApplicationPrivate::requestPermission(QPermission::PermissionType permission)
+QFuture<QApplicationPermission::PermissionResult>
+QCoreApplicationPrivate::requestPermission(QApplicationPermission::PermissionType permission)
 {
     const auto nativePermissions = nativeStringsFromPermission(permission);
 
     if (nativePermissions.size() > 0)
         return groupRequestToSingleResult(nativePermissions);
 
-    QPromise<QPermission::PermissionResult> promise;
-    QFuture<QPermission::PermissionResult> future = promise.future();
+    QPromise<QApplicationPermission::PermissionResult> promise;
+    QFuture<QApplicationPermission::PermissionResult> future = promise.future();
     promise.start();
 #ifndef QT_NO_EXCEPTIONS
     promise.setException(std::make_exception_ptr(
                              std::runtime_error(invalidNativePermissionExcept)));
 #else
-    promise.addResult(QPermission::Denied);
+    promise.addResult(QApplicationPermission::Denied);
 #endif
     promise.finish();
     return future;
 }
 
-QFuture<QPermission::PermissionResult>
+QFuture<QApplicationPermission::PermissionResult>
 QCoreApplicationPrivate::checkPermission(const QString &permission)
 {
-    QPromise<QPermission::PermissionResult> promise;
-    QFuture<QPermission::PermissionResult> future = promise.future();
+    QPromise<QApplicationPermission::PermissionResult> promise;
+    QFuture<QApplicationPermission::PermissionResult> future = promise.future();
     promise.start();
 
     if (permission.size() > 0) {
@@ -273,7 +273,7 @@ QCoreApplicationPrivate::checkPermission(const QString &permission)
 #ifndef QT_NO_EXCEPTIONS
         promise.setException(std::make_exception_ptr(std::runtime_error(emptyPermissionExcept)));
 #else
-        promise.addResult(QPermission::Denied);
+        promise.addResult(QApplicationPermission::Denied);
 #endif
     }
 
@@ -281,22 +281,22 @@ QCoreApplicationPrivate::checkPermission(const QString &permission)
     return future;
 }
 
-QFuture<QPermission::PermissionResult>
-QCoreApplicationPrivate::checkPermission(QPermission::PermissionType permission)
+QFuture<QApplicationPermission::PermissionResult>
+QCoreApplicationPrivate::checkPermission(QApplicationPermission::PermissionType permission)
 {
     const auto nativePermissions = nativeStringsFromPermission(permission);
 
     if (nativePermissions.size() > 0)
         return checkPermission(nativePermissions.first());
 
-    QPromise<QPermission::PermissionResult> promise;
-    QFuture<QPermission::PermissionResult> future = promise.future();
+    QPromise<QApplicationPermission::PermissionResult> promise;
+    QFuture<QApplicationPermission::PermissionResult> future = promise.future();
     promise.start();
 #ifndef QT_NO_EXCEPTIONS
     promise.setException(std::make_exception_ptr(
                              std::runtime_error(invalidNativePermissionExcept)));
 #else
-    promise.addResult(QPermission::Denied);
+    promise.addResult(QApplicationPermission::Denied);
 #endif
     promise.finish();
     return future;
