@@ -103,6 +103,8 @@ struct MyPrimitive : public MyBase
     { ++errorCount; }
     MyPrimitive(const MyPrimitive &other) : MyBase(other)
     { ++errorCount; }
+    MyPrimitive &operator=(const MyPrimitive &other)
+    { ++errorCount; MyBase::operator=(other); return *this; }
     ~MyPrimitive()
     { ++errorCount; }
 };
