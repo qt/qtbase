@@ -305,6 +305,9 @@ public:
         Q_UNUSED(timePoint);
         return true;
     }
+
+private:
+    Q_DISABLE_COPY(QMutex)
 };
 
 class QRecursiveMutex : public QMutex {};
