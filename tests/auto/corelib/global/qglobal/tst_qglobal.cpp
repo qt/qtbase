@@ -134,7 +134,7 @@ void tst_QGlobal::for_each()
     QCOMPARE(counter, list.count());
 
     // Should also work with an existing variable
-    int local;
+    int local = 0;
     counter = 0;
     foreach (local, list) {
         QCOMPARE(local, counter++);
