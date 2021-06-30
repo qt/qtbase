@@ -155,6 +155,7 @@ public:
     bool skipSignature;
 
 private:
+    Q_DECL_COLD_FUNCTION void unregisteredTypeError(QMetaType t);
     Q_DISABLE_COPY_MOVE(QDBusMarshaller)
 };
 
