@@ -486,6 +486,46 @@ bool QSemaphore::tryAcquire(int n, int timeout)
 }
 
 /*!
+    \fn template <typename Rep, typename Period> QSemaphore::tryAcquire(int n, std::chrono::duration<Rep, Period> timeout)
+    \overload
+    \since 6.3
+*/
+
+/*!
+    \fn QSemaphore::try_acquire()
+    \since 6.3
+
+    This function is provided for \c{std::counting_semaphore} compatibility.
+
+    It is equivalent to calling \c{tryAcquire(1)}.
+
+    \sa tryAcquire(), try_acquire_for(), try_acquire_until()
+*/
+
+/*!
+    \fn template <typename Rep, typename Period> QSemaphore::try_acquire_for(std::chrono::duration<Rep, Period> timeout)
+    \since 6.3
+
+    This function is provided for \c{std::counting_semaphore} compatibility.
+
+    It is equivalent to calling \c{tryAcquire(1, timeout)}.
+
+    \sa tryAcquire(), try_acquire(), try_acquire_until()
+*/
+
+/*!
+    \fn template <typename Clock, typename Duration> QSemaphore::try_acquire_until(std::chrono::time_point<Clock, Duration> timeout)
+    \since 6.3
+
+    This function is provided for \c{std::counting_semaphore} compatibility.
+
+    It is equivalent to calling \c{tryAcquire(1, timeout - Clock::now())},
+    which means that adjustments to \c{Clock} are ignored while waiting.
+
+    \sa tryAcquire(), try_acquire(), try_acquire_for()
+*/
+
+/*!
     \class QSemaphoreReleaser
     \brief The QSemaphoreReleaser class provides exception-safe deferral of a QSemaphore::release() call.
     \since 5.10
