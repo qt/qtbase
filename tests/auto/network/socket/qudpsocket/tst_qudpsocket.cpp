@@ -193,7 +193,7 @@ QNetworkInterface tst_QUdpSocket::interfaceForGroup(const QHostAddress &multicas
     if (!scope.isEmpty())
         return QNetworkInterface::interfaceFromName(scope);
 
-    static QNetworkInterface ipv6if = [=]() {
+    static QNetworkInterface ipv6if = [&]() {
         // find any link local address in the allAddress list
         for (const QHostAddress &addr: qAsConst(allAddresses)) {
             if (addr.isLoopback())

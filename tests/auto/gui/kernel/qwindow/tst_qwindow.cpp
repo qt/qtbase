@@ -293,7 +293,7 @@ public:
 #if !defined(Q_OS_MACOS)
         // FIXME: All platforms should send window-state change events, regardless
         // of the sync/async nature of the the underlying platform, but they don't.
-        connect(this, &QWindow::windowStateChanged, [=]() {
+        connect(this, &QWindow::windowStateChanged, [this]() {
             lastReceivedWindowState = windowState();
         });
 #endif
