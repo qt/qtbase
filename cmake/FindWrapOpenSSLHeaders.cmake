@@ -31,4 +31,9 @@ if(OPENSSL_INCLUDE_DIR)
 endif()
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(WrapOpenSSLHeaders DEFAULT_MSG WrapOpenSSLHeaders_FOUND)
+find_package_handle_standard_args(WrapOpenSSLHeaders
+    REQUIRED_VARS
+        OPENSSL_INCLUDE_DIR
+    VERSION_VAR
+        OPENSSL_VERSION
+)
