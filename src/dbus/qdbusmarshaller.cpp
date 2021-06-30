@@ -59,6 +59,16 @@ QDBusMarshaller::~QDBusMarshaller()
     close();
 }
 
+void QDBusMarshaller::unregisteredTypeError(QMetaType id)
+{
+    const char *name = id.name();
+    qWarning("QDBusMarshaller: type `%s' (%d) is not registered with D-BUS. "
+             "Use qDBusRegisterMetaType to register it",
+             name ? name : "", id.id());
+    error(QLatin1String("Unregistered type %1 passed in arguments")
+          .arg(QLatin1String(id.name())));
+}
+
 inline QString QDBusMarshaller::currentSignature()
 {
     if (message)
@@ -208,11 +218,7 @@ inline bool QDBusMarshaller::append(const QDBusVariant &arg)
         signature = QDBusMetaType::typeToSignature(id);
     }
     if (!signature) {
-        qWarning("QDBusMarshaller: type `%s' (%d) is not registered with D-BUS. "
-                 "Use qDBusRegisterMetaType to register it",
-                 id.name(), id.id());
-        error(QLatin1String("Unregistered type %1 passed in arguments")
-              .arg(QLatin1String(id.name())));
+        unregisteredTypeError(id);
         return false;
     }
 
@@ -250,11 +256,7 @@ inline QDBusMarshaller *QDBusMarshaller::beginArray(QMetaType id)
 {
     const char *signature = QDBusMetaType::typeToSignature(id);
     if (!signature) {
-        qWarning("QDBusMarshaller: type `%s' (%d) is not registered with D-BUS. "
-                 "Use qDBusRegisterMetaType to register it",
-                 id.name(), id.id());
-        error(QLatin1String("Unregistered type %1 passed in arguments")
-              .arg(QLatin1String(id.name())));
+        unregisteredTypeError(id);
         return this;
     }
 
@@ -265,11 +267,7 @@ inline QDBusMarshaller *QDBusMarshaller::beginMap(QMetaType kid, QMetaType vid)
 {
     const char *ksignature = QDBusMetaType::typeToSignature(kid);
     if (!ksignature) {
-        qWarning("QDBusMarshaller: type `%s' (%d) is not registered with D-BUS. "
-                 "Use qDBusRegisterMetaType to register it",
-                 kid.name(), kid.id());
-        error(QLatin1String("Unregistered type %1 passed in arguments")
-              .arg(QLatin1String(kid.name())));
+        unregisteredTypeError(kid);
         return this;
     }
     if (ksignature[1] != 0 || !QDBusUtil::isValidBasicType(*ksignature)) {
@@ -282,12 +280,7 @@ inline QDBusMarshaller *QDBusMarshaller::beginMap(QMetaType kid, QMetaType vid)
 
     const char *vsignature = QDBusMetaType::typeToSignature(vid);
     if (!vsignature) {
-        const char *typeName = vid.name();
-        qWarning("QDBusMarshaller: type `%s' (%d) is not registered with D-BUS. "
-                 "Use qDBusRegisterMetaType to register it",
-                 typeName, vid.id());
-        error(QLatin1String("Unregistered type %1 passed in arguments")
-              .arg(QLatin1String(typeName)));
+        unregisteredTypeError(vid);
         return this;
     }
 
@@ -414,11 +407,7 @@ bool QDBusMarshaller::appendVariantInternal(const QVariant &arg)
 
     const char *signature = QDBusMetaType::typeToSignature(id);
     if (!signature) {
-        qWarning("QDBusMarshaller: type `%s' (%d) is not registered with D-BUS. "
-                 "Use qDBusRegisterMetaType to register it",
-                 id.name(), id.id());
-        error(QLatin1String("Unregistered type %1 passed in arguments")
-              .arg(QLatin1String(id.name())));
+        unregisteredTypeError(id);
         return false;
     }
 
