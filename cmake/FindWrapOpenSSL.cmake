@@ -30,4 +30,10 @@ if(OpenSSL_FOUND)
 endif()
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(WrapOpenSSL DEFAULT_MSG WrapOpenSSL_FOUND)
+find_package_handle_standard_args(WrapOpenSSL
+    REQUIRED_VARS
+        OPENSSL_CRYPTO_LIBRARY
+        OPENSSL_INCLUDE_DIR
+    VERSION_VAR
+        OPENSSL_VERSION
+)
