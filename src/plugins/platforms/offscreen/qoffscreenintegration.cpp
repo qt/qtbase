@@ -113,6 +113,8 @@ QOffscreenIntegration::QOffscreenIntegration()
 
 QOffscreenIntegration::~QOffscreenIntegration()
 {
+    for (auto screen : std::as_const(m_screens))
+        QWindowSystemInterface::handleScreenRemoved(screen);
 }
 
 /*
