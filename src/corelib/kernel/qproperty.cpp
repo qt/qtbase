@@ -268,7 +268,8 @@ QPropertyBindingPrivate::~QPropertyBindingPrivate()
     if (firstObserver)
         firstObserver.unlink();
     if (vtable->size)
-        vtable->destroy(reinterpret_cast<std::byte *>(this) + sizeof(QPropertyBindingPrivate));
+        vtable->destroy(reinterpret_cast<std::byte *>(this)
+                        + QPropertyBindingPrivate::getSizeEnsuringAlignment());
 }
 
 void QPropertyBindingPrivate::unlinkAndDeref()
@@ -344,7 +345,7 @@ QUntypedPropertyBinding::QUntypedPropertyBinding(QMetaType metaType, const Bindi
 {
     std::byte *mem = new std::byte[QPropertyBindingPrivate::getSizeEnsuringAlignment() + vtable->size]();
     d = new(mem) QPropertyBindingPrivate(metaType, vtable, std::move(location));
-    vtable->moveConstruct(mem+sizeof(QPropertyBindingPrivate), function);
+    vtable->moveConstruct(mem + QPropertyBindingPrivate::getSizeEnsuringAlignment(), function);
 }
 
 QUntypedPropertyBinding::QUntypedPropertyBinding(QUntypedPropertyBinding &&other)
