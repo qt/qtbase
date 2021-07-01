@@ -132,6 +132,10 @@ endfunction()
 #                     This makes possible to have relative paths to the source files in the
 #                     generated ninja rules.
 #
+# BUILD_DIR: A custom build dir relative to the calling project CMAKE_CURRENT_BINARY_DIR.
+#            Useful when configuring the same test project with different options in separate
+#            build dirs.
+#
 # BINARY: Path to the test artifact that will be executed after the build is complete. If a
 #         relative path is specified, it will be counted from the build directory.
 #         Can also be passed a random executable to be found in PATH, like 'ctest'.
@@ -143,8 +147,24 @@ endfunction()
 # BUILD_OPTIONS: a list of -D style CMake definitions to pass to ctest's --build-options (which
 #                are ultimately passed to the CMake invocation of the test project)
 macro(_qt_internal_test_expect_pass _dir)
-  cmake_parse_arguments(_ARGS "SIMULATE_IN_SOURCE" "BINARY;TESTNAME" "BUILD_OPTIONS;BINARY_ARGS"
-                        ${ARGN})
+  set(_test_option_args
+      SIMULATE_IN_SOURCE
+  )
+  set(_test_single_args
+      BINARY
+      TESTNAME
+      BUILD_DIR
+  )
+  set(_test_multi_args
+      BUILD_OPTIONS
+      BINARY_ARGS
+  )
+  cmake_parse_arguments(_ARGS
+      "${_test_option_args}"
+      "${_test_single_args}"
+      "${_test_multi_args}"
+      ${ARGN}
+  )
   if(_ARGS_TESTNAME)
       set(testname "${_ARGS_TESTNAME}")
   else()
@@ -157,6 +177,10 @@ macro(_qt_internal_test_expect_pass _dir)
     string(REPLACE ";" "\;" __expect_pass_prefixes "${__expect_pass_prefixes}")
 
     set(__expect_pass_build_dir "${CMAKE_CURRENT_BINARY_DIR}/${_dir}")
+    if(_ARGS_BUILD_DIR)
+        set(__expect_pass_build_dir "${CMAKE_CURRENT_BINARY_DIR}/${_ARGS_BUILD_DIR}")
+    endif()
+
     set(__expect_pass_source_dir "${CMAKE_CURRENT_SOURCE_DIR}/${_dir}")
     if(_ARGS_SIMULATE_IN_SOURCE)
         set(__expect_pass_in_source_build_dir "${CMAKE_CURRENT_BINARY_DIR}/in_source")
