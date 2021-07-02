@@ -755,6 +755,8 @@ void tst_QObject::findChildren()
     op = o.findChild<QObject*>("unnamed", Qt::FindDirectChildrenOnly);
     QCOMPARE(op, static_cast<QObject *>(0));
 
+    l = o.findChildren<QObject*>(Qt::FindDirectChildrenOnly);
+    QCOMPARE(l.size(), 5);
     l = o.findChildren<QObject*>(QString(), Qt::FindDirectChildrenOnly);
     QCOMPARE(l.size(), 5);
     l = o.findChildren<QObject*>("", Qt::FindDirectChildrenOnly);

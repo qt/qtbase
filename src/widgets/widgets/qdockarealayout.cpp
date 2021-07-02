@@ -2607,7 +2607,7 @@ void QDockAreaLayout::removePlaceHolder(const QString &name)
     if (!index.isEmpty())
         remove(index);
     const auto groups =
-            mainWindow->findChildren<QDockWidgetGroupWindow *>(QString(), Qt::FindDirectChildrenOnly);
+            mainWindow->findChildren<QDockWidgetGroupWindow *>(Qt::FindDirectChildrenOnly);
     for (QDockWidgetGroupWindow *dwgw : groups) {
         index = dwgw->layoutInfo()->indexOfPlaceHolder(name);
         if (!index.isEmpty()) {
@@ -3045,7 +3045,7 @@ bool QDockAreaLayout::restoreDockWidget(QDockWidget *dockWidget)
 {
     QDockAreaLayoutItem *item = nullptr;
     const auto groups =
-            mainWindow->findChildren<QDockWidgetGroupWindow *>(QString(), Qt::FindDirectChildrenOnly);
+            mainWindow->findChildren<QDockWidgetGroupWindow *>(Qt::FindDirectChildrenOnly);
     for (QDockWidgetGroupWindow *dwgw : groups) {
         QList<int> index = dwgw->layoutInfo()->indexOfPlaceHolder(dockWidget->objectName());
         if (!index.isEmpty()) {

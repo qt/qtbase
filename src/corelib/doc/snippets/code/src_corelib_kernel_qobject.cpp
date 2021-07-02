@@ -449,7 +449,7 @@ QListWidget *list = parentWidget->findChild<QListWidget *>(QString(), Qt::FindDi
 
 
 //! [43]
-QList<QPushButton *> childButtons = parentWidget.findChildren<QPushButton *>(QString(), Qt::FindDirectChildrenOnly);
+QList<QPushButton *> childButtons = parentWidget.findChildren<QPushButton *>(Qt::FindDirectChildrenOnly);
 //! [43]
 
 //! [44]

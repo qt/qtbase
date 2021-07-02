@@ -1947,7 +1947,8 @@ void QObject::killTimer(int id)
 
     Returns all children of this object with the given \a name that can be
     cast to type T, or an empty list if there are no such objects.
-    Omitting the \a name argument causes all object names to be matched.
+    A null \a name argument causes all objects to be matched, an empty one
+    only those whose objectName is empty.
     The search is performed recursively, unless \a options specifies the
     option FindDirectChildrenOnly.
 
@@ -1963,6 +1964,19 @@ void QObject::killTimer(int id)
     This example returns all \c{QPushButton}s that are immediate children of \c{parentWidget}:
 
     \snippet code/src_corelib_kernel_qobject.cpp 43
+
+    \sa findChild()
+*/
+
+/*!
+    \fn template<typename T> QList<T> QObject::findChildren(Qt::FindChildOptions options) const
+    \overload
+    \since 6.3
+
+    Returns all children of this object that can be cast to type T, or
+    an empty list if there are no such objects.
+    The search is performed recursively, unless \a options specifies the
+    option FindDirectChildrenOnly.
 
     \sa findChild()
 */
@@ -2012,24 +2026,46 @@ void QObject::killTimer(int id)
     \sa QObject::findChildren()
 */
 
+static void qt_qFindChildren_with_name(const QObject *parent, const QString &name,
+                                       const QMetaObject &mo, QList<void *> *list,
+                                       Qt::FindChildOptions options)
+{
+    Q_ASSERT(parent);
+    Q_ASSERT(list);
+    Q_ASSERT(!name.isNull());
+    for (QObject *obj : parent->children()) {
+        if (mo.cast(obj) && obj->objectName() == name)
+            list->append(obj);
+        if (options & Qt::FindChildrenRecursively)
+            qt_qFindChildren_with_name(obj, name, mo, list, options);
+    }
+}
+
 /*!
     \internal
 */
 void qt_qFindChildren_helper(const QObject *parent, const QString &name,
                              const QMetaObject &mo, QList<void*> *list, Qt::FindChildOptions options)
 {
+    if (name.isNull())
+        return qt_qFindChildren_helper(parent, mo, list, options);
+    else
+        return qt_qFindChildren_with_name(parent, name, mo, list, options);
+}
+
+/*!
+    \internal
+*/
+void qt_qFindChildren_helper(const QObject *parent, const QMetaObject &mo,
+                             QList<void*> *list, Qt::FindChildOptions options)
+{
     Q_ASSERT(parent);
     Q_ASSERT(list);
-    const QObjectList &children = parent->children();
-    QObject *obj;
-    for (int i = 0; i < children.size(); ++i) {
-        obj = children.at(i);
-        if (mo.cast(obj)) {
-            if (name.isNull() || obj->objectName() == name)
-                list->append(obj);
-        }
+    for (QObject *obj : parent->children()) {
+        if (mo.cast(obj))
+            list->append(obj);
         if (options & Qt::FindChildrenRecursively)
-            qt_qFindChildren_helper(obj, name, mo, list, options);
+            qt_qFindChildren_helper(obj, mo, list, options);
     }
 }
 
@@ -2042,10 +2078,7 @@ void qt_qFindChildren_helper(const QObject *parent, const QRegularExpression &re
 {
     Q_ASSERT(parent);
     Q_ASSERT(list);
-    const QObjectList &children = parent->children();
-    QObject *obj;
-    for (int i = 0; i < children.size(); ++i) {
-        obj = children.at(i);
+    for (QObject *obj : parent->children()) {
         if (mo.cast(obj)) {
             QRegularExpressionMatch m = re.match(obj->objectName());
             if (m.hasMatch())
@@ -2063,18 +2096,13 @@ void qt_qFindChildren_helper(const QObject *parent, const QRegularExpression &re
 QObject *qt_qFindChild_helper(const QObject *parent, const QString &name, const QMetaObject &mo, Qt::FindChildOptions options)
 {
     Q_ASSERT(parent);
-    const QObjectList &children = parent->children();
-    QObject *obj;
-    int i;
-    for (i = 0; i < children.size(); ++i) {
-        obj = children.at(i);
+    for (QObject *obj : parent->children()) {
         if (mo.cast(obj) && (name.isNull() || obj->objectName() == name))
             return obj;
     }
     if (options & Qt::FindChildrenRecursively) {
-        for (i = 0; i < children.size(); ++i) {
-            obj = qt_qFindChild_helper(children.at(i), name, mo, options);
-            if (obj)
+        for (QObject *child : parent->children()) {
+            if (QObject *obj = qt_qFindChild_helper(child, name, mo, options))
                 return obj;
         }
     }
@@ -3593,7 +3621,7 @@ void QMetaObject::connectSlotsByName(QObject *o)
     const QMetaObject *mo = o->metaObject();
     Q_ASSERT(mo);
     const QObjectList list = // list of all objects to look for matching signals including...
-            o->findChildren<QObject *>(QString()) // all children of 'o'...
+            o->findChildren<QObject *>() // all children of 'o'...
             << o; // and the object 'o' itself
 
     // for each method/slot of o ...
