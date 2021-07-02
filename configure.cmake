@@ -930,7 +930,7 @@ qt_feature("xml" PRIVATE
 )
 qt_feature("libudev" PRIVATE
     LABEL "udev"
-    CONDITION Libudev_FOUND
+    CONDITION Libudev_FOUND AND NOT INTEGRITY
 )
 qt_feature("ccache"
     LABEL "Using ccache"
@@ -948,7 +948,7 @@ qt_feature_config("static_runtime" QMAKE_PUBLIC_CONFIG)
 qt_feature_config("static_runtime" QMAKE_PUBLIC_QT_CONFIG)
 qt_feature("dlopen" PRIVATE
     LABEL "dlopen()"
-    CONDITION UNIX
+    CONDITION UNIX AND NOT INTEGRITY
 )
 qt_feature("relocatable" PRIVATE
     LABEL "Relocatable"
