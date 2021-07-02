@@ -1,5 +1,19 @@
 type: Group
 instructions:
+  - type: EnvironmentVariable
+    variableName: CMAKE_BUILD_TIMEOUT
+    variableValue: "6000"
+    enable_if:
+      condition: runtime
+      env_var: CMAKE_BUILD_TIMEOUT
+      equals_value: null
+  - type: EnvironmentVariable
+    variableName: CMAKE_BUILD_OUTPUT_TIMEOUT
+    variableValue: "1200"
+    enable_if:
+      condition: runtime
+      env_var: CMAKE_BUILD_OUTPUT_TIMEOUT
+      equals_value: null
   - type: MakeDirectory
     directory: .git
   - type: MakeDirectory
@@ -23,8 +37,8 @@ instructions:
       - !include "{{qt/qtbase}}/call_host_cmake.yaml"
       - type: ExecuteCommand
         command: "{{.Env.ENV_PREFIX}} cmake --build . --parallel -v"
-        maxTimeInSeconds: 6000
-        maxTimeBetweenOutput: 1200
+        maxTimeInSeconds: "{{.Env.CMAKE_BUILD_TIMEOUT}}"
+        maxTimeBetweenOutput: "{{.Env.CMAKE_BUILD_OUTPUT_TIMEOUT}}"
         userMessageOnFailure: >
           Failed to build sources. In the current state bug can be everywhere.
       - type: EnvironmentVariable
@@ -53,8 +67,8 @@ instructions:
   - !include "{{qt/qtbase}}/call_target_cmake.yaml"
   - type: ExecuteCommand
     command: "{{.Env.TARGET_ENV_PREFIX}} cmake --build . --parallel -v"
-    maxTimeInSeconds: 6000
-    maxTimeBetweenOutput: 1200
+    maxTimeInSeconds: "{{.Env.CMAKE_BUILD_TIMEOUT}}"
+    maxTimeBetweenOutput: "{{.Env.CMAKE_BUILD_OUTPUT_TIMEOUT}}"
     userMessageOnFailure: >
       Failed to build sources. In the current state bug can be everywhere.
   - type: EnvironmentVariable
