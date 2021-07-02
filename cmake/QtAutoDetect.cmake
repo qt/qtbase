@@ -73,6 +73,17 @@ function(qt_auto_detect_cmake_generator)
 endfunction()
 
 function(qt_auto_detect_android)
+    # We assume an Android build if any of the ANDROID_* cache variables are set.
+    if(DEFINED ANDROID_SDK_ROOT
+            OR DEFINED ANDROID_NDK_ROOT
+            OR DEFINED ANDROID_ABI
+            OR DEFINED ANDROID_NATIVE_ABI_LEVEL
+            OR DEFINED ANDROID_STL)
+        set(android_detected TRUE)
+    else()
+        set(android_detected FALSE)
+    endif()
+
     # Auto-detect NDK root
     if(NOT DEFINED ANDROID_NDK_ROOT AND DEFINED ANDROID_SDK_ROOT)
         file(GLOB ndk_versions LIST_DIRECTORIES true RELATIVE "${ANDROID_SDK_ROOT}/ndk"
@@ -113,24 +124,24 @@ function(qt_auto_detect_android)
         endif()
     endif()
 
-    if("${CMAKE_TOOLCHAIN_FILE}" STREQUAL ""
-            AND (DEFINED ANDROID_ABI OR DEFINED ANDROID_NATIVE_API_LEVEL))
+    if(NOT DEFINED CMAKE_TOOLCHAIN_FILE AND android_detected)
         message(FATAL_ERROR "An Android build was requested, but no Android toolchain file was "
             "specified nor detected.")
     endif()
 
     if(DEFINED CMAKE_TOOLCHAIN_FILE AND NOT DEFINED QT_AUTODETECT_ANDROID)
-
-        file(READ ${CMAKE_TOOLCHAIN_FILE} toolchain_file_content OFFSET 0 LIMIT 80)
-        string(FIND "${toolchain_file_content}" "The Android Open Source Project" find_result REVERSE)
-        if (NOT ${find_result} EQUAL -1)
-            set(android_detected TRUE)
-        else()
-            set(android_detected FALSE)
+        # Peek into the toolchain file and check if it looks like an Android one.
+        if(NOT android_detected)
+            file(READ ${CMAKE_TOOLCHAIN_FILE} toolchain_file_content OFFSET 0 LIMIT 80)
+            string(FIND "${toolchain_file_content}" "The Android Open Source Project"
+                find_result REVERSE)
+            if(NOT ${find_result} EQUAL -1)
+                set(android_detected TRUE)
+            endif()
         endif()
 
         if(android_detected)
-            message(STATUS "Android toolchain file detected, checking configuration defaults...")
+            message(STATUS "Android build detected, checking configuration defaults...")
             if(NOT DEFINED ANDROID_NATIVE_API_LEVEL)
                 message(STATUS "ANDROID_NATIVE_API_LEVEL was not specified, using API level 23 as default")
                 set(ANDROID_NATIVE_API_LEVEL 23 CACHE STRING "")
@@ -141,7 +152,7 @@ function(qt_auto_detect_android)
         endif()
         set(QT_AUTODETECT_ANDROID ${android_detected} CACHE STRING "")
     elseif (QT_AUTODETECT_ANDROID)
-        message(STATUS "Android toolchain file detected")
+        message(STATUS "Android build detected")
     endif()
 endfunction()
 
