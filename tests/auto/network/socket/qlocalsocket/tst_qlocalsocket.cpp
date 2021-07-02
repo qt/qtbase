@@ -95,6 +95,9 @@ private slots:
     void readLine_data();
     void readLine();
 
+    void skip_data();
+    void skip();
+
     void readBufferOverflow();
 
     void simpleCommandProtocol1();
@@ -804,6 +807,58 @@ void tst_QLocalSocket::readLine()
     } while (++pos <= input.size());
     QCOMPARE(client.state(), QLocalSocket::UnconnectedState);
     QCOMPARE(result, output);
+}
+
+void tst_QLocalSocket::skip_data()
+{
+    QTest::addColumn<QByteArray>("data");
+    QTest::addColumn<int>("read");
+    QTest::addColumn<int>("skip");
+    QTest::addColumn<int>("skipped");
+    QTest::addColumn<char>("expect");
+
+    QByteArray bigData;
+    bigData.fill('a', 20000);
+    bigData[10001] = 'x';
+
+    QTest::newRow("small_data") << QByteArray("abcdefghij") << 3 << 6 << 6 << 'j';
+    QTest::newRow("big_data") << bigData << 1 << 10000 << 10000 << 'x';
+    QTest::newRow("beyond_the_end") << bigData << 1 << 20000 << 19999 << '\0';
+}
+
+void tst_QLocalSocket::skip()
+{
+    QFETCH(QByteArray, data);
+    QFETCH(int, read);
+    QFETCH(int, skip);
+    QFETCH(int, skipped);
+    QFETCH(char, expect);
+    char lastChar = '\0';
+
+    const QString serverName = QLatin1String("tst_localsocket");
+    LocalServer server;
+    QVERIFY(server.listen(serverName));
+
+    LocalSocket client;
+    client.connectToServer(serverName);
+    QVERIFY(server.waitForNewConnection());
+    QLocalSocket *serverSocket = server.nextPendingConnection();
+    QVERIFY(serverSocket);
+    QCOMPARE(client.state(), QLocalSocket::ConnectedState);
+
+    QCOMPARE(serverSocket->write(data), data.size());
+    while (serverSocket->waitForBytesWritten())
+        QVERIFY(client.waitForReadyRead());
+    QCOMPARE(serverSocket->bytesToWrite(), qint64(0));
+    serverSocket->close();
+    QVERIFY(client.waitForDisconnected());
+
+    for (int i = 0; i < read; ++i)
+        client.getChar(nullptr);
+
+    QCOMPARE(client.skip(skip), skipped);
+    client.getChar(&lastChar);
+    QCOMPARE(lastChar, expect);
 }
 
 void tst_QLocalSocket::readBufferOverflow()

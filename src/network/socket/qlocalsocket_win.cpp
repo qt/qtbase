@@ -277,7 +277,12 @@ qint64 QLocalSocket::readLineData(char *data, qint64 maxSize)
 
 qint64 QLocalSocket::skipData(qint64 maxSize)
 {
-    return QIODevice::skipData(maxSize);
+    Q_D(QLocalSocket);
+
+    if (!maxSize)
+        return 0;
+
+    return transformPipeReaderResult(d->pipeReader->skip(maxSize));
 }
 
 qint64 QLocalSocket::writeData(const char *data, qint64 len)

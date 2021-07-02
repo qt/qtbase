@@ -233,6 +233,25 @@ qint64 QWindowsPipeReader::readLine(char *data, qint64 maxlen)
 }
 
 /*!
+    Skips up to \c{maxlen} bytes from the internal read buffer.
+ */
+qint64 QWindowsPipeReader::skip(qint64 maxlen)
+{
+    QMutexLocker locker(&mutex);
+
+    const qint64 skippedSoFar = readBuffer.skip(qMin(actualReadBufferSize, maxlen));
+    actualReadBufferSize -= skippedSoFar;
+
+    if (!pipeBroken) {
+        startAsyncReadHelper(&locker);
+        if (skippedSoFar == 0)
+            return -2;      // signal EWOULDBLOCK
+    }
+
+    return skippedSoFar;
+}
+
+/*!
     Returns \c true if a complete line of data can be read from the buffer.
  */
 bool QWindowsPipeReader::canReadLine() const
