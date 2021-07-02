@@ -58,7 +58,7 @@ QString string = toUtf16(encodedString);
 //! [1]
 QString string = "...";
 auto fromUtf16 = QStringEncoder(QStringEncoder::Utf8);
-QByteArray encodedString = fromUtf16(encodedString);
+QByteArray encodedString = fromUtf16(string);
 //! [1]
 
 
