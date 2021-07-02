@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -57,24 +57,23 @@ private slots:
     void data();
 };
 
-
 void tst_qdiriterator::data()
 {
-#if defined(Q_OS_WIN)
-    const char *qtdir = "C:\\depot\\qt\\main";
-#else
-    const char *qtdir = ::getenv("QTDIR");
-#endif
-    if (!qtdir) {
-        fprintf(stderr, "QTDIR not set\n");
-        exit(1);
-    }
+    const char hereRelative[] = "tests/benchmarks/corelib/io/qdiriterator/qdiriterator.pro";
+    QString proname = QTest::qFindTestData(QStringLiteral("qdiriterator.pro"));
+    // qDebug("Source pro: %s", proname.toLocal8Bit().constData());
+    // Size chopped counts the '\0', making up for the omitted leading '/':
+    QByteArray dir(QStringRef(&proname).chopped(sizeof(hereRelative)).toLocal8Bit());
+    // qDebug("Root dir: %s", dir.constData());
 
     QTest::addColumn<QByteArray>("dirpath");
-    QByteArray ba = QByteArray(qtdir) + "/src/corelib";
-    QByteArray ba1 = ba + "/io";
-    QTest::newRow(ba) << ba;
-    //QTest::newRow(ba1) << ba1;
+    const QByteArray ba = dir + "/src/corelib";
+
+    if (!QFileInfo(QString::fromLocal8Bit(ba)).isDir())
+        QSKIP("Missing Qt directory");
+
+    QTest::newRow("corelib") << ba;
+    QTest::newRow("corelib/io") << (ba + "/io");
 }
 
 #ifdef Q_OS_WIN
