@@ -1013,6 +1013,32 @@ function(qt6_extract_metatypes target)
         endif()
 
         if (NOT use_dep_files)
+            # When a project is configured with a Visual Studio generator, CMake's
+            # cmQtAutoGenInitializer::InitAutogenTarget() can take one of two code paths on how to
+            # handle AUTOMOC rules.
+            # It either creates a ${target}_autogen custom target or uses PRE_BUILD build events.
+            #
+            # The latter in considered an optimization and is used by CMake when possible.
+            # Unfortunately that breaks our add_dependency call because we expect on _autogen target
+            # to always exist.
+            #
+            # Ensure the PRE_BUILD path is not taken by generating a dummy header file and adding it
+            # as a source file to the target. This causes the file to be added to
+            # cmQtAutoGenInitializer::AutogenTarget.DependFiles, which disables the PRE_BUILD path.
+            if(CMAKE_GENERATOR MATCHES "Visual Studio")
+                # The file name should be target specific, but still short, so we don't hit path
+                # length issues.
+                string(MAKE_C_IDENTIFIER "ddf_${target}" dummy_dependency_file)
+                set(dummy_out_file "${CMAKE_CURRENT_BINARY_DIR}/${dummy_dependency_file}.h")
+
+                # The content shouldn't be empty so we don't trigger AUTOMOC warnings about it.
+                file(GENERATE OUTPUT "${dummy_out_file}" CONTENT "//")
+                set_source_files_properties("${dummy_out_file}" PROPERTIES
+                    GENERATED TRUE
+                    SKIP_AUTOGEN OFF)
+                target_sources("${target}" PRIVATE "${dummy_out_file}")
+            endif()
+
             add_custom_target(${target}_automoc_json_extraction
                 DEPENDS ${QT_CMAKE_EXPORT_NAMESPACE}::cmake_automoc_parser
                 BYPRODUCTS ${type_list_file}
