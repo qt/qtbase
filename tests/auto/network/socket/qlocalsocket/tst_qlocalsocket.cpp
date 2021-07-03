@@ -34,6 +34,7 @@
 #include <QWaitCondition>
 #include <QLoggingCategory>
 #include <QMutex>
+#include <QList>
 
 #include <qtextstream.h>
 #include <qdatastream.h>
@@ -64,6 +65,7 @@ class tst_QLocalSocket : public QObject
     Q_OBJECT
 
 public:
+    using ByteArrayList = QList<QByteArray>;
     tst_QLocalSocket();
 
 private slots:
@@ -89,6 +91,9 @@ private slots:
 
     void sendData_data();
     void sendData();
+
+    void readLine_data();
+    void readLine();
 
     void readBufferOverflow();
 
@@ -702,6 +707,103 @@ void tst_QLocalSocket::sendData()
 
     QCOMPARE(server.hits.count(), (canListen ? 1 : 0));
     QCOMPARE(spy.count(), (canListen ? 1 : 0));
+}
+
+void tst_QLocalSocket::readLine_data()
+{
+    QTest::addColumn<ByteArrayList>("input");
+    QTest::addColumn<ByteArrayList>("output");
+    QTest::addColumn<int>("maxSize");
+    QTest::addColumn<bool>("wholeLinesOnly");
+
+    QTest::newRow("0") << ByteArrayList{ "\n", "A", "\n", "B", "B", "A", "\n" }
+                       << ByteArrayList{ "\n", "", "", "A\n", "", "", "", "",
+                                         "BBA\n", "", "" }
+                       << 80 << true;
+    QTest::newRow("1") << ByteArrayList{ "A", "\n", "\n", "B", "B", "\n", "A", "A" }
+                       << ByteArrayList{ "", "A\n", "", "\n", "", "", "", "BB\n",
+                                         "", "", "", "AA", "" }
+                       << 80 << true;
+
+    QTest::newRow("2") << ByteArrayList{ "\nA\nA\n" }
+                       << ByteArrayList{ "\n", "A", "\n", "A", "\n", "", "" }
+                       << 1 << false;
+    QTest::newRow("3") << ByteArrayList{ "A\n\n\nA", "A" }
+                       << ByteArrayList{ "A\n", "\n", "\n", "A", "", "A", "", "" }
+                       << 2 << false;
+
+    QTest::newRow("4") << ByteArrayList{ "He", "ll", "o\n", " \n", "wo", "rl", "d", "!\n" }
+                       << ByteArrayList{ "", "Hel", "", "lo\n", "", " \n", "", "", "wor",
+                                         "", "", "ld!", "\n", "", "" }
+                       << 3 << true;
+    QTest::newRow("5") << ByteArrayList{ "Hello\n world!" }
+                       << ByteArrayList{ "Hello\n", "", " world!", "" }
+                       << 80 << true;
+
+    QTest::newRow("6") << ByteArrayList{ "\nHello", " \n", " wor", "ld!\n" }
+                       << ByteArrayList{ "\n", "Hell", "o", "", " \n", "", " wor", "",
+                                         "ld!\n", "", "" }
+                       << 4 << false;
+    QTest::newRow("7") << ByteArrayList{ "Hello\n world", "!" }
+                       << ByteArrayList{ "Hello\n", " world", "", "!", "", "" }
+                       << 80 << false;
+}
+
+void tst_QLocalSocket::readLine()
+{
+    QFETCH(ByteArrayList, input);
+    QFETCH(ByteArrayList, output);
+    QFETCH(int, maxSize);
+    QFETCH(bool, wholeLinesOnly);
+
+    const QString serverName = QLatin1String("tst_localsocket");
+    LocalServer server;
+    QVERIFY(server.listen(serverName));
+
+    LocalSocket client;
+    client.connectToServer(serverName);
+    QVERIFY(server.waitForNewConnection());
+    QLocalSocket *serverSocket = server.nextPendingConnection();
+    QVERIFY(serverSocket);
+    QCOMPARE(client.state(), QLocalSocket::ConnectedState);
+
+    ByteArrayList result;
+    qsizetype pos = 0;
+    do {
+        // This test assumes that such small chunks of data are synchronously
+        // delivered to the receiver on all supported platforms.
+        if (pos < input.size()) {
+            const QByteArray &chunk = input.at(pos);
+            QCOMPARE(serverSocket->write(chunk), qint64(chunk.size()));
+            QVERIFY(serverSocket->waitForBytesWritten());
+            QCOMPARE(serverSocket->bytesToWrite(), qint64(0));
+            QVERIFY(client.waitForReadyRead());
+        } else {
+            serverSocket->close();
+            QVERIFY(!client.waitForReadyRead());
+        }
+
+        while (!wholeLinesOnly || (client.bytesAvailable() >= qint64(maxSize))
+               || client.canReadLine() || (pos == input.size())) {
+            const bool chunkEmptied = (client.bytesAvailable() == 0);
+            QByteArray line(maxSize, Qt::Uninitialized);
+
+            const qint64 readResult = client.readLine(line.data(), maxSize + 1);
+            if (chunkEmptied) {
+                if (pos == input.size())
+                    QCOMPARE(readResult, qint64(-1));
+                else
+                    QCOMPARE(readResult, qint64(0));
+                break;
+            }
+            QVERIFY((readResult > 0) && (readResult <= maxSize));
+            line.resize(readResult);
+            result.append(line);
+        }
+        result.append(QByteArray());
+    } while (++pos <= input.size());
+    QCOMPARE(client.state(), QLocalSocket::UnconnectedState);
+    QCOMPARE(result, output);
 }
 
 void tst_QLocalSocket::readBufferOverflow()
