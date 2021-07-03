@@ -646,11 +646,12 @@ void tst_QIODevice::skip_data()
     do {
         QByteArray devName(sequential ? "sequential" : "random-access");
 
-        QTest::newRow(qPrintable(devName + "-small_data")) << true  << QByteArray("abcdefghij")
+        QTest::newRow(qPrintable(devName + "-small_data")) << sequential
+                                                           << QByteArray("abcdefghij")
                                                            << 3 << 6 << 6 << 'j';
-        QTest::newRow(qPrintable(devName + "-big_data")) << true  << bigData
+        QTest::newRow(qPrintable(devName + "-big_data")) << sequential << bigData
                                                          << 1 << 10000 << 10000 << 'x';
-        QTest::newRow(qPrintable(devName + "-beyond_the_end")) << true  << bigData
+        QTest::newRow(qPrintable(devName + "-beyond_the_end")) << sequential << bigData
                                                                << 1 << 20000 << 19999 << '\0';
 
         sequential = !sequential;
