@@ -363,10 +363,8 @@ void QCryptographicHash::addData(const char *data, qsizetype length)
     // feed the data UINT_MAX bytes at a time, as some of the methods below
     // take a uint (of course, feeding more than 4G of data into the hashing
     // functions will be pretty slow anyway)
-    qsizetype remaining = length;
-    while (remaining) {
+    for (auto remaining = length; remaining; remaining -= length, data += length) {
         length = qMin(qsizetype(std::numeric_limits<uint>::max()), remaining);
-        remaining -= length;
 #else
     {
 #endif

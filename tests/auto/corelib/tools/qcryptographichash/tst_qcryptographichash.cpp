@@ -29,8 +29,13 @@
 
 #include <QtCore/QCoreApplication>
 #include <QTest>
+#include <QScopeGuard>
 #include <QCryptographicHash>
 #include <QtCore/QMetaEnum>
+
+#if QT_CONFIG(cxx11_future)
+#  include <thread>
+#endif
 
 Q_DECLARE_METATYPE(QCryptographicHash::Algorithm)
 
@@ -51,6 +56,11 @@ private slots:
     void files();
     void hashLength_data();
     void hashLength();
+    // keep last
+    void moreThan4GiBOfData_data();
+    void moreThan4GiBOfData();
+private:
+    std::vector<char> large;
 };
 
 void tst_QCryptographicHash::repeated_result_data()
@@ -417,6 +427,80 @@ void tst_QCryptographicHash::hashLength()
 
     QByteArray output = QCryptographicHash::hash(QByteArrayLiteral("test"), algorithm);
     QCOMPARE(QCryptographicHash::hashLength(algorithm), output.length());
+}
+
+void tst_QCryptographicHash::moreThan4GiBOfData_data()
+{
+#if QT_POINTER_SIZE > 4
+    QElapsedTimer timer;
+    timer.start();
+    const size_t GiB = 1024 * 1024 * 1024;
+    try {
+        large.resize(4 * GiB + 1, '\0');
+    } catch (const std::bad_alloc &) {
+        QSKIP("Could not allocate 4GiB plus one byte of RAM.");
+    }
+    QCOMPARE(large.size(), 4 * GiB + 1);
+    large.back() = '\1';
+    qDebug("created dataset in %lld ms", timer.elapsed());
+
+    QTest::addColumn<QCryptographicHash::Algorithm>("algorithm");
+    auto me = QMetaEnum::fromType<QCryptographicHash::Algorithm>();
+    auto row = [me] (QCryptographicHash::Algorithm algo) {
+        QTest::addRow("%s", me.valueToKey(int(algo))) << algo;
+    };
+    // these are reasonably fast (O(secs))
+    row(QCryptographicHash::Md4);
+    row(QCryptographicHash::Md5);
+    row(QCryptographicHash::Sha1);
+    // this is already significantly slower, but important (O(min)
+    row(QCryptographicHash::Sha512);
+    // the rest is just too slow
+#else
+    QSKIP("This test is 64-bit only.");
+#endif
+}
+
+void tst_QCryptographicHash::moreThan4GiBOfData()
+{
+    QFETCH(const QCryptographicHash::Algorithm, algorithm);
+
+# if QT_CONFIG(cxx11_future)
+    using MaybeThread = std::thread;
+# else
+    struct MaybeThread {
+        std::function<void()> func;
+        void join() { func(); }
+    };
+# endif
+
+    QElapsedTimer timer;
+    timer.start();
+    const auto sg = qScopeGuard([&] {
+        qDebug() << algorithm << "test finished in" << timer.restart() << "ms";
+    });
+
+    const auto begin = large.data();
+    const auto mid = begin + large.size() / 2;
+    const auto end = begin + large.size();
+
+    QByteArray single;
+    QByteArray chunked;
+
+    auto t = MaybeThread{[&] {
+        QCryptographicHash h(algorithm);
+        h.addData(begin, end - begin);
+        single = h.result();
+    }};
+    {
+        QCryptographicHash h(algorithm);
+        h.addData(begin, mid - begin);
+        h.addData(mid, end - mid);
+        chunked = h.result();
+    }
+    t.join();
+
+    QCOMPARE(single, chunked);
 }
 
 QTEST_MAIN(tst_QCryptographicHash)
