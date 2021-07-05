@@ -425,7 +425,7 @@ void tst_QCryptographicHash::hashLength()
 {
     QFETCH(const QCryptographicHash::Algorithm, algorithm);
 
-    QByteArray output = QCryptographicHash::hash(QByteArrayLiteral("test"), algorithm);
+    QByteArray output = QCryptographicHash::hash("test", algorithm);
     QCOMPARE(QCryptographicHash::hashLength(algorithm), output.length());
 }
 
@@ -480,22 +480,22 @@ void tst_QCryptographicHash::moreThan4GiBOfData()
         qDebug() << algorithm << "test finished in" << timer.restart() << "ms";
     });
 
-    const auto begin = large.data();
-    const auto mid = begin + large.size() / 2;
-    const auto end = begin + large.size();
+    const auto view = QByteArrayView{large};
+    const auto first = view.first(view.size() / 2);
+    const auto last = view.sliced(view.size() / 2);
 
     QByteArray single;
     QByteArray chunked;
 
     auto t = MaybeThread{[&] {
         QCryptographicHash h(algorithm);
-        h.addData(begin, end - begin);
+        h.addData(view);
         single = h.result();
     }};
     {
         QCryptographicHash h(algorithm);
-        h.addData(begin, mid - begin);
-        h.addData(mid, end - mid);
+        h.addData(first);
+        h.addData(last);
         chunked = h.result();
     }
     t.join();

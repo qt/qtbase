@@ -241,6 +241,7 @@ qt_internal_add_module(Core
         tools/qsize.cpp tools/qsize.h
         tools/qstack.h
         tools/qtaggedpointer.h
+        tools/qtcore_tools_removed_functions_in_6_3.cpp
         tools/qtools_p.h
         tools/qvarlengtharray.h
         tools/qvector.h
@@ -271,7 +272,14 @@ qt_internal_add_module(Core
     # special case end
 )
 
-qt_update_ignore_pch_source(Core kernel/qmetatype.cpp )
+set(corelib_no_pch_sources
+    kernel/qmetatype.cpp
+    tools/qtcore_tools_removed_functions_in_6_3.cpp
+)
+
+foreach(src ${corelib_no_pch_sources})
+    qt_update_ignore_pch_source(Core ${src})
+endforeach()
 
 # special case begin
 add_dependencies(Core qmodule_pri)

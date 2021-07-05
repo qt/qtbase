@@ -140,7 +140,7 @@ void QMessageAuthenticationCodePrivate::initMessageHash()
     for (int i = 0; i < blockSize; ++i)
         iKeyPad[i] = keyData[i] ^ 0x36;
 
-    messageHash.addData(iKeyPad.data(), iKeyPad.size());
+    messageHash.addData(iKeyPad);
 }
 
 /*!
@@ -216,7 +216,7 @@ void QMessageAuthenticationCode::setKey(const QByteArray &key)
 void QMessageAuthenticationCode::addData(const char *data, qsizetype length)
 {
     d->initMessageHash();
-    d->messageHash.addData(data, length);
+    d->messageHash.addData({data, length});
 }
 
 /*!
@@ -263,7 +263,7 @@ QByteArray QMessageAuthenticationCode::result() const
         oKeyPad[i] = keyData[i] ^ 0x5c;
 
     QCryptographicHash hash(d->method);
-    hash.addData(oKeyPad.data(), oKeyPad.size());
+    hash.addData(oKeyPad);
     hash.addData(hashedMessage);
 
     d->result = hash.result();

@@ -1,5 +1,6 @@
 /****************************************************************************
 **
+** Copyright (C) 2021 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Marc Mutz <marc.mutz@kdab.com>
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Copyright (C) 2013 Richard J. Moore <rich@kde.org>.
 ** Contact: https://www.qt.io/licensing/
@@ -103,13 +104,22 @@ public:
 
     void reset();
 
+#if QT_DEPRECATED_SINCE(6, 4)
+    QT_DEPRECATED_VERSION_X_6_4("Use the QByteArrayView overload instead")
     void addData(const char *data, qsizetype length);
+#endif
+#ifdef QT_BUILD_FUNCTIONS_REMOVED_IN_6_3
     void addData(const QByteArray &data);
+#endif
+    void addData(QByteArrayView data) noexcept;
     bool addData(QIODevice *device);
 
     QByteArray result() const;
 
+#ifdef QT_BUILD_FUNCTIONS_REMOVED_IN_6_3
     static QByteArray hash(const QByteArray &data, Algorithm method);
+#endif
+    static QByteArray hash(QByteArrayView data, Algorithm method);
     static int hashLength(Algorithm method);
 private:
     Q_DISABLE_COPY(QCryptographicHash)

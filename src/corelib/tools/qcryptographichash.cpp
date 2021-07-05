@@ -351,13 +351,32 @@ void QCryptographicHash::reset()
     d->result.clear();
 }
 
+#if QT_DEPRECATED_SINCE(6, 4)
 /*!
     Adds the first \a length chars of \a data to the cryptographic
     hash.
+
+    \obsolete
+    Use the QByteArrayView overload instead.
 */
 void QCryptographicHash::addData(const char *data, qsizetype length)
 {
     Q_ASSERT(length >= 0);
+    addData(QByteArrayView{data, length});
+}
+#endif
+
+/*!
+    Adds the first \a length chars of \a data to the cryptographic
+    hash.
+
+    \note In Qt versions prior to 6.3, this function took QByteArray,
+    not QByteArrayView.
+*/
+void QCryptographicHash::addData(QByteArrayView bytes) noexcept
+{
+    const char *data = bytes.data();
+    auto length = bytes.size();
 
 #if QT_POINTER_SIZE == 8
     // feed the data UINT_MAX bytes at a time, as some of the methods below
@@ -431,14 +450,6 @@ void QCryptographicHash::addData(const char *data, qsizetype length)
 }
 
 /*!
-  \overload addData()
-*/
-void QCryptographicHash::addData(const QByteArray &data)
-{
-    addData(data.constData(), data.length());
-}
-
-/*!
   Reads the data from the open QIODevice \a device until it ends
   and hashes it. Returns \c true if reading was successful.
   \since 5.0
@@ -455,7 +466,7 @@ bool QCryptographicHash::addData(QIODevice *device)
     int length;
 
     while ((length = device->read(buffer, sizeof(buffer))) > 0)
-        addData(buffer, length);
+        addData({buffer, length});
 
     return device->atEnd();
 }
@@ -580,8 +591,11 @@ QByteArray QCryptographicHash::result() const
 
 /*!
   Returns the hash of \a data using \a method.
+
+  \note In Qt versions prior to 6.3, this function took QByteArray,
+  not QByteArrayView.
 */
-QByteArray QCryptographicHash::hash(const QByteArray &data, Algorithm method)
+QByteArray QCryptographicHash::hash(QByteArrayView data, Algorithm method)
 {
     QCryptographicHash hash(method);
     hash.addData(data);
