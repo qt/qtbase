@@ -4,11 +4,8 @@ The following table describes the mapping of configure options to CMake argument
 |---------------------------------------|---------------------------------------------------|-----------------------------------------------------------------|
 | -prefix /opt/qt6                      | -DCMAKE_INSTALL_PREFIX=/opt/qta6                  |                                                                 |
 | -extprefix /opt/qt6                   | -DCMAKE_STAGING_PREFIX=/opt/qt6                   |                                                                 |
-| -hostprefix  /where/ever              | n/a                                               | When cross-building Qt, we do not build for host system anymore |
-| -external-hostbindir /path/to/host/qt | -DQT_HOST_PATH=/path/to/host/qt                   | Can be set with configure -qt-host-path /path/to/host/qt.       |
 | -bindir <dir>                         | -DINSTALL_BINDIR=<dir>                            | similar for -headerdir -libdir and so on                        |
 | -hostdatadir <dir>                    | -DINSTALL_MKSPECSDIR=<dir>                        |                                                                 |
-| -host*dir <dir>                       | n/a                                               |                                                                 |
 | -help                                 | n/a                                               | Handled by configure[.bat].                                     |
 | -verbose                              |                                                   |                                                                 |
 | -continue                             |                                                   |                                                                 |
@@ -95,7 +92,6 @@ The following table describes the mapping of configure options to CMake argument
 | -android-sdk <path>                   | -DANDROID_SDK_ROOT=<path>                         |                                                                 |
 | -android-ndk <path>                   | -DCMAKE_TOOLCHAIN_PATH=<toolchain file in NDK>    |                                                                 |
 | -android-ndk-platform android-23      | -DCMAKE_ANDROID_NATIVE_API_LEVEL=23               |                                                                 |
-| -android-ndk-host                     | n/a                                               | determined by toolchain file                                    |
 | -android-abis <abi_1>,...,<abi_n>     | -DANDROID_ABI=<abi_1>                             | only one ABI can be specified                                   |
 | -android-style-assets                 | -DFEATURE_android_style_assets=ON                 |                                                                 |
 | -android-javac-source                 | -DQT_ANDROID_JAVAC_SOURCE=7                       | Set the javac build source version.                             |

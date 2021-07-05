@@ -9,8 +9,6 @@ Top-level installation directories:
                        -developer-build]
   -extprefix <dir> ... The installation directory, as seen on the host machine.
                        [SYSROOT/PREFIX]
-  -external-hostbindir <path> ... Path to Qt tools built for this machine.
-                       This option is required when cross-compiling Qt.
 
 Fine tuning of installation directory layout. Note that all directories
 except -sysconfdir should be located under -prefix:

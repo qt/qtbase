@@ -163,7 +163,6 @@ while [ "$#" -gt 0 ]; do
     -hostlibdir| \
     -extprefix| \
     -sysroot| \
-    -external-hostbindir| \
     -make| \
     -nomake| \
     -skip| \
