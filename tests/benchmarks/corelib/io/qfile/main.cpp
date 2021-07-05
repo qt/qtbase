@@ -80,17 +80,16 @@ public:
     };
 private slots:
     void initTestCase();
-    void cleanupTestCase();
 
     void open_data();
     void open();
     void seek_data();
     void seek();
 
-    void readSmallFiles_QFile();
-    void readSmallFiles_QFSFileEngine();
-    void readSmallFiles_posix();
-    void readSmallFiles_Win32();
+    void readSmallFiles_QFile() { readSmallFiles(); }
+    void readSmallFiles_QFSFileEngine() { readSmallFiles(); }
+    void readSmallFiles_posix() { readSmallFiles(); }
+    void readSmallFiles_Win32() { readSmallFiles(); }
 
     void readSmallFiles_QFile_data();
     void readSmallFiles_QFSFileEngine_data();
@@ -102,10 +101,10 @@ private slots:
     void readBigFile_posix_data();
     void readBigFile_Win32_data();
 
-    void readBigFile_QFile();
-    void readBigFile_QFSFileEngine();
-    void readBigFile_posix();
-    void readBigFile_Win32();
+    void readBigFile_QFile() { readBigFile(); }
+    void readBigFile_QFSFileEngine() { readBigFile(); }
+    void readBigFile_posix() { readBigFile(); }
+    void readBigFile_Win32() { readBigFile(); }
 
 private:
     void readFile_data(BenchmarkType type, QIODevice::OpenModeFlag t, QIODevice::OpenModeFlag b);
@@ -161,10 +160,6 @@ void tst_qfile::initTestCase()
 {
 }
 
-void tst_qfile::cleanupTestCase()
-{
-}
-
 void tst_qfile::readFile_data(BenchmarkType type, QIODevice::OpenModeFlag t,
                               QIODevice::OpenModeFlag b)
 {
@@ -188,17 +183,6 @@ void tst_qfile::readFile_data(BenchmarkType type, QIODevice::OpenModeFlag t,
             << type << size << t << b;
     }
 }
-
-void tst_qfile::readBigFile_QFile() { readBigFile(); }
-void tst_qfile::readBigFile_QFSFileEngine()
-{
-    readBigFile();
-}
-void tst_qfile::readBigFile_posix()
-{
-    readBigFile();
-}
-void tst_qfile::readBigFile_Win32() { readBigFile(); }
 
 void tst_qfile::readBigFile_QFile_data()
 {
@@ -484,21 +468,6 @@ void tst_qfile::open()
     }
 
     removeFile();
-}
-
-
-void tst_qfile::readSmallFiles_QFile() { readSmallFiles(); }
-void tst_qfile::readSmallFiles_QFSFileEngine()
-{
-    readSmallFiles();
-}
-void tst_qfile::readSmallFiles_posix()
-{
-    readSmallFiles();
-}
-void tst_qfile::readSmallFiles_Win32()
-{
-    readSmallFiles();
 }
 
 void tst_qfile::readSmallFiles_QFile_data()
