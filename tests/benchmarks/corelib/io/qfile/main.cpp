@@ -170,9 +170,12 @@ void tst_qfile::readFile_data(BenchmarkType type, QIODevice::OpenModeFlag t,
 
     QByteArray flagstring;
     if (t & QIODevice::Text)
-        flagstring += "textMode ";
-    if (b & QIODevice::Unbuffered)
-        flagstring += "unbuffered ";
+        flagstring += "textMode";
+    if (b & QIODevice::Unbuffered) {
+        if (flagstring.size())
+            flagstring += ' ';
+        flagstring += "unbuffered";
+    }
     if (flagstring.isEmpty())
         flagstring = "none";
 
