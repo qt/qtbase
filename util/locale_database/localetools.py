@@ -40,8 +40,8 @@ Classes:
 import os
 import tempfile
 
-class Error (StandardError):
-    __upinit = StandardError.__init__
+class Error (Exception):
+    __upinit = Exception.__init__
     def __init__(self, msg, *args):
         self.__upinit(msg, *args)
         self.message = msg

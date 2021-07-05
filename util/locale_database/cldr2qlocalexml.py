@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # coding=utf8
 #############################################################################
 ##
@@ -99,10 +99,6 @@ def main(args, out, err):
     if args:
         usage(name, err, 'Too many arguments - excess: ' + ' '.join(args))
         return 1
-
-    if emit.encoding != 'UTF-8' or (emit.encoding is None and sys.getdefaultencoding() != 'UTF-8'):
-        reload(sys) # Weirdly, this gets a richer sys module than the plain import got us !
-        sys.setdefaultencoding('UTF-8')
 
     # TODO - command line options to tune choice of grumble and whitter:
     reader = CldrReader(root, err.write, err.write)
