@@ -4026,6 +4026,7 @@ QDebug operator<<(QDebug dbg, const QEvent *e)
     }
     // More useful event output could be added here
     const QEvent::Type type = e->type();
+    bool isMouse = false;
     switch (type) {
     case QEvent::Expose:
 QT_WARNING_PUSH
@@ -4044,31 +4045,41 @@ QT_WARNING_POP
     case QEvent::NonClientAreaMouseMove:
     case QEvent::NonClientAreaMouseButtonRelease:
     case QEvent::NonClientAreaMouseButtonDblClick:
+        isMouse = true;
+        Q_FALLTHROUGH();
+    case QEvent::HoverEnter:
+    case QEvent::HoverMove:
+    case QEvent::HoverLeave:
     {
-        const QMouseEvent *me = static_cast<const QMouseEvent*>(e);
-        const Qt::MouseButton button = me->button();
-        const Qt::MouseButtons buttons = me->buttons();
-        dbg << "QMouseEvent(";
+        const QSinglePointEvent *spe = static_cast<const QSinglePointEvent*>(e);
+        const Qt::MouseButton button = spe->button();
+        const Qt::MouseButtons buttons = spe->buttons();
+        dbg << eventClassName(type) << '(';
         QtDebugUtils::formatQEnum(dbg, type);
-        if (type != QEvent::MouseMove && type != QEvent::NonClientAreaMouseMove) {
-            dbg << ' ';
-            QtDebugUtils::formatQEnum(dbg, button);
+        if (isMouse) {
+            if (type != QEvent::MouseMove && type != QEvent::NonClientAreaMouseMove) {
+                dbg << ' ';
+                QtDebugUtils::formatQEnum(dbg, button);
+            }
+            if (buttons && button != buttons) {
+                dbg << " btns=";
+                QtDebugUtils::formatQFlags(dbg, buttons);
+            }
         }
-        if (buttons && button != buttons) {
-            dbg << " btns=";
-            QtDebugUtils::formatQFlags(dbg, buttons);
-        }
-        QtDebugUtils::formatNonNullQFlags(dbg, ", ", me->modifiers());
+        QtDebugUtils::formatNonNullQFlags(dbg, ", ", spe->modifiers());
         dbg << " pos=";
-        QtDebugUtils::formatQPoint(dbg, me->position());
+        QtDebugUtils::formatQPoint(dbg, spe->position());
         dbg << " scn=";
-        QtDebugUtils::formatQPoint(dbg, me->scenePosition());
+        QtDebugUtils::formatQPoint(dbg, spe->scenePosition());
         dbg << " gbl=";
-        QtDebugUtils::formatQPoint(dbg, me->globalPosition());
-        dbg << " dev=" << me->device() << ')';
-        if (me->source() != Qt::MouseEventNotSynthesized) {
-            dbg << " source=";
-            QtDebugUtils::formatQEnum(dbg, me->source());
+        QtDebugUtils::formatQPoint(dbg, spe->globalPosition());
+        dbg << " dev=" << spe->device() << ')';
+        if (isMouse) {
+            auto src = static_cast<const QMouseEvent*>(e)->source();
+            if (src != Qt::MouseEventNotSynthesized) {
+                dbg << " source=";
+                QtDebugUtils::formatQEnum(dbg, src);
+            }
         }
     }
         break;
