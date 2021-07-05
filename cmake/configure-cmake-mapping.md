@@ -1,6 +1,4 @@
 The following table describes the mapping of configure options to CMake arguments.
-Note that not everything is implemented in configure/configure.bat yet.
-The effort of this is tracked in QTBUG-85373 and QTBUG-85349.
 
 | configure                             | cmake                                             | Notes                                                           |
 |---------------------------------------|---------------------------------------------------|-----------------------------------------------------------------|
