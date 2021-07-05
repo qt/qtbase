@@ -124,7 +124,7 @@ class Node (object):
         one."""
         seq = self.findAllChildren(tag)
         try:
-            node = seq.next()
+            node = next(seq)
         except StopIteration:
             raise Error('No child found where one was expected', tag)
         for it in seq:
@@ -197,7 +197,7 @@ class Supplement (XmlScanner):
                                 for e in elts):
             if elt.attributes:
                 yield (elt.nodeName,
-                       dict((k, v if isinstance(v, basestring) else v.nodeValue)
+                       dict((k, v if isinstance(v, str) else v.nodeValue)
                             for k, v in elt.attributes.items()))
 
 class LocaleScanner (object):
@@ -312,7 +312,7 @@ class LocaleScanner (object):
         except Error:
             money = self.find(xpath)
         money = self.__currencyFormats(money, plus, minus)
-        yield 'currencyFormat', money.next()
+        yield 'currencyFormat', next(money)
         neg = ''
         for it in money:
             assert not neg, 'There should be at most one more pattern'

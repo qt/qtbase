@@ -60,7 +60,7 @@ def _convert_pattern(pattern):
         "v" : "t", "vv" : "t", "vvv" : "t", "vvvv" : "t", # timezone
         "V" : "t", "VV" : "t", "VVV" : "t", "VVVV" : "t"  # timezone
     }
-    if qt_patterns.has_key(pattern):
+    if pattern in qt_patterns:
         return qt_patterns[pattern]
     for r,v in qt_regexps.items():
         pattern = re.sub(r, v, pattern)

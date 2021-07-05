@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 #############################################################################
 ##
 ## Copyright (C) 2021 The Qt Company Ltd.
@@ -162,8 +162,7 @@ class LocaleDataWriter (LocaleSourceEditor):
         def keyLikely(entry):
             have = entry[1] # Numeric id triple
             return have[0] or huge, have[2] or huge, have[1] or huge # language, region, script
-        likely = list(likely) # Turn generator into list so we can sort it
-        likely.sort(key=keyLikely)
+        likely = sorted(likely, key=keyLikely)
 
         i = 0
         self.writer.write('static const QLocaleId likely_subtags[] = {\n')

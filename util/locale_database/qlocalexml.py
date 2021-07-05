@@ -36,14 +36,14 @@ Provides classes:
 Support:
   Spacer -- provides control over indentation of the output.
 """
-from __future__ import print_function
+
 from xml.sax.saxutils import escape
 
 from localetools import Error
 
 # Tools used by Locale:
 def camel(seq):
-    yield seq.next()
+    yield next(seq)
     for word in seq:
         yield word.capitalize()
 
@@ -58,7 +58,7 @@ def startCount(c, text): # strspn
     """First index in text where it doesn't have a character in c"""
     assert text and text[0] in c
     try:
-        return (j for j, d in enumerate(text) if d not in c).next()
+        return next((j for j, d in enumerate(text) if d not in c))
     except StopIteration:
         return len(text)
 
@@ -166,7 +166,7 @@ class QLocaleXmlReader (object):
 
     def languageIndices(self, locales):
         index = 0
-        for key, value in self.languages.iteritems():
+        for key, value in self.languages.items():
             i, count = 0, locales.count(key)
             if count > 0:
                 i = index
@@ -360,9 +360,7 @@ class QLocaleXmlWriter (object):
         self.__openTag('locale')
         self.__writeLocale(Locale.C(calendars), calendars)
         self.__closeTag('locale')
-        keys = locales.keys()
-        keys.sort()
-        for key in keys:
+        for key in sorted(locales.keys()):
             self.__openTag('locale')
             self.__writeLocale(locales[key], calendars)
             self.__closeTag('locale')
@@ -403,7 +401,7 @@ class QLocaleXmlWriter (object):
 
     def __enumTable(self, tag, table):
         self.__openTag(tag + 'List')
-        for key, value in table.iteritems():
+        for key, value in table.items():
             self.__openTag(tag)
             self.inTag('name', value[0])
             self.inTag('id', key)
@@ -545,7 +543,7 @@ class Locale (object):
                 '_'.join((k, cal))
                 for k in self.propsMonthDay('months')
                 for cal in calendars):
-            write(key, escape(get(key)).encode('utf-8'))
+            write(key, escape(get(key)))
 
         write('groupSizes', ';'.join(str(x) for x in get('groupSizes')))
         for key in ('currencyDigits', 'currencyRounding'):

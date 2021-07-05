@@ -153,7 +153,7 @@ class CldrReader (object):
 
     def __parseTags(self, locale):
         tags = self.__splitLocale(locale)
-        language = tags.next()
+        language = next(tags)
         script = territory = variant = ''
         try:
             script, territory, variant = tags
@@ -171,10 +171,10 @@ class CldrReader (object):
         single tag (i.e. contains no underscores).  Always yields 1 or
         4 values, never 2 or 3."""
         tags = iter(name.split('_'))
-        yield tags.next() # Language
+        yield next(tags) # Language
 
         try:
-            tag = tags.next()
+            tag = next(tags)
         except StopIteration:
             return
 
@@ -182,7 +182,7 @@ class CldrReader (object):
         if len(tag) == 4 and tag[0].isupper() and tag[1:].islower():
             yield tag
             try:
-                tag = tags.next()
+                tag = next(tags)
             except StopIteration:
                 tag = ''
         else:
@@ -192,7 +192,7 @@ class CldrReader (object):
         if tag and tag.isupper() or tag.isdigit():
             yield tag
             try:
-                tag = tags.next()
+                tag = next(tags)
             except StopIteration:
                 tag = ''
         else:
@@ -726,7 +726,7 @@ enumdata.py (keeping the old name as an alias):
             except (KeyError, ValueError, TypeError):
                 pass
             else:
-                if key not in seen or not elt.attributes.has_key('alt'):
+                if key not in seen or 'alt' not in elt.attributes:
                     yield key, value
                     seen.add(key)
 
