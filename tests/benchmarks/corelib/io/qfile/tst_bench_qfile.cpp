@@ -615,4 +615,4 @@ void tst_qfile::readSmallFiles()
 
 QTEST_MAIN(tst_qfile)
 
-#include "main.moc"
+#include "tst_bench_qfile.moc"
