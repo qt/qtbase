@@ -249,7 +249,7 @@ void tst_qfile::readBigFile()
 
     char buffer[BUFSIZE];
     switch (testType) {
-        case(QFileBenchmark): {
+        case QFileBenchmark: {
             QFile file(tempDir.filename);
             file.open(QIODevice::ReadOnly|textMode|bufferedMode);
             QBENCHMARK {
@@ -261,7 +261,7 @@ void tst_qfile::readBigFile()
         }
         break;
 #ifdef QT_BUILD_INTERNAL
-        case(QFSFileEngineBenchmark): {
+        case QFSFileEngineBenchmark: {
             QFSFileEngine fse(tempDir.filename);
             fse.open(QIODevice::ReadOnly|textMode|bufferedMode);
             QBENCHMARK {
@@ -273,7 +273,7 @@ void tst_qfile::readBigFile()
         }
         break;
 #endif
-        case(PosixBenchmark): {
+        case PosixBenchmark: {
             QByteArray data = tempDir.filename.toLocal8Bit();
             const char* cfilename = data.constData();
             FILE* cfile = ::fopen(cfilename, "rb");
@@ -285,11 +285,11 @@ void tst_qfile::readBigFile()
             ::fclose(cfile);
         }
         break;
-        case(QFileFromPosixBenchmark): {
+        case QFileFromPosixBenchmark: {
             // No gain in benchmarking this case
         }
         break;
-        case(Win32Benchmark): {
+        case Win32Benchmark: {
 #ifdef Q_OS_WIN
             HANDLE hndl;
 
@@ -336,7 +336,7 @@ void tst_qfile::seek()
     int i = 0;
 
     switch (testType) {
-        case(QFileBenchmark): {
+        case QFileBenchmark: {
             QFile file(tempDir.filename);
             file.open(QIODevice::ReadOnly);
             QBENCHMARK {
@@ -347,7 +347,7 @@ void tst_qfile::seek()
         }
         break;
 #ifdef QT_BUILD_INTERNAL
-        case(QFSFileEngineBenchmark): {
+        case QFSFileEngineBenchmark: {
             QFSFileEngine fse(tempDir.filename);
             fse.open(QIODevice::ReadOnly | QIODevice::Unbuffered);
             QBENCHMARK {
@@ -358,7 +358,7 @@ void tst_qfile::seek()
         }
         break;
 #endif
-        case(PosixBenchmark): {
+        case PosixBenchmark: {
             QByteArray data = tempDir.filename.toLocal8Bit();
             const char* cfilename = data.constData();
             FILE* cfile = ::fopen(cfilename, "rb");
@@ -369,11 +369,11 @@ void tst_qfile::seek()
             ::fclose(cfile);
         }
         break;
-        case(QFileFromPosixBenchmark): {
+        case QFileFromPosixBenchmark: {
             // No gain in benchmarking this case
         }
         break;
-        case(Win32Benchmark): {
+        case Win32Benchmark: {
 #ifdef Q_OS_WIN
             HANDLE hndl;
 
@@ -414,7 +414,7 @@ void tst_qfile::open()
     QFETCH(tst_qfile::BenchmarkType, testType);
 
     switch (testType) {
-        case(QFileBenchmark): {
+        case QFileBenchmark: {
             QBENCHMARK {
                 QFile file(tempDir.filename);
                 file.open(QIODevice::ReadOnly);
@@ -423,7 +423,7 @@ void tst_qfile::open()
         }
         break;
 #ifdef QT_BUILD_INTERNAL
-        case(QFSFileEngineBenchmark): {
+        case QFSFileEngineBenchmark: {
             QBENCHMARK {
                 QFSFileEngine fse(tempDir.filename);
                 fse.open(QIODevice::ReadOnly | QIODevice::Unbuffered);
@@ -432,7 +432,7 @@ void tst_qfile::open()
         }
         break;
 #endif
-        case(PosixBenchmark): {
+        case PosixBenchmark: {
             // ensure we don't account toLocal8Bit()
             QByteArray data = tempDir.filename.toLocal8Bit();
             const char* cfilename = data.constData();
@@ -443,7 +443,7 @@ void tst_qfile::open()
             }
         }
         break;
-        case(QFileFromPosixBenchmark): {
+        case QFileFromPosixBenchmark: {
             // ensure we don't account toLocal8Bit()
             QByteArray data = tempDir.filename.toLocal8Bit();
             const char* cfilename = data.constData();
@@ -457,7 +457,7 @@ void tst_qfile::open()
             ::fclose(cfile);
         }
         break;
-        case(Win32Benchmark): {
+        case Win32Benchmark: {
 #ifdef Q_OS_WIN
             HANDLE hndl;
 
@@ -524,7 +524,7 @@ void tst_qfile::readSmallFiles()
     char buffer[BUFSIZE];
 
     switch (testType) {
-        case(QFileBenchmark): {
+        case QFileBenchmark: {
             QList<QFile*> fileList;
             for (const QString &file : files) {
                 QFile *f = new QFile(tempDir.filePath(file));
@@ -546,7 +546,7 @@ void tst_qfile::readSmallFiles()
         }
         break;
 #ifdef QT_BUILD_INTERNAL
-        case(QFSFileEngineBenchmark): {
+        case QFSFileEngineBenchmark: {
             QList<QFSFileEngine*> fileList;
             for (const QString &file : files) {
                 QFSFileEngine *fse = new QFSFileEngine(tempDir.filePath(file));
@@ -566,7 +566,7 @@ void tst_qfile::readSmallFiles()
         }
         break;
 #endif
-        case(PosixBenchmark): {
+        case PosixBenchmark: {
             QList<FILE *> fileList;
             for (const QString &file : files)
                 fileList.append(::fopen(QFile::encodeName(tempDir.filePath(file)).constData(), "rb"));
@@ -583,11 +583,11 @@ void tst_qfile::readSmallFiles()
                 ::fclose(cfile);
         }
         break;
-        case(QFileFromPosixBenchmark): {
+        case QFileFromPosixBenchmark: {
             // No gain in benchmarking this case
         }
         break;
-        case(Win32Benchmark): {
+        case Win32Benchmark: {
 #ifdef Q_OS_WIN
             HANDLE hndl;
 
