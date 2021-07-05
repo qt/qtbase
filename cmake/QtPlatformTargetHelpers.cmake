@@ -7,7 +7,7 @@ function(qt_internal_setup_public_platform_target)
     add_library(${INSTALL_CMAKE_NAMESPACE}::Platform ALIAS Platform)
     target_include_directories(Platform
         INTERFACE
-        $<BUILD_INTERFACE:${QT_PLATFORM_DEFINITION_DIR_ABSOLUTE}>
+        $<BUILD_INTERFACE:${QT_PLATFORM_DEFINITION_BUILD_INTERFACE_DIR}>
         $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
         $<INSTALL_INTERFACE:${QT_PLATFORM_DEFINITION_DIR}>
         $<INSTALL_INTERFACE:${INSTALL_INCLUDEDIR}>
