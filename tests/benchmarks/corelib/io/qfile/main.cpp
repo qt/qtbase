@@ -108,9 +108,8 @@ private slots:
     void readBigFile_Win32();
 
 private:
-    void readBigFile_data(BenchmarkType type, QIODevice::OpenModeFlag t, QIODevice::OpenModeFlag b);
+    void readFile_data(BenchmarkType type, QIODevice::OpenModeFlag t, QIODevice::OpenModeFlag b);
     void readBigFile();
-    void readSmallFiles_data(BenchmarkType type, QIODevice::OpenModeFlag t, QIODevice::OpenModeFlag b);
     void readSmallFiles();
     void createFile();
     void fillFile(int factor=FACTOR);
@@ -166,6 +165,30 @@ void tst_qfile::cleanupTestCase()
 {
 }
 
+void tst_qfile::readFile_data(BenchmarkType type, QIODevice::OpenModeFlag t,
+                              QIODevice::OpenModeFlag b)
+{
+    QTest::addColumn<tst_qfile::BenchmarkType>("testType");
+    QTest::addColumn<int>("blockSize");
+    QTest::addColumn<QFile::OpenModeFlag>("textMode");
+    QTest::addColumn<QFile::OpenModeFlag>("bufferedMode");
+
+    QByteArray flagstring;
+    if (t & QIODevice::Text)
+        flagstring += "textMode ";
+    if (b & QIODevice::Unbuffered)
+        flagstring += "unbuffered ";
+    if (flagstring.isEmpty())
+        flagstring = "none";
+
+    const int kbs[] = {1, 2, 8, 16, 32, 512};
+    for (int kb : kbs) {
+        const int size = 1024 * kb;
+        QTest::addRow("BS: %d, Flags: %s", size, flagstring.constData())
+            << type << size << t << b;
+    }
+}
+
 void tst_qfile::readBigFile_QFile() { readBigFile(); }
 void tst_qfile::readBigFile_QFSFileEngine()
 {
@@ -179,10 +202,10 @@ void tst_qfile::readBigFile_Win32() { readBigFile(); }
 
 void tst_qfile::readBigFile_QFile_data()
 {
-    readBigFile_data(QFileBenchmark, QIODevice::NotOpen, QIODevice::NotOpen);
-    readBigFile_data(QFileBenchmark, QIODevice::NotOpen, QIODevice::Unbuffered);
-    readBigFile_data(QFileBenchmark, QIODevice::Text, QIODevice::NotOpen);
-    readBigFile_data(QFileBenchmark, QIODevice::Text, QIODevice::Unbuffered);
+    readFile_data(QFileBenchmark, QIODevice::NotOpen, QIODevice::NotOpen);
+    readFile_data(QFileBenchmark, QIODevice::NotOpen, QIODevice::Unbuffered);
+    readFile_data(QFileBenchmark, QIODevice::Text, QIODevice::NotOpen);
+    readFile_data(QFileBenchmark, QIODevice::Text, QIODevice::Unbuffered);
 
 }
 
@@ -190,8 +213,8 @@ void tst_qfile::readBigFile_QFSFileEngine_data()
 {
 #ifdef QT_BUILD_INTERNAL
     // Support for buffering dropped at 5.10, so only test Unbuffered
-    readBigFile_data(QFSFileEngineBenchmark, QIODevice::NotOpen, QIODevice::Unbuffered);
-    readBigFile_data(QFSFileEngineBenchmark, QIODevice::Text, QIODevice::Unbuffered);
+    readFile_data(QFSFileEngineBenchmark, QIODevice::NotOpen, QIODevice::Unbuffered);
+    readFile_data(QFSFileEngineBenchmark, QIODevice::Text, QIODevice::Unbuffered);
 #else
     QSKIP("This test requires -developer-build.");
 #endif
@@ -199,35 +222,16 @@ void tst_qfile::readBigFile_QFSFileEngine_data()
 
 void tst_qfile::readBigFile_posix_data()
 {
-    readBigFile_data(PosixBenchmark, QIODevice::NotOpen, QIODevice::NotOpen);
+    readFile_data(PosixBenchmark, QIODevice::NotOpen, QIODevice::NotOpen);
 }
 
 void tst_qfile::readBigFile_Win32_data()
 {
 #ifdef Q_OS_WIN
-    readBigFile_data(Win32Benchmark, QIODevice::NotOpen, QIODevice::NotOpen);
+    readFile_data(Win32Benchmark, QIODevice::NotOpen, QIODevice::NotOpen);
 #else
     QSKIP("This is Windows only benchmark.");
 #endif
-}
-
-void tst_qfile::readBigFile_data(BenchmarkType type, QIODevice::OpenModeFlag t, QIODevice::OpenModeFlag b)
-{
-    QTest::addColumn<tst_qfile::BenchmarkType>("testType");
-    QTest::addColumn<int>("blockSize");
-    QTest::addColumn<QFile::OpenModeFlag>("textMode");
-    QTest::addColumn<QFile::OpenModeFlag>("bufferedMode");
-
-    const int bs[] = {1024, 1024*2, 1024*8, 1024*16, 1024*32,1024*512};
-    int bs_entries = sizeof(bs)/sizeof(const int);
-
-    QString flagstring;
-    if (t & QIODevice::Text)       flagstring += "textMode ";
-    if (b & QIODevice::Unbuffered) flagstring += "unbuffered ";
-    if (flagstring.isEmpty())      flagstring = "none";
-
-    for (int i=0; i<bs_entries; ++i)
-        QTest::newRow((QString("BS: %1, Flags: %2" )).arg(bs[i]).arg(flagstring).toLatin1().constData()) << type << bs[i] << t << b;
 }
 
 void tst_qfile::readBigFile()
@@ -521,10 +525,10 @@ void tst_qfile::readSmallFiles_Win32()
 
 void tst_qfile::readSmallFiles_QFile_data()
 {
-    readSmallFiles_data(QFileBenchmark, QIODevice::NotOpen, QIODevice::NotOpen);
-    readSmallFiles_data(QFileBenchmark, QIODevice::NotOpen, QIODevice::Unbuffered);
-    readSmallFiles_data(QFileBenchmark, QIODevice::Text, QIODevice::NotOpen);
-    readSmallFiles_data(QFileBenchmark, QIODevice::Text, QIODevice::Unbuffered);
+    readFile_data(QFileBenchmark, QIODevice::NotOpen, QIODevice::NotOpen);
+    readFile_data(QFileBenchmark, QIODevice::NotOpen, QIODevice::Unbuffered);
+    readFile_data(QFileBenchmark, QIODevice::Text, QIODevice::NotOpen);
+    readFile_data(QFileBenchmark, QIODevice::Text, QIODevice::Unbuffered);
 
 }
 
@@ -532,8 +536,8 @@ void tst_qfile::readSmallFiles_QFSFileEngine_data()
 {
 #ifdef QT_BUILD_INTERNAL
     // Support for buffering dropped at 5.10, so only test Unbuffered
-    readSmallFiles_data(QFSFileEngineBenchmark, QIODevice::NotOpen, QIODevice::Unbuffered);
-    readSmallFiles_data(QFSFileEngineBenchmark, QIODevice::Text, QIODevice::Unbuffered);
+    readFile_data(QFSFileEngineBenchmark, QIODevice::NotOpen, QIODevice::Unbuffered);
+    readFile_data(QFSFileEngineBenchmark, QIODevice::Text, QIODevice::Unbuffered);
 #else
     QSKIP("This test requires -developer-build.");
 #endif
@@ -541,37 +545,17 @@ void tst_qfile::readSmallFiles_QFSFileEngine_data()
 
 void tst_qfile::readSmallFiles_posix_data()
 {
-    readSmallFiles_data(PosixBenchmark, QIODevice::NotOpen, QIODevice::NotOpen);
+    readFile_data(PosixBenchmark, QIODevice::NotOpen, QIODevice::NotOpen);
 }
 
 void tst_qfile::readSmallFiles_Win32_data()
 {
 
 #ifdef Q_OS_WIN
-    readSmallFiles_data(Win32Benchmark, QIODevice::NotOpen, QIODevice::NotOpen);
+    readFile_data(Win32Benchmark, QIODevice::NotOpen, QIODevice::NotOpen);
 #else
     QSKIP("This is Windows only benchmark.");
 #endif
-}
-
-void tst_qfile::readSmallFiles_data(BenchmarkType type, QIODevice::OpenModeFlag t, QIODevice::OpenModeFlag b)
-{
-    QTest::addColumn<tst_qfile::BenchmarkType>("testType");
-    QTest::addColumn<int>("blockSize");
-    QTest::addColumn<QFile::OpenModeFlag>("textMode");
-    QTest::addColumn<QFile::OpenModeFlag>("bufferedMode");
-
-    const int bs[] = {1024, 1024*2, 1024*8, 1024*16, 1024*32,1024*512};
-    int bs_entries = sizeof(bs)/sizeof(const int);
-
-    QString flagstring;
-    if (t & QIODevice::Text)       flagstring += "textMode ";
-    if (b & QIODevice::Unbuffered) flagstring += "unbuffered ";
-    if (flagstring.isEmpty())      flagstring = "none";
-
-    for (int i=0; i<bs_entries; ++i)
-        QTest::newRow((QString("BS: %1, Flags: %2" )).arg(bs[i]).arg(flagstring).toLatin1().constData()) << type << bs[i] << t << b;
-
 }
 
 void tst_qfile::createSmallFiles()
