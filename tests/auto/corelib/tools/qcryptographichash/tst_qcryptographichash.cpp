@@ -49,6 +49,7 @@ private slots:
     void blake2();
     void files_data();
     void files();
+    void hashLength_data();
     void hashLength();
 };
 
@@ -400,14 +401,22 @@ void tst_QCryptographicHash::files()
     }
 }
 
-void tst_QCryptographicHash::hashLength()
+void tst_QCryptographicHash::hashLength_data()
 {
+    QTest::addColumn<QCryptographicHash::Algorithm>("algorithm");
     auto metaEnum = QMetaEnum::fromType<QCryptographicHash::Algorithm>();
     for (int i = 0, value = metaEnum.value(i); value != -1; value = metaEnum.value(++i)) {
         auto algorithm = QCryptographicHash::Algorithm(value);
-        QByteArray output = QCryptographicHash::hash(QByteArrayLiteral("test"), algorithm);
-        QCOMPARE(QCryptographicHash::hashLength(algorithm), output.length());
+        QTest::addRow("%s", metaEnum.valueToKey(value)) << algorithm;
     }
+}
+
+void tst_QCryptographicHash::hashLength()
+{
+    QFETCH(const QCryptographicHash::Algorithm, algorithm);
+
+    QByteArray output = QCryptographicHash::hash(QByteArrayLiteral("test"), algorithm);
+    QCOMPARE(QCryptographicHash::hashLength(algorithm), output.length());
 }
 
 QTEST_MAIN(tst_QCryptographicHash)
