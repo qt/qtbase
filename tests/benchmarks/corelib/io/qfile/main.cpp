@@ -169,11 +169,7 @@ void tst_qfile::cleanupTestCase()
 void tst_qfile::readBigFile_QFile() { readBigFile(); }
 void tst_qfile::readBigFile_QFSFileEngine()
 {
-#ifdef QT_BUILD_INTERNAL
     readBigFile();
-#else
-    QSKIP("This test requires -developer-build.");
-#endif
 }
 void tst_qfile::readBigFile_posix()
 {
@@ -197,8 +193,7 @@ void tst_qfile::readBigFile_QFSFileEngine_data()
     readBigFile_data(QFSFileEngineBenchmark, QIODevice::NotOpen, QIODevice::Unbuffered);
     readBigFile_data(QFSFileEngineBenchmark, QIODevice::Text, QIODevice::Unbuffered);
 #else
-    QTest::addColumn<int>("dummy");
-    QTest::newRow("Test will be skipped") << -1;
+    QSKIP("This test requires -developer-build.");
 #endif
 }
 
@@ -209,9 +204,12 @@ void tst_qfile::readBigFile_posix_data()
 
 void tst_qfile::readBigFile_Win32_data()
 {
+#ifdef Q_OS_WIN
     readBigFile_data(Win32Benchmark, QIODevice::NotOpen, QIODevice::NotOpen);
+#else
+    QSKIP("This is Windows only benchmark.");
+#endif
 }
-
 
 void tst_qfile::readBigFile_data(BenchmarkType type, QIODevice::OpenModeFlag t, QIODevice::OpenModeFlag b)
 {
@@ -238,11 +236,6 @@ void tst_qfile::readBigFile()
     QFETCH(int, blockSize);
     QFETCH(QFile::OpenModeFlag, textMode);
     QFETCH(QFile::OpenModeFlag, bufferedMode);
-
-#ifndef Q_OS_WIN
-    if (testType == Win32Benchmark)
-        QSKIP("This is Windows only benchmark.");
-#endif
 
     char *buffer = new char[BUFSIZE];
     createFile();
@@ -493,11 +486,7 @@ void tst_qfile::open()
 void tst_qfile::readSmallFiles_QFile() { readSmallFiles(); }
 void tst_qfile::readSmallFiles_QFSFileEngine()
 {
-#ifdef QT_BUILD_INTERNAL
     readSmallFiles();
-#else
-    QSKIP("This test requires -developer-build.");
-#endif
 }
 void tst_qfile::readSmallFiles_posix()
 {
@@ -524,8 +513,7 @@ void tst_qfile::readSmallFiles_QFSFileEngine_data()
     readSmallFiles_data(QFSFileEngineBenchmark, QIODevice::NotOpen, QIODevice::Unbuffered);
     readSmallFiles_data(QFSFileEngineBenchmark, QIODevice::Text, QIODevice::Unbuffered);
 #else
-    QTest::addColumn<int>("dummy");
-    QTest::newRow("Test will be skipped") << -1;
+    QSKIP("This test requires -developer-build.");
 #endif
 }
 
@@ -536,9 +524,13 @@ void tst_qfile::readSmallFiles_posix_data()
 
 void tst_qfile::readSmallFiles_Win32_data()
 {
-    readSmallFiles_data(Win32Benchmark, QIODevice::NotOpen, QIODevice::NotOpen);
-}
 
+#ifdef Q_OS_WIN
+    readSmallFiles_data(Win32Benchmark, QIODevice::NotOpen, QIODevice::NotOpen);
+#else
+    QSKIP("This is Windows only benchmark.");
+#endif
+}
 
 void tst_qfile::readSmallFiles_data(BenchmarkType type, QIODevice::OpenModeFlag t, QIODevice::OpenModeFlag b)
 {
@@ -591,11 +583,6 @@ void tst_qfile::readSmallFiles()
     QFETCH(int, blockSize);
     QFETCH(QFile::OpenModeFlag, textMode);
     QFETCH(QFile::OpenModeFlag, bufferedMode);
-
-#ifndef Q_OS_WIN
-    if (testType == Win32Benchmark)
-        QSKIP("This is Windows only benchmark.");
-#endif
 
     createSmallFiles();
 
