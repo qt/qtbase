@@ -407,8 +407,9 @@ void QLineEditIconButton::setHideWithText(bool hide)
 
 void QLineEditIconButton::onAnimationFinished()
 {
-    if (shouldHideWithText() && isVisible() && !m_wasHidden) {
+    if (shouldHideWithText() && isVisible() && m_fadingOut) {
         hide();
+        m_fadingOut = false;
 
         // Invalidate previous geometry to take into account new size of side widgets
         if (auto le = lineEditPrivate())
@@ -418,7 +419,7 @@ void QLineEditIconButton::onAnimationFinished()
 
 void QLineEditIconButton::animateShow(bool visible)
 {
-    m_wasHidden = visible;
+    m_fadingOut = !visible;
 
     if (shouldHideWithText() && !isVisible()) {
         show();
