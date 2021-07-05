@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -193,9 +193,8 @@ void tst_qfile::readBigFile_QFile_data()
 void tst_qfile::readBigFile_QFSFileEngine_data()
 {
 #ifdef QT_BUILD_INTERNAL
-    readBigFile_data(QFSFileEngineBenchmark, QIODevice::NotOpen, QIODevice::NotOpen);
+    // Support for buffering dropped at 5.10, so only test Unbuffered
     readBigFile_data(QFSFileEngineBenchmark, QIODevice::NotOpen, QIODevice::Unbuffered);
-    readBigFile_data(QFSFileEngineBenchmark, QIODevice::Text, QIODevice::NotOpen);
     readBigFile_data(QFSFileEngineBenchmark, QIODevice::Text, QIODevice::Unbuffered);
 #else
     QTest::addColumn<int>("dummy");
@@ -365,7 +364,7 @@ void tst_qfile::seek()
 #ifdef QT_BUILD_INTERNAL
         case(QFSFileEngineBenchmark): {
             QFSFileEngine fse(filename);
-            fse.open(QIODevice::ReadOnly);
+            fse.open(QIODevice::ReadOnly | QIODevice::Unbuffered);
             QBENCHMARK {
                 i=(i+1)%sp_size;
                 fse.seek(seekpos[i]);
@@ -455,7 +454,7 @@ void tst_qfile::open()
         case(QFSFileEngineBenchmark): {
             QBENCHMARK {
                 QFSFileEngine fse(filename);
-                fse.open(QIODevice::ReadOnly);
+                fse.open(QIODevice::ReadOnly | QIODevice::Unbuffered);
                 fse.close();
             }
         }
@@ -543,9 +542,8 @@ void tst_qfile::readSmallFiles_QFile_data()
 void tst_qfile::readSmallFiles_QFSFileEngine_data()
 {
 #ifdef QT_BUILD_INTERNAL
-    readSmallFiles_data(QFSFileEngineBenchmark, QIODevice::NotOpen, QIODevice::NotOpen);
+    // Support for buffering dropped at 5.10, so only test Unbuffered
     readSmallFiles_data(QFSFileEngineBenchmark, QIODevice::NotOpen, QIODevice::Unbuffered);
-    readSmallFiles_data(QFSFileEngineBenchmark, QIODevice::Text, QIODevice::NotOpen);
     readSmallFiles_data(QFSFileEngineBenchmark, QIODevice::Text, QIODevice::Unbuffered);
 #else
     QTest::addColumn<int>("dummy");
