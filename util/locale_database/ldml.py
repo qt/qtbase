@@ -276,7 +276,7 @@ class LocaleScanner (object):
 
         First argument, lookup, is a callable that maps a numbering
         system's name to certain data about the system, as a mapping;
-        we expect this to have u'digits' as a key.
+        we expect this to have 'digits' as a key.
         """
         system = self.find('numbers/defaultNumberingSystem')
         stem = 'numbers/symbols[numberSystem={}]/'.format(system)
@@ -580,7 +580,7 @@ class LocaleScanner (object):
             # According to http://www.unicode.org/reports/tr35/#Number_Format_Patterns
             # there can be doubled or trippled currency sign, however none of the
             # locales use that.
-            p = p.replace(u'\xa4', "%2")
+            p = p.replace('\xa4', "%2")
             # Single quote goes away, but double goes to single:
             p = p.replace("''", '###').replace("'", '').replace('###', "'")
             # Use number system's signs:

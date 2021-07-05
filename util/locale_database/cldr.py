@@ -309,7 +309,7 @@ class CldrAccess (object):
     def numberSystem(self, system):
         """Get a description of a numbering system.
 
-        Returns a mapping, with keys u'digits', u'type' and u'id'; the
+        Returns a mapping, with keys 'digits', 'type' and 'id'; the
         value for this last is system. Raises KeyError for unknown
         number system, ldml.Error on failure to load data."""
         try:
@@ -371,7 +371,7 @@ class CldrAccess (object):
                 text = '{} code {}'.format(key, value)
                 name = naming.get(value)
                 if name and value != 'POSIX':
-                    text += u' (could add {})'.format(name)
+                    text += ' (could add {})'.format(name)
                 parts.append(text)
         if len(parts) > 1:
             parts[-1] = 'and ' + parts[-1]
@@ -381,10 +381,10 @@ class CldrAccess (object):
 
     @staticmethod
     def __checkEnum(given, proper, scraps,
-                    remap = { u'å': 'a', u'ã': 'a', u'ç': 'c', u'é': 'e', u'í': 'i', u'ü': 'u'},
+                    remap = { 'å': 'a', 'ã': 'a', 'ç': 'c', 'é': 'e', 'í': 'i', 'ü': 'u'},
                     prefix = { 'St.': 'Saint', 'U.S.': 'United States' },
                     suffixes = ( 'Han', ),
-                    skip = u'\u02bc'):
+                    skip = '\u02bc'):
         # Each is a { code: full name } mapping
         for code, name in given.items():
             try: right = proper[code]
@@ -484,7 +484,7 @@ enumdata.py (keeping the old name as an alias):
                 key = 0
             data['windowsKey'] = key
 
-            if code == u'001':
+            if code == '001':
                 defaults[key] = data['ianaList']
             else:
                 try:
