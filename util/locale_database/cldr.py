@@ -172,7 +172,11 @@ class CldrReader (object):
         4 values, never 2 or 3."""
         tags = iter(name.split('_'))
         yield tags.next() # Language
-        tag = tags.next() # may raise StopIteration
+
+        try:
+            tag = tags.next()
+        except StopIteration:
+            return
 
         # Script is always four letters, always capitalised:
         if len(tag) == 4 and tag[0].isupper() and tag[1:].islower():
@@ -201,10 +205,11 @@ class CldrReader (object):
         else:
             yield ''
 
-        # If nothing is left, StopIteration will avoid the warning:
-        if not tag:
-            tag = tags.next()
-        self.grumble('Ignoring unparsed cruft {} in {}\n'.format('_'.join(tag + tuple(tags)), name))
+        rest = [tag] if tag else []
+        rest.extend(tags)
+
+        if rest:
+            self.grumble('Ignoring unparsed cruft {} in {}\n'.format('_'.join(rest), name))
 
     def __getLocaleData(self, scan, calendars, language, script, territory, variant):
         ids, names = zip(*self.root.codesToIdName(language, script, territory, variant))
