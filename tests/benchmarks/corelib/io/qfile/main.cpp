@@ -265,9 +265,9 @@ void tst_qfile::readBigFile()
             QFSFileEngine fse(tempDir.filename);
             fse.open(QIODevice::ReadOnly|textMode|bufferedMode);
             QBENCHMARK {
-               //qWarning() << fse.supportsExtension(QAbstractFileEngine::AtEndExtension);
-               while(fse.read(buffer, blockSize));
-               fse.seek(0);
+                //qWarning() << fse.supportsExtension(QAbstractFileEngine::AtEndExtension);
+                while (fse.read(buffer, blockSize)) {}
+                fse.seek(0);
             }
             fse.close();
         }
@@ -526,21 +526,20 @@ void tst_qfile::readSmallFiles()
     switch (testType) {
         case(QFileBenchmark): {
             QList<QFile*> fileList;
-            Q_FOREACH(QString file, files) {
+            for (const QString &file : files) {
                 QFile *f = new QFile(tempDir.filePath(file));
                 f->open(QIODevice::ReadOnly|textMode|bufferedMode);
                 fileList.append(f);
             }
 
             QBENCHMARK {
-                Q_FOREACH(QFile *file, fileList) {
-                    while (!file->atEnd()) {
+                for (QFile *const file : qAsConst(fileList)) {
+                    while (!file->atEnd())
                        file->read(buffer, blockSize);
-                    }
                 }
             }
 
-            Q_FOREACH(QFile *file, fileList) {
+            for (QFile *const file : qAsConst(fileList)) {
                 file->close();
                 delete file;
             }
@@ -549,19 +548,18 @@ void tst_qfile::readSmallFiles()
 #ifdef QT_BUILD_INTERNAL
         case(QFSFileEngineBenchmark): {
             QList<QFSFileEngine*> fileList;
-            Q_FOREACH(QString file, files) {
+            for (const QString &file : files) {
                 QFSFileEngine *fse = new QFSFileEngine(tempDir.filePath(file));
                 fse->open(QIODevice::ReadOnly|textMode|bufferedMode);
                 fileList.append(fse);
             }
 
             QBENCHMARK {
-                Q_FOREACH(QFSFileEngine *fse, fileList) {
-                    while (fse->read(buffer, blockSize));
-                }
+                for (QFSFileEngine *const fse : qAsConst(fileList))
+                    while (fse->read(buffer, blockSize)) {}
             }
 
-            Q_FOREACH(QFSFileEngine *fse, fileList) {
+            for (QFSFileEngine *const fse : qAsConst(fileList)) {
                 fse->close();
                 delete fse;
             }
@@ -569,22 +567,20 @@ void tst_qfile::readSmallFiles()
         break;
 #endif
         case(PosixBenchmark): {
-            QList<FILE*> fileList;
-            Q_FOREACH(QString file, files) {
+            QList<FILE *> fileList;
+            for (const QString &file : files)
                 fileList.append(::fopen(QFile::encodeName(tempDir.filePath(file)).constData(), "rb"));
-            }
 
             QBENCHMARK {
-                Q_FOREACH(FILE* cfile, fileList) {
-                    while(!feof(cfile))
+                for (FILE *const cfile : qAsConst(fileList)) {
+                    while (!feof(cfile))
                         [[maybe_unused]] auto f = ::fread(buffer, blockSize, 1, cfile);
                     ::fseek(cfile, 0, SEEK_SET);
                 }
             }
 
-            Q_FOREACH(FILE* cfile, fileList) {
+            for (FILE *const cfile : qAsConst(fileList))
                 ::fclose(cfile);
-            }
         }
         break;
         case(QFileFromPosixBenchmark): {
