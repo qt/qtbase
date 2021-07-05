@@ -255,25 +255,21 @@ public:
 
 void tst_QtConcurrentThreadEngine::threadCount()
 {
-   //QTBUG-23333: This test is unstable
-
     const int repeats = 10;
     for (int i = 0; i < repeats; ++i) {
         (new ThreadCountUser())->startAsynchronously().waitForFinished();
         const auto count = threads.count();
-        const auto count_expected = QThreadPool::globalInstance()->maxThreadCount();
-        if (count != count_expected)
-            QEXPECT_FAIL("", "QTBUG-23333", Abort);
-        QCOMPARE(count, count_expected);
+        const auto maxThreadCount = QThreadPool::globalInstance()->maxThreadCount();
+        QVERIFY(count <= maxThreadCount);
+        QVERIFY(!threads.contains(QThread::currentThread()));
     }
 
     // Set the finish flag immediately, this should give us one thread only.
     for (int i = 0; i < repeats; ++i) {
         (new ThreadCountUser(true /*finishImmediately*/))->startAsynchronously().waitForFinished();
         const auto count = threads.count();
-        if (count != 1)
-            QEXPECT_FAIL("", "QTBUG-23333", Abort);
         QCOMPARE(count, 1);
+        QVERIFY(!threads.contains(QThread::currentThread()));
     }
 }
 
