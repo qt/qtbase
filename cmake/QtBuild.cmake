@@ -372,30 +372,6 @@ else()
     set(QT_QMAKE_HOST_MKSPEC "${QT_QMAKE_TARGET_MKSPEC}")
 endif()
 
-# Used by consumers of prefix builds via INSTALL_INTERFACE (relative path).
-set(QT_DEFAULT_PLATFORM_DEFINITION_DIR "${INSTALL_MKSPECSDIR}/${QT_QMAKE_TARGET_MKSPEC}")
-
-# Used by qtbase in prefix builds via BUILD_INTERFACE
-set(QT_PLATFORM_DEFINITION_BUILD_INTERFACE_BASE_DIR
-    "${CMAKE_CURRENT_LIST_DIR}/../mkspecs/"
-)
-
-# Used by qtbase and consumers in non-prefix builds via BUILD_INTERFACE
-if(NOT QT_WILL_INSTALL)
-    set(QT_PLATFORM_DEFINITION_BUILD_INTERFACE_BASE_DIR
-        "${QT_BUILD_DIR}/${INSTALL_MKSPECSDIR}"
-    )
-endif()
-
-get_filename_component(QT_PLATFORM_DEFINITION_BUILD_INTERFACE_DIR
-    "${QT_PLATFORM_DEFINITION_BUILD_INTERFACE_BASE_DIR}/${QT_QMAKE_TARGET_MKSPEC}"
-    ABSOLUTE
-)
-set(QT_PLATFORM_DEFINITION_BUILD_INTERFACE_DIR
-    "${QT_PLATFORM_DEFINITION_BUILD_INTERFACE_DIR}"
-    CACHE INTERNAL "Path to directory that contains qplatformdefs.h"
-)
-
 if(NOT EXISTS "${QT_MKSPECS_DIR}/${QT_QMAKE_TARGET_MKSPEC}")
     file(GLOB known_platforms
         LIST_DIRECTORIES true
@@ -413,8 +389,6 @@ endif()
 
 set(QT_PLATFORM_DEFINITIONS ${QT_DEFAULT_PLATFORM_DEFINITIONS}
     CACHE STRING "Qt platform specific pre-processor defines")
-set(QT_PLATFORM_DEFINITION_DIR "${QT_DEFAULT_PLATFORM_DEFINITION_DIR}"
-    CACHE PATH "Path to directory that contains qplatformdefs.h")
 
 set(QT_NAMESPACE "" CACHE STRING "Qt Namespace")
 
