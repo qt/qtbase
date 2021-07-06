@@ -10,7 +10,7 @@ qt_internal_add_plugin(QVkKhrDisplayIntegrationPlugin
         qvkkhrdisplayvulkaninstance.cpp qvkkhrdisplayvulkaninstance.h
     DEFINES
         QT_NO_FOREACH
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Core
         Qt::CorePrivate
         Qt::FbSupportPrivate

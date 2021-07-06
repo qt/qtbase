@@ -7,7 +7,7 @@ qt_internal_add_plugin(QNetworkManagerNetworkInformationPlugin
         qnetworkmanagernetworkinformationbackend.cpp
         qnetworkmanagerservice.h
         qnetworkmanagerservice.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::DBus
         Qt::NetworkPrivate
 )
