@@ -384,7 +384,7 @@ class QLocaleXmlWriter (object):
             grumble('Some enum members are unused, corresponding to these tags:\n')
             import textwrap
             def kvetch(kind, seq, g = grumble, w = textwrap.wrap):
-                g('\n\t'.join(w(' {}: '.format(kind) + ', '.join(seq), width=80)) + '\n')
+                g('\n\t'.join(w(' {}: '.format(kind) + ', '.join(sorted(seq)), width=80)) + '\n')
             if self.__languages:
                 kvetch('Languages', self.__languages)
             if self.__scripts:
