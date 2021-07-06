@@ -28,10 +28,6 @@ endif()
 unset(build_dir_absolute)
 unset(build_dir_realpath)
 
-# Early check to reduce chance of warning being lost in the output
-include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/QtCMakeVersionHelpers.cmake")
-qt_internal_check_for_suitable_cmake_version()
-
 # Run auto detection routines, but not when doing standalone tests. In that case, the detection
 # results are taken from either QtBuildInternals or the qt.toolchain.cmake file. Also, inhibit
 # auto-detection in a top-level build, because the top-level project file already includes it.
@@ -39,12 +35,29 @@ if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_SUPERBUILD)
     include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/QtAutoDetect.cmake)
 endif()
 
+# This call will load any provided cmake toolchain file.
 project(QtBase
     VERSION "${QT_REPO_MODULE_VERSION}"
     DESCRIPTION "Qt Base Libraries"
     HOMEPAGE_URL "https://qt.io/"
     LANGUAGES CXX C ASM
 )
+
+# Should this Qt be static or dynamically linked?
+option(BUILD_SHARED_LIBS "Build Qt statically or dynamically" ON)
+set(QT_BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})
+
+# This variable is also set in Qt6CoreConfigExtras.cmake, but it's not loaded when building
+# qtbase. Set it here so qt_add_plugin can compute the proper plugin flavor.
+set(QT6_IS_SHARED_LIBS_BUILD ${BUILD_SHARED_LIBS})
+
+# BUILD_SHARED_LIBS influences the minimum required CMake version. The value is set either by:
+#   a cache variable provided on the configure command line
+#   or set by QtAutoDetect.cmake depending on the platform
+#   or specified via a toolchain file that is loaded by the project() call
+#   or set by the option() call above
+include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/QtCMakeVersionHelpers.cmake")
+qt_internal_check_for_suitable_cmake_version()
 
 if(NOT QT_BUILD_STANDALONE_TESTS)
     ## Add some paths to check for cmake modules:
@@ -77,14 +90,6 @@ endif()
 qt_build_repo_begin()
 
 if(NOT QT_BUILD_STANDALONE_TESTS)
-    ## Should this Qt be static or dynamically linked?
-    option(BUILD_SHARED_LIBS "Build Qt statically or dynamically" ON)
-    set(QT_BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})
-
-    # This variable is also set in Qt6CoreConfigExtras.cmake, but it's not loaded when building
-    # qtbase. Set it here so qt_add_plugin can compute the proper plugin flavor.
-    set(QT6_IS_SHARED_LIBS_BUILD ${BUILD_SHARED_LIBS})
-
     ## Should this Qt be built with Werror?
     option(WARNINGS_ARE_ERRORS "Build Qt with warnings as errors" ${FEATURE_developer_build})
 
