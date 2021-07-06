@@ -3,6 +3,9 @@
 # Need an explicit call at the top level. This is the absolute minimum version
 # needed to configure the project with any combination of enabled features.
 # The call to qt_build_repo_begin() will upgrade policies further.
+#
+# The absolute minimum version for building Qt is 3.16 because for metatype.json generation, we
+# depend on being able to find the location of json files created by AUTOMOC/moc.
 cmake_minimum_required(VERSION 3.16)
 
 # Get the repo version and CMake policy details
