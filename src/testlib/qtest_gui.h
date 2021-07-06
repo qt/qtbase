@@ -186,7 +186,7 @@ inline bool qCompare(QImage const &t1, QImage const &t2,
         return compare_helper(false, msg, nullptr, nullptr, actual, expected, file, line);
     }
     return compare_helper(t1 == t2, "Compared values are not the same",
-                          toString(t1), toString(t2), actual, expected, file, line);
+                          nullptr, nullptr, actual, expected, file, line);
 }
 
 inline bool qCompare(QPixmap const &t1, QPixmap const &t2, const char *actual, const char *expected,
