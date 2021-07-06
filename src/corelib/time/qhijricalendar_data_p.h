@@ -59,7 +59,7 @@ QT_BEGIN_NAMESPACE
 // GENERATED PART STARTS HERE
 
 /*
-    This part of the file was generated on 2021-04-09 from the
+    This part of the file was generated on 2021-07-06 from the
     Common Locale Data Repository v39
 
     http://www.unicode.org/cldr/
@@ -561,13 +561,13 @@ static const QCalendarLocale locale_data[] = {
       {   249,    66,   117,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// Sardinian/Latin/Italy
       {   251,    66,   160,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// Sena/Latin/Mozambique
       {   252,    27,   207, 1032, 1122, 1219, 1219,  184,  184, 90, 97, 69, 69, 26, 26 },// Serbian/Cyrillic/Serbia
-      {   252,    66,    29, 7959, 8053, 8150, 8150,  184,  184, 94, 97, 72, 72, 26, 26 },// Serbian/Latin/Bosnia And Herzegovina
-      {   252,    66,   207, 7959, 8053, 8150, 8150,  184,  184, 94, 97, 72, 72, 26, 26 },// Serbian/Latin/Serbia
       {   252,    27,    29, 1032, 1122, 1219, 1219,  184,  184, 90, 97, 69, 69, 26, 26 },// Serbian/Cyrillic/Bosnia And Herzegovina
       {   252,    27,   126, 1032, 1122, 1219, 1219,  184,  184, 90, 97, 69, 69, 26, 26 },// Serbian/Cyrillic/Kosovo
       {   252,    27,   157, 1032, 1122, 1219, 1219,  184,  184, 90, 97, 69, 69, 26, 26 },// Serbian/Cyrillic/Montenegro
+      {   252,    66,    29, 7959, 8053, 8150, 8150,  184,  184, 94, 97, 72, 72, 26, 26 },// Serbian/Latin/Bosnia And Herzegovina
       {   252,    66,   126, 7959, 8053, 8150, 8150,  184,  184, 94, 97, 72, 72, 26, 26 },// Serbian/Latin/Kosovo
       {   252,    66,   157, 7959, 8053, 8150, 8150,  184,  184, 94, 97, 72, 72, 26, 26 },// Serbian/Latin/Montenegro
+      {   252,    66,   207, 7959, 8053, 8150, 8150,  184,  184, 94, 97, 72, 72, 26, 26 },// Serbian/Latin/Serbia
       {   253,    66,   230,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// Shambala/Latin/Tanzania
       {   254,    66,   261,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// Shona/Latin/Zimbabwe
       {   255,   141,    50,    0,    0,  106,  106,  184,  184,106,106, 78, 78, 26, 26 },// Sichuan Yi/Yi/China

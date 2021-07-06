@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 #############################################################################
 ##
-## Copyright (C) 2020 The Qt Company Ltd.
+## Copyright (C) 2021 The Qt Company Ltd.
 ## Contact: https://www.qt.io/licensing/
 ##
 ## This file is part of the test suite of the Qt Toolkit.
@@ -39,40 +39,49 @@ import datetime
 from qlocalexml import QLocaleXmlReader
 from localetools import unicode2hex, wrap_list, Error, Transcriber, SourceFileEditor
 
-def compareLocaleKeys(key1, key2):
-    if key1 == key2:
+def compareLocaleKeys(left, right):
+    """Compares two (language, script, territory) triples.
+
+    Returns a negative value if left should sort before right,
+    positive if left should sort after right and zero if they are
+    equal.
+
+    Loosely, it sorts by (language, script, territory) *but* sorts a
+    triple with the default territory for its language and script
+    before all other triples for that language, unless they meet the
+    same condition. In the case of the same language in two scripts,
+    if just one triple does have its default territory then it wins;
+    but if both have their respective default the special treatment of
+    default territory is skipped."""
+
+    # TODO: study the relationship between this and CLDR's likely
+    # sub-tags algorithm. Work out how locale sort-order impacts
+    # QLocale's likely sub-tag matching algorithms. Make sure this is
+    # sorting in an order compatible with those algorithms.
+    # TODO: should we compare territory before or after script ?
+
+    if left == right:
         return 0
 
-    if key1[0] != key2[0]: # First sort by language:
-        return key1[0] - key2[0]
+    if left[0] != right[0]: # First sort by language:
+        return left[0] - right[0]
 
     defaults = compareLocaleKeys.default_map
     # maps {(language, script): territory} by ID
-    try:
-        territory = defaults[key1[:2]]
-    except KeyError:
-        pass
-    else:
-        if key1[2] == territory:
-            return -1
-        if key2[2] == territory:
+    leftLand = defaults.get(left[:2])
+    rightLand = defaults.get(right[:2])
+
+    # If just one matches its default territory, it wins:
+    if leftLand is None or left[2] != leftLand:
+        if rightLand is not None and right[2] == rightLand:
             return 1
+        # else: Neither matches
+    elif rightLand is None or right[2] != rightLand:
+        return -1
+    # else: Both match
 
-    if key1[1] == key2[1]:
-        return key1[2] - key2[2]
-
-    try:
-        territory = defaults[key2[:2]]
-    except KeyError:
-        pass
-    else:
-        if key2[2] == territory:
-            return 1
-        if key1[2] == territory:
-            return -1
-
-    return key1[1] - key2[1]
-
+    # Compare script first, territory after:
+    return left[1] - right[1] or left[2] - right[2]
 
 class StringDataToken:
     def __init__(self, index, length, bits):
