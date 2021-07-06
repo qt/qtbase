@@ -480,16 +480,10 @@ void QCryptographicHashPrivate::addData(QByteArrayView bytes) noexcept
             break;
         case QCryptographicHash::RealSha3_224:
         case QCryptographicHash::Keccak_224:
-            sha3Update(&sha3Context, reinterpret_cast<const BitSequence *>(data), uint64_t(length) * 8);
-            break;
         case QCryptographicHash::RealSha3_256:
         case QCryptographicHash::Keccak_256:
-            sha3Update(&sha3Context, reinterpret_cast<const BitSequence *>(data), uint64_t(length) * 8);
-            break;
         case QCryptographicHash::RealSha3_384:
         case QCryptographicHash::Keccak_384:
-            sha3Update(&sha3Context, reinterpret_cast<const BitSequence *>(data), uint64_t(length) * 8);
-            break;
         case QCryptographicHash::RealSha3_512:
         case QCryptographicHash::Keccak_512:
             sha3Update(&sha3Context, reinterpret_cast<const BitSequence *>(data), uint64_t(length) * 8);
@@ -600,36 +594,18 @@ QByteArray QCryptographicHashPrivate::finalize()
         SHA512Result(&copy, reinterpret_cast<unsigned char *>(result.data()));
         break;
     }
-    case QCryptographicHash::RealSha3_224: {
-        sha3Finish(224, QCryptographicHashPrivate::Sha3Variant::Sha3);
-        break;
-    }
-    case QCryptographicHash::RealSha3_256: {
-        sha3Finish(256, QCryptographicHashPrivate::Sha3Variant::Sha3);
-        break;
-    }
-    case QCryptographicHash::RealSha3_384: {
-        sha3Finish(384, QCryptographicHashPrivate::Sha3Variant::Sha3);
-        break;
-    }
+    case QCryptographicHash::RealSha3_224:
+    case QCryptographicHash::RealSha3_256:
+    case QCryptographicHash::RealSha3_384:
     case QCryptographicHash::RealSha3_512: {
-        sha3Finish(512, QCryptographicHashPrivate::Sha3Variant::Sha3);
+        sha3Finish(8 * hashLengthInternal(method), Sha3Variant::Sha3);
         break;
     }
-    case QCryptographicHash::Keccak_224: {
-        sha3Finish(224, QCryptographicHashPrivate::Sha3Variant::Keccak);
-        break;
-    }
-    case QCryptographicHash::Keccak_256: {
-        sha3Finish(256, QCryptographicHashPrivate::Sha3Variant::Keccak);
-        break;
-    }
-    case QCryptographicHash::Keccak_384: {
-        sha3Finish(384, QCryptographicHashPrivate::Sha3Variant::Keccak);
-        break;
-    }
+    case QCryptographicHash::Keccak_224:
+    case QCryptographicHash::Keccak_256:
+    case QCryptographicHash::Keccak_384:
     case QCryptographicHash::Keccak_512: {
-        sha3Finish(512, QCryptographicHashPrivate::Sha3Variant::Keccak);
+        sha3Finish(8 * hashLengthInternal(method), Sha3Variant::Keccak);
         break;
     }
     case QCryptographicHash::Blake2b_160:
