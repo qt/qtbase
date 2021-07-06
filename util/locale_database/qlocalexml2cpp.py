@@ -444,7 +444,7 @@ class CalendarDataWriter (LocaleSourceEditor):
                                 (locale.standaloneShortMonths, locale.shortMonths,
                                  locale.standaloneNarrowMonths, locale.narrowMonths)))
             except ValueError as e:
-                e.args += (locale.language, locale.script, locale.territory, stem)
+                e.args += (locale.language, locale.script, locale.territory)
                 raise
 
             self.writer.write(
