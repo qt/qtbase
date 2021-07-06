@@ -39,49 +39,29 @@ import datetime
 from qlocalexml import QLocaleXmlReader
 from localetools import unicode2hex, wrap_list, Error, Transcriber, SourceFileEditor
 
-def compareLocaleKeys(left, right):
-    """Compares two (language, script, territory) triples.
+class LocaleKeySorter:
+    """Sort-ordering representation of a locale key.
 
-    Returns a negative value if left should sort before right,
-    positive if left should sort after right and zero if they are
-    equal.
-
-    Loosely, it sorts by (language, script, territory) *but* sorts a
-    triple with the default territory for its language and script
-    before all other triples for that language, unless they meet the
-    same condition. In the case of the same language in two scripts,
-    if just one triple does have its default territory then it wins;
-    but if both have their respective default the special treatment of
-    default territory is skipped."""
+    This is for passing to a sorting algorithm as key-function, that
+    it applies to each entry in the list to decide which belong
+    earlier. It adds an entry to the (language, script, territory)
+    triple, just before script, that sorts earlier if the territory is
+    the default for the given language and script, later otherwise.
+    """
 
     # TODO: study the relationship between this and CLDR's likely
     # sub-tags algorithm. Work out how locale sort-order impacts
     # QLocale's likely sub-tag matching algorithms. Make sure this is
     # sorting in an order compatible with those algorithms.
-    # TODO: should we compare territory before or after script ?
 
-    if left == right:
-        return 0
-
-    if left[0] != right[0]: # First sort by language:
-        return left[0] - right[0]
-
-    defaults = compareLocaleKeys.default_map
-    # maps {(language, script): territory} by ID
-    leftLand = defaults.get(left[:2])
-    rightLand = defaults.get(right[:2])
-
-    # If just one matches its default territory, it wins:
-    if leftLand is None or left[2] != leftLand:
-        if rightLand is not None and right[2] == rightLand:
-            return 1
-        # else: Neither matches
-    elif rightLand is None or right[2] != rightLand:
-        return -1
-    # else: Both match
-
-    # Compare script first, territory after:
-    return left[1] - right[1] or left[2] - right[2]
+    def __init__(self, defaults):
+        self.map = dict(defaults)
+    def foreign(self, key):
+        default = self.map.get(key[:2])
+        return default is None or default != key[2]
+    def __call__(self, key):
+        # TODO: should we compare territory before or after script ?
+        return (key[0], self.foreign(key)) + key[1:]
 
 class StringDataToken:
     def __init__(self, index, length, bits):
@@ -551,10 +531,7 @@ def main(args, out, err):
 
     reader = QLocaleXmlReader(qlocalexml)
     locale_map = dict(reader.loadLocaleMap(calendars, err.write))
-
-    locale_keys = locale_map.keys()
-    compareLocaleKeys.default_map = dict(reader.defaultMap())
-    locale_keys.sort(compareLocaleKeys)
+    locale_keys = sorted(locale_map.keys(), key=LocaleKeySorter(reader.defaultMap()))
 
     try:
         writer = LocaleDataWriter(os.path.join(qtsrcdir,  'src', 'corelib', 'text',
