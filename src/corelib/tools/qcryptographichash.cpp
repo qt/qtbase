@@ -138,6 +138,51 @@ static inline int SHA384_512AddLength(SHA512Context *context, unsigned int lengt
 
 QT_BEGIN_NAMESPACE
 
+static constexpr int hashLengthInternal(QCryptographicHash::Algorithm method) noexcept
+{
+    switch (method) {
+    case QCryptographicHash::Sha1:
+        return 20;
+#ifndef QT_CRYPTOGRAPHICHASH_ONLY_SHA1
+    case QCryptographicHash::Md4:
+        return 16;
+    case QCryptographicHash::Md5:
+        return 16;
+    case QCryptographicHash::Sha224:
+        return SHA224HashSize;
+    case QCryptographicHash::Sha256:
+        return SHA256HashSize;
+    case QCryptographicHash::Sha384:
+        return SHA384HashSize;
+    case QCryptographicHash::Sha512:
+        return SHA512HashSize;
+    case QCryptographicHash::Blake2s_128:
+        return 128 / 8;
+    case QCryptographicHash::Blake2b_160:
+    case QCryptographicHash::Blake2s_160:
+        return 160 / 8;
+    case QCryptographicHash::RealSha3_224:
+    case QCryptographicHash::Keccak_224:
+    case QCryptographicHash::Blake2s_224:
+        return 224 / 8;
+    case QCryptographicHash::RealSha3_256:
+    case QCryptographicHash::Keccak_256:
+    case QCryptographicHash::Blake2b_256:
+    case QCryptographicHash::Blake2s_256:
+        return 256 / 8;
+    case QCryptographicHash::RealSha3_384:
+    case QCryptographicHash::Keccak_384:
+    case QCryptographicHash::Blake2b_384:
+        return 384 / 8;
+    case QCryptographicHash::RealSha3_512:
+    case QCryptographicHash::Keccak_512:
+    case QCryptographicHash::Blake2b_512:
+        return 512 / 8;
+#endif
+    }
+    return 0;
+}
+
 class QCryptographicHashPrivate
 {
 public:
@@ -334,21 +379,21 @@ void QCryptographicHash::reset()
     case RealSha3_512:
     case Keccak_512:
         new (&d->sha3Context) SHA3Context;
-        sha3Init(&d->sha3Context, hashLength(d->method) * 8);
+        sha3Init(&d->sha3Context, hashLengthInternal(d->method) * 8);
         break;
     case Blake2b_160:
     case Blake2b_256:
     case Blake2b_384:
     case Blake2b_512:
         new (&d->blake2bContext) blake2b_state;
-        blake2b_init(&d->blake2bContext, hashLength(d->method));
+        blake2b_init(&d->blake2bContext, hashLengthInternal(d->method));
         break;
     case Blake2s_128:
     case Blake2s_160:
     case Blake2s_224:
     case Blake2s_256:
         new (&d->blake2sContext) blake2s_state;
-        blake2s_init(&d->blake2sContext, hashLength(d->method));
+        blake2s_init(&d->blake2sContext, hashLengthInternal(d->method));
         break;
 #endif
     }
@@ -572,7 +617,7 @@ QByteArray QCryptographicHash::result() const
     case Blake2b_256:
     case Blake2b_384:
     case Blake2b_512: {
-        const auto length = hashLength(d->method);
+        const auto length = hashLengthInternal(d->method);
         blake2b_state copy = d->blake2bContext;
         d->result.resize(length);
         blake2b_final(&copy, reinterpret_cast<uint8_t *>(d->result.data()), length);
@@ -582,7 +627,7 @@ QByteArray QCryptographicHash::result() const
     case Blake2s_160:
     case Blake2s_224:
     case Blake2s_256: {
-        const auto length = hashLength(d->method);
+        const auto length = hashLengthInternal(d->method);
         blake2s_state copy = d->blake2sContext;
         d->result.resize(length);
         blake2s_final(&copy, reinterpret_cast<uint8_t *>(d->result.data()), length);
@@ -613,47 +658,7 @@ QByteArray QCryptographicHash::hash(QByteArrayView data, Algorithm method)
 */
 int QCryptographicHash::hashLength(QCryptographicHash::Algorithm method)
 {
-    switch (method) {
-    case QCryptographicHash::Sha1:
-        return 20;
-#ifndef QT_CRYPTOGRAPHICHASH_ONLY_SHA1
-    case QCryptographicHash::Md4:
-        return 16;
-    case QCryptographicHash::Md5:
-        return 16;
-    case QCryptographicHash::Sha224:
-        return SHA224HashSize;
-    case QCryptographicHash::Sha256:
-        return SHA256HashSize;
-    case QCryptographicHash::Sha384:
-        return SHA384HashSize;
-    case QCryptographicHash::Sha512:
-        return SHA512HashSize;
-    case QCryptographicHash::Blake2s_128:
-        return 128 / 8;
-    case QCryptographicHash::Blake2b_160:
-    case QCryptographicHash::Blake2s_160:
-        return 160 / 8;
-    case QCryptographicHash::RealSha3_224:
-    case QCryptographicHash::Keccak_224:
-    case QCryptographicHash::Blake2s_224:
-        return 224 / 8;
-    case QCryptographicHash::RealSha3_256:
-    case QCryptographicHash::Keccak_256:
-    case QCryptographicHash::Blake2b_256:
-    case QCryptographicHash::Blake2s_256:
-        return 256 / 8;
-    case QCryptographicHash::RealSha3_384:
-    case QCryptographicHash::Keccak_384:
-    case QCryptographicHash::Blake2b_384:
-        return 384 / 8;
-    case QCryptographicHash::RealSha3_512:
-    case QCryptographicHash::Keccak_512:
-    case QCryptographicHash::Blake2b_512:
-        return 512 / 8;
-#endif
-    }
-    return 0;
+    return hashLengthInternal(method);
 }
 
 QT_END_NAMESPACE
