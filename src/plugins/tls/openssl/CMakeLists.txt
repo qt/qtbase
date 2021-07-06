@@ -14,7 +14,7 @@ qt_internal_add_plugin(QTlsBackendOpenSSLPlugin
         qsslcontext_openssl.cpp qsslcontext_openssl_p.h
         qsslsocket_openssl_symbols.cpp qsslsocket_openssl_symbols_p.h
         qopenssl_p.h
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::NetworkPrivate
         Qt::CorePrivate
     DEFINES
@@ -48,4 +48,3 @@ qt_internal_extend_target(QTlsBackendOpenSSLPlugin CONDITION QT_FEATURE_openssl
     LIBRARIES
         crypt32
 )
-

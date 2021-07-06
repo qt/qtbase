@@ -12,6 +12,6 @@ qt_internal_add_plugin(QTlsBackendCertOnlyPlugin
         ../shared/qasn1element.cpp
         qtlsbackend_cert.cpp
         qtlsbackend_cert_p.h
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::NetworkPrivate
 )

@@ -14,7 +14,7 @@ qt_internal_add_plugin(QEglFSKmsEglDeviceIntegrationPlugin
         qeglfskmsegldevicescreen.cpp qeglfskmsegldevicescreen.h
     DEFINES
         QT_EGL_NO_X11
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Libdrm::Libdrm
         Qt::Core
         Qt::CorePrivate
