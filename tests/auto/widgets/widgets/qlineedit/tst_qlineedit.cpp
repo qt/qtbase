@@ -3322,7 +3322,7 @@ void tst_QLineEdit::validateOnFocusOut()
 
     QLineEdit *testWidget = ensureTestWidget();
     QSignalSpy editingFinishedSpy(testWidget, SIGNAL(editingFinished()));
-    testWidget->setValidator(new QIntValidator(100, 999, 0));
+    testWidget->setValidator(new QIntValidator(100, 999, testWidget));
     QTest::keyPress(testWidget, '1');
     QTest::keyPress(testWidget, '0');
     QCOMPARE(testWidget->text(), QString("10"));
@@ -3347,7 +3347,7 @@ void tst_QLineEdit::editInvalidText()
 {
     QLineEdit *testWidget = ensureTestWidget();
     testWidget->clear();
-    testWidget->setValidator(new QIntValidator(0, 12, 0));
+    testWidget->setValidator(new QIntValidator(0, 12, testWidget));
     testWidget->setText("1234");
 
     QVERIFY(!testWidget->hasAcceptableInput());
