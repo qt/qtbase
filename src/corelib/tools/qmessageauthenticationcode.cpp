@@ -122,10 +122,7 @@ void QMessageAuthenticationCodePrivate::initMessageHash()
     const int blockSize = qt_hash_block_size(method);
 
     if (key.size() > blockSize) {
-        QCryptographicHash hash(method);
-        hash.addData(key);
-        key = hash.result();
-        hash.reset();
+        key = QCryptographicHash::hash(key, method);
     }
 
     if (key.size() < blockSize) {

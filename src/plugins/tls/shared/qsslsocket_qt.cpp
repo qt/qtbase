@@ -109,15 +109,11 @@ static QByteArray _q_PKCS12_keygen(char id, const QByteArray &salt, const QStrin
     QByteArray A;
     QByteArray B;
     B.resize(v);
-    QCryptographicHash hash(QCryptographicHash::Sha1);
     for (int i = 0; i < c; ++i) {
         // hash r iterations
         QByteArray Ai = D + I;
-        for (int j = 0; j < r; ++j) {
-            hash.reset();
-            hash.addData(Ai);
-            Ai = hash.result();
-        }
+        for (int j = 0; j < r; ++j)
+            Ai = QCryptographicHash::hash(Ai, QCryptographicHash::Sha1);
 
         for (int j = 0; j < v; ++j)
             B[j] = Ai[j % u];
