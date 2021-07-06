@@ -61,10 +61,10 @@ from cldr import CldrReader
 from qlocalexml import QLocaleXmlWriter
 
 def usage(name, err, message = ''):
-    err.write("""Usage: {} path/to/cldr/common/main [out-file.xml]
-""".format(name)) # TODO: expand command-line, improve help message
+    err.write(f"""Usage: {name} path/to/cldr/common/main [out-file.xml]
+""") # TODO: expand command-line, improve help message
     if message:
-        err.write('\n' + message + '\n')
+        err.write(f'\n{message}\n')
 
 def main(args, out, err):
     # TODO: make calendars a command-line option
@@ -78,22 +78,21 @@ def main(args, out, err):
 
     root = args.pop(0)
     if not os.path.exists(os.path.join(root, 'common', 'main', 'root.xml')):
-        usage(name, err,
-              'First argument is the root of the CLDR tree: found no common/main/root.xml under '
-              + root)
+        usage(name, err, 'First argument is the root of the CLDR tree: '
+                         f'found no common/main/root.xml under {root}')
         return 1
 
     xml = args.pop(0) if args else None
     if not xml or xml == '-':
         emit = out
     elif not xml.endswith('.xml'):
-        usage(name, err, 'Please use a .xml extension on your output file name, not ' + xml)
+        usage(name, err, f'Please use a .xml extension on your output file name, not {xml}')
         return 1
     else:
         try:
             emit = open(xml, 'w')
         except IOError as e:
-            usage(name, err, 'Failed to open "{}" to write output to it\n'.format(xml))
+            usage(name, err, f'Failed to open "{xml}" to write output to it\n')
             return 1
 
     if args:

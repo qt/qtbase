@@ -51,7 +51,7 @@ def camelCase(words):
     return ''.join(camel(iter(words)))
 
 def addEscapes(s):
-    return ''.join(c if n < 128 else '\\x{:02x}'.format(n)
+    return ''.join(c if n < 128 else f'\\x{n:02x}'
                    for n, c in ((ord(c), c) for c in s))
 
 def startCount(c, text): # strspn
@@ -146,7 +146,7 @@ class QLocaleXmlReader (object):
 
             if language != 1: # C
                 if territory == 0:
-                    grumble('loadLocaleMap: No territory id for "{}"\n'.format(locale.language))
+                    grumble(f'loadLocaleMap: No territory id for "{locale.language}"\n')
 
                 if script == 0:
                     # Find default script for the given language and territory - see:
@@ -205,7 +205,7 @@ class QLocaleXmlReader (object):
     # Implementation details:
     def __loadMap(self, category):
         kid = self.__firstChildText
-        for element in self.__eachEltInGroup(self.root, category + 'List', category):
+        for element in self.__eachEltInGroup(self.root, f'{category}List', category):
             yield int(kid(element, 'id')), kid(element, 'name'), kid(element, 'code')
 
     def __likelySubtagsMap(self):
@@ -246,7 +246,7 @@ class QLocaleXmlReader (object):
                 return child
             child = child.nextSibling
 
-        raise Error('No {} child found'.format(name))
+        raise Error(f'No {name} child found')
 
     @classmethod
     def __firstChildText(cls, elt, key):
@@ -302,7 +302,7 @@ class Spacer (object):
         elif line.startswith('<') and not line.startswith('<!'):
             cut = line.find('>')
             tag = (line[1:] if cut < 0 else line[1 : cut]).strip().split()[0]
-            if '</{}>'.format(tag) not in line:
+            if f'</{tag}>' not in line:
                 self.current += self.__each
         return indent + line + '\n'
 
@@ -370,7 +370,7 @@ class QLocaleXmlWriter (object):
         self.inTag('version', cldrVersion)
 
     def inTag(self, tag, text):
-        self.__write('<{0}>{1}</{0}>'.format(tag, text))
+        self.__write(f'<{tag}>{text}</{tag}>')
 
     def close(self, grumble):
         """Finish writing and grumble any issues discovered."""
@@ -382,7 +382,7 @@ class QLocaleXmlWriter (object):
             grumble('Some enum members are unused, corresponding to these tags:\n')
             import textwrap
             def kvetch(kind, seq, g = grumble, w = textwrap.wrap):
-                g('\n\t'.join(w(' {}: '.format(kind) + ', '.join(sorted(seq)), width=80)) + '\n')
+                g('\n\t'.join(w(f' {kind}: {", ".join(sorted(seq))}', width=80)) + '\n')
             if self.__languages:
                 kvetch('Languages', self.__languages)
             if self.__scripts:
@@ -400,14 +400,14 @@ class QLocaleXmlWriter (object):
         raise Error('Attempted to write data after closing :-(')
 
     def __enumTable(self, tag, table):
-        self.__openTag(tag + 'List')
+        self.__openTag(f'{tag}List')
         for key, value in table.items():
             self.__openTag(tag)
             self.inTag('name', value[0])
             self.inTag('id', key)
             self.inTag('code', value[1])
             self.__closeTag(tag)
-        self.__closeTag(tag + 'List')
+        self.__closeTag(f'{tag}List')
 
     def __likelySubTag(self, tag, likely):
         self.__openTag(tag)
@@ -424,9 +424,9 @@ class QLocaleXmlWriter (object):
         self.__territories.discard(locale.territory_code)
 
     def __openTag(self, tag):
-        self.__write('<{}>'.format(tag))
+        self.__write(f'<{tag}>')
     def __closeTag(self, tag):
-        self.__write('</{}>'.format(tag))
+        self.__write(f'</{tag}>')
 
     def __write(self, line):
         self.__rawOutput(self.__wrap(line))
@@ -521,7 +521,7 @@ class Locale (object):
         get = lambda k: getattr(self, k)
         for key in ('language', 'script', 'territory'):
             write(key, get(key))
-            write('{}code'.format(key), get('{}_code'.format(key)))
+            write(f'{key}code', get(f'{key}_code'))
 
         for key in ('decimal', 'group', 'zero', 'list',
                     'percent', 'minus', 'plus', 'exp'):
