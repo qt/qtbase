@@ -1,29 +1,40 @@
 # Returns the minimum supported CMake version required to build Qt as originally advertised by Qt.
 function(qt_internal_get_qt_supported_minimum_cmake_version out_var)
+    if(NOT DEFINED BUILD_SHARED_LIBS)
+        message(FATAL_ERROR "BUILD_SHARED_LIBS is needed to decide the minimum CMake version. "
+            "It should have been set by this point.")
+    endif()
+
     # QT_MIN_SUPPORTED_CMAKE_VERSION is set either in .cmake.conf or in QtBuildInternalsExtras.cmake
-    # when building a child repo.
+    # when building a repo.
     set(supported_version "${QT_MIN_SUPPORTED_CMAKE_VERSION}")
+
+    if(NOT BUILD_SHARED_LIBS)
+        set(supported_version "${QT_MIN_SUPPORTED_CMAKE_VERSION_FOR_STATIC_QT}")
+    endif()
     set(${out_var} "${supported_version}" PARENT_SCOPE)
 endfunction()
 
 # Returns the computed minimum supported CMake version required to build Qt.
 function(qt_internal_get_computed_minimum_cmake_version out_var)
-    qt_internal_get_qt_supported_minimum_cmake_version(min_supported_version)
-    set(computed_min_version "${min_supported_version}")
-
-    # Set in QtBuildInternalsExtras.cmake.
-    if(QT_COMPUTED_MIN_CMAKE_VERSION)
-        set(computed_min_version "${QT_COMPUTED_MIN_CMAKE_VERSION}")
-    endif()
-
     # An explicit override for those that take it upon themselves to fix the build system
     # when using a CMake version lower than the one officially supported.
     # Also useful for build testing locally with different minimum versions to observe different
     # policy behaviors.
     if(QT_FORCE_MIN_CMAKE_VERSION)
         set(computed_min_version "${QT_FORCE_MIN_CMAKE_VERSION}")
-    endif()
 
+    # Set in QtBuildInternalsExtras.cmake, which means it was already computed as part of qtbase
+    # configuration.
+    elseif(QT_COMPUTED_MIN_CMAKE_VERSION)
+        set(computed_min_version "${QT_COMPUTED_MIN_CMAKE_VERSION}")
+
+    # No override was given and the version was not computed before, thus initialize with the
+    # default minimum.
+    else()
+        qt_internal_get_qt_supported_minimum_cmake_version(min_supported_version)
+        set(computed_min_version "${min_supported_version}")
+    endif()
     set(${out_var} "${computed_min_version}" PARENT_SCOPE)
 endfunction()
 
@@ -64,7 +75,7 @@ function(qt_internal_check_for_suitable_cmake_version)
     qt_internal_warn_about_unsuitable_cmake_versions()
 endfunction()
 
-# Function to be used in child repos like qtsvg to require a minimum CMake version.
+# Function to be used in downstream repos like qtsvg to require a minimum CMake version.
 #
 # Such repos don't have the required version information at cmake_minimum_required() time, that's
 # why we provide this function to be called at a time when the info is available.
@@ -73,8 +84,11 @@ function(qt_internal_require_suitable_cmake_version)
     qt_internal_get_computed_minimum_cmake_version(computed_min_version)
 
     if(CMAKE_VERSION VERSION_LESS computed_min_version)
-        message(FATAL_ERROR "CMake ${computed_min_version} or higher is required. "
-                            "You are running version ${CMAKE_VERSION}")
+        message(FATAL_ERROR
+            "CMake ${computed_min_version} or higher is required. "
+            "You are running version ${CMAKE_VERSION} "
+            "\nQt requires newer CMake features to build correctly. You can lower the minimum "
+            "required version by passing a QT_FORCE_MIN_CMAKE_VERSION cache variable when configuring Qt.")
     endif()
 endfunction()
 
