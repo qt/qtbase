@@ -1,5 +1,5 @@
 # These values should be kept in sync with those in qtbase/.cmake.conf
-cmake_minimum_required(VERSION 3.14...3.19)
+cmake_minimum_required(VERSION 3.16...3.20)
 
 ###############################################
 #
