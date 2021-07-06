@@ -133,9 +133,8 @@ def currencyIsoCodeData(s):
     return "{0,0,0}"
 
 class LocaleSourceEditor (SourceFileEditor):
-    __upinit = SourceFileEditor.__init__
     def __init__(self, path, temp, version):
-        self.__upinit(path, temp)
+        super().__init__(path, temp)
         self.writer.write("""
 /*
     This part of the file was generated on {} from the
@@ -447,9 +446,8 @@ class CalendarDataWriter (LocaleSourceEditor):
         months_data.write(self.writer)
 
 class LocaleHeaderWriter (SourceFileEditor):
-    __upinit = SourceFileEditor.__init__
     def __init__(self, path, temp, dupes):
-        self.__upinit(path, temp)
+        super().__init__(path, temp)
         self.__dupes = dupes
 
     def languages(self, languages):

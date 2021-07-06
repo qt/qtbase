@@ -41,9 +41,8 @@ import os
 import tempfile
 
 class Error (Exception):
-    __upinit = Exception.__init__
     def __init__(self, msg, *args):
-        self.__upinit(msg, *args)
+        super().__init__(msg, *args)
         self.message = msg
     def __str__(self):
         return self.message
@@ -126,7 +125,6 @@ class SourceFileEditor (Transcriber):
     Callers should call close() on success or cleanup() on failure (to
     clear away the temporary file); see Transcriber.
     """
-    __upinit = Transcriber.__init__
     def __init__(self, path, temp):
         """Set up the source file editor.
 
@@ -134,13 +132,12 @@ class SourceFileEditor (Transcriber):
         and, on success, replaced with a new version; and the
         directory in which to store the temporary file during the
         rewrite."""
-        self.__upinit(path, temp)
+        super().__init__(path, temp)
         self.__copyPrelude()
 
-    __upclose = Transcriber.close
     def close(self):
         self.__copyTail()
-        self.__upclose()
+        super().close()
 
     # Implementation details:
     GENERATED_BLOCK_START = '// GENERATED PART STARTS HERE'
