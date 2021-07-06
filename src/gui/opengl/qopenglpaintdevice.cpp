@@ -331,7 +331,7 @@ void QOpenGLPaintDevice::setDotsPerMeterX(qreal dpmx)
 
 void QOpenGLPaintDevice::setDotsPerMeterY(qreal dpmy)
 {
-    d_ptr->dpmx = dpmy;
+    d_ptr->dpmy = dpmy;
 }
 
 /*!
