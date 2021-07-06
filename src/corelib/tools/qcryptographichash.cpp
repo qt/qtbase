@@ -141,7 +141,12 @@ QT_BEGIN_NAMESPACE
 class QCryptographicHashPrivate
 {
 public:
-    QCryptographicHash::Algorithm method;
+    explicit QCryptographicHashPrivate(QCryptographicHash::Algorithm method) noexcept
+        : method(method)
+    {
+    }
+
+    const QCryptographicHash::Algorithm method;
     union {
         Sha1State sha1Context;
 #ifndef QT_CRYPTOGRAPHICHASH_ONLY_SHA1
@@ -267,9 +272,8 @@ void QCryptographicHashPrivate::sha3Finish(int bitCount, Sha3Variant sha3Variant
   Constructs an object that can be used to create a cryptographic hash from data using \a method.
 */
 QCryptographicHash::QCryptographicHash(Algorithm method)
-    : d(new QCryptographicHashPrivate)
+    : d(new QCryptographicHashPrivate{method})
 {
-    d->method = method;
     reset();
 }
 
