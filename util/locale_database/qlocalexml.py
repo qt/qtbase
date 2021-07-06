@@ -391,7 +391,7 @@ class QLocaleXmlWriter (object):
                 kvetch('Scripts', self.__scripts)
             if self.__territories:
                 kvetch('Territories', self.__territories)
-            grumble('It may make sense to deprecate them.')
+            grumble('It may make sense to deprecate them.\n')
 
     # Implementation details
     @staticmethod
