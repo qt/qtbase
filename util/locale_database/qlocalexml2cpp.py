@@ -66,9 +66,9 @@ class LocaleKeySorter:
 class StringDataToken:
     def __init__(self, index, length, bits):
         if index > 0xffff:
-            raise ValueError('Start-index ({}) exceeds the uint16 range!'.format(index))
+            raise ValueError(f'Start-index ({index}) exceeds the uint16 range!')
         if length >= (1 << bits):
-            raise ValueError('Data size ({}) exceeds the {}-bit range!'.format(length, bits))
+            raise ValueError(f'Data size ({length}) exceeds the {bits}-bit range!')
 
         self.index = index
         self.length = length
@@ -120,10 +120,9 @@ class StringData:
 
     def write(self, fd):
         if len(self.data) > 0xffff:
-            raise ValueError('Data is too big ({}) for quint16 index to its end!'
-                             .format(len(self.data)),
+            raise ValueError(f'Data is too big ({len(self.data)}) for quint16 index to its end!',
                              self.name)
-        fd.write("\nstatic const char16_t {}[] = {{\n".format(self.name))
+        fd.write(f"\nstatic const char16_t {self.name}[] = {{\n")
         fd.write(wrap_list(self.data))
         fd.write("\n};\n")
 
@@ -135,10 +134,10 @@ def currencyIsoCodeData(s):
 class LocaleSourceEditor (SourceFileEditor):
     def __init__(self, path, temp, version):
         super().__init__(path, temp)
-        self.writer.write("""
+        self.writer.write(f"""
 /*
-    This part of the file was generated on {} from the
-    Common Locale Data Repository v{}
+    This part of the file was generated on {datetime.date.today()} from the
+    Common Locale Data Repository v{version}
 
     http://www.unicode.org/cldr/
 
@@ -147,7 +146,7 @@ class LocaleSourceEditor (SourceFileEditor):
     edited) CLDR data; see qtbase/util/locale_database/.
 */
 
-""".format(datetime.date.today(), version))
+""")
 
 class LocaleDataWriter (LocaleSourceEditor):
     def likelySubtags(self, likely):
@@ -170,13 +169,13 @@ class LocaleDataWriter (LocaleSourceEditor):
             self.writer.write('    {{ {:3d}, {:3d}, {:3d} }}'.format(*have))
             self.writer.write(', {{ {:3d}, {:3d}, {:3d} }}'.format(*give))
             self.writer.write(' ' if i == len(likely) else ',')
-            self.writer.write(' // {} -> {}\n'.format(had, got))
+            self.writer.write(f' // {had} -> {got}\n')
         self.writer.write('};\n\n')
 
     def localeIndex(self, indices):
         self.writer.write('static const quint16 locale_index[] = {\n')
-        for pair in indices:
-            self.writer.write('{:6d}, // {}\n'.format(*pair))
+        for index, name in indices:
+            self.writer.write(f'{index:6d}, // {name}\n')
         self.writer.write('     0 // trailing 0\n')
         self.writer.write('};\n\n')
 
@@ -327,8 +326,7 @@ class LocaleDataWriter (LocaleSourceEditor):
                          locale.currencyRounding, # unused (QTBUG-81343)
                          locale.firstDayOfWeek, locale.weekendStart, locale.weekendEnd,
                          locale.groupTop, locale.groupHigher, locale.groupLeast) ))
-                              + ', // {}/{}/{}\n'.format(
-                    locale.language, locale.script, locale.territory))
+                              + f', // {locale.language}/{locale.script}/{locale.territory}\n')
         self.writer.write(formatLine(*( # All zeros, matching the format:
                     (0,) * 3 + (0,) * 37 * 2
                     + (currencyIsoCodeData(0),)
@@ -346,32 +344,32 @@ class LocaleDataWriter (LocaleSourceEditor):
 
     @staticmethod
     def __writeNameData(out, book, form):
-        out('static const char {}_name_list[] =\n'.format(form))
+        out(f'static const char {form}_name_list[] =\n')
         out('"Default\\0"\n')
         for key, value in book.items():
             if key == 0:
                 continue
-            out('"' + value[0] + '\\0"\n')
+            out(f'"{value[0]}\\0"\n')
         out(';\n\n')
 
-        out('static const quint16 {}_name_index[] = {{\n'.format(form))
-        out('     0, // Any{}\n'.format(form.capitalize()))
+        out(f'static const quint16 {form}_name_index[] = {{\n')
+        out(f'     0, // Any{form.capitalize()}\n')
         index = 8
         for key, value in book.items():
             if key == 0:
                 continue
             name = value[0]
-            out('{:6d}, // {}\n'.format(index, name))
+            out(f'{index:6d}, // {name}\n')
             index += len(name) + 1
         out('};\n\n')
 
     @staticmethod
     def __writeCodeList(out, book, form, width):
-        out('static const unsigned char {}_code_list[] =\n'.format(form))
+        out(f'static const unsigned char {form}_code_list[] =\n')
         for key, value in book.items():
             code = value[1]
             code += r'\0' * max(width - len(code), 0)
-            out('"{}" // {}\n'.format(code, value[0]))
+            out(f'"{code}" // {value[0]}\n')
         out(';\n\n')
 
     def languageNames(self, languages):
@@ -439,7 +437,7 @@ class CalendarDataWriter (LocaleSourceEditor):
                         key +
                         tuple(r.index for r in ranges) +
                         tuple(r.length for r in ranges) ))
-                + '// {}/{}/{}\n'.format(locale.language, locale.script, locale.territory))
+                + f'// {locale.language}/{locale.script}/{locale.territory}\n')
         self.writer.write(self.formatCalendar(*( (0,) * (3 + 6 * 2) ))
                           + '// trailing zeros\n')
         self.writer.write('};\n')
@@ -474,7 +472,7 @@ class LocaleHeaderWriter (SourceFileEditor):
             suffix = name
 
         out, dupes = self.writer.write, self.__dupes
-        out('    enum {} : ushort {{\n'.format(name))
+        out(f'    enum {name} : ushort {{\n')
         for key, value in book.items():
             member = value[0].replace('-', ' ')
             if name == 'Script':
@@ -483,27 +481,26 @@ class LocaleHeaderWriter (SourceFileEditor):
                 if not member.endswith('Script'):
                     member += 'Script'
                 if member in dupes:
-                    raise Error('The script name "{}" is messy'.format(member))
+                    raise Error(f'The script name "{member}" is messy')
             else:
                 member = ''.join(member.split())
                 member = member + suffix if member in dupes else member
-            out('        {} = {},\n'.format(member, key))
+            out(f'        {member} = {key},\n')
 
         out('\n        '
-            + ',\n        '.join('{} = {}'.format(*pair)
-                                 for pair in sorted(alias.items()))
-            + ',\n\n        Last{} = {}'.format(suffix, member))
+            + ',\n        '.join(f'{k} = {v}' for k, v in sorted(alias.items()))
+            + f',\n\n        Last{suffix} = {member}')
 
         # for "LastCountry = LastTerritory"
         # ### Qt 7: Remove
         if suffix != name:
-            out(',\n        Last{} = Last{}'.format(name, suffix))
+            out(f',\n        Last{name} = Last{suffix}')
 
         out('\n    };\n')
 
 def usage(name, err, message = ''):
-    err.write("""Usage: {} path/to/qlocale.xml root/of/qtbase
-""".format(name)) # TODO: elaborate
+    err.write(f"""Usage: {name} path/to/qlocale.xml root/of/qtbase
+""") # TODO: elaborate
     if message:
         err.write('\n' + message + '\n')
 
@@ -523,7 +520,7 @@ def main(args, out, err):
     if not (os.path.isdir(qtsrcdir)
             and all(os.path.isfile(os.path.join(qtsrcdir, 'src', 'corelib', 'text', leaf))
                     for leaf in ('qlocale_data_p.h', 'qlocale.h', 'qlocale.qdoc'))):
-        usage(name, err, 'Missing expected files under qtbase source root ' + qtsrcdir)
+        usage(name, err, f'Missing expected files under qtbase source root {qtsrcdir}')
         return 1
 
     reader = QLocaleXmlReader(qlocalexml)
@@ -535,7 +532,7 @@ def main(args, out, err):
                                                'qlocale_data_p.h'),
                                   qtsrcdir, reader.cldrVersion)
     except IOError as e:
-        err.write('Failed to open files to transcribe locale data: ' + str(e))
+        err.write(f'Failed to open files to transcribe locale data: {e}')
         return 1
 
     try:
@@ -552,7 +549,7 @@ def main(args, out, err):
         writer.territoryCodes(reader.territories)
     except Error as e:
         writer.cleanup()
-        err.write('\nError updating locale data: ' + e.message + '\n')
+        err.write(f'\nError updating locale data: {e}\n')
         return 1
 
     writer.close()
@@ -561,18 +558,17 @@ def main(args, out, err):
     for calendar, stem in calendars.items():
         try:
             writer = CalendarDataWriter(os.path.join(qtsrcdir, 'src', 'corelib', 'time',
-                                                     'q{}calendar_data_p.h'.format(stem)),
+                                                     f'q{stem}calendar_data_p.h'),
                                         qtsrcdir, reader.cldrVersion)
         except IOError as e:
-            err.write('Failed to open files to transcribe ' + calendar
-                             + ' data ' + str(e))
+            err.write(f'Failed to open files to transcribe {calendar} data {e}')
             return 1
 
         try:
             writer.write(calendar, locale_map, locale_keys)
         except Error as e:
             writer.cleanup()
-            err.write('\nError updating ' + calendar + ' locale data: ' + e.message + '\n')
+            err.write(f'\nError updating {calendar} locale data: {e}\n')
             return 1
 
         writer.close()
@@ -582,7 +578,7 @@ def main(args, out, err):
         writer = LocaleHeaderWriter(os.path.join(qtsrcdir, 'src', 'corelib', 'text', 'qlocale.h'),
                                     qtsrcdir, reader.dupes)
     except IOError as e:
-        err.write('Failed to open files to transcribe qlocale.h: ' + str(e))
+        err.write(f'Failed to open files to transcribe qlocale.h: {e}')
         return 1
 
     try:
@@ -591,7 +587,7 @@ def main(args, out, err):
         writer.territories(reader.territories)
     except Error as e:
         writer.cleanup()
-        err.write('\nError updating qlocale.h: ' + e.message + '\n')
+        err.write(f'\nError updating qlocale.h: {e}\n')
         return 1
 
     writer.close()
@@ -601,19 +597,19 @@ def main(args, out, err):
         writer = Transcriber(os.path.join(qtsrcdir, 'src', 'corelib', 'text', 'qlocale.qdoc'),
                              qtsrcdir)
     except IOError as e:
-        err.write('Failed to open files to transcribe qlocale.qdoc: ' + str(e))
+        err.write(f'Failed to open files to transcribe qlocale.qdoc: {e}')
         return 1
 
     DOCSTRING = "    QLocale's data is based on Common Locale Data Repository "
     try:
         for line in writer.reader:
             if DOCSTRING in line:
-                writer.writer.write(DOCSTRING + 'v' + reader.cldrVersion + '.\n')
+                writer.writer.write(f'{DOCSTRING}v{reader.cldrVersion}.\n')
             else:
                 writer.writer.write(line)
     except Error as e:
         writer.cleanup()
-        err.write('\nError updating qlocale.qdoc: ' + e.message + '\n')
+        err.write(f'\nError updating qlocale.qdoc: {e}\n')
         return 1
 
     writer.close()

@@ -241,7 +241,7 @@ class LocaleScanner (object):
             except (KeyError, AttributeError):
                 pass
             else:
-                raise Error('Alias to {}'.format(source))
+                raise Error(f'Alias to {source}')
 
         ids = root.findUniqueChild('identity')
         for code in ('language', 'script', 'territory', 'variant'):
@@ -263,8 +263,8 @@ class LocaleScanner (object):
         includes some currency formats.
         """
         if isoCode:
-            stem = 'numbers/currencies/currency[{}]/'.format(isoCode)
-            symbol = self.find(stem + 'symbol', '')
+            stem = f'numbers/currencies/currency[{isoCode}]/'
+            symbol = self.find(f'{stem}symbol', '')
             name = self.__currencyDisplayName(stem)
         else:
             symbol = name = ''
@@ -279,15 +279,15 @@ class LocaleScanner (object):
         we expect this to have 'digits' as a key.
         """
         system = self.find('numbers/defaultNumberingSystem')
-        stem = 'numbers/symbols[numberSystem={}]/'.format(system)
-        decimal = self.find(stem + 'decimal')
-        group = self.find(stem + 'group')
+        stem = f'numbers/symbols[numberSystem={system}]/'
+        decimal = self.find(f'{stem}decimal')
+        group = self.find(f'{stem}group')
         assert decimal != group, (self.name, system, decimal)
         yield 'decimal', decimal
         yield 'group', group
-        yield 'percent', self.find(stem + 'percentSign')
-        yield 'list', self.find(stem + 'list')
-        yield 'exp', self.find(stem + 'exponential')
+        yield 'percent', self.find(f'{stem}percentSign')
+        yield 'list', self.find(f'{stem}list')
+        yield 'exp', self.find(f'{stem}exponential')
         yield 'groupSizes', self.__numberGrouping(system)
 
         digits = lookup(system)['digits']
@@ -299,8 +299,8 @@ class LocaleScanner (object):
                    for i, c in enumerate(digits[1:], 1))
         yield 'zero', zero
 
-        plus = self.find(stem + 'plusSign')
-        minus = self.find(stem + 'minusSign')
+        plus = self.find(f'{stem}plusSign')
+        minus = self.find(f'{stem}minusSign')
         yield 'plus', plus
         yield 'minus', minus
 
@@ -308,7 +308,7 @@ class LocaleScanner (object):
         xpath = 'numbers/currencyFormats/currencyFormatLength/currencyFormat[accounting]/pattern'
         try:
             money = self.find(xpath.replace('Formats/',
-                                            'Formats[numberSystem={}]/'.format(system)))
+                                            f'Formats[numberSystem={system}]/'))
         except Error:
             money = self.find(xpath)
         money = self.__currencyFormats(money, plus, minus)
@@ -322,12 +322,12 @@ class LocaleScanner (object):
     def textPatternData(self):
         for key in ('quotationStart', 'alternateQuotationEnd',
                     'quotationEnd', 'alternateQuotationStart'):
-            yield key, self.find('delimiters/' + key)
+            yield key, self.find(f'delimiters/{key}')
 
         for key in ('start', 'middle', 'end'):
-            yield ('listPatternPart' + key.capitalize(),
+            yield (f'listPatternPart{key.capitalize()}',
                    self.__fromLdmlListPattern(self.find(
-                        'listPatterns/listPattern/listPatternPart[{}]'.format(key))))
+                        f'listPatterns/listPattern/listPatternPart[{key}]')))
         yield ('listPatternPartTwo',
                self.__fromLdmlListPattern(self.find(
                     'listPatterns/listPattern/listPatternPart[2]')))
@@ -335,17 +335,16 @@ class LocaleScanner (object):
         stem = 'dates/calendars/calendar[gregorian]/'
         # TODO: is wide really the right width to use here ?
         # abbreviated might be an option ... or try both ?
-        meridiem = stem + 'dayPeriods/dayPeriodContext[format]/dayPeriodWidth[wide]/'
+        meridiem = f'{stem}dayPeriods/dayPeriodContext[format]/dayPeriodWidth[wide]/'
         for key in ('am', 'pm'):
-            yield key, self.find(meridiem + 'dayPeriod[{}]'.format(key),
+            yield key, self.find(f'{meridiem}dayPeriod[{key}]',
                                  draft = Node.draftScore('contributed'))
 
         for pair in (('long', 'full'), ('short', 'short')):
             for key in ('time', 'date'):
-                yield (pair[0] + key.capitalize() + 'Format',
+                yield (f'{pair[0]}{key.capitalize()}Format',
                        convert_date(self.find(
-                            stem + '{}Formats/{}FormatLength[{}]/{}Format/pattern'.format(
-                                key, key, pair[1], key))))
+                            f'{stem}{key}Formats/{key}FormatLength[{pair[1]}]/{key}Format/pattern')))
 
     def endonyms(self, language, script, territory, variant):
         # TODO: take variant into account ?
@@ -355,8 +354,7 @@ class LocaleScanner (object):
                 continue
             try:
                 yield ('languageEndonym',
-                       self.find('localeDisplayNames/languages/language[{}]'
-                                 .format('_'.join(seq))))
+                       self.find(f'localeDisplayNames/languages/language[{"_".join(seq)}]'))
             except Error:
                 pass
             else:
@@ -366,8 +364,7 @@ class LocaleScanner (object):
             yield 'languageEndonym', ''
 
         yield ('territoryEndonym',
-               self.find('localeDisplayNames/territories/territory[{}]'
-                         .format(territory), ''))
+               self.find(f'localeDisplayNames/territories/territory[{territory}]', ''))
 
     def unitData(self):
         yield ('byte_unit',
@@ -386,20 +383,20 @@ class LocaleScanner (object):
     def calendarNames(self, calendars):
         namings = self.__nameForms
         for cal in calendars:
-            stem = 'dates/calendars/calendar[' + cal + ']/months/'
+            stem = f'dates/calendars/calendar[{cal}]/months/'
             for key, mode, size in namings:
-                prop = 'monthContext[' + mode + ']/monthWidth[' + size + ']/'
-                yield (key + 'Months_' + cal,
-                       ';'.join(self.find(stem + prop + 'month[{}]'.format(i))
+                prop = f'monthContext[{mode}]/monthWidth[{size}]/'
+                yield (f'{key}Months_{cal}',
+                       ';'.join(self.find(f'{stem}{prop}month[{i}]')
                                 for i in range(1, 13)))
 
         # Day data (for Gregorian, at least):
         stem = 'dates/calendars/calendar[gregorian]/days/'
         days = ('sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat')
         for (key, mode, size) in namings:
-            prop = 'dayContext[' + mode + ']/dayWidth[' + size + ']/day'
-            yield (key + 'Days',
-                   ';'.join(self.find(stem + prop + '[' + day + ']')
+            prop = f'dayContext[{mode}]/dayWidth[{size}]/day'
+            yield (f'{key}Days',
+                   ';'.join(self.find(f'{stem}{prop}[{day}]')
                             for day in days))
 
     # Implementation details
@@ -444,9 +441,8 @@ class LocaleScanner (object):
                         break
                     sought = '/'.join(tags)
                     if sought != xpath:
-                        sought += ' (for {})'.format(xpath)
-                    raise Error('All lack child {} for {} in {}'.format(
-                            selector, sought, self.name))
+                        sought += f' (for {xpath})'
+                    raise Error(f'All lack child {selector} for {sought} in {self.name}')
 
             else: # Found matching elements
                 for elt in roots:
@@ -454,8 +450,8 @@ class LocaleScanner (object):
 
         sought = '/'.join(tags)
         if sought != xpath:
-            sought += ' (for {})'.format(xpath)
-        raise Error('No {} in {}'.format(sought, self.name))
+            sought += f' (for {xpath})'
+        raise Error(f'No {sought} in {self.name}')
 
     def __currencyDisplayName(self, stem):
         try:
@@ -464,7 +460,7 @@ class LocaleScanner (object):
             pass
         for x in  ('zero', 'one', 'two', 'few', 'many', 'other'):
             try:
-                return self.find(stem + 'displayName[count={}]'.format(x))
+                return self.find(f'{stem}displayName[count={x}]')
             except Error:
                 pass
         return ''
@@ -474,10 +470,10 @@ class LocaleScanner (object):
         # (even for unitLength[narrow]) instead of kB (etc.), so
         # prefer any unitPattern provided, but prune its placeholder:
         for size in ('short', 'narrow'): # TODO: reverse order ?
-            stem = 'units/unitLength[{}]/unit[digital-{}byte]/'.format(size + keySuffix, quantify)
+            stem = f'units/unitLength[{size}{keySuffix}]/unit[digital-{quantify}byte]/'
             for count in ('many', 'few', 'two', 'other', 'zero', 'one'):
                 try:
-                    ans = self.find(stem + 'unitPattern[count={}]'.format(count))
+                    ans = self.find(f'{stem}unitPattern[count={count}]')
                 except Error:
                     continue
 
@@ -490,7 +486,7 @@ class LocaleScanner (object):
                     return ans
 
             try:
-                return self.find(stem + 'displayName')
+                return self.find(f'{stem}displayName')
             except Error:
                 pass
 
@@ -518,10 +514,10 @@ class LocaleScanner (object):
             if cache:
                 byte = cache.pop()
                 if all(byte == k for k in cache):
-                    suffix = 'i' + byte
+                    suffix = f'i{byte}'
             for q in siQuantifiers:
                 # Those don't (yet, v36) exist in CLDR, so we always get the fall-back:
-                yield self.__findUnit(keySuffix, q[:2], q[0].upper() + suffix)
+                yield self.__findUnit(keySuffix, q[:2], f'{q[0].upper()}{suffix}')
         else: # first call
             tail = suffix = suffix or 'B'
             for q in siQuantifiers:
@@ -556,8 +552,8 @@ class LocaleScanner (object):
         elsewhere)."""
         top = int(self.find('numbers/minimumGroupingDigits'))
         assert top < 4, top # We store it in a 2-bit field
-        grouping = self.find('numbers/decimalFormats[numberSystem='
-                             + system + ']/decimalFormatLength/decimalFormat/pattern')
+        grouping = self.find(f'numbers/decimalFormats[numberSystem={system}]/'
+                             'decimalFormatLength/decimalFormat/pattern')
         groups = grouping.split('.')[0].split(',')[-3:]
         assert all(len(x) < 8 for x in groups[-2:]), grouping # we store them in 3-bit fields
         if len(groups) > 2:

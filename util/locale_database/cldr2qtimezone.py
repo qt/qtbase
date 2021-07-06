@@ -255,13 +255,13 @@ class ByteArrayData:
         lst = unicode2hex(s)
         index = len(self.data)
         if index > 0xffff:
-            raise Error('Index ({}) outside the uint16 range !'.format(index))
+            raise Error(f'Index ({index}) outside the uint16 range !')
         self.hash[s] = index
         self.data += lst
         return index
 
     def write(self, out, name):
-        out('\nstatic const char {}[] = {{\n'.format(name))
+        out(f'\nstatic const char {name}[] = {{\n')
         out(wrap_list(self.data))
         out('\n};\n')
 
@@ -273,10 +273,10 @@ class ZoneIdWriter (SourceFileEditor):
         iana.write(self.writer.write, 'ianaIdData')
 
     def __writeWarning(self, version):
-        self.writer.write("""
+        self.writer.write(f"""
 /*
-    This part of the file was generated on {} from the
-    Common Locale Data Repository v{} file supplemental/windowsZones.xml
+    This part of the file was generated on {datetime.date.today()} from the
+    Common Locale Data Repository v{version} file supplemental/windowsZones.xml
 
     http://www.unicode.org/cldr/
 
@@ -284,7 +284,7 @@ class ZoneIdWriter (SourceFileEditor):
     edited) CLDR data; see qtbase/util/locale_database/.
 */
 
-""".format(str(datetime.date.today()), version))
+""")
 
     @staticmethod
     def __writeTables(out, defaults, windowsIds):
@@ -325,10 +325,10 @@ class ZoneIdWriter (SourceFileEditor):
         return windowsIdData, ianaIdData
 
 def usage(err, name, message=''):
-    err.write("""Usage: {} path/to/cldr/root path/to/qtbase
-""".format(name)) # TODO: more interesting message
+    err.write(f"""Usage: {name} path/to/cldr/root path/to/qtbase
+""") # TODO: more interesting message
     if message:
-        err.write('\n' + message + '\n')
+        err.write(f'\n{message}\n')
 
 def main(args, out, err):
     """Parses CLDR's data and updates Qt's representation of it.
@@ -347,15 +347,15 @@ def main(args, out, err):
     qtPath = args.pop(0)
 
     if not os.path.isdir(qtPath):
-        usage(err, name, "No such Qt directory: " + qtPath)
+        usage(err, name, f"No such Qt directory: {qtPath}")
         return 1
     if not os.path.isdir(cldrPath):
-        usage(err, name, "No such CLDR directory: " + cldrPath)
+        usage(err, name, f"No such CLDR directory: {cldrPath}")
         return 1
 
     dataFilePath = os.path.join(qtPath, 'src', 'corelib', 'time', 'qtimezoneprivate_data_p.h')
     if not os.path.isfile(dataFilePath):
-        usage(err, name, 'No such file: ' + dataFilePath)
+        usage(err, name, f'No such file: {dataFilePath}')
         return 1
 
     try:
@@ -363,11 +363,11 @@ def main(args, out, err):
             dict((name, ind) for ind, name in enumerate((x[0] for x in windowsIdList), 1)))
     except IOError as e:
         usage(err, name,
-              'Failed to open common/supplemental/windowsZones.xml: ' + str(e))
+              f'Failed to open common/supplemental/windowsZones.xml: {e}')
         return 1
     except Error as e:
         err.write('\n'.join(textwrap.wrap(
-                    'Failed to read windowsZones.xml: ' + (e.message or e.args[1]),
+                    f'Failed to read windowsZones.xml: {e}',
                     subsequent_indent=' ', width=80)) + '\n')
         return 1
 
@@ -375,18 +375,18 @@ def main(args, out, err):
     try:
         writer = ZoneIdWriter(dataFilePath, qtPath)
     except IOError as e:
-        err.write('Failed to open files to transcribe: {}'.format(e))
+        err.write(f'Failed to open files to transcribe: {e}')
         return 1
 
     try:
         writer.write(version, defaults, winIds)
     except Error as e:
         writer.cleanup()
-        err.write('\nError in Windows ID data: ' + e.message + '\n')
+        err.write(f'\nError in Windows ID data: {e}\n')
         return 1
 
     writer.close()
-    out.write('Data generation completed, please check the new file at ' + dataFilePath + '\n')
+    out.write(f'Data generation completed, please check the new file at {dataFilePath}\n')
     return 0
 
 if __name__ == '__main__':

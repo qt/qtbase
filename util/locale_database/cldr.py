@@ -79,7 +79,7 @@ class CldrReader (object):
                     and e.message.startswith('Unknown ') and ' code ' in e.message):
                     skips.append(use)
                 else:
-                    self.grumble('Skipping likelySubtag "{}" -> "{}" ({})\n'.format(got, use, e.message))
+                    self.grumble(f'Skipping likelySubtag "{got}" -> "{use}" ({e})\n')
                 continue
             if all(code.startswith('Any') and code[3].isupper() for code in have[:-1]):
                 continue
@@ -105,7 +105,7 @@ class CldrReader (object):
 
     def __allLocales(self, calendars):
         def skip(locale, reason):
-            return 'Skipping defaultContent locale "{}" ({})\n'.format(locale, reason)
+            return f'Skipping defaultContent locale "{locale}" ({reason})\n'
 
         for locale in self.root.defaultContentLocales:
             try:
@@ -142,7 +142,7 @@ class CldrReader (object):
                     continue
                 yield self.__getLocaleData(chain, calendars, language, script, territory, variant)
             except Error as e:
-                self.grumble('Skipping file locale "{}" ({})\n'.format(locale, e.message))
+                self.grumble(f'Skipping file locale "{locale}" ({e})\n')
 
     import textwrap
     @staticmethod
@@ -209,7 +209,7 @@ class CldrReader (object):
         rest.extend(tags)
 
         if rest:
-            self.grumble('Ignoring unparsed cruft {} in {}\n'.format('_'.join(rest), name))
+            self.grumble(f'Ignoring unparsed cruft {"_".join(rest)} in {name}\n')
 
     def __getLocaleData(self, scan, calendars, language, script, territory, variant):
         ids, names = zip(*self.root.codesToIdName(language, script, territory, variant))
@@ -315,7 +315,7 @@ class CldrAccess (object):
         try:
             return self.__numberSystems[system]
         except KeyError:
-            raise Error('Unsupported number system: {}'.format(system))
+            raise Error(f'Unsupported number system: {system}')
 
     def weekData(self, territory):
         """Data on the weekly cycle.
@@ -368,10 +368,10 @@ class CldrAccess (object):
             naming, enums = self.__codeMap(key), enum(key)
             value = values[index]
             if value not in enums:
-                text = '{} code {}'.format(key, value)
+                text = f'{key} code {value}'
                 name = naming.get(value)
                 if name and value != 'POSIX':
-                    text += ' (could add {})'.format(name)
+                    text += f' (could add {name})'
                 parts.append(text)
         if len(parts) > 1:
             parts[-1] = 'and ' + parts[-1]
@@ -392,7 +392,7 @@ class CldrAccess (object):
                 # No en.xml name for this code, but supplementalData's
                 # parentLocale may still believe in it:
                 if code not in scraps:
-                    yield name, '[Found no CLDR name for code {}]'.format(code)
+                    yield name, f'[Found no CLDR name for code {code}]'
                 continue
             if name == right: continue
             ok = right.replace('&', 'And')
@@ -429,15 +429,15 @@ enumdata.py (keeping the old name as an alias):
 """)
             if lang:
                 grumble('Language:\n\t'
-                        + '\n\t'.join('{} -> {}'.format(k, v) for k, v in lang.items())
+                        + '\n\t'.join(f'{k} -> {v}' for k, v in lang.items())
                         + '\n')
             if land:
                 grumble('Territory:\n\t'
-                        + '\n\t'.join('{} -> {}'.format(k, v) for k, v in land.items())
+                        + '\n\t'.join(f'{k} -> {v}' for k, v in land.items())
                         + '\n')
             if text:
                 grumble('Script:\n\t'
-                        + '\n\t'.join('{} -> {}'.format(k, v) for k, v in text.items())
+                        + '\n\t'.join(f'{k} -> {v}' for k, v in text.items())
                         + '\n')
             grumble('\n')
 
@@ -568,7 +568,7 @@ enumdata.py (keeping the old name as an alias):
         source = self.__supplementalData
         for key in ('firstDay', 'weekendStart', 'weekendEnd'):
             result = {}
-            for ignore, attrs in source.find('weekData/' + key):
+            for ignore, attrs in source.find(f'weekData/{key}'):
                 assert ignore == key
                 day = attrs['day']
                 assert day in ('mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'), day
@@ -601,7 +601,7 @@ enumdata.py (keeping the old name as an alias):
                         break
                 if iso:
                     for tag, data in source.find(
-                        'currencyData/fractions/info[iso4217={}]'.format(iso)):
+                        f'currencyData/fractions/info[iso4217={iso}]'):
                         digits = data['digits']
                         rounding = data['rounding']
                 cache[territory] = iso, digits, rounding
@@ -745,7 +745,7 @@ enumdata.py (keeping the old name as an alias):
 
     def __localeAsDoc(self, name, aliasFor = None,
                       joinPath = os.path.join, exists = os.path.isfile):
-        path = ('common', 'main', name + '.xml')
+        path = ('common', 'main', f'{name}.xml')
         if exists(joinPath(self.root, *path)):
             elt = self.__xml(path)
             for child in Node(elt).findAllChildren('alias'):
@@ -759,8 +759,8 @@ enumdata.py (keeping the old name as an alias):
             return elt
 
         if aliasFor:
-            raise Error('Fatal error: found an alias "{}" -> "{}", but found no file for the alias'
-                        .format(aliasFor, name))
+            raise Error(f'Fatal error: found an alias "{aliasFor}" -> "{name}", '
+                        'but found no file for the alias')
 
     def __scanLocaleRoots(self, name):
         while name and name != 'root':
