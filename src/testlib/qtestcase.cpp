@@ -1424,12 +1424,12 @@ char *toPrettyUnicode(const ushort *p, int length)
 */
 char *toPrettyUnicode(QStringView string)
 {
-    auto p = reinterpret_cast<const ushort *>(string.utf16());
+    auto p = string.utf16();
     auto length = string.size();
     // keep it simple for the vast majority of cases
     bool trimmed = false;
     QScopedArrayPointer<char> buffer(new char[256]);
-    const ushort *end = p + length;
+    const auto end = p + length;
     char *dst = buffer.data();
 
     *dst++ = '"';
