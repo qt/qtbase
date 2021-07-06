@@ -65,13 +65,24 @@ set(CMAKE_LINK_DEPENDS_NO_SHARED ON)
 # This detection only happens when building qtbase, and later is propagated via the generated
 # QtBuildInternalsExtra.cmake file.
 if (PROJECT_NAME STREQUAL "QtBase" AND NOT QT_BUILD_STANDALONE_TESTS)
-    if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT AND FEATURE_developer_build)
-        # Handle non-prefix builds by setting the CMake install prefix to point to qtbase's build
-        # dir.
-        # While building another repo (like qtsvg) the CMAKE_PREFIX_PATH
-        # should be set on the command line to point to the qtbase build dir.
-        set(CMAKE_INSTALL_PREFIX ${QtBase_BINARY_DIR} CACHE PATH
+    if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+        if(FEATURE_developer_build)
+            # Handle non-prefix builds by setting the CMake install prefix to point to qtbase's
+            # build dir. While building another repo (like qtsvg) the CMAKE_PREFIX_PATH should be
+            # set on the command line to point to the qtbase build dir.
+            set(__qt_default_prefix "${QtBase_BINARY_DIR}")
+        else()
+            if(CMAKE_HOST_WIN32)
+                set(__qt_default_prefix "C:/Qt/")
+            else()
+                set(__qt_default_prefix "/usr/local/")
+            endif()
+            string(APPEND __qt_default_prefix
+                "Qt-${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}")
+        endif()
+        set(CMAKE_INSTALL_PREFIX ${__qt_default_prefix} CACHE PATH
             "Install path prefix, prepended onto install directories." FORCE)
+        unset(__qt_default_prefix)
     endif()
     if(CMAKE_CROSSCOMPILING)
         set(__qt_prefix "${CMAKE_STAGING_PREFIX}")
