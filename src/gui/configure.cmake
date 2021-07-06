@@ -1232,6 +1232,7 @@ qt_configure_add_summary_entry(ARGS "xlib")
 qt_configure_add_summary_entry(ARGS "xcb-xlib")
 qt_configure_add_summary_entry(ARGS "egl_x11")
 qt_configure_add_summary_entry(ARGS "xkbcommon-x11")
+qt_configure_add_summary_entry(ARGS "xcb-sm")
 qt_configure_end_summary_section() # end of "X11 specific" section
 qt_configure_end_summary_section() # end of "Features used by QPA backends" section
 qt_configure_add_summary_section(NAME "QPA backends")
