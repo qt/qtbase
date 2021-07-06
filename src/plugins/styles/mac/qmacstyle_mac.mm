@@ -1233,6 +1233,8 @@ void QMacStylePrivate::drawFocusRing(QPainter *p, const QRectF &targetRect, int 
         QRectF focusRect = targetRect;
         if (isBigSurOrAbove)
             focusRect.translate(0, -1.5);
+        else if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSCatalina)
+            focusRect.adjust(0, 0, 0, -1);
         const qreal innerRadius = cw.type == Button_PushButton ? 3 : 4;
         const qreal outerRadius = innerRadius + focusRingWidth;
         hOffset = focusRect.left();
