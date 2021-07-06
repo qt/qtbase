@@ -665,9 +665,9 @@ QByteArray QCryptographicHashPrivate::finalize()
 */
 QByteArray QCryptographicHash::hash(QByteArrayView data, Algorithm method)
 {
-    QCryptographicHash hash(method);
+    QCryptographicHashPrivate hash(method);
     hash.addData(data);
-    return hash.result();
+    return hash.finalize();
 }
 
 /*!
