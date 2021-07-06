@@ -424,9 +424,9 @@ QByteArray deriveAesKey(QSslKeyPrivate::Cipher cipher, const QByteArray &passPhr
     hash.addData(data);
 
     if (cipher == Cipher::Aes192Cbc)
-        return key.append(hash.result().constData(), 8);
+        return key.append(hash.resultView().first(8));
 
-    return key.append(hash.result());
+    return key.append(hash.resultView());
 }
 
 QByteArray deriveKey(QSslKeyPrivate::Cipher cipher, const QByteArray &passPhrase,

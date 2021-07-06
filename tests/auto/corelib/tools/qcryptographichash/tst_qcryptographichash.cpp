@@ -78,15 +78,17 @@ void tst_QCryptographicHash::repeated_result()
     hash.addData(first);
 
     QFETCH(QByteArray, hash_first);
-    QByteArray result = hash.result();
+    QByteArrayView result = hash.resultView();
     QCOMPARE(result, hash_first);
+    QCOMPARE(result, hash.resultView());
     QCOMPARE(result, hash.result());
 
     hash.reset();
     hash.addData(first);
-    result = hash.result();
+    result = hash.resultView();
     QCOMPARE(result, hash_first);
     QCOMPARE(result, hash.result());
+    QCOMPARE(result, hash.resultView());
 }
 
 void tst_QCryptographicHash::intermediary_result_data()
@@ -179,16 +181,14 @@ void tst_QCryptographicHash::intermediary_result()
     hash.addData(first);
 
     QFETCH(QByteArray, hash_first);
-    QByteArray result = hash.result();
-    QCOMPARE(result, hash_first);
+    QCOMPARE(hash.resultView(), hash_first);
 
     // don't reset
     QFETCH(QByteArray, second);
     QFETCH(QByteArray, hash_firstsecond);
     hash.addData(second);
 
-    result = hash.result();
-    QCOMPARE(result, hash_firstsecond);
+    QCOMPARE(hash.resultView(), hash_firstsecond);
 
     hash.reset();
 }

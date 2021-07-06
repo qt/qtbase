@@ -251,7 +251,7 @@ QByteArray QMessageAuthenticationCode::result() const
 
     const int blockSize = qt_hash_block_size(d->method);
 
-    QByteArray hashedMessage = d->messageHash.result();
+    QByteArrayView hashedMessage = d->messageHash.resultView();
 
     QVarLengthArray<char> oKeyPad(blockSize);
     const char * const keyData = d->key.constData();

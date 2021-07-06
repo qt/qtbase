@@ -138,47 +138,53 @@ static inline int SHA384_512AddLength(SHA512Context *context, unsigned int lengt
 
 QT_BEGIN_NAMESPACE
 
+static constexpr qsizetype MaxHashLength = 64;
+
 static constexpr int hashLengthInternal(QCryptographicHash::Algorithm method) noexcept
 {
     switch (method) {
-    case QCryptographicHash::Sha1:
-        return 20;
+#define CASE(Enum, Size) \
+    case QCryptographicHash:: Enum : \
+        /* if this triggers, then increase MaxHashLength accordingly */ \
+        static_assert(MaxHashLength >= qsizetype(Size) ); \
+        return Size \
+    /*end*/
+    CASE(Sha1, 20);
 #ifndef QT_CRYPTOGRAPHICHASH_ONLY_SHA1
-    case QCryptographicHash::Md4:
-        return 16;
-    case QCryptographicHash::Md5:
-        return 16;
-    case QCryptographicHash::Sha224:
-        return SHA224HashSize;
-    case QCryptographicHash::Sha256:
-        return SHA256HashSize;
-    case QCryptographicHash::Sha384:
-        return SHA384HashSize;
-    case QCryptographicHash::Sha512:
-        return SHA512HashSize;
-    case QCryptographicHash::Blake2s_128:
-        return 128 / 8;
+    CASE(Md4, 16);
+    CASE(Md5, 16);
+    CASE(Sha224, SHA224HashSize);
+    CASE(Sha256, SHA256HashSize);
+    CASE(Sha384, SHA384HashSize);
+    CASE(Sha512, SHA512HashSize);
+    CASE(Blake2s_128, 128 / 8);
     case QCryptographicHash::Blake2b_160:
     case QCryptographicHash::Blake2s_160:
+        static_assert(160 / 8 <= MaxHashLength);
         return 160 / 8;
     case QCryptographicHash::RealSha3_224:
     case QCryptographicHash::Keccak_224:
     case QCryptographicHash::Blake2s_224:
+        static_assert(224 / 8 <= MaxHashLength);
         return 224 / 8;
     case QCryptographicHash::RealSha3_256:
     case QCryptographicHash::Keccak_256:
     case QCryptographicHash::Blake2b_256:
     case QCryptographicHash::Blake2s_256:
+        static_assert(256 / 8 <= MaxHashLength);
         return 256 / 8;
     case QCryptographicHash::RealSha3_384:
     case QCryptographicHash::Keccak_384:
     case QCryptographicHash::Blake2b_384:
+        static_assert(384 / 8 <= MaxHashLength);
         return 384 / 8;
     case QCryptographicHash::RealSha3_512:
     case QCryptographicHash::Keccak_512:
     case QCryptographicHash::Blake2b_512:
+        static_assert(512 / 8 <= MaxHashLength);
         return 512 / 8;
 #endif
+#undef CASE
     }
     return 0;
 }
@@ -194,7 +200,8 @@ public:
 
     void reset() noexcept;
     void addData(QByteArrayView bytes) noexcept;
-    QByteArray finalize();
+    void finalize() noexcept;
+    QByteArrayView resultView() const noexcept { return result.toByteArrayView(); }
 
     const QCryptographicHash::Algorithm method;
     union {
@@ -219,7 +226,25 @@ public:
     };
     void sha3Finish(int bitCount, Sha3Variant sha3Variant);
 #endif
-    QByteArray result;
+    class SmallByteArray {
+        std::array<char, MaxHashLength> m_data;
+        static_assert(MaxHashLength <= std::numeric_limits<std::uint8_t>::max());
+        std::uint8_t m_size;
+    public:
+        char *data() noexcept { return m_data.data(); }
+        const char *data() const noexcept { return m_data.data(); }
+        qsizetype size() const noexcept { return qsizetype{m_size}; }
+        bool isEmpty() const noexcept { return size() == 0; }
+        void clear() noexcept { m_size = 0; }
+        void resize(qsizetype s) {
+            Q_ASSERT(s >= 0);
+            Q_ASSERT(s <= MaxHashLength);
+            m_size = std::uint8_t(s);
+        }
+        QByteArrayView toByteArrayView() const noexcept
+        { return QByteArrayView{data(), size()}; }
+    };
+    SmallByteArray result;
 };
 
 #ifndef QT_CRYPTOGRAPHICHASH_ONLY_SHA1
@@ -337,7 +362,7 @@ QCryptographicHash::~QCryptographicHash()
 /*!
   Resets the object.
 */
-void QCryptographicHash::reset()
+void QCryptographicHash::reset() noexcept
 {
     d->reset();
 }
@@ -532,17 +557,33 @@ bool QCryptographicHash::addData(QIODevice *device)
 /*!
   Returns the final hash value.
 
-  \sa QByteArray::toHex()
+  \sa resultView(), QByteArray::toHex()
 */
 QByteArray QCryptographicHash::result() const
 {
-    return d->finalize();
+    return resultView().toByteArray();
 }
 
-QByteArray QCryptographicHashPrivate::finalize()
+/*!
+  \since 6.3
+
+  Returns the final hash value.
+
+  Note that the returned view remains valid only as long as the QCryptographicHash object is
+  not modified by other means.
+
+  \sa result(), QByteArrayView::toHex()
+*/
+QByteArrayView QCryptographicHash::resultView() const noexcept
+{
+    d->finalize();
+    return d->resultView();
+}
+
+void QCryptographicHashPrivate::finalize() noexcept
 {
     if (!result.isEmpty())
-        return result;
+        return;
 
     switch (method) {
     case QCryptographicHash::Sha1: {
@@ -630,7 +671,6 @@ QByteArray QCryptographicHashPrivate::finalize()
     }
 #endif
     }
-    return result;
 }
 
 /*!
@@ -643,7 +683,8 @@ QByteArray QCryptographicHash::hash(QByteArrayView data, Algorithm method)
 {
     QCryptographicHashPrivate hash(method);
     hash.addData(data);
-    return hash.finalize();
+    hash.finalize();
+    return hash.resultView().toByteArray();
 }
 
 /*!

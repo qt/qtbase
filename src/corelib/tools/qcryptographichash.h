@@ -102,7 +102,7 @@ public:
     explicit QCryptographicHash(Algorithm method);
     ~QCryptographicHash();
 
-    void reset();
+    void reset() noexcept;
 
 #if QT_DEPRECATED_SINCE(6, 4)
     QT_DEPRECATED_VERSION_X_6_4("Use the QByteArrayView overload instead")
@@ -115,6 +115,7 @@ public:
     bool addData(QIODevice *device);
 
     QByteArray result() const;
+    QByteArrayView resultView() const noexcept;
 
 #ifdef QT_BUILD_FUNCTIONS_REMOVED_IN_6_3
     static QByteArray hash(const QByteArray &data, Algorithm method);

@@ -1239,7 +1239,6 @@ QByteArray qEncodeHmacMd5(QByteArray &key, const QByteArray &message)
     Q_ASSERT_X(!(key.isEmpty()),"qEncodeHmacMd5", "Empty key check");
 
     QCryptographicHash hash(QCryptographicHash::Md5);
-    QByteArray hMsg;
 
     QByteArray iKeyPad(blockSize, 0x36);
     QByteArray oKeyPad(blockSize, 0x5c);
@@ -1272,7 +1271,7 @@ QByteArray qEncodeHmacMd5(QByteArray &key, const QByteArray &message)
 
     hash.reset();
     hash.addData(iKeyPad);
-    hMsg = hash.result();
+    QByteArrayView hMsg = hash.resultView();
                     //Digest gen after pass-1: H((K0 xor ipad)||text)
 
     QByteArray hmacDigest;
