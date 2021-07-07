@@ -149,7 +149,10 @@ function(qt_internal_add_tool target_name)
         set(install_dir "${arg_INSTALL_DIR}")
     endif()
 
-    qt_internal_add_executable("${target_name}" OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${install_dir}"
+    set(output_dir "${QT_BUILD_DIR}/${install_dir}")
+
+    qt_internal_add_executable("${target_name}"
+        OUTPUT_DIRECTORY "${output_dir}"
         ${bootstrap}
         ${exceptions}
         NO_INSTALL
@@ -173,6 +176,7 @@ function(qt_internal_add_tool target_name)
     )
     qt_internal_add_target_aliases("${target_name}")
     _qt_internal_apply_strict_cpp("${target_name}")
+    qt_internal_adjust_main_config_runtime_output_dir("${target_name}" "${output_dir}")
 
     if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.19.0" AND QT_FEATURE_debug_and_release)
         set_property(TARGET "${target_name}"
@@ -209,12 +213,6 @@ function(qt_internal_add_tool target_name)
         set_property(GLOBAL APPEND PROPERTY QT_USER_FACING_TOOL_TARGETS ${target_name})
     endif()
 
-    # If building with a multi-config configuration, the main configuration tool will be placed in
-    # ./bin, while the rest will be in <CONFIG> specific subdirectories.
-    qt_get_tool_cmake_configuration(tool_cmake_configuration)
-    set_target_properties("${target_name}" PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY_${tool_cmake_configuration} "${QT_BUILD_DIR}/${install_dir}"
-    )
 
     if(NOT arg_NO_INSTALL AND arg_TOOLS_TARGET)
         # Assign a tool to an export set, and mark the module to which the tool belongs.
@@ -408,21 +406,6 @@ endif()
         DESTINATION "${config_install_dir}"
         COMPONENT Devel
     )
-endfunction()
-
-function(qt_get_tool_cmake_configuration out_var)
-    qt_get_main_cmake_configuration("${out_var}")
-    string(TOUPPER "${${out_var}}" upper_config)
-    set("${out_var}" "${upper_config}" PARENT_SCOPE)
-endfunction()
-
-function(qt_get_main_cmake_configuration out_var)
-    if(CMAKE_BUILD_TYPE)
-        set(config "${CMAKE_BUILD_TYPE}")
-    elseif(QT_MULTI_CONFIG_FIRST_CONFIG)
-        set(config "${QT_MULTI_CONFIG_FIRST_CONFIG}")
-    endif()
-    set("${out_var}" "${config}" PARENT_SCOPE)
 endfunction()
 
 # Returns the target name for the tool with the given name.

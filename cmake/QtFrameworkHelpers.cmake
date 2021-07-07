@@ -111,7 +111,7 @@ function(qt_finalize_framework_headers_copy target)
         # Create a fake header file and copy it into the framework by marking it as PUBLIC_HEADER.
         # CMake now takes care of creating the symlink.
         set(fake_header ${target}_fake_header.h)
-        qt_get_main_cmake_configuration(main_config)
+        qt_internal_get_main_cmake_configuration(main_config)
         file(GENERATE OUTPUT ${fake_header} CONTENT "// ignore this file\n"
              CONDITION "$<CONFIG:${main_config}>")
         string(PREPEND fake_header "${CMAKE_CURRENT_BINARY_DIR}/")

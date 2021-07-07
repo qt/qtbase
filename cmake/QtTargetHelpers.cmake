@@ -736,3 +736,27 @@ function(qt_internal_qtfy_target out_var target)
     set(${out_var} "Qt${target}" PARENT_SCOPE)
     set(${out_var}_versioned "Qt${PROJECT_VERSION_MAJOR}${target}" PARENT_SCOPE)
 endfunction()
+
+function(qt_internal_get_main_cmake_configuration out_var)
+    if(CMAKE_BUILD_TYPE)
+        set(config "${CMAKE_BUILD_TYPE}")
+    elseif(QT_MULTI_CONFIG_FIRST_CONFIG)
+        set(config "${QT_MULTI_CONFIG_FIRST_CONFIG}")
+    endif()
+    set("${out_var}" "${config}" PARENT_SCOPE)
+endfunction()
+
+function(qt_internal_get_upper_case_main_cmake_configuration out_var)
+    qt_internal_get_main_cmake_configuration("${out_var}")
+    string(TOUPPER "${${out_var}}" upper_config)
+    set("${out_var}" "${upper_config}" PARENT_SCOPE)
+endfunction()
+
+function(qt_internal_adjust_main_config_runtime_output_dir target output_dir)
+    # When building Qt with multiple configurations, place the main configuration executable
+    # directly in ${output_dir}, rather than a ${output_dir}/<CONFIG> subdirectory.
+    qt_internal_get_upper_case_main_cmake_configuration(main_cmake_configuration)
+    set_target_properties("${target}" PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY_${main_cmake_configuration} "${output_dir}"
+    )
+endfunction()
