@@ -1782,7 +1782,7 @@ public:
     qsizetype remove(const Key &key, const T &value)
     {
         if (isEmpty()) // prevents detaching shared null
-            return false;
+            return 0;
         detach();
 
         auto it = d->find(key);
@@ -1844,6 +1844,8 @@ public:
 
     iterator find(const Key &key, const T &value)
     {
+        if (isEmpty())
+            return end();
         detach();
         auto it = constFind(key, value);
         return iterator(it.i, it.e);
