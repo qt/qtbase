@@ -60,15 +60,16 @@
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
-    QGuiApplication::setApplicationDisplayName(Dialog::tr("Standard Dialogs"));
 
-#ifndef QT_NO_TRANSLATION
-    QString translatorFileName = QLatin1String("qtbase_");
-    translatorFileName += QLocale::system().name();
-    QTranslator *translator = new QTranslator(&app);
-    if (translator->load(translatorFileName, QLibraryInfo::path(QLibraryInfo::TranslationsPath)))
-        app.installTranslator(translator);
+#if QT_CONFIG(translation)
+    QTranslator translator;
+    if (translator.load(QLocale::system(), u"qtbase"_qs, u"_"_qs,
+                        QLibraryInfo::path(QLibraryInfo::TranslationsPath))) {
+        app.installTranslator(&translator);
+    }
 #endif
+
+    QGuiApplication::setApplicationDisplayName(Dialog::tr("Standard Dialogs"));
 
     Dialog dialog;
     if (!QGuiApplication::styleHints()->showIsFullScreen() && !QGuiApplication::styleHints()->showIsMaximized()) {
