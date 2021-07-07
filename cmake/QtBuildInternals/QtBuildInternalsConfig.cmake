@@ -533,7 +533,7 @@ macro(qt_set_up_standalone_tests_build)
     # Standalone tests are not handled via the main repo project and qt_build_tests.
 endmacro()
 
-function(qt_get_standalone_tests_confg_files_path out_var)
+function(qt_get_standalone_tests_config_files_path out_var)
     set(path "${QT_CONFIG_INSTALL_DIR}/${INSTALL_CMAKE_NAMESPACE}BuildInternals/StandaloneTests")
 
     # QT_CONFIG_INSTALL_DIR is relative in prefix builds.
@@ -552,7 +552,7 @@ macro(qt_build_tests)
     if(QT_BUILD_STANDALONE_TESTS)
         # Find location of TestsConfig.cmake. These contain the modules that need to be
         # find_package'd when testing.
-        qt_get_standalone_tests_confg_files_path(_qt_build_tests_install_prefix)
+        qt_get_standalone_tests_config_files_path(_qt_build_tests_install_prefix)
         include("${_qt_build_tests_install_prefix}/${PROJECT_NAME}TestsConfig.cmake" OPTIONAL)
 
         # Of course we always need the test module as well.
