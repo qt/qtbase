@@ -112,8 +112,7 @@ public:
 */
 
 QTreeModel::QTreeModel(int columns, QTreeWidget *parent)
-    : QAbstractItemModel(parent), rootItem(new QTreeWidgetItem),
-      headerItem(new QTreeWidgetItem), skipPendingSort(false)
+    : QAbstractItemModel(parent), rootItem(new QTreeWidgetItem), headerItem(new QTreeWidgetItem)
 {
     rootItem->view = parent;
     rootItem->itemFlags = Qt::ItemIsDropEnabled;
@@ -127,8 +126,7 @@ QTreeModel::QTreeModel(int columns, QTreeWidget *parent)
 */
 
 QTreeModel::QTreeModel(QTreeModelPrivate &dd, QTreeWidget *parent)
-    : QAbstractItemModel(dd, parent), rootItem(new QTreeWidgetItem),
-      headerItem(new QTreeWidgetItem), skipPendingSort(false)
+    : QAbstractItemModel(dd, parent), rootItem(new QTreeWidgetItem), headerItem(new QTreeWidgetItem)
 {
     rootItem->view = parent;
     rootItem->itemFlags = Qt::ItemIsDropEnabled;
@@ -1563,11 +1561,8 @@ QTreeWidgetItem::QTreeWidgetItem(QTreeWidgetItem *parent, QTreeWidgetItem *after
 QTreeWidgetItem::~QTreeWidgetItem()
 {
     QTreeModel *model = treeModel();
-    bool wasSkipSort = false;
-    if (model) {
-        wasSkipSort = model->skipPendingSort;
-        model->skipPendingSort = true;
-    }
+    QTreeModel::SkipSorting skipSorting(model);
+
     if (par) {
         int i = par->children.indexOf(this);
         if (i >= 0) {
@@ -1606,9 +1601,6 @@ QTreeWidgetItem::~QTreeWidgetItem()
 
     children.clear();
     delete d;
-    if (model) {
-        model->skipPendingSort = wasSkipSort;
-    }
 }
 
 /*!
@@ -2008,8 +2000,7 @@ void QTreeWidgetItem::insertChild(int index, QTreeWidgetItem *child)
         return;
 
     if (QTreeModel *model = treeModel()) {
-        const bool wasSkipSort = model->skipPendingSort;
-        model->skipPendingSort = true;
+        QTreeModel::SkipSorting skipSorting(model);
         if (model->rootItem == this)
             child->par = nullptr;
         else
@@ -2033,7 +2024,6 @@ void QTreeWidgetItem::insertChild(int index, QTreeWidgetItem *child)
         children.insert(index, child);
         d->updateHiddenStatus(child, true);
         model->endInsertItems();
-        model->skipPendingSort = wasSkipSort;
     } else {
         child->par = this;
         children.insert(index, child);

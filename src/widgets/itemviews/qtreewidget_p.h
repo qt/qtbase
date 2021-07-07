@@ -155,7 +155,7 @@ private:
     QList<QTreeWidgetItemIterator*> iterators;
 
     mutable QBasicTimer sortPendingTimer;
-    mutable bool skipPendingSort; //while doing internal operation we don't care about sorting
+    mutable bool skipPendingSort = false; // no sorting during internal operations
     bool inline executePendingSort() const;
 
     bool isChanging() const;
@@ -167,9 +167,9 @@ public:
     {
         const QTreeModel * const model;
         const bool previous;
-        SkipSorting(const QTreeModel *m) : model(m), previous(model->skipPendingSort)
-        { model->skipPendingSort = true; }
-        ~SkipSorting() { model->skipPendingSort = previous; }
+        SkipSorting(const QTreeModel *m) : model(m), previous(model ? model->skipPendingSort : false)
+        { if (model) model->skipPendingSort = true; }
+        ~SkipSorting() { if (model) model->skipPendingSort = previous; }
     };
     friend struct SkipSorting;
 };
