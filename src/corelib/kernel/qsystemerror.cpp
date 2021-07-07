@@ -46,6 +46,9 @@
 #ifdef Q_OS_WIN
 #  include <qt_windows.h>
 #endif
+#ifndef QT_BOOTSTRAPPED
+#  include <qcoreapplication.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -127,9 +130,11 @@ static QString standardLibraryErrorString(int errorCode)
     break; }
     }
     if (s) {
-        // ######## this breaks moc build currently
-        // ret = QCoreApplication::translate("QIODevice", s);
+#ifndef QT_BOOTSTRAPPED
+        ret = QCoreApplication::translate("QIODevice", s);
+#else
         ret = QString::fromLatin1(s);
+#endif
     }
     return ret.trimmed();
 }
