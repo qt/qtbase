@@ -321,7 +321,7 @@ QUuid QUuid::fromCFUUID(CFUUIDRef uuid)
     if (!uuid)
         return QUuid();
     const CFUUIDBytes bytes = CFUUIDGetUUIDBytes(uuid);
-    return QUuid::fromRfc4122(QByteArray::fromRawData(reinterpret_cast<const char *>(&bytes), sizeof(bytes)));
+    return QUuid::fromRfc4122(QByteArrayView(reinterpret_cast<const char *>(&bytes), sizeof(bytes)));
 }
 
 /*!
@@ -354,7 +354,7 @@ QUuid QUuid::fromNSUUID(const NSUUID *uuid)
         return QUuid();
     uuid_t bytes;
     [uuid getUUIDBytes:bytes];
-    return QUuid::fromRfc4122(QByteArray::fromRawData(reinterpret_cast<const char *>(bytes), sizeof(bytes)));
+    return QUuid::fromRfc4122(QByteArrayView(reinterpret_cast<const char *>(bytes), sizeof(bytes)));
 }
 
 /*!

@@ -105,7 +105,10 @@ public:
     explicit QUuid(const QByteArray &);
     QByteArray toByteArray(StringFormat mode = WithBraces) const;
     QByteArray toRfc4122() const;
+#if QT_REMOVED_SINCE(6, 3)
     static QUuid fromRfc4122(const QByteArray &);
+#endif
+    static QUuid fromRfc4122(QByteArrayView) noexcept;
     bool isNull() const noexcept;
 
     constexpr bool operator==(const QUuid &orig) const noexcept

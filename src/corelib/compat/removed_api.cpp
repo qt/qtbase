@@ -57,6 +57,13 @@ QByteArray QCryptographicHash::hash(const QByteArray &data, Algorithm method)
     return hash(QByteArrayView{data}, method);
 }
 
+#include "quuid.h"
+
+QUuid QUuid::fromRfc4122(const QByteArray &bytes)
+{
+    return fromRfc4122(qToByteArrayViewIgnoringNull(bytes));
+}
+
 // #include <qotherheader.h>
 // // implement removed functions from qotherheader.h
 

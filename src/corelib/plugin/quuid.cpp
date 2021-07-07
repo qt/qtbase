@@ -151,16 +151,12 @@ static QUuid _q_uuidFromHex(const char *src)
 
 static QUuid createFromName(const QUuid &ns, const QByteArray &baseData, QCryptographicHash::Algorithm algorithm, int version)
 {
-    QByteArray hashResult;
-
-    // create a scope so later resize won't reallocate
-    {
-        QCryptographicHash hash(algorithm);
-        hash.addData(ns.toRfc4122());
-        hash.addData(baseData);
-        hashResult = hash.result();
-    }
-    hashResult.resize(16); // Sha1 will be too long
+    QCryptographicHash hash(algorithm);
+    hash.addData(ns.toRfc4122());
+    hash.addData(baseData);
+    QByteArrayView hashResult = hash.resultView();
+    Q_ASSERT(hashResult.size() >= 16);
+    hashResult.truncate(16); // Sha1 will be too long
 
     QUuid result = QUuid::fromRfc4122(hashResult);
 
@@ -524,20 +520,23 @@ QUuid QUuid::createUuidV5(const QUuid &ns, const QByteArray &baseData)
 
   If the conversion fails, a null UUID is created.
 
+    \note In Qt versions prior to 6.3, this function took QByteArray, not
+    QByteArrayView.
+
     \since 4.8
 
     \sa toRfc4122(), QUuid()
 */
-QUuid QUuid::fromRfc4122(const QByteArray &bytes)
+QUuid QUuid::fromRfc4122(QByteArrayView bytes) noexcept
 {
-    if (bytes.isEmpty() || bytes.length() != 16)
+    if (bytes.isEmpty() || bytes.size() != 16)
         return QUuid();
 
     uint d1;
     ushort d2, d3;
     uchar d4[8];
 
-    const uchar *data = reinterpret_cast<const uchar *>(bytes.constData());
+    const uchar *data = reinterpret_cast<const uchar *>(bytes.data());
 
     d1 = qFromBigEndian<quint32>(data);
     data += sizeof(quint32);
@@ -744,7 +743,7 @@ QDataStream &operator<<(QDataStream &s, const QUuid &id)
 */
 QDataStream &operator>>(QDataStream &s, QUuid &id)
 {
-    QByteArray bytes(16, Qt::Uninitialized);
+    std::array<char, 16> bytes;
     if (s.readRawData(bytes.data(), 16) != 16) {
         s.setStatus(QDataStream::ReadPastEnd);
         return s;
@@ -753,7 +752,7 @@ QDataStream &operator>>(QDataStream &s, QUuid &id)
     if (s.byteOrder() == QDataStream::BigEndian) {
         id = QUuid::fromRfc4122(bytes);
     } else {
-        const uchar *data = reinterpret_cast<const uchar *>(bytes.constData());
+        const uchar *data = reinterpret_cast<const uchar *>(bytes.data());
 
         id.data1 = qFromLittleEndian<quint32>(data);
         data += sizeof(quint32);
