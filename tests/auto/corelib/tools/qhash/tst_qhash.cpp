@@ -44,6 +44,7 @@ private slots:
     void erase();
     void erase_edge_case();
     void key();
+    void keys();
 
     void swap();
     void count(); // copied from tst_QMap
@@ -619,6 +620,62 @@ void tst_QHash::key()
         hash2.insert(0, "zero");
         QCOMPARE(hash2.key("zero"), 0);
         QCOMPARE(hash2.key("zero", def), 0);
+    }
+
+    {
+        const int def = -1;
+        QMultiHash<int, QString> hash;
+        QCOMPARE(hash.key("val"), 0);
+        QCOMPARE(hash.key("val", def), def);
+        QVERIFY(!hash.isDetached());
+
+        hash.insert(1, "value1");
+        hash.insert(1, "value2");
+        hash.insert(2, "value1");
+
+        QCOMPARE(hash.key("value2"), 1);
+        const auto key = hash.key("value1");
+        QVERIFY(key == 1 || key == 2);
+        QCOMPARE(hash.key("value"), 0);
+        QCOMPARE(hash.key("value", def), def);
+    }
+}
+
+template <typename T>
+QList<T> sorted(const QList<T> &list)
+{
+    QList<T> res = list;
+    std::sort(res.begin(), res.end());
+    return res;
+}
+
+void tst_QHash::keys()
+{
+    {
+        QHash<QString, int> hash;
+        QVERIFY(hash.keys().isEmpty());
+        QVERIFY(hash.keys(1).isEmpty());
+        QVERIFY(!hash.isDetached());
+
+        hash.insert("key1", 1);
+        hash.insert("key2", 2);
+        hash.insert("key3", 1);
+
+        QCOMPARE(sorted(hash.keys()), QStringList({ "key1", "key2", "key3" }));
+        QCOMPARE(sorted(hash.keys(1)), QStringList({ "key1", "key3" }));
+    }
+    {
+        QMultiHash<QString, int> hash;
+        QVERIFY(hash.keys().isEmpty());
+        QVERIFY(hash.keys(1).isEmpty());
+        QVERIFY(!hash.isDetached());
+
+        hash.insert("key1", 1);
+        hash.insert("key2", 1);
+        hash.insert("key1", 2);
+
+        QCOMPARE(sorted(hash.keys()), QStringList({ "key1", "key1", "key2" }));
+        QCOMPARE(sorted(hash.keys(1)), QStringList({ "key1", "key2" }));
     }
 }
 
@@ -1467,14 +1524,6 @@ void tst_QHash::qmultihash_qhash_rvalue_ref_unite()
     QCOMPARE(MyClass::moves, 2);
     QCOMPARE(MyClass::count, 3);
     }
-}
-
-template <typename T>
-QList<T> sorted(const QList<T> &list)
-{
-    QList<T> res = list;
-    std::sort(res.begin(), res.end());
-    return res;
 }
 
 void tst_QHash::keys_values_uniqueKeys()

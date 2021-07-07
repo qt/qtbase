@@ -1458,7 +1458,7 @@ public:
         QList<Key> res;
         const_iterator i = begin();
         while (i != end()) {
-            if (i.value()->contains(value))
+            if (i.value() == value)
                 res.append(i.key());
             ++i;
         }
