@@ -744,7 +744,10 @@ void QPropertyObserverPointer::noSelfDependencies(QPropertyBindingPrivate *bindi
     // See also comment in notify()
     while (observer) {
         if (QPropertyObserver::ObserverTag(observer->next.tag()) == QPropertyObserver::ObserverNotifiesBinding)
-            Q_ASSERT(observer->binding != binding);
+            if (observer->binding == binding) {
+                qCritical("Property depends on itself!");
+                break;
+            }
 
         observer = observer->next.data();
     }
