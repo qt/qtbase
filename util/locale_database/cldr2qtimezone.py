@@ -363,7 +363,7 @@ def main(args, out, err):
             dict((name, ind) for ind, name in enumerate((x[0] for x in windowsIdList), 1)))
     except IOError as e:
         usage(err, name,
-              'Failed to open common/supplemental/windowsZones.xml: ' + (e.message or e.args[1]))
+              'Failed to open common/supplemental/windowsZones.xml: ' + str(e))
         return 1
     except Error as e:
         err.write('\n'.join(textwrap.wrap(
@@ -375,7 +375,7 @@ def main(args, out, err):
     try:
         writer = ZoneIdWriter(dataFilePath, qtPath)
     except IOError as e:
-        err.write('Failed to open files to transcribe: {}'.format(e.message or e.args[1]))
+        err.write('Failed to open files to transcribe: {}'.format(e))
         return 1
 
     try:
