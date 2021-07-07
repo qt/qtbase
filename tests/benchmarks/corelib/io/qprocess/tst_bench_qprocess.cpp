@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -39,10 +39,16 @@ private slots:
     void echoTest_performance();
 };
 
+#ifdef Q_OS_WIN
+#  define EXE ".exe"
+#else
+#  define EXE ""
+#endif
+
 void tst_QProcess::echoTest_performance()
 {
     QProcess process;
-    process.start("testProcessLoopback/testProcessLoopback");
+    process.start(QFINDTESTDATA("testProcessLoopback/testProcessLoopback" EXE), QStringList());
 
     QByteArray array;
     array.resize(1024 * 1024);

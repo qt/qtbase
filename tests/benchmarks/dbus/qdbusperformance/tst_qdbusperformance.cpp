@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -79,7 +79,7 @@ void tst_QDBusPerformance::initTestCase()
 #else
 #  define EXE ""
 #endif
-    proc.start(QFINDTESTDATA("server/server" EXE));
+    proc.start(QFINDTESTDATA("server/server" EXE), QStringList());
     QVERIFY2(proc.waitForStarted(), qPrintable(proc.errorString()));
     QVERIFY(proc.waitForReadyRead());
 
