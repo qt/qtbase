@@ -668,12 +668,17 @@ void tst_QHash::empty()
 //copied from tst_QMap
 void tst_QHash::find()
 {
+    const QHash<int, QString> constEmptyHash;
+    QVERIFY(constEmptyHash.find(1) == constEmptyHash.end());
+    QVERIFY(!constEmptyHash.isDetached());
+
     QHash<int, QString> map1;
     QString testString="Teststring %0";
     QString compareString;
     int i,count=0;
 
     QVERIFY(map1.find(1) == map1.end());
+    QVERIFY(!map1.isDetached());
 
     map1.insert(1,"Mensch");
     map1.insert(1,"Mayer");
@@ -681,6 +686,16 @@ void tst_QHash::find()
 
     QCOMPARE(map1.find(1).value(), QLatin1String("Mayer"));
     QCOMPARE(map1.find(2).value(), QLatin1String("Hej"));
+
+    const QMultiHash<int, QString> constEmptyMultiHash;
+    QVERIFY(constEmptyMultiHash.find(1) == constEmptyMultiHash.cend());
+    QVERIFY(constEmptyMultiHash.find(1, "value") == constEmptyMultiHash.cend());
+    QVERIFY(!constEmptyMultiHash.isDetached());
+
+    QMultiHash<int, QString> emptyMultiHash;
+    QVERIFY(emptyMultiHash.find(1) == emptyMultiHash.end());
+    QVERIFY(emptyMultiHash.find(1, "value") == emptyMultiHash.end());
+    QVERIFY(!emptyMultiHash.isDetached());
 
     QMultiHash<int, QString> multiMap(map1);
     for (i = 3; i < 10; ++i) {
