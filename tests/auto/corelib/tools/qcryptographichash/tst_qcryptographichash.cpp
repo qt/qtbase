@@ -209,10 +209,7 @@ void tst_QCryptographicHash::sha1()
 
 //  SHA1(A million repetitions of "a") =
 //      34AA973C D4C4DAA4 F61EEB2B DBAD2731 6534016F
-    QByteArray as;
-    for (int i = 0; i < 1000000; ++i)
-        as += 'a';
-    QCOMPARE(QCryptographicHash::hash(as, QCryptographicHash::Sha1).toHex().toUpper(),
+    QCOMPARE(QCryptographicHash::hash(QByteArray(1'000'000, 'a'), QCryptographicHash::Sha1).toHex().toUpper(),
              QByteArray("34AA973CD4C4DAA4F61EEB2BDBAD27316534016F"));
 }
 
