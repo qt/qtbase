@@ -39,6 +39,7 @@ for use.
 import os
 import datetime
 import textwrap
+import argparse
 
 from localetools import unicode2hex, wrap_list, Error, SourceFileEditor
 from cldr import CldrAccess
@@ -324,46 +325,41 @@ class ZoneIdWriter (SourceFileEditor):
 
         return windowsIdData, ianaIdData
 
-def usage(err, name, message=''):
-    err.write(f"""Usage: {name} path/to/cldr/root path/to/qtbase
-""") # TODO: more interesting message
-    if message:
-        err.write(f'\n{message}\n')
 
-def main(args, out, err):
+def main(out, err):
     """Parses CLDR's data and updates Qt's representation of it.
 
-    Takes sys.argv, sys.stdout, sys.stderr (or equivalents) as
+    Takes sys.stdout, sys.stderr (or equivalents) as
     arguments. Expects two command-line options: the root of the
     unpacked CLDR data-file tree and the root of the qtbase module's
     checkout. Updates QTimeZone's private data about Windows time-zone
     IDs."""
-    name = args.pop(0)
-    if len(args) != 2:
-        usage(err, name, "Expected two arguments")
-        return 1
+    parser = argparse.ArgumentParser(
+        description="Update Qt's CLDR-derived timezone data.")
+    parser.add_argument('cldr_path', help='path to the root of the CLDR tree')
+    parser.add_argument('qtbase_path', help='path to the root of the qtbase source tree')
 
-    cldrPath = args.pop(0)
-    qtPath = args.pop(0)
+    args = parser.parse_args()
+
+    cldrPath = args.cldr_path
+    qtPath = args.qtbase_path
 
     if not os.path.isdir(qtPath):
-        usage(err, name, f"No such Qt directory: {qtPath}")
-        return 1
+        parser.error(f"No such Qt directory: {qtPath}")
+
     if not os.path.isdir(cldrPath):
-        usage(err, name, f"No such CLDR directory: {cldrPath}")
-        return 1
+        parser.error(f"No such CLDR directory: {cldrPath}")
 
     dataFilePath = os.path.join(qtPath, 'src', 'corelib', 'time', 'qtimezoneprivate_data_p.h')
     if not os.path.isfile(dataFilePath):
-        usage(err, name, f'No such file: {dataFilePath}')
-        return 1
+        parser.error(f'No such file: {dataFilePath}')
 
     try:
         version, defaults, winIds = CldrAccess(cldrPath).readWindowsTimeZones(
             dict((name, ind) for ind, name in enumerate((x[0] for x in windowsIdList), 1)))
     except IOError as e:
-        usage(err, name,
-              f'Failed to open common/supplemental/windowsZones.xml: {e}')
+        parser.error(
+            f'Failed to open common/supplemental/windowsZones.xml: {e}')
         return 1
     except Error as e:
         err.write('\n'.join(textwrap.wrap(
@@ -391,4 +387,4 @@ def main(args, out, err):
 
 if __name__ == '__main__':
     import sys
-    sys.exit(main(sys.argv, sys.stdout, sys.stderr))
+    sys.exit(main(sys.stdout, sys.stderr))

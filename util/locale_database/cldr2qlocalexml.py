@@ -27,7 +27,7 @@
 ## $QT_END_LICENSE$
 ##
 #############################################################################
-"""Convert CLDR data to qLocaleXML
+"""Convert CLDR data to QLocaleXML
 
 The CLDR data can be downloaded from CLDR_, which has a sub-directory
 for each version; you need the ``core.zip`` file for your version of
@@ -51,53 +51,49 @@ order.
 While updating the locale data, check also for updates to MS-Win's
 time zone names; see cldr2qtimezone.py for details.
 
+All the scripts mentioned support --help to tell you how to use them.
+
 .. _CLDR: ftp://unicode.org/Public/cldr/
 """
 
 import os
 import sys
+import argparse
 
 from cldr import CldrReader
 from qlocalexml import QLocaleXmlWriter
 
-def usage(name, err, message = ''):
-    err.write(f"""Usage: {name} path/to/cldr/common/main [out-file.xml]
-""") # TODO: expand command-line, improve help message
-    if message:
-        err.write(f'\n{message}\n')
 
-def main(args, out, err):
-    # TODO: make calendars a command-line option
-    calendars = ['gregorian', 'persian', 'islamic'] # 'hebrew'
+def main(out, err):
+    all_calendars = ['gregorian', 'persian', 'islamic']  # 'hebrew'
 
-    # TODO: make argument parsing more sophisticated
-    name = args.pop(0)
-    if not args:
-        usage(name, err, 'Where is your CLDR data tree ?')
-        return 1
+    parser = argparse.ArgumentParser(
+        description='Generate QLocaleXML from CLDR data.',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('cldr_path', help='path to the root of the CLDR tree')
+    parser.add_argument('out_file', help='output XML file name',
+                        nargs='?', metavar='out-file.xml')
+    parser.add_argument('--calendars', help='select calendars to emit data for',
+                        nargs='+', metavar='CALENDAR',
+                        choices=all_calendars, default=all_calendars)
 
-    root = args.pop(0)
+    args = parser.parse_args()
+
+    root = args.cldr_path
     if not os.path.exists(os.path.join(root, 'common', 'main', 'root.xml')):
-        usage(name, err, 'First argument is the root of the CLDR tree: '
-                         f'found no common/main/root.xml under {root}')
-        return 1
+        parser.error('First argument is the root of the CLDR tree: '
+                     f'found no common/main/root.xml under {root}')
 
-    xml = args.pop(0) if args else None
+    xml = args.out_file
     if not xml or xml == '-':
         emit = out
     elif not xml.endswith('.xml'):
-        usage(name, err, f'Please use a .xml extension on your output file name, not {xml}')
-        return 1
+        parser.error(f'Please use a .xml extension on your output file name, not {xml}')
     else:
         try:
             emit = open(xml, 'w')
         except IOError as e:
-            usage(name, err, f'Failed to open "{xml}" to write output to it\n')
-            return 1
-
-    if args:
-        usage(name, err, 'Too many arguments - excess: ' + ' '.join(args))
-        return 1
+            parser.error(f'Failed to open "{xml}" to write output to it')
 
     # TODO - command line options to tune choice of grumble and whitter:
     reader = CldrReader(root, err.write, err.write)
@@ -106,10 +102,10 @@ def main(args, out, err):
     writer.version(reader.root.cldrVersion)
     writer.enumData()
     writer.likelySubTags(reader.likelySubTags())
-    writer.locales(reader.readLocales(calendars), calendars)
+    writer.locales(reader.readLocales(args.calendars), args.calendars)
 
     writer.close(err.write)
     return 0
 
 if __name__ == '__main__':
-    sys.exit(main(sys.argv, sys.stdout, sys.stderr))
+    sys.exit(main(sys.stdout, sys.stderr))
