@@ -91,37 +91,11 @@ public:
         Id128           = 3
     };
 
-#if defined(Q_COMPILER_UNIFORM_INIT) && !defined(Q_CLANG_QDOC)
-
     constexpr QUuid() noexcept : data1(0), data2(0), data3(0), data4{0,0,0,0,0,0,0,0} {}
 
     constexpr QUuid(uint l, ushort w1, ushort w2, uchar b1, uchar b2, uchar b3,
                            uchar b4, uchar b5, uchar b6, uchar b7, uchar b8) noexcept
         : data1(l), data2(w1), data3(w2), data4{b1, b2, b3, b4, b5, b6, b7, b8} {}
-#else
-    QUuid() noexcept
-    {
-        data1 = 0;
-        data2 = 0;
-        data3 = 0;
-        for (int i = 0; i < 8; i++)
-            data4[i] = 0;
-    }
-    QUuid(uint l, ushort w1, ushort w2, uchar b1, uchar b2, uchar b3, uchar b4, uchar b5, uchar b6, uchar b7, uchar b8) noexcept
-    {
-        data1 = l;
-        data2 = w1;
-        data3 = w2;
-        data4[0] = b1;
-        data4[1] = b2;
-        data4[2] = b3;
-        data4[3] = b4;
-        data4[4] = b5;
-        data4[5] = b6;
-        data4[6] = b7;
-        data4[7] = b8;
-    }
-#endif
 
     explicit QUuid(const QString &);
     static QUuid fromString(QStringView string) noexcept;
