@@ -26,15 +26,16 @@
 ## $QT_END_LICENSE$
 ##
 #############################################################################
-"""Script to generate C++ code from CLDR data in qLocaleXML form
+"""Script to generate C++ code from CLDR data in QLocaleXML form
 
-See ``cldr2qlocalexml.py`` for how to generate the qLocaleXML data itself.
+See ``cldr2qlocalexml.py`` for how to generate the QLocaleXML data itself.
 Pass the output file from that as first parameter to this script; pass
 the root of the qtbase check-out as second parameter.
 """
 
 import os
 import datetime
+import argparse
 
 from qlocalexml import QLocaleXmlReader
 from localetools import unicode2hex, wrap_list, Error, Transcriber, SourceFileEditor
@@ -498,30 +499,36 @@ class LocaleHeaderWriter (SourceFileEditor):
 
         out('\n    };\n')
 
-def usage(name, err, message = ''):
-    err.write(f"""Usage: {name} path/to/qlocale.xml root/of/qtbase
-""") # TODO: elaborate
-    if message:
-        err.write('\n' + message + '\n')
 
-def main(args, out, err):
-    # TODO: Make calendars a command-line parameter
+def main(out, err):
     # map { CLDR name: Qt file name }
-    calendars = {'gregorian': 'roman', 'persian': 'jalali', 'islamic': 'hijri',} # 'hebrew': 'hebrew',
+    calendars_map = {
+        'gregorian': 'roman',
+        'persian': 'jalali',
+        'islamic': 'hijri',
+        # 'hebrew': 'hebrew'
+    }
+    all_calendars = list(calendars_map.keys())
 
-    name = args.pop(0)
-    if len(args) != 2:
-        usage(name, err, 'I expect two arguments')
-        return 1
+    parser = argparse.ArgumentParser(
+        description='Generate C++ code from CLDR data in QLocaleXML form.',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('input_file', help='input XML file name',
+                        metavar='input-file.xml')
+    parser.add_argument('qtbase_path', help='path to the root of the qtbase source tree')
+    parser.add_argument('--calendars', help='select calendars to emit data for',
+                        nargs='+', metavar='CALENDAR',
+                        choices=all_calendars, default=all_calendars)
+    args = parser.parse_args()
 
-    qlocalexml = args.pop(0)
-    qtsrcdir = args.pop(0)
+    qlocalexml = args.input_file
+    qtsrcdir = args.qtbase_path
+    calendars = {cal: calendars_map[cal] for cal in args.calendars}
 
     if not (os.path.isdir(qtsrcdir)
             and all(os.path.isfile(os.path.join(qtsrcdir, 'src', 'corelib', 'text', leaf))
                     for leaf in ('qlocale_data_p.h', 'qlocale.h', 'qlocale.qdoc'))):
-        usage(name, err, f'Missing expected files under qtbase source root {qtsrcdir}')
-        return 1
+        parser.error(f'Missing expected files under qtbase source root {qtsrcdir}')
 
     reader = QLocaleXmlReader(qlocalexml)
     locale_map = dict(reader.loadLocaleMap(calendars, err.write))
@@ -617,4 +624,4 @@ def main(args, out, err):
 
 if __name__ == "__main__":
     import sys
-    sys.exit(main(sys.argv, sys.stdout, sys.stderr))
+    sys.exit(main(sys.stdout, sys.stderr))
