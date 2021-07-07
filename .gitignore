@@ -38,6 +38,7 @@ qt*-config_p.h
 qt*-config.pri
 *.pyc
 .mypy_cache
+__pycache__
 
 /include/
 
