@@ -5,7 +5,7 @@ qt_build_internals_set_up_private_api()
 # This will find all Qt packages that are required for standalone tests.
 # It will find more packages that needed for a certain test, but will ensure any test can
 # be built.
-qt_get_standalone_tests_confg_files_path(standalone_tests_config_path)
+qt_get_standalone_tests_config_files_path(standalone_tests_config_path)
 
 file(GLOB config_files "${standalone_tests_config_path}/*")
 foreach(file ${config_files})
