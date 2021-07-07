@@ -552,7 +552,7 @@ def main(args, out, err):
                                                'qlocale_data_p.h'),
                                   qtsrcdir, reader.cldrVersion)
     except IOError as e:
-        err.write('Failed to open files to transcribe locale data: ' + (e.message or e.args[1]))
+        err.write('Failed to open files to transcribe locale data: ' + str(e))
         return 1
 
     try:
@@ -582,7 +582,7 @@ def main(args, out, err):
                                         qtsrcdir, reader.cldrVersion)
         except IOError as e:
             err.write('Failed to open files to transcribe ' + calendar
-                             + ' data ' + (e.message or e.args[1]))
+                             + ' data ' + str(e))
             return 1
 
         try:
@@ -599,7 +599,7 @@ def main(args, out, err):
         writer = LocaleHeaderWriter(os.path.join(qtsrcdir, 'src', 'corelib', 'text', 'qlocale.h'),
                                     qtsrcdir, reader.dupes)
     except IOError as e:
-        err.write('Failed to open files to transcribe qlocale.h: ' + (e.message or e.args[1]))
+        err.write('Failed to open files to transcribe qlocale.h: ' + str(e))
         return 1
 
     try:
@@ -618,7 +618,7 @@ def main(args, out, err):
         writer = Transcriber(os.path.join(qtsrcdir, 'src', 'corelib', 'text', 'qlocale.qdoc'),
                              qtsrcdir)
     except IOError as e:
-        err.write('Failed to open files to transcribe qlocale.qdoc: ' + (e.message or e.args[1]))
+        err.write('Failed to open files to transcribe qlocale.qdoc: ' + str(e))
         return 1
 
     DOCSTRING = "    QLocale's data is based on Common Locale Data Repository "
