@@ -313,6 +313,14 @@ public slots:
     { }
 };
 
+#define CLASSINFO_VAARGS(...) Q_CLASSINFO("classinfo_va_args", #__VA_ARGS__)
+class TestClassinfoFromVaArgs : public QObject
+{
+    Q_OBJECT
+    CLASSINFO_VAARGS(a, b, c, d)
+};
+#undef CLASSINFO_VAARGS
+
 struct ForwardDeclaredStruct;
 
 struct StructQObject : public QObject
@@ -655,6 +663,7 @@ private slots:
     void task87883();
     void multilineComments();
     void classinfoWithEscapes();
+    void classinfoFromVaArgs();
     void trNoopInClassInfo();
     void ppExpressionEvaluation();
     void arrayArguments();
@@ -975,6 +984,15 @@ void tst_Moc::classinfoWithEscapes()
 
     QMetaMethod mm = mobj->method(mobj->methodOffset());
     QCOMPARE(mm.methodSignature(), QByteArray("slotWithAReallyLongName(int)"));
+}
+
+void tst_Moc::classinfoFromVaArgs()
+{
+    const QMetaObject *mobj = &TestClassinfoFromVaArgs::staticMetaObject;
+
+    QCOMPARE(mobj->classInfoCount(), 1);
+    QCOMPARE(mobj->classInfo(0).name(), "classinfo_va_args");
+    QCOMPARE(mobj->classInfo(0).value(), "a,b,c,d");
 }
 
 void tst_Moc::trNoopInClassInfo()
