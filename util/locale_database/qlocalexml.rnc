@@ -1,0 +1,143 @@
+#
+# Copyright (C) 2021 The Qt Company Ltd.
+# Contact: https://www.qt.io/licensing/
+#
+# This file is part of the test suite of the Qt Toolkit.
+#
+# $QT_BEGIN_LICENSE:GPL-EXCEPT$
+# Commercial License Usage
+# Licensees holding valid commercial Qt licenses may use this file in
+# accordance with the commercial license agreement provided with the
+# Software or, alternatively, in accordance with the terms contained in
+# a written agreement between you and The Qt Company. For licensing terms
+# and conditions see https://www.qt.io/terms-conditions. For further
+# information use the contact form at https://www.qt.io/contact-us.
+#
+# GNU General Public License Usage
+# Alternatively, this file may be used under the terms of the GNU
+# General Public License version 3 as published by the Free Software
+# Foundation with exceptions as appearing in the file LICENSE.GPL3-EXCEPT
+# included in the packaging of this file. Please review the following
+# information to ensure the GNU General Public License requirements will
+# be met: https://www.gnu.org/licenses/gpl-3.0.html.
+#
+# $QT_END_LICENSE$
+#
+
+# This is RelaxNG compact schema for qLocaleXML interemediate locale data
+# representation format produced and consumed by the qlocalexml module.
+#
+# To validate an xml file run:
+#
+#      jing -c qlocalexml.rnc <your-file.xml>
+#
+# You can download jing from https://relaxng.org/jclark/jing.html if your
+# package manager lacks the jing package.
+
+start = element localeDatabase {
+  element version { text },
+  element languageList { Language+ },
+  element scriptList { Script+ },
+  element territoryList { Territory+ },
+  element likelySubtags { LikelySubtag+ },
+  element localeList { Locale+ }
+}
+
+Language = element language { TagDescriptor }
+Script = element script { TagDescriptor }
+Territory = element territory { TagDescriptor }
+TagDescriptor = (
+  element name { text },
+  element id { xsd:nonNegativeInteger },
+  element code { text }
+)
+
+LikelySubtag = element likelySubtag {
+  element from { LocaleTriplet },
+  element to { LocaleTriplet }
+}
+
+LocaleTriplet = (
+  element language { text },
+  element script { text },
+  element territory { text }
+)
+
+WeekDay = ("sun" | "mon" | "tue" | "wed" | "thu" | "fri" | "sat")
+Digit = xsd:string { pattern = "\d" }
+Punctuation = xsd:string { pattern = "\p{P}" }
+GroupSizes = xsd:string { pattern = "\d;\d;\d" }
+
+Locale = element locale {
+  element language { text },
+  element languagecode { text },
+  element script { text },
+  element scriptcode { text },
+  element territory { text },
+  element territorycode { text },
+  element decimal { Punctuation },
+  element group { text },
+  element zero { Digit },
+  element list { Punctuation },
+  element percent { text },
+  element minus { text },
+  element plus { text },
+  element exp { text },
+  element languageEndonym { text },
+  element territoryEndonym { text },
+  element quotationStart { Punctuation },
+  element quotationEnd { Punctuation },
+  element alternateQuotationStart { Punctuation },
+  element alternateQuotationEnd { Punctuation },
+  element listPatternPartStart { text },
+  element listPatternPartMiddle { text },
+  element listPatternPartEnd { text },
+  element listPatternPartTwo { text },
+  element byte_unit { text },
+  element byte_si_quantified { text },
+  element byte_iec_quantified { text },
+  element am { text },
+  element pm { text },
+  element firstDayOfWeek { text },
+  element weekendStart { WeekDay },
+  element weekendEnd { WeekDay },
+  element longDateFormat { text },
+  element shortDateFormat { text },
+  element longTimeFormat { text },
+  element shortTimeFormat { text },
+  element currencyIsoCode { text },
+  element currencySymbol { text },
+  element currencyDisplayName { text },
+  element currencyFormat { text },
+  element currencyNegativeFormat { text },
+  element longDays { text },
+  element standaloneLongDays { text },
+  element shortDays { text },
+  element standaloneShortDays { text },
+  element narrowDays { text },
+  element standaloneNarrowDays { text },
+
+  # Some of these entries may be absent depending on command line arguments
+  element longMonths_gregorian { text }?,
+  element longMonths_persian { text }?,
+  element longMonths_islamic { text }?,
+  element standaloneLongMonths_gregorian { text }?,
+  element standaloneLongMonths_persian { text }?,
+  element standaloneLongMonths_islamic { text }?,
+  element shortMonths_gregorian { text }?,
+  element shortMonths_persian { text }?,
+  element shortMonths_islamic { text }?,
+  element standaloneShortMonths_gregorian { text }?,
+  element standaloneShortMonths_persian { text }?,
+  element standaloneShortMonths_islamic { text }?,
+  element narrowMonths_gregorian { text }?,
+  element narrowMonths_persian { text }?,
+  element narrowMonths_islamic { text }?,
+  element standaloneNarrowMonths_gregorian { text }?,
+  element standaloneNarrowMonths_persian { text }?,
+  element standaloneNarrowMonths_islamic { text }?,
+
+  element groupSizes { GroupSizes },
+  element currencyDigits { xsd:nonNegativeInteger },
+  element currencyRounding { xsd:nonNegativeInteger }
+}

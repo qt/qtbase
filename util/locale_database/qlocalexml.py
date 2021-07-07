@@ -35,6 +35,14 @@ Provides classes:
 
 Support:
   Spacer -- provides control over indentation of the output.
+
+RelaxNG schema for the used file format can be found in qlocalexml.rnc.
+QLocaleXML files can be validated using:
+
+    jing -c qlocalexml.rnc <file.xml>
+
+You can download jing from https://relaxng.org/jclark/jing.html if your
+package manager lacks the jing package.
 """
 
 from xml.sax.saxutils import escape
