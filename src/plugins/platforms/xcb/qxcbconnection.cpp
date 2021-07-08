@@ -580,6 +580,7 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
         HANDLE_PLATFORM_WINDOW_EVENT(xcb_expose_event_t, window, handleExposeEvent);
     case XCB_BUTTON_PRESS: {
         auto ev = reinterpret_cast<xcb_button_press_event_t *>(event);
+        setTime(ev->time);
         m_keyboard->updateXKBStateFromCore(ev->state);
         // the event explicitly contains the state of the three first buttons,
         // the rest we need to manage ourselves
@@ -592,6 +593,7 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
     }
     case XCB_BUTTON_RELEASE: {
         auto ev = reinterpret_cast<xcb_button_release_event_t *>(event);
+        setTime(ev->time);
         m_keyboard->updateXKBStateFromCore(ev->state);
         m_buttonState = (m_buttonState & ~0x7) | translateMouseButtons(ev->state);
         setButtonState(translateMouseButton(ev->detail), false);
@@ -602,6 +604,7 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
     }
     case XCB_MOTION_NOTIFY: {
         auto ev = reinterpret_cast<xcb_motion_notify_event_t *>(event);
+        setTime(ev->time);
         m_keyboard->updateXKBStateFromCore(ev->state);
         m_buttonState = (m_buttonState & ~0x7) | translateMouseButtons(ev->state);
         if (Q_UNLIKELY(lcQpaXInputEvents().isDebugEnabled()))
@@ -636,14 +639,19 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
             // Prefer XI2 enter (XCB_INPUT_ENTER) events over core events.
             break;
         }
+        setTime(reinterpret_cast<xcb_enter_notify_event_t *>(event)->time);
         HANDLE_PLATFORM_WINDOW_EVENT(xcb_enter_notify_event_t, event, handleEnterNotifyEvent);
     case XCB_LEAVE_NOTIFY:
+    {
         if (hasXInput2()) {
             // Prefer XI2 leave (XCB_INPUT_LEAVE) events over core events.
             break;
         }
-        m_keyboard->updateXKBStateFromCore(reinterpret_cast<xcb_leave_notify_event_t *>(event)->state);
+        auto ev = reinterpret_cast<xcb_leave_notify_event_t *>(event);
+        setTime(ev->time);
+        m_keyboard->updateXKBStateFromCore(ev->state);
         HANDLE_PLATFORM_WINDOW_EVENT(xcb_leave_notify_event_t, event, handleLeaveNotifyEvent);
+    }
     case XCB_FOCUS_IN:
         HANDLE_PLATFORM_WINDOW_EVENT(xcb_focus_in_event_t, event, handleFocusInEvent);
     case XCB_FOCUS_OUT:
@@ -651,13 +659,18 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
     case XCB_KEY_PRESS:
     {
         auto keyPress = reinterpret_cast<xcb_key_press_event_t *>(event);
+        setTime(keyPress->time);
         m_keyboard->updateXKBStateFromCore(keyPress->state);
         setTime(keyPress->time);
         HANDLE_KEYBOARD_EVENT(xcb_key_press_event_t, handleKeyPressEvent);
     }
     case XCB_KEY_RELEASE:
-        m_keyboard->updateXKBStateFromCore(reinterpret_cast<xcb_key_release_event_t *>(event)->state);
+    {
+        auto keyRelease = reinterpret_cast<xcb_key_release_event_t *>(event);
+        setTime(keyRelease->time);
+        m_keyboard->updateXKBStateFromCore(keyRelease->state);
         HANDLE_KEYBOARD_EVENT(xcb_key_release_event_t, handleKeyReleaseEvent);
+    }
     case XCB_MAPPING_NOTIFY:
         m_keyboard->updateKeymap(reinterpret_cast<xcb_mapping_notify_event_t *>(event));
         break;
@@ -665,6 +678,7 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
     {
 #if QT_CONFIG(draganddrop) || QT_CONFIG(clipboard)
         auto selectionRequest = reinterpret_cast<xcb_selection_request_event_t *>(event);
+        setTime(selectionRequest->time);
 #endif
 #if QT_CONFIG(draganddrop)
         if (selectionRequest->selection == atom(QXcbAtom::XdndSelection))
@@ -689,11 +703,12 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
         break;
     case XCB_PROPERTY_NOTIFY:
     {
+        auto propertyNotify = reinterpret_cast<xcb_property_notify_event_t *>(event);
+        setTime(propertyNotify->time);
 #ifndef QT_NO_CLIPBOARD
         if (m_clipboard->handlePropertyNotify(event))
             break;
 #endif
-        auto propertyNotify = reinterpret_cast<xcb_property_notify_event_t *>(event);
         if (propertyNotify->atom == atom(QXcbAtom::_NET_WORKAREA)) {
             QXcbVirtualDesktop *virtualDesktop = virtualDesktopForRootWindow(propertyNotify->window);
             if (virtualDesktop)
