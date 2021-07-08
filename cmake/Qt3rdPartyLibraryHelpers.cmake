@@ -275,8 +275,8 @@ function(qt_install_3rdparty_library_wrap_config_extra_file target)
         set(use_bundled "OFF")
     endif()
 
-    set(QT_USE_BUNDLED_${target} "${use_bundled}" CACHE BOOL "" FORCE)
-    set(extra_cmake_code "set(QT_USE_BUNDLED_${target} ${use_bundled} CACHE BOOL \"\" FORCE)")
+    set(QT_USE_BUNDLED_${target} "${use_bundled}" CACHE INTERNAL "")
+    set(extra_cmake_code "set(QT_USE_BUNDLED_${target} ${use_bundled} CACHE INTERNAL \"\")")
     configure_file(
         "${QT_CMAKE_DIR}/QtFindWrapConfigExtra.cmake.in"
         "${QT_CONFIG_BUILD_DIR}/${INSTALL_CMAKE_NAMESPACE}/FindWrap${target}ConfigExtra.cmake"
