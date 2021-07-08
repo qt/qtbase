@@ -3207,6 +3207,127 @@ QList<QAction*> QWidget::actions() const
     Q_D(const QWidget);
     return d->actions;
 }
+
+/*!
+    \fn QAction *QWidget::addAction(const QString &text);
+    \fn QAction *QWidget::addAction(const QString &text, const QKeySequence &shortcut);
+    \fn QAction *QWidget::addAction(const QIcon &icon, const QString &text);
+    \fn QAction *QWidget::addAction(const QIcon &icon, const QString &text, const QKeySequence &shortcut);
+
+    \since 6.3
+
+    These convenience functions create a new action with text \a text,
+    icon \a icon and shortcut \a shortcut, if any.
+
+    The functions add the newly created action to the widget's
+    list of actions, and return it.
+
+    QWidget takes ownership of the returned QAction.
+*/
+QAction *QWidget::addAction(const QString &text)
+{
+    QAction *ret = new QAction(text, this);
+    addAction(ret);
+    return ret;
+}
+
+QAction *QWidget::addAction(const QIcon &icon, const QString &text)
+{
+    QAction *ret = new QAction(icon, text, this);
+    addAction(ret);
+    return ret;
+}
+
+QAction *QWidget::addAction(const QString &text, const QKeySequence &shortcut)
+{
+    QAction *ret = addAction(text);
+    ret->setShortcut(shortcut);
+    return ret;
+}
+
+QAction *QWidget::addAction(const QIcon &icon, const QString &text, const QKeySequence &shortcut)
+{
+    QAction *ret = addAction(icon, text);
+    ret->setShortcut(shortcut);
+    return ret;
+}
+
+/*!
+    \fn QAction *QWidget::addAction(const QString &text, const QObject *receiver, const char* member, Qt::ConnectionType type)
+    \fn QAction *QWidget::addAction(const QIcon &icon, const QString &text, const QObject *receiver, const char* member, Qt::ConnectionType type)
+    \fn QAction *QWidget::addAction(const QString &text, const QKeySequence &shortcut, const QObject *receiver, const char* member, Qt::ConnectionType type)
+    \fn QAction *QWidget::addAction(const QIcon &icon, const QString &text, const QKeySequence &shortcut, const QObject *receiver, const char* member, Qt::ConnectionType type)
+
+    \overload
+    \since 6.3
+
+    This convenience function creates a new action with the text \a
+    text, icon \a icon, and shortcut \a shortcut, if any.
+
+    The action's \l{QAction::triggered()}{triggered()} signal is connected
+    to the \a receiver's \a member slot. The function adds the newly created
+    action to the widget's list of actions and returns it.
+
+    QWidget takes ownership of the returned QAction.
+*/
+QAction *QWidget::addAction(const QString &text, const QObject *receiver, const char* member,
+                            Qt::ConnectionType type)
+{
+    QAction *action = addAction(text);
+    QObject::connect(action, SIGNAL(triggered(bool)), receiver, member, type);
+    return action;
+}
+
+QAction *QWidget::addAction(const QIcon &icon, const QString &text,
+                            const QObject *receiver, const char* member,
+                            Qt::ConnectionType type)
+{
+    QAction *action = addAction(icon, text);
+    QObject::connect(action, SIGNAL(triggered(bool)), receiver, member, type);
+    return action;
+}
+
+#if QT_CONFIG(shortcut)
+QAction *QWidget::addAction(const QString &text, const QKeySequence &shortcut,
+                            const QObject *receiver, const char* member,
+                            Qt::ConnectionType type)
+{
+    QAction *action = addAction(text, receiver, member, type);
+    action->setShortcut(shortcut);
+    return action;
+}
+
+QAction *QWidget::addAction(const QIcon &icon, const QString &text, const QKeySequence &shortcut,
+                            const QObject *receiver, const char* member,
+                            Qt::ConnectionType type)
+{
+    QAction *action = addAction(icon, text, receiver, member, type);
+    action->setShortcut(shortcut);
+    return action;
+}
+#endif // QT_CONFIG(shortcut)
+
+/*!
+    \fn template<typename...Args> QAction *QWidget::addAction(const QString &text, Args&&...args)
+    \fn template<typename...Args> QAction *QWidget::addAction(const QString &text, const QShortcut &shortcut, Args&&...args)
+    \fn template<typename...Args> QAction *QWidget::addAction(const QIcon &icon, const QString &text, Args&&...args)
+    \fn template<typename...Args> QAction *QWidget::addAction(const QIcon &icon, const QString &text, const QShortcut &shortcut, Args&&...args)
+
+    \since 6.3
+    \overload
+
+    These convenience functions create a new action with the text \a text,
+    icon \a icon, and shortcut \a shortcut, if any.
+
+    The action's \l{QAction::triggered()}{triggered()} signal is connected
+    as if by a call to QObject::connect(action, &QAction::triggered, args...),
+    perfectly forwarding \a args, including a possible Qt::ConnectionType.
+
+    The function adds the newly created action to the widget's list of
+    actions and returns it.
+
+    QWidget takes ownership of the returned QAction.
+*/
 #endif // QT_NO_ACTION
 
 /*!

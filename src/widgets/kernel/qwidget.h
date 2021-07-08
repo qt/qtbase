@@ -44,6 +44,7 @@
 #include <QtGui/qwindowdefs.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qmargins.h>
+#include <QtGui/qaction.h>
 #include <QtGui/qpaintdevice.h>
 #include <QtGui/qpalette.h>
 #include <QtGui/qfont.h>
@@ -210,6 +211,11 @@ class Q_WIDGETS_EXPORT QWidget : public QObject, public QPaintDevice
     Q_PROPERTY(QString windowFilePath READ windowFilePath WRITE setWindowFilePath)
     Q_PROPERTY(Qt::InputMethodHints inputMethodHints READ inputMethodHints WRITE setInputMethodHints)
 
+    template <typename...Args>
+    using compatible_action_slot_args = std::void_t<
+        decltype(QObject::connect(std::declval<QAction*>(), &QAction::triggered,
+                                  std::declval<Args>()...))
+    >;
 public:
     enum RenderFlag {
         DrawWindowBackground = 0x1,
@@ -569,7 +575,55 @@ public:
     void insertAction(QAction *before, QAction *action);
     void removeAction(QAction *action);
     QList<QAction*> actions() const;
-#endif
+
+    // convenience action factories
+    QAction *addAction(const QString &text);
+    QAction *addAction(const QIcon &icon, const QString &text);
+    QAction *addAction(const QString &text, const QObject *receiver,
+                       const char *member, Qt::ConnectionType type = Qt::AutoConnection);
+    QAction *addAction(const QIcon &icon, const QString &text, const QObject *receiver,
+                       const char *member, Qt::ConnectionType type = Qt::AutoConnection);
+    template <typename...Args, typename = compatible_action_slot_args<Args...>>
+    QAction *addAction(const QString &text, Args&&...args)
+    {
+        QAction *result = addAction(text);
+        connect(result, &QAction::triggered, std::forward<Args>(args)...);
+        return result;
+    }
+    template <typename...Args, typename = compatible_action_slot_args<Args...>>
+    QAction *addAction(const QIcon &icon, const QString &text, Args&&...args)
+    {
+        QAction *result = addAction(icon, text);
+        connect(result, &QAction::triggered, std::forward<Args>(args)...);
+        return result;
+    }
+
+#if QT_CONFIG(shortcut)
+    QAction *addAction(const QString &text, const QKeySequence &shortcut);
+    QAction *addAction(const QIcon &icon, const QString &text, const QKeySequence &shortcut);
+    QAction *addAction(const QString &text, const QKeySequence &shortcut,
+                       const QObject *receiver, const char *member,
+                       Qt::ConnectionType type = Qt::AutoConnection);
+    QAction *addAction(const QIcon &icon, const QString &text, const QKeySequence &shortcut,
+                       const QObject *receiver, const char *member,
+                       Qt::ConnectionType type = Qt::AutoConnection);
+
+    template <typename...Args, typename = compatible_action_slot_args<Args...>>
+    QAction *addAction(const QString &text, const QKeySequence &shortcut, Args&&...args)
+    {
+        QAction *result = addAction(text, shortcut);
+        connect(result, &QAction::triggered, std::forward<Args>(args)...);
+        return result;
+    }
+    template <typename...Args, typename = compatible_action_slot_args<Args...>>
+    QAction *addAction(const QIcon &icon, const QString &text, const QKeySequence &shortcut, Args&&...args)
+    {
+        QAction *result = addAction(icon, text, shortcut);
+        connect(result, &QAction::triggered, std::forward<Args>(args)...);
+        return result;
+    }
+#endif // QT_CONFIG(shortcut)
+#endif // QT_NO_ACTION
 
     QWidget *parentWidget() const;
 
