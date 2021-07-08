@@ -205,6 +205,8 @@ private:
     QTreeWidget *view;
     QTreeWidgetItemPrivate *d;
     QTreeWidgetItem *par;
+    // ### Qt7: Move children to d-pointer and replace QList by a suitable data structure.
+    //          to fix QTBUG-94546
     QList<QTreeWidgetItem*> children;
     Qt::ItemFlags itemFlags;
 };
