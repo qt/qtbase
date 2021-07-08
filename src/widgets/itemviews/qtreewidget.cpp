@@ -1385,16 +1385,7 @@ bool QTreeWidgetItem::isFirstColumnSpanned() const
 
     \sa type()
 */
-QTreeWidgetItem::QTreeWidgetItem(int type)
-    : rtti(type), view(nullptr), d(new QTreeWidgetItemPrivate(this)), par(nullptr),
-      itemFlags(Qt::ItemIsSelectable
-                |Qt::ItemIsUserCheckable
-                |Qt::ItemIsEnabled
-                |Qt::ItemIsDragEnabled
-                |Qt::ItemIsDropEnabled)
-{
-}
-
+QTreeWidgetItem::QTreeWidgetItem(int type) : rtti(type), d(new QTreeWidgetItemPrivate(this)) { }
 
 /*!
     Constructs a tree widget item of the specified \a type. The item
@@ -1405,12 +1396,7 @@ QTreeWidgetItem::QTreeWidgetItem(int type)
     \sa type()
 */
 QTreeWidgetItem::QTreeWidgetItem(const QStringList &strings, int type)
-    : rtti(type), view(nullptr), d(new QTreeWidgetItemPrivate(this)), par(nullptr),
-      itemFlags(Qt::ItemIsSelectable
-                |Qt::ItemIsUserCheckable
-                |Qt::ItemIsEnabled
-                |Qt::ItemIsDragEnabled
-                |Qt::ItemIsDropEnabled)
+    : rtti(type), d(new QTreeWidgetItemPrivate(this))
 {
     for (int i = 0; i < strings.count(); ++i)
         setText(i, strings.at(i));
@@ -1426,12 +1412,7 @@ QTreeWidgetItem::QTreeWidgetItem(const QStringList &strings, int type)
 */
 
 QTreeWidgetItem::QTreeWidgetItem(QTreeWidget *treeview, int type)
-    : rtti(type), view(nullptr), d(new QTreeWidgetItemPrivate(this)), par(nullptr),
-      itemFlags(Qt::ItemIsSelectable
-                |Qt::ItemIsUserCheckable
-                |Qt::ItemIsEnabled
-                |Qt::ItemIsDragEnabled
-                |Qt::ItemIsDropEnabled)
+    : rtti(type), d(new QTreeWidgetItemPrivate(this))
 {
     // do not set this->view here otherwise insertChild() will fail
     if (QTreeModel *model = treeModel(treeview)) {
@@ -1451,12 +1432,7 @@ QTreeWidgetItem::QTreeWidgetItem(QTreeWidget *treeview, int type)
 */
 
 QTreeWidgetItem::QTreeWidgetItem(QTreeWidget *treeview, const QStringList &strings, int type)
-    : rtti(type), view(nullptr), d(new QTreeWidgetItemPrivate(this)), par(nullptr),
-      itemFlags(Qt::ItemIsSelectable
-                |Qt::ItemIsUserCheckable
-                |Qt::ItemIsEnabled
-                |Qt::ItemIsDragEnabled
-                |Qt::ItemIsDropEnabled)
+    : rtti(type), d(new QTreeWidgetItemPrivate(this))
 {
     for (int i = 0; i < strings.count(); ++i)
         setText(i, strings.at(i));
@@ -1476,12 +1452,7 @@ QTreeWidgetItem::QTreeWidgetItem(QTreeWidget *treeview, const QStringList &strin
     \sa type()
 */
 QTreeWidgetItem::QTreeWidgetItem(QTreeWidget *treeview, QTreeWidgetItem *after, int type)
-    : rtti(type), view(nullptr), d(new QTreeWidgetItemPrivate(this)), par(nullptr),
-      itemFlags(Qt::ItemIsSelectable
-                |Qt::ItemIsUserCheckable
-                |Qt::ItemIsEnabled
-                |Qt::ItemIsDragEnabled
-                |Qt::ItemIsDropEnabled)
+    : rtti(type), d(new QTreeWidgetItemPrivate(this))
 {
     // do not set this->view here otherwise insertChild() will fail
     if (QTreeModel *model = treeModel(treeview)) {
@@ -1497,12 +1468,7 @@ QTreeWidgetItem::QTreeWidgetItem(QTreeWidget *treeview, QTreeWidgetItem *after, 
     \sa type()
 */
 QTreeWidgetItem::QTreeWidgetItem(QTreeWidgetItem *parent, int type)
-    : rtti(type), view(nullptr), d(new QTreeWidgetItemPrivate(this)), par(nullptr),
-      itemFlags(Qt::ItemIsSelectable
-                |Qt::ItemIsUserCheckable
-                |Qt::ItemIsEnabled
-                |Qt::ItemIsDragEnabled
-                |Qt::ItemIsDropEnabled)
+    : rtti(type), d(new QTreeWidgetItemPrivate(this))
 {
     if (parent)
         parent->addChild(this);
@@ -1515,12 +1481,7 @@ QTreeWidgetItem::QTreeWidgetItem(QTreeWidgetItem *parent, int type)
     \sa type()
 */
 QTreeWidgetItem::QTreeWidgetItem(QTreeWidgetItem *parent, const QStringList &strings, int type)
-    : rtti(type), view(nullptr), d(new QTreeWidgetItemPrivate(this)), par(nullptr),
-      itemFlags(Qt::ItemIsSelectable
-                |Qt::ItemIsUserCheckable
-                |Qt::ItemIsEnabled
-                |Qt::ItemIsDragEnabled
-                |Qt::ItemIsDropEnabled)
+    : rtti(type), d(new QTreeWidgetItemPrivate(this))
 {
     for (int i = 0; i < strings.count(); ++i)
         setText(i, strings.at(i));
@@ -1537,12 +1498,7 @@ QTreeWidgetItem::QTreeWidgetItem(QTreeWidgetItem *parent, const QStringList &str
     \sa type()
 */
 QTreeWidgetItem::QTreeWidgetItem(QTreeWidgetItem *parent, QTreeWidgetItem *after, int type)
-    : rtti(type), view(nullptr), d(new QTreeWidgetItemPrivate(this)), par(nullptr),
-      itemFlags(Qt::ItemIsSelectable
-                |Qt::ItemIsUserCheckable
-                |Qt::ItemIsEnabled
-                |Qt::ItemIsDragEnabled
-                |Qt::ItemIsDropEnabled)
+    : rtti(type), d(new QTreeWidgetItemPrivate(this))
 {
     if (parent) {
         int i = parent->children.indexOf(after) + 1;
@@ -1952,8 +1908,9 @@ void QTreeWidgetItem::write(QDataStream &out) const
     \sa data(), flags()
 */
 QTreeWidgetItem::QTreeWidgetItem(const QTreeWidgetItem &other)
-    : rtti(Type), values(other.values), view(nullptr),
-      d(new QTreeWidgetItemPrivate(this)), par(nullptr),
+    : rtti(Type),
+      values(other.values),
+      d(new QTreeWidgetItemPrivate(this)),
       itemFlags(other.itemFlags)
 {
     d->display = other.d->display;

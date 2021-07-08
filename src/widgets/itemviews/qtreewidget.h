@@ -202,13 +202,14 @@ private:
     int rtti;
     // One item has a vector of column entries. Each column has a vector of (role, value) pairs.
     QList<QList<QWidgetItemData>> values;
-    QTreeWidget *view;
+    QTreeWidget *view = nullptr;
     QTreeWidgetItemPrivate *d;
-    QTreeWidgetItem *par;
+    QTreeWidgetItem *par = nullptr;
     // ### Qt7: Move children to d-pointer and replace QList by a suitable data structure.
     //          to fix QTBUG-94546
     QList<QTreeWidgetItem*> children;
-    Qt::ItemFlags itemFlags;
+    Qt::ItemFlags itemFlags = Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled
+            | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled;
 };
 
 inline void QTreeWidgetItem::setText(int column, const QString &atext)
