@@ -1587,6 +1587,7 @@ function(__qt_propagate_generated_resource target resource_name generated_source
         target_compile_definitions("${resource_target}" PRIVATE
             "$<TARGET_PROPERTY:${QT_CMAKE_EXPORT_NAMESPACE}::Core,INTERFACE_COMPILE_DEFINITIONS>"
         )
+        _qt_internal_set_up_static_runtime_library("${resource_target}")
 
         # Special handling is required for the Core library resources. The linking of the Core
         # library to the resources adds a circular dependency. This leads to the wrong

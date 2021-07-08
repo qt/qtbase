@@ -243,6 +243,7 @@ function(__qt_internal_add_static_plugin_init_object_library
         # Core provides the symbols needed by Q_IMPORT_PLUGIN.
         ${QT_CMAKE_EXPORT_NAMESPACE}::Core
     )
+    _qt_internal_set_up_static_runtime_library("${plugin_init_target}")
 
     set_property(TARGET ${plugin_init_target} PROPERTY _is_qt_plugin_init_target TRUE)
     set_property(TARGET ${plugin_init_target} APPEND PROPERTY
