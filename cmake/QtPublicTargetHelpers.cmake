@@ -19,7 +19,7 @@ endfunction()
 function(__qt_internal_static_link_order_public_test result)
     # We could trust iOS linker
     if(IOS)
-        set(QT_HAVE_LINK_ORDER_MATTERS "FALSE" CACHE BOOL "Link order matters")
+        set(QT_HAVE_LINK_ORDER_MATTERS "FALSE" CACHE INTERNAL "Link order matters")
     endif()
 
     if(DEFINED QT_HAVE_LINK_ORDER_MATTERS)
@@ -48,7 +48,7 @@ function(__qt_internal_static_link_order_public_test result)
         set(${result} TRUE)
     endif()
 
-    set(QT_HAVE_LINK_ORDER_MATTERS "${${result}}" CACHE BOOL "Link order matters")
+    set(QT_HAVE_LINK_ORDER_MATTERS "${${result}}" CACHE INTERNAL "Link order matters")
 
     set(${result} "${${result}}" PARENT_SCOPE)
 endfunction()
