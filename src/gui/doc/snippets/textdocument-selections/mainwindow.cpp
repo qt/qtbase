@@ -55,8 +55,8 @@ MainWindow::MainWindow()
 {
     QMenu *fileMenu = new QMenu(tr("&File"));
 
-    fileMenu->addAction(tr("&Open..."), this, SLOT(openFile()),
-                        QKeySequence(tr("Ctrl+O", "File|Open")));
+    fileMenu->addAction(tr("&Open..."), QKeySequence(tr("Ctrl+O", "File|Open")),
+                        this, SLOT(openFile()));
 
     QAction *quitAction = fileMenu->addAction(tr("E&xit"), this, SLOT(close()));
     quitAction->setShortcut(tr("Ctrl+Q"));

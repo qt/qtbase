@@ -60,8 +60,8 @@ MainWindow::MainWindow()
 {
     QMenu *fileMenu = new QMenu(tr("&File"));
 
-    fileMenu->addAction(tr("&Open..."), this, SLOT(openFile()),
-                        QKeySequence(tr("Ctrl+O", "File|Open")));
+    fileMenu->addAction(tr("&Open..."), QKeySequence(tr("Ctrl+O", "File|Open"))
+                        this, SLOT(openFile()));
 
     printAction = fileMenu->addAction(tr("&Print..."), this, SLOT(printFile()));
     printAction->setEnabled(false);
@@ -69,8 +69,8 @@ MainWindow::MainWindow()
     pdfPrintAction = fileMenu->addAction(tr("Print as P&DF..."), this, SLOT(printPdf()));
     pdfPrintAction->setEnabled(false);
 
-    fileMenu->addAction(tr("E&xit"), this, SLOT(close()),
-                        QKeySequence(tr("Ctrl+Q", "File|Exit")));
+    fileMenu->addAction(tr("E&xit"), QKeySequence(tr("Ctrl+Q", "File|Exit")),
+                        this, SLOT(close()));
 
     menuBar()->addMenu(fileMenu);
 

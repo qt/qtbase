@@ -76,96 +76,71 @@ public:
     ~QMenu();
 
     using QWidget::addAction;
+#ifdef QT_BUILD_FUNCTIONS_REMOVED_IN_6_3
     QAction *addAction(const QString &text);
     QAction *addAction(const QIcon &icon, const QString &text);
+#if !QT_CONFIG(shortcut)
+    QAction *addAction(const QString &text, const QObject *receiver, const char* member);
+    QAction *addAction(const QIcon &icon, const QString &text,
+                       const QObject *receiver, const char* member);
+#endif
+#endif
 
-    QAction *addAction(const QString &text, const QObject *receiver, const char* member
 #if QT_CONFIG(shortcut)
-                       , const QKeySequence &shortcut = {}
-#endif
-                       );
-    QAction *addAction(const QIcon &icon, const QString &text, const QObject *receiver, const char* member
-#if QT_CONFIG(shortcut)
-                       , const QKeySequence &shortcut = {}
-#endif
-                       );
+#if QT_DEPRECATED_SINCE(6, 4)
+    QT_DEPRECATED_VERSION_X_6_4("Use addAction(text, shortcut, receiver, member) instead.")
+    QAction *addAction(const QString &text, const QObject *receiver, const char* member,
+                       const QKeySequence &shortcut);
+    QT_DEPRECATED_VERSION_X_6_4("Use addAction(icon, text, shortcut, receiver, member) instead.")
+    QAction *addAction(const QIcon &icon, const QString &text,
+                       const QObject *receiver, const char* member,
+                       const QKeySequence &shortcut);
 
 #ifdef Q_CLANG_QDOC
     template<typename Functor>
-    QAction *addAction(const QString &text, Functor functor, const QKeySequence &shortcut = 0);
+    QAction *addAction(const QString &text, Functor functor, const QKeySequence &shortcut);
     template<typename Functor>
-    QAction *addAction(const QString &text, const QObject *context, Functor functor, const QKeySequence &shortcut = 0);
+    QAction *addAction(const QString &text, const QObject *context, Functor functor, const QKeySequence &shortcut);
     template<typename Functor>
-    QAction *addAction(const QIcon &icon, const QString &text, Functor functor, const QKeySequence &shortcut = 0);
+    QAction *addAction(const QIcon &icon, const QString &text, Functor functor, const QKeySequence &shortcut);
     template<typename Functor>
-    QAction *addAction(const QIcon &icon, const QString &text, const QObject *context, Functor functor, const QKeySequence &shortcut = 0);
+    QAction *addAction(const QIcon &icon, const QString &text, const QObject *context, Functor functor, const QKeySequence &shortcut);
 #else
     // addAction(QString): Connect to a QObject slot / functor or function pointer (with context)
     template<class Obj, typename Func1>
     inline typename std::enable_if<!std::is_same<const char*, Func1>::value
         && QtPrivate::IsPointerToTypeDerivedFromQObject<Obj*>::Value, QAction *>::type
-        addAction(const QString &text, const Obj *object, Func1 slot
-#if QT_CONFIG(shortcut)
-                  , const QKeySequence &shortcut = {}
-#endif
-                  )
+        addAction(const QString &text, const Obj *object, Func1 slot,
+                  const QKeySequence &shortcut)
     {
-        QAction *result = addAction(text);
-#if QT_CONFIG(shortcut)
-        result->setShortcut(shortcut);
-#endif
-        connect(result, &QAction::triggered, object, std::move(slot));
-        return result;
+        return addAction(text, shortcut, object, slot);
     }
     // addAction(QString): Connect to a functor or function pointer (without context)
     template <typename Func1>
-    inline QAction *addAction(const QString &text, Func1 slot
-#if QT_CONFIG(shortcut)
-                              , const QKeySequence &shortcut = {}
-#endif
-                              )
+    inline QAction *addAction(const QString &text, Func1 slot, const QKeySequence &shortcut)
     {
-        QAction *result = addAction(text);
-#if QT_CONFIG(shortcut)
-        result->setShortcut(shortcut);
-#endif
-        connect(result, &QAction::triggered, std::move(slot));
-        return result;
+        return addAction(text, shortcut, slot);
     }
     // addAction(QIcon, QString): Connect to a QObject slot / functor or function pointer (with context)
     template<class Obj, typename Func1>
     inline typename std::enable_if<!std::is_same<const char*, Func1>::value
         && QtPrivate::IsPointerToTypeDerivedFromQObject<Obj*>::Value, QAction *>::type
-        addAction(const QIcon &actionIcon, const QString &text, const Obj *object, Func1 slot
-#if QT_CONFIG(shortcut)
-                  , const QKeySequence &shortcut = {}
-#endif
-                  )
+        addAction(const QIcon &actionIcon, const QString &text, const Obj *object, Func1 slot,
+                  const QKeySequence &shortcut)
 
     {
-        QAction *result = addAction(actionIcon, text);
-#if QT_CONFIG(shortcut)
-        result->setShortcut(shortcut);
-#endif
-        connect(result, &QAction::triggered, object, std::move(slot));
-        return result;
+        return addAction(actionIcon, text, shortcut, object, slot);
     }
     // addAction(QIcon, QString): Connect to a functor or function pointer (without context)
     template <typename Func1>
-    inline QAction *addAction(const QIcon &actionIcon, const QString &text, Func1 slot
-#if QT_CONFIG(shortcut)
-                              , const QKeySequence &shortcut = {}
-#endif
-                              )
+    inline QAction *addAction(const QIcon &actionIcon, const QString &text, Func1 slot,
+                              const QKeySequence &shortcut)
     {
-        QAction *result = addAction(actionIcon, text);
-#if QT_CONFIG(shortcut)
-        result->setShortcut(shortcut);
-#endif
-        connect(result, &QAction::triggered, std::move(slot));
-        return result;
+        return addAction(actionIcon, text, shortcut, slot);
     }
 #endif // !Q_CLANG_QDOC
+#endif // QT_DEPRECATED_SINCE(6, 4)
+#endif // QT_CONFIG(shortcut)
 
     QAction *addMenu(QMenu *menu);
     QMenu *addMenu(const QString &title);

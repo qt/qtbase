@@ -47,6 +47,7 @@ qt_internal_add_module(Widgets
         widgets/qabstractscrollarea.cpp widgets/qabstractscrollarea.h widgets/qabstractscrollarea_p.h
         widgets/qfocusframe.cpp widgets/qfocusframe.h
         widgets/qframe.cpp widgets/qframe.h widgets/qframe_p.h
+        widgets/qtwidgets_widgets_removed_functions_in_6_3.cpp
         widgets/qwidgetanimator.cpp widgets/qwidgetanimator_p.h
     DEFINES
         QT_NO_USING_NAMESPACE
@@ -236,6 +237,15 @@ set(qstyle_resource_files
     "styles/images/viewlist-16.png"
     "styles/images/viewlist-32.png"
 )
+
+set(widgets_no_pch_sources
+    widgets/qtwidgets_widgets_removed_functions_in_6_3.cpp
+)
+
+foreach(src ${widgets_no_pch_sources})
+    qt_update_ignore_pch_source(Widgets ${src})
+endforeach()
+
 
 qt_internal_add_resource(Widgets "qstyle"
     PREFIX

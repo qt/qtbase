@@ -304,6 +304,9 @@ void tst_QMenu::addActionsConnect()
     menu.addAction(icon, text, &menu, testFunction);
 #ifndef QT_NO_SHORTCUT
     const QKeySequence keySequence(Qt::CTRL | Qt::Key_C);
+#if QT_DEPRECATED_SINCE(6, 4)
+    QT_WARNING_PUSH
+    QT_WARNING_DISABLE_DEPRECATED
     menu.addAction(text, &menu, SLOT(deleteLater()), keySequence);
     menu.addAction(text, &menu, &QMenu::deleteLater, keySequence);
     menu.addAction(text, testFunction, keySequence);
@@ -312,6 +315,16 @@ void tst_QMenu::addActionsConnect()
     menu.addAction(icon, text, &menu, &QMenu::deleteLater, keySequence);
     menu.addAction(icon, text, testFunction, keySequence);
     menu.addAction(icon, text, &menu, testFunction, keySequence);
+    QT_WARNING_POP
+#endif
+    menu.addAction(text, keySequence, &menu, SLOT(deleteLater()));
+    menu.addAction(text, keySequence, &menu, &QMenu::deleteLater);
+    menu.addAction(text, keySequence, testFunction);
+    menu.addAction(text, keySequence, &menu, testFunction);
+    menu.addAction(icon, text, keySequence, &menu, SLOT(deleteLater()));
+    menu.addAction(icon, text, keySequence, &menu, &QMenu::deleteLater);
+    menu.addAction(icon, text, keySequence, testFunction);
+    menu.addAction(icon, text, keySequence, &menu, testFunction);
 #endif // !QT_NO_SHORTCUT
 }
 
