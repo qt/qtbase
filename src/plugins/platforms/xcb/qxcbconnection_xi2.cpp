@@ -639,6 +639,7 @@ static inline qreal fixed1616ToReal(xcb_input_fp1616_t val)
 void QXcbConnection::xi2HandleEvent(xcb_ge_event_t *event)
 {
     auto *xiEvent = reinterpret_cast<qt_xcb_input_device_event_t *>(event);
+    setTime(xiEvent->time);
     if (m_xiSlavePointerIds.contains(xiEvent->deviceid)) {
         if (!m_duringSystemMoveResize)
             return;
