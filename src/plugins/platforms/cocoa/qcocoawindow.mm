@@ -524,8 +524,10 @@ NSUInteger QCocoaWindow::windowStyleMask(Qt::WindowFlags flags)
     if (frameless) {
         // Frameless windows do not display the traffic lights buttons for
         // e.g. minimize, however StyleMaskMiniaturizable is required to allow
-        // programatic minimize.
-        styleMask |= NSWindowStyleMaskMiniaturizable;
+        // programatic minimize. However, for framless tool windows (e.g. dock windows)
+        // we don't want that, as it breaks translucency.
+        if (type != Qt::Tool)
+            styleMask |= NSWindowStyleMaskMiniaturizable;
     } else if (flags & Qt::CustomizeWindowHint) {
         if (flags & Qt::WindowTitleHint)
             styleMask |= NSWindowStyleMaskTitled;
