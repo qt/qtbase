@@ -275,6 +275,11 @@
     internal data structure. This means that it can safely be called
     while iterating, and won't affect the order of items in the set.
 
+    \note The iterator \a pos \e must be valid and dereferenceable. Calling this
+    method on any other iterator, including its own \l end(), results in
+    undefined behavior. In particular, even the \l begin() iterator of an empty
+    set cannot be dereferenced.
+
     \sa remove(), find()
 */
 
