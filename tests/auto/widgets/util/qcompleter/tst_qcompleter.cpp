@@ -110,6 +110,8 @@ private slots:
 
     void fileSystemModel_data();
     void fileSystemModel();
+    void fileDialog_data();
+    void fileDialog();
 
     void changingModel_data();
     void changingModel();
@@ -626,7 +628,23 @@ void tst_QCompleter::fileSystemModel_data()
 
 void tst_QCompleter::fileSystemModel()
 {
-    //QFileSystemModel is assync.
+    //QFileSystemModel is async.
+    filter(true);
+}
+
+/*!
+    In the file dialog, the completer uses the EditRole.
+    See QTBUG-94799
+*/
+void tst_QCompleter::fileDialog_data()
+{
+    fileSystemModel_data();
+    completer->setCompletionRole(Qt::EditRole);
+}
+
+void tst_QCompleter::fileDialog()
+{
+    //QFileSystemModel is async.
     filter(true);
 }
 
