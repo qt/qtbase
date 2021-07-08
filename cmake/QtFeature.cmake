@@ -374,18 +374,27 @@ function(qt_evaluate_feature feature)
         endif()
     endif()
 
+    # Warn about a feature which is not emitted, but the user explicitly provided a value for it.
     if(NOT emit_if AND DEFINED FEATURE_${feature})
         set(msg "")
         string(APPEND msg
             "Feature ${feature} is insignificant in this configuration, "
             "ignoring related command line option(s).")
         qt_configure_add_report_entry(TYPE WARNING MESSAGE "${msg}")
-        set(computed OFF)
-        set(FEATURE_${feature} OFF)
+
+        # Remove the cache entry so that the warning is not persisted and shown on every
+        # reconfiguration.
+        unset(FEATURE_${feature} CACHE)
     endif()
 
-    qt_feature_check_and_save_user_provided_value(
-        saved_user_value "${feature}" "${condition}" "${computed}" "${arg_LABEL}")
+    # Only save the user provided value if the feature was emitted.
+    if(emit_if)
+        qt_feature_check_and_save_user_provided_value(
+            saved_user_value "${feature}" "${condition}" "${computed}" "${arg_LABEL}")
+    else()
+        # Make sure the feature internal value is OFF if not emitted.
+        set(saved_user_value OFF)
+    endif()
 
     qt_feature_check_and_save_internal_value(
         "${feature}" "${saved_user_value}" "${condition}" "${arg_LABEL}" "${arg_CONDITION}")
