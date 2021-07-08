@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -41,8 +41,16 @@
 #include <stdlib.h>
 #include <string.h>
 
-QT_BEGIN_NAMESPACE
+const int million = 1000000;
+extern double accumulate;
 
+// Defined in outofline.cpp
+extern QVector<double> qvector_fill_and_return_helper();
+extern QVector<double> qrawvector_fill_and_return_helper();
+extern std::vector<double> stdvector_fill_and_return_helper();
+extern QVector<double> mixedvector_fill_and_return_helper();
+
+QT_BEGIN_NAMESPACE
 
 struct QVectorData
 {

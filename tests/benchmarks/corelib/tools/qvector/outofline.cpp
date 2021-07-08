@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtTest module of the Qt Toolkit.
@@ -27,32 +27,32 @@
 ****************************************************************************/
 
 #include <QList>
-#include <vector>
 #include "qrawvector.h"
+#include <vector>
 
-const int N = 1000000;
-double s = 0;
+// Used as accumulator in tests:
+double accumulate = 0;
 
 QVector<double> qvector_fill_and_return_helper()
 {
-    QVector<double> v(N);
-    for (int i = 0; i != N; ++i)
+    QVector<double> v(million);
+    for (int i = 0; i != million; ++i)
         v[i] = i;
     return v;
 }
 
 QVector<double> qrawvector_fill_and_return_helper()
 {
-    QRawVector<double> v(N);
-    for (int i = 0; i != N; ++i)
+    QRawVector<double> v(million);
+    for (int i = 0; i != million; ++i)
         v[i] = i;
     return v.mutateToVector();
 }
 
 QVector<double> mixedvector_fill_and_return_helper()
 {
-    std::vector<double> v(N);
-    for (int i = 0; i != N; ++i)
+    std::vector<double> v(million);
+    for (int i = 0; i != million; ++i)
         v[i] = i;
     return QVector<double>(v.begin(), v.end());
 }
@@ -60,8 +60,8 @@ QVector<double> mixedvector_fill_and_return_helper()
 
 std::vector<double> stdvector_fill_and_return_helper()
 {
-    std::vector<double> v(N);
-    for (int i = 0; i != N; ++i)
+    std::vector<double> v(million);
+    for (int i = 0; i != million; ++i)
         v[i] = i;
     return v;
 }
@@ -79,6 +79,8 @@ QVectorData *QVectorData::allocate(int size, int alignment)
 {
     return static_cast<QVectorData *>(alignment > alignmentThreshold() ? qMallocAligned(size, alignment) : ::malloc(size));
 }
+
+QT_BEGIN_NAMESPACE
 
 QVectorData *QVectorData::reallocate(QVectorData *x, int newsize, int oldsize, int alignment)
 {
@@ -99,3 +101,5 @@ int QVectorData::grow(int sizeOfHeader, int size, int sizeOfT)
 {
     return qCalculateGrowingBlockSize(size, sizeOfT, sizeOfHeader).elementCount;
 }
+
+QT_END_NAMESPACE
