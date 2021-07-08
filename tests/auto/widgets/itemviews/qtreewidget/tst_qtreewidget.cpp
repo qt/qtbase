@@ -5,6 +5,7 @@
 #include <QApplication>
 #include <QHeaderView>
 #include <QLineEdit>
+#include <QScopeGuard>
 #include <QScrollBar>
 #include <QSignalSpy>
 #include <QStyledItemDelegate>
@@ -322,6 +323,7 @@ void tst_QTreeWidget::addTopLevelItem()
     // invalid insert
     {
         tops.clear();
+        const auto sg = qScopeGuard([&] { qDeleteAll(std::exchange(tops, {})); });
         for (int i = 0; i < 10; ++i)
             tops << new TreeItem();
         int count = tree.topLevelItemCount();
