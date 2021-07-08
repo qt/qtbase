@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -175,6 +175,16 @@ sys     0m0.008s
 
 
 #define TEST_RETURN 1
+#if TEST_RETURN
+/* QRawVector::mutateToVector() hacks a semblance of a Qt 5 QVector.
+
+   However, Qt 6's QVector is Qt 6's QList and completely different in internal
+   layout.  The QTypedArrayData inside it is also completely rearranged.  Until
+   QRawVector can be rewritten to do whatever it's supposed to do in a
+   Qt6-compatible way, this test is suppressed, see QTBUG-95061.
+*/
+#define TEST_RAW 0
+#endif
 
 // For some reason, both 'plain' and '-callgrind' create strange results
 // (like varying instruction count for the same assembly code)
@@ -218,9 +228,9 @@ private slots:
     void qrawvector_separator() { qWarning() << "QRawVector results: "; }
     void qrawvector_const_read_access();
     void qrawvector_mutable_read_access();
-    #ifdef TEST_RETURN
+#if TEST_RAW
     void qrawvector_fill_and_return();
-    #endif
+#endif
 };
 
 const int N = 1000000;
@@ -321,9 +331,7 @@ void tst_QVector::qvector_pop_back()
     }
 }
 
-
-
-#ifdef TEST_RETURN
+#if TEST_RAW
 extern QVector<double> qrawvector_fill_and_return_helper();
 
 void tst_QVector::qrawvector_fill_and_return()
