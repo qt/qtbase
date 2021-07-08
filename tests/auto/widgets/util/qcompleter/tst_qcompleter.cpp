@@ -113,6 +113,8 @@ private slots:
 #endif
     void fileSystemModel_data();
     void fileSystemModel();
+    void fileDialog_data();
+    void fileDialog();
 
     void changingModel_data();
     void changingModel();
@@ -695,7 +697,26 @@ void tst_QCompleter::fileSystemModel()
 #ifdef Q_OS_WINRT
     QSKIP("WinRT cannot access directories outside of the application's sandbox");
 #endif
-    //QFileSystemModel is assync.
+    //QFileSystemModel is async.
+    filter(true);
+}
+
+/*!
+    In the file dialog, the completer uses the EditRole.
+    See QTBUG-94799
+*/
+void tst_QCompleter::fileDialog_data()
+{
+    fileSystemModel_data();
+    completer->setCompletionRole(Qt::EditRole);
+}
+
+void tst_QCompleter::fileDialog()
+{
+#ifdef Q_OS_WINRT
+    QSKIP("WinRT cannot access directories outside of the application's sandbox");
+#endif
+    //QFileSystemModel is async.
     filter(true);
 }
 
