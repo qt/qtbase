@@ -61,6 +61,7 @@ private slots:
     void insert();
     void insertConstructionCounted();
     void setOperations();
+    void setOperationsOnEmptySet();
     void stlIterator();
     void stlMutableIterator();
     void javaIterator();
@@ -69,6 +70,8 @@ private slots:
     void initializerList();
     void qhash();
     void intersects();
+    void find();
+    void values();
 };
 
 struct IdentityTracker {
@@ -163,6 +166,7 @@ void tst_QSet::size()
     QVERIFY(set.isEmpty());
     QVERIFY(set.count() == set.size());
     QVERIFY(set.isEmpty() == set.empty());
+    QVERIFY(!set.isDetached());
 
     set.insert(1);
     QVERIFY(set.size() == 1);
@@ -206,6 +210,7 @@ void tst_QSet::capacity()
     QSet<int> set;
     int n = set.capacity();
     QVERIFY(n == 0);
+    QVERIFY(!set.isDetached());
 
     for (int i = 0; i < 1000; ++i) {
         set.insert(i);
@@ -241,6 +246,10 @@ void tst_QSet::squeeze()
     QSet<int> set;
     int n = set.capacity();
     QVERIFY(n == 0);
+
+    set.squeeze();
+    n = set.capacity();
+    QVERIFY(n > 0 && n < 100);
 
     set.reserve(1000);
     QVERIFY(set.capacity() >= 1000);
@@ -312,6 +321,7 @@ void tst_QSet::clear()
 
     set1.clear();
     QVERIFY(set1.size() == 0);
+    QVERIFY(!set1.isDetached());
 
     set1.insert("foo");
     QVERIFY(set1.size() != 0);
@@ -356,22 +366,32 @@ void tst_QSet::cpp17ctad()
 
 void tst_QSet::remove()
 {
-    QSet<QString> set1;
+    QSet<QString> set;
+    QCOMPARE(set.remove("test"), false);
+    QVERIFY(!set.isDetached());
+
+    const auto cnt = set.removeIf([](auto it) {
+        Q_UNUSED(it);
+        return true;
+    });
+    QCOMPARE(cnt, 0);
 
     for (int i = 0; i < 500; ++i)
-        set1.insert(QString::number(i));
+        set.insert(QString::number(i));
 
-    QCOMPARE(set1.size(), 500);
+    QCOMPARE(set.size(), 500);
 
     for (int j = 0; j < 500; ++j) {
-        set1.remove(QString::number((j * 17) % 500));
-        QCOMPARE(set1.size(), 500 - j - 1);
+        set.remove(QString::number((j * 17) % 500));
+        QCOMPARE(set.size(), 500 - j - 1);
     }
 }
 
 void tst_QSet::contains()
 {
     QSet<QString> set1;
+    QVERIFY(!set1.contains("test"));
+    QVERIFY(!set1.isDetached());
 
     for (int i = 0; i < 500; ++i) {
         QVERIFY(!set1.contains(QString::number(i)));
@@ -396,6 +416,7 @@ void tst_QSet::containsSet()
 
     // empty set contains the empty set
     QVERIFY(set1.contains(set2));
+    QVERIFY(!set1.isDetached());
 
     for (int i = 0; i < 500; ++i) {
         set1.insert(QString::number(i));
@@ -417,6 +438,7 @@ void tst_QSet::containsSet()
 
     // the empty set doesn't contain a filled set
     QVERIFY(!set3.contains(set1));
+    QVERIFY(!set3.isDetached());
 
     // verify const signature
     const QSet<QString> set4;
@@ -438,6 +460,8 @@ void tst_QSet::begin()
         QVERIFY(k == ell);
         QVERIFY(i == k);
         QVERIFY(j == ell);
+        QVERIFY(!set1.isDetached());
+        QVERIFY(!set2.isDetached());
     }
 
     set1.insert(44);
@@ -467,6 +491,31 @@ void tst_QSet::begin()
         QVERIFY(i == k);
         QVERIFY(j == ell);
     }
+
+    const QSet<int> set3;
+    QSet<int> set4 = set3;
+
+    {
+        QSet<int>::const_iterator i = set3.begin();
+        QSet<int>::const_iterator j = set3.cbegin();
+        QSet<int>::const_iterator k = set4.begin();
+        QVERIFY(i == j);
+        QVERIFY(k == j);
+        QVERIFY(!set3.isDetached());
+        QVERIFY(set4.isDetached());
+    }
+
+    set4.insert(1);
+
+    {
+        QSet<int>::const_iterator i = set3.begin();
+        QSet<int>::const_iterator j = set3.cbegin();
+        QSet<int>::const_iterator k = set4.begin();
+        QVERIFY(i == j);
+        QVERIFY(k != j);
+        QVERIFY(!set3.isDetached());
+        QVERIFY(set4.isDetached());
+    }
 }
 
 void tst_QSet::end()
@@ -487,6 +536,9 @@ void tst_QSet::end()
 
         QVERIFY(set1.constBegin() == set1.constEnd());
         QVERIFY(set2.constBegin() == set2.constEnd());
+
+        QVERIFY(!set1.isDetached());
+        QVERIFY(!set2.isDetached());
     }
 
     set1.insert(44);
@@ -527,6 +579,37 @@ void tst_QSet::end()
     set2.clear();
     QVERIFY(set1.constBegin() == set1.constEnd());
     QVERIFY(set2.constBegin() == set2.constEnd());
+
+    const QSet<int> set3;
+    QSet<int> set4 = set3;
+
+    {
+        QSet<int>::const_iterator i = set3.end();
+        QSet<int>::const_iterator j = set3.cend();
+        QSet<int>::const_iterator k = set4.end();
+        QVERIFY(i == j);
+        QVERIFY(k == j);
+        QVERIFY(!set3.isDetached());
+        QVERIFY(!set4.isDetached());
+
+        QVERIFY(set3.constBegin() == set3.constEnd());
+        QVERIFY(set4.constBegin() == set4.constEnd());
+    }
+
+    set4.insert(1);
+
+    {
+        QSet<int>::const_iterator i = set3.end();
+        QSet<int>::const_iterator j = set3.cend();
+        QSet<int>::const_iterator k = set4.end();
+        QVERIFY(i == j);
+        QVERIFY(k == j);
+        QVERIFY(!set3.isDetached());
+        QVERIFY(set4.isDetached());
+
+        QVERIFY(set3.constBegin() == set3.constEnd());
+        QVERIFY(set4.constBegin() != set4.constEnd());
+    }
 }
 
 void tst_QSet::insert()
@@ -756,6 +839,44 @@ void tst_QSet::setOperations()
     QVERIFY(set18 == set8);
 }
 
+void tst_QSet::setOperationsOnEmptySet()
+{
+    {
+        // Both sets are empty
+        QSet<int> set1;
+        QSet<int> set2;
+
+        set1.unite(set2);
+        QVERIFY(set1.isEmpty());
+        QVERIFY(!set1.isDetached());
+
+        set1.intersect(set2);
+        QVERIFY(set1.isEmpty());
+        QVERIFY(!set1.isDetached());
+
+        set1.subtract(set2);
+        QVERIFY(set1.isEmpty());
+        QVERIFY(!set1.isDetached());
+    }
+    {
+        // Second set is not empty
+        QSet<int> empty;
+        QSet<int> nonEmpty { 1, 2, 3 };
+
+        empty.intersect(nonEmpty);
+        QVERIFY(empty.isEmpty());
+        QVERIFY(!empty.isDetached());
+
+        empty.subtract(nonEmpty);
+        QVERIFY(empty.isEmpty());
+        QVERIFY(!empty.isDetached());
+
+        empty.unite(nonEmpty);
+        QCOMPARE(empty, nonEmpty);
+        QVERIFY(empty.isDetached());
+    }
+}
+
 void tst_QSet::stlIterator()
 {
     QSet<QString> set1;
@@ -982,6 +1103,8 @@ void tst_QSet::intersects()
 
     QVERIFY(!s1.intersects(s1));
     QVERIFY(!s1.intersects(s2));
+    QVERIFY(!s1.isDetached());
+    QVERIFY(!s2.isDetached());
 
     s1 << 100;
     QVERIFY(s1.intersects(s1));
@@ -999,6 +1122,50 @@ void tst_QSet::intersects()
     QVERIFY(!s1.intersects(s3));
     s3 << 200;
     QVERIFY(s1.intersects(s3));
+}
+
+void tst_QSet::find()
+{
+    QSet<int> set;
+    QCOMPARE(set.find(1), set.end());
+    QCOMPARE(set.constFind(1), set.constEnd());
+    QVERIFY(!set.isDetached());
+
+    set.insert(1);
+    set.insert(2);
+
+    QVERIFY(set.find(1) != set.end());
+    QVERIFY(set.constFind(2) != set.constEnd());
+    QVERIFY(set.find(3) == set.end());
+    QVERIFY(set.constFind(4) == set.constEnd());
+}
+
+template<typename T>
+QList<T> sorted(const QList<T> &list)
+{
+    QList<T> res = list;
+    std::sort(res.begin(), res.end());
+    return res;
+}
+
+void tst_QSet::values()
+{
+    QSet<int> set;
+    QVERIFY(set.values().isEmpty());
+    QVERIFY(!set.isDetached());
+
+    set.insert(1);
+    QCOMPARE(set.values(), QList<int> { 1 });
+
+    set.insert(10);
+    set.insert(5);
+    set.insert(2);
+
+    QCOMPARE(sorted(set.values()), QList<int>({ 1, 2, 5, 10 }));
+
+    set.remove(5);
+
+    QCOMPARE(sorted(set.values()), QList<int>({ 1, 2, 10 }));
 }
 
 QTEST_APPLESS_MAIN(tst_QSet)
