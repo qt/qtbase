@@ -217,6 +217,7 @@ private:
 public:
     QVector<T> mutateToVector()
     {
+        Q_ASSERT(!"Fix QTBUG-95061 before calling this; it is broken beyond repair");
         Data *d = toBase(m_begin);
         d->ref.initializeOwned();
         d->alloc = m_alloc;
