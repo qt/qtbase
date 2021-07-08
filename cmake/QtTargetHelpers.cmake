@@ -469,8 +469,26 @@ endif()
             continue()
         endif()
 
-        # FIXME: Don't add IMPORTED_SOLIB and IMPORTED_SONAME properties for executables.
         set(properties_retrieved TRUE)
+
+        # Non-prefix debug-and-release builds: add check for the existence of the debug binary of
+        # the target.  It is not built by default.
+        if(NOT QT_WILL_INSTALL AND QT_FEATURE_debug_and_release)
+            get_target_property(excluded_genex ${target} EXCLUDE_FROM_ALL)
+            if(NOT excluded_genex STREQUAL "")
+                string(APPEND content "
+# ${full_target} is not built by default in the Debug configuration. Check existence.
+get_target_property(_qt_imported_location ${full_target} IMPORTED_LOCATION_DEBUG)
+if(NOT EXISTS \"$\\{_qt_imported_location}\")
+    get_target_property(_qt_imported_configs ${full_target} IMPORTED_CONFIGURATIONS)
+    list(REMOVE_ITEM _qt_imported_configs DEBUG)
+    set_property(TARGET ${full_target} PROPERTY IMPORTED_CONFIGURATIONS $\\{_qt_imported_configs})
+    set_property(TARGET ${full_target} PROPERTY IMPORTED_LOCATION_DEBUG)
+endif()\n\n")
+            endif()
+        endif()
+
+        # FIXME: Don't add IMPORTED_SOLIB and IMPORTED_SONAME properties for executables.
         if(NOT "${uc_release_cfg}" STREQUAL "")
             string(APPEND content "get_target_property(_qt_imported_location ${full_target} IMPORTED_LOCATION_${uc_release_cfg})\n")
             string(APPEND content "get_target_property(_qt_imported_implib ${full_target} IMPORTED_IMPLIB_${uc_release_cfg})\n")
@@ -512,7 +530,8 @@ endif()
 unset(_qt_imported_location)
 unset(_qt_imported_location_default)
 unset(_qt_imported_soname)
-unset(_qt_imported_soname_default)")
+unset(_qt_imported_soname_default)
+unset(_qt_imported_configs)")
     endif()
 
     qt_path_join(output_file "${arg_CONFIG_INSTALL_DIR}"
