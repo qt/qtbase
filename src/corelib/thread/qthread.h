@@ -186,6 +186,8 @@ QThread *QThread::create(Function &&f, Args &&... args)
 */
 inline Qt::HANDLE QThread::currentThreadId() noexcept
 {
+    // define is undefed if we have to fall back to currentThreadIdImpl
+#define QT_HAS_FAST_CURRENT_THREAD_ID
     Qt::HANDLE tid; // typedef to void*
     static_assert(sizeof(tid) == sizeof(void*));
     // See https://akkadia.org/drepper/tls.pdf for x86 ABI
@@ -219,6 +221,7 @@ inline Qt::HANDLE QThread::currentThreadId() noexcept
     // Then read the thread ID
     tid = *reinterpret_cast<Qt::HANDLE *>(tib + 0x24);
 #else
+#undef QT_HAS_FAST_CURRENT_THREAD_ID
     tid = currentThreadIdImpl();
 #endif
     return tid;
