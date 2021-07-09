@@ -331,7 +331,9 @@ private:
 
     static QGuiApplicationPrivate *self;
     static int m_fakeMouseSourcePointId;
+#ifdef Q_OS_WIN
     QSharedPointer<QColorTrcLut> m_a8ColorProfile;
+#endif
     QSharedPointer<QColorTrcLut> m_a32ColorProfile;
 
     bool ownGlobalShareContext;
