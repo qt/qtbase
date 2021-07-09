@@ -38,6 +38,7 @@ Classes:
 """
 
 import os
+from pathlib import Path
 import tempfile
 
 class Error (Exception):
@@ -81,29 +82,40 @@ class Transcriber (object):
     Callers should call close() on success or cleanup() on failure (to
     clear away the temporary file).
     """
-    def __init__(self, path, temp):
+    def __init__(self, path: Path, temp_dir: Path):
         # Open the old file
         self.reader = open(path)
         # Create a temp file to write the new data into
-        temp, tempPath = tempfile.mkstemp(os.path.split(path)[1], dir = temp)
-        self.__names = path, tempPath
+        temp, tempPath = tempfile.mkstemp(path.name, dir=temp_dir)
+        self.path = path
+        self.tempPath = Path(tempPath)
         self.writer = os.fdopen(temp, "w")
 
-    def close(self):
+    def close(self) -> None:
         self.reader.close()
         self.writer.close()
         self.reader = self.writer = None
-        source, temp = self.__names
-        os.remove(source)
-        os.rename(temp, source)
 
-    def cleanup(self):
-        if self.__names:
+        # Move the modified file to the original location
+        self.path.unlink()
+        self.tempPath.rename(self.path)
+
+        self.tempPath = None
+
+    def cleanup(self) -> None:
+        if self.reader:
             self.reader.close()
+            self.reader = None
+
+        if self.writer:
             self.writer.close()
+            self.writer = None
+
+        if self.tempPath:
             # Remove temp-file:
-            os.remove(self.__names[1])
-            self.__names = ()
+            self.tempPath.unlink(missing_ok=True)
+            self.tempPath = None
+
 
 class SourceFileEditor (Transcriber):
     """Transcriber with transcription of code around a gnerated block.
@@ -125,14 +137,14 @@ class SourceFileEditor (Transcriber):
     Callers should call close() on success or cleanup() on failure (to
     clear away the temporary file); see Transcriber.
     """
-    def __init__(self, path, temp):
+    def __init__(self, path: Path, temp_dir: Path):
         """Set up the source file editor.
 
         Requires two arguments: the path to the source file to be read
         and, on success, replaced with a new version; and the
         directory in which to store the temporary file during the
         rewrite."""
-        super().__init__(path, temp)
+        super().__init__(path, temp_dir)
         self.__copyPrelude()
 
     def close(self):
