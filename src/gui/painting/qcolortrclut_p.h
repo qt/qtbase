@@ -69,7 +69,7 @@ QT_BEGIN_NAMESPACE
 class QColorTransferFunction;
 class QColorTransferTable;
 
-class Q_GUI_EXPORT QColorTrcLut : public QEnableSharedFromThis<QColorTrcLut>
+class Q_GUI_EXPORT QColorTrcLut
 {
 public:
     static QColorTrcLut *fromGamma(qreal gamma);
