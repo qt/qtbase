@@ -43,6 +43,7 @@
 #include <QtCore/qglobal.h>
 
 #include <QtCore/qfutureinterface.h>
+#include <QtCore/qmetatype.h>
 #include <QtCore/qstring.h>
 
 #include <QtCore/qfuture_impl.h>
@@ -438,8 +439,27 @@ QFutureInterfaceBase QFutureInterfaceBase::get(const QFuture<T> &future)
     return future.d;
 }
 
+namespace QtPrivate
+{
+
+template<typename T>
+struct MetaTypeQFutureHelper<QFuture<T>>
+{
+    static bool registerConverter() {
+        if constexpr (std::is_same_v<T, void>)
+            return false;
+
+        return QMetaType::registerConverter<QFuture<T>, QFuture<void>>(
+                [](const QFuture<T> &future) { return QFuture<void>(future); });
+    }
+};
+
+}  // namespace QtPrivate
+
 Q_DECLARE_SEQUENTIAL_ITERATOR(Future)
 
 QT_END_NAMESPACE
+
+Q_DECLARE_METATYPE_TEMPLATE_1ARG(QFuture)
 
 #endif // QFUTURE_H

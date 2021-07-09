@@ -1092,6 +1092,14 @@ namespace QtPrivate
         static bool registerConverter() { return false; }
     };
 
+#if QT_CONFIG(future)
+    template<typename T>
+    struct MetaTypeQFutureHelper
+    {
+        static bool registerConverter() { return false; }
+    };
+#endif
+
     Q_CORE_EXPORT bool isBuiltinType(const QByteArray &type);
 } // namespace QtPrivate
 
@@ -1218,6 +1226,9 @@ int qRegisterNormalizedMetaType(const QT_PREPEND_NAMESPACE(QByteArray) &normaliz
     QtPrivate::AssociativeContainerTransformationHelper<T>::registerMutableView();
     QtPrivate::MetaTypePairHelper<T>::registerConverter();
     QtPrivate::MetaTypeSmartPointerHelper<T>::registerConverter();
+#if QT_CONFIG(future)
+    QtPrivate::MetaTypeQFutureHelper<T>::registerConverter();
+#endif
 
     if (normalizedTypeName != metaType.name())
         QMetaType::registerNormalizedTypedef(normalizedTypeName, metaType);
