@@ -48,7 +48,7 @@ function(qt_internal_add_plugin target)
 
     # Put this behind a cache option for now. It's too noisy for general use
     # until most repos are updated.
-    option(QT_WARN_PLUGIN_PUBLIC_KEYWORDS "Warn if a plugin specifies a PUBLIC keyword")
+    option(QT_WARN_PLUGIN_PUBLIC_KEYWORDS "Warn if a plugin specifies a PUBLIC keyword" ON)
     if(QT_WARN_PLUGIN_PUBLIC_KEYWORDS)
         foreach(publicKeyword IN LISTS __default_public_args)
             if(NOT "${arg_${publicKeyword}}" STREQUAL "")
