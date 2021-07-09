@@ -2987,14 +2987,14 @@ bool writeDependencyFile(const Options &options)
 
     if (depFile.open(QIODevice::WriteOnly)) {
         depFile.write(escapeAndEncodeDependencyPath(relativeApkPath));
-        depFile.write(u8": ");
+        depFile.write(": ");
 
         for (const auto &file : dependenciesForDepfile) {
-            depFile.write(u8" \\\n    ");
+            depFile.write(" \\\n    ");
             depFile.write(escapeAndEncodeDependencyPath(file));
         }
 
-        depFile.write(u8"\n");
+        depFile.write("\n");
     }
     return true;
 }
