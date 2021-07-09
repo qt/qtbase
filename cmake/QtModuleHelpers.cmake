@@ -250,7 +250,7 @@ function(qt_internal_add_module target)
             )
         else()
             set_target_properties(${target} PROPERTIES
-                OUTPUT_NAME "${INSTALL_CMAKE_NAMESPACE}${target}${QT_LIBINFIX}"
+                OUTPUT_NAME "${INSTALL_CMAKE_NAMESPACE}${module_interface_name}${QT_LIBINFIX}"
             )
         endif()
 
@@ -763,6 +763,8 @@ endfunction()
 #  * foo_include_dir with the module's include directory
 #    e.g for QtQuick it would be qtdeclarative_build_dir/include/QtQuick for a prefix build or
 #                                qtbase_build_dir/include/QtQuick for a non-prefix build
+#  * foo_interface_name the interface name of the module stored in _qt_module_interface_name
+#    property.
 function(qt_internal_module_info result target)
     get_target_property(module_interface_name ${target} _qt_module_interface_name)
     if(NOT module_interface_name)
@@ -778,6 +780,7 @@ function(qt_internal_module_info result target)
     set("${result}_lower" "${lower}" PARENT_SCOPE)
     set("${result}_repo_include_dir" "${QT_BUILD_DIR}/include" PARENT_SCOPE)
     set("${result}_include_dir" "${QT_BUILD_DIR}/include/${module}" PARENT_SCOPE)
+    set("${result}_interface_name" "${module_interface_name}" PARENT_SCOPE)
 endfunction()
 
 # Generate a module description file based on the template in ModuleDescription.json.in
