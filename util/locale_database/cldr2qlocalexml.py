@@ -56,7 +56,7 @@ All the scripts mentioned support --help to tell you how to use them.
 .. _CLDR: ftp://unicode.org/Public/cldr/
 """
 
-import os
+from pathlib import Path
 import sys
 import argparse
 
@@ -79,10 +79,12 @@ def main(out, err):
 
     args = parser.parse_args()
 
-    root = args.cldr_path
-    if not os.path.exists(os.path.join(root, 'common', 'main', 'root.xml')):
+    root = Path(args.cldr_path)
+    root_xml_path = 'common/main/root.xml'
+
+    if not root.joinpath(root_xml_path).exists():
         parser.error('First argument is the root of the CLDR tree: '
-                     f'found no common/main/root.xml under {root}')
+                     f'found no {root_xml_path} under {root}')
 
     xml = args.out_file
     if not xml or xml == '-':

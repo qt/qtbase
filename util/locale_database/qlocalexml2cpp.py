@@ -33,9 +33,9 @@ Pass the output file from that as first parameter to this script; pass
 the root of the qtbase check-out as second parameter.
 """
 
-import os
 import datetime
 import argparse
+from pathlib import Path
 
 from qlocalexml import QLocaleXmlReader
 from localetools import unicode2hex, wrap_list, Error, Transcriber, SourceFileEditor
@@ -133,7 +133,7 @@ def currencyIsoCodeData(s):
     return "{0,0,0}"
 
 class LocaleSourceEditor (SourceFileEditor):
-    def __init__(self, path, temp, version):
+    def __init__(self, path: Path, temp: Path, version: str):
         super().__init__(path, temp)
         self.writer.write(f"""
 /*
@@ -522,11 +522,11 @@ def main(out, err):
     args = parser.parse_args()
 
     qlocalexml = args.input_file
-    qtsrcdir = args.qtbase_path
+    qtsrcdir = Path(args.qtbase_path)
     calendars = {cal: calendars_map[cal] for cal in args.calendars}
 
-    if not (os.path.isdir(qtsrcdir)
-            and all(os.path.isfile(os.path.join(qtsrcdir, 'src', 'corelib', 'text', leaf))
+    if not (qtsrcdir.is_dir()
+            and all(qtsrcdir.joinpath('src/corelib/text', leaf).is_file()
                     for leaf in ('qlocale_data_p.h', 'qlocale.h', 'qlocale.qdoc'))):
         parser.error(f'Missing expected files under qtbase source root {qtsrcdir}')
 
@@ -535,8 +535,7 @@ def main(out, err):
     locale_keys = sorted(locale_map.keys(), key=LocaleKeySorter(reader.defaultMap()))
 
     try:
-        writer = LocaleDataWriter(os.path.join(qtsrcdir,  'src', 'corelib', 'text',
-                                               'qlocale_data_p.h'),
+        writer = LocaleDataWriter(qtsrcdir.joinpath('src/corelib/text/qlocale_data_p.h'),
                                   qtsrcdir, reader.cldrVersion)
     except IOError as e:
         err.write(f'Failed to open files to transcribe locale data: {e}')
@@ -564,9 +563,9 @@ def main(out, err):
     # Generate calendar data
     for calendar, stem in calendars.items():
         try:
-            writer = CalendarDataWriter(os.path.join(qtsrcdir, 'src', 'corelib', 'time',
-                                                     f'q{stem}calendar_data_p.h'),
-                                        qtsrcdir, reader.cldrVersion)
+            writer = CalendarDataWriter(
+                qtsrcdir.joinpath(f'src/corelib/time/q{stem}calendar_data_p.h'),
+                qtsrcdir, reader.cldrVersion)
         except IOError as e:
             err.write(f'Failed to open files to transcribe {calendar} data {e}')
             return 1
@@ -582,7 +581,7 @@ def main(out, err):
 
     # qlocale.h
     try:
-        writer = LocaleHeaderWriter(os.path.join(qtsrcdir, 'src', 'corelib', 'text', 'qlocale.h'),
+        writer = LocaleHeaderWriter(qtsrcdir.joinpath('src/corelib/text/qlocale.h'),
                                     qtsrcdir, reader.dupes)
     except IOError as e:
         err.write(f'Failed to open files to transcribe qlocale.h: {e}')
@@ -601,8 +600,7 @@ def main(out, err):
 
     # qlocale.qdoc
     try:
-        writer = Transcriber(os.path.join(qtsrcdir, 'src', 'corelib', 'text', 'qlocale.qdoc'),
-                             qtsrcdir)
+        writer = Transcriber(qtsrcdir.joinpath('src/corelib/text/qlocale.qdoc'), qtsrcdir)
     except IOError as e:
         err.write(f'Failed to open files to transcribe qlocale.qdoc: {e}')
         return 1

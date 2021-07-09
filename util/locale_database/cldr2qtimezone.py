@@ -36,8 +36,8 @@ shall update qtbase's src/corelib/time/qtimezoneprivate_data_p.h ready
 for use.
 """
 
-import os
 import datetime
+from pathlib import Path
 import textwrap
 import argparse
 
@@ -341,17 +341,18 @@ def main(out, err):
 
     args = parser.parse_args()
 
-    cldrPath = args.cldr_path
-    qtPath = args.qtbase_path
+    cldrPath = Path(args.cldr_path)
+    qtPath = Path(args.qtbase_path)
 
-    if not os.path.isdir(qtPath):
+    if not qtPath.is_dir():
         parser.error(f"No such Qt directory: {qtPath}")
 
-    if not os.path.isdir(cldrPath):
+    if not cldrPath.is_dir():
         parser.error(f"No such CLDR directory: {cldrPath}")
 
-    dataFilePath = os.path.join(qtPath, 'src', 'corelib', 'time', 'qtimezoneprivate_data_p.h')
-    if not os.path.isfile(dataFilePath):
+    dataFilePath = qtPath.joinpath('src/corelib/time/qtimezoneprivate_data_p.h')
+
+    if not dataFilePath.is_file():
         parser.error(f'No such file: {dataFilePath}')
 
     try:

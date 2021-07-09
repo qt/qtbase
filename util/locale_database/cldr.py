@@ -36,15 +36,16 @@ The former should normally be all you need to access.
 See individual classes for further detail.
 """
 
+from typing import Iterable, TextIO
 from xml.dom import minidom
 from weakref import WeakValueDictionary as CacheDict
-import os
+from pathlib import Path
 
 from ldml import Error, Node, XmlScanner, Supplement, LocaleScanner
 from qlocalexml import Locale
 
 class CldrReader (object):
-    def __init__(self, root, grumble = lambda msg: None, whitter = lambda msg: None):
+    def __init__(self, root: Path, grumble = lambda msg: None, whitter = lambda msg: None):
         """Set up a reader object for reading CLDR data.
 
         Single parameter, root, is the file-system path to the root of
@@ -247,7 +248,7 @@ class CldrReader (object):
 # the cache. If a process were to instantiate this class with distinct
 # roots, each cache would be filled by the first to need it !
 class CldrAccess (object):
-    def __init__(self, root):
+    def __init__(self, root: Path):
         """Set up a master object for accessing CLDR data.
 
         Single parameter, root, is the file-system path to the root of
@@ -255,18 +256,18 @@ class CldrAccess (object):
         contain dtd/, main/ and supplemental/ sub-directories."""
         self.root = root
 
-    def xml(self, *path):
+    def xml(self, relative_path: str):
         """Load a single XML file and return its root element as an XmlScanner.
 
         The path is interpreted relative to self.root"""
-        return XmlScanner(Node(self.__xml(path)))
+        return XmlScanner(Node(self.__xml(relative_path)))
 
     def supplement(self, name):
         """Loads supplemental data as a Supplement object.
 
         The name should be that of a file in common/supplemental/, without path.
         """
-        return Supplement(Node(self.__xml(('common', 'supplemental', name))))
+        return Supplement(Node(self.__xml(f'common/supplemental/{name}')))
 
     def locale(self, name):
         """Loads all data for a locale as a LocaleScanner object.
@@ -279,16 +280,14 @@ class CldrAccess (object):
         return LocaleScanner(name, self.__localeRoots(name), self.__rootLocale)
 
     @property
-    def fileLocales(self, joinPath = os.path.join, listDirectory = os.listdir,
-                    splitExtension = os.path.splitext):
+    def fileLocales(self) -> Iterable[str]:
         """Generator for locale IDs seen in file-names.
 
         All *.xml other than root.xml in common/main/ are assumed to
         identify locales."""
-        for name in listDirectory(joinPath(self.root, 'common', 'main')):
-            stem, ext = splitExtension(name)
-            if ext == '.xml' and stem != 'root':
-                yield stem
+        for path in self.root.joinpath('common/main').glob('*.xml'):
+            if path.stem != 'root':
+                yield path.stem
 
     @property
     def defaultContentLocales(self):
@@ -512,20 +511,20 @@ enumdata.py (keeping the old name as an alias):
         return self.__cldrVersion
 
     # Implementation details
-    def __xml(self, path, cache = CacheDict(), read = minidom.parse, joinPath = os.path.join):
+    def __xml(self, relative_path: str, cache = CacheDict(), read = minidom.parse):
         try:
-            doc = cache[path]
+            doc = cache[relative_path]
         except KeyError:
-            cache[path] = doc = read(joinPath(self.root, *path)).documentElement
+            cache[relative_path] = doc = read(str(self.root.joinpath(relative_path))).documentElement
         return doc
 
-    def __open(self, path, joinPath=os.path.join):
-        return open(joinPath(self.root, *path))
+    def __open(self, relative_path: str) -> TextIO:
+        return self.root.joinpath(relative_path).open()
 
     @property
     def __rootLocale(self, cache = []):
         if not cache:
-            cache.append(self.xml('common', 'main', 'root.xml'))
+            cache.append(self.xml('common/main/root.xml'))
         return cache[0]
 
     @property
@@ -535,7 +534,7 @@ enumdata.py (keeping the old name as an alias):
         return cache[0]
 
     @property
-    def __numberSystems(self, cache = {}, joinPath=os.path.join):
+    def __numberSystems(self, cache = {}):
         if not cache:
             for ignore, attrs in self.supplement('numberingSystems.xml').find('numberingSystems'):
                 cache[attrs['id']] = attrs
@@ -610,7 +609,7 @@ enumdata.py (keeping the old name as an alias):
         return cache
 
     @property
-    def __unDistinguishedAttributes(self, cache = {}, joinPath = os.path.join):
+    def __unDistinguishedAttributes(self, cache = {}):
         """Mapping from tag names to lists of attributes.
 
         LDML defines some attributes as 'distinguishing': if a node
@@ -630,7 +629,7 @@ enumdata.py (keeping the old name as an alias):
 
         return cache
 
-    def __scanLdmlDtd(self, joinPath = os.path.join):
+    def __scanLdmlDtd(self):
         """Scan the LDML DTD, record CLDR version
 
         Yields (tag, attrs) pairs: on elements with a given tag,
@@ -640,7 +639,7 @@ enumdata.py (keeping the old name as an alias):
 
         Sets self.__cldrVersion as a side-effect, since this
         information is found in the same file."""
-        with self.__open(('common', 'dtd', 'ldml.dtd')) as dtd:
+        with self.__open('common/dtd/ldml.dtd') as dtd:
             tag, ignored, last = None, None, None
 
             for line in dtd:
@@ -700,7 +699,7 @@ enumdata.py (keeping the old name as an alias):
                   naming = {'language': 'languages', 'script': 'scripts',
                             'territory': 'territories', 'variant': 'variants'}):
         if not cache:
-            root = self.xml('common', 'main', 'en.xml').root.findUniqueChild('localeDisplayNames')
+            root = self.xml('common/main/en.xml').root.findUniqueChild('localeDisplayNames')
             for dst, src in naming.items():
                 cache[dst] = dict(self.__codeMapScan(root.findUniqueChild(src)))
             assert cache
@@ -743,10 +742,9 @@ enumdata.py (keeping the old name as an alias):
 
         return cache
 
-    def __localeAsDoc(self, name, aliasFor = None,
-                      joinPath = os.path.join, exists = os.path.isfile):
-        path = ('common', 'main', f'{name}.xml')
-        if exists(joinPath(self.root, *path)):
+    def __localeAsDoc(self, name: str, aliasFor = None):
+        path = f'common/main/{name}.xml'
+        if self.root.joinpath(path).exists():
             elt = self.__xml(path)
             for child in Node(elt).findAllChildren('alias'):
                 try:
@@ -785,4 +783,4 @@ enumdata.py (keeping the old name as an alias):
         return chain
 
 # Unpolute the namespace: we don't need to export these.
-del minidom, CacheDict, os
+del minidom, CacheDict
