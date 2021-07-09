@@ -759,12 +759,12 @@ public:
     DerivedData() : moreData(0) { }
     ~DerivedData() { ++derivedDestructorCounter; }
 
-    virtual void virtualDelete()
+    void virtualDelete() override
     {
         delete this;
     }
 
-    virtual int classLevel() { return 2; }
+    int classLevel() override { return 2; }
 };
 int DerivedData::derivedDestructorCounter = 0;
 
@@ -779,7 +779,7 @@ public:
 class DiffPtrDerivedData: public Stuffing, public Data
 {
 public:
-    virtual int classLevel() { return 3; }
+    int classLevel() override { return 3; }
 };
 
 class VirtualDerived: virtual public Data
@@ -788,7 +788,7 @@ public:
     int moreData;
 
     VirtualDerived() : moreData(0xc0ffee) { }
-    virtual int classLevel() { return 4; }
+    int classLevel() override { return 4; }
 };
 
 void tst_QSharedPointer::downCast()
@@ -1955,7 +1955,7 @@ public:
 class StrongThread: public QThread
 {
 protected:
-    void run()
+    void run() override
     {
         usleep(QRandomGenerator::global()->bounded(2000));
         ptr->ref();
@@ -1968,7 +1968,7 @@ public:
 class WeakThread: public QThread
 {
 protected:
-    void run()
+    void run() override
     {
         usleep(QRandomGenerator::global()->bounded(2000));
         QSharedPointer<ThreadData> ptr = weak;
@@ -2729,7 +2729,7 @@ namespace ReentrancyWhileDestructing {
     {
         QSharedPointer<IB> b;
 
-        virtual QSharedPointer<IB> getB()
+        virtual QSharedPointer<IB> getB() override
         {
             return b;
         }
