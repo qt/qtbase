@@ -669,6 +669,8 @@
     from the map, and returns an iterator to the next item in the
     map.
 
+    \note The iterator \a pos \e must be valid and dereferencable.
+
     \sa remove()
 */
 
@@ -678,6 +680,8 @@
     Removes the (key, value) pairs pointed to by the iterator range
     [\a first, \a last) from the map.
     Returns an iterator to the item in the map following the last removed element.
+
+    \note The range \c {[first, last)} \e must be a valid range in \c {*this}.
 
     \sa remove()
 */
