@@ -177,6 +177,9 @@ public:
     // ### Qt 7: inline
     void swap(QFutureInterfaceBase &other) noexcept;
 
+    template<typename T>
+    static QFutureInterfaceBase get(const QFuture<T> &future);  // implemented in qfuture.h
+
 protected:
     // ### Qt 7: remove const from refT/derefT
     bool refT() const noexcept;

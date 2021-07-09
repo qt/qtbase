@@ -163,6 +163,8 @@ private slots:
 
     void createReadyFutures();
 
+    void getFutureInterface();
+
 private:
     using size_type = std::vector<int>::size_type;
 
@@ -3519,6 +3521,15 @@ void tst_QFuture::createReadyFutures()
         QVERIFY(caught);
     }
 #endif
+}
+
+void tst_QFuture::getFutureInterface()
+{
+    const int val = 42;
+    QFuture<int> f = QtFuture::makeReadyFuture(val);
+
+    auto interface = QFutureInterfaceBase::get(f);
+    QCOMPARE(interface.resultCount(), 1);
 }
 
 QTEST_MAIN(tst_QFuture)

@@ -300,6 +300,8 @@ private:
     template<class U>
     friend class QFuture;
 
+    friend class QFutureInterfaceBase;
+
     template<class Function, class ResultType, class ParentResultType>
     friend class QtPrivate::Continuation;
 
@@ -428,6 +430,12 @@ QFuture<T> QFuture<T>::onCanceled(QObject *context, Function &&handler)
 inline QFuture<void> QFutureInterface<void>::future()
 {
     return QFuture<void>(this);
+}
+
+template<typename T>
+QFutureInterfaceBase QFutureInterfaceBase::get(const QFuture<T> &future)
+{
+    return future.d;
 }
 
 Q_DECLARE_SEQUENTIAL_ITERATOR(Future)
