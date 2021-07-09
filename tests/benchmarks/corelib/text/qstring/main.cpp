@@ -155,7 +155,7 @@ void tst_QString::toUpper()
     QFETCH(QString, s);
 
     QBENCHMARK {
-        s.toUpper();
+        [[maybe_unused]] auto r = s.toUpper();
     }
 }
 
@@ -169,7 +169,7 @@ void tst_QString::toLower()
     QFETCH(QString, s);
 
     QBENCHMARK {
-        s.toLower();
+        [[maybe_unused]] auto r = s.toLower();
     }
 }
 
@@ -183,7 +183,7 @@ void tst_QString::toCaseFolded()
     QFETCH(QString, s);
 
     QBENCHMARK {
-        s.toCaseFolded();
+        [[maybe_unused]] auto r = s.toCaseFolded();
     }
 }
 
