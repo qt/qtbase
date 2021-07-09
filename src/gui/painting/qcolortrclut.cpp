@@ -43,10 +43,15 @@
 #include <qmath.h>
 
 QT_BEGIN_NAMESPACE
-
-QColorTrcLut *QColorTrcLut::fromGamma(qreal gamma)
+std::shared_ptr<QColorTrcLut> QColorTrcLut::create()
 {
-    QColorTrcLut *cp = new QColorTrcLut;
+    struct Access : QColorTrcLut {};
+    return std::make_shared<Access>();
+}
+
+std::shared_ptr<QColorTrcLut> QColorTrcLut::fromGamma(qreal gamma)
+{
+    auto cp = create();
 
     for (int i = 0; i <= (255 * 16); ++i) {
         cp->m_toLinear[i] = ushort(qRound(qPow(i / qreal(255 * 16), gamma) * (255 * 256)));
@@ -56,9 +61,9 @@ QColorTrcLut *QColorTrcLut::fromGamma(qreal gamma)
     return cp;
 }
 
-QColorTrcLut *QColorTrcLut::fromTransferFunction(const QColorTransferFunction &fun)
+std::shared_ptr<QColorTrcLut> QColorTrcLut::fromTransferFunction(const QColorTransferFunction &fun)
 {
-    QColorTrcLut *cp = new QColorTrcLut;
+    auto cp = create();
     QColorTransferFunction inv = fun.inverted();
 
     for (int i = 0; i <= (255 * 16); ++i) {
@@ -69,9 +74,9 @@ QColorTrcLut *QColorTrcLut::fromTransferFunction(const QColorTransferFunction &f
     return cp;
 }
 
-QColorTrcLut *QColorTrcLut::fromTransferTable(const QColorTransferTable &table)
+std::shared_ptr<QColorTrcLut> QColorTrcLut::fromTransferTable(const QColorTransferTable &table)
 {
-    QColorTrcLut *cp = new QColorTrcLut;
+    auto cp = create();
 
     float minInverse = 0.0f;
     for (int i = 0; i <= (255 * 16); ++i) {

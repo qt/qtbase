@@ -56,7 +56,7 @@
 
 QT_BEGIN_NAMESPACE
 
-QColorTrcLut *lutFromTrc(const QColorTrc &trc)
+std::shared_ptr<QColorTrcLut> lutFromTrc(const QColorTrc &trc)
 {
     if (trc.m_type == QColorTrc::Type::Table)
         return QColorTrcLut::fromTransferTable(trc.m_table);
@@ -80,12 +80,12 @@ void QColorTransformPrivate::updateLutsIn() const
     }
 
     if (colorSpaceIn->trc[0] == colorSpaceIn->trc[1] && colorSpaceIn->trc[0] == colorSpaceIn->trc[2]) {
-        colorSpaceIn->lut[0].reset(lutFromTrc(colorSpaceIn->trc[0]));
+        colorSpaceIn->lut[0] = lutFromTrc(colorSpaceIn->trc[0]);
         colorSpaceIn->lut[1] = colorSpaceIn->lut[0];
         colorSpaceIn->lut[2] = colorSpaceIn->lut[0];
     } else {
         for (int i = 0; i < 3; ++i)
-            colorSpaceIn->lut[i].reset(lutFromTrc(colorSpaceIn->trc[i]));
+            colorSpaceIn->lut[i] = lutFromTrc(colorSpaceIn->trc[i]);
     }
 
     colorSpaceIn->lut.generated.storeRelease(1);
@@ -104,12 +104,12 @@ void QColorTransformPrivate::updateLutsOut() const
     }
 
     if (colorSpaceOut->trc[0] == colorSpaceOut->trc[1] && colorSpaceOut->trc[0] == colorSpaceOut->trc[2]) {
-        colorSpaceOut->lut[0].reset(lutFromTrc(colorSpaceOut->trc[0]));
+        colorSpaceOut->lut[0] = lutFromTrc(colorSpaceOut->trc[0]);
         colorSpaceOut->lut[1] = colorSpaceOut->lut[0];
         colorSpaceOut->lut[2] = colorSpaceOut->lut[0];
     } else {
         for (int i = 0; i < 3; ++i)
-            colorSpaceOut->lut[i].reset(lutFromTrc(colorSpaceOut->trc[i]));
+            colorSpaceOut->lut[i] = lutFromTrc(colorSpaceOut->trc[i]);
     }
 
     colorSpaceOut->lut.generated.storeRelease(1);

@@ -52,11 +52,11 @@
 //
 
 #include <QtGui/private/qtguiglobal_p.h>
-#include <QtCore/qsharedpointer.h>
 #include <QtGui/qrgb.h>
 #include <QtGui/qrgba64.h>
 
 #include <cmath>
+#include <memory>
 
 #if defined(__SSE2__)
 #include <emmintrin.h>
@@ -72,9 +72,9 @@ class QColorTransferTable;
 class Q_GUI_EXPORT QColorTrcLut
 {
 public:
-    static QColorTrcLut *fromGamma(qreal gamma);
-    static QColorTrcLut *fromTransferFunction(const QColorTransferFunction &transfn);
-    static QColorTrcLut *fromTransferTable(const QColorTransferTable &transTable);
+    static std::shared_ptr<QColorTrcLut> fromGamma(qreal gamma);
+    static std::shared_ptr<QColorTrcLut> fromTransferFunction(const QColorTransferFunction &transfn);
+    static std::shared_ptr<QColorTrcLut> fromTransferTable(const QColorTransferTable &transTable);
 
     // The following methods all convert opaque or unpremultiplied colors:
 
@@ -227,7 +227,9 @@ public:
     ushort m_fromLinear[(255 * 16) + 1]; // [0-4080] -> [0-65280]
 
 private:
-    QColorTrcLut() { }
+    QColorTrcLut() { } // force uninitialized members
+
+    static std::shared_ptr<QColorTrcLut> create();
 
     Q_ALWAYS_INLINE static QRgb convertWithTable(QRgb rgb32, const ushort *table)
     {

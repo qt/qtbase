@@ -1861,7 +1861,7 @@ void tst_QColor::qcolorprofile()
 {
     QFETCH(float, gammaC);
     QFETCH(int, tolerance);
-    QColorTrcLut *cp = QColorTrcLut::fromGamma(gammaC);
+    std::shared_ptr cp = QColorTrcLut::fromGamma(gammaC);
 
     // Test we are accurate for most values after converting through gamma-correction.
     int error = 0;
@@ -1872,7 +1872,6 @@ void tst_QColor::qcolorprofile()
         error += qAbs(qRed(cin) - qRed(cout));
     }
     QVERIFY(error <= tolerance);
-    delete cp;
 }
 
 QTEST_MAIN(tst_QColor)

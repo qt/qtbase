@@ -60,6 +60,8 @@
 #include <QtCore/qpoint.h>
 #include <QtCore/qshareddata.h>
 
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 
 class Q_AUTOTEST_EXPORT QColorSpacePrimaries
@@ -150,9 +152,9 @@ public:
                 generated.storeRelaxed(1);
             }
         }
-        QSharedPointer<QColorTrcLut> &operator[](int i) { return table[i]; }
-        const QSharedPointer<QColorTrcLut> &operator[](int i) const  { return table[i]; }
-        QSharedPointer<QColorTrcLut> table[3];
+        std::shared_ptr<QColorTrcLut> &operator[](int i) { return table[i]; }
+        const std::shared_ptr<QColorTrcLut> &operator[](int i) const  { return table[i]; }
+        std::shared_ptr<QColorTrcLut> table[3];
         QAtomicInt generated;
     } mutable lut;
 };

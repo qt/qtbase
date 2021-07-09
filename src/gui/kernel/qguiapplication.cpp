@@ -4156,10 +4156,8 @@ void QGuiApplicationPrivate::notifyDragStarted(const QDrag *drag)
 const QColorTrcLut *QGuiApplicationPrivate::colorProfileForA8Text()
 {
 #ifdef Q_OS_WIN
-    if (!m_a8ColorProfile){
-        QColorTrcLut *cs = QColorTrcLut::fromGamma(2.31); // This is a hard-coded thing for Windows text rendering
-        m_a8ColorProfile.reset(cs);
-    }
+    if (!m_a8ColorProfile)
+        m_a8ColorProfile = QColorTrcLut::fromGamma(2.31); // This is a hard-coded thing for Windows text rendering
     return m_a8ColorProfile.get();
 #else
     return colorProfileForA32Text();
@@ -4168,10 +4166,8 @@ const QColorTrcLut *QGuiApplicationPrivate::colorProfileForA8Text()
 
 const QColorTrcLut *QGuiApplicationPrivate::colorProfileForA32Text()
 {
-    if (!m_a32ColorProfile) {
-        QColorTrcLut *cs = QColorTrcLut::fromGamma(fontSmoothingGamma);
-        m_a32ColorProfile.reset(cs);
-    }
+    if (!m_a32ColorProfile)
+        m_a32ColorProfile = QColorTrcLut::fromGamma(fontSmoothingGamma);
     return m_a32ColorProfile.get();
 }
 

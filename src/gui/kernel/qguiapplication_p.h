@@ -56,7 +56,6 @@
 #include <QtGui/qicon.h>
 
 #include <QtCore/QPointF>
-#include <QtCore/QSharedPointer>
 #include <QtCore/private/qcoreapplication_p.h>
 
 #include <QtCore/qnativeinterface.h>
@@ -67,6 +66,8 @@
 #if QT_CONFIG(shortcut)
 #  include "private/qshortcutmap_p.h"
 #endif
+
+#include <memory>
 
 QT_BEGIN_NAMESPACE
 
@@ -332,9 +333,9 @@ private:
     static QGuiApplicationPrivate *self;
     static int m_fakeMouseSourcePointId;
 #ifdef Q_OS_WIN
-    QSharedPointer<QColorTrcLut> m_a8ColorProfile;
+    std::shared_ptr<QColorTrcLut> m_a8ColorProfile;
 #endif
-    QSharedPointer<QColorTrcLut> m_a32ColorProfile;
+    std::shared_ptr<QColorTrcLut> m_a32ColorProfile;
 
     bool ownGlobalShareContext;
 
