@@ -132,6 +132,7 @@ class tst_QList: public QObject
 {
     Q_OBJECT
 
+    const int million = 1000000;
 private Q_SLOTS:
     void removeAll_primitive_data();
     void removeAll_primitive() { removeAll_impl<MyPrimitive>(); }
@@ -166,12 +167,12 @@ private Q_SLOTS:
     void prependOne_complex() const { prependOne_impl<QList, MyComplex>(); }
     void prependOne_QString() const { prependOne_impl<QList, QString>(); }
 
-    // insert in middle 1 element:
-    void midInsertOne_int_data() const { commonBenchmark_data<int>(); }
-    void midInsertOne_primitive_data() const { commonBenchmark_data<MyPrimitive>(); }
-    void midInsertOne_movable_data() const { commonBenchmark_data<MyMovable>(); }
-    void midInsertOne_complex_data() const { commonBenchmark_data<MyComplex>(); }
-    void midInsertOne_QString_data() const { commonBenchmark_data<QString>(); }
+    // insert in middle 1 element (quadratic, slow):
+    void midInsertOne_int_data() const { commonBenchmark_data<int>(million); }
+    void midInsertOne_primitive_data() const { commonBenchmark_data<MyPrimitive>(million); }
+    void midInsertOne_movable_data() const { commonBenchmark_data<MyMovable>(million); }
+    void midInsertOne_complex_data() const { commonBenchmark_data<MyComplex>(million / 10); }
+    void midInsertOne_QString_data() const { commonBenchmark_data<QString>(million / 10); }
 
     void midInsertOne_int() const { midInsertOne_impl<QList, int>(); }
     void midInsertOne_primitive() const { midInsertOne_impl<QList, MyPrimitive>(); }
@@ -208,12 +209,12 @@ private Q_SLOTS:
     void prependAppendHalvesOne_complex() const { prependAppendHalvesOne_impl<QList, MyComplex>(); }
     void prependAppendHalvesOne_QString() const { prependAppendHalvesOne_impl<QList, QString>(); }
 
-    // emplace in middle 1 element:
-    void midEmplaceOne_int_data() const { commonBenchmark_data<int>(); }
-    void midEmplaceOne_primitive_data() const { commonBenchmark_data<MyPrimitive>(); }
-    void midEmplaceOne_movable_data() const { commonBenchmark_data<MyMovable>(); }
-    void midEmplaceOne_complex_data() const { commonBenchmark_data<MyComplex>(); }
-    void midEmplaceOne_QString_data() const { commonBenchmark_data<QString>(); }
+    // emplace in middle 1 element (quadratic, slow):
+    void midEmplaceOne_int_data() const { commonBenchmark_data<int>(million); }
+    void midEmplaceOne_primitive_data() const { commonBenchmark_data<MyPrimitive>(million); }
+    void midEmplaceOne_movable_data() const { commonBenchmark_data<MyMovable>(million); }
+    void midEmplaceOne_complex_data() const { commonBenchmark_data<MyComplex>(million / 10); }
+    void midEmplaceOne_QString_data() const { commonBenchmark_data<QString>(million / 10); }
 
     void midEmplaceOne_int() const { midEmplaceOne_impl<QList, int>(); }
     void midEmplaceOne_primitive() const { midEmplaceOne_impl<QList, MyPrimitive>(); }
@@ -252,7 +253,7 @@ private:
     void removeAll_impl() const;
 
     template<typename>
-    void commonBenchmark_data() const;
+    void commonBenchmark_data(int max = 200000000) const;
 
     template<template<typename> typename, typename>
     void appendOne_impl() const;
@@ -341,7 +342,7 @@ void tst_QList::removeAll_primitive_data()
 }
 
 template<typename T>
-void tst_QList::commonBenchmark_data() const
+void tst_QList::commonBenchmark_data(int max) const
 {
     QTest::addColumn<int>("elemCount");
 
@@ -352,7 +353,8 @@ void tst_QList::commonBenchmark_data() const
     // cap at 20m elements to allow 5.15/6.0 coverage to be the same
     for (auto pair : { p(100, "100"), p(1000, "1k"), p(10000, "10k"), p(100000, "100k"),
                        p(1000000, "1m"), p(10000000, "10m"), p(20000000, "20m") }) {
-        addRow(pair.first, pair.second);
+        if (pair.first <= max)
+            addRow(pair.first, pair.second);
     }
 }
 
