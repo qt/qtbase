@@ -132,21 +132,10 @@ public:
 #if defined(Q_OS_WIN) || defined(Q_CLANG_QDOC)
     // On Windows we have a type GUID that is used by the platform API, so we
     // provide convenience operators to cast from and to this type.
-#if defined(Q_COMPILER_UNIFORM_INIT) && !defined(Q_CLANG_QDOC)
     constexpr QUuid(const GUID &guid) noexcept
         : data1(guid.Data1), data2(guid.Data2), data3(guid.Data3),
           data4{guid.Data4[0], guid.Data4[1], guid.Data4[2], guid.Data4[3],
                 guid.Data4[4], guid.Data4[5], guid.Data4[6], guid.Data4[7]} {}
-#else
-    QUuid(const GUID &guid) noexcept
-    {
-        data1 = guid.Data1;
-        data2 = guid.Data2;
-        data3 = guid.Data3;
-        for (int i = 0; i < 8; i++)
-            data4[i] = guid.Data4[i];
-    }
-#endif
 
     constexpr QUuid &operator=(const GUID &guid) noexcept
     {
