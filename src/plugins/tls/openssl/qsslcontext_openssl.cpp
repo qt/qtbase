@@ -462,7 +462,7 @@ init_context:
         break;
     case QSsl::DtlsV1_0OrLater:
         minVersion = DTLS1_VERSION;
-        maxVersion = DTLS_MAX_VERSION;
+        maxVersion = 0;
         break;
     case QSsl::DtlsV1_2:
         minVersion = DTLS1_2_VERSION;
@@ -470,7 +470,7 @@ init_context:
         break;
     case QSsl::DtlsV1_2OrLater:
         minVersion = DTLS1_2_VERSION;
-        maxVersion = DTLS_MAX_VERSION;
+        maxVersion = 0;
         break;
     case QSsl::TlsV1_3OrLater:
 #ifdef TLS1_3_VERSION
