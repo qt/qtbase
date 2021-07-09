@@ -476,7 +476,7 @@ QT_WARNING_DISABLE_DEPRECATED
         break;
     case QSsl::DtlsV1_0OrLater:
         minVersion = DTLS1_VERSION;
-        maxVersion = DTLS_MAX_VERSION;
+        maxVersion = 0;
         break;
 QT_WARNING_POP
     case QSsl::DtlsV1_2:
@@ -485,7 +485,7 @@ QT_WARNING_POP
         break;
     case QSsl::DtlsV1_2OrLater:
         minVersion = DTLS1_2_VERSION;
-        maxVersion = DTLS_MAX_VERSION;
+        maxVersion = 0;
         break;
     case QSsl::TlsV1_3OrLater:
 #ifdef TLS1_3_VERSION
