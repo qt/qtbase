@@ -601,9 +601,14 @@ bool QTranslatorPrivate::do_load(const QString &realname, const QString &directo
         }
     }
 
-    if (ok && d->do_load(reinterpret_cast<const uchar *>(d->unmapPointer), d->unmapLength, directory)) {
-        d->filePath = realname;
-        return true;
+    if (ok) {
+        const QString base_dir =
+                !directory.isEmpty() ? directory : QFileInfo(realname).absolutePath();
+        if (d->do_load(reinterpret_cast<const uchar *>(d->unmapPointer), d->unmapLength,
+                       base_dir)) {
+            d->filePath = realname;
+            return true;
+        }
     }
 
 #if defined(QT_USE_MMAP)
