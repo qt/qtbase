@@ -93,7 +93,7 @@ void tst_QStringList::join() const
     QFETCH(QString, separator);
 
     QBENCHMARK {
-        input.join(separator);
+        [[maybe_unused]] auto r = input.join(separator);
     }
 }
 
@@ -173,7 +173,7 @@ void tst_QStringList::split_qlist_qbytearray() const
     QByteArray ba = input.toLatin1();
 
     QBENCHMARK {
-        ba.split(splitChar);
+        [[maybe_unused]] auto r = ba.split(splitChar);
     }
 }
 
@@ -183,7 +183,7 @@ void tst_QStringList::split_qlist_qstring() const
     const QChar splitChar = ':';
 
     QBENCHMARK {
-        input.split(splitChar);
+        [[maybe_unused]] auto r = input.split(splitChar);
     }
 }
 
