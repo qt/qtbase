@@ -48,6 +48,7 @@ protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
 private slots:
     void initTestCase();
+    void init();
 
     void load_data();
     void load();
@@ -75,6 +76,10 @@ void tst_QTranslator::initTestCase()
 {
     dataDir = QEXTRACTTESTDATA(QStringLiteral("/tst_qtranslator"));
     QVERIFY2(!dataDir.isNull(), qPrintable("Could not extract test data"));
+}
+
+void tst_QTranslator::init()
+{
     QVERIFY2(QDir::setCurrent(dataDir->path()),
              qPrintable("Could not chdir to " + dataDir->path()));
 }
@@ -354,6 +359,15 @@ void tst_QTranslator::dependencies()
         QVERIFY(tor.load((const uchar *)data.constData(), data.length()));
         QVERIFY(!tor.isEmpty());
         QCOMPARE(tor.translate("QPushButton", "Hello world!"), QLatin1String("Hallo Welt!"));
+    }
+
+    {
+        // Test resolution of paths relative to main file
+        const QString absoluteFile = QFileInfo("dependencies_la").absoluteFilePath();
+        QDir::setCurrent(QDir::tempPath());
+        QTranslator tor;
+        QVERIFY(tor.load(absoluteFile));
+        QVERIFY(!tor.isEmpty());
     }
 }
 
