@@ -584,10 +584,7 @@ DH *q_DH_new();
 void q_DH_free(DH *dh);
 DH *q_d2i_DHparams(DH **a, const unsigned char **pp, long length);
 int q_i2d_DHparams(DH *a, unsigned char **p);
-
-#ifndef OPENSSL_NO_DEPRECATED_3_0
 int q_DH_check(DH *dh, int *codes);
-#endif // OPENSSL_NO_DEPRECATED_3_0
 
 BIGNUM *q_BN_bin2bn(const unsigned char *s, int len, BIGNUM *ret);
 #define q_SSL_CTX_set_tmp_dh(ctx, dh) q_SSL_CTX_ctrl((ctx), SSL_CTRL_SET_TMP_DH, 0, (char *)dh)

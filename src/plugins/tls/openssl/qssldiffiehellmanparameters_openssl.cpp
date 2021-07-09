@@ -55,57 +55,6 @@ QT_BEGIN_NAMESPACE
 
 namespace {
 
-#ifdef OPENSSL_NO_DEPRECATED_3_0
-
-int q_DH_check(DH *dh, int *status)
-{
-    // DH_check was first deprecated in OpenSSL 3.0.0, as low-level
-    // API; the EVP_PKEY family of functions was advised as an alternative.
-    // As of now EVP_PKEY_params_check ends up calling ... DH_check,
-    // which is good enough.
-
-    Q_ASSERT(dh);
-    Q_ASSERT(status);
-
-    EVP_PKEY *key = q_EVP_PKEY_new();
-    if (!key) {
-        qCWarning(lcSsl, "EVP_PKEY_new failed");
-        QTlsBackendOpenSSL::logAndClearErrorQueue();
-        return 0;
-    }
-    const auto keyDeleter = qScopeGuard([key](){
-        q_EVP_PKEY_free(key);
-    });
-    if (!q_EVP_PKEY_set1_DH(key, dh)) {
-        qCWarning(lcTlsBackend, "EVP_PKEY_set1_DH failed");
-        QTlsBackendOpenSSL::logAndClearErrorQueue();
-        return 0;
-    }
-
-    EVP_PKEY_CTX *keyCtx = q_EVP_PKEY_CTX_new(key, nullptr);
-    if (!keyCtx) {
-        qCWarning(lcTlsBackend, "EVP_PKEY_CTX_new failed");
-        QTlsBackendOpenSSL::logAndClearErrorQueue();
-        return 0;
-    }
-    const auto ctxDeleter = qScopeGuard([keyCtx]{
-        q_EVP_PKEY_CTX_free(keyCtx);
-    });
-
-    const int result = q_EVP_PKEY_param_check(keyCtx);
-    QTlsBackendOpenSSL::logAndClearErrorQueue();
-    // Note: unlike DH_check, we cannot obtain the 'status',
-    // if the 'result' is 0 (actually the result is 1 only
-    // if this 'status' was 0). We could probably check the
-    // errors from the error queue, but it's not needed anyway
-    // - see the 'isSafeDH' below, how it returns immediately
-    // on 0.
-    Q_UNUSED(status);
-
-    return result;
-}
-#endif // OPENSSL_NO_DEPRECATED_3_0
-
 bool isSafeDH(DH *dh)
 {
     int status = 0;

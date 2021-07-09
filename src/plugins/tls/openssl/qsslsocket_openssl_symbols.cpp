@@ -495,9 +495,7 @@ DEFINEFUNC(DH *, DH_new, DUMMYARG, DUMMYARG, return nullptr, return)
 DEFINEFUNC(void, DH_free, DH *dh, dh, return, DUMMYARG)
 DEFINEFUNC3(DH *, d2i_DHparams, DH**a, a, const unsigned char **pp, pp, long length, length, return nullptr, return)
 DEFINEFUNC2(int, i2d_DHparams, DH *a, a, unsigned char **p, p, return -1, return)
-#ifndef OPENSSL_NO_DEPRECATED_3_0
 DEFINEFUNC2(int, DH_check, DH *dh, dh, int *codes, codes, return 0, return)
-#endif // OPENSSL_NO_DEPRECATED_3_0
 DEFINEFUNC3(BIGNUM *, BN_bin2bn, const unsigned char *s, s, int len, len, BIGNUM *ret, ret, return nullptr, return)
 
 #ifndef OPENSSL_NO_EC
@@ -1186,9 +1184,7 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(DH_free)
     RESOLVEFUNC(d2i_DHparams)
     RESOLVEFUNC(i2d_DHparams)
-#ifndef OPENSSL_NO_DEPRECATED_3_0
     RESOLVEFUNC(DH_check)
-#endif // OPENSSL_NO_DEPRECATED_3_0
     RESOLVEFUNC(BN_bin2bn)
 
 #ifndef OPENSSL_NO_EC
