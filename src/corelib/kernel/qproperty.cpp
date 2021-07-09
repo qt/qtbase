@@ -523,8 +523,12 @@ void QPropertyBindingData::notifyObservers(QUntypedPropertyData *propertyDataPtr
     if (QPropertyObserverPointer observer = d.firstObserver()) {
         auto status = storage ? storage->bindingStatus : nullptr;
         QPropertyDelayedNotifications *delay;
+#ifndef QT_HAS_FAST_CURRENT_THREAD_ID
+        status = &bindingStatus;
+#else
         if (!status || status->threadId != QThread::currentThreadId())
             status = &bindingStatus;
+#endif
         delay = status->groupUpdateData;
         if (delay) {
             delay->addProperty(this, propertyDataPtr);
@@ -2171,12 +2175,16 @@ void QBindingStorage::registerDependency_helper(const QUntypedPropertyData *data
     Q_ASSERT(bindingStatus);
     // Use ::bindingStatus to get the binding from TLS. This is required, so that reads from
     // another thread do not register as dependencies
-    const bool threadMatches = (QThread::currentThreadId() == bindingStatus->threadId);
     QtPrivate::BindingEvaluationState *currentBinding;
+#ifdef QT_HAS_FAST_CURRENT_THREAD_ID
+    const bool threadMatches = (QThread::currentThreadId() == bindingStatus->threadId);
     if (Q_LIKELY(threadMatches))
         currentBinding = bindingStatus->currentlyEvaluatingBinding;
     else
         currentBinding = QT_PREPEND_NAMESPACE(bindingStatus).currentlyEvaluatingBinding;
+#else
+    currentBinding = QT_PREPEND_NAMESPACE(bindingStatus).currentlyEvaluatingBinding;
+#endif
     QUntypedPropertyData *dd = const_cast<QUntypedPropertyData *>(data);
     if (!currentBinding)
         return;
