@@ -542,9 +542,10 @@ function(qt6_add_executable target)
 endfunction()
 
 function(_qt_internal_create_executable target)
+    cmake_parse_arguments(arg "" "" "ANDROID_ABIS" ${ARGN})
     if(ANDROID)
         list(REMOVE_ITEM ARGN "WIN32" "MACOSX_BUNDLE")
-        add_library("${target}" MODULE ${ARGN})
+        add_library("${target}" MODULE ${arg_UNPARSED_ARGUMENTS})
         # On our qmake builds we do don't compile the executables with
         # visibility=hidden. Not having this flag set will cause the
         # executable to have main() hidden and can then no longer be loaded
@@ -555,8 +556,82 @@ function(_qt_internal_create_executable target)
         set_property(TARGET "${target}" PROPERTY OBJCXX_VISIBILITY_PRESET default)
         qt6_android_apply_arch_suffix("${target}")
         set_property(TARGET "${target}" PROPERTY _qt_is_android_executable TRUE)
+        # Build per-abi binaries for android
+        if(NOT QT_IS_ANDROID_MULTI_ABI_EXTERNAL_PROJECT)
+            if(QT_ANDROID_BUILD_ALL_ABIS)
+                # Use autodetected Qt for Android ABIs.
+                set(android_abis ${QT_DEFAULT_ANDROID_ABIS})
+            elseif(arg_ANDROID_ABIS)
+                # Use target-specific Qt for Android ABIs.
+                set(android_abis ${arg_ANDROID_ABIS})
+            elseif(QT_ANDROID_ABIS)
+                # Use project-wide Qt for Android ABIs.
+                set(android_abis ${QT_ANDROID_ABIS})
+            else()
+                # User have an empty list of Qt for Android ABIs.
+                message(FATAL_ERROR
+                    "The list of Android ABIs is empty, when building ${target}.\n"
+                    "You have the following options to select ABIs for a target:\n"
+                    " - Set the QT_ANDROID_ABIS variable before calling qt6_add_executable\n"
+                    " - Add the ANDROID_ABIS parameter to the qt6_add_executable call\n"
+                    " - Set QT_ANDROID_BUILD_ALL_ABIS flag to try building with\n"
+                    "   the list of autodetected Qt for Android:\n ${QT_DEFAULT_ANDROID_ABIS}"
+                )
+            endif()
+
+            set(missing_qt_abi_toolchains "")
+            # Create external projects for each android ABI except the main one.
+            list(REMOVE_ITEM android_abis "${CMAKE_ANDROID_ARCH_ABI}")
+            include(ExternalProject)
+            foreach(abi IN ITEMS ${android_abis})
+                if(NOT "${abi}" IN_LIST QT_DEFAULT_ANDROID_ABIS)
+                    list(APPEND missing_qt_abi_toolchains ${abi})
+                    list(REMOVE_ITEM android_abis "${abi}")
+                    continue()
+                endif()
+
+                _qt_internal_get_android_abi_path(qt_abi_path ${abi})
+                set(qt_abi_toolchain_path
+                    "${qt_abi_path}/lib/cmake/${QT_CMAKE_EXPORT_NAMESPACE}/qt.toolchain.cmake")
+                set(abi_copy_target_path "${CMAKE_CURRENT_BINARY_DIR}/android-build/libs/${abi}")
+                ExternalProject_Add("${target}_${abi}"
+                    SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}"
+                    BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/${target}_${abi}"
+                    CMAKE_ARGS "-DCMAKE_TOOLCHAIN_FILE=${qt_abi_toolchain_path}"
+                        "-DQT_IS_ANDROID_MULTI_ABI_EXTERNAL_PROJECT=ON"
+                        "-DQT_ANDROID_ABI_TARGET_PATH=${abi_copy_target_path}"
+                    STEP_TARGETS build
+                    EXCLUDE_FROM_ALL TRUE
+                    BUILD_COMMAND "${CMAKE_COMMAND}"
+                        "--build" "${CMAKE_CURRENT_BINARY_DIR}/${target}_${abi}"
+                        "--target" "${target}_prepare_apk_dir"
+                )
+                add_dependencies(${target} "${target}_${abi}-build")
+            endforeach()
+
+            if(missing_qt_abi_toolchains)
+                list(JOIN missing_qt_abi_toolchains ", " missing_qt_abi_toolchains_string)
+                message(FATAL_ERROR "Cannot find toolchain files for the manually specified Android"
+                    " ABIs: ${missing_qt_abi_toolchains_string}"
+                    "\nSkipping these ABIs."
+                    "\nNote that you also may manually specify the path to the required Qt for"
+                    " Android ABI using QT_PATH_ANDROID_ABI_<abi> CMake variable.\n")
+            endif()
+
+            list(JOIN android_abis ", " android_abis_string)
+            if(android_abis_string)
+                set(android_abis_string "${CMAKE_ANDROID_ARCH_ABI}(default), ${android_abis_string}")
+            else()
+                set(android_abis_string "${CMAKE_ANDROID_ARCH_ABI}(default)")
+            endif()
+            if(NOT QT_NO_ANDROID_ABI_STATUS_MESSAGE)
+                message(STATUS "Configuring '${target}' for the following Android ABIs:"
+                        " ${android_abis_string}")
+            endif()
+            set_target_properties(${target} PROPERTIES _qt_android_abis "${android_abis}")
+        endif()
     else()
-        add_executable("${target}" ${ARGN})
+        add_executable("${target}" ${arg_UNPARSED_ARGUMENTS})
     endif()
 
     _qt_internal_set_up_static_runtime_library("${target}")

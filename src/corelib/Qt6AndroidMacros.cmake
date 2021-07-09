@@ -81,16 +81,30 @@ function(qt6_android_generate_deployment_settings target)
         endif()
     endif()
 
+    set(abi_records "")
+    get_target_property(qt_android_abis ${target} _qt_android_abis)
+    if(qt_android_abis)
+        foreach(abi IN LISTS qt_android_abis)
+            _qt_internal_get_android_abi_path(qt_abi_path ${abi})
+            file(TO_CMAKE_PATH "${qt_abi_path}" qt_android_install_dir_native)
+            list(APPEND abi_records "\"${abi}\": \"${qt_android_install_dir_native}\"")
+        endforeach()
+    endif()
+
     # Required to build unit tests in developer build
     if(QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX)
         set(qt_android_install_dir "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}")
     else()
         set(qt_android_install_dir "${QT6_INSTALL_PREFIX}")
     endif()
-
     file(TO_CMAKE_PATH "${qt_android_install_dir}" qt_android_install_dir_native)
+    list(APPEND abi_records "\"${CMAKE_ANDROID_ARCH_ABI}\": \"${qt_android_install_dir_native}\"")
+
+    list(JOIN abi_records "," qt_android_install_dir_records)
+    set(qt_android_install_dir_records "{${qt_android_install_dir_records}}")
+
     string(APPEND file_contents
-        "   \"qt\": \"${qt_android_install_dir_native}\",\n")
+        "   \"qt\": ${qt_android_install_dir_records},\n")
 
     # Android SDK path
     file(TO_CMAKE_PATH "${ANDROID_SDK_ROOT}" android_sdk_root_native)
@@ -126,19 +140,24 @@ function(qt6_android_generate_deployment_settings target)
     string(APPEND file_contents
         "   \"ndk-host\": \"${ANDROID_NDK_HOST_SYSTEM_NAME}\",\n")
 
-    if (CMAKE_ANDROID_ARCH_ABI STREQUAL "x86")
-        set(arch_value "i686-linux-android")
-    elseif (CMAKE_ANDROID_ARCH_ABI STREQUAL "x86_64")
-        set(arch_value "x86_64-linux-android")
-    elseif (CMAKE_ANDROID_ARCH_ABI STREQUAL "arm64-v8a")
-        set(arch_value "aarch64-linux-android")
-    else()
-        set(arch_value "arm-linux-androideabi")
-    endif()
+    set(architecture_record_list "")
+    foreach(abi IN LISTS qt_android_abis CMAKE_ANDROID_ARCH_ABI)
+        if(abi STREQUAL "x86")
+            set(arch_value "i686-linux-android")
+        elseif(abi STREQUAL "x86_64")
+            set(arch_value "x86_64-linux-android")
+        elseif(abi STREQUAL "arm64-v8a")
+            set(arch_value "aarch64-linux-android")
+        elseif(abi)
+            set(arch_value "arm-linux-androideabi")
+        endif()
+        list(APPEND architecture_record_list "\"${abi}\":\"${arch_value}\"")
+    endforeach()
 
+    list(JOIN architecture_record_list "," architecture_records)
     # Architecture
     string(APPEND file_contents
-        "   \"architectures\": { \"${CMAKE_ANDROID_ARCH_ABI}\" : \"${arch_value}\" },\n")
+        "   \"architectures\": { ${architecture_records} },\n")
 
     # deployment dependencies
     _qt_internal_add_android_deployment_multi_value_property(file_contents ${target}
@@ -300,13 +319,23 @@ function(qt6_android_add_apk_target target)
     set(apk_intermediate_file_path "${apk_intermediate_dir}/${apk_file_name}")
     set(dep_intermediate_file_path "${apk_intermediate_dir}/${dep_file_name}")
 
+    # Temporary location of the library target file. If the library is built as an external project
+    # inside multi-abi build the QT_ANDROID_ABI_TARGET_PATH variable will point to the ABI related
+    # folder in the top-level build directory.
+    set(copy_target_path "${apk_final_dir}/libs/${CMAKE_ANDROID_ARCH_ABI}")
+    if(QT_IS_ANDROID_MULTI_ABI_EXTERNAL_PROJECT AND QT_ANDROID_ABI_TARGET_PATH)
+        set(copy_target_path "${QT_ANDROID_ABI_TARGET_PATH}")
+    endif()
+
     # This target is used by Qt Creator's Android support and by the ${target}_make_apk target
     # in case DEPFILEs are not supported.
+    # Also the target is used to copy the library that belongs to ${target} when building multi-abi
+    # apk to the abi-specific directory.
     add_custom_target(${target}_prepare_apk_dir ALL
         DEPENDS ${target}
         COMMAND ${CMAKE_COMMAND}
             -E copy_if_different $<TARGET_FILE:${target}>
-            "${apk_final_dir}/libs/${CMAKE_ANDROID_ARCH_ABI}/$<TARGET_FILE_NAME:${target}>"
+            "${copy_target_path}/$<TARGET_FILE_NAME:${target}>"
         COMMENT "Copying ${target} binary to apk folder"
     )
 
@@ -573,3 +602,60 @@ if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
         qt6_android_add_apk_target(${ARGV})
     endfunction()
 endif()
+
+# The function returns the installation path to Qt for Android for the specified ${abi}.
+# By default function expects to find a layout as is installed by the Qt online installer:
+#   Qt_install_dir/Version/
+#   |__  gcc_64
+#   |__  android_arm64_v8a
+#   |__  android_armv7
+#   |__  android_x86
+#   |__  android_x86_64
+function(_qt_internal_get_android_abi_path out_path abi)
+    if(DEFINED QT_PATH_ANDROID_ABI_${abi})
+        get_filename_component(${out_path} "${QT_PATH_ANDROID_ABI_${abi}}" ABSOLUTE)
+    else()
+        # Map the ABI value to the Qt for Android folder.
+        if (abi STREQUAL "x86")
+            set(abi_directory_suffix "${abi}")
+        elseif (abi STREQUAL "x86_64")
+            set(abi_directory_suffix "${abi}")
+        elseif (abi STREQUAL "arm64-v8a")
+            set(abi_directory_suffix "arm64_v8a")
+        else()
+            set(abi_directory_suffix "armv7")
+        endif()
+
+        get_filename_component(${out_path}
+            "${_qt_cmake_dir}/../../../android_${abi_directory_suffix}" ABSOLUTE)
+    endif()
+    set(${out_path} "${${out_path}}" PARENT_SCOPE)
+endfunction()
+
+# The function collects list of existing Qt for Android using _qt_internal_get_android_abi_path
+# and pre-defined set of known Android ABIs. The result is written to QT_DEFAULT_ANDROID_ABIS
+# cache variable.
+# Note that QT_DEFAULT_ANDROID_ABIS is not intended to be set outside the function and will be
+# rewritten.
+function(_qt_internal_collect_default_android_abis)
+    set(known_android_abis armeabi-v7a arm64-v8a x86 x86_64)
+
+    set(default_abis)
+    foreach(abi IN LISTS known_android_abis)
+        _qt_internal_get_android_abi_path(qt_abi_path ${abi})
+        # It's expected that Qt for Android contains ABI specific toolchain file.
+        if(EXISTS "${qt_abi_path}/lib/cmake/${QT_CMAKE_EXPORT_NAMESPACE}/qt.toolchain.cmake"
+            OR CMAKE_ANDROID_ARCH_ABI STREQUAL abi)
+            list(APPEND default_abis ${abi})
+        endif()
+    endforeach()
+    set(QT_DEFAULT_ANDROID_ABIS "${default_abis}" CACHE STRING
+        "The list of autodetected Qt for Android ABIs" FORCE
+    )
+    set(QT_ANDROID_ABIS "${CMAKE_ANDROID_ARCH_ABI}" CACHE STRING
+        "The list of Qt for Android ABIs used to build the project apk"
+    )
+    set(QT_ANDROID_BUILD_ALL_ABIS FALSE CACHE BOOL
+        "Build project using the list of autodetected Qt for Android ABIs"
+    )
+endfunction()
