@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -134,11 +134,11 @@ class tst_QList: public QObject
 
 private Q_SLOTS:
     void removeAll_primitive_data();
-    void removeAll_primitive();
-    void removeAll_movable_data();
-    void removeAll_movable();
-    void removeAll_complex_data();
-    void removeAll_complex();
+    void removeAll_primitive() { removeAll_impl<MyPrimitive>(); }
+    void removeAll_movable_data() { removeAll_primitive_data(); }
+    void removeAll_movable() { removeAll_impl<MyMovable>(); }
+    void removeAll_complex_data() { removeAll_primitive_data(); }
+    void removeAll_complex() { removeAll_impl<MyComplex>(); }
 
     // append 1 element:
     void appendOne_int_data() const { commonBenchmark_data<int>(); }
@@ -248,6 +248,9 @@ private Q_SLOTS:
     void removeFirstSpecial_QString() const { removeFirstSpecial_impl<QList, QString>(); }
 
 private:
+    template <class T>
+    void removeAll_impl() const;
+
     template<typename>
     void commonBenchmark_data() const;
 
@@ -277,9 +280,13 @@ private:
 };
 
 template <class T>
-void removeAll_test(const QList<int> &i10, ushort valueToRemove, int itemsToRemove)
+void tst_QList::removeAll_impl() const
 {
-    bool isComplex = QTypeInfo<T>::isComplex;
+    QFETCH(QList<int>, i10);
+    QFETCH(int, itemsToRemove);
+
+    constexpr int valueToRemove = 5;
+    constexpr bool isComplex = QTypeInfo<T>::isComplex;
 
     MyBase::errorCount = 0;
     MyBase::liveCount = 0;
@@ -311,63 +318,26 @@ void removeAll_test(const QList<int> &i10, ushort valueToRemove, int itemsToRemo
         QCOMPARE(l.size() + removedCount, list.size());
         QVERIFY(!l.contains(valueToRemove));
 
-        QCOMPARE(MyBase::liveCount, isComplex ? l.isDetached() ? list.size() + l.size() + 1 : list.size() + 1 : 1);
-        QCOMPARE(MyBase::copyCount, isComplex ? l.isDetached() ? list.size() + l.size() : list.size() : 0);
+        QCOMPARE(MyBase::liveCount,
+                 isComplex ? l.isDetached() ? list.size() + l.size() + 1 : list.size() + 1 : 1);
+        QCOMPARE(MyBase::copyCount,
+                 isComplex ? l.isDetached() ? list.size() + l.size() : list.size() : 0);
     }
     if (isComplex)
         QCOMPARE(MyBase::errorCount, 0);
 }
-
 
 void tst_QList::removeAll_primitive_data()
 {
     qRegisterMetaType<QList<int> >();
 
     QTest::addColumn<QList<int> >("i10");
-    QTest::addColumn<int>("valueToRemove");
     QTest::addColumn<int>("itemsToRemove");
 
-    QTest::newRow("0%")   << (QList<int>() << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0) << 5 << 0;
-    QTest::newRow("10%")  << (QList<int>() << 0 << 0 << 0 << 0 << 5 << 0 << 0 << 0 << 0 << 0) << 5 << 1;
-    QTest::newRow("90%")  << (QList<int>() << 5 << 5 << 5 << 5 << 0 << 5 << 5 << 5 << 5 << 5) << 5 << 9;
-    QTest::newRow("100%") << (QList<int>() << 5 << 5 << 5 << 5 << 5 << 5 << 5 << 5 << 5 << 5) << 5 << 10;
-}
-
-void tst_QList::removeAll_primitive()
-{
-    QFETCH(QList<int>, i10);
-    QFETCH(int, valueToRemove);
-    QFETCH(int, itemsToRemove);
-
-    removeAll_test<MyPrimitive>(i10, valueToRemove, itemsToRemove);
-}
-
-void tst_QList::removeAll_movable_data()
-{
-    removeAll_primitive_data();
-}
-
-void tst_QList::removeAll_movable()
-{
-    QFETCH(QList<int>, i10);
-    QFETCH(int, valueToRemove);
-    QFETCH(int, itemsToRemove);
-
-    removeAll_test<MyMovable>(i10, valueToRemove, itemsToRemove);
-}
-
-void tst_QList::removeAll_complex_data()
-{
-    removeAll_primitive_data();
-}
-
-void tst_QList::removeAll_complex()
-{
-    QFETCH(QList<int>, i10);
-    QFETCH(int, valueToRemove);
-    QFETCH(int, itemsToRemove);
-
-    removeAll_test<MyComplex>(i10, valueToRemove, itemsToRemove);
+    QTest::newRow("0%")   << QList<int>(10, 0) << 0;
+    QTest::newRow("10%")  << (QList<int>() << 0 << 0 << 0 << 0 << 5 << 0 << 0 << 0 << 0 << 0) << 1;
+    QTest::newRow("90%")  << (QList<int>() << 5 << 5 << 5 << 5 << 0 << 5 << 5 << 5 << 5 << 5) << 9;
+    QTest::newRow("100%") << QList<int>(10, 5) << 10;
 }
 
 template<typename T>
