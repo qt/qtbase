@@ -75,6 +75,8 @@ Q_MOC_INCLUDE(<QtNetwork/QAuthenticator>)
 
 #include <private/qdecompresshelper_p.h>
 
+#include <memory>
+
 QT_REQUIRE_CONFIG(http);
 
 QT_BEGIN_NAMESPACE
@@ -197,11 +199,11 @@ public:
 
     // upload
     QNonContiguousByteDevice* createUploadByteDevice();
-    QSharedPointer<QNonContiguousByteDevice> uploadByteDevice;
+    std::shared_ptr<QNonContiguousByteDevice> uploadByteDevice;
     qint64 uploadByteDevicePosition;
     bool uploadDeviceChoking; // if we couldn't readPointer() any data at the moment
     QIODevice *outgoingData;
-    QSharedPointer<QRingBuffer> outgoingDataBuffer;
+    std::shared_ptr<QRingBuffer> outgoingDataBuffer;
     void emitReplyUploadProgress(qint64 bytesSent, qint64 bytesTotal); // dup?
     void onRedirected(const QUrl &redirectUrl, int httpStatus, int maxRedirectsRemainig);
     void followRedirect();

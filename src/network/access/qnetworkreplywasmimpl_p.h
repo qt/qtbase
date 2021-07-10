@@ -63,6 +63,8 @@
 #include <emscripten.h>
 #include <emscripten/fetch.h>
 
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 
 class QIODevice;
@@ -134,7 +136,7 @@ public:
     QByteArray downloadBuffer;
 
     QIODevice *outgoingData;
-    QSharedPointer<QRingBuffer> outgoingDataBuffer;
+    std::shared_ptr<QRingBuffer> outgoingDataBuffer;
     QByteArray requestData;
 
     static void downloadProgress(emscripten_fetch_t *fetch);

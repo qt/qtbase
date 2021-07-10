@@ -80,7 +80,7 @@ public:
     QNetworkAccessBackend::TargetTypes m_targetTypes;
     QNetworkAccessBackend::SecurityFeatures m_securityFeatures;
     QNetworkAccessBackend::IOFeatures m_ioFeatures;
-    QSharedPointer<QNonContiguousByteDevice> uploadByteDevice;
+    std::shared_ptr<QNonContiguousByteDevice> uploadByteDevice;
     QIODevice *wrappedUploadByteDevice;
     QNetworkReplyImplPrivate *m_reply = nullptr;
     QNetworkAccessManagerPrivate *m_manager = nullptr;
@@ -566,7 +566,7 @@ QIODevice *QNetworkAccessBackend::createUploadByteDevice()
 
     // We want signal emissions only for normal asynchronous uploads
     if (!isSynchronous()) {
-        connect(d->uploadByteDevice.data(), &QNonContiguousByteDevice::readProgress, this,
+        connect(d->uploadByteDevice.get(), &QNonContiguousByteDevice::readProgress, this,
                 [this](qint64 a, qint64 b) {
                     Q_D(QNetworkAccessBackend);
                     if (!d->m_reply->isFinished)
@@ -574,7 +574,7 @@ QIODevice *QNetworkAccessBackend::createUploadByteDevice()
                 });
     }
 
-    d->wrappedUploadByteDevice = QNonContiguousByteDeviceFactory::wrap(d->uploadByteDevice.data());
+    d->wrappedUploadByteDevice = QNonContiguousByteDeviceFactory::wrap(d->uploadByteDevice.get());
     return d->wrappedUploadByteDevice;
 }
 

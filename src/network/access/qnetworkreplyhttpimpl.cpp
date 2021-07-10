@@ -199,7 +199,7 @@ QNetworkReplyHttpImpl::QNetworkReplyHttpImpl(QNetworkAccessManager* const manage
         if (d->synchronous && outgoingData) {
             // The synchronous HTTP is a corner case, we will put all upload data in one big QByteArray in the outgoingDataBuffer.
             // Yes, this is not the most efficient thing to do, but on the other hand synchronous XHR needs to die anyway.
-            d->outgoingDataBuffer = QSharedPointer<QRingBuffer>::create();
+            d->outgoingDataBuffer = std::make_shared<QRingBuffer>();
             qint64 previousDataSize = 0;
             do {
                 previousDataSize = d->outgoingDataBuffer->size();
@@ -923,14 +923,14 @@ void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpReq
             delegate->httpRequest.setUploadByteDevice(forwardUploadDevice);
 
             // If the device in the user thread claims it has more data, keep the flow to HTTP thread going
-            QObject::connect(uploadByteDevice.data(), SIGNAL(readyRead()),
+            QObject::connect(uploadByteDevice.get(), SIGNAL(readyRead()),
                              q, SLOT(uploadByteDeviceReadyReadSlot()),
                              Qt::QueuedConnection);
 
             // From user thread to http thread:
             QObject::connect(q, SIGNAL(haveUploadData(qint64,QByteArray,bool,qint64)),
                              forwardUploadDevice, SLOT(haveDataSlot(qint64,QByteArray,bool,qint64)), Qt::QueuedConnection);
-            QObject::connect(uploadByteDevice.data(), SIGNAL(readyRead()),
+            QObject::connect(uploadByteDevice.get(), SIGNAL(readyRead()),
                              forwardUploadDevice, SIGNAL(readyRead()),
                              Qt::QueuedConnection);
 
@@ -953,7 +953,7 @@ void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpReq
             // use the uploadByteDevice provided to us by the QNetworkReplyImpl.
             // The code that is in start() makes sure it is safe to use from a thread
             // since it only wraps a QRingBuffer
-            delegate->httpRequest.setUploadByteDevice(uploadByteDevice.data());
+            delegate->httpRequest.setUploadByteDevice(uploadByteDevice.get());
         }
     }
 
@@ -1966,7 +1966,7 @@ void QNetworkReplyHttpImplPrivate::_q_bufferOutgoingData()
 
     if (!outgoingDataBuffer) {
         // first call, create our buffer
-        outgoingDataBuffer = QSharedPointer<QRingBuffer>::create();
+        outgoingDataBuffer = std::make_shared<QRingBuffer>();
 
         QObject::connect(outgoingData, SIGNAL(readyRead()), q, SLOT(_q_bufferOutgoingData()));
         QObject::connect(outgoingData, SIGNAL(readChannelFinished()), q, SLOT(_q_bufferOutgoingDataFinished()));
@@ -2066,10 +2066,10 @@ QNonContiguousByteDevice* QNetworkReplyHttpImplPrivate::createUploadByteDevice()
 
     // We want signal emissions only for normal asynchronous uploads
     if (!synchronous)
-        QObject::connect(uploadByteDevice.data(), SIGNAL(readProgress(qint64,qint64)),
+        QObject::connect(uploadByteDevice.get(), SIGNAL(readProgress(qint64,qint64)),
                          q, SLOT(emitReplyUploadProgress(qint64,qint64)));
 
-    return uploadByteDevice.data();
+    return uploadByteDevice.get();
 }
 
 void QNetworkReplyHttpImplPrivate::_q_finished()
