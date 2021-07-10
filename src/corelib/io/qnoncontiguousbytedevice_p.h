@@ -102,7 +102,7 @@ public:
 class QNonContiguousByteDeviceByteArrayImpl : public QNonContiguousByteDevice
 {
 public:
-    QNonContiguousByteDeviceByteArrayImpl(QByteArray *ba);
+    explicit QNonContiguousByteDeviceByteArrayImpl(QByteArray *ba);
     ~QNonContiguousByteDeviceByteArrayImpl();
     const char *readPointer(qint64 maximumLength, qint64 &len) override;
     bool advanceReadPointer(qint64 amount) override;
@@ -119,7 +119,7 @@ protected:
 class QNonContiguousByteDeviceRingBufferImpl : public QNonContiguousByteDevice
 {
 public:
-    QNonContiguousByteDeviceRingBufferImpl(QSharedPointer<QRingBuffer> rb);
+    explicit QNonContiguousByteDeviceRingBufferImpl(QSharedPointer<QRingBuffer> rb);
     ~QNonContiguousByteDeviceRingBufferImpl();
     const char *readPointer(qint64 maximumLength, qint64 &len) override;
     bool advanceReadPointer(qint64 amount) override;
@@ -137,7 +137,7 @@ class QNonContiguousByteDeviceIoDeviceImpl : public QNonContiguousByteDevice
 {
     Q_OBJECT
 public:
-    QNonContiguousByteDeviceIoDeviceImpl(QIODevice *d);
+    explicit QNonContiguousByteDeviceIoDeviceImpl(QIODevice *d);
     ~QNonContiguousByteDeviceIoDeviceImpl();
     const char *readPointer(qint64 maximumLength, qint64 &len) override;
     bool advanceReadPointer(qint64 amount) override;
@@ -161,7 +161,7 @@ class QNonContiguousByteDeviceBufferImpl : public QNonContiguousByteDevice
 {
     Q_OBJECT
 public:
-    QNonContiguousByteDeviceBufferImpl(QBuffer *b);
+    explicit QNonContiguousByteDeviceBufferImpl(QBuffer *b);
     ~QNonContiguousByteDeviceBufferImpl();
     const char *readPointer(qint64 maximumLength, qint64 &len) override;
     bool advanceReadPointer(qint64 amount) override;
@@ -179,7 +179,7 @@ protected:
 class QByteDeviceWrappingIoDevice : public QIODevice
 {
 public:
-    QByteDeviceWrappingIoDevice(QNonContiguousByteDevice *bd);
+    explicit QByteDeviceWrappingIoDevice(QNonContiguousByteDevice *bd);
     ~QByteDeviceWrappingIoDevice();
     bool isSequential() const override;
     bool atEnd() const override;
