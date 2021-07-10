@@ -3920,12 +3920,26 @@ void tst_QFile::stdfilesystem()
     path = "tile-fest";
     QVERIFY(file.rename(path));
     QVERIFY(fs::exists(path));
+#ifdef Q_OS_WIN
+    fs::path linkfile { "test-link.lnk" };
+#else
     fs::path linkfile { "test-link" };
+#endif
     QVERIFY(file.link(linkfile));
     QVERIFY(fs::exists(linkfile));
+    QVERIFY(QFile::remove(linkfile));
+    QVERIFY(QFile::link(file.filesystemFileName(), linkfile));
+    QVERIFY(fs::exists(linkfile));
+    QCOMPARE(QFileInfo(QFile::filesystemSymLinkTarget(linkfile)),
+             QFileInfo(file.filesystemFileName()));
+    QCOMPARE(QFileInfo(QFile(linkfile).filesystemSymLinkTarget()),
+             QFileInfo(file.filesystemFileName()));
 
     fs::path copyfile { "copy-file" };
     QVERIFY(file.copy(copyfile));
+    QVERIFY(fs::exists(copyfile));
+    QVERIFY(QFile::remove(copyfile));
+    QVERIFY(QFile::copy(file.filesystemFileName(), copyfile));
     QVERIFY(fs::exists(copyfile));
 
     QFileDevice::Permissions p = QFile::permissions(path);
@@ -3935,6 +3949,10 @@ void tst_QFile::stdfilesystem()
     else if (p.testFlag(QFile::ReadOwner))
         p.setFlag(QFile::ReadOwner, false);
     QVERIFY(QFile::setPermissions(path, p));
+
+    path = "test-exists";
+    fs::create_directory(path);
+    QVERIFY(QFile::exists(path) == fs::exists(path));
 #else
     QSKIP("Not supported");
 #endif
