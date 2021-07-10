@@ -11,8 +11,6 @@ endif()
 qt_internal_add_test(tst_qsocks5socketengine
     SOURCES
         tst_qsocks5socketengine.cpp
-    INCLUDE_DIRECTORIES
-        ${QT_SOURCE_TREE}/src/network
     PUBLIC_LIBRARIES
         Qt::CorePrivate
         Qt::NetworkPrivate
