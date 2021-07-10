@@ -37,19 +37,17 @@ qt_internal_add_plugin(QWasmIntegrationPlugin
 )
 
 # Resources:
-set_source_files_properties("${QT_SOURCE_TREE}/src/3rdparty/wasm/Vera.ttf" PROPERTIES QT_RESOURCE_ALIAS "Vera.ttf")
-set_source_files_properties("${QT_SOURCE_TREE}/src/3rdparty/wasm/DejaVuSans.ttf" PROPERTIES QT_RESOURCE_ALIAS "DejaVuSans.ttf")
-set_source_files_properties("${QT_SOURCE_TREE}/src/3rdparty/wasm/DejaVuSansMono.ttf" PROPERTIES QT_RESOURCE_ALIAS "DejaVuSansMono.ttf")
-
 set(wasmfonts_resource_files
-    "${QT_SOURCE_TREE}/src/3rdparty/wasm/Vera.ttf"
-    "${QT_SOURCE_TREE}/src/3rdparty/wasm/DejaVuSans.ttf"
-    "${QT_SOURCE_TREE}/src/3rdparty/wasm/DejaVuSansMono.ttf"
+    "${QtBase_SOURCE_DIR}/src/3rdparty/wasm/Vera.ttf"
+    "${QtBase_SOURCE_DIR}/src/3rdparty/wasm/DejaVuSans.ttf"
+    "${QtBase_SOURCE_DIR}/src/3rdparty/wasm/DejaVuSansMono.ttf"
 )
 
 qt_internal_add_resource(QWasmIntegrationPlugin "wasmfonts"
     PREFIX
         "/fonts"
+    BASE
+        "${QtBase_SOURCE_DIR}/src/3rdparty/wasm"
     FILES
         ${wasmfonts_resource_files}
 )
