@@ -138,7 +138,7 @@ qt_internal_extend_target(QWindowsDirect2DIntegrationPlugin CONDITION QT_FEATURE
     SOURCES
         ../windows/qwindowstabletsupport.cpp ../windows/qwindowstabletsupport.h
     INCLUDE_DIRECTORIES
-        ${QT_SOURCE_TREE}/src/3rdparty/wintab
+        ${QtBase_SOURCE_DIR}/src/3rdparty/wintab
 )
 
 qt_internal_extend_target(QWindowsDirect2DIntegrationPlugin CONDITION QT_FEATURE_sessionmanager

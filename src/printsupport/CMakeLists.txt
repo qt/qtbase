@@ -181,7 +181,7 @@ qt_internal_extend_target(PrintSupport CONDITION QT_FEATURE_printdialog AND UNIX
         dialogs/qprintsettingsoutput.ui
         dialogs/qprintwidget.ui
     INCLUDE_DIRECTORIES
-        ${QT_SOURCE_TREE}/src/plugins/printsupport/cups
+        ${QtBase_SOURCE_DIR}/src/plugins/printsupport/cups
     ENABLE_AUTOGEN_TOOLS
         uic
 )
