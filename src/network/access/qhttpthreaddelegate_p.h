@@ -97,13 +97,13 @@ public:
     qint64 readBufferMaxSize;
     qint64 bytesEmitted;
     // From backend, modified by us for signal compression
-    QSharedPointer<QAtomicInt> pendingDownloadData;
-    QSharedPointer<QAtomicInt> pendingDownloadProgress;
+    std::shared_ptr<QAtomicInt> pendingDownloadData;
+    std::shared_ptr<QAtomicInt> pendingDownloadProgress;
 #ifndef QT_NO_NETWORKPROXY
     QNetworkProxy cacheProxy;
     QNetworkProxy transparentProxy;
 #endif
-    QSharedPointer<QNetworkAccessAuthenticationManager> authenticationManager;
+    std::shared_ptr<QNetworkAccessAuthenticationManager> authenticationManager;
     bool synchronous;
     qint64 connectionCacheExpiryTimeoutSeconds;
 

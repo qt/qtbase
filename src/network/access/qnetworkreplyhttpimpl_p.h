@@ -247,8 +247,8 @@ public:
     char* downloadZerocopyBuffer;
 
     // Will be increased by HTTP thread:
-    QSharedPointer<QAtomicInt> pendingDownloadDataEmissions;
-    QSharedPointer<QAtomicInt> pendingDownloadProgressEmissions;
+    std::shared_ptr<QAtomicInt> pendingDownloadDataEmissions;
+    std::shared_ptr<QAtomicInt> pendingDownloadProgressEmissions;
 
 
 #ifndef QT_NO_SSL

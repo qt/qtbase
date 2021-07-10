@@ -86,7 +86,7 @@ public:
           cookieJarCreated(false),
           defaultAccessControl(true),
           redirectPolicy(QNetworkRequest::NoLessSafeRedirectPolicy),
-          authenticationManager(QSharedPointer<QNetworkAccessAuthenticationManager>::create())
+          authenticationManager(std::make_shared<QNetworkAccessAuthenticationManager>())
     {
     }
     ~QNetworkAccessManagerPrivate();
@@ -150,7 +150,7 @@ public:
     QNetworkRequest::RedirectPolicy redirectPolicy = QNetworkRequest::NoLessSafeRedirectPolicy;
 
     // The cache with authorization data:
-    QSharedPointer<QNetworkAccessAuthenticationManager> authenticationManager;
+    std::shared_ptr<QNetworkAccessAuthenticationManager> authenticationManager;
 
     // this cache can be used by individual backends to cache e.g. their TCP connections to a server
     // and use the connections for multiple requests.

@@ -123,8 +123,8 @@ public:
     void _q_bufferOutgoingData();
     void _q_bufferOutgoingDataFinished();
 
-    QSharedPointer<QAtomicInt> pendingDownloadData;
-    QSharedPointer<QAtomicInt> pendingDownloadProgress;
+    std::shared_ptr<QAtomicInt> pendingDownloadData;
+    std::shared_ptr<QAtomicInt> pendingDownloadProgress;
 
     qint64 bytesDownloaded;
     qint64 bytesBuffered;
