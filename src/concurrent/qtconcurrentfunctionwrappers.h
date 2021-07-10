@@ -41,6 +41,7 @@
 #define QTCONCURRENT_FUNCTIONWRAPPERS_H
 
 #include <QtConcurrent/qtconcurrentcompilertest.h>
+#include <QtCore/qfuture.h>
 #include <QtCore/QStringList>
 
 #include <tuple>
@@ -142,6 +143,50 @@ struct ReduceResultType<T(C::*)(U) noexcept>
     using ResultType = C;
 };
 #endif
+
+template<class T, class Enable = void>
+struct hasCallOperator : std::false_type
+{
+};
+
+template<class T>
+struct hasCallOperator<T, std::void_t<decltype(&T::operator())>> : std::true_type
+{
+};
+
+template<class T, class Enable = void>
+struct isIterator : std::false_type
+{
+};
+
+template<class T>
+struct isIterator<T, std::void_t<typename std::iterator_traits<T>::value_type>> : std::true_type
+{
+};
+
+template <class Callable, class Sequence>
+using isInvocable = std::is_invocable<Callable, typename std::decay_t<Sequence>::value_type>;
+
+template<class Callable, class Enable = void>
+struct ReduceResultTypeHelper
+{
+};
+
+template <class Callable>
+struct ReduceResultTypeHelper<Callable,
+        typename std::enable_if_t<std::is_function_v<std::remove_pointer_t<std::decay_t<Callable>>>
+                                  || std::is_member_function_pointer_v<std::decay_t<Callable>>>>
+{
+    using type = typename QtPrivate::ReduceResultType<std::decay_t<Callable>>::ResultType;
+};
+
+template <class Callable>
+struct ReduceResultTypeHelper<Callable,
+        typename std::enable_if_t<!std::is_function_v<std::remove_pointer_t<std::decay_t<Callable>>>
+                                  && hasCallOperator<std::decay_t<Callable>>::value>>
+{
+    using type = std::decay_t<typename QtPrivate::ArgResolver<Callable>::First>;
+};
 
 // -- MapSequenceResultType
 

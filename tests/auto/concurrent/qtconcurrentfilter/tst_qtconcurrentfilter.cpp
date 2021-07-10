@@ -410,23 +410,47 @@ void testFilteredReduced(const QList<SourceObject> &sourceObjectList,
                          FilterObject filterObject,
                          ReduceObject reduceObject)
 {
-    const ResultObject result1 = QtConcurrent::filteredReduced<ResultObject>(
-                                         sourceObjectList, filterObject, reduceObject).result();
-    QCOMPARE(result1, expectedResult);
+    // Result type is passed explicitly
+    {
+        const ResultObject result1 = QtConcurrent::filteredReduced<ResultObject>(
+                    sourceObjectList, filterObject, reduceObject).result();
+        QCOMPARE(result1, expectedResult);
 
-    const ResultObject result2 = QtConcurrent::filteredReduced<ResultObject>(
-                                         sourceObjectList.constBegin(), sourceObjectList.constEnd(),
-                                         filterObject, reduceObject).result();
-    QCOMPARE(result2, expectedResult);
+        const ResultObject result2 = QtConcurrent::filteredReduced<ResultObject>(
+                    sourceObjectList.constBegin(), sourceObjectList.constEnd(),
+                    filterObject, reduceObject).result();
+        QCOMPARE(result2, expectedResult);
 
-    const ResultObject result3 = QtConcurrent::blockingFilteredReduced<ResultObject>(
-                sourceObjectList, filterObject, reduceObject);
-    QCOMPARE(result3, expectedResult);
+        const ResultObject result3 = QtConcurrent::blockingFilteredReduced<ResultObject>(
+                    sourceObjectList, filterObject, reduceObject);
+        QCOMPARE(result3, expectedResult);
 
-    const ResultObject result4 = QtConcurrent::blockingFilteredReduced<ResultObject>(
-                sourceObjectList.constBegin(), sourceObjectList.constEnd(),
-                filterObject, reduceObject);
-    QCOMPARE(result4, expectedResult);
+        const ResultObject result4 = QtConcurrent::blockingFilteredReduced<ResultObject>(
+                    sourceObjectList.constBegin(), sourceObjectList.constEnd(),
+                    filterObject, reduceObject);
+        QCOMPARE(result4, expectedResult);
+    }
+
+    // Result type is deduced
+    {
+        const ResultObject result1 = QtConcurrent::filteredReduced(
+                    sourceObjectList, filterObject, reduceObject).result();
+        QCOMPARE(result1, expectedResult);
+
+        const ResultObject result2 = QtConcurrent::filteredReduced(
+                    sourceObjectList.constBegin(), sourceObjectList.constEnd(),
+                    filterObject, reduceObject).result();
+        QCOMPARE(result2, expectedResult);
+
+        const ResultObject result3 = QtConcurrent::blockingFilteredReduced(
+                    sourceObjectList, filterObject, reduceObject);
+        QCOMPARE(result3, expectedResult);
+
+        const ResultObject result4 = QtConcurrent::blockingFilteredReduced(
+                    sourceObjectList.constBegin(), sourceObjectList.constEnd(),
+                    filterObject, reduceObject);
+        QCOMPARE(result4, expectedResult);
+    }
 }
 
 template <typename SourceObject,
@@ -570,28 +594,57 @@ void testFilteredReducedThreadPool(QThreadPool *pool,
                                    FilterObject filterObject,
                                    ReduceObject reduceObject)
 {
-    const ResultObject result1 = QtConcurrent::filteredReduced<ResultObject>(
-                pool, sourceObjectList, filterObject, reduceObject).result();
-    QCOMPARE(result1, expectedResult);
-    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
+    // Result type is passed explicitly
+    {
+        const ResultObject result1 = QtConcurrent::filteredReduced<ResultObject>(
+                    pool, sourceObjectList, filterObject, reduceObject).result();
+        QCOMPARE(result1, expectedResult);
+        QCOMPARE(threadCount(), 1); // ensure the only one thread was working
 
-    const ResultObject result2 =
-            QtConcurrent::filteredReduced<ResultObject>(pool, sourceObjectList.constBegin(),
-                                                        sourceObjectList.constEnd(), filterObject,
-                                                        reduceObject).result();
-    QCOMPARE(result2, expectedResult);
-    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
+        const ResultObject result2 =
+                QtConcurrent::filteredReduced<ResultObject>(pool, sourceObjectList.constBegin(),
+                                                            sourceObjectList.constEnd(), filterObject,
+                                                            reduceObject).result();
+        QCOMPARE(result2, expectedResult);
+        QCOMPARE(threadCount(), 1); // ensure the only one thread was working
 
-    const ResultObject result3 = QtConcurrent::blockingFilteredReduced<ResultObject>(
-                pool, sourceObjectList, filterObject, reduceObject);
-    QCOMPARE(result3, expectedResult);
-    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
+        const ResultObject result3 = QtConcurrent::blockingFilteredReduced<ResultObject>(
+                    pool, sourceObjectList, filterObject, reduceObject);
+        QCOMPARE(result3, expectedResult);
+        QCOMPARE(threadCount(), 1); // ensure the only one thread was working
 
-    const ResultObject result4 = QtConcurrent::blockingFilteredReduced<ResultObject>(
-                pool, sourceObjectList.constBegin(), sourceObjectList.constEnd(),
-                filterObject, reduceObject);
-    QCOMPARE(result4, expectedResult);
-    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
+        const ResultObject result4 = QtConcurrent::blockingFilteredReduced<ResultObject>(
+                    pool, sourceObjectList.constBegin(), sourceObjectList.constEnd(),
+                    filterObject, reduceObject);
+        QCOMPARE(result4, expectedResult);
+        QCOMPARE(threadCount(), 1); // ensure the only one thread was working
+    }
+
+    // Result type is deduced
+    {
+        const ResultObject result1 = QtConcurrent::filteredReduced(
+                    pool, sourceObjectList, filterObject, reduceObject).result();
+        QCOMPARE(result1, expectedResult);
+        QCOMPARE(threadCount(), 1); // ensure the only one thread was working
+
+        const ResultObject result2 =
+                QtConcurrent::filteredReduced(pool, sourceObjectList.constBegin(),
+                                              sourceObjectList.constEnd(), filterObject,
+                                              reduceObject).result();
+        QCOMPARE(result2, expectedResult);
+        QCOMPARE(threadCount(), 1); // ensure the only one thread was working
+
+        const ResultObject result3 = QtConcurrent::blockingFilteredReduced(
+                    pool, sourceObjectList, filterObject, reduceObject);
+        QCOMPARE(result3, expectedResult);
+        QCOMPARE(threadCount(), 1); // ensure the only one thread was working
+
+        const ResultObject result4 = QtConcurrent::blockingFilteredReduced(
+                    pool, sourceObjectList.constBegin(), sourceObjectList.constEnd(),
+                    filterObject, reduceObject);
+        QCOMPARE(result4, expectedResult);
+        QCOMPARE(threadCount(), 1); // ensure the only one thread was working
+    }
 }
 
 void tst_QtConcurrentFilter::filteredReducedThreadPool()
@@ -666,50 +719,50 @@ void tst_QtConcurrentFilter::filteredReducedWithMoveOnlyCallables()
     const auto sum = 6;
     {
         const auto result =
-                QtConcurrent::filteredReduced<int>(intList, KeepEvenIntegersMoveOnly(),
-                                                   IntSumReduceMoveOnly()).result();
+                QtConcurrent::filteredReduced(intList, KeepEvenIntegersMoveOnly(),
+                                              IntSumReduceMoveOnly()).result();
         QCOMPARE(result, sum);
     }
     {
         const auto result =
-                QtConcurrent::filteredReduced<int>(intList.begin(), intList.end(),
-                                                   KeepEvenIntegersMoveOnly(),
-                                                   IntSumReduceMoveOnly()).result();
+                QtConcurrent::filteredReduced(intList.begin(), intList.end(),
+                                              KeepEvenIntegersMoveOnly(),
+                                              IntSumReduceMoveOnly()).result();
         QCOMPARE(result, sum);
     }
     {
-        const auto result = QtConcurrent::blockingFilteredReduced<int>(
-                intList, KeepEvenIntegersMoveOnly(), IntSumReduceMoveOnly());
+        const auto result = QtConcurrent::blockingFilteredReduced(
+                    intList, KeepEvenIntegersMoveOnly(), IntSumReduceMoveOnly());
         QCOMPARE(result, sum);
     }
     {
-        const auto result = QtConcurrent::blockingFilteredReduced<int>(
-                intList.begin(), intList.end(), KeepEvenIntegersMoveOnly(), IntSumReduceMoveOnly());
+        const auto result = QtConcurrent::blockingFilteredReduced(
+                    intList.begin(), intList.end(), KeepEvenIntegersMoveOnly(), IntSumReduceMoveOnly());
         QCOMPARE(result, sum);
     }
 
     QThreadPool pool;
     {
         const auto result =
-                QtConcurrent::filteredReduced<int>(&pool, intList, KeepEvenIntegersMoveOnly(),
-                                                   IntSumReduceMoveOnly()).result();
+                QtConcurrent::filteredReduced(&pool, intList, KeepEvenIntegersMoveOnly(),
+                                              IntSumReduceMoveOnly()).result();
         QCOMPARE(result, sum);
     }
     {
-        const auto result = QtConcurrent::filteredReduced<int>(
-                                    &pool, intList.begin(), intList.end(),
-                                    KeepEvenIntegersMoveOnly(), IntSumReduceMoveOnly()).result();
+        const auto result = QtConcurrent::filteredReduced(
+                    &pool, intList.begin(), intList.end(),
+                    KeepEvenIntegersMoveOnly(), IntSumReduceMoveOnly()).result();
         QCOMPARE(result, sum);
     }
     {
-        const auto result = QtConcurrent::blockingFilteredReduced<int>(
-                &pool, intList, KeepEvenIntegersMoveOnly(), IntSumReduceMoveOnly());
+        const auto result = QtConcurrent::blockingFilteredReduced(
+                    &pool, intList, KeepEvenIntegersMoveOnly(), IntSumReduceMoveOnly());
         QCOMPARE(result, sum);
     }
     {
-        const auto result = QtConcurrent::blockingFilteredReduced<int>(
-                &pool, intList.begin(), intList.end(), KeepEvenIntegersMoveOnly(),
-                IntSumReduceMoveOnly());
+        const auto result = QtConcurrent::blockingFilteredReduced(
+                    &pool, intList.begin(), intList.end(), KeepEvenIntegersMoveOnly(),
+                    IntSumReduceMoveOnly());
         QCOMPARE(result, sum);
     }
 }
@@ -774,23 +827,47 @@ void testFilteredReducedInitialValue(const QList<SourceObject> &sourceObjectList
                                      ReduceObject reduceObject,
                                      InitialObject &&initialObject)
 {
-    const ResultObject result1 = QtConcurrent::filteredReduced<ResultObject>(
-                sourceObjectList, filterObject, reduceObject, initialObject).result();
-    QCOMPARE(result1, expectedResult);
+    // Result type is passed explicitly
+    {
+        const ResultObject result1 = QtConcurrent::filteredReduced<ResultObject>(
+                    sourceObjectList, filterObject, reduceObject, initialObject).result();
+        QCOMPARE(result1, expectedResult);
 
-    const ResultObject result2 = QtConcurrent::filteredReduced<ResultObject>(
-                                         sourceObjectList.constBegin(), sourceObjectList.constEnd(),
-                                         filterObject, reduceObject, initialObject).result();
-    QCOMPARE(result2, expectedResult);
+        const ResultObject result2 = QtConcurrent::filteredReduced<ResultObject>(
+                    sourceObjectList.constBegin(), sourceObjectList.constEnd(),
+                    filterObject, reduceObject, initialObject).result();
+        QCOMPARE(result2, expectedResult);
 
-    const ResultObject result3 = QtConcurrent::blockingFilteredReduced<ResultObject>(
-                sourceObjectList, filterObject, reduceObject, initialObject);
-    QCOMPARE(result3, expectedResult);
+        const ResultObject result3 = QtConcurrent::blockingFilteredReduced<ResultObject>(
+                    sourceObjectList, filterObject, reduceObject, initialObject);
+        QCOMPARE(result3, expectedResult);
 
-    const ResultObject result4 = QtConcurrent::blockingFilteredReduced<ResultObject>(
-                sourceObjectList.constBegin(), sourceObjectList.constEnd(),
-                filterObject, reduceObject, initialObject);
-    QCOMPARE(result4, expectedResult);
+        const ResultObject result4 = QtConcurrent::blockingFilteredReduced<ResultObject>(
+                    sourceObjectList.constBegin(), sourceObjectList.constEnd(),
+                    filterObject, reduceObject, initialObject);
+        QCOMPARE(result4, expectedResult);
+    }
+
+    // Result type is deduced
+    {
+        const ResultObject result1 = QtConcurrent::filteredReduced(
+                    sourceObjectList, filterObject, reduceObject, initialObject).result();
+        QCOMPARE(result1, expectedResult);
+
+        const ResultObject result2 = QtConcurrent::filteredReduced(
+                    sourceObjectList.constBegin(), sourceObjectList.constEnd(),
+                    filterObject, reduceObject, initialObject).result();
+        QCOMPARE(result2, expectedResult);
+
+        const ResultObject result3 = QtConcurrent::blockingFilteredReduced(
+                    sourceObjectList, filterObject, reduceObject, initialObject);
+        QCOMPARE(result3, expectedResult);
+
+        const ResultObject result4 = QtConcurrent::blockingFilteredReduced(
+                    sourceObjectList.constBegin(), sourceObjectList.constEnd(),
+                    filterObject, reduceObject, initialObject);
+        QCOMPARE(result4, expectedResult);
+    }
 }
 
 template <typename SourceObject,
@@ -945,28 +1022,57 @@ void testFilteredReducedInitialValueThreadPool(QThreadPool *pool,
                                                ReduceObject reduceObject,
                                                InitialObject &&initialObject)
 {
-    const ResultObject result1 = QtConcurrent::filteredReduced<ResultObject>(
-                pool, sourceObjectList, filterObject, reduceObject, initialObject).result();
-    QCOMPARE(result1, expectedResult);
-    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
+    // Result type is passed explicitly
+    {
+        const ResultObject result1 = QtConcurrent::filteredReduced<ResultObject>(
+                    pool, sourceObjectList, filterObject, reduceObject, initialObject).result();
+        QCOMPARE(result1, expectedResult);
+        QCOMPARE(threadCount(), 1); // ensure the only one thread was working
 
-    const ResultObject result2 =
-            QtConcurrent::filteredReduced<ResultObject>(pool, sourceObjectList.constBegin(),
-                                                        sourceObjectList.constEnd(), filterObject,
-                                                        reduceObject, initialObject).result();
-    QCOMPARE(result2, expectedResult);
-    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
+        const ResultObject result2 =
+                QtConcurrent::filteredReduced<ResultObject>(pool, sourceObjectList.constBegin(),
+                                                            sourceObjectList.constEnd(), filterObject,
+                                                            reduceObject, initialObject).result();
+        QCOMPARE(result2, expectedResult);
+        QCOMPARE(threadCount(), 1); // ensure the only one thread was working
 
-    const ResultObject result3 = QtConcurrent::blockingFilteredReduced<ResultObject>(
-                pool, sourceObjectList, filterObject, reduceObject, initialObject);
-    QCOMPARE(result3, expectedResult);
-    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
+        const ResultObject result3 = QtConcurrent::blockingFilteredReduced<ResultObject>(
+                    pool, sourceObjectList, filterObject, reduceObject, initialObject);
+        QCOMPARE(result3, expectedResult);
+        QCOMPARE(threadCount(), 1); // ensure the only one thread was working
 
-    const ResultObject result4 = QtConcurrent::blockingFilteredReduced<ResultObject>(
-                pool, sourceObjectList.constBegin(), sourceObjectList.constEnd(),
-                filterObject, reduceObject, initialObject);
-    QCOMPARE(result4, expectedResult);
-    QCOMPARE(threadCount(), 1); // ensure the only one thread was working
+        const ResultObject result4 = QtConcurrent::blockingFilteredReduced<ResultObject>(
+                    pool, sourceObjectList.constBegin(), sourceObjectList.constEnd(),
+                    filterObject, reduceObject, initialObject);
+        QCOMPARE(result4, expectedResult);
+        QCOMPARE(threadCount(), 1); // ensure the only one thread was working
+    }
+
+    // Result type is deduced
+    {
+        const ResultObject result1 = QtConcurrent::filteredReduced(
+                    pool, sourceObjectList, filterObject, reduceObject, initialObject).result();
+        QCOMPARE(result1, expectedResult);
+        QCOMPARE(threadCount(), 1); // ensure the only one thread was working
+
+        const ResultObject result2 =
+                QtConcurrent::filteredReduced(pool, sourceObjectList.constBegin(),
+                                              sourceObjectList.constEnd(), filterObject,
+                                              reduceObject, initialObject).result();
+        QCOMPARE(result2, expectedResult);
+        QCOMPARE(threadCount(), 1); // ensure the only one thread was working
+
+        const ResultObject result3 = QtConcurrent::blockingFilteredReduced(
+                    pool, sourceObjectList, filterObject, reduceObject, initialObject);
+        QCOMPARE(result3, expectedResult);
+        QCOMPARE(threadCount(), 1); // ensure the only one thread was working
+
+        const ResultObject result4 = QtConcurrent::blockingFilteredReduced(
+                    pool, sourceObjectList.constBegin(), sourceObjectList.constEnd(),
+                    filterObject, reduceObject, initialObject);
+        QCOMPARE(result4, expectedResult);
+        QCOMPARE(threadCount(), 1); // ensure the only one thread was working
+    }
 }
 
 void tst_QtConcurrentFilter::filteredReducedInitialValueThreadPool()
@@ -1053,52 +1159,52 @@ void tst_QtConcurrentFilter::filteredReducedInitialValueWithMoveOnlyCallables()
     const auto sum = 16;
     {
         const auto result =
-                QtConcurrent::filteredReduced<int>(intList, KeepEvenIntegersMoveOnly(),
-                                                   IntSumReduceMoveOnly(), initial).result();
+                QtConcurrent::filteredReduced(intList, KeepEvenIntegersMoveOnly(),
+                                              IntSumReduceMoveOnly(), initial).result();
         QCOMPARE(result, sum);
     }
     {
         const auto result =
-                QtConcurrent::filteredReduced<int>(intList.begin(), intList.end(),
-                                                   KeepEvenIntegersMoveOnly(),
-                                                   IntSumReduceMoveOnly(), initial).result();
+                QtConcurrent::filteredReduced(intList.begin(), intList.end(),
+                                              KeepEvenIntegersMoveOnly(),
+                                              IntSumReduceMoveOnly(), initial).result();
         QCOMPARE(result, sum);
     }
     {
-        const auto result = QtConcurrent::blockingFilteredReduced<int>(
-                intList, KeepEvenIntegersMoveOnly(), IntSumReduceMoveOnly(), initial);
+        const auto result = QtConcurrent::blockingFilteredReduced(
+                    intList, KeepEvenIntegersMoveOnly(), IntSumReduceMoveOnly(), initial);
         QCOMPARE(result, sum);
     }
     {
-        const auto result = QtConcurrent::blockingFilteredReduced<int>(
-                intList.begin(), intList.end(), KeepEvenIntegersMoveOnly(), IntSumReduceMoveOnly(),
-                initial);
+        const auto result = QtConcurrent::blockingFilteredReduced(
+                    intList.begin(), intList.end(), KeepEvenIntegersMoveOnly(), IntSumReduceMoveOnly(),
+                    initial);
         QCOMPARE(result, sum);
     }
 
     QThreadPool pool;
     {
         const auto result =
-                QtConcurrent::filteredReduced<int>(&pool, intList, KeepEvenIntegersMoveOnly(),
-                                                   IntSumReduceMoveOnly(), initial).result();
+                QtConcurrent::filteredReduced(&pool, intList, KeepEvenIntegersMoveOnly(),
+                                              IntSumReduceMoveOnly(), initial).result();
         QCOMPARE(result, sum);
     }
     {
         const auto result =
-                QtConcurrent::filteredReduced<int>(
+                QtConcurrent::filteredReduced(
                     &pool, intList.begin(), intList.end(),
                     KeepEvenIntegersMoveOnly(), IntSumReduceMoveOnly(), initial).result();
         QCOMPARE(result, sum);
     }
     {
-        const auto result = QtConcurrent::blockingFilteredReduced<int>(
-                &pool, intList, KeepEvenIntegersMoveOnly(), IntSumReduceMoveOnly(), initial);
+        const auto result = QtConcurrent::blockingFilteredReduced(
+                    &pool, intList, KeepEvenIntegersMoveOnly(), IntSumReduceMoveOnly(), initial);
         QCOMPARE(result, sum);
     }
     {
-        const auto result = QtConcurrent::blockingFilteredReduced<int>(
-                &pool, intList.begin(), intList.end(), KeepEvenIntegersMoveOnly(),
-                IntSumReduceMoveOnly(), initial);
+        const auto result = QtConcurrent::blockingFilteredReduced(
+                    &pool, intList.begin(), intList.end(), KeepEvenIntegersMoveOnly(),
+                    IntSumReduceMoveOnly(), initial);
         QCOMPARE(result, sum);
     }
 }

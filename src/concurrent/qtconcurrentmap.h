@@ -151,8 +151,8 @@ QFuture<ResultType> mappedReduced(Sequence &&sequence,
 }
 
 template <typename Sequence, typename MapFunctor, typename ReduceFunctor,
-          typename ResultType =
-                  typename QtPrivate::ReduceResultType<std::decay_t<ReduceFunctor>>::ResultType>
+          std::enable_if_t<QtPrivate::isInvocable<MapFunctor, Sequence>::value, int> = 0,
+          typename ResultType = typename QtPrivate::ReduceResultTypeHelper<ReduceFunctor>::type>
 QFuture<ResultType> mappedReduced(QThreadPool *pool,
                                   Sequence &&sequence,
                                   MapFunctor &&map,
@@ -166,8 +166,8 @@ QFuture<ResultType> mappedReduced(QThreadPool *pool,
 }
 
 template <typename Sequence, typename MapFunctor, typename ReduceFunctor,
-          typename ResultType =
-                  typename QtPrivate::ReduceResultType<std::decay_t<ReduceFunctor>>::ResultType>
+          std::enable_if_t<QtPrivate::isInvocable<MapFunctor, Sequence>::value, int> = 0,
+          typename ResultType = typename QtPrivate::ReduceResultTypeHelper<ReduceFunctor>::type>
 QFuture<ResultType> mappedReduced(Sequence &&sequence,
                                   MapFunctor &&map,
                                   ReduceFunctor &&reduce,
@@ -183,10 +183,9 @@ QFuture<ResultType> mappedReduced(Sequence &&sequence,
 template <typename Sequence, typename MapFunctor, typename ReduceFunctor, typename ResultType,
           typename InitialValueType>
 #else
-template <typename Sequence, typename MapFunctor, typename ReduceFunctor,
-          typename ResultType =
-                  typename QtPrivate::ReduceResultType<std::decay_t<ReduceFunctor>>::ResultType,
-          typename InitialValueType,
+template <typename Sequence, typename MapFunctor, typename ReduceFunctor, typename InitialValueType,
+          std::enable_if_t<QtPrivate::isInvocable<MapFunctor, Sequence>::value, int> = 0,
+          typename ResultType = typename QtPrivate::ReduceResultTypeHelper<ReduceFunctor>::type,
           std::enable_if_t<std::is_convertible_v<InitialValueType, ResultType>, int> = 0>
 #endif
 QFuture<ResultType> mappedReduced(QThreadPool *pool,
@@ -207,10 +206,9 @@ QFuture<ResultType> mappedReduced(QThreadPool *pool,
 template <typename Sequence, typename MapFunctor, typename ReduceFunctor, typename ResultType,
           typename InitialValueType>
 #else
-template <typename Sequence, typename MapFunctor, typename ReduceFunctor,
-          typename ResultType =
-                  typename QtPrivate::ReduceResultType<std::decay_t<ReduceFunctor>>::ResultType,
-          typename InitialValueType,
+template <typename Sequence, typename MapFunctor, typename ReduceFunctor, typename InitialValueType,
+          std::enable_if_t<QtPrivate::isInvocable<MapFunctor, Sequence>::value, int> = 0,
+          typename ResultType = typename QtPrivate::ReduceResultTypeHelper<ReduceFunctor>::type,
           std::enable_if_t<std::is_convertible_v<InitialValueType, ResultType>, int> = 0>
 #endif
 QFuture<ResultType> mappedReduced(Sequence &&sequence,
@@ -299,8 +297,7 @@ QFuture<ResultType> mappedReduced(Iterator begin,
 }
 
 template <typename Iterator, typename MapFunctor, typename ReduceFunctor,
-          typename ResultType =
-                  typename QtPrivate::ReduceResultType<std::decay_t<ReduceFunctor>>::ResultType>
+          typename ResultType = typename QtPrivate::ReduceResultTypeHelper<ReduceFunctor>::type>
 QFuture<ResultType> mappedReduced(QThreadPool *pool,
                                   Iterator begin,
                                   Iterator end,
@@ -315,7 +312,7 @@ QFuture<ResultType> mappedReduced(QThreadPool *pool,
 }
 
 template <typename Iterator, typename MapFunctor, typename ReduceFunctor,
-          typename ResultType = typename QtPrivate::ReduceResultType<std::decay_t<ReduceFunctor>>::ResultType>
+          typename ResultType = typename QtPrivate::ReduceResultTypeHelper<ReduceFunctor>::type>
 QFuture<ResultType> mappedReduced(Iterator begin,
                                   Iterator end,
                                   MapFunctor &&map,
@@ -333,8 +330,7 @@ template <typename Iterator, typename MapFunctor, typename ReduceFunctor, typena
           typename InitialValueType>
 #else
 template <typename Iterator, typename MapFunctor, typename ReduceFunctor,
-          typename ResultType =
-                  typename QtPrivate::ReduceResultType<std::decay_t<ReduceFunctor>>::ResultType,
+          typename ResultType = typename QtPrivate::ReduceResultTypeHelper<ReduceFunctor>::type,
           typename InitialValueType,
           std::enable_if_t<std::is_convertible_v<InitialValueType, ResultType>, int> = 0>
 #endif
@@ -357,8 +353,8 @@ template <typename Iterator, typename MapFunctor, typename ReduceFunctor, typena
           typename InitialValueType>
 #else
 template<typename Iterator, typename MapFunctor, typename ReduceFunctor,
-         typename ResultType =
-                 typename QtPrivate::ReduceResultType<std::decay_t<ReduceFunctor>>::ResultType,
+         std::enable_if_t<QtPrivate::isIterator<Iterator>::value, int> = 0,
+         typename ResultType = typename QtPrivate::ReduceResultTypeHelper<ReduceFunctor>::type,
          typename InitialValueType,
          std::enable_if_t<std::is_convertible_v<InitialValueType, ResultType>, int> = 0>
 #endif
@@ -528,8 +524,8 @@ ResultType blockingMappedReduced(Sequence &&sequence,
 }
 
 template <typename MapFunctor, typename ReduceFunctor, typename Sequence,
-          typename ResultType =
-                  typename QtPrivate::ReduceResultType<std::decay_t<ReduceFunctor>>::ResultType>
+          std::enable_if_t<QtPrivate::isInvocable<MapFunctor, Sequence>::value, int> = 0,
+          typename ResultType = typename QtPrivate::ReduceResultTypeHelper<ReduceFunctor>::type>
 ResultType blockingMappedReduced(QThreadPool *pool,
                                  Sequence &&sequence,
                                  MapFunctor &&map,
@@ -545,8 +541,8 @@ ResultType blockingMappedReduced(QThreadPool *pool,
 }
 
 template <typename MapFunctor, typename ReduceFunctor, typename Sequence,
-          typename ResultType =
-                  typename QtPrivate::ReduceResultType<std::decay_t<ReduceFunctor>>::ResultType>
+          std::enable_if_t<QtPrivate::isInvocable<MapFunctor, Sequence>::value, int> = 0,
+          typename ResultType = typename QtPrivate::ReduceResultTypeHelper<ReduceFunctor>::type>
 ResultType blockingMappedReduced(Sequence &&sequence,
                                  MapFunctor &&map,
                                  ReduceFunctor &&reduce,
@@ -564,10 +560,9 @@ ResultType blockingMappedReduced(Sequence &&sequence,
 template <typename MapFunctor, typename ReduceFunctor, typename Sequence, typename ResultType,
           typename InitialValueType>
 #else
-template <typename MapFunctor, typename ReduceFunctor, typename Sequence,
-          typename ResultType =
-                  typename QtPrivate::ReduceResultType<std::decay_t<ReduceFunctor>>::ResultType,
-          typename InitialValueType,
+template <typename MapFunctor, typename ReduceFunctor, typename Sequence, typename InitialValueType,
+          std::enable_if_t<QtPrivate::isInvocable<MapFunctor, Sequence>::value, int> = 0,
+          typename ResultType = typename QtPrivate::ReduceResultTypeHelper<ReduceFunctor>::type,
           std::enable_if_t<std::is_convertible_v<InitialValueType, ResultType>, int> = 0>
 #endif
 ResultType blockingMappedReduced(QThreadPool *pool,
@@ -589,10 +584,9 @@ ResultType blockingMappedReduced(QThreadPool *pool,
 template <typename MapFunctor, typename ReduceFunctor, typename Sequence, typename ResultType,
           typename InitialValueType>
 #else
-template<typename MapFunctor, typename ReduceFunctor, typename Sequence,
-         typename ResultType =
-                 typename QtPrivate::ReduceResultType<std::decay_t<ReduceFunctor>>::ResultType,
-         typename InitialValueType,
+template<typename MapFunctor, typename ReduceFunctor, typename Sequence, typename InitialValueType,
+         std::enable_if_t<QtPrivate::isInvocable<MapFunctor, Sequence>::value, int> = 0,
+         typename ResultType = typename QtPrivate::ReduceResultTypeHelper<ReduceFunctor>::type,
          std::enable_if_t<std::is_convertible_v<InitialValueType, ResultType>, int> = 0>
 #endif
 ResultType blockingMappedReduced(Sequence &&sequence,
@@ -687,8 +681,7 @@ ResultType blockingMappedReduced(Iterator begin,
 }
 
 template <typename Iterator, typename MapFunctor, typename ReduceFunctor,
-          typename ResultType =
-                  typename QtPrivate::ReduceResultType<std::decay_t<ReduceFunctor>>::ResultType>
+          typename ResultType = typename QtPrivate::ReduceResultTypeHelper<ReduceFunctor>::type>
 ResultType blockingMappedReduced(QThreadPool *pool,
                                  Iterator begin,
                                  Iterator end,
@@ -704,8 +697,7 @@ ResultType blockingMappedReduced(QThreadPool *pool,
 }
 
 template <typename Iterator, typename MapFunctor, typename ReduceFunctor,
-          typename ResultType =
-                  typename QtPrivate::ReduceResultType<std::decay_t<ReduceFunctor>>::ResultType>
+          typename ResultType = typename QtPrivate::ReduceResultTypeHelper<ReduceFunctor>::type>
 ResultType blockingMappedReduced(Iterator begin,
                                  Iterator end,
                                  MapFunctor &&map,
@@ -724,8 +716,7 @@ template <typename Iterator, typename MapFunctor, typename ReduceFunctor, typena
           typename InitialValueType>
 #else
 template <typename Iterator, typename MapFunctor, typename ReduceFunctor,
-          typename ResultType =
-                  typename QtPrivate::ReduceResultType<std::decay_t<ReduceFunctor>>::ResultType,
+          typename ResultType = typename QtPrivate::ReduceResultTypeHelper<ReduceFunctor>::type,
           typename InitialValueType,
           std::enable_if_t<std::is_convertible_v<InitialValueType, ResultType>, int> = 0>
 #endif
@@ -749,8 +740,8 @@ template <typename Iterator, typename MapFunctor, typename ReduceFunctor, typena
           typename InitialValueType>
 #else
 template <typename Iterator, typename MapFunctor, typename ReduceFunctor,
-          typename ResultType =
-                  typename QtPrivate::ReduceResultType<std::decay_t<ReduceFunctor>>::ResultType,
+          std::enable_if_t<QtPrivate::isIterator<Iterator>::value, int> = 0,
+          typename ResultType = typename QtPrivate::ReduceResultTypeHelper<ReduceFunctor>::type,
           typename InitialValueType,
           std::enable_if_t<std::is_convertible_v<InitialValueType, ResultType>, int> = 0>
 #endif
