@@ -2975,15 +2975,21 @@ void QSslSocketPrivate::setRootCertOnDemandLoadingSupported(bool supported)
 */
 QList<QByteArray> QSslSocketPrivate::unixRootCertDirectories()
 {
-    return QList<QByteArray>() <<  "/etc/ssl/certs/" // (K)ubuntu, OpenSUSE, Mandriva ...
-                               << "/usr/lib/ssl/certs/" // Gentoo, Mandrake
-                               << "/usr/share/ssl/" // Centos, Redhat, SuSE
-                               << "/usr/local/ssl/" // Normal OpenSSL Tarball
-                               << "/var/ssl/certs/" // AIX
-                               << "/usr/local/ssl/certs/" // Solaris
-                               << "/etc/openssl/certs/" // BlackBerry
-                               << "/opt/openssl/certs/" // HP-UX
-                               << "/etc/ssl/"; // OpenBSD
+    const auto ba = [](const auto &cstr) constexpr {
+        return QByteArray::fromRawData(std::begin(cstr), std::size(cstr) - 1);
+    };
+    static const QByteArray dirs[] = {
+        ba("/etc/ssl/certs/"), // (K)ubuntu, OpenSUSE, Mandriva ...
+        ba("/usr/lib/ssl/certs/"), // Gentoo, Mandrake
+        ba("/usr/share/ssl/"), // Centos, Redhat, SuSE
+        ba("/usr/local/ssl/"), // Normal OpenSSL Tarball
+        ba("/var/ssl/certs/"), // AIX
+        ba("/usr/local/ssl/certs/"), // Solaris
+        ba("/etc/openssl/certs/"), // BlackBerry
+        ba("/opt/openssl/certs/"), // HP-UX
+        ba("/etc/ssl/"), // OpenBSD
+    };
+    return QList<QByteArray>::fromReadOnlyData(dirs);
 }
 
 /*!
