@@ -77,9 +77,7 @@ void tst_QResourceEngine::initTestCase()
 
     QDirIterator it(sourcePath, QDirIterator::Subdirectories);
     while (it.hasNext()) {
-        it.next();
-
-        QFileInfo fileInfo = it.fileInfo();
+        QFileInfo fileInfo = it.nextFileInfo();
         if (!fileInfo.isDir()) {
             QString destination(dataPath + QLatin1Char('/') + fileInfo.filePath().mid(sourcePath.length()));
             QFileInfo destinationFileInfo(destination);

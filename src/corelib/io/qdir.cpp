@@ -355,10 +355,8 @@ inline void QDirPrivate::initFileLists(const QDir &dir) const
     if (!fileListsInitialized) {
         QFileInfoList l;
         QDirIterator it(dir);
-        while (it.hasNext()) {
-            it.next();
-            l.append(it.fileInfo());
-        }
+        while (it.hasNext())
+            l.append(it.nextFileInfo());
         sortFileList(sort, l, &files, &fileInfos);
         fileListsInitialized = true;
     }
@@ -1397,10 +1395,8 @@ QStringList QDir::entryList(const QStringList &nameFilters, Filters filters,
 
     QFileInfoList l;
     QDirIterator it(d->dirEntry.filePath(), nameFilters, filters);
-    while (it.hasNext()) {
-        it.next();
-        l.append(it.fileInfo());
-    }
+    while (it.hasNext())
+        l.append(it.nextFileInfo());
     QStringList ret;
     d->sortFileList(sort, l, &ret, nullptr);
     return ret;
@@ -1439,10 +1435,8 @@ QFileInfoList QDir::entryInfoList(const QStringList &nameFilters, Filters filter
 
     QFileInfoList l;
     QDirIterator it(d->dirEntry.filePath(), nameFilters, filters);
-    while (it.hasNext()) {
-        it.next();
-        l.append(it.fileInfo());
-    }
+    while (it.hasNext())
+        l.append(it.nextFileInfo());
     QFileInfoList ret;
     d->sortFileList(sort, l, nullptr, &ret);
     return ret;
@@ -1580,8 +1574,7 @@ bool QDir::removeRecursively()
     // not empty -- we must empty it first
     QDirIterator di(dirPath, QDir::AllEntries | QDir::Hidden | QDir::System | QDir::NoDotAndDotDot);
     while (di.hasNext()) {
-        di.next();
-        const QFileInfo& fi = di.fileInfo();
+        const QFileInfo fi = di.nextFileInfo();
         const QString &filePath = di.filePath();
         bool ok;
         if (fi.isDir() && !fi.isSymLink()) {

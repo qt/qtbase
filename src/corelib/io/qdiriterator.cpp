@@ -60,11 +60,11 @@
 
     \snippet code/src_corelib_io_qdiriterator.cpp 1
 
-    The next() function returns the path to the next directory entry and
-    advances the iterator. You can also call filePath() to get the current
-    file path without advancing the iterator.  The fileName() function returns
-    only the name of the file, similar to how QDir::entryList() works. You can
-    also call fileInfo() to get a QFileInfo for the current entry.
+    The next() and nextFileInfo() functions advance the iterator and return
+    the path or the QFileInfo of the next directory entry. You can also call
+    filePath() or fileInfo() to get the current file path or QFileInfo without
+    first advancing the iterator. The fileName() function returns only the
+    name of the file, similar to how QDir::entryList() works.
 
     Unlike Qt's container iterators, QDirIterator is uni-directional (i.e.,
     you cannot iterate directories in reverse order) and does not allow random
@@ -490,10 +490,12 @@ QDirIterator::~QDirIterator()
     new entry. If hasNext() returns \c false, this function does nothing, and
     returns an empty QString.
 
-    You can call fileName() or filePath() to get the current entry file name
+    You can call fileName() or filePath() to get the current entry's file name
     or path, or fileInfo() to get a QFileInfo for the current entry.
 
-    \sa hasNext(), fileName(), filePath(), fileInfo()
+    Call nextFileInfo() instead of next() if you're interested in the QFileInfo.
+
+    \sa hasNext(), nextFileInfo(), fileName(), filePath(), fileInfo()
 */
 QString QDirIterator::next()
 {
@@ -502,10 +504,30 @@ QString QDirIterator::next()
 }
 
 /*!
+    \since 6.3
+
+    Advances the iterator to the next entry, and returns the file info of this
+    new entry. If hasNext() returns \c false, this function does nothing, and
+    returns an empty QFileInfo.
+
+    You can call fileName() or filePath() to get the current entry's file name
+    or path, or fileInfo() to get a QFileInfo for the current entry.
+
+    Call next() instead of nextFileInfo() when all you need is the filePath().
+
+    \sa hasNext(), fileName(), filePath(), fileInfo()
+*/
+QFileInfo QDirIterator::nextFileInfo()
+{
+    d->advance();
+    return fileInfo();
+}
+
+/*!
     Returns \c true if there is at least one more entry in the directory;
     otherwise, false is returned.
 
-    \sa next(), fileName(), filePath(), fileInfo()
+    \sa next(), nextFileInfo(), fileName(), filePath(), fileInfo()
 */
 bool QDirIterator::hasNext() const
 {

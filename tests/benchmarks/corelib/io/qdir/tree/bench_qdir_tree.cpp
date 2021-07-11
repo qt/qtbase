@@ -211,9 +211,8 @@ private slots:
             int count = 0;
             QDirIterator iter(dirName, QDir::Files, QDirIterator::Subdirectories);
             while(iter.hasNext()) {
-                iter.next();
                 count++;
-                totalsize += iter.fileInfo().size();
+                totalsize += iter.nextFileInfo().size();
             }
             QCOMPARE(count, 1000);
             QCOMPARE(totalsize, expectedSize);

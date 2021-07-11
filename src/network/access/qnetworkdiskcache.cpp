@@ -522,8 +522,8 @@ qint64 QNetworkDiskCache::expire()
     QMultiMap<QDateTime, QString> cacheItems;
     qint64 totalSize = 0;
     while (it.hasNext()) {
-        QString path = it.next();
-        QFileInfo info = it.fileInfo();
+        QFileInfo info = it.nextFileInfo();
+        QString path = info.filePath();
         QString fileName = info.fileName();
         if (fileName.endsWith(CACHE_POSTFIX)) {
             const QDateTime birthTime = info.fileTime(QFile::FileBirthTime);

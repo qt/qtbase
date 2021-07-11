@@ -127,9 +127,7 @@ void tst_QDirIterator::initTestCase()
     QString resourceSourcePath = QStringLiteral(":/testdata");
     QDirIterator it(resourceSourcePath, QDirIterator::Subdirectories);
     while (it.hasNext()) {
-        it.next();
-
-        QFileInfo fileInfo = it.fileInfo();
+        QFileInfo fileInfo = it.nextFileInfo();
 
         if (!fileInfo.isDir()) {
             QString destination = testdata_dir + QLatin1Char('/') + fileInfo.filePath().mid(resourceSourcePath.length());
@@ -467,7 +465,7 @@ void tst_QDirIterator::stopLinkLoop()
     QStringList list;
     int max = 200;
     while (--max && it.hasNext())
-        it.next();
+        it.nextFileInfo();
     QVERIFY(max);
 
     // The goal of this test is only to ensure that the test above don't malfunction
@@ -508,10 +506,8 @@ void tst_QDirIterator::engineWithNoIterator()
 void tst_QDirIterator::absoluteFilePathsFromRelativeIteratorPath()
 {
     QDirIterator it("entrylist/", QDir::NoDotAndDotDot);
-    while (it.hasNext()) {
-        it.next();
-        QVERIFY(QFileInfo(it.filePath()).absoluteFilePath().contains("entrylist"));
-    }
+    while (it.hasNext())
+        QVERIFY(it.nextFileInfo().absoluteFilePath().contains("entrylist"));
 }
 
 void tst_QDirIterator::recurseWithFilters() const
@@ -528,11 +524,9 @@ void tst_QDirIterator::recurseWithFilters() const
     expectedEntries.insert(QString::fromLatin1("recursiveDirs/textFileA.txt"));
 
     QVERIFY(it.hasNext());
-    it.next();
-    actualEntries.insert(it.fileInfo().filePath());
+    actualEntries.insert(it.next());
     QVERIFY(it.hasNext());
-    it.next();
-    actualEntries.insert(it.fileInfo().filePath());
+    actualEntries.insert(it.next());
     QCOMPARE(actualEntries, expectedEntries);
 
     QVERIFY(!it.hasNext());
@@ -555,7 +549,7 @@ void tst_QDirIterator::longPath()
     int m = 0;
     while (it.hasNext()) {
         ++m;
-        it.next();
+        it.nextFileInfo();
     }
 
     QCOMPARE(n, m);
@@ -622,8 +616,7 @@ void tst_QDirIterator::hiddenDirs_hiddenFiles()
         QDirIterator di("hiddenDirs_hiddenFiles", QDir::Files | QDir::Hidden | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
         while (di.hasNext()) {
             ++matches;
-            QString filename = di.next();
-            if (QFileInfo(filename).isDir())
+            if (di.nextFileInfo().isDir())
                 ++failures;    // search was only supposed to find files
         }
         QCOMPARE(matches, 6);
@@ -636,8 +629,7 @@ void tst_QDirIterator::hiddenDirs_hiddenFiles()
         QDirIterator di("hiddenDirs_hiddenFiles", QDir::Dirs | QDir::Hidden | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
         while (di.hasNext()) {
             ++matches;
-            QString filename = di.next();
-            if (!QFileInfo(filename).isDir())
+            if (!di.nextFileInfo().isDir())
                 ++failures;    // search was only supposed to find files
         }
         QCOMPARE(matches, 6);

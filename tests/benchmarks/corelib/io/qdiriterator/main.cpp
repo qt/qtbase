@@ -189,13 +189,13 @@ void tst_qdiriterator::diriterator()
             QDirIterator::Subdirectories);
 
         while (dir.hasNext()) {
-            dir.next();
+            const auto fi = dir.nextFileInfo();
             //printf("%s\n", qPrintable(dir.fileName()));
             0 && printf("%d %s\n",
-                dir.fileInfo().isDir(),
-                //qPrintable(dir.fileInfo().absoluteFilePath()),
+                fi.isDir(),
+                //qPrintable(fi.absoluteFilePath()),
                 //qPrintable(dir.path()),
-                qPrintable(dir.filePath()));
+                qPrintable(fi.filePath()));
             ++c;
         }
         count = c;

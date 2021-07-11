@@ -69,6 +69,7 @@ public:
     ~QDirIterator();
 
     QString next();
+    QFileInfo nextFileInfo();
     bool hasNext() const;
 
     QString fileName() const;

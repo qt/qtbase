@@ -401,8 +401,7 @@ void QFileInfoGatherer::getFileInfos(const QString &path, const QStringList &fil
     if (files.isEmpty()) {
         QDirIterator dirIt(path, QDir::AllEntries | QDir::System | QDir::Hidden);
         while (!abort.loadRelaxed() && dirIt.hasNext()) {
-            dirIt.next();
-            fileInfo = dirIt.fileInfo();
+            fileInfo = dirIt.nextFileInfo();
             fileInfo.stat();
             allFiles.append(fileInfo.fileName());
             fetch(fileInfo, base, firstTime, updatedFiles, path);

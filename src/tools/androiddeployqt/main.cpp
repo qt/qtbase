@@ -1080,8 +1080,7 @@ bool readInputFile(Options *options)
                 if (QFileInfo(path).isDir()) {
                     QDirIterator iterator(path, QDirIterator::Subdirectories);
                     while (iterator.hasNext()) {
-                        iterator.next();
-                        if (iterator.fileInfo().isFile()) {
+                        if (iterator.nextFileInfo().isFile()) {
                             QString subPath = iterator.filePath();
                             auto arch = fileArchitecture(*options, subPath);
                             if (!arch.isEmpty()) {

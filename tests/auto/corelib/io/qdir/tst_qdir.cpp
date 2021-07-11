@@ -242,9 +242,7 @@ tst_QDir::tst_QDir()
     QString resourceSourcePath = QStringLiteral(":/android_testdata/");
     QDirIterator it(resourceSourcePath, QDirIterator::Subdirectories);
     while (it.hasNext()) {
-        it.next();
-
-        QFileInfo fileInfo = it.fileInfo();
+        QFileInfo fileInfo = it.nextFileInfo();
 
         if (!fileInfo.isDir()) {
             QString destination = m_dataPath + QLatin1Char('/') + fileInfo.filePath().mid(resourceSourcePath.length());

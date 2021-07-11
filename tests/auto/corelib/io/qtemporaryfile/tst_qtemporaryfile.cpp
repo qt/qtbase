@@ -111,9 +111,7 @@ void tst_QTemporaryFile::initTestCase()
     QString sourceDir(":/android_testdata/");
     QDirIterator it(sourceDir, QDirIterator::Subdirectories);
     while (it.hasNext()) {
-        it.next();
-
-        QFileInfo sourceFileInfo = it.fileInfo();
+        QFileInfo sourceFileInfo = it.nextFileInfo();
         if (!sourceFileInfo.isDir()) {
             QFileInfo destinationFileInfo(QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + QLatin1Char('/') + sourceFileInfo.filePath().mid(sourceDir.length()));
 

@@ -413,9 +413,8 @@ QList<QSslCertificate> systemCaCertificates()
             currentDir.setPath(QLatin1String(directory));
             QDirIterator it(currentDir);
             while (it.hasNext()) {
-                it.next();
                 // use canonical path here to not load the same certificate twice if symlinked
-                certFiles.insert(it.fileInfo().canonicalFilePath());
+                certFiles.insert(it.nextFileInfo().canonicalFilePath());
             }
         }
         for (const QString& file : qAsConst(certFiles))

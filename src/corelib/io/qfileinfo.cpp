@@ -1694,10 +1694,8 @@ QDebug operator<<(QDebug dbg, const QFileInfo &fi)
 
     QDirIterator it(dir);
     while (it.hasNext()) {
-        it.next();
-
         // Extract the QFileInfo from the iterator directly:
-        QFileInfo fi = it.fileInfo();
+        QFileInfo fi = it.nextFileInfo();
 
         ~~~
     }

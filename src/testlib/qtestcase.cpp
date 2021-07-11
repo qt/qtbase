@@ -2158,9 +2158,7 @@ QSharedPointer<QTemporaryDir> QTest::qExtractTestData(const QString &dirName)
       }
 
       while (it.hasNext()) {
-          it.next();
-
-          QFileInfo fileInfo = it.fileInfo();
+          QFileInfo fileInfo = it.nextFileInfo();
 
           if (!fileInfo.isDir()) {
               const QString destination = dataPath + QLatin1Char('/') + QStringView{fileInfo.filePath()}.mid(resourcePath.length());

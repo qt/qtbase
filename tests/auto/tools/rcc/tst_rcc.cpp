@@ -274,8 +274,7 @@ void tst_rcc::binary_data()
     QDirIterator iter(dataPath, QStringList() << QLatin1String("*.qrc"));
     while (iter.hasNext())
     {
-        iter.next();
-        QFileInfo qrcFileInfo = iter.fileInfo();
+        QFileInfo qrcFileInfo = iter.nextFileInfo();
         QString absoluteBaseName = QFileInfo(qrcFileInfo.absolutePath(), qrcFileInfo.baseName()).absoluteFilePath();
         QString rccFileName = absoluteBaseName + QLatin1String(".rcc");
 

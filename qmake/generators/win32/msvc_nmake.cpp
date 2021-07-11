@@ -338,8 +338,7 @@ void NmakeMakefileGenerator::writeImplicitRulesPart(QTextStream &t)
         for (const QString &sourceDir : qAsConst(fixifiedSourceDirs)) {
             QDirIterator dit(sourceDir, sourceFilesFilter, QDir::Files | QDir::NoDotAndDotDot);
             while (dit.hasNext()) {
-                dit.next();
-                const QFileInfo fi = dit.fileInfo();
+                const QFileInfo fi = dit.nextFileInfo();
                 QString &duplicate = fileNames[fi.completeBaseName()];
                 if (duplicate.isNull()) {
                     duplicate = fi.filePath();

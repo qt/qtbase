@@ -341,8 +341,7 @@ static int installFileOrDirectory(const QString &source, const QString &target,
 
         QDirIterator it(source, QDir::AllEntries | QDir::NoDotAndDotDot | QDir::Hidden);
         while (it.hasNext()) {
-            it.next();
-            const QFileInfo &entry = it.fileInfo();
+            const QFileInfo entry = it.nextFileInfo();
             const QString &entryTarget = target + QDir::separator() + entry.fileName();
 
             const int recursionResult = installFileOrDirectory(entry.filePath(), entryTarget, true);
