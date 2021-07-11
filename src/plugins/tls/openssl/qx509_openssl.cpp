@@ -633,7 +633,7 @@ QList<QSslError> X509CertificateOpenSSL::verify(const QList<QSslCertificate> &ca
         // certificate will be searched. Make sure to not have expired
         // certificates mixed with valid ones.
         //
-        // See also: QSslContext::fromConfiguration()
+        // See also: QSslContext::sharedFromConfiguration()
         if (caCertificate.expiryDate() >= now) {
             q_X509_STORE_add_cert(certStore, reinterpret_cast<X509 *>(caCertificate.handle()));
         }

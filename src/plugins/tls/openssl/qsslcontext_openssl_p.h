@@ -69,8 +69,6 @@ public:
 
     ~QSslContext();
 
-    static QSslContext* fromConfiguration(QSslSocket::SslMode mode, const QSslConfiguration &configuration,
-                                          bool allowRootCertOnDemandLoading);
     static QSharedPointer<QSslContext> sharedFromConfiguration(QSslSocket::SslMode mode, const QSslConfiguration &configuration,
                                                                bool allowRootCertOnDemandLoading);
     static QSharedPointer<QSslContext> sharedFromPrivateConfiguration(QSslSocket::SslMode mode, QSslConfigurationPrivate *privConfiguration,

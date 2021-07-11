@@ -172,13 +172,6 @@ QSslContext::~QSslContext()
         q_SSL_SESSION_free(session);
 }
 
-QSslContext* QSslContext::fromConfiguration(QSslSocket::SslMode mode, const QSslConfiguration &configuration, bool allowRootCertOnDemandLoading)
-{
-    QSslContext *sslContext = new QSslContext();
-    initSslContext(sslContext, mode, configuration, allowRootCertOnDemandLoading);
-    return sslContext;
-}
-
 QSharedPointer<QSslContext> QSslContext::sharedFromConfiguration(QSslSocket::SslMode mode, const QSslConfiguration &configuration, bool allowRootCertOnDemandLoading)
 {
     QSharedPointer<QSslContext> sslContext = QSharedPointer<QSslContext>::create();
