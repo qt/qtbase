@@ -277,7 +277,7 @@ void QAbstractItemViewPrivate::_q_scrollerStateChanged()
             \li Changes the current item and selects it. The previously
                selected item(s) is not deselected.
         \row
-            \li Ctr+Space
+            \li Ctrl+Space
             \li Toggles selection of the current item.
         \row
             \li Tab/Backtab
