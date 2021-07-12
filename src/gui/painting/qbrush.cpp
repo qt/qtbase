@@ -1664,9 +1664,10 @@ void QGradient::setStops(const QGradientStops &stops)
 QGradientStops QGradient::stops() const
 {
     if (m_stops.isEmpty()) {
-        QGradientStops tmp;
-        tmp << QGradientStop(0, Qt::black) << QGradientStop(1, Qt::white);
-        return tmp;
+        static constexpr QGradientStop blackAndWhite[] = {
+            {0, QColorConstants::Black}, {1, QColorConstants::White},
+        };
+        return QGradientStops::fromReadOnlyData(blackAndWhite);
     }
     return m_stops;
 }
