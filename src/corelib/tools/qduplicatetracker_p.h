@@ -106,7 +106,7 @@ class QDuplicateTracker {
     Q_DISABLE_COPY_MOVE(QDuplicateTracker);
 public:
     QDuplicateTracker() = default;
-    void reserve(int n) { set.reserve(n); }
+    void reserve(qsizetype n) { set.reserve(n); }
     [[nodiscard]] bool hasSeen(const T &s)
     {
         return !set.insert(s).second;
