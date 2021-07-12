@@ -144,6 +144,9 @@ private slots:
     void verifyListenWithDescriptor_data();
 
     void serverBindingsAndProperties();
+
+protected slots:
+    void socketClosedSlot();
 };
 
 tst_QLocalSocket::tst_QLocalSocket()
@@ -1543,11 +1546,23 @@ void tst_QLocalSocket::bytesWrittenSignal()
     QVERIFY(writeThread.wait(2000));
 }
 
+void tst_QLocalSocket::socketClosedSlot()
+{
+    QLocalSocket *socket = qobject_cast<QLocalSocket *>(sender());
+
+    QCOMPARE(socket->state(), QLocalSocket::UnconnectedState);
+}
+
 void tst_QLocalSocket::syncDisconnectNotify()
 {
     QLocalServer server;
     QVERIFY(server.listen("syncDisconnectNotify"));
     QLocalSocket client;
+    connect(&client, &QLocalSocket::disconnected,
+            this, &tst_QLocalSocket::socketClosedSlot);
+    connect(&client, &QIODevice::readChannelFinished,
+            this, &tst_QLocalSocket::socketClosedSlot);
+
     client.connectToServer("syncDisconnectNotify");
     QVERIFY(server.waitForNewConnection());
     QLocalSocket* serverSocket = server.nextPendingConnection();
@@ -1563,12 +1578,19 @@ void tst_QLocalSocket::asyncDisconnectNotify()
     QVERIFY(server.listen("asyncDisconnectNotify"));
     QLocalSocket client;
     QSignalSpy disconnectedSpy(&client, SIGNAL(disconnected()));
+    QSignalSpy readChannelFinishedSpy(&client, SIGNAL(readChannelFinished()));
+    connect(&client, &QLocalSocket::disconnected,
+            this, &tst_QLocalSocket::socketClosedSlot);
+    connect(&client, &QIODevice::readChannelFinished,
+            this, &tst_QLocalSocket::socketClosedSlot);
+
     client.connectToServer("asyncDisconnectNotify");
     QVERIFY(server.waitForNewConnection());
     QLocalSocket* serverSocket = server.nextPendingConnection();
     QVERIFY(serverSocket);
     delete serverSocket;
     QTRY_VERIFY(!disconnectedSpy.isEmpty());
+    QCOMPARE(readChannelFinishedSpy.count(), 1);
 }
 
 void tst_QLocalSocket::verifySocketOptions_data()

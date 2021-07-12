@@ -336,22 +336,23 @@ void QLocalSocketPrivate::_q_pipeClosed()
     if (state == QLocalSocket::UnconnectedState)
         return;
 
-    emit q->readChannelFinished();
     if (state != QLocalSocket::ClosingState) {
         state = QLocalSocket::ClosingState;
         emit q->stateChanged(state);
         if (state != QLocalSocket::ClosingState)
             return;
     }
-    state = QLocalSocket::UnconnectedState;
-    emit q->stateChanged(state);
-    emit q->disconnected();
 
     pipeReader->stop();
     delete pipeWriter;
     pipeWriter = nullptr;
     destroyPipeHandles();
     handle = INVALID_HANDLE_VALUE;
+
+    state = QLocalSocket::UnconnectedState;
+    emit q->stateChanged(state);
+    emit q->readChannelFinished();
+    emit q->disconnected();
 }
 
 qint64 QLocalSocket::bytesAvailable() const
