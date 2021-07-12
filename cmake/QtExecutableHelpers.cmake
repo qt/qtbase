@@ -167,7 +167,14 @@ function(qt_internal_add_executable name)
                        ${install_targets_default_args})
         endforeach()
 
-        qt_enable_separate_debug_info(${name} "${arg_INSTALL_DIRECTORY}")
+        if(NOT exclude_from_all AND arg_QT_APP AND QT_FEATURE_debug_and_release)
+            set(separate_debug_info_executable_arg "QT_EXECUTABLE")
+        else()
+            unset(separate_debug_info_executable_arg)
+        endif()
+        qt_enable_separate_debug_info(${name} "${arg_INSTALL_DIRECTORY}"
+                                      ${separate_debug_info_executable_arg}
+                                      ADDITIONAL_INSTALL_ARGS ${additional_install_args})
         qt_internal_install_pdb_files(${name} "${arg_INSTALL_DIRECTORY}")
     endif()
 

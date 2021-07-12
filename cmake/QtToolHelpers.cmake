@@ -257,7 +257,7 @@ function(qt_internal_add_tool target_name)
 
     endif()
 
-    qt_enable_separate_debug_info(${target_name} "${install_dir}")
+    qt_enable_separate_debug_info(${target_name} "${install_dir}" QT_EXECUTABLE)
     qt_internal_install_pdb_files(${target_name} "${install_dir}")
 endfunction()
 
