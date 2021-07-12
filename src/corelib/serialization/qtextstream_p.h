@@ -70,8 +70,13 @@ public:
     inline void setupDevice(QTextStream *stream, QIODevice *device)
     {
         disconnect();
-        if (device)
-            connect(device, SIGNAL(aboutToClose()), this, SLOT(flushStream()));
+        if (device) {
+            // Force direct connection here so that QTextStream can be used
+            // from multiple threads when the application code is handling
+            // synchronization (see also QTBUG-12055).
+            connect(device, SIGNAL(aboutToClose()), this, SLOT(flushStream()),
+                    Qt::DirectConnection);
+        }
         this->stream = stream;
     }
 
