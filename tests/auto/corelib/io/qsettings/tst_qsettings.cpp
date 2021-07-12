@@ -742,6 +742,10 @@ void tst_QSettings::embeddedZeroByte_data()
 
     QTest::newRow("@bytearray\\0") << QVariant(bytes);
     QTest::newRow("@string\\0") << QVariant(QString::fromLatin1(bytes.data(), bytes.size()));
+
+    bytes = QByteArray("@\xdd\x7d", 3);
+    QTest::newRow("@-prefixed data") << QVariant(bytes);
+    QTest::newRow("@-prefixed data as string") << QVariant(QString::fromLatin1(bytes.data(), bytes.size()));
 }
 
 void tst_QSettings::embeddedZeroByte()
