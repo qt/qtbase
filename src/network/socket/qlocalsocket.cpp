@@ -208,7 +208,14 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \fn void QLocalSocket::close()
-    \reimp
+
+    Closes the I/O device for the socket and calls disconnectFromServer()
+    to close the socket's connection.
+
+    See QIODevice::close() for a description of the actions that occur when an I/O
+    device is closed.
+
+    \sa abort()
 */
 
 /*!

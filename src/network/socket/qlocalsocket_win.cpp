@@ -377,21 +377,11 @@ bool QLocalSocket::canReadLine() const
 void QLocalSocket::close()
 {
     Q_D(QLocalSocket);
-    if (openMode() == NotOpen)
-        return;
 
     QIODevice::close();
     d->serverName = QString();
     d->fullServerName = QString();
-
-    if (state() != UnconnectedState) {
-        if (bytesToWrite() > 0) {
-            disconnectFromServer();
-            return;
-        }
-
-        d->_q_pipeClosed();
-    }
+    disconnectFromServer();
 }
 
 bool QLocalSocket::flush()
@@ -479,10 +469,6 @@ bool QLocalSocket::waitForDisconnected(int msecs)
     Q_D(QLocalSocket);
     if (state() == UnconnectedState) {
         qWarning("QLocalSocket::waitForDisconnected() is not allowed in UnconnectedState");
-        return false;
-    }
-    if (!openMode().testFlag(QIODevice::ReadOnly)) {
-        qWarning("QLocalSocket::waitForDisconnected isn't supported for write only pipes.");
         return false;
     }
 

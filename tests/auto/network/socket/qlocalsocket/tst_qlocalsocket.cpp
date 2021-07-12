@@ -1498,17 +1498,16 @@ void tst_QLocalSocket::writeToClientAndDisconnect()
     QVERIFY(server.waitForNewConnection(200));
     QLocalSocket* clientSocket = server.nextPendingConnection();
     QVERIFY(clientSocket);
+    server.close();
 
     char buffer[100];
     memset(buffer, 0, sizeof(buffer));
     for (int i = 0; i < chunks; ++i)
         QCOMPARE(clientSocket->write(buffer, sizeof(buffer)), qint64(sizeof(buffer)));
-    while (clientSocket->bytesToWrite())
-        QVERIFY(clientSocket->waitForBytesWritten());
     clientSocket->close();
-    server.close();
+    QVERIFY(clientSocket->waitForDisconnected());
 
-    client.waitForDisconnected();
+    QVERIFY(client.waitForDisconnected());
     QCOMPARE(readChannelFinishedSpy.count(), 1);
     const QByteArray received = client.readAll();
     QCOMPARE(received.size(), qint64(sizeof(buffer) * chunks));
