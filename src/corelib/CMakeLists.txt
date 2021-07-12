@@ -317,8 +317,7 @@ set(core_metatype_args MANUAL_MOC_JSON_FILES ${core_qobject_metatypes_json_list}
 
 set(metatypes_install_dir ${INSTALL_LIBDIR}/metatypes)
 if (NOT QT_WILL_INSTALL)
-    list(APPEND core_metatype_args
-         COPY_OVER_INSTALL INSTALL_DIR "${QT_BUILD_DIR}/${metatypes_install_dir}")
+    list(APPEND core_metatype_args __QT_INTERNAL_NO_INSTALL)
 else()
     list(APPEND core_metatype_args INSTALL_DIR "${metatypes_install_dir}")
 endif()
