@@ -73,7 +73,13 @@ class QDuplicateTracker {
         }
     };
 
-    char buffer[Prealloc * sizeof(T)];
+    struct node_guesstimate { void *next; size_t hash; T value; };
+    static constexpr size_t bufferSize(size_t N) {
+        return N * sizeof(void*) // bucket list
+                + N * sizeof(node_guesstimate); // nodes
+    }
+
+    char buffer[bufferSize(Prealloc)];
     std::pmr::monotonic_buffer_resource res{buffer, sizeof buffer};
     std::pmr::unordered_set<T, QHasher<T>> set{&res};
 #else
