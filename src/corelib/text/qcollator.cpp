@@ -72,12 +72,16 @@ QT_BEGIN_NAMESPACE
 /*!
   \since 5.13
 
-  Constructs a QCollator using the system's default collation locale.
+  Constructs a QCollator using the default locale's collation locale.
 
-  \sa setLocale(), QLocale::collation()
+  The system locale, when used as default locale, may have a collation locale
+  other than itself (e.g. on Unix, if LC_COLLATE is set differently to LANG in
+  the environment). All other locales are their own collation locales.
+
+  \sa setLocale(), QLocale::collation(), QLocale::setDefault()
 */
 QCollator::QCollator()
-    : d(new QCollatorPrivate(QLocale::system().collation()))
+    : d(new QCollatorPrivate(QLocale().collation()))
 {
     d->init();
 }
