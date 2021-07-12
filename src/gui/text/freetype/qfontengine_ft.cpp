@@ -780,7 +780,7 @@ bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format,
        TrueType fonts with embedded bitmaps may have a bitmap font specific
        ascent/descent in the EBLC table. There is no direct public API
        to extract those values. The only way we've found is to trick freetype
-       into thinking that it's not a scalable font in FT_SelectSize so that
+       into thinking that it's not a scalable font in FT_Select_Size so that
        the metrics are retrieved from the bitmap strikes.
     */
     if (FT_IS_SCALABLE(face)) {
