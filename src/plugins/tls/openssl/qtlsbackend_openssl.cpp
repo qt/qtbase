@@ -223,11 +223,11 @@ void QTlsBackendOpenSSL::ensureCiphersAndCertsLoaded() const
     QSslSocketPrivate::setRootCertOnDemandLoadingSupported(true);
 #elif defined(Q_OS_UNIX) && !defined(Q_OS_DARWIN)
     // check whether we can enable on-demand root-cert loading (i.e. check whether the sym links are there)
-    QList<QByteArray> dirs = QSslSocketPrivate::unixRootCertDirectories();
+    const QList<QByteArray> dirs = QSslSocketPrivate::unixRootCertDirectories();
     QStringList symLinkFilter;
     symLinkFilter << QLatin1String("[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f].[0-9]");
-    for (int a = 0; a < dirs.count(); ++a) {
-        QDirIterator iterator(QLatin1String(dirs.at(a)), symLinkFilter, QDir::Files);
+    for (const auto &dir : dirs) {
+        QDirIterator iterator(QLatin1String(dir), symLinkFilter, QDir::Files);
         if (iterator.hasNext()) {
             QSslSocketPrivate::setRootCertOnDemandLoadingSupported(true);
             break;
@@ -402,17 +402,18 @@ QList<QSslCertificate> systemCaCertificates()
     QSet<QString> certFiles;
     QDir currentDir;
     QStringList nameFilters;
-    QList<QByteArray> directories;
     QSsl::EncodingFormat platformEncodingFormat;
-# ifndef Q_OS_ANDROID
-    directories = QSslSocketPrivate::unixRootCertDirectories();
+# ifdef Q_OS_ANDROID
+    const QList<QByteArray> directories;
+# else
+    const QList<QByteArray> directories = QSslSocketPrivate::unixRootCertDirectories();
     nameFilters << QLatin1String("*.pem") << QLatin1String("*.crt");
     platformEncodingFormat = QSsl::Pem;
 # endif //Q_OS_ANDROID
     {
         currentDir.setNameFilters(nameFilters);
-        for (int a = 0; a < directories.count(); a++) {
-            currentDir.setPath(QLatin1String(directories.at(a)));
+        for (const auto &directory : directories) {
+            currentDir.setPath(QLatin1String(directory));
             QDirIterator it(currentDir);
             while (it.hasNext()) {
                 it.next();
