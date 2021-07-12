@@ -512,7 +512,6 @@ const SSL_CIPHER *q_SSL_get_current_cipher(SSL *a);
 int q_SSL_version(const SSL *a);
 int q_SSL_get_error(SSL *a, int b);
 STACK_OF(X509) *q_SSL_get_peer_cert_chain(SSL *a);
-X509 *q_SSL_get_peer_certificate(SSL *a);
 long q_SSL_get_verify_result(const SSL *a);
 SSL *q_SSL_new(SSL_CTX *a);
 SSL_CTX *q_SSL_get_SSL_CTX(SSL *a);
@@ -750,6 +749,14 @@ const char *q_SSL_alert_desc_string_long(int value);
 
 int q_SSL_CTX_get_security_level(const SSL_CTX *ctx);
 void q_SSL_CTX_set_security_level(SSL_CTX *ctx, int level);
+
+// Here we have the ones that make difference between OpenSSL pre/post v3:
+#if defined(OPENSSL_VERSION_MAJOR) && OPENSSL_VERSION_MAJOR >= 3
+X509 *q_SSL_get1_peer_certificate(SSL *a);
+#define q_SSL_get_peer_certificate q_SSL_get1_peer_certificate
+#else
+X509 *q_SSL_get_peer_certificate(SSL *a);
+#endif // OPENSSL_VERSION_MAJOR >= 3
 
 QT_END_NAMESPACE
 

@@ -374,7 +374,13 @@ DEFINEFUNC(const SSL_CIPHER *, SSL_get_current_cipher, SSL *a, a, return nullptr
 DEFINEFUNC(int, SSL_version, const SSL *a, a, return 0, return)
 DEFINEFUNC2(int, SSL_get_error, SSL *a, a, int b, b, return -1, return)
 DEFINEFUNC(STACK_OF(X509) *, SSL_get_peer_cert_chain, SSL *a, a, return nullptr, return)
+
+#if defined(OPENSSL_VERSION_MAJOR) && OPENSSL_VERSION_MAJOR >= 3
+DEFINEFUNC(X509 *, SSL_get1_peer_certificate, SSL *a, a, return nullptr, return)
+#else
 DEFINEFUNC(X509 *, SSL_get_peer_certificate, SSL *a, a, return nullptr, return)
+#endif // OPENSSL_VERSION_MAJOR >= 3
+
 DEFINEFUNC(long, SSL_get_verify_result, const SSL *a, a, return -1, return)
 DEFINEFUNC(SSL *, SSL_new, SSL_CTX *a, a, return nullptr, return)
 DEFINEFUNC(SSL_CTX *, SSL_get_SSL_CTX, SSL *a, a, return nullptr, return)
@@ -1085,7 +1091,13 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(SSL_version)
     RESOLVEFUNC(SSL_get_error)
     RESOLVEFUNC(SSL_get_peer_cert_chain)
+
+#if defined(OPENSSL_VERSION_MAJOR) && OPENSSL_VERSION_MAJOR >= 3
+    RESOLVEFUNC(SSL_get1_peer_certificate)
+#else
     RESOLVEFUNC(SSL_get_peer_certificate)
+#endif // OPENSSL_VERSION_MAJOR >= 3
+
     RESOLVEFUNC(SSL_get_verify_result)
     RESOLVEFUNC(SSL_new)
     RESOLVEFUNC(SSL_get_SSL_CTX)
