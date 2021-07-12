@@ -83,9 +83,25 @@ class QDuplicateTracker {
     std::pmr::monotonic_buffer_resource res{buffer, sizeof buffer};
     std::pmr::unordered_set<T, QHasher<T>> set{Prealloc, &res};
 #else
-    static QSet<T> makeQSet() { QSet<T> r; r.reserve(Prealloc); return r; }
-    QSet<T> set = makeQSet();
-    int setSize = 0;
+    class Set : public QSet<T> {
+        qsizetype setSize = 0;
+    public:
+        explicit Set(qsizetype n) : QSet<T>{}
+        { this->reserve(n); }
+
+        auto insert(const T &e) {
+            auto it = QSet<T>::insert(e);
+            const auto n = this->size();
+            return std::pair{it, qExchange(setSize, n) != n};
+        }
+
+        auto insert(T &&e) {
+            auto it = QSet<T>::insert(std::move(e));
+            const auto n = this->size();
+            return std::pair{it, qExchange(setSize, n) != n};
+        }
+    };
+    Set set{Prealloc};
 #endif
     Q_DISABLE_COPY_MOVE(QDuplicateTracker);
 public:
@@ -93,27 +109,11 @@ public:
     void reserve(int n) { set.reserve(n); }
     [[nodiscard]] bool hasSeen(const T &s)
     {
-        bool inserted;
-#ifdef __cpp_lib_memory_resource
-        inserted = set.insert(s).second;
-#else
-        set.insert(s);
-        const int n = set.size();
-        inserted = qExchange(setSize, n) != n;
-#endif
-        return !inserted;
+        return !set.insert(s).second;
     }
     [[nodiscard]] bool hasSeen(T &&s)
     {
-        bool inserted;
-#ifdef __cpp_lib_memory_resource
-        inserted = set.insert(std::move(s)).second;
-#else
-        set.insert(std::move(s));
-        const int n = set.size();
-        inserted = qExchange(setSize, n) != n;
-#endif
-        return !inserted;
+        return !set.insert(std::move(s)).second;
     }
 
     template <typename C>
