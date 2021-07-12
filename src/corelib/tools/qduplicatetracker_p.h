@@ -72,9 +72,10 @@ class QDuplicateTracker {
 
     char buffer[bufferSize(Prealloc)];
     std::pmr::monotonic_buffer_resource res{buffer, sizeof buffer};
-    std::pmr::unordered_set<T> set{&res};
+    std::pmr::unordered_set<T> set{Prealloc, &res};
 #else
-    QSet<T> set;
+    static QSet<T> makeQSet() { QSet<T> r; r.reserve(Prealloc); return r; }
+    QSet<T> set = makeQSet();
     int setSize = 0;
 #endif
     Q_DISABLE_COPY_MOVE(QDuplicateTracker);
