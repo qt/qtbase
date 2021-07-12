@@ -6,6 +6,11 @@ endif()
 
 # Enable separate debug information for the given target
 function(qt_enable_separate_debug_info target installDestination)
+    set(flags QT_EXECUTABLE)
+    set(options)
+    set(multiopts ADDITIONAL_INSTALL_ARGS)
+    cmake_parse_arguments(arg "${flags}" "${options}" "${multiopts}" ${ARGN})
+
     if (NOT QT_FEATURE_separate_debug_info)
         return()
     endif()
@@ -66,7 +71,27 @@ function(qt_enable_separate_debug_info target installDestination)
             COMMAND ${CMAKE_COMMAND} -E copy "Info.dSYM.plist" "${debug_info_contents_dir}/Info.plist"
             )
         set(debug_info_target "${debug_info_target_dir}/$<TARGET_FILE_BASE_NAME:${target}>")
-        qt_install(DIRECTORY ${debug_info_bundle_dir} DESTINATION ${installDestination})
+
+        if(arg_QT_EXECUTABLE AND QT_FEATURE_debug_and_release)
+            qt_get_cmake_configurations(cmake_configs)
+            foreach(cmake_config ${cmake_configs})
+                # Make installation optional for targets that are not built by default in this config
+                if(NOT (cmake_config STREQUAL QT_MULTI_CONFIG_FIRST_CONFIG))
+                    set(install_optional_arg OPTIONAL)
+                  else()
+                    unset(install_optional_arg)
+                endif()
+                qt_install(DIRECTORY ${debug_info_bundle_dir}
+                           ${arg_ADDITIONAL_INSTALL_ARGS}
+                           ${install_optional_arg}
+                           CONFIGURATIONS ${cmake_config}
+                           DESTINATION ${installDestination})
+            endforeach()
+        else()
+            qt_install(DIRECTORY ${debug_info_bundle_dir}
+                       ${arg_ADDITIONAL_INSTALL_ARGS}
+                       DESTINATION ${installDestination})
+        endif()
     else()
         set(debug_info_target "$<TARGET_FILE_DIR:${target}>/$<TARGET_FILE_BASE_NAME:${target}>.${debug_info_suffix}")
         qt_install(FILES ${debug_info_target} DESTINATION ${installDestination})
