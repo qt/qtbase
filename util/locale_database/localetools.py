@@ -37,9 +37,8 @@ Classes:
   SourceFileEditor -- adds standard prelude and tail handling to Transcriber.
 """
 
-import os
 from pathlib import Path
-import tempfile
+from tempfile import NamedTemporaryFile
 
 class Error (Exception):
     def __init__(self, msg, *args):
@@ -85,22 +84,19 @@ class Transcriber (object):
     def __init__(self, path: Path, temp_dir: Path):
         # Open the old file
         self.reader = open(path)
-        # Create a temp file to write the new data into
-        temp, tempPath = tempfile.mkstemp(path.name, dir=temp_dir)
         self.path = path
-        self.tempPath = Path(tempPath)
-        self.writer = os.fdopen(temp, "w")
+        # Create a temp file to write the new data into
+        self.writer = NamedTemporaryFile('w', prefix=path.name, dir=temp_dir, delete=False)
 
     def close(self) -> None:
         self.reader.close()
         self.writer.close()
-        self.reader = self.writer = None
 
         # Move the modified file to the original location
         self.path.unlink()
-        self.tempPath.rename(self.path)
+        Path(self.writer.name).rename(self.path)
 
-        self.tempPath = None
+        self.reader = self.writer = None
 
     def cleanup(self) -> None:
         if self.reader:
@@ -109,12 +105,9 @@ class Transcriber (object):
 
         if self.writer:
             self.writer.close()
-            self.writer = None
-
-        if self.tempPath:
             # Remove temp-file:
-            self.tempPath.unlink(missing_ok=True)
-            self.tempPath = None
+            Path(self.writer.name).unlink(missing_ok=True)
+            self.writer = None
 
 
 class SourceFileEditor (Transcriber):
