@@ -1668,8 +1668,11 @@ QCocoaNSWindow *QCocoaWindow::createNSWindow(bool shouldBePanel)
 
     applyContentBorderThickness(nsWindow);
 
-    if (format().colorSpace() == QColorSpace::SRgb)
-        nsWindow.colorSpace = NSColorSpace.sRGBColorSpace;
+    if (QColorSpace colorSpace = format().colorSpace(); colorSpace.isValid()) {
+        NSData *iccData = colorSpace.iccProfile().toNSData();
+        nsWindow.colorSpace = [[[NSColorSpace alloc] initWithICCProfileData:iccData] autorelease];
+        qCDebug(lcQpaDrawing) << "Set" << this << "color space to" << nsWindow.colorSpace;
+    }
 
     return nsWindow;
 }
