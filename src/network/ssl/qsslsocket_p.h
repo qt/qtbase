@@ -130,8 +130,8 @@ public:
     Q_NETWORK_EXPORT static void pauseSocketNotifiers(QSslSocket*);
     Q_NETWORK_EXPORT static void resumeSocketNotifiers(QSslSocket*);
     // ### The 2 methods below should be made member methods once the QSslContext class is made public
-    static void checkSettingSslContext(QSslSocket*, QSharedPointer<QSslContext>);
-    static QSharedPointer<QSslContext> sslContext(QSslSocket *socket);
+    static void checkSettingSslContext(QSslSocket*, std::shared_ptr<QSslContext>);
+    static std::shared_ptr<QSslContext> sslContext(QSslSocket *socket);
     Q_NETWORK_EXPORT bool isPaused() const;
     Q_NETWORK_EXPORT void setPaused(bool p);
     bool bind(const QHostAddress &address, quint16, QAbstractSocket::BindMode) override;

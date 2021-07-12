@@ -172,14 +172,15 @@ QSslContext::~QSslContext()
         q_SSL_SESSION_free(session);
 }
 
-QSharedPointer<QSslContext> QSslContext::sharedFromConfiguration(QSslSocket::SslMode mode, const QSslConfiguration &configuration, bool allowRootCertOnDemandLoading)
+std::shared_ptr<QSslContext> QSslContext::sharedFromConfiguration(QSslSocket::SslMode mode, const QSslConfiguration &configuration, bool allowRootCertOnDemandLoading)
 {
-    QSharedPointer<QSslContext> sslContext = QSharedPointer<QSslContext>::create();
-    initSslContext(sslContext.data(), mode, configuration, allowRootCertOnDemandLoading);
+    struct AccessToPrivateCtor : QSslContext {};
+    std::shared_ptr<QSslContext> sslContext = std::make_shared<AccessToPrivateCtor>();
+    initSslContext(sslContext.get(), mode, configuration, allowRootCertOnDemandLoading);
     return sslContext;
 }
 
-QSharedPointer<QSslContext> QSslContext::sharedFromPrivateConfiguration(QSslSocket::SslMode mode, QSslConfigurationPrivate *privConfiguration,
+std::shared_ptr<QSslContext> QSslContext::sharedFromPrivateConfiguration(QSslSocket::SslMode mode, QSslConfigurationPrivate *privConfiguration,
                                                                         bool allowRootCertOnDemandLoading)
 {
     return sharedFromConfiguration(mode, privConfiguration, allowRootCertOnDemandLoading);

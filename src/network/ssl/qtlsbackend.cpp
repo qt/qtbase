@@ -1864,7 +1864,7 @@ TlsCryptograph::~TlsCryptograph() = default;
 
     \sa sslContext()
 */
-void TlsCryptograph::checkSettingSslContext(QSharedPointer<QSslContext> tlsContext)
+void TlsCryptograph::checkSettingSslContext(std::shared_ptr<QSslContext> tlsContext)
 {
     Q_UNUSED(tlsContext);
 }
@@ -1877,7 +1877,7 @@ void TlsCryptograph::checkSettingSslContext(QSharedPointer<QSslContext> tlsConte
 
     \sa checkSettingSslContext()
 */
-QSharedPointer<QSslContext> TlsCryptograph::sslContext() const
+std::shared_ptr<QSslContext> TlsCryptograph::sslContext() const
 {
     return {};
 }

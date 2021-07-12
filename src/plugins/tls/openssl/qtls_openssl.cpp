@@ -504,13 +504,13 @@ void TlsCryptographOpenSSL::init(QSslSocket *qObj, QSslSocketPrivate *dObj)
     caToFetch = QSslCertificate{};
 }
 
-void TlsCryptographOpenSSL::checkSettingSslContext(QSharedPointer<QSslContext> tlsContext)
+void TlsCryptographOpenSSL::checkSettingSslContext(std::shared_ptr<QSslContext> tlsContext)
 {
     if (!sslContextPointer)
         sslContextPointer = std::move(tlsContext);
 }
 
-QSharedPointer<QSslContext> TlsCryptographOpenSSL::sslContext() const
+std::shared_ptr<QSslContext> TlsCryptographOpenSSL::sslContext() const
 {
     return sslContextPointer;
 }

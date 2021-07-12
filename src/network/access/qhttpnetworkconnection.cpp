@@ -1459,13 +1459,13 @@ void QHttpNetworkConnection::setSslConfiguration(const QSslConfiguration &config
         d->channels[i].setSslConfiguration(config);
 }
 
-QSharedPointer<QSslContext> QHttpNetworkConnection::sslContext()
+std::shared_ptr<QSslContext> QHttpNetworkConnection::sslContext()
 {
     Q_D(QHttpNetworkConnection);
     return d->sslContext;
 }
 
-void QHttpNetworkConnection::setSslContext(QSharedPointer<QSslContext> context)
+void QHttpNetworkConnection::setSslContext(std::shared_ptr<QSslContext> context)
 {
     Q_D(QHttpNetworkConnection);
     d->sslContext = std::move(context);

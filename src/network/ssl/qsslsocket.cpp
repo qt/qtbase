@@ -2995,7 +2995,7 @@ QList<QByteArray> QSslSocketPrivate::unixRootCertDirectories()
 /*!
     \internal
 */
-void QSslSocketPrivate::checkSettingSslContext(QSslSocket* socket, QSharedPointer<QSslContext> tlsContext)
+void QSslSocketPrivate::checkSettingSslContext(QSslSocket* socket, std::shared_ptr<QSslContext> tlsContext)
 {
     if (!socket)
         return;
@@ -3007,7 +3007,7 @@ void QSslSocketPrivate::checkSettingSslContext(QSslSocket* socket, QSharedPointe
 /*!
     \internal
 */
-QSharedPointer<QSslContext> QSslSocketPrivate::sslContext(QSslSocket *socket)
+std::shared_ptr<QSslContext> QSslSocketPrivate::sslContext(QSslSocket *socket)
 {
     if (!socket)
         return {};

@@ -92,7 +92,7 @@ public:
     using BioMethod = QSharedPointer<BIO_METHOD>;
     BioMethod bioMethod;
 
-    using TlsContext = QSharedPointer<QSslContext>;
+    using TlsContext = std::shared_ptr<QSslContext>;
     TlsContext tlsContext;
 
     using TlsConnection = QSharedPointer<SSL>;

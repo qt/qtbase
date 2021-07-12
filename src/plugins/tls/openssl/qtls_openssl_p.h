@@ -80,8 +80,8 @@ public:
     ~TlsCryptographOpenSSL();
 
     void init(QSslSocket *qObj, QSslSocketPrivate *dObj) override;
-    void checkSettingSslContext(QSharedPointer<QSslContext> tlsContext) override;
-    QSharedPointer<QSslContext> sslContext() const override;
+    void checkSettingSslContext(std::shared_ptr<QSslContext> tlsContext) override;
+    std::shared_ptr<QSslContext> sslContext() const override;
 
     QList<QSslError> tlsErrors() const override;
 
@@ -133,7 +133,7 @@ private:
     bool initSslContext();
     void destroySslContext();
 
-    QSharedPointer<QSslContext> sslContextPointer;
+    std::shared_ptr<QSslContext> sslContextPointer;
     SSL *ssl = nullptr; // TLSTODO: RAII.
 
     QList<QSslErrorEntry> errorList;

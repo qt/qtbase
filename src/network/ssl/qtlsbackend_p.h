@@ -194,8 +194,8 @@ public:
     virtual ~TlsCryptograph();
 
     virtual void init(QSslSocket *q, QSslSocketPrivate *d) = 0;
-    virtual void checkSettingSslContext(QSharedPointer<QSslContext> tlsContext);
-    virtual QSharedPointer<QSslContext> sslContext() const;
+    virtual void checkSettingSslContext(std::shared_ptr<QSslContext> tlsContext);
+    virtual std::shared_ptr<QSslContext> sslContext() const;
 
     virtual QList<QSslError> tlsErrors() const = 0;
 
