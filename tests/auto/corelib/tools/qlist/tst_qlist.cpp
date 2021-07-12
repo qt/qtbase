@@ -318,6 +318,7 @@ private slots:
     void prependInt() const { prepend<int>(); }
     void prependMovable() const { prepend<Movable>(); }
     void prependCustom() const { prepend<Custom>(); }
+    void prependRvalue() const;
     void qhashInt() const { qhash<int>(); }
     void qhashMovable() const { qhash<Movable>(); }
     void qhashCustom() const { qhash<Custom>(); }
@@ -336,6 +337,8 @@ private slots:
     void resizeToZero() const;
     void resizeToTheSameSize_data();
     void resizeToTheSameSize() const;
+    void iterators() const;
+    void constIterators() const;
     void reverseIterators() const;
     void sizeInt() const { size<int>(); }
     void sizeMovable() const { size<Movable>(); }
@@ -373,10 +376,15 @@ private slots:
     void emplaceConsistentWithStdVectorMovable() { emplaceConsistentWithStdVectorImpl<Movable>(); }
     void emplaceConsistentWithStdVectorQString() { emplaceConsistentWithStdVectorImpl<QString>(); }
     void emplaceReturnsIterator();
+    void emplaceFront() const;
+    void emplaceFrontReturnsRef() const;
     void emplaceBack();
     void emplaceBackReturnsRef();
     void emplaceWithElementFromTheSameContainer();
     void emplaceWithElementFromTheSameContainer_data();
+    void replaceInt() const { replace<int>(); }
+    void replaceCustom() const { replace<Custom>(); }
+    void replaceMovable() const { replace<Movable>(); }
     void fromReadOnlyData() const;
     void reallocateCustomAlignedType_qtbug90359() const;
     void reinsertToBeginInt_qtbug91360() const { reinsertToBegin<int>(); }
@@ -437,6 +445,7 @@ private:
     template<typename T> void detachThreadSafety() const;
     template<typename T> void emplaceImpl() const;
     template<typename T> void emplaceConsistentWithStdVectorImpl() const;
+    template<typename T> void replace() const;
     template<typename T, typename Reinsert>
     void reinsert(Reinsert op) const;
     template<typename T>
@@ -733,6 +742,37 @@ void tst_QList::append() const
 
         QCOMPARE(v, combined);
     }
+    {
+        const QList<T> otherVec { SimpleValue<T>::at(0),
+                                  SimpleValue<T>::at(1),
+                                  SimpleValue<T>::at(2),
+                                  SimpleValue<T>::at(3) };
+        QList<T> myvec;
+        myvec.append(otherVec.cbegin(), otherVec.cbegin() + 3);
+        QCOMPARE(myvec.size(), 3);
+        QCOMPARE(myvec, QList<T>() << SimpleValue<T>::at(0)
+                                   << SimpleValue<T>::at(1)
+                                   << SimpleValue<T>::at(2));
+    }
+    {
+        QList<T> emptyVec;
+        QList<T> otherEmptyVec;
+
+        emptyVec.append(otherEmptyVec);
+
+        QVERIFY(emptyVec.isEmpty());
+        QVERIFY(!emptyVec.isDetached());
+        QVERIFY(!otherEmptyVec.isDetached());
+    }
+    {
+        QList<T> myvec { SimpleValue<T>::at(0), SimpleValue<T>::at(1) };
+        QList<T> emptyVec;
+
+        myvec.append(emptyVec);
+        QVERIFY(emptyVec.isEmpty());
+        QVERIFY(!emptyVec.isDetached());
+        QCOMPARE(myvec, QList<T>({ SimpleValue<T>::at(0), SimpleValue<T>::at(1) }));
+    }
 }
 
 void tst_QList::appendRvalue() const
@@ -741,9 +781,15 @@ void tst_QList::appendRvalue() const
     v.append("hello");
     QString world = "world";
     v.append(std::move(world));
-    QVERIFY(world.isEmpty());
     QCOMPARE(v.front(), QString("hello"));
     QCOMPARE(v.back(),  QString("world"));
+
+    // check append rvalue to empty list
+    QList<QString> myvec;
+    QString test = "test";
+    myvec.append(std::move(test));
+    QCOMPARE(myvec.size(), 1);
+    QCOMPARE(myvec.front(), QString("test"));
 }
 
 struct ConstructionCounted
@@ -976,6 +1022,7 @@ void tst_QList::capacity() const
     // TODO: is this guaranteed? seems a safe assumption, but I suppose preallocation of a
     // few items isn't an entirely unforseeable possibility.
     QVERIFY(myvec.capacity() == 0);
+    QVERIFY(!myvec.isDetached());
 
     // test it gets a size
     myvec << SimpleValue<T>::at(0) << SimpleValue<T>::at(1) << SimpleValue<T>::at(2);
@@ -1004,6 +1051,9 @@ void tst_QList::clear() const
     TST_QLIST_CHECK_LEAKS(T)
 
     QList<T> myvec;
+    myvec.clear();
+    QVERIFY(!myvec.isDetached());
+
     myvec << SimpleValue<T>::at(0) << SimpleValue<T>::at(1) << SimpleValue<T>::at(2);
 
     const auto oldCapacity = myvec.capacity();
@@ -1017,14 +1067,21 @@ void tst_QList::constData() const
 {
     int arr[] = { 42, 43, 44 };
     QList<int> myvec;
+    QCOMPARE(myvec.constData(), nullptr);
+    QVERIFY(!myvec.isDetached());
+
     myvec << 42 << 43 << 44;
 
-    QVERIFY(memcmp(myvec.constData(), reinterpret_cast<const int *>(&arr), sizeof(int) * 3) == 0);
+    QCOMPARE(memcmp(myvec.constData(), reinterpret_cast<const int *>(&arr), sizeof(int) * 3), 0);
 }
 
 void tst_QList::contains() const
 {
     QList<QString> myvec;
+
+    QVERIFY(!myvec.contains(QLatin1String("test")));
+    QVERIFY(!myvec.isDetached());
+
     myvec << "aaa" << "bbb" << "ccc";
 
     QVERIFY(myvec.contains(QLatin1String("aaa")));
@@ -1047,6 +1104,7 @@ void tst_QList::count() const
         // zero size
         QList<T> myvec;
         QVERIFY(myvec.count() == 0);
+        QVERIFY(!myvec.isDetached());
 
         // grow
         myvec.append(SimpleValue<T>::at(0));
@@ -1064,6 +1122,9 @@ void tst_QList::count() const
     // count of items
     {
         QList<T> myvec;
+        QCOMPARE(myvec.count(SimpleValue<T>::at(0)), 0);
+        QVERIFY(!myvec.isDetached());
+
         myvec << SimpleValue<T>::at(0) << SimpleValue<T>::at(1) << SimpleValue<T>::at(2);
 
         // initial tests
@@ -1110,6 +1171,8 @@ void tst_QList::cpp17ctad() const
 void tst_QList::data() const
 {
     QList<int> myvec;
+    QCOMPARE(myvec.data(), nullptr);
+
     myvec << 42 << 43 << 44;
 
     // make sure it starts off ok
@@ -1122,7 +1185,11 @@ void tst_QList::data() const
     QCOMPARE(*(myvec.data() + 1), 69);
 
     int arr[] = { 42, 69, 44 };
-    QVERIFY(memcmp(myvec.data(), reinterpret_cast<int *>(&arr), sizeof(int) * 3) == 0);
+    QCOMPARE(memcmp(myvec.data(), reinterpret_cast<int *>(&arr), sizeof(int) * 3), 0);
+
+    const QList<int> constVec = myvec;
+    QCOMPARE(memcmp(constVec.data(), reinterpret_cast<const int *>(&arr), sizeof(int) * 3), 0);
+    QVERIFY(!constVec.isDetached()); // const data() does not detach()
 }
 
 template<typename T>
@@ -1134,6 +1201,7 @@ void tst_QList::empty() const
 
     // starts empty
     QVERIFY(myvec.empty());
+    QVERIFY(!myvec.isDetached());
 
     // not empty
     myvec.append(SimpleValue<T>::at(2));
@@ -1317,6 +1385,10 @@ void tst_QList::fill() const
     TST_QLIST_CHECK_LEAKS(T)
 
     QList<T> myvec;
+
+    // fill an empty list - it should resize
+    myvec.fill(SimpleValue<T>::at(1), 2);
+    QCOMPARE(myvec, QList<T>({ SimpleValue<T>::at(1), SimpleValue<T>::at(1) }));
 
     // resize
     myvec.resize(5);
@@ -1509,6 +1581,11 @@ void tst_QList::fromStdVector() const
 void tst_QList::indexOf() const
 {
     QList<QString> myvec;
+
+    QCOMPARE(myvec.indexOf("A"), -1);
+    QCOMPARE(myvec.indexOf("A", 5), -1);
+    QVERIFY(!myvec.isDetached());
+
     myvec << "A" << "B" << "C" << "B" << "A";
 
     QVERIFY(myvec.indexOf("B") == 1);
@@ -1598,6 +1675,52 @@ void tst_QList::insert() const
     QCOMPARE(myvec, QList<T>() << tB << tB << tX << tZ << ti << ti
              << tA << tB << tC << tT);
     QCOMPARE(myvec2, myvec);
+
+    // Different insert() into empty list overloads
+    {
+        QList<T> myvec;
+        auto it = myvec.insert(0, tA);
+        QCOMPARE(myvec.size(), 1);
+        QCOMPARE(myvec.front(), tA);
+        QCOMPARE(it, myvec.begin());
+    }
+    {
+        QList<T> myvec;
+        auto it = myvec.insert(0, 3, tX);
+        QCOMPARE(myvec.size(), 3);
+        QCOMPARE(myvec, QList<T>({ tX, tX, tX }));
+        QCOMPARE(it, myvec.begin());
+    }
+    {
+        QList<T> myvec;
+        auto it = myvec.insert(myvec.cbegin(), tA);
+        QCOMPARE(myvec.size(), 1);
+        QCOMPARE(myvec.front(), tA);
+        QCOMPARE(it, myvec.begin());
+    }
+    {
+        QList<T> myvec;
+        auto it = myvec.insert(myvec.cbegin(), 3, tX);
+        QCOMPARE(myvec.size(), 3);
+        QCOMPARE(myvec, QList<T>({ tX, tX, tX }));
+        QCOMPARE(it, myvec.begin());
+    }
+    {
+        QList<QString> myvec;
+        QString test = "test";
+        auto it = myvec.insert(0, std::move(test));
+        QCOMPARE(myvec.size(), 1);
+        QCOMPARE(myvec.front(), u"test");
+        QCOMPARE(it, myvec.begin());
+    }
+    {
+        QList<QString> myvec;
+        QString test = "test";
+        auto it = myvec.insert(myvec.cbegin(), std::move(test));
+        QCOMPARE(myvec.size(), 1);
+        QCOMPARE(myvec.front(), u"test");
+        QCOMPARE(it, myvec.begin());
+    }
 }
 
 void tst_QList::insertZeroCount_data()
@@ -1626,6 +1749,7 @@ void tst_QList::isEmpty() const
 
     // starts ok
     QVERIFY(myvec.isEmpty());
+    QVERIFY(!myvec.isDetached());
 
     // not empty now
     myvec.append(QLatin1String("hello there"));
@@ -1731,6 +1855,11 @@ void tst_QList::constLast() const
 void tst_QList::lastIndexOf() const
 {
     QList<QString> myvec;
+
+    QCOMPARE(myvec.lastIndexOf("A"), -1);
+    QCOMPARE(myvec.lastIndexOf("A", 5), -1);
+    QVERIFY(!myvec.isDetached());
+
     myvec << "A" << "B" << "C" << "B" << "A";
 
     QVERIFY(myvec.lastIndexOf("B") == 3);
@@ -1754,6 +1883,12 @@ void tst_QList::lastIndexOf() const
 void tst_QList::mid() const
 {
     QList<QString> list;
+
+    QCOMPARE(list.mid(4, 2), QList<QString>());
+    QCOMPARE(list.mid(0, 3), QList<QString>());
+    QCOMPARE(list.mid(-2, 3), QList<QString>());
+    QVERIFY(!list.isDetached());
+
     list << "foo" << "bar" << "baz" << "bak" << "buck" << "hello" << "kitty";
 
     QCOMPARE(list.mid(3, 3), QList<QString>() << "bak" << "buck" << "hello");
@@ -1817,11 +1952,19 @@ void tst_QList::prepend() const
     TST_QLIST_CHECK_LEAKS(T)
 
     QList<T> myvec;
+
     T val1 = SimpleValue<T>::at(0);
     T val2 = SimpleValue<T>::at(1);
     T val3 = SimpleValue<T>::at(2);
     T val4 = SimpleValue<T>::at(3);
     T val5 = SimpleValue<T>::at(4);
+
+    // prepend to default-constructed empty list
+    myvec.prepend(val1);
+    QCOMPARE(myvec.size(), 1);
+    QCOMPARE(myvec.at(0), val1);
+    myvec.clear();
+
     myvec << val1 << val2 << val3;
 
     // starts ok
@@ -1849,6 +1992,21 @@ void tst_QList::prepend() const
     QCOMPARE(myvec.at(0), val5);
 }
 
+void tst_QList::prependRvalue() const
+{
+    QList<QString> myvec;
+
+    QString hello = "hello";
+    QString world = "world";
+
+    myvec.prepend(std::move(world));
+    QCOMPARE(myvec.size(), 1);
+
+    myvec.prepend(std::move(hello));
+    QCOMPARE(myvec.size(), 2);
+    QCOMPARE(myvec, QList<QString>({ "hello", "world" }));
+}
+
 void tst_QList::removeAllWithAlias() const
 {
     QList<QString> strings;
@@ -1866,31 +2024,48 @@ void tst_QList::remove() const
     T val2 = SimpleValue<T>::at(2);
     T val3 = SimpleValue<T>::at(3);
     T val4 = SimpleValue<T>::at(4);
-    myvec << val1 << val2 << val3;
-    myvec << val1 << val2 << val3;
-    myvec << val1 << val2 << val3;
-    // remove middle
+    T val5 = SimpleValue<T>::at(5);
+
+    // some operations on empty list
+    QVERIFY(!myvec.removeOne(val1));
+    QCOMPARE(myvec.removeAll(val2), 0);
+    auto count = myvec.removeIf([](const T&) { return true; });
+    QCOMPARE(count, 0);
+
+    myvec << val1 << val2 << val3 << val4;
+    myvec << val1 << val2 << val3 << val4;
+    myvec << val1 << val2 << val3 << val4;
+    // remove by index
     myvec.remove(1);
-    QCOMPARE(myvec, QList<T>() << val1 << val3  << val1 << val2 << val3  << val1 << val2 << val3);
+    QCOMPARE(myvec, QList<T>({ val1, val3, val4, val1, val2, val3, val4, val1, val2, val3, val4 }));
+    myvec.removeAt(6);
+    QCOMPARE(myvec, QList<T>({ val1, val3, val4, val1, val2, val3, val1, val2, val3, val4 }));
 
     // removeOne()
-    QVERIFY(!myvec.removeOne(val4));
+    QVERIFY(!myvec.removeOne(val5));
     QVERIFY(myvec.removeOne(val2));
-    QCOMPARE(myvec, QList<T>() << val1 << val3  << val1 << val3  << val1 << val2 << val3);
+    QCOMPARE(myvec, QList<T>({ val1, val3, val4, val1, val3, val1, val2, val3, val4 }));
 
     QList<T> myvecCopy = myvec;
     QVERIFY(myvecCopy.isSharedWith(myvec));
     // removeAll()
-    QCOMPARE(myvec.removeAll(val4), 0);
+    QCOMPARE(myvec.removeAll(val5), 0);
     QVERIFY(myvecCopy.isSharedWith(myvec));
     QCOMPARE(myvec.removeAll(val1), 3);
     QVERIFY(!myvecCopy.isSharedWith(myvec));
-    QCOMPARE(myvec, QList<T>() << val3  << val3  << val2 << val3);
+    QCOMPARE(myvec, QList<T>({ val3, val4, val3, val2, val3, val4 }));
+    QCOMPARE(myvecCopy, QList<T>({ val1, val3, val4, val1, val3, val1, val2, val3, val4 }));
     myvecCopy = myvec;
     QVERIFY(myvecCopy.isSharedWith(myvec));
     QCOMPARE(myvec.removeAll(val2), 1);
     QVERIFY(!myvecCopy.isSharedWith(myvec));
-    QCOMPARE(myvec, QList<T>() << val3  << val3  << val3);
+    QCOMPARE(myvec, QList<T>({ val3, val4, val3, val3, val4 }));
+    QCOMPARE(myvecCopy, QList<T>({ val3, val4, val3, val2, val3, val4 }));
+
+    // removeIf
+    count = myvec.removeIf([&val4](const T &val) { return val == val4; });
+    QCOMPARE(count, 2);
+    QCOMPARE(myvec, QList<T>({ val3, val3, val3 }));
 
     // remove rest
     myvec.remove(0, 3);
@@ -2016,7 +2191,9 @@ void tst_QList::resizePOD_data() const
     QVERIFY(nonEmptyReserved.capacity() >= 15);
 
     QTest::newRow("null") << null << 10;
+    QTest::newRow("null and 0 size") << null << 0;
     QTest::newRow("empty") << empty << 10;
+    QTest::newRow("empty and 0 size") << empty << 0;
     QTest::newRow("emptyReserved") << emptyReserved << 10;
     QTest::newRow("nonEmpty") << nonEmpty << 10;
     QTest::newRow("nonEmptyReserved") << nonEmptyReserved << 10;
@@ -2032,6 +2209,9 @@ void tst_QList::resizePOD() const
     vector.resize(size);
     QCOMPARE(vector.size(), size);
     QVERIFY(vector.capacity() >= size);
+    if (vector.isEmpty())
+        QVERIFY(!vector.isDetached());
+
     for (int i = oldSize; i < size; ++i)
         QVERIFY(vector[i] == 0); // check initialization
 
@@ -2064,7 +2244,9 @@ void tst_QList::resizeComplexMovable_data() const
     QVERIFY(nonEmptyReserved.capacity() >= 15);
 
     QTest::newRow("null") << null << 10;
+    QTest::newRow("null and 0 size") << null << 0;
     QTest::newRow("empty") << empty << 10;
+    QTest::newRow("empty and 0 size") << empty << 0;
     QTest::newRow("emptyReserved") << emptyReserved << 10;
     QTest::newRow("nonEmpty") << nonEmpty << 10;
     QTest::newRow("nonEmptyReserved") << nonEmptyReserved << 10;
@@ -2082,6 +2264,8 @@ void tst_QList::resizeComplexMovable() const
         vector.resize(size);
         QCOMPARE(vector.size(), size);
         QVERIFY(vector.capacity() >= size);
+        if (vector.isEmpty())
+            QVERIFY(!vector.isDetached());
         for (int i = oldSize; i < size; ++i)
             QVERIFY(vector[i] == 'j'); // check initialization
 
@@ -2116,7 +2300,9 @@ void tst_QList::resizeComplex_data() const
     QVERIFY(nonEmptyReserved.capacity() >= 15);
 
     QTest::newRow("null") << null << 10;
+    QTest::newRow("null and 0 size") << null << 0;
     QTest::newRow("empty") << empty << 10;
+    QTest::newRow("empty and 0 size") << empty << 0;
     QTest::newRow("emptyReserved") << emptyReserved << 10;
     QTest::newRow("nonEmpty") << nonEmpty << 10;
     QTest::newRow("nonEmptyReserved") << nonEmptyReserved << 10;
@@ -2133,6 +2319,8 @@ void tst_QList::resizeComplex() const
         vector.resize(size);
         QCOMPARE(vector.size(), size);
         QVERIFY(vector.capacity() >= size);
+        if (vector.isEmpty())
+            QVERIFY(!vector.isDetached());
         for (int i = oldSize; i < size; ++i)
             QVERIFY(vector[i].i == 'j'); // check default initialization
 
@@ -2205,6 +2393,156 @@ void tst_QList::resizeToTheSameSize() const
     QCOMPARE(y.size(), x.size());
 }
 
+void tst_QList::iterators() const
+{
+    QList<int> v;
+
+    QCOMPARE(v.begin(), v.end());
+    QCOMPARE(v.rbegin(), v.rend());
+
+    qsizetype idx = 0;
+    for (; idx < 10; ++idx)
+        v.push_back(idx);
+
+    // stl-style iterators
+    idx = 0;
+    auto it = v.begin();
+    QCOMPARE(*it, idx);
+
+    std::advance(it, 7);
+    idx += 7;
+    QCOMPARE(*it, idx);
+
+    it++;
+    idx++;
+    QCOMPARE(*it, idx);
+
+    ++it;
+    ++idx;
+    QCOMPARE(*it, idx);
+
+    std::advance(it, -3);
+    idx -= 3;
+    QCOMPARE(*it, idx);
+
+    it--;
+    idx--;
+    QCOMPARE(*it, idx);
+
+    --it;
+    --idx;
+    QCOMPARE(*it, idx);
+
+    *it = idx + 1;
+    QCOMPARE(*it, idx + 1);
+    *it = idx;
+
+    // stl-style reverse iterators
+    idx = v.size() - 1;
+    auto rit = v.rbegin();
+    QCOMPARE(*rit, idx);
+
+    *rit = idx + 1;
+    QCOMPARE(*rit, idx + 1);
+    *rit = idx;
+
+    std::advance(rit, 5);
+    idx -= 5;
+    QCOMPARE(*rit, idx);
+
+    ++rit;
+    --idx;
+    QCOMPARE(*rit, idx);
+
+    rit++;
+    idx--;
+    QCOMPARE(*rit, idx);
+
+    std::advance(rit, -4);
+    idx += 4;
+    QCOMPARE(*rit, idx);
+
+    --rit;
+    ++idx;
+    QCOMPARE(*rit, idx);
+
+    rit--;
+    idx++;
+    QCOMPARE(*rit, idx);
+}
+
+void tst_QList::constIterators() const
+{
+    const QList<int> constEmptyList;
+    QCOMPARE(constEmptyList.cbegin(), constEmptyList.cend());
+    QCOMPARE(constEmptyList.begin(), constEmptyList.cbegin());
+    QCOMPARE(constEmptyList.end(), constEmptyList.cend());
+    QCOMPARE(constEmptyList.constBegin(), constEmptyList.constEnd());
+    QCOMPARE(constEmptyList.constBegin(), constEmptyList.cbegin());
+    QCOMPARE(constEmptyList.constEnd(), constEmptyList.cend());
+    QVERIFY(!constEmptyList.isDetached());
+
+    const QList<int> v { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+
+    // stl-style iterators
+    qsizetype idx = 0;
+    auto it = v.cbegin();
+    QCOMPARE(*it, idx);
+
+    std::advance(it, 7);
+    idx += 7;
+    QCOMPARE(*it, idx);
+
+    it++;
+    idx++;
+    QCOMPARE(*it, idx);
+
+    ++it;
+    ++idx;
+    QCOMPARE(*it, idx);
+
+    std::advance(it, -3);
+    idx -= 3;
+    QCOMPARE(*it, idx);
+
+    it--;
+    idx--;
+    QCOMPARE(*it, idx);
+
+    --it;
+    --idx;
+    QCOMPARE(*it, idx);
+
+    // stl-style reverse iterators
+    idx = v.size() - 1;
+    auto rit = v.crbegin();
+    QCOMPARE(*rit, idx);
+
+    std::advance(rit, 5);
+    idx -= 5;
+    QCOMPARE(*rit, idx);
+
+    ++rit;
+    --idx;
+    QCOMPARE(*rit, idx);
+
+    rit++;
+    idx--;
+    QCOMPARE(*rit, idx);
+
+    std::advance(rit, -4);
+    idx += 4;
+    QCOMPARE(*rit, idx);
+
+    --rit;
+    ++idx;
+    QCOMPARE(*rit, idx);
+
+    rit--;
+    idx++;
+    QCOMPARE(*rit, idx);
+}
+
 void tst_QList::reverseIterators() const
 {
     QList<int> v;
@@ -2225,21 +2563,29 @@ void tst_QList::size() const
 {
     TST_QLIST_CHECK_LEAKS(T)
 
+    // also verify that length() is an alias to size()
+
     // zero size
     QList<T> myvec;
     QVERIFY(myvec.size() == 0);
+    QCOMPARE(myvec.length(), myvec.size());
+    QVERIFY(!myvec.isDetached());
 
     // grow
     myvec.append(SimpleValue<T>::at(0));
     QVERIFY(myvec.size() == 1);
+    QCOMPARE(myvec.length(), myvec.size());
     myvec.append(SimpleValue<T>::at(1));
     QVERIFY(myvec.size() == 2);
+    QCOMPARE(myvec.length(), myvec.size());
 
     // shrink
     myvec.remove(0);
     QVERIFY(myvec.size() == 1);
+    QCOMPARE(myvec.length(), myvec.size());
     myvec.remove(0);
     QVERIFY(myvec.size() == 0);
+    QCOMPARE(myvec.length(), myvec.size());
 }
 
 // ::squeeze() is tested in ::capacity().
@@ -2312,6 +2658,11 @@ void tst_QList::toStdVector() const
 void tst_QList::value() const
 {
     QList<QString> myvec;
+
+    QCOMPARE(myvec.value(1), QString());
+    QCOMPARE(myvec.value(-1, QLatin1String("default")), QLatin1String("default"));
+    QVERIFY(!myvec.isDetached());
+
     myvec << "A" << "B" << "C";
 
     // valid calls
@@ -2432,6 +2783,10 @@ void tst_QList::reserveZero()
     QList<int> vec2;
     vec2.reserve(0); // should not crash either
     vec2.reserve(-1);
+    vec2.squeeze();
+    QCOMPARE(vec2.size(), 0);
+    QCOMPARE(vec2.capacity(), 0);
+    QVERIFY(!vec2.isDetached());
 }
 
 template<typename T>
@@ -2719,6 +3074,31 @@ void tst_QList::emplaceReturnsIterator()
     QCOMPARE(vec[0].i, 'p');
 }
 
+void tst_QList::emplaceFront() const
+{
+    QScopedValueRollback<QAtomicInt> rollback(Movable::counter, 0);
+
+    QList<Movable> vec;
+    vec.emplaceFront('b');
+    QCOMPARE(Movable::counter, 1);
+
+    vec.emplaceFront('a');
+    QCOMPARE(Movable::counter, 2);
+
+    QCOMPARE(vec, QList<Movable>({ 'a', 'b' }));
+}
+
+void tst_QList::emplaceFrontReturnsRef() const
+{
+    QList<Movable> vec;
+
+    QCOMPARE(vec.emplaceFront('c').i, 'c');
+
+    vec.emplaceFront('b').i = 'a';
+
+    QCOMPARE(vec.front().i, 'a');
+}
+
 void tst_QList::emplaceBack()
 {
     QScopedValueRollback<QAtomicInt> rollback(Movable::counter, 0);
@@ -2784,7 +3164,42 @@ void tst_QList::emplaceImpl() const
 
     vec.emplace(2, 'k');
 
+    QCOMPARE(vec.size(), 5); // emplace adds new element
     QCOMPARE(vec[2], T('k'));
+
+    vec.emplace(vec.end(), T('f'));
+
+    QCOMPARE(vec.size(), 6);
+    QCOMPARE(vec.back(), T('f'));
+
+    // emplace() into empty container
+    {
+        QList<T> vec;
+        vec.emplace(vec.begin(), 'a');
+        QCOMPARE(vec.size(), 1);
+        QCOMPARE(vec.front(), T('a'));
+    }
+    {
+        QList<T> vec;
+        vec.emplace(0, 'a');
+        QCOMPARE(vec.size(), 1);
+        QCOMPARE(vec.front(), T('a'));
+    }
+}
+
+template <typename T>
+void tst_QList::replace() const
+{
+    TST_QLIST_CHECK_LEAKS(T)
+
+    QList<T> vec { 'a', 'b', 'c', 'd' };
+    T e = 'e';
+    vec.replace(0, e);
+    QCOMPARE(vec[0], T('e'));
+
+    T f = 'f';
+    vec.replace(2, std::move(f));
+    QCOMPARE(vec[2], T('f'));
 }
 
 template <class T>
