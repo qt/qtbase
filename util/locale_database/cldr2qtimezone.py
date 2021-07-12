@@ -369,20 +369,14 @@ def main(out, err):
         return 1
 
     out.write('Input file parsed, now writing data\n')
-    try:
-        writer = ZoneIdWriter(dataFilePath, qtPath)
-    except IOError as e:
-        err.write(f'Failed to open files to transcribe: {e}')
-        return 1
 
     try:
-        writer.write(version, defaults, winIds)
-    except Error as e:
-        writer.cleanup()
-        err.write(f'\nError in Windows ID data: {e}\n')
+        with ZoneIdWriter(dataFilePath, qtPath) as writer:
+            writer.write(version, defaults, winIds)
+    except Exception as e:
+        err.write(f'\nError while updating timezone data: {e}\n')
         return 1
 
-    writer.close()
     out.write(f'Data generation completed, please check the new file at {dataFilePath}\n')
     return 0
 

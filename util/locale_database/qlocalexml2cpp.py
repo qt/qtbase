@@ -135,10 +135,14 @@ def currencyIsoCodeData(s):
 class LocaleSourceEditor (SourceFileEditor):
     def __init__(self, path: Path, temp: Path, version: str):
         super().__init__(path, temp)
+        self.version = version
+
+    def onEnter(self) -> None:
+        super().onEnter()
         self.writer.write(f"""
 /*
     This part of the file was generated on {datetime.date.today()} from the
-    Common Locale Data Repository v{version}
+    Common Locale Data Repository v{self.version}
 
     http://www.unicode.org/cldr/
 
@@ -535,89 +539,56 @@ def main(out, err):
     locale_keys = sorted(locale_map.keys(), key=LocaleKeySorter(reader.defaultMap()))
 
     try:
-        writer = LocaleDataWriter(qtsrcdir.joinpath('src/corelib/text/qlocale_data_p.h'),
-                                  qtsrcdir, reader.cldrVersion)
-    except IOError as e:
-        err.write(f'Failed to open files to transcribe locale data: {e}')
-        return 1
-
-    try:
-        writer.likelySubtags(reader.likelyMap())
-        writer.localeIndex(reader.languageIndices(tuple(k[0] for k in locale_map)))
-        writer.localeData(locale_map, locale_keys)
-        writer.writer.write('\n')
-        writer.languageNames(reader.languages)
-        writer.scriptNames(reader.scripts)
-        writer.territoryNames(reader.territories)
-        # TODO: merge the next three into the previous three
-        writer.languageCodes(reader.languages)
-        writer.scriptCodes(reader.scripts)
-        writer.territoryCodes(reader.territories)
-    except Error as e:
-        writer.cleanup()
+        with LocaleDataWriter(qtsrcdir.joinpath('src/corelib/text/qlocale_data_p.h'),
+                              qtsrcdir, reader.cldrVersion) as writer:
+            writer.likelySubtags(reader.likelyMap())
+            writer.localeIndex(reader.languageIndices(tuple(k[0] for k in locale_map)))
+            writer.localeData(locale_map, locale_keys)
+            writer.writer.write('\n')
+            writer.languageNames(reader.languages)
+            writer.scriptNames(reader.scripts)
+            writer.territoryNames(reader.territories)
+            # TODO: merge the next three into the previous three
+            writer.languageCodes(reader.languages)
+            writer.scriptCodes(reader.scripts)
+            writer.territoryCodes(reader.territories)
+    except Exception as e:
         err.write(f'\nError updating locale data: {e}\n')
         return 1
-
-    writer.close()
 
     # Generate calendar data
     for calendar, stem in calendars.items():
         try:
-            writer = CalendarDataWriter(
-                qtsrcdir.joinpath(f'src/corelib/time/q{stem}calendar_data_p.h'),
-                qtsrcdir, reader.cldrVersion)
-        except IOError as e:
-            err.write(f'Failed to open files to transcribe {calendar} data {e}')
-            return 1
-
-        try:
-            writer.write(calendar, locale_map, locale_keys)
-        except Error as e:
-            writer.cleanup()
+            with CalendarDataWriter(
+                    qtsrcdir.joinpath(f'src/corelib/time/q{stem}calendar_data_p.h'),
+                    qtsrcdir, reader.cldrVersion) as writer:
+                writer.write(calendar, locale_map, locale_keys)
+        except Exception as e:
             err.write(f'\nError updating {calendar} locale data: {e}\n')
-            return 1
-
-        writer.close()
 
     # qlocale.h
     try:
-        writer = LocaleHeaderWriter(qtsrcdir.joinpath('src/corelib/text/qlocale.h'),
-                                    qtsrcdir, reader.dupes)
-    except IOError as e:
-        err.write(f'Failed to open files to transcribe qlocale.h: {e}')
-        return 1
-
-    try:
-        writer.languages(reader.languages)
-        writer.scripts(reader.scripts)
-        writer.territories(reader.territories)
-    except Error as e:
-        writer.cleanup()
+        with LocaleHeaderWriter(qtsrcdir.joinpath('src/corelib/text/qlocale.h'),
+                                qtsrcdir, reader.dupes) as writer:
+            writer.languages(reader.languages)
+            writer.scripts(reader.scripts)
+            writer.territories(reader.territories)
+    except Exception as e:
         err.write(f'\nError updating qlocale.h: {e}\n')
-        return 1
-
-    writer.close()
 
     # qlocale.qdoc
     try:
-        writer = Transcriber(qtsrcdir.joinpath('src/corelib/text/qlocale.qdoc'), qtsrcdir)
-    except IOError as e:
-        err.write(f'Failed to open files to transcribe qlocale.qdoc: {e}')
+        with Transcriber(qtsrcdir.joinpath('src/corelib/text/qlocale.qdoc'), qtsrcdir) as qdoc:
+            DOCSTRING = "    QLocale's data is based on Common Locale Data Repository "
+            for line in qdoc.reader:
+                if DOCSTRING in line:
+                    qdoc.writer.write(f'{DOCSTRING}v{reader.cldrVersion}.\n')
+                else:
+                    qdoc.writer.write(line)
+    except Exception as e:
+        err.write(f'\nError updating qlocale.h: {e}\n')
         return 1
 
-    DOCSTRING = "    QLocale's data is based on Common Locale Data Repository "
-    try:
-        for line in writer.reader:
-            if DOCSTRING in line:
-                writer.writer.write(f'{DOCSTRING}v{reader.cldrVersion}.\n')
-            else:
-                writer.writer.write(line)
-    except Error as e:
-        writer.cleanup()
-        err.write(f'\nError updating qlocale.qdoc: {e}\n')
-        return 1
-
-    writer.close()
     return 0
 
 if __name__ == "__main__":
