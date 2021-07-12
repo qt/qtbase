@@ -1576,15 +1576,10 @@ function(__qt_propagate_generated_resource target resource_name generated_source
 endfunction()
 
 # Creates fake targets and adds resource files to IDE's tree
+# FIXME: We shouldn't need to create a separate target for this, the files
+#        should be added to the actual target instead.
 function(_qt_internal_expose_source_file_to_ide target file)
-    set(ide_target_extension "other_files")
-    set(qml_extensions ".qml" ".js")
-    get_filename_component(resource_extension "${file}" LAST_EXT)
-    if(resource_extension IN_LIST qml_extensions)
-        set(ide_target_extension "qml_files")
-    endif()
-
-    set(ide_target ${target}_${ide_target_extension})
+    set(ide_target ${target}_other_files)
     if(NOT TARGET ${ide_target})
         add_custom_target(${ide_target} SOURCES "${file}")
     else()
