@@ -106,6 +106,14 @@ class QDuplicateTracker {
     Q_DISABLE_COPY_MOVE(QDuplicateTracker);
 public:
     QDuplicateTracker() = default;
+    explicit QDuplicateTracker(qsizetype n)
+#ifdef __cpp_lib_memory_resource
+        : set{size_t(n), &res}
+#else
+        : set{n}
+#endif
+    {}
+    Q_DECL_DEPRECATED_X("Pass the capacity to reserve() to the ctor instead.")
     void reserve(qsizetype n) { set.reserve(n); }
     [[nodiscard]] bool hasSeen(const T &s)
     {

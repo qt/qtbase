@@ -168,8 +168,7 @@ size_t qHash(const ConstructionCounted &c, std::size_t seed = 0)
 
 void tst_QDuplicateTracker::appendTo_special()
 {
-    QDuplicateTracker<ConstructionCounted> tracker;
-    tracker.reserve(3);
+    QDuplicateTracker<ConstructionCounted> tracker(3);
     QVERIFY(!tracker.hasSeen(1));
     QVERIFY(!tracker.hasSeen(2));
     QVERIFY(!tracker.hasSeen(3));

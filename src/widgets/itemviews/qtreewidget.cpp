@@ -3101,8 +3101,7 @@ QList<QTreeWidgetItem*> QTreeWidget::selectedItems() const
     const QModelIndexList indexes = selectionModel()->selectedIndexes();
     QList<QTreeWidgetItem*> items;
     items.reserve(indexes.count());
-    QDuplicateTracker<QTreeWidgetItem *> seen;
-    seen.reserve(indexes.count());
+    QDuplicateTracker<QTreeWidgetItem *> seen(indexes.count());
     for (const auto &index : indexes) {
         QTreeWidgetItem *item = d->item(index);
         if (item->isHidden() || seen.hasSeen(item))

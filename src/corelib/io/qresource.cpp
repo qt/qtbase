@@ -416,8 +416,7 @@ void QResourcePrivate::ensureChildren() const
     QString path = absoluteFilePath, k;
     if (path.startsWith(QLatin1Char(':')))
         path = path.mid(1);
-    QDuplicateTracker<QString> kids;
-    kids.reserve(related.size());
+    QDuplicateTracker<QString> kids(related.size());
     QString cleaned = cleanPath(path);
     for (int i = 0; i < related.size(); ++i) {
         QResourceRoot *res = related.at(i);
