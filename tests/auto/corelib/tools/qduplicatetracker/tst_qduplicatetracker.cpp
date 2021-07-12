@@ -94,9 +94,15 @@ void tst_QDuplicateTracker::appendTo()
 
     QVERIFY(!tracker.hasSeen(2));
     QList<int> c;
-    tracker.appendTo(c);
+    std::move(tracker).appendTo(c);
     std::sort(c.begin(), c.end());
     QCOMPARE(c, QList<int>({ 0, 1, 2 }));
+    if (QDuplicateTracker<int, 2>::uses_pmr) {
+        // the following is only true if we use the std container
+        QVERIFY(!tracker.hasSeen(0));
+        QVERIFY(!tracker.hasSeen(1));
+        QVERIFY(!tracker.hasSeen(2));
+    }
 }
 
 struct ConstructionCounted
@@ -173,12 +179,36 @@ void tst_QDuplicateTracker::appendTo_special()
     QVERIFY(!tracker.hasSeen(1));
     QVERIFY(!tracker.hasSeen(2));
     QVERIFY(!tracker.hasSeen(3));
-    QList<ConstructionCounted> a;
-    a.reserve(3);
-    tracker.appendTo(a);
-    for (const auto &counter : a) {
-        QCOMPARE(counter.moves, 1);
-        QCOMPARE(counter.copies, 1);
+
+    QVERIFY(tracker.hasSeen(1));
+    QVERIFY(tracker.hasSeen(2));
+    QVERIFY(tracker.hasSeen(3));
+    {
+        QList<ConstructionCounted> a;
+        a.reserve(3);
+        tracker.appendTo(a);
+        for (const auto &counter : a) {
+            QCOMPARE(counter.moves, 1);
+            QCOMPARE(counter.copies, 1);
+        }
+    }
+    QVERIFY(tracker.hasSeen(1));
+    QVERIFY(tracker.hasSeen(2));
+    QVERIFY(tracker.hasSeen(3));
+    {
+        QList<ConstructionCounted> a;
+        a.reserve(3);
+        std::move(tracker).appendTo(a);
+        if (QDuplicateTracker<ConstructionCounted>::uses_pmr) {
+            // the following is only true if we use the std container
+            for (const auto &counter : a) {
+                QCOMPARE(counter.moves, 2);
+                QCOMPARE(counter.copies, 0);
+            }
+            QVERIFY(!tracker.hasSeen(1));
+            QVERIFY(!tracker.hasSeen(2));
+            QVERIFY(!tracker.hasSeen(3));
+        }
     }
 }
 
