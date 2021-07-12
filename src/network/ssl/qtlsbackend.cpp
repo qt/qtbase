@@ -1367,7 +1367,7 @@ namespace QTlsPrivate {
 */
 
 /*!
-    QByteArray TlsKey::encrypt(Cipher cipher, const QByteArray &data, const QByteArray &passPhrase, const QByteArray &iv) const
+    \fn QByteArray TlsKey::encrypt(Cipher cipher, const QByteArray &data, const QByteArray &passPhrase, const QByteArray &iv) const
 
     This function is needed to implement QSslKey::toPem() with encryption (for a private
     key). \a cipher names a block cipher to use to encrypt \a data, using

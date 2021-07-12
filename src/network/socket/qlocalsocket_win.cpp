@@ -74,7 +74,7 @@ QSocketPoller::QSocketPoller(const QLocalSocketPrivate &socket)
 
     \note If the read operation is inactive, it succeeds after
     a short wait, allowing the caller to check the state of the socket.
- */
+*/
 bool QSocketPoller::poll(const QDeadlineTimer &deadline)
 {
     const qint64 sleepTime = 10;
