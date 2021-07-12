@@ -393,8 +393,8 @@ bool QHttpNetworkConnectionChannel::ensureConnection()
             // check whether we can re-use an existing SSL session
             // (meaning another socket in this connection has already
             // performed a full handshake)
-            if (!connection->sslContext().isNull())
-                QSslSocketPrivate::checkSettingSslContext(sslSocket, connection->sslContext());
+            if (auto ctx = connection->sslContext())
+                QSslSocketPrivate::checkSettingSslContext(sslSocket, std::move(ctx));
 
             sslSocket->setPeerVerifyName(connection->d_func()->peerVerifyName);
             sslSocket->connectToHostEncrypted(connectHost, connectPort, QIODevice::ReadWrite, networkLayerPreference);
@@ -925,12 +925,11 @@ void QHttpNetworkConnectionChannel::_q_connected()
     //channels[i].reconnectAttempts = 2;
     if (ssl || pendingEncrypt) { // FIXME: Didn't work properly with pendingEncrypt only, we should refactor this into an EncrypingState
 #ifndef QT_NO_SSL
-        if (connection->sslContext().isNull()) {
+        if (!connection->sslContext()) {
             // this socket is making the 1st handshake for this connection,
             // we need to set the SSL context so new sockets can reuse it
-            QSharedPointer<QSslContext> socketSslContext = QSslSocketPrivate::sslContext(static_cast<QSslSocket*>(socket));
-            if (!socketSslContext.isNull())
-                connection->setSslContext(socketSslContext);
+            if (auto socketSslContext = QSslSocketPrivate::sslContext(static_cast<QSslSocket*>(socket)))
+                connection->setSslContext(std::move(socketSslContext));
         }
 #endif
     } else if (connection->connectionType() == QHttpNetworkConnection::ConnectionTypeHTTP2Direct) {

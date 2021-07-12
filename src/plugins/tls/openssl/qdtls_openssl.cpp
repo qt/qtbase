@@ -605,7 +605,7 @@ bool DtlsState::init(QDtlsBasePrivate *dtlsBase, QUdpSocket *socket,
     Q_ASSERT(dtlsBase);
     Q_ASSERT(socket);
 
-    if (!tlsContext.data() && !initTls(dtlsBase))
+    if (!tlsContext && !initTls(dtlsBase))
         return false;
 
     udpSocket = socket;
@@ -632,7 +632,7 @@ void DtlsState::reset()
 
 bool DtlsState::initTls(QDtlsBasePrivate *dtlsBase)
 {
-    if (tlsContext.data())
+    if (tlsContext)
         return true;
 
     if (!QSslSocket::supportsSsl())
@@ -716,7 +716,7 @@ bool DtlsState::initCtxAndConnection(QDtlsBasePrivate *dtlsBase)
 bool DtlsState::initBIO(QDtlsBasePrivate *dtlsBase)
 {
     Q_ASSERT(dtlsBase);
-    Q_ASSERT(tlsContext.data() && tlsConnection.data());
+    Q_ASSERT(tlsContext && tlsConnection);
 
     BioMethod customMethod(q_BIO_meth_new(BIO_TYPE_DGRAM, dtlsbio::qdtlsMethodName),
                            dtlsutil::delete_bio_method);

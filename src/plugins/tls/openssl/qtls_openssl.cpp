@@ -506,8 +506,8 @@ void TlsCryptographOpenSSL::init(QSslSocket *qObj, QSslSocketPrivate *dObj)
 
 void TlsCryptographOpenSSL::checkSettingSslContext(QSharedPointer<QSslContext> tlsContext)
 {
-    if (sslContextPointer.isNull())
-        sslContextPointer = tlsContext;
+    if (!sslContextPointer)
+        sslContextPointer = std::move(tlsContext);
 }
 
 QSharedPointer<QSslContext> TlsCryptographOpenSSL::sslContext() const
@@ -815,7 +815,7 @@ void TlsCryptographOpenSSL::continueHandshake()
     // Cache this SSL session inside the QSslContext
     if (!(configuration.testSslOption(QSsl::SslOptionDisableSessionSharing))) {
         if (!sslContextPointer->cacheSession(ssl)) {
-            sslContextPointer.clear(); // we could not cache the session
+            sslContextPointer.reset(); // we could not cache the session
         } else {
             // Cache the session for permanent usage as well
             if (!(configuration.testSslOption(QSsl::SslOptionDisableSessionPersistence))) {
@@ -1367,7 +1367,7 @@ bool TlsCryptographOpenSSL::initSslContext()
 
     if (sslContextPointer->error() != QSslError::NoError) {
         setErrorAndEmit(d, QAbstractSocket::SslInvalidUserDataError, sslContextPointer->errorString());
-        sslContextPointer.clear(); // deletes the QSslContext
+        sslContextPointer.reset();
         return false;
     }
 
@@ -1495,7 +1495,7 @@ void TlsCryptographOpenSSL::destroySslContext()
         q_SSL_free(ssl);
         ssl = nullptr;
     }
-    sslContextPointer.clear();
+    sslContextPointer.reset();
 }
 
 void TlsCryptographOpenSSL::storePeerCertificates()
