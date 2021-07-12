@@ -276,7 +276,7 @@ void tst_qfile::readBigFile()
             FILE* cfile = ::fopen(cfilename, "rb");
             QBENCHMARK {
                 while(!feof(cfile))
-                    ::fread(buffer, blockSize, 1, cfile);
+                    [[maybe_unused]] auto r = ::fread(buffer, blockSize, 1, cfile);
                 ::fseek(cfile, 0, SEEK_SET);
             }
             ::fclose(cfile);
@@ -628,7 +628,7 @@ void tst_qfile::readSmallFiles()
             QBENCHMARK {
                 Q_FOREACH(FILE* cfile, fileList) {
                     while(!feof(cfile))
-                        ::fread(buffer, blockSize, 1, cfile);
+                        [[maybe_unused]] auto f = ::fread(buffer, blockSize, 1, cfile);
                     ::fseek(cfile, 0, SEEK_SET);
                 }
             }
