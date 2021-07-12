@@ -62,9 +62,12 @@ private slots:
     void take();
 
     void iterators();
+    void multimapIterators();
     void iteratorsInEmptyMap();
     void keyIterator();
+    void multimapKeyIterator();
     void keyValueIterator();
+    void multimapKeyValueIterator();
     void keyValueIteratorInEmptyMap();
     void keys_values_uniqueKeys();
     void qmultimap_specific();
@@ -118,6 +121,7 @@ public:
 int MyClass::count = 0;
 
 typedef QMap<QString, MyClass> MyMap;
+typedef QMultiMap<QString, MyClass> MyMultiMap;
 
 QDebug operator << (QDebug d, const MyClass &c) {
     d << c.str;
@@ -328,6 +332,45 @@ void tst_QMap::count()
         QCOMPARE( MyClass::count, 0 );
     }
     QCOMPARE( MyClass::count, 0 );
+
+    {
+        QMultiMap<int, MyClass> map;
+        QMultiMap<int, MyClass> map2(map);
+        QCOMPARE(map.count(), 0);
+        QCOMPARE(map2.count(), 0);
+        QCOMPARE(MyClass::count, 0);
+        QCOMPARE(map.count(1), 0);
+        QCOMPARE(map.size(), 0);
+        QCOMPARE(map2.size(), 0);
+        QVERIFY(!map.isDetached());
+        QVERIFY(!map2.isDetached());
+
+        // detach
+        map2.insert(0, MyClass("value0"));
+        QCOMPARE(map.count(), 0);
+        QCOMPARE(map.size(), 0);
+        QCOMPARE(map2.count(), 1);
+        QCOMPARE(map2.size(), 1);
+        QVERIFY(!map.isDetached());
+        QCOMPARE(MyClass::count, 1);
+
+        map2.insert(1, MyClass("value1"));
+        map2.insert(2, MyClass("value2"));
+        QCOMPARE(map2.count(), 3);
+        QCOMPARE(MyClass::count, 3);
+
+        map2.insert(0, MyClass("value0_1"));
+        map2.insert(0, MyClass("value0_2"));
+        QCOMPARE(map2.count(), 5);
+        QCOMPARE(map2.count(0), 3);
+        QCOMPARE(MyClass::count, 5);
+
+        map2.clear();
+        QCOMPARE(map2.count(), 0);
+        QCOMPARE(MyClass::count, 0);
+
+    }
+    QCOMPARE(MyClass::count, 0);
 }
 
 void tst_QMap::clear()
@@ -335,19 +378,40 @@ void tst_QMap::clear()
     {
         MyMap map;
         map.clear();
-        QVERIFY( map.isEmpty() );
+        QVERIFY(map.isEmpty());
         QVERIFY(!map.isDetached());
         map.insert( "key", MyClass( "value" ) );
+        QVERIFY(!map.isEmpty());
         map.clear();
-        QVERIFY( map.isEmpty() );
+        QVERIFY(map.isEmpty());
         map.insert( "key0", MyClass( "value0" ) );
         map.insert( "key0", MyClass( "value1" ) );
         map.insert( "key1", MyClass( "value2" ) );
+        QVERIFY(!map.isEmpty());
         map.clear();
         sanityCheckTree(map, __LINE__);
-        QVERIFY( map.isEmpty() );
+        QVERIFY(map.isEmpty());
     }
-    QCOMPARE( MyClass::count, int(0) );
+    QCOMPARE(MyClass::count, int(0));
+
+    {
+        MyMultiMap map;
+        map.clear();
+        QVERIFY(map.isEmpty());
+        QVERIFY(!map.isDetached());
+        map.insert( "key", MyClass( "value" ) );
+        QVERIFY(!map.isEmpty());
+        map.clear();
+        QVERIFY(map.isEmpty());
+        map.insert( "key0", MyClass( "value0" ) );
+        map.insert( "key0", MyClass( "value1" ) );
+        map.insert( "key1", MyClass( "value2" ) );
+        QVERIFY(!map.isEmpty());
+        map.clear();
+        sanityCheckTree(map, __LINE__);
+        QVERIFY(map.isEmpty());
+    }
+    QCOMPARE(MyClass::count, int(0));
 }
 
 void tst_QMap::beginEnd()
@@ -485,39 +549,82 @@ void tst_QMap::key()
         QCOMPARE(map2.key("zero"), 0);
         QCOMPARE(map2.key("zero", def), 0);
     }
+
+    {
+        int def = -1;
+        QMultiMap<int, QString> multiMap;
+        QCOMPARE(multiMap.key("value0"), 0);
+        QCOMPARE(multiMap.key("value0", def), def);
+        QVERIFY(!multiMap.isDetached());
+
+        multiMap.insert(1, "value1");
+        multiMap.insert(2, "value2");
+        multiMap.insert(1, "value1_1");
+
+        QCOMPARE(multiMap.key("value1"), 1);
+        QCOMPARE(multiMap.key("value1", def), 1);
+        QCOMPARE(multiMap.key("value1_1"), 1);
+        QCOMPARE(multiMap.key("value2"), 2);
+        QCOMPARE(multiMap.key("value3"), 0);
+        QCOMPARE(multiMap.key("value3", def), def);
+    }
 }
 
 void tst_QMap::value()
 {
     const QString def = "default value";
-    QMap<int, QString> map;
-    QCOMPARE(map.value(1), QString());
-    QCOMPARE(map.value(1, def), def);
-    QVERIFY(!map.isDetached());
+    {
+        QMap<int, QString> map;
+        QCOMPARE(map.value(1), QString());
+        QCOMPARE(map.value(1, def), def);
+        QVERIFY(!map.isDetached());
 
-    map.insert(1, "value1");
-    QCOMPARE(map.value(1), "value1");
-    QCOMPARE(map[1], "value1");
-    QCOMPARE(map.value(2), QString());
-    QCOMPARE(map.value(2, def), def);
-    QCOMPARE(map[2], QString());
-    QCOMPARE(map.size(), 2);
+        map.insert(1, "value1");
+        QCOMPARE(map.value(1), "value1");
+        QCOMPARE(map[1], "value1");
+        QCOMPARE(map.value(2), QString());
+        QCOMPARE(map.value(2, def), def);
+        QCOMPARE(map[2], QString());
+        QCOMPARE(map.size(), 2);
 
-    map.insert(2, "value2");
-    QCOMPARE(map.value(2), "value2");
-    QCOMPARE(map[2], "value2");
+        map.insert(2, "value2");
+        QCOMPARE(map.value(2), "value2");
+        QCOMPARE(map[2], "value2");
 
-    map.insert(1, "value3");
-    QCOMPARE(map.value(1), "value3");
-    QCOMPARE(map.value(1, def), "value3");
-    QCOMPARE(map[1], "value3");
+        map.insert(1, "value3");
+        QCOMPARE(map.value(1), "value3");
+        QCOMPARE(map.value(1, def), "value3");
+        QCOMPARE(map[1], "value3");
 
-    const QMap<int, QString> constMap;
-    QVERIFY(!constMap.isDetached());
-    QCOMPARE(constMap.value(1, def), def);
-    QCOMPARE(constMap[1], QString());
-    QCOMPARE(constMap.size(), 0);
-    QVERIFY(!constMap.isDetached());
+        const QMap<int, QString> constMap;
+        QVERIFY(!constMap.isDetached());
+        QCOMPARE(constMap.value(1, def), def);
+        QCOMPARE(constMap[1], QString());
+        QCOMPARE(constMap.size(), 0);
+        QVERIFY(!constMap.isDetached());
+    }
+    {
+        QMultiMap<int, QString> map;
+        QCOMPARE(map.value(1), QString());
+        QCOMPARE(map.value(1, def), def);
+        QVERIFY(!map.isDetached());
+
+        map.insert(1, "value1");
+        QCOMPARE(map.value(1), "value1");
+        QCOMPARE(map.value(2), QString());
+        QCOMPARE(map.value(2, def), def);
+
+        map.insert(2, "value2");
+        QCOMPARE(map.value(2), "value2");
+
+        map.insert(1, "value3");
+        // If multiple values exist, the most recently added is returned.
+        QCOMPARE(map.value(1), "value3");
+        QCOMPARE(map.value(1, def), "value3");
+
+        map.remove(1, "value3");
+        QCOMPARE(map.value(1), "value1");
+    }
 }
 
 void tst_QMap::swap()
@@ -610,41 +717,78 @@ void tst_QMap::operator_eq()
     }
 }
 
+template <typename T>
+void emptyTestMethod()
+{
+    T map;
+
+    QVERIFY(map.isEmpty());
+    QVERIFY(map.empty());
+    QVERIFY(!map.isDetached());
+
+    map.insert(1, "one");
+    QVERIFY(!map.isEmpty());
+    QVERIFY(!map.empty());
+
+    map.clear();
+    QVERIFY(map.isEmpty());
+    QVERIFY(map.empty());
+}
+
 void tst_QMap::empty()
 {
-    QMap<int, QString> map1;
+    emptyTestMethod<QMap<int, QString>>();
+    if (QTest::currentTestFailed())
+        return;
 
-    QVERIFY(map1.isEmpty());
-    QVERIFY(map1.empty());
-    QVERIFY(!map1.isDetached());
-
-    map1.insert(1, "one");
-    QVERIFY(!map1.isEmpty());
-    QVERIFY(!map1.empty());
-
-    map1.clear();
-    QVERIFY(map1.isEmpty());
-    QVERIFY(map1.empty());
+    emptyTestMethod<QMultiMap<int, QString>>();
 }
 
 void tst_QMap::contains()
 {
-    QMap<int, QString> map1;
-    int i;
+    {
+        QMap<int, QString> map1;
+        int i;
 
-    QVERIFY(!map1.contains(1));
-    QVERIFY(!map1.isDetached());
+        QVERIFY(!map1.contains(1));
+        QVERIFY(!map1.isDetached());
 
-    map1.insert(1, "one");
-    QVERIFY(map1.contains(1));
+        map1.insert(1, "one");
+        QVERIFY(map1.contains(1));
 
-    for(i=2; i < 100; ++i)
-        map1.insert(i, "teststring");
-    for(i=99; i > 1; --i)
-        QVERIFY(map1.contains(i));
+        for (i = 2; i < 100; ++i)
+            map1.insert(i, "teststring");
+        for (i = 99; i > 1; --i)
+            QVERIFY(map1.contains(i));
 
-    map1.remove(43);
-    QVERIFY(!map1.contains(43));
+        map1.remove(43);
+        QVERIFY(!map1.contains(43));
+    }
+
+    {
+        QMultiMap<int, QString> multiMap;
+        QVERIFY(!multiMap.contains(1));
+        QVERIFY(!multiMap.contains(1, "value1"));
+        QVERIFY(!multiMap.isDetached());
+
+        multiMap.insert(1, "value1");
+        multiMap.insert(2, "value2");
+        multiMap.insert(1, "value1_1");
+
+        QVERIFY(multiMap.contains(1));
+        QVERIFY(multiMap.contains(1, "value1"));
+        QVERIFY(multiMap.contains(1, "value1_1"));
+        QVERIFY(multiMap.contains(2));
+        QVERIFY(multiMap.contains(2, "value2"));
+        QVERIFY(!multiMap.contains(2, "invalid_value"));
+
+        QVERIFY(!multiMap.contains(3));
+        multiMap.insert(3, "value3");
+        QVERIFY(multiMap.contains(3));
+
+        multiMap.remove(3);
+        QVERIFY(!multiMap.contains(3));
+    }
 }
 
 void tst_QMap::find()
@@ -668,31 +812,40 @@ void tst_QMap::find()
         QCOMPARE(map.find(4), map.end());
     }
 
-    QMultiMap<int, QString> map1;
+    const QMultiMap<int, QString> constMap;
+    QCOMPARE(constMap.find(1), constMap.end());
+    QCOMPARE(constMap.find(1, "value"), constMap.end());
+    QVERIFY(!constMap.isDetached());
+
+    QMultiMap<int, QString> map;
     QString testString="Teststring %0";
     QString compareString;
     int i,count=0;
 
-    QVERIFY(map1.find(1) == map1.end());
+    QCOMPARE(map.find(1), map.end());
+    QCOMPARE(map.find(1, "value1"), map.end());
 
-    map1.insert(1,"Mensch");
-    map1.insert(1,"Mayer");
-    map1.insert(2,"Hej");
+    map.insert(1,"Mensch");
+    map.insert(1,"Mayer");
+    map.insert(2,"Hej");
 
-    QCOMPARE(map1.find(1).value(), QLatin1String("Mayer"));
-    QCOMPARE(map1.find(2).value(), QLatin1String("Hej"));
+    QCOMPARE(map.find(1).value(), QLatin1String("Mayer"));
+    QCOMPARE(map.find(2).value(), QLatin1String("Hej"));
+    QCOMPARE(map.find(1, "Mensch").value(), QLatin1String("Mensch"));
+    QCOMPARE(map.find(1, "Unknown Value"), map.end());
 
-    for(i = 3; i < 10; ++i) {
+    for (i = 3; i < 10; ++i) {
         compareString = testString.arg(i);
-        map1.insertMulti(4, compareString);
-        QCOMPARE(map1.count(4), i - 2);
+        map.insert(4, compareString);
+        QCOMPARE(map.count(4), i - 2);
     }
 
-    QMultiMap<int, QString>::const_iterator it=map1.constFind(4);
+    QMultiMap<int, QString>::iterator it = map.find(4);
 
-    for(i = 9; i > 2 && it != map1.constEnd() && it.key() == 4; --i) {
+    for (i = 9; i > 2 && it != map.end() && it.key() == 4; --i) {
         compareString = testString.arg(i);
         QVERIFY(it.value() == compareString);
+        QCOMPARE(map.find(4, compareString), it);
         ++it;
         ++count;
     }
@@ -717,32 +870,37 @@ void tst_QMap::constFind()
         QCOMPARE(map.constFind(4), map.constEnd());
     }
 
-    QMultiMap<int, QString> map1;
+    QMultiMap<int, QString> map;
     QString testString="Teststring %0";
     QString compareString;
     int i,count=0;
 
-    QVERIFY(map1.constFind(1) == map1.constEnd());
+    QCOMPARE(map.constFind(1), map.constEnd());
+    QCOMPARE(map.constFind(1, "value"), map.constEnd());
+    QVERIFY(!map.isDetached());
 
-    map1.insert(1,"Mensch");
-    map1.insert(1,"Mayer");
-    map1.insert(2,"Hej");
+    map.insert(1,"Mensch");
+    map.insert(1,"Mayer");
+    map.insert(2,"Hej");
 
-    QVERIFY(map1.constFind(4) == map1.constEnd());
+    QVERIFY(map.constFind(4) == map.constEnd());
 
-    QCOMPARE(map1.constFind(1).value(), QLatin1String("Mayer"));
-    QCOMPARE(map1.constFind(2).value(), QLatin1String("Hej"));
+    QCOMPARE(map.constFind(1).value(), QLatin1String("Mayer"));
+    QCOMPARE(map.constFind(2).value(), QLatin1String("Hej"));
+    QCOMPARE(map.constFind(1, "Mensch").value(), QLatin1String("Mensch"));
+    QCOMPARE(map.constFind(1, "Invalid Value"), map.constEnd());
 
-    for(i = 3; i < 10; ++i) {
+    for (i = 3; i < 10; ++i) {
         compareString = testString.arg(i);
-        map1.insertMulti(4, compareString);
+        map.insertMulti(4, compareString);
     }
 
-    QMultiMap<int, QString>::const_iterator it=map1.constFind(4);
+    QMultiMap<int, QString>::const_iterator it = map.constFind(4);
 
-    for(i = 9; i > 2 && it != map1.constEnd() && it.key() == 4; --i) {
+    for (i = 9; i > 2 && it != map.constEnd() && it.key() == 4; --i) {
         compareString = testString.arg(i);
         QVERIFY(it.value() == compareString);
+        QCOMPARE(map.constFind(4, compareString), it);
         ++it;
         ++count;
     }
@@ -799,58 +957,80 @@ void tst_QMap::lowerUpperBound()
         QCOMPARE(map.upperBound(999), map.end());
     }
 
-    QMultiMap<int, QString> map1;
+    const QMultiMap<int, QString> emptyConstMap;
+    QCOMPARE(emptyConstMap.lowerBound(1), emptyConstMap.constEnd());
+    QCOMPARE(emptyConstMap.upperBound(1), emptyConstMap.constEnd());
+    QVERIFY(!emptyConstMap.isDetached());
 
-    map1.insert(1, "one");
-    map1.insert(5, "five");
-    map1.insert(10, "ten");
+    const QMultiMap<int, QString> constMap { qMakePair(1, "one"),
+                                             qMakePair(5, "five"),
+                                             qMakePair(10, "ten") };
 
+    QCOMPARE(constMap.lowerBound(-1).key(), 1);
+    QCOMPARE(constMap.lowerBound(1).key(), 1);
+    QCOMPARE(constMap.lowerBound(3).key(), 5);
+    QCOMPARE(constMap.lowerBound(12), constMap.constEnd());
+
+    QCOMPARE(constMap.upperBound(-1).key(), 1);
+    QCOMPARE(constMap.upperBound(1).key(), 5);
+    QCOMPARE(constMap.upperBound(3).key(), 5);
+    QCOMPARE(constMap.upperBound(12), constMap.constEnd());
+
+    QMultiMap<int, QString> map;
+
+    map.insert(1, "one");
+    map.insert(5, "five");
+    map.insert(10, "ten");
 
     //Copied from documentation
 
-    QCOMPARE(map1.upperBound(0).key(), 1);      // returns iterator to (1, "one")
-    QCOMPARE(map1.upperBound(1).key(), 5);      // returns iterator to (5, "five")
-    QCOMPARE(map1.upperBound(2).key(), 5);      // returns iterator to (5, "five")
-    QVERIFY(map1.upperBound(10) == map1.end());     // returns end()
-    QVERIFY(map1.upperBound(999) == map1.end());    // returns end()
+    QCOMPARE(map.upperBound(0).key(), 1);      // returns iterator to (1, "one")
+    QCOMPARE(map.upperBound(1).key(), 5);      // returns iterator to (5, "five")
+    QCOMPARE(map.upperBound(2).key(), 5);      // returns iterator to (5, "five")
+    QVERIFY(map.upperBound(10) == map.end());     // returns end()
+    QVERIFY(map.upperBound(999) == map.end());    // returns end()
 
-    QCOMPARE(map1.lowerBound(0).key(), 1);      // returns iterator to (1, "one")
-    QCOMPARE(map1.lowerBound(1).key(), 1);      // returns iterator to (1, "one")
-    QCOMPARE(map1.lowerBound(2).key(), 5);      // returns iterator to (5, "five")
-    QCOMPARE(map1.lowerBound(10).key(), 10);     // returns iterator to (10, "ten")
-    QVERIFY(map1.lowerBound(999) == map1.end());    // returns end()
+    QCOMPARE(map.lowerBound(0).key(), 1);      // returns iterator to (1, "one")
+    QCOMPARE(map.lowerBound(1).key(), 1);      // returns iterator to (1, "one")
+    QCOMPARE(map.lowerBound(2).key(), 5);      // returns iterator to (5, "five")
+    QCOMPARE(map.lowerBound(10).key(), 10);     // returns iterator to (10, "ten")
+    QVERIFY(map.lowerBound(999) == map.end());    // returns end()
 
-    map1.insert(3, "three");
-    map1.insert(7, "seven");
-    map1.insertMulti(7, "seven_2");
+    map.insert(3, "three");
+    map.insert(7, "seven");
+    map.insertMulti(7, "seven_2");
 
-    QCOMPARE(map1.upperBound(0).key(), 1);
-    QCOMPARE(map1.upperBound(1).key(), 3);
-    QCOMPARE(map1.upperBound(2).key(), 3);
-    QCOMPARE(map1.upperBound(3).key(), 5);
-    QCOMPARE(map1.upperBound(7).key(), 10);
-    QVERIFY(map1.upperBound(10) == map1.end());
-    QVERIFY(map1.upperBound(999) == map1.end());
+    QCOMPARE(map.upperBound(0).key(), 1);
+    QCOMPARE(map.upperBound(1).key(), 3);
+    QCOMPARE(map.upperBound(2).key(), 3);
+    QCOMPARE(map.upperBound(3).key(), 5);
+    QCOMPARE(map.upperBound(7).key(), 10);
+    QVERIFY(map.upperBound(10) == map.end());
+    QVERIFY(map.upperBound(999) == map.end());
 
-    QCOMPARE(map1.lowerBound(0).key(), 1);
-    QCOMPARE(map1.lowerBound(1).key(), 1);
-    QCOMPARE(map1.lowerBound(2).key(), 3);
-    QCOMPARE(map1.lowerBound(3).key(), 3);
-    QCOMPARE(map1.lowerBound(4).key(), 5);
-    QCOMPARE(map1.lowerBound(5).key(), 5);
-    QCOMPARE(map1.lowerBound(6).key(), 7);
-    QCOMPARE(map1.lowerBound(7).key(), 7);
-    QCOMPARE(map1.lowerBound(6).value(), QLatin1String("seven_2"));
-    QCOMPARE(map1.lowerBound(7).value(), QLatin1String("seven_2"));
-    QCOMPARE((++map1.lowerBound(6)).value(), QLatin1String("seven"));
-    QCOMPARE((++map1.lowerBound(7)).value(), QLatin1String("seven"));
-    QCOMPARE(map1.lowerBound(10).key(), 10);
-    QVERIFY(map1.lowerBound(999) == map1.end());
+    QCOMPARE(map.lowerBound(0).key(), 1);
+    QCOMPARE(map.lowerBound(1).key(), 1);
+    QCOMPARE(map.lowerBound(2).key(), 3);
+    QCOMPARE(map.lowerBound(3).key(), 3);
+    QCOMPARE(map.lowerBound(4).key(), 5);
+    QCOMPARE(map.lowerBound(5).key(), 5);
+    QCOMPARE(map.lowerBound(6).key(), 7);
+    QCOMPARE(map.lowerBound(7).key(), 7);
+    QCOMPARE(map.lowerBound(6).value(), QLatin1String("seven_2"));
+    QCOMPARE(map.lowerBound(7).value(), QLatin1String("seven_2"));
+    QCOMPARE((++map.lowerBound(6)).value(), QLatin1String("seven"));
+    QCOMPARE((++map.lowerBound(7)).value(), QLatin1String("seven"));
+    QCOMPARE(map.lowerBound(10).key(), 10);
+    QVERIFY(map.lowerBound(999) == map.end());
 }
 
 void tst_QMap::mergeCompare()
 {
-    QMultiMap<int, QString> map1, map2, map3, map1b, map2b;
+    QMultiMap<int, QString> map1, map2, map3, map1b, map2b, map4;
+
+    // unite with an empty map does nothing
+    map1.unite(map2);
+    QVERIFY(!map1.isDetached());
 
     map1.insert(1,"ett");
     map1.insert(3,"tre");
@@ -880,20 +1060,43 @@ void tst_QMap::mergeCompare()
     map3.insert(4, "fyra");
     map3.insert(5, "fem");
 
-    QVERIFY(map1 == map3);
+    QCOMPARE(map1, map3);
+
+    map4.unite(map3);
+    QCOMPARE(map4, map3);
 }
 
 void tst_QMap::take()
 {
-    QMap<int, QString> map;
-    QCOMPARE(map.take(1), QString());
-    QVERIFY(!map.isDetached());
+    {
+        QMap<int, QString> map;
+        QCOMPARE(map.take(1), QString());
+        QVERIFY(!map.isDetached());
 
-    map.insert(2, "zwei");
-    map.insert(3, "drei");
+        map.insert(2, "zwei");
+        map.insert(3, "drei");
 
-    QCOMPARE(map.take(3), QLatin1String("drei"));
-    QVERIFY(!map.contains(3));
+        QCOMPARE(map.take(3), QLatin1String("drei"));
+        QVERIFY(!map.contains(3));
+    }
+
+    {
+        QMultiMap<int, QString> multiMap;
+        QCOMPARE(multiMap.take(1), QString());
+        QVERIFY(!multiMap.isDetached());
+
+        multiMap.insert(0, "value0");
+        multiMap.insert(1, "value1");
+        multiMap.insert(0, "value0_1");
+        multiMap.insert(0, "value0_2");
+
+        // The most recently inserted value is returned
+        QCOMPARE(multiMap.take(0), u"value0_2");
+        QCOMPARE(multiMap.take(0), u"value0_1");
+        QCOMPARE(multiMap.take(0), u"value0");
+        QCOMPARE(multiMap.take(0), QString());
+        QVERIFY(!multiMap.contains(0));
+    }
 }
 
 void tst_QMap::iterators()
@@ -973,10 +1176,79 @@ void tst_QMap::iterators()
     }
 }
 
-void tst_QMap::iteratorsInEmptyMap()
+void tst_QMap::multimapIterators()
 {
-    QMap<int, int> map;
-    using ConstIter = QMap<int, int>::const_iterator;
+    QMultiMap<int, QString> map;
+    const QString testString = "Teststring %1-%2";
+
+    for (int i = 0; i < 5; ++i) {
+        // reverse order, because the last added is returned first.
+        for (int j = 4; j >= 0; --j)
+            map.insert(i, testString.arg(i).arg(j));
+    }
+
+    // STL-style iterators
+    auto stlIt = map.begin();
+    QCOMPARE(stlIt.value(), u"Teststring 0-0");
+
+    stlIt++;
+    QCOMPARE(stlIt.value(), u"Teststring 0-1");
+
+    std::advance(stlIt, 10);
+    QCOMPARE(stlIt.value(), u"Teststring 2-1");
+
+    std::advance(stlIt, -4);
+    QCOMPARE(stlIt.value(), u"Teststring 1-2");
+
+    stlIt--;
+    QCOMPARE(stlIt.value(), u"Teststring 1-1");
+
+    // STL-style const iterators
+    auto cstlIt = map.cbegin();
+    QCOMPARE(cstlIt.value(), u"Teststring 0-0");
+
+    cstlIt++;
+    QCOMPARE(cstlIt.value(), u"Teststring 0-1");
+
+    std::advance(cstlIt, 16);
+    QCOMPARE(cstlIt.value(), u"Teststring 3-2");
+
+    std::advance(cstlIt, -6);
+    QCOMPARE(cstlIt.value(), u"Teststring 2-1");
+
+    cstlIt--;
+    QCOMPARE(cstlIt.value(), u"Teststring 2-0");
+
+    // Java-style iterator
+    QMultiMapIterator javaIt(map);
+    int i = 0;
+    int j = 0;
+    while (javaIt.hasNext()) {
+        javaIt.next();
+        QCOMPARE(javaIt.value(), testString.arg(i).arg(j));
+        if (++j == 5) {
+            j = 0;
+            i++;
+        }
+    }
+
+    i = 4;
+    j = 4;
+    while (javaIt.hasPrevious()) {
+        javaIt.previous();
+        QCOMPARE(javaIt.value(), testString.arg(i).arg(j));
+        if (--j < 0) {
+            j = 4;
+            i--;
+        }
+    }
+}
+
+template <typename T>
+void iteratorsInEmptyMapTestMethod()
+{
+    T map;
+    using ConstIter = typename T::const_iterator;
     ConstIter it1 = map.cbegin();
     ConstIter it2 = map.constBegin();
     QVERIFY(it1 == it2 && it2 == ConstIter());
@@ -988,16 +1260,25 @@ void tst_QMap::iteratorsInEmptyMap()
     QVERIFY(!map.isDetached());
 
     // to call const overloads of begin() and end()
-    const QMap<int, int> map2;
+    const T map2;
     ConstIter it5 = map2.begin();
     ConstIter it6 = map2.end();
     QVERIFY(it5 == it6 && it6 == ConstIter());
     QVERIFY(!map2.isDetached());
 
-    using Iter = QMap<int, int>::iterator;
+    using Iter = typename T::iterator;
     Iter it7 = map.begin();
     Iter it8 = map.end();
     QVERIFY(it7 == it8);
+}
+
+void tst_QMap::iteratorsInEmptyMap()
+{
+    iteratorsInEmptyMapTestMethod<QMap<int, int>>();
+    if (QTest::currentTestFailed())
+        return;
+
+    iteratorsInEmptyMapTestMethod<QMultiMap<int, int>>();
 }
 
 void tst_QMap::keyIterator()
@@ -1032,6 +1313,47 @@ void tst_QMap::keyIterator()
     QCOMPARE(*(--key_it), (--it).key());
 
     QCOMPARE(std::count(map.keyBegin(), map.keyEnd(), 99), 1);
+
+    // DefaultConstructible test
+    static_assert(std::is_default_constructible<KeyIterator>::value);
+}
+
+void tst_QMap::multimapKeyIterator()
+{
+    QMultiMap<int, int> map;
+
+    using KeyIterator = QMultiMap<int, int>::key_iterator;
+    KeyIterator it1 = map.keyBegin();
+    KeyIterator it2 = map.keyEnd();
+    QVERIFY(it1 == it2 && it2 == KeyIterator());
+    QVERIFY(!map.isDetached());
+
+    for (int i = 0; i < 5; ++i) {
+        for (int j = 4; j >= 0; --j)
+            map.insert(i, 100 * i + j);
+    }
+
+    KeyIterator keyIt = map.keyBegin();
+    QMultiMap<int, int>::const_iterator it = map.cbegin();
+    for (int i = 0; i < 5; ++i) {
+        for (int j = 4; j >= 0; --j) {
+            QCOMPARE(*keyIt, it.key());
+            ++keyIt;
+            ++it;
+        }
+    }
+
+    keyIt = std::find(map.keyBegin(), map.keyEnd(), 3);
+    it = std::find(map.cbegin(), map.cend(), 3 * 100);
+
+    QVERIFY(keyIt != map.keyEnd());
+    QCOMPARE(*keyIt, it.key());
+    QCOMPARE(*(keyIt++), (it++).key());
+    QCOMPARE(*(keyIt--), (it--).key());
+    QCOMPARE(*(++keyIt), (++it).key());
+    QCOMPARE(*(--keyIt), (--it).key());
+
+    QCOMPARE(std::count(map.keyBegin(), map.keyEnd(), 2), 5);
 
     // DefaultConstructible test
     static_assert(std::is_default_constructible<KeyIterator>::value);
@@ -1096,27 +1418,95 @@ void tst_QMap::keyValueIterator()
     QCOMPARE(std::count(map.constKeyValueBegin(), map.constKeyValueEnd(), entry_type(key, value)), 1);
 }
 
-void tst_QMap::keyValueIteratorInEmptyMap()
+void tst_QMap::multimapKeyValueIterator()
 {
-    QMap<int, int> map;
-    using ConstKeyValueIter = QMap<int, int>::const_key_value_iterator;
+    QMultiMap<int, int> map;
+    using EntryType = QMultiMap<int, int>::const_key_value_iterator::value_type;
+
+    for (int i = 0; i < 5; ++i) {
+        for (int j = 4; j >= 0; --j)
+            map.insert(i, 100 * i + j);
+    }
+
+    auto keyValueIt = map.constKeyValueBegin();
+    auto it = map.cbegin();
+
+    for (int i = 0; i < map.size(); ++i) {
+        QVERIFY(keyValueIt != map.constKeyValueEnd());
+        QVERIFY(it != map.cend());
+
+        EntryType pair(it.key(), it.value());
+        QCOMPARE(*keyValueIt, pair);
+        QCOMPARE(keyValueIt->first, pair.first);
+        QCOMPARE(keyValueIt->second, pair.second);
+        ++keyValueIt;
+        ++it;
+    }
+
+    QVERIFY(keyValueIt == map.constKeyValueEnd());
+    QVERIFY(it == map.cend());
+
+    int key = 3;
+    int value = 100 * 3;
+    keyValueIt = std::find(map.constKeyValueBegin(), map.constKeyValueEnd(), EntryType(key, value));
+    it = std::find(map.cbegin(), map.cend(), value);
+
+    QVERIFY(keyValueIt != map.constKeyValueEnd());
+    QCOMPARE(*keyValueIt, EntryType(it.key(), it.value()));
+
+    ++it;
+    ++keyValueIt;
+    QCOMPARE(*keyValueIt, EntryType(it.key(), it.value()));
+
+    --it;
+    --keyValueIt;
+    QCOMPARE(*keyValueIt, EntryType(it.key(), it.value()));
+
+    std::advance(it, 5);
+    std::advance(keyValueIt, 5);
+    QCOMPARE(*keyValueIt, EntryType(it.key(), it.value()));
+
+    std::advance(it, -5);
+    std::advance(keyValueIt, -5);
+    QCOMPARE(*keyValueIt, EntryType(it.key(), it.value()));
+
+    key = 2;
+    value = 100 * 2 + 2;
+    auto cnt = std::count(map.constKeyValueBegin(), map.constKeyValueEnd(), EntryType(key, value));
+    QCOMPARE(cnt, 1);
+}
+
+template <typename T>
+void keyValueIteratorInEmptyMapTestMethod()
+{
+    T map;
+    using ConstKeyValueIter = typename T::const_key_value_iterator;
 
     ConstKeyValueIter it1 = map.constKeyValueBegin();
     ConstKeyValueIter it2 = map.constKeyValueEnd();
     QVERIFY(it1 == it2 && it2 == ConstKeyValueIter());
     QVERIFY(!map.isDetached());
 
-    const QMap<int, int> map2;
+    const T map2;
     ConstKeyValueIter it3 = map2.keyValueBegin();
     ConstKeyValueIter it4 = map2.keyValueEnd();
     QVERIFY(it3 == it4 && it4 == ConstKeyValueIter());
     QVERIFY(!map2.isDetached());
 
-    using KeyValueIter = QMap<int, int>::key_value_iterator;
+    using KeyValueIter = typename T::key_value_iterator;
 
     KeyValueIter it5 = map.keyValueBegin();
     KeyValueIter it6 = map.keyValueEnd();
     QVERIFY(it5 == it6);
+}
+
+void tst_QMap::keyValueIteratorInEmptyMap()
+{
+    keyValueIteratorInEmptyMapTestMethod<QMap<int, int>>();
+    if (QTest::currentTestFailed())
+        return;
+
+    keyValueIteratorInEmptyMapTestMethod<QMultiMap<int, int>>();
 }
 
 void tst_QMap::keys_values_uniqueKeys()
@@ -1153,23 +1543,43 @@ void tst_QMap::keys_values_uniqueKeys()
 
     QMultiMap<QString, int> map;
     QVERIFY(map.keys().isEmpty());
+    QVERIFY(map.keys(1).isEmpty());
+    QVERIFY(map.uniqueKeys().isEmpty());
     QVERIFY(map.values().isEmpty());
+    QVERIFY(map.values("key").isEmpty());
+    QVERIFY(!map.isDetached());
 
-    map.insertMulti("alpha", 1);
+    map.insert("alpha", 1);
     QVERIFY(map.keys() == (QList<QString>() << "alpha"));
     QVERIFY(map.values() == (QList<int>() << 1));
+    QVERIFY(map.uniqueKeys() == QList<QString>({ "alpha" }));
 
-    map.insertMulti("beta", -2);
+    map.insert("beta", -2);
     QVERIFY(map.keys() == (QList<QString>() << "alpha" << "beta"));
     QVERIFY(map.values() == (QList<int>() << 1 << -2));
+    QVERIFY(map.uniqueKeys() == QList<QString>({ "alpha", "beta" }));
 
-    map.insertMulti("alpha", 2);
+    map.insert("alpha", 2);
     QVERIFY(map.keys() == (QList<QString>() << "alpha" << "alpha" << "beta"));
     QVERIFY(map.values() == (QList<int>() << 2 << 1 << -2));
+    QVERIFY(map.uniqueKeys() == QList<QString>({ "alpha", "beta" }));
+    QVERIFY(map.values("alpha") == QList<int>({ 2, 1 }));
 
-    map.insertMulti("beta", 4);
+    map.insert("beta", 4);
     QVERIFY(map.keys() == (QList<QString>() << "alpha" << "alpha" << "beta" << "beta"));
     QVERIFY(map.values() == (QList<int>() << 2 << 1 << 4 << -2));
+    QVERIFY(map.uniqueKeys() == QList<QString>({ "alpha", "beta" }));
+    QVERIFY(map.values("alpha") == QList<int>({ 2, 1 }));
+    QVERIFY(map.values("beta") == QList<int>({ 4, -2 }));
+
+    map.insert("gamma", 2);
+    QVERIFY(map.keys() == QList<QString>({ "alpha", "alpha", "beta", "beta", "gamma" }));
+    QVERIFY(map.values() == QList<int>({ 2, 1, 4, -2, 2 }));
+    QVERIFY(map.uniqueKeys() == QList<QString>({ "alpha", "beta", "gamma" }));
+    QVERIFY(map.values("alpha") == QList<int>({ 2, 1 }));
+    QVERIFY(map.values("beta") == QList<int>({ 4, -2 }));
+    QVERIFY(map.values("gamma") == QList<int>({ 2 }));
+    QVERIFY(map.keys(2) == QList<QString>({ "alpha", "gamma" }));
 }
 
 void tst_QMap::qmultimap_specific()
@@ -1323,6 +1733,10 @@ void tst_QMap::equal_range()
 
         QCOMPARE(map.equal_range(10), qMakePair(map.end(), map.end()));
     }
+
+    const QMultiMap<int, QString> constMap;
+    QCOMPARE(constMap.equal_range(1), qMakePair(constMap.constEnd(), constMap.constEnd()));
+    QVERIFY(!constMap.isDetached());
 
     QMultiMap<int, QString> map;
     const QMultiMap<int, QString> &cmap = map;
@@ -2000,6 +2414,14 @@ void tst_QMap::removeElementsInMap()
     }
 
     {
+        QMultiMap<int, int> map;
+        QCOMPARE(map.remove(1), 0);
+        QVERIFY(!map.isDetached());
+
+        auto cnt = map.removeIf([](QMultiMap<int, int>::iterator) { return true; });
+        QCOMPARE(cnt, 0);
+    }
+    {
         QMultiMap<SharedInt, int> multimap {
             { SharedInt(1), 10 },
             { SharedInt(1), 11 },
@@ -2096,12 +2518,17 @@ void tst_QMap::removeElementsInMap()
 
         QCOMPARE(multimap.size(), 0);
         QCOMPARE(multimap2.size(), 12);
+
+        auto cnt = multimap2.removeIf([](auto it) { return (*it % 2) == 0; });
+        QCOMPARE(cnt, 8);
+        QCOMPARE(multimap2.size(), 4);
     }
 }
 
-void tst_QMap::toStdMap()
+template <typename QtMap, typename StdMap>
+void toStdMapTestMethod(const StdMap &expectedMap)
 {
-    QMap<int, QString> map;
+    QtMap map;
     QVERIFY(map.isEmpty());
     auto stdMap = map.toStdMap();
     QVERIFY(stdMap.empty());
@@ -2112,9 +2539,20 @@ void tst_QMap::toStdMap()
     map.insert(3, "value3");
     map.insert(1, "value0");
 
-    const std::map<int, QString> expectedMap { {1, "value0"}, {2, "value2"}, {3, "value3"} };
     stdMap = map.toStdMap();
     QCOMPARE(stdMap, expectedMap);
+}
+
+void tst_QMap::toStdMap()
+{
+    const std::map<int, QString> expectedMap { {1, "value0"}, {2, "value2"}, {3, "value3"} };
+    toStdMapTestMethod<QMap<int, QString>>(expectedMap);
+    if (QTest::currentTestFailed())
+        return;
+
+    const std::multimap<int, QString> expectedMultiMap {
+        {1, "value0"}, {1, "value1"}, {2, "value2"}, {3, "value3"} };
+    toStdMapTestMethod<QMultiMap<int, QString>>(expectedMultiMap);
 }
 
 QTEST_APPLESS_MAIN(tst_QMap)
