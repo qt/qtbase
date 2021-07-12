@@ -274,7 +274,15 @@ static QVariant qtValue(CFPropertyListRef cfvalue)
         }
 
         const QString str = QString::fromUtf8(byteArray.constData(), byteArray.size());
-        return QSettingsPrivate::stringToVariant(str);
+        QVariant variant = QSettingsPrivate::stringToVariant(str);
+        if (variant == QVariant(str)) {
+            // We did not find an encoded variant in the string,
+            // so return the raw byte array instead.
+            byteArray.detach();
+            return byteArray;
+        }
+
+        return variant;
     } else if (typeId == CFDictionaryGetTypeID()) {
         CFDictionaryRef cfdict = static_cast<CFDictionaryRef>(cfvalue);
         CFTypeID arrayTypeId = CFArrayGetTypeID();
