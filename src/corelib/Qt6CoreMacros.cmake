@@ -934,8 +934,7 @@ endif()
 #   INSTALL_DIR: Location where to install the metatypes file. For public consumption,
 #                defaults to a ${CMAKE_INSTALL_PREFIX}/${INSTALL_LIBDIR}/metatypes directory.
 #                Executable metatypes files are never installed.
-#   COPY_OVER_INSTALL: (Qt Internal) When present will install the file via a post build step
-#   copy rather than using install.
+#   __QT_INTERNAL_NO_INSTALL: When passed, will skip installation of the metatype file.
 function(qt6_extract_metatypes target)
 
     get_target_property(existing_meta_types_file ${target} INTERFACE_QT_META_TYPES_BUILD_FILE)
@@ -943,7 +942,8 @@ function(qt6_extract_metatypes target)
         return()
     endif()
 
-    cmake_parse_arguments(arg "COPY_OVER_INSTALL" "INSTALL_DIR" "MANUAL_MOC_JSON_FILES" ${ARGN})
+    cmake_parse_arguments(arg
+        "__QT_INTERNAL_NO_INSTALL" "INSTALL_DIR" "MANUAL_MOC_JSON_FILES" ${ARGN})
 
     get_target_property(target_type ${target} TYPE)
     if (target_type STREQUAL "INTERFACE_LIBRARY")
@@ -954,24 +954,6 @@ function(qt6_extract_metatypes target)
     if (CMAKE_VERSION VERSION_LESS "3.16.0")
         message(FATAL_ERROR "Meta types generation requires CMake >= 3.16")
         return()
-    endif()
-
-    # Whether the generated json file needs to be installed for prefix-builds, or copied for
-    # non-prefix builds. Regardless of the type of build, executable metatypes.json files should
-    # not be installed. Only library .json files should be installed.
-    set(should_install "TRUE")
-    if (target_type STREQUAL "EXECUTABLE")
-        set(should_install "FALSE")
-    endif()
-
-    # Automatically fill default install args when not specified.
-    if (NOT arg_INSTALL_DIR)
-        # INSTALL_LIBDIR is not set when QtBuildInternals is not loaded (when not doing a Qt build).
-        if(INSTALL_LIBDIR)
-            set(arg_INSTALL_DIR "${INSTALL_LIBDIR}/metatypes")
-        else()
-            set(arg_INSTALL_DIR "lib/metatypes")
-        endif()
     endif()
 
     get_target_property(target_binary_dir ${target} BINARY_DIR)
@@ -1117,33 +1099,10 @@ function(qt6_extract_metatypes target)
         file(TOUCH ${metatypes_file})
     endif()
 
-    # Need to make the path absolute during a Qt non-prefix build, otherwise files are written
-    # to the source dir because the paths are relative to the source dir when using file(TOUCH).
-    if(arg_COPY_OVER_INSTALL AND NOT IS_ABSOLUTE "${arg_INSTALL_DIR}/${metatypes_file_name}")
-        set(arg_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/${arg_INSTALL_DIR}")
-    endif()
-
-    set(metatypes_file_non_prefix)
-    if(should_install AND arg_COPY_OVER_INSTALL)
-        set(metatypes_file_non_prefix "${arg_INSTALL_DIR}/${metatypes_file_name}")
-        set(metatypes_non_prefix_copy
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "${metatypes_file}"
-                "${metatypes_file_non_prefix}"
-        )
-
-        # The reason for this configure-time file creation is described in a comment slightly above.
-        if(NOT EXISTS "${metatypes_file_non_prefix}")
-            file(MAKE_DIRECTORY "${arg_INSTALL_DIR}")
-            file(TOUCH "${metatypes_file_non_prefix}")
-        endif()
-    endif()
-
     add_custom_command(
         OUTPUT
             ${metatypes_file_gen}
             ${metatypes_file}
-            ${metatypes_file_non_prefix}
         DEPENDS ${QT_CMAKE_EXPORT_NAMESPACE}::moc ${automoc_dependencies} ${manual_dependencies}
         COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::moc
             -o ${metatypes_file_gen}
@@ -1151,48 +1110,56 @@ function(qt6_extract_metatypes target)
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
             ${metatypes_file_gen}
             ${metatypes_file}
-        # One more command
-        ${metatypes_non_prefix_copy}
         COMMENT "Running moc --collect-json for target ${target}"
     )
 
-    # We still need to add this file as a source of Core, otherwise the file
+    # We still need to add this file as a source of the target, otherwise the file
     # rule above is not triggered. INTERFACE_SOURCES do not properly register
     # as dependencies to build the current target.
+    # TODO: Can we pass ${metatypes_file} instead of ${metatypes_file_gen} as a source?
+    # TODO: Do we still need the _gen variant at all?
     target_sources(${target} PRIVATE ${metatypes_file_gen})
-    set(metatypes_file_genex_build)
-    set(metatypes_file_genex_install)
-    if (arg_COPY_OVER_INSTALL)
-        if(should_install)
-            set(metatypes_file_genex_build
-                "$<BUILD_INTERFACE:$<$<BOOL:$<TARGET_PROPERTY:QT_CONSUMES_METATYPES>>:${arg_INSTALL_DIR}/${metatypes_file_name}>>"
-            )
-        endif()
-    else()
-        set(metatypes_file_genex_build
-            "$<BUILD_INTERFACE:$<$<BOOL:$<TARGET_PROPERTY:QT_CONSUMES_METATYPES>>:${metatypes_file}>>"
-        )
-        if(should_install)
-            set(metatypes_file_genex_install
-                "$<INSTALL_INTERFACE:$<$<BOOL:$<TARGET_PROPERTY:QT_CONSUMES_METATYPES>>:$<INSTALL_PREFIX>/${arg_INSTALL_DIR}/${metatypes_file_name}>>"
-            )
-        endif()
-    endif()
     set_source_files_properties(${metatypes_file} PROPERTIES HEADER_FILE_ONLY TRUE)
 
     set_target_properties(${target} PROPERTIES
         INTERFACE_QT_MODULE_HAS_META_TYPES YES
-        INTERFACE_QT_MODULE_META_TYPES_FROM_BUILD YES
         INTERFACE_QT_META_TYPES_BUILD_FILE "${metatypes_file}"
-        QT_MODULE_META_TYPES_FILE_GENEX_BUILD "${metatypes_file_genex_build}"
-        QT_MODULE_META_TYPES_FILE_GENEX_INSTALL "${metatypes_file_genex_install}"
     )
-    target_sources(${target} INTERFACE ${metatypes_file_genex_build} ${metatypes_file_genex_install})
+
+    # Set up consumption of files via INTERFACE_SOURCES.
+    set(consumes_metatypes "$<BOOL:$<TARGET_PROPERTY:QT_CONSUMES_METATYPES>>")
+    set(metatypes_file_genex_build
+        "$<BUILD_INTERFACE:$<${consumes_metatypes}:${metatypes_file}>>"
+    )
+    target_sources(${target} INTERFACE ${metatypes_file_genex_build})
+
+    # Chech whether the generated json file needs to be installed.
+    # Executable metatypes.json files should not be installed. Qt non-prefix builds should also
+    # not install the files.
+    set(should_install TRUE)
+    if (target_type STREQUAL "EXECUTABLE" OR arg___QT_INTERNAL_NO_INSTALL)
+        set(should_install "FALSE")
+    endif()
+
+    # Automatically fill default install args when not specified.
+    if (NOT arg_INSTALL_DIR)
+        # INSTALL_LIBDIR is not set when QtBuildInternals is not loaded (when not doing a Qt build).
+        # Default to a hardcoded location for user projects.
+        if(INSTALL_LIBDIR)
+            set(arg_INSTALL_DIR "${INSTALL_LIBDIR}/metatypes")
+        else()
+            set(arg_INSTALL_DIR "lib/metatypes")
+        endif()
+    endif()
 
     if(should_install)
-        if(NOT arg_COPY_OVER_INSTALL)
-            install(FILES "${metatypes_file}" DESTINATION "${arg_INSTALL_DIR}")
-        endif()
+        set(metatypes_file_install_path "${arg_INSTALL_DIR}/${metatypes_file_name}")
+        set(metatypes_file_install_path_genex "$<INSTALL_PREFIX>/${metatypes_file_install_path}")
+        set(metatypes_file_genex_install
+            "$<INSTALL_INTERFACE:$<${consumes_metatypes}:${metatypes_file_install_path_genex}>>"
+        )
+        target_sources(${target} INTERFACE ${metatypes_file_genex_install})
+        install(FILES "${metatypes_file}" DESTINATION "${arg_INSTALL_DIR}")
     endif()
 endfunction()
 
