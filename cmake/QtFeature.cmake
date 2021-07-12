@@ -1091,15 +1091,11 @@ function(qt_config_linker_supports_flag_test name)
 
     # Select the right linker.
     if(GCC OR CLANG)
-        # TODO: This works for now but is... suboptimal. Once
-        # QTBUG-86186 is resolved, we should check the *features*
-        # QT_FEATURE_use_gold_linker etc. instead of trying to
-        # replicate the feature conditions.
-        if(QT_FEATURE_use_gold_linker_alias OR INPUT_linker STREQUAL "gold")
+        if(QT_FEATURE_use_gold_linker)
             list(PREPEND flags "-fuse-ld=gold")
-        elseif(INPUT_linker STREQUAL "bfd")
+        elseif(QT_FEATURE_use_bfd_linker)
             list(PREPEND flags "-fuse-ld=bfd")
-        elseif(INPUT_linker STREQUAL "lld")
+        elseif(QT_FEATURE_use_lld_linker)
             list(PREPEND flags "-fuse-ld=lld")
         endif()
     endif()
@@ -1140,5 +1136,3 @@ function(qt_make_features_available target)
         endforeach()
     endforeach()
 endfunction()
-
-

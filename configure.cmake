@@ -22,6 +22,65 @@ qt_find_package(WrapDBus1 1.2 PROVIDED_TARGETS dbus-1 MODULE_NAME global QMAKE_L
 qt_find_package(Libudev PROVIDED_TARGETS PkgConfig::Libudev MODULE_NAME global QMAKE_LIB libudev)
 
 
+#### Early-evaluated, Linker-related Tests and Features
+
+qt_config_compiler_supports_flag_test(use_bfd_linker
+    LABEL "bfd linker"
+    FLAG "-fuse-ld=bfd"
+    )
+
+qt_config_compiler_supports_flag_test(use_gold_linker
+    LABEL "gold linker"
+    FLAG "-fuse-ld=gold"
+    )
+
+qt_config_compiler_supports_flag_test(use_lld_linker
+    LABEL "lld linker"
+    FLAG "-fuse-ld=lld"
+    )
+
+qt_feature("use_bfd_linker"
+    PRIVATE
+    LABEL "bfd"
+    AUTODETECT false
+    CONDITION NOT WIN32 AND NOT INTEGRITY AND NOT WASM AND TEST_use_bfd_linker
+    ENABLE INPUT_linker STREQUAL 'bfd'
+    DISABLE INPUT_linker STREQUAL 'gold' OR INPUT_linker STREQUAL 'lld'
+)
+qt_feature_config("use_bfd_linker" QMAKE_PRIVATE_CONFIG)
+
+qt_feature("use_gold_linker_alias"
+    AUTODETECT false
+    CONDITION NOT WIN32 AND NOT INTEGRITY AND NOT WASM AND TEST_use_gold_linker
+)
+qt_feature("use_gold_linker"
+    PRIVATE
+    LABEL "gold"
+    AUTODETECT false
+    CONDITION NOT WIN32 AND NOT INTEGRITY AND NOT WASM AND NOT rtems AND TEST_use_gold_linker
+    ENABLE INPUT_linker STREQUAL 'gold' OR QT_FEATURE_use_gold_linker_alias
+    DISABLE INPUT_linker STREQUAL 'bfd' OR INPUT_linker STREQUAL 'lld'
+)
+qt_feature_config("use_gold_linker" QMAKE_PRIVATE_CONFIG)
+
+qt_feature("use_lld_linker"
+    PRIVATE
+    LABEL "lld"
+    AUTODETECT false
+    CONDITION NOT WIN32 AND NOT INTEGRITY AND NOT WASM AND TEST_use_lld_linker
+    ENABLE INPUT_linker STREQUAL 'lld'
+    DISABLE INPUT_linker STREQUAL 'bfd' OR INPUT_linker STREQUAL 'gold'
+)
+qt_feature_config("use_lld_linker" QMAKE_PRIVATE_CONFIG)
+
+if(NOT QT_CONFIGURE_RUNNING)
+    qt_evaluate_feature(use_bfd_linker)
+    qt_evaluate_feature(use_gold_linker_alias)
+    qt_evaluate_feature(use_gold_linker)
+    qt_evaluate_feature(use_lld_linker)
+endif()
+
+
 #### Tests
 
 # machineTuple
@@ -96,21 +155,6 @@ int main(void)
 qt_config_compile_test(precompile_header
     LABEL "precompiled header support"
     PROJECT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/config.tests/precompile_header"
-)
-
-qt_config_compiler_supports_flag_test(use_bfd_linker
-    LABEL "bfd linker"
-    FLAG "-fuse-ld=bfd"
-)
-
-qt_config_compiler_supports_flag_test(use_gold_linker
-    LABEL "gold linker"
-    FLAG "-fuse-ld=gold"
-)
-
-qt_config_compiler_supports_flag_test(use_lld_linker
-    LABEL "lld linker"
-    FLAG "-fuse-ld=lld"
 )
 
 qt_config_compiler_supports_flag_test(optimize_debug
@@ -360,37 +404,6 @@ qt_feature_config("cross_compile" QMAKE_PRIVATE_CONFIG)
 qt_feature("gc_binaries" PRIVATE
     CONDITION NOT QT_FEATURE_shared
 )
-qt_feature("use_bfd_linker"
-    PRIVATE # special case
-    LABEL "bfd"
-    AUTODETECT false
-    CONDITION NOT WIN32 AND NOT INTEGRITY AND NOT WASM AND TEST_use_bfd_linker
-    ENABLE INPUT_linker STREQUAL 'bfd'
-    DISABLE INPUT_linker STREQUAL 'gold' OR INPUT_linker STREQUAL 'lld'
-)
-qt_feature_config("use_bfd_linker" QMAKE_PRIVATE_CONFIG)
-qt_feature("use_gold_linker_alias"
-    AUTODETECT false
-    CONDITION NOT WIN32 AND NOT INTEGRITY AND NOT WASM AND TEST_use_gold_linker
-)
-qt_feature("use_gold_linker"
-    PRIVATE # special case
-    LABEL "gold"
-    AUTODETECT false
-    CONDITION NOT WIN32 AND NOT INTEGRITY AND NOT WASM AND NOT rtems AND TEST_use_gold_linker
-    ENABLE INPUT_linker STREQUAL 'gold' OR QT_FEATURE_use_gold_linker_alias
-    DISABLE INPUT_linker STREQUAL 'bfd' OR INPUT_linker STREQUAL 'lld'
-)
-qt_feature_config("use_gold_linker" QMAKE_PRIVATE_CONFIG)
-qt_feature("use_lld_linker"
-    PRIVATE # special case
-    LABEL "lld"
-    AUTODETECT false
-    CONDITION NOT WIN32 AND NOT INTEGRITY AND NOT WASM AND TEST_use_lld_linker
-    ENABLE INPUT_linker STREQUAL 'lld'
-    DISABLE INPUT_linker STREQUAL 'bfd' OR INPUT_linker STREQUAL 'gold'
-)
-qt_feature_config("use_lld_linker" QMAKE_PRIVATE_CONFIG)
 qt_feature("optimize_debug"
     LABEL "Optimize debug build"
     AUTODETECT NOT QT_FEATURE_developer_build
