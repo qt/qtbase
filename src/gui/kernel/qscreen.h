@@ -153,7 +153,7 @@ public:
 
     qreal refreshRate() const;
 
-    QT_DECLARE_NATIVE_INTERFACE_ACCESSOR
+    QT_DECLARE_NATIVE_INTERFACE_ACCESSOR(QScreen)
 
 Q_SIGNALS:
     void geometryChanged(const QRect &geometry);

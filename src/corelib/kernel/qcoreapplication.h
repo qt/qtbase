@@ -164,7 +164,7 @@ public:
                              const char * disambiguation = nullptr,
                              int n = -1);
 
-    QT_DECLARE_NATIVE_INTERFACE_ACCESSOR
+    QT_DECLARE_NATIVE_INTERFACE_ACCESSOR(QCoreApplication)
 
 #ifndef QT_NO_QOBJECT
 #if QT_CONFIG(future)

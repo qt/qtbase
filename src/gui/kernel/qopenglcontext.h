@@ -154,7 +154,7 @@ public:
     static bool supportsThreadedOpenGL();
     static QOpenGLContext *globalShareContext();
 
-    QT_DECLARE_NATIVE_INTERFACE_ACCESSOR
+    QT_DECLARE_NATIVE_INTERFACE_ACCESSOR(QOpenGLContext)
 
 Q_SIGNALS:
     void aboutToBeDestroyed();
