@@ -108,6 +108,7 @@ public:
 #else
     // addAction(QString): Connect to a QObject slot / functor or function pointer (with context)
     template<class Obj, typename Func1>
+    QT_DEPRECATED_VERSION_X_6_4("Use addAction(text, shortcut, object, slot) instead.")
     inline typename std::enable_if<!std::is_same<const char*, Func1>::value
         && QtPrivate::IsPointerToTypeDerivedFromQObject<Obj*>::Value, QAction *>::type
         addAction(const QString &text, const Obj *object, Func1 slot,
@@ -117,12 +118,14 @@ public:
     }
     // addAction(QString): Connect to a functor or function pointer (without context)
     template <typename Func1>
+    QT_DEPRECATED_VERSION_X_6_4("Use addAction(text, shortcut, slot) instead.")
     inline QAction *addAction(const QString &text, Func1 slot, const QKeySequence &shortcut)
     {
         return addAction(text, shortcut, slot);
     }
     // addAction(QIcon, QString): Connect to a QObject slot / functor or function pointer (with context)
     template<class Obj, typename Func1>
+    QT_DEPRECATED_VERSION_X_6_4("Use addAction(icon, text, shortcut, object, slot) instead.")
     inline typename std::enable_if<!std::is_same<const char*, Func1>::value
         && QtPrivate::IsPointerToTypeDerivedFromQObject<Obj*>::Value, QAction *>::type
         addAction(const QIcon &actionIcon, const QString &text, const Obj *object, Func1 slot,
@@ -133,6 +136,7 @@ public:
     }
     // addAction(QIcon, QString): Connect to a functor or function pointer (without context)
     template <typename Func1>
+    QT_DEPRECATED_VERSION_X_6_4("Use addAction(icon, text, shortcut, slot) instead.")
     inline QAction *addAction(const QIcon &actionIcon, const QString &text, Func1 slot,
                               const QKeySequence &shortcut)
     {
