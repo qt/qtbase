@@ -1169,7 +1169,7 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
                 if (!dis)
                     newMi.state |= State_Enabled;
                 if (act)
-                    newMi.state |= State_On;
+                    newMi.state |= State_On | State_Selected;
                 newMi.rect = visualRect(opt->direction, menuitem->rect, QRect(menuitem->rect.x() + QWindowsStylePrivate::windowsItemFrame,
                                                                               menuitem->rect.y() + QWindowsStylePrivate::windowsItemFrame,
                                                                               checkcol - 2 * QWindowsStylePrivate::windowsItemFrame,
