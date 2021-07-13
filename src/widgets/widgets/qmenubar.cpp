@@ -751,72 +751,6 @@ QMenuBar::~QMenuBar()
 }
 
 /*!
-    This convenience function creates a new action with \a text.
-    The function adds the newly created action to the menu's
-    list of actions, and returns it.
-
-    \sa QWidget::addAction(), QWidget::actions()
-*/
-QAction *QMenuBar::addAction(const QString &text)
-{
-    QAction *ret = new QAction(text, this);
-    addAction(ret);
-    return ret;
-}
-
-/*!
-    \overload
-
-    This convenience function creates a new action with the given \a
-    text. The action's triggered() signal is connected to the \a
-    receiver's \a member slot. The function adds the newly created
-    action to the menu's list of actions and returns it.
-
-    \sa QWidget::addAction(), QWidget::actions()
-*/
-QAction *QMenuBar::addAction(const QString &text, const QObject *receiver, const char* member)
-{
-    QAction *ret = new QAction(text, this);
-    QObject::connect(ret, SIGNAL(triggered(bool)), receiver, member);
-    addAction(ret);
-    return ret;
-}
-
-/*!
-    \fn template<typename Obj, typename PointerToMemberFunctionOrFunctor> QAction *QMenuBar::addAction(const QString &text, const Obj *receiver, PointerToMemberFunctionOrFunctor method)
-
-    \since 5.11
-
-    \overload
-
-    This convenience function creates a new action with the given \a
-    text. The action's triggered() signal is connected to the
-    \a method of the \a receiver. The function adds the newly created
-    action to the menu's list of actions and returns it.
-
-    QMenuBar takes ownership of the returned QAction.
-
-    \sa QWidget::addAction(), QWidget::actions()
-*/
-
-/*!
-    \fn template<typename Functor> QAction *QMenuBar::addAction(const QString &text, Functor functor)
-
-    \since 5.11
-
-    \overload
-
-    This convenience function creates a new action with the given \a
-    text. The action's triggered() signal is connected to the
-    \a functor. The function adds the newly created
-    action to the menu's list of actions and returns it.
-
-    QMenuBar takes ownership of the returned QAction.
-
-    \sa QWidget::addAction(), QWidget::actions()
-*/
-
-/*!
   Appends a new QMenu with \a title to the menu bar. The menu bar
   takes ownership of the menu. Returns the new menu.
 
@@ -1588,7 +1522,7 @@ bool QMenuBar::eventFilter(QObject *object, QEvent *event)
   Returns the QAction at \a pt. Returns \nullptr if there is no action at \a pt or if
 the location has a separator.
 
-    \sa addAction(), addSeparator()
+    \sa QWidget::addAction(), addSeparator()
 */
 QAction *QMenuBar::actionAt(const QPoint &pt) const
 {

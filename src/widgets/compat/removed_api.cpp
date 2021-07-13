@@ -96,6 +96,18 @@ QAction *QToolBar::addAction(const QIcon &icon, const QString &text,
     return QWidget::addAction(icon, text, receiver, member);
 }
 
+#include "qmenubar.h"
+
+QAction *QMenuBar::addAction(const QString &text)
+{
+    return QWidget::addAction(text);
+}
+
+QAction *QMenuBar::addAction(const QString &text, const QObject *receiver, const char* member)
+{
+    return QWidget::addAction(text, receiver, member);
+}
+
 // #include <qotherheader.h>
 // // implement removed functions from qotherheader.h
 
