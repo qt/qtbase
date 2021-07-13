@@ -169,6 +169,8 @@ private:
     static bool isNaturalChild(const QObject *obj);
     static QPixmap loadPixmap(const QString &fileName, const QObject *context);
     bool initObject(const QObject *obj) const;
+    void renderMenuItemIcon(const QStyleOptionMenuItem *mi, QPainter *p, const QWidget *w,
+                            const QRect &rect, QRenderRule &subRule) const;
 public:
     static int numinstances;
 
