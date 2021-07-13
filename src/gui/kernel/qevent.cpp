@@ -2822,7 +2822,7 @@ QNativeGestureEvent::QNativeGestureEvent(Qt::NativeGestureType type, const QPoin
 */
 QNativeGestureEvent::QNativeGestureEvent(Qt::NativeGestureType type, const QPointingDevice *device, int fingerCount,
                                          const QPointF &localPos, const QPointF &scenePos,
-                                         const QPointF &globalPos, qreal value, QVector2D deltas,
+                                         const QPointF &globalPos, qreal value, const QPointF &deltas,
                                          quint64 sequenceId)
     : QSinglePointEvent(QEvent::NativeGesture, device, localPos, scenePos, globalPos, Qt::NoButton,
                         Qt::NoButton, Qt::NoModifier),
