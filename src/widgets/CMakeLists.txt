@@ -8,6 +8,7 @@ qt_internal_add_module(Widgets
     QMAKE_MODULE_CONFIG uic
     PLUGIN_TYPES styles
     SOURCES
+        compat/removed_api.cpp
         itemviews/qfileiconprovider.cpp itemviews/qfileiconprovider.h itemviews/qfileiconprovider_p.h
         kernel/qapplication.cpp kernel/qapplication.h kernel/qapplication_p.h
         kernel/qboxlayout.cpp kernel/qboxlayout.h
@@ -47,7 +48,6 @@ qt_internal_add_module(Widgets
         widgets/qabstractscrollarea.cpp widgets/qabstractscrollarea.h widgets/qabstractscrollarea_p.h
         widgets/qfocusframe.cpp widgets/qfocusframe.h
         widgets/qframe.cpp widgets/qframe.h widgets/qframe_p.h
-        widgets/qtwidgets_widgets_removed_functions_in_6_3.cpp
         widgets/qwidgetanimator.cpp widgets/qwidgetanimator_p.h
     DEFINES
         QT_NO_USING_NAMESPACE
@@ -239,7 +239,7 @@ set(qstyle_resource_files
 )
 
 set(widgets_no_pch_sources
-    widgets/qtwidgets_widgets_removed_functions_in_6_3.cpp
+    compat/removed_api.cpp
 )
 
 foreach(src ${widgets_no_pch_sources})

@@ -37,13 +37,13 @@
 **
 ****************************************************************************/
 
-#define QT_BUILD_FUNCTIONS_REMOVED_IN_6_3
+#define QT_BUILD_REMOVED_API
 
 #include "qglobal.h"
 
 QT_USE_NAMESPACE
 
-#if QT_DEPRECATED_SINCE(6, 3)
+#if QT_REMOVED_SINCE(6, 3)
 
 #include "qmenu.h"
 
@@ -99,4 +99,4 @@ QAction *QToolBar::addAction(const QIcon &icon, const QString &text,
 // #include <qotherheader.h>
 // // implement removed functions from qotherheader.h
 
-#endif // QT_DEPRECATED_SINCE(6, 3)
+#endif // QT_REMOVED_SINCE(6, 3)
