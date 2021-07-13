@@ -49,7 +49,7 @@ macos: QDOC_INCLUDE_PATHS += $$join(QMAKE_DEFAULT_INCDIRS," -I","-I")
 
 !build_online_docs: qtPrepareTool(QHELPGENERATOR, qhelpgenerator)
 
-qtPrepareTool(QTATTRIBUTIONSSCANNER, qtattributionsscanner)
+qtPrepareLibExecTool(QTATTRIBUTIONSSCANNER, qtattributionsscanner)
 
 # qtPrepareTool() must be called outside a build pass, as it protects
 # against concurrent wrapper creation by omitting it during build passes.
