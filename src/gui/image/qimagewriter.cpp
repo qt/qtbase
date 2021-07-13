@@ -153,7 +153,7 @@ static QImageIOHandler *createWriteHandlerHelper(QIODevice *device,
         // if there's no format, see if \a device is a file, and if so, find
         // the file suffix and find support for that format among our plugins.
         // this allows plugins to override our built-in handlers.
-        if (QFile *file = qobject_cast<QFile *>(device)) {
+        if (QFileDevice *file = qobject_cast<QFileDevice *>(device)) {
             if (!(suffix = QFileInfo(file->fileName()).suffix().toLower().toLatin1()).isEmpty()) {
 #ifndef QT_NO_IMAGEFORMATPLUGIN
                 const int index = keyMap.key(QString::fromLatin1(suffix), -1);
@@ -428,17 +428,17 @@ void QImageWriter::setFileName(const QString &fileName)
 }
 
 /*!
-    If the currently assigned device is a QFile, or if setFileName()
+    If the currently assigned device is a file, or if setFileName()
     has been called, this function returns the name of the file
     QImageWriter writes to. Otherwise (i.e., if no device has been
-    assigned or the device is not a QFile), an empty QString is
+    assigned or the device is not a file), an empty QString is
     returned.
 
     \sa setFileName(), setDevice()
 */
 QString QImageWriter::fileName() const
 {
-    QFile *file = qobject_cast<QFile *>(d->device);
+    QFileDevice *file = qobject_cast<QFileDevice *>(d->device);
     return file ? file->fileName() : QString();
 }
 
@@ -719,7 +719,7 @@ bool QImageWriter::write(const QImage &image)
 
     if (!d->handler->write(img))
         return false;
-    if (QFile *file = qobject_cast<QFile *>(d->device))
+    if (QFileDevice *file = qobject_cast<QFileDevice *>(d->device))
         file->flush();
     return true;
 }
