@@ -173,7 +173,7 @@ public:
     bool isSavingSession() const;
 #endif
 
-    QT_DECLARE_NATIVE_INTERFACE_ACCESSOR
+    QT_DECLARE_NATIVE_INTERFACE_ACCESSOR(QGuiApplication)
 
     static void sync();
 Q_SIGNALS:

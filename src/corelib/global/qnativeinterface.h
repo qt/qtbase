@@ -61,11 +61,21 @@ QT_BEGIN_NAMESPACE
 #define QT_DECLARE_NATIVE_INTERFACE_3(NativeInterface, Revision, BaseType) \
     protected: \
         virtual ~NativeInterface(); \
+        \
         struct TypeInfo { \
             using baseType = BaseType; \
             static constexpr char const *name = QT_STRINGIFY(NativeInterface); \
             static constexpr int revision = Revision; \
         }; \
+        \
+        template <typename, typename> \
+        friend struct QNativeInterface::Private::has_type_info; \
+        \
+        template <typename> \
+        friend bool constexpr QNativeInterface::Private::hasTypeInfo(); \
+        \
+        template <typename> \
+        friend struct QNativeInterface::Private::TypeInfo; \
     public: \
 
 // Revisioned interfaces only make sense when exposed through a base
@@ -81,35 +91,97 @@ QT_BEGIN_NAMESPACE
     QT_OVERLOADED_MACRO(QT_DECLARE_NATIVE_INTERFACE, __VA_ARGS__)
 
 namespace QNativeInterface::Private {
-    template <typename NativeInterface>
-    struct TypeInfo : private NativeInterface
-    {
-        static constexpr char const *name() { return NativeInterface::TypeInfo::name; }
-        static constexpr int revision() { return NativeInterface::TypeInfo::revision; }
 
-        template<typename BaseType>
-        static constexpr bool isCompatibleWith =
-            std::is_base_of<typename NativeInterface::TypeInfo::baseType, BaseType>::value;
+    // Basic type-trait to verify that a given native interface has
+    // all the required type information for us to evaluate it.
+    template <typename NativeInterface, typename = void>
+    struct has_type_info : std::false_type {};
+
+    // The type-trait is friended by TypeInfo, so that we can
+    // evaluate TypeInfo in the template arguments.
+    template <typename NativeInterface>
+    struct has_type_info<NativeInterface, std::void_t<
+        typename NativeInterface::TypeInfo,
+        typename NativeInterface::TypeInfo::baseType,
+        decltype(&NativeInterface::TypeInfo::name),
+        decltype(&NativeInterface::TypeInfo::revision)
+        >> : std::true_type {};
+
+    // We need to wrap the instantiation of has_type_info in a
+    // function friended by TypeInfo, otherwise MSVC will not
+    // let us evaluate TypeInfo in the template arguments.
+    template <typename NativeInterface>
+    bool constexpr hasTypeInfo()
+    {
+        return has_type_info<NativeInterface>::value;
+    }
+
+    template <typename NativeInterface>
+    struct TypeInfo
+    {
+        // To ensure SFINAE works for hasTypeInfo we can't use it in a constexpr
+        // variable that also includes an expression that relies on the type
+        // info. This helper variable is okey, as it it self contained.
+        static constexpr bool haveTypeInfo = hasTypeInfo<NativeInterface>();
+
+        // We can then use the helper variable in a constexpr condition in a
+        // function, which does not break SFINAE if haveTypeInfo is false.
+        template <typename BaseType>
+        static constexpr bool isCompatibleHelper()
+        {
+            if constexpr (haveTypeInfo)
+                return std::is_base_of<typename NativeInterface::TypeInfo::baseType, BaseType>::value;
+            else
+                return false;
+        }
+
+        // MSVC however doesn't like constexpr functions in enable_if_t conditions,
+        // so we need to wrap it yet again in a constexpr variable. This is fine,
+        // as all the SFINAE magic has been resolved at this point.
+        template <typename BaseType>
+        static constexpr bool isCompatibleWith = isCompatibleHelper<BaseType>();
+
+        // The revision and name accessors are not used in enable_if_t conditions,
+        // so we can leave them as constexpr functions. As this class template is
+        // friended by TypeInfo we can access the protected members of TypeInfo.
+        static constexpr int revision()
+        {
+            if constexpr (haveTypeInfo)
+                return NativeInterface::TypeInfo::revision;
+            else
+                return 0;
+        }
+
+        static constexpr char const *name()
+        {
+            if constexpr (haveTypeInfo)
+                return NativeInterface::TypeInfo::name;
+            else
+                return nullptr;
+        }
     };
+
+    // Wrapper type to make the error message in case
+    // of incompatible interface types read better.
+    template <typename I>
+    struct NativeInterface : TypeInfo<I> {};
 
     template <typename T>
     Q_NATIVE_INTERFACE_IMPORT void *resolveInterface(const T *that, const char *name, int revision);
 
     Q_CORE_EXPORT Q_DECLARE_LOGGING_CATEGORY(lcNativeInterface)
-}
+
+} // QNativeInterface::Private
 
 // Declares an accessor for the native interface
-#define QT_DECLARE_NATIVE_INTERFACE_ACCESSOR \
-    template <typename I> \
-    I *nativeInterface() const \
+#define QT_DECLARE_NATIVE_INTERFACE_ACCESSOR(T) \
+    template <typename NativeInterface, typename TypeInfo = QNativeInterface::Private::NativeInterface<NativeInterface>, \
+    typename BaseType = T, std::enable_if_t<TypeInfo::template isCompatibleWith<T>, bool> = true> \
+    NativeInterface *nativeInterface() const \
     { \
-        using T = std::decay_t<decltype(*this)>; \
-        using NativeInterface = QNativeInterface::Private::TypeInfo<I>; \
-        static_assert(NativeInterface::template isCompatibleWith<T>, \
-            "T::nativeInterface<I>() requires that native interface I is compatible with T"); \
-        \
-        return static_cast<I*>(QNativeInterface::Private::resolveInterface(this, \
-            NativeInterface::name(), NativeInterface::revision())); \
+        return static_cast<NativeInterface*>( \
+            QNativeInterface::Private::resolveInterface(this, \
+                TypeInfo::name(), TypeInfo::revision())); \
     }
 
 // Provides a definition for the interface destructor
@@ -134,6 +206,8 @@ namespace QNativeInterface::Private {
                 revision, TypeInfo<NativeInterface>::revision(), name); \
             return nullptr; \
         } \
+    } else { \
+        qCDebug(lcNativeInterface, "No match for requested interface name %s", name); \
     }
 
 QT_END_NAMESPACE

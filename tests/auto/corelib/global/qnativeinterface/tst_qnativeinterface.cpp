@@ -44,7 +44,7 @@ struct InterfaceImplementation;
 struct PublicClass
 {
     PublicClass();
-    QT_DECLARE_NATIVE_INTERFACE_ACCESSOR
+    QT_DECLARE_NATIVE_INTERFACE_ACCESSOR(PublicClass)
     std::unique_ptr<InterfaceImplementation> m_implementation;
 };
 
@@ -65,6 +65,15 @@ struct OtherInterface
 QT_DEFINE_NATIVE_INTERFACE(Interface);
 QT_DEFINE_NATIVE_INTERFACE(OtherInterface);
 QT_END_NAMESPACE
+
+struct NotInterface {};
+
+struct AlmostInterface
+{
+    struct TypeInfo {
+        // Missing required members
+    };
+};
 
 using namespace QNativeInterface;
 
@@ -88,6 +97,10 @@ void* QNativeInterface::Private::resolveInterface<PublicClass>(
 void tst_QNativeInterface::typeInfo() const
 {
     using namespace QNativeInterface::Private;
+
+    QCOMPARE(TypeInfo<Interface>::haveTypeInfo, true);
+    QCOMPARE(TypeInfo<NotInterface>::haveTypeInfo, false);
+    QCOMPARE(TypeInfo<AlmostInterface>::haveTypeInfo, false);
 
     QCOMPARE(TypeInfo<Interface>::isCompatibleWith<PublicClass>, true);
     QCOMPARE(TypeInfo<Interface>::isCompatibleWith<QObject>, false);

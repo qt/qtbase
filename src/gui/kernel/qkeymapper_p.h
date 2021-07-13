@@ -73,7 +73,7 @@ public:
     static void changeKeyboard();
     static QList<int> possibleKeys(QKeyEvent *e);
 
-    QT_DECLARE_NATIVE_INTERFACE_ACCESSOR
+    QT_DECLARE_NATIVE_INTERFACE_ACCESSOR(QKeyMapper)
 
 private:
     friend QKeyMapperPrivate *qt_keymapper_private();

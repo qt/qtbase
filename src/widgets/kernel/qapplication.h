@@ -154,7 +154,7 @@ public:
     static Qt::NavigationMode navigationMode();
 #endif
 
-    QT_DECLARE_NATIVE_INTERFACE_ACCESSOR
+    QT_DECLARE_NATIVE_INTERFACE_ACCESSOR(QApplication)
 
 Q_SIGNALS:
     void focusChanged(QWidget *old, QWidget *now);
