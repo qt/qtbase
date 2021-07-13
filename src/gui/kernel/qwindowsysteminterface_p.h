@@ -458,7 +458,7 @@ public:
         Qt::NativeGestureType type;
         QPointF pos;
         QPointF globalPos;
-        QVector2D deltas;
+        QPointF deltas;
         int fingerCount;
         // Mac
         qreal realValue;

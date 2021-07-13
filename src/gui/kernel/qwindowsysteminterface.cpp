@@ -1057,7 +1057,7 @@ bool QWindowSystemInterface::handleGestureEventWithRealValue(QWindow *window, ul
 }
 
 bool QWindowSystemInterface::handleGestureEventWithValueAndDeltas(QWindow *window, ulong timestamp, const QPointingDevice *device,
-                                                                  Qt::NativeGestureType type, qreal value, QVector2D deltas,
+                                                                  Qt::NativeGestureType type, qreal value, const QPointF &deltas,
                                                                   const QPointF &local, const QPointF &global, int fingerCount)
 {
     QWindowSystemInterfacePrivate::GestureEvent *e =
