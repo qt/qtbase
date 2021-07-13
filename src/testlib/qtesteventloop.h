@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtTest module of the Qt Toolkit.
@@ -41,6 +41,7 @@
 #define QTESTEVENTLOOP_H
 
 #include <QtTest/qttestglobal.h>
+#include <QtTest/qtestcase.h>
 
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qeventloop.h>
@@ -93,11 +94,12 @@ private:
 inline void QTestEventLoop::enterLoopMSecs(int ms)
 {
     Q_ASSERT(!loop);
-
-    QEventLoop l;
-
     _timeout = false;
 
+    if (QTest::currentTestFailed())
+        return;
+
+    QEventLoop l;
     timerId = startTimer(ms);
 
     loop = &l;

@@ -46,6 +46,7 @@
 #include <QtTest/qtestdata.h>
 #include <QtTest/qtestcase.h>
 #include <QtTest/qtestassert.h>
+#include <QtTest/qtesteventloop.h>
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -464,6 +465,7 @@ bool QTestResult::compare(bool success, const char *failureMsg,
 void QTestResult::addFailure(const char *message, const char *file, int line)
 {
     clearExpectFail();
+    QTestEventLoop::instance().exitLoop();
 
     if (QTest::blacklistCurrentTest)
         QTestLog::addBFail(message, file, line);
