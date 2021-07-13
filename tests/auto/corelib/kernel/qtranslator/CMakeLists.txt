@@ -11,8 +11,10 @@ qt_internal_add_test(tst_qtranslator
 
 # Resources:
 set(qtranslator_resource_files
+    "dependencies_la.qm"
     "hellotr_empty.qm"
     "hellotr_la.qm"
+    "msgfmt_from_po.qm"
 )
 
 qt_internal_add_resource(tst_qtranslator "qtranslator"
