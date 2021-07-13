@@ -424,7 +424,7 @@ public:
     Qt::NativeGestureType gestureType() const { return m_gestureType; }
     int fingerCount() const { return m_fingerCount; }
     qreal value() const { return m_realValue; }
-    QPointF deltas() const { return m_deltas.toPointF(); }
+    QPointF delta() const { return m_delta.toPointF(); }
 
 #if QT_DEPRECATED_SINCE(6, 0)
 #ifndef QT_NO_INTEGER_EVENT_COORDINATES
@@ -443,7 +443,7 @@ public:
 
 protected:
     quint64 m_sequenceId;
-    QVector2D m_deltas;
+    QVector2D m_delta;
     qreal m_realValue;
     Qt::NativeGestureType m_gestureType;
     quint32 m_fingerCount : 4;

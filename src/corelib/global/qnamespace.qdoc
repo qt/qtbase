@@ -3123,12 +3123,11 @@
 
     \value BeginNativeGesture Sent before gesture event stream.
     \value EndNativeGesture   Sent after gesture event stream.
-    \value PanNativeGesture   Sent after a panning gesture.
-                              Similar to a click-and-drag mouse movement.
+    \value PanNativeGesture   Specifies the displacement delta in pixels.
     \value ZoomNativeGesture  Specifies the magnification delta in percent.
     \value SmartZoomNativeGesture Boolean magnification state.
-    \value RotateNativeGesture    Rotation delta in degrees.
-    \value SwipeNativeGesture     Sent after a swipe movements.
+    \value RotateNativeGesture    Specifies the rotation delta in degrees.
+    \value SwipeNativeGesture     Sent after a swipe movement.
 
 */
 

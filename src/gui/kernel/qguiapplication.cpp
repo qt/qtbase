@@ -2760,7 +2760,7 @@ void QGuiApplicationPrivate::processGestureEvent(QWindowSystemInterfacePrivate::
 
     const QPointingDevice *device = static_cast<const QPointingDevice *>(e->device);
     QNativeGestureEvent ev(e->type, device, e->fingerCount, e->pos, e->pos, e->globalPos, (e->intValue ? e->intValue : e->realValue),
-                           e->deltas, e->sequenceId);
+                           e->delta, e->sequenceId);
     ev.setTimestamp(e->timestamp);
     QGuiApplication::sendSpontaneousEvent(e->window, &ev);
 }
