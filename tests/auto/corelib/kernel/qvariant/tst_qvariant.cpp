@@ -63,6 +63,7 @@
 #include "qnumeric.h"
 
 #include <private/qlocale_p.h>
+#include <private/qmetatype_p.h>
 #include "tst_qvariant_common.h"
 
 #include <unordered_map>
@@ -309,6 +310,7 @@ private slots:
     void mutableView();
 
     void moveOperations();
+    void equalsWithoutMetaObject();
 
 private:
     void dataStream_data(QDataStream::Version version);
@@ -5084,6 +5086,52 @@ void tst_QVariant::moveOperations()
     v = QVariant::fromValue(list);
     v2 = std::move(v);
     QVERIFY(v2.value<std::list<int>>() == list);
+}
+
+class NoMetaObject : public QObject {};
+void tst_QVariant::equalsWithoutMetaObject()
+{
+    using T = NoMetaObject*;
+    QtPrivate::QMetaTypeInterface d = {
+        /*.revision=*/ 0,
+        /*.alignment=*/ alignof(T),
+        /*.size=*/ sizeof(T),
+        /*.flags=*/ QtPrivate::QMetaTypeTypeFlags<T>::Flags,
+        /*.typeId=*/ 0,
+        /*.metaObject=*/ nullptr, // on purpose.
+        /*.name=*/ "NoMetaObject*",
+        /*.defaultCtr=*/ [](const QtPrivate::QMetaTypeInterface *, void *addr) {
+            new (addr) T();
+        },
+        /*.copyCtr=*/ [](const QtPrivate::QMetaTypeInterface *, void *addr, const void *other) {
+            new (addr) T(*reinterpret_cast<const T *>(other));
+        },
+        /*.moveCtr=*/ [](const QtPrivate::QMetaTypeInterface *, void *addr, void *other) {
+            new (addr) T(std::move(*reinterpret_cast<T *>(other)));
+        },
+        /*.dtor=*/ [](const QtPrivate::QMetaTypeInterface *, void *addr) {
+            reinterpret_cast<T *>(addr)->~T();
+        },
+        /*.equals*/ nullptr,
+        /*.lessThan*/ nullptr,
+        /*.debugStream=*/ nullptr,
+        /*.dataStreamOut=*/ nullptr,
+        /*.dataStreamIn=*/ nullptr,
+        /*.legacyRegisterOp=*/ nullptr
+    };
+
+    QMetaType noMetaObjectMetaType(&d);
+    QMetaType qobjectMetaType = QMetaType::fromType<tst_QVariant*>();
+
+    QVERIFY(noMetaObjectMetaType.flags() & QMetaType::PointerToQObject);
+    QVERIFY(qobjectMetaType.flags() & QMetaType::PointerToQObject);
+
+    QVariant noMetaObjectVariant(noMetaObjectMetaType, nullptr);
+    QVariant qobjectVariant(qobjectMetaType, nullptr);
+
+    // Shouldn't crash
+    QVERIFY(noMetaObjectVariant != qobjectVariant);
+    QVERIFY(qobjectVariant != noMetaObjectVariant);
 }
 
 QTEST_MAIN(tst_QVariant)

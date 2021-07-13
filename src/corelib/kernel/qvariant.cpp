@@ -2341,9 +2341,11 @@ static bool numericEquals(const QVariant::Private *d1, const QVariant::Private *
 #ifndef QT_BOOTSTRAPPED
 static bool canConvertMetaObject(QMetaType fromType, QMetaType toType)
 {
-    if ((fromType.flags() & QMetaType::PointerToQObject) && (toType.flags() & QMetaType::PointerToQObject)) {
-        return fromType.metaObject()->inherits(toType.metaObject()) ||
-                toType.metaObject()->inherits(fromType.metaObject());
+    if ((fromType.flags() & QMetaType::PointerToQObject)
+            && (toType.flags() & QMetaType::PointerToQObject)) {
+        const QMetaObject *f = fromType.metaObject();
+        const QMetaObject *t = toType.metaObject();
+        return f && t && (f->inherits(t) || t->inherits(f));
     }
     return false;
 }
