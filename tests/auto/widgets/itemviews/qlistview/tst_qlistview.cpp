@@ -173,6 +173,8 @@ private slots:
     void internalDragDropMove();
     void spacingWithWordWrap_data();
     void spacingWithWordWrap();
+    void scrollOnRemove_data();
+    void scrollOnRemove();
 };
 
 // Testing get/set functions
@@ -2849,6 +2851,73 @@ void tst_QListView::spacingWithWordWrap()
         QCOMPARE(rectForRowOne.y() + rectForRowOne.height(), rectForRowTwo.y());
     }
 }
+
+void tst_QListView::scrollOnRemove_data()
+{
+    QTest::addColumn<QListView::ViewMode>("viewMode");
+    QTest::addColumn<QAbstractItemView::SelectionMode>("selectionMode");
+
+    const QMetaObject &mo = QListView::staticMetaObject;
+    const auto viewModeEnum = mo.enumerator(mo.indexOfEnumerator("ViewMode"));
+    const auto selectionModeEnum = mo.enumerator(mo.indexOfEnumerator("SelectionMode"));
+    for (auto viewMode : { QListView::ListMode, QListView::IconMode }) {
+        const char *viewModeName = viewModeEnum.valueToKey(viewMode);
+        for (int index = 0; index < selectionModeEnum.keyCount(); ++index) {
+            const auto selectionMode = QAbstractItemView::SelectionMode(selectionModeEnum.value(index));
+            const char *selectionModeName = selectionModeEnum.valueToKey(selectionMode);
+            QTest::addRow("%s, %s", viewModeName, selectionModeName) << viewMode << selectionMode;
+        }
+    }
+}
+
+void tst_QListView::scrollOnRemove()
+{
+    QFETCH(QListView::ViewMode, viewMode);
+    QFETCH(QAbstractItemView::SelectionMode, selectionMode);
+
+    QPixmap pixmap;
+    if (viewMode == QListView::IconMode) {
+        pixmap = QPixmap(25, 25);
+        pixmap.fill(Qt::red);
+    }
+
+    QStandardItemModel model;
+    for (int i = 0; i < 50; ++i) {
+        QStandardItem *item = new QStandardItem(QString::number(i));
+        item->setIcon(pixmap);
+        model.appendRow(item);
+    }
+
+    QWidget widget;
+    QListView view(&widget);
+    view.setFixedSize(100, 100);
+    view.setAutoScroll(true);
+    if (viewMode == QListView::IconMode)
+        view.setWrapping(true);
+    view.setModel(&model);
+    view.setSelectionMode(selectionMode);
+    view.setViewMode(viewMode);
+
+    widget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
+
+    QCOMPARE(view.verticalScrollBar()->value(), 0);
+    const QModelIndex item25 = model.index(25, 0);
+    view.scrollTo(item25);
+    QTRY_VERIFY(view.verticalScrollBar()->value() > 0); // layout and scrolling are delayed
+    const int item25Position = view.verticalScrollBar()->value();
+    // selecting a fully visible item shouldn't scroll
+    view.selectionModel()->setCurrentIndex(item25, QItemSelectionModel::SelectCurrent);
+    QTRY_COMPARE(view.verticalScrollBar()->value(), item25Position);
+
+    // removing the selected item might scroll if another item is selected
+    model.removeRow(25);
+
+    // if nothing is selected now, then the view should not have scrolled
+    if (!view.selectionModel()->selectedIndexes().count())
+        QTRY_COMPARE(view.verticalScrollBar()->value(), item25Position);
+}
+
 
 QTEST_MAIN(tst_QListView)
 #include "tst_qlistview.moc"

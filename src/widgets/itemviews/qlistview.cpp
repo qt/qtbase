@@ -572,6 +572,8 @@ void QListView::scrollTo(const QModelIndex &index, ScrollHint hint)
         return;
 
     const QRect rect = visualRect(index);
+    if (!rect.isValid())
+        return;
     if (hint == EnsureVisible && d->viewport->rect().contains(rect)) {
         d->viewport->update(rect);
         return;
