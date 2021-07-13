@@ -75,7 +75,9 @@ public:
             });
         });
 
-        QVERIFY(server.listen("foo"));
+        // TODO QTBUG-95136: on failure, remove the socket file and retry.
+        QVERIFY2(server.listen("foo"), qPrintable(server.errorString()));
+
         running.release();
         exec();
     }
