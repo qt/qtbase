@@ -908,7 +908,7 @@ void QNetworkRequest::setHttp2Configuration(const QHttp2Configuration &configura
     If the decompressed size of a reply is smaller than this, Qt will simply
     decompress it, without further checking.
 
-    \sa setMinimumArchiveBombSize()
+    \sa setDecompressedSafetyCheckThreshold()
 */
 qint64 QNetworkRequest::decompressedSafetyCheckThreshold() const
 {
@@ -935,7 +935,7 @@ qint64 QNetworkRequest::decompressedSafetyCheckThreshold() const
     ZStandard), the reply will be treated as an error. Setting the threshold
     to \c{-1} disables this check.
 
-    \sa minimumArchiveBombSize()
+    \sa decompressedSafetyCheckThreshold()
 */
 void QNetworkRequest::setDecompressedSafetyCheckThreshold(qint64 threshold)
 {
