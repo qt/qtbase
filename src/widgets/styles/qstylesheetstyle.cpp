@@ -3555,6 +3555,35 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
     baseStyle()->drawComplexControl(cc, opt, p, w);
 }
 
+void QStyleSheetStyle::renderMenuItemIcon(const QStyleOptionMenuItem *mi, QPainter *p, const QWidget *w,
+                                          const QRect &rect, QRenderRule &subRule) const
+{
+    const QIcon::Mode mode = mi->state & QStyle::State_Enabled
+                           ? (mi->state & QStyle::State_Selected ? QIcon::Active : QIcon::Normal)
+                           : QIcon::Disabled;
+    const bool checked = mi->checkType != QStyleOptionMenuItem::NotCheckable && mi->checked;
+    const QPixmap pixmap(mi->icon.pixmap(pixelMetric(PM_SmallIconSize), mode,
+                        checked ? QIcon::On : QIcon::Off));
+    const int pixw = pixmap.width() / pixmap.devicePixelRatio();
+    const int pixh = pixmap.height() / pixmap.devicePixelRatio();
+    QRenderRule iconRule = renderRule(w, mi, PseudoElement_MenuIcon);
+    if (!iconRule.hasGeometry()) {
+        iconRule.geo = new QStyleSheetGeometryData(pixw, pixh, pixw, pixh, -1, -1);
+    } else {
+        iconRule.geo->width = pixw;
+        iconRule.geo->height = pixh;
+    }
+    QRect iconRect = positionRect(w, subRule, iconRule, PseudoElement_MenuIcon, rect, mi->direction);
+    if (mi->direction == Qt::LeftToRight)
+        iconRect.moveLeft(iconRect.left());
+    else
+        iconRect.moveRight(iconRect.right());
+    iconRule.drawRule(p, iconRect);
+    QRect pmr(0, 0, pixw, pixh);
+    pmr.moveCenter(iconRect.center());
+    p->drawPixmap(pmr.topLeft(), pixmap);
+}
+
 void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter *p,
                           const QWidget *w) const
 {
@@ -3835,42 +3864,18 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                 }
                 mi.palette.setBrush(QPalette::HighlightedText, mi.palette.brush(QPalette::ButtonText));
 
-                bool checkable = mi.checkType != QStyleOptionMenuItem::NotCheckable;
-                bool checked = checkable ? mi.checked : false;
-
-                bool dis = !(opt->state & QStyle::State_Enabled),
-                     act = opt->state & QStyle::State_Selected;
-
                 int textRectOffset = m->maxIconWidth;
                 if (!mi.icon.isNull()) {
-                    QIcon::Mode mode = dis ? QIcon::Disabled : QIcon::Normal;
-                    if (act && !dis)
-                        mode = QIcon::Active;
-                    const QPixmap pixmap(mi.icon.pixmap(pixelMetric(PM_SmallIconSize), mode, checked ? QIcon::On : QIcon::Off));
-                    const int pixw = pixmap.width() / pixmap.devicePixelRatio();
-                    const int pixh = pixmap.height() / pixmap.devicePixelRatio();
-                    QRenderRule iconRule = renderRule(w, opt, PseudoElement_MenuIcon);
-                    if (!iconRule.hasGeometry()) {
-                        iconRule.geo = new QStyleSheetGeometryData(pixw, pixh, pixw, pixh, -1, -1);
-                    } else {
-                        iconRule.geo->width = pixw;
-                        iconRule.geo->height = pixh;
-                    }
-                    QRect iconRect = positionRect(w, subRule, iconRule, PseudoElement_MenuIcon, opt->rect, opt->direction);
-                    if (opt->direction == Qt::LeftToRight)
-                        iconRect.moveLeft(iconRect.left());
-                    else
-                        iconRect.moveRight(iconRect.right());
-                    iconRule.drawRule(p, iconRect);
-                    QRect pmr(0, 0, pixw, pixh);
-                    pmr.moveCenter(iconRect.center());
-                    p->drawPixmap(pmr.topLeft(), pixmap);
+                    renderMenuItemIcon(&mi, p, w, opt->rect, subRule);
                 } else if (mi.menuHasCheckableItems) {
-                    QRenderRule subSubRule = renderRule(w, opt, PseudoElement_MenuCheckMark);
+                    const bool checkable = mi.checkType != QStyleOptionMenuItem::NotCheckable;
+                    const bool checked = checkable ? mi.checked : false;
+
+                    const QRenderRule subSubRule = renderRule(w, opt, PseudoElement_MenuCheckMark);
                     const QRect cmRect = positionRect(w, subRule, subSubRule, PseudoElement_MenuCheckMark, opt->rect, opt->direction);
                     if (checkable && (subSubRule.hasDrawable() || checked)) {
                         QStyleOptionMenuItem newMi = mi;
-                        if (!dis)
+                        if (opt->state & QStyle::State_Enabled)
                             newMi.state |= State_Enabled;
                         if (mi.checked)
                             newMi.state |= State_On;
@@ -3907,6 +3912,17 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                     mi.rect = positionRect(w, subRule, subRule2, PseudoElement_MenuRightArrow, opt->rect, mi.direction);
                     drawPrimitive(arrow, &mi, p, w);
                 }
+            } else if (!mi.icon.isNull() && hasStyleRule(w, PseudoElement_MenuIcon)) {
+                // we wouldn't be here if the item itself would be styled, so now we only want
+                // the text from the default style, and then draw the icon ourselves.
+                QStyleOptionMenuItem newMi = mi;
+                newMi.icon = {};
+                newMi.checkType = QStyleOptionMenuItem::NotCheckable;
+                if (rule.baseStyleCanDraw() && subRule.baseStyleCanDraw())
+                    baseStyle()->drawControl(ce, &newMi, p, w);
+                else
+                    ParentStyle::drawControl(ce, &newMi, p, w);
+                renderMenuItemIcon(&mi, p, w, opt->rect, subRule);
             } else if (hasStyleRule(w, PseudoElement_MenuCheckMark) || hasStyleRule(w, PseudoElement_MenuRightArrow)) {
                 QWindowsStyle::drawControl(ce, &mi, p, w);
                 if (mi.checkType != QStyleOptionMenuItem::NotCheckable && !mi.checked) {
