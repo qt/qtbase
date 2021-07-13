@@ -62,8 +62,8 @@ MainWindow::MainWindow(QWidget *parent)
       view(new QTreeView(this))
 {
     fileMenu = menuBar()->addMenu(tr("&File"));
-    fileMenu->addAction(tr("&Open..."), this, &MainWindow::openFile, QKeySequence::Open);
-    fileMenu->addAction(tr("E&xit"), this, &QWidget::close, QKeySequence::Quit);
+    fileMenu->addAction(tr("&Open..."), QKeySequence::Open, this, &MainWindow::openFile);
+    fileMenu->addAction(tr("E&xit"), QKeySequence::Quit, this, &QWidget::close);
 
     view->setModel(model);
 

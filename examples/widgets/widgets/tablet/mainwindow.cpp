@@ -155,13 +155,13 @@ void MainWindow::about()
 void MainWindow::createMenus()
 {
     QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
-    fileMenu->addAction(tr("&Open..."), this, &MainWindow::load, QKeySequence::Open);
-    fileMenu->addAction(tr("&Save As..."), this, &MainWindow::save, QKeySequence::SaveAs);
-    fileMenu->addAction(tr("&New"), this, &MainWindow::clear, QKeySequence::New);
-    fileMenu->addAction(tr("E&xit"), this, &MainWindow::close, QKeySequence::Quit);
+    fileMenu->addAction(tr("&Open..."), QKeySequence::Open, this, &MainWindow::load);
+    fileMenu->addAction(tr("&Save As..."), QKeySequence::SaveAs, this, &MainWindow::save);
+    fileMenu->addAction(tr("&New"), QKeySequence::New, this, &MainWindow::clear);
+    fileMenu->addAction(tr("E&xit"), QKeySequence::Quit, this, &MainWindow::close);
 
     QMenu *brushMenu = menuBar()->addMenu(tr("&Brush"));
-    brushMenu->addAction(tr("&Brush Color..."), this, &MainWindow::setBrushColor, tr("Ctrl+B"));
+    brushMenu->addAction(tr("&Brush Color..."), tr("Ctrl+B"), this, &MainWindow::setBrushColor);
 //! [8]
 
     QMenu *tabletMenu = menuBar()->addMenu(tr("&Tablet"));

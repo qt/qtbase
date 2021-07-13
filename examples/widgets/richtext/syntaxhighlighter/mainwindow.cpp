@@ -117,12 +117,12 @@ void MainWindow::setupFileMenu()
     QMenu *fileMenu = new QMenu(tr("&File"), this);
     menuBar()->addMenu(fileMenu);
 
-    fileMenu->addAction(tr("&New"), this,
-                        &MainWindow::newFile, QKeySequence::New);
-    fileMenu->addAction(tr("&Open..."),
-                        this, [this](){ openFile(); }, QKeySequence::Open);
-    fileMenu->addAction(tr("E&xit"), qApp,
-                        &QApplication::quit, QKeySequence::Quit);
+    fileMenu->addAction(tr("&New"), QKeySequence::New,
+                        this, &MainWindow::newFile);
+    fileMenu->addAction(tr("&Open..."), QKeySequence::Open,
+                        this, [this](){ openFile(); });
+    fileMenu->addAction(tr("E&xit"), QKeySequence::Quit,
+                        qApp, &QApplication::quit);
 }
 
 void MainWindow::setupHelpMenu()
