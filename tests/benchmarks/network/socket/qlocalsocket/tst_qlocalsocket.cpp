@@ -28,11 +28,12 @@
 ****************************************************************************/
 
 #include <QTest>
+#include <QtTest/qtesteventloop.h>
+
 #include <QtCore/qglobal.h>
 #include <QtCore/qthread.h>
 #include <QtCore/qsemaphore.h>
 #include <QtCore/qbytearray.h>
-#include <QtCore/qeventloop.h>
 #include <QtCore/qvector.h>
 #include <QtCore/qelapsedtimer.h>
 #include <QtNetwork/qlocalsocket.h>
@@ -152,7 +153,7 @@ void tst_QLocalSocket::pingPong()
     QVERIFY(serverThread.running.tryAcquire(1, 3000));
 
     SocketFactory factory(1, connections);
-    QEventLoop eventLoop;
+    QTestEventLoop eventLoop;
     QVector<qint64> bytesToRead;
     QElapsedTimer timer;
 
@@ -163,15 +164,20 @@ void tst_QLocalSocket::pingPong()
 
         if (--bytesToRead[channel] == 0 && --connections == 0) {
             factory.stopped = true;
-            eventLoop.quit();
+            eventLoop.exitLoop();
         }
     });
 
     timer.start();
     emit factory.start();
-    eventLoop.exec();
+    // QtTestLib's Watchdog defaults to 300 seconds; we want to give up before
+    // it bites.
+    eventLoop.enterLoop(290);
 
-    qDebug("Elapsed time: %.1f s", timer.elapsed() / 1000.0);
+    if (eventLoop.timeout())
+        qDebug("Timed out after %.1f s", timer.elapsed() / 1000.0);
+    else if (!QTest::currentTestFailed())
+        qDebug("Elapsed time: %.1f s", timer.elapsed() / 1000.0);
     serverThread.quit();
     serverThread.wait();
 }
@@ -202,7 +208,7 @@ void tst_QLocalSocket::dataExchange()
     QVERIFY(serverThread.running.tryAcquire(1, 3000));
 
     SocketFactory factory(chunkSize, connections);
-    QEventLoop eventLoop;
+    QTestEventLoop eventLoop;
     qint64 totalReceived = 0;
     QElapsedTimer timer;
 
@@ -213,15 +219,16 @@ void tst_QLocalSocket::dataExchange()
         totalReceived += bytes;
         if (timer.elapsed() >= timeToTest) {
             factory.stopped = true;
-            eventLoop.quit();
+            eventLoop.exitLoop();
         }
     });
 
     timer.start();
     emit factory.start();
-    eventLoop.exec();
+    eventLoop.enterLoopMSecs(timeToTest * 2);
 
-    qDebug("Transfer rate: %.1f MB/s", totalReceived / 1048.576 / timer.elapsed());
+    if (!QTest::currentTestFailed())
+        qDebug("Transfer rate: %.1f MB/s", totalReceived / 1048.576 / timer.elapsed());
     serverThread.quit();
     serverThread.wait();
 }
