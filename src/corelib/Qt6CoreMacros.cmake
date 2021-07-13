@@ -970,16 +970,17 @@ function(qt6_extract_metatypes target)
             AUTOMOC_MOC_OPTIONS "--output-json"
         )
 
-        if(NOT CMAKE_CONFIGURATION_TYPES)
+        get_property(is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+        if(NOT is_multi_config)
             set(cmake_autogen_cache_file
                 "${target_binary_dir}/CMakeFiles/${target}_autogen.dir/ParseCache.txt")
-            set(mutli_config_args
+            set(multi_config_args
                 --cmake-autogen-include-dir-path "${target_binary_dir}/${target}_autogen/include"
             )
         else()
             set(cmake_autogen_cache_file
                 "${target_binary_dir}/CMakeFiles/${target}_autogen.dir/ParseCache_$<CONFIG>.txt")
-            set(mutli_config_args
+            set(multi_config_args
                 --cmake-autogen-include-dir-path "${target_binary_dir}/${target}_autogen/include_$<CONFIG>"
                 "--cmake-multi-config")
         endif()
@@ -1029,7 +1030,7 @@ function(qt6_extract_metatypes target)
                     --cmake-autogen-cache-file "${cmake_autogen_cache_file}"
                     --cmake-autogen-info-file "${cmake_autogen_info_file}"
                     --output-file-path "${type_list_file}"
-                    ${mutli_config_args}
+                    ${multi_config_args}
                 COMMENT "Running AUTOMOC file extraction for target ${target}"
                 COMMAND_EXPAND_LISTS
             )
@@ -1047,7 +1048,7 @@ function(qt6_extract_metatypes target)
                     --cmake-autogen-cache-file "${cmake_autogen_cache_file}"
                     --cmake-autogen-info-file "${cmake_autogen_info_file}"
                     --output-file-path "${type_list_file}"
-                    ${mutli_config_args}
+                    ${multi_config_args}
                 COMMENT "Running AUTOMOC file extraction for target ${target}"
                 COMMAND_EXPAND_LISTS
             )
@@ -1073,7 +1074,7 @@ function(qt6_extract_metatypes target)
         message(FATAL_ERROR "Metatype generation requires either the use of AUTOMOC or a manual list of generated json files")
     endif()
 
-    if (CMAKE_BUILD_TYPE)
+    if (CMAKE_BUILD_TYPE AND NOT is_multi_config)
         string(TOLOWER ${target}_${CMAKE_BUILD_TYPE} target_lowercase)
     else()
         string(TOLOWER ${target} target_lowercase)
