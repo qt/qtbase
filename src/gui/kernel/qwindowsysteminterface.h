@@ -298,8 +298,8 @@ public:
                                    const QPointF &local, const QPointF &global, int fingerCount = 0);
     static bool handleGestureEventWithRealValue(QWindow *window, ulong timestamp, const QPointingDevice *device, Qt::NativeGestureType type,
                                                 qreal value, const QPointF &local, const QPointF &global, int fingerCount = 2);
-    static bool handleGestureEventWithValueAndDeltas(QWindow *window, ulong timestamp, const QPointingDevice *device, Qt::NativeGestureType type, qreal value,
-                                                     const QPointF &deltas, const QPointF &local, const QPointF &global, int fingerCount = 2);
+    static bool handleGestureEventWithValueAndDelta(QWindow *window, ulong timestamp, const QPointingDevice *device, Qt::NativeGestureType type, qreal value,
+                                                    const QPointF &delta, const QPointF &local, const QPointF &global, int fingerCount = 2);
 #endif // QT_NO_GESTURES
 
     static void handlePlatformPanelEvent(QWindow *window);

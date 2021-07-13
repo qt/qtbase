@@ -1056,14 +1056,14 @@ bool QWindowSystemInterface::handleGestureEventWithRealValue(QWindow *window, ul
     return QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
 
-bool QWindowSystemInterface::handleGestureEventWithValueAndDeltas(QWindow *window, ulong timestamp, const QPointingDevice *device,
-                                                                  Qt::NativeGestureType type, qreal value, const QPointF &deltas,
-                                                                  const QPointF &local, const QPointF &global, int fingerCount)
+bool QWindowSystemInterface::handleGestureEventWithValueAndDelta(QWindow *window, ulong timestamp, const QPointingDevice *device,
+                                                                 Qt::NativeGestureType type, qreal value, const QPointF &delta,
+                                                                 const QPointF &local, const QPointF &global, int fingerCount)
 {
     QWindowSystemInterfacePrivate::GestureEvent *e =
             new QWindowSystemInterfacePrivate::GestureEvent(window, timestamp, type, device, fingerCount, local, global);
     e->realValue = value;
-    e->deltas = deltas;
+    e->delta = delta;
     return QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
 #endif // QT_NO_GESTURES
