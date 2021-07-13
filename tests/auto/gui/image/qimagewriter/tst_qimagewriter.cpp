@@ -36,6 +36,7 @@
 #include <QSet>
 #include <QTemporaryDir>
 #include <QTemporaryFile>
+#include <QSaveFile>
 
 #ifdef Q_OS_UNIX // for geteuid()
 # include <sys/types.h>
@@ -75,6 +76,7 @@ private slots:
     void saveWithNoFormat();
 
     void saveToTemporaryFile();
+    void saveToSaveFile();
 
     void writeEmpty();
 
@@ -526,6 +528,59 @@ void tst_QImageWriter::saveToTemporaryFile()
         file.reset();
         QImage tmp;
         QVERIFY(tmp.load(&file, "PNG"));
+        QCOMPARE(tmp, image);
+    }
+}
+
+void tst_QImageWriter::saveToSaveFile()
+{
+    QImage image(prefix + "kollada.png");
+    QVERIFY(!image.isNull());
+
+    {
+        // Check canWrite
+        QImageWriter writer;
+        QSaveFile file(writePrefix + "savefile0.png");
+        writer.setDevice(&file);
+        QVERIFY2(writer.canWrite(), qPrintable(writer.errorString()));
+    }
+
+    QString fileName1(writePrefix + "savefile1.garble");
+    {
+        // Check failing canWrite
+        QVERIFY(!QFileInfo(fileName1).exists());
+        QImageWriter writer;
+        QSaveFile file(fileName1);
+        writer.setDevice(&file);
+        QVERIFY(!writer.canWrite());
+        QCOMPARE(writer.error(), QImageWriter::UnsupportedFormatError);
+    }
+    QVERIFY(!QFileInfo(fileName1).exists());
+
+    QString fileName2(writePrefix + "savefile2.png");
+    {
+        QImageWriter writer;
+        QSaveFile file(fileName2);
+        writer.setDevice(&file);
+        QCOMPARE(writer.fileName(), fileName2);
+        QVERIFY2(writer.write(image), qPrintable(writer.errorString()));
+        QVERIFY(file.commit());
+    }
+    {
+        QImage tmp;
+        QVERIFY(tmp.load(fileName2, "PNG"));
+        QCOMPARE(tmp, image);
+    }
+
+    QString fileName3(writePrefix + "savefile3.png");
+    {
+        QSaveFile file(fileName3);
+        QVERIFY(image.save(&file));
+        QVERIFY(file.commit());
+    }
+    {
+        QImage tmp;
+        QVERIFY(tmp.load(fileName3, "PNG"));
         QCOMPARE(tmp, image);
     }
 }
