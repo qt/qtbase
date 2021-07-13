@@ -108,7 +108,7 @@ public:
     QT_DEPRECATED_VERSION_X_6_4("Use the QByteArrayView overload instead")
     void addData(const char *data, qsizetype length);
 #endif
-#ifdef QT_BUILD_FUNCTIONS_REMOVED_IN_6_3
+#if QT_REMOVED_SINCE(6, 3)
     void addData(const QByteArray &data);
 #endif
     void addData(QByteArrayView data) noexcept;
@@ -117,7 +117,7 @@ public:
     QByteArray result() const;
     QByteArrayView resultView() const noexcept;
 
-#ifdef QT_BUILD_FUNCTIONS_REMOVED_IN_6_3
+#if QT_REMOVED_SINCE(6, 3)
     static QByteArray hash(const QByteArray &data, Algorithm method);
 #endif
     static QByteArray hash(QByteArrayView data, Algorithm method);
