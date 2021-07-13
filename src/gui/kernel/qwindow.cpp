@@ -3004,12 +3004,11 @@ bool QWindowPrivate::applyCursor()
 }
 #endif // QT_NO_CURSOR
 
-template <>
-Q_NATIVE_INTERFACE_EXPORT void *QNativeInterface::Private::resolveInterface(const QWindow *that, const char *name, int revision)
+void *QWindow::resolveInterface(const char *name, int revision) const
 {
     using namespace QNativeInterface::Private;
 
-    auto *platformWindow = that->handle();
+    auto *platformWindow = handle();
     Q_UNUSED(platformWindow);
     Q_UNUSED(name);
     Q_UNUSED(revision);

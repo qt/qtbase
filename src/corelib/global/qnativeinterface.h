@@ -43,14 +43,6 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/qloggingcategory.h>
 
-#ifndef QT_STATIC
-#  define Q_NATIVE_INTERFACE_EXPORT Q_DECL_EXPORT
-#  define Q_NATIVE_INTERFACE_IMPORT Q_DECL_IMPORT
-#else
-#  define Q_NATIVE_INTERFACE_EXPORT
-#  define Q_NATIVE_INTERFACE_IMPORT
-#endif
-
 QT_BEGIN_NAMESPACE
 
 // We declare a virtual non-inline function in the form
@@ -166,9 +158,6 @@ namespace QNativeInterface::Private {
     template <typename I>
     struct NativeInterface : TypeInfo<I> {};
 
-    template <typename T>
-    Q_NATIVE_INTERFACE_IMPORT void *resolveInterface(const T *that, const char *name, int revision);
-
     Q_CORE_EXPORT Q_DECLARE_LOGGING_CATEGORY(lcNativeInterface)
 
 } // QNativeInterface::Private
@@ -179,10 +168,12 @@ namespace QNativeInterface::Private {
     typename BaseType = T, std::enable_if_t<TypeInfo::template isCompatibleWith<T>, bool> = true> \
     NativeInterface *nativeInterface() const \
     { \
-        return static_cast<NativeInterface*>( \
-            QNativeInterface::Private::resolveInterface(this, \
-                TypeInfo::name(), TypeInfo::revision())); \
-    }
+        return static_cast<NativeInterface*>(resolveInterface( \
+            TypeInfo::name(), TypeInfo::revision())); \
+    } \
+    protected: \
+        void *resolveInterface(const char *name, int revision) const; \
+    public:
 
 // Provides a definition for the interface destructor
 #define QT_DEFINE_NATIVE_INTERFACE_2(Namespace, InterfaceClass) \
@@ -192,22 +183,25 @@ namespace QNativeInterface::Private {
 #define QT_DEFINE_PRIVATE_NATIVE_INTERFACE(...) QT_OVERLOADED_MACRO(QT_DEFINE_NATIVE_INTERFACE, QNativeInterface::Private, __VA_ARGS__)
 
 #define QT_NATIVE_INTERFACE_RETURN_IF(NativeInterface, baseType) \
-    using QNativeInterface::Private::lcNativeInterface; \
-    qCDebug(lcNativeInterface, "Comparing requested interface name %s with available %s", \
-            name, TypeInfo<NativeInterface>::name()); \
-    if (qstrcmp(name, TypeInfo<NativeInterface>::name()) == 0) { \
-        qCDebug(lcNativeInterface, "Match for interface %s. Comparing revisions (requested %d / available %d)", \
-            name, revision, TypeInfo<NativeInterface>::revision()); \
-        if (revision == TypeInfo<NativeInterface>::revision()) { \
-            qCDebug(lcNativeInterface) << "Full match. Returning dynamic cast of" << baseType; \
-            return dynamic_cast<NativeInterface*>(baseType); \
+    { \
+        using QNativeInterface::Private::lcNativeInterface; \
+        using QNativeInterface::Private::TypeInfo; \
+        qCDebug(lcNativeInterface, "Comparing requested interface name %s with available %s", \
+                name, TypeInfo<NativeInterface>::name()); \
+        if (qstrcmp(name, TypeInfo<NativeInterface>::name()) == 0) { \
+            qCDebug(lcNativeInterface, "Match for interface %s. Comparing revisions (requested %d / available %d)", \
+                name, revision, TypeInfo<NativeInterface>::revision()); \
+            if (revision == TypeInfo<NativeInterface>::revision()) { \
+                qCDebug(lcNativeInterface) << "Full match. Returning dynamic cast of" << baseType; \
+                return dynamic_cast<NativeInterface*>(baseType); \
+            } else { \
+                qCWarning(lcNativeInterface, "Native interface revision mismatch (requested %d / available %d) for interface %s", \
+                    revision, TypeInfo<NativeInterface>::revision(), name); \
+                return nullptr; \
+            } \
         } else { \
-            qCWarning(lcNativeInterface, "Native interface revision mismatch (requested %d / available %d) for interface %s", \
-                revision, TypeInfo<NativeInterface>::revision(), name); \
-            return nullptr; \
+            qCDebug(lcNativeInterface, "No match for requested interface name %s", name); \
         } \
-    } else { \
-        qCDebug(lcNativeInterface, "No match for requested interface name %s", name); \
     }
 
 QT_END_NAMESPACE

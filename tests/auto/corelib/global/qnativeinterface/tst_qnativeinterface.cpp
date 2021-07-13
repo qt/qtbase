@@ -37,6 +37,8 @@ private slots:
     void typeInfo() const;
     void resolve() const;
     void accessor() const;
+
+    friend struct PublicClass;
 };
 
 struct InterfaceImplementation;
@@ -46,6 +48,8 @@ struct PublicClass
     PublicClass();
     QT_DECLARE_NATIVE_INTERFACE_ACCESSOR(PublicClass)
     std::unique_ptr<InterfaceImplementation> m_implementation;
+
+    friend void tst_QNativeInterface::resolve() const;
 };
 
 QT_BEGIN_NAMESPACE
@@ -84,11 +88,9 @@ struct InterfaceImplementation : public Interface
 
 PublicClass::PublicClass() : m_implementation(new InterfaceImplementation) {}
 
-template <>
-void* QNativeInterface::Private::resolveInterface<PublicClass>(
-    PublicClass const* that, char const* name, int revision)
+void* PublicClass::resolveInterface(char const* name, int revision) const
 {
-    auto *implementation = that->m_implementation.get();
+    auto *implementation = m_implementation.get();
     QT_NATIVE_INTERFACE_RETURN_IF(Interface, implementation);
     QT_NATIVE_INTERFACE_RETURN_IF(OtherInterface, implementation);
     return nullptr;
@@ -116,14 +118,14 @@ void tst_QNativeInterface::resolve() const
 
     PublicClass foo;
 
-    QVERIFY(resolveInterface(&foo, "Interface", 10));
+    QVERIFY(foo.resolveInterface("Interface", 10));
 
     QTest::ignoreMessage(QtWarningMsg, "Native interface revision mismatch "
                     "(requested 5 / available 10) for interface Interface");
 
-    QCOMPARE(resolveInterface(&foo, "Interface", 5), nullptr);
-    QCOMPARE(resolveInterface(&foo, "NotInterface", 10), nullptr);
-    QCOMPARE(resolveInterface(&foo, "OtherInterface", 10), nullptr);
+    QCOMPARE(foo.resolveInterface("Interface", 5), nullptr);
+    QCOMPARE(foo.resolveInterface("NotInterface", 10), nullptr);
+    QCOMPARE(foo.resolveInterface("OtherInterface", 10), nullptr);
 }
 
 void tst_QNativeInterface::accessor() const

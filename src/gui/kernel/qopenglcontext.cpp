@@ -1312,12 +1312,11 @@ QDebug operator<<(QDebug debug, const QOpenGLContextGroup *cg)
 
 using namespace QNativeInterface;
 
-template <>
-Q_NATIVE_INTERFACE_EXPORT void *QNativeInterface::Private::resolveInterface(const QOpenGLContext *that, const char *name, int revision)
+void *QOpenGLContext::resolveInterface(const char *name, int revision) const
 {
-    Q_UNUSED(that); Q_UNUSED(name); Q_UNUSED(revision);
+    Q_UNUSED(name); Q_UNUSED(revision);
 
-    auto *platformContext = that->handle();
+    auto *platformContext = handle();
     Q_UNUSED(platformContext);
 
 #if defined(Q_OS_MACOS)

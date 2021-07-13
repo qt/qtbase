@@ -135,10 +135,9 @@ QList<int> QKeyMapperPrivate::possibleKeys(QKeyEvent *e)
     return extractKeyFromEvent(e);
 }
 
-template <>
-Q_NATIVE_INTERFACE_EXPORT void *QNativeInterface::Private::resolveInterface(const QKeyMapper *that, const char *name, int revision)
+void *QKeyMapper::resolveInterface(const char *name, int revision) const
 {
-    Q_UNUSED(that); Q_UNUSED(name); Q_UNUSED(revision);
+    Q_UNUSED(name); Q_UNUSED(revision);
     using namespace QNativeInterface::Private;
 
 #if QT_CONFIG(evdev)

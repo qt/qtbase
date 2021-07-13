@@ -4101,10 +4101,9 @@ QPixmap QApplicationPrivate::applyQIconStyleHelper(QIcon::Mode mode, const QPixm
     return QApplication::style()->generatedIconPixmap(mode, base, &opt);
 }
 
-template <>
-Q_NATIVE_INTERFACE_EXPORT void *QNativeInterface::Private::resolveInterface(const QApplication *that, const char *name, int revision)
+void *QApplication::resolveInterface(const char *name, int revision) const
 {
-    return resolveInterface<QGuiApplication>(that, name, revision);
+    return QGuiApplication::resolveInterface(name, revision);
 }
 
 QT_END_NAMESPACE

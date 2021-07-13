@@ -3246,10 +3246,9 @@ QCoreApplication::checkPermission(const QString &permission)
 }
 #endif // future && QT_NO_QOBJECT
 
-template <>
-Q_NATIVE_INTERFACE_EXPORT void *QNativeInterface::Private::resolveInterface(const QCoreApplication *that, const char *name, int revision)
+void *QCoreApplication::resolveInterface(const char *name, int revision) const
 {
-    Q_UNUSED(that); Q_UNUSED(name); Q_UNUSED(revision);
+    Q_UNUSED(name); Q_UNUSED(revision);
     return nullptr;
 }
 

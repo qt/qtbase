@@ -371,16 +371,15 @@ QPlatformSurface *QOffscreenSurface::surfaceHandle() const
 
 using namespace QNativeInterface;
 
-template <>
-Q_NATIVE_INTERFACE_EXPORT void *QNativeInterface::Private::resolveInterface(const QOffscreenSurface *that, const char *name, int revision)
+void *QOffscreenSurface::resolveInterface(const char *name, int revision) const
 {
-    Q_UNUSED(that); Q_UNUSED(name); Q_UNUSED(revision);
+    Q_UNUSED(name); Q_UNUSED(revision);
 
-    auto *surfacePrivate = QOffscreenSurfacePrivate::get(const_cast<QOffscreenSurface*>(that));
-    Q_UNUSED(surfacePrivate);
+    Q_D(const QOffscreenSurface);
+    Q_UNUSED(d);
 
 #if defined(Q_OS_ANDROID)
-    QT_NATIVE_INTERFACE_RETURN_IF(QAndroidOffscreenSurface, surfacePrivate->platformOffscreenSurface);
+    QT_NATIVE_INTERFACE_RETURN_IF(QAndroidOffscreenSurface, d->platformOffscreenSurface);
 #endif
 
     return nullptr;
