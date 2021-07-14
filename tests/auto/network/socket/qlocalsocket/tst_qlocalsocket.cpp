@@ -914,6 +914,7 @@ void tst_QLocalSocket::simpleCommandProtocol2()
     server.listen(QStringLiteral("simpleProtocol"));
 
     QLocalSocket localSocketWrite;
+    QSignalSpy spyDisconnected(&localSocketWrite, SIGNAL(disconnected()));
     localSocketWrite.connectToServer(server.serverName());
     QVERIFY(server.waitForNewConnection());
     QLocalSocket* localSocketRead = server.nextPendingConnection();
@@ -955,6 +956,11 @@ void tst_QLocalSocket::simpleCommandProtocol2()
     }
 
     localSocketWrite.abort();
+    QCOMPARE(localSocketWrite.state(), QLocalSocket::UnconnectedState);
+    QCOMPARE(spyDisconnected.count(), 1);
+    QCOMPARE(localSocketWrite.bytesToWrite(), 0);
+    QVERIFY(!localSocketWrite.isOpen());
+
     QVERIFY(localSocketRead->waitForDisconnected(1000));
 }
 
