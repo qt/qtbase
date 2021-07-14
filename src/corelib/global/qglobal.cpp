@@ -2178,11 +2178,6 @@ static inline QString windows10ReleaseId()
     return readVersionRegistryString(L"ReleaseId");
 }
 
-static inline QString windows7Build()
-{
-    return readVersionRegistryString(L"CurrentBuild");
-}
-
 static QString winSp_helper()
 {
     const auto osv = qWindowsVersionInfo();
@@ -2206,12 +2201,6 @@ static const char *osVer_helper(QOperatingSystemVersion version = QOperatingSyst
 
 #define Q_WINVER(major, minor) (major << 8 | minor)
     switch (Q_WINVER(osver.dwMajorVersion, osver.dwMinorVersion)) {
-    case Q_WINVER(6, 1):
-        return workstation ? "7" : "Server 2008 R2";
-    case Q_WINVER(6, 2):
-        return workstation ? "8" : "Server 2012";
-    case Q_WINVER(6, 3):
-        return workstation ? "8.1" : "Server 2012 R2";
     case Q_WINVER(10, 0):
         return workstation ? "10" : "Server 2016";
     }
@@ -2828,8 +2817,6 @@ QString QSysInfo::productType()
         \li "10.0" (tvOS 10)
         \li "16.10" (Ubuntu 16.10)
         \li "3.1" (watchOS 3.1)
-        \li "7 SP 1" (Windows 7 Service Pack 1)
-        \li "8.1" (Windows 8.1)
         \li "10" (Windows 10)
         \li "Server 2016" (Windows Server 2016)
     \endlist
@@ -2901,21 +2888,10 @@ QString QSysInfo::prettyProductName()
     return result + QLatin1String(" (") + versionString + QLatin1Char(')');
 #  else
     // (resembling winver.exe): Windows 10 "Windows 10 Version 1809"
-    if (majorVersion >= 10) {
-        const auto releaseId = windows10ReleaseId();
-        if (!releaseId.isEmpty())
-            result += QLatin1String(" Version ") + releaseId;
-        return result;
-    }
-    // Windows 7: "Windows 7 Version 6.1 (Build 7601: Service Pack 1)"
-    result += QLatin1String(" Version ") + versionString + QLatin1String(" (");
-    const auto build = windows7Build();
-    if (!build.isEmpty())
-        result += QLatin1String("Build ") + build;
-    const auto servicePack = winSp_helper();
-    if (!servicePack.isEmpty())
-        result += QLatin1String(": ") + servicePack;
-    return result + QLatin1Char(')');
+    const auto releaseId = windows10ReleaseId();
+    if (!releaseId.isEmpty())
+        result += QLatin1String(" Version ") + releaseId;
+    return result;
 #  endif // Windows
 #elif defined(Q_OS_HAIKU)
     return QLatin1String("Haiku ") + productVersion();
