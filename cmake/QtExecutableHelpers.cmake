@@ -29,7 +29,7 @@ function(qt_internal_add_executable name)
     endif()
 
     if(arg_QT_APP AND QT_FEATURE_debug_and_release AND CMAKE_VERSION VERSION_GREATER_EQUAL "3.19.0")
-        set_property(TARGET "${target}"
+        set_property(TARGET "${name}"
             PROPERTY EXCLUDE_FROM_ALL "$<NOT:$<CONFIG:${QT_MULTI_CONFIG_FIRST_CONFIG}>>")
     endif()
 
