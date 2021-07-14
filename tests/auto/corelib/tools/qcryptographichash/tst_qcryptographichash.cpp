@@ -453,8 +453,11 @@ void tst_QCryptographicHash::moreThan4GiBOfData_data()
     row(QCryptographicHash::Md4);
     row(QCryptographicHash::Md5);
     row(QCryptographicHash::Sha1);
-    // this is already significantly slower, but important (O(min)
-    row(QCryptographicHash::Sha512);
+    if (!qgetenv("QTEST_ENVIRONMENT").split(' ').contains("ci")) {
+        // This is important but so slow (O(minute)) that, on CI, it tends to time out.
+        // Retain it for manual runs, all the same, as most dev machines will be fast enough.
+        row(QCryptographicHash::Sha512);
+    }
     // the rest is just too slow
 #else
     QSKIP("This test is 64-bit only.");
