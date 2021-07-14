@@ -3729,11 +3729,6 @@ void tst_QSslSocket::allowedProtocolNegotiation()
     if (!hasServerAlpn)
         QSKIP("Server-side ALPN is unsupported, skipping test");
 
-    if (isTestingSchannel) {
-        if (QOperatingSystemVersion::current() < QOperatingSystemVersion::Windows8_1)
-            QSKIP("ALPN is not supported on this version of Windows using Schannel.");
-    }
-
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy)
         return;
@@ -3762,9 +3757,9 @@ void tst_QSslSocket::allowedProtocolNegotiation()
     connect(&clientSocket, SIGNAL(encrypted()), &loop, SLOT(quit()));
     loop.exec();
 
-    QVERIFY(server.socket->sslConfiguration().nextNegotiatedProtocol() ==
-            clientSocket.sslConfiguration().nextNegotiatedProtocol());
-    QVERIFY(server.socket->sslConfiguration().nextNegotiatedProtocol() == expectedNegotiated);
+    QCOMPARE(server.socket->sslConfiguration().nextNegotiatedProtocol(),
+             clientSocket.sslConfiguration().nextNegotiatedProtocol());
+    QCOMPARE(server.socket->sslConfiguration().nextNegotiatedProtocol(), expectedNegotiated);
 }
 
 #if QT_CONFIG(openssl)
