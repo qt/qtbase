@@ -86,7 +86,6 @@
 #include <cmath>
 #include <numeric>
 #include <algorithm>
-#include <condition_variable>
 #include <mutex>
 #include <chrono>
 
@@ -1015,7 +1014,8 @@ class WatchDog : public QThread
         ThreadEnd,
     };
 
-    bool waitFor(std::unique_lock<QtPrivate::mutex> &m, Expectation e) {
+    bool waitFor(std::unique_lock<QtPrivate::mutex> &m, Expectation e)
+    {
         auto expectationChanged = [this, e] { return expecting.load(std::memory_order_relaxed) != e; };
         switch (e) {
         case TestFunctionEnd:
@@ -1038,7 +1038,9 @@ public:
         start();
         waitFor(locker, ThreadStart);
     }
-    ~WatchDog() {
+
+    ~WatchDog()
+    {
         {
             const auto locker = qt_scoped_lock(mutex);
             expecting.store(ThreadEnd, std::memory_order_relaxed);
@@ -1047,19 +1049,22 @@ public:
         wait();
     }
 
-    void beginTest() {
+    void beginTest()
+    {
         const auto locker = qt_scoped_lock(mutex);
         expecting.store(TestFunctionEnd, std::memory_order_relaxed);
         waitCondition.notify_all();
     }
 
-    void testFinished() {
+    void testFinished()
+    {
         const auto locker = qt_scoped_lock(mutex);
         expecting.store(TestFunctionStart, std::memory_order_relaxed);
         waitCondition.notify_all();
     }
 
-    void run() override {
+    void run() override
+    {
         auto locker = qt_unique_lock(mutex);
         expecting.store(TestFunctionStart, std::memory_order_release);
         waitCondition.notify_all();
