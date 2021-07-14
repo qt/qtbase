@@ -13,7 +13,7 @@ instructions:
           equals_property: target.os
         - condition: property
           property: target.osVersion
-          not_in_values: [QEMU, WebAssembly]
+          not_in_values: [QEMU, WebAssembly, INTEGRITY]
         - condition: property
           property: features
           not_contains_value: "TargetBuildOnly"
@@ -32,7 +32,7 @@ instructions:
       conditions:
         - condition: property
           property: target.osVersion
-          in_values: [IOS_ANY, Android_ANY, QEMU, QNX_710, WebAssembly]
+          in_values: [IOS_ANY, Android_ANY, QEMU, QNX_710, WebAssembly, INTEGRITY]
         - condition: and
           conditions:
             - condition: property
