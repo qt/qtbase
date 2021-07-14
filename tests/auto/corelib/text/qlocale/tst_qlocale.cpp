@@ -1945,6 +1945,20 @@ void tst_QLocale::toDateTime_data()
                                 << "24 Şubat2017 Cuma17:21:25" << true;
     QTest::newRow("tr:short")
         << "tr" << dt.addSecs(-25) << "d.MM.yyyy HH:mm" << "25.02.2017 17:21" << true;
+
+    QTest::newRow("ccp:short")
+        << "ccp" << dt << "dd/M/yy h:mm AP"
+        // "𑄸𑄻/𑄸/𑄷𑄽 𑄻:𑄸𑄷 PM"
+        << QString::fromUcs4(U"\U00011138\U0001113b/\U00011138/\U00011137\U0001113d \U0001113b:"
+                             U"\U00011138\U00011137 PM") << true;
+    QTest::newRow("ccp:long")
+        << "ccp" << dt << "dddd, d MMMM, yyyy h:mm:ss AP"
+        // "𑄥𑄧𑄚𑄨𑄝𑄢𑄴, 𑄸𑄻 𑄜𑄬𑄛𑄴𑄝𑄳𑄢𑄪𑄠𑄢𑄨, 𑄸𑄶𑄷𑄽 𑄻:𑄸𑄷:𑄸𑄻 PM"
+        << QString::fromUcs4(U"\U00011125\U00011127\U0001111a\U00011128\U0001111d\U00011122"
+                             U"\U00011134, \U00011138\U0001113b \U0001111c\U0001112c\U0001111b"
+                             U"\U00011134\U0001111d\U00011133\U00011122\U0001112a\U00011120"
+                             U"\U00011122\U00011128, \U00011138\U00011136\U00011137\U0001113d "
+                             U"\U0001113b:\U00011138\U00011137:\U00011138\U0001113b PM") << true;
 }
 
 void tst_QLocale::toDateTime()
@@ -1956,6 +1970,8 @@ void tst_QLocale::toDateTime()
     QFETCH(bool, clean);
 
     QLocale l(localeName);
+    QEXPECT_FAIL("ccp:short", "QTBUG-87111: Handling of code points outside BMP is broken", Abort);
+    QEXPECT_FAIL("ccp:long", "QTBUG-87111: Handling of code points outside BMP is broken", Abort);
     QCOMPARE(l.toDateTime(string, format), result);
     if (clean) {
         QCOMPARE(l.toDateTime(string.toLower(), format), result);
