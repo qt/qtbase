@@ -508,6 +508,7 @@ void QLocalSocket::abort()
 {
     Q_D(QLocalSocket);
     d->unixSocket.abort();
+    close();
 }
 
 qint64 QLocalSocket::bytesAvailable() const

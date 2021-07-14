@@ -326,6 +326,7 @@ void QLocalSocket::abort()
 {
     Q_D(QLocalSocket);
     d->tcpSocket->abort();
+    close();
 }
 
 qint64 QLocalSocket::bytesAvailable() const
