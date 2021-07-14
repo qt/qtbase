@@ -5,6 +5,16 @@
 # Make sure to not run detection when building standalone tests, because the detection was already
 # done when initially configuring qtbase.
 
+function(qt_internal_ensure_static_qt_config)
+    if(NOT DEFINED BUILD_SHARED_LIBS)
+        set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build Qt statically or dynamically" FORCE)
+    endif()
+
+    if(BUILD_SHARED_LIBS)
+        message(FATAL_ERROR
+            "Building Qt for ${CMAKE_SYSTEM_NAME} as shared libraries is not supported.")
+    endif()
+endfunction()
 
 function(qt_auto_detect_wasm)
     if("${QT_QMAKE_TARGET_MKSPEC}" STREQUAL "wasm-emscripten" AND DEFINED ENV{EMSDK})
@@ -49,14 +59,7 @@ function(qt_auto_detect_wasm)
             endif()
             set(QT_AUTODETECT_WASM TRUE CACHE BOOL "")
 
-            if(NOT DEFINED BUILD_SHARED_LIBS)
-                set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build Qt statically or dynamically" FORCE)
-            endif()
-
-            if(BUILD_SHARED_LIBS)
-                message(FATAL_ERROR
-                    "Building Qt for ${CMAKE_SYSTEM_NAME} as shared libraries is not supported.")
-            endif()
+            qt_internal_ensure_static_qt_config()
             # this version of Qt needs this version of emscripten
             set(QT_EMCC_RECOMMENDED_VERSION 2.0.14 CACHE STRING INTERNAL FORCE)
         endif()
@@ -250,14 +253,7 @@ function(qt_auto_detect_ios)
         endif()
         set(CMAKE_OSX_ARCHITECTURES "${osx_architectures}" CACHE STRING "")
 
-        if(NOT DEFINED BUILD_SHARED_LIBS)
-            set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build Qt statically or dynamically" FORCE)
-        endif()
-
-        if(BUILD_SHARED_LIBS)
-            message(FATAL_ERROR
-                "Building Qt for ${CMAKE_SYSTEM_NAME} as shared libraries is not supported.")
-        endif()
+        qt_internal_ensure_static_qt_config()
 
         # Disable qt rpaths for iOS, just like mkspecs/common/uikit.conf does, due to those
         # bundles not being able to use paths outside the app bundle. Not sure this is strictly
@@ -420,6 +416,17 @@ function(qt_auto_detect_win32_arm)
     endif()
 endfunction()
 
+function(qt_auto_detect_integrity)
+    if(
+       # Qt's custom CMake toolchain file sets this value.
+       CMAKE_SYSTEM_NAME STREQUAL "Integrity" OR
+
+       # Upstream CMake expects this name, but we don't currently use it in Qt.
+       CMAKE_SYSTEM_NAME STREQUAL "GHS-MULTI"
+    )
+        qt_internal_ensure_static_qt_config()
+    endif()
+endfunction()
 
 qt_auto_detect_cmake_generator()
 qt_auto_detect_cyclic_toolchain()
@@ -432,3 +439,4 @@ qt_auto_detect_vcpkg()
 qt_auto_detect_pch()
 qt_auto_detect_wasm()
 qt_auto_detect_win32_arm()
+qt_auto_detect_integrity()
