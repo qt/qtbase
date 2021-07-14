@@ -4298,15 +4298,19 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
     case CE_ItemViewItem:
         if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(opt)) {
             QRenderRule subRule = renderRule(w, opt, PseudoElement_ViewItem);
-            if (subRule.hasDrawable() || hasStyleRule(w, PseudoElement_Indicator)) {
-                QStyleOptionViewItem optCopy(*vopt);
+            QStyleOptionViewItem optCopy(*vopt);
+            if (subRule.hasDrawable()) {
                 subRule.configurePalette(&optCopy.palette, vopt->state & QStyle::State_Selected ? QPalette::HighlightedText : QPalette::Text,
                                                            vopt->state & QStyle::State_Selected ? QPalette::Highlight : QPalette::Base);
                 QWindowsStyle::drawControl(ce, &optCopy, p, w);
             } else {
-                QStyleOptionViewItem voptCopy(*vopt);
-                subRule.configurePalette(&voptCopy.palette, QPalette::Text, QPalette::NoRole);
-                baseStyle()->drawControl(ce, &voptCopy, p, w);
+                if (hasStyleRule(w, PseudoElement_Indicator)) {
+                    subRule.configurePalette(&optCopy.palette, vopt->state & QStyle::State_Selected ? QPalette::HighlightedText : QPalette::Text,
+                                                            vopt->state & QStyle::State_Selected ? QPalette::Highlight : QPalette::Base);
+                } else {
+                    subRule.configurePalette(&optCopy.palette, QPalette::Text, QPalette::NoRole);
+                }
+                baseStyle()->drawControl(ce, &optCopy, p, w);
             }
             return;
         }
