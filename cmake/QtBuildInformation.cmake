@@ -272,8 +272,13 @@ endfunction()
 
 function(qt_configure_process_add_summary_build_type_and_config)
     get_property(subarch_summary GLOBAL PROPERTY qt_configure_subarch_summary)
-    set(message
-        "Building for: ${QT_QMAKE_TARGET_MKSPEC} (${TEST_architecture_arch}, CPU features: ${subarch_summary})")
+    if(APPLE AND (CMAKE_OSX_ARCHITECTURES MATCHES ";"))
+        set(message
+            "Building for: ${QT_QMAKE_TARGET_MKSPEC} (${CMAKE_OSX_ARCHITECTURES}), ${TEST_architecture_arch} features: ${subarch_summary})")
+    else()
+        set(message
+            "Building for: ${QT_QMAKE_TARGET_MKSPEC} (${TEST_architecture_arch}, CPU features: ${subarch_summary})")
+    endif()
     qt_configure_add_report("${message}")
 
     set(message "Compiler: ")
