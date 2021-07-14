@@ -2837,18 +2837,22 @@ QNativeGestureEvent::QNativeGestureEvent(Qt::NativeGestureType type, const QPoin
     indicating that the target item should have its scale adjusted like this:
     item.scale = item.scale * (1 + event.value)
 
-    For PanNativeGesture, \a deltas gives the distance in pixels that the
+    For PanNativeGesture, \a delta gives the distance in pixels that the
     viewport, widget or item should be moved or panned.
+
+    \note The \a delta is stored in single precision (QVector2D), so \l delta()
+    may return slightly different values in some cases. This is subject to change
+    in future versions of Qt.
 
     \since 6.2
 */
 QNativeGestureEvent::QNativeGestureEvent(Qt::NativeGestureType type, const QPointingDevice *device, int fingerCount,
                                          const QPointF &localPos, const QPointF &scenePos,
-                                         const QPointF &globalPos, qreal value, const QPointF &deltas,
+                                         const QPointF &globalPos, qreal value, const QPointF &delta,
                                          quint64 sequenceId)
     : QSinglePointEvent(QEvent::NativeGesture, device, localPos, scenePos, globalPos, Qt::NoButton,
                         Qt::NoButton, Qt::NoModifier),
-      m_sequenceId(sequenceId), m_delta(deltas), m_realValue(value), m_gestureType(type), m_fingerCount(fingerCount)
+      m_sequenceId(sequenceId), m_delta(delta), m_realValue(value), m_gestureType(type), m_fingerCount(fingerCount)
 {
     Q_ASSERT(fingerCount < 16); // we store it in 4 bits unsigned
 }

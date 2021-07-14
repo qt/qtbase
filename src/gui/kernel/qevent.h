@@ -416,7 +416,7 @@ public:
 #endif
     QNativeGestureEvent(Qt::NativeGestureType type, const QPointingDevice *dev, int fingerCount,
                         const QPointF &localPos, const QPointF &scenePos, const QPointF &globalPos,
-                        qreal value, const QPointF &deltas, quint64 sequenceId = UINT64_MAX);
+                        qreal value, const QPointF &delta, quint64 sequenceId = UINT64_MAX);
     ~QNativeGestureEvent();
 
     QNativeGestureEvent *clone() const override { return new QNativeGestureEvent(*this); }
@@ -424,7 +424,13 @@ public:
     Qt::NativeGestureType gestureType() const { return m_gestureType; }
     int fingerCount() const { return m_fingerCount; }
     qreal value() const { return m_realValue; }
-    QPointF delta() const { return m_delta.toPointF(); }
+    QPointF delta() const {
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+        return m_delta.toPointF();
+#else
+        return m_delta;
+#endif
+    }
 
 #if QT_DEPRECATED_SINCE(6, 0)
 #ifndef QT_NO_INTEGER_EVENT_COORDINATES
@@ -443,7 +449,11 @@ public:
 
 protected:
     quint64 m_sequenceId;
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
     QVector2D m_delta;
+#else
+    QPointF m_delta;
+#endif
     qreal m_realValue;
     Qt::NativeGestureType m_gestureType;
     quint32 m_fingerCount : 4;
