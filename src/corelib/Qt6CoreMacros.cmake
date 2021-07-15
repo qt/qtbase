@@ -685,6 +685,87 @@ function(qt6_finalize_target target)
     endif()
 endfunction()
 
+function(_qt_internal_handle_ios_launch_screen target)
+    # Check if user provided a launch screen path via a variable.
+    set(launch_screen "")
+
+    # This variable is currently in Technical Preview.
+    if(QT_IOS_LAUNCH_SCREEN)
+        set(launch_screen "${QT_IOS_LAUNCH_SCREEN}")
+    endif()
+
+    # Check if user provided a launch screen path via a target property.
+    if(NOT launch_screen)
+
+        # This property is currently in Technical Preview.
+        get_target_property(launch_screen_from_prop "${target}" QT_IOS_LAUNCH_SCREEN)
+        if(launch_screen_from_prop)
+            set(launch_screen "${launch_screen_from_prop}")
+        endif()
+    endif()
+
+    # If user hasn't provided a launch screen path, use a copy of the one qmake uses.
+    # It needs to be a copy because configure_file can't handle all the escaped double quotes.
+    if(NOT launch_screen AND NOT QT_NO_SET_IOS_LAUNCH_SCREEN)
+        set(launch_screen "LaunchScreen.storyboard")
+        set(launch_screen
+            "${__qt_internal_cmake_ios_support_files_path}/${launch_screen}")
+    endif()
+
+    # Save the name of the launch screen in an internal cache var, so it is added as a
+    # UILaunchStoryboardName entry in the generated Info.plist.
+    # This is the only sensible but dirty way to set up a variable, so that CMake's internal
+    # configure_file call for Info.plist picks it up.
+    # Unfortunately CMake does not provide a way of setting a regular non-cache variable in a
+    # directory scope from within a nested function call.
+    # This means that the behavior below will only work if there's one single executable in the
+    # project.
+    # FIXME: Figure out if there's a better way of doing this.
+    #        Perhaps we should give up on using CMake's Info.plist mechanism and just call
+    #        configure_file ourselves.
+    if(launch_screen)
+        if(NOT IS_ABSOLUTE "${launch_screen}")
+            message(FATAL_ERROR
+                "Provided launch screen value should be an absolute path: '${launch_screen}'")
+        endif()
+
+        if(NOT EXISTS "${launch_screen}")
+            message(FATAL_ERROR
+                "Provided launch screen file does not exist: '${launch_screen}'")
+        endif()
+
+        get_filename_component(launch_screen_name "${launch_screen}" NAME)
+        set(QT_INTERNAL_IOS_LAUNCH_SCREEN_PLIST_ENTRY "${launch_screen_name}" CACHE INTERNAL "")
+    endif()
+
+    if(launch_screen AND NOT QT_NO_ADD_IOS_LAUNCH_SCREEN_TO_BUNDLE)
+        # Configure the file and place it in the build dir.
+        set(launch_screen_in_path "${launch_screen}")
+
+        string(MAKE_C_IDENTIFIER "${target}" target_identifier)
+        set(launch_screen_out_dir
+            "${CMAKE_CURRENT_BINARY_DIR}/qt_story_boards/${target_identifier}")
+
+        set(launch_screen_out_path
+            "${launch_screen_out_dir}/${launch_screen_name}")
+
+        file(MAKE_DIRECTORY "${launch_screen_out_dir}")
+
+        set(QT_IOS_LAUNCH_SCREEN_TEXT "${target}")
+        configure_file(
+            "${launch_screen_in_path}"
+            "${launch_screen_out_path}"
+            @ONLY
+        )
+
+        # Add it as a source file, otherwise CMake doesn't consider it a resource.
+        target_sources("${target}" PRIVATE "${launch_screen_out_path}")
+
+        # Ensure Xcode copies the file to the app bundle.
+        set_property(TARGET "${target}" APPEND PROPERTY RESOURCE "${launch_screen_out_path}")
+    endif()
+endfunction()
+
 function(_qt_internal_find_ios_development_team_id out_var)
     get_property(team_id GLOBAL PROPERTY _qt_internal_ios_development_team_id)
     get_property(team_id_computed GLOBAL PROPERTY _qt_internal_ios_development_team_id_computed)
@@ -846,6 +927,7 @@ function(_qt_internal_finalize_ios_app target)
         endif()
     endif()
 
+    _qt_internal_handle_ios_launch_screen("${target}")
     _qt_internal_set_placeholder_apple_bundle_version("${target}")
 endfunction()
 

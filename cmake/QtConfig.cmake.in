@@ -44,7 +44,8 @@ if(APPLE AND (NOT CMAKE_SYSTEM_NAME OR CMAKE_SYSTEM_NAME STREQUAL "Darwin"))
     list(APPEND CMAKE_MODULE_PATH "${_qt_import_prefix}/macos")
 elseif(APPLE AND CMAKE_SYSTEM_NAME STREQUAL "iOS")
     # Add module directory to pick up custom Info.plist template for iOS
-    list(APPEND CMAKE_MODULE_PATH "${_qt_import_prefix}/ios")
+    set(__qt_internal_cmake_ios_support_files_path "${_qt_import_prefix}/ios")
+    list(APPEND CMAKE_MODULE_PATH "${__qt_internal_cmake_ios_support_files_path}")
 endif()
 
 set(QT_ADDITIONAL_PACKAGES_PREFIX_PATH "" CACHE STRING
