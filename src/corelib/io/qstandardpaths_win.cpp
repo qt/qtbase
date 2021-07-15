@@ -100,8 +100,6 @@ static bool isProcessLowIntegrity() {
     // Disable function until Qt CI is updated
     return false;
 #else
-    if (QOperatingSystemVersion::current() < QOperatingSystemVersion::Windows8)
-        return false;
     // non-leaking pseudo-handle. Expanded inline function GetCurrentProcessToken()
     // (was made an inline function in Windows 8).
     const auto process_token = HANDLE(quintptr(-4));
