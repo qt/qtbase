@@ -146,13 +146,17 @@ QColorMatrix QColorSpacePrimaries::toXyzMatrix() const
         QColorVector srcCone = abrad.map(wXyz);
         QColorVector dstCone = abrad.map(wXyzD50);
 
-        QColorMatrix wToD50 = { { dstCone.x / srcCone.x, 0, 0 },
-                                { 0, dstCone.y / srcCone.y, 0 },
-                                { 0, 0, dstCone.z / srcCone.z } };
+        if (srcCone.x && srcCone.y && srcCone.z) {
+            QColorMatrix wToD50 = { { dstCone.x / srcCone.x, 0, 0 },
+                                    { 0, dstCone.y / srcCone.y, 0 },
+                                    { 0, 0, dstCone.z / srcCone.z } };
 
 
-        QColorMatrix chromaticAdaptation = abradinv * (wToD50 * abrad);
-        toXyz = chromaticAdaptation * toXyz;
+            QColorMatrix chromaticAdaptation = abradinv * (wToD50 * abrad);
+            toXyz = chromaticAdaptation * toXyz;
+        } else {
+            toXyz.r = {0, 0, 0}; // set to invalid value
+        }
     }
 
     return toXyz;
