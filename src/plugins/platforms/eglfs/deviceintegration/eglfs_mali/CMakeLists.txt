@@ -14,7 +14,7 @@ qt_internal_add_plugin(QEglFSMaliIntegrationPlugin
         QT_EGL_NO_X11
     INCLUDE_DIRECTORIES
         ../../api
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Core
         Qt::CorePrivate
         Qt::EglFSDeviceIntegrationPrivate

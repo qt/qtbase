@@ -5,7 +5,7 @@ qt_internal_add_plugin(QSCNetworkReachabilityNetworkInformationPlugin
     DEFAULT_IF APPLE
     SOURCES
         qscnetworkreachabilitynetworkinformationbackend.mm
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::NetworkPrivate
         ${FWSystemConfiguration}
 )

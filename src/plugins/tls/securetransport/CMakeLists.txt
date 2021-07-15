@@ -24,10 +24,9 @@ qt_internal_add_plugin(QSecureTransportBackendPlugin
         qx509_st_p.h
         qtls_st.cpp
         qtls_st_p.h
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::NetworkPrivate
         Qt::CorePrivate
-    LIBRARIES
         ${FWCoreFoundation}
         ${FWSecurity}
 )

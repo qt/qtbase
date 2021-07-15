@@ -4,7 +4,7 @@ qt_internal_add_plugin(QNLMNIPlugin
     TYPE networkinformation
     DEFAULT_IF WINDOWS AND QT_FEATURE_networklistmanager
     SOURCES qnetworklistmanagernetworkinformationbackend.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::NetworkPrivate
 )
 
