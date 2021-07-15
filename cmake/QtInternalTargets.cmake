@@ -152,7 +152,6 @@ function(qt_internal_apply_bitcode_flags target)
 
     set(bitcode_flags "$<${is_enabled_genex}:${flags_genex}>")
 
-    target_link_options("${target}" INTERFACE ${bitcode_flags})
     target_compile_options("${target}" INTERFACE ${bitcode_flags})
 endfunction()
 
