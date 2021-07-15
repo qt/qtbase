@@ -116,6 +116,10 @@ public:
             });
 
             socket->connectToServer("foo");
+            QVERIFY2(socket->waitForConnected(), "The system is probably reaching the maximum "
+                                                 "number of open file descriptors. On Unix, "
+                                                 "try to increase the limit with 'ulimit -n 32000' "
+                                                 "and run the test again.");
             QCOMPARE(socket->state(), QLocalSocket::ConnectedState);
         }
     }
