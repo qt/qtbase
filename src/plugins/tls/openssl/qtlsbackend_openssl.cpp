@@ -398,20 +398,17 @@ QList<QSslCertificate> systemCaCertificates()
         }
         CertCloseStore(hSystemStore, 0);
     }
+#elif defined(Q_OS_ANDROID)
+    // TODO: find where it hides its system certs !
 #elif defined(Q_OS_UNIX)
-    QSet<QString> certFiles;
-    QDir currentDir;
-    QStringList nameFilters;
-    QSsl::EncodingFormat platformEncodingFormat;
-# ifdef Q_OS_ANDROID
-    const QList<QByteArray> directories;
-# else
-    const QList<QByteArray> directories = QSslSocketPrivate::unixRootCertDirectories();
-    nameFilters << QLatin1String("*.pem") << QLatin1String("*.crt");
-    platformEncodingFormat = QSsl::Pem;
-# endif //Q_OS_ANDROID
     {
-        currentDir.setNameFilters(nameFilters);
+        const QList<QByteArray> directories = QSslSocketPrivate::unixRootCertDirectories();
+        QSet<QString> certFiles = {
+            QStringLiteral("/etc/pki/tls/certs/ca-bundle.crt"), // Fedora, Mandriva
+            QStringLiteral("/usr/local/share/certs/ca-root-nss.crt") // FreeBSD's ca_root_nss
+        };
+        QDir currentDir;
+        currentDir.setNameFilters(QStringList{QStringLiteral("*.pem"), QStringLiteral("*.crt")});
         for (const auto &directory : directories) {
             currentDir.setPath(QLatin1String(directory));
             QDirIterator it(currentDir);
@@ -422,13 +419,9 @@ QList<QSslCertificate> systemCaCertificates()
             }
         }
         for (const QString& file : qAsConst(certFiles))
-            systemCerts.append(QSslCertificate::fromPath(file, platformEncodingFormat));
-# ifndef Q_OS_ANDROID
-        systemCerts.append(QSslCertificate::fromPath(QLatin1String("/etc/pki/tls/certs/ca-bundle.crt"), QSsl::Pem)); // Fedora, Mandriva
-        systemCerts.append(QSslCertificate::fromPath(QLatin1String("/usr/local/share/certs/ca-root-nss.crt"), QSsl::Pem)); // FreeBSD's ca_root_nss
-# endif
+            systemCerts.append(QSslCertificate::fromPath(file, QSsl::Pem));
     }
-#endif
+#endif // platform
 #ifdef QSSLSOCKET_DEBUG
     qCDebug(lcTlsBackend) << "systemCaCertificates retrieval time " << timer.elapsed() << "ms";
     qCDebug(lcTlsBackend) << "imported " << systemCerts.count() << " certificates";
