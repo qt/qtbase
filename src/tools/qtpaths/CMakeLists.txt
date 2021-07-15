@@ -8,6 +8,7 @@ qt_get_tool_target_name(target_name qtpaths)
 qt_internal_add_tool(${target_name}
     TARGET_DESCRIPTION "Qt tool that provides the standard paths of the Qt framework"
     TOOLS_TARGET Core
+    INSTALL_VERSIONED_LINK
     SOURCES
         qtpaths.cpp
     DEFINES
