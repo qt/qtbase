@@ -50,6 +50,7 @@ function(qt_internal_add_common_qt_library_helper target)
     endif()
 
     _qt_internal_add_library(${target} ${arg_STATIC} ${arg_SHARED} ${arg_MODULE} ${arg_INTERFACE})
+    qt_internal_mark_as_internal_library(${target})
 endfunction()
 
 # Wrapper function to create a regular cmake target and forward all the

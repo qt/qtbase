@@ -753,3 +753,12 @@ function(qt_internal_adjust_main_config_runtime_output_dir target output_dir)
         RUNTIME_OUTPUT_DIRECTORY_${main_cmake_configuration} "${output_dir}"
     )
 endfunction()
+
+# Marks a target with a property that it is a library (shared or static) which was built using the
+# internal Qt API (qt_internal_add_module, qt_internal_add_plugin, etc) as opposed to it being
+# a user project library (qt_add_library, qt_add_plugin, etc).
+#
+# Needed to allow selectively applying certain flags via PlatformXInternal targets.
+function(qt_internal_mark_as_internal_library target)
+    set_target_properties(${target} PROPERTIES _qt_is_internal_library TRUE)
+endfunction()

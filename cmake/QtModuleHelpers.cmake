@@ -105,6 +105,7 @@ function(qt_internal_add_module target)
     endif()
 
     _qt_internal_add_library("${target}" ${type_to_create})
+    qt_internal_mark_as_internal_library("${target}")
 
     get_target_property(target_type ${target} TYPE)
 

@@ -76,6 +76,7 @@ function(qt_internal_add_plugin target)
             ${ARGN}
     )
     qt6_add_plugin(${target} ${plugin_args})
+    qt_internal_mark_as_internal_library(${target})
 
     qt_get_sanitized_plugin_type("${arg_TYPE}" plugin_type_escaped)
 
