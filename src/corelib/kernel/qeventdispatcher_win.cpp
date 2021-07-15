@@ -117,18 +117,6 @@ void WINAPI QT_WIN_CALLBACK qt_fast_timer_proc(uint timerId, uint /*reserved*/, 
     QCoreApplication::postEvent(t->dispatcher, new QTimerEvent(t->timerId));
 }
 
-static inline UINT inputQueueMask()
-{
-    UINT result = QS_ALLEVENTS;
-    // QTBUG 28513, QTBUG-29097, QTBUG-29435: QS_TOUCH, QS_POINTER became part of
-    // QS_INPUT in Windows Kit 8. They should not be used when running on pre-Windows 8.
-#if WINVER > 0x0601
-    if (QOperatingSystemVersion::current() < QOperatingSystemVersion::Windows8)
-        result &= ~(QS_TOUCH | QS_POINTER);
-#endif //  WINVER > 0x0601
-    return result;
-}
-
 LRESULT QT_WIN_CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPARAM lp)
 {
     if (message == WM_NCCREATE)
@@ -248,7 +236,7 @@ LRESULT QT_WIN_CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPA
         // by the foreign event loop (e.g. from the native modal dialog).
         // Skip sending, if the message queue is not empty.
         // sendPostedEventsTimer will deliver posted events later.
-        static const UINT mask = inputQueueMask();
+        static const UINT mask = QS_ALLEVENTS;
         if (HIWORD(GetQueueStatus(mask)) == 0)
             q->sendPostedEvents();
         else
