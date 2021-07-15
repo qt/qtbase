@@ -329,6 +329,7 @@ function(qt_internal_add_plugin target)
 
         if(qt_module_target)
             __qt_internal_add_static_plugin_init_object_library("${target}" plugin_init_target)
+            qt_internal_link_internal_platform_for_object_library("${plugin_init_target}")
         endif()
     endif()
 

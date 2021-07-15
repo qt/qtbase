@@ -762,3 +762,13 @@ endfunction()
 function(qt_internal_mark_as_internal_library target)
     set_target_properties(${target} PROPERTIES _qt_is_internal_library TRUE)
 endfunction()
+
+function(qt_internal_link_internal_platform_for_object_library target)
+    # We need to apply iOS bitcode flags to object libraries that are associated with internal
+    # modules or plugins (e.g. object libraries added by qt_internal_add_resource,
+    # qt_internal_add_plugin, etc.)
+    # The flags are needed when building iOS apps because Xcode expects bitcode to be
+    # present by default.
+    # Achieve this by compiling the cpp files with the PlatformModuleInternal compile flags.
+    target_link_libraries("${target}" PRIVATE Qt::PlatformModuleInternal)
+endfunction()

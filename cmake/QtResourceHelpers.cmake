@@ -87,10 +87,7 @@ function(qt_internal_record_rcc_object_files target resource_targets)
         endif()
         set_property(TARGET ${target} APPEND PROPERTY _qt_rcc_objects "${rcc_object_file_path}")
 
-        # Make sure that the target cpp files are compiled with the regular Qt internal compile
-        # flags, needed for building iOS apps with qmake where bitcode is involved.
-        target_link_libraries("${out_target}" PRIVATE Qt::PlatformModuleInternal)
-
+        qt_internal_link_internal_platform_for_object_library("${out_target}")
         qt_set_common_target_properties(${out_target})
     endforeach()
 endfunction()
