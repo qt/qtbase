@@ -325,8 +325,22 @@ function(qt_handle_apple_app_extension_api_only)
         # Build Qt libraries with -fapplication-extension. Needed to avoid linker warnings
         # transformed into errors on darwin platforms.
         set(flags "-fapplication-extension")
-        set(genex_condition "$<NOT:$<BOOL:$<TARGET_PROPERTY:QT_NO_APP_EXTENSION_ONLY_API>>>")
-        set(flags "$<${genex_condition}:${flags}>")
+
+        # The flags should only be applied to internal Qt libraries like modules and plugins.
+        # The reason why we use a custom property to apply the flags is because there's no other
+        # way to prevent the link options spilling out into user projects if the target that links
+        # against PlatformXInternal is a static library.
+        # The exported static library's INTERFACE_LINK_LIBRARIES property would contain
+        # $<LINK_ONLY:PlatformXInternal> and PlatformXInternal's INTERFACE_LINK_OPTIONS would be
+        # applied to a user project target.
+        # So to contain the spilling out of the flags, we ensure the link options are only added
+        # to internal Qt libraries that are marked with the property.
+        set(not_disabled "$<NOT:$<BOOL:$<TARGET_PROPERTY:QT_NO_APP_EXTENSION_ONLY_API>>>")
+        set(is_qt_internal_library "$<BOOL:$<TARGET_PROPERTY:_qt_is_internal_library>>")
+
+        set(condition "$<AND:${not_disabled},${is_qt_internal_library}>")
+
+        set(flags "$<${condition}:${flags}>")
         target_compile_options(PlatformModuleInternal INTERFACE ${flags})
         target_link_options(PlatformModuleInternal INTERFACE ${flags})
         target_compile_options(PlatformPluginInternal INTERFACE ${flags})
