@@ -17,7 +17,6 @@ qt_internal_add_plugin(QEglFSVivWaylandIntegrationPlugin
         ../../api
     LIBRARIES
         Wayland::Server
-    PUBLIC_LIBRARIES
         Qt::Core
         Qt::CorePrivate
         Qt::EglFSDeviceIntegrationPrivate

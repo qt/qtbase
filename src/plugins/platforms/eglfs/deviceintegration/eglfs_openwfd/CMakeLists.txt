@@ -12,7 +12,7 @@ qt_internal_add_plugin(QEglFSOpenWFDIntegrationPlugin
         qeglfsopenwfdmain.cpp
     INCLUDE_DIRECTORIES
         ../../api
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Core
         Qt::CorePrivate
         Qt::EglFSDeviceIntegrationPrivate

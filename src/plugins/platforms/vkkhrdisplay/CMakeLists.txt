@@ -24,6 +24,6 @@ qt_internal_extend_target(QVkKhrDisplayIntegrationPlugin CONDITION QT_FEATURE_fr
 )
 
 qt_internal_extend_target(QVkKhrDisplayIntegrationPlugin CONDITION TARGET Qt::InputSupportPrivate
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::InputSupportPrivate
 )

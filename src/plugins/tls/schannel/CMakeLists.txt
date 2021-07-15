@@ -21,10 +21,9 @@ qt_internal_add_plugin(QSchannelBackendPlugin
         qtlskey_schannel.cpp qtlskey_schannel_p.h
         qx509_schannel.cpp qx509_schannel_p.h
     LIBRARIES
+        Qt::NetworkPrivate
         crypt32
         secur32
         bcrypt
         ncrypt
-    PUBLIC_LIBRARIES
-        Qt::NetworkPrivate
 )

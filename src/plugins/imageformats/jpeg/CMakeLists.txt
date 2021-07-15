@@ -33,7 +33,7 @@ endif()
 #####################################################################
 
 qt_internal_extend_target(QJpegPlugin CONDITION QT_FEATURE_system_jpeg
-    PUBLIC_LIBRARIES
+    LIBRARIES
         JPEG::JPEG
 )
 

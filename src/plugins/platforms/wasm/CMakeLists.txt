@@ -29,7 +29,7 @@ qt_internal_add_plugin(QWasmIntegrationPlugin
     DEFINES
         QT_EGL_NO_X11
         QT_NO_FOREACH
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Core
         Qt::CorePrivate
         Qt::Gui
@@ -54,7 +54,7 @@ qt_internal_add_resource(QWasmIntegrationPlugin "wasmfonts"
 qt_internal_extend_target(QWasmIntegrationPlugin CONDITION QT_FEATURE_opengl
     SOURCES
         qwasmbackingstore.cpp qwasmbackingstore.h
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::OpenGL
         Qt::OpenGLPrivate
 )

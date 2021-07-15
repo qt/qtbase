@@ -48,7 +48,7 @@ qt_internal_extend_target(QQnxIntegrationPlugin CONDITION QT_FEATURE_egl
     SOURCES
         qqnxeglwindow.cpp qqnxeglwindow.h
         qqnxglcontext.cpp qqnxglcontext.h
-    PUBLIC_LIBRARIES
+    LIBRARIES
         EGL::EGL
 )
 
@@ -58,14 +58,14 @@ qt_internal_extend_target(QQnxIntegrationPlugin CONDITION QT_FEATURE_qqnx_pps
         qqnxnavigatoreventnotifier.cpp qqnxnavigatoreventnotifier.h
         qqnxnavigatorpps.cpp qqnxnavigatorpps.h
         qqnxvirtualkeyboardpps.cpp qqnxvirtualkeyboardpps.h
-    PUBLIC_LIBRARIES
+    LIBRARIES
         PPS::PPS
 )
 
 qt_internal_extend_target(QQnxIntegrationPlugin CONDITION QT_FEATURE_clipboard AND QT_FEATURE_qqnx_pps
     SOURCES
         qqnxclipboard.cpp qqnxclipboard.h
-    PUBLIC_LIBRARIES
+    LIBRARIES
         clipboard
 )
 
@@ -84,7 +84,7 @@ qt_internal_extend_target(QQnxIntegrationPlugin CONDITION lgmon
         qqnxlgmon.cpp
     DEFINES
         QQNX_LGMON
-    PUBLIC_LIBRARIES
+    LIBRARIES
         lgmon
 )
 

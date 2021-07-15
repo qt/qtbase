@@ -35,7 +35,7 @@ qt_internal_add_plugin(QEglFSKmsGbmIntegrationPlugin
         qeglfskmsgbmmain.cpp
     DEFINES
         QT_EGL_NO_X11
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Libdrm::Libdrm
         Qt::CorePrivate
         Qt::EglFSDeviceIntegrationPrivate
