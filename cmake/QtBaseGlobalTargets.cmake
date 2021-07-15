@@ -362,6 +362,7 @@ if(MACOS)
 elseif(IOS)
     qt_copy_or_install(FILES
         cmake/ios/MacOSXBundleInfo.plist.in
+        cmake/ios/LaunchScreen.storyboard
         DESTINATION "${__GlobalConfig_install_dir}/ios"
     )
 endif()
