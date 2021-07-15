@@ -66,38 +66,10 @@ tst_QTranslator::tst_QTranslator()
 
 void tst_QTranslator::initTestCase()
 {
-#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
-    QString sourceDir(":/android_testdata/");
-    QDirIterator it(sourceDir, QDirIterator::Subdirectories);
-    while (it.hasNext()) {
-        it.next();
-
-        QFileInfo sourceFileInfo = it.fileInfo();
-        if (!sourceFileInfo.isDir()) {
-            QFileInfo destinationFileInfo(QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + QLatin1Char('/') + sourceFileInfo.filePath().mid(sourceDir.length()));
-
-            if (!destinationFileInfo.exists()) {
-                QVERIFY(QDir().mkpath(destinationFileInfo.path()));
-                QVERIFY(QFile::copy(sourceFileInfo.filePath(), destinationFileInfo.filePath()));
-            }
-        }
-    }
-
-    QDir::setCurrent(QStandardPaths::writableLocation(QStandardPaths::CacheLocation));
-#endif
-
-    // chdir into the directory containing our testdata,
-    // to make the code simpler (load testdata via relative paths)
-#ifdef Q_OS_WINRT
-    // ### TODO: Use this for all platforms in 5.7
-    dataDir = QEXTRACTTESTDATA(QStringLiteral("/"));
+    dataDir = QEXTRACTTESTDATA(QStringLiteral("/tst_qtranslator"));
     QVERIFY2(!dataDir.isNull(), qPrintable("Could not extract test data"));
-    QVERIFY2(QDir::setCurrent(dataDir->path()), qPrintable("Could not chdir to " + dataDir->path()));
-#else // !Q_OS_WINRT
-    QString testdata_dir = QFileInfo(QFINDTESTDATA("hellotr_la.qm")).absolutePath();
-    QVERIFY2(QDir::setCurrent(testdata_dir), qPrintable("Could not chdir to " + testdata_dir));
-#endif // !Q_OS_WINRT
-
+    QVERIFY2(QDir::setCurrent(dataDir->path()),
+             qPrintable("Could not chdir to " + dataDir->path()));
 }
 
 bool tst_QTranslator::eventFilter(QObject *, QEvent *event)
