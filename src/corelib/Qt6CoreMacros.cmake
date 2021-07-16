@@ -1361,10 +1361,24 @@ END
 
         # We would like to do the following:
         #     target_sources(${target} PRIVATE "$<$<CONFIG:${cfg}>:${output}>")
-        # However, https://gitlab.kitware.com/cmake/cmake/-/issues/20682 doesn't let us.
-        # Work-around by compiling the resources in an object lib and linking that.
-        add_library(${target}_rc OBJECT "${output}")
-        target_link_libraries(${target} PRIVATE $<TARGET_OBJECTS:${target}_rc>)
+        #
+        # However, https://gitlab.kitware.com/cmake/cmake/-/issues/20682 doesn't let us do that
+        # in CMake 3.19 and earlier.
+        # We can do it in CMake 3.20 and later.
+        # And we have to do it with CMake 3.21.0 to avoid a different issue
+        # https://gitlab.kitware.com/cmake/cmake/-/issues/22436
+        #
+        # So use the object lib work around for <= 3.19 and target_sources directly for later
+        # versions.
+        set(use_obj_lib FALSE)
+        set(end_target "${target}")
+        if(CMAKE_VERSION VERSION_LESS 3.20)
+            set(use_obj_lib TRUE)
+            set(end_target "${target}_rc")
+            add_library(${target}_rc OBJECT "${output}")
+            target_link_libraries(${target} PRIVATE $<TARGET_OBJECTS:${target}_rc>)
+        endif()
+
         while(outputs)
             list(POP_FRONT cfgs cfg)
             list(POP_FRONT outputs output)
@@ -1373,7 +1387,7 @@ END
                 DEPENDS "${input}"
                 COMMAND ${CMAKE_COMMAND} -E copy_if_different "${input}" "${output}"
             )
-            target_sources(${target}_rc PRIVATE "$<$<CONFIG:${cfg}>:${output}>")
+            target_sources(${end_target} PRIVATE "$<$<CONFIG:${cfg}>:${output}>")
         endwhile()
     endif()
 endfunction()
