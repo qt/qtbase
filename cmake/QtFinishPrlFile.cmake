@@ -23,6 +23,7 @@
 # LINK_LIBRARY_FLAG: flag used to link a shared library to an executable, e.g. -l on UNIX
 # IMPLICIT_LINK_DIRECTORIES: list of implicit linker search paths
 
+cmake_policy(SET CMP0007 NEW)
 include("${CMAKE_CURRENT_LIST_DIR}/QtGenerateLibHelpers.cmake")
 
 file(STRINGS "${IN_FILE}" lines)
