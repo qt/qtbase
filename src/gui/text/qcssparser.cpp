@@ -1599,11 +1599,21 @@ QSize Declaration::sizeValue() const
         return qvariant_cast<QSize>(d->parsed);
 
     int x[2] = { 0, 0 };
-    if (d->values.count() > 0)
-        intValueHelper(d->values.at(0), &x[0], "px");
-    if (d->values.count() > 1)
-        intValueHelper(d->values.at(1), &x[1], "px");
-    else
+    const int count = d->values.count();
+    for (int i = 0; i < count; ++i) {
+        const auto &value = d->values.at(i);
+        const QString valueString = value.variant.toString();
+        if (valueString.endsWith(u"pt", Qt::CaseInsensitive)) {
+            intValueHelper(value, &x[i], "pt");
+            // according to https://www.w3.org/TR/css3-values/#absolute-lengths
+            // 1pt = 1/72th of 1 inch, and 1px = 1/96th of 1 inch
+            x[i] *= 72.0/96.0;
+        } else {
+            // by default we use 'px'
+            intValueHelper(value, &x[i], "px");
+        }
+    }
+    if (count == 1)
         x[1] = x[0];
     QSize size(x[0], x[1]);
     d->parsed = QVariant::fromValue<QSize>(size);
