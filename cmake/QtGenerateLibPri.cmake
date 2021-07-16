@@ -16,6 +16,7 @@
 # The library values are transformed from an absolute path into link flags
 # aka from "/usr/lib/x86_64-linux-gnu/libcups.so" to "-lcups".
 
+cmake_policy(SET CMP0007 NEW)
 cmake_policy(SET CMP0057 NEW)
 
 # Create a qmake-style list from the passed arguments and store it in ${out_var}.
