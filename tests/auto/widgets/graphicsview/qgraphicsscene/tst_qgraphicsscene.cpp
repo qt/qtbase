@@ -1218,10 +1218,10 @@ void tst_QGraphicsScene::addPath()
     QVERIFY(scene.items(QPointF(10, 10)).isEmpty());
     QVERIFY(scene.items(QPointF(-10, 20)).isEmpty());
     QVERIFY(scene.items(QPointF(10, 20)).isEmpty());
-if (sizeof(qreal) != sizeof(double))
-    QWARN("Skipping test because of rounding errors when qreal != double");
-else
-    QVERIFY(scene.items(QPointF(-10, 30)).isEmpty());
+    if (sizeof(qreal) != sizeof(double))
+        QWARN("Skipping test because of rounding errors when qreal != double");
+    else
+        QVERIFY(scene.items(QPointF(-10, 30)).isEmpty());
     QVERIFY(scene.items(QPointF(10.1, 30)).isEmpty());
 }
 
