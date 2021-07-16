@@ -3562,7 +3562,7 @@ void tst_QComboBox::propagateStyleChanges()
         {}
 
         int styleHint(QStyle::StyleHint hint, const QStyleOption *opt,
-                      const QWidget *widget, QStyleHintReturn *returnData) const
+                      const QWidget *widget, QStyleHintReturn *returnData) const override
         {
             if (hint == QStyle::SH_ComboBox_PopupFrameStyle) {
                 inquired = true;
