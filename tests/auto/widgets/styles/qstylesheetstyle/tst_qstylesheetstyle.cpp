@@ -139,6 +139,9 @@ private slots:
     void highdpiImages_data();
     void highdpiImages();
 
+    void iconSizes_data();
+    void iconSizes();
+
 private:
     static QColor COLOR(const QWidget &w)
     {
@@ -2335,6 +2338,38 @@ void tst_QStyleSheetStyle::placeholderColor()
     QCOMPARE(le2.palette().placeholderText(), red);
     le2.setEnabled(true);
     QCOMPARE(le2.palette().placeholderText(), red);
+}
+
+void tst_QStyleSheetStyle::iconSizes_data()
+{
+    QTest::addColumn<QString>("styleSheet");
+    QTest::addColumn<QFont>("font");
+    QTest::addColumn<QSize>("iconSize");
+
+    const int defaultSize = QApplication::style()->pixelMetric(QStyle::PM_ButtonIconSize);
+
+    QFont smallFont;
+    smallFont.setPointSizeF(9.0);
+    QFont largeFont;
+    largeFont.setPointSizeF(24.0);
+
+    QTest::addRow("default") << QString() << QFont() << QSize(defaultSize, defaultSize);
+    QTest::addRow("pixels") << "icon-size: 50px" << QFont() << QSize(50, 50);
+    QTest::addRow("points") << "icon-size: 20pt" << QFont() << QSize(15, 15);
+    QTest::addRow("pixels with font") << "icon-size: 50px" << smallFont << QSize(50, 50);
+    QTest::addRow("points with font") << "icon-size: 20pt" << largeFont << QSize(15, 15);
+}
+
+void tst_QStyleSheetStyle::iconSizes()
+{
+    QFETCH(QString, styleSheet);
+    QFETCH(QFont, font);
+    QFETCH(QSize, iconSize);
+
+    QPushButton button;
+    button.setFont(font);
+    button.setStyleSheet(styleSheet);
+    QCOMPARE(button.iconSize(), iconSize);
 }
 
 QTEST_MAIN(tst_QStyleSheetStyle)
