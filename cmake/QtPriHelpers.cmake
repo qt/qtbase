@@ -378,8 +378,10 @@ QT.${config_module_name}_private.disabled_features = ${disabled_private_features
             ${CMAKE_STATIC_LIBRARY_SUFFIX})
         if(MSVC)
             set(link_library_flag "-l")
+            file(TO_CMAKE_PATH "$ENV{LIB};${CMAKE_CXX_IMPLICIT_LINK_DIRECTORIES}" implicit_link_directories)
         else()
             set(link_library_flag ${CMAKE_LINK_LIBRARY_FLAG})
+            set(implicit_link_directories ${CMAKE_CXX_IMPLICIT_LINK_DIRECTORIES})
         endif()
         add_custom_command(
             OUTPUT "${private_pri_file_path}"
@@ -391,7 +393,7 @@ QT.${config_module_name}_private.disabled_features = ${disabled_private_features
                     "-DLIBRARY_SUFFIXES=${library_suffixes}"
                     "-DLINK_LIBRARY_FLAG=${link_library_flag}"
                     "-DCONFIGS=${configs}"
-                    "-DIMPLICIT_LINK_DIRECTORIES=${CMAKE_CXX_IMPLICIT_LINK_DIRECTORIES}"
+                    "-DIMPLICIT_LINK_DIRECTORIES=${implicit_link_directories}"
                     -P "${QT_CMAKE_DIR}/QtGenerateLibPri.cmake"
             VERBATIM)
         add_custom_target(${target}_lib_pri DEPENDS "${private_pri_file_path}")
@@ -801,8 +803,10 @@ CONFIG += ${private_config_joined}
         ${CMAKE_STATIC_LIBRARY_SUFFIX})
     if(MSVC)
         set(link_library_flag "-l")
+        file(TO_CMAKE_PATH "$ENV{LIB};${CMAKE_CXX_IMPLICIT_LINK_DIRECTORIES}" implicit_link_directories)
     else()
         set(link_library_flag ${CMAKE_LINK_LIBRARY_FLAG})
+        set(implicit_link_directories ${CMAKE_CXX_IMPLICIT_LINK_DIRECTORIES})
     endif()
     add_custom_command(
         OUTPUT "${qmodule_pri_target_path}"
@@ -814,7 +818,7 @@ CONFIG += ${private_config_joined}
                 "-DLIBRARY_SUFFIXES=${library_suffixes}"
                 "-DLINK_LIBRARY_FLAG=${link_library_flag}"
                 "-DCONFIGS=${configs}"
-                "-DIMPLICIT_LINK_DIRECTORIES=${CMAKE_CXX_IMPLICIT_LINK_DIRECTORIES}"
+                "-DIMPLICIT_LINK_DIRECTORIES=${implicit_link_directories}"
                 -P "${QT_CMAKE_DIR}/QtGenerateLibPri.cmake"
         VERBATIM)
     add_custom_target(qmodule_pri DEPENDS "${qmodule_pri_target_path}")
