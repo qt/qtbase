@@ -37,6 +37,7 @@
 #include <QtCore/QList>
 #include <QtCore/QMap>
 #include <QtCore/QThread>
+#include <QtCore/private/qvolatile_p.h>
 
 #include "forwarddeclared.h"
 #include "nontracked.h"
@@ -1944,7 +1945,7 @@ class ThreadData
     QAtomicInt * volatile ptr;
 public:
     ThreadData(QAtomicInt *p) : ptr(p) { }
-    ~ThreadData() { ++ptr; }
+    ~ThreadData() { QtPrivate::volatilePreIncrement(ptr); }
     void ref()
     {
         // if we're called after the destructor, we'll crash

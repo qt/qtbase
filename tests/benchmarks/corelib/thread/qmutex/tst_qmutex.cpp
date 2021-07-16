@@ -28,6 +28,7 @@
 
 #include <QtCore/QtCore>
 #include <QTest>
+#include <QtCore/private/qvolatile_p.h>
 
 #include <math.h>
 
@@ -158,7 +159,7 @@ void tst_QMutex::noThread()
             QBENCHMARK {
                 count = 0;
                 for (int i = 0; i < N; i++) {
-                    count++;
+                    QtPrivate::volatilePreIncrement(count);
                 }
             }
             break;
@@ -167,7 +168,7 @@ void tst_QMutex::noThread()
                 count = 0;
                 for (int i = 0; i < N; i++) {
                     mtx.lock();
-                    count++;
+                    QtPrivate::volatilePreIncrement(count);
                     mtx.unlock();
                 }
             }
@@ -177,7 +178,7 @@ void tst_QMutex::noThread()
                 count = 0;
                 for (int i = 0; i < N; i++) {
                     QMutexLocker locker(&mtx);
-                    count++;
+                    QtPrivate::volatilePreIncrement(count);
                 }
             }
             break;

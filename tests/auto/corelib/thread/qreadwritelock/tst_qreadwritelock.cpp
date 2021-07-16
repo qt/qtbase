@@ -34,6 +34,7 @@
 #include <qmutex.h>
 #include <qthread.h>
 #include <qwaitcondition.h>
+#include <private/qvolatile_p.h>
 
 #ifdef Q_OS_UNIX
 #include <unistd.h>
@@ -587,12 +588,8 @@ public:
             if(count)
                 qFatal("Non-zero count at start of write! (%d)",count );
 //            printf(".");
-            int i;
-            for(i=0; i<maxval; ++i) {
-                volatile int lc=count;
-                ++lc;
-                count=lc;
-            }
+            for (int i = 0; i < maxval; ++i)
+                QtPrivate::volatilePreIncrement(count);
             count=0;
             testRwlock.unlock();
             msleep(ulong(waitTime));

@@ -8,4 +8,6 @@ qt_internal_add_test(tst_qsharedpointer
         nontracked.cpp
         wrapper.cpp
         tst_qsharedpointer.cpp
+    PUBLIC_LIBRARIES
+        Qt::CorePrivate
 )

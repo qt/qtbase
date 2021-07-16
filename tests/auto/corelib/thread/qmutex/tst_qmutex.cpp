@@ -36,6 +36,7 @@
 #include <qmutex.h>
 #include <qthread.h>
 #include <qwaitcondition.h>
+#include <private/qvolatile_p.h>
 
 class tst_QMutex : public QObject
 {
@@ -1191,9 +1192,9 @@ void tst_QMutex::tryLockDeadlock()
         {
             for (int i = 0; i < 100000; ++i) {
                 if (mut.tryLock(0)) {
-                    if ((++tryLockDeadlockCounter) != 1)
+                    if (QtPrivate::volatilePreIncrement(tryLockDeadlockCounter) != 1)
                         ++tryLockDeadlockFailureCount;
-                    if ((--tryLockDeadlockCounter) != 0)
+                    if (QtPrivate::volatilePreDecrement(tryLockDeadlockCounter) != 0)
                         ++tryLockDeadlockFailureCount;
                     mut.unlock();
                 }
@@ -1210,9 +1211,9 @@ void tst_QMutex::tryLockDeadlock()
 
     for (int i = 0; i < 100000; ++i) {
         mut.lock();
-        if ((++tryLockDeadlockCounter) != 1)
+        if (QtPrivate::volatilePreIncrement(tryLockDeadlockCounter) != 1)
             ++tryLockDeadlockFailureCount;
-        if ((--tryLockDeadlockCounter) != 0)
+        if (QtPrivate::volatilePreDecrement(tryLockDeadlockCounter) != 0)
             ++tryLockDeadlockFailureCount;
         mut.unlock();
     }
