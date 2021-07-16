@@ -2338,12 +2338,40 @@ void tst_QStyleSheetStyle::iconSizes_data()
     smallFont.setPointSizeF(9.0);
     QFont largeFont;
     largeFont.setPointSizeF(24.0);
+    QFont hugeFont;
+    hugeFont.setPointSizeF(40.0);
 
     QTest::addRow("default") << QString() << QFont() << QSize(defaultSize, defaultSize);
     QTest::addRow("pixels") << "icon-size: 50px" << QFont() << QSize(50, 50);
     QTest::addRow("points") << "icon-size: 20pt" << QFont() << QSize(15, 15);
     QTest::addRow("pixels with font") << "icon-size: 50px" << smallFont << QSize(50, 50);
     QTest::addRow("points with font") << "icon-size: 20pt" << largeFont << QSize(15, 15);
+
+    const QFontMetrics defaultMetrics{QFont()};
+    const QFontMetrics smallMetrics(smallFont);
+    const QFontMetrics largeMetrics(largeFont);
+    const QFontMetrics hugeMetrics(hugeFont);
+    QTest::addRow("1em, default font") << "icon-size: 1em"
+        << QFont() << QSize(defaultMetrics.height(), defaultMetrics.height());
+    QTest::addRow("1em, small font") << "icon-size: 1em"
+        << smallFont << QSize(smallMetrics.height(), smallMetrics.height());
+    QTest::addRow("1em, large font") << "icon-size: 1em"
+        << largeFont << QSize(largeMetrics.height(), largeMetrics.height());
+    QTest::addRow("1.5em, lage font") << "icon-size: 1.5em"
+        << largeFont << QSize(largeMetrics.height(), largeMetrics.height()) * 1.5;
+    QTest::addRow("2em with styled font") << "font-size: 40pt; icon-size: 2em"
+        << QFont() << QSize(hugeMetrics.height(), hugeMetrics.height()) * 2;
+
+    QTest::addRow("1ex, default font") << "icon-size: 1ex"
+        << QFont() << QSize(defaultMetrics.xHeight(), defaultMetrics.xHeight());
+    QTest::addRow("1ex, small font") << "icon-size: 1ex"
+        << smallFont << QSize(smallMetrics.xHeight(), smallMetrics.xHeight());
+    QTest::addRow("1ex, large font") << "icon-size: 1ex"
+        << largeFont << QSize(largeMetrics.xHeight(), largeMetrics.xHeight());
+    QTest::addRow("1.5ex, lage font") << "icon-size: 1.5ex"
+        << largeFont << QSize(largeMetrics.xHeight(), largeMetrics.xHeight()) * 1.5;
+    QTest::addRow("2ex with styled font") << "font-size: 40pt; icon-size: 2ex"
+        << QFont() << QSize(hugeMetrics.xHeight(), hugeMetrics.xHeight()) * 2;
 }
 
 void tst_QStyleSheetStyle::iconSizes()
