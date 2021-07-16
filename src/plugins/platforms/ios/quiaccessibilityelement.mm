@@ -43,6 +43,7 @@
 
 #include "private/qaccessiblecache_p.h"
 #include "private/qcore_mac_p.h"
+#include "uistrings_p.h"
 
 QT_NAMESPACE_ALIAS_OBJC_CLASS(QMacAccessibilityElement);
 
@@ -117,7 +118,9 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QMacAccessibilityElement);
     QAccessible::State state = iface->state();
 
     if (state.checkable)
-        return state.checked ? @"checked" : @"unchecked"; // FIXME: translation
+        return state.checked
+                ? QCoreApplication::translate(ACCESSIBILITY_ELEMENT, AE_CHECKED).toNSString()
+                : QCoreApplication::translate(ACCESSIBILITY_ELEMENT, AE_UNCHECKED).toNSString();
 
     QAccessibleValueInterface *val = iface->valueInterface();
     if (val) {

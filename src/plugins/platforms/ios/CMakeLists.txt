@@ -27,6 +27,7 @@ qt_internal_add_plugin(QIOSIntegrationPlugin
         qioswindow.h qioswindow.mm
         quiaccessibilityelement.h quiaccessibilityelement.mm
         quiview.h quiview.mm
+        uistrings_p.h uistrings.cpp
     LIBRARIES
         ${FWAudioToolbox}
         ${FWFoundation}
