@@ -75,15 +75,14 @@ using namespace QRoundingDown;
     Julian Calendar}
  */
 
-QJulianCalendar::QJulianCalendar()
-    : QRomanCalendar(QStringLiteral("Julian"), QCalendar::System::Julian)
-{
-    Q_ASSERT(calendarSystem() == QCalendar::System::Julian || !calendarId().isValid());
-}
-
 QString QJulianCalendar::name() const
 {
     return QStringLiteral("Julian");
+}
+
+QStringList QJulianCalendar::nameList()
+{
+    return { QStringLiteral("Julian") };
 }
 
 bool QJulianCalendar::isLeapYear(int year) const

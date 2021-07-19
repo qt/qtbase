@@ -72,21 +72,20 @@ using namespace QRoundingDown;
     \sa QHijriCalendar, QCalendar
 */
 
-QIslamicCivilCalendar::QIslamicCivilCalendar()
-    : QHijriCalendar(QStringLiteral("Islamic Civil"), QCalendar::System::IslamicCivil)
-{
-    if (calendarId().isValid()) {
-        Q_ASSERT(calendarSystem() == QCalendar::System::IslamicCivil);
-        registerAlias(QStringLiteral("islamic-civil")); // CLDR name
-        registerAlias(QStringLiteral("islamicc")); // old CLDR name, still (2018) used by Mozilla
-        // Until we have a oncrete implementation that knows all the needed ephemerides:
-        registerAlias(QStringLiteral("Islamic"));
-    } // else: being ignored in favor of a duplicate created at the same time
-}
-
 QString QIslamicCivilCalendar::name() const
 {
     return QStringLiteral("Islamic Civil");
+}
+
+QStringList QIslamicCivilCalendar::nameList()
+{
+    return {
+        QStringLiteral("Islamic Civil"),
+        QStringLiteral("islamic-civil"), // CLDR name
+        QStringLiteral("islamicc"), // old CLDR name, still (2018) used by Mozilla
+        // Until we have a concrete implementation that knows all the needed ephemerides:
+        QStringLiteral("Islamic"),
+    };
 }
 
 bool QIslamicCivilCalendar::isLeapYear(int year) const

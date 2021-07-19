@@ -73,15 +73,14 @@ using namespace QRoundingDown;
     page on Milanković Calendar}
  */
 
-QMilankovicCalendar::QMilankovicCalendar()
-    : QRomanCalendar(QStringLiteral("Milankovic"), QCalendar::System::Milankovic)
-{
-    Q_ASSERT(calendarSystem() == QCalendar::System::Milankovic || !calendarId().isValid());
-}
-
 QString QMilankovicCalendar::name() const
 {
     return QStringLiteral("Milankovic");
+}
+
+QStringList QMilankovicCalendar::nameList()
+{
+    return { QStringLiteral("Milankovic") };
 }
 
 bool QMilankovicCalendar::isLeapYear(int year) const

@@ -73,9 +73,6 @@ public:
 protected:
     const QCalendarLocale *localeMonthIndexData() const override;
     const char16_t *localeMonthData() const override;
-    // (The INTEGRITY compiler got upset at: using QCalendarBackend:QCalendarBackend;)
-    QHijriCalendar(const QString &name, QCalendar::System id = QCalendar::System::User)
-        : QCalendarBackend(name, id) {}
 };
 
 QT_END_NAMESPACE

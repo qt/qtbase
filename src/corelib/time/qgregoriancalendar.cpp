@@ -60,18 +60,17 @@ using namespace QRoundingDown;
     \sa QRomanCalendar, QJulianCalendar, QCalendar
 */
 
-QGregorianCalendar::QGregorianCalendar()
-    : QRomanCalendar(QStringLiteral("Gregorian"), QCalendar::System::Gregorian)
-{
-    if (calendarId().isValid()) {
-        Q_ASSERT(calendarSystem() == QCalendar::System::Gregorian);
-        registerAlias(QStringLiteral("gregory"));
-    } // else: being ignored in favor of a duplicate created at the same time
-}
-
 QString QGregorianCalendar::name() const
 {
     return QStringLiteral("Gregorian");
+}
+
+QStringList QGregorianCalendar::nameList()
+{
+    return {
+        QStringLiteral("Gregorian"),
+        QStringLiteral("gregory"),
+    };
 }
 
 bool QGregorianCalendar::isLeapYear(int year) const

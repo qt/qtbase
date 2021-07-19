@@ -58,9 +58,9 @@ QT_BEGIN_NAMESPACE
 class Q_CORE_EXPORT QMilankovicCalendar : public QRomanCalendar
 {
 public:
-    QMilankovicCalendar();
     // Calendar properties:
     QString name() const override;
+    static QStringList nameList();
     // Date queries:
     bool isLeapYear(int year) const override;
     // Julian Day conversions:

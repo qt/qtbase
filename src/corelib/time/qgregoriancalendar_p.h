@@ -60,9 +60,9 @@ class Q_CORE_EXPORT QGregorianCalendar : public QRomanCalendar
     // TODO: provide static methods, called by the overrides, that can be called
     // directly by QDate to optimize various parts.
 public:
-    QGregorianCalendar();
     // Calendar property:
     QString name() const override;
+    static QStringList nameList();
     // Date queries:
     bool isLeapYear(int year) const override;
     // Julian Day conversions:
