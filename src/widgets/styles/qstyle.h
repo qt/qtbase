@@ -825,6 +825,7 @@ public:
         SP_DialogRetryButton,
         SP_DialogIgnoreButton,
         SP_RestoreDefaultsButton,
+        SP_TabCloseButton,
         // do not add any values below/greater than this
         SP_CustomBase = 0xf0000000
     };

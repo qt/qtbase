@@ -126,30 +126,6 @@ static qreal qt_getDevicePixelRatio(const QWidget *widget)
     return widget ? widget->devicePixelRatio() : qApp->devicePixelRatio();
 }
 
-static QIcon tabBarCloseButtonIcon()
-{
-    QIcon result;
-    result.addPixmap(QPixmap(
-                     QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-closetab-16.png")),
-                     QIcon::Normal, QIcon::Off);
-    result.addPixmap(QPixmap(
-                     QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-closetab-32.png")),
-                     QIcon::Normal, QIcon::Off);
-    result.addPixmap(QPixmap(
-                     QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-closetab-down-16.png")),
-                     QIcon::Normal, QIcon::On);
-    result.addPixmap(QPixmap(
-                     QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-closetab-down-32.png")),
-                     QIcon::Normal, QIcon::On);
-    result.addPixmap(QPixmap(
-                     QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-closetab-hover-16.png")),
-                     QIcon::Active, QIcon::Off);
-    result.addPixmap(QPixmap(
-                     QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-closetab-hover-32.png")),
-                     QIcon::Active, QIcon::Off);
-    return result;
-}
-
 /*!
     \class QCommonStyle
     \brief The QCommonStyle class encapsulates the common Look and Feel of a GUI.
@@ -441,7 +417,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
         break;
     case PE_IndicatorTabClose: {
         if (d->tabBarcloseButtonIcon.isNull())
-            d->tabBarcloseButtonIcon = tabBarCloseButtonIcon();
+            d->tabBarcloseButtonIcon = proxy()->standardIcon(QStyle::SP_TabCloseButton, opt, widget);
 
         const int size = proxy()->pixelMetric(QStyle::PM_SmallIconSize, opt);
         QIcon::Mode mode = opt->state & State_Enabled ?
@@ -5775,6 +5751,8 @@ QPixmap QCommonStyle::standardPixmap(StandardPixmap sp, const QStyleOption *opti
         return QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/media-volume-muted-16.png"));
     case SP_LineEditClearButton:
         return QPixmap(clearText16IconPath());
+    case SP_TabCloseButton:
+        return QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-closetab-16.png"));
 #endif // QT_NO_IMAGEFORMAT_PNG
     default:
         break;
@@ -6392,6 +6370,20 @@ QIcon QCommonStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption
                      toolBarExtVSizes, sizeof(toolBarExtVSizes)/sizeof(toolBarExtVSizes[0]), icon);
         break;
 #endif // QT_NO_IMAGEFORMAT_PNG
+    case SP_TabCloseButton:
+        icon.addFile(iconResourcePrefix() + u"standardbutton-closetab-16.png", QSize(16, 16),
+                     QIcon::Normal, QIcon::Off);
+        icon.addFile(iconResourcePrefix() + u"standardbutton-closetab-32.png", QSize(32, 32),
+                     QIcon::Normal, QIcon::Off);
+        icon.addFile(iconResourcePrefix() + u"standardbutton-closetab-down-16.png", QSize(16, 16),
+                     QIcon::Normal, QIcon::On);
+        icon.addFile(iconResourcePrefix() + u"standardbutton-closetab-down-32.png", QSize(32, 32),
+                     QIcon::Normal, QIcon::On);
+        icon.addFile(iconResourcePrefix() + u"standardbutton-closetab-hover-16.png", QSize(16, 16),
+                     QIcon::Active, QIcon::Off);
+        icon.addFile(iconResourcePrefix() + u"standardbutton-closetab-hover-16.png", QSize(32, 32),
+                     QIcon::Active, QIcon::Off);
+        break;
     default:
         icon.addPixmap(proxy()->standardPixmap(standardIcon, option, widget));
         break;

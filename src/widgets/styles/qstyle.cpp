@@ -2124,6 +2124,8 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
        This enum value was added in Qt 5.14.
     \value SP_RestoreDefaultsButton Icon for a standard RestoreDefaults button in a QDialogButtonBox.
        This enum value was added in Qt 5.14.
+    \value SP_TabCloseButton Icon for the close button in the tab of a QTabBar.
+       This enum value was added in Qt 6.3.
     \value SP_CustomBase  Base value for custom standard pixmaps;
     custom values must be greater than this value.
 
