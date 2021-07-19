@@ -53,12 +53,6 @@ QT_BEGIN_NAMESPACE
 
 static const char qtNativeClassName[] = "org/qtproject/qt/android/QtNative";
 
-#ifndef QT_NO_EXCEPTIONS
-static const char emptyPermissionExcept[] = "The permission cannot be an empty string.";
-static const char invalidNativePermissionExcept[] =
-        "Coudn't convert the provided permission type to a native Android permission string.";
-#endif
-
 QApplicationPermission::PermissionResult resultFromAndroid(jint value)
 {
     return value == 0 ? QApplicationPermission::Authorized : QApplicationPermission::Denied;
@@ -208,11 +202,7 @@ QCoreApplicationPrivate::requestPermission(const QString &permission)
     QPromise<QApplicationPermission::PermissionResult> promise;
     QFuture<QApplicationPermission::PermissionResult> future = promise.future();
     promise.start();
-#ifndef QT_NO_EXCEPTIONS
-    promise.setException(std::make_exception_ptr(std::runtime_error(emptyPermissionExcept)));
-#else
     promise.addResult(QApplicationPermission::Denied);
-#endif
     promise.finish();
     return future;
 }
@@ -251,12 +241,7 @@ QCoreApplicationPrivate::requestPermission(QApplicationPermission::PermissionTyp
         return future;
     }
 
-#ifndef QT_NO_EXCEPTIONS
-    promise->setException(std::make_exception_ptr(
-                             std::runtime_error(invalidNativePermissionExcept)));
-#else
-    promise.addResult(QApplicationPermission::Denied);
-#endif
+    promise->addResult(QApplicationPermission::Denied);
     promise->finish();
     return future;
 }
@@ -275,11 +260,7 @@ QCoreApplicationPrivate::checkPermission(const QString &permission)
                                                       QJniObject::fromString(permission).object());
         promise.addResult(resultFromAndroid(res));
     } else {
-#ifndef QT_NO_EXCEPTIONS
-        promise.setException(std::make_exception_ptr(std::runtime_error(emptyPermissionExcept)));
-#else
         promise.addResult(QApplicationPermission::Denied);
-#endif
     }
 
     promise.finish();
@@ -297,12 +278,7 @@ QCoreApplicationPrivate::checkPermission(QApplicationPermission::PermissionType 
     QPromise<QApplicationPermission::PermissionResult> promise;
     QFuture<QApplicationPermission::PermissionResult> future = promise.future();
     promise.start();
-#ifndef QT_NO_EXCEPTIONS
-    promise.setException(std::make_exception_ptr(
-                             std::runtime_error(invalidNativePermissionExcept)));
-#else
     promise.addResult(QApplicationPermission::Denied);
-#endif
     promise.finish();
     return future;
 }
