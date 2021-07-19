@@ -250,4 +250,4 @@ void tst_QVector::mixedvector_fill_and_return()
 
 QTEST_MAIN(tst_QVector)
 
-#include "main.moc"
+#include "tst_bench_qvector.moc"
