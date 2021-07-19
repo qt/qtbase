@@ -83,11 +83,14 @@ QStringList tst_QMap::helloEachWorld(int count)
     return result;
 }
 
+constexpr int huge = 100000; // one hundred thousand; simple integral data tests
+constexpr int bigish = 5000; // five thousand; tests using XString's expensive <
+
 void tst_QMap::insertion_int_int()
 {
     QMap<int, int> map;
     QBENCHMARK {
-        for (int i = 0; i < 100000; ++i)
+        for (int i = 0; i < huge; ++i)
             map.insert(i, i);
     }
 }
@@ -98,7 +101,7 @@ void tst_QMap::insertion_int_intx()
     // The results in the beginning of the test seems to be a somewhat inaccurate.
     QMap<int, int> map;
     QBENCHMARK {
-        for (int i = 0; i < 100000; ++i)
+        for (int i = 0; i < huge; ++i)
             map.insert(i, i);
     }
 }
@@ -107,7 +110,7 @@ void tst_QMap::insertion_int_int_with_hint1()
 {
     QMap<int, int> map;
     QBENCHMARK {
-        for (int i = 0; i < 100000; ++i)
+        for (int i = 0; i < huge; ++i)
             map.insert(map.constEnd(), i, i);
     }
 }
@@ -116,7 +119,7 @@ void tst_QMap::insertion_int_int2()
 {
     QMap<int, int> map;
     QBENCHMARK {
-        for (int i = 100000; i >= 0; --i)
+        for (int i = huge; i >= 0; --i)
             map.insert(i, i);
     }
 }
@@ -125,7 +128,7 @@ void tst_QMap::insertion_int_int_with_hint2()
 {
     QMap<int, int> map;
     QBENCHMARK {
-        for (int i = 100000; i >= 0; --i)
+        for (int i = huge; i >= 0; --i)
             map.insert(map.constBegin(), i, i);
     }
 }
@@ -135,7 +138,7 @@ void tst_QMap::insertion_int_string()
     QMap<int, QString> map;
     QString str("Hello World");
     QBENCHMARK {
-        for (int i = 0; i < 100000; ++i)
+        for (int i = 0; i < huge; ++i)
             map.insert(i, str);
     }
 }
@@ -143,9 +146,9 @@ void tst_QMap::insertion_int_string()
 void tst_QMap::insertion_string_int()
 {
     QMap<QString, int> map;
-    const QStringList names = helloEachWorld(100000);
+    const QStringList names = helloEachWorld(huge);
     QBENCHMARK {
-        for (int i = 1; i < 100000; ++i)
+        for (int i = 1; i < huge; ++i)
             map.insert(names.at(i), i);
     }
 }
@@ -153,12 +156,12 @@ void tst_QMap::insertion_string_int()
 void tst_QMap::lookup_int_int()
 {
     QMap<int, int> map;
-    for (int i = 0; i < 100000; ++i)
+    for (int i = 0; i < huge; ++i)
         map.insert(i, i);
 
     int sum = 0;
     QBENCHMARK {
-        for (int i = 0; i < 100000; ++i)
+        for (int i = 0; i < huge; ++i)
              sum += map.value(i);
     }
 }
@@ -167,11 +170,11 @@ void tst_QMap::lookup_int_string()
 {
     QMap<int, QString> map;
     QString str("Hello World");
-    for (int i = 0; i < 100000; ++i)
+    for (int i = 0; i < huge; ++i)
         map.insert(i, str);
 
     QBENCHMARK {
-        for (int i = 0; i < 100000; ++i)
+        for (int i = 0; i < huge; ++i)
              str = map.value(i);
     }
 }
@@ -179,13 +182,13 @@ void tst_QMap::lookup_int_string()
 void tst_QMap::lookup_string_int()
 {
     QMap<QString, int> map;
-    const QStringList names = helloEachWorld(100000);
-    for (int i = 1; i < 100000; ++i)
+    const QStringList names = helloEachWorld(huge);
+    for (int i = 1; i < huge; ++i)
         map.insert(names.at(i), i);
 
     int sum = 0;
     QBENCHMARK {
-        for (int i = 1; i < 100000; ++i)
+        for (int i = 1; i < huge; ++i)
             sum += map.value(names.at(i));
     }
 }
@@ -194,7 +197,7 @@ void tst_QMap::lookup_string_int()
 void tst_QMap::iteration()
 {
     QMap<int, int> map;
-    for (int i = 0; i < 100000; ++i)
+    for (int i = 0; i < huge; ++i)
         map.insert(i, i);
 
     int j = 0;
@@ -213,7 +216,7 @@ void tst_QMap::iteration()
 void tst_QMap::toStdMap()
 {
     QMap<int, int> map;
-    for (int i = 0; i < 100000; ++i)
+    for (int i = 0; i < huge; ++i)
         map.insert(i, i);
 
     QBENCHMARK {
@@ -225,11 +228,11 @@ void tst_QMap::toStdMap()
 void tst_QMap::iterator_begin()
 {
     QMap<int, int> map;
-    for (int i = 0; i < 100000; ++i)
+    for (int i = 0; i < huge; ++i)
         map.insert(i, i);
 
     QBENCHMARK {
-        for (int i = 0; i < 100000; ++i) {
+        for (int i = 0; i < huge; ++i) {
             QMap<int, int>::const_iterator it = map.constBegin();
             QMap<int, int>::const_iterator end = map.constEnd();
             if (it == end) // same as if (false)
@@ -241,7 +244,7 @@ void tst_QMap::iterator_begin()
 void tst_QMap::ctorStdMap()
 {
     std::map<int, int> map;
-    for (int i = 0; i < 100000; ++i)
+    for (int i = 0; i < huge; ++i)
         map.insert(std::pair<int, int>(i, i));
 
     QBENCHMARK {
@@ -263,7 +266,7 @@ void tst_QMap::insertion_string_int2()
 {
     QMap<XString, int> map;
     QBENCHMARK {
-        for (int i = 1; i < 5000; ++i) {
+        for (int i = 1; i < bigish; ++i) {
             XString str;
             str.setNum(i);
             map.insert(str, i);
@@ -275,7 +278,7 @@ void tst_QMap::insertion_string_int2_hint()
 {
     QMap<XString, int> map;
     QBENCHMARK {
-        for (int i = 1; i < 5000; ++i) {
+        for (int i = 1; i < bigish; ++i) {
             XString str;
             str.setNum(i);
             map.insert(map.end(), str, i);
@@ -286,10 +289,10 @@ void tst_QMap::insertion_string_int2_hint()
 void tst_QMap::insertMap()
 {
     QMap<int, int> map;
-    for (int i = 0; i < 100000; ++i)
+    for (int i = 0; i < huge; ++i)
         map.insert(i * 4, 0);
     QMap<int, int> map2;
-    for (int i = 0; i < 50000; ++i)
+    for (int i = 0; i < huge / 2; ++i)
         map2.insert(i * 7, 0);
     QBENCHMARK_ONCE {
         map.insert(map2);
