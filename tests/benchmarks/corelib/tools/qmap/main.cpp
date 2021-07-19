@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -61,8 +61,27 @@ private slots:
     void insertion_string_int2_hint();
 
     void insertMap();
+
+private:
+    QStringList helloEachWorld(int count);
 };
 
+QStringList tst_QMap::helloEachWorld(int count)
+{
+    QStringList result;
+    result.reserve(count);
+    result << QStringLiteral("Hello World"); // at index 0, not used
+
+    char16_t name[] = u"Hello    World";
+    QStringView str(name);
+    for (int i = 1; i < count; ++i) {
+        auto p = name + 6; // In the gap between words.
+        for (const auto ch : QChar::fromUcs4(i))
+            p++[0] = ch;
+        result << str.toString();
+    }
+    return result;
+}
 
 void tst_QMap::insertion_int_int()
 {
@@ -124,15 +143,12 @@ void tst_QMap::insertion_int_string()
 void tst_QMap::insertion_string_int()
 {
     QMap<QString, int> map;
-    QString str("Hello World");
+    const QStringList names = helloEachWorld(100000);
     QBENCHMARK {
-        for (int i = 1; i < 100000; ++i) {
-            str[0] = QChar(i);
-            map.insert(str, i);
-        }
+        for (int i = 1; i < 100000; ++i)
+            map.insert(names.at(i), i);
     }
 }
-
 
 void tst_QMap::lookup_int_int()
 {
@@ -163,18 +179,14 @@ void tst_QMap::lookup_int_string()
 void tst_QMap::lookup_string_int()
 {
     QMap<QString, int> map;
-    QString str("Hello World");
-    for (int i = 1; i < 100000; ++i) {
-        str[0] = QChar(i);
-        map.insert(str, i);
-    }
+    const QStringList names = helloEachWorld(100000);
+    for (int i = 1; i < 100000; ++i)
+        map.insert(names.at(i), i);
 
     int sum = 0;
     QBENCHMARK {
-        for (int i = 1; i < 100000; ++i) {
-            str[0] = QChar(i);
-            sum += map.value(str);
-        }
+        for (int i = 1; i < 100000; ++i)
+            sum += map.value(names.at(i));
     }
 }
 
