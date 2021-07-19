@@ -61,6 +61,10 @@
 
 QT_BEGIN_NAMESPACE
 
+namespace QtPrivate {
+class QCalendarRegistry;
+}
+
 // Locale-related parts, mostly handled in ../text/qlocale.cpp
 
 struct QCalendarLocale {
@@ -90,9 +94,14 @@ struct QCalendarLocale {
 class Q_CORE_EXPORT QCalendarBackend
 {
     friend class QCalendar;
+    friend class QtPrivate::QCalendarRegistry;
+
 public:
     virtual ~QCalendarBackend();
     virtual QString name() const = 0;
+
+    QStringList names() const;
+
     QCalendar::System calendarSystem() const;
     QCalendar::SystemId calendarId() const { return m_id; }
     // Date queries:
@@ -131,25 +140,29 @@ public:
                                      QDate dateOnly, QTime timeOnly,
                                      const QLocale &locale) const;
 
+    bool isGregorian() const;
+
+    QCalendar::SystemId registerCustomBackend(const QStringList &names);
+
     // Calendar enumeration by name:
     static QStringList availableCalendars();
 
 protected:
-    QCalendarBackend(const QString &name, QCalendar::System system = QCalendar::System::User);
-
     // Locale support:
     virtual const QCalendarLocale *localeMonthIndexData() const = 0;
     virtual const char16_t *localeMonthData() const = 0;
 
-    bool registerAlias(const QString &name);
-
 private:
-    const QCalendar::SystemId m_id;
+    QCalendar::SystemId m_id;
+
+    void setIndex(size_t index);
+
     // QCalendar's access to its registry:
     static const QCalendarBackend *fromName(QAnyStringView name);
     static const QCalendarBackend *fromId(QCalendar::SystemId id);
     // QCalendar's access to singletons:
     static const QCalendarBackend *fromEnum(QCalendar::System system);
+    static const QCalendarBackend *gregorian();
 };
 
 QT_END_NAMESPACE

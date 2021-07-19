@@ -60,9 +60,9 @@ QT_BEGIN_NAMESPACE
 class Q_CORE_EXPORT QJalaliCalendar : public QCalendarBackend
 {
 public:
-    QJalaliCalendar();
     // Calendar properties:
     QString name() const override;
+    static QStringList nameList();
     // Date queries:
     int daysInMonth(int month, int year = QCalendar::Unspecified) const override;
     bool isLeapYear(int year) const override;

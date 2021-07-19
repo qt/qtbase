@@ -132,7 +132,7 @@ public:
     Q_ENUM(System)
     class SystemId
     {
-        const size_t id;
+        size_t id;
         friend class QCalendarBackend;
         constexpr bool isInEnum() const { return id <= size_t(QCalendar::System::Last); }
         constexpr explicit SystemId(QCalendar::System e) : id(size_t(e)) { }

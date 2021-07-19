@@ -113,18 +113,17 @@ qint64 firstDayOfYear(int year, int cycleNo)
     page on Solar Hijri Calendar}
  */
 
-QJalaliCalendar::QJalaliCalendar()
-    : QCalendarBackend(QStringLiteral("Jalali"), QCalendar::System::Jalali)
-{
-    if (calendarId().isValid()) {
-        Q_ASSERT(calendarSystem() == QCalendar::System::Jalali);
-        registerAlias(QStringLiteral("Persian"));
-    } // else: being ignored in favor of a duplicate created at the same time
-}
-
 QString QJalaliCalendar::name() const
 {
     return QStringLiteral("Jalali");
+}
+
+QStringList QJalaliCalendar::nameList()
+{
+    return {
+        QStringLiteral("Jalali"),
+        QStringLiteral("Persian"),
+    };
 }
 
 bool QJalaliCalendar::isLeapYear(int year) const

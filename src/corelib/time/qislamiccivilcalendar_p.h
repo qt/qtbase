@@ -60,9 +60,9 @@ QT_BEGIN_NAMESPACE
 class Q_CORE_EXPORT QIslamicCivilCalendar : public QHijriCalendar
 {
 public:
-    QIslamicCivilCalendar();
     // Calendar properties:
     QString name() const override;
+    static QStringList nameList();
     // Date queries:
     bool isLeapYear(int year) const override;
     // Julian Day conversions:
