@@ -2841,10 +2841,7 @@ bool QDateTimePrivate::epochMSecsToLocalTime(qint64 msecs, QDate *localDate, QTi
                     ? QDateTimePrivate::DaylightTime
                     : QDateTimePrivate::StandardTime;
             }
-
-            // NB: cast to qint64 here is important to make sure a matching
-            // add_overflow is found, GCC 7.5.0 fails without this cast
-            if (add_overflow(msecs, qint64(sys.d->offsetFromUtc(msecs)) * MSECS_PER_SEC, &msecs))
+            if (add_overflow(msecs, sys.d->offsetFromUtc(msecs) * MSECS_PER_SEC, &msecs))
                 return false;
             msecsToTime(msecs, localDate, localTime);
             return true;
@@ -4146,9 +4143,7 @@ void QDateTime::setMSecsSinceEpoch(qint64 msecs)
                     : QDateTimePrivate::StandardTime;
                 offsetFromUtc = data.offsetFromUtc;
                 if (!offsetFromUtc
-                    // NB: cast to qint64 here is important to make sure a matching
-                    // add_overflow is found, GCC 7.5.0 fails without this cast
-                    || !add_overflow(msecs, qint64(offsetFromUtc * MSECS_PER_SEC), &local)) {
+                    || !add_overflow(msecs, offsetFromUtc * MSECS_PER_SEC, &local)) {
                     status |= QDateTimePrivate::ValidWhenMask;
                 }
             }
@@ -5312,7 +5307,7 @@ QDataStream &operator<<(QDataStream &out, QDate date)
     if (out.version() < QDataStream::Qt_5_0)
         return out << quint32(date.jd);
     else
-        return out << qint64(date.jd);
+        return out << date.jd;
 }
 
 /*!
