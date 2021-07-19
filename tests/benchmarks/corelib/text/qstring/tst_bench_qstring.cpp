@@ -28,6 +28,7 @@
 #include <QStringList>
 #include <QFile>
 #include <QTest>
+#include <limits>
 
 class tst_QString: public QObject
 {
@@ -48,9 +49,18 @@ private slots:
     void toCaseFolded_data();
     void toCaseFolded();
 
+    void number_qlonglong_data();
+    void number_qlonglong() { number_impl<qlonglong>(); }
+    void number_qulonglong_data();
+    void number_qulonglong() { number_impl<qulonglong>(); }
+
+    void number_double_data();
+    void number_double();
+
 private:
     void section_data_impl(bool includeRegExOnly = true);
     template <typename RX> void section_impl();
+    template <typename Integer> void number_impl();
 };
 
 tst_QString::tst_QString()
@@ -185,6 +195,128 @@ void tst_QString::toCaseFolded()
     QBENCHMARK {
         [[maybe_unused]] auto r = s.toCaseFolded();
     }
+}
+
+template <typename Integer>
+void tst_QString::number_impl()
+{
+    QFETCH(Integer, number);
+    QFETCH(int, base);
+    QFETCH(QString, expected);
+
+    QString actual;
+    QBENCHMARK {
+        actual = QString::number(number, base);
+    }
+    QCOMPARE(actual, expected);
+}
+
+template <typename Integer>
+void number_integer_common()
+{
+    QTest::newRow("0") << Integer(0ull) << 10 << QStringLiteral("0");
+    QTest::newRow("1234") << Integer(1234ull) << 10 << QStringLiteral("1234");
+    QTest::newRow("123456789") << Integer(123456789ull) << 10 << QStringLiteral("123456789");
+    QTest::newRow("bad1dea, base 16") << Integer(0xBAD1DEAull) << 16 << QStringLiteral("bad1dea");
+    QTest::newRow("242, base 8") << Integer(0242ull) << 8 << QStringLiteral("242");
+    QTest::newRow("101101, base 2") << Integer(0b101101ull) << 2 << QStringLiteral("101101");
+    QTest::newRow("ad, base 30") << Integer(313ull) << 30 << QStringLiteral("ad");
+}
+
+void tst_QString::number_qlonglong_data()
+{
+    QTest::addColumn<qlonglong>("number");
+    QTest::addColumn<int>("base");
+    QTest::addColumn<QString>("expected");
+
+    number_integer_common<qlonglong>();
+
+    QTest::newRow("-1234") << -1234ll << 10 << QStringLiteral("-1234");
+    QTest::newRow("-123456789") << -123456789ll << 10 << QStringLiteral("-123456789");
+    QTest::newRow("-bad1dea, base 16") << -0xBAD1DEAll << 16 << QStringLiteral("-bad1dea");
+    QTest::newRow("-242, base 8") << -0242ll << 8 << QStringLiteral("-242");
+    QTest::newRow("-101101, base 2") << -0b101101ll << 2 << QStringLiteral("-101101");
+    QTest::newRow("-ad, base 30") << -313ll << 30 << QStringLiteral("-ad");
+
+    QTest::newRow("qlonglong-max")
+            << std::numeric_limits<qlonglong>::max() << 10 << QStringLiteral("9223372036854775807");
+    QTest::newRow("qlonglong-min")
+            << std::numeric_limits<qlonglong>::min() << 10
+            << QStringLiteral("-9223372036854775808");
+    QTest::newRow("qlonglong-max, base 2")
+            << std::numeric_limits<qlonglong>::max() << 2 << QString(63, u'1');
+    QTest::newRow("qlonglong-min, base 2") << std::numeric_limits<qlonglong>::min() << 2
+                                           << (QStringLiteral("-1") + QString(63, u'0'));
+    QTest::newRow("qlonglong-max, base 16")
+            << std::numeric_limits<qlonglong>::max() << 16 << (QChar(u'7') + QString(15, u'f'));
+    QTest::newRow("qlonglong-min, base 16") << std::numeric_limits<qlonglong>::min() << 16
+                                            << (QStringLiteral("-8") + QString(15, u'0'));
+}
+
+void tst_QString::number_qulonglong_data()
+{
+    QTest::addColumn<qulonglong>("number");
+    QTest::addColumn<int>("base");
+    QTest::addColumn<QString>("expected");
+
+    number_integer_common<qulonglong>();
+
+    QTest::newRow("qlonglong-max + 1")
+            << (qulonglong(std::numeric_limits<qlonglong>::max()) + 1) << 10
+            << QStringLiteral("9223372036854775808");
+    QTest::newRow("qulonglong-max")
+            << std::numeric_limits<qulonglong>::max() << 10
+            << QStringLiteral("18446744073709551615");
+    QTest::newRow("qulonglong-max, base 2")
+            << std::numeric_limits<qulonglong>::max() << 2 << QString(64, u'1');
+    QTest::newRow("qulonglong-max, base 16")
+            << std::numeric_limits<qulonglong>::max() << 16 << QString(16, u'f');
+}
+
+void tst_QString::number_double_data()
+{
+    QTest::addColumn<double>("number");
+    QTest::addColumn<char>("format");
+    QTest::addColumn<int>("precision");
+    QTest::addColumn<QString>("expected");
+
+    struct
+    {
+        double d;
+        char f;
+        int p;
+        QString expected;
+    } data[] = {
+        { 0.0, 'f', 0, QStringLiteral("0") },
+        { 0.0001, 'f', 0, QStringLiteral("0") },
+        { 0.1234, 'f', 5, QStringLiteral("0.12340") },
+        { -0.1234, 'f', 5, QStringLiteral("-0.12340") },
+        { 0.5 + qSqrt(1.25), 'f', 15, QStringLiteral("1.618033988749895") },
+        { std::numeric_limits<double>::epsilon(), 'g', 10, QStringLiteral("2.220446049e-16") },
+        { 0.0001, 'E', 1, QStringLiteral("1.0E-04") },
+        { 1e8, 'E', 1, QStringLiteral("1.0E+08") },
+        { -1e8, 'E', 1, QStringLiteral("-1.0E+08") },
+    };
+
+    for (auto &datum : data) {
+        QTest::addRow("%ls, format '%c', precision %d", qUtf16Printable(datum.expected), datum.f,
+                      datum.p)
+                << datum.d << datum.f << datum.p << datum.expected;
+    }
+}
+
+void tst_QString::number_double()
+{
+    QFETCH(double, number);
+    QFETCH(char, format);
+    QFETCH(int, precision);
+    QFETCH(QString, expected);
+
+    QString actual;
+    QBENCHMARK {
+        actual = QString::number(number, format, precision);
+    }
+    QCOMPARE(actual, expected);
 }
 
 QTEST_APPLESS_MAIN(tst_QString)
