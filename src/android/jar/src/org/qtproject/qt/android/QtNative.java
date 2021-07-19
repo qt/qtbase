@@ -559,8 +559,8 @@ public class QtNative
         synchronized (m_mainActivityMutex) {
             final Looper mainLooper = Looper.getMainLooper();
             final Handler handler = new Handler(mainLooper);
-            final boolean actionIsQueued = !m_activityPaused && m_activity != null && mainLooper != null && handler.post(action);
-            if (!actionIsQueued)
+            final boolean active = (m_activity != null && !m_activityPaused) || m_service != null;
+            if (!active || mainLooper == null || !handler.post(action))
                 m_lostActions.add(action);
         }
     }
