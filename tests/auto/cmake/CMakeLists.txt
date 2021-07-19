@@ -125,10 +125,14 @@ if (CMAKE_GENERATOR STREQUAL Ninja AND UNIX AND NOT WIN32)
         BINARY "tests/test_QFINDTESTDATA"
         SIMULATE_IN_SOURCE
     )
-    _qt_internal_test_expect_pass(test_QT_TESTCASE_BUILDDIR
-        BINARY "test_qt_testcase_builddir"
-        SIMULATE_IN_SOURCE
-    )
+    # TODO: Decide if there's a reason to keep this test. With CMake 3.21.0 which passes absolute
+    # source file paths to the compiler (instead of relative ones), specifying a custom
+    # QT_TESTCASE_BUILDDIR is a no-op, which fails the test's preconditions.
+    # See QTBUG-95268.
+    #_qt_internal_test_expect_pass(test_QT_TESTCASE_BUILDDIR
+    #    BINARY "test_qt_testcase_builddir"
+    #    SIMULATE_IN_SOURCE
+    #)
 endif()
 
 if (NOT NO_DBUS)
