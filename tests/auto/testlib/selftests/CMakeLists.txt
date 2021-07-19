@@ -133,7 +133,7 @@ endforeach()
 list(JOIN subprograms " " subprograms)
 qt_internal_extend_target(tst_selftests
     DEFINES
-        SUBPROGRAMS=${subprograms}
+        $<$<COMPILE_LANGUAGE:CXX>:SUBPROGRAMS=${subprograms}>
 )
 # special case end
 
