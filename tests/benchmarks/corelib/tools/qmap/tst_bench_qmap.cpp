@@ -301,4 +301,4 @@ void tst_QMap::insertMap()
 
 QTEST_MAIN(tst_QMap)
 
-#include "main.moc"
+#include "tst_bench_qmap.moc"
