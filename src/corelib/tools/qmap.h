@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2020 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Giuseppe D'Angelo <giuseppe.dangelo@kdab.com>
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -668,10 +668,15 @@ public:
     iterator insert(const_iterator pos, const Key &key, const T &value)
     {
         // TODO: improve. In case of assignment, why copying first?
-        auto posDistance = d ? std::distance(d->m.cbegin(), pos.i) : 0;
-        detach();
-        auto detachedPos = std::next(d->m.cbegin(), posDistance);
-        return iterator(d->m.insert_or_assign(detachedPos, key, value));
+        typename Map::const_iterator dpos;
+        if (!d || d.isShared()) {
+            auto posDistance = d ? std::distance(d->m.cbegin(), pos.i) : 0;
+            detach();
+            dpos = std::next(d->m.cbegin(), posDistance);
+        } else {
+            dpos = pos.i;
+        }
+        return iterator(d->m.insert_or_assign(dpos, key, value));
     }
 
     void insert(const QMap<Key, T> &map)
@@ -1335,10 +1340,15 @@ public:
 
     iterator insert(const_iterator pos, const Key &key, const T &value)
     {
-        auto posDistance = d ? std::distance(d->m.cbegin(), pos.i) : 0;
-        detach();
-        auto detachedPos = std::next(d->m.cbegin(), posDistance);
-        return iterator(d->m.insert(detachedPos, {key, value}));
+        typename Map::const_iterator dpos;
+        if (!d || d.isShared()) {
+            auto posDistance = d ? std::distance(d->m.cbegin(), pos.i) : 0;
+            detach();
+            dpos = std::next(d->m.cbegin(), posDistance);
+        } else {
+            dpos = pos.i;
+        }
+        return iterator(d->m.insert(dpos, {key, value}));
     }
 
 #if QT_DEPRECATED_SINCE(6, 0)
