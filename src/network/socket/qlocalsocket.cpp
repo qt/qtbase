@@ -396,6 +396,8 @@ QLocalSocket::QLocalSocket(QObject * parent)
     : QIODevice(*new QLocalSocketPrivate, parent)
 {
     Q_D(QLocalSocket);
+
+    d->readBufferChunkSize = 0; // force QIODevice unbuffered mode
     d->init();
 }
 

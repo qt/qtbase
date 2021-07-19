@@ -357,7 +357,7 @@ void QLocalSocketPrivate::_q_connectToSocket()
     fullServerName = connectingPathName;
     if (unixSocket.setSocketDescriptor(connectingSocket,
         QAbstractSocket::ConnectedState, connectingOpenMode)) {
-        q->QIODevice::open(connectingOpenMode | QIODevice::Unbuffered);
+        q->QIODevice::open(connectingOpenMode);
         q->emit connected();
     } else {
         QString function = QLatin1String("QLocalSocket::connectToServer");
