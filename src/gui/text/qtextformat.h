@@ -465,13 +465,23 @@ public:
 
     inline void setFontFamilies(const QStringList &families)
     { setProperty(FontFamilies, QVariant(families)); }
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
     inline QVariant fontFamilies() const
     { return property(FontFamilies); }
+#else
+    inline QStringList fontFamilies() const
+    { return property(FontFamilies).toStringList(); }
+#endif
 
     inline void setFontStyleName(const QString &styleName)
     { setProperty(FontStyleName, styleName); }
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
     inline QVariant fontStyleName() const
     { return property(FontStyleName); }
+#else
+    inline QStringList fontStyleName() const
+    { return property(FontStyleName).toStringList(); }
+#endif
 
     inline void setFontPointSize(qreal size)
     { setProperty(FontPointSize, size); }

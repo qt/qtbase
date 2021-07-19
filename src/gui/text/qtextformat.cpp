@@ -1483,6 +1483,20 @@ QTextCharFormat::QTextCharFormat(const QTextFormat &fmt)
     \sa setFont()
 */
 
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+/*!
+    \fn QVariant QTextCharFormat::fontFamilies() const
+    \since 5.13
+
+    Returns the text format's font families.
+
+    \note This function returns a QVariant for historical reasons. It will be
+    corrected to return QStringList in Qt 7. The variant contains a QStringList
+    object, which can be extracted by calling \c{toStringList()} on it.
+
+    \sa font()
+*/
+#else
 /*!
     \fn QStringList QTextCharFormat::fontFamilies() const
     \since 5.13
@@ -1491,6 +1505,7 @@ QTextCharFormat::QTextCharFormat(const QTextFormat &fmt)
 
     \sa font()
 */
+#endif
 
 /*!
     \fn void QTextCharFormat::setFontStyleName(const QString &styleName)
@@ -1501,6 +1516,20 @@ QTextCharFormat::QTextCharFormat(const QTextFormat &fmt)
     \sa setFont(), QFont::setStyleName()
 */
 
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+/*!
+    \fn QVariant QTextCharFormat::fontStyleName() const
+    \since 5.13
+
+    Returns the text format's font style name.
+
+    \note This function returns a QVariant for historical reasons. It will be
+    corrected to return QStringList in Qt 7. The variant contains a QStringList
+    object, which can be extracted by calling \c{toStringList()} on it.
+
+    \sa font(), QFont::styleName()
+*/
+#else
 /*!
     \fn QStringList QTextCharFormat::fontStyleName() const
     \since 5.13
@@ -1509,6 +1538,7 @@ QTextCharFormat::QTextCharFormat(const QTextFormat &fmt)
 
     \sa font(), QFont::styleName()
 */
+#endif
 
 /*!
     \fn void QTextCharFormat::setFontPointSize(qreal size)
