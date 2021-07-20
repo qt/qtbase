@@ -61,7 +61,6 @@
 #include <QtGui/qopengl.h>
 
 #include <QtCore/qvariant.h>
-#include <QtCore/qnativeinterface.h>
 
 QT_BEGIN_NAMESPACE
 
