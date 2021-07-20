@@ -41,7 +41,9 @@
 #include <QTest>
 #include <QString>
 #include <QStringBuilder>
+#if QT_CONFIG(regularexpression)
 #include <qregularexpression.h>
+#endif
 #include <qtextstream.h>
 #include <qstringlist.h>
 #include <qstringmatcher.h>
@@ -297,8 +299,10 @@ class tst_QString : public QObject
 {
     Q_OBJECT
 
+#if QT_CONFIG(regularexpression)
     template<typename List, class RegExp>
     void split_regexp(const QString &string, const QString &pattern, QStringList result);
+#endif
     template<typename List>
     void split(const QString &string, const QString &separator, QStringList result);
 
@@ -381,15 +385,19 @@ private slots:
     void replace_string_data();
     void replace_string();
     void replace_string_extra();
+#if QT_CONFIG(regularexpression)
     void replace_regexp_data();
     void replace_regexp();
     void replace_regexp_extra();
+#endif
     void remove_uint_uint_data();
     void remove_uint_uint();
     void remove_string_data();
     void remove_string();
+#if QT_CONFIG(regularexpression)
     void remove_regexp_data();
     void remove_regexp();
+#endif
     void remove_extra();
     void swap();
 
@@ -490,10 +498,12 @@ private slots:
     void count();
     void lastIndexOf_data();
     void lastIndexOf();
-    void lastIndexOfInvalidRegex();
     void indexOf_data();
     void indexOf();
+#if QT_CONFIG(regularexpression)
     void indexOfInvalidRegex();
+    void lastIndexOfInvalidRegex();
+#endif
     void indexOf2_data();
     void indexOf2();
     void indexOf3_data();
@@ -558,8 +568,10 @@ private slots:
     void reverseIterators();
     void split_data();
     void split();
+#if QT_CONFIG(regularexpression)
     void split_regularexpression_data();
     void split_regularexpression();
+#endif
     void fromUtf16_data();
     void fromUtf16();
     void fromUtf16_char16_data() { fromUtf16_data(); }
@@ -684,10 +696,12 @@ void tst_QString::remove_string_data()
     replace_string_data();
 }
 
+#if QT_CONFIG(regularexpression)
 void tst_QString::remove_regexp_data()
 {
     replace_regexp_data();
 }
+#endif
 
 void tst_QString::indexOf3_data()
 {
@@ -875,6 +889,7 @@ void tst_QString::replace_string_data()
     QTest::newRow("rep19") << QString() << QString("A") << QString("X") << QString("") << false;
 }
 
+#if QT_CONFIG(regularexpression)
 void tst_QString::replace_regexp_data()
 {
     QTest::addColumn<QString>("string" );
@@ -917,6 +932,7 @@ void tst_QString::replace_regexp_data()
                                << QString("\\0\\01\\011") << QString("\\0\\01\\011");
     QTest::newRow("invalid") << QString("") << QString("invalid regex\\") << QString("") << QString("");
 }
+#endif
 
 void tst_QString::utf8_data()
 {
@@ -1553,6 +1569,7 @@ void tst_QString::indexOf()
         QCOMPARE( haystack.indexOf(needle.toLatin1().data(), startpos, cs), resultpos );
     }
 
+#if QT_CONFIG(regularexpression)
     {
         QRegularExpression::PatternOptions options = QRegularExpression::NoPatternOption;
         if (!bcs)
@@ -1573,6 +1590,7 @@ void tst_QString::indexOf()
                 QVERIFY(match.captured().toLower() == needle.toLower());
         }
     }
+#endif
 
     if (cs == Qt::CaseSensitive) {
         QCOMPARE( haystack.indexOf(needle, startpos), resultpos );
@@ -1680,6 +1698,7 @@ void tst_QString::indexOf2()
     }
 }
 
+#if QT_CONFIG(regularexpression)
 void tst_QString::indexOfInvalidRegex()
 {
     QTest::ignoreMessage(QtWarningMsg, "QString::indexOf: invalid QRegularExpression object");
@@ -1693,6 +1712,7 @@ void tst_QString::indexOfInvalidRegex()
     QCOMPARE(QString("invalid regex\\").indexOf(QRegularExpression("invalid regex\\"), -1, &match), -1);
     QVERIFY(!match.hasMatch());
 }
+#endif
 
 void tst_QString::lastIndexOf_data()
 {
@@ -1760,6 +1780,7 @@ void tst_QString::lastIndexOf()
     QCOMPARE(haystack.lastIndexOf(needle.toLatin1(), from, cs), expected);
     QCOMPARE(haystack.lastIndexOf(needle.toLatin1().data(), from, cs), expected);
 
+#if QT_CONFIG(regularexpression)
     if (from >= -1 && from < haystack.size() && needle.size() > 0) {
         // unfortunately, QString and QRegularExpression don't have the same out of bound semantics
         // I think QString is wrong -- See file log for contact information.
@@ -1783,6 +1804,7 @@ void tst_QString::lastIndexOf()
             }
         }
     }
+#endif
 
     if (cs == Qt::CaseSensitive) {
         QCOMPARE(haystack.lastIndexOf(needle, from), expected);
@@ -1802,6 +1824,7 @@ void tst_QString::lastIndexOf()
     }
 }
 
+#if QT_CONFIG(regularexpression)
 void tst_QString::lastIndexOfInvalidRegex()
 {
     QTest::ignoreMessage(QtWarningMsg, "QString::lastIndexOf: invalid QRegularExpression object");
@@ -1815,6 +1838,7 @@ void tst_QString::lastIndexOfInvalidRegex()
     QCOMPARE(QString("invalid regex\\").lastIndexOf(QRegularExpression("invalid regex\\"), -1, &match), -1);
     QVERIFY(!match.hasMatch());
 }
+#endif
 
 void tst_QString::count()
 {
@@ -1829,11 +1853,13 @@ void tst_QString::count()
     QCOMPARE(a.count("FG",Qt::CaseInsensitive),3);
     QCOMPARE(a.count( QString(), Qt::CaseInsensitive), 16);
     QCOMPARE(a.count( "", Qt::CaseInsensitive), 16);
+#if QT_CONFIG(regularexpression)
     QCOMPARE(a.count(QRegularExpression("")), 16);
     QCOMPARE(a.count(QRegularExpression("[FG][HI]")), 1);
     QCOMPARE(a.count(QRegularExpression("[G][HE]")), 2);
     QTest::ignoreMessage(QtWarningMsg, "QString::count: invalid QRegularExpression object");
     QCOMPARE(a.count(QRegularExpression("invalid regex\\")), 0);
+#endif
 
     CREATE_VIEW(QLatin1String("FG"));
     QCOMPARE(a.count(view),2);
@@ -1847,10 +1873,12 @@ void tst_QString::count()
     QCOMPARE(nullStr.count(view), 0);
     QCOMPARE(nullStr.count(QString()), 1);
     QCOMPARE(nullStr.count(""), 1);
+#if QT_CONFIG(regularexpression)
     QCOMPARE(nullStr.count(QRegularExpression("")), 1);
     QCOMPARE(nullStr.count(QRegularExpression("[FG][HI]")), 0);
     QTest::ignoreMessage(QtWarningMsg, "QString::count: invalid QRegularExpression object");
     QCOMPARE(nullStr.count(QRegularExpression("invalid regex\\")), 0);
+#endif
 
     QString emptyStr("");
     QCOMPARE(emptyStr.count(), 0);
@@ -1859,10 +1887,12 @@ void tst_QString::count()
     QCOMPARE(emptyStr.count(view), 0);
     QCOMPARE(emptyStr.count(QString()), 1);
     QCOMPARE(emptyStr.count(""), 1);
+#if QT_CONFIG(regularexpression)
     QCOMPARE(emptyStr.count(QRegularExpression("")), 1);
     QCOMPARE(emptyStr.count(QRegularExpression("[FG][HI]")), 0);
     QTest::ignoreMessage(QtWarningMsg, "QString::count: invalid QRegularExpression object");
     QCOMPARE(emptyStr.count(QRegularExpression("invalid regex\\")), 0);
+#endif
 }
 
 void tst_QString::contains()
@@ -1880,6 +1910,7 @@ void tst_QString::contains()
     QVERIFY(a.contains(QLatin1String("fg"),Qt::CaseInsensitive));
     QVERIFY(a.contains( QString(), Qt::CaseInsensitive));
     QVERIFY(a.contains( "", Qt::CaseInsensitive));
+#if QT_CONFIG(regularexpression)
     QVERIFY(a.contains(QRegularExpression("[FG][HI]")));
     QVERIFY(a.contains(QRegularExpression("[G][HE]")));
 
@@ -1932,18 +1963,20 @@ void tst_QString::contains()
         QVERIFY(!a.contains(QRegularExpression("ZZZ"), 0));
     }
 
+    QTest::ignoreMessage(QtWarningMsg, "QString::contains: invalid QRegularExpression object");
+    QVERIFY(!a.contains(QRegularExpression("invalid regex\\")));
+#endif
+
     CREATE_VIEW(QLatin1String("FG"));
     QVERIFY(a.contains(view));
     QVERIFY(a.contains(view, Qt::CaseInsensitive));
     QVERIFY(a.contains( QStringView(), Qt::CaseInsensitive));
 
-    QTest::ignoreMessage(QtWarningMsg, "QString::contains: invalid QRegularExpression object");
-    QVERIFY(!a.contains(QRegularExpression("invalid regex\\")));
-
     QString nullStr;
     QVERIFY(!nullStr.contains('A'));
     QVERIFY(!nullStr.contains("AB"));
     QVERIFY(!nullStr.contains(view));
+#if QT_CONFIG(regularexpression)
     QVERIFY(!nullStr.contains(QRegularExpression("[FG][HI]")));
     QRegularExpressionMatch nullMatch;
     QVERIFY(nullStr.contains(QRegularExpression(""), &nullMatch));
@@ -1951,12 +1984,14 @@ void tst_QString::contains()
     QCOMPARE(nullMatch.captured(), "");
     QCOMPARE(nullMatch.capturedStart(), 0);
     QCOMPARE(nullMatch.capturedEnd(), 0);
+#endif
     QVERIFY(!nullStr.isDetached());
 
     QString emptyStr("");
     QVERIFY(!emptyStr.contains('A'));
     QVERIFY(!emptyStr.contains("AB"));
     QVERIFY(!emptyStr.contains(view));
+#if QT_CONFIG(regularexpression)
     QVERIFY(!emptyStr.contains(QRegularExpression("[FG][HI]")));
     QRegularExpressionMatch emptyMatch;
     QVERIFY(emptyStr.contains(QRegularExpression(""), &emptyMatch));
@@ -1964,6 +1999,7 @@ void tst_QString::contains()
     QCOMPARE(emptyMatch.captured(), "");
     QCOMPARE(emptyMatch.capturedStart(), 0);
     QCOMPARE(emptyMatch.capturedEnd(), 0);
+#endif
     QVERIFY(!emptyStr.isDetached());
 }
 
@@ -3163,6 +3199,7 @@ void tst_QString::replace_string_extra()
     }
 }
 
+#if QT_CONFIG(regularexpression)
 void tst_QString::replace_regexp()
 {
     QFETCH( QString, string );
@@ -3205,6 +3242,7 @@ void tst_QString::replace_regexp_extra()
         QCOMPARE( s, smallReplacement );
     }
 }
+#endif
 
 void tst_QString::remove_uint_uint()
 {
@@ -3259,6 +3297,7 @@ void tst_QString::remove_string()
     }
 }
 
+#if QT_CONFIG(regularexpression)
 void tst_QString::remove_regexp()
 {
     QFETCH( QString, string );
@@ -3273,6 +3312,7 @@ void tst_QString::remove_regexp()
         QCOMPARE( 0, 0 ); // shut Qt Test
     }
 }
+#endif
 
 void tst_QString::remove_extra()
 {
@@ -5496,13 +5536,18 @@ void tst_QString::section()
     QFETCH( QString, sectionString );
     QFETCH( bool, regexp );
     if (regexp) {
+#if QT_CONFIG(regularexpression)
         QCOMPARE( wholeString.section( QRegularExpression(sep), start, end, QString::SectionFlag(flags) ), sectionString );
+#else
+        QSKIP("QRegularExpression not supported");
+#endif
     } else {
         if (sep.size() == 1)
             QCOMPARE( wholeString.section( sep[0], start, end, QString::SectionFlag(flags) ), sectionString );
         QCOMPARE( wholeString.section( sep, start, end, QString::SectionFlag(flags) ), sectionString );
+#if QT_CONFIG(regularexpression)
         QCOMPARE( wholeString.section( QRegularExpression(QRegularExpression::escape(sep)), start, end, QString::SectionFlag(flags) ), sectionString );
-
+#endif
     }
 }
 
@@ -6262,7 +6307,9 @@ template<> struct StringSplitWrapper<QString>
 
     QStringList split(const QString &sep, Qt::SplitBehavior behavior = Qt::KeepEmptyParts, Qt::CaseSensitivity cs = Qt::CaseSensitive) const { return string.split(sep, behavior, cs); }
     QStringList split(QChar sep, Qt::SplitBehavior behavior = Qt::KeepEmptyParts, Qt::CaseSensitivity cs = Qt::CaseSensitive) const { return string.split(sep, behavior, cs); }
+#if QT_CONFIG(regularexpression)
     QStringList split(const QRegularExpression &sep, Qt::SplitBehavior behavior = Qt::KeepEmptyParts) const { return string.split(sep, behavior); }
+#endif
 };
 
 template<> struct StringSplitWrapper<QStringView>
@@ -6272,8 +6319,10 @@ template<> struct StringSplitWrapper<QStringView>
     { return QStringView{string}.split(sep, behavior, cs); }
     QList<QStringView> split(QChar sep, Qt::SplitBehavior behavior = Qt::KeepEmptyParts, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
     { return QStringView{string}.split(sep, behavior, cs); }
+#if QT_CONFIG(regularexpression)
     QList<QStringView> split(const QRegularExpression &sep, Qt::SplitBehavior behavior = Qt::KeepEmptyParts) const
     { return QStringView{string}.split(sep, behavior); }
+#endif
 };
 
 static bool operator==(const QList<QStringView> &result, const QStringList &expected)
@@ -6289,15 +6338,19 @@ static bool operator==(const QList<QStringView> &result, const QStringList &expe
 template<class List>
 void tst_QString::split(const QString &string, const QString &sep, QStringList result)
 {
+#if QT_CONFIG(regularexpression)
     QRegularExpression re(QRegularExpression::escape(sep));
+#endif
 
     List list;
     StringSplitWrapper<typename List::value_type> str = {string};
 
     list = str.split(sep);
     QVERIFY(list == result);
+#if QT_CONFIG(regularexpression)
     list = str.split(re);
     QVERIFY(list == result);
+#endif
     if (sep.size() == 1) {
         list = str.split(sep.at(0));
         QVERIFY(list == result);
@@ -6307,8 +6360,10 @@ QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
     list = str.split(sep, Qt::KeepEmptyParts);
     QVERIFY(list == result);
+#if QT_CONFIG(regularexpression)
     list = str.split(re, Qt::KeepEmptyParts);
     QVERIFY(list == result);
+#endif
     if (sep.size() == 1) {
         list = str.split(sep.at(0), Qt::KeepEmptyParts);
         QVERIFY(list == result);
@@ -6317,8 +6372,10 @@ QT_WARNING_DISABLE_DEPRECATED
     result.removeAll("");
     list = str.split(sep, Qt::SkipEmptyParts);
     QVERIFY(list == result);
+#if QT_CONFIG(regularexpression)
     list = str.split(re, Qt::SkipEmptyParts);
     QVERIFY(list == result);
+#endif
     if (sep.size() == 1) {
         list = str.split(sep.at(0), Qt::SkipEmptyParts);
         QVERIFY(list == result);
@@ -6335,6 +6392,7 @@ void tst_QString::split()
     split<QList<QStringView>>(str, sep, result);
 }
 
+#if QT_CONFIG(regularexpression)
 void tst_QString::split_regularexpression_data()
 {
     QTest::addColumn<QString>("string");
@@ -6377,6 +6435,7 @@ void tst_QString::split_regularexpression()
     split_regexp<QStringList, QRegularExpression>(string, pattern, result);
     split_regexp<QList<QStringView>, QRegularExpression>(string, pattern, result);
 }
+#endif
 
 void tst_QString::fromUtf16_data()
 {
