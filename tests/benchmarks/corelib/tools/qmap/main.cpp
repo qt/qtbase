@@ -172,7 +172,7 @@ void tst_QMap::lookup_int_string()
 
     QBENCHMARK {
         for (int i = 0; i < 100000; ++i)
-             str += map.value(i);
+             str = map.value(i);
     }
 }
 
