@@ -271,6 +271,10 @@ void tst_Http2::singleRequest()
     request.setAttribute(h2Attribute, QVariant(true));
 
     auto reply = manager->get(request);
+#if QT_CONFIG(ssl)
+    QSignalSpy encSpy(reply, &QNetworkReply::encrypted);
+#endif // QT_CONFIG(ssl)
+
     connect(reply, &QNetworkReply::finished, this, &tst_Http2::replyFinished);
     // Since we're using self-signed certificates,
     // ignore SSL errors:
@@ -285,6 +289,11 @@ void tst_Http2::singleRequest()
 
     QCOMPARE(reply->error(), QNetworkReply::NoError);
     QVERIFY(reply->isFinished());
+
+#if QT_CONFIG(ssl)
+    if (connectionType == H2Type::h2Alpn || connectionType == H2Type::h2Direct)
+        QCOMPARE(encSpy.count(), 1);
+#endif // QT_CONFIG(ssl)
 }
 
 void tst_Http2::multipleRequests()

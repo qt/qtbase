@@ -1286,6 +1286,10 @@ void QHttpNetworkConnectionChannel::_q_encrypted()
         connection->connectionType() == QHttpNetworkConnection::ConnectionTypeHTTP2Direct) {
         // we call setSpdyWasUsed(true) on the replies in the SPDY handler when the request is sent
         if (spdyRequestsToSend.count() > 0) {
+            // Similar to HTTP/1.1 counterpart below:
+            const auto &pairs = spdyRequestsToSend.values(); // (request, reply)
+            const auto &pair = pairs.first();
+            emit pair.second->encrypted();
             // In case our peer has sent us its settings (window size, max concurrent streams etc.)
             // let's give _q_receiveReply a chance to read them first ('invokeMethod', QueuedConnection).
             QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
