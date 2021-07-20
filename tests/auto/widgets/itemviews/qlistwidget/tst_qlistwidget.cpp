@@ -118,6 +118,8 @@ private slots:
     void QTBUG14363_completerWithAnyKeyPressedEditTriggers();
     void mimeData();
     void QTBUG50891_ensureSelectionModelSignalConnectionsAreSet();
+    void createPersistentOnLayoutAboutToBeChanged();
+    void createPersistentOnLayoutAboutToBeChangedAutoSort();
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     void clearItemData();
 #endif
@@ -1842,6 +1844,72 @@ void tst_QListWidget::QTBUG50891_ensureSelectionModelSignalConnectionsAreSet()
     QCOMPARE(currentItemChangedSpy.count(), 1);
     QCOMPARE(itemSelectionChangedSpy.count(), 1);
 
+}
+
+void tst_QListWidget::createPersistentOnLayoutAboutToBeChanged() // QTBUG-93466
+{
+    QListWidget widget;
+    QCOMPARE(widget.model()->columnCount(), 1);
+    widget.model()->insertRows(0, 3);
+    for (int row = 0; row < 3; ++row)
+        widget.model()->setData(widget.model()->index(row, 0), row);
+    QList<QPersistentModelIndex> idxList;
+    QSignalSpy layoutAboutToBeChangedSpy(widget.model(), &QAbstractItemModel::layoutAboutToBeChanged);
+    QSignalSpy layoutChangedSpy(widget.model(), &QAbstractItemModel::layoutChanged);
+    connect(widget.model(), &QAbstractItemModel::layoutAboutToBeChanged, this, [&idxList, &widget](){
+        idxList.clear();
+        for (int row = 0; row < 3; ++row)
+            idxList << QPersistentModelIndex(widget.model()->index(row, 0));
+    });
+    connect(widget.model(), &QAbstractItemModel::layoutChanged, this, [&idxList](){
+        QCOMPARE(idxList.size(), 3);
+        QCOMPARE(idxList.at(0).row(), 1);
+        QCOMPARE(idxList.at(0).column(), 0);
+        QCOMPARE(idxList.at(0).data().toInt(), 0);
+        QCOMPARE(idxList.at(1).row(), 0);
+        QCOMPARE(idxList.at(1).column(), 0);
+        QCOMPARE(idxList.at(1).data().toInt(), -1);
+        QCOMPARE(idxList.at(2).row(), 2);
+        QCOMPARE(idxList.at(2).column(), 0);
+        QCOMPARE(idxList.at(2).data().toInt(), 2);
+    });
+    widget.model()->setData(widget.model()->index(1, 0), -1);
+    widget.model()->sort(0);
+    QCOMPARE(layoutAboutToBeChangedSpy.size(), 1);
+    QCOMPARE(layoutChangedSpy.size(), 1);
+}
+
+void tst_QListWidget::createPersistentOnLayoutAboutToBeChangedAutoSort() // QTBUG-93466
+{
+    QListWidget widget;
+    QCOMPARE(widget.model()->columnCount(), 1);
+    widget.model()->insertRows(0, 3);
+    for (int row = 0; row < 3; ++row)
+        widget.model()->setData(widget.model()->index(row, 0), row);
+    widget.setSortingEnabled(true);
+    QList<QPersistentModelIndex> idxList;
+    QSignalSpy layoutAboutToBeChangedSpy(widget.model(), &QAbstractItemModel::layoutAboutToBeChanged);
+    QSignalSpy layoutChangedSpy(widget.model(), &QAbstractItemModel::layoutChanged);
+    connect(widget.model(), &QAbstractItemModel::layoutAboutToBeChanged, this, [&idxList, &widget](){
+        idxList.clear();
+        for (int row = 0; row < 3; ++row)
+            idxList << QPersistentModelIndex(widget.model()->index(row, 0));
+    });
+    connect(widget.model(), &QAbstractItemModel::layoutChanged, this, [&idxList](){
+        QCOMPARE(idxList.size(), 3);
+        QCOMPARE(idxList.at(0).row(), 1);
+        QCOMPARE(idxList.at(0).column(), 0);
+        QCOMPARE(idxList.at(0).data().toInt(), 0);
+        QCOMPARE(idxList.at(1).row(), 0);
+        QCOMPARE(idxList.at(1).column(), 0);
+        QCOMPARE(idxList.at(1).data().toInt(), -1);
+        QCOMPARE(idxList.at(2).row(), 2);
+        QCOMPARE(idxList.at(2).column(), 0);
+        QCOMPARE(idxList.at(2).data().toInt(), 2);
+    });
+    widget.model()->setData(widget.model()->index(1, 0), -1);
+    QCOMPARE(layoutAboutToBeChangedSpy.size(), 1);
+    QCOMPARE(layoutChangedSpy.size(), 1);
 }
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)

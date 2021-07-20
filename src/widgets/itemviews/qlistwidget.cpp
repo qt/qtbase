@@ -373,7 +373,7 @@ void QListModel::ensureSorted(int column, Qt::SortOrder order, int start, int en
     if (column != 0)
         return;
 
-    int count = end - start + 1;
+    const int count = end - start + 1;
     QList<QPair<QListWidgetItem *, int>> sorting(count);
     for (int i = 0; i < count; ++i) {
         sorting[i].first = items.at(start + i);
@@ -399,7 +399,12 @@ void QListModel::ensureSorted(int column, Qt::SortOrder order, int start, int en
         int newRow = qMax<qsizetype>(lit - tmp.begin(), 0);
         lit = tmp.insert(lit, item);
         if (newRow != oldRow) {
-            changed = true;
+            if (!changed) {
+                emit layoutAboutToBeChanged({}, QAbstractItemModel::VerticalSortHint);
+                oldPersistentIndexes = persistentIndexList();
+                newPersistentIndexes = oldPersistentIndexes;
+                changed = true;
+            }
             for (int j = i + 1; j < count; ++j) {
                 int otherRow = sorting.at(j).second;
                 if (oldRow < otherRow && newRow >= otherRow)
@@ -425,10 +430,9 @@ void QListModel::ensureSorted(int column, Qt::SortOrder order, int start, int en
     }
 
     if (changed) {
-        emit layoutAboutToBeChanged();
         items = tmp;
         changePersistentIndexList(oldPersistentIndexes, newPersistentIndexes);
-        emit layoutChanged();
+        emit layoutChanged({}, QAbstractItemModel::VerticalSortHint);
     }
 }
 
