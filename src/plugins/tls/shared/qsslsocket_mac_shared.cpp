@@ -57,8 +57,6 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_DECLARE_LOGGING_CATEGORY(lcTlsBackend)
-
 #ifdef Q_OS_MACOS
 namespace {
 
@@ -107,9 +105,8 @@ bool isCaCertificateTrusted(SecCertificateRef cfCert, int domain)
                 }
             }
         }
-    } else {
-        qCWarning(lcTlsBackend, "Error receiving trust for a CA certificate");
     }
+
     return false;
 }
 
@@ -133,11 +130,8 @@ QList<QSslCertificate> systemCaCertificates()
                 SecCertificateRef cfCert = (SecCertificateRef)CFArrayGetValueAtIndex(cfCerts, i);
                 QCFType<CFDataRef> derData = SecCertificateCopyData(cfCert);
                 if (isCaCertificateTrusted(cfCert, dom)) {
-                    if (derData == nullptr) {
-                        qCWarning(lcTlsBackend, "Error retrieving a CA certificate from the system store");
-                    } else {
+                    if (derData)
                         systemCerts << QSslCertificate(QByteArray::fromCFData(derData), QSsl::Der);
-                    }
                 }
             }
         }

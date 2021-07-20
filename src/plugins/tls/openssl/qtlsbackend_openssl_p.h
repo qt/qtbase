@@ -134,6 +134,8 @@ private:
     void forceAutotestSecurityLevel() override;
 };
 
+Q_DECLARE_LOGGING_CATEGORY(lcTlsBackend)
+
 QT_END_NAMESPACE
 
 #endif // QTLSBACKEND_OPENSSL_P_H
