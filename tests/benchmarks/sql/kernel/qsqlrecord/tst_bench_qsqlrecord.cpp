@@ -50,9 +50,9 @@ public slots:
 private slots:
     void benchmarkRecord_data() { generic_data(); }
     void benchmarkRecord();
-    void benchFieldName_data() { generic_data(); }
+    void benchFieldName_data() { generic_data("QPSQL"); }
     void benchFieldName();
-    void benchFieldIndex_data() { generic_data(); }
+    void benchFieldIndex_data() { generic_data("QPSQL"); }
     void benchFieldIndex();
 
 private:
@@ -199,14 +199,13 @@ void tst_QSqlRecord::benchFieldName()
 {
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
-    if (tst_Databases::getDatabaseType(db) == QSqlDriver::PostgreSQL) {
-        QSqlQuery qry(db);
-        QVERIFY_SQL(qry, exec("SELECT GENERATE_SERIES(1,5000) AS r"));
-        QBENCHMARK {
-            while (qry.next())
-                qry.value("r");
-            QVERIFY(qry.seek(0));
-        }
+    QCOMPARE(tst_Databases::getDatabaseType(db), QSqlDriver::PostgreSQL);
+    QSqlQuery qry(db);
+    QVERIFY_SQL(qry, exec("SELECT GENERATE_SERIES(1,5000) AS r"));
+    QBENCHMARK {
+        while (qry.next())
+            qry.value("r");
+        QVERIFY(qry.seek(0));
     }
 }
 
@@ -214,15 +213,14 @@ void tst_QSqlRecord::benchFieldIndex()
 {
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
-    if (tst_Databases::getDatabaseType(db) == QSqlDriver::PostgreSQL) {
-        QSqlQuery qry(db);
-        QVERIFY_SQL(qry, exec("SELECT GENERATE_SERIES(1,5000) AS r"));
-        qry = db.exec("SELECT GENERATE_SERIES(1,5000) AS r");
-        QBENCHMARK {
-            while (qry.next())
-                qry.value(0);
-            QVERIFY(qry.seek(0));
-        }
+    QCOMPARE(tst_Databases::getDatabaseType(db), QSqlDriver::PostgreSQL);
+    QSqlQuery qry(db);
+    QVERIFY_SQL(qry, exec("SELECT GENERATE_SERIES(1,5000) AS r"));
+    qry = db.exec("SELECT GENERATE_SERIES(1,5000) AS r");
+    QBENCHMARK {
+        while (qry.next())
+            qry.value(0);
+        QVERIFY(qry.seek(0));
     }
 }
 
