@@ -39,6 +39,7 @@
 
 #include <QtNetwork/private/qssl_p.h>
 
+#include "qtlsbackend_schannel_p.h"
 #include "qtlskey_schannel_p.h"
 
 #include "../shared/qwincrypt_p.h"
@@ -81,7 +82,7 @@ BCRYPT_ALG_HANDLE getHandle(QSslKeyPrivate::Cipher cipher)
             0 // dwFlags
     );
     if (status < 0) {
-        qCWarning(lcTlsBackend, "Failed to open algorithm handle (%ld)!", status);
+        qCWarning(lcTlsBackendSchannel, "Failed to open algorithm handle (%ld)!", status);
         return nullptr;
     }
 
@@ -102,7 +103,7 @@ BCRYPT_KEY_HANDLE generateSymmetricKey(BCRYPT_ALG_HANDLE handle,
             0 // dwFlags
     );
     if (status < 0) {
-        qCWarning(lcTlsBackend, "Failed to generate symmetric key (%ld)!", status);
+        qCWarning(lcTlsBackendSchannel, "Failed to generate symmetric key (%ld)!", status);
         return nullptr;
     }
 
@@ -115,7 +116,8 @@ BCRYPT_KEY_HANDLE generateSymmetricKey(BCRYPT_ALG_HANDLE handle,
     );
     if (status < 0) {
         BCryptDestroyKey(keyHandle);
-        qCWarning(lcTlsBackend, "Failed to change the symmetric key's chaining mode (%ld)!", status);
+        qCWarning(lcTlsBackendSchannel, "Failed to change the symmetric key's chaining mode (%ld)!",
+                  status);
         return nullptr;
     }
     return keyHandle;
@@ -160,7 +162,8 @@ QByteArray doCrypt(QSslKeyPrivate::Cipher cipher, const QByteArray &data, const 
                 BCRYPT_BLOCK_PADDING // dwFlags
         );
         if (status < 0) {
-            qCWarning(lcTlsBackend, "%s failed (%ld)!", encrypt ? "Encrypt" : "Decrypt", status);
+            qCWarning(lcTlsBackendSchannel, "%s failed (%ld)!", encrypt ? "Encrypt" : "Decrypt",
+                      status);
             return {};
         }
     }

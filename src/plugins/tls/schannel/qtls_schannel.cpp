@@ -161,7 +161,7 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_LOGGING_CATEGORY(lcTlsBackend, "qt.tlsbackend.schannel");
+Q_LOGGING_CATEGORY(lcTlsBackendSchannel, "qt.tlsbackend.schannel");
 
 // Defined in qsslsocket_qt.cpp.
 QByteArray _q_makePkcs12(const QList<QSslCertificate> &certs, const QSslKey &key,
@@ -572,7 +572,7 @@ bool matchesContextRequirements(DWORD attributes, DWORD requirements,
                                 bool isClient)
 {
 #ifdef QSSLSOCKET_DEBUG
-#define DEBUG_WARN(message) qCWarning(lcTlsBackend, message)
+#define DEBUG_WARN(message) qCWarning(lcTlsBackendSchannel, message)
 #else
 #define DEBUG_WARN(message)
 #endif
@@ -624,8 +624,8 @@ QByteArray createAlpnString(const QByteArrayList &nextAllowedProtocols)
             QByteArray protocolString;
             for (QByteArray proto : nextAllowedProtocols) {
                 if (proto.size() > 255) {
-                    qCWarning(lcTlsBackend) << "TLS ALPN extension" << proto
-                                            << "is too long and will be ignored.";
+                    qCWarning(lcTlsBackendSchannel)
+                            << "TLS ALPN extension" << proto << "is too long and will be ignored.";
                     continue;
                 } else if (proto.isEmpty()) {
                     continue;
@@ -678,7 +678,8 @@ void retainExtraData(QByteArray &buffer, const SecBuffer &secBuffer)
         return;
 
 #ifdef QSSLSOCKET_DEBUG
-    qCDebug(lcTlsBackend, "We got SECBUFFER_EXTRA, will retain %lu bytes", secBuffer.cbBuffer);
+    qCDebug(lcTlsBackendSchannel, "We got SECBUFFER_EXTRA, will retain %lu bytes",
+            secBuffer.cbBuffer);
 #endif
     std::move(buffer.end() - secBuffer.cbBuffer, buffer.end(), buffer.begin());
     buffer.resize(secBuffer.cbBuffer);
@@ -688,7 +689,7 @@ qint64 checkIncompleteData(const SecBuffer &secBuffer)
 {
     if (secBuffer.BufferType == SECBUFFER_MISSING) {
 #ifdef QSSLSOCKET_DEBUG
-        qCDebug(lcTlsBackend, "Need %lu more bytes.", secBuffer.cbBuffer);
+        qCDebug(lcTlsBackendSchannel, "Need %lu more bytes.", secBuffer.cbBuffer);
 #endif
         return secBuffer.cbBuffer;
 }
@@ -1138,8 +1139,9 @@ bool TlsCryptographSchannel::performHandshake()
     Q_ASSERT(schannelState == SchannelState::PerformHandshake);
 
 #ifdef QSSLSOCKET_DEBUG
-    qCDebug(lcTlsBackend, "Bytes available from socket: %lld", plainSocket->bytesAvailable());
-    qCDebug(lcTlsBackend, "intermediateBuffer size: %d", intermediateBuffer.size());
+    qCDebug(lcTlsBackendSchannel, "Bytes available from socket: %lld",
+            plainSocket->bytesAvailable());
+    qCDebug(lcTlsBackendSchannel, "intermediateBuffer size: %d", intermediateBuffer.size());
 #endif
 
     if (missingData > plainSocket->bytesAvailable())
@@ -1347,8 +1349,8 @@ bool TlsCryptographSchannel::verifyHandshake()
             && configuration.peerVerifyMode() != QSslSocket::PeerVerifyMode::QueryPeer)) {
         if (status != SEC_E_OK) {
 #ifdef QSSLSOCKET_DEBUG
-            qCDebug(lcTlsBackend) << "Couldn't retrieve peer certificate, status:"
-                                  << schannelErrorToString(status);
+            qCDebug(lcTlsBackendSchannel) << "Couldn't retrieve peer certificate, status:"
+                                          << schannelErrorToString(status);
 #endif
             const QSslError error{ QSslError::NoPeerCertificate };
             sslErrors += error;
@@ -1364,7 +1366,7 @@ bool TlsCryptographSchannel::verifyHandshake()
 
     if (!checkSslErrors() || q->state() != QAbstractSocket::ConnectedState) {
 #ifdef QSSLSOCKET_DEBUG
-        qCDebug(lcTlsBackend) << __func__ << "was unsuccessful. Paused:" << paused;
+        qCDebug(lcTlsBackendSchannel) << __func__ << "was unsuccessful. Paused:" << d->isPaused();
 #endif
         // If we're paused then checkSslErrors returned false, but it's not an error
         return d->isPaused() && q->state() == QAbstractSocket::ConnectedState;
@@ -1547,7 +1549,8 @@ void TlsCryptographSchannel::transmit()
             fullMessage.resize(inputBuffers[0].cbBuffer + inputBuffers[1].cbBuffer + inputBuffers[2].cbBuffer);
             const qint64 bytesWritten = plainSocket->write(fullMessage);
 #ifdef QSSLSOCKET_DEBUG
-            qCDebug(lcTlsBackend, "Wrote %lld of total %d bytes", bytesWritten, fullMessage.length());
+            qCDebug(lcTlsBackendSchannel, "Wrote %lld of total %d bytes", bytesWritten,
+                    fullMessage.length());
 #endif
             if (bytesWritten >= 0) {
                 totalBytesWritten += bytesWritten;
@@ -1577,7 +1580,8 @@ void TlsCryptographSchannel::transmit()
             if (missingData > plainSocket->bytesAvailable()
                 && (!readBufferMaxSize || readBufferMaxSize >= missingData)) {
 #ifdef QSSLSOCKET_DEBUG
-                qCDebug(lcTlsBackend, "We're still missing %lld bytes, will check later.", missingData);
+                qCDebug(lcTlsBackendSchannel, "We're still missing %lld bytes, will check later.",
+                        missingData);
 #endif
                 break;
             }
@@ -1585,18 +1589,20 @@ void TlsCryptographSchannel::transmit()
             missingData = 0;
             const qint64 bytesRead = readToBuffer(intermediateBuffer, plainSocket);
 #ifdef QSSLSOCKET_DEBUG
-            qCDebug(lcTlsBackend, "Read %lld encrypted bytes from the socket", bytesRead);
+            qCDebug(lcTlsBackendSchannel, "Read %lld encrypted bytes from the socket", bytesRead);
 #endif
             if (intermediateBuffer.length() == 0 || (hadIncompleteData && bytesRead == 0)) {
 #ifdef QSSLSOCKET_DEBUG
-                qCDebug(lcTlsBackend, (hadIncompleteData ? "No new data received, leaving loop!"
-                                                         : "Nothing to decrypt, leaving loop!"));
+                qCDebug(lcTlsBackendSchannel,
+                        (hadIncompleteData ? "No new data received, leaving loop!"
+                                           : "Nothing to decrypt, leaving loop!"));
 #endif
                 break;
             }
             hadIncompleteData = false;
 #ifdef QSSLSOCKET_DEBUG
-            qCDebug(lcTlsBackend, "Total amount of bytes to decrypt: %d", intermediateBuffer.length());
+            qCDebug(lcTlsBackendSchannel, "Total amount of bytes to decrypt: %d",
+                    intermediateBuffer.length());
 #endif
 
             SecBuffer dataBuffer[4]{
@@ -1621,7 +1627,7 @@ void TlsCryptographSchannel::transmit()
                                   dataBuffer[1].cbBuffer);
                     totalRead += dataBuffer[1].cbBuffer;
 #ifdef QSSLSOCKET_DEBUG
-                    qCDebug(lcTlsBackend, "Decrypted %lu bytes. New read buffer size: %d",
+                    qCDebug(lcTlsBackendSchannel, "Decrypted %lu bytes. New read buffer size: %d",
                             dataBuffer[1].cbBuffer, buffer.size());
 #endif
                 }
@@ -1638,16 +1644,17 @@ void TlsCryptographSchannel::transmit()
             if (status == SEC_E_INCOMPLETE_MESSAGE) {
                 missingData = checkIncompleteData(dataBuffer[0]);
 #ifdef QSSLSOCKET_DEBUG
-                qCDebug(lcTlsBackend, "We didn't have enough data to decrypt anything, will try again!");
+                qCDebug(lcTlsBackendSchannel,
+                        "We didn't have enough data to decrypt anything, will try again!");
 #endif
                 // We try again, but if we don't get any more data then we leave
                 hadIncompleteData = true;
             } else if (status == SEC_E_INVALID_HANDLE) {
                 // I don't think this should happen, if it does we're done...
-                qCWarning(lcTlsBackend, "The internal SSPI handle is invalid!");
+                qCWarning(lcTlsBackendSchannel, "The internal SSPI handle is invalid!");
                 Q_UNREACHABLE();
             } else if (status == SEC_E_INVALID_TOKEN) {
-                qCWarning(lcTlsBackend, "Got SEC_E_INVALID_TOKEN!");
+                qCWarning(lcTlsBackendSchannel, "Got SEC_E_INVALID_TOKEN!");
                 Q_UNREACHABLE(); // Happened once due to a bug, but shouldn't generally happen(?)
             } else if (status == SEC_E_MESSAGE_ALTERED) {
                 // The message has been altered, disconnect now.
@@ -1674,7 +1681,7 @@ void TlsCryptographSchannel::transmit()
             } else if (status == SEC_I_RENEGOTIATE) {
                 // 'remote' wants to renegotiate
 #ifdef QSSLSOCKET_DEBUG
-                qCDebug(lcTlsBackend, "The peer wants to renegotiate.");
+                qCDebug(lcTlsBackendSchannel, "The peer wants to renegotiate.");
 #endif
                 schannelState = SchannelState::Renegotiate;
                 renegotiating = true;
@@ -1710,7 +1717,8 @@ void TlsCryptographSchannel::sendShutdown()
 
     if (status != SEC_E_OK) {
 #ifdef QSSLSOCKET_DEBUG
-        qCDebug(lcTlsBackend) << "Failed to apply shutdown control token:" << schannelErrorToString(status);
+        qCDebug(lcTlsBackendSchannel)
+                << "Failed to apply shutdown control token:" << schannelErrorToString(status);
 #endif
         return;
     }
@@ -1768,7 +1776,8 @@ void TlsCryptographSchannel::sendShutdown()
         }
     } else {
 #ifdef QSSLSOCKET_DEBUG
-        qCDebug(lcTlsBackend) << "Failed to initialize shutdown:" << schannelErrorToString(status);
+        qCDebug(lcTlsBackendSchannel)
+                << "Failed to initialize shutdown:" << schannelErrorToString(status);
 #endif
     }
 }
@@ -1962,7 +1971,7 @@ void TlsCryptographSchannel::initializeCertificateStores()
             localCertificateStore = createStoreFromCertificateChain(configuration.localCertificateChain(),
                                                                     configuration.privateKey());
             if (localCertificateStore == nullptr)
-                qCWarning(lcTlsBackend, "Failed to load certificate chain!");
+                qCWarning(lcTlsBackendSchannel, "Failed to load certificate chain!");
         }
     }
 
@@ -1989,7 +1998,7 @@ bool TlsCryptographSchannel::verifyCertContext(CERT_CONTEXT *certContext)
                                                                nullptr));
     if (!tempCertCollection) {
 #ifdef QSSLSOCKET_DEBUG
-        qCWarning(lcTlsBackend, "Failed to create certificate store collection!");
+        qCWarning(lcTlsBackendSchannel, "Failed to create certificate store collection!");
 #endif
         return false;
     }
@@ -2002,12 +2011,14 @@ bool TlsCryptographSchannel::verifyCertContext(CERT_CONTEXT *certContext)
         auto rootStore = QHCertStorePointer(CertOpenSystemStore(0, L"ROOT"));
         if (!rootStore) {
 #ifdef QSSLSOCKET_DEBUG
-            qCWarning(lcTlsBackend, "Failed to open the system root CA certificate store!");
+            qCWarning(lcTlsBackendSchannel, "Failed to open the system root CA certificate store!");
 #endif
             return false;
         } else if (!CertAddStoreToCollection(tempCertCollection.get(), rootStore.get(), 0, 1)) {
 #ifdef QSSLSOCKET_DEBUG
-            qCWarning(lcTlsBackend, "Failed to add the system root CA certificate store to the certificate store collection!");
+            qCWarning(lcTlsBackendSchannel,
+                      "Failed to add the system root CA certificate store to the certificate store "
+                      "collection!");
 #endif
             return false;
         }
@@ -2015,7 +2026,9 @@ bool TlsCryptographSchannel::verifyCertContext(CERT_CONTEXT *certContext)
     if (caCertificateStore) {
         if (!CertAddStoreToCollection(tempCertCollection.get(), caCertificateStore.get(), 0, 1)) {
 #ifdef QSSLSOCKET_DEBUG
-            qCWarning(lcTlsBackend, "Failed to add the user's CA certificate store to the certificate store collection!");
+            qCWarning(lcTlsBackendSchannel,
+                      "Failed to add the user's CA certificate store to the certificate store "
+                      "collection!");
 #endif
             return false;
         }
@@ -2023,7 +2036,8 @@ bool TlsCryptographSchannel::verifyCertContext(CERT_CONTEXT *certContext)
 
     if (!CertAddStoreToCollection(tempCertCollection.get(), certContext->hCertStore, 0, 0)) {
 #ifdef QSSLSOCKET_DEBUG
-        qCWarning(lcTlsBackend, "Failed to add certificate's origin store to the certificate store collection!");
+        qCWarning(lcTlsBackendSchannel,
+                  "Failed to add certificate's origin store to the certificate store collection!");
 #endif
         return false;
     }
@@ -2115,11 +2129,11 @@ bool TlsCryptographSchannel::verifyCertContext(CERT_CONTEXT *certContext)
         const QList<QSslCertificateExtension> extensions = certificate.extensions();
 
 #ifdef QSSLSOCKET_DEBUG
-        qCDebug(lcTlsBackend) << "issuer:" << certificate.issuerDisplayName()
-                              << "\nsubject:" << certificate.subjectDisplayName()
-                              << "\nQSslCertificate info:" << certificate
-                              << "\nextended error info:" << element->pwszExtendedErrorInfo
-                              << "\nerror status:" << element->TrustStatus.dwErrorStatus;
+        qCDebug(lcTlsBackendSchannel) << "issuer:" << certificate.issuerDisplayName()
+                                      << "\nsubject:" << certificate.subjectDisplayName()
+                                      << "\nQSslCertificate info:" << certificate
+                                      << "\nextended error info:" << element->pwszExtendedErrorInfo
+                                      << "\nerror status:" << element->TrustStatus.dwErrorStatus;
 #endif
 
         peerCertificateChain.append(certificate);
