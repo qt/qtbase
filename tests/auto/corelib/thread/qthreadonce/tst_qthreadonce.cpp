@@ -36,11 +36,14 @@
 #include <qwaitcondition.h>
 #include "qthreadonce.h"
 
+#include <QtTest/private/qemulationdetector_p.h>
+
 class tst_QThreadOnce : public QObject
 {
     Q_OBJECT
 
 private slots:
+    void initTestCase();
     void sameThread();
     void sameThread_data();
     void multipleThreads();
@@ -51,6 +54,12 @@ private slots:
     void exception();
 #endif
 };
+
+void tst_QThreadOnce::initTestCase()
+{
+    if (QTestPrivate::isRunningArmOnX86())
+        QSKIP("Flaky on QEMU, QTBUG-94737");
+}
 
 class SingletonObject: public QObject
 {
