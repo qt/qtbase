@@ -37,14 +37,9 @@ class tst_QSqlRecord : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_QSqlRecord();
-    virtual ~tst_QSqlRecord();
-
 public slots:
     void initTestCase();
     void cleanupTestCase();
-    void init();
     void cleanup();
 
 private slots:
@@ -66,14 +61,6 @@ private:
 
 QTEST_MAIN(tst_QSqlRecord)
 
-tst_QSqlRecord::tst_QSqlRecord()
-{
-}
-
-tst_QSqlRecord::~tst_QSqlRecord()
-{
-}
-
 void tst_QSqlRecord::initTestCase()
 {
     dbs.open();
@@ -94,10 +81,6 @@ void tst_QSqlRecord::cleanupTestCase()
         dropTestTables(db);
     }
     dbs.close();
-}
-
-void tst_QSqlRecord::init()
-{
 }
 
 void tst_QSqlRecord::cleanup()
