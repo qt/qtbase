@@ -180,7 +180,8 @@ void tst_QSqlRecord::benchmarkRecord()
         QSqlQuery qry(db);
         QVERIFY_SQL(qry, exec("create table " + tableName + " (id int NOT NULL, t_varchar varchar(20), "
                               "t_char char(20), primary key(id))"));
-        for (int i = 0; i < 1000; i++)
+        // Limit to 500: at 600, the set-up takes nearly 5 minutes
+        for (int i = 0; i < 500; i++)
             QVERIFY_SQL(qry, exec(QString("INSERT INTO " + tableName +
                                           " VALUES (%1, 'VarChar%1', 'Char%1')").arg(i)));
         QVERIFY_SQL(qry, exec(QString("SELECT * from ") + tableName));
