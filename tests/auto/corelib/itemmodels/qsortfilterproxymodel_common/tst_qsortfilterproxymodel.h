@@ -55,6 +55,7 @@ private slots:
     void sort();
     void sortHierarchy_data();
     void sortHierarchy();
+    void createPersistentOnLayoutAboutToBeChanged();
 
     void insertRows_data();
     void insertRows();

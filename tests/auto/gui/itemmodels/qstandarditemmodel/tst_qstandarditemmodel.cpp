@@ -138,6 +138,7 @@ private slots:
     void taskQTBUG_45114_setItemData();
     void setItemPersistentIndex();
     void signalsOnTakeItem();
+    void createPersistentOnLayoutAboutToBeChanged();
 private:
     QStandardItemModel *m_model = nullptr;
     QPersistentModelIndex persistent;
@@ -1783,6 +1784,41 @@ void tst_QStandardItemModel::signalsOnTakeItem() // QTBUG-89145
     QCOMPARE(takenItem->model(), nullptr);
     QCOMPARE(takenItem->child(0, 0)->model(), nullptr);
     QCOMPARE(m.index(1, 0).data(), QVariant());
+}
+
+void tst_QStandardItemModel::createPersistentOnLayoutAboutToBeChanged() // QTBUG-93466
+{
+    QStandardItemModel model;
+    QAbstractItemModelTester mTester(&model, nullptr);
+    model.insertColumn(0);
+    QCOMPARE(model.columnCount(), 1);
+    model.insertRows(0, 3);
+    for (int row = 0; row < 3; ++row)
+        model.setData(model.index(row, 0), row);
+    QList<QPersistentModelIndex> idxList;
+    QSignalSpy layoutAboutToBeChangedSpy(&model, &QAbstractItemModel::layoutAboutToBeChanged);
+    QSignalSpy layoutChangedSpy(&model, &QAbstractItemModel::layoutChanged);
+    connect(&model, &QAbstractItemModel::layoutAboutToBeChanged, this, [&idxList, &model](){
+        idxList.clear();
+        for (int row = 0; row < 3; ++row)
+            idxList << QPersistentModelIndex(model.index(row, 0));
+    });
+    connect(&model, &QAbstractItemModel::layoutChanged, this, [&idxList](){
+        QCOMPARE(idxList.size(), 3);
+        QCOMPARE(idxList.at(0).row(), 1);
+        QCOMPARE(idxList.at(0).column(), 0);
+        QCOMPARE(idxList.at(0).data().toInt(), 0);
+        QCOMPARE(idxList.at(1).row(), 0);
+        QCOMPARE(idxList.at(1).column(), 0);
+        QCOMPARE(idxList.at(1).data().toInt(), -1);
+        QCOMPARE(idxList.at(2).row(), 2);
+        QCOMPARE(idxList.at(2).column(), 0);
+        QCOMPARE(idxList.at(2).data().toInt(), 2);
+    });
+    model.setData(model.index(1, 0), -1);
+    model.sort(0);
+    QCOMPARE(layoutAboutToBeChangedSpy.size(), 1);
+    QCOMPARE(layoutChangedSpy.size(), 1);
 }
 
 QTEST_MAIN(tst_QStandardItemModel)

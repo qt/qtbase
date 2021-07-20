@@ -77,7 +77,7 @@ private slots:
     void itemData();
 
     void persistIndexOnLayoutChange();
-
+    void createPersistentOnLayoutAboutToBeChanged();
 protected:
     void verifyIdentity(QAbstractItemModel *model, const QModelIndex &parent = QModelIndex());
 
@@ -492,6 +492,41 @@ void tst_QIdentityProxyModel::persistIndexOnLayoutChange()
     QVERIFY(gotLayoutAboutToBeChanged);
     QVERIFY(gotLayoutChanged);
     QVERIFY(persistentIndex.isValid());
+}
+
+void tst_QIdentityProxyModel::createPersistentOnLayoutAboutToBeChanged() // QTBUG-93466
+{
+    QStandardItemModel model(3, 1);
+    for (int row = 0; row < 3; ++row)
+        model.setData(model.index(row, 0), row, Qt::UserRole);
+    model.setSortRole(Qt::UserRole);
+    QIdentityProxyModel proxy;
+    new QAbstractItemModelTester(&proxy, &proxy);
+    proxy.setSourceModel(&model);
+    QList<QPersistentModelIndex> idxList;
+    QSignalSpy layoutAboutToBeChangedSpy(&proxy, &QAbstractItemModel::layoutAboutToBeChanged);
+    QSignalSpy layoutChangedSpy(&proxy, &QAbstractItemModel::layoutChanged);
+    connect(&proxy, &QAbstractItemModel::layoutAboutToBeChanged, this, [&idxList, &proxy](){
+        idxList.clear();
+        for (int row = 0; row < 3; ++row)
+            idxList << QPersistentModelIndex(proxy.index(row, 0));
+    });
+    connect(&proxy, &QAbstractItemModel::layoutChanged, this, [&idxList](){
+        QCOMPARE(idxList.size(), 3);
+        QCOMPARE(idxList.at(0).row(), 1);
+        QCOMPARE(idxList.at(0).column(), 0);
+        QCOMPARE(idxList.at(0).data(Qt::UserRole).toInt(), 0);
+        QCOMPARE(idxList.at(1).row(), 0);
+        QCOMPARE(idxList.at(1).column(), 0);
+        QCOMPARE(idxList.at(1).data(Qt::UserRole).toInt(), -1);
+        QCOMPARE(idxList.at(2).row(), 2);
+        QCOMPARE(idxList.at(2).column(), 0);
+        QCOMPARE(idxList.at(2).data(Qt::UserRole).toInt(), 2);
+    });
+    model.setData(model.index(1, 0), -1, Qt::UserRole);
+    model.sort(0);
+    QCOMPARE(layoutAboutToBeChangedSpy.size(), 1);
+    QCOMPARE(layoutChangedSpy.size(), 1);
 }
 
 QTEST_MAIN(tst_QIdentityProxyModel)

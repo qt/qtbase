@@ -93,6 +93,7 @@ private slots:
 
     void itemData();
     void setItemData();
+    void createPersistentOnLayoutAboutToBeChanged();
 };
 
 void tst_QStringListModel::moveRowsInvalid_data()
@@ -445,6 +446,35 @@ void tst_QStringListModel::supportedDragDropActions()
     QStringListModel model;
     QCOMPARE(model.supportedDragActions(), Qt::CopyAction | Qt::MoveAction);
     QCOMPARE(model.supportedDropActions(), Qt::CopyAction | Qt::MoveAction);
+}
+
+void tst_QStringListModel::createPersistentOnLayoutAboutToBeChanged() // QTBUG-93466
+{
+    QStringListModel model(QStringList{QStringLiteral("1"), QStringLiteral("2"), QStringLiteral("3")});
+    QList<QPersistentModelIndex> idxList;
+    QSignalSpy layoutAboutToBeChangedSpy(&model, &QAbstractItemModel::layoutAboutToBeChanged);
+    QSignalSpy layoutChangedSpy(&model, &QAbstractItemModel::layoutChanged);
+    connect(&model, &QAbstractItemModel::layoutAboutToBeChanged, this, [&idxList, &model](){
+        idxList.clear();
+        for (int row = 0; row < 3; ++row)
+            idxList << QPersistentModelIndex(model.index(row, 0));
+    });
+    connect(&model, &QAbstractItemModel::layoutChanged, this, [&idxList](){
+        QCOMPARE(idxList.size(), 3);
+        QCOMPARE(idxList.at(0).row(), 1);
+        QCOMPARE(idxList.at(0).column(), 0);
+        QCOMPARE(idxList.at(0).data().toString(), QStringLiteral("1"));
+        QCOMPARE(idxList.at(1).row(), 0);
+        QCOMPARE(idxList.at(1).column(), 0);
+        QCOMPARE(idxList.at(1).data().toString(), QStringLiteral("0"));
+        QCOMPARE(idxList.at(2).row(), 2);
+        QCOMPARE(idxList.at(2).column(), 0);
+        QCOMPARE(idxList.at(2).data().toString(), QStringLiteral("3"));
+    });
+    model.setData(model.index(1, 0), QStringLiteral("0"));
+    model.sort(0);
+    QCOMPARE(layoutAboutToBeChangedSpy.size(), 1);
+    QCOMPARE(layoutChangedSpy.size(), 1);
 }
 
 QTEST_MAIN(tst_QStringListModel)
