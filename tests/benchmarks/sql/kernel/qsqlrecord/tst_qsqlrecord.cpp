@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2018 The Qt Company Ltd.
+ ** Copyright (C) 2021 The Qt Company Ltd.
  ** Contact: https://www.qt.io/licensing/
  **
  ** This file is part of the test suite of the Qt Toolkit.
@@ -178,7 +178,8 @@ void tst_QSqlRecord::benchmarkRecord()
     const auto tableName = qTableName("record", __FILE__, db);
     {
         QSqlQuery qry(db);
-        QVERIFY_SQL(qry, exec("create table " + tableName + " (id int NOT NULL, t_varchar varchar(20), "
+        QVERIFY_SQL(qry, exec("create table " + tableName +
+                              " (id int NOT NULL, t_varchar varchar(20), "
                               "t_char char(20), primary key(id))"));
         // Limit to 500: at 600, the set-up takes nearly 5 minutes
         for (int i = 0; i < 500; i++)
@@ -188,6 +189,7 @@ void tst_QSqlRecord::benchmarkRecord()
         QBENCHMARK {
             while (qry.next())
                 qry.record();
+            QVERIFY(qry.seek(0));
         }
     }
     tst_Databases::safeDropTables(db, QStringList() << tableName);
@@ -203,6 +205,7 @@ void tst_QSqlRecord::benchFieldName()
         QBENCHMARK {
             while (qry.next())
                 qry.value("r");
+            QVERIFY(qry.seek(0));
         }
     }
 }
@@ -218,6 +221,7 @@ void tst_QSqlRecord::benchFieldIndex()
         QBENCHMARK {
             while (qry.next())
                 qry.value(0);
+            QVERIFY(qry.seek(0));
         }
     }
 }
