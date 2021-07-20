@@ -49,7 +49,7 @@ QT_BEGIN_NAMESPACE
 
 Q_GLOBAL_STATIC(QRecursiveMutex, qt_securetransport_mutex)
 
-Q_LOGGING_CATEGORY(lcTlsBackend, "qt.tlsbackend.securetransport");
+Q_LOGGING_CATEGORY(lcSecureTransport, "qt.tlsbackend.securetransport");
 
 namespace QTlsPrivate {
 

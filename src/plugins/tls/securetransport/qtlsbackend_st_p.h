@@ -91,6 +91,8 @@ private:
     static bool s_loadedCiphersAndCerts;
 };
 
+Q_DECLARE_LOGGING_CATEGORY(lcSecureTransport)
+
 QT_END_NAMESPACE
 
 #endif // QTLSBACKEND_ST_P_H

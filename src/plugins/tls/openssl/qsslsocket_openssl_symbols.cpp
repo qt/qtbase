@@ -55,6 +55,7 @@
 ****************************************************************************/
 
 #include "qsslsocket_openssl_symbols_p.h"
+#include "qtlsbackend_openssl_p.h"
 
 #include <QtNetwork/private/qssl_p.h>
 

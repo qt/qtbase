@@ -428,8 +428,6 @@ public:
     Q_DISABLE_COPY_MOVE(QTlsBackend)
 };
 
-Q_DECLARE_LOGGING_CATEGORY(lcTlsBackend)
-
 #define QTlsBackend_iid "org.qt-project.Qt.QTlsBackend"
 Q_DECLARE_INTERFACE(QTlsBackend, QTlsBackend_iid);
 

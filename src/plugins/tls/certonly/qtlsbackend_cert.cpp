@@ -47,8 +47,6 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_LOGGING_CATEGORY(lcTlsBackend, "qt.tlsbackend.cert-only");
-
 QString QTlsBackendCertOnly::backendName() const
 {
     return builtinBackendNames[nameIndexCertOnly];

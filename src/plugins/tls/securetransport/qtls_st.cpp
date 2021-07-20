@@ -109,7 +109,7 @@ EphemeralSecKeychain::EphemeralSecKeychain()
 {
     const auto uuid = QUuid::createUuid();
     if (uuid.isNull()) {
-        qCWarning(lcTlsBackend) << "Failed to create a unique keychain name";
+        qCWarning(lcSecureTransport) << "Failed to create a unique keychain name";
         return;
     }
 
@@ -136,14 +136,14 @@ EphemeralSecKeychain::EphemeralSecKeychain()
     const auto ok = CFStringGetFileSystemRepresentation(cfName, &posixPath[0],
                                                         CFIndex(posixPath.size()));
     if (!ok) {
-        qCWarning(lcTlsBackend) << "Failed to create a unique keychain name from"
-                                << "QDir::tempPath()";
+        qCWarning(lcSecureTransport) << "Failed to create a unique keychain name from"
+                                     << "QDir::tempPath()";
         return;
     }
 
     std::vector<uint8_t> passUtf8(256);
     if (SecRandomCopyBytes(kSecRandomDefault, passUtf8.size(), &passUtf8[0])) {
-        qCWarning(lcTlsBackend) << "SecRandomCopyBytes: failed to create a key";
+        qCWarning(lcSecureTransport) << "SecRandomCopyBytes: failed to create a key";
         return;
     }
 
@@ -151,7 +151,7 @@ EphemeralSecKeychain::EphemeralSecKeychain()
                                               &passUtf8[0], FALSE, nullptr,
                                               &keychain);
     if (status != errSecSuccess || !keychain) {
-        qCWarning(lcTlsBackend) << "SecKeychainCreate: failed to create a custom keychain";
+        qCWarning(lcSecureTransport) << "SecKeychainCreate: failed to create a custom keychain";
         if (keychain) {
             SecKeychainDelete(keychain);
             CFRelease(keychain);
@@ -166,13 +166,13 @@ EphemeralSecKeychain::EphemeralSecKeychain()
         // == false, set interval to INT_MAX to never lock ...
         settings.lockInterval = INT_MAX;
         if (SecKeychainSetSettings(keychain, &settings) != errSecSuccess)
-            qCWarning(lcTlsBackend) << "SecKeychainSettings: failed to disable lock on sleep";
+            qCWarning(lcSecureTransport) << "SecKeychainSettings: failed to disable lock on sleep";
     }
 
 #ifdef QSSLSOCKET_DEBUG
     if (keychain) {
-        qCDebug(lcTlsBackend) << "Custom keychain with name" << keychainName << "was created"
-                              << "successfully";
+        qCDebug(lcSecureTransport) << "Custom keychain with name" << keychainName << "was created"
+                                   << "successfully";
     }
 #endif
 }
@@ -204,7 +204,7 @@ SSLContextRef qt_createSecureTransportContext(QSslSocket::SslMode mode)
     // We never use kSSLDatagramType, so it's kSSLStreamType unconditionally.
     SSLContextRef context = SSLCreateContext(nullptr, side, kSSLStreamType);
     if (!context)
-        qCWarning(lcTlsBackend) << "SSLCreateContext failed";
+        qCWarning(lcSecureTransport) << "SSLCreateContext failed";
     return context;
 }
 
@@ -280,7 +280,7 @@ OSStatus TlsCryptographSecureTransport::ReadCallback(TlsCryptographSecureTranspo
 
     const qint64 bytes = plainSocket->read(data, *dataLength);
 #ifdef QSSLSOCKET_DEBUG
-    qCDebug(lcTlsBackend) << plainSocket << "read" << bytes;
+    qCDebug(lcSecureTransport) << plainSocket << "read" << bytes;
 #endif
     if (bytes < 0) {
         *dataLength = 0;
@@ -306,7 +306,7 @@ OSStatus TlsCryptographSecureTransport::WriteCallback(TlsCryptographSecureTransp
 
     const qint64 bytes = plainSocket->write(data, *dataLength);
 #ifdef QSSLSOCKET_DEBUG
-    qCDebug(lcTlsBackend) << plainSocket << "write" << bytes;
+    qCDebug(lcSecureTransport) << plainSocket << "write" << bytes;
 #endif
     if (bytes < 0) {
         *dataLength = 0;
@@ -346,7 +346,7 @@ void TlsCryptographSecureTransport::continueHandshake()
     Q_ASSERT(d);
     d->setEncrypted(true);
 #ifdef QSSLSOCKET_DEBUG
-    qCDebug(lcTlsBackend) << d->plainTcpSocket() << "connection encrypted";
+    qCDebug(lcSecureTransport) << d->plainTcpSocket() << "connection encrypted";
 #endif
 
 #if QT_DARWIN_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_13_4, __IPHONE_11_0, __TVOS_11_0, __WATCHOS_4_0)
@@ -434,7 +434,7 @@ QSsl::SslProtocol TlsCryptographSecureTransport::sessionProtocol() const
     SSLProtocol protocol = kSSLProtocolUnknown;
     const OSStatus err = SSLGetNegotiatedProtocolVersion(context, &protocol);
     if (err != errSecSuccess) {
-        qCWarning(lcTlsBackend) << "SSLGetNegotiatedProtocolVersion failed:" << err;
+        qCWarning(lcSecureTransport) << "SSLGetNegotiatedProtocolVersion failed:" << err;
         return QSsl::UnknownProtocol;
     }
 
@@ -503,7 +503,7 @@ void TlsCryptographSecureTransport::transmit()
             size_t writtenBytes = 0;
             const OSStatus err = SSLWrite(context, writeBuffer.readPointer(), nextDataBlockSize, &writtenBytes);
 #ifdef QSSLSOCKET_DEBUG
-            qCDebug(lcTlsBackend) << d->plainTcpSocket() << "SSLWrite returned" << err;
+            qCDebug(lcSecureTransport) << d->plainTcpSocket() << "SSLWrite returned" << err;
 #endif
             if (err != errSecSuccess && err != errSSLWouldBlock) {
                 setErrorAndEmit(d, QAbstractSocket::SslInternalError,
@@ -541,7 +541,7 @@ void TlsCryptographSecureTransport::transmit()
             data.resize(4096);
             const OSStatus err = SSLRead(context, data.data(), data.size(), &readBytes);
 #ifdef QSSLSOCKET_DEBUG
-            qCDebug(lcTlsBackend) << d->plainTcpSocket() << "SSLRead returned" << err;
+            qCDebug(lcSecureTransport) << d->plainTcpSocket() << "SSLRead returned" << err;
 #endif
             if (err == errSSLClosedGraceful) {
                 shutdown = true; // the other side shut down, make sure we do not send shutdown ourselves
@@ -706,8 +706,8 @@ bool TlsCryptographSecureTransport::initSslContext()
         if (cfNames) {
             for (const QByteArray &name : protocolNames) {
                 if (name.size() > 255) {
-                    qCWarning(lcTlsBackend) << "TLS ALPN extension" << name
-                                            << "is too long and will be ignored.";
+                    qCWarning(lcSecureTransport) << "TLS ALPN extension" << name
+                                                 << "is too long and will be ignored.";
                     continue;
                 } else if (name.isEmpty()) {
                     continue;
@@ -721,10 +721,10 @@ bool TlsCryptographSecureTransport::initSslContext()
                 // failed, and handle this non-TLS error, we do not handle
                 // the result of this call as an error:
                 if (SSLSetALPNProtocols(context, cfNames) != errSecSuccess)
-                    qCWarning(lcTlsBackend) << "SSLSetALPNProtocols failed - too long protocol names?";
+                    qCWarning(lcSecureTransport) << "SSLSetALPNProtocols failed - too long protocol names?";
             }
         } else {
-            qCWarning(lcTlsBackend) << "failed to allocate ALPN names array";
+            qCWarning(lcSecureTransport) << "failed to allocate ALPN names array";
         }
     }
 #endif // QT_DARWIN_PLATFORM_SDK_EQUAL_OR_ABOVE
@@ -779,12 +779,12 @@ bool TlsCryptographSecureTransport::initSslContext()
                 cfCiphers << sslCipher;
         }
         if (cfCiphers.size() == 0) {
-            qCWarning(lcTlsBackend) << "failed to add any of the requested ciphers from the configuration";
+            qCWarning(lcSecureTransport) << "failed to add any of the requested ciphers from the configuration";
             return false;
         }
         OSStatus err = SSLSetEnabledCiphers(context, cfCiphers.data(), cfCiphers.size());
         if (err != errSecSuccess) {
-            qCWarning(lcTlsBackend) << "failed to set the ciphers from the configuration";
+            qCWarning(lcSecureTransport) << "failed to set the ciphers from the configuration";
             return false;
         }
     }
@@ -846,8 +846,8 @@ bool TlsCryptographSecureTransport::setSessionCertificate(QString &errorDescript
         OSStatus err = SecPKCS12Import(pkcs12, options, &items);
         if (err != errSecSuccess) {
 #ifdef QSSLSOCKET_DEBUG
-            qCWarning(lcTlsBackend) << plainSocket
-                                    << QStringLiteral("SecPKCS12Import failed: %1").arg(err);
+            qCWarning(lcSecureTransport) << plainSocket
+                                         << QStringLiteral("SecPKCS12Import failed: %1").arg(err);
 #endif
             errorCode = QAbstractSocket::SslInvalidUserDataError;
             errorDescription = QStringLiteral("SecPKCS12Import failed: %1").arg(err);
@@ -856,7 +856,7 @@ bool TlsCryptographSecureTransport::setSessionCertificate(QString &errorDescript
 
         if (!CFArrayGetCount(items)) {
 #ifdef QSSLSOCKET_DEBUG
-            qCWarning(lcTlsBackend) << plainSocket << "SecPKCS12Import returned no items";
+            qCWarning(lcSecureTransport) << plainSocket << "SecPKCS12Import returned no items";
 #endif
             errorCode = QAbstractSocket::SslInvalidUserDataError;
             errorDescription = QStringLiteral("SecPKCS12Import returned no items");
@@ -867,7 +867,7 @@ bool TlsCryptographSecureTransport::setSessionCertificate(QString &errorDescript
         SecIdentityRef identity = (SecIdentityRef)CFDictionaryGetValue(import, kSecImportItemIdentity);
         if (!identity) {
 #ifdef QSSLSOCKET_DEBUG
-            qCWarning(lcTlsBackend) << plainSocket << "SecPKCS12Import returned no identity";
+            qCWarning(lcSecureTransport) << plainSocket << "SecPKCS12Import returned no identity";
 #endif
             errorCode = QAbstractSocket::SslInvalidUserDataError;
             errorDescription = QStringLiteral("SecPKCS12Import returned no identity");
@@ -892,8 +892,8 @@ bool TlsCryptographSecureTransport::setSessionCertificate(QString &errorDescript
         err = SSLSetCertificate(context, certs);
         if (err != errSecSuccess) {
 #ifdef QSSLSOCKET_DEBUG
-            qCWarning(lcTlsBackend)
-                    << plainSocket << QStringLiteral("Cannot set certificate and key: %1").arg(err);
+            qCWarning(lcSecureTransport) << plainSocket
+                                         << QStringLiteral("Cannot set certificate and key: %1").arg(err);
 #endif
             errorCode = QAbstractSocket::SslInvalidUserDataError;
             errorDescription = QStringLiteral("Cannot set certificate and key: %1").arg(err);
@@ -918,7 +918,7 @@ bool TlsCryptographSecureTransport::setSessionProtocol()
     switch (configuration.protocol()) {
     case QSsl::TlsV1_3:
     case QSsl::TlsV1_3OrLater:
-        qCWarning(lcTlsBackend) << plainSocket << "SecureTransport does not support TLS 1.3";
+        qCWarning(lcSecureTransport) << plainSocket << "SecureTransport does not support TLS 1.3";
         return false;
     default:;
     }
@@ -929,14 +929,14 @@ QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
     if (configuration.protocol() == QSsl::TlsV1_0) {
     #ifdef QSSLSOCKET_DEBUG
-        qCDebug(lcTlsBackend) << plainSocket << "requesting : TLSv1.0";
+        qCDebug(lcSecureTransport) << plainSocket << "requesting : TLSv1.0";
     #endif
         err = SSLSetProtocolVersionMin(context, kTLSProtocol1);
         if (err == errSecSuccess)
             err = SSLSetProtocolVersionMax(context, kTLSProtocol1);
     } else if (configuration.protocol() == QSsl::TlsV1_1) {
     #ifdef QSSLSOCKET_DEBUG
-        qCDebug(lcTlsBackend) << plainSocket << "requesting : TLSv1.1";
+        qCDebug(lcSecureTransport) << plainSocket << "requesting : TLSv1.1";
     #endif
         err = SSLSetProtocolVersionMin(context, kTLSProtocol11);
         if (err == errSecSuccess)
@@ -944,42 +944,42 @@ QT_WARNING_DISABLE_DEPRECATED
 QT_WARNING_POP
     } else if (configuration.protocol() == QSsl::TlsV1_2) {
     #ifdef QSSLSOCKET_DEBUG
-        qCDebug(lcTlsBackend) << plainSocket << "requesting : TLSv1.2";
+        qCDebug(lcSecureTransport) << plainSocket << "requesting : TLSv1.2";
     #endif
         err = SSLSetProtocolVersionMin(context, kTLSProtocol12);
         if (err == errSecSuccess)
             err = SSLSetProtocolVersionMax(context, kTLSProtocol12);
     } else if (configuration.protocol() == QSsl::AnyProtocol) {
     #ifdef QSSLSOCKET_DEBUG
-        qCDebug(lcTlsBackend) << plainSocket << "requesting : any";
+        qCDebug(lcSecureTransport) << plainSocket << "requesting : any";
     #endif
         err = SSLSetProtocolVersionMin(context, kTLSProtocol1);
     } else if (configuration.protocol() == QSsl::SecureProtocols) {
     #ifdef QSSLSOCKET_DEBUG
-        qCDebug(lcTlsBackend) << plainSocket << "requesting : TLSv1.2";
+        qCDebug(lcSecureTransport) << plainSocket << "requesting : TLSv1.2";
     #endif
         err = SSLSetProtocolVersionMin(context, kTLSProtocol12);
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
     } else if (configuration.protocol() == QSsl::TlsV1_0OrLater) {
     #ifdef QSSLSOCKET_DEBUG
-        qCDebug(lcTlsBackend) << plainSocket << "requesting : TLSv1 - TLSv1.2";
+        qCDebug(lcSecureTransport) << plainSocket << "requesting : TLSv1 - TLSv1.2";
     #endif
         err = SSLSetProtocolVersionMin(context, kTLSProtocol1);
     } else if (configuration.protocol() == QSsl::TlsV1_1OrLater) {
     #ifdef QSSLSOCKET_DEBUG
-        qCDebug(lcTlsBackend) << plainSocket << "requesting : TLSv1.1 - TLSv1.2";
+        qCDebug(lcSecureTransport) << plainSocket << "requesting : TLSv1.1 - TLSv1.2";
     #endif
         err = SSLSetProtocolVersionMin(context, kTLSProtocol11);
 QT_WARNING_POP
     } else if (configuration.protocol() == QSsl::TlsV1_2OrLater) {
     #ifdef QSSLSOCKET_DEBUG
-        qCDebug(lcTlsBackend) << plainSocket << "requesting : TLSv1.2";
+        qCDebug(lcSecureTransport) << plainSocket << "requesting : TLSv1.2";
     #endif
         err = SSLSetProtocolVersionMin(context, kTLSProtocol12);
     } else {
     #ifdef QSSLSOCKET_DEBUG
-        qCDebug(lcTlsBackend) << plainSocket << "no protocol version found in the configuration";
+        qCDebug(lcSecureTransport) << plainSocket << "no protocol version found in the configuration";
     #endif
         return false;
     }
@@ -1140,7 +1140,7 @@ bool TlsCryptographSecureTransport::verifyPeerTrust()
         if (QCFType<SecCertificateRef> secRef = SecCertificateCreateWithData(nullptr, certData))
             CFArrayAppendValue(certArray, secRef);
         else
-            qCWarning(lcTlsBackend, "Failed to create SecCertificate from QSslCertificate");
+            qCWarning(lcSecureTransport, "Failed to create SecCertificate from QSslCertificate");
     }
 
     SecTrustSetAnchorCertificates(trust, certArray);
@@ -1249,7 +1249,7 @@ bool TlsCryptographSecureTransport::startHandshake()
 
     OSStatus err = SSLHandshake(context);
 #ifdef QSSLSOCKET_DEBUG
-    qCDebug(lcTlsBackend) << plainSocket << "SSLHandhake returned" << err;
+    qCDebug(lcSecureTransport) << plainSocket << "SSLHandhake returned" << err;
 #endif
 
     if (err == errSSLWouldBlock) {
@@ -1295,7 +1295,7 @@ bool TlsCryptographSecureTransport::startHandshake()
 
     // Connection aborted during handshake phase.
     if (q->state() != QAbstractSocket::ConnectedState) {
-        qCDebug(lcTlsBackend) << "connection aborted";
+        qCDebug(lcSecureTransport) << "connection aborted";
         renegotiating = false;
         return false;
     }
