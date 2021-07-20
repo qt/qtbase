@@ -999,7 +999,7 @@ bool QWindowsXPStylePrivate::drawBackgroundThruNativeBuffer(XPThemeData &themeDa
 #endif
         img = QImage(bufferPixels, bufferW, bufferH, format);
         if (hasCorrectionFactor)
-            img = img.scaled(w, h, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+            img = img.scaled(img.size() * correctionFactor, Qt::KeepAspectRatio, Qt::SmoothTransformation);
         img.setDevicePixelRatio(additionalDevicePixelRatio);
     }
 
@@ -2498,7 +2498,7 @@ static void populateMdiButtonTheme(const QStyle *proxy, const QWidget *widget,
 // Calculate an small (max 2), empirical correction factor for scaling up
 // WP_MDICLOSEBUTTON, WP_MDIRESTOREBUTTON, WP_MDIMINBUTTON, which are too
 // small on High DPI screens (QTBUG-75927).
-qreal mdiButtonCorrectionFactor(XPThemeData &theme, const QPaintDevice *pd = nullptr)
+static qreal mdiButtonCorrectionFactor(XPThemeData &theme, const QPaintDevice *pd = nullptr)
 {
     const auto dpr = pd ? pd->devicePixelRatioF() : qApp->devicePixelRatio();
     const QSizeF nativeSize = QSizeF(theme.size()) / dpr;
