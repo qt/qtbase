@@ -226,4 +226,4 @@ void tst_QSqlRecord::benchFieldIndex()
     }
 }
 
-#include "tst_qsqlrecord.moc"
+#include "tst_bench_qsqlrecord.moc"
