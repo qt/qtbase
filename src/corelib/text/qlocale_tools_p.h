@@ -68,6 +68,7 @@ double qt_asciiToDouble(const char *num, qsizetype numLen, bool &ok, int &proces
 void qt_doubleToAscii(double d, QLocaleData::DoubleForm form, int precision, char *buf, int bufSize,
                       bool &sign, int &length, int &decpt);
 
+QString qulltoBasicLatin(qulonglong l, int base, bool negative);
 QString qulltoa(qulonglong l, int base, const QStringView zero);
 Q_CORE_EXPORT QString qdtoa(qreal d, int *decpt, int *sign);
 

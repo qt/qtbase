@@ -460,6 +460,53 @@ qstrtoll(const char * nptr, const char **endptr, int base, bool *ok)
     return result;
 }
 
+static Q_ALWAYS_INLINE void qulltoBasicLatin_helper(qulonglong number, int base, char16_t *&p)
+{
+    // Performance-optimized code. Compiler can generate faster code when base is known.
+    switch (base) {
+#define BIG_BASE_LOOP(b)                        \
+    do {                                        \
+        const int r = number % b;               \
+        *--p = (r < 10 ? u'0' : u'a' - 10) + r; \
+        number /= b;                            \
+    } while (number)
+#ifndef __OPTIMIZE_SIZE__
+#define SMALL_BASE_LOOP(b)        \
+    do {                          \
+        *--p = u'0' + number % b; \
+        number /= b;              \
+    } while (number)
+
+    case 2: SMALL_BASE_LOOP(2); break;
+    case 8: SMALL_BASE_LOOP(8); break;
+    case 10: SMALL_BASE_LOOP(10); break;
+    case 16: BIG_BASE_LOOP(16); break;
+#undef SMALL_BASE_LOOP
+#endif
+    default: BIG_BASE_LOOP(base); break;
+#undef BIG_BASE_LOOP
+    }
+}
+
+// This is technically "qulonglong to ascii", but that name's taken
+QString qulltoBasicLatin(qulonglong number, int base, bool negative)
+{
+    if (number == 0)
+        return QStringLiteral("0");
+    // Length of MIN_LLONG with the sign in front is 65; we never need surrogate pairs.
+    // We do not need a terminator.
+    const unsigned maxlen = 65;
+    static_assert(CHAR_BIT * sizeof(number) + 1 <= maxlen);
+    char16_t buff[maxlen];
+    char16_t *const end = buff + maxlen, *p = end;
+
+    qulltoBasicLatin_helper(number, base, p);
+    if (negative)
+        *--p = u'-';
+
+    return QString(reinterpret_cast<QChar *>(p), end - p);
+}
+
 QString qulltoa(qulonglong number, int base, const QStringView zero)
 {
     // Length of MAX_ULLONG in base 2 is 64; and we may need a surrogate pair
@@ -469,51 +516,8 @@ QString qulltoa(qulonglong number, int base, const QStringView zero)
     char16_t buff[maxlen];
     char16_t *const end = buff + maxlen, *p = end;
 
-    // Performance-optimized code. Compiler can generate faster code when base is known.
     if (base != 10 || zero == u"0") {
-        switch (base) {
-#ifndef __OPTIMIZE_SIZE__
-        case 10:
-            while (number != 0) {
-                const int c = number % 10;
-                const qulonglong temp = number / 10;
-                *--p = '0' + c;
-                number = temp;
-            }
-            break;
-        case 2:
-            while (number != 0) {
-                const int c = number % 2;
-                const qulonglong temp = number / 2;
-                *--p = '0' + c;
-                number = temp;
-            }
-            break;
-        case 8:
-            while (number != 0) {
-                const int c = number % 8;
-                const qulonglong temp = number / 8;
-                *--p = '0' + c;
-                number = temp;
-            }
-            break;
-        case 16:
-            while (number != 0) {
-                const int c = number % 16;
-                const qulonglong temp = number / 16;
-                *--p = c < 10 ? '0' + c : c - 10 + 'a';
-                number = temp;
-            }
-            break;
-#endif
-        default:
-            while (number != 0) {
-                const int c = number % base;
-                const qulonglong temp = number / base;
-                *--p = c < 10 ? '0' + c : c - 10 + 'a';
-                number = temp;
-            }
-        }
+        qulltoBasicLatin_helper(number, base, p);
     } else if (zero.size() && !zero.at(0).isSurrogate()) {
         const char16_t zeroUcs2 = zero.at(0).unicode();
         while (number != 0) {

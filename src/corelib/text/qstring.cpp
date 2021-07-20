@@ -7307,7 +7307,16 @@ QString QString::number(qlonglong n, int base)
         base = 10;
     }
 #endif
-    return QLocaleData::c()->longLongToString(n, -1, base);
+QT_WARNING_PUSH
+    /* "unary minus operator applied to unsigned type, result still unsigned" */
+QT_WARNING_DISABLE_MSVC(4146)
+    bool negative = n < 0;
+    /*
+      Negating std::numeric_limits<qlonglong>::min() hits undefined behavior, so
+      taking an absolute value has to cast to unsigned to change sign.
+    */
+    return qulltoBasicLatin(negative ? -qulonglong(n) : qulonglong(n), base, negative);
+QT_WARNING_POP
 }
 
 /*!
@@ -7321,7 +7330,7 @@ QString QString::number(qulonglong n, int base)
         base = 10;
     }
 #endif
-    return QLocaleData::c()->unsLongLongToString(n, -1, base);
+    return qulltoBasicLatin(n, base, false);
 }
 
 
