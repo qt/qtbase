@@ -278,7 +278,10 @@ QString QFileSelectorPrivate::select(const QString &filePath) const
     Q_Q(const QFileSelector);
     QFileInfo fi(filePath);
 
-    QString ret = selectionHelper(fi.path().isEmpty() ? QString() : fi.path() + QLatin1Char('/'),
+    QString pathString;
+    if (auto path = fi.path(); !path.isEmpty())
+        pathString = path.endsWith(u'/') ? path : path + u'/';
+    QString ret = selectionHelper(pathString,
             fi.fileName(), q->allSelectors());
 
     if (!ret.isEmpty())

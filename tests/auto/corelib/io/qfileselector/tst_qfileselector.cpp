@@ -215,6 +215,9 @@ void tst_QFileSelector::urlConvenience_data()
     strUrlWithFragment = QString("file:") + testWithQueryAndFragment;
     QTest::newRow("file with query and fragment too") << QUrl(strUrlWithFragment) << (QStringList()) << QUrl(strUrlWithFragment);
 
+    // preserve path to root
+    QTest::newRow("path to root") << QUrl("file:///") << (QStringList()) << QUrl("file:///");
+
     // http://qt-project.org/images/qtdn/sprites-combined-latest.png is chosen as a representative real world URL
     // But note that this test is checking that http urls are NOT selected so it shouldn't be checked
     QUrl testHttpUrl("http://qt-project.org/images/sprites-combined-latest.png");
