@@ -1601,13 +1601,17 @@ QSize Declaration::sizeValue() const
     int x[2] = { 0, 0 };
     const int count = d->values.count();
     for (int i = 0; i < count; ++i) {
+        if (i > 1) {
+            qWarning("QCssParser::sizeValue: Too many values provided");
+            break;
+        }
         const auto &value = d->values.at(i);
         const QString valueString = value.variant.toString();
         if (valueString.endsWith(u"pt", Qt::CaseInsensitive)) {
             intValueHelper(value, &x[i], "pt");
             // according to https://www.w3.org/TR/css3-values/#absolute-lengths
             // 1pt = 1/72th of 1 inch, and 1px = 1/96th of 1 inch
-            x[i] *= 72.0/96.0;
+            x[i] = (x[i] * 72) / 96;
         } else {
             // by default we use 'px'
             intValueHelper(value, &x[i], "px");
