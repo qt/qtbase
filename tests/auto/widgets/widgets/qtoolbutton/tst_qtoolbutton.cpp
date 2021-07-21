@@ -56,6 +56,7 @@ private slots:
     void task176137_autoRepeatOfAction();
     void qtbug_26956_popupTimerDone();
     void qtbug_34759_sizeHintResetWhenSettingMenu();
+    void defaultActionSynced();
 
 protected slots:
     void sendMouseClick();
@@ -278,6 +279,64 @@ void tst_QToolButton::qtbug_34759_sizeHintResetWhenSettingMenu()
 
     button1.setMenu(new QMenu(&button1));
     QTRY_COMPARE(button1.sizeHint(), button2.sizeHint());
+}
+
+void tst_QToolButton::defaultActionSynced()
+{
+    QAction a;
+    a.setCheckable(true);
+
+    QToolButton tb;
+    tb.setDefaultAction(&a);
+    QVERIFY(tb.isCheckable());
+
+    QSignalSpy tbSpy(&tb, SIGNAL(toggled(bool)));
+    QSignalSpy aSpy(&a, SIGNAL(toggled(bool)));
+
+    int tbToggledCount = 0;
+    int aToggledCount = 0;
+
+    tb.setChecked(true);
+    QVERIFY(a.isChecked());
+    QCOMPARE(tbSpy.count(), ++tbToggledCount);
+    QCOMPARE(aSpy.count(), ++aToggledCount);
+    tb.setChecked(false);
+    QVERIFY(!a.isChecked());
+    QCOMPARE(tbSpy.count(), ++tbToggledCount);
+    QCOMPARE(aSpy.count(), ++aToggledCount);
+
+    a.setChecked(true);
+    QVERIFY(tb.isChecked());
+    QCOMPARE(tbSpy.count(), ++tbToggledCount);
+    QCOMPARE(aSpy.count(), ++aToggledCount);
+    a.setChecked(false);
+    QVERIFY(!tb.isChecked());
+    QCOMPARE(tbSpy.count(), ++tbToggledCount);
+    QCOMPARE(aSpy.count(), ++aToggledCount);
+
+    QAction b;
+    QSignalSpy bSpy(&b, SIGNAL(toggled(bool)));
+    int bToggledCount = 0;
+    tb.setDefaultAction(&b);
+    QVERIFY(!tb.isCheckable());
+    b.setCheckable(true);
+    QVERIFY(tb.isCheckable());
+
+    tb.setChecked(true);
+    QVERIFY(!a.isChecked());
+    QVERIFY(b.isChecked());
+
+    QCOMPARE(tbSpy.count(), ++tbToggledCount);
+    QCOMPARE(aSpy.count(), aToggledCount);
+    QCOMPARE(bSpy.count(), ++bToggledCount);
+
+    tb.click();
+    QVERIFY(!a.isChecked());
+    QVERIFY(!tb.isChecked());
+    QVERIFY(!b.isChecked());
+    QCOMPARE(tbSpy.count(), ++tbToggledCount);
+    QCOMPARE(aSpy.count(), aToggledCount);
+    QCOMPARE(bSpy.count(), ++bToggledCount);
 }
 
 QTEST_MAIN(tst_QToolButton)
