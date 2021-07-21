@@ -95,6 +95,7 @@ void tst_QMap::insertion_int_int()
         for (int i = 0; i < huge; ++i)
             map.insert(i, i);
     }
+    QCOMPARE(map.size(), qsizetype(huge));
 }
 
 void tst_QMap::insertion_int_intx()
@@ -106,6 +107,7 @@ void tst_QMap::insertion_int_intx()
         for (int i = 0; i < huge; ++i)
             map.insert(i, i);
     }
+    QCOMPARE(map.size(), qsizetype(huge));
 }
 
 void tst_QMap::insertion_int_int_with_hint1()
@@ -115,6 +117,7 @@ void tst_QMap::insertion_int_int_with_hint1()
         for (int i = 0; i < huge; ++i)
             map.insert(map.constEnd(), i, i);
     }
+    QCOMPARE(map.size(), qsizetype(huge));
 }
 
 void tst_QMap::insertion_int_int2()
@@ -124,6 +127,7 @@ void tst_QMap::insertion_int_int2()
         for (int i = huge; i >= 0; --i)
             map.insert(i, i);
     }
+    QCOMPARE(map.size(), qsizetype(huge) + 1);
 }
 
 void tst_QMap::insertion_int_int_with_hint2()
@@ -133,6 +137,7 @@ void tst_QMap::insertion_int_int_with_hint2()
         for (int i = huge; i >= 0; --i)
             map.insert(map.constBegin(), i, i);
     }
+    QCOMPARE(map.size(), qsizetype(huge) + 1);
 }
 
 void tst_QMap::insertion_int_string()
@@ -143,16 +148,19 @@ void tst_QMap::insertion_int_string()
         for (int i = 0; i < huge; ++i)
             map.insert(i, str);
     }
+    QCOMPARE(map.size(), qsizetype(huge));
 }
 
 void tst_QMap::insertion_string_int()
 {
     QMap<QString, int> map;
     const QStringList names = helloEachWorld(huge);
+    QCOMPARE(names.size(), qsizetype(huge));
     QBENCHMARK {
         for (int i = 1; i < huge; ++i)
             map.insert(names.at(i), i);
     }
+    QCOMPARE(map.size() + 1, qsizetype(huge));
 }
 
 void tst_QMap::lookup_int_int()
@@ -160,6 +168,7 @@ void tst_QMap::lookup_int_int()
     QMap<int, int> map;
     for (int i = 0; i < huge; ++i)
         map.insert(i, i);
+    QCOMPARE(map.size(), qsizetype(huge));
 
     uint sum = 0, count = 0;
     QBENCHMARK {
@@ -176,6 +185,7 @@ void tst_QMap::lookup_int_string()
     QString str("Hello World");
     for (int i = 0; i < huge; ++i)
         map.insert(i, str);
+    QCOMPARE(map.size(), qsizetype(huge));
 
     QBENCHMARK {
         for (int i = 0; i < huge; ++i)
@@ -189,6 +199,7 @@ void tst_QMap::lookup_string_int()
     const QStringList names = helloEachWorld(huge);
     for (int i = 1; i < huge; ++i)
         map.insert(names.at(i), i);
+    QCOMPARE(map.size() + 1, qsizetype(huge));
 
     uint sum = 0, count = 0;
     QBENCHMARK {
@@ -205,6 +216,7 @@ void tst_QMap::iteration()
     QMap<int, int> map;
     for (int i = 0; i < huge; ++i)
         map.insert(i, i);
+    QCOMPARE(map.size(), qsizetype(huge));
 
     uint sum = 0, count = 0;
     QBENCHMARK {
@@ -226,6 +238,7 @@ void tst_QMap::toStdMap()
     QMap<int, int> map;
     for (int i = 0; i < huge; ++i)
         map.insert(i, i);
+    QCOMPARE(map.size(), qsizetype(huge));
 
     QBENCHMARK {
         std::map<int, int> n = map.toStdMap();
@@ -238,6 +251,7 @@ void tst_QMap::iterator_begin()
     QMap<int, int> map;
     for (int i = 0; i < huge; ++i)
         map.insert(i, i);
+    QCOMPARE(map.size(), qsizetype(huge));
 
     QBENCHMARK {
         for (int i = 0; i < huge; ++i) {
@@ -254,6 +268,7 @@ void tst_QMap::ctorStdMap()
     std::map<int, int> map;
     for (int i = 0; i < huge; ++i)
         map.insert(std::pair<int, int>(i, i));
+    QCOMPARE(map.size(), size_t(huge));
 
     QBENCHMARK {
         QMap<int, int> qmap(map);
@@ -280,6 +295,7 @@ void tst_QMap::insertion_string_int2()
             map.insert(str, i);
         }
     }
+    QCOMPARE(map.size() + 1, qsizetype(bigish));
 }
 
 void tst_QMap::insertion_string_int2_hint()
@@ -292,6 +308,7 @@ void tst_QMap::insertion_string_int2_hint()
             map.insert(map.end(), str, i);
         }
     }
+    QCOMPARE(map.size() + 1, qsizetype(bigish));
 }
 
 void tst_QMap::insertMap()
