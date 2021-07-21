@@ -407,14 +407,6 @@ void QLocalSocket::disconnectFromServer()
 {
     Q_D(QLocalSocket);
 
-    // Are we still connected?
-    if (!isValid()) {
-        // If we have unwritten data, the pipeWriter is still present.
-        // It must be destroyed before close() to prevent an infinite loop.
-        delete d->pipeWriter;
-        d->pipeWriter = 0;
-    }
-
     flush();
     if (bytesToWrite() != 0) {
         d->state = QLocalSocket::ClosingState;
