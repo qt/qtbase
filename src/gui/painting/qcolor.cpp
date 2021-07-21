@@ -2887,16 +2887,7 @@ QColor &QColor::operator=(Qt::GlobalColor color) noexcept
 */
 bool QColor::operator==(const QColor &color) const noexcept
 {
-    if (cspec == Hsl && cspec == color.cspec) {
-        return (ct.argb.alpha == color.ct.argb.alpha
-                && ct.ahsl.hue % 36000 == color.ct.ahsl.hue % 36000
-                && (qAbs(ct.ahsl.saturation - color.ct.ahsl.saturation) < 50
-                    || ct.ahsl.lightness == 0
-                    || color.ct.ahsl.lightness == 0
-                    || ct.ahsl.lightness == USHRT_MAX
-                    || color.ct.ahsl.lightness == USHRT_MAX)
-                && (qAbs(ct.ahsl.lightness - color.ct.ahsl.lightness)) < 50);
-    } else if ((cspec == ExtendedRgb || color.cspec == ExtendedRgb) &&
+    if ((cspec == ExtendedRgb || color.cspec == ExtendedRgb) &&
                (cspec == color.cspec || cspec == Rgb || color.cspec == Rgb))  {
         return qFuzzyCompare(alphaF(), color.alphaF())
             && qFuzzyCompare(redF(), color.redF())
@@ -2905,9 +2896,9 @@ bool QColor::operator==(const QColor &color) const noexcept
     } else {
         return (cspec == color.cspec
                 && ct.argb.alpha == color.ct.argb.alpha
-                && (((cspec == QColor::Hsv)
+                && (((cspec == QColor::Hsv || cspec == QColor::Hsl)
                      && ((ct.ahsv.hue % 36000) == (color.ct.ahsv.hue % 36000)))
-                    || (ct.ahsv.hue == color.ct.ahsv.hue))
+                    || (ct.argb.red == color.ct.argb.red))
                 && ct.argb.green == color.ct.argb.green
                 && ct.argb.blue  == color.ct.argb.blue
                 && ct.argb.pad   == color.ct.argb.pad);
