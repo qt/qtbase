@@ -84,6 +84,8 @@ QStringList tst_QMap::helloEachWorld(int count)
 }
 
 constexpr int huge = 100000; // one hundred thousand; simple integral data tests
+// Sum of i with 0 <= i < huge; overflows, but that's OK as long as it's unsigned:
+constexpr uint hugeSum = (uint(huge) / 2) * uint(huge - 1);
 constexpr int bigish = 5000; // five thousand; tests using XString's expensive <
 
 void tst_QMap::insertion_int_int()
@@ -159,11 +161,13 @@ void tst_QMap::lookup_int_int()
     for (int i = 0; i < huge; ++i)
         map.insert(i, i);
 
-    int sum = 0;
+    uint sum = 0, count = 0;
     QBENCHMARK {
         for (int i = 0; i < huge; ++i)
              sum += map.value(i);
+        ++count;
     }
+    QCOMPARE(sum, hugeSum * count);
 }
 
 void tst_QMap::lookup_int_string()
@@ -186,11 +190,13 @@ void tst_QMap::lookup_string_int()
     for (int i = 1; i < huge; ++i)
         map.insert(names.at(i), i);
 
-    int sum = 0;
+    uint sum = 0, count = 0;
     QBENCHMARK {
         for (int i = 1; i < huge; ++i)
             sum += map.value(names.at(i));
+        ++count;
     }
+    QCOMPARE(sum, hugeSum * count);
 }
 
 // iteration speed doesn't depend on the type of the map.
@@ -200,17 +206,19 @@ void tst_QMap::iteration()
     for (int i = 0; i < huge; ++i)
         map.insert(i, i);
 
-    int j = 0;
+    uint sum = 0, count = 0;
     QBENCHMARK {
         for (int i = 0; i < 100; ++i) {
             QMap<int, int>::const_iterator it = map.constBegin();
             QMap<int, int>::const_iterator end = map.constEnd();
             while (it != end) {
-                j += *it;
+                sum += *it;
                 ++it;
             }
         }
+        ++count;
     }
+    QCOMPARE(sum, hugeSum * 100u * count);
 }
 
 void tst_QMap::toStdMap()
