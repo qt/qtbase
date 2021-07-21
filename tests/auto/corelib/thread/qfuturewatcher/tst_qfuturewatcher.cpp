@@ -64,13 +64,13 @@ private slots:
     void suspendEvents();
     void suspended();
     void suspendedEventsOrder();
-    void finishedState();
     void throttling();
     void incrementalMapResults();
     void incrementalFilterResults();
     void qfutureSynchronizer();
     void warnRace();
     void matchFlags();
+    void checkStateConsistency();
 };
 
 void sleeper()
@@ -960,30 +960,6 @@ void tst_QFutureWatcher::suspendedEventsOrder()
     iface.reportFinished();
 }
 
-// Test that the finished state for the watcher gets
-// set when the finished event is delivered.
-// This means it will lag the finished state for the future,
-// but makes it more useful.
-void tst_QFutureWatcher::finishedState()
-{
-    QFutureInterface<int> iface;
-    iface.reportStarted();
-    QFuture<int> future = iface.future();
-    QFutureWatcher<int> watcher;
-    QSignalSpy startedSpy(&watcher, &QFutureWatcher<int>::started);
-    QSignalSpy finishedSpy(&watcher, &QFutureWatcher<int>::finished);
-
-    watcher.setFuture(future);
-    QVERIFY(startedSpy.wait());
-
-    iface.reportFinished();
-    QVERIFY(future.isFinished());
-    QVERIFY(!watcher.isFinished());
-
-    QVERIFY(finishedSpy.wait());
-    QVERIFY(watcher.isFinished());
-}
-
 /*
     Verify that throttling kicks in if you report a lot of results,
     and that it clears when the result events are processed.
@@ -1178,6 +1154,55 @@ void tst_QFutureWatcher::matchFlags()
     QCOMPARE(watcher.isFinished(), future.isFinished());
 }
 
+void tst_QFutureWatcher::checkStateConsistency()
+{
+#define CHECK_FAIL(state)                                                                          \
+    do {                                                                                           \
+        if (QTest::currentTestFailed())                                                            \
+            QFAIL("checkState() failed, QFutureWatcher has inconistent state after " state "!");   \
+    } while (false)
+
+    QFutureWatcher<void> futureWatcher;
+
+    auto checkState = [&futureWatcher] {
+        QCOMPARE(futureWatcher.isStarted(), futureWatcher.future().isStarted());
+        QCOMPARE(futureWatcher.isRunning(), futureWatcher.future().isRunning());
+        QCOMPARE(futureWatcher.isCanceled(), futureWatcher.future().isCanceled());
+        QCOMPARE(futureWatcher.isSuspended(), futureWatcher.future().isSuspended());
+        QCOMPARE(futureWatcher.isSuspending(), futureWatcher.future().isSuspending());
+        QCOMPARE(futureWatcher.isFinished(), futureWatcher.future().isFinished());
+    };
+
+    checkState();
+    CHECK_FAIL("default-constructing");
+
+    QFutureInterface<void> fi;
+    futureWatcher.setFuture(fi.future());
+    checkState();
+    CHECK_FAIL("setting future");
+
+    fi.reportStarted();
+    checkState();
+    CHECK_FAIL("starting");
+
+    fi.future().suspend();
+    checkState();
+    CHECK_FAIL("suspending");
+
+    fi.reportSuspended();
+    checkState();
+    CHECK_FAIL("suspended");
+
+    fi.reportCanceled();
+    checkState();
+    CHECK_FAIL("canceling");
+
+    fi.reportFinished();
+    checkState();
+    CHECK_FAIL("finishing");
+
+#undef CHECK_FAIL
+}
 
 QTEST_MAIN(tst_QFutureWatcher)
 #include "tst_qfuturewatcher.moc"

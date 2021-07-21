@@ -78,7 +78,6 @@ public:
     int maximumPendingResultsReady;
 
     QAtomicInt resultAtConnected;
-    bool finished;
 };
 
 QT_END_NAMESPACE

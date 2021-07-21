@@ -329,8 +329,7 @@ bool QFutureWatcherBase::isStarted() const
 */
 bool QFutureWatcherBase::isFinished() const
 {
-    Q_D(const QFutureWatcherBase);
-    return d->finished;
+    return futureInterface().isFinished();
 }
 
 /*! \fn template <typename T> bool QFutureWatcher<T>::isRunning() const
@@ -480,8 +479,7 @@ void QFutureWatcherBase::disconnectNotify(const QMetaMethod &signal)
 */
 QFutureWatcherBasePrivate::QFutureWatcherBasePrivate()
     : maximumPendingResultsReady(QThread::idealThreadCount() * 2),
-      resultAtConnected(0),
-      finished(true) /* the initial m_future is a canceledResult(), with Finished set */
+      resultAtConnected(0)
 { }
 
 /*!
@@ -500,7 +498,6 @@ void QFutureWatcherBase::disconnectOutputInterface(bool pendingAssignment)
     if (pendingAssignment) {
         Q_D(QFutureWatcherBase);
         d->pendingResultsReady.storeRelaxed(0);
-        d->finished = false; /* May soon be amended, during connectOutputInterface() */
     }
 
     futureInterface().d->disconnectOutputInterface(d_func());
@@ -532,7 +529,6 @@ void QFutureWatcherBasePrivate::sendCallOutEvent(QFutureCallOutEvent *event)
             emit q->started();
         break;
         case QFutureCallOutEvent::Finished:
-            finished = true;
             emit q->finished();
         break;
         case QFutureCallOutEvent::Canceled:
