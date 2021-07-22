@@ -245,7 +245,7 @@ ${framework_base_path}/${fw_private_module_header_dir}")
 
     if (arg_INTERNAL_MODULE)
         # Internal module pri needs to provide private headers
-        set(public_module_includes "${private_module_includes}")
+        set(public_module_includes "${public_module_includes} ${private_module_includes}")
     endif()
 
     qt_path_join(target_path ${QT_BUILD_DIR} ${INSTALL_MKSPECSDIR}/modules)
