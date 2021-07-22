@@ -120,6 +120,7 @@ private slots:
     void waitForDisconnect();
     void waitForDisconnectByServer();
     void waitForReadyReadOnDisconnected();
+    void delayedDisconnect();
 
     void removeServer();
 
@@ -1350,6 +1351,24 @@ void tst_QLocalSocket::waitForReadyReadOnDisconnected()
     timer.start();
     QVERIFY(socket.waitForReadyRead(5000));
     QVERIFY(timer.elapsed() < 2000);
+}
+
+void tst_QLocalSocket::delayedDisconnect()
+{
+    QString name = "tst_localsocket";
+    LocalServer server;
+    QVERIFY(server.listen(name));
+    LocalSocket socket;
+    socket.connectToServer(name);
+    QVERIFY(socket.waitForConnected(3000));
+    QVERIFY(server.waitForNewConnection(3000));
+    QLocalSocket *serverSocket = server.nextPendingConnection();
+    QVERIFY(serverSocket);
+    QVERIFY(socket.putChar(0));
+    socket.disconnectFromServer();
+    QCOMPARE(socket.state(), QLocalSocket::ClosingState);
+    QVERIFY(socket.waitForDisconnected(3000));
+    QCOMPARE(socket.state(), QLocalSocket::UnconnectedState);
 }
 
 void tst_QLocalSocket::removeServer()

@@ -403,7 +403,6 @@ void QLocalSocket::disconnectFromServer()
 {
     Q_D(QLocalSocket);
 
-    flush();
     if (bytesToWrite() != 0) {
         d->state = QLocalSocket::ClosingState;
         emit stateChanged(d->state);
