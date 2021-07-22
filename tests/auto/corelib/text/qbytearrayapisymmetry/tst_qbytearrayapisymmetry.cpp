@@ -212,6 +212,8 @@ void tst_QByteArrayApiSymmetry::startsWith_impl()
         QVERIFY(haystack.startsWith((char *)0) == result);
     } else {
         QVERIFY(haystack.startsWith(needle.data()) == result);
+        if (needle.size() == 1)
+            QVERIFY(haystack.startsWith(needle.at(0)) == result);
     }
 }
 
@@ -267,6 +269,8 @@ void tst_QByteArrayApiSymmetry::endsWith_impl()
         QVERIFY(haystack.endsWith((char *)0) == result);
     } else {
         QVERIFY(haystack.endsWith(needle.data()) == result);
+        if (needle.size() == 1)
+            QVERIFY(haystack.endsWith(needle.at(0)) == result);
     }
 }
 
@@ -509,6 +513,14 @@ void tst_QByteArrayApiSymmetry::count_data()
 
     QTest::addRow("aaa") << QByteArray("aaa") << QByteArray("a") << 3;
     QTest::addRow("xyzaaaxyz") << QByteArray("xyzaaxyaxyz") << QByteArray("xyz") << 2;
+    QTest::addRow("a in null") << QByteArray() << QByteArray("a") << 0;
+    QTest::addRow("a in empty") << QByteArray("") << QByteArray("a") << 0;
+    QTest::addRow("xyz in null") << QByteArray() << QByteArray("xyz") << 0;
+    QTest::addRow("xyz in empty") << QByteArray("") << QByteArray("xyz") << 0;
+    QTest::addRow("null in null") << QByteArray() << QByteArray() << 1;
+    QTest::addRow("empty in empty") << QByteArray("") << QByteArray("") << 1;
+    QTest::addRow("empty in null") << QByteArray() << QByteArray("") << 1;
+    QTest::addRow("null in empty") << QByteArray("") << QByteArray() << 1;
 
     const int len = 500;
     QByteArray longData(len, 'a');
