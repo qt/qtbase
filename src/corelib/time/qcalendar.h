@@ -153,7 +153,7 @@ public:
     explicit QCalendar(SystemId id);
 
     // QCalendar is a trivially copyable value type.
-    bool isValid() const { return d != nullptr; }
+    bool isValid() const { return d_ptr != nullptr; }
 
     // Date queries:
     int daysInMonth(int month, int year = Unspecified) const;
@@ -201,7 +201,10 @@ public:
     static QStringList availableCalendars();
 private:
     // Always supplied by QCalendarBackend and expected to be a singleton
-    const QCalendarBackend *d;
+    // Note that the calendar registry destroys all backends when it is itself
+    // destroyed. The code should check if the registry is destroyed before
+    // dereferencing this pointer.
+    const QCalendarBackend *d_ptr;
 };
 
 QT_END_NAMESPACE

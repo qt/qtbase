@@ -118,7 +118,12 @@ class QCalendarRegistry
     */
     QAtomicPointer<const QCalendarBackend> gregorianCalendar = nullptr;
 
-    enum : int { Unpopulated, Populated };
+    enum : int {
+        Unpopulated, // The standard backends may not yet be created
+        Populated, // All standard backends were created
+        IsBeingDestroyed, // The registry and the backends are being destroyed
+    };
+
     /*
         Fast way to check whether the standard calendars were populated.
 
@@ -133,6 +138,10 @@ class QCalendarRegistry
 
 public:
     QCalendarRegistry() { byId.resize(int(QCalendar::System::Last) + 1); }
+
+    ~QCalendarRegistry();
+
+    bool isBeingDestroyed() const { return status.loadRelaxed() == IsBeingDestroyed; }
 
     void registerCustomBackend(QCalendarBackend *backend, const QStringList &names);
 
@@ -167,6 +176,21 @@ public:
 
     QStringList backendNames(const QCalendarBackend *backend);
 };
+
+/*!
+    Destroy the registry.
+
+    This destroys all registered backends. This destructor should only be called
+    in a single-threaded context at program exit.
+*/
+QCalendarRegistry::~QCalendarRegistry()
+{
+    QWriteLocker locker(&lock);
+
+    status.storeRelaxed(IsBeingDestroyed);
+
+    qDeleteAll(byId);
+}
 
 /*!
     Registers a custom backend.
@@ -508,7 +532,7 @@ Q_GLOBAL_STATIC(QtPrivate::QCalendarRegistry, calendarRegistry);
     Destroys the calendar backend.
 
     Each calendar backend, once instantiated and successfully registered by ID,
-    shall exist for the lifetime of the program. Destroying a
+    shall exist until it is destroyed by the registry. Destroying a
     successfully-registered backend otherwise may leave existing QCalendar
     instances referencing the destroyed calendar, with undefined results.
 
@@ -518,7 +542,8 @@ Q_GLOBAL_STATIC(QtPrivate::QCalendarRegistry, calendarRegistry);
 */
 QCalendarBackend::~QCalendarBackend()
 {
-    Q_ASSERT(!m_id.isValid());
+    Q_ASSERT(!m_id.isValid() || calendarRegistry.isDestroyed()
+             || calendarRegistry->isBeingDestroyed());
 }
 
 /*!
@@ -616,6 +641,15 @@ QCalendar::System QCalendarBackend::calendarSystem() const
     return m_id.isInEnum() ? QCalendar::System(m_id.index()) : QCalendar::System::User;
 }
 
+/*
+    Create local variable d containing the backend associated with a QCalendar
+    instance unless the calendar registry is destroyed together with all backends,
+    then return nullptr.
+
+    This assumes that the registry is only destroyed in single threaded context.
+*/
+#define SAFE_D() const auto d = Q_UNLIKELY(calendarRegistry.isDestroyed()) ? nullptr : d_ptr
+
 /*!
     The primary name of this calendar.
 
@@ -625,6 +659,7 @@ QCalendar::System QCalendarBackend::calendarSystem() const
 */
 QString QCalendar::name() const
 {
+    SAFE_D();
     return d ? d->name() : QString();
 }
 
@@ -1141,17 +1176,16 @@ const QCalendarBackend *QCalendarBackend::gregorian()
 */
 
 QCalendar::QCalendar()
-    : d(QCalendarBackend::gregorian())
+    : d_ptr(QCalendarBackend::gregorian())
 {
-    Q_ASSERT(!d || d->calendarId().isValid());
+    Q_ASSERT(!d_ptr || d_ptr->calendarId().isValid());
 }
 
-QCalendar::QCalendar(QCalendar::System system)
-    : d(QCalendarBackend::fromEnum(system))
+QCalendar::QCalendar(QCalendar::System system) : d_ptr(QCalendarBackend::fromEnum(system))
 {
     // If system is valid, we should get a valid d for that system.
-    Q_ASSERT(!d || (uint(system) > uint(QCalendar::System::Last))
-             || (d->calendarId().index() == size_t(system)));
+    Q_ASSERT(!d_ptr || (uint(system) > uint(QCalendar::System::Last))
+             || (d_ptr->calendarId().index() == size_t(system)));
 }
 
 /*!
@@ -1166,21 +1200,21 @@ QCalendar::QCalendar(QCalendar::System system)
   registered by name.
 */
 QCalendar::QCalendar(QCalendar::SystemId id)
-    : d(QCalendarBackend::fromId(id))
+    : d_ptr(QCalendarBackend::fromId(id))
 {
-    Q_ASSERT(!d || d->calendarId().index() == id.index());
+    Q_ASSERT(!d_ptr || d_ptr->calendarId().index() == id.index());
 }
 
 QCalendar::QCalendar(QLatin1String name)
-    : d(QCalendarBackend::fromName(name))
+    : d_ptr(QCalendarBackend::fromName(name))
 {
-    Q_ASSERT(!d || d->calendarId().isValid());
+    Q_ASSERT(!d_ptr || d_ptr->calendarId().isValid());
 }
 
 QCalendar::QCalendar(QStringView name)
-    : d(QCalendarBackend::fromName(name))
+    : d_ptr(QCalendarBackend::fromName(name))
 {
-    Q_ASSERT(!d || d->calendarId().isValid());
+    Q_ASSERT(!d_ptr || d_ptr->calendarId().isValid());
 }
 
 /*!
@@ -1205,6 +1239,7 @@ QCalendar::QCalendar(QStringView name)
 */
 int QCalendar::daysInMonth(int month, int year) const
 {
+    SAFE_D();
     return d ? d->daysInMonth(month, year) : 0;
 }
 
@@ -1215,6 +1250,7 @@ int QCalendar::daysInMonth(int month, int year) const
 */
 int QCalendar::daysInYear(int year) const
 {
+    SAFE_D();
     return d ? d->daysInYear(year) : 0;
 }
 
@@ -1228,6 +1264,7 @@ int QCalendar::daysInYear(int year) const
 */
 int QCalendar::monthsInYear(int year) const
 {
+    SAFE_D();
     return d ? year == Unspecified ? d->maximumMonthsInYear() : d->monthsInYear(year) : 0;
 }
 
@@ -1241,6 +1278,7 @@ int QCalendar::monthsInYear(int year) const
 */
 bool QCalendar::isDateValid(int year, int month, int day) const
 {
+    SAFE_D();
     return d && d->isDateValid(year, month, day);
 }
 
@@ -1252,6 +1290,7 @@ bool QCalendar::isDateValid(int year, int month, int day) const
 */
 bool QCalendar::isGregorian() const
 {
+    SAFE_D();
     return d && d->isGregorian();
 }
 
@@ -1266,6 +1305,7 @@ bool QCalendar::isGregorian() const
 */
 bool QCalendar::isLeapYear(int year) const
 {
+    SAFE_D();
     return d && d->isLeapYear(year);
 }
 
@@ -1276,6 +1316,7 @@ bool QCalendar::isLeapYear(int year) const
 */
 bool QCalendar::isLunar() const
 {
+    SAFE_D();
     return d && d->isLunar();
 }
 
@@ -1288,6 +1329,7 @@ bool QCalendar::isLunar() const
 */
 bool QCalendar::isLuniSolar() const
 {
+    SAFE_D();
     return d && d->isLuniSolar();
 }
 
@@ -1299,6 +1341,7 @@ bool QCalendar::isLuniSolar() const
 */
 bool QCalendar::isSolar() const
 {
+    SAFE_D();
     return d && d->isSolar();
 }
 
@@ -1313,6 +1356,7 @@ bool QCalendar::isSolar() const
 */
 bool QCalendar::isProleptic() const
 {
+    SAFE_D();
     return d && d->isProleptic();
 }
 
@@ -1343,6 +1387,7 @@ bool QCalendar::isProleptic() const
 */
 bool QCalendar::hasYearZero() const
 {
+    SAFE_D();
     return d && d->hasYearZero();
 }
 
@@ -1353,6 +1398,7 @@ bool QCalendar::hasYearZero() const
 */
 int QCalendar::maximumDaysInMonth() const
 {
+    SAFE_D();
     return d ? d->maximumDaysInMonth() : 0;
 }
 
@@ -1363,6 +1409,7 @@ int QCalendar::maximumDaysInMonth() const
 */
 int QCalendar::minimumDaysInMonth() const
 {
+    SAFE_D();
     return d ? d->minimumDaysInMonth() : 0;
 }
 
@@ -1373,6 +1420,7 @@ int QCalendar::minimumDaysInMonth() const
 */
 int QCalendar::maximumMonthsInYear() const
 {
+    SAFE_D();
     return d ? d->maximumMonthsInYear() : 0;
 }
 
@@ -1394,6 +1442,7 @@ int QCalendar::maximumMonthsInYear() const
 */
 QDate QCalendar::dateFromParts(int year, int month, int day) const
 {
+    SAFE_D();
     qint64 jd;
     return d && d->dateToJulianDay(year, month, day, &jd)
         ? QDate::fromJulianDay(jd) : QDate();
@@ -1415,6 +1464,7 @@ QDate QCalendar::dateFromParts(const QCalendar::YearMonthDay &parts) const
 */
 QCalendar::YearMonthDay QCalendar::partsFromDate(QDate date) const
 {
+    SAFE_D();
     return d && date.isValid() ? d->julianDayToDate(date.toJulianDay()) : YearMonthDay();
 }
 
@@ -1429,6 +1479,7 @@ QCalendar::YearMonthDay QCalendar::partsFromDate(QDate date) const
 */
 int QCalendar::dayOfWeek(QDate date) const
 {
+    SAFE_D();
     return d && date.isValid() ? d->dayOfWeek(date.toJulianDay()) : 0;
 }
 
@@ -1456,6 +1507,7 @@ int QCalendar::dayOfWeek(QDate date) const
 QString QCalendar::monthName(const QLocale &locale, int month, int year,
                              QLocale::FormatType format) const
 {
+    SAFE_D();
     const int maxMonth = year == Unspecified ? maximumMonthsInYear() : monthsInYear(year);
     if (!d || month < 1 || month > maxMonth)
         return QString();
@@ -1485,6 +1537,7 @@ QString QCalendar::monthName(const QLocale &locale, int month, int year,
 QString QCalendar::standaloneMonthName(const QLocale &locale, int month, int year,
                                        QLocale::FormatType format) const
 {
+    SAFE_D();
     const int maxMonth = year == Unspecified ? maximumMonthsInYear() : monthsInYear(year);
     if (!d || month < 1 || month > maxMonth)
         return QString();
@@ -1509,6 +1562,7 @@ QString QCalendar::standaloneMonthName(const QLocale &locale, int month, int yea
 QString QCalendar::weekDayName(const QLocale &locale, int day,
                                QLocale::FormatType format) const
 {
+    SAFE_D();
     return d ? d->weekDayName(locale, day, format) : QString();
 }
 
@@ -1531,6 +1585,7 @@ QString QCalendar::weekDayName(const QLocale &locale, int day,
 QString QCalendar::standaloneWeekDayName(const QLocale &locale, int day,
                                          QLocale::FormatType format) const
 {
+    SAFE_D();
     return d ? d->standaloneWeekDayName(locale, day, format) : QString();
 }
 
@@ -1557,6 +1612,7 @@ QString QCalendar::dateTimeToString(QStringView format, const QDateTime &datetim
                                     QDate dateOnly, QTime timeOnly,
                                     const QLocale &locale) const
 {
+    SAFE_D();
     return d ? d->dateTimeToString(format, datetime, dateOnly, timeOnly, locale) : QString();
 }
 
