@@ -381,7 +381,6 @@ void QLocalSocket::close()
     if (openMode() == NotOpen)
         return;
 
-    d->setWriteChannelCount(0);
     QIODevice::close();
     d->serverName = QString();
     d->fullServerName = QString();
