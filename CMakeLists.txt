@@ -57,7 +57,8 @@ set(QT6_IS_SHARED_LIBS_BUILD ${BUILD_SHARED_LIBS})
 #   or specified via a toolchain file that is loaded by the project() call
 #   or set by the option() call above
 include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/QtCMakeVersionHelpers.cmake")
-qt_internal_check_for_suitable_cmake_version()
+include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/QtPublicCMakeVersionHelpers.cmake")
+qt_internal_check_and_warn_about_unsuitable_cmake_version()
 
 if(NOT QT_BUILD_STANDALONE_TESTS)
     ## Add some paths to check for cmake modules:

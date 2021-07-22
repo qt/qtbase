@@ -69,5 +69,20 @@ set(QT_USE_CCACHE @QT_USE_CCACHE@ CACHE BOOL "Enable the use of ccache")
 set(QT_CREATE_VERSIONED_HARD_LINK "@QT_CREATE_VERSIONED_HARD_LINK@" CACHE BOOL
     "Enable the use of versioned hard link")
 
+# The minimum version required to build Qt.
+set(QT_SUPPORTED_MIN_CMAKE_VERSION_FOR_BUILDING_QT "@supported_min_version_for_building_qt@")
+set(QT_COMPUTED_MIN_CMAKE_VERSION_FOR_BUILDING_QT "@computed_min_version_for_building_qt@")
+
+# The lower and upper CMake version policy range as computed by qtbase.
+# These values are inherited when building other Qt repositories, unless overridden
+# in the respective repository .cmake.conf file.
+# These are not cache variables, so that they can be overridden in each repo directory scope.
+if(NOT DEFINED QT_MIN_NEW_POLICY_CMAKE_VERSION)
+    set(QT_MIN_NEW_POLICY_CMAKE_VERSION "@min_new_policy_version@")
+endif()
+if(NOT DEFINED QT_MAX_NEW_POLICY_CMAKE_VERSION)
+    set(QT_MAX_NEW_POLICY_CMAKE_VERSION "@max_new_policy_version@")
+endif()
+
 # Extra set of exported variables
 @QT_EXTRA_BUILD_INTERNALS_VARS@

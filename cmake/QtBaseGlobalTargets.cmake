@@ -142,14 +142,26 @@ qt_internal_export_modern_cmake_config_targets_file(TARGETS ${__export_targets}
                                                     CONFIG_INSTALL_DIR
                                                     ${__GlobalConfig_install_dir})
 
-# Generate and install Qt6 config file. Make sure it happens after the global feature evaluation so
-# they can be accessed in the Config file if needed.
+# Save minimum required CMake version to use Qt.
+qt_internal_get_supported_min_cmake_version_for_using_qt(supported_min_version_for_using_qt)
+qt_internal_get_computed_min_cmake_version_for_using_qt(computed_min_version_for_using_qt)
+
+# Get the lower and upper policy range to embed into the Qt6 config file.
 qt_internal_get_min_new_policy_cmake_version(min_new_policy_version)
 qt_internal_get_max_new_policy_cmake_version(max_new_policy_version)
+
+# Generate and install Qt6 config file. Make sure it happens after the global feature evaluation so
+# they can be accessed in the Config file if needed.
 configure_package_config_file(
     "${PROJECT_SOURCE_DIR}/cmake/QtConfig.cmake.in"
     "${__GlobalConfig_build_dir}/${INSTALL_CMAKE_NAMESPACE}Config.cmake"
     INSTALL_DESTINATION "${__GlobalConfig_install_dir}"
+)
+
+configure_file(
+    "${PROJECT_SOURCE_DIR}/cmake/QtConfigExtras.cmake.in"
+    "${__GlobalConfig_build_dir}/${INSTALL_CMAKE_NAMESPACE}ConfigExtras.cmake"
+    @ONLY
 )
 
 write_basic_package_version_file(
@@ -160,6 +172,7 @@ write_basic_package_version_file(
 
 qt_install(FILES
     "${__GlobalConfig_build_dir}/${INSTALL_CMAKE_NAMESPACE}Config.cmake"
+    "${__GlobalConfig_build_dir}/${INSTALL_CMAKE_NAMESPACE}ConfigExtras.cmake"
     "${__GlobalConfig_build_dir}/${INSTALL_CMAKE_NAMESPACE}ConfigVersion.cmake"
     DESTINATION "${__GlobalConfig_install_dir}"
     COMPONENT Devel
@@ -257,6 +270,7 @@ qt_copy_or_install(DIRECTORY
 set(__public_cmake_helpers
     cmake/QtFeature.cmake
     cmake/QtFeatureCommon.cmake
+    cmake/QtPublicCMakeVersionHelpers.cmake
     cmake/QtPublicFinalizerHelpers.cmake
     cmake/QtPublicPluginHelpers.cmake
     cmake/QtPublicTargetHelpers.cmake
