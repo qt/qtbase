@@ -161,15 +161,9 @@ QLocalSocketPrivate::QLocalSocketPrivate() : QIODevicePrivate(),
 
 QLocalSocketPrivate::~QLocalSocketPrivate()
 {
-    destroyPipeHandles();
-}
-
-void QLocalSocketPrivate::destroyPipeHandles()
-{
-    if (handle != INVALID_HANDLE_VALUE) {
-        DisconnectNamedPipe(handle);
-        CloseHandle(handle);
-    }
+    Q_ASSERT(state == QLocalSocket::UnconnectedState);
+    Q_ASSERT(handle == INVALID_HANDLE_VALUE);
+    Q_ASSERT(pipeWriter == nullptr);
 }
 
 void QLocalSocket::connectToServer(OpenMode openMode)
@@ -346,8 +340,11 @@ void QLocalSocketPrivate::_q_pipeClosed()
     pipeReader->stop();
     delete pipeWriter;
     pipeWriter = nullptr;
-    destroyPipeHandles();
-    handle = INVALID_HANDLE_VALUE;
+    if (handle != INVALID_HANDLE_VALUE) {
+        DisconnectNamedPipe(handle);
+        CloseHandle(handle);
+        handle = INVALID_HANDLE_VALUE;
+    }
 
     state = QLocalSocket::UnconnectedState;
     emit q->stateChanged(state);
