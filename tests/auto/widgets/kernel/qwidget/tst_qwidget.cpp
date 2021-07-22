@@ -160,6 +160,7 @@ public slots:
     void initTestCase();
     void cleanup();
 private slots:
+    void addActionOverloads();
     void getSetCheck();
     void fontPropagation();
     void fontPropagation2();
@@ -642,6 +643,72 @@ void tst_QWidget::initTestCase()
 void tst_QWidget::cleanup()
 {
     QTRY_VERIFY(QApplication::topLevelWidgets().isEmpty());
+}
+
+template <typename T>
+struct ImplicitlyConvertibleTo {
+    T t;
+    operator const T() const { return t; }
+    operator T() { return t; }
+};
+
+void testFunction0() {}
+void testFunction1(bool) {}
+
+void tst_QWidget::addActionOverloads()
+{
+    // almost exhaustive check of addAction() overloads:
+    // (text), (icon, text), (icon, text, shortcut), (text, shortcut)
+    // each with a good sample of ways to QObject::connect() to
+    // QAction::triggered(bool)
+    QWidget w;
+
+    // don't just pass QString etc - that'd be too easy (think QStringBuilder)
+    ImplicitlyConvertibleTo<QString> text = {QStringLiteral("foo")};
+    ImplicitlyConvertibleTo<QIcon> icon;
+
+    const auto check = [&](auto &...args) { // don't need to perfectly-forward, only lvalues passed
+        w.addAction(args...);
+
+        w.addAction(args..., &w, SLOT(deleteLater()));
+        w.addAction(args..., &w, &QObject::deleteLater);
+        w.addAction(args..., testFunction0);
+        w.addAction(args..., &w, testFunction0);
+        w.addAction(args..., testFunction1);
+        w.addAction(args..., &w, testFunction1);
+        w.addAction(args..., [&](bool b) { w.setEnabled(b); });
+        w.addAction(args..., &w, [&](bool b) { w.setEnabled(b); });
+
+        w.addAction(args..., &w, SLOT(deleteLater()), Qt::QueuedConnection);
+        w.addAction(args..., &w, &QObject::deleteLater, Qt::QueuedConnection);
+        // doesn't exist: w.addAction(args..., testFunction0, Qt::QueuedConnection);
+        w.addAction(args..., &w, testFunction0, Qt::QueuedConnection);
+        // doesn't exist: w.addAction(args..., testFunction1, Qt::QueuedConnection);
+        w.addAction(args..., &w, testFunction1, Qt::QueuedConnection);
+        // doesn't exist: w.addAction(args..., [&](bool b) { w.setEnabled(b); }, Qt::QueuedConnection);
+        w.addAction(args..., &w, [&](bool b) { w.setEnabled(b); }, Qt::QueuedConnection);
+    };
+    const auto check1 = [&](auto &arg, auto &...args) {
+        check(arg, args...);
+        check(std::as_const(arg), args...);
+    };
+    const auto check2 = [&](auto &arg1, auto &arg2, auto &...args) {
+        check1(arg1, arg2, args...);
+        check1(arg1, std::as_const(arg2), args...);
+    };
+    [[maybe_unused]]
+    const auto check3 = [&](auto &arg1, auto &arg2, auto &arg3) {
+        check2(arg1, arg2, arg3);
+        check2(arg1, arg2, std::as_const(arg3));
+    };
+
+    check1(text);
+    check2(icon, text);
+#ifndef QT_NO_SHORTCUT
+    ImplicitlyConvertibleTo<QKeySequence> keySequence = {Qt::CTRL | Qt::Key_C};
+    check2(text, keySequence);
+    check3(icon, text, keySequence);
+#endif
 }
 
 void tst_QWidget::fontPropagation()

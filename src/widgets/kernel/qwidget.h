@@ -211,11 +211,28 @@ class Q_WIDGETS_EXPORT QWidget : public QObject, public QPaintDevice
     Q_PROPERTY(QString windowFilePath READ windowFilePath WRITE setWindowFilePath)
     Q_PROPERTY(Qt::InputMethodHints inputMethodHints READ inputMethodHints WRITE setInputMethodHints)
 
+#if 0
+    // ### TODO: make this work (requires SFINAE-friendly connect())
     template <typename...Args>
     using compatible_action_slot_args = std::void_t<
         decltype(QObject::connect(std::declval<QAction*>(), &QAction::triggered,
                                   std::declval<Args>()...))
     >;
+#else
+    // good-enough compromise for now
+    template <typename...Args>
+    using compatible_action_slot_args = std::enable_if_t<std::conjunction_v<
+#if QT_CONFIG(shortcut)
+            std::disjunction<
+                std::is_same<Args, Qt::ConnectionType>,
+                std::negation<std::is_convertible<Args, QKeySequence>>
+            >...,
+#endif
+            std::negation<std::is_convertible<Args, QIcon>>...,
+            std::negation<std::is_convertible<Args, const char*>>...,
+            std::negation<std::is_convertible<Args, QString>>...
+        >>;
+#endif
 public:
     enum RenderFlag {
         DrawWindowBackground = 0x1,
