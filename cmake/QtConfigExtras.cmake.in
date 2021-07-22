@@ -1,0 +1,2 @@
+set(QT_SUPPORTED_MIN_CMAKE_VERSION_FOR_USING_QT "@supported_min_version_for_using_qt@")
+set(QT_COMPUTED_MIN_CMAKE_VERSION_FOR_USING_QT "@computed_min_version_for_using_qt@")
