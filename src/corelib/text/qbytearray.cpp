@@ -2421,12 +2421,17 @@ static inline qsizetype findCharHelper(QByteArrayView haystack, qsizetype from, 
 qsizetype QtPrivate::findByteArray(QByteArrayView haystack, qsizetype from, QByteArrayView needle) noexcept
 {
     const auto ol = needle.size();
-    if (ol == 0)
-        return from;
+    const auto l = haystack.size();
+    if (ol == 0) {
+        if (from < 0)
+            return qMax(from + l, 0);
+        else
+            return from > l ? -1 : from;
+    }
+
     if (ol == 1)
         return findCharHelper(haystack, from, needle.front());
 
-    const auto l = haystack.size();
     if (from > l || ol + from > l)
         return -1;
 
@@ -2461,7 +2466,7 @@ qsizetype QtPrivate::findByteArray(QByteArrayView haystack, qsizetype from, QByt
 
 qsizetype QByteArray::indexOf(char ch, qsizetype from) const
 {
-    return static_cast<int>(findCharHelper(*this, from, ch));
+    return qToByteArrayViewIgnoringNull(*this).indexOf(ch, from);
 }
 
 static qsizetype lastIndexOfHelper(const char *haystack, qsizetype l, const char *needle,
@@ -2556,7 +2561,7 @@ qsizetype QtPrivate::lastIndexOf(QByteArrayView haystack, qsizetype from, QByteA
 
 qsizetype QByteArray::lastIndexOf(char ch, qsizetype from) const
 {
-    return static_cast<int>(lastIndexOfCharHelper(*this, from, ch));
+    return qToByteArrayViewIgnoringNull(*this).lastIndexOf(ch, from);
 }
 
 static inline qsizetype countCharHelper(QByteArrayView haystack, char needle) noexcept
