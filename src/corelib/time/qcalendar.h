@@ -145,7 +145,9 @@ public:
 
     explicit QCalendar(); // Gregorian, optimised
     explicit QCalendar(System system);
+    // ### Qt 7: remove
     explicit QCalendar(QLatin1String name);
+    // ### Qt 7: use QAnyStringView
     explicit QCalendar(QStringView name);
     explicit QCalendar(SystemId id);
 

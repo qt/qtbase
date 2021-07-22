@@ -56,6 +56,7 @@
 #include <QtCore/qstringlist.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qmap.h>
+#include <QtCore/qanystringview.h>
 #include <QtCore/private/qlocale_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -145,8 +146,7 @@ protected:
 private:
     const QCalendar::SystemId m_id;
     // QCalendar's access to its registry:
-    static const QCalendarBackend *fromName(QStringView name);
-    static const QCalendarBackend *fromName(QLatin1String name);
+    static const QCalendarBackend *fromName(QAnyStringView name);
     static const QCalendarBackend *fromId(QCalendar::SystemId id);
     // QCalendar's access to singletons:
     static const QCalendarBackend *fromEnum(QCalendar::System system);
