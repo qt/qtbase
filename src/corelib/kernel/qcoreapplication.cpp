@@ -3084,7 +3084,6 @@ void QCoreApplication::setEventDispatcher(QAbstractEventDispatcher *eventDispatc
     \sa Q_OBJECT, QObject::tr()
 */
 #if QT_CONFIG(future) && !defined(QT_NO_QOBJECT)
-#if !defined(Q_OS_ANDROID)
 
     QFuture<QApplicationPermission::PermissionResult> defaultPermissionFuture()
     {
@@ -3127,7 +3126,6 @@ void QCoreApplication::setEventDispatcher(QAbstractEventDispatcher *eventDispatc
         Q_UNUSED(permission)
         return defaultPermissionFuture();
     }
-#endif
 
 /*!
     Requests the \a permission and returns a QFuture representing the

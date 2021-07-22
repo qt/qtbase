@@ -60,6 +60,10 @@
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qmap.h>
 
+#if QT_CONFIG(future)
+#include <QtCore/qfuture.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QAndroidParcel;
@@ -255,6 +259,42 @@ namespace QtAndroidPrivate
     Q_CORE_EXPORT bool bindService(const QAndroidIntent &serviceIntent,
                                    const QAndroidServiceConnection &serviceConnection,
                                    BindFlags flags = BindFlag::None);
+
+#if QT_CONFIG(future)
+    enum PermissionType {
+        Camera,
+        Microphone,
+        Bluetooth,
+        Location,
+        PreciseLocation,
+        BackgroundLocation,
+        PreciseBackgroundLocation,
+        BodySensors,
+        PhysicalActivity,
+        Contacts,
+        Storage,
+        // TODO: remove after usages in other modules are renamed.
+        WriteStorage,
+        Calendar
+    };
+
+    enum PermissionResult {
+        Undetermined,
+        Authorized,
+        Denied
+    };
+
+    Q_CORE_EXPORT QFuture<QtAndroidPrivate::PermissionResult>
+    requestPermission(QtAndroidPrivate::PermissionType permission);
+    Q_CORE_EXPORT QFuture<QtAndroidPrivate::PermissionResult>
+    requestPermission(const QString &permission);
+
+    Q_CORE_EXPORT QFuture<QtAndroidPrivate::PermissionResult>
+    checkPermission(QtAndroidPrivate::PermissionType permission);
+    Q_CORE_EXPORT QFuture<QtAndroidPrivate::PermissionResult>
+    checkPermission(const QString &permission);
+#endif
+
 }
 
 QT_END_NAMESPACE

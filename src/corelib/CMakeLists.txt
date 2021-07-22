@@ -973,7 +973,6 @@ qt_internal_extend_target(Core CONDITION UNIX AND NOT APPLE
 qt_internal_extend_target(Core CONDITION ANDROID AND NOT ANDROID_EMBEDDED
     SOURCES
         io/qstandardpaths_android.cpp
-        kernel/qcoreapplication_android.cpp
         io/qstorageinfo_unix.cpp
         kernel/qjnienvironment.cpp kernel/qjnienvironment.h
         kernel/qjniobject.cpp kernel/qjniobject.h

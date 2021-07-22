@@ -47,6 +47,10 @@
 #include <QtCore/qtimer.h>
 #include <QtCore/qset.h>
 
+#if QT_CONFIG(future)
+#include <QtCore/qpromise.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QAndroidParcelPrivate
@@ -1029,6 +1033,254 @@ void QAndroidActivityCallbackResultReceiver::registerCallback(
         std::function<void(int, int, const QJniObject &data)> callbackFunc)
 {
     callbackMap.insert(receiverRequestCode, callbackFunc);
+}
+
+// Permissions API
+
+static const char qtNativeClassName[] = "org/qtproject/qt/android/QtNative";
+
+QtAndroidPrivate::PermissionResult resultFromAndroid(jint value)
+{
+    return value == 0 ? QtAndroidPrivate::Authorized : QtAndroidPrivate::Denied;
+}
+
+using PendingPermissionRequestsHash
+            = QHash<int, QSharedPointer<QPromise<QtAndroidPrivate::PermissionResult>>>;
+Q_GLOBAL_STATIC(PendingPermissionRequestsHash, g_pendingPermissionRequests);
+static QBasicMutex g_pendingPermissionRequestsMutex;
+
+static int nextRequestCode()
+{
+    static QBasicAtomicInt counter = Q_BASIC_ATOMIC_INITIALIZER(0);
+    return counter.fetchAndAddRelaxed(1);
+}
+
+static QStringList nativeStringsFromPermission(QtAndroidPrivate::PermissionType permission)
+{
+    static const auto precisePerm = QStringLiteral("android.permission.ACCESS_FINE_LOCATION");
+    static const auto coarsePerm = QStringLiteral("android.permission.ACCESS_COARSE_LOCATION");
+    static const auto backgroundPerm =
+            QStringLiteral("android.permission.ACCESS_BACKGROUND_LOCATION");
+
+    switch (permission) {
+    case QtAndroidPrivate::Location:
+        return {coarsePerm};
+    case QtAndroidPrivate::PreciseLocation:
+        return {precisePerm};
+    case QtAndroidPrivate::BackgroundLocation:
+        // Keep the background permission first to be able to use .first()
+        // in checkPermission because it takes single permission
+        if (QtAndroidPrivate::androidSdkVersion() >= 29)
+            return {backgroundPerm, coarsePerm};
+        return {coarsePerm};
+    case QtAndroidPrivate::PreciseBackgroundLocation:
+        // Keep the background permission first to be able to use .first()
+        // in checkPermission because it takes single permission
+        if (QtAndroidPrivate::androidSdkVersion() >= 29)
+            return {backgroundPerm, precisePerm};
+        return {precisePerm};
+    case QtAndroidPrivate::Camera:
+        return {QStringLiteral("android.permission.CAMERA")};
+    case QtAndroidPrivate::Microphone:
+        return {QStringLiteral("android.permission.RECORD_AUDIO")};
+    case QtAndroidPrivate::Bluetooth:
+        return { QStringLiteral("android.permission.BLUETOOTH") };
+    case QtAndroidPrivate::BodySensors:
+        return {QStringLiteral("android.permission.BODY_SENSORS")};
+    case QtAndroidPrivate::PhysicalActivity:
+        return {QStringLiteral("android.permission.ACTIVITY_RECOGNITION")};
+    case QtAndroidPrivate::Contacts:
+        return {QStringLiteral("android.permission.READ_CONTACTS"),
+                QStringLiteral("android.permission.WRITE_CONTACTS")};
+    case QtAndroidPrivate::Storage:
+        return {QStringLiteral("android.permission.READ_EXTERNAL_STORAGE"),
+                QStringLiteral("android.permission.WRITE_EXTERNAL_STORAGE")};
+    case QtAndroidPrivate::Calendar:
+        return {QStringLiteral("android.permission.READ_CALENDAR"),
+                QStringLiteral("android.permission.WRITE_CALENDAR")};
+    }
+
+    return {};
+}
+
+/*!
+    \internal
+
+    This function is called when the result of the permission request is available.
+    Once a permission is requested, the result is braodcast by the OS and listened
+    to by QtActivity which passes it to C++ through a native JNI method call.
+ */
+static void sendRequestPermissionsResult(JNIEnv *env, jobject *obj, jint requestCode,
+                                         jobjectArray permissions, jintArray grantResults)
+{
+    Q_UNUSED(obj);
+
+    QMutexLocker locker(&g_pendingPermissionRequestsMutex);
+    auto it = g_pendingPermissionRequests->constFind(requestCode);
+    if (it == g_pendingPermissionRequests->constEnd()) {
+        qWarning() << "Found no valid pending permission request for request code" << requestCode;
+        return;
+    }
+
+    auto request = *it;
+    g_pendingPermissionRequests->erase(it);
+    locker.unlock();
+
+    const int size = env->GetArrayLength(permissions);
+    std::unique_ptr<jint[]> results(new jint[size]);
+    env->GetIntArrayRegion(grantResults, 0, size, results.get());
+
+    for (int i = 0 ; i < size; ++i) {
+        QtAndroidPrivate::PermissionResult result = resultFromAndroid(results[i]);
+        request->addResult(result, i);
+    }
+
+    request->finish();
+}
+
+QFuture<QtAndroidPrivate::PermissionResult>
+requestPermissionsInternal(const QStringList &permissions)
+{
+    QSharedPointer<QPromise<QtAndroidPrivate::PermissionResult>> promise;
+    promise.reset(new QPromise<QtAndroidPrivate::PermissionResult>());
+    QFuture<QtAndroidPrivate::PermissionResult> future = promise->future();
+    promise->start();
+
+    // No mechanism to request permission for SDK version below 23, because
+    // permissions defined in the manifest are granted at install time.
+    if (QtAndroidPrivate::androidSdkVersion() < 23) {
+        for (int i = 0; i < permissions.size(); ++i)
+            promise->addResult(QtAndroidPrivate::checkPermission(permissions.at(i)).result(), i);
+        promise->finish();
+        return future;
+    }
+
+    const int requestCode = nextRequestCode();
+    QMutexLocker locker(&g_pendingPermissionRequestsMutex);
+    g_pendingPermissionRequests->insert(requestCode, promise);
+
+    QNativeInterface::QAndroidApplication::runOnAndroidMainThread([permissions, requestCode] {
+        QJniEnvironment env;
+        jclass clazz = env.findClass("java/lang/String");
+        auto array = env->NewObjectArray(permissions.size(), clazz, nullptr);
+        int index = 0;
+
+        for (auto &perm : permissions)
+            env->SetObjectArrayElement(array, index++, QJniObject::fromString(perm).object());
+
+        QJniObject(QtAndroidPrivate::activity()).callMethod<void>("requestPermissions",
+                                                                  "([Ljava/lang/String;I)V",
+                                                                  array,
+                                                                  requestCode);
+        env->DeleteLocalRef(array);
+    });
+
+    return future;
+}
+
+QFuture<QtAndroidPrivate::PermissionResult>
+QtAndroidPrivate::requestPermission(const QString &permission)
+{
+    // avoid the uneccessary call and response to an empty permission string
+    if (permission.size() > 0)
+        return requestPermissionsInternal({permission});
+
+    QPromise<QtAndroidPrivate::PermissionResult> promise;
+    QFuture<QtAndroidPrivate::PermissionResult> future = promise.future();
+    promise.start();
+    promise.addResult(QtAndroidPrivate::Denied);
+    promise.finish();
+    return future;
+}
+
+static bool isBackgroundLocationApi29(QtAndroidPrivate::PermissionType permission)
+{
+    return QNativeInterface::QAndroidApplication::sdkVersion() >= 29
+            && (permission == QtAndroidPrivate::BackgroundLocation
+                || permission == QtAndroidPrivate::PreciseBackgroundLocation);
+}
+
+QFuture<QtAndroidPrivate::PermissionResult>
+QtAndroidPrivate::requestPermission(QtAndroidPrivate::PermissionType permission)
+{
+    QSharedPointer<QPromise<QtAndroidPrivate::PermissionResult>> promise;
+    promise.reset(new QPromise<QtAndroidPrivate::PermissionResult>());
+    QFuture<QtAndroidPrivate::PermissionResult> future = promise->future();
+    promise->start();
+    const auto nativePermissions = nativeStringsFromPermission(permission);
+
+    if (nativePermissions.size() > 0) {
+        requestPermissionsInternal(nativePermissions).then(
+                    [promise, permission](QFuture<QtAndroidPrivate::PermissionResult> future) {
+            auto AuthorizedCount = future.results().count(QtAndroidPrivate::Authorized);
+            if (AuthorizedCount > 0) {
+                if (isBackgroundLocationApi29(permission))
+                    promise->addResult(future.resultAt(0), 0);
+                else
+                    promise->addResult(QtAndroidPrivate::Authorized, 0);
+            } else {
+                promise->addResult(QtAndroidPrivate::Denied, 0);
+            }
+            promise->finish();
+        });
+
+        return future;
+    }
+
+    promise->addResult(QtAndroidPrivate::Denied);
+    promise->finish();
+    return future;
+}
+
+QFuture<QtAndroidPrivate::PermissionResult>
+QtAndroidPrivate::checkPermission(const QString &permission)
+{
+    QPromise<QtAndroidPrivate::PermissionResult> promise;
+    QFuture<QtAndroidPrivate::PermissionResult> future = promise.future();
+    promise.start();
+
+    if (permission.size() > 0) {
+        auto res = QJniObject::callStaticMethod<jint>(qtNativeClassName,
+                                                      "checkSelfPermission",
+                                                      "(Ljava/lang/String;)I",
+                                                      QJniObject::fromString(permission).object());
+        promise.addResult(resultFromAndroid(res));
+    } else {
+        promise.addResult(QtAndroidPrivate::Denied);
+    }
+
+    promise.finish();
+    return future;
+}
+
+QFuture<QtAndroidPrivate::PermissionResult>
+QtAndroidPrivate::checkPermission(QtAndroidPrivate::PermissionType permission)
+{
+    const auto nativePermissions = nativeStringsFromPermission(permission);
+
+    if (nativePermissions.size() > 0)
+        return checkPermission(nativePermissions.first());
+
+    QPromise<QtAndroidPrivate::PermissionResult> promise;
+    QFuture<QtAndroidPrivate::PermissionResult> future = promise.future();
+    promise.start();
+    promise.addResult(QtAndroidPrivate::Denied);
+    promise.finish();
+    return future;
+}
+
+bool QtAndroidPrivate::registerPermissionNatives()
+{
+    if (QtAndroidPrivate::androidSdkVersion() < 23)
+        return true;
+
+    JNINativeMethod methods[] = {
+        {"sendRequestPermissionsResult", "(I[Ljava/lang/String;[I)V",
+         reinterpret_cast<void *>(sendRequestPermissionsResult)
+        }};
+
+    QJniEnvironment env;
+    return env.registerNativeMethods(qtNativeClassName, methods, 1);
 }
 
 QT_END_NAMESPACE
