@@ -890,27 +890,13 @@ bool QCalendarBackend::registerAlias(const QString &name)
 
     \sa availableCalendars(), registerAlias(), fromEnum(), fromId()
 */
-const QCalendarBackend *QCalendarBackend::fromName(QStringView name)
+const QCalendarBackend *QCalendarBackend::fromName(QAnyStringView name)
 {
     if (calendarRegistry.isDestroyed())
         return nullptr;
     calendarRegistry->populate();
     const auto registryLock = qt_scoped_lock(registryMutex);
     auto it = calendarRegistry->byName.find(name.toString());
-    return it == calendarRegistry->byName.end() ? nullptr : *it;
-}
-
-/*!
-    \internal
-    \overload
- */
-const QCalendarBackend *QCalendarBackend::fromName(QLatin1String name)
-{
-    if (calendarRegistry.isDestroyed())
-        return nullptr;
-    calendarRegistry->populate();
-    const auto registryLock = qt_scoped_lock(registryMutex);
-    auto it = calendarRegistry->byName.find(QString(name));
     return it == calendarRegistry->byName.end() ? nullptr : *it;
 }
 
