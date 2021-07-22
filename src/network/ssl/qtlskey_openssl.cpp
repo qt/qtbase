@@ -38,6 +38,7 @@
 ****************************************************************************/
 
 #include "qsslsocket_openssl_symbols_p.h"
+#include "qtlsbackend_openssl_p.h"
 #include "qtlskey_openssl_p.h"
 #include "qsslsocket.h"
 #include "qsslkey_p.h"
@@ -435,7 +436,10 @@ QByteArray doCrypt(QSslKeyPrivate::Cipher cipher, const QByteArray &data,
 
     EVP_CIPHER_CTX *ctx = q_EVP_CIPHER_CTX_new();
     q_EVP_CIPHER_CTX_reset(ctx);
-    q_EVP_CipherInit(ctx, type, nullptr, nullptr, enc);
+    if (q_EVP_CipherInit(ctx, type, nullptr, nullptr, enc) != 1) {
+        QTlsBackendOpenSSL::logAndClearErrorQueue();
+        return QByteArray();
+    }
     q_EVP_CIPHER_CTX_set_key_length(ctx, key.size());
     if (cipher == Cipher::Rc2Cbc)
         q_EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_SET_RC2_KEY_BITS, 8 * key.size(), nullptr);
