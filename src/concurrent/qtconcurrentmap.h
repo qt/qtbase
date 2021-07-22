@@ -47,7 +47,6 @@
 #include <QtConcurrent/qtconcurrentmapkernel.h>
 #include <QtConcurrent/qtconcurrentreducekernel.h>
 #include <QtConcurrent/qtconcurrentfunctionwrappers.h>
-#include <QtCore/qstringlist.h>
 
 QT_BEGIN_NAMESPACE
 

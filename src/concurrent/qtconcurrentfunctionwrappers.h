@@ -42,7 +42,6 @@
 
 #include <QtConcurrent/qtconcurrentcompilertest.h>
 #include <QtCore/qfuture.h>
-#include <QtCore/QStringList>
 
 #include <tuple>
 
@@ -192,12 +191,6 @@ struct ReduceResultTypeHelper<Callable,
 
 template <class InputSequence, class MapFunctor>
 struct MapSequenceResultType;
-
-template <class MapFunctor>
-struct MapSequenceResultType<QStringList, MapFunctor>
-{
-    typedef QList<QtPrivate::MapResultType<QStringList, MapFunctor>> ResultType;
-};
 
 #ifndef QT_NO_TEMPLATE_TEMPLATE_PARAMETERS
 
