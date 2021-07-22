@@ -165,10 +165,8 @@ struct ImageTransform
 };
 
 QFuture<QImage> thumbNails =
-  QtConcurrent::mappedReduced<QImage>(images,
-                                      Scaled(100),
-                                      ImageTransform(),
-                                      QtConcurrent::SequentialReduce);
+        QtConcurrent::mappedReduced(images, Scaled(100), ImageTransform(),
+                                    QtConcurrent::SequentialReduce);
 //! [11]
 
 //! [13]
@@ -223,7 +221,7 @@ QList<QImage> collage = QtConcurrent::mappedReduced(images,
 //! [16]
 
 //! [17]
-QList<QImage> collage = QtConcurrent::mappedReduced<QImage>(images,
+QList<QImage> collage = QtConcurrent::mappedReduced(images,
         [&size](const QImage &image) {
             return image.scaled(size, size);
         },

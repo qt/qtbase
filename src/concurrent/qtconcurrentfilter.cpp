@@ -148,9 +148,7 @@
 
     \snippet code/src_concurrent_qtconcurrentfilter.cpp 13
 
-    For the reduce function, function objects are not directly
-    supported. Function objects can, however, be used
-    when the type of the reduction result is explicitly specified:
+    Function objects are also supported for the reduce function:
 
     \snippet code/src_concurrent_qtconcurrentfilter.cpp 14
 
@@ -168,9 +166,7 @@
 
     \snippet code/src_concurrent_qtconcurrentfilter.cpp 16
 
-    For the reduce function, lambda expressions are not directly supported.
-    Lambda expressions can, however, be used when the type of the reduction
-    result is explicitly specified:
+    You can also pass a lambda as a reduce object:
 
     \snippet code/src_concurrent_qtconcurrentfilter.cpp 17
 
