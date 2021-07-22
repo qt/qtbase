@@ -85,6 +85,9 @@ static NSSearchPathDirectory searchPathDirectory(QStandardPaths::StandardLocatio
         return NSCachesDirectory;
     case QStandardPaths::DownloadLocation:
         return NSDownloadsDirectory;
+    case QStandardPaths::PublicShareLocation:
+        return NSSharedPublicDirectory;
+    case QStandardPaths::TemplatesLocation:
     default:
         return (NSSearchPathDirectory)0;
     }
@@ -135,6 +138,12 @@ static QString baseWritableLocation(QStandardPaths::StandardLocation type,
         path = pathForDirectory(NSDocumentDirectory, mask) + QLatin1String("/Desktop");
         break;
     case QStandardPaths::ApplicationsLocation:
+        break;
+    case QStandardPaths::PublicShareLocation:
+        path = pathForDirectory(NSDocumentDirectory, mask) + QLatin1String("/Public");
+        break;
+    case QStandardPaths::TemplatesLocation:
+        path = pathForDirectory(NSDocumentDirectory, mask) + QLatin1String("/Templates");
         break;
 #endif
     case QStandardPaths::FontsLocation:

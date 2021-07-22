@@ -72,7 +72,9 @@ public:
         GenericCacheLocation,
         GenericConfigLocation,
         AppDataLocation,
-        AppConfigLocation
+        AppConfigLocation,
+        PublicShareLocation,
+        TemplatesLocation
     };
     Q_ENUM(StandardLocation)
 

@@ -144,8 +144,10 @@ static GUID writableSpecialFolderId(QStandardPaths::StandardLocation type)
         FOLDERID_LocalAppData,  // GenericConfigLocation ("Local" path)
         FOLDERID_RoamingAppData,// AppDataLocation ("Roaming" path)
         FOLDERID_LocalAppData,  // AppConfigLocation ("Local" path)
+        FOLDERID_Public,        // PublicShareLocation
+        FOLDERID_Templates,     // TemplatesLocation
     };
-    static_assert(sizeof(folderIds) / sizeof(folderIds[0]) == size_t(QStandardPaths::AppConfigLocation + 1));
+    static_assert(sizeof(folderIds) / sizeof(folderIds[0]) == size_t(QStandardPaths::TemplatesLocation + 1));
 
     // folders for low integrity processes
     static const GUID folderIds_li[] = {
@@ -166,6 +168,8 @@ static GUID writableSpecialFolderId(QStandardPaths::StandardLocation type)
         FOLDERID_LocalAppDataLow,// GenericConfigLocation ("Local" path)
         FOLDERID_RoamingAppData, // AppDataLocation ("Roaming" path)
         FOLDERID_LocalAppDataLow,// AppConfigLocation ("Local" path)
+        FOLDERID_Public,         // PublicShareLocation
+        FOLDERID_Templates,      // TemplatesLocation
     };
     static_assert(sizeof(folderIds_li) == sizeof(folderIds));
 

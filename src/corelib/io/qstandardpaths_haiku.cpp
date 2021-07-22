@@ -137,6 +137,8 @@ QString QStandardPaths::writableLocation(StandardLocation type)
     case MusicLocation:
     case MoviesLocation:
     case DownloadLocation:
+    case PublicShareLocation:
+    case TemplatesLocation:
     case HomeLocation:
         return haikuStandardPath(B_USER_DIRECTORY);
     case FontsLocation:
@@ -178,6 +180,8 @@ QStringList QStandardPaths::standardLocations(StandardLocation type)
     case MusicLocation:
     case MoviesLocation:
     case DownloadLocation:
+    case PublicShareLocation:
+    case TemplatesLocation:
     case HomeLocation:
         paths += haikuStandardPath(B_USER_NONPACKAGED_DIRECTORY);
         break;

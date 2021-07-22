@@ -88,6 +88,10 @@ static QLatin1String xdg_key_name(QStandardPaths::StandardLocation type)
         return QLatin1String("VIDEOS");
     case QStandardPaths::DownloadLocation:
         return QLatin1String("DOWNLOAD");
+    case QStandardPaths::PublicShareLocation:
+        return QLatin1String("PUBLICSHARE");
+    case QStandardPaths::TemplatesLocation:
+        return QLatin1String("TEMPLATES");
     default:
         return QLatin1String();
     }
@@ -336,6 +340,14 @@ QString QStandardPaths::writableLocation(StandardLocation type)
         break;
     case ApplicationsLocation:
         path = writableLocation(GenericDataLocation) + QLatin1String("/applications");
+        break;
+
+    case PublicShareLocation:
+        path = QDir::homePath() + QLatin1String("/Public");
+        break;
+
+    case TemplatesLocation:
+        path = QDir::homePath() + QLatin1String("/Templates");
         break;
 
     default:

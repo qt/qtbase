@@ -153,6 +153,14 @@ QT_BEGIN_NAMESPACE
            configuration files should be written. This is an application-specific directory,
            and the returned path is never empty.
            This enum value was added in Qt 5.5.
+    \value PublicShareLocation Returns a directory location where user-specific publicly shared files
+           and directories can be stored. This is a generic value. Note that the returned path may be
+           empty if the system has no concept of a publicly shared location.
+           This enum value was added in Qt 6.3.
+    \value TemplatesLocation Returns a directory location where user-specific
+           template files can be stored. This is a generic value. Note that the returned path may be
+           empty if the system has no concept of a templates location.
+           This enum value was added in Qt 6.3.
 
     The following table gives examples of paths on different operating systems.
     The first path is the writable path (unless noted). Other, additional
@@ -217,6 +225,12 @@ QT_BEGIN_NAMESPACE
     \row \li AppConfigLocation
          \li "~/Library/Preferences/<APPNAME>"
          \li "C:/Users/<USER>/AppData/Local/<APPNAME>", "C:/ProgramData/<APPNAME>"
+    \row \li PublicShareLocation
+         \li "~/Public"
+         \li "C:/Users/Public"
+    \row \li TemplatesLocation
+         \li "~/Templates"
+         \li "C:/Users/<USER>/AppData/Roaming/Microsoft/Windows/Templates"
     \endtable
 
     \table
@@ -259,6 +273,10 @@ QT_BEGIN_NAMESPACE
          \li "~/.local/share/<APPNAME>", "/usr/local/share/<APPNAME>", "/usr/share/<APPNAME>"
     \row \li AppConfigLocation
          \li "~/.config/<APPNAME>", "/etc/xdg/<APPNAME>"
+    \row \li PublicShareLocation
+         \li "~/Public"
+    \row \li TemplatesLocation
+         \li "~/Templates"
     \endtable
 
     \table
@@ -320,6 +338,12 @@ QT_BEGIN_NAMESPACE
     \row \li AppConfigLocation
          \li "<APPROOT>/files/settings"
          \li "<APPROOT>/Library/Preferences/<APPNAME>"
+    \row \li PublicShareLocation
+         \li not supported
+         \li not supported
+    \row \li TemplatesLocation
+         \li not supported
+         \li not supported
     \endtable
 
     In the table above, \c <APPNAME> is usually the organization name, the
@@ -572,6 +596,10 @@ QString QStandardPaths::displayName(StandardLocation type)
     case AppDataLocation:
     case AppConfigLocation:
         return QCoreApplication::translate("QStandardPaths", "Application Configuration");
+    case PublicShareLocation:
+        return QCoreApplication::translate("QStandardPaths", "Public");
+    case TemplatesLocation:
+        return QCoreApplication::translate("QStandardPaths", "Templates");
     }
     // not reached
     return QString();

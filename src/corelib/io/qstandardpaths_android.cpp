@@ -200,6 +200,8 @@ QString QStandardPaths::writableLocation(StandardLocation type)
         return getFilesDir();
     case QStandardPaths::ApplicationsLocation:
     case QStandardPaths::FontsLocation:
+    case QStandardPaths::PublicShareLocation:
+    case QStandardPaths::TemplatesLocation:
     default:
         break;
     }
