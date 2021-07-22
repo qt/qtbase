@@ -135,7 +135,8 @@ QFuture<QImage> bgrImages = QtConcurrent::mapped(images,
 
 // Create a set of the lengths of all strings in a list.
 QStringList strings = ...;
-QFuture<QSet<int> > wordLengths = QtConcurrent::mappedReduced(strings, &QString::length, &QSet<int>::insert);
+QFuture<QSet<int>> wordLengths = QtConcurrent::mappedReduced(strings, &QString::length,
+                                                             qOverload<const int&>(&QSet<int>::insert));
 //! [8]
 
 
@@ -150,7 +151,8 @@ QFuture<int> averageWordLength = QtConcurrent::mappedReduced(strings, &QString::
 // Create a set of the color distribution of all images in a list.
 extern int colorDistribution(const QImage &string);
 QList<QImage> images = ...;
-QFuture<QSet<int> > totalColorDistribution = QtConcurrent::mappedReduced(images, colorDistribution, QSet<int>::insert);
+QFuture<QSet<int>> totalColorDistribution = QtConcurrent::mappedReduced(images, colorDistribution,
+                                                                        qOverload<const int&>(&QSet<int>::insert));
 //! [9]
 
 

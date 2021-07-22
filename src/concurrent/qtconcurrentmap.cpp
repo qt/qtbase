@@ -260,7 +260,10 @@
 
     \snippet code/src_concurrent_qtconcurrentmap.cpp 8
 
-    Note that when using QtConcurrent::mappedReduced(), you can mix the use of
+    Note the use of qOverload. It is needed to resolve the ambiguity for the
+    methods, that have multiple overloads.
+
+    Also note that when using QtConcurrent::mappedReduced(), you can mix the use of
     normal and member functions freely:
 
     \snippet code/src_concurrent_qtconcurrentmap.cpp 9
