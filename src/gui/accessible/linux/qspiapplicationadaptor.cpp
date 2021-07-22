@@ -48,6 +48,8 @@
 #include "deviceeventcontroller_adaptor.h"
 #include "atspi/atspi-constants.h"
 
+#include <xcb/xproto.h>
+
 //#define KEYBOARD_DEBUG
 
 QT_BEGIN_NAMESPACE
@@ -62,7 +64,7 @@ QT_BEGIN_NAMESPACE
 */
 
 QSpiApplicationAdaptor::QSpiApplicationAdaptor(const QDBusConnection &connection, QObject *parent)
-    : QObject(parent), dbusConnection(connection), inCapsLock(false)
+    : QObject(parent), dbusConnection(connection)
 {
 }
 
@@ -143,13 +145,9 @@ bool QSpiApplicationAdaptor::eventFilter(QObject *target, QEvent *event)
             de.text = QStringLiteral("Escape");
         else if (keyEvent->key() == Qt::Key_Space)
             de.text = QStringLiteral("space");
-        else if (keyEvent->key() == Qt::Key_CapsLock) {
+        else if (keyEvent->key() == Qt::Key_CapsLock)
             de.text = QStringLiteral("Caps_Lock");
-            if (event->type() == QEvent::KeyPress)
-                inCapsLock = true;
-            else
-                inCapsLock = false;
-        } else if (keyEvent->key() == Qt::Key_NumLock)
+        else if (keyEvent->key() == Qt::Key_NumLock)
             de.text = QStringLiteral("Num_Lock");
         else if (keyEvent->key() == Qt::Key_Insert)
             de.text = QStringLiteral("Insert");
@@ -161,9 +159,10 @@ bool QSpiApplicationAdaptor::eventFilter(QObject *target, QEvent *event)
         de.isText = !de.text.isEmpty();
 
         de.modifiers = 0;
-        if (!inCapsLock && keyEvent->modifiers() & Qt::ShiftModifier)
+        if ((keyEvent->modifiers() & Qt::ShiftModifier) && (keyEvent->key() != Qt::Key_Shift))
             de.modifiers |= 1 << ATSPI_MODIFIER_SHIFT;
-        if (inCapsLock && (keyEvent->key() != Qt::Key_CapsLock))
+        // TODO rather introduce Qt::CapslockModifier into KeyboardModifier
+        if (keyEvent->nativeModifiers() & XCB_MOD_MASK_LOCK )
             de.modifiers |= 1 << ATSPI_MODIFIER_SHIFTLOCK;
         if ((keyEvent->modifiers() & Qt::ControlModifier) && (keyEvent->key() != Qt::Key_Control))
             de.modifiers |= 1 << ATSPI_MODIFIER_CONTROL;
