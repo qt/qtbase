@@ -82,7 +82,7 @@ void addToDictionary(QSet<QString> &dictionary, const QString &string)
 }
 
 QStringList strings = ...;
-QFuture<QSet<QString> > dictionary = QtConcurrent::filteredReduced(strings, allLowerCase, addToDictionary);
+QFuture<QSet<QString>> dictionary = QtConcurrent::filteredReduced(strings, allLowerCase, addToDictionary);
 //! [4]
 
 
@@ -93,7 +93,7 @@ QFuture<QString> lowerCaseStrings = QtConcurrent::filtered(strings.constBegin(),
 // filter in-place only works on non-const iterators
 QFuture<void> future = QtConcurrent::filter(strings.begin(), strings.end(), allLowerCase);
 
-QFuture<QSet<QString> > dictionary = QtConcurrent::filteredReduced(strings.constBegin(), strings.constEnd(), allLowerCase, addToDictionary);
+QFuture<QSet<QString>> dictionary = QtConcurrent::filteredReduced(strings.constBegin(), strings.constEnd(), allLowerCase, addToDictionary);
 //! [5]
 
 
@@ -121,7 +121,8 @@ QFuture<QImage> grayscaleImages = QtConcurrent::filtered(images, &QImage::isGray
 
 // create a set of all printable characters
 QList<QChar> characters = ...;
-QFuture<QSet<QChar> > set = QtConcurrent::filteredReduced(characters, &QChar::isPrint, &QSet<QChar>::insert);
+QFuture<QSet<QChar>> set = QtConcurrent::filteredReduced(characters, qOverload<>(&QChar::isPrint),
+                                                         qOverload<const QChar&>(&QSet<QChar>::insert));
 //! [7]
 
 
@@ -131,7 +132,8 @@ QFuture<QSet<QChar> > set = QtConcurrent::filteredReduced(characters, &QChar::is
 // create a dictionary of all lower cased strings
 extern bool allLowerCase(const QString &string);
 QStringList strings = ...;
-QFuture<QSet<int> > averageWordLength = QtConcurrent::filteredReduced(strings, allLowerCase, QSet<QString>::insert);
+QFuture<QSet<QString>> lowerCase = QtConcurrent::filteredReduced(strings, allLowerCase,
+                                                                 qOverload<const QString&>(&QSet<QString>::insert));
 
 // create a collage of all gray scale images
 extern void addToCollage(QImage &collage, const QImage &grayscaleImage);
