@@ -426,7 +426,7 @@ void QPaintEngineEx::stroke(const QVectorPath &path, const QPen &inPen)
             patternLength *= pen.widthF();
         if (qFuzzyIsNull(patternLength)) {
             pen.setStyle(Qt::NoPen);
-        } else if (extent / patternLength > 10000) {
+        } else if (qFuzzyIsNull(extent) || extent / patternLength > 10000) {
             // approximate stream of tiny dashes with semi-transparent solid line
             pen.setStyle(Qt::SolidLine);
             QColor color(pen.color());
