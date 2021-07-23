@@ -2587,6 +2587,8 @@ void tst_QHash::fineTuningInEmptyHash()
 {
     QHash<QString, int> hash;
     QCOMPARE(hash.capacity(), 0);
+    hash.squeeze();
+    QCOMPARE(hash.capacity(), 0);
     QVERIFY(qFuzzyIsNull(hash.load_factor()));
     QVERIFY(!hash.isDetached());
 
