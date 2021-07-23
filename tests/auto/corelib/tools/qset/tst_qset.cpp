@@ -244,12 +244,12 @@ void tst_QSet::reserve()
 void tst_QSet::squeeze()
 {
     QSet<int> set;
-    int n = set.capacity();
-    QVERIFY(n == 0);
+    QCOMPARE(set.capacity(), 0);
 
     set.squeeze();
-    n = set.capacity();
-    QVERIFY(n > 0 && n < 100);
+    QCOMPARE(set.capacity(), 0);
+
+    QVERIFY(!set.isDetached());
 
     set.reserve(1000);
     QVERIFY(set.capacity() >= 1000);
