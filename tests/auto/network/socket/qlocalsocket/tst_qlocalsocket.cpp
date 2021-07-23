@@ -1369,6 +1369,7 @@ void tst_QLocalSocket::delayedDisconnect()
     QCOMPARE(socket.state(), QLocalSocket::ClosingState);
     QVERIFY(socket.waitForDisconnected(3000));
     QCOMPARE(socket.state(), QLocalSocket::UnconnectedState);
+    QVERIFY(socket.isOpen());
 }
 
 void tst_QLocalSocket::removeServer()

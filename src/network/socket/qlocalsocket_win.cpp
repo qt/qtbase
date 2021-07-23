@@ -337,6 +337,8 @@ void QLocalSocketPrivate::_q_pipeClosed()
             return;
     }
 
+    serverName.clear();
+    fullServerName.clear();
     pipeReader->stop();
     delete pipeWriter;
     pipeWriter = nullptr;
@@ -403,11 +405,11 @@ void QLocalSocket::disconnectFromServer()
 {
     Q_D(QLocalSocket);
 
-    if (bytesToWrite() != 0) {
+    if (bytesToWrite() == 0) {
+        d->_q_pipeClosed();
+    } else if (d->state != QLocalSocket::ClosingState) {
         d->state = QLocalSocket::ClosingState;
         emit stateChanged(d->state);
-    } else {
-        close();
     }
 }
 
@@ -444,8 +446,8 @@ void QLocalSocketPrivate::_q_bytesWritten(qint64 bytes)
         QScopedValueRollback<bool> guard(emittedBytesWritten, true);
         emit q->bytesWritten(bytes);
     }
-    if (state == QLocalSocket::ClosingState && pipeWriterBytesToWrite() == 0)
-        q->close();
+    if (state == QLocalSocket::ClosingState)
+        q->disconnectFromServer();
 }
 
 qintptr QLocalSocket::socketDescriptor() const
