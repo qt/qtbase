@@ -551,7 +551,7 @@ qreal QSimplex::solver(SolverFactor factor)
 
     // Return the value calculated by the simplex plus the value of the
     // fixed variables.
-    return (factor * valueAt(0, columns - 1)) + resultOffset;
+    return (qToUnderlying(factor) * valueAt(0, columns - 1)) + resultOffset;
 }
 
 /*!

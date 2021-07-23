@@ -631,9 +631,11 @@ void tst_qnetworkreply::uploadPerformance()
       QVERIFY(!QTestEventLoop::instance().timeout());
 }
 
+constexpr qint64 MiB = 1024 * 1024;
+
 void tst_qnetworkreply::httpUploadPerformance()
 {
-      enum {UploadSize = 128*1024*1024}; // 128 MB
+      constexpr qint64 UploadSize = 128 * MiB;
 
       ThreadedDataReaderHttpServer reader;
       FixedSizeDataGenerator generator(UploadSize);
@@ -701,7 +703,7 @@ void tst_qnetworkreply::httpDownloadPerformance()
     QFETCH(bool, serverSendsContentLength);
     QFETCH(bool, chunkedEncoding);
 
-    enum {UploadSize = 128*1024*1024}; // 128 MB
+    constexpr qint64 UploadSize = 128 * MiB;
 
     HttpDownloadPerformanceServer server(UploadSize, serverSendsContentLength, chunkedEncoding);
 

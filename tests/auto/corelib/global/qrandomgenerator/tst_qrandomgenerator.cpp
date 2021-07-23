@@ -750,18 +750,16 @@ void tst_QRandomGenerator::qualityReal()
         return;
     RandomGenerator rng(control);
 
-    enum {
-        SampleSize = 16000,
+    constexpr int SampleSize = 16000;
 
-        // Expected value: sample size times proportion of the range:
-        PerfectOctile = SampleSize / 8,
-        PerfectHalf = SampleSize / 2,
+    // Expected value: sample size times proportion of the range:
+    constexpr int PerfectOctile = SampleSize / 8;
+    constexpr int PerfectHalf = SampleSize / 2;
 
-        // Variance is (1 - proportion of range) * expected; sqrt() for standard deviations.
-        // Should usually be within twice that and almost never outside four times:
-        RangeHalf = 252,         // floor(4 * sqrt((1 - 0.5) * PerfectHalf))
-        RangeOctile = 167        // floor(4 * sqrt((1 - 0.125) * PerfectOctile))
-    };
+    // Variance is (1 - proportion of range) * expected; sqrt() for standard deviations.
+    // Should usually be within twice that and almost never outside four times:
+    constexpr int RangeHalf = 252;     // floor(4 * sqrt((1 - 0.5) * PerfectHalf))
+    constexpr int RangeOctile = 167;   // floor(4 * sqrt((1 - 0.125) * PerfectOctile))
 
     double data[SampleSize];
     std::generate(std::begin(data), std::end(data), [&rng] { return rng.generateDouble(); });
