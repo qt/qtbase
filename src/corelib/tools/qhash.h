@@ -850,7 +850,11 @@ public:
         else
             d = Data::detached(d, size_t(size));
     }
-    inline void squeeze() { reserve(0); }
+    inline void squeeze()
+    {
+        if (capacity())
+            reserve(0);
+    }
 
     inline void detach() { if (!d || d->ref.isShared()) d = Data::detached(d); }
     inline bool isDetached() const noexcept { return d && !d->ref.isShared(); }
