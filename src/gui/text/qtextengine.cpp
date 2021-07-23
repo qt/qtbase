@@ -2393,9 +2393,9 @@ QFontEngine *QTextEngine::fontEngine(const QScriptItem &si, QFixed *ascent, QFix
                 feCache.prevLength = length(&si);
             }
         } else {
-            if (feCache.prevFontEngine && feCache.prevScript == script && feCache.prevPosition == -1)
+            if (feCache.prevFontEngine && feCache.prevScript == script && feCache.prevPosition == -1) {
                 engine = feCache.prevFontEngine;
-            else {
+            } else {
                 engine = font.d->engineForScript(script);
                 Q_ASSERT(engine);
                 engine->ref.ref();
