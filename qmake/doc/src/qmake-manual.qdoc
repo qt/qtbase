@@ -727,9 +727,10 @@
     \section2 Creating and Moving Xcode Projects
 
     Developers on \macos can take advantage of the qmake support for Xcode
-    project files, as described in \l{Qt for macOS#Additional Command-Line Options}{Qt for \macos} documentation.
-    by running qmake to generate an Xcode project from an existing qmake project
-    file. For example:
+    project files, as described in the \l{Qt for macOS/Additional
+    Command-Line Options}{Qt for \macos} documentation,
+    by running qmake to generate an Xcode project from an existing qmake
+    project file. For example:
 
     \snippet code/doc_src_qmake-manual.pro 19
 
@@ -2677,7 +2678,7 @@
 
     Specifies the hard minimum version of \macos that the application supports.
 
-    For more information, see \l{macOS Version Dependencies}.
+    For more information, see \l{Qt for macOS/Supported Versions}.
 
     \section1 QMAKE_MAKEFILE
 
