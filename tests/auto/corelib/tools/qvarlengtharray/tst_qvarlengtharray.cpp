@@ -69,6 +69,7 @@ class tst_QVarLengthArray : public QObject
     Q_OBJECT
 private slots:
     void append();
+    void prepend();
     void move_int_1() { move_int<1>(); }
     void move_int_2() { move_int<2>(); }
     void move_int_3() { move_int<3>(); }
@@ -83,6 +84,7 @@ private slots:
     void appendCausingRealloc();
     void resize();
     void realloc();
+    void iterators();
     void reverseIterators();
     void count();
     void cpp17ctad();
@@ -100,6 +102,13 @@ private slots:
     void insertMove();
     void nonCopyable();
     void implicitDefaultCtor();
+    void reserve();
+    void value();
+    void insert();
+    void insert_data();
+    void replace();
+    void remove();
+    void erase();
 
 private:
     template <qsizetype N, typename T>
@@ -134,6 +143,25 @@ void tst_QVarLengthArray::append()
 
     QVarLengthArray<int> v2; // rocket!
     v2.append(5);
+}
+
+void tst_QVarLengthArray::prepend()
+{
+    QVarLengthArray<QString, 2> v;
+    v.prepend(QString("1"));
+    v.prepend(v.front());
+    QCOMPARE(v.capacity(), 2);
+    // transition from stack to heap
+    v.prepend(v.back());
+    QVERIFY(v.capacity() > 2);
+    QCOMPARE(v.front(), v.back());
+    while (v.size() < v.capacity())
+        v.prepend(v.back());
+    QCOMPARE(v.front(), v.back());
+    QCOMPARE(v.size(), v.capacity());
+    // transition from heap to larger heap:
+    v.prepend(v.back());
+    QCOMPARE(v.front(), v.back());
 }
 
 template <qsizetype N>
@@ -309,6 +337,31 @@ void tst_QVarLengthArray::appendCausingRealloc()
 
 void tst_QVarLengthArray::resize()
 {
+    // Empty Movable
+    {
+        QVarLengthArray<QVariant, 1> values;
+        QCOMPARE(values.size(), 0);
+        values.resize(2);
+        QCOMPARE(values.size(), 2);
+        QCOMPARE(values[0], QVariant());
+        QCOMPARE(values[1], QVariant());
+    }
+
+    // Empty POD
+    {
+        QVarLengthArray<int, 1> values;
+        QCOMPARE(values.size(), 0);
+        values.resize(2);
+        QCOMPARE(values.size(), 2);
+        // POD values are uninitialized, but we can check that we can assign
+        // new values
+        values[0] = 0;
+        values[1] = 1;
+
+        QCOMPARE(values[0], 0);
+        QCOMPARE(values[1], 1);
+    }
+
     //MOVABLE
     {
         QVarLengthArray<QVariant,1> values(1);
@@ -704,8 +757,53 @@ void tst_QVarLengthArray::realloc()
     QVERIFY(reallocTestProceed);
 }
 
+void tst_QVarLengthArray::iterators()
+{
+    QVarLengthArray<int> emptyArr;
+    QCOMPARE(emptyArr.constBegin(), emptyArr.constEnd());
+    QCOMPARE(emptyArr.cbegin(), emptyArr.cend());
+    QCOMPARE(emptyArr.begin(), emptyArr.end());
+
+    QVarLengthArray<int> arr { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+
+    auto it = arr.begin();
+    auto constIt = arr.cbegin();
+    qsizetype idx = 0;
+
+    QCOMPARE(*it, arr[idx]);
+    QCOMPARE(*constIt, arr[idx]);
+
+    it++;
+    constIt++;
+    idx++;
+    QCOMPARE(*it, arr[idx]);
+    QCOMPARE(*constIt, arr[idx]);
+
+    it += 5;
+    constIt += 5;
+    idx += 5;
+    QCOMPARE(*it, arr[idx]);
+    QCOMPARE(*constIt, arr[idx]);
+
+    it -= 3;
+    constIt -= 3;
+    idx -= 3;
+    QCOMPARE(*it, arr[idx]);
+    QCOMPARE(*constIt, arr[idx]);
+
+    it--;
+    constIt--;
+    idx--;
+    QCOMPARE(*it, arr[idx]);
+    QCOMPARE(*constIt, arr[idx]);
+}
+
 void tst_QVarLengthArray::reverseIterators()
 {
+    QVarLengthArray<int> emptyArr;
+    QCOMPARE(emptyArr.crbegin(), emptyArr.crend());
+    QCOMPARE(emptyArr.rbegin(), emptyArr.rend());
+
     QVarLengthArray<int> v;
     v << 1 << 2 << 3 << 4;
     QVarLengthArray<int> vr = v;
@@ -727,6 +825,7 @@ void tst_QVarLengthArray::count()
         QCOMPARE(list.length(), 0);
         QCOMPARE(list.count(), 0);
         QCOMPARE(list.size(), 0);
+        QVERIFY(list.isEmpty());
     }
 
     {
@@ -735,6 +834,7 @@ void tst_QVarLengthArray::count()
         QCOMPARE(list.length(), 1);
         QCOMPARE(list.count(), 1);
         QCOMPARE(list.size(), 1);
+        QVERIFY(!list.isEmpty());
     }
 
     {
@@ -744,6 +844,7 @@ void tst_QVarLengthArray::count()
         QCOMPARE(list.length(), 2);
         QCOMPARE(list.count(), 2);
         QCOMPARE(list.size(), 2);
+        QVERIFY(!list.isEmpty());
     }
 
     {
@@ -754,6 +855,7 @@ void tst_QVarLengthArray::count()
         QCOMPARE(list.length(), 3);
         QCOMPARE(list.count(), 3);
         QCOMPARE(list.size(), 3);
+        QVERIFY(!list.isEmpty());
     }
 
     // test removals too
@@ -765,18 +867,22 @@ void tst_QVarLengthArray::count()
         QCOMPARE(list.length(), 3);
         QCOMPARE(list.count(), 3);
         QCOMPARE(list.size(), 3);
+        QVERIFY(!list.isEmpty());
         list.removeLast();
         QCOMPARE(list.length(), 2);
         QCOMPARE(list.count(), 2);
         QCOMPARE(list.size(), 2);
+        QVERIFY(!list.isEmpty());
         list.removeLast();
         QCOMPARE(list.length(), 1);
         QCOMPARE(list.count(), 1);
         QCOMPARE(list.size(), 1);
+        QVERIFY(!list.isEmpty());
         list.removeLast();
         QCOMPARE(list.length(), 0);
         QCOMPARE(list.count(), 0);
         QCOMPARE(list.size(), 0);
+        QVERIFY(list.isEmpty());
     }
 }
 
@@ -854,9 +960,13 @@ void tst_QVarLengthArray::last()
 
 void tst_QVarLengthArray::squeeze()
 {
-    QVarLengthArray<int> list;
-    int sizeOnStack = list.capacity();
-    int sizeOnHeap = sizeOnStack * 2;
+    QVarLengthArray<int, 100> list;
+    qsizetype sizeOnStack = list.capacity();
+    QCOMPARE(sizeOnStack, 100);
+    list.squeeze();
+    QCOMPARE(list.capacity(), sizeOnStack);
+
+    qsizetype sizeOnHeap = sizeOnStack * 2;
     list.resize(0);
     QCOMPARE(list.capacity(), sizeOnStack);
     list.resize(sizeOnHeap);
@@ -921,6 +1031,10 @@ void tst_QVarLengthArray::operators()
 void tst_QVarLengthArray::indexOf()
 {
     QVarLengthArray<QString> myvec;
+
+    QCOMPARE(myvec.indexOf("A"), -1);
+    QCOMPARE(myvec.indexOf("A", 5), -1);
+
     myvec << "A" << "B" << "C" << "B" << "A";
 
     QVERIFY(myvec.indexOf("B") == 1);
@@ -945,6 +1059,10 @@ void tst_QVarLengthArray::indexOf()
 void tst_QVarLengthArray::lastIndexOf()
 {
     QVarLengthArray<QString> myvec;
+
+    QCOMPARE(myvec.lastIndexOf("A"), -1);
+    QCOMPARE(myvec.lastIndexOf("A", 5), -1);
+
     myvec << "A" << "B" << "C" << "B" << "A";
 
     QVERIFY(myvec.lastIndexOf("B") == 3);
@@ -968,6 +1086,10 @@ void tst_QVarLengthArray::lastIndexOf()
 void tst_QVarLengthArray::contains()
 {
     QVarLengthArray<QString> myvec;
+
+    QVERIFY(!myvec.contains(QLatin1String("aaa")));
+    QVERIFY(!myvec.contains(QString()));
+
     myvec << "aaa" << "bbb" << "ccc";
 
     QVERIFY(myvec.contains(QLatin1String("aaa")));
@@ -983,6 +1105,9 @@ void tst_QVarLengthArray::contains()
 void tst_QVarLengthArray::clear()
 {
     QVarLengthArray<QString, 5> myvec;
+    QCOMPARE(myvec.size(), 0);
+    myvec.clear();
+    QCOMPARE(myvec.size(), 0);
 
     for (int i = 0; i < 10; ++i)
         myvec << "aaa";
@@ -1191,6 +1316,219 @@ void tst_QVarLengthArray::implicitDefaultCtor()
 {
     QVarLengthArray<int> def = {};
     QCOMPARE(def.size(), 0);
+}
+
+void tst_QVarLengthArray::reserve()
+{
+    QVarLengthArray<int, 100> arr;
+    QCOMPARE(arr.capacity(), 100);
+    QCOMPARE(arr.size(), 0);
+
+    const auto *stackPtr = arr.constData();
+    arr.reserve(50);
+    // Nothing changed, as we reserve less than pre-allocated
+    QCOMPARE(arr.capacity(), 100);
+    QCOMPARE(arr.size(), 0);
+    QCOMPARE(arr.constData(), stackPtr);
+
+    arr.reserve(150);
+    // Allocate memory on heap, as we reserve more than pre-allocated
+    QCOMPARE(arr.capacity(), 150);
+    QCOMPARE(arr.size(), 0);
+    const auto *heapPtr = arr.constData();
+    QVERIFY(heapPtr != stackPtr);
+
+    arr.reserve(50);
+    // Nothing changed
+    QCOMPARE(arr.capacity(), 150);
+    QCOMPARE(arr.constData(), heapPtr);
+
+    arr.squeeze();
+    // After squeeze() we go back to using stack
+    QCOMPARE(arr.capacity(), 100);
+    QCOMPARE(arr.constData(), stackPtr);
+}
+
+void tst_QVarLengthArray::value()
+{
+    const QString def("default value");
+
+    QVarLengthArray<QString> arr;
+    QCOMPARE(arr.value(0), QString());
+    QCOMPARE(arr.value(1, def), def);
+    QCOMPARE(arr.value(-1, def), def);
+
+    const qsizetype size = 5;
+    const QString dataStr("data%1");
+    arr.resize(size);
+    for (qsizetype i = 0; i < size; ++i)
+        arr[i] = dataStr.arg(i);
+
+    for (qsizetype i = 0; i < size; ++i)
+        QCOMPARE(arr.value(i, def), dataStr.arg(i));
+
+    QCOMPARE(arr.value(size + 1), QString());
+    QCOMPARE(arr.value(-1, def), def);
+}
+
+void tst_QVarLengthArray::insert()
+{
+    QFETCH(QVarLengthArray<QString>, arr);
+    QFETCH(int, pos);
+    QFETCH(int, count);
+    QFETCH(QString, data);
+    QFETCH(QVarLengthArray<QString>, expected);
+
+    // Insert using index
+    {
+        QVarLengthArray<QString> copy = arr;
+        if (count == 1) {
+            copy.insert(pos, data);
+            QCOMPARE(copy, expected);
+
+            copy = arr;
+            QString d = data;
+            copy.insert(pos, std::move(d));
+            QCOMPARE(copy, expected);
+        } else {
+            copy.insert(pos, count, data);
+            QCOMPARE(copy, expected);
+        }
+    }
+
+    // Insert using iterator
+    {
+        QVarLengthArray<QString> copy = arr;
+        if (count == 1) {
+            copy.insert(copy.cbegin() + pos, data);
+            QCOMPARE(copy, expected);
+
+            copy = arr;
+            QString d = data;
+            copy.insert(copy.cbegin() + pos, std::move(d));
+            QCOMPARE(copy, expected);
+        } else {
+            copy.insert(copy.cbegin() + pos, count, data);
+            QCOMPARE(copy, expected);
+        }
+    }
+}
+
+void tst_QVarLengthArray::insert_data()
+{
+    QTest::addColumn<QVarLengthArray<QString>>("arr");
+    QTest::addColumn<int>("pos");
+    QTest::addColumn<int>("count");
+    QTest::addColumn<QString>("data");
+    QTest::addColumn<QVarLengthArray<QString>>("expected");
+
+    const QString data("Test");
+
+    QTest::newRow("empty")
+            << QVarLengthArray<QString>() << 0 << 1 << data << QVarLengthArray<QString>({ data });
+    QTest::newRow("empty-none")
+            << QVarLengthArray<QString>() << 0 << 0 << data << QVarLengthArray<QString>();
+    QTest::newRow("begin")
+            << QVarLengthArray<QString>({ "value1", "value2" }) << 0 << 1 << data
+            << QVarLengthArray<QString>({ data, "value1", "value2" });
+    QTest::newRow("end")
+            << QVarLengthArray<QString>({ "value1", "value2" }) << 2 << 1 << data
+            << QVarLengthArray<QString>({ "value1", "value2", data });
+    QTest::newRow("middle")
+            << QVarLengthArray<QString>({ "value1", "value2" }) << 1 << 1 << data
+            << QVarLengthArray<QString>({ "value1", data, "value2" });
+    QTest::newRow("begin-none")
+            << QVarLengthArray<QString>({ "value1", "value2" }) << 0 << 0 << data
+            << QVarLengthArray<QString>({ "value1", "value2" });
+    QTest::newRow("end-none")
+            << QVarLengthArray<QString>({ "value1", "value2" }) << 2 << 0 << data
+            << QVarLengthArray<QString>({ "value1", "value2" });
+    QTest::newRow("middle-none")
+            << QVarLengthArray<QString>({ "value1", "value2" }) << 1 << 0 << data
+            << QVarLengthArray<QString>({ "value1", "value2" });
+    QTest::newRow("multi begin")
+            << QVarLengthArray<QString>({ "value1", "value2" }) << 0 << 2 << data
+            << QVarLengthArray<QString>({ data, data, "value1", "value2" });
+    QTest::newRow("multi end")
+            << QVarLengthArray<QString>({ "value1", "value2" }) << 2 << 2 << data
+            << QVarLengthArray<QString>({ "value1", "value2", data, data });
+    QTest::newRow("multi middle")
+            << QVarLengthArray<QString>({ "value1", "value2" }) << 1 << 2 << data
+            << QVarLengthArray<QString>({ "value1", data, data, "value2" });
+}
+
+void tst_QVarLengthArray::replace()
+{
+    QVarLengthArray<QString> arr({ "val0", "val1", "val2" });
+
+    arr.replace(0, "data0");
+    QCOMPARE(arr, QVarLengthArray<QString>({ "data0", "val1", "val2" }));
+
+    arr.replace(2, "data2");
+    QCOMPARE(arr, QVarLengthArray<QString>({ "data0", "val1", "data2" }));
+
+    arr.replace(1, "data1");
+    QCOMPARE(arr, QVarLengthArray<QString>({ "data0", "data1", "data2" }));
+}
+
+void tst_QVarLengthArray::remove()
+{
+    auto isVal2 = [](const QString &str) { return str == "val2"; };
+
+    QVarLengthArray<QString> arr;
+    QCOMPARE(arr.removeAll("val0"), 0);
+    QVERIFY(!arr.removeOne("val1"));
+    QCOMPARE(arr.removeIf(isVal2), 0);
+
+    arr << "val0" << "val1" << "val2";
+    arr << "val0" << "val1" << "val2";
+    arr << "val0" << "val1" << "val2";
+
+    QCOMPARE(arr.size(), 9);
+
+    arr.remove(1, 3);
+    QCOMPARE(arr, QVarLengthArray<QString>({ "val0", "val1", "val2", "val0", "val1", "val2" }));
+
+    arr.remove(2);
+    QCOMPARE(arr, QVarLengthArray<QString>({ "val0", "val1", "val0", "val1", "val2" }));
+
+    QVERIFY(arr.removeOne("val1"));
+    QCOMPARE(arr, QVarLengthArray<QString>({ "val0", "val0", "val1", "val2" }));
+
+    QCOMPARE(arr.removeAll("val0"), 2);
+    QCOMPARE(arr, QVarLengthArray<QString>({ "val1", "val2" }));
+
+    QCOMPARE(arr.removeIf(isVal2), 1);
+    QCOMPARE(arr, QVarLengthArray<QString>({ "val1" }));
+
+    arr.removeLast();
+    QVERIFY(arr.isEmpty());
+}
+
+void tst_QVarLengthArray::erase()
+{
+    QVarLengthArray<QString> arr;
+    QCOMPARE(arr.erase(arr.cbegin(), arr.cend()), arr.cend());
+
+    arr << "val0" << "val1" << "val2";
+    arr << "val0" << "val1" << "val2";
+    arr << "val0" << "val1" << "val2";
+
+    auto it = arr.erase(arr.cbegin() + 1, arr.cend() - 3);
+    QCOMPARE(it, arr.cend() - 3);
+    QCOMPARE(arr, QVarLengthArray<QString>({ "val0", "val0", "val1", "val2" }));
+
+    it = arr.erase(arr.cbegin());
+    QCOMPARE(it, arr.cbegin());
+    QCOMPARE(arr, QVarLengthArray<QString>({ "val0", "val1", "val2" }));
+
+    it = arr.erase(arr.cbegin() + 1);
+    QCOMPARE(it, arr.cend() - 1);
+    QCOMPARE(arr, QVarLengthArray<QString>({ "val0", "val2" }));
+
+    it = arr.erase(arr.cend() - 1);
+    QCOMPARE(it, arr.cend());
+    QCOMPARE(arr, QVarLengthArray<QString>({ "val0" }));
 }
 
 QTEST_APPLESS_MAIN(tst_QVarLengthArray)
