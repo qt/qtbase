@@ -232,14 +232,11 @@ const unsigned char * q_ASN1_STRING_get0_data(const ASN1_STRING *x);
 BIO *q_BIO_new(const BIO_METHOD *a);
 const BIO_METHOD *q_BIO_s_mem();
 
-int q_DSA_bits(DSA *a);
 int q_EVP_CIPHER_CTX_reset(EVP_CIPHER_CTX *c);
 int q_EVP_PKEY_up_ref(EVP_PKEY *a);
 EVP_PKEY_CTX *q_EVP_PKEY_CTX_new(EVP_PKEY *pkey, ENGINE *e);
 void q_EVP_PKEY_CTX_free(EVP_PKEY_CTX *ctx);
 int q_EVP_PKEY_param_check(EVP_PKEY_CTX *ctx);
-int q_EVP_PKEY_base_id(EVP_PKEY *a);
-int q_RSA_bits(RSA *a);
 int q_OPENSSL_sk_num(OPENSSL_STACK *a);
 void q_OPENSSL_sk_pop_free(OPENSSL_STACK *a, void (*b)(void *));
 OPENSSL_STACK *q_OPENSSL_sk_new_null();
@@ -266,7 +263,6 @@ int q_X509_STORE_set_ex_data(X509_STORE *ctx, int idx, void *data);
 void *q_X509_STORE_get_ex_data(X509_STORE *r, int idx);
 STACK_OF(X509) *q_X509_STORE_CTX_get0_chain(X509_STORE_CTX *ctx);
 void q_DH_get0_pqg(const DH *dh, const BIGNUM **p, const BIGNUM **q, const BIGNUM **g);
-int q_DH_bits(DH *dh);
 
 # define q_SSL_load_error_strings() q_OPENSSL_init_ssl(OPENSSL_INIT_LOAD_SSL_STRINGS \
                                                        | OPENSSL_INIT_LOAD_CRYPTO_STRINGS, NULL)
@@ -380,11 +376,6 @@ int q_BN_num_bits(const BIGNUM *a);
 int q_BN_is_word(BIGNUM *a, BN_ULONG w);
 BN_ULONG q_BN_mod_word(const BIGNUM *a, BN_ULONG w);
 
-#ifndef OPENSSL_NO_EC
-const EC_GROUP* q_EC_KEY_get0_group(const EC_KEY* k);
-int q_EC_GROUP_get_degree(const EC_GROUP* g);
-#endif // OPENSSL_NO_EC
-
 DSA *q_DSA_new();
 void q_DSA_free(DSA *a);
 X509 *q_d2i_X509(X509 **a, const unsigned char **b, long c);
@@ -417,23 +408,8 @@ const EVP_CIPHER *q_EVP_aes_256_cbc();
 #endif // OPENSSL_NO_AES
 
 const EVP_MD *q_EVP_sha1();
-int q_EVP_PKEY_assign(EVP_PKEY *a, int b, void *r);
-int q_EVP_PKEY_set1_RSA(EVP_PKEY *a, RSA *b);
-int q_EVP_PKEY_set1_DSA(EVP_PKEY *a, DSA *b);
-int q_EVP_PKEY_set1_DH(EVP_PKEY *a, DH *b);
 
-#ifndef OPENSSL_NO_EC
-int q_EVP_PKEY_set1_EC_KEY(EVP_PKEY *a, EC_KEY *b);
-#endif
-
-int q_EVP_PKEY_cmp(const EVP_PKEY *a, const EVP_PKEY *b);
 void q_EVP_PKEY_free(EVP_PKEY *a);
-RSA *q_EVP_PKEY_get1_RSA(EVP_PKEY *a);
-DSA *q_EVP_PKEY_get1_DSA(EVP_PKEY *a);
-DH *q_EVP_PKEY_get1_DH(EVP_PKEY *a);
-#ifndef OPENSSL_NO_EC
-EC_KEY *q_EVP_PKEY_get1_EC_KEY(EVP_PKEY *a);
-#endif
 int q_EVP_PKEY_type(int a);
 EVP_PKEY *q_EVP_PKEY_new();
 int q_i2d_X509(X509 *a, unsigned char **b);
@@ -446,29 +422,13 @@ int q_OBJ_obj2txt(char *buf, int buf_len, ASN1_OBJECT *obj, int no_name);
 int q_OBJ_obj2nid(const ASN1_OBJECT *a);
 #define q_EVP_get_digestbynid(a) q_EVP_get_digestbyname(q_OBJ_nid2sn(a))
 EVP_PKEY *q_PEM_read_bio_PrivateKey(BIO *a, EVP_PKEY **b, pem_password_cb *c, void *d);
-DSA *q_PEM_read_bio_DSAPrivateKey(BIO *a, DSA **b, pem_password_cb *c, void *d);
-RSA *q_PEM_read_bio_RSAPrivateKey(BIO *a, RSA **b, pem_password_cb *c, void *d);
-
-#ifndef OPENSSL_NO_EC
-EC_KEY *q_PEM_read_bio_ECPrivateKey(BIO *a, EC_KEY **b, pem_password_cb *c, void *d);
-int q_PEM_write_bio_ECPrivateKey(BIO *a, EC_KEY *b, const EVP_CIPHER *c, unsigned char *d,
-                                  int e, pem_password_cb *f, void *g);
-EC_KEY *q_PEM_read_bio_EC_PUBKEY(BIO *a, EC_KEY **b, pem_password_cb *c, void *d);
-int q_PEM_write_bio_EC_PUBKEY(BIO *a, EC_KEY *b);
-#endif // OPENSSL_NO_EC
 
 DH *q_PEM_read_bio_DHparams(BIO *a, DH **b, pem_password_cb *c, void *d);
-int q_PEM_write_bio_DSAPrivateKey(BIO *a, DSA *b, const EVP_CIPHER *c, unsigned char *d,
-                                  int e, pem_password_cb *f, void *g);
-int q_PEM_write_bio_RSAPrivateKey(BIO *a, RSA *b, const EVP_CIPHER *c, unsigned char *d,
-                                  int e, pem_password_cb *f, void *g);
 int q_PEM_write_bio_PrivateKey(BIO *a, EVP_PKEY *b, const EVP_CIPHER *c, unsigned char *d,
                                int e, pem_password_cb *f, void *g);
+int q_PEM_write_bio_PrivateKey_traditional(BIO *a, EVP_PKEY *b, const EVP_CIPHER *c, unsigned char *d,
+                               int e, pem_password_cb *f, void *g);
 EVP_PKEY *q_PEM_read_bio_PUBKEY(BIO *a, EVP_PKEY **b, pem_password_cb *c, void *d);
-DSA *q_PEM_read_bio_DSA_PUBKEY(BIO *a, DSA **b, pem_password_cb *c, void *d);
-RSA *q_PEM_read_bio_RSA_PUBKEY(BIO *a, RSA **b, pem_password_cb *c, void *d);
-int q_PEM_write_bio_DSA_PUBKEY(BIO *a, DSA *b);
-int q_PEM_write_bio_RSA_PUBKEY(BIO *a, RSA *b);
 int q_PEM_write_bio_PUBKEY(BIO *a, EVP_PKEY *b);
 
 void q_RAND_seed(const void *a, int b);
@@ -621,10 +581,6 @@ void q_GENERAL_NAME_free(GENERAL_NAME *a);
 #define q_sk_SSL_CIPHER_value(st, i) q_SKM_sk_value(SSL_CIPHER, (st), (i))
 #define q_SSL_CTX_add_extra_chain_cert(ctx,x509) \
         q_SSL_CTX_ctrl(ctx,SSL_CTRL_EXTRA_CHAIN_CERT,0,(char *)x509)
-#define q_EVP_PKEY_assign_RSA(pkey,rsa) q_EVP_PKEY_assign((pkey),EVP_PKEY_RSA,\
-                                        (char *)(rsa))
-#define q_EVP_PKEY_assign_DSA(pkey,dsa) q_EVP_PKEY_assign((pkey),EVP_PKEY_DSA,\
-                                        (char *)(dsa))
 #define q_OpenSSL_add_all_algorithms() q_OPENSSL_add_all_algorithms_conf()
 
 #if OPENSSL_VERSION_MAJOR < 3
@@ -754,9 +710,69 @@ void q_SSL_CTX_set_security_level(SSL_CTX *ctx, int level);
 #if defined(OPENSSL_VERSION_MAJOR) && OPENSSL_VERSION_MAJOR >= 3
 X509 *q_SSL_get1_peer_certificate(SSL *a);
 #define q_SSL_get_peer_certificate q_SSL_get1_peer_certificate
+int q_EVP_PKEY_get_bits(const EVP_PKEY *pkey);
+int q_EVP_PKEY_get_base_id(const EVP_PKEY *pkey);
+#define q_EVP_PKEY_base_id q_EVP_PKEY_get_base_id
 #else
 X509 *q_SSL_get_peer_certificate(SSL *a);
+int q_EVP_PKEY_base_id(EVP_PKEY *a);
 #endif // OPENSSL_VERSION_MAJOR >= 3
+
+#ifndef OPENSSL_NO_DEPRECATED_3_0
+
+DSA *q_PEM_read_bio_DSA_PUBKEY(BIO *a, DSA **b, pem_password_cb *c, void *d);
+RSA *q_PEM_read_bio_RSA_PUBKEY(BIO *a, RSA **b, pem_password_cb *c, void *d);
+
+DSA *q_PEM_read_bio_DSAPrivateKey(BIO *a, DSA **b, pem_password_cb *c, void *d);
+RSA *q_PEM_read_bio_RSAPrivateKey(BIO *a, RSA **b, pem_password_cb *c, void *d);
+
+int q_PEM_write_bio_DSA_PUBKEY(BIO *a, DSA *b);
+int q_PEM_write_bio_RSA_PUBKEY(BIO *a, RSA *b);
+
+int q_PEM_write_bio_DSAPrivateKey(BIO *a, DSA *b, const EVP_CIPHER *c, unsigned char *d,
+                                  int e, pem_password_cb *f, void *g);
+int q_PEM_write_bio_RSAPrivateKey(BIO *a, RSA *b, const EVP_CIPHER *c, unsigned char *d,
+                                  int e, pem_password_cb *f, void *g);
+
+RSA *q_EVP_PKEY_get1_RSA(EVP_PKEY *a);
+DSA *q_EVP_PKEY_get1_DSA(EVP_PKEY *a);
+DH *q_EVP_PKEY_get1_DH(EVP_PKEY *a);
+
+int q_EVP_PKEY_set1_RSA(EVP_PKEY *a, RSA *b);
+int q_EVP_PKEY_set1_DSA(EVP_PKEY *a, DSA *b);
+int q_EVP_PKEY_set1_DH(EVP_PKEY *a, DH *b);
+
+int q_DH_bits(DH *dh);
+int q_RSA_bits(RSA *a);
+int q_DSA_bits(DSA *a);
+
+int q_EVP_PKEY_assign(EVP_PKEY *a, int b, void *r);
+int q_EVP_PKEY_cmp(const EVP_PKEY *a, const EVP_PKEY *b);
+
+#ifndef OPENSSL_NO_EC
+
+EC_KEY *q_PEM_read_bio_EC_PUBKEY(BIO *a, EC_KEY **b, pem_password_cb *c, void *d);
+EC_KEY *q_PEM_read_bio_ECPrivateKey(BIO *a, EC_KEY **b, pem_password_cb *c, void *d);
+
+int q_PEM_write_bio_ECPrivateKey(BIO *a, EC_KEY *b, const EVP_CIPHER *c, unsigned char *d,
+                                  int e, pem_password_cb *f, void *g);
+int q_PEM_write_bio_EC_PUBKEY(BIO *a, EC_KEY *b);
+
+EC_KEY *q_EVP_PKEY_get1_EC_KEY(EVP_PKEY *a);
+int q_EVP_PKEY_set1_EC_KEY(EVP_PKEY *a, EC_KEY *b);
+
+const EC_GROUP* q_EC_KEY_get0_group(const EC_KEY* k);
+int q_EC_GROUP_get_degree(const EC_GROUP* g);
+
+#define q_EVP_PKEY_assign_RSA(pkey,rsa) q_EVP_PKEY_assign((pkey),EVP_PKEY_RSA,\
+                                        (char *)(rsa))
+#define q_EVP_PKEY_assign_DSA(pkey,dsa) q_EVP_PKEY_assign((pkey),EVP_PKEY_DSA,\
+                                        (char *)(dsa))
+
+
+#endif // OPENSSL_NO_EC
+
+#endif // OPENSSL_NO_DEPRECATED_3_0
 
 QT_END_NAMESPACE
 
