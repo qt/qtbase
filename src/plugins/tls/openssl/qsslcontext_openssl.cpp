@@ -46,6 +46,7 @@
 #include "qsslsocket_openssl_symbols_p.h"
 #include "qsslcontext_openssl_p.h"
 #include "qtlsbackend_openssl_p.h"
+#include "qtlskey_openssl_p.h"
 #include "qopenssl_p.h"
 
 #include <QtNetwork/private/qssl_p.h>
@@ -626,6 +627,13 @@ QT_WARNING_POP
         if (configuration.d->privateKey.algorithm() == QSsl::Opaque) {
             sslContext->pkey = reinterpret_cast<EVP_PKEY *>(configuration.d->privateKey.handle());
         } else {
+#ifdef OPENSSL_NO_DEPRECATED_3_0
+            auto qtKey = QTlsBackend::backend<QTlsPrivate::TlsKeyOpenSSL>(configuration.d->privateKey);
+            Q_ASSERT(qtKey);
+            sslContext->pkey = qtKey->genericKey;
+            Q_ASSERT(sslContext->pkey);
+            q_EVP_PKEY_up_ref(sslContext->pkey);
+#else
             // Load private key
             sslContext->pkey = q_EVP_PKEY_new();
             // before we were using EVP_PKEY_assign_R* functions and did not use EVP_PKEY_free.
@@ -638,7 +646,8 @@ QT_WARNING_POP
 #ifndef OPENSSL_NO_EC
             else if (configuration.d->privateKey.algorithm() == QSsl::Ec)
                 q_EVP_PKEY_set1_EC_KEY(sslContext->pkey, reinterpret_cast<EC_KEY *>(configuration.d->privateKey.handle()));
-#endif
+#endif // OPENSSL_NO_EC
+#endif // OPENSSL_NO_DEPRECATED_3_0
         }
         auto pkey = sslContext->pkey;
         if (configuration.d->privateKey.algorithm() == QSsl::Opaque)

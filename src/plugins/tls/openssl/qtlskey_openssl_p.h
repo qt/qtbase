@@ -67,6 +67,14 @@
 #include <openssl/dsa.h>
 #include <openssl/dh.h>
 
+#ifdef OPENSSL_NO_DEPRECATED_3_0
+typedef struct evp_pkey_st EVP_PKEY;
+typedef struct dsa_st DSA;
+typedef struct rsa_st RSA;
+typedef struct dh_st DH;
+typedef struct ec_key_st EC_KEY;
+#endif // OPENSSL_NO_DEPRECATED_3_0
+
 QT_BEGIN_NAMESPACE
 
 QT_REQUIRE_CONFIG(ssl);
@@ -115,6 +123,7 @@ public:
 #ifndef OPENSSL_NO_EC
         EC_KEY *ec;
 #endif
+        EVP_PKEY *genericKey;
     };
 
     bool fromEVP_PKEY(EVP_PKEY *pkey);
