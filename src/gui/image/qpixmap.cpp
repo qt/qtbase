@@ -82,7 +82,7 @@ static bool qt_pixmap_thread_test()
         return false;
     }
 
-    if (qApp->thread() != QThread::currentThread()) {
+    if (QGuiApplicationPrivate::instance() && qApp->thread() != QThread::currentThread()) {
         bool fail = false;
         if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::ThreadedPixmaps)) {
             printf("Platform plugin does not support threaded pixmaps!\n");
