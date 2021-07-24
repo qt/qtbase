@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -81,17 +81,11 @@ static bool qt_pixmap_thread_test()
         qFatal("QPixmap: Must construct a QGuiApplication before a QPixmap");
         return false;
     }
-
-    if (QGuiApplicationPrivate::instance() && qApp->thread() != QThread::currentThread()) {
-        bool fail = false;
-        if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::ThreadedPixmaps)) {
-            printf("Platform plugin does not support threaded pixmaps!\n");
-            fail = true;
-        }
-        if (fail) {
-            qWarning("QPixmap: It is not safe to use pixmaps outside the GUI thread");
-            return false;
-        }
+    if (QGuiApplicationPrivate::instance()
+        && qApp->thread() != QThread::currentThread()
+        && !QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::ThreadedPixmaps)) {
+        qWarning("QPixmap: It is not safe to use pixmaps outside the GUI thread on this platform");
+        return false;
     }
     return true;
 }
