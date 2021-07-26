@@ -115,7 +115,7 @@ struct QUtcData {
 // GENERATED PART STARTS HERE
 
 /*
-    This part of the file was generated on 2021-04-13 from the
+    This part of the file was generated on 2021-07-26 from the
     Common Locale Data Repository v39 file supplemental/windowsZones.xml
 
     http://www.unicode.org/cldr/
@@ -124,7 +124,7 @@ struct QUtcData {
     edited) CLDR data; see qtbase/util/locale_database/.
 */
 
-// Windows ID Key, Country Enum, IANA ID Index
+// Windows ID Key, Territory Enum, IANA ID Index
 static const QZoneData zoneDataTable[] = {
     {      1,     1,     0 }, // Afghanistan Standard Time / Afghanistan
     {      2,   248,    11 }, // Alaskan Standard Time / United States
@@ -135,7 +135,7 @@ static const QZoneData zoneDataTable[] = {
     {      5,   190,   157 }, // Arab Standard Time / Qatar
     {      5,   205,   168 }, // Arab Standard Time / Saudi Arabia
     {      5,   259,   180 }, // Arab Standard Time / Yemen
-    {      6,     0,   190 }, // Arabian Standard Time / AnyCountry
+    {      6,     0,   190 }, // Arabian Standard Time / AnyTerritory
     {      6,   176,   200 }, // Arabian Standard Time / Oman
     {      6,   245,   212 }, // Arabian Standard Time / United Arab Emirates
     {      7,   113,   223 }, // Arabic Standard Time / Iraq
@@ -156,11 +156,11 @@ static const QZoneData zoneDataTable[] = {
     {     18,    22,   797 }, // Belarus Standard Time / Belarus
     {     19,   182,   810 }, // Bougainville Standard Time / Papua New Guinea
     {     20,    41,   831 }, // Canada Central Standard Time / Canada
-    {     21,     0,   868 }, // Cape Verde Standard Time / AnyCountry
+    {     21,     0,   868 }, // Cape Verde Standard Time / AnyTerritory
     {     21,    43,   878 }, // Cape Verde Standard Time / Cape Verde
     {     22,    12,   898 }, // Caucasus Standard Time / Armenia
     {     23,    15,   911 }, // Cen. Australia Standard Time / Australia
-    {     24,     0,   952 }, // Central America Standard Time / AnyCountry
+    {     24,     0,   952 }, // Central America Standard Time / AnyTerritory
     {     24,    24,   962 }, // Central America Standard Time / Belize
     {     24,    59,   977 }, // Central America Standard Time / Costa Rica
     {     24,    70,   996 }, // Central America Standard Time / Ecuador
@@ -168,7 +168,7 @@ static const QZoneData zoneDataTable[] = {
     {     24,    99,  1034 }, // Central America Standard Time / Guatemala
     {     24,   106,  1052 }, // Central America Standard Time / Honduras
     {     24,   168,  1072 }, // Central America Standard Time / Nicaragua
-    {     25,     0,  1088 }, // Central Asia Standard Time / AnyCountry
+    {     25,     0,  1088 }, // Central Asia Standard Time / AnyTerritory
     {     25,     9,  1098 }, // Central Asia Standard Time / Antarctica
     {     25,    33,  1116 }, // Central Asia Standard Time / British Indian Ocean Territory
     {     25,    50,  1130 }, // Central Asia Standard Time / China
@@ -186,14 +186,14 @@ static const QZoneData zoneDataTable[] = {
     {     28,    60,  1345 }, // Central European Standard Time / Croatia
     {     28,   140,  1359 }, // Central European Standard Time / Macedonia
     {     28,   187,  1373 }, // Central European Standard Time / Poland
-    {     29,     0,  1387 }, // Central Pacific Standard Time / AnyCountry
+    {     29,     0,  1387 }, // Central Pacific Standard Time / AnyTerritory
     {     29,     9,  1398 }, // Central Pacific Standard Time / Antarctica
     {     29,   153,  1415 }, // Central Pacific Standard Time / Micronesia
     {     29,   166,  1445 }, // Central Pacific Standard Time / New Caledonia
     {     29,   214,  1460 }, // Central Pacific Standard Time / Solomon Islands
     {     29,   252,  1480 }, // Central Pacific Standard Time / Vanuatu
     {     30,   152,  1494 }, // Central Standard Time (Mexico) / Mexico
-    {     31,     0,  1570 }, // Central Standard Time / AnyCountry
+    {     31,     0,  1570 }, // Central Standard Time / AnyTerritory
     {     31,    41,  1578 }, // Central Standard Time / Canada
     {     31,   152,  1653 }, // Central Standard Time / Mexico
     {     31,   248,  1671 }, // Central Standard Time / United States
@@ -202,8 +202,8 @@ static const QZoneData zoneDataTable[] = {
     {     32,   139,  1868 }, // China Standard Time / Macao
     {     33,   167,  1879 }, // Chatham Islands Standard Time / New Zealand
     {     34,    61,  1895 }, // Cuba Standard Time / Cuba
-    {     35,     0,  1910 }, // Dateline Standard Time / AnyCountry
-    {     36,     0,  1921 }, // E. Africa Standard Time / AnyCountry
+    {     35,     0,  1910 }, // Dateline Standard Time / AnyTerritory
+    {     36,     0,  1921 }, // E. Africa Standard Time / AnyTerritory
     {     36,     9,  1931 }, // E. Africa Standard Time / Antarctica
     {     36,    55,  1948 }, // E. Africa Standard Time / Comoros
     {     36,    67,  1962 }, // E. Africa Standard Time / Djibouti
@@ -219,7 +219,7 @@ static const QZoneData zoneDataTable[] = {
     {     38,   154,  2152 }, // E. Europe Standard Time / Moldova
     {     39,    32,  2168 }, // E. South America Standard Time / Brazil
     {     40,    49,  2186 }, // Easter Island Standard Time / Chile
-    {     41,     0,  2201 }, // Eastern Standard Time / AnyCountry
+    {     41,     0,  2201 }, // Eastern Standard Time / AnyTerritory
     {     41,    18,  2209 }, // Eastern Standard Time / Bahamas
     {     41,    41,  2224 }, // Eastern Standard Time / Canada
     {     41,   248,  2329 }, // Eastern Standard Time / United States
@@ -263,7 +263,7 @@ static const QZoneData zoneDataTable[] = {
     {     51,    94,  3115 }, // GTB Standard Time / Greece
     {     51,   192,  3129 }, // GTB Standard Time / Romania
     {     52,   104,  3146 }, // Haiti Standard Time / Haiti
-    {     53,     0,  3169 }, // Hawaiian Standard Time / AnyCountry
+    {     53,     0,  3169 }, // Hawaiian Standard Time / AnyTerritory
     {     53,    58,  3180 }, // Hawaiian Standard Time / Cook Islands
     {     53,    86,  3198 }, // Hawaiian Standard Time / French Polynesia
     {     53,   247,  3213 }, // Hawaiian Standard Time / United States Outlying Islands
@@ -275,7 +275,7 @@ static const QZoneData zoneDataTable[] = {
     {     58,   193,  3299 }, // Kaliningrad Standard Time / Russia
     {     59,   218,  3318 }, // Korea Standard Time / South Korea
     {     60,   135,  3329 }, // Libya Standard Time / Libya
-    {     61,     0,  3344 }, // Line Islands Standard Time / AnyCountry
+    {     61,     0,  3344 }, // Line Islands Standard Time / AnyTerritory
     {     61,   125,  3355 }, // Line Islands Standard Time / Kiribati
     {     62,    15,  3374 }, // Lord Howe Standard Time / Australia
     {     63,   193,  3394 }, // Magadan Standard Time / Russia
@@ -289,7 +289,7 @@ static const QZoneData zoneDataTable[] = {
     {     69,   159,  3521 }, // Morocco Standard Time / Morocco
     {     69,   257,  3539 }, // Morocco Standard Time / Western Sahara
     {     70,   152,  3555 }, // Mountain Standard Time (Mexico) / Mexico
-    {     71,     0,  3590 }, // Mountain Standard Time / AnyCountry
+    {     71,     0,  3590 }, // Mountain Standard Time / AnyTerritory
     {     71,    41,  3598 }, // Mountain Standard Time / Canada
     {     71,   152,  3672 }, // Mountain Standard Time / Mexico
     {     71,   248,  3688 }, // Mountain Standard Time / United States
@@ -307,7 +307,7 @@ static const QZoneData zoneDataTable[] = {
     {     81,   174,  3907 }, // North Korea Standard Time / North Korea
     {     82,   193,  3922 }, // Omsk Standard Time / Russia
     {     83,    49,  3932 }, // Pacific SA Standard Time / Chile
-    {     84,     0,  3949 }, // Pacific Standard Time / AnyCountry
+    {     84,     0,  3949 }, // Pacific Standard Time / AnyTerritory
     {     84,    41,  3957 }, // Pacific Standard Time / Canada
     {     84,   248,  3975 }, // Pacific Standard Time / United States
     {     85,   152,  3995 }, // Pacific Standard Time (Mexico) / Mexico
@@ -323,13 +323,13 @@ static const QZoneData zoneDataTable[] = {
     {     92,   193,  4184 }, // Russia Time Zone 11 / Russia
     {     93,   193,  4211 }, // Russian Standard Time / Russia
     {     93,   244,  4238 }, // Russian Standard Time / Ukraine
-    {     94,     0,  4256 }, // SA Eastern Standard Time / AnyCountry
+    {     94,     0,  4256 }, // SA Eastern Standard Time / AnyTerritory
     {     94,     9,  4266 }, // SA Eastern Standard Time / Antarctica
     {     94,    32,  4303 }, // SA Eastern Standard Time / Brazil
     {     94,    80,  4382 }, // SA Eastern Standard Time / Falkland Islands
     {     94,    85,  4399 }, // SA Eastern Standard Time / French Guiana
     {     94,   223,  4415 }, // SA Eastern Standard Time / Suriname
-    {     95,     0,  4434 }, // SA Pacific Standard Time / AnyCountry
+    {     95,     0,  4434 }, // SA Pacific Standard Time / AnyTerritory
     {     95,    32,  4444 }, // SA Pacific Standard Time / Brazil
     {     95,    41,  4480 }, // SA Pacific Standard Time / Canada
     {     95,    45,  4502 }, // SA Pacific Standard Time / Cayman Islands
@@ -338,7 +338,7 @@ static const QZoneData zoneDataTable[] = {
     {     95,   119,  4550 }, // SA Pacific Standard Time / Jamaica
     {     95,   181,  4566 }, // SA Pacific Standard Time / Panama
     {     95,   184,  4581 }, // SA Pacific Standard Time / Peru
-    {     96,     0,  4594 }, // SA Western Standard Time / AnyCountry
+    {     96,     0,  4594 }, // SA Western Standard Time / AnyTerritory
     {     96,     8,  4604 }, // SA Western Standard Time / Anguilla
     {     96,    10,  4621 }, // SA Western Standard Time / Antigua And Barbuda
     {     96,    13,  4637 }, // SA Western Standard Time / Aruba
@@ -370,7 +370,7 @@ static const QZoneData zoneDataTable[] = {
     {     99,   202,  5139 }, // Samoa Standard Time / Samoa
     {    100,   204,  5152 }, // Sao Tome Standard Time / Sao Tome And Principe
     {    101,   193,  5168 }, // Saratov Standard Time / Russia
-    {    102,     0,  5183 }, // SE Asia Standard Time / AnyCountry
+    {    102,     0,  5183 }, // SE Asia Standard Time / AnyTerritory
     {    102,     9,  5193 }, // SE Asia Standard Time / Antarctica
     {    102,    39,  5210 }, // SE Asia Standard Time / Cambodia
     {    102,    51,  5226 }, // SE Asia Standard Time / Christmas Island
@@ -378,13 +378,13 @@ static const QZoneData zoneDataTable[] = {
     {    102,   129,  5271 }, // SE Asia Standard Time / Laos
     {    102,   231,  5286 }, // SE Asia Standard Time / Thailand
     {    102,   255,  5299 }, // SE Asia Standard Time / Vietnam
-    {    103,     0,  5311 }, // Singapore Standard Time / AnyCountry
+    {    103,     0,  5311 }, // Singapore Standard Time / AnyTerritory
     {    103,    35,  5321 }, // Singapore Standard Time / Brunei
     {    103,   111,  5333 }, // Singapore Standard Time / Indonesia
     {    103,   143,  5347 }, // Singapore Standard Time / Malaysia
     {    103,   185,  5378 }, // Singapore Standard Time / Philippines
     {    103,   210,  5390 }, // Singapore Standard Time / Singapore
-    {    104,     0,  5405 }, // South Africa Standard Time / AnyCountry
+    {    104,     0,  5405 }, // South Africa Standard Time / AnyTerritory
     {    104,    30,  5415 }, // South Africa Standard Time / Botswana
     {    104,    38,  5431 }, // South Africa Standard Time / Burundi
     {    104,    57,  5448 }, // South Africa Standard Time / Congo Kinshasa
@@ -403,7 +403,7 @@ static const QZoneData zoneDataTable[] = {
     {    108,   228,  5642 }, // Taipei Standard Time / Taiwan
     {    109,    15,  5654 }, // Tasmania Standard Time / Australia
     {    110,    32,  5709 }, // Tocantins Standard Time / Brazil
-    {    111,     0,  5727 }, // Tokyo Standard Time / AnyCountry
+    {    111,     0,  5727 }, // Tokyo Standard Time / AnyTerritory
     {    111,   111,  5737 }, // Tokyo Standard Time / Indonesia
     {    111,   120,  5751 }, // Tokyo Standard Time / Japan
     {    111,   179,  5762 }, // Tokyo Standard Time / Palau
@@ -415,37 +415,37 @@ static const QZoneData zoneDataTable[] = {
     {    116,   241,  5842 }, // Turks And Caicos Standard Time / Turks And Caicos Islands
     {    117,   156,  5861 }, // Ulaanbaatar Standard Time / Mongolia
     {    118,   248,  5894 }, // US Eastern Standard Time / United States
-    {    119,     0,  5961 }, // US Mountain Standard Time / AnyCountry
+    {    119,     0,  5961 }, // US Mountain Standard Time / AnyTerritory
     {    119,    41,  5971 }, // US Mountain Standard Time / Canada
     {    119,   152,  6028 }, // US Mountain Standard Time / Mexico
     {    119,   248,  6047 }, // US Mountain Standard Time / United States
-    {    120,     0,  6063 }, // UTC-11 / AnyCountry
+    {    120,     0,  6063 }, // UTC-11 / AnyTerritory
     {    120,     5,  6074 }, // UTC-11 / American Samoa
     {    120,   171,  6092 }, // UTC-11 / Niue
     {    120,   247,  6105 }, // UTC-11 / United States Outlying Islands
-    {    121,     0,  6120 }, // UTC-09 / AnyCountry
+    {    121,     0,  6120 }, // UTC-09 / AnyTerritory
     {    121,    86,  6130 }, // UTC-09 / French Polynesia
-    {    122,     0,  6146 }, // UTC-08 / AnyCountry
+    {    122,     0,  6146 }, // UTC-08 / AnyTerritory
     {    122,   186,  6156 }, // UTC-08 / Pitcairn
-    {    123,     0,  6173 }, // UTC-02 / AnyCountry
+    {    123,     0,  6173 }, // UTC-02 / AnyTerritory
     {    123,    32,  6183 }, // UTC-02 / Brazil
     {    123,   217,  6199 }, // UTC-02 / South Georgia And South Sandwich Islands
-    {    124,     0,  6222 }, // UTC / AnyCountry
-    {    125,     0,  6238 }, // UTC+12 / AnyCountry
+    {    124,     0,  6222 }, // UTC / AnyTerritory
+    {    125,     0,  6238 }, // UTC+12 / AnyTerritory
     {    125,   125,  6249 }, // UTC+12 / Kiribati
     {    125,   147,  6264 }, // UTC+12 / Marshall Islands
     {    125,   163,  6297 }, // UTC+12 / Nauru
     {    125,   242,  6311 }, // UTC+12 / Tuvalu
     {    125,   247,  6328 }, // UTC+12 / United States Outlying Islands
     {    125,   256,  6341 }, // UTC+12 / Wallis And Futuna
-    {    126,     0,  6356 }, // UTC+13 / AnyCountry
+    {    126,     0,  6356 }, // UTC+13 / AnyTerritory
     {    126,   125,  6367 }, // UTC+13 / Kiribati
     {    126,   234,  6385 }, // UTC+13 / Tokelau
     {    127,   254,  6401 }, // Venezuela Standard Time / Venezuela
     {    128,   193,  6417 }, // Vladivostok Standard Time / Russia
     {    129,   193,  6448 }, // Volgograd Standard Time / Russia
     {    130,    15,  6465 }, // W. Australia Standard Time / Australia
-    {    131,     0,  6481 }, // W. Central Africa Standard Time / AnyCountry
+    {    131,     0,  6481 }, // W. Central Africa Standard Time / AnyTerritory
     {    131,     4,  6491 }, // W. Central Africa Standard Time / Algeria
     {    131,     7,  6506 }, // W. Central Africa Standard Time / Angola
     {    131,    25,  6520 }, // W. Central Africa Standard Time / Benin
@@ -476,7 +476,7 @@ static const QZoneData zoneDataTable[] = {
     {    132,   226,  6919 }, // W. Europe Standard Time / Switzerland
     {    132,   253,  6933 }, // W. Europe Standard Time / Vatican City
     {    133,   156,  6948 }, // W. Mongolia Standard Time / Mongolia
-    {    134,     0,  6958 }, // West Asia Standard Time / AnyCountry
+    {    134,     0,  6958 }, // West Asia Standard Time / AnyTerritory
     {    134,     9,  6968 }, // West Asia Standard Time / Antarctica
     {    134,    87,  6986 }, // West Asia Standard Time / French Southern Territories
     {    134,   123,  7003 }, // West Asia Standard Time / Kazakhstan
@@ -485,7 +485,7 @@ static const QZoneData zoneDataTable[] = {
     {    134,   240,  7078 }, // West Asia Standard Time / Turkmenistan
     {    134,   251,  7092 }, // West Asia Standard Time / Uzbekistan
     {    135,   180,  7121 }, // West Bank Standard Time / Palestinian Territories
-    {    136,     0,  7143 }, // West Pacific Standard Time / AnyCountry
+    {    136,     0,  7143 }, // West Pacific Standard Time / AnyTerritory
     {    136,     9,  7154 }, // West Pacific Standard Time / Antarctica
     {    136,    98,  7180 }, // West Pacific Standard Time / Guam
     {    136,   153,  7193 }, // West Pacific Standard Time / Micronesia
