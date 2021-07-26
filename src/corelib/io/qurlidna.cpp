@@ -1566,7 +1566,7 @@ namespace {
     }
 } // unnamed namespace
 
-static bool containsProhibitedOuptut(QStringView str, qsizetype from)
+static bool containsProhibitedOutput(QStringView str, qsizetype from)
 {
     constexpr char32_t invalid = 0xDEAD;
     static_assert(isProhibitedOutputChar(invalid));
@@ -2092,7 +2092,7 @@ Q_AUTOTEST_EXPORT bool qt_nameprep(QString *source, int from)
                         firstNonAscii > from ? firstNonAscii - 1 : from);
 
     // Check for prohibited output
-    if (containsProhibitedOuptut(*source, firstNonAscii)) {
+    if (containsProhibitedOutput(*source, firstNonAscii)) {
         source->resize(from);
         return false;
     }
