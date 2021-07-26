@@ -3384,7 +3384,7 @@ QString QLocaleData::doubleToString(double d, int precision, DoubleForm form,
     int bufSize = 1;
     if (precision == QLocale::FloatingPointShortest)
         bufSize += std::numeric_limits<double>::max_digits10;
-    else if (form == DFDecimal)
+    else if (form == DFDecimal && qIsFinite(d))
         bufSize += wholePartSpace(qAbs(d)) + precision;
     else // Add extra digit due to different interpretations of precision. Also, "nan" has to fit.
         bufSize += qMax(2, precision) + 1;
