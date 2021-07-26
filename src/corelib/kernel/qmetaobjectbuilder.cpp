@@ -1119,7 +1119,7 @@ static void writeString(char *out, int i, const QByteArray &str,
     memcpy(out + 2 * i * sizeof(uint), &offsetLen, 2 * sizeof(uint));
 
     memcpy(out + offset, str.constData(), size);
-    out[offsetOfStringdataMember + stringdataOffset + size] = '\0';
+    out[offset + size] = '\0';
 
     stringdataOffset += size + 1;
 }
