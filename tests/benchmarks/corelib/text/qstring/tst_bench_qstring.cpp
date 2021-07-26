@@ -299,7 +299,7 @@ void tst_QString::number_double_data()
     };
 
     for (auto &datum : data) {
-        QTest::addRow("%ls, format '%c', precision %d", qUtf16Printable(datum.expected), datum.f,
+        QTest::addRow("%s, format '%c', precision %d", qPrintable(datum.expected), datum.f,
                       datum.p)
                 << datum.d << datum.f << datum.p << datum.expected;
     }
