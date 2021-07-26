@@ -108,7 +108,7 @@ QT_BEGIN_NAMESPACE
     \section1 Adding Strings
 
     Strings can be added to a list using the \l
-    {QList::insert()}{insert()} \l
+    {QList::insert()}{insert()}, \l
     {QList::append()}{append()}, \l
     {QList::operator+=()}{operator+=()} and \l
     {operator<<()} functions.
