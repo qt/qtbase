@@ -135,8 +135,9 @@ public:
         const size_t id;
         friend class QCalendarBackend;
         constexpr bool isInEnum() const { return id <= size_t(QCalendar::System::Last); }
-        constexpr SystemId(QCalendar::System e) : id(size_t(e)) {}
-        constexpr SystemId(size_t i) : id(i) {}
+        constexpr explicit SystemId(QCalendar::System e) : id(size_t(e)) { }
+        constexpr explicit SystemId(size_t i) : id(i) { }
+
     public:
         constexpr SystemId() : id(~size_t(0)) {}
         constexpr size_t index() const noexcept { return id; }
