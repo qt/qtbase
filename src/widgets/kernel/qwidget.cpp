@@ -4851,7 +4851,9 @@ void QWidgetPrivate::resolveLayoutDirection()
 /*!
     \property QWidget::layoutDirection
 
-    \brief the layout direction for this widget
+    \brief the layout direction for this widget.
+
+    \note This method no longer affects text layout direction since Qt 4.7.
 
     By default, this property is set to Qt::LeftToRight.
 
@@ -4862,7 +4864,6 @@ void QWidgetPrivate::resolveLayoutDirection()
     has been called for the parent do not inherit the parent's layout
     direction.
 
-    This method no longer affects text layout direction since Qt 4.7.
 
     \sa QApplication::layoutDirection
 */
