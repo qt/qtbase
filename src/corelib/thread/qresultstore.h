@@ -193,6 +193,9 @@ public:
     template<typename T>
     int addResults(int index, const QList<T> *results)
     {
+        if (results->empty()) // reject if results are empty
+            return -1;
+
         if (containsValidResultItem(index)) // reject if already present
             return -1;
 
@@ -202,6 +205,10 @@ public:
     template<typename T>
     int addResults(int index, const QList<T> *results, int totalCount)
     {
+        // reject if results are empty, and nothing is filtered away
+        if ((m_filterMode == false || results->count() == totalCount) && results->empty())
+            return -1;
+
         if (containsValidResultItem(index)) // reject if already present
             return -1;
 
