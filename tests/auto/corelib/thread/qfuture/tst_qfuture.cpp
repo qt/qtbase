@@ -730,6 +730,26 @@ void tst_QFuture::futureInterface()
         QCOMPARE(i1.resultReference(0), 2);
         QCOMPARE(i2.resultReference(0), 1);
     }
+
+    {
+        QFutureInterface<int> fi;
+        fi.reportStarted();
+        QVERIFY(!fi.reportResults(QList<int> {}));
+        fi.reportFinished();
+
+        QVERIFY(fi.results().empty());
+    }
+
+    {
+        QFutureInterface<int> fi;
+        fi.reportStarted();
+        QList<int> values = { 1, 2, 3 };
+        QVERIFY(fi.reportResults(values));
+        QVERIFY(!fi.reportResults(QList<int> {}));
+        fi.reportFinished();
+
+        QCOMPARE(fi.results(), values);
+    }
 }
 
 template <typename T>
