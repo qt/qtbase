@@ -101,7 +101,7 @@ extern "C" int LLVMFuzzerTestOneInput(const char *Data, size_t Size)
 
     QDateTime::fromString(userString, formats[0], QCalendar(QCalendar::System::Gregorian));
     for (int sys = int(QCalendar::System::Julian); sys <= int(QCalendar::System::Last); ++sys)
-        QDateTime::fromString(userString, formats[0], QCalendar(sys));
+        QDateTime::fromString(userString, formats[0], QCalendar(QCalendar::System(sys)));
 
     for (const auto &format : formats) {
         #ifdef LOG_FORMAT
