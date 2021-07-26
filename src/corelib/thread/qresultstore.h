@@ -151,12 +151,19 @@ public:
     template <typename T>
     int addResults(int index, const QVector<T> *results)
     {
+        if (results->empty()) // reject if results are empty
+            return -1;
+
         return addResults(index, new QVector<T>(*results), results->count(), results->count());
     }
 
     template <typename T>
     int addResults(int index, const QVector<T> *results, int totalCount)
     {
+        // reject if results are empty, and nothing is filtered away
+        if ((m_filterMode == false || results->count() == totalCount) && results->empty())
+            return -1;
+
         if (m_filterMode == true && results->count() != totalCount && 0 == results->count())
             return addResults(index, nullptr, 0, totalCount);
         else

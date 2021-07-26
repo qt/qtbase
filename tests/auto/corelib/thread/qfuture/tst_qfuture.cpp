@@ -627,6 +627,26 @@ void tst_QFuture::futureInterface()
         VoidResult a;
         a.run().waitForFinished();
     }
+
+    {
+        QFutureInterface<int> fi;
+        fi.reportStarted();
+        fi.reportResults(QVector<int> {});
+        fi.reportFinished();
+
+        QVERIFY(fi.results().empty());
+    }
+
+    {
+        QFutureInterface<int> fi;
+        fi.reportStarted();
+        QVector<int> values = { 1, 2, 3 };
+        fi.reportResults(values);
+        fi.reportResults(QVector<int> {});
+        fi.reportFinished();
+
+        QCOMPARE(fi.results(), values.toList());
+    }
 }
 
 template <typename T>

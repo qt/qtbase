@@ -175,6 +175,14 @@ void tst_QtConcurrentResultStore::addResults()
 
     ++it;
     QCOMPARE(it, store.end());
+
+    QVector<int> empty;
+    const auto countBefore = store.count();
+    QCOMPARE(store.addResults(countBefore, &empty), -1);
+    QCOMPARE(store.count(), countBefore);
+
+    QCOMPARE(store.addResults(countBefore, &vec1), countBefore);
+    QCOMPARE(store.count(), countBefore + vec1.size());
 }
 
 void tst_QtConcurrentResultStore::resultIndex()
@@ -338,6 +346,14 @@ void tst_QtConcurrentResultStore::filterMode()
     QCOMPARE(store.contains(6), true);
     QCOMPARE(store.contains(7), true);
     QCOMPARE(store.contains(8), false);
+
+    QVector<int> empty;
+    const auto countBefore = store.count();
+    QCOMPARE(store.addResults(countBefore, &empty), -1);
+    QCOMPARE(store.count(), countBefore);
+
+    QCOMPARE(store.addResult(countBefore, &int2), countBefore);
+    QCOMPARE(store.count(), countBefore + 1);
 }
 
 void tst_QtConcurrentResultStore::addCanceledResult()
