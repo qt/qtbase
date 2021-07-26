@@ -54,6 +54,8 @@
 
 #include <string>
 #include <algorithm>
+#include <limits>
+#include <ctype.h>
 
 #define CREATE_VIEW(string)                                              \
     const QString padded = QLatin1Char(' ') + string + QLatin1Char(' '); \
@@ -533,6 +535,8 @@ private slots:
     void toUcs4();
     void arg();
     void number();
+    void number_double_data();
+    void number_double();
     void number_base_data();
     void number_base();
     void doubleOut();
@@ -5147,11 +5151,93 @@ void tst_QString::number()
     QCOMPARE(QString::number(4.4), QLatin1String("4.4"));
     QCOMPARE(QString::number(Q_INT64_C(-555)), QLatin1String("-555"));
     QCOMPARE(QString::number(Q_UINT64_C(6666)), QLatin1String("6666"));
+}
 
-#ifndef QT_NO_DOUBLECONVERSION // snprintf_l is too stupid for this
-    QCOMPARE( QString::number(12.05, 'f', 1), QString("12.1") );
-    QCOMPARE( QString::number(12.5, 'f', 0), QString("13") );
-#endif
+void tst_QString::number_double_data()
+{
+    QTest::addColumn<double>("value");
+    QTest::addColumn<char>("format");
+    QTest::addColumn<int>("precision");
+    QTest::addColumn<QString>("expected");
+
+    constexpr double nan = std::numeric_limits<double>::quiet_NaN();
+    constexpr double inf = std::numeric_limits<double>::infinity();
+    struct
+    {
+        double d;
+        char f;
+        int p;
+        QLatin1String expected;
+    } const data[] = {
+        { 0.0, 'f', 0, QLatin1String("0") },
+        { 0.0, 'e', 0, QLatin1String("0e+00") },
+        { 0.0, 'e', 1, QLatin1String("0.0e+00") },
+        { 0.0001, 'f', 0, QLatin1String("0") },
+        { 0.1234, 'f', 5, QLatin1String("0.12340") },
+        { -0.1234, 'f', 5, QLatin1String("-0.12340") },
+        { 0.0000000314, 'f', 12, QLatin1String("0.000000031400") },
+        { -0.0000000314, 'f', 12, QLatin1String("-0.000000031400") },
+        { -100000, 'f', 15, QLatin1String("-100000.000000000000000") },
+        { 0.5 + qSqrt(1.25), 'f', 15, QLatin1String("1.618033988749895") },
+        { 0.5 + qSqrt(1.25), 'e', 15, QLatin1String("1.618033988749895e+00") },
+        { std::numeric_limits<double>::epsilon(), 'g', 10, QLatin1String("2.220446049e-16") },
+        { 0.0001, 'e', 1, QLatin1String("1.0e-04") },
+        { 1e8, 'e', 1, QLatin1String("1.0e+08") },
+        { -1e8, 'e', 1, QLatin1String("-1.0e+08") },
+        { 100000, 'f', 0, QLatin1String("100000") },
+        // Increasingly small fraction, test how/when 'g' switches to scientific notation:
+        { 0.001, 'g', 6, QLatin1String("0.001") },
+        { 0.0001, 'g', 6, QLatin1String("0.0001") },
+        { 0.00001, 'g', 6, QLatin1String("1e-05") },
+        { 0.000001, 'g', 6, QLatin1String("1e-06") },
+        // FloatingPointShortest is relied upon by various facilities:
+        { 1.0, 'g', QLocale::FloatingPointShortest, QLatin1String("1") },
+        { 0.01, 'g', QLocale::FloatingPointShortest, QLatin1String("0.01") },
+        { 123.456, 'g', QLocale::FloatingPointShortest, QLatin1String("123.456") },
+        { 12.12, 'g', QLocale::FloatingPointShortest, QLatin1String("12.12") },
+        { 0.000001, 'g', QLocale::FloatingPointShortest, QLatin1String("1e-06") },
+        { 100000, 'g', QLocale::FloatingPointShortest, QLatin1String("1e+05") },
+        // inf and nan testing:
+        { inf, 'g', QLocale::FloatingPointShortest, QLatin1String("inf") },
+        { -inf, 'g', QLocale::FloatingPointShortest, QLatin1String("-inf") },
+        { nan, 'g', QLocale::FloatingPointShortest, QLatin1String("nan") },
+        { inf, 'f', 15, QLatin1String("inf") },
+        { -inf, 'f', 15, QLatin1String("-inf") },
+        { nan, 'f', 15, QLatin1String("nan") },
+        { inf, 'e', 2, QLatin1String("inf") },
+        { -inf, 'e', 2, QLatin1String("-inf") },
+        { nan, 'e', 2, QLatin1String("nan") },
+        // Negative precision (except QLocale::F.P.Shortest) defaults to 6:
+        { 0.001, 'f', -50, QLatin1String("0.001000") },
+        { 0.0001, 'f', -62, QLatin1String("0.000100") },
+        { 0.00001, 'f', -11, QLatin1String("0.000010") },
+        { 0.000001, 'f', -41, QLatin1String("0.000001") },
+        { 0.0000001, 'f', -21, QLatin1String("0.000000") },
+        // Some rounding tests
+        { 10.5, 'f', 0, QLatin1String("11") },
+        { 12.05, 'f', 1, QLatin1String("12.1") },
+        { 14.500000000000001, 'f', 0, QLatin1String("15") },
+        { 16.5000000000000001, 'f', 0, QLatin1String("17") },
+    };
+
+    for (auto datum : data) {
+        QTest::addRow("%s, format '%c', precision %d", datum.expected.data(), datum.f, datum.p)
+                << datum.d << datum.f << datum.p << datum.expected.toString();
+        if (datum.f != 'f') { // Also test uppercase format
+            datum.f = toupper(datum.f);
+            QString upper = datum.expected.toString().toUpper();
+            QTest::addRow("%s, format '%c', precision %d", qPrintable(upper), datum.f, datum.p)
+                    << datum.d << datum.f << datum.p << upper;
+        }
+    }
+}
+
+void tst_QString::number_double()
+{
+    QFETCH(double, value);
+    QFETCH(char, format);
+    QFETCH(int, precision);
+    QTEST(QString::number(value, format, precision), "expected");
 }
 
 void tst_QString::number_base_data()
