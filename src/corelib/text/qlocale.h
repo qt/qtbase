@@ -994,9 +994,9 @@ public:
     QString toString(ushort i) const { return toString(qulonglong(i)); }
     QString toString(int i) const { return toString(qlonglong(i)); }
     QString toString(uint i) const { return toString(qulonglong(i)); }
-    QString toString(double i, char f = 'g', int prec = 6) const;
-    QString toString(float i, char f = 'g', int prec = 6) const
-    { return toString(double(i), f, prec); }
+    QString toString(double f, char format = 'g', int precision = 6) const;
+    QString toString(float f, char format = 'g', int precision = 6) const
+    { return toString(double(f), format, precision); }
 
 #if QT_STRINGVIEW_LEVEL < 2
     // (Can't inline first two: passing by value doesn't work when only forward-declared.)
