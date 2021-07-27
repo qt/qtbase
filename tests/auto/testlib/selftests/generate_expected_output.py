@@ -64,7 +64,7 @@ TESTS = ['assert', 'badxml', 'benchlibcallgrind', 'benchlibcounting',
          'signaldumper', 'silent', 'singleskip', 'skip', 'skipcleanup',
          'skipinit', 'skipinitdata', 'sleep', 'strcmp', 'subtest', 'testlib',
          'tuplediagnostics', 'verbose1', 'verbose2', 'verifyexceptionthrown',
-         'warnings', 'watchdog', 'xunit', 'keyboard']
+         'warnings', 'watchdog', 'junit', 'keyboard']
 
 
 class Fail (Exception): pass
@@ -299,6 +299,8 @@ def generateTestData(test_path, expected_path, clean, formats):
     env = testEnv(testname)
 
     for format in formats:
+        if testname == "junit" and not format == "junitxml":
+            continue
         print(f'  running {testname}/{format}')
         cmd = [path, f'-{format}']
         expected_file = f'expected_{testname}.{format}'

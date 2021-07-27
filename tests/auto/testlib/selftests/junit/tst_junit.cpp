@@ -28,12 +28,12 @@
 
 #include <QTest>
 
-class tst_Xunit : public QObject
+class tst_JUnit : public QObject
 {
     Q_OBJECT
 
 public:
-    tst_Xunit();
+    tst_JUnit();
 
 private slots:
     void testFunc1();
@@ -45,28 +45,28 @@ private slots:
     void testFunc7();
 };
 
-tst_Xunit::tst_Xunit()
+tst_JUnit::tst_JUnit()
 {
 }
 
-void tst_Xunit::testFunc1()
+void tst_JUnit::testFunc1()
 {
     QWARN("just a QWARN() !");
     QCOMPARE(1,1);
 }
 
-void tst_Xunit::testFunc2()
+void tst_JUnit::testFunc2()
 {
     qDebug("a qDebug() call with comment-ending stuff -->");
     QCOMPARE(2, 3);
 }
 
-void tst_Xunit::testFunc3()
+void tst_JUnit::testFunc3()
 {
     QSKIP("skipping this function!");
 }
 
-void tst_Xunit::testFunc4()
+void tst_JUnit::testFunc4()
 {
     QFAIL("a forced failure!");
 }
@@ -79,24 +79,24 @@ void tst_Xunit::testFunc4()
     count.
 */
 
-void tst_Xunit::testFunc5()
+void tst_JUnit::testFunc5()
 {
     QEXPECT_FAIL("", "this failure is expected", Abort);
     QVERIFY(false);
 }
 
-void tst_Xunit::testFunc6()
+void tst_JUnit::testFunc6()
 {
     QEXPECT_FAIL("", "this failure is also expected", Abort);
     QVERIFY(false);
 }
 
-void tst_Xunit::testFunc7()
+void tst_JUnit::testFunc7()
 {
     QEXPECT_FAIL("", "this pass is unexpected", Abort);
     QVERIFY(true);
 }
 
 
-QTEST_APPLESS_MAIN(tst_Xunit)
-#include "tst_xunit.moc"
+QTEST_APPLESS_MAIN(tst_JUnit)
+#include "tst_junit.moc"

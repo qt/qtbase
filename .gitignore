@@ -190,7 +190,7 @@ qt*-config.pri
 /tests/auto/testlib/selftests/verifyexceptionthrown/verifyexceptionthrown
 /tests/auto/testlib/selftests/waitwithoutgui/waitwithoutgui
 /tests/auto/testlib/selftests/warnings/warnings
-/tests/auto/testlib/selftests/xunit/xunit
+/tests/auto/testlib/selftests/junit/junit
 /tests/auto/widgets/kernel/qapplication/modal/modal
 
 QObject.log
