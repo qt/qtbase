@@ -64,6 +64,8 @@
 #include <qtimer.h>
 #include <qhash.h>
 
+#include <vector>
+
 QT_REQUIRE_CONFIG(filesystemmodel);
 
 QT_BEGIN_NAMESPACE
@@ -291,6 +293,8 @@ public:
     QHash<const QFileSystemNode*, bool> bypassFilters;
 #if QT_CONFIG(regularexpression)
     QStringList nameFilters;
+    std::vector<QRegularExpression> nameFiltersRegexps;
+    void rebuildNameFilterRegexps();
 #endif
     QHash<QString, QString> resolvedSymLinks;
 
