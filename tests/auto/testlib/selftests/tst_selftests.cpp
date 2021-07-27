@@ -748,6 +748,9 @@ bool TestLogger::shouldIgnoreTest(const QString &test) const
     if (logger == QTestLog::TeamCity && test.startsWith("benchlib"))
         return true; // Skip benchmark for TeamCity logger
 
+    if (logger != QTestLog::JUnitXML && test == "junit")
+        return true;
+
     return false;
 }
 
@@ -775,7 +778,7 @@ void checkErrorOutput(const QString &test, const QByteArray &errorOutput)
         || test == "cmptest" // QImage comparison requires QGuiApplication
         || test == "fetchbogus"
         || test == "watchdog"
-        || test == "xunit"
+        || test == "junit"
         || test == "benchlibcallgrind")
         return;
 

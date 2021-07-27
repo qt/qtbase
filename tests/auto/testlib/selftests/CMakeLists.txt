@@ -91,6 +91,7 @@ set(subprograms
     findtestdata
     float
     globaldata
+    junit
     longstring
     maxwarnings
     multiexec
@@ -116,7 +117,6 @@ set(subprograms
     verifyexceptionthrown
     warnings
     watchdog
-    xunit
 )
 
 if(TARGET Qt::Gui)
