@@ -772,3 +772,40 @@ function(qt_internal_link_internal_platform_for_object_library target)
     # Achieve this by compiling the cpp files with the PlatformModuleInternal compile flags.
     target_link_libraries("${target}" PRIVATE Qt::PlatformModuleInternal)
 endfunction()
+
+
+# Use ${dep_target}'s include dirs when building ${target} and optionally propagate the include
+# dirs to consumers of ${target}.
+
+# Assumes ${dep_target} is an INTERFACE_LIBRARY that only propagates include dirs and ${target}
+# is a Qt module / plugin.
+#
+# Building ${target} requires ${dep_target}'s include dirs.
+#
+# User projects that don't have ${dep_target}'s headers installed in their system should still
+# configure successfully.
+#
+# To achieve that, consumers of ${target} will only get the include directories of ${dep_target}
+# if the latter package and target exists.
+#
+# A find_package(dep_target) dependency is added to ${target}'s ModuleDependencies.cmake file.
+#
+# We use target_include_directories(PRIVATE) instead of target_link_libraries(PRIVATE) because the
+# latter would propagate a mandatory LINK_ONLY dependency on the ${dep_target} in a static Qt build.
+#
+# The main use case is for propagating WrapVulkanHeaders::WrapVulkanHeaders.
+function(qt_internal_add_target_include_dirs_and_optionally_propagate target dep_target)
+    if(NOT TARGET "${target}")
+        message(FATAL_ERROR "${target} is not a valid target.")
+    endif()
+    if(NOT TARGET "${dep_target}")
+        message(FATAL_ERROR "${dep_target} is not a valid target.")
+    endif()
+
+    target_include_directories("${target}" PRIVATE
+        "$<TARGET_PROPERTY:${dep_target},INTERFACE_INCLUDE_DIRECTORIES>")
+
+    target_link_libraries("${target}" INTERFACE "$<TARGET_NAME_IF_EXISTS:${dep_target}>")
+
+    qt_record_extra_third_party_dependency("${target}" "${dep_target}")
+endfunction()

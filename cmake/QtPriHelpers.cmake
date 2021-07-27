@@ -36,7 +36,16 @@ function(qt_generate_qmake_libraries_pri_content module_name output_root_dir out
                     list(APPEND lib_libs "$<TARGET_LINKER_FILE:${lib_target}>")
                 endif()
                 list(APPEND lib_libdir  "$<TARGET_PROPERTY:${lib_target},INTERFACE_LINK_DIRECTORIES>")
-                list(APPEND lib_incdir  "$<TARGET_PROPERTY:${lib_target},INTERFACE_INCLUDE_DIRECTORIES>")
+
+                get_target_property(skip_include_dir "${lib_target}" _qt_skip_include_dir_for_pri)
+                if(skip_include_dir)
+                    set(target_include_dir "")
+                else()
+                    set(target_include_dir
+                        "$<TARGET_PROPERTY:${lib_target},INTERFACE_INCLUDE_DIRECTORIES>")
+                endif()
+
+                list(APPEND lib_incdir "${target_include_dir}")
                 list(APPEND lib_defines "$<TARGET_PROPERTY:${lib_target},INTERFACE_COMPILE_DEFINITIONS>")
             else()
                 if(lib_target MATCHES "/([^/]+).framework$")
@@ -120,14 +129,35 @@ function(qt_get_direct_module_dependencies target out_var)
 endfunction()
 
 # Return a list of qmake library names for a given list of targets.
-# For example, Vulkan::Vulkan_nolink is mapped to vulkan/nolink.
+# For example, Foo::Foo_nolink is mapped to foo/nolink.
+# Also targets with the _qt_is_nolink_target property are mapped to nolink as well.
 function(qt_internal_map_targets_to_qmake_libs out_var)
     set(result "")
     foreach(target ${ARGN})
+        # Unwrap optional targets. Needed for Vulkan.
+        if(target MATCHES "^\\$<TARGET_NAME_IF_EXISTS:(.*)>$")
+            set(target ${CMAKE_MATCH_1})
+        endif()
+
+        set(is_no_link_target FALSE)
+
+        # First case of detecting nolink targets (possibly not needed anymore)
         string(REGEX REPLACE "_nolink$" "" stripped_target "${target}")
+        if(NOT target STREQUAL stripped_target)
+            set(is_no_link_target TRUE)
+        endif()
+
+        # Second case of detecting nolink targets.
+        if(TARGET "${target}")
+            get_target_property(marked_as_no_link_target "${target}" _qt_is_nolink_target)
+            if(marked_as_no_link_target)
+                set(is_no_link_target TRUE)
+            endif()
+        endif()
+
         qt_internal_map_target_to_qmake_lib(${stripped_target} qmake_lib)
         if(NOT "${qmake_lib}" STREQUAL "")
-            if(NOT target STREQUAL stripped_target)
+            if(is_no_link_target)
                 string(APPEND qmake_lib "/nolink")
             endif()
             list(APPEND result "${qmake_lib}")

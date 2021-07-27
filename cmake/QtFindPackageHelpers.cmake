@@ -269,6 +269,29 @@ function(qt_record_extra_qt_main_tools_package_dependency main_target_name
         "${main_target_name}" "${qtfied_package_name_versioned}" "${dep_package_version}")
 endfunction()
 
+# Record an extra 3rd party target as a dependency for ${main_target_name}.
+#
+# Adds a find_package(${dep_target_package_name}) in ${main_target_name}Dependencies.cmake.
+#
+# Needed to record a dependency on the package that provides WrapVulkanHeaders::WrapVulkanHeaders.
+# The package version, components, whether the package is optional, etc, are queried from the
+# ${dep_target} target properties.
+function(qt_record_extra_third_party_dependency main_target_name dep_target)
+    if(NOT TARGET "${main_target_name}")
+        qt_get_tool_target_name(main_target_name "${main_target_name}")
+    endif()
+    if(TARGET "${main_target_name}")
+        get_target_property(extra_deps "${main_target_name}" _qt_extra_third_party_dep_targets)
+        if(NOT extra_deps)
+            set(extra_deps "")
+        endif()
+
+        list(APPEND extra_deps "${dep_target}")
+        set_target_properties("${main_target_name}" PROPERTIES _qt_extra_third_party_dep_targets
+                                                               "${extra_deps}")
+    endif()
+endfunction()
+
 # This function stores the list of Qt targets a library depend on,
 # along with their version info, for usage in ${target}Depends.cmake file
 function(qt_register_target_dependencies target public_libs private_libs)

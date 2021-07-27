@@ -18,6 +18,12 @@ if(Vulkan_INCLUDE_DIR)
     target_include_directories(WrapVulkanHeaders::WrapVulkanHeaders INTERFACE
         ${Vulkan_INCLUDE_DIR})
 
+    set_target_properties(WrapVulkanHeaders::WrapVulkanHeaders PROPERTIES
+        _qt_is_nolink_target TRUE)
+
+    set_target_properties(WrapVulkanHeaders::WrapVulkanHeaders PROPERTIES
+        _qt_skip_include_dir_for_pri TRUE)
+
     # Also propagate MoltenVK include directory on Apple platforms if found.
     # Assumes the folder structure of the LunarG Vulkan SDK.
     if(APPLE)

@@ -148,6 +148,13 @@ function(__qt_internal_walk_libs
                 continue()
             endif()
 
+            # Skip optional dependencies for now. They are likely to be handled manually for prl
+            # file purposes (like nolink handling). And for one of the other operations, we don't
+            # have a use case yet. This might be revisited.
+            if(lib MATCHES "^\\$<TARGET_NAME_IF_EXISTS:")
+                continue()
+            endif()
+
             # Strip any directory scope tokens.
             __qt_internal_strip_target_directory_scope_token("${lib}" lib)
 

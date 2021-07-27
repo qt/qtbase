@@ -25,7 +25,7 @@ macro(qt_collect_third_party_deps target)
     endif()
     unset(_target_is_static)
 
-    foreach(dep ${${depends_var}} ${optional_public_depends})
+    foreach(dep ${${depends_var}} ${optional_public_depends} ${extra_third_party_deps})
         # Gather third party packages that should be found when using the Qt module.
         # Also handle nolink target dependencies.
         string(REGEX REPLACE "_nolink$" "" base_dep "${dep}")
@@ -136,6 +136,12 @@ function(qt_internal_create_module_depends_file target)
     endif()
     if(NOT extra_depends MATCHES "-NOTFOUND$")
         list(APPEND target_deps "${extra_depends}")
+    endif()
+
+    # Extra 3rd party targets who's packages should be considered dependencies.
+    get_target_property(extra_third_party_deps "${target}" _qt_extra_third_party_dep_targets)
+    if(NOT extra_third_party_deps)
+        set(extra_third_party_deps "")
     endif()
 
     # Used for assembling the content of an include/Module/ModuleDepends.h header.
