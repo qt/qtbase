@@ -1594,9 +1594,11 @@ void QFileSystemModel::setFilter(QDir::Filters filters)
     Q_D(QFileSystemModel);
     if (d->filters == filters)
         return;
+    const bool changingCaseSensitivity =
+        filters.testFlag(QDir::CaseSensitive) != d->filters.testFlag(QDir::CaseSensitive);
     d->filters = filters;
-    // CaseSensitivity might have changed
-    setNameFilters(nameFilters());
+    if (changingCaseSensitivity)
+        d->rebuildNameFilterRegexps();
     d->forceSort = true;
     d->delayedSort();
 }
@@ -1693,7 +1695,6 @@ bool QFileSystemModel::nameFilterDisables() const
 */
 void QFileSystemModel::setNameFilters(const QStringList &filters)
 {
-    // Prep the regexp's ahead of time
 #if QT_CONFIG(regularexpression)
     Q_D(QFileSystemModel);
 
@@ -1716,6 +1717,7 @@ void QFileSystemModel::setNameFilters(const QStringList &filters)
     }
 
     d->nameFilters = filters;
+    d->rebuildNameFilterRegexps();
     d->forceSort = true;
     d->delayedSort();
 #else
@@ -2152,21 +2154,36 @@ bool QFileSystemModelPrivate::passNameFilters(const QFileSystemNode *node) const
 
     // Check the name regularexpression filters
     if (!(node->isDir() && (filters & QDir::AllDirs))) {
-        auto cs = (filters & QDir::CaseSensitive) ? Qt::CaseSensitive : Qt::CaseInsensitive;
-
-        for (const auto &nameFilter : nameFilters) {
-            auto rx = QRegularExpression::fromWildcard(nameFilter, cs);
-            QRegularExpressionMatch match = rx.match(node->fileName);
-            if (match.hasMatch())
-                return true;
-        }
-        return false;
+        const auto matchesNodeFileName = [node](const QRegularExpression &re)
+        {
+            return node->fileName.contains(re);
+        };
+        return std::any_of(nameFiltersRegexps.begin(),
+                           nameFiltersRegexps.end(),
+                           matchesNodeFileName);
     }
 #else
     Q_UNUSED(node);
 #endif
     return true;
 }
+
+#if QT_CONFIG(regularexpression)
+void QFileSystemModelPrivate::rebuildNameFilterRegexps()
+{
+    nameFiltersRegexps.clear();
+    nameFiltersRegexps.reserve(nameFilters.size());
+    const auto cs = (filters & QDir::CaseSensitive) ? Qt::CaseSensitive : Qt::CaseInsensitive;
+    const auto convertWildcardToRegexp = [cs](const QString &nameFilter)
+    {
+        return QRegularExpression::fromWildcard(nameFilter, cs);
+    };
+    std::transform(nameFilters.constBegin(),
+                   nameFilters.constEnd(),
+                   std::back_inserter(nameFiltersRegexps),
+                   convertWildcardToRegexp);
+}
+#endif
 
 QT_END_NAMESPACE
 
