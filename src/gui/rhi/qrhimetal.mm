@@ -2237,10 +2237,12 @@ void QMetalBuffer::destroy()
     }
 
     QRHI_RES_RHI(QRhiMetal);
-    rhiD->d->releaseQueue.append(e);
-    QRHI_PROF;
-    QRHI_PROF_F(releaseBuffer(this));
-    rhiD->unregisterResource(this);
+    if (rhiD) {
+        rhiD->d->releaseQueue.append(e);
+        QRHI_PROF;
+        QRHI_PROF_F(releaseBuffer(this));
+        rhiD->unregisterResource(this);
+    }
 }
 
 bool QMetalBuffer::create()
@@ -2516,10 +2518,12 @@ void QMetalRenderBuffer::destroy()
     d->tex = nil;
 
     QRHI_RES_RHI(QRhiMetal);
-    rhiD->d->releaseQueue.append(e);
-    QRHI_PROF;
-    QRHI_PROF_F(releaseRenderBuffer(this));
-    rhiD->unregisterResource(this);
+    if (rhiD) {
+        rhiD->d->releaseQueue.append(e);
+        QRHI_PROF;
+        QRHI_PROF_F(releaseRenderBuffer(this));
+        rhiD->unregisterResource(this);
+    }
 }
 
 bool QMetalRenderBuffer::create()
@@ -2633,10 +2637,12 @@ void QMetalTexture::destroy()
     }
 
     QRHI_RES_RHI(QRhiMetal);
-    rhiD->d->releaseQueue.append(e);
-    QRHI_PROF;
-    QRHI_PROF_F(releaseTexture(this));
-    rhiD->unregisterResource(this);
+    if (rhiD) {
+        rhiD->d->releaseQueue.append(e);
+        QRHI_PROF;
+        QRHI_PROF_F(releaseTexture(this));
+        rhiD->unregisterResource(this);
+    }
 }
 
 bool QMetalTexture::prepareCreate(QSize *adjustedSize)
@@ -2801,8 +2807,10 @@ void QMetalSampler::destroy()
     d->samplerState = nil;
 
     QRHI_RES_RHI(QRhiMetal);
-    rhiD->d->releaseQueue.append(e);
-    rhiD->unregisterResource(this);
+    if (rhiD) {
+        rhiD->d->releaseQueue.append(e);
+        rhiD->unregisterResource(this);
+    }
 }
 
 static inline MTLSamplerMinMagFilter toMetalFilter(QRhiSampler::Filter f)
@@ -3171,8 +3179,6 @@ QMetalGraphicsPipeline::~QMetalGraphicsPipeline()
 
 void QMetalGraphicsPipeline::destroy()
 {
-    QRHI_RES_RHI(QRhiMetal);
-
     d->vs.destroy();
     d->fs.destroy();
 
@@ -3185,7 +3191,9 @@ void QMetalGraphicsPipeline::destroy()
     [d->ps release];
     d->ps = nil;
 
-    rhiD->unregisterResource(this);
+    QRHI_RES_RHI(QRhiMetal);
+    if (rhiD)
+        rhiD->unregisterResource(this);
 }
 
 static inline MTLVertexFormat toMetalAttributeFormat(QRhiVertexInputAttribute::Format format)
@@ -3672,8 +3680,6 @@ QMetalComputePipeline::~QMetalComputePipeline()
 
 void QMetalComputePipeline::destroy()
 {
-    QRHI_RES_RHI(QRhiMetal);
-
     d->cs.destroy();
 
     if (!d->ps)
@@ -3682,7 +3688,9 @@ void QMetalComputePipeline::destroy()
     [d->ps release];
     d->ps = nil;
 
-    rhiD->unregisterResource(this);
+    QRHI_RES_RHI(QRhiMetal);
+    if (rhiD)
+        rhiD->unregisterResource(this);
 }
 
 bool QMetalComputePipeline::create()
@@ -3851,12 +3859,12 @@ void QMetalSwapChain::destroy()
     d->curDrawable = nil;
 
     QRHI_RES_RHI(QRhiMetal);
-    rhiD->swapchains.remove(this);
-
-    QRHI_PROF;
-    QRHI_PROF_F(releaseSwapChain(this));
-
-    rhiD->unregisterResource(this);
+    if (rhiD) {
+        rhiD->swapchains.remove(this);
+        QRHI_PROF;
+        QRHI_PROF_F(releaseSwapChain(this));
+        rhiD->unregisterResource(this);
+    }
 }
 
 QRhiCommandBuffer *QMetalSwapChain::currentFrameCommandBuffer()

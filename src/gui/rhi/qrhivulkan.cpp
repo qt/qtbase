@@ -5523,12 +5523,15 @@ void QVkBuffer::destroy()
     }
 
     QRHI_RES_RHI(QRhiVulkan);
-    rhiD->releaseQueue.append(e);
-
-    QRHI_PROF;
-    QRHI_PROF_F(releaseBuffer(this));
-
-    rhiD->unregisterResource(this);
+    // destroy() implementations, unlike other functions, are expected to test
+    // for m_rhi being null, to allow surviving in case one attempts to destroy
+    // a (leaked) resource after the QRhi.
+    if (rhiD) {
+        rhiD->releaseQueue.append(e);
+        QRHI_PROF;
+        QRHI_PROF_F(releaseBuffer(this));
+        rhiD->unregisterResource(this);
+    }
 }
 
 bool QVkBuffer::create()
@@ -5680,12 +5683,12 @@ void QVkRenderBuffer::destroy()
     }
 
     QRHI_RES_RHI(QRhiVulkan);
-    rhiD->releaseQueue.append(e);
-
-    QRHI_PROF;
-    QRHI_PROF_F(releaseRenderBuffer(this));
-
-    rhiD->unregisterResource(this);
+    if (rhiD) {
+        rhiD->releaseQueue.append(e);
+        QRHI_PROF;
+        QRHI_PROF_F(releaseRenderBuffer(this));
+        rhiD->unregisterResource(this);
+    }
 }
 
 bool QVkRenderBuffer::create()
@@ -5803,12 +5806,12 @@ void QVkTexture::destroy()
     imageAlloc = nullptr;
 
     QRHI_RES_RHI(QRhiVulkan);
-    rhiD->releaseQueue.append(e);
-
-    QRHI_PROF;
-    QRHI_PROF_F(releaseTexture(this));
-
-    rhiD->unregisterResource(this);
+    if (rhiD) {
+        rhiD->releaseQueue.append(e);
+        QRHI_PROF;
+        QRHI_PROF_F(releaseTexture(this));
+        rhiD->unregisterResource(this);
+    }
 }
 
 bool QVkTexture::prepareCreate(QSize *adjustedSize)
@@ -6087,8 +6090,10 @@ void QVkSampler::destroy()
     sampler = VK_NULL_HANDLE;
 
     QRHI_RES_RHI(QRhiVulkan);
-    rhiD->releaseQueue.append(e);
-    rhiD->unregisterResource(this);
+    if (rhiD) {
+        rhiD->releaseQueue.append(e);
+        rhiD->unregisterResource(this);
+    }
 }
 
 bool QVkSampler::create()
@@ -6152,9 +6157,10 @@ void QVkRenderPassDescriptor::destroy()
     rp = VK_NULL_HANDLE;
 
     QRHI_RES_RHI(QRhiVulkan);
-    rhiD->releaseQueue.append(e);
-
-    rhiD->unregisterResource(this);
+    if (rhiD) {
+        rhiD->releaseQueue.append(e);
+        rhiD->unregisterResource(this);
+    }
 }
 
 static inline bool attachmentDescriptionEquals(const VkAttachmentDescription &a, const VkAttachmentDescription &b)
@@ -6317,9 +6323,10 @@ void QVkTextureRenderTarget::destroy()
     }
 
     QRHI_RES_RHI(QRhiVulkan);
-    rhiD->releaseQueue.append(e);
-
-    rhiD->unregisterResource(this);
+    if (rhiD) {
+        rhiD->releaseQueue.append(e);
+        rhiD->unregisterResource(this);
+    }
 }
 
 QRhiRenderPassDescriptor *QVkTextureRenderTarget::newCompatibleRenderPassDescriptor()
@@ -6528,9 +6535,10 @@ void QVkShaderResourceBindings::destroy()
         descSets[i] = VK_NULL_HANDLE;
 
     QRHI_RES_RHI(QRhiVulkan);
-    rhiD->releaseQueue.append(e);
-
-    rhiD->unregisterResource(this);
+    if (rhiD) {
+        rhiD->releaseQueue.append(e);
+        rhiD->unregisterResource(this);
+    }
 }
 
 bool QVkShaderResourceBindings::create()
@@ -6643,9 +6651,10 @@ void QVkGraphicsPipeline::destroy()
     layout = VK_NULL_HANDLE;
 
     QRHI_RES_RHI(QRhiVulkan);
-    rhiD->releaseQueue.append(e);
-
-    rhiD->unregisterResource(this);
+    if (rhiD) {
+        rhiD->releaseQueue.append(e);
+        rhiD->unregisterResource(this);
+    }
 }
 
 bool QVkGraphicsPipeline::create()
@@ -6892,9 +6901,10 @@ void QVkComputePipeline::destroy()
     layout = VK_NULL_HANDLE;
 
     QRHI_RES_RHI(QRhiVulkan);
-    rhiD->releaseQueue.append(e);
-
-    rhiD->unregisterResource(this);
+    if (rhiD) {
+        rhiD->releaseQueue.append(e);
+        rhiD->unregisterResource(this);
+    }
 }
 
 bool QVkComputePipeline::create()
@@ -7014,8 +7024,10 @@ void QVkSwapChain::destroy()
         return;
 
     QRHI_RES_RHI(QRhiVulkan);
-    rhiD->swapchains.remove(this);
-    rhiD->releaseSwapChainResources(this);
+    if (rhiD) {
+        rhiD->swapchains.remove(this);
+        rhiD->releaseSwapChainResources(this);
+    }
 
     for (int i = 0; i < QVK_FRAMES_IN_FLIGHT; ++i) {
         QVkSwapChain::FrameResources &frame(frameRes[i]);
@@ -7025,10 +7037,11 @@ void QVkSwapChain::destroy()
 
     surface = lastConnectedSurface = VK_NULL_HANDLE;
 
-    QRHI_PROF;
-    QRHI_PROF_F(releaseSwapChain(this));
-
-    rhiD->unregisterResource(this);
+    if (rhiD) {
+        QRHI_PROF;
+        QRHI_PROF_F(releaseSwapChain(this));
+        rhiD->unregisterResource(this);
+    }
 }
 
 QRhiCommandBuffer *QVkSwapChain::currentFrameCommandBuffer()

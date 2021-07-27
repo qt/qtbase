@@ -137,6 +137,8 @@ private slots:
     void renderbufferImportOpenGL();
     void threeDimTexture_data();
     void threeDimTexture();
+    void leakedResourceDestroy_data();
+    void leakedResourceDestroy();
 
 private:
     void setWindowType(QWindow *window, QRhi::Implementation impl);
@@ -3983,6 +3985,53 @@ void tst_QRhi::threeDimTexture()
         referenceImage.fill(QColor::fromRgb(254, 0, 0));
         QVERIFY(imageRGBAEquals(result, referenceImage));
     }
+}
+
+void tst_QRhi::leakedResourceDestroy_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::leakedResourceDestroy()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping");
+
+    // Incorrectly destroy the QRhi before the resources created from it.  Attempting to
+    // destroy the resources afterwards is pointless, the native resources are leaked.
+    // Nonetheless, it should not crash, which is what we are testing here.
+    //
+    // We do not however have control over other, native and 3rd party components: a
+    // validation or debug layer, or a memory allocator may warn, assert, or abort when
+    // not releasing all native resources correctly.
+#ifndef QT_NO_DEBUG
+    // don't want asserts from vkmemalloc, skip the test in debug builds
+    if (impl == QRhi::Vulkan)
+        QSKIP("Skipping leaked resource destroy test due to Vulkan and debug build");
+#endif
+
+    QScopedPointer<QRhiBuffer> buffer(rhi->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, 256));
+    QVERIFY(buffer->create());
+
+    QScopedPointer<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGBA8, QSize(512, 512), 1, QRhiTexture::RenderTarget));
+    QVERIFY(texture->create());
+
+    QScopedPointer<QRhiTextureRenderTarget> rt(rhi->newTextureRenderTarget({ texture.data() }));
+    QScopedPointer<QRhiRenderPassDescriptor> rpDesc(rt->newCompatibleRenderPassDescriptor());
+    QVERIFY(rpDesc);
+    rt->setRenderPassDescriptor(rpDesc.data());
+    QVERIFY(rt->create());
+
+    if (impl == QRhi::Vulkan)
+        qDebug("Vulkan validation layer warnings may be printed below - this is expected");
+
+    rhi.reset();
+
+    // let the scoped ptr do its job with the resources
 }
 
 #include <tst_qrhi.moc>
