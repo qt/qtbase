@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Copyright (C) 2019 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Giuseppe D'Angelo <giuseppe.dangelo@kdab.com>
 ** Contact: https://www.qt.io/licensing/
@@ -899,17 +899,18 @@ QByteArray qUncompress(const uchar* data, qsizetype nbytes)
     \section2 Spacing Characters
 
     A frequent requirement is to remove spacing characters from a byte array
-    ('\\n', '\\t', ' ', etc.). If you want to remove spacing from both ends of a
-    QByteArray, use trimmed(). If you want to also replace each run of spacing
-    characters with a single space character within the byte array, use
+    (\c{'\n'}, \c{'\t'}, \c{' '}, etc.). If you want to remove spacing from both
+    ends of a QByteArray, use trimmed(). If you want to also replace each run of
+    spacing characters with a single space character within the byte array, use
     simplified(). Only ASCII spacing characters are recognized for these
     purposes.
 
     \section2 Number-String Conversions
 
-    Functions that perform conversions between numeric data types and strings
-    are performed in the C locale, regardless of the user's locale settings. Use
-    QLocale to perform locale-aware conversions between numbers and strings.
+    Functions that perform conversions between numeric data types and string
+    representations are performed in the C locale, regardless of the user's
+    locale settings. Use QLocale to perform locale-aware conversions between
+    numbers and strings.
 
     \section2 Character Case
 
@@ -923,7 +924,7 @@ QByteArray qUncompress(const uchar* data, qsizetype nbytes)
     This issue does not apply to \l{QString}s since they represent characters
     using Unicode.
 
-    \sa  QByteArrayView, QString, QBitArray
+    \sa QByteArrayView, QString, QBitArray
 */
 
 /*!
@@ -3863,8 +3864,10 @@ QByteArray QByteArray::toBase64(Base64Options options) const
 /*!
     \fn QByteArray &QByteArray::setNum(int n, int base)
 
-    Sets the byte array to the printed value of \a n in base \a base (ten by
-    default) and returns a reference to the byte array. Bases 2 through 36 are
+    Represent the whole number \a n as text.
+
+    Sets this byte array to a string representing \a n in base \a base (ten by
+    default) and returns a reference to this byte array. Bases 2 through 36 are
     supported, using letters for digits beyond 9; A is ten, B is eleven and so
     on.
 
@@ -3975,82 +3978,64 @@ QByteArray &QByteArray::setNum(qulonglong n, int base)
 /*!
     \overload
 
-    Sets the byte array to the printed value of \a n, formatted in format
-    \a f with precision \a prec, and returns a reference to the
-    byte array.
+    Represent the floating-point number \a n as text.
 
-    The format \a f can be any of the following:
+    Sets this byte array to a string representating \a n, with a given \a format
+    and \a precision (with the same meanings as for \l {QString::number(double,
+    char, int)}), and returns a reference to this byte array.
 
-    \table
-    \header \li Format \li Meaning
-    \row \li \c e \li format as [-]9.9e[+|-]999
-    \row \li \c E \li format as [-]9.9E[+|-]999
-    \row \li \c f \li format as [-]9.9
-    \row \li \c g \li use \c e or \c f format, whichever is the most concise
-    \row \li \c G \li use \c E or \c f format, whichever is the most concise
-    \endtable
-
-    With 'e', 'E', and 'f', \a prec is the number of digits after the
-    decimal point. With 'g' and 'G', \a prec is the maximum number of
-    significant digits (trailing zeroes are omitted).
-
-    \note The format of the number is not localized; the default C locale is
-    used regardless of the user's locale. Use QLocale to perform locale-aware
-    conversions between numbers and strings.
-
-    \sa toDouble()
+    \sa toDouble(), QLocale::FloatingPointPrecisionOption
 */
 
-QByteArray &QByteArray::setNum(double n, char f, int prec)
+QByteArray &QByteArray::setNum(double n, char format, int precision)
 {
     QLocaleData::DoubleForm form = QLocaleData::DFDecimal;
     uint flags = QLocaleData::ZeroPadExponent;
 
-    char lower = asciiLower(uchar(f));
-    if (f != lower)
+    char lower = asciiLower(uchar(format));
+    if (format != lower)
         flags |= QLocaleData::CapitalEorX;
-    f = lower;
 
-    switch (f) {
-        case 'f':
-            form = QLocaleData::DFDecimal;
-            break;
-        case 'e':
-            form = QLocaleData::DFExponent;
-            break;
-        case 'g':
-            form = QLocaleData::DFSignificantDigits;
-            break;
-        default:
+    switch (lower) {
+    case 'f':
+        form = QLocaleData::DFDecimal;
+        break;
+    case 'e':
+        form = QLocaleData::DFExponent;
+        break;
+    case 'g':
+        form = QLocaleData::DFSignificantDigits;
+        break;
+    default:
 #if defined(QT_CHECK_RANGE)
-            qWarning("QByteArray::setNum: Invalid format char '%c'", f);
+        qWarning("QByteArray::setNum: Invalid format char '%c'", format);
 #endif
-            break;
+        break;
     }
 
-    *this = QLocaleData::c()->doubleToString(n, prec, form, -1, flags).toUtf8();
+    *this = QLocaleData::c()->doubleToString(n, precision, form, -1, flags).toUtf8();
     return *this;
 }
 
 /*!
-    \fn QByteArray &QByteArray::setNum(float n, char f, int prec)
+    \fn QByteArray &QByteArray::setNum(float n, char format, int precision)
     \overload
 
-    Sets the byte array to the printed value of \a n, formatted in format
-    \a f with precision \a prec, and returns a reference to the
-    byte array.
+    Represent the floating-point number \a n as text.
 
-    \note The format of the number is not localized; the default C locale is
-    used regardless of the user's locale. Use QLocale to perform locale-aware
-    conversions between numbers and strings.
+    Sets this byte array to a string representating \a n, with a given \a format
+    and \a precision (with the same meanings as for \l {QString::number(double,
+    char, int)}), and returns a reference to this byte array.
 
     \sa toFloat()
 */
 
 /*!
-    Returns a byte array containing the printed value of the number \a n to base
-    \a base (ten by default). Bases 2 through 36 are supported, using letters
-    for digits beyond 9: A is ten, B is eleven and so on.
+    Returns a byte-array representing the whole number \a n as text.
+
+    Returns a byte array containing a string representating \a n, using the
+    specified \a base (ten by default). Bases 2 through 36 are supported, using
+    letters for digits beyond 9: A is ten, B is eleven and so on.
 
     Example:
     \snippet code/src_corelib_text_qbytearray.cpp 41
@@ -4130,38 +4115,20 @@ QByteArray QByteArray::number(qulonglong n, int base)
 
 /*!
     \overload
+    Returns a byte-array representing the floating-point number \a n as text.
 
-    Returns a byte array that contains the printed value of \a n,
-    formatted in format \a f with precision \a prec.
-
-    Argument \a n is formatted according to the \a f format specified,
-    which is \c g by default, and can be any of the following:
-
-    \table
-    \header \li Format \li Meaning
-    \row \li \c e \li format as [-]9.9e[+|-]999
-    \row \li \c E \li format as [-]9.9E[+|-]999
-    \row \li \c f \li format as [-]9.9
-    \row \li \c g \li use \c e or \c f format, whichever is the most concise
-    \row \li \c G \li use \c E or \c f format, whichever is the most concise
-    \endtable
-
-    With 'e', 'E', and 'f', \a prec is the number of digits after the
-    decimal point. With 'g' and 'G', \a prec is the maximum number of
-    significant digits (trailing zeroes are omitted).
+    Returns a byte array containing a string representing \a n, with a given \a
+    format and \a precision, with the same meanings as for \l
+    {QString::number(double, char, int)}. For example:
 
     \snippet code/src_corelib_text_qbytearray.cpp 42
 
-    \note The format of the number is not localized; the default C locale is
-    used regardless of the user's locale. Use QLocale to perform locale-aware
-    conversions between numbers and strings.
-
-    \sa toDouble()
+    \sa toDouble(), QLocale::FloatingPointPrecisionOption
 */
-QByteArray QByteArray::number(double n, char f, int prec)
+QByteArray QByteArray::number(double n, char format, int precision)
 {
     QByteArray s;
-    s.setNum(n, f, prec);
+    s.setNum(n, format, precision);
     return s;
 }
 

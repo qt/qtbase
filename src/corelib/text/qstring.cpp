@@ -1842,26 +1842,33 @@ inline char qToLower(char ch)
     (\e not nullptr) to a '\\0' character for a null string. We
     recommend that you always use the isEmpty() function and avoid isNull().
 
-    \section1 Argument Formats
+    \section1 Number Formats
 
-    In member functions where an argument \e format can be specified
-    (e.g., arg(), number()), the argument \e format can be one of the
-    following:
+    When a QString::arg() \c{'%'} format specifier includes the \c{'L'} locale
+    qualifier, and the base is ten (its default), the default locale is
+    used. This can be set using \l{QLocale::setDefault()}. For more refined
+    control of localized string representations of numbers, see
+    QLocale::toString(). All other number formatting done by QString follows the
+    C locale's representation of numbers.
 
-    \table
-    \header \li Format \li Meaning
-    \row \li \c e \li format as [-]9.9e[+|-]999
-    \row \li \c E \li format as [-]9.9E[+|-]999
-    \row \li \c f \li format as [-]9.9
-    \row \li \c g \li use \c e or \c f format, whichever is the most concise
-    \row \li \c G \li use \c E or \c f format, whichever is the most concise
-    \endtable
+    When QString::arg() applies left-padding to numbers, the fill character
+    \c{'0'} is treated specially. If the number is negative, its minus sign will
+    appear before the zero-padding. If the field is localized, the
+    locale-appropriate zero character is used in place of \c{'0'}. For
+    floating-point numbers, this special treatment only applies if the number is
+    finite.
 
-    A \e precision is also specified with the argument \e format. For
-    the 'e', 'E', and 'f' formats, the \e precision represents the
-    number of digits \e after the decimal point. For the 'g' and 'G'
-    formats, the \e precision represents the maximum number of
-    significant digits (trailing zeroes are omitted).
+    \section2 Floating-point Formats
+
+    In member functions (e.g., arg(), number()) that represent floating-point
+    numbers (\c float or \c double) as strings, the form of display can be
+    controlled by a choice of \e format and \e precision, whose meanings are as
+    for \l {QLocale::toString(double, char, int)}.
+
+    If the selected \e format includes an exponent, localized forms follow the
+    locale's convention on digits in the exponent. For non-localized formatting,
+    the exponent shows its sign and includes at least two digits, left-padding
+    with zero if needed.
 
     \section1 More Efficient String Construction
 
@@ -7222,26 +7229,17 @@ QString &QString::setNum(qulonglong n, int base)
 */
 
 /*!
-    \fn QString &QString::setNum(double n, char format, int precision)
     \overload
 
-    Sets the string to the printed value of \a n, formatted according
-    to the given \a format and \a precision, and returns a reference
-    to the string.
+    Sets the string to the printed value of \a n, formatted according to the
+    given \a format and \a precision, and returns a reference to the string.
 
-    The \a format can be 'e', 'E', 'f', 'g' or 'G' (see
-    \l{Argument Formats} for an explanation of the formats).
-
-    The formatting always uses QLocale::C, i.e., English/UnitedStates.
-    To get a localized string representation of a number, use
-    QLocale::toString() with the appropriate locale.
-
-    \sa number()
+    \sa number(), QLocale::FloatingPointPrecisionOption, {Number Formats}
 */
 
-QString &QString::setNum(double n, char f, int prec)
+QString &QString::setNum(double n, char format, int precision)
 {
-    return *this = number(n, f, prec);
+    return *this = number(n, format, precision);
 }
 
 /*!
@@ -7340,26 +7338,25 @@ QString QString::number(qulonglong n, int base)
 
 
 /*!
-    \fn QString QString::number(double n, char format, int precision)
+    Returns a string representing the floating-point number \a n.
 
-    Returns a string equivalent of the number \a n, formatted
-    according to the specified \a format and \a precision. See
-    \l{Argument Formats} for details.
+    Returns a string that represents \a n, formatted according to the specified
+    \a format and \a precision.
 
-    Unlike QLocale::toString(), this function does not honor the
-    user's locale settings.
+    For formats with an exponent, the exponent will show its sign and have at
+    least two digits, left-padding the exponent with zero if needed.
 
-    \sa setNum(), QLocale::toString()
+    \sa setNum(), QLocale::toString(), QLocale::FloatingPointPrecisionOption, {Number Formats}
 */
-QString QString::number(double n, char f, int prec)
+QString QString::number(double n, char format, int precision)
 {
     QLocaleData::DoubleForm form = QLocaleData::DFDecimal;
     uint flags = QLocaleData::ZeroPadExponent;
 
-    if (qIsUpper(f))
+    if (qIsUpper(format))
         flags |= QLocaleData::CapitalEorX;
 
-    switch (qToLower(f)) {
+    switch (qToLower(format)) {
         case 'f':
             form = QLocaleData::DFDecimal;
             break;
@@ -7371,12 +7368,12 @@ QString QString::number(double n, char f, int prec)
             break;
         default:
 #if defined(QT_CHECK_RANGE)
-            qWarning("QString::setNum: Invalid format char '%c'", f);
+            qWarning("QString::setNum: Invalid format char '%c'", format);
 #endif
             break;
     }
 
-    return QLocaleData::c()->doubleToString(n, prec, form, -1, flags);
+    return QLocaleData::c()->doubleToString(n, precision, form, -1, flags);
 }
 
 namespace {
@@ -7973,15 +7970,13 @@ QString QString::arg(QLatin1String a, int fieldWidth, QChar fillChar) const
   The '%' can be followed by an 'L', in which case the sequence is
   replaced with a localized representation of \a a. The conversion
   uses the default locale, set by QLocale::setDefault(). If no default
-  locale was specified, the "C" locale is used. The 'L' flag is
+  locale was specified, the system locale is used. The 'L' flag is
   ignored if \a base is not 10.
 
   \snippet qstring/main.cpp 12
   \snippet qstring/main.cpp 14
 
-  If \a fillChar is '0' (the number 0, ASCII 48), the locale's zero is
-  used. For negative numbers, zero padding might appear before the
-  minus sign.
+  \sa {Number Formats}
 */
 
 /*! \fn QString QString::arg(uint a, int fieldWidth, int base, QChar fillChar) const
@@ -7990,9 +7985,7 @@ QString QString::arg(QLatin1String a, int fieldWidth, QChar fillChar) const
   The \a base argument specifies the base to use when converting the
   integer \a a into a string. The base must be between 2 and 36.
 
-  If \a fillChar is '0' (the number 0, ASCII 48), the locale's zero is
-  used. For negative numbers, zero padding might appear before the
-  minus sign.
+  \sa {Number Formats}
 */
 
 /*! \fn QString QString::arg(long a, int fieldWidth, int base, QChar fillChar) const
@@ -8016,12 +8009,11 @@ QString QString::arg(QLatin1String a, int fieldWidth, QChar fillChar) const
   \snippet qstring/main.cpp 12
   \snippet qstring/main.cpp 14
 
-  If \a fillChar is '0' (the number 0, ASCII 48), the locale's zero is
-  used. For negative numbers, zero padding might appear before the
-  minus sign.
+  \sa {Number Formats}
 */
 
-/*! \fn QString QString::arg(ulong a, int fieldWidth, int base, QChar fillChar) const
+/*!
+  \fn QString QString::arg(ulong a, int fieldWidth, int base, QChar fillChar) const
   \overload arg()
 
   \a fieldWidth specifies the minimum amount of space that \a a is
@@ -8033,9 +8025,7 @@ QString QString::arg(QLatin1String a, int fieldWidth, QChar fillChar) const
   integer \a a to a string. The base must be between 2 and 36, with 8
   giving octal, 10 decimal, and 16 hexadecimal numbers.
 
-  If \a fillChar is '0' (the number 0, ASCII 48), the locale's zero is
-  used. For negative numbers, zero padding might appear before the
-  minus sign.
+  \sa {Number Formats}
 */
 
 /*!
@@ -8050,9 +8040,7 @@ QString QString::arg(QLatin1String a, int fieldWidth, QChar fillChar) const
   integer \a a into a string. The base must be between 2 and 36, with
   8 giving octal, 10 decimal, and 16 hexadecimal numbers.
 
-  If \a fillChar is '0' (the number 0, ASCII 48), the locale's zero is
-  used. For negative numbers, zero padding might appear before the
-  minus sign.
+  \sa {Number Formats}
 */
 QString QString::arg(qlonglong a, int fieldWidth, int base, QChar fillChar) const
 {
@@ -8094,9 +8082,7 @@ QString QString::arg(qlonglong a, int fieldWidth, int base, QChar fillChar) cons
   integer \a a into a string. \a base must be between 2 and 36, with 8
   giving octal, 10 decimal, and 16 hexadecimal numbers.
 
-  If \a fillChar is '0' (the number 0, ASCII 48), the locale's zero is
-  used. For negative numbers, zero padding might appear before the
-  minus sign.
+  \sa {Number Formats}
 */
 QString QString::arg(qulonglong a, int fieldWidth, int base, QChar fillChar) const
 {
@@ -8140,9 +8126,7 @@ QString QString::arg(qulonglong a, int fieldWidth, int base, QChar fillChar) con
   integer \a a into a string. The base must be between 2 and 36, with
   8 giving octal, 10 decimal, and 16 hexadecimal numbers.
 
-  If \a fillChar is '0' (the number 0, ASCII 48), the locale's zero is
-  used. For negative numbers, zero padding might appear before the
-  minus sign.
+  \sa {Number Formats}
 */
 
 /*!
@@ -8158,9 +8142,7 @@ QString QString::arg(qulonglong a, int fieldWidth, int base, QChar fillChar) con
   integer \a a into a string. The base must be between 2 and 36, with
   8 giving octal, 10 decimal, and 16 hexadecimal numbers.
 
-  If \a fillChar is '0' (the number 0, ASCII 48), the locale's zero is
-  used. For negative numbers, zero padding might appear before the
-  minus sign.
+  \sa {Number Formats}
 */
 
 /*!
@@ -8182,11 +8164,10 @@ QString QString::arg(char a, int fieldWidth, QChar fillChar) const
 }
 
 /*!
-  \fn QString QString::arg(double a, int fieldWidth, char format, int precision, QChar fillChar) const
   \overload arg()
 
   Argument \a a is formatted according to the specified \a format and
-  \a precision. See \l{Argument Formats} for details.
+  \a precision. See \l{Floating-point Formats} for details.
 
   \a fieldWidth specifies the minimum amount of space that \a a is
   padded to and filled with the character \a fillChar.  A positive
@@ -8195,18 +8176,9 @@ QString QString::arg(char a, int fieldWidth, QChar fillChar) const
 
   \snippet code/src_corelib_text_qstring.cpp 2
 
-  The '%' can be followed by an 'L', in which case the sequence is
-  replaced with a localized representation of \a a. The conversion
-  uses the default locale, set by QLocale::setDefault(). If no
-  default locale was specified, the "C" locale is used.
-
-  If \a fillChar is '0' (the number 0, ASCII 48), this function will
-  use the locale's zero to pad. For negative numbers, the zero padding
-  will probably appear before the minus sign.
-
-  \sa QLocale::toString()
+  \sa QLocale::toString(), QLocale::FloatingPointPrecisionOption, {Number Formats}
 */
-QString QString::arg(double a, int fieldWidth, char fmt, int prec, QChar fillChar) const
+QString QString::arg(double a, int fieldWidth, char format, int precision, QChar fillChar) const
 {
     ArgEscapeData d = findArgEscapes(*this);
 
@@ -8219,11 +8191,11 @@ QString QString::arg(double a, int fieldWidth, char fmt, int prec, QChar fillCha
     if (fillChar == QLatin1Char('0'))
         flags |= QLocaleData::ZeroPadded;
 
-    if (qIsUpper(fmt))
+    if (qIsUpper(format))
         flags |= QLocaleData::CapitalEorX;
 
     QLocaleData::DoubleForm form = QLocaleData::DFDecimal;
-    switch (qToLower(fmt)) {
+    switch (qToLower(format)) {
     case 'f':
         form = QLocaleData::DFDecimal;
         break;
@@ -8235,14 +8207,14 @@ QString QString::arg(double a, int fieldWidth, char fmt, int prec, QChar fillCha
         break;
     default:
 #if defined(QT_CHECK_RANGE)
-        qWarning("QString::arg: Invalid format char '%c'", fmt);
+        qWarning("QString::arg: Invalid format char '%c'", format);
 #endif
         break;
     }
 
     QString arg;
     if (d.occurrences > d.locale_occurrences)
-        arg = QLocaleData::c()->doubleToString(a, prec, form, fieldWidth, flags | QLocaleData::ZeroPadExponent);
+        arg = QLocaleData::c()->doubleToString(a, precision, form, fieldWidth, flags | QLocaleData::ZeroPadExponent);
 
     QString locale_arg;
     if (d.locale_occurrences > 0) {
@@ -8255,7 +8227,7 @@ QString QString::arg(double a, int fieldWidth, char fmt, int prec, QChar fillCha
             flags |= QLocaleData::ZeroPadExponent;
         if (numberOptions & QLocale::IncludeTrailingZeroesAfterDot)
             flags |= QLocaleData::AddTrailingZeroes;
-        locale_arg = locale.d->m_data->doubleToString(a, prec, form, fieldWidth, flags);
+        locale_arg = locale.d->m_data->doubleToString(a, precision, form, fieldWidth, flags);
     }
 
     return replaceArgEscapes(*this, d, fieldWidth, arg, locale_arg, fillChar);

@@ -375,8 +375,8 @@ public:
     inline QByteArray &setNum(ulong, int base = 10);
     QByteArray &setNum(qlonglong, int base = 10);
     QByteArray &setNum(qulonglong, int base = 10);
-    inline QByteArray &setNum(float, char f = 'g', int prec = 6);
-    QByteArray &setNum(double, char f = 'g', int prec = 6);
+    inline QByteArray &setNum(float, char format = 'g', int precision = 6);
+    QByteArray &setNum(double, char format = 'g', int precision = 6);
     QByteArray &setRawData(const char *a, qsizetype n);
 
     [[nodiscard]] static QByteArray number(int, int base = 10);
@@ -385,7 +385,7 @@ public:
     [[nodiscard]] static QByteArray number(ulong, int base = 10);
     [[nodiscard]] static QByteArray number(qlonglong, int base = 10);
     [[nodiscard]] static QByteArray number(qulonglong, int base = 10);
-    [[nodiscard]] static QByteArray number(double, char f = 'g', int prec = 6);
+    [[nodiscard]] static QByteArray number(double, char format = 'g', int precision = 6);
     [[nodiscard]] static QByteArray fromRawData(const char *data, qsizetype size)
     {
         return QByteArray(DataPointer(nullptr, const_cast<char *>(data), size));
@@ -609,8 +609,8 @@ inline QByteArray &QByteArray::setNum(long n, int base)
 { return setNum(qlonglong(n), base); }
 inline QByteArray &QByteArray::setNum(ulong n, int base)
 { return setNum(qulonglong(n), base); }
-inline QByteArray &QByteArray::setNum(float n, char f, int prec)
-{ return setNum(double(n),f,prec); }
+inline QByteArray &QByteArray::setNum(float n, char format, int precision)
+{ return setNum(double(n), format, precision); }
 
 inline std::string QByteArray::toStdString() const
 { return std::string(constData(), length()); }

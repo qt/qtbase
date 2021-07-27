@@ -1072,7 +1072,7 @@ size_t qHash(const QLocale &key, size_t seed) noexcept
     Sets the \a options related to number conversions for this
     QLocale instance.
 
-    \sa numberOptions()
+    \sa numberOptions(), FloatingPointPrecisionOption
 */
 void QLocale::setNumberOptions(NumberOptions options)
 {
@@ -1088,7 +1088,7 @@ void QLocale::setNumberOptions(NumberOptions options)
     By default, no options are set for the standard locales, except
     for the "C" locale, which has OmitGroupSeparator set by default.
 
-    \sa setNumberOptions(), toString(), groupSeparator()
+    \sa setNumberOptions(), toString(), groupSeparator(), FloatingPointPrecisionOption
 */
 QLocale::NumberOptions QLocale::numberOptions() const
 {
@@ -2528,18 +2528,46 @@ static char qToLower(char c)
 
 /*!
     \overload
+    Returns a string representing the floating-point number \a f.
 
-    \a f and \a prec have the same meaning as in QString::number(double, char, int).
+    The form of the representation is controlled by the \a format and \a
+    precision parameters.
 
-    \sa toDouble(), numberOptions(), exponential(), decimalPoint(), zeroDigit(), positiveSign(), percent()
+    The \a format defaults to \c{'g'}. It can be any of the following:
+
+    \table
+    \header \li Format \li Meaning
+    \row \li \c 'e' \li format as [-]9.9e[+|-]999
+    \row \li \c 'E' \li format as [-]9.9E[+|-]999
+    \row \li \c 'f' \li format as [-]9.9
+    \row \li \c 'g' \li use \c 'e' or \c 'f' format, whichever is more concise
+    \row \li \c 'G' \li use \c 'E' or \c 'f' format, whichever is more concise
+    \endtable
+
+    For the \c 'e', \c 'E', and \c 'f' formats, the \a precision represents the
+    number of digits \e after the decimal point. For the \c 'g' and \c 'G'
+    formats, the \a precision represents the maximum number of significant
+    digits (trailing zeroes are omitted). The special \a precision value
+    QLocale::FloatingPointShortest selects the shortest representation that,
+    when read as a number, gets back the original floating-point value. Aside
+    from that, any negative \a precision is ignored in favor of the default, 6.
+
+    For the \c 'e', \c 'f' and \c 'g' formats, positive infinity is represented
+    as "inf", negative infinity as "-inf" and floating-point NaN (not-a-number)
+    values are represented as "nan". For the \c 'E' and \c 'G' formats, "INF"
+    and "NAN" are used instead. This does not vary with locale.
+
+    \sa toDouble(), numberOptions(), exponential(), decimalPoint(), zeroDigit(),
+        positiveSign(), percent(), toCurrencyString(), formattedDataSize(),
+        QLocale::FloatingPointPrecisionOption
 */
 
-QString QLocale::toString(double i, char f, int prec) const
+QString QLocale::toString(double f, char format, int precision) const
 {
     QLocaleData::DoubleForm form = QLocaleData::DFDecimal;
-    uint flags = qIsUpper(f) ? QLocaleData::CapitalEorX : 0;
+    uint flags = qIsUpper(format) ? QLocaleData::CapitalEorX : 0;
 
-    switch (qToLower(f)) {
+    switch (qToLower(format)) {
         case 'f':
             form = QLocaleData::DFDecimal;
             break;
@@ -2559,7 +2587,7 @@ QString QLocale::toString(double i, char f, int prec) const
         flags |= QLocaleData::ZeroPadExponent;
     if (d->m_numberOptions & IncludeTrailingZeroesAfterDot)
         flags |= QLocaleData::AddTrailingZeroes;
-    return d->m_data->doubleToString(i, prec, form, -1, flags);
+    return d->m_data->doubleToString(f, precision, form, -1, flags);
 }
 
 /*!
@@ -3374,8 +3402,11 @@ QString QCalendarBackend::dateTimeToString(QStringView format, const QDateTime &
 QString QLocaleData::doubleToString(double d, int precision, DoubleForm form,
                                     int width, unsigned flags) const
 {
-    // Undocumented: aside from F.P.Shortest, precision < 0 is treated as
-    // default, 6 - same as printf().
+    // Although the special handling of F.P.Shortest below is limited to
+    // DFSignificantDigits, the double-conversion library does treat it
+    // specially for the other forms, shedding trailing zeros for DFDecimal and
+    // using the shortest mantissa that faithfully represents the value for
+    // DFExponent.
     if (precision != QLocale::FloatingPointShortest && precision < 0)
         precision = 6;
     if (width < 0)
@@ -3387,8 +3418,8 @@ QString QLocaleData::doubleToString(double d, int precision, DoubleForm form,
         bufSize += std::numeric_limits<double>::max_digits10;
     else if (form == DFDecimal && qIsFinite(d))
         bufSize += wholePartSpace(qAbs(d)) + precision;
-    else // Add extra digit due to different interpretations of precision. Also, "nan" has to fit.
-        bufSize += qMax(2, precision) + 1;
+    else // Add extra digit due to different interpretations of precision.
+        bufSize += qMax(2, precision) + 1; // Must also be big enough for "nan" or "inf"
 
     QVarLengthArray<char> buf(bufSize);
     int length;

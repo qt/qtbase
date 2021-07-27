@@ -995,23 +995,23 @@
             dot when parsing a number in scientific or decimal representation. The
             default is to accept trailing zeroes.
 
-    \sa setNumberOptions(), numberOptions()
+    \sa setNumberOptions(), numberOptions(), FloatingPointPrecisionOption
 */
 
 /*!
     \enum QLocale::FloatingPointPrecisionOption
 
-    This enum defines constants that can be given as precision to QString::number(),
+    This enum defines a constant that can be given as precision to QString::number(),
     QByteArray::number(), and QLocale::toString() when converting floats or doubles,
     in order to express a variable number of digits as precision.
 
     \value FloatingPointShortest The conversion algorithm will try to find the
-            shortest accurate representation for the given number. "Accurate" means
-            that you get the exact same number back from an inverse conversion on
-            the generated string representation.
+           shortest accurate representation for the given number. "Accurate" means
+           that you get the exact same number back from an inverse conversion on
+           the generated string representation. In particular, trailing zeros are
+           omitted (from the mantissa, in exponent formats).
 
-    \sa toString(), QString, QByteArray
-
+    \sa toString(), QString::number(), QByteArray::number()
     \since 5.7
 */
 
@@ -1256,13 +1256,17 @@
 */
 
 /*!
-\fn QString QLocale::toString(float i, char f = 'g', int prec = 6) const
-
+\fn QString QLocale::toString(float f, char format = 'g', int precision = 6) const
 \overload
 
-\a f and \a prec have the same meaning as in QString::number(double, char, int).
+Returns a string representing the floating-point number \a f.
 
-\sa toDouble()
+The \a format and \a precision have the same meanings as described in \l
+{toString(double, char, int)}.
+
+\sa toFloat(), toDouble(), numberOptions(), exponential(), decimalPoint(), zeroDigit(),
+    positiveSign(), percent(), toCurrencyString(), formattedDataSize(),
+    QLocale::FloatingPointPrecisionOption
 */
 
 /*!
