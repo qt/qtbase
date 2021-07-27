@@ -53,6 +53,8 @@
 #include <stdlib.h>
 #include <time.h>
 
+#include <limits>
+
 #if defined(Q_OS_LINUX) && !defined(__UCLIBC__)
 #    include <fenv.h>
 #endif
@@ -578,6 +580,192 @@ QString qdtoa(qreal d, int *decpt, int *sign)
         *decpt = nonNullDecpt;
 
     return QLatin1String(result, length);
+}
+
+static QLocaleData::DoubleForm resolveFormat(int precision, int decpt, qsizetype length)
+{
+    bool useDecimal;
+    if (precision == QLocale::FloatingPointShortest) {
+        // Find out which representation is shorter.
+        // Set bias to everything added to exponent form but not
+        // decimal, minus the converse.
+
+        // Exponent adds separator, sign and two exponents:
+        int bias = 2 + 2;
+        if (length <= decpt && length > 1)
+            ++bias;
+        else if (length == 1 && decpt <= 0)
+            --bias;
+
+        // When 0 < decpt <= length, the forms have equal digit
+        // counts, plus things bias has taken into account;
+        // otherwise decimal form's digit count is right-padded with
+        // zeros to decpt, when decpt is positive, otherwise it's
+        // left-padded with 1 - decpt zeros.
+        if (decpt <= 0)
+            useDecimal = 1 - decpt <= bias;
+        else if (decpt <= length)
+            useDecimal = true;
+        else
+            useDecimal = decpt <= length + bias;
+    } else {
+        // X == decpt - 1, POSIX's P; -4 <= X < P iff -4 < decpt <= P
+        Q_ASSERT(precision >= 0);
+        useDecimal = decpt > -4 && decpt <= (precision ? precision : 1);
+    }
+    return useDecimal ? QLocaleData::DFDecimal : QLocaleData::DFExponent;
+}
+
+static constexpr int digits(int number)
+{
+    Q_ASSERT(number >= 0);
+    if (Q_LIKELY(number < 1000))
+        return number < 10 ? 1 : number < 100 ? 2 : 3;
+    int i = 3;
+    for (number /= 1000; number; number /= 10)
+        ++i;
+    return i;
+}
+
+QString qdtoBasicLatin(double d, QLocaleData::DoubleForm form, int precision, bool uppercase)
+{
+    // Undocumented: aside from F.P.Shortest, precision < 0 is treated as
+    // default, 6 - same as printf().
+    if (precision != QLocale::FloatingPointShortest && precision < 0)
+        precision = 6;
+
+    using D = std::numeric_limits<double>;
+    // 1 is for the null-terminator
+    constexpr int MaxDigits = 1 + qMax(D::max_exponent10, D::digits10 - D::min_exponent10);
+
+    // "maxDigits" above is a reasonable estimate, though we may need more due to extra precision
+    int bufSize = 1;
+    if (precision == QLocale::FloatingPointShortest)
+        bufSize += D::max_digits10;
+    else if (form == QLocaleData::DFDecimal && qIsFinite(d))
+        bufSize += wholePartSpace(qAbs(d)) + precision;
+    else // Add extra digit due to different interpretations of precision.
+        bufSize += qMax(2, precision) + 1; // Must also be big enough for "nan" or "inf"
+
+    // Reserve `MaxDigits` on the stack, which is a reasonable estimate;
+    // but we may need more due to extra precision, which we cannot know at compile-time.
+    QVarLengthArray<char, MaxDigits> buffer(bufSize);
+    bool negative = false;
+    int length = 0;
+    int decpt = 0;
+    qt_doubleToAscii(d, form, precision, buffer.data(), buffer.length(), negative, length, decpt);
+    QLatin1String view(buffer.data(), buffer.data() + length);
+    const bool succinct = form == QLocaleData::DFSignificantDigits;
+    qsizetype total = (negative ? 1 : 0) + length;
+    if (qIsFinite(d)) {
+        if (succinct)
+            form = resolveFormat(precision, decpt, view.size());
+
+        switch (form) {
+        case QLocaleData::DFExponent:
+            total += 3; // (.e+) The '.' may not be needed, but we would only overestimate by 1 char
+            // Exponents: we guarantee at least 2
+            total += std::max(2, digits(std::abs(decpt - 1)));
+            // "length - 1" because one of the digits will always be before the decimal point
+            if (int extraPrecision = precision - (length - 1); extraPrecision > 0 && !succinct)
+                total += extraPrecision; // some requested zero-padding
+            break;
+        case QLocaleData::DFDecimal:
+            if (decpt <= 0) // leading "0." and zeros
+                total += 2 - decpt;
+            else if (decpt < length) // just the dot
+                total += 1;
+            else // trailing zeros (and no dot, unless we require extra precision):
+                total += decpt - length;
+
+            if (precision > 0 && !succinct) {
+                // May need trailing zeros to satisfy precision:
+                if (decpt < length)
+                    total += std::max(0, precision - length + decpt);
+                else // and a dot to separate them:
+                    total += 1 + precision;
+            }
+            break;
+        case QLocaleData::DFSignificantDigits:
+            Q_UNREACHABLE(); // Handled earlier
+        }
+    }
+    QString result;
+    result.reserve(total);
+    if (negative && !isZero(d)) // We don't return "-0"
+        result.append(u'-');
+    if (!qIsFinite(d)) {
+        result.append(view);
+        if (uppercase)
+            result = std::move(result).toUpper();
+    } else {
+        switch (form) {
+        case QLocaleData::DFExponent: {
+            result.append(view.first(1));
+            view = view.sliced(1);
+            if (!view.isEmpty() || (!succinct && precision > 0)) {
+                result.append(u'.');
+                result.append(view);
+                if (qsizetype pad = precision - view.size(); !succinct && pad > 0) {
+                    for (int i = 0; i < pad; ++i)
+                        result.append(u'0');
+                }
+            }
+            int exponent = decpt - 1;
+            result.append(uppercase ? u'E' : u'e');
+            result.append(exponent < 0 ? u'-' : u'+');
+            exponent = std::abs(exponent);
+            Q_ASSUME(exponent <= D::max_exponent10 + D::max_digits10);
+            int exponentDigits = digits(exponent);
+            // C's printf guarantees a two-digit exponent, and so do we:
+            if (exponentDigits == 1)
+                result.append(u'0');
+            result.resize(result.size() + exponentDigits);
+            auto location = reinterpret_cast<char16_t *>(result.end());
+            qulltoBasicLatin_helper(exponent, 10, location);
+            break;
+        }
+        case QLocaleData::DFDecimal:
+            if (decpt < 0) {
+                result.append(u"0.0");
+                while (++decpt < 0)
+                    result.append(u'0');
+                result.append(view);
+                if (!succinct) {
+                    auto numDecimals = result.size() - 2 - (negative ? 1 : 0);
+                    for (qsizetype i = numDecimals; i < precision; ++i)
+                        result.append(u'0');
+                }
+            } else {
+                if (decpt > view.size()) {
+                    result.append(view);
+                    const int sign = negative ? 1 : 0;
+                    while (result.size() - sign < decpt)
+                        result.append(u'0');
+                    view = {};
+                } else if (decpt) {
+                    result.append(view.first(decpt));
+                    view = view.sliced(decpt);
+                } else {
+                    result.append(u'0');
+                }
+                if (!view.isEmpty() || (!succinct && view.size() < precision)) {
+                    result.append(u'.');
+                    result.append(view);
+                    if (!succinct) {
+                        for (qsizetype i = view.size(); i < precision; ++i)
+                            result.append(u'0');
+                    }
+                }
+            }
+            break;
+        case QLocaleData::DFSignificantDigits:
+            Q_UNREACHABLE(); // taken care of earlier
+            break;
+        }
+    }
+    Q_ASSERT(total >= result.size()); // No reallocations are needed
+    return result;
 }
 
 QT_END_NAMESPACE

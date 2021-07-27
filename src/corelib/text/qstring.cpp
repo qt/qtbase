@@ -7363,10 +7363,6 @@ QString QString::number(qulonglong n, int base)
 QString QString::number(double n, char format, int precision)
 {
     QLocaleData::DoubleForm form = QLocaleData::DFDecimal;
-    uint flags = QLocaleData::ZeroPadExponent;
-
-    if (qIsUpper(format))
-        flags |= QLocaleData::CapitalEorX;
 
     switch (qToLower(format)) {
         case 'f':
@@ -7385,7 +7381,7 @@ QString QString::number(double n, char format, int precision)
             break;
     }
 
-    return QLocaleData::c()->doubleToString(n, precision, form, -1, flags);
+    return qdtoBasicLatin(n, form, precision, qIsUpper(format));
 }
 
 namespace {
