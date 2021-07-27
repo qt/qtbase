@@ -4256,10 +4256,12 @@ void QGles2Buffer::destroy()
     buffer = 0;
 
     QRHI_RES_RHI(QRhiGles2);
-    rhiD->releaseQueue.append(e);
-    QRHI_PROF;
-    QRHI_PROF_F(releaseBuffer(this));
-    rhiD->unregisterResource(this);
+    if (rhiD) {
+        rhiD->releaseQueue.append(e);
+        QRHI_PROF;
+        QRHI_PROF_F(releaseBuffer(this));
+        rhiD->unregisterResource(this);
+    }
 }
 
 bool QGles2Buffer::create()
@@ -4366,11 +4368,13 @@ void QGles2RenderBuffer::destroy()
     stencilRenderbuffer = 0;
 
     QRHI_RES_RHI(QRhiGles2);
-    if (owns)
-        rhiD->releaseQueue.append(e);
-    QRHI_PROF;
-    QRHI_PROF_F(releaseRenderBuffer(this));
-    rhiD->unregisterResource(this);
+    if (rhiD) {
+        if (owns)
+            rhiD->releaseQueue.append(e);
+        QRHI_PROF;
+        QRHI_PROF_F(releaseRenderBuffer(this));
+        rhiD->unregisterResource(this);
+    }
 }
 
 bool QGles2RenderBuffer::create()
@@ -4521,11 +4525,13 @@ void QGles2Texture::destroy()
     zeroInitialized = false;
 
     QRHI_RES_RHI(QRhiGles2);
-    if (owns)
-        rhiD->releaseQueue.append(e);
-    QRHI_PROF;
-    QRHI_PROF_F(releaseTexture(this));
-    rhiD->unregisterResource(this);
+    if (rhiD) {
+        if (owns)
+            rhiD->releaseQueue.append(e);
+        QRHI_PROF;
+        QRHI_PROF_F(releaseTexture(this));
+        rhiD->unregisterResource(this);
+    }
 }
 
 bool QGles2Texture::prepareCreate(QSize *adjustedSize)
@@ -4803,9 +4809,10 @@ void QGles2TextureRenderTarget::destroy()
     framebuffer = 0;
 
     QRHI_RES_RHI(QRhiGles2);
-    rhiD->releaseQueue.append(e);
-
-    rhiD->unregisterResource(this);
+    if (rhiD) {
+        rhiD->releaseQueue.append(e);
+        rhiD->unregisterResource(this);
+    }
 }
 
 QRhiRenderPassDescriptor *QGles2TextureRenderTarget::newCompatibleRenderPassDescriptor()
@@ -4999,9 +5006,10 @@ void QGles2GraphicsPipeline::destroy()
     samplers.clear();
 
     QRHI_RES_RHI(QRhiGles2);
-    rhiD->releaseQueue.append(e);
-
-    rhiD->unregisterResource(this);
+    if (rhiD) {
+        rhiD->releaseQueue.append(e);
+        rhiD->unregisterResource(this);
+    }
 }
 
 bool QGles2GraphicsPipeline::create()
@@ -5135,9 +5143,10 @@ void QGles2ComputePipeline::destroy()
     samplers.clear();
 
     QRHI_RES_RHI(QRhiGles2);
-    rhiD->releaseQueue.append(e);
-
-    rhiD->unregisterResource(this);
+    if (rhiD) {
+        rhiD->releaseQueue.append(e);
+        rhiD->unregisterResource(this);
+    }
 }
 
 bool QGles2ComputePipeline::create()
@@ -5231,8 +5240,12 @@ QGles2SwapChain::~QGles2SwapChain()
 
 void QGles2SwapChain::destroy()
 {
-    QRHI_PROF;
-    QRHI_PROF_F(releaseSwapChain(this));
+    QRHI_RES_RHI(QRhiGles2);
+    if (rhiD) {
+        QRHI_PROF;
+        QRHI_PROF_F(releaseSwapChain(this));
+        rhiD->unregisterResource(this);
+    }
 }
 
 QRhiCommandBuffer *QGles2SwapChain::currentFrameCommandBuffer()
@@ -5258,6 +5271,11 @@ QRhiRenderPassDescriptor *QGles2SwapChain::newCompatibleRenderPassDescriptor()
 
 bool QGles2SwapChain::createOrResize()
 {
+    // can be called multiple times due to window resizes
+    const bool needsRegistration = !surface || surface != m_window;
+    if (surface && surface != m_window)
+        destroy();
+
     surface = m_window;
     m_currentPixelSize = surfacePixelSize();
     pixelSize = m_currentPixelSize;
@@ -5282,6 +5300,14 @@ bool QGles2SwapChain::createOrResize()
     QRHI_PROF;
     // make something up
     QRHI_PROF_F(resizeSwapChain(this, 2, m_sampleCount > 1 ? 2 : 0, m_sampleCount));
+
+    // The only reason to register this fairly fake gl swapchain
+    // object with no native resources underneath is to be able to
+    // implement a safe destroy().
+    if (needsRegistration) {
+        QRHI_RES_RHI(QRhiGles2);
+        rhiD->registerResource(this);
+    }
 
     return true;
 }

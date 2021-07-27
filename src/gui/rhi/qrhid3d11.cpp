@@ -2664,9 +2664,11 @@ void QD3D11Buffer::destroy()
     }
 
     QRHI_RES_RHI(QRhiD3D11);
-    QRHI_PROF;
-    QRHI_PROF_F(releaseBuffer(this));
-    rhiD->unregisterResource(this);
+    if (rhiD) {
+        QRHI_PROF;
+        QRHI_PROF_F(releaseBuffer(this));
+        rhiD->unregisterResource(this);
+    }
 }
 
 static inline uint toD3DBufferUsage(QRhiBuffer::UsageFlags usage)
@@ -2821,9 +2823,11 @@ void QD3D11RenderBuffer::destroy()
     tex = nullptr;
 
     QRHI_RES_RHI(QRhiD3D11);
-    QRHI_PROF;
-    QRHI_PROF_F(releaseRenderBuffer(this));
-    rhiD->unregisterResource(this);
+    if (rhiD) {
+        QRHI_PROF;
+        QRHI_PROF_F(releaseRenderBuffer(this));
+        rhiD->unregisterResource(this);
+    }
 }
 
 bool QD3D11RenderBuffer::create()
@@ -2948,9 +2952,11 @@ void QD3D11Texture::destroy()
     tex3D = nullptr;
 
     QRHI_RES_RHI(QRhiD3D11);
-    QRHI_PROF;
-    QRHI_PROF_F(releaseTexture(this));
-    rhiD->unregisterResource(this);
+    if (rhiD) {
+        QRHI_PROF;
+        QRHI_PROF_F(releaseTexture(this));
+        rhiD->unregisterResource(this);
+    }
 }
 
 static inline DXGI_FORMAT toD3DDepthTextureSRVFormat(QRhiTexture::Format format)
@@ -3238,7 +3244,8 @@ void QD3D11Sampler::destroy()
     samplerState = nullptr;
 
     QRHI_RES_RHI(QRhiD3D11);
-    rhiD->unregisterResource(this);
+    if (rhiD)
+        rhiD->unregisterResource(this);
 }
 
 static inline D3D11_FILTER toD3DFilter(QRhiSampler::Filter minFilter, QRhiSampler::Filter magFilter, QRhiSampler::Filter mipFilter)
@@ -3419,8 +3426,6 @@ QD3D11TextureRenderTarget::~QD3D11TextureRenderTarget()
 
 void QD3D11TextureRenderTarget::destroy()
 {
-    QRHI_RES_RHI(QRhiD3D11);
-
     if (!rtv[0] && !dsv)
         return;
 
@@ -3438,7 +3443,9 @@ void QD3D11TextureRenderTarget::destroy()
         }
     }
 
-    rhiD->unregisterResource(this);
+    QRHI_RES_RHI(QRhiD3D11);
+    if (rhiD)
+        rhiD->unregisterResource(this);
 }
 
 QRhiRenderPassDescriptor *QD3D11TextureRenderTarget::newCompatibleRenderPassDescriptor()
@@ -3632,8 +3639,6 @@ QD3D11GraphicsPipeline::~QD3D11GraphicsPipeline()
 
 void QD3D11GraphicsPipeline::destroy()
 {
-    QRHI_RES_RHI(QRhiD3D11);
-
     if (!dsState)
         return;
 
@@ -3667,7 +3672,9 @@ void QD3D11GraphicsPipeline::destroy()
     }
     fs.nativeResourceBindingMap.clear();
 
-    rhiD->unregisterResource(this);
+    QRHI_RES_RHI(QRhiD3D11);
+    if (rhiD)
+        rhiD->unregisterResource(this);
 }
 
 static inline D3D11_CULL_MODE toD3DCullMode(QRhiGraphicsPipeline::CullMode c)
@@ -4174,8 +4181,6 @@ QD3D11ComputePipeline::~QD3D11ComputePipeline()
 
 void QD3D11ComputePipeline::destroy()
 {
-    QRHI_RES_RHI(QRhiD3D11);
-
     if (!cs.shader)
         return;
 
@@ -4183,7 +4188,9 @@ void QD3D11ComputePipeline::destroy()
     cs.shader = nullptr;
     cs.nativeResourceBindingMap.clear();
 
-    rhiD->unregisterResource(this);
+    QRHI_RES_RHI(QRhiD3D11);
+    if (rhiD)
+        rhiD->unregisterResource(this);
 }
 
 bool QD3D11ComputePipeline::create()
@@ -4317,11 +4324,12 @@ void QD3D11SwapChain::destroy()
     swapChain->Release();
     swapChain = nullptr;
 
-    QRHI_PROF;
-    QRHI_PROF_F(releaseSwapChain(this));
-
     QRHI_RES_RHI(QRhiD3D11);
-    rhiD->unregisterResource(this);
+    if (rhiD) {
+        QRHI_PROF;
+        QRHI_PROF_F(releaseSwapChain(this));
+        rhiD->unregisterResource(this);
+    }
 }
 
 QRhiCommandBuffer *QD3D11SwapChain::currentFrameCommandBuffer()

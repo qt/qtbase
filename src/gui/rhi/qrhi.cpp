@@ -4445,11 +4445,19 @@ QRhiImplementation::~QRhiImplementation()
     // release builds: opt-in
     static bool leakCheck = qEnvironmentVariableIntValue("QT_RHI_LEAK_CHECK");
 #endif
-    if (leakCheck && !resources.isEmpty()) {
-        qWarning("QRhi %p going down with %d unreleased resources that own native graphics objects. This is not nice.",
-                 q, int(resources.count()));
+    if (!resources.isEmpty()) {
+        if (leakCheck) {
+            qWarning("QRhi %p going down with %d unreleased resources that own native graphics objects. This is not nice.",
+                     q, int(resources.count()));
+        }
         for (QRhiResource *res : qAsConst(resources)) {
-            qWarning("  %s resource %p (%s)", resourceTypeStr(res), res, res->m_objectName.constData());
+            if (leakCheck)
+                qWarning("  %s resource %p (%s)", resourceTypeStr(res), res, res->m_objectName.constData());
+
+            // Null out the resource's rhi pointer. This is why it makes sense to do null
+            // checks in the destroy() implementations of the various resource types. It
+            // allows to survive in bad applications that somehow manage to destroy a
+            // resource of a QRhi after the QRhi itself.
             res->m_rhi = nullptr;
         }
     }

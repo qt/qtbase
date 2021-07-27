@@ -593,17 +593,30 @@ void QNullBuffer::destroy()
     delete[] data;
     data = nullptr;
 
-    QRHI_PROF;
-    QRHI_PROF_F(releaseBuffer(this));
+    QRHI_RES_RHI(QRhiNull);
+    if (rhiD) {
+        QRHI_PROF;
+        QRHI_PROF_F(releaseBuffer(this));
+        rhiD->unregisterResource(this);
+    }
 }
 
 bool QNullBuffer::create()
 {
+    if (data)
+        destroy();
+
     data = new char[m_size];
     memset(data, 0, m_size);
 
     QRHI_PROF;
     QRHI_PROF_F(newBuffer(this, uint(m_size), 1, 0));
+    // If we register the buffer to the profiler, then it needs to be registered to the
+    // QRhi too (even though we normally do that for native-resource-owning objects only),
+    // in order to be able to implement destroy() in a robust manner.
+    QRHI_RES_RHI(QRhiNull);
+    rhiD->registerResource(this);
+
     return true;
 }
 
@@ -627,14 +640,28 @@ QNullRenderBuffer::~QNullRenderBuffer()
 
 void QNullRenderBuffer::destroy()
 {
-    QRHI_PROF;
-    QRHI_PROF_F(releaseRenderBuffer(this));
+    valid = false;
+
+    QRHI_RES_RHI(QRhiNull);
+    if (rhiD) {
+        QRHI_PROF;
+        QRHI_PROF_F(releaseRenderBuffer(this));
+        rhiD->unregisterResource(this);
+    }
 }
 
 bool QNullRenderBuffer::create()
 {
+    if (valid)
+        destroy();
+
+    valid = true;
+
     QRHI_PROF;
     QRHI_PROF_F(newRenderBuffer(this, false, false, 1));
+    QRHI_RES_RHI(QRhiNull);
+    rhiD->registerResource(this);
+
     return true;
 }
 
@@ -656,12 +683,23 @@ QNullTexture::~QNullTexture()
 
 void QNullTexture::destroy()
 {
-    QRHI_PROF;
-    QRHI_PROF_F(releaseTexture(this));
+    valid = false;
+
+    QRHI_RES_RHI(QRhiNull);
+    if (rhiD) {
+        QRHI_PROF;
+        QRHI_PROF_F(releaseTexture(this));
+        rhiD->unregisterResource(this);
+    }
 }
 
 bool QNullTexture::create()
 {
+    if (valid)
+        destroy();
+
+    valid = true;
+
     QRHI_RES_RHI(QRhiNull);
     const bool isCube = m_flags.testFlag(CubeMap);
     const bool is3D = m_flags.testFlag(ThreeDimensional);
@@ -684,19 +722,29 @@ bool QNullTexture::create()
 
     QRHI_PROF;
     QRHI_PROF_F(newTexture(this, true, mipLevelCount, layerCount, 1));
+    rhiD->registerResource(this);
+
     return true;
 }
 
 bool QNullTexture::createFrom(QRhiTexture::NativeTexture src)
 {
     Q_UNUSED(src);
+    if (valid)
+        destroy();
+
+    valid = true;
+
     QRHI_RES_RHI(QRhiNull);
     const bool isCube = m_flags.testFlag(CubeMap);
     const bool hasMipMaps = m_flags.testFlag(MipMapped);
     QSize size = m_pixelSize.isEmpty() ? QSize(1, 1) : m_pixelSize;
     const int mipLevelCount = hasMipMaps ? rhiD->q->mipLevelsForSize(size) : 1;
+
     QRHI_PROF;
     QRHI_PROF_F(newTexture(this, false, mipLevelCount, isCube ? 6 : 1, 1));
+    rhiD->registerResource(this);
+
     return true;
 }
 
@@ -925,8 +973,12 @@ QNullSwapChain::~QNullSwapChain()
 
 void QNullSwapChain::destroy()
 {
-    QRHI_PROF;
-    QRHI_PROF_F(releaseSwapChain(this));
+    QRHI_RES_RHI(QRhiNull);
+    if (rhiD) {
+        QRHI_PROF;
+        QRHI_PROF_F(releaseSwapChain(this));
+        rhiD->unregisterResource(this);
+    }
 }
 
 QRhiCommandBuffer *QNullSwapChain::currentFrameCommandBuffer()
@@ -951,12 +1003,23 @@ QRhiRenderPassDescriptor *QNullSwapChain::newCompatibleRenderPassDescriptor()
 
 bool QNullSwapChain::createOrResize()
 {
+    const bool needsRegistration = !window || window != m_window;
+    if (window && window != m_window)
+        destroy();
+
+    window = m_window;
     m_currentPixelSize = surfacePixelSize();
     rt.d.rp = QRHI_RES(QNullRenderPassDescriptor, m_renderPassDesc);
     rt.d.pixelSize = m_currentPixelSize;
     frameCount = 0;
+
     QRHI_PROF;
     QRHI_PROF_F(resizeSwapChain(this, 1, 0, 1));
+    if (needsRegistration) {
+        QRHI_RES_RHI(QRhiNull);
+        rhiD->registerResource(this);
+    }
+
     return true;
 }
 

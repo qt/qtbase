@@ -76,6 +76,8 @@ struct QNullRenderBuffer : public QRhiRenderBuffer
     void destroy() override;
     bool create() override;
     QRhiTexture::Format backingFormat() const override;
+
+    bool valid = false;
 };
 
 struct QNullTexture : public QRhiTexture
@@ -87,6 +89,7 @@ struct QNullTexture : public QRhiTexture
     bool create() override;
     bool createFrom(NativeTexture src) override;
 
+    bool valid = false;
     QVarLengthArray<std::array<QImage, QRhi::MAX_MIP_LEVELS>, 6> image;
 };
 
@@ -191,6 +194,7 @@ struct QNullSwapChain : public QRhiSwapChain
     QRhiRenderPassDescriptor *newCompatibleRenderPassDescriptor() override;
     bool createOrResize() override;
 
+    QWindow *window = nullptr;
     QNullReferenceRenderTarget rt;
     QNullCommandBuffer cb;
     int frameCount = 0;
