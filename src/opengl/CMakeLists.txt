@@ -89,9 +89,11 @@ qt_internal_extend_target(OpenGL CONDITION NOT QT_FEATURE_opengles2
 qt_internal_extend_target(OpenGL CONDITION QT_FEATURE_vulkan
     SOURCES
         qvkconvenience.cpp qvkconvenience_p.h
-    PUBLIC_LIBRARIES
-        WrapVulkanHeaders::WrapVulkanHeaders
 )
+if(QT_FEATURE_vulkan)
+    qt_internal_add_target_include_dirs_and_optionally_propagate(
+        OpenGL WrapVulkanHeaders::WrapVulkanHeaders)
+endif()
 
 qt_internal_extend_target(OpenGL CONDITION QT_FEATURE_egl
     SOURCES

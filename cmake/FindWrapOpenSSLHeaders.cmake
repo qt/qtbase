@@ -28,6 +28,9 @@ if(OPENSSL_INCLUDE_DIR)
     add_library(WrapOpenSSLHeaders::WrapOpenSSLHeaders INTERFACE IMPORTED)
     target_include_directories(WrapOpenSSLHeaders::WrapOpenSSLHeaders INTERFACE
         ${OPENSSL_INCLUDE_DIR})
+
+    set_target_properties(WrapOpenSSLHeaders::WrapOpenSSLHeaders PROPERTIES
+        _qt_is_nolink_target TRUE)
 endif()
 
 include(FindPackageHandleStandardArgs)

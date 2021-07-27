@@ -868,9 +868,11 @@ qt_internal_extend_target(Gui CONDITION QT_FEATURE_vulkan
         vulkan/qvulkanfunctions.cpp
         vulkan/qvulkaninstance.cpp vulkan/qvulkaninstance.h
         vulkan/qvulkanwindow.cpp vulkan/qvulkanwindow.h vulkan/qvulkanwindow_p.h
-    PUBLIC_LIBRARIES
-        WrapVulkanHeaders::WrapVulkanHeaders
 )
+if(QT_FEATURE_vulkan)
+    qt_internal_add_target_include_dirs_and_optionally_propagate(
+        Gui WrapVulkanHeaders::WrapVulkanHeaders)
+endif()
 
 #### Keys ignored in scope 111:.:vulkan:vulkan/vulkan.pri:QT_FEATURE_vkgen:
 # special case begin
