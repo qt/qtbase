@@ -132,22 +132,19 @@ void setVariantString(const QString &value, VARIANT *variant)
 void rectToNativeUiaRect(const QRect &rect, const QWindow *w, UiaRect *uiaRect)
 {
     if (w && uiaRect) {
-        const qreal factor = QHighDpiScaling::factor(w);
-        uiaRect->left = qreal(rect.x()) * factor;
-        uiaRect->top = qreal(rect.y()) * factor;
-        uiaRect->width = qreal(rect.width()) * factor;
-        uiaRect->height = qreal(rect.height()) * factor;
+        QRectF r = QHighDpi::toNativePixels(QRectF(rect), w);
+        uiaRect->left =r.x();
+        uiaRect->top = r.y();
+        uiaRect->width = r.width();
+        uiaRect->height = r.height();
     }
 }
 
 // Scales a point from native coordinates, according to high dpi settings.
 void nativeUiaPointToPoint(const UiaPoint &uiaPoint, const QWindow *w, QPoint *point)
 {
-    if (w && point) {
-        const qreal factor = QHighDpiScaling::factor(w);
-        point->setX(int(std::lround(uiaPoint.x / factor)));
-        point->setY(int(std::lround(uiaPoint.y / factor)));
-    }
+    if (w && point)
+        *point = QHighDpi::fromNativePixels(QPoint(uiaPoint.x, uiaPoint.y), w);
 }
 
 // Maps an accessibility role ID to an UI Automation control type ID.
