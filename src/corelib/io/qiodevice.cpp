@@ -543,7 +543,7 @@ void QIODevice::setOpenMode(QIODeviceBase::OpenMode openMode)
 {
     Q_D(QIODevice);
 #if defined QIODEVICE_DEBUG
-    printf("%p QIODevice::setOpenMode(0x%x)\n", this, int(openMode));
+    printf("%p QIODevice::setOpenMode(0x%x)\n", this, openMode.toInt());
 #endif
     d->openMode = openMode;
     d->accessMode = QIODevicePrivate::Unset;
@@ -788,7 +788,7 @@ bool QIODevice::open(QIODeviceBase::OpenMode mode)
     d->setWriteChannelCount(isWritable() ? 1 : 0);
     d->errorString.clear();
 #if defined QIODEVICE_DEBUG
-    printf("%p QIODevice::open(0x%x)\n", this, quint32(mode));
+    printf("%p QIODevice::open(0x%x)\n", this, mode.toInt());
 #endif
     return true;
 }
@@ -937,7 +937,7 @@ bool QIODevice::atEnd() const
                                                     && bytesAvailable() == 0));
 #if defined QIODEVICE_DEBUG
     printf("%p QIODevice::atEnd() returns %s, d->openMode == %d, d->pos == %lld\n", this,
-           result ? "true" : "false", int(d->openMode), d->pos);
+           result ? "true" : "false", d->openMode.toInt(), d->pos);
 #endif
     return result;
 }
