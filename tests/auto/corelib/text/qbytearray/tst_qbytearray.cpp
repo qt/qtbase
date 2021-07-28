@@ -96,6 +96,8 @@ private slots:
     void toULongLong();
 
     void number();
+    void number_base_data();
+    void number_base();
     void toShort();
     void toUShort();
     void toInt_data();
@@ -1294,6 +1296,57 @@ void tst_QByteArray::number()
              QString(QByteArray("9223372036854775807")));
     QCOMPARE(QString(QByteArray::number(Q_INT64_C(0x8000000000000000))),
              QString(QByteArray("-9223372036854775808")));
+}
+
+void tst_QByteArray::number_base_data()
+{
+    QTest::addColumn<qlonglong>("n");
+    QTest::addColumn<int>("base");
+    QTest::addColumn<QByteArray>("expected");
+
+    QTest::newRow("base 10") << 12346LL << 10 << QByteArray("12346");
+    QTest::newRow("base  2") << 12346LL <<  2 << QByteArray("11000000111010");
+    QTest::newRow("base  8") << 12346LL <<  8 << QByteArray("30072");
+    QTest::newRow("base 16") << 12346LL << 16 << QByteArray("303a");
+    QTest::newRow("base 17") << 12346LL << 17 << QByteArray("28c4");
+    QTest::newRow("base 36") << 2181789482LL << 36 << QByteArray("102zbje");
+
+    QTest::newRow("largeint, base 10")
+            << 123456789012LL << 10 << QByteArray("123456789012");
+    QTest::newRow("largeint, base  2")
+            << 123456789012LL <<  2 << QByteArray("1110010111110100110010001101000010100");
+    QTest::newRow("largeint, base  8")
+            << 123456789012LL <<  8 << QByteArray("1627646215024");
+    QTest::newRow("largeint, base 16")
+            << 123456789012LL << 16 << QByteArray("1cbe991a14");
+    QTest::newRow("largeint, base 17")
+            << 123456789012LL << 17 << QByteArray("10bec2b629");
+}
+
+void tst_QByteArray::number_base()
+{
+    QFETCH( qlonglong, n );
+    QFETCH( int, base );
+    QFETCH( QByteArray, expected );
+    QCOMPARE(QByteArray::number(n, base), expected);
+    QCOMPARE(QByteArray::number(-n, base), '-' + expected);
+
+    // check qlonglong->QByteArray->qlonglong round trip
+    for (int ibase = 2; ibase <= 36; ++ibase) {
+        auto stringrep = QByteArray::number(n, ibase);
+        QCOMPARE(QByteArray::number(-n, ibase), '-' + stringrep);
+        bool ok(false);
+        auto result = stringrep.toLongLong(&ok, ibase);
+        QVERIFY(ok);
+        QCOMPARE(n, result);
+    }
+    if (n <= std::numeric_limits<int>::max()) {
+        QCOMPARE(QByteArray::number(int(n), base), expected);
+        QCOMPARE(QByteArray::number(int(-n), base), '-' + expected);
+    } else if (n <= std::numeric_limits<long>::max()) {
+        QCOMPARE(QByteArray::number(long(n), base), expected);
+        QCOMPARE(QByteArray::number(long(-n), base), '-' + expected);
+    }
 }
 
 void tst_QByteArray::toShort()
