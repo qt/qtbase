@@ -445,6 +445,10 @@ QNetworkInformationBackendFactory::~QNetworkInformationBackendFactory()
         If the plugin supports this feature then
         the \c reachability property will be available.
         See also QNetworkInformation::Reachability.
+
+    \value CaptivePortal
+        If the plugin supports this feature then
+        the \c isBehindCaptivePortal property will be available.
 */
 
 /*!
