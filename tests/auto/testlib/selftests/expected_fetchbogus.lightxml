@@ -12,7 +12,7 @@
     <DataTag><![CDATA[foo]]></DataTag>
     <Description><![CDATA[QFETCH: Requested testdata 'bubu' not available, check your _data function.]]></Description>
 </Message>
-<Incident type="fail" file="Unknown file" line="0">
+<Incident type="fail" file="" line="0">
     <DataTag><![CDATA[foo]]></DataTag>
     <Description><![CDATA[Received a fatal error.]]></Description>
 </Incident>

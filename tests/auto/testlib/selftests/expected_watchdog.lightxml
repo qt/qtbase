@@ -11,7 +11,7 @@
 <Message type="qfatal" file="" line="0">
     <Description><![CDATA[Test function timed out]]></Description>
 </Message>
-<Incident type="fail" file="Unknown file" line="0">
+<Incident type="fail" file="" line="0">
     <Description><![CDATA[Received a fatal error.]]></Description>
 </Incident>
     <Duration msecs="0"/>

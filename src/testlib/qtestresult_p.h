@@ -77,7 +77,7 @@ public:
     static void reset();
     static void setBlacklistCurrentTest(bool b);
 
-    static void addFailure(const char *message, const char *file, int line);
+    static void addFailure(const char *message, const char *file = nullptr, int line = 0);
     static bool compare(bool success, const char *failureMsg,
                         char *val1, char *val2,
                         const char *actual, const char *expected,

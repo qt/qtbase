@@ -6,8 +6,8 @@ ok 1 - initTestCase()
 not ok 2 - value()
   ---
   # Received a fatal error.
-  at: tst_FailDataType::value() (Unknown file:0)
-  file: Unknown file
+  at: tst_FailDataType::value() (qtbase/src/testlib/qtestdata.cpp:0)
+  file: qtbase/src/testlib/qtestdata.cpp
   line: 0
   ...
 1..2

@@ -5,9 +5,6 @@ ok 1 - initTestCase()
 not ok 2 - fetch(bool)
   ---
   # Received a fatal error.
-  at: tst_FailFetchType::fetch() (Unknown file:0)
-  file: Unknown file
-  line: 0
   ...
 1..2
 # tests 2

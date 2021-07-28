@@ -62,6 +62,8 @@ qt_internal_add_module(Test
         QT_NO_CAST_TO_ASCII
         QT_NO_DATASTREAM
         QT_NO_FOREACH
+        # Ensure uniform location info between release and debug builds
+        QT_NO_MESSAGELOGCONTEXT
     LIBRARIES
         Qt::CorePrivate
     PUBLIC_LIBRARIES

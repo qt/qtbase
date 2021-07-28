@@ -41,9 +41,7 @@ XFAIL  : tst_ExpectFail::xfailOnAnyRow(second row) This test should xfail
    Loc: [qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp(0)]
 PASS   : tst_ExpectFail::xfailOnAnyRow(second row)
 FAIL!  : tst_ExpectFail::xfailWithoutVerify(first row) QEXPECT_FAIL was called without any subsequent verification statements
-   Loc: [Unknown File(0)]
 FAIL!  : tst_ExpectFail::xfailWithoutVerify(second row) QEXPECT_FAIL was called without any subsequent verification statements
-   Loc: [Unknown File(0)]
 XPASS  : tst_ExpectFail::xpass() 'true' returned TRUE unexpectedly. ()
    Loc: [qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp(0)]
 XPASS  : tst_ExpectFail::xpassDataDrivenWithQVerify(XPass) 'true' returned TRUE unexpectedly. ()
