@@ -61,7 +61,7 @@ QT_BEGIN_NAMESPACE
 
   \value AI_Type
 
-  \value AI_Description
+  \value AI_Message
 
   \value AI_PropertyValue
 
@@ -132,7 +132,7 @@ const char *QTestElementAttribute::name() const
         "failures",
         "errors",
         "type",
-        "description",
+        "message",
         "value",
         "qtestversion",
         "qtversion",

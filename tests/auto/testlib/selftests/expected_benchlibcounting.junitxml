@@ -6,8 +6,7 @@
     <property name="QtBuild" value=""/>
   </properties>
   <testcase name="initTestCase" result="pass" time="@TEST_DURATION@"/>
-  <testcase name="passingBenchmark" result="pass" time="@TEST_DURATION@">
-  </testcase>
+  <testcase name="passingBenchmark" result="pass" time="@TEST_DURATION@"/>
   <testcase name="skippingBenchmark" time="@TEST_DURATION@">
     <!-- type="skip" message="This is a skipping benchmark" -->
   </testcase>

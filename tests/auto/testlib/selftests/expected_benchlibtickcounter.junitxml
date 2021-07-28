@@ -6,8 +6,7 @@
     <property name="QtBuild" value=""/>
   </properties>
   <testcase name="initTestCase" result="pass" time="@TEST_DURATION@"/>
-  <testcase name="threeBillionTicks" result="pass" time="@TEST_DURATION@">
-  </testcase>
+  <testcase name="threeBillionTicks" result="pass" time="@TEST_DURATION@"/>
   <testcase name="cleanupTestCase" result="pass" time="@TEST_DURATION@"/>
   <system-err/>
 </testsuite>

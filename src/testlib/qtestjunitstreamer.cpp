@@ -129,25 +129,16 @@ void QTestJUnitStreamer::formatAttributes(const QTestElement* element, const QTe
         && (element->parentElement()->elementType() == QTest::LET_SystemOutput
             || element->parentElement()->elementType() == QTest::LET_SystemError)) {
 
-        if (attrindex != QTest::AI_Description) return;
+        if (attrindex != QTest::AI_Message) return;
 
         QXmlTestLogger::xmlCdata(formatted, attribute->value());
         return;
     }
 
-    char const* key = nullptr;
-    if (attrindex == QTest::AI_Description)
-        key = "message";
-    else if (attrindex != QTest::AI_File && attrindex != QTest::AI_Line)
-        key = attribute->name();
-
-    if (key) {
-        QTestCharBuffer quotedValue;
-        QXmlTestLogger::xmlQuote(&quotedValue, attribute->value());
-        QTest::qt_asprintf(formatted, " %s=\"%s\"", key, quotedValue.constData());
-    } else {
-        formatted->data()[0] = '\0';
-    }
+    QTestCharBuffer quotedValue;
+    QXmlTestLogger::xmlQuote(&quotedValue, attribute->value());
+    QTest::qt_asprintf(formatted, " %s=\"%s\"",
+        attribute->name(), quotedValue.constData());
 }
 
 void QTestJUnitStreamer::formatAfterAttributes(const QTestElement *element, QTestCharBuffer *formatted) const
@@ -197,21 +188,20 @@ void QTestJUnitStreamer::outputElements(QTestElement *element, bool) const
     while (element) {
         hasChildren = element->childElements();
 
-        if (element->elementType() != QTest::LET_Benchmark) {
-            formatStart(element, &buf);
-            outputString(buf.data());
+        formatStart(element, &buf);
+        outputString(buf.data());
 
-            outputElementAttributes(element, element->attributes());
+        outputElementAttributes(element, element->attributes());
 
-            formatAfterAttributes(element, &buf);
-            outputString(buf.data());
+        formatAfterAttributes(element, &buf);
+        outputString(buf.data());
 
-            if (hasChildren)
-                outputElements(element->childElements(), true);
+        if (hasChildren)
+            outputElements(element->childElements(), true);
 
-            formatEnd(element, &buf);
-            outputString(buf.data());
-        }
+        formatEnd(element, &buf);
+        outputString(buf.data());
+
         element = element->previousElement();
     }
 }

@@ -6,8 +6,7 @@
     <property name="QtBuild" value=""/>
   </properties>
   <testcase name="initTestCase" result="pass" time="@TEST_DURATION@"/>
-  <testcase name="threeEvents" result="pass" time="@TEST_DURATION@">
-  </testcase>
+  <testcase name="threeEvents" result="pass" time="@TEST_DURATION@"/>
   <testcase name="cleanupTestCase" result="pass" time="@TEST_DURATION@"/>
   <system-err/>
 </testsuite>
@@ -19,8 +18,7 @@
     <property name="QtBuild" value=""/>
   </properties>
   <testcase name="initTestCase" result="pass" time="@TEST_DURATION@"/>
-  <testcase name="threeEvents" result="pass" time="@TEST_DURATION@">
-  </testcase>
+  <testcase name="threeEvents" result="pass" time="@TEST_DURATION@"/>
   <testcase name="cleanupTestCase" result="pass" time="@TEST_DURATION@"/>
   <system-err/>
 </testsuite>
@@ -32,8 +30,7 @@
     <property name="QtBuild" value=""/>
   </properties>
   <testcase name="initTestCase" result="pass" time="@TEST_DURATION@"/>
-  <testcase name="threeEvents" result="pass" time="@TEST_DURATION@">
-  </testcase>
+  <testcase name="threeEvents" result="pass" time="@TEST_DURATION@"/>
   <testcase name="cleanupTestCase" result="pass" time="@TEST_DURATION@"/>
   <system-err/>
 </testsuite>
