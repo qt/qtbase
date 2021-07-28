@@ -239,7 +239,7 @@ namespace QTest {
              * this function, it will proceed with calling exit() and abort()
              * and hence crash. Therefore, we call these logging functions such
              * that we wrap up nicely, and in particular produce well-formed XML. */
-            QTestResult::addFailure("Received a fatal error.", "Unknown file", 0);
+            QTestResult::addFailure("Received a fatal error.", context.file, context.line);
             QTestLog::leaveTestFunction();
             QTestLog::stopLogging();
         }
@@ -336,7 +336,6 @@ void QTestLog::addFail(const char *msg, const char *file, int line)
 void QTestLog::addXFail(const char *msg, const char *file, int line)
 {
     QTEST_ASSERT(msg);
-    QTEST_ASSERT(file);
 
     FOREACH_TEST_LOGGER
         logger->addIncident(QAbstractTestLogger::XFail, msg, file, line);
@@ -345,7 +344,6 @@ void QTestLog::addXFail(const char *msg, const char *file, int line)
 void QTestLog::addXPass(const char *msg, const char *file, int line)
 {
     QTEST_ASSERT(msg);
-    QTEST_ASSERT(file);
 
     ++QTest::fails;
 
@@ -366,7 +364,6 @@ void QTestLog::addBPass(const char *msg)
 void QTestLog::addBFail(const char *msg, const char *file, int line)
 {
     QTEST_ASSERT(msg);
-    QTEST_ASSERT(file);
 
     ++QTest::blacklists;
 
@@ -377,7 +374,6 @@ void QTestLog::addBFail(const char *msg, const char *file, int line)
 void QTestLog::addBXPass(const char *msg, const char *file, int line)
 {
     QTEST_ASSERT(msg);
-    QTEST_ASSERT(file);
 
     ++QTest::blacklists;
 
@@ -388,7 +384,6 @@ void QTestLog::addBXPass(const char *msg, const char *file, int line)
 void QTestLog::addBXFail(const char *msg, const char *file, int line)
 {
     QTEST_ASSERT(msg);
-    QTEST_ASSERT(file);
 
     ++QTest::blacklists;
 
@@ -399,7 +394,6 @@ void QTestLog::addBXFail(const char *msg, const char *file, int line)
 void QTestLog::addSkip(const char *msg, const char *file, int line)
 {
     QTEST_ASSERT(msg);
-    QTEST_ASSERT(file);
 
     ++QTest::skips;
 

@@ -34,8 +34,8 @@ ok 7 - xpass() # TODO 'true' returned TRUE unexpectedly. (This test should BXPAS
 not ok 8 - messages() # TODO Received a fatal error.
   ---
   # Received a fatal error.
-  at: tst_Blacklisted::messages() (Unknown file:0)
-  file: Unknown file
+  at: tst_Blacklisted::messages() (qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp:0)
+  file: qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp
   line: 0
   ...
 1..8

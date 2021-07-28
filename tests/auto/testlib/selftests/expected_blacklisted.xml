@@ -60,7 +60,7 @@
 <Message type="qfatal" file="" line="0">
     <Description><![CDATA[This is a fatal error message that should still appear in silent test output]]></Description>
 </Message>
-<Incident type="bfail" file="Unknown file" line="0">
+<Incident type="bfail" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
     <Description><![CDATA[Received a fatal error.]]></Description>
 </Incident>
     <Duration msecs="0"/>

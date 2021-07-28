@@ -14,7 +14,7 @@
     <DataTag><![CDATA[bool]]></DataTag>
     <Description><![CDATA[Requested type 'QString' does not match available type 'bool'.]]></Description>
 </Message>
-<Incident type="fail" file="Unknown file" line="0">
+<Incident type="fail" file="" line="0">
     <DataTag><![CDATA[bool]]></DataTag>
     <Description><![CDATA[Received a fatal error.]]></Description>
 </Incident>

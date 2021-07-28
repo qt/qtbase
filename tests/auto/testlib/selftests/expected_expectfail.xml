@@ -118,11 +118,11 @@
     <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="xfailWithoutVerify">
-<Incident type="fail" file="Unknown File" line="0">
+<Incident type="fail" file="" line="0">
     <DataTag><![CDATA[first row]]></DataTag>
     <Description><![CDATA[QEXPECT_FAIL was called without any subsequent verification statements]]></Description>
 </Incident>
-<Incident type="fail" file="Unknown File" line="0">
+<Incident type="fail" file="" line="0">
     <DataTag><![CDATA[second row]]></DataTag>
     <Description><![CDATA[QEXPECT_FAIL was called without any subsequent verification statements]]></Description>
 </Incident>

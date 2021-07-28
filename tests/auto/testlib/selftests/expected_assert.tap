@@ -6,8 +6,8 @@ ok 2 - testNumber1()
 not ok 3 - testNumber2()
   ---
   # Received a fatal error.
-  at: tst_Assert::testNumber2() (Unknown file:0)
-  file: Unknown file
+  at: tst_Assert::testNumber2() (qtbase/tests/auto/testlib/selftests/assert/tst_assert.cpp:0)
+  file: qtbase/tests/auto/testlib/selftests/assert/tst_assert.cpp
   line: 0
   ...
 1..3

@@ -4,4 +4,3 @@ PASS   : tst_Crashes::initTestCase()
 QFATAL : tst_Crashes::crash() Received signal 11
          Function time: ms Total time: ms
 FAIL!  : tst_Crashes::crash() Received a fatal error.
-   Loc: [Unknown file(0)]

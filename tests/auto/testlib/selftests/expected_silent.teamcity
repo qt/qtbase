@@ -6,7 +6,7 @@
 ##teamcity[testFailed name='xpass()' message='Failure! |[Loc: qtbase/tests/auto/testlib/selftests/silent/tst_silent.cpp(0)|]' details='|'true|' returned TRUE unexpectedly. (This test should XPASS)' flowId='tst_Silent']
 ##teamcity[testFinished name='xpass()' flowId='tst_Silent']
 ##teamcity[testStarted name='messages()' flowId='tst_Silent']
-##teamcity[testFailed name='messages()' message='Failure! |[Loc: Unknown file(0)|]' details='Received a fatal error.' flowId='tst_Silent']
+##teamcity[testFailed name='messages()' message='Failure! |[Loc: qtbase/tests/auto/testlib/selftests/silent/tst_silent.cpp(0)|]' details='Received a fatal error.' flowId='tst_Silent']
 ##teamcity[testStdOut name='messages()' out='QFATAL: This is a fatal error message that should still appear in silent test output' flowId='tst_Silent']
 ##teamcity[testFinished name='messages()' flowId='tst_Silent']
 ##teamcity[testSuiteFinished name='tst_Silent' flowId='tst_Silent']

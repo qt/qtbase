@@ -32,8 +32,8 @@ ok 6 - xpass() # TODO 'true' returned TRUE unexpectedly. (This test should XPASS
 not ok 7 - messages()
   ---
   # Received a fatal error.
-  at: tst_Silent::messages() (Unknown file:0)
-  file: Unknown file
+  at: tst_Silent::messages() (qtbase/tests/auto/testlib/selftests/silent/tst_silent.cpp:0)
+  file: qtbase/tests/auto/testlib/selftests/silent/tst_silent.cpp
   line: 0
   ...
 1..7

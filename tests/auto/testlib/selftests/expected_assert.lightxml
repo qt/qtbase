@@ -15,7 +15,7 @@
 <Message type="qfatal" file="" line="0">
     <Description><![CDATA[ASSERT: "false" in file qtbase/tests/auto/testlib/selftests/assert/tst_assert.cpp, line 0]]></Description>
 </Message>
-<Incident type="fail" file="Unknown file" line="0">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/assert/tst_assert.cpp" line="0">
     <Description><![CDATA[Received a fatal error.]]></Description>
 </Incident>
     <Duration msecs="0"/>
