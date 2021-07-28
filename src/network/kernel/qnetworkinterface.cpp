@@ -935,7 +935,7 @@ static inline QDebug flagsDebug(QDebug debug, QNetworkInterface::InterfaceFlags 
    \since 6.2
 
     Writes the QNetworkAddressEntry \a entry to the stream and
-    returns a reference to the stream.
+    returns a reference to the \a debug stream.
 
     \relates QNetworkAddressEntry
  */
@@ -953,7 +953,7 @@ QDebug operator<<(QDebug debug, const QNetworkAddressEntry &entry)
 
 /*!
     Writes the QNetworkInterface \a networkInterface to the stream and
-    returns a reference to the stream.
+    returns a reference to the \a debug stream.
 
     \relates QNetworkInterface
  */
