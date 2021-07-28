@@ -7179,8 +7179,7 @@ float QString::toFloat(bool *ok) const
     Sets the string to the printed value of \a n in the specified \a
     base, and returns a reference to the string.
 
-    The base is 10 by default and must be between 2 and 36. For bases
-    other than 10, \a n is treated as an unsigned integer.
+    The base is 10 by default and must be between 2 and 36.
 
     \snippet qstring/main.cpp 56
 
