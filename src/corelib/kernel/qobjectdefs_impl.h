@@ -353,10 +353,13 @@ namespace QtPrivate {
         QAtomicInt m_ref;
         // don't use virtual functions here; we don't want the
         // compiler to create tons of per-polymorphic-class stuff that
-        // we'll never need. We just use one function pointer.
+        // we'll never need. We just use one function pointer, and the
+        // Operations enum below to distinguish requests
         typedef void (*ImplFn)(int which, QSlotObjectBase* this_, QObject *receiver, void **args, bool *ret);
         const ImplFn m_impl;
     protected:
+        // The operations that can be requested by calls to m_impl,
+        // see the member functions that call m_impl below for details
         enum Operation {
             Destroy,
             Call,
