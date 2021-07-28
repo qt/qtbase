@@ -35,6 +35,8 @@
 #include <limits.h>
 #include <private/qtools_p.h>
 
+#include "../shared/test_number_shared.h"
+
 class tst_QByteArray : public QObject
 {
     Q_OBJECT
@@ -96,6 +98,8 @@ private slots:
     void toULongLong();
 
     void number();
+    void number_double_data();
+    void number_double();
     void toShort();
     void toUShort();
     void toInt_data();
@@ -1294,6 +1298,35 @@ void tst_QByteArray::number()
              QString(QByteArray("9223372036854775807")));
     QCOMPARE(QString(QByteArray::number(Q_INT64_C(0x8000000000000000))),
              QString(QByteArray("-9223372036854775808")));
+}
+
+void tst_QByteArray::number_double_data()
+{
+    QTest::addColumn<double>("value");
+    QTest::addColumn<char>("format");
+    QTest::addColumn<int>("precision");
+    QTest::addColumn<QByteArray>("expected");
+
+    // This function is implemented in ../shared/test_number_shared.h
+    add_number_double_shared_data([](NumberDoubleTestData datum) {
+        QByteArray ba(datum.expected.data(), datum.expected.size());
+        QTest::addRow("%s, format '%c', precision %d", ba.data(), datum.f, datum.p)
+                << datum.d << datum.f << datum.p << ba;
+        if (datum.f != 'f') { // Also test uppercase format
+            datum.f = toupper(datum.f);
+            QByteArray upper = ba.toUpper();
+            QTest::addRow("%s, format '%c', precision %d", upper.data(), datum.f, datum.p)
+                    << datum.d << datum.f << datum.p << upper;
+        }
+    });
+}
+
+void tst_QByteArray::number_double()
+{
+    QFETCH(double, value);
+    QFETCH(char, format);
+    QFETCH(int, precision);
+    QTEST(QByteArray::number(value, format, precision), "expected");
 }
 
 void tst_QByteArray::toShort()
