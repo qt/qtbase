@@ -5224,6 +5224,10 @@ void tst_QString::number_double_data()
         { 0.0001, 'e', 1, QLatin1String("1.0e-04") },
         { 1e8, 'e', 1, QLatin1String("1.0e+08") },
         { -1e8, 'e', 1, QLatin1String("-1.0e+08") },
+        { 1.1e-8, 'e', 6, QLatin1String("1.100000e-08") },
+        { -1.1e-8, 'e', 6, QLatin1String("-1.100000e-08") },
+        { 1.1e+8, 'e', 6, QLatin1String("1.100000e+08") },
+        { -1.1e+8, 'e', 6, QLatin1String("-1.100000e+08") },
         { 100000, 'f', 0, QLatin1String("100000") },
         // Increasingly small fraction, test how/when 'g' switches to scientific notation:
         { 0.001, 'g', 6, QLatin1String("0.001") },
