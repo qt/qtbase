@@ -170,7 +170,7 @@ endfunction()
 #
 # All tests are wrapped with cmake script that supports TESTARGS and TESTRUNNER environment
 # variables handling. Endpoint wrapper may be used standalone as cmake script to run tests e.g.:
-# TESTARGS="-o result.xml,xunitxml" TESTRUNNER="testrunner --arg" ./tst_simpleTestWrapper.cmake
+# TESTARGS="-o result.xml,junitxml" TESTRUNNER="testrunner --arg" ./tst_simpleTestWrapper.cmake
 # On non-UNIX machine you may need to use 'cmake -P' explicitly to execute wrapper.
 # You may avoid test wrapping by either passing NO_WRAPPER option or switching QT_NO_TEST_WRAPPERS
 # to ON. This is helpful if you want to use internal CMake tools within tests, like memory or

@@ -47,6 +47,18 @@
 #define QT_POPEN_READ "r"
 #endif
 
+static auto junitChecker = [](const QByteArray &data) -> bool {
+    QXmlStreamReader reader{data};
+    while (!reader.atEnd()) {
+        reader.readNext();
+        if (reader.isStartElement() && reader.name() == QStringLiteral("testcase") &&
+                reader.attributes().value(QStringLiteral("result")).toString() == QStringLiteral("fail")) {
+            return false;
+        }
+    }
+    return true;
+};
+
 struct Options
 {
     bool helpRequested = false;
@@ -84,17 +96,8 @@ struct Options
     {QStringLiteral("lightxml"), [](const QByteArray &data) -> bool {
         return data.indexOf("\n<Incident type=\"fail\" ") < 0;
     }},
-    {QStringLiteral("xunitxml"), [](const QByteArray &data) -> bool {
-        QXmlStreamReader reader{data};
-        while (!reader.atEnd()) {
-            reader.readNext();
-            if (reader.isStartElement() && reader.name() == QStringLiteral("testcase") &&
-                    reader.attributes().value(QStringLiteral("result")).toString() == QStringLiteral("fail")) {
-                return false;
-            }
-        }
-        return true;
-    }},
+    {QStringLiteral("xunitxml"), junitChecker},
+    {QStringLiteral("junitxml"), junitChecker},
     {QStringLiteral("teamcity"), [](const QByteArray &data) -> bool {
         return data.indexOf("' message='Failure! |[Loc: ") < 0;
     }},
@@ -335,8 +338,8 @@ static void setOutputFile(QString file, QString format)
 
 static bool parseTestArgs()
 {
-    QRegularExpression oldFormats{QStringLiteral("^-(txt|csv|xunitxml|xml|lightxml|teamcity|tap)$")};
-    QRegularExpression newLoggingFormat{QStringLiteral("^(.*),(txt|csv|xunitxml|xml|lightxml|teamcity|tap)$")};
+    QRegularExpression oldFormats{QStringLiteral("^-(txt|csv|xunitxml|junitxml|xml|lightxml|teamcity|tap)$")};
+    QRegularExpression newLoggingFormat{QStringLiteral("^(.*),(txt|csv|xunitxml|junitxml|xml|lightxml|teamcity|tap)$")};
 
     QString file;
     QString logType;

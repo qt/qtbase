@@ -5605,11 +5605,11 @@
     on the command-line:
 
     \code
-        # Run tests through test-wrapper and use xunitxml output format.
+        # Run tests through test-wrapper and use JUnit XML output format.
         # In this example, test-wrapper is a fictional wrapper script which terminates
         # a test if it does not complete within the amount of seconds set by "--timeout".
-        # The "-o result.xml,xunitxml" options are interpreted by QTestLib.
-        make check TESTRUNNER="test-wrapper --timeout 120" TESTARGS="-o result.xml,xunitxml"
+        # The "-o result.xml,junitxml" options are interpreted by QTestLib.
+        make check TESTRUNNER="test-wrapper --timeout 120" TESTARGS="-o result.xml,junitxml"
     \endcode
 
     Testcase projects may be further customized with the following \c CONFIG options:

@@ -631,7 +631,10 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, const char *const argv[], bool 
             logFormat = QTestLog::Plain;
         } else if (strcmp(argv[i], "-csv") == 0) {
             logFormat = QTestLog::CSV;
-        } else if (strcmp(argv[i], "-junitxml") == 0 || strcmp(argv[i], "-xunitxml") == 0)  {
+        } else if (strcmp(argv[i], "-junitxml") == 0)  {
+            logFormat = QTestLog::JUnitXML;
+        } else if (strcmp(argv[i], "-xunitxml") == 0)  {
+            fprintf(stderr, "WARNING: xunitxml is deprecated. Please use junitxml.\n");
             logFormat = QTestLog::JUnitXML;
         } else if (strcmp(argv[i], "-xml") == 0) {
             logFormat = QTestLog::XML;
@@ -671,9 +674,12 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, const char *const argv[], bool 
                     logFormat = QTestLog::LightXML;
                 else if (strcmp(format, "xml") == 0)
                     logFormat = QTestLog::XML;
-                else if (strcmp(format, "junitxml") == 0 || strcmp(format, "xunitxml") == 0)
+                else if (strcmp(format, "junitxml") == 0)
                     logFormat = QTestLog::JUnitXML;
-                else if (strcmp(format, "teamcity") == 0)
+                else if (strcmp(format, "xunitxml") == 0) {
+                    fprintf(stderr, "WARNING: xunitxml is deprecated. Please use junitxml.\n");
+                    logFormat = QTestLog::JUnitXML;
+                } else if (strcmp(format, "teamcity") == 0)
                     logFormat = QTestLog::TeamCity;
                 else if (strcmp(format, "tap") == 0)
                     logFormat = QTestLog::TAP;
