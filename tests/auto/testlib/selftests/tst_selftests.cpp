@@ -602,10 +602,9 @@ struct TestLogger
 
     QString outputFileName(const QString &test) const
     {
-        if (outputMode == StdoutOutput)
-            return QString();
-
-        return testOutputDir.filePath("output_" + test + "." + shortName());
+        return testOutputDir.filePath("output_" + test +
+            (outputMode == StdoutOutput ? ".stdout" : "") +
+            "." + shortName());
     }
 
     QString expectationFileName(const QString &test, int version = 0) const
@@ -619,16 +618,15 @@ struct TestLogger
 
     QStringList arguments(const QString &test) const
     {
-        auto fileName = outputFileName(test);
-
         QStringList arguments;
         if (argumentStyle == NewStyleArgument) {
-            arguments << "-o" << (!fileName.isEmpty() ? fileName : QStringLiteral("-"))
-                + "," + shortName();
+            arguments << "-o" << (outputMode == FileOutput
+                ? outputFileName(test) : QStringLiteral("-")) +
+                "," + shortName();
         } else {
             arguments << "-" + shortName();
-            if (!fileName.isEmpty())
-                arguments << "-o" << fileName;
+            if (outputMode == FileOutput)
+                arguments << "-o" << outputFileName(test);
         }
 
         return arguments;
@@ -636,9 +634,6 @@ struct TestLogger
 
     QByteArray testOutput(const QString &test) const
     {
-        if (outputMode == StdoutOutput)
-            return QByteArray();
-
         QFile outputFile(outputFileName(test));
         REQUIRE(outputFile.exists());
         REQUIRE(outputFile.open(QIODevice::ReadOnly));
@@ -787,6 +782,11 @@ void checkErrorOutput(const QString &test, const QByteArray &errorOutput)
         || test == "silent") // calls qFatal()
 #endif
         return;
+
+#ifdef Q_OS_WIN
+    if (test == "crashes")
+        return; // Complains about uncaught exception
+#endif
 
 #ifdef Q_OS_LINUX
     // QEMU outputs to stderr about uncaught signals
@@ -1050,10 +1050,14 @@ void runTest(const QString &test, const TestLoggers &requestedLoggers)
 
     for (auto logger : loggers) {
         QByteArray testOutput;
-        if (logger.outputMode == StdoutOutput)
+        if (logger.outputMode == StdoutOutput) {
             testOutput = testProcess.standardOutput;
-        else
+            QFile file(logger.outputFileName(test));
+            REQUIRE(file.open(QIODevice::WriteOnly));
+            file.write(testOutput);
+        } else {
             testOutput = logger.testOutput(test);
+        }
 
         checkTestOutput(test, logger, testOutput);
     }
@@ -1205,7 +1209,7 @@ SCENARIO("Test output of the loggers is as expected")
     GIVEN("The " << logger << " logger") {
         for (QString test : tests) {
             AND_GIVEN("The " << test << " subtest") {
-                runTest(test, TestLogger(logger));
+                runTest(test, TestLogger(logger, StdoutOutput));
             }
         }
     }
