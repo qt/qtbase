@@ -715,7 +715,7 @@ void tst_QSslSocket::constructing()
     QVERIFY(!socket.isTextModeEnabled());
     QVERIFY(!socket.isWritable());
     QCOMPARE(socket.openMode(), QIODevice::NotOpen);
-    QTest::ignoreMessage(QtWarningMsg, readNotOpenMessage);
+    QTest::ignoreMessage(QtWarningMsg, "QIODevice::peek (QSslSocket): device not open");
     QVERIFY(socket.peek(2).isEmpty());
     QCOMPARE(socket.pos(), qint64(0));
     QTest::ignoreMessage(QtWarningMsg, writeNotOpenMessage);
@@ -726,8 +726,7 @@ void tst_QSslSocket::constructing()
     QCOMPARE(socket.read(0, 0), qint64(-1));
     QTest::ignoreMessage(QtWarningMsg, readNotOpenMessage);
     QVERIFY(socket.readAll().isEmpty());
-    QTest::ignoreMessage(QtWarningMsg, "QIODevice::readLine (QSslSocket): Called with maxSize < 2");
-    QCOMPARE(socket.readLine(0, 0), qint64(-1));
+    QTest::ignoreMessage(QtWarningMsg, "QIODevice::readLine (QSslSocket): device not open");
     char buf[10];
     QCOMPARE(socket.readLine(buf, sizeof(buf)), qint64(-1));
     QTest::ignoreMessage(QtWarningMsg, "QIODevice::seek (QSslSocket): Cannot call seek on a sequential device");

@@ -407,6 +407,9 @@ void tst_QIODevice::readLine()
     QVERIFY(buffer.open(QIODevice::ReadWrite));
     QVERIFY(buffer.canReadLine());
 
+    QTest::ignoreMessage(QtWarningMsg, "QIODevice::readLine (QBuffer): Called with maxSize < 2");
+    QCOMPARE(buffer.readLine(nullptr, 0), qint64(-1));
+
     int linelen = data.indexOf('\n') + 1;
     QByteArray line;
     line.reserve(linelen + 100);

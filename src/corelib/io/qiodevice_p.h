@@ -180,6 +180,7 @@ public:
     void setWriteChannelCount(int count);
 
     qint64 read(char *data, qint64 maxSize, bool peeking = false);
+    qint64 readLine(char *data, qint64 maxSize);
     virtual qint64 peek(char *data, qint64 maxSize);
     virtual QByteArray peek(qint64 maxSize);
     qint64 skipByReading(qint64 maxSize);

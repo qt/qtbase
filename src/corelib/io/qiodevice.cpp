@@ -120,6 +120,14 @@ static void checkWarnMessage(const QIODevice *device, const char *function, cons
         } \
     } while (0)
 
+#define CHECK_LINEMAXLEN(function, returnType) \
+    do { \
+        if (maxSize < 2) { \
+            checkWarnMessage(this, #function, "Called with maxSize < 2"); \
+            return returnType; \
+        } \
+    } while (0)
+
 #define CHECK_MAXBYTEARRAYSIZE(function) \
     do { \
         if (maxSize >= MaxByteArraySize) { \
@@ -1011,12 +1019,12 @@ qint64 QIODevice::bytesToWrite() const
 qint64 QIODevice::read(char *data, qint64 maxSize)
 {
     Q_D(QIODevice);
-
 #if defined QIODEVICE_DEBUG
     printf("%p QIODevice::read(%p, %lld), d->pos = %lld, d->buffer.size() = %lld\n",
            this, data, maxSize, d->pos, d->buffer.size());
 #endif
 
+    CHECK_READABLE(read, qint64(-1));
     const bool sequential = d->isSequential();
 
     // Short-cut for getChar(), unless we need to keep the data in the buffer.
@@ -1041,8 +1049,6 @@ qint64 QIODevice::read(char *data, qint64 maxSize)
     }
 
     CHECK_MAXLEN(read, qint64(-1));
-    CHECK_READABLE(read, qint64(-1));
-
     const qint64 readBytes = d->read(data, maxSize);
 
 #if defined QIODEVICE_DEBUG
@@ -1204,17 +1210,18 @@ qint64 QIODevicePrivate::read(char *data, qint64 maxSize, bool peeking)
 QByteArray QIODevice::read(qint64 maxSize)
 {
     Q_D(QIODevice);
-    QByteArray result;
-
 #if defined QIODEVICE_DEBUG
     printf("%p QIODevice::read(%lld), d->pos = %lld, d->buffer.size() = %lld\n",
            this, maxSize, d->pos, d->buffer.size());
 #endif
 
+    QByteArray result;
+    CHECK_READABLE(read, result);
+
     // Try to prevent the data from being copied, if we have a chunk
     // with the same size in the read buffer.
     if (maxSize == d->buffer.nextDataBlockSize() && !d->transactionStarted
-        && (d->openMode & (QIODevice::ReadOnly | QIODevice::Text)) == QIODevice::ReadOnly) {
+        && (d->openMode & QIODevice::Text) == 0) {
         result = d->buffer.read();
         if (!d->isSequential())
             d->pos += maxSize;
@@ -1227,7 +1234,7 @@ QByteArray QIODevice::read(qint64 maxSize)
     CHECK_MAXBYTEARRAYSIZE(read);
 
     result.resize(int(maxSize));
-    qint64 readBytes = read(result.data(), result.size());
+    qint64 readBytes = d->read(result.data(), result.size());
 
     if (readBytes <= 0)
         result.clear();
@@ -1254,6 +1261,8 @@ QByteArray QIODevice::readAll()
 #endif
 
     QByteArray result;
+    CHECK_READABLE(read, result);
+
     qint64 readBytes = (d->isSequential() ? Q_INT64_C(0) : size());
     if (readBytes == 0) {
         // Size is unknown, read incrementally.
@@ -1267,7 +1276,7 @@ QByteArray QIODevice::readAll()
                 break;
             }
             result.resize(readBytes + readChunkSize);
-            readResult = read(result.data() + readBytes, readChunkSize);
+            readResult = d->read(result.data() + readBytes, readChunkSize);
             if (readResult > 0 || readBytes == 0) {
                 readBytes += readResult;
                 readChunkSize = d->readBufferChunkSize;
@@ -1280,7 +1289,7 @@ QByteArray QIODevice::readAll()
         if (readBytes >= MaxByteArraySize)
             return QByteArray();
         result.resize(readBytes);
-        readBytes = read(result.data(), readBytes);
+        readBytes = d->read(result.data(), readBytes);
     }
 
     if (readBytes <= 0)
@@ -1335,50 +1344,66 @@ QByteArray QIODevice::readAll()
 qint64 QIODevice::readLine(char *data, qint64 maxSize)
 {
     Q_D(QIODevice);
-    if (maxSize < 2) {
-        checkWarnMessage(this, "readLine", "Called with maxSize < 2");
-        return qint64(-1);
-    }
-
 #if defined QIODEVICE_DEBUG
     printf("%p QIODevice::readLine(%p, %lld), d->pos = %lld, d->buffer.size() = %lld\n",
            this, data, maxSize, d->pos, d->buffer.size());
 #endif
 
+    CHECK_READABLE(readLine, qint64(-1));
+    CHECK_LINEMAXLEN(readLine, qint64(-1));
+    const qint64 readBytes = d->readLine(data, maxSize);
+
+#if defined QIODEVICE_DEBUG
+    printf("%p \treturning %lld, d->pos = %lld, d->buffer.size() = %lld, size() = %lld\n",
+           this, readBytes, d->pos, d->buffer.size(), size());
+    debugBinaryString(data, int(readBytes));
+#endif
+
+    return readBytes;
+}
+
+/*!
+    \internal
+*/
+qint64 QIODevicePrivate::readLine(char *data, qint64 maxSize)
+{
+    Q_Q(QIODevice);
+    Q_ASSERT(maxSize >= 2);
+
     // Leave room for a '\0'
     --maxSize;
 
-    const bool sequential = d->isSequential();
-    const bool keepDataInBuffer = sequential && d->transactionStarted;
+    const bool sequential = isSequential();
+    const bool keepDataInBuffer = sequential && transactionStarted;
 
     qint64 readSoFar = 0;
     if (keepDataInBuffer) {
-        if (d->transactionPos < d->buffer.size()) {
+        if (transactionPos < buffer.size()) {
             // Peek line from the specified position
-            const qint64 i = d->buffer.indexOf('\n', maxSize, d->transactionPos);
-            readSoFar = d->buffer.peek(data, i >= 0 ? (i - d->transactionPos + 1) : maxSize,
-                                       d->transactionPos);
-            d->transactionPos += readSoFar;
-            if (d->transactionPos == d->buffer.size())
-                readData(data, 0);
+            const qint64 i = buffer.indexOf('\n', maxSize, transactionPos);
+            readSoFar = buffer.peek(data, i >= 0 ? (i - transactionPos + 1) : maxSize,
+                                    transactionPos);
+            transactionPos += readSoFar;
+            if (transactionPos == buffer.size())
+                q->readData(data, 0);
         }
-    } else if (!d->buffer.isEmpty()) {
+    } else if (!buffer.isEmpty()) {
         // QRingBuffer::readLine() terminates the line with '\0'
-        readSoFar = d->buffer.readLine(data, maxSize + 1);
-        if (d->buffer.isEmpty())
-            readData(data, 0);
+        readSoFar = buffer.readLine(data, maxSize + 1);
+        if (buffer.isEmpty())
+            q->readData(data, 0);
         if (!sequential)
-            d->pos += readSoFar;
+            pos += readSoFar;
     }
 
     if (readSoFar) {
 #if defined QIODEVICE_DEBUG
-        printf("%p \tread from buffer: %lld bytes, last character read: %hhx\n", this,
+        printf("%p \tread from buffer: %lld bytes, last character read: %hhx\n", q,
                readSoFar, data[readSoFar - 1]);
         debugBinaryString(data, int(readSoFar));
 #endif
         if (data[readSoFar - 1] == '\n') {
-            if (d->openMode & Text) {
+            if (openMode & QIODevice::Text) {
                 // QRingBuffer::readLine() isn't Text aware.
                 if (readSoFar > 1 && data[readSoFar - 2] == '\r') {
                     --readSoFar;
@@ -1390,16 +1415,16 @@ qint64 QIODevice::readLine(char *data, qint64 maxSize)
         }
     }
 
-    if (d->pos != d->devicePos && !sequential && !seek(d->pos))
+    if (pos != devicePos && !sequential && !q->seek(pos))
         return qint64(-1);
-    d->baseReadLineDataCalled = false;
+    baseReadLineDataCalled = false;
     // Force base implementation for transaction on sequential device
     // as it stores the data in internal buffer automatically.
     qint64 readBytes = keepDataInBuffer
-                       ? QIODevice::readLineData(data + readSoFar, maxSize - readSoFar)
-                       : readLineData(data + readSoFar, maxSize - readSoFar);
+                       ? q->QIODevice::readLineData(data + readSoFar, maxSize - readSoFar)
+                       : q->readLineData(data + readSoFar, maxSize - readSoFar);
 #if defined QIODEVICE_DEBUG
-    printf("%p \tread from readLineData: %lld bytes, readSoFar = %lld bytes\n", this,
+    printf("%p \tread from readLineData: %lld bytes, readSoFar = %lld bytes\n", q,
            readBytes, readSoFar);
     if (readBytes > 0) {
         debugBinaryString(data, int(readSoFar + readBytes));
@@ -1410,15 +1435,15 @@ qint64 QIODevice::readLine(char *data, qint64 maxSize)
         return readSoFar ? readSoFar : -1;
     }
     readSoFar += readBytes;
-    if (!d->baseReadLineDataCalled && !sequential) {
-        d->pos += readBytes;
+    if (!baseReadLineDataCalled && !sequential) {
+        pos += readBytes;
         // If the base implementation was not called, then we must
         // assume the device position is invalid and force a seek.
-        d->devicePos = qint64(-1);
+        devicePos = qint64(-1);
     }
     data[readSoFar] = '\0';
 
-    if (d->openMode & Text) {
+    if (openMode & QIODevice::Text) {
         if (readSoFar > 1 && data[readSoFar - 1] == '\n' && data[readSoFar - 2] == '\r') {
             data[readSoFar - 2] = '\n';
             data[readSoFar - 1] = '\0';
@@ -1426,11 +1451,6 @@ qint64 QIODevice::readLine(char *data, qint64 maxSize)
         }
     }
 
-#if defined QIODEVICE_DEBUG
-    printf("%p \treturning %lld, d->pos = %lld, d->buffer.size() = %lld, size() = %lld\n",
-           this, readSoFar, d->pos, d->buffer.size(), size());
-    debugBinaryString(data, int(readSoFar));
-#endif
     return readSoFar;
 }
 
@@ -1447,22 +1467,18 @@ qint64 QIODevice::readLine(char *data, qint64 maxSize)
 QByteArray QIODevice::readLine(qint64 maxSize)
 {
     Q_D(QIODevice);
-    QByteArray result;
-
-    CHECK_MAXLEN(readLine, result);
-    CHECK_MAXBYTEARRAYSIZE(readLine);
-
 #if defined QIODEVICE_DEBUG
     printf("%p QIODevice::readLine(%lld), d->pos = %lld, d->buffer.size() = %lld\n",
            this, maxSize, d->pos, d->buffer.size());
 #endif
 
-    result.resize(int(maxSize));
+    QByteArray result;
+    CHECK_READABLE(readLine, result);
+
     qint64 readBytes = 0;
-    if (!result.size()) {
-        // If resize fails or maxSize == 0, read incrementally
-        if (maxSize == 0)
-            maxSize = MaxByteArraySize - 1;
+    if (maxSize == 0) {
+        // Size is unknown, read incrementally.
+        maxSize = MaxByteArraySize - 1;
 
         // The first iteration needs to leave an extra byte for the terminating null
         result.resize(1);
@@ -1470,13 +1486,18 @@ QByteArray QIODevice::readLine(qint64 maxSize)
         qint64 readResult;
         do {
             result.resize(int(qMin(maxSize, qint64(result.size() + d->readBufferChunkSize))));
-            readResult = readLine(result.data() + readBytes, result.size() - readBytes);
+            readResult = d->readLine(result.data() + readBytes, result.size() - readBytes);
             if (readResult > 0 || readBytes == 0)
                 readBytes += readResult;
         } while (readResult == d->readBufferChunkSize
                 && result[int(readBytes - 1)] != '\n');
-    } else
-        readBytes = readLine(result.data(), result.size());
+    } else {
+        CHECK_LINEMAXLEN(readLine, result);
+        CHECK_MAXBYTEARRAYSIZE(readLine);
+
+        result.resize(maxSize);
+        readBytes = d->readLine(result.data(), result.size());
+    }
 
     if (readBytes <= 0)
         result.clear();
