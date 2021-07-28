@@ -48,7 +48,7 @@
 <Message type="info" file="" line="0">
     <Description><![CDATA[Did not receive message: "Warning1"]]></Description>
 </Message>
-<Incident type="fail" file="" line="0">
+<Incident type="fail" file="Unknown File" line="0">
     <Description><![CDATA[Not all expected messages were received]]></Description>
 </Incident>
     <Duration msecs="0"/>
@@ -57,7 +57,7 @@
 <Message type="info" file="" line="0">
     <Description><![CDATA[Did not receive any message matching: "Warning\s\d"]]></Description>
 </Message>
-<Incident type="fail" file="" line="0">
+<Incident type="fail" file="Unknown File" line="0">
     <Description><![CDATA[Not all expected messages were received]]></Description>
 </Incident>
     <Duration msecs="0"/>
@@ -71,7 +71,7 @@
     <DataTag><![CDATA[first row]]></DataTag>
     <Description><![CDATA[Did not receive message: "Warning1"]]></Description>
 </Message>
-<Incident type="fail" file="" line="0">
+<Incident type="fail" file="Unknown File" line="0">
     <DataTag><![CDATA[first row]]></DataTag>
     <Description><![CDATA[Not all expected messages were received]]></Description>
 </Incident>
@@ -83,7 +83,7 @@
     <DataTag><![CDATA[second row]]></DataTag>
     <Description><![CDATA[Did not receive message: "Warning1"]]></Description>
 </Message>
-<Incident type="fail" file="" line="0">
+<Incident type="fail" file="Unknown File" line="0">
     <DataTag><![CDATA[second row]]></DataTag>
     <Description><![CDATA[Not all expected messages were received]]></Description>
 </Incident>

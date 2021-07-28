@@ -4,77 +4,77 @@ ok 1 - initTestCase()
 # begin
 not ok 2 - xfailAndContinue() # TODO This should xfail
   ---
-  at: tst_ExpectFail::xfailAndContinue() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:65)
+  at: tst_ExpectFail::xfailAndContinue() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp
-  line: 65
+  line: 0
   ...
 # after
 # begin
 not ok 3 - xfailAndAbort() # TODO This should xfail
   ---
-  at: tst_ExpectFail::xfailAndAbort() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:73)
+  at: tst_ExpectFail::xfailAndAbort() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp
-  line: 73
+  line: 0
   ...
 not ok 4 - xfailTwice()
   ---
   # Already expecting a fail
-  at: tst_ExpectFail::xfailTwice() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:83)
+  at: tst_ExpectFail::xfailTwice() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp
-  line: 83
+  line: 0
   ...
 not ok 5 - xfailWithQString() # TODO A string
   ---
-  at: tst_ExpectFail::xfailWithQString() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:92)
+  at: tst_ExpectFail::xfailWithQString() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp
-  line: 92
+  line: 0
   ...
 not ok 5 - xfailWithQString() # TODO Bug 5 (The message)
   ---
-  at: tst_ExpectFail::xfailWithQString() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:97)
+  at: tst_ExpectFail::xfailWithQString() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp
-  line: 97
+  line: 0
   ...
 ok 6 - xfailDataDrivenWithQVerify(Pass 1)
 ok 7 - xfailDataDrivenWithQVerify(Pass 2)
 not ok 8 - xfailDataDrivenWithQVerify(Abort) # TODO This test should xfail
   ---
-  at: tst_ExpectFail::xfailDataDrivenWithQVerify() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:126)
+  at: tst_ExpectFail::xfailDataDrivenWithQVerify() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp
-  line: 126
+  line: 0
   ...
 not ok 9 - xfailDataDrivenWithQVerify(Continue) # TODO This test should xfail
   ---
-  at: tst_ExpectFail::xfailDataDrivenWithQVerify() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:126)
+  at: tst_ExpectFail::xfailDataDrivenWithQVerify() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp
-  line: 126
+  line: 0
   ...
 ok 10 - xfailDataDrivenWithQCompare(Pass 1)
 ok 11 - xfailDataDrivenWithQCompare(Pass 2)
 not ok 12 - xfailDataDrivenWithQCompare(Abort) # TODO This test should xfail
   ---
-  at: tst_ExpectFail::xfailDataDrivenWithQCompare() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:160)
+  at: tst_ExpectFail::xfailDataDrivenWithQCompare() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp
-  line: 160
+  line: 0
   ...
 not ok 13 - xfailDataDrivenWithQCompare(Continue) # TODO This test should xfail
   ---
-  at: tst_ExpectFail::xfailDataDrivenWithQCompare() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:160)
+  at: tst_ExpectFail::xfailDataDrivenWithQCompare() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp
-  line: 160
+  line: 0
   ...
 ok 14 - xfailOnWrongRow(right row)
 not ok 15 - xfailOnAnyRow(first row) # TODO This test should xfail
   ---
-  at: tst_ExpectFail::xfailOnAnyRow() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:195)
+  at: tst_ExpectFail::xfailOnAnyRow() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp
-  line: 195
+  line: 0
   ...
 not ok 16 - xfailOnAnyRow(second row) # TODO This test should xfail
   ---
-  at: tst_ExpectFail::xfailOnAnyRow() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:195)
+  at: tst_ExpectFail::xfailOnAnyRow() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp
-  line: 195
+  line: 0
   ...
 not ok 17 - xfailWithoutVerify(first row)
   ---
