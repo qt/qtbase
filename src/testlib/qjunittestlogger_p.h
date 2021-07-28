@@ -72,11 +72,12 @@ class QJUnitTestLogger : public QAbstractTestLogger
 
         void addIncident(IncidentTypes type, const char *description,
                      const char *file = nullptr, int line = 0) override;
-        void addBenchmarkResult(const QBenchmarkResult &result) override;
         void addTag(QTestElement* element);
 
         void addMessage(MessageTypes type, const QString &message,
                     const char *file = nullptr, int line = 0) override;
+
+        void addBenchmarkResult(const QBenchmarkResult &) override {}
 
     private:
         QTestElement *currentTestSuite = nullptr;

@@ -167,7 +167,6 @@ void QJUnitTestLogger::addIncident(IncidentTypes type, const char *description,
                                    const char *file, int line)
 {
     const char *typeBuf = nullptr;
-    char buf[100];
 
     switch (type) {
     case QAbstractTestLogger::XPass:
@@ -206,13 +205,7 @@ void QJUnitTestLogger::addIncident(IncidentTypes type, const char *description,
     if (type == QAbstractTestLogger::Fail || type == QAbstractTestLogger::XPass) {
         QTestElement *failureElement = new QTestElement(QTest::LET_Failure);
         failureElement->addAttribute(QTest::AI_Result, typeBuf);
-        if (file)
-            failureElement->addAttribute(QTest::AI_File, file);
-        else
-            failureElement->addAttribute(QTest::AI_File, "");
-        qsnprintf(buf, sizeof(buf), "%i", line);
-        failureElement->addAttribute(QTest::AI_Line, buf);
-        failureElement->addAttribute(QTest::AI_Description, description);
+        failureElement->addAttribute(QTest::AI_Message, description);
         addTag(failureElement);
         currentLogElement->addLogElement(failureElement);
     }
@@ -251,14 +244,6 @@ void QJUnitTestLogger::addIncident(IncidentTypes type, const char *description,
         currentLogElement->addAttribute(QTest::AI_Result, typeBuf);
     }
 
-    if (file)
-        currentLogElement->addAttribute(QTest::AI_File, file);
-    else
-        currentLogElement->addAttribute(QTest::AI_File, "");
-
-    qsnprintf(buf, sizeof(buf), "%i", line);
-    currentLogElement->addAttribute(QTest::AI_Line, buf);
-
     /*
         Since XFAIL does not add a failure to the testlog in junitxml, add a message, so we still
         have some information about the expected failure.
@@ -266,24 +251,6 @@ void QJUnitTestLogger::addIncident(IncidentTypes type, const char *description,
     if (type == QAbstractTestLogger::XFail) {
         QJUnitTestLogger::addMessage(QAbstractTestLogger::Info, QString::fromUtf8(description), file, line);
     }
-}
-
-void QJUnitTestLogger::addBenchmarkResult(const QBenchmarkResult &result)
-{
-    QTestElement *benchmarkElement = new QTestElement(QTest::LET_Benchmark);
-
-    benchmarkElement->addAttribute(
-        QTest::AI_Metric,
-        QTest::benchmarkMetricName(result.metric));
-    benchmarkElement->addAttribute(QTest::AI_Tag, result.context.tag.toUtf8().data());
-
-    const qreal valuePerIteration = qreal(result.value) / qreal(result.iterations);
-    benchmarkElement->addAttribute(QTest::AI_Value, QByteArray::number(valuePerIteration).constData());
-
-    char buf[100];
-    qsnprintf(buf, sizeof(buf), "%i", result.iterations);
-    benchmarkElement->addAttribute(QTest::AI_Iterations, buf);
-    currentLogElement->addLogElement(benchmarkElement);
 }
 
 void QJUnitTestLogger::addTag(QTestElement* element)
@@ -309,6 +276,9 @@ void QJUnitTestLogger::addTag(QTestElement* element)
 
 void QJUnitTestLogger::addMessage(MessageTypes type, const QString &message, const char *file, int line)
 {
+    Q_UNUSED(file);
+    Q_UNUSED(line);
+
     auto messageElement = new QTestElement(QTest::LET_Message);
     auto systemLogElement = systemOutputElement;
     const char *typeBuf = nullptr;
@@ -347,17 +317,8 @@ void QJUnitTestLogger::addMessage(MessageTypes type, const QString &message, con
     }
 
     messageElement->addAttribute(QTest::AI_Type, typeBuf);
-    messageElement->addAttribute(QTest::AI_Description, message.toUtf8().constData());
+    messageElement->addAttribute(QTest::AI_Message, message.toUtf8().constData());
     addTag(messageElement);
-
-    if (file)
-        messageElement->addAttribute(QTest::AI_File, file);
-    else
-        messageElement->addAttribute(QTest::AI_File, "");
-
-    char buf[100];
-    qsnprintf(buf, sizeof(buf), "%i", line);
-    messageElement->addAttribute(QTest::AI_Line, buf);
 
     currentLogElement->addLogElement(messageElement);
     ++errorCounter;
@@ -365,7 +326,7 @@ void QJUnitTestLogger::addMessage(MessageTypes type, const QString &message, con
     // Also add the message to the system log (stdout/stderr), if one exists
     if (systemLogElement) {
         auto messageElement = new QTestElement(QTest::LET_Message);
-        messageElement->addAttribute(QTest::AI_Description, message.toUtf8().constData());
+        messageElement->addAttribute(QTest::AI_Message, message.toUtf8().constData());
         systemLogElement->addLogElement(messageElement);
     }
 }

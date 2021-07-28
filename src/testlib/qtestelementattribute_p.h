@@ -67,7 +67,7 @@ namespace QTest {
         AI_Failures = 3,
         AI_Errors = 4,
         AI_Type = 5,
-        AI_Description = 6,
+        AI_Message = 6,
         AI_PropertyValue = 7,
         AI_QTestVersion = 8,
         AI_QtVersion = 9,

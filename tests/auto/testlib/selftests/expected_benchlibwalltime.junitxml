@@ -6,12 +6,9 @@
     <property name="QtBuild" value=""/>
   </properties>
   <testcase name="initTestCase" result="pass" time="@TEST_DURATION@"/>
-  <testcase name="waitForOneThousand" result="pass" time="@TEST_DURATION@">
-  </testcase>
-  <testcase name="waitForFourThousand" result="pass" time="@TEST_DURATION@">
-  </testcase>
-  <testcase name="qbenchmark_once" result="pass" time="@TEST_DURATION@">
-  </testcase>
+  <testcase name="waitForOneThousand" result="pass" time="@TEST_DURATION@"/>
+  <testcase name="waitForFourThousand" result="pass" time="@TEST_DURATION@"/>
+  <testcase name="qbenchmark_once" result="pass" time="@TEST_DURATION@"/>
   <testcase name="cleanupTestCase" result="pass" time="@TEST_DURATION@"/>
   <system-err/>
 </testsuite>
