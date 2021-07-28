@@ -182,20 +182,20 @@ void tst_float::float16Comparisons_data() const
     QTest::addColumn<qfloat16>("operandLeft");
     QTest::addColumn<qfloat16>("operandRight");
     const qfloat16 zero(0), one(1);
-    const qfloat16 tiny(QTestPrivate::isRunningArmOnX86() ? 0.00099f : 0.001f);
+    const qfloat16 tiny(9.756e-03f);
 
     QTest::newRow("should FAIL 1") << one << qfloat16(3);
     QTest::newRow("should PASS 1") << zero << zero;
-    QTest::newRow("should FAIL 2") << qfloat16(1e-3f) << qfloat16(3e-3f);
 
     // QCOMPARE for uses qFuzzyCompare(), which ignores differences of one part
     // in 102.5 and considers any two qFuzzyIsNull() values, i.e. values smaller
-    // than 1e-3, equal
+    // than 1/102.5, equal
+    QTest::newRow("should FAIL 2") << qfloat16(.01f) << qfloat16(.03f);
     QTest::newRow("should PASS 2") << qfloat16(1001) << qfloat16(1002);
     QTest::newRow("should FAIL 3") << qfloat16(98) << qfloat16(99);
     QTest::newRow("should PASS 3") << tiny << -tiny;
     // ... which gets a bit unreliable near to the type's bounds
-    QTest::newRow("should FAIL 4") << qfloat16(1.01e-3f) << qfloat16(0.99e-3f);
+    QTest::newRow("should FAIL 4") << qfloat16(10e-3f) << qfloat16(9.7e-3f);
     QTest::newRow("should PASS 4") << qfloat16(6e4) + qfloat16(700) << qfloat16(6e4) + qfloat16(1200);
     QTest::newRow("should FAIL 5") << qfloat16(6e4) - qfloat16(600) << qfloat16(6e4) - qfloat16(1200);
 
