@@ -15,14 +15,13 @@ not ok 4 - fail() # TODO 'false' returned FALSE. (This test should BFAIL)
   file: qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp
   line: 0
   ...
-not ok 5 - xfail() # TODO This test should BXFAIL then BPASS
+not ok 6 - xfail() # TODO This test should BXFAIL then BPASS
   ---
   # This test should BXFAIL then BPASS
   at: tst_Blacklisted::xfail() (qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp
   line: 0
   ...
-ok 6 - xfail() # TODO 
 ok 7 - xpass() # TODO 'true' returned TRUE unexpectedly. (This test should BXPASS)
 # This is a warning that should not appear in silent test output
 # This is an internal testlib warning that should not appear in silent test output

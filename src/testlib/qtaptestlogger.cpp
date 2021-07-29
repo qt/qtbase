@@ -115,7 +115,7 @@ void QTapTestLogger::outputTestLine(bool ok, int testNumber, QTestCharBuffer &di
 void QTapTestLogger::addIncident(IncidentTypes type, const char *description,
                                    const char *file, int line)
 {
-    if (m_wasExpectedFail && type == Pass) {
+    if (m_wasExpectedFail && (type == Pass || type == BlacklistedPass)) {
         // XFail comes with a corresponding Pass incident, but we only want
         // to emit a single test point for it, so skip the this pass.
         return;
@@ -132,7 +132,7 @@ void QTapTestLogger::addIncident(IncidentTypes type, const char *description,
     }
 
     int testNumber = QTestLog::totalCount();
-    if (type == XFail) {
+    if (type == XFail || type == BlacklistedXFail) {
         // The global test counter hasn't been updated yet for XFail
         testNumber += 1;
     }
@@ -238,7 +238,7 @@ void QTapTestLogger::addIncident(IncidentTypes type, const char *description,
         outputString(YAML_INDENT "...\n");
     }
 
-    m_wasExpectedFail = type == XFail;
+    m_wasExpectedFail = (type == XFail || type == BlacklistedXFail);
 }
 
 void QTapTestLogger::addMessage(MessageTypes type, const QString &message,
