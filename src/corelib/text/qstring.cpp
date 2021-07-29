@@ -7768,12 +7768,10 @@ static QString replaceArgEscapes(QStringView s, const ArgEscapeData &d, qsizetyp
 {
     // Negative field-width for right-padding, positive for left-padding:
     const qsizetype abs_field_width = qAbs(field_width);
-    qsizetype result_len = s.length()
-                     - d.escape_len
-                     + (d.occurrences - d.locale_occurrences)
-                     *qMax(abs_field_width, arg.length())
-                     + d.locale_occurrences
-                     *qMax(abs_field_width, larg.length());
+    const qsizetype result_len =
+            s.length() - d.escape_len
+            + (d.occurrences - d.locale_occurrences) * qMax(abs_field_width, arg.length())
+            + d.locale_occurrences * qMax(abs_field_width, larg.length());
 
     QString result(result_len, Qt::Uninitialized);
     QChar *rc = const_cast<QChar *>(result.unicode());
@@ -7789,12 +7787,10 @@ static QString replaceArgEscapes(QStringView s, const ArgEscapeData &d, qsizetyp
            sequences remaining. */
 
         const QChar *text_start = c;
-
         while (c->unicode() != '%')
             ++c;
 
         const QChar *escape_start = c++;
-
         const bool localize = c->unicode() == 'L';
         if (localize)
             ++c;
@@ -7809,13 +7805,12 @@ static QString replaceArgEscapes(QStringView s, const ArgEscapeData &d, qsizetyp
         }
 
         if (escape != d.min_escape) {
-            memcpy(rc, text_start, (c - text_start)*sizeof(QChar));
+            memcpy(rc, text_start, (c - text_start) * sizeof(QChar));
             rc += c - text_start;
-        }
-        else {
+        } else {
             ++c;
 
-            memcpy(rc, text_start, (escape_start - text_start)*sizeof(QChar));
+            memcpy(rc, text_start, (escape_start - text_start) * sizeof(QChar));
             rc += escape_start - text_start;
 
             const QStringView use = localize ? larg : arg;
@@ -7836,7 +7831,7 @@ static QString replaceArgEscapes(QStringView s, const ArgEscapeData &d, qsizetyp
             }
 
             if (++repl_cnt == d.occurrences) {
-                memcpy(rc, c, (uc_end - c)*sizeof(QChar));
+                memcpy(rc, c, (uc_end - c) * sizeof(QChar));
                 rc += uc_end - c;
                 Q_ASSERT(rc == result_end);
                 c = uc_end;
