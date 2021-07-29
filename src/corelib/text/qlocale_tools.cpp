@@ -462,22 +462,23 @@ qstrtoll(const char * nptr, const char **endptr, int base, bool *ok)
     return result;
 }
 
-static Q_ALWAYS_INLINE void qulltoBasicLatin_helper(qulonglong number, int base, char16_t *&p)
+template <typename Char>
+static Q_ALWAYS_INLINE void qulltoString_helper(qulonglong number, int base, Char *&p)
 {
     // Performance-optimized code. Compiler can generate faster code when base is known.
     switch (base) {
-#define BIG_BASE_LOOP(b)                        \
-    do {                                        \
-        const int r = number % b;               \
-        *--p = (r < 10 ? u'0' : u'a' - 10) + r; \
-        number /= b;                            \
+#define BIG_BASE_LOOP(b)                                  \
+    do {                                                  \
+        const int r = number % b;                         \
+        *--p = Char((r < 10 ? '0' : 'a' - 10) + r); \
+        number /= b;                                      \
     } while (number)
 #ifndef __OPTIMIZE_SIZE__
-#define SMALL_BASE_LOOP(b)        \
-    do {                          \
-        *--p = u'0' + number % b; \
-        number /= b;              \
-    } while (number)
+#    define SMALL_BASE_LOOP(b)             \
+        do {                               \
+            *--p = Char('0' + number % b); \
+            number /= b;                   \
+        } while (number)
 
     case 2: SMALL_BASE_LOOP(2); break;
     case 8: SMALL_BASE_LOOP(8); break;
@@ -502,7 +503,7 @@ QString qulltoBasicLatin(qulonglong number, int base, bool negative)
     char16_t buff[maxlen];
     char16_t *const end = buff + maxlen, *p = end;
 
-    qulltoBasicLatin_helper(number, base, p);
+    qulltoString_helper<char16_t>(number, base, p);
     if (negative)
         *--p = u'-';
 
@@ -519,7 +520,7 @@ QString qulltoa(qulonglong number, int base, const QStringView zero)
     char16_t *const end = buff + maxlen, *p = end;
 
     if (base != 10 || zero == u"0") {
-        qulltoBasicLatin_helper(number, base, p);
+        qulltoString_helper<char16_t>(number, base, p);
     } else if (zero.size() && !zero.at(0).isSurrogate()) {
         const char16_t zeroUcs2 = zero.at(0).unicode();
         while (number != 0) {
@@ -627,7 +628,8 @@ static constexpr int digits(int number)
     return i;
 }
 
-QString qdtoBasicLatin(double d, QLocaleData::DoubleForm form, int precision, bool uppercase)
+template <typename T>
+static T dtoString(double d, QLocaleData::DoubleForm form, int precision, bool uppercase)
 {
     // Undocumented: aside from F.P.Shortest, precision < 0 is treated as
     // default, 6 - same as printf().
@@ -690,10 +692,15 @@ QString qdtoBasicLatin(double d, QLocaleData::DoubleForm form, int precision, bo
             Q_UNREACHABLE(); // Handled earlier
         }
     }
-    QString result;
+
+    constexpr bool IsQString = std::is_same_v<T, QString>;
+    using Char = std::conditional_t<IsQString, char16_t, char>;
+
+    T result;
     result.reserve(total);
+
     if (negative && !isZero(d)) // We don't return "-0"
-        result.append(u'-');
+        result.append(Char('-'));
     if (!qIsFinite(d)) {
         result.append(view);
         if (uppercase)
@@ -704,57 +711,60 @@ QString qdtoBasicLatin(double d, QLocaleData::DoubleForm form, int precision, bo
             result.append(view.first(1));
             view = view.sliced(1);
             if (!view.isEmpty() || (!succinct && precision > 0)) {
-                result.append(u'.');
+                result.append(Char('.'));
                 result.append(view);
                 if (qsizetype pad = precision - view.size(); !succinct && pad > 0) {
                     for (int i = 0; i < pad; ++i)
-                        result.append(u'0');
+                        result.append(Char('0'));
                 }
             }
             int exponent = decpt - 1;
-            result.append(uppercase ? u'E' : u'e');
-            result.append(exponent < 0 ? u'-' : u'+');
+            result.append(Char(uppercase ? 'E' : 'e'));
+            result.append(Char(exponent < 0 ? '-' : '+'));
             exponent = std::abs(exponent);
             Q_ASSUME(exponent <= D::max_exponent10 + D::max_digits10);
             int exponentDigits = digits(exponent);
             // C's printf guarantees a two-digit exponent, and so do we:
             if (exponentDigits == 1)
-                result.append(u'0');
+                result.append(Char('0'));
             result.resize(result.size() + exponentDigits);
-            auto location = reinterpret_cast<char16_t *>(result.end());
-            qulltoBasicLatin_helper(exponent, 10, location);
+            auto location = reinterpret_cast<Char *>(result.end());
+            qulltoString_helper<Char>(exponent, 10, location);
             break;
         }
         case QLocaleData::DFDecimal:
             if (decpt < 0) {
-                result.append(u"0.0");
+                if constexpr (IsQString)
+                    result.append(u"0.0");
+                else
+                    result.append("0.0");
                 while (++decpt < 0)
-                    result.append(u'0');
+                    result.append(Char('0'));
                 result.append(view);
                 if (!succinct) {
                     auto numDecimals = result.size() - 2 - (negative ? 1 : 0);
                     for (qsizetype i = numDecimals; i < precision; ++i)
-                        result.append(u'0');
+                        result.append(Char('0'));
                 }
             } else {
                 if (decpt > view.size()) {
                     result.append(view);
                     const int sign = negative ? 1 : 0;
                     while (result.size() - sign < decpt)
-                        result.append(u'0');
+                        result.append(Char('0'));
                     view = {};
                 } else if (decpt) {
                     result.append(view.first(decpt));
                     view = view.sliced(decpt);
                 } else {
-                    result.append(u'0');
+                    result.append(Char('0'));
                 }
                 if (!view.isEmpty() || (!succinct && view.size() < precision)) {
-                    result.append(u'.');
+                    result.append(Char('.'));
                     result.append(view);
                     if (!succinct) {
                         for (qsizetype i = view.size(); i < precision; ++i)
-                            result.append(u'0');
+                            result.append(Char('0'));
                     }
                 }
             }
@@ -766,6 +776,11 @@ QString qdtoBasicLatin(double d, QLocaleData::DoubleForm form, int precision, bo
     }
     Q_ASSERT(total >= result.size()); // No reallocations are needed
     return result;
+}
+
+QString qdtoBasicLatin(double d, QLocaleData::DoubleForm form, int precision, bool uppercase)
+{
+    return dtoString<QString>(d, form, precision, uppercase);
 }
 
 QT_END_NAMESPACE
