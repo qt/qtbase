@@ -77,6 +77,11 @@ static qreal elapsedTestCaseSeconds()
     return elapsedTestcaseTime.nsecsElapsed() / 1e9;
 }
 
+static QByteArray toSecondsFormat(qreal ms)
+{
+    return QByteArray::number(ms / 1000, 'f', 3);
+}
+
 void QJUnitTestLogger::startLogging()
 {
     QAbstractTestLogger::startLogging();
@@ -135,7 +140,7 @@ void QJUnitTestLogger::stopLogging()
     currentTestSuite->addAttribute(QTest::AI_Errors, buf);
 
     currentTestSuite->addAttribute(QTest::AI_Time,
-        QByteArray::number(QTestLog::msecsTotalTime() / 1000, 'f').constData());
+        toSecondsFormat(QTestLog::msecsTotalTime()).constData());
 
     currentTestSuite->addLogElement(listOfTestcases);
 
@@ -205,7 +210,7 @@ void QJUnitTestLogger::leaveTestFunction()
 void QJUnitTestLogger::leaveTestCase()
 {
     currentLogElement->addAttribute(QTest::AI_Time,
-        QByteArray::number(elapsedTestCaseSeconds(), 'f').constData());
+        toSecondsFormat(elapsedTestCaseSeconds()).constData());
 }
 
 void QJUnitTestLogger::addIncident(IncidentTypes type, const char *description,
