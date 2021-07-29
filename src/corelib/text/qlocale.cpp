@@ -3429,7 +3429,8 @@ QString QLocaleData::doubleToString(double d, int precision, DoubleForm form,
     const QString prefix = signPrefix(negative && !isZero(d), flags);
     QString numStr;
 
-    if (qstrncmp(buf.data(), "inf", 3) == 0 || qstrncmp(buf.data(), "nan", 3) == 0) {
+    if (length == 3
+        && (qstrncmp(buf.data(), "inf", 3) == 0 || qstrncmp(buf.data(), "nan", 3) == 0)) {
         numStr = QString::fromLatin1(buf.data(), length);
     } else { // Handle finite values
         const QString zero = zeroDigit();
@@ -3437,6 +3438,9 @@ QString QLocaleData::doubleToString(double d, int precision, DoubleForm form,
 
         if (zero == u"0") {
             // No need to convert digits.
+            Q_ASSERT(std::all_of(buf.cbegin(), buf.cbegin() + length, [](char ch)
+                                 { return '0' <= ch && ch <= '9'; }));
+            // That check is taken care of in unicodeForDigits, below.
         } else if (zero.size() == 2 && zero.at(0).isHighSurrogate()) {
             const char32_t zeroUcs4 = QChar::surrogateToUcs4(zero.at(0), zero.at(1));
             QString converted;
