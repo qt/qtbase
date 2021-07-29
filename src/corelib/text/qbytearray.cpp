@@ -4002,33 +4002,7 @@ QByteArray &QByteArray::setNum(qulonglong n, int base)
 
 QByteArray &QByteArray::setNum(double n, char f, int prec)
 {
-    QLocaleData::DoubleForm form = QLocaleData::DFDecimal;
-    uint flags = QLocaleData::ZeroPadExponent;
-
-    char lower = asciiLower(uchar(f));
-    if (f != lower)
-        flags |= QLocaleData::CapitalEorX;
-    f = lower;
-
-    switch (f) {
-        case 'f':
-            form = QLocaleData::DFDecimal;
-            break;
-        case 'e':
-            form = QLocaleData::DFExponent;
-            break;
-        case 'g':
-            form = QLocaleData::DFSignificantDigits;
-            break;
-        default:
-#if defined(QT_CHECK_RANGE)
-            qWarning("QByteArray::setNum: Invalid format char '%c'", f);
-#endif
-            break;
-    }
-
-    *this = QLocaleData::c()->doubleToString(n, prec, form, -1, flags).toUtf8();
-    return *this;
+    return *this = QByteArray::number(n, f, prec);
 }
 
 /*!
@@ -4159,9 +4133,32 @@ QByteArray QByteArray::number(qulonglong n, int base)
 */
 QByteArray QByteArray::number(double n, char f, int prec)
 {
-    QByteArray s;
-    s.setNum(n, f, prec);
-    return s;
+    QLocaleData::DoubleForm form = QLocaleData::DFDecimal;
+    uint flags = QLocaleData::ZeroPadExponent;
+
+    char lower = asciiLower(uchar(f));
+    if (f != lower)
+        flags |= QLocaleData::CapitalEorX;
+    f = lower;
+
+    switch (f) {
+        case 'f':
+            form = QLocaleData::DFDecimal;
+            break;
+        case 'e':
+            form = QLocaleData::DFExponent;
+            break;
+        case 'g':
+            form = QLocaleData::DFSignificantDigits;
+            break;
+        default:
+#if defined(QT_CHECK_RANGE)
+            qWarning("QByteArray::setNum: Invalid format char '%c'", f);
+#endif
+            break;
+    }
+
+    return QLocaleData::c()->doubleToString(n, prec, form, -1, flags).toUtf8();
 }
 
 /*!
