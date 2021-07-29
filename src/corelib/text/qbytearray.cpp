@@ -4110,13 +4110,8 @@ QByteArray QByteArray::number(qulonglong n, int base)
 QByteArray QByteArray::number(double n, char format, int precision)
 {
     QLocaleData::DoubleForm form = QLocaleData::DFDecimal;
-    uint flags = QLocaleData::ZeroPadExponent;
 
-    char lower = asciiLower(uchar(format));
-    if (format != lower)
-        flags |= QLocaleData::CapitalEorX;
-
-    switch (lower) {
+    switch (asciiLower(format)) {
         case 'f':
             form = QLocaleData::DFDecimal;
             break;
@@ -4133,7 +4128,7 @@ QByteArray QByteArray::number(double n, char format, int precision)
             break;
     }
 
-    return QLocaleData::c()->doubleToString(n, precision, form, -1, flags).toUtf8();
+    return qdtoAscii(n, form, precision, isUpperCaseAscii(format));
 }
 
 /*!

@@ -628,6 +628,7 @@ static constexpr int digits(int number)
     return i;
 }
 
+// Used generically for both QString and QByteArray
 template <typename T>
 static T dtoString(double d, QLocaleData::DoubleForm form, int precision, bool uppercase)
 {
@@ -781,6 +782,11 @@ static T dtoString(double d, QLocaleData::DoubleForm form, int precision, bool u
 QString qdtoBasicLatin(double d, QLocaleData::DoubleForm form, int precision, bool uppercase)
 {
     return dtoString<QString>(d, form, precision, uppercase);
+}
+
+QByteArray qdtoAscii(double d, QLocaleData::DoubleForm form, int precision, bool uppercase)
+{
+    return dtoString<QByteArray>(d, form, precision, uppercase);
 }
 
 QT_END_NAMESPACE

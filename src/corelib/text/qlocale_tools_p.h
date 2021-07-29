@@ -72,6 +72,7 @@ QString qulltoBasicLatin(qulonglong l, int base, bool negative);
 QString qulltoa(qulonglong l, int base, const QStringView zero);
 Q_CORE_EXPORT QString qdtoa(qreal d, int *decpt, int *sign);
 QString qdtoBasicLatin(double d, QLocaleData::DoubleForm form, int precision, bool uppercase);
+QByteArray qdtoAscii(double d, QLocaleData::DoubleForm form, int precision, bool uppercase);
 
 inline bool isZero(double d)
 {
