@@ -139,6 +139,7 @@ const char *QTestCoreElement<ElementType>::elementName() const
         "testcase",
         "testsuite",
         "benchmark",
+        "message",
         "system-err",
         "system-out"
     };
