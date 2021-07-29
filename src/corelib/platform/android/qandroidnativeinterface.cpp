@@ -188,7 +188,7 @@ void QNativeInterface::QAndroidApplication::hideSplashScreen(int duration)
 #if QT_CONFIG(future) && !defined(QT_NO_QOBJECT)
 QFuture<QVariant> QNativeInterface::QAndroidApplication::runOnAndroidMainThread(
                                                     const std::function<QVariant()> &runnable,
-                                                    const QDeadlineTimer &timeout)
+                                                    const QDeadlineTimer timeout)
 {
     QSharedPointer<QPromise<QVariant>> promise(new QPromise<QVariant>());
     QFuture<QVariant> future = promise->future();

@@ -69,14 +69,12 @@ struct Q_CORE_EXPORT QAndroidApplication
 
 #if QT_CONFIG(future) && !defined(QT_NO_QOBJECT)
     static QFuture<QVariant> runOnAndroidMainThread(const std::function<QVariant()> &runnable,
-                                                    const QDeadlineTimer
-                                                    &timeout = QDeadlineTimer(-1));
+                                            const QDeadlineTimer timeout = QDeadlineTimer::Forever);
 
     template <class T>
     std::enable_if_t<std::is_invocable_v<T> && std::is_same_v<std::invoke_result_t<T>, void>,
     QFuture<void>> static runOnAndroidMainThread(const T &runnable,
-                                                 const QDeadlineTimer
-                                                 &timeout = QDeadlineTimer(-1))
+                                            const QDeadlineTimer timeout = QDeadlineTimer::Forever)
     {
         std::function<QVariant()> func = [runnable](){ runnable(); return QVariant(); };
         return static_cast<QFuture<void>>(runOnAndroidMainThread(func, timeout));
