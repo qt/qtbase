@@ -409,6 +409,7 @@ function(qt6_add_big_resources outfiles )
                            VERBATIM)
         add_custom_target(big_resources_${outfilename} ALL DEPENDS ${tmpoutfile})
         add_library(rcc_object_${outfilename} OBJECT ${tmpoutfile})
+        _qt_internal_set_up_static_runtime_library(rcc_object_${outfilename})
         target_compile_definitions(rcc_object_${outfilename} PUBLIC "$<TARGET_PROPERTY:Qt6::Core,INTERFACE_COMPILE_DEFINITIONS>")
         set_target_properties(rcc_object_${outfilename} PROPERTIES AUTOMOC OFF)
         set_target_properties(rcc_object_${outfilename} PROPERTIES AUTOUIC OFF)
@@ -524,6 +525,7 @@ function(_qt_internal_create_executable target)
     endif()
 
     target_link_libraries("${target}" PRIVATE Qt6::Core)
+    _qt_internal_set_up_static_runtime_library("${target}")
 endfunction()
 
 function(_qt_internal_finalize_executable target)
@@ -1957,6 +1959,7 @@ function(_qt_internal_add_library target)
     endif()
 
     add_library(${target} ${type_to_create} ${arg_UNPARSED_ARGUMENTS})
+    _qt_internal_set_up_static_runtime_library(${target})
 
     if(NOT type_to_create STREQUAL "INTERFACE" AND NOT type_to_create STREQUAL "OBJECT")
         _qt_internal_apply_win_prefix_and_suffix("${target}")
