@@ -314,7 +314,6 @@ void QJUnitTestLogger::addMessage(MessageTypes type, const QString &message, con
     messageElement->addAttribute(QTest::AI_Message, message.toUtf8().constData());
 
     currentLogElement->addLogElement(messageElement);
-    ++errorCounter;
 
     // Also add the message to the system log (stdout/stderr), if one exists
     if (systemLogElement) {
