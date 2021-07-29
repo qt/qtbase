@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite name="tst_globaldata" timestamp="@TEST_START_TIME@" hostname="@HOSTNAME@" tests="15" failures="0" errors="0" time="@TEST_DURATION@">
+<testsuite name="tst_globaldata" timestamp="@TEST_START_TIME@" hostname="@HOSTNAME@" tests="15" failures="0" errors="0" skipped="7" time="@TEST_DURATION@">
   <properties>
     <property name="QTestVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtVersion" value="@INSERT_QT_VERSION_HERE@"/>
@@ -33,26 +33,26 @@
     <!-- type="qdebug" message="cleanup testGlobal local=true" -->
   </testcase>
   <testcase name="skip" classname="tst_globaldata" time="@TEST_DURATION@">
-    <!-- type="skip" message="skipping" -->
+    <skipped message="skipping"/>
   </testcase>
   <testcase name="skipLocal(global=false:local=false)" classname="tst_globaldata" time="@TEST_DURATION@">
     <!-- type="qdebug" message="init skipLocal local=false" -->
-    <!-- type="skip" message="skipping" -->
+    <skipped message="skipping"/>
     <!-- type="qdebug" message="cleanup skipLocal local=false" -->
   </testcase>
   <testcase name="skipLocal(global=false:local=true)" classname="tst_globaldata" time="@TEST_DURATION@">
     <!-- type="qdebug" message="init skipLocal local=true" -->
-    <!-- type="skip" message="skipping" -->
+    <skipped message="skipping"/>
     <!-- type="qdebug" message="cleanup skipLocal local=true" -->
   </testcase>
   <testcase name="skipLocal(global=true:local=false)" classname="tst_globaldata" time="@TEST_DURATION@">
     <!-- type="qdebug" message="init skipLocal local=false" -->
-    <!-- type="skip" message="skipping" -->
+    <skipped message="skipping"/>
     <!-- type="qdebug" message="cleanup skipLocal local=false" -->
   </testcase>
   <testcase name="skipLocal(global=true:local=true)" classname="tst_globaldata" time="@TEST_DURATION@">
     <!-- type="qdebug" message="init skipLocal local=true" -->
-    <!-- type="skip" message="skipping" -->
+    <skipped message="skipping"/>
     <!-- type="qdebug" message="cleanup skipLocal local=true" -->
   </testcase>
   <testcase name="skipSingle(global=false:local=false)" classname="tst_globaldata" time="@TEST_DURATION@">
@@ -62,12 +62,12 @@
   </testcase>
   <testcase name="skipSingle(global=false:local=true)" classname="tst_globaldata" time="@TEST_DURATION@">
     <!-- type="qdebug" message="init skipSingle local=true" -->
-    <!-- type="skip" message="Skipping" -->
+    <skipped message="Skipping"/>
     <!-- type="qdebug" message="cleanup skipSingle local=true" -->
   </testcase>
   <testcase name="skipSingle(global=true:local=false)" classname="tst_globaldata" time="@TEST_DURATION@">
     <!-- type="qdebug" message="init skipSingle local=false" -->
-    <!-- type="skip" message="Skipping" -->
+    <skipped message="Skipping"/>
     <!-- type="qdebug" message="cleanup skipSingle local=false" -->
   </testcase>
   <testcase name="skipSingle(global=true:local=true)" classname="tst_globaldata" time="@TEST_DURATION@">
@@ -96,27 +96,20 @@
 <![CDATA[global: true]]>
 <![CDATA[local: true]]>
 <![CDATA[cleanup testGlobal local=true]]>
-<![CDATA[skipping]]>
 <![CDATA[init skipLocal local=false]]>
-<![CDATA[skipping]]>
 <![CDATA[cleanup skipLocal local=false]]>
 <![CDATA[init skipLocal local=true]]>
-<![CDATA[skipping]]>
 <![CDATA[cleanup skipLocal local=true]]>
 <![CDATA[init skipLocal local=false]]>
-<![CDATA[skipping]]>
 <![CDATA[cleanup skipLocal local=false]]>
 <![CDATA[init skipLocal local=true]]>
-<![CDATA[skipping]]>
 <![CDATA[cleanup skipLocal local=true]]>
 <![CDATA[init skipSingle local=false]]>
 <![CDATA[global: false local: false]]>
 <![CDATA[cleanup skipSingle local=false]]>
 <![CDATA[init skipSingle local=true]]>
-<![CDATA[Skipping]]>
 <![CDATA[cleanup skipSingle local=true]]>
 <![CDATA[init skipSingle local=false]]>
-<![CDATA[Skipping]]>
 <![CDATA[cleanup skipSingle local=false]]>
 <![CDATA[init skipSingle local=true]]>
 <![CDATA[global: true local: true]]>

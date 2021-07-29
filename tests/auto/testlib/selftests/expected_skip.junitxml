@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite name="tst_Skip" timestamp="@TEST_START_TIME@" hostname="@HOSTNAME@" tests="6" failures="0" errors="0" time="@TEST_DURATION@">
+<testsuite name="tst_Skip" timestamp="@TEST_START_TIME@" hostname="@HOSTNAME@" tests="6" failures="0" errors="0" skipped="3" time="@TEST_DURATION@">
   <properties>
     <property name="QTestVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtVersion" value="@INSERT_QT_VERSION_HERE@"/>
@@ -7,22 +7,19 @@
   </properties>
   <testcase name="initTestCase" classname="tst_Skip" time="@TEST_DURATION@"/>
   <testcase name="test" classname="tst_Skip" time="@TEST_DURATION@">
-    <!-- type="skip" message="skipping all" -->
+    <skipped message="skipping all"/>
   </testcase>
   <testcase name="emptytest" classname="tst_Skip" time="@TEST_DURATION@">
-    <!-- type="skip" message="skipping all" -->
+    <skipped message="skipping all"/>
   </testcase>
   <testcase name="singleSkip(local 1)" classname="tst_Skip" time="@TEST_DURATION@">
-    <!-- type="skip" message="skipping one" -->
+    <skipped message="skipping one"/>
   </testcase>
   <testcase name="singleSkip(local 2)" classname="tst_Skip" time="@TEST_DURATION@">
     <!-- type="qdebug" message="this line should only be reached once (true)" -->
   </testcase>
   <testcase name="cleanupTestCase" classname="tst_Skip" time="@TEST_DURATION@"/>
   <system-out>
-<![CDATA[skipping all]]>
-<![CDATA[skipping all]]>
-<![CDATA[skipping one]]>
 <![CDATA[this line should only be reached once (true)]]>
   </system-out>
   <system-err/>

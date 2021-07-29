@@ -81,6 +81,7 @@ namespace QTest {
         AI_Timestamp = 17,
         AI_Hostname = 18,
         AI_Classname = 19,
+        AI_Skipped = 20
     };
 
     enum LogElementType
@@ -95,7 +96,8 @@ namespace QTest {
         LET_Benchmark = 6,
         LET_Message = 7,
         LET_SystemError = 8,
-        LET_SystemOutput = 9
+        LET_SystemOutput = 9,
+        LET_Skipped = 10
     };
 }
 
