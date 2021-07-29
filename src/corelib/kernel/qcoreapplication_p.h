@@ -203,17 +203,6 @@ public:
     void processCommandLineArguments();
     QString qmljs_debug_arguments; // a string containing arguments for js/qml debugging.
     inline QString qmljsDebugArgumentsString() const { return qmljs_debug_arguments; }
-#if QT_CONFIG(future) && !defined QT_NO_QOBJECT
-    static QFuture<QApplicationPermission::PermissionResult>
-    requestPermission(QApplicationPermission::PermissionType permission);
-    static QFuture<QApplicationPermission::PermissionResult>
-    requestPermission(const QString &permission);
-
-    static QFuture<QApplicationPermission::PermissionResult>
-    checkPermission(QApplicationPermission::PermissionType permission);
-    static QFuture<QApplicationPermission::PermissionResult>
-    checkPermission(const QString &permission);
-#endif
 
 #ifdef QT_NO_QOBJECT
     QCoreApplication *q_ptr;

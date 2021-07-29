@@ -1178,6 +1178,14 @@ requestPermissionsInternal(const QStringList &permissions)
     return future;
 }
 
+/*!
+    \preliminary
+    Requests the \a permission and returns a QFuture representing the
+    result of the request.
+
+    \since 6.2
+    \sa checkPermission()
+*/
 QFuture<QtAndroidPrivate::PermissionResult>
 QtAndroidPrivate::requestPermission(const QString &permission)
 {
@@ -1200,6 +1208,15 @@ static bool isBackgroundLocationApi29(QtAndroidPrivate::PermissionType permissio
                 || permission == QtAndroidPrivate::PreciseBackgroundLocation);
 }
 
+/*!
+    \preliminary
+
+    Requests the \a permission and returns a QFuture representing the
+    result of the request.
+
+    \since 6.2
+    \sa checkPermission()
+*/
 QFuture<QtAndroidPrivate::PermissionResult>
 QtAndroidPrivate::requestPermission(QtAndroidPrivate::PermissionType permission)
 {
@@ -1232,6 +1249,14 @@ QtAndroidPrivate::requestPermission(QtAndroidPrivate::PermissionType permission)
     return future;
 }
 
+/*!
+    \preliminary
+    Checks whether this process has the named \a permission and returns a QFuture
+    representing the result of the check.
+
+    \since 6.2
+    \sa requestPermission()
+*/
 QFuture<QtAndroidPrivate::PermissionResult>
 QtAndroidPrivate::checkPermission(const QString &permission)
 {
@@ -1253,6 +1278,14 @@ QtAndroidPrivate::checkPermission(const QString &permission)
     return future;
 }
 
+/*!
+    \preliminary
+    Checks whether this process has the named \a permission and returns a QFuture
+    representing the result of the check.
+
+    \since 6.2
+    \sa requestPermission()
+*/
 QFuture<QtAndroidPrivate::PermissionResult>
 QtAndroidPrivate::checkPermission(QtAndroidPrivate::PermissionType permission)
 {
