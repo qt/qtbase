@@ -459,7 +459,7 @@ typedef double qreal;
 
         // removed_api/some.cpp
         #define QT_BUILD_REMOVED_API
-        #include <qglobal.h>
+        #include <QtCore/qglobal.h>
 
         #include <someheader.h>
 
