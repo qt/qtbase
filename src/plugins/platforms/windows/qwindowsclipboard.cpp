@@ -191,12 +191,9 @@ void QWindowsClipboard::registerViewer()
         createDummyWindow(QStringLiteral("ClipboardView"), L"QtClipboardView",
                           qClipboardViewerWndProc, WS_OVERLAPPED);
 
-    // Try format listener API (Vista onwards) first.
-    if (QWindowsContext::user32dll.addClipboardFormatListener && QWindowsContext::user32dll.removeClipboardFormatListener) {
-        m_formatListenerRegistered = QWindowsContext::user32dll.addClipboardFormatListener(m_clipboardViewer);
-        if (!m_formatListenerRegistered)
-            qErrnoWarning("AddClipboardFormatListener() failed.");
-    }
+    m_formatListenerRegistered = AddClipboardFormatListener(m_clipboardViewer);
+    if (!m_formatListenerRegistered)
+        qErrnoWarning("AddClipboardFormatListener() failed.");
 
     if (!m_formatListenerRegistered)
         m_nextClipboardViewer = SetClipboardViewer(m_clipboardViewer);
@@ -210,7 +207,7 @@ void QWindowsClipboard::unregisterViewer()
 {
     if (m_clipboardViewer) {
         if (m_formatListenerRegistered) {
-            QWindowsContext::user32dll.removeClipboardFormatListener(m_clipboardViewer);
+            RemoveClipboardFormatListener(m_clipboardViewer);
             m_formatListenerRegistered = false;
         } else {
             ChangeClipboardChain(m_clipboardViewer, m_nextClipboardViewer);

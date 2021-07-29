@@ -70,7 +70,6 @@
 #include <QtCore/qmutex.h>
 #include <QtCore/quuid.h>
 #include <QtCore/qtemporaryfile.h>
-#include <QtCore/private/qsystemlibrary_p.h>
 
 #include <algorithm>
 #include <vector>
@@ -1707,9 +1706,6 @@ public slots:
     void close() override {}
 
 private:
-    typedef BOOL (APIENTRY *PtrGetOpenFileNameW)(LPOPENFILENAMEW);
-    typedef BOOL (APIENTRY *PtrGetSaveFileNameW)(LPOPENFILENAMEW);
-
     explicit QWindowsXpNativeFileDialog(const OptionsPtr &options, const QWindowsFileDialogSharedData &data);
     void populateOpenFileName(OPENFILENAME *ofn, HWND owner) const;
     QList<QUrl> execExistingDir(HWND owner);
@@ -1719,27 +1715,11 @@ private:
     QString m_title;
     QPlatformDialogHelper::DialogCode m_result;
     QWindowsFileDialogSharedData m_data;
-
-    static PtrGetOpenFileNameW m_getOpenFileNameW;
-    static PtrGetSaveFileNameW m_getSaveFileNameW;
 };
-
-QWindowsXpNativeFileDialog::PtrGetOpenFileNameW QWindowsXpNativeFileDialog::m_getOpenFileNameW = nullptr;
-QWindowsXpNativeFileDialog::PtrGetSaveFileNameW QWindowsXpNativeFileDialog::m_getSaveFileNameW = nullptr;
 
 QWindowsXpNativeFileDialog *QWindowsXpNativeFileDialog::create(const OptionsPtr &options, const QWindowsFileDialogSharedData &data)
 {
-    // GetOpenFileNameW() GetSaveFileName() are resolved
-    // dynamically as not to create a dependency on Comdlg32, which
-    // is used on XP only.
-    if (!m_getOpenFileNameW) {
-        QSystemLibrary library(QStringLiteral("Comdlg32"));
-        m_getOpenFileNameW = (PtrGetOpenFileNameW)(library.resolve("GetOpenFileNameW"));
-        m_getSaveFileNameW = (PtrGetSaveFileNameW)(library.resolve("GetSaveFileNameW"));
-    }
-    if (m_getOpenFileNameW && m_getSaveFileNameW)
-        return new QWindowsXpNativeFileDialog(options, data);
-    return nullptr;
+    return new QWindowsXpNativeFileDialog(options, data);
 }
 
 QWindowsXpNativeFileDialog::QWindowsXpNativeFileDialog(const OptionsPtr &options,
@@ -1903,7 +1883,7 @@ QList<QUrl> QWindowsXpNativeFileDialog::execFileNames(HWND owner, int *selectedF
     populateOpenFileName(&ofn, owner);
     QList<QUrl> result;
     const bool isSave = m_options->acceptMode() == QFileDialogOptions::AcceptSave;
-    if (isSave ? m_getSaveFileNameW(&ofn) : m_getOpenFileNameW(&ofn)) {
+    if (isSave ? GetSaveFileNameW(&ofn) : GetOpenFileNameW(&ofn)) {
         *selectedFilterIndex = ofn.nFilterIndex - 1;
         const QString dir = QDir::cleanPath(QString::fromWCharArray(ofn.lpstrFile));
         result.push_back(QUrl::fromLocalFile(dir));
@@ -2045,8 +2025,6 @@ QWindowsNativeColorDialog::QWindowsNativeColorDialog(const SharedPointerColor &c
 
 void QWindowsNativeColorDialog::doExec(HWND owner)
 {
-    typedef BOOL (WINAPI *ChooseColorWType)(LPCHOOSECOLORW);
-
     CHOOSECOLOR chooseColor;
     ZeroMemory(&chooseColor, sizeof(chooseColor));
     chooseColor.lStructSize = sizeof(chooseColor);
@@ -2059,18 +2037,9 @@ void QWindowsNativeColorDialog::doExec(HWND owner)
         m_customColors[c] = qColorToCOLORREF(QColor(qCustomColors[c]));
     chooseColor.rgbResult = qColorToCOLORREF(*m_color);
     chooseColor.Flags = CC_FULLOPEN | CC_RGBINIT;
-    static ChooseColorWType chooseColorW = 0;
-    if (!chooseColorW) {
-        QSystemLibrary library(QStringLiteral("Comdlg32"));
-        chooseColorW = (ChooseColorWType)library.resolve("ChooseColorW");
-    }
-    if (chooseColorW) {
-        m_code = chooseColorW(&chooseColor) ?
-            QPlatformDialogHelper::Accepted : QPlatformDialogHelper::Rejected;
-        QWindowsDialogs::eatMouseMove();
-    } else {
-        m_code = QPlatformDialogHelper::Rejected;
-    }
+    m_code = ChooseColorW(&chooseColor) ?
+        QPlatformDialogHelper::Accepted : QPlatformDialogHelper::Rejected;
+    QWindowsDialogs::eatMouseMove();
     if (m_code == QPlatformDialogHelper::Accepted) {
         *m_color = COLORREFToQColor(chooseColor.rgbResult);
         for (int c= 0; c < customColorCount; ++c)

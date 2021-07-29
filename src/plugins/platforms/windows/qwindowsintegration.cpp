@@ -122,14 +122,6 @@ QT_BEGIN_NAMESPACE
         MinGW-w64 provides more complete headers (compared to stock MinGW from mingw.org),
         including a considerable part of the Windows SDK.
     \endlist
-
-    When using a function from the WinAPI, the minimum supported Windows version
-    and Windows Embedded support should be checked. If the function is not supported
-    on Windows XP or is not present in the MinGW-headers, it should be dynamically
-    resolved. For this purpose, QWindowsContext has static structs like
-    QWindowsUser32DLL and QWindowsShell32DLL. All function pointers should go to
-    these structs to avoid lookups in several places.
-
 */
 
 struct QWindowsIntegrationPrivate
@@ -245,10 +237,8 @@ void QWindowsIntegrationPrivate::parseOptions(QWindowsIntegration *q, const QStr
     initOpenGlBlacklistResources();
 
     static bool dpiAwarenessSet = false;
-    static bool hasDpiAwarenessContext = QWindowsContext::user32dll.setProcessDpiAwarenessContext != nullptr;
     // Default to per-monitor-v2 awareness (if available)
-    QtWindows::ProcessDpiAwareness dpiAwareness = hasDpiAwarenessContext ?
-        QtWindows::ProcessPerMonitorV2DpiAware : QtWindows::ProcessPerMonitorDpiAware;
+    QtWindows::ProcessDpiAwareness dpiAwareness = QtWindows::ProcessPerMonitorV2DpiAware;
 
     int tabletAbsoluteRange = -1;
     DarkModeHandling darkModeHandling;
@@ -267,7 +257,7 @@ void QWindowsIntegrationPrivate::parseOptions(QWindowsIntegration *q, const QStr
         if (!QCoreApplication::testAttribute(Qt::AA_PluginApplication)) {
 
             // DpiAwareV2 requires using new API
-            if (dpiAwareness == QtWindows::ProcessPerMonitorV2DpiAware && hasDpiAwarenessContext) {
+            if (dpiAwareness == QtWindows::ProcessPerMonitorV2DpiAware) {
                 m_context.setProcessDpiV2Awareness();
                 qCDebug(lcQpaWindows)
                     << __FUNCTION__ << "DpiAwareness: DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2";

@@ -40,8 +40,8 @@
 #include "qwin10helpers.h"
 
 #include <QtCore/qdebug.h>
-#include <QtCore/qoperatingsystemversion.h>
-#include <QtCore/private/qsystemlibrary_p.h>
+#include <winstring.h>
+#include <roapi.h>
 
 #if defined(Q_CC_MINGW) || defined(Q_CC_CLANG)
 #  define HAS_UI_VIEW_SETTINGS_INTEROP
@@ -96,56 +96,23 @@ public:
 
 QT_BEGIN_NAMESPACE
 
-// Starting from Windows 10
-struct QWindowsComBaseDLL
-{
-    bool init();
-    bool isValid() const
-    {
-        return roGetActivationFactory != nullptr && windowsCreateStringReference != nullptr;
-    }
-
-    typedef HRESULT (WINAPI *RoGetActivationFactory)(HSTRING, REFIID, void **);
-    typedef HRESULT (WINAPI *WindowsCreateStringReference)(PCWSTR, UINT32, HSTRING_HEADER *, HSTRING *);
-
-    RoGetActivationFactory roGetActivationFactory = nullptr;
-    WindowsCreateStringReference windowsCreateStringReference = nullptr;
-};
-
-static QWindowsComBaseDLL baseComDll;
-
-bool QWindowsComBaseDLL::init()
-{
-    if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::Windows10 && !isValid()) {
-        QSystemLibrary library(QStringLiteral("combase"));
-        roGetActivationFactory =
-            reinterpret_cast<RoGetActivationFactory>(library.resolve("RoGetActivationFactory"));
-        windowsCreateStringReference =
-            reinterpret_cast<WindowsCreateStringReference>(library.resolve("WindowsCreateStringReference"));
-    }
-    return isValid();
-}
-
 // Return tablet mode, note: Does not work for GetDesktopWindow().
 bool qt_windowsIsTabletMode(HWND hwnd)
 {
     bool result = false;
 
-    if (!baseComDll.init())
-        return false;
-
     const wchar_t uiViewSettingsId[] = L"Windows.UI.ViewManagement.UIViewSettings";
     HSTRING_HEADER uiViewSettingsIdRefHeader;
     HSTRING uiViewSettingsIdHs = nullptr;
     const auto uiViewSettingsIdLen = UINT32(sizeof(uiViewSettingsId) / sizeof(uiViewSettingsId[0]) - 1);
-    if (FAILED(baseComDll.windowsCreateStringReference(uiViewSettingsId, uiViewSettingsIdLen, &uiViewSettingsIdRefHeader, &uiViewSettingsIdHs)))
+    if (FAILED(WindowsCreateStringReference(uiViewSettingsId, uiViewSettingsIdLen, &uiViewSettingsIdRefHeader, &uiViewSettingsIdHs)))
         return false;
 
     IUIViewSettingsInterop *uiViewSettingsInterop = nullptr;
     // __uuidof(IUIViewSettingsInterop);
     const GUID uiViewSettingsInteropRefId = {0x3694dbf9, 0x8f68, 0x44be,{0x8f, 0xf5, 0x19, 0x5c, 0x98, 0xed, 0xe8, 0xa6}};
 
-    HRESULT hr = baseComDll.roGetActivationFactory(uiViewSettingsIdHs, uiViewSettingsInteropRefId,
+    HRESULT hr = RoGetActivationFactory(uiViewSettingsIdHs, uiViewSettingsInteropRefId,
                                                    reinterpret_cast<void **>(&uiViewSettingsInterop));
     if (FAILED(hr))
         return false;

@@ -72,6 +72,10 @@ qt_internal_add_plugin(QWindowsDirect2DIntegrationPlugin
         winmm
         winspool
         wtsapi32
+        shcore
+        comdlg32
+        d3d9
+        runtimeobject
 )
 
 # Resources:

@@ -55,7 +55,6 @@
 #endif
 
 #include <QtCore/qt_windows.h>
-#include <private/qsystemlibrary_p.h>
 #include <d3d9.h>
 
 QT_BEGIN_NAMESPACE
@@ -94,19 +93,12 @@ public:
     bool retrieveAdapterIdentifier(UINT n, D3DADAPTER_IDENTIFIER9 *adapterIdentifier) const;
 
 private:
-    QSystemLibrary m_d3d9lib;
     IDirect3D9 *m_direct3D9 = nullptr;
 };
 
-QDirect3D9Handle::QDirect3D9Handle() :
-    m_d3d9lib(QStringLiteral("d3d9"))
+QDirect3D9Handle::QDirect3D9Handle()
 {
-    using PtrDirect3DCreate9 = IDirect3D9 *(WINAPI *)(UINT);
-
-    if (m_d3d9lib.load()) {
-        if (auto direct3DCreate9 = (PtrDirect3DCreate9)m_d3d9lib.resolve("Direct3DCreate9"))
-            m_direct3D9 = direct3DCreate9(D3D_SDK_VERSION);
-    }
+    m_direct3D9 = Direct3DCreate9(D3D_SDK_VERSION);
 }
 
 QDirect3D9Handle::~QDirect3D9Handle()

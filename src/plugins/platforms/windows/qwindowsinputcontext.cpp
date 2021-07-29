@@ -47,7 +47,6 @@
 #include <QtCore/qobject.h>
 #include <QtCore/qrect.h>
 #include <QtCore/qtextboundaryfinder.h>
-#include <QtCore/qoperatingsystemversion.h>
 
 #include <QtGui/qevent.h>
 #include <QtGui/qtextformat.h>
@@ -285,9 +284,7 @@ void QWindowsInputContext::showInputPanel()
         // Only trigger the native OSK if the Qt OSK is not in use.
         static bool imModuleEmpty = qEnvironmentVariableIsEmpty("QT_IM_MODULE");
         bool nativeVKDisabled = QCoreApplication::testAttribute(Qt::AA_DisableNativeVirtualKeyboard);
-        if ((imModuleEmpty && !nativeVKDisabled)
-                && QOperatingSystemVersion::current()
-                    >= QOperatingSystemVersion(QOperatingSystemVersion::Windows, 10, 0, 16299)) {
+        if (imModuleEmpty && !nativeVKDisabled) {
             ShowCaret(platformWindow->handle());
         } else {
             HideCaret(platformWindow->handle());
