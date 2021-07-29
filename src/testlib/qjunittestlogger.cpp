@@ -69,6 +69,14 @@ QJUnitTestLogger::~QJUnitTestLogger()
     delete logFormatter;
 }
 
+// We track test timing per test case, so we
+// need to maintain our own elapsed timer.
+static QElapsedTimer elapsedTestcaseTime;
+static qreal elapsedTestCaseSeconds()
+{
+    return elapsedTestcaseTime.nsecsElapsed() / 1e9;
+}
+
 void QJUnitTestLogger::startLogging()
 {
     QAbstractTestLogger::startLogging();
@@ -84,9 +92,11 @@ void QJUnitTestLogger::startLogging()
     currentTestSuite->addAttribute(QTest::AI_Name, QTestResult::currentTestObjectName());
 
     auto localTime = QDateTime::currentDateTime();
-    auto localTimeWithUtcOffset = localTime.toOffsetFromUtc(localTime.offsetFromUtc());
     currentTestSuite->addAttribute(QTest::AI_Timestamp,
-        localTimeWithUtcOffset.toString(Qt::ISODate).toUtf8().constData());
+        localTime.toString(Qt::ISODate).toUtf8().constData());
+
+    currentTestSuite->addAttribute(QTest::AI_Hostname,
+        QSysInfo::machineHostName().toUtf8().constData());
 
     QTestElement *property;
     QTestElement *properties = new QTestElement(QTest::LET_Properties);
@@ -107,6 +117,8 @@ void QJUnitTestLogger::startLogging()
     properties->addLogElement(property);
 
     currentTestSuite->addLogElement(properties);
+
+    elapsedTestcaseTime.start();
 }
 
 void QJUnitTestLogger::stopLogging()
@@ -134,8 +146,7 @@ void QJUnitTestLogger::stopLogging()
         testcase = testcase->nextElement();
     }
 
-    if (systemOutputElement->childElements())
-        currentTestSuite->addLogElement(systemOutputElement);
+    currentTestSuite->addLogElement(systemOutputElement);
     currentTestSuite->addLogElement(systemErrorElement);
 
     logFormatter->output(currentTestSuite);
@@ -148,19 +159,53 @@ void QJUnitTestLogger::stopLogging()
 
 void QJUnitTestLogger::enterTestFunction(const char *function)
 {
+    enterTestCase(function);
+}
+
+void QJUnitTestLogger::enterTestCase(const char *name)
+{
     currentLogElement = new QTestElement(QTest::LET_TestCase);
-    currentLogElement->addAttribute(QTest::AI_Name, function);
+    currentLogElement->addAttribute(QTest::AI_Name, name);
+    currentLogElement->addAttribute(QTest::AI_Classname, QTestResult::currentTestObjectName());
     currentLogElement->addToList(&listOfTestcases);
 
     // The element will be deleted when the suite is deleted
 
     ++testCounter;
+
+    elapsedTestcaseTime.restart();
+}
+
+void QJUnitTestLogger::enterTestData(QTestData *)
+{
+    QTestCharBuffer testIdentifier;
+    QTestPrivate::generateTestIdentifier(&testIdentifier,
+        QTestPrivate::TestFunction | QTestPrivate::TestDataTag);
+
+    static const char *lastTestFunction = nullptr;
+    if (QTestResult::currentTestFunction() != lastTestFunction) {
+        // Adopt existing testcase for the initial test data
+        auto *name = const_cast<QTestElementAttribute*>(
+            currentLogElement->attribute(QTest::AI_Name));
+        name->setPair(QTest::AI_Name, testIdentifier.data());
+        lastTestFunction = QTestResult::currentTestFunction();
+        elapsedTestcaseTime.restart();
+    } else {
+        // Create new test cases for remaining test data
+        leaveTestCase();
+        enterTestCase(testIdentifier.data());
+    }
 }
 
 void QJUnitTestLogger::leaveTestFunction()
 {
+    leaveTestCase();
+}
+
+void QJUnitTestLogger::leaveTestCase()
+{
     currentLogElement->addAttribute(QTest::AI_Time,
-        QByteArray::number(QTestLog::msecsFunctionTime() / 1000, 'f').constData());
+        QByteArray::number(elapsedTestCaseSeconds(), 'f').constData());
 }
 
 void QJUnitTestLogger::addIncident(IncidentTypes type, const char *description,
@@ -204,44 +249,9 @@ void QJUnitTestLogger::addIncident(IncidentTypes type, const char *description,
 
     if (type == QAbstractTestLogger::Fail || type == QAbstractTestLogger::XPass) {
         QTestElement *failureElement = new QTestElement(QTest::LET_Failure);
-        failureElement->addAttribute(QTest::AI_Result, typeBuf);
+        failureElement->addAttribute(QTest::AI_Type, typeBuf);
         failureElement->addAttribute(QTest::AI_Message, description);
-        addTag(failureElement);
         currentLogElement->addLogElement(failureElement);
-    }
-
-    /*
-        Only one result can be shown for the whole testfunction.
-        Check if we currently have a result, and if so, overwrite it
-        iff the new result is worse.
-    */
-    QTestElementAttribute* resultAttr =
-        const_cast<QTestElementAttribute*>(currentLogElement->attribute(QTest::AI_Result));
-    if (resultAttr) {
-        const char* oldResult = resultAttr->value();
-        bool overwrite = false;
-        if (!strcmp(oldResult, "pass")) {
-            overwrite = true;
-        }
-        else if (!strcmp(oldResult, "bpass") || !strcmp(oldResult, "bxfail")) {
-            overwrite = (type == QAbstractTestLogger::XPass || type == QAbstractTestLogger::Fail) || (type == QAbstractTestLogger::XFail)
-                    || (type == QAbstractTestLogger::BlacklistedFail) || (type == QAbstractTestLogger::BlacklistedXPass);
-        }
-        else if (!strcmp(oldResult, "bfail") || !strcmp(oldResult, "bxpass")) {
-            overwrite = (type == QAbstractTestLogger::XPass || type == QAbstractTestLogger::Fail) || (type == QAbstractTestLogger::XFail);
-        }
-        else if (!strcmp(oldResult, "xfail")) {
-            overwrite = (type == QAbstractTestLogger::XPass || type == QAbstractTestLogger::Fail);
-        }
-        else if (!strcmp(oldResult, "xpass")) {
-            overwrite = (type == QAbstractTestLogger::Fail);
-        }
-        if (overwrite) {
-            resultAttr->setPair(QTest::AI_Result, typeBuf);
-        }
-    }
-    else {
-        currentLogElement->addAttribute(QTest::AI_Result, typeBuf);
     }
 
     /*
@@ -251,27 +261,6 @@ void QJUnitTestLogger::addIncident(IncidentTypes type, const char *description,
     if (type == QAbstractTestLogger::XFail) {
         QJUnitTestLogger::addMessage(QAbstractTestLogger::Info, QString::fromUtf8(description), file, line);
     }
-}
-
-void QJUnitTestLogger::addTag(QTestElement* element)
-{
-    const char *tag = QTestResult::currentDataTag();
-    const char *gtag = QTestResult::currentGlobalDataTag();
-    const char *filler = (tag && gtag) ? ":" : "";
-    if ((!tag || !tag[0]) && (!gtag || !gtag[0])) {
-        return;
-    }
-
-    if (!tag) {
-        tag = "";
-    }
-    if (!gtag) {
-        gtag = "";
-    }
-
-    QTestCharBuffer buf;
-    QTest::qt_asprintf(&buf, "%s%s%s", gtag, filler, tag);
-    element->addAttribute(QTest::AI_Tag, buf.constData());
 }
 
 void QJUnitTestLogger::addMessage(MessageTypes type, const QString &message, const char *file, int line)
@@ -318,7 +307,6 @@ void QJUnitTestLogger::addMessage(MessageTypes type, const QString &message, con
 
     messageElement->addAttribute(QTest::AI_Type, typeBuf);
     messageElement->addAttribute(QTest::AI_Message, message.toUtf8().constData());
-    addTag(messageElement);
 
     currentLogElement->addLogElement(messageElement);
     ++errorCounter;

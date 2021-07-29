@@ -78,7 +78,9 @@ namespace QTest {
         AI_Value = 14,
         AI_Iterations = 15,
         AI_Time = 16,
-        AI_Timestamp = 17
+        AI_Timestamp = 17,
+        AI_Hostname = 18,
+        AI_Classname = 19,
     };
 
     enum LogElementType

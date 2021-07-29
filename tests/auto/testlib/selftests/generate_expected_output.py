@@ -116,6 +116,7 @@ class Cleaner (object):
             (r'(Config: Using QtTest library).*', r'\1'), # txt
             (r'( *<QtBuild)>[^<]+</QtBuild>', r'\1/>'), # xml, lightxml
             (r'(<property name="QtBuild" value=")[^"]+"', r'\1"'), # junitxml
+            (r'(<testsuite .*? hostname=")[^"]+(".*>)', r'\1@HOSTNAME@\2'), # junit
             # Line numbers in source files:
             (r'(ASSERT: ("|&quot;).*("|&quot;) in file .*, line) \d+', r'\1 0'), # lightxml
             (r'(Loc: \[[^[\]()]+)\(\d+\)', r'\1(0)'), # txt

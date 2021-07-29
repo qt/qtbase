@@ -1,37 +1,70 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite name="tst_DataTable" timestamp="@TEST_START_TIME@" tests="10" failures="13" errors="0" time="@TEST_DURATION@">
+<testsuite name="tst_DataTable" timestamp="@TEST_START_TIME@" hostname="@HOSTNAME@" tests="34" failures="13" errors="0" time="@TEST_DURATION@">
   <properties>
     <property name="QTestVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtBuild" value=""/>
   </properties>
-  <testcase name="initTestCase" result="pass" time="@TEST_DURATION@"/>
-  <testcase name="singleTestFunction1" result="pass" time="@TEST_DURATION@"/>
-  <testcase name="singleTestFunction2" result="pass" time="@TEST_DURATION@"/>
-  <testcase name="fiveTablePasses" result="pass" time="@TEST_DURATION@"/>
-  <testcase name="fiveTableFailures" result="fail" time="@TEST_DURATION@">
-    <failure result="fail" message="&apos;test&apos; returned FALSE. ()" tag="fiveTableFailures_data 1"/>
-    <failure result="fail" message="&apos;test&apos; returned FALSE. ()" tag="fiveTableFailures_data 2"/>
-    <failure result="fail" message="&apos;test&apos; returned FALSE. ()" tag="fiveTableFailures_data 3"/>
-    <failure result="fail" message="&apos;test&apos; returned FALSE. ()" tag="fiveTableFailures_data 4"/>
-    <failure result="fail" message="&apos;test&apos; returned FALSE. ()" tag="fiveTableFailures_data 5"/>
+  <testcase name="initTestCase" classname="tst_DataTable" time="@TEST_DURATION@"/>
+  <testcase name="singleTestFunction1" classname="tst_DataTable" time="@TEST_DURATION@"/>
+  <testcase name="singleTestFunction2" classname="tst_DataTable" time="@TEST_DURATION@"/>
+  <testcase name="fiveTablePasses(fiveTablePasses_data 1)" classname="tst_DataTable" time="@TEST_DURATION@"/>
+  <testcase name="fiveTablePasses(fiveTablePasses_data 2)" classname="tst_DataTable" time="@TEST_DURATION@"/>
+  <testcase name="fiveTablePasses(fiveTablePasses_data 3)" classname="tst_DataTable" time="@TEST_DURATION@"/>
+  <testcase name="fiveTablePasses(fiveTablePasses_data 4)" classname="tst_DataTable" time="@TEST_DURATION@"/>
+  <testcase name="fiveTablePasses(fiveTablePasses_data 5)" classname="tst_DataTable" time="@TEST_DURATION@"/>
+  <testcase name="fiveTableFailures(fiveTableFailures_data 1)" classname="tst_DataTable" time="@TEST_DURATION@">
+    <failure type="fail" message="&apos;test&apos; returned FALSE. ()"/>
   </testcase>
-  <testcase name="startsWithFailure" result="fail" time="@TEST_DURATION@">
-    <failure result="fail" message="&apos;test&apos; returned FALSE. ()" tag="startsWithFailure_data 1"/>
+  <testcase name="fiveTableFailures(fiveTableFailures_data 2)" classname="tst_DataTable" time="@TEST_DURATION@">
+    <failure type="fail" message="&apos;test&apos; returned FALSE. ()"/>
   </testcase>
-  <testcase name="endsWithFailure" result="fail" time="@TEST_DURATION@">
-    <failure result="fail" message="&apos;test&apos; returned FALSE. ()" tag="endsWithFailure 5"/>
+  <testcase name="fiveTableFailures(fiveTableFailures_data 3)" classname="tst_DataTable" time="@TEST_DURATION@">
+    <failure type="fail" message="&apos;test&apos; returned FALSE. ()"/>
   </testcase>
-  <testcase name="failureInMiddle" result="fail" time="@TEST_DURATION@">
-    <failure result="fail" message="&apos;test&apos; returned FALSE. ()" tag="failureInMiddle_data 3"/>
+  <testcase name="fiveTableFailures(fiveTableFailures_data 4)" classname="tst_DataTable" time="@TEST_DURATION@">
+    <failure type="fail" message="&apos;test&apos; returned FALSE. ()"/>
   </testcase>
-  <testcase name="fiveIsolatedFailures" result="fail" time="@TEST_DURATION@">
-    <failure result="fail" message="&apos;!test&apos; returned FALSE. ()" tag="fiveIsolatedFailures_data 1"/>
-    <failure result="fail" message="&apos;!test&apos; returned FALSE. ()" tag="fiveIsolatedFailures_data 2"/>
-    <failure result="fail" message="&apos;!test&apos; returned FALSE. ()" tag="fiveIsolatedFailures_data 3"/>
-    <failure result="fail" message="&apos;!test&apos; returned FALSE. ()" tag="fiveIsolatedFailures_data 4"/>
-    <failure result="fail" message="&apos;!test&apos; returned FALSE. ()" tag="fiveIsolatedFailures_data 5"/>
+  <testcase name="fiveTableFailures(fiveTableFailures_data 5)" classname="tst_DataTable" time="@TEST_DURATION@">
+    <failure type="fail" message="&apos;test&apos; returned FALSE. ()"/>
   </testcase>
-  <testcase name="cleanupTestCase" result="pass" time="@TEST_DURATION@"/>
+  <testcase name="startsWithFailure(startsWithFailure_data 1)" classname="tst_DataTable" time="@TEST_DURATION@">
+    <failure type="fail" message="&apos;test&apos; returned FALSE. ()"/>
+  </testcase>
+  <testcase name="startsWithFailure(startsWithFailure_data 2)" classname="tst_DataTable" time="@TEST_DURATION@"/>
+  <testcase name="startsWithFailure(startsWithFailure_data 3)" classname="tst_DataTable" time="@TEST_DURATION@"/>
+  <testcase name="startsWithFailure(startsWithFailure_data 4)" classname="tst_DataTable" time="@TEST_DURATION@"/>
+  <testcase name="startsWithFailure(startsWithFailure_data 5)" classname="tst_DataTable" time="@TEST_DURATION@"/>
+  <testcase name="endsWithFailure(endsWithFailure 1)" classname="tst_DataTable" time="@TEST_DURATION@"/>
+  <testcase name="endsWithFailure(endsWithFailure 2)" classname="tst_DataTable" time="@TEST_DURATION@"/>
+  <testcase name="endsWithFailure(endsWithFailure 3)" classname="tst_DataTable" time="@TEST_DURATION@"/>
+  <testcase name="endsWithFailure(endsWithFailure 4)" classname="tst_DataTable" time="@TEST_DURATION@"/>
+  <testcase name="endsWithFailure(endsWithFailure 5)" classname="tst_DataTable" time="@TEST_DURATION@">
+    <failure type="fail" message="&apos;test&apos; returned FALSE. ()"/>
+  </testcase>
+  <testcase name="failureInMiddle(failureInMiddle_data 1)" classname="tst_DataTable" time="@TEST_DURATION@"/>
+  <testcase name="failureInMiddle(failureInMiddle_data 2)" classname="tst_DataTable" time="@TEST_DURATION@"/>
+  <testcase name="failureInMiddle(failureInMiddle_data 3)" classname="tst_DataTable" time="@TEST_DURATION@">
+    <failure type="fail" message="&apos;test&apos; returned FALSE. ()"/>
+  </testcase>
+  <testcase name="failureInMiddle(failureInMiddle_data 4)" classname="tst_DataTable" time="@TEST_DURATION@"/>
+  <testcase name="failureInMiddle(failureInMiddle_data 5)" classname="tst_DataTable" time="@TEST_DURATION@"/>
+  <testcase name="fiveIsolatedFailures(fiveIsolatedFailures_data 1)" classname="tst_DataTable" time="@TEST_DURATION@">
+    <failure type="fail" message="&apos;!test&apos; returned FALSE. ()"/>
+  </testcase>
+  <testcase name="fiveIsolatedFailures(fiveIsolatedFailures_data 2)" classname="tst_DataTable" time="@TEST_DURATION@">
+    <failure type="fail" message="&apos;!test&apos; returned FALSE. ()"/>
+  </testcase>
+  <testcase name="fiveIsolatedFailures(fiveIsolatedFailures_data 3)" classname="tst_DataTable" time="@TEST_DURATION@">
+    <failure type="fail" message="&apos;!test&apos; returned FALSE. ()"/>
+  </testcase>
+  <testcase name="fiveIsolatedFailures(fiveIsolatedFailures_data 4)" classname="tst_DataTable" time="@TEST_DURATION@">
+    <failure type="fail" message="&apos;!test&apos; returned FALSE. ()"/>
+  </testcase>
+  <testcase name="fiveIsolatedFailures(fiveIsolatedFailures_data 5)" classname="tst_DataTable" time="@TEST_DURATION@">
+    <failure type="fail" message="&apos;!test&apos; returned FALSE. ()"/>
+  </testcase>
+  <testcase name="cleanupTestCase" classname="tst_DataTable" time="@TEST_DURATION@"/>
+  <system-out/>
   <system-err/>
 </testsuite>

@@ -1,32 +1,33 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite name="tst_VerifyExceptionThrown" timestamp="@TEST_START_TIME@" tests="11" failures="6" errors="0" time="@TEST_DURATION@">
+<testsuite name="tst_VerifyExceptionThrown" timestamp="@TEST_START_TIME@" hostname="@HOSTNAME@" tests="11" failures="6" errors="0" time="@TEST_DURATION@">
   <properties>
     <property name="QTestVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtBuild" value=""/>
   </properties>
-  <testcase name="initTestCase" result="pass" time="@TEST_DURATION@"/>
-  <testcase name="testCorrectStdTypes" result="pass" time="@TEST_DURATION@"/>
-  <testcase name="testCorrectStdExceptions" result="pass" time="@TEST_DURATION@"/>
-  <testcase name="testCorrectMyExceptions" result="pass" time="@TEST_DURATION@"/>
-  <testcase name="testFailInt" result="fail" time="@TEST_DURATION@">
-    <failure result="fail" message="Expected exception of type double to be thrown but unknown exception caught"/>
+  <testcase name="initTestCase" classname="tst_VerifyExceptionThrown" time="@TEST_DURATION@"/>
+  <testcase name="testCorrectStdTypes" classname="tst_VerifyExceptionThrown" time="@TEST_DURATION@"/>
+  <testcase name="testCorrectStdExceptions" classname="tst_VerifyExceptionThrown" time="@TEST_DURATION@"/>
+  <testcase name="testCorrectMyExceptions" classname="tst_VerifyExceptionThrown" time="@TEST_DURATION@"/>
+  <testcase name="testFailInt" classname="tst_VerifyExceptionThrown" time="@TEST_DURATION@">
+    <failure type="fail" message="Expected exception of type double to be thrown but unknown exception caught"/>
   </testcase>
-  <testcase name="testFailStdString" result="fail" time="@TEST_DURATION@">
-    <failure result="fail" message="Expected exception of type char* to be thrown but unknown exception caught"/>
+  <testcase name="testFailStdString" classname="tst_VerifyExceptionThrown" time="@TEST_DURATION@">
+    <failure type="fail" message="Expected exception of type char* to be thrown but unknown exception caught"/>
   </testcase>
-  <testcase name="testFailStdRuntimeError" result="fail" time="@TEST_DURATION@">
-    <failure result="fail" message="Expected exception of type std::runtime_error to be thrown but std::exception caught with message: logic error"/>
+  <testcase name="testFailStdRuntimeError" classname="tst_VerifyExceptionThrown" time="@TEST_DURATION@">
+    <failure type="fail" message="Expected exception of type std::runtime_error to be thrown but std::exception caught with message: logic error"/>
   </testcase>
-  <testcase name="testFailMyException" result="fail" time="@TEST_DURATION@">
-    <failure result="fail" message="Expected exception of type MyBaseException to be thrown but std::exception caught with message: logic error"/>
+  <testcase name="testFailMyException" classname="tst_VerifyExceptionThrown" time="@TEST_DURATION@">
+    <failure type="fail" message="Expected exception of type MyBaseException to be thrown but std::exception caught with message: logic error"/>
   </testcase>
-  <testcase name="testFailMyDerivedException" result="fail" time="@TEST_DURATION@">
-    <failure result="fail" message="Expected exception of type std::runtime_error to be thrown but std::exception caught with message: MyDerivedException"/>
+  <testcase name="testFailMyDerivedException" classname="tst_VerifyExceptionThrown" time="@TEST_DURATION@">
+    <failure type="fail" message="Expected exception of type std::runtime_error to be thrown but std::exception caught with message: MyDerivedException"/>
   </testcase>
-  <testcase name="testFailNoException" result="fail" time="@TEST_DURATION@">
-    <failure result="fail" message="Expected exception of type std::exception to be thrown but no exception caught"/>
+  <testcase name="testFailNoException" classname="tst_VerifyExceptionThrown" time="@TEST_DURATION@">
+    <failure type="fail" message="Expected exception of type std::exception to be thrown but no exception caught"/>
   </testcase>
-  <testcase name="cleanupTestCase" result="pass" time="@TEST_DURATION@"/>
+  <testcase name="cleanupTestCase" classname="tst_VerifyExceptionThrown" time="@TEST_DURATION@"/>
+  <system-out/>
   <system-err/>
 </testsuite>
