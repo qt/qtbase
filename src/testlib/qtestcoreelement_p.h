@@ -141,7 +141,8 @@ const char *QTestCoreElement<ElementType>::elementName() const
         "benchmark",
         "message",
         "system-err",
-        "system-out"
+        "system-out",
+        "skipped"
     };
 
     if (type != QTest::LET_Undefined)

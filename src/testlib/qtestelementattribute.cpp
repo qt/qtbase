@@ -145,7 +145,8 @@ const char *QTestElementAttribute::name() const
         "time",
         "timestamp",
         "hostname",
-        "classname"
+        "classname",
+        "skipped"
     };
 
     if (attributeIndex != QTest::AI_Undefined)

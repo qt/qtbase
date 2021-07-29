@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite name="tst_SingleSkip" timestamp="@TEST_START_TIME@" hostname="@HOSTNAME@" tests="3" failures="0" errors="0" time="@TEST_DURATION@">
+<testsuite name="tst_SingleSkip" timestamp="@TEST_START_TIME@" hostname="@HOSTNAME@" tests="3" failures="0" errors="0" skipped="1" time="@TEST_DURATION@">
   <properties>
     <property name="QTestVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtVersion" value="@INSERT_QT_VERSION_HERE@"/>
@@ -7,11 +7,9 @@
   </properties>
   <testcase name="initTestCase" classname="tst_SingleSkip" time="@TEST_DURATION@"/>
   <testcase name="myTest" classname="tst_SingleSkip" time="@TEST_DURATION@">
-    <!-- type="skip" message="skipping test" -->
+    <skipped message="skipping test"/>
   </testcase>
   <testcase name="cleanupTestCase" classname="tst_SingleSkip" time="@TEST_DURATION@"/>
-  <system-out>
-<![CDATA[skipping test]]>
-  </system-out>
+  <system-out/>
   <system-err/>
 </testsuite>

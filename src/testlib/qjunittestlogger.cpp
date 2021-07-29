@@ -139,6 +139,9 @@ void QJUnitTestLogger::stopLogging()
     qsnprintf(buf, sizeof(buf), "%i", errorCounter);
     currentTestSuite->addAttribute(QTest::AI_Errors, buf);
 
+    qsnprintf(buf, sizeof(buf), "%i", QTestLog::skipCount());
+    currentTestSuite->addAttribute(QTest::AI_Skipped, buf);
+
     currentTestSuite->addAttribute(QTest::AI_Time,
         toSecondsFormat(QTestLog::msecsTotalTime()).constData());
 
@@ -273,6 +276,13 @@ void QJUnitTestLogger::addMessage(MessageTypes type, const QString &message, con
     Q_UNUSED(file);
     Q_UNUSED(line);
 
+    if (type == QAbstractTestLogger::Skip) {
+        auto skippedElement = new QTestElement(QTest::LET_Skipped);
+        skippedElement->addAttribute(QTest::AI_Message, message.toUtf8().constData());
+        currentLogElement->addLogElement(skippedElement);
+        return;
+    }
+
     auto messageElement = new QTestElement(QTest::LET_Message);
     auto systemLogElement = systemOutputElement;
     const char *typeBuf = nullptr;
@@ -300,7 +310,7 @@ void QJUnitTestLogger::addMessage(MessageTypes type, const QString &message, con
         typeBuf = "qfatal";
         break;
     case QAbstractTestLogger::Skip:
-        typeBuf = "skip";
+        Q_UNREACHABLE();
         break;
     case QAbstractTestLogger::Info:
         typeBuf = "info";
