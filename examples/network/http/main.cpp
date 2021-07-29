@@ -57,14 +57,6 @@
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
-
-    auto permission = QApplicationPermission::WriteStorage;
-    if (QCoreApplication::requestPermission(permission).result()
-            != QApplicationPermission::Authorized) {
-        qWarning() << "Couldn't get 'WriteStorage' permission!";
-        return -1;
-    }
-
     HttpWindow httpWin;
     const QRect availableSize = httpWin.screen()->availableGeometry();
     httpWin.resize(availableSize.width() / 5, availableSize.height() / 5);
