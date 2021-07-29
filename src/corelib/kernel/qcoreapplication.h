@@ -167,17 +167,6 @@ public:
     QT_DECLARE_NATIVE_INTERFACE_ACCESSOR(QCoreApplication)
 
 #ifndef QT_NO_QOBJECT
-#if QT_CONFIG(future)
-    static QFuture<QApplicationPermission::PermissionResult>
-    requestPermission(QApplicationPermission::PermissionType permission);
-    static QFuture<QApplicationPermission::PermissionResult>
-    requestPermission(const QString &permission);
-
-    static QFuture<QApplicationPermission::PermissionResult>
-    checkPermission(QApplicationPermission::PermissionType permission);
-    static QFuture<QApplicationPermission::PermissionResult>
-    checkPermission(const QString &permission);
-#endif
     void installNativeEventFilter(QAbstractNativeEventFilter *filterObj);
     void removeNativeEventFilter(QAbstractNativeEventFilter *filterObj);
 
