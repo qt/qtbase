@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Copyright (C) 2020 Intel Corporation.
 ** Copyright (C) 2019 Mail.ru Group.
 ** Contact: https://www.qt.io/licensing/
@@ -8051,22 +8051,28 @@ QString QString::arg(qlonglong a, int fieldWidth, int base, QChar fillChar) cons
     }
 
     unsigned flags = QLocaleData::NoFlags;
+    // ZeroPadded sorts out left-padding when the fill is zero, to the right of sign:
     if (fillChar == QLatin1Char('0'))
         flags = QLocaleData::ZeroPadded;
 
     QString arg;
-    if (d.occurrences > d.locale_occurrences)
+    if (d.occurrences > d.locale_occurrences) {
         arg = QLocaleData::c()->longLongToString(a, -1, base, fieldWidth, flags);
+        Q_ASSERT(fillChar != QLatin1Char('0') || !qIsFinite(a)
+                 || fieldWidth <= arg.length());
+    }
 
-    QString locale_arg;
+    QString localeArg;
     if (d.locale_occurrences > 0) {
         QLocale locale;
         if (!(locale.numberOptions() & QLocale::OmitGroupSeparator))
             flags |= QLocaleData::GroupDigits;
-        locale_arg = locale.d->m_data->longLongToString(a, -1, base, fieldWidth, flags);
+        localeArg = locale.d->m_data->longLongToString(a, -1, base, fieldWidth, flags);
+        Q_ASSERT(fillChar != QLatin1Char('0') || !qIsFinite(a)
+                 || fieldWidth <= localeArg.length());
     }
 
-    return replaceArgEscapes(*this, d, fieldWidth, arg, locale_arg, fillChar);
+    return replaceArgEscapes(*this, d, fieldWidth, arg, localeArg, fillChar);
 }
 
 /*!
@@ -8093,22 +8099,28 @@ QString QString::arg(qulonglong a, int fieldWidth, int base, QChar fillChar) con
     }
 
     unsigned flags = QLocaleData::NoFlags;
+    // ZeroPadded sorts out left-padding when the fill is zero, to the right of sign:
     if (fillChar == QLatin1Char('0'))
         flags = QLocaleData::ZeroPadded;
 
     QString arg;
-    if (d.occurrences > d.locale_occurrences)
+    if (d.occurrences > d.locale_occurrences) {
         arg = QLocaleData::c()->unsLongLongToString(a, -1, base, fieldWidth, flags);
+        Q_ASSERT(fillChar != QLatin1Char('0') || !qIsFinite(a)
+                 || fieldWidth <= arg.length());
+    }
 
-    QString locale_arg;
+    QString localeArg;
     if (d.locale_occurrences > 0) {
         QLocale locale;
         if (!(locale.numberOptions() & QLocale::OmitGroupSeparator))
             flags |= QLocaleData::GroupDigits;
-        locale_arg = locale.d->m_data->unsLongLongToString(a, -1, base, fieldWidth, flags);
+        localeArg = locale.d->m_data->unsLongLongToString(a, -1, base, fieldWidth, flags);
+        Q_ASSERT(fillChar != QLatin1Char('0') || !qIsFinite(a)
+                 || fieldWidth <= localeArg.length());
     }
 
-    return replaceArgEscapes(*this, d, fieldWidth, arg, locale_arg, fillChar);
+    return replaceArgEscapes(*this, d, fieldWidth, arg, localeArg, fillChar);
 }
 
 /*!
@@ -8187,6 +8199,7 @@ QString QString::arg(double a, int fieldWidth, char format, int precision, QChar
     }
 
     unsigned flags = QLocaleData::NoFlags;
+    // ZeroPadded sorts out left-padding when the fill is zero, to the right of sign:
     if (fillChar == QLatin1Char('0'))
         flags |= QLocaleData::ZeroPadded;
 
@@ -8212,10 +8225,14 @@ QString QString::arg(double a, int fieldWidth, char format, int precision, QChar
     }
 
     QString arg;
-    if (d.occurrences > d.locale_occurrences)
-        arg = QLocaleData::c()->doubleToString(a, precision, form, fieldWidth, flags | QLocaleData::ZeroPadExponent);
+    if (d.occurrences > d.locale_occurrences) {
+        arg = QLocaleData::c()->doubleToString(a, precision, form, fieldWidth,
+                                               flags | QLocaleData::ZeroPadExponent);
+        Q_ASSERT(fillChar != QLatin1Char('0') || !qIsFinite(a)
+                 || fieldWidth <= arg.length());
+    }
 
-    QString locale_arg;
+    QString localeArg;
     if (d.locale_occurrences > 0) {
         QLocale locale;
 
@@ -8226,10 +8243,12 @@ QString QString::arg(double a, int fieldWidth, char format, int precision, QChar
             flags |= QLocaleData::ZeroPadExponent;
         if (numberOptions & QLocale::IncludeTrailingZeroesAfterDot)
             flags |= QLocaleData::AddTrailingZeroes;
-        locale_arg = locale.d->m_data->doubleToString(a, precision, form, fieldWidth, flags);
+        localeArg = locale.d->m_data->doubleToString(a, precision, form, fieldWidth, flags);
+        Q_ASSERT(fillChar != QLatin1Char('0') || !qIsFinite(a)
+                 || fieldWidth <= localeArg.length());
     }
 
-    return replaceArgEscapes(*this, d, fieldWidth, arg, locale_arg, fillChar);
+    return replaceArgEscapes(*this, d, fieldWidth, arg, localeArg, fillChar);
 }
 
 static inline char16_t to_unicode(const QChar c) { return c.unicode(); }

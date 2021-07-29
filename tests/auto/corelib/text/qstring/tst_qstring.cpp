@@ -6368,6 +6368,34 @@ void tst_QString::nanAndInf()
     valueFromString = valueAsString.toFloat();
     QVERIFY(value == -qInf());
     QVERIFY(qIsInf(valueFromString));
+
+    // Check that .arg(inf-or-nan, wide, fmt, 3, '0') padds with zeros
+    QString form = QStringLiteral("%1");
+    QCOMPARE(form.arg(qInf(), 5, 'f', 3, '0'), u"00inf");
+    QCOMPARE(form.arg(qInf(), -5, 'f', 3, '0'), u"inf00");
+    QCOMPARE(form.arg(-qInf(), 6, 'f', 3, '0'), u"00-inf");
+    QCOMPARE(form.arg(-qInf(), -6, 'f', 3, '0'), u"-inf00");
+    QCOMPARE(form.arg(qQNaN(), -5, 'f', 3, '0'), u"nan00");
+    QCOMPARE(form.arg(qInf(), 5, 'e', 3, '0'), u"00inf");
+    QCOMPARE(form.arg(qInf(), -5, 'e', 3, '0'), u"inf00");
+    QCOMPARE(form.arg(-qInf(), 6, 'e', 3, '0'), u"00-inf");
+    QCOMPARE(form.arg(-qInf(), -6, 'e', 3, '0'), u"-inf00");
+    QCOMPARE(form.arg(qQNaN(), -5, 'e', 3, '0'), u"nan00");
+    QCOMPARE(form.arg(qInf(), 5, 'E', 3, '0'), u"00INF");
+    QCOMPARE(form.arg(qInf(), -5, 'E', 3, '0'), u"INF00");
+    QCOMPARE(form.arg(-qInf(), 6, 'E', 3, '0'), u"00-INF");
+    QCOMPARE(form.arg(-qInf(), -6, 'E', 3, '0'), u"-INF00");
+    QCOMPARE(form.arg(qQNaN(), -5, 'E', 3, '0'), u"NAN00");
+    QCOMPARE(form.arg(qInf(), 5, 'g', 3, '0'), u"00inf");
+    QCOMPARE(form.arg(qInf(), -5, 'g', 3, '0'), u"inf00");
+    QCOMPARE(form.arg(-qInf(), 6, 'g', 3, '0'), u"00-inf");
+    QCOMPARE(form.arg(-qInf(), -6, 'g', 3, '0'), u"-inf00");
+    QCOMPARE(form.arg(qQNaN(), -5, 'g', 3, '0'), u"nan00");
+    QCOMPARE(form.arg(qInf(), 5, 'G', 3, '0'), u"00INF");
+    QCOMPARE(form.arg(qInf(), -5, 'G', 3, '0'), u"INF00");
+    QCOMPARE(form.arg(-qInf(), 6, 'G', 3, '0'), u"00-INF");
+    QCOMPARE(form.arg(-qInf(), -6, 'G', 3, '0'), u"-INF00");
+    QCOMPARE(form.arg(qQNaN(), -5, 'G', 3, '0'), u"NAN00");
 }
 
 void tst_QString::arg_fillChar_data()
@@ -6378,27 +6406,39 @@ void tst_QString::arg_fillChar_data()
     QTest::addColumn<QString>("fillChars");
     QTest::addColumn<QString>("expected");
 
-    QList<QVariant> replaceValues;
-    IntList widths;
-    QString fillChars;
+    using DataList = QList<QVariant>;
 
-    replaceValues << QVariant((int)5) << QVariant(QString("f")) << QVariant((int)0);
-    widths << 3 << 2 << 5;
-    QTest::newRow("str0") << QString("%1%2%3") << replaceValues << widths << QString("abc") << QString("aa5bfcccc0");
+    QTest::newRow("str0")
+        << QStringLiteral("%1%2%3")
+        << DataList{QVariant(int(5)), QVariant(QString("f")), QVariant(int(0))}
+        << IntList{3, 2, 5} << QString("abc") << QString("aa5bfcccc0");
 
-    replaceValues.clear();
-    widths.clear();
-    replaceValues << QVariant((int)5.5) << QVariant(QString("foo")) << QVariant((qulonglong)INT_MAX);
-    widths << 10 << 2 << 5;
-    QTest::newRow("str1") << QString("%3.%1.%3.%2") << replaceValues << widths << QString("0 c")
-                       << QString("2147483647.0000000005.2147483647.foo");
+    QTest::newRow("str1")
+        << QStringLiteral("%3.%1.%3.%2")
+        << DataList{QVariant(int(5)), QVariant(QString("foo")), QVariant(qulonglong(INT_MAX))}
+        << IntList{10, 2, 5} << QString("0 c") << QString("2147483647.0000000005.2147483647.foo");
 
-    replaceValues.clear();
-    widths.clear();
-    replaceValues << QVariant(QString("fisk"));
-    widths << 100;
-    QTest::newRow("str2") << QString("%9 og poteter") << replaceValues << widths << QString("f")
-                       << QString("fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffisk og poteter");
+    QTest::newRow("str2")
+        << QStringLiteral("%9 og poteter")
+        << DataList{QVariant(QString("fisk"))} << IntList{100} << QString("f")
+        << QString("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+                   "fffffffffffffffffffffffffffffffffffffisk og poteter");
+
+    // Left-padding with zeros fits them before the minus sign:
+    QTest::newRow("zero-left")
+        << QStringLiteral("%1 %2 %3 %4 %5 %6")
+        << DataList{QVariant(-314.0), QVariant(-3.14e8), QVariant(-3.14e12),
+                    QVariant(-.0314), QVariant(-3.14e-7), QVariant(-3.14e-13)}
+        << IntList{6, 11, 11, 9, 11, 11} << QStringLiteral("000000")
+        << QStringLiteral("-00314 -003.14e+08 -003.14e+12 -000.0314 -003.14e-07 -003.14e-13");
+
+    // Right-padding with zeros is not so sensible:
+    QTest::newRow("zero-right")
+        << QStringLiteral("%1 %2 %3 %4 %5 %6")
+        << DataList{QVariant(-314.0), QVariant(-3.14e8), QVariant(-3.14e12),
+                    QVariant(-.0314), QVariant(-3.14e-7), QVariant(-3.14e-13)}
+        << IntList{-6, -11, -11, -9, -11, -11} << QStringLiteral("000000")
+        << QStringLiteral("-31400 -3.14e+0800 -3.14e+1200 -0.031400 -3.14e-0700 -3.14e-1300");
 }
 
 void tst_QString::arg_fillChar()
