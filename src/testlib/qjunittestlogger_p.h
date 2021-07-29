@@ -70,16 +70,19 @@ class QJUnitTestLogger : public QAbstractTestLogger
         void enterTestFunction(const char *function) override;
         void leaveTestFunction() override;
 
+        void enterTestData(QTestData *) override;
+
         void addIncident(IncidentTypes type, const char *description,
                      const char *file = nullptr, int line = 0) override;
-        void addTag(QTestElement* element);
-
         void addMessage(MessageTypes type, const QString &message,
                     const char *file = nullptr, int line = 0) override;
 
         void addBenchmarkResult(const QBenchmarkResult &) override {}
 
     private:
+        void enterTestCase(const char *name);
+        void leaveTestCase();
+
         QTestElement *currentTestSuite = nullptr;
         QTestElement *listOfTestcases = nullptr;
         QTestElement *currentLogElement = nullptr;

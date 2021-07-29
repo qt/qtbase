@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite name="tst_Assert" timestamp="@TEST_START_TIME@" tests="3" failures="1" errors="1" time="@TEST_DURATION@">
+<testsuite name="tst_Assert" timestamp="@TEST_START_TIME@" hostname="@HOSTNAME@" tests="3" failures="1" errors="1" time="@TEST_DURATION@">
   <properties>
     <property name="QTestVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtBuild" value=""/>
   </properties>
-  <testcase name="initTestCase" result="pass" time="@TEST_DURATION@"/>
-  <testcase name="testNumber1" result="pass" time="@TEST_DURATION@"/>
-  <testcase name="testNumber2" result="fail" time="@TEST_DURATION@">
+  <testcase name="initTestCase" classname="tst_Assert" time="@TEST_DURATION@"/>
+  <testcase name="testNumber1" classname="tst_Assert" time="@TEST_DURATION@"/>
+  <testcase name="testNumber2" classname="tst_Assert" time="@TEST_DURATION@">
     <!-- type="qfatal" message="ASSERT: &quot;false&quot; in file qtbase/tests/auto/testlib/selftests/assert/tst_assert.cpp, line 0" -->
-    <failure result="fail" message="Received a fatal error."/>
+    <failure type="fail" message="Received a fatal error."/>
   </testcase>
+  <system-out/>
   <system-err>
 <![CDATA[ASSERT: "false" in file qtbase/tests/auto/testlib/selftests/assert/tst_assert.cpp, line 0]]>
   </system-err>

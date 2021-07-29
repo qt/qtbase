@@ -143,7 +143,9 @@ const char *QTestElementAttribute::name() const
         "value",
         "iterations",
         "time",
-        "timestamp"
+        "timestamp",
+        "hostname",
+        "classname"
     };
 
     if (attributeIndex != QTest::AI_Undefined)

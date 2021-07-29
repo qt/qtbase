@@ -236,6 +236,8 @@ bool compareOutput(const QString &logger, const QString &subdir,
             actualLine.replace(timestampRegex, "timestamp=\"@TEST_START_TIME@\"");
             static QRegularExpression timeRegex("time=\".*?\"");
             actualLine.replace(timeRegex, "time=\"@TEST_DURATION@\"");
+            static QRegularExpression hostnameRegex("hostname=\".*?\"");
+            actualLine.replace(hostnameRegex, "hostname=\"@HOSTNAME@\"");
         }
 
         // Special handling for ignoring _FILE_ and _LINE_ if logger is teamcity
