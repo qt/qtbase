@@ -340,7 +340,8 @@ ${framework_base_path}/${fw_private_module_header_dir}")
     else()
         set(public_module_includes "$$QT_MODULE_INCLUDE_BASE $$QT_MODULE_INCLUDE_BASE/${module}")
         set(public_module_frameworks "")
-        set(private_module_includes "$$QT_MODULE_INCLUDE_BASE/${module}/${PROJECT_VERSION} $$QT_MODULE_INCLUDE_BASE/${module}/${PROJECT_VERSION}/${module}")
+        set(private_module_includes "$$QT_MODULE_INCLUDE_BASE/${module_versioned_include_dir} \
+$$QT_MODULE_INCLUDE_BASE/${module_versioned_inner_include_dir}")
     endif()
 
     if(arg_HEADER_MODULE)
