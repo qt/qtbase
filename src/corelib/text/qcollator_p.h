@@ -92,11 +92,7 @@ public:
     QAtomicInt ref = 1;
     QLocale locale;
 #if defined(Q_OS_WIN) && !QT_CONFIG(icu)
-#ifdef USE_COMPARESTRINGEX
-    QString localeName;
-#else
     LCID localeID;
-#endif
 #endif
     Qt::CaseSensitivity caseSensitivity = Qt::CaseSensitive;
     bool numericMode = false;
