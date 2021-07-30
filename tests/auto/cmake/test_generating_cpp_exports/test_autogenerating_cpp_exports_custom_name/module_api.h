@@ -40,7 +40,7 @@
 #ifndef MODULE_API_H
 #define MODULE_API_H
 
-#include <QtTestAutogeneratingCppExportsCustomName/customname_exports.hpp>
+#include <QtTestAutogeneratingCppExportsCustomName/customname_exports.h>
 
 struct Q_TESTAUTOGENERATINGCPPEXPORTSCUSTOMNAME_EXPORT TestApi
 {

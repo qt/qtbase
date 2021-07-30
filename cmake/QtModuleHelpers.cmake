@@ -21,7 +21,6 @@ macro(qt_internal_get_internal_add_module_keywords option_args single_args multi
         CONFIG_MODULE_NAME
         PRECOMPILED_HEADER
         CONFIGURE_FILE_PATH
-        CPP_EXPORT_HEADER_NAME
         ${__default_target_info_args}
     )
     set(${multi_args}
@@ -33,6 +32,16 @@ macro(qt_internal_get_internal_add_module_keywords option_args single_args multi
         ${__default_public_args}
         ${__default_private_module_args}
     )
+endmacro()
+
+macro(qt_internal_get_generate_cpp_global_exports_keywords option_args single_args multi_args)
+    set(${option_args}
+        GENERATE_PRIVATE_CPP_EXPORTS
+    )
+    set(${single_args}
+        CPP_EXPORT_HEADER_BASE_NAME
+    )
+    set(${multi_args} "")
 endmacro()
 
 # This is the main entry function for creating a Qt module, that typically
@@ -62,9 +71,30 @@ endmacro()
 #
 function(qt_internal_add_module target)
     qt_internal_get_internal_add_module_keywords(
-        option_args
-        single_args
-        multi_args
+        module_option_args
+        module_single_args
+        module_multi_args
+    )
+
+    qt_internal_get_generate_cpp_global_exports_keywords(
+        cpp_exports_option_args
+        cpp_exports_single_args
+        cpp_exports_multi_args
+    )
+
+    set(option_args
+        ${module_option_args}
+        ${cpp_exports_option_args}
+    )
+
+    set(single_args
+        ${module_single_args}
+        ${cpp_exports_single_args}
+    )
+
+    set(multi_args
+        ${module_multi_args}
+        ${cpp_exports_multi_args}
     )
 
     qt_parse_all_arguments(arg "qt_internal_add_module"
@@ -153,15 +183,6 @@ function(qt_internal_add_module target)
     string(TOUPPER "${arg_CONFIG_MODULE_NAME}" module_define_infix)
     string(REPLACE "-" "_" module_define_infix "${module_define_infix}")
     string(REPLACE "." "_" module_define_infix "${module_define_infix}")
-
-    if(arg_GENERATE_CPP_EXPORTS)
-        if(arg_CPP_EXPORT_HEADER_NAME)
-            set(cpp_export_header_name "CPP_EXPORT_HEADER_NAME;${arg_CPP_EXPORT_HEADER_NAME}")
-        endif()
-        qt_internal_generate_cpp_global_exports(${target} ${module_define_infix}
-            "${cpp_export_header_name}"
-        )
-    endif()
 
     set(property_prefix "INTERFACE_")
     if(NOT arg_HEADER_MODULE)
@@ -316,6 +337,25 @@ function(qt_internal_add_module target)
 
         ### FIXME: Can we replace headers.pri?
         qt_read_headers_pri("${module_build_interface_include_dir}" "module_headers")
+        if(arg_GENERATE_CPP_EXPORTS)
+            if(arg_CPP_EXPORT_HEADER_BASE_NAME)
+                set(cpp_export_header_base_name
+                    "CPP_EXPORT_HEADER_BASE_NAME;${arg_CPP_EXPORT_HEADER_BASE_NAME}"
+                )
+            endif()
+            if(arg_GENERATE_PRIVATE_CPP_EXPORTS)
+                set(generate_private_cpp_export "GENERATE_PRIVATE_CPP_EXPORTS")
+            endif()
+            qt_internal_generate_cpp_global_exports(${target} ${module_define_infix}
+                generated_public_cpp_export
+                generated_private_cpp_export
+                "${cpp_export_header_base_name}"
+                "${generate_private_cpp_export}"
+            )
+            list(APPEND module_headers_public "${generated_public_cpp_export}")
+            list(APPEND module_headers_private "${generated_private_cpp_export}")
+        endif()
+
         set(module_depends_header
             "${module_build_interface_include_dir}/${module_include_name}Depends")
         if(is_framework)
@@ -922,24 +962,51 @@ function(qt_describe_module target)
     qt_install(FILES "${descfile_out}" DESTINATION "${install_dir}")
 endfunction()
 
-function(qt_internal_generate_cpp_global_exports target module_define_infix)
+function(qt_internal_generate_cpp_global_exports target module_define_infix
+    out_public_header out_private_header)
+
+    qt_internal_get_generate_cpp_global_exports_keywords(
+        option_args
+        single_args
+        multi_args
+    )
+
     cmake_parse_arguments(arg
-        ""
-        "CPP_EXPORT_HEADER_NAME"
-        "" ${ARGN})
+        "${option_args}"
+        "${single_args}"
+        "${multi_args}" ${ARGN}
+    )
+
     qt_internal_module_info(module "${target}")
-    if(NOT arg_CPP_EXPORT_HEADER_NAME)
-        set(arg_CPP_EXPORT_HEADER_NAME "qt${module_lower}exports.h")
+
+    set(header_base_name "qt${module_lower}exports")
+    if(arg_CPP_EXPORT_HEADER_BASE_NAME)
+        set(header_base_name "${arg_CPP_EXPORT_HEADER_BASE_NAME}")
     endif()
+    # Is used as a part of the header guard define.
+    string(TOUPPER "${header_base_name}" header_base_name_upper)
 
     set(generated_header_path
-        "${module_build_interface_include_dir}/${arg_CPP_EXPORT_HEADER_NAME}"
+        "${module_build_interface_include_dir}/${header_base_name}.h"
     )
 
     configure_file("${QT_CMAKE_DIR}/modulecppexports.h.in"
         "${generated_header_path}" @ONLY
     )
 
+    set(${out_public_header} "${generated_header_path}" PARENT_SCOPE)
     target_sources(${target} PRIVATE "${generated_header_path}")
-    set_property(TARGET ${target} APPEND PROPERTY PUBLIC_HEADER "${generated_header_path}")
+
+    if(arg_GENERATE_PRIVATE_CPP_EXPORTS)
+        set(generated_private_header_path
+            "${module_build_interface_private_include_dir}/${header_base_name}_p.h"
+        )
+
+        configure_file("${QT_CMAKE_DIR}/modulecppexports_p.h.in"
+            "${generated_private_header_path}" @ONLY
+        )
+
+        set(${out_private_header} "${generated_private_header_path}" PARENT_SCOPE)
+        target_sources(${target} PRIVATE "${generated_private_header_path}")
+    endif()
 endfunction()

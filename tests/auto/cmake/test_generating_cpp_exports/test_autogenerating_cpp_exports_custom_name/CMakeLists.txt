@@ -1,7 +1,7 @@
 qt_internal_add_module(TestAutogeneratingCppExportsCustomName
     GENERATE_CPP_EXPORTS
-    CPP_EXPORT_HEADER_NAME
-        "customname_exports.hpp"
+    CPP_EXPORT_HEADER_BASE_NAME
+        "customname_exports"
     SOURCES
         module_api.h
         module_api.cpp

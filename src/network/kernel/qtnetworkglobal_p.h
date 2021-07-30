@@ -54,8 +54,7 @@
 #include <QtNetwork/qtnetworkglobal.h>
 #include <QtCore/private/qglobal_p.h>
 #include <QtNetwork/private/qtnetwork-config_p.h>
-
-#define Q_NETWORK_PRIVATE_EXPORT Q_NETWORK_EXPORT
+#include <QtNetwork/private/qtnetworkexports_p.h>
 
 QT_BEGIN_NAMESPACE
 
