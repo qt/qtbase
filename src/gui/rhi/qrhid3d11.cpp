@@ -47,6 +47,7 @@
 
 #include <d3dcompiler.h>
 #include <comdef.h>
+#include <dxgi1_3.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -170,16 +171,10 @@ inline Int aligned(Int v, Int byteAlign)
 static IDXGIFactory1 *createDXGIFactory2()
 {
     IDXGIFactory1 *result = nullptr;
-    using PtrCreateDXGIFactory2 = HRESULT (WINAPI *)(UINT, REFIID, void **);
-    QSystemLibrary dxgilib(QStringLiteral("dxgi"));
-    if (auto createDXGIFactory2 = reinterpret_cast<PtrCreateDXGIFactory2>(dxgilib.resolve("CreateDXGIFactory2"))) {
-        const HRESULT hr = createDXGIFactory2(0, IID_IDXGIFactory2, reinterpret_cast<void **>(&result));
-        if (FAILED(hr)) {
-            qWarning("CreateDXGIFactory2() failed to create DXGI factory: %s", qPrintable(comErrorMessage(hr)));
-            result = nullptr;
-        }
-    } else {
-        qWarning("Unable to resolve CreateDXGIFactory2()");
+    const HRESULT hr = CreateDXGIFactory2(0, IID_IDXGIFactory2, reinterpret_cast<void **>(&result));
+    if (FAILED(hr)) {
+        qWarning("CreateDXGIFactory2() failed to create DXGI factory: %s", qPrintable(comErrorMessage(hr)));
+        result = nullptr;
     }
     return result;
 }
