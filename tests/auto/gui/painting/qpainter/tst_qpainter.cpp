@@ -300,6 +300,7 @@ private slots:
     void fillPolygon();
 
     void drawImageAtPointF();
+    void scaledDashes();
 
 private:
     void fillData();
@@ -5306,6 +5307,36 @@ void tst_QPainter::drawImageAtPointF()
     paint.drawImage(QPointF(96, std::numeric_limits<int>::max()), image1);
     paint.drawImage(QPointF(std::numeric_limits<int>::min(), 48), image1);
     paint.end();
+}
+
+void tst_QPainter::scaledDashes()
+{
+    // Test that we do not hit the limit-huge-number-of-dashes path
+    QRgb fore = qRgb(0, 0, 0xff);
+    QRgb back = qRgb(0xff, 0xff, 0);
+    QImage image(5, 32, QImage::Format_RGB32);
+    image.fill(back);
+    QPainter p(&image);
+    QPen pen(QColor(fore), 3, Qt::DotLine);
+    p.setPen(pen);
+    p.scale(1, 2);
+    p.drawLine(2, 0, 2, 16);
+    p.end();
+
+    bool foreFound = false;
+    bool backFound = false;
+    int i = 0;
+    while (i < 32 && (!foreFound || !backFound)) {
+        QRgb pix = image.pixel(3, i);
+        if (pix == fore)
+            foreFound = true;
+        else if (pix == back)
+            backFound = true;
+        i++;
+    }
+
+    QVERIFY(foreFound);
+    QVERIFY(backFound);
 }
 
 QTEST_MAIN(tst_QPainter)
