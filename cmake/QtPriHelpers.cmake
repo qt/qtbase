@@ -263,7 +263,7 @@ ${framework_base_path}/${fw_private_module_header_dir}")
         get_target_property(module_name_in_pri ${target} OUTPUT_NAME)
     endif()
 
-    get_target_property(hasModuleHeaders ${target} INTERFACE_MODULE_HAS_HEADERS)
+    get_target_property(hasModuleHeaders ${target} _qt_module_has_headers)
     if (NOT hasModuleHeaders)
         unset(public_module_includes)
         unset(private_module_includes)

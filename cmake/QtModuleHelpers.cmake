@@ -274,7 +274,6 @@ function(qt_internal_add_module target)
     set_property(TARGET "${target}" APPEND PROPERTY EXPORT_PROPERTIES _qt_module_has_headers)
     if(${arg_NO_MODULE_HEADERS} OR ${arg_NO_SYNC_QT})
         set_target_properties("${target}" PROPERTIES
-            INTERFACE_MODULE_HAS_HEADERS OFF
             _qt_module_has_headers OFF)
     else()
         set_target_properties("${target}" PROPERTIES INTERFACE_MODULE_INCLUDE_NAME "${module_include_name}")
@@ -298,7 +297,6 @@ function(qt_internal_add_module target)
         endif()
 
         set_target_properties("${target}" PROPERTIES
-            INTERFACE_MODULE_HAS_HEADERS ON
             _qt_module_has_headers ON)
 
         ### FIXME: Can we replace headers.pri?

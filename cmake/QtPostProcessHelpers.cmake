@@ -247,7 +247,7 @@ function(qt_internal_create_module_depends_file target)
         list(REMOVE_DUPLICATES qtdeps)
     endif()
 
-    get_target_property(hasModuleHeaders "${target}" INTERFACE_MODULE_HAS_HEADERS)
+    get_target_property(hasModuleHeaders "${target}" _qt_module_has_headers)
     if (${hasModuleHeaders})
         get_target_property(module_include_name "${target}" INTERFACE_MODULE_INCLUDE_NAME)
         qt_internal_write_depends_file(${module_include_name} ${qtdeps})
