@@ -424,6 +424,8 @@ public:
     QBasicAtomicInt ref;
     const uint m_index;
     QLocale::NumberOptions m_numberOptions;
+
+    static QBasicAtomicInt s_generation;
 };
 
 #ifndef QT_NO_SYSTEMLOCALE
