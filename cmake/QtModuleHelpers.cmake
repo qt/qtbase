@@ -122,6 +122,14 @@ function(qt_internal_add_module target)
         message(FATAL_ERROR "Invalid target type '${target_type}' for Qt module '${target}'")
     endif()
 
+    if(NOT arg_NO_SYNC_QT AND NOT arg_NO_MODULE_HEADERS AND arg_MODULE_INCLUDE_NAME)
+        # qt_internal_module_info uses this property if it's set, so it must be
+        # specified before the qt_internal_module_info call.
+        set_target_properties(${target} PROPERTIES
+            _qt_module_include_name ${arg_MODULE_INCLUDE_NAME}
+        )
+    endif()
+
     set_target_properties(${target} PROPERTIES
         _qt_module_interface_name "${arg_MODULE_INTERFACE_NAME}"
     )
@@ -146,18 +154,11 @@ function(qt_internal_add_module target)
     string(REPLACE "-" "_" module_define_infix "${module_define_infix}")
     string(REPLACE "." "_" module_define_infix "${module_define_infix}")
 
-    if(arg_MODULE_INCLUDE_NAME)
-        set(module_include_name ${arg_MODULE_INCLUDE_NAME})
-    else()
-        set(module_include_name ${module})
-    endif()
-
     if(arg_GENERATE_CPP_EXPORTS)
         if(arg_CPP_EXPORT_HEADER_NAME)
             set(cpp_export_header_name "CPP_EXPORT_HEADER_NAME;${arg_CPP_EXPORT_HEADER_NAME}")
         endif()
         qt_internal_generate_cpp_global_exports(${target} ${module_define_infix}
-            ${module_include_name}
             "${cpp_export_header_name}"
         )
     endif()
@@ -288,7 +289,9 @@ function(qt_internal_add_module target)
         set_target_properties("${target}" PROPERTIES
             _qt_module_has_headers OFF)
     else()
-        set_target_properties("${target}" PROPERTIES INTERFACE_MODULE_INCLUDE_NAME "${module_include_name}")
+        set_property(TARGET ${target} APPEND PROPERTY EXPORT_PROPERTIES _qt_module_include_name)
+        set_target_properties("${target}" PROPERTIES
+            _qt_module_include_name "${module_include_name}")
 
         # Use QT_BUILD_DIR for the syncqt call.
         # So we either write the generated files into the qtbase non-prefix build root, or the
@@ -312,9 +315,9 @@ function(qt_internal_add_module target)
             _qt_module_has_headers ON)
 
         ### FIXME: Can we replace headers.pri?
-        set(module_include_dir "${QT_BUILD_DIR}/include/${module_include_name}")
-        qt_read_headers_pri("${module_include_dir}" "module_headers")
-        set(module_depends_header "${module_include_dir}/${module_include_name}Depends")
+        qt_read_headers_pri("${module_build_interface_include_dir}" "module_headers")
+        set(module_depends_header
+            "${module_build_interface_include_dir}/${module_include_name}Depends")
         if(is_framework)
             if(NOT is_interface_lib)
                 set(public_headers_to_copy "${module_headers_public}" "${module_depends_header}")
@@ -327,7 +330,8 @@ function(qt_internal_add_module target)
             set_property(TARGET ${target} APPEND PROPERTY PRIVATE_HEADER "${module_headers_private}")
         endif()
         if (NOT ${arg_HEADER_MODULE})
-            set_property(TARGET "${target}" PROPERTY MODULE_HEADER "${module_include_dir}/${module_include_name}")
+            set_property(TARGET "${target}" PROPERTY MODULE_HEADER
+                "${module_build_interface_include_dir}/${module_include_name}")
         endif()
 
         if(module_headers_qpa)
@@ -336,7 +340,7 @@ function(qt_internal_add_module target)
             else()
                 qt_install(
                     FILES ${module_headers_qpa}
-                    DESTINATION ${INSTALL_INCLUDEDIR}/${module}/${PROJECT_VERSION}/${module_include_name}/qpa)
+                    DESTINATION "${module_install_interface_versioned_inner_include_dir}/qpa")
             endif()
         endif()
     endif()
@@ -394,14 +398,14 @@ function(qt_internal_add_module target)
         # Don't include private headers unless they exist, aka syncqt created them.
         if(module_headers_private)
             list(APPEND private_includes
-                        "$<BUILD_INTERFACE:${module_include_dir}/${PROJECT_VERSION}>"
-                        "$<BUILD_INTERFACE:${module_include_dir}/${PROJECT_VERSION}/${module}>")
+                "$<BUILD_INTERFACE:${module_build_interface_versioned_include_dir}>"
+                "$<BUILD_INTERFACE:${module_build_interface_versioned_inner_include_dir}>")
         endif()
 
         list(APPEND public_includes
                     # For the syncqt headers
-                    "$<BUILD_INTERFACE:${module_repo_include_dir}>"
-                    "$<BUILD_INTERFACE:${module_include_dir}>")
+                    "$<BUILD_INTERFACE:${repo_build_interface_include_dir}>"
+                    "$<BUILD_INTERFACE:${module_build_interface_include_dir}>")
     endif()
 
     if(is_framework)
@@ -424,7 +428,8 @@ function(qt_internal_add_module target)
 
     if(NOT arg_NO_MODULE_HEADERS AND NOT arg_NO_SYNC_QT)
         # For the syncqt headers
-        list(APPEND ${public_headers_list} "$<INSTALL_INTERFACE:${INSTALL_INCLUDEDIR}/${module}>")
+        list(APPEND ${public_headers_list}
+            "$<INSTALL_INTERFACE:${module_install_interface_include_dir}>")
 
         # To support finding Qt module includes that are not installed into the main Qt prefix.
         # Use case: A Qt module built by Conan installed into a prefix other than the main prefix.
@@ -654,8 +659,8 @@ set(QT_LIBINFIX \"${QT_LIBINFIX}\")")
         LIBRARY DESTINATION ${INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${INSTALL_LIBDIR}
         FRAMEWORK DESTINATION ${INSTALL_LIBDIR}
-        PUBLIC_HEADER DESTINATION ${INSTALL_INCLUDEDIR}/${module_include_name}
-        PRIVATE_HEADER DESTINATION ${INSTALL_INCLUDEDIR}/${module_include_name}/${PROJECT_VERSION}/${module}/private
+        PUBLIC_HEADER DESTINATION "${module_install_interface_include_dir}"
+        PRIVATE_HEADER DESTINATION "${module_install_interface_private_include_dir}"
         )
 
     if(BUILD_SHARED_LIBS)
@@ -704,10 +709,10 @@ set(QT_LIBINFIX \"${QT_LIBINFIX}\")")
         # consumers of the module will fail at CMake generation time stating that
         # INTERFACE_INCLUDE_DIRECTORIES contains a non-existent path.
         if(NOT arg_NO_MODULE_HEADERS
-                AND EXISTS "${module_include_dir}/${PROJECT_VERSION}/${module}")
+                AND EXISTS "${module_build_interface_versioned_inner_include_dir}")
             list(APPEND interface_includes
-                        "$<BUILD_INTERFACE:${module_include_dir}/${PROJECT_VERSION}>"
-                        "$<BUILD_INTERFACE:${module_include_dir}/${PROJECT_VERSION}/${module}>")
+                "$<BUILD_INTERFACE:${module_build_interface_versioned_include_dir}>"
+                "$<BUILD_INTERFACE:${module_build_interface_versioned_inner_include_dir}>")
 
             if(is_framework)
                 set(fw_install_private_header_dir "${INSTALL_LIBDIR}/${fw_private_header_dir}")
@@ -717,8 +722,8 @@ set(QT_LIBINFIX \"${QT_LIBINFIX}\")")
                             "$<INSTALL_INTERFACE:${fw_install_private_module_header_dir}>")
             else()
                 list(APPEND interface_includes
-                            "$<INSTALL_INTERFACE:${INSTALL_INCLUDEDIR}/${module}/${PROJECT_VERSION}>"
-                            "$<INSTALL_INTERFACE:${INSTALL_INCLUDEDIR}/${module}/${PROJECT_VERSION}/${module}>")
+                    "$<INSTALL_INTERFACE:${module_install_interface_versioned_include_dir}>"
+                    "$<INSTALL_INTERFACE:${module_install_interface_versioned_inner_include_dir}>")
             endif()
         endif()
     endif()
@@ -768,36 +773,136 @@ function(qt_finalize_module target)
 endfunction()
 
 # Get a set of Qt module related values based on the target.
-# When doing qt_internal_module_info(foo Core) this method will set
-# the following variables in the caller's scope:
+#
+# The function uses the _qt_module_interface_name and _qt_module_include_name target properties to
+# preform values for the output variables. _qt_module_interface_name it's the basic name of module
+# without "Qtfication" and the "Private" suffix if we speak about INTERNAL_MODULEs. Typical value of
+# the _qt_module_interface_name is the provided to qt_internal_add_module ${target} name, e.g. Core.
+# _qt_module_interface_name is used to preform all the include paths unless the
+# _qt_module_include_name property is specified. _qt_module_include_name is legacy property that
+# replaces the module name in include paths and has a higher priority than the
+# _qt_module_interface_name property.
+#
+# When doing qt_internal_module_info(foo Core) this method will set the following variables in
+# the caller's scope:
 #  * foo with the value "QtCore"
 #  * foo_versioned with the value "Qt6Core" (based on major Qt version)
 #  * foo_upper with the value "CORE"
 #  * foo_lower with the value "core"
-#  * foo_repo_include_dir with the module's include directory
-#    e.g for QtQuick it would be qtdeclarative_build_dir/include for a prefix build or
-#                                qtbase_build_dir/include for a non-prefix build
-#  * foo_include_dir with the module's include directory
-#    e.g for QtQuick it would be qtdeclarative_build_dir/include/QtQuick for a prefix build or
-#                                qtbase_build_dir/include/QtQuick for a non-prefix build
+#  * foo_include_name with the value"QtCore"
+#    Usually the module name from ${foo} is used, but the name might be different if the
+#    MODULE_INCLUDE_NAME argument is set when creating the module.
+#  * foo_versioned_include_dir with the value "QtCore/6.2.0"
+#  * foo_versioned_inner_include_dir with the value "QtCore/6.2.0/QtCore"
+#  * foo_private_include_dir with the value "QtCore/6.2.0/QtCore/private"
 #  * foo_interface_name the interface name of the module stored in _qt_module_interface_name
-#    property.
+#    property, e.g. Core.
+#
+# The function also sets a bunch of module include paths for the build and install interface.
+# Variables that contains these paths start with foo_build_interface_ and foo_install_interface_
+# accordingly.
+# The following variables are set in the caller's scope:
+#  * foo_<build|install>_interface_include_dir with
+#    qtbase_build_dir/include/QtCore for build interface and
+#    include/QtCore for install interface.
+#  * foo_<build|install>_interface_versioned_include_dir with
+#    qtbase_build_dir/include/QtCore/6.2.0 for build interface and
+#    include/QtCore/6.2.0 for install interface.
+#  * foo_<build|install>_versioned_inner_include_dir with
+#    qtbase_build_dir/include/QtCore/6.2.0/QtCore for build interface and
+#    include/QtCore/6.2.0/QtCore for install interface.
+#  * foo_<build|install>_private_include_dir with
+#    qtbase_build_dir/include/QtCore/6.2.0/QtCore/private for build interface and
+#    include/QtCore/6.2.0/QtCore/private for install interface.
+# The following values are set by the function and might be useful in caller's scope:
+#  * repo_install_interface_include_dir contains path to the top-level repository include directory,
+#    e.g. qtbase_build_dir/include
+#  * repo_install_interface_include_dir contains path to the non-prefixed top-level include
+#    directory is used for the installation, e.g. include
+# Note: that for non-prefixed Qt configurations the build interface paths will start with
+# <build_directory>/qtbase/include, e.g foo_build_interface_include_dir of the Qml module looks
+# like qt_toplevel_build_dir/qtbase/include/QtQml
 function(qt_internal_module_info result target)
+    if(result STREQUAL "repo")
+        message(FATAL_ERROR "'repo' keyword is reserved for internal use, please specify \
+the different base name for the module info variables.")
+    endif()
+
     get_target_property(module_interface_name ${target} _qt_module_interface_name)
     if(NOT module_interface_name)
         message(FATAL_ERROR "${target} is not a module.")
     endif()
 
     qt_internal_qtfy_target(module ${module_interface_name})
+
+    get_target_property("${result}_include_name" ${target} _qt_module_include_name)
+    if(NOT ${result}_include_name)
+        set("${result}_include_name" "${module}")
+    endif()
+
+    set("${result}_versioned_include_dir"
+        "${${result}_include_name}/${PROJECT_VERSION}")
+    set("${result}_versioned_inner_include_dir"
+        "${${result}_versioned_include_dir}/${${result}_include_name}")
+    set("${result}_private_include_dir"
+        "${${result}_versioned_inner_include_dir}/private")
+
+    # Module build interface directories
+    set(repo_build_interface_include_dir "${QT_BUILD_DIR}/include")
+    set("${result}_build_interface_include_dir"
+        "${repo_build_interface_include_dir}/${${result}_include_name}")
+    set("${result}_build_interface_versioned_include_dir"
+        "${repo_build_interface_include_dir}/${${result}_versioned_include_dir}")
+    set("${result}_build_interface_versioned_inner_include_dir"
+        "${repo_build_interface_include_dir}/${${result}_versioned_inner_include_dir}")
+    set("${result}_build_interface_private_include_dir"
+        "${repo_build_interface_include_dir}/${${result}_private_include_dir}")
+
+    # Module install interface direcotries
+    set(repo_install_interface_include_dir "${INSTALL_INCLUDEDIR}")
+    set("${result}_install_interface_include_dir"
+        "${repo_install_interface_include_dir}/${${result}_include_name}")
+    set("${result}_install_interface_versioned_include_dir"
+        "${repo_install_interface_include_dir}/${${result}_versioned_include_dir}")
+    set("${result}_install_interface_versioned_inner_include_dir"
+        "${repo_install_interface_include_dir}/${${result}_versioned_inner_include_dir}")
+    set("${result}_install_interface_private_include_dir"
+        "${repo_install_interface_include_dir}/${${result}_private_include_dir}")
+
     set("${result}" "${module}" PARENT_SCOPE)
     set("${result}_versioned" "${module_versioned}" PARENT_SCOPE)
     string(TOUPPER "${module_interface_name}" upper)
-    string(TOLOWER "${module_interface_name}" lower)#  * foo_upper with the value "CORE"
+    string(TOLOWER "${module_interface_name}" lower)
     set("${result}_upper" "${upper}" PARENT_SCOPE)
     set("${result}_lower" "${lower}" PARENT_SCOPE)
-    set("${result}_repo_include_dir" "${QT_BUILD_DIR}/include" PARENT_SCOPE)
-    set("${result}_include_dir" "${QT_BUILD_DIR}/include/${module}" PARENT_SCOPE)
+    set("${result}_include_name" "${${result}_include_name}" PARENT_SCOPE)
+    set("${result}_versioned_include_dir" "${${result}_versioned_include_dir}" PARENT_SCOPE)
+    set("${result}_versioned_inner_include_dir"
+        "${${result}_versioned_inner_include_dir}" PARENT_SCOPE)
+    set("${result}_private_include_dir" "${${result}_private_include_dir}" PARENT_SCOPE)
     set("${result}_interface_name" "${module_interface_name}" PARENT_SCOPE)
+
+    # Setting module build interface directories in parent scope
+    set(repo_build_interface_include_dir "${repo_build_interface_include_dir}" PARENT_SCOPE)
+    set("${result}_build_interface_include_dir"
+        "${${result}_build_interface_include_dir}" PARENT_SCOPE)
+    set("${result}_build_interface_versioned_include_dir"
+        "${${result}_build_interface_versioned_include_dir}" PARENT_SCOPE)
+    set("${result}_build_interface_versioned_inner_include_dir"
+        "${${result}_build_interface_versioned_inner_include_dir}" PARENT_SCOPE)
+    set("${result}_build_interface_private_include_dir"
+        "${${result}_build_interface_private_include_dir}" PARENT_SCOPE)
+
+    # Setting module install interface directories in parent scope
+    set(repo_install_interface_include_dir "${repo_install_interface_include_dir}" PARENT_SCOPE)
+    set("${result}_install_interface_include_dir"
+        "${${result}_install_interface_include_dir}" PARENT_SCOPE)
+    set("${result}_install_interface_versioned_include_dir"
+        "${${result}_install_interface_versioned_include_dir}" PARENT_SCOPE)
+    set("${result}_install_interface_versioned_inner_include_dir"
+        "${${result}_install_interface_versioned_inner_include_dir}" PARENT_SCOPE)
+    set("${result}_install_interface_private_include_dir"
+        "${${result}_install_interface_private_include_dir}" PARENT_SCOPE)
 endfunction()
 
 # Generate a module description file based on the template in ModuleDescription.json.in
@@ -817,7 +922,7 @@ function(qt_describe_module target)
     qt_install(FILES "${descfile_out}" DESTINATION "${install_dir}")
 endfunction()
 
-function(qt_internal_generate_cpp_global_exports target module_define_infix module_include_name)
+function(qt_internal_generate_cpp_global_exports target module_define_infix)
     cmake_parse_arguments(arg
         ""
         "CPP_EXPORT_HEADER_NAME"
@@ -828,7 +933,7 @@ function(qt_internal_generate_cpp_global_exports target module_define_infix modu
     endif()
 
     set(generated_header_path
-        "${QT_BUILD_DIR}/include/${module_include_name}/${arg_CPP_EXPORT_HEADER_NAME}"
+        "${module_build_interface_include_dir}/${arg_CPP_EXPORT_HEADER_NAME}"
     )
 
     configure_file("${QT_CMAKE_DIR}/modulecppexports.h.in"
