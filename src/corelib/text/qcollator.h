@@ -117,6 +117,9 @@ public:
 
     QCollatorSortKey sortKey(const QString &string) const;
 
+    static int defaultCompare(QStringView s1, QStringView s2);
+    static QCollatorSortKey defaultSortKey(QStringView key);
+
 private:
     QCollatorPrivate *d;
 

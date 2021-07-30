@@ -43,8 +43,32 @@
 #include "qstring.h"
 
 #include "qdebug.h"
+#include "qlocale_p.h"
+#include "qthreadstorage.h"
 
 QT_BEGIN_NAMESPACE
+
+namespace {
+struct GenerationalCollator
+{
+    QCollator theCollator;
+    int generation = QLocalePrivate::s_generation.loadRelaxed();
+public:
+    GenerationalCollator() = default;
+    GenerationalCollator(const QCollator &copy) : theCollator(copy) {}
+    QCollator &collator()
+    {
+        int currentGeneration = QLocalePrivate::s_generation.loadRelaxed();
+        if (Q_UNLIKELY(generation != currentGeneration)) {
+            // reinitialize the collator
+            generation = currentGeneration;
+            theCollator = QCollator();
+        }
+        return theCollator;
+    }
+};
+}
+Q_GLOBAL_STATIC(QThreadStorage<GenerationalCollator>, defaultCollator)
 
 /*!
     \class QCollator
@@ -343,6 +367,33 @@ bool QCollator::ignorePunctuation() const
     whether \a s1 sorts before, with or after \a s2.
 */
 #endif // QT_STRINGVIEW_LEVEL < 2
+
+/*!
+    \since 6.3
+
+    Compares the strings \a s1 and \a s2, returning their sorting order. This
+    function performs the same operation as compare() on a default-constructed
+    QCollator object.
+
+    \sa compare(), defaultSortKey()
+*/
+int QCollator::defaultCompare(QStringView s1, QStringView s2)
+{
+    return defaultCollator->localData().collator().compare(s1, s2);
+}
+
+/*!
+    \since 6.3
+
+    Returns the sort key for the string \a key. This function performs the same
+    operation as sortKey() on a default-constructed QCollator object.
+
+    \sa sortKey(), defaultCompare()
+*/
+QCollatorSortKey QCollator::defaultSortKey(QStringView key)
+{
+    return defaultCollator->localData().collator().sortKey(key.toString());
+}
 
 /*!
     \fn QCollatorSortKey QCollator::sortKey(const QString &string) const

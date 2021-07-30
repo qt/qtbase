@@ -6214,28 +6214,6 @@ int QString::localeAwareCompare(const QString &other) const
     return localeAwareCompare_helper(constData(), length(), other.constData(), other.length());
 }
 
-#if QT_CONFIG(icu)
-namespace {
-class GenerationalCollator
-{
-    QCollator theCollator;
-    int generation = QLocalePrivate::s_generation.loadRelaxed();
-public:
-    QCollator &collator()
-    {
-        int currentGeneration = QLocalePrivate::s_generation.loadRelaxed();
-        if (Q_UNLIKELY(generation != currentGeneration)) {
-            // reinitialize the collator
-            generation = currentGeneration;
-            theCollator = QCollator();
-        }
-        return theCollator;
-    }
-};
-}
-Q_GLOBAL_STATIC(QThreadStorage<GenerationalCollator>, defaultCollator)
-#endif
-
 /*!
     \internal
     \since 4.5
@@ -6254,9 +6232,7 @@ int QString::localeAwareCompare_helper(const QChar *data1, qsizetype length1,
                                Qt::CaseSensitive);
 
 #if QT_CONFIG(icu)
-    if (!defaultCollator()->hasLocalData())
-        defaultCollator()->setLocalData(GenerationalCollator());
-    return defaultCollator()->localData().collator().compare(data1, length1, data2, length2);
+    return QCollator::defaultCompare(QStringView(data1, length1), QStringView(data2, length2));
 #else
     const QString lhs = QString::fromRawData(data1, length1).normalized(QString::NormalizationForm_C);
     const QString rhs = QString::fromRawData(data2, length2).normalized(QString::NormalizationForm_C);

@@ -31,6 +31,7 @@
 #include <qlocale.h>
 #include <qcollator.h>
 #include <private/qglobal_p.h>
+#include <QScopeGuard>
 
 #include <cstring>
 
@@ -276,6 +277,13 @@ void tst_QCollator::compare()
     QFETCH(int, punctuationResult);
 
     QCollator collator((QLocale(locale)));
+
+    // AFTER the QCollator initialization
+    auto localechanger = qScopeGuard([original = QLocale()] {
+        QLocale::setDefault(original);  // reset back to what it was
+    });
+    QLocale::setDefault(QLocale(locale));
+
     // Need to canonicalize sign to -1, 0 or 1, as .compare() can produce any -ve for <, any +ve for >.
     auto asSign = [](int compared) {
         return compared < 0 ? -1 : compared > 0 ? 1 : 0;
@@ -310,10 +318,17 @@ void tst_QCollator::compare()
     // NOTE: currently QCollatorSortKey::compare is not working
     // properly without icu: see QTBUG-88704 for details
     QCOMPARE(asSign(collator.compare(s1, s2)), result);
+    if (!numericMode)
+        QCOMPARE(asSign(QCollator::defaultCompare(s1, s2)), result);
 #if QT_CONFIG(icu)
     auto key1 = collator.sortKey(s1);
     auto key2 = collator.sortKey(s2);
     QCOMPARE(asSign(key1.compare(key2)), keyCompareResult);
+
+    key1 = QCollator::defaultSortKey(s1);
+    key2 = QCollator::defaultSortKey(s2);
+    if (!numericMode)
+        QCOMPARE(asSign(key1.compare(key2)), keyCompareResult);
 #endif
     collator.setCaseSensitivity(Qt::CaseInsensitive);
     QCOMPARE(asSign(collator.compare(s1, s2)), caseInsensitiveResult);
