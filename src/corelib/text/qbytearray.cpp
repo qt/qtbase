@@ -3866,7 +3866,7 @@ QByteArray QByteArray::toBase64(Base64Options options) const
     Sets the byte array to the printed value of \a n in base \a base (ten by
     default) and returns a reference to the byte array. Bases 2 through 36 are
     supported, using letters for digits beyond 9; A is ten, B is eleven and so
-    on. For bases other than ten, n is treated as an unsigned integer.
+    on.
 
     Example:
     \snippet code/src_corelib_text_qbytearray.cpp 40
@@ -3942,7 +3942,8 @@ QByteArray &QByteArray::setNum(qlonglong n, int base)
     char buff[buffsize];
     char *p;
 
-    if (n < 0 && base == 10) {
+    if (n < 0) {
+        // Take care to avoid overflow on negating min value:
         p = qulltoa2(buff + buffsize, qulonglong(-(1 + n)) + 1, base);
         *--p = '-';
     } else {
