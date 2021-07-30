@@ -805,6 +805,59 @@ static void initScriptMap()
     }
 }
 
+// IDNA status as present int the data file
+enum class IdnaRawStatus : unsigned int {
+    Disallowed,
+    Valid,
+    Ignored,
+    Mapped,
+    Deviation,
+    DisallowedStd3Valid,
+    DisallowedStd3Mapped,
+};
+
+static QHash<QByteArray, IdnaRawStatus> idnaStatusMap;
+
+static void initIdnaStatusMap()
+{
+    struct {
+        IdnaRawStatus status;
+        const char *name;
+    } data[] = {
+        {IdnaRawStatus::Disallowed,           "disallowed"},
+        {IdnaRawStatus::Valid,                "valid"},
+        {IdnaRawStatus::Ignored,              "ignored"},
+        {IdnaRawStatus::Mapped,               "mapped"},
+        {IdnaRawStatus::Deviation,            "deviation"},
+        {IdnaRawStatus::DisallowedStd3Valid,  "disallowed_STD3_valid"},
+        {IdnaRawStatus::DisallowedStd3Mapped, "disallowed_STD3_mapped"},
+    };
+
+    for (const auto &entry : data)
+        idnaStatusMap[entry.name] = entry.status;
+}
+
+static const char *idna_status_string =
+    "enum class IdnaStatus : unsigned int {\n"
+    "    Disallowed,\n"
+    "    Valid,\n"
+    "    Ignored,\n"
+    "    Mapped,\n"
+    "    Deviation\n"
+    "};\n\n";
+
+// Resolved IDNA status as it goes into the database.
+// Qt extends host name validity rules to allow underscores
+// NOTE: The members here should come in the same order and have the same values
+// as in IdnaRawStatus
+enum class IdnaStatus : unsigned int {
+    Disallowed,
+    Valid,
+    Ignored,
+    Mapped,
+    Deviation,
+};
+
 // Keep this one in sync with the code in createPropertyInfo
 static const char *property_string =
     "enum Case {\n"
@@ -838,7 +891,8 @@ static const char *property_string =
     "    ushort graphemeBreakClass  : 5; /* 5 used */\n"
     "    ushort wordBreakClass      : 5; /* 5 used */\n"
     "    ushort lineBreakClass      : 6; /* 6 used */\n"
-    "    ushort sentenceBreakClass  : 8; /* 4 used */\n"
+    "    ushort sentenceBreakClass  : 4; /* 4 used */\n"
+    "    ushort idnaStatus          : 4; /* 3 used */\n"
     "    ushort script              : 8;\n"
     "};\n\n"
     "Q_CORE_EXPORT const Properties * QT_FASTCALL properties(char32_t ucs4) noexcept;\n"
@@ -861,6 +915,14 @@ static const char *methods =
     "Q_CORE_EXPORT LineBreakClass QT_FASTCALL lineBreakClass(char32_t ucs4) noexcept;\n"
     "inline LineBreakClass lineBreakClass(QChar ch) noexcept\n"
     "{ return lineBreakClass(ch.unicode()); }\n"
+    "\n"
+    "Q_CORE_EXPORT IdnaStatus QT_FASTCALL idnaStatus(char32_t ucs4) noexcept;\n"
+    "inline IdnaStatus idnaStatus(QChar ch) noexcept\n"
+    "{ return idnaStatus(ch.unicode()); }\n"
+    "\n"
+    "Q_CORE_EXPORT const char16_t * QT_FASTCALL idnaMapping(char32_t usc4) noexcept;\n"
+    "inline const char16_t *idnaMapping(QChar ch) noexcept\n"
+    "{ return idnaMapping(ch.unicode()); }\n"
     "\n";
 
 static const int SizeOfPropertiesStruct = 20;
@@ -899,6 +961,7 @@ struct PropertyFlags {
                 && lineBreakClass == o.lineBreakClass
                 && script == o.script
                 && nfQuickCheck == o.nfQuickCheck
+                && idnaStatus == o.idnaStatus
             );
     }
     // from UnicodeData.txt
@@ -928,6 +991,7 @@ struct PropertyFlags {
     int script = QChar::Script_Unknown;
     // from DerivedNormalizationProps.txt
     uchar nfQuickCheck = 0;
+    IdnaStatus idnaStatus = IdnaStatus::Disallowed;
 };
 
 
@@ -1082,6 +1146,8 @@ struct UnicodeData {
 
     // computed position of unicode property set
     int propertyIndex = -1;
+
+    IdnaRawStatus idnaRawStatus = IdnaRawStatus::Disallowed;
 };
 
 static QList<UnicodeData> unicodeData;
@@ -2292,6 +2358,194 @@ static void readScripts()
     }
 }
 
+static QMap<char32_t, QList<char32_t>> idnaMappingTable;
+
+static void readIdnaMappingTable()
+{
+    qDebug("Reading IdnaMappingTable.txt");
+
+    QFile f("data/IdnaMappingTable.txt");
+    if (!f.exists() || !f.open(QFile::ReadOnly))
+        qFatal("Couldn't find or read IdnaMappingTable.txt");
+
+    while (!f.atEnd()) {
+        QByteArray line = f.readLine().trimmed();
+
+        int comment = line.indexOf('#');
+        line = (comment < 0 ? line : line.left(comment)).simplified();
+
+        if (line.isEmpty())
+            continue;
+
+        QList<QByteArray> fields = line.split(';');
+        Q_ASSERT(fields.size() >= 2);
+
+        // That would be split(".."), but that API does not exist.
+        const QByteArray codePoints = fields[0].trimmed().replace("..", ".");
+        QList<QByteArray> cl = codePoints.split('.');
+        Q_ASSERT(cl.size() >= 1 && cl.size() <= 2);
+
+        const QByteArray statusString = fields[1].trimmed();
+        if (!idnaStatusMap.contains(statusString))
+            qFatal("Unhandled IDNA status property value for %s: %s",
+                   qPrintable(codePoints), qPrintable(statusString));
+        IdnaRawStatus rawStatus = idnaStatusMap.value(statusString);
+
+        bool ok;
+        const int first = cl[0].toInt(&ok, 16);
+        const int last = ok && cl.size() == 2 ? cl[1].toInt(&ok, 16) : first;
+        Q_ASSERT(ok);
+
+        QList<char32_t> mapping;
+
+        switch (rawStatus) {
+        case IdnaRawStatus::Disallowed:
+        case IdnaRawStatus::Valid:
+        case IdnaRawStatus::Ignored:
+        case IdnaRawStatus::DisallowedStd3Valid:
+            break;
+
+        case IdnaRawStatus::Mapped:
+        case IdnaRawStatus::Deviation:
+        case IdnaRawStatus::DisallowedStd3Mapped:
+            Q_ASSERT(fields.size() >= 3);
+
+            for (const auto &s : fields[2].trimmed().split(' ')) {
+                if (!s.isEmpty()) {
+                    bool ok;
+                    int val = s.toInt(&ok, 16);
+                    Q_ASSERT_X(ok, "readIdnaMappingTable", qPrintable(line));
+                    mapping.append(val);
+                }
+            }
+
+            // Some deviations have empty mappings, others should not...
+            if (mapping.isEmpty()) {
+                Q_ASSERT(rawStatus == IdnaRawStatus::Deviation);
+                qDebug() << "    Empty IDNA mapping for" << codePoints;
+            }
+
+            break;
+        }
+
+        for (int codepoint = first; codepoint <= last; ++codepoint) {
+            UnicodeData &ud = UnicodeData::valueRef(codepoint);
+            // Ensure that ranges don't overlap.
+            Q_ASSERT(ud.idnaRawStatus == IdnaRawStatus::Disallowed);
+            ud.idnaRawStatus = rawStatus;
+
+            // ASCII codepoints are skipped here because they are processed in separate
+            // optimized code paths that do not use this mapping table.
+            if (codepoint >= 0x80 && !mapping.isEmpty())
+                idnaMappingTable[codepoint] = mapping;
+        }
+    }
+}
+
+/*
+    Resolve IDNA status by deciding whether to allow STD3 violations
+
+    Underscores are normally prohibited by STD3 rules but Qt allows underscores
+    to be used inside URLs (see QTBUG-7434 for example). This code changes the
+    underscore status to Valid. The same is done to mapped codepoints that
+    map to underscores combined with other Valid codepoints.
+
+    Underscores in domain names are required when using DNS-SD protocol and they
+    are also allowed by the SMB protocol.
+*/
+static void resolveIdnaStatus()
+{
+    qDebug("resolveIdnaStatus:");
+
+    UnicodeData::valueRef(u'_').idnaRawStatus = IdnaRawStatus::Valid;
+
+    for (int codepoint = 0; codepoint <= QChar::LastValidCodePoint; ++codepoint) {
+        UnicodeData &ud = UnicodeData::valueRef(codepoint);
+        switch (ud.idnaRawStatus) {
+        case IdnaRawStatus::Disallowed:
+        case IdnaRawStatus::Valid:
+        case IdnaRawStatus::Ignored:
+        case IdnaRawStatus::Deviation:
+        case IdnaRawStatus::Mapped:
+            ud.p.idnaStatus = static_cast<IdnaStatus>(ud.idnaRawStatus);
+            break;
+        case IdnaRawStatus::DisallowedStd3Valid:
+            ud.p.idnaStatus = IdnaStatus::Disallowed;
+            break;
+        case IdnaRawStatus::DisallowedStd3Mapped: {
+            Q_ASSERT(idnaMappingTable.contains(codepoint));
+            const auto &mapping = idnaMappingTable[codepoint];
+
+            bool allow = std::all_of(mapping.begin(), mapping.end(), [](auto c) {
+                return UnicodeData::valueRef(c).idnaRawStatus == IdnaRawStatus::Valid;
+            });
+
+            if (allow) {
+                qDebug() << "    Allowing" << Qt::hex << codepoint;
+                ud.p.idnaStatus = IdnaStatus::Mapped;
+            } else {
+                ud.p.idnaStatus = IdnaStatus::Disallowed;
+                idnaMappingTable.remove(codepoint);
+            }
+            break;
+        }
+        }
+    }
+}
+
+static QByteArray createIdnaMapping()
+{
+    qDebug("createIdnaMapping:");
+
+    size_t maxMappingLength = 0;
+
+    for (const auto &entry : idnaMappingTable) {
+        size_t length = 0;
+        for (char32_t c : entry)
+            length += QChar::requiresSurrogates(c) ? 2 : 1;
+        maxMappingLength = qMax(maxMappingLength, length);
+    }
+
+    qDebug() << "    max mapping length:" << maxMappingLength;
+    qsizetype memoryUsage = 0;
+    QByteArray out =
+        "struct IdnaMapEntry {\n"
+        "    char32_t codePoint;\n"
+        "    char16_t mapping[" + QByteArray::number(maxMappingLength + 1) + "];\n"
+        "};\n\n"
+        "static const IdnaMapEntry idnaMap[] = {\n";
+
+    for (auto i = idnaMappingTable.keyValueBegin(); i != idnaMappingTable.keyValueEnd(); i++) {
+        out += "    { 0x" + QByteArray::number(i->first, 16) + ", {";
+        size_t n = 0;
+        for (char32_t c : i->second) {
+            for (auto qc : QChar::fromUcs4(c)) {
+                out += "0x" + QByteArray::number(qc, 16) + ", ";
+                n++;
+            }
+        }
+        for (; n < maxMappingLength; n++)
+            out += "0, ";
+        out += "0 }},\n";
+        memoryUsage += 4 + 2 * (maxMappingLength + 1);
+    }
+
+    qDebug() << "    memory usage:" << memoryUsage << "bytes";
+
+    out +=
+        "};\n\n"
+        "Q_CORE_EXPORT const char16_t * QT_FASTCALL idnaMapping(char32_t ucs4) noexcept\n"
+        "{\n"
+        "    auto i = std::lower_bound(std::begin(idnaMap), std::end(idnaMap), ucs4,\n"
+        "                              [](const auto &p, char32_t c) { return p.codePoint < c; });\n"
+        "    if (i != std::end(idnaMap) && i->codePoint == ucs4)\n"
+        "        return i->mapping;\n"
+        "    return nullptr;\n"
+        "}\n\n";
+
+    return out;
+}
+
 #if 0
 static void dump(int from, int to)
 {
@@ -2532,8 +2786,11 @@ static QByteArray createPropertyInfo()
         out += ", ";
         out += QByteArray::number( p.lineBreakClass );
         out += ", ";
-//     "        ushort sentenceBreakClass  : 8; /* 4 used */\n"
+//     "        ushort sentenceBreakClass  : 4; /* 4 used */\n"
         out += QByteArray::number( p.sentenceBreakClass );
+        out += ", ";
+//     "        ushort idnaStatus          : 4; /* 3 used */\n"
+        out += QByteArray::number( static_cast<unsigned int>(p.idnaStatus) );
         out += ", ";
 //     "        ushort script              : 8;\n"
         out += QByteArray::number( p.script );
@@ -2594,6 +2851,11 @@ static QByteArray createPropertyInfo()
            "Q_CORE_EXPORT LineBreakClass QT_FASTCALL lineBreakClass(char32_t ucs4) noexcept\n"
            "{\n"
            "    return static_cast<LineBreakClass>(qGetProp(ucs4)->lineBreakClass);\n"
+           "}\n"
+           "\n"
+           "Q_CORE_EXPORT IdnaStatus QT_FASTCALL idnaStatus(char32_t ucs4) noexcept\n"
+           "{\n"
+           "    return static_cast<IdnaStatus>(qGetProp(ucs4)->idnaStatus);\n"
            "}\n"
            "\n";
 
@@ -3059,6 +3321,7 @@ int main(int, char **)
     initSentenceBreak();
     initLineBreak();
     initScriptMap();
+    initIdnaStatusMap();
 
     readUnicodeData();
     readBidiMirroring();
@@ -3074,6 +3337,9 @@ int main(int, char **)
     readWordBreak();
     readSentenceBreak();
     readLineBreak();
+    readIdnaMappingTable();
+
+    resolveIdnaStatus();
 
     computeUniqueProperties();
     QByteArray properties = createPropertyInfo();
@@ -3081,6 +3347,7 @@ int main(int, char **)
     QByteArray compositions = createCompositionInfo();
     QByteArray ligatures = createLigatureInfo();
     QByteArray normalizationCorrections = createNormalizationCorrections();
+    QByteArray idnaMapping = createIdnaMapping();
 
     QByteArray header =
         "/****************************************************************************\n"
@@ -3150,6 +3417,7 @@ int main(int, char **)
     f.write(ligatures);
     f.write("\n");
     f.write(normalizationCorrections);
+    f.write(idnaMapping);
     f.write("} // namespace QUnicodeTables\n\n");
     f.write("using namespace QUnicodeTables;\n\n");
     f.write("QT_END_NAMESPACE\n");
@@ -3173,6 +3441,7 @@ int main(int, char **)
     f.write(word_break_class_string);
     f.write(sentence_break_class_string);
     f.write(line_break_class_string);
+    f.write(idna_status_string);
     f.write(methods);
     f.write("} // namespace QUnicodeTables\n\n"
             "QT_END_NAMESPACE\n\n"

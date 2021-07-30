@@ -12,6 +12,8 @@ To update:
   Unicode version
 * In that case, also update main.cpp's initAgeMap and DATA_VERSION_S*
   to match
+* Download https://www.unicode.org/Public/idna/$Version/IdnaMappingTable.txt
+  and put it into data/.
 * Build this project. Its binary, unicode, ignores command-line
   options and assumes it is being run from this directory. When run,
   it produces lots of output. If it gets as far as updating
