@@ -780,9 +780,9 @@ QDataStream &operator>>(QDataStream &ds, QLocale &l)
 }
 #endif // QT_NO_DATASTREAM
 
-
 static const int locale_data_size = sizeof(locale_data)/sizeof(QLocaleData) - 1;
 
+QBasicAtomicInt QLocalePrivate::s_generation = Q_BASIC_ATOMIC_INITIALIZER(0);
 Q_GLOBAL_STATIC_WITH_ARGS(QSharedDataPointer<QLocalePrivate>, defaultLocalePrivate,
                           (new QLocalePrivate(defaultData(), defaultIndex())))
 
@@ -1206,6 +1206,7 @@ void QLocale::setDefault(const QLocale &locale)
 
     // update the cached private
     *defaultLocalePrivate = locale.d;
+    QLocalePrivate::s_generation.fetchAndAddRelaxed(1);
 }
 
 /*!
