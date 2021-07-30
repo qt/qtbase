@@ -2646,22 +2646,24 @@ static bool qIsUpper(char c)
     \row \li \c 'e' \li format as [-]9.9e[+|-]999
     \row \li \c 'E' \li format as [-]9.9E[+|-]999
     \row \li \c 'f' \li format as [-]9.9
+    \row \li \c 'F' \li same as \c 'f' except for INF and NAN (see below)
     \row \li \c 'g' \li use \c 'e' or \c 'f' format, whichever is more concise
-    \row \li \c 'G' \li use \c 'E' or \c 'f' format, whichever is more concise
+    \row \li \c 'G' \li use \c 'E' or \c 'F' format, whichever is more concise
     \endtable
 
-    For the \c 'e', \c 'E', and \c 'f' formats, the \a precision represents the
-    number of digits \e after the decimal point. For the \c 'g' and \c 'G'
-    formats, the \a precision represents the maximum number of significant
-    digits (trailing zeroes are omitted). The special \a precision value
-    QLocale::FloatingPointShortest selects the shortest representation that,
-    when read as a number, gets back the original floating-point value. Aside
-    from that, any negative \a precision is ignored in favor of the default, 6.
+    For the \c 'e', \c 'E', \c 'f' and \c 'F' formats, the \a precision
+    represents the number of digits \e after the decimal point. For the \c 'g'
+    and \c 'G' formats, the \a precision represents the maximum number of
+    significant digits (trailing zeroes are omitted). The special \a precision
+    value QLocale::FloatingPointShortest selects the shortest representation
+    that, when read as a number, gets back the original floating-point
+    value. Aside from that, any negative \a precision is ignored in favor of the
+    default, 6.
 
     For the \c 'e', \c 'f' and \c 'g' formats, positive infinity is represented
     as "inf", negative infinity as "-inf" and floating-point NaN (not-a-number)
-    values are represented as "nan". For the \c 'E' and \c 'G' formats, "INF"
-    and "NAN" are used instead. This does not vary with locale.
+    values are represented as "nan". For the \c 'E', \c 'F' and \c 'G' formats,
+    "INF" and "NAN" are used instead. This does not vary with locale.
 
     \sa toDouble(), numberOptions(), exponential(), decimalPoint(), zeroDigit(),
         positiveSign(), percent(), toCurrencyString(), formattedDataSize(),

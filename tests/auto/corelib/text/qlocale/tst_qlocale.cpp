@@ -90,6 +90,7 @@ private slots:
     void long_long_conversion_data();
     void long_long_conversion();
     void long_long_conversion_extra();
+    void infNaN();
     void fpExceptions();
     void negativeZero_data();
     void negativeZero();
@@ -1406,6 +1407,101 @@ void tst_QLocale::long_long_conversion_extra()
     QCOMPARE(l.toString((qulonglong)123), QString("123"));
     QCOMPARE(l.toString((qulonglong)1234), QString("1,234"));
     QCOMPARE(l.toString((qulonglong)12345), QString("12,345"));
+}
+
+void tst_QLocale::infNaN()
+{
+    // TODO: QTBUG-95460 -- could support localized forms of inf/NaN
+    const QLocale c(QLocale::C);
+    QCOMPARE(c.toString(qQNaN()), u"nan");
+    QCOMPARE(c.toString(qQNaN(), 'e'), u"nan");
+    QCOMPARE(c.toString(qQNaN(), 'f'), u"nan");
+    QCOMPARE(c.toString(qQNaN(), 'g'), u"nan");
+    QCOMPARE(c.toString(qQNaN(), 'E'), u"NAN");
+    QCOMPARE(c.toString(qQNaN(), 'F'), u"NAN");
+    QCOMPARE(c.toString(qQNaN(), 'G'), u"NAN");
+
+    QCOMPARE(c.toString(qInf()), u"inf");
+    QCOMPARE(c.toString(qInf(), 'e'), u"inf");
+    QCOMPARE(c.toString(qInf(), 'f'), u"inf");
+    QCOMPARE(c.toString(qInf(), 'g'), u"inf");
+    QCOMPARE(c.toString(qInf(), 'E'), u"INF");
+    QCOMPARE(c.toString(qInf(), 'F'), u"INF");
+    QCOMPARE(c.toString(qInf(), 'G'), u"INF");
+
+    // Precision is ignored for inf and NaN:
+    QCOMPARE(c.toString(qQNaN(), 'g', 42), u"nan");
+    QCOMPARE(c.toString(qQNaN(), 'G', 42), u"NAN");
+    QCOMPARE(c.toString(qInf(), 'g', 42), u"inf");
+    QCOMPARE(c.toString(qInf(), 'G', 42), u"INF");
+
+    // Case is ignored when parsing inf and NaN:
+    bool ok = false;
+    QCOMPARE(c.toDouble("inf", &ok), qInf());
+    QVERIFY(ok);
+    QCOMPARE(c.toDouble("INF", &ok), qInf());
+    QVERIFY(ok);
+    QCOMPARE(c.toDouble("Inf", &ok), qInf());
+    QVERIFY(ok);
+    QCOMPARE(c.toDouble("+inf", &ok), qInf());
+    QVERIFY(ok);
+    QCOMPARE(c.toDouble("+INF", &ok), qInf());
+    QVERIFY(ok);
+    QCOMPARE(c.toDouble("+inF", &ok), qInf());
+    QVERIFY(ok);
+    QCOMPARE(c.toDouble("-inf", &ok), -qInf());
+    QVERIFY(ok);
+    QCOMPARE(c.toDouble("-INF", &ok), -qInf());
+    QVERIFY(ok);
+    QCOMPARE(c.toDouble("-iNf", &ok), -qInf());
+    QVERIFY(ok);
+    QCOMPARE(c.toDouble("nan", &ok), qQNaN());
+    QVERIFY(ok);
+    QCOMPARE(c.toDouble("NaN", &ok), qQNaN());
+    QVERIFY(ok);
+    QCOMPARE(c.toDouble("NAN", &ok), qQNaN());
+    QVERIFY(ok);
+    QCOMPARE(c.toDouble("nAn", &ok), qQNaN());
+    QVERIFY(ok);
+    // Sign is invalid for NaN:
+    QCOMPARE(c.toDouble("-nan", &ok), 0.0);
+    QVERIFY(!ok);
+    QCOMPARE(c.toDouble("+nan", &ok), 0.0);
+    QVERIFY(!ok);
+
+
+    // Case is ignored when parsing inf and NaN:
+    QCOMPARE(c.toFloat("inf", &ok), float(qInf()));
+    QVERIFY(ok);
+    QCOMPARE(c.toFloat("INF", &ok), float(qInf()));
+    QVERIFY(ok);
+    QCOMPARE(c.toFloat("Inf", &ok), float(qInf()));
+    QVERIFY(ok);
+    QCOMPARE(c.toFloat("+inf", &ok), float(qInf()));
+    QVERIFY(ok);
+    QCOMPARE(c.toFloat("+INF", &ok), float(qInf()));
+    QVERIFY(ok);
+    QCOMPARE(c.toFloat("+inF", &ok), float(qInf()));
+    QVERIFY(ok);
+    QCOMPARE(c.toFloat("-inf", &ok), -float(qInf()));
+    QVERIFY(ok);
+    QCOMPARE(c.toFloat("-INF", &ok), -float(qInf()));
+    QVERIFY(ok);
+    QCOMPARE(c.toFloat("-iNf", &ok), -float(qInf()));
+    QVERIFY(ok);
+    QCOMPARE(c.toFloat("nan", &ok), float(qQNaN()));
+    QVERIFY(ok);
+    QCOMPARE(c.toFloat("NaN", &ok), float(qQNaN()));
+    QVERIFY(ok);
+    QCOMPARE(c.toFloat("NAN", &ok), float(qQNaN()));
+    QVERIFY(ok);
+    QCOMPARE(c.toFloat("nAn", &ok), float(qQNaN()));
+    QVERIFY(ok);
+    // Sign is invalid for NaN:
+    QCOMPARE(c.toFloat("-nan", &ok), 0.0f);
+    QVERIFY(!ok);
+    QCOMPARE(c.toFloat("+nan", &ok), 0.0f);
+    QVERIFY(!ok);
 }
 
 void tst_QLocale::fpExceptions()

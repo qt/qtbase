@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2021 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Copyright (C) 2020 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -6430,6 +6430,11 @@ void tst_QString::nanAndInf()
     QCOMPARE(form.arg(-qInf(), 6, 'f', 3, '0'), u"00-inf");
     QCOMPARE(form.arg(-qInf(), -6, 'f', 3, '0'), u"-inf00");
     QCOMPARE(form.arg(qQNaN(), -5, 'f', 3, '0'), u"nan00");
+    QCOMPARE(form.arg(qInf(), 5, 'F', 3, '0'), u"00INF");
+    QCOMPARE(form.arg(qInf(), -5, 'F', 3, '0'), u"INF00");
+    QCOMPARE(form.arg(-qInf(), 6, 'F', 3, '0'), u"00-INF");
+    QCOMPARE(form.arg(-qInf(), -6, 'F', 3, '0'), u"-INF00");
+    QCOMPARE(form.arg(qQNaN(), -5, 'F', 3, '0'), u"NAN00");
     QCOMPARE(form.arg(qInf(), 5, 'e', 3, '0'), u"00inf");
     QCOMPARE(form.arg(qInf(), -5, 'e', 3, '0'), u"inf00");
     QCOMPARE(form.arg(-qInf(), 6, 'e', 3, '0'), u"00-inf");
