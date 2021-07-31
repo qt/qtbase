@@ -68,7 +68,6 @@ void QLocalSocketPrivate::setSocket(QLocalUnixSocket* socket)
 
     Q_Q(QLocalSocket);
     // QIODevice signals
-    q->connect(tcpSocket, SIGNAL(aboutToClose()), q, SIGNAL(aboutToClose()));
     q->connect(tcpSocket, SIGNAL(bytesWritten(qint64)),
                q, SIGNAL(bytesWritten(qint64)));
     q->connect(tcpSocket, SIGNAL(readyRead()), q, SIGNAL(readyRead()));

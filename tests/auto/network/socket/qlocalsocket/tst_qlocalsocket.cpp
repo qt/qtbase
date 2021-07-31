@@ -485,6 +485,7 @@ void tst_QLocalSocket::connectWithOpen()
     QVERIFY(server.listen("tst_qlocalsocket"));
 
     LocalSocket socket;
+    QSignalSpy spyAboutToClose(&socket, SIGNAL(aboutToClose()));
     socket.setServerName("tst_qlocalsocket");
     QVERIFY(socket.open());
 
@@ -498,6 +499,8 @@ void tst_QLocalSocket::connectWithOpen()
 
     socket.close();
     server.close();
+
+    QCOMPARE(spyAboutToClose.count(), 1);
 }
 
 void tst_QLocalSocket::listenAndConnectAbstractNamespaceTrailingZeros_data()
