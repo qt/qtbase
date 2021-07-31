@@ -2063,7 +2063,7 @@ void tst_QWindow::modalDialog()
     QGuiApplication::processEvents();
 
     if (isPlatformOffscreenOrMinimal()) {
-        QWARN("Focus stays in normalWindow on offscreen/minimal platforms");
+        qWarning("Focus stays in normalWindow on offscreen/minimal platforms");
         QTRY_COMPARE(QGuiApplication::focusWindow(), &normalWindow);
         return;
     }
@@ -2109,7 +2109,7 @@ void tst_QWindow::modalDialogClosingOneOfTwoModal()
     QGuiApplication::processEvents();
 
     if (isPlatformOffscreenOrMinimal()) {
-        QWARN("Focus is lost when closing modal dialog on offscreen/minimal platforms");
+        qWarning("Focus is lost when closing modal dialog on offscreen/minimal platforms");
         QTRY_COMPARE(QGuiApplication::focusWindow(), nullptr);
         return;
     }

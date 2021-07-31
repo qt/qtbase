@@ -344,7 +344,7 @@ void tst_QFocusEvent::checkReason_ActiveWindow()
 #if defined(Q_OS_WIN)
     if (QSysInfo::kernelVersion() == "10.0.15063") {
         // Activate window of testFocusWidget, focus in that window goes to childFocusWidgetOne
-        QWARN("Windows 10 Creators Update (10.0.15063) requires explicit activateWindow()");
+        qWarning("Windows 10 Creators Update (10.0.15063) requires explicit activateWindow()");
         testFocusWidget->activateWindow();
     }
 #endif
@@ -359,7 +359,7 @@ void tst_QFocusEvent::checkReason_ActiveWindow()
     if (!QGuiApplication::platformName().compare(QLatin1String("offscreen"), Qt::CaseInsensitive)
         || !QGuiApplication::platformName().compare(QLatin1String("minimal"), Qt::CaseInsensitive)) {
         // Activate window of testFocusWidget, focus in that window goes to childFocusWidgetOne
-        QWARN("Platforms offscreen and minimal require explicit activateWindow()");
+        qWarning("Platforms offscreen and minimal require explicit activateWindow()");
         testFocusWidget->activateWindow();
     }
 

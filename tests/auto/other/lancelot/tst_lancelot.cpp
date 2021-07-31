@@ -127,7 +127,7 @@ void tst_Lancelot::initTestCase()
     QDir qpsDir(scriptsDir);
     qpsFiles = qpsDir.entryList(QStringList() << QLatin1String("*.qps"), QDir::Files | QDir::Readable);
     if (qpsFiles.isEmpty()) {
-        QWARN("No qps script files found in " + qpsDir.path().toLatin1());
+        qWarning() << "No qps script files found in" << qpsDir.path();
         QSKIP("Aborted due to errors.");
     }
 

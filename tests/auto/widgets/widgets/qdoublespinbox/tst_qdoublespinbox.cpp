@@ -1045,7 +1045,7 @@ void tst_QDoubleSpinBox::undoRedo()
         QVERIFY(!spin.lineEdit()->isUndoAvailable());
         QVERIFY(spin.lineEdit()->isRedoAvailable());
     } else {
-        QWARN("Undo not tested because no key sequence associated to QKeySequence::Redo");
+        qWarning("Undo not tested because no key sequence associated to QKeySequence::Redo");
     }
 
 
@@ -1058,7 +1058,7 @@ void tst_QDoubleSpinBox::undoRedo()
         QVERIFY(!spin.lineEdit()->isRedoAvailable());
         QVERIFY(spin.lineEdit()->isUndoAvailable());
     } else {
-        QWARN("Redo not tested because no key sequence associated to QKeySequence::Redo");
+        qWarning("Redo not tested because no key sequence associated to QKeySequence::Redo");
     }
 
 

@@ -181,10 +181,8 @@ static QStringList readLinesFromFile(const QString &fileName,
     QFile file(fileName);
 
     bool ok = file.open(QIODevice::ReadOnly | QIODevice::Text);
-    if (!ok) {
-        QWARN(qPrintable(QString::fromLatin1("Could not open testdata file %1: %2")
-                         .arg(fileName, file.errorString())));
-    }
+    if (!ok)
+        qWarning() << "Could not open testdata file" << fileName << ":" << file.errorString();
 
     return QString::fromUtf8(file.readAll()).split(QLatin1Char('\n'), splitBehavior);
 }

@@ -1888,10 +1888,10 @@ void tst_QSqlQuery::precision()
             // TDS has crappy precisions by default
             if (dbType == QSqlDriver::Sybase) {
                 if (i < 18)
-                    QWARN("TDS didn't return the right precision");
+                    qWarning("TDS didn't return the right precision");
             } else {
-                QWARN(QString(tst_Databases::dbToString(db) + " didn't return the right precision (" +
-                              QString::number(i) + " out of 21), " + val).toUtf8());
+                qWarning() << tst_Databases::dbToString(db) << "didn't return the right precision ("
+                    << i << "out of 21)," << val;
             }
         }
     } // SQLITE scope

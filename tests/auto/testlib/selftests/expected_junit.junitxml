@@ -7,7 +7,7 @@
   </properties>
   <testcase name="initTestCase" result="pass" time="@TEST_DURATION@"/>
   <testcase name="testFunc1" result="pass" time="@TEST_DURATION@">
-    <!-- type="warn" message="just a QWARN() !" -->
+    <!-- type="qwarn" message="just a qWarning() !" -->
   </testcase>
   <testcase name="testFunc2" result="fail" time="@TEST_DURATION@">
     <!-- type="qdebug" message="a qDebug() call with comment&#x002D;ending stuff &#x002D;&#x002D;&gt;" -->
@@ -38,6 +38,6 @@
 <![CDATA[this failure is also expected]]>
   </system-out>
   <system-err>
-<![CDATA[just a QWARN() !]]>
+<![CDATA[just a qWarning() !]]>
   </system-err>
 </testsuite>

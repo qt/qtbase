@@ -260,7 +260,7 @@ void tst_QFontDialog::testNonStandardFontSize()
     if (accepted)
         QCOMPARE(testFont.pointSize(), resultFont.pointSize());
     else
-        QWARN("Fail using a non-standard font size.");
+        qWarning("Fail using a non-standard font size.");
 }
 
 QTEST_MAIN(tst_QFontDialog)
