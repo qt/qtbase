@@ -2073,7 +2073,7 @@ void SettingsThread::run()
         settings.setValue(QString::number((param * NumIterations) + i), param);
         settings.sync();
         if (settings.status() != QSettings::NoError) {
-            QWARN(qPrintable(QString("Unexpected QSettings status %1").arg((int)settings.status())));
+            qWarning() << qPrintable(QString("Unexpected QSettings status %1").arg((int)settings.status()));
             ++numThreadSafetyFailures;
         }
     }

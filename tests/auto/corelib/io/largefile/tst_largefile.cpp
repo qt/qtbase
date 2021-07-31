@@ -299,7 +299,7 @@ void tst_LargeFile::createSparseFile()
     DWORD bytes;
     if (!::DeviceIoControl(handle, FSCTL_SET_SPARSE, NULL, 0, NULL, 0,
             &bytes, NULL)) {
-        QWARN("Unable to set test file as sparse. "
+        qWarning("Unable to set test file as sparse. "
             "Limiting test file to 16MiB.");
         maxSizeBits = 24;
     }
@@ -347,11 +347,10 @@ void tst_LargeFile::fillFileSparsely()
         {
             if (failed) {
                 this_->maxSizeBits = lastKnownGoodIndex;
-                QWARN( qPrintable(
-                    QString("QFile::error %1: '%2'. Maximum size bits reset to %3.")
-                        .arg(this_->largeFile.error())
-                        .arg(this_->largeFile.errorString())
-                        .arg(this_->maxSizeBits)) );
+                qWarning("QFile::error %d: '%s'. Maximum size bits reset to %d.",
+                        this_->largeFile.error(),
+                        qPrintable(this_->largeFile.errorString()),
+                        this_->maxSizeBits);
             } else
                 lastKnownGoodIndex = qMax<int>(index_, lastKnownGoodIndex);
         }

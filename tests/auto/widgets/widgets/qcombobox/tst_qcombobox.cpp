@@ -3460,7 +3460,7 @@ void tst_QComboBox::task_QTBUG_52027_mapCompleterIndex()
     completer->setModel(model);
 
     if (QGuiApplication::platformName() == "offscreen") {
-        QWARN("Offscreen platform requires explicit activateWindow()");
+        qWarning("Offscreen platform requires explicit activateWindow()");
         cbox.activateWindow();
     }
 

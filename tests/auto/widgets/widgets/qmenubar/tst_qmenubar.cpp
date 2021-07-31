@@ -921,7 +921,7 @@ void tst_QMenuBar::check_escKey()
 
     if (!QGuiApplication::platformName().compare(QLatin1String("minimal"), Qt::CaseInsensitive)
         || !QGuiApplication::platformName().compare(QLatin1String("offscreen"), Qt::CaseInsensitive)) {
-        QWARN("Skipping menu button test on minimal/offscreen platforms");
+        qWarning("Skipping menu button test on minimal/offscreen platforms");
         return;
     }
 

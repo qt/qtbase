@@ -967,7 +967,7 @@ void tst_QAbstractItemView::dragAndDrop()
 
     if (successes < attempts) {
         QString msg = QString("# successes (%1) < # attempts (%2)").arg(successes).arg(attempts);
-        QWARN(msg.toLatin1());
+        qWarning() << qPrintable(msg);
     }
     QVERIFY(successes > 0); // allow for some "event unstability" (i.e. unless
                             // successes == 0, QAbstractItemView is probably ok!)

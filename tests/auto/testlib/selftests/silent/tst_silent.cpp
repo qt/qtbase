@@ -86,7 +86,7 @@ static void abort_handler(int)
 void tst_Silent::messages()
 {
     qWarning("This is a warning that should not appear in silent test output");
-    QWARN("This is an internal testlib warning that should not appear in silent test output");
+    QTestLog::warn("This is an internal testlib warning that should not appear in silent test output", __FILE__, __LINE__);
     qDebug("This is a debug message that should not appear in silent test output");
     qCritical("This is a critical message that should not appear in silent test output");
     qInfo("This is an info message that should not appear in silent test output");

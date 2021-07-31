@@ -51,7 +51,7 @@ tst_JUnit::tst_JUnit()
 
 void tst_JUnit::testFunc1()
 {
-    QWARN("just a QWARN() !");
+    qWarning("just a qWarning() !");
     QCOMPARE(1,1);
 }
 

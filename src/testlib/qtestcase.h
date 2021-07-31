@@ -210,9 +210,6 @@ do {\
         return;\
 } while (false)
 
-#define QWARN(msg)\
-    QTest::qWarn(static_cast<const char *>(msg), __FILE__, __LINE__)
-
 #ifdef QT_TESTCASE_BUILDDIR
 
 #ifndef QT_TESTCASE_SOURCEDIR
@@ -575,6 +572,19 @@ namespace QTest
 }
 
 #undef QTEST_COMPARE_DECL
+
+#if QT_DEPRECATED_SINCE(6, 2)
+namespace QTestPrivate {
+QT_DEPRECATED_VERSION_X_6_2("Use qWarning() instead")
+Q_DECL_UNUSED static inline void qWarnMacro(const char *message, const char *file = nullptr, int line = 0)
+{
+    QTest::qWarn(message, file, line);
+}
+}
+#endif
+
+#define QWARN(msg) \
+    QTestPrivate::qWarnMacro(static_cast<const char *>(msg), __FILE__, __LINE__)
 
 QT_END_NAMESPACE
 

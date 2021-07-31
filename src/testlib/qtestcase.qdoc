@@ -336,6 +336,7 @@
 
    \relates QTest
    \threadsafe
+   \deprecated Use qWarning() instead.
 
    Appends \a message as a warning to the test log. This macro can be used anywhere
    in your tests.

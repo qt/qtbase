@@ -1360,7 +1360,7 @@ void tst_QFileInfo::isSymbolicLink_data()
 #if defined(Q_OS_WIN)
     const auto creationResult = FileSystem::createSymbolicLink("symlink", m_sourceFile);
     if (creationResult.dwErr == ERROR_PRIVILEGE_NOT_HELD) {
-        QWARN(msgInsufficientPrivileges(creationResult.errorMessage));
+        qWarning() << qPrintable(msgInsufficientPrivileges(creationResult.errorMessage));
     } else {
         QVERIFY2(creationResult.dwErr == ERROR_SUCCESS, qPrintable(creationResult.errorMessage));
         QTest::newRow("NTFS-symlink")
@@ -1423,7 +1423,7 @@ void tst_QFileInfo::link_data()
 #if defined(Q_OS_WIN)
     auto creationResult = FileSystem::createSymbolicLink("link", m_sourceFile);
     if (creationResult.dwErr == ERROR_PRIVILEGE_NOT_HELD) {
-        QWARN(msgInsufficientPrivileges(creationResult.errorMessage));
+        qWarning() << qPrintable(msgInsufficientPrivileges(creationResult.errorMessage));
     } else {
         QVERIFY2(creationResult.dwErr == ERROR_SUCCESS, qPrintable(creationResult.errorMessage));
         QTest::newRow("link")
@@ -1432,7 +1432,7 @@ void tst_QFileInfo::link_data()
 
     creationResult = FileSystem::createSymbolicLink("brokenlink", "dummyfile");
     if (creationResult.dwErr == ERROR_PRIVILEGE_NOT_HELD) {
-        QWARN(msgInsufficientPrivileges(creationResult.errorMessage));
+        qWarning() << qPrintable(msgInsufficientPrivileges(creationResult.errorMessage));
     } else {
         QVERIFY2(creationResult.dwErr == ERROR_SUCCESS, qPrintable(creationResult.errorMessage));
         QTest::newRow("broken link")
