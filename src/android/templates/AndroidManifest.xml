@@ -75,7 +75,7 @@
                 * none - useful for apps that don't use any of the above Qt modules -->
             <meta-data
                 android:name="android.app.extract_android_style"
-                android:value="default" />
+                android:value="minimal" />
             <!-- extract android style -->
         </activity>
     </application>
