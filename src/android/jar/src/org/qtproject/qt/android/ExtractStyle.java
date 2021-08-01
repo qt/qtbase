@@ -40,22 +40,6 @@
 
 package org.qtproject.qt.android;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.xmlpull.v1.XmlPullParser;
-
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.ColorStateList;
@@ -67,9 +51,8 @@ import android.graphics.Bitmap.Config;
 import android.graphics.Canvas;
 import android.graphics.NinePatch;
 import android.graphics.Paint;
-import android.graphics.Rect;
-import android.graphics.RectF;
 import android.graphics.PorterDuff;
+import android.graphics.Rect;
 import android.graphics.drawable.AnimatedStateListDrawable;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.BitmapDrawable;
@@ -86,7 +69,6 @@ import android.graphics.drawable.RotateDrawable;
 import android.graphics.drawable.ScaleDrawable;
 import android.graphics.drawable.StateListDrawable;
 import android.graphics.drawable.VectorDrawable;
-import android.os.Build;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.TypedValue;
@@ -94,15 +76,29 @@ import android.util.Xml;
 import android.view.ContextThemeWrapper;
 import android.view.inputmethod.EditorInfo;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.xmlpull.v1.XmlPullParser;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+
 
 public class ExtractStyle {
 
-    native static int[] extractChunkInfo20(byte[] chunkData);
-    native static int[] extractNativeChunkInfo20(long nativeChunk);
-
     // This used to be retrieved from android.R.styleable.ViewDrawableStates field via reflection,
     // but since the access to that is restricted, we need to have hard-coded here.
-    final int[] viewDrawableStatesState = new int[] {
+    final int[] viewDrawableStatesState = new int[]{
             android.R.attr.state_focused,
             android.R.attr.state_window_focused,
             android.R.attr.state_enabled,
@@ -114,7 +110,6 @@ public class ExtractStyle {
             android.R.attr.state_drag_can_accept,
             android.R.attr.state_drag_hovered
     };
-
     final int[] EMPTY_STATE_SET = {};
     final int[] ENABLED_STATE_SET = {android.R.attr.state_enabled};
     final int[] FOCUSED_STATE_SET = {android.R.attr.state_focused};
@@ -127,10 +122,10 @@ public class ExtractStyle {
     final int[] FOCUSED_SELECTED_STATE_SET = stateSetUnion(FOCUSED_STATE_SET, SELECTED_STATE_SET);
     final int[] FOCUSED_WINDOW_FOCUSED_STATE_SET = stateSetUnion(FOCUSED_STATE_SET, WINDOW_FOCUSED_STATE_SET);
     final int[] SELECTED_WINDOW_FOCUSED_STATE_SET = stateSetUnion(SELECTED_STATE_SET, WINDOW_FOCUSED_STATE_SET);
-    final int[] ENABLED_FOCUSED_SELECTED_STATE_SET =  stateSetUnion(ENABLED_FOCUSED_STATE_SET, SELECTED_STATE_SET);
+    final int[] ENABLED_FOCUSED_SELECTED_STATE_SET = stateSetUnion(ENABLED_FOCUSED_STATE_SET, SELECTED_STATE_SET);
     final int[] ENABLED_FOCUSED_WINDOW_FOCUSED_STATE_SET = stateSetUnion(ENABLED_FOCUSED_STATE_SET, WINDOW_FOCUSED_STATE_SET);
     final int[] ENABLED_SELECTED_WINDOW_FOCUSED_STATE_SET = stateSetUnion(ENABLED_SELECTED_STATE_SET, WINDOW_FOCUSED_STATE_SET);
-    final int[] FOCUSED_SELECTED_WINDOW_FOCUSED_STATE_SET =  stateSetUnion(FOCUSED_SELECTED_STATE_SET, WINDOW_FOCUSED_STATE_SET);
+    final int[] FOCUSED_SELECTED_WINDOW_FOCUSED_STATE_SET = stateSetUnion(FOCUSED_SELECTED_STATE_SET, WINDOW_FOCUSED_STATE_SET);
     final int[] ENABLED_FOCUSED_SELECTED_WINDOW_FOCUSED_STATE_SET = stateSetUnion(ENABLED_FOCUSED_SELECTED_STATE_SET, WINDOW_FOCUSED_STATE_SET);
     final int[] PRESSED_WINDOW_FOCUSED_STATE_SET = stateSetUnion(PRESSED_STATE_SET, WINDOW_FOCUSED_STATE_SET);
     final int[] PRESSED_SELECTED_STATE_SET = stateSetUnion(PRESSED_STATE_SET, SELECTED_STATE_SET);
@@ -147,93 +142,97 @@ public class ExtractStyle {
     final int[] PRESSED_ENABLED_FOCUSED_WINDOW_FOCUSED_STATE_SET = stateSetUnion(PRESSED_ENABLED_FOCUSED_STATE_SET, WINDOW_FOCUSED_STATE_SET);
     final int[] PRESSED_ENABLED_FOCUSED_SELECTED_STATE_SET = stateSetUnion(PRESSED_ENABLED_FOCUSED_STATE_SET, SELECTED_STATE_SET);
     final int[] PRESSED_ENABLED_FOCUSED_SELECTED_WINDOW_FOCUSED_STATE_SET = stateSetUnion(PRESSED_ENABLED_FOCUSED_SELECTED_STATE_SET, WINDOW_FOCUSED_STATE_SET);
-
     final Resources.Theme m_theme;
     final String m_extractPath;
-    Context m_context;
     final int defaultBackgroundColor;
     final int defaultTextColor;
     final boolean m_minimal;
+    final int[] DrawableStates = { android.R.attr.state_active, android.R.attr.state_checked,
+            android.R.attr.state_enabled, android.R.attr.state_focused,
+            android.R.attr.state_pressed, android.R.attr.state_selected,
+            android.R.attr.state_window_focused, 16908288, android.R.attr.state_multiline,
+            android.R.attr.state_activated, android.R.attr.state_accelerated};
+    final String[] DrawableStatesLabels = {"active", "checked", "enabled", "focused", "pressed",
+            "selected", "window_focused", "background", "multiline", "activated", "accelerated"};
+    final String[] DisableDrawableStatesLabels = {"inactive", "unchecked", "disabled",
+            "not_focused", "no_pressed", "unselected", "window_not_focused", "background",
+            "multiline", "activated", "accelerated"};
+    final String[] sScaleTypeArray = {
+            "MATRIX",
+            "FIT_XY",
+            "FIT_START",
+            "FIT_CENTER",
+            "FIT_END",
+            "CENTER",
+            "CENTER_CROP",
+            "CENTER_INSIDE"
+    };
+    Context m_context;
+    private final HashMap<String, DrawableCache> m_drawableCache = new HashMap<>();
 
-    class SimpleJsonWriter
-    {
-        private OutputStreamWriter m_writer;
-        private boolean m_addComma = false;
-        private int m_indentLevel = 0;
-        public SimpleJsonWriter(String filePath) throws FileNotFoundException
-        {
-            m_writer = new OutputStreamWriter(new FileOutputStream(filePath));
-        }
+    public ExtractStyle(Context context, String extractPath, boolean minimal) {
+        m_minimal = minimal;
+        m_extractPath = extractPath + "/";
+        boolean dirCreated = new File(m_extractPath).mkdirs();
+        if (!dirCreated)
+            Log.w(QtNative.QtTAG, "Cannot create Android style directory.");
+        m_context = context;
+        m_theme = context.getTheme();
+        TypedArray array = m_theme.obtainStyledAttributes(new int[]{
+                android.R.attr.colorBackground,
+                android.R.attr.textColorPrimary,
+                android.R.attr.textColor
+        });
+        defaultBackgroundColor = array.getColor(0, 0);
+        int textColor = array.getColor(1, 0xFFFFFF);
+        if (textColor == 0xFFFFFF)
+            textColor = array.getColor(2, 0xFFFFFF);
+        defaultTextColor = textColor;
+        array.recycle();
 
-        public void close() throws IOException
-        {
-            m_writer.close();
-        }
-
-        private void writeIndent() throws IOException
-        {
-            m_writer.write(" ", 0, m_indentLevel);
-        }
-
-        SimpleJsonWriter beginObject() throws IOException
-        {
-            writeIndent();
-            m_writer.write("{\n");
-            ++m_indentLevel;
-            m_addComma = false;
-            return this;
-        }
-
-        SimpleJsonWriter endObject() throws IOException
-        {
-            m_writer.write("\n");
-            writeIndent();
-            m_writer.write("}\n");
-            --m_indentLevel;
-            m_addComma = false;
-            return this;
-        }
-
-        SimpleJsonWriter name(String name) throws IOException
-        {
-            if (m_addComma) {
-                m_writer.write(",\n");
+        try {
+            SimpleJsonWriter jsonWriter = new SimpleJsonWriter(m_extractPath + "style.json");
+            jsonWriter.beginObject();
+            try {
+                jsonWriter.name("defaultStyle").value(extractDefaultPalette());
+                extractWindow(jsonWriter);
+                jsonWriter.name("buttonStyle").value(extractTextAppearanceInformation(android.R.attr.buttonStyle, "QPushButton"));
+                jsonWriter.name("spinnerStyle").value(extractTextAppearanceInformation(android.R.attr.spinnerStyle, "QComboBox"));
+                extractProgressBar(jsonWriter, android.R.attr.progressBarStyleHorizontal, "progressBarStyleHorizontal", "QProgressBar");
+                extractProgressBar(jsonWriter, android.R.attr.progressBarStyleLarge, "progressBarStyleLarge", null);
+                extractProgressBar(jsonWriter, android.R.attr.progressBarStyleSmall, "progressBarStyleSmall", null);
+                extractProgressBar(jsonWriter, android.R.attr.progressBarStyle, "progressBarStyle", null);
+                extractAbsSeekBar(jsonWriter);
+                extractSwitch(jsonWriter);
+                extractCompoundButton(jsonWriter, android.R.attr.checkboxStyle, "checkboxStyle", "QCheckBox");
+                jsonWriter.name("editTextStyle").value(extractTextAppearanceInformation(android.R.attr.editTextStyle, "QLineEdit"));
+                extractCompoundButton(jsonWriter, android.R.attr.radioButtonStyle, "radioButtonStyle", "QRadioButton");
+                jsonWriter.name("textViewStyle").value(extractTextAppearanceInformation(android.R.attr.textViewStyle, "QWidget"));
+                jsonWriter.name("scrollViewStyle").value(extractTextAppearanceInformation(android.R.attr.scrollViewStyle, "QAbstractScrollArea"));
+                extractListView(jsonWriter);
+                jsonWriter.name("listSeparatorTextViewStyle").value(extractTextAppearanceInformation(android.R.attr.listSeparatorTextViewStyle, null));
+                extractItemsStyle(jsonWriter);
+                extractCompoundButton(jsonWriter, android.R.attr.buttonStyleToggle, "buttonStyleToggle", null);
+                extractCalendar(jsonWriter);
+                extractToolBar(jsonWriter);
+                jsonWriter.name("actionButtonStyle").value(extractTextAppearanceInformation(android.R.attr.actionButtonStyle, "QToolButton"));
+                jsonWriter.name("actionBarTabTextStyle").value(extractTextAppearanceInformation(android.R.attr.actionBarTabTextStyle, null));
+                jsonWriter.name("actionBarTabStyle").value(extractTextAppearanceInformation(android.R.attr.actionBarTabStyle, null));
+                jsonWriter.name("actionOverflowButtonStyle").value(extractImageViewInformation(android.R.attr.actionOverflowButtonStyle, null));
+                extractTabBar(jsonWriter);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-            writeIndent();
-            m_writer.write(JSONObject.quote(name) + ": ");
-            m_addComma = true;
-            return this;
-        }
-
-        SimpleJsonWriter value(JSONObject value) throws IOException
-        {
-            m_writer.write(value.toString());
-            return this;
+            jsonWriter.endObject();
+            jsonWriter.close();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
-    class FakeCanvas extends Canvas {
-        int[] chunkData = null;
-        class Size {
-            public int s,e;
-            Size(int start, int end)
-            {
-                s=start;
-                e=end;
-            }
-        }
+    native static int[] extractNativeChunkInfo20(long nativeChunk);
 
-        public boolean isHardwareAccelerated() {
-            return true;
-        }
-
-        public void drawPatch(Bitmap bmp, byte[] chunks, RectF dst, Paint paint) {
-            chunkData = extractChunkInfo20(chunks);
-        }
-    }
-
-    private int[] stateSetUnion(final int[] stateSet1, final int[] stateSet2)
-    {
+    private int[] stateSetUnion(final int[] stateSet1, final int[] stateSet2) {
         try {
             final int stateSet1Length = stateSet1.length;
             final int stateSet2Length = stateSet2.length;
@@ -251,12 +250,10 @@ public class ExtractStyle {
                     newSet[k++] = viewState;
                     j++;
                 }
-                if (k > 1) {
-                    assert(newSet[k - 1] > newSet[k - 2]);
-                }
+                assert k <= 1 || (newSet[k - 1] > newSet[k - 2]);
             }
             return newSet;
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
@@ -291,21 +288,9 @@ public class ExtractStyle {
         return tryGetAccessibleField(clazz.getSuperclass(), fieldName);
     }
 
-    int getField(Class<?> clazz, String fieldName)
-    {
-        try {
-            return clazz.getDeclaredField(fieldName).getInt(null);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return -1;
-    }
-
-    JSONObject getColorStateList(ColorStateList colorList)
-    {
+    JSONObject getColorStateList(ColorStateList colorList) {
         JSONObject json = new JSONObject();
-        try
-        {
+        try {
             json.put("EMPTY_STATE_SET", colorList.getColorForState(EMPTY_STATE_SET, 0));
             json.put("WINDOW_FOCUSED_STATE_SET", colorList.getColorForState(WINDOW_FOCUSED_STATE_SET, 0));
             json.put("SELECTED_STATE_SET", colorList.getColorForState(SELECTED_STATE_SET, 0));
@@ -345,150 +330,70 @@ public class ExtractStyle {
         return json;
     }
 
-    final int [] DrawableStates ={android.R.attr.state_active, android.R.attr.state_checked
-            , android.R.attr.state_enabled, android.R.attr.state_focused
-            , android.R.attr.state_pressed, android.R.attr.state_selected
-            , android.R.attr.state_window_focused, 16908288, 16843597, 16843518, 16843547};
-    final String[] DrawableStatesLabels = {"active", "checked", "enabled", "focused", "pressed", "selected", "window_focused", "background", "multiline", "activated", "accelerated"};
-    final String[] DisableDrawableStatesLabels = {"inactive", "unchecked", "disabled", "not_focused", "no_pressed", "unselected", "window_not_focused", "background", "multiline", "activated", "accelerated"};
-
-    String getFileName(String file, String[] states)
-    {
-        for (String state: states)
-            file+="__"+state;
-        return file;
-    }
-
-    String getStatesName(String[] states)
-    {
-        String statesName="";
-        for (String state: states)
-        {
-            if (statesName.length()>0)
-                statesName+="__";
-            statesName += state;
-        }
-        return statesName;
-    }
-
-    void addDrawableItemIfNotExists(JSONObject json, ArrayList<Integer> list, Drawable item, String[] states, String filename)
-    {
-        for (Integer it : list)
-        {
-            if (it.equals(item.hashCode()))
-                return;
-        }
-        list.add(item.hashCode());
-        try {
-            json.put(getStatesName(states), getDrawable(item, getFileName(filename, states), null));
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
-    void addSolution(String filename, JSONObject json, int c, Drawable drawable, ArrayList<Integer> drawableList, int u)
-    {
-        int pos=0;
-        int states[] = new int[c];
-        String [] statesText = new String[c];
-
-        for (int n= 0;u > 0;++n, u>>= 1)
-            if ((u & 1) > 0)
-            {
-                statesText[pos]=DrawableStatesLabels[n];
-                states[pos++]=DrawableStates[n];
-            }
-        drawable.setState(states);
-        addDrawableItemIfNotExists(json, drawableList, drawable.getCurrent(), statesText, filename);
-    }
-
-    int bitCount(int u)
-    {
-        int n;
-        for (n= 0;u > 0;++n, u&= (u - 1));
-        return n;
-    }
-
-    JSONObject getStatesList(int [] states) throws JSONException
-    {
+    JSONObject getStatesList(int[] states) throws JSONException {
         JSONObject json = new JSONObject();
-        for (int s : states)
-        {
-            boolean found=false;
-            for (int d = 0;d<DrawableStates.length;d++)
-            {
-                if (s==DrawableStates[d])
-                {
+        for (int s : states) {
+            boolean found = false;
+            for (int d = 0; d < DrawableStates.length; d++) {
+                if (s == DrawableStates[d]) {
                     json.put(DrawableStatesLabels[d], true);
-                    found=true;
+                    found = true;
                     break;
-                }
-                else if (s==-DrawableStates[d])
-                {
+                } else if (s == -DrawableStates[d]) {
                     json.put(DrawableStatesLabels[d], false);
 
-                    found=true;
+                    found = true;
                     break;
                 }
             }
-            if (!found)
-            {
-                json.put("unhandled_state_"+s,s>0);
+            if (!found) {
+                json.put("unhandled_state_" + s, s > 0);
             }
         }
         return json;
     }
 
-    String getStatesName(int [] states)
-    {
-        String statesName="";
-        for (int s : states)
-        {
-            boolean found=false;
-            for (int d = 0;d<DrawableStates.length;d++)
-            {
-                if (s==DrawableStates[d])
-                {
-                    if (statesName.length()>0)
-                        statesName+="__";
-                    statesName+=DrawableStatesLabels[d];
-                    found=true;
+    String getStatesName(int[] states) {
+        StringBuilder statesName = new StringBuilder();
+        for (int s : states) {
+            boolean found = false;
+            for (int d = 0; d < DrawableStates.length; d++) {
+                if (s == DrawableStates[d]) {
+                    if (statesName.length() > 0)
+                        statesName.append("__");
+                    statesName.append(DrawableStatesLabels[d]);
+                    found = true;
                     break;
-                }
-                else if (s==-DrawableStates[d])
-                {
-                    if (statesName.length()>0)
-                        statesName+="__";
-                    statesName+=DisableDrawableStatesLabels[d];
-                    found=true;
+                } else if (s == -DrawableStates[d]) {
+                    if (statesName.length() > 0)
+                        statesName.append("__");
+                    statesName.append(DisableDrawableStatesLabels[d]);
+                    found = true;
                     break;
                 }
             }
-            if (!found)
-            {
-                if (statesName.length()>0)
-                    statesName+=";";
-                statesName+=s;
+            if (!found) {
+                if (statesName.length() > 0)
+                    statesName.append(";");
+                statesName.append(s);
             }
         }
-        if (statesName.length()>0)
-            return statesName;
+        if (statesName.length() > 0)
+            return statesName.toString();
         return "empty";
     }
 
-    private JSONObject getLayerDrawable(Object drawable, String filename)
-    {
+    private JSONObject getLayerDrawable(Object drawable, String filename) {
         JSONObject json = new JSONObject();
         LayerDrawable layers = (LayerDrawable) drawable;
-        final int nr=layers.getNumberOfLayers();
+        final int nr = layers.getNumberOfLayers();
         try {
-            JSONArray array =new JSONArray();
-            for (int i = 0; i < nr; i++)
-            {
+            JSONArray array = new JSONArray();
+            for (int i = 0; i < nr; i++) {
                 int id = layers.getId(i);
                 if (id == -1)
                     id = i;
-                JSONObject layerJsonObject=getDrawable(layers.getDrawable(i), filename+"__"+id, null);
+                JSONObject layerJsonObject = getDrawable(layers.getDrawable(i), filename + "__" + id, null);
                 layerJsonObject.put("id", id);
                 array.put(layerJsonObject);
             }
@@ -503,21 +408,18 @@ public class ExtractStyle {
         return json;
     }
 
-    private JSONObject getStateListDrawable(Object drawable, String filename)
-    {
+    private JSONObject getStateListDrawable(Object drawable, String filename) {
         JSONObject json = new JSONObject();
         try {
             StateListDrawable stateList = (StateListDrawable) drawable;
-            final int numStates = (Integer) StateListDrawable.class.getMethod("getStateCount").invoke(stateList);
-            JSONArray array =new JSONArray();
-            for (int i = 0; i < numStates; i++)
-            {
+            JSONArray array = new JSONArray();
+            for (int i = 0; i < stateList.getStateCount(); i++) {
                 JSONObject stateJson = new JSONObject();
-                final Drawable d =  (Drawable) StateListDrawable.class.getMethod("getStateDrawable", Integer.TYPE).invoke(stateList, i);
-                final int [] states = (int[]) StateListDrawable.class.getMethod("getStateSet", Integer.TYPE).invoke(stateList, i);
+                final Drawable d = (Drawable) StateListDrawable.class.getMethod("getStateDrawable", Integer.TYPE).invoke(stateList, i);
+                final int[] states = (int[]) StateListDrawable.class.getMethod("getStateSet", Integer.TYPE).invoke(stateList, i);
                 if (states != null)
                     stateJson.put("states", getStatesList(states));
-                stateJson.put("drawable", getDrawable(d, filename+"__" + (states != null ? getStatesName(states) : ("state_pos_" + i)), null));
+                stateJson.put("drawable", getDrawable(d, filename + "__" + (states != null ? getStatesName(states) : ("state_pos_" + i)), null));
                 array.put(stateJson);
             }
             json.put("type", "stateslist");
@@ -535,32 +437,33 @@ public class ExtractStyle {
         JSONObject json = new JSONObject();
         try {
             json.put("type", "gradient");
-            Object obj=drawable.getConstantState();
-            Class<?> gradientStateClass=obj.getClass();
-            json.put("shape",gradientStateClass.getField("mShape").getInt(obj));
-            json.put("gradient",gradientStateClass.getField("mGradient").getInt(obj));
-            GradientDrawable.Orientation orientation=(Orientation) gradientStateClass.getField("mOrientation").get(obj);
-            json.put("orientation",orientation.name());
-            int [] intArray=(int[]) gradientStateClass.getField("mGradientColors").get(obj);
+            Object obj = drawable.getConstantState();
+            Class<?> gradientStateClass = obj.getClass();
+            json.put("shape", gradientStateClass.getField("mShape").getInt(obj));
+            json.put("gradient", gradientStateClass.getField("mGradient").getInt(obj));
+            GradientDrawable.Orientation orientation = (Orientation) gradientStateClass.getField("mOrientation").get(obj);
+            if (orientation != null)
+                json.put("orientation", orientation.name());
+            int[] intArray = (int[]) gradientStateClass.getField("mGradientColors").get(obj);
             if (intArray != null)
-                json.put("colors",getJsonArray(intArray, 0, intArray.length));
-            json.put("positions",getJsonArray((float[]) gradientStateClass.getField("mPositions").get(obj)));
-            json.put("strokeWidth",gradientStateClass.getField("mStrokeWidth").getInt(obj));
-            json.put("strokeDashWidth",gradientStateClass.getField("mStrokeDashWidth").getFloat(obj));
-            json.put("strokeDashGap",gradientStateClass.getField("mStrokeDashGap").getFloat(obj));
-            json.put("radius",gradientStateClass.getField("mRadius").getFloat(obj));
-            float [] floatArray=(float[]) gradientStateClass.getField("mRadiusArray").get(obj);
-            if (floatArray!=null)
-                json.put("radiusArray",getJsonArray(floatArray));
-            Rect rc= (Rect) gradientStateClass.getField("mPadding").get(obj);
-            if (rc!=null)
-                json.put("padding",getJsonRect(rc));
-            json.put("width",gradientStateClass.getField("mWidth").getInt(obj));
-            json.put("height",gradientStateClass.getField("mHeight").getInt(obj));
-            json.put("innerRadiusRatio",gradientStateClass.getField("mInnerRadiusRatio").getFloat(obj));
-            json.put("thicknessRatio",gradientStateClass.getField("mThicknessRatio").getFloat(obj));
-            json.put("innerRadius",gradientStateClass.getField("mInnerRadius").getInt(obj));
-            json.put("thickness",gradientStateClass.getField("mThickness").getInt(obj));
+                json.put("colors", getJsonArray(intArray, 0, intArray.length));
+            json.put("positions", getJsonArray((float[]) gradientStateClass.getField("mPositions").get(obj)));
+            json.put("strokeWidth", gradientStateClass.getField("mStrokeWidth").getInt(obj));
+            json.put("strokeDashWidth", gradientStateClass.getField("mStrokeDashWidth").getFloat(obj));
+            json.put("strokeDashGap", gradientStateClass.getField("mStrokeDashGap").getFloat(obj));
+            json.put("radius", gradientStateClass.getField("mRadius").getFloat(obj));
+            float[] floatArray = (float[]) gradientStateClass.getField("mRadiusArray").get(obj);
+            if (floatArray != null)
+                json.put("radiusArray", getJsonArray(floatArray));
+            Rect rc = (Rect) gradientStateClass.getField("mPadding").get(obj);
+            if (rc != null)
+                json.put("padding", getJsonRect(rc));
+            json.put("width", gradientStateClass.getField("mWidth").getInt(obj));
+            json.put("height", gradientStateClass.getField("mHeight").getInt(obj));
+            json.put("innerRadiusRatio", gradientStateClass.getField("mInnerRadiusRatio").getFloat(obj));
+            json.put("thicknessRatio", gradientStateClass.getField("mThicknessRatio").getFloat(obj));
+            json.put("innerRadius", gradientStateClass.getField("mInnerRadius").getInt(obj));
+            json.put("thickness", gradientStateClass.getField("mThickness").getInt(obj));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -573,10 +476,7 @@ public class ExtractStyle {
             json.put("type", "rotate");
             Object obj = drawable.getConstantState();
             Class<?> rotateStateClass = obj.getClass();
-            if (Build.VERSION.SDK_INT < 23)
-                json.put("drawable", getDrawable(getAccessibleField(rotateStateClass, "mDrawable").get(obj), filename, null));
-            else
-                json.put("drawable", getDrawable(drawable.getClass().getMethod("getDrawable").invoke(drawable), filename, null));
+            json.put("drawable", getDrawable(drawable.getClass().getMethod("getDrawable").invoke(drawable), filename, null));
             json.put("pivotX", getAccessibleField(rotateStateClass, "mPivotX").getFloat(obj));
             json.put("pivotXRel", getAccessibleField(rotateStateClass, "mPivotXRel").getBoolean(obj));
             json.put("pivotY", getAccessibleField(rotateStateClass, "mPivotY").getFloat(obj));
@@ -596,11 +496,10 @@ public class ExtractStyle {
             json.put("oneshot", drawable.isOneShot());
             final int count = drawable.getNumberOfFrames();
             JSONArray frames = new JSONArray();
-            for (int i = 0; i < count; ++i)
-            {
+            for (int i = 0; i < count; ++i) {
                 JSONObject frame = new JSONObject();
                 frame.put("duration", drawable.getDuration(i));
-                frame.put("drawable", getDrawable(drawable.getFrame(i), filename+"__"+i, null));
+                frame.put("drawable", getDrawable(drawable.getFrame(i), filename + "__" + i, null));
                 frames.put(frame);
             }
             json.put("frames", frames);
@@ -610,8 +509,7 @@ public class ExtractStyle {
         return json;
     }
 
-    private JSONObject getJsonRect(Rect rect) throws JSONException
-    {
+    private JSONObject getJsonRect(Rect rect) throws JSONException {
         JSONObject jsonRect = new JSONObject();
         jsonRect.put("left", rect.left);
         jsonRect.put("top", rect.top);
@@ -621,26 +519,23 @@ public class ExtractStyle {
 
     }
 
-    private JSONArray getJsonArray(int[] array, int pos, int len)
-    {
+    private JSONArray getJsonArray(int[] array, int pos, int len) {
         JSONArray a = new JSONArray();
-        final int l = pos+len;
-        for (int i=pos; i<l;i++)
+        final int l = pos + len;
+        for (int i = pos; i < l; i++)
             a.put(array[i]);
         return a;
     }
 
-    private JSONArray getJsonArray(float[] array) throws JSONException
-    {
+    private JSONArray getJsonArray(float[] array) throws JSONException {
         JSONArray a = new JSONArray();
         if (array != null)
-            for (float val: array)
+            for (float val : array)
                 a.put(val);
         return a;
     }
 
-    private JSONObject getJsonChunkInfo(int[] chunkData) throws JSONException
-    {
+    private JSONObject getJsonChunkInfo(int[] chunkData) throws JSONException {
         JSONObject jsonRect = new JSONObject();
         if (chunkData == null)
             return jsonRect;
@@ -651,41 +546,31 @@ public class ExtractStyle {
         return jsonRect;
     }
 
-    private JSONObject findPatchesMarings(Drawable d) throws JSONException, NoSuchFieldException, IllegalAccessException
-    {
+    private JSONObject findPatchesMarings(Drawable d) throws JSONException, IllegalAccessException {
         NinePatch np;
         Field f = tryGetAccessibleField(NinePatchDrawable.class, "mNinePatch");
         if (f != null) {
             np = (NinePatch) f.get(d);
         } else {
             Object state = getAccessibleField(NinePatchDrawable.class, "mNinePatchState").get(d);
-            np = (NinePatch) getAccessibleField(state.getClass(), "mNinePatch").get(state);
+            np = (NinePatch) getAccessibleField(Objects.requireNonNull(state).getClass(), "mNinePatch").get(state);
         }
-        return getJsonChunkInfo(extractNativeChunkInfo20(getAccessibleField(np.getClass(), "mNativeChunk").getLong(np)));
+        return getJsonChunkInfo(extractNativeChunkInfo20(getAccessibleField(Objects.requireNonNull(np).getClass(), "mNativeChunk").getLong(np)));
     }
 
-    class DrawableCache
-    {
-        public DrawableCache(JSONObject json, Object drawable)
-        {
-            object = json;
-            this.drawable = drawable;
-        }
-        JSONObject object;
-        Object drawable;
-    }
-    private HashMap<String, DrawableCache> m_drawableCache = new HashMap<String, DrawableCache>();
-
-    private JSONObject getRippleDrawable(Object drawable, String filename, Rect padding)
-    {
+    private JSONObject getRippleDrawable(Object drawable, String filename, Rect padding) {
         JSONObject json = getLayerDrawable(drawable, filename);
-        JSONObject ripple =  new JSONObject();
+        JSONObject ripple = new JSONObject();
         try {
             Class<?> rippleDrawableClass = Class.forName("android.graphics.drawable.RippleDrawable");
             final Object mState = getAccessibleField(rippleDrawableClass, "mState").get(drawable);
-            ripple.put("mask", getDrawable((Drawable)getAccessibleField(rippleDrawableClass, "mMask").get(drawable), filename, padding));
-            ripple.put("maxRadius", getAccessibleField(mState.getClass(), "mMaxRadius").getInt(mState));
-            ripple.put("color", getColorStateList((ColorStateList)getAccessibleField(mState.getClass(), "mColor").get(mState)));
+            ripple.put("mask", getDrawable((Drawable) getAccessibleField(rippleDrawableClass, "mMask").get(drawable), filename, padding));
+            if (mState != null) {
+                ripple.put("maxRadius", getAccessibleField(mState.getClass(), "mMaxRadius").getInt(mState));
+                ColorStateList color = (ColorStateList) getAccessibleField(mState.getClass(), "mColor").get(mState);
+                if (color != null)
+                    ripple.put("color", getColorStateList(color));
+            }
             json.put("ripple", ripple);
         } catch (Exception e) {
             e.printStackTrace();
@@ -693,32 +578,31 @@ public class ExtractStyle {
         return json;
     }
 
-    private HashMap<Long, Long> getStateTransitions(Object sa) throws Exception
-    {
-        HashMap<Long, Long> transitions = new HashMap<Long, Long>();
+    private HashMap<Long, Long> getStateTransitions(Object sa) throws Exception {
+        HashMap<Long, Long> transitions = new HashMap<>();
         final int sz = getAccessibleField(sa.getClass(), "mSize").getInt(sa);
         long[] keys = (long[]) getAccessibleField(sa.getClass(), "mKeys").get(sa);
         long[] values = (long[]) getAccessibleField(sa.getClass(), "mValues").get(sa);
         for (int i = 0; i < sz; i++) {
-            transitions.put(keys[i], values[i]);
+            if (keys != null && values != null)
+                transitions.put(keys[i], values[i]);
         }
         return transitions;
     }
 
-    private HashMap<Integer, Integer> getStateIds(Object sa) throws Exception
-    {
-        HashMap<Integer, Integer> states = new HashMap<Integer, Integer>();
+    private HashMap<Integer, Integer> getStateIds(Object sa) throws Exception {
+        HashMap<Integer, Integer> states = new HashMap<>();
         final int sz = getAccessibleField(sa.getClass(), "mSize").getInt(sa);
         int[] keys = (int[]) getAccessibleField(sa.getClass(), "mKeys").get(sa);
         int[] values = (int[]) getAccessibleField(sa.getClass(), "mValues").get(sa);
         for (int i = 0; i < sz; i++) {
-            states.put(keys[i], values[i]);
+            if (keys != null && values != null)
+                states.put(keys[i], values[i]);
         }
         return states;
     }
 
-    private int findStateIndex(int id, HashMap<Integer, Integer> stateIds)
-    {
+    private int findStateIndex(int id, HashMap<Integer, Integer> stateIds) {
         for (Map.Entry<Integer, Integer> s : stateIds.entrySet()) {
             if (id == s.getValue())
                 return s.getKey();
@@ -726,28 +610,30 @@ public class ExtractStyle {
         return -1;
     }
 
-    private JSONObject getAnimatedStateListDrawable(Object drawable, String filename)
-    {
+    private JSONObject getAnimatedStateListDrawable(Object drawable, String filename) {
         JSONObject json = getStateListDrawable(drawable, filename);
         try {
             Class<?> animatedStateListDrawableClass = Class.forName("android.graphics.drawable.AnimatedStateListDrawable");
             Object state = getAccessibleField(animatedStateListDrawableClass, "mState").get(drawable);
 
-            HashMap<Integer, Integer> stateIds = getStateIds(getAccessibleField(state.getClass(), "mStateIds").get(state));
-            HashMap<Long, Long> transitions = getStateTransitions(getAccessibleField(state.getClass(), "mTransitions").get(state));
+            if (state != null) {
+                Class<?> stateClass = state.getClass();
+                HashMap<Integer, Integer> stateIds = getStateIds(Objects.requireNonNull(getAccessibleField(stateClass, "mStateIds").get(state)));
+                HashMap<Long, Long> transitions = getStateTransitions(Objects.requireNonNull(getAccessibleField(stateClass, "mTransitions").get(state)));
 
-            for (Map.Entry<Long, Long> t : transitions.entrySet()) {
-                final int toState = findStateIndex(t.getKey().intValue(), stateIds);
-                final int fromState = findStateIndex((int) (t.getKey() >> 32), stateIds);
+                for (Map.Entry<Long, Long> t : transitions.entrySet()) {
+                    final int toState = findStateIndex(t.getKey().intValue(), stateIds);
+                    final int fromState = findStateIndex((int) (t.getKey() >> 32), stateIds);
 
-                JSONObject transition = new JSONObject();
-                transition.put("from", fromState);
-                transition.put("to", toState);
-                transition.put("reverse", (t.getValue() >> 32) != 0);
+                    JSONObject transition = new JSONObject();
+                    transition.put("from", fromState);
+                    transition.put("to", toState);
+                    transition.put("reverse", (t.getValue() >> 32) != 0);
 
-                JSONArray stateslist = json.getJSONArray("stateslist");
-                JSONObject stateobj = stateslist.getJSONObject(t.getValue().intValue());
-                stateobj.put("transition", transition);
+                    JSONArray stateslist = json.getJSONArray("stateslist");
+                    JSONObject stateobj = stateslist.getJSONObject(t.getValue().intValue());
+                    stateobj.put("transition", transition);
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -755,21 +641,22 @@ public class ExtractStyle {
         return json;
     }
 
-    private JSONObject getVPath(Object path) throws Exception
-    {
+    private JSONObject getVPath(Object path) throws Exception {
         JSONObject json = new JSONObject();
         final Class<?> pathClass = path.getClass();
         json.put("type", "path");
         json.put("name", tryGetAccessibleField(pathClass, "mPathName").get(path));
         Object[] mNodes = (Object[]) tryGetAccessibleField(pathClass, "mNodes").get(path);
         JSONArray nodes = new JSONArray();
-        for (Object n: mNodes) {
-            JSONObject node = new JSONObject();
-            node.put("type", String.valueOf(getAccessibleField(n.getClass(), "mType").getChar(n)));
-            node.put("params", getJsonArray((float[])getAccessibleField(n.getClass(), "mParams").get(n)));
-            nodes.put(node);
+        if (mNodes != null) {
+            for (Object n : mNodes) {
+                JSONObject node = new JSONObject();
+                node.put("type", String.valueOf(getAccessibleField(n.getClass(), "mType").getChar(n)));
+                node.put("params", getJsonArray((float[]) getAccessibleField(n.getClass(), "mParams").get(n)));
+                nodes.put(node);
+            }
+            json.put("nodes", nodes);
         }
-        json.put("nodes", nodes);
         json.put("isClip", (Boolean) pathClass.getMethod("isClipPath").invoke(path));
 
         if (tryGetAccessibleField(pathClass, "mStrokeColor") == null)
@@ -791,8 +678,7 @@ public class ExtractStyle {
     }
 
     @SuppressWarnings("unchecked")
-    private JSONObject getVGroup(Object group) throws Exception
-    {
+    private JSONObject getVGroup(Object group) throws Exception {
         JSONObject json = new JSONObject();
         json.put("type", "group");
         final Class<?> groupClass = group.getClass();
@@ -807,65 +693,63 @@ public class ExtractStyle {
 
         ArrayList<Object> mChildren = (ArrayList<Object>) getAccessibleField(groupClass, "mChildren").get(group);
         JSONArray children = new JSONArray();
-        for (Object c: mChildren) {
-            if (groupClass.isInstance(c))
-                children.put(getVGroup(c));
-            else
-                children.put(getVPath(c));
+        if (mChildren != null) {
+            for (Object c : mChildren) {
+                if (groupClass.isInstance(c))
+                    children.put(getVGroup(c));
+                else
+                    children.put(getVPath(c));
+            }
+            json.put("children", children);
         }
-        json.put("children", children);
         return json;
     }
 
-    private JSONObject getVectorDrawable(Object drawable, String filename, Rect padding)
-    {
+    private JSONObject getVectorDrawable(Object drawable) {
         JSONObject json = new JSONObject();
         try {
             json.put("type", "vector");
             Class<?> vectorDrawableClass = Class.forName("android.graphics.drawable.VectorDrawable");
             final Object state = getAccessibleField(vectorDrawableClass, "mVectorState").get(drawable);
-            final Class<?> stateClass = state.getClass();
+            final Class<?> stateClass = Objects.requireNonNull(state).getClass();
             final ColorStateList mTint = (ColorStateList) getAccessibleField(stateClass, "mTint").get(state);
             if (mTint != null) {
                 json.put("tintList", getColorStateList(mTint));
                 json.put("tintMode", (PorterDuff.Mode) getAccessibleField(stateClass, "mTintMode").get(state));
             }
             final Object mVPathRenderer = getAccessibleField(stateClass, "mVPathRenderer").get(state);
-            final Class<?> VPathRendererClass = mVPathRenderer.getClass();
+            final Class<?> VPathRendererClass = Objects.requireNonNull(mVPathRenderer).getClass();
             json.put("baseWidth", getAccessibleField(VPathRendererClass, "mBaseWidth").getFloat(mVPathRenderer));
             json.put("baseHeight", getAccessibleField(VPathRendererClass, "mBaseHeight").getFloat(mVPathRenderer));
             json.put("viewportWidth", getAccessibleField(VPathRendererClass, "mViewportWidth").getFloat(mVPathRenderer));
             json.put("viewportHeight", getAccessibleField(VPathRendererClass, "mViewportHeight").getFloat(mVPathRenderer));
             json.put("rootAlpha", getAccessibleField(VPathRendererClass, "mRootAlpha").getInt(mVPathRenderer));
             json.put("rootName", getAccessibleField(VPathRendererClass, "mRootName").get(mVPathRenderer));
-            json.put("rootGroup", getVGroup(getAccessibleField(mVPathRenderer.getClass(), "mRootGroup").get(mVPathRenderer)));
-        } catch(Exception e) {
+            json.put("rootGroup", getVGroup(Objects.requireNonNull(getAccessibleField(VPathRendererClass, "mRootGroup").get(mVPathRenderer))));
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return json;
     }
 
-    public JSONObject getDrawable(Object drawable, String filename, Rect padding)
-    {
+    public JSONObject getDrawable(Object drawable, String filename, Rect padding) {
         if (drawable == null || m_minimal)
             return null;
 
         DrawableCache dc = m_drawableCache.get(filename);
-        if (dc != null)
-        {
+        if (dc != null) {
             if (dc.drawable.equals(drawable))
                 return dc.object;
             else
-                Log.e(QtNative.QtTAG, "Different drawable objects points to the same file name \"" + filename +"\"");
+                Log.e(QtNative.QtTAG, "Different drawable objects points to the same file name \"" + filename + "\"");
         }
         JSONObject json = new JSONObject();
         Bitmap bmp = null;
         if (drawable instanceof Bitmap)
             bmp = (Bitmap) drawable;
-        else
-        {
+        else {
             if (drawable instanceof BitmapDrawable) {
-                BitmapDrawable bitmapDrawable = (BitmapDrawable)drawable;
+                BitmapDrawable bitmapDrawable = (BitmapDrawable) drawable;
                 bmp = bitmapDrawable.getBitmap();
                 try {
                     json.put("gravity", bitmapDrawable.getGravity());
@@ -880,48 +764,39 @@ public class ExtractStyle {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-            }
-            else
-            {
+            } else {
 
-                if (drawable instanceof RippleDrawable )
+                if (drawable instanceof RippleDrawable)
                     return getRippleDrawable(drawable, filename, padding);
 
                 if (drawable instanceof AnimatedStateListDrawable)
                     return getAnimatedStateListDrawable(drawable, filename);
 
                 if (drawable instanceof VectorDrawable)
-                    return getVectorDrawable(drawable, filename, padding);
+                    return getVectorDrawable(drawable);
 
-                if (drawable instanceof ScaleDrawable)
-                {
-                    return getDrawable(((ScaleDrawable)drawable).getDrawable(), filename, null);
+                if (drawable instanceof ScaleDrawable) {
+                    return getDrawable(((ScaleDrawable) drawable).getDrawable(), filename, null);
                 }
-                if (drawable instanceof LayerDrawable)
-                {
+                if (drawable instanceof LayerDrawable) {
                     return getLayerDrawable(drawable, filename);
                 }
-                if (drawable instanceof StateListDrawable)
-                {
+                if (drawable instanceof StateListDrawable) {
                     return getStateListDrawable(drawable, filename);
                 }
-                if (drawable instanceof GradientDrawable)
-                {
+                if (drawable instanceof GradientDrawable) {
                     return getGradientDrawable((GradientDrawable) drawable);
                 }
-                if (drawable instanceof RotateDrawable)
-                {
+                if (drawable instanceof RotateDrawable) {
                     return getRotateDrawable((RotateDrawable) drawable, filename);
                 }
-                if (drawable instanceof AnimationDrawable)
-                {
+                if (drawable instanceof AnimationDrawable) {
                     return getAnimationDrawable((AnimationDrawable) drawable, filename);
                 }
-                if (drawable instanceof ClipDrawable)
-                {
+                if (drawable instanceof ClipDrawable) {
                     try {
                         json.put("type", "clipDrawable");
-                        Drawable.ConstantState dcs = ((ClipDrawable)drawable).getConstantState();
+                        Drawable.ConstantState dcs = ((ClipDrawable) drawable).getConstantState();
                         json.put("drawable", getDrawable(getAccessibleField(dcs.getClass(), "mDrawable").get(dcs), filename, null));
                         if (null != padding)
                             json.put("padding", getJsonRect(padding));
@@ -935,8 +810,7 @@ public class ExtractStyle {
                     }
                     return json;
                 }
-                if (drawable instanceof ColorDrawable)
-                {
+                if (drawable instanceof ColorDrawable) {
                     bmp = Bitmap.createBitmap(1, 1, Config.ARGB_8888);
                     Drawable d = (Drawable) drawable;
                     d.setBounds(0, 0, 1, 1);
@@ -956,34 +830,29 @@ public class ExtractStyle {
                     }
                     return json;
                 }
-                if (drawable instanceof InsetDrawable)
-                {
+                if (drawable instanceof InsetDrawable) {
                     try {
-                        InsetDrawable d = (InsetDrawable)drawable;
+                        InsetDrawable d = (InsetDrawable) drawable;
                         Object mInsetStateObject = getAccessibleField(InsetDrawable.class, "mState").get(d);
                         Rect _padding = new Rect();
                         boolean hasPadding = d.getPadding(_padding);
-                        return getDrawable(getAccessibleField(mInsetStateObject.getClass(), "mDrawable").get(mInsetStateObject), filename, hasPadding ? _padding : null);
+                        return getDrawable(getAccessibleField(Objects.requireNonNull(mInsetStateObject).getClass(), "mDrawable").get(mInsetStateObject), filename, hasPadding ? _padding : null);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-                }
-                else
-                {
+                } else {
                     Drawable d = (Drawable) drawable;
-                    int w=d.getIntrinsicWidth();
-                    int h=d.getIntrinsicHeight();
+                    int w = d.getIntrinsicWidth();
+                    int h = d.getIntrinsicHeight();
                     d.setLevel(10000);
-                    if (w<1 || h< 1)
-                    {
-                        w=100;
-                        h=100;
+                    if (w < 1 || h < 1) {
+                        w = 100;
+                        h = 100;
                     }
                     bmp = Bitmap.createBitmap(w, h, Config.ARGB_8888);
                     d.setBounds(0, 0, w, h);
                     d.draw(new Canvas(bmp));
-                    if (drawable instanceof NinePatchDrawable)
-                    {
+                    if (drawable instanceof NinePatchDrawable) {
                         NinePatchDrawable npd = (NinePatchDrawable) drawable;
                         try {
                             json.put("type", "9patch");
@@ -1007,20 +876,21 @@ public class ExtractStyle {
         }
         FileOutputStream out;
         try {
-            filename = m_extractPath+filename+".png";
+            filename = m_extractPath + filename + ".png";
             out = new FileOutputStream(filename);
-            bmp.compress(Bitmap.CompressFormat.PNG, 100, out);
+            if (bmp != null)
+                bmp.compress(Bitmap.CompressFormat.PNG, 100, out);
             out.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
         try {
             json.put("type", "image");
             json.put("path", filename);
-            json.put("width", bmp.getWidth());
-            json.put("height", bmp.getHeight());
+            if (bmp != null) {
+                json.put("width", bmp.getWidth());
+                json.put("height", bmp.getHeight());
+            }
             m_drawableCache.put(filename, new DrawableCache(json, drawable));
         } catch (JSONException e) {
             e.printStackTrace();
@@ -1036,8 +906,7 @@ public class ExtractStyle {
         return ctx.obtainStyledAttributes(typedValue.data, attributes);
     }
 
-    private ArrayList<Integer> getArrayListFromIntArray(int[] attributes)
-    {
+    private ArrayList<Integer> getArrayListFromIntArray(int[] attributes) {
         ArrayList<Integer> sortedAttrs = new ArrayList<>();
         for (int attr : attributes)
             sortedAttrs.add(attr);
@@ -1249,7 +1118,7 @@ public class ExtractStyle {
             ctx.getTheme().resolveAttribute(styleName, typedValue, true);
 
             // Get textAppearance values
-            int[] textAppearanceAttr = new int[]{ textAppearance };
+            int[] textAppearanceAttr = new int[]{textAppearance};
             TypedArray textAppearanceArray = ctx.obtainStyledAttributes(typedValue.data, textAppearanceAttr);
             int textAppearanceId = textAppearanceArray.getResourceId(0, -1);
             textAppearanceArray.recycle();
@@ -1468,19 +1337,7 @@ public class ExtractStyle {
         return json;
     }
 
-    final String[] sScaleTypeArray = {
-            "MATRIX",
-            "FIT_XY",
-            "FIT_START",
-            "FIT_CENTER",
-            "FIT_END",
-            "CENTER",
-            "CENTER_CROP",
-            "CENTER_INSIDE"
-    };
-
-    public JSONObject extractImageViewInformation(int styleName, String qtClassName)
-    {
+    public JSONObject extractImageViewInformation(int styleName, String qtClassName) {
         JSONObject json = new JSONObject();
         try {
             extractViewInformation(styleName, json, qtClassName);
@@ -1524,8 +1381,7 @@ public class ExtractStyle {
         return json;
     }
 
-    void extractCompoundButton(SimpleJsonWriter jsonWriter, int styleName, String className, String qtClass)
-    {
+    void extractCompoundButton(SimpleJsonWriter jsonWriter, int styleName, String className, String qtClass) {
         JSONObject json = extractTextAppearanceInformation(styleName, qtClass);
 
         TypedValue typedValue = new TypedValue();
@@ -1545,8 +1401,7 @@ public class ExtractStyle {
         }
     }
 
-    void extractProgressBarInfo(JSONObject json, int styleName)
-    {
+    void extractProgressBarInfo(JSONObject json, int styleName) {
         try {
             final int[] attributes = new int[]{
                     android.R.attr.minWidth,
@@ -1588,8 +1443,7 @@ public class ExtractStyle {
         }
     }
 
-    void extractProgressBar(SimpleJsonWriter writer, int styleName, String className, String qtClass)
-    {
+    void extractProgressBar(SimpleJsonWriter writer, int styleName, String className, String qtClass) {
         JSONObject json = extractTextAppearanceInformation(android.R.attr.progressBarStyle, qtClass);
         try {
             extractProgressBarInfo(json, styleName);
@@ -1599,9 +1453,7 @@ public class ExtractStyle {
         }
     }
 
-
-    void extractAbsSeekBar(SimpleJsonWriter jsonWriter)
-    {
+    void extractAbsSeekBar(SimpleJsonWriter jsonWriter) {
         JSONObject json = extractTextAppearanceInformation(android.R.attr.seekBarStyle, "QSlider");
         extractProgressBarInfo(json, android.R.attr.seekBarStyle);
         try {
@@ -1624,8 +1476,7 @@ public class ExtractStyle {
         }
     }
 
-    void extractSwitch(SimpleJsonWriter jsonWriter)
-    {
+    void extractSwitch(SimpleJsonWriter jsonWriter) {
         JSONObject json = new JSONObject();
         try {
             int[] attributes = new int[]{
@@ -1671,8 +1522,7 @@ public class ExtractStyle {
         }
     }
 
-    JSONObject extractCheckedTextView(String itemName)
-    {
+    JSONObject extractCheckedTextView(String itemName) {
         JSONObject json = extractTextAppearanceInformation(android.R.attr.checkedTextViewStyle, itemName);
         try {
             int[] attributes = new int[]{
@@ -1716,8 +1566,7 @@ public class ExtractStyle {
         return null;
     }
 
-    private void extractItemsStyle(SimpleJsonWriter jsonWriter)
-    {
+    private void extractItemsStyle(SimpleJsonWriter jsonWriter) {
         try {
             JSONObject itemStyle = extractItemStyle(android.R.layout.simple_list_item_1, "simple_list_item");
             if (itemStyle != null)
@@ -1748,8 +1597,7 @@ public class ExtractStyle {
         }
     }
 
-    void extractListView(SimpleJsonWriter writer)
-    {
+    void extractListView(SimpleJsonWriter writer) {
         JSONObject json = extractTextAppearanceInformation(android.R.attr.listViewStyle, "QListView");
         try {
             int[] attributes = new int[]{
@@ -1773,8 +1621,7 @@ public class ExtractStyle {
         }
     }
 
-    void extractCalendar(SimpleJsonWriter writer)
-    {
+    void extractCalendar(SimpleJsonWriter writer) {
         JSONObject json = extractTextAppearanceInformation(android.R.attr.calendarViewStyle, "QCalendarWidget");
         try {
             int[] attributes = new int[]{
@@ -1819,11 +1666,10 @@ public class ExtractStyle {
         }
     }
 
-    void extractToolBar(SimpleJsonWriter writer)
-    {
+    void extractToolBar(SimpleJsonWriter writer) {
         JSONObject json = extractTextAppearanceInformation(android.R.attr.toolbarStyle, "QToolBar");
         try {
-            int[] attributes = new int[] {
+            int[] attributes = new int[]{
                     android.R.attr.background,
                     android.R.attr.backgroundStacked,
                     android.R.attr.backgroundSplit,
@@ -1859,8 +1705,7 @@ public class ExtractStyle {
         }
     }
 
-    void extractTabBar(SimpleJsonWriter writer)
-    {
+    void extractTabBar(SimpleJsonWriter writer) {
         JSONObject json = extractTextAppearanceInformation(android.R.attr.actionBarTabBarStyle, "QTabBar");
         try {
             int[] attributes = new int[]{
@@ -1885,8 +1730,7 @@ public class ExtractStyle {
         }
     }
 
-    private void extractWindow(SimpleJsonWriter writer)
-    {
+    private void extractWindow(SimpleJsonWriter writer) {
         JSONObject json = new JSONObject();
         try {
             int[] attributes = new int[]{
@@ -1911,8 +1755,7 @@ public class ExtractStyle {
         }
     }
 
-    private JSONObject extractDefaultPalette()
-    {
+    private JSONObject extractDefaultPalette() {
         JSONObject json = extractTextAppearance(android.R.attr.textAppearance);
         try {
             json.put("defaultBackgroundColor", defaultBackgroundColor);
@@ -1923,64 +1766,59 @@ public class ExtractStyle {
         return json;
     }
 
-    public ExtractStyle(Context context, String extractPath, boolean minimal)
-    {
-        m_minimal = minimal;
-        m_extractPath = extractPath + "/";
-        new File(m_extractPath).mkdirs();
-        m_context = context;
-        m_theme = context.getTheme();
-        TypedArray array = m_theme.obtainStyledAttributes(new int[]{
-                android.R.attr.colorBackground,
-                android.R.attr.textColorPrimary,
-                android.R.attr.textColor
-        });
-        defaultBackgroundColor = array.getColor(0, 0);
-        int textColor = array.getColor(1, 0xFFFFFF);
-        if (textColor == 0xFFFFFF)
-            textColor = array.getColor(2, 0xFFFFFF);
-        defaultTextColor = textColor;
-        array.recycle();
+    static class SimpleJsonWriter {
+        private final OutputStreamWriter m_writer;
+        private boolean m_addComma = false;
+        private int m_indentLevel = 0;
 
-        try
-        {
-            SimpleJsonWriter jsonWriter = new SimpleJsonWriter(m_extractPath+"style.json");
-            jsonWriter.beginObject();
-            try {
-                jsonWriter.name("defaultStyle").value(extractDefaultPalette());
-                extractWindow(jsonWriter);
-                jsonWriter.name("buttonStyle").value(extractTextAppearanceInformation(android.R.attr.buttonStyle, "QPushButton"));
-                jsonWriter.name("spinnerStyle").value(extractTextAppearanceInformation(android.R.attr.spinnerStyle, "QComboBox"));
-                extractProgressBar(jsonWriter, android.R.attr.progressBarStyleHorizontal, "progressBarStyleHorizontal", "QProgressBar");
-                extractProgressBar(jsonWriter, android.R.attr.progressBarStyleLarge, "progressBarStyleLarge", null);
-                extractProgressBar(jsonWriter, android.R.attr.progressBarStyleSmall, "progressBarStyleSmall", null);
-                extractProgressBar(jsonWriter, android.R.attr.progressBarStyle, "progressBarStyle", null);
-                extractAbsSeekBar(jsonWriter);
-                extractSwitch(jsonWriter);
-                extractCompoundButton(jsonWriter, android.R.attr.checkboxStyle, "checkboxStyle", "QCheckBox");
-                jsonWriter.name("editTextStyle").value(extractTextAppearanceInformation(android.R.attr.editTextStyle, "QLineEdit"));
-                extractCompoundButton(jsonWriter, android.R.attr.radioButtonStyle, "radioButtonStyle", "QRadioButton");
-                jsonWriter.name("textViewStyle").value(extractTextAppearanceInformation(android.R.attr.textViewStyle, "QWidget"));
-                jsonWriter.name("scrollViewStyle").value(extractTextAppearanceInformation(android.R.attr.scrollViewStyle, "QAbstractScrollArea"));
-                extractListView(jsonWriter);
-                jsonWriter.name("listSeparatorTextViewStyle").value(extractTextAppearanceInformation(android.R.attr.listSeparatorTextViewStyle, null));
-                extractItemsStyle(jsonWriter);
-                extractCompoundButton(jsonWriter, android.R.attr.buttonStyleToggle, "buttonStyleToggle", null);
-                extractCalendar(jsonWriter);
-                extractToolBar(jsonWriter);
-                jsonWriter.name("actionButtonStyle").value(extractTextAppearanceInformation(android.R.attr.actionButtonStyle, "QToolButton"));
-                jsonWriter.name("actionBarTabTextStyle").value(extractTextAppearanceInformation(android.R.attr.actionBarTabTextStyle, null));
-                jsonWriter.name("actionBarTabStyle").value(extractTextAppearanceInformation(android.R.attr.actionBarTabStyle, null));
-                jsonWriter.name("actionOverflowButtonStyle").value(extractImageViewInformation(android.R.attr.actionOverflowButtonStyle, null));
-                extractTabBar(jsonWriter);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            jsonWriter.endObject();
-            jsonWriter.close();
+        public SimpleJsonWriter(String filePath) throws FileNotFoundException {
+            m_writer = new OutputStreamWriter(new FileOutputStream(filePath));
         }
-        catch (Exception e) {
-            e.printStackTrace();
+
+        public void close() throws IOException {
+            m_writer.close();
+        }
+
+        private void writeIndent() throws IOException {
+            m_writer.write(" ", 0, m_indentLevel);
+        }
+
+        void beginObject() throws IOException {
+            writeIndent();
+            m_writer.write("{\n");
+            ++m_indentLevel;
+            m_addComma = false;
+        }
+
+        void endObject() throws IOException {
+            m_writer.write("\n");
+            writeIndent();
+            m_writer.write("}\n");
+            --m_indentLevel;
+            m_addComma = false;
+        }
+
+        SimpleJsonWriter name(String name) throws IOException {
+            if (m_addComma) {
+                m_writer.write(",\n");
+            }
+            writeIndent();
+            m_writer.write(JSONObject.quote(name) + ": ");
+            m_addComma = true;
+            return this;
+        }
+
+        void value(JSONObject value) throws IOException {
+            m_writer.write(value.toString());
+        }
+    }
+
+    static class DrawableCache {
+        JSONObject object;
+        Object drawable;
+        public DrawableCache(JSONObject json, Object drawable) {
+            object = json;
+            this.drawable = drawable;
         }
     }
 }
