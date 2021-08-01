@@ -1110,6 +1110,35 @@ void tst_QQuaternion::fromEulerAngles_data()
 
     QTest::newRow("complex")
         << 30.0f << 240.0f << -45.0f << QQuaternion(-0.531976f, -0.43968f, 0.723317f, -0.02226f);
+
+    // Three gimbal_lock cases are not unique for the conversions from quaternion
+    // to euler, Qt will use only XY rotations for these cases.
+    // For example, QQuaternion(0.5f, 0.5f, -0.5f, 0.5f) can be EulerXYZ(90.0f, 0.0f, 90.0f), too.
+    // But Qt will always convert it to EulerXYZ(90.0f, -90.0f, 0.0f) without Z-rotation.
+    QTest::newRow("gimbal_lock_1")
+            << 90.0f << -90.0f << 0.0f << QQuaternion(0.5f, 0.5f, -0.5f, 0.5f);
+
+    QTest::newRow("gimbal_lock_2")
+            << 90.0f << 40.0f << 0.0f << QQuaternion(0.664463f, 0.664463f, 0.241845f, -0.241845f);
+
+    QTest::newRow("gimbal_lock_3") << 90.0f << 170.0f << 0.0f
+                                   << QQuaternion(0.0616285f, 0.0616285f, 0.704416f, -0.704416f);
+
+    // These four examples have a fraction of errors that would bypass normalize() threshold
+    // and could make Gimbal lock detection fail.
+    QTest::newRow("gimbal_lock_fraction_1")
+            << -90.0f << 90.001152f << 0.0f << QQuaternion(0.499989986f, -0.5f, 0.5f, 0.5f);
+
+    QTest::newRow("gimbal_lock_fraction_2")
+            << -90.0f << -179.999985f << 0.0f
+            << QQuaternion(1.00000001e-07f, 1.00000001e-10f, -0.707106769f, -0.707105756f);
+
+    QTest::newRow("gimbal_lock_fraction_3")
+            << -90.0f << 90.0011597f << 0.0f << QQuaternion(0.499989986f, -0.49999994f, 0.5f, 0.5f);
+
+    QTest::newRow("gimbal_lock_fraction_4")
+            << -90.0f << -180.0f << 0.0f
+            << QQuaternion(9.99999996e-12f, 9.99999996e-12f, -0.707106769f, -0.707096756f);
 }
 void tst_QQuaternion::fromEulerAngles()
 {
