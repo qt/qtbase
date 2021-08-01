@@ -40,13 +40,9 @@ private slots:
     void fail();
     void xfail();
     void xpass();
-
-    // This test function must be last, as it calls qFatal().
-    void messages();
 };
 
-// All the tests below except pass() have been blacklisted in blacklisted/BLACKLIST
-// Contrast with ../silent/, for the same tests without blacklisting but with -silent
+// All the tests below have been blacklisted in blacklisted/BLACKLIST
 
 void tst_Blacklisted::pass()
 {
@@ -73,36 +69,6 @@ void tst_Blacklisted::xpass()
 {
     QEXPECT_FAIL("", "This test should BXPASS", Abort);
     QVERIFY2(true, "This test should BXPASS");
-}
-
-#ifndef Q_OS_WIN
-#include <signal.h>
-#include <setjmp.h>
-
-static jmp_buf state;
-static void abort_handler(int)
-{
-    longjmp(state, 1);
-}
-#endif
-
-void tst_Blacklisted::messages()
-{
-    qWarning("This is a warning that should not appear in silent test output");
-    QTestLog::warn("This is an internal testlib warning that should not appear in silent test output", __FILE__, __LINE__);
-    qDebug("This is a debug message that should not appear in silent test output");
-    qCritical("This is a critical message that should not appear in silent test output");
-    qInfo("This is an info message that should not appear in silent test output");
-    QTestLog::info("This is an internal testlib info message that should not appear in silent test output", __FILE__, __LINE__);
-
-#ifndef Q_OS_WIN
-    // We're testing qFatal, but we don't want to actually std::abort() !
-    auto prior = signal(SIGABRT, abort_handler);
-    if (setjmp(state))
-        signal(SIGABRT, prior);
-    else
-#endif
-        qFatal("This is a fatal error message that should still appear in silent test output");
 }
 
 QTEST_MAIN(tst_Blacklisted)

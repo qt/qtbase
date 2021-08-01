@@ -38,31 +38,8 @@
 </Incident>
     <Duration msecs="0"/>
 </TestFunction>
-<TestFunction name="messages">
-<Message type="qwarn" file="" line="0">
-    <Description><![CDATA[This is a warning that should not appear in silent test output]]></Description>
-</Message>
-<Message type="warn" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
-    <Description><![CDATA[This is an internal testlib warning that should not appear in silent test output]]></Description>
-</Message>
-<Message type="qdebug" file="" line="0">
-    <Description><![CDATA[This is a debug message that should not appear in silent test output]]></Description>
-</Message>
-<Message type="system" file="" line="0">
-    <Description><![CDATA[This is a critical message that should not appear in silent test output]]></Description>
-</Message>
-<Message type="qinfo" file="" line="0">
-    <Description><![CDATA[This is an info message that should not appear in silent test output]]></Description>
-</Message>
-<Message type="info" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
-    <Description><![CDATA[This is an internal testlib info message that should not appear in silent test output]]></Description>
-</Message>
-<Message type="qfatal" file="" line="0">
-    <Description><![CDATA[This is a fatal error message that should still appear in silent test output]]></Description>
-</Message>
-<Incident type="bfail" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
-    <Description><![CDATA[Received a fatal error.]]></Description>
-</Incident>
+<TestFunction name="cleanupTestCase">
+<Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>
 </TestFunction>
 <Duration msecs="0"/>

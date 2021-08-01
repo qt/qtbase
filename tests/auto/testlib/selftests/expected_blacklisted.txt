@@ -11,16 +11,6 @@ BXFAIL : tst_Blacklisted::xfail() This test should BXFAIL then BPASS
 BPASS  : tst_Blacklisted::xfail()
 BXPASS : tst_Blacklisted::xpass() 'true' returned TRUE unexpectedly. (This test should BXPASS)
    Loc: [qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp(0)]
-QWARN  : tst_Blacklisted::messages() This is a warning that should not appear in silent test output
-WARNING: tst_Blacklisted::messages() This is an internal testlib warning that should not appear in silent test output
-   Loc: [qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp(0)]
-QDEBUG : tst_Blacklisted::messages() This is a debug message that should not appear in silent test output
-QSYSTEM: tst_Blacklisted::messages() This is a critical message that should not appear in silent test output
-QINFO  : tst_Blacklisted::messages() This is an info message that should not appear in silent test output
-INFO   : tst_Blacklisted::messages() This is an internal testlib info message that should not appear in silent test output
-   Loc: [qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp(0)]
-QFATAL : tst_Blacklisted::messages() This is a fatal error message that should still appear in silent test output
-BFAIL  : tst_Blacklisted::messages() Received a fatal error.
-   Loc: [qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp(0)]
-Totals: 1 passed, 0 failed, 1 skipped, 6 blacklisted, 0ms
+PASS   : tst_Blacklisted::cleanupTestCase()
+Totals: 2 passed, 0 failed, 1 skipped, 5 blacklisted, 0ms
 ********* Finished testing of tst_Blacklisted *********

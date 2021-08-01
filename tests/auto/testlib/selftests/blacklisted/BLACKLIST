@@ -1,8 +1,7 @@
 obscure # no such platform; is ignored
-*
 
 [pass]
-!*
+*
 
 [skip]
 *
@@ -14,7 +13,4 @@ obscure # no such platform; is ignored
 *
 
 [xpass]
-*
-
-[messages]
 *
