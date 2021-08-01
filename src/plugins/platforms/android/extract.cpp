@@ -1,5 +1,6 @@
 /****************************************************************************
 **
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Copyright (C) 2014 BogDan Vatra <bogdan@kde.org>
 ** Contact: https://www.qt.io/licensing/
 **
@@ -124,26 +125,6 @@ Java_org_qtproject_qt_android_ExtractStyle_extractNativeChunkInfo20(JNIEnv *env,
     env->SetIntArrayRegion(result, 0, size, data);
     free(data);
     return result;
-}
-
-extern "C" JNIEXPORT jintArray JNICALL
-Java_org_qtproject_qt_android_ExtractStyle_extractChunkInfo20(JNIEnv *env, jobject obj,
-                                                              jbyteArray chunkObj)
-{
-    size_t chunkSize = env->GetArrayLength(chunkObj);
-    void* storage = alloca(chunkSize);
-    env->GetByteArrayRegion(chunkObj, 0, chunkSize,
-                            reinterpret_cast<jbyte*>(storage));
-
-    if (QJniEnvironment::checkAndClearExceptions(env))
-        return 0;
-
-    jintArray res = Java_org_qtproject_qt_android_ExtractStyle_extractNativeChunkInfo20(env, obj,
-                                                                                    long(storage));
-    if (QJniEnvironment::checkAndClearExceptions(env))
-        res = nullptr;
-
-    return res;
 }
 
 static inline void fill9patchOffsets(Res_png_9patch20* patch) {
