@@ -508,50 +508,46 @@ void QQuaternion::getEulerAngles(float *pitch, float *yaw, float *roll) const
 {
     Q_ASSERT(pitch && yaw && roll);
 
-    // Algorithm from:
-    // http://www.j3d.org/matrix_faq/matrfaq_latest.html#Q37
+    // Algorithm adapted from:
+    // https://ingmec.ual.es/~jlblanco/papers/jlblanco2010geometry3D_techrep.pdf
+    // "A tutorial on SE(3) transformation parameterizations and on-manifold optimization".
 
-    float xx = xp * xp;
-    float xy = xp * yp;
-    float xz = xp * zp;
-    float xw = xp * wp;
-    float yy = yp * yp;
-    float yz = yp * zp;
-    float yw = yp * wp;
-    float zz = zp * zp;
-    float zw = zp * wp;
+    // Normalize values even if the length is below the margin. Otherwise we might fail
+    // to detect Gimbal lock due to cumulative errors.
+    const float len = length();
+    const bool rescale = !qFuzzyIsNull(len);
+    const float xps = rescale ? xp / len : xp;
+    const float yps = rescale ? yp / len : yp;
+    const float zps = rescale ? zp / len : zp;
+    const float wps = rescale ? wp / len : wp;
 
-    const float lengthSquared = xx + yy + zz + wp * wp;
-    if (!qFuzzyIsNull(lengthSquared - 1.0f) && !qFuzzyIsNull(lengthSquared)) {
-        xx /= lengthSquared;
-        xy /= lengthSquared; // same as (xp / length) * (yp / length)
-        xz /= lengthSquared;
-        xw /= lengthSquared;
-        yy /= lengthSquared;
-        yz /= lengthSquared;
-        yw /= lengthSquared;
-        zz /= lengthSquared;
-        zw /= lengthSquared;
-    }
+    const float xx = xps * xps;
+    const float xy = xps * yps;
+    const float xz = xps * zps;
+    const float xw = xps * wps;
+    const float yy = yps * yps;
+    const float yz = yps * zps;
+    const float yw = yps * wps;
+    const float zz = zps * zps;
+    const float zw = zps * wps;
+
+    // For the common case, we have a hidden division by cos(pitch) to calculate
+    // yaw and roll: atan2(a / cos(pitch), b / cos(pitch)) = atan2(a, b). This equation
+    // wouldn't work if cos(pitch) is close to zero (i.e. abs(sin(pitch)) =~ 1.0).
+    // This threshold is copied from qFuzzyIsNull() to avoid the hidden division by zero.
+    constexpr float epsilon = 0.00001f;
 
     const float sinp = -2.0f * (yz - xw);
-    if (std::abs(sinp) >= 1.0f)
-        *pitch = std::copysign(M_PI_2, sinp);
-    else
+    if (std::abs(sinp) < 1.0f - epsilon) {
         *pitch = std::asin(sinp);
-    if (*pitch < M_PI_2) {
-        if (*pitch > -M_PI_2) {
-            *yaw = std::atan2(2.0f * (xz + yw), 1.0f - 2.0f * (xx + yy));
-            *roll = std::atan2(2.0f * (xy + zw), 1.0f - 2.0f * (xx + zz));
-        } else {
-            // not a unique solution
-            *roll = 0.0f;
-            *yaw = -std::atan2(-2.0f * (xy - zw), 1.0f - 2.0f * (yy + zz));
-        }
+        *yaw = std::atan2(2.0f * (xz + yw), 1.0f - 2.0f * (xx + yy));
+        *roll = std::atan2(2.0f * (xy + zw), 1.0f - 2.0f * (xx + zz));
     } else {
-        // not a unique solution
+        // Gimbal lock case, which doesn't have a unique solution. We just use
+        // XY rotation.
+        *pitch = std::copysign(static_cast<float>(M_PI_2), sinp);
+        *yaw = 2.0f * std::atan2(yps, wps);
         *roll = 0.0f;
-        *yaw = std::atan2(-2.0f * (xy - zw), 1.0f - 2.0f * (yy + zz));
     }
 
     *pitch = qRadiansToDegrees(*pitch);
