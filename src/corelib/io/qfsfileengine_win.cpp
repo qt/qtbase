@@ -871,17 +871,18 @@ uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size,
 bool QFSFileEnginePrivate::unmap(uchar *ptr)
 {
     Q_Q(QFSFileEngine);
-    if (!maps.contains(ptr)) {
+    const auto it = std::as_const(maps).find(ptr);
+    if (it == maps.cend()) {
         q->setError(QFile::PermissionsError, qt_error_string(ERROR_ACCESS_DENIED));
         return false;
     }
-    uchar *start = ptr - maps[ptr];
+    uchar *start = ptr - *it;
     if (!UnmapViewOfFile(start)) {
         q->setError(QFile::PermissionsError, qt_error_string());
         return false;
     }
 
-    maps.remove(ptr);
+    maps.erase(it);
     if (maps.isEmpty()) {
         ::CloseHandle(mapHandle);
         mapHandle = NULL;

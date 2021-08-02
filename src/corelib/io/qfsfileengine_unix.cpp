@@ -646,18 +646,19 @@ bool QFSFileEnginePrivate::unmap(uchar *ptr)
 {
 #if !defined(Q_OS_INTEGRITY)
     Q_Q(QFSFileEngine);
-    if (!maps.contains(ptr)) {
+    const auto it = std::as_const(maps).find(ptr);
+    if (it == maps.cend()) {
         q->setError(QFile::PermissionsError, qt_error_string(EACCES));
         return false;
     }
 
-    uchar *start = ptr - maps[ptr].first;
-    size_t len = maps[ptr].second;
+    uchar *start = ptr - it->first;
+    size_t len = it->second;
     if (-1 == munmap(start, len)) {
         q->setError(QFile::UnspecifiedError, qt_error_string(errno));
         return false;
     }
-    maps.remove(ptr);
+    maps.erase(it);
     return true;
 #else
     return false;
