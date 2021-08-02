@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite name="tst_Assert" timestamp="@TEST_START_TIME@" hostname="@HOSTNAME@" tests="3" failures="1" errors="0" skipped="0" time="@TEST_DURATION@">
+<testsuite name="tst_Assert" timestamp="@TEST_START_TIME@" hostname="@HOSTNAME@" tests="3" failures="0" errors="1" skipped="0" time="@TEST_DURATION@">
   <properties>
     <property name="QTestVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtVersion" value="@INSERT_QT_VERSION_HERE@"/>
@@ -8,11 +8,8 @@
   <testcase name="initTestCase" classname="tst_Assert" time="@TEST_DURATION@"/>
   <testcase name="testNumber1" classname="tst_Assert" time="@TEST_DURATION@"/>
   <testcase name="testNumber2" classname="tst_Assert" time="@TEST_DURATION@">
-    <!-- type="qfatal" message="ASSERT: &quot;false&quot; in file qtbase/tests/auto/testlib/selftests/assert/tst_assert.cpp, line 0" -->
-    <failure type="fail" message="Received a fatal error."/>
+    <error type="qfatal" message="ASSERT: &quot;false&quot; in file qtbase/tests/auto/testlib/selftests/assert/tst_assert.cpp, line 0"/>
   </testcase>
   <system-out/>
-  <system-err>
-    <![CDATA[ASSERT: "false" in file qtbase/tests/auto/testlib/selftests/assert/tst_assert.cpp, line 0]]>
-  </system-err>
+  <system-err/>
 </testsuite>

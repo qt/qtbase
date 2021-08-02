@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite name="tst_Silent" timestamp="@TEST_START_TIME@" hostname="@HOSTNAME@" tests="7" failures="3" errors="0" skipped="1" time="@TEST_DURATION@">
+<testsuite name="tst_Silent" timestamp="@TEST_START_TIME@" hostname="@HOSTNAME@" tests="7" failures="2" errors="1" skipped="1" time="@TEST_DURATION@">
   <properties>
     <property name="QTestVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtVersion" value="@INSERT_QT_VERSION_HERE@"/>
@@ -26,8 +26,7 @@
     <!-- type="system" message="This is a critical message that should not appear in silent test output" -->
     <!-- type="qinfo" message="This is an info message that should not appear in silent test output" -->
     <!-- type="info" message="This is an internal testlib info message that should not appear in silent test output" -->
-    <!-- type="qfatal" message="This is a fatal error message that should still appear in silent test output" -->
-    <failure type="fail" message="Received a fatal error."/>
+    <error type="qfatal" message="This is a fatal error message that should still appear in silent test output"/>
   </testcase>
   <system-out>
     <![CDATA[This test should XFAIL]]>
@@ -39,6 +38,5 @@
   <system-err>
     <![CDATA[This is a warning that should not appear in silent test output]]>
     <![CDATA[This is an internal testlib warning that should not appear in silent test output]]>
-    <![CDATA[This is a fatal error message that should still appear in silent test output]]>
   </system-err>
 </testsuite>

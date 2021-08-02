@@ -219,66 +219,58 @@ void QJUnitTestLogger::leaveTestCase()
 void QJUnitTestLogger::addIncident(IncidentTypes type, const char *description,
                                    const char *file, int line)
 {
-    const char *typeBuf = nullptr;
-
-    switch (type) {
-    case QAbstractTestLogger::XPass:
-        ++failureCounter;
-        typeBuf = "xpass";
-        break;
-    case QAbstractTestLogger::Pass:
-        typeBuf = "pass";
-        break;
-    case QAbstractTestLogger::XFail:
-        typeBuf = "xfail";
-        break;
-    case QAbstractTestLogger::Fail:
-        ++failureCounter;
-        typeBuf = "fail";
-        break;
-    case QAbstractTestLogger::BlacklistedPass:
-        typeBuf = "bpass";
-        break;
-    case QAbstractTestLogger::BlacklistedFail:
-        typeBuf = "bfail";
-        break;
-    case QAbstractTestLogger::BlacklistedXPass:
-        typeBuf = "bxpass";
-        break;
-    case QAbstractTestLogger::BlacklistedXFail:
-        typeBuf = "bxfail";
-        break;
-    default:
-        typeBuf = "??????";
-        break;
-    }
-
     if (type == QAbstractTestLogger::Fail || type == QAbstractTestLogger::XPass) {
-        QTestElement *failureElement = new QTestElement(QTest::LET_Failure);
-        failureElement->addAttribute(QTest::AI_Type, typeBuf);
+        auto failureType = [&]() {
+            switch (type) {
+            case QAbstractTestLogger::Fail: return "fail";
+            case QAbstractTestLogger::XPass: return "xpass";
+            default: Q_UNREACHABLE();
+            }
+        }();
 
-        // Assume the first line is the message, and the remainder are details
-        QString descriptionString = QString::fromUtf8(description);
-        QString message = descriptionString.section(QLatin1Char('\n'), 0, 0);
-        QString details = descriptionString.section(QLatin1Char('\n'), 1);
+        addFailure(QTest::LET_Failure, failureType, QString::fromUtf8(description));
+    } else if (type == QAbstractTestLogger::XFail) {
+        // Since XFAIL does not add a failure to the testlog in JUnit XML we add a
+        // message, so we still have some information about the expected failure.
+        addMessage(QAbstractTestLogger::Info, QString::fromUtf8(description), file, line);
+    }
+}
 
-        failureElement->addAttribute(QTest::AI_Message, message.toUtf8().constData());
-
-        if (!details.isEmpty()) {
-            auto messageElement = new QTestElement(QTest::LET_Message);
-            messageElement->addAttribute(QTest::AI_Message, details.toUtf8().constData());
-            failureElement->addLogElement(messageElement);
+void QJUnitTestLogger::addFailure(QTest::LogElementType elementType,
+    const char *failureType, const QString &failureDescription)
+{
+    if (elementType == QTest::LET_Failure) {
+        // Make sure we're not adding failure when we already have error,
+        // or adding additional failures when we already have a failure.
+        for (auto *childElement = currentTestCase->childElements();
+                   childElement; childElement = childElement->nextElement()) {
+            if (childElement->elementType() == QTest::LET_Error ||
+                childElement->elementType() == QTest::LET_Failure)
+                return;
         }
-
-        currentTestCase->addLogElement(failureElement);
     }
 
-    /*
-        Since XFAIL does not add a failure to the testlog in junitxml, add a message, so we still
-        have some information about the expected failure.
-    */
-    if (type == QAbstractTestLogger::XFail) {
-        QJUnitTestLogger::addMessage(QAbstractTestLogger::Info, QString::fromUtf8(description), file, line);
+    QTestElement *failureElement = new QTestElement(elementType);
+    failureElement->addAttribute(QTest::AI_Type, failureType);
+
+    // Assume the first line is the message, and the remainder are details
+    QString message = failureDescription.section(QLatin1Char('\n'), 0, 0);
+    QString details = failureDescription.section(QLatin1Char('\n'), 1);
+
+    failureElement->addAttribute(QTest::AI_Message, message.toUtf8().constData());
+
+    if (!details.isEmpty()) {
+        auto messageElement = new QTestElement(QTest::LET_Message);
+        messageElement->addAttribute(QTest::AI_Message, details.toUtf8().constData());
+        failureElement->addLogElement(messageElement);
+    }
+
+    currentTestCase->addLogElement(failureElement);
+
+    switch (elementType) {
+    case QTest::LET_Failure: ++failureCounter; break;
+    case QTest::LET_Error: ++errorCounter; break;
+    default: Q_UNREACHABLE();
     }
 }
 
@@ -294,7 +286,6 @@ void QJUnitTestLogger::addMessage(MessageTypes type, const QString &message, con
         return;
     }
 
-    auto messageElement = new QTestElement(QTest::LET_Message);
     auto systemLogElement = systemOutputElement;
     const char *typeBuf = nullptr;
 
@@ -331,6 +322,12 @@ void QJUnitTestLogger::addMessage(MessageTypes type, const QString &message, con
         break;
     }
 
+    if (type == QAbstractTestLogger::QFatal) {
+        addFailure(QTest::LET_Error, typeBuf, message);
+        return;
+    }
+
+    auto messageElement = new QTestElement(QTest::LET_Message);
     messageElement->addAttribute(QTest::AI_Type, typeBuf);
     messageElement->addAttribute(QTest::AI_Message, message.toUtf8().constData());
 
