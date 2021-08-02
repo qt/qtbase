@@ -7763,13 +7763,14 @@ static ArgEscapeData findArgEscapes(QStringView s)
     return d;
 }
 
-static QString replaceArgEscapes(QStringView s, const ArgEscapeData &d, int field_width,
+static QString replaceArgEscapes(QStringView s, const ArgEscapeData &d, qsizetype field_width,
                                  QStringView arg, QStringView larg, QChar fillChar)
 {
     const QChar *uc_begin = s.begin();
     const QChar *uc_end = s.end();
 
-    int abs_field_width = qAbs(field_width);
+    // Negative field-width for right-padding, positive for left-padding:
+    const qsizetype abs_field_width = qAbs(field_width);
     qsizetype result_len = s.length()
                      - d.escape_len
                      + (d.occurrences - d.locale_occurrences)
@@ -7818,10 +7819,11 @@ static QString replaceArgEscapes(QStringView s, const ArgEscapeData &d, int fiel
             rc += escape_start - text_start;
 
             const QStringView use = localize ? larg : arg;
-            const uint pad_chars = qMax(abs_field_width, use.length()) - use.length();
+            const qsizetype pad_chars = abs_field_width - use.length();
+            // (If negative, relevant loops are no-ops: no need to check.)
 
             if (field_width > 0) { // left padded
-                for (uint i = 0; i < pad_chars; ++i)
+                for (qsizetype i = 0; i < pad_chars; ++i)
                     *rc++ = fillChar;
             }
 
@@ -7829,7 +7831,7 @@ static QString replaceArgEscapes(QStringView s, const ArgEscapeData &d, int fiel
             rc += use.length();
 
             if (field_width < 0) { // right padded
-                for (uint i = 0; i < pad_chars; ++i)
+                for (qsizetype i = 0; i < pad_chars; ++i)
                     *rc++ = fillChar;
             }
 
