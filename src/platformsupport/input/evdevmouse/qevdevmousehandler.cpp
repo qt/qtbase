@@ -204,7 +204,10 @@ void QEvdevMouseHandler::sendMouseEvent()
         m_prevInvalid = false;
     }
 
-    emit handleMouseEvent(x, y, m_abs, m_buttons, m_button, m_eventType);
+    if (m_eventType == QEvent::MouseMove)
+        emit handleMouseEvent(x, y, m_abs, m_buttons, Qt::NoButton, m_eventType);
+    else
+        emit handleMouseEvent(x, y, m_abs, m_buttons, m_button, m_eventType);
 
     m_prevx = m_x;
     m_prevy = m_y;
