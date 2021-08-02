@@ -172,10 +172,10 @@ void QJUnitTestLogger::enterTestFunction(const char *function)
 
 void QJUnitTestLogger::enterTestCase(const char *name)
 {
-    currentLogElement = new QTestElement(QTest::LET_TestCase);
-    currentLogElement->addAttribute(QTest::AI_Name, name);
-    currentLogElement->addAttribute(QTest::AI_Classname, QTestResult::currentTestObjectName());
-    currentLogElement->addToList(&listOfTestcases);
+    currentTestCase = new QTestElement(QTest::LET_TestCase);
+    currentTestCase->addAttribute(QTest::AI_Name, name);
+    currentTestCase->addAttribute(QTest::AI_Classname, QTestResult::currentTestObjectName());
+    currentTestCase->addToList(&listOfTestcases);
 
     // The element will be deleted when the suite is deleted
 
@@ -194,7 +194,7 @@ void QJUnitTestLogger::enterTestData(QTestData *)
     if (QTestResult::currentTestFunction() != lastTestFunction) {
         // Adopt existing testcase for the initial test data
         auto *name = const_cast<QTestElementAttribute*>(
-            currentLogElement->attribute(QTest::AI_Name));
+            currentTestCase->attribute(QTest::AI_Name));
         name->setPair(QTest::AI_Name, testIdentifier.data());
         lastTestFunction = QTestResult::currentTestFunction();
         elapsedTestcaseTime.restart();
@@ -212,7 +212,7 @@ void QJUnitTestLogger::leaveTestFunction()
 
 void QJUnitTestLogger::leaveTestCase()
 {
-    currentLogElement->addAttribute(QTest::AI_Time,
+    currentTestCase->addAttribute(QTest::AI_Time,
         toSecondsFormat(elapsedTestCaseSeconds()).constData());
 }
 
@@ -272,7 +272,7 @@ void QJUnitTestLogger::addIncident(IncidentTypes type, const char *description,
             failureElement->addLogElement(messageElement);
         }
 
-        currentLogElement->addLogElement(failureElement);
+        currentTestCase->addLogElement(failureElement);
     }
 
     /*
@@ -292,7 +292,7 @@ void QJUnitTestLogger::addMessage(MessageTypes type, const QString &message, con
     if (type == QAbstractTestLogger::Skip) {
         auto skippedElement = new QTestElement(QTest::LET_Skipped);
         skippedElement->addAttribute(QTest::AI_Message, message.toUtf8().constData());
-        currentLogElement->addLogElement(skippedElement);
+        currentTestCase->addLogElement(skippedElement);
         return;
     }
 
@@ -336,7 +336,7 @@ void QJUnitTestLogger::addMessage(MessageTypes type, const QString &message, con
     messageElement->addAttribute(QTest::AI_Type, typeBuf);
     messageElement->addAttribute(QTest::AI_Message, message.toUtf8().constData());
 
-    currentLogElement->addLogElement(messageElement);
+    currentTestCase->addLogElement(messageElement);
 
     // Also add the message to the system log (stdout/stderr), if one exists
     if (systemLogElement) {
