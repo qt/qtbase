@@ -7,7 +7,7 @@
 # special case begin
 # The bootstrap library has a few manual tweaks compared to other
 # libraries.
-add_library(Bootstrap STATIC)
+qt_add_library(Bootstrap STATIC)
 # special case end
 qt_internal_extend_target(Bootstrap
     SOURCES

@@ -74,6 +74,7 @@ function(qt_internal_add_executable name)
     endif()
 
     qt_set_common_target_properties(${name})
+    _qt_internal_set_up_static_runtime_library(${name})
     if(ANDROID)
         # On our qmake builds we don't compile the executables with
         # visibility=hidden. Not having this flag set will cause the
