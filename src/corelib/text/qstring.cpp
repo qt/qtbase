@@ -7766,9 +7766,6 @@ static ArgEscapeData findArgEscapes(QStringView s)
 static QString replaceArgEscapes(QStringView s, const ArgEscapeData &d, qsizetype field_width,
                                  QStringView arg, QStringView larg, QChar fillChar)
 {
-    const QChar *uc_begin = s.begin();
-    const QChar *uc_end = s.end();
-
     // Negative field-width for right-padding, positive for left-padding:
     const qsizetype abs_field_width = qAbs(field_width);
     qsizetype result_len = s.length()
@@ -7779,11 +7776,12 @@ static QString replaceArgEscapes(QStringView s, const ArgEscapeData &d, qsizetyp
                      *qMax(abs_field_width, larg.length());
 
     QString result(result_len, Qt::Uninitialized);
-    QChar *result_buff = const_cast<QChar *>(result.unicode());
-
-    QChar *rc = result_buff;
-    const QChar *c = uc_begin;
+    QChar *rc = const_cast<QChar *>(result.unicode());
+    QChar *const result_end = rc + result_len;
     int repl_cnt = 0;
+
+    const QChar *c = s.begin();
+    const QChar *const uc_end = s.end();
     while (c != uc_end) {
         /* We don't have to check if we run off the end of the string with c,
            because as long as d.occurrences > 0 we KNOW there are valid escape
@@ -7838,12 +7836,12 @@ static QString replaceArgEscapes(QStringView s, const ArgEscapeData &d, qsizetyp
             if (++repl_cnt == d.occurrences) {
                 memcpy(rc, c, (uc_end - c)*sizeof(QChar));
                 rc += uc_end - c;
-                Q_ASSERT(rc - result_buff == result_len);
+                Q_ASSERT(rc == result_end);
                 c = uc_end;
             }
         }
     }
-    Q_ASSERT(rc == result_buff + result_len);
+    Q_ASSERT(rc == result_end);
 
     return result;
 }
