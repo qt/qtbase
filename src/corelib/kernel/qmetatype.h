@@ -48,6 +48,7 @@
 #include <QtCore/qcompare.h>
 #include <QtCore/qvarlengtharray.h>
 #include <QtCore/qrefcount.h>
+#include <QtCore/qscopeguard.h>
 #include <QtCore/qdatastream.h>
 #include <QtCore/qiterable.h>
 #ifndef QT_NO_QOBJECT
@@ -570,7 +571,7 @@ public:
             *t = (f->*function)();
             return true;
         };
-        return registerConverterFunction(converter, fromType, toType);
+        return registerConverterImpl<From, To>(converter, fromType, toType);
     }
 
     // member function
@@ -588,7 +589,7 @@ public:
             *t = (f->*function)();
             return true;
         };
-        return registerMutableViewFunction(view, fromType, toType);
+        return registerMutableViewImpl<From, To>(view, fromType, toType);
     }
 
     // member function as in "double QString::toDouble(bool *ok = nullptr) const"
@@ -609,7 +610,7 @@ public:
                 *t = To();
             return result;
         };
-        return registerConverterFunction(converter, fromType, toType);
+        return registerConverterImpl<From, To>(converter, fromType, toType);
     }
 
     // functor or function pointer
@@ -621,13 +622,13 @@ public:
 
         const QMetaType fromType = QMetaType::fromType<From>();
         const QMetaType toType = QMetaType::fromType<To>();
-        auto converter = [function](const void *from, void *to) -> bool {
+        auto converter = [function = std::move(function)](const void *from, void *to) -> bool {
             const From *f = static_cast<const From *>(from);
             To *t = static_cast<To *>(to);
             *t = function(*f);
             return true;
         };
-        return registerConverterFunction(converter, fromType, toType);
+        return registerConverterImpl<From, To>(std::move(converter), fromType, toType);
     }
 
     // functor or function pointer
@@ -639,15 +640,43 @@ public:
 
         const QMetaType fromType = QMetaType::fromType<From>();
         const QMetaType toType = QMetaType::fromType<To>();
-        auto view = [function](void *from, void *to) -> bool {
+        auto view = [function = std::move(function)](void *from, void *to) -> bool {
             From *f = static_cast<From *>(from);
             To *t = static_cast<To *>(to);
             *t = function(*f);
             return true;
         };
-        return registerMutableViewFunction(view, fromType, toType);
+        return registerMutableViewImpl<From, To>(std::move(view), fromType, toType);
     }
-#endif
+
+private:
+    template<typename From, typename To>
+    static bool registerConverterImpl(ConverterFunction converter, QMetaType fromType, QMetaType toType)
+    {
+        if (registerConverterFunction(std::move(converter), fromType, toType)) {
+            static const auto unregister = qScopeGuard([=] {
+                unregisterConverterFunction(fromType, toType);
+            });
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    template<typename From, typename To>
+    static bool registerMutableViewImpl(MutableViewFunction view, QMetaType fromType, QMetaType toType)
+    {
+        if (registerMutableViewFunction(std::move(view), fromType, toType)) {
+            static const auto unregister = qScopeGuard([=] {
+               unregisterMutableViewFunction(fromType, toType);
+            });
+            return true;
+        } else {
+            return false;
+        }
+    }
+#endif // Q_CLANG_DOC
+public:
 
     static bool convert(QMetaType fromType, const void *from, QMetaType toType, void *to);
     static bool canConvert(QMetaType fromType, QMetaType toType);
