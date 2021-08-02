@@ -510,9 +510,9 @@ void QWindowsContext::setProcessDpiV2Awareness()
         QWindowsContextPrivate::m_v2DpiAware = true;
     } else {
         const HRESULT errorCode = GetLastError();
-        // E_ACCESSDENIED means set externally (MSVC manifest or external app loading Qt plugin).
+        // ERROR_ACCESS_DENIED means set externally (MSVC manifest or external app loading Qt plugin).
         // Silence warning in that case unless debug is enabled.
-        if (errorCode != E_ACCESSDENIED || lcQpaWindows().isDebugEnabled()) {
+        if (errorCode != ERROR_ACCESS_DENIED || lcQpaWindows().isDebugEnabled()) {
             qWarning().noquote().nospace() << "setProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2) failed: "
                 << QWindowsContext::comErrorString(errorCode);
         }
