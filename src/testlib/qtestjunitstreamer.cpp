@@ -83,11 +83,13 @@ void QTestJUnitStreamer::formatStart(const QTestElement *element, QTestCharBuffe
     indentForElement(element, indent, sizeof(indent));
 
     // Messages/errors are written as CDATA within system-out, system-err,
-    // respectively, comments elsewhere
+    // error, and failure respectively, comments elsewhere
     if (element->elementType() == QTest::LET_Message) {
         switch (element->parentElement()->elementType()) {
         case QTest::LET_SystemOutput:
         case QTest::LET_SystemError:
+        case QTest::LET_Failure:
+        case QTest::LET_Error:
             QTest::qt_asprintf(formatted, "%s<![CDATA[", indent);
             break;
         default:
@@ -123,11 +125,12 @@ void QTestJUnitStreamer::formatAttributes(const QTestElement* element, const QTe
 
     QTest::AttributeIndex attrindex = attribute->index();
 
-    // For messages/errors within system-out, system-err, respectively,
-    // we only want to output `message'
+    // For messages we only want to output the `message' attribute value
     if (element && element->elementType() == QTest::LET_Message
         && (element->parentElement()->elementType() == QTest::LET_SystemOutput
-            || element->parentElement()->elementType() == QTest::LET_SystemError)) {
+            || element->parentElement()->elementType() == QTest::LET_SystemError
+            || element->parentElement()->elementType() == QTest::LET_Failure
+            || element->parentElement()->elementType() == QTest::LET_Error)) {
 
         if (attrindex != QTest::AI_Message) return;
 
@@ -146,12 +149,14 @@ void QTestJUnitStreamer::formatAfterAttributes(const QTestElement *element, QTes
     if (!element || !formatted )
         return;
 
-    // Messages/errors are written as CDATA within system-out, system-err,
-    // respectively, comments elsewhere
+    // Messages are written as CDATA within system-out, system-err,
+    // error, and failure respectively, comments elsewhere
     if (element->elementType() == QTest::LET_Message) {
         switch (element->parentElement()->elementType()) {
         case QTest::LET_SystemOutput:
         case QTest::LET_SystemError:
+        case QTest::LET_Failure:
+        case QTest::LET_Error:
             QTest::qt_asprintf(formatted, "]]>\n");
             break;
         default:

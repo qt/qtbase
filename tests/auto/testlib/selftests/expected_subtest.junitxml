@@ -44,17 +44,19 @@
   <testcase name="test3(data1)" classname="tst_Subtest" time="@TEST_DURATION@">
     <!-- type="qdebug" message="init test3 data1" -->
     <!-- type="qdebug" message="test2 test3 data1" -->
-    <failure type="fail" message="Compared values are not the same
-   Actual   (str)              : &quot;hello1&quot;
-   Expected (QString(&quot;hello0&quot;)): &quot;hello0&quot;"/>
+    <failure type="fail" message="Compared values are not the same">
+      <![CDATA[   Actual   (str)              : "hello1"
+   Expected (QString("hello0")): "hello0"]]>
+    </failure>
     <!-- type="qdebug" message="cleanup test3 data1" -->
   </testcase>
   <testcase name="test3(data2)" classname="tst_Subtest" time="@TEST_DURATION@">
     <!-- type="qdebug" message="init test3 data2" -->
     <!-- type="qdebug" message="test2 test3 data2" -->
-    <failure type="fail" message="Compared values are not the same
-   Actual   (str)              : &quot;hello2&quot;
-   Expected (QString(&quot;hello0&quot;)): &quot;hello0&quot;"/>
+    <failure type="fail" message="Compared values are not the same">
+      <![CDATA[   Actual   (str)              : "hello2"
+   Expected (QString("hello0")): "hello0"]]>
+    </failure>
     <!-- type="qdebug" message="cleanup test3 data2" -->
   </testcase>
   <testcase name="cleanupTestCase" classname="tst_Subtest" time="@TEST_DURATION@">

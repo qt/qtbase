@@ -258,7 +258,20 @@ void QJUnitTestLogger::addIncident(IncidentTypes type, const char *description,
     if (type == QAbstractTestLogger::Fail || type == QAbstractTestLogger::XPass) {
         QTestElement *failureElement = new QTestElement(QTest::LET_Failure);
         failureElement->addAttribute(QTest::AI_Type, typeBuf);
-        failureElement->addAttribute(QTest::AI_Message, description);
+
+        // Assume the first line is the message, and the remainder are details
+        QString descriptionString = QString::fromUtf8(description);
+        QString message = descriptionString.section(QLatin1Char('\n'), 0, 0);
+        QString details = descriptionString.section(QLatin1Char('\n'), 1);
+
+        failureElement->addAttribute(QTest::AI_Message, message.toUtf8().constData());
+
+        if (!details.isEmpty()) {
+            auto messageElement = new QTestElement(QTest::LET_Message);
+            messageElement->addAttribute(QTest::AI_Message, details.toUtf8().constData());
+            failureElement->addLogElement(messageElement);
+        }
+
         currentLogElement->addLogElement(failureElement);
     }
 

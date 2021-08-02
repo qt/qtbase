@@ -11,29 +11,34 @@
     <!-- type="info" message="Next test should fail" -->
     <!-- type="info" message="Next test should fail" -->
     <!-- type="info" message="Next test should fail" -->
-    <failure type="fail" message="Compared values are not the same
-   Actual   (a): &quot;BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB&quot;...
-   Expected (b): &quot;AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&quot;..."/>
+    <failure type="fail" message="Compared values are not the same">
+      <![CDATA[   Actual   (a): "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"...
+   Expected (b): "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"...]]>
+    </failure>
   </testcase>
   <testcase name="failByteArray" classname="tst_StrCmp" time="@TEST_DURATION@">
-    <failure type="fail" message="Compared values are not the same
-   Actual   (QByteArray(&quot;abc&quot;)): &quot;abc&quot;
-   Expected (QByteArray(&quot;cba&quot;)): &quot;cba&quot;"/>
+    <failure type="fail" message="Compared values are not the same">
+      <![CDATA[   Actual   (QByteArray("abc")): "abc"
+   Expected (QByteArray("cba")): "cba"]]>
+    </failure>
   </testcase>
   <testcase name="failByteArrayNull" classname="tst_StrCmp" time="@TEST_DURATION@">
-    <failure type="fail" message="Compared values are not the same
-   Actual   (QByteArray(&quot;foo&quot;)): &quot;foo&quot;
-   Expected (QByteArray())     : &quot;&quot;"/>
+    <failure type="fail" message="Compared values are not the same">
+      <![CDATA[   Actual   (QByteArray("foo")): "foo"
+   Expected (QByteArray())     : ""]]>
+    </failure>
   </testcase>
   <testcase name="failByteArrayEmpty" classname="tst_StrCmp" time="@TEST_DURATION@">
-    <failure type="fail" message="Compared values are not the same
-   Actual   (QByteArray(&quot;&quot;))   : &quot;&quot;
-   Expected (QByteArray(&quot;foo&quot;)): &quot;foo&quot;"/>
+    <failure type="fail" message="Compared values are not the same">
+      <![CDATA[   Actual   (QByteArray(""))   : ""
+   Expected (QByteArray("foo")): "foo"]]>
+    </failure>
   </testcase>
   <testcase name="failByteArraySingleChars" classname="tst_StrCmp" time="@TEST_DURATION@">
-    <failure type="fail" message="Compared values are not the same
-   Actual   (QByteArray(&quot;6&quot;)): &quot;6&quot;
-   Expected (QByteArray(&quot;7&quot;)): &quot;7&quot;"/>
+    <failure type="fail" message="Compared values are not the same">
+      <![CDATA[   Actual   (QByteArray("6")): "6"
+   Expected (QByteArray("7")): "7"]]>
+    </failure>
   </testcase>
   <testcase name="cleanupTestCase" classname="tst_StrCmp" time="@TEST_DURATION@"/>
   <system-out>

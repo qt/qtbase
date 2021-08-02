@@ -8,14 +8,16 @@
   <testcase name="initTestCase" classname="tst_TupleDiagnostics" time="@TEST_DURATION@"/>
   <testcase name="testEmptyTuple" classname="tst_TupleDiagnostics" time="@TEST_DURATION@"/>
   <testcase name="testSimpleTuple" classname="tst_TupleDiagnostics" time="@TEST_DURATION@">
-    <failure type="fail" message="Compared values are not the same
-   Actual   (std::tuple&lt;int&gt;{1}): std::tuple(1)
-   Expected (std::tuple&lt;int&gt;{2}): std::tuple(2)"/>
+    <failure type="fail" message="Compared values are not the same">
+      <![CDATA[   Actual   (std::tuple<int>{1}): std::tuple(1)
+   Expected (std::tuple<int>{2}): std::tuple(2)]]>
+    </failure>
   </testcase>
   <testcase name="testTuple" classname="tst_TupleDiagnostics" time="@TEST_DURATION@">
-    <failure type="fail" message="Compared values are not the same
-   Actual   (tuple1): std::tuple(42, &apos;Y&apos;, &quot;tuple1&quot;)
-   Expected (tuple2): std::tuple(42, &apos;Y&apos;, &quot;tuple2&quot;)"/>
+    <failure type="fail" message="Compared values are not the same">
+      <![CDATA[   Actual   (tuple1): std::tuple(42, 'Y', "tuple1")
+   Expected (tuple2): std::tuple(42, 'Y', "tuple2")]]>
+    </failure>
   </testcase>
   <testcase name="cleanupTestCase" classname="tst_TupleDiagnostics" time="@TEST_DURATION@"/>
   <system-out/>

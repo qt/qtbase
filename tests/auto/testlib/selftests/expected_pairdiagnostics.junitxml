@@ -7,14 +7,16 @@
   </properties>
   <testcase name="initTestCase" classname="tst_PairDiagnostics" time="@TEST_DURATION@"/>
   <testcase name="testQPair" classname="tst_PairDiagnostics" time="@TEST_DURATION@">
-    <failure type="fail" message="Compared values are not the same
-   Actual   (pair1): &quot;std::pair(1,1)&quot;
-   Expected (pair2): &quot;std::pair(1,2)&quot;"/>
+    <failure type="fail" message="Compared values are not the same">
+      <![CDATA[   Actual   (pair1): "std::pair(1,1)"
+   Expected (pair2): "std::pair(1,2)"]]>
+    </failure>
   </testcase>
   <testcase name="testStdPair" classname="tst_PairDiagnostics" time="@TEST_DURATION@">
-    <failure type="fail" message="Compared values are not the same
-   Actual   (pair1): &quot;std::pair(1,1)&quot;
-   Expected (pair2): &quot;std::pair(1,2)&quot;"/>
+    <failure type="fail" message="Compared values are not the same">
+      <![CDATA[   Actual   (pair1): "std::pair(1,1)"
+   Expected (pair2): "std::pair(1,2)"]]>
+    </failure>
   </testcase>
   <testcase name="cleanupTestCase" classname="tst_PairDiagnostics" time="@TEST_DURATION@"/>
   <system-out/>
