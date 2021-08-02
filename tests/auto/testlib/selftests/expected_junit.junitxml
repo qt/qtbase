@@ -11,9 +11,10 @@
   </testcase>
   <testcase name="testFunc2" classname="tst_JUnit" time="@TEST_DURATION@">
     <!-- type="qdebug" message="a qDebug() call with comment&#x002D;ending stuff &#x002D;&#x002D;&gt;" -->
-    <failure type="fail" message="Compared values are not the same
-   Actual   (2): 2
-   Expected (3): 3"/>
+    <failure type="fail" message="Compared values are not the same">
+      <![CDATA[   Actual   (2): 2
+   Expected (3): 3]]>
+    </failure>
   </testcase>
   <testcase name="testFunc3" classname="tst_JUnit" time="@TEST_DURATION@">
     <skipped message="skipping this function!"/>

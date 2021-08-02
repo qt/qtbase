@@ -7,228 +7,268 @@
   </properties>
   <testcase name="initTestCase" classname="tst_Cmptest" time="@TEST_DURATION@"/>
   <testcase name="compare_unregistered_enums" classname="tst_Cmptest" time="@TEST_DURATION@">
-    <failure type="fail" message="Compared values are not the same
-   Actual   (MyUnregisteredEnumValue1): 0
-   Expected (MyUnregisteredEnumValue2): 1"/>
+    <failure type="fail" message="Compared values are not the same">
+      <![CDATA[   Actual   (MyUnregisteredEnumValue1): 0
+   Expected (MyUnregisteredEnumValue2): 1]]>
+    </failure>
   </testcase>
   <testcase name="compare_registered_enums" classname="tst_Cmptest" time="@TEST_DURATION@">
-    <failure type="fail" message="Compared values are not the same
-   Actual   (Qt::Monday): Monday
-   Expected (Qt::Sunday): Sunday"/>
+    <failure type="fail" message="Compared values are not the same">
+      <![CDATA[   Actual   (Qt::Monday): Monday
+   Expected (Qt::Sunday): Sunday]]>
+    </failure>
   </testcase>
   <testcase name="compare_class_enums" classname="tst_Cmptest" time="@TEST_DURATION@">
-    <failure type="fail" message="Compared values are not the same
-   Actual   (MyClassEnum::MyClassEnumValue1): MyClassEnumValue1
-   Expected (MyClassEnum::MyClassEnumValue2): MyClassEnumValue2"/>
+    <failure type="fail" message="Compared values are not the same">
+      <![CDATA[   Actual   (MyClassEnum::MyClassEnumValue1): MyClassEnumValue1
+   Expected (MyClassEnum::MyClassEnumValue2): MyClassEnumValue2]]>
+    </failure>
   </testcase>
   <testcase name="test_windowflags(pass)" classname="tst_Cmptest" time="@TEST_DURATION@"/>
   <testcase name="test_windowflags(fail1)" classname="tst_Cmptest" time="@TEST_DURATION@">
-    <failure type="fail" message="Compared values are not the same
-   Actual   (actualWindowFlags)  : Window|WindowSystemMenuHint|WindowStaysOnBottomHint
-   Expected (expectedWindowFlags): Window|FramelessWindowHint|WindowSystemMenuHint|WindowStaysOnBottomHint"/>
+    <failure type="fail" message="Compared values are not the same">
+      <![CDATA[   Actual   (actualWindowFlags)  : Window|WindowSystemMenuHint|WindowStaysOnBottomHint
+   Expected (expectedWindowFlags): Window|FramelessWindowHint|WindowSystemMenuHint|WindowStaysOnBottomHint]]>
+    </failure>
   </testcase>
   <testcase name="test_windowflags(fail2)" classname="tst_Cmptest" time="@TEST_DURATION@">
-    <failure type="fail" message="Compared values are not the same
-   Actual   (actualWindowFlags)  : Window
-   Expected (expectedWindowFlags): Window|FramelessWindowHint"/>
+    <failure type="fail" message="Compared values are not the same">
+      <![CDATA[   Actual   (actualWindowFlags)  : Window
+   Expected (expectedWindowFlags): Window|FramelessWindowHint]]>
+    </failure>
   </testcase>
   <testcase name="test_unregistered_flags(pass)" classname="tst_Cmptest" time="@TEST_DURATION@"/>
   <testcase name="test_unregistered_flags(fail1)" classname="tst_Cmptest" time="@TEST_DURATION@">
-    <failure type="fail" message="Compared values are not the same
-   Actual   (actualFlags)  : 0x3
-   Expected (expectedFlags): 0x5"/>
+    <failure type="fail" message="Compared values are not the same">
+      <![CDATA[   Actual   (actualFlags)  : 0x3
+   Expected (expectedFlags): 0x5]]>
+    </failure>
   </testcase>
   <testcase name="test_unregistered_flags(fail2)" classname="tst_Cmptest" time="@TEST_DURATION@">
-    <failure type="fail" message="Compared values are not the same
-   Actual   (actualFlags)  : 0x1
-   Expected (expectedFlags): 0x5"/>
+    <failure type="fail" message="Compared values are not the same">
+      <![CDATA[   Actual   (actualFlags)  : 0x1
+   Expected (expectedFlags): 0x5]]>
+    </failure>
   </testcase>
   <testcase name="compare_boolfuncs" classname="tst_Cmptest" time="@TEST_DURATION@"/>
   <testcase name="compare_to_nullptr" classname="tst_Cmptest" time="@TEST_DURATION@"/>
   <testcase name="compare_pointerfuncs" classname="tst_Cmptest" time="@TEST_DURATION@"/>
   <testcase name="compare_tostring(int, string)" classname="tst_Cmptest" time="@TEST_DURATION@">
-    <failure type="fail" message="Compared values are not the same
-   Actual   (actual)  : QVariant(int,123)
-   Expected (expected): QVariant(QString,hi)"/>
+    <failure type="fail" message="Compared values are not the same">
+      <![CDATA[   Actual   (actual)  : QVariant(int,123)
+   Expected (expected): QVariant(QString,hi)]]>
+    </failure>
   </testcase>
   <testcase name="compare_tostring(both invalid)" classname="tst_Cmptest" time="@TEST_DURATION@"/>
   <testcase name="compare_tostring(null hash, invalid)" classname="tst_Cmptest" time="@TEST_DURATION@">
-    <failure type="fail" message="Compared values are not the same
-   Actual   (actual)  : QVariant(QVariantHash)
-   Expected (expected): QVariant()"/>
+    <failure type="fail" message="Compared values are not the same">
+      <![CDATA[   Actual   (actual)  : QVariant(QVariantHash)
+   Expected (expected): QVariant()]]>
+    </failure>
   </testcase>
   <testcase name="compare_tostring(string, null user type)" classname="tst_Cmptest" time="@TEST_DURATION@">
-    <failure type="fail" message="Compared values are not the same
-   Actual   (actual)  : QVariant(QString,A simple string)
-   Expected (expected): QVariant(PhonyClass)"/>
+    <failure type="fail" message="Compared values are not the same">
+      <![CDATA[   Actual   (actual)  : QVariant(QString,A simple string)
+   Expected (expected): QVariant(PhonyClass)]]>
+    </failure>
   </testcase>
   <testcase name="compare_tostring(both non&#x002D;null user type)" classname="tst_Cmptest" time="@TEST_DURATION@">
-    <failure type="fail" message="Compared values are not the same
-   Actual   (actual)  : QVariant(PhonyClass,&lt;value not representable as string&gt;)
-   Expected (expected): QVariant(PhonyClass,&lt;value not representable as string&gt;)"/>
+    <failure type="fail" message="Compared values are not the same">
+      <![CDATA[   Actual   (actual)  : QVariant(PhonyClass,<value not representable as string>)
+   Expected (expected): QVariant(PhonyClass,<value not representable as string>)]]>
+    </failure>
   </testcase>
   <testcase name="compareQObjects" classname="tst_Cmptest" time="@TEST_DURATION@">
-    <failure type="fail" message="Compared QObject pointers are not the same
-   Actual   (&amp;object1): QObject/&quot;object1&quot;
-   Expected (&amp;object2): QObject/&quot;object2&quot;"/>
+    <failure type="fail" message="Compared QObject pointers are not the same">
+      <![CDATA[   Actual   (&object1): QObject/"object1"
+   Expected (&object2): QObject/"object2"]]>
+    </failure>
   </testcase>
   <testcase name="compareQStringLists(empty lists)" classname="tst_Cmptest" time="@TEST_DURATION@"/>
   <testcase name="compareQStringLists(equal lists)" classname="tst_Cmptest" time="@TEST_DURATION@"/>
   <testcase name="compareQStringLists(last item different)" classname="tst_Cmptest" time="@TEST_DURATION@">
-    <failure type="fail" message="Compared lists differ at index 2.
-   Actual   (opA): &quot;string3&quot;
-   Expected (opB): &quot;DIFFERS&quot;"/>
+    <failure type="fail" message="Compared lists differ at index 2.">
+      <![CDATA[   Actual   (opA): "string3"
+   Expected (opB): "DIFFERS"]]>
+    </failure>
   </testcase>
   <testcase name="compareQStringLists(second&#x002D;last item different)" classname="tst_Cmptest" time="@TEST_DURATION@">
-    <failure type="fail" message="Compared lists differ at index 2.
-   Actual   (opA): &quot;string3&quot;
-   Expected (opB): &quot;DIFFERS&quot;"/>
+    <failure type="fail" message="Compared lists differ at index 2.">
+      <![CDATA[   Actual   (opA): "string3"
+   Expected (opB): "DIFFERS"]]>
+    </failure>
   </testcase>
   <testcase name="compareQStringLists(prefix)" classname="tst_Cmptest" time="@TEST_DURATION@">
-    <failure type="fail" message="Compared lists have different sizes.
-   Actual   (opA) size: 2
-   Expected (opB) size: 1"/>
+    <failure type="fail" message="Compared lists have different sizes.">
+      <![CDATA[   Actual   (opA) size: 2
+   Expected (opB) size: 1]]>
+    </failure>
   </testcase>
   <testcase name="compareQStringLists(short list second)" classname="tst_Cmptest" time="@TEST_DURATION@">
-    <failure type="fail" message="Compared lists have different sizes.
-   Actual   (opA) size: 12
-   Expected (opB) size: 1"/>
+    <failure type="fail" message="Compared lists have different sizes.">
+      <![CDATA[   Actual   (opA) size: 12
+   Expected (opB) size: 1]]>
+    </failure>
   </testcase>
   <testcase name="compareQStringLists(short list first)" classname="tst_Cmptest" time="@TEST_DURATION@">
-    <failure type="fail" message="Compared lists have different sizes.
-   Actual   (opA) size: 1
-   Expected (opB) size: 12"/>
+    <failure type="fail" message="Compared lists have different sizes.">
+      <![CDATA[   Actual   (opA) size: 1
+   Expected (opB) size: 12]]>
+    </failure>
   </testcase>
   <testcase name="compareQListInt(match)" classname="tst_Cmptest" time="@TEST_DURATION@"/>
   <testcase name="compareQListInt(size mismatch)" classname="tst_Cmptest" time="@TEST_DURATION@">
-    <failure type="fail" message="Compared lists have different sizes.
-   Actual   (actual) size: 2
-   Expected (expected) size: 3"/>
+    <failure type="fail" message="Compared lists have different sizes.">
+      <![CDATA[   Actual   (actual) size: 2
+   Expected (expected) size: 3]]>
+    </failure>
   </testcase>
   <testcase name="compareQListInt(value mismatch)" classname="tst_Cmptest" time="@TEST_DURATION@">
-    <failure type="fail" message="Compared lists differ at index 2.
-   Actual   (actual): 4
-   Expected (expected): 3"/>
+    <failure type="fail" message="Compared lists differ at index 2.">
+      <![CDATA[   Actual   (actual): 4
+   Expected (expected): 3]]>
+    </failure>
   </testcase>
   <testcase name="compareQListIntToArray(match)" classname="tst_Cmptest" time="@TEST_DURATION@"/>
   <testcase name="compareQListIntToArray(size mismatch)" classname="tst_Cmptest" time="@TEST_DURATION@">
-    <failure type="fail" message="Compared lists have different sizes.
-   Actual   (actual) size: 2
-   Expected (expected) size: 3"/>
+    <failure type="fail" message="Compared lists have different sizes.">
+      <![CDATA[   Actual   (actual) size: 2
+   Expected (expected) size: 3]]>
+    </failure>
   </testcase>
   <testcase name="compareQListIntToArray(value mismatch)" classname="tst_Cmptest" time="@TEST_DURATION@">
-    <failure type="fail" message="Compared lists differ at index 2.
-   Actual   (actual): 4
-   Expected (expected): 3"/>
+    <failure type="fail" message="Compared lists differ at index 2.">
+      <![CDATA[   Actual   (actual): 4
+   Expected (expected): 3]]>
+    </failure>
   </testcase>
   <testcase name="compareQListIntToInitializerList(match)" classname="tst_Cmptest" time="@TEST_DURATION@"/>
   <testcase name="compareQListIntToInitializerList(size mismatch)" classname="tst_Cmptest" time="@TEST_DURATION@">
-    <failure type="fail" message="Compared lists have different sizes.
-   Actual   (actual) size: 2
-   Expected (ARG({1, 2, 3})) size: 3"/>
+    <failure type="fail" message="Compared lists have different sizes.">
+      <![CDATA[   Actual   (actual) size: 2
+   Expected (ARG({1, 2, 3})) size: 3]]>
+    </failure>
   </testcase>
   <testcase name="compareQListIntToInitializerList(value mismatch)" classname="tst_Cmptest" time="@TEST_DURATION@">
-    <failure type="fail" message="Compared lists differ at index 2.
-   Actual   (actual): 4
-   Expected (ARG({1, 2, 3})): 3"/>
+    <failure type="fail" message="Compared lists differ at index 2.">
+      <![CDATA[   Actual   (actual): 4
+   Expected (ARG({1, 2, 3})): 3]]>
+    </failure>
   </testcase>
   <testcase name="compareQListDouble" classname="tst_Cmptest" time="@TEST_DURATION@">
-    <failure type="fail" message="Compared lists differ at index 0.
-   Actual   (double1): 1.5
-   Expected (double2): 1"/>
+    <failure type="fail" message="Compared lists differ at index 0.">
+      <![CDATA[   Actual   (double1): 1.5
+   Expected (double2): 1]]>
+    </failure>
   </testcase>
   <testcase name="compareQColor(Qt::yellow vs &quot;yellow&quot;)" classname="tst_Cmptest" time="@TEST_DURATION@"/>
   <testcase name="compareQColor(Qt::yellow vs Qt::green)" classname="tst_Cmptest" time="@TEST_DURATION@">
-    <failure type="fail" message="Compared values are not the same
-   Actual   (colorA): #ffffff00
-   Expected (colorB): #ff00ff00"/>
+    <failure type="fail" message="Compared values are not the same">
+      <![CDATA[   Actual   (colorA): #ffffff00
+   Expected (colorB): #ff00ff00]]>
+    </failure>
   </testcase>
   <testcase name="compareQColor(0x88ff0000 vs 0xffff0000)" classname="tst_Cmptest" time="@TEST_DURATION@">
-    <failure type="fail" message="Compared values are not the same
-   Actual   (colorA): #88ff0000
-   Expected (colorB): #ffff0000"/>
+    <failure type="fail" message="Compared values are not the same">
+      <![CDATA[   Actual   (colorA): #88ff0000
+   Expected (colorB): #ffff0000]]>
+    </failure>
   </testcase>
   <testcase name="compareQPixmaps(both null)" classname="tst_Cmptest" time="@TEST_DURATION@"/>
   <testcase name="compareQPixmaps(one null)" classname="tst_Cmptest" time="@TEST_DURATION@">
-    <failure type="fail" message="Compared QPixmaps differ.
-   Actual   (opA).isNull(): 1
-   Expected (opB).isNull(): 0"/>
+    <failure type="fail" message="Compared QPixmaps differ.">
+      <![CDATA[   Actual   (opA).isNull(): 1
+   Expected (opB).isNull(): 0]]>
+    </failure>
   </testcase>
   <testcase name="compareQPixmaps(other null)" classname="tst_Cmptest" time="@TEST_DURATION@">
-    <failure type="fail" message="Compared QPixmaps differ.
-   Actual   (opA).isNull(): 0
-   Expected (opB).isNull(): 1"/>
+    <failure type="fail" message="Compared QPixmaps differ.">
+      <![CDATA[   Actual   (opA).isNull(): 0
+   Expected (opB).isNull(): 1]]>
+    </failure>
   </testcase>
   <testcase name="compareQPixmaps(equal)" classname="tst_Cmptest" time="@TEST_DURATION@"/>
   <testcase name="compareQPixmaps(different size)" classname="tst_Cmptest" time="@TEST_DURATION@">
-    <failure type="fail" message="Compared QPixmaps differ in size.
-   Actual   (opA): 11x20
-   Expected (opB): 20x20"/>
+    <failure type="fail" message="Compared QPixmaps differ in size.">
+      <![CDATA[   Actual   (opA): 11x20
+   Expected (opB): 20x20]]>
+    </failure>
   </testcase>
   <testcase name="compareQPixmaps(different pixels)" classname="tst_Cmptest" time="@TEST_DURATION@">
     <failure type="fail" message="Compared values are not the same"/>
   </testcase>
   <testcase name="compareQPixmaps(different dpr)" classname="tst_Cmptest" time="@TEST_DURATION@">
-    <failure type="fail" message="Compared QPixmaps differ in device pixel ratio.
-   Actual   (opA): 1
-   Expected (opB): 2"/>
+    <failure type="fail" message="Compared QPixmaps differ in device pixel ratio.">
+      <![CDATA[   Actual   (opA): 1
+   Expected (opB): 2]]>
+    </failure>
   </testcase>
   <testcase name="compareQImages(both null)" classname="tst_Cmptest" time="@TEST_DURATION@"/>
   <testcase name="compareQImages(one null)" classname="tst_Cmptest" time="@TEST_DURATION@">
-    <failure type="fail" message="Compared QImages differ.
-   Actual   (opA).isNull(): 1
-   Expected (opB).isNull(): 0"/>
+    <failure type="fail" message="Compared QImages differ.">
+      <![CDATA[   Actual   (opA).isNull(): 1
+   Expected (opB).isNull(): 0]]>
+    </failure>
   </testcase>
   <testcase name="compareQImages(other null)" classname="tst_Cmptest" time="@TEST_DURATION@">
-    <failure type="fail" message="Compared QImages differ.
-   Actual   (opA).isNull(): 0
-   Expected (opB).isNull(): 1"/>
+    <failure type="fail" message="Compared QImages differ.">
+      <![CDATA[   Actual   (opA).isNull(): 0
+   Expected (opB).isNull(): 1]]>
+    </failure>
   </testcase>
   <testcase name="compareQImages(equal)" classname="tst_Cmptest" time="@TEST_DURATION@"/>
   <testcase name="compareQImages(different size)" classname="tst_Cmptest" time="@TEST_DURATION@">
-    <failure type="fail" message="Compared QImages differ in size.
-   Actual   (opA): 11x20
-   Expected (opB): 20x20"/>
+    <failure type="fail" message="Compared QImages differ in size.">
+      <![CDATA[   Actual   (opA): 11x20
+   Expected (opB): 20x20]]>
+    </failure>
   </testcase>
   <testcase name="compareQImages(different format)" classname="tst_Cmptest" time="@TEST_DURATION@">
-    <failure type="fail" message="Compared QImages differ in format.
-   Actual   (opA): 6
-   Expected (opB): 3"/>
+    <failure type="fail" message="Compared QImages differ in format.">
+      <![CDATA[   Actual   (opA): 6
+   Expected (opB): 3]]>
+    </failure>
   </testcase>
   <testcase name="compareQImages(different pixels)" classname="tst_Cmptest" time="@TEST_DURATION@">
     <failure type="fail" message="Compared values are not the same"/>
   </testcase>
   <testcase name="compareQImages(different dpr)" classname="tst_Cmptest" time="@TEST_DURATION@">
-    <failure type="fail" message="Compared QImages differ in device pixel ratio.
-   Actual   (opA): 1
-   Expected (opB): 2"/>
+    <failure type="fail" message="Compared QImages differ in device pixel ratio.">
+      <![CDATA[   Actual   (opA): 1
+   Expected (opB): 2]]>
+    </failure>
   </testcase>
   <testcase name="compareQRegion(equal&#x002D;empty)" classname="tst_Cmptest" time="@TEST_DURATION@"/>
   <testcase name="compareQRegion(1&#x002D;empty)" classname="tst_Cmptest" time="@TEST_DURATION@">
-    <failure type="fail" message="Compared values are not the same
-   Actual   (rA): QRegion(200x50+10+10)
-   Expected (rB): QRegion(null)"/>
+    <failure type="fail" message="Compared values are not the same">
+      <![CDATA[   Actual   (rA): QRegion(200x50+10+10)
+   Expected (rB): QRegion(null)]]>
+    </failure>
   </testcase>
   <testcase name="compareQRegion(equal)" classname="tst_Cmptest" time="@TEST_DURATION@"/>
   <testcase name="compareQRegion(different lists)" classname="tst_Cmptest" time="@TEST_DURATION@">
-    <failure type="fail" message="Compared values are not the same
-   Actual   (rA): QRegion(200x50+10+10)
-   Expected (rB): QRegion(2 rectangles, 50x200+100+200, 200x50+10+10)"/>
+    <failure type="fail" message="Compared values are not the same">
+      <![CDATA[   Actual   (rA): QRegion(200x50+10+10)
+   Expected (rB): QRegion(2 rectangles, 50x200+100+200, 200x50+10+10)]]>
+    </failure>
   </testcase>
   <testcase name="compareQVector2D" classname="tst_Cmptest" time="@TEST_DURATION@">
-    <failure type="fail" message="Compared values are not the same
-   Actual   (v2a): QVector2D(1, 2)
-   Expected (v2b): QVector2D(1, 3)"/>
+    <failure type="fail" message="Compared values are not the same">
+      <![CDATA[   Actual   (v2a): QVector2D(1, 2)
+   Expected (v2b): QVector2D(1, 3)]]>
+    </failure>
   </testcase>
   <testcase name="compareQVector3D" classname="tst_Cmptest" time="@TEST_DURATION@">
-    <failure type="fail" message="Compared values are not the same
-   Actual   (v3a): QVector3D(1, 2, 3)
-   Expected (v3b): QVector3D(1, 3, 3)"/>
+    <failure type="fail" message="Compared values are not the same">
+      <![CDATA[   Actual   (v3a): QVector3D(1, 2, 3)
+   Expected (v3b): QVector3D(1, 3, 3)]]>
+    </failure>
   </testcase>
   <testcase name="compareQVector4D" classname="tst_Cmptest" time="@TEST_DURATION@">
-    <failure type="fail" message="Compared values are not the same
-   Actual   (v4a): QVector4D(1, 2, 3, 4)
-   Expected (v4b): QVector4D(1, 3, 3, 4)"/>
+    <failure type="fail" message="Compared values are not the same">
+      <![CDATA[   Actual   (v4a): QVector4D(1, 2, 3, 4)
+   Expected (v4b): QVector4D(1, 3, 3, 4)]]>
+    </failure>
   </testcase>
   <testcase name="verify" classname="tst_Cmptest" time="@TEST_DURATION@">
     <failure type="fail" message="&apos;opaqueFunc() &lt; 2&apos; returned FALSE. ()"/>
