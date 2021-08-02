@@ -7795,11 +7795,9 @@ static QString replaceArgEscapes(QStringView s, const ArgEscapeData &d, int fiel
 
         const QChar *escape_start = c++;
 
-        bool locale_arg = false;
-        if (c->unicode() == 'L') {
-            locale_arg = true;
+        const bool localize = c->unicode() == 'L';
+        if (localize)
             ++c;
-        }
 
         int escape = c->digitValue();
         if (escape != -1) {
@@ -7820,7 +7818,7 @@ static QString replaceArgEscapes(QStringView s, const ArgEscapeData &d, int fiel
             rc += escape_start - text_start;
 
             uint pad_chars;
-            if (locale_arg)
+            if (localize)
                 pad_chars = qMax(abs_field_width, larg.length()) - larg.length();
             else
                 pad_chars = qMax(abs_field_width, arg.length()) - arg.length();
@@ -7830,7 +7828,7 @@ static QString replaceArgEscapes(QStringView s, const ArgEscapeData &d, int fiel
                     *rc++ = fillChar;
             }
 
-            if (locale_arg) {
+            if (localize) {
                 memcpy(rc, larg.data(), larg.length()*sizeof(QChar));
                 rc += larg.length();
             }
