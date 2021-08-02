@@ -94,7 +94,8 @@ struct Properties {
     ushort graphemeBreakClass  : 5; /* 5 used */
     ushort wordBreakClass      : 5; /* 5 used */
     ushort lineBreakClass      : 6; /* 6 used */
-    ushort sentenceBreakClass  : 8; /* 4 used */
+    ushort sentenceBreakClass  : 4; /* 4 used */
+    ushort idnaStatus          : 4; /* 3 used */
     ushort script              : 8;
 };
 
@@ -186,6 +187,14 @@ enum LineBreakClass {
     NumLineBreakClasses
 };
 
+enum class IdnaStatus : unsigned int {
+    Disallowed,
+    Valid,
+    Ignored,
+    Mapped,
+    Deviation
+};
+
 Q_CORE_EXPORT GraphemeBreakClass QT_FASTCALL graphemeBreakClass(char32_t ucs4) noexcept;
 inline GraphemeBreakClass graphemeBreakClass(QChar ch) noexcept
 { return graphemeBreakClass(ch.unicode()); }
@@ -201,6 +210,14 @@ inline SentenceBreakClass sentenceBreakClass(QChar ch) noexcept
 Q_CORE_EXPORT LineBreakClass QT_FASTCALL lineBreakClass(char32_t ucs4) noexcept;
 inline LineBreakClass lineBreakClass(QChar ch) noexcept
 { return lineBreakClass(ch.unicode()); }
+
+Q_CORE_EXPORT IdnaStatus QT_FASTCALL idnaStatus(char32_t ucs4) noexcept;
+inline IdnaStatus idnaStatus(QChar ch) noexcept
+{ return idnaStatus(ch.unicode()); }
+
+Q_CORE_EXPORT const char16_t * QT_FASTCALL idnaMapping(char32_t usc4) noexcept;
+inline const char16_t *idnaMapping(QChar ch) noexcept
+{ return idnaMapping(ch.unicode()); }
 
 } // namespace QUnicodeTables
 
