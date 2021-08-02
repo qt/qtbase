@@ -188,7 +188,6 @@ function(qt_set_common_target_properties target)
             OBJCXX_VISIBILITY_PRESET hidden
             VISIBILITY_INLINES_HIDDEN 1)
     endif()
-    _qt_internal_set_up_static_runtime_library("${target}")
     qt_internal_set_compile_pdb_names("${target}")
 endfunction()
 

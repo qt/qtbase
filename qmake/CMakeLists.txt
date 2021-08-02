@@ -5,7 +5,7 @@
 #####################################################################
 
 # The common object library, that should be available regardless of the presence of qmake.
-add_library(QtLibraryInfo OBJECT
+qt_add_library(QtLibraryInfo OBJECT
     library/proitems.cpp library/proitems.h
     library/qmake_global.h
     property.cpp property.h
@@ -42,7 +42,6 @@ target_compile_definitions(QtLibraryInfo PUBLIC
     QT_TARGET_MKSPEC="${QT_QMAKE_TARGET_MKSPEC}"
     QT_HOST_DATADIR="${hostdatadir}"
 )
-qt_set_common_target_properties(QtLibraryInfo)
 
 # qmake is out of any module, so we manually evaluate the required features.
 include("${CMAKE_CURRENT_SOURCE_DIR}/configure.cmake")
