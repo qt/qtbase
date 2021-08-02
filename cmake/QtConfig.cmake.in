@@ -33,12 +33,6 @@ if(NOT "${QT_HOST_PATH}" STREQUAL "")
                  NO_DEFAULT_PATH)
 endif()
 
-# if (NOT @INSTALL_CMAKE_NAMESPACE@_FIND_COMPONENTS)
-#     set(@INSTALL_CMAKE_NAMESPACE@_NOT_FOUND_MESSAGE "The Qt package requires at least one component")
-#     set(@INSTALL_CMAKE_NAMESPACE@_FOUND False)
-#     return()
-# endif()
-
 get_filename_component(_qt_import_prefix "${CMAKE_CURRENT_LIST_FILE}" PATH)
 get_filename_component(_qt_import_prefix "${_qt_import_prefix}" REALPATH)
 list(APPEND CMAKE_MODULE_PATH "${_qt_import_prefix}")
@@ -112,21 +106,50 @@ foreach(module ${@INSTALL_CMAKE_NAMESPACE@_FIND_COMPONENTS})
         ${__qt_use_no_default_path_for_qt_packages}
     )
     if (NOT @INSTALL_CMAKE_NAMESPACE@${module}_FOUND)
-        string(CONFIGURE ${_qt5_module_location_template} _expected_module_location @ONLY)
+        set(_qt_expected_component_config_path
+            "${_qt_cmake_dir}/@INSTALL_CMAKE_NAMESPACE@${module}/@INSTALL_CMAKE_NAMESPACE@${module}Config.cmake")
+        get_filename_component(
+            _qt_expected_component_dir_path "${_qt_expected_component_config_path}" DIRECTORY)
 
-        if (@INSTALL_CMAKE_NAMESPACE@_FIND_REQUIRED_${module})
-            set(_Qt_NOTFOUND_MESSAGE "${_Qt_NOTFOUND_MESSAGE}Failed to find Qt component \"${module}\" config file at                                       \"${_expected_module_location}\"\n")
-        elseif(NOT @INSTALL_CMAKE_NAMESPACE@_FIND_QUIETLY)
-            message(WARNING "Failed to find Qt component \"${module}\" config file at \"${_expected_module_location}\"")
+        set(_qt_component_not_found_msg
+            "\nExpected Config file at \"${_qt_expected_component_config_path}\"")
+
+        if(EXISTS "${_qt_expected_component_config_path}")
+            string(APPEND _qt_component_not_found_msg " exists \n")
+        else()
+            string(APPEND _qt_component_not_found_msg " does NOT exist\n")
         endif()
 
-        unset(_expected_module_location)
+        set(_qt_candidate_component_dir_path "${@INSTALL_CMAKE_NAMESPACE@${module}_DIR}")
+
+        if(_qt_candidate_component_dir_path AND
+            NOT _qt_expected_component_dir_path STREQUAL _qt_candidate_component_dir_path)
+            string(APPEND _qt_component_not_found_msg
+               "\n@INSTALL_CMAKE_NAMESPACE@${module}_DIR was computed by CMake or specified on the "
+               "command line by the user: \"${_qt_candidate_component_dir_path}\" "
+               "\nThe expected and computed paths are different, which might be the reason for "
+               "the package not to be found.")
+        endif()
+
+        if(@INSTALL_CMAKE_NAMESPACE@_FIND_REQUIRED_${module})
+            set(_Qt_NOTFOUND_MESSAGE
+                "${_Qt_NOTFOUND_MESSAGE}Failed to find Qt component \"${module}\". ${_qt_component_not_found_msg}")
+        elseif(NOT @INSTALL_CMAKE_NAMESPACE@_FIND_QUIETLY)
+            message(WARNING
+                "Failed to find Qt component \"${module}\". ${_qt_component_not_found_msg}")
+        endif()
+
+        unset(_qt_expected_component_config_path)
+        unset(_qt_expected_component_dir_path)
+        unset(_qt_candidate_component_dir_path)
+        unset(_qt_component_not_found_msg)
     endif()
 endforeach()
 
-if (_Qt_NOTFOUND_MESSAGE)
+if(@INSTALL_CMAKE_NAMESPACE@_FIND_COMPONENTS AND _Qt_NOTFOUND_MESSAGE)
     set(@INSTALL_CMAKE_NAMESPACE@_NOT_FOUND_MESSAGE "${_Qt_NOTFOUND_MESSAGE}")
     set(@INSTALL_CMAKE_NAMESPACE@_FOUND False)
+    unset(_Qt_NOTFOUND_MESSAGE)
 endif()
 
 __qt_internal_defer_promote_targets_in_dir_scope_to_global()
