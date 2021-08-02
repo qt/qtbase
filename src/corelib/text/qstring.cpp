@@ -7783,9 +7783,10 @@ static QString replaceArgEscapes(QStringView s, const ArgEscapeData &d, qsizetyp
     const QChar *c = s.begin();
     const QChar *const uc_end = s.end();
     while (c != uc_end) {
-        /* We don't have to check if we run off the end of the string with c,
-           because as long as d.occurrences > 0 we KNOW there are valid escape
-           sequences. */
+        Q_ASSERT(d.occurrences > repl_cnt);
+        /* We don't have to check increments of c against uc_end because, as
+           long as d.occurrences > repl_cnt, we KNOW there are valid escape
+           sequences remaining. */
 
         const QChar *text_start = c;
 
