@@ -20,8 +20,13 @@ instructions:
 
         file=os.path.basename(sys.argv[1])
         timestamp = str(round(time.time() * 1000))
-        results_file = home + "/work/testresults/" + file +"-" + timestamp + ".xml,xml"
-        testargs = ["-o", results_file, "-o", "-,txt"]
+        results_path = home + "/work/testresults/"
+        results_base = results_path + file + "-" + timestamp
+        testargs = [
+          "-o", results_base + ".xml,xml",
+          "-o", results_base + ".junitxml,junitxml",
+          "-o", "-,txt"
+        ]
         if re.search("testlib.selftests.tst_selftests", sys.argv[1]):
             testargs = []
         exit(subprocess.call([sys.argv[1]] + testargs))
