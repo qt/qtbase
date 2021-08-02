@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite name="tst_FailFetchType" timestamp="@TEST_START_TIME@" hostname="@HOSTNAME@" tests="2" failures="1" errors="0" skipped="0" time="@TEST_DURATION@">
+<testsuite name="tst_FailFetchType" timestamp="@TEST_START_TIME@" hostname="@HOSTNAME@" tests="2" failures="0" errors="1" skipped="0" time="@TEST_DURATION@">
   <properties>
     <property name="QTestVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtVersion" value="@INSERT_QT_VERSION_HERE@"/>
@@ -7,11 +7,8 @@
   </properties>
   <testcase name="initTestCase" classname="tst_FailFetchType" time="@TEST_DURATION@"/>
   <testcase name="fetch(bool)" classname="tst_FailFetchType" time="@TEST_DURATION@">
-    <!-- type="qfatal" message="Requested type &apos;QString&apos; does not match available type &apos;bool&apos;." -->
-    <failure type="fail" message="Received a fatal error."/>
+    <error type="qfatal" message="Requested type &apos;QString&apos; does not match available type &apos;bool&apos;."/>
   </testcase>
   <system-out/>
-  <system-err>
-    <![CDATA[Requested type 'QString' does not match available type 'bool'.]]>
-  </system-err>
+  <system-err/>
 </testsuite>

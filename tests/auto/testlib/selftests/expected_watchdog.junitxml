@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite name="tst_Watchdog" timestamp="@TEST_START_TIME@" hostname="@HOSTNAME@" tests="2" failures="1" errors="0" skipped="0" time="@TEST_DURATION@">
+<testsuite name="tst_Watchdog" timestamp="@TEST_START_TIME@" hostname="@HOSTNAME@" tests="2" failures="0" errors="1" skipped="0" time="@TEST_DURATION@">
   <properties>
     <property name="QTestVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtVersion" value="@INSERT_QT_VERSION_HERE@"/>
@@ -7,11 +7,8 @@
   </properties>
   <testcase name="initTestCase" classname="tst_Watchdog" time="@TEST_DURATION@"/>
   <testcase name="delay" classname="tst_Watchdog" time="@TEST_DURATION@">
-    <!-- type="qfatal" message="Test function timed out" -->
-    <failure type="fail" message="Received a fatal error."/>
+    <error type="qfatal" message="Test function timed out"/>
   </testcase>
   <system-out/>
-  <system-err>
-    <![CDATA[Test function timed out]]>
-  </system-err>
+  <system-err/>
 </testsuite>
