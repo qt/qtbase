@@ -12,6 +12,6 @@
   </testcase>
   <system-out/>
   <system-err>
-<![CDATA[Requested type 'QString' does not match available type 'bool'.]]>
+    <![CDATA[Requested type 'QString' does not match available type 'bool'.]]>
   </system-err>
 </testsuite>

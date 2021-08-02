@@ -64,19 +64,19 @@
   <testcase name="xpassDataDrivenWithQCompare(Pass)" classname="tst_ExpectFail" time="@TEST_DURATION@"/>
   <testcase name="cleanupTestCase" classname="tst_ExpectFail" time="@TEST_DURATION@"/>
   <system-out>
-<![CDATA[begin]]>
-<![CDATA[This should xfail]]>
-<![CDATA[after]]>
-<![CDATA[begin]]>
-<![CDATA[This should xfail]]>
-<![CDATA[A string]]>
-<![CDATA[Bug 5 (The message)]]>
-<![CDATA[This test should xfail]]>
-<![CDATA[This test should xfail]]>
-<![CDATA[This test should xfail]]>
-<![CDATA[This test should xfail]]>
-<![CDATA[This test should xfail]]>
-<![CDATA[This test should xfail]]>
+    <![CDATA[begin]]>
+    <![CDATA[This should xfail]]>
+    <![CDATA[after]]>
+    <![CDATA[begin]]>
+    <![CDATA[This should xfail]]>
+    <![CDATA[A string]]>
+    <![CDATA[Bug 5 (The message)]]>
+    <![CDATA[This test should xfail]]>
+    <![CDATA[This test should xfail]]>
+    <![CDATA[This test should xfail]]>
+    <![CDATA[This test should xfail]]>
+    <![CDATA[This test should xfail]]>
+    <![CDATA[This test should xfail]]>
   </system-out>
   <system-err/>
 </testsuite>

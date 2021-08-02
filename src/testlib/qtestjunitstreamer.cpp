@@ -88,7 +88,7 @@ void QTestJUnitStreamer::formatStart(const QTestElement *element, QTestCharBuffe
         switch (element->parentElement()->elementType()) {
         case QTest::LET_SystemOutput:
         case QTest::LET_SystemError:
-            QTest::qt_asprintf(formatted, "<![CDATA[");
+            QTest::qt_asprintf(formatted, "%s<![CDATA[", indent);
             break;
         default:
             QTest::qt_asprintf(formatted, "%s<!--", indent);

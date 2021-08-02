@@ -12,6 +12,6 @@
   </testcase>
   <system-out/>
   <system-err>
-<![CDATA[QFETCH: Requested testdata 'bubu' not available, check your _data function.]]>
+    <![CDATA[QFETCH: Requested testdata 'bubu' not available, check your _data function.]]>
   </system-err>
 </testsuite>

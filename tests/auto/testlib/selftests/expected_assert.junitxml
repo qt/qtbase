@@ -13,6 +13,6 @@
   </testcase>
   <system-out/>
   <system-err>
-<![CDATA[ASSERT: "false" in file qtbase/tests/auto/testlib/selftests/assert/tst_assert.cpp, line 0]]>
+    <![CDATA[ASSERT: "false" in file qtbase/tests/auto/testlib/selftests/assert/tst_assert.cpp, line 0]]>
   </system-err>
 </testsuite>

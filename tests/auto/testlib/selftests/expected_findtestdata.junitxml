@@ -12,6 +12,6 @@
   <testcase name="cleanupTestCase" classname="FindTestData" time="@TEST_DURATION@"/>
   <system-out/>
   <system-err>
-<![CDATA[testdata testfile could not be located!]]>
+    <![CDATA[testdata testfile could not be located!]]>
   </system-err>
 </testsuite>

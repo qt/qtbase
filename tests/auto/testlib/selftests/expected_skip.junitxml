@@ -20,7 +20,7 @@
   </testcase>
   <testcase name="cleanupTestCase" classname="tst_Skip" time="@TEST_DURATION@"/>
   <system-out>
-<![CDATA[this line should only be reached once (true)]]>
+    <![CDATA[this line should only be reached once (true)]]>
   </system-out>
   <system-err/>
 </testsuite>

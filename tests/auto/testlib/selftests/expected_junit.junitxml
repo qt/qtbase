@@ -32,11 +32,11 @@
   </testcase>
   <testcase name="cleanupTestCase" classname="tst_JUnit" time="@TEST_DURATION@"/>
   <system-out>
-<![CDATA[a qDebug() call with comment-ending stuff -->]]>
-<![CDATA[this failure is expected]]>
-<![CDATA[this failure is also expected]]>
+    <![CDATA[a qDebug() call with comment-ending stuff -->]]>
+    <![CDATA[this failure is expected]]>
+    <![CDATA[this failure is also expected]]>
   </system-out>
   <system-err>
-<![CDATA[just a qWarning() !]]>
+    <![CDATA[just a qWarning() !]]>
   </system-err>
 </testsuite>

@@ -27,12 +27,12 @@
   </testcase>
   <testcase name="cleanupTestCase" classname="tst_DataTable" time="@TEST_DURATION@"/>
   <system-out>
-<![CDATA[QVERIFY(test)]]>
-<![CDATA[QVERIFY(test)]]>
-<![CDATA[QVERIFY(test)]]>
-<![CDATA[QVERIFY(test)]]>
-<![CDATA[QVERIFY(test)]]>
-<![CDATA[QVERIFY(test)]]>
+    <![CDATA[QVERIFY(test)]]>
+    <![CDATA[QVERIFY(test)]]>
+    <![CDATA[QVERIFY(test)]]>
+    <![CDATA[QVERIFY(test)]]>
+    <![CDATA[QVERIFY(test)]]>
+    <![CDATA[QVERIFY(test)]]>
   </system-out>
   <system-err/>
 </testsuite>
