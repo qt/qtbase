@@ -390,6 +390,25 @@
 */
 
 /*!
+    \enum  QUrl::AceProcessingOption
+    \since 6.3
+
+    The ACE processing options control the way URLs are transformed to and from
+    ASCII-Compatible Encoding.
+
+    \value IgnoreIDNWhitelist         Ignore the IDN whitelist when converting URLs
+                                      to Unicode.
+    \value AceTransitionalProcessing  Use transitional processing described in UTS #46.
+                                      This allows better compatibility with IDNA 2003
+                                      specification.
+
+    The default is to use nontransitional processing and to allow non-ASCII
+    characters only inside URLs whose top-level domains are listed in the IDN whitelist.
+
+    \sa toAce(), fromAce(), idnWhitelist()
+*/
+
+/*!
     \fn QUrl::QUrl(QUrl &&other)
 
     Move-constructs a QUrl instance, making it point at the same
@@ -1177,7 +1196,7 @@ inline void QUrlPrivate::appendHost(QString &appendTo, QUrl::FormattingOptions o
         // this is either an IPv4Address or a reg-name
         // if it is a reg-name, it is already stored in Unicode form
         if (options & QUrl::EncodeUnicode && !(options & 0x4000000))
-            appendTo += qt_ACE_do(host, ToAceOnly, AllowLeadingDot);
+            appendTo += qt_ACE_do(host, ToAceOnly, AllowLeadingDot, {});
         else
             appendTo += host;
     }
@@ -1339,7 +1358,7 @@ inline bool QUrlPrivate::setHost(const QString &value, int from, int iend, QUrl:
     //  Unicode encoding (some non-ASCII characters case-fold to digits
     //                    when nameprepping is done)
     //
-    // The qt_ACE_do function below applies nameprepping and the STD3 check.
+    // The qt_ACE_do function below does IDNA normalization and the STD3 check.
     // That means a Unicode string may become an IPv4 address, but it cannot
     // produce a '[' or a '%'.
 
@@ -1358,7 +1377,7 @@ inline bool QUrlPrivate::setHost(const QString &value, int from, int iend, QUrl:
         return setHost(s, 0, s.length(), QUrl::StrictMode);
     }
 
-    s = qt_ACE_do(QStringView(begin, len), NormalizeAce, ForbidLeadingDot);
+    s = qt_ACE_do(value.mid(from, iend - from), NormalizeAce, ForbidLeadingDot, {});
     if (s.isEmpty()) {
         setError(InvalidRegNameError, value);
         return false;
@@ -3013,50 +3032,72 @@ QByteArray QUrl::toPercentEncoding(const QString &input, const QByteArray &exclu
 }
 
 /*!
-    \since 4.2
+    \since 6.3
 
     Returns the Unicode form of the given domain name
     \a domain, which is encoded in the ASCII Compatible Encoding (ACE).
+    The output can be customized by passing flags with \a options.
     The result of this function is considered equivalent to \a domain.
 
     If the value in \a domain cannot be encoded, it will be converted
     to QString and returned.
 
-    The ASCII Compatible Encoding (ACE) is defined by RFC 3490, RFC 3491
-    and RFC 3492. It is part of the Internationalizing Domain Names in
-    Applications (IDNA) specification, which allows for domain names
-    (like \c "example.com") to be written using international
-    characters.
+    The ASCII-Compatible Encoding (ACE) is defined by RFC 3490, RFC 3491
+    and RFC 3492 and updated by the Unicode Technical Standard #46. It is part
+    of the Internationalizing Domain Names in Applications (IDNA) specification,
+    which allows for domain names (like \c "example.com") to be written using
+    non-US-ASCII characters.
+*/
+QString QUrl::fromAce(const QByteArray &domain, QUrl::AceProcessingOptions options)
+{
+    return qt_ACE_do(QString::fromLatin1(domain), NormalizeAce,
+                     ForbidLeadingDot /*FIXME: make configurable*/, options);
+}
+
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+/*!
+    \since 4.2
+    \overload
 */
 QString QUrl::fromAce(const QByteArray &domain)
 {
-    QVarLengthArray<char16_t> buffer;
-    buffer.resize(domain.size());
-    qt_from_latin1(buffer.data(), domain.data(), domain.size());
-    return qt_ACE_do(QStringView{buffer.data(), buffer.size()},
-                     NormalizeAce, ForbidLeadingDot /*FIXME: make configurable*/);
+    return fromAce(domain, {});
 }
+#endif
 
 /*!
-    \since 4.2
+    \since 6.3
 
     Returns the ASCII Compatible Encoding of the given domain name \a domain.
+    The output can be customized by passing flags with \a options.
     The result of this function is considered equivalent to \a domain.
 
     The ASCII-Compatible Encoding (ACE) is defined by RFC 3490, RFC 3491
-    and RFC 3492. It is part of the Internationalizing Domain Names in
-    Applications (IDNA) specification, which allows for domain names
-    (like \c "example.com") to be written using international
-    characters.
+    and RFC 3492 and updated by the Unicode Technical Standard #46. It is part
+    of the Internationalizing Domain Names in Applications (IDNA) specification,
+    which allows for domain names (like \c "example.com") to be written using
+    non-US-ASCII characters.
 
     This function returns an empty QByteArray if \a domain is not a valid
     hostname. Note, in particular, that IPv6 literals are not valid domain
     names.
 */
+QByteArray QUrl::toAce(const QString &domain, AceProcessingOptions options)
+{
+    return qt_ACE_do(domain, ToAceOnly, ForbidLeadingDot /*FIXME: make configurable*/, options)
+            .toLatin1();
+}
+
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+/*!
+    \since 4.2
+    \overload
+*/
 QByteArray QUrl::toAce(const QString &domain)
 {
-    return qt_ACE_do(domain, ToAceOnly, ForbidLeadingDot /*FIXME: make configurable*/).toLatin1();
+    return toAce(domain, {});
 }
+#endif
 
 /*!
     \internal
