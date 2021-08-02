@@ -7800,10 +7800,11 @@ static QString replaceArgEscapes(QStringView s, const ArgEscapeData &d, qsizetyp
             ++c;
 
         int escape = c->digitValue();
-        if (escape != -1) {
-            if (c + 1 != uc_end && (c + 1)->digitValue() != -1) {
-                escape = (10 * escape) + (c + 1)->digitValue();
+        if (escape != -1 && c + 1 != uc_end) {
+            int digit = c[1].digitValue();
+            if (digit != -1) {
                 ++c;
+                escape = 10 * escape + digit;
             }
         }
 
