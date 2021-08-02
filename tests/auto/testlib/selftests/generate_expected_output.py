@@ -281,6 +281,15 @@ def testEnv(testname,
         data.update(extraEnv[testname])
     return data
 
+# See TestLogger::shouldIgnoreTest() in tst_selftest.cpp
+def shouldIgnoreTest(testname, format):
+    if testname == "junit" and not format == "junitxml":
+        return True
+    if testname in ["float", "silent"] and not format == "txt":
+        return True
+
+    return False
+
 def generateTestData(test_path, expected_path, clean, formats):
     """Run one test and save its cleaned results.
 
@@ -296,18 +305,11 @@ def generateTestData(test_path, expected_path, clean, formats):
         print("Warning: directory", testname, "contains no test executable")
         return
 
-    # See TestLogger::shouldIgnoreTest() in tst_selftest.cpp for these
-    # single-format tests:
-    if testname == 'junit':
-        formats = ( 'junitxml', ) if 'junitxml' in formats else ()
-    elif testname == 'float':
-        formats = ( 'txt', ) if 'txt' in formats else ()
-
     # Prepare environment in which to run tests:
     env = testEnv(testname)
 
     for format in formats:
-        if testname == "junit" and not format == "junitxml":
+        if shouldIgnoreTest(testname, format):
             continue
         print(f'  running {testname}/{format}')
         cmd = [path, f'-{format}']
