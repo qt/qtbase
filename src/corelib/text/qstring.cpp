@@ -7817,25 +7817,16 @@ static QString replaceArgEscapes(QStringView s, const ArgEscapeData &d, int fiel
             memcpy(rc, text_start, (escape_start - text_start)*sizeof(QChar));
             rc += escape_start - text_start;
 
-            uint pad_chars;
-            if (localize)
-                pad_chars = qMax(abs_field_width, larg.length()) - larg.length();
-            else
-                pad_chars = qMax(abs_field_width, arg.length()) - arg.length();
+            const QStringView use = localize ? larg : arg;
+            const uint pad_chars = qMax(abs_field_width, use.length()) - use.length();
 
             if (field_width > 0) { // left padded
                 for (uint i = 0; i < pad_chars; ++i)
                     *rc++ = fillChar;
             }
 
-            if (localize) {
-                memcpy(rc, larg.data(), larg.length()*sizeof(QChar));
-                rc += larg.length();
-            }
-            else {
-                memcpy(rc, arg.data(), arg.length()*sizeof(QChar));
-                rc += arg.length();
-            }
+            memcpy(rc, use.data(), use.length() * sizeof(QChar));
+            rc += use.length();
 
             if (field_width < 0) { // right padded
                 for (uint i = 0; i < pad_chars; ++i)
