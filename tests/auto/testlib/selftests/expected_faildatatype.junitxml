@@ -12,9 +12,9 @@
     <failure type="fail" message="Received a fatal error."/>
   </testcase>
   <system-out>
-<![CDATA[expected data of type 'QString', got 'bool' for element 0 of data with tag 'bool-as-string']]>
+    <![CDATA[expected data of type 'QString', got 'bool' for element 0 of data with tag 'bool-as-string']]>
   </system-out>
   <system-err>
-<![CDATA[ASSERT: "false" in file qtbase/src/testlib/qtestdata.cpp, line 0]]>
+    <![CDATA[ASSERT: "false" in file qtbase/src/testlib/qtestdata.cpp, line 0]]>
   </system-err>
 </testsuite>

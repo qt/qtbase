@@ -12,6 +12,6 @@
   </testcase>
   <system-out/>
   <system-err>
-<![CDATA[Test function timed out]]>
+    <![CDATA[Test function timed out]]>
   </system-err>
 </testsuite>

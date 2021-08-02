@@ -170,130 +170,130 @@
   </testcase>
   <testcase name="cleanupTestCase" classname="tst_Signaldumper" time="@TEST_DURATION@"/>
   <system-out>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
-<![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
-<![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
-<![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
-<![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
-<![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
-<![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
-<![CDATA[    Slot: SignalSlotClass(_POINTER_) slotWithoutParameters()]]>
-<![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
-<![CDATA[    Slot: SignalSlotClass(_POINTER_) slotWithParameters(int,char)]]>
-<![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
-<![CDATA[    Slot: SignalSlotClass(_POINTER_) slotWithoutParameters()]]>
-<![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
-<![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
-<![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
-<![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
-<![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
-<![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
-<![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
-<![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
-<![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
-<![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
-<![CDATA[    Slot: SignalSlotClass(_POINTER_) slotWithoutParameters()]]>
-<![CDATA[    Slot: SignalSlotClass(_POINTER_) slotWithoutParameters()]]>
-<![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
-<![CDATA[    Slot: SignalSlotClass(_POINTER_) slotWithParameters(int,char)]]>
-<![CDATA[    Slot: SignalSlotClass(_POINTER_) slotWithParameters(int,char)]]>
-<![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
-<![CDATA[    Slot: SignalSlotClass(_POINTER_) slotWithoutParameters()]]>
-<![CDATA[    Slot: SignalSlotClass(_POINTER_) slotWithoutParameters()]]>
-<![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
-<![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
-<![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
-<![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
-<![CDATA[    Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]>
-<![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
-<![CDATA[    Signal: SignalSlotClass(_POINTER_) nestedSignalWithParameters (int(242), char(m))]]>
-<![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
-<![CDATA[    Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]>
-<![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
-<![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
-<![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) nestedSignalWithParameters (int(242), char(m))]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
-<![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
-<![CDATA[    Slot: SignalSlotClass(_POINTER_) nestedSignal()]]>
-<![CDATA[    Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]>
-<![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
-<![CDATA[    Slot: SignalSlotClass(_POINTER_) nestedSignalWithParameters(int,char)]]>
-<![CDATA[    Signal: SignalSlotClass(_POINTER_) nestedSignalWithParameters (int(242), char(m))]]>
-<![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
-<![CDATA[    Slot: SignalSlotClass(_POINTER_) nestedSignal()]]>
-<![CDATA[    Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]>
-<![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
-<![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
-<![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) nestedSignalWithParameters (int(242), char(m))]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
-<![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
-<![CDATA[    Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]>
-<![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
-<![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
-<![CDATA[    Slot: SignalSlotClass(_POINTER_) emitSecondSignal()]]>
-<![CDATA[    Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]>
-<![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
-<![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) qStringSignal (QString(Test string))]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) qStringRefSignal ((QString&)@_POINTER_)]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) qStringConstRefSignal (QString(Test string))]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) qByteArraySignal (QByteArray(Test bytearray))]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) qListSignal (QList<int>())]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) qVectorSignal (QList<int>())]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) qVectorRefSignal ((QList<int>&)@_POINTER_)]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) qVectorConstRefSignal (QList<int>())]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) qVectorConstPointerSignal ((const QList<int>*)_POINTER_)]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) qVectorPointerConstSignal ((QList<int>*)_POINTER_)]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) qVariantSignal (QVariant())]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) qVariantSignal (QVariant())]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
+    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
+    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
+    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
+    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
+    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
+    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
+    <![CDATA[    Slot: SignalSlotClass(_POINTER_) slotWithoutParameters()]]>
+    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
+    <![CDATA[    Slot: SignalSlotClass(_POINTER_) slotWithParameters(int,char)]]>
+    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
+    <![CDATA[    Slot: SignalSlotClass(_POINTER_) slotWithoutParameters()]]>
+    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
+    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
+    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
+    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
+    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
+    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
+    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
+    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
+    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
+    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
+    <![CDATA[    Slot: SignalSlotClass(_POINTER_) slotWithoutParameters()]]>
+    <![CDATA[    Slot: SignalSlotClass(_POINTER_) slotWithoutParameters()]]>
+    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
+    <![CDATA[    Slot: SignalSlotClass(_POINTER_) slotWithParameters(int,char)]]>
+    <![CDATA[    Slot: SignalSlotClass(_POINTER_) slotWithParameters(int,char)]]>
+    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
+    <![CDATA[    Slot: SignalSlotClass(_POINTER_) slotWithoutParameters()]]>
+    <![CDATA[    Slot: SignalSlotClass(_POINTER_) slotWithoutParameters()]]>
+    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
+    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
+    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
+    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
+    <![CDATA[    Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]>
+    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
+    <![CDATA[    Signal: SignalSlotClass(_POINTER_) nestedSignalWithParameters (int(242), char(m))]]>
+    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
+    <![CDATA[    Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]>
+    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
+    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
+    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) nestedSignalWithParameters (int(242), char(m))]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
+    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
+    <![CDATA[    Slot: SignalSlotClass(_POINTER_) nestedSignal()]]>
+    <![CDATA[    Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]>
+    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
+    <![CDATA[    Slot: SignalSlotClass(_POINTER_) nestedSignalWithParameters(int,char)]]>
+    <![CDATA[    Signal: SignalSlotClass(_POINTER_) nestedSignalWithParameters (int(242), char(m))]]>
+    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
+    <![CDATA[    Slot: SignalSlotClass(_POINTER_) nestedSignal()]]>
+    <![CDATA[    Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]>
+    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
+    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
+    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) nestedSignalWithParameters (int(242), char(m))]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
+    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
+    <![CDATA[    Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]>
+    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
+    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
+    <![CDATA[    Slot: SignalSlotClass(_POINTER_) emitSecondSignal()]]>
+    <![CDATA[    Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]>
+    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
+    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) qStringSignal (QString(Test string))]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) qStringRefSignal ((QString&)@_POINTER_)]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) qStringConstRefSignal (QString(Test string))]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) qByteArraySignal (QByteArray(Test bytearray))]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) qListSignal (QList<int>())]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) qVectorSignal (QList<int>())]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) qVectorRefSignal ((QList<int>&)@_POINTER_)]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) qVectorConstRefSignal (QList<int>())]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) qVectorConstPointerSignal ((const QList<int>*)_POINTER_)]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) qVectorPointerConstSignal ((QList<int>*)_POINTER_)]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) qVariantSignal (QVariant())]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) qVariantSignal (QVariant())]]>
+    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
   </system-out>
   <system-err/>
 </testsuite>

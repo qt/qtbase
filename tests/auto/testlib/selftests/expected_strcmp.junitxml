@@ -37,9 +37,9 @@
   </testcase>
   <testcase name="cleanupTestCase" classname="tst_StrCmp" time="@TEST_DURATION@"/>
   <system-out>
-<![CDATA[Next test should fail]]>
-<![CDATA[Next test should fail]]>
-<![CDATA[Next test should fail]]>
+    <![CDATA[Next test should fail]]>
+    <![CDATA[Next test should fail]]>
+    <![CDATA[Next test should fail]]>
   </system-out>
   <system-err/>
 </testsuite>

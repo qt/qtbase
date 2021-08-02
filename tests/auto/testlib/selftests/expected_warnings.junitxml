@@ -39,24 +39,24 @@
   </testcase>
   <testcase name="cleanupTestCase" classname="tst_Warnings" time="@TEST_DURATION@"/>
   <system-out>
-<![CDATA[Debug]]>
-<![CDATA[Debug]]>
-<![CDATA[Info]]>
-<![CDATA[Info]]>
-<![CDATA[Baba]]>
-<![CDATA[Baba]]>
-<![CDATA[Bubublabla]]>
-<![CDATA[Did not receive message: "Warning0"]]>
-<![CDATA[Did not receive message: "Warning1"]]>
-<![CDATA[Did not receive any message matching: "Warning\s\d"]]>
-<![CDATA[Did not receive message: "Warning0"]]>
-<![CDATA[Did not receive message: "Warning1"]]>
-<![CDATA[Did not receive message: "Warning0"]]>
-<![CDATA[Did not receive message: "Warning1"]]>
+    <![CDATA[Debug]]>
+    <![CDATA[Debug]]>
+    <![CDATA[Info]]>
+    <![CDATA[Info]]>
+    <![CDATA[Baba]]>
+    <![CDATA[Baba]]>
+    <![CDATA[Bubublabla]]>
+    <![CDATA[Did not receive message: "Warning0"]]>
+    <![CDATA[Did not receive message: "Warning1"]]>
+    <![CDATA[Did not receive any message matching: "Warning\s\d"]]>
+    <![CDATA[Did not receive message: "Warning0"]]>
+    <![CDATA[Did not receive message: "Warning1"]]>
+    <![CDATA[Did not receive message: "Warning0"]]>
+    <![CDATA[Did not receive message: "Warning1"]]>
   </system-out>
   <system-err>
-<![CDATA[Warning]]>
-<![CDATA[Warning]]>
-<![CDATA[Babablabla]]>
+    <![CDATA[Warning]]>
+    <![CDATA[Warning]]>
+    <![CDATA[Babablabla]]>
   </system-err>
 </testsuite>
