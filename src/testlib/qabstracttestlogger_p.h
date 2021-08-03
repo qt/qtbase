@@ -79,7 +79,7 @@ public:
         Warn,
         QWarning,
         QDebug,
-        QSystem,
+        QCritical,
         QFatal,
         Skip,
         Info,

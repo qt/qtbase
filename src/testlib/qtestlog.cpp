@@ -223,7 +223,7 @@ namespace QTest {
 
             if (!counter.deref()) {
                 FOREACH_TEST_LOGGER {
-                    logger->addMessage(QAbstractTestLogger::QSystem,
+                    logger->addMessage(QAbstractTestLogger::Warn,
                         QStringLiteral("Maximum amount of warnings exceeded. Use -maxwarnings to override."));
                 }
                 return;

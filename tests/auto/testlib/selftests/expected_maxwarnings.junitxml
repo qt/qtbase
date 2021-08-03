@@ -2008,10 +2008,7 @@
     <!-- type="qwarn" message="1998" -->
     <!-- type="qwarn" message="1999" -->
     <!-- type="qwarn" message="2000" -->
-    <!-- type="system" message="Maximum amount of warnings exceeded. Use &#x002D;maxwarnings to override." -->
-    <system-out>
-      <![CDATA[Maximum amount of warnings exceeded. Use -maxwarnings to override.]]>
-    </system-out>
+    <!-- type="warn" message="Maximum amount of warnings exceeded. Use &#x002D;maxwarnings to override." -->
     <system-err>
       <![CDATA[0]]>
       <![CDATA[1]]>
@@ -4014,6 +4011,7 @@
       <![CDATA[1998]]>
       <![CDATA[1999]]>
       <![CDATA[2000]]>
+      <![CDATA[Maximum amount of warnings exceeded. Use -maxwarnings to override.]]>
     </system-err>
   </testcase>
   <testcase name="cleanupTestCase" classname="MaxWarnings" time="@TEST_DURATION@"/>

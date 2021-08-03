@@ -115,8 +115,8 @@ namespace QTest {
             return "QDEBUG ";
         case QAbstractTestLogger::QInfo:
             return "QINFO  ";
-        case QAbstractTestLogger::QSystem:
-            return "QSYSTEM";
+        case QAbstractTestLogger::QCritical:
+            return "QCRITICAL";
         case QAbstractTestLogger::QFatal:
             return "QFATAL ";
         case QAbstractTestLogger::Info:

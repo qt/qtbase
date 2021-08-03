@@ -6013,7 +6013,7 @@
 <Message type="qwarn" file="" line="0">
     <Description><![CDATA[2000]]></Description>
 </Message>
-<Message type="system" file="" line="0">
+<Message type="warn" file="" line="0">
     <Description><![CDATA[Maximum amount of warnings exceeded. Use -maxwarnings to override.]]></Description>
 </Message>
 <Incident type="pass" file="" line="0" />
