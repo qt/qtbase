@@ -17,46 +17,54 @@
     <!-- type="qdebug" message="Baba" -->
     <!-- type="qdebug" message="Bubublabla" -->
     <!-- type="qwarn" message="Babablabla" -->
+    <system-out>
+      <![CDATA[Debug]]>
+      <![CDATA[Debug]]>
+      <![CDATA[Info]]>
+      <![CDATA[Info]]>
+      <![CDATA[Baba]]>
+      <![CDATA[Baba]]>
+      <![CDATA[Bubublabla]]>
+    </system-out>
+    <system-err>
+      <![CDATA[Warning]]>
+      <![CDATA[Warning]]>
+      <![CDATA[Babablabla]]>
+    </system-err>
   </testcase>
   <testcase name="testMissingWarnings" classname="tst_Warnings" time="@TEST_DURATION@">
     <!-- type="info" message="Did not receive message: &quot;Warning0&quot;" -->
     <!-- type="info" message="Did not receive message: &quot;Warning1&quot;" -->
     <failure type="fail" message="Not all expected messages were received"/>
+    <system-out>
+      <![CDATA[Did not receive message: "Warning0"]]>
+      <![CDATA[Did not receive message: "Warning1"]]>
+    </system-out>
   </testcase>
   <testcase name="testMissingWarningsRegularExpression" classname="tst_Warnings" time="@TEST_DURATION@">
     <!-- type="info" message="Did not receive any message matching: &quot;Warning\s\d&quot;" -->
     <failure type="fail" message="Not all expected messages were received"/>
+    <system-out>
+      <![CDATA[Did not receive any message matching: "Warning\s\d"]]>
+    </system-out>
   </testcase>
   <testcase name="testMissingWarningsWithData(first row)" classname="tst_Warnings" time="@TEST_DURATION@">
     <!-- type="info" message="Did not receive message: &quot;Warning0&quot;" -->
     <!-- type="info" message="Did not receive message: &quot;Warning1&quot;" -->
     <failure type="fail" message="Not all expected messages were received"/>
+    <system-out>
+      <![CDATA[Did not receive message: "Warning0"]]>
+      <![CDATA[Did not receive message: "Warning1"]]>
+    </system-out>
   </testcase>
   <testcase name="testMissingWarningsWithData(second row)" classname="tst_Warnings" time="@TEST_DURATION@">
     <!-- type="info" message="Did not receive message: &quot;Warning0&quot;" -->
     <!-- type="info" message="Did not receive message: &quot;Warning1&quot;" -->
     <failure type="fail" message="Not all expected messages were received"/>
+    <system-out>
+      <![CDATA[Did not receive message: "Warning0"]]>
+      <![CDATA[Did not receive message: "Warning1"]]>
+    </system-out>
   </testcase>
   <testcase name="cleanupTestCase" classname="tst_Warnings" time="@TEST_DURATION@"/>
-  <system-out>
-    <![CDATA[Debug]]>
-    <![CDATA[Debug]]>
-    <![CDATA[Info]]>
-    <![CDATA[Info]]>
-    <![CDATA[Baba]]>
-    <![CDATA[Baba]]>
-    <![CDATA[Bubublabla]]>
-    <![CDATA[Did not receive message: "Warning0"]]>
-    <![CDATA[Did not receive message: "Warning1"]]>
-    <![CDATA[Did not receive any message matching: "Warning\s\d"]]>
-    <![CDATA[Did not receive message: "Warning0"]]>
-    <![CDATA[Did not receive message: "Warning1"]]>
-    <![CDATA[Did not receive message: "Warning0"]]>
-    <![CDATA[Did not receive message: "Warning1"]]>
-  </system-out>
-  <system-err>
-    <![CDATA[Warning]]>
-    <![CDATA[Warning]]>
-    <![CDATA[Babablabla]]>
-  </system-err>
 </testsuite>

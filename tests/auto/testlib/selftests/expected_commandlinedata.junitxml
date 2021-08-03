@@ -8,31 +8,40 @@
   <testcase name="initTestCase" classname="tst_DataTable" time="@TEST_DURATION@"/>
   <testcase name="fiveTablePasses(fiveTablePasses_data1)" classname="tst_DataTable" time="@TEST_DURATION@">
     <!-- type="info" message="QVERIFY(test)" -->
+    <system-out>
+      <![CDATA[QVERIFY(test)]]>
+    </system-out>
   </testcase>
   <testcase name="fiveTablePasses(fiveTablePasses_data2)" classname="tst_DataTable" time="@TEST_DURATION@">
     <!-- type="info" message="QVERIFY(test)" -->
+    <system-out>
+      <![CDATA[QVERIFY(test)]]>
+    </system-out>
   </testcase>
   <testcase name="fiveTablePasses(fiveTablePasses_data3)" classname="tst_DataTable" time="@TEST_DURATION@">
     <!-- type="info" message="QVERIFY(test)" -->
+    <system-out>
+      <![CDATA[QVERIFY(test)]]>
+    </system-out>
   </testcase>
   <testcase name="fiveTablePasses(fiveTablePasses_data4)" classname="tst_DataTable" time="@TEST_DURATION@">
     <!-- type="info" message="QVERIFY(test)" -->
+    <system-out>
+      <![CDATA[QVERIFY(test)]]>
+    </system-out>
   </testcase>
   <testcase name="fiveTablePasses(fiveTablePasses_data5)" classname="tst_DataTable" time="@TEST_DURATION@">
     <!-- type="info" message="QVERIFY(test)" -->
+    <system-out>
+      <![CDATA[QVERIFY(test)]]>
+    </system-out>
   </testcase>
   <testcase name="fiveTablePasses" classname="tst_DataTable" time="@TEST_DURATION@"/>
   <testcase name="fiveTablePasses(fiveTablePasses_data1)" classname="tst_DataTable" time="@TEST_DURATION@">
     <!-- type="info" message="QVERIFY(test)" -->
+    <system-out>
+      <![CDATA[QVERIFY(test)]]>
+    </system-out>
   </testcase>
   <testcase name="cleanupTestCase" classname="tst_DataTable" time="@TEST_DURATION@"/>
-  <system-out>
-    <![CDATA[QVERIFY(test)]]>
-    <![CDATA[QVERIFY(test)]]>
-    <![CDATA[QVERIFY(test)]]>
-    <![CDATA[QVERIFY(test)]]>
-    <![CDATA[QVERIFY(test)]]>
-    <![CDATA[QVERIFY(test)]]>
-  </system-out>
-  <system-err/>
 </testsuite>

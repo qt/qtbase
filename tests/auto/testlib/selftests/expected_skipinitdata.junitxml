@@ -8,6 +8,4 @@
   <testcase name="initTestCase" classname="tst_SkipInitData" time="@TEST_DURATION@">
     <skipped message="Skip inside initTestCase_data. This should skip all tests in the class."/>
   </testcase>
-  <system-out/>
-  <system-err/>
 </testsuite>

@@ -12,8 +12,6 @@
   <testcase name="testB(Data3)" classname="tst_QExecStringList" time="@TEST_DURATION@"/>
   <testcase name="testC" classname="tst_QExecStringList" time="@TEST_DURATION@"/>
   <testcase name="cleanupTestCase" classname="tst_QExecStringList" time="@TEST_DURATION@"/>
-  <system-out/>
-  <system-err/>
 </testsuite>
 ********* Start testing of tst_QExecStringList *********
 Config: Using QtTest library

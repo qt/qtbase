@@ -20,6 +20,4 @@
     </failure>
   </testcase>
   <testcase name="cleanupTestCase" classname="tst_TupleDiagnostics" time="@TEST_DURATION@"/>
-  <system-out/>
-  <system-err/>
 </testsuite>

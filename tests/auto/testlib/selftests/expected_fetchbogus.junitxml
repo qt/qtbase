@@ -9,6 +9,4 @@
   <testcase name="fetchBogus(foo)" classname="tst_FetchBogus" time="@TEST_DURATION@">
     <error type="qfatal" message="QFETCH: Requested testdata &apos;bubu&apos; not available, check your _data function."/>
   </testcase>
-  <system-out/>
-  <system-err/>
 </testsuite>

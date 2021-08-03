@@ -9,6 +9,10 @@
   <testcase name="noConnections" classname="tst_Signaldumper" time="@TEST_DURATION@">
     <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()" -->
     <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" -->
+    <system-out>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
+    </system-out>
   </testcase>
   <testcase name="oneSlot(direct)" classname="tst_Signaldumper" time="@TEST_DURATION@">
     <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()" -->
@@ -17,6 +21,14 @@
     <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" -->
     <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" -->
     <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" -->
+    <system-out>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
+      <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
+      <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
+      <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+    </system-out>
   </testcase>
   <testcase name="oneSlot(queued)" classname="tst_Signaldumper" time="@TEST_DURATION@">
     <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()" -->
@@ -25,6 +37,14 @@
     <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" -->
     <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" -->
     <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" -->
+    <system-out>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
+      <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
+      <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
+      <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+    </system-out>
   </testcase>
   <testcase name="oneSlotOldSyntax(direct)" classname="tst_Signaldumper" time="@TEST_DURATION@">
     <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()" -->
@@ -36,6 +56,17 @@
     <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" -->
     <!-- type="info" message="    Slot: SignalSlotClass(_POINTER_) slotWithoutParameters()" -->
     <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" -->
+    <system-out>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
+      <![CDATA[    Slot: SignalSlotClass(_POINTER_) slotWithoutParameters()]]>
+      <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
+      <![CDATA[    Slot: SignalSlotClass(_POINTER_) slotWithParameters(int,char)]]>
+      <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
+      <![CDATA[    Slot: SignalSlotClass(_POINTER_) slotWithoutParameters()]]>
+      <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+    </system-out>
   </testcase>
   <testcase name="oneSlotOldSyntax(queued)" classname="tst_Signaldumper" time="@TEST_DURATION@">
     <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()" -->
@@ -44,6 +75,14 @@
     <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" -->
     <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" -->
     <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" -->
+    <system-out>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
+      <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
+      <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
+      <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+    </system-out>
   </testcase>
   <testcase name="twoSlots(direct)" classname="tst_Signaldumper" time="@TEST_DURATION@">
     <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()" -->
@@ -52,6 +91,14 @@
     <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" -->
     <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" -->
     <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" -->
+    <system-out>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
+      <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
+      <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
+      <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+    </system-out>
   </testcase>
   <testcase name="twoSlots(queued)" classname="tst_Signaldumper" time="@TEST_DURATION@">
     <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()" -->
@@ -60,6 +107,14 @@
     <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" -->
     <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" -->
     <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" -->
+    <system-out>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
+      <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
+      <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
+      <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+    </system-out>
   </testcase>
   <testcase name="twoSlotsOldSyntax(direct)" classname="tst_Signaldumper" time="@TEST_DURATION@">
     <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()" -->
@@ -74,6 +129,20 @@
     <!-- type="info" message="    Slot: SignalSlotClass(_POINTER_) slotWithoutParameters()" -->
     <!-- type="info" message="    Slot: SignalSlotClass(_POINTER_) slotWithoutParameters()" -->
     <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" -->
+    <system-out>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
+      <![CDATA[    Slot: SignalSlotClass(_POINTER_) slotWithoutParameters()]]>
+      <![CDATA[    Slot: SignalSlotClass(_POINTER_) slotWithoutParameters()]]>
+      <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
+      <![CDATA[    Slot: SignalSlotClass(_POINTER_) slotWithParameters(int,char)]]>
+      <![CDATA[    Slot: SignalSlotClass(_POINTER_) slotWithParameters(int,char)]]>
+      <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
+      <![CDATA[    Slot: SignalSlotClass(_POINTER_) slotWithoutParameters()]]>
+      <![CDATA[    Slot: SignalSlotClass(_POINTER_) slotWithoutParameters()]]>
+      <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+    </system-out>
   </testcase>
   <testcase name="twoSlotsOldSyntax(queued)" classname="tst_Signaldumper" time="@TEST_DURATION@">
     <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()" -->
@@ -82,6 +151,14 @@
     <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" -->
     <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" -->
     <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" -->
+    <system-out>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
+      <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
+      <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
+      <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+    </system-out>
   </testcase>
   <testcase name="signalForwarding(direct)" classname="tst_Signaldumper" time="@TEST_DURATION@">
     <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()" -->
@@ -93,6 +170,17 @@
     <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" -->
     <!-- type="info" message="    Signal: SignalSlotClass(_POINTER_) nestedSignal ()" -->
     <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" -->
+    <system-out>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
+      <![CDATA[    Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]>
+      <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
+      <![CDATA[    Signal: SignalSlotClass(_POINTER_) nestedSignalWithParameters (int(242), char(m))]]>
+      <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
+      <![CDATA[    Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]>
+      <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+    </system-out>
   </testcase>
   <testcase name="signalForwarding(queued)" classname="tst_Signaldumper" time="@TEST_DURATION@">
     <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()" -->
@@ -104,6 +192,17 @@
     <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" -->
     <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" -->
     <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) nestedSignal ()" -->
+    <system-out>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
+      <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
+      <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) nestedSignalWithParameters (int(242), char(m))]]>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
+      <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]>
+    </system-out>
   </testcase>
   <testcase name="signalForwardingOldSyntax(direct)" classname="tst_Signaldumper" time="@TEST_DURATION@">
     <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()" -->
@@ -118,6 +217,20 @@
     <!-- type="info" message="    Slot: SignalSlotClass(_POINTER_) nestedSignal()" -->
     <!-- type="info" message="    Signal: SignalSlotClass(_POINTER_) nestedSignal ()" -->
     <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" -->
+    <system-out>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
+      <![CDATA[    Slot: SignalSlotClass(_POINTER_) nestedSignal()]]>
+      <![CDATA[    Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]>
+      <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
+      <![CDATA[    Slot: SignalSlotClass(_POINTER_) nestedSignalWithParameters(int,char)]]>
+      <![CDATA[    Signal: SignalSlotClass(_POINTER_) nestedSignalWithParameters (int(242), char(m))]]>
+      <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
+      <![CDATA[    Slot: SignalSlotClass(_POINTER_) nestedSignal()]]>
+      <![CDATA[    Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]>
+      <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+    </system-out>
   </testcase>
   <testcase name="signalForwardingOldSyntax(queued)" classname="tst_Signaldumper" time="@TEST_DURATION@">
     <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()" -->
@@ -129,27 +242,59 @@
     <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))" -->
     <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" -->
     <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) nestedSignal ()" -->
+    <system-out>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
+      <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
+      <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) nestedSignalWithParameters (int(242), char(m))]]>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
+      <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]>
+    </system-out>
   </testcase>
   <testcase name="slotEmittingSignal(direct)" classname="tst_Signaldumper" time="@TEST_DURATION@">
     <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()" -->
     <!-- type="info" message="    Signal: SignalSlotClass(_POINTER_) nestedSignal ()" -->
     <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" -->
+    <system-out>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
+      <![CDATA[    Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]>
+      <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+    </system-out>
   </testcase>
   <testcase name="slotEmittingSignal(queued)" classname="tst_Signaldumper" time="@TEST_DURATION@">
     <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()" -->
     <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" -->
     <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) nestedSignal ()" -->
+    <system-out>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
+      <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]>
+    </system-out>
   </testcase>
   <testcase name="slotEmittingSignalOldSyntax(direct)" classname="tst_Signaldumper" time="@TEST_DURATION@">
     <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()" -->
     <!-- type="info" message="    Slot: SignalSlotClass(_POINTER_) emitSecondSignal()" -->
     <!-- type="info" message="    Signal: SignalSlotClass(_POINTER_) nestedSignal ()" -->
     <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" -->
+    <system-out>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
+      <![CDATA[    Slot: SignalSlotClass(_POINTER_) emitSecondSignal()]]>
+      <![CDATA[    Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]>
+      <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+    </system-out>
   </testcase>
   <testcase name="slotEmittingSignalOldSyntax(queued)" classname="tst_Signaldumper" time="@TEST_DURATION@">
     <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()" -->
     <!-- type="info" message="Signal: QEventDispatcherPlatform(_POINTER_) awake ()" -->
     <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) nestedSignal ()" -->
+    <system-out>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
+      <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]>
+    </system-out>
   </testcase>
   <testcase name="variousTypes" classname="tst_Signaldumper" time="@TEST_DURATION@">
     <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) qStringSignal (QString(Test string))" -->
@@ -164,136 +309,26 @@
     <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) qVectorPointerConstSignal ((QList&lt;int&gt;*)_POINTER_)" -->
     <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) qVariantSignal (QVariant())" -->
     <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) qVariantSignal (QVariant())" -->
+    <system-out>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) qStringSignal (QString(Test string))]]>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) qStringRefSignal ((QString&)@_POINTER_)]]>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) qStringConstRefSignal (QString(Test string))]]>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) qByteArraySignal (QByteArray(Test bytearray))]]>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) qListSignal (QList<int>())]]>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) qVectorSignal (QList<int>())]]>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) qVectorRefSignal ((QList<int>&)@_POINTER_)]]>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) qVectorConstRefSignal (QList<int>())]]>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) qVectorConstPointerSignal ((const QList<int>*)_POINTER_)]]>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) qVectorPointerConstSignal ((QList<int>*)_POINTER_)]]>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) qVariantSignal (QVariant())]]>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) qVariantSignal (QVariant())]]>
+    </system-out>
   </testcase>
   <testcase name="deletingSender" classname="tst_Signaldumper" time="@TEST_DURATION@">
     <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()" -->
+    <system-out>
+      <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
+    </system-out>
   </testcase>
   <testcase name="cleanupTestCase" classname="tst_Signaldumper" time="@TEST_DURATION@"/>
-  <system-out>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
-    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
-    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
-    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
-    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
-    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
-    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
-    <![CDATA[    Slot: SignalSlotClass(_POINTER_) slotWithoutParameters()]]>
-    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
-    <![CDATA[    Slot: SignalSlotClass(_POINTER_) slotWithParameters(int,char)]]>
-    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
-    <![CDATA[    Slot: SignalSlotClass(_POINTER_) slotWithoutParameters()]]>
-    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
-    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
-    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
-    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
-    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
-    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
-    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
-    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
-    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
-    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
-    <![CDATA[    Slot: SignalSlotClass(_POINTER_) slotWithoutParameters()]]>
-    <![CDATA[    Slot: SignalSlotClass(_POINTER_) slotWithoutParameters()]]>
-    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
-    <![CDATA[    Slot: SignalSlotClass(_POINTER_) slotWithParameters(int,char)]]>
-    <![CDATA[    Slot: SignalSlotClass(_POINTER_) slotWithParameters(int,char)]]>
-    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
-    <![CDATA[    Slot: SignalSlotClass(_POINTER_) slotWithoutParameters()]]>
-    <![CDATA[    Slot: SignalSlotClass(_POINTER_) slotWithoutParameters()]]>
-    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
-    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
-    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
-    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
-    <![CDATA[    Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]>
-    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
-    <![CDATA[    Signal: SignalSlotClass(_POINTER_) nestedSignalWithParameters (int(242), char(m))]]>
-    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
-    <![CDATA[    Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]>
-    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
-    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
-    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) nestedSignalWithParameters (int(242), char(m))]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
-    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
-    <![CDATA[    Slot: SignalSlotClass(_POINTER_) nestedSignal()]]>
-    <![CDATA[    Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]>
-    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
-    <![CDATA[    Slot: SignalSlotClass(_POINTER_) nestedSignalWithParameters(int,char)]]>
-    <![CDATA[    Signal: SignalSlotClass(_POINTER_) nestedSignalWithParameters (int(242), char(m))]]>
-    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
-    <![CDATA[    Slot: SignalSlotClass(_POINTER_) nestedSignal()]]>
-    <![CDATA[    Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]>
-    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
-    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
-    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) nestedSignalWithParameters (int(242), char(m))]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
-    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
-    <![CDATA[    Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]>
-    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
-    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
-    <![CDATA[    Slot: SignalSlotClass(_POINTER_) emitSecondSignal()]]>
-    <![CDATA[    Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]>
-    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
-    <![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) qStringSignal (QString(Test string))]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) qStringRefSignal ((QString&)@_POINTER_)]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) qStringConstRefSignal (QString(Test string))]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) qByteArraySignal (QByteArray(Test bytearray))]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) qListSignal (QList<int>())]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) qVectorSignal (QList<int>())]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) qVectorRefSignal ((QList<int>&)@_POINTER_)]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) qVectorConstRefSignal (QList<int>())]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) qVectorConstPointerSignal ((const QList<int>*)_POINTER_)]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) qVectorPointerConstSignal ((QList<int>*)_POINTER_)]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) qVariantSignal (QVariant())]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) qVariantSignal (QVariant())]]>
-    <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
-  </system-out>
-  <system-err/>
 </testsuite>

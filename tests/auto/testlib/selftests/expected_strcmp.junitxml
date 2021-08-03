@@ -15,6 +15,11 @@
       <![CDATA[   Actual   (a): "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"...
    Expected (b): "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"...]]>
     </failure>
+    <system-out>
+      <![CDATA[Next test should fail]]>
+      <![CDATA[Next test should fail]]>
+      <![CDATA[Next test should fail]]>
+    </system-out>
   </testcase>
   <testcase name="failByteArray" classname="tst_StrCmp" time="@TEST_DURATION@">
     <failure type="fail" message="Compared values are not the same">
@@ -41,10 +46,4 @@
     </failure>
   </testcase>
   <testcase name="cleanupTestCase" classname="tst_StrCmp" time="@TEST_DURATION@"/>
-  <system-out>
-    <![CDATA[Next test should fail]]>
-    <![CDATA[Next test should fail]]>
-    <![CDATA[Next test should fail]]>
-  </system-out>
-  <system-err/>
 </testsuite>

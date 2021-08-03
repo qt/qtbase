@@ -9,6 +9,4 @@
   <testcase name="throwException" classname="tst_Exception" time="@TEST_DURATION@">
     <failure type="fail" message="Caught unhandled exception"/>
   </testcase>
-  <system-out/>
-  <system-err/>
 </testsuite>

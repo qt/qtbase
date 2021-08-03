@@ -14,6 +14,4 @@
   <testcase name="xfail" classname="tst_Blacklisted" time="@TEST_DURATION@"/>
   <testcase name="xpass" classname="tst_Blacklisted" time="@TEST_DURATION@"/>
   <testcase name="cleanupTestCase" classname="tst_Blacklisted" time="@TEST_DURATION@"/>
-  <system-out/>
-  <system-err/>
 </testsuite>

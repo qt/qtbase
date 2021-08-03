@@ -10,6 +10,4 @@
   <testcase name="testNumber2" classname="tst_Assert" time="@TEST_DURATION@">
     <error type="qfatal" message="ASSERT: &quot;false&quot; in file qtbase/tests/auto/testlib/selftests/assert/tst_assert.cpp, line 0"/>
   </testcase>
-  <system-out/>
-  <system-err/>
 </testsuite>

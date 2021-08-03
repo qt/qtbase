@@ -8,6 +8,4 @@
   <testcase name="initTestCase" classname="tst_BenchlibTickCounter" time="@TEST_DURATION@"/>
   <testcase name="threeBillionTicks" classname="tst_BenchlibTickCounter" time="@TEST_DURATION@"/>
   <testcase name="cleanupTestCase" classname="tst_BenchlibTickCounter" time="@TEST_DURATION@"/>
-  <system-out/>
-  <system-err/>
 </testsuite>

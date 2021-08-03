@@ -10,6 +10,4 @@
   <testcase name="cleanupTestCase" classname="tst_SkipCleanup" time="@TEST_DURATION@">
     <skipped message="Skip inside cleanupTestCase."/>
   </testcase>
-  <system-out/>
-  <system-err/>
 </testsuite>

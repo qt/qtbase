@@ -9,6 +9,4 @@
   <testcase name="fetch(bool)" classname="tst_FailFetchType" time="@TEST_DURATION@">
     <error type="qfatal" message="Requested type &apos;QString&apos; does not match available type &apos;bool&apos;."/>
   </testcase>
-  <system-out/>
-  <system-err/>
 </testsuite>
