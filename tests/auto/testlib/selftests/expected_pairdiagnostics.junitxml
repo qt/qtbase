@@ -19,6 +19,4 @@
     </failure>
   </testcase>
   <testcase name="cleanupTestCase" classname="tst_PairDiagnostics" time="@TEST_DURATION@"/>
-  <system-out/>
-  <system-err/>
 </testsuite>

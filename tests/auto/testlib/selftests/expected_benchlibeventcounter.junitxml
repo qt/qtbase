@@ -14,6 +14,4 @@
   <testcase name="events(5000)" classname="tst_BenchlibEventCounter" time="@TEST_DURATION@"/>
   <testcase name="events(100000)" classname="tst_BenchlibEventCounter" time="@TEST_DURATION@"/>
   <testcase name="cleanupTestCase" classname="tst_BenchlibEventCounter" time="@TEST_DURATION@"/>
-  <system-out/>
-  <system-err/>
 </testsuite>

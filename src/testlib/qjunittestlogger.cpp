@@ -87,10 +87,6 @@ void QJUnitTestLogger::startLogging()
     QAbstractTestLogger::startLogging();
 
     logFormatter = new QTestJUnitStreamer(this);
-    delete systemOutputElement;
-    systemOutputElement = new QTestElement(QTest::LET_SystemOutput);
-    delete systemErrorElement;
-    systemErrorElement = new QTestElement(QTest::LET_SystemError);
 
     Q_ASSERT(!currentTestSuite);
     currentTestSuite = new QTestElement(QTest::LET_TestSuite);
@@ -154,9 +150,6 @@ void QJUnitTestLogger::stopLogging()
         testcase = testcase->nextElement();
     }
 
-    currentTestSuite->addLogElement(systemOutputElement);
-    currentTestSuite->addLogElement(systemErrorElement);
-
     logFormatter->output(currentTestSuite);
 
     delete currentTestSuite;
@@ -176,6 +169,10 @@ void QJUnitTestLogger::enterTestCase(const char *name)
     currentTestCase->addAttribute(QTest::AI_Name, name);
     currentTestCase->addAttribute(QTest::AI_Classname, QTestResult::currentTestObjectName());
     currentTestCase->addToList(&listOfTestcases);
+
+    Q_ASSERT(!systemOutputElement && !systemErrorElement);
+    systemOutputElement = new QTestElement(QTest::LET_SystemOutput);
+    systemErrorElement = new QTestElement(QTest::LET_SystemError);
 
     // The element will be deleted when the suite is deleted
 
@@ -214,6 +211,19 @@ void QJUnitTestLogger::leaveTestCase()
 {
     currentTestCase->addAttribute(QTest::AI_Time,
         toSecondsFormat(elapsedTestCaseSeconds()).constData());
+
+    if (systemOutputElement->childElements())
+        currentTestCase->addLogElement(systemOutputElement);
+    else
+        delete systemOutputElement;
+
+    if (systemErrorElement->childElements())
+        currentTestCase->addLogElement(systemErrorElement);
+    else
+        delete systemErrorElement;
+
+    systemOutputElement = nullptr;
+    systemErrorElement = nullptr;
 }
 
 void QJUnitTestLogger::addIncident(IncidentTypes type, const char *description,

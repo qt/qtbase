@@ -28,6 +28,4 @@
     <failure type="fail" message="Expected exception of type std::exception to be thrown but no exception caught"/>
   </testcase>
   <testcase name="cleanupTestCase" classname="tst_VerifyExceptionThrown" time="@TEST_DURATION@"/>
-  <system-out/>
-  <system-err/>
 </testsuite>

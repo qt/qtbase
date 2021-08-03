@@ -19,6 +19,4 @@ Aenean posuere, tortor sed cursus feugiat, nunc augue blandit nunc, eu sollicitu
     </failure>
   </testcase>
   <testcase name="cleanupTestCase" classname="tst_LongString" time="@TEST_DURATION@"/>
-  <system-out/>
-  <system-err/>
 </testsuite>

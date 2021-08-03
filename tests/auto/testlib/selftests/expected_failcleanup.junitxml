@@ -10,6 +10,4 @@
   <testcase name="cleanupTestCase" classname="tst_FailCleanup" time="@TEST_DURATION@">
     <failure type="fail" message="&apos;false&apos; returned FALSE. (Fail inside cleanupTestCase)"/>
   </testcase>
-  <system-out/>
-  <system-err/>
 </testsuite>

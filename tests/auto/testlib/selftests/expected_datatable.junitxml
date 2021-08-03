@@ -65,6 +65,4 @@
     <failure type="fail" message="&apos;!test&apos; returned FALSE. ()"/>
   </testcase>
   <testcase name="cleanupTestCase" classname="tst_DataTable" time="@TEST_DURATION@"/>
-  <system-out/>
-  <system-err/>
 </testsuite>

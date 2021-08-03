@@ -57,6 +57,9 @@
   <testcase name="testFailInCleanup(fail)" classname="tst_Counting" time="@TEST_DURATION@">
     <!-- type="qdebug" message="This test function should execute and then QFAIL in cleanup()" -->
     <failure type="fail" message="Fail in cleanup()"/>
+    <system-out>
+      <![CDATA[This test function should execute and then QFAIL in cleanup()]]>
+    </system-out>
   </testcase>
   <testcase name="testFailInCleanup(after)" classname="tst_Counting" time="@TEST_DURATION@"/>
   <testcase name="testSkipInInit(before)" classname="tst_Counting" time="@TEST_DURATION@"/>
@@ -68,12 +71,10 @@
   <testcase name="testSkipInCleanup(skip)" classname="tst_Counting" time="@TEST_DURATION@">
     <!-- type="qdebug" message="This test function should execute and then QSKIP in cleanup()" -->
     <skipped message="Skip in cleanup()"/>
+    <system-out>
+      <![CDATA[This test function should execute and then QSKIP in cleanup()]]>
+    </system-out>
   </testcase>
   <testcase name="testSkipInCleanup(after)" classname="tst_Counting" time="@TEST_DURATION@"/>
   <testcase name="cleanupTestCase" classname="tst_Counting" time="@TEST_DURATION@"/>
-  <system-out>
-    <![CDATA[This test function should execute and then QFAIL in cleanup()]]>
-    <![CDATA[This test function should execute and then QSKIP in cleanup()]]>
-  </system-out>
-  <system-err/>
 </testsuite>

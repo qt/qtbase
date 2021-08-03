@@ -9,6 +9,4 @@
   <testcase name="delay" classname="tst_Watchdog" time="@TEST_DURATION@">
     <error type="qfatal" message="Test function timed out"/>
   </testcase>
-  <system-out/>
-  <system-err/>
 </testsuite>

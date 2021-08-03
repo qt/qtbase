@@ -8,10 +8,9 @@
   <testcase name="initTestCase" classname="FindTestData" time="@TEST_DURATION@"/>
   <testcase name="paths" classname="FindTestData" time="@TEST_DURATION@">
     <!-- type="warn" message="testdata testfile could not be located!" -->
+    <system-err>
+      <![CDATA[testdata testfile could not be located!]]>
+    </system-err>
   </testcase>
   <testcase name="cleanupTestCase" classname="FindTestData" time="@TEST_DURATION@"/>
-  <system-out/>
-  <system-err>
-    <![CDATA[testdata testfile could not be located!]]>
-  </system-err>
 </testsuite>
