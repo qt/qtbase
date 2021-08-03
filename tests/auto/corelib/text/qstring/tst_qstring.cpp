@@ -5949,12 +5949,14 @@ void tst_QString::localeAwareCompare_data()
         // to en.UTF-8, but setlocale() reports that as C, whose sort order is
         // simpler. Only believe we can run C tests if the environment variables
         // (which, conveniently, QLocale::system()'s Unix backend uses) say it
-        // really is.
-        if (current == "C" && current == wanted) {
-            if (QLocale::system().name() == u"C")
+        // really is. Conversely, don't reject "en_US" just because setlocale()
+        // misdescribes it.
+        if (current == "C") {
+            const QString sys = QLocale::system().name();
+            if (wanted == current ? sys == u"C" : sys.startsWith(wanted))
                 return true;
-            qDebug("Skipping C test-cases as we can only test in locale %s",
-                   QLocale::system().name().toUtf8().constData());
+            qDebug("Skipping %s test-cases as we can only test in locale %s (seen as C)",
+                   wanted, sys.toUtf8().constData());
             return false;
         }
 #  endif
@@ -5970,7 +5972,8 @@ void tst_QString::localeAwareCompare_data()
             return true;
         }
 #  endif
-        qDebug("Skipping %s test-cases as we can only test in locale %s", wanted, current.data());
+        qDebug("Skipping %s test-cases as we can only test in locale %s (seen as %s)",
+               wanted, QLocale::system().name().toUtf8().constData(), current.data());
         return false;
     };
 #else
