@@ -7,9 +7,6 @@
   </properties>
   <testcase name="initTestCase" classname="tst_ExpectFail" time="@TEST_DURATION@"/>
   <testcase name="xfailAndContinue" classname="tst_ExpectFail" time="@TEST_DURATION@">
-    <!-- type="qdebug" message="begin" -->
-    <!-- type="info" message="This should xfail" -->
-    <!-- type="qdebug" message="after" -->
     <system-out>
       <![CDATA[begin]]>
       <![CDATA[This should xfail]]>
@@ -17,8 +14,6 @@
     </system-out>
   </testcase>
   <testcase name="xfailAndAbort" classname="tst_ExpectFail" time="@TEST_DURATION@">
-    <!-- type="qdebug" message="begin" -->
-    <!-- type="info" message="This should xfail" -->
     <system-out>
       <![CDATA[begin]]>
       <![CDATA[This should xfail]]>
@@ -28,8 +23,6 @@
     <failure type="fail" message="Already expecting a fail"/>
   </testcase>
   <testcase name="xfailWithQString" classname="tst_ExpectFail" time="@TEST_DURATION@">
-    <!-- type="info" message="A string" -->
-    <!-- type="info" message="Bug 5 (The message)" -->
     <system-out>
       <![CDATA[A string]]>
       <![CDATA[Bug 5 (The message)]]>
@@ -38,13 +31,11 @@
   <testcase name="xfailDataDrivenWithQVerify(Pass 1)" classname="tst_ExpectFail" time="@TEST_DURATION@"/>
   <testcase name="xfailDataDrivenWithQVerify(Pass 2)" classname="tst_ExpectFail" time="@TEST_DURATION@"/>
   <testcase name="xfailDataDrivenWithQVerify(Abort)" classname="tst_ExpectFail" time="@TEST_DURATION@">
-    <!-- type="info" message="This test should xfail" -->
     <system-out>
       <![CDATA[This test should xfail]]>
     </system-out>
   </testcase>
   <testcase name="xfailDataDrivenWithQVerify(Continue)" classname="tst_ExpectFail" time="@TEST_DURATION@">
-    <!-- type="info" message="This test should xfail" -->
     <system-out>
       <![CDATA[This test should xfail]]>
     </system-out>
@@ -52,26 +43,22 @@
   <testcase name="xfailDataDrivenWithQCompare(Pass 1)" classname="tst_ExpectFail" time="@TEST_DURATION@"/>
   <testcase name="xfailDataDrivenWithQCompare(Pass 2)" classname="tst_ExpectFail" time="@TEST_DURATION@"/>
   <testcase name="xfailDataDrivenWithQCompare(Abort)" classname="tst_ExpectFail" time="@TEST_DURATION@">
-    <!-- type="info" message="This test should xfail" -->
     <system-out>
       <![CDATA[This test should xfail]]>
     </system-out>
   </testcase>
   <testcase name="xfailDataDrivenWithQCompare(Continue)" classname="tst_ExpectFail" time="@TEST_DURATION@">
-    <!-- type="info" message="This test should xfail" -->
     <system-out>
       <![CDATA[This test should xfail]]>
     </system-out>
   </testcase>
   <testcase name="xfailOnWrongRow(right row)" classname="tst_ExpectFail" time="@TEST_DURATION@"/>
   <testcase name="xfailOnAnyRow(first row)" classname="tst_ExpectFail" time="@TEST_DURATION@">
-    <!-- type="info" message="This test should xfail" -->
     <system-out>
       <![CDATA[This test should xfail]]>
     </system-out>
   </testcase>
   <testcase name="xfailOnAnyRow(second row)" classname="tst_ExpectFail" time="@TEST_DURATION@">
-    <!-- type="info" message="This test should xfail" -->
     <system-out>
       <![CDATA[This test should xfail]]>
     </system-out>

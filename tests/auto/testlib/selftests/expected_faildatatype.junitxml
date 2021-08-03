@@ -7,7 +7,6 @@
   </properties>
   <testcase name="initTestCase" classname="tst_FailDataType" time="@TEST_DURATION@"/>
   <testcase name="value" classname="tst_FailDataType" time="@TEST_DURATION@">
-    <!-- type="qdebug" message="expected data of type &apos;QString&apos;, got &apos;bool&apos; for element 0 of data with tag &apos;bool&#x002D;as&#x002D;string&apos;" -->
     <error type="qfatal" message="ASSERT: &quot;false&quot; in file qtbase/src/testlib/qtestdata.cpp, line 0"/>
     <system-out>
       <![CDATA[expected data of type 'QString', got 'bool' for element 0 of data with tag 'bool-as-string']]>

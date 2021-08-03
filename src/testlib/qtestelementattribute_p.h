@@ -94,7 +94,7 @@ namespace QTest {
         LET_TestCase = 4,
         LET_TestSuite = 5,
         LET_Benchmark = 6,
-        LET_Message = 7,
+        LET_Text = 7,
         LET_SystemError = 8,
         LET_SystemOutput = 9,
         LET_Skipped = 10

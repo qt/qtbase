@@ -6,15 +6,11 @@
     <property name="QtBuild" value=""/>
   </properties>
   <testcase name="initTestCase" classname="tst_Subtest" time="@TEST_DURATION@">
-    <!-- type="qdebug" message="initTestCase initTestCase (null)" -->
     <system-out>
       <![CDATA[initTestCase initTestCase (null)]]>
     </system-out>
   </testcase>
   <testcase name="test1" classname="tst_Subtest" time="@TEST_DURATION@">
-    <!-- type="qdebug" message="init test1 (null)" -->
-    <!-- type="qdebug" message="test1 test1 (null)" -->
-    <!-- type="qdebug" message="cleanup test1 (null)" -->
     <system-out>
       <![CDATA[init test1 (null)]]>
       <![CDATA[test1 test1 (null)]]>
@@ -22,12 +18,6 @@
     </system-out>
   </testcase>
   <testcase name="test2(data0)" classname="tst_Subtest" time="@TEST_DURATION@">
-    <!-- type="qdebug" message="test2_data test2 (null)" -->
-    <!-- type="qdebug" message="test2_data end" -->
-    <!-- type="qdebug" message="init test2 data0" -->
-    <!-- type="qdebug" message="test2 test2 data0" -->
-    <!-- type="qdebug" message="test2 end" -->
-    <!-- type="qdebug" message="cleanup test2 data0" -->
     <system-out>
       <![CDATA[test2_data test2 (null)]]>
       <![CDATA[test2_data end]]>
@@ -38,10 +28,6 @@
     </system-out>
   </testcase>
   <testcase name="test2(data1)" classname="tst_Subtest" time="@TEST_DURATION@">
-    <!-- type="qdebug" message="init test2 data1" -->
-    <!-- type="qdebug" message="test2 test2 data1" -->
-    <!-- type="qdebug" message="test2 end" -->
-    <!-- type="qdebug" message="cleanup test2 data1" -->
     <system-out>
       <![CDATA[init test2 data1]]>
       <![CDATA[test2 test2 data1]]>
@@ -50,10 +36,6 @@
     </system-out>
   </testcase>
   <testcase name="test2(data2)" classname="tst_Subtest" time="@TEST_DURATION@">
-    <!-- type="qdebug" message="init test2 data2" -->
-    <!-- type="qdebug" message="test2 test2 data2" -->
-    <!-- type="qdebug" message="test2 end" -->
-    <!-- type="qdebug" message="cleanup test2 data2" -->
     <system-out>
       <![CDATA[init test2 data2]]>
       <![CDATA[test2 test2 data2]]>
@@ -62,12 +44,6 @@
     </system-out>
   </testcase>
   <testcase name="test3(data0)" classname="tst_Subtest" time="@TEST_DURATION@">
-    <!-- type="qdebug" message="test3_data test3 (null)" -->
-    <!-- type="qdebug" message="test3_data end" -->
-    <!-- type="qdebug" message="init test3 data0" -->
-    <!-- type="qdebug" message="test2 test3 data0" -->
-    <!-- type="qdebug" message="test2 end" -->
-    <!-- type="qdebug" message="cleanup test3 data0" -->
     <system-out>
       <![CDATA[test3_data test3 (null)]]>
       <![CDATA[test3_data end]]>
@@ -78,13 +54,10 @@
     </system-out>
   </testcase>
   <testcase name="test3(data1)" classname="tst_Subtest" time="@TEST_DURATION@">
-    <!-- type="qdebug" message="init test3 data1" -->
-    <!-- type="qdebug" message="test2 test3 data1" -->
     <failure type="fail" message="Compared values are not the same">
       <![CDATA[   Actual   (str)              : "hello1"
    Expected (QString("hello0")): "hello0"]]>
     </failure>
-    <!-- type="qdebug" message="cleanup test3 data1" -->
     <system-out>
       <![CDATA[init test3 data1]]>
       <![CDATA[test2 test3 data1]]>
@@ -92,13 +65,10 @@
     </system-out>
   </testcase>
   <testcase name="test3(data2)" classname="tst_Subtest" time="@TEST_DURATION@">
-    <!-- type="qdebug" message="init test3 data2" -->
-    <!-- type="qdebug" message="test2 test3 data2" -->
     <failure type="fail" message="Compared values are not the same">
       <![CDATA[   Actual   (str)              : "hello2"
    Expected (QString("hello0")): "hello0"]]>
     </failure>
-    <!-- type="qdebug" message="cleanup test3 data2" -->
     <system-out>
       <![CDATA[init test3 data2]]>
       <![CDATA[test2 test3 data2]]>
@@ -106,7 +76,6 @@
     </system-out>
   </testcase>
   <testcase name="cleanupTestCase" classname="tst_Subtest" time="@TEST_DURATION@">
-    <!-- type="qdebug" message="cleanupTestCase cleanupTestCase (null)" -->
     <system-out>
       <![CDATA[cleanupTestCase cleanupTestCase (null)]]>
     </system-out>

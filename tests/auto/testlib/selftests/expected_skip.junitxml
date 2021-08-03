@@ -16,7 +16,6 @@
     <skipped message="skipping one"/>
   </testcase>
   <testcase name="singleSkip(local 2)" classname="tst_Skip" time="@TEST_DURATION@">
-    <!-- type="qdebug" message="this line should only be reached once (true)" -->
     <system-out>
       <![CDATA[this line should only be reached once (true)]]>
     </system-out>
