@@ -77,14 +77,16 @@ public class QtLayout extends ViewGroup
         Rect r = new Rect();
         ((Activity) getContext()).getWindow().getDecorView().getWindowVisibleDisplayFrame(r);
 
-        if (m_bottomDisplayFrame !=  r.bottom) {
+        if (m_bottomDisplayFrame !=  r.bottom || oldh == -1) {
             m_bottomDisplayFrame =  r.bottom;
             QtNative.setApplicationDisplayMetrics(metrics.widthPixels, metrics.heightPixels, w, h,
                                                 metrics.xdpi,
                                                 metrics.ydpi,
                                                 metrics.scaledDensity,
                                                 metrics.density,
-                                                ((metrics.heightPixels == h) || (metrics.heightPixels == h + r.top)));
+                                               ((metrics.heightPixels == h)
+                                               || (metrics.heightPixels == h + r.top)
+                                               || (m_bottomDisplayFrame > metrics.heightPixels + r.top)));
         }
     }
 
@@ -171,7 +173,7 @@ public class QtLayout extends ViewGroup
             }
         }
 
-        handleSizeChanged (r, b, 0, 0);
+         handleSizeChanged (r, b, 0, -1);
     }
 
     // Override to allow type-checking of LayoutParams.
