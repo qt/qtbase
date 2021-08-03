@@ -58,8 +58,8 @@ namespace QTest {
         switch (type) {
         case QAbstractTestLogger::Warn:
             return "warn";
-        case QAbstractTestLogger::QSystem:
-            return "system";
+        case QAbstractTestLogger::QCritical:
+            return "qcritical";
         case QAbstractTestLogger::QDebug:
             return "qdebug";
         case QAbstractTestLogger::QInfo:

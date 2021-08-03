@@ -135,7 +135,7 @@ void QAbstractTestLogger::addMessage(QtMsgType type, const QMessageLogContext &c
         switch (type) {
         case QtDebugMsg: return QAbstractTestLogger::QDebug;
         case QtInfoMsg: return QAbstractTestLogger::QInfo;
-        case QtCriticalMsg: return QAbstractTestLogger::QSystem;
+        case QtCriticalMsg: return QAbstractTestLogger::QCritical;
         case QtWarningMsg: return QAbstractTestLogger::QWarning;
         case QtFatalMsg: return QAbstractTestLogger::QFatal;
         }

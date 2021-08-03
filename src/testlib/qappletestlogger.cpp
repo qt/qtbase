@@ -149,8 +149,8 @@ void QAppleTestLogger::addMessage(MessageTypes type, const QString &message, con
             return MessageData{QtWarningMsg, nullptr};
         case QAbstractTestLogger::QDebug:
             return MessageData{QtDebugMsg, nullptr};
-        case QAbstractTestLogger::QSystem:
-            return MessageData{QtWarningMsg, "system"};
+        case QAbstractTestLogger::QCritical:
+            return MessageData{QtWarningMsg, "critical"};
         case QAbstractTestLogger::QFatal:
             return MessageData{QtFatalMsg, nullptr};
         case QAbstractTestLogger::Skip:
