@@ -114,10 +114,10 @@ QFuture<int> future = ...;
 //! [5]
 
 //! [6]
-QFuture<int> parentFuture = ...;
-auto continuation = parentFuture.then([](int res1){ ... }).then([](int res2){ ... })...
+QFuture<int> future = ...;
+auto continuation = future.then([](int res1){ ... }).then([](int res2){ ... })...
 ...
-// parentFuture throws an exception
+// future throws an exception
 try {
     auto result = continuation.result();
 } catch (QException &e) {
@@ -286,9 +286,9 @@ auto future = QtConcurrent::run([] {
 
 //! [20]
 QObject *context = ...;
-auto parentFuture = cachedResultsReady ? QtFuture::makeReadyFuture(results)
-                                       : QtConcurrent::run([] { /* compute results */});
-auto future = parentFuture.then(context, [] (Results results) {
+auto future = cachedResultsReady ? QtFuture::makeReadyFuture(results)
+                                 : QtConcurrent::run([] { /* compute results */});
+auto continuation = future.then(context, [] (Results results) {
     // Runs in the context's thread
 }).then([] {
     // May or may not run in the context's thread
