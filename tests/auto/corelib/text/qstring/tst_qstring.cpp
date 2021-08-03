@@ -696,13 +696,6 @@ void tst_QString::remove_string_data()
     replace_string_data();
 }
 
-#if QT_CONFIG(regularexpression)
-void tst_QString::remove_regexp_data()
-{
-    replace_regexp_data();
-}
-#endif
-
 void tst_QString::indexOf3_data()
 {
     indexOf2_data();
@@ -892,17 +885,9 @@ void tst_QString::replace_string_data()
 #if QT_CONFIG(regularexpression)
 void tst_QString::replace_regexp_data()
 {
-    QTest::addColumn<QString>("string" );
-    QTest::addColumn<QString>("regexp" );
-    QTest::addColumn<QString>("after" );
-    QTest::addColumn<QString>("result" );
-
-    QTest::newRow( "rem00" ) << QString("alpha") << QString("a+") << QString("") << QString("lph");
-    QTest::newRow( "rem01" ) << QString("banana") << QString("^.a") << QString("") << QString("nana");
-    QTest::newRow( "rem02" ) << QString("") << QString("^.a") << QString("") << QString("");
-    QTest::newRow( "rem03" ) << QString("") << QString("^.a") << QString() << QString("");
-    QTest::newRow( "rem04" ) << QString() << QString("^.a") << QString("") << QString();
-    QTest::newRow( "rem05" ) << QString() << QString("^.a") << QString() << QString();
+    remove_regexp_data(); // Sets up the columns, adds rows with empty replacement text.
+    // Columns (all QString): string, regexp, after, result; string.replace(regexp, after) == result
+    // Test-cases with empty after (replacement text, third column) go in remove_regexp_data()
 
     QTest::newRow( "rep00" ) << QString("A <i>bon mot</i>.") << QString("<i>([^<]*)</i>") << QString("\\emph{\\1}") << QString("A \\emph{bon mot}.");
     QTest::newRow( "rep01" ) << QString("banana") << QString("^.a()") << QString("\\1") << QString("nana");
@@ -930,7 +915,6 @@ void tst_QString::replace_regexp_data()
                                << QString("a9a8a7a6a5nmlkjii0hh0gg0ff0ee0dd0cc0bb0a");
     QTest::newRow("backref10") << QString("abc") << QString("((((((((((((((abc))))))))))))))")
                                << QString("\\0\\01\\011") << QString("\\0\\01\\011");
-    QTest::newRow("invalid") << QString("") << QString("invalid regex\\") << QString("") << QString("");
 }
 #endif
 
@@ -3206,12 +3190,11 @@ void tst_QString::replace_regexp()
     QFETCH( QString, regexp );
     QFETCH( QString, after );
 
-    QString s2 = string;
     QRegularExpression regularExpression(regexp);
     if (!regularExpression.isValid())
         QTest::ignoreMessage(QtWarningMsg, "QString::replace: invalid QRegularExpression object");
-    s2.replace( regularExpression, after );
-    QTEST( s2, "result" );
+    string.replace(regularExpression, after);
+    QTEST(string, "result");
 }
 
 void tst_QString::replace_regexp_extra()
@@ -3298,19 +3281,42 @@ void tst_QString::remove_string()
 }
 
 #if QT_CONFIG(regularexpression)
+void tst_QString::remove_regexp_data()
+{
+    QTest::addColumn<QString>("string");
+    QTest::addColumn<QString>("regexp");
+    QTest::addColumn<QString>("after"); // For the benefit of replace_regexp; empty = remove.
+    QTest::addColumn<QString>("result");
+    // string.remove(regexp) == result
+
+    QTest::newRow("alpha:s/a+//")
+        << QString("alpha") << QString("a+") << QString("") << QString("lph");
+    QTest::newRow("banana:s/^.a//")
+        << QString("banana") << QString("^.a") << QString("") << QString("nana");
+    QTest::newRow("<empty>:s/^.a//")
+        << QString("") << QString("^.a") << QString("") << QString("");
+    // The null-vs-empty distinction in after is only relevant to repplace_regexp(), but
+    // include both cases here to keep after's "empty here, non-empty there" rule simple.
+    QTest::newRow("<empty>:s/^.a/<null>/")
+        << QString("") << QString("^.a") << QString() << QString("");
+    QTest::newRow("<null>:s/^.a//") << QString() << QString("^.a") << QString("") << QString();
+    QTest::newRow("<null>s/.a/<null>/") << QString() << QString("^.a") << QString() << QString();
+    QTest::newRow("invalid")
+        << QString("") << QString("invalid regex\\") << QString("") << QString("");
+}
+
 void tst_QString::remove_regexp()
 {
     QFETCH( QString, string );
     QFETCH( QString, regexp );
-    QFETCH( QString, after );
+    QTEST(QString(), "after"); // non-empty replacement text tests should go in replace_regexp_data()
 
-    if ( after.length() == 0 ) {
-        QString s2 = string;
-        s2.remove( QRegularExpression(regexp) );
-        QTEST( s2, "result" );
-    } else {
-        QCOMPARE( 0, 0 ); // shut Qt Test
-    }
+    QRegularExpression regularExpression(regexp);
+    // remove() delegates to replace(), which produces this warning:
+    if (!regularExpression.isValid())
+        QTest::ignoreMessage(QtWarningMsg, "QString::replace: invalid QRegularExpression object");
+    string.remove(regularExpression);
+    QTEST(string, "result");
 }
 #endif
 
