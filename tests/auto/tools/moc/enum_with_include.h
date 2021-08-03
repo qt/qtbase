@@ -34,6 +34,11 @@ class Foo : public QObject {
     enum en {
        #include <enum_inc.h>
     };
+
+    enum class en2 {
+       #include <enum_inc.h>
+       reference = 42
+    };
     Q_OBJECT
 };
 #endif

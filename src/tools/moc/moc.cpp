@@ -285,10 +285,9 @@ bool Moc::parseEnum(EnumDef *def)
             return IncludeState::NoInclude;
     };
     do {
+        handleInclude();
         if (lookup() == RBRACE) // accept trailing comma
             break;
-        if ( handleInclude() == IncludeState::IncludeEnd)
-            continue;
         next(IDENTIFIER);
         def->values += lexem();
         handleInclude();
