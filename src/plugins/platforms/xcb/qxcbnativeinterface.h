@@ -45,6 +45,8 @@
 
 #include <QtCore/QRect>
 
+#include <QtGui/qguiapplication.h>
+
 #include "qxcbexport.h"
 #include "qxcbconnection.h"
 
@@ -54,11 +56,12 @@ class QXcbScreen;
 class QXcbNativeInterfaceHandler;
 
 class Q_XCB_EXPORT QXcbNativeInterface : public QPlatformNativeInterface
+    , public QNativeInterface::QX11Application
 {
     Q_OBJECT
 public:
     enum ResourceType {
-        Display,
+        XDisplay,
         Connection,
         Screen,
         AppTime,
@@ -109,9 +112,11 @@ public:
     void *startupId();
     void *x11Screen();
     void *rootWindow();
-    void *display();
+
+    Display *display() const override;
+    xcb_connection_t *connection() const override;
+
     void *atspiBus();
-    void *connection();
     static void setStartupId(const char *);
     static void setAppTime(QScreen *screen, xcb_timestamp_t time);
     static void setAppUserTime(QScreen *screen, xcb_timestamp_t time);

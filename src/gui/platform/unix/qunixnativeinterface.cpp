@@ -179,6 +179,36 @@ QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QXcbScreen);
 
 QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QXcbWindow);
 
+/*!
+    \class QNativeInterface::QX11Application
+    \since 6.0
+    \brief Native interface to an X11 application.
+
+    Accessed through QGuiApplication::nativeInterface().
+
+    \inmodule QtGui
+    \ingroup native-interfaces
+    \ingroup native-interfaces-qguiapplication
+*/
+
+/*!
+    \fn Display *QNativeInterface::QX11Application::display() const
+
+    \return the X display of the application, for use with Xlib.
+
+    \sa connection()
+*/
+
+/*!
+    \fn xcb_connection_t *QNativeInterface::QX11Application::connection() const
+
+    \return the X connection of the application, for use with XCB.
+
+    \sa display()
+*/
+
+QT_DEFINE_NATIVE_INTERFACE(QX11Application);
+
 #endif // QT_CONFIG(xcb)
 
 #if QT_CONFIG(vsp2)

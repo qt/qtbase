@@ -87,7 +87,7 @@ qt_internal_add_module(Gui
         kernel/qevent.cpp kernel/qevent.h kernel/qevent_p.h
         kernel/qgenericplugin.cpp kernel/qgenericplugin.h
         kernel/qgenericpluginfactory.cpp kernel/qgenericpluginfactory.h
-        kernel/qguiapplication.cpp kernel/qguiapplication.h kernel/qguiapplication_p.h
+        kernel/qguiapplication.cpp kernel/qguiapplication.h kernel/qguiapplication_p.h kernel/qguiapplication_platform.h
         kernel/qguivariant.cpp
         kernel/qhighdpiscaling.cpp kernel/qhighdpiscaling_p.h
         kernel/qinputdevice.cpp kernel/qinputdevice.h kernel/qinputdevice_p.h

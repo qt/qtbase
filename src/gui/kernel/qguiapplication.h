@@ -219,4 +219,6 @@ private:
 
 QT_END_NAMESPACE
 
+#include <QtGui/qguiapplication_platform.h>
+
 #endif // QGUIAPPLICATION_H

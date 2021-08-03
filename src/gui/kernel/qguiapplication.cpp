@@ -4212,8 +4212,22 @@ QInputDeviceManager *QGuiApplicationPrivate::inputDeviceManager()
     return m_inputDeviceManager;
 }
 
+/*!
+    \fn template <typename QNativeInterface> QNativeInterface *QGuiApplication::nativeInterface() const
+
+    Returns a native interface of the given type for the application.
+
+    This function provides access to platform specific functionality
+    of QGuiApplication, as defined in the QNativeInterface namespace:
+
+    \annotatedlist native-interfaces-qguiapplication
+
+    If the requested interface is not available a \nullptr is returned.
+ */
+
 void *QGuiApplication::resolveInterface(const char *name, int revision) const
 {
+    using namespace QNativeInterface;
     using namespace QNativeInterface::Private;
 
     auto *platformIntegration = QGuiApplicationPrivate::platformIntegration();
@@ -4221,6 +4235,9 @@ void *QGuiApplication::resolveInterface(const char *name, int revision) const
 
 #if defined(Q_OS_WIN)
     QT_NATIVE_INTERFACE_RETURN_IF(QWindowsApplication, platformIntegration);
+#endif
+#if QT_CONFIG(xcb)
+    QT_NATIVE_INTERFACE_RETURN_IF(QX11Application, platformNativeInterface());
 #endif
 
     return QCoreApplication::resolveInterface(name, revision);
