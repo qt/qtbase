@@ -870,7 +870,7 @@ qt_feature("tuiotouch" PRIVATE
     PURPOSE "Provides the TuioTouch input plugin."
     CONDITION QT_FEATURE_network AND QT_FEATURE_udpsocket
 )
-qt_feature("xcb" PRIVATE
+qt_feature("xcb" PUBLIC
     SECTION "Platform plugins"
     LABEL "XCB"
     AUTODETECT NOT APPLE

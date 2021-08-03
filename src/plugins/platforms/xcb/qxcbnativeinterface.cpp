@@ -118,7 +118,7 @@ void *QXcbNativeInterface::nativeResourceForIntegration(const QByteArray &resour
     case RootWindow:
         result = rootWindow();
         break;
-    case Display:
+    case XDisplay:
         result = display();
         break;
     case AtspiBus:
@@ -155,7 +155,7 @@ void *QXcbNativeInterface::nativeResourceForScreen(const QByteArray &resourceStr
 
     const QXcbScreen *xcbScreen = static_cast<QXcbScreen *>(screen->handle());
     switch (resourceType(lowerCaseResource)) {
-    case Display:
+    case XDisplay:
 #if QT_CONFIG(xcb_xlib)
         result = xcbScreen->connection()->xlib_display();
 #endif
@@ -203,7 +203,7 @@ void *QXcbNativeInterface::nativeResourceForWindow(const QByteArray &resourceStr
         return result;
 
     switch (resourceType(lowerCaseResource)) {
-    case Display:
+    case XDisplay:
         result = displayForWindow(window);
         break;
     case Connection:
@@ -365,18 +365,17 @@ void *QXcbNativeInterface::rootWindow()
     return nullptr;
 }
 
-void *QXcbNativeInterface::display()
+Display *QXcbNativeInterface::display() const
 {
 #if QT_CONFIG(xcb_xlib)
     QXcbIntegration *integration = QXcbIntegration::instance();
-    QXcbConnection *connection = integration->connection();
-    if (connection)
-        return connection->xlib_display();
+    if (QXcbConnection *connection = integration->connection())
+        return reinterpret_cast<Display *>(connection->xlib_display());
 #endif
     return nullptr;
 }
 
-void *QXcbNativeInterface::connection()
+xcb_connection_t *QXcbNativeInterface::connection() const
 {
     QXcbIntegration *integration = QXcbIntegration::instance();
     return integration->connection()->xcb_connection();
