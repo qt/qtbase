@@ -53,9 +53,9 @@ function(qt6_android_generate_deployment_settings target)
         file(GLOB plugin_dir_files LIST_DIRECTORIES FALSE "${glob_expression}")
         if (NOT plugin_dir_files)
             message(SEND_ERROR
-                "Detected Qt installation does not contain qtforandroid_${CMAKE_ANDROID_ARCH_ABI}.so in the following dir:"
-                "${android_plugin_dir_path}"
-                "This is most likely due to the installation not being a Qt for Android build."
+                "Detected Qt installation does not contain qtforandroid_${CMAKE_ANDROID_ARCH_ABI}.so in the following dir:\n"
+                "${android_plugin_dir_path}\n"
+                "This is most likely due to the installation not being a Qt for Android build. "
                 "Please recheck your build configuration.")
             return()
         else()
