@@ -7,24 +7,18 @@
   </properties>
   <testcase name="initTestCase" classname="tst_Counting" time="@TEST_DURATION@"/>
   <testcase name="testPassPass(row 1)" classname="tst_Counting" time="@TEST_DURATION@">
-    <!-- type="info" message="QVERIFY(true)" -->
-    <!-- type="info" message="QCOMPARE(2 + 1, 3)" -->
     <system-out>
       <![CDATA[QVERIFY(true)]]>
       <![CDATA[QCOMPARE(2 + 1, 3)]]>
     </system-out>
   </testcase>
   <testcase name="testPassPass(row 2)" classname="tst_Counting" time="@TEST_DURATION@">
-    <!-- type="info" message="QVERIFY(true)" -->
-    <!-- type="info" message="QCOMPARE(2 + 1, 3)" -->
     <system-out>
       <![CDATA[QVERIFY(true)]]>
       <![CDATA[QCOMPARE(2 + 1, 3)]]>
     </system-out>
   </testcase>
   <testcase name="testPassSkip(row 1)" classname="tst_Counting" time="@TEST_DURATION@">
-    <!-- type="info" message="QVERIFY(true)" -->
-    <!-- type="info" message="QCOMPARE(2 + 1, 3)" -->
     <system-out>
       <![CDATA[QVERIFY(true)]]>
       <![CDATA[QCOMPARE(2 + 1, 3)]]>
@@ -34,15 +28,12 @@
     <skipped message="Skipping"/>
   </testcase>
   <testcase name="testPassFail(row 1)" classname="tst_Counting" time="@TEST_DURATION@">
-    <!-- type="info" message="QVERIFY(true)" -->
-    <!-- type="info" message="QCOMPARE(2 + 1, 3)" -->
     <system-out>
       <![CDATA[QVERIFY(true)]]>
       <![CDATA[QCOMPARE(2 + 1, 3)]]>
     </system-out>
   </testcase>
   <testcase name="testPassFail(row 2)" classname="tst_Counting" time="@TEST_DURATION@">
-    <!-- type="info" message="QVERIFY(false)" -->
     <failure type="fail" message="&apos;false&apos; returned FALSE. ()"/>
     <system-out>
       <![CDATA[QVERIFY(false)]]>
@@ -52,8 +43,6 @@
     <skipped message="Skipping"/>
   </testcase>
   <testcase name="testSkipPass(row 2)" classname="tst_Counting" time="@TEST_DURATION@">
-    <!-- type="info" message="QVERIFY(true)" -->
-    <!-- type="info" message="QCOMPARE(2 + 1, 3)" -->
     <system-out>
       <![CDATA[QVERIFY(true)]]>
       <![CDATA[QCOMPARE(2 + 1, 3)]]>
@@ -69,29 +58,24 @@
     <skipped message="Skipping"/>
   </testcase>
   <testcase name="testSkipFail(row 2)" classname="tst_Counting" time="@TEST_DURATION@">
-    <!-- type="info" message="QVERIFY(false)" -->
     <failure type="fail" message="&apos;false&apos; returned FALSE. ()"/>
     <system-out>
       <![CDATA[QVERIFY(false)]]>
     </system-out>
   </testcase>
   <testcase name="testFailPass(row 1)" classname="tst_Counting" time="@TEST_DURATION@">
-    <!-- type="info" message="QVERIFY(false)" -->
     <failure type="fail" message="&apos;false&apos; returned FALSE. ()"/>
     <system-out>
       <![CDATA[QVERIFY(false)]]>
     </system-out>
   </testcase>
   <testcase name="testFailPass(row 2)" classname="tst_Counting" time="@TEST_DURATION@">
-    <!-- type="info" message="QVERIFY(true)" -->
-    <!-- type="info" message="QCOMPARE(2 + 1, 3)" -->
     <system-out>
       <![CDATA[QVERIFY(true)]]>
       <![CDATA[QCOMPARE(2 + 1, 3)]]>
     </system-out>
   </testcase>
   <testcase name="testFailSkip(row 1)" classname="tst_Counting" time="@TEST_DURATION@">
-    <!-- type="info" message="QVERIFY(false)" -->
     <failure type="fail" message="&apos;false&apos; returned FALSE. ()"/>
     <system-out>
       <![CDATA[QVERIFY(false)]]>
@@ -101,14 +85,12 @@
     <skipped message="Skipping"/>
   </testcase>
   <testcase name="testFailFail(row 1)" classname="tst_Counting" time="@TEST_DURATION@">
-    <!-- type="info" message="QVERIFY(false)" -->
     <failure type="fail" message="&apos;false&apos; returned FALSE. ()"/>
     <system-out>
       <![CDATA[QVERIFY(false)]]>
     </system-out>
   </testcase>
   <testcase name="testFailFail(row 2)" classname="tst_Counting" time="@TEST_DURATION@">
-    <!-- type="info" message="QVERIFY(false)" -->
     <failure type="fail" message="&apos;false&apos; returned FALSE. ()"/>
     <system-out>
       <![CDATA[QVERIFY(false)]]>
@@ -121,7 +103,6 @@
   <testcase name="testFailInInit(after)" classname="tst_Counting" time="@TEST_DURATION@"/>
   <testcase name="testFailInCleanup(before)" classname="tst_Counting" time="@TEST_DURATION@"/>
   <testcase name="testFailInCleanup(fail)" classname="tst_Counting" time="@TEST_DURATION@">
-    <!-- type="qdebug" message="This test function should execute and then QFAIL in cleanup()" -->
     <failure type="fail" message="Fail in cleanup()"/>
     <system-out>
       <![CDATA[This test function should execute and then QFAIL in cleanup()]]>
@@ -135,7 +116,6 @@
   <testcase name="testSkipInInit(after)" classname="tst_Counting" time="@TEST_DURATION@"/>
   <testcase name="testSkipInCleanup(before)" classname="tst_Counting" time="@TEST_DURATION@"/>
   <testcase name="testSkipInCleanup(skip)" classname="tst_Counting" time="@TEST_DURATION@">
-    <!-- type="qdebug" message="This test function should execute and then QSKIP in cleanup()" -->
     <skipped message="Skip in cleanup()"/>
     <system-out>
       <![CDATA[This test function should execute and then QSKIP in cleanup()]]>

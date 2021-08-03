@@ -7,16 +7,6 @@
   </properties>
   <testcase name="initTestCase" classname="tst_Warnings" time="@TEST_DURATION@"/>
   <testcase name="testWarnings" classname="tst_Warnings" time="@TEST_DURATION@">
-    <!-- type="qwarn" message="Warning" -->
-    <!-- type="qwarn" message="Warning" -->
-    <!-- type="qdebug" message="Debug" -->
-    <!-- type="qdebug" message="Debug" -->
-    <!-- type="qinfo" message="Info" -->
-    <!-- type="qinfo" message="Info" -->
-    <!-- type="qdebug" message="Baba" -->
-    <!-- type="qdebug" message="Baba" -->
-    <!-- type="qdebug" message="Bubublabla" -->
-    <!-- type="qwarn" message="Babablabla" -->
     <system-out>
       <![CDATA[Debug]]>
       <![CDATA[Debug]]>
@@ -33,8 +23,6 @@
     </system-err>
   </testcase>
   <testcase name="testMissingWarnings" classname="tst_Warnings" time="@TEST_DURATION@">
-    <!-- type="info" message="Did not receive message: &quot;Warning0&quot;" -->
-    <!-- type="info" message="Did not receive message: &quot;Warning1&quot;" -->
     <failure type="fail" message="Not all expected messages were received"/>
     <system-out>
       <![CDATA[Did not receive message: "Warning0"]]>
@@ -42,15 +30,12 @@
     </system-out>
   </testcase>
   <testcase name="testMissingWarningsRegularExpression" classname="tst_Warnings" time="@TEST_DURATION@">
-    <!-- type="info" message="Did not receive any message matching: &quot;Warning\s\d&quot;" -->
     <failure type="fail" message="Not all expected messages were received"/>
     <system-out>
       <![CDATA[Did not receive any message matching: "Warning\s\d"]]>
     </system-out>
   </testcase>
   <testcase name="testMissingWarningsWithData(first row)" classname="tst_Warnings" time="@TEST_DURATION@">
-    <!-- type="info" message="Did not receive message: &quot;Warning0&quot;" -->
-    <!-- type="info" message="Did not receive message: &quot;Warning1&quot;" -->
     <failure type="fail" message="Not all expected messages were received"/>
     <system-out>
       <![CDATA[Did not receive message: "Warning0"]]>
@@ -58,8 +43,6 @@
     </system-out>
   </testcase>
   <testcase name="testMissingWarningsWithData(second row)" classname="tst_Warnings" time="@TEST_DURATION@">
-    <!-- type="info" message="Did not receive message: &quot;Warning0&quot;" -->
-    <!-- type="info" message="Did not receive message: &quot;Warning1&quot;" -->
     <failure type="fail" message="Not all expected messages were received"/>
     <system-out>
       <![CDATA[Did not receive message: "Warning0"]]>
