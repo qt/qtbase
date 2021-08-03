@@ -1150,10 +1150,10 @@ void QHttp2ProtocolHandler::updateStream(Stream &stream, const HPack::HttpHeader
             statusCode = value.left(3).toInt();
             httpReply->setStatusCode(statusCode);
             m_channel->lastStatus = statusCode; // Mostly useless for http/2, needed for auth
-            httpReplyPrivate->reasonPhrase = QString::fromLatin1(value.mid(4));
+            httpReply->setReasonPhrase(QString::fromLatin1(value.mid(4)));
         } else if (name == ":version") {
-            httpReplyPrivate->majorVersion = value.at(5) - '0';
-            httpReplyPrivate->minorVersion = value.at(7) - '0';
+            httpReply->setMajorVersion(value.at(5) - '0');
+            httpReply->setMinorVersion(value.at(7) - '0');
         } else if (name == "content-length") {
             bool ok = false;
             const qlonglong length = value.toLongLong(&ok);
@@ -1165,7 +1165,7 @@ void QHttp2ProtocolHandler::updateStream(Stream &stream, const HPack::HttpHeader
             QByteArray binder(", ");
             if (name == "set-cookie")
                 binder = "\n";
-            httpReplyPrivate->fields.append(qMakePair(name, value.replace('\0', binder)));
+            httpReply->appendHeaderField(name, value.replace('\0', binder));
         }
     }
 

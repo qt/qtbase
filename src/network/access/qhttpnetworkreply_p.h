@@ -87,7 +87,7 @@ class QHttpNetworkConnectionChannel;
 class QHttpNetworkRequest;
 class QHttpNetworkConnectionPrivate;
 class QHttpNetworkReplyPrivate;
-class Q_NETWORK_PRIVATE_EXPORT QHttpNetworkReply : public QObject, public QHttpNetworkHeader
+class Q_AUTOTEST_EXPORT QHttpNetworkReply : public QObject, public QHttpNetworkHeader
 {
     Q_OBJECT
 public:
@@ -100,6 +100,8 @@ public:
 
     int majorVersion() const override;
     int minorVersion() const override;
+    void setMajorVersion(int version);
+    void setMinorVersion(int version);
 
     qint64 contentLength() const override;
     void setContentLength(qint64 length) override;
@@ -107,7 +109,8 @@ public:
     QList<QPair<QByteArray, QByteArray> > header() const override;
     QByteArray headerField(const QByteArray &name, const QByteArray &defaultValue = QByteArray()) const override;
     void setHeaderField(const QByteArray &name, const QByteArray &data) override;
-    void parseHeader(const QByteArray &header); // used by QtWebSockets
+    void appendHeaderField(const QByteArray &name, const QByteArray &data);
+    void parseHeader(const QByteArray &header); // used for testing
 
     QHttpNetworkRequest request() const;
     void setRequest(const QHttpNetworkRequest &request);
@@ -121,6 +124,7 @@ public:
     QNetworkReply::NetworkError errorCode() const;
 
     QString reasonPhrase() const;
+    void setReasonPhrase(const QString &reason);
 
     qint64 bytesAvailable() const;
     qint64 bytesAvailableNextBlock() const;
@@ -205,6 +209,7 @@ public:
     bool parseStatus(const QByteArray &status);
     qint64 readHeader(QAbstractSocket *socket);
     void parseHeader(const QByteArray &header);
+    void appendHeaderField(const QByteArray &name, const QByteArray &data);
     qint64 readBody(QAbstractSocket *socket, QByteDataBuffer *out);
     qint64 readBodyVeryFast(QAbstractSocket *socket, char *b);
     qint64 readBodyFast(QAbstractSocket *socket, QByteDataBuffer *rb);
@@ -243,11 +248,7 @@ public:
 
     QHttpNetworkRequest request;
     bool ssl;
-    int statusCode;
-    int majorVersion;
-    int minorVersion;
     QString errorString;
-    QString reasonPhrase;
     qint64 bodyLength;
     qint64 contentRead;
     qint64 totalProgress;

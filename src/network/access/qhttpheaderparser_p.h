@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -37,72 +37,68 @@
 **
 ****************************************************************************/
 
-#include "qhttpnetworkheader_p.h"
+#ifndef QHTTPHEADERPARSER_H
+#define QHTTPHEADERPARSER_H
 
-#include <algorithm>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists for the convenience
+// of the Network Access API.  This header file may change from
+// version to version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include <QtNetwork/private/qtnetworkglobal_p.h>
+
+#include <QByteArray>
+#include <QList>
+#include <QPair>
+#include <QString>
 
 QT_BEGIN_NAMESPACE
 
-QHttpNetworkHeaderPrivate::QHttpNetworkHeaderPrivate(const QUrl &newUrl)
-    :url(newUrl)
+class Q_NETWORK_PRIVATE_EXPORT QHttpHeaderParser
 {
-}
+public:
+    QHttpHeaderParser();
 
-qint64 QHttpNetworkHeaderPrivate::contentLength() const
-{
-    bool ok = false;
-    // We are not using the headerField() method here because servers might send us multiple content-length
-    // headers which is crap (see QTBUG-15311). Therefore just take the first content-length header field.
-    QByteArray value = parser.firstHeaderField("content-length");
-    qint64 length = value.toULongLong(&ok);
-    if (ok)
-        return length;
-    return -1; // the header field is not set
-}
+    void clear();
+    bool parseHeaders(QByteArrayView headers);
+    bool parseStatus(QByteArrayView status);
 
-void QHttpNetworkHeaderPrivate::setContentLength(qint64 length)
-{
-    setHeaderField("Content-Length", QByteArray::number(length));
-}
+    const QList<QPair<QByteArray, QByteArray> >& headers() const;
+    void setStatusCode(int code);
+    int getStatusCode() const;
+    int getMajorVersion() const;
+    void setMajorVersion(int version);
+    int getMinorVersion() const;
+    void setMinorVersion(int version);
+    QString getReasonPhrase() const;
+    void setReasonPhrase(const QString &reason);
 
-QByteArray QHttpNetworkHeaderPrivate::headerField(const QByteArray &name, const QByteArray &defaultValue) const
-{
-    QList<QByteArray> allValues = headerFieldValues(name);
-    if (allValues.isEmpty())
-        return defaultValue;
-    else
-        return allValues.join(", ");
-}
+    QByteArray firstHeaderField(const QByteArray &name,
+                                const QByteArray &defaultValue = QByteArray()) const;
+    QByteArray combinedHeaderValue(const QByteArray &name,
+                                   const QByteArray &defaultValue = QByteArray()) const;
+    QList<QByteArray> headerFieldValues(const QByteArray &name) const;
+    void setHeaderField(const QByteArray &name, const QByteArray &data);
+    void prependHeaderField(const QByteArray &name, const QByteArray &data);
+    void appendHeaderField(const QByteArray &name, const QByteArray &data);
+    void removeHeaderField(const QByteArray &name);
+    void clearHeaders();
 
-QList<QByteArray> QHttpNetworkHeaderPrivate::headerFieldValues(const QByteArray &name) const
-{
-    return parser.headerFieldValues(name);
-}
-
-void QHttpNetworkHeaderPrivate::setHeaderField(const QByteArray &name, const QByteArray &data)
-{
-    parser.setHeaderField(name, data);
-}
-
-void QHttpNetworkHeaderPrivate::prependHeaderField(const QByteArray &name, const QByteArray &data)
-{
-    parser.prependHeaderField(name, data);
-}
-
-QList<QPair<QByteArray, QByteArray> > QHttpNetworkHeaderPrivate::headers() const
-{
-    return parser.headers();
-}
-
-void QHttpNetworkHeaderPrivate::clearHeaders()
-{
-    parser.clearHeaders();
-}
-
-bool QHttpNetworkHeaderPrivate::operator==(const QHttpNetworkHeaderPrivate &other) const
-{
-   return (url == other.url);
-}
+private:
+    QList<QPair<QByteArray, QByteArray> > fields;
+    QString reasonPhrase;
+    int statusCode;
+    int majorVersion;
+    int minorVersion;
+};
 
 
 QT_END_NAMESPACE
+
+#endif // QHTTPHEADERPARSER_H

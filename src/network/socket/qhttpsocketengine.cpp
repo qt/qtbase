@@ -579,7 +579,7 @@ void QHttpSocketEngine::slotSocketReadNotification()
         d->pendingResponseData -= uint(skipped);
         if (d->pendingResponseData > 0)
             return;
-        if (d->reply->d_func()->statusCode == 407)
+        if (d->reply->statusCode() == 407)
             d->state = SendAuthentication;
     }
 

@@ -107,7 +107,7 @@ void QHttpProtocolHandler::_q_receiveReply()
                 return;
             }
             bytes += statusBytes;
-            m_channel->lastStatus = m_reply->d_func()->statusCode;
+            m_channel->lastStatus = m_reply->statusCode();
             break;
         }
         case QHttpNetworkReplyPrivate::ReadingHeaderState: {
@@ -127,7 +127,7 @@ void QHttpProtocolHandler::_q_receiveReply()
                 } else {
                     replyPrivate->autoDecompress = false;
                 }
-                if (replyPrivate->statusCode == 100) {
+                if (m_reply->statusCode() == 100) {
                     replyPrivate->clearHttpLayerInformation();
                     replyPrivate->state = QHttpNetworkReplyPrivate::ReadingStatusState;
                     break; // ignore

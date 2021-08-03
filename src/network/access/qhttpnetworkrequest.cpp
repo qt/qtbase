@@ -271,7 +271,7 @@ void QHttpNetworkRequest::setContentLength(qint64 length)
 
 QList<QPair<QByteArray, QByteArray> > QHttpNetworkRequest::header() const
 {
-    return d->fields;
+    return d->parser.headers();
 }
 
 QByteArray QHttpNetworkRequest::headerField(const QByteArray &name, const QByteArray &defaultValue) const

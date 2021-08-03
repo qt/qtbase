@@ -584,7 +584,7 @@ void QHttpNetworkConnectionChannel::detectPipeliningSupport()
     QByteArray serverHeaderField;
     if (
             // check for HTTP/1.1
-            (reply->d_func()->majorVersion == 1 && reply->d_func()->minorVersion == 1)
+            (reply->majorVersion() == 1 && reply->minorVersion() == 1)
             // check for not having connection close
             && (!reply->d_func()->isConnectionCloseEnabled())
             // check if it is still connected

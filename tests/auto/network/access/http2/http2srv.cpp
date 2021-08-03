@@ -382,7 +382,7 @@ bool Http2Server::verifyProtocolUpgradeRequest()
     QHttpNetworkReplyPrivate *firstRequestReader = protocolUpgradeHandler->d_func();
 
     // That's how we append them, that's what I expect to find:
-    for (const auto &header : firstRequestReader->fields) {
+    for (const auto &header : firstRequestReader->headers()) {
         if (header.first == "Connection")
             connectionOk = header.second.contains("Upgrade, HTTP2-Settings");
         else if (header.first == "Upgrade")

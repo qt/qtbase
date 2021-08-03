@@ -52,6 +52,7 @@
 //
 
 #include <QtNetwork/private/qtnetworkglobal_p.h>
+#include <QtNetwork/private/qhttpheaderparser_p.h>
 
 #include <qshareddata.h>
 #include <qurl.h>
@@ -84,10 +85,10 @@ class Q_AUTOTEST_EXPORT QHttpNetworkHeaderPrivate : public QSharedData
 {
 public:
     QUrl url;
-    QList<QPair<QByteArray, QByteArray> > fields;
+    QHttpHeaderParser parser;
 
     QHttpNetworkHeaderPrivate(const QUrl &newUrl = QUrl());
-    QHttpNetworkHeaderPrivate(const QHttpNetworkHeaderPrivate &other);
+    QHttpNetworkHeaderPrivate(const QHttpNetworkHeaderPrivate &other) = default;
     qint64 contentLength() const;
     void setContentLength(qint64 length);
 
@@ -96,6 +97,7 @@ public:
     void setHeaderField(const QByteArray &name, const QByteArray &data);
     void prependHeaderField(const QByteArray &name, const QByteArray &data);
     void clearHeaders();
+    QList<QPair<QByteArray, QByteArray> > headers() const;
     bool operator==(const QHttpNetworkHeaderPrivate &other) const;
 
 };
