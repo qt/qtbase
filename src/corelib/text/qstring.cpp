@@ -1485,6 +1485,40 @@ inline char qToLower(char ch)
         return ch;
 }
 
+// ### Qt 7: do not allow anything but ASCII digits
+// in arg()'s replacements.
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+static bool supportUnicodeDigitValuesInArg()
+{
+    static const bool result = []() {
+        static const char supportUnicodeDigitValuesEnvVar[]
+                = "QT_USE_UNICODE_DIGIT_VALUES_IN_STRING_ARG";
+
+        if (qEnvironmentVariableIsSet(supportUnicodeDigitValuesEnvVar))
+            return qEnvironmentVariableIntValue(supportUnicodeDigitValuesEnvVar) != 0;
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 6, 0) // keep it in sync with the test
+        return true;
+#else
+        return false;
+#endif
+    }();
+
+    return result;
+}
+#endif
+
+static int qArgDigitValue(QChar ch) noexcept
+{
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+    if (supportUnicodeDigitValuesInArg())
+        return ch.digitValue();
+#endif
+    if (ch >= u'0' && ch <= u'9')
+        return int(ch.unicode() - u'0');
+    return -1;
+}
+
 
 /*!
   \macro QT_RESTRICTED_CAST_FROM_ASCII
@@ -7725,6 +7759,34 @@ QString QString::normalized(QString::NormalizationForm mode, QChar::UnicodeVersi
     return copy;
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+static void checkArgEscape(QStringView s)
+{
+    // If we're in here, it means that qArgDigitValue has accepted the
+    // digit. We can skip the check in case we already know it will
+    // succeed.
+    if (!supportUnicodeDigitValuesInArg())
+        return;
+
+    const auto isNonAsciiDigit = [](QChar c) {
+        return c.unicode() < u'0' || c.unicode() > u'9';
+    };
+
+    if (std::any_of(s.begin(), s.end(), isNonAsciiDigit)) {
+        const auto accumulateDigit = [](int partial, QChar digit) {
+            return partial * 10 + digit.digitValue();
+        };
+        const int parsedNumber = std::accumulate(s.begin(), s.end(), 0, accumulateDigit);
+
+        qWarning("QString::arg(): the replacement \"%%%ls\" contains non-ASCII digits;\n"
+                 "    it is currently being interpreted as the %d-th substitution.\n"
+                 "    This is deprecated; support for non-ASCII digits will be dropped\n"
+                 "    in a future version of Qt.",
+                 qUtf16Printable(s.toString()),
+                 parsedNumber);
+    }
+}
+#endif
 
 struct ArgEscapeData
 {
@@ -7765,19 +7827,33 @@ static ArgEscapeData findArgEscapes(QStringView s)
                 break;
         }
 
-        int escape = c->digitValue();
+        int escape = qArgDigitValue(*c);
         if (escape == -1)
             continue;
+
+        // ### Qt 7: do not allow anything but ASCII digits
+        // in arg()'s replacements.
+#if QT_VERSION <= QT_VERSION_CHECK(7, 0, 0)
+        const QChar *escapeBegin = c;
+        const QChar *escapeEnd = escapeBegin + 1;
+#endif
 
         ++c;
 
         if (c != uc_end) {
-            int next_escape = c->digitValue();
+            const int next_escape = qArgDigitValue(*c);
             if (next_escape != -1) {
                 escape = (10 * escape) + next_escape;
                 ++c;
+#if QT_VERSION <= QT_VERSION_CHECK(7, 0, 0)
+                ++escapeEnd;
+#endif
             }
         }
+
+#if QT_VERSION <= QT_VERSION_CHECK(7, 0, 0)
+        checkArgEscape(QStringView(escapeBegin, escapeEnd));
+#endif
 
         if (escape > d.min_escape)
             continue;
@@ -7829,9 +7905,9 @@ static QString replaceArgEscapes(QStringView s, const ArgEscapeData &d, qsizetyp
         if (localize)
             ++c;
 
-        int escape = c->digitValue();
+        int escape = qArgDigitValue(*c);
         if (escape != -1 && c + 1 != uc_end) {
-            int digit = c[1].digitValue();
+            const int digit = qArgDigitValue(c[1]);
             if (digit != -1) {
                 ++c;
                 escape = 10 * escape + digit;

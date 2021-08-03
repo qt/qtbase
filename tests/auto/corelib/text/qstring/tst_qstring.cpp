@@ -5153,6 +5153,35 @@ void tst_QString::arg()
                        .arg( firstName ).arg( lastName );
     QCOMPARE( fullName, QLatin1String("My name is Bond, James Bond") );
 
+    // ### Qt 7: clean this up, leave just the #else branch
+#if QT_VERSION < QT_VERSION_CHECK(6, 6, 0)
+    static const QRegularExpression nonAsciiArgWarning("QString::arg\\(\\): the replacement \".*\" contains non-ASCII digits");
+    QTest::ignoreMessage(QtWarningMsg, nonAsciiArgWarning);
+    QCOMPARE( QString("%¹").arg("foo"), QString("foo") );
+    QTest::ignoreMessage(QtWarningMsg, nonAsciiArgWarning);
+    QCOMPARE( QString("%¹%1").arg("foo"), QString("foofoo") );
+    QTest::ignoreMessage(QtWarningMsg, nonAsciiArgWarning);
+    QCOMPARE( QString("%1²").arg("E=mc"), QString("E=mc") );
+    QTest::ignoreMessage(QtWarningMsg, nonAsciiArgWarning);
+    QTest::ignoreMessage(QtWarningMsg, nonAsciiArgWarning);
+    QCOMPARE( QString("%1²%2").arg("a").arg("b"), QString("ba") );
+    QTest::ignoreMessage(QtWarningMsg, nonAsciiArgWarning);
+    QTest::ignoreMessage(QtWarningMsg, nonAsciiArgWarning);
+    QTest::ignoreMessage(QtWarningMsg, nonAsciiArgWarning);
+    QCOMPARE( QString("%¹%1²%2").arg("a").arg("b"), QString("a%1²b") );
+    QTest::ignoreMessage(QtWarningMsg, nonAsciiArgWarning);
+    QTest::ignoreMessage(QtWarningMsg, nonAsciiArgWarning);
+    QCOMPARE( QString("%2²%1").arg("a").arg("b"), QString("ba") );
+#else
+    QTest::ignoreMessage(QtWarningMsg, "QString::arg: Argument missing: %¹, foo");
+    QCOMPARE( QString("%¹").arg("foo"), QString("%¹") );
+    QCOMPARE( QString("%¹%1").arg("foo"), QString("%¹foo") );
+    QCOMPARE( QString("%1²").arg("E=mc"), QString("E=mc²") );
+    QCOMPARE( QString("%1²%2").arg("a").arg("b"), QString("a²b") );
+    QCOMPARE( QString("%¹%1²%2").arg("a").arg("b"), QString("%¹a²b") );
+    QCOMPARE( QString("%2²%1").arg("a").arg("b"), QString("b²a") );
+#endif
+
     // number overloads
     QCOMPARE( s4.arg(0), QLatin1String("[0]") );
     QCOMPARE( s4.arg(-1), QLatin1String("[-1]") );
