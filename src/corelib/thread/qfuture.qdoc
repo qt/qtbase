@@ -65,7 +65,7 @@
     using exceptions. Let's say we want to send a network request to obtain a large
     file from a network location. Then we want to write it to the file system and
     return its location in case of a success. Both of these operations may fail
-    with different errors. So, we use std::variant to keep the result
+    with different errors. So, we use \c std::variant to keep the result
     or error:
 
     \snippet code/src_corelib_thread_qfuture.cpp 3
@@ -75,13 +75,13 @@
     \snippet code/src_corelib_thread_qfuture.cpp 4
 
     It's possible to chain multiple continuations and handlers in any order.
-    The first handler that can handle the state of its parent is invoked first.
-    If there's no proper handler, the state is propagated to the next continuation
-    or handler. For example:
+    For example:
 
     \snippet code/src_corelib_thread_qfuture.cpp 15
 
-    If \c testFuture is successfully fulfilled \c {Block 1} will be called. If
+    Depending on the state of \c testFuture (canceled, has exception or has a
+    result), the next onCanceled(), onFailed() or then() will be called. So
+    if \c testFuture is successfully fulfilled, \c {Block 1} will be called. If
     it succeeds as well, the next then() (\c {Block 4}) is called. If \c testFuture
     gets canceled or fails with an exception, either \c {Block 2} or \c {Block 3}
     will be called respectively. The next then() will be called afterwards, and the
@@ -890,16 +890,19 @@
 
   Represents execution policies for running a QFuture continuation.
 
-  \value Sync           The continuation will be launched in the same thread in
-                        which the parent has been executing, or in the thread where
-                        the parent lives if the continuation is attached after the
-                        parent has already finished.
+  \value Sync           The continuation will be launched in the same thread that
+                        fulfills the promise associated with the future to which the
+                        continuation was attached, or if it has already finished, the
+                        continuation will be invoked immediately, in the thread that
+                        executes \c then().
 
-  \value Async          The continuation will be launched in in a separate thread taken from
+  \value Async          The continuation will be launched in a separate thread taken from
                         the global QThreadPool.
 
-  \value Inherit        The continuation will inherit the launch policy of the parent or its
-                        thread pool, if it was using a custom one.
+  \value Inherit        The continuation will inherit the launch policy or thread pool of
+                        the future to which it is attached.
+
+  \c Sync is used as a default launch policy.
 
   \sa QFuture::then(), QThreadPool::globalInstance()
 
@@ -1051,11 +1054,8 @@
     \overload
 
     Attaches a continuation to this future, allowing to chain multiple asynchronous
-    computations if desired. When the asynchronous computation represented by this
-    future finishes, \a function will be invoked in the same thread in which this
-    future has been running. If the continuation is attached after the parent has
-    already finished, it will be invoked in the thread where the parent lives. This
-    method returns a new QFuture representing the result of the continuation.
+    computations if desired, using the \l {QtFuture::Launch}{Sync} policy.
+    This method returns a new QFuture representing the result of the continuation.
 
     \note Use other overloads of this method if you need to launch the continuation in
     a separate thread.
@@ -1092,7 +1092,7 @@
 
     In this case the whole chain of continuations will be interrupted.
 
-    \note If the parent future gets canceled, its continuations will
+    \note If this future gets canceled, the continuations attached to it will
     also be canceled.
 
     \sa onFailed(), onCanceled()
@@ -1108,10 +1108,12 @@
     finishes, \a function will be invoked according to the given launch \a policy.
     A new QFuture representing the result of the continuation is returned.
 
-    Depending on the \a policy, continuation will run in the same thread as the parent,
-    run in a new thread, or inherit the launch policy and thread pool of the parent.
+    Depending on the \a policy, continuation will be invoked in the same thread as
+    this future, in a new thread, or will inherit the launch policy and thread pool of
+    this future. If no launch policy is specified (see the overload taking only a callable),
+    the \c Sync policy will be used.
 
-    In the following example both continuations will run in a new thread (but in
+    In the following example both continuations will be invoked in a new thread (but in
     the same one).
 
     \code
@@ -1119,8 +1121,8 @@
     future.then(QtFuture::Launch::Async, [](int res){ ... }).then([](int res2){ ... });
     \endcode
 
-    In the following example both continuations will run in new threads using the same
-    thread pool.
+    In the following example both continuations will be invoked in new threads using the
+    same thread pool.
 
     \code
     QFuture<int> future = ...;
@@ -1166,10 +1168,11 @@
 
     \snippet code/src_corelib_thread_qfuture.cpp 18
 
-    This is because by default \c .then() is invoked from the same thread as the parent.
+    This is because by default \c .then() is invoked from the same thread as the
+    previous one.
 
-    But note that if the continuation is attached after the parent has already finished,
-    it will be invoked in the thread where the parent future lives:
+    But note that if the continuation is attached after this future has already finished,
+    it will be invoked immediately, in the thread that executes \c then():
 
     \snippet code/src_corelib_thread_qfuture.cpp 20
 
@@ -1189,13 +1192,14 @@
     \since 6.0
 
     Attaches a failure handler to this future, to handle any exceptions that may
-    have been generated. Returns a QFuture of the parent type. The handler will
-    be invoked only in case of an exception, in the same thread as the parent
-    future has been running. If the continuation is attached after the parent has
-    already finished, it will be invoked in the thread where the parent lives.
-    \a handler is a callable which takes either no argument or one argument, to
-    filter by specific error types similar to
-    \l {https://en.cppreference.com/w/cpp/language/try_catch} {catch} statement.
+    have been generated. Returns a QFuture of the same type as this future. The
+    handler will be invoked only in case of an exception, in the same thread that
+    reported that the promise associated with this future is finished with an exception.
+    If the handler is attached after this future has already finished, it will be
+    invoked immediately, in the thread that executes \c onFailed(). \a handler is a
+    callable which takes either no argument or one argument, to filter by specific error
+    types, similar to the \l {https://en.cppreference.com/w/cpp/language/try_catch} {catch}
+    statement.
 
     For example:
 
@@ -1222,11 +1226,11 @@
     \since 6.1
     \overload
 
-    Attaches a failure handler to this future, to handle any exceptions that may
-    have been generated. Returns a QFuture of the parent type. The handler will
-    be invoked only in case of an exception, in the thread of the \a context object.
-    This can be useful if the failure needs to be handled in a specific thread.
-    For example:
+    Attaches a failure handler to this future, to handle any exceptions that the future
+    raises, or that it has already raised. Returns a QFuture of the same type as this
+    future. The handler will be invoked only in case of an exception, in the thread of
+    the \a context object. This can be useful if the failure needs to be handled in a
+    specific thread. For example:
 
     \snippet code/src_corelib_thread_qfuture.cpp 19
 
@@ -1244,11 +1248,11 @@
 
     \since 6.0
 
-    Attaches a cancellation \a handler to this future, to be called when the future is
-    canceled. The \a handler is a callable which doesn't take any arguments. It will be
-    invoked in the same thread in which this future has been running. If the continuation
-    is attached after the parent has already finished, it will be invoked in the thread
-    where the parent lives.
+    Attaches a cancellation \a handler to this future, to be called when or if the future
+    is canceled. The \a handler is a callable which doesn't take any arguments. It will be
+    invoked in the same thread that canceled the promise associated with this future. If
+    the continuation is attached after this future has already finished, it will be invoked
+    immediately, in the thread that executes \c onCanceled().
 
     \sa then(), onFailed()
 */
