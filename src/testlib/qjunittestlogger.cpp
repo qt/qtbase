@@ -305,6 +305,7 @@ void QJUnitTestLogger::addMessage(MessageTypes type, const QString &message, con
         typeBuf = "warn";
         break;
     case QAbstractTestLogger::QCritical:
+        systemLogElement = systemErrorElement;
         typeBuf = "qcritical";
         break;
     case QAbstractTestLogger::QDebug:
