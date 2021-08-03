@@ -197,7 +197,11 @@ public:
     mutable int cachedFd;
     mutable DWORD fileAttrib;
 #else
-    QHash<uchar *, QPair<int /*offset % PageSize*/, size_t /*length + offset % PageSize*/> > maps;
+    struct StartAndLength {
+        int start;     // offset % PageSize
+        size_t length; // length + offset % PageSize
+    };
+    QHash<uchar *, StartAndLength> maps;
 #endif
     int fd;
 

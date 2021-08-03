@@ -621,7 +621,7 @@ uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size, QFile::MemoryMapFla
                    access, sharemode, nativeHandle(), realOffset);
     if (MAP_FAILED != mapAddress) {
         uchar *address = extra + static_cast<uchar*>(mapAddress);
-        maps[address] = QPair<int,size_t>(extra, realSize);
+        maps[address] = {extra, realSize};
         return address;
     }
 
@@ -652,8 +652,8 @@ bool QFSFileEnginePrivate::unmap(uchar *ptr)
         return false;
     }
 
-    uchar *start = ptr - it->first;
-    size_t len = it->second;
+    uchar *start = ptr - it->start;
+    size_t len = it->length;
     if (-1 == munmap(start, len)) {
         q->setError(QFile::UnspecifiedError, qt_error_string(errno));
         return false;
