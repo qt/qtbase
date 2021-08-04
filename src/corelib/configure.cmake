@@ -901,6 +901,7 @@ qt_feature("timezone" PUBLIC
     SECTION "Utilities"
     LABEL "QTimeZone"
     PURPOSE "Provides support for time-zone handling."
+    CONDITION NOT WASM
 )
 qt_feature("datetimeparser" PRIVATE
     SECTION "Utilities"
