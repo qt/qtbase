@@ -1145,8 +1145,11 @@ static bool write_xpm_image(const QImage &sourceImage, QIODevice *device, const 
         ++cpp;
         // limit to 4 characters per pixel
         // 64^4 colors is enough for a 4096x4096 image
-         if (cpp > 4)
-            break;
+         if (cpp > 4) {
+             qCWarning(lcImageIo, "Qt does not support writing XPM images with more than "
+                       "64^4 colors (requested: %d colors).", ncolors);
+             return false;
+         }
     }
 
     // write header
