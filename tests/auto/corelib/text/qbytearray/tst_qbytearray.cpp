@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -322,12 +322,9 @@ void tst_QByteArray::qUncompressCorruptedData_data()
     QTest::newRow("0xffffffff") << QByteArray("\xff\xff\xff\xff", 4);
 }
 
-// Corrupt data causes this test to lock up on HP-UX / PA-RISC with gcc,
-// SOLARIS, and Windows.
 // This test is expected to produce some warning messages in the test output.
 void tst_QByteArray::qUncompressCorruptedData()
 {
-#if !(defined(Q_OS_HPUX) && !defined(__ia64) && defined(Q_CC_GNU)) && !defined(Q_OS_SOLARIS) && !defined(Q_OS_WIN)
     QFETCH(QByteArray, in);
 
     QByteArray res;
@@ -336,9 +333,6 @@ void tst_QByteArray::qUncompressCorruptedData()
 
     res = ::qUncompress(in + "blah");
     QCOMPARE(res, QByteArray());
-#else
-    QSKIP("This test freezes on this platform");
-#endif
 }
 
 void tst_QByteArray::qCompressionZeroTermination()
@@ -347,7 +341,6 @@ void tst_QByteArray::qCompressionZeroTermination()
     QByteArray ba = ::qUncompress(::qCompress(s.toLocal8Bit()));
     QVERIFY((int) *(ba.data() + ba.size()) == 0);
 }
-
 #endif
 
 void tst_QByteArray::constByteArray()
