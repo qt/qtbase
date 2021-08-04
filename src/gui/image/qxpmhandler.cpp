@@ -1168,13 +1168,12 @@ static bool write_xpm_image(const QImage &sourceImage, QIODevice *device, const 
     }
 
     // write pixels, limit to 4 characters per pixel
-    QByteArray line;
     for (int y = 0; y < h; ++y) {
-        line.clear();
+        s << ',' << Qt::endl << '\"';
         const QRgb *yp = reinterpret_cast<const QRgb *>(image.constScanLine(y));
         for (int x = 0; x < w; ++x)
-            line.append(xpm_color_name(cpp, colorMap[yp[x]]));
-        s << ',' << Qt::endl << '\"' << line << '\"';
+            s << xpm_color_name(cpp, colorMap[yp[x]]);
+        s << '\"';
     }
     s << "};" << Qt::endl;
     return (s.status() == QTextStream::Ok);
