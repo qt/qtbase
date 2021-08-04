@@ -246,7 +246,6 @@ void tst_QUrlInternal::idna_testsuite()
 
     QString result;
     qt_punycodeEncoder(QStringView{unicode.points, numchars}, &result);
-    QEXPECT_FAIL("U+102F7", "QTBUG-95577: Non-BMP handling is broken", Continue);
     QCOMPARE(result.toLatin1(), punycode);
     QCOMPARE(qt_punycodeDecoder(result), QString::fromUtf16(unicode.points, numchars));
 }

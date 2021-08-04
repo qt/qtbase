@@ -2252,15 +2252,27 @@ Q_AUTOTEST_EXPORT void qt_punycodeEncoder(QStringView in, QString *output)
     if (h > 0)
         *output += QLatin1Char{'-'};
 
+    // compute the input length in Unicode code points.
+    qsizetype inputLength = 0;
+    for (QStringIterator iter(in); iter.hasNext();) {
+        inputLength++;
+
+        if (iter.next(char32_t(-1)) == char32_t(-1)) {
+            output->truncate(outLen);
+            return; // invalid surrogate pair
+        }
+    }
+
     // while there are still unprocessed non-basic code points left in
     // the input string...
-    while (h < (uint) in.length()) {
+    while (h < inputLength) {
         // find the character in the input string with the lowest
         // unicode value.
         uint m = Q_MAXINT;
-        for (QChar c : in) {
-            if (c.unicode() >= n && c.unicode() < m)
-                m = (uint) c.unicode();
+        for (QStringIterator iter(in); iter.hasNext();) {
+            auto c = iter.nextUnchecked();
+            if (c >= n && c < m)
+                m = c;
         }
 
         // reject out-of-bounds unicode characters
@@ -2272,11 +2284,12 @@ Q_AUTOTEST_EXPORT void qt_punycodeEncoder(QStringView in, QString *output)
         delta += (m - n) * (h + 1);
         n = m;
 
-        for (QChar c : in) {
+        for (QStringIterator iter(in); iter.hasNext();) {
+            auto c = iter.nextUnchecked();
 
             // increase delta until we reach the character with the
             // lowest unicode code. fail if delta overflows.
-            if (c.unicode() < n) {
+            if (c < n) {
                 ++delta;
                 if (!delta) {
                     output->truncate(outLen);
@@ -2286,7 +2299,7 @@ Q_AUTOTEST_EXPORT void qt_punycodeEncoder(QStringView in, QString *output)
 
             // if j is the index of the character with the lowest
             // unicode code...
-            if (c.unicode() == n) {
+            if (c == n) {
                 appendEncode(output, delta, bias, b, h);
             }
         }
@@ -2314,8 +2327,8 @@ Q_AUTOTEST_EXPORT QString qt_punycodeDecoder(const QString &pc)
     // find the last delimiter character '-' in the input array. copy
     // all data before this delimiter directly to the output array.
     int delimiterPos = pc.lastIndexOf(QLatin1Char{'-'});
-    QString output = delimiterPos < 4 ?
-                     QString() : pc.mid(start, delimiterPos - start);
+    auto output = delimiterPos < 4 ? std::u32string()
+                                   : pc.mid(start, delimiterPos - start).toStdU32String();
 
     // if a delimiter was found, skip to the position after it;
     // otherwise start at the front of the input string. everything
@@ -2357,18 +2370,30 @@ Q_AUTOTEST_EXPORT QString qt_punycodeDecoder(const QString &pc)
 
         // find new bias and calculate the next non-basic code
         // character.
-        bias = adapt(i - oldi, output.length() + 1, oldi == 0);
-        n += i / (output.length() + 1);
+        uint outputLength = static_cast<uint>(output.length());
+        bias = adapt(i - oldi, outputLength + 1, oldi == 0);
+        n += i / (outputLength + 1);
 
         // allow the deltas to wrap around
-        i %= (output.length() + 1);
+        i %= (outputLength + 1);
+
+        // Surrogates should normally be rejected later by other IDNA code.
+        // But because of Qt's use of UTF-16 to represent strings the
+        // IDNA code is not able to distinguish characters represented as pairs
+        // of surrogates from normal code points. This is why surrogates are
+        // not allowed here.
+        //
+        // Allowing surrogates would lead to non-unique (after normalization)
+        // encoding of strings with non-BMP characters.
+        if (QChar::isSurrogate(n))
+            return QString();
 
         // insert the character n at position i
-        output.insert((uint) i, QChar((ushort) n));
+        output.insert(i, 1, static_cast<char32_t>(n));
         ++i;
     }
 
-    return output;
+    return QString::fromStdU32String(output);
 }
 
 static const char * const idn_whitelist[] = {
