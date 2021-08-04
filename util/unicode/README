@@ -14,6 +14,8 @@ To update:
   to match
 * Download https://www.unicode.org/Public/idna/$Version/IdnaMappingTable.txt
   and put it into data/.
+* Download https://www.unicode.org/Public/idna/$Version/IdnaTestV2.txt
+  and put it into tests/auto/corelib/io/qurluts46/testdata.
 * Build this project. Its binary, unicode, ignores command-line
   options and assumes it is being run from this directory. When run,
   it produces lots of output. If it gets as far as updating
