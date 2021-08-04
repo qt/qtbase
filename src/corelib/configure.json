@@ -1045,6 +1045,7 @@
             "label": "QTimeZone",
             "purpose": "Provides support for time-zone handling.",
             "section": "Utilities",
+            "condition": "!config.wasm",
             "output": [ "publicFeature" ]
         },
         "datetimeparser": {
