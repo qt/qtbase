@@ -1118,7 +1118,9 @@ static bool write_xpm_image(const QImage &sourceImage, QIODevice *device, const 
 
     QMap<QRgb, int> colorMap;
 
-    int w = image.width(), h = image.height(), ncolors = 0;
+    const int w = image.width();
+    const int h = image.height();
+    int ncolors = 0;
     int x, y;
 
     // build color table
