@@ -6,7 +6,7 @@
 
 qt_internal_add_plugin(QIbusPlatformInputContextPlugin
     OUTPUT_NAME ibusplatforminputcontextplugin
-    TYPE platforminputcontexts
+    PLUGIN_TYPE platforminputcontexts
     DEFAULT_IF FALSE
     SOURCES
         main.cpp

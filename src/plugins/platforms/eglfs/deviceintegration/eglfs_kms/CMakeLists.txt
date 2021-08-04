@@ -30,7 +30,7 @@ qt_internal_add_module(EglFsKmsGbmSupportPrivate
 
 qt_internal_add_plugin(QEglFSKmsGbmIntegrationPlugin
     OUTPUT_NAME qeglfs-kms-integration
-    TYPE egldeviceintegrations
+    PLUGIN_TYPE egldeviceintegrations
     SOURCES
         qeglfskmsgbmmain.cpp
     DEFINES

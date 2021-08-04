@@ -6,7 +6,7 @@
 
 qt_internal_add_plugin(QMacStylePlugin
     OUTPUT_NAME qmacstyle
-    TYPE styles
+    PLUGIN_TYPE styles
     SOURCES
         main.mm
         qmacstyle_mac.mm qmacstyle_mac_p.h

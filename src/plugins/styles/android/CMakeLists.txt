@@ -6,7 +6,7 @@
 
 qt_internal_add_plugin(QAndroidStylePlugin
     OUTPUT_NAME qandroidstyle
-    TYPE styles
+    PLUGIN_TYPE styles
     SOURCES
         main.cpp
         qandroidstyle.cpp qandroidstyle_p.h

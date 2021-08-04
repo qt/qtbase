@@ -7,7 +7,7 @@ qt_find_package(EGL) # special case
 
 qt_internal_add_plugin(QAndroidIntegrationPlugin
     OUTPUT_NAME qtforandroid
-    TYPE platforms
+    PLUGIN_TYPE platforms
     DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES android # special case
     SOURCES
         androidcontentfileengine.cpp androidcontentfileengine.h

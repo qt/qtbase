@@ -6,7 +6,7 @@
 
 qt_internal_add_plugin(QXcbGlxIntegrationPlugin
     OUTPUT_NAME qxcb-glx-integration
-    TYPE xcbglintegrations
+    PLUGIN_TYPE xcbglintegrations
     SOURCES
         qglxintegration.cpp qglxintegration.h
         qxcbglxintegration.cpp qxcbglxintegration.h

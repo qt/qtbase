@@ -8,7 +8,7 @@ qt_find_package(Cups PROVIDED_TARGETS Cups::Cups) # special case
 
 qt_internal_add_plugin(QCupsPrinterSupportPlugin
     OUTPUT_NAME cupsprintersupport
-    TYPE printsupport
+    PLUGIN_TYPE printsupport
     SOURCES
         main.cpp
         qcupsprintengine.cpp qcupsprintengine_p.h

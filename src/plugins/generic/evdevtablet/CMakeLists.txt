@@ -6,7 +6,7 @@
 
 qt_internal_add_plugin(QEvdevTabletPlugin
     OUTPUT_NAME qevdevtabletplugin
-    TYPE generic
+    PLUGIN_TYPE generic
     DEFAULT_IF FALSE
     SOURCES
         main.cpp

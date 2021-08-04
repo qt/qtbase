@@ -1770,7 +1770,11 @@ macro(_qt_internal_get_add_plugin_keywords option_args single_args multi_args)
         SHARED
     )
     set(${single_args}
+        # TODO: For backward compatibility / transitional use only, remove once all repos no longer
+        # use it
         TYPE
+
+        PLUGIN_TYPE
         CLASS_NAME
         OUTPUT_NAME
     )
@@ -1798,6 +1802,20 @@ function(qt6_add_plugin target)
         endif()
         set(arg_CLASS_NAME "${arg_CLASSNAME}")
         unset(arg_CLASSNAME)
+    endif()
+
+    # Handle the inconsistent TYPE/PLUGIN_TYPE keyword naming between commands
+    if(arg_TYPE)
+        if(arg_PLUGIN_TYPE AND NOT arg_TYPE STREQUAL arg_PLUGIN_TYPE)
+            message(FATAL_ERROR
+                "Both TYPE and PLUGIN_TYPE were given and were different. "
+                "Only one of the two should be used."
+            )
+        endif()
+        message(AUTHOR_WARNING
+            "The TYPE keyword is deprecated and will be removed soon. Please use PLUGIN_TYPE instead.")
+        set(arg_PLUGIN_TYPE "${arg_TYPE}")
+        unset(arg_TYPE)
     endif()
 
     if(arg_STATIC AND arg_SHARED)
@@ -1844,13 +1862,13 @@ function(qt6_add_plugin target)
     if (ANDROID)
         set_target_properties(${target}
             PROPERTIES
-            LIBRARY_OUTPUT_NAME "plugins_${arg_TYPE}_${output_name}"
+            LIBRARY_OUTPUT_NAME "plugins_${arg_PLUGIN_TYPE}_${output_name}"
         )
     endif()
 
     # Derive the class name from the target name if it's not explicitly specified.
     set(plugin_class_name "")
-    if (NOT "${arg_TYPE}" STREQUAL "qml_plugin")
+    if (NOT "${arg_PLUGIN_TYPE}" STREQUAL "qml_plugin")
         if (NOT arg_CLASS_NAME)
             set(plugin_class_name "${target}")
         else()

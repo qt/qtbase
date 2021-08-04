@@ -25,7 +25,7 @@ qt_internal_add_plugin(QTBUG_90341ThemePlugin
     OUTPUT_NAME QTBUG_90341
     OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
     CLASS_NAME ThemePlugin
-    TYPE platformthemes
+    PLUGIN_TYPE platformthemes
     DEFAULT_IF TRUE
     SOURCES
         plugin.cpp

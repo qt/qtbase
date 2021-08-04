@@ -6,7 +6,7 @@
 
 qt_internal_add_plugin(QOCIDriverPlugin
     OUTPUT_NAME qsqloci
-    TYPE sqldrivers
+    PLUGIN_TYPE sqldrivers
     SOURCES
         main.cpp
         qsql_oci.cpp qsql_oci_p.h

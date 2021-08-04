@@ -6,7 +6,7 @@
 
 qt_internal_add_plugin(QEglFSX11IntegrationPlugin
     OUTPUT_NAME qeglfs-x11-integration
-    TYPE egldeviceintegrations
+    PLUGIN_TYPE egldeviceintegrations
     SOURCES
         qeglfsx11integration.cpp qeglfsx11integration.h
         qeglfsx11main.cpp

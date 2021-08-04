@@ -9,7 +9,7 @@ pkg_get_variable(PKG_X11_PREFIX x11 prefix) # special case
 
 qt_internal_add_plugin(QComposePlatformInputContextPlugin
     OUTPUT_NAME composeplatforminputcontextplugin
-    TYPE platforminputcontexts
+    PLUGIN_TYPE platforminputcontexts
     DEFAULT_IF FALSE
     SOURCES
         qcomposeplatforminputcontext.cpp qcomposeplatforminputcontext.h

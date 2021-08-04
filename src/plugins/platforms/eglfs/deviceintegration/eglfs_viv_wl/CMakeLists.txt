@@ -6,7 +6,7 @@
 
 qt_internal_add_plugin(QEglFSVivWaylandIntegrationPlugin
     OUTPUT_NAME qeglfs-viv-wl-integration
-    TYPE egldeviceintegrations
+    PLUGIN_TYPE egldeviceintegrations
     SOURCES
         qeglfsvivwlintegration.cpp qeglfsvivwlintegration.h
         qeglfsvivwlmain.cpp

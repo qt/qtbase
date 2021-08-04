@@ -6,7 +6,7 @@
 
 qt_internal_add_plugin(QSQLiteDriverPlugin
     OUTPUT_NAME qsqlite
-    TYPE sqldrivers
+    PLUGIN_TYPE sqldrivers
     SOURCES
         qsql_sqlite.cpp qsql_sqlite_p.h
         smain.cpp

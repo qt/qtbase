@@ -8,7 +8,7 @@ qt_find_package(WrapFreetype PROVIDED_TARGETS WrapFreetype::WrapFreetype) # spec
 
 qt_internal_add_plugin(QMinimalIntegrationPlugin
     OUTPUT_NAME qminimal
-    TYPE platforms
+    PLUGIN_TYPE platforms
     DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES minimal # special case
     SOURCES
         main.cpp

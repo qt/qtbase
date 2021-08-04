@@ -2,7 +2,7 @@ qt_find_package(WrapFreetype PROVIDED_TARGETS WrapFreetype::WrapFreetype)
 
 qt_internal_add_plugin(QVkKhrDisplayIntegrationPlugin
     OUTPUT_NAME qvkkhrdisplay
-    TYPE platforms
+    PLUGIN_TYPE platforms
     DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES vkkhrdisplay
     SOURCES
         main.cpp

@@ -11,7 +11,7 @@ qt_find_package(EGL)
 
 qt_internal_add_plugin(QDirectFbIntegrationPlugin
     OUTPUT_NAME qdirectfb
-    TYPE platforms
+    PLUGIN_TYPE platforms
     SOURCES
         main.cpp
         qdirectfbbackingstore.cpp qdirectfbbackingstore.h

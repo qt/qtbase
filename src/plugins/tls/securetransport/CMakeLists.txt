@@ -1,7 +1,7 @@
 qt_internal_add_plugin(QSecureTransportBackendPlugin
     OUTPUT_NAME securetransportbackend
     CLASS_NAME QSecureTransportBackend
-    TYPE tls
+    PLUGIN_TYPE tls
     DEFAULT_IF APPLE
     SOURCES
         ../shared/qsslsocket_mac_shared.cpp

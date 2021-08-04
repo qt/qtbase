@@ -17,7 +17,7 @@ install_jar(Qt${QtBase_VERSION_MAJOR}AndroidNetworkInformationBackend
 qt_internal_add_plugin(QAndroidNetworkInformationPlugin
     OUTPUT_NAME androidnetworkinformation
     CLASS_NAME QAndroidNetworkInformationBackendFactory
-    TYPE networkinformation
+    PLUGIN_TYPE networkinformation
     DEFAULT_IF ANDROID
     SOURCES
         qandroidnetworkinformationbackend.cpp

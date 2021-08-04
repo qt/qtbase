@@ -1,7 +1,7 @@
 qt_internal_add_plugin(QSchannelBackendPlugin
     OUTPUT_NAME schannelbackend
     CLASS_NAME QSchannelBackend
-    TYPE tls
+    PLUGIN_TYPE tls
     DEFAULT_IF WIN32
     SOURCES
         ../shared/qtlskey_base_p.h

@@ -6,7 +6,7 @@
 
 qt_internal_add_plugin(QEglFSVivIntegrationPlugin
     OUTPUT_NAME qeglfs-viv-integration
-    TYPE egldeviceintegrations
+    PLUGIN_TYPE egldeviceintegrations
     SOURCES
         qeglfsvivintegration.cpp qeglfsvivintegration.h
         qeglfsvivmain.cpp

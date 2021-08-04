@@ -6,7 +6,7 @@
 
 qt_internal_add_plugin(QGifPlugin
     OUTPUT_NAME qgif
-    TYPE imageformats
+    PLUGIN_TYPE imageformats
     SOURCES
         main.cpp main.h
         qgifhandler.cpp qgifhandler_p.h

@@ -6,7 +6,7 @@
 
 qt_internal_add_plugin(QEvdevKeyboardPlugin
     OUTPUT_NAME qevdevkeyboardplugin
-    TYPE generic
+    PLUGIN_TYPE generic
     DEFAULT_IF FALSE
     SOURCES
         main.cpp

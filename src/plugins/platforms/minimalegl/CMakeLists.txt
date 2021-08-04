@@ -7,7 +7,7 @@ qt_find_package(EGL) # special case
 
 qt_internal_add_plugin(QMinimalEglIntegrationPlugin
     OUTPUT_NAME qminimalegl
-    TYPE platforms
+    PLUGIN_TYPE platforms
     DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES minimalegl # special case
     SOURCES
         main.cpp

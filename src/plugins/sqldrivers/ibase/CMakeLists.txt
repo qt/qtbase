@@ -1,6 +1,6 @@
 qt_internal_add_plugin(QIBaseDriverPlugin
     OUTPUT_NAME qsqlibase
-    TYPE sqldrivers
+    PLUGIN_TYPE sqldrivers
     SOURCES
         main.cpp
         qsql_ibase.cpp qsql_ibase_p.h
