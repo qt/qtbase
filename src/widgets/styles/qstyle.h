@@ -568,7 +568,7 @@ public:
         PM_TitleBarButtonSize,
 
         PM_LineEditIconSize,
-
+        PM_LineEditIconMargin,
         // do not add any values below/greater than this
         PM_CustomBase = 0xf0000000
     };

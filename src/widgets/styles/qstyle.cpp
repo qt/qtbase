@@ -1519,6 +1519,9 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     \value PM_LineEditIconSize The default size for icons in a line edit.
            This enum value has been introduced in Qt 6.2.
 
+    \value PM_LineEditIconMargin The margin around icons in a line edit.
+           This enum value has been introduced in Qt 6.3.
+
     \value PM_CustomBase Base value for custom pixel metrics.  Custom
     values must be greater than this value.
 
