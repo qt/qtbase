@@ -8,7 +8,7 @@ qt_find_package(EGL) # special case
 
 qt_internal_add_plugin(QXcbEglIntegrationPlugin
     OUTPUT_NAME qxcb-egl-integration
-    TYPE xcbglintegrations
+    PLUGIN_TYPE xcbglintegrations
     SOURCES
         qxcbeglcontext.h
         qxcbeglintegration.cpp qxcbeglintegration.h

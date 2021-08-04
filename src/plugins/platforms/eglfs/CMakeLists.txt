@@ -98,7 +98,7 @@ endif()
 
 qt_internal_add_plugin(QEglFSIntegrationPlugin
     OUTPUT_NAME qeglfs
-    TYPE platforms
+    PLUGIN_TYPE platforms
     DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES eglfs # special case
     SOURCES
         qeglfsmain.cpp

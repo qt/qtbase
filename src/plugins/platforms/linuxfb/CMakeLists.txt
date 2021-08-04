@@ -6,7 +6,7 @@
 
 qt_internal_add_plugin(QLinuxFbIntegrationPlugin
     OUTPUT_NAME qlinuxfb
-    TYPE platforms
+    PLUGIN_TYPE platforms
     DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES linuxfb # special case
     SOURCES
         main.cpp

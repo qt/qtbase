@@ -6,7 +6,7 @@
 
 qt_internal_add_plugin(QIosOptionalPlugin_NSPhotoLibrary
     OUTPUT_NAME qiosnsphotolibrarysupport
-    TYPE platforms/darwin
+    PLUGIN_TYPE platforms/darwin
     DEFAULT_IF FALSE
     SOURCES
         plugin.mm

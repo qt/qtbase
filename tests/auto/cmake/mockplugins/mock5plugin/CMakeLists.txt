@@ -1,6 +1,6 @@
 qt_internal_add_plugin(QMock5Plugin
     CLASS_NAME QMock5Plugin
-    TYPE mockplugin
+    PLUGIN_TYPE mockplugin
     DEFAULT_IF FALSE
     SOURCES
         qmock5plugin.cpp qmock5plugin.h

@@ -6,7 +6,7 @@
 
 qt_internal_add_plugin(QWindowsVistaStylePlugin
     OUTPUT_NAME qwindowsvistastyle
-    TYPE styles
+    PLUGIN_TYPE styles
     SOURCES
         main.cpp
         qwindowsvistastyle.cpp qwindowsvistastyle_p.h

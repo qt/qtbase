@@ -6,7 +6,7 @@
 
 qt_internal_add_plugin(QDB2DriverPlugin
     OUTPUT_NAME qsqldb2
-    TYPE sqldrivers
+    PLUGIN_TYPE sqldrivers
     SOURCES
         main.cpp
         qsql_db2.cpp qsql_db2_p.h

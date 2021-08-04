@@ -1,7 +1,7 @@
 qt_internal_add_plugin(QTlsBackendOpenSSLPlugin
     OUTPUT_NAME opensslbackend
     CLASS_NAME QTlsBackendOpenSSL
-    TYPE tls
+    PLUGIN_TYPE tls
     SOURCES
         ../shared/qx509_base.cpp ../shared/qx509_base_p.h
         ../shared/qtlskey_base.cpp ../shared/qtlskey_base_p.h

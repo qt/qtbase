@@ -6,7 +6,7 @@
 
 qt_internal_add_plugin(QICOPlugin
     OUTPUT_NAME qico
-    TYPE imageformats
+    PLUGIN_TYPE imageformats
     SOURCES
         main.cpp main.h
         qicohandler.cpp qicohandler.h

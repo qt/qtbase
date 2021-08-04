@@ -8,7 +8,7 @@ qt_find_package(Tslib) # special case
 
 qt_internal_add_plugin(QTsLibPlugin
     OUTPUT_NAME qtslibplugin
-    TYPE generic
+    PLUGIN_TYPE generic
     DEFAULT_IF FALSE
     SOURCES
         main.cpp

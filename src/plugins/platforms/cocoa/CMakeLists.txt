@@ -9,7 +9,7 @@
 qt_internal_add_plugin(QCocoaIntegrationPlugin
     OUTPUT_NAME qcocoa
     DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES cocoa # special case
-    TYPE platforms
+    PLUGIN_TYPE platforms
     SOURCES
         main.mm
         qcocoaapplication.h qcocoaapplication.mm

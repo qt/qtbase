@@ -8,7 +8,7 @@ qt_find_package(JPEG) # special case
 
 qt_internal_add_plugin(QJpegPlugin
     OUTPUT_NAME qjpeg
-    TYPE imageformats
+    PLUGIN_TYPE imageformats
     SOURCES
         main.cpp main.h
         qjpeghandler.cpp qjpeghandler_p.h

@@ -6,7 +6,7 @@
 
 qt_internal_add_plugin(QEglFSOpenWFDIntegrationPlugin
     OUTPUT_NAME qeglfs-openwfd-integration
-    TYPE egldeviceintegrations
+    PLUGIN_TYPE egldeviceintegrations
     SOURCES
         qeglfsopenwfdintegration.cpp qeglfsopenwfdintegration.h
         qeglfsopenwfdmain.cpp

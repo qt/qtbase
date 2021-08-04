@@ -6,7 +6,7 @@
 
 qt_internal_add_plugin(QEglFSMaliIntegrationPlugin
     OUTPUT_NAME qeglfs-mali-integration
-    TYPE egldeviceintegrations
+    PLUGIN_TYPE egldeviceintegrations
     SOURCES
         qeglfsmaliintegration.cpp qeglfsmaliintegration.h
         qeglfsmalimain.cpp

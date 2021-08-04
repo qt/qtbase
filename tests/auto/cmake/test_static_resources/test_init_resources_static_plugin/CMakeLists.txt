@@ -1,7 +1,7 @@
 qt_internal_add_plugin(TestInitResourcesStaticPlugin STATIC
     OUTPUT_NAME
         testinitresourcesstaticplugin
-    TYPE mockstaticresources
+    PLUGIN_TYPE mockstaticresources
     SOURCES
         pluginmain.cpp
     SKIP_INSTALL
