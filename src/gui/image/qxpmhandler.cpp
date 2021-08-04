@@ -49,6 +49,7 @@
 #include <qvariant.h>
 
 #include <algorithm>
+#include <array>
 
 QT_BEGIN_NAMESPACE
 
@@ -1055,15 +1056,23 @@ bool qt_read_xpm_image_or_array(QIODevice *device, const char * const * source, 
     return read_xpm_body(device, source, index, state, cpp, ncols, w, h, image);
 }
 
-static const char* xpm_color_name(int cpp, int index)
+namespace {
+template <size_t N>
+struct CharBuffer : std::array<char, N>
 {
-    static char returnable[5];
+    CharBuffer() {} // avoid value-initializing the whole array
+};
+}
+
+static const char* xpm_color_name(int cpp, int index, CharBuffer<5> && returnable = {})
+{
     static const char code[] = ".#abcdefghijklmnopqrstuvwxyzABCD"
                                "EFGHIJKLMNOPQRSTUVWXYZ0123456789";
     // cpp is limited to 4 and index is limited to 64^cpp
     if (cpp > 1) {
         if (cpp > 2) {
             if (cpp > 3) {
+                returnable[4] = '\0';
                 returnable[3] = code[index % 64];
                 index /= 64;
             } else
@@ -1083,7 +1092,7 @@ static const char* xpm_color_name(int cpp, int index)
         returnable[1] = '\0';
     returnable[0] = code[index];
 
-    return returnable;
+    return returnable.data();
 }
 
 
