@@ -56,13 +56,23 @@ QT_BEGIN_NAMESPACE
 // core language feature, so just use u"" here unconditionally:
 
 #define QT_UNICODE_LITERAL(str) u"" str
-#define QStringLiteral(str) \
-    (QString(QStringPrivate(nullptr,  \
-                            const_cast<char16_t *>(QT_UNICODE_LITERAL(str)), \
-                            sizeof(QT_UNICODE_LITERAL(str))/2 - 1))) \
-    /**/
 
 using QStringPrivate = QArrayDataPointer<char16_t>;
+
+namespace QtPrivate {
+template <qsizetype N>
+static Q_ALWAYS_INLINE QStringPrivate qMakeStringPrivate(const char16_t (&literal)[N])
+{
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+    auto str = const_cast<char16_t *>(literal);
+    return { nullptr, str, N - 1 };
+}
+}
+
+#define QStringLiteral(str) \
+    (QString(QtPrivate::qMakeStringPrivate(QT_UNICODE_LITERAL(str)))) \
+    /**/
+
 
 QT_END_NAMESPACE
 
