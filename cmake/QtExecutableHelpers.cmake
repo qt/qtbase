@@ -34,7 +34,7 @@ function(qt_internal_add_executable name)
     endif()
 
     if(WASM)
-        qt6_wasm_add_target_helpers("${name}")
+        _qt_internal_wasm_add_target_helpers("${name}")
     endif()
     if (arg_VERSION)
         if(arg_VERSION MATCHES "[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+")

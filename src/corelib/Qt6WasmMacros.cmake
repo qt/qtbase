@@ -1,6 +1,5 @@
-
-function(qt6_wasm_add_target_helpers target)
-    # copy in Qt HTML/JS launch files for apps
+# Copy in Qt HTML/JS launch files for apps.
+function(_qt_internal_wasm_add_target_helpers target)
     get_target_property(targetType "${target}" TYPE)
     if("${targetType}" STREQUAL "EXECUTABLE")
 
@@ -21,11 +20,3 @@ function(qt6_wasm_add_target_helpers target)
 
     endif()
 endfunction()
-
-if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
-    function(qt_wasm_add_target_helpers)
-        if(QT_DEFAULT_MAJOR_VERSION EQUAL 6)
-            qt6_wasm_add_target_helpers(${ARGV})
-        endif()
-    endfunction()
-endif()
