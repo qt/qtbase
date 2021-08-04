@@ -231,6 +231,9 @@ void tst_QUrlInternal::idna_testsuite_data()
     QTest::newRow("Russian (Cyrillic)") << 28 << char16array(d20)
                                      << QByteArray(IDNA_ACE_PREFIX "b1abfaaepdrnnbgefbadotcwatmq2g4l")
                                      << 0 << 0 << IDNA_SUCCESS << IDNA_SUCCESS;
+
+    char16_t d21[] = { 0xd800, 0xdef7 };
+    QTest::newRow("U+102F7") << 2 << char16array(d21) << QByteArray(IDNA_ACE_PREFIX "r97c");
 }
 #endif
 
@@ -243,6 +246,7 @@ void tst_QUrlInternal::idna_testsuite()
 
     QString result;
     qt_punycodeEncoder(QStringView{unicode.points, numchars}, &result);
+    QEXPECT_FAIL("U+102F7", "QTBUG-95577: Non-BMP handling is broken", Continue);
     QCOMPARE(result.toLatin1(), punycode);
     QCOMPARE(qt_punycodeDecoder(result), QString::fromUtf16(unicode.points, numchars));
 }
