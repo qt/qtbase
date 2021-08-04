@@ -100,6 +100,23 @@ if(QT_DISABLE_NO_DEFAULT_PATH_IN_QT_PACKAGES)
 endif()
 
 foreach(module ${@INSTALL_CMAKE_NAMESPACE@_FIND_COMPONENTS})
+    if(NOT "${QT_HOST_PATH}" STREQUAL ""
+       AND "${module}" MATCHES "Tools$"
+       AND NOT "${module}" MATCHES "ShaderTools$"
+       AND NOT "${module}" MATCHES "^Tools$"
+       AND NOT QT_NO_FIND_HOST_TOOLS_PATH_MANIPULATION)
+        # Make sure that a Qt*Tools package is also looked up in QT_HOST_PATH.
+        # But don't match QtShaderTools and QtTools which are cross-compiled target package names.
+        # Allow opt out just in case.
+        # TODO: Handle a hypothetical QT_ADDITIONAL_HOST_PACKAGES_PREFIX_PATH
+        #       See QTBUG-94524
+        set(__qt_find_package_host_qt_path "${QT_HOST_PATH}/lib/cmake")
+        set(__qt_backup_cmake_prefix_path "${CMAKE_PREFIX_PATH}")
+        set(__qt_backup_cmake_find_root_path "${CMAKE_FIND_ROOT_PATH}")
+        list(PREPEND CMAKE_PREFIX_PATH "${__qt_find_package_host_qt_path}")
+        list(PREPEND CMAKE_FIND_ROOT_PATH "${QT_HOST_PATH}")
+    endif()
+
     find_package(@INSTALL_CMAKE_NAMESPACE@${module}
         ${_@INSTALL_CMAKE_NAMESPACE@_FIND_PARTS_QUIET}
         PATHS
@@ -107,8 +124,18 @@ foreach(module ${@INSTALL_CMAKE_NAMESPACE@_FIND_COMPONENTS})
             ${_qt_additional_packages_prefix_path}
             ${_qt_additional_packages_prefix_path_env}
             ${QT_EXAMPLES_CMAKE_PREFIX_PATH}
+            ${__qt_find_package_host_qt_path}
         ${__qt_use_no_default_path_for_qt_packages}
     )
+
+    if(NOT "${__qt_find_package_host_qt_path}" STREQUAL "")
+        set(CMAKE_PREFIX_PATH "${__qt_backup_cmake_prefix_path}")
+        set(CMAKE_FIND_ROOT_PATH "${__qt_backup_cmake_find_root_path}")
+        unset(__qt_backup_cmake_prefix_path)
+        unset(__qt_backup_cmake_find_root_path)
+        unset(__qt_find_package_host_qt_path)
+    endif()
+
     if (NOT @INSTALL_CMAKE_NAMESPACE@${module}_FOUND)
         set(_qt_expected_component_config_path
             "${_qt_cmake_dir}/@INSTALL_CMAKE_NAMESPACE@${module}/@INSTALL_CMAKE_NAMESPACE@${module}Config.cmake")
