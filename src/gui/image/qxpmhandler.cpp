@@ -1128,12 +1128,11 @@ static bool write_xpm_image(const QImage &sourceImage, QIODevice *device, const 
     const int w = image.width();
     const int h = image.height();
     int ncolors = 0;
-    int x, y;
 
     // build color table
-    for(y=0; y<h; y++) {
+    for (int y = 0; y < h; ++y) {
         const QRgb *yp = reinterpret_cast<const QRgb *>(image.constScanLine(y));
-        for(x=0; x<w; x++) {
+        for (int x = 0; x < w; ++x) {
             QRgb color = *(yp + x);
             const auto [it, inserted] = colorMap.try_emplace(color, ncolors);
             if (inserted)
@@ -1168,10 +1167,10 @@ static bool write_xpm_image(const QImage &sourceImage, QIODevice *device, const 
 
     // write pixels, limit to 4 characters per pixel
     QByteArray line;
-    for(y=0; y<h; y++) {
+    for (int y = 0; y < h; ++y) {
         line.clear();
         const QRgb *yp = reinterpret_cast<const QRgb *>(image.constScanLine(y));
-        for(x=0; x<w; x++) {
+        for (int x = 0; x < w; ++x) {
             int color = (int)(*(yp + x));
             line.append(xpm_color_name(cpp, colorMap[color]));
         }
