@@ -1569,6 +1569,7 @@ class PrivatePropertyTest : public QObject
     Q_PRIVATE_PROPERTY(PrivatePropertyTest::d, QString blub4 MEMBER mBlub NOTIFY blub4Changed)
     Q_PRIVATE_PROPERTY(PrivatePropertyTest::d, QString blub5 MEMBER mBlub NOTIFY blub5Changed)
     Q_PRIVATE_PROPERTY(PrivatePropertyTest::d, QString blub6 MEMBER mConst CONSTANT)
+    Q_PRIVATE_PROPERTY(PrivatePropertyTest::d, int zap READ zap WRITE setZap BINDABLE bindableZap)
     class MyDPointer {
     public:
         MyDPointer() : mConst("const"), mBar(0), mPlop(0) {}
@@ -1580,12 +1581,16 @@ class PrivatePropertyTest : public QObject
         void setBaz(int value) { mBaz = value; }
         QString blub() const { return mBlub; }
         void setBlub(const QString &value) { mBlub = value; }
+        int zap() { return mZap; }
+        void setZap(int zap) { mZap = zap; }
+        QBindable<int> bindableZap() { return QBindable<int>(&mZap); }
         QString mBlub;
         const QString mConst;
     private:
         int mBar;
         int mPlop;
         int mBaz;
+        QProperty<int> mZap;
     };
 public:
     PrivatePropertyTest(QObject *parent = nullptr) : QObject(parent), mFoo(0), d (new MyDPointer) {}
@@ -1617,6 +1622,12 @@ void tst_Moc::qprivateproperties()
 
     test.setProperty("baz", 4);
     QCOMPARE(test.property("baz"), QVariant::fromValue(4));
+
+    QMetaProperty zap = test.metaObject()->property(test.metaObject()->indexOfProperty("zap"));
+    QVERIFY(zap.isValid());
+    QVERIFY(zap.isBindable());
+    auto zapBindable = zap.bindable(&test);
+    QVERIFY(zapBindable.isBindable());
 }
 
 void tst_Moc::warnOnPropertyWithoutREAD()
