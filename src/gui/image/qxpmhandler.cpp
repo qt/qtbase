@@ -50,6 +50,7 @@
 #include <qvariant.h>
 
 #include <private/qcolor_p.h>
+#include <private/qduplicatetracker_p.h> // for easier std::pmr detection
 
 #include <algorithm>
 #include <array>
@@ -1116,7 +1117,13 @@ static bool write_xpm_image(const QImage &sourceImage, QIODevice *device, const 
     else
         image = sourceImage;
 
-    QMap<QRgb, int> colorMap;
+#ifdef __cpp_lib_memory_resource
+    char buffer[1024];
+    std::pmr::monotonic_buffer_resource res{&buffer, sizeof buffer};
+    std::pmr::map<QRgb, int> colorMap(&res);
+#else
+    std::map<QRgb, int> colorMap;
+#endif
 
     const int w = image.width();
     const int h = image.height();
@@ -1128,8 +1135,9 @@ static bool write_xpm_image(const QImage &sourceImage, QIODevice *device, const 
         const QRgb *yp = reinterpret_cast<const QRgb *>(image.constScanLine(y));
         for(x=0; x<w; x++) {
             QRgb color = *(yp + x);
-            if (!colorMap.contains(color))
-                colorMap.insert(color, ncolors++);
+            const auto [it, inserted] = colorMap.try_emplace(color, ncolors);
+            if (inserted)
+                ++ncolors;
         }
     }
 
@@ -1150,14 +1158,11 @@ static bool write_xpm_image(const QImage &sourceImage, QIODevice *device, const 
       << '\"' << w << ' ' << h << ' ' << ncolors << ' ' << cpp << '\"';
 
     // write palette
-    QMap<QRgb, int>::Iterator c = colorMap.begin();
-    while (c != colorMap.end()) {
-        QRgb color = c.key();
+    for (const auto [color, index] : colorMap) {
         const QString line = image.format() != QImage::Format_RGB32 && !qAlpha(color)
-            ? QString::asprintf("\"%s c None\"", xpm_color_name(cpp, *c))
-            : QString::asprintf("\"%s c #%02x%02x%02x\"", xpm_color_name(cpp, *c),
+            ? QString::asprintf("\"%s c None\"", xpm_color_name(cpp, index))
+            : QString::asprintf("\"%s c #%02x%02x%02x\"", xpm_color_name(cpp, index),
                                 qRed(color), qGreen(color), qBlue(color));
-        ++c;
         s << ',' << Qt::endl << line;
     }
 
