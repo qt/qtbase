@@ -881,48 +881,52 @@ if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
     endfunction()
 endif()
 
-# This function allows enabling or disabling the finalizer mode of plugin importing in static Qt
-# builds.
+# This function is currently in Technical Preview. It's signature may change or be removed entirely.
+
+# This function allows enabling or disabling finalizer modes for a specific target.
+# Currently, the only supported finalizer mode is for plugin importing in static Qt builds which
+# is called 'static_plugins'. You can enable / disable it by calling
 #
-# When finalizer mode is enabled, all plugins initializer object libraries are directly linked to
-# the given '${target}' (executable or shared library).
-# This prevents cycles between Qt provided static libraries and reduces link time, due to the
-# libraries not being repeated because they are not part of a cycle anymore.
+#   qt6_set_finalizer_mode(${target} ENABLE MODES "static_plugins")
+#   qt6_set_finalizer_mode(${target} DISABLE MODES "static_plugins")
 #
-# When finalizer mode is disabled, each plugin initializer is propagated via usage requirements
-# of its associated module.
+# When the "static_plugins" finalizer mode is enabled, all plugins initializer object libraries are
+# directly linked to the given ${target} (executable or shared library).
+# This prevents cycles between Qt provided static libraries and reduces link time, thanks to the
+# libraries not being repeated on the link line because they are not part of a cycle anymore.
 #
-# Finalizer mode is enabled by default if:
+# When the finalizer mode is disabled, each plugin initializer is propagated via usage requirements
+# of its associated module, which may cause cycles in the current build system implementation.
+#
+# The "static_plugins" finalizer mode is enabled by default if:
 #   - the project calls qt_finalize_target explicitly at the end of the project file or
 #   - the project uses qt_add_executable and a CMake version greater than or equal to 3.19
 #     (which will DEFER CALL qt_finalize_target)
-function(qt6_enable_import_plugins_finalizer_mode target enabled)
-    if(enabled)
-        set(enabled "TRUE")
-    else()
-        set(enabled "FALSE")
+function(qt6_set_finalizer_mode target)
+    cmake_parse_arguments(arg "ENABLE;DISABLE" "" "MODES" ${ARGN})
+    if(NOT arg_ENABLE AND NOT arg_DISABLE)
+        message(FATAL_ERROR "No option was specified whether to enable or disable the modes.")
+    elseif(arg_ENABLE AND arg_DISABLE)
+        message(FATAL_ERROR "Both ENABLE and DISABLE options were specified.")
     endif()
-    set_property(TARGET "${target}" PROPERTY _qt_static_plugins_use_finalizer_mode "${enabled}")
+    if(NOT arg_MODES)
+        message(FATAL_ERROR "No modes were specified in qt6_set_finalizer_mode() call.")
+    endif()
+
+    if(arg_ENABLE)
+        set(value "TRUE")
+    elseif(arg_DISABLE)
+        set(value "FALSE")
+    endif()
+
+    foreach(mode ${arg_MODES})
+        __qt_internal_enable_finalizer_mode("${target}" "${mode}" "${value}")
+    endforeach()
 endfunction()
 
 if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
-    function(qt_enable_import_plugins_finalizer_mode)
-        qt6_enable_import_plugins_finalizer_mode(${ARGV})
-    endfunction()
-endif()
-
-# This function allows enabling or disabling the finalizer mode of resource objects linking in
-# static Qt builds.
-# It makes sense to manually disable the finalizer of the resource object if you are using
-# linkers other than ld, since the dependencies between resource objects and static libraries
-# are resolved correctly by them.
-function(qt6_enable_object_libraries_finalizer_mode target enabled)
-    __qt_internal_enable_finalizer_mode(${target} object_libraries ${enabled})
-endfunction()
-
-if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
-    function(qt_enable_object_libraries_finalizer_mode)
-        qt6_enable_object_libraries_finalizer_mode(${ARGV})
+    function(qt_set_finalizer_mode)
+        qt6_set_finalizer_mode(${ARGV})
     endfunction()
 endif()
 
