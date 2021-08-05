@@ -230,10 +230,10 @@ void QTestResult::finishedCurrentTestDataCleanup()
 */
 void QTestResult::finishedCurrentTestFunction()
 {
+    QTestLog::leaveTestFunction();
+
     QTest::currentTestFunc = nullptr;
     QTest::resetFailed();
-
-    QTestLog::leaveTestFunction();
 }
 
 const char *QTestResult::currentTestFunction()
