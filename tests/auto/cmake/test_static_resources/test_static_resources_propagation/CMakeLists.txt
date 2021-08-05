@@ -1,3 +1,10 @@
+# TODO: Revisit which of these tests makes sense to keep now that we depend on CMake 3.21 to
+# properly place object libraries object files on the link line.
+# See QTBUG-95601
+#
+#
+#
+#
 # Add a dummy library that links the static "Qt" module containing resources
 file(GENERATE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/dummy.cpp" CONTENT "void dummy() { }")
 add_library(dummy STATIC "${CMAKE_CURRENT_BINARY_DIR}/dummy.cpp")
@@ -77,24 +84,26 @@ if(NOT link_order_matters)
         COMMAND test_static_resources_propagation_non_ld
     )
 
-    if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.19)
-        qt_add_executable(test_static_resources_propagation_not_finalize main.cpp)
-        qt6_enable_object_libraries_finalizer_mode(
-            test_static_resources_propagation_not_finalize FALSE
-        )
-        set_target_properties(test_static_resources_propagation_not_finalize PROPERTIES
-                AUTOMOC TRUE
-        )
-        target_link_libraries(test_static_resources_propagation_not_finalize
-            PRIVATE
-                dummy
-                Qt::Core
-                Qt::Test
-        )
-        add_test(NAME test_static_resources_propagation_not_finalize
-            COMMAND test_static_resources_propagation_not_finalize
-        )
-    endif()
+# FIXME: qt6_enable_object_libraries_finalizer_mode is not available anymore. See QTBUG-95601
+#
+#    if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.19)
+#        qt_add_executable(test_static_resources_propagation_not_finalize main.cpp)
+#        qt6_enable_object_libraries_finalizer_mode(
+#            test_static_resources_propagation_not_finalize FALSE
+#        )
+#        set_target_properties(test_static_resources_propagation_not_finalize PROPERTIES
+#                AUTOMOC TRUE
+#        )
+#        target_link_libraries(test_static_resources_propagation_not_finalize
+#            PRIVATE
+#                dummy
+#                Qt::Core
+#                Qt::Test
+#        )
+#        add_test(NAME test_static_resources_propagation_not_finalize
+#            COMMAND test_static_resources_propagation_not_finalize
+#        )
+#    endif()
 endif()
 
 # Add the executable using add_executable, expecting resources are propagated using

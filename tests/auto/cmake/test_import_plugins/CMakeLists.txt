@@ -38,12 +38,12 @@ function(create_test_executable target)
     add_test(test_${target_name_adjusted} ${target_name_adjusted})
 
     if(arg_FINALIZER_MODE)
-        set(finalizer_mode "TRUE")
+        set(finalizer_mode_state "ENABLE")
     else()
-        set(finalizer_mode "FALSE")
+        set(finalizer_mode_state "DISABLE")
     endif()
-    qt_enable_import_plugins_finalizer_mode(${target_name_adjusted} ${finalizer_mode})
 
+    qt_set_finalizer_mode(${target_name_adjusted} ${finalizer_mode_state} MODES static_plugins)
     set(target ${target_name_adjusted} PARENT_SCOPE)
 endfunction()
 
@@ -73,7 +73,7 @@ target_link_libraries(${target} PRIVATE Qt6::MockPlugins2)
 
 # Check that both regular and finalizer mode plugin importing pulls in the same set of plugins.
 # In regular mode, qt_finalize_target won't execute the finalizer plugin importing, because
-# we opt out via qt_enable_import_plugins_finalizer_mode(target FALSE).
+# we opt out via qt_set_finalizer_mode(target DISABLE MODES static_plugins).
 foreach(import_mode "" "FINALIZER_MODE")
     create_test_executable(manual QMock1Plugin QMock2Plugin QMock3Plugin QMock4Plugin
         ${import_mode})
