@@ -162,6 +162,22 @@ static void clearExpectFail()
     QTest::expectFailComment = nullptr;
 }
 
+/*!
+    This function is called after completing each test function,
+    including test functions that are not data-driven.
+
+    For data-driven functions, this is called after each call to the test
+    function, with distinct data. Otherwise, this function is called once,
+    with currentTestData() and currentGlobalTestData() set to \nullptr.
+
+    The function is called before the test's cleanup(), if it has one.
+
+    For benchmarks, this will be called after each repeat of a function
+    (with the same data row), when the benchmarking code decides to
+    re-run one to get sufficient data.
+
+    \sa finishedCurrentTestDataCleanup()
+*/
 void QTestResult::finishedCurrentTestData()
 {
     if (QTest::expectFailMode)
@@ -176,6 +192,21 @@ void QTestResult::finishedCurrentTestData()
     QTestLog::clearIgnoreMessages();
 }
 
+/*!
+    This function is called after completing each test function,
+    including test functions that are not data-driven.
+
+    For data-driven functions, this is called after each call to the test
+    function, with distinct data. Otherwise, this function is called once,
+    with currentTestData() and currentGlobalTestData() set to \nullptr.
+
+    The function is called after the test's cleanup(), if it has one.
+
+    For benchmarks, this is called after all repeat calls to the function
+    (with a given data row).
+
+    \sa finishedCurrentTestData()
+*/
 void QTestResult::finishedCurrentTestDataCleanup()
 {
     // If the current test hasn't failed or been skipped, then it passes.
@@ -189,6 +220,14 @@ void QTestResult::finishedCurrentTestDataCleanup()
     QTest::resetFailed();
 }
 
+/*!
+    This function is called after completing each test function,
+    including test functions that are data-driven.
+
+    For data-driven functions, this is called after after all data rows
+    have been tested, and the data table has been cleared, so both
+    currentTestData() and currentGlobalTestData() will be \nullptr.
+*/
 void QTestResult::finishedCurrentTestFunction()
 {
     QTest::currentTestFunc = nullptr;
