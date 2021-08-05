@@ -52,7 +52,6 @@
 //
 
 #include <QtCore/private/qglobal_p.h>
-#include "QtCore/qmap.h"
 #include "QtCore/qstringlist.h"
 #include "QtCore/qreadwritelock.h"
 #include "QtCore/qhash.h"
@@ -66,7 +65,7 @@ struct QCoreGlobalData
     QCoreGlobalData();
     ~QCoreGlobalData();
 
-    QMap<QString, QStringList> dirSearchPaths;
+    QHash<QString, QStringList> dirSearchPaths;
     QReadWriteLock dirSearchPathsLock;
 
     static QCoreGlobalData *instance();
