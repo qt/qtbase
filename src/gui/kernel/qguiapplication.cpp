@@ -179,8 +179,8 @@ QPalette *QGuiApplicationPrivate::app_pal = nullptr;        // default applicati
 
 Qt::MouseButton QGuiApplicationPrivate::mousePressButton = Qt::NoButton;
 
-static int mouseDoubleClickDistance = -1;
-static int touchDoubleTapDistance = -1;
+static int mouseDoubleClickDistance = 0;
+static int touchDoubleTapDistance = 0;
 
 QWindow *QGuiApplicationPrivate::currentMousePressWindow = nullptr;
 
