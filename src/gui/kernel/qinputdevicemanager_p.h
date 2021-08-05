@@ -74,7 +74,8 @@ public:
         NumDeviceTypes
     };
 
-    QInputDeviceManager(QObject *parent = nullptr);
+    explicit QInputDeviceManager(QObject *parent = nullptr);
+    ~QInputDeviceManager() override;
 
     int deviceCount(DeviceType type) const;
 
