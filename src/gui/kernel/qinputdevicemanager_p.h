@@ -84,7 +84,7 @@ public:
     Qt::KeyboardModifiers keyboardModifiers() const;
     void setKeyboardModifiers(Qt::KeyboardModifiers mods);
 
-signals:
+Q_SIGNALS:
     void deviceListChanged(QInputDeviceManager::DeviceType type);
     void cursorPositionChangeRequested(const QPoint &pos);
 };
