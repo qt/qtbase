@@ -240,14 +240,12 @@ void QJUnitTestLogger::addIncident(IncidentTypes type, const char *description,
         typeBuf = "bpass";
         break;
     case QAbstractTestLogger::BlacklistedFail:
-        ++failureCounter;
         typeBuf = "bfail";
         break;
     case QAbstractTestLogger::BlacklistedXPass:
         typeBuf = "bxpass";
         break;
     case QAbstractTestLogger::BlacklistedXFail:
-        ++failureCounter;
         typeBuf = "bxfail";
         break;
     default:
