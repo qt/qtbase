@@ -328,7 +328,7 @@ QVariant QSystemLocalePrivate::timeFormat(QLocale::FormatType type)
     case QLocale::NarrowFormat:
         break;
     }
-    return QVariant();
+    return {};
 }
 
 QVariant QSystemLocalePrivate::dateTimeFormat(QLocale::FormatType type)
@@ -382,7 +382,7 @@ QVariant QSystemLocalePrivate::monthName(int month, QLocale::FormatType type)
 
     month -= 1;
     if (month < 0 || month > 11)
-        return QString();
+        return {};
 
     LCTYPE lctype = (type == QLocale::ShortFormat || type == QLocale::NarrowFormat)
             ? short_month_map[month] : long_month_map[month];
@@ -404,7 +404,7 @@ QVariant QSystemLocalePrivate::toString(QDate date, QLocale::FormatType type)
             text = substituteDigits(std::move(text));
         return text;
     }
-    return QString();
+    return {};
 }
 
 QVariant QSystemLocalePrivate::toString(QTime time, QLocale::FormatType type)
@@ -427,7 +427,7 @@ QVariant QSystemLocalePrivate::toString(QTime time, QLocale::FormatType type)
             text = substituteDigits(std::move(text));
         return text;
     }
-    return QString();
+    return {};
 }
 
 QVariant QSystemLocalePrivate::toString(const QDateTime &dt, QLocale::FormatType type)
