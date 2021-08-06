@@ -380,13 +380,12 @@ QVariant QSystemLocalePrivate::monthName(int month, QLocale::FormatType type)
             LOCALE_SMONTHNAME7, LOCALE_SMONTHNAME8, LOCALE_SMONTHNAME9,
             LOCALE_SMONTHNAME10, LOCALE_SMONTHNAME11, LOCALE_SMONTHNAME12 };
 
-    month -= 1;
-    if (month < 0 || month > 11)
+    if (month < 1 || month > 12)
         return {};
 
-    LCTYPE lctype = (type == QLocale::ShortFormat || type == QLocale::NarrowFormat)
-            ? short_month_map[month] : long_month_map[month];
-    return getLocaleInfo(lctype);
+    // Month is Jan = 1, ... Dec = 12; adjust by 1 to match array indexing from 0:
+    return getLocaleInfo(
+        (type == QLocale::LongFormat ? long_month_map : short_month_map)[month - 1]);
 }
 
 QVariant QSystemLocalePrivate::toString(QDate date, QLocale::FormatType type)
