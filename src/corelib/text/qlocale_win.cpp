@@ -399,10 +399,10 @@ QVariant QSystemLocalePrivate::toString(QDate date, QLocale::FormatType type)
     DWORD flags = (type == QLocale::LongFormat ? DATE_LONGDATE : DATE_SHORTDATE);
     wchar_t buf[255];
     if (getDateFormat(flags, &st, NULL, buf, 255)) {
-        QString format = QString::fromWCharArray(buf);
+        QString text = QString::fromWCharArray(buf);
         if (substitution() == SAlways)
-            format = substituteDigits(std::move(format));
-        return format;
+            text = substituteDigits(std::move(text));
+        return text;
     }
     return QString();
 }
@@ -422,10 +422,10 @@ QVariant QSystemLocalePrivate::toString(QTime time, QLocale::FormatType type)
 
     wchar_t buf[255];
     if (getTimeFormat(flags, &st, NULL, buf, 255)) {
-        QString format = QString::fromWCharArray(buf);
+        QString text = QString::fromWCharArray(buf);
         if (substitution() == SAlways)
-            format = substituteDigits(std::move(format));
-        return format;
+            text = substituteDigits(std::move(text));
+        return text;
     }
     return QString();
 }
