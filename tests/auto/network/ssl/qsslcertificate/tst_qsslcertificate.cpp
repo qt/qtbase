@@ -1061,7 +1061,6 @@ void tst_QSslCertificate::verify()
 {
     if (isNonOpenSslTls)
         QSKIP("Not implemented in SecureTransport or Schannel");
-    QSKIP("Expired certificates, regenerate first");
 
     QList<QSslError> errors;
     QList<QSslCertificate> toVerify;
