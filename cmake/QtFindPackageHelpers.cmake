@@ -86,16 +86,31 @@ macro(qt_find_package)
         # in their own way. CMake has FindSQLite3.cmake and with the original
         # qt_find_package(SQLite3) call it is our intention to use the cmake package
         # in module mode.
-        if (${ARGV0}_FOUND AND arg_PROVIDED_TARGETS)
-            unset(any_target_found)
+        unset(_qt_any_target_found)
+        unset(_qt_should_unset_found_var)
+        if(${ARGV0}_FOUND AND arg_PROVIDED_TARGETS)
             foreach(expected_target ${arg_PROVIDED_TARGETS})
                 if (TARGET ${expected_target})
-                    set(any_target_found TRUE)
+                    set(_qt_any_target_found TRUE)
                     break()
                 endif()
             endforeach()
-            if(NOT any_target_found)
-                unset(${ARGV0}_FOUND)
+            if(NOT _qt_any_target_found)
+                set(_qt_should_unset_found_var TRUE)
+            endif()
+        endif()
+        # If we consider the package not to be found, make sure to unset both regular
+        # and CACHE vars, otherwise CMP0126 set to NEW might cause issues with
+        # packages not being found correctly.
+        if(NOT ${ARGV0}_FOUND OR _qt_should_unset_found_var)
+            unset(${ARGV0}_FOUND)
+            unset(${ARGV0}_FOUND CACHE)
+
+            # Unset the NOTFOUND ${package}_DIR var that might have been set by the previous
+            # find_package call, to get rid of "not found" messages in the feature summary
+            # if the package is found by the next find_package call.
+            if(DEFINED CACHE{${ARGV0}_DIR} AND NOT ${ARGV0}_DIR)
+                unset(${ARGV0}_DIR CACHE)
             endif()
         endif()
     endif()
@@ -111,13 +126,6 @@ macro(qt_find_package)
     # E.g. find_package(Qt6 COMPONENTS BuildInternals) followed by
     # qt_find_package(Qt6 COMPONENTS Core) doesn't end up calling find_package(Qt6Core).
     if (NOT ${ARGV0}_FOUND AND NOT _qt_find_package_skip_find_package)
-        # Unset the NOTFOUND ${package}_DIR var that might have been set by the previous
-        # find_package call, to get rid of "not found" messagees in the feature summary
-        # if the package is found by the next find_package call.
-        if(DEFINED CACHE{${ARGV0}_DIR} AND NOT ${ARGV0}_DIR)
-            unset(${ARGV0}_DIR CACHE)
-        endif()
-
         # Call original function without our custom arguments.
         find_package(${arg_UNPARSED_ARGUMENTS})
     endif()
