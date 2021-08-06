@@ -133,6 +133,7 @@ private slots:
     void menuSize_Scrolling();
     void tearOffMenuNotDisplayed();
     void QTBUG_61039_menu_shortcuts();
+    void screenOrientationChangedCloseMenu();
 
 protected slots:
     void onActivated(QAction*);
@@ -1958,6 +1959,21 @@ void tst_QMenu::QTBUG_61039_menu_shortcuts()
     QSignalSpy actionJoeSpy(actionJoe, &QAction::triggered);
     QTest::keyClick(&widget, Qt::Key_J, Qt::ControlModifier);
     QTRY_COMPARE(actionJoeSpy.count(), 1);
+}
+
+void tst_QMenu::screenOrientationChangedCloseMenu()
+{
+     QMenu menu;
+     menu.addAction("action1");
+     menu.show();
+
+     QTRY_COMPARE(menu.isVisible(),true);
+
+     Qt::ScreenOrientation orientation = menu.screen()->orientation() == Qt::PortraitOrientation ? Qt::LandscapeOrientation : Qt::PortraitOrientation;
+     QScreenOrientationChangeEvent event(menu.screen(), orientation);
+     QCoreApplication::sendEvent(QCoreApplication::instance(), &event);
+
+     QTRY_COMPARE(menu.isVisible(),false);
 }
 
 QTEST_MAIN(tst_QMenu)

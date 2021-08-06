@@ -2707,8 +2707,10 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
 
     switch (e->type()) {
     case QEvent::ApplicationDeactivate:
+    case QEvent::OrientationChange:
         // Close all popups (triggers when switching applications
         // by pressing ALT-TAB on Windows, which is not receive as key event.
+        // triggers when the screen rotates.)
         closeAllPopups();
         break;
     case QEvent::Wheel: // User input and window activation makes tooltips sleep
