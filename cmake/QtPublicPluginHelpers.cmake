@@ -193,13 +193,12 @@ function(__qt_internal_add_static_plugin_import_macro
         qt_module_unprefixed)
 
     __qt_internal_get_static_plugin_init_target_name("${plugin_target}" plugin_init_target)
-    set(objs_genex "$<TARGET_OBJECTS:${QT_CMAKE_EXPORT_NAMESPACE}::${plugin_init_target}>")
+    set(plugin_init_target_namespaced "${QT_CMAKE_EXPORT_NAMESPACE}::${plugin_init_target}")
 
-    # TODO: Replace the target_sources call here with the more generalized approach that will be
-    # added to __qt_propagate_generated_resource (the one that determines whether to use
-    # target_sources or target_link_libraries depending on the CMake version).
-    target_sources(${QT_CMAKE_EXPORT_NAMESPACE}::${plugin_target} INTERFACE
-                   "${objs_genex}")
+    __qt_internal_propagate_object_library(
+        "${QT_CMAKE_EXPORT_NAMESPACE}::${plugin_target}"
+        "${plugin_init_target_namespaced}"
+    )
 endfunction()
 
 # Get target name of object library which is used to initialize a qt plugin.
