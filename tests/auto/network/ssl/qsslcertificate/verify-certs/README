@@ -1,2 +1,9 @@
 openssl verify -CAfile cacert.pem -untrusted test-intermediate-ca-cert.pem test-intermediate-is-ca-cert.pem
 openssl verify -CAfile cacert.pem -untrusted test-ocsp-good-cert.pem test-intermediate-not-ca-cert.pem
+
+1. cacert.pem is, obviously, a root CA certificate.
+2. test-intermediate-ca-cert.pem is a certificate, signed by the root CA, an intermediate CA.
+3. test-intermediate-is-ca-cert.pem is a certificate, signed by test-intermediate-ca-cert.pem.
+4. test-ocsp-good-cert.pem is signed by root CA, it has CA:FALSE but keyUsage allowing to sign
+   CSRs - this is how OpenSSL would report us 'invalid CA certificate' instead of 'No issuer found'.
+5. test-intermediate-not-ca-cert.pem is signed by test-ocsp-good-cert.pem.
