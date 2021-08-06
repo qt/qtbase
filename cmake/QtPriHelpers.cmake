@@ -90,9 +90,37 @@ set(QMAKE_DEPENDS_${uclib}_LD, ${deps})
 endfunction()
 
 # Retrieves the public Qt module dependencies of the given Qt module or Qt Private module.
+# The returned dependencies are "config module names", not target names.
+#
+# PRIVATE (OPTIONAL):
+#     Retrieve private dependencies only. Dependencies that appear in both, LINK_LIBRARIES and
+#     INTERFACE_LINK_LIBRARIES are discarded.
+#
 function(qt_get_direct_module_dependencies target out_var)
+    cmake_parse_arguments(arg "PRIVATE" "" "" ${ARGN})
     set(dependencies "")
-    get_target_property(libs ${target} INTERFACE_LINK_LIBRARIES)
+    if(arg_PRIVATE)
+        get_target_property(libs ${target} LINK_LIBRARIES)
+        get_target_property(public_libs ${target} INTERFACE_LINK_LIBRARIES)
+        list(REMOVE_DUPLICATES libs)
+        list(REMOVE_DUPLICATES public_libs)
+
+        # Remove all Qt::Foo and Qt6::Foo from libs that also appear in public_libs.
+        set(libs_to_remove "")
+        foreach(lib IN LISTS public_libs)
+            list(APPEND libs_to_remove "${lib}")
+            if(lib MATCHES "^Qt::(.*)")
+                list(APPEND libs_to_remove "${QT_CMAKE_EXPORT_NAMESPACE}::${CMAKE_MATCH_1}")
+            elseif(lib MATCHES "^{QT_CMAKE_EXPORT_NAMESPACE}::(.*)")
+                list(APPEND libs_to_remove "Qt::${CMAKE_MATCH_1}")
+            endif()
+        endforeach()
+
+        list(REMOVE_DUPLICATES libs_to_remove)
+        list(REMOVE_ITEM libs ${libs_to_remove})
+    else()
+        get_target_property(libs ${target} INTERFACE_LINK_LIBRARIES)
+    endif()
     if(NOT libs)
         set(libs "")
     endif()
@@ -164,6 +192,60 @@ function(qt_internal_map_targets_to_qmake_libs out_var)
         endif()
     endforeach()
     set(${out_var} "${result}" PARENT_SCOPE)
+endfunction()
+
+# Retrieve the runtime dependencies of module ${target}.
+# The runtime dependencies are what in CMake is called IMPORTED_LINK_DEPENDENT_LIBRARIES.
+# This function returns the dependencies in out_var, separated by space.
+#
+# PUBLIC_DEPENDENCIES:
+#     List of the module's public dependencies.
+#     The dependencies are expected to be config module names.
+#
+# PUBLIC (OPTIONAL):
+#     Specifies that target is a public module.
+#     If not specified, a private module is assumed.
+#
+function(qt_internal_get_module_run_dependencies out_var target)
+    cmake_parse_arguments(arg "PUBLIC" "" "PUBLIC_DEPENDENCIES" ${ARGN})
+
+    # Private dependencies of the module are runtime dependencies.
+    qt_get_direct_module_dependencies(${target} run_dependencies PRIVATE)
+
+    # If ${target} is a public module then public dependencies
+    # of the private module are also runtime dependencies.
+    if(arg_PUBLIC AND TARGET ${target}Private)
+        qt_get_direct_module_dependencies(${target}Private qt_for_private)
+
+        # FooPrivate depends on Foo, but we must not record this dependency in run_depends.
+        get_target_property(config_module_name ${target} _qt_config_module_name)
+        list(REMOVE_ITEM qt_for_private ${config_module_name})
+
+        list(APPEND run_dependencies ${qt_for_private})
+    endif()
+
+    list(REMOVE_DUPLICATES run_dependencies)
+
+    # If foo-private is a private dependency and foo is a public dependency,
+    # we don't have to add foo-private as runtime dependency.
+    set(deps_to_remove "")
+    foreach(dep IN LISTS run_dependencies)
+        if(NOT dep MATCHES "(.*)_private$")
+            continue()
+        endif()
+
+        # Is foo a public dependency?
+        list(FIND arg_PUBLIC_DEPENDENCIES "${CMAKE_MATCH_1}" idx)
+        if(idx GREATER -1)
+            list(APPEND deps_to_remove "${dep}")
+        endif()
+    endforeach()
+    if(NOT "${deps_to_remove}" STREQUAL "")
+        list(REMOVE_ITEM run_dependencies ${deps_to_remove})
+    endif()
+
+    list(JOIN run_dependencies " " run_dependencies)
+    set("${out_var}" "${run_dependencies}" PARENT_SCOPE)
 endfunction()
 
 # Generates module .pri files for consumption by qmake
@@ -298,8 +380,8 @@ ${framework_base_path}/${fw_private_module_header_dir}")
             "\nQT.${config_module_name}.plugin_types = ${module_plugin_types}")
     endif()
 
-    qt_get_direct_module_dependencies(${target} public_module_dependencies)
-    list(JOIN public_module_dependencies " " public_module_dependencies)
+    qt_get_direct_module_dependencies(${target} public_module_dependencies_list)
+    list(JOIN public_module_dependencies_list " " public_module_dependencies)
     set(public_module_dependencies "${module_depends} ${public_module_dependencies}")
 
     qt_path_join(pri_file_name "${target_path}" "qt_lib_${config_module_name}.pri")
@@ -326,10 +408,12 @@ ${framework_base_path}/${fw_private_module_header_dir}")
     qt_internal_map_targets_to_qmake_libs(module_uses ${dep_targets})
     list(JOIN module_uses " " joined_module_uses)
 
-    file(GENERATE
-        OUTPUT "${pri_file_name}"
-        CONTENT
-    "QT.${config_module_name}.VERSION = ${PROJECT_VERSION}
+    # Retrieve the public module's runtime dependencies.
+    qt_internal_get_module_run_dependencies(public_module_run_dependencies ${target}
+        PUBLIC
+        PUBLIC_DEPENDENCIES "${public_module_dependencies_list}")
+
+    set(content "QT.${config_module_name}.VERSION = ${PROJECT_VERSION}
 QT.${config_module_name}.name = ${module}
 QT.${config_module_name}.module = ${module_name_in_pri}
 QT.${config_module_name}.libs = $$QT_MODULE_LIB_BASE
@@ -338,7 +422,13 @@ QT.${config_module_name}.includes = ${public_module_includes}
 QT.${config_module_name}.frameworks = ${public_module_frameworks}
 QT.${config_module_name}.bins = $$QT_MODULE_BIN_BASE${module_plugin_types_assignment}
 QT.${config_module_name}.depends = ${public_module_dependencies}
-QT.${config_module_name}.uses = ${joined_module_uses}
+")
+    if(NOT "${public_module_run_dependencies}" STREQUAL "")
+        string(APPEND content
+            "QT.${config_module_name}.run_depends = ${public_module_run_dependencies}\n")
+    endif()
+    string(APPEND content
+        "QT.${config_module_name}.uses = ${joined_module_uses}
 QT.${config_module_name}.module_config = ${joined_module_internal_config}${module_build_config}
 QT.${config_module_name}.DEFINES = ${joined_target_defines}
 QT.${config_module_name}.enabled_features = ${enabled_features}
@@ -346,8 +436,8 @@ QT.${config_module_name}.disabled_features = ${disabled_features}${extra_assignm
 QT_CONFIG += ${enabled_features}
 QT_MODULES += ${config_module_name_base}
 ${module_pri_extra_content}
-"
-    )
+")
+    file(GENERATE OUTPUT "${pri_file_name}" CONTENT "${content}")
 
     if (NOT arg_NO_PRIVATE_MODULE AND NOT arg_INTERNAL_MODULE)
         set(pri_data_cmake_file "qt_lib_${config_module_name}_private.cmake")
@@ -371,22 +461,33 @@ ${module_pri_extra_content}
         qt_internal_map_targets_to_qmake_libs(private_module_uses ${dep_targets})
         list(JOIN private_module_uses " " joined_private_module_uses)
 
+        # Retrieve the private module's runtime dependencies.
+        qt_internal_get_module_run_dependencies(private_module_run_dependencies ${target}Private
+            PUBLIC_DEPENDENCIES "${dep_targets}")
+
         # Generate a preliminary qt_lib_XXX_private.pri file
-        file(GENERATE
-            OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${private_pri_file_name}"
-            CONTENT
-        "QT.${config_module_name}_private.VERSION = ${PROJECT_VERSION}
+        set(content
+            "QT.${config_module_name}_private.VERSION = ${PROJECT_VERSION}
 QT.${config_module_name}_private.name = ${module}
 QT.${config_module_name}_private.module =
 QT.${config_module_name}_private.libs = $$QT_MODULE_LIB_BASE
 QT.${config_module_name}_private.includes = ${private_module_includes}
 QT.${config_module_name}_private.frameworks = ${private_module_frameworks}
 QT.${config_module_name}_private.depends = ${private_module_dependencies}
-QT.${config_module_name}_private.uses = ${joined_private_module_uses}
+")
+        if(NOT "${private_module_run_dependencies}" STREQUAL "")
+            string(APPEND content
+                "QT.${config_module_name}_private.run_depends = ${private_module_run_dependencies}
+")
+        endif()
+        string(APPEND content
+            "QT.${config_module_name}_private.uses = ${joined_private_module_uses}
 QT.${config_module_name}_private.module_config = ${joined_module_internal_config}
 QT.${config_module_name}_private.enabled_features = ${enabled_private_features}
-QT.${config_module_name}_private.disabled_features = ${disabled_private_features}"
-        )
+QT.${config_module_name}_private.disabled_features = ${disabled_private_features}")
+        file(GENERATE
+            OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${private_pri_file_name}"
+            CONTENT "${content}")
 
         if(QT_GENERATOR_IS_MULTI_CONFIG)
             set(configs ${CMAKE_CONFIGURATION_TYPES})
