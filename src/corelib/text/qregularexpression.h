@@ -233,6 +233,13 @@ public:
 
     int lastCapturedIndex() const;
 
+#if QT_STRINGVIEW_LEVEL < 2
+    bool hasCaptured(const QString &name) const
+    { return hasCaptured(QStringView(name)); }
+#endif
+    bool hasCaptured(QStringView name) const;
+    bool hasCaptured(int nth) const;
+
     QString captured(int nth = 0) const;
     QStringView capturedView(int nth = 0) const;
 

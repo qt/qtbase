@@ -1259,6 +1259,12 @@ void QRegularExpressionPrivate::doMatch(QRegularExpressionMatchPrivate *priv,
         PCRE2_SIZE *ovector = pcre2_get_ovector_pointer_16(matchData);
         qsizetype *const capturedOffsets = priv->capturedOffsets.data();
 
+        // We rely on the fact that capturing groups that did not
+        // capture anything have offset -1, but PCRE technically
+        // returns "PCRE2_UNSET". Test that out, better safe than
+        // sorry...
+        static_assert(qsizetype(PCRE2_UNSET) == qsizetype(-1), "Internal error: PCRE2 changed its API");
+
         for (int i = 0; i < priv->capturedCount * 2; ++i)
             capturedOffsets[i] = qsizetype(ovector[i]);
 
@@ -2178,11 +2184,68 @@ QRegularExpression::MatchOptions QRegularExpressionMatch::matchOptions() const
 
     If the regular expression did not match, this function returns -1.
 
-    \sa captured(), capturedStart(), capturedEnd(), capturedLength()
+    \sa hasCaptured(), captured(), capturedStart(), capturedEnd(), capturedLength()
 */
 int QRegularExpressionMatch::lastCapturedIndex() const
 {
     return d->capturedCount - 1;
+}
+
+/*!
+    \fn bool QRegularExpressionMatch::hasCaptured(const QString &name) const
+    \fn bool QRegularExpressionMatch::hasCaptured(QStringView name) const
+    \since 6.3
+
+    Returns true if the capturing group named \a name captured something
+    in the subject string, and false otherwise (or if there is no
+    capturing group called \a name).
+
+    \note Some capturing groups in a regular expression may not have
+    captured anything even if the regular expression matched. This may
+    happen, for instance, if a conditional operator is used in the
+    pattern:
+
+    \snippet code/src_corelib_text_qregularexpression.cpp 36
+
+    Similarly, a capturing group may capture a substring of length 0;
+    this function will return \c{true} for such a capturing group.
+
+    \sa captured(), hasMatch()
+*/
+bool QRegularExpressionMatch::hasCaptured(QStringView name) const
+{
+    const int nth = d->regularExpression.d->captureIndexForName(name);
+    return hasCaptured(nth);
+}
+
+/*!
+    \since 6.3
+
+    Returns true if the \a nth capturing group captured something
+    in the subject string, and false otherwise (or if there is no
+    such capturing group).
+
+    \note The implicit capturing group number 0 captures the substring
+    matched by the entire pattern.
+
+    \note Some capturing groups in a regular expression may not have
+    captured anything even if the regular expression matched. This may
+    happen, for instance, if a conditional operator is used in the
+    pattern:
+
+    \snippet code/src_corelib_text_qregularexpression.cpp 36
+
+    Similarly, a capturing group may capture a substring of length 0;
+    this function will return \c{true} for such a capturing group.
+
+    \sa captured(), lastCapturedIndex(), hasMatch()
+*/
+bool QRegularExpressionMatch::hasCaptured(int nth) const
+{
+    if (nth < 0 || nth > lastCapturedIndex())
+        return false;
+
+    return d->capturedOffsets.at(nth * 2) != -1;
 }
 
 /*!
@@ -2218,7 +2281,7 @@ QString QRegularExpressionMatch::captured(int nth) const
 */
 QStringView QRegularExpressionMatch::capturedView(int nth) const
 {
-    if (nth < 0 || nth > lastCapturedIndex())
+    if (!hasCaptured(nth))
         return QStringView();
 
     qsizetype start = capturedStart(nth);
@@ -2312,7 +2375,7 @@ QStringList QRegularExpressionMatch::capturedTexts() const
 */
 qsizetype QRegularExpressionMatch::capturedStart(int nth) const
 {
-    if (nth < 0 || nth > lastCapturedIndex())
+    if (!hasCaptured(nth))
         return -1;
 
     return d->capturedOffsets.at(nth * 2);
@@ -2341,7 +2404,7 @@ qsizetype QRegularExpressionMatch::capturedLength(int nth) const
 */
 qsizetype QRegularExpressionMatch::capturedEnd(int nth) const
 {
-    if (nth < 0 || nth > lastCapturedIndex())
+    if (!hasCaptured(nth))
         return -1;
 
     return d->capturedOffsets.at(nth * 2 + 1);

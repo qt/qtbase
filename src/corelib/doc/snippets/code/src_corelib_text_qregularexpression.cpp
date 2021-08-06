@@ -374,4 +374,16 @@ QRegularExpression re(R"(\d\d \w+)");
 //! [35]
 }
 
+{
+//! [36]
+QRegularExpression re("([a-z]+)|([A-Z]+)");
+QRegularExpressionMatch m = re.match("UPPERCASE");
+if (m.hasMatch()) {
+    qDebug() << m.hasCaptured(0); // true
+    qDebug() << m.hasCaptured(1); // false
+    qDebug() << m.hasCaptured(2); // true
+}
+//! [36]
+}
+
 }
