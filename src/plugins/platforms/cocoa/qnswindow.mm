@@ -104,7 +104,7 @@ static bool isMouseEvent(NSEvent *ev)
 
     // Unfortunately there's no NSWindowListOrderedBackToFront,
     // so we have to manually reverse the order using an array.
-    NSMutableArray<NSWindow *> *windows = [NSMutableArray<NSWindow *> new];
+    NSMutableArray<NSWindow *> *windows = [[NSMutableArray<NSWindow *> new] autorelease];
     [application enumerateWindowsWithOptions:NSWindowListOrderedFrontToBack
         usingBlock:^(NSWindow *window, BOOL *) {
             // For some reason AppKit will give us nil-windows, skip those
