@@ -321,6 +321,7 @@ private:
 
 class Q_CORE_EXPORT QMetaStringTable
 {
+    Q_DISABLE_COPY_MOVE(QMetaStringTable)
 public:
     explicit QMetaStringTable(const QByteArray &className);
 
