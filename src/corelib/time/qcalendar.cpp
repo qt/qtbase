@@ -88,6 +88,8 @@ namespace QtPrivate {
 */
 class QCalendarRegistry
 {
+    Q_DISABLE_COPY_MOVE(QCalendarRegistry); // This is a singleton.
+
     /*
         Lock protecting the registry from concurrent modification.
     */
