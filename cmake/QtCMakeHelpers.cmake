@@ -137,7 +137,7 @@ function(qt_remove_args out_var)
             endif()
             list(GET result ${find_result} arg_current)
             # remove values until we hit another arg or the end of the list
-            while(NOT ${arg_current} IN_LIST arg_ALL_ARGS AND find_result LESS result_len)
+            while(NOT "${arg_current}" IN_LIST arg_ALL_ARGS AND find_result LESS result_len)
                 list(REMOVE_AT result ${find_result})
                 list(LENGTH result result_len)
                 if (NOT find_result EQUAL result_len)
