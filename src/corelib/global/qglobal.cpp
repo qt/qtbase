@@ -40,6 +40,7 @@
 
 #include "qplatformdefs.h"
 #include "qstring.h"
+#include "qbytearrayview.h"
 #include "qlist.h"
 #include "qdir.h"
 #include "qdatetime.h"
@@ -3548,37 +3549,7 @@ int qEnvironmentVariableIntValue(const char *varName, bool *ok) noexcept
         return 0;
     }
 #endif
-    bool ok_ = true;
-    const char *endptr;
-    const qlonglong value = qstrntoll(buffer, size, &endptr, 0, &ok_);
-
-    // Keep the following checks in sync with QByteArray::toInt()
-    if (!ok_) {
-        if (ok)
-            *ok = false;
-        return 0;
-    }
-
-    if (*endptr != '\0') {
-        while (ascii_isspace(*endptr))
-            ++endptr;
-    }
-
-    if (*endptr != '\0') {
-        // we stopped at a non-digit character after converting some digits
-        if (ok)
-            *ok = false;
-        return 0;
-    }
-
-    if (int(value) != value) {
-        if (ok)
-            *ok = false;
-        return 0;
-    } else if (ok) {
-        *ok = ok_;
-    }
-    return int(value);
+    return QByteArrayView(buffer, size).toInt(ok, 0);
 }
 
 /*!
