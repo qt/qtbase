@@ -1235,9 +1235,22 @@ bool QMYSQLDriver::open(const QString& db,
     }
 
     // try utf8 with non BMP first, utf8 (BMP only) if that fails
-    if (mysql_set_character_set(d->mysql, "utf8mb4"))
-        if (mysql_set_character_set(d->mysql, "utf8"))
-            qWarning() << "MySQL: Unable to set the client character set to utf8.";
+    static const char wanted_charsets[][8] = { "utf8mb4", "utf8" };
+#ifdef MARIADB_VERSION_ID
+    MARIADB_CHARSET_INFO *cs = nullptr;
+    for (const char *p : wanted_charsets) {
+        cs = mariadb_get_charset_by_name(p);
+        if (cs) {
+            d->mysql->charset = cs;
+            break;
+        }
+    }
+#else
+    // dummy
+    struct {
+        const char *csname;
+    } *cs = nullptr;
+#endif
 
     if (!sslKey.isNull() || !sslCert.isNull() || !sslCA.isNull() ||
         !sslCAPath.isNull() || !sslCipher.isNull()) {
@@ -1264,6 +1277,21 @@ bool QMYSQLDriver::open(const QString& db,
                                       (port > -1) ? port : 0,
                                       unixSocket.isNull() ? nullptr : unixSocket.toUtf8().constData(),
                                       optionFlags);
+
+    // now ask the server to match the charset we selected
+    if (!cs || mysql_set_character_set(d->mysql, cs->csname)) {
+        bool ok = false;
+        for (const char *p : wanted_charsets) {
+            if (mysql_set_character_set(d->mysql, p)) {
+                ok = true;
+                break;
+            }
+        }
+        if (!ok)
+            qWarning("MySQL: Unable to set the client character set to utf8 (\"%s\"). Using '%s' instead.",
+                     mysql_error(d->mysql),
+                     mysql_character_set_name(d->mysql));
+    }
 
     if (mysql == d->mysql) {
         if (!db.isEmpty() && mysql_select_db(d->mysql, db.toUtf8().constData())) {
