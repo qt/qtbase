@@ -408,4 +408,11 @@ bool QWasmWindow::hasTitleBar() const
             && !window()->flags().testFlag(Qt::Popup);
 }
 
+void QWasmWindow::requestActivateWindow()
+{
+    if (window()->isTopLevel())
+        raise();
+    QPlatformWindow::requestActivateWindow();
+}
+
 QT_END_NAMESPACE
