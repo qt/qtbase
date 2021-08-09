@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -485,7 +485,6 @@ private:
     void reallocData(qsizetype alloc, QArrayData::AllocationOption option);
     void reallocGrowData(qsizetype n);
     void expand(qsizetype i);
-    QByteArray nulTerminated() const;
 
     static QByteArray toLower_helper(const QByteArray &a);
     static QByteArray toLower_helper(QByteArray &a);

@@ -1822,26 +1822,6 @@ void QByteArray::expand(qsizetype i)
 }
 
 /*!
-   \internal
-   Return a QByteArray that is sure to be '\\0'-terminated.
-
-   By default, all QByteArray have an extra NUL at the end,
-   guaranteeing that assumption. However, if QByteArray::fromRawData
-   is used, then the NUL is there only if the user put it there. We
-   can't be sure.
-*/
-QByteArray QByteArray::nulTerminated() const
-{
-    // is this fromRawData?
-    if (d.isMutable())
-        return *this;           // no, then we're sure we're zero terminated
-
-    QByteArray copy(*this);
-    copy.detach();
-    return copy;
-}
-
-/*!
     \fn QByteArray &QByteArray::prepend(QByteArrayView ba)
 
     Prepends the byte array view \a ba to this byte array and returns a
