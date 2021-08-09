@@ -131,8 +131,8 @@ void QWasmCompositor::removeWindow(QWasmWindow *window)
     if (!m_windowStack.isEmpty() && !QGuiApplication::focusWindow()) {
         auto lastWindow = m_windowStack.last();
         lastWindow->requestActivateWindow();
+        notifyTopWindowChanged(lastWindow);
     }
-    notifyTopWindowChanged(window);
 }
 
 void QWasmCompositor::setVisible(QWasmWindow *window, bool visible)
