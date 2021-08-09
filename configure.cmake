@@ -549,21 +549,6 @@ qt_feature("sanitizer"
     CONDITION QT_FEATURE_sanitize_address OR QT_FEATURE_sanitize_thread OR QT_FEATURE_sanitize_memory OR QT_FEATURE_sanitize_fuzzer_no_link OR QT_FEATURE_sanitize_undefined
 )
 qt_feature_config("sanitizer" QMAKE_PUBLIC_CONFIG)
-qt_feature("coverage_trace_pc_guard"
-    LABEL "trace-pc-guard"
-    AUTODETECT OFF
-)
-qt_feature_config("coverage_trace_pc_guard" QMAKE_PUBLIC_CONFIG)
-qt_feature("coverage_source_based"
-    LABEL "source-based"
-    AUTODETECT OFF
-)
-qt_feature_config("coverage_source_based" QMAKE_PUBLIC_CONFIG)
-qt_feature("coverage"
-    LABEL "Code Coverage Instrumentation"
-    CONDITION QT_FEATURE_coverage_trace_pc_guard OR QT_FEATURE_coverage_source_based
-)
-qt_feature_config("coverage" QMAKE_PUBLIC_CONFIG)
 qt_feature("plugin-manifests"
     LABEL "Embed manifests in plugins"
     AUTODETECT OFF
@@ -1072,12 +1057,6 @@ qt_configure_add_summary_entry(ARGS "sanitize_memory")
 qt_configure_add_summary_entry(ARGS "sanitize_fuzzer_no_link")
 qt_configure_add_summary_entry(ARGS "sanitize_undefined")
 qt_configure_end_summary_section() # end of "Sanitizers" section
-qt_configure_add_summary_entry(
-    TYPE "firstAvailableFeature"
-    ARGS "coverage_trace_pc_guard coverage_source_based"
-    MESSAGE "Code Coverage Instrumentation"
-    CONDITION QT_FEATURE_coverage
-)
 qt_configure_add_summary_build_parts("Build parts")
 qt_configure_add_summary_entry(
     ARGS "appstore-compliant"
@@ -1128,11 +1107,6 @@ qt_configure_add_report_entry(
     TYPE ERROR
     MESSAGE "Static builds don't support RPATH"
     CONDITION ( QT_FEATURE_rpath OR QT_EXTRA_RPATHS ) AND NOT QT_FEATURE_shared
-)
-qt_configure_add_report_entry(
-    TYPE ERROR
-    MESSAGE "Command line option -coverage is only supported with clang compilers."
-    CONDITION QT_FEATURE_coverage AND NOT CLANG
 )
 qt_configure_add_report_entry(
     TYPE ERROR

@@ -19,7 +19,7 @@ To run a test with libFuzzer:
 3. Configure Qt with
     -platform linux-clang -sanitize fuzzer-no-link
    or, if you are using clang 5
-    -platform linux-clang -coverage trace-pc-guard
+    -platform linux-clang -- -DCMAKE_CXX_FLAGS=-fsanitize-coverage=trace-pc-guard
    to add the needed code coverage instrumentation. Since speed of execution is crucial for fuzz
    testing, it's recommendable to also use the switches
     -release -static
