@@ -675,6 +675,17 @@ void tst_QUrlInternal::ace_testsuite_data()
     QTest::newRow("invalid-nameprep-unassigned") << "xn--s5a" << "xn--s5a" << "xn--s5a" << "xn--s5a";
     // same character, see QTBUG-60364
     QTest::newRow("invalid-nameprep-unassigned2") << "xn--80ak6aa92e" << "xn--80ak6aa92e" << "xn--80ak6aa92e" << "xn--80ak6aa92e";
+
+    // Decodes to "a" in some versions, see QTBUG-95689
+    QTest::newRow("punycode-overflow-1") << "xn--5p32g"
+                                         << "xn--5p32g"
+                                         << "xn--5p32g"
+                                         << "xn--5p32g";
+    // Decodes to the same string as "xn--097c" in some versions, see QTBUG-95689
+    QTest::newRow("punycode-overflow-2") << "xn--400595c"
+                                         << "xn--400595c"
+                                         << "xn--400595c"
+                                         << "xn--400595c";
 }
 
 void tst_QUrlInternal::ace_testsuite()
@@ -691,6 +702,8 @@ void tst_QUrlInternal::ace_testsuite()
 
     QString domain = in + suffix;
     QCOMPARE(QString::fromLatin1(QUrl::toAce(domain)), toace + suffix);
+    QEXPECT_FAIL("punycode-overflow-2", "QTBUG-95689: Missing oweflow check in punycode decoder",
+                 Abort);
     if (fromace != ".")
         QCOMPARE(QUrl::fromAce(domain.toLatin1()), fromace + suffix);
     QCOMPARE(QUrl::fromAce(QUrl::toAce(domain)), unicode + suffix);
