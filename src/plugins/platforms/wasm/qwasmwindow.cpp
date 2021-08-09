@@ -420,4 +420,11 @@ bool QWasmWindow::windowIsPopupType(Qt::WindowType type) const
     return false;
 }
 
+void QWasmWindow::requestActivateWindow()
+{
+    if (window()->isTopLevel())
+        raise();
+    QPlatformWindow::requestActivateWindow();
+}
+
 QT_END_NAMESPACE
