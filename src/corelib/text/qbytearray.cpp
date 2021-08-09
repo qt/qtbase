@@ -3571,6 +3571,11 @@ qlonglong QByteArray::toLongLong(bool *ok, int base) const
     return toIntegral_helper<qlonglong>(*this, ok, base);
 }
 
+qlonglong QByteArrayView::toLongLong(bool *ok, int base) const
+{
+    return toIntegral_helper<qlonglong>(*this, ok, base);
+}
+
 /*!
     Returns the byte array converted to an \c {unsigned long long} using base \a
     base, which is ten by default. Bases 0 and 2 through 36 are supported, using
@@ -3594,6 +3599,11 @@ qlonglong QByteArray::toLongLong(bool *ok, int base) const
 */
 
 qulonglong QByteArray::toULongLong(bool *ok, int base) const
+{
+    return toIntegral_helper<qulonglong>(*this, ok, base);
+}
+
+qulonglong QByteArrayView::toULongLong(bool *ok, int base) const
 {
     return toIntegral_helper<qulonglong>(*this, ok, base);
 }
@@ -3627,6 +3637,11 @@ int QByteArray::toInt(bool *ok, int base) const
     return toIntegral_helper<int>(*this, ok, base);
 }
 
+int QByteArrayView::toInt(bool *ok, int base) const
+{
+    return toIntegral_helper<int>(*this, ok, base);
+}
+
 /*!
     Returns the byte array converted to an \c {unsigned int} using base \a base,
     which is ten by default. Bases 0 and 2 through 36 are supported, using
@@ -3650,6 +3665,11 @@ int QByteArray::toInt(bool *ok, int base) const
 */
 
 uint QByteArray::toUInt(bool *ok, int base) const
+{
+    return toIntegral_helper<uint>(*this, ok, base);
+}
+
+uint QByteArrayView::toUInt(bool *ok, int base) const
 {
     return toIntegral_helper<uint>(*this, ok, base);
 }
@@ -3684,6 +3704,11 @@ long QByteArray::toLong(bool *ok, int base) const
     return toIntegral_helper<long>(*this, ok, base);
 }
 
+long QByteArrayView::toLong(bool *ok, int base) const
+{
+    return toIntegral_helper<long>(*this, ok, base);
+}
+
 /*!
     \since 4.1
 
@@ -3708,6 +3733,11 @@ long QByteArray::toLong(bool *ok, int base) const
     \sa number()
 */
 ulong QByteArray::toULong(bool *ok, int base) const
+{
+    return toIntegral_helper<ulong>(*this, ok, base);
+}
+
+ulong QByteArrayView::toULong(bool *ok, int base) const
 {
     return toIntegral_helper<ulong>(*this, ok, base);
 }
@@ -3739,6 +3769,11 @@ short QByteArray::toShort(bool *ok, int base) const
     return toIntegral_helper<short>(*this, ok, base);
 }
 
+short QByteArrayView::toShort(bool *ok, int base) const
+{
+    return toIntegral_helper<short>(*this, ok, base);
+}
+
 /*!
     Returns the byte array converted to an \c {unsigned short} using base \a
     base, which is ten by default. Bases 0 and 2 through 36 are supported, using
@@ -3766,6 +3801,10 @@ ushort QByteArray::toUShort(bool *ok, int base) const
     return toIntegral_helper<ushort>(*this, ok, base);
 }
 
+ushort QByteArrayView::toUShort(bool *ok, int base) const
+{
+    return toIntegral_helper<ushort>(*this, ok, base);
+}
 
 /*!
     Returns the byte array converted to a \c double value.
@@ -3794,10 +3833,14 @@ ushort QByteArray::toUShort(bool *ok, int base) const
 
 double QByteArray::toDouble(bool *ok) const
 {
+    return QByteArrayView(*this).toDouble(ok);
+}
+
+double QByteArrayView::toDouble(bool *ok) const
+{
     bool nonNullOk = false;
     int processed = 0;
-    double d = qt_asciiToDouble(constData(), size(),
-                                nonNullOk, processed, WhitespacesAllowed);
+    double d = qt_asciiToDouble(data(), size(), nonNullOk, processed, WhitespacesAllowed);
     if (ok)
         *ok = nonNullOk;
     return d;
@@ -3829,6 +3872,11 @@ double QByteArray::toDouble(bool *ok) const
 */
 
 float QByteArray::toFloat(bool *ok) const
+{
+    return QLocaleData::convertDoubleToFloat(toDouble(ok), ok);
+}
+
+float QByteArrayView::toFloat(bool *ok) const
 {
     return QLocaleData::convertDoubleToFloat(toDouble(ok), ok);
 }

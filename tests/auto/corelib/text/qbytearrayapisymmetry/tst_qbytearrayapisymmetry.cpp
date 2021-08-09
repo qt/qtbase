@@ -30,6 +30,8 @@
 
 #include <QByteArrayView>
 
+#include <limits>
+
 class tst_QByteArrayApiSymmetry : public QObject
 {
     Q_OBJECT
@@ -126,6 +128,41 @@ private slots:
     void trimmed_QByteArrayView_data() { trimmed_data(); }
     void trimmed_QByteArrayView() { trimmed_impl<QByteArrayView>(); }
 
+    void toShort_QByteArray() const { toShort<QByteArray>(); }
+    void toShort_QByteArrayView() const { toShort<QByteArrayView>(); }
+    void toUShort_QByteArray() const { toUShort<QByteArray>(); }
+    void toUShort_QByteArrayView() const { toUShort<QByteArrayView>(); }
+    void toInt_QByteArray_data() const { toInt_data(); }
+    void toInt_QByteArrayView_data() const { toInt_data(); }
+    void toInt_QByteArray() const { toInt<QByteArray>(); }
+    void toInt_QByteArrayView() const { toInt<QByteArrayView>(); }
+    void toUInt_QByteArray_data() const { toUInt_data(); }
+    void toUInt_QByteArrayView_data() const { toUInt_data(); }
+    void toUInt_QByteArray() const { toUInt<QByteArray>(); }
+    void toUInt_QByteArrayView() const { toUInt<QByteArrayView>(); }
+    void toLong_QByteArray_data() const { toLong_data(); }
+    void toLong_QByteArrayView_data() const { toLong_data(); }
+    void toLong_QByteArray() const { toLong<QByteArray>(); }
+    void toLong_QByteArrayView() const { toLong<QByteArrayView>(); }
+    void toULong_QByteArray_data() const { toULong_data(); }
+    void toULong_QByteArrayView_data() const { toULong_data(); }
+    void toULong_QByteArray() const { toULong<QByteArray>(); }
+    void toULong_QByteArrayView() const { toULong<QByteArrayView>(); }
+    void toLongLong_QByteArray_data() const { toLongLong_data(); }
+    void toLongLong_QByteArrayView_data() const { toLongLong_data(); }
+    void toLongLong_QByteArray() const { toLongLong<QByteArray>(); }
+    void toLongLong_QByteArrayView() const { toLongLong<QByteArrayView>(); }
+    void toULongLong_QByteArray_data() const { toULongLong_data(); }
+    void toULongLong_QByteArrayView_data() const { toULongLong_data(); }
+    void toULongLong_QByteArray() const { toULongLong<QByteArray>(); }
+    void toULongLong_QByteArrayView() const { toULongLong<QByteArrayView>(); }
+    void toFloat_QByteArray() const { toFloat<QByteArray>(); }
+    void toFloat_QByteArrayView() const { toFloat<QByteArrayView>(); }
+    void toDouble_QByteArray_data() const { toDouble_data(); }
+    void toDouble_QByteArrayView_data() const { toDouble_data(); }
+    void toDouble_QByteArray() const { toDouble<QByteArray>(); }
+    void toDouble_QByteArrayView() const { toDouble<QByteArrayView>(); }
+
 private:
     void startsWith_data();
     template<typename Haystack, typename Needle> void startsWith_impl();
@@ -164,6 +201,24 @@ private:
 
     void trimmed_data();
     template <typename ByteArray> void trimmed_impl();
+
+    template <typename ByteArray> void toShort() const;
+    template <typename ByteArray> void toUShort() const;
+    void toInt_data() const;
+    template <typename ByteArray> void toInt() const;
+    void toUInt_data() const;
+    template <typename ByteArray> void toUInt() const;
+    void toLong_data() const;
+    template <typename ByteArray> void toLong() const;
+    void toULong_data() const;
+    template <typename ByteArray> void toULong() const;
+    void toLongLong_data() const;
+    template <typename ByteArray> void toLongLong() const;
+    void toULongLong_data() const;
+    template <typename ByteArray> void toULongLong() const;
+    template <typename ByteArray> void toFloat() const;
+    void toDouble_data() const;
+    template <typename ByteArray> void toDouble() const;
 };
 
 static const auto empty = QByteArray("");
@@ -916,6 +971,611 @@ template <typename ByteArray> void tst_QByteArrayApiSymmetry::trimmed_impl()
             QVERIFY(!source.isDetached());
     }
 }
+
+template <typename ByteArray> void tst_QByteArrayApiSymmetry::toShort() const
+{
+    bool ok = true; // opposite to the first expected result
+
+    QCOMPARE(ByteArray().toShort(&ok), 0);
+    QVERIFY(!ok);
+
+    QCOMPARE(ByteArray("").toShort(&ok), 0);
+    QVERIFY(!ok);
+
+    QCOMPARE(ByteArray("12345").toShort(&ok), 12345);
+    QVERIFY(ok);
+
+    QCOMPARE(ByteArray("-12345").toShort(&ok), -12345);
+    QVERIFY(ok);
+
+    QCOMPARE(ByteArray("-12345 and a bit", 5).toShort(&ok), -1234);
+    QVERIFY(ok);
+
+    QCOMPARE(ByteArray("-12345 and a bit").sliced(1, 4).toShort(&ok), 1234);
+    QVERIFY(ok);
+
+    QCOMPARE(ByteArray("-012345 and a bit", 2).toShort(&ok), 0);
+    QVERIFY(ok);
+
+    QCOMPARE(ByteArray("-12345 and a bit", 6).toShort(&ok), -12345);
+    QVERIFY(ok);
+
+    QCOMPARE(ByteArray("-12345 and a bit", 7).toShort(&ok), -12345);
+    QVERIFY(ok);
+
+    QCOMPARE(ByteArray("12345 and a bit", 10).toShort(&ok), 0);
+    QVERIFY(!ok);
+
+    QCOMPARE(ByteArray("32767").toShort(&ok), 32767);
+    QVERIFY(ok);
+
+    QCOMPARE(ByteArray("-32768").toShort(&ok), -32768);
+    QVERIFY(ok);
+
+    QCOMPARE(ByteArray("32768").toShort(&ok), 0);
+    QVERIFY(!ok);
+
+    QCOMPARE(ByteArray("-32769").toShort(&ok), 0);
+    QVERIFY(!ok);
+}
+
+template <typename ByteArray> void tst_QByteArrayApiSymmetry::toUShort() const
+{
+    bool ok = true; // opposite to the first expected result
+
+    QCOMPARE(ByteArray().toUShort(&ok), 0);
+    QVERIFY(!ok);
+
+    QCOMPARE(ByteArray("").toUShort(&ok), 0);
+    QVERIFY(!ok);
+
+    QCOMPARE(ByteArray("12345").toUShort(&ok), 12345);
+    QVERIFY(ok);
+
+    QCOMPARE(ByteArray("12345 and a bit", 4).toUShort(&ok), 1234);
+    QVERIFY(ok);
+
+    QCOMPARE(ByteArray("012345 and a bit").sliced(1, 4).toUShort(&ok), 1234);
+    QVERIFY(ok);
+
+    QCOMPARE(ByteArray("012345 and a bit", 1).toUShort(&ok), 0);
+    QVERIFY(ok);
+
+    QCOMPARE(ByteArray("12345 and a bit", 5).toUShort(&ok), 12345);
+    QVERIFY(ok);
+
+    QCOMPARE(ByteArray("12345 and a bit", 6).toUShort(&ok), 12345);
+    QVERIFY(ok);
+
+    QCOMPARE(ByteArray("12345 and a bit", 10).toUShort(&ok), 0);
+    QVERIFY(!ok);
+
+    QCOMPARE(ByteArray("-12345").toUShort(&ok), 0);
+    QVERIFY(!ok);
+
+    QCOMPARE(ByteArray("32767").toUShort(&ok), 32767);
+    QVERIFY(ok);
+
+    QCOMPARE(ByteArray("32768").toUShort(&ok), 32768);
+    QVERIFY(ok);
+
+    QCOMPARE(ByteArray("65535").toUShort(&ok), 65535);
+    QVERIFY(ok);
+
+    QCOMPARE(ByteArray("65536").toUShort(&ok), 0);
+    QVERIFY(!ok);
+}
+
+// defined later
+extern const char globalChar;
+
+void tst_QByteArrayApiSymmetry::toInt_data() const
+{
+    QTest::addColumn<QByteArray>("string");
+    QTest::addColumn<int>("base");
+    QTest::addColumn<int>("expectednumber");
+    QTest::addColumn<bool>("expectedok");
+
+    QTest::newRow("null") << QByteArray() << 10 << 0 << false;
+    QTest::newRow("empty") << QByteArray("") << 10 << 0 << false;
+
+    QTest::newRow("base 10") << QByteArray("100") << 10 << 100 << true;
+    QTest::newRow("base 16-1") << QByteArray("100") << 16 << 256 << true;
+    QTest::newRow("base 16-2") << QByteArray("0400") << 16 << 1024 << true;
+    QTest::newRow("base 2") << QByteArray("1111") << 2 << 15 << true;
+    QTest::newRow("base 8") << QByteArray("100") << 8 << 64 << true;
+    QTest::newRow("base 0-1") << QByteArray("0x10") << 0 << 16 << true;
+    QTest::newRow("base 0-2") << QByteArray("10") << 0 << 10 << true;
+    QTest::newRow("base 0-3") << QByteArray("010") << 0 << 8 << true;
+    QTest::newRow("empty") << QByteArray() << 0 << 0 << false;
+
+    QTest::newRow("leading space") << QByteArray(" 100") << 10 << 100 << true;
+    QTest::newRow("trailing space") << QByteArray("100 ") << 10 << 100 << true;
+    QTest::newRow("leading junk") << QByteArray("x100") << 10 << 0 << false;
+    QTest::newRow("trailing junk") << QByteArray("100x") << 10 << 0 << false;
+
+    // using fromRawData
+    QTest::newRow("raw1") << QByteArray::fromRawData("1", 1) << 10 << 1 << true;
+    QTest::newRow("raw2") << QByteArray::fromRawData("1foo", 1) << 10 << 1 << true;
+    QTest::newRow("raw3") << QByteArray::fromRawData("12", 1) << 10 << 1 << true;
+    QTest::newRow("raw4") << QByteArray::fromRawData("123456789", 1) << 10 << 1 << true;
+    QTest::newRow("raw5") << QByteArray::fromRawData("123456789", 2) << 10 << 12 << true;
+
+    QTest::newRow("raw-static") << QByteArray::fromRawData(&globalChar, 1) << 10 << 1 << true;
+}
+
+template <typename ByteArray> void tst_QByteArrayApiSymmetry::toInt() const
+{
+    QFETCH(QByteArray, string);
+    QFETCH(int, base);
+    QFETCH(int, expectednumber);
+    QFETCH(bool, expectedok);
+
+    bool ok;
+    int number = ByteArray(string).toInt(&ok, base);
+
+    QCOMPARE(ok, expectedok);
+    QCOMPARE(number, expectednumber);
+}
+
+void tst_QByteArrayApiSymmetry::toUInt_data() const
+{
+    QTest::addColumn<QByteArray>("string");
+    QTest::addColumn<int>("base");
+    QTest::addColumn<uint>("expectednumber");
+    QTest::addColumn<bool>("expectedok");
+
+    QTest::newRow("null") << QByteArray() << 10 << 0u << false;
+    QTest::newRow("empty") << QByteArray("") << 10 << 0u << false;
+
+    QTest::newRow("negative value") << QByteArray("-50") << 10 << 0u << false;
+    QTest::newRow("more than MAX_INT") << QByteArray("3234567890") << 10 << 3234567890u << true;
+    QTest::newRow("2^32 - 1") << QByteArray("4294967295") << 10 << 4294967295u << true;
+    if constexpr (sizeof(int) > 4)
+        QTest::newRow("2^32") << QByteArray("4294967296") << 10 << (1u << 32) << true;
+    else
+        QTest::newRow("2^32") << QByteArray("4294967296") << 10 << 0u << false;
+}
+
+template <typename ByteArray> void tst_QByteArrayApiSymmetry::toUInt() const
+{
+    QFETCH(QByteArray, string);
+    QFETCH(int, base);
+    QFETCH(uint, expectednumber);
+    QFETCH(bool, expectedok);
+
+    bool ok;
+    const uint number = ByteArray(string).toUInt(&ok, base);
+
+    QCOMPARE(ok, expectedok);
+    QCOMPARE(number, expectednumber);
+}
+
+void tst_QByteArrayApiSymmetry::toLong_data() const
+{
+    QTest::addColumn<QByteArray>("str");
+    QTest::addColumn<int>("base");
+    QTest::addColumn<long>("result");
+    QTest::addColumn<bool>("ok");
+
+    QTest::newRow("null") << QByteArray() << 10 << 0L << false;
+    QTest::newRow("empty") << QByteArray("") << 16 << 0L << false;
+    QTest::newRow("in range dec") << QByteArray("1608507359") << 10 << 1608507359L << true;
+    QTest::newRow("in range dec neg") << QByteArray("-1608507359") << 10 << -1608507359L << true;
+    QTest::newRow("in range hex") << QByteArray("12ABCDEF") << 16 << 0x12ABCDEFL << true;
+    QTest::newRow("in range hex neg") << QByteArray("-12ABCDEF") << 16 << -0x12ABCDEFL << true;
+    QTest::newRow("Fibonacci's last int32")
+        << QByteArray("1836311903") << 10 << 1836311903L << true;
+
+    QTest::newRow("leading spaces") << QByteArray(" \r\n\tABC123") << 16 << 0xABC123L << true;
+    QTest::newRow("trailing spaces") << QByteArray("1234567\t\r \n") << 10 << 1234567L << true;
+    QTest::newRow("leading junk") << QByteArray("q12345") << 10 << 0L << false;
+    QTest::newRow("trailing junk") << QByteArray("abc12345t") << 16 << 0L << false;
+
+    QTest::newRow("dec with base 0") << QByteArray("123") << 0 << 123L << true;
+    QTest::newRow("neg dec with base 0") << QByteArray("-123") << 0 << -123L << true;
+    QTest::newRow("hex with base 0") << QByteArray("0x123") << 0 << 0x123L << true;
+    QTest::newRow("neg hex with base 0") << QByteArray("-0x123") << 0 << -0x123L << true;
+    QTest::newRow("oct with base 0") << QByteArray("0123") << 0 << 0123L << true;
+    QTest::newRow("neg oct with base 0") << QByteArray("-0123") << 0 << -0123L << true;
+
+    QTest::newRow("base 3") << QByteArray("12012") << 3 << 140L << true;
+    QTest::newRow("neg base 3") << QByteArray("-201") << 3 << -19L << true;
+
+    using Bounds = std::numeric_limits<long>;
+    QTest::newRow("long max") << QByteArray::number(Bounds::max()) << 10 << Bounds::max() << true;
+    QTest::newRow("long min") << QByteArray::number(Bounds::min()) << 10 << Bounds::min() << true;
+
+    using B32 = std::numeric_limits<qint32>;
+    QTest::newRow("int32 min bin")
+        << (QByteArray("-1") + QByteArray(31, '0')) << 2 << long(B32::min()) << true;
+    QTest::newRow("int32 max bin") << QByteArray(31, '1') << 2 << long(B32::max()) << true;
+    QTest::newRow("int32 min hex") << QByteArray("-80000000") << 16 << long(B32::min()) << true;
+    QTest::newRow("int32 max hex") << QByteArray("7fffffff") << 16 << long(B32::max()) << true;
+    QTest::newRow("int32 min dec") << QByteArray("-2147483648") << 10 << long(B32::min()) << true;
+    QTest::newRow("int32 max dec") << QByteArray("2147483647") << 10 << long(B32::max()) << true;
+
+    if constexpr (sizeof(long) < sizeof(qlonglong)) {
+        const qlonglong longMaxPlusOne = static_cast<qlonglong>(Bounds::max()) + 1;
+        const qlonglong longMinMinusOne = static_cast<qlonglong>(Bounds::min()) - 1;
+        QTest::newRow("long max + 1") << QByteArray::number(longMaxPlusOne) << 10 << 0L << false;
+        QTest::newRow("long min - 1") << QByteArray::number(longMinMinusOne) << 10 << 0L << false;
+    }
+}
+
+template <typename ByteArray> void tst_QByteArrayApiSymmetry::toLong() const
+{
+    QFETCH(QByteArray, str);
+    QFETCH(int, base);
+    QFETCH(long, result);
+    QFETCH(bool, ok);
+
+    bool good;
+    QCOMPARE(ByteArray(str).toLong(nullptr, base), result);
+    QCOMPARE(ByteArray(str).toLong(&good, base), result);
+    QCOMPARE(good, ok);
+    if (base == 10) {
+        // check that by default base is assumed to be 10
+        QCOMPARE(ByteArray(str).toLong(&good), result);
+        QCOMPARE(good, ok);
+    }
+}
+
+void tst_QByteArrayApiSymmetry::toULong_data() const
+{
+    QTest::addColumn<QByteArray>("str");
+    QTest::addColumn<int>("base");
+    QTest::addColumn<ulong>("result");
+    QTest::addColumn<bool>("ok");
+
+    ulong LongMaxPlusOne = (ulong)LONG_MAX + 1;
+    QTest::newRow("LONG_MAX+1")
+        << QString::number(LongMaxPlusOne).toUtf8() << 10 << LongMaxPlusOne << true;
+    QTest::newRow("null") << QByteArray() << 10 << 0UL << false;
+    QTest::newRow("empty") << QByteArray("") << 10 << 0UL << false;
+    QTest::newRow("ulong1") << QByteArray("3234567890") << 10 << 3234567890UL << true;
+    QTest::newRow("ulong2") << QByteArray("fFFfFfFf") << 16 << 0xFFFFFFFFUL << true;
+
+    QTest::newRow("leading spaces") << QByteArray(" \n\r\t100") << 10 << 100UL << true;
+    QTest::newRow("trailing spaces") << QByteArray("100 \n\r\t") << 10 << 100UL << true;
+    QTest::newRow("leading junk") << QByteArray("x100") << 10 << 0UL << false;
+    QTest::newRow("trailing junk") << QByteArray("100x") << 10 << 0UL << false;
+}
+
+template <typename ByteArray> void tst_QByteArrayApiSymmetry::toULong() const
+{
+    QFETCH(QByteArray, str);
+    QFETCH(int, base);
+    QFETCH(ulong, result);
+    QFETCH(bool, ok);
+
+    bool good;
+    QCOMPARE(ByteArray(str).toULong(0, base), result);
+    QCOMPARE(ByteArray(str).toULong(&good, base), result);
+    QCOMPARE(good, ok);
+}
+
+static QByteArray decNext(QByteArray &&big)
+{
+    // Increments a decimal digit-string (ignoring sign, so decrements if
+    // negative); only intended for taking a boundary value just out of range,
+    // so big is never a string of only 9s (that'd be one less than a power of
+    // ten, which cannot be a power of two, as odd, or one less than one, as the
+    // power of ten isn't a power of two).
+    int i = big.size() - 1;
+    while (big.at(i) == '9')
+        big[i--] = '0';
+    big[i] += 1;
+    return big;
+}
+
+void tst_QByteArrayApiSymmetry::toLongLong_data() const
+{
+    QTest::addColumn<QByteArray>("str");
+    QTest::addColumn<int>("base");
+    QTest::addColumn<qlonglong>("result");
+    QTest::addColumn<bool>("ok");
+
+    QTest::newRow("null") << QByteArray() << 10 << 0LL << false;
+    QTest::newRow("empty") << QByteArray("") << 10 << 0LL << false;
+    QTest::newRow("out of base bound") << QByteArray("c") << 10 << 0LL << false;
+
+    QTest::newRow("in range dec")
+        << QByteArray("7679359922672374856") << 10 << 7679359922672374856LL << true;
+    QTest::newRow("in range dec neg")
+        << QByteArray("-7679359922672374856") << 10 << -7679359922672374856LL << true;
+    QTest::newRow("in range hex")
+        << QByteArray("6A929129A5421448") << 16 << 0x6A929129A5421448LL << true;
+    QTest::newRow("in range hex prefix")
+        << QByteArray("0x6A929129A5421448") << 16 << 0x6A929129A5421448LL << true;
+    QTest::newRow("in range hex neg")
+        << QByteArray("-6A929129A5421448") << 16 << -0x6A929129A5421448LL << true;
+    QTest::newRow("in range hex prefix neg")
+        << QByteArray("-0x6A929129A5421448") << 16 << -0x6A929129A5421448LL << true;
+    QTest::newRow("Fibonacci's last int64")
+        << QByteArray("7540113804746346429") << 10 << 7540113804746346429LL << true;
+
+    QTest::newRow("leading spaces")
+        << QByteArray(" \r\n\tABCFFFFFFF123") << 16 << 0xABCFFFFFFF123LL << true;
+    QTest::newRow("trailing spaces")
+        << QByteArray("9876543210\t\r \n") << 10 << 9876543210LL << true;
+    QTest::newRow("space after plus") << QByteArray("+ 12") << 10 << 0LL << false;
+    QTest::newRow("space after minus") << QByteArray("- 12") << 10 << 0LL << false;
+    QTest::newRow("leading junk") << QByteArray("q12345") << 10 << 0LL << false;
+    QTest::newRow("trailing junk") << QByteArray("abc12345t") << 16 << 0LL << false;
+
+    QTest::newRow("dec with base 0") << QByteArray("9876543210") << 0 << 9876543210LL << true;
+    QTest::newRow("neg dec with base 0") << QByteArray("-9876543210") << 0 << -9876543210LL << true;
+    QTest::newRow("hex with base 0") << QByteArray("0x9876543210") << 0 << 0x9876543210LL << true;
+    QTest::newRow("neg hex with base 0")
+        << QByteArray("-0x9876543210") << 0 << -0x9876543210LL << true;
+    QTest::newRow("oct with base 0")
+        << QByteArray("07654321234567") << 0 << 07654321234567LL << true;
+    QTest::newRow("neg oct with base 0")
+        << QByteArray("-07654321234567") << 0 << -07654321234567LL << true;
+
+    QTest::newRow("base 3") << QByteArray("12012") << 3 << 140LL << true;
+    QTest::newRow("neg base 3") << QByteArray("-201") << 3 << -19LL << true;
+
+    // Boundary values, first in every base:
+    using LL = std::numeric_limits<qlonglong>;
+    for (int b = 0; b <= 36; ++b) {
+        if (b == 1) // bases 0 and 2 through 36 are allowed
+            ++b;
+        QTest::addRow("max base %d", b)
+            << QByteArray::number(LL::max(), b ? b : 10) << b << LL::max() << true;
+        QTest::addRow("min base %d", b)
+            << QByteArray::number(LL::min(), b ? b : 10) << b << LL::min() << true;
+    }
+    // Check leading zeros don't hit any buffer-too-big problems:
+    QTest::newRow("many-0 max dec")
+        << (QByteArray(512, '0') + QByteArray::number(LL::max())) << 10 << LL::max() << true;
+
+    // Special bases (and let's include some leading space, too !), first decimal:
+    QTest::newRow("max space dec")
+        << ("\t\r\n\f\v " + QByteArray::number(LL::max())) << 10 << LL::max() << true;
+    QTest::newRow("max space dec, base 0")
+        << ("\t\r\n\f\v " + QByteArray::number(LL::max())) << 0 << LL::max() << true;
+    QTest::newRow("min space dec")
+        << ("\t\r\n\f\v " + QByteArray::number(LL::min())) << 10 << LL::min() << true;
+    QTest::newRow("min space dec, base 0")
+        << ("\t\r\n\f\v " + QByteArray::number(LL::min())) << 0 << LL::min() << true;
+
+    // Hex with prefix:
+    QTest::newRow("max 0x base 0")
+        << ("0x" + QByteArray::number(LL::max(), 16)) << 0 << LL::max() << true;
+    QTest::newRow("max +0x base 0")
+        << ("+0x" + QByteArray::number(LL::max(), 16)) << 0 << LL::max() << true;
+    QTest::newRow("max space 0x base 0")
+        << ("\t\r\n\f\v 0x" + QByteArray::number(LL::max(), 16)) << 0 << LL::max() << true;
+    QTest::newRow("max space +0x base 0")
+        << ("\t\r\n\f\v +0x" + QByteArray::number(LL::max(), 16)) << 0 << LL::max() << true;
+    QByteArray big = QByteArray::number(LL::min(), 16);
+    big.insert(1, "0x"); // after sign
+    QTest::newRow("min hex prefix") << big << 16 << LL::min() << true;
+    QTest::newRow("min 0x base 0") << big << 0 << LL::min() << true;
+    big.prepend("\t\r\n\f\v ");
+    QTest::newRow("min space hex prefix") << big << 16 << LL::min() << true;
+    QTest::newRow("min space 0x base 0") << big << 0 << LL::min() << true;
+
+    // Octal with prefix:
+    QTest::newRow("max octal base 0")
+        << ('0' + QByteArray::number(LL::max(), 8)) << 0 << LL::max() << true;
+    QTest::newRow("max +octal base 0")
+        << ("+0" + QByteArray::number(LL::max(), 8)) << 0 << LL::max() << true;
+    QTest::newRow("max space octal base 0")
+        << ("\t\r\n\f\v 0" + QByteArray::number(LL::max(), 8)) << 0 << LL::max() << true;
+    QTest::newRow("max space +octal base 0")
+        << ("\t\r\n\f\v +0" + QByteArray::number(LL::max(), 8)) << 0 << LL::max() << true;
+    big = QByteArray::number(LL::min(), 8);
+    big.insert(1, '0'); // after sign
+    QTest::newRow("min octal prefix") << big << 8 << LL::min() << true;
+    QTest::newRow("min octal base 0") << big << 0 << LL::min() << true;
+    big.prepend("\t\r\n\f\v ");
+    QTest::newRow("min space octal prefix") << big << 8 << LL::min() << true;
+    QTest::newRow("min space octal base 0") << big << 0 << LL::min() << true;
+
+    // Values *just* out of range:
+    QTest::newRow("max + 1 dec") << decNext(QByteArray::number(LL::max())) << 10 << 0LL << false;
+    QTest::newRow("max + 1 dec base 0")
+        << decNext(QByteArray::number(LL::max())) << 0 << 0LL << false;
+    QTest::newRow("min - 1 dec") << decNext(QByteArray::number(LL::min())) << 10 << 0LL << false;
+    QTest::newRow("min - 1 dec base 0")
+        << decNext(QByteArray::number(LL::min())) << 0 << 0LL << false;
+    // For hex and octal, we know the last digit of min is 0 and skipping its sign gets max+1:
+    big = QByteArray::number(LL::min(), 8);
+    QTest::newRow("max + 1 oct") << big.sliced(1) << 8 << 0LL << false;
+    big[big.size() - 1] = '1';
+    QTest::newRow("min - 1 oct") << big << 8 << 0LL << false;
+    big.insert(1, '0'); // after minus sign
+    QTest::newRow("min - 1 octal base 0") << big << 0 << 0LL << false;
+    big = QByteArray::number(LL::min(), 16);
+    QTest::newRow("max + 1 hex") << big.sliced(1) << 16 << 0LL << false;
+    big[big.size() - 1] = '1';
+    QTest::newRow("min - 1 hex") << big << 16 << 0LL << false;
+    big.insert(1, "0x"); // after minus sign
+    QTest::newRow("min - 1, 0x base 0") << big << 0 << 0LL << false;
+}
+
+template <typename ByteArray> void tst_QByteArrayApiSymmetry::toLongLong() const
+{
+    QFETCH(QByteArray, str);
+    QFETCH(int, base);
+    QFETCH(qlonglong, result);
+    QFETCH(bool, ok);
+
+    bool good;
+    QCOMPARE(ByteArray(str).toLongLong(nullptr, base), result);
+    QCOMPARE(ByteArray(str).toLongLong(&good, base), result);
+    QCOMPARE(good, ok);
+    if (base == 10) {
+        QCOMPARE(ByteArray(str).toLongLong(&good), result);
+        QCOMPARE(good, ok);
+    }
+}
+
+void tst_QByteArrayApiSymmetry::toULongLong_data() const
+{
+    QTest::addColumn<QByteArray>("str");
+    QTest::addColumn<int>("base");
+    QTest::addColumn<qulonglong>("result");
+    QTest::addColumn<bool>("ok");
+
+    QTest::newRow("null") << QByteArray() << 10 << 0ULL << false;
+    QTest::newRow("empty") << QByteArray("") << 10 << 0ULL << false;
+    QTest::newRow("out of base bound") << QByteArray("c") << 10 << 0ULL << false;
+
+    QTest::newRow("in range dec")
+        << QByteArray("7679359922672374856") << 10 << 7679359922672374856ULL << true;
+    QTest::newRow("in range hex")
+        << QByteArray("6A929129A5421448") << 16 << 0x6A929129A5421448ULL << true;
+    QTest::newRow("in range hex prefix")
+        << QByteArray("0x6A929129A5421448") << 16 << 0x6A929129A5421448ULL << true;
+
+    QTest::newRow("leading spaces") << QByteArray(" \n\r\t100") << 10 << 100ULL << true;
+    QTest::newRow("trailing spaces") << QByteArray("100 \n\r\t") << 10 << 100ULL << true;
+    QTest::newRow("leading plus") << QByteArray("+100") << 10 << 100ULL << true;
+    QTest::newRow("space after plus") << QByteArray("+ 12") << 10 << 0ULL << false;
+    QTest::newRow("leading minus") << QByteArray("-100") << 10 << 0ULL << false;
+    QTest::newRow("leading junk") << QByteArray("x100") << 10 << 0ULL << false;
+    QTest::newRow("trailing junk") << QByteArray("100x") << 10 << 0ULL << false;
+
+    QTest::newRow("dec, base 0") << QByteArray("9876543210") << 0 << 9876543210ULL << true;
+    QTest::newRow("hex, base 0") << QByteArray("0x9876543210") << 0 << 0x9876543210ULL << true;
+    QTest::newRow("oct, base 0") << QByteArray("07654321234567") << 0 << 07654321234567ULL << true;
+    QTest::newRow("base 3") << QByteArray("12012") << 3 << 140ULL << true;
+
+    // Boundary values, first in every base:
+    using ULL = std::numeric_limits<qulonglong>;
+    for (int b = 0; b <= 36; ++b) {
+        if (b == 1) // bases 0 and 2 through 36 are allowed
+            ++b;
+        QTest::addRow("max base %d", b)
+            << QByteArray::number(ULL::max(), b ? b : 10) << b << ULL::max() << true;
+    }
+    // Check leading zeros don't hit any buffer-too-big problems:
+    QTest::newRow("many-0 max dec")
+        << (QByteArray(512, '0') + QByteArray::number(ULL::max())) << 10 << ULL::max() << true;
+
+    // Special bases (and let's include some leading space, too !), first decimal:
+    QTest::newRow("max space dec")
+        << ("\t\r\n\f\v " + QByteArray::number(ULL::max())) << 10 << ULL::max() << true;
+    QTest::newRow("max space dec, base 0")
+        << ("\t\r\n\f\v " + QByteArray::number(ULL::max())) << 0 << ULL::max() << true;
+
+    // Hex with prefix:
+    QTest::newRow("max 0x base 0")
+        << ("0x" + QByteArray::number(ULL::max(), 16)) << 0 << ULL::max() << true;
+    QTest::newRow("max +0x base 0")
+        << ("+0x" + QByteArray::number(ULL::max(), 16)) << 0 << ULL::max() << true;
+    QTest::newRow("max space 0x base 0")
+        << ("\t\r\n\f\v 0x" + QByteArray::number(ULL::max(), 16)) << 0 << ULL::max() << true;
+    QTest::newRow("max space +0x base 0")
+        << ("\t\r\n\f\v +0x" + QByteArray::number(ULL::max(), 16)) << 0 << ULL::max() << true;
+
+    // Octal with prefix:
+    QTest::newRow("max octal base 0")
+        << ('0' + QByteArray::number(ULL::max(), 8)) << 0 << ULL::max() << true;
+    QTest::newRow("max +octal base 0")
+        << ("+0" + QByteArray::number(ULL::max(), 8)) << 0 << ULL::max() << true;
+    QTest::newRow("max space octal base 0")
+        << ("\t\r\n\f\v 0" + QByteArray::number(ULL::max(), 8)) << 0 << ULL::max() << true;
+    QTest::newRow("max space +octal base 0")
+        << ("\t\r\n\f\v +0" + QByteArray::number(ULL::max(), 8)) << 0 << ULL::max() << true;
+
+    // Values *just* out of range:
+    QTest::newRow("max + 1 dec") << decNext(QByteArray::number(ULL::max())) << 10 << 0ULL << false;
+    QTest::newRow("max + 1 dec base 0")
+        << decNext(QByteArray::number(ULL::max())) << 0 << 0ULL << false;
+    auto big = QByteArray::number(ULL::max(), 8).replace('7', '0');
+    // Number of bits is a power of two, so not a multiple of three; so (only)
+    // first digit of max wasn't 7:
+    big[0] += 1;
+    QTest::newRow("max + 1 oct") << big << 8 << 0ULL << false;
+    // Number of bits is a multiple of four, so every digit of max is 'f'.
+    big = '1' + QByteArray::number(ULL::max(), 16).replace('f', '0');
+    QTest::newRow("max + 1 hex") << big << 16 << 0ULL << false;
+}
+
+template <typename ByteArray> void tst_QByteArrayApiSymmetry::toULongLong() const
+{
+    QFETCH(QByteArray, str);
+    QFETCH(int, base);
+    QFETCH(qulonglong, result);
+    QFETCH(bool, ok);
+
+    bool good;
+    QCOMPARE(ByteArray(str).toULongLong(0, base), result);
+    QCOMPARE(ByteArray(str).toULongLong(&good, base), result);
+    QCOMPARE(good, ok);
+}
+
+template <typename ByteArray> void tst_QByteArrayApiSymmetry::toFloat() const
+{
+    bool ok = true; // opposite to the next expected result
+
+    QCOMPARE(ByteArray().toFloat(&ok), 0.0f);
+    QVERIFY(!ok);
+
+    QCOMPARE(ByteArray("").toFloat(&ok), 0.0f);
+    QVERIFY(!ok);
+
+    // NB: floats < 1e-6 are zero as far as QCOMPARE() is concerned !
+    const char data[] = "0.0000931322574615478515625";
+    const float expectedValue = 9.31322574615478515625e-5f;
+    QCOMPARE(ByteArray(data).toFloat(&ok), expectedValue);
+    QVERIFY(ok);
+    QCOMPARE(ByteArray(data, 6).toFloat(&ok), 0.0f);
+    QVERIFY(ok);
+
+    const char crufty[] = "3.14 and a bit";
+    QCOMPARE(ByteArray(crufty).toFloat(&ok), 0.0f);
+    QVERIFY(!ok);
+    QCOMPARE(ByteArray(crufty, 4).toFloat(&ok), 3.14f);
+    QVERIFY(ok);
+}
+
+void tst_QByteArrayApiSymmetry::toDouble_data() const
+{
+    QTest::addColumn<QByteArray>("string");
+    QTest::addColumn<double>("expectedNumber");
+    QTest::addColumn<bool>("expectedOk");
+
+    QTest::newRow("null") << QByteArray() << 0.0 << false;
+    QTest::newRow("empty") << QByteArray("") << 0.0 << false;
+
+    QTest::newRow("decimal") << QByteArray("1.2345") << 1.2345 << true;
+    QTest::newRow("exponent lowercase") << QByteArray("1.2345e+01") << 12.345 << true;
+    QTest::newRow("exponent uppercase") << QByteArray("1.2345E+02") << 123.45 << true;
+    QTest::newRow("leading spaces") << QByteArray(" \n\r\t1.2345") << 1.2345 << true;
+    QTest::newRow("trailing spaces") << QByteArray("1.2345 \n\r\t") << 1.2345 << true;
+    QTest::newRow("leading junk") << QByteArray("x1.2345") << 0.0 << false;
+    QTest::newRow("trailing junk") << QByteArray("1.2345x") << 0.0 << false;
+    QTest::newRow("high precision")
+        << QByteArray("0.000000000931322574615478515625") << 9.31322574615478515625e-10 << true;
+    QTest::newRow("exponential")
+        << QByteArray("9.31322574615478515625e-10") << 9.31322574615478515625e-10 << true;
+
+    QTest::newRow("raw, null plus junk")
+        << QByteArray::fromRawData("1.2\0 junk", 9) << 0.0 << false;
+    QTest::newRow("raw, null-terminator excluded")
+        << QByteArray::fromRawData("2.3", 3) << 2.3 << true;
+}
+
+template <typename ByteArray> void tst_QByteArrayApiSymmetry::toDouble() const
+{
+    QFETCH(QByteArray, string);
+    QFETCH(double, expectedNumber);
+    QFETCH(bool, expectedOk);
+
+    bool ok;
+    const double number = ByteArray(string).toDouble(&ok);
+
+    QCOMPARE(ok, expectedOk);
+    QCOMPARE(number, expectedNumber);
+}
+
+const char globalChar = '1'; // Used as staic data for a raw byte array
 
 QTEST_APPLESS_MAIN(tst_QByteArrayApiSymmetry)
 #include "tst_qbytearrayapisymmetry.moc"
