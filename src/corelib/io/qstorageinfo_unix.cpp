@@ -1,5 +1,6 @@
 /****************************************************************************
 **
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Copyright (C) 2014 Ivan Komissarov <ABBAPOH@gmail.com>
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
@@ -488,21 +489,21 @@ inline bool QStorageIterator::next()
     mnt.mnt_passno = 0;
 
     mnt.mount_id = qstrtoll(ptr, const_cast<const char **>(&ptr), 10, &ok);
-    if (!ptr || !ok)
+    if (!ok)
         return false;
 
     int parent_id = qstrtoll(ptr, const_cast<const char **>(&ptr), 10, &ok);
     Q_UNUSED(parent_id);
-    if (!ptr || !ok)
+    if (!ok)
         return false;
 
     int rdevmajor = qstrtoll(ptr, const_cast<const char **>(&ptr), 10, &ok);
-    if (!ptr || !ok)
+    if (!ok)
         return false;
     if (*ptr != ':')
         return false;
     int rdevminor = qstrtoll(ptr + 1, const_cast<const char **>(&ptr), 10, &ok);
-    if (!ptr || !ok)
+    if (!ok)
         return false;
     mnt.rdev = makedev(rdevmajor, rdevminor);
 
