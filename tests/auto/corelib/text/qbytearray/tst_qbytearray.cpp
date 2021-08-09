@@ -44,6 +44,7 @@ class tst_QByteArray : public QObject
 public:
     tst_QByteArray();
 private slots:
+    // Note: much of the shared API is tested in ../qbytearrayapisymmetry/
     void swap();
     void qChecksum_data();
     void qChecksum();
@@ -157,8 +158,6 @@ private slots:
     void fill();
     void dataPointers();
     void truncate();
-    void trimmed();
-    void trimmed_data();
     void simplified();
     void simplified_data();
     void left();
@@ -2795,32 +2794,6 @@ void tst_QByteArray::truncate()
 
     a.truncate(-5);
     QVERIFY(a.isEmpty());
-}
-
-void tst_QByteArray::trimmed()
-{
-    QFETCH(QByteArray, source);
-    QFETCH(QByteArray, expected);
-
-    QCOMPARE(source.trimmed(), expected);
-    QByteArray copy = source;
-    QCOMPARE(std::move(copy).trimmed(), expected);
-
-    if (source.isEmpty())
-        QVERIFY(!source.isDetached());
-}
-
-void tst_QByteArray::trimmed_data()
-{
-    QTest::addColumn<QByteArray>("source");
-    QTest::addColumn<QByteArray>("expected");
-
-    QTest::newRow("null") << QByteArray() << QByteArray();
-    QTest::newRow("empty") << QByteArray("") << QByteArray("");
-    QTest::newRow("no spaces") << QByteArray("a b\nc\td") << QByteArray("a b\nc\td");
-    QTest::newRow("with spaces") << QByteArray("\t \v a b\r\nc \td\ve   f \r\n\f")
-                                 << QByteArray("a b\r\nc \td\ve   f");
-    QTest::newRow("all spaces") << QByteArray("\t \r \n \v \f") << QByteArray("");
 }
 
 void tst_QByteArray::simplified()

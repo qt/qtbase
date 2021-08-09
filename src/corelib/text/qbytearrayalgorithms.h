@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -71,6 +71,8 @@ qsizetype lastIndexOf(QByteArrayView haystack, qsizetype from, QByteArrayView ne
 qsizetype count(QByteArrayView haystack, QByteArrayView needle) noexcept;
 
 [[nodiscard]] Q_CORE_EXPORT int compareMemory(QByteArrayView lhs, QByteArrayView rhs);
+
+[[nodiscard]] Q_CORE_EXPORT Q_DECL_PURE_FUNCTION QByteArrayView trimmed(QByteArrayView s) noexcept;
 
 } // namespace QtPrivate
 

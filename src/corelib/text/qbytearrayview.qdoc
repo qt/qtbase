@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -617,6 +617,21 @@
     \note The behavior is undefined when \a length < 0 or \a length > size().
 
     \sa sliced(), first(), last(), chopped(), truncate()
+*/
+
+/*!
+    \fn QByteArrayView QByteArrayView::trimmed() const noexcept
+    \since 6.3
+
+    Returns a copy of this byte array view with spacing characters
+    removed from the start and end.
+
+    The spacing characters are those for which the standard C++ \c isspace()
+    function returns \c true in the C locale; these are the ASCII characters
+    tabulation '\\t', line feed '\\n', carriage return '\\r', vertical
+    tabulation '\\v', form feed '\\f', and space ' '.
+
+    \sa QChar::SpecialCharacter, {QByteArray#Spacing Characters}{Spacing Characters}
 */
 
 /*!

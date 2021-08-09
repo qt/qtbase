@@ -107,6 +107,7 @@ class tst_QByteArrayView : public QObject
 {
     Q_OBJECT
 private slots:
+    // Note: much of the shared API is tested in ../qbytearrayapisymmetry/
     void constExpr() const;
     void basics() const;
     void literals() const;

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -239,6 +239,9 @@ public:
     { Q_ASSERT(n >= 0); Q_ASSERT(n <= size()); m_size = n; }
     constexpr void chop(qsizetype n)
     { Q_ASSERT(n >= 0); Q_ASSERT(n <= size()); m_size -= n; }
+
+    [[nodiscard]] QByteArrayView trimmed() const noexcept
+    { return QtPrivate::trimmed(*this); }
 
     [[nodiscard]] bool startsWith(QByteArrayView other) const noexcept
     { return QtPrivate::startsWith(*this, other); }

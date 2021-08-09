@@ -3390,6 +3390,13 @@ QByteArray QByteArray::trimmed_helper(QByteArray &a)
     return QStringAlgorithms<QByteArray>::trimmed_helper(a);
 }
 
+QByteArrayView QtPrivate::trimmed(QByteArrayView view) noexcept
+{
+    auto start = view.begin();
+    auto stop = view.end();
+    QStringAlgorithms<QByteArrayView>::trimmed_helper_positions(start, stop);
+    return QByteArrayView(start, stop);
+}
 
 /*!
     Returns a byte array of size \a width that contains this byte array padded

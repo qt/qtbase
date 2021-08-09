@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -121,6 +121,11 @@ private slots:
     void chop_QByteArrayView_data() { chop_data(); }
     void chop_QByteArrayView() { chop_impl<QByteArrayView>(); }
 
+    void trimmed_QByteArray_data() { trimmed_data(); }
+    void trimmed_QByteArray() { trimmed_impl<QByteArray>(); }
+    void trimmed_QByteArrayView_data() { trimmed_data(); }
+    void trimmed_QByteArrayView() { trimmed_impl<QByteArrayView>(); }
+
 private:
     void startsWith_data();
     template<typename Haystack, typename Needle> void startsWith_impl();
@@ -156,6 +161,9 @@ private:
 
     void chop_data();
     template <typename ByteArray> void chop_impl();
+
+    void trimmed_data();
+    template <typename ByteArray> void trimmed_impl();
 };
 
 static const auto empty = QByteArray("");
@@ -874,6 +882,34 @@ void tst_QByteArrayApiSymmetry::chop_impl()
         QCOMPARE(chopped, result);
         QCOMPARE(chopped.isNull(), result.isNull());
         QCOMPARE(chopped.isEmpty(), result.isEmpty());
+    }
+}
+
+void tst_QByteArrayApiSymmetry::trimmed_data()
+{
+    QTest::addColumn<QByteArray>("source");
+    QTest::addColumn<QByteArray>("expected");
+
+    QTest::newRow("null") << QByteArray() << QByteArray();
+    QTest::newRow("empty") << QByteArray("") << QByteArray("");
+    QTest::newRow("no end-spaces") << QByteArray("a b\nc\td") << QByteArray("a b\nc\td");
+    QTest::newRow("with end-spaces")
+        << QByteArray("\t \v a b\r\nc \td\ve   f \r\n\f") << QByteArray("a b\r\nc \td\ve   f");
+    QTest::newRow("all spaces") << QByteArray("\t \r \n \v \f") << QByteArray("");
+}
+
+template <typename ByteArray> void tst_QByteArrayApiSymmetry::trimmed_impl()
+{
+    QFETCH(QByteArray, source);
+    QFETCH(QByteArray, expected);
+
+    QCOMPARE(ByteArray(source).trimmed(), ByteArray(expected));
+    ByteArray copy{source};
+    QCOMPARE(std::move(copy).trimmed(), ByteArray(expected));
+
+    if constexpr (std::is_same_v<QByteArray, ByteArray>) {
+        if (source.isEmpty())
+            QVERIFY(!source.isDetached());
     }
 }
 
