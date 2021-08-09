@@ -1662,6 +1662,7 @@ void QWidgetLineControl::processKeyEvent(QKeyEvent* event)
                     break;
 #endif
                 if (!m_completer->currentCompletion().isEmpty() && hasSelectedText()
+                    && !m_completer->completionPrefix().isEmpty()
                     && textAfterSelection().isEmpty()) {
                     setText(m_completer->currentCompletion());
                     inlineCompletionAccepted = true;
