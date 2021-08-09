@@ -228,7 +228,7 @@ qDeleteAll(list.constBegin(), list.constEnd());
 QVector<double> vect;
 vect << 20.0 << 30.0 << 40.0 << 50.0;
 
-QList<double> list = QVector<T>::fromVector(vect);
+QList<double> list = QList<double>::fromVector(vect);
 // list: [20.0, 30.0, 40.0, 50.0]
 //! [21]
 
