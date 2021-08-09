@@ -42,6 +42,7 @@
 
 #include <QtCore/qstringlist.h>
 #include <QtCore/private/qstringiterator_p.h>
+#include <QtCore/private/qnumeric_p.h>
 
 #include <algorithm>
 
@@ -57,7 +58,6 @@
 QT_BEGIN_NAMESPACE
 
 // needed by the punycode encoder/decoder
-#define Q_MAXINT ((uint)((uint)(-1)>>1))
 static const uint base = 36;
 static const uint tmin = 1;
 static const uint tmax = 26;
@@ -65,6 +65,8 @@ static const uint skew = 38;
 static const uint damp = 700;
 static const uint initial_bias = 72;
 static const uint initial_n = 128;
+
+static constexpr unsigned MaxDomainLabelLength = 63;
 
 struct NameprepCaseFoldingEntry {
     char32_t uc;
@@ -2132,7 +2134,7 @@ static const QChar *qt_find_nonstd3(QStringView in, Qt::CaseSensitivity cs)
     const QChar * const uc = in.data();
     const qsizetype len = in.size();
 
-    if (len > 63)
+    if (len > MaxDomainLabelLength)
         return uc;
 
     for (qsizetype i = 0; i < len; ++i) {
@@ -2219,6 +2221,12 @@ Q_AUTOTEST_EXPORT void qt_punycodeEncoder(QStringView in, QString *output)
     uint delta = 0;
     uint bias = initial_bias;
 
+    // Do not try to encode strings that certainly will result in output
+    // that is longer than allowable domain name label length. Note that
+    // non-BMP codepoints are encoded as two QChars.
+    if (in.length() > MaxDomainLabelLength * 2)
+        return;
+
     int outLen = output->length();
     output->resize(outLen + in.length());
 
@@ -2262,39 +2270,37 @@ Q_AUTOTEST_EXPORT void qt_punycodeEncoder(QStringView in, QString *output)
     // while there are still unprocessed non-basic code points left in
     // the input string...
     while (h < inputLength) {
-        // find the character in the input string with the lowest
-        // unicode value.
-        uint m = Q_MAXINT;
+        // find the character in the input string with the lowest unprocessed value.
+        uint m = std::numeric_limits<uint>::max();
         for (QStringIterator iter(in); iter.hasNext();) {
             auto c = iter.nextUnchecked();
+            static_assert(std::numeric_limits<decltype(m)>::max()
+                                  >= std::numeric_limits<decltype(c)>::max(),
+                          "Punycode uint should be able to cover all codepoints");
             if (c >= n && c < m)
                 m = c;
         }
 
-        // reject out-of-bounds unicode characters
-        if (m - n > (Q_MAXINT - delta) / (h + 1)) {
+        // delta = delta + (m - n) * (h + 1), fail on overflow
+        uint tmp;
+        if (mul_overflow<uint>(m - n, h + 1, &tmp) || add_overflow<uint>(delta, tmp, &delta)) {
             output->truncate(outLen);
             return; // punycode_overflow
         }
-
-        delta += (m - n) * (h + 1);
         n = m;
 
         for (QStringIterator iter(in); iter.hasNext();) {
             auto c = iter.nextUnchecked();
 
-            // increase delta until we reach the character with the
-            // lowest unicode code. fail if delta overflows.
+            // increase delta until we reach the character processed in this iteration;
+            // fail if delta overflows.
             if (c < n) {
-                ++delta;
-                if (!delta) {
+                if (add_overflow<uint>(delta, 1, &delta)) {
                     output->truncate(outLen);
                     return; // punycode_overflow
                 }
             }
 
-            // if j is the index of the character with the lowest
-            // unicode code...
             if (c == n) {
                 appendEncode(output, delta, bias);
 
@@ -2318,6 +2324,12 @@ Q_AUTOTEST_EXPORT QString qt_punycodeDecoder(const QString &pc)
     uint n = initial_n;
     uint i = 0;
     uint bias = initial_bias;
+
+    // Do not try to decode strings longer than allowable for a domain label.
+    // Non-ASCII strings are not allowed here anyway, so there is no need
+    // to account for surrogates.
+    if (pc.length() > MaxDomainLabelLength)
+        return QString();
 
     // strip any ACE prefix
     int start = pc.startsWith(QLatin1String("xn--")) ? 4 : 0;
@@ -2352,30 +2364,47 @@ Q_AUTOTEST_EXPORT QString qt_punycodeDecoder(const QString &pc)
             else if (digit - 97 < 26) digit -= 97;
             else digit = base;
 
-            // reject out of range digits
-            if (digit >= base || digit > (Q_MAXINT - i) / w)
-                return QStringLiteral("");
+            // Fail if the code point has no digit value
+            if (digit >= base)
+                return QString();
 
-            i += (digit * w);
+            // i = i + digit * w, fail on overflow
+            uint tmp;
+            if (mul_overflow<uint>(digit, w, &tmp) || add_overflow<uint>(i, tmp, &i))
+                return QString();
 
             // detect threshold to stop reading delta digits
             uint t;
             if (k <= bias) t = tmin;
             else if (k >= bias + tmax) t = tmax;
             else t = k - bias;
+
             if (digit < t) break;
 
-            w *= (base - t);
+            // w = w * (base - t), fail on overflow
+            if (mul_overflow<uint>(w, base - t, &w))
+                return QString();
         }
 
         // find new bias and calculate the next non-basic code
         // character.
         uint outputLength = static_cast<uint>(output.length());
         bias = adapt(i - oldi, outputLength + 1, oldi == 0);
-        n += i / (outputLength + 1);
+
+        // n = n + i div (length(output) + 1), fail on overflow
+        if (add_overflow<uint>(n, i / (outputLength + 1), &n))
+            return QString();
 
         // allow the deltas to wrap around
         i %= (outputLength + 1);
+
+        // if n is a basic code point then fail; this should not happen with
+        // correct implementation of Punycode, but check just n case.
+        if (n < initial_n) {
+            // Don't use Q_ASSERT() to avoid possibility of DoS
+            qWarning("Attempt to insert a basic codepoint. Unhandled overflow?");
+            return QString();
+        }
 
         // Surrogates should normally be rejected later by other IDNA code.
         // But because of Qt's use of UTF-16 to represent strings the
@@ -2385,7 +2414,10 @@ Q_AUTOTEST_EXPORT QString qt_punycodeDecoder(const QString &pc)
         //
         // Allowing surrogates would lead to non-unique (after normalization)
         // encoding of strings with non-BMP characters.
-        if (QChar::isSurrogate(n))
+        //
+        // Punycode that encodes characters outside the Unicode range is also
+        // invalid and is rejected here.
+        if (QChar::isSurrogate(n) || n > QChar::LastValidCodePoint)
             return QString();
 
         // insert the character n at position i
