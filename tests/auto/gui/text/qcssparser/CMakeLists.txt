@@ -14,8 +14,6 @@ list(APPEND test_data "testdata")
 qt_internal_add_test(tst_qcssparser
     SOURCES
         tst_qcssparser.cpp
-    DEFINES
-        SRCDIR=\\\"${CMAKE_CURRENT_SOURCE_DIR}\\\"
     PUBLIC_LIBRARIES
         Qt::Gui
         Qt::GuiPrivate
