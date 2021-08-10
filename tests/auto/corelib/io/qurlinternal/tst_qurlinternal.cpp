@@ -684,6 +684,9 @@ void tst_QUrlInternal::ace_testsuite_data()
     badRow("punycode-overflow-1", "xn--5p32g");
     // Decodes to the same string as "xn--097c" in some versions, see QTBUG-95689
     badRow("punycode-overflow-2", "xn--400595c");
+
+    // Encodes 2**32, decodes to empty string in some versions
+    badRow("punycode-overflow-3", "xn--l0902716a");
 }
 
 void tst_QUrlInternal::ace_testsuite()
@@ -702,6 +705,7 @@ void tst_QUrlInternal::ace_testsuite()
     QCOMPARE(QString::fromLatin1(QUrl::toAce(domain)), toace + suffix);
     QEXPECT_FAIL("punycode-overflow-2", "QTBUG-95689: Missing oweflow check in punycode decoder",
                  Abort);
+    QEXPECT_FAIL("punycode-overflow-3", "QTBUG-95689: Returns empty string", Abort);
     if (fromace != ".")
         QCOMPARE(QUrl::fromAce(domain.toLatin1()), fromace + suffix);
     QCOMPARE(QUrl::fromAce(QUrl::toAce(domain)), unicode + suffix);
