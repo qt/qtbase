@@ -163,6 +163,11 @@ namespace QNativeInterface::Private {
 } // QNativeInterface::Private
 
 // Declares an accessor for the native interface
+#ifdef Q_QDOC
+#define QT_DECLARE_NATIVE_INTERFACE_ACCESSOR(T) \
+    template <typename QNativeInterface> \
+    QNativeInterface *nativeInterface() const;
+#else
 #define QT_DECLARE_NATIVE_INTERFACE_ACCESSOR(T) \
     template <typename NativeInterface, typename TypeInfo = QNativeInterface::Private::NativeInterface<NativeInterface>, \
     typename BaseType = T, std::enable_if_t<TypeInfo::template isCompatibleWith<T>, bool> = true> \
@@ -174,6 +179,7 @@ namespace QNativeInterface::Private {
     protected: \
         void *resolveInterface(const char *name, int revision) const; \
     public:
+#endif
 
 // Provides a definition for the interface destructor
 #define QT_DEFINE_NATIVE_INTERFACE_2(Namespace, InterfaceClass) \
