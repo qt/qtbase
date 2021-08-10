@@ -14,8 +14,6 @@ list(APPEND test_data "certs")
 qt_internal_add_test(tst_qsslsocket
     SOURCES
         tst_qsslsocket.cpp
-    DEFINES
-        SRCDIR=\\\"${CMAKE_CURRENT_SOURCE_DIR}/\\\"
     PUBLIC_LIBRARIES
         Qt::CorePrivate
         Qt::NetworkPrivate

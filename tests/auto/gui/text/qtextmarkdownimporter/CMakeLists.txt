@@ -13,8 +13,6 @@ list(APPEND test_data "data/fuzz20580.md")
 qt_internal_add_test(tst_qtextmarkdownimporter
     SOURCES
         tst_qtextmarkdownimporter.cpp
-    DEFINES
-        SRCDIR=\\\"${CMAKE_CURRENT_SOURCE_DIR}\\\"
     PUBLIC_LIBRARIES
         Qt::CorePrivate
         Qt::Gui

@@ -9,7 +9,6 @@ qt_internal_add_test(tst_qdbusconnection_spyhook
         ../qdbusconnection/tst_qdbusconnection.h
         tst_qdbusconnection_spyhook.cpp
     DEFINES
-        SRCDIR=\\\"${CMAKE_CURRENT_SOURCE_DIR}/\\\"
         tst_QDBusConnection=tst_QDBusConnection_SpyHook
     PUBLIC_LIBRARIES
         Qt::DBus
