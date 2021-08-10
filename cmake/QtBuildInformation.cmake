@@ -20,6 +20,13 @@ function(qt_print_build_instructions)
 
     set(build_command "cmake --build . --parallel")
     set(install_command "cmake --install .")
+
+    # Suggest "ninja install" for Multi-Config builds
+    # until https://gitlab.kitware.com/cmake/cmake/-/issues/21475 is fixed.
+    if(CMAKE_GENERATOR STREQUAL "Ninja Multi-Config")
+        set(install_command "ninja install")
+    endif()
+
     set(configure_module_command "qt-configure-module")
     if(CMAKE_HOST_WIN32)
         string(APPEND configure_module_command ".bat")
