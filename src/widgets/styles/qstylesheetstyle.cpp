@@ -4449,14 +4449,14 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
 
     case PE_PanelLineEdit:
         if (const QStyleOptionFrame *frm = qstyleoption_cast<const QStyleOptionFrame *>(opt)) {
-#if QT_CONFIG(spinbox)
-            if (w && qobject_cast<const QAbstractSpinBox *>(w->parentWidget())) {
-                QRenderRule spinboxRule = renderRule(w->parentWidget(), opt);
-                if (!spinboxRule.hasNativeBorder() || !spinboxRule.baseStyleCanDraw())
+            QWidget *container = containerWidget(w);
+            if (container != w) {
+                QRenderRule containerRule = renderRule(container, opt);
+                if (!containerRule.hasNativeBorder() || !containerRule.baseStyleCanDraw())
                     return;
-                rule = spinboxRule;
+                rule = containerRule;
             }
-#endif
+
             if (rule.hasNativeBorder()) {
                 QStyleOptionFrame frmOpt(*frm);
                 rule.configurePalette(&frmOpt.palette, QPalette::Text, QPalette::Base);
