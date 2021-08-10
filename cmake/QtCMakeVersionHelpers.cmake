@@ -182,6 +182,13 @@ function(qt_internal_warn_about_buggy_cmake_versions)
     # https://gitlab.kitware.com/cmake/cmake/-/issues/22014
     list(APPEND unsuitable_versions "3.20.1")
 
+    # Cyclic dependencies can happen when the AUTOMOC / AUTOUIC include directory is added as a
+    # target include directory.
+    # https://gitlab.kitware.com/cmake/cmake/-/merge_requests/6380
+    # https://gitlab.kitware.com/cmake/cmake/-/merge_requests/6359
+    # https://gitlab.kitware.com/cmake/cmake/-/issues/16776
+    list(APPEND unsuitable_versions "3.21.0")
+
     foreach(unsuitable_version ${unsuitable_versions})
         if(CMAKE_VERSION VERSION_EQUAL unsuitable_version)
             message(WARNING
