@@ -5210,11 +5210,18 @@ void tst_QString::number_double_data()
 
     // This function is implemented in ../shared/test_number_shared.h
     add_number_double_shared_data([](NumberDoubleTestData datum) {
-        QTest::addRow("%s, format '%c', precision %d", datum.expected.data(), datum.f, datum.p)
+        const char *title =
+                !datum.optTitle.isEmpty() ? datum.optTitle.data() : datum.expected.data();
+        QTest::addRow("%s, format '%c', precision %d", title, datum.f, datum.p)
                 << datum.d << datum.f << datum.p << datum.expected.toString();
         if (datum.f != 'f') { // Also test uppercase format
             datum.f = toupper(datum.f);
             QString upper = datum.expected.toString().toUpper();
+            QString upperTitle = QString::fromLatin1(title);
+            if (!datum.optTitle.isEmpty())
+                upperTitle += ", uppercase";
+            else
+                upperTitle = upperTitle.toUpper();
             QTest::addRow("%s, format '%c', precision %d", qPrintable(upper), datum.f, datum.p)
                     << datum.d << datum.f << datum.p << upper;
         }

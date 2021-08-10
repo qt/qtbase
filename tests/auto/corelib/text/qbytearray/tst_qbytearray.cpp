@@ -1304,12 +1304,18 @@ void tst_QByteArray::number_double_data()
     // This function is implemented in ../shared/test_number_shared.h
     add_number_double_shared_data([](NumberDoubleTestData datum) {
         QByteArray ba(datum.expected.data(), datum.expected.size());
-        QTest::addRow("%s, format '%c', precision %d", ba.data(), datum.f, datum.p)
+        const char *title = !datum.optTitle.isEmpty() ? datum.optTitle.data() : ba.data();
+        QTest::addRow("%s, format '%c', precision %d", title, datum.f, datum.p)
                 << datum.d << datum.f << datum.p << ba;
         if (datum.f != 'f') { // Also test uppercase format
             datum.f = toupper(datum.f);
             QByteArray upper = ba.toUpper();
-            QTest::addRow("%s, format '%c', precision %d", upper.data(), datum.f, datum.p)
+            QByteArray upperTitle = QByteArray(title);
+            if (!datum.optTitle.isEmpty())
+                upperTitle += ", uppercase";
+            else
+                upperTitle = upperTitle.toUpper();
+            QTest::addRow("%s, format '%c', precision %d", upperTitle.data(), datum.f, datum.p)
                     << datum.d << datum.f << datum.p << upper;
         }
     });
