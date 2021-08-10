@@ -69,6 +69,8 @@ QT_BEGIN_NAMESPACE
         template <typename> \
         friend struct QNativeInterface::Private::TypeInfo; \
     public: \
+        NativeInterface() = default; \
+        Q_DISABLE_COPY_MOVE(NativeInterface)
 
 // Revisioned interfaces only make sense when exposed through a base
 // type via QT_DECLARE_NATIVE_INTERFACE_ACCESSOR, as the revision
