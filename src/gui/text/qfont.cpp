@@ -691,10 +691,7 @@ QFont::QFont()
 {
 }
 
-#if QT_DEPRECATED_SINCE(6, 2)
 /*!
-    \deprecated [6.2] Use the overload taking a QStringList instead.
-
     Constructs a font object with the specified \a family, \a
     pointSize, \a weight and \a italic settings.
 
@@ -740,7 +737,6 @@ QFont::QFont(const QString &family, int pointSize, int weight, bool italic)
     d->request.weight = weight;
     d->request.style = italic ? QFont::StyleItalic : QFont::StyleNormal;
 }
-#endif
 
 /*!
      Constructs a font object with the specified \a families, \a
