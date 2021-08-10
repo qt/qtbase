@@ -1761,7 +1761,7 @@
             \li maxIconWidth
             \li The maximum width allowed for the icon.
         \row
-            \li menuHasChecableItem
+            \li menuHasCheckableItems
             \li Boolean which is \c true if at least one item in the
                menu is checkable.
         \row
