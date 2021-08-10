@@ -1856,7 +1856,7 @@ static void initEnvironment()
     than once, as command-line options for logging test output to files and
     executing individual test functions will not behave correctly.
 
-    Note: This function is not reentrant, only one test can run at a time. A
+    \note This function is not reentrant, only one test can run at a time. A
     test that was executed with qExec() can't run another test via qExec() and
     threads are not allowed to call qExec() simultaneously.
 
@@ -2078,9 +2078,9 @@ void QTest::qWarn(const char *message, const char *file, int line)
     test log. If the test finished and the \a message was not outputted,
     a test failure is appended to the test log.
 
-    \b {Note:} Invoking this function will only ignore one message.
-    If the message you want to ignore is outputted twice, you have to
-    call ignoreMessage() twice, too.
+    \note Invoking this function will only ignore one message. If the message
+    you want to ignore is output twice, you have to call ignoreMessage() twice,
+    too.
 
     Example:
     \snippet code/src_qtestlib_qtestcase.cpp 19
@@ -2103,9 +2103,9 @@ void QTest::ignoreMessage(QtMsgType type, const char *message)
     test log. If the test finished and the message was not outputted,
     a test failure is appended to the test log.
 
-    \b {Note:} Invoking this function will only ignore one message.
-    If the message you want to ignore is outputted twice, you have to
-    call ignoreMessage() twice, too.
+    \note Invoking this function will only ignore one message. If the message
+    you want to ignore is output twice, you have to call ignoreMessage() twice,
+    too.
 
     \since 5.3
 */
@@ -2384,7 +2384,7 @@ void QTest::addColumnInternal(int id, const char *name)
     Example:
     \snippet code/src_qtestlib_qtestcase.cpp 20
 
-    \b {Note:} This macro can only be used in a test's data function
+    \note This function can only be called as part of a test's data function
     that is invoked by the test framework.
 
     See \l {Chapter 2: Data Driven Testing}{Data Driven Testing} for
@@ -2416,7 +2416,7 @@ QTestData &QTest::newRow(const char *dataTag)
     Example:
     \snippet code/src_qtestlib_qtestcase.cpp addRow
 
-    \b {Note:} This function can only be used in a test's data function
+    \note This function can only be called as part of a test's data function
     that is invoked by the test framework.
 
     See \l {Chapter 2: Data Driven Testing}{Data Driven Testing} for
@@ -2459,8 +2459,8 @@ QTestData &QTest::addRow(const char *format, ...)
     To add custom types to the testdata, the type must be registered with
     QMetaType via \l Q_DECLARE_METATYPE().
 
-    \b {Note:} This macro can only be used in a test's data function
-    that is invoked by the test framework.
+    \note This function can only be used called as part of a test's data
+    function that is invoked by the test framework.
 
     See \l {Chapter 2: Data Driven Testing}{Data Driven Testing} for
     a more extensive example.
