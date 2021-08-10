@@ -451,6 +451,7 @@ macro(qt_build_repo_end)
 
         # Install the repo-specific cmake find modules.
         qt_path_join(__qt_repo_install_dir ${QT_CONFIG_INSTALL_DIR} ${INSTALL_CMAKE_NAMESPACE})
+        qt_path_join(__qt_repo_build_dir ${QT_CONFIG_BUILD_DIR} ${INSTALL_CMAKE_NAMESPACE})
 
         if(NOT PROJECT_NAME STREQUAL "QtBase")
             if(IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
@@ -458,6 +459,12 @@ macro(qt_build_repo_end)
                     DESTINATION "${__qt_repo_install_dir}"
                     FILES_MATCHING PATTERN "Find*.cmake"
                 )
+                if(QT_SUPERBUILD AND QT_WILL_INSTALL)
+                    file(COPY cmake/
+                         DESTINATION "${__qt_repo_build_dir}"
+                         FILES_MATCHING PATTERN "Find*.cmake"
+                    )
+                endif()
             endif()
         endif()
 
