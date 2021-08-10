@@ -1465,6 +1465,20 @@ QString QMYSQLDriver::formatValue(const QSqlField &field, bool trimStrings) cons
                 qWarning("QMYSQLDriver::formatValue: Database not open");
             }
             Q_FALLTHROUGH();
+        case QMetaType::QDateTime:
+            if (QDateTime dt = field.value().toDateTime(); dt.isValid()) {
+                // MySQL format doesn't like the "Z" at the end, but does allow
+                // "+00:00" starting in version 8.0.19. However, if we got here,
+                // it's because the MySQL server is too old for prepared queries
+                // in the first place, so it won't understand timezones either.
+                // Besides, MYSQL_TIME does not support timezones, so match it.
+                r = QLatin1Char('\'') +
+                        dt.date().toString(Qt::ISODate) +
+                        QLatin1Char('T') +
+                        dt.time().toString(Qt::ISODate) +
+                        QLatin1Char('\'');
+            }
+            break;
         default:
             r = QSqlDriver::formatValue(field, trimStrings);
         }
