@@ -2596,10 +2596,13 @@ QString qt_ACE_do(QStringView domain, AceOperation op, AceLeadingDot dot)
             // We use resize()+memcpy() here because we're overwriting the data we've copied
             bool appended = false;
             if (isIdnEnabled) {
+                // The decoding step can fail here if the original domain name contained
+                // labels that start with "xn--" but don't contain valid Punycode. Even
+                // if the label was decoded correctly, it may still break some IDNA rules.
+                // In either case the original ASCII label should be used instead of
+                // the result returned by the decoder.
                 QString tmp = qt_punycodeDecoder(aceForm);
-                if (tmp.isEmpty())
-                    return QString(); // shouldn't happen, since we've just punycode-encoded it
-                if (qt_check_nameprepped_std3(tmp)) {
+                if (!tmp.isEmpty() && qt_check_nameprepped_std3(tmp)) {
                     result.resize(prevLen + tmp.size());
                     memcpy(result.data() + prevLen, tmp.constData(), tmp.size() * sizeof(QChar));
                     appended = true;

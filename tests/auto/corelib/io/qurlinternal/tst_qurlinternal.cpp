@@ -705,7 +705,6 @@ void tst_QUrlInternal::ace_testsuite()
     QCOMPARE(QString::fromLatin1(QUrl::toAce(domain)), toace + suffix);
     QEXPECT_FAIL("punycode-overflow-2", "QTBUG-95689: Missing oweflow check in punycode decoder",
                  Abort);
-    QEXPECT_FAIL("punycode-overflow-3", "QTBUG-95689: Returns empty string", Abort);
     if (fromace != ".")
         QCOMPARE(QUrl::fromAce(domain.toLatin1()), fromace + suffix);
     QCOMPARE(QUrl::fromAce(QUrl::toAce(domain)), unicode + suffix);
