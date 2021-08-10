@@ -11,8 +11,6 @@ endif()
 qt_internal_add_test(tst_qsslsocket_onDemandCertificates_member
     SOURCES
         tst_qsslsocket_onDemandCertificates_member.cpp
-    DEFINES
-        SRCDIR=\\\"${CMAKE_CURRENT_SOURCE_DIR}/\\\"
     PUBLIC_LIBRARIES
         Qt::CorePrivate
         Qt::NetworkPrivate

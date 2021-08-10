@@ -11,8 +11,6 @@ endif()
 qt_internal_add_test(tst_qauthenticator
     SOURCES
         tst_qauthenticator.cpp
-    DEFINES
-        SRCDIR=\\\"${CMAKE_CURRENT_SOURCE_DIR}/\\\"
     PUBLIC_LIBRARIES
         Qt::NetworkPrivate
 )
