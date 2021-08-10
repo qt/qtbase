@@ -652,40 +652,38 @@ void tst_QUrlInternal::ace_testsuite_data()
         << taiwaneseIDN;
 
     // violations / invalids
-    QTest::newRow("invalid-punycode") << "xn--z" << "xn--z" << "xn--z" << "xn--z";
+    auto badRow = [](const char *name, const char *text) {
+        QTest::newRow(name) << text << text << text << text;
+    };
+
+    badRow("invalid-punycode", "xn--z");
 
     // U+00A0 NO-BREAK SPACE encodes to Punycode "6a"
     // but it is prohibited and should have caused encoding failure
-    QTest::newRow("invalid-nameprep-prohibited") << "xn--6a" << "xn--6a" << "xn--6a" << "xn--6a";
+    badRow("invalid-nameprep-prohibited", "xn--6a");
 
     // U+00AD SOFT HYPHEN between "a" and "b" encodes to Punycode "ab-5da"
     // but it should have been removed in the nameprep stage
-    QTest::newRow("invalid-nameprep-maptonothing") << "xn-ab-5da" << "xn-ab-5da" << "xn-ab-5da" << "xn-ab-5da";
+    badRow("invalid-nameprep-maptonothing", "xn-ab-5da");
 
     // U+00C1 LATIN CAPITAL LETTER A WITH ACUTE encodes to Punycode "4ba"
     // but it should have nameprepped to lowercase first
-    QTest::newRow("invalid-nameprep-uppercase") << "xn--4ba" << "xn--4ba" << "xn--4ba" << "xn--4ba";
+    badRow("invalid-nameprep-uppercase", "xn--4ba");
 
     // U+00B5 MICRO SIGN encodes to Punycode "sba"
     // but is should have nameprepped to NFKC U+03BC GREEK SMALL LETTER MU
-    QTest::newRow("invalid-nameprep-nonnfkc") << "xn--sba" << "xn--sba" << "xn--sba" << "xn--sba";
+    badRow("invalid-nameprep-nonnfkc", "xn--sba");
 
     // U+04CF CYRILLIC SMALL LETTER PALOCHKA encodes to "s5a"
     // but it's not in RFC 3454's allowed character list (Unicode 3.2)
-    QTest::newRow("invalid-nameprep-unassigned") << "xn--s5a" << "xn--s5a" << "xn--s5a" << "xn--s5a";
+    badRow("invalid-nameprep-unassigned", "xn--s5a");
     // same character, see QTBUG-60364
-    QTest::newRow("invalid-nameprep-unassigned2") << "xn--80ak6aa92e" << "xn--80ak6aa92e" << "xn--80ak6aa92e" << "xn--80ak6aa92e";
+    badRow("invalid-nameprep-unassigned2", "xn--80ak6aa92e");
 
     // Decodes to "a" in some versions, see QTBUG-95689
-    QTest::newRow("punycode-overflow-1") << "xn--5p32g"
-                                         << "xn--5p32g"
-                                         << "xn--5p32g"
-                                         << "xn--5p32g";
+    badRow("punycode-overflow-1", "xn--5p32g");
     // Decodes to the same string as "xn--097c" in some versions, see QTBUG-95689
-    QTest::newRow("punycode-overflow-2") << "xn--400595c"
-                                         << "xn--400595c"
-                                         << "xn--400595c"
-                                         << "xn--400595c";
+    badRow("punycode-overflow-2", "xn--400595c");
 }
 
 void tst_QUrlInternal::ace_testsuite()
