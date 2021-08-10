@@ -318,11 +318,11 @@ void Http2Server::incomingConnection(qintptr socketDescriptor)
         sslSocket->setProtocol(QSsl::TlsV1_2OrLater);
         connect(sslSocket, SIGNAL(sslErrors(QList<QSslError>)),
                 this, SLOT(ignoreErrorSlot()));
-        QFile file(SRCDIR "certs/fluke.key");
+        QFile file(QT_TESTCASE_SOURCEDIR "/certs/fluke.key");
         file.open(QIODevice::ReadOnly);
         QSslKey key(file.readAll(), QSsl::Rsa, QSsl::Pem, QSsl::PrivateKey);
         sslSocket->setPrivateKey(key);
-        auto localCert = QSslCertificate::fromPath(SRCDIR "certs/fluke.cert");
+        auto localCert = QSslCertificate::fromPath(QT_TESTCASE_SOURCEDIR "/certs/fluke.cert");
         sslSocket->setLocalCertificateChain(localCert);
         sslSocket->setSocketDescriptor(socketDescriptor, QAbstractSocket::ConnectedState);
         // Stop listening.

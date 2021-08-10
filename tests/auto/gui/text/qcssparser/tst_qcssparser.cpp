@@ -90,7 +90,7 @@ void tst_QCssParser::scanner_data()
 #if defined(Q_OS_ANDROID)
     QDir d(":/");
 #else
-    QDir d(SRCDIR);
+    QDir d(QT_TESTCASE_SOURCEDIR);
 #endif
     d.cd("testdata");
     d.cd("scanner");

@@ -303,7 +303,7 @@ void tst_QFiledialog::filesSelectedSignal()
 {
     QFileDialog fd;
     fd.setViewMode(QFileDialog::List);
-    QDir testDir(SRCDIR);
+    QDir testDir(QT_TESTCASE_SOURCEDIR);
     fd.setDirectory(testDir);
     QFETCH(QFileDialog::FileMode, fileMode);
     fd.setFileMode(fileMode);
