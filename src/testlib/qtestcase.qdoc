@@ -454,7 +454,8 @@
    \a comment will be appended to the test log for the expected failure.
 
    \a mode is a \l QTest::TestFailMode and sets whether the test should
-   continue to execute or not.
+   continue to execute or not. The \a mode is applied regardless of
+   whether the expected test failure occurs.
 
    \note This macro can only be used in a test function that is invoked
    by the test framework.
@@ -471,7 +472,7 @@
    \snippet code/src_qtestlib_qtestcase.cpp 10
 
    The above testfunction will not continue executing for the test data
-   entry \c{data27}.
+   entry \c{data27} (regardless of the value of \c i).
 
    \sa QTest::TestFailMode, QVERIFY(), QCOMPARE()
 */
@@ -632,14 +633,16 @@
 
 /*! \enum QTest::TestFailMode
 
-    This enum describes the modes for handling an expected failure of the
-    \l QVERIFY() or \l QCOMPARE() macros.
+    This enum describes the modes for handling a check, such as by \l
+    QVERIFY() or \l QCOMPARE() macros, that is known to fail. The mode
+    applies regardless of whether the check fails or succeeds.
 
-    \value Abort Aborts the execution of the test. Use this mode when it
-           doesn't make sense to execute the test any further after the
-           expected failure.
+    \value Abort Aborts the execution of the test. Use this mode when
+           it doesn't make sense to execute the test any further after
+           the problematic check.
 
-    \value Continue Continues execution of the test after the expected failure.
+    \value Continue Continues execution of the test after the
+           problematic check.
 
     \sa QEXPECT_FAIL()
 */

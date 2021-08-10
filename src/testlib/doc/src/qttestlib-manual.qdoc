@@ -921,8 +921,8 @@
 
     QSKIP can be used to skip testing when the implementation is not yet
     complete or not supported on a certain platform. When there are known
-    failures, it is recommended to use QEXPECT_FAIL, so that the test is
-    always completely executed.
+    failures, QEXPECT_FAIL is recommended, as it supports running the rest
+    of the test, when possible.
 
     Example of QSKIP in a test function:
 
