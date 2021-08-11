@@ -39,9 +39,9 @@ description file.
 
 \badcode
 qt_add_dbus_interface(<VAR> dbus_spec basename)
-
-qt6_add_dbus_interface(<VAR> dbus_spec basename)
 \endcode
+
+\versionlessCMakeCommandsNote qt6_add_dbus_interface()
 
 \section1 Description
 
@@ -103,9 +103,9 @@ description files.
 
 \badcode
 qt_add_dbus_interfaces(<VAR> dbus_spec1 [dbus_spec2 ...])
-
-qt6_add_dbus_interfaces(<VAR> dbus_spec1 [dbus_spec2 ...])
 \endcode
+
+\versionlessCMakeCommandsNote qt6_add_dbus_interfaces()
 
 \section1 Description
 
@@ -162,12 +162,9 @@ qt_generate_dbus_interface(header
     [customName]
     [OPTIONS options]
 )
-
-qt6_generate_dbus_interface(header
-    [customName]
-    [OPTIONS options]
-)
 \endcode
+
+\versionlessCMakeCommandsNote qt6_generate_dbus_interface()
 
 \section1 Description
 
@@ -201,13 +198,9 @@ qt_add_dbus_adaptor(<VAR> dbus_spec header
     [basename]
     [classname]
 )
-
-qt6_add_dbus_adaptor(<VAR> dbus_spec header
-    [parent_class]
-    [basename]
-    [classname]
-)
 \endcode
+
+\versionlessCMakeCommandsNote qt6_add_dbus_adaptor()
 
 \section1 Description
 
