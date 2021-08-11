@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -36,6 +36,7 @@
 #include <qwaitcondition.h>
 #include <qdebug.h>
 #include <qmetaobject.h>
+#include <qscopeguard.h>
 
 #ifdef Q_OS_UNIX
 #include <pthread.h>
@@ -1082,8 +1083,8 @@ void tst_QThread::wait2()
              qPrintable(msgElapsed(elapsed)));
 }
 
-
-class SlowSlotObject : public QObject {
+class SlowSlotObject : public QObject
+{
     Q_OBJECT
 public:
     QMutex mutex;
@@ -1099,22 +1100,23 @@ void tst_QThread::wait3_slowDestructor()
 {
     SlowSlotObject slow;
     QThread thread;
-    QObject::connect(&thread, SIGNAL(finished()), &slow, SLOT(slowSlot()), Qt::DirectConnection);
-
-    enum { WaitTime = 1800 };
+    QObject::connect(&thread, &QThread::finished,
+                     &slow, &SlowSlotObject::slowSlot, Qt::DirectConnection);
     QElapsedTimer timer;
 
     thread.start();
     thread.quit();
-    //the quit function will cause the thread to finish and enter the slowSlot that is blocking
+    // Calling quit() will cause the thread to finish and enter the blocking slowSlot().
 
     timer.start();
-    QVERIFY(!thread.wait(Waiting_Thread::WaitTime));
-    qint64 elapsed = timer.elapsed();
-    QVERIFY2(elapsed >= Waiting_Thread::WaitTime - 1, qPrintable(QString::fromLatin1("elapsed: %1").arg(elapsed)));
-
-    slow.cond.wakeOne();
-    //now the thread should finish quickly
+    {
+        // Ensure thread finishes quickly after the checks - regardless of success:
+        const auto wakeSlow = qScopeGuard([&slow]() -> void { slow.cond.wakeOne(); });
+        QVERIFY(!thread.wait(Waiting_Thread::WaitTime));
+        const qint64 elapsed = timer.elapsed();
+        QVERIFY2(elapsed >= Waiting_Thread::WaitTime - 1,
+                 qPrintable(QString::fromLatin1("elapsed: %1").arg(elapsed)));
+    }
     QVERIFY(thread.wait(one_minute));
 }
 
