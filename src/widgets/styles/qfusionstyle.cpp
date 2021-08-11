@@ -1088,10 +1088,13 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
             painter->translate(0.5, 0.5);
             painter->setBrush(dimHighlight);
             painter->drawRoundedRect(option->rect.adjusted(0, 0, -1, -1), 1, 1);
-            QColor innerLine = Qt::white;
-            innerLine.setAlpha(40);
-            painter->setPen(innerLine);
-            painter->drawRoundedRect(option->rect.adjusted(1, 1, -2, -2), 1, 1);
+            //when the rectangle we get is large enough, draw the inner rectangle.
+            if (option->rect.width() > 2 && option->rect.height() > 2) {
+                QColor innerLine = Qt::white;
+                innerLine.setAlpha(40);
+                painter->setPen(innerLine);
+                painter->drawRoundedRect(option->rect.adjusted(1, 1, -2, -2), 1, 1);
+            }
             painter->restore();
         }
         break;
