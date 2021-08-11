@@ -1763,7 +1763,7 @@ void tst_QAccessibility::textEditTest()
         QString text = "<p>hello world.<br/>How are you today?</p><p>I'm fine, thanks</p>";
         edit.setHtml(text);
         if (pass == 1) {
-            QFont font("Helvetica");
+            QFont font(QStringList{"Helvetica"});
             font.setPointSizeF(12.5);
             font.setWordSpacing(1.1);
             edit.document()->setDefaultFont(font);
