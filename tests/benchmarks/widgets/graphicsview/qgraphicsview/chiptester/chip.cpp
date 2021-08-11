@@ -97,7 +97,7 @@ void Chip::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
 
     // Draw text
     if (lod >= 2) {
-        QFont font("Times", 10);
+        QFont font(QStringList{"Times"}, 10);
         font.setStyleStrategy(QFont::ForceOutline);
         painter->setFont(font);
         painter->save();
