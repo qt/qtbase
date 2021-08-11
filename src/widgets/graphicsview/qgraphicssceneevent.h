@@ -157,6 +157,15 @@ public:
     Qt::Orientation orientation() const;
     void setOrientation(Qt::Orientation orientation);
 
+    Qt::ScrollPhase phase() const;
+    void setPhase(Qt::ScrollPhase scrollPhase);
+
+    QPoint pixelDelta() const;
+    void setPixelDelta(QPoint delta);
+
+    bool isInverted() const;
+    void setInverted(bool inverted);
+
 private:
     Q_DECLARE_PRIVATE(QGraphicsSceneWheelEvent)
     Q_DISABLE_COPY(QGraphicsSceneWheelEvent)

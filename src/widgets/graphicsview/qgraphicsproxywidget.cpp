@@ -1289,6 +1289,19 @@ void QGraphicsProxyWidget::wheelEvent(QGraphicsSceneWheelEvent *event)
     if (!receiver)
         receiver = d->widget;
 
+    // high precision event streams go to the grabber, which will be the
+    // QGraphicsView's viewport. We need to change that temporarily, otherwise
+    // the event we send to the receiver get grabbed by the viewport, resulting
+    // in infinite recursion
+    QPointer<QWidget> prev_grabber = QApplicationPrivate::wheel_widget;
+    if (event->phase() == Qt::ScrollBegin) {
+        QApplicationPrivate::wheel_widget = receiver;
+    } else if (event->phase() != Qt::NoScrollPhase && QApplicationPrivate::wheel_widget != receiver) {
+        // this event is part of a stream that didn't start here, so ignore
+        event->ignore();
+        return;
+    }
+
     // Map event position from us to the receiver
     pos = d->mapToReceiver(pos, receiver);
 
@@ -1300,14 +1313,20 @@ void QGraphicsProxyWidget::wheelEvent(QGraphicsSceneWheelEvent *event)
         angleDelta.setY(event->delta());
     // pixelDelta, inverted, scrollPhase and source from the original QWheelEvent
     // were not preserved in the QGraphicsSceneWheelEvent unfortunately
-    QWheelEvent wheelEvent(pos, event->screenPos(), QPoint(), angleDelta,
-                           event->buttons(), event->modifiers(), Qt::NoScrollPhase,
-                           false, Qt::MouseEventSynthesizedByQt,
+    QWheelEvent wheelEvent(pos, event->screenPos(), event->pixelDelta(), angleDelta,
+                           event->buttons(), event->modifiers(), event->phase(),
+                           event->isInverted(), Qt::MouseEventSynthesizedByQt,
                            QPointingDevice::primaryPointingDevice());
     QPointer<QWidget> focusWidget = d->widget->focusWidget();
     extern bool qt_sendSpontaneousEvent(QObject *, QEvent *);
     qt_sendSpontaneousEvent(receiver, &wheelEvent);
     event->setAccepted(wheelEvent.isAccepted());
+
+    if (event->phase() == Qt::ScrollBegin) {
+        // reset the wheel grabber if the event wasn't accepted
+        if (!wheelEvent.isAccepted())
+            QApplicationPrivate::wheel_widget = prev_grabber;
+    }
 
     // ### Remove, this should be done by proper focusIn/focusOut events.
     if (focusWidget && !focusWidget->hasFocus()) {

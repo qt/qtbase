@@ -2351,12 +2351,9 @@ void tst_QGraphicsView::wheelEventPropagation()
     QCOMPARE(scrollSpy.count(), ++scrollCount);
     for (int i = 0; i < 5; ++i) {
         wheelUp(Qt::ScrollUpdate);
-        if (i >= 1)
-            QEXPECT_FAIL("", "Fixed for Qt 6.2 - QTBUG-65552", Continue);
         QCOMPARE(scrollSpy.count(), ++scrollCount);
     }
     wheelUp(Qt::ScrollEnd);
-    QEXPECT_FAIL("", "Fixed for Qt 6.2 - QTBUG-65552", Continue);
     QCOMPARE(scrollSpy.count(), ++scrollCount);
 
     // reset
@@ -2373,11 +2370,9 @@ void tst_QGraphicsView::wheelEventPropagation()
     QCOMPARE(scrollSpy.count(), ++scrollCount);
     for (int i = 0; i < 5; ++i) {
         wheelUp(Qt::ScrollUpdate);
-        QEXPECT_FAIL("", "Fixed for Qt 6.2 - QTBUG-65552", Continue);
         QCOMPARE(scrollSpy.count(), ++scrollCount);
     }
     wheelUp(Qt::ScrollEnd);
-    QEXPECT_FAIL("", "Fixed for Qt 6.2 - QTBUG-65552", Continue);
     QCOMPARE(scrollSpy.count(), ++scrollCount);
 
     // starting a scroll on a widget that does accept wheel events
