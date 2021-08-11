@@ -2840,12 +2840,8 @@ int QMetaEnum::keysToValue(const char *keys, bool *ok) const
         *ok = false;
     if (!mobj || !keys)
         return -1;
-    if (ok != nullptr)
-        *ok = true;
     const QString keysString = QString::fromLatin1(keys);
     const auto splitKeys = QStringView{keysString}.split(QLatin1Char('|'));
-    if (splitKeys.isEmpty())
-        return 0;
     // ### TODO write proper code: do not allocate memory, so we can go nothrow
     int value = 0;
     for (QStringView untrimmed : splitKeys) {
@@ -2870,11 +2866,11 @@ int QMetaEnum::keysToValue(const char *keys, bool *ok) const
             }
         }
         if (i < 0) {
-            if (ok != nullptr)
-                *ok = false;
             return -1;
         }
     }
+    if (ok != nullptr)
+        *ok = true;
     return value;
 }
 
