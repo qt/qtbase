@@ -42,11 +42,9 @@ qt_wrap_cpp(<VAR> src_file1 [src_file2 ...]
             [OPTIONS ...]
             [DEPENDS ...])
 
-qt6_wrap_cpp(<VAR> src_file1 [src_file2 ...]
-             [TARGET target]
-             [OPTIONS ...]
-             [DEPENDS ...])
 \endcode
+
+\versionlessCMakeCommandsNote qt6_wrap_cpp()
 
 \section1 Description
 
@@ -90,10 +88,9 @@ Q_PLUGIN_METADATA() macro.
 \badcode
 qt_add_resources(<VAR> file1.qrc [file2.qrc ...]
                   [OPTIONS ...])
-
-qt6_add_resources(<VAR> file1.qrc [file2.qrc ...]
-                  [OPTIONS ...])
 \endcode
+
+\versionlessCMakeCommandsNote qt6_add_resources()
 
 Since 6.0:
 
@@ -103,13 +100,9 @@ qt_add_resources(<TARGET> <RESOURCE_NAME>
                   [LANG <LANGUAGE>]
                   [BASE <PATH>]
                   [FILES ...] [OPTIONS ...])
-
-qt6_add_resources(<TARGET> <RESOURCE_NAME>
-                  [PREFIX <PATH>]
-                  [LANG <LANGUAGE>]
-                  [BASE <PATH>]
-                  [FILES ...] [OPTIONS ...])
 \endcode
+
+\versionlessCMakeCommandsNote qt6_add_resources()
 
 \section1 Description
 
@@ -182,10 +175,9 @@ different static libraries conflict in the consuming target.
 \badcode
 qt_add_big_resources(<VAR> file1.qrc [file2.qrc ...]
                      [OPTIONS ...])
-
-qt6_add_big_resources(<VAR> file1.qrc [file2.qrc ...]
-                     [OPTIONS ...])
 \endcode
+
+\versionlessCMakeCommandsNote qt6_add_big_resources()
 
 \section1 Description
 
@@ -225,11 +217,9 @@ You can find possible options in the \l{rcc}{rcc documentation}.
 qt_add_binary_resources(target file1.qrc [file2.qrc ...]
                         [DESTINATION ...]
                         [OPTIONS ...])
-
-qt6_add_binary_resources(target file1.qrc [file2.qrc ...]
-                        [DESTINATION ...]
-                        [OPTIONS ...])
 \endcode
+
+\versionlessCMakeCommandsNote qt6_add_binary_resources()
 
 \section1 Description
 
@@ -263,10 +253,9 @@ You can find possible options in the \l{rcc}{rcc documentation}.
 \badcode
 qt_generate_moc(src_file dest_file
                 [TARGET target])
-
-qt6_generate_moc(src_file dest_file
-                [TARGET target])
 \endcode
+
+\versionlessCMakeCommandsNote qt6_generate_moc()
 
 \section1 Description
 
@@ -306,13 +295,9 @@ qt_import_plugins(target
                   [EXCLUDE plugin ...]
                   [INCLUDE_BY_TYPE plugin_type plugin ...]
                   [EXCLUDE_BY_TYPE plugin_type])
-
-qt6_import_plugins(target
-                  [INCLUDE plugin ...]
-                  [EXCLUDE plugin ...]
-                  [INCLUDE_BY_TYPE plugin_type plugin ...]
-                  [EXCLUDE_BY_TYPE plugin_type])
 \endcode
+
+\versionlessCMakeCommandsNote qt6_import_plugins()
 
 \section1 Description
 
@@ -378,12 +363,9 @@ qt_add_executable(target
                   [WIN32] [MACOSX_BUNDLE]
                   [MANUAL_FINALIZATION]
                   sources...)
-
-qt6_add_executable(target
-                   [WIN32] [MACOSX_BUNDLE]
-                   [MANUAL_FINALIZATION]
-                   sources...)
 \endcode
+
+\versionlessCMakeCommandsNote qt6_add_executable()
 
 \section1 Description
 
@@ -471,9 +453,9 @@ for finalizing the target by adding the \c{MANUAL_FINALIZATION} keyword.
 
 \badcode
 qt_finalize_target(target)
-
-qt6_finalize_target(target)
 \endcode
+
+\versionlessCMakeCommandsNote qt6_finalize_target()
 
 \section1 Description
 
@@ -513,9 +495,9 @@ in the documentation of that command.
 
 \badcode
 qt_android_apply_arch_suffix(target)
-
-qt6_android_apply_arch_suffix(target)
 \endcode
+
+\versionlessCMakeCommandsNote qt6_android_apply_arch_suffix()
 
 \section1 Description
 
@@ -543,9 +525,9 @@ overwriting each other.
 
 \badcode
 qt_android_generate_deployment_settings(target)
-
-qt6_android_generate_deployment_settings(target)
 \endcode
+
+\versionlessCMakeCommandsNote qt6_android_generate_deployment_settings()
 
 \section1 Description
 
@@ -620,9 +602,9 @@ contain the location of the generated deployment settings file.
 
 \badcode
 qt_android_add_apk_target(target)
-
-qt6_android_add_apk_target(target)
 \endcode
+
+\versionlessCMakeCommandsNote qt6_android_add_apk_target()
 
 \section1 Description
 

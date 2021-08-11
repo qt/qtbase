@@ -39,10 +39,9 @@
 \badcode
 qt_wrap_ui(<VAR> ui_file1 [ui_file2 ...]
            [OPTIONS ...])
-
-qt6_wrap_ui(<VAR> ui_file1 [ui_file2 ...]
-           [OPTIONS ...])
 \endcode
+
+\versionlessCMakeCommandsNote qt6_wrap_ui()
 
 \section1 Description
 
