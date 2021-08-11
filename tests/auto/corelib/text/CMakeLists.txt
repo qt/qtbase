@@ -21,6 +21,7 @@ add_subdirectory(qstringmatcher)
 add_subdirectory(qstringtokenizer)
 add_subdirectory(qstringview)
 add_subdirectory(qtextboundaryfinder)
+add_subdirectory(qunicodetools)
 # QTBUG-87414 # special case
 if(NOT ANDROID)
     add_subdirectory(qlocale)
