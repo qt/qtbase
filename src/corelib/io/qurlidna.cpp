@@ -2193,14 +2193,13 @@ static inline uint adapt(uint delta, uint numpoints, bool firsttime)
     return k + (((base - tmin + 1) * delta) / (delta + skew));
 }
 
-static inline void appendEncode(QString* output, uint& delta, uint& bias, uint& b, uint& h)
+static inline void appendEncode(QString *output, uint delta, uint bias)
 {
     uint qq;
     uint k;
     uint t;
 
-    // insert the variable length delta integer; fail on
-    // overflow.
+    // insert the variable length delta integer.
     for (qq = delta, k = base;; k += base) {
         // stop generating digits when the threshold is
         // detected.
@@ -2212,9 +2211,6 @@ static inline void appendEncode(QString* output, uint& delta, uint& bias, uint& 
     }
 
     *output += QChar(encodeDigit(qq));
-    bias = adapt(delta, h + 1, h == b);
-    delta = 0;
-    ++h;
 }
 
 Q_AUTOTEST_EXPORT void qt_punycodeEncoder(QStringView in, QString *output)
@@ -2300,7 +2296,11 @@ Q_AUTOTEST_EXPORT void qt_punycodeEncoder(QStringView in, QString *output)
             // if j is the index of the character with the lowest
             // unicode code...
             if (c == n) {
-                appendEncode(output, delta, bias, b, h);
+                appendEncode(output, delta, bias);
+
+                bias = adapt(delta, h + 1, h == b);
+                delta = 0;
+                ++h;
             }
         }
 
