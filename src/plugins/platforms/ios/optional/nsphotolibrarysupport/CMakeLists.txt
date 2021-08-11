@@ -4,9 +4,10 @@
 ## QIosOptionalPlugin_NSPhotoLibrary Plugin:
 #####################################################################
 
-qt_internal_add_plugin(QIosOptionalPlugin_NSPhotoLibrary
+qt_internal_add_plugin(QIosOptionalPlugin_NSPhotoLibraryPlugin
     OUTPUT_NAME qiosnsphotolibrarysupport
     PLUGIN_TYPE platforms/darwin
+    CLASS_NAME QIosOptionalPlugin_NSPhotoLibrary
     DEFAULT_IF FALSE
     SOURCES
         plugin.mm
@@ -23,7 +24,7 @@ qt_internal_add_plugin(QIosOptionalPlugin_NSPhotoLibrary
 )
 
 # special case begin
-set_target_properties(QIosOptionalPlugin_NSPhotoLibrary
+set_target_properties(QIosOptionalPlugin_NSPhotoLibraryPlugin
     PROPERTIES
         DISABLE_PRECOMPILE_HEADERS ON
 )
