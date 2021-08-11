@@ -2872,7 +2872,7 @@ int QMetaEnum::keysToValue(const char *keys, bool *ok) const
         if (i < 0) {
             if (ok != nullptr)
                 *ok = false;
-            value |= -1;
+            return -1;
         }
     }
     return value;
