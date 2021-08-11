@@ -3400,6 +3400,9 @@ void QGraphicsView::wheelEvent(QWheelEvent *event)
     wheelEvent.setModifiers(event->modifiers());
     const bool horizontal = qAbs(event->angleDelta().x()) > qAbs(event->angleDelta().y());
     wheelEvent.setDelta(horizontal ? event->angleDelta().x() : event->angleDelta().y());
+    wheelEvent.setPixelDelta(event->pixelDelta());
+    wheelEvent.setPhase(event->phase());
+    wheelEvent.setInverted(event->isInverted());
     wheelEvent.setOrientation(horizontal ? Qt::Horizontal : Qt::Vertical);
     wheelEvent.setAccepted(false);
     QCoreApplication::sendEvent(d->scene, &wheelEvent);

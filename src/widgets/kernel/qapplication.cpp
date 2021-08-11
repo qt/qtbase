@@ -2946,15 +2946,9 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
 
             // a widget has already grabbed the wheel for a sequence
             if (QApplicationPrivate::wheel_widget) {
-                // Qt explicitly synthesizes a spontaneous event for the receiver, done
-                // by QGraphicsProxyWidget - so trust it
-                if (wheel->source() == Qt::MouseEventSynthesizedByQt) {
-                    QApplicationPrivate::wheel_widget = w;
-                } else {
-                    Q_ASSERT(phase != Qt::NoScrollPhase);
-                    w = QApplicationPrivate::wheel_widget;
-                    relpos = w->mapFromGlobal(wheel->globalPosition().toPoint());
-                }
+                Q_ASSERT(phase != Qt::NoScrollPhase);
+                w = QApplicationPrivate::wheel_widget;
+                relpos = w->mapFromGlobal(wheel->globalPosition().toPoint());
             }
             /*
                 Start or finish a scrolling sequence by grabbing/releasing the wheel via

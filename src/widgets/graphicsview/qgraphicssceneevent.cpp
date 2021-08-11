@@ -695,10 +695,13 @@ public:
     QPointF pos;
     QPointF scenePos;
     QPoint screenPos;
+    QPoint pixelDelta;
     Qt::MouseButtons buttons;
     Qt::KeyboardModifiers modifiers;
     int delta = 0;
     Qt::Orientation orientation = Qt::Horizontal;
+    Qt::ScrollPhase scrollPhase = Qt::NoScrollPhase;
+    bool inverted = false;
 };
 
 /*!
@@ -863,6 +866,73 @@ void QGraphicsSceneWheelEvent::setOrientation(Qt::Orientation orientation)
 {
     Q_D(QGraphicsSceneWheelEvent);
     d->orientation = orientation;
+}
+
+/*!
+    \since 6.2
+
+    Returns the scrolling phase of this wheel event.
+
+    \sa QWheelEvent::phase
+*/
+Qt::ScrollPhase QGraphicsSceneWheelEvent::phase() const
+{
+    Q_D(const QGraphicsSceneWheelEvent);
+    return d->scrollPhase;
+}
+
+/*!
+    \internal
+*/
+void QGraphicsSceneWheelEvent::setPhase(Qt::ScrollPhase scrollPhase)
+{
+    Q_D(QGraphicsSceneWheelEvent);
+    d->scrollPhase = scrollPhase;
+}
+
+/*!
+    \since 6.2
+
+    Returns the scrolling distance in pixels on screen. This value is
+    provided on platforms that support high-resolution pixel-based
+    delta values, such as \macos. The value should be used directly
+    to scroll content on screen.
+
+    \sa QWheelEvent::pixelDelta
+*/
+QPoint QGraphicsSceneWheelEvent::pixelDelta() const
+{
+    Q_D(const QGraphicsSceneWheelEvent);
+    return d->pixelDelta;
+}
+
+/*!
+    \internal
+*/
+void QGraphicsSceneWheelEvent::setPixelDelta(QPoint pixelDelta)
+{
+    Q_D(QGraphicsSceneWheelEvent);
+    d->pixelDelta = pixelDelta;
+}
+
+/*!
+    Returns whether the delta values delivered with the event are inverted.
+
+    \since 6.2
+*/
+bool QGraphicsSceneWheelEvent::isInverted() const
+{
+    Q_D(const QGraphicsSceneWheelEvent);
+    return d->inverted;
+}
+
+/*!
+    \internal
+*/
+void QGraphicsSceneWheelEvent::setInverted(bool inverted)
+{
+    Q_D(QGraphicsSceneWheelEvent);
+    d->inverted = inverted;
 }
 
 class QGraphicsSceneContextMenuEventPrivate : public QGraphicsSceneEventPrivate
