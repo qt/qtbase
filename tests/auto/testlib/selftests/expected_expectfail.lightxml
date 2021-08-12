@@ -312,6 +312,9 @@
     <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="cleanupTestCase">
+<Message type="qdebug" file="" line="0">
+    <Description><![CDATA[Totals should add up to 44: 23 passed, 17 failed, 4 skipped]]></Description>
+</Message>
 <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>
 </TestFunction>
