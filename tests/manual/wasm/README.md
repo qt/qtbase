@@ -9,4 +9,5 @@ Content
 -------
 
     cursors         Cursor handling
+    eventloop       Event loops, application startup, dialog exec()
     localfiles      Local file download and upload
