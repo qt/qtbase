@@ -550,9 +550,11 @@ NSUInteger QCocoaWindow::windowStyleMask(Qt::WindowFlags flags)
     if (m_drawContentBorderGradient)
         styleMask |= NSWindowStyleMaskTexturedBackground;
 
-    // Don't wipe fullscreen state
+    // Don't wipe existing states
     if (m_view.window.styleMask & NSWindowStyleMaskFullScreen)
         styleMask |= NSWindowStyleMaskFullScreen;
+    if (m_view.window.styleMask & NSWindowStyleMaskFullSizeContentView)
+        styleMask |= NSWindowStyleMaskFullSizeContentView;
 
     return styleMask;
 }
