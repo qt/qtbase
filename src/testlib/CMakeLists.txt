@@ -118,7 +118,7 @@ set(qt_bool_tc_build_dir "$<BOOL:${qt_tc_build_dir}>")
 set(qt_tc_build_dir_def
     "$<IF:${qt_bool_tc_build_dir},${qt_tc_build_dir},$<TARGET_PROPERTY:BINARY_DIR>>"
 )
-set_property(TARGET Test PROPERTY INTERFACE_COMPILE_DEFINITIONS
+set_property(TARGET Test APPEND PROPERTY INTERFACE_COMPILE_DEFINITIONS
     QT_TESTCASE_BUILDDIR="${qt_tc_build_dir_def}"
     QT_TESTCASE_SOURCEDIR="$<TARGET_PROPERTY:SOURCE_DIR>"
 )
