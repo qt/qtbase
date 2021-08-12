@@ -61,6 +61,8 @@ qt_internal_add_module(Core
         global/qsystemdetection.h
         global/qtypeinfo.h
         global/qvolatile_p.h
+        global/q20algorithm.h
+        global/q20functional.h
         io/qabstractfileengine.cpp io/qabstractfileengine_p.h
         io/qbuffer.cpp io/qbuffer.h
         io/qdataurl.cpp io/qdataurl_p.h
