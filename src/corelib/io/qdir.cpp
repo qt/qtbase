@@ -177,10 +177,8 @@ inline QStringList QDirPrivate::splitFilters(const QString &nameFilter, QChar se
 {
     if (sep.isNull())
         sep = getFilterSepChar(nameFilter);
-    const auto split = QStringView{nameFilter}.split(sep);
     QStringList ret;
-    ret.reserve(split.size());
-    for (const auto &e : split)
+    for (auto e : qTokenize(nameFilter, sep))
         ret.append(e.trimmed().toString());
     return ret;
 }
