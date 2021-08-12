@@ -707,8 +707,7 @@ bool QLibrary::isLibrary(const QString &fileName)
 
     bool valid = suffixPos != -1;
     for (int i = suffixPos + 1; i < suffixes.count() && valid; ++i)
-        if (i != suffixPos)
-            (void)suffixes.at(i).toInt(&valid);
+        (void)suffixes.at(i).toInt(&valid);
     return valid;
 #endif
 }
