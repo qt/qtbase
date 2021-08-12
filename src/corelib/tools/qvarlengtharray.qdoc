@@ -90,6 +90,11 @@
     \sa QVector, QList, QLinkedList
 */
 
+/*! \fn template<class T, int Prealloc> QVarLengthArray<T, Prealloc>::QVarLengthArray()
+
+    Constructs an array with an initial size of zero.
+*/
+
 /*! \fn template<class T, int Prealloc> QVarLengthArray<T, Prealloc>::QVarLengthArray(int size)
 
     Constructs an array with an initial size of \a size elements.
