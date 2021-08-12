@@ -172,10 +172,13 @@ static ParsedRfcDateTime rfcDateImpl(QStringView s)
     do { // "loop" so that we can use break on merely invalid, but "right shape" date.
         QStringView dayName;
         bool rfcX22 = true;
-        if (words.at(0).endsWith(u',')) {
-            dayName = words.takeFirst().chopped(1);
-        } else if (!words.at(0)[0].isDigit()) {
-            dayName = words.takeFirst();
+        const QStringView maybeDayName = words.front();
+        if (maybeDayName.endsWith(u',')) {
+            dayName = maybeDayName.chopped(1);
+            words.erase(words.begin());
+        } else if (!maybeDayName.front().isDigit()) {
+            dayName = maybeDayName;
+            words.erase(words.begin());
             rfcX22 = false;
         } // else: dayName is not specified (so we can only be RFC *22)
         if (words.size() < 3 || words.size() > 5)
@@ -227,7 +230,8 @@ static ParsedRfcDateTime rfcDateImpl(QStringView s)
     // Time: [hh:mm[:ss]]
     QTime time;
     if (words.size() && words.at(0).contains(colon)) {
-        const QStringView when = words.takeFirst();
+        const QStringView when = words.front();
+        words.erase(words.begin());
         if (when.size() < 5 || when[2] != colon
             || (when.size() == 8 ? when[5] != colon : when.size() > 5)) {
             return result;
@@ -247,7 +251,8 @@ static ParsedRfcDateTime rfcDateImpl(QStringView s)
     // Offset: [±hh[mm]]
     int offset = 0;
     if (words.size()) {
-        const QStringView zone = words.takeFirst();
+        const QStringView zone = words.front();
+        words.erase(words.begin());
         if (words.size() || !(zone.size() == 3 || zone.size() == 5))
             return result;
         bool negate = false;
