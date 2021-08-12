@@ -57,10 +57,17 @@ set(QT_SOURCE_TREE "@QT_SOURCE_TREE@" CACHE PATH
 # Propagate decision of building tests and examples to other repositories.
 set(QT_BUILD_TESTS @QT_BUILD_TESTS@ CACHE BOOL "Build the testing tree.")
 set(QT_BUILD_EXAMPLES @QT_BUILD_EXAMPLES@ CACHE BOOL "Build Qt examples")
+set(QT_BUILD_BENCHMARKS @QT_BUILD_BENCHMARKS@ CACHE BOOL "Build Qt Benchmarks")
+set(QT_BUILD_MANUAL_TESTS @QT_BUILD_MANUAL_TESTS@ CACHE BOOL "Build Qt manual tests")
+set(QT_BUILD_MINIMAL_STATIC_TESTS @QT_BUILD_MINIMAL_STATIC_TESTS@ CACHE BOOL
+    "Build minimal subset of tests for static Qt builds")
+
 set(QT_BUILD_TESTS_BY_DEFAULT @QT_BUILD_TESTS_BY_DEFAULT@ CACHE BOOL
     "Should tests be built as part of the default 'all' target.")
 set(QT_BUILD_EXAMPLES_BY_DEFAULT @QT_BUILD_EXAMPLES_BY_DEFAULT@ CACHE BOOL
     "Should examples be built as part of the default 'all' target.")
+set(QT_BUILD_TOOLS_BY_DEFAULT @QT_BUILD_TOOLS_BY_DEFAULT@ CACHE BOOL
+    "Should tools be built as part of the default 'all' target.")
 
 # Propagate usage of ccache.
 set(QT_USE_CCACHE @QT_USE_CCACHE@ CACHE BOOL "Enable the use of ccache")
