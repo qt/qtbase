@@ -66,6 +66,8 @@
 
 #include <qtcore_tracepoints_p.h>
 
+#include <QtCore/q20algorithm.h>
+
 QT_BEGIN_NAMESPACE
 
 #ifdef QT_NO_DEBUG
@@ -672,26 +674,32 @@ bool QLibrary::isLibrary(const QString &fileName)
     QString completeSuffix = QFileInfo(fileName).completeSuffix();
     if (completeSuffix.isEmpty())
         return false;
-    const auto suffixes = QStringView{completeSuffix}.split(QLatin1Char('.'));
-    QStringList validSuffixList;
 
+    auto isValidSuffix = [](QStringView s) {
+        // if this throws an empty-array error, you need to fix the #ifdef's:
+        const QLatin1String candidates[] = {
 # if defined(Q_OS_HPUX)
 /*
     See "HP-UX Linker and Libraries User's Guide", section "Link-time Differences between PA-RISC and IPF":
     "In PA-RISC (PA-32 and PA-64) shared libraries are suffixed with .sl. In IPF (32-bit and 64-bit),
     the shared libraries are suffixed with .so. For compatibility, the IPF linker also supports the .sl suffix."
  */
-    validSuffixList << QLatin1String("sl");
+            QLatin1String("sl"),
 #  if defined __ia64
-    validSuffixList << QLatin1String("so");
+            QLatin1String("so"),
 #  endif
 # elif defined(Q_OS_AIX)
-    validSuffixList << QLatin1String("a") << QLatin1String("so");
+            QLatin1String("a"),
+            QLatin1String("so"),
 # elif defined(Q_OS_DARWIN)
-    validSuffixList << QLatin1String("so") << QLatin1String("bundle");
+            QLatin1String("so"),
+            QLatin1String("bundle"),
 # elif defined(Q_OS_UNIX)
-    validSuffixList << QLatin1String("so");
+            QLatin1String("so"),
 # endif
+        }; // candidates
+        return std::find(std::begin(candidates), std::end(candidates), s) != std::end(candidates);
+    };
 
     // Examples of valid library names:
     //  libfoo.so
@@ -700,15 +708,17 @@ bool QLibrary::isLibrary(const QString &fileName)
     //  libfoo-0.3.so
     //  libfoo-0.3.so.0.3.0
 
-    int suffix;
-    int suffixPos = -1;
-    for (suffix = 0; suffix < validSuffixList.count() && suffixPos == -1; ++suffix)
-        suffixPos = suffixes.indexOf(validSuffixList.at(suffix));
+    auto suffixes = qTokenize(completeSuffix, u'.');
+    auto it = suffixes.begin();
+    const auto end = suffixes.end();
 
-    bool valid = suffixPos != -1;
-    for (int i = suffixPos + 1; i < suffixes.count() && valid; ++i)
-        (void)suffixes.at(i).toInt(&valid);
-    return valid;
+    auto isNumeric = [](QStringView s) { bool ok; (void)s.toInt(&ok); return ok; };
+
+    while (it != end) {
+        if (isValidSuffix(*it++))
+            return q20::ranges::all_of(it, end, isNumeric);
+    }
+    return false; // no valid suffix found
 #endif
 }
 
