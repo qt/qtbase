@@ -153,7 +153,8 @@ static ParsedRfcDateTime rfcDateImpl(QStringView s)
     // or           "ddd MMM dd[ hh:mm:ss] yyyy [±hhmm]" - permissive RFC 850, 1036 (read only)
     ParsedRfcDateTime result;
 
-    auto words = QStringView{s}.split(u' ', Qt::SkipEmptyParts);
+    QVarLengthArray<QStringView, 6> words;
+    s.tokenize(u' ', Qt::SkipEmptyParts).toContainer(words);
     if (words.size() < 3 || words.size() > 6)
         return result;
     const QChar colon(u':');
@@ -1483,7 +1484,8 @@ QDate QDate::fromString(QStringView string, Qt::DateFormat format)
     default:
     case Qt::TextDate: {
         // Documented as "ddd MMM d yyyy"
-        auto parts = string.split(u' ', Qt::SkipEmptyParts);
+        QVarLengthArray<QStringView, 4> parts;
+        string.tokenize(u' ', Qt::SkipEmptyParts).toContainer(parts);
 
         if (parts.count() != 4)
             return QDate();
@@ -5119,7 +5121,8 @@ QDateTime QDateTime::fromString(QStringView string, Qt::DateFormat format)
         return QDateTime(date, time, spec, offset);
     }
     case Qt::TextDate: {
-        QList<QStringView> parts = string.split(u' ', Qt::SkipEmptyParts);
+        QVarLengthArray<QStringView, 6> parts;
+        string.tokenize(u' ', Qt::SkipEmptyParts).toContainer(parts);
 
         // Documented as "ddd MMM d HH:mm:ss yyyy" with optional offset-suffix;
         // and allow time either before or after year.
