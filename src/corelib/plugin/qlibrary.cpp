@@ -664,6 +664,11 @@ bool QLibrary::isLibrary(const QString &fileName)
 #if defined(Q_OS_WIN)
     return fileName.endsWith(QLatin1String(".dll"), Qt::CaseInsensitive);
 #else // Generic Unix
+# if defined(Q_OS_DARWIN)
+    // On Apple platforms, dylib look like libmylib.1.0.0.dylib
+    if (fileName.endsWith(QLatin1String(".dylib")))
+        return true;
+# endif
     QString completeSuffix = QFileInfo(fileName).completeSuffix();
     if (completeSuffix.isEmpty())
         return false;
@@ -683,10 +688,6 @@ bool QLibrary::isLibrary(const QString &fileName)
 # elif defined(Q_OS_AIX)
     validSuffixList << QLatin1String("a") << QLatin1String("so");
 # elif defined(Q_OS_DARWIN)
-    // On Apple platforms, dylib look like libmylib.1.0.0.dylib
-    if (suffixes.last() == QLatin1String("dylib"))
-        return true;
-
     validSuffixList << QLatin1String("so") << QLatin1String("bundle");
 # elif defined(Q_OS_UNIX)
     validSuffixList << QLatin1String("so");
