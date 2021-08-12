@@ -84,11 +84,6 @@ QT_BEGIN_NAMESPACE
 // for valid QImage's, where height() cannot be 0. Therefore disable the warning.
 QT_WARNING_DISABLE_MSVC(4723)
 
-static inline bool isLocked(QImageData *data)
-{
-    return data != nullptr && data->is_locked;
-}
-
 #if defined(Q_CC_DEC) && defined(__alpha) && (__DECCXX_VER-0 >= 50190001)
 #pragma message disable narrowptr
 #endif
@@ -119,7 +114,7 @@ QImageData::QImageData()
       dpmx(qt_defaultDpiX() * 100 / qreal(2.54)),
       dpmy(qt_defaultDpiY() * 100 / qreal(2.54)),
       offset(0, 0), own_data(true), ro_data(false), has_alpha_clut(false),
-      is_cached(false), is_locked(false), cleanupFunction(nullptr), cleanupInfo(nullptr),
+      is_cached(false), cleanupFunction(nullptr), cleanupInfo(nullptr),
       paintEngine(nullptr)
 {
 }
@@ -1047,7 +1042,7 @@ QImage::QImage(const char * const xpm[])
 QImage::QImage(const QImage &image)
     : QPaintDevice()
 {
-    if (image.paintingActive() || isLocked(image.d)) {
+    if (image.paintingActive()) {
         d = nullptr;
         image.copy().swap(*this);
     } else {
@@ -1079,7 +1074,7 @@ QImage::~QImage()
 
 QImage &QImage::operator=(const QImage &image)
 {
-    if (image.paintingActive() || isLocked(image.d)) {
+    if (image.paintingActive()) {
         operator=(image.copy());
     } else {
         if (image.d)
