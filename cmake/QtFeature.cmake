@@ -863,6 +863,15 @@ function(qt_config_compile_test name)
             set(arg_CMAKE_FLAGS "")
         endif()
 
+        # CI passes the project dir of the Qt repository as absolute path without drive letter:
+        #   \Users\qt\work\qt\qtbase
+        # Ensure that arg_PROJECT_PATH is an absolute path with drive letter:
+        #   C:/Users/qt/work/qt/qtbase
+        # This works around CMake upstream issue #22534.
+        if(CMAKE_HOST_WIN32)
+            get_filename_component(arg_PROJECT_PATH "${arg_PROJECT_PATH}" REALPATH)
+        endif()
+
         try_compile(HAVE_${name} "${CMAKE_BINARY_DIR}/config.tests/${name}" "${arg_PROJECT_PATH}"
                     "${name}" CMAKE_FLAGS ${flags} ${arg_CMAKE_FLAGS})
 
