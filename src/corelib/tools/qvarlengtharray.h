@@ -288,7 +288,7 @@ public:
     const_reverse_iterator crbegin() const { return const_reverse_iterator(end()); }
     const_reverse_iterator crend() const { return const_reverse_iterator(begin()); }
     iterator insert(const_iterator before, qsizetype n, const T &x);
-    iterator insert(const_iterator before, T &&x);
+    iterator insert(const_iterator before, T &&x) { return emplace(before, std::move(x)); }
     inline iterator insert(const_iterator before, const T &x) { return insert(before, 1, x); }
     iterator erase(const_iterator begin, const_iterator end);
     inline iterator erase(const_iterator pos) { return erase(pos, pos + 1); }
@@ -303,6 +303,11 @@ public:
     inline T &back() { return last(); }
     inline const T &back() const { return last(); }
     void shrink_to_fit() { squeeze(); }
+    template <typename...Args>
+    iterator emplace(const_iterator pos, Args &&...args);
+    template <typename...Args>
+    T &emplace_back(Args &&...args) { return *emplace(cend(), std::forward<Args>(args)...); }
+
 
 #ifdef Q_QDOC
     template <typename T, qsizetype Prealloc1, qsizetype Prealloc2>
@@ -612,7 +617,8 @@ inline void QVarLengthArray<T, Prealloc>::replace(qsizetype i, const T &t)
 }
 
 template <class T, qsizetype Prealloc>
-Q_OUTOFLINE_TEMPLATE typename QVarLengthArray<T, Prealloc>::iterator QVarLengthArray<T, Prealloc>::insert(const_iterator before, T &&t)
+template <typename...Args>
+Q_OUTOFLINE_TEMPLATE auto QVarLengthArray<T, Prealloc>::emplace(const_iterator before, Args &&...args) -> iterator
 {
     Q_ASSERT_X(isValidIterator(before), "QVarLengthArray::insert", "The specified const_iterator argument 'before' is invalid");
 
@@ -627,14 +633,14 @@ Q_OUTOFLINE_TEMPLATE typename QVarLengthArray<T, Prealloc>::iterator QVarLengthA
             new (--j) T(std::move(*--i));
             while (i != b)
                 *--j = std::move(*--i);
-            *b = std::move(t);
+            *b = T(std::forward<Args>(args)...);
         } else {
-            new (b) T(std::move(t));
+            new (b) T(std::forward<Args>(args)...);
         }
     } else {
         T *b = ptr + offset;
         memmove(static_cast<void *>(b + 1), static_cast<const void *>(b), (s - offset) * sizeof(T));
-        new (b) T(std::move(t));
+        new (b) T(std::forward<Args>(args)...);
     }
     s += 1;
     return ptr + offset;

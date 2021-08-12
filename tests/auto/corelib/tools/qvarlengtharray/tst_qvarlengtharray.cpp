@@ -70,6 +70,7 @@ class tst_QVarLengthArray : public QObject
 private slots:
     void append();
     void prepend();
+    void emplace();
     void move_int_1() { move_int<1>(); }
     void move_int_2() { move_int<2>(); }
     void move_int_3() { move_int<3>(); }
@@ -162,6 +163,24 @@ void tst_QVarLengthArray::prepend()
     // transition from heap to larger heap:
     v.prepend(v.back());
     QCOMPARE(v.front(), v.back());
+}
+
+void tst_QVarLengthArray::emplace()
+{
+    {
+        QVarLengthArray<QString, 2> strings;
+        strings.emplace_back();
+        QCOMPARE(strings.size(), 1);
+        QCOMPARE(strings.front().isNull(), true);
+        strings.emplace(strings.begin(), 42, u'x');
+        QCOMPARE(strings.size(), 2);
+        QCOMPARE(strings.back().isNull(), true);
+        QCOMPARE(strings.front(), QString(42, u'x'));
+        auto &r = strings.emplace_back(42, u'y');
+        QCOMPARE(&r, &strings.back());
+        QCOMPARE(strings.size(), 3);
+        QCOMPARE(strings.back(), QString(42, u'y'));
+    }
 }
 
 template <qsizetype N>

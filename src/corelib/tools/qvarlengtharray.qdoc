@@ -753,6 +753,28 @@
     \a before. Returns an iterator pointing at the inserted item.
 */
 
+/*!
+    \fn template <class T, qsizetype Prealloc> QVarLengthArray<T, Prealloc>::emplace(const_iterator before, Args &&...args);
+
+    \since 6.3
+
+    Inserts an item in front of the item pointed to by the iterator
+    \a before, passing \a args to its constructor.
+
+    Returns an iterator pointing at the emplaced item.
+*/
+
+/*!
+    \fn template <class T, qsizetype Prealloc> QVarLengthArray<T, Prealloc>::emplace_back(Args &&...args);
+
+    \since 6.3
+
+    Inserts an item at the back of this QVarLengthArray, passing
+    \a args to its constructor.
+
+    Returns a reference to the emplaced item.
+*/
+
 /*! \fn template<class T, qsizetype Prealloc> QVarLengthArray<T, Prealloc>::iterator QVarLengthArray<T, Prealloc>::insert(const_iterator before, qsizetype count, const T &value)
 
     \since 4.8
