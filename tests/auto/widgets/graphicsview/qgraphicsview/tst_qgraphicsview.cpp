@@ -198,6 +198,7 @@ private slots:
     void sendEvent();
 #if QT_CONFIG(wheelevent)
     void wheelEvent();
+    void wheelEventPropagation();
 #endif
 #ifndef QT_NO_CURSOR
     void cursor();
@@ -2241,6 +2242,152 @@ void tst_QGraphicsView::wheelEvent()
 
     QCOMPARE(spy.count(), 2);
     QVERIFY(widget->hasFocus());
+}
+
+/*!
+    QGraphicsProxyWidget receives wheel events from QGraphicsScene, and then
+    generates a new event that is sent spontaneously in order to enable event
+    propagation. This requires extra handling of the wheel grabbing we do for
+    high-precision wheel event streams.
+
+    Test that this doesn't trigger infinite recursion, while still resulting in
+    event propagation within the embedded widget hierarchy, and back to the
+    QGraphicsView if the event is not accepted.
+
+    See tst_QApplication::wheelEventPropagation for a similar test.
+*/
+void tst_QGraphicsView::wheelEventPropagation()
+{
+    QGraphicsScene scene(0, 0, 600, 600);
+
+    QWidget *label = new QLabel("Direct");
+    label->setFixedSize(300, 30);
+    QGraphicsProxyWidget *labelProxy = scene.addWidget(label);
+    labelProxy->setPos(0, 50);
+    labelProxy->show();
+
+    class NestedWidget : public QWidget
+    {
+    public:
+        NestedWidget(const QString &text)
+        {
+            setObjectName("Nested Label");
+            QLabel *nested = new QLabel(text);
+            QHBoxLayout *hbox = new QHBoxLayout;
+            hbox->addWidget(nested);
+            setLayout(hbox);
+        }
+
+        int wheelEventCount = 0;
+    protected:
+        void wheelEvent(QWheelEvent *) override
+        {
+            ++wheelEventCount;
+        }
+    };
+    NestedWidget *nestedWidget = new NestedWidget("Nested");
+    nestedWidget->setFixedSize(300, 60);
+    QGraphicsProxyWidget *nestedProxy = scene.addWidget(nestedWidget);
+    nestedProxy->setPos(0, 120);
+    nestedProxy->show();
+
+    QGraphicsView view(&scene);
+    view.setFixedHeight(200);
+    view.show();
+
+    QVERIFY(QTest::qWaitForWindowActive(&view));
+    QVERIFY(view.verticalScrollBar()->isVisible());
+
+    view.verticalScrollBar()->setValue(0);
+    QSignalSpy scrollSpy(view.verticalScrollBar(), &QScrollBar::valueChanged);
+
+    const QPoint wheelPosition(50, 25);
+    auto wheelUp = [&view, wheelPosition](Qt::ScrollPhase phase) {
+        const QPoint global = view.mapToGlobal(wheelPosition);
+        const QPoint pixelDelta(0, -25);
+        const QPoint angleDelta(0, -120);
+        QWindowSystemInterface::handleWheelEvent(view.windowHandle(), wheelPosition, global,
+                                                pixelDelta, angleDelta, Qt::NoModifier,
+                                                phase);
+        QCoreApplication::processEvents();
+    };
+
+    int scrollCount = 0;
+    // test non-kinetic events; they are not grabbed, and should scroll the view unless
+    // accepted by the embedded widget
+    QCOMPARE(view.itemAt(wheelPosition), nullptr);
+    wheelUp(Qt::NoScrollPhase);
+    QCOMPARE(scrollSpy.count(), ++scrollCount);
+
+    // wheeling on the label, which ignores the event, should scroll the view
+    QCOMPARE(view.itemAt(wheelPosition), labelProxy);
+    wheelUp(Qt::NoScrollPhase);
+    QCOMPARE(scrollSpy.count(), ++scrollCount);
+    QCOMPARE(view.itemAt(wheelPosition), labelProxy);
+    wheelUp(Qt::NoScrollPhase);
+    QCOMPARE(scrollSpy.count(), ++scrollCount);
+
+    // left the widget
+    QCOMPARE(view.itemAt(wheelPosition), nullptr);
+    wheelUp(Qt::NoScrollPhase);
+    QCOMPARE(scrollSpy.count(), ++scrollCount);
+
+    // reached the nested widget, which accepts the wheel event, so no more scrolling
+    QCOMPARE(view.itemAt(wheelPosition), nestedProxy);
+    // remember this position for later
+    const int scrollBarValueOnNestedProxy = view.verticalScrollBar()->value();
+    wheelUp(Qt::NoScrollPhase);
+    QCOMPARE(scrollSpy.count(), scrollCount);
+    QCOMPARE(nestedWidget->wheelEventCount, 1);
+
+    // reset, try with kinetic events
+    view.verticalScrollBar()->setValue(0);
+    ++scrollCount;
+
+    // starting a scroll outside any widget and scrolling through the widgets should work,
+    // no matter if the widget accepts wheel events - the view has the grab
+    QCOMPARE(view.itemAt(wheelPosition), nullptr);
+    wheelUp(Qt::ScrollBegin);
+    QCOMPARE(scrollSpy.count(), ++scrollCount);
+    for (int i = 0; i < 5; ++i) {
+        wheelUp(Qt::ScrollUpdate);
+        if (i >= 1)
+            QEXPECT_FAIL("", "Fixed for Qt 6.2 - QTBUG-65552", Continue);
+        QCOMPARE(scrollSpy.count(), ++scrollCount);
+    }
+    wheelUp(Qt::ScrollEnd);
+    QEXPECT_FAIL("", "Fixed for Qt 6.2 - QTBUG-65552", Continue);
+    QCOMPARE(scrollSpy.count(), ++scrollCount);
+
+    // reset
+    view.verticalScrollBar()->setValue(0);
+    scrollCount = scrollSpy.count();
+
+    // starting a scroll on a widget that doesn't accept wheel events
+    // should also scroll the view, which still gets the grab
+    wheelUp(Qt::NoScrollPhase);
+    scrollCount = scrollSpy.count();
+
+    QCOMPARE(view.itemAt(wheelPosition), labelProxy);
+    wheelUp(Qt::ScrollBegin);
+    QCOMPARE(scrollSpy.count(), ++scrollCount);
+    for (int i = 0; i < 5; ++i) {
+        wheelUp(Qt::ScrollUpdate);
+        QEXPECT_FAIL("", "Fixed for Qt 6.2 - QTBUG-65552", Continue);
+        QCOMPARE(scrollSpy.count(), ++scrollCount);
+    }
+    wheelUp(Qt::ScrollEnd);
+    QEXPECT_FAIL("", "Fixed for Qt 6.2 - QTBUG-65552", Continue);
+    QCOMPARE(scrollSpy.count(), ++scrollCount);
+
+    // starting a scroll on a widget that does accept wheel events
+    // should not scroll the view
+    view.verticalScrollBar()->setValue(scrollBarValueOnNestedProxy);
+    scrollCount = scrollSpy.count();
+
+    QCOMPARE(view.itemAt(wheelPosition), nestedProxy);
+    wheelUp(Qt::ScrollBegin);
+    QCOMPARE(scrollSpy.count(), scrollCount);
 }
 #endif // QT_CONFIG(wheelevent)
 
