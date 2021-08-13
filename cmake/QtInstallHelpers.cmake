@@ -18,14 +18,18 @@ function(qt_install)
         install(${ARGV})
     endif()
 
-    # Exit early if this is a prefix build.
-    if(QT_WILL_INSTALL)
-        return()
-    endif()
-
-    # In a non-prefix build, when install(EXPORT) is called,
-    # also call export(EXPORT) to generate build tree target files.
+    # When install(EXPORT) is called, also call export(EXPORT)
+    # to generate build tree target files.
     if(NOT is_install_targets AND arg_EXPORT)
+        # For prefixed builds (both top-level and per-repo) export build tree CMake Targets files so
+        # they can be used in CMake ExternalProjects. One such case is examples built as
+        # ExternalProjects as part of the Qt build.
+        # In a top-level build the exported config files are placed under qtbase/lib/cmake.
+        # In a per-repo build, they will be placed in each repo's build dir/lib/cmake.
+        if(QT_WILL_INSTALL)
+            qt_path_join(arg_DESTINATION "${QT_BUILD_DIR}" "${arg_DESTINATION}")
+        endif()
+
         set(namespace_option "")
         if(arg_NAMESPACE)
             set(namespace_option NAMESPACE ${arg_NAMESPACE})
