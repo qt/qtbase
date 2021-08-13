@@ -2979,6 +2979,9 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             we.setTimestamp(wheel->timestamp());
             bool eventAccepted;
             do {
+                // events are delivered as accepted and ignored by the default event handler
+                // since we always send the same QWheelEvent object, we need to reset the accepted state
+                we.setAccepted(true);
                 we.m_spont = wheel->spontaneous() && w == receiver;
                 res = d->notify_helper(w, &we);
                 eventAccepted = we.isAccepted();
