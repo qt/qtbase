@@ -353,7 +353,7 @@
 /*!
     \fn QUtf8StringView::data() const
 
-    Returns a const pointer to the first code point in the string.
+    Returns a const pointer to the first code point in the string view.
 
     \note The character array represented by the return value is \e not null-terminated.
 
@@ -363,7 +363,7 @@
 /*!
     \fn QUtf8StringView::utf8() const
 
-    Returns a const pointer to the first code point in the string.
+    Returns a const pointer to the first code point in the string view.
 
     The result is returned as a \c{const char8_t*}, so this function is only available when
     compiling in C++20 mode.
@@ -377,7 +377,7 @@
     \fn QUtf8StringView::const_iterator QUtf8StringView::begin() const
 
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first code point in
-    the string.
+    the string view.
 
     This function is provided for STL compatibility.
 
@@ -418,7 +418,7 @@
     \fn QUtf8StringView::const_reverse_iterator QUtf8StringView::rbegin() const
 
     Returns a const \l{STL-style iterators}{STL-style} reverse iterator pointing to the first
-    code point in the string, in reverse order.
+    code point in the string view, in reverse order.
 
     This function is provided for STL compatibility.
 
@@ -439,7 +439,7 @@
     \fn QUtf8StringView::const_reverse_iterator QUtf8StringView::rend() const
 
     Returns a \l{STL-style iterators}{STL-style} reverse iterator pointing to one past
-    the last code point in the string, in reverse order.
+    the last code point in the string view, in reverse order.
 
     This function is provided for STL compatibility.
 
@@ -529,7 +529,7 @@
 /*!
     \fn QUtf8StringView::front() const
 
-    Returns the first code point in the string. Same as first().
+    Returns the first code point in the string view. Same as first().
 
     This function is provided for STL compatibility.
 
@@ -542,7 +542,7 @@
 /*!
     \fn QUtf8StringView::back() const
 
-    Returns the last code point in the string. Same as last().
+    Returns the last code point in the string view. Same as last().
 
     This function is provided for STL compatibility.
 
@@ -561,8 +561,8 @@
     \deprecated Use sliced() instead in new code.
 
     Returns an empty string view if \a n exceeds the
-    length of the string. If there are less than \a n code points
-    available in the string starting at \a pos, or if
+    length of the string view. If there are less than \a n code points
+    available in the string view starting at \a pos, or if
     \a n is negative (default), the function returns all code points that
     are available from \a pos.
 
@@ -577,7 +577,7 @@
     Returns the substring of length \a n starting at position
     0 in this object.
 
-    The entire string is returned if \a n is greater than or equal
+    The entire string view is returned if \a n is greater than or equal
     to size(), or less than zero.
 
     \sa first(), last(), sliced(), chopped(), chop(), truncate()
@@ -591,7 +591,7 @@
     Returns the substring of length \a n starting at position
     size() - \a n in this object.
 
-    The entire string is returned if \a n is greater than or equal
+    The entire string view is returned if \a n is greater than or equal
     to size(), or less than zero.
 
     \sa first(), last(), sliced(), chopped(), chop(), truncate()
@@ -601,7 +601,7 @@
     \fn QUtf8StringView::first(qsizetype n) const
 
     Returns a string view that contains the first \a n code points
-    of this string.
+    of this string view.
 
     \note The behavior is undefined when \a n < 0 or \a n > size().
 
@@ -611,7 +611,7 @@
 /*!
     \fn QUtf8StringView::last(qsizetype n) const
 
-    Returns a string view that contains the last \a n code points of this string.
+    Returns a string view that contains the last \a n code points of this string view.
 
     \note The behavior is undefined when \a n < 0 or \a n > size().
 
@@ -685,7 +685,7 @@
 
     Convert \a s to a QUtf8StringView ignoring \c{s.isNull()}.
 
-    Returns a string-view that references \a{s}'s data, but is never null.
+    Returns a string view that references \a{s}'s data, but is never null.
 
     This is a faster way to convert a QByteArray to a QUtf8StringView,
     if null QByteArrays can legitimately be treated as empty ones.

@@ -6871,8 +6871,8 @@ QString QString::vasprintf(const char *cformat, va_list ap)
     If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
-    If \a base is 0, the C language convention is used: If the string
-    begins with "0x", base 16 is used; if the string begins with "0",
+    If \a base is 0, the C language convention is used: if the string
+    begins with "0x", base 16 is used; otherwise, if the string begins with "0",
     base 8 is used; otherwise, base 10 is used.
 
     The string conversion will always happen in the 'C' locale. For
@@ -6913,8 +6913,8 @@ qlonglong QString::toIntegral_helper(QStringView string, bool *ok, int base)
     If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
-    If \a base is 0, the C language convention is used: If the string
-    begins with "0x", base 16 is used; if the string begins with "0",
+    If \a base is 0, the C language convention is used: if the string
+    begins with "0x", base 16 is used; otherwise, if the string begins with "0",
     base 8 is used; otherwise, base 10 is used.
 
     The string conversion will always happen in the 'C' locale. For
@@ -6956,8 +6956,8 @@ qulonglong QString::toIntegral_helper(QStringView string, bool *ok, uint base)
     If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
-    If \a base is 0, the C language convention is used: If the string
-    begins with "0x", base 16 is used; if the string begins with "0",
+    If \a base is 0, the C language convention is used: if the string
+    begins with "0x", base 16 is used; otherwise, if the string begins with "0",
     base 8 is used; otherwise, base 10 is used.
 
     The string conversion will always happen in the 'C' locale. For
@@ -6982,8 +6982,8 @@ qulonglong QString::toIntegral_helper(QStringView string, bool *ok, uint base)
     If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
-    If \a base is 0, the C language convention is used: If the string
-    begins with "0x", base 16 is used; if the string begins with "0",
+    If \a base is 0, the C language convention is used: if the string
+    begins with "0x", base 16 is used; otherwise, if the string begins with "0",
     base 8 is used; otherwise, base 10 is used.
 
     The string conversion will always happen in the 'C' locale. For
@@ -7007,8 +7007,8 @@ qulonglong QString::toIntegral_helper(QStringView string, bool *ok, uint base)
     If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
-    If \a base is 0, the C language convention is used: If the string
-    begins with "0x", base 16 is used; if the string begins with "0",
+    If \a base is 0, the C language convention is used: if the string
+    begins with "0x", base 16 is used; otherwise, if the string begins with "0",
     base 8 is used; otherwise, base 10 is used.
 
     The string conversion will always happen in the 'C' locale. For
@@ -7032,8 +7032,8 @@ qulonglong QString::toIntegral_helper(QStringView string, bool *ok, uint base)
     If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
-    If \a base is 0, the C language convention is used: If the string
-    begins with "0x", base 16 is used; if the string begins with "0",
+    If \a base is 0, the C language convention is used: if the string
+    begins with "0x", base 16 is used; otherwise, if the string begins with "0",
     base 8 is used; otherwise, base 10 is used.
 
     The string conversion will always happen in the 'C' locale. For
@@ -7058,8 +7058,8 @@ qulonglong QString::toIntegral_helper(QStringView string, bool *ok, uint base)
     If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
-    If \a base is 0, the C language convention is used: If the string
-    begins with "0x", base 16 is used; if the string begins with "0",
+    If \a base is 0, the C language convention is used: if the string
+    begins with "0x", base 16 is used; otherwise, if the string begins with "0",
     base 8 is used; otherwise, base 10 is used.
 
     The string conversion will always happen in the 'C' locale. For
@@ -7084,7 +7084,7 @@ qulonglong QString::toIntegral_helper(QStringView string, bool *ok, uint base)
     If \a ok is not \nullptr, failure is reported by setting *\a{ok}
     to \c false, and success by setting *\a{ok} to \c true.
 
-    If \a base is 0, the C language convention is used: If the string
+    If \a base is 0, the C language convention is used: if the string
     begins with "0x", base 16 is used; if the string begins with "0",
     base 8 is used; otherwise, base 10 is used.
 

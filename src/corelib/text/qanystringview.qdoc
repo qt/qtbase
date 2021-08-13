@@ -263,7 +263,7 @@
 /*!
     \fn const void *QAnyStringView::data() const
 
-    Returns a const pointer to the first character in the string.
+    Returns a const pointer to the first character in the string view.
 
     \note The character array represented by the return value is \e not null-terminated.
 
@@ -333,7 +333,7 @@
 /*!
     \fn QChar QAnyStringView::front() const
 
-    Returns the first character in the string.
+    Returns the first character in the string view.
 
     This function is provided for STL compatibility.
 
@@ -346,7 +346,7 @@
 /*!
     \fn QChar QAnyStringView::back() const
 
-    Returns the last character in the string.
+    Returns the last character in the string view.
 
     This function is provided for STL compatibility.
 
@@ -387,7 +387,7 @@
 
     Convert \a s to a QAnyStringView ignoring \c{s.isNull()}.
 
-    Returns a string-view that references \a{s}'s data, but is never null.
+    Returns a string view that references \a{s}'s data, but is never null.
 
     This is a faster way to convert a QString or QByteArray to a QAnyStringView,
     if null QStrings or QByteArrays can legitimately be treated as empty ones.
