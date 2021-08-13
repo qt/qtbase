@@ -303,6 +303,13 @@ static bool qIsBlob(int t)
            || t == MYSQL_TYPE_LONG_BLOB;
 }
 
+static bool qIsTimeOrDate(int t)
+{
+    // *not* MYSQL_TYPE_TIME because its range is bigger than QTime
+    // (see above)
+    return t == MYSQL_TYPE_DATE || t == MYSQL_TYPE_DATETIME || t == MYSQL_TYPE_TIMESTAMP;
+}
+
 static bool qIsInteger(int t)
 {
     return t == QMetaType::Char || t == QMetaType::UChar
@@ -354,6 +361,8 @@ bool QMYSQLResultPrivate::bindInValues()
             // after mysql_stmt_exec() in QMYSQLResult::exec()
             bind->buffer_length = f.bufLength = 0;
             hasBlobs = true;
+        } else if (qIsTimeOrDate(fieldInfo->type)) {
+            bind->buffer_length = f.bufLength = sizeof(MYSQL_TIME);
         } else if (qIsInteger(f.type.id())) {
             bind->buffer_length = f.bufLength = 8;
         } else {
@@ -557,6 +566,20 @@ QVariant QMYSQLResult::data(int field)
             else if (f.type.id() == QMetaType::Char)
                 return variant.toInt();
             return variant;
+        } else if (qIsTimeOrDate(f.myField->type) && f.bufLength == sizeof(MYSQL_TIME)) {
+            auto t = reinterpret_cast<const MYSQL_TIME *>(f.outField);
+            QDate date;
+            QTime time;
+            if (f.type.id() != QMetaType::QTime)
+                date = QDate(t->year, t->month, t->day);
+            if (f.type.id() != QMetaType::QDate)
+                time = QTime(t->hour, t->minute, t->second, t->second_part / 1000);
+            if (f.type.id() == QMetaType::QDateTime)
+                return QDateTime(date, time);
+            else if (f.type.id() == QMetaType::QDate)
+                return date;
+            else
+                return time;
         }
 
         if (f.type.id() != QMetaType::QByteArray)
