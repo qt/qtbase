@@ -187,13 +187,21 @@ function(qt6_android_generate_deployment_settings target)
             "   \"qml-import-paths\": \"${_import_paths}\",\n")
     endif()
 
-    get_target_property(qml_root_path ${target} QT_QML_ROOT_PATH)
-    if(NOT qml_root_path)
-        set(qml_root_path "${target_source_dir}")
+    get_target_property(qml_root_paths ${target} QT_QML_ROOT_PATH)
+    if(NOT qml_root_paths)
+        set(qml_root_paths "${target_source_dir}")
     endif()
-    file(TO_CMAKE_PATH "${qml_root_path}" qml_root_path_native)
+
+    set(qml_native_root_paths "")
+    foreach(root_path IN LISTS qml_root_paths)
+        file(TO_CMAKE_PATH "${root_path}" qml_root_path_native)
+        list(APPEND qml_native_root_paths "\"${qml_root_path_native}\"")
+    endforeach()
+
+    list(JOIN qml_native_root_paths "," qml_native_root_paths)
+
     string(APPEND file_contents
-        "   \"qml-root-path\": \"${qml_root_path_native}\",\n")
+        "   \"qml-root-path\": [${qml_native_root_paths}],\n")
 
     # App binary
     string(APPEND file_contents
