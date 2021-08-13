@@ -234,14 +234,14 @@ public:
     struct QMyField
     {
         QMyField()
-            : outField(0), nullIndicator(false), bufLength(0ul),
-              myField(0), type(QVariant::Invalid)
+            : outField(0), myField(Q_NULLPTR), bufLength(0ul),
+              type(QVariant::Invalid), nullIndicator(false)
         {}
         char *outField;
-        my_bool nullIndicator;
+        const MYSQL_FIELD *myField;
         ulong bufLength;
-        MYSQL_FIELD *myField;
         QVariant::Type type;
+        my_bool nullIndicator;
     };
 
     QVector<QMyField> fields;
@@ -378,12 +378,10 @@ static bool qIsInteger(int t)
 
 void QMYSQLResultPrivate::bindBlobs()
 {
-    int i;
-    MYSQL_FIELD *fieldInfo;
     MYSQL_BIND *bind;
 
-    for(i = 0; i < fields.count(); ++i) {
-        fieldInfo = fields.at(i).myField;
+    for (int i = 0; i < fields.count(); ++i) {
+        const MYSQL_FIELD *fieldInfo = fields.at(i).myField;
         if (qIsBlob(inBinds[i].buffer_type) && meta && fieldInfo) {
             bind = &inBinds[i];
             bind->buffer_length = fieldInfo->max_length;
@@ -396,8 +394,6 @@ void QMYSQLResultPrivate::bindBlobs()
 
 bool QMYSQLResultPrivate::bindInValues()
 {
-    MYSQL_BIND *bind;
-    char *field;
     int i = 0;
 
     if (!meta)
@@ -410,35 +406,34 @@ bool QMYSQLResultPrivate::bindInValues()
     inBinds = new MYSQL_BIND[fields.size()];
     memset(inBinds, 0, fields.size() * sizeof(MYSQL_BIND));
 
-    MYSQL_FIELD *fieldInfo;
+    const MYSQL_FIELD *fieldInfo;
 
     while((fieldInfo = mysql_fetch_field(meta))) {
+        MYSQL_BIND *bind = &inBinds[i];
+
         QMyField &f = fields[i];
         f.myField = fieldInfo;
-
+        bind->buffer_length = f.bufLength = fieldInfo->length + 1;
+        bind->buffer_type = fieldInfo->type;
         f.type = qDecodeMYSQLType(fieldInfo->type, fieldInfo->flags);
         if (qIsBlob(fieldInfo->type)) {
             // the size of a blob-field is available as soon as we call
             // mysql_stmt_store_result()
             // after mysql_stmt_exec() in QMYSQLResult::exec()
-            fieldInfo->length = 0;
+            bind->buffer_length = f.bufLength = 0;
             hasBlobs = true;
         } else if (qIsInteger(f.type)) {
-            fieldInfo->length = 8;
+            bind->buffer_length = f.bufLength = 8;
         } else {
-            fieldInfo->type = MYSQL_TYPE_STRING;
+            bind->buffer_type = MYSQL_TYPE_STRING;
         }
-        bind = &inBinds[i];
-        field = new char[fieldInfo->length + 1];
-        memset(field, 0, fieldInfo->length + 1);
 
-        bind->buffer_type = fieldInfo->type;
-        bind->buffer = field;
-        bind->buffer_length = f.bufLength = fieldInfo->length + 1;
         bind->is_null = &f.nullIndicator;
         bind->length = &f.bufLength;
         bind->is_unsigned = fieldInfo->flags & UNSIGNED_FLAG ? 1 : 0;
-        f.outField=field;
+
+        char *field = new char[bind->buffer_length + 1]{};
+        bind->buffer = f.outField = field;
 
         ++i;
     }
