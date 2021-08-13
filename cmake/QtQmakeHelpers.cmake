@@ -71,7 +71,7 @@ function(qt_generate_qconfig_cpp in_file out_file)
     #   C:/work/qt/install
     # so it includes a drive letter and forward slashes.
     set(QT_CONFIGURE_PREFIX_PATH_STR "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}")
-    if(WIN32)
+    if(CMAKE_HOST_WIN32)
         get_filename_component(
             QT_CONFIGURE_PREFIX_PATH_STR
             "${QT_CONFIGURE_PREFIX_PATH_STR}" REALPATH)
