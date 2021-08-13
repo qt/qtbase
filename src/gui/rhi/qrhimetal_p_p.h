@@ -476,6 +476,7 @@ public:
 
     struct {
         int maxTextureSize = 4096;
+        bool baseVertexAndInstance = true;
     } caps;
 
     QRhiMetalData *d = nullptr;
