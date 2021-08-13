@@ -574,13 +574,18 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     require the point size to be set in the shader explicitly whenever drawing
     points, even when the size is 1, as they do not automatically default to 1.
 
-    \value BaseVertex Indicates that \l{QRhiCommandBuffer::drawIndexed()}{drawIndexed()}
-    supports the \c vertexOffset argument. When reported as not supported, the
-    vertexOffset value in an indexed draw is ignored.
+    \value BaseVertex Indicates that
+    \l{QRhiCommandBuffer::drawIndexed()}{drawIndexed()} supports the \c
+    vertexOffset argument. When reported as not supported, the vertexOffset
+    value in an indexed draw is ignored. In practice this feature will be
+    unsupported with OpenGL and OpenGL ES versions lower than 3.2, and with
+    Metal on older iOS devices, including the iOS Simulator.
 
     \value BaseInstance Indicates that instanced draw commands support the \c
     firstInstance argument. When reported as not supported, the firstInstance
-    value is ignored and the instance ID starts from 0.
+    value is ignored and the instance ID starts from 0. In practice this feature
+    will be unsupported with OpenGL, and with Metal on older iOS devices,
+    including the iOS Simulator.
 
     \value TriangleFanTopology Indicates that QRhiGraphicsPipeline::setTopology()
     supports QRhiGraphicsPipeline::TriangleFan.

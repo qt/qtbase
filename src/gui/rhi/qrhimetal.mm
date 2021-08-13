@@ -414,11 +414,13 @@ bool QRhiMetal::create(QRhi::Flags flags)
 
 #if defined(Q_OS_MACOS)
     caps.maxTextureSize = 16384;
+    caps.baseVertexAndInstance = true;
 #elif defined(Q_OS_TVOS)
     if ([d->dev supportsFeatureSet: MTLFeatureSet(30003)]) // MTLFeatureSet_tvOS_GPUFamily2_v1
         caps.maxTextureSize = 16384;
     else
         caps.maxTextureSize = 8192;
+    caps.baseVertexAndInstance = false;
 #elif defined(Q_OS_IOS)
     // welcome to feature set hell
     if ([d->dev supportsFeatureSet: MTLFeatureSet(16)] // MTLFeatureSet_iOS_GPUFamily5_v1
@@ -426,12 +428,15 @@ bool QRhiMetal::create(QRhi::Flags flags)
             || [d->dev supportsFeatureSet: MTLFeatureSet(4)]) // MTLFeatureSet_iOS_GPUFamily3_v1
     {
         caps.maxTextureSize = 16384;
+        caps.baseVertexAndInstance = true;
     } else if ([d->dev supportsFeatureSet: MTLFeatureSet(3)] // MTLFeatureSet_iOS_GPUFamily2_v2
             || [d->dev supportsFeatureSet: MTLFeatureSet(2)]) // MTLFeatureSet_iOS_GPUFamily1_v2
     {
         caps.maxTextureSize = 8192;
+        caps.baseVertexAndInstance = false;
     } else {
         caps.maxTextureSize = 4096;
+        caps.baseVertexAndInstance = false;
     }
 #endif
 
@@ -573,9 +578,9 @@ bool QRhiMetal::isFeatureSupported(QRhi::Feature feature) const
     case QRhi::VertexShaderPointSize:
         return true;
     case QRhi::BaseVertex:
-        return true;
+        return caps.baseVertexAndInstance;
     case QRhi::BaseInstance:
-        return true;
+        return caps.baseVertexAndInstance;
     case QRhi::TriangleFanTopology:
         return false;
     case QRhi::ReadBackNonUniformBuffer:
@@ -1333,14 +1338,23 @@ void QRhiMetal::drawIndexed(QRhiCommandBuffer *cb, quint32 indexCount,
     QMetalBuffer *ibufD = QRHI_RES(QMetalBuffer, cbD->currentIndexBuffer);
     id<MTLBuffer> mtlbuf = ibufD->d->buf[ibufD->d->slotted ? currentFrameSlot : 0];
 
-    [cbD->d->currentRenderPassEncoder drawIndexedPrimitives: QRHI_RES(QMetalGraphicsPipeline, cbD->currentGraphicsPipeline)->d->primitiveType
-      indexCount: indexCount
-      indexType: cbD->currentIndexFormat == QRhiCommandBuffer::IndexUInt16 ? MTLIndexTypeUInt16 : MTLIndexTypeUInt32
-      indexBuffer: mtlbuf
-      indexBufferOffset: indexOffset
-      instanceCount: instanceCount
-      baseVertex: vertexOffset
-      baseInstance: firstInstance];
+    if (caps.baseVertexAndInstance) {
+        [cbD->d->currentRenderPassEncoder drawIndexedPrimitives: QRHI_RES(QMetalGraphicsPipeline, cbD->currentGraphicsPipeline)->d->primitiveType
+          indexCount: indexCount
+          indexType: cbD->currentIndexFormat == QRhiCommandBuffer::IndexUInt16 ? MTLIndexTypeUInt16 : MTLIndexTypeUInt32
+          indexBuffer: mtlbuf
+          indexBufferOffset: indexOffset
+          instanceCount: instanceCount
+          baseVertex: vertexOffset
+          baseInstance: firstInstance];
+    } else {
+        [cbD->d->currentRenderPassEncoder drawIndexedPrimitives: QRHI_RES(QMetalGraphicsPipeline, cbD->currentGraphicsPipeline)->d->primitiveType
+          indexCount: indexCount
+          indexType: cbD->currentIndexFormat == QRhiCommandBuffer::IndexUInt16 ? MTLIndexTypeUInt16 : MTLIndexTypeUInt32
+          indexBuffer: mtlbuf
+          indexBufferOffset: indexOffset
+          instanceCount: instanceCount];
+    }
 }
 
 void QRhiMetal::debugMarkBegin(QRhiCommandBuffer *cb, const QByteArray &name)
