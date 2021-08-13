@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Copyright (C) 2020 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -40,6 +40,7 @@
 #include <QtCore/QRegularExpression>
 #include <QtCore/QDebug>
 #include <QtCore/QMetaType>
+#include <QtCore/QScopeGuard>
 #include <QtNetwork/QHostInfo>
 
 #include <qplatformdefs.h>
@@ -1244,17 +1245,15 @@ void tst_QProcess::processesInMultipleThreads()
             threadCount = qMax(threadCount, QThread::idealThreadCount() + 2);
 
         QList<TestThread *> threads(threadCount);
+        QScopeGuard cleanup([&threads]() { qDeleteAll(threads); });
         for (int j = 0; j < threadCount; ++j)
             threads[j] = new TestThread;
         for (int j = 0; j < threadCount; ++j)
             threads[j]->start();
-        for (int j = 0; j < threadCount; ++j) {
+        for (int j = 0; j < threadCount; ++j)
             QVERIFY(threads[j]->wait(10000));
-        }
-        for (int j = 0; j < threadCount; ++j) {
+        for (int j = 0; j < threadCount; ++j)
             QCOMPARE(threads[j]->code(), 0);
-        }
-        qDeleteAll(threads);
     }
 }
 
