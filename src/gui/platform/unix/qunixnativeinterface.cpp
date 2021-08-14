@@ -181,7 +181,7 @@ QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QXcbWindow);
 
 /*!
     \class QNativeInterface::QX11Application
-    \since 6.0
+    \since 6.2
     \brief Native interface to an X11 application.
 
     Accessed through QGuiApplication::nativeInterface().
