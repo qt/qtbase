@@ -1311,13 +1311,6 @@ bool QMYSQLDriver::open(const QString& db,
         return false;
     }
 
-    // force the communication to be utf8mb4 (only utf8mb4 supports 4-byte characters)
-    if (mysql_set_character_set(d->mysql, "utf8mb4")) {
-        // this failed, try forcing it to utf (BMP only)
-        if (mysql_set_character_set(d->mysql, "utf8"))
-            qWarning() << "MySQL: Unable to set the client character set to utf8.";
-    }
-
     d->preparedQuerysEnabled = checkPreparedQueries(d->mysql);
 
 #if QT_CONFIG(thread)
