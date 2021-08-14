@@ -121,6 +121,7 @@ public class QtNative
     private static HashMap<String, Uri> m_cachedUris = new HashMap<String, Uri>();
     private static ArrayList<String> m_knownDirs = new ArrayList<String>();
     private static final int KEYBOARD_HEIGHT_THRESHOLD = 100;
+    private static final String NoPermissionErrorMessage = "No permissions to open Uri";
 
     private static final Runnable runPendingCppRunnablesRunnable = new Runnable() {
         @Override
@@ -198,11 +199,10 @@ public class QtNative
                     return iterUri;
             }
 
-            // Android 6 and earlier could still manage to open the file so we can return the
-            // parsed uri here
-            if (Build.VERSION.SDK_INT < 24)
-                return parsedUri;
-            return null;
+            // if we only have transient permissions on uri all the above will fail,
+            // but we will be able to read the file anyway, so continue with uri here anyway
+            // and check for SecurityExceptions later
+            return parsedUri;
         } catch (SecurityException e) {
             e.printStackTrace();
             return null;
@@ -249,7 +249,7 @@ public class QtNative
         int error = -1;
 
         if (uri == null) {
-            Log.e(QtTAG, "openFdForContentUrl(): No permissions to open Uri");
+            Log.e(QtTAG, "openFdForContentUrl(): " + NoPermissionErrorMessage);
             return error;
         }
 
@@ -259,12 +259,13 @@ public class QtNative
             return fdDesc.detachFd();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
-            return error;
         } catch (IllegalArgumentException e) {
             Log.e(QtTAG, "openFdForContentUrl(): Invalid Uri");
             e.printStackTrace();
-            return error;
+        } catch (SecurityException e) {
+            Log.e(QtTAG, NoPermissionErrorMessage);
         }
+        return error;
     }
 
     public static long getSize(Context context, String contentUrl)
@@ -275,7 +276,7 @@ public class QtNative
             uri = getUriWithValidPermission(context, contentUrl, "r");
 
         if (uri == null) {
-            Log.e(QtTAG, "getSize(): No permissions to open Uri");
+            Log.e(QtTAG, NoPermissionErrorMessage);
             return size;
         } else if (!m_cachedUris.containsKey(contentUrl)) {
             m_cachedUris.put(contentUrl, uri);
@@ -293,12 +294,13 @@ public class QtNative
         } catch (IllegalArgumentException e) {
             Log.e(QtTAG, "getSize(): Invalid Uri");
             e.printStackTrace();
-            return size;
         }  catch (UnsupportedOperationException e) {
             Log.e(QtTAG, "getSize(): Unsupported operation for given Uri");
             e.printStackTrace();
-            return size;
+        } catch (SecurityException e) {
+            Log.e(QtTAG, NoPermissionErrorMessage);
         }
+        return size;
     }
 
     public static boolean checkFileExists(Context context, String contentUrl)
@@ -308,7 +310,7 @@ public class QtNative
         if (uri == null)
             uri = getUriWithValidPermission(context, contentUrl, "r");
         if (uri == null) {
-            Log.e(QtTAG, "checkFileExists(): No permissions to open Uri");
+            Log.e(QtTAG, NoPermissionErrorMessage);
             return exists;
         } else {
             if (!m_cachedUris.containsKey(contentUrl))
@@ -326,12 +328,13 @@ public class QtNative
         } catch (IllegalArgumentException e) {
             Log.e(QtTAG, "checkFileExists(): Invalid Uri");
             e.printStackTrace();
-            return exists;
         } catch (UnsupportedOperationException e) {
             Log.e(QtTAG, "checkFileExists(): Unsupported operation for given Uri");
             e.printStackTrace();
-            return false;
+        } catch (SecurityException e) {
+            Log.e(QtTAG, NoPermissionErrorMessage);
         }
+        return exists;
     }
 
     public static boolean checkIfWritable(Context context, String contentUrl)
@@ -349,7 +352,7 @@ public class QtNative
             uri = getUriWithValidPermission(context, contentUrl, "r");
         }
         if (uri == null) {
-            Log.e(QtTAG, "isDir(): No permissions to open Uri");
+            Log.e(QtTAG, NoPermissionErrorMessage);
             return isDir;
         } else {
             if (!m_cachedUris.containsKey(contentUrl))
@@ -379,12 +382,13 @@ public class QtNative
         } catch (IllegalArgumentException e) {
             Log.e(QtTAG, "checkIfDir(): Invalid Uri");
             e.printStackTrace();
-            return false;
         } catch (UnsupportedOperationException e) {
             Log.e(QtTAG, "checkIfDir(): Unsupported operation for given Uri");
             e.printStackTrace();
-            return false;
+        } catch (SecurityException e) {
+            Log.e(QtTAG, NoPermissionErrorMessage);
         }
+        return false;
     }
     public static String[] listContentsFromTreeUri(Context context, String contentUrl)
     {
