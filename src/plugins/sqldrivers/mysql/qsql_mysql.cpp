@@ -375,6 +375,8 @@ bool QMYSQLResultPrivate::bindInValues()
 
         char *field = bind->buffer_length ? new char[bind->buffer_length + 1]{} : nullptr;
         bind->buffer = f.outField = field;
+        if (qIsTimeOrDate(fieldInfo->type))
+            new (field) MYSQL_TIME;
 
         ++i;
     }
@@ -425,9 +427,11 @@ void QMYSQLResult::cleanup()
         d->meta = 0;
     }
 
-    int i;
-    for (i = 0; i < d->fields.count(); ++i)
-        delete[] d->fields[i].outField;
+    for (const auto &field : qAsConst(d->fields)) {
+        if (qIsTimeOrDate(field.myField->type))
+            reinterpret_cast<MYSQL_TIME *>(field.outField)->~MYSQL_TIME();
+        delete[] field.outField;
+    }
 
     if (d->outBinds) {
         delete[] d->outBinds;
