@@ -579,6 +579,8 @@ QList<int> QAppleKeyMapper::possibleKeys(const QKeyEvent *event) const
         auto keyAfterApplyingModifiers = keyMap[i];
         if (keyAfterApplyingModifiers == unmodifiedKey)
             continue;
+        if (!keyAfterApplyingModifiers)
+             continue;
 
         // Include key if event modifiers includes, or matches
         // perfectly, the current candidate modifiers.
