@@ -102,7 +102,6 @@ private:
     enum { NullMode, UnicodeMode, OtherMode } m_keyboardMode = NullMode;
     const UCKeyboardLayout *m_keyboardLayoutFormat = nullptr;
     KeyboardLayoutKind m_keyboardKind = kKLKCHRuchrKind;
-    mutable UInt32 m_deadKeyState = 0; // Maintains dead key state beween calls to UCKeyTranslate
 
     mutable QHash<VirtualKeyCode, KeyMap> m_keyMap;
 #endif
