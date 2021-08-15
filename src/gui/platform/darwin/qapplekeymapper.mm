@@ -437,7 +437,6 @@ bool QAppleKeyMapper::updateKeyboard()
     Q_ASSERT(source);
     m_currentInputSource = source;
     m_keyboardKind = LMGetKbdType();
-    m_deadKeyState = 0;
 
     m_keyMap.clear();
 
@@ -508,12 +507,15 @@ const QAppleKeyMapper::KeyMap &QAppleKeyMapper::keyMapForKey(VirtualKeyCode virt
         auto carbonModifiers = toCarbonModifiers(qtModifiers);
         const UInt32 modifierKeyState = (carbonModifiers >> 8) & 0xFF;
 
+        UInt32 deadKeyState = 0;
         static const UniCharCount maxStringLength = 10;
         static UniChar unicodeString[maxStringLength];
         UniCharCount actualStringLength = 0;
         OSStatus err = UCKeyTranslate(m_keyboardLayoutFormat, virtualKey,
-            kUCKeyActionDown, modifierKeyState, m_keyboardKind, OptionBits(0),
-            &m_deadKeyState, maxStringLength, &actualStringLength, unicodeString);
+            kUCKeyActionDown, modifierKeyState, m_keyboardKind,
+            kUCKeyTranslateNoDeadKeysMask, &deadKeyState,
+            maxStringLength, &actualStringLength,
+            unicodeString);
 
         // Use translated Unicode key if valid
         QChar carbonUnicodeKey;
