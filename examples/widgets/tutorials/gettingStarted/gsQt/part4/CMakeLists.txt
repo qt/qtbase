@@ -1,6 +1,6 @@
 # Generated from part4.pro.
 
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.16)
 project(getting_started_part4 LANGUAGES CXX)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)

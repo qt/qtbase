@@ -1,6 +1,6 @@
 # Generated from 4_headers.pro.
 
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.16)
 project(mv_headers LANGUAGES CXX)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
