@@ -71,7 +71,7 @@ QT_BEGIN_NAMESPACE
 
 class QWindowsFontEngineData;
 
-class QWindowsFontEngineDirectWrite : public QFontEngine
+class Q_GUI_EXPORT QWindowsFontEngineDirectWrite : public QFontEngine
 {
     Q_DISABLE_COPY_MOVE(QWindowsFontEngineDirectWrite)
 public:
@@ -106,6 +106,8 @@ public:
     FaceId faceId() const override;
 
     bool supportsHorizontalSubPixelPositions() const override;
+
+    HFONT createHFONT() const;
 
     QImage alphaMapForGlyph(glyph_t glyph, const QFixedPoint &subPixelPosition) override;
     QImage alphaMapForGlyph(glyph_t glyph,

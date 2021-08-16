@@ -337,6 +337,22 @@ QString QWindowsFontEngineDirectWrite::filenameFromFontFile(IDWriteFontFile *fon
     return ret;
 }
 
+HFONT QWindowsFontEngineDirectWrite::createHFONT() const
+{
+    if (m_fontEngineData == nullptr || m_directWriteFontFace == nullptr)
+        return NULL;
+
+    LOGFONT lf;
+    HRESULT hr = m_fontEngineData->directWriteGdiInterop->ConvertFontFaceToLOGFONT(m_directWriteFontFace,
+                                                                                   &lf);
+    if (SUCCEEDED(hr)) {
+        lf.lfHeight = -qRound(fontDef.pixelSize);
+        return CreateFontIndirect(&lf);
+    } else {
+        return NULL;
+    }
+}
+
 void QWindowsFontEngineDirectWrite::initializeHeightMetrics() const
 {
     DWRITE_FONT_METRICS metrics;
