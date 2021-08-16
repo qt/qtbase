@@ -376,6 +376,10 @@ void PaintCommands::staticInit()
                       "^drawLine\\s+(-?[\\w.]*)\\s+(-?[\\w.]*)\\s+(-?[\\w.]*)\\s+(-?[\\w.]*)$",
                       "drawLine <x1> <y1> <x2> <y2>",
                       "drawLine 10.0 10.0 20.0 20.0");
+    DECL_PAINTCOMMAND("drawLines", command_drawLines,
+                      "^drawLines\\s+\\[([\\w\\s\\-.]*)\\]$",
+                      "drawLines <[ <l1x1> <l1y1> <l1x2> <l1y2> <l2x1> <l2y1> ... ]>",
+                      "drawLines [ 10 10 50 10  50 20 10 20 ]");
     DECL_PAINTCOMMAND("drawRect", command_drawRect,
                       "^drawRect\\s+(-?[\\w.]*)\\s+(-?[\\w.]*)\\s+(-?[\\w.]*)\\s+(-?[\\w.]*)$",
                       "drawRect <x> <y> <w> <h>",
@@ -433,7 +437,7 @@ void PaintCommands::staticInit()
                       "drawConvexPolygon <[ <x1> <y1> ... <xn> <yn> ]>",
                       "drawConvexPolygon [ 1 4  6 8  5 3 ]");
     DECL_PAINTCOMMAND("drawPolyline", command_drawPolyline,
-                      "^drawPolyline\\s+\\[([\\w\\s]*)\\]$",
+                      "^drawPolyline\\s+\\[([\\w\\s\\-.]*)\\]$",
                       "drawPolyline <[ <x1> <y1> ... <xn> <yn> ]>",
                       "drawPolyline [ 1 4  6 8  5 3 ]");
     DECL_PAINTCOMMAND("drawText", command_drawText,
@@ -972,6 +976,25 @@ void PaintCommands::command_drawLine(QRegularExpressionMatch re)
         printf(" -(lance) drawLine((%.2f, %.2f), (%.2f, %.2f))\n", x1, y1, x2, y2);
 
     m_painter->drawLine(QLineF(x1, y1, x2, y2));
+}
+
+/***************************************************************************************************/
+void PaintCommands::command_drawLines(QRegularExpressionMatch re)
+{
+    static QRegularExpression separators("\\s");
+    QStringList numbers = re.captured(1).split(separators, Qt::SkipEmptyParts);
+
+    QVector<QLineF> array;
+    for (int i = 0; i + 3 < numbers.size(); i += 4) {
+        QPointF pt1(numbers.at(i).toFloat(), numbers.at(i + 1).toFloat());
+        QPointF pt2(numbers.at(i + 2).toFloat(), numbers.at(i + 3).toFloat());
+        array.append(QLineF(pt1, pt2));
+    }
+
+    if (m_verboseMode)
+        printf(" -(lance) drawLines(size=%zd)\n", size_t(array.size()));
+
+    m_painter->drawLines(array);
 }
 
 /***************************************************************************************************/
