@@ -41,6 +41,10 @@
     \title Android: App Versioning
 */
 /*!
+    \externalpage https://developer.android.com/studio/command-line/adb#devicestatus
+    \title Android: Query for devices
+*/
+/*!
     \externalpage http://www.freedesktop.org/
     \title freedesktop.org
 */
