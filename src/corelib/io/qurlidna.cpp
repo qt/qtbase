@@ -2031,7 +2031,7 @@ static bool isBidirectionalL(uint uc)
     return false;
 }
 
-Q_AUTOTEST_EXPORT bool qt_nameprep(QString *source, int from)
+static bool qt_nameprep(QString *source, int from)
 {
     QChar *src = source->data(); // causes a detach, so we're sure the only one using it
     QChar *out = src + from;
@@ -2158,7 +2158,7 @@ static const QChar *qt_find_nonstd3(QStringView in, Qt::CaseSensitivity cs)
     return nullptr;
 }
 
-Q_AUTOTEST_EXPORT bool qt_check_std3rules(QStringView in)
+static bool qt_check_std3rules(QStringView in)
 {
     return qt_find_nonstd3(in, Qt::CaseInsensitive) == nullptr;
 }
