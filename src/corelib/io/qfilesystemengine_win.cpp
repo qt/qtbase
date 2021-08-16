@@ -627,14 +627,14 @@ QFileSystemEntry QFileSystemEngine::absoluteName(const QFileSystemEntry &entry)
     return QFileSystemEntry(ret, QFileSystemEntry::FromInternalPath());
 }
 
-#if defined(Q_CC_MINGW) && WINVER < 0x0602 //  Windows 8 onwards
+#if defined(Q_CC_MINGW) && WINVER < 0x0602 && _WIN32_WINNT < _WIN32_WINNT_WIN8 //  Windows 8 onwards
 
 typedef struct _FILE_ID_INFO {
     ULONGLONG VolumeSerialNumber;
     FILE_ID_128 FileId;
 } FILE_ID_INFO, *PFILE_ID_INFO;
 
-#endif // if defined (Q_CC_MINGW) && WINVER < 0x0602
+#endif // if defined(Q_CC_MINGW) && WINVER < 0x0602 && _WIN32_WINNT < _WIN32_WINNT_WIN8
 
 // File ID for Windows up to version 7 and FAT32 drives
 static inline QByteArray fileId(HANDLE handle)
