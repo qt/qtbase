@@ -47,7 +47,7 @@
 
     \snippet code/doc_src_qset.cpp 1
 
-    Another way to insert items into the set is to use operator<<():
+    Another way to insert items into the set is to use \l operator<<():
 
     \snippet code/doc_src_qset.cpp 2
 
@@ -559,7 +559,7 @@
     \fn template <class T> QSet<T> &QSet<T>::operator|=(const QSet<T> &other)
     \fn template <class T> QSet<T> &QSet<T>::operator+=(const QSet<T> &other)
 
-    Same as unite(\a other).
+    Same as \l {unite()} {unite(\a other)}.
 
     \sa operator|(), operator&=(), operator-=()
 */
@@ -567,7 +567,7 @@
 /*!
     \fn template <class T> QSet<T> &QSet<T>::operator&=(const QSet<T> &other)
 
-    Same as intersect(\a other).
+    Same as \l {intersect()} {intersect(\a other)}.
 
     \sa operator&(), operator|=(), operator-=()
 */
@@ -577,7 +577,7 @@
 
     \overload
 
-    Same as intersect(\e{other}), if we consider \e{other} to be a set
+    Same as \l {intersect()} {intersect(\a{other})}, if we consider \a other to be a set
     that contains the singleton \a value.
 */
 
@@ -585,7 +585,7 @@
 /*!
     \fn template <class T> QSet<T> &QSet<T>::operator-=(const QSet<T> &other)
 
-    Same as subtract(\a{other}).
+    Same as \l {subtract()} {subtract(\a{other})}.
 
     \sa operator-(), operator|=(), operator&=()
 */
