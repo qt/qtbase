@@ -859,7 +859,7 @@ constexpr inline QTypeTraits::Promoted<T, U> qBound(const U &min, const T &val, 
 #  ifdef __OBJC__
 #    define Q_FORWARD_DECLARE_OBJC_CLASS(classname) @class classname
 #  else
-#    define Q_FORWARD_DECLARE_OBJC_CLASS(classname) typedef struct objc_object classname
+#    define Q_FORWARD_DECLARE_OBJC_CLASS(classname) class classname
 #  endif
 #endif
 #ifndef Q_FORWARD_DECLARE_CF_TYPE
