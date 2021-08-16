@@ -1,6 +1,6 @@
 # Generated from undoframework.pro.
 
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.16)
 project(undoframework LANGUAGES CXX)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)

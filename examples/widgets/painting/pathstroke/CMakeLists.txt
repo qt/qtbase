@@ -1,6 +1,6 @@
 # Generated from pathstroke.pro.
 
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.16)
 project(pathstroke LANGUAGES CXX)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
