@@ -492,9 +492,14 @@ function(qt_evaluate_feature_definition key)
         set(expected OFF)
     endif()
 
+    set(actual OFF)
+    if(QT_FEATURE_${arg_FEATURE})
+        set(actual ON)
+    endif()
+
     set(msg "")
 
-    if(QT_FEATURE_${arg_FEATURE} STREQUAL expected)
+    if(actual STREQUAL expected)
         set(indent "")
         if(arg_PREREQUISITE)
             string(APPEND msg "#if ${arg_PREREQUISITE}\n")
