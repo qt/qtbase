@@ -12,5 +12,17 @@ obscure # no such platform; is ignored
 [xfail]
 *
 
+[xfailContinueSkip]
+*
+
+[xfailContinueFail]
+*
+
 [xpass]
+*
+
+[xpassContinueSkip]
+*
+
+[xpassContinueFail]
 *

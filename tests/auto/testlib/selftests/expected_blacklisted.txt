@@ -1,6 +1,7 @@
 ********* Start testing of tst_Blacklisted *********
 Config: Using QtTest library
 PASS   : tst_Blacklisted::initTestCase()
+QDEBUG : tst_Blacklisted::pass() This test should BPASS
 BPASS  : tst_Blacklisted::pass()
 SKIP   : tst_Blacklisted::skip() This test should SKIP
    Loc: [qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp(0)]
@@ -9,8 +10,25 @@ BFAIL  : tst_Blacklisted::fail() 'false' returned FALSE. (This test should BFAIL
 BXFAIL : tst_Blacklisted::xfail() This test should BXFAIL then BPASS
    Loc: [qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp(0)]
 BPASS  : tst_Blacklisted::xfail()
+BXFAIL : tst_Blacklisted::xfailContinueSkip() This test should BXFAIL then SKIP
+   Loc: [qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp(0)]
+SKIP   : tst_Blacklisted::xfailContinueSkip() This skip should be seen and counted
+   Loc: [qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp(0)]
+BXFAIL : tst_Blacklisted::xfailContinueFail() This test should BXFAIL then BFAIL
+   Loc: [qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp(0)]
+BFAIL  : tst_Blacklisted::xfailContinueFail() This fail should be seen and counted as blacklisted
+   Loc: [qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp(0)]
 BXPASS : tst_Blacklisted::xpass() 'true' returned TRUE unexpectedly. (This test should BXPASS)
    Loc: [qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp(0)]
+BXPASS : tst_Blacklisted::xpassContinueSkip() 'true' returned TRUE unexpectedly. (This test should BXPASS then SKIP)
+   Loc: [qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp(0)]
+SKIP   : tst_Blacklisted::xpassContinueSkip() This skip should be seen but not counted
+   Loc: [qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp(0)]
+BXPASS : tst_Blacklisted::xpassContinueFail() 'true' returned TRUE unexpectedly. (This test should BXPASS then BFAIL)
+   Loc: [qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp(0)]
+BFAIL  : tst_Blacklisted::xpassContinueFail() This fail should be seen and not counted (due to prior XPASS)
+   Loc: [qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp(0)]
+QDEBUG : tst_Blacklisted::cleanupTestCase() Totals should add up to 11: 2 passed, 0 failed, 2 skipped, 7 blacklisted
 PASS   : tst_Blacklisted::cleanupTestCase()
-Totals: 2 passed, 0 failed, 1 skipped, 4 blacklisted, 0ms
+Totals: 2 passed, 0 failed, 3 skipped, 8 blacklisted, 0ms
 ********* Finished testing of tst_Blacklisted *********

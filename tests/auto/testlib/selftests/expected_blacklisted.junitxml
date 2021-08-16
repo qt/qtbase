@@ -1,17 +1,33 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite name="tst_Blacklisted" timestamp="@TEST_START_TIME@" hostname="@HOSTNAME@" tests="7" failures="0" errors="0" skipped="1" time="@TEST_DURATION@">
+<testsuite name="tst_Blacklisted" timestamp="@TEST_START_TIME@" hostname="@HOSTNAME@" tests="11" failures="0" errors="0" skipped="3" time="@TEST_DURATION@">
   <properties>
     <property name="QTestVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtBuild" value=""/>
   </properties>
   <testcase name="initTestCase" classname="tst_Blacklisted" time="@TEST_DURATION@"/>
-  <testcase name="pass" classname="tst_Blacklisted" time="@TEST_DURATION@"/>
+  <testcase name="pass" classname="tst_Blacklisted" time="@TEST_DURATION@">
+    <system-out>
+      <![CDATA[This test should BPASS]]>
+    </system-out>
+  </testcase>
   <testcase name="skip" classname="tst_Blacklisted" time="@TEST_DURATION@">
     <skipped message="This test should SKIP"/>
   </testcase>
   <testcase name="fail" classname="tst_Blacklisted" time="@TEST_DURATION@"/>
   <testcase name="xfail" classname="tst_Blacklisted" time="@TEST_DURATION@"/>
+  <testcase name="xfailContinueSkip" classname="tst_Blacklisted" time="@TEST_DURATION@">
+    <skipped message="This skip should be seen and counted"/>
+  </testcase>
+  <testcase name="xfailContinueFail" classname="tst_Blacklisted" time="@TEST_DURATION@"/>
   <testcase name="xpass" classname="tst_Blacklisted" time="@TEST_DURATION@"/>
-  <testcase name="cleanupTestCase" classname="tst_Blacklisted" time="@TEST_DURATION@"/>
+  <testcase name="xpassContinueSkip" classname="tst_Blacklisted" time="@TEST_DURATION@">
+    <skipped message="This skip should be seen but not counted"/>
+  </testcase>
+  <testcase name="xpassContinueFail" classname="tst_Blacklisted" time="@TEST_DURATION@"/>
+  <testcase name="cleanupTestCase" classname="tst_Blacklisted" time="@TEST_DURATION@">
+    <system-out>
+      <![CDATA[Totals should add up to 11: 2 passed, 0 failed, 2 skipped, 7 blacklisted]]>
+    </system-out>
+  </testcase>
 </testsuite>
