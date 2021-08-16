@@ -557,6 +557,23 @@ const QAppleKeyMapper::KeyMap &QAppleKeyMapper::keyMapForKey(VirtualKeyCode virt
     return keyMap;
 }
 
+/*
+    Compute the possible key combinations that can map to the event's
+    virtual key and modifiers, in the current keyboard layout.
+
+    For example, given a normal US keyboard layout, the virtual key
+    23 combined with the Alt (⌥) and Shift (⇧) modifiers, can map
+    to the following key combinations:
+
+        - Alt+Shift+5
+        - Alt+%
+        - Shift+∞
+        - ﬁ
+
+    The function builds on a key map produced by keyMapForKey(),
+    where each modifier-key combination has been mapped to the
+    key it will produce.
+*/
 QList<int> QAppleKeyMapper::possibleKeys(const QKeyEvent *event) const
 {
     QList<int> ret;
@@ -572,9 +589,10 @@ QList<int> QAppleKeyMapper::possibleKeys(const QKeyEvent *event) const
 
     auto eventModifiers = event->modifiers();
 
-    // The base key, with the complete set of modifiers,
-    // is always valid, and the first priority.
-    ret << int(unmodifiedKey) + int(eventModifiers);
+    // The complete set of event modifiers, along with the
+    // unmodified key, is always a valid key combination,
+    // and the first priority.
+    ret << int(eventModifiers) + int(unmodifiedKey);
 
     // FIXME: We only compute the first 8 combinations. Why?
     for (int i = 1; i < 8; ++i) {
@@ -584,11 +602,15 @@ QList<int> QAppleKeyMapper::possibleKeys(const QKeyEvent *event) const
         if (!keyAfterApplyingModifiers)
              continue;
 
-        // Include key if event modifiers includes, or matches
-        // perfectly, the current candidate modifiers.
+        // Include key if the event modifiers match exactly,
+        // or are a superset of the current candidate modifiers.
         auto candidateModifiers = modifierCombinations[i];
-        if ((eventModifiers & candidateModifiers) == candidateModifiers)
-            ret << int(keyAfterApplyingModifiers) + int(eventModifiers & ~candidateModifiers);
+        if ((eventModifiers & candidateModifiers) == candidateModifiers) {
+            // If the event includes more modifiers than the candidate they
+            // will need to be included in the resulting key combination.
+            auto additionalModifiers = eventModifiers & ~candidateModifiers;
+            ret << int(additionalModifiers) + int(keyAfterApplyingModifiers);
+        }
     }
 
     return ret;
