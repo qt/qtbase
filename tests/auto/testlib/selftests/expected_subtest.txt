@@ -26,25 +26,49 @@ PASS   : tst_Subtest::test2(data2)
 QDEBUG : tst_Subtest::test3() test3_data test3 (null)
 QDEBUG : tst_Subtest::test3() test3_data end
 QDEBUG : tst_Subtest::test3(data0) init test3 data0
-QDEBUG : tst_Subtest::test3(data0) test2 test3 data0
-QDEBUG : tst_Subtest::test3(data0) test2 end
+QDEBUG : tst_Subtest::test3(data0) test3 test3 data0
+QDEBUG : tst_Subtest::test3(data0) test3 end
 QDEBUG : tst_Subtest::test3(data0) cleanup test3 data0
 PASS   : tst_Subtest::test3(data0)
 QDEBUG : tst_Subtest::test3(data1) init test3 data1
-QDEBUG : tst_Subtest::test3(data1) test2 test3 data1
+QDEBUG : tst_Subtest::test3(data1) test3 test3 data1
 FAIL!  : tst_Subtest::test3(data1) Compared values are not the same
    Actual   (str)              : "hello1"
    Expected (QString("hello0")): "hello0"
    Loc: [qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp(0)]
 QDEBUG : tst_Subtest::test3(data1) cleanup test3 data1
 QDEBUG : tst_Subtest::test3(data2) init test3 data2
-QDEBUG : tst_Subtest::test3(data2) test2 test3 data2
+QDEBUG : tst_Subtest::test3(data2) test3 test3 data2
 FAIL!  : tst_Subtest::test3(data2) Compared values are not the same
    Actual   (str)              : "hello2"
    Expected (QString("hello0")): "hello0"
    Loc: [qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp(0)]
 QDEBUG : tst_Subtest::test3(data2) cleanup test3 data2
+QDEBUG : tst_Subtest::multiFail() init multiFail (null)
+FAIL!  : tst_Subtest::multiFail() This failure message should be repeated ten times
+   Loc: [qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp(0)]
+FAIL!  : tst_Subtest::multiFail() This failure message should be repeated ten times
+   Loc: [qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp(0)]
+FAIL!  : tst_Subtest::multiFail() This failure message should be repeated ten times
+   Loc: [qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp(0)]
+FAIL!  : tst_Subtest::multiFail() This failure message should be repeated ten times
+   Loc: [qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp(0)]
+FAIL!  : tst_Subtest::multiFail() This failure message should be repeated ten times
+   Loc: [qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp(0)]
+FAIL!  : tst_Subtest::multiFail() This failure message should be repeated ten times
+   Loc: [qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp(0)]
+FAIL!  : tst_Subtest::multiFail() This failure message should be repeated ten times
+   Loc: [qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp(0)]
+FAIL!  : tst_Subtest::multiFail() This failure message should be repeated ten times
+   Loc: [qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp(0)]
+FAIL!  : tst_Subtest::multiFail() This failure message should be repeated ten times
+   Loc: [qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp(0)]
+FAIL!  : tst_Subtest::multiFail() This failure message should be repeated ten times
+   Loc: [qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp(0)]
+FAIL!  : tst_Subtest::multiFail() But this test should only contribute one to the failure count
+   Loc: [qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp(0)]
+QDEBUG : tst_Subtest::multiFail() cleanup multiFail (null)
 QDEBUG : tst_Subtest::cleanupTestCase() cleanupTestCase cleanupTestCase (null)
 PASS   : tst_Subtest::cleanupTestCase()
-Totals: 7 passed, 2 failed, 0 skipped, 0 blacklisted, 0ms
+Totals: 7 passed, 13 failed, 0 skipped, 0 blacklisted, 0ms
 ********* Finished testing of tst_Subtest *********

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -47,6 +47,8 @@ private slots:
     void test2();
     void test3_data();
     void test3();
+
+    void multiFail();
 };
 
 
@@ -131,7 +133,7 @@ void tst_Subtest::test3_data()
 
 void tst_Subtest::test3()
 {
-    qDebug() << "test2"
+    qDebug() << "test3"
              << (QTest::currentTestFunction() ? QTest::currentTestFunction() : "(null)")
              << (QTest::currentDataTag() ? QTest::currentDataTag() : "(null)");
 
@@ -140,7 +142,17 @@ void tst_Subtest::test3()
     // second and third time we call this it should FAIL
     QCOMPARE(str, QString("hello0"));
 
-    qDebug() << "test2 end";
+    qDebug() << "test3 end";
+}
+
+void tst_Subtest::multiFail()
+{
+    // Simulates tests which call a shared function that does common checks, or
+    // that do checks in code run asynchronously from a messae loop.
+    for (int i = 0; i < 10; ++i)
+        []() { QFAIL("This failure message should be repeated ten times"); }();
+    // FIXME QTBUG-95661: it gets counted as eleven failures, of course.
+    QFAIL("But this test should only contribute one to the failure count");
 }
 
 QTEST_MAIN(tst_Subtest)

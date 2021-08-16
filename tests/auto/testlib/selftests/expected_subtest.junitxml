@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite name="tst_Subtest" timestamp="@TEST_START_TIME@" hostname="@HOSTNAME@" tests="9" failures="2" errors="0" skipped="0" time="@TEST_DURATION@">
+<testsuite name="tst_Subtest" timestamp="@TEST_START_TIME@" hostname="@HOSTNAME@" tests="10" failures="3" errors="0" skipped="0" time="@TEST_DURATION@">
   <properties>
     <property name="QTestVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtVersion" value="@INSERT_QT_VERSION_HERE@"/>
@@ -48,8 +48,8 @@
       <![CDATA[test3_data test3 (null)]]>
       <![CDATA[test3_data end]]>
       <![CDATA[init test3 data0]]>
-      <![CDATA[test2 test3 data0]]>
-      <![CDATA[test2 end]]>
+      <![CDATA[test3 test3 data0]]>
+      <![CDATA[test3 end]]>
       <![CDATA[cleanup test3 data0]]>
     </system-out>
   </testcase>
@@ -60,7 +60,7 @@
     </failure>
     <system-out>
       <![CDATA[init test3 data1]]>
-      <![CDATA[test2 test3 data1]]>
+      <![CDATA[test3 test3 data1]]>
       <![CDATA[cleanup test3 data1]]>
     </system-out>
   </testcase>
@@ -71,8 +71,15 @@
     </failure>
     <system-out>
       <![CDATA[init test3 data2]]>
-      <![CDATA[test2 test3 data2]]>
+      <![CDATA[test3 test3 data2]]>
       <![CDATA[cleanup test3 data2]]>
+    </system-out>
+  </testcase>
+  <testcase name="multiFail" classname="tst_Subtest" time="@TEST_DURATION@">
+    <failure type="fail" message="This failure message should be repeated ten times"/>
+    <system-out>
+      <![CDATA[init multiFail (null)]]>
+      <![CDATA[cleanup multiFail (null)]]>
     </system-out>
   </testcase>
   <testcase name="cleanupTestCase" classname="tst_Subtest" time="@TEST_DURATION@">

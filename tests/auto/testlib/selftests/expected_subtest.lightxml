@@ -102,11 +102,11 @@
 </Message>
 <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[data0]]></DataTag>
-    <Description><![CDATA[test2 test3 data0]]></Description>
+    <Description><![CDATA[test3 test3 data0]]></Description>
 </Message>
 <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[data0]]></DataTag>
-    <Description><![CDATA[test2 end]]></Description>
+    <Description><![CDATA[test3 end]]></Description>
 </Message>
 <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[data0]]></DataTag>
@@ -121,7 +121,7 @@
 </Message>
 <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[data1]]></DataTag>
-    <Description><![CDATA[test2 test3 data1]]></Description>
+    <Description><![CDATA[test3 test3 data1]]></Description>
 </Message>
 <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp" line="0">
     <DataTag><![CDATA[data1]]></DataTag>
@@ -139,7 +139,7 @@
 </Message>
 <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[data2]]></DataTag>
-    <Description><![CDATA[test2 test3 data2]]></Description>
+    <Description><![CDATA[test3 test3 data2]]></Description>
 </Message>
 <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp" line="0">
     <DataTag><![CDATA[data2]]></DataTag>
@@ -150,6 +150,48 @@
 <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[data2]]></DataTag>
     <Description><![CDATA[cleanup test3 data2]]></Description>
+</Message>
+    <Duration msecs="0"/>
+</TestFunction>
+<TestFunction name="multiFail">
+<Message type="qdebug" file="" line="0">
+    <Description><![CDATA[init multiFail (null)]]></Description>
+</Message>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp" line="0">
+    <Description><![CDATA[This failure message should be repeated ten times]]></Description>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp" line="0">
+    <Description><![CDATA[This failure message should be repeated ten times]]></Description>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp" line="0">
+    <Description><![CDATA[This failure message should be repeated ten times]]></Description>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp" line="0">
+    <Description><![CDATA[This failure message should be repeated ten times]]></Description>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp" line="0">
+    <Description><![CDATA[This failure message should be repeated ten times]]></Description>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp" line="0">
+    <Description><![CDATA[This failure message should be repeated ten times]]></Description>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp" line="0">
+    <Description><![CDATA[This failure message should be repeated ten times]]></Description>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp" line="0">
+    <Description><![CDATA[This failure message should be repeated ten times]]></Description>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp" line="0">
+    <Description><![CDATA[This failure message should be repeated ten times]]></Description>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp" line="0">
+    <Description><![CDATA[This failure message should be repeated ten times]]></Description>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp" line="0">
+    <Description><![CDATA[But this test should only contribute one to the failure count]]></Description>
+</Incident>
+<Message type="qdebug" file="" line="0">
+    <Description><![CDATA[cleanup multiFail (null)]]></Description>
 </Message>
     <Duration msecs="0"/>
 </TestFunction>

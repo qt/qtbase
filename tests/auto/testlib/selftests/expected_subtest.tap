@@ -26,12 +26,12 @@ ok 5 - test2(data2)
 # test3_data test3 (null)
 # test3_data end
 # init test3 data0
-# test2 test3 data0
-# test2 end
+# test3 test3 data0
+# test3 end
 # cleanup test3 data0
 ok 6 - test3(data0)
 # init test3 data1
-# test2 test3 data1
+# test3 test3 data1
 not ok 7 - test3(data1)
   ---
   type: QCOMPARE
@@ -46,7 +46,7 @@ not ok 7 - test3(data1)
   ...
 # cleanup test3 data1
 # init test3 data2
-# test2 test3 data2
+# test3 test3 data2
 not ok 8 - test3(data2)
   ---
   type: QCOMPARE
@@ -60,9 +60,88 @@ not ok 8 - test3(data2)
   line: 0
   ...
 # cleanup test3 data2
+# init multiFail (null)
+not ok 9 - multiFail()
+  ---
+  # This failure message should be repeated ten times
+  at: tst_Subtest::multiFail() (qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp:0)
+  file: qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp
+  line: 0
+  ...
+not ok 10 - multiFail()
+  ---
+  # This failure message should be repeated ten times
+  at: tst_Subtest::multiFail() (qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp:0)
+  file: qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp
+  line: 0
+  ...
+not ok 11 - multiFail()
+  ---
+  # This failure message should be repeated ten times
+  at: tst_Subtest::multiFail() (qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp:0)
+  file: qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp
+  line: 0
+  ...
+not ok 12 - multiFail()
+  ---
+  # This failure message should be repeated ten times
+  at: tst_Subtest::multiFail() (qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp:0)
+  file: qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp
+  line: 0
+  ...
+not ok 13 - multiFail()
+  ---
+  # This failure message should be repeated ten times
+  at: tst_Subtest::multiFail() (qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp:0)
+  file: qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp
+  line: 0
+  ...
+not ok 14 - multiFail()
+  ---
+  # This failure message should be repeated ten times
+  at: tst_Subtest::multiFail() (qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp:0)
+  file: qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp
+  line: 0
+  ...
+not ok 15 - multiFail()
+  ---
+  # This failure message should be repeated ten times
+  at: tst_Subtest::multiFail() (qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp:0)
+  file: qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp
+  line: 0
+  ...
+not ok 16 - multiFail()
+  ---
+  # This failure message should be repeated ten times
+  at: tst_Subtest::multiFail() (qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp:0)
+  file: qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp
+  line: 0
+  ...
+not ok 17 - multiFail()
+  ---
+  # This failure message should be repeated ten times
+  at: tst_Subtest::multiFail() (qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp:0)
+  file: qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp
+  line: 0
+  ...
+not ok 18 - multiFail()
+  ---
+  # This failure message should be repeated ten times
+  at: tst_Subtest::multiFail() (qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp:0)
+  file: qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp
+  line: 0
+  ...
+not ok 19 - multiFail()
+  ---
+  # But this test should only contribute one to the failure count
+  at: tst_Subtest::multiFail() (qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp:0)
+  file: qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp
+  line: 0
+  ...
+# cleanup multiFail (null)
 # cleanupTestCase cleanupTestCase (null)
-ok 9 - cleanupTestCase()
-1..9
-# tests 9
+ok 20 - cleanupTestCase()
+1..20
+# tests 20
 # pass 7
-# fail 2
+# fail 13
