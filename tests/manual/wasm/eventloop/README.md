@@ -11,3 +11,4 @@ Contents
     main_exec       Standard Qt main(), where QApplication::exec() does not return
     main_noexec     Qt main() without QApplication::exec()
     dialog_exec     Shows how QDialog::exec() also does not return
+    thread_exec     Shows how to use QThread::exec()

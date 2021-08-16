@@ -1,6 +1,7 @@
 add_subdirectory(asyncify_exec)
 add_subdirectory(main_exec)
 add_subdirectory(main_noexec)
+add_subdirectory(thread_exec)
 if(QT_FEATURE_widgets)
 add_subdirectory(dialog_exec)
 endif()
