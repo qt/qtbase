@@ -154,6 +154,12 @@
     All labeled targets will be run when \c {test} target is called on the
     command line.
 
+    \note On Android, if you have one connected device or emulator, tests will
+    run on that device. If you have more than one device connected, set the
+    environment variable \c {ANDROID_DEVICE_SERIAL} to the
+    \l {Android: Query for devices}{ADB serial number} of the device that
+    you want to run tests on.
+
     There are several other advantages with CMake. For example, the result of
     a test run can be published on a web server using CDash with virtually no
     effort.
