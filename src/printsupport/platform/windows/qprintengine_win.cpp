@@ -49,6 +49,9 @@
 #include <private/qfont_p.h>
 #include <private/qfontengine_p.h>
 #include <private/qpainter_p.h>
+#if QT_CONFIG(directwrite)
+#  include <private/qwindowsfontenginedirectwrite_p.h>
+#endif
 
 #include <qpa/qplatformprintplugin.h>
 #include <qpa/qplatformprintersupport.h>
@@ -290,8 +293,22 @@ void QWin32PrintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem
                     || d->txop >= QTransform::TxProject
                     || !d->embed_fonts;
 
-    if (!fallBack && ti.fontEngine->type() == QFontEngine::Win) {
-        if (HFONT hfont = static_cast<HFONT>(ti.fontEngine->handle())) {
+    if (!fallBack) {
+        bool deleteFont = false;
+        HFONT hfont = NULL;
+        if (ti.fontEngine->type() == QFontEngine::Win) {
+            hfont = static_cast<HFONT>(ti.fontEngine->handle());
+        }
+#if QT_CONFIG(directwrite)
+        else if (ti.fontEngine->type() == QFontEngine::DirectWrite) {
+            QWindowsFontEngineDirectWrite *fedw = static_cast<QWindowsFontEngineDirectWrite *>(ti.fontEngine);
+            hfont = fedw->createHFONT();
+            if (hfont)
+                deleteFont = true;
+        }
+#endif
+
+        if (hfont) {
             // Try selecting the font to see if we get a substitution font
             SelectObject(d->hdc, hfont);
             if (GetDeviceCaps(d->hdc, TECHNOLOGY) != DT_CHARSTREAM) {
@@ -302,7 +319,12 @@ void QWin32PrintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem
                 GetTextFace(d->hdc, 64, n);
                 fallBack = QString::fromWCharArray(n)
                     != QString::fromWCharArray(logFont.lfFaceName);
+
+                if (deleteFont)
+                    DeleteObject(hfont);
             }
+        } else {
+            fallBack = true;
         }
     }
 
@@ -1720,11 +1742,20 @@ static void draw_text_item_win(const QPointF &pos, const QTextItemInt &ti, HDC h
     const bool has_kerning = ti.f && ti.f->kerning();
 
     HFONT hfont = 0;
+    bool deleteFont = false;
 
     if (ti.fontEngine->type() == QFontEngine::Win) {
         if (ti.fontEngine->supportsTransformation(QTransform::fromScale(0.5, 0.5))) // is TrueType font?
             hfont = static_cast<HFONT>(ti.fontEngine->handle());
     }
+#if QT_CONFIG(directwrite)
+    else if (ti.fontEngine->type() == QFontEngine::DirectWrite) {
+        QWindowsFontEngineDirectWrite *fedw = static_cast<QWindowsFontEngineDirectWrite *>(ti.fontEngine);
+        hfont = fedw->createHFONT();
+        if (hfont)
+            deleteFont = true;
+    }
+#endif
 
     if (!hfont)
         hfont = (HFONT)GetStockObject(ANSI_VAR_FONT);
@@ -1797,6 +1828,9 @@ static void draw_text_item_win(const QPointF &pos, const QTextItemInt &ti, HDC h
         SetWorldTransform(hdc, &win_xform);
 
     SelectObject(hdc, old_font);
+
+    if (deleteFont)
+        DeleteObject(hfont);
 }
 
 QT_END_NAMESPACE
