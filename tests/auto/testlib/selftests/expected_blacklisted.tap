@@ -15,16 +15,16 @@ not ok 4 - fail() # TODO 'false' returned FALSE. (This test should BFAIL)
   file: qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp
   line: 0
   ...
-not ok 6 - xfail() # TODO This test should BXFAIL then BPASS
+not ok 5 - xfail() # TODO This test should BXFAIL then BPASS
   ---
   # This test should BXFAIL then BPASS
   at: tst_Blacklisted::xfail() (qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp
   line: 0
   ...
-ok 7 - xpass() # TODO 'true' returned TRUE unexpectedly. (This test should BXPASS)
-ok 8 - cleanupTestCase()
-1..8
-# tests 8
+ok 6 - xpass() # TODO 'true' returned TRUE unexpectedly. (This test should BXPASS)
+ok 7 - cleanupTestCase()
+1..7
+# tests 7
 # pass 2
 # fail 0
