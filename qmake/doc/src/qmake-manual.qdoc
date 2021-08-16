@@ -1142,6 +1142,8 @@
     Specifies project configuration and compiler options. The values are
     recognized internally by qmake and have special meaning.
 
+    \note The values are case-sensitive.
+
     The following \c CONFIG values control compiler and linker flags:
 
     \table
