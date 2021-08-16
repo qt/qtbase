@@ -338,6 +338,8 @@ void QTestLog::addXFail(const char *msg, const char *file, int line)
     QTEST_ASSERT(msg);
     QTEST_ASSERT(file);
 
+    // Will be counted in addPass() if we get there.
+
     FOREACH_TEST_LOGGER
         logger->addIncident(QAbstractTestLogger::XFail, msg, file, line);
 }
@@ -390,7 +392,7 @@ void QTestLog::addBXFail(const char *msg, const char *file, int line)
     QTEST_ASSERT(msg);
     QTEST_ASSERT(file);
 
-    ++QTest::blacklists;
+    // Will be counted in addBPass() if we get there.
 
     FOREACH_TEST_LOGGER
         logger->addIncident(QAbstractTestLogger::BlacklistedXFail, msg, file, line);
