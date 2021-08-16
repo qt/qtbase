@@ -46,6 +46,9 @@
     if (m_composingText.isEmpty())
         return;
 
+    qCDebug(lcQpaKeys) << "Canceling composition" << m_composingText
+        << "for focus object" << m_composingFocusObject;
+
     if (m_composingFocusObject) {
         QInputMethodQueryEvent queryEvent(Qt::ImEnabled);
         if (QCoreApplication::sendEvent(m_composingFocusObject, &queryEvent)) {
@@ -62,6 +65,11 @@
 
 - (void)unmarkText
 {
+    // FIXME: Match cancelComposingText in early exit and focus object handling
+
+    qCDebug(lcQpaKeys) << "Unmarking" << m_composingText
+        << "for focus object" << m_composingFocusObject;
+
     if (!m_composingText.isEmpty()) {
         if (QObject *fo = m_platformWindow->window()->focusObject()) {
             QInputMethodQueryEvent queryEvent(Qt::ImEnabled);
@@ -85,17 +93,20 @@
 - (void)insertNewline:(id)sender
 {
     Q_UNUSED(sender);
+    qCDebug(lcQpaKeys) << "Inserting newline";
     m_resendKeyEvent = true;
 }
 
 - (void)doCommandBySelector:(SEL)aSelector
 {
+    qCDebug(lcQpaKeys) << "Trying to perform command" << aSelector;
     [self tryToPerform:aSelector with:self];
 }
 
 - (void)insertText:(id)aString replacementRange:(NSRange)replacementRange
 {
-    Q_UNUSED(replacementRange);
+    qCDebug(lcQpaKeys).nospace() << "Inserting \"" << aString << "\""
+        << ", replacing range " << replacementRange;
 
     if (m_sendKeyEvent && m_composingText.isEmpty() && [aString isEqualToString:m_inputSource]) {
         // don't send input method events for simple text input (let handleKeyEvent send key events instead)
@@ -129,7 +140,10 @@
 
 - (void)setMarkedText:(id)aString selectedRange:(NSRange)selectedRange replacementRange:(NSRange)replacementRange
 {
-    Q_UNUSED(replacementRange);
+    qCDebug(lcQpaKeys).nospace() << "Marking \"" << aString << "\""
+        << " with selected range " << selectedRange
+        << ", replacing range " << replacementRange;
+
     QString preeditString;
 
     QList<QInputMethodEvent::Attribute> attrs;

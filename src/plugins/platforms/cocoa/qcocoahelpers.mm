@@ -58,6 +58,7 @@ QT_BEGIN_NAMESPACE
 Q_LOGGING_CATEGORY(lcQpaWindow, "qt.qpa.window");
 Q_LOGGING_CATEGORY(lcQpaDrawing, "qt.qpa.drawing");
 Q_LOGGING_CATEGORY(lcQpaMouse, "qt.qpa.input.mouse", QtCriticalMsg);
+Q_LOGGING_CATEGORY(lcQpaKeys, "qt.qpa.input.keys", QtCriticalMsg);
 Q_LOGGING_CATEGORY(lcQpaScreen, "qt.qpa.screen", QtCriticalMsg);
 Q_LOGGING_CATEGORY(lcQpaApplication, "qt.qpa.application");
 Q_LOGGING_CATEGORY(lcQpaClipboard, "qt.qpa.clipboard")
@@ -508,4 +509,22 @@ void q_IOObjectRelease(io_object_t obj)
     Q_ASSERT(!ret);
 }
 
+// -------------------------------------------------------------------------
+
+QDebug operator<<(QDebug debug, const NSRange &range)
+{
+    if (range.location == NSNotFound) {
+        QDebugStateSaver saver(debug);
+        debug.nospace() << "{NSNotFound, " << range.length << "}";
+    } else {
+        debug << NSStringFromRange(range);
+    }
+    return debug;
+}
+
+QDebug operator<<(QDebug debug, SEL selector)
+{
+    debug << NSStringFromSelector(selector);
+    return debug;
+}
 @end
