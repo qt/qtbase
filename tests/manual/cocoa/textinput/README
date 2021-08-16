@@ -1,0 +1,14 @@
+# Debug keyboard layout
+
+The keyboard layout in this directory can be enabled by
+copying it to "~/Library/Keyboard Layouts/" and adding it
+it as an input source in the macOS keyboard preferences.
+
+The layout was created in Ukulele and tries to cover many
+corner cases of keyboard input related to e.g. modifier
+and dead key states.
+
+# Useful tools
+
+ - https://software.sil.org/ukelele/
+ - https://manytricks.com/keycodes/
