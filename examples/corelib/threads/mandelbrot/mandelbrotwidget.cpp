@@ -109,7 +109,7 @@ void MandelbrotWidget::paintEvent(QPaintEvent * /* event */)
 //! [7] //! [8]
         auto previewPixmap = qFuzzyCompare(pixmap.devicePixelRatio(), qreal(1))
             ? pixmap
-            : pixmap.scaled(pixmap.size() / pixmap.devicePixelRatio(), Qt::KeepAspectRatio,
+            : pixmap.scaled(pixmap.deviceIndependentSize().toSize(), Qt::KeepAspectRatio,
                             Qt::SmoothTransformation);
         double scaleFactor = pixmapScale / curScale;
         int newWidth = int(previewPixmap.width() * scaleFactor);
@@ -216,7 +216,7 @@ void MandelbrotWidget::mouseReleaseEvent(QMouseEvent *event)
         pixmapOffset += event->position().toPoint() - lastDragPos;
         lastDragPos = QPoint();
 
-        const auto pixmapSize = pixmap.size() / pixmap.devicePixelRatio();
+        const auto pixmapSize = pixmap.deviceIndependentSize().toSize();
         int deltaX = (width() - pixmapSize.width()) / 2 - pixmapOffset.x();
         int deltaY = (height() - pixmapSize.height()) / 2 - pixmapOffset.y();
         scroll(deltaX, deltaY);

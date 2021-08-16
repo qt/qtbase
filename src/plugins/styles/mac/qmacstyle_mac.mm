@@ -3568,9 +3568,10 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 QPixmap pixmap = header->icon.pixmap(QSize(iconExtent, iconExtent), p->device()->devicePixelRatio(), mode);
 
                 QRect pixr = header->rect;
-                pixr.setY(header->rect.center().y() - (pixmap.height() / pixmap.devicePixelRatio() - 1) / 2);
+                QSizeF size = pixmap.deviceIndependentSize();
+                pixr.setY(header->rect.center().y() - (size.height() - 1) / 2);
                 proxy()->drawItemPixmap(p, pixr, Qt::AlignVCenter, pixmap);
-                textr.translate(pixmap.width() / pixmap.devicePixelRatio() + 2, 0);
+                textr.translate(size.width() + 2, 0);
             }
             QString text = header->text;
             if (const QStyleOptionHeaderV2 *headerV2 = qstyleoption_cast<const QStyleOptionHeaderV2 *>(header)) {
@@ -3627,12 +3628,13 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                         // Draw the text if it's needed.
                         if (tb->toolButtonStyle != Qt::ToolButtonIconOnly) {
                             needText = true;
+                            QSizeF size = pixmap.deviceIndependentSize();
                             if (tb->toolButtonStyle == Qt::ToolButtonTextUnderIcon) {
-                                pr.setHeight(pixmap.size().height() / pixmap.devicePixelRatio() + 6);
+                                pr.setHeight(size.height() + 6);
                                 cr.adjust(0, pr.bottom(), 0, -3);
                                 alignment |= Qt::AlignCenter;
                             } else {
-                                pr.setWidth(pixmap.width() / pixmap.devicePixelRatio() + 8);
+                                pr.setWidth(size.width() + 8);
                                 cr.adjust(pr.right(), 0, 0, 0);
                                 alignment |= Qt::AlignLeft | Qt::AlignVCenter;
                             }
@@ -3812,12 +3814,11 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                     if (btn.state & State_On)
                         state = QIcon::On;
                     QPixmap pixmap = btn.icon.pixmap(btn.iconSize, p->device()->devicePixelRatio(), mode, state);
-                    int pixmapWidth = pixmap.width() / pixmap.devicePixelRatio();
-                    int pixmapHeight = pixmap.height() / pixmap.devicePixelRatio();
-                    contentW += pixmapWidth + QMacStylePrivate::PushButtonContentPadding;
+                    QSizeF pixmapSize = pixmap.deviceIndependentSize();
+                    contentW += pixmapSize.width() + QMacStylePrivate::PushButtonContentPadding;
                     int iconLeftOffset = freeContentRect.x() + (freeContentRect.width() - contentW) / 2;
-                    int iconTopOffset = freeContentRect.y() + (freeContentRect.height() - pixmapHeight) / 2;
-                    QRect iconDestRect(iconLeftOffset, iconTopOffset, pixmapWidth, pixmapHeight);
+                    int iconTopOffset = freeContentRect.y() + (freeContentRect.height() - pixmapSize.height()) / 2;
+                    QRect iconDestRect(iconLeftOffset, iconTopOffset, pixmapSize.width(), pixmapSize.height());
                     QRect visualIconDestRect = visualRect(btn.direction, freeContentRect, iconDestRect);
                     proxy()->drawItemPixmap(p, visualIconDestRect, Qt::AlignLeft | Qt::AlignVCenter, pixmap);
                     int newOffset = iconDestRect.x() + iconDestRect.width()
@@ -4314,13 +4315,12 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 }
 #endif
                 QPixmap pixmap = mi->icon.pixmap(iconSize, p->device()->devicePixelRatio(), mode);
-                int pixw = pixmap.width() / pixmap.devicePixelRatio();
-                int pixh = pixmap.height() / pixmap.devicePixelRatio();
                 QRect cr(xpos, mi->rect.y(), checkcol, mi->rect.height());
-                QRect pmr(0, 0, pixw, pixh);
+                QSize size = pixmap.deviceIndependentSize().toSize();
+                QRect pmr(QPoint(0, 0), size);
                 pmr.moveCenter(cr.center());
                 p->drawPixmap(pmr.topLeft(), pixmap);
-                xpos += pixw + 6;
+                xpos += size.width() + 6;
             }
 
             QString s = mi->text;

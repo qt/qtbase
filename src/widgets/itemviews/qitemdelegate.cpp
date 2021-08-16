@@ -1051,10 +1051,10 @@ QRect QItemDelegate::rect(const QStyleOptionViewItem &option,
             break;
         case QMetaType::QPixmap: {
             const QPixmap &pixmap = qvariant_cast<QPixmap>(value);
-            return QRect(QPoint(0, 0), pixmap.size() / pixmap.devicePixelRatio() ); }
+            return QRect(QPoint(0, 0), pixmap.deviceIndependentSize().toSize()); }
         case QMetaType::QImage: {
             const QImage &image = qvariant_cast<QImage>(value);
-            return QRect(QPoint(0, 0), image.size() /  image.devicePixelRatio() ); }
+            return QRect(QPoint(0, 0), image.deviceIndependentSize().toSize()); }
         case QMetaType::QIcon: {
             QIcon::Mode mode = d->iconMode(option.state);
             QIcon::State state = d->iconState(option.state);

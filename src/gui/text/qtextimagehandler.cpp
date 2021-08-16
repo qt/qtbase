@@ -102,20 +102,19 @@ static QSize getPixmapSize(QTextDocument *doc, const QTextImageFormat &format)
     QSize size(width, height);
     if (!hasWidth || !hasHeight) {
         pm = getPixmap(doc, format);
-        const int pmWidth = pm.width() / pm.devicePixelRatio();
-        const int pmHeight = pm.height() / pm.devicePixelRatio();
+        const QSizeF pmSize = pm.deviceIndependentSize();
 
         if (!hasWidth) {
             if (!hasHeight)
-                size.setWidth(pmWidth);
+                size.setWidth(pmSize.width());
             else
-                size.setWidth(qRound(height * (pmWidth / (qreal) pmHeight)));
+                size.setWidth(qRound(height * (pmSize.width() / (qreal) pmSize.height())));
         }
         if (!hasHeight) {
             if (!hasWidth)
-                size.setHeight(pmHeight);
+                size.setHeight(pmSize.height());
             else
-                size.setHeight(qRound(width * (pmHeight / (qreal) pmWidth)));
+                size.setHeight(qRound(width * (pmSize.height() / (qreal) pmSize.width())));
         }
     }
 
@@ -171,10 +170,11 @@ static QSize getImageSize(QTextDocument *doc, const QTextImageFormat &format)
     QSize size(width, height);
     if (!hasWidth || !hasHeight) {
         image = getImage(doc, format);
+        QSizeF imageSize = image.deviceIndependentSize();
         if (!hasWidth)
-            size.setWidth(image.width() / image.devicePixelRatio());
+            size.setWidth(imageSize.width());
         if (!hasHeight)
-            size.setHeight(image.height() / image.devicePixelRatio());
+            size.setHeight(imageSize.height());
     }
 
     qreal scale = 1.0;

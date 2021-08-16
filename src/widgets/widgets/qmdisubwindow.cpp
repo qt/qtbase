@@ -422,7 +422,7 @@ ControlLabel::ControlLabel(QMdiSubWindow *subWindow, QWidget *parent)
     Q_UNUSED(subWindow);
     setFocusPolicy(Qt::NoFocus);
     updateWindowIcon();
-    setFixedSize(label.size() / label.devicePixelRatio());
+    setFixedSize(label.deviceIndependentSize().toSize());
 }
 
 /*
@@ -430,7 +430,7 @@ ControlLabel::ControlLabel(QMdiSubWindow *subWindow, QWidget *parent)
 */
 QSize ControlLabel::sizeHint() const
 {
-    return label.size() / label.devicePixelRatio();
+    return label.deviceIndependentSize().toSize();
 }
 
 /*

@@ -584,7 +584,7 @@ void tst_QLabel::taskQTBUG_48157_dprPixmap()
     pixmap.load(QFINDTESTDATA(QStringLiteral("red@2x.png")));
     QCOMPARE(pixmap.devicePixelRatio(), 2.0);
     label.setPixmap(pixmap);
-    QCOMPARE(label.sizeHint(), pixmap.rect().size() / pixmap.devicePixelRatio());
+    QCOMPARE(label.sizeHint(), pixmap.deviceIndependentSize().toSize());
 }
 
 void tst_QLabel::taskQTBUG_48157_dprMovie()
@@ -595,7 +595,7 @@ void tst_QLabel::taskQTBUG_48157_dprMovie()
     movie.start();
     QCOMPARE(movie.currentPixmap().devicePixelRatio(), 2.0);
     label.setMovie(&movie);
-    QCOMPARE(label.sizeHint(), movie.currentPixmap().size() / movie.currentPixmap().devicePixelRatio());
+    QCOMPARE(label.sizeHint(), movie.currentPixmap().deviceIndependentSize().toSize());
 }
 
 void tst_QLabel::resourceProvider()

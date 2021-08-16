@@ -885,7 +885,7 @@ Q_WIDGETS_EXPORT void qt_blurImage(QPainter *p, QImage &blurImage, qreal radius,
     if (p) {
         p->scale(scale, scale);
         p->setRenderHint(QPainter::SmoothPixmapTransform);
-        p->drawImage(QRect(QPoint(0, 0), blurImage.size() / blurImage.devicePixelRatio()), blurImage);
+        p->drawImage(QRect(QPoint(0, 0), blurImage.deviceIndependentSize().toSize()), blurImage);
     }
 }
 

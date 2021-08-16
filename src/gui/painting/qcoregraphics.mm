@@ -145,7 +145,7 @@ QT_END_NAMESPACE
     // NSImage.
     auto nsImage = [[NSImage alloc] initWithSize:NSZeroSize];
     auto *imageRep = [[NSBitmapImageRep alloc] initWithCGImage:cgImage];
-    imageRep.size = (image.size() / image.devicePixelRatio()).toCGSize();
+    imageRep.size = image.deviceIndependentSize().toCGSize();
     [nsImage addRepresentation:[imageRep autorelease]];
     Q_ASSERT(CGSizeEqualToSize(nsImage.size, imageRep.size));
 
@@ -178,7 +178,7 @@ QT_END_NAMESPACE
             continue;
 
         auto *imageRep = [[NSBitmapImageRep alloc] initWithCGImage:cgImage];
-        imageRep.size = (image.size() / image.devicePixelRatio()).toCGSize();
+        imageRep.size = image.deviceIndependentSize().toCGSize();
         [nsImage addRepresentation:[imageRep autorelease]];
     }
 

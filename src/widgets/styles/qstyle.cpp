@@ -573,8 +573,9 @@ QRect QStyle::itemPixmapRect(const QRect &rect, int alignment, const QPixmap &pi
     int x, y, w, h;
     rect.getRect(&x, &y, &w, &h);
 
-    const int pixmapWidth = pixmap.width()/pixmap.devicePixelRatio();
-    const int pixmapHeight = pixmap.height()/pixmap.devicePixelRatio();
+    QSizeF pixmapSize = pixmap.deviceIndependentSize();
+    const int pixmapWidth = pixmapSize.width();
+    const int pixmapHeight = pixmapSize.height();
 
     if ((alignment & Qt::AlignVCenter) == Qt::AlignVCenter)
         y += h/2 - pixmapHeight/2;

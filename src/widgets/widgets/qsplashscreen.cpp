@@ -284,7 +284,7 @@ void QSplashScreen::setPixmap(const QPixmap &pixmap)
     d->pixmap = pixmap;
     setAttribute(Qt::WA_TranslucentBackground, pixmap.hasAlpha());
 
-    const QRect r(QPoint(), pixmap.size() / pixmap.devicePixelRatio());
+    const QRect r(QPoint(), pixmap.deviceIndependentSize().toSize());
     resize(r.size());
 
     move(screen()->geometry().center() - r.center());

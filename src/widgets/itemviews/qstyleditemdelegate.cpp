@@ -343,13 +343,13 @@ void QStyledItemDelegate::initStyleOption(QStyleOptionViewItem *option,
         case QMetaType::QImage: {
             QImage image = qvariant_cast<QImage>(*value);
             option->icon = QIcon(QPixmap::fromImage(image));
-            option->decorationSize = image.size() / image.devicePixelRatio();
+            option->decorationSize = image.deviceIndependentSize().toSize();
             break;
         }
         case QMetaType::QPixmap: {
             QPixmap pixmap = qvariant_cast<QPixmap>(*value);
             option->icon = QIcon(pixmap);
-            option->decorationSize = pixmap.size() / pixmap.devicePixelRatio();
+            option->decorationSize = pixmap.deviceIndependentSize().toSize();
             break;
         }
         default:

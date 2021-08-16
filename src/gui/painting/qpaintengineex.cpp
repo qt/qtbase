@@ -967,12 +967,12 @@ void QPaintEngineEx::drawPolygon(const QPoint *points, int pointCount, PolygonDr
 
 void QPaintEngineEx::drawPixmap(const QPointF &pos, const QPixmap &pm)
 {
-    drawPixmap(QRectF(pos, pm.size() / pm.devicePixelRatio()), pm, pm.rect());
+    drawPixmap(QRectF(pos, pm.deviceIndependentSize()), pm, pm.rect());
 }
 
 void QPaintEngineEx::drawImage(const QPointF &pos, const QImage &image)
 {
-    drawImage(QRectF(pos, image.size() / image.devicePixelRatio()), image, image.rect());
+    drawImage(QRectF(pos, image.deviceIndependentSize()), image, image.rect());
 }
 
 void QPaintEngineEx::drawTiledPixmap(const QRectF &r, const QPixmap &pixmap, const QPointF &s)

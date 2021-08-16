@@ -604,7 +604,7 @@ QSize QLabelPrivate::sizeForWidth(int w) const
 
     if (pixmap && !pixmap->isNull()) {
         br = pixmap->rect();
-        br.setSize(br.size() / pixmap->devicePixelRatio());
+        br.setSize(pixmap->deviceIndependentSize().toSize());
 #ifndef QT_NO_PICTURE
     } else if (picture && !picture->isNull()) {
         br = picture->boundingRect();
@@ -612,7 +612,7 @@ QSize QLabelPrivate::sizeForWidth(int w) const
 #if QT_CONFIG(movie)
     } else if (movie && !movie->currentPixmap().isNull()) {
         br = movie->currentPixmap().rect();
-        br.setSize(br.size() / movie->currentPixmap().devicePixelRatio());
+        br.setSize(movie->currentPixmap().deviceIndependentSize().toSize());
 #endif
     } else if (isTextLabel) {
         int align = QStyle::visualAlignment(textDirection(), QFlag(this->align));
