@@ -1375,7 +1375,7 @@ QStringList qt_strip_filters(const QStringList &filters)
 {
 #if QT_CONFIG(regularexpression)
     QStringList strippedFilters;
-    QRegularExpression r(QString::fromLatin1(QPlatformFileDialogHelper::filterRegExp));
+    static const QRegularExpression r(QString::fromLatin1(QPlatformFileDialogHelper::filterRegExp));
     const int numFilters = filters.count();
     strippedFilters.reserve(numFilters);
     for (int i = 0; i < numFilters; ++i) {
