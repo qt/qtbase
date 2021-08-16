@@ -12,5 +12,5 @@ BPASS  : tst_Blacklisted::xfail()
 BXPASS : tst_Blacklisted::xpass() 'true' returned TRUE unexpectedly. (This test should BXPASS)
    Loc: [qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp(0)]
 PASS   : tst_Blacklisted::cleanupTestCase()
-Totals: 2 passed, 0 failed, 1 skipped, 5 blacklisted, 0ms
+Totals: 2 passed, 0 failed, 1 skipped, 4 blacklisted, 0ms
 ********* Finished testing of tst_Blacklisted *********
