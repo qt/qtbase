@@ -47,9 +47,41 @@ elseif(APPLE AND CMAKE_SYSTEM_NAME STREQUAL "iOS")
     list(APPEND CMAKE_MODULE_PATH "${_qt_import_prefix}/ios")
 endif()
 
-set(QT_ADDITIONAL_PACKAGES_PREFIX_PATH "" CACHE STRING "Additional directories where find(Qt6 ...) components are searched")
-file(TO_CMAKE_PATH "${QT_ADDITIONAL_PACKAGES_PREFIX_PATH}" _qt_additional_packages_prefix_path)
-file(TO_CMAKE_PATH "$ENV{QT_ADDITIONAL_PACKAGES_PREFIX_PATH}" _qt_additional_packages_prefix_path_env)
+set(QT_ADDITIONAL_PACKAGES_PREFIX_PATH "" CACHE STRING
+    "Additional directories where find(Qt6 ...) components are searched")
+
+# Collect additional package prefix paths to look for Qt packages, both from command line and the
+# env variable.
+if(NOT DEFINED _qt_additional_packages_prefix_paths)
+    set(_qt_additional_packages_prefix_paths "")
+
+    set(_qt_additional_packages_prefixes "")
+    if(QT_ADDITIONAL_PACKAGES_PREFIX_PATH)
+        list(APPEND _qt_additional_packages_prefixes ${QT_ADDITIONAL_PACKAGES_PREFIX_PATH})
+    endif()
+    if(DEFINED ENV{QT_ADDITIONAL_PACKAGES_PREFIX_PATH}
+        AND NOT "$ENV{QT_ADDITIONAL_PACKAGES_PREFIX_PATH}" STREQUAL "")
+        list(APPEND _qt_additional_packages_prefixes $ENV{QT_ADDITIONAL_PACKAGES_PREFIX_PATH})
+    endif()
+
+    foreach(_qt_additional_path IN LISTS _qt_additional_packages_prefixes)
+        file(TO_CMAKE_PATH "${_qt_additional_path}" _qt_additional_path)
+
+        # The prefix paths need to end with lib/cmake to ensure the packages are found when
+        # cross compiling. Search for REROOT_PATH_ISSUE_MARKER in the qt.toolchain.cmake file for
+        # details.
+        # We must pass the values via the PATHS options because the main find_package call uses
+        # NO_DEFAULT_PATH, and thus CMAKE_PREFIX_PATH values are discarded.
+        # CMAKE_FIND_ROOT_PATH values are not discarded and togegher with the PATHS option, it
+        # ensures packages from additional prefixes are found.
+        if(NOT _qt_additional_path MATCHES "/lib/cmake$")
+            string(APPEND _qt_additional_path "/lib/cmake")
+        endif()
+        list(APPEND _qt_additional_packages_prefix_paths "${_qt_additional_path}")
+    endforeach()
+    unset(_qt_additional_path)
+    unset(_qt_additional_packages_prefixes)
+endif()
 
 # Public helpers available to all Qt packages.
 include("${CMAKE_CURRENT_LIST_DIR}/QtFeature.cmake")
@@ -121,8 +153,7 @@ foreach(module ${@INSTALL_CMAKE_NAMESPACE@_FIND_COMPONENTS})
         ${_@INSTALL_CMAKE_NAMESPACE@_FIND_PARTS_QUIET}
         PATHS
             ${_qt_cmake_dir}
-            ${_qt_additional_packages_prefix_path}
-            ${_qt_additional_packages_prefix_path_env}
+            ${_qt_additional_packages_prefix_paths}
             ${QT_EXAMPLES_CMAKE_PREFIX_PATH}
             ${__qt_find_package_host_qt_path}
         ${__qt_use_no_default_path_for_qt_packages}

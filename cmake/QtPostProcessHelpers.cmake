@@ -292,12 +292,15 @@ function(qt_internal_create_plugin_depends_file target)
 
     if(third_party_deps OR target_deps)
         # Setup build and install paths
-        set(find_dependency_paths "\${CMAKE_CURRENT_LIST_DIR}/..")
+
+        # Plugins should look for their dependencies in their associated module package folder as
+        # well as the Qt6 package folder which is stored by the Qt6 package in _qt_cmake_dir.
+        set(find_dependency_paths "\${CMAKE_CURRENT_LIST_DIR}/..;\${_qt_cmake_dir}")
         if(plugin_install_package_suffix)
             set(path_suffix "${INSTALL_CMAKE_NAMESPACE}${plugin_install_package_suffix}")
             if(plugin_install_package_suffix MATCHES "/QmlPlugins")
                 # Qml plugins are one folder deeper.
-                set(find_dependency_paths "\${CMAKE_CURRENT_LIST_DIR}/../..")
+                set(find_dependency_paths "\${CMAKE_CURRENT_LIST_DIR}/../..;\${_qt_cmake_dir}")
             endif()
 
         else()
