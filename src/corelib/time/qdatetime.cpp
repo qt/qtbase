@@ -1135,9 +1135,8 @@ QString QDate::toString(Qt::DateFormat format) const
 
     If the datetime is invalid, an empty string will be returned.
 
-    \note Day and month names are given in English (C locale).
-    If localized month and day names are desired, use
-    QLocale::system().toString().
+    \note Day and month names are given in English (C locale). To get localized
+    month and day names, use QLocale::system().toString().
 
     \sa fromString(), QDateTime::toString(), QTime::toString(), QLocale::toString()
 
@@ -1544,9 +1543,8 @@ QDate QDate::fromString(QStringView string, Qt::DateFormat format)
              minus sign for negative years.
     \endtable
 
-    \note Day and month names must be given in English (C locale).
-    If localized month and day names are used, use
-    QLocale::system().toDate().
+    \note Day and month names must be given in English (C locale). If localized
+    month and day names are to be recognized, use QLocale::system().toDate().
 
     All other input characters will be treated as text. Any non-empty sequence
     of characters enclosed in single quotes will also be treated (stripped of
@@ -1886,9 +1884,19 @@ QString QTime::toString(Qt::DateFormat format) const
     \row \li zzz \li The fractional part of the second, to millisecond
                 precision, including trailing zeroes where applicable (000 to 999).
     \row \li AP or A
-         \li Use AM/PM display. \e A/AP will be replaced by 'AM' or 'PM'
+         \li Use AM/PM display. \c A/AP will be replaced by 'AM' or 'PM'. In
+             localized forms (only relevant to \l{QLocale::toString()}), the
+             locale-appropriate text is converted to upper-case.
     \row \li ap or a
-         \li Use am/pm display. \e a/ap will be replaced by 'am' or 'pm'
+         \li Use am/pm display. \c a/ap will be replaced by 'am' or 'pm'. In
+             localized forms (only relevant to \l{QLocale::toString()}), the
+             locale-appropriate text is converted to lower-case.
+    \row \li aP or Ap
+         \li Use AM/PM display (since 6.3). \c aP/Ap will be replaced by 'AM' or
+             'PM'. In localized forms (only relevant to
+             \l{QLocale::toString()}), the locale-appropriate text (returned by
+             \l{QLocale::amText()} or \l{QLocaleie:pmText()}) is used without
+             change of case.
     \row \li t \li The timezone (for example "CEST")
     \endtable
 
@@ -1903,8 +1911,7 @@ QString QTime::toString(Qt::DateFormat format) const
     produces "212" it could mean either the 2nd of December or the 21st of
     February).
 
-    Example format strings (assuming that the QTime is 14:13:09.042 and the system
-    locale is \c{en_US})
+    Example format strings (assuming that the QTime is 14:13:09.042)
 
     \table
     \header \li Format \li Result
@@ -1915,8 +1922,8 @@ QString QTime::toString(Qt::DateFormat format) const
 
     If the time is invalid, an empty string will be returned.
 
-    \note If localized forms of am or pm (the AP, ap, A or a formats) are
-    desired, please use QLocale::system().toString().
+    \note To get localized forms of AM or PM (the AP, ap, A, a, aP or Ap
+    formats), use QLocale::system().toString().
 
     \sa fromString(), QDate::toString(), QDateTime::toString(), QLocale::toString()
 */
@@ -2277,10 +2284,9 @@ QTime QTime::fromString(QStringView string, Qt::DateFormat format)
                 without trailing zeroes.
     \row \li zzz \li The fractional part of the second, to millisecond
                 precision, including trailing zeroes where applicable (000 to 999).
-    \row \li AP or A
-         \li Interpret as an AM/PM time. \e A/AP will match 'AM' or 'PM'.
-    \row \li ap or a
-         \li Interpret as an am/pm time. \e a/ap will match 'am' or 'pm'.
+    \row \li AP, A, ap, a, aP or Ap
+         \li Either 'AM' indicating a time before 12:00 or 'PM' for later times,
+             matched case-insensitively.
     \endtable
 
     All other input characters will be treated as text. Any non-empty sequence
@@ -2304,11 +2310,11 @@ QTime QTime::fromString(QStringView string, Qt::DateFormat format)
 
     \snippet code/src_corelib_time_qdatetime.cpp 8
 
-    \note If localized forms of am or pm (the AP, ap, A or a formats) are used,
-    please use QLocale::system().toTime().
+    \note If localized forms of am or pm (the AP, ap, Ap, aP, A or a formats)
+    are to be recognized, use QLocale::system().toTime().
 
     \sa toString(), QDateTime::fromString(), QDate::fromString(),
-    QLocale::toTime()
+        QLocale::toTime(), QLocale::toDateTime()
 */
 
 /*!
@@ -4327,9 +4333,9 @@ QString QDateTime::toString(Qt::DateFormat format) const
 
     If the datetime is invalid, an empty string will be returned.
 
-    \note Day and month names as well as AM/PM indication are given in English (C locale).
-    If localized month and day names and localized forms of AM/PM are used, use
-    QLocale::system().toDateTime().
+    \note Day and month names as well as AM/PM indicators are given in English
+    (C locale).  To get localized month and day names and localized forms of
+    AM/PM, use QLocale::system().toDateTime().
 
     \sa fromString(), QDate::toString(), QTime::toString(), QLocale::toString()
 */
@@ -5235,9 +5241,9 @@ QDateTime QDateTime::fromString(QStringView string, Qt::DateFormat format)
 
     \snippet code/src_corelib_time_qdatetime.cpp 21
 
-    \note Day and month names as well as AM/PM indication must be given in English (C locale).
-    If localized month and day names and localized forms of AM/PM are used, use
-    QLocale::system().toDateTime().
+    \note Day and month names as well as AM/PM indicators must be given in
+    English (C locale).  If localized month and day names or localized forms of
+    AM/PM are to be recognized, use QLocale::system().toDateTime().
 
     \sa toString(), QDate::fromString(), QTime::fromString(),
     QLocale::toDateTime()

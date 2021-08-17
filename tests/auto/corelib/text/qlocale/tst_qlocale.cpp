@@ -1675,18 +1675,27 @@ void tst_QLocale::formatTime_data()
         << QTime(14, 2, 3) << "en_US" << "h:m:s ap" << "2:2:3 pm";
     QTest::newRow("en_US-H:m:s+AP-pm")
         << QTime(14, 2, 3) << "en_US" << "H:m:s AP" << "14:2:3 PM";
+    QTest::newRow("en_US-H:m:s+Ap-pm")
+        << QTime(14, 2, 3) << "en_US" << "H:m:s Ap" << "14:2:3 PM";
     QTest::newRow("en_US-h:m:s+ap-am")
         << QTime(1, 2, 3) << "en_US" << "h:m:s ap" << "1:2:3 am";
     QTest::newRow("en_US-H:m:s+AP-am")
         << QTime(1, 2, 3) << "en_US" << "H:m:s AP" << "1:2:3 AM";
+    QTest::newRow("en_US-H:m:s+aP-am")
+        << QTime(1, 2, 3) << "en_US" << "H:m:s aP" << "1:2:3 AM";
+
     QTest::newRow("cs_CZ-h:m:s+ap-pm")
         << QTime(14, 2, 3) << "cs_CZ" << "h:m:s ap" << "2:2:3 odp.";
     QTest::newRow("cs_CZ-h:m:s+AP-pm")
         << QTime(14, 2, 3) << "cs_CZ" << "h:m:s AP" << "2:2:3 ODP.";
+    QTest::newRow("cs_CZ-h:m:s+Ap-pm")
+        << QTime(14, 2, 3) << "cs_CZ" << "h:m:s Ap" << "2:2:3 odp.";
     QTest::newRow("cs_CZ-h:m:s+ap-am")
         << QTime(1, 2, 3) << "cs_CZ" << "h:m:s ap" << "1:2:3 dop.";
     QTest::newRow("cs_CZ-h:m:s+AP-am")
         << QTime(1, 2, 3) << "cs_CZ" << "h:m:s AP" << "1:2:3 DOP.";
+    QTest::newRow("cs_CZ-h:m:s+aP-am")
+        << QTime(1, 2, 3) << "cs_CZ" << "h:m:s aP" << "1:2:3 dop.";
 }
 
 void tst_QLocale::formatTime()
@@ -1810,7 +1819,7 @@ void tst_QLocale::formatDateTime_data()
                                     << QString("31-apAP12-1999 23:59:59.999");
     QTest::newRow("datetime3")      << "en_US" << testLongHour
                                     << QString("Apdd-MM-yyyy hh:mm:ss.zzz")
-                                    << QString("PMp31-12-1999 11:59:59.999");
+                                    << QString("PM31-12-1999 11:59:59.999");
     QTest::newRow("datetime4")      << "en_US" << testLongHour
                                     << QString("'ap'apdd-MM-yyyy 'AP'hh:mm:ss.zzz")
                                     << QString("appm31-12-1999 AP11:59:59.999");
@@ -1985,6 +1994,14 @@ void tst_QLocale::toDateTime_data()
     QTest::newRow("longFormat")
         << "en_US" << QDateTime(QDate(2009, 1, 5), QTime(11, 48, 32))
         << "dddd, MMMM d, yyyy h:mm:ss AP " << "Monday, January 5, 2009 11:48:32 AM " << true;
+
+    // Parsing am/pm indicators case-insensitively:
+    QTest::newRow("am-cs_CZ")
+        << "cs_CZ" << QDateTime(QDate(1945, 8, 6), QTime(8, 15, 44, 400))
+        << "yyyy-MM-dd hh:mm:ss.z aP" << "1945-08-06 08:15:44.4 dOp." << true;
+    QTest::newRow("pm-cs_CZ")
+        << "cs_CZ" << QDateTime(QDate(1945, 8, 15), QTime(12, 0))
+        << "yyyy-MM-dd hh:mm aP" << "1945-08-15 12:00 OdP." << true;
 
     const QDateTime dt(QDate(2017, 02, 25), QTime(17, 21, 25));
     // These formats correspond to the locale formats, with the timezone removed.

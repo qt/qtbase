@@ -553,11 +553,18 @@ void tst_QTime::fromStringFormat_data()
     QTest::newRow("data7") << QString("25") << QString("hh") << invalidTime();
     QTest::newRow("data8") << QString("22pm") << QString("Hap") << QTime(22, 0, 0);
     QTest::newRow("data9") << QString("2221") << QString("hhhh") << invalidTime();
-    QTest::newRow("data10") << QString("02:23PM") << QString("hh:mmAP") << QTime(14,23,0,0);
-    QTest::newRow("data11") << QString("02:23pm") << QString("hh:mmap") << QTime(14,23,0,0);
-    QTest::newRow("short-msecs-lt100") << QString("10:12:34:045") << QString("hh:m:ss:z") << QTime(10,12,34,45);
-    QTest::newRow("short-msecs-gt100") << QString("10:12:34:45") << QString("hh:m:ss:z") << QTime(10,12,34,450);
-    QTest::newRow("late") << QString("23:59:59.999") << QString("hh:mm:ss.z") << QTime(23, 59, 59, 999);
+    // Parsing of am/pm indicators is case-insensitive
+    QTest::newRow("pm-upper") << QString("02:23PM") << QString("hh:mmAp") << QTime(14, 23);
+    QTest::newRow("pm-lower") << QString("02:23pm") << QString("hh:mmaP") << QTime(14, 23);
+    QTest::newRow("pm-as-upper") << QString("02:23Pm") << QString("hh:mmAP") << QTime(14, 23);
+    QTest::newRow("pm-as-lower") << QString("02:23pM") << QString("hh:mmap") << QTime(14, 23);
+    // Millisecond parsing must interpolate 0s only at the end and notice them at the start.
+    QTest::newRow("short-msecs-lt100")
+        << QString("10:12:34:045") << QString("hh:m:ss:z") << QTime(10, 12, 34, 45);
+    QTest::newRow("short-msecs-gt100")
+        << QString("10:12:34:45") << QString("hh:m:ss:z") << QTime(10, 12, 34, 450);
+    QTest::newRow("late")
+        << QString("23:59:59.999") << QString("hh:mm:ss.z") << QTime(23, 59, 59, 999);
 
     // Test unicode handling.
     QTest::newRow("emoji in format string 1")

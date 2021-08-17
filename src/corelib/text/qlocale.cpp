@@ -2263,9 +2263,13 @@ QString QLocale::dateTimeFormat(FormatType format) const
 /*!
     \since 4.4
 
-    Parses the time string given in \a string and returns the
-    time. The format of the time string is chosen according to the
-    \a format parameter (see timeFormat()).
+    Reads \a string as a time in a locale-specific \a format.
+
+    Parses \a string and returns the time it represents. The format of the time
+    string is chosen according to the \a format parameter (see timeFormat()).
+
+    \note Any am/pm indicators used must match \l amText() or \l pmText(),
+    ignoring case.
 
     If the time could not be parsed, returns an invalid time.
 
@@ -2279,9 +2283,13 @@ QTime QLocale::toTime(const QString &string, FormatType format) const
 /*!
     \since 4.4
 
-    Parses the date string given in \a string and returns the
-    date. The format of the date string is chosen according to the
-    \a format parameter (see dateFormat()).
+    Reads \a string as a date in a locale-specific \a format.
+
+    Parses \a string and returns the date it represents. The format of the date
+    string is chosen according to the \a format parameter (see dateFormat()).
+
+    \note Month and day names, where used, must be given in the locale's
+    language.
 
     If the date could not be parsed, returns an invalid date.
 
@@ -2304,9 +2312,15 @@ QDate QLocale::toDate(const QString &string, FormatType format, QCalendar cal) c
 /*!
     \since 4.4
 
-    Parses the date/time string given in \a string and returns the
-    time. The format of the date/time string is chosen according to the
-    \a format parameter (see dateTimeFormat()).
+    Reads \a string as a date-time in a locale-specific \a format.
+
+    Parses \a string and returns the date-time it represents. The format of the
+    date string is chosen according to the \a format parameter (see
+    dateFormat()).
+
+    \note Month and day names, where used, must be given in the locale's
+    language. Any am/pm indicators used must match \l amText() or \l pmText(),
+    ignoring case.
 
     If the string could not be parsed, returns an invalid QDateTime.
 
@@ -2329,9 +2343,13 @@ QDateTime QLocale::toDateTime(const QString &string, FormatType format, QCalenda
 /*!
     \since 4.4
 
-    Parses the time string given in \a string and returns the
-    time. See QTime::fromString() for information on what is a valid
-    format string.
+    Reads \a string as a time in the given \a format.
+
+    Parses \a string and returns the time it represents. See QTime::fromString()
+    for the interpretation of \a format.
+
+    \note Any am/pm indicators used must match \l amText() or \l pmText(),
+    ignoring case.
 
     If the time could not be parsed, returns an invalid time.
 
@@ -2355,12 +2373,13 @@ QTime QLocale::toTime(const QString &string, const QString &format) const
 /*!
     \since 4.4
 
-    Parses the date string given in \a string and returns the
-    date. See QDate::fromString() for information on the expressions
-    that can be used with this function.
+    Reads \a string as a date in the given \a format.
 
-    This function searches month names and the names of the days of
-    the week in the current locale.
+    Parses \a string and returns the date it represents. See QDate::fromString()
+    for the interpretation of \a format.
+
+    \note Month and day names, where used, must be given in the locale's
+    language.
 
     If the date could not be parsed, returns an invalid date.
 
@@ -2394,12 +2413,14 @@ QDate QLocale::toDate(const QString &string, const QString &format, QCalendar ca
 /*!
     \since 4.4
 
-    Parses the date/time string given in \a string and returns the
-    time.  See QDateTime::fromString() for information on the expressions
-    that can be used with this function.
+    Reads \a string as a date-time in the given \a format.
 
-    \note The month and day names used must be given in the user's local
-    language.
+    Parses \a string and returns the date-time it represents.  See
+    QDateTime::fromString() for the interpretation of \a format.
+
+    \note Month and day names, where used, must be given in the locale's
+    language. Any am/pm indicators used must match \l amText() or \l pmText(),
+    ignoring case.
 
     If the string could not be parsed, returns an invalid QDateTime.  If the
     string can be parsed and represents an invalid date-time (e.g. in a gap
@@ -3356,19 +3377,21 @@ QString QCalendarBackend::dateTimeToString(QStringView format, const QDateTime &
                 }
                 break;
 
-            case 'a':
-                used = true;
-                repeat = format.mid(i + 1).startsWith(QLatin1Char('p')) ? 2 : 1;
-                result.append(time.hour() < 12 ? locale.amText().toLower()
-                                               : locale.pmText().toLower());
-                break;
-
             case 'A':
+            case 'a': {
+                QString text = time.hour() < 12 ? locale.amText() : locale.pmText();
                 used = true;
-                repeat = format.mid(i + 1).startsWith(QLatin1Char('P')) ? 2 : 1;
-                result.append(time.hour() < 12 ? locale.amText().toUpper()
-                                                : locale.pmText().toUpper());
+                repeat = 1;
+                if (format.mid(i + 1).startsWith(QLatin1Char('p'), Qt::CaseInsensitive))
+                    ++repeat;
+                if (c.unicode() == 'A' && (repeat == 1 || format.at(i + 1).unicode() == 'P'))
+                    text = std::move(text).toUpper();
+                else if (c.unicode() == 'a' && (repeat == 1 || format.at(i + 1).unicode() == 'p'))
+                    text = std::move(text).toLower();
+                // else 'Ap' or 'aP' => use CLDR text verbatim, preserving case
+                result.append(text);
                 break;
+            }
 
             case 'z':
                 used = true;

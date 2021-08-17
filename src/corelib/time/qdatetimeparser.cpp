@@ -292,7 +292,7 @@ int QDateTimeParser::absoluteMax(int s, const QDateTime &cur) const
     case DayOfWeekSectionLong:
         return 7;
     case AmPmSection:
-        return 1;
+        return int(UpperCase);
     default:
         break;
     }
@@ -330,7 +330,7 @@ int QDateTimeParser::absoluteMin(int s) const
     case DaySection:
     case DayOfWeekSectionShort:
     case DayOfWeekSectionLong: return 1;
-    case AmPmSection: return 0;
+    case AmPmSection: return int(NativeCase);
     default: break;
     }
     qWarning("QDateTimeParser::absoluteMin() Internal error (%ls, %0x)",
@@ -545,15 +545,19 @@ bool QDateTimeParser::parseFormat(QStringView newFormat)
             case 'A':
             case 'a':
                 if (parserType != QMetaType::QDate) {
-                    const bool cap = (sect == 'A');
-                    const SectionNode sn = { AmPmSection, i - add, (cap ? 1 : 0), 0 };
-                    newSectionNodes.append(sn);
+                    const int pos = i - add;
+                    Case caseOpt = sect == 'A' ? UpperCase : LowerCase;
                     appendSeparator(&newSeparators, newFormat, index, i - index, lastQuote);
                     newDisplay |= AmPmSection;
                     if (i + 1 < newFormat.size()
-                        && newFormat.at(i+1) == (cap ? QLatin1Char('P') : QLatin1Char('p'))) {
+                        && newFormat.sliced(i + 1).startsWith(QLatin1Char('p'),
+                                                              Qt::CaseInsensitive)) {
                         ++i;
+                        if (newFormat.at(i) != QLatin1Char(caseOpt == UpperCase ? 'P' : 'p'))
+                            caseOpt = NativeCase;
                     }
+                    const SectionNode sn = { AmPmSection, pos, int(caseOpt), 0 };
+                    newSectionNodes.append(sn);
                     index = i + 1;
                 }
                 break;
@@ -699,8 +703,8 @@ int QDateTimeParser::sectionMaxSize(Section s, int count) const
 
     case AmPmSection:
         // Special: "count" here is a case flag, not field width !
-        return qMax(getAmPmText(AmText, count ? UpperCase : LowerCase).size(),
-                    getAmPmText(PmText, count ? UpperCase : LowerCase).size());
+        return qMax(getAmPmText(AmText, Case(count)).size(),
+                    getAmPmText(PmText, Case(count)).size());
 
     case Hour24Section:
     case Hour12Section:
@@ -1910,9 +1914,9 @@ QDateTimeParser::AmPmFinder QDateTimeParser::findAmPm(QString &str, int sectionI
         pmindex = 1
     };
     QString ampm[2];
-    ampm[amindex] = getAmPmText(AmText, s.count == 1 ? UpperCase : LowerCase);
-    ampm[pmindex] = getAmPmText(PmText, s.count == 1 ? UpperCase : LowerCase);
-    for (int i=0; i<2; ++i)
+    ampm[amindex] = getAmPmText(AmText, Case(s.count));
+    ampm[pmindex] = getAmPmText(PmText, Case(s.count));
+    for (int i = 0; i < 2; ++i)
         ampm[i].truncate(size);
 
     QDTPDEBUG << "findAmPm" << str << ampm[0] << ampm[1];
@@ -2034,8 +2038,8 @@ QDateTimeParser::FieldInfo QDateTimeParser::fieldInfo(int index) const
         break;
     case AmPmSection:
         // Some locales have different length AM and PM texts.
-        if (getAmPmText(AmText, sn.count ? UpperCase : LowerCase).size()
-            == getAmPmText(PmText, sn.count ? UpperCase : LowerCase).size()) {
+        if (getAmPmText(AmText, Case(sn.count)).size()
+            == getAmPmText(PmText, Case(sn.count)).size()) {
             // Only relevant to DateTimeEdit's fixups in parse().
             ret |= FixedWidth;
         }
@@ -2054,7 +2058,7 @@ QString QDateTimeParser::SectionNode::format() const
 {
     QChar fillChar;
     switch (type) {
-    case AmPmSection: return count == 1 ? QLatin1String("AP") : QLatin1String("ap");
+    case AmPmSection: return QLatin1String(count == 1 ? "ap" : count == 2 ? "AP" : "Ap");
     case MSecSection: fillChar = QLatin1Char('z'); break;
     case SecondSection: fillChar = QLatin1Char('s'); break;
     case MinuteSection: fillChar = QLatin1Char('m'); break;
@@ -2260,7 +2264,14 @@ QString QDateTimeParser::getAmPmText(AmPm ap, Case cs) const
 {
     const QLocale loc = locale();
     QString raw = ap == AmText ? loc.amText() : loc.pmText();
-    return cs == UpperCase ? raw.toUpper() : raw.toLower();
+    switch (cs)
+    {
+    case UpperCase: return raw.toUpper();
+    case LowerCase: return raw.toLower();
+    case NativeCase: return raw;
+    }
+    Q_UNREACHABLE();
+    return raw;
 }
 
 /*

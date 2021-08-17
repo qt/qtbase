@@ -140,7 +140,7 @@ public:
     struct Q_CORE_EXPORT SectionNode {
         Section type;
         mutable int pos;
-        int count;
+        int count; // (used as Case(count) indicator for AmPmSection)
         int zeroesAdded;
 
         static QString name(Section s);
@@ -168,11 +168,6 @@ public:
     enum AmPm {
         AmText,
         PmText
-    };
-
-    enum Case {
-        UpperCase,
-        LowerCase
     };
 
     StateNode parse(const QString &input, int position,
@@ -239,6 +234,14 @@ private:
         return potentialValue(QStringView(str), min, max, index, currentValue, insert);
     }
 
+    enum Case {
+        NativeCase,
+        LowerCase,
+        UpperCase
+    };
+
+    QString getAmPmText(AmPm ap, Case cs) const;
+
     friend class QDTPUnitTestParser;
 
 protected: // for the benefit of QDateTimeEditPrivate
@@ -262,7 +265,6 @@ protected: // for the benefit of QDateTimeEditPrivate
         return skipToNextSection(section, current, QStringView(sectionText));
     }
     QString stateName(State s) const;
-    QString getAmPmText(AmPm ap, Case cs) const;
 
     virtual QDateTime getMinimum() const;
     virtual QDateTime getMaximum() const;
