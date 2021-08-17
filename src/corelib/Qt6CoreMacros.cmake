@@ -2238,7 +2238,28 @@ function(qt6_disable_unicode_defines target)
     set_target_properties(${target} PROPERTIES QT_NO_UNICODE_DEFINES TRUE)
 endfunction()
 
+# Finalizer function for the top-level user projects.
+#
+# This function is currently in Technical Preview.
+# Its signature and behavior might change.
+function(qt6_finalize_project)
+    if(NOT CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
+        message("qt6_finalize_project is called not in the top-level CMakeLists.txt.")
+    endif()
+    if(ANDROID)
+        _qt_internal_collect_target_apk_dependencies()
+    endif()
+endfunction()
+
 if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
+    function(qt_finalize_project)
+        if(QT_DEFAULT_MAJOR_VERSION EQUAL 6)
+            qt6_finalize_project()
+        else()
+            message(FATAL_ERROR "qt_finalize_project() is only available in Qt 6.")
+        endif()
+    endfunction()
+
     function(qt_disable_unicode_defines)
         qt6_disable_unicode_defines(${ARGV})
     endfunction()

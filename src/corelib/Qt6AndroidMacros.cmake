@@ -19,6 +19,15 @@ endfunction()
 
 # Generate the deployment settings json file for a cmake target.
 function(qt6_android_generate_deployment_settings target)
+    # Avoid calling the function twice
+    get_target_property(is_called ${target} _qt_is_android_generate_deployment_settings_called)
+    if(is_called)
+        return()
+    endif()
+    set_target_properties(${target} PROPERTIES
+        _qt_is_android_generate_deployment_settings_called TRUE
+    )
+
     # Information extracted from mkspecs/features/android/android_deployment_settings.prf
     if (NOT TARGET ${target})
         message(SEND_ERROR "${target} is not a cmake target")
@@ -140,12 +149,12 @@ function(qt6_android_generate_deployment_settings target)
     endif()
 
     # package source dir
-    get_target_property(android_package_source_dir ${target} QT_ANDROID_PACKAGE_SOURCE_DIR)
-    if (android_package_source_dir)
-        file(TO_CMAKE_PATH "${android_package_source_dir}" android_package_source_dir_native)
-        string(APPEND file_contents
-            "   \"android-package-source-directory\": \"${android_package_source_dir_native}\",\n")
-    endif()
+    set(android_package_source_dir_genex
+        "$<TARGET_PROPERTY:${target},QT_ANDROID_PACKAGE_SOURCE_DIR>")
+    string(APPEND file_contents
+        "$<$<BOOL:${android_package_source_dir_genex}>:"
+        "   \"android-package-source-directory\": \"${android_package_source_dir_genex}\"\,\n"
+        ">")
 
     # version code
     get_target_property(android_version_code ${target} QT_ANDROID_VERSION_CODE)
@@ -235,12 +244,33 @@ function(qt6_android_generate_deployment_settings target)
     foreach(prefix IN LISTS CMAKE_FIND_ROOT_PATH)
         if (NOT "${prefix}" STREQUAL "${qt_android_install_dir_native}"
             AND NOT "${prefix}" STREQUAL "${android_ndk_root_native}")
-            list(APPEND extra_prefix_list \"${prefix}\")
+            list(APPEND extra_prefix_list "\"${prefix}\"")
         endif()
     endforeach()
     string (REPLACE ";" "," extra_prefix_list "${extra_prefix_list}")
     string(APPEND file_contents
         "   \"extraPrefixDirs\" : [ ${extra_prefix_list} ],\n")
+
+    # Extra library paths that could be used as a dependency lookup path by androiddeployqt.
+    #
+    # Unlike 'extraPrefixDirs', the 'extraLibraryDirs' key doesn't expect the 'lib' subfolder
+    # when looking for dependencies.
+    set(extra_library_dirs_property_genex
+        "$<TARGET_PROPERTY:${target},_qt_android_extra_library_dirs>"
+    )
+    set(extra_library_dirs_add_quote_genex
+        "$<$<BOOL:${extra_library_dirs_property_genex}>:\">"
+    )
+    string(JOIN "" extra_library_dirs
+        "${extra_library_dirs_add_quote_genex}"
+        "$<JOIN:"
+            "$<GENEX_EVAL:${extra_library_dirs_property_genex}>,"
+            "\",\""
+        ">"
+        "${extra_library_dirs_add_quote_genex}"
+    )
+    string(APPEND file_contents
+        "   \"extraLibraryDirs\" : [ ${extra_library_dirs} ],\n")
 
     if(QT_FEATURE_zstd)
         set(is_zstd_enabled "true")
@@ -261,7 +291,7 @@ function(qt6_android_generate_deployment_settings target)
     # content end
     string(APPEND file_contents "}\n")
 
-    file(WRITE ${deploy_file} ${file_contents})
+    file(GENERATE OUTPUT ${deploy_file} CONTENT ${file_contents})
 
     set_target_properties(${target}
         PROPERTIES
@@ -358,6 +388,8 @@ function(qt6_android_add_apk_target target)
             COMMENT "Creating APK for ${target}"
         )
     endif()
+    set_property(GLOBAL APPEND PROPERTY _qt_apk_targets ${target})
+    _qt_internal_collect_target_apk_dependencies_defer(${target})
 endfunction()
 
 function(_qt_internal_create_global_apk_target)
@@ -369,6 +401,89 @@ function(_qt_internal_create_global_apk_target)
             add_custom_target(apk COMMENT "Building all apks")
         endif()
     endif()
+endfunction()
+
+# The function collects all known non-imported shared libraries that are created in the build tree.
+# It uses the CMake DEFER CALL feature if the CMAKE_VERSION is greater
+# than or equal to 3.18.
+# Note: Users that use cmake version less that 3.18 need to call qt_finalize_project
+# in the end of a project's top-level CMakeLists.txt.
+function(_qt_internal_collect_target_apk_dependencies_defer target)
+    # User opted-out the functionality
+    if(QT_NO_COLLECT_BUILD_TREE_APK_DEPS)
+        return()
+    endif()
+
+    get_property(is_called GLOBAL PROPERTY _qt_is_collect_target_apk_dependencies_defer_called)
+    if(is_called) # Already scheduled
+        return()
+    endif()
+    set_property(GLOBAL PROPERTY _qt_is_collect_target_apk_dependencies_defer_called TRUE)
+
+    if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.18")
+        cmake_language(EVAL CODE "cmake_language(DEFER DIRECTORY \"${CMAKE_SOURCE_DIR}\"
+            CALL _qt_internal_collect_target_apk_dependencies ${target})")
+    else()
+        # User don't want to see the warning
+        if(NOT QT_NO_WARN_BUILD_TREE_APK_DEPS)
+            message(WARNING "CMake version you use is less than 3.18. APK dependencies, that are a"
+                    " part of the project tree, might not be collected correctly."
+                    " Please call qt_finalize_project in the end of a project's top-level"
+                    " CMakeLists.txt file to make sure that all the APK dependencies are"
+                    " collected correctly."
+                    " You can pass -DQT_NO_WARN_BUILD_TREE_APK_DEPS=ON when configuring the project"
+                    " to silence the warning.")
+        endif()
+    endif()
+endfunction()
+
+# The function collects shared libraries from the build system tree, that might be dependencies for
+# the main apk targets.
+function(_qt_internal_collect_target_apk_dependencies target)
+    # User opted-out the functionality
+    if(QT_NO_COLLECT_BUILD_TREE_APK_DEPS)
+        return()
+    endif()
+
+    get_property(is_called GLOBAL PROPERTY _qt_is_collect_target_apk_dependencies_called)
+    if(is_called)
+        return()
+    endif()
+    set_property(GLOBAL PROPERTY _qt_is_collect_target_apk_dependencies_called TRUE)
+
+    get_property(apk_targets GLOBAL PROPERTY _qt_apk_targets)
+
+    _qt_internal_collect_buildsystem_shared_libraries(libs "${CMAKE_SOURCE_DIR}")
+
+    foreach(lib IN LISTS libs)
+        if(NOT lib IN_LIST apk_targets)
+            list(APPEND extra_prefix_dirs "$<TARGET_FILE_DIR:${lib}>")
+        endif()
+    endforeach()
+
+    set_target_properties(${target} PROPERTIES _qt_android_extra_library_dirs "${extra_prefix_dirs}")
+endfunction()
+
+# The function recursively goes through the project subfolders and collects targets that supposed to
+# be shared libraries of any kind.
+function(_qt_internal_collect_buildsystem_shared_libraries out_var subdir)
+    set(result "")
+    get_directory_property(buildsystem_targets DIRECTORY ${subdir} BUILDSYSTEM_TARGETS)
+    foreach(buildsystem_target IN LISTS buildsystem_targets)
+        if(buildsystem_target AND TARGET ${buildsystem_target})
+            get_target_property(target_type ${buildsystem_target} TYPE)
+            if(target_type STREQUAL "SHARED_LIBRARY" OR target_type STREQUAL "MODULE_LIBRARY")
+                list(APPEND result ${buildsystem_target})
+            endif()
+        endif()
+    endforeach()
+
+    get_directory_property(subdirs DIRECTORY "${subdir}" SUBDIRECTORIES)
+    foreach(dir IN LISTS subdirs)
+        _qt_internal_collect_buildsystem_shared_libraries(result_inner "${dir}")
+    endforeach()
+    list(APPEND result ${result_inner})
+    set(${out_var} "${result}" PARENT_SCOPE)
 endfunction()
 
 # This function allows deciding whether apks should be built as part of the ALL target at first

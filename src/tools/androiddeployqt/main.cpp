@@ -166,6 +166,9 @@ struct Options
     // Build paths
     QString qtInstallDirectory;
     std::vector<QString> extraPrefixDirs;
+    // Unlike 'extraPrefixDirs', the 'extraLibraryDirs' key doesn't expect the 'lib' subfolder
+    // when looking for dependencies.
+    std::vector<QString> extraLibraryDirs;
     QString androidSourceDirectory;
     QString outputDirectory;
     QString inputFileName;
@@ -922,6 +925,14 @@ bool readInputFile(Options *options)
     }
 
     {
+        const auto extraLibraryDirs = jsonObject.value(QLatin1String("extraLibraryDirs")).toArray();
+        options->extraLibraryDirs.reserve(extraLibraryDirs.size());
+        for (const QJsonValue path : extraLibraryDirs) {
+            options->extraLibraryDirs.push_back(path.toString());
+        }
+    }
+
+    {
         const QJsonValue androidSourcesDirectory = jsonObject.value(QLatin1String("android-package-source-directory"));
         if (!androidSourcesDirectory.isUndefined())
             options->androidSourceDirectory = androidSourcesDirectory.toString();
@@ -1607,6 +1618,17 @@ bool updateAndroidFiles(Options &options)
 
 static QString absoluteFilePath(const Options *options, const QString &relativeFileName)
 {
+    // Use extraLibraryDirs as the extra library lookup folder if it is expected to find a file in
+    // any $prefix/lib folder.
+    // Library directories from a build tree(extraLibraryDirs) have the higher priority.
+    if (relativeFileName.startsWith(QLatin1String("lib/"))) {
+        for (const auto &dir : options->extraLibraryDirs) {
+            const QString path = dir + QLatin1Char('/') + relativeFileName.mid(sizeof("lib/") - 1);
+            if (QFile::exists(path))
+                return path;
+        }
+    }
+
     for (const auto &prefix : options->extraPrefixDirs) {
         const QString path = prefix + QLatin1Char('/') + relativeFileName;
         if (QFile::exists(path))
