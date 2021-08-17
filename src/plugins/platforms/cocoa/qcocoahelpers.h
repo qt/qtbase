@@ -361,6 +361,15 @@ QSendSuperHelper<Args...> qt_objcDynamicSuperHelper(id receiver, SEL selector, A
 
 // -------------------------------------------------------------------------
 
+struct InputMethodQueryResult : public QHash<Qt::InputMethodQuery, QVariant>
+{
+    operator bool() { return !isEmpty(); }
+};
+
+InputMethodQueryResult queryInputMethod(QObject *object, Qt::InputMethodQueries queries = Qt::ImEnabled);
+
+// -------------------------------------------------------------------------
+
 QDebug operator<<(QDebug, const NSRange &);
 QDebug operator<<(QDebug, SEL);
 
