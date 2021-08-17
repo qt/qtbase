@@ -229,12 +229,12 @@ void tst_QFutureWatcher::canceled()
     future.waitForFinished();
 }
 
-class IntTask : public RunFunctionTask<int>
+class IntTask : public RunFunctionTaskBase<int>
 {
 public:
     void runFunctor() override
     {
-        result = 10;
+        promise.reportResult(10);
     }
 };
 
@@ -463,7 +463,7 @@ void tst_QFutureWatcher::disconnectRunningFuture()
 }
 
 const int maxProgress = 100000;
-class ProgressEmitterTask : public RunFunctionTask<void>
+class ProgressEmitterTask : public RunFunctionTaskBase<void>
 {
 public:
     void runFunctor() override
@@ -493,7 +493,7 @@ void tst_QFutureWatcher::tooMuchProgress()
 }
 
 template <typename T>
-class ProgressTextTask : public RunFunctionTask<T>
+class ProgressTextTask : public RunFunctionTaskBase<T>
 {
 public:
     void runFunctor() override
