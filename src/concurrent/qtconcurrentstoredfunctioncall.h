@@ -138,7 +138,7 @@ template <class ...Types>
 using DecayedTuple = std::tuple<std::decay_t<Types>...>;
 
 template <class Function, class ...Args>
-struct StoredFunctionCall : public RunFunctionTask<InvokeResultType<Function, Args...>>
+struct StoredFunctionCall : public RunFunctionTaskBase<InvokeResultType<Function, Args...>>
 {
     StoredFunctionCall(DecayedTuple<Function, Args...> &&_data)
         : data(std::move(_data))
@@ -152,10 +152,17 @@ protected:
             return std::invoke(function, args...);
         };
 
-        if constexpr (std::is_void_v<InvokeResultType<Function, Args...>>)
+        if constexpr (std::is_void_v<InvokeResultType<Function, Args...>>) {
             std::apply(invoke, std::move(data));
-        else
-            this->result = std::apply(invoke, std::move(data));
+        } else {
+            auto result = std::apply(invoke, std::move(data));
+
+            using T = InvokeResultType<Function, Args...>;
+            if constexpr (std::is_move_constructible_v<T>)
+                this->promise.reportAndMoveResult(std::move(result));
+            else if constexpr (std::is_copy_constructible_v<T>)
+                this->promise.reportResult(result);
+        }
     }
 
 private:
