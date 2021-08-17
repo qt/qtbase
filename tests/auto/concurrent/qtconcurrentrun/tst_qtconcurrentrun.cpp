@@ -64,6 +64,7 @@ private slots:
     void moveOnlyType();
     void crefFunction();
     void customPromise();
+    void nonDefaultConstructibleValue();
 };
 
 void light()
@@ -1564,6 +1565,17 @@ void tst_QtConcurrentRun::customPromise()
     QCOMPARE(p.future().progressMaximum(), 10);
 }
 
+void tst_QtConcurrentRun::nonDefaultConstructibleValue()
+{
+    struct NonDefaultConstructible
+    {
+        explicit NonDefaultConstructible(int v) : value(v) { }
+        int value = 0;
+    };
+
+    auto future = QtConcurrent::run([] { return NonDefaultConstructible(42); });
+    QCOMPARE(future.result().value, 42);
+}
 
 QTEST_MAIN(tst_QtConcurrentRun)
 #include "tst_qtconcurrentrun.moc"

@@ -117,36 +117,14 @@ public:
             promise.reportException(QUnhandledException(std::current_exception()));
         }
 #endif
-
-        reportResult();
-
         promise.reportFinished();
     }
 
 protected:
     virtual void runFunctor() = 0;
-    virtual void reportResult() {}
 
     QFutureInterface<T> promise;
 };
-
-template <typename T>
-class RunFunctionTask : public RunFunctionTaskBase<T>
-{
-protected:
-    void reportResult() override
-    {
-        if constexpr (std::is_move_constructible_v<T>)
-            this->promise.reportAndMoveResult(std::move(result));
-        else if constexpr (std::is_copy_constructible_v<T>)
-            this->promise.reportResult(result);
-    }
-
-    T result;
-};
-
-template <>
-class RunFunctionTask<void> : public RunFunctionTaskBase<void> {};
 
 } //namespace QtConcurrent
 
