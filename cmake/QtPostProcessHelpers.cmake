@@ -542,6 +542,11 @@ endif()\n")
                 "set(QT_IS_MACOS_UNIVERSAL \"${QT_IS_MACOS_UNIVERSAL}\" CACHE BOOL \"\")\n")
         endif()
 
+        if(DEFINED QT_UIKIT_SDK)
+            string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
+                "set(QT_UIKIT_SDK \"${QT_UIKIT_SDK}\" CACHE BOOL \"\")\n")
+        endif()
+
         if(CMAKE_CROSSCOMPILING AND QT_BUILD_TOOLS_WHEN_CROSSCOMPILING)
             string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
                 "set(QT_BUILD_TOOLS_WHEN_CROSSCOMPILING \"TRUE\" CACHE BOOL \"\" FORCE)\n")
