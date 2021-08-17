@@ -4366,13 +4366,13 @@ qsizetype QString::lastIndexOf(const QRegularExpression &re, qsizetype from, QRe
         return -1;
     }
 
-    qsizetype endpos = (from < 0) ? (size() + from + 1) : (from);
+    qsizetype endpos = (from < 0) ? (size() + from + 1) : (from + 1);
     QRegularExpressionMatchIterator iterator = re.globalMatch(*this);
     qsizetype lastIndex = -1;
     while (iterator.hasNext()) {
         QRegularExpressionMatch match = iterator.next();
         qsizetype start = match.capturedStart();
-        if (start <= endpos) {
+        if (start < endpos) {
             lastIndex = start;
             if (rmatch)
                 *rmatch = std::move(match);

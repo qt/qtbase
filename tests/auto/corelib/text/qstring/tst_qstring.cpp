@@ -1669,7 +1669,7 @@ void tst_QString::lastIndexOf()
     QCOMPARE(haystack.lastIndexOf(needle.toLatin1().data(), from, cs), expected);
 
 #if QT_CONFIG(regularexpression)
-    if (from >= -1 && from < haystack.size() && needle.size() > 0) {
+    if (from >= -1 && from < haystack.size()) {
         // unfortunately, QString and QRegularExpression don't have the same out of bound semantics
         // I think QString is wrong -- See file log for contact information.
         {
