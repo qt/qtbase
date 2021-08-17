@@ -511,6 +511,28 @@ void q_IOObjectRelease(io_object_t obj)
 
 // -------------------------------------------------------------------------
 
+InputMethodQueryResult queryInputMethod(QObject *object, Qt::InputMethodQueries queries)
+{
+    if (object) {
+        QInputMethodQueryEvent queryEvent(queries | Qt::ImEnabled);
+        if (QCoreApplication::sendEvent(object, &queryEvent)) {
+            if (queryEvent.value(Qt::ImEnabled).toBool()) {
+                InputMethodQueryResult result;
+                static QMetaEnum queryEnum = QMetaEnum::fromType<Qt::InputMethodQuery>();
+                for (int i = 0; i < queryEnum.keyCount(); ++i) {
+                    auto query = Qt::InputMethodQuery(queryEnum.value(i));
+                    if (queries & query)
+                        result.insert(query, queryEvent.value(query));
+                }
+                return result;
+            }
+        }
+    }
+    return {};
+}
+
+// -------------------------------------------------------------------------
+
 QDebug operator<<(QDebug debug, const NSRange &range)
 {
     if (range.location == NSNotFound) {

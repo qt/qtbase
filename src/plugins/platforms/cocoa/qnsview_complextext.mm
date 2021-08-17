@@ -49,14 +49,9 @@
     qCDebug(lcQpaKeys) << "Canceling composition" << m_composingText
         << "for focus object" << m_composingFocusObject;
 
-    if (m_composingFocusObject) {
-        QInputMethodQueryEvent queryEvent(Qt::ImEnabled);
-        if (QCoreApplication::sendEvent(m_composingFocusObject, &queryEvent)) {
-            if (queryEvent.value(Qt::ImEnabled).toBool()) {
-                QInputMethodEvent e;
-                QCoreApplication::sendEvent(m_composingFocusObject, &e);
-            }
-        }
+    if (queryInputMethod(m_composingFocusObject)) {
+        QInputMethodEvent e;
+        QCoreApplication::sendEvent(m_composingFocusObject, &e);
     }
 
     m_composingText.clear();
@@ -71,17 +66,14 @@
         << "for focus object" << m_composingFocusObject;
 
     if (!m_composingText.isEmpty()) {
-        if (QObject *fo = m_platformWindow->window()->focusObject()) {
-            QInputMethodQueryEvent queryEvent(Qt::ImEnabled);
-            if (QCoreApplication::sendEvent(fo, &queryEvent)) {
-                if (queryEvent.value(Qt::ImEnabled).toBool()) {
-                    QInputMethodEvent e;
-                    e.setCommitString(m_composingText);
-                    QCoreApplication::sendEvent(fo, &e);
-                }
-            }
+        QObject *focusObject = m_platformWindow->window()->focusObject();
+        if (queryInputMethod(focusObject)) {
+            QInputMethodEvent e;
+            e.setCommitString(m_composingText);
+            QCoreApplication::sendEvent(focusObject, &e);
         }
     }
+
     m_composingText.clear();
     m_composingFocusObject = nullptr;
 }
@@ -121,17 +113,14 @@
             commitString = QString::fromCFString(reinterpret_cast<CFStringRef>(aString));
         };
     }
-    if (QObject *fo = m_platformWindow->window()->focusObject()) {
-        QInputMethodQueryEvent queryEvent(Qt::ImEnabled);
-        if (QCoreApplication::sendEvent(fo, &queryEvent)) {
-            if (queryEvent.value(Qt::ImEnabled).toBool()) {
-                QInputMethodEvent e;
-                e.setCommitString(commitString);
-                QCoreApplication::sendEvent(fo, &e);
-                // prevent handleKeyEvent from sending a key event
-                m_sendKeyEvent = false;
-            }
-        }
+
+    QObject *focusObject = m_platformWindow->window()->focusObject();
+    if (queryInputMethod(focusObject)) {
+        QInputMethodEvent e;
+        e.setCommitString(commitString);
+        QCoreApplication::sendEvent(focusObject, &e);
+        // prevent handleKeyEvent from sending a key event
+        m_sendKeyEvent = false;
     }
 
     m_composingText.clear();
@@ -192,16 +181,13 @@
 
     m_composingText = preeditString;
 
-    if (QObject *fo = m_platformWindow->window()->focusObject()) {
-        m_composingFocusObject = fo;
-        QInputMethodQueryEvent queryEvent(Qt::ImEnabled);
-        if (QCoreApplication::sendEvent(fo, &queryEvent)) {
-            if (queryEvent.value(Qt::ImEnabled).toBool()) {
-                QInputMethodEvent e(preeditString, attrs);
-                QCoreApplication::sendEvent(fo, &e);
-                // prevent handleKeyEvent from sending a key event
-                m_sendKeyEvent = false;
-            }
+    if (QObject *focusObject = m_platformWindow->window()->focusObject()) {
+        m_composingFocusObject = focusObject;
+        if (queryInputMethod(focusObject)) {
+            QInputMethodEvent e(preeditString, attrs);
+            QCoreApplication::sendEvent(focusObject, &e);
+            // prevent handleKeyEvent from sending a key event
+            m_sendKeyEvent = false;
         }
     }
 }
@@ -214,22 +200,19 @@
 - (NSAttributedString *)attributedSubstringForProposedRange:(NSRange)aRange actualRange:(NSRangePointer)actualRange
 {
     Q_UNUSED(actualRange);
-    QObject *fo = m_platformWindow->window()->focusObject();
-    if (!fo)
-        return nil;
-    QInputMethodQueryEvent queryEvent(Qt::ImEnabled | Qt::ImCurrentSelection);
-    if (!QCoreApplication::sendEvent(fo, &queryEvent))
-        return nil;
-    if (!queryEvent.value(Qt::ImEnabled).toBool())
-        return nil;
 
-    QString selectedText = queryEvent.value(Qt::ImCurrentSelection).toString();
-    if (selectedText.isEmpty())
-        return nil;
+    QObject *focusObject = m_platformWindow->window()->focusObject();
+    if (auto queryResult = queryInputMethod(focusObject, Qt::ImCurrentSelection)) {
+        QString selectedText = queryResult.value(Qt::ImCurrentSelection).toString();
+        if (selectedText.isEmpty())
+            return nil;
 
-    QCFString string(selectedText.mid(aRange.location, aRange.length));
-    const NSString *tmpString = reinterpret_cast<const NSString *>((CFStringRef)string);
-    return [[[NSAttributedString alloc]  initWithString:const_cast<NSString *>(tmpString)] autorelease];
+        QCFString string(selectedText.mid(aRange.location, aRange.length));
+        const NSString *tmpString = reinterpret_cast<const NSString *>((CFStringRef)string);
+        return [[[NSAttributedString alloc] initWithString:const_cast<NSString *>(tmpString)] autorelease];
+    } else {
+        return nil;
+    }
 }
 
 - (NSRange)markedRange
@@ -247,24 +230,13 @@
 
 - (NSRange)selectedRange
 {
-    NSRange selectedRange = {0, 0};
-
-    QObject *fo = m_platformWindow->window()->focusObject();
-    if (!fo)
-        return selectedRange;
-    QInputMethodQueryEvent queryEvent(Qt::ImEnabled | Qt::ImCurrentSelection);
-    if (!QCoreApplication::sendEvent(fo, &queryEvent))
-        return selectedRange;
-    if (!queryEvent.value(Qt::ImEnabled).toBool())
-        return selectedRange;
-
-    QString selectedText = queryEvent.value(Qt::ImCurrentSelection).toString();
-
-    if (!selectedText.isEmpty()) {
-        selectedRange.location = 0;
-        selectedRange.length = selectedText.length();
+    QObject *focusObject = m_platformWindow->window()->focusObject();
+    if (auto queryResult = queryInputMethod(focusObject, Qt::ImCurrentSelection)) {
+        QString selectedText = queryResult.value(Qt::ImCurrentSelection).toString();
+        return selectedText.isEmpty() ? NSMakeRange(0, 0) : NSMakeRange(0, selectedText.length());
+    } else {
+        return NSMakeRange(0, 0);
     }
-    return selectedRange;
 }
 
 - (NSRect)firstRectForCharacterRange:(NSRange)aRange actualRange:(NSRangePointer)actualRange
@@ -272,20 +244,14 @@
     Q_UNUSED(aRange);
     Q_UNUSED(actualRange);
 
-    QObject *fo = m_platformWindow->window()->focusObject();
-    if (!fo)
+    QWindow *window = m_platformWindow->window();
+    if (queryInputMethod(window->focusObject())) {
+        QRect cursorRect = qApp->inputMethod()->cursorRectangle().toRect();
+        cursorRect.moveBottomLeft(window->mapToGlobal(cursorRect.bottomLeft()));
+        return QCocoaScreen::mapToNative(cursorRect);
+    } else {
         return NSZeroRect;
-
-    QInputMethodQueryEvent queryEvent(Qt::ImEnabled);
-    if (!QCoreApplication::sendEvent(fo, &queryEvent))
-        return NSZeroRect;
-    if (!queryEvent.value(Qt::ImEnabled).toBool())
-        return NSZeroRect;
-
-    // The returned rect is always based on the internal cursor.
-    QRect mr = qApp->inputMethod()->cursorRectangle().toRect();
-    mr.moveBottomLeft(m_platformWindow->window()->mapToGlobal(mr.bottomLeft()));
-    return QCocoaScreen::mapToNative(mr);
+    }
 }
 
 - (NSUInteger)characterIndexForPoint:(NSPoint)aPoint
@@ -303,18 +269,10 @@
     if (m_platformWindow->window() != QGuiApplication::focusWindow())
         return nil;
 
-    QObject *fo = m_platformWindow->window()->focusObject();
-    if (!fo)
+    if (queryInputMethod(m_platformWindow->window()->focusObject()))
+        return @[NSUnderlineColorAttributeName, NSUnderlineStyleAttributeName];
+    else
         return nil;
-
-    QInputMethodQueryEvent queryEvent(Qt::ImEnabled);
-    if (!QCoreApplication::sendEvent(fo, &queryEvent))
-        return nil;
-    if (!queryEvent.value(Qt::ImEnabled).toBool())
-        return nil;
-
-    // Support only underline color/style.
-    return @[NSUnderlineColorAttributeName, NSUnderlineStyleAttributeName];
 }
 
 - (void)textInputContextKeyboardSelectionDidChangeNotification:(NSNotification *)textInputContextKeyboardSelectionDidChangeNotification
