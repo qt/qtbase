@@ -50,6 +50,7 @@
 #include <QtWidgets/QBoxLayout>
 #include <QtWidgets/QStyle>
 #include <QtWidgets/QPushButton>
+#include <QtWidgets/QScroller>
 #if QT_CONFIG(opengl)
 #include <QtOpenGLWidgets/QOpenGLWidget>
 #endif
@@ -266,6 +267,7 @@ private slots:
     void QTBUG_5859_exposedRect();
     void hoverLeave();
     void QTBUG_16063_microFocusRect();
+    void QTBUG_70255_scrollTo();
 #ifndef QT_NO_CURSOR
     void QTBUG_7438_cursor();
 #endif
@@ -5023,6 +5025,34 @@ void tst_QGraphicsView::QTBUG_16063_microFocusRect()
     view.setFocus();
     QRectF mfv = view.inputMethodQuery(Qt::ImCursorRectangle).toRectF();
     QCOMPARE(mfv, IMItem::mf.translated(-view.mapToScene(view.sceneRect().toRect()).boundingRect().topLeft()));
+}
+
+void tst_QGraphicsView::QTBUG_70255_scrollTo()
+{
+    QGraphicsView view;
+    QGraphicsScene scene;
+    view.setFixedSize(200, 200);
+    scene.setSceneRect(0, 0,  1000, 1000);
+    QGraphicsRectItem item;
+    item.setRect(-20, -20, 40, 40);
+    item.setFlag(QGraphicsItem::ItemIsMovable, true);
+    scene.addItem(&item);
+    view.setScene(&scene);
+    view.centerOn(0, 0);
+
+    view.show();
+    QApplication::setActiveWindow(&view);
+    if (!QTest::qWaitForWindowExposed(&view) || !QTest::qWaitForWindowActive(&view))
+        QSKIP("Failed to show and activate window");
+
+    QPoint point = view.mapFromScene(0, 0);
+    QCOMPARE(point, QPoint(0, 0));
+
+    QScroller::scroller(&view)->scrollTo(QPointF(0, 500), 100);
+    QTest::qWait(200);
+
+    point = view.mapFromScene(0, 0);
+    QCOMPARE(point, QPoint(0, -500));
 }
 
 QTEST_MAIN(tst_QGraphicsView)
