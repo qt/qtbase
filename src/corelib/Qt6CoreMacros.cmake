@@ -715,6 +715,30 @@ function(_qt_internal_get_default_ios_bundle_identifier out_var)
     set("${out_var}" "${prefix}.\${PRODUCT_NAME:rfc1034identifier}" PARENT_SCOPE)
 endfunction()
 
+function(_qt_internal_set_placeholder_apple_bundle_version target)
+    # If user hasn't provided neither a bundle version nor a bundle short version string for the
+    # app, set a placeholder value for both which will add them to the generated Info.plist file.
+    # This is required so that the app launches in the simulator (but apparently not for running
+    # on-device).
+    get_target_property(bundle_version "${target}" MACOSX_BUNDLE_BUNDLE_VERSION)
+    get_target_property(bundle_short_version "${target}" MACOSX_BUNDLE_SHORT_VERSION_STRING)
+
+    if(NOT MACOSX_BUNDLE_BUNDLE_VERSION AND
+       NOT MACOSX_BUNDLE_SHORT_VERSION_STRING AND
+       NOT bundle_version AND
+       NOT bundle_short_version AND
+       NOT QT_NO_SET_XCODE_BUNDLE_VERSION
+     )
+         set(bundle_version "0.0.1")
+         set(bundle_short_version "0.0.1")
+         set_target_properties("${target}"
+                               PROPERTIES
+                               MACOSX_BUNDLE_BUNDLE_VERSION "${bundle_version}"
+                               MACOSX_BUNDLE_SHORT_VERSION_STRING "${bundle_short_version}"
+                               )
+    endif()
+endfunction()
+
 function(_qt_internal_finalize_ios_app target)
     # If user hasn't provided a development team id, try to find the first one specified
     # in the Xcode preferences.
@@ -749,6 +773,8 @@ function(_qt_internal_finalize_ios_app target)
                                   "${bundle_id}")
         endif()
     endif()
+
+    _qt_internal_set_placeholder_apple_bundle_version("${target}")
 endfunction()
 
 if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
