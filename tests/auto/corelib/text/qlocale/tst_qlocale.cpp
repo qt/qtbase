@@ -1567,59 +1567,84 @@ void tst_QLocale::formatDate()
 void tst_QLocale::formatTime_data()
 {
     QTest::addColumn<QTime>("time");
+    QTest::addColumn<QString>("locale");
     QTest::addColumn<QString>("format");
     QTest::addColumn<QString>("result");
 
-    QTest::newRow("1") << QTime(1, 2, 3) << "h:m:s" << "1:2:3";
-    QTest::newRow("3") << QTime(1, 2, 3) << "H:m:s" << "1:2:3";
-    QTest::newRow("4") << QTime(1, 2, 3) << "hh:mm:ss" << "01:02:03";
-    QTest::newRow("5") << QTime(1, 2, 3) << "HH:mm:ss" << "01:02:03";
-    QTest::newRow("6") << QTime(1, 2, 3) << "hhh:mmm:sss" << "011:022:033";
+    QTest::newRow("C-h:m:s-am") << QTime(1, 2, 3) << "C" << "h:m:s" << "1:2:3";
+    QTest::newRow("C-H:m:s-am") << QTime(1, 2, 3) << "C" << "H:m:s" << "1:2:3";
+    QTest::newRow("C-hh:mm:ss-am") << QTime(1, 2, 3) << "C" << "hh:mm:ss" << "01:02:03";
+    QTest::newRow("C-HH:mm:ss-am") << QTime(1, 2, 3) << "C" << "HH:mm:ss" << "01:02:03";
+    QTest::newRow("C-hhh:mmm:sss-am") << QTime(1, 2, 3) << "C" << "hhh:mmm:sss" << "011:022:033";
 
-    QTest::newRow("8") << QTime(14, 2, 3) << "h:m:s" << "14:2:3";
-    QTest::newRow("9") << QTime(14, 2, 3) << "H:m:s" << "14:2:3";
-    QTest::newRow("10") << QTime(14, 2, 3) << "hh:mm:ss" << "14:02:03";
-    QTest::newRow("11") << QTime(14, 2, 3) << "HH:mm:ss" << "14:02:03";
-    QTest::newRow("12") << QTime(14, 2, 3) << "hhh:mmm:sss" << "1414:022:033";
+    QTest::newRow("C-h:m:s-pm") << QTime(14, 2, 3) << "C" << "h:m:s" << "14:2:3";
+    QTest::newRow("C-H:m:s-pm") << QTime(14, 2, 3) << "C" << "H:m:s" << "14:2:3";
+    QTest::newRow("C-hh:mm:ss-pm") << QTime(14, 2, 3) << "C" << "hh:mm:ss" << "14:02:03";
+    QTest::newRow("C-HH:mm:ss-pm") << QTime(14, 2, 3) << "C" << "HH:mm:ss" << "14:02:03";
+    QTest::newRow("C-hhh:mmm:sss-pm") << QTime(14, 2, 3) << "C" << "hhh:mmm:sss" << "1414:022:033";
 
-    QTest::newRow("14") << QTime(14, 2, 3) << "h:m:s ap" << "2:2:3 pm";
-    QTest::newRow("15") << QTime(14, 2, 3) << "H:m:s AP" << "14:2:3 PM";
-    QTest::newRow("16") << QTime(14, 2, 3) << "hh:mm:ss aap" << "02:02:03 pmpm";
-    QTest::newRow("17") << QTime(14, 2, 3) << "HH:mm:ss AP aa" << "14:02:03 PM pmpm";
+    QTest::newRow("C-h:m:s+ap-pm") << QTime(14, 2, 3) << "C" << "h:m:s ap" << "2:2:3 pm";
+    QTest::newRow("C-H:m:s+AP-pm") << QTime(14, 2, 3) << "C" << "H:m:s AP" << "14:2:3 PM";
+    QTest::newRow("C-hh:mm:ss+aap-pm")
+        << QTime(14, 2, 3) << "C" << "hh:mm:ss aap" << "02:02:03 pmpm";
+    QTest::newRow("C-HH:mm:ss+AP+aa-pm")
+        << QTime(14, 2, 3) << "C" << "HH:mm:ss AP aa" << "14:02:03 PM pmpm";
 
-    QTest::newRow("18") << QTime(1, 2, 3) << "h:m:s ap" << "1:2:3 am";
-    QTest::newRow("19") << QTime(1, 2, 3) << "H:m:s AP" << "1:2:3 AM";
+    QTest::newRow("C-h:m:s+ap-am") << QTime(1, 2, 3) << "C" << "h:m:s ap" << "1:2:3 am";
+    QTest::newRow("C-H:m:s+AP-am") << QTime(1, 2, 3) << "C" << "H:m:s AP" << "1:2:3 AM";
 
-    QTest::newRow("20") << QTime(1, 2, 3) << "foo" << "foo";
-    QTest::newRow("21") << QTime(1, 2, 3) << "'" << "";
-    QTest::newRow("22") << QTime(1, 2, 3) << "''" << "'";
-    QTest::newRow("23") << QTime(1, 2, 3) << "'''" << "'";
-    QTest::newRow("24") << QTime(1, 2, 3) << "\"" << "\"";
-    QTest::newRow("25") << QTime(1, 2, 3) << "\"\"" << "\"\"";
-    QTest::newRow("26") << QTime(1, 2, 3) << "\"H\"" << "\"1\"";
-    QTest::newRow("27") << QTime(1, 2, 3) << "'\"H\"'" << "\"H\"";
+    QTest::newRow("C-foo") << QTime(1, 2, 3) << "C" << "foo" << "foo";
+    QTest::newRow("C-quote") << QTime(1, 2, 3) << "C" << "'" << "";
+    QTest::newRow("C-quote*2") << QTime(1, 2, 3) << "C" << "''" << "'";
+    QTest::newRow("C-quote*3") << QTime(1, 2, 3) << "C" << "'''" << "'";
+    QTest::newRow("C-dquote") << QTime(1, 2, 3) << "C" << "\"" << "\"";
+    QTest::newRow("C-dquote*2") << QTime(1, 2, 3) << "C" << "\"\"" << "\"\"";
+    QTest::newRow("C-dquote-H") << QTime(1, 2, 3) << "C" << "\"H\"" << "\"1\"";
+    QTest::newRow("C-quote-dquote-H") << QTime(1, 2, 3) << "C" << "'\"H\"'" << "\"H\"";
 
-    QTest::newRow("28") << QTime(1, 2, 3, 456) << "H:m:s.z" << "1:2:3.456";
-    QTest::newRow("29") << QTime(1, 2, 3, 456) << "H:m:s.zz" << "1:2:3.456456";
-    QTest::newRow("30") << QTime(1, 2, 3, 456) << "H:m:s.zzz" << "1:2:3.456";
-    QTest::newRow("31") << QTime(1, 2, 3, 400) << "H:m:s.z" << "1:2:3.4";
-    QTest::newRow("32") << QTime(1, 2, 3, 4) << "H:m:s.z" << "1:2:3.004";
-    QTest::newRow("33") << QTime(1, 2, 3, 4) << "H:m:s.zzz" << "1:2:3.004";
-    QTest::newRow("34") << QTime() << "H:m:s.zzz" << "";
-    QTest::newRow("35") << QTime(1, 2, 3, 4) << "dd MM yyyy H:m:s.zzz" << "dd MM yyyy 1:2:3.004";
+    QTest::newRow("C-H:m:s.z") << QTime(1, 2, 3, 456) << "C" << "H:m:s.z" << "1:2:3.456";
+    QTest::newRow("C-H:m:s.zz") << QTime(1, 2, 3, 456) << "C" << "H:m:s.zz" << "1:2:3.456456";
+    QTest::newRow("C-H:m:s.zzz") << QTime(1, 2, 3, 456) << "C" << "H:m:s.zzz" << "1:2:3.456";
+    QTest::newRow("C-H:m:s.z=400") << QTime(1, 2, 3, 400) << "C" << "H:m:s.z" << "1:2:3.4";
+    QTest::newRow("C-H:m:s.zzz=400") << QTime(1, 2, 3, 400) << "C" << "H:m:s.zzz" << "1:2:3.400";
+    QTest::newRow("C-H:m:s.z=004") << QTime(1, 2, 3, 4) << "C" << "H:m:s.z" << "1:2:3.004";
+    QTest::newRow("C-H:m:s.zzz=004") << QTime(1, 2, 3, 4) << "C" << "H:m:s.zzz" << "1:2:3.004";
+
+    QTest::newRow("C-invalid") << QTime() << "C" << "H:m:s.zzz" << "";
+    QTest::newRow("C-date-time")
+        << QTime(1, 2, 3, 4) << "C" << "dd MM yyyy H:m:s.zzz" << "dd MM yyyy 1:2:3.004";
 
     // Test unicode handling.
-    QTest::newRow("emoji in format string")
-        << QTime(17, 22, 05, 18) << u8"m📌ss📢H.zzz" << u8"22📌05📢17.018";
+    QTest::newRow("C-emoji")
+        << QTime(17, 22, 05, 18) << "C" << u8"m📌ss📢H.zzz" << u8"22📌05📢17.018";
+
+    // Test-cases related to QTBUG-95790 (case of localized am/pm indicators):
+    QTest::newRow("en_US-h:m:s+ap-pm")
+        << QTime(14, 2, 3) << "en_US" << "h:m:s ap" << "2:2:3 pm";
+    QTest::newRow("en_US-H:m:s+AP-pm")
+        << QTime(14, 2, 3) << "en_US" << "H:m:s AP" << "14:2:3 PM";
+    QTest::newRow("en_US-h:m:s+ap-am")
+        << QTime(1, 2, 3) << "en_US" << "h:m:s ap" << "1:2:3 am";
+    QTest::newRow("en_US-H:m:s+AP-am")
+        << QTime(1, 2, 3) << "en_US" << "H:m:s AP" << "1:2:3 AM";
+    QTest::newRow("cs_CZ-h:m:s+ap-pm")
+        << QTime(14, 2, 3) << "cs_CZ" << "h:m:s ap" << "2:2:3 odp.";
+    QTest::newRow("cs_CZ-h:m:s+AP-pm")
+        << QTime(14, 2, 3) << "cs_CZ" << "h:m:s AP" << "2:2:3 ODP.";
+    QTest::newRow("cs_CZ-h:m:s+ap-am")
+        << QTime(1, 2, 3) << "cs_CZ" << "h:m:s ap" << "1:2:3 dop.";
+    QTest::newRow("cs_CZ-h:m:s+AP-am")
+        << QTime(1, 2, 3) << "cs_CZ" << "h:m:s AP" << "1:2:3 DOP.";
 }
 
 void tst_QLocale::formatTime()
 {
-    QFETCH(QTime, time);
-    QFETCH(QString, format);
-    QFETCH(QString, result);
+    QFETCH(const QTime, time);
+    QFETCH(const QString, locale);
+    QFETCH(const QString, format);
+    QFETCH(const QString, result);
 
-    QLocale l(QLocale::C);
+    QLocale l(locale);
     QCOMPARE(l.toString(time, format), result);
     QCOMPARE(l.toString(time, QStringView(format)), result);
 }
