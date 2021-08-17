@@ -268,6 +268,7 @@ public:
     QStroker *stroker() const { return m_stroker; }
 
     static QList<qfixed> patternForStyle(Qt::PenStyle style);
+    static int repetitionLimit() { return 10000; }
 
     void setDashPattern(const QList<qfixed> &dashPattern) { m_dashPattern = dashPattern; }
     QList<qfixed> dashPattern() const { return m_dashPattern; }
