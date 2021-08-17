@@ -614,7 +614,7 @@ bool QGraphicsViewPrivate::canStartScrollingAt(const QPoint &startPos) const
 
     const QGraphicsItem *childItem = q->itemAt(startPos);
 
-    if (childItem && (childItem->flags() & QGraphicsItem::ItemIsMovable))
+    if (!startPos.isNull() && childItem && (childItem->flags() & QGraphicsItem::ItemIsMovable))
         return false;
 
     return QAbstractScrollAreaPrivate::canStartScrollingAt(startPos);
