@@ -37,6 +37,9 @@
 #include <qdebug.h>
 #include <time.h>
 
+#include <tuple>
+#include <utility>
+
 QT_BEGIN_NAMESPACE
 
 void
@@ -1415,6 +1418,25 @@ UnixMakefileGenerator::libtoolFileName(bool fixify)
     return ret;
 }
 
+static std::pair<ProStringList, ProStringList>
+splitFrameworksAndLibs(const ProStringList &linkArgs)
+{
+    std::pair<ProStringList, ProStringList> result;
+    bool frameworkArg = false;
+    for (auto arg : linkArgs) {
+        if (frameworkArg) {
+            frameworkArg = false;
+            result.second += arg;
+        } else if (arg == "-framework") {
+            frameworkArg = true;
+            result.second += arg;
+        } else {
+            result.first += arg;
+        }
+    }
+    return result;
+}
+
 void
 UnixMakefileGenerator::writeLibtoolFile()
 {
@@ -1489,7 +1511,13 @@ UnixMakefileGenerator::writeLibtoolFile()
     ProStringList libs;
     for (auto var : libVars)
         libs += fixLibFlags(var);
+    ProStringList frameworks;
+    std::tie(libs, frameworks) = splitFrameworksAndLibs(libs);
     t << "dependency_libs='" << fixDependencyLibs(libs).join(' ') << "'\n\n";
+    if (!frameworks.isEmpty()) {
+        t << "# Frameworks that this library depends upon.\n";
+        t << "inherited_linker_flags='" << frameworks.join(' ') << "'\n\n";
+    }
 
     t << "# Version information for " << lname << "\n";
     int maj = project->first("VER_MAJ").toInt();
