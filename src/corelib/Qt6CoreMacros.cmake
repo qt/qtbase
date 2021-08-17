@@ -1738,6 +1738,12 @@ function(_qt_internal_process_resource target resourceName)
         endforeach()
     endif()
 
+    if(ANDROID)
+        if(COMMAND _qt_internal_collect_qml_root_paths)
+            _qt_internal_collect_qml_root_paths(${target} ${resource_files})
+        endif()
+    endif()
+
     if(NOT rcc_PREFIX)
         get_target_property(rcc_PREFIX ${target} QT_RESOURCE_PREFIX)
         if (NOT rcc_PREFIX)
