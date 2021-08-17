@@ -49,7 +49,7 @@ endforeach()
 # Find Qt tool package.
 set(__qt_@target@_tool_deps "@main_module_tool_deps@")
 
-if(NOT "${QT_HOST_PATH}" STREQUAL "")
+if(__qt_@target@_tool_deps AND NOT "${QT_HOST_PATH}" STREQUAL "")
      # Make sure that the tools find the host tools first
      set(BACKUP_@target@_CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH})
      set(BACKUP_@target@_CMAKE_FIND_ROOT_PATH ${CMAKE_FIND_ROOT_PATH})
@@ -81,7 +81,7 @@ foreach(__qt_@target@_target_dep ${__qt_@target@_tool_deps})
         return()
     endif()
 endforeach()
-if(NOT "${QT_HOST_PATH}" STREQUAL "")
+if(__qt_@target@_tool_deps AND NOT "${QT_HOST_PATH}" STREQUAL "")
      set(CMAKE_PREFIX_PATH ${BACKUP_@target@_CMAKE_PREFIX_PATH})
      set(CMAKE_FIND_ROOT_PATH ${BACKUP_@target@_CMAKE_FIND_ROOT_PATH})
 endif()
