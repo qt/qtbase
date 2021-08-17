@@ -363,12 +363,6 @@ void tst_QUrlInternal::ace_testsuite_data()
     // but is should have nameprepped to NFKC U+03BC GREEK SMALL LETTER MU
     badRow("invalid-nameprep-nonnfkc", "xn--sba");
 
-    // U+04CF CYRILLIC SMALL LETTER PALOCHKA encodes to "s5a"
-    // but it's not in RFC 3454's allowed character list (Unicode 3.2)
-    badRow("invalid-nameprep-unassigned", "xn--s5a");
-    // same character, see QTBUG-60364
-    badRow("invalid-nameprep-unassigned2", "xn--80ak6aa92e");
-
     // Decodes to "a" in some versions, see QTBUG-95689
     badRow("punycode-overflow-1", "xn--5p32g");
     // Decodes to the same string as "xn--097c" in some versions, see QTBUG-95689
