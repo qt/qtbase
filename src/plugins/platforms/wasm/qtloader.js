@@ -126,6 +126,11 @@
 //      Signals to the application that a canvas has been resized.
 // setFontDpi
 //      Sets the logical font dpi for the application.
+// module
+//      Returns the Emscripten module object, or undefined if the module
+//      has not been created yet. Note that the module object becomes available
+//      at the very end of the loading sequence, _after_ the transition from
+//      Loading to Running occurs.
 
 
 function QtLoader(config)
@@ -249,6 +254,7 @@ function QtLoader(config)
     publicAPI.resizeCanvasElement = resizeCanvasElement;
     publicAPI.setFontDpi = setFontDpi;
     publicAPI.fontDpi = fontDpi;
+    publicAPI.module = module;
 
     self.restartCount = 0;
 
@@ -584,6 +590,10 @@ function QtLoader(config)
 
     function fontDpi() {
         return self.qtFontDpi;
+    }
+
+    function module() {
+        return self.module;
     }
 
     setStatus("Created");
