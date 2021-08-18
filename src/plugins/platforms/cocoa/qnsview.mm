@@ -116,7 +116,6 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSViewMouseMoveHelper);
 @end
 
 @interface QNSView (ComplexText) <NSTextInputClient>
-- (void)textInputContextKeyboardSelectionDidChangeNotification:(NSNotification *)textInputContextKeyboardSelectionDidChangeNotification;
 @end
 
 @implementation QNSView {
@@ -159,11 +158,6 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSViewMouseMoveHelper);
         [self initDrawing];
         [self initMouse];
         [self registerDragTypes];
-
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                              selector:@selector(textInputContextKeyboardSelectionDidChangeNotification:)
-                                              name:NSTextInputContextKeyboardSelectionDidChangeNotification
-                                              object:nil];
     }
     return self;
 }

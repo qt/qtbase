@@ -275,13 +275,4 @@
         return nil;
 }
 
-- (void)textInputContextKeyboardSelectionDidChangeNotification:(NSNotification *)textInputContextKeyboardSelectionDidChangeNotification
-{
-    Q_UNUSED(textInputContextKeyboardSelectionDidChangeNotification);
-    if (([NSApp keyWindow] == self.window) && self.window.firstResponder == self) {
-        if (QCocoaInputContext *ic = qobject_cast<QCocoaInputContext *>(QCocoaIntegration::instance()->inputContext()))
-            ic->updateLocale();
-    }
-}
-
 @end
