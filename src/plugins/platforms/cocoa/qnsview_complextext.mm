@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -39,61 +39,9 @@
 
 // This file is included from qnsview.mm, and only used to organize the code
 
-@implementation QNSView (ComplexTextAPI)
-
-- (void)cancelComposingText
-{
-    if (m_composingText.isEmpty())
-        return;
-
-    qCDebug(lcQpaKeys) << "Canceling composition" << m_composingText
-        << "for focus object" << m_composingFocusObject;
-
-    if (queryInputMethod(m_composingFocusObject)) {
-        QInputMethodEvent e;
-        QCoreApplication::sendEvent(m_composingFocusObject, &e);
-    }
-
-    m_composingText.clear();
-    m_composingFocusObject = nullptr;
-}
-
-- (void)unmarkText
-{
-    // FIXME: Match cancelComposingText in early exit and focus object handling
-
-    qCDebug(lcQpaKeys) << "Unmarking" << m_composingText
-        << "for focus object" << m_composingFocusObject;
-
-    if (!m_composingText.isEmpty()) {
-        QObject *focusObject = m_platformWindow->window()->focusObject();
-        if (queryInputMethod(focusObject)) {
-            QInputMethodEvent e;
-            e.setCommitString(m_composingText);
-            QCoreApplication::sendEvent(focusObject, &e);
-        }
-    }
-
-    m_composingText.clear();
-    m_composingFocusObject = nullptr;
-}
-
-@end
-
 @implementation QNSView (ComplexText)
 
-- (void)insertNewline:(id)sender
-{
-    Q_UNUSED(sender);
-    qCDebug(lcQpaKeys) << "Inserting newline";
-    m_resendKeyEvent = true;
-}
-
-- (void)doCommandBySelector:(SEL)aSelector
-{
-    qCDebug(lcQpaKeys) << "Trying to perform command" << aSelector;
-    [self tryToPerform:aSelector with:self];
-}
+// ------------- Text insertion -------------
 
 - (void)insertText:(id)aString replacementRange:(NSRange)replacementRange
 {
@@ -120,6 +68,15 @@
     m_composingText.clear();
     m_composingFocusObject = nullptr;
 }
+
+- (void)insertNewline:(id)sender
+{
+    Q_UNUSED(sender);
+    qCDebug(lcQpaKeys) << "Inserting newline";
+    m_resendKeyEvent = true;
+}
+
+// ------------- Text composition -------------
 
 - (void)setMarkedText:(id)aString selectedRange:(NSRange)selectedRange replacementRange:(NSRange)replacementRange
 {
@@ -182,9 +139,94 @@
     }
 }
 
+- (NSArray<NSString *> *)validAttributesForMarkedText
+{
+    if (!m_platformWindow)
+        return nil;
+
+    if (m_platformWindow->window() != QGuiApplication::focusWindow())
+        return nil;
+
+    if (queryInputMethod(m_platformWindow->window()->focusObject()))
+        return @[NSUnderlineColorAttributeName, NSUnderlineStyleAttributeName];
+    else
+        return nil;
+}
+
 - (BOOL)hasMarkedText
 {
-    return (m_composingText.isEmpty() ? NO: YES);
+    return !m_composingText.isEmpty();
+}
+
+- (NSRange)markedRange
+{
+    NSRange range;
+    if (!m_composingText.isEmpty()) {
+        range.location = 0;
+        range.length = m_composingText.length();
+    } else {
+        range.location = NSNotFound;
+        range.length = 0;
+    }
+    return range;
+}
+
+- (void)unmarkText
+{
+    // FIXME: Match cancelComposingText in early exit and focus object handling
+
+    qCDebug(lcQpaKeys) << "Unmarking" << m_composingText
+        << "for focus object" << m_composingFocusObject;
+
+    if (!m_composingText.isEmpty()) {
+        QObject *focusObject = m_platformWindow->window()->focusObject();
+        if (queryInputMethod(focusObject)) {
+            QInputMethodEvent e;
+            e.setCommitString(m_composingText);
+            QCoreApplication::sendEvent(focusObject, &e);
+        }
+    }
+
+    m_composingText.clear();
+    m_composingFocusObject = nullptr;
+}
+
+- (void)cancelComposingText
+{
+    if (m_composingText.isEmpty())
+        return;
+
+    qCDebug(lcQpaKeys) << "Canceling composition" << m_composingText
+        << "for focus object" << m_composingFocusObject;
+
+    if (queryInputMethod(m_composingFocusObject)) {
+        QInputMethodEvent e;
+        QCoreApplication::sendEvent(m_composingFocusObject, &e);
+    }
+
+    m_composingText.clear();
+    m_composingFocusObject = nullptr;
+}
+
+// ------------- Key binding command handling -------------
+
+- (void)doCommandBySelector:(SEL)aSelector
+{
+    qCDebug(lcQpaKeys) << "Trying to perform command" << aSelector;
+    [self tryToPerform:aSelector with:self];
+}
+
+// ------------- Various text properties -------------
+
+- (NSRange)selectedRange
+{
+    QObject *focusObject = m_platformWindow->window()->focusObject();
+    if (auto queryResult = queryInputMethod(focusObject, Qt::ImCurrentSelection)) {
+        QString selectedText = queryResult.value(Qt::ImCurrentSelection).toString();
+        return selectedText.isEmpty() ? NSMakeRange(0, 0) : NSMakeRange(0, selectedText.length());
+    } else {
+        return NSMakeRange(0, 0);
+    }
 }
 
 - (NSAttributedString *)attributedSubstringForProposedRange:(NSRange)aRange actualRange:(NSRangePointer)actualRange
@@ -202,30 +244,6 @@
 
     } else {
         return nil;
-    }
-}
-
-- (NSRange)markedRange
-{
-    NSRange range;
-    if (!m_composingText.isEmpty()) {
-        range.location = 0;
-        range.length = m_composingText.length();
-    } else {
-        range.location = NSNotFound;
-        range.length = 0;
-    }
-    return range;
-}
-
-- (NSRange)selectedRange
-{
-    QObject *focusObject = m_platformWindow->window()->focusObject();
-    if (auto queryResult = queryInputMethod(focusObject, Qt::ImCurrentSelection)) {
-        QString selectedText = queryResult.value(Qt::ImCurrentSelection).toString();
-        return selectedText.isEmpty() ? NSMakeRange(0, 0) : NSMakeRange(0, selectedText.length());
-    } else {
-        return NSMakeRange(0, 0);
     }
 }
 
@@ -249,20 +267,6 @@
     // We don't support cursor movements using mouse while composing.
     Q_UNUSED(aPoint);
     return NSNotFound;
-}
-
-- (NSArray<NSString *> *)validAttributesForMarkedText
-{
-    if (!m_platformWindow)
-        return nil;
-
-    if (m_platformWindow->window() != QGuiApplication::focusWindow())
-        return nil;
-
-    if (queryInputMethod(m_platformWindow->window()->focusObject()))
-        return @[NSUnderlineColorAttributeName, NSUnderlineStyleAttributeName];
-    else
-        return nil;
 }
 
 @end
