@@ -84,8 +84,6 @@ QCocoaInputContext::QCocoaInputContext()
     : QPlatformInputContext()
     , m_focusWindow(QGuiApplication::focusWindow())
 {
-    QMetaObject::invokeMethod(this, "connectSignals", Qt::QueuedConnection);
-
     m_inputSourceObserver = QMacNotificationObserver(nil,
         NSTextInputContextKeyboardSelectionDidChangeNotification, [&]() {
         qCDebug(lcQpaInputMethods) << "Text input source changed";
@@ -123,13 +121,7 @@ void QCocoaInputContext::reset()
     }
 }
 
-void QCocoaInputContext::connectSignals()
-{
-    connect(qApp, SIGNAL(focusObjectChanged(QObject*)), this, SLOT(focusObjectChanged(QObject*)));
-    focusObjectChanged(qApp->focusObject());
-}
-
-void QCocoaInputContext::focusObjectChanged(QObject *focusObject)
+void QCocoaInputContext::setFocusObject(QObject *focusObject)
 {
     qCDebug(lcQpaInputMethods) << "Focus object changed to" << focusObject;
 
