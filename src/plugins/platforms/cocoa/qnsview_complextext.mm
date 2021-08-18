@@ -43,18 +43,18 @@
 
 // ------------- Text insertion -------------
 
-- (void)insertText:(id)aString replacementRange:(NSRange)replacementRange
+- (void)insertText:(id)text replacementRange:(NSRange)replacementRange
 {
-    qCDebug(lcQpaKeys).nospace() << "Inserting \"" << aString << "\""
+    qCDebug(lcQpaKeys).nospace() << "Inserting \"" << text << "\""
         << ", replacing range " << replacementRange;
 
-    if (m_sendKeyEvent && m_composingText.isEmpty() && [aString isEqualToString:m_inputSource]) {
+    if (m_sendKeyEvent && m_composingText.isEmpty() && [text isEqualToString:m_inputSource]) {
         // don't send input method events for simple text input (let handleKeyEvent send key events instead)
         return;
     }
 
-    const bool isAttributedString = [aString isKindOfClass:NSAttributedString.class];
-    QString commitString = QString::fromNSString(isAttributedString ? [aString string] : aString);
+    const bool isAttributedString = [text isKindOfClass:NSAttributedString.class];
+    QString commitString = QString::fromNSString(isAttributedString ? [text string] : text);
 
     QObject *focusObject = m_platformWindow->window()->focusObject();
     if (queryInputMethod(focusObject)) {
@@ -78,14 +78,14 @@
 
 // ------------- Text composition -------------
 
-- (void)setMarkedText:(id)aString selectedRange:(NSRange)selectedRange replacementRange:(NSRange)replacementRange
+- (void)setMarkedText:(id)text selectedRange:(NSRange)selectedRange replacementRange:(NSRange)replacementRange
 {
-    qCDebug(lcQpaKeys).nospace() << "Marking \"" << aString << "\""
+    qCDebug(lcQpaKeys).nospace() << "Marking \"" << text << "\""
         << " with selected range " << selectedRange
         << ", replacing range " << replacementRange;
 
-    const bool isAttributedString = [aString isKindOfClass:NSAttributedString.class];
-    QString preeditString = QString::fromNSString(isAttributedString ? [aString string] : aString);
+    const bool isAttributedString = [text isKindOfClass:NSAttributedString.class];
+    QString preeditString = QString::fromNSString(isAttributedString ? [text string] : text);
 
     QList<QInputMethodEvent::Attribute> attrs;
     attrs<<QInputMethodEvent::Attribute(QInputMethodEvent::Cursor, selectedRange.location + selectedRange.length, 1, QVariant());
@@ -97,7 +97,7 @@
         while (index < composingLength) {
             NSRange effectiveRange;
             NSRange range = NSMakeRange(index, composingLength-index);
-            NSDictionary *attributes = [aString attributesAtIndex:index
+            NSDictionary *attributes = [text attributesAtIndex:index
                                             longestEffectiveRange:&effectiveRange
                                                           inRange:range];
             NSNumber *underlineStyle = [attributes objectForKey:NSUnderlineStyleAttributeName];
@@ -210,10 +210,10 @@
 
 // ------------- Key binding command handling -------------
 
-- (void)doCommandBySelector:(SEL)aSelector
+- (void)doCommandBySelector:(SEL)selector
 {
-    qCDebug(lcQpaKeys) << "Trying to perform command" << aSelector;
-    [self tryToPerform:aSelector with:self];
+    qCDebug(lcQpaKeys) << "Trying to perform command" << selector;
+    [self tryToPerform:selector with:self];
 }
 
 // ------------- Various text properties -------------
@@ -229,7 +229,7 @@
     }
 }
 
-- (NSAttributedString *)attributedSubstringForProposedRange:(NSRange)aRange actualRange:(NSRangePointer)actualRange
+- (NSAttributedString *)attributedSubstringForProposedRange:(NSRange)range actualRange:(NSRangePointer)actualRange
 {
     Q_UNUSED(actualRange);
 
@@ -239,7 +239,7 @@
         if (selectedText.isEmpty())
             return nil;
 
-        NSString *substring = QStringView(selectedText).mid(aRange.location, aRange.length).toNSString();
+        NSString *substring = QStringView(selectedText).mid(range.location, range.length).toNSString();
         return [[[NSAttributedString alloc] initWithString:substring] autorelease];
 
     } else {
@@ -247,9 +247,9 @@
     }
 }
 
-- (NSRect)firstRectForCharacterRange:(NSRange)aRange actualRange:(NSRangePointer)actualRange
+- (NSRect)firstRectForCharacterRange:(NSRange)range actualRange:(NSRangePointer)actualRange
 {
-    Q_UNUSED(aRange);
+    Q_UNUSED(range);
     Q_UNUSED(actualRange);
 
     QWindow *window = m_platformWindow->window();
@@ -262,10 +262,10 @@
     }
 }
 
-- (NSUInteger)characterIndexForPoint:(NSPoint)aPoint
+- (NSUInteger)characterIndexForPoint:(NSPoint)point
 {
     // We don't support cursor movements using mouse while composing.
-    Q_UNUSED(aPoint);
+    Q_UNUSED(point);
     return NSNotFound;
 }
 
