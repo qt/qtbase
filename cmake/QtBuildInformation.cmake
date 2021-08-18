@@ -1,7 +1,8 @@
 function(qt_print_feature_summary)
     include(FeatureSummary)
     # Show which packages were found.
-    feature_summary(WHAT PACKAGES_FOUND
+    feature_summary(INCLUDE_QUIET_PACKAGES
+                    WHAT PACKAGES_FOUND
                          REQUIRED_PACKAGES_NOT_FOUND
                          RECOMMENDED_PACKAGES_NOT_FOUND
                          OPTIONAL_PACKAGES_NOT_FOUND
