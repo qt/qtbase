@@ -44,6 +44,8 @@
 #include <QtCore/QLocale>
 #include <QtCore/QPointer>
 
+#include <QtCore/private/qcore_mac_p.h>
+
 QT_BEGIN_NAMESPACE
 
 class QCocoaInputContext : public QPlatformInputContext
@@ -67,6 +69,7 @@ private Q_SLOTS:
 private:
     QPointer<QWindow> mWindow;
     QLocale m_locale;
+    QMacNotificationObserver m_inputSourceObserver;
 };
 
 QT_END_NAMESPACE

@@ -85,6 +85,13 @@ QCocoaInputContext::QCocoaInputContext()
     , mWindow(QGuiApplication::focusWindow())
 {
     QMetaObject::invokeMethod(this, "connectSignals", Qt::QueuedConnection);
+
+    m_inputSourceObserver = QMacNotificationObserver(nil,
+        NSTextInputContextKeyboardSelectionDidChangeNotification, [&]() {
+        qCDebug(lcQpaInputMethods) << "Text input source changed";
+        updateLocale();
+    });
+
     updateLocale();
 }
 
@@ -146,18 +153,21 @@ void QCocoaInputContext::focusObjectChanged(QObject *focusObject)
 
 void QCocoaInputContext::updateLocale()
 {
-    TISInputSourceRef source = TISCopyCurrentKeyboardInputSource();
-    CFArrayRef languages = (CFArrayRef) TISGetInputSourceProperty(source, kTISPropertyInputSourceLanguages);
-    if (CFArrayGetCount(languages) > 0) {
-        CFStringRef langRef = (CFStringRef)CFArrayGetValueAtIndex(languages, 0);
-        QString name = QString::fromCFString(langRef);
-        QLocale locale(name);
-        if (m_locale != locale) {
-            m_locale = locale;
-            emitLocaleChanged();
-        }
+    QCFType<TISInputSourceRef> source = TISCopyCurrentKeyboardInputSource();
+    NSArray *languages = static_cast<NSArray*>(TISGetInputSourceProperty(source,
+                                               kTISPropertyInputSourceLanguages));
+
+    qCDebug(lcQpaInputMethods) << "Input source supports" << languages;
+    if (!languages.count)
+        return;
+
+    QString language = QString::fromNSString(languages.firstObject);
+    QLocale locale(language);
+    if (m_locale != locale) {
+        qCDebug(lcQpaInputMethods) << "Reporting new locale" << locale;
+        m_locale = locale;
+        emitLocaleChanged();
     }
-    CFRelease(source);
 }
 
 QT_END_NAMESPACE
