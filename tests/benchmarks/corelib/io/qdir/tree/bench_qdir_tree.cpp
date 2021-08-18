@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite module of the Qt Toolkit.
@@ -42,7 +42,7 @@ class bench_QDir_tree
 
 public:
     bench_QDir_tree()
-        : prefix("./test-tree/"),
+        : prefix("test-tree/"),
           musicprefix(QLatin1String("music")),
           photoprefix(QLatin1String("photos")),
           sourceprefix(QLatin1String("source")),
@@ -60,6 +60,7 @@ private:
     qint64 musicsize;
     qint64 photosize;
     qint64 sourcesize;
+    FileSystem fs; // Uses QTemporaryDir to tidy away file tree created.
 
 private slots:
     void initTestCase()
@@ -71,7 +72,7 @@ private slots:
 
         QStack<QByteArray> stack;
         QByteArray line;
-        Q_FOREVER {
+        while (true) {
             char ch;
             if (!list.getChar(&ch))
                 break;
@@ -89,12 +90,11 @@ private slots:
                 --pop;
             }
 
-            line = list.readLine();
-            line.chop(1);
+            line = list.readLine().trimmed();
             stack.push(line);
 
             line = prefix;
-            Q_FOREACH(const QByteArray &pathElement, stack)
+            for (const QByteArray &pathElement : qAsConst(stack))
                 line += pathElement;
 
             if (line.endsWith('/'))
@@ -140,13 +140,11 @@ private slots:
         QTest::addColumn<int>("filter");
         QTest::addColumn<int>("entryCount");
 
-        QTest::newRow("*.cpp") << QStringList("*.cpp")
-            << int(QDir::Files)
-            << 3813;
-
-        QTest::newRow("executables") << QStringList("*")
+        QTest::newRow("*.cpp") << QStringList("*.cpp") << int(QDir::Files) << 3791;
+        QTest::newRow("executables")
+            << QStringList("*")
             << int(QDir::Executable | QDir::Files | QDir::AllDirs | QDir::NoDotAndDotDot)
-            << 543;
+            << 536;
     }
 
     void fileSearch() const
@@ -158,8 +156,9 @@ private slots:
         int count = 0;
         QBENCHMARK {
             // Recursive directory iteration
-            QDirIterator iterator(prefix, nameFilters, QDir::Filter(filter),
-                QDirIterator::Subdirectories | QDirIterator::FollowSymlinks);
+            QDirIterator iterator(fs.absoluteFilePath(prefix),
+                                  nameFilters, QDir::Filter(filter),
+                                  QDirIterator::Subdirectories | QDirIterator::FollowSymlinks);
 
             count = 0;
             while (iterator.hasNext()) {
@@ -177,7 +176,8 @@ private slots:
     {
         int count = 0;
         QBENCHMARK {
-            QDirIterator iterator(prefix,
+            QDirIterator iterator(
+                    fs.absoluteFilePath(prefix),
                     QDir::AllEntries | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System,
                     QDirIterator::Subdirectories | QDirIterator::FollowSymlinks);
 
@@ -187,10 +187,10 @@ private slots:
                 ++count;
             }
 
-            QCOMPARE(count, 11963);
+            QCOMPARE(count, 11906);
         }
 
-        QCOMPARE(count, 11963);
+        QCOMPARE(count, 11906);
     }
 
     void thousandFiles_data() const
@@ -209,7 +209,8 @@ private slots:
         QBENCHMARK {
             qint64 totalsize = 0;
             int count = 0;
-            QDirIterator iter(dirName, QDir::Files, QDirIterator::Subdirectories);
+            QDirIterator iter(fs.absoluteFilePath(dirName),
+                              QDir::Files, QDirIterator::Subdirectories);
             while(iter.hasNext()) {
                 count++;
                 totalsize += iter.nextFileInfo().size();
@@ -218,8 +219,6 @@ private slots:
             QCOMPARE(totalsize, expectedSize);
         }
     }
-private:
-    FileSystem fs;
 };
 
 QTEST_MAIN(bench_QDir_tree)
