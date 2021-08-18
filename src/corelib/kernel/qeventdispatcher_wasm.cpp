@@ -206,6 +206,9 @@ bool QEventDispatcherWasm::processEvents(QEventLoop::ProcessEventsFlags flags)
     qCDebug(lcEventDispatcher) << "QEventDispatcherWasm::processEvents flags" << flags
                                << "pending events" << hasPendingEvents;
 
+    if (flags & QEventLoop::DialogExec)
+        handleDialogExec();
+
     if (!(flags & QEventLoop::ExcludeUserInputEvents))
         pollForNativeEvents();
 
@@ -359,6 +362,21 @@ void QEventDispatcherWasm::wakeUp()
     } else
 #endif
     emscripten_async_call(&QEventDispatcherWasm::callProcessEvents, this, 0);
+}
+
+void QEventDispatcherWasm::handleDialogExec()
+{
+#if !QT_HAVE_EMSCRIPTEN_ASYNCIFY
+    qWarning() << "Warning: dialog exec() is not supported on Qt for WebAssembly in this"
+               << "configuration. Please use show() instead, or enable experimental support"
+               << "for asyncify.\n"
+               << "When using exec() (without asyncify) the dialog will show, the user can interact"
+               << "with it and the appropriate signals will be emitted on close. However, the"
+               << "exec() call never returns, stack content at the time of the exec() call"
+               << "is leaked, and the exec() call may interfere with input event processing";
+    emscripten_sleep(1); // This call never returns
+#endif
+    // For the asyncify case we do nothing here and wait for events in waitForForEvents()
 }
 
 void QEventDispatcherWasm::pollForNativeEvents()
