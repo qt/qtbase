@@ -3928,7 +3928,8 @@ void QApplicationPrivate::activateImplicitTouchGrab(QWidget *widget, QTouchEvent
 bool QApplicationPrivate::translateRawTouchEvent(QWidget *window,
                                                  const QPointingDevice *device,
                                                  QList<QEventPoint> &touchPoints,
-                                                 ulong timestamp)
+                                                 ulong timestamp,
+                                                 bool spontaneous)
 {
     QApplicationPrivate *d = self;
     // TODO get rid of this QPair
@@ -4030,7 +4031,9 @@ bool QApplicationPrivate::translateRawTouchEvent(QWidget *window,
         {
             // if the TouchBegin handler recurses, we assume that means the event
             // has been implicitly accepted and continue to send touch events
-            if (QApplication::sendSpontaneousEvent(widget, &touchEvent) && touchEvent.isAccepted()) {
+            bool res = spontaneous ? QApplication::sendSpontaneousEvent(widget, &touchEvent)
+                                   : QApplication::sendEvent(widget, &touchEvent);
+            if (res && touchEvent.isAccepted()) {
                 accepted = true;
                 if (!widget.isNull())
                     widget->setAttribute(Qt::WA_WState_AcceptedTouchBeginEvent);
@@ -4043,7 +4046,9 @@ bool QApplicationPrivate::translateRawTouchEvent(QWidget *window,
                 || QGestureManager::gesturePending(widget)
 #endif
                 ) {
-                if (QApplication::sendSpontaneousEvent(widget, &touchEvent) && touchEvent.isAccepted())
+                bool res = spontaneous ? QApplication::sendSpontaneousEvent(widget, &touchEvent)
+                                       : QApplication::sendEvent(widget, &touchEvent);
+                if (res && touchEvent.isAccepted())
                     accepted = true;
                 // widget can be deleted on TouchEnd
                 if (touchEvent.type() == QEvent::TouchEnd && !widget.isNull())

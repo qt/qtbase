@@ -916,16 +916,17 @@ bool QGraphicsProxyWidget::event(QEvent *event)
     case QEvent::TouchBegin:
     case QEvent::TouchUpdate:
     case QEvent::TouchEnd: {
-        if (event->spontaneous())
-            qt_sendSpontaneousEvent(d->widget, event);
-        else
-            QCoreApplication::sendEvent(d->widget, event);
-
-        if (event->isAccepted())
+        QTouchEvent *touchEvent = static_cast<QTouchEvent *>(event);
+        auto touchPoints = touchEvent->points();
+        bool res = QApplicationPrivate::translateRawTouchEvent(d->widget, touchEvent->pointingDevice(),
+                                                               touchPoints, touchEvent->timestamp(),
+                                                               event->spontaneous());
+        if (res) {
+            event->accept();
             return true;
-
+        }
         break;
-   }
+    }
     default:
         break;
     }

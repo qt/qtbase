@@ -253,7 +253,8 @@ public:
     static bool translateRawTouchEvent(QWidget *widget,
                                        const QPointingDevice *device,
                                        QList<QEventPoint> &touchPoints,
-                                       ulong timestamp);
+                                       ulong timestamp,
+                                       bool spontaneous = true);
     static void translateTouchCancel(const QPointingDevice *device, ulong timestamp);
 
     QPixmap applyQIconStyleHelper(QIcon::Mode mode, const QPixmap& base) const override;
