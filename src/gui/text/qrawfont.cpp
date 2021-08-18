@@ -770,7 +770,7 @@ QRawFont QRawFont::fromFont(const QFont &font, QFontDatabase::WritingSystem writ
             QFontDef request(multiEngine->fontDef);
             request.styleStrategy |= QFont::NoFontMerging;
 
-            if (QFontEngine *engine = QFontDatabasePrivate::findFont(request, script)) {
+            if (QFontEngine *engine = QFontDatabasePrivate::findFont(request, script, true)) {
                 if (request.weight > QFont::Normal)
                     engine->fontDef.weight = request.weight;
                 if (request.style > QFont::StyleNormal)
