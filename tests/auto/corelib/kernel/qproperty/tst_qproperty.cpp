@@ -115,6 +115,8 @@ private slots:
     void bindableInterfaceOfCompatPropertyUsesSetter();
 
     void selfBindingShouldNotCrash();
+
+    void qpropertyAlias();
 };
 
 void tst_QProperty::functorBinding()
@@ -1854,6 +1856,21 @@ void tst_QProperty::selfBindingShouldNotCrash()
     QProperty<int> i;
     i.setBinding([&](){ return i+1; });
     QVERIFY(i.binding().error().hasError());
+}
+
+void tst_QProperty::qpropertyAlias()
+{
+    std::unique_ptr<QProperty<int>> i {new QProperty<int>};
+    QPropertyAlias<int> alias(i.get());
+    QVERIFY(alias.isValid());
+    alias.setValue(42);
+    QCOMPARE(i->value(), 42);
+    QProperty<int> j;
+    i->setBinding([&]() -> int { return j; });
+    j.setValue(42);
+    QCOMPARE(alias.value(), 42);
+    i.reset();
+    QVERIFY(!alias.isValid());
 }
 
 QTEST_MAIN(tst_QProperty);

@@ -103,6 +103,7 @@ struct QPropertyObserverPointer
     QPropertyObserver *ptr = nullptr;
 
     void unlink();
+    void unlink_fast();
 
     void setBindingToNotify(QPropertyBindingPrivate *binding);
     void setBindingToNotify_unsafe(QPropertyBindingPrivate *binding);
@@ -289,7 +290,7 @@ public:
     void clearDependencyObservers() {
         for (size_t i = 0; i < qMin(dependencyObserverCount, inlineDependencyObservers.size()); ++i) {
             QPropertyObserverPointer p{&inlineDependencyObservers[i]};
-            p.unlink();
+            p.unlink_fast();
         }
         if (heapObservers)
             heapObservers->clear();
