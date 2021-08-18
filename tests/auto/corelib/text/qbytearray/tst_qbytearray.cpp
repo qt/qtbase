@@ -123,8 +123,8 @@ private slots:
     void fromPercentEncoding();
     void toPercentEncoding_data();
     void toPercentEncoding();
-    void toPercentEncoding2_data();
-    void toPercentEncoding2();
+    void pecentEncodingRoundTrip_data();
+    void pecentEncodingRoundTrip();
 
     void qstrcmp_data();
     void qstrcmp();
@@ -338,9 +338,10 @@ void tst_QByteArray::qUncompressCorruptedData()
 
 void tst_QByteArray::qCompressionZeroTermination()
 {
-    QString s = "Hello, I'm a string.";
-    QByteArray ba = ::qUncompress(::qCompress(s.toLocal8Bit()));
-    QVERIFY((int) *(ba.data() + ba.size()) == 0);
+    QByteArray s = "Hello, I'm a string.";
+    QByteArray ba = ::qUncompress(::qCompress(s));
+    QCOMPARE(ba.data()[ba.size()], '\0');
+    QCOMPARE(ba, s);
 }
 #endif
 
@@ -1280,18 +1281,15 @@ void tst_QByteArray::replaceWithSpecifiedLength()
 
 void tst_QByteArray::number()
 {
-    QCOMPARE(QString(QByteArray::number((quint64) 0)),
-             QString(QByteArray("0")));
-    QCOMPARE(QString(QByteArray::number(Q_UINT64_C(0xFFFFFFFFFFFFFFFF))),
-             QString(QByteArray("18446744073709551615")));
-    QCOMPARE(QString(QByteArray::number(Q_INT64_C(0xFFFFFFFFFFFFFFFF))),
-             QString(QByteArray("-1")));
-    QCOMPARE(QString(QByteArray::number(qint64(0))),
-             QString(QByteArray("0")));
-    QCOMPARE(QString(QByteArray::number(Q_INT64_C(0x7FFFFFFFFFFFFFFF))),
-             QString(QByteArray("9223372036854775807")));
-    QCOMPARE(QString(QByteArray::number(Q_INT64_C(0x8000000000000000))),
-             QString(QByteArray("-9223372036854775808")));
+    QCOMPARE(QByteArray::number(quint64(0)), QByteArray("0"));
+    QCOMPARE(QByteArray::number(Q_UINT64_C(0xFFFFFFFFFFFFFFFF)),
+             QByteArray("18446744073709551615"));
+    QCOMPARE(QByteArray::number(Q_INT64_C(0xFFFFFFFFFFFFFFFF)), QByteArray("-1"));
+    QCOMPARE(QByteArray::number(qint64(0)), QByteArray("0"));
+    QCOMPARE(QByteArray::number(Q_INT64_C(0x7FFFFFFFFFFFFFFF)),
+             QByteArray("9223372036854775807"));
+    QCOMPARE(QByteArray::number(Q_INT64_C(0x8000000000000000)),
+             QByteArray("-9223372036854775808"));
 }
 
 void tst_QByteArray::number_double_data()
@@ -2023,15 +2021,15 @@ void tst_QByteArray::toFromPercentEncoding()
     QCOMPARE(QByteArray("").toPercentEncoding(), QByteArray(""));
 
     QByteArray data = arr.toPercentEncoding();
-    QCOMPARE(QString(data), QString("Qt%20is%20great%21"));
+    QCOMPARE(data, QByteArray("Qt%20is%20great%21"));
     QCOMPARE(QByteArray::fromPercentEncoding(data), arr);
 
     data = arr.toPercentEncoding("! ", "Qt");
-    QCOMPARE(QString(data), QString("%51%74 is grea%74!"));
+    QCOMPARE(data, QByteArray("%51%74 is grea%74!"));
     QCOMPARE(QByteArray::fromPercentEncoding(data), arr);
 
     data = arr.toPercentEncoding(QByteArray(), "abcdefghijklmnopqrstuvwxyz", 'Q');
-    QCOMPARE(QString(data), QString("Q51Q74Q20Q69Q73Q20Q67Q72Q65Q61Q74Q21"));
+    QCOMPARE(data, QByteArray("Q51Q74Q20Q69Q73Q20Q67Q72Q65Q61Q74Q21"));
     QCOMPARE(QByteArray::fromPercentEncoding(data, 'Q'), arr);
 
     // verify that to/from percent encoding preserves nullity
@@ -2096,36 +2094,34 @@ void tst_QByteArray::toPercentEncoding()
     QCOMPARE(decodedString.toPercentEncoding("/.").constData(), encodedString.constData());
 }
 
-void tst_QByteArray::toPercentEncoding2_data()
+void tst_QByteArray::pecentEncodingRoundTrip_data()
 {
     QTest::addColumn<QByteArray>("original");
     QTest::addColumn<QByteArray>("encoded");
     QTest::addColumn<QByteArray>("excludeInEncoding");
     QTest::addColumn<QByteArray>("includeInEncoding");
 
-    QTest::newRow("test_01") << QByteArray("abcdevghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ012345678-._~")
-                          << QByteArray("abcdevghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ012345678-._~")
-                          << QByteArray("")
-                          << QByteArray("");
-    QTest::newRow("test_02") << QByteArray("{\t\n\r^\"abc}")
-                          << QByteArray("%7B%09%0A%0D%5E%22abc%7D")
-                          << QByteArray("")
-                          << QByteArray("");
-    QTest::newRow("test_03") << QByteArray("://?#[]@!$&'()*+,;=")
-                          << QByteArray("%3A%2F%2F%3F%23%5B%5D%40%21%24%26%27%28%29%2A%2B%2C%3B%3D")
-                          << QByteArray("")
-                          << QByteArray("");
-    QTest::newRow("test_04") << QByteArray("://?#[]@!$&'()*+,;=")
-                          << QByteArray("%3A%2F%2F%3F%23%5B%5D%40!$&'()*+,;=")
-                          << QByteArray("!$&'()*+,;=")
-                          << QByteArray("");
-    QTest::newRow("test_05") << QByteArray("abcd")
-                          << QByteArray("a%62%63d")
-                          << QByteArray("")
-                          << QByteArray("bc");
+    QTest::newRow("unchanged")
+        << QByteArray("abcdevghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ012345678-._~")
+        << QByteArray("abcdevghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ012345678-._~")
+        << QByteArray("") << QByteArray("");
+    QTest::newRow("enclosed-space-quote")
+        << QByteArray("{\t\n\r^\"abc}")
+        << QByteArray("%7B%09%0A%0D%5E%22abc%7D")
+        << QByteArray("") << QByteArray("");
+    QTest::newRow("punctuate")
+        << QByteArray("://?#[]@!$&'()*+,;=")
+        << QByteArray("%3A%2F%2F%3F%23%5B%5D%40%21%24%26%27%28%29%2A%2B%2C%3B%3D")
+        << QByteArray("") << QByteArray("");
+    QTest::newRow("punctuate-exclude")
+        << QByteArray("://?#[]@!$&'()*+,;=")
+        << QByteArray("%3A%2F%2F%3F%23%5B%5D%40!$&'()*+,;=")
+        << QByteArray("!$&'()*+,;=") << QByteArray("");
+    QTest::newRow("text-include")
+        << QByteArray("abcd") << QByteArray("a%62%63d") << QByteArray("") << QByteArray("bc");
 }
 
-void tst_QByteArray::toPercentEncoding2()
+void tst_QByteArray::pecentEncodingRoundTrip()
 {
     QFETCH(QByteArray, original);
     QFETCH(QByteArray, encoded);
@@ -2133,8 +2129,8 @@ void tst_QByteArray::toPercentEncoding2()
     QFETCH(QByteArray, includeInEncoding);
 
     QByteArray encodedData = original.toPercentEncoding(excludeInEncoding, includeInEncoding);
-    QCOMPARE(encodedData.constData(), encoded.constData());
-    QCOMPARE(original, QByteArray::fromPercentEncoding(encodedData));
+    QCOMPARE(encodedData, encoded);
+    QCOMPARE(QByteArray::fromPercentEncoding(encodedData), original);
 }
 
 struct StringComparisonData
@@ -2217,52 +2213,49 @@ void tst_QByteArray::compare_singular()
 void tst_QByteArray::compareCharStar_data()
 {
     QTest::addColumn<QByteArray>("str1");
-    QTest::addColumn<QString>("string2");
+    QTest::addColumn<QByteArray>("string2");
     QTest::addColumn<int>("result");
 
-    QTest::newRow("null-null") << QByteArray() << QString() << 0;
-    QTest::newRow("null-empty") << QByteArray() << "" << 0;
-    QTest::newRow("null-full") << QByteArray() << "abc" << -1;
-    QTest::newRow("empty-null") << QByteArray("") << QString() << 0;
-    QTest::newRow("empty-empty") << QByteArray("") << "" << 0;
-    QTest::newRow("empty-full") << QByteArray("") << "abc" << -1;
-    QTest::newRow("raw-null") << QByteArray::fromRawData("abc", 0) << QString() << 0;
-    QTest::newRow("raw-empty") << QByteArray::fromRawData("abc", 0) << QString("") << 0;
-    QTest::newRow("raw-full") << QByteArray::fromRawData("abc", 0) << "abc" << -1;
+    QTest::newRow("null-null") << QByteArray() << QByteArray() << 0;
+    QTest::newRow("null-empty") << QByteArray() << QByteArray("") << 0;
+    QTest::newRow("null-full") << QByteArray() << QByteArray("abc") << -1;
+    QTest::newRow("empty-null") << QByteArray("") << QByteArray() << 0;
+    QTest::newRow("empty-empty") << QByteArray("") << QByteArray("") << 0;
+    QTest::newRow("empty-full") << QByteArray("") << QByteArray("abc") << -1;
+    QTest::newRow("raw-null") << QByteArray::fromRawData("abc", 0) << QByteArray() << 0;
+    QTest::newRow("raw-empty") << QByteArray::fromRawData("abc", 0) << QByteArray("") << 0;
+    QTest::newRow("raw-full") << QByteArray::fromRawData("abc", 0) << QByteArray("abc") << -1;
 
-    QTest::newRow("full-null") << QByteArray("abc") << QString() << +1;
-    QTest::newRow("full-empty") << QByteArray("abc") << "" << +1;
+    QTest::newRow("full-null") << QByteArray("abc") << QByteArray() << +1;
+    QTest::newRow("full-empty") << QByteArray("abc") << QByteArray("") << +1;
 
-    QTest::newRow("equal1") << QByteArray("abc") << "abc" << 0;
-    QTest::newRow("equal2") << QByteArray("abcd", 3) << "abc" << 0;
-    QTest::newRow("equal3") << QByteArray::fromRawData("abcd", 3) << "abc" << 0;
+    QTest::newRow("equal1") << QByteArray("abc") << QByteArray("abc") << 0;
+    QTest::newRow("equal2") << QByteArray("abcd", 3) << QByteArray("abc") << 0;
+    QTest::newRow("equal3") << QByteArray::fromRawData("abcd", 3) << QByteArray("abc") << 0;
 
-    QTest::newRow("less1") << QByteArray("ab") << "abc" << -1;
-    QTest::newRow("less2") << QByteArray("abb") << "abc" << -1;
-    QTest::newRow("less3") << QByteArray::fromRawData("abc", 2) << "abc" << -1;
-    QTest::newRow("less4") << QByteArray("", 1) << "abc" << -1;
-    QTest::newRow("less5") << QByteArray::fromRawData("", 1) << "abc" << -1;
-    QTest::newRow("less6") << QByteArray("a\0bc", 4) << "a.bc" << -1;
+    QTest::newRow("less1") << QByteArray("ab") << QByteArray("abc") << -1;
+    QTest::newRow("less2") << QByteArray("abb") << QByteArray("abc") << -1;
+    QTest::newRow("less3") << QByteArray::fromRawData("abc", 2) << QByteArray("abc") << -1;
+    QTest::newRow("less4") << QByteArray("", 1) << QByteArray("abc") << -1;
+    QTest::newRow("less5") << QByteArray::fromRawData("", 1) << QByteArray("abc") << -1;
+    QTest::newRow("less6") << QByteArray("a\0bc", 4) << QByteArray("a.bc") << -1;
 
-    QTest::newRow("greater1") << QByteArray("ac") << "abc" << +1;
-    QTest::newRow("greater2") << QByteArray("abd") << "abc" << +1;
-    QTest::newRow("greater3") << QByteArray("abcd") << "abc" << +1;
-    QTest::newRow("greater4") << QByteArray::fromRawData("abcd", 4) << "abc" << +1;
+    QTest::newRow("greater1") << QByteArray("ac") << QByteArray("abc") << +1;
+    QTest::newRow("greater2") << QByteArray("abd") << QByteArray("abc") << +1;
+    QTest::newRow("greater3") << QByteArray("abcd") << QByteArray("abc") << +1;
+    QTest::newRow("greater4") << QByteArray::fromRawData("abcd", 4) << QByteArray("abc") << +1;
 }
 
 void tst_QByteArray::compareCharStar()
 {
     QFETCH(QByteArray, str1);
-    QFETCH(QString, string2);
+    QFETCH(QByteArray, string2);
     QFETCH(int, result);
 
     const bool isEqual   = result == 0;
     const bool isLess    = result < 0;
     const bool isGreater = result > 0;
-    QByteArray qba = string2.toUtf8();
-    const char *str2 = qba.constData();
-    if (string2.isNull())
-        str2 = 0;
+    const char *str2 = string2.isNull() ? nullptr : string2.constData();
 
     // basic tests:
     QCOMPARE(str1 == str2, isEqual);
