@@ -57,8 +57,8 @@ QT_BEGIN_NAMESPACE
     \class QCocoaInputContext
     \brief Cocoa Input context implementation
 
-    Handles input of foreign characters (particularly East Asian)
-    languages.
+    Handles input of languages that support character composition,
+    for example East Asian languages.
 
     \section1 Testing
 
@@ -74,11 +74,9 @@ QT_BEGIN_NAMESPACE
 
     \section1 Interaction
 
-    Input method support in Cocoa uses NSTextInput protorol. Therefore
-    almost all functionality is implemented in QNSView.
+    Input method support in Cocoa is based on the NSTextInputClient protocol,
+    therefore almost all functionality is in QNSView (qnsview_complextext.mm).
 */
-
-
 
 QCocoaInputContext::QCocoaInputContext()
     : QPlatformInputContext()
