@@ -34,8 +34,15 @@ configure_file(
     @ONLY
     )
 
+write_basic_package_version_file(
+    "${__build_internals_build_dir}/${INSTALL_CMAKE_NAMESPACE}BuildInternalsConfigVersion.cmake"
+    VERSION ${PROJECT_VERSION}
+    COMPATIBILITY AnyNewerVersion
+)
+
 qt_install(FILES
     "${__build_internals_build_dir}/${INSTALL_CMAKE_NAMESPACE}BuildInternalsConfig.cmake"
+    "${__build_internals_build_dir}/${INSTALL_CMAKE_NAMESPACE}BuildInternalsConfigVersion.cmake"
     "${__build_internals_build_dir}/QtBuildInternalsExtra.cmake"
     DESTINATION "${__build_internals_install_dir}"
     COMPONENT Devel

@@ -150,6 +150,7 @@ foreach(module ${@INSTALL_CMAKE_NAMESPACE@_FIND_COMPONENTS})
     endif()
 
     find_package(@INSTALL_CMAKE_NAMESPACE@${module}
+        ${@INSTALL_CMAKE_NAMESPACE@_FIND_VERSION}
         ${_@INSTALL_CMAKE_NAMESPACE@_FIND_PARTS_QUIET}
         PATHS
             ${_qt_cmake_dir}
