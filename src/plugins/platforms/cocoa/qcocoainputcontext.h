@@ -57,14 +57,12 @@ public:
 
     bool isValid() const override { return true; }
 
+    void setFocusObject(QObject *object) override;
+
     void reset() override;
 
     QLocale locale() const override { return m_locale; }
     void updateLocale();
-
-private Q_SLOTS:
-    void connectSignals();
-    void focusObjectChanged(QObject *focusObject);
 
 private:
     QPointer<QWindow> m_focusWindow;
