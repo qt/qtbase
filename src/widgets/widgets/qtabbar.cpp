@@ -523,7 +523,7 @@ void QTabBarPrivate::layoutTabs()
             y += sz.height();
             maxWidth = qMax(maxWidth, sz.width());
             sz = q->minimumTabSizeHint(i);
-            tab->data = QRect(0, miny, sz.width(), sz.height());
+            tab->minRect = QRect(0, miny, sz.width(), sz.height());
             miny += sz.height();
             tabChain[tabChainIndex].init();
             tabChain[tabChainIndex].sizeHint = tab->maxRect.height();
