@@ -1633,8 +1633,9 @@ void QRasterPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
             patternLength += pattern.at(i);
 
         if (patternLength > 0) {
-            int n = qFloor(dashOffset / patternLength);
-            dashOffset -= n * patternLength;
+            dashOffset = std::fmod(dashOffset, patternLength);
+            if (dashOffset < 0)
+                dashOffset += patternLength;
             while (dashOffset >= pattern.at(dashIndex)) {
                 dashOffset -= pattern.at(dashIndex);
                 if (++dashIndex >= pattern.size())
