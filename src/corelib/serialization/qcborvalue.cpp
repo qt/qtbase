@@ -1354,6 +1354,7 @@ static void encodeToCbor(QCborStreamWriter &writer, const QCborContainerPrivate 
         else
             writer.endMap();
     } else if (idx < 0) {
+        Q_ASSERT_X(d != nullptr, "QCborValue", "Unexpected null container");
         if (d->elements.size() != 2) {
             // invalid state!
             qWarning("QCborValue: invalid tag state; are you encoding something that was improperly decoded?");
@@ -1364,6 +1365,7 @@ static void encodeToCbor(QCborStreamWriter &writer, const QCborContainerPrivate 
         writer.append(QCborTag(d->elements.at(0).value));
         encodeToCbor(writer, d, 1, opt);
     } else {
+        Q_ASSERT_X(d != nullptr, "QCborValue", "Unexpected null container");
         // just one element
         auto e = d->elements.at(idx);
         const ByteData *b = d->byteData(idx);
