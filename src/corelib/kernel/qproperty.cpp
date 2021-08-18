@@ -558,9 +558,10 @@ QPropertyObserver::QPropertyObserver(ChangeHandler changeHandler)
     d.setChangeHandler(changeHandler);
 }
 
-QPropertyObserver::QPropertyObserver(QUntypedPropertyData *)
+QPropertyObserver::QPropertyObserver(QUntypedPropertyData *data)
 {
-    // ### Qt 7: Remove, currently left for binary compatibility
+    aliasData = data;
+    next.setTag(ObserverIsAlias);
 }
 
 /*! \internal
@@ -609,15 +610,37 @@ QPropertyObserver &QPropertyObserver::operator=(QPropertyObserver &&other) noexc
     return *this;
 }
 
+#define UNLINK_COMMON \
+    if (ptr->next) \
+        ptr->next->prev = ptr->prev; \
+    if (ptr->prev) \
+        ptr->prev.setPointer(ptr->next.data()); \
+    ptr->next = nullptr; \
+    ptr->prev.clear();
+
+/*!
+    \internal
+    Unlinks
+ */
 void QPropertyObserverPointer::unlink()
 {
-    if (ptr->next)
-        ptr->next->prev = ptr->prev;
-    if (ptr->prev)
-        ptr->prev.setPointer(ptr->next.data());
-    ptr->next = nullptr;
-    ptr->prev.clear();
+    UNLINK_COMMON
+    if (ptr->next.tag() == QPropertyObserver::ObserverIsAlias)
+        ptr->aliasData = nullptr;
 }
+
+/*!
+    \internal
+    Like unlink, but does not handle ObserverIsAlias.
+    Must only be called in places where we know that we are not dealing
+    with such an observer.
+ */
+void QPropertyObserverPointer::unlink_fast()
+{
+    Q_ASSERT(ptr->next.tag() != QPropertyObserver::ObserverIsAlias);
+    UNLINK_COMMON
+}
+#undef UNLINK_COMMON
 
 void QPropertyObserverPointer::setChangeHandler(QPropertyObserver::ChangeHandler changeHandler)
 {
@@ -666,7 +689,7 @@ struct [[nodiscard]] QPropertyObserverNodeProtector {
 
     ~QPropertyObserverNodeProtector() {
         QPropertyObserverPointer d{static_cast<QPropertyObserver *>(&m_placeHolder)};
-        d.unlink();
+        d.unlink_fast();
     }
 };
 
@@ -720,6 +743,8 @@ void QPropertyObserverPointer::notify(QUntypedPropertyData *propertyDataPtr)
         }
         case QPropertyObserver::ObserverIsPlaceholder:
             // recursion is already properly handled somewhere else
+            break;
+        case QPropertyObserver::ObserverIsAlias:
             break;
         default: Q_UNREACHABLE();
         }

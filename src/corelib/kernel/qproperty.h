@@ -223,7 +223,8 @@ public:
     enum ObserverTag {
         ObserverNotifiesBinding, // observer was installed to notify bindings that obsverved property changed
         ObserverNotifiesChangeHandler, // observer is a change handler, which runs on every change
-        ObserverIsPlaceholder  // the observer before this one is currently evaluated in QPropertyObserver::notifyObservers.
+        ObserverIsPlaceholder,  // the observer before this one is currently evaluated in QPropertyObserver::notifyObservers.
+        ObserverIsAlias
     };
 protected:
     using ChangeHandler = void (*)(QPropertyObserver*, QUntypedPropertyData *);
@@ -244,6 +245,7 @@ private:
     union {
         QPropertyBindingPrivate *binding = nullptr;
         ChangeHandler changeHandler;
+        QUntypedPropertyData *aliasData;
     };
 };
 
@@ -266,7 +268,7 @@ protected:
 
     QUntypedPropertyData *aliasedProperty() const
     {
-        return nullptr;
+        return aliasData;
     }
 
 private:
