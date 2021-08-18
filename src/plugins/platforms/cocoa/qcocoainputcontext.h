@@ -67,7 +67,7 @@ private Q_SLOTS:
     void focusObjectChanged(QObject *focusObject);
 
 private:
-    QPointer<QWindow> mWindow;
+    QPointer<QWindow> m_focusWindow;
     QLocale m_locale;
     QMacNotificationObserver m_inputSourceObserver;
 };
