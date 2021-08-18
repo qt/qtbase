@@ -120,35 +120,35 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSViewMouseMoveHelper);
 
 @implementation QNSView {
     QPointer<QCocoaWindow> m_platformWindow;
+
+    // Mouse
+    QNSViewMouseMoveHelper *m_mouseMoveHelper;
     Qt::MouseButtons m_buttons;
     Qt::MouseButtons m_acceptedMouseDowns;
     Qt::MouseButtons m_frameStrutButtons;
-    QString m_composingText;
-    QPointer<QObject> m_composingFocusObject;
-    bool m_lastKeyDead;
-    bool m_sendKeyEvent;
+    Qt::KeyboardModifiers m_currentWheelModifiers;
     bool m_dontOverrideCtrlLMB;
     bool m_sendUpAsRightButton;
-    Qt::KeyboardModifiers m_currentWheelModifiers;
-    NSString *m_inputSource;
-    QNSViewMouseMoveHelper *m_mouseMoveHelper;
-    bool m_resendKeyEvent;
     bool m_scrolling;
     bool m_updatingDrag;
+
+    // Keys
+    bool m_lastKeyDead;
+    bool m_sendKeyEvent;
+    bool m_resendKeyEvent;
     NSEvent *m_currentlyInterpretedKeyEvent;
     QSet<quint32> m_acceptedKeyDowns;
+
+    // Text
+    NSString *m_inputSource;
+    QString m_composingText;
+    QPointer<QObject> m_composingFocusObject;
 }
 
 - (instancetype)initWithCocoaWindow:(QCocoaWindow *)platformWindow
 {
     if ((self = [super initWithFrame:NSZeroRect])) {
         m_platformWindow = platformWindow;
-        m_lastKeyDead = false;
-        m_sendKeyEvent = false;
-        m_inputSource = nil;
-        m_resendKeyEvent = false;
-        m_updatingDrag = false;
-        m_currentlyInterpretedKeyEvent = nil;
 
         self.focusRingType = NSFocusRingTypeNone;
 
@@ -158,6 +158,15 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSViewMouseMoveHelper);
         [self initDrawing];
         [self initMouse];
         [self registerDragTypes];
+
+        m_updatingDrag = false;
+
+        m_lastKeyDead = false;
+        m_sendKeyEvent = false;
+        m_resendKeyEvent = false;
+        m_currentlyInterpretedKeyEvent = nil;
+
+        m_inputSource = nil;
     }
     return self;
 }
