@@ -62,15 +62,20 @@ qt_internal_extend_target(QWasmIntegrationPlugin CONDITION QT_FEATURE_opengl
 #### Keys ignored in scope 4:.:.:wasm.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
 # PLUGIN_EXTENDS = "-"
 
-qt_copy_or_install(FILES
+set(wasm_support_files
     wasm_shell.html
-    DESTINATION "${CMAKE_INSTALL_PREFIX}/plugins/platforms/"
-)
-qt_copy_or_install(FILES
     qtloader.js
-    DESTINATION "${CMAKE_INSTALL_PREFIX}/plugins/platforms/"
-)
-qt_copy_or_install(FILES
     qtlogo.svg
-    DESTINATION "${CMAKE_INSTALL_PREFIX}/plugins/platforms/"
 )
+
+qt_copy_or_install(FILES
+    ${wasm_support_files}
+    DESTINATION "${CMAKE_INSTALL_PREFIX}/plugins/platforms"
+)
+# Need to copy the support files to the build dir in a top-level prefix build
+# So _qt_internal_wasm_add_target_helpers finds them.
+if(QT_WILL_INSTALL)
+    foreach(wasm_support_file ${wasm_support_files})
+        file(COPY "${wasm_support_file}" DESTINATION "${QT_BUILD_DIR}/plugins/platforms")
+    endforeach()
+endif()
