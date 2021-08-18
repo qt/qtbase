@@ -226,7 +226,16 @@ function(qt_internal_create_module_depends_file target)
     foreach(dep ${target_deps})
         if(NOT dep MATCHES ".+Private$" AND
            dep MATCHES "${INSTALL_CMAKE_NAMESPACE}(.+)")
-            list(APPEND qt_module_dependencies "${CMAKE_MATCH_1}")
+            # target_deps cointains elements that are a pair of target name and version,
+            # e.g. 'Core\;6.2'
+            # After the extracting from the target_deps list, the element becomes a list itself,
+            # because it loses escape symbol before the semicolon, so ${CMAKE_MATCH_1} is the list:
+            # Core;6.2.
+            # We need to store only the target name in the qt_module_dependencies variable.
+            list(GET CMAKE_MATCH_1 0 dep_name)
+            if(dep_name)
+                list(APPEND qt_module_dependencies "${dep_name}")
+            endif()
         endif()
     endforeach()
     list(REMOVE_DUPLICATES qt_module_dependencies)
