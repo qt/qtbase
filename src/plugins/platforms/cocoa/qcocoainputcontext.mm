@@ -82,7 +82,7 @@ QT_BEGIN_NAMESPACE
 
 QCocoaInputContext::QCocoaInputContext()
     : QPlatformInputContext()
-    , mWindow(QGuiApplication::focusWindow())
+    , m_focusWindow(QGuiApplication::focusWindow())
 {
     QMetaObject::invokeMethod(this, "connectSignals", Qt::QueuedConnection);
 
@@ -107,10 +107,10 @@ void QCocoaInputContext::reset()
 {
     QPlatformInputContext::reset();
 
-    if (!mWindow)
+    if (!m_focusWindow)
         return;
 
-    QCocoaWindow *window = static_cast<QCocoaWindow *>(mWindow->handle());
+    QCocoaWindow *window = static_cast<QCocoaWindow *>(m_focusWindow->handle());
     QNSView *view = qnsview_cast(window->view());
     if (!view)
         return;
@@ -131,11 +131,11 @@ void QCocoaInputContext::connectSignals()
 void QCocoaInputContext::focusObjectChanged(QObject *focusObject)
 {
     Q_UNUSED(focusObject);
-    if (mWindow == QGuiApplication::focusWindow()) {
-        if (!mWindow)
+    if (m_focusWindow == QGuiApplication::focusWindow()) {
+        if (!m_focusWindow)
             return;
 
-        QCocoaWindow *window = static_cast<QCocoaWindow *>(mWindow->handle());
+        QCocoaWindow *window = static_cast<QCocoaWindow *>(m_focusWindow->handle());
         if (!window)
             return;
         QNSView *view = qnsview_cast(window->view());
@@ -147,7 +147,7 @@ void QCocoaInputContext::focusObjectChanged(QObject *focusObject)
             [view cancelComposingText];
         }
     } else {
-        mWindow = QGuiApplication::focusWindow();
+        m_focusWindow = QGuiApplication::focusWindow();
     }
 }
 
