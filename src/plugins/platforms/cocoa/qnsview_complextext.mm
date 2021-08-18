@@ -105,14 +105,8 @@
         return;
     }
 
-    QString commitString;
-    if ([aString length]) {
-        if ([aString isKindOfClass:[NSAttributedString class]]) {
-            commitString = QString::fromCFString(reinterpret_cast<CFStringRef>([aString string]));
-        } else {
-            commitString = QString::fromCFString(reinterpret_cast<CFStringRef>(aString));
-        };
-    }
+    const bool isAttributedString = [aString isKindOfClass:NSAttributedString.class];
+    QString commitString = QString::fromNSString(isAttributedString ? [aString string] : aString);
 
     QObject *focusObject = m_platformWindow->window()->focusObject();
     if (queryInputMethod(focusObject)) {
@@ -133,14 +127,13 @@
         << " with selected range " << selectedRange
         << ", replacing range " << replacementRange;
 
-    QString preeditString;
+    const bool isAttributedString = [aString isKindOfClass:NSAttributedString.class];
+    QString preeditString = QString::fromNSString(isAttributedString ? [aString string] : aString);
 
     QList<QInputMethodEvent::Attribute> attrs;
     attrs<<QInputMethodEvent::Attribute(QInputMethodEvent::Cursor, selectedRange.location + selectedRange.length, 1, QVariant());
 
-    if ([aString isKindOfClass:[NSAttributedString class]]) {
-        // Preedit string has attribution
-        preeditString = QString::fromCFString(reinterpret_cast<CFStringRef>([aString string]));
+    if (isAttributedString) {
         int composingLength = preeditString.length();
         int index = 0;
         // Create attributes for individual sections of preedit text
@@ -167,9 +160,6 @@
             }
             index = effectiveRange.location + effectiveRange.length;
         }
-    } else {
-        // No attributes specified, take only the preedit text.
-        preeditString = QString::fromCFString(reinterpret_cast<CFStringRef>(aString));
     }
 
     if (attrs.isEmpty()) {
@@ -207,9 +197,9 @@
         if (selectedText.isEmpty())
             return nil;
 
-        QCFString string(selectedText.mid(aRange.location, aRange.length));
-        const NSString *tmpString = reinterpret_cast<const NSString *>((CFStringRef)string);
-        return [[[NSAttributedString alloc] initWithString:const_cast<NSString *>(tmpString)] autorelease];
+        NSString *substring = QStringView(selectedText).mid(aRange.location, aRange.length).toNSString();
+        return [[[NSAttributedString alloc] initWithString:substring] autorelease];
+
     } else {
         return nil;
     }
