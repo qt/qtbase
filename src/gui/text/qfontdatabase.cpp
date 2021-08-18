@@ -2677,7 +2677,9 @@ bool QFontDatabase::supportsThreadedFontRendering()
 /*!
     \internal
 */
-QFontEngine *QFontDatabase::findFont(const QFontDef &request, int script)
+QFontEngine *QFontDatabase::findFont(const QFontDef &request,
+                                     int script,
+                                     bool preferScriptOverFamily)
 {
     QMutexLocker locker(fontDatabaseMutex());
 
@@ -2724,6 +2726,14 @@ QFontEngine *QFontDatabase::findFont(const QFontDef &request, int script)
         // We populated familiy aliases (e.g. localized families), so try again
         index = match(multi ? QChar::Script_Common : script, request, family_name, foundry_name, &desc, blackListed);
     }
+
+    // If we do not find a match and NoFontMerging is set, use the requested font even if it does
+    // not support the script.
+    //
+    // (we do this at the end to prefer foundries that support the script if they exist)
+    if (index < 0 && !multi && !preferScriptOverFamily)
+        index = match(QChar::Script_Common, request, family_name, foundry_name, &desc, blackListed);
+
     if (index >= 0) {
         QFontDef fontDef = request;
 
