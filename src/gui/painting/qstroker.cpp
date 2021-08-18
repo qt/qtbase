@@ -1133,7 +1133,9 @@ void QDashStroker::processCurrentSubpath()
     qreal doffset = m_dashOffset * m_stroke_width;
 
     // make sure doffset is in range [0..sumLength)
-    doffset -= qFloor(doffset * invSumLength) * sumLength;
+    doffset = std::fmod(doffset, sumLength);
+    if (doffset < 0)
+        doffset += sumLength;
 
     while (doffset >= dashes[idash]) {
         doffset -= dashes[idash];
