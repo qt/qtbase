@@ -48,6 +48,9 @@ private slots:
     void latin1Uppercasing_xlate_checked();
     void latin1Uppercasing_category();
     void latin1Uppercasing_bitcheck();
+
+    void toPercentEncoding_data();
+    void toPercentEncoding();
 };
 
 void tst_qbytearray::initTestCase()
@@ -258,6 +261,34 @@ void tst_qbytearray::latin1Uppercasing_bitcheck()
     }
 }
 
+void tst_qbytearray::toPercentEncoding_data()
+{
+    QTest::addColumn<QByteArray>("plaintext");
+    QTest::addColumn<QByteArray>("expected");
+
+    QTest::newRow("empty") << QByteArray("") << QByteArray("");
+    QTest::newRow("plain")
+        << QByteArray("the quick brown fox jumped over the lazy dogs")
+        << QByteArray("the%20quick%20brown%20fox%20jumped%20over%20the%20lazy%20dogs");
+    QTest::newRow("specials")
+        << QByteArray(
+            "\x01\x02\x03\x04\x05\x06\x07\x08\t\n\x0b\x0c\r\x0e\x0f\x10\x11\x12\x13\x14\x15"
+            "\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f !\"#$%&'()*+,/:;<=>?@[\\]^`{|}\x7f")
+        << QByteArray(
+            "%01%02%03%04%05%06%07%08%09%0A%0B%0C%0D%0E%0F%10%11%12%13%14%15%16%17%18"
+            "%19%1A%1B%1C%1D%1E%1F%20%21%22%23%24%25%26%27%28%29%2A%2B%2C%2F%3A%3B%3C"
+            "%3D%3E%3F%40%5B%5C%5D%5E%60%7B%7C%7D%7F");
+}
+
+void tst_qbytearray::toPercentEncoding()
+{
+    QFETCH(QByteArray, plaintext);
+    QByteArray encoded;
+    QBENCHMARK {
+        encoded = plaintext.toPercentEncoding();
+    }
+    QTEST(encoded, "expected");
+}
 
 QTEST_MAIN(tst_qbytearray)
 
