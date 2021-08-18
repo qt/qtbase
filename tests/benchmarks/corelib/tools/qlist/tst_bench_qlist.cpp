@@ -283,6 +283,7 @@ private:
 template <class T>
 void tst_QList::removeAll_impl() const
 {
+    QSKIP("QTBUG-95096: known to be broken (for some test-cases) since Qt 6.0");
     QFETCH(QList<int>, i10);
     QFETCH(int, itemsToRemove);
 
