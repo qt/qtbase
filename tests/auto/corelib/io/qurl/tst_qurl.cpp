@@ -2081,8 +2081,9 @@ void tst_QUrl::hasQuery()
 
 void tst_QUrl::nameprep()
 {
-    QUrl url(QString::fromUtf8("http://www.fu""\xc3""\x9f""ball.de/"));
-    QCOMPARE(url.toString(), QString::fromLatin1("http://www.fussball.de/"));
+    // U+FB01 LATIN SMALL LIGATURE FI
+    QUrl url(u"http://www.\uFB01le.de/"_qs);
+    QCOMPARE(url.toString(), QStringLiteral(u"http://www.file.de/"));
 }
 
 void tst_QUrl::isValid()

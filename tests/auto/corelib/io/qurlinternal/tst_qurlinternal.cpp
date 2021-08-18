@@ -258,8 +258,9 @@ void tst_QUrlInternal::ace_testsuite_data()
     QTest::newRow("ascii-mixed") << "FLuke" << "fluke" << "fluke" << "fluke";
     QTest::newRow("ascii-upper") << "FLUKE" << "fluke" << "fluke" << "fluke";
 
-    QTest::newRow("asciifolded") << QString::fromLatin1("stra\337e") << "strasse" << "." << "strasse";
-    QTest::newRow("asciifolded-dotcom") << QString::fromLatin1("stra\337e.example.com") << "strasse.example.com" << "." << "strasse.example.com";
+    // U+FB01 LATIN SMALL LIGATURE FI
+    QTest::newRow("asciifolded") << u"\uFB01le"_qs << "file" << "." << "file";
+    QTest::newRow("asciifolded-dotcom") << u"\uFB01le.example.com"_qs << "file.example.com" << "." << "file.example.com";
     QTest::newRow("greek-mu") << QString::fromLatin1("\265V")
                               <<"xn--v-lmb"
                               << "."
