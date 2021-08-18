@@ -102,9 +102,10 @@ QCocoaInputContext::~QCocoaInputContext()
 /*!
     \brief Cancels a composition.
 */
-
 void QCocoaInputContext::reset()
 {
+    qCDebug(lcQpaInputMethods) << "Resetting input method";
+
     QPlatformInputContext::reset();
 
     if (!m_focusWindow)
@@ -130,7 +131,8 @@ void QCocoaInputContext::connectSignals()
 
 void QCocoaInputContext::focusObjectChanged(QObject *focusObject)
 {
-    Q_UNUSED(focusObject);
+    qCDebug(lcQpaInputMethods) << "Focus object changed to" << focusObject;
+
     if (m_focusWindow == QGuiApplication::focusWindow()) {
         if (!m_focusWindow)
             return;
