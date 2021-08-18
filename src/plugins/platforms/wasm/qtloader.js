@@ -416,7 +416,7 @@ function QtLoader(config)
         self.moduleConfig.preRun.push(function(module) {
             // Set environment variables
             for (var [key, value] of Object.entries(config.environment)) {
-                ENV[key.toUpperCase()] = value;
+                module.ENV[key.toUpperCase()] = value;
             }
             // Propagate Qt module properties
             module.qtCanvasElements = self.qtCanvasElements;
