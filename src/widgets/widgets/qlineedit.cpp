@@ -1855,6 +1855,7 @@ QVariant QLineEdit::inputMethodQuery(Qt::InputMethodQuery property, QVariant arg
         return d->adjustedControlRect(d->control->anchorRect());
     case Qt::ImFont:
         return font();
+    case Qt::ImAbsolutePosition:
     case Qt::ImCursorPosition: {
         const QPointF pt = argument.toPointF();
         if (!pt.isNull())

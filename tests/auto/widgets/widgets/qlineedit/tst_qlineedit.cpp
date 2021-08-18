@@ -2250,6 +2250,11 @@ void tst_QLineEdit::cursorPositionChanged()
     input.simulate(testWidget);
     QCOMPARE(lastCursorPos, lastPos);
     QCOMPARE(newCursorPos, newPos);
+
+    QInputMethodQueryEvent queryEvent(Qt::ImCursorPosition | Qt::ImAbsolutePosition);
+    QApplication::sendEvent(testWidget, &queryEvent);
+    QCOMPARE(queryEvent.value(Qt::ImCursorPosition).toInt(), newPos);
+    QCOMPARE(queryEvent.value(Qt::ImAbsolutePosition).toInt(), newPos);
 }
 
 void tst_QLineEdit::selectedText()
