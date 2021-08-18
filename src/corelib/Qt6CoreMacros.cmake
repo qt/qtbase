@@ -957,16 +957,25 @@ if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
 endif()
 
 # Extracts metatypes from a Qt target and generates a metatypes.json for it.
+#
 # By default we check whether AUTOMOC has been enabled and we extract the information from the
 # target's AUTOMOC supporting files.
-# Should you not wish to use automoc you need to pass in all the generated json files via the
+#
+# Should you not wish to use AUTOMOC you need to pass in all the generated json files via the
 # MANUAL_MOC_JSON_FILES parameter. The latter can be obtained by running moc with
 # the --output-json parameter.
 # Params:
-#   INSTALL_DIR: Location where to install the metatypes file. For public consumption,
-#                defaults to a ${CMAKE_INSTALL_PREFIX}/${INSTALL_LIBDIR}/metatypes directory.
-#                Executable metatypes files are never installed.
+#   OUTPUT_FILES: a variable name in which to store the list of the extracted metatype json files.
+#                 A typical use case would to install them.
+#
+#   TODO: Move these internal options out into an internal function to be used by Qt only.
+#   __QT_INTERNAL_INSTALL_DIR: Location where to install the metatypes file. For public consumption,
+#                              defaults to a ${CMAKE_INSTALL_PREFIX}/${INSTALL_LIBDIR}/metatypes
+#                              directory.
+#                              Executable metatypes files are never installed.
 #   __QT_INTERNAL_NO_INSTALL: When passed, will skip installation of the metatype file.
+#   __QT_INTERNAL_INSTALL: Installs the metatypes files into the default Qt metatypes folder.
+#                          Only to be used by the Qt build.
 function(qt6_extract_metatypes target)
 
     get_target_property(existing_meta_types_file ${target} INTERFACE_QT_META_TYPES_BUILD_FILE)
@@ -974,8 +983,27 @@ function(qt6_extract_metatypes target)
         return()
     endif()
 
+    set(args_option
+        # TODO: Remove this once all leaf module usages of it are removed. It's now a no-op.
+        __QT_INTERNAL_NO_INSTALL
+
+        # TODO: Move this into a separate internal function, so it doesn't pollute the public one.
+        __QT_INTERNAL_INSTALL
+    )
+    set(args_single
+        # TODO: Move this into a separate internal function, so it doesn't pollute the public one.
+        __QT_INTERNAL_INSTALL_DIR
+
+        OUTPUT_FILES
+    )
+    set(args_multi
+        MANUAL_MOC_JSON_FILES
+    )
+
     cmake_parse_arguments(arg
-        "__QT_INTERNAL_NO_INSTALL" "INSTALL_DIR" "MANUAL_MOC_JSON_FILES" ${ARGN})
+        "${args_option}"
+        "${args_single}"
+        "${args_multi}" ${ARGN})
 
     get_target_property(target_type ${target} TYPE)
     if (target_type STREQUAL "INTERFACE_LIBRARY")
@@ -1166,33 +1194,40 @@ function(qt6_extract_metatypes target)
     )
     target_sources(${target} INTERFACE ${metatypes_file_genex_build})
 
+    if(arg_OUTPUT_FILES)
+        set(${arg_OUTPUT_FILES} "${metatypes_file}")
+    endif()
+
     # Chech whether the generated json file needs to be installed.
     # Executable metatypes.json files should not be installed. Qt non-prefix builds should also
     # not install the files.
-    set(should_install TRUE)
-    if (target_type STREQUAL "EXECUTABLE" OR arg___QT_INTERNAL_NO_INSTALL)
-        set(should_install "FALSE")
+    set(should_install FALSE)
+
+    if(NOT target_type STREQUAL "EXECUTABLE" AND arg___QT_INTERNAL_INSTALL)
+        set(should_install TRUE)
     endif()
 
     # Automatically fill default install args when not specified.
-    if (NOT arg_INSTALL_DIR)
+    if(NOT arg___QT_INTERNAL_INSTALL_DIR)
         # INSTALL_LIBDIR is not set when QtBuildInternals is not loaded (when not doing a Qt build).
         # Default to a hardcoded location for user projects.
         if(INSTALL_LIBDIR)
-            set(arg_INSTALL_DIR "${INSTALL_LIBDIR}/metatypes")
+            set(install_dir "${INSTALL_LIBDIR}/metatypes")
         else()
-            set(arg_INSTALL_DIR "lib/metatypes")
+            set(install_dir "lib/metatypes")
         endif()
+    else()
+        set(install_dir "${arg___QT_INTERNAL_INSTALL_DIR}")
     endif()
 
     if(should_install)
-        set(metatypes_file_install_path "${arg_INSTALL_DIR}/${metatypes_file_name}")
+        set(metatypes_file_install_path "${install_dir}/${metatypes_file_name}")
         set(metatypes_file_install_path_genex "$<INSTALL_PREFIX>/${metatypes_file_install_path}")
         set(metatypes_file_genex_install
             "$<INSTALL_INTERFACE:$<${consumes_metatypes}:${metatypes_file_install_path_genex}>>"
         )
         target_sources(${target} INTERFACE ${metatypes_file_genex_install})
-        install(FILES "${metatypes_file}" DESTINATION "${arg_INSTALL_DIR}")
+        install(FILES "${metatypes_file}" DESTINATION "${install_dir}")
     endif()
 endfunction()
 

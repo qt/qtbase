@@ -318,11 +318,10 @@ set_source_files_properties(${qobject_moc_files} PROPERTIES HEADER_FILE_ONLY ON)
 
 set(core_metatype_args MANUAL_MOC_JSON_FILES ${core_qobject_metatypes_json_list})
 
-set(metatypes_install_dir ${INSTALL_LIBDIR}/metatypes)
-if (NOT QT_WILL_INSTALL)
-    list(APPEND core_metatype_args __QT_INTERNAL_NO_INSTALL)
-else()
-    list(APPEND core_metatype_args INSTALL_DIR "${metatypes_install_dir}")
+if(QT_WILL_INSTALL)
+    set(metatypes_install_dir ${INSTALL_LIBDIR}/metatypes)
+    list(APPEND core_metatype_args
+        __QT_INTERNAL_INSTALL __QT_INTERNAL_INSTALL_DIR "${metatypes_install_dir}")
 endif()
 # Use qt6_extract_metatypes instead of GENERATE_METATYPES so that we can manually pass the
 # additional json files.
