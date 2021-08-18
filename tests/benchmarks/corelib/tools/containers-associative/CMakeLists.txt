@@ -1,15 +1,10 @@
-# Generated from containers-associative.pro.
-
 #####################################################################
-## tst_bench_containers-associative Binary:
+## tst_bench_containers_associative Binary:
 #####################################################################
 
-qt_internal_add_benchmark(tst_bench_containers-associative
+qt_internal_add_benchmark(tst_bench_containers_associative
     SOURCES
-        main.cpp
+        tst_bench_containers_associative.cpp
     PUBLIC_LIBRARIES
         Qt::Test
 )
-
-#### Keys ignored in scope 1:.:.:containers-associative.pro:<TRUE>:
-# TEMPLATE = "app"

@@ -1,12 +1,10 @@
-# Generated from qstringlist.pro.
-
 #####################################################################
 ## tst_bench_qstringlist Binary:
 #####################################################################
 
 qt_internal_add_benchmark(tst_bench_qstringlist
     SOURCES
-        main.cpp
+        tst_bench_qstringlist.cpp
     PUBLIC_LIBRARIES
         Qt::Test
 )

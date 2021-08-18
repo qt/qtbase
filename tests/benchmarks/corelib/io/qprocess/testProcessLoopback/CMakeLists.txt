@@ -2,4 +2,4 @@
 ## testProcessLoopback Binary:
 #####################################################################
 
-add_executable(testProcessLoopback main.cpp)
+add_executable(testProcessLoopback loopback.cpp)

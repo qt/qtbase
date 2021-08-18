@@ -1,6 +1,6 @@
 qt_internal_add_benchmark(tst_bench_qsortfilterproxymodel
     SOURCES
-        tst_qsortfilterproxymodel.cpp
+        tst_bench_qsortfilterproxymodel.cpp
     PUBLIC_LIBRARIES
         Qt::Test
 )

@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include "main.h"
+#include "tst_bench_qhash.h"
 
 QT_BEGIN_NAMESPACE
 
