@@ -61,6 +61,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSView);
 
 @interface QNSView (MouseAPI)
 - (void)handleFrameStrutMouseEvent:(NSEvent *)theEvent;
+- (bool)closePopups:(NSEvent *)theEvent;
 - (void)resetMouseButtons;
 @end
 
