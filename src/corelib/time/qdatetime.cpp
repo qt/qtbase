@@ -2813,7 +2813,7 @@ static inline bool millisInSystemRange(qint64 millis, qint64 slack = 0)
 */
 static int systemTimeYearMatching(int year)
 {
-#ifdef Q_OS_WIN // Doesn't suppor times before epoch
+#if defined(Q_OS_WIN) || defined(Q_OS_WASM)// They don't support times before the epoch
     static constexpr int forLeapEarly[] = { 1984, 1996, 1980, 1992, 1976, 1988, 1972 };
     static constexpr int regularEarly[] = { 1978, 1973, 1974, 1975, 1970, 1971, 1977 };
 #else // First year fully in 32-bit time_t range is 1902
