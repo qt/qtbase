@@ -33,6 +33,7 @@
 #include <qhash.h>
 #include <qlist.h>
 #include <qstring.h>
+#include <private/qstringiterator_p.h>
 #if 0
 #include <private/qunicodetables_p.h>
 #endif
@@ -920,8 +921,8 @@ static const char *methods =
     "inline IdnaStatus idnaStatus(QChar ch) noexcept\n"
     "{ return idnaStatus(ch.unicode()); }\n"
     "\n"
-    "Q_CORE_EXPORT const char16_t * QT_FASTCALL idnaMapping(char32_t usc4) noexcept;\n"
-    "inline const char16_t *idnaMapping(QChar ch) noexcept\n"
+    "Q_CORE_EXPORT QStringView QT_FASTCALL idnaMapping(char32_t usc4) noexcept;\n"
+    "inline QStringView idnaMapping(QChar ch) noexcept\n"
     "{ return idnaMapping(ch.unicode()); }\n"
     "\n";
 
@@ -2358,7 +2359,7 @@ static void readScripts()
     }
 }
 
-static QMap<char32_t, QList<char32_t>> idnaMappingTable;
+static QMap<char32_t, QString> idnaMappingTable;
 
 static void readIdnaMappingTable()
 {
@@ -2396,7 +2397,7 @@ static void readIdnaMappingTable()
         const int last = ok && cl.size() == 2 ? cl[1].toInt(&ok, 16) : first;
         Q_ASSERT(ok);
 
-        QList<char32_t> mapping;
+        QString mapping;
 
         switch (rawStatus) {
         case IdnaRawStatus::Disallowed:
@@ -2415,7 +2416,8 @@ static void readIdnaMappingTable()
                     bool ok;
                     int val = s.toInt(&ok, 16);
                     Q_ASSERT_X(ok, "readIdnaMappingTable", qPrintable(line));
-                    mapping.append(val);
+                    for (auto c : QChar::fromUcs4(val))
+                        mapping.append(c);
                 }
             }
 
@@ -2476,9 +2478,13 @@ static void resolveIdnaStatus()
             Q_ASSERT(idnaMappingTable.contains(codepoint));
             const auto &mapping = idnaMappingTable[codepoint];
 
-            bool allow = std::all_of(mapping.begin(), mapping.end(), [](auto c) {
-                return UnicodeData::valueRef(c).idnaRawStatus == IdnaRawStatus::Valid;
-            });
+            bool allow = true;
+            for (QStringIterator iter(mapping); iter.hasNext();) {
+                if (UnicodeData::valueRef(iter.next()).idnaRawStatus != IdnaRawStatus::Valid) {
+                    allow = false;
+                    break;
+                }
+            }
 
             if (allow) {
                 qDebug() << "    Allowing" << Qt::hex << codepoint;
@@ -2493,54 +2499,125 @@ static void resolveIdnaStatus()
     }
 }
 
+/*
+    Returns a common supersting of all inputs.
+
+    Ideally this function would return the superstring of the smallest
+    possible size, but the shortest common superstring problem is know to be
+    NP-hard so an approximation must be used here.
+
+    This function implements a simple algorithm that consists of appending
+    input strings to the result if they are not already contained in it.
+
+    As an optimization this function is allowed to destroy its inputs.
+*/
+static QString buildSuperstring(QList<QString> &inputs)
+{
+    // Sort by size, longest strings first.
+    std::sort(inputs.begin(), inputs.end(), [](const QString &a, const QString &b) {
+        return a.size() == b.size() ? a > b : a.size() > b.size();
+    });
+
+    QString superstring;
+
+    for (const QString &s : inputs) {
+        if (!superstring.contains(s))
+            superstring.append(s);
+    }
+
+    return superstring;
+}
+
+/*
+    Stores IDNA mapping information.
+
+    The mapping table is an array of IdnaMapEntry instances sorted
+    by codePoint. For mapping resulting in a single QChar, that character
+    is stored inside the entry in charOrOffset. Otherwise the entry contains
+    offset inside idnaMappingData array.
+
+    It should be possible to find all mapped strings with size > 1 inside
+    idnaMappingData, otherwise the construction of this array should be optimized
+    to take advantage of common substrings and minimize the data size.
+*/
 static QByteArray createIdnaMapping()
 {
     qDebug("createIdnaMapping:");
 
-    size_t maxMappingLength = 0;
+    QList<QString> values;
+    values.reserve(idnaMappingTable.size());
+    qsizetype uncompressedSize = 0;
 
-    for (const auto &entry : idnaMappingTable) {
-        size_t length = 0;
-        for (char32_t c : entry)
-            length += QChar::requiresSurrogates(c) ? 2 : 1;
-        maxMappingLength = qMax(maxMappingLength, length);
+    for (const auto &v : idnaMappingTable.values()) {
+        if (v.size() > 1) {
+            values.append(v);
+            uncompressedSize += v.size();
+        }
     }
 
-    qDebug() << "    max mapping length:" << maxMappingLength;
+    QString idnaMappingData = buildSuperstring(values);
+    qDebug() << "    uncompressed size:" << uncompressedSize << "characters";
+    qDebug() << "    consolidated size:" << idnaMappingData.size() << "characters";
+
     qsizetype memoryUsage = 0;
+
     QByteArray out =
+        "static const char16_t idnaMappingData[] = {";
+
+    int col = 0;
+    for (auto c : idnaMappingData) {
+        if (col == 0)
+            out += "\n   ";
+        out += " 0x" + QByteArray::number(c.unicode(), 16) + ",";
+        col = (col + 1) % 12;
+        memoryUsage += 2;
+    }
+    out += "\n};\n\n";
+
+    // Check if the values fit into IdnaMapEntry below.
+    Q_ASSERT(idnaMappingData.size() < (1 << 16));
+
+    // This could be written more elegantly with a union and designated initializers,
+    // but designated initizers is a C++20 feature
+    out +=
         "struct IdnaMapEntry {\n"
         "    char32_t codePoint;\n"
-        "    char16_t mapping[" + QByteArray::number(maxMappingLength + 1) + "];\n"
-        "};\n\n"
+        "    uint16_t size;\n"
+        "    char16_t uc_or_offset; // offset if size > 1\n"
+        "};\n"
+        "static_assert(sizeof(IdnaMapEntry) == 8);\n\n"
         "static const IdnaMapEntry idnaMap[] = {\n";
 
     for (auto i = idnaMappingTable.keyValueBegin(); i != idnaMappingTable.keyValueEnd(); i++) {
-        out += "    { 0x" + QByteArray::number(i->first, 16) + ", {";
-        size_t n = 0;
-        for (char32_t c : i->second) {
-            for (auto qc : QChar::fromUcs4(c)) {
-                out += "0x" + QByteArray::number(qc, 16) + ", ";
-                n++;
-            }
-        }
-        for (; n < maxMappingLength; n++)
-            out += "0, ";
-        out += "0 }},\n";
-        memoryUsage += 4 + 2 * (maxMappingLength + 1);
+        const QString &mapping = i->second;
+        Q_ASSERT(!mapping.isEmpty());
+
+        qsizetype mappingIndex = idnaMappingData.indexOf(mapping);
+        Q_ASSERT(mappingIndex >= 0 || mapping.size() == 1);
+
+        out += "    { 0x" + QByteArray::number(i->first, 16) +
+               ", " + QByteArray::number(mapping.size());
+        if (mapping.size() == 1)
+            out += ", 0x" + QByteArray::number(mapping[0].unicode(), 16);
+        else
+            out += ", " + QByteArray::number(mappingIndex);
+        out += "},\n";
+        memoryUsage += 8;
     }
 
     qDebug() << "    memory usage:" << memoryUsage << "bytes";
 
     out +=
         "};\n\n"
-        "Q_CORE_EXPORT const char16_t * QT_FASTCALL idnaMapping(char32_t ucs4) noexcept\n"
+        "Q_CORE_EXPORT QStringView QT_FASTCALL idnaMapping(char32_t ucs4) noexcept\n"
         "{\n"
         "    auto i = std::lower_bound(std::begin(idnaMap), std::end(idnaMap), ucs4,\n"
         "                              [](const auto &p, char32_t c) { return p.codePoint < c; });\n"
-        "    if (i != std::end(idnaMap) && i->codePoint == ucs4)\n"
-        "        return i->mapping;\n"
-        "    return nullptr;\n"
+        "    if (i == std::end(idnaMap) || i->codePoint != ucs4)\n"
+        "        return {};\n\n"
+        "    return QStringView(i->size > 1\n"
+        "                           ? idnaMappingData + i->uc_or_offset : &i->uc_or_offset,\n"
+        "                       i->size);\n"
         "}\n\n";
 
     return out;
