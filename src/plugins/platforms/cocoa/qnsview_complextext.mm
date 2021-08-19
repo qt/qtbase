@@ -75,14 +75,62 @@
         return;
     }
 
-    const bool isAttributedString = [text isKindOfClass:NSAttributedString.class];
-    QString commitString = QString::fromNSString(isAttributedString ? [text string] : text);
-
     QObject *focusObject = m_platformWindow->window()->focusObject();
     if (queryInputMethod(focusObject)) {
-        QInputMethodEvent e;
-        e.setCommitString(commitString);
-        QCoreApplication::sendEvent(focusObject, &e);
+        QInputMethodEvent inputMethodEvent;
+
+        const bool isAttributedString = [text isKindOfClass:NSAttributedString.class];
+        QString commitString = QString::fromNSString(isAttributedString ? [text string] : text);
+
+        const auto markedRange = [self markedRange];
+        const auto selectedRange = [self selectedRange];
+
+        // If the replacement range is not specified we are expected to compute
+        // the range ourselves, based on the current state of the input context.
+        if (replacementRange.location == NSNotFound) {
+            if (markedRange.location != NSNotFound)
+                replacementRange = markedRange;
+            else
+                replacementRange = selectedRange;
+        }
+
+        // Qt's QInputMethodEvent has different semantics for the replacement
+        // range than AppKit does, so we need to sanitize the range first.
+        long long replaceFrom = replacementRange.location;
+        long long replaceLength = replacementRange.length;
+
+        // The QInputMethodEvent replacement start is relative to the start
+        // of the marked text (the location of the preedit string).
+        if (markedRange.location != NSNotFound)
+            replaceFrom -= markedRange.location;
+        else
+            replaceFrom = 0;
+
+        // The replacement length of QInputMethodEvent already includes
+        // the selection, as the documentation says that "If the widget
+        // has selected text, the selected text should get removed."
+        replaceLength -= selectedRange.length;
+
+        // The replacement length of QInputMethodEvent already includes
+        // the preedit string, as the documentation says that "When doing
+        // replacement, the area of the preedit string is ignored".
+        replaceLength -= markedRange.length;
+
+        // What we're left with is any _additional_ replacement.
+        // Make sure it's valid before passing it on.
+        replaceLength = qMax(0ll, replaceLength);
+
+        if (replaceFrom == NSNotFound) {
+            qCWarning(lcQpaKeys) << "Failed to compute valid replacement range for text insertion";
+            inputMethodEvent.setCommitString(commitString);
+        } else {
+            qCDebug(lcQpaKeys) << "Replacing from" << replaceFrom << "with length" << replaceLength
+                << "based on marked range" << markedRange << "and selection" << selectedRange;
+            inputMethodEvent.setCommitString(commitString, replaceFrom, replaceLength);
+        }
+
+        QCoreApplication::sendEvent(focusObject, &inputMethodEvent);
+
         // prevent handleKeyEvent from sending a key event
         m_sendKeyEvent = false;
     }
@@ -227,17 +275,34 @@
     return !m_composingText.isEmpty();
 }
 
+/*
+    Returns the range of marked text or {cursorPosition, 0} if there's none.
+
+    This maps to the location and length of the current preedit (composited) string.
+
+    The returned range measures from the start of the receiver’s text storage,
+    that is, from 0 to the document length.
+*/
 - (NSRange)markedRange
 {
-    NSRange range;
-    if (!m_composingText.isEmpty()) {
-        range.location = 0;
-        range.length = m_composingText.length();
+    QObject *focusObject = m_platformWindow->window()->focusObject();
+    if (auto queryResult = queryInputMethod(focusObject, Qt::ImAbsolutePosition)) {
+        int absoluteCursorPosition = queryResult.value(Qt::ImAbsolutePosition).toInt();
+
+        // The cursor position as reflected by Qt::ImAbsolutePosition is not
+        // affected by the offset of the cursor in the preedit area. That means
+        // that when composing text, the cursor position stays the same, at the
+        // preedit insertion point, regardless of where the cursor is positioned within
+        // the preedit string by the QInputMethodEvent::Cursor attribute. This means
+        // we can use the cursor position to determine the range of the marked text.
+
+        // The NSTextInputClient documentation says {NSNotFound, 0} should be returned if there
+        // is no marked text, but in practice NSTextView seems to report {cursorPosition, 0},
+        // so we do the same.
+        return NSMakeRange(absoluteCursorPosition, m_composingText.length());
     } else {
-        range.location = NSNotFound;
-        range.length = 0;
+        return {NSNotFound, 0};
     }
-    return range;
 }
 
 /*
@@ -302,14 +367,43 @@
 
 // ------------- Various text properties -------------
 
+/*
+    Returns the range of selected text, or {cursorPosition, 0} if there's none.
+
+    The returned range measures from the start of the receiver’s text storage,
+    that is, from 0 to the document length.
+*/
 - (NSRange)selectedRange
 {
     QObject *focusObject = m_platformWindow->window()->focusObject();
-    if (auto queryResult = queryInputMethod(focusObject, Qt::ImCurrentSelection)) {
-        QString selectedText = queryResult.value(Qt::ImCurrentSelection).toString();
-        return selectedText.isEmpty() ? NSMakeRange(0, 0) : NSMakeRange(0, selectedText.length());
+    if (auto queryResult = queryInputMethod(focusObject,
+            Qt::ImCursorPosition | Qt::ImAbsolutePosition | Qt::ImAnchorPosition)) {
+
+        // Unfortunately the Qt::InputMethodQuery values are all relative
+        // to the start of the current editing block (paragraph), but we
+        // need them in absolute values relative to the entire text.
+        // Luckily we have one property, Qt::ImAbsolutePosition, that
+        // we can use to compute the offset.
+        int cursorPosition = queryResult.value(Qt::ImCursorPosition).toInt();
+        int absoluteCursorPosition = queryResult.value(Qt::ImAbsolutePosition).toInt();
+        int absoluteOffset = absoluteCursorPosition - cursorPosition;
+
+        int anchorPosition = absoluteOffset + queryResult.value(Qt::ImAnchorPosition).toInt();
+        int selectionStart = anchorPosition >= absoluteCursorPosition ? absoluteCursorPosition : anchorPosition;
+        int selectionEnd = selectionStart == anchorPosition ? absoluteCursorPosition : anchorPosition;
+        int selectionLength = selectionEnd - selectionStart;
+
+        // Note: The cursor position as reflected by these properties are not
+        // affected by the offset of the cursor in the preedit area. That means
+        // that when composing text, the cursor position stays the same, at the
+        // preedit insertion point, regardless of where the cursor is positioned within
+        // the preedit string by the QInputMethodEvent::Cursor attribute.
+
+        // The NSTextInputClient documentation says {NSNotFound, 0} should be returned if there is no
+        // selection, but in practice NSTextView seems to report {cursorPosition, 0}, so we do the same.
+        return NSMakeRange(selectionStart, selectionLength);
     } else {
-        return NSMakeRange(0, 0);
+        return {NSNotFound, 0};
     }
 }
 
