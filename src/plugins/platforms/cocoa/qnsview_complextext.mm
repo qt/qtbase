@@ -159,9 +159,7 @@
             }
             index = effectiveRange.location + effectiveRange.length;
         }
-    }
-
-    if (attrs.isEmpty()) {
+    } else {
         QTextCharFormat format;
         format.setFontUnderline(true);
         attrs<<QInputMethodEvent::Attribute(QInputMethodEvent::TextFormat,
