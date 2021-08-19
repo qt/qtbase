@@ -2549,7 +2549,7 @@ static QByteArray createIdnaMapping()
     qsizetype uncompressedSize = 0;
 
     for (const auto &v : idnaMappingTable.values()) {
-        if (v.size() > 1) {
+        if (v.size() > 2) {
             values.append(v);
             uncompressedSize += v.size();
         }
@@ -2581,9 +2581,10 @@ static QByteArray createIdnaMapping()
     // but designated initizers is a C++20 feature
     out +=
         "struct IdnaMapEntry {\n"
-        "    char32_t codePoint;\n"
-        "    uint16_t size;\n"
-        "    char16_t uc_or_offset; // offset if size > 1\n"
+        "    // 21 bits suffice for any valid code-point (LastValidCodePoint = 0x10ffff)\n"
+        "    unsigned codePoint : 24;\n"
+        "    unsigned size : 8;\n"
+        "    char16_t ucs[2]; // ucs[0] is offset if size > 2\n"
         "};\n"
         "static_assert(sizeof(IdnaMapEntry) == 8);\n\n"
         "static const IdnaMapEntry idnaMap[] = {\n";
@@ -2593,15 +2594,21 @@ static QByteArray createIdnaMapping()
         Q_ASSERT(!mapping.isEmpty());
 
         qsizetype mappingIndex = idnaMappingData.indexOf(mapping);
-        Q_ASSERT(mappingIndex >= 0 || mapping.size() == 1);
+        Q_ASSERT(mappingIndex >= 0 || mapping.size() <= 2);
 
         out += "    { 0x" + QByteArray::number(i->first, 16) +
                ", " + QByteArray::number(mapping.size());
-        if (mapping.size() == 1)
-            out += ", 0x" + QByteArray::number(mapping[0].unicode(), 16);
-        else
-            out += ", " + QByteArray::number(mappingIndex);
-        out += "},\n";
+        if (mapping.size() <= 2) {
+            out += ", { 0x" + QByteArray::number(mapping[0].unicode(), 16);
+            if (mapping.size() == 2)
+                out += ", 0x" + QByteArray::number(mapping[1].unicode(), 16);
+            else
+                out += ", 0";
+        } else {
+            out += ", { " + QByteArray::number(mappingIndex);
+            out += ", 0";
+        }
+        out += " } },\n";
         memoryUsage += 8;
     }
 
@@ -2615,9 +2622,7 @@ static QByteArray createIdnaMapping()
         "                              [](const auto &p, char32_t c) { return p.codePoint < c; });\n"
         "    if (i == std::end(idnaMap) || i->codePoint != ucs4)\n"
         "        return {};\n\n"
-        "    return QStringView(i->size > 1\n"
-        "                           ? idnaMappingData + i->uc_or_offset : &i->uc_or_offset,\n"
-        "                       i->size);\n"
+        "    return QStringView(i->size > 2 ? idnaMappingData + i->ucs[0] : i->ucs, i->size);\n"
         "}\n\n";
 
     return out;
