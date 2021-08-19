@@ -132,6 +132,8 @@ endfunction()
 #
 # GENERATOR: Use a custom generator. When not specified, uses existing CMAKE_GENERATOR value.
 #
+# NO_IOS_DEFAULT_ARGS: Skips setting default iOS-specific options like the generator to be used.
+#
 # MAKE_PROGRAM: Specify a different make program. Can be useful with a custom make or ninja wrapper.
 #
 # BUILD_TYPE: Specify a different CMake build type. Defaults to CMAKE_BUILD_TYPE if it is not empty.
@@ -163,6 +165,7 @@ macro(_qt_internal_test_expect_pass _dir)
       SIMULATE_IN_SOURCE
       NO_CLEAN_STEP
       NO_BUILD_PROJECT_ARG
+      NO_IOS_DEFAULT_ARGS
     )
     set(_test_single_args
       BINARY
@@ -182,6 +185,13 @@ macro(_qt_internal_test_expect_pass _dir)
       "${_test_multi_args}"
       ${ARGN}
     )
+
+    if(NOT _ARGS_NO_IOS_DEFAULT_ARGS AND IOS)
+        set(_ARGS_NO_BUILD_PROJECT_ARG TRUE)
+        set(_ARGS_GENERATOR Xcode)
+        set(_ARGS_MAKE_PROGRAM xcodebuild)
+    endif()
+
     if(_ARGS_TESTNAME)
       set(testname "${_ARGS_TESTNAME}")
     else()
@@ -248,6 +258,28 @@ macro(_qt_internal_test_expect_pass _dir)
     endif()
     if(DEFINED ENV{QT_CMAKE_TESTS_ADDITIONAL_CONFIGURE_OPTIONS})
         list(APPEND additional_configure_args $ENV{QT_CMAKE_TESTS_ADDITIONAL_CONFIGURE_OPTIONS})
+    endif()
+
+    # When building an iOS CMake test in the CI using a universal Qt build, target the simulator
+    # sdk, because the CI currently doesn't have a proper setup for signing device binaries
+    # (missing a working signing certificate and provisioning profile). Allow opt-out.
+    if(IOS)
+        set(osx_arch_count 0)
+        if(QT_OSX_ARCHITECTURES)
+            list(LENGTH QT_OSX_ARCHITECTURES osx_arch_count)
+        endif()
+
+        set(build_environment "")
+        if(DEFINED ENV{QT_BUILD_ENVIRONMENT})
+            set(build_environment "$ENV{QT_BUILD_ENVIRONMENT}")
+        endif()
+        if(build_environment STREQUAL "ci"
+            AND osx_arch_count GREATER_EQUAL 2
+            AND NOT QT_UIKIT_SDK
+            AND NOT QT_NO_IOS_BUILD_ADJUSTMENT_IN_CI)
+            list(APPEND additional_configure_args
+                -DCMAKE_OSX_ARCHITECTURES=x86_64 -DCMAKE_OSX_SYSROOT=iphonesimulator)
+        endif()
     endif()
 
     set(__expect_pass_prefixes "${CMAKE_PREFIX_PATH}")

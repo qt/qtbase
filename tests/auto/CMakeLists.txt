@@ -2,9 +2,19 @@
 # Order by dependency [*], then alphabetic. [*] If bugs in part A of
 # our source would break tests of part B, then test A before B.
 
-# Build only corelib and gui tests when targeting uikit (iOS),
-# because the script can't handle the SUBDIRS assignment well.
-if (UIKIT)
+if(UIKIT)
+    # For now, only build CMake auto tests when QT_BUILD_MINIMAL_STATIC_TEST
+    # is a requested (which is basically what CI will build).
+    # The reason is that qt_internal_add_test doesn't use qt_add_executable
+    # at the moment, which means none of the required iOS specific finalizers
+    # are run.
+    if(QT_BUILD_MINIMAL_STATIC_TESTS)
+        add_subdirectory(cmake)
+        return()
+    endif()
+
+    # Build only corelib and gui tests when targeting uikit (iOS),
+    # because the script can't handle the SUBDIRS assignment well.
     add_subdirectory(corelib)
     if (TARGET Qt::Gui)
         add_subdirectory(gui)

@@ -1,5 +1,7 @@
 type: Group
 instructions:
+  # Informs qtestblacklist.cpp that tests are run in the CI.
+  # A related QT_BUILD_ENVIRONMENT env var is set during an integration's build phase.
   - type: EnvironmentVariable
     variableName: QTEST_ENVIRONMENT
     variableValue: "ci"
