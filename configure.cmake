@@ -611,6 +611,12 @@ qt_feature("ltcg"
     CONDITION __qt_ltcg_detected
 )
 qt_feature_config("ltcg" QMAKE_PRIVATE_CONFIG)
+
+if(NOT QT_CONFIGURE_RUNNING)
+    # This feature is used early in QtCompilerOptimization.cmake.
+    qt_evaluate_feature(ltcg)
+endif()
+
 qt_feature("enable_new_dtags"
     LABEL "Using new DTAGS"
     CONDITION LINUX AND TEST_enable_new_dtags

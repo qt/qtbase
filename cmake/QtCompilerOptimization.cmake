@@ -168,8 +168,14 @@ endif()
 
 # Android Clang
 if(CLANG AND ANDROID)
-    set(QT_CFLAGS_OPTIMIZE "-Oz")
-    set(QT_CFLAGS_OPTIMIZE_FULL "-Oz")
+    if(QT_FEATURE_ltcg)
+        # When using LTCG, the linker cannot cope with -Oz.  See QTBUG-89472 for details.
+        set(QT_CFLAGS_OPTIMIZE "-O2")
+        set(QT_CFLAGS_OPTIMIZE_FULL "-O3")
+    else()
+        set(QT_CFLAGS_OPTIMIZE "-Oz")
+        set(QT_CFLAGS_OPTIMIZE_FULL "-Oz")
+    endif()
 endif()
 
 # qcc
