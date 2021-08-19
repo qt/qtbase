@@ -133,37 +133,38 @@
     preeditAttributes << QInputMethodEvent::Attribute(
         QInputMethodEvent::Cursor, selectedRange.location + selectedRange.length, true);
 
-    if (isAttributedString) {
-        // Create attributes for individual sections of preedit text
-        int index = 0;
-        int composingLength = preeditString.length();
-        while (index < composingLength) {
-            NSRange effectiveRange;
-            NSRange range = NSMakeRange(index, composingLength - index);
-            NSDictionary *attributes = [text attributesAtIndex:index
-                longestEffectiveRange:&effectiveRange inRange:range];
+    int index = 0;
+    int composingLength = preeditString.length();
+    while (index < composingLength) {
+        NSRange range = NSMakeRange(index, composingLength - index);
 
-            if (NSNumber *underlineStyle = attributes[NSUnderlineStyleAttributeName]) {
-                QColor underlineColor(Qt::black);
-                if (NSColor *color = attributes[NSUnderlineColorAttributeName])
-                    underlineColor = qt_mac_toQColor(color);
+        static NSDictionary *defaultMarkedTextAttributes = []{
+            NSTextView *textView = [[NSTextView new] autorelease];
+            return [textView.markedTextAttributes retain];
+        }();
 
-                QTextCharFormat format;
-                format.setFontUnderline(true);
-                format.setUnderlineColor(underlineColor);
-                preeditAttributes << QInputMethodEvent::Attribute(
-                    QInputMethodEvent::TextFormat,
-                    effectiveRange.location, effectiveRange.length,
-                    format);
-            }
+        NSDictionary *attributes = isAttributedString
+            ? [text attributesAtIndex:index longestEffectiveRange:&range inRange:range]
+            : defaultMarkedTextAttributes;
 
-            index = effectiveRange.location + effectiveRange.length;
-        }
-    } else {
+        qCDebug(lcQpaKeys) << "Decorating range" << range << "based on" << attributes;
         QTextCharFormat format;
-        format.setFontUnderline(true);
-        preeditAttributes << QInputMethodEvent::Attribute(
-            QInputMethodEvent::TextFormat, 0, preeditString.length(), format);
+
+        if (NSNumber *underlineStyle = attributes[NSUnderlineStyleAttributeName])
+            format.setFontUnderline(true); // FIXME: Support all NSUnderlineStyles
+        if (NSColor *underlineColor = attributes[NSUnderlineColorAttributeName])
+            format.setUnderlineColor(qt_mac_toQColor(underlineColor));
+        if (NSColor *foregroundColor = attributes[NSForegroundColorAttributeName])
+            format.setForeground(qt_mac_toQColor(foregroundColor));
+        if (NSColor *backgroundColor = attributes[NSBackgroundColorAttributeName])
+            format.setBackground(qt_mac_toQColor(backgroundColor));
+
+        if (format != QTextCharFormat()) {
+            preeditAttributes << QInputMethodEvent::Attribute(
+                QInputMethodEvent::TextFormat, range.location, range.length, format);
+        }
+
+        index = range.location + range.length;
     }
 
     m_composingText = preeditString;
@@ -181,7 +182,12 @@
 
 - (NSArray<NSString *> *)validAttributesForMarkedText
 {
-    return @[NSUnderlineColorAttributeName, NSUnderlineStyleAttributeName];
+    return @[
+        NSUnderlineColorAttributeName,
+        NSUnderlineStyleAttributeName,
+        NSForegroundColorAttributeName,
+        NSBackgroundColorAttributeName
+    ];
 }
 
 - (BOOL)hasMarkedText
