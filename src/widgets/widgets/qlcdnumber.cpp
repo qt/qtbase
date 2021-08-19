@@ -432,7 +432,7 @@ void QLCDNumber::setDigitCount(int numDigits)
             d->digitStr = d->digitStr.right(numDigits);
             QBitArray tmpPoints = d->points;
             d->points.resize(numDigits);
-            for (i=0; i<(int)numDigits; i++)
+            for (i=0; i<numDigits; i++)
                 d->points.setBit(i, tmpPoints.testBit(i+dif));
         }
         d->ndigits = numDigits;
