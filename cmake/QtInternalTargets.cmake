@@ -131,15 +131,6 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" AND CMAKE_SYSTEM_NAME STREQUAL "
     target_compile_options(PlatformCommonInternal INTERFACE -Wno-ignored-attributes)
 endif()
 
-# We can't use the gold linker on android with the NDK, which is the default
-# linker. To build our own target we will use the lld linker.
-# TODO: Why not?
-# Linking Android libs with lld on Windows sometimes deadlocks. Don't use lld on
-# Windows. qmake doesn't use lld to build Android on any host platform.
-if (ANDROID AND NOT CMAKE_HOST_WIN32)
-    target_link_options(PlatformModuleInternal INTERFACE -fuse-ld=lld)
-endif()
-
 target_compile_definitions(PlatformCommonInternal INTERFACE $<$<NOT:$<CONFIG:Debug>>:QT_NO_DEBUG>)
 
 function(qt_internal_apply_bitcode_flags target)
