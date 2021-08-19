@@ -1,34 +1,14 @@
-# Generated from plugin.pro.
-
-cmake_minimum_required(VERSION 3.16)
-project(simplestyleplugin LANGUAGES CXX)
-
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
-set(CMAKE_AUTOUIC ON)
-
-if(NOT DEFINED INSTALL_EXAMPLESDIR)
-  set(INSTALL_EXAMPLESDIR "examples")
-endif()
-
-set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/widgets/tools/styleplugin/styles")
-
-find_package(Qt6 COMPONENTS Core)
-find_package(Qt6 COMPONENTS Gui)
-find_package(Qt6 COMPONENTS Widgets)
-
-qt_add_plugin(simplestyleplugin)
+qt_add_plugin(simplestyleplugin
+    CLASS_NAME SimpleStylePlugin
+)
 target_sources(simplestyleplugin PRIVATE
     simplestyle.cpp simplestyle.h
     simplestyleplugin.cpp simplestyleplugin.h
 )
 set_target_properties(simplestyleplugin PROPERTIES
-    WIN32_EXECUTABLE TRUE
-    MACOSX_BUNDLE TRUE
+    LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/stylewindow/styles"
 )
-target_link_libraries(simplestyleplugin PUBLIC
+target_link_libraries(simplestyleplugin PRIVATE
     Qt::Core
     Qt::Gui
     Qt::Widgets
@@ -36,6 +16,5 @@ target_link_libraries(simplestyleplugin PUBLIC
 
 install(TARGETS simplestyleplugin
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
-    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
     LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )

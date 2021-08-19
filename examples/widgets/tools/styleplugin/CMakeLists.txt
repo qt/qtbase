@@ -1,19 +1,15 @@
-# Generated from styleplugin.pro.
-
-# special case begin
 cmake_minimum_required(VERSION 3.16)
 project(styleplugin LANGUAGES CXX)
 
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
+find_package(Qt6 COMPONENTS Widgets)
 
 set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
-set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+if(NOT DEFINED INSTALL_EXAMPLESDIR)
+    set(INSTALL_EXAMPLESDIR "examples")
+endif()
 
-find_package(Qt6 COMPONENTS Widgets)
-# special case end
+set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/widgets/tools/styleplugin")
 
 add_subdirectory(stylewindow)
 add_subdirectory(plugin)

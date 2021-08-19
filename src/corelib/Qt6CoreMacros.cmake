@@ -1833,6 +1833,7 @@ macro(_qt_internal_get_add_plugin_keywords option_args single_args multi_args)
     set(${option_args}
         STATIC
         SHARED
+        __QT_INTERNAL_NO_PROPAGATE_PLUGIN_INITIALIZER
     )
     set(${single_args}
         # TODO: For backward compatibility / transitional use only, remove once all repos no longer
@@ -1842,6 +1843,7 @@ macro(_qt_internal_get_add_plugin_keywords option_args single_args multi_args)
         PLUGIN_TYPE
         CLASS_NAME
         OUTPUT_NAME
+        OUTPUT_TARGETS
     )
     set(${multi_args})
 endmacro()
@@ -1950,6 +1952,28 @@ function(qt6_add_plugin target)
     endif()
 
     set_target_properties(${target} PROPERTIES QT_PLUGIN_CLASS_NAME "${plugin_class_name}")
+
+    # Create a plugin initializer object library for static plugins.
+    # It contains a Q_IMPORT_PLUGIN(QT_PLUGIN_CLASS_NAME) call.
+    # Project targets will automatically link to the plugin initializer whenever they link to the
+    # plugin target.
+    # The plugin init target name is stored in OUTPUT_TARGETS, so projects may install them.
+    # Qml plugin inits are handled in Qt6QmlMacros.
+    if(NOT "${arg_PLUGIN_TYPE}" STREQUAL "qml_plugin"
+            AND target_type STREQUAL "STATIC_LIBRARY")
+        __qt_internal_add_static_plugin_init_object_library("${target}" plugin_init_target)
+
+        if(arg_OUTPUT_TARGETS)
+            set(${arg_OUTPUT_TARGETS} ${plugin_init_target} PARENT_SCOPE)
+        endif()
+
+        # We don't automatically propagate the plugin init library for Qt provided plugins, because
+        # there are 2 other code paths that take care of that, one involving finalizers and the
+        # other regular usage requirements.
+        if(NOT arg___QT_INTERNAL_NO_PROPAGATE_PLUGIN_INITIALIZER)
+            __qt_internal_propagate_object_library("${target}" "${plugin_init_target}")
+        endif()
+    endif()
 
     target_compile_definitions(${target} PRIVATE
         QT_PLUGIN

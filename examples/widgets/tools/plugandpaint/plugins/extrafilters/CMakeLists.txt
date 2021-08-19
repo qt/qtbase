@@ -1,19 +1,17 @@
-# Generated from extrafilters.pro.
-# special case skip regeneration
-
-qt_add_plugin(pnp_extrafilters)
+qt_add_plugin(pnp_extrafilters
+    CLASS_NAME ExtraFiltersPlugin
+)
 target_sources(pnp_extrafilters PRIVATE
     extrafiltersplugin.cpp extrafiltersplugin.h
 )
 set_target_properties(pnp_extrafilters PROPERTIES
-    MACOSX_BUNDLE TRUE
     LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/app"
 )
 target_include_directories(pnp_extrafilters PUBLIC
     ../../app
 )
 
-target_link_libraries(pnp_extrafilters PUBLIC
+target_link_libraries(pnp_extrafilters PRIVATE
     Qt::Core
     Qt::Gui
     Qt::Widgets
