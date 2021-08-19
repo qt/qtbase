@@ -99,7 +99,6 @@ static QPalette *qt_mac_createSystemPalette()
 
     palette->setBrush(QPalette::Disabled, QPalette::WindowText, dark);
     palette->setBrush(QPalette::Disabled, QPalette::Text, dark);
-    palette->setBrush(QPalette::Disabled, QPalette::ButtonText, dark);
     palette->setBrush(QPalette::Disabled, QPalette::Base, backgroundBrush);
     QBrush textBackgroundBrush = qt_mac_toQBrush([NSColor textBackgroundColor]);
     palette->setBrush(QPalette::Active, QPalette::Base, textBackgroundBrush);
@@ -124,6 +123,7 @@ static QPalette *qt_mac_createSystemPalette()
 
     qc = qt_mac_toQColor([NSColor controlTextColor]);
     palette->setColor(QPalette::Active, QPalette::Text, qc);
+    palette->setColor(QPalette::Active, QPalette::ButtonText, qc);
     palette->setColor(QPalette::Active, QPalette::WindowText, qc);
     palette->setColor(QPalette::Active, QPalette::HighlightedText, qc);
     palette->setColor(QPalette::Inactive, QPalette::Text, qc);
@@ -132,6 +132,7 @@ static QPalette *qt_mac_createSystemPalette()
 
     qc = qt_mac_toQColor([NSColor disabledControlTextColor]);
     palette->setColor(QPalette::Disabled, QPalette::Text, qc);
+    palette->setColor(QPalette::Disabled, QPalette::ButtonText, qc);
     palette->setColor(QPalette::Disabled, QPalette::WindowText, qc);
     palette->setColor(QPalette::Disabled, QPalette::HighlightedText, qc);
 
