@@ -1,4 +1,15 @@
-# Generated from echoplugin.pro.
+cmake_minimum_required(VERSION 3.16)
+project(plugandpaint LANGUAGES CXX)
 
-qt_internal_add_example(echowindow)
-qt_internal_add_example(plugin)
+find_package(Qt6 COMPONENTS Core Gui Widgets)
+
+set(CMAKE_AUTOMOC ON)
+
+if(NOT DEFINED INSTALL_EXAMPLESDIR)
+    set(INSTALL_EXAMPLESDIR "examples")
+endif()
+
+set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/widgets/tools/echoplugin")
+
+add_subdirectory(plugin)
+add_subdirectory(echowindow)
