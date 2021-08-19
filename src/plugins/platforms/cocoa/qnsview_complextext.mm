@@ -183,16 +183,7 @@
 
 - (NSArray<NSString *> *)validAttributesForMarkedText
 {
-    if (!m_platformWindow)
-        return nil;
-
-    if (m_platformWindow->window() != QGuiApplication::focusWindow())
-        return nil;
-
-    if (queryInputMethod(m_platformWindow->window()->focusObject()))
-        return @[NSUnderlineColorAttributeName, NSUnderlineStyleAttributeName];
-    else
-        return nil;
+    return @[NSUnderlineColorAttributeName, NSUnderlineStyleAttributeName];
 }
 
 - (BOOL)hasMarkedText
