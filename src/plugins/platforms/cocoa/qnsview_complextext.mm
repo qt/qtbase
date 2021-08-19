@@ -129,41 +129,41 @@
     const bool isAttributedString = [text isKindOfClass:NSAttributedString.class];
     QString preeditString = QString::fromNSString(isAttributedString ? [text string] : text);
 
-    QList<QInputMethodEvent::Attribute> attrs;
-    attrs<<QInputMethodEvent::Attribute(QInputMethodEvent::Cursor, selectedRange.location + selectedRange.length, 1, QVariant());
+    QList<QInputMethodEvent::Attribute> preeditAttributes;
+    preeditAttributes << QInputMethodEvent::Attribute(
+        QInputMethodEvent::Cursor, selectedRange.location + selectedRange.length, true);
 
     if (isAttributedString) {
-        int composingLength = preeditString.length();
-        int index = 0;
         // Create attributes for individual sections of preedit text
+        int index = 0;
+        int composingLength = preeditString.length();
         while (index < composingLength) {
             NSRange effectiveRange;
-            NSRange range = NSMakeRange(index, composingLength-index);
+            NSRange range = NSMakeRange(index, composingLength - index);
             NSDictionary *attributes = [text attributesAtIndex:index
-                                            longestEffectiveRange:&effectiveRange
-                                                          inRange:range];
-            NSNumber *underlineStyle = [attributes objectForKey:NSUnderlineStyleAttributeName];
-            if (underlineStyle) {
-                QColor clr (Qt::black);
-                NSColor *color = [attributes objectForKey:NSUnderlineColorAttributeName];
-                if (color) {
-                    clr = qt_mac_toQColor(color);
-                }
+                longestEffectiveRange:&effectiveRange inRange:range];
+
+            if (NSNumber *underlineStyle = attributes[NSUnderlineStyleAttributeName]) {
+                QColor underlineColor(Qt::black);
+                if (NSColor *color = attributes[NSUnderlineColorAttributeName])
+                    underlineColor = qt_mac_toQColor(color);
+
                 QTextCharFormat format;
                 format.setFontUnderline(true);
-                format.setUnderlineColor(clr);
-                attrs<<QInputMethodEvent::Attribute(QInputMethodEvent::TextFormat,
-                                                    effectiveRange.location,
-                                                    effectiveRange.length,
-                                                    format);
+                format.setUnderlineColor(underlineColor);
+                preeditAttributes << QInputMethodEvent::Attribute(
+                    QInputMethodEvent::TextFormat,
+                    effectiveRange.location, effectiveRange.length,
+                    format);
             }
+
             index = effectiveRange.location + effectiveRange.length;
         }
     } else {
         QTextCharFormat format;
         format.setFontUnderline(true);
-        attrs<<QInputMethodEvent::Attribute(QInputMethodEvent::TextFormat,
-                                            0, preeditString.length(), format);
+        preeditAttributes << QInputMethodEvent::Attribute(
+            QInputMethodEvent::TextFormat, 0, preeditString.length(), format);
     }
 
     m_composingText = preeditString;
@@ -171,8 +171,8 @@
     if (QObject *focusObject = m_platformWindow->window()->focusObject()) {
         m_composingFocusObject = focusObject;
         if (queryInputMethod(focusObject)) {
-            QInputMethodEvent e(preeditString, attrs);
-            QCoreApplication::sendEvent(focusObject, &e);
+            QInputMethodEvent event(preeditString, preeditAttributes);
+            QCoreApplication::sendEvent(focusObject, &event);
             // prevent handleKeyEvent from sending a key event
             m_sendKeyEvent = false;
         }
