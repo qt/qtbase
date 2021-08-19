@@ -2659,7 +2659,8 @@
     \value ImCursorRectangle    The rectangle covering the area of the input cursor in widget coordinates.
     \value ImFont               The currently used font for text input.
     \value ImCursorPosition     The logical position of the cursor within the text surrounding the input area
-                                (see \c ImSurroundingText).
+                                (see \c ImSurroundingText). The position does not incorporate the offset of
+                                the cursor within the preedit area, as controlled by QInputMethodEvent::Cursor.
     \value ImSurroundingText    The plain text around the input area, for example the current paragraph.
     \value ImCurrentSelection   The currently selected text.
     \value ImMaximumTextLength  The maximum number of characters that the widget can hold. If there is no limit,
@@ -2670,7 +2671,9 @@
     \value ImHints              The hints for input method on expected input. (See Qt::InputMethodHints)
     \value ImPreferredLanguage  The preferred input language.
     \value ImPlatformData       Platform specific data for input method.
-    \value ImAbsolutePosition   The logical position of the cursor within the entire document.
+    \value ImAbsolutePosition   The logical position of the cursor within the entire document. The position does
+                                not incorporate the offset of the cursor within the preedit area, as controlled
+                                by QInputMethodEvent::Cursor.
     \value ImTextBeforeCursor   The plain text before the cursor. The widget can decide how much text to return,
                                 but \b{must} not return an empty string unless the cursor is at the start of the document.
     \value ImTextAfterCursor    The plain text after the cursor. The widget can decide how much text to return,
