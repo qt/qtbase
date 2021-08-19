@@ -109,6 +109,21 @@ endif()
 
 include("${_Qt6CTestMacros}")
 
+if(NOT NO_WIDGETS)
+    _qt_internal_test_expect_pass(test_build_simple_widget_app)
+endif()
+
+# We only support a limited subset of cmake tests when targeting iOS:
+# - Only those that use qt_add_executable (but not add_executable)
+# - and don't try to run the built binaries via BINARY_ARGS option
+# - and don't use internal API like qt_internal_add_*
+#
+# So we can't run binaries in the simulator or on-device, but we at least
+# want build coverage (app linking succeeds).
+if(IOS)
+    return()
+endif()
+
 _qt_internal_test_expect_pass(test_umbrella_config)
 _qt_internal_test_expect_pass(test_wrap_cpp_and_resources)
 if (NOT NO_WIDGETS)

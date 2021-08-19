@@ -26,7 +26,7 @@ instructions:
         enable_if:
               condition: property
               property: target.osVersion
-              in_values: [Android_ANY, QEMU]
+              in_values: [Android_ANY, QEMU, IOS_ANY]
     enable_if:
       condition: or
       conditions:

@@ -16,6 +16,9 @@ instructions:
               property: target.osVersion
               equals_value: QEMU
             - condition: property
+              property: target.osVersion
+              equals_value: IOS_ANY
+            - condition: property
               property: features
               contains_value: AndroidTestRun
     disable_if:
