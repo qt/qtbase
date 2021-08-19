@@ -43,13 +43,35 @@
 
 // ------------- Text insertion -------------
 
+/*
+    Inserts the given text, potentially replacing existing text.
+
+    The text input management system calls this as a result of:
+
+     - A normal key press, via [NSView interpretKeyEvents:] or
+       [NSInputContext handleEvent:]
+
+     - An input method finishing (confirming) composition
+
+     - Pressing a key in the Keyboard Viewer panel
+
+     - Confirming an inline input area (accent popup e.g.)
+
+    \a replacementRange refers to the existing text to replace.
+    Under normal circumstances this is {NSNotFound, 0}, and the
+    implementation should replace either the existing marked text,
+    the current selection, or just insert the text at the current
+    cursor location.
+*/
 - (void)insertText:(id)text replacementRange:(NSRange)replacementRange
 {
     qCDebug(lcQpaKeys).nospace() << "Inserting \"" << text << "\""
         << ", replacing range " << replacementRange;
 
     if (m_sendKeyEvent && m_composingText.isEmpty() && [text isEqualToString:m_inputSource]) {
-        // don't send input method events for simple text input (let handleKeyEvent send key events instead)
+        // We do not send input method events for simple text input,
+        // and instead let handleKeyEvent send the key event.
+        qCDebug(lcQpaKeys) << "Not sending simple text as input method event";
         return;
     }
 
@@ -78,6 +100,26 @@
 
 // ------------- Text composition -------------
 
+/*
+    Updates the composed text, potentially replacing existing text.
+
+    The NSTextInputClient protocol refers to composed text as "marked",
+    since it is "marked differently from the selection, using temporary
+    attributes that affect only display, not layout or storage.""
+
+    The concept maps to the preeditString of our QInputMethodEvent.
+
+    \a selectedRange refers to the part of the marked text that
+    is considered selected, for example when composing text with
+    multiple clause segments (Hiragana - Kana e.g.).
+
+    \a replacementRange refers to the existing text to replace.
+    Under normal circumstances this is {NSNotFound, 0}, and the
+    implementation should replace either the existing marked text,
+    the current selection, or just insert the text at the current
+    cursor location. But when initiating composition of existing
+    committed text (Hiragana - Kana e.g.), the range will be valid.
+*/
 - (void)setMarkedText:(id)text selectedRange:(NSRange)selectedRange replacementRange:(NSRange)replacementRange
 {
     qCDebug(lcQpaKeys).nospace() << "Marking \"" << text << "\""
@@ -171,6 +213,14 @@
     return range;
 }
 
+/*
+    Confirms the marked (composed) text.
+
+    The marked text is accepted as if it had been inserted normally,
+    and the preedit string is cleared.
+
+    If there is no marked text this method has no effect.
+*/
 - (void)unmarkText
 {
     // FIXME: Match cancelComposingText in early exit and focus object handling
@@ -191,6 +241,13 @@
     m_composingFocusObject = nullptr;
 }
 
+/*
+    Cancels composition.
+
+    The marked text is discarded, and the preedit string is cleared.
+
+    If there is no marked text this method has no effect.
+*/
 - (void)cancelComposingText
 {
     if (m_composingText.isEmpty())
