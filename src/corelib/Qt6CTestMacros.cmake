@@ -126,6 +126,18 @@ endfunction()
 
 # Checks if the test project can be built successfully. Arguments:
 #
+# NO_CLEAN_STEP: Skips calling 'clean' target before building.
+#
+# NO_BUILD_PROJECT_ARG: Skips adding --build-project argument. Useful when using Xcode generator.
+#
+# GENERATOR: Use a custom generator. When not specified, uses existing CMAKE_GENERATOR value.
+#
+# MAKE_PROGRAM: Specify a different make program. Can be useful with a custom make or ninja wrapper.
+#
+# BUILD_TYPE: Specify a different CMake build type. Defaults to CMAKE_BUILD_TYPE if it is not empty.
+#             Which means no build type is passed if the top-level project is configured with a
+#             multi-config generator.
+#
 # SIMULATE_IN_SOURCE: If the option is specified, the function copies sources of the tests to the
 #                     CMAKE_CURRENT_BINARY_DIR directory, creates internal build directory in the
 #                     copied sources and uses this directory to build and test the project.
@@ -149,11 +161,16 @@ endfunction()
 macro(_qt_internal_test_expect_pass _dir)
     set(_test_option_args
       SIMULATE_IN_SOURCE
+      NO_CLEAN_STEP
+      NO_BUILD_PROJECT_ARG
     )
     set(_test_single_args
       BINARY
       TESTNAME
       BUILD_DIR
+      GENERATOR
+      MAKE_PROGRAM
+      BUILD_TYPE
     )
     set(_test_multi_args
       BUILD_OPTIONS
@@ -171,6 +188,66 @@ macro(_qt_internal_test_expect_pass _dir)
       string(REPLACE "(" "_" testname "${_dir}")
       string(REPLACE ")" "_" testname "${testname}")
       string(REPLACE "/" "_" testname "${testname}")
+    endif()
+
+    # Allow setting a different generator. Needed for iOS.
+    set(generator "${CMAKE_GENERATOR}")
+    if(_ARGS_GENERATOR)
+        set(generator "${_ARGS_GENERATOR}")
+    endif()
+
+    # Allow setting a different make program.
+    set(make_program "${CMAKE_MAKE_PROGRAM}")
+    if(_ARGS_MAKE_PROGRAM)
+        set(make_program "${_ARGS_MAKE_PROGRAM}")
+    endif()
+
+    # Only pass build config if it was specified during the initial tests/auto project
+    # configuration. Important when using Qt multi-config builds which won't have CMAKE_BUILD_TYPE
+    # set.
+    set(build_type "")
+
+    if(_ARGS_BUILD_TYPE)
+        set(build_type "${_ARGS_BUILD_TYPE}")
+    elseif(CMAKE_BUILD_TYPE)
+        set(build_type "${CMAKE_BUILD_TYPE}")
+    endif()
+    if(build_type)
+        set(build_type "--build-config" "${build_type}")
+    endif()
+
+    # Allow skipping clean step.
+    set(build_no_clean "")
+    if(_ARGS_NO_CLEAN_STEP)
+        set(build_no_clean "--build-noclean")
+    endif()
+
+    # Allow omitting the --build-project arg. It's relevant for xcode projects where the project
+    # name on disk is different from the project source dir name.
+    if(NOT _ARGS_NO_BUILD_PROJECT_ARG)
+        set(build_project "--build-project" "${_dir}")
+    else()
+        set(build_project)
+    endif()
+
+    # Allow omitting test command if no binary or binary args are provided.
+    set(test_command "")
+    if(_ARGS_BINARY)
+        list(APPEND test_command ${_ARGS_BINARY} ${_ARGS_BINARY_ARGS})
+    endif()
+    if(test_command)
+        set(test_command "--test-command" ${test_command})
+    endif()
+
+    set(additional_configure_args "")
+
+    # Allow passing additional configure options to all projects via either a cache var or env var.
+    # Can be useful for certain catch-all scenarios.
+    if(QT_CMAKE_TESTS_ADDITIONAL_CONFIGURE_OPTIONS)
+        list(APPEND additional_configure_args ${QT_CMAKE_TESTS_ADDITIONAL_CONFIGURE_OPTIONS})
+    endif()
+    if(DEFINED ENV{QT_CMAKE_TESTS_ADDITIONAL_CONFIGURE_OPTIONS})
+        list(APPEND additional_configure_args $ENV{QT_CMAKE_TESTS_ADDITIONAL_CONFIGURE_OPTIONS})
     endif()
 
     set(__expect_pass_prefixes "${CMAKE_PREFIX_PATH}")
@@ -214,13 +291,14 @@ macro(_qt_internal_test_expect_pass _dir)
         --build-and-test
         "${__expect_pass_source_dir}"
         "${__expect_pass_build_dir}"
-        --build-config "${CMAKE_BUILD_TYPE}"
-        --build-generator "${CMAKE_GENERATOR}"
-        --build-makeprogram "${CMAKE_MAKE_PROGRAM}"
-        --build-project "${_dir}"
+        ${build_type}
+        ${build_no_clean}
+        --build-generator "${generator}"
+        --build-makeprogram "${make_program}"
+        ${build_project}
         --build-options "-DCMAKE_PREFIX_PATH=${__expect_pass_prefixes}" ${BUILD_OPTIONS_LIST}
-                        ${_ARGS_BUILD_OPTIONS}
-        --test-command ${_ARGS_BINARY} ${_ARGS_BINARY_ARGS}
+                        ${_ARGS_BUILD_OPTIONS} ${additional_configure_args}
+        ${test_command}
     )
     add_test(${testname} ${CMAKE_CTEST_COMMAND} ${ctest_command_args})
     if(_ARGS_SIMULATE_IN_SOURCE)
