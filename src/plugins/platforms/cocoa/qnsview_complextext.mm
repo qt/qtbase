@@ -150,8 +150,28 @@
         qCDebug(lcQpaKeys) << "Decorating range" << range << "based on" << attributes;
         QTextCharFormat format;
 
-        if (NSNumber *underlineStyle = attributes[NSUnderlineStyleAttributeName])
-            format.setFontUnderline(true); // FIXME: Support all NSUnderlineStyles
+        if (NSNumber *underlineStyle = attributes[NSUnderlineStyleAttributeName]) {
+            format.setFontUnderline(true);
+            NSUnderlineStyle style = underlineStyle.integerValue;
+            if (style & NSUnderlineStylePatternDot)
+                format.setUnderlineStyle(QTextCharFormat::DotLine);
+            else if (style & NSUnderlineStylePatternDash)
+                format.setUnderlineStyle(QTextCharFormat::DashUnderline);
+            else if (style & NSUnderlineStylePatternDashDot)
+                format.setUnderlineStyle(QTextCharFormat::DashDotLine);
+            if (style & NSUnderlineStylePatternDashDotDot)
+                format.setUnderlineStyle(QTextCharFormat::DashDotDotLine);
+            else
+                format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
+
+            // Unfortunately QTextCharFormat::UnderlineStyle does not distinguish
+            // between NSUnderlineStyle{Single,Thick,Double}, which is used by CJK
+            // input methods to highlight the selected clause segments, so we fake
+            // it using QTextCharFormat::WaveUnderline.
+            if ((style & NSUnderlineStyleThick) == NSUnderlineStyleThick
+                || (style & NSUnderlineStyleDouble) == NSUnderlineStyleDouble)
+                format.setUnderlineStyle(QTextCharFormat::WaveUnderline);
+        }
         if (NSColor *underlineColor = attributes[NSUnderlineColorAttributeName])
             format.setUnderlineColor(qt_mac_toQColor(underlineColor));
         if (NSColor *foregroundColor = attributes[NSForegroundColorAttributeName])
