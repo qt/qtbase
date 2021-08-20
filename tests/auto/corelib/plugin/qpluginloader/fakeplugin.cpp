@@ -29,8 +29,8 @@
 #include <QtCore/qplugin.h>
 
 #if QT_POINTER_SIZE == 8
-QT_PLUGIN_METADATA_SECTION void *const pluginSection = (void*)(0xc0ffeec0ffeeL);
+QT_PLUGIN_METADATA_SECTION const uintptr_t pluginSection = 0xc0ffeec0ffeeULL;
 #else
-QT_PLUGIN_METADATA_SECTION void *const pluginSection = (void*)0xc0ffee;
+QT_PLUGIN_METADATA_SECTION const uintptr_t pluginSection = 0xc0ffee;
 #endif
 QT_PLUGIN_METADATA_SECTION const char message[] = "QTMETADATA";
