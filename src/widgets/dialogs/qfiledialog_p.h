@@ -312,7 +312,8 @@ private:
 class QFileDialogComboBox : public QComboBox
 {
 public:
-    QFileDialogComboBox(QWidget *parent = nullptr) : QComboBox(parent), urlModel(nullptr) {}
+    QFileDialogComboBox(QWidget *parent = nullptr) :
+        QComboBox(parent), urlModel(nullptr), d_ptr(nullptr) {}
     void setFileDialogPrivate(QFileDialogPrivate *d_pointer);
     void showPopup() override;
     void setHistory(const QStringList &paths);
@@ -328,7 +329,7 @@ private:
 class QFileDialogListView : public QListView
 {
 public:
-    QFileDialogListView(QWidget *parent = nullptr);
+    QFileDialogListView(QWidget *parent = nullptr) : QListView(parent), d_ptr(nullptr) {}
     void setFileDialogPrivate(QFileDialogPrivate *d_pointer);
     QSize sizeHint() const override;
 protected:
@@ -340,7 +341,7 @@ private:
 class QFileDialogTreeView : public QTreeView
 {
 public:
-    QFileDialogTreeView(QWidget *parent);
+    QFileDialogTreeView(QWidget *parent) : QTreeView(parent), d_ptr(nullptr) {}
     void setFileDialogPrivate(QFileDialogPrivate *d_pointer);
     QSize sizeHint() const override;
 
