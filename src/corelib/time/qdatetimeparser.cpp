@@ -600,7 +600,10 @@ bool QDateTimeParser::parseFormat(QStringView newFormat)
                 break;
             case 't':
                 if (parserType == QMetaType::QDateTime) {
-                    const SectionNode sn = { TimeZoneSection, i - add, countRepeat(newFormat, i, 4), 0 };
+                    // TODO (in qlocale.cpp's serialization, too) QTBUG-95966:
+                    // decide what different lengths of 't' format should do,
+                    // instead of repetition !
+                    const SectionNode sn = { TimeZoneSection, i - add, 1, 0 };
                     newSectionNodes.append(sn);
                     appendSeparator(&newSeparators, newFormat, index, i - index, lastQuote);
                     i += sn.count - 1;

@@ -212,7 +212,6 @@ tst_QDateTime::tst_QDateTime()
                  && QDate(1990, 7, 1).startOfDay().toSecsSinceEpoch() == 646783200
                  && QDate(1990, 1, 1).startOfDay().toSecsSinceEpoch() == 631148400
                  && QDate(1979, 1, 1).startOfDay().toSecsSinceEpoch() == 283993200
-                 // .toSecsSinceEpoch() returns -1 for everything before this:
                  && QDateTime(QDate(1970, 1, 1), QTime(1, 0)).toSecsSinceEpoch() == 0);
     // Use .toMSecsSinceEpoch() if you really need to test anything earlier.
 
@@ -1084,6 +1083,8 @@ void tst_QDateTime::toString_strformat()
     QCOMPARE(testDate.toString("yyyy-MM-dd"), QString("2013-01-01"));
     QCOMPARE(testTime.toString("hh:mm:ss"), QString("01:02:03"));
     QCOMPARE(testDateTime.toString("yyyy-MM-dd hh:mm:ss t"), QString("2013-01-01 01:02:03 UTC"));
+    // TODO QTBUG-95966: find better ways to use repeated 't'
+    QCOMPARE(testDateTime.toString("yyyy-MM-dd hh:mm:ss tt"), QString("2013-01-01 01:02:03 UTCUTC"));
 }
 #endif // datestring
 
@@ -2907,6 +2908,10 @@ void tst_QDateTime::fromStringStringFormat_localTimeZone_data()
     if (etcGmtWithOffset.isValid()) {
         QTest::newRow("local-timezone-with-offset:Etc/GMT+3") << QByteArrayLiteral("GMT")
             << QString("2008-10-13 Etc/GMT+3 11.50") << QString("yyyy-MM-dd t hh.mm")
+            << QDateTime(QDate(2008, 10, 13), QTime(11, 50), etcGmtWithOffset);
+        // TODO QTBUG-95966: find better ways to use repeated 't'
+        QTest::newRow("double-timezone-with-offset:Etc/GMT+3") << QByteArrayLiteral("GMT")
+            << QString("2008-10-13 Etc/GMT+3Etc/GMT+3 11.50") << QString("yyyy-MM-dd tt hh.mm")
             << QDateTime(QDate(2008, 10, 13), QTime(11, 50), etcGmtWithOffset);
     }
     QTimeZone gmtWithOffset("GMT-2");
