@@ -223,6 +223,7 @@ private slots:
     void replayMouseMove();
     void itemsUnderMouse();
     void embeddedViews();
+    void embeddedViewsWithFocus();
     void scrollAfterResize_data();
     void scrollAfterResize();
     void moveItemWhileScrolling_data();
@@ -3517,6 +3518,60 @@ void tst_QGraphicsView::embeddedViews()
 
     QCOMPARE(a, b);
     delete v1;
+}
+
+/*!
+    Verify that a nested graphics view and embedded widgets receive window
+    activation and focus correctly.
+
+    See QTBUG-94091.
+*/
+void tst_QGraphicsView::embeddedViewsWithFocus()
+{
+    class FocusWidget : public QWidget
+    {
+    public:
+        FocusWidget() { setFocusPolicy(Qt::StrongFocus); }
+        QSize sizeHint() const override { return QSize(100, 100); }
+
+        int focusCount = 0;
+    protected:
+        void mousePressEvent(QMouseEvent *) override {} // accept event to avoid warning
+        void focusInEvent(QFocusEvent *) override { ++focusCount; }
+        void focusOutEvent(QFocusEvent *) override { --focusCount; }
+    };
+
+    QGraphicsScene *innerScene = new QGraphicsScene;
+    FocusWidget *innerWidget = new FocusWidget;
+    innerScene->addWidget(innerWidget);
+    QGraphicsView *innerView = new QGraphicsView(innerScene);
+
+    QGraphicsScene outerScene;
+    FocusWidget *outerWidget = new FocusWidget;
+    QGraphicsProxyWidget *outerProxy = outerScene.addWidget(outerWidget);
+    QGraphicsProxyWidget *nestedProxy = outerScene.addWidget(innerView);
+    outerProxy->setPos(0, 0);
+    nestedProxy->setPos(0, outerWidget->sizeHint().height());
+    QGraphicsView outerView(&outerScene);
+    outerView.show();
+    outerView.activateWindow();
+    QVERIFY(QTest::qWaitForWindowActive(&outerView));
+    const QPoint outerCenter(QPoint(innerWidget->sizeHint().width() / 2,
+                                    innerWidget->sizeHint().height() / 2));
+    const QPoint innerCenter(outerCenter + QPoint(0, innerWidget->sizeHint().height()));
+    QCOMPARE(outerView.itemAt(outerCenter), outerProxy);
+    QCOMPARE(outerView.itemAt(innerCenter), nestedProxy);
+    QVERIFY(outerScene.isActive());
+    QVERIFY(innerScene->isActive());
+
+    QCOMPARE(outerWidget->focusCount, 0);
+    QCOMPARE(innerWidget->focusCount, 0);
+    QTest::mouseClick(outerView.viewport(), Qt::LeftButton, {}, outerCenter);
+    QCOMPARE(outerWidget->focusCount, 1);
+    QCOMPARE(innerWidget->focusCount, 0);
+    QTest::mouseClick(outerView.viewport(), Qt::LeftButton, {}, innerCenter);
+    QCOMPARE(outerWidget->focusCount, 0);
+    QCOMPARE(innerWidget->focusCount, 1);
 }
 
 void tst_QGraphicsView::scrollAfterResize_data()
