@@ -353,7 +353,7 @@ static_assert(sizeof(qint64) == 8, "Internal error, qint64 is misdefined");
 /*!
     \fn template <typename Enum> QFlags &QFlags<Enum>::operator=(const QFlags &other)
 
-    Assigns \a other to this object and returns a reference to this
+    Assigns \e other to this object and returns a reference to this
     object.
 */
 

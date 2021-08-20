@@ -499,7 +499,7 @@ QT_BEGIN_NAMESPACE
     \enum QChar::Decomposition
 
     This enum type defines the Unicode decomposition attributes. See
-    the \l{Unicode Standard} for a description of the values.
+    the \l{Unicode standard} for a description of the values.
 
     \value NoDecomposition
     \value Canonical
@@ -528,7 +528,7 @@ QT_BEGIN_NAMESPACE
     since 5.3
 
     This enum type defines the Unicode joining type attributes. See the
-    \l{Unicode Standard} for a description of the values.
+    \l{Unicode standard} for a description of the values.
 
     In order to conform to C/C++ naming conventions "Joining_" is prepended
     to the codes used in the Unicode Standard.

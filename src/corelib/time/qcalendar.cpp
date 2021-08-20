@@ -82,7 +82,7 @@ inline size_t qHash(const CalendarName &key, size_t seed = 0) noexcept
 
 namespace QtPrivate {
 
-/*!
+/*
     \internal
     Handles calendar backend registration.
 */
@@ -179,7 +179,7 @@ public:
     QStringList backendNames(const QCalendarBackend *backend);
 };
 
-/*!
+/*
     Destroy the registry.
 
     This destroys all registered backends. This destructor should only be called
@@ -194,7 +194,7 @@ QCalendarRegistry::~QCalendarRegistry()
     qDeleteAll(byId);
 }
 
-/*!
+/*
     Registers a custom backend.
 
     A new unique ID is allocated for the \a backend. The registry takes
@@ -218,7 +218,7 @@ void QCalendarRegistry::registerCustomBackend(QCalendarBackend *backend, const Q
     registerBackendLockHeld(backend, names, QCalendar::System::User);
 }
 
-/*!
+/*
     Ensures all system calendars have been instantiated.
 
     This arranges for each system backend to be registered. The method only
@@ -248,7 +248,7 @@ void QCalendarRegistry::ensurePopulated()
 #endif
 }
 
-/*!
+/*
     Helper functions for system backend registration.
 
     This function must be called with write lock held on the registry.
@@ -303,7 +303,7 @@ QCalendarBackend *QCalendarRegistry::registerSystemBackendLockHeld(QCalendar::Sy
     return backend;
 }
 
-/*!
+/*
     Helper function for backend registration.
 
     This function must be called with write lock held on the registry.
@@ -350,7 +350,7 @@ void QCalendarRegistry::registerBackendLockHeld(QCalendarBackend *backend, const
     }
 }
 
-/*!
+/*
     Returns a list of names of the available calendar systems.
 
     Any QCalendarBackend sub-class must be registered before being exposed to Date
@@ -366,7 +366,7 @@ QStringList QCalendarRegistry::availableCalendars()
     return QStringList(byName.keyBegin(), byName.keyEnd());
 }
 
-/*!
+/*
     Returns a pointer to a named calendar backend.
 
     If the given \a name is present in availableCalendars(), the backend
@@ -383,7 +383,7 @@ const QCalendarBackend *QCalendarRegistry::fromName(QAnyStringView name)
     return byName.value(name.toString(), nullptr);
 }
 
-/*!
+/*
     Returns a pointer to a calendar backend, specified by index.
 
     If a calendar with ID \a index is known to the calendar registry, the backend
@@ -409,7 +409,7 @@ const QCalendarBackend *QCalendarRegistry::fromIndex(size_t index)
     return nullptr;
 }
 
-/*!
+/*
     Returns a pointer to a calendar backend, specified by \a system.
 
     This will instantiate the indicated calendar (which will enable fromName()
@@ -442,7 +442,7 @@ const QCalendarBackend *QCalendarRegistry::fromEnum(QCalendar::System system)
     return registerSystemBackendLockHeld(system);
 }
 
-/*!
+/*
     Returns a list of names \a backend was registered with.
 */
 QStringList QCalendarRegistry::backendNames(const QCalendarBackend *backend)
@@ -1138,10 +1138,10 @@ const QCalendarBackend *QCalendarBackend::gregorian()
 */
 
 /*!
-    \fn QCalendar::SystemId::isValid()
+    \fn QCalendar::SystemId::isValid() const
 
-    Returns true if this is a valid calendar implementation identifier, else
-    false.
+    Returns \c true if this is a valid calendar implementation identifier,
+    \c false otherwise.
 
     \sa QCalendar
 */

@@ -60,5 +60,6 @@ struct _jobject;
 typedef _jobject* jobject;
 typedef int jint;
 typedef int jmethodID;
+typedef int jfieldID;
 typedef void* JavaVM;
 #endif

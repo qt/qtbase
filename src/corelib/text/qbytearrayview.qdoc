@@ -353,6 +353,17 @@
     \sa data(), begin(), end()
 */
 
+/*! //! friend
+    \fn int QByteArrayView::operator==(QByteArrayView lhs, QByteArrayView rhs)
+    \fn int QByteArrayView::operator!=(QByteArrayView lhs, QByteArrayView rhs)
+    \fn int QByteArrayView::operator< (QByteArrayView lhs, QByteArrayView rhs)
+    \fn int QByteArrayView::operator<=(QByteArrayView lhs, QByteArrayView rhs)
+    \fn int QByteArrayView::operator> (QByteArrayView lhs, QByteArrayView rhs)
+    \fn int QByteArrayView::operator>=(QByteArrayView lhs, QByteArrayView rhs)
+
+    Comparison operators for QByteArrayView.
+*/
+
 /*!
     \fn int QByteArrayView::compare(QByteArrayView bv, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
     \since 6.2

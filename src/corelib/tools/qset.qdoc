@@ -577,7 +577,7 @@
 
     \overload
 
-    Same as \l {intersect()} {intersect(\a{other})}, if we consider \a other to be a set
+    Same as \l {intersect()} {intersect(\e{other})}, if we consider \e other to be a set
     that contains the singleton \a value.
 */
 
