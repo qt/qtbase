@@ -34,6 +34,8 @@ qt_internal_add_3rdparty_library(BundledHarfbuzz
         src/hb-object.hh
         src/hb-open-file.hh
         src/hb-open-type.hh
+        src/hb-priority-queue.hh
+        src/hb-repacker.hh
         src/hb-set.cc src/hb-set.h src/hb-set.hh
         src/hb-set-digest.hh
         src/hb-shape.cc src/hb-shape.h
@@ -105,6 +107,7 @@ qt_internal_extend_target(BundledHarfbuzz CONDITION TRUE # special case
         src/hb-ot-cmap-table.hh
         src/hb-ot-color.cc
         src/hb-ot-color-cbdt-table.hh
+        src/hb-ot-color-colrv1-closure.hh
         src/hb-ot-face.cc
         src/hb-ot-font.cc src/hb-ot-font.h
         src/hb-ot-glyf-table.hh
@@ -128,6 +131,7 @@ qt_internal_extend_target(BundledHarfbuzz CONDITION TRUE # special case
         src/hb-ot-os2-table.hh
         src/hb-ot-post-macroman.hh
         src/hb-ot-post-table.hh
+        src/hb-ot-post-table-v2subset.hh
         src/hb-ot-shape.cc src/hb-ot-shape.h src/hb-ot-shape.hh
         src/hb-ot-shape-complex-arabic.cc src/hb-ot-shape-complex-arabic.hh
         src/hb-ot-shape-complex-arabic-fallback.hh
