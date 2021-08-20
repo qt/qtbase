@@ -824,6 +824,7 @@ void QProcessPrivate::findExitCode()
 }
 
 /*! \reimp
+    \internal
 */
 qint64 QProcess::writeData(const char *data, qint64 len)
 {

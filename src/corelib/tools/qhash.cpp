@@ -913,7 +913,7 @@ int qGlobalQHashSeed()
     If the environment variable \c QT_HASH_SEED is set, calling this function will
     result in a no-op.
 
-    \sa qHashSeed::globalSeed, QHashSeed
+    \sa QHashSeed::globalSeed(), QHashSeed
  */
 void qSetGlobalQHashSeed(int newSeed)
 {

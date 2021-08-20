@@ -1063,18 +1063,17 @@
     current item.
 */
 
-/*! \fn template <class Key, class T> QMap<Key, T>::iterator operator+(QMap<Key, T>::iterator, difference_type n)
-    \fn template <class Key, class T> QMap<Key, T>::iterator operator+(difference_type n, QMap<Key, T>::iterator)
-    \fn template <class Key, class T> QMap<Key, T>::iterator operator-(QMap<Key, T>::iterator, difference_type n)
-    \fn template <class Key, class T> QMap<Key, T>::iterator operator-(difference_type n, QMap<Key, T>::iterator)
-    \fn template <class Key, class T> QMap<Key, T>::iterator QMap<Key, T>::iterator::operator+=(difference_type n)
-    \fn template <class Key, class T> QMap<Key, T>::iterator QMap<Key, T>::iterator::operator-=(difference_type n)
+/*! //! friends
+    \fn [qmap-op-it-plus-step] template <class Key, class T> typename QMap<Key, T>::iterator QMap<Key, T>::iterator::operator+(QMap<Key, T>::iterator, difference_type n)
+    \fn [qmap-op-step-plus-it] template <class Key, class T> QMap<Key, T>::iterator QMap<Key, T>::iterator::operator+(difference_type n, QMap<Key, T>::iterator)
+    \fn [qmap-op-it-minus-step] template <class Key, class T> QMap<Key, T>::iterator QMap<Key, T>::iterator::operator-(QMap<Key, T>::iterator, difference_type n)
+    \fn [qmap-op-step-minus-it] template <class Key, class T> QMap<Key, T>::iterator QMap<Key, T>::iterator::operator-(difference_type n, QMap<Key, T>::iterator)
 
-    \obsolete
+    //! members
+    \fn template <class Key, class T> typename QMap<Key, T>::iterator QMap<Key, T>::iterator::operator+=(QMap<Key, T>::iterator::difference_type n)
+    \fn template <class Key, class T> typename QMap<Key, T>::iterator QMap<Key, T>::iterator::operator-=(QMap<Key, T>::iterator::difference_type n)
 
-    \since 6.2
-
-    Use \c{std::next}, \c{std::prev} or \c{std::advance} instead.
+    \deprecated [6.2] Use \c{std::next}, \c{std::prev} or \c{std::advance} instead.
 
     Moves an iterator by \e{n} positions. These operations can be
     expensive for large values of \e{n}; QMap iterators are not
@@ -1235,18 +1234,17 @@
     current item.
 */
 
-/*! \fn template <class Key, class T> QMap<Key, T>::const_iterator operator+(QMap<Key, T>::const_iterator, difference_type n)
-    \fn template <class Key, class T> QMap<Key, T>::const_iterator operator+(difference_type n, QMap<Key, T>::const_iterator)
-    \fn template <class Key, class T> QMap<Key, T>::const_iterator operator-(QMap<Key, T>::const_iterator, difference_type n)
-    \fn template <class Key, class T> QMap<Key, T>::const_iterator operator-(difference_type n, QMap<Key, T>::const_iterator)
-    \fn template <class Key, class T> QMap<Key, T>::const_iterator QMap<Key, T>::const_iterator::operator+=(difference_type n)
-    \fn template <class Key, class T> QMap<Key, T>::const_iterator QMap<Key, T>::const_iterator::operator-=(difference_type n)
+/*! //! friends
+    \fn [qmap-op-it-plus-step-const] template <class Key, class T> QMap<Key, T>::const_iterator::operator+(QMap<Key, T>::const_iterator, difference_type n)
+    \fn [qmap-op-step-plus-it-const] template <class Key, class T> QMap<Key, T>::operator+(difference_type n, QMap<Key, T>::const_iterator)
+    \fn [qmap-op-it-minus-step-const] template <class Key, class T> QMap<Key, T>::operator-(QMap<Key, T>::const_iterator, difference_type n)
+    \fn [qmap-op-step-minus-it-const] template <class Key, class T> QMap<Key, T>::operator-(difference_type n, QMap<Key, T>::const_iterator)
 
-    \obsolete
+    //! members
+    \fn template <class Key, class T> typename QMap<Key, T>::const_iterator QMap<Key, T>::const_iterator::operator+=(QMap<Key, T>::const_iterator::difference_type n)
+    \fn template <class Key, class T> typename QMap<Key, T>::const_iterator QMap<Key, T>::const_iterator::operator-=(QMap<Key, T>::const_iterator::difference_type n)
 
-    \since 6.2
-
-    Use \c{std::next}, \c{std::prev} or \c{std::advance} instead.
+    \deprecated [6.2] Use \c{std::next}, \c{std::prev} or \c{std::advance} instead.
 
     Moves an iterator by \e{n} positions. These operations can be
     expensive for large values of \e{n}. QMap iterators are not

@@ -1037,7 +1037,8 @@ QString QPropertyBindingError::description() const
   Returns the metatype of the property from which the QUntypedBindable was created.
   If the bindable is invalid, an invalid metatype will be returned.
 
-  \sa isValid() //!, QUntypedPropertyBinding::valueMetaType()
+  \sa isValid()
+  //! \sa QUntypedPropertyBinding::valueMetaType()
 */
 
 /*!
