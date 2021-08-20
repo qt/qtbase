@@ -28,4 +28,7 @@ goto :eof
 
 :print_usage
 echo Usage: qt-configure-module ^<module-source-dir^> [options]
+echo.
+echo To display the available options for a Qt module, run
+echo qt-configure-module ^<module-source-dir^> -help
 goto :eof

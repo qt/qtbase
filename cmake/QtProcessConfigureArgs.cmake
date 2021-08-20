@@ -71,6 +71,8 @@ while(NOT "${configure_args}" STREQUAL "")
         set(auto_detect_compiler FALSE)
     elseif(arg STREQUAL "-list-features")
         set(list_features TRUE)
+    elseif(arg MATCHES "^-h(elp)?$")
+        set(display_module_help TRUE)
     elseif(arg STREQUAL "-write-options-for-conan")
         list(POP_FRONT configure_args options_json_file)
     elseif(arg STREQUAL "-skip")
@@ -438,6 +440,26 @@ function(qt_call_function func)
         cmake_language(EVAL CODE "${call_code}")
     endif()
 endfunction()
+
+if(display_module_help)
+    message([[
+Options:
+  -help, -h ............ Display this help screen
+
+  -feature-<feature> ... Enable <feature>
+  -no-feature-<feature>  Disable <feature> [none]
+  -list-features ....... List available features. Note that some features
+                         have dedicated command line options as well.
+]])
+
+    set(help_file "${MODULE_ROOT}/config_help.txt")
+    if(EXISTS "${help_file}")
+        file(READ "${help_file}" content)
+        message("${content}")
+    endif()
+
+    return()
+endif()
 
 if(list_features)
     unset(lines)

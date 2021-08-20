@@ -4,7 +4,12 @@ script_dir_path=`(cd "$script_dir_path"; /bin/pwd)`
 
 printUsage()
 {
-    echo 'Usage: qt-configure-module <module-source-dir> [options]'
+    cat <<EOF
+Usage: qt-configure-module <module-source-dir> [options]
+
+To display the available options for a Qt module, run
+qt-configure-module <module-source-dir> -help
+EOF
 }
 
 if [ "$#" -lt 1 ]; then
