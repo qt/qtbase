@@ -80,7 +80,9 @@ class QtConfigureOption(object):
             self.possible_values = values
 
         if self._binary_option and self.possible_values:
-            raise QtConanError(f"A binary option: '{name}' can not contain values: {self.possible_values}")
+            raise QtConanError(
+                f"A binary option: '{name}' can not contain values: " f"{self.possible_values}"
+            )
 
         self.default = default
 
@@ -133,20 +135,23 @@ class QtOptionParser:
         """
         print("QtOptionParser: load configure options ..")
         recipe_folder = Path(__file__).parent.resolve()
-        configure_options = Path(recipe_folder) / "configure_options.json"
-        configure_features = Path(recipe_folder) / "configure_features.txt"
+        configure_options = recipe_folder / "configure_options.json"
+        configure_features = recipe_folder / "configure_features.txt"
         if not configure_options.exists() or not configure_features.exists():
             # This is when the 'conan export' is called
             script = Path("configure.bat") if tools.os_info.is_windows else Path("configure")
             root_path = recipe_folder
 
-            configure = Path(root_path / script).resolve()
+            configure = root_path.joinpath(script).resolve()
             if not configure.exists():
-                root_path = Path(root_path / ".." / "export_source").resolve()
+                root_path = root_path.joinpath("..").joinpath("export_source").resolve()
                 if root_path.exists():
-                    configure = Path(root_path / script).resolve(strict=True)
+                    configure = root_path.joinpath(script).resolve(strict=True)
                 else:
-                    raise QtConanError(f"Unable to locate 'configure(.bat)' from current context: {recipe_folder}")
+                    raise QtConanError(
+                        f"Unable to locate 'configure(.bat)' "
+                        f"from current context: {recipe_folder}"
+                    )
 
             self.write_configure_options(configure, output_file=configure_options)
             self.write_configure_features(configure, output_file=configure_features)
@@ -171,7 +176,14 @@ class QtOptionParser:
         print(f"QtOptionParser: writing Qt configure features to: {output_file}")
         cmd = [str(configure), "-list-features"]
         with open(output_file, "w") as f:
-            subprocess.run(cmd, encoding="utf-8", check=True, timeout=60 * 2, stderr=subprocess.STDOUT, stdout=f)
+            subprocess.run(
+                cmd,
+                encoding="utf-8",
+                check=True,
+                timeout=60 * 2,
+                stderr=subprocess.STDOUT,
+                stdout=f,
+            )
 
     def read_configure_features(self, input_file: Path) -> List[str]:
         print(f"QtOptionParser: reading Qt configure features from: {input_file}")
@@ -195,14 +207,18 @@ class QtOptionParser:
             if option_type == "enum" and not values:
                 raise QtConanError(f"The enum values are missing for: {option_name}")
 
-            opt = QtConfigureOption(name=option_name, type=option_type, values=values, default=default)
+            opt = QtConfigureOption(
+                name=option_name, type=option_type, values=values, default=default
+            )
             self.options.append(opt)
 
     def set_features(self, feature_name_prefix: str, features: List[str]) -> None:
         for line in features:
             feature_name = self.parse_feature(line)
             if feature_name:
-                opt = QtConfigureOption(name=feature_name_prefix + feature_name, type="void", values=[], default=None)
+                opt = QtConfigureOption(
+                    name=feature_name_prefix + feature_name, type="void", values=[], default=None
+                )
                 self.options.append(opt)
 
     def parse_feature(self, feature_line: str) -> Optional[str]:
@@ -248,11 +264,13 @@ class QtOptionParser:
                 if conan_option_name == qt_opt.conan_option_name:
                     return qt_opt
             else:
-                raise QtConanError(f"Could not find a matching Qt configure option for: {conan_option_name}")
+                raise QtConanError(
+                    "Could not find a matching Qt configure option for: " f"{conan_option_name}"
+                )
 
         def _is_excluded_from_configure() -> bool:
-            # extra options are not Qt configure(.bat) options but those exist as conan recipe options which
-            # are treated outside Qt's configure(.bat)
+            # extra options are not Qt configure(.bat) options but those exist as
+            # conan recipe options which are treated outside Qt's configure(.bat)
             if name in self.extra_options.keys():
                 return True
             return False
@@ -289,7 +307,9 @@ class QtOptionParser:
         _filter_overlapping_options(_options)
 
         for option_name, option_value in _options.items():
-            qt_option = self.convert_conan_option_to_qt_option(name=option_name, value=option_value)
+            qt_option = self.convert_conan_option_to_qt_option(
+                name=option_name, value=option_value
+            )
             if not qt_option:
                 continue
             qt_options.append(qt_option)
@@ -306,12 +326,15 @@ class QtOptionParser:
 def _build_qtbase(conan_file: ConanFile):
     # we call the Qt's configure(.bat) directly
     script = Path("configure.bat") if tools.os_info.is_windows else Path("configure")
-    configure = Path(Path(conan_file.build_folder).resolve() / script).resolve(strict=True)
+    configure = Path(conan_file.build_folder).joinpath(script).resolve(strict=True)
 
     # convert the Conan options to Qt configure(.bat) arguments
-    qt_configure_options = conan_file._qt_option_parser.convert_conan_options_to_qt_options(conan_file.options)
-    cmd = " ".join([str(configure), " ".join(qt_configure_options), "-prefix", conan_file.package_folder])
-    cmake_args = conan_file._qt_option_parser.get_extra_cmake_args_for_configure(conan_file.options)
+    parser = conan_file._qt_option_parser
+    qt_configure_options = parser.convert_conan_options_to_qt_options(conan_file.options)
+    cmd = " ".join(
+        [str(configure), " ".join(qt_configure_options), "-prefix", conan_file.package_folder]
+    )
+    cmake_args = parser.get_extra_cmake_args_for_configure(conan_file.options)
     if cmake_args:
         cmd += f" -- {' '.join(cmake_args)}"
     conan_file.output.info(f"Calling: {cmd}")
@@ -324,16 +347,20 @@ def _build_qtbase(conan_file: ConanFile):
 
 @lru_cache(maxsize=8)
 def _parse_qt_version_by_key(key: str) -> str:
-    with open(Path(Path(__file__).parent.resolve() / ".cmake.conf")) as f:
-        ret = [m.group(1) for m in [re.search(r"{0} .*\"(.*)\"".format(key), f.read())] if m]
-    return ret.pop() if ret else ""
+    with open(Path(__file__).parent.resolve() / ".cmake.conf") as f:
+        m = re.search(fr'{key} .*"(.*)"', f.read())
+    return m.group(1) if m else ""
+
+
+def _get_qt_minor_version() -> str:
+    return ".".join(_parse_qt_version_by_key("QT_REPO_MODULE_VERSION").split(".")[:2])
 
 
 class QtBase(ConanFile):
     name = "qtbase"
-    license = "GPL-3.0+, Commercial Qt License Agreement"
+    license = "LGPL-3.0, GPL-2.0+, Commercial Qt License Agreement"
     author = "The Qt Company <https://www.qt.io/contact-us>"
-    url = "https://code.qt.io/cgit/qt/qtbase.git/"
+    url = "https://code.qt.io/cgit/qt/qtbase.git"
     description = "Qt6 core framework libraries and tools."
     topics = ("qt", "qt6")
     settings = "os", "compiler", "arch", "build_type"
@@ -342,19 +369,15 @@ class QtBase(ConanFile):
     default_options = _qt_option_parser.get_default_qt_conan_options()
     exports = "configure_options.json", "configure_features.txt", ".cmake.conf"
     exports_sources = "*", "!conan*.*"
-    # use commit ID as the RREV (recipe revision) if this is exported from .git repository
-    revision_mode = "scm" if Path(Path(__file__).parent.resolve() / ".git").exists() else "hash"
-    python_requires = f"qt-conan-common/{_parse_qt_version_by_key('QT_REPO_MODULE_VERSION')[0:3]}@qt/everywhere"
+    # use commit ID as the RREV (recipe revision)
+    revision_mode = "scm"
+    python_requires = f"qt-conan-common/{_get_qt_minor_version()}@qt/everywhere"
 
     def set_version(self):
         # Executed during "conan export" i.e. in source tree
         _ver = _parse_qt_version_by_key("QT_REPO_MODULE_VERSION")
         _prerelease = _parse_qt_version_by_key("QT_REPO_MODULE_PRERELEASE_VERSION_SEGMENT")
         self.version = _ver + "-" + _prerelease if _prerelease else _ver
-
-    def source(self):
-        # sources are installed next to recipe, no need to clone sources here
-        pass
 
     def configure(self):
         if self.settings.compiler == "gcc" and tools.Version(self.settings.compiler.version) < "8":
@@ -366,7 +389,15 @@ class QtBase(ConanFile):
             if not value or value == "None":
                 setattr(self.options, option_name, option_value)
 
-        default_all_os_options = ["release", "shared", "gui", "widgets", "accessibility", "system_proxies", "ico"]
+        default_all_os_options = [
+            "release",
+            "shared",
+            "gui",
+            "widgets",
+            "accessibility",
+            "system_proxies",
+            "ico",
+        ]
         for item in default_all_os_options:
             _set_default_if_not_set(item, "yes")
 
@@ -412,8 +443,9 @@ class QtBase(ConanFile):
         self.info.requires.package_revision_mode()
 
         # Remove those configure(.bat) options which should not affect package_id.
-        # These point to local file system paths and in order to re-use pre-built binaries (by Qt CI)
-        # by others these should not affect the 'package_id' as those probably differ on each machine
+        # These point to local file system paths and in order to re-use pre-built
+        # binaries (by Qt CI) by others these should not affect the 'package_id'
+        # as those probably differ on each machine
         rm_list = [
             "sdk",
             "android_sdk_path",
