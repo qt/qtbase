@@ -701,7 +701,7 @@ function(_qt_internal_get_ios_bundle_identifier_prefix out_var)
         message(DEBUG "Failed to extract the default bundle indentifier prefix.")
     endif()
 
-    if(prefix)
+    if(prefix AND NOT prefix_error)
         set_property(GLOBAL PROPERTY _qt_internal_ios_bundle_identifier_prefix "${prefix}")
         set("${out_var}" "${prefix}" PARENT_SCOPE)
     endif()
