@@ -495,6 +495,8 @@ QT_END_NAMESPACE
     [super layout];
 }
 
+@end // QNSPanelContentsWrapper
+
 // -------------------------------------------------------------------------
 
 io_object_t q_IOObjectRetain(io_object_t obj)
@@ -550,4 +552,3 @@ QDebug operator<<(QDebug debug, SEL selector)
     debug << NSStringFromSelector(selector);
     return debug;
 }
-@end
