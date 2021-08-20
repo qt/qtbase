@@ -48,22 +48,36 @@ struct QSocketPoller
 {
     QSocketPoller(const QLocalSocketPrivate &socket);
 
+    qint64 getRemainingTime(const QDeadlineTimer &deadline) const;
     bool poll(const QDeadlineTimer &deadline);
 
     enum { maxHandles = 2 };
     HANDLE handles[maxHandles];
     DWORD handleCount = 0;
     bool waitForClose = false;
+    bool writePending = false;
 };
 
 QSocketPoller::QSocketPoller(const QLocalSocketPrivate &socket)
 {
-    if (socket.pipeWriter)
+    if (socket.pipeWriter && socket.pipeWriter->bytesToWrite() != 0) {
         handles[handleCount++] = socket.pipeWriter->syncEvent();
+        writePending = true;
+    }
     if (socket.pipeReader->isReadOperationActive())
         handles[handleCount++] = socket.pipeReader->syncEvent();
     else
         waitForClose = true;
+}
+
+qint64 QSocketPoller::getRemainingTime(const QDeadlineTimer &deadline) const
+{
+    const qint64 sleepTime = 10;
+    qint64 remainingTime = deadline.remainingTime();
+    if (waitForClose && (remainingTime > sleepTime || remainingTime == -1))
+        return sleepTime;
+
+    return remainingTime;
 }
 
 /*!
@@ -77,9 +91,8 @@ QSocketPoller::QSocketPoller(const QLocalSocketPrivate &socket)
 */
 bool QSocketPoller::poll(const QDeadlineTimer &deadline)
 {
-    const qint64 sleepTime = 10;
-    QDeadlineTimer timer(waitForClose ? qMin(deadline.remainingTime(), sleepTime)
-                                      : deadline.remainingTime());
+    Q_ASSERT(handleCount != 0);
+    QDeadlineTimer timer(getRemainingTime(deadline));
     DWORD waitRet;
 
     do {
@@ -88,7 +101,7 @@ bool QSocketPoller::poll(const QDeadlineTimer &deadline)
     } while (waitRet == WAIT_IO_COMPLETION);
 
     if (waitRet == WAIT_TIMEOUT)
-        return !deadline.hasExpired();
+        return waitForClose || !deadline.hasExpired();
 
     return waitRet - WAIT_OBJECT_0 < handleCount;
 }
@@ -473,10 +486,22 @@ bool QLocalSocket::waitForDisconnected(int msecs)
     }
 
     QDeadlineTimer deadline(msecs);
+    bool wasChecked = false;
     while (!d->pipeReader->isPipeClosed()) {
-        QSocketPoller poller(*d);
-        if (!poller.poll(deadline))
+        if (wasChecked && deadline.hasExpired())
             return false;
+
+        QSocketPoller poller(*d);
+        // The first parameter of the WaitForMultipleObjectsEx() call cannot
+        // be zero. So we have to call SleepEx() here.
+        if (!poller.writePending && poller.waitForClose) {
+            // Prevent waiting on the first pass, if both the pipe reader
+            // and the pipe writer are inactive.
+            if (wasChecked)
+                SleepEx(poller.getRemainingTime(deadline), TRUE);
+        } else if (!poller.poll(deadline)) {
+            return false;
+        }
 
         if (d->pipeWriter)
             d->pipeWriter->checkForWrite();
@@ -487,6 +512,7 @@ bool QLocalSocket::waitForDisconnected(int msecs)
             d->pipeReader->checkPipeState();
 
         d->pipeReader->checkForReadyRead();
+        wasChecked = true;
     }
     d->_q_pipeClosed();
     return true;
@@ -529,12 +555,13 @@ bool QLocalSocket::waitForBytesWritten(int msecs)
         return false;
 
     QDeadlineTimer deadline(msecs);
+    bool wasChecked = false;
     while (!d->pipeReader->isPipeClosed()) {
-        if (bytesToWrite() == 0)
+        if (wasChecked && deadline.hasExpired())
             return false;
 
         QSocketPoller poller(*d);
-        if (!poller.poll(deadline))
+        if (!poller.writePending || !poller.poll(deadline))
             return false;
 
         Q_ASSERT(d->pipeWriter);
@@ -545,6 +572,7 @@ bool QLocalSocket::waitForBytesWritten(int msecs)
             d->pipeReader->checkPipeState();
 
         d->pipeReader->checkForReadyRead();
+        wasChecked = true;
     }
     d->_q_pipeClosed();
     return false;

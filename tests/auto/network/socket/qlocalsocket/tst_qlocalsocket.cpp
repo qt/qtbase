@@ -1479,6 +1479,13 @@ void tst_QLocalSocket::writeOnlySocket()
 
     QCOMPARE(client.bytesAvailable(), qint64(0));
     QCOMPARE(client.state(), QLocalSocket::ConnectedState);
+
+    serverSocket->abort();
+    // On Windows, we need to test that the socket state is periodically
+    // checked in a loop, even if no timeout value is specified (i.e.
+    // waitForDisconnected(-1) does not fail immediately).
+    QVERIFY(client.waitForDisconnected(-1));
+    QCOMPARE(client.state(), QLocalSocket::UnconnectedState);
 }
 
 void tst_QLocalSocket::writeToClientAndDisconnect_data()
