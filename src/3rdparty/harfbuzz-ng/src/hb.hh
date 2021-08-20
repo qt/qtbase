@@ -117,6 +117,9 @@
 #pragma GCC diagnostic ignored "-Wshadow"			// TODO fix
 #pragma GCC diagnostic ignored "-Wunsafe-loop-optimizations"	// TODO fix
 #pragma GCC diagnostic ignored "-Wunused-parameter"		// TODO fix
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic ignored "-Wunused-result"		// TODO fix
+#endif
 #endif
 
 /* Ignored intentionally. */
@@ -220,10 +223,15 @@ extern "C" void* hb_malloc_impl(size_t size);
 extern "C" void* hb_calloc_impl(size_t nmemb, size_t size);
 extern "C" void* hb_realloc_impl(void *ptr, size_t size);
 extern "C" void  hb_free_impl(void *ptr);
-#define malloc hb_malloc_impl
-#define calloc hb_calloc_impl
-#define realloc hb_realloc_impl
-#define free hb_free_impl
+#define hb_malloc hb_malloc_impl
+#define hb_calloc hb_calloc_impl
+#define hb_realloc hb_realloc_impl
+#define hb_free hb_free_impl
+#else
+#define hb_malloc malloc
+#define hb_calloc calloc
+#define hb_realloc realloc
+#define hb_free free
 #endif
 
 
@@ -335,7 +343,6 @@ extern "C" void  hb_free_impl(void *ptr);
 #else
 #  define HB_NODISCARD
 #endif
-#define hb_success_t HB_NODISCARD bool
 
 /* https://github.com/harfbuzz/harfbuzz/issues/1852 */
 #if defined(__clang__) && !(defined(_AIX) && (defined(__IBMCPP__) || defined(__ibmxl__)))
@@ -376,7 +383,7 @@ extern "C" void  hb_free_impl(void *ptr);
 #      define HB_NO_SETLOCALE
 #      define HB_NO_ERRNO
 #    endif
-#  elif WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
+#  elif !WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 #    ifndef HB_NO_GETENV
 #      define HB_NO_GETENV
 #    endif
