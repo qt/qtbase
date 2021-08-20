@@ -4069,10 +4069,6 @@ void QFileDialogComboBox::paintEvent(QPaintEvent *)
     painter.drawControl(QStyle::CE_ComboBoxLabel, opt);
 }
 
-QFileDialogListView::QFileDialogListView(QWidget *parent) : QListView(parent)
-{
-}
-
 void QFileDialogListView::setFileDialogPrivate(QFileDialogPrivate *d_pointer)
 {
     d_ptr = d_pointer;
@@ -4104,10 +4100,6 @@ void QFileDialogListView::keyPressEvent(QKeyEvent *e)
     if (!d_ptr->itemViewKeyboardEvent(e))
         QListView::keyPressEvent(e);
     e->accept();
-}
-
-QFileDialogTreeView::QFileDialogTreeView(QWidget *parent) : QTreeView(parent)
-{
 }
 
 void QFileDialogTreeView::setFileDialogPrivate(QFileDialogPrivate *d_pointer)
