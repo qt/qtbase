@@ -127,14 +127,17 @@ static QString generateInterfaceXml(const QMetaObject *mo, int flags, int method
     for (int i = methodOffset; i < mo->methodCount(); ++i) {
         QMetaMethod mm = mo->method(i);
 
-        bool isSignal;
+        bool isSignal = false;
+        bool isSlot = false;
         if (mm.methodType() == QMetaMethod::Signal)
             // adding a signal
             isSignal = true;
-        else if (mm.access() == QMetaMethod::Public && (mm.methodType() == QMetaMethod::Slot || mm.methodType() == QMetaMethod::Method))
-            isSignal = false;
+        else if (mm.access() == QMetaMethod::Public && mm.methodType() == QMetaMethod::Slot)
+            isSlot = true;
+        else if (mm.access() == QMetaMethod::Public && mm.methodType() == QMetaMethod::Method)
+            ; // invokable, neither signal nor slot
         else
-            continue;           // neither signal nor public slot
+            continue;           // neither signal nor public method/slot
 
         if (isSignal && !(flags & (QDBusConnection::ExportScriptableSignals |
                                    QDBusConnection::ExportNonScriptableSignals)))
@@ -220,10 +223,12 @@ static QString generateInterfaceXml(const QMetaObject *mo, int flags, int method
         int wantedMask;
         if (isScriptable)
             wantedMask = isSignal ? QDBusConnection::ExportScriptableSignals
-                                  : QDBusConnection::ExportScriptableSlots;
+                                  : isSlot ? QDBusConnection::ExportScriptableSlots
+                                           : QDBusConnection::ExportScriptableInvokables;
         else
             wantedMask = isSignal ? QDBusConnection::ExportNonScriptableSignals
-                                  : QDBusConnection::ExportNonScriptableSlots;
+                                  : isSlot ? QDBusConnection::ExportNonScriptableSlots
+                                           : QDBusConnection::ExportNonScriptableInvokables;
         if ((flags & wantedMask) != wantedMask)
             continue;
 
