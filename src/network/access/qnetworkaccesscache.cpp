@@ -174,6 +174,7 @@ void QNetworkAccessCache::linkEntry(const QByteArray &key)
                 current = current->older;
             }
             node->older = current->older;
+            node->newer = current;
             current->older = node;
             if (node->older == nullptr) {
                 oldest = node;
