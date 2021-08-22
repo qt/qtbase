@@ -254,8 +254,8 @@ QIcuTimeZonePrivate::QIcuTimeZonePrivate()
 QIcuTimeZonePrivate::QIcuTimeZonePrivate(const QByteArray &ianaId)
     : m_ucal(nullptr)
 {
-    // Need to check validity here as ICu will create a GMT tz if name is invalid
-    if (availableTimeZoneIds().contains(ianaId))
+    // ICU misleadingly maps invalid IDs to GMT.
+    if (isTimeZoneIdAvailable(ianaId))
         init(ianaId);
 }
 
@@ -440,6 +440,25 @@ QByteArray QIcuTimeZonePrivate::systemTimeZoneId() const
     // No ICU C API to obtain system tz
     // TODO Assume default hasn't been changed and is the latests system
     return ucalDefaultTimeZoneId();
+}
+
+bool QIcuTimeZonePrivate::isTimeZoneIdAvailable(const QByteArray &ianaId) const
+{
+    const QString ianaStr = QString::fromUtf8(ianaId);
+    const UChar *const name = reinterpret_cast<const UChar *>(ianaStr.constData());
+    // We are not interested in the value, but we have to pass something.
+    // No known IANA zone name is (up to 2023) longer than 30 characters.
+    constexpr size_t size = 64;
+    UChar buffer[size];
+
+    // TODO: convert to ucal_getIanaTimeZoneID(), new draft in ICU 74, once we
+    // can rely on its availability, assuming it works the same once not draft.
+    UErrorCode status = U_ZERO_ERROR;
+    UBool isSys = false;
+    // Returns the length of the IANA zone name (but we don't care):
+    ucal_getCanonicalTimeZoneID(name, ianaStr.size(), buffer, size, &isSys, &status);
+    // We're only interested if the result is a "system" (i.e. IANA) ID:
+    return isSys;
 }
 
 QList<QByteArray> QIcuTimeZonePrivate::availableTimeZoneIds() const
