@@ -85,7 +85,7 @@ class named after the interface name, with a namespaced alias:
 
 \section1 Options
 
-Options can be set using \c set_source_file_property on the \c dbus_spec:
+Options can be set using \c set_source_files_properties on the \c dbus_spec:
 
 \table
 \header
@@ -145,7 +145,7 @@ The generated C++ source files are named after the XML file: For the file
 
 \section1 Options
 
-Options can be set using \c set_source_file_property on each of the file
+Options can be set using \c set_source_files_properties on each of the file
 arguments:
 
 \table
