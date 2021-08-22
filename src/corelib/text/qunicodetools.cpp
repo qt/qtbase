@@ -164,9 +164,50 @@ static void getGraphemeBreaks(const ushort *string, quint32 len, QCharAttributes
         QUnicodeTables::GraphemeBreakClass cls = (QUnicodeTables::GraphemeBreakClass) prop->graphemeBreakClass;
 
         bool shouldBreak = GB::shouldBreakBetweenClasses(lcls, cls);
+        bool handled = false;
 
         switch (state) {
         case GB::State::Normal:
+            break; // will deal with it below
+
+        case GB::State::GB11_ExtPicExt:
+            Q_ASSERT(lcls == QUnicodeTables::GraphemeBreak_Extend);
+            if (cls == QUnicodeTables::GraphemeBreak_Extend) {
+                // keep going in the current state
+                Q_ASSERT(!shouldBreak); // GB9, do not break before Extend
+                handled = true;
+            } else if (cls == QUnicodeTables::GraphemeBreak_ZWJ) {
+                state = GB::State::GB11_ExtPicExtZWJ;
+                Q_ASSERT(!shouldBreak); // GB9, do not break before ZWJ
+                handled = true;
+            } else {
+                state = GB::State::Normal;
+            }
+            break;
+
+        case GB::State::GB11_ExtPicExtZWJ:
+            Q_ASSERT(lcls == QUnicodeTables::GraphemeBreak_ZWJ);
+            if (cls == QUnicodeTables::GraphemeBreak_Extended_Pictographic) {
+                shouldBreak = false;
+                handled = true;
+            }
+
+            state = GB::State::Normal;
+            break;
+
+        case GB::State::GB12_13_RI:
+            Q_ASSERT(lcls == QUnicodeTables::GraphemeBreak_RegionalIndicator);
+            if (cls == QUnicodeTables::GraphemeBreak_RegionalIndicator) {
+                shouldBreak = false;
+                handled = true;
+            }
+
+            state = GB::State::Normal;
+            break;
+        }
+
+        if (!handled) {
+            Q_ASSERT(state == GB::State::Normal);
             if (lcls == QUnicodeTables::GraphemeBreak_Extended_Pictographic) { // GB11
                 if (cls == QUnicodeTables::GraphemeBreak_Extend) {
                     state = GB::State::GB11_ExtPicExt;
@@ -178,35 +219,6 @@ static void getGraphemeBreaks(const ushort *string, quint32 len, QCharAttributes
             } else if (cls == QUnicodeTables::GraphemeBreak_RegionalIndicator) { // GB12, GB13
                 state = GB::State::GB12_13_RI;
             }
-
-            break;
-        case GB::State::GB11_ExtPicExt:
-            Q_ASSERT(lcls == QUnicodeTables::GraphemeBreak_Extend);
-            if (cls == QUnicodeTables::GraphemeBreak_Extend) {
-                // keep going in the current state
-                Q_ASSERT(!shouldBreak); // GB9, do not break before Extend
-            } else if (cls == QUnicodeTables::GraphemeBreak_ZWJ) {
-                state = GB::State::GB11_ExtPicExtZWJ;
-                Q_ASSERT(!shouldBreak); // GB9, do not break before ZWJ
-            }
-
-            break;
-
-        case GB::State::GB11_ExtPicExtZWJ:
-            Q_ASSERT(lcls == QUnicodeTables::GraphemeBreak_ZWJ);
-            if (cls == QUnicodeTables::GraphemeBreak_Extended_Pictographic)
-                shouldBreak = false;
-
-            state = GB::State::Normal;
-            break;
-
-        case GB::State::GB12_13_RI:
-            Q_ASSERT(lcls == QUnicodeTables::GraphemeBreak_RegionalIndicator);
-            if (cls == QUnicodeTables::GraphemeBreak_RegionalIndicator)
-                shouldBreak = false;
-
-            state = GB::State::Normal;
-            break;
         }
 
         if (shouldBreak)
