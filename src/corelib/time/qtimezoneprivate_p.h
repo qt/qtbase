@@ -233,6 +233,7 @@ public:
 
     QByteArray systemTimeZoneId() const override;
 
+    bool isTimeZoneIdAvailable(const QByteArray &ianaId) const override;
     QList<QByteArray> availableTimeZoneIds() const override;
     QList<QByteArray> availableTimeZoneIds(QLocale::Territory territory) const override;
     QList<QByteArray> availableTimeZoneIds(int offsetFromUtc) const override;

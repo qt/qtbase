@@ -1281,7 +1281,9 @@ void tst_QTimeZone::icuTest()
     QIcuTimeZonePrivate tzpd;
     QVERIFY(tzpd.isValid());
 
-    // Test invalid constructor
+    // Test invalid is not available:
+    QVERIFY(!tzpd.isTimeZoneIdAvailable("Gondwana/Erewhon"));
+    // and construction gives an invalid result:
     QIcuTimeZonePrivate tzpi("Gondwana/Erewhon");
     QCOMPARE(tzpi.isValid(), false);
 
