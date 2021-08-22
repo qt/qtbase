@@ -467,8 +467,13 @@ static void writeProxy(const QString &filename, const QDBusIntrospection::Interf
 
     // include our stuff:
     hs << "#include <QtCore/QObject>" << Qt::endl
-       << includeList
-       << "#include <QtDBus/QtDBus>" << Qt::endl;
+       << includeList;
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+    hs << "#include <QtDBus/QtDBus>" << Qt::endl;
+#else
+    hs << "#include <QtDBus/QDBusAbstractInterface>" << Qt::endl;
+    hs << "#include <QtDBus/QDBusPendingReply>" << Qt::endl;
+#endif
 
     for (const QString &include : qAsConst(includes)) {
         hs << "#include \"" << include << "\"" << Qt::endl;
@@ -776,7 +781,12 @@ static void writeAdaptor(const QString &filename, const QDBusIntrospection::Inte
     if (cppName == headerName)
         hs << "#include <QtCore/QMetaObject>" << Qt::endl
            << "#include <QtCore/QVariant>" << Qt::endl;
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
     hs << "#include <QtDBus/QtDBus>" << Qt::endl;
+#else
+    hs << "#include <QtDBus/QDBusAbstractAdaptor>" << Qt::endl;
+    hs << "#include <QtDBus/QDBusObjectPath>" << Qt::endl;
+#endif
 
     for (const QString &include : qAsConst(includes)) {
         hs << "#include \"" << include << "\"" << Qt::endl;
