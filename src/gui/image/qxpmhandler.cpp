@@ -1159,7 +1159,7 @@ static bool write_xpm_image(const QImage &sourceImage, QIODevice *device, const 
       << '\"' << w << ' ' << h << ' ' << ncolors << ' ' << cpp << '\"';
 
     // write palette
-    for (const auto [color, index] : colorMap) {
+    for (const auto &[color, index] : colorMap) {
         const QString line = image.format() != QImage::Format_RGB32 && !qAlpha(color)
             ? QString::asprintf("\"%s c None\"", xpm_color_name(cpp, index))
             : QString::asprintf("\"%s c #%02x%02x%02x\"", xpm_color_name(cpp, index),
