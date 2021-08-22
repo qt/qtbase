@@ -707,8 +707,8 @@ static void writeProxy(const QString &filename, const QDBusIntrospection::Interf
             // add this class:
             if (!name.isEmpty()) {
                 hs << QString(current.count() * 2, QLatin1Char(' '))
-                   << "typedef ::" << classNameForInterface(it->constData()->name, Proxy)
-                   << " " << name << ";" << Qt::endl;
+                   << "using " << name << " = ::" << classNameForInterface(it->constData()->name, Proxy)
+                   << ";" << Qt::endl;
             }
 
             if (it == interfaces.constEnd())
