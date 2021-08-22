@@ -133,6 +133,22 @@
     preeditAttributes << QInputMethodEvent::Attribute(
         QInputMethodEvent::Cursor, selectedRange.location + selectedRange.length, true);
 
+
+    // QInputMethodEvent::Selection unfortunately doesn't apply to the
+    // preedit text, and QInputMethodEvent::Cursor which does, doesn't
+    // support setting a selection. Until we've introduced attributes
+    // that allow us to propagate the preedit selection semantically
+    // we resort to styling the selection via the TextFormat attribute,
+    // so that the preedit selection is visible to the user.
+    QTextCharFormat selectionFormat;
+    auto *platformTheme = QGuiApplicationPrivate::platformTheme();
+    auto *systemPalette = platformTheme->palette();
+    selectionFormat.setBackground(systemPalette->color(QPalette::Highlight));
+    preeditAttributes << QInputMethodEvent::Attribute(
+        QInputMethodEvent::TextFormat,
+        selectedRange.location, selectedRange.length,
+        selectionFormat);
+
     int index = 0;
     int composingLength = preeditString.length();
     while (index < composingLength) {
@@ -166,11 +182,7 @@
 
             // Unfortunately QTextCharFormat::UnderlineStyle does not distinguish
             // between NSUnderlineStyle{Single,Thick,Double}, which is used by CJK
-            // input methods to highlight the selected clause segments, so we fake
-            // it using QTextCharFormat::WaveUnderline.
-            if ((style & NSUnderlineStyleThick) == NSUnderlineStyleThick
-                || (style & NSUnderlineStyleDouble) == NSUnderlineStyleDouble)
-                format.setUnderlineStyle(QTextCharFormat::WaveUnderline);
+            // input methods to highlight the selected clause segments.
         }
         if (NSColor *underlineColor = attributes[NSUnderlineColorAttributeName])
             format.setUnderlineColor(qt_mac_toQColor(underlineColor));
