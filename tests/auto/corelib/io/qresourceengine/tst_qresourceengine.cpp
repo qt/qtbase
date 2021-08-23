@@ -488,7 +488,7 @@ void tst_QResourceEngine::checkStructure()
 
 void tst_QResourceEngine::searchPath_data()
 {
-    auto searchPath = QFileInfo(QFINDTESTDATA("testqrc")).canonicalFilePath();
+    auto searchPath = QFileInfo(QT_TESTCASE_SOURCEDIR "/testqrc").canonicalFilePath();
 
     QTest::addColumn<QString>("searchPathPrefix");
     QTest::addColumn<QString>("searchPath");

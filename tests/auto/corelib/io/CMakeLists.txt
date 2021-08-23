@@ -29,7 +29,7 @@ if(TARGET Qt::Concurrent)
 endif()
 if(NOT ANDROID)
     add_subdirectory(qdir)
-    # add_subdirectory(qresourceengine) # special case needs fixes
+    add_subdirectory(qresourceengine)
 endif()
 if(QT_FEATURE_private_tests OR UNIX)
     add_subdirectory(qfilesystementry)
