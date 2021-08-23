@@ -2506,6 +2506,8 @@ static qsizetype lastIndexOfHelper(const char *haystack, qsizetype l, const char
 
 static inline qsizetype lastIndexOfCharHelper(QByteArrayView haystack, qsizetype from, char needle) noexcept
 {
+    if (haystack.size() == 0)
+        return -1;
     if (from < 0)
         from += haystack.size();
     else if (from > haystack.size())
