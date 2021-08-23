@@ -1223,12 +1223,16 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
 #endif
 
 #if QT_CONFIG(http)
-    // Since Qt 5 we use the new QNetworkReplyHttpImpl
-    if (scheme == QLatin1String("http") || scheme == QLatin1String("preconnect-http")
+    constexpr char16_t httpSchemes[][17] = {
+        u"http",
+        u"preconnect-http",
 #ifndef QT_NO_SSL
-        || scheme == QLatin1String("https") || scheme == QLatin1String("preconnect-https")
+        u"https",
+        u"preconnect-https",
 #endif
-        ) {
+    };
+    // Since Qt 5 we use the new QNetworkReplyHttpImpl
+    if (std::find(std::begin(httpSchemes), std::end(httpSchemes), scheme) != std::end(httpSchemes)) {
 #ifndef QT_NO_SSL
         if (isStrictTransportSecurityEnabled() && d->stsCache.isKnownHost(request.url())) {
             QUrl stsUrl(request.url());
