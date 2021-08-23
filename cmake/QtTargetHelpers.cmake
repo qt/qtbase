@@ -38,9 +38,9 @@ function(qt_internal_extend_target target)
             set(is_library TRUE)
         endif()
         foreach(lib ${arg_PUBLIC_LIBRARIES} ${arg_LIBRARIES})
-            # Automatically generate PCH for 'target' using dependencies
-            # if 'target' is a library/module!
-            if (${is_library})
+            # Automatically generate PCH for 'target' using public dependencies.
+            # But only if 'target' is a library/module that does not specify its own PCH file.
+            if(NOT arg_PRECOMPILED_HEADER AND ${is_library})
                 qt_update_precompiled_header_with_library("${target}" "${lib}")
             endif()
 
