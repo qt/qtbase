@@ -195,6 +195,7 @@ struct Options
     QString toolchainPrefix;
     QString ndkHost;
     bool buildAAB = false;
+    bool isZstdCompressionEnabled = false;
 
 
     // Package information
@@ -1107,6 +1108,12 @@ bool readInputFile(Options *options)
     {
         const QJsonValue qrcFiles = jsonObject.value(QLatin1String("qrcFiles"));
         options->qrcFiles = qrcFiles.toString().split(QLatin1Char(','), Qt::SkipEmptyParts);
+    }
+    {
+        const QJsonValue zstdCompressionFlag = jsonObject.value(QLatin1String("zstdCompression"));
+        if (zstdCompressionFlag.isBool()) {
+            options->isZstdCompressionEnabled = zstdCompressionFlag.toBool();
+        }
     }
     options->packageName = packageNameFromAndroidManifest(options->androidSourceDirectory + QLatin1String("/AndroidManifest.xml"));
     if (options->packageName.isEmpty())
@@ -2086,9 +2093,14 @@ bool createRcc(const Options &options)
     if (!res)
         return false;
 
+    QLatin1String noZstd;
+    if (!options.isZstdCompressionEnabled)
+        noZstd = QLatin1String("--no-zstd");
+
     QFile::rename(QLatin1String("%1/android_rcc_bundle.qrc").arg(assetsDir), QLatin1String("%1/android_rcc_bundle/android_rcc_bundle.qrc").arg(assetsDir));
 
-    res = runCommand(options, QLatin1String("%1 %2 --binary -o %3 android_rcc_bundle.qrc").arg(rcc, shellQuote(QLatin1String("--root=/android_rcc_bundle/")),
+    res = runCommand(options, QLatin1String("%1 %2 %3 --binary -o %4 android_rcc_bundle.qrc").arg(rcc, shellQuote(QLatin1String("--root=/android_rcc_bundle/")),
+                                                                                               noZstd,
                                                                                                shellQuote(QLatin1String("%1/android_rcc_bundle.rcc").arg(assetsDir))));
     if (!QDir::setCurrent(currentDir)) {
         fprintf(stderr, "Cannot set current dir to: %s\n", qPrintable(currentDir));

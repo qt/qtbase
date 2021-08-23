@@ -234,6 +234,14 @@ function(qt6_android_generate_deployment_settings target)
     string(APPEND file_contents
         "   \"extraPrefixDirs\" : [ ${extra_prefix_list} ],\n")
 
+    if(QT_FEATURE_zstd)
+        set(is_zstd_enabled "true")
+    else()
+        set(is_zstd_enabled "false")
+    endif()
+    string(APPEND file_contents
+        "   \"zstdCompression\": ${is_zstd_enabled},\n")
+
     # Last item in json file
 
     # base location of stdlibc++, will be suffixed by androiddeploy qt
