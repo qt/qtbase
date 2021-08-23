@@ -147,31 +147,31 @@ endfunction()
 # BUILD_OPTIONS: a list of -D style CMake definitions to pass to ctest's --build-options (which
 #                are ultimately passed to the CMake invocation of the test project)
 macro(_qt_internal_test_expect_pass _dir)
-  set(_test_option_args
+    set(_test_option_args
       SIMULATE_IN_SOURCE
-  )
-  set(_test_single_args
+    )
+    set(_test_single_args
       BINARY
       TESTNAME
       BUILD_DIR
-  )
-  set(_test_multi_args
+    )
+    set(_test_multi_args
       BUILD_OPTIONS
       BINARY_ARGS
-  )
-  cmake_parse_arguments(_ARGS
+    )
+    cmake_parse_arguments(_ARGS
       "${_test_option_args}"
       "${_test_single_args}"
       "${_test_multi_args}"
       ${ARGN}
-  )
-  if(_ARGS_TESTNAME)
+    )
+    if(_ARGS_TESTNAME)
       set(testname "${_ARGS_TESTNAME}")
-  else()
+    else()
       string(REPLACE "(" "_" testname "${_dir}")
       string(REPLACE ")" "_" testname "${testname}")
       string(REPLACE "/" "_" testname "${testname}")
-  endif()
+    endif()
 
     set(__expect_pass_prefixes "${CMAKE_PREFIX_PATH}")
     string(REPLACE ";" "\;" __expect_pass_prefixes "${__expect_pass_prefixes}")
