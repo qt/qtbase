@@ -108,8 +108,16 @@ function(qt_internal_extend_target target)
             set(target_private "${target}")
         endif()
         if(TARGET "${target_private}")
-          target_link_libraries("${target_private}"
-                                INTERFACE ${arg_PRIVATE_MODULE_INTERFACE})
+            target_link_libraries("${target_private}"
+                                  INTERFACE ${arg_PRIVATE_MODULE_INTERFACE})
+        elseif(arg_PRIVATE_MODULE_INTERFACE)
+            set(warning_message "")
+            string(APPEND warning_message
+                "The PRIVATE_MODULE_INTERFACE option was provided the values:"
+                "'${arg_PRIVATE_MODULE_INTERFACE}' "
+                "but there is no ${target}Private target to assign them to."
+                "Ensure the target exists or remove the option.")
+            message(AUTHOR_WARNING "${warning_message}")
         endif()
         qt_register_target_dependencies("${target}"
                                         "${arg_PUBLIC_LIBRARIES}"
