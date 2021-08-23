@@ -107,7 +107,7 @@ Q_GLOBAL_STATIC(QNetworkAccessDebugPipeBackendFactory, debugpipeBackend)
 
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
                           (QNetworkAccessBackendFactory_iid,
-                           QLatin1String("/networkaccessbackends")))
+                           QLatin1String("/networkaccess")))
 #if defined(Q_OS_MACOS)
 bool getProxyAuth(const QString& proxyHostname, const QString &scheme, QString& username, QString& password)
 {
