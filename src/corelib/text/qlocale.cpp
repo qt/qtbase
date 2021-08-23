@@ -934,11 +934,11 @@ QLocale::QLocale(QLocalePrivate &dd)
     \endlist
 
     The separator can be either underscore \c{'_'} (U+005F, "low line") or a
-    dash \c{'-'} (U+002D, "hyphen-minus"). If the string violates the locale
+    dash \c{'-'} (U+002D, "hyphen-minus"). If QLocale has no data for the
+    specified combination of language, script, and territory, then it uses the
+    most suitable match it can find instead. If the string violates the locale
     format, or no suitable data can be found for the specified keys, the "C"
-    locale is used instead. If QLocale has no data for the specified combination
-    of language, script and territory, the it uses most suitable match it can
-    find instead.
+    locale is used instead.
 
     This constructor is much slower than QLocale(Language, Script, Territory) or
     QLocale(Language, Territory).
