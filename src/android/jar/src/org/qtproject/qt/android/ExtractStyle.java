@@ -69,6 +69,7 @@ import android.graphics.drawable.RotateDrawable;
 import android.graphics.drawable.ScaleDrawable;
 import android.graphics.drawable.StateListDrawable;
 import android.graphics.drawable.VectorDrawable;
+import android.os.Build;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.TypedValue;
@@ -413,7 +414,12 @@ public class ExtractStyle {
         try {
             StateListDrawable stateList = (StateListDrawable) drawable;
             JSONArray array = new JSONArray();
-            for (int i = 0; i < stateList.getStateCount(); i++) {
+            final int numStates;
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q)
+                numStates = (Integer) StateListDrawable.class.getMethod("getStateCount").invoke(stateList);
+            else
+                numStates = stateList.getStateCount();
+            for (int i = 0; i < numStates; i++) {
                 JSONObject stateJson = new JSONObject();
                 final Drawable d = (Drawable) StateListDrawable.class.getMethod("getStateDrawable", Integer.TYPE).invoke(stateList, i);
                 final int[] states = (int[]) StateListDrawable.class.getMethod("getStateSet", Integer.TYPE).invoke(stateList, i);
