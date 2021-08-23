@@ -508,10 +508,13 @@ public class ExtractStyle {
         JSONObject json = new JSONObject();
         try {
             StateListDrawable stateList = (StateListDrawable) drawable;
-            final int numStates = (Integer) StateListDrawable.class.getMethod("getStateCount").invoke(stateList);
-            JSONArray array =new JSONArray();
-            for (int i = 0; i < numStates; i++)
-            {
+            JSONArray array = new JSONArray();
+            final int numStates;
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q)
+                numStates = (Integer) StateListDrawable.class.getMethod("getStateCount").invoke(stateList);
+            else
+                numStates = stateList.getStateCount();
+            for (int i = 0; i < numStates; i++) {
                 JSONObject stateJson = new JSONObject();
                 final Drawable d =  (Drawable) StateListDrawable.class.getMethod("getStateDrawable", Integer.TYPE).invoke(stateList, i);
                 final int [] states = (int[]) StateListDrawable.class.getMethod("getStateSet", Integer.TYPE).invoke(stateList, i);
