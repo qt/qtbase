@@ -180,7 +180,7 @@ QFontEngine::~QFontEngine()
 QFixed QFontEngine::lineThickness() const
 {
     // ad hoc algorithm
-    int score = fontDef.weight * fontDef.pixelSize;
+    int score = fontDef.weight * fontDef.pixelSize / 10;
     int lw = score / 700;
 
     // looks better with thicker line for small pointsizes
