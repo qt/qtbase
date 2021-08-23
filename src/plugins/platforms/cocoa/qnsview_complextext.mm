@@ -82,50 +82,19 @@
         const bool isAttributedString = [text isKindOfClass:NSAttributedString.class];
         QString commitString = QString::fromNSString(isAttributedString ? [text string] : text);
 
-        const auto markedRange = [self markedRange];
-        const auto selectedRange = [self selectedRange];
-
-        // If the replacement range is not specified we are expected to compute
-        // the range ourselves, based on the current state of the input context.
-        if (replacementRange.location == NSNotFound) {
-            if (markedRange.location != NSNotFound)
-                replacementRange = markedRange;
-            else
-                replacementRange = selectedRange;
-        }
+        // Ensure we have a valid replacement range
+        replacementRange = [self sanitizeReplacementRange:replacementRange];
 
         // Qt's QInputMethodEvent has different semantics for the replacement
         // range than AppKit does, so we need to sanitize the range first.
-        long long replaceFrom = replacementRange.location;
-        long long replaceLength = replacementRange.length;
-
-        // The QInputMethodEvent replacement start is relative to the start
-        // of the marked text (the location of the preedit string).
-        if (markedRange.location != NSNotFound)
-            replaceFrom -= markedRange.location;
-        else
-            replaceFrom = 0;
-
-        // The replacement length of QInputMethodEvent already includes
-        // the selection, as the documentation says that "If the widget
-        // has selected text, the selected text should get removed."
-        replaceLength -= selectedRange.length;
-
-        // The replacement length of QInputMethodEvent already includes
-        // the preedit string, as the documentation says that "When doing
-        // replacement, the area of the preedit string is ignored".
-        replaceLength -= markedRange.length;
-
-        // What we're left with is any _additional_ replacement.
-        // Make sure it's valid before passing it on.
-        replaceLength = qMax(0ll, replaceLength);
+        auto [replaceFrom, replaceLength] = [self inputMethodRangeForRange:replacementRange];
 
         if (replaceFrom == NSNotFound) {
             qCWarning(lcQpaKeys) << "Failed to compute valid replacement range for text insertion";
             inputMethodEvent.setCommitString(commitString);
         } else {
             qCDebug(lcQpaKeys) << "Replacing from" << replaceFrom << "with length" << replaceLength
-                << "based on marked range" << markedRange << "and selection" << selectedRange;
+                << "based on replacement range" << replacementRange;
             inputMethodEvent.setCommitString(commitString, replaceFrom, replaceLength);
         }
 
@@ -445,6 +414,72 @@
     // We don't support cursor movements using mouse while composing.
     Q_UNUSED(point);
     return NSNotFound;
+}
+
+// ------------- Helper functions -------------
+
+/*
+    Sanitizes the replacement range, ensuring it's valid.
+
+    If \a range is not valid the range of the current
+    marked text will be used.
+
+    If there's no marked text the range of the current
+    selection will be used.
+
+    If there's no selection the range will be {cursorPosition, 0}.
+*/
+- (NSRange)sanitizeReplacementRange:(NSRange)range
+{
+    if (range.location != NSNotFound)
+        return range; // Use as is
+
+    // If the replacement range is not specified we are expected to compute
+    // the range ourselves, based on the current state of the input context.
+
+    const auto markedRange = [self markedRange];
+    if (markedRange.location != NSNotFound)
+        return markedRange;
+    else
+        return [self selectedRange];
+}
+
+/*
+    Computes the QInputMethodEvent commit string range,
+    based on the NSTextInputClient replacement range.
+
+    The two APIs have different semantics.
+*/
+- (std::pair<long long, long long>)inputMethodRangeForRange:(NSRange)range
+{
+    long long replaceFrom = range.location;
+    long long replaceLength = range.length;
+
+    const auto markedRange = [self markedRange];
+    const auto selectedRange = [self selectedRange];
+
+    // The QInputMethodEvent replacement start is relative to the start
+    // of the marked text (the location of the preedit string).
+    if (markedRange.location != NSNotFound)
+        replaceFrom -= markedRange.location;
+    else
+        replaceFrom = 0;
+
+    // The replacement length of QInputMethodEvent already includes
+    // the selection, as the documentation says that "If the widget
+    // has selected text, the selected text should get removed."
+    replaceLength -= selectedRange.length;
+
+    // The replacement length of QInputMethodEvent already includes
+    // the preedit string, as the documentation says that "When doing
+    // replacement, the area of the preedit string is ignored".
+    replaceLength -= markedRange.length;
+
+    // What we're left with is any _additional_ replacement.
+    // Make sure it's valid before passing it on.
+    replaceLength = qMax(0ll, replaceLength);
+
+    return {replaceFrom, replaceLength};
 }
 
 @end
