@@ -1723,7 +1723,7 @@ void tst_QString::lastIndexOf_data()
 
     QTest::newRow("10") << a << "G" <<  -1 <<  int(a.size())-1 << true;
     QTest::newRow("11") << a << "G" <<  int(a.size())-1 <<  int(a.size())-1 << true;
-    QTest::newRow("12") << a << "G" <<  int(a.size()) <<  -1 << true;
+    QTest::newRow("12") << a << "G" <<  int(a.size()) <<  int(a.size())-1 << true;
     QTest::newRow("13") << a << "A" <<  0 <<  0 << true;
     QTest::newRow("14") << a << "A" <<  -1*int(a.size()) <<  0 << true;
 

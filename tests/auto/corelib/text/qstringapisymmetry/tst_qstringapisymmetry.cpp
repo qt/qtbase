@@ -2561,7 +2561,7 @@ void tst_QStringApiSymmetry::lastIndexOf_data(bool rhsHasVariableLength)
     }
 
 #define ROW(h, n, st, cs, cis) \
-    QTest::addRow("haystack: %s, needle: %s", #h, #n) << h << QLatin1String(#h) \
+    QTest::addRow("haystack: %s, needle: %s, start %d", #h, #n, st) << h << QLatin1String(#h) \
                                        << n << QLatin1String(#n) \
                                        << qsizetype(st) << qsizetype(cs) << qsizetype(cis)
 
@@ -2578,8 +2578,8 @@ void tst_QStringApiSymmetry::lastIndexOf_data(bool rhsHasVariableLength)
     ROW(ABCDEFGHIEfGEFG, g,  14, -1, 14);
     ROW(ABCDEFGHIEfGEFG, G,  13, 11, 11);
     ROW(ABCDEFGHIEfGEFG, g,  13, -1, 11);
-    ROW(ABCDEFGHIEfGEFG, G,  15, -1, -1);
-    ROW(ABCDEFGHIEfGEFG, g,  15, -1, -1);
+    ROW(ABCDEFGHIEfGEFG, G,  15, 14, 14);
+    ROW(ABCDEFGHIEfGEFG, g,  15, -1, 14);
     ROW(ABCDEFGHIEfGEFG, B,  14,  1,  1);
     ROW(ABCDEFGHIEfGEFG, b,  14, -1,  1);
     ROW(ABCDEFGHIEfGEFG, B,  -1,  1,  1);

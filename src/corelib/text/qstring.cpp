@@ -10344,10 +10344,12 @@ template <typename Haystack>
 static inline qsizetype qLastIndexOf(Haystack haystack, QChar needle,
                                      qsizetype from, Qt::CaseSensitivity cs) noexcept
 {
+    if (haystack.size() == 0)
+        return -1;
     if (from < 0)
         from += haystack.size();
-    if (std::size_t(from) >= std::size_t(haystack.size()))
-        return -1;
+    else if (std::size_t(from) > std::size_t(haystack.size()))
+        from = haystack.size() - 1;
     if (from >= 0) {
         char16_t c = needle.unicode();
         const auto b = haystack.data();
