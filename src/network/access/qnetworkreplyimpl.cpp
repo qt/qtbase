@@ -734,6 +734,7 @@ void QNetworkReplyImplPrivate::readFromBackend()
         if (backend->bytesAvailable())
             emit q->readyRead();
     } else {
+        bool anyBytesRead = false;
         while (backend->bytesAvailable()
                && (!readBufferMaxSize || buffer.size() < readBufferMaxSize)) {
             qint64 toRead = qMin(nextDownstreamBlockSize(), backend->bytesAvailable());
@@ -743,8 +744,10 @@ void QNetworkReplyImplPrivate::readFromBackend()
             qint64 bytesRead = backend->read(data, toRead);
             Q_ASSERT(bytesRead <= toRead);
             buffer.chop(toRead - bytesRead);
-            emit q->readyRead();
+            anyBytesRead |= bytesRead > 0;
         }
+        if (anyBytesRead)
+            emit q->readyRead();
     }
 }
 
