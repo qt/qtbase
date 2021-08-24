@@ -2532,12 +2532,6 @@ void tst_QStringApiSymmetry::indexOf_contains_lastIndexOf_count_regexp_data()
                 << rightFrom
                 << lastIndexOf;
     };
-
-    ROW("", "", QRegularExpression::NoPatternOption, 0, 0, 1, -1, 0);
-    ROW("test", "", QRegularExpression::NoPatternOption, 0, 0, 5, -1, 4);
-    ROW("", "^", QRegularExpression::NoPatternOption, 0, 0, 1, -1, 0);
-    ROW("", "$", QRegularExpression::NoPatternOption, 0, 0, 1, -1, 0);
-    ROW("", "^$", QRegularExpression::NoPatternOption, 0, 0, 1, -1, 0);
     ROW("", "x", QRegularExpression::NoPatternOption, 0, -1, 0, -1, -1);
     ROW("", "^x", QRegularExpression::NoPatternOption, 0, -1, 0, -1, -1);
     ROW("", "x$", QRegularExpression::NoPatternOption, 0, -1, 0, -1, -1);
@@ -2563,7 +2557,6 @@ void tst_QStringApiSymmetry::indexOf_contains_lastIndexOf_count_regexp_data()
     ROW("test", "t", QRegularExpression::NoPatternOption, 0, 0, 2, 0, 0);
     ROW("test", "t", QRegularExpression::NoPatternOption, 0, 0, 2, 1, 0);
     ROW("test", "t", QRegularExpression::NoPatternOption, 0, 0, 2, -1, 3);
-    ROW("test", "t", QRegularExpression::NoPatternOption, 0, 0, 2, -2, 3);
     ROW("test", "t", QRegularExpression::NoPatternOption, 0, 0, 2, -3, 0);
 
     ROW("test", "^es", QRegularExpression::NoPatternOption, 0, -1, 0, -1, -1);
@@ -2579,7 +2572,6 @@ void tst_QStringApiSymmetry::indexOf_contains_lastIndexOf_count_regexp_data()
     ROW("test", "e.*t", QRegularExpression::NoPatternOption, 0, 1, 1, -1, 1);
     ROW("test", "e.*t", QRegularExpression::NoPatternOption, 0, 1, 1, -2, 1);
     ROW("test", "e.*t", QRegularExpression::NoPatternOption, 0, 1, 1, -3, 1);
-    ROW("test", "e.*t", QRegularExpression::NoPatternOption, 0, 1, 1, -4, 1);
     ROW("test", "e.*t", QRegularExpression::NoPatternOption, 0, 1, 1, -5, -1);
     ROW("test", "e.*t$", QRegularExpression::NoPatternOption, 0, 1, 1, -1, 1);
     ROW("test", "e.*t$", QRegularExpression::NoPatternOption, 0, 1, 1, -2, 1);
@@ -2589,11 +2581,8 @@ void tst_QStringApiSymmetry::indexOf_contains_lastIndexOf_count_regexp_data()
     ROW("test", "t.*t", QRegularExpression::NoPatternOption, 0, 0, 1, -2, 0);
     ROW("test", "st", QRegularExpression::NoPatternOption, 0, 2, 1, -1, 2);
     ROW("test", "st", QRegularExpression::NoPatternOption, 0, 2, 1, -2, 2);
-    ROW("test", "st", QRegularExpression::NoPatternOption, 0, 2, 1, -3, 2);
     ROW("test", "st", QRegularExpression::NoPatternOption, 0, 2, 1, -4, -1);
 
-    ROW("", "", QRegularExpression::CaseInsensitiveOption, 0, 0, 1, -1, 0);
-    ROW("test", "", QRegularExpression::CaseInsensitiveOption, 0, 0, 5, -1, 4);
     ROW("test", "^", QRegularExpression::CaseInsensitiveOption, 0, 0, 1, -1, 0);
     ROW("test", "^t", QRegularExpression::CaseInsensitiveOption, 0, 0, 1, -1, 0);
     ROW("TEST", "^t", QRegularExpression::CaseInsensitiveOption, 0, 0, 1, -1, 0);
@@ -2606,11 +2595,9 @@ void tst_QStringApiSymmetry::indexOf_contains_lastIndexOf_count_regexp_data()
     ROW("testtest", "e", QRegularExpression::NoPatternOption, 0, 1, 2, -1, 5);
     ROW("testtest", "e", QRegularExpression::NoPatternOption, 0, 1, 2, -2, 5);
     ROW("testtest", "e", QRegularExpression::NoPatternOption, 0, 1, 2, -3, 5);
-    ROW("testtest", "e", QRegularExpression::NoPatternOption, 0, 1, 2, -4, 5);
     ROW("testtest", "e", QRegularExpression::NoPatternOption, 0, 1, 2, -5, 1);
     ROW("testtest", "e", QRegularExpression::NoPatternOption, 0, 1, 2, -6, 1);
     ROW("testtest", "e", QRegularExpression::NoPatternOption, 0, 1, 2, -7, 1);
-    ROW("testtest", "e", QRegularExpression::NoPatternOption, 0, 1, 2, -8, 1);
     ROW("testtest", "es", QRegularExpression::NoPatternOption, 0, 1, 2, -1, 5);
     ROW("testtest", "e.*s", QRegularExpression::NoPatternOption, 0, 1, 2, -1, 1);
 
@@ -2621,7 +2608,6 @@ void tst_QStringApiSymmetry::indexOf_contains_lastIndexOf_count_regexp_data()
     ROW("testtest", "es", QRegularExpression::NoPatternOption, 2, 5, 1, -1, 5);
     ROW("testtest", "es", QRegularExpression::NoPatternOption, 2, 5, 1, -2, 5);
     ROW("testtest", "es", QRegularExpression::NoPatternOption, 2, 5, 1, -3, 5);
-    ROW("testtest", "es", QRegularExpression::NoPatternOption, 2, 5, 1, -4, 5);
     ROW("testtest", "es", QRegularExpression::NoPatternOption, 2, 5, 1, -5, 1);
     ROW("testtest", "e.*s", QRegularExpression::NoPatternOption, 2, 5, 1, -1, 1);
 
