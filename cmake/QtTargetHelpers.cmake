@@ -101,6 +101,12 @@ function(qt_internal_extend_target target)
         endforeach()
 
         set(target_private "${target}Private")
+        get_target_property(is_internal_module ${target} _qt_is_internal_module)
+        # Internal modules don't have Private targets but we still need to
+        # propagate their private dependencies.
+        if(is_internal_module)
+            set(target_private "${target}")
+        endif()
         if(TARGET "${target_private}")
           target_link_libraries("${target_private}"
                                 INTERFACE ${arg_PRIVATE_MODULE_INTERFACE})

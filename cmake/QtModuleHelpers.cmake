@@ -127,6 +127,10 @@ function(qt_internal_add_module target)
 
     qt_internal_module_info(module "${target}")
     qt_internal_add_qt_repo_known_module("${target}")
+    if(arg_INTERNAL_MODULE)
+        set_target_properties(${target} PROPERTIES _qt_is_internal_module TRUE)
+        set_property(TARGET ${target} APPEND PROPERTY EXPORT_PROPERTIES _qt_is_internal_module)
+    endif()
 
     if(NOT arg_CONFIG_MODULE_NAME)
         set(arg_CONFIG_MODULE_NAME "${module_lower}")
