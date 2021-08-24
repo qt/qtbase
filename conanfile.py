@@ -124,8 +124,8 @@ class QtOptionParser:
     def __init__(self) -> None:
         self.options: List[QtConfigureOption] = []
         self.load_configure_options()
-        self.extra_options: Dict[str, Any] = {"extra_cmake_args": "ANY"}
-        self.extra_options_default_values = {"extra_cmake_args": None}
+        self.extra_options: Dict[str, Any] = {"cmake_args_qtbase": "ANY"}
+        self.extra_options_default_values = {"cmake_args_qtbase": None}
 
     def load_configure_options(self) -> None:
         """Read the configure options and features dynamically via configure(.bat).
@@ -315,10 +315,10 @@ class QtOptionParser:
             qt_options.append(qt_option)
         return qt_options
 
-    def get_extra_cmake_args_for_configure(self, conan_options: Options) -> List[Optional[str]]:
+    def get_cmake_args_for_configure(self, conan_options: Options) -> List[Optional[str]]:
         ret: List[Optional[str]] = []
         for option_name, option_value in conan_options.items():
-            if option_name == "extra_cmake_args" and self.is_used_option(option_value):
+            if option_name == "cmake_args_qtbase" and self.is_used_option(option_value):
                 ret = [ret for ret in option_value.strip(r" '\"").split()]
         return ret
 
@@ -334,7 +334,7 @@ def _build_qtbase(conan_file: ConanFile):
     cmd = " ".join(
         [str(configure), " ".join(qt_configure_options), "-prefix", conan_file.package_folder]
     )
-    cmake_args = parser.get_extra_cmake_args_for_configure(conan_file.options)
+    cmake_args = parser.get_cmake_args_for_configure(conan_file.options)
     if cmake_args:
         cmd += f" -- {' '.join(cmake_args)}"
     conan_file.output.info(f"Calling: {cmd}")
