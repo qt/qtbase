@@ -90,19 +90,16 @@ info2.size();               // returns 63942
 
 
 //! [2]
-QString absolute = "/local/bin";
-QString relative = "local/bin";
-QFileInfo absFile(absolute);
-QFileInfo relFile(relative);
+QFileInfo info("/usr/bin/env");
 
-QDir::setCurrent(QDir::rootPath());
-// absFile and relFile now point to the same file
+QString path = info.absolutePath(); // path = /usr/bin
+QString base = info.baseName(); // base = env
 
-QDir::setCurrent("/tmp");
-// absFile now points to "/local/bin",
-// while relFile points to "/tmp/local/bin"
+info.setFile("/etc/hosts");
+
+path = info.absolutePath(); // path = /etc
+base = info.baseName(); // base = hosts
 //! [2]
-
 
 //! [3]
 QFileInfo fi("/tmp/archive.tar.gz");
