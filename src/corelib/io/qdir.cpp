@@ -1942,6 +1942,8 @@ QFileInfoList QDir::drives()
     Returns \c true if the directory was successfully changed; otherwise
     returns \c false.
 
+    \snippet code/src_corelib_io_qdir.cpp 16
+
     \sa current(), currentPath(), home(), root(), temp()
 */
 bool QDir::setCurrent(const QString &path)
