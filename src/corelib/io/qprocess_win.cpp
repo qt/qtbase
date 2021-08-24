@@ -737,7 +737,7 @@ bool QProcessPrivate::waitForBytesWritten(const QDeadlineTimer &deadline)
         // start with, in which case we fail immediately. Also, if the input
         // pipe goes down somewhere in the code below, we avoid waiting for
         // a full timeout.
-        if (pipeWriterBytesToWrite() == 0)
+        if (!stdinChannel.writer || !stdinChannel.writer->isWriteOperationActive())
             return false;
 
         QProcessPoller poller(*this);
@@ -747,7 +747,6 @@ bool QProcessPrivate::waitForBytesWritten(const QDeadlineTimer &deadline)
         if (ret == 0)
             break;
 
-        Q_ASSERT(stdinChannel.writer);
         if (stdinChannel.writer->checkForWrite())
             return true;
 

@@ -60,7 +60,7 @@ struct QSocketPoller
 
 QSocketPoller::QSocketPoller(const QLocalSocketPrivate &socket)
 {
-    if (socket.pipeWriter && socket.pipeWriter->bytesToWrite() != 0) {
+    if (socket.pipeWriter && socket.pipeWriter->isWriteOperationActive()) {
         handles[handleCount++] = socket.pipeWriter->syncEvent();
         writePending = true;
     }

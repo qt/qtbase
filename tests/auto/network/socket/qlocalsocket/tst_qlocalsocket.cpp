@@ -132,6 +132,7 @@ private slots:
 
     void writeToClientAndDisconnect_data();
     void writeToClientAndDisconnect();
+    void writeToDisconnected();
 
     void debug();
     void bytesWrittenSignal();
@@ -1521,6 +1522,32 @@ void tst_QLocalSocket::writeToClientAndDisconnect()
     QCOMPARE(readChannelFinishedSpy.count(), 1);
     const QByteArray received = client.readAll();
     QCOMPARE(received.size(), qint64(sizeof(buffer) * chunks));
+    QCOMPARE(client.state(), QLocalSocket::UnconnectedState);
+}
+
+void tst_QLocalSocket::writeToDisconnected()
+{
+    QLocalServer server;
+    QVERIFY(server.listen("writeToDisconnected"));
+
+    QLocalSocket client;
+    client.connectToServer("writeToDisconnected");
+    QVERIFY(client.waitForConnected(3000));
+    QVERIFY(server.waitForNewConnection(3000));
+    QLocalSocket *serverSocket = server.nextPendingConnection();
+    QVERIFY(serverSocket);
+    serverSocket->abort();
+
+    QCOMPARE(client.state(), QLocalSocket::ConnectedState);
+    QVERIFY(client.putChar(0));
+
+#ifdef Q_OS_WIN
+    // Ensure the asynchronous write operation is finished.
+    QTest::qSleep(250);
+#endif
+
+    QCOMPARE(client.bytesToWrite(), qint64(1));
+    QVERIFY(!client.waitForBytesWritten());
     QCOMPARE(client.state(), QLocalSocket::UnconnectedState);
 }
 

@@ -73,6 +73,7 @@ public:
     void stop();
     bool checkForWrite() { return consumePendingAndEmit(false); }
     qint64 bytesToWrite() const;
+    bool isWriteOperationActive() const;
     HANDLE syncEvent() const { return syncHandle; }
 
 Q_SIGNALS:
@@ -82,13 +83,17 @@ protected:
     bool event(QEvent *e) override;
 
 private:
+    enum CompletionState { NoError, ErrorDetected, WriteDisabled };
+
     template <typename... Args>
     inline void writeImpl(Args... args);
 
-    void startAsyncWriteLocked(QMutexLocker<QMutex> *locker);
+    void startAsyncWriteHelper(QMutexLocker<QMutex> *locker);
+    void startAsyncWriteLocked();
     static void CALLBACK waitCallback(PTP_CALLBACK_INSTANCE instance, PVOID context,
                                       PTP_WAIT wait, TP_WAIT_RESULT waitResult);
     bool writeCompleted(DWORD errorCode, DWORD numberOfBytesWritten);
+    void notifyCompleted(QMutexLocker<QMutex> *locker);
     bool consumePendingAndEmit(bool allowWinActPosting);
 
     HANDLE handle;
@@ -100,6 +105,8 @@ private:
     qint64 pendingBytesWrittenValue;
     mutable QMutex mutex;
     DWORD lastError;
+
+    CompletionState completionState;
     bool stopped;
     bool writeSequenceStarted;
     bool bytesWrittenPending;
