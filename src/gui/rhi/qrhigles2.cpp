@@ -107,8 +107,9 @@ QT_BEGIN_NAMESPACE
     of the returned QOffscreenSurface is transferred to the caller and the QRhi
     will not destroy it.
 
-    \note QRhiSwapChain can only target QWindow instances that have their
-    surface type set to QSurface::OpenGLSurface.
+    \note With the OpenGL backend, QRhiSwapChain can only target QWindow
+    instances that have their surface type set to QSurface::OpenGLSurface or
+    QSurface::RasterGLSurface.
 
     \note \l window is optional. It is recommended to specify it whenever
     possible, in order to avoid problems on multi-adapter and multi-screen
@@ -116,6 +117,10 @@ QT_BEGIN_NAMESPACE
     QOpenGLContext::makeCurrent() happens with \l fallbackSurface which may be
     an invisible window on some platforms (for example, Windows) and that may
     trigger unexpected problems in some cases.
+
+    In case resource sharing with an existing QOpenGLContext is desired, \l
+    shareContext can be set to an existing QOpenGLContext. Alternatively,
+    Qt::AA_ShareOpenGLContexts is honored as well, when enabled.
 
     \section2 Working with existing OpenGL contexts
 
@@ -424,6 +429,7 @@ QRhiGles2::QRhiGles2(QRhiGles2InitParams *params, QRhiGles2NativeHandles *import
     requestedFormat = QRhiGles2InitParams::adjustedFormat(params->format);
     fallbackSurface = params->fallbackSurface;
     maybeWindow = params->window; // may be null
+    maybeShareContext = params->shareContext; // may be null
 
     importedContext = importDevice != nullptr;
     if (importedContext) {
@@ -472,7 +478,10 @@ bool QRhiGles2::create(QRhi::Flags flags)
     if (!importedContext) {
         ctx = new QOpenGLContext;
         ctx->setFormat(requestedFormat);
-        if (QOpenGLContext *shareContext = qt_gl_global_share_context()) {
+        if (maybeShareContext) {
+            ctx->setShareContext(maybeShareContext);
+            ctx->setScreen(maybeShareContext->screen());
+        } else if (QOpenGLContext *shareContext = qt_gl_global_share_context()) {
             ctx->setShareContext(shareContext);
             ctx->setScreen(shareContext->screen());
         }

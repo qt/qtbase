@@ -897,6 +897,7 @@ public:
     QSurfaceFormat requestedFormat;
     QSurface *fallbackSurface = nullptr;
     QWindow *maybeWindow = nullptr;
+    QOpenGLContext *maybeShareContext = nullptr;
     mutable bool needsMakeCurrent = false;
     QOpenGLExtensions *f = nullptr;
     uint vao = 0;
