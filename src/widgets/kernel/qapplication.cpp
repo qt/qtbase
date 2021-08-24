@@ -3916,17 +3916,15 @@ void QApplicationPrivate::activateImplicitTouchGrab(QWidget *widget, QTouchEvent
     // TODO setExclusiveGrabber() to be consistent with Qt Quick?
 }
 
-bool QApplicationPrivate::translateRawTouchEvent(QWidget *window,
-                                                 const QPointingDevice *device,
-                                                 QList<QEventPoint> &touchPoints,
-                                                 ulong timestamp,
-                                                 bool spontaneous)
+bool QApplicationPrivate::translateRawTouchEvent(QWidget *window, const QTouchEvent *te)
 {
     QApplicationPrivate *d = self;
     // TODO get rid of this QPair
     typedef QPair<QEventPoint::State, QList<QEventPoint> > StatesAndTouchPoints;
     QHash<QWidget *, StatesAndTouchPoints> widgetsNeedingEvents;
 
+    const auto *device = te->pointingDevice();
+    auto touchPoints = te->points(); // touch points will be mutated
     for (auto &touchPoint : touchPoints) {
         // update state
         QPointer<QObject> target;
@@ -4011,7 +4009,7 @@ bool QApplicationPrivate::translateRawTouchEvent(QWidget *window,
         QMutableTouchEvent touchEvent(eventType, device, QGuiApplication::keyboardModifiers(),
                                       it.value().second);
         bool containsPress = updateTouchPointsForWidget(widget, &touchEvent);
-        touchEvent.setTimestamp(timestamp);
+        touchEvent.setTimestamp(te->timestamp());
         touchEvent.setTarget(widget);
 
         if (containsPress)
@@ -4022,8 +4020,8 @@ bool QApplicationPrivate::translateRawTouchEvent(QWidget *window,
         {
             // if the TouchBegin handler recurses, we assume that means the event
             // has been implicitly accepted and continue to send touch events
-            bool res = spontaneous ? QApplication::sendSpontaneousEvent(widget, &touchEvent)
-                                   : QApplication::sendEvent(widget, &touchEvent);
+            bool res = te->spontaneous() ? QApplication::sendSpontaneousEvent(widget, &touchEvent)
+                                         : QApplication::sendEvent(widget, &touchEvent);
             if (res && touchEvent.isAccepted()) {
                 accepted = true;
                 if (!widget.isNull())
@@ -4037,8 +4035,8 @@ bool QApplicationPrivate::translateRawTouchEvent(QWidget *window,
                 || QGestureManager::gesturePending(widget)
 #endif
                 ) {
-                bool res = spontaneous ? QApplication::sendSpontaneousEvent(widget, &touchEvent)
-                                       : QApplication::sendEvent(widget, &touchEvent);
+                bool res = te->spontaneous() ? QApplication::sendSpontaneousEvent(widget, &touchEvent)
+                                             : QApplication::sendEvent(widget, &touchEvent);
                 if (res && touchEvent.isAccepted())
                     accepted = true;
                 // widget can be deleted on TouchEnd
