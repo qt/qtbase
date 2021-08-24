@@ -493,10 +493,13 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     Flag values to indicate what features are supported by the backend currently in use.
 
     \value MultisampleTexture Indicates that textures with a sample count larger
-    than 1 are supported.
+    than 1 are supported. In practice this feature will be unsupported with
+    OpenGL ES versions older than 3.1, and OpenGL older than 3.0.
 
     \value MultisampleRenderBuffer Indicates that renderbuffers with a sample
-    count larger than 1 are supported.
+    count larger than 1 are supported. In practice this feature will be
+    unsupported with OpenGL ES 2.0, and may also be unsupported with OpenGL 2.x
+    unless the relevant extensions are present.
 
     \value DebugMarkers Indicates that debug marker groups (and so
     QRhiCommandBuffer::debugMarkBegin()) are supported.
@@ -504,10 +507,15 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     \value Timestamps Indicates that command buffer timestamps are supported.
     Relevant for QRhiProfiler::gpuFrameTimes().
 
-    \value Instancing Indicates that instanced drawing is supported.
+    \value Instancing Indicates that instanced drawing is supported. In
+    practice this feature will be unsupported with OpenGL ES 2.0 and OpenGL
+    3.2 or older.
 
-    \value CustomInstanceStepRate Indicates that instance step rates other than
-    1 are supported.
+    \value CustomInstanceStepRate Indicates that instance step rates other
+    than 1 are supported. In practice this feature will always be unsupported
+    with OpenGL. In addition, running with Vulkan 1.0 without
+    VK_EXT_vertex_attribute_divisor will also lead to reporting false for this
+    feature.
 
     \value PrimitiveRestart Indicates that restarting the assembly of
     primitives when encountering an index value of 0xFFFF
@@ -535,7 +543,8 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     index buffer offsets (\c{indexOffset + firstIndex * indexComponentSize})
     that are not 4 byte aligned are supported. When not supported, attempting
     to issue a \l{QRhiCommandBuffer::drawIndexed()}{drawIndexed()} with a
-    non-aligned effective offset may lead to unspecified behavior.
+    non-aligned effective offset may lead to unspecified behavior. Relevant in
+    particular for Metal, where this will be reported as unsupported.
 
     \value NPOTTextureRepeat Indicates that the
     \l{QRhiSampler::Repeat}{Repeat} wrap mode and mipmap filtering modes are
@@ -546,8 +555,12 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     \value RedOrAlpha8IsRed Indicates that the
     \l{QRhiTexture::RED_OR_ALPHA8}{RED_OR_ALPHA8} format maps to a one
     component 8-bit \c red format. This is the case for all backends except
-    OpenGL, where \c{GL_ALPHA}, a one component 8-bit \c alpha format, is used
-    instead. This is relevant for shader code that samples from the texture.
+    OpenGL when using either OpenGL ES or a non-core profile context. There
+    \c{GL_ALPHA}, a one component 8-bit \c alpha format, is used
+    instead. Using the special texture format allows having a single code
+    path for creating textures, leaving it up to the backend to decide the
+    actual format, while the feature flag can be used to pick the
+    appropriate shader variant for sampling the texture.
 
     \value ElementIndexUint Indicates that 32-bit unsigned integer elements are
     supported in the index buffer. In practice this is true everywhere except
@@ -556,7 +569,8 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     index buffer.
 
     \value Compute Indicates that compute shaders, image load/store, and
-    storage buffers are supported.
+    storage buffers are supported. OpenGL older than 4.3 and OpenGL ES older
+    than 3.1 have no compute support.
 
     \value WideLines Indicates that lines with a width other than 1 are
     supported. When reported as not supported, the line width set on the
@@ -588,41 +602,42 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     including the iOS Simulator.
 
     \value TriangleFanTopology Indicates that QRhiGraphicsPipeline::setTopology()
-    supports QRhiGraphicsPipeline::TriangleFan.
+    supports QRhiGraphicsPipeline::TriangleFan. In practice this feature will be
+    unsupported with Metal and Direct 3D 11.
 
     \value ReadBackNonUniformBuffer Indicates that
     \l{QRhiResourceUpdateBatch::readBackBuffer()}{reading buffer contents} is
     supported for QRhiBuffer instances with a usage different than
-    UniformBuffer. While this is supported in the majority of cases, it will be
-    unsupported with OpenGL ES older than 3.0.
+    UniformBuffer. In practice this feature will be unsupported with OpenGL ES
+    2.0.
 
     \value ReadBackNonBaseMipLevel Indicates that specifying a mip level other
     than 0 is supported when reading back texture contents. When not supported,
     specifying a non-zero level in QRhiReadbackDescription leads to returning
     an all-zero image. In practice this feature will be unsupported with OpenGL
-    ES 2.0, while it will likely be supported everywhere else.
+    ES 2.0.
 
-    \value TexelFetch Indicates that texelFetch() is available in shaders. In
-    practice this will be reported as unsupported with OpenGL ES 2.0 and OpenGL
-    2.x contexts, because GLSL 100 es and versions before 130 do not support
-    this function.
+    \value TexelFetch Indicates that texelFetch() and textureLod() are available
+    in shaders. In practice this will be reported as unsupported with OpenGL ES
+    2.0 and OpenGL 2.x contexts, because GLSL 100 es and versions before 130 do
+    not support these functions.
 
     \value RenderToNonBaseMipLevel Indicates that specifying a mip level other
     than 0 is supported when creating a QRhiTextureRenderTarget with a
     QRhiTexture as its color attachment. When not supported, create() will fail
     whenever the target mip level is not zero. In practice this feature will be
-    unsupported with OpenGL ES 2.0, while it will likely be supported everywhere
-    else.
+    unsupported with OpenGL ES 2.0.
 
     \value IntAttributes Indicates that specifying input attributes with
     signed and unsigned integer types for a shader pipeline is supported. When
     not supported, build() will succeed but just show a warning message and the
     values of the target attributes will be broken. In practice this feature
-    will be unsupported with OpenGL ES 2.0 and OpenGL 2.x, while it will likely
-    be supported everywhere else.
+    will be unsupported with OpenGL ES 2.0 and OpenGL 2.x.
 
     \value ScreenSpaceDerivatives Indicates that functions such as dFdx(),
-    dFdy(), and fwidth() are supported in shaders.
+    dFdy(), and fwidth() are supported in shaders. In practice this feature will
+    be unsupported with OpenGL ES 2.0 without the GL_OES_standard_derivatives
+    extension.
 
     \value ReadBackAnyTextureFormat Indicates that reading back texture
     contents can be expected to work for any QRhiTexture::Format. Backends
