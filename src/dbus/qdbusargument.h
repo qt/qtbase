@@ -300,7 +300,7 @@ inline QDBusArgument &operator<<(QDBusArgument &arg, const Container<Key, T> &ma
 }
 
 template <template <typename, typename> class Container, typename Key, typename T,
-         typename = typename Container<Key, T>::iterator>
+         QtPrivate::IfAssociativeIteratorHasKeyAndValue<typename Container<Key, T>::iterator> = true>
 inline const QDBusArgument &operator>>(const QDBusArgument &arg, Container<Key, T> &map)
 {
     arg.beginMap();

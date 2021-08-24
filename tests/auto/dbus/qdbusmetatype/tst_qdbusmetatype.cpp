@@ -270,6 +270,8 @@ void tst_QDBusMetaType::initTestCase()
     qDBusRegisterMetaType<QList<Struct3> >();
     qDBusRegisterMetaType<QList<Struct4> >();
 
+    qDBusRegisterMetaType<std::vector<Struct1> >();
+
     qDBusRegisterMetaType<Invalid0>();
     qDBusRegisterMetaType<Invalid1>();
     qDBusRegisterMetaType<Invalid2>();
@@ -330,6 +332,7 @@ void tst_QDBusMetaType::dynamicTypes_data()
 
     QTest::newRow("Struct1") << qMetaTypeId<Struct1>() << "(s)";
     QTest::newRow("QList<Struct1>") << qMetaTypeId<QList<Struct1> >() << "a(s)";
+    QTest::newRow("std::vector<Struct1>") << qMetaTypeId<std::vector<Struct1> >() << "a(s)";
 
     QTest::newRow("Struct2") << qMetaTypeId<Struct2>() << "(sos)";
     QTest::newRow("QList<Struct2>") << qMetaTypeId<QList<Struct2>>() << "a(sos)";
