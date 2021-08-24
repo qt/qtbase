@@ -41,6 +41,7 @@
 #include <qcommonstyle.h>
 #include <qstylefactory.h>
 #include <qscreen.h>
+#include <qsignalspy.h>
 
 typedef QList<QGraphicsItem *> QGraphicsItemList;
 
@@ -57,7 +58,7 @@ public:
     int count() const { return _count; }
 
 protected:
-    bool eventFilter(QObject *watched, QEvent *event)
+    bool eventFilter(QObject *watched, QEvent *event) override
     {
         Q_UNUSED(watched);
         if (event->type() == spied)
@@ -151,7 +152,6 @@ private slots:
     void polishEvent2();
     void autoFillBackground();
     void initialShow();
-    void initialShow2();
     void itemChangeEvents();
     void itemSendGeometryPosChangesDeactivated();
     void fontPropagatesResolveToChildren();
@@ -178,7 +178,7 @@ public:
         : QGraphicsWidget(parent, windowFlags), eventCount(0)
         { }
 
-    void initStyleOption(QStyleOption *option) const
+    void initStyleOption(QStyleOption *option) const override
         { QGraphicsWidget::initStyleOption(option); }
 
     void call_changeEvent(QEvent* event)
@@ -232,7 +232,7 @@ public:
     int eventCount;
     Qt::LayoutDirection m_painterLayoutDirection;
 
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override
     {
         m_painterLayoutDirection = painter->layoutDirection();
         QGraphicsWidget::paint(painter, option, widget);
@@ -244,7 +244,7 @@ public:
     }
 
 protected:
-    bool event(QEvent *event)
+    bool event(QEvent *event) override
     {
         eventCount++;
         return QGraphicsWidget::event(event);
@@ -271,7 +271,7 @@ public:
     }
 
 protected:
-    QSizeF sizeHint(Qt::SizeHint which, const QSizeF &constraint = QSizeF()) const
+    QSizeF sizeHint(Qt::SizeHint which, const QSizeF &constraint = QSizeF()) const override
     {
         Q_UNUSED(constraint);
         return m_sizes[which];
@@ -518,11 +518,14 @@ void tst_QGraphicsWidget::focusWidget2()
 class FocusWatchWidget : public QGraphicsWidget
 {
 public:
-    FocusWatchWidget(QGraphicsItem *parent = nullptr) : QGraphicsWidget(parent) { gotFocusInCount = 0; gotFocusOutCount = 0; }
+    FocusWatchWidget(QGraphicsItem *parent = nullptr)
+    : QGraphicsWidget(parent) { gotFocusInCount = 0; gotFocusOutCount = 0; }
     int gotFocusInCount, gotFocusOutCount;
 protected:
-    void focusInEvent(QFocusEvent *fe) { gotFocusInCount++; QGraphicsWidget::focusInEvent(fe); }
-    void focusOutEvent(QFocusEvent *fe) { gotFocusOutCount++; QGraphicsWidget::focusOutEvent(fe); }
+    void focusInEvent(QFocusEvent *fe) override
+    { gotFocusInCount++; QGraphicsWidget::focusInEvent(fe); }
+    void focusOutEvent(QFocusEvent *fe) override
+    { gotFocusOutCount++; QGraphicsWidget::focusOutEvent(fe); }
 };
 
 void tst_QGraphicsWidget::focusWidget3()
@@ -1216,8 +1219,6 @@ void tst_QGraphicsWidget::palettePropagation()
 
     // These colors are unlikely to be imposed on the default palette of
     // QWidget ;-).
-    QColor sysPalText(21, 22, 23);
-    QColor sysPalToolTipBase(12, 13, 14);
     QColor overridePalText(42, 43, 44);
     QColor overridePalToolTipBase(45, 46, 47);
     QColor sysPalButton(99, 98, 97);
@@ -1375,6 +1376,8 @@ void tst_QGraphicsWidget::setStyle()
 
     // cleanup
     widget.setStyle(0);
+#else
+    QSKIP("This test requires the Fusion style");
 #endif
 }
 
@@ -1772,7 +1775,7 @@ void tst_QGraphicsWidget::updateFocusChainWhenChildDie()
     QVERIFY(w);
     const QPoint center(view.viewport()->width() / 2, view.viewport()->height() / 2);
     QTest::mouseMove(view.viewport(), center);
-    QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, center);
+    QTest::mouseClick(view.viewport(), Qt::LeftButton, {}, center);
 #ifdef Q_OS_MAC
     QEXPECT_FAIL("", "QTBUG-23699", Continue);
 #endif
@@ -2318,7 +2321,7 @@ public:
     int ngrab;
     int nungrab;
 protected:
-    bool sceneEvent(QEvent *event)
+    bool sceneEvent(QEvent *event) override
     {
         switch (event->type()) {
         case QEvent::GrabMouse:
@@ -2333,17 +2336,17 @@ protected:
         return QGraphicsRectItem::sceneEvent(event);
     }
 
-    void mousePressEvent(QGraphicsSceneMouseEvent *)
+    void mousePressEvent(QGraphicsSceneMouseEvent *) override
     {
         grabMouse();
         ++npress;
     }
-    void mouseReleaseEvent(QGraphicsSceneMouseEvent *)
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent *) override
     {
         ungrabMouse();
         ++nrelease;
     }
-    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *)
+    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *) override
     {
         ++ndoubleClick;
     }
@@ -2369,7 +2372,7 @@ void tst_QGraphicsWidget::doubleClickAfterExplicitMouseGrab()
     {
         QGraphicsSceneMouseEvent event(QEvent::GraphicsSceneMouseRelease);
         event.setButton(Qt::LeftButton);
-        event.setButtons(0);
+        event.setButtons({});
         event.ignore();
         event.setScenePos(QPointF(50, 50));
         qApp->sendEvent(&scene, &event);
@@ -2391,7 +2394,7 @@ void tst_QGraphicsWidget::doubleClickAfterExplicitMouseGrab()
     {
         QGraphicsSceneMouseEvent event(QEvent::GraphicsSceneMouseRelease);
         event.setButton(Qt::LeftButton);
-        event.setButtons(0);
+        event.setButtons({});
         event.ignore();
         event.setScenePos(QPointF(50, 50));
         qApp->sendEvent(&scene, &event);
@@ -2538,7 +2541,7 @@ void tst_QGraphicsWidget::windowFlags()
     QCOMPARE(widget2.windowFlags(), Qt::WindowFlags(outputFlags));
 
     // Reset flags
-    widget2.setWindowFlags(0);
+    widget2.setWindowFlags({});
     QVERIFY(!widget2.windowFlags());
 
     // Set flags back again
@@ -2555,7 +2558,7 @@ void tst_QGraphicsWidget::windowFlags()
     QCOMPARE(widget4.windowFlags(), Qt::WindowFlags(inputFlags | Qt::FramelessWindowHint));
 
     // Reset flags
-    widget4.setWindowFlags(0);
+    widget4.setWindowFlags({});
     QVERIFY(!widget4.windowFlags());
 
     // Set custom flags back again
@@ -2565,7 +2568,7 @@ void tst_QGraphicsWidget::windowFlags()
     QGraphicsWidget *widget5 = new QGraphicsWidget;
     widget5->setWindowFlags(Qt::WindowFlags(inputFlags));
     QCOMPARE(widget5->windowFlags(), Qt::WindowFlags(outputFlags));
-    QGraphicsWidget window(0, Qt::Window);
+    QGraphicsWidget window(nullptr, Qt::Window);
     widget5->setParentItem(&window);
     QCOMPARE(widget5->windowFlags(), Qt::WindowFlags(outputFlags));
 }
@@ -2591,13 +2594,13 @@ public:
     : QGraphicsWidget(parent, wFlags)
     {}
 
-    void paintWindowFrame(QPainter * painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+    void paintWindowFrame(QPainter * painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override
     {
         QCOMPARE(painter->opacity(), 1.0);
         painter->setOpacity(0.0);
         QGraphicsWidget::paintWindowFrame(painter, option, widget);
     }
-    void paint(QPainter * painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+    void paint(QPainter * painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override
     {
         QCOMPARE(painter->opacity(), 1.0);
         painter->drawRect(0, 0, 100, 100);
@@ -2624,7 +2627,7 @@ public:
         m_proxyStyle = proxyStyle;
     }
 
-    int pixelMetric(QStyle::PixelMetric metric, const QStyleOption *option = 0, const QWidget *widget = 0) const
+    int pixelMetric(QStyle::PixelMetric metric, const QStyleOption *option = 0, const QWidget *widget = 0) const override
     {
         return m_proxyStyle->pixelMetric(metric, option, widget);
     }
@@ -2676,14 +2679,14 @@ public:
     int shortcutEvents;
 
 private:
-    bool event(QEvent *event)
+    bool event(QEvent *event) override
     {
         if (event->type() == QEvent::Shortcut)
             shortcutEvents++;
         return QGraphicsWidget::event(event);
     }
 
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) override
     {
         if (hasFocus()) {
             painter->setPen(QPen(Qt::black, 0, Qt::DashLine));
@@ -2753,7 +2756,7 @@ public:
     QList<QGraphicsItem *> drawnItems;
 protected:
     void drawItems(QPainter *painter, int numItems, QGraphicsItem *items[],
-                   const QStyleOptionGraphicsItem options[], QWidget *widget = 0)
+                   const QStyleOptionGraphicsItem options[], QWidget *widget = 0) override
     {
         drawnItems.clear();
         for (int i = 0; i < numItems; ++i)
@@ -2768,7 +2771,7 @@ public:
 
     RectWidget(Qt::GlobalColor color, QGraphicsItem *parent=0) : QGraphicsWidget(parent), mColor(color) {}
 
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) override
     {
         painter->setBrush(QBrush(mColor));
         painter->drawRect(boundingRect());
@@ -2783,10 +2786,10 @@ public:
 
     RectItem(Qt::GlobalColor color, QGraphicsItem *parent=0) : QGraphicsItem(parent), mColor(color) {}
 
-    QRectF boundingRect() const
+    QRectF boundingRect() const override
     {return QRectF(10,10,50,50);}
 
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) override
     {
         painter->setBrush(QBrush(mColor));
         painter->drawRect(boundingRect());
@@ -2844,7 +2847,7 @@ public:
     QList<QVariant> values;
     QList<QVariant> oldValues;
 protected:
-    QVariant itemChange(GraphicsItemChange change, const QVariant &value)
+    QVariant itemChange(GraphicsItemChange change, const QVariant &value) override
     {
         changes << change;
         values << value;
@@ -2864,7 +2867,7 @@ protected:
 void tst_QGraphicsWidget::widgetSendsGeometryChanges()
 {
     ItemChangeTester widget;
-    widget.setFlags(0);
+    widget.setFlags({});
     widget.clear();
 
     QPointF pos(10, 10);
@@ -2906,7 +2909,7 @@ public:
         setSizePolicy(sp);
     }
 
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override
     {
         Q_UNUSED(option);
         Q_UNUSED(widget);
@@ -2918,7 +2921,7 @@ public:
     }
 
 protected:
-    QSizeF sizeHint(Qt::SizeHint which, const QSizeF &constraint = QSizeF()) const
+    QSizeF sizeHint(Qt::SizeHint which, const QSizeF &constraint = QSizeF()) const override
     {
         qreal w = constraint.width();
         switch (which) {
@@ -2941,9 +2944,6 @@ protected:
 
 void tst_QGraphicsWidget::respectHFW()
 {
-#if defined(Q_OS_DARWIN)
-    QSKIP("This test is platform dependent, it fails on Apple platforms. Please fix.");
-#else
     QGraphicsScene scene;
     HFWWidget *window = new HFWWidget;
     scene.addItem(window);
@@ -2958,7 +2958,7 @@ void tst_QGraphicsWidget::respectHFW()
     {   // here we go - simulate a interactive resize of the window
         QTest::mouseMove(view.data(), view->mapFromScene(71, 71)); // bottom right corner
 
-        QTest::mousePress(view->viewport(), Qt::LeftButton, 0, view->mapFromScene(71, 71), 200);
+        QTest::mousePress(view->viewport(), Qt::LeftButton, {}, view->mapFromScene(71, 71), 200);
         view->grabMouse();
         // move both mouse cursor and set correct event in order to emulate resize
         QTest::mouseMove(view->viewport(), view->mapFromScene(60, 30), 200);
@@ -2972,8 +2972,10 @@ void tst_QGraphicsWidget::respectHFW()
     }
     const QSizeF winSize = window->size();
     qreal minHFW = window->effectiveSizeHint(Qt::MinimumSize, QSizeF(winSize.width(), -1)).height();
-    QTRY_VERIFY(qAbs(minHFW - winSize.height()) < 1);
+#ifdef Q_OS_DARWIN
+    QEXPECT_FAIL("", "This test is known to fail on Apple platforms.", Continue);
 #endif
+    QTRY_VERIFY(qAbs(minHFW - winSize.height()) < 1);
 }
 
 class PolishWidget : public QGraphicsWidget
@@ -2985,13 +2987,13 @@ public:
     {
     }
 
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) override
     {
         painter->setBrush(QBrush(mColor));
         painter->drawRect(boundingRect());
     }
 
-    void polishEvent()
+    void polishEvent() override
     {
         if (!parentWidget()) {
             //We add a child in the polish event for the parent
@@ -3031,9 +3033,9 @@ void tst_QGraphicsWidget::polishEvent()
 {
     class MyGraphicsWidget : public QGraphicsWidget
     { public:
-        void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *)
+        void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *) override
         { events << QEvent::Paint; }
-        void polishEvent()
+        void polishEvent() override
         { events << QEvent::Polish; }
         QList<QEvent::Type> events;
     };
@@ -3058,7 +3060,7 @@ void tst_QGraphicsWidget::polishEvent2()
 {
     class MyGraphicsWidget : public QGraphicsWidget
     { public:
-    void polishEvent()
+    void polishEvent() override
     { events << QEvent::Polish; }
     QList<QEvent::Type> events;
     };
@@ -3107,31 +3109,8 @@ void tst_QGraphicsWidget::initialShow()
     { public:
         MyGraphicsWidget() : repaints(0) {}
         int repaints;
-        void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget*) { ++repaints; }
-        void polishEvent() { update(); }
-    };
-
-    QGraphicsScene scene;
-    MyGraphicsWidget *widget = new MyGraphicsWidget;
-
-    QGraphicsView view(&scene);
-    view.show();
-    qApp->setActiveWindow(&view);
-    QVERIFY(QTest::qWaitForWindowActive(&view));
-
-    scene.addItem(widget);
-
-    QTRY_COMPARE(widget->repaints, 1);
-}
-
-void tst_QGraphicsWidget::initialShow2()
-{
-    class MyGraphicsWidget : public QGraphicsWidget
-    { public:
-        MyGraphicsWidget() : repaints(0) {}
-        int repaints;
-        void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget*) { ++repaints; }
-        void polishEvent() { update(); }
+        void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget*) override { ++repaints; }
+        void polishEvent() override { update(); }
     };
 
     // Don't let paint events triggered by the windowing system
@@ -3172,7 +3151,7 @@ void tst_QGraphicsWidget::itemChangeEvents()
     { public:
         TestGraphicsWidget() : QGraphicsWidget() {}
         QHash<QEvent::Type, QVariant> valueDuringEvents;
-        bool event(QEvent *event) {
+        bool event(QEvent *event) override {
             Q_UNUSED(event);
             switch (event->type()) {
             case QEvent::EnabledChange: {
@@ -3203,11 +3182,11 @@ void tst_QGraphicsWidget::itemChangeEvents()
             }
             return true;
         }
-        void showEvent(QShowEvent *event) {
+        void showEvent(QShowEvent *event) override {
             Q_UNUSED(event);
             valueDuringEvents.insert(QEvent::Show, isVisible());
         }
-        void hideEvent(QHideEvent *event) {
+        void hideEvent(QHideEvent *event) override {
             Q_UNUSED(event);
             valueDuringEvents.insert(QEvent::Hide, isVisible());
         }
@@ -3293,8 +3272,8 @@ public:
 
 void verifyTabFocus(QGraphicsScene *scene, const QList<QGraphicsWidget *> &chain, bool wrapsAround)
 {
-    QKeyEvent tabEvent(QEvent::KeyPress, Qt::Key_Tab, 0);
-    QKeyEvent backtabEvent(QEvent::KeyPress, Qt::Key_Backtab, 0);
+    QKeyEvent tabEvent(QEvent::KeyPress, Qt::Key_Tab, {});
+    QKeyEvent backtabEvent(QEvent::KeyPress, Qt::Key_Backtab, {});
 
     for (int i = 0; i < chain.size(); ++i)
         chain.at(i)->clearFocus();
