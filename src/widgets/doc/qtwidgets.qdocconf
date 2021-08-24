@@ -18,10 +18,6 @@ qhp.QtWidgets.virtualFolder       = qtwidgets
 qhp.QtWidgets.indexTitle          = Qt Widgets
 qhp.QtWidgets.indexRoot           =
 
-qhp.QtWidgets.filterAttributes    = qtwidgets $QT_VERSION qtrefdoc
-qhp.QtWidgets.customFilters.Qt.name = QtWidgets $QT_VERSION
-qhp.QtWidgets.customFilters.Qt.filterAttributes = qtwidgets $QT_VERSION
-
 qhp.QtWidgets.subprojects         = classes
 qhp.QtWidgets.subprojects.classes.title = C++ Classes
 qhp.QtWidgets.subprojects.classes.indexTitle = Qt Widgets C++ Classes

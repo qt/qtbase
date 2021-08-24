@@ -15,10 +15,6 @@ qhp.QtConcurrent.virtualFolder       = qtconcurrent
 qhp.QtConcurrent.indexTitle          = Qt Concurrent
 qhp.QtConcurrent.indexRoot           =
 
-qhp.QtConcurrent.filterAttributes    = qtconcurrent $QT_VERSION qtrefdoc
-qhp.QtConcurrent.customFilters.Qt.name = QtConcurrent $QT_VERSION
-qhp.QtConcurrent.customFilters.Qt.filterAttributes = qtconcurrent $QT_VERSION
-
 qhp.QtConcurrent.subprojects         = classes
 qhp.QtConcurrent.subprojects.classes.title = C++ Classes
 qhp.QtConcurrent.subprojects.classes.indexTitle = Qt Concurrent C++ Classes

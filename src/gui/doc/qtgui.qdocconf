@@ -18,10 +18,6 @@ qhp.QtGui.virtualFolder       = qtgui
 qhp.QtGui.indexTitle          = Qt GUI
 qhp.QtGui.indexRoot           =
 
-qhp.QtGui.filterAttributes    = qtgui $QT_VERSION qtrefdoc
-qhp.QtGui.customFilters.Qt.name = QtGui $QT_VERSION
-qhp.QtGui.customFilters.Qt.filterAttributes = qtgui $QT_VERSION
-
 qhp.QtGui.subprojects         = classes
 qhp.QtGui.subprojects.classes.title = C++ Classes
 qhp.QtGui.subprojects.classes.indexTitle = Qt GUI C++ Classes

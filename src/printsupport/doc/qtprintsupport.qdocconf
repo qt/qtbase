@@ -15,10 +15,6 @@ qhp.QtPrintSupport.virtualFolder       = qtprintsupport
 qhp.QtPrintSupport.indexTitle          = Qt Print Support
 qhp.QtPrintSupport.indexRoot           =
 
-qhp.QtPrintSupport.filterAttributes    = qtprintsupport $QT_VERSION qtrefdoc
-qhp.QtPrintSupport.customFilters.Qt.name = QtPrintSupport $QT_VERSION
-qhp.QtPrintSupport.customFilters.Qt.filterAttributes = qtprintsupport $QT_VERSION
-
 qhp.QtPrintSupport.subprojects         = classes
 qhp.QtPrintSupport.subprojects.classes.title = C++ Classes
 qhp.QtPrintSupport.subprojects.classes.indexTitle = Qt Print Support C++ Classes
