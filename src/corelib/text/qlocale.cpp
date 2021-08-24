@@ -3642,20 +3642,17 @@ QString QLocaleData::signPrefix(bool negative, unsigned flags) const
     return {};
 }
 
-QString QLocaleData::longLongToString(qlonglong l, int precision,
+QString QLocaleData::longLongToString(qlonglong n, int precision,
                                       int base, int width, unsigned flags) const
 {
-    bool negative = l < 0;
+    bool negative = n < 0;
 
-QT_WARNING_PUSH
-    /* "unary minus operator applied to unsigned type, result still unsigned" */
-QT_WARNING_DISABLE_MSVC(4146)
     /*
       Negating std::numeric_limits<qlonglong>::min() hits undefined behavior, so
-      taking an absolute value has to cast to unsigned to change sign.
+      taking an absolute value has to take a slight detour.
      */
-    QString numStr = qulltoa(negative ? -qulonglong(l) : qulonglong(l), base, zeroDigit());
-QT_WARNING_POP
+    QString numStr = qulltoa(negative ? 1u + qulonglong(-(n + 1)) : qulonglong(n),
+                             base, zeroDigit());
 
     return applyIntegerFormatting(std::move(numStr), negative, precision, base, width, flags);
 }
