@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -29,12 +29,13 @@
 #ifndef QT_TESTS_SHARED_FILESYSTEM_H_INCLUDED
 #define QT_TESTS_SHARED_FILESYSTEM_H_INCLUDED
 
+#include <QDir>
+#include <QFile>
+#include <QOperatingSystemVersion>
+#include <QScopedPointer>
 #include <QString>
 #include <QStringList>
 #include <QTemporaryDir>
-#include <QScopedPointer>
-#include <QDir>
-#include <QFile>
 
 #if defined(Q_OS_WIN)
 #include <windows.h>
