@@ -250,11 +250,7 @@ public:
     void appendTouchPoint(const QEventPoint &touchPoint);
     void removeTouchPoint(int touchPointId);
     void activateImplicitTouchGrab(QWidget *widget, QTouchEvent *touchBeginEvent);
-    static bool translateRawTouchEvent(QWidget *widget,
-                                       const QPointingDevice *device,
-                                       QList<QEventPoint> &touchPoints,
-                                       ulong timestamp,
-                                       bool spontaneous = true);
+    static bool translateRawTouchEvent(QWidget *widget, const QTouchEvent *touchEvent);
     static void translateTouchCancel(const QPointingDevice *device, ulong timestamp);
 
     QPixmap applyQIconStyleHelper(QIcon::Mode mode, const QPixmap& base) const override;

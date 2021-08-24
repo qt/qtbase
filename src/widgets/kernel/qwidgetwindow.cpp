@@ -698,9 +698,7 @@ void QWidgetWindow::handleTouchEvent(QTouchEvent *event)
         // events instead, which QWidgetWindow::handleMouseEvent will forward correctly:
         event->ignore();
     } else {
-        event->setAccepted(QApplicationPrivate::translateRawTouchEvent(m_widget, event->pointingDevice(),
-                                                                       const_cast<QList<QEventPoint> &>(event->points()),
-                                                                       event->timestamp()));
+        event->setAccepted(QApplicationPrivate::translateRawTouchEvent(m_widget, event));
     }
 }
 

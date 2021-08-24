@@ -922,9 +922,7 @@ bool QGraphicsProxyWidget::event(QEvent *event)
     case QEvent::TouchEnd: {
         QTouchEvent *touchEvent = static_cast<QTouchEvent *>(event);
         auto touchPoints = touchEvent->points();
-        bool res = QApplicationPrivate::translateRawTouchEvent(d->widget, touchEvent->pointingDevice(),
-                                                               touchPoints, touchEvent->timestamp(),
-                                                               event->spontaneous());
+        bool res = QApplicationPrivate::translateRawTouchEvent(d->widget, touchEvent);
         if (res) {
             event->accept();
             return true;
