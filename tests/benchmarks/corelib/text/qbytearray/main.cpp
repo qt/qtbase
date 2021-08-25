@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -32,6 +32,7 @@
 #include <QString>
 
 #include <qtest.h>
+#include <limits>
 
 
 class tst_qbytearray : public QObject
@@ -42,6 +43,11 @@ private slots:
     void initTestCase();
     void append();
     void append_data();
+
+    void toLongLong_data();
+    void toLongLong();
+    void toULongLong_data();
+    void toULongLong();
 
     void latin1Uppercasing_qt54();
     void latin1Uppercasing_xlate();
@@ -84,6 +90,89 @@ void tst_qbytearray::append()
         ba.append(ba2);
         ba.clear();
     }
+}
+
+static QByteArray decNext(QByteArray &&big)
+{
+    // Increments a decimal digit-string (ignoring sign, so decrements if
+    // negative); only intended for taking a boundary value just out of range,
+    // so big is never a string of only 9s (that'd be one less than a power of
+    // ten, which cannot be a power of two, as odd, or one less than one, as the
+    // power of ten isn't a power of two).
+    int i = big.size() - 1;
+    while (big.at(i) == '9')
+        big[i--] = '0';
+    big[i] += 1;
+    return big;
+}
+
+void tst_qbytearray::toLongLong_data()
+{
+    QTest::addColumn<QByteArray>("text");
+    QTest::addColumn<bool>("good");
+    QTest::addColumn<qlonglong>("number");
+#define ROW(n) QTest::newRow(#n) << QByteArray(#n) << true << n ## LL
+    ROW(0);
+    ROW(1);
+    ROW(-1);
+    ROW(17);
+    ROW(-17);
+    ROW(1234567890);
+    ROW(-1234567890);
+#undef ROW
+    using LL = std::numeric_limits<qlonglong>;
+    QTest::newRow("min") << QByteArray::number(LL::min()) << true << LL::min();
+    QTest::newRow("min-1") << decNext(QByteArray::number(LL::min())) << false << 0LL;
+    QTest::newRow("max") << QByteArray::number(LL::max()) << true << LL::max();
+    QTest::newRow("max+1") << decNext(QByteArray::number(LL::max())) << false << 0LL;
+}
+
+void tst_qbytearray::toLongLong()
+{
+    QFETCH(QByteArray, text);
+    QFETCH(bool, good);
+    QFETCH(qlonglong, number);
+
+    qlonglong actual = 0;
+    bool ok;
+    QBENCHMARK {
+        actual = text.toLongLong(&ok);
+    }
+    QCOMPARE(actual, number);
+    QCOMPARE(ok, good);
+}
+
+void tst_qbytearray::toULongLong_data()
+{
+    QTest::addColumn<QByteArray>("text");
+    QTest::addColumn<bool>("good");
+    QTest::addColumn<qulonglong>("number");
+#define ROW(n) \
+    QTest::newRow(#n) << QByteArray(#n) << true << n ## ULL; \
+    QTest::newRow("-" #n) << QByteArray("-" #n) << false << 0ULL
+    ROW(0);
+    ROW(1);
+    ROW(17);
+    ROW(1234567890);
+#undef ROW
+    using ULL = std::numeric_limits<qulonglong>;
+    QTest::newRow("max") << QByteArray::number(ULL::max()) << true << ULL::max();
+    QTest::newRow("max+1") << decNext(QByteArray::number(ULL::max())) << false << 0ULL;
+}
+
+void tst_qbytearray::toULongLong()
+{
+    QFETCH(QByteArray, text);
+    QFETCH(bool, good);
+    QFETCH(qulonglong, number);
+
+    qulonglong actual = 0;
+    bool ok;
+    QBENCHMARK {
+        actual = text.toULongLong(&ok);
+    }
+    QCOMPARE(actual, number);
+    QCOMPARE(ok, good);
 }
 
 void tst_qbytearray::latin1Uppercasing_qt54()
