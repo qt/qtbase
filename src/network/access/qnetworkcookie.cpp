@@ -744,9 +744,10 @@ static QDateTime parseDateString(const QByteArray &dateString)
             && (dateString[at + 2] == ':' || dateString[at + 1] == ':')) {
             // While the date can be found all over the string the format
             // for the time is set and a nice regexp can be used.
-            QRegularExpressionMatch match;
-            int pos = QString::fromLatin1(dateString).indexOf(timeRx, at, &match);
-            if (pos != -1) {
+            // This string needs to stay for as long as the QRegularExpressionMatch is used,
+            // or else we get use-after-free issues:
+            QString dateToString = QString::fromLatin1(dateString);
+            if (auto match = timeRx.match(dateToString, at); match.hasMatch()) {
                 QStringList list = match.capturedTexts();
                 int h = match.captured(1).toInt();
                 int m = match.captured(2).toInt();
