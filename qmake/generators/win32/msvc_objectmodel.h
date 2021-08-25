@@ -527,6 +527,7 @@ public:
     inlineExpansionOption   InlineFunctionExpansion;
     triState                KeepComments;
     QString                 LanguageStandard;
+    QString                 LanguageStandard_C;
     triState                MinimalRebuild;
     QString                 ObjectFile;
     triState                OmitDefaultLibName;
