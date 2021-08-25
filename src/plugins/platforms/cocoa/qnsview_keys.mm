@@ -50,10 +50,6 @@
 
     NSString *charactersIgnoringModifiers = nsevent.charactersIgnoringModifiers;
     NSString *characters = nsevent.characters;
-    if (m_inputSource != characters) {
-        [m_inputSource release];
-        m_inputSource = [characters retain];
-    }
 
     // Scan codes are hardware dependent codes for each key. There is no way to get these
     // from Carbon or Cocoa, so leave it 0, as documented in QKeyEvent::nativeScanCode().
