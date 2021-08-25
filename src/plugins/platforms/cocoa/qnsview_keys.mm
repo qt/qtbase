@@ -41,13 +41,15 @@
 
 @implementation QNSView (Keys)
 
-- (bool)handleKeyEvent:(NSEvent *)nsevent eventType:(int)eventType
+- (bool)handleKeyEvent:(NSEvent *)nsevent eventType:(QEvent::Type)eventType
 {
-    ulong timestamp = [nsevent timestamp] * 1000;
-    ulong nativeModifiers = [nsevent modifierFlags];
+    ulong timestamp = nsevent.timestamp * 1000;
+
+    NSEventModifierFlags nativeModifiers = nsevent.modifierFlags;
     Qt::KeyboardModifiers modifiers = QAppleKeyMapper::fromCocoaModifiers(nativeModifiers);
-    NSString *charactersIgnoringModifiers = [nsevent charactersIgnoringModifiers];
-    NSString *characters = [nsevent characters];
+
+    NSString *charactersIgnoringModifiers = nsevent.charactersIgnoringModifiers;
+    NSString *characters = nsevent.characters;
     if (m_inputSource != characters) {
         [m_inputSource release];
         m_inputSource = [characters retain];
@@ -61,47 +63,48 @@
     const quint32 nativeVirtualKey = nsevent.keyCode;
 
     QChar ch = QChar::ReplacementCharacter;
-    int keyCode = Qt::Key_unknown;
+    Qt::Key qtKey = Qt::Key_unknown;
 
     // If a dead key occurs as a result of pressing a key combination then
     // characters will have 0 length, but charactersIgnoringModifiers will
     // have a valid character in it. This enables key combinations such as
     // ALT+E to be used as a shortcut with an English keyboard even though
     // pressing ALT+E will give a dead key while doing normal text input.
-    if ([characters length] != 0 || [charactersIgnoringModifiers length] != 0) {
+    if (characters.length || charactersIgnoringModifiers.length) {
         if (nativeModifiers & (NSEventModifierFlagControl | NSEventModifierFlagOption)
-            && [charactersIgnoringModifiers length] != 0)
+            && charactersIgnoringModifiers.length)
             ch = QChar([charactersIgnoringModifiers characterAtIndex:0]);
-        else if ([characters length] != 0)
+        else if (characters.length)
             ch = QChar([characters characterAtIndex:0]);
-        keyCode = QAppleKeyMapper::fromCocoaKey(ch);
+        qtKey = QAppleKeyMapper::fromCocoaKey(ch);
     }
 
-    // we will send a key event unless the input method sets m_sendKeyEvent to false
-    m_sendKeyEvent = true;
     QString text;
     // ignore text for the U+F700-U+F8FF range. This is used by Cocoa when
     // delivering function keys (e.g. arrow keys, backspace, F1-F35, etc.)
     if (!(modifiers & (Qt::ControlModifier | Qt::MetaModifier)) && (ch.unicode() < 0xf700 || ch.unicode() > 0xf8ff))
         text = QString::fromNSString(characters);
 
+    // FIXME: Why is this the top level window and not m_platformWindow?
     QWindow *window = [self topLevelWindow];
-
-    // Popups implicitly grab key events; forward to the active popup if there is one.
-    // This allows popups to e.g. intercept shortcuts and close the popup in response.
     if (QCocoaWindow *popup = QCocoaIntegration::instance()->activePopupWindow()) {
+        // Popups implicitly grab key events; forward to the active popup if there is one.
+        // This allows popups to e.g. intercept shortcuts and close the popup in response.
         if (!popup->window()->flags().testFlag(Qt::ToolTip))
             window = popup->window();
     }
 
-    qCDebug(lcQpaKeys) << "Handling" << nsevent << "as" << Qt::Key(keyCode)
+    qCDebug(lcQpaKeys) << "Handling" << nsevent << "as" << qtKey
         << "with" << modifiers << "and resulting text" << text;
+
+    // We will send a key event unless the input method sets m_sendKeyEvent to false
+    m_sendKeyEvent = true;
 
     if (eventType == QEvent::KeyPress) {
 
         if (m_composingText.isEmpty()) {
             qCDebug(lcQpaKeys) << "Trying potential shortcuts in" << window;
-            if (QWindowSystemInterface::handleShortcutEvent(window, timestamp, keyCode, modifiers,
+            if (QWindowSystemInterface::handleShortcutEvent(window, timestamp, qtKey, modifiers,
                     nativeScanCode, nativeVirtualKey, nativeModifiers, text, [nsevent isARepeat], 1)) {
                 qCDebug(lcQpaKeys) << "Found matching shortcut; will not send as key event";
                 m_sendKeyEvent = false;
@@ -153,7 +156,7 @@
     bool accepted = true;
     if (m_sendKeyEvent && m_composingText.isEmpty()) {
         qCDebug(lcQpaKeys) << "Sending as regular key event";
-        QWindowSystemInterface::handleExtendedKeyEvent(window, timestamp, QEvent::Type(eventType), keyCode, modifiers,
+        QWindowSystemInterface::handleExtendedKeyEvent(window, timestamp, QEvent::Type(eventType), qtKey, modifiers,
                                                        nativeScanCode, nativeVirtualKey, nativeModifiers, text, [nsevent isARepeat], 1, false);
         accepted = QWindowSystemInterface::flushWindowSystemEvents();
     }
@@ -167,7 +170,7 @@
     if ([self isTransparentForUserInput])
         return [super keyDown:nsevent];
 
-    const bool accepted = [self handleKeyEvent:nsevent eventType:int(QEvent::KeyPress)];
+    const bool accepted = [self handleKeyEvent:nsevent eventType:QEvent::KeyPress];
 
     // When Qt is used to implement a plugin for a native application we
     // want to propagate unhandled events to other native views. However,
@@ -178,7 +181,7 @@
 
     // Track keyDown acceptance/forward state for later acceptance of the keyUp.
     if (!shouldPropagate)
-        m_acceptedKeyDowns.insert([nsevent keyCode]);
+        m_acceptedKeyDowns.insert(nsevent.keyCode);
 
     if (shouldPropagate)
         [super keyDown:nsevent];
@@ -189,12 +192,12 @@
     if ([self isTransparentForUserInput])
         return [super keyUp:nsevent];
 
-    const bool keyUpAccepted = [self handleKeyEvent:nsevent eventType:int(QEvent::KeyRelease)];
+    const bool keyUpAccepted = [self handleKeyEvent:nsevent eventType:QEvent::KeyRelease];
 
     // Propagate the keyUp if neither Qt accepted it nor the corresponding KeyDown was
     // accepted. Qt text controls wil often not use and ignore keyUp events, but we
     // want to avoid propagating unmatched keyUps.
-    const bool keyDownAccepted = m_acceptedKeyDowns.remove([nsevent keyCode]);
+    const bool keyDownAccepted = m_acceptedKeyDowns.remove(nsevent.keyCode);
     if (!keyUpAccepted && !keyDownAccepted)
         [super keyUp:nsevent];
 }
@@ -203,7 +206,7 @@
 {
     Q_UNUSED(sender);
 
-    NSEvent *currentEvent = [NSApp currentEvent];
+    NSEvent *currentEvent = NSApp.currentEvent;
     if (!currentEvent || currentEvent.type != NSEventTypeKeyDown)
         return;
 
@@ -215,13 +218,15 @@
     // Send Command+Key_Period and Escape as normal keypresses so that
     // the key sequence is delivered through Qt. That way clients can
     // intercept the shortcut and override its effect.
-    [self handleKeyEvent:currentEvent eventType:int(QEvent::KeyPress)];
+    [self handleKeyEvent:currentEvent eventType:QEvent::KeyPress];
 }
 
 - (void)flagsChanged:(NSEvent *)nsevent
 {
-    ulong timestamp = [nsevent timestamp] * 1000;
-    ulong nativeModifiers = [nsevent modifierFlags];
+    // FIXME: Why are we not checking isTransparentForUserInput here?
+
+    ulong timestamp = nsevent.timestamp * 1000;
+    NSEventModifierFlags nativeModifiers = nsevent.modifierFlags;
     Qt::KeyboardModifiers modifiers = QAppleKeyMapper::fromCocoaModifiers(nativeModifiers);
 
     qCDebug(lcQpaKeys) << "Flags changed with" << nsevent
@@ -234,44 +239,41 @@
     // Virtual keys on the other hand are mapped to be the same keys on any system
     const quint32 nativeVirtualKey = nsevent.keyCode;
 
-    // calculate the delta and remember the current modifiers for next time
-    static ulong m_lastKnownModifiers;
-    ulong lastKnownModifiers = m_lastKnownModifiers;
-    ulong delta = lastKnownModifiers ^ nativeModifiers;
+    // Calculate the delta and remember the current modifiers for next time
+    static NSEventModifierFlags m_lastKnownModifiers;
+    NSEventModifierFlags lastKnownModifiers = m_lastKnownModifiers;
+    NSEventModifierFlags newModifiers = lastKnownModifiers ^ nativeModifiers;
     m_lastKnownModifiers = nativeModifiers;
 
-    struct qt_mac_enum_mapper
-    {
-        ulong mac_mask;
-        Qt::Key qt_code;
-    };
-    static qt_mac_enum_mapper modifier_key_symbols[] = {
+    static constexpr std::tuple<NSEventModifierFlags, Qt::Key> modifierMap[] = {
         { NSEventModifierFlagShift, Qt::Key_Shift },
         { NSEventModifierFlagControl, Qt::Key_Meta },
         { NSEventModifierFlagCommand, Qt::Key_Control },
         { NSEventModifierFlagOption, Qt::Key_Alt },
-        { NSEventModifierFlagCapsLock, Qt::Key_CapsLock },
-        { 0ul, Qt::Key_unknown } };
-    for (int i = 0; modifier_key_symbols[i].mac_mask != 0u; ++i) {
-        uint mac_mask = modifier_key_symbols[i].mac_mask;
-        if ((delta & mac_mask) == 0u)
+        { NSEventModifierFlagCapsLock, Qt::Key_CapsLock }
+    };
+
+    for (auto [macModifier, qtKey] : modifierMap) {
+        if (!(newModifiers & macModifier))
             continue;
 
-        Qt::Key qtCode = modifier_key_symbols[i].qt_code;
+        // FIXME: Use QAppleKeyMapper helper
         if (qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta)) {
-            if (qtCode == Qt::Key_Meta)
-                qtCode = Qt::Key_Control;
-            else if (qtCode == Qt::Key_Control)
-                qtCode = Qt::Key_Meta;
+            if (qtKey == Qt::Key_Meta)
+                qtKey = Qt::Key_Control;
+            else if (qtKey == Qt::Key_Control)
+                qtKey = Qt::Key_Meta;
         }
-        QWindowSystemInterface::handleExtendedKeyEvent(m_platformWindow->window(),
-                                                       timestamp,
-                                                       (lastKnownModifiers & mac_mask) ? QEvent::KeyRelease
-                                                                                       : QEvent::KeyPress,
-                                                       qtCode,
-                                                       modifiers ^ QAppleKeyMapper::fromCocoaModifiers(mac_mask),
-                                                       nativeScanCode, nativeVirtualKey,
-                                                       nativeModifiers ^ mac_mask);
+
+        auto eventType = lastKnownModifiers & macModifier
+                       ? QEvent::KeyRelease : QEvent::KeyPress;
+
+        // FIXME: Why are we sending to m_platformWindow here, but not for key events?
+        QWindow *window = m_platformWindow->window();
+
+        QWindowSystemInterface::handleExtendedKeyEvent(window, timestamp, eventType,
+            qtKey, modifiers ^ QAppleKeyMapper::fromCocoaModifiers(macModifier),
+            nativeScanCode, nativeVirtualKey, nativeModifiers ^ macModifier);
     }
 }
 
