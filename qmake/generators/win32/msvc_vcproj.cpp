@@ -37,6 +37,7 @@
 #include <qcryptographichash.h>
 #include <qhash.h>
 #include <quuid.h>
+#include <qregularexpression.h>
 
 #include <stdlib.h>
 
@@ -1034,6 +1035,20 @@ void VcprojGenerator::initConfiguration()
     initPreLinkEventTools();
 }
 
+// Filter from the given QMAKE_CFLAGS the options that are relevant
+// for the vcxproj-global VCCLCompilerTool.
+static ProStringList relevantCFlags(const ProStringList &flags)
+{
+    ProStringList result;
+    static const QRegularExpression rex("^[/-]std:");
+    for (const ProString &flag : flags) {
+        if (rex.match(flag.toQString()).hasMatch()) {
+            result.append(flag);
+        }
+    }
+    return result;
+}
+
 void VcprojGenerator::initCompilerTool()
 {
     QString placement = project->first("OBJECTS_DIR").toQString();
@@ -1056,6 +1071,7 @@ void VcprojGenerator::initCompilerTool()
         conf.compiler.ForcedIncludeFiles       = project->values("PRECOMPILED_HEADER").toQStringList();
     }
 
+    conf.compiler.parseOptions(relevantCFlags(project->values("QMAKE_CFLAGS")));
     conf.compiler.parseOptions(project->values("QMAKE_CXXFLAGS"));
 
     if (project->isActiveConfig("windows"))
