@@ -93,8 +93,9 @@
     qCDebug(lcQpaKeys) << "Handling" << nsevent << "as" << qtKey
         << "with" << modifiers << "and resulting text" << text;
 
+    QBoolBlocker resendKeyEventGuard(m_resendKeyEvent, false);
     // We will send a key event unless the input method sets m_sendKeyEvent to false
-    m_sendKeyEvent = true;
+    QBoolBlocker sendKeyEventGuard(m_sendKeyEvent, true);
 
     if (eventType == QEvent::KeyPress) {
 
@@ -103,10 +104,7 @@
             if (QWindowSystemInterface::handleShortcutEvent(window, timestamp, qtKey, modifiers,
                     nativeScanCode, nativeVirtualKey, nativeModifiers, text, [nsevent isARepeat], 1)) {
                 qCDebug(lcQpaKeys) << "Found matching shortcut; will not send as key event";
-                m_sendKeyEvent = false;
-                // Handling a shortcut may result in closing the window
-                if (!m_platformWindow)
-                    return true;
+                return true;
             } else {
                 qCDebug(lcQpaKeys) << "No matching shortcuts; continuing with key event delivery";
             }
@@ -157,8 +155,6 @@
                                                        nativeScanCode, nativeVirtualKey, nativeModifiers, text, [nsevent isARepeat], 1, false);
         accepted = QWindowSystemInterface::flushWindowSystemEvents();
     }
-    m_sendKeyEvent = false;
-    m_resendKeyEvent = false;
     return accepted;
 }
 
