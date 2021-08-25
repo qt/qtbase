@@ -1151,12 +1151,40 @@ bool VCCLCompilerTool::parseOption(const char* option)
             ShowIncludes = _True;
             break;
         }
-        if (strlen(option) > 8 && second == 't' && third == 'd') {
-            const QString version = option + 8;
-            static const QStringList knownVersions = { "14", "17", "latest" };
-            if (knownVersions.contains(version)) {
-                LanguageStandard = "stdcpp" + version;
-                break;
+        if (strlen(option) > 7 && second == 't' && third == 'd' && fourth == ':') {
+            static const QRegularExpression rex("(c(?:\\+\\+)?)(.+)");
+            auto m = rex.match(option + 5);
+            if (m.hasMatch()) {
+                QString *var = nullptr;
+                const QStringList *knownVersions = nullptr;
+                QString valuePrefix;
+                auto lang = m.capturedView(1);
+                auto version = m.capturedView(2);
+                if (lang == QStringLiteral("c++")) {
+                    // Turn /std:c++17 into <LanguageStandard>stdcpp17</LanguageStandard>
+                    static const QStringList knownCxxVersions = {
+                        "14",
+                        "17",
+                        "20",
+                        "latest"
+                    };
+                    var = &LanguageStandard;
+                    knownVersions = &knownCxxVersions;
+                    valuePrefix = "stdcpp";
+                } else if (lang == QStringLiteral("c")) {
+                    // Turn /std:c17 into <LanguageStandard_C>stdc17</LanguageStandard_C>
+                    static const QStringList knownCVersions = {
+                        "11",
+                        "17"
+                    };
+                    var = &LanguageStandard_C;
+                    knownVersions = &knownCVersions;
+                    valuePrefix = "stdc";
+                }
+                if (var && knownVersions->contains(version)) {
+                    *var = valuePrefix + version;
+                    break;
+                }
             }
         }
         found = false; break;
