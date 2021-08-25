@@ -2870,7 +2870,7 @@ int QMetaEnum::keysToValue(const char *keys, bool *ok) const
     auto className = [&] { return stringDataView(mobj, priv(mobj->d.data)->className); };
 
     int value = 0;
-    for (const QLatin1String untrimmed : qTokenize(QLatin1String{keys}, QLatin1Char{'|'})) {
+    for (const QLatin1String &untrimmed : qTokenize(QLatin1String{keys}, QLatin1Char{'|'})) {
         const auto parsed = parse_scope(untrimmed.trimmed());
         if (parsed.scope && *parsed.scope != className())
             return -1; // wrong type name in qualified name
