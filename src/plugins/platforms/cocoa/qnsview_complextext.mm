@@ -68,11 +68,23 @@
     qCDebug(lcQpaKeys).nospace() << "Inserting \"" << text << "\""
         << ", replacing range " << replacementRange;
 
-    if (m_sendKeyEvent && m_composingText.isEmpty() && [text isEqualToString:m_inputSource]) {
-        // We do not send input method events for simple text input,
-        // and instead let handleKeyEvent send the key event.
-        qCDebug(lcQpaKeys) << "Not sending simple text as input method event";
-        return;
+    if (m_sendKeyEvent && m_composingText.isEmpty()) {
+        // The input method may have transformed the incoming key event
+        // to text that doesn't match what the original key event would
+        // have produced, for example when 'Pinyin - Simplified' does smart
+        // replacement of quotes. If that's the case we can't rely on
+        // handleKeyEvent for sending the text.
+        auto *currentEvent = NSApp.currentEvent;
+        NSString *eventText = currentEvent.type == NSEventTypeKeyDown
+                           || currentEvent.type == NSEventTypeKeyUp
+                                ? currentEvent.characters : nil;
+
+        if ([text isEqualToString:eventText]) {
+            // We do not send input method events for simple text input,
+            // and instead let handleKeyEvent send the key event.
+            qCDebug(lcQpaKeys) << "Ignoring text insertion for simple text";
+            return;
+        }
     }
 
     QObject *focusObject = m_platformWindow->window()->focusObject();
