@@ -118,7 +118,8 @@
                 auto hints = static_cast<Qt::InputMethodHints>(queryResult.value(Qt::ImHints).toUInt());
 
                 // Make sure we send dead keys and the next key to the input method for composition
-                const bool ignoreHidden = (hints & Qt::ImhHiddenText) && !text.isEmpty() && !m_lastKeyDead;
+                const bool isDeadKey = !nsevent.characters.length;
+                const bool ignoreHidden = (hints & Qt::ImhHiddenText) && !isDeadKey && !m_lastKeyDead;
 
                 if (!(hints & Qt::ImhDigitsOnly || hints & Qt::ImhFormattedNumbersOnly || ignoreHidden)) {
                     // Pass the key event to the input method. Note that m_sendKeyEvent may be set
@@ -139,7 +140,7 @@
 
                     // If the last key we sent was dead, then pass the next
                     // key to the IM as well to complete composition.
-                    m_lastKeyDead = text.isEmpty();
+                    m_lastKeyDead = isDeadKey;
                 }
 
             }
