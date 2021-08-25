@@ -287,6 +287,7 @@ public:
 
     QWidget *widget;
     QGraphicsSceneEvent *q_ptr;
+    quint64 timestamp = 0;
 };
 
 /*!
@@ -337,6 +338,26 @@ QWidget *QGraphicsSceneEvent::widget() const
 void QGraphicsSceneEvent::setWidget(QWidget *widget)
 {
     d_ptr->widget = widget;
+}
+
+/*!
+    \since 6.2
+
+    Returns the timestamp of the original event, or 0 if the
+    original event does not report a time stamp.
+*/
+quint64 QGraphicsSceneEvent::timestamp() const
+{
+    return d_ptr->timestamp;
+}
+/*!
+    \internal
+
+    Sets the timestamp for the event to \a ts.
+*/
+void QGraphicsSceneEvent::setTimestamp(quint64 ts)
+{
+    d_ptr->timestamp = ts;
 }
 
 class QGraphicsSceneMouseEventPrivate : public QGraphicsSceneEventPrivate

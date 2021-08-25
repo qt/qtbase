@@ -671,6 +671,7 @@ void QGraphicsViewPrivate::mouseMoveEventHandler(QMouseEvent *event)
     mouseEvent.setModifiers(event->modifiers());
     mouseEvent.setSource(event->source());
     mouseEvent.setFlags(event->flags());
+    mouseEvent.setTimestamp(event->timestamp());
     lastMouseMoveScenePoint = mouseEvent.scenePos();
     lastMouseMoveScreenPoint = mouseEvent.screenPos();
     mouseEvent.setAccepted(false);
@@ -873,6 +874,7 @@ void QGraphicsViewPrivate::storeDragDropEvent(const QGraphicsSceneDragDropEvent 
     lastDragDropEvent->setMimeData(event->mimeData());
     lastDragDropEvent->setWidget(event->widget());
     lastDragDropEvent->setSource(event->source());
+    lastDragDropEvent->setTimestamp(event->timestamp());
 }
 
 /*!
@@ -2973,6 +2975,7 @@ void QGraphicsView::contextMenuEvent(QContextMenuEvent *event)
     contextEvent.setModifiers(event->modifiers());
     contextEvent.setReason((QGraphicsSceneContextMenuEvent::Reason)(event->reason()));
     contextEvent.setAccepted(event->isAccepted());
+    contextEvent.setTimestamp(event->timestamp());
     QCoreApplication::sendEvent(d->scene, &contextEvent);
     event->setAccepted(contextEvent.isAccepted());
 }
@@ -3188,6 +3191,7 @@ void QGraphicsView::mouseDoubleClickEvent(QMouseEvent *event)
     mouseEvent.setModifiers(event->modifiers());
     mouseEvent.setSource(event->source());
     mouseEvent.setFlags(event->flags());
+    mouseEvent.setTimestamp(event->timestamp());
     if (event->spontaneous())
         qt_sendSpontaneousEvent(d->scene, &mouseEvent);
     else
@@ -3239,6 +3243,7 @@ void QGraphicsView::mousePressEvent(QMouseEvent *event)
             mouseEvent.setSource(event->source());
             mouseEvent.setFlags(event->flags());
             mouseEvent.setAccepted(false);
+            mouseEvent.setTimestamp(event->timestamp());
             if (event->spontaneous())
                 qt_sendSpontaneousEvent(d->scene, &mouseEvent);
             else
@@ -3362,6 +3367,7 @@ void QGraphicsView::mouseReleaseEvent(QMouseEvent *event)
     mouseEvent.setSource(event->source());
     mouseEvent.setFlags(event->flags());
     mouseEvent.setAccepted(false);
+    mouseEvent.setTimestamp(event->timestamp());
     if (event->spontaneous())
         qt_sendSpontaneousEvent(d->scene, &mouseEvent);
     else
@@ -3405,6 +3411,7 @@ void QGraphicsView::wheelEvent(QWheelEvent *event)
     wheelEvent.setInverted(event->isInverted());
     wheelEvent.setOrientation(horizontal ? Qt::Horizontal : Qt::Vertical);
     wheelEvent.setAccepted(false);
+    wheelEvent.setTimestamp(event->timestamp());
     QCoreApplication::sendEvent(d->scene, &wheelEvent);
     event->setAccepted(wheelEvent.isAccepted());
     if (!event->isAccepted())

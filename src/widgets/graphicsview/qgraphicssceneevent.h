@@ -67,6 +67,9 @@ public:
     QWidget *widget() const;
     void setWidget(QWidget *widget);
 
+    quint64 timestamp() const;
+    void setTimestamp(quint64 ts);
+
 protected:
     QGraphicsSceneEvent(QGraphicsSceneEventPrivate &dd, Type type = None);
     QScopedPointer<QGraphicsSceneEventPrivate> d_ptr;
