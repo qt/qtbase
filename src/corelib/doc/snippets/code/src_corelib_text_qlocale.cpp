@@ -62,17 +62,19 @@ int i = egyptian.toInt(s2);
 bool ok;
 double d;
 
-QLocale::setDefault(QLocale::C);
-d = QString("1234,56").toDouble(&ok);   // ok == false, d == 0
-d = QString("1234.56").toDouble(&ok);   // ok == true,  d == 1234.56
+QLocale::setDefault(QLocale::C);      // uses '.' as a decimal point
+QLocale cLocale;                      // default-constructed C locale
+d = cLocale.toDouble("1234,56", &ok); // ok == false, d == 0
+d = cLocale.toDouble("1234.56", &ok); // ok == true,  d == 1234.56
 
-QLocale::setDefault(QLocale::German);
-d = QString("1234,56").toDouble(&ok);   // ok == false, d == 0
-d = QString("1234.56").toDouble(&ok);   // ok == true,  d == 1234.56
+QLocale::setDefault(QLocale::German); // uses ',' as a decimal point
+QLocale german;                       // default-constructed German locale
+d = german.toDouble("1234,56", &ok);  // ok == true,  d == 1234.56
+d = german.toDouble("1234.56", &ok);  // ok == false, d == 0
 
-QLocale::setDefault(QLocale(QLocale::English, QLocale::UnitedStates));
-QString str = QString("%1 %L2 %L3")
-      .arg(12345).arg(12345).arg(12345, 0, 16);
+QLocale::setDefault(QLocale::English);
+// Default locale now uses ',' as a group separator.
+QString str = QString("%1 %L2 %L3").arg(12345).arg(12345).arg(12345, 0, 16);
 // str == "12345 12,345 3039"
 //! [1]
 
