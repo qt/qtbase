@@ -1,5 +1,5 @@
 qt_internal_add_plugin(QSchannelBackendPlugin
-    OUTPUT_NAME schannelbackend
+    OUTPUT_NAME qschannelbackend
     CLASS_NAME QSchannelBackend
     PLUGIN_TYPE tls
     DEFAULT_IF WIN32

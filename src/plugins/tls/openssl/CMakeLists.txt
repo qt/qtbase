@@ -1,5 +1,5 @@
 qt_internal_add_plugin(QTlsBackendOpenSSLPlugin
-    OUTPUT_NAME opensslbackend
+    OUTPUT_NAME qopensslbackend
     CLASS_NAME QTlsBackendOpenSSL
     PLUGIN_TYPE tls
     SOURCES
