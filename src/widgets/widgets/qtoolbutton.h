@@ -118,6 +118,7 @@ protected:
     void changeEvent(QEvent *) override;
 
     bool hitButton(const QPoint &pos) const override;
+    void checkStateSet() override;
     void nextCheckState() override;
     virtual void initStyleOption(QStyleOptionToolButton *option) const;
 

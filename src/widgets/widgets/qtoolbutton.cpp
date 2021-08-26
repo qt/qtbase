@@ -963,12 +963,6 @@ void QToolButton::setDefaultAction(QAction *action)
     }
 #endif
     setCheckable(action->isCheckable());
-    if (action->isCheckable()) {
-        connect(this, &QAbstractButton::toggled, this, [this](bool checked) {
-            if (defaultAction())
-                defaultAction()->setChecked(checked);
-        }, Qt::UniqueConnection);
-    }
     setChecked(action->isChecked());
     setEnabled(action->isEnabled());
     if (action->d_func()->fontSet)
@@ -987,7 +981,15 @@ QAction *QToolButton::defaultAction() const
     return d->defaultAction;
 }
 
-
+/*!
+  \reimp
+ */
+void QToolButton::checkStateSet()
+{
+    Q_D(QToolButton);
+    if (d->defaultAction && d->defaultAction->isCheckable())
+        d->defaultAction->setChecked(isChecked());
+}
 
 /*!
   \reimp
