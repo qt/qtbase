@@ -377,6 +377,15 @@
 */
 
 /*!
+    \fn QByteArrayView::isValidUtf8() const
+
+    Returns \c true if this byte array view contains valid UTF-8 encoded data,
+    or \c false otherwise.
+
+    \since 6.3
+*/
+
+/*!
     \fn QByteArrayView::const_iterator QByteArrayView::begin() const
 
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the

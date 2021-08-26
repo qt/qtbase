@@ -51,6 +51,7 @@
 #include "qstringalgorithms_p.h"
 #include "qscopedpointer.h"
 #include "qbytearray_p.h"
+#include "qstringconverter_p.h"
 #include <qdatastream.h>
 #include <qmath.h>
 
@@ -424,6 +425,14 @@ int QtPrivate::compareMemory(QByteArrayView lhs, QByteArrayView rhs)
     // they matched qMin(l1, l2) bytes
     // so the longer one is lexically after the shorter one
     return lhs.size() == rhs.size() ? 0 : lhs.size() > rhs.size() ? 1 : -1;
+}
+
+/*!
+    \internal
+*/
+bool QtPrivate::isValidUtf8(QByteArrayView s) noexcept
+{
+    return QUtf8::isValidUtf8(s).isValidUtf8;
 }
 
 // the CRC table below is created by the following piece of code
@@ -2782,6 +2791,15 @@ bool QByteArray::isLower() const
 
     return true;
 }
+
+/*!
+    \fn QByteArray::isValidUtf8() const
+
+    Returns \c true if this byte array contains valid UTF-8 encoded data,
+    or \c false otherwise.
+
+    \since 6.3
+*/
 
 /*!
     Returns a byte array that contains the first \a len bytes of this byte

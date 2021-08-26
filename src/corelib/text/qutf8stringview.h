@@ -285,6 +285,11 @@ public:
     constexpr void chop(qsizetype n)
     { verify(n); m_size -= n; }
 
+    [[nodiscard]] inline bool isValidUtf8() const noexcept
+    {
+        return QByteArrayView(reinterpret_cast<const char *>(data()), size()).isValidUtf8();
+    }
+
     //
     // STL compatibility API:
     //

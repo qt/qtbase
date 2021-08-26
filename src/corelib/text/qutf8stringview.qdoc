@@ -679,6 +679,15 @@
 */
 
 /*!
+    \fn QUtf8StringView::isValidUtf8() const
+
+    Returns \c true if this string contains valid UTF-8 encoded data,
+    or \c false otherwise.
+
+    \since 6.3
+*/
+
+/*!
     \fn template <typename QStringLike> qToUtf8StringViewIgnoringNull(const QStringLike &s);
     \relates QUtf8StringView
     \internal

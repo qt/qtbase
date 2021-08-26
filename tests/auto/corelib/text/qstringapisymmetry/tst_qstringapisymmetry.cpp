@@ -898,6 +898,19 @@ private Q_SLOTS:
     void indexOf_regexp_QString() { indexOf_contains_lastIndexOf_count_regexp_impl<QString>(); }
     void indexOf_regexp_QStringView_data() { indexOf_contains_lastIndexOf_count_regexp_data(); }
     void indexOf_regexp_QStringView() { indexOf_contains_lastIndexOf_count_regexp_impl<QStringView>(); }
+
+private:
+    void isValidUtf8_data();
+    template<typename String>
+    void isValidUtf8_impl() const;
+
+private Q_SLOTS:
+    void isValidUtf8_QByteArray_data() { isValidUtf8_data(); }
+    void isValidUtf8_QByteArray() { isValidUtf8_impl<QByteArray>(); }
+    void isValidUtf8_QByteArrayView_data() { isValidUtf8_data(); }
+    void isValidUtf8_QByteArrayView() { isValidUtf8_impl<QByteArrayView>(); }
+    void isValidUtf8_QUtf8StringView_data() { isValidUtf8_data(); }
+    void isValidUtf8_QUtf8StringView() { isValidUtf8_impl<QUtf8StringView>(); }
 };
 
 namespace {
@@ -2853,6 +2866,76 @@ void tst_QStringApiSymmetry::indexOf_contains_lastIndexOf_count_regexp_impl() co
         result = s.lastIndexOf(regexp);
         QCOMPARE(result, lastIndexOf);
     }
+}
+
+void tst_QStringApiSymmetry::isValidUtf8_data()
+{
+    QTest::addColumn<QByteArray>("ba");
+    QTest::addColumn<bool>("valid");
+
+    int row = 0;
+    QTest::addRow("valid-%02d", row++) << QByteArray() << true;
+    QTest::addRow("valid-%02d", row++) << QByteArray("ascii") << true;
+    QTest::addRow("valid-%02d", row++)
+            << QByteArray("\xc2\xa2\xe0\xa4\xb9\xf0\x90\x8d\x88") << true; // U+00A2 U+0939 U+10348
+    QTest::addRow("valid-%02d", row++) << QByteArray("\xf4\x8f\xbf\xbf") << true; // U+10FFFF
+
+    row = 0;
+    QTest::addRow("overlong-%02d", row++) << QByteArray("\xc0\x00") << false;
+    QTest::addRow("overlong-%02d", row++) << QByteArray("\xc1\xff") << false;
+    QTest::addRow("overlong-%02d", row++) << QByteArray("\xe0\x00\x00") << false;
+    QTest::addRow("overlong-%02d", row++) << QByteArray("\xe0\xa0\x7f") << false;
+    QTest::addRow("overlong-%02d", row++) << QByteArray("\xf0\x00\x00\x00") << false;
+    QTest::addRow("overlong-%02d", row++) << QByteArray("\xf0\x90\x80\x7f") << false;
+
+    row = 0;
+    QTest::addRow("short-%02d", row++) << QByteArray("\xc2") << false;
+    QTest::addRow("short-%02d", row++) << QByteArray("x\xc2") << false;
+    QTest::addRow("short-%02d", row++) << QByteArray("x\xc2y") << false;
+    QTest::addRow("short-%02d", row++) << QByteArray("\xc2y") << false;
+    QTest::addRow("short-%02d", row++) << QByteArray("\xe0\xa4") << false;
+    QTest::addRow("short-%02d", row++) << QByteArray("x\xe0\xa4") << false;
+    QTest::addRow("short-%02d", row++) << QByteArray("x\xe0\xa4y") << false;
+    QTest::addRow("short-%02d", row++) << QByteArray("\xe0\xa4y") << false;
+    QTest::addRow("short-%02d", row++) << QByteArray("\xe0") << false;
+    QTest::addRow("short-%02d", row++) << QByteArray("x\xe0") << false;
+    QTest::addRow("short-%02d", row++) << QByteArray("x\xe0y") << false;
+    QTest::addRow("short-%02d", row++) << QByteArray("\xe0y") << false;
+    QTest::addRow("short-%02d", row++) << QByteArray("\xf4\x8f\xbf") << false;
+    QTest::addRow("short-%02d", row++) << QByteArray("x\xf4\x8f\xbf") << false;
+    QTest::addRow("short-%02d", row++) << QByteArray("x\xf4\x8f\xbfy") << false;
+    QTest::addRow("short-%02d", row++) << QByteArray("\xf4\x8f\xbfy") << false;
+    QTest::addRow("short-%02d", row++) << QByteArray("\xf4\x8f") << false;
+    QTest::addRow("short-%02d", row++) << QByteArray("x\xf4\x8f") << false;
+    QTest::addRow("short-%02d", row++) << QByteArray("x\xf4\x8fy") << false;
+    QTest::addRow("short-%02d", row++) << QByteArray("\xf4\x8fy") << false;
+    QTest::addRow("short-%02d", row++) << QByteArray("\xf4") << false;
+    QTest::addRow("short-%02d", row++) << QByteArray("x\xf4") << false;
+    QTest::addRow("short-%02d", row++) << QByteArray("x\xf4y") << false;
+    QTest::addRow("short-%02d", row++) << QByteArray("\xf4y") << false;
+
+    row = 0;
+    QTest::addRow("surrogates-%02d", row++) << QByteArray("\xed\x9f\xc0\xee\x80\x7f") << false;
+    QTest::addRow("surrogates-%02d", row++) << QByteArray("\xed\x9f\xc0") << false;
+    QTest::addRow("surrogates-%02d", row++) << QByteArray("\xee\x80\x7f") << false;
+    QTest::addRow("surrogates-%02d", row++) << QByteArray("\xee\x80\x7f\xed\x9f\xc0") << false;
+
+    row = 0;
+    QTest::addRow("other-%02d", row++) << QByteArray("\xf4\x8f\xbf\xc0") << false;
+    QTest::addRow("other-%02d", row++) << QByteArray("\xf7\x80\x80\x80") << false;
+    QTest::addRow("other-%02d", row++) << QByteArray("\xfd\xbf\xbf\xbf\xbf") << false;
+    QTest::addRow("other-%02d", row++) << QByteArray("\xfe\xbf\xbf\xbf\xbf\xbf") << false;
+    QTest::addRow("other-%02d", row++) << QByteArray("\xff\xbf\xbf\xbf\xbf\xbf\xbf") << false;
+    QTest::addRow("other-%02d", row++) << QByteArray("\x80") << false;
+    QTest::addRow("other-%02d", row++) << QByteArray("\xbf") << false;
+}
+
+template<typename String>
+void tst_QStringApiSymmetry::isValidUtf8_impl() const
+{
+    QFETCH(QByteArray, ba);
+    const String string(ba);
+    QTEST(string.isValidUtf8(), "valid");
 }
 
 QTEST_APPLESS_MAIN(tst_QStringApiSymmetry)

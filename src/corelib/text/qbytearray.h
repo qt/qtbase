@@ -200,6 +200,11 @@ public:
     bool isUpper() const;
     bool isLower() const;
 
+    [[nodiscard]] bool isValidUtf8() const noexcept
+    {
+        return QtPrivate::isValidUtf8(qToByteArrayViewIgnoringNull(*this));
+    }
+
     void truncate(qsizetype pos);
     void chop(qsizetype n);
 
