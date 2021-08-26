@@ -40,36 +40,40 @@ using namespace QMakeInternal;
 
 QT_BEGIN_NAMESPACE
 
-static DotNET vsVersionFromString(const char *versionString)
-{
-    struct VSVersionMapping
-    {
-        const char *str;
-        DotNET version;
-    };
-    static VSVersionMapping mapping[] = {
-        { "7.0", NET2002 },
-        { "7.1", NET2003 },
-        { "8.0", NET2005 },
-        { "9.0", NET2008 },
-        { "10.0", NET2010 },
-        { "11.0", NET2012 },
-        { "12.0", NET2013 },
-        { "14.0", NET2015 },
-        { "15.0", NET2017 },
-        { "16.0", NET2019 }
-    };
-    DotNET result = NETUnknown;
-    for (const auto entry : mapping) {
-        if (strcmp(entry.str, versionString) == 0)
-            return entry.version;
-    }
-    return result;
-}
-
 DotNET vsVersionFromString(const ProString &versionString)
 {
-    return vsVersionFromString(versionString.toLatin1().constData());
+    int idx = versionString.indexOf(QLatin1Char('.'));
+    if (idx == -1)
+        return NETUnknown;
+
+    QStringView versionView = versionString.toQStringView();
+    int versionMajor = versionView.left(idx).toInt();
+    int versionMinor = versionView.mid(idx + 1).toInt();
+
+    if (versionMajor == 16)
+        return NET2019;
+    if (versionMajor == 15)
+        return NET2017;
+    if (versionMajor == 14)
+        return NET2015;
+    if (versionMajor == 12)
+        return NET2013;
+    if (versionMajor == 11)
+        return NET2012;
+    if (versionMajor == 10)
+        return NET2010;
+    if (versionMajor == 9)
+        return NET2008;
+    if (versionMajor == 8)
+        return NET2005;
+    if (versionMajor == 7) {
+        if (versionMinor == 0)
+            return NET2002;
+        if (versionMinor == 1)
+            return NET2003;
+    }
+
+    return NETUnknown;
 }
 
 // XML Tags ---------------------------------------------------------
