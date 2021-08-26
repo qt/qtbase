@@ -111,8 +111,8 @@ protected:
 private:
     // idea copied from qcache.h
     NodeHash hash;
-    Node *oldest;
-    Node *newest;
+    Node *firstExpiringNode;
+    Node *lastExpiringNode;
 
     QBasicTimer timer;
 

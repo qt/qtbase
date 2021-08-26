@@ -66,13 +66,14 @@ struct QNetworkAccessCache::Node
     QDateTime timestamp;
     QByteArray key;
 
-    Node *older, *newer;
+    Node *previous; // "previous" nodes expire "previous"ly (before us)
+    Node *next; // "next" nodes expire "next" (after us)
     CacheableObject *object;
 
     int useCount;
 
     Node()
-        : older(nullptr), newer(nullptr), object(nullptr), useCount(0)
+        : previous(nullptr), next(nullptr), object(nullptr), useCount(0)
     { }
 };
 
@@ -102,7 +103,7 @@ void QNetworkAccessCache::CacheableObject::setShareable(bool enable)
 }
 
 QNetworkAccessCache::QNetworkAccessCache()
-    : oldest(nullptr), newest(nullptr)
+    : firstExpiringNode(nullptr), lastExpiringNode(nullptr)
 {
 }
 
@@ -130,7 +131,7 @@ void QNetworkAccessCache::clear()
 
     timer.stop();
 
-    oldest = newest = nullptr;
+    firstExpiringNode = lastExpiringNode = nullptr;
 }
 
 /*!
@@ -143,58 +144,61 @@ void QNetworkAccessCache::linkEntry(const QByteArray &key)
     if (!node)
         return;
 
-    Q_ASSERT(node != oldest && node != newest);
-    Q_ASSERT(node->older == nullptr && node->newer == nullptr);
+    Q_ASSERT(node != firstExpiringNode && node != lastExpiringNode);
+    Q_ASSERT(node->previous == nullptr && node->next == nullptr);
     Q_ASSERT(node->useCount == 0);
 
 
     node->timestamp = QDateTime::currentDateTimeUtc().addSecs(node->object->expiryTimeoutSeconds);
 #ifdef QT_DEBUG
-    qDebug() << "QNetworkAccessCache case trying to insert=" <<QString::fromUtf8(key) << node->timestamp;
-    Node *current = newest;
+    qDebug() << "QNetworkAccessCache case trying to insert=" << QString::fromUtf8(key)
+             << node->timestamp;
+    Node *current = lastExpiringNode;
     while (current) {
-        qDebug() << "QNetworkAccessCache item=" << QString::fromUtf8(current->key) << current->timestamp << (current==newest? "newest":"") <<  (current==oldest? "oldest":"");
-        current = current->older;
+        qDebug() << "QNetworkAccessCache item=" << QString::fromUtf8(current->key)
+                 << current->timestamp << (current == lastExpiringNode ? "[last to expire]" : "")
+                 << (current == firstExpiringNode ? "[next to expire]" : "");
+        current = current->previous;
     }
 #endif
 
-    if (newest) {
-        Q_ASSERT(newest->newer == nullptr);
-        if (newest->timestamp < node->timestamp) {
-            // Insert as new newest.
-            node->older = newest;
-            newest->newer = node;
-            newest = node;
-            Q_ASSERT(newest->newer == nullptr);
+    if (lastExpiringNode) {
+        Q_ASSERT(lastExpiringNode->next == nullptr);
+        if (lastExpiringNode->timestamp < node->timestamp) {
+            // Insert as new last-to-expire node.
+            node->previous = lastExpiringNode;
+            lastExpiringNode->next = node;
+            lastExpiringNode = node;
+            Q_ASSERT(lastExpiringNode->next == nullptr);
         } else {
             // Insert in a sorted way, as different nodes might have had different expiryTimeoutSeconds set.
-            Node *current = newest;
-            while (current->older != nullptr && current->older->timestamp >= node->timestamp) {
-                current = current->older;
+            Node *current = lastExpiringNode;
+            while (current->previous != nullptr && current->previous->timestamp >= node->timestamp) {
+                current = current->previous;
             }
-            node->older = current->older;
-            if (node->older)
-                node->older->newer = node;
-            node->newer = current;
-            current->older = node;
-            if (node->older == nullptr) {
-                oldest = node;
-                Q_ASSERT(oldest->older == nullptr);
+            node->previous = current->previous;
+            if (node->previous)
+                node->previous->next = node;
+            node->next = current;
+            current->previous = node;
+            if (node->previous == nullptr) {
+                firstExpiringNode = node;
+                Q_ASSERT(firstExpiringNode->previous == nullptr);
             }
         }
     } else {
-        // no newest yet
-        newest = node;
+        // no current last-to-expire node
+        lastExpiringNode = node;
     }
-    if (!oldest) {
-        // there are no entries, so this is the oldest one too
-        oldest = node;
+    if (!firstExpiringNode) {
+        // there are no entries, so this is the next-to-expire too
+        firstExpiringNode = node;
     }
 }
 
 /*!
     Removes the entry pointed by \a key from the linked list.
-    Returns \c true if the entry removed was the oldest one.
+    Returns \c true if the entry removed was the next to expire.
  */
 bool QNetworkAccessCache::unlinkEntry(const QByteArray &key)
 {
@@ -202,30 +206,30 @@ bool QNetworkAccessCache::unlinkEntry(const QByteArray &key)
     if (!node)
         return false;
 
-    bool wasOldest = false;
-    if (node == oldest) {
-        oldest = node->newer;
-        wasOldest = true;
+    bool wasFirst = false;
+    if (node == firstExpiringNode) {
+        firstExpiringNode = node->next;
+        wasFirst = true;
     }
-    if (node == newest)
-        newest = node->older;
-    if (node->older)
-        node->older->newer = node->newer;
-    if (node->newer)
-        node->newer->older = node->older;
+    if (node == lastExpiringNode)
+        lastExpiringNode = node->previous;
+    if (node->previous)
+        node->previous->next = node->next;
+    if (node->next)
+        node->next->previous = node->previous;
 
-    node->newer = node->older = nullptr;
-    return wasOldest;
+    node->next = node->previous = nullptr;
+    return wasFirst;
 }
 
 void QNetworkAccessCache::updateTimer()
 {
     timer.stop();
 
-    if (!oldest)
+    if (!firstExpiringNode)
         return;
 
-    qint64 interval = QDateTime::currentDateTimeUtc().msecsTo(oldest->timestamp);
+    qint64 interval = QDateTime::currentDateTimeUtc().msecsTo(firstExpiringNode->timestamp);
     if (interval <= 0) {
         interval = 0;
     }
@@ -254,19 +258,19 @@ void QNetworkAccessCache::timerEvent(QTimerEvent *)
     // expire old items
     const QDateTime now = QDateTime::currentDateTimeUtc();
 
-    while (oldest && oldest->timestamp < now) {
-        Node *next = oldest->newer;
-        oldest->object->dispose();
-        hash.remove(oldest->key); // oldest gets deleted
-        delete oldest;
-        oldest = next;
+    while (firstExpiringNode && firstExpiringNode->timestamp < now) {
+        Node *next = firstExpiringNode->next;
+        firstExpiringNode->object->dispose();
+        hash.remove(firstExpiringNode->key); // `firstExpiringNode` gets deleted
+        delete firstExpiringNode;
+        firstExpiringNode = next;
     }
 
     // fixup the list
-    if (oldest)
-        oldest->older = nullptr;
+    if (firstExpiringNode)
+        firstExpiringNode->previous = nullptr;
     else
-        newest = nullptr;
+        lastExpiringNode = nullptr;
 
     updateTimer();
 }
@@ -323,10 +327,10 @@ QNetworkAccessCache::CacheableObject *QNetworkAccessCache::requestEntryNow(const
     }
 
     // entry not in use, let the caller have it
-    bool wasOldest = unlinkEntry(key);
+    bool wasNext = unlinkEntry(key);
     ++node->useCount;
 
-    if (wasOldest)
+    if (wasNext)
         updateTimer();
     return node->object;
 }
@@ -346,7 +350,7 @@ void QNetworkAccessCache::releaseEntry(const QByteArray &key)
         if (node->object->expires)
             linkEntry(key);
 
-        if (oldest == node)
+        if (firstExpiringNode == node)
             updateTimer();
     }
 }
