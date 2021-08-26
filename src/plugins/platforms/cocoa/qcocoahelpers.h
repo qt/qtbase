@@ -371,6 +371,31 @@ InputMethodQueryResult queryInputMethod(QObject *object, Qt::InputMethodQueries 
 
 // -------------------------------------------------------------------------
 
+struct KeyEvent
+{
+    ulong timestamp = 0;
+    QEvent::Type type = QEvent::None;
+
+    Qt::Key key = Qt::Key_unknown;
+    Qt::KeyboardModifiers modifiers = Qt::NoModifier;
+    QString text;
+    bool isRepeat = false;
+
+    // Scan codes are hardware dependent codes for each key. There is no way to get these
+    // from Carbon or Cocoa, so leave it 0, as documented in QKeyEvent::nativeScanCode().
+    static const quint32 nativeScanCode = 0;
+
+    quint32 nativeVirtualKey = 0;
+    NSEventModifierFlags nativeModifiers = 0;
+
+    KeyEvent(NSEvent *nsevent);
+    bool sendWindowSystemEvent(QWindow *window) const;
+};
+
+QDebug operator<<(QDebug debug, const KeyEvent &e);
+
+// -------------------------------------------------------------------------
+
 QDebug operator<<(QDebug, const NSRange &);
 QDebug operator<<(QDebug, SEL);
 
