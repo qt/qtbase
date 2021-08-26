@@ -389,7 +389,7 @@ static bool isRunning() {
 
         return false;
     }
-    return output.indexOf(" " + g_options.package.toUtf8()) > -1;
+    return output.indexOf(QLatin1String(" " + g_options.package.toUtf8())) > -1;
 }
 
 static bool waitToFinish()
