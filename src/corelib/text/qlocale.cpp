@@ -3868,99 +3868,83 @@ bool QLocaleData::validateChars(QStringView str, NumberMode numMode, QByteArray 
     buff->clear();
     buff->reserve(str.length());
 
+    enum { Whole, Fractional, Exponent } state = Whole;
     const bool scientific = numMode == DoubleScientificMode;
-    bool lastWasE = false;
-    bool lastWasDigit = false;
-    int eCnt = 0;
-    int decPointCnt = 0;
-    bool dec = false;
-    int decDigitCnt = 0;
+    char last = 0;
 
     for (qsizetype i = 0; i < str.size();) {
         const QStringView in = str.mid(i, str.at(i).isHighSurrogate() ? 2 : 1);
         char c = numericToCLocale(in);
 
         if (c >= '0' && c <= '9') {
-            if (numMode != IntegerMode) {
-                // If a double has too many digits after decpt, it shall be Invalid.
-                if (dec && decDigits != -1 && decDigits < ++decDigitCnt)
+            switch (state) {
+            case Whole:
+                // Nothing special to do (unless we want to check grouping sizes).
+                break;
+            case Fractional:
+                // If a double has too many digits in its fractional part it is Invalid.
+                if (decDigits-- == 0)
                     return false;
+                break;
+            case Exponent:
+                if (last < '0' || last > '9') {
+                    // This is the first digit in the exponent (there may have beena '+'
+                    // or '-' in before). If it's a zero, the exponent is zero-padded.
+                    if (c == '0' && (number_options & QLocale::RejectLeadingZeroInExponent))
+                        return false;
+                }
+                break;
             }
 
-            // The only non-digit character after the 'e' can be '+' or '-'.
-            // If a zero is directly after that, then the exponent is zero-padded.
-            if ((number_options & QLocale::RejectLeadingZeroInExponent)
-                && c == '0' && eCnt > 0 && !lastWasDigit) {
-                return false;
-            }
-
-            lastWasDigit = true;
         } else {
             switch (c) {
                 case '.':
-                    if (numMode == IntegerMode) {
-                        // If an integer has a decimal point, it shall be Invalid.
+                    // If an integer has a decimal point, it is Invalid.
+                    // A double can only have one, at the end of its whole-number part.
+                    if (numMode == IntegerMode || state != Whole)
                         return false;
-                    } else {
-                        // If a double has more than one decimal point, it shall be Invalid.
-                        if (++decPointCnt > 1)
-                            return false;
-#if 0
-                        // If a double with no decimal digits has a decimal point, it shall be
-                        // Invalid.
-                        if (decDigits == 0)
-                            return false;
-#endif                  // On second thoughts, it shall be Valid.
+                    // Even when decDigits is 0, we do allow the decimal point to be
+                    // present - just as long as no digits follow it.
 
-                        dec = true;
-                    }
+                    state = Fractional;
                     break;
 
                 case '+':
                 case '-':
-                    if (scientific) {
-                        // If a scientific has a sign that's not at the beginning or after
-                        // an 'e', it shall be Invalid.
-                        if (i != 0 && !lastWasE)
-                            return false;
-                    } else {
-                        // If a non-scientific has a sign that's not at the beginning,
-                        // it shall be Invalid.
-                        if (i != 0)
-                            return false;
-                    }
+                    // A sign can only appear at the start or after the e of scientific:
+                    if (i != 0 && !(scientific && last == 'e'))
+                        return false;
                     break;
 
                 case ',':
-                    //it can only be placed after a digit which is before the decimal point
-                    if ((number_options & QLocale::RejectGroupSeparator) || !lastWasDigit ||
-                            decPointCnt > 0)
+                    // Grouping is only allowed after a digit in the whole-number portion:
+                    if ((number_options & QLocale::RejectGroupSeparator) || state != Whole
+                        || last < '0' || last > '9') {
                         return false;
+                    }
+                    // We could check grouping sizes are correct, but fixup()s are
+                    // probably better off correcting any misplacement instead.
                     break;
 
                 case 'e':
-                    if (scientific) {
-                        // If a scientific has more than one 'e', it shall be Invalid.
-                        if (++eCnt > 1)
-                            return false;
-                        dec = false;
-                    } else {
-                        // If a non-scientific has an 'e', it shall be Invalid.
+                    // Only one e is allowed and only in scientific:
+                    if (!scientific || state == Exponent)
                         return false;
-                    }
+                    state = Exponent;
                     break;
 
                 default:
-                    // If it's not a valid digit, it shall be Invalid.
+                    // Nothing else can validly appear in a number.
+                    // In fact, numericToCLocale() must have returned 0. If anyone changes
+                    // it to return something else, we probably need to handle it here !
+                    Q_ASSERT(!c);
                     return false;
             }
-            lastWasDigit = false;
         }
 
-        lastWasE = c == 'e';
-        if (c != ',')
+        last = c;
+        if (c != ',') // Skip grouping
             buff->append(c);
-
         i += in.size();
     }
 
