@@ -1205,6 +1205,11 @@
     \row    \li c11 \li C11 support is enabled. This option has no effect if
             the compiler does not support C11, or can't select the C standard.
             By default, the compiler default is used.
+    \row    \li c17 \li C17, also known as C18, support is enabled.
+            This option has no effect if the compiler does not support C17, or
+            can't select the C standard.
+            By default, the compiler default is used.
+    \row    \li c18 \li This is an alias for the \c{c17} value.
     \row    \li strict_c \li Disables support for C compiler extensions.
             By default, they are enabled.
     \row    \li c++11 \li C++11 support is enabled. This option has no effect if
