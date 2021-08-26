@@ -354,6 +354,9 @@ function(qt_internal_add_module target)
             # Save the non-sanitized plugin type values for qmake consumption via .pri files.
             set_property(TARGET "${target}"
                          PROPERTY QMAKE_MODULE_PLUGIN_TYPES "${arg_PLUGIN_TYPES}")
+
+            # Export the plugin types.
+            set_property(TARGET ${target} APPEND PROPERTY EXPORT_PROPERTIES MODULE_PLUGIN_TYPES)
         endif()
     endif()
 
