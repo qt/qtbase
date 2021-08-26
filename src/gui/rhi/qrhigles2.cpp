@@ -484,6 +484,8 @@ bool QRhiGles2::create(QRhi::Flags flags)
         } else if (QOpenGLContext *shareContext = qt_gl_global_share_context()) {
             ctx->setShareContext(shareContext);
             ctx->setScreen(shareContext->screen());
+        } else if (maybeWindow) {
+            ctx->setScreen(maybeWindow->screen());
         }
         if (!ctx->create()) {
             qWarning("QRhiGles2: Failed to create context");
