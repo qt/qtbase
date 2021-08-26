@@ -4974,6 +4974,19 @@ QMetaObject::Connection QObject::connectImpl(const QObject *sender, void **signa
     return QObjectPrivate::connectImpl(sender, signal_index, receiver, slot, slotObj, type, types, senderMetaObject);
 }
 
+static void connectWarning(const QObject *sender,
+                           const QMetaObject *senderMetaObject,
+                           const QObject *receiver,
+                           const char *message)
+{
+    const char *senderString = sender ? sender->metaObject()->className()
+                                      : senderMetaObject ? senderMetaObject->className()
+                                      : "Unknown";
+    const char *receiverString = receiver ? receiver->metaObject()->className()
+                                          : "Unknown";
+    qCWarning(lcConnect, "QObject::connect(%s, %s): %s", senderString, receiverString, message);
+}
+
 /*!
     \internal
 
@@ -4986,17 +4999,23 @@ QMetaObject::Connection QObjectPrivate::connectImpl(const QObject *sender, int s
                                              QtPrivate::QSlotObjectBase *slotObj, int type,
                                              const int *types, const QMetaObject *senderMetaObject)
 {
-    if (!sender || !receiver || !slotObj || !senderMetaObject) {
-        const char *senderString = sender ? sender->metaObject()->className()
-                                          : senderMetaObject ? senderMetaObject->className()
-                                          : "Unknown";
-        const char *receiverString = receiver ? receiver->metaObject()->className()
-                                              : "Unknown";
-        qCWarning(lcConnect, "QObject::connect(%s, %s): invalid nullptr parameter", senderString, receiverString);
+    auto connectFailureGuard = qScopeGuard([&]()
+    {
         if (slotObj)
             slotObj->destroyIfLastRef();
+    });
+
+    if (!sender || !receiver || !slotObj || !senderMetaObject) {
+        connectWarning(sender, senderMetaObject, receiver, "invalid nullptr parameter");
         return QMetaObject::Connection();
     }
+
+    if (type & Qt::UniqueConnection && !slot) {
+        connectWarning(sender, senderMetaObject, receiver, "unique connections require a pointer to member function of a QObject subclass");
+        return QMetaObject::Connection();
+    }
+
+    connectFailureGuard.dismiss();
 
     QObject *s = const_cast<QObject *>(sender);
     QObject *r = const_cast<QObject *>(receiver);
