@@ -1,5 +1,5 @@
 qt_internal_add_plugin(QSecureTransportBackendPlugin
-    OUTPUT_NAME securetransportbackend
+    OUTPUT_NAME qsecuretransportbackend
     CLASS_NAME QSecureTransportBackend
     PLUGIN_TYPE tls
     DEFAULT_IF APPLE

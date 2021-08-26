@@ -1,5 +1,5 @@
 qt_internal_add_plugin(QTlsBackendCertOnlyPlugin
-    OUTPUT_NAME certonlybackend
+    OUTPUT_NAME qcertonlybackend
     CLASS_NAME QTlsBackendCertOnly
     PLUGIN_TYPE tls
     DEFAULT_IF NOT QT_FEATURE_securetransport AND NOT (QT_FEATURE_openssl OR QT_FEATURE_openssl_linked) AND NOT QT_FEATURE_schannel
