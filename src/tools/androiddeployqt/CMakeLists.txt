@@ -4,7 +4,10 @@
 ## androiddeployqt App:
 #####################################################################
 
-qt_internal_add_app(androiddeployqt
+qt_get_tool_target_name(target_name androiddeployqt)
+qt_internal_add_tool(${target_name}
+    TARGET_DESCRIPTION "Qt Android Deployment Tool"
+    TOOLS_TARGET Core
     SOURCES
         main.cpp
     DEFINES
@@ -16,7 +19,7 @@ qt_internal_add_app(androiddeployqt
     INCLUDE_DIRECTORIES
         ../shared
 )
-set_target_properties(androiddeployqt PROPERTIES
+set_target_properties(${target_name} PROPERTIES
     WIN32_EXECUTABLE FALSE
 )
 
@@ -26,7 +29,7 @@ set_target_properties(androiddeployqt PROPERTIES
 ## Scopes:
 #####################################################################
 
-qt_internal_extend_target(androiddeployqt CONDITION windows
+qt_internal_extend_target(${target_name} CONDITION windows
     COMPILE_OPTIONS
         -U__STRICT_ANSI__
 )

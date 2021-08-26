@@ -395,7 +395,7 @@ void deleteMissingFiles(const Options &options, const QDir &srcDir, const QDir &
         for (const QFileInfo &src : srcEntries)
             if (dst.fileName() == src.fileName()) {
                 if (dst.isDir())
-                    deleteMissingFiles(options, src.absoluteFilePath(), dst.absoluteFilePath());
+                    deleteMissingFiles(options, src.absoluteDir(), dst.absoluteDir());
                 found = true;
                 break;
             }
@@ -1150,16 +1150,17 @@ void cleanTopFolders(const Options &options, const QDir &srcDir, const QString &
     const auto dirs = srcDir.entryInfoList(QDir::NoDotAndDotDot | QDir::Dirs);
     for (const QFileInfo &dir : dirs) {
         if (dir.fileName() != QLatin1String("libs"))
-            deleteMissingFiles(options, dir.absoluteFilePath(), dstDir + dir.fileName());
+            deleteMissingFiles(options, dir.absoluteDir(), QDir(dstDir + dir.fileName()));
     }
 }
 
 void cleanAndroidFiles(const Options &options)
 {
     if (!options.androidSourceDirectory.isEmpty())
-        cleanTopFolders(options, options.androidSourceDirectory, options.outputDirectory);
+        cleanTopFolders(options, QDir(options.androidSourceDirectory), options.outputDirectory);
 
-    cleanTopFolders(options, options.qtInstallDirectory + QLatin1String("/src/android/templates"), options.outputDirectory);
+    cleanTopFolders(options, QDir(options.qtInstallDirectory + QLatin1String("/src/android/templates")),
+                    options.outputDirectory);
 }
 
 bool copyAndroidTemplate(const Options &options, const QString &androidTemplate, const QString &outDirPrefix = QString())
