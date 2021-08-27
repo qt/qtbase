@@ -42,6 +42,7 @@
 #include <QtCore/qurl.h>
 #include <QtCore/qdebug.h>
 #include <QtCore/private/qcore_mac_p.h>
+#include <QtCore/qscopedvaluerollback.h>
 
 #include <QtGui/qdesktopservices.h>
 
@@ -56,6 +57,7 @@ bool QIOSServices::openUrl(const QUrl &url)
         return false;
     }
 
+    // avoid recursing back into self
     if (url == m_handlingUrl)
         return false;
 
@@ -94,16 +96,12 @@ bool QIOSServices::openDocument(const QUrl &url)
 /* Callback from iOS that the application should handle a URL */
 bool QIOSServices::handleUrl(const QUrl &url)
 {
-    QUrl previouslyHandling = m_handlingUrl;
-    m_handlingUrl = url;
+    QScopedValueRollback<QUrl> rollback(m_handlingUrl, url);
 
     // FIXME: Add platform services callback from QDesktopServices::setUrlHandler
     // so that we can warn the user if calling setUrlHandler without also setting
     // up the matching keys in the Info.plist file (CFBundleURLTypes and friends).
-    bool couldHandle = QDesktopServices::openUrl(url);
-
-    m_handlingUrl = previouslyHandling;
-    return couldHandle;
+    return QDesktopServices::openUrl(url);
 }
 
 QT_END_NAMESPACE
