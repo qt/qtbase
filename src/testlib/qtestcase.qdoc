@@ -149,15 +149,24 @@
 
    \relates QTest
 
-   The QVERIFY_EXCEPTION_THROWN macro executes an \a expression and tries
-   to catch an exception thrown from the \a expression. If the \a expression
-   throws an exception and its type is the same as \a exceptiontype
-   or \a exceptiontype is substitutable with the type of thrown exception
-   (i.e. usually the type of thrown exception is publicly derived
-   from \a exceptiontype) then execution will be continued. If not-substitutable
-   type of exception is thrown or the \a expression doesn't throw an exception
-   at all, then a failure will be recorded in the test log and
-   the test won't be executed further.
+   The QVERIFY_EXCEPTION_THROWN macro executes \a expression
+   and tries to catch an exception thrown from \a expression.
+
+   There are several possible outcomes:
+
+   \list
+   \li If \a expression throws an exception that is either the same as
+   \a exceptiontype or derived from \a exceptiontype, then execution will continue.
+
+   \li Otherwise, if \a expression throws no exception, or the
+   exception thrown derives from \c{std::exception}, then a failure
+   will be recorded in the test log and the macro returns early
+   (from enclosing function).
+
+   \li If the thrown exception derives neither from \c{std::exception} nor from
+   \a exceptiontype, a failure will be recorded in the test log, and the exception is
+   re-thrown. This avoids problems with e.g. pthread cancellation exceptions.
+   \endlist
 
    \note This macro can only be used in a test function that is invoked
    by the test framework.
