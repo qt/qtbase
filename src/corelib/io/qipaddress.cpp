@@ -115,10 +115,8 @@ static bool parseIp4Internal(IPv4Address &address, const char *ptr, bool acceptL
         }
         address |= x;
 
-        if (dotCount == 3 && *endptr != '\0')
-            return false;
-        else if (dotCount == 3 || *endptr == '\0')
-            return true;
+        if (dotCount == 3 || *endptr == '\0')
+            return *endptr == '\0';
         if (*endptr != '.')
             return false;
 

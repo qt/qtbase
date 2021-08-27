@@ -452,7 +452,7 @@ static QVersionNumber from_string(QLatin1String string, qsizetype *suffixIndex)
         seg.append(int(value));
         start = end + 1;
         lastGoodEnd = end;
-    } while (start < endOfString && (end < endOfString && *end == '.'));
+    } while (start < endOfString && end < endOfString && *end == '.');
 
     if (suffixIndex)
         *suffixIndex = lastGoodEnd - string.begin();
