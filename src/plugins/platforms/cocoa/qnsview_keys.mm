@@ -55,7 +55,6 @@
             window = popup->window();
     }
 
-    QBoolBlocker resendKeyEventGuard(m_resendKeyEvent, false);
     // We will send a key event unless the input method sets m_sendKeyEvent to false
     QBoolBlocker sendKeyEventGuard(m_sendKeyEvent, true);
 
@@ -108,9 +107,6 @@
 
             }
         }
-
-        if (m_resendKeyEvent)
-            m_sendKeyEvent = true;
     }
 
     bool accepted = true;
