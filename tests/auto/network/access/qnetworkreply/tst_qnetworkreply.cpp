@@ -453,6 +453,8 @@ private Q_SLOTS:
     void httpAbort();
 
     void closeClientSideConnectionEagerlyQtbug20726();
+    void varyingCacheExpiry_data();
+    void varyingCacheExpiry();
 
     void dontInsertPartialContentIntoTheCache();
 
@@ -7986,6 +7988,110 @@ void tst_QNetworkReply::closeClientSideConnectionEagerlyQtbug20726()
     QCOMPARE(serverNotEagerClientClose.client->state(), QTcpSocket::ConnectedState);
     QCOMPARE(replyNotEager2->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 200);
     QCOMPARE(serverNotEagerClientClose2.client->state(), QTcpSocket::ConnectedState);
+}
+
+void tst_QNetworkReply::varyingCacheExpiry_data()
+{
+    QTest::addColumn<int>("firstExpiry");
+    QTest::addColumn<int>("secondExpiry");
+    QTest::addColumn<int>("thirdExpiry");
+    QTest::addColumn<int>("fourthExpiry");
+
+    // The datatags signify the Keep-Alive time-outs of the successive requests:
+    QTest::newRow("1-2-3-4") << 1 << 2 << 3 << 4;
+    QTest::newRow("4-1-2-3") << 4 << 1 << 2 << 3;
+    QTest::newRow("3-4-1-2") << 3 << 4 << 1 << 2;
+    QTest::newRow("2-3-4-1") << 2 << 3 << 4 << 1;
+    QTest::newRow("1-2-2-1") << 1 << 2 << 2 << 1;
+}
+
+// Test creating a few requests with various expiry timeouts.
+// We do this because the internal QNetworkAccessCache inserts them in sorted
+// order, so make sure it gets it right.
+void tst_QNetworkReply::varyingCacheExpiry()
+{
+    // Local QNAM instance because there may be leftover entries from other
+    // tests. Which wouldn't be a big deal, it would just get in the way of our
+    // pattern
+    QNetworkAccessManager qnam;
+    QFETCH(int, firstExpiry);
+    QFETCH(int, secondExpiry);
+    QFETCH(int, thirdExpiry);
+    QFETCH(int, fourthExpiry);
+
+    int expiryTimes[4] = {
+        firstExpiry,
+        secondExpiry,
+        thirdExpiry,
+        fourthExpiry,
+    };
+
+    // We need multiple servers because we want to have multiple connections
+    // in the QNetworkAccessCache, not to just reuse one connection from the
+    // cache.
+    MiniHttpServer servers[4] = {
+        { httpEmpty200Response },
+        { httpEmpty200Response },
+        { httpEmpty200Response },
+        { httpEmpty200Response },
+    };
+    for (MiniHttpServer &server : servers)
+        server.doClose = false;
+
+    QUrl urls[4] = {
+        u"http://localhost"_qs,
+        u"http://localhost"_qs,
+        u"http://localhost"_qs,
+        u"http://localhost"_qs,
+    };
+    for (int i = 0; i < std::size(urls); ++i)
+        urls[i].setPort(servers[i].serverPort());
+
+    // After the initial request is completed the connection is kept alive
+    // (Keep-Alive). Internally they are added to a sorted linked-list based on
+    // expiry. So, set the requests to be torn down at varying timeouts.
+
+    QNetworkRequest requests[4] = {
+        QNetworkRequest(urls[0]),
+        QNetworkRequest(urls[1]),
+        QNetworkRequest(urls[2]),
+        QNetworkRequest(urls[3]),
+    };
+
+    for (int i = 0; i < 4; ++i) {
+        requests[i].setAttribute(QNetworkRequest::Http2AllowedAttribute,
+                                 QVariant::fromValue(false));
+        requests[i].setAttribute(QNetworkRequest::ConnectionCacheExpiryTimeoutSecondsAttribute,
+                                 expiryTimes[i]);
+    }
+
+    // The server just uses a normal TCP socket and prints out this error when the client
+    // disconnects:
+    for (int i = 0; i < 4; ++i) {
+        QTest::ignoreMessage(QtDebugMsg,
+                             "slotError QAbstractSocket::RemoteHostClosedError "
+                             "\"The remote host closed the connection\"");
+    }
+
+    // Start each request and wait for it to finish before starting the next
+    // one, we must do this because the connections are only added to the expiry
+    // list once finished
+    for (const auto &request : requests) {
+        QNetworkReplyPtr reply(qnam.get(request));
+        QCOMPARE(waitForFinish(reply), Success);
+    }
+
+    int lastExpiry = *std::max_element(std::begin(expiryTimes), std::end(expiryTimes));
+    auto allServersDisconnected = [&servers]() {
+        auto socketDisconnected = [](const MiniHttpServer &s) {
+            return s.client->state() == QAbstractSocket::UnconnectedState;
+        };
+        return std::all_of(std::begin(servers), std::end(servers), socketDisconnected);
+    };
+    // At least +5 seconds due to CI. Completes much faster locally
+    bool success = QTest::qWaitFor(allServersDisconnected, lastExpiry * 1000 + 5000);
+
+    QVERIFY(success);
 }
 
 void tst_QNetworkReply::dontInsertPartialContentIntoTheCache()
