@@ -81,6 +81,11 @@ QT_END_NAMESPACE
 // if not defined in linux/futex.h
 #  define FUTEX_PRIVATE_FLAG        128         // added in v2.6.22
 
+// RISC-V does not supply __NR_futex
+#  ifndef __NR_futex
+#    define __NR_futex __NR_futex_time64
+#  endif
+
 #  if (__has_feature(thread_sanitizer) || defined(__SANITIZE_THREAD__)) && __has_include(<sanitizer/tsan_interface.h>)
 #    include <sanitizer/tsan_interface.h>
 inline void _q_tsan_acquire(void *addr, void *addr2)
