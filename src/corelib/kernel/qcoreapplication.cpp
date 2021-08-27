@@ -1729,15 +1729,21 @@ bool QCoreApplication::compressEvent(QEvent *event, QObject *receiver, QPostEven
     Q_ASSERT(receiver);
     Q_ASSERT(postedEvents);
 
+    auto receiverPostedEvents = receiver->d_func()->postedEvents;
     // compress posted timers to this object.
-    if (event->type() == QEvent::Timer && receiver->d_func()->postedEvents > 0) {
-        int timerId = ((QTimerEvent *) event)->timerId();
-        for (const QPostEvent &e : std::as_const(*postedEvents)) {
-            if (e.receiver == receiver && e.event && e.event->type() == QEvent::Timer
-                && ((QTimerEvent *) e.event)->timerId() == timerId) {
+    if (event->type() == QEvent::Timer && receiverPostedEvents > 0) {
+        int timerId = static_cast<QTimerEvent *>(event)->timerId();
+        auto sameReceiver = [receiver](const QPostEvent &e) { return e.receiver == receiver; };
+        auto it = std::find_if(postedEvents->cbegin(), postedEvents->cend(), sameReceiver);
+        while (receiverPostedEvents > 0 && it != postedEvents->cend()) {
+            if (it->event && it->event->type() == QEvent::Timer
+                && static_cast<QTimerEvent *>(it->event)->timerId() == timerId) {
                 delete event;
                 return true;
             }
+
+            if (--receiverPostedEvents)
+                it = std::find_if(it + 1, postedEvents->cend(), sameReceiver);
         }
         return false;
     }
@@ -1753,7 +1759,7 @@ bool QCoreApplication::compressEvent(QEvent *event, QObject *receiver, QPostEven
         return false;
     }
 
-    if (event->type() == QEvent::Quit && receiver->d_func()->postedEvents > 0) {
+    if (event->type() == QEvent::Quit && receiverPostedEvents > 0) {
         for (const QPostEvent &cur : std::as_const(*postedEvents)) {
             if (cur.receiver != receiver
                     || cur.event == nullptr
