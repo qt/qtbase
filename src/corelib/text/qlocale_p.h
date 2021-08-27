@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -276,8 +276,8 @@ public:
     quint64 stringToUnsLongLong(QStringView str, int base, bool *ok, QLocale::NumberOptions options) const;
 
     // this function is used in QIntValidator (QtGui)
-    Q_CORE_EXPORT static qint64 bytearrayToLongLong(const char *num, int base, bool *ok);
-    static quint64 bytearrayToUnsLongLong(const char *num, int base, bool *ok);
+    Q_CORE_EXPORT static qint64 bytearrayToLongLong(QByteArrayView num, int base, bool *ok);
+    static quint64 bytearrayToUnsLongLong(QByteArrayView num, int base, bool *ok);
 
     bool numberToCLocale(QStringView s, QLocale::NumberOptions number_options,
                          CharBuff *result) const;

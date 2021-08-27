@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Copyright (C) 2012 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Giuseppe D'Angelo <giuseppe.dangelo@kdab.com>
 ** Contact: https://www.qt.io/licensing/
 **
@@ -421,7 +421,7 @@ QValidator::State QIntValidator::validate(QString & input, int&) const
         return Intermediate;
 
     bool ok;
-    qlonglong entered = QLocaleData::bytearrayToLongLong(buff.constData(), 10, &ok);
+    qlonglong entered = QLocaleData::bytearrayToLongLong(buff, 10, &ok);
     if (!ok)
         return Invalid;
 
@@ -456,7 +456,7 @@ void QIntValidator::fixup(QString &input) const
         return;
     }
     bool ok;
-    qlonglong entered = QLocaleData::bytearrayToLongLong(buff.constData(), 10, &ok);
+    qlonglong entered = QLocaleData::bytearrayToLongLong(buff, 10, &ok);
     if (ok)
         input = locale().toString(entered);
 }

@@ -3997,7 +3997,7 @@ qlonglong QLocaleData::stringToLongLong(QStringView str, int base, bool *ok,
         return 0;
     }
 
-    return bytearrayToLongLong(buff.constData(), base, ok);
+    return bytearrayToLongLong(QByteArrayView(buff.constData(), buff.size()), base, ok);
 }
 
 qulonglong QLocaleData::stringToUnsLongLong(QStringView str, int base, bool *ok,
@@ -4010,34 +4010,34 @@ qulonglong QLocaleData::stringToUnsLongLong(QStringView str, int base, bool *ok,
         return 0;
     }
 
-    return bytearrayToUnsLongLong(buff.constData(), base, ok);
+    return bytearrayToUnsLongLong(QByteArrayView(buff.constData(), buff.size()), base, ok);
 }
 
-qlonglong QLocaleData::bytearrayToLongLong(const char *num, int base, bool *ok)
+qlonglong QLocaleData::bytearrayToLongLong(QByteArrayView num, int base, bool *ok)
 {
+    if (num.isEmpty() || num.at(0) == '\0') {
+        if (ok != nullptr)
+            *ok = false;
+        return 0;
+    }
+
     bool _ok;
     const char *endptr;
+    const qlonglong l = qstrntoll(num.data(), num.size(), &endptr, base, &_ok);
 
-    if (*num == '\0') {
+    if (!_ok || endptr == num.data()) {
         if (ok != nullptr)
             *ok = false;
         return 0;
     }
 
-    qlonglong l = qstrtoll(num, &endptr, base, &_ok);
-
-    if (!_ok) {
-        if (ok != nullptr)
-            *ok = false;
-        return 0;
-    }
-
-    if (*endptr != '\0') {
-        while (ascii_isspace(*endptr))
+    const char *const stop = num.end();
+    if (endptr < stop && *endptr != '\0') {
+        while (endptr < stop && ascii_isspace(*endptr))
             ++endptr;
     }
 
-    if (*endptr != '\0') {
+    if (endptr < stop && *endptr != '\0') {
         // we stopped at a non-digit character after converting some digits
         if (ok != nullptr)
             *ok = false;
@@ -4049,24 +4049,31 @@ qlonglong QLocaleData::bytearrayToLongLong(const char *num, int base, bool *ok)
     return l;
 }
 
-qulonglong QLocaleData::bytearrayToUnsLongLong(const char *num, int base, bool *ok)
+qulonglong QLocaleData::bytearrayToUnsLongLong(QByteArrayView num, int base, bool *ok)
 {
-    bool _ok;
-    const char *endptr;
-    qulonglong l = qstrtoull(num, &endptr, base, &_ok);
-
-    if (!_ok) {
+    if (num.isEmpty() || num.at(0) == '\0') {
         if (ok != nullptr)
             *ok = false;
         return 0;
     }
 
-    if (*endptr != '\0') {
-        while (ascii_isspace(*endptr))
+    bool _ok;
+    const char *endptr;
+    const qulonglong l = qstrntoull(num.data(), num.size(), &endptr, base, &_ok);
+
+    if (!_ok || endptr == num.data()) {
+        if (ok != nullptr)
+            *ok = false;
+        return 0;
+    }
+
+    const char *const stop = num.end();
+    if (endptr < stop && *endptr != '\0') {
+        while (endptr < stop && ascii_isspace(*endptr))
             ++endptr;
     }
 
-    if (*endptr != '\0') {
+    if (endptr < stop && *endptr != '\0') {
         if (ok != nullptr)
             *ok = false;
         return 0;
