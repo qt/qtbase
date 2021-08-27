@@ -185,9 +185,16 @@
     QString preeditString = QString::fromNSString(isAttributedString ? [text string] : text);
 
     QList<QInputMethodEvent::Attribute> preeditAttributes;
-    preeditAttributes << QInputMethodEvent::Attribute(
-        QInputMethodEvent::Cursor, selectedRange.location + selectedRange.length, true);
 
+    // The QInputMethodEvent::Cursor specifies that the length
+    // determines whether the cursor is visible or not, but uses
+    // logic opposite of that of native AppKit application, where
+    // the cursor is visible if there's no selection, and hidden
+    // if there's a selection. Instead of passing on the length
+    // directly we need to inverse the logic.
+    const bool showCursor = !selectedRange.length;
+    preeditAttributes << QInputMethodEvent::Attribute(
+        QInputMethodEvent::Cursor, selectedRange.location, showCursor);
 
     // QInputMethodEvent::Selection unfortunately doesn't apply to the
     // preedit text, and QInputMethodEvent::Cursor which does, doesn't
