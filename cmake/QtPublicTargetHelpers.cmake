@@ -306,7 +306,7 @@ function(_qt_internal_set_up_static_runtime_library target)
             set_property(TARGET ${target} PROPERTY
                 MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
         elseif(MINGW)
-            target_link_options(${target} INTERFACE "LINKER:-static")
+            target_link_options(${target} INTERFACE "LINKER:-Bstatic")
         endif()
     endif()
 endfunction()
