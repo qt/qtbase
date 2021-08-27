@@ -416,10 +416,6 @@ qt_internal_set_qt_known_plugins("")
 
 set(QT_KNOWN_MODULES_WITH_TOOLS "" CACHE INTERNAL "Known Qt modules with tools" FORCE)
 
-# Reset syncqt cache variable, to make sure it gets recomputed on reconfiguration, otherwise
-# it might not get installed.
-unset(QT_SYNCQT CACHE)
-
 # For adjusting variables when running tests, we need to know what
 # the correct variable is for separating entries in PATH-alike
 # variables.
