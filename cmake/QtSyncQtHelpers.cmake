@@ -14,11 +14,17 @@ function(qt_ensure_sync_qt)
         return()
     endif()
 
+    get_property(QT_SYNCQT GLOBAL PROPERTY _qt_syncqt)
+    if(NOT "${QT_SYNCQT}" STREQUAL "")
+        set(QT_SYNCQT "${QT_SYNCQT}" PARENT_SCOPE)
+        return()
+    endif()
+
     # When building qtbase, use the source syncqt, otherwise use the installed one.
     set(SYNCQT_FROM_SOURCE "${QtBase_SOURCE_DIR}/libexec/syncqt.pl")
     if(NOT ("${QtBase_SOURCE_DIR}" STREQUAL "") AND EXISTS "${SYNCQT_FROM_SOURCE}")
-        set(QT_SYNCQT "${SYNCQT_FROM_SOURCE}" CACHE FILEPATH "syncqt script")
-        message(STATUS "Using source syncqt found at: ${QT_SYNCQT}")
+        set(syncqt_absolute_path "${SYNCQT_FROM_SOURCE}")
+        message(STATUS "Using source syncqt found at: ${syncqt_absolute_path}")
 
         qt_path_join(syncqt_install_dir ${QT_INSTALL_DIR} ${INSTALL_LIBEXECDIR})
         qt_copy_or_install(PROGRAMS "${SYNCQT_FROM_SOURCE}"
@@ -27,15 +33,16 @@ function(qt_ensure_sync_qt)
         get_filename_component(syncqt_absolute_path
                                "${QT_HOST_PATH}/${QT${PROJECT_VERSION_MAJOR}_HOST_INFO_LIBEXECDIR}/syncqt.pl"
                                ABSOLUTE)
-        set(QT_SYNCQT "${syncqt_absolute_path}" CACHE FILEPATH "syncqt script")
-        message(STATUS "Using host syncqt found at: ${QT_SYNCQT}")
+        message(STATUS "Using host syncqt found at: ${syncqt_absolute_path}")
     else()
         get_filename_component(syncqt_absolute_path
                                "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}/${INSTALL_LIBEXECDIR}/syncqt.pl"
                                ABSOLUTE)
-        set(QT_SYNCQT "${syncqt_absolute_path}" CACHE FILEPATH "syncqt script")
-        message(STATUS "Using installed syncqt found at: ${QT_SYNCQT}")
+        message(STATUS "Using installed syncqt found at: ${syncqt_absolute_path}")
     endif()
+
+    set(QT_SYNCQT "${syncqt_absolute_path}" PARENT_SCOPE)
+    set_property(GLOBAL PROPERTY _qt_syncqt "${syncqt_absolute_path}")
 endfunction()
 
 function(qt_install_injections target build_dir install_dir)
