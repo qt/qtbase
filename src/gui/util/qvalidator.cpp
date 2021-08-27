@@ -591,8 +591,8 @@ public:
     that accepts any double.
 */
 
-QDoubleValidator::QDoubleValidator(QObject * parent)
-    : QDoubleValidator(-HUGE_VAL, HUGE_VAL, 1000, parent)
+QDoubleValidator::QDoubleValidator(QObject *parent)
+    : QDoubleValidator(-HUGE_VAL, HUGE_VAL, -1, parent)
 {
 }
 
@@ -801,6 +801,9 @@ void QDoubleValidatorPrivate::fixupWithLocale(QString &input, QLocaleData::Numbe
     Sets the validator to accept doubles from \a minimum to \a maximum
     inclusive, with at most \a decimals digits after the decimal
     point.
+
+    \note Setting the number of decimals to -1 effectively sets it to unlimited.
+    This is also the value used by a default-constructed validator.
 */
 
 void QDoubleValidator::setRange(double minimum, double maximum, int decimals)
@@ -825,6 +828,17 @@ void QDoubleValidator::setRange(double minimum, double maximum, int decimals)
     }
     if (rangeChanged)
         emit changed();
+}
+
+/*!
+    \overload
+
+    Sets the validator to accept doubles from \a minimum to \a maximum
+    inclusive without changing the number of digits after the decimal point.
+*/
+void QDoubleValidator::setRange(double minimum, double maximum)
+{
+    setRange(minimum, maximum, decimals());
 }
 
 /*!
@@ -860,7 +874,8 @@ void QDoubleValidator::setTop(double top)
     \property QDoubleValidator::decimals
     \brief the validator's maximum number of digits after the decimal point
 
-    By default, this property contains a value of 1000.
+    By default, this property contains a value of -1, which means any number
+    of digits is accepted.
 
     \sa setRange()
 */

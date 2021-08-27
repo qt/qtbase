@@ -47,6 +47,8 @@ private slots:
     void notifySignals();
     void fixup();
     void fixup_data();
+    void setRangeOverloads();
+    void setRangeOverloads_data();
 };
 
 Q_DECLARE_METATYPE(QValidator::State);
@@ -162,6 +164,10 @@ void tst_QDoubleValidator::validate_data()
     QTest::newRow("data52")  << "C" << 100.0 << 200.0 << 4 << QString("999.9999") << ITM << ITM;
     QTest::newRow("data53")  << "C" << 0.0 << 2.0 << 2 << QString("9.9999") << INV << INV;
     QTest::newRow("data54")  << "C" << 100.0 << 200.0 << 4 << QString("9999.9999") << ITM << INV;
+    QTest::newRow("data55") << "C" << 1229.0 << 1231.0 << -1 << QString("123E") << ITM << INV;
+    QTest::newRow("data56") << "C" << 1229.0 << 1231.0 << -1 << QString("123E+") << ITM << INV;
+    QTest::newRow("data57") << "C" << 1229.0 << 1231.0 << -1 << QString("123E+1") << ACC << INV;
+    QTest::newRow("data58") << "C" << 0.0 << 100.0 << -1 << QString("0.0") << ACC << ACC;
 
     QTest::newRow("data_de0")  << "de" << 0.0 << 100.0 << 1 << QString("50,0") << ACC << ACC;
     QTest::newRow("data_de1")  << "de" << 00.0 << 100.0 << 1 << QString("500,0") << ITM << ITM;
@@ -252,9 +258,9 @@ void tst_QDoubleValidator::validate()
 
     QDoubleValidator dv(minimum, maximum, decimals, 0);
     int dummy;
-    QCOMPARE((int)dv.validate(value, dummy), (int)scientific_state);
+    QCOMPARE(dv.validate(value, dummy), scientific_state);
     dv.setNotation(QDoubleValidator::StandardNotation);
-    QCOMPARE((int)dv.validate(value, dummy), (int)standard_state);
+    QCOMPARE(dv.validate(value, dummy), standard_state);
 }
 
 void tst_QDoubleValidator::zeroPaddedExponent_data()
@@ -308,7 +314,7 @@ void tst_QDoubleValidator::zeroPaddedExponent()
     QDoubleValidator dv(minimum, maximum, decimals, 0);
     dv.setLocale(locale);
     int dummy;
-    QCOMPARE((int)dv.validate(value, dummy), (int)state);
+    QCOMPARE(dv.validate(value, dummy), state);
 }
 
 void tst_QDoubleValidator::notifySignals()
@@ -324,6 +330,10 @@ void tst_QDoubleValidator::notifySignals()
     qRegisterMetaType<QDoubleValidator::Notation>("QDoubleValidator::Notation");
     QSignalSpy notSpy(&dv, SIGNAL(notationChanged(QDoubleValidator::Notation)));
 
+    QCOMPARE(dv.bottom(), 0.1);
+    QCOMPARE(dv.top(), 0.9);
+    QCOMPARE(dv.decimals(), 10);
+
     dv.setTop(0.8);
     QCOMPARE(topSpy.count(), 1);
     QCOMPARE(changedSpy.count(), 1);
@@ -336,11 +346,11 @@ void tst_QDoubleValidator::notifySignals()
     dv.setRange(0.2, 0.7);
     QCOMPARE(topSpy.count(), 2);
     QCOMPARE(bottomSpy.count(), 1);
-    QCOMPARE(decSpy.count(), 1);
+    QCOMPARE(decSpy.count(), 0);
     QCOMPARE(changedSpy.count(), 3);
     QCOMPARE(dv.bottom(), 0.2);
     QCOMPARE(dv.top(), 0.7);
-    QCOMPARE(dv.decimals(), 0);
+    QCOMPARE(dv.decimals(), 10);
 
     dv.setRange(0.3, 0.7);
     QCOMPARE(topSpy.count(), 2);
@@ -348,7 +358,7 @@ void tst_QDoubleValidator::notifySignals()
     QCOMPARE(changedSpy.count(), 4);
     QCOMPARE(dv.bottom(), 0.3);
     QCOMPARE(dv.top(), 0.7);
-    QCOMPARE(dv.decimals(), 0);
+    QCOMPARE(dv.decimals(), 10);
 
     dv.setRange(0.4, 0.6);
     QCOMPARE(topSpy.count(), 3);
@@ -356,18 +366,18 @@ void tst_QDoubleValidator::notifySignals()
     QCOMPARE(changedSpy.count(), 5);
     QCOMPARE(dv.bottom(), 0.4);
     QCOMPARE(dv.top(), 0.6);
-    QCOMPARE(dv.decimals(), 0);
-
-    dv.setDecimals(10);
-    QCOMPARE(decSpy.count(), 2);
-    QCOMPARE(changedSpy.count(), 6);
     QCOMPARE(dv.decimals(), 10);
+
+    dv.setDecimals(5);
+    QCOMPARE(decSpy.count(), 1);
+    QCOMPARE(changedSpy.count(), 6);
+    QCOMPARE(dv.decimals(), 5);
 
 
     dv.setRange(0.4, 0.6, 100);
     QCOMPARE(topSpy.count(), 3);
     QCOMPARE(bottomSpy.count(), 3);
-    QCOMPARE(decSpy.count(), 3);
+    QCOMPARE(decSpy.count(), 2);
     QCOMPARE(changedSpy.count(), 7);
     QCOMPARE(dv.bottom(), 0.4);
     QCOMPARE(dv.top(), 0.6);
@@ -381,7 +391,7 @@ void tst_QDoubleValidator::notifySignals()
     dv.setRange(dv.bottom(), dv.top(), dv.decimals());
     QCOMPARE(topSpy.count(), 3);
     QCOMPARE(bottomSpy.count(), 3);
-    QCOMPARE(decSpy.count(), 3);
+    QCOMPARE(decSpy.count(), 2);
     QCOMPARE(changedSpy.count(), 8);
 
     dv.setNotation(dv.notation());
@@ -611,6 +621,69 @@ void tst_QDoubleValidator::fixup_data()
     QTest::newRow("hi scientific negative no fractional and exponent")
             << "hi" << QDoubleValidator::ScientificNotation << -1 << "-1,234,56"
             << "-1.23456E+05";
+}
+
+void tst_QDoubleValidator::setRangeOverloads()
+{
+    QFETCH(QDoubleValidator::Notation, notation);
+    QFETCH(int, initialDecimals);
+    QFETCH(double, minimum);
+    QFETCH(double, maximum);
+    QFETCH(int, updatedDecimals);
+    QFETCH(QString, input);
+    QFETCH(QValidator::State, initDecimalsState);
+    QFETCH(QValidator::State, updDecimalsState);
+
+    QDoubleValidator dv;
+    dv.setLocale(QLocale::C);
+    dv.setNotation(notation);
+    dv.setDecimals(initialDecimals);
+    dv.setRange(minimum, maximum);
+    QCOMPARE(dv.decimals(), initialDecimals);
+
+    int dummy;
+    QCOMPARE(dv.validate(input, dummy), initDecimalsState);
+
+    dv.setRange(minimum, maximum, updatedDecimals);
+    QCOMPARE(dv.decimals(), updatedDecimals);
+    QCOMPARE(dv.validate(input, dummy), updDecimalsState);
+}
+
+void tst_QDoubleValidator::setRangeOverloads_data()
+{
+    QTest::addColumn<QDoubleValidator::Notation>("notation");
+    QTest::addColumn<int>("initialDecimals");
+    QTest::addColumn<double>("minimum");
+    QTest::addColumn<double>("maximum");
+    QTest::addColumn<int>("updatedDecimals");
+    QTest::addColumn<QString>("input");
+    QTest::addColumn<QValidator::State>("initDecimalsState");
+    QTest::addColumn<QValidator::State>("updDecimalsState");
+
+    QTest::newRow("scientific, 0 digits after point")
+            << QDoubleValidator::ScientificNotation << -1 << -100.0 << 100.0 << 0
+            << QString("1e1") << ACC << ACC;
+    QTest::newRow("scientific, 1 digits after point")
+            << QDoubleValidator::ScientificNotation << -1 << -100.0 << 100.0 << 0
+            << QString("1.2e1") << ACC << INV;
+    QTest::newRow("scientific, 3 digits after point, not in range")
+            << QDoubleValidator::ScientificNotation << 3 << -100.0 << 100.0 << 1
+            << QString("10.234e-1") << ACC << INV;
+    QTest::newRow("scientific, 3 digits after point, not in range")
+            << QDoubleValidator::ScientificNotation << 3 << -100.0 << 100.0 << 5
+            << QString("1.234e3") << ITM << ITM;
+    QTest::newRow("standard, 0 digits after point")
+            << QDoubleValidator::StandardNotation << -1 << -100.0 << 100.0 << 0
+            << QString("12.") << ACC << ACC;
+    QTest::newRow("standard, 2 digits after point")
+            << QDoubleValidator::StandardNotation << -1 << -100.0 << 100.0 << 1
+            << QString("12.34") << ACC << INV;
+    QTest::newRow("standard, 2 digits after point, not in range")
+            << QDoubleValidator::StandardNotation << -1 << -100.0 << 100.0 << 1
+            << QString("123.45") << ITM << INV;
+    QTest::newRow("standard, 5 digits after point")
+            << QDoubleValidator::StandardNotation << 5 << -100.0 << 100.0 << 3
+            << QString("12.34567") << ACC << INV;
 }
 
 void tst_QDoubleValidator::validateIntEquiv_data()
