@@ -123,8 +123,38 @@
 - (void)insertNewline:(id)sender
 {
     Q_UNUSED(sender);
-    qCDebug(lcQpaKeys) << "Inserting newline";
-    m_resendKeyEvent = true;
+
+    // Depending on the input method, pressing enter may
+    // result in simply dismissing the input method editor,
+    // without confirming the composition. In other cases
+    // it may confirm the composition as well. And in some
+    // cases the IME will produce an explicit new line, which
+    // brings us here.
+
+    // Semantically, the input method has asked us to insert
+    // a newline, and we should do so via an QInputMethodEvent,
+    // either directly or via [self insertText:@"\r"]. This is
+    // also how NSTextView handles the command. But, if we did,
+    // we would bypass all the code in Qt (and clients) that
+    // assume that pressing the return key results in a key
+    // event, for example the QLineEdit::returnPressed logic.
+    // To ensure that clients will still see the Qt::Key_Return
+    // key event, we send it as a normal key event.
+
+    // But, we can not fall back to handleKeyEvent for this,
+    // as the original key event may have text that reflects
+    // the combination of the inserted text and the newline,
+    // e.g. "~\r". We have already inserted the composition,
+    // so we need to follow up with a single newline event.
+
+    KeyEvent newlineEvent(NSApp.currentEvent);
+    newlineEvent.key = Qt::Key_Return;
+    newlineEvent.text = QLatin1Char(kReturnCharCode);
+    newlineEvent.nativeVirtualKey = kVK_Return;
+    qCDebug(lcQpaKeys) << "Inserting newline via" << newlineEvent;
+    newlineEvent.sendWindowSystemEvent(m_platformWindow->window());
+
+    m_sendKeyEvent = false;
 }
 
 // ------------- Text composition -------------

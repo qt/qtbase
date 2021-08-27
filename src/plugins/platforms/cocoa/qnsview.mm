@@ -135,7 +135,6 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSViewMouseMoveHelper);
     // Keys
     bool m_lastKeyDead;
     bool m_sendKeyEvent;
-    bool m_resendKeyEvent;
     NSEvent *m_currentlyInterpretedKeyEvent;
     QSet<quint32> m_acceptedKeyDowns;
 
@@ -162,7 +161,6 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSViewMouseMoveHelper);
 
         m_lastKeyDead = false;
         m_sendKeyEvent = false;
-        m_resendKeyEvent = false;
         m_currentlyInterpretedKeyEvent = nil;
     }
     return self;
