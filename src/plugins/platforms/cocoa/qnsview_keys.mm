@@ -55,7 +55,7 @@
             window = popup->window();
     }
 
-    // We will send a key event unless the input method sets m_sendKeyEvent to false
+    // We will send a key event unless the input method handles it
     QBoolBlocker sendKeyEventGuard(m_sendKeyEvent, true);
 
     if (keyEvent.type == QEvent::KeyPress) {
@@ -84,8 +84,10 @@
                 const bool ignoreHidden = (hints & Qt::ImhHiddenText) && !isDeadKey && !m_lastKeyDead;
 
                 if (!(hints & Qt::ImhDigitsOnly || hints & Qt::ImhFormattedNumbersOnly || ignoreHidden)) {
-                    // Pass the key event to the input method. Note that m_sendKeyEvent may be set
-                    // to false during this call
+                    // Pass the key event to the input method, and assume it handles the event,
+                    // unless we explicit set m_sendKeyEvent to deliver as a normal key event.
+                    m_sendKeyEvent = false;
+
                     qCDebug(lcQpaKeys) << "Interpreting key event for focus object" << focusObject;
                     m_currentlyInterpretedKeyEvent = nsevent;
                     [self interpretKeyEvents:@[nsevent]];

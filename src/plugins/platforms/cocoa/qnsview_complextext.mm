@@ -68,7 +68,7 @@
     qCDebug(lcQpaKeys).nospace() << "Inserting \"" << text << "\""
         << ", replacing range " << replacementRange;
 
-    if (m_sendKeyEvent && m_composingText.isEmpty()) {
+    if (m_composingText.isEmpty()) {
         // The input method may have transformed the incoming key event
         // to text that doesn't match what the original key event would
         // have produced, for example when 'Pinyin - Simplified' does smart
@@ -83,6 +83,7 @@
             // We do not send input method events for simple text input,
             // and instead let handleKeyEvent send the key event.
             qCDebug(lcQpaKeys) << "Ignoring text insertion for simple text";
+            m_sendKeyEvent = true;
             return;
         }
     }
@@ -111,9 +112,6 @@
         }
 
         QCoreApplication::sendEvent(focusObject, &inputMethodEvent);
-
-        // prevent handleKeyEvent from sending a key event
-        m_sendKeyEvent = false;
     }
 
     m_composingText.clear();
@@ -153,8 +151,6 @@
     newlineEvent.nativeVirtualKey = kVK_Return;
     qCDebug(lcQpaKeys) << "Inserting newline via" << newlineEvent;
     newlineEvent.sendWindowSystemEvent(m_platformWindow->window());
-
-    m_sendKeyEvent = false;
 }
 
 // ------------- Text composition -------------
@@ -281,8 +277,6 @@
                 event.setCommitString(QString(), replaceFrom, replaceLength);
             }
             QCoreApplication::sendEvent(focusObject, &event);
-            // prevent handleKeyEvent from sending a key event
-            m_sendKeyEvent = false;
         }
     }
 }
@@ -388,8 +382,15 @@
 
 - (void)doCommandBySelector:(SEL)selector
 {
+    // Note: if the selector cannot be invoked, then doCommandBySelector:
+    // should not pass this message up the responder chain (nor should it
+    // call super, as the NSResponder base class would in that case pass
+    // the message up the responder chain, which we don't want). We will
+    // pass the originating key event up the responder chain if applicable.
+
     qCDebug(lcQpaKeys) << "Trying to perform command" << selector;
-    [self tryToPerform:selector with:self];
+    if (![self tryToPerform:selector with:self])
+        m_sendKeyEvent = true;
 }
 
 // ------------- Various text properties -------------
