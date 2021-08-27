@@ -98,7 +98,6 @@ public:
 
     void addEntry(const QByteArray &key, CacheableObject *entry, qint64 connectionCacheExpiryTimeoutSeconds = -1);
     bool hasEntry(const QByteArray &key) const;
-    bool requestEntry(const QByteArray &key, QObject *target, const char *member);
     CacheableObject *requestEntryNow(const QByteArray &key);
     void releaseEntry(const QByteArray &key);
     void removeEntry(const QByteArray &key);

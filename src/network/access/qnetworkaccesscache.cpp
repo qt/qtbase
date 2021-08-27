@@ -64,7 +64,6 @@ namespace {
 struct QNetworkAccessCache::Node
 {
     QDateTime timestamp;
-    std::vector<Receiver> receiverQueue;
     QByteArray key;
 
     Node *older, *newer;
@@ -305,30 +304,6 @@ bool QNetworkAccessCache::hasEntry(const QByteArray &key) const
     return hash.contains(key);
 }
 
-bool QNetworkAccessCache::requestEntry(const QByteArray &key, QObject *target, const char *member)
-{
-    Node *node = hash.value(key);
-    if (!node)
-        return false;
-
-    if (node->useCount > 0 && !node->object->shareable) {
-        // object is not shareable and is in use
-        // queue for later use
-        Q_ASSERT(node->older == nullptr && node->newer == nullptr);
-        node->receiverQueue.push_back({target, member});
-
-        // request queued
-        return true;
-    } else {
-        // node not in use or is shareable
-        if (unlinkEntry(key))
-            updateTimer();
-
-        ++node->useCount;
-        return emitEntryReady(node, target, member);
-    }
-}
-
 QNetworkAccessCache::CacheableObject *QNetworkAccessCache::requestEntryNow(const QByteArray &key)
 {
     Node *node = hash.value(key);
@@ -363,22 +338,6 @@ void QNetworkAccessCache::releaseEntry(const QByteArray &key)
     }
 
     Q_ASSERT(node->useCount > 0);
-
-    // are there other objects waiting?
-    const auto objectStillExists = [](const Receiver &r) { return !r.object.isNull(); };
-
-    auto &queue = node->receiverQueue;
-    auto qit = std::find_if(queue.begin(), queue.end(), objectStillExists);
-
-    const Receiver receiver = qit == queue.end() ? Receiver{} : std::move(*qit++) ;
-
-    queue.erase(queue.begin(), qit);
-
-    if (receiver.object) {
-        // queue another activation
-        emitEntryReady(node, receiver.object, receiver.member);
-        return;
-    }
 
     if (!--node->useCount) {
         // no objects waiting; add it back to the expiry list
