@@ -228,7 +228,7 @@ if(QT_USE_CCACHE)
         set(CMAKE_OBJC_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
         set(CMAKE_OBJCXX_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
     else()
-        message(WARNING "Ccache use was requested, but the program was not found.")
+        message(FATAL_ERROR "Ccache use was requested, but the program was not found.")
     endif()
 endif()
 
