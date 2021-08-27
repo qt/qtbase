@@ -435,17 +435,47 @@
     }
 }
 
+/*
+    Returns an attributed string derived from the given range
+    in the underlying focus object's text storage.
+
+    Input methods may call this with a proposed range that is
+    out of bounds. For example, the InkWell text input service
+    may ask for the contents of the text input client that extends
+    beyond the document's range. To remedy this we always compute
+    the intersection between the proposed range and the available
+    text.
+
+    If the intersection is completely outside of the available text
+    this method returns nil.
+*/
 - (NSAttributedString *)attributedSubstringForProposedRange:(NSRange)range actualRange:(NSRangePointer)actualRange
 {
-    Q_UNUSED(actualRange);
-
     QObject *focusObject = m_platformWindow->window()->focusObject();
-    if (auto queryResult = queryInputMethod(focusObject, Qt::ImCurrentSelection)) {
-        QString selectedText = queryResult.value(Qt::ImCurrentSelection).toString();
-        if (selectedText.isEmpty())
+    if (auto queryResult = queryInputMethod(focusObject,
+            Qt::ImAbsolutePosition | Qt::ImTextBeforeCursor | Qt::ImTextAfterCursor)) {
+        const int absoluteCursorPosition = queryResult.value(Qt::ImAbsolutePosition).toInt();
+        const QString textBeforeCursor = queryResult.value(Qt::ImTextBeforeCursor).toString();
+        const QString textAfterCursor = queryResult.value(Qt::ImTextAfterCursor).toString();
+
+        // The documentation doesn't say whether the marked text should be included
+        // in the available text, but observing NSTextView shows that this is the
+        // case, so we follow suit.
+        const QString availableText = textBeforeCursor + m_composingText + textAfterCursor;
+        const NSRange availableRange = NSMakeRange(absoluteCursorPosition - textBeforeCursor.length(),
+                                  availableText.length());
+
+        const NSRange intersectedRange = NSIntersectionRange(range, availableRange);
+        if (actualRange)
+            *actualRange = intersectedRange;
+
+        if (!intersectedRange.length)
             return nil;
 
-        NSString *substring = QStringView(selectedText).mid(range.location, range.length).toNSString();
+        NSString *substring = QStringView(availableText).mid(
+            intersectedRange.location - availableRange.location,
+            intersectedRange.length).toNSString();
+
         return [[[NSAttributedString alloc] initWithString:substring] autorelease];
 
     } else {
