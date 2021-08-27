@@ -7971,7 +7971,10 @@ void tst_QNetworkReply::closeClientSideConnectionEagerlyQtbug20726()
     QNetworkRequest request(url);
     request.setAttribute(QNetworkRequest::ConnectionCacheExpiryTimeoutSecondsAttribute, 0);
     QNetworkReplyPtr reply(manager.get(request));
-    qDebug() << reply->request().url() << replyNotEager->request().url();
+    // The server just uses a normal TCP socket and prints out this error when the client disconnects:
+    QTest::ignoreMessage(QtDebugMsg,
+                         "slotError QAbstractSocket::RemoteHostClosedError "
+                         "\"The remote host closed the connection\"");
     QCOMPARE(waitForFinish(reply), Success);
     QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 200);
     // Socket from server to QNAM still connected?
