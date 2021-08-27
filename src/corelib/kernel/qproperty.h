@@ -43,6 +43,8 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/qshareddata.h>
 #include <QtCore/qstring.h>
+#include <QtCore/qbindingstorage.h>
+
 #include <type_traits>
 
 #include <QtCore/qpropertyprivate.h>
@@ -934,68 +936,6 @@ public:
         return aliasedProperty() != nullptr;
     }
 };
-
-namespace QtPrivate {
-
-struct BindingEvaluationState;
-struct CompatPropertySafePoint;
-}
-
-struct QBindingStatus
-{
-    QtPrivate::BindingEvaluationState *currentlyEvaluatingBinding = nullptr;
-    QtPrivate::CompatPropertySafePoint *currentCompatProperty = nullptr;
-    Qt::HANDLE threadId = nullptr;
-    QPropertyDelayedNotifications *groupUpdateData = nullptr;
-};
-
-
-struct QBindingStorageData;
-class Q_CORE_EXPORT QBindingStorage
-{
-    mutable QBindingStorageData *d = nullptr;
-    QBindingStatus *bindingStatus = nullptr;
-
-    template<typename Class, typename T, auto Offset, auto Setter, auto Signal, auto Getter>
-    friend class QObjectCompatProperty;
-    friend class QObjectPrivate;
-    friend class QtPrivate::QPropertyBindingData;
-public:
-    QBindingStorage();
-    ~QBindingStorage();
-
-    bool isEmpty() { return !d; }
-
-    void registerDependency(const QUntypedPropertyData *data) const
-    {
-        if (!bindingStatus->currentlyEvaluatingBinding)
-            return;
-        registerDependency_helper(data);
-    }
-    QtPrivate::QPropertyBindingData *bindingData(const QUntypedPropertyData *data) const
-    {
-        if (!d)
-            return nullptr;
-        return bindingData_helper(data);
-    }
-    // ### Qt 7: remove unused BIC shim
-    void maybeUpdateBindingAndRegister(const QUntypedPropertyData *data) const { registerDependency(data); }
-
-    QtPrivate::QPropertyBindingData *bindingData(QUntypedPropertyData *data, bool create)
-    {
-        if (!d && !create)
-            return nullptr;
-        return bindingData_helper(data, create);
-    }
-private:
-    void clear();
-    void registerDependency_helper(const QUntypedPropertyData *data) const;
-    // ### Unused, but keep for BC
-    void maybeUpdateBindingAndRegister_helper(const QUntypedPropertyData *data) const;
-    QtPrivate::QPropertyBindingData *bindingData_helper(const QUntypedPropertyData *data) const;
-    QtPrivate::QPropertyBindingData *bindingData_helper(QUntypedPropertyData *data, bool create);
-};
-
 
 template<typename Class, typename T, auto Offset, auto Signal = nullptr>
 class QObjectBindableProperty : public QPropertyData<T>
