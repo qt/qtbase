@@ -39,7 +39,7 @@
 
 #include "qnetworkaccesscache_p.h"
 #include "QtCore/qpointer.h"
-#include "QtCore/qdatetime.h"
+#include "QtCore/qdeadlinetimer.h"
 #include "qnetworkaccessmanager_p.h"
 #include "qnetworkreply_p.h"
 #include "qnetworkrequest.h"
@@ -65,7 +65,7 @@ namespace {
 // idea copied from qcache.h
 struct QNetworkAccessCache::Node
 {
-    QDateTime timestamp;
+    QDeadlineTimer timer;
     QByteArray key;
 
     Node *previous; // "previous" nodes expire "previous"ly (before us)
@@ -146,22 +146,23 @@ void QNetworkAccessCache::linkEntry(const QByteArray &key)
     Q_ASSERT(node->useCount == 0);
 
 
-    node->timestamp = QDateTime::currentDateTimeUtc().addSecs(node->object->expiryTimeoutSeconds);
+    node->timer.setPreciseRemainingTime(node->object->expiryTimeoutSeconds);
 #ifdef DEBUG_ACCESSCACHE
     qDebug() << "QNetworkAccessCache case trying to insert=" << QString::fromUtf8(key)
-             << node->timestamp;
+             << node->timer.remainingTime() << "milliseconds";
     Node *current = lastExpiringNode;
     while (current) {
         qDebug() << "QNetworkAccessCache item=" << QString::fromUtf8(current->key)
-                 << current->timestamp << (current == lastExpiringNode ? "[last to expire]" : "")
-                 << (current == firstExpiringNode ? "[next to expire]" : "");
+                 << current->timer.remainingTime() << "milliseconds"
+                 << (current == lastExpiringNode ? "[last to expire]" : "")
+                 << (current == firstExpiringNode ? "[first to expire]" : "");
         current = current->previous;
     }
 #endif
 
     if (lastExpiringNode) {
         Q_ASSERT(lastExpiringNode->next == nullptr);
-        if (lastExpiringNode->timestamp < node->timestamp) {
+        if (lastExpiringNode->timer < node->timer) {
             // Insert as new last-to-expire node.
             node->previous = lastExpiringNode;
             lastExpiringNode->next = node;
@@ -170,7 +171,7 @@ void QNetworkAccessCache::linkEntry(const QByteArray &key)
         } else {
             // Insert in a sorted way, as different nodes might have had different expiryTimeoutSeconds set.
             Node *current = lastExpiringNode;
-            while (current->previous != nullptr && current->previous->timestamp >= node->timestamp) {
+            while (current->previous != nullptr && current->previous->timer >= node->timer) {
                 current = current->previous;
             }
             node->previous = current->previous;
@@ -226,7 +227,7 @@ void QNetworkAccessCache::updateTimer()
     if (!firstExpiringNode)
         return;
 
-    qint64 interval = QDateTime::currentDateTimeUtc().msecsTo(firstExpiringNode->timestamp);
+    qint64 interval = firstExpiringNode->timer.remainingTime();
     if (interval <= 0) {
         interval = 0;
     }
@@ -252,10 +253,7 @@ bool QNetworkAccessCache::emitEntryReady(Node *node, QObject *target, const char
 
 void QNetworkAccessCache::timerEvent(QTimerEvent *)
 {
-    // expire old items
-    const QDateTime now = QDateTime::currentDateTimeUtc();
-
-    while (firstExpiringNode && firstExpiringNode->timestamp < now) {
+    while (firstExpiringNode && firstExpiringNode->timer.hasExpired()) {
         Node *next = firstExpiringNode->next;
         firstExpiringNode->object->dispose();
         hash.remove(firstExpiringNode->key); // `firstExpiringNode` gets deleted
