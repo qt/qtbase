@@ -803,10 +803,12 @@ QMouseEvent::~QMouseEvent()
     \sa Qt::MouseEventSource
     \sa QGraphicsSceneMouseEvent::source()
 */
+#if QT_DEPRECATED_SINCE(6, 0)
 Qt::MouseEventSource QMouseEvent::source() const
 {
     return Qt::MouseEventSource(m_source);
 }
+#endif
 
 /*!
     \since 5.3
