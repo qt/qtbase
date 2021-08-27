@@ -488,7 +488,7 @@ int main(int argc, char *argv[])
     }
 
     RunnerLocker lock; // do not install or run packages while another test is running
-    if (!execCommand(QStringLiteral("%1 install -r %2")
+    if (!execCommand(QStringLiteral("%1 install -r -g %2")
                         .arg(g_options.adbCommand, g_options.apkPath), nullptr, g_options.verbose)) {
         return 1;
     }
