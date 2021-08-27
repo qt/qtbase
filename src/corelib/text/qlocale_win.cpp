@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -982,7 +982,7 @@ static QString winIso639LangName(LCID id)
         const char *endptr;
         bool ok;
         QByteArray latin1_lang_code = std::move(lang_code).toLatin1();
-        int i = qstrtoull(latin1_lang_code, &endptr, 16, &ok);
+        int i = qstrntoull(latin1_lang_code.data(), latin1_lang_code.size(), &endptr, 16, &ok);
         if (ok && *endptr == '\0') {
             switch (i) {
                 case 0x814:
@@ -1024,7 +1024,7 @@ static QByteArray getWinLocaleName(LCID id)
         if (result == "C"
             || (!result.isEmpty() && qt_splitLocaleName(QString::fromLocal8Bit(result)))) {
             bool ok = false; // See if we have a Windows locale code instead of a locale name:
-            long id = qstrtoll(result.data(), 0, 0, &ok);
+            long id = qstrntoll(result.data(), result.size(), 0, 0, &ok);
             if (!ok || id == 0 || id < INT_MIN || id > INT_MAX) // Assume real locale name
                 return result;
             return winLangCodeToIsoName(int(id));

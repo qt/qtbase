@@ -223,7 +223,7 @@ void qt_doubleToAscii(double d, QLocaleData::DoubleForm form, int precision, cha
             // This is why the final decimal point is offset by 1, relative to the number after 'e'.
             bool ok;
             const char *endptr;
-            decpt = qstrtoll(target.data() + eSign + 1, &endptr, 10, &ok) + 1;
+            decpt = qstrntoll(target.data() + eSign + 1, length - eSign - 1, &endptr, 10, &ok) + 1;
             Q_ASSERT(ok);
             Q_ASSERT(endptr - target.data() <= length);
         } else {

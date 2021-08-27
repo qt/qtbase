@@ -6608,17 +6608,19 @@ static uint parse_flag_characters(const char * &c) noexcept
     }
 }
 
-static int parse_field_width(const char * &c)
+static int parse_field_width(const char *&c, qsizetype size)
 {
     Q_ASSERT(qIsDigit(*c));
+    const char *const stop = c + size;
 
     // can't be negative - started with a digit
     // contains at least one digit
     const char *endp;
     bool ok;
-    const qulonglong result = qstrtoull(c, &endp, 10, &ok);
+    const qulonglong result = qstrntoull(c, size, &endp, 10, &ok);
     c = endp;
-    while (qIsDigit(*c)) // preserve Qt 5.5 behavior of consuming all digits, no matter how many
+    // preserve Qt 5.5 behavior of consuming all digits, no matter how many
+    while (c < stop && qIsDigit(*c))
         ++c;
     return ok && result < qulonglong(std::numeric_limits<int>::max()) ? int(result) : 0;
 }
@@ -6674,6 +6676,7 @@ QString QString::vasprintf(const char *cformat, va_list ap)
 
     QString result;
     const char *c = cformat;
+    const char *formatEnd = cformat + qstrlen(cformat);
     for (;;) {
         // Copy non-escape chars to result
         const char *cb = c;
@@ -6708,7 +6711,7 @@ QString QString::vasprintf(const char *cformat, va_list ap)
         // Parse field width
         int width = -1; // -1 means unspecified
         if (qIsDigit(*c)) {
-            width = parse_field_width(c);
+            width = parse_field_width(c, formatEnd - c);
         } else if (*c == '*') { // can't parse this in another function, not portably, at least
             width = va_arg(ap, int);
             if (width < 0)
@@ -6726,7 +6729,7 @@ QString QString::vasprintf(const char *cformat, va_list ap)
         if (*c == '.') {
             ++c;
             if (qIsDigit(*c)) {
-                precision = parse_field_width(c);
+                precision = parse_field_width(c, formatEnd - c);
             } else if (*c == '*') { // can't parse this in another function, not portably, at least
                 precision = va_arg(ap, int);
                 if (precision < 0)

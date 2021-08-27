@@ -3529,6 +3529,7 @@ int qEnvironmentVariableIntValue(const char *varName, bool *ok) noexcept
         (std::numeric_limits<uint>::digits + NumBinaryDigitsPerOctalDigit - 1) / NumBinaryDigitsPerOctalDigit;
 
     const auto locker = qt_scoped_lock(environmentMutex);
+    size_t size;
 #ifdef Q_CC_MSVC
     // we provide a buffer that can hold any int value:
     char buffer[MaxDigitsForOctalInt + 2]; // +1 for NUL +1 for optional '-'
@@ -3538,9 +3539,10 @@ int qEnvironmentVariableIntValue(const char *varName, bool *ok) noexcept
             *ok = false;
         return 0;
     }
+    size = strlen(buffer);
 #else
     const char * const buffer = ::getenv(varName);
-    if (!buffer || strlen(buffer) > MaxDigitsForOctalInt + 2) {
+    if (!buffer || (size = strlen(buffer)) > MaxDigitsForOctalInt + 2) {
         if (ok)
             *ok = false;
         return 0;
@@ -3548,7 +3550,7 @@ int qEnvironmentVariableIntValue(const char *varName, bool *ok) noexcept
 #endif
     bool ok_ = true;
     const char *endptr;
-    const qlonglong value = qstrtoll(buffer, &endptr, 0, &ok_);
+    const qlonglong value = qstrntoll(buffer, size, &endptr, 0, &ok_);
 
     // Keep the following checks in sync with QByteArray::toInt()
     if (!ok_) {

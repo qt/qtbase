@@ -467,7 +467,7 @@ inline bool QStorageIterator::next()
     if (fgets(ptr, buffer.size(), fp) == nullptr)
         return false;
 
-    size_t len = strlen(buffer.data());
+    size_t len = strlen(ptr);
     if (len == 0)
         return false;
     while (Q_UNLIKELY(ptr[len - 1] != '\n' && !feof(fp))) {
@@ -482,27 +482,28 @@ inline bool QStorageIterator::next()
         Q_ASSERT(len < size_t(buffer.size()));
     }
     ptr[len - 1] = '\0';
+    const char *const stop = ptr + len - 1;
 
     // parse the line
     bool ok;
     mnt.mnt_freq = 0;
     mnt.mnt_passno = 0;
 
-    mnt.mount_id = qstrtoll(ptr, const_cast<const char **>(&ptr), 10, &ok);
+    mnt.mount_id = qstrntoll(ptr, stop - ptr, const_cast<const char **>(&ptr), 10, &ok);
     if (!ok)
         return false;
 
-    int parent_id = qstrtoll(ptr, const_cast<const char **>(&ptr), 10, &ok);
+    int parent_id = qstrntoll(ptr, stop - ptr, const_cast<const char **>(&ptr), 10, &ok);
     Q_UNUSED(parent_id);
     if (!ok)
         return false;
 
-    int rdevmajor = qstrtoll(ptr, const_cast<const char **>(&ptr), 10, &ok);
+    int rdevmajor = qstrntoll(ptr, stop - ptr, const_cast<const char **>(&ptr), 10, &ok);
     if (!ok)
         return false;
     if (*ptr != ':')
         return false;
-    int rdevminor = qstrtoll(ptr + 1, const_cast<const char **>(&ptr), 10, &ok);
+    int rdevminor = qstrntoll(ptr + 1, stop - ptr - 1, const_cast<const char **>(&ptr), 10, &ok);
     if (!ok)
         return false;
     mnt.rdev = makedev(rdevmajor, rdevminor);

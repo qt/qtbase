@@ -1,5 +1,6 @@
 /****************************************************************************
 **
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -86,6 +87,7 @@ static bool parseIp4Internal(IPv4Address &address, const char *ptr, bool acceptL
 {
     address = 0;
     int dotCount = 0;
+    const char *const stop = ptr + qstrlen(ptr);
     while (dotCount < 4) {
         if (!acceptLeadingZero && *ptr == '0' &&
                 ptr[1] != '.' && ptr[1] != '\0')
@@ -93,7 +95,7 @@ static bool parseIp4Internal(IPv4Address &address, const char *ptr, bool acceptL
 
         const char *endptr;
         bool ok;
-        quint64 ll = qstrtoull(ptr, &endptr, 0, &ok);
+        quint64 ll = qstrntoull(ptr, stop - ptr, &endptr, 0, &ok);
         quint32 x = ll;
         if (!ok || endptr == ptr || ll != x)
             return false;
@@ -158,6 +160,7 @@ const QChar *parseIp6(IPv6Address &address, const QChar *begin, const QChar *end
         return ret;
 
     const char *ptr = buffer.data();
+    const char *const stop = ptr + buffer.size();
 
     // count the colons
     int colonCount = 0;
@@ -213,7 +216,7 @@ const QChar *parseIp6(IPv6Address &address, const QChar *begin, const QChar *end
 
         const char *endptr;
         bool ok;
-        quint64 ll = qstrtoull(ptr, &endptr, 16, &ok);
+        quint64 ll = qstrntoull(ptr, stop - ptr, &endptr, 16, &ok);
         quint16 x = ll;
 
         // Reject malformed fields:

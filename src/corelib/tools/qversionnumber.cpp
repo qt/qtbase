@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Copyright (C) 2014 Keith Gardner <kreios4004@gmail.com>
 ** Contact: https://www.qt.io/licensing/
@@ -465,7 +465,7 @@ QVersionNumber QVersionNumber::fromString(QLatin1String string, int *suffixIndex
 
     do {
         bool ok = false;
-        const qulonglong value = qstrtoull(start, &end, 10, &ok);
+        const qulonglong value = qstrntoull(start, endOfString - start, &end, 10, &ok);
         if (!ok || value > qulonglong(std::numeric_limits<int>::max()))
             break;
         seg.append(int(value));
