@@ -46,6 +46,8 @@
 
 #include <vector>
 
+//#define DEBUG_ACCESSCACHE
+
 QT_BEGIN_NAMESPACE
 
 enum ExpiryTimeEnum {
@@ -145,7 +147,7 @@ void QNetworkAccessCache::linkEntry(const QByteArray &key)
 
 
     node->timestamp = QDateTime::currentDateTimeUtc().addSecs(node->object->expiryTimeoutSeconds);
-#ifdef QT_DEBUG
+#ifdef DEBUG_ACCESSCACHE
     qDebug() << "QNetworkAccessCache case trying to insert=" << QString::fromUtf8(key)
              << node->timestamp;
     Node *current = lastExpiringNode;
