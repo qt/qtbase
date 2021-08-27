@@ -258,12 +258,28 @@
         index = range.location + range.length;
     }
 
+    // Ensure we have a valid replacement range
+    replacementRange = [self sanitizeReplacementRange:replacementRange];
+
+    // Qt's QInputMethodEvent has different semantics for the replacement
+    // range than AppKit does, so we need to sanitize the range first.
+    auto [replaceFrom, replaceLength] = [self inputMethodRangeForRange:replacementRange];
+
+    // Update the composition, now that we've computed the replacement range
     m_composingText = preeditString;
 
     if (QObject *focusObject = m_platformWindow->window()->focusObject()) {
         m_composingFocusObject = focusObject;
         if (queryInputMethod(focusObject)) {
             QInputMethodEvent event(preeditString, preeditAttributes);
+            if (replaceLength > 0) {
+                // The input method may extend the preedit into already
+                // committed text. If so, we need to replace existing text
+                // by committing an empty string.
+                qCDebug(lcQpaKeys) << "Replacing from" << replaceFrom << "with length"
+                    << replaceLength << "based on replacement range" << replacementRange;
+                event.setCommitString(QString(), replaceFrom, replaceLength);
+            }
             QCoreApplication::sendEvent(focusObject, &event);
             // prevent handleKeyEvent from sending a key event
             m_sendKeyEvent = false;
