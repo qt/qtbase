@@ -69,22 +69,27 @@ class QStatusBarPrivate : public QWidgetPrivate
 public:
     QStatusBarPrivate() {}
 
-    struct SBItem {
-        SBItem(QWidget* widget, int stretch, bool permanent)
-            : s(stretch), w(widget), p(permanent) {}
-        int s;
-        QWidget * w;
-        bool p;
+    enum ItemCategory
+    {
+        Normal,
+        Permanent
     };
 
-    QList<SBItem *> items;
+    struct SBItem {
+        QWidget *widget = nullptr;
+        int stretch = 0;
+        ItemCategory category = Normal;
+        bool isPermanent() const { return category == Permanent; }
+    };
+
+    QList<SBItem> items;
     QString tempItem;
 
-    QBoxLayout * box;
-    QTimer * timer;
+    QBoxLayout *box;
+    QTimer *timer;
 
 #if QT_CONFIG(sizegrip)
-    QSizeGrip * resizer;
+    QSizeGrip *resizer;
     bool showSizeGrip;
 #endif
 
@@ -94,8 +99,8 @@ public:
     {
         int i = items.size() - 1;
         for (; i >= 0; --i) {
-            SBItem *item = items.at(i);
-            if (!(item && item->p))
+            const SBItem &item = items.at(i);
+            if (!item.isPermanent())
                 break;
         }
         return i;
@@ -122,7 +127,7 @@ public:
 QRect QStatusBarPrivate::messageRect() const
 {
     Q_Q(const QStatusBar);
-    bool rtl = q->layoutDirection() == Qt::RightToLeft;
+    const bool rtl = q->layoutDirection() == Qt::RightToLeft;
 
     int left = 6;
     int right = q->width() - 12;
@@ -136,18 +141,13 @@ QRect QStatusBarPrivate::messageRect() const
     }
 #endif
 
-    for (int i=0; i<items.size(); ++i) {
-        QStatusBarPrivate::SBItem* item = items.at(i);
-        if (!item)
+    for (const auto &item : items) {
+        if (item.isPermanent() && item.widget->isVisible()) {
+            if (rtl)
+                left = qMax(left, item.widget->x() + item.widget->width() + 2);
+            else
+                right = qMin(right, item.widget->x() - 2);
             break;
-        if (item->p && item->w->isVisible()) {
-                if (item->p) {
-                    if (rtl)
-                        left = qMax(left, item->w->x() + item->w->width() + 2);
-                    else
-                        right = qMin(right, item->w->x() - 2);
-                }
-                break;
         }
     }
     return QRect(left, 0, right-left, q->height());
@@ -246,9 +246,6 @@ QStatusBar::QStatusBar(QWidget * parent)
 */
 QStatusBar::~QStatusBar()
 {
-    Q_D(QStatusBar);
-    while (!d->items.isEmpty())
-        delete d->items.takeFirst();
 }
 
 
@@ -298,7 +295,7 @@ int QStatusBar::insertWidget(int index, QWidget *widget, int stretch)
         return -1;
 
     Q_D(QStatusBar);
-    QStatusBarPrivate::SBItem* item = new QStatusBarPrivate::SBItem(widget, stretch, false);
+    QStatusBarPrivate::SBItem item{widget, stretch, QStatusBarPrivate::Normal};
 
     int idx = d->indexToLastNonPermanentWidget();
     if (Q_UNLIKELY(index < 0 || index > d->items.size() || (idx >= 0 && index > idx + 1))) {
@@ -363,7 +360,7 @@ int QStatusBar::insertPermanentWidget(int index, QWidget *widget, int stretch)
         return -1;
 
     Q_D(QStatusBar);
-    QStatusBarPrivate::SBItem* item = new QStatusBarPrivate::SBItem(widget, stretch, true);
+    QStatusBarPrivate::SBItem item{widget, stretch, QStatusBarPrivate::Permanent};
 
     int idx = d->indexToLastNonPermanentWidget();
     if (Q_UNLIKELY(index < 0 || index > d->items.size() || (idx >= 0 && index <= idx))) {
@@ -396,15 +393,11 @@ void QStatusBar::removeWidget(QWidget *widget)
 
     Q_D(QStatusBar);
     bool found = false;
-    QStatusBarPrivate::SBItem* item;
-    for (int i=0; i<d->items.size(); ++i) {
-        item = d->items.at(i);
-        if (!item)
-            break;
-        if (item->w == widget) {
+    for (int i = 0; i < d->items.size(); ++i) {
+        const auto &item = d->items.at(i);
+        if (item.widget == widget) {
             d->items.removeAt(i);
-            item->w->hide();
-            delete item;
+            item.widget->hide();
             found = true;
             break;
         }
@@ -495,25 +488,22 @@ void QStatusBar::reformat()
 
     int maxH = fontMetrics().height();
 
-    int i;
-    QStatusBarPrivate::SBItem* item;
-    for (i=0,item=nullptr; i<d->items.size(); ++i) {
-        item = d->items.at(i);
-        if (!item || item->p)
+    qsizetype i;
+    for (i = 0; i < d->items.size(); ++i) {
+        const auto &item = d->items.at(i);
+        if (item.isPermanent())
             break;
-        l->addWidget(item->w, item->s);
-        int itemH = qMin(qSmartMinSize(item->w).height(), item->w->maximumHeight());
+        l->addWidget(item.widget, item.stretch);
+        int itemH = qMin(qSmartMinSize(item.widget).height(), item.widget->maximumHeight());
         maxH = qMax(maxH, itemH);
     }
 
     l->addStretch(0);
 
-    for (item=nullptr; i<d->items.size(); ++i) {
-        item = d->items.at(i);
-        if (!item)
-            break;
-        l->addWidget(item->w, item->s);
-        int itemH = qMin(qSmartMinSize(item->w).height(), item->w->maximumHeight());
+    for (; i < d->items.size(); ++i) {
+        const auto &item = d->items.at(i);
+        l->addWidget(item.widget, item.stretch);
+        int itemH = qMin(qSmartMinSize(item.widget).height(), item.widget->maximumHeight());
         maxH = qMax(maxH, itemH);
     }
 #if QT_CONFIG(sizegrip)
@@ -617,16 +607,14 @@ void QStatusBar::hideOrShow()
     Q_D(QStatusBar);
     bool haveMessage = !d->tempItem.isEmpty();
 
-    QStatusBarPrivate::SBItem* item = nullptr;
-    for (int i=0; i<d->items.size(); ++i) {
-        item = d->items.at(i);
-        if (!item || item->p)
+    for (const auto &item : qAsConst(d->items)) {
+        if (item.isPermanent())
             break;
-        if (haveMessage && item->w->isVisible()) {
-            item->w->hide();
-            item->w->setAttribute(Qt::WA_WState_ExplicitShowHide, false);
-        } else if (!haveMessage && !item->w->testAttribute(Qt::WA_WState_ExplicitShowHide)) {
-            item->w->show();
+        if (haveMessage && item.widget->isVisible()) {
+            item.widget->hide();
+            item.widget->setAttribute(Qt::WA_WState_ExplicitShowHide, false);
+        } else if (!haveMessage && !item.widget->testAttribute(Qt::WA_WState_ExplicitShowHide)) {
+            item.widget->show();
         }
     }
 
@@ -671,16 +659,15 @@ void QStatusBar::paintEvent(QPaintEvent *event)
     opt.initFrom(this);
     style()->drawPrimitive(QStyle::PE_PanelStatusBar, &opt, &p, this);
 
-    for (int i=0; i<d->items.size(); ++i) {
-        QStatusBarPrivate::SBItem* item = d->items.at(i);
-        if (item && item->w->isVisible() && (!haveMessage || item->p)) {
-            QRect ir = item->w->geometry().adjusted(-2, -1, 2, 1);
+    for (const auto &item : qAsConst(d->items)) {
+        if (item.widget->isVisible() && (!haveMessage || item.isPermanent())) {
+            QRect ir = item.widget->geometry().adjusted(-2, -1, 2, 1);
             if (event->rect().intersects(ir)) {
                 QStyleOption opt(0);
                 opt.rect = ir;
                 opt.palette = palette();
                 opt.state = QStyle::State_None;
-                style()->drawPrimitive(QStyle::PE_FrameStatusBarItem, &opt, &p, item->w);
+                style()->drawPrimitive(QStyle::PE_FrameStatusBarItem, &opt, &p, item.widget);
             }
         }
     }
@@ -706,17 +693,13 @@ bool QStatusBar::event(QEvent *e)
 {
     Q_D(QStatusBar);
 
-    if (e->type() == QEvent::LayoutRequest
-        ) {
+    switch (e->type()) {
+    case QEvent::LayoutRequest: {
         // Calculate new strut height and call reformat() if it has changed
         int maxH = fontMetrics().height();
 
-        QStatusBarPrivate::SBItem* item = nullptr;
-        for (int i=0; i<d->items.size(); ++i) {
-            item = d->items.at(i);
-            if (!item)
-                break;
-            int itemH = qMin(qSmartMinSize(item->w).height(), item->w->maximumHeight());
+        for (const auto &item : qAsConst(d->items)) {
+            const int itemH = qMin(qSmartMinSize(item.widget).height(), item.widget->maximumHeight());
             maxH = qMax(maxH, itemH);
         }
 
@@ -729,18 +712,17 @@ bool QStatusBar::event(QEvent *e)
             reformat();
         else
             update();
+        break;
     }
-    if (e->type() == QEvent::ChildRemoved) {
-        QStatusBarPrivate::SBItem* item = nullptr;
-        for (int i=0; i<d->items.size(); ++i) {
-            item = d->items.at(i);
-            if (!item)
-                break;
-            if (item->w == ((QChildEvent*)e)->child()) {
+    case QEvent::ChildRemoved:
+        for (int i = 0; i < d->items.size(); ++i) {
+            const auto &item = d->items.at(i);
+            if (item.widget == static_cast<QChildEvent *>(e)->child())
                 d->items.removeAt(i);
-                delete item;
-            }
         }
+        break;
+    default:
+        break;
     }
 
     return QWidget::event(e);
