@@ -88,6 +88,19 @@
                     // unless we explicit set m_sendKeyEvent to deliver as a normal key event.
                     m_sendKeyEvent = false;
 
+                    // Match NSTextView's keyDown behavior of hiding the cursor before
+                    // interpreting key events. Shortcuts should not trigger this though.
+                    // Unfortunately many of our controls handle shortcuts by accepting
+                    // the ShortcutOverride event and then handling the shortcut in the
+                    // following key event, and QWSI::handleShortcutEvent doesn't reveal
+                    // whether this will be the case. For NSTextView this is not an issue
+                    // as shortcuts are handled via performKeyEquivalent, which happens
+                    // prior to keyDown. To work around this until we can get the info
+                    // we need from handleShortcutEvent we match AppKit and assume that
+                    // any key press with a command or control modifier is a shortcut.
+                    if (!(nsevent.modifierFlags & (NSEventModifierFlagCommand | NSEventModifierFlagControl)))
+                        [NSCursor setHiddenUntilMouseMoves:YES];
+
                     qCDebug(lcQpaKeys) << "Interpreting key event for focus object" << focusObject;
                     m_currentlyInterpretedKeyEvent = nsevent;
                     [self interpretKeyEvents:@[nsevent]];
