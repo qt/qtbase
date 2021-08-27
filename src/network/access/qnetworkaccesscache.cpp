@@ -102,11 +102,6 @@ void QNetworkAccessCache::CacheableObject::setShareable(bool enable)
     shareable = enable;
 }
 
-QNetworkAccessCache::QNetworkAccessCache()
-    : firstExpiringNode(nullptr), lastExpiringNode(nullptr)
-{
-}
-
 QNetworkAccessCache::~QNetworkAccessCache()
 {
     clear();

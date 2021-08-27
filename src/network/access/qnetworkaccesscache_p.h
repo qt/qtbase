@@ -91,7 +91,6 @@ public:
         void setShareable(bool enable);
     };
 
-    QNetworkAccessCache();
     ~QNetworkAccessCache();
 
     void clear();
@@ -111,8 +110,8 @@ protected:
 private:
     // idea copied from qcache.h
     NodeHash hash;
-    Node *firstExpiringNode;
-    Node *lastExpiringNode;
+    Node *firstExpiringNode = nullptr;
+    Node *lastExpiringNode = nullptr;
 
     QBasicTimer timer;
 
