@@ -3897,7 +3897,7 @@ void tst_QString::toLong()
 void tst_QString::toULongLong()
 {
     QString str;
-    bool ok;
+    bool ok = true;
 
     QCOMPARE(str.toULongLong(), Q_UINT64_C(0));
     QCOMPARE(str.toULongLong(&ok), Q_UINT64_C(0));
@@ -3917,6 +3917,15 @@ void tst_QString::toULongLong()
     QCOMPARE( str.toULongLong( 0 ), Q_UINT64_C(0) );
     QCOMPARE( str.toULongLong( &ok ), Q_UINT64_C(0) );
     QVERIFY( !ok );
+
+    // Check limits round-trip in every base:
+    using ULL = std::numeric_limits<qulonglong>;
+    for (int b = 0; b <= 36; ++b) {
+        if (b == 1) // 0 and 2 through 36 are valid bases
+            ++b;
+        QCOMPARE(QString::number(ULL::max(), b ? b : 10).toULongLong(&ok, b), ULL::max());
+        QVERIFY(ok);
+    }
 }
 
 void tst_QString::toLongLong()
@@ -3969,6 +3978,71 @@ void tst_QString::toLongLong()
             }
         }
     }
+
+    // Check bounds.
+    // First in every base, with no prefix:
+    using LL = std::numeric_limits<qlonglong>;
+    for (int b = 0; b <= 36; ++b) {
+        if (b == 1) // 0 and 2 through 36 are valid bases
+            ++b;
+        QCOMPARE(QString::number(LL::max(), b ? b : 10).toLongLong(&ok, b), LL::max());
+        QVERIFY(ok);
+        QCOMPARE(QString::number(LL::min(), b ? b : 10).toLongLong(&ok, b), LL::min());
+        QVERIFY(ok);
+    }
+
+    // Then in base 16 or 0 with 0x prefix:
+    auto big = QString::number(LL::min(), 16);
+    big.insert(1, u"0x"); // after the minus sign
+    big.prepend(u"\t\r\n\f\v ");
+    QCOMPARE(big.toLongLong(&ok, 16), LL::min());
+    QVERIFY(ok);
+    QCOMPARE(big.toLongLong(&ok, 0), LL::min());
+    QVERIFY(ok);
+    big = QString::number(LL::max(), 16);
+    big.prepend(u"\t\r\n\f\v 0x");
+    QCOMPARE(big.toLongLong(&ok, 16), LL::max());
+    QVERIFY(ok);
+    QCOMPARE(big.toLongLong(&ok, 0), LL::max());
+    QVERIFY(ok);
+    big.insert(6, u'+');
+    QCOMPARE(big.toLongLong(&ok, 16), LL::max());
+    QVERIFY(ok);
+    QCOMPARE(big.toLongLong(&ok, 0), LL::max());
+    QVERIFY(ok);
+
+    // Next octal:
+    big = QString::number(LL::min(), 8);
+    big.insert(1, u'0'); // after the minus sign
+    big.prepend(u"\t\r\n\f\v ");
+    QCOMPARE(big.toLongLong(&ok, 8), LL::min());
+    QVERIFY(ok);
+    QCOMPARE(big.toLongLong(&ok, 0), LL::min());
+    QVERIFY(ok);
+    big = QString::number(LL::max(), 8);
+    big.prepend(u"\t\r\n\f\v 0");
+    QCOMPARE(big.toLongLong(&ok, 8), LL::max());
+    QVERIFY(ok);
+    QCOMPARE(big.toLongLong(&ok, 0), LL::max());
+    QVERIFY(ok);
+    big.insert(6, u'+');
+    QCOMPARE(big.toLongLong(&ok, 8), LL::max());
+    QVERIFY(ok);
+    QCOMPARE(big.toLongLong(&ok, 0), LL::max());
+    QVERIFY(ok);
+
+    // Finally decimal for base 0:
+    big = QString::number(LL::min(), 10);
+    big.prepend(u"\t\r\n\f\v ");
+    QCOMPARE(big.toLongLong(&ok, 0), LL::min());
+    QVERIFY(ok);
+    big = QString::number(LL::max(), 10);
+    big.prepend(u"\t\r\n\f\v ");
+    QCOMPARE(big.toLongLong(&ok, 0), LL::max());
+    QVERIFY(ok);
+    big.insert(6, u'+');
+    QCOMPARE(big.toLongLong(&ok, 0), LL::max());
+    QVERIFY(ok);
 }
 
 ////////////////////////////////////////////////////////////////////////////

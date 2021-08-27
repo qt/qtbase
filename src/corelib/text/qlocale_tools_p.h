@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -117,8 +117,13 @@ inline double qstrtod(const char *s00, char const **se, bool *ok)
     return qstrntod(s00, len, se, ok);
 }
 
-qlonglong qstrtoll(const char *nptr, const char **endptr, int base, bool *ok);
-qulonglong qstrtoull(const char *nptr, const char **endptr, int base, bool *ok);
+qlonglong qstrntoll(const char *nptr, qsizetype size, const char **endptr, int base, bool *ok);
+qulonglong qstrntoull(const char *nptr, qsizetype size, const char **endptr, int base, bool *ok);
+
+inline qlonglong qstrtoll(const char *nptr, const char **endptr, int base, bool *ok)
+{ return qstrntoll(nptr, strlen(nptr), endptr, base, ok); }
+inline qulonglong qstrtoull(const char *nptr, const char **endptr, int base, bool *ok)
+{ return qstrntoull(nptr, strlen(nptr), endptr, base, ok); }
 
 QT_END_NAMESPACE
 

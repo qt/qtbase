@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -54,6 +54,7 @@
 #include <time.h>
 
 #include <limits>
+#include <charconv>
 
 #if defined(Q_OS_LINUX) && !defined(__UCLIBC__)
 #    include <fenv.h>
@@ -71,13 +72,6 @@
 #endif
 
 QT_BEGIN_NAMESPACE
-
-QT_WARNING_PUSH
-    /* "unary minus operator applied to unsigned type, result still unsigned" */
-QT_WARNING_DISABLE_MSVC(4146)
-#include "../../3rdparty/freebsd/strtoull.c"
-#include "../../3rdparty/freebsd/strtoll.c"
-QT_WARNING_POP
 
 QT_CLOCALE_HOLDER
 
@@ -416,50 +410,99 @@ double qt_asciiToDouble(const char *num, qsizetype numLen, bool &ok, int &proces
     return d;
 }
 
-unsigned long long
-qstrtoull(const char * nptr, const char **endptr, int base, bool *ok)
+/* Detect base if 0 and, if base is hex, skip over 0x prefix */
+static auto scanPrefix(const char *p, const char *stop, int base)
 {
-    // strtoull accepts negative numbers. We don't.
-    // Use a different variable so we pass the original nptr to strtoul
-    // (we need that so endptr may be nptr in case of failure)
-    const char *begin = nptr;
-    while (ascii_isspace(*begin))
-        ++begin;
-    if (*begin == '-') {
+    if (p < stop && *p >= '0' && *p <= '9') {
+        if (*p == '0') {
+            const char *x = p + 1;
+            if (x < stop && (*x == 'x' || *x == 'X')) {
+                if (base == 0)
+                    base = 16;
+                if (base == 16)
+                    p += 2;
+            } else if (base == 0) {
+                base = 8;
+            }
+        } else if (base == 0) {
+            base = 10;
+        }
+        Q_ASSERT(base);
+    }
+    struct R
+    {
+        const char *next;
+        int base;
+    };
+    return R{p, base};
+}
+
+unsigned long long
+qstrntoull(const char *begin, qsizetype size, const char **endptr, int base, bool *ok)
+{
+    const char *p = begin, *const stop = begin + size;
+    while (p < stop && ascii_isspace(*p))
+        ++p;
+    unsigned long long result = 0;
+    if (p >= stop || *p == '-') {
+        *ok = false;
+        if (endptr)
+            *endptr = begin;
+        return result;
+    }
+    const auto prefix = scanPrefix(*p == '+' ? p + 1 : p, stop, base);
+    if (!prefix.base || prefix.next >= stop) {
+        if (endptr)
+            *endptr = begin;
         *ok = false;
         return 0;
     }
 
-    *ok = true;
-    errno = 0;
-    char *endptr2 = nullptr;
-    unsigned long long result = qt_strtoull(nptr, &endptr2, base);
+    const auto res = std::from_chars(prefix.next, stop, result, prefix.base);
+    *ok = res.ec == std::errc{};
     if (endptr)
-        *endptr = endptr2;
-    if ((result == 0 || result == std::numeric_limits<unsigned long long>::max())
-            && (errno || endptr2 == nptr)) {
-        *ok = false;
-        return 0;
-    }
+        *endptr = res.ptr == prefix.next ? begin : res.ptr;
     return result;
 }
 
 long long
-qstrtoll(const char * nptr, const char **endptr, int base, bool *ok)
+qstrntoll(const char *begin, qsizetype size, const char **endptr, int base, bool *ok)
 {
-    *ok = true;
-    errno = 0;
-    char *endptr2 = nullptr;
-    long long result = qt_strtoll(nptr, &endptr2, base);
-    if (endptr)
-        *endptr = endptr2;
-    if ((result == 0 || result == std::numeric_limits<long long>::min()
-         || result == std::numeric_limits<long long>::max())
-            && (errno || nptr == endptr2)) {
+    const char *p = begin, *const stop = begin + size;
+    while (p < stop && ascii_isspace(*p))
+        ++p;
+    // Frustratingly, std::from_chars() doesn't cope with a 0x prefix that might
+    // be between the sign and digits, so we have to handle that for it, which
+    // means we can't use its ability to read LLONG_MIN directly; see below.
+    const bool negate = p < stop && *p == '-';
+    if (negate || (p < stop && *p == '+'))
+        ++p;
+
+    const auto prefix = scanPrefix(p, stop, base);
+    if (!prefix.base || prefix.next >= stop) {
+        if (endptr)
+            *endptr = begin;
         *ok = false;
         return 0;
     }
-    return result;
+
+    long long result = 0;
+    auto res = std::from_chars(prefix.next, stop, result, prefix.base);
+    *ok = res.ec == std::errc{};
+    if (negate && res.ec == std::errc::result_out_of_range) {
+        // Maybe LLONG_MIN:
+        unsigned long long check = 0;
+        res = std::from_chars(prefix.next, stop, check, prefix.base);
+        if (res.ec == std::errc{} && check + std::numeric_limits<long long>::min() == 0) {
+            *ok = true;
+            if (endptr)
+                *endptr = res.ptr;
+            return std::numeric_limits<long long>::min();
+        }
+    }
+    if (endptr)
+        *endptr = res.ptr == prefix.next ? begin : res.ptr;
+    return negate && *ok ? -result : result;
 }
 
 template <typename Char>
