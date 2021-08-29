@@ -5980,7 +5980,8 @@ void QGraphicsScenePrivate::touchEventHandler(QTouchEvent *sceneTouchEvent)
             break;
         }
     }
-    sceneTouchEvent->setAccepted(ignoreSceneTouchEvent);
+    // don't override the acceptance state of the individual points
+    sceneTouchEvent->QInputEvent::setAccepted(ignoreSceneTouchEvent);
 }
 
 bool QGraphicsScenePrivate::sendTouchBeginEvent(QGraphicsItem *origin, QTouchEvent *touchEvent)
@@ -6050,7 +6051,8 @@ bool QGraphicsScenePrivate::sendTouchBeginEvent(QGraphicsItem *origin, QTouchEve
             break;
     }
 
-    touchEvent->setAccepted(eventAccepted);
+    // don't override the acceptance state of the touch points
+    touchEvent->QInputEvent::setAccepted(eventAccepted);
     return res;
 }
 

@@ -3911,8 +3911,13 @@ void QApplicationPrivate::activateImplicitTouchGrab(QWidget *widget, QTouchEvent
     if (touchEvent->type() != QEvent::TouchBegin)
         return;
 
-    for (int i = 0; i < touchEvent->pointCount(); ++i)
-        QMutableEventPoint::from(touchEvent->point(i)).setTarget(widget);
+    // If the widget dispatched the event further (see QGraphicsProxyWidget), then
+    // there might already be an implicit grabber. Don't override that.
+    for (int i = 0; i < touchEvent->pointCount(); ++i) {
+        auto &mep = QMutableEventPoint::from(touchEvent->point(i));
+        if (!mep.target() && mep.isAccepted())
+            mep.setTarget(widget);
+    }
     // TODO setExclusiveGrabber() to be consistent with Qt Quick?
 }
 
@@ -3946,16 +3951,21 @@ bool QApplicationPrivate::translateRawTouchEvent(QWidget *window, const QTouchEv
                     target = window;
             }
 
+            bool usingClosestWidget = false;
             if (device->type() == QInputDevice::DeviceType::TouchScreen) {
                 QWidget *closestWidget = d->findClosestTouchPointTarget(device, touchPoint);
                 QWidget *widget = static_cast<QWidget *>(target.data());
                 if (closestWidget
                         && (widget->isAncestorOf(closestWidget) || closestWidget->isAncestorOf(widget))) {
                     target = closestWidget;
+                    usingClosestWidget = true;
                 }
             }
 
-            QMutableEventPoint::from(touchPoint).setTarget(target);
+            // on touch pads, implicitly grab all touch points
+            // on touch screens, grab touch points that are redirected to the closest widget
+            if (device->type() == QInputDevice::DeviceType::TouchPad || usingClosestWidget)
+                QMutableEventPoint::from(touchPoint).setTarget(target);
         } else {
             target = QMutableEventPoint::from(touchPoint).target();
             if (!target)
@@ -4020,7 +4030,9 @@ bool QApplicationPrivate::translateRawTouchEvent(QWidget *window, const QTouchEv
         {
             // if the TouchBegin handler recurses, we assume that means the event
             // has been implicitly accepted and continue to send touch events
-            if (QApplication::sendSpontaneousEvent(widget, &touchEvent) && touchEvent.isAccepted()) {
+            bool res = te->spontaneous() ? QApplication::sendSpontaneousEvent(widget, &touchEvent)
+                                         : QApplication::sendEvent(widget, &touchEvent);
+            if (res && touchEvent.isAccepted()) {
                 accepted = true;
                 if (!widget.isNull())
                     widget->setAttribute(Qt::WA_WState_AcceptedTouchBeginEvent);
@@ -4033,7 +4045,9 @@ bool QApplicationPrivate::translateRawTouchEvent(QWidget *window, const QTouchEv
                 || QGestureManager::gesturePending(widget)
 #endif
                 ) {
-                if (QApplication::sendSpontaneousEvent(widget, &touchEvent) && touchEvent.isAccepted())
+                bool res = te->spontaneous() ? QApplication::sendSpontaneousEvent(widget, &touchEvent)
+                                            : QApplication::sendEvent(widget, &touchEvent);
+                if (res && touchEvent.isAccepted())
                     accepted = true;
                 // widget can be deleted on TouchEnd
                 if (touchEvent.type() == QEvent::TouchEnd && !widget.isNull())
