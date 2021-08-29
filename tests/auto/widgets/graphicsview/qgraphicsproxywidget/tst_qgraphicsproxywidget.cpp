@@ -34,6 +34,8 @@
 #include <private/qgraphicsproxywidget_p.h>
 #include <private/qlayoutengine_p.h>    // qSmartMin functions...
 
+Q_LOGGING_CATEGORY(lcTests, "qt.widgets.tests")
+
 /*
     Notes:
 
@@ -3834,9 +3836,19 @@ void tst_QGraphicsProxyWidget::touchEventPropagation()
     QPushButton *pushButton2 = new QPushButton("Two");
     pushButton2->setObjectName("pushButton2");
     pushButton2->setAttribute(Qt::WA_AcceptTouchEvents, true);
+    TouchWidget *touchWidget1 = new TouchWidget;
+    touchWidget1->setObjectName("touchWidget1");
+    touchWidget1->setAttribute(Qt::WA_AcceptTouchEvents, true);
+    touchWidget1->setFixedSize(pushButton1->sizeHint());
+    TouchWidget *touchWidget2 = new TouchWidget;
+    touchWidget2->setObjectName("touchWidget2");
+    touchWidget2->setAttribute(Qt::WA_AcceptTouchEvents, true);
+    touchWidget2->setFixedSize(pushButton2->sizeHint());
     QVBoxLayout *vbox = new QVBoxLayout;
     vbox->addWidget(pushButton1);
     vbox->addWidget(pushButton2);
+    vbox->addWidget(touchWidget1);
+    vbox->addWidget(touchWidget2);
     formWidget->setLayout(vbox);
     QGraphicsProxyWidget *formProxy = scene.addWidget(formWidget);
     formProxy->setAcceptTouchEvents(true);
@@ -3846,6 +3858,7 @@ void tst_QGraphicsProxyWidget::touchEventPropagation()
     view.setFixedSize(scene.width(), scene.height());
     view.verticalScrollBar()->setValue(0);
     view.horizontalScrollBar()->setValue(0);
+    view.viewport()->setObjectName("GraphicsView's Viewport");
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
 
@@ -3857,13 +3870,18 @@ void tst_QGraphicsProxyWidget::touchEventPropagation()
         struct TouchRecord {
             QObject *receiver;
             QEvent::Type eventType;
-            QHash<int, QPointF> positions;
+            QPointF position;
         };
-        QList<TouchRecord> records;
+        QHash<int, QList<TouchRecord>> records;
+        QWidget *mousePressReceiver = nullptr;
 
-        int count() const { return records.count(); }
-        TouchRecord at(int i) const { return records.at(i); }
-        void clear() { records.clear(); }
+        int count(int id = 0) const { return records.value(id).count(); }
+        TouchRecord at(int i, int id = 0) const { return records.value(id).at(i); }
+        void clear()
+        {
+            records.clear();
+            mousePressReceiver = nullptr;
+        }
     protected:
         bool eventFilter(QObject *receiver, QEvent *event) override
         {
@@ -3874,12 +3892,14 @@ void tst_QGraphicsProxyWidget::touchEventPropagation()
             case QEvent::TouchEnd: {
                 QTouchEvent *touchEvent = static_cast<QTouchEvent *>(event);
                 // instead of detaching each QEventPoint, just store the relative positions
-                QHash<int, QPointF> positions;
                 for (const auto &touchPoint : touchEvent->points())
-                    positions[touchPoint.id()] = touchPoint.position();
-                records << TouchRecord{receiver, event->type(), positions};
+                    records[touchPoint.id()] << TouchRecord{receiver, event->type(), touchPoint.position()};
+                qCDebug(lcTests) << "Recording" << event << receiver;
                 break;
             }
+            case QEvent::MouseButtonPress:
+                mousePressReceiver = qobject_cast<QWidget*>(receiver);
+                break;
             default:
                 break;
             }
@@ -3902,17 +3922,17 @@ void tst_QGraphicsProxyWidget::touchEventPropagation()
     };
 
     // verify that the embedded widget gets the correctly translated event
-    {
-        auto sequence = QTest::touchEvent(view.viewport(), touchDevice);
-        sequence.press(0, simpleCenter.toPoint());
-    }
+    QTest::touchEvent(&view, touchDevice).press(0, simpleCenter.toPoint());
     // window, viewport, scene, simpleProxy, simpleWidget
     QCOMPARE(eventSpy.count(), 5);
-    auto record = eventSpy.at(eventSpy.count() - 1);
+    QCOMPARE(eventSpy.at(0).receiver, view.windowHandle());
+    QCOMPARE(eventSpy.at(1).receiver, view.viewport());
+    QCOMPARE(eventSpy.at(2).receiver, &scene);
+    QCOMPARE(eventSpy.at(3).receiver, simpleProxy);
+    auto record = eventSpy.at(4);
     QCOMPARE(record.receiver, simpleWidget);
     QCOMPARE(record.eventType, QEvent::TouchBegin);
-    QCOMPARE(record.positions.count(), 1);
-    QVERIFY(closeEnough(record.positions[0], simpleCenter));
+    QVERIFY(closeEnough(record.position, simpleCenter));
     eventSpy.clear();
 
     // verify that the layout of formWidget is how we expect it to be
@@ -3921,67 +3941,113 @@ void tst_QGraphicsProxyWidget::touchEventPropagation()
     QCOMPARE(formWidget->childAt(pushButton1->pos() + pb1Center), pushButton1);
     const QPoint pb2Center = pushButton2->rect().center();
     QCOMPARE(formWidget->childAt(pushButton2->pos() + pb2Center), pushButton2);
+    const QPoint tw1Center = touchWidget1->rect().center();
+    QCOMPARE(formWidget->childAt(touchWidget1->pos() + tw1Center), touchWidget1);
+    const QPoint tw2Center = touchWidget2->rect().center();
+    QCOMPARE(formWidget->childAt(touchWidget2->pos() + tw2Center), touchWidget2);
 
+    // touch events are sent to the view, in view coordinates
+    const QPoint formProxyPox = view.mapFromScene(formProxy->pos().toPoint());
+    const QPoint pb1TouchPos = pushButton1->pos() + pb1Center + formProxyPox;
+    const QPoint pb2TouchPos = pushButton2->pos() + pb2Center + formProxyPox;
+    const QPoint tw1TouchPos = touchWidget1->pos() + tw1Center + formProxyPox;
+    const QPoint tw2TouchPos = touchWidget2->pos() + tw2Center + formProxyPox;
+
+    QSignalSpy clickedSpy(pushButton1, &QPushButton::clicked);
     // Single touch point to nested widget not accepting event.
-    // Event should bubble up and translate correctly.
-    {
-        auto sequence = QTest::touchEvent(view.viewport(), touchDevice);
-        sequence.press(0, pushButton1->pos() + pb1Center + formProxy->pos().toPoint());
-    }
-    // ..., formProxy, pushButton1, formWidget
-    QEXPECT_FAIL("", "Touch events are not forwarded to children - QTBUG-67819", Abort);
-    QCOMPARE(eventSpy.count(), 6);
-    record = eventSpy.at(eventSpy.count() - 2);
-    QCOMPARE(record.receiver, pushButton1);
-    QVERIFY(closeEnough(record.positions[0], pb1Center));
-    QCOMPARE(record.eventType, QEvent::TouchBegin);
-    // pushButton doesn't accept the point, so it propagates to parent
-    record = eventSpy.at(eventSpy.count() - 1);
-    QCOMPARE(record.receiver, formWidget);
-    QVERIFY(closeEnough(record.positions[0], pushButton1->pos() + pb1Center));
-    QCOMPARE(record.eventType, QEvent::TouchBegin);
-    eventSpy.clear();
-
-    // multi-touch to different widgets
-    {
-        auto sequence = QTest::touchEvent(view.viewport(), touchDevice);
-        sequence.press(0, pushButton1->pos() + pb1Center + formProxy->pos().toPoint());
-        sequence.press(1, pushButton2->pos() + pb2Center + formProxy->pos().toPoint());
-    }
-    // window, viewport, scene, formProxy, pushButton1, formWidget, pushButton2, formWidget
+    // Event should bubble up and translate correctly, TouchUpdate and TouchEnd events
+    // stop at the window since nobody accepted the TouchBegin. A mouse event will be generated.
+    QTest::touchEvent(&view, touchDevice).press(0, pb1TouchPos);
+    QTest::touchEvent(&view, touchDevice).move(0, pb1TouchPos + QPoint(1, 1));
+    QTest::touchEvent(&view, touchDevice).release(0, pb1TouchPos + QPoint(1, 1));
+    // ..., formProxy, pushButton1, formWidget, window, window
     QCOMPARE(eventSpy.count(), 8);
+    QCOMPARE(eventSpy.at(3).receiver, formProxy); // formProxy dispatches to the right subwidget
     record = eventSpy.at(4);
-    // the order in which the two presses are delivered is not defined
-    const bool pb1First = record.receiver == pushButton1;
-    if (pb1First) {
-        QCOMPARE(record.receiver, pushButton1);
-        QVERIFY(closeEnough(record.positions[0], pb1Center));
-    } else {
-        QCOMPARE(record.receiver, pushButton2);
-        QVERIFY(closeEnough(record.positions[1], pb2Center));
-    }
+    QCOMPARE(record.receiver, pushButton1);
+    QVERIFY(closeEnough(record.position, pb1Center));
+    QCOMPARE(record.eventType, QEvent::TouchBegin);
+    // pushButton doesn't accept the point, so the TouchBegin propagates to parent
     record = eventSpy.at(5);
     QCOMPARE(record.receiver, formWidget);
-    if (pb1First) {
-        QVERIFY(closeEnough(record.positions[0], pushButton1->pos() + pb1Center));
-    } else {
-        QVERIFY(closeEnough(record.positions[1], pushButton2->pos() + pb2Center));
-    }
+    QVERIFY(closeEnough(record.position, pushButton1->pos() + pb1Center));
+    QCOMPARE(record.eventType, QEvent::TouchBegin);
     record = eventSpy.at(6);
-    if (pb1First) {
-        QCOMPARE(record.receiver, pushButton2);
-        QVERIFY(closeEnough(record.positions[1], pb2Center));
-    } else {
-        QCOMPARE(record.receiver, pushButton1);
-        QVERIFY(closeEnough(record.positions[0], pb1Center));
-    }
+    QCOMPARE(record.receiver, view.windowHandle());
+    QCOMPARE(record.eventType, QEvent::TouchUpdate);
     record = eventSpy.at(7);
-    QCOMPARE(record.receiver, formWidget);
-    if (pb1First) {
-        QVERIFY(closeEnough(record.positions[1], pushButton2->pos() + pb2Center));
-    } else {
-        QVERIFY(closeEnough(record.positions[0], pushButton1->pos() + pb1Center));
-    }
+    QCOMPARE(record.receiver, view.windowHandle());
+    QCOMPARE(record.eventType, QEvent::TouchEnd);
+    QCOMPARE(eventSpy.mousePressReceiver, pushButton1);
+    QCOMPARE(clickedSpy.count(), 1);
+    eventSpy.clear();
+    clickedSpy.clear();
+
+    // Single touch point to nested widget accepting event.
+    QTest::touchEvent(&view, touchDevice).press(0, tw1TouchPos);
+    QTest::touchEvent(&view, touchDevice).move(0, tw1TouchPos + QPoint(5, 5));
+    QTest::touchEvent(&view, touchDevice).release(0, tw1TouchPos + QPoint(5, 5));
+    // Press: ..., formProxy, touchWidget1 (5)
+    // Move: window, touchWidget1 (2)
+    // Release: window, touchWidget1 (2)
+    QCOMPARE(eventSpy.count(), 9);
+    QCOMPARE(eventSpy.at(3).receiver, formProxy); // form proxy dispatches TouchBegin to the right widget
+    record = eventSpy.at(4);
+    QCOMPARE(record.receiver, touchWidget1);
+    QVERIFY(closeEnough(record.position, tw1Center));
+    QCOMPARE(record.eventType, QEvent::TouchBegin);
+    QCOMPARE(eventSpy.at(5).receiver, view.windowHandle()); // QWidgetWindow dispatches TouchUpdate
+    record = eventSpy.at(6);
+    QCOMPARE(record.receiver, touchWidget1);
+    QVERIFY(closeEnough(record.position, tw1Center + QPoint(5, 5)));
+    QCOMPARE(record.eventType, QEvent::TouchUpdate);
+    QCOMPARE(eventSpy.at(7).receiver, view.windowHandle()); // QWidgetWindow dispatches TouchEnd
+    record = eventSpy.at(8);
+    QCOMPARE(record.receiver, touchWidget1);
+    QVERIFY(closeEnough(record.position, tw1Center + QPoint(5, 5)));
+    QCOMPARE(record.eventType, QEvent::TouchEnd);
+    eventSpy.clear();
+
+    // to simplify the remaining test, install the event spy explicitly on the target widgets
+    qApp->removeEventFilter(&eventSpy);
+    formWidget->installEventFilter(&eventSpy);
+    pushButton1->installEventFilter(&eventSpy);
+    pushButton2->installEventFilter(&eventSpy);
+    touchWidget1->installEventFilter(&eventSpy);
+    touchWidget2->installEventFilter(&eventSpy);
+
+    // multi-touch to different widgets, some do and some don't accept the event
+    QTest::touchEvent(&view, touchDevice)
+        .press(0, pb1TouchPos)
+        .press(1, tw1TouchPos)
+        .press(2, pb2TouchPos)
+        .press(3, tw2TouchPos);
+    QTest::touchEvent(&view, touchDevice)
+        .move(0, pb1TouchPos + QPoint(1, 1))
+        .move(1, tw1TouchPos + QPoint(1, 1))
+        .move(2, pb2TouchPos + QPoint(1, 1))
+        .move(3, tw2TouchPos + QPoint(1, 1));
+    QTest::touchEvent(&view, touchDevice)
+        .release(0, pb1TouchPos + QPoint(1, 1))
+        .release(1, tw1TouchPos + QPoint(1, 1))
+        .release(2, pb2TouchPos + QPoint(1, 1))
+        .release(3, tw2TouchPos + QPoint(1, 1));
+
+    QCOMPARE(eventSpy.count(0), 2); // Begin never accepted, so move up and then stop
+    QCOMPARE(eventSpy.count(1), 3); // Begin accepted, so not propagated and update/end received
+    QCOMPARE(eventSpy.count(2), 2); // Begin never accepted
+    QCOMPARE(eventSpy.count(3), 3); // Begin accepted
+    QCOMPARE(eventSpy.at(0, 0).receiver, pushButton1);
+    QCOMPARE(eventSpy.at(1, 0).receiver, formWidget);
+    QCOMPARE(eventSpy.at(0, 1).receiver, touchWidget1);
+    QCOMPARE(eventSpy.at(1, 1).receiver, touchWidget1);
+    QCOMPARE(eventSpy.at(2, 1).receiver, touchWidget1);
+    QCOMPARE(eventSpy.at(0, 2).receiver, pushButton2);
+    QCOMPARE(eventSpy.at(1, 2).receiver, formWidget);
+    QCOMPARE(eventSpy.at(0, 3).receiver, touchWidget2);
+    QCOMPARE(eventSpy.at(1, 3).receiver, touchWidget2);
+    QCOMPARE(eventSpy.at(2, 3).receiver, touchWidget2);
+    QCOMPARE(clickedSpy.count(), 0); // multi-touch event does not synthesize a mouse event
 }
 
 QTEST_MAIN(tst_QGraphicsProxyWidget)
