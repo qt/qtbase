@@ -4020,9 +4020,7 @@ bool QApplicationPrivate::translateRawTouchEvent(QWidget *window, const QTouchEv
         {
             // if the TouchBegin handler recurses, we assume that means the event
             // has been implicitly accepted and continue to send touch events
-            bool res = te->spontaneous() ? QApplication::sendSpontaneousEvent(widget, &touchEvent)
-                                         : QApplication::sendEvent(widget, &touchEvent);
-            if (res && touchEvent.isAccepted()) {
+            if (QApplication::sendSpontaneousEvent(widget, &touchEvent) && touchEvent.isAccepted()) {
                 accepted = true;
                 if (!widget.isNull())
                     widget->setAttribute(Qt::WA_WState_AcceptedTouchBeginEvent);
@@ -4035,9 +4033,7 @@ bool QApplicationPrivate::translateRawTouchEvent(QWidget *window, const QTouchEv
                 || QGestureManager::gesturePending(widget)
 #endif
                 ) {
-                bool res = te->spontaneous() ? QApplication::sendSpontaneousEvent(widget, &touchEvent)
-                                             : QApplication::sendEvent(widget, &touchEvent);
-                if (res && touchEvent.isAccepted())
+                if (QApplication::sendSpontaneousEvent(widget, &touchEvent) && touchEvent.isAccepted())
                     accepted = true;
                 // widget can be deleted on TouchEnd
                 if (touchEvent.type() == QEvent::TouchEnd && !widget.isNull())
