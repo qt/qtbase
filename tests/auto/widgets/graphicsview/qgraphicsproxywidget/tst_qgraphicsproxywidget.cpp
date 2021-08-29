@@ -3782,8 +3782,6 @@ void tst_QGraphicsProxyWidget::wheelEventPropagation()
 // QTBUG_45737
 void tst_QGraphicsProxyWidget::forwardTouchEvent()
 {
-    QSKIP("Test is currently broken");
-
     QGraphicsScene scene;
 
     TouchWidget *widget = new TouchWidget;
@@ -3931,6 +3929,7 @@ void tst_QGraphicsProxyWidget::touchEventPropagation()
         sequence.press(0, pushButton1->pos() + pb1Center + formProxy->pos().toPoint());
     }
     // ..., formProxy, pushButton1, formWidget
+    QEXPECT_FAIL("", "Touch events are not forwarded to children - QTBUG-67819", Abort);
     QCOMPARE(eventSpy.count(), 6);
     record = eventSpy.at(eventSpy.count() - 2);
     QCOMPARE(record.receiver, pushButton1);
