@@ -3415,19 +3415,21 @@ void QTextDocumentLayoutPrivate::layoutFlow(QTextFrame::Iterator it, QTextLayout
 static inline void getLineHeightParams(const QTextBlockFormat &blockFormat, const QTextLine &line, qreal scaling,
                                        QFixed *lineAdjustment, QFixed *lineBreakHeight, QFixed *lineHeight, QFixed *lineBottom)
 {
+    const qreal height = line.height();
+    const int lineHeightType = blockFormat.lineHeightType();
     qreal rawHeight = qCeil(line.ascent() + line.descent() + line.leading());
     *lineHeight = QFixed::fromReal(blockFormat.lineHeight(rawHeight, scaling));
-    *lineBottom = QFixed::fromReal(blockFormat.lineHeight(line.height(), scaling));
+    *lineBottom = QFixed::fromReal(blockFormat.lineHeight(height, scaling));
 
-    if (blockFormat.lineHeightType() == QTextBlockFormat::FixedHeight || blockFormat.lineHeightType() == QTextBlockFormat::MinimumHeight) {
+    if (lineHeightType == QTextBlockFormat::FixedHeight || lineHeightType == QTextBlockFormat::MinimumHeight) {
         *lineBreakHeight = *lineBottom;
-        if (blockFormat.lineHeightType() == QTextBlockFormat::FixedHeight)
+        if (lineHeightType == QTextBlockFormat::FixedHeight)
             *lineAdjustment = QFixed::fromReal(line.ascent() + qMax(line.leading(), qreal(0.0))) - ((*lineHeight * 4) / 5);
         else
-            *lineAdjustment = QFixed::fromReal(line.height()) - *lineHeight;
+            *lineAdjustment = QFixed::fromReal(height) - *lineHeight;
     }
     else {
-        *lineBreakHeight = QFixed::fromReal(line.height());
+        *lineBreakHeight = QFixed::fromReal(height);
         *lineAdjustment = 0;
     }
 }
