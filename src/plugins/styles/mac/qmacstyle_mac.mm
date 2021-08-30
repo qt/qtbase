@@ -196,6 +196,8 @@ const int pushButtonBevelRectOffsets[3] = {
 
 QVector<QPointer<QObject> > QMacStylePrivate::scrollBars;
 
+bool isDarkMode() { return QGuiApplicationPrivate::platformTheme()->appearance() == QPlatformTheme::Appearance::Dark; }
+
 // Title bar gradient colors for Lion were determined by inspecting PSDs exported
 // using CoreUI's CoreThemeDocument; there is no public API to retrieve them
 
@@ -216,7 +218,7 @@ static QLinearGradient titlebarGradientActive()
         gradient.setColorAt(1, QColor(180, 180, 180));
         return gradient;
     }();
-    return qt_mac_applicationIsInDarkMode() ? darkGradient : lightGradient;
+    return isDarkMode() ? darkGradient : lightGradient;
 }
 
 static QLinearGradient titlebarGradientInactive()
@@ -232,7 +234,7 @@ static QLinearGradient titlebarGradientInactive()
         gradient.setColorAt(1, QColor(225, 225, 225));
         return gradient;
     }();
-    return qt_mac_applicationIsInDarkMode() ? darkGradient : lightGradient;
+    return isDarkMode() ? darkGradient : lightGradient;
 }
 
 #if QT_CONFIG(tabwidget)
@@ -254,7 +256,7 @@ static void clipTabBarFrame(const QStyleOption *option, const QMacStyle *style, 
     Q_ASSERT(style);
     Q_ASSERT(ctx);
 
-    if (qt_mac_applicationIsInDarkMode()) {
+    if (isDarkMode()) {
         QTabWidget *tabWidget = qobject_cast<QTabWidget *>(option->styleObject);
         Q_ASSERT(tabWidget);
 
@@ -302,7 +304,6 @@ static const qreal titleBarButtonSpacing = 8;
 // active: window is active
 // selected: tab is selected
 // hovered: tab is hovered
-bool isDarkMode() { return qt_mac_applicationIsInDarkMode(); }
 
 #if QT_CONFIG(tabbar)
 static const QColor lightTabBarTabBackgroundActive(190, 190, 190);
@@ -422,7 +423,7 @@ public:
     {
 #if QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_14)
         if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSMojave
-            && !qt_mac_applicationIsInDarkMode()) {
+            && !isDarkMode()) {
             auto requiredAppearanceName = NSApplication.sharedApplication.effectiveAppearance.name;
             if (![NSAppearance.currentAppearance.name isEqualToString:requiredAppearanceName]) {
                 previous = NSAppearance.currentAppearance;
@@ -1288,7 +1289,7 @@ void QMacStylePrivate::drawFocusRing(QPainter *p, const QRectF &targetRect, int 
     }
 
     auto focusRingColor = qt_mac_toQColor(NSColor.keyboardFocusIndicatorColor.CGColor);
-    if (!qt_mac_applicationIsInDarkMode()) {
+    if (!isDarkMode()) {
         // This color already has alpha ~ 0.25, this value is too small - the ring is
         // very pale and nothing like the native one. 0.39 makes it better (not ideal
         // anyway). The color seems to be correct in dark more without any modification.
@@ -1836,7 +1837,7 @@ NSView *QMacStylePrivate::cocoaControl(CocoaControl widget) const
 
     if (widget.type == Box) {
         if (__builtin_available(macOS 10.14, *)) {
-            if (qt_mac_applicationIsInDarkMode()) {
+            if (isDarkMode()) {
                 // See render code in drawPrimitive(PE_FrameTabWidget)
                 widget.type = Box_Dark;
             }
@@ -3102,7 +3103,7 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
         auto adjustedRect = opt->rect;
         bool needTranslation = false;
         if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSMojave
-            && !qt_mac_applicationIsInDarkMode()) {
+            && !isDarkMode()) {
             // In Aqua theme we have to use the 'default' NSBox (as opposite
             // to the 'custom' QDarkNSBox we use in dark theme). Since -drawRect:
             // does nothing in default NSBox, we call -displayRectIgnoringOpaticty:.
@@ -3150,7 +3151,7 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
             theStroker.setCapStyle(Qt::FlatCap);
             theStroker.setDashPattern(QVector<qreal>() << 1 << 2);
             path = theStroker.createStroke(path);
-            const auto dark = qt_mac_applicationIsInDarkMode() ? opt->palette.dark().color().darker()
+            const auto dark = isDarkMode() ? opt->palette.dark().color().darker()
                                                                : QColor(0, 0, 0, 119);
             p->fillPath(path, dark);
         }
@@ -3344,7 +3345,7 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
                 static_cast<NSTextFieldCell *>(tf.cell).bezelStyle = isRounded ? NSTextFieldRoundedBezel : NSTextFieldSquareBezel;
                 tf.frame = opt->rect.toCGRect();
                 d->drawNSViewInRect(tf, opt->rect, p, ^(CGContextRef, const CGRect &rect) {
-                    if (!qt_mac_applicationIsInDarkMode()) {
+                    if (!isDarkMode()) {
                         // In 'Dark' mode controls are transparent, so we do not
                         // over-paint the (potentially custom) color in the background.
                         // In 'Light' mode we have to care about the correct
@@ -3377,7 +3378,7 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
     case PE_PanelLineEdit:
         {
             const QStyleOptionFrame *panel = qstyleoption_cast<const QStyleOptionFrame *>(opt);
-            if (qt_mac_applicationIsInDarkMode() || (panel && panel->lineWidth <= 0)) {
+            if (isDarkMode() || (panel && panel->lineWidth <= 0)) {
                 // QCommonStyle::drawPrimitive(PE_PanelLineEdit) fill the background with
                 // a proper color, defined in opt->palette and then, if lineWidth > 0, it
                 // calls QMacStyle::drawPrimitive(PE_FrameLineEdit). We use NSTextFieldCell
@@ -4594,7 +4595,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
 #ifndef QT_NO_TOOLBAR
     case CE_ToolBar: {
         const QStyleOptionToolBar *toolBar = qstyleoption_cast<const QStyleOptionToolBar *>(opt);
-        const bool isDarkMode = qt_mac_applicationIsInDarkMode();
+        const bool darkMode = isDarkMode();
 
         // Unified title and toolbar drawing. In this mode the cocoa platform plugin will
         // fill the top toolbar area part with a background gradient that "unifies" with
@@ -4619,7 +4620,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                     if (isEndOfUnifiedArea) {
                         const int margin = qt_mac_aqua_get_metric(SeparatorSize);
                         const auto separatorRect = QRect(opt->rect.left(), opt->rect.bottom(), opt->rect.width(), margin);
-                        p->fillRect(separatorRect, isDarkMode ? darkModeSeparatorLine : opt->palette.dark().color());
+                        p->fillRect(separatorRect, darkMode ? darkModeSeparatorLine : opt->palette.dark().color());
                     }
                     break;
                 }
@@ -4634,24 +4635,24 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
         else
             linearGrad = QLinearGradient(opt->rect.left(), 0,  opt->rect.right(), 0);
 
-        QColor mainWindowGradientBegin = isDarkMode ? darkMainWindowGradientBegin : lightMainWindowGradientBegin;
-        QColor mainWindowGradientEnd = isDarkMode ? darkMainWindowGradientEnd : lightMainWindowGradientEnd;
+        QColor mainWindowGradientBegin = darkMode ? darkMainWindowGradientBegin : lightMainWindowGradientBegin;
+        QColor mainWindowGradientEnd = darkMode ? darkMainWindowGradientEnd : lightMainWindowGradientEnd;
 
         linearGrad.setColorAt(0, mainWindowGradientBegin);
         linearGrad.setColorAt(1, mainWindowGradientEnd);
         p->fillRect(opt->rect, linearGrad);
 
         p->save();
-        QRect toolbarRect = isDarkMode ? opt->rect.adjusted(0, 0, 0, 1) : opt->rect;
+        QRect toolbarRect = darkMode ? opt->rect.adjusted(0, 0, 0, 1) : opt->rect;
         if (opt->state & State_Horizontal) {
-            p->setPen(isDarkMode ? darkModeSeparatorLine : mainWindowGradientBegin.lighter(114));
+            p->setPen(darkMode ? darkModeSeparatorLine : mainWindowGradientBegin.lighter(114));
             p->drawLine(toolbarRect.topLeft(), toolbarRect.topRight());
-            p->setPen(isDarkMode ? darkModeSeparatorLine :mainWindowGradientEnd.darker(114));
+            p->setPen(darkMode ? darkModeSeparatorLine :mainWindowGradientEnd.darker(114));
             p->drawLine(toolbarRect.bottomLeft(), toolbarRect.bottomRight());
         } else {
-            p->setPen(isDarkMode ? darkModeSeparatorLine : mainWindowGradientBegin.lighter(114));
+            p->setPen(darkMode ? darkModeSeparatorLine : mainWindowGradientBegin.lighter(114));
             p->drawLine(toolbarRect.topLeft(), toolbarRect.bottomLeft());
-            p->setPen(isDarkMode ? darkModeSeparatorLine : mainWindowGradientEnd.darker(114));
+            p->setPen(darkMode ? darkModeSeparatorLine : mainWindowGradientEnd.darker(114));
             p->drawLine(toolbarRect.topRight(), toolbarRect.bottomRight());
         }
         p->restore();
