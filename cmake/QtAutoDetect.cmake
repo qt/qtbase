@@ -17,7 +17,12 @@ function(qt_internal_ensure_static_qt_config)
 endfunction()
 
 function(qt_auto_detect_wasm)
-    if("${QT_QMAKE_TARGET_MKSPEC}" STREQUAL "wasm-emscripten" AND DEFINED ENV{EMSDK})
+    if("${QT_QMAKE_TARGET_MKSPEC}" STREQUAL "wasm-emscripten")
+        if (NOT DEFINED ENV{EMSDK})
+            message(FATAL_ERROR
+                "Can't find EMSDK! Make sure EMSDK environment variable "
+                "is available and emcc is in your path.")
+        endif()
         if(NOT DEFINED QT_AUTODETECT_WASM)
             # detect EMSCRIPTEN_ROOT path
             file(READ "$ENV{EMSDK}/.emscripten" ver)
