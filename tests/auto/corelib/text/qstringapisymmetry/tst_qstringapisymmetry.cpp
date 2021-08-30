@@ -701,7 +701,7 @@ private Q_SLOTS:
     void trim_trimmed_QLatin1String_data() { trimmed_data(); }
     void trim_trimmed_QLatin1String() { trimmed_impl<QLatin1String>(); }
     void trim_trimmed_QByteArray_data() { trimmed_data(); }
-    void trim_trimmed_QByteArray() { /*trimmed_impl<QByteArray>();*/ } // TODO
+    void trim_trimmed_QByteArray() { trimmed_impl<QByteArray>(); }
 
 private:
     void toNumber_data();
