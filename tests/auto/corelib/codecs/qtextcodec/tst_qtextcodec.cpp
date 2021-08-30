@@ -38,6 +38,11 @@
 #endif
 #include <QThreadPool>
 
+#include <private/qglobal_p.h> // for the icu feature test
+#if QT_CONFIG(icu)
+# include <unicode/uvernum.h>
+#endif
+
 class tst_QTextCodec : public QObject
 {
     Q_OBJECT
@@ -96,6 +101,9 @@ private slots:
 
     void shiftJis();
     void userCodec();
+
+    void canEncode();
+    void canEncode_data();
 };
 
 void tst_QTextCodec::toUnicode_data()
@@ -2453,6 +2461,67 @@ void tst_QTextCodec::userCodec()
 
     pcodec = QTextCodec::codecForName("UserCodec");
     QCOMPARE(pcodec, nullptr);
+}
+
+void tst_QTextCodec::canEncode()
+{
+    QFETCH(QString, codecName);
+    QFETCH(QString, inputString);
+    QFETCH(QByteArray, expectedData);
+    QFETCH(bool, canEncode);
+
+    QTextCodec *codec = QTextCodec::codecForName(codecName.toLatin1());
+    QVERIFY(codec != nullptr);
+
+    QCOMPARE(codec->canEncode(inputString), canEncode);
+    QByteArray encoded = codec->fromUnicode(inputString);
+    QCOMPARE(encoded, expectedData);
+}
+
+void tst_QTextCodec::canEncode_data()
+{
+    QTest::addColumn<QString>("codecName");
+    QTest::addColumn<QString>("inputString");
+    QTest::addColumn<QByteArray>("expectedData");
+    QTest::addColumn<bool>("canEncode");
+
+    QTest::newRow("English ISO-8859-1") << "ISO-8859-1" << "Hello World"
+                                        << QByteArray("Hello World") << true;
+    QTest::newRow("English big5") << "Big5" << "Hello World" << QByteArray("Hello World") << true;
+
+    QTest::newRow("Greek win1252")
+            << "Windows-1252"
+            << QString("\u03c0\u03bf\u03bb\u03cd\u03c4\u03c1\u03bf\u03c0\u03bf\u03bd")
+            << QByteArray("??????????") << false;
+    QTest::newRow("Greek win1253")
+            << "Windows-1253"
+            << QString("\u03c0\u03bf\u03bb\u03cd\u03c4\u03c1\u03bf\u03c0\u03bf\u03bd")
+            << QByteArray("\xF0\xEF\xEB\xFD\xF4\xF1\xEF\xF0\xEF\xED") << true;
+
+    QTest::newRow("Russian win1252")
+            << "Windows-1252" << QString("\u041f\u0440\u0438\u0432\u0435\u0442 \u043c\u0438\u0440")
+            << QByteArray("?????? ???") << false;
+    QTest::newRow("Russian win1251")
+            << "Windows-1251" << QString("\u041f\u0440\u0438\u0432\u0435\u0442 \u043c\u0438\u0440")
+            << QByteArray("\xCF\xF0\xE8\xE2\xE5\xF2 \xEC\xE8\xF0") << true;
+
+    QTest::newRow("English from ucs4")
+            << "ISO-8859-1" << QString("\u0048\u0065\u006c\u006c\u006f\u0021")
+            << QByteArray("Hello!") << true;
+
+    // ICU on Linux RHEL 7.6 seems to be old, and does not handle NULL
+    // characters properly. It returns 0x01 instead of 0x00 for it, so
+    // we just skip the test.
+#if !QT_CONFIG(icu) || (U_ICU_VERSION_MAJOR_NUM > 56)
+    QTest::newRow("With null") << "ISO-8859-1" << QString::fromUcs4(U"Hello\u0000World", 11)
+                               << QByteArray("Hello\x00World", 11) << true;
+#endif
+
+    QTest::newRow("With special chars")
+            << "ISO-8859-1" << QString("\u0001\u0002\u0003\u0008\u0009\u000a\u000b\u000d")
+            << QByteArray("\x01\x02\x03\b\t\n\x0B\r") << true;
+
+    QTest::newRow("Pencil icon") << "ISO-8859-1" << QString("\u270f") << QByteArray("?") << false;
 }
 
 struct DontCrashAtExit {
