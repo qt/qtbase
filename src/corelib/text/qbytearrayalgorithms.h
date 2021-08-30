@@ -96,12 +96,10 @@ inline size_t qstrlen(const char *str)
 
 inline size_t qstrnlen(const char *str, size_t maxlen)
 {
-    size_t length = 0;
-    if (str) {
-        while (length < maxlen && *str++)
-            length++;
-    }
-    return length;
+    if (!str)
+        return 0;
+    auto end = static_cast<const char *>(memchr(str, '\0', maxlen));
+    return end ? end - str : maxlen;
 }
 
 // implemented in qbytearray.cpp

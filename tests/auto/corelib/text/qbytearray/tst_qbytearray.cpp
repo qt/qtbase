@@ -803,18 +803,18 @@ void tst_QByteArray::qvsnprintf()
 void tst_QByteArray::qstrlen()
 {
     const char *src = "Something about ... \0 a string.";
-    QCOMPARE(::qstrlen((char*)0), (uint)0);
-    QCOMPARE(::qstrlen(src), (uint)20);
+    QCOMPARE(::qstrlen(nullptr), size_t(0));
+    QCOMPARE(::qstrlen(src), size_t(20));
 }
 
 void tst_QByteArray::qstrnlen()
 {
     const char *src = "Something about ... \0 a string.";
-    QCOMPARE(::qstrnlen((char*)0, 1), (uint)0);
-    QCOMPARE(::qstrnlen(src, 31), (uint)20);
-    QCOMPARE(::qstrnlen(src, 19), (uint)19);
-    QCOMPARE(::qstrnlen(src, 21), (uint)20);
-    QCOMPARE(::qstrnlen(src, 20), (uint)20);
+    QCOMPARE(::qstrnlen(nullptr, 1), size_t(0));
+    QCOMPARE(::qstrnlen(src, 31), size_t(20));
+    QCOMPARE(::qstrnlen(src, 19), size_t(19));
+    QCOMPARE(::qstrnlen(src, 21), size_t(20));
+    QCOMPARE(::qstrnlen(src, 20), size_t(20));
 }
 
 void tst_QByteArray::qstrcpy()
