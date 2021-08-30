@@ -33,8 +33,7 @@ instructions:
         enable_if:
           condition: property
           property: target.osVersion
-          # We don't currently build tests for Android other than qtbase repo
-          in_values: [QEMU]
+          in_values: [Android_ANY, QEMU]
     enable_if:
       condition: or
       conditions:
