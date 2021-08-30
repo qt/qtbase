@@ -3095,6 +3095,11 @@ QString QTextEngine::elidedText(Qt::TextElideMode mode, const QFixed &width, int
 
                 ellipsisWidth *= 3;
                 ellipsisText = QStringLiteral("...");
+            } else {
+                engine = fnt.d->engineForScript(QChar::Script_Common);
+                glyph = engine->glyphIndex(ellipsisChar.unicode());
+                engine->recalcAdvances(&glyphs, { });
+                ellipsisText = ellipsisChar;
             }
         }
     }
