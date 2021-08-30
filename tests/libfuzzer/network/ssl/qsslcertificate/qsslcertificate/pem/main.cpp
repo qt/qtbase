@@ -30,7 +30,7 @@
 
 extern "C" int LLVMFuzzerTestOneInput(const char *Data, size_t Size) {
     // to reduce noise and increase speed
-    static char quiet[] = "QT_LOGGING_RULES=qt.network.ssl=false";
+    static char quiet[] = "QT_LOGGING_RULES=qt.*=false";
     static int pe = putenv(quiet);
     Q_UNUSED(pe);
     QSslCertificate ssl(QByteArray::fromRawData(Data, Size), QSsl::Pem);
