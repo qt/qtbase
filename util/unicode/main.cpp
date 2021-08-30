@@ -33,6 +33,7 @@
 #include <qhash.h>
 #include <qlist.h>
 #include <qstring.h>
+#include <qbitarray.h>
 #include <private/qstringiterator_p.h>
 #if 0
 #include <private/qunicodetables_p.h>
@@ -2500,30 +2501,122 @@ static void resolveIdnaStatus()
 }
 
 /*
+    Return maximum overlap for strings left and right in this order.
+
+    The input strings should not be substrings of each other.
+*/
+static qsizetype overlap(const QString &left, const QString &right)
+{
+    for (qsizetype n = std::min(left.size(), right.size()) - 1; n > 0; n--) {
+        if (left.last(n) == right.first(n))
+            return n;
+    }
+    return 0;
+}
+
+using GraphNode = unsigned int;
+
+struct OverlapGraphEdge
+{
+    GraphNode start;
+    GraphNode end;
+    qsizetype overlap;
+};
+
+/*
     Returns a common supersting of all inputs.
 
     Ideally this function would return the superstring of the smallest
     possible size, but the shortest common superstring problem is know to be
     NP-hard so an approximation must be used here.
 
-    This function implements a simple algorithm that consists of appending
-    input strings to the result if they are not already contained in it.
+    This function implements the greedy algorithm for building the superstring.
 
     As an optimization this function is allowed to destroy its inputs.
 */
 static QString buildSuperstring(QList<QString> &inputs)
 {
-    // Sort by size, longest strings first.
+    // Ensure that the inputs don't contain substrings.
+    // First, sort the array by length to make substring removal easier.
     std::sort(inputs.begin(), inputs.end(), [](const QString &a, const QString &b) {
         return a.size() == b.size() ? a > b : a.size() > b.size();
     });
 
-    QString superstring;
-
-    for (const QString &s : inputs) {
-        if (!superstring.contains(s))
-            superstring.append(s);
+    // Remove duplicates and other substrings
+    for (auto i = inputs.begin() + 1; i != inputs.end();) {
+        bool isSubstring = std::any_of(inputs.begin(), i, [i](const QString &s) {
+            return s.contains(*i);
+        });
+        i = isSubstring ? inputs.erase(i) : i + 1;
     }
+
+    // Build overlap graph for the remaining inputs. It is fully-connected.
+    QList<OverlapGraphEdge> graphEdges;
+    graphEdges.reserve(inputs.size() * (inputs.size() - 1));
+
+    for (GraphNode i = 0; i < inputs.size(); i++) {
+        for (GraphNode j = 0; j < inputs.size(); j++) {
+            if (i != j)
+                graphEdges.append(OverlapGraphEdge {i, j, overlap(inputs[i], inputs[j])});
+        }
+    }
+
+    // Build a Hamiltonian path through the overlap graph, taking nodes with highest overlap
+    // first.
+    std::sort(graphEdges.begin(), graphEdges.end(), [](const auto &a, const auto &b) {
+        return a.overlap == b.overlap
+                ? a.start == b.start ? a.end < b.end : a.start < b.start
+                : a.overlap > b.overlap;
+    });
+
+    QBitArray starts(inputs.size());
+    QBitArray ends(inputs.size());
+    QMap<GraphNode, OverlapGraphEdge> pathEdges;
+
+    auto createsCycle = [&](const OverlapGraphEdge &edge) {
+        if (!starts[edge.end] || !ends[edge.start])
+            return false;
+        Q_ASSERT(!pathEdges.contains(edge.start)); // Caller checks it's not yet a start.
+
+        GraphNode node = edge.end;
+        while (pathEdges.contains(node))
+            node = pathEdges[node].end;
+
+        return node == edge.start;
+    };
+
+    for (const auto &edge : graphEdges) {
+        if (!starts[edge.start] && !ends[edge.end] && !createsCycle(edge)) {
+            starts.setBit(edge.start);
+            ends.setBit(edge.end);
+            pathEdges[edge.start] = edge;
+            if (pathEdges.size() == inputs.size() - 1)
+                break;
+        }
+    }
+
+    Q_ASSERT(ends.count(false) == 1);
+    Q_ASSERT(starts.count(false) == 1);
+
+    // Find the start node of the path.
+    GraphNode node = 0;
+    while (node < ends.size() && ends[node])
+        node++;
+    Q_ASSERT(node < ends.size());
+
+    QString superstring = inputs[node];
+    qsizetype pathNodes = 1; // Count path nodes for sanity check
+
+    while (pathEdges.contains(node)) {
+        const auto &edge = pathEdges[node];
+        Q_ASSERT(edge.start == node);
+
+        superstring.append(QStringView { inputs[edge.end] }.sliced(edge.overlap));
+
+        node = edge.end;
+        pathNodes++;
+    }
+    Q_ASSERT(pathNodes == inputs.size());
 
     return superstring;
 }
