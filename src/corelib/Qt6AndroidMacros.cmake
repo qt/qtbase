@@ -262,9 +262,9 @@ function(qt6_android_generate_deployment_settings target)
 endfunction()
 
 if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
-    function(qt_android_generate_deployment_settings)
+    macro(qt_android_generate_deployment_settings)
         qt6_android_generate_deployment_settings(${ARGV})
-    endfunction()
+    endmacro()
 endif()
 
 function(qt6_android_apply_arch_suffix target)
@@ -277,9 +277,9 @@ function(qt6_android_apply_arch_suffix target)
 endfunction()
 
 if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
-    function(qt_android_apply_arch_suffix)
+    macro(qt_android_apply_arch_suffix)
         qt6_android_apply_arch_suffix(${ARGV})
-    endfunction()
+    endmacro()
 endif()
 
 # Add custom target to package the APK
@@ -397,7 +397,7 @@ function(_qt_internal_create_global_apk_all_target_if_needed)
 endfunction()
 
 if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
-    function(qt_android_add_apk_target)
+    macro(qt_android_add_apk_target)
         qt6_android_add_apk_target(${ARGV})
-    endfunction()
+    endmacro()
 endif()
