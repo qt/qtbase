@@ -262,9 +262,15 @@ bool QWindowsPipeWriter::writeCompleted(DWORD errorCode, DWORD numberOfBytesWrit
 
     lastError = errorCode;
     writeBuffer.clear();
-    // The other end has closed the pipe. This can happen in QLocalSocket. Do not warn.
-    if (errorCode != ERROR_OPERATION_ABORTED && errorCode != ERROR_NO_DATA)
+    switch (errorCode) {
+    case ERROR_PIPE_NOT_CONNECTED: // the other end has closed the pipe
+    case ERROR_OPERATION_ABORTED: // the operation was canceled
+    case ERROR_NO_DATA: // the pipe is being closed
+        break;
+    default:
         qErrnoWarning(errorCode, "QWindowsPipeWriter: write failed.");
+        break;
+    }
     return false;
 }
 
