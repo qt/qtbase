@@ -102,26 +102,6 @@ size_t calculateHash(const T &t, size_t seed = 0)
     }
 }
 
-// QHash uses a power of two growth policy.
-namespace GrowthPolicy {
-inline constexpr size_t maxNumBuckets() noexcept
-{
-    return size_t(1) << (8 * sizeof(size_t) - 1);
-}
-inline constexpr size_t bucketsForCapacity(size_t requestedCapacity) noexcept
-{
-    if (requestedCapacity <= 8)
-        return 16;
-    if (requestedCapacity >= maxNumBuckets())
-        return maxNumBuckets();
-    return qNextPowerOfTwo(QIntegerForSize<sizeof(size_t)>::Unsigned(2 * requestedCapacity - 1));
-}
-inline constexpr size_t bucketForHash(size_t nBuckets, size_t hash) noexcept
-{
-    return hash & (nBuckets - 1);
-}
-}
-
 template <typename Key, typename T>
 struct Node
 {
@@ -452,6 +432,37 @@ struct Span {
         allocated = uchar(alloc);
     }
 };
+
+// QHash uses a power of two growth policy.
+namespace GrowthPolicy {
+inline constexpr size_t maxNumBuckets() noexcept
+{
+    // ensure the size of a Span does not depend on the template parameters
+    using Node1 = Node<int, int>;
+    using Node2 = Node<char, void *>;
+    using Node3 = Node<qsizetype, QHashDummyValue>;
+    static_assert(sizeof(Span<Node1>) == sizeof(Span<Node2>));
+    static_assert(sizeof(Span<Node1>) == sizeof(Span<Node3>));
+    static_assert(int(Span<Node1>::NEntries) == int(Span<Node2>::NEntries));
+    static_assert(int(Span<Node1>::NEntries) == int(Span<Node3>::NEntries));
+
+    // Maximum is 2^31-1 or 2^63-1 bytes (limited by qsizetype and ptrdiff_t)
+    size_t max = (std::numeric_limits<ptrdiff_t>::max)();
+    return max / sizeof(Span<Node1>) * Span<Node1>::NEntries;
+}
+inline constexpr size_t bucketsForCapacity(size_t requestedCapacity) noexcept
+{
+    if (requestedCapacity <= 8)
+        return 16;
+    if (requestedCapacity >= maxNumBuckets())
+        return maxNumBuckets();
+    return qNextPowerOfTwo(QIntegerForSize<sizeof(size_t)>::Unsigned(2 * requestedCapacity - 1));
+}
+inline constexpr size_t bucketForHash(size_t nBuckets, size_t hash) noexcept
+{
+    return hash & (nBuckets - 1);
+}
+} // namespace GrowthPolicy
 
 template <typename Node>
 struct iterator;
