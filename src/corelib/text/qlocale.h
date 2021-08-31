@@ -925,7 +925,10 @@ public:
     Q_FLAG(DataSizeFormats)
 
     QLocale();
-    explicit QLocale(const QString &name);
+#if QT_STRINGVIEW_LEVEL < 2
+    explicit QLocale(const QString &name) : QLocale(qToStringViewIgnoringNull(name)) {}
+#endif
+    explicit QLocale(QStringView name);
     QLocale(Language language, Territory territory);
     QLocale(Language language, Script script = AnyScript, Territory territory = AnyTerritory);
     QLocale(const QLocale &other);

@@ -148,7 +148,7 @@ namespace QIcu {
 
 struct QLocaleId
 {
-    [[nodiscard]] Q_CORE_EXPORT static QLocaleId fromName(const QString &name);
+    [[nodiscard]] Q_CORE_EXPORT static QLocaleId fromName(QStringView name);
     [[nodiscard]] inline bool operator==(QLocaleId other) const
     { return language_id == other.language_id && script_id == other.script_id && territory_id == other.territory_id; }
     [[nodiscard]] inline bool operator!=(QLocaleId other) const

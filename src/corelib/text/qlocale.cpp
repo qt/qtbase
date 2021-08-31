@@ -550,7 +550,7 @@ bool qt_splitLocaleName(QStringView name, QStringView *lang, QStringView *script
     return state != LangState;
 }
 
-QLocaleId QLocaleId::fromName(const QString &name)
+QLocaleId QLocaleId::fromName(QStringView name)
 {
     QStringView lang;
     QStringView script;
@@ -786,9 +786,9 @@ QBasicAtomicInt QLocalePrivate::s_generation = Q_BASIC_ATOMIC_INITIALIZER(0);
 Q_GLOBAL_STATIC_WITH_ARGS(QSharedDataPointer<QLocalePrivate>, defaultLocalePrivate,
                           (new QLocalePrivate(defaultData(), defaultIndex())))
 
-static QLocalePrivate *localePrivateByName(const QString &name)
+static QLocalePrivate *localePrivateByName(QStringView name)
 {
-    if (name == QLatin1String("C"))
+    if (name == u"C")
         return c_private();
     const int index = QLocaleData::findLocaleIndex(QLocaleId::fromName(name));
     Q_ASSERT(index >= 0 && size_t(index) < std::size(locale_data) - 1);
@@ -920,9 +920,12 @@ QLocale::QLocale(QLocalePrivate &dd)
 
 
 /*!
-    Constructs a QLocale object with the specified \a name,
-    which has the format
-    "language[_script][_territory][.codeset][@modifier]" or "C", where:
+    \since 6.3
+
+    Constructs a QLocale object with the specified \a name.
+
+    The name has the format "language[_script][_territory][.codeset][@modifier]"
+    or "C", where:
 
     \list
     \li language is a lowercase, two-letter, ISO 639 language code (some
@@ -945,11 +948,17 @@ QLocale::QLocale(QLocalePrivate &dd)
 
     \sa bcp47Name(), {Matching combinations of language, script and territory}
 */
-
-QLocale::QLocale(const QString &name)
+QLocale::QLocale(QStringView name)
     : d(localePrivateByName(name))
 {
 }
+
+#if QT_STRINGVIEW_LEVEL < 2
+/*!
+    \fn QLocale::QLocale(const QString &name)
+    \overload
+*/
+#endif
 
 /*!
     Constructs a QLocale object initialized with the default locale.
@@ -957,7 +966,7 @@ QLocale::QLocale(const QString &name)
     If no default locale was set using setDefault(), this locale will be the
     same as the one returned by system().
 
-    \sa setDefault()
+    \sa setDefault(), system()
 */
 
 QLocale::QLocale()
