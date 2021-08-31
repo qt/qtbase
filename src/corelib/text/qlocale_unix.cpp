@@ -113,7 +113,7 @@ Q_GLOBAL_STATIC(QSystemLocaleData, qSystemLocaleData)
 
 #ifndef QT_NO_SYSTEMLOCALE
 
-static bool contradicts(const QString &maybe, const QString &known)
+static bool contradicts(QStringView maybe, const QString &known)
 {
     if (maybe.isEmpty())
         return false;
@@ -149,11 +149,10 @@ QLocale QSystemLocale::fallbackLocale() const
 
     // ... otherwise, if the first part of LANGUAGE says more than or
     // contradicts what we have, use that:
-    QString language = qEnvironmentVariable("LANGUAGE");
-    if (!language.isEmpty()) {
-        language = language.split(QLatin1Char(':')).constFirst();
+    for (const auto &language : qEnvironmentVariable("LANGUAGE").tokenize(QLatin1Char(':'))) {
         if (contradicts(language, lang))
             return QLocale(language);
+        break; // We only look at the first entry.
     }
 
     return QLocale(lang);
