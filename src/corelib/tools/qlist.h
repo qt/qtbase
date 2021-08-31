@@ -162,13 +162,19 @@ public:
         inline iterator operator++(int) { T *n = i; ++i; return n; }
         inline iterator &operator--() { i--; return *this; }
         inline iterator operator--(int) { T *n = i; i--; return n; }
-        inline iterator &operator+=(qsizetype j) { i+=j; return *this; }
-        inline iterator &operator-=(qsizetype j) { i-=j; return *this; }
-        inline iterator operator+(qsizetype j) const { return iterator(i+j); }
-        inline iterator operator-(qsizetype j) const { return iterator(i-j); }
-        friend inline iterator operator+(qsizetype j, iterator k) { return k + j; }
         inline qsizetype operator-(iterator j) const { return i - j.i; }
         inline operator T*() const { return i; }
+
+        template <typename Int> std::enable_if_t<std::is_integral_v<Int>, iterator>
+        &operator+=(Int j) { i+=j; return *this; }
+        template <typename Int> std::enable_if_t<std::is_integral_v<Int>, iterator>
+        &operator-=(Int j) { i-=j; return *this; }
+        template <typename Int> std::enable_if_t<std::is_integral_v<Int>, iterator>
+        operator+(Int j) const { return iterator(i+j); }
+        template <typename Int> std::enable_if_t<std::is_integral_v<Int>, iterator>
+        operator-(Int j) const { return iterator(i-j); }
+        template <typename Int> friend std::enable_if_t<std::is_integral_v<Int>, iterator>
+        operator+(Int j, iterator k) { return k + j; }
     };
 
     class const_iterator {
@@ -206,13 +212,19 @@ public:
         inline const_iterator operator++(int) { const T *n = i; ++i; return n; }
         inline const_iterator &operator--() { i--; return *this; }
         inline const_iterator operator--(int) { const T *n = i; i--; return n; }
-        inline const_iterator &operator+=(qsizetype j) { i+=j; return *this; }
-        inline const_iterator &operator-=(qsizetype j) { i-=j; return *this; }
-        inline const_iterator operator+(qsizetype j) const { return const_iterator(i+j); }
-        inline const_iterator operator-(qsizetype j) const { return const_iterator(i-j); }
-        friend inline const_iterator operator+(qsizetype j, const_iterator k) { return k + j; }
         inline qsizetype operator-(const_iterator j) const { return i - j.i; }
         inline operator const T*() const { return i; }
+
+        template <typename Int> std::enable_if_t<std::is_integral_v<Int>, const_iterator>
+        &operator+=(Int j) { i+=j; return *this; }
+        template <typename Int> std::enable_if_t<std::is_integral_v<Int>, const_iterator>
+        &operator-=(Int j) { i-=j; return *this; }
+        template <typename Int> std::enable_if_t<std::is_integral_v<Int>, const_iterator>
+        operator+(Int j) const { return const_iterator(i+j); }
+        template <typename Int> std::enable_if_t<std::is_integral_v<Int>, const_iterator>
+        operator-(Int j) const { return const_iterator(i-j); }
+        template <typename Int> friend std::enable_if_t<std::is_integral_v<Int>, const_iterator>
+        operator+(Int j, const_iterator k) { return k + j; }
     };
     using Iterator = iterator;
     using ConstIterator = const_iterator;

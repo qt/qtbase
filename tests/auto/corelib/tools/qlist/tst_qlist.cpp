@@ -2404,30 +2404,97 @@ void tst_QList::iterators() const
     idx = 0;
     auto it = v.begin();
     QCOMPARE(*it, idx);
+    // idx == 0
 
     std::advance(it, 7);
     idx += 7;
     QCOMPARE(*it, idx);
+    // idx == 7
 
     it++;
     idx++;
     QCOMPARE(*it, idx);
+    // idx == 8
 
     ++it;
     ++idx;
     QCOMPARE(*it, idx);
+    // idx == 9
 
     std::advance(it, -3);
     idx -= 3;
     QCOMPARE(*it, idx);
+    // idx == 6
 
     it--;
     idx--;
     QCOMPARE(*it, idx);
+    // idx == 5
 
     --it;
     --idx;
     QCOMPARE(*it, idx);
+    // idx == 4
+
+    it = it + 1;
+    idx = idx + 1;
+    QCOMPARE(*it, idx);
+    // idx == 5
+
+    it = it + ptrdiff_t(1);
+    idx = idx + 1;
+    QCOMPARE(*it, idx);
+    // idx == 6
+
+    it = it + qsizetype(1);
+    idx = idx + 1;
+    QCOMPARE(*it, idx);
+    // idx == 7
+
+    it = it - qsizetype(1);
+    idx = idx - 1;
+    QCOMPARE(*it, idx);
+    // idx == 6
+
+    it = it - ptrdiff_t(1);
+    idx = idx - 1;
+    QCOMPARE(*it, idx);
+    // idx == 5
+
+    it = it - 1;
+    idx = idx - 1;
+    QCOMPARE(*it, idx);
+    // idx == 4
+
+    it -= 1;
+    idx -= 1;
+    QCOMPARE(*it, idx);
+    // idx == 3
+
+    it -= qsizetype(1);
+    idx -= 1;
+    QCOMPARE(*it, idx);
+    // idx == 2
+
+    it -= ptrdiff_t(1);
+    idx -= 1;
+    QCOMPARE(*it, idx);
+    // idx == 1
+
+    it += ptrdiff_t(1);
+    idx += 1;
+    QCOMPARE(*it, idx);
+    // idx == 2
+
+    it += qsizetype(1);
+    idx += 1;
+    QCOMPARE(*it, idx);
+    // idx == 3
+
+    it += 1;
+    idx += 1;
+    QCOMPARE(*it, idx);
+    // idx == 4
 
     *it = idx + 1;
     QCOMPARE(*it, idx + 1);
@@ -2484,30 +2551,97 @@ void tst_QList::constIterators() const
     qsizetype idx = 0;
     auto it = v.cbegin();
     QCOMPARE(*it, idx);
+    // idx == 0
 
     std::advance(it, 7);
     idx += 7;
     QCOMPARE(*it, idx);
+    // idx == 7
 
     it++;
     idx++;
     QCOMPARE(*it, idx);
+    // idx == 8
 
     ++it;
     ++idx;
     QCOMPARE(*it, idx);
+    // idx == 9
 
     std::advance(it, -3);
     idx -= 3;
     QCOMPARE(*it, idx);
+    // idx == 6
 
     it--;
     idx--;
     QCOMPARE(*it, idx);
+    // idx == 5
 
     --it;
     --idx;
     QCOMPARE(*it, idx);
+    // idx == 4
+
+    it = it + 1;
+    idx = idx + 1;
+    QCOMPARE(*it, idx);
+    // idx == 5
+
+    it = it + ptrdiff_t(1);
+    idx = idx + 1;
+    QCOMPARE(*it, idx);
+    // idx == 6
+
+    it = it + qsizetype(1);
+    idx = idx + 1;
+    QCOMPARE(*it, idx);
+    // idx == 7
+
+    it = it - qsizetype(1);
+    idx = idx - 1;
+    QCOMPARE(*it, idx);
+    // idx == 6
+
+    it = it - ptrdiff_t(1);
+    idx = idx - 1;
+    QCOMPARE(*it, idx);
+    // idx == 5
+
+    it = it - 1;
+    idx = idx - 1;
+    QCOMPARE(*it, idx);
+    // idx == 4
+
+    it -= 1;
+    idx -= 1;
+    QCOMPARE(*it, idx);
+    // idx == 3
+
+    it -= qsizetype(1);
+    idx -= 1;
+    QCOMPARE(*it, idx);
+    // idx == 2
+
+    it -= ptrdiff_t(1);
+    idx -= 1;
+    QCOMPARE(*it, idx);
+    // idx == 1
+
+    it += ptrdiff_t(1);
+    idx += 1;
+    QCOMPARE(*it, idx);
+    // idx == 2
+
+    it += qsizetype(1);
+    idx += 1;
+    QCOMPARE(*it, idx);
+    // idx == 3
+
+    it += 1;
+    idx += 1;
+    QCOMPARE(*it, idx);
+    // idx == 4
 
     // stl-style reverse iterators
     idx = v.size() - 1;
