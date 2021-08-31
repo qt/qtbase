@@ -76,14 +76,9 @@ void qt_doubleToAscii(double d, QLocaleData::DoubleForm form, int precision, cha
 [[nodiscard]] QByteArray qdtoAscii(double d, QLocaleData::DoubleForm form,
                                    int precision, bool uppercase);
 
-[[nodiscard]] inline bool isZero(double d)
+[[nodiscard]] constexpr inline bool isZero(double d)
 {
-    uchar *ch = (uchar *)&d;
-    if (QSysInfo::ByteOrder == QSysInfo::BigEndian) {
-        return !(ch[0] & 0x7F || ch[1] || ch[2] || ch[3] || ch[4] || ch[5] || ch[6] || ch[7]);
-    } else {
-        return !(ch[7] & 0x7F || ch[6] || ch[5] || ch[4] || ch[3] || ch[2] || ch[1] || ch[0]);
-    }
+    return d == 0; // Amusingly, compilers do not grumble.
 }
 
 // Enough space for the digits before the decimal separator:
