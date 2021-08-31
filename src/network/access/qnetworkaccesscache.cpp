@@ -167,22 +167,18 @@ void QNetworkAccessCache::linkEntry(const QByteArray &key)
             node->previous = lastExpiringNode;
             lastExpiringNode->next = node;
             lastExpiringNode = node;
-            Q_ASSERT(lastExpiringNode->next == nullptr);
         } else {
             // Insert in a sorted way, as different nodes might have had different expiryTimeoutSeconds set.
             Node *current = lastExpiringNode;
-            while (current->previous != nullptr && current->previous->timer >= node->timer) {
+            while (current->previous != nullptr && current->previous->timer >= node->timer)
                 current = current->previous;
-            }
             node->previous = current->previous;
             if (node->previous)
                 node->previous->next = node;
             node->next = current;
             current->previous = node;
-            if (node->previous == nullptr) {
+            if (node->previous == nullptr)
                 firstExpiringNode = node;
-                Q_ASSERT(firstExpiringNode->previous == nullptr);
-            }
         }
     } else {
         // no current last-to-expire node
@@ -192,6 +188,8 @@ void QNetworkAccessCache::linkEntry(const QByteArray &key)
         // there are no entries, so this is the next-to-expire too
         firstExpiringNode = node;
     }
+    Q_ASSERT(firstExpiringNode->previous == nullptr);
+    Q_ASSERT(lastExpiringNode->next == nullptr);
 }
 
 /*!
