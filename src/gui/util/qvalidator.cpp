@@ -683,8 +683,7 @@ QValidator::State QDoubleValidatorPrivate::validateWithLocale(QString &input, QL
 
     bool ok = false;
     double i = locale.toDouble(input, &ok); // returns 0.0 if !ok
-    if (i == qt_qnan())
-        return QValidator::Invalid;
+    Q_ASSERT(!qIsNaN(i)); // Would be caught by validateChars()
     if (!ok)
         return QValidator::Intermediate;
 
