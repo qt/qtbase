@@ -356,26 +356,33 @@ QTimeZonePrivate::Data QTimeZonePrivate::dataForLocalTime(qint64 forLocalMSecs, 
 
         // Check we do *really* have transitions for this zone:
         if (tran.atMSecsSinceEpoch != invalidMSecs()) {
-
-            /*
-              So now tran is definitely before and nextTran is either after or only
-              slightly before.  One is standard time; we interpret the other as DST
-              (although the transition might in fact by a change in standard offset).  Our
-              hint tells us which of those to use (defaulting to standard if no hint): try
-              it first; if that fails, try the other; if both fail, life's tricky.
-            */
+            /* So now tran is definitely before ... */
             Q_ASSERT(forLocalMSecs < 0
                      || forLocalMSecs - tran.offsetFromUtc * 1000 > tran.atMSecsSinceEpoch);
-            const qint64 nextStart = nextTran.atMSecsSinceEpoch;
-            // Work out the UTC values it might make sense to return:
-            nextTran.atMSecsSinceEpoch = forLocalMSecs - nextTran.offsetFromUtc * 1000;
+            // Work out the UTC value it would make sense to return if using tran:
             tran.atMSecsSinceEpoch = forLocalMSecs - tran.offsetFromUtc * 1000;
+            // If we know of no transition after it, the answer is easy:
+            const qint64 nextStart = nextTran.atMSecsSinceEpoch;
+            if (nextStart == invalidMSecs())
+                return tran;
+
+            /*
+              ... and nextTran is either after or only slightly before. We're
+              going to interpret one as standard time, the other as DST
+              (although the transition might in fact be a change in standard
+              offset, or a change in DST offset, e.g. to/from double-DST). Our
+              hint tells us which of those to use (defaulting to standard if no
+              hint): try it first; if that fails, try the other; if both fail,
+              life's tricky.
+            */
+            // Work out the UTC value it would make sense to return if using nextTran:
+            nextTran.atMSecsSinceEpoch = forLocalMSecs - nextTran.offsetFromUtc * 1000;
 
             // If both or neither have zero DST, treat the one with lower offset as standard:
             const bool nextIsDst = !nextTran.daylightTimeOffset == !tran.daylightTimeOffset
                 ? tran.offsetFromUtc < nextTran.offsetFromUtc : nextTran.daylightTimeOffset;
             // If that agrees with hint > 0, our first guess is to use nextTran; else tran.
-            const bool nextFirst = nextIsDst == (hint > 0) && nextStart != invalidMSecs();
+            const bool nextFirst = nextIsDst == (hint > 0);
             for (int i = 0; i < 2; i++) {
                 /*
                   On the first pass, the case we consider is what hint told us to expect
@@ -384,12 +391,11 @@ QTimeZonePrivate::Data QTimeZonePrivate::dataForLocalTime(qint64 forLocalMSecs, 
                   by which time the second case, that we're trying, is likely right.
                 */
                 if (nextFirst ? i == 0 : i) {
-                    Q_ASSERT(nextStart != invalidMSecs());
                     if (nextStart <= nextTran.atMSecsSinceEpoch)
                         return nextTran;
                 } else {
                     // If next is invalid, nextFirst is false, to route us here first:
-                    if (nextStart == invalidMSecs() || nextStart > tran.atMSecsSinceEpoch)
+                    if (nextStart > tran.atMSecsSinceEpoch)
                         return tran;
                 }
             }
