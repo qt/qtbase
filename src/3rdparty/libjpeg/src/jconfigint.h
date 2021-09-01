@@ -8,10 +8,12 @@
 
 #define PACKAGE_NAME "libjpeg-turbo"
 
-#define VERSION "2.1.0"
+#define VERSION "2.1.1"
 
 #if SIZE_MAX == 0xffffffff
 #define SIZEOF_SIZE_T 4
 #elif SIZE_MAX == 0xffffffffffffffff
 #define SIZEOF_SIZE_T 8
 #endif
+
+#define FALLTHROUGH
