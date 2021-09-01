@@ -1040,10 +1040,12 @@ public:
     virtual bool create() = 0;
 
 protected:
+    static const int BINDING_PREALLOC = 12;
+    static const int LAYOUT_DESC_FIELD_COUNT = 4;
     QRhiShaderResourceBindings(QRhiImplementation *rhi);
-    QVarLengthArray<QRhiShaderResourceBinding, 16> m_bindings;
+    QVarLengthArray<QRhiShaderResourceBinding, BINDING_PREALLOC> m_bindings;
     uint m_layoutDescHash = 0;
-    QVarLengthArray<uint, 16 * 3> m_layoutDesc;
+    QVarLengthArray<uint, BINDING_PREALLOC * LAYOUT_DESC_FIELD_COUNT> m_layoutDesc;
     friend class QRhiImplementation;
 #ifndef QT_NO_DEBUG_STREAM
     friend Q_GUI_EXPORT QDebug operator<<(QDebug, const QRhiShaderResourceBindings &);
