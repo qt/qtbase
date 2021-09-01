@@ -766,7 +766,7 @@ bool Parser::parseNumber()
 
         unescaped = %x20-21 / %x23-5B / %x5D-10FFFF
  */
-static inline bool addHexDigit(char digit, uint *result)
+static inline bool addHexDigit(char digit, char32_t *result)
 {
     *result <<= 4;
     if (digit >= '0' && digit <= '9')
@@ -780,7 +780,7 @@ static inline bool addHexDigit(char digit, uint *result)
     return true;
 }
 
-static inline bool scanEscapeSequence(const char *&json, const char *end, uint *ch)
+static inline bool scanEscapeSequence(const char *&json, const char *end, char32_t *ch)
 {
     ++json;
     if (json >= end)
@@ -825,7 +825,7 @@ static inline bool scanEscapeSequence(const char *&json, const char *end, uint *
     return true;
 }
 
-static inline bool scanUtf8Char(const char *&json, const char *end, uint *result)
+static inline bool scanUtf8Char(const char *&json, const char *end, char32_t *result)
 {
     const auto *usrc = reinterpret_cast<const uchar *>(json);
     const auto *uend = reinterpret_cast<const uchar *>(end);
@@ -848,7 +848,7 @@ bool Parser::parseString()
     bool isUtf8 = true;
     bool isAscii = true;
     while (json < end) {
-        uint ch = 0;
+        char32_t ch = 0;
         if (*json == '"')
             break;
         if (*json == '\\') {
@@ -890,7 +890,7 @@ bool Parser::parseString()
 
     QString ucs4;
     while (json < end) {
-        uint ch = 0;
+        char32_t ch = 0;
         if (*json == '"')
             break;
         else if (*json == '\\') {

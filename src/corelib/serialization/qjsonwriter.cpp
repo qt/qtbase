@@ -65,8 +65,8 @@ static QByteArray escapedString(const QString &s)
 
     uchar *cursor = reinterpret_cast<uchar *>(const_cast<char *>(ba.constData()));
     const uchar *ba_end = cursor + ba.length();
-    const ushort *src = reinterpret_cast<const ushort *>(s.constBegin());
-    const ushort *const end = reinterpret_cast<const ushort *>(s.constEnd());
+    const char16_t *src = reinterpret_cast<const char16_t *>(s.constBegin());
+    const char16_t *const end = reinterpret_cast<const char16_t *>(s.constEnd());
 
     while (src != end) {
         if (cursor >= ba_end - 6) {
@@ -77,7 +77,7 @@ static QByteArray escapedString(const QString &s)
             ba_end = (const uchar *)ba.constData() + ba.length();
         }
 
-        uint u = *src++;
+        char16_t u = *src++;
         if (u < 0x80) {
             if (u < 0x20 || u == 0x22 || u == 0x5c) {
                 *cursor++ = '\\';

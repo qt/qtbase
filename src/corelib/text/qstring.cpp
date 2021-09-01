@@ -885,8 +885,8 @@ static int ucstricmp8(const char *utf8, const char *utf8end, const QChar *utf16,
     QStringIterator src2(utf16, utf16end);
 
     while (src1 < end1 && src2.hasNext()) {
-        uint uc1 = 0;
-        uint *output = &uc1;
+        char32_t uc1 = 0;
+        char32_t *output = &uc1;
         uchar b = *src1++;
         int res = QUtf8Functions::fromUtf8<QUtf8BaseTraits>(b, output, src1, end1);
         if (res < 0) {
@@ -896,7 +896,7 @@ static int ucstricmp8(const char *utf8, const char *utf8end, const QChar *utf16,
             uc1 = QChar::toCaseFolded(uc1);
         }
 
-        uint uc2 = QChar::toCaseFolded(src2.next());
+        char32_t uc2 = QChar::toCaseFolded(src2.next());
         int diff = uc1 - uc2;   // can't underflow
         if (diff)
             return diff;

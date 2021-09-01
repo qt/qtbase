@@ -70,9 +70,6 @@ struct QUtf8BaseTraits
     static const int Error = -1;
     static const int EndOfString = -2;
 
-    static bool isValidCharacter(uint u)
-    { return int(u) >= 0; }
-
     static void appendByte(uchar *&ptr, uchar b)
     { *ptr++ = b; }
 
@@ -97,17 +94,8 @@ struct QUtf8BaseTraits
     static void advanceByte(const char8_t *&ptr, int n = 1)
     { ptr += n; }
 
-    static void appendUtf16(ushort *&ptr, ushort uc)
-    { *ptr++ = uc; }
-
-    static void appendUtf16(char16_t *&ptr, ushort uc)
+    static void appendUtf16(char16_t *&ptr, char16_t uc)
     { *ptr++ = char16_t(uc); }
-
-    static void appendUcs4(ushort *&ptr, uint uc)
-    {
-        appendUtf16(ptr, QChar::highSurrogate(uc));
-        appendUtf16(ptr, QChar::lowSurrogate(uc));
-    }
 
     static void appendUcs4(char16_t *&ptr, char32_t uc)
     {
@@ -115,36 +103,18 @@ struct QUtf8BaseTraits
         appendUtf16(ptr, QChar::lowSurrogate(uc));
     }
 
-    static ushort peekUtf16(const ushort *ptr, qsizetype n = 0)
-    { return ptr[n]; }
-
-    static ushort peekUtf16(const char16_t *ptr, int n = 0)
-    { return ptr[n]; }
-
-    static qptrdiff availableUtf16(const ushort *ptr, const ushort *end)
-    { return end - ptr; }
+    static char16_t peekUtf16(const char16_t *ptr, qsizetype n = 0) { return ptr[n]; }
 
     static qptrdiff availableUtf16(const char16_t *ptr, const char16_t *end)
     { return end - ptr; }
 
-    static void advanceUtf16(const ushort *&ptr, qsizetype n = 1)
-    { ptr += n; }
+    static void advanceUtf16(const char16_t *&ptr, qsizetype n = 1) { ptr += n; }
 
-    static void advanceUtf16(const char16_t *&ptr, int n = 1)
-    { ptr += n; }
-
-    // it's possible to output to UCS-4 too
-    static void appendUtf16(uint *&ptr, ushort uc)
-    { *ptr++ = uc; }
-
-    static void appendUtf16(char32_t *&ptr, ushort uc)
+    static void appendUtf16(char32_t *&ptr, char16_t uc)
     { *ptr++ = char32_t(uc); }
 
-    static void appendUcs4(uint *&ptr, uint uc)
+    static void appendUcs4(char32_t *&ptr, char32_t uc)
     { *ptr++ = uc; }
-
-    static void appendUcs4(char32_t *&ptr, uint uc)
-    { *ptr++ = char32_t(uc); }
 };
 
 struct QUtf8BaseTraitsNoAscii : public QUtf8BaseTraits
@@ -159,7 +129,7 @@ namespace QUtf8Functions
     /// if \a u is a high surrogate, Error if the next isn't a low one,
     /// EndOfString if we run into the end of the string.
     template <typename Traits, typename OutputPtr, typename InputPtr> inline
-    int toUtf8(ushort u, OutputPtr &dst, InputPtr &src, InputPtr end)
+    int toUtf8(char16_t u, OutputPtr &dst, InputPtr &src, InputPtr end)
     {
         if (!Traits::skipAsciiHandling && u < 0x80) {
             // U+0000 to U+007F (US-ASCII) - one byte
@@ -183,14 +153,14 @@ namespace QUtf8Functions
                 if (Traits::availableUtf16(src, end) == 0)
                     return Traits::EndOfString;
 
-                ushort low = Traits::peekUtf16(src);
+                char16_t low = Traits::peekUtf16(src);
                 if (!QChar::isHighSurrogate(u))
                     return Traits::Error;
                 if (!QChar::isLowSurrogate(low))
                     return Traits::Error;
 
                 Traits::advanceUtf16(src);
-                uint ucs4 = QChar::surrogateToUcs4(u, low);
+                char32_t ucs4 = QChar::surrogateToUcs4(u, low);
 
                 if (!Traits::allowNonCharacters && QChar::isNonCharacter(ucs4))
                     return Traits::Error;
@@ -202,7 +172,7 @@ namespace QUtf8Functions
                 Traits::appendByte(dst, 0x80 | (uchar(ucs4 >> 12) & 0x3f));
 
                 // for the rest of the bytes
-                u = ushort(ucs4);
+                u = char16_t(ucs4);
             }
 
             // second to last byte
@@ -225,8 +195,8 @@ namespace QUtf8Functions
     qsizetype fromUtf8(uchar b, OutputPtr &dst, InputPtr &src, InputPtr end)
     {
         qsizetype charsNeeded;
-        uint min_uc;
-        uint uc;
+        char32_t min_uc;
+        char32_t uc;
 
         if (!Traits::skipAsciiHandling && b < 0x80) {
             // US-ASCII
@@ -306,7 +276,7 @@ namespace QUtf8Functions
         if (!QChar::requiresSurrogates(uc)) {
             // UTF-8 decoded and no surrogates are required
             // detach if necessary
-            Traits::appendUtf16(dst, ushort(uc));
+            Traits::appendUtf16(dst, char16_t(uc));
         } else {
             // UTF-8 decoded to something that requires a surrogate pair
             Traits::appendUcs4(dst, uc);
