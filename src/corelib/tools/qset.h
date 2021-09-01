@@ -72,10 +72,10 @@ public:
     inline void swap(QSet<T> &other) noexcept { q_hash.swap(other.q_hash); }
 
     template <typename U = T>
-    QTypeTraits::compare_eq_result<U> operator==(const QSet<T> &other) const
+    QTypeTraits::compare_eq_result_container<QSet, U> operator==(const QSet<T> &other) const
     { return q_hash == other.q_hash; }
     template <typename U = T>
-    QTypeTraits::compare_eq_result<U> operator!=(const QSet<T> &other) const
+    QTypeTraits::compare_eq_result_container<QSet, U> operator!=(const QSet<T> &other) const
     { return q_hash != other.q_hash; }
 
     inline qsizetype size() const { return q_hash.size(); }

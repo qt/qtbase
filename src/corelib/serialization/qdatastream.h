@@ -351,9 +351,16 @@ QDataStream &writeAssociativeMultiContainer(QDataStream &s, const Container &c)
 template<typename ...T>
 using QDataStreamIfHasOStreamOperators =
     std::enable_if_t<std::conjunction_v<QTypeTraits::has_ostream_operator<QDataStream, T>...>, QDataStream &>;
+template<typename Container, typename ...T>
+using QDataStreamIfHasOStreamOperatorsContainer =
+    std::enable_if_t<std::conjunction_v<QTypeTraits::has_ostream_operator_container<QDataStream, Container, T>...>, QDataStream &>;
+
 template<typename ...T>
 using QDataStreamIfHasIStreamOperators =
     std::enable_if_t<std::conjunction_v<QTypeTraits::has_istream_operator<QDataStream, T>...>, QDataStream &>;
+template<typename Container, typename ...T>
+using QDataStreamIfHasIStreamOperatorsContainer =
+    std::enable_if_t<std::conjunction_v<QTypeTraits::has_istream_operator_container<QDataStream, Container, T>...>, QDataStream &>;
 
 /*****************************************************************************
   QDataStream inline functions
@@ -425,74 +432,74 @@ operator>>(QDataStream &s, T &t)
 { return s >> reinterpret_cast<typename std::underlying_type<T>::type &>(t); }
 
 template<typename T>
-inline QDataStreamIfHasIStreamOperators<T> operator>>(QDataStream &s, QList<T> &v)
+inline QDataStreamIfHasIStreamOperatorsContainer<QList<T>, T> operator>>(QDataStream &s, QList<T> &v)
 {
     return QtPrivate::readArrayBasedContainer(s, v);
 }
 
 template<typename T>
-inline QDataStreamIfHasOStreamOperators<T> operator<<(QDataStream &s, const QList<T> &v)
+inline QDataStreamIfHasOStreamOperatorsContainer<QList<T>, T> operator<<(QDataStream &s, const QList<T> &v)
 {
     return QtPrivate::writeSequentialContainer(s, v);
 }
 
 template <typename T>
-inline QDataStreamIfHasIStreamOperators<T> operator>>(QDataStream &s, QSet<T> &set)
+inline QDataStreamIfHasIStreamOperatorsContainer<QSet<T>, T> operator>>(QDataStream &s, QSet<T> &set)
 {
     return QtPrivate::readListBasedContainer(s, set);
 }
 
 template <typename T>
-inline QDataStreamIfHasOStreamOperators<T> operator<<(QDataStream &s, const QSet<T> &set)
+inline QDataStreamIfHasOStreamOperatorsContainer<QSet<T>, T> operator<<(QDataStream &s, const QSet<T> &set)
 {
     return QtPrivate::writeSequentialContainer(s, set);
 }
 
 template <class Key, class T>
-inline QDataStreamIfHasIStreamOperators<Key, T> operator>>(QDataStream &s, QHash<Key, T> &hash)
+inline QDataStreamIfHasIStreamOperatorsContainer<QHash<Key, T>, Key, T> operator>>(QDataStream &s, QHash<Key, T> &hash)
 {
     return QtPrivate::readAssociativeContainer(s, hash);
 }
 
 template <class Key, class T>
 
-inline QDataStreamIfHasOStreamOperators<Key, T> operator<<(QDataStream &s, const QHash<Key, T> &hash)
+inline QDataStreamIfHasOStreamOperatorsContainer<QHash<Key, T>, Key, T> operator<<(QDataStream &s, const QHash<Key, T> &hash)
 {
     return QtPrivate::writeAssociativeContainer(s, hash);
 }
 
 template <class Key, class T>
-inline QDataStreamIfHasIStreamOperators<Key, T> operator>>(QDataStream &s, QMultiHash<Key, T> &hash)
+inline QDataStreamIfHasIStreamOperatorsContainer<QMultiHash<Key, T>, Key, T> operator>>(QDataStream &s, QMultiHash<Key, T> &hash)
 {
     return QtPrivate::readAssociativeContainer(s, hash);
 }
 
 template <class Key, class T>
-inline QDataStreamIfHasOStreamOperators<Key, T> operator<<(QDataStream &s, const QMultiHash<Key, T> &hash)
+inline QDataStreamIfHasOStreamOperatorsContainer<QMultiHash<Key, T>, Key, T> operator<<(QDataStream &s, const QMultiHash<Key, T> &hash)
 {
     return QtPrivate::writeAssociativeMultiContainer(s, hash);
 }
 
 template <class Key, class T>
-inline QDataStreamIfHasIStreamOperators<Key, T> operator>>(QDataStream &s, QMap<Key, T> &map)
+inline QDataStreamIfHasIStreamOperatorsContainer<QMap<Key, T>, Key, T> operator>>(QDataStream &s, QMap<Key, T> &map)
 {
     return QtPrivate::readAssociativeContainer(s, map);
 }
 
 template <class Key, class T>
-inline QDataStreamIfHasOStreamOperators<Key, T> operator<<(QDataStream &s, const QMap<Key, T> &map)
+inline QDataStreamIfHasOStreamOperatorsContainer<QMap<Key, T>, Key, T> operator<<(QDataStream &s, const QMap<Key, T> &map)
 {
     return QtPrivate::writeAssociativeContainer(s, map);
 }
 
 template <class Key, class T>
-inline QDataStreamIfHasIStreamOperators<Key, T> operator>>(QDataStream &s, QMultiMap<Key, T> &map)
+inline QDataStreamIfHasIStreamOperatorsContainer<QMultiMap<Key, T>, Key, T> operator>>(QDataStream &s, QMultiMap<Key, T> &map)
 {
     return QtPrivate::readAssociativeContainer(s, map);
 }
 
 template <class Key, class T>
-inline QDataStreamIfHasOStreamOperators<Key, T> operator<<(QDataStream &s, const QMultiMap<Key, T> &map)
+inline QDataStreamIfHasOStreamOperatorsContainer<QMultiMap<Key, T>, Key, T> operator<<(QDataStream &s, const QMultiMap<Key, T> &map)
 {
     return QtPrivate::writeAssociativeMultiContainer(s, map);
 }
