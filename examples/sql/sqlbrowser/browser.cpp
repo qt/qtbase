@@ -141,7 +141,7 @@ void Browser::addConnection()
         q.exec("insert into Movies values (2, 'Bis ans Ende der Welt', 'Wim Wenders', '6.5')");
         q.exec("insert into Movies values (3, 'Hardware', 'Richard Stanley', '5.2')");
         q.exec("insert into Movies values (4, 'Mitchell', 'Andrew V. McLaglen', '2.1')");
-        q.exec("create table Names (id integer primary key, Firstname varchar, Lastname varchar, City varchar)");
+        q.exec("create table Names (id integer primary key, FirstName varchar, LastName varchar, City varchar)");
         q.exec("insert into Names values (0, 'Sala', 'Palmer', 'Morristown')");
         q.exec("insert into Names values (1, 'Christopher', 'Walker', 'Morristown')");
         q.exec("insert into Names values (2, 'Donald', 'Duck', 'Andeby')");
