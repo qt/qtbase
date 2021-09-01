@@ -3044,9 +3044,11 @@ void QRhiImplementation::updateLayoutDesc(QRhiShaderResourceBindings *srb)
     srb->m_layoutDesc.clear();
     for (const QRhiShaderResourceBinding &b : qAsConst(srb->m_bindings)) {
         const QRhiShaderResourceBinding::Data *d = b.data();
-        // must match QRhiShaderResourceBinding::isLayoutCompatible()
-        srb->m_layoutDescHash ^= uint(d->binding) ^ uint(d->stage) ^ uint(d->type);
-        srb->m_layoutDesc << uint(d->binding) << uint(d->stage) << uint(d->type);
+        // the logic must match QRhiShaderResourceBinding::isLayoutCompatible()
+        const int count = d->type == QRhiShaderResourceBinding::SampledTexture ? d->u.stex.count : 1;
+        // the number of entries here should match LAYOUT_DESC_FIELD_COUNT
+        srb->m_layoutDescHash ^= uint(d->binding) ^ uint(d->stage) ^ uint(d->type) ^ uint(count);
+        srb->m_layoutDesc << uint(d->binding) << uint(d->stage) << uint(d->type) << uint(count);
     }
 }
 
@@ -3110,7 +3112,10 @@ void QRhiImplementation::updateLayoutDesc(QRhiShaderResourceBindings *srb)
  */
 bool QRhiShaderResourceBinding::isLayoutCompatible(const QRhiShaderResourceBinding &other) const
 {
-    return d.binding == other.d.binding && d.stage == other.d.stage && d.type == other.d.type;
+    // i.e. everything that goes into a VkDescriptorSetLayoutBinding must match
+    const int thisCount = d.type == QRhiShaderResourceBinding::SampledTexture ? d.u.stex.count : 1;
+    const int otherCount = other.d.type == QRhiShaderResourceBinding::SampledTexture ? other.d.u.stex.count : 1;
+    return d.binding == other.d.binding && d.stage == other.d.stage && d.type == other.d.type && thisCount == otherCount;
 }
 
 /*!
