@@ -68,6 +68,7 @@ QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_SYSTEMLOCALE
 struct QLocaleData;
+// Subclassed by Android platform plugin:
 class Q_CORE_EXPORT QSystemLocale
 {
 public:
@@ -154,7 +155,7 @@ namespace QIcu {
 
 struct QLocaleId
 {
-    [[nodiscard]] Q_CORE_EXPORT static QLocaleId fromName(QStringView name);
+    [[nodiscard]] static QLocaleId fromName(QStringView name);
     [[nodiscard]] inline bool operator==(QLocaleId other) const
     { return language_id == other.language_id && script_id == other.script_id && territory_id == other.territory_id; }
     [[nodiscard]] inline bool operator!=(QLocaleId other) const
@@ -403,7 +404,7 @@ public:
     quint8 m_grouping_least : 3; // Number of digits after last grouping separator (before decimal).
 };
 
-class Q_CORE_EXPORT QLocalePrivate
+class QLocalePrivate
 {
 public:
     constexpr QLocalePrivate(const QLocaleData *data, const uint index,
