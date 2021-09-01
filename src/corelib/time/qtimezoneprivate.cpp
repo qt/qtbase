@@ -410,7 +410,7 @@ QTimeZonePrivate::Data QTimeZonePrivate::dataForLocalTime(qint64 forLocalMSecs, 
             const bool nextIsDst = !nextTran.daylightTimeOffset == !tran.daylightTimeOffset
                 ? tran.offsetFromUtc < nextTran.offsetFromUtc : nextTran.daylightTimeOffset;
             // If that agrees with hint > 0, our first guess is to use nextTran; else tran.
-            const bool nextFirst = nextIsDst == (hint > 0) && nextStart != invalidMSecs();
+            const bool nextFirst = nextIsDst == (hint > 0);
             for (int i = 0; i < 2; i++) {
                 /*
                   On the first pass, the case we consider is what hint told us to expect
