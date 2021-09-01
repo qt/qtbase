@@ -277,7 +277,7 @@ public:
     }
 
     template <typename AKey = Key, typename AT = T> friend
-    QTypeTraits::compare_eq_result<AKey, AT> operator==(const QMap &lhs, const QMap &rhs)
+    QTypeTraits::compare_eq_result_container<QMap, AKey, AT> operator==(const QMap &lhs, const QMap &rhs)
     {
         if (lhs.d == rhs.d)
             return true;
@@ -288,7 +288,7 @@ public:
     }
 
     template <typename AKey = Key, typename AT = T> friend
-    QTypeTraits::compare_eq_result<AKey, AT> operator!=(const QMap &lhs, const QMap &rhs)
+    QTypeTraits::compare_eq_result_container<QMap, AKey, AT> operator!=(const QMap &lhs, const QMap &rhs)
     {
         return !(lhs == rhs);
     }
@@ -905,7 +905,7 @@ public:
     }
 
     template <typename AKey = Key, typename AT = T> friend
-    QTypeTraits::compare_eq_result<AKey, AT> operator==(const QMultiMap &lhs, const QMultiMap &rhs)
+    QTypeTraits::compare_eq_result_container<QMultiMap, AKey, AT> operator==(const QMultiMap &lhs, const QMultiMap &rhs)
     {
         if (lhs.d == rhs.d)
             return true;
@@ -916,7 +916,7 @@ public:
     }
 
     template <typename AKey = Key, typename AT = T> friend
-    QTypeTraits::compare_eq_result<AKey, AT> operator!=(const QMultiMap &lhs, const QMultiMap &rhs)
+    QTypeTraits::compare_eq_result_container<QMultiMap, AKey, AT> operator!=(const QMultiMap &lhs, const QMultiMap &rhs)
     {
         return !(lhs == rhs);
     }

@@ -160,6 +160,150 @@ struct Pod {
     int i1, i2;
 };
 
+// Compile-time checks for recursive containers
+struct Dummy
+{
+    bool operator==(const Dummy &) const { return false; }
+    bool operator<(const Dummy &) const { return false; }
+};
+
+struct RecursiveList : public QList<RecursiveList> {};
+struct RecursiveSet : public QSet<RecursiveSet> {};
+struct RecursiveMapV : public QMap<Dummy, RecursiveMapV> {};
+struct RecursiveMapK : public QMap<RecursiveMapK, Dummy> {};
+struct RecursiveMultiMapV : public QMultiMap<Dummy, RecursiveMultiMapV> {};
+struct RecursiveMultiMapK : public QMultiMap<RecursiveMultiMapK, Dummy> {};
+struct RecursiveHashV : public QHash<Dummy, RecursiveHashV> {};
+struct RecursiveHashK : public QHash<RecursiveHashK, Dummy> {};
+struct RecursiveMultiHashV : public QMultiHash<Dummy, RecursiveMultiHashV> {};
+struct RecursiveMultiHashK : public QMultiHash<RecursiveMultiHashK, Dummy> {};
+
+struct Empty {};
+struct NoCmpParamRecursiveMapV : public QMap<Empty, NoCmpParamRecursiveMapV> {};
+struct NoCmpParamRecursiveMapK : public QMap<NoCmpParamRecursiveMapK, Empty> {};
+struct NoCmpParamRecursiveMultiMapV : public QMultiMap<Empty, NoCmpParamRecursiveMultiMapV> {};
+struct NoCmpParamRecursiveMultiMapK : public QMultiMap<NoCmpParamRecursiveMultiMapK, Empty> {};
+struct NoCmpParamRecursiveHashV : public QHash<Empty, NoCmpParamRecursiveHashV> {};
+struct NoCmpParamRecursiveHashK : public QHash<NoCmpParamRecursiveHashK, Empty> {};
+struct NoCmpParamRecursiveMultiHashV : public QMultiHash<Empty, NoCmpParamRecursiveMultiHashV> {};
+struct NoCmpParamRecursiveMultiHashK : public QMultiHash<NoCmpParamRecursiveMultiHashK, Empty> {};
+
+struct NoCmpRecursiveList : public QList<NoCmpRecursiveList>
+{
+    bool operator==(const RecursiveList &) const = delete;
+    bool operator<(const RecursiveList &) const = delete;
+};
+struct NoCmpRecursiveSet : public QSet<NoCmpRecursiveSet>
+{
+    bool operator==(const NoCmpRecursiveSet &) const = delete;
+};
+struct NoCmpRecursiveMapV : public QMap<Dummy, NoCmpRecursiveMapV>
+{
+    bool operator==(const NoCmpRecursiveMapV &) const = delete;
+};
+struct NoCmpRecursiveMapK : public QMap<NoCmpRecursiveMapK, Dummy>
+{
+    bool operator==(const NoCmpRecursiveMapK &) const = delete;
+};
+struct NoCmpRecursiveMultiMapV : public QMultiMap<Dummy, NoCmpRecursiveMultiMapV>
+{
+    bool operator==(const NoCmpRecursiveMultiMapV &) const = delete;
+};
+struct NoCmpRecursiveMultiMapK : public QMultiMap<NoCmpRecursiveMultiMapK, Dummy>
+{
+    bool operator==(const NoCmpRecursiveMultiMapK &) const = delete;
+};
+struct NoCmpRecursiveHashV : public QHash<Dummy, NoCmpRecursiveHashV>
+{
+    bool operator==(const NoCmpRecursiveHashV &) const = delete;
+};
+struct NoCmpRecursiveHashK : public QHash<NoCmpRecursiveHashK, Dummy>
+{
+    bool operator==(const NoCmpRecursiveHashK &) const = delete;
+};
+struct NoCmpRecursiveMultiHashV : public QMultiHash<Dummy, NoCmpRecursiveMultiHashV>
+{
+    bool operator==(const NoCmpRecursiveMultiHashV &) const = delete;
+};
+struct NoCmpRecursiveMultiHashK : public QMultiHash<NoCmpRecursiveMultiHashK, Dummy>
+{
+    bool operator==(const NoCmpRecursiveMultiHashK &) const = delete;
+};
+
+uint qHash(const Dummy &) { return 0; }
+uint qHash(const RecursiveSet &) { return 0; }
+uint qHash(const RecursiveHashK &) { return 0; }
+uint qHash(const RecursiveHashV &) { return 0; }
+uint qHash(const RecursiveMultiHashK &) { return 0; }
+uint qHash(const RecursiveMultiHashV &) { return 0; }
+
+Q_DECLARE_METATYPE(RecursiveList);
+Q_DECLARE_METATYPE(RecursiveSet);
+Q_DECLARE_METATYPE(RecursiveMapV);
+Q_DECLARE_METATYPE(RecursiveMapK);
+Q_DECLARE_METATYPE(RecursiveMultiMapV);
+Q_DECLARE_METATYPE(RecursiveMultiMapK);
+Q_DECLARE_METATYPE(RecursiveHashV);
+Q_DECLARE_METATYPE(RecursiveHashK);
+Q_DECLARE_METATYPE(RecursiveMultiHashV);
+Q_DECLARE_METATYPE(RecursiveMultiHashK);
+
+Q_DECLARE_METATYPE(NoCmpParamRecursiveMapV);
+Q_DECLARE_METATYPE(NoCmpParamRecursiveMapK);
+Q_DECLARE_METATYPE(NoCmpParamRecursiveMultiMapV);
+Q_DECLARE_METATYPE(NoCmpParamRecursiveMultiMapK);
+Q_DECLARE_METATYPE(NoCmpParamRecursiveHashK);
+// TODO: fix, this requires operator== from key type (QTBUG-96256)
+// Q_DECLARE_METATYPE(NoCmpParamRecursiveHashV);
+Q_DECLARE_METATYPE(NoCmpParamRecursiveMultiHashK);
+// TODO: fix, this requires operator== from key type (QTBUG-96256)
+// Q_DECLARE_METATYPE(NoCmpParamRecursiveMultiHashK);
+
+Q_DECLARE_METATYPE(NoCmpRecursiveList);
+// TODO: fix, this requires operator== (QTBUG-96257)
+// Q_DECLARE_METATYPE(NoCmpRecursiveSet);
+Q_DECLARE_METATYPE(NoCmpRecursiveMapV);
+Q_DECLARE_METATYPE(NoCmpRecursiveMapK);
+Q_DECLARE_METATYPE(NoCmpRecursiveMultiMapV);
+Q_DECLARE_METATYPE(NoCmpRecursiveMultiMapK);
+Q_DECLARE_METATYPE(NoCmpRecursiveHashV);
+Q_DECLARE_METATYPE(NoCmpRecursiveHashK);
+Q_DECLARE_METATYPE(NoCmpRecursiveMultiHashV);
+Q_DECLARE_METATYPE(NoCmpRecursiveMultiHashK);
+
+static_assert(QTypeTraits::has_operator_equal_v<RecursiveList>);
+static_assert(QTypeTraits::has_operator_less_than_v<RecursiveList>);
+static_assert(QTypeTraits::has_operator_equal_v<RecursiveSet>);
+static_assert(QTypeTraits::has_operator_equal_v<RecursiveMapV>);
+static_assert(QTypeTraits::has_operator_equal_v<RecursiveMapK>);
+static_assert(QTypeTraits::has_operator_equal_v<RecursiveMultiMapV>);
+static_assert(QTypeTraits::has_operator_equal_v<RecursiveMultiMapK>);
+static_assert(QTypeTraits::has_operator_equal_v<RecursiveHashV>);
+static_assert(QTypeTraits::has_operator_equal_v<RecursiveHashK>);
+static_assert(QTypeTraits::has_operator_equal_v<RecursiveMultiHashV>);
+static_assert(QTypeTraits::has_operator_equal_v<RecursiveMultiHashK>);
+
+static_assert(!QTypeTraits::has_operator_equal_v<NoCmpParamRecursiveMapV>);
+static_assert(!QTypeTraits::has_operator_equal_v<NoCmpParamRecursiveMapK>);
+static_assert(!QTypeTraits::has_operator_equal_v<NoCmpParamRecursiveMultiMapV>);
+static_assert(!QTypeTraits::has_operator_equal_v<NoCmpParamRecursiveMultiMapK>);
+static_assert(QTypeTraits::has_operator_equal_v<NoCmpParamRecursiveHashV>);
+static_assert(!QTypeTraits::has_operator_equal_v<NoCmpParamRecursiveHashK>);
+static_assert(QTypeTraits::has_operator_equal_v<NoCmpParamRecursiveMultiHashV>);
+static_assert(!QTypeTraits::has_operator_equal_v<NoCmpParamRecursiveMultiHashK>);
+
+static_assert(!QTypeTraits::has_operator_equal_v<NoCmpRecursiveList>);
+static_assert(!QTypeTraits::has_operator_less_than_v<NoCmpRecursiveList>);
+static_assert(!QTypeTraits::has_operator_equal_v<NoCmpRecursiveSet>);
+static_assert(!QTypeTraits::has_operator_equal_v<NoCmpRecursiveMapV>);
+static_assert(!QTypeTraits::has_operator_equal_v<NoCmpRecursiveMapK>);
+static_assert(!QTypeTraits::has_operator_equal_v<NoCmpRecursiveMultiMapV>);
+static_assert(!QTypeTraits::has_operator_equal_v<NoCmpRecursiveMultiMapK>);
+static_assert(!QTypeTraits::has_operator_equal_v<NoCmpRecursiveHashV>);
+static_assert(!QTypeTraits::has_operator_equal_v<NoCmpRecursiveHashK>);
+static_assert(!QTypeTraits::has_operator_equal_v<NoCmpRecursiveMultiHashV>);
+static_assert(!QTypeTraits::has_operator_equal_v<NoCmpRecursiveMultiHashK>);
+
 void tst_Collections::typeinfo()
 {
     QVERIFY(QTypeInfo<int*>::isPointer);
