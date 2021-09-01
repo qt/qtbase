@@ -820,7 +820,7 @@ public:
     void swap(QHash &other) noexcept { qSwap(d, other.d); }
 
     template <typename U = T>
-    QTypeTraits::compare_eq_result<U> operator==(const QHash &other) const noexcept
+    QTypeTraits::compare_eq_result_container<QHash, U> operator==(const QHash &other) const noexcept
     {
         if (d == other.d)
             return true;
@@ -836,7 +836,7 @@ public:
         return true;
     }
     template <typename U = T>
-    QTypeTraits::compare_eq_result<U> operator!=(const QHash &other) const noexcept
+    QTypeTraits::compare_eq_result_container<QHash, U> operator!=(const QHash &other) const noexcept
     { return !(*this == other); }
 
     inline qsizetype size() const noexcept { return d ? qsizetype(d->size) : 0; }

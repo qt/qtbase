@@ -277,7 +277,7 @@ public:
     void swap(QList<T> &other) noexcept { qSwap(d, other.d); }
 
     template <typename U = T>
-    QTypeTraits::compare_eq_result<U> operator==(const QList &other) const
+    QTypeTraits::compare_eq_result_container<QList, U> operator==(const QList &other) const
     {
         if (size() != other.size())
             return false;
@@ -288,13 +288,13 @@ public:
         return d->compare(begin(), other.begin(), size());
     }
     template <typename U = T>
-    QTypeTraits::compare_eq_result<U> operator!=(const QList &other) const
+    QTypeTraits::compare_eq_result_container<QList, U> operator!=(const QList &other) const
     {
         return !(*this == other);
     }
 
     template <typename U = T>
-    QTypeTraits::compare_lt_result<U> operator<(const QList &other) const
+    QTypeTraits::compare_lt_result_container<QList, U> operator<(const QList &other) const
         noexcept(noexcept(std::lexicographical_compare<typename QList<U>::const_iterator,
                                                        typename QList::const_iterator>(
                             std::declval<QList<U>>().begin(), std::declval<QList<U>>().end(),
@@ -305,21 +305,21 @@ public:
     }
 
     template <typename U = T>
-    QTypeTraits::compare_lt_result<U> operator>(const QList &other) const
+    QTypeTraits::compare_lt_result_container<QList, U> operator>(const QList &other) const
         noexcept(noexcept(other < std::declval<QList<U>>()))
     {
         return other < *this;
     }
 
     template <typename U = T>
-    QTypeTraits::compare_lt_result<U> operator<=(const QList &other) const
+    QTypeTraits::compare_lt_result_container<QList, U> operator<=(const QList &other) const
         noexcept(noexcept(other < std::declval<QList<U>>()))
     {
         return !(other < *this);
     }
 
     template <typename U = T>
-    QTypeTraits::compare_lt_result<U> operator>=(const QList &other) const
+    QTypeTraits::compare_lt_result_container<QList, U> operator>=(const QList &other) const
         noexcept(noexcept(std::declval<QList<U>>() < other))
     {
         return !(*this < other);
