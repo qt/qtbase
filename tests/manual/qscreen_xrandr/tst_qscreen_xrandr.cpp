@@ -39,17 +39,19 @@ class tst_QScreen_Xrandr: public QObject
     Q_OBJECT
 
 private slots:
-    void xrandr_15();
+    void xrandr_15_merge_and_unmerge();
+    void xrandr_15_scale();
 };
 
 // this test requires an X11 desktop with at least two screens
-void tst_QScreen_Xrandr::xrandr_15()
+void tst_QScreen_Xrandr::xrandr_15_merge_and_unmerge()
 {
     QStringList originalScreenNames;
     QStringList mergedScreenNames;
     {
         QList<QScreen *> screens = QGuiApplication::screens();
-        QVERIFY(screens.size() >= 2);
+        if (screens.size() < 2)
+            QSKIP("This test requires two or more screens.");
         qDebug() << "initial set of screens:" << screens.size();
         for (QScreen *s : screens) {
             qDebug() << "screen: " << s->name();
@@ -104,6 +106,71 @@ void tst_QScreen_Xrandr::xrandr_15()
         qDebug() << "screen: " << s->name();
 
     QCOMPARE(QGuiApplication::screens().size(), originalScreenNames.size());
+}
+
+// try to scale the first screen to 1.5x1.5 and scale back to 1x1
+void tst_QScreen_Xrandr::xrandr_15_scale()
+{
+    QList<QScreen *> screens = QGuiApplication::screens();
+    if (screens.size() < 1)
+        QSKIP("This test requires at least one screen.");
+
+    QScreen *screen1 = screens.at(0);
+    QString name1 = screen1->name();
+    int height1 = screen1->size().height();
+    int width1 = screen1->size().width();
+    qDebug() << "screen " << name1 << ": height=" << height1 << ", width=" << width1;
+
+    int expectedHeight = height1 * 1.5;
+    int expectedWidth = width1 * 1.5;
+
+    QSignalSpy geometryChangedSpy1(screen1, &QScreen::geometryChanged);
+
+    // "xrandr --output name1 --scale 1.5x1.5"
+    QString prog1 = "xrandr";
+    QStringList args1;
+    args1 << "--output" << name1 << "--scale" << "1.5x1.5";
+    QProcess *myProcess1 = new QProcess(this);
+    myProcess1->start(prog1, args1);
+    QVERIFY(myProcess1->waitForFinished());
+    QTRY_COMPARE(geometryChangedSpy1.count(), 1);
+
+    QList<QScreen *> screens2 = QGuiApplication::screens();
+    QVERIFY(screens2.size() >= 1);
+    QScreen *screen2 = nullptr;
+    for (QScreen *s : screens2) {
+        if (s->name() == name1)
+            screen2 = s;
+    }
+    int height2 = screen2->size().height();
+    int width2 = screen2->size().width();
+    qDebug() << "screen " << name1 << ": height=" << height2 << ", width=" << width2;
+    QVERIFY(height2 == expectedHeight);
+    QVERIFY(width2 == expectedWidth);
+
+    QSignalSpy geometryChangedSpy2(screen2, &QScreen::geometryChanged);
+
+    // "xrandr --output name1 --scale 1x1"
+    QString prog2 = "xrandr";
+    QStringList args2;
+    args2 << "--output" << name1 << "--scale" << "1x1";
+    QProcess *myProcess2 = new QProcess(this);
+    myProcess2->start(prog2, args2);
+    QVERIFY(myProcess2->waitForFinished());
+    QTRY_COMPARE(geometryChangedSpy2.count(), 1);
+
+    QList<QScreen *> screens3 = QGuiApplication::screens();
+    QVERIFY(screens3.size() >= 1);
+    QScreen *screen3 = nullptr;
+    for (QScreen *s : screens3) {
+        if (s->name() == name1)
+            screen3 = s;
+    }
+    int height3 = screen3->size().height();
+    int width3 = screen3->size().width();
+    qDebug() << "screen " << name1 << ": height=" << height3 << ", width=" << width3;
+    QVERIFY(height3 == height1);
+    QVERIFY(width3 == width1);
 }
 
 #include <tst_qscreen_xrandr.moc>
