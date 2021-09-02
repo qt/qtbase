@@ -120,6 +120,8 @@ private Q_SLOTS:
 
     void parseEscapes_data();
     void parseEscapes();
+    void makeEscapes_data();
+    void makeEscapes();
 
     void assignObjects();
     void assignArrays();
@@ -2507,6 +2509,59 @@ void tst_QtJson::parseEscapes()
     QJsonArray array = doc.array();
 
     QCOMPARE(array.first().toString(), result);
+}
+
+void tst_QtJson::makeEscapes_data()
+{
+    QTest::addColumn<QString>("input");
+    QTest::addColumn<QByteArray>("result");
+
+    auto addUnicodeRow = [](char16_t c) {
+        char buf[32];   // more than enough
+        snprintf(buf, std::size(buf), "\\u%04x", c);
+        QTest::addRow("U+%04X", c) << QString(c) << QByteArray(buf);
+    };
+
+
+    QTest::addRow("quote") << "\"" << QByteArray(R"(\")");
+    QTest::addRow("backslash") << "\\" << QByteArray(R"(\\)");
+    //QTest::addRow("slash") << "/" << QByteArray(R"(\/)");    // does not get escaped
+    QTest::addRow("backspace") << "\b" << QByteArray(R"(\b)");
+    QTest::addRow("form-feed") << "\f" << QByteArray(R"(\f)");
+    QTest::addRow("newline") << "\n" << QByteArray(R"(\n)");
+    QTest::addRow("carriage-return") << "\r" << QByteArray(R"(\r)");
+    QTest::addRow("tab") << "\t" << QByteArray(R"(\t)");
+
+    // control characters other than the above
+    for (char16_t c = 0; c < 0x20; ++c) {
+        if (c && strchr("\b\f\n\r\t", c))
+            continue;
+        addUnicodeRow(c);
+    }
+    // unpaired surrogates
+    addUnicodeRow(char16_t(0xd800));
+    addUnicodeRow(char16_t(0xdc00));
+
+    QString improperlyPaired;
+    improperlyPaired.append(char16_t(0xdc00));
+    improperlyPaired.append(char16_t(0xd800));
+    QTest::addRow("inverted-surrogates") << improperlyPaired << QByteArray("\\udc00\\ud800");
+}
+
+void tst_QtJson::makeEscapes()
+{
+    QFETCH(QString, input);
+    QFETCH(QByteArray, result);
+
+    QJsonArray array = { input };
+    QByteArray json = QJsonDocument(array).toJson(QJsonDocument::Compact);
+
+    QVERIFY(json.startsWith("[\""));
+    result.prepend("[\"");
+    QVERIFY(json.endsWith("\"]"));
+    result.append("\"]");
+
+    QCOMPARE(json, result);
 }
 
 void tst_QtJson::assignObjects()
