@@ -89,8 +89,14 @@ contains(TEMPLATE, ".*app"):!build_pass {
             contains(resource, ".*qmake_qmake_immediate\\.qrc$") {
                 # They will be created for each architecture, since they could be different
                 # we need to account for all of them
-                for (arch, ANDROID_ABIS): \
-                    rescopy += $$absolute_path("qmake_qmake_immediate.qrc", $$OUT_PWD/$$RCC_DIR/$$arch)
+                qmake_qrc_path = "qmake_qmake_immediate.qrc"
+                base_out_path = $$OUT_PWD/$$RCC_DIR
+                multi_android_abi {
+                    for (arch, ANDROID_ABIS): \
+                        rescopy += $$absolute_path($$qmake_qrc_path, $$base_out_path/$$arch)
+                } else {
+                    rescopy += $$absolute_path($$qmake_qrc_path, $$base_out_path)
+                }
             } else {
                 contains(resource, ".*\\.qrc$"): rescopy += $$absolute_path($$resource, $$_PRO_FILE_PWD_)
             }
