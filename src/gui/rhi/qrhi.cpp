@@ -3018,8 +3018,12 @@ QRhiResource::Type QRhiShaderResourceBindings::resourceType() const
     then safely be passed to QRhiCommandBuffer::setShaderResources(), and so
     be used with the pipeline in place of this QRhiShaderResourceBindings.
 
-    This function can be called before create() as well. The bindings must
-    already be set via setBindings() however.
+    \note This function must only be called after a successful create(), because
+    it relies on data generated during the baking of the underlying data
+    structures. This way the function can implement a comparison approach that
+    is more efficient than iterating through two binding lists and calling
+    QRhiShaderResourceBinding::isLayoutCompatible() on each pair. This becomes
+    relevant especially when this function is called at a high frequency.
  */
 bool QRhiShaderResourceBindings::isLayoutCompatible(const QRhiShaderResourceBindings *other) const
 {
