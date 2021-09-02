@@ -479,11 +479,9 @@ static QString mapDomainName(const QString &in, QUrl::AceProcessingOptions optio
             for (auto c : QChar::fromUcs4(uc))
                 result.append(c);
             break;
-        case QUnicodeTables::IdnaStatus::Mapped: {
-            const char16_t *mapping = QUnicodeTables::idnaMapping(uc);
-            if (mapping != nullptr)
-                result.append(mapping);
-        } break;
+        case QUnicodeTables::IdnaStatus::Mapped:
+            result.append(QUnicodeTables::idnaMapping(uc));
+            break;
         case QUnicodeTables::IdnaStatus::Disallowed:
             return {};
         default:

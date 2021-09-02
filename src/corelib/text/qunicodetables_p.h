@@ -215,8 +215,8 @@ Q_CORE_EXPORT IdnaStatus QT_FASTCALL idnaStatus(char32_t ucs4) noexcept;
 inline IdnaStatus idnaStatus(QChar ch) noexcept
 { return idnaStatus(ch.unicode()); }
 
-Q_CORE_EXPORT const char16_t * QT_FASTCALL idnaMapping(char32_t usc4) noexcept;
-inline const char16_t *idnaMapping(QChar ch) noexcept
+Q_CORE_EXPORT QStringView QT_FASTCALL idnaMapping(char32_t usc4) noexcept;
+inline QStringView idnaMapping(QChar ch) noexcept
 { return idnaMapping(ch.unicode()); }
 
 } // namespace QUnicodeTables
