@@ -99,7 +99,7 @@ static QString macMonthName(int month, QSystemLocale::QueryType type)
     return QString();
 }
 
-static QString macDayName(int day, bool short_format)
+static QString macDayName(int day, QSystemLocale::QueryType type)
 {
     if (day < 1 || day > 7)
         return QString();
@@ -107,9 +107,29 @@ static QString macDayName(int day, bool short_format)
     QCFType<CFDateFormatterRef> formatter
         = CFDateFormatterCreate(0, QCFType<CFLocaleRef>(CFLocaleCopyCurrent()),
                                 kCFDateFormatterNoStyle,  kCFDateFormatterNoStyle);
-    QCFType<CFArrayRef> values = static_cast<CFArrayRef>(CFDateFormatterCopyProperty(formatter,
-                                            short_format ? kCFDateFormatterShortWeekdaySymbols
-                                                         : kCFDateFormatterWeekdaySymbols));
+
+    CFDateFormatterKey formatterType;
+    switch (type) {
+    case QSystemLocale::DayNameLong:
+        formatterType = kCFDateFormatterWeekdaySymbols;
+        break;
+    case QSystemLocale::DayNameShort:
+        formatterType = kCFDateFormatterShortWeekdaySymbols;
+        break;
+    case QSystemLocale::StandaloneDayNameLong:
+        formatterType = kCFDateFormatterStandaloneWeekdaySymbols;
+        break;
+    case QSystemLocale::StandaloneDayNameShort:
+        formatterType = kCFDateFormatterShortStandaloneWeekdaySymbols;
+        break;
+    default:
+        qWarning("macDayName: Unsupported query type %d", type);
+        return QString();
+    }
+
+    QCFType<CFArrayRef> values =
+            static_cast<CFArrayRef>(CFDateFormatterCopyProperty(formatter, formatterType));
+
     if (values != 0) {
         CFStringRef cfstring = static_cast<CFStringRef>(CFArrayGetValueAtIndex(values, day % 7));
         return QString::fromCFString(cfstring);
@@ -446,7 +466,9 @@ QVariant QSystemLocale::query(QueryType type, QVariant in) const
                                 : kCFDateFormatterLongStyle);
     case DayNameLong:
     case DayNameShort:
-        return macDayName(in.toInt(), (type == DayNameShort));
+    case StandaloneDayNameLong:
+    case StandaloneDayNameShort:
+        return macDayName(in.toInt(), type);
     case MonthNameLong:
     case MonthNameShort:
     case StandaloneMonthNameLong:

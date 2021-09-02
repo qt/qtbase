@@ -124,7 +124,9 @@ public:
         NativeLanguageName, // QString
         NativeTerritoryName, // QString
         StandaloneMonthNameLong, // QString, in: int
-        StandaloneMonthNameShort // QString, in: int
+        StandaloneMonthNameShort, // QString, in: int
+        StandaloneDayNameLong, // QString, in: int
+        StandaloneDayNameShort // QString, in: int
     };
     virtual QVariant query(QueryType type, QVariant in = QVariant()) const;
 

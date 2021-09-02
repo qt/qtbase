@@ -148,6 +148,11 @@ private slots:
     void systemLocale_data();
     void systemLocale();
 
+#ifndef QT_NO_SYSTEMLOCALE
+    void systemLocaleDayAndMonthNames_data();
+    void systemLocaleDayAndMonthNames();
+#endif
+
     void numberGroupingIndia();
     void numberFormatChakma();
 
@@ -3223,6 +3228,128 @@ void tst_QLocale::systemLocale()
     QCOMPARE(QLocale(), originalLocale);
     QCOMPARE(QLocale::system(), originalSystemLocale);
 }
+
+#ifndef QT_NO_SYSTEMLOCALE
+
+void tst_QLocale::systemLocaleDayAndMonthNames_data()
+{
+    QTest::addColumn<QByteArray>("locale");
+    QTest::addColumn<QDate>("date");
+    QTest::addColumn<QLocale::FormatType>("format");
+    QTest::addColumn<QString>("month");
+    QTest::addColumn<QString>("standaloneMonth");
+    QTest::addColumn<QString>("day");
+    QTest::addColumn<QString>("standaloneDay");
+
+    // en_US and de_DE locale outputs for ICU and macOS are similar.
+    // ru_RU are different.
+    // Windows has its own representation for all of the locales
+
+#if QT_CONFIG(icu)
+    // августа, август, понедельник, понедельник
+    QTest::newRow("ru_RU 30.08.2021 long")
+            << QByteArray("ru_RU") << QDate(2021, 8, 30) << QLocale::LongFormat
+            << QString("\u0430\u0432\u0433\u0443\u0441\u0442\u0430")
+            << QString("\u0430\u0432\u0433\u0443\u0441\u0442")
+            << QString("\u043f\u043e\u043d\u0435\u0434\u0435\u043b\u044c\u043d\u0438\u043a")
+            << QString("\u043f\u043e\u043d\u0435\u0434\u0435\u043b\u044c\u043d\u0438\u043a");
+    // авг., авг., пн, пн
+    QTest::newRow("ru_RU 30.08.2021 short")
+            << QByteArray("ru_RU") << QDate(2021, 8, 30) << QLocale::ShortFormat
+            << QString("\u0430\u0432\u0433.") << QString("\u0430\u0432\u0433.")
+            << QString("\u043f\u043d") << QString("\u043f\u043d");
+#elif defined(Q_OS_DARWIN)
+    // августа, август, понедельник, понедельник
+    QTest::newRow("ru_RU 30.08.2021 long")
+            << QByteArray("ru_RU") << QDate(2021, 8, 30) << QLocale::LongFormat
+            << QString("\u0430\u0432\u0433\u0443\u0441\u0442\u0430")
+            << QString("\u0430\u0432\u0433\u0443\u0441\u0442")
+            << QString("\u043f\u043e\u043d\u0435\u0434\u0435\u043b\u044c\u043d\u0438\u043a")
+            << QString("\u043f\u043e\u043d\u0435\u0434\u0435\u043b\u044c\u043d\u0438\u043a");
+    // авг., авг., Пн, Пн
+    QTest::newRow("ru_RU 30.08.2021 short")
+            << QByteArray("ru_RU") << QDate(2021, 8, 30) << QLocale::ShortFormat
+            << QString("\u0430\u0432\u0433.") << QString("\u0430\u0432\u0433.")
+            << QString("\u041f\u043d") << QString("\u041f\u043d");
+#endif
+
+#if QT_CONFIG(icu) || defined(Q_OS_DARWIN)
+    QTest::newRow("en_US 30.08.2021 long")
+            << QByteArray("en_US") << QDate(2021, 8, 30) << QLocale::LongFormat
+            << "August" << "August" << "Monday" << "Monday";
+    QTest::newRow("en_US 30.08.2021 short")
+            << QByteArray("en_US") << QDate(2021, 8, 30) << QLocale::ShortFormat
+            << "Aug" << "Aug" << "Mon" << "Mon";
+
+    QTest::newRow("de_DE 30.08.2021 long")
+            << QByteArray("de_DE") << QDate(2021, 8, 30) << QLocale::LongFormat
+            << "August" << "August" << "Montag" << "Montag";
+    QTest::newRow("de_DE 30.08.2021 short")
+            << QByteArray("de_DE") << QDate(2021, 8, 30) << QLocale::ShortFormat
+            << "Aug." << "Aug" << "Mo." << "Mo";
+#elif defined(Q_OS_WIN)
+    // августа, Август, понедельник, понедельник
+    QTest::newRow("ru_RU 30.08.2021 long")
+            << QByteArray("ru_RU") << QDate(2021, 8, 30) << QLocale::LongFormat
+            << QString("\u0430\u0432\u0433\u0443\u0441\u0442\u0430")
+            << QString("\u0410\u0432\u0433\u0443\u0441\u0442")
+            << QString("\u043f\u043e\u043d\u0435\u0434\u0435\u043b\u044c\u043d\u0438\u043a")
+            << QString("\u043f\u043e\u043d\u0435\u0434\u0435\u043b\u044c\u043d\u0438\u043a");
+    // авг, авг, Пн, пн
+    QTest::newRow("ru_RU 30.08.2021 short")
+            << QByteArray("ru_RU") << QDate(2021, 8, 30) << QLocale::ShortFormat
+            << QString("\u0430\u0432\u0433") << QString("\u0430\u0432\u0433")
+            << QString("\u041f\u043d") << QString("\u043f\u043d");
+
+    QTest::newRow("en_US 30.08.2021 long")
+            << QByteArray("en_US") << QDate(2021, 8, 30) << QLocale::LongFormat
+            << "August" << "August" << "Monday" << "Monday";
+    QTest::newRow("en_US 30.08.2021 short")
+            << QByteArray("en_US") << QDate(2021, 8, 30) << QLocale::ShortFormat
+            << "Aug" << "Aug" << "Mon" << "Mon";
+
+    QTest::newRow("de_DE 30.08.2021 long")
+            << QByteArray("de_DE") << QDate(2021, 8, 30) << QLocale::LongFormat
+            << "August" << "August" << "Montag" << "Montag";
+    QTest::newRow("de_DE 30.08.2021 short")
+            << QByteArray("de_DE") << QDate(2021, 8, 30) << QLocale::ShortFormat
+            << "Aug" << "Aug" << "Mo" << "Mo";
+#else
+    QSKIP("This test can't run on this OS");
+#endif
+}
+
+void tst_QLocale::systemLocaleDayAndMonthNames()
+{
+    QFETCH(QByteArray, locale);
+    QFETCH(QDate, date);
+    QFETCH(QLocale::FormatType, format);
+    QFETCH(QString, month);
+    QFETCH(QString, standaloneMonth);
+    QFETCH(QString, day);
+    QFETCH(QString, standaloneDay);
+    locale += ".UTF-8"; // So we don't have to repeat it on every data row !
+
+    const TransientLocale tested(LC_ALL, locale.constData());
+
+    QLocale sys = QLocale::system();
+#if !QT_CONFIG(icu)
+    // setlocale() does not really change locale on Windows and macOS, we
+    // need to actually set the locale manually to run the test
+    if (!locale.startsWith(sys.name().toLatin1()))
+        QSKIP(("Set locale to " + locale + " manually to run this test.").constData());
+#endif
+
+    const int m = date.month();
+    QCOMPARE(sys.monthName(m, format), month);
+    QCOMPARE(sys.standaloneMonthName(m, format), standaloneMonth);
+
+    const int d = date.dayOfWeek();
+    QCOMPARE(sys.dayName(d, format), day);
+    QCOMPARE(sys.standaloneDayName(d, format), standaloneDay);
+}
+
+#endif // QT_NO_SYSTEMLOCALE
 
 void tst_QLocale::numberGroupingIndia()
 {
