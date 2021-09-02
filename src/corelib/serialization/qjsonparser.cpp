@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
-** Copyright (C) 2016 Intel Corporation.
+** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -787,7 +787,7 @@ static inline bool scanEscapeSequence(const char *&json, const char *end, char32
         return false;
 
     DEBUG << "scan escape" << (char)*json;
-    uint escaped = *json++;
+    uchar escaped = *json++;
     switch (escaped) {
     case '"':
         *ch = '"'; break;

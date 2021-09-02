@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2021 The Qt Company Ltd.
+** Copyright (C) 2021 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -117,7 +118,8 @@ private Q_SLOTS:
     void testCompaction();
     void testDebugStream();
 
-    void parseUnicodeEscapes();
+    void parseEscapes_data();
+    void parseEscapes();
 
     void assignObjects();
     void assignArrays();
@@ -2438,16 +2440,71 @@ void tst_QtJson::testDebugStream()
     }
 }
 
-void tst_QtJson::parseUnicodeEscapes()
+void tst_QtJson::parseEscapes_data()
 {
-    const QByteArray json = "[ \"A\\u00e4\\u00C4\" ]";
+    QTest::addColumn<QByteArray>("json");
+    QTest::addColumn<QString>("result");
+
+    auto addUnicodeRow = [](char32_t u) {
+        char buf[32];   // more than enough
+        char *ptr = buf;
+        const QString result = QString::fromUcs4(&u, 1);
+        for (QChar c : result)
+            ptr += snprintf(ptr, std::end(buf) - ptr, "\\u%04x", c.unicode());
+        QTest::addRow("U+%04X", u) << "[\"" + QByteArray(buf) + "\"]" << result;
+    };
+
+    char singleCharJson[] = R"(["\x"])";
+    Q_ASSERT(singleCharJson[3] == 'x');
+    auto makeSingleCharEscape = [&singleCharJson](char c) {
+        singleCharJson[3] = char(c);
+        return QByteArray(singleCharJson, std::size(singleCharJson) - 1);
+    };
+
+    QTest::addRow("quote") << makeSingleCharEscape('"') << "\"";
+    QTest::addRow("backslash") << makeSingleCharEscape('\\') << "\\";
+    QTest::addRow("slash") << makeSingleCharEscape('/') << "/";
+    QTest::addRow("backspace") << makeSingleCharEscape('b') << "\b";
+    QTest::addRow("form-feed") << makeSingleCharEscape('f') << "\f";
+    QTest::addRow("newline") << makeSingleCharEscape('n') << "\n";
+    QTest::addRow("carriage-return") << makeSingleCharEscape('r') << "\r";
+    QTest::addRow("tab") << makeSingleCharEscape('t') << "\t";
+
+    // we're not going to exhaustively test all Unicode possibilities
+    for (char16_t c = 0; c < 0x21; ++c)
+        addUnicodeRow(c);
+    addUnicodeRow(u'\u007f');
+    addUnicodeRow(u'\u0080');
+    addUnicodeRow(u'\u00ff');
+    addUnicodeRow(u'\u0100');
+    addUnicodeRow(char16_t(0xd800));
+    addUnicodeRow(char16_t(0xdc00));
+    addUnicodeRow(u'\ufffe');
+    addUnicodeRow(u'\uffff');
+    addUnicodeRow(U'\U00010000');
+    addUnicodeRow(U'\U00100000');
+    addUnicodeRow(U'\U0010ffff');
+
+    QTest::addRow("mojibake-utf8") << QByteArrayLiteral(R"(["A\u00e4\u00C4"])")
+                                   << QStringLiteral(u"A\u00e4\u00C4");
+
+    // characters for which, preceded by backslash, it is a valid (recognized)
+    // escape sequence (should match the above list)
+    static const char validEscapes[] = "\"\\/bfnrtu";
+    for (int i = 0; i <= 0xff; ++i) {
+        if (i && strchr(validEscapes, i))
+            continue;
+        QTest::addRow("invalid-uchar-0x%02x", i) << makeSingleCharEscape(i) << QString(char16_t(i));
+    }
+}
+
+void tst_QtJson::parseEscapes()
+{
+    QFETCH(QByteArray, json);
+    QFETCH(QString, result);
 
     QJsonDocument doc = QJsonDocument::fromJson(json);
     QJsonArray array = doc.array();
-
-    QString result = QLatin1String("A");
-    result += QChar(0xe4);
-    result += QChar(0xc4);
 
     QCOMPARE(array.first().toString(), result);
 }
