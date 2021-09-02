@@ -197,10 +197,27 @@ QVariant x509UnknownExtensionToValue(X509_EXTENSION *ext)
     }
 
     void *ext_internal = q_X509V3_EXT_d2i(ext);
+    if (!ext_internal)
+        return {};
+
+    const auto extCleaner = qScopeGuard([meth, ext_internal]{
+        Q_ASSERT(ext_internal && meth);
+
+        if (meth->it)
+            q_ASN1_item_free(static_cast<ASN1_VALUE *>(ext_internal), ASN1_ITEM_ptr(meth->it));
+        else if (meth->ext_free)
+            meth->ext_free(ext_internal);
+        else
+            qCWarning(lcTlsBackend, "No method to free an unknown extension, a potential memory leak?");
+    });
 
     // If this extension can be converted
-    if (meth->i2v && ext_internal) {
+    if (meth->i2v) {
         STACK_OF(CONF_VALUE) *val = meth->i2v(meth, ext_internal, nullptr);
+        const auto stackCleaner = qScopeGuard([val]{
+            if (val)
+                q_OPENSSL_sk_pop_free((OPENSSL_STACK *)val, (void(*)(void*))q_X509V3_conf_free);
+        });
 
         QVariantMap map;
         QVariantList list;
@@ -222,10 +239,12 @@ QVariant x509UnknownExtensionToValue(X509_EXTENSION *ext)
             return map;
         else
             return list;
-    } else if (meth->i2s && ext_internal) {
-        QVariant result(QString::fromUtf8(meth->i2s(meth, ext_internal)));
+    } else if (meth->i2s) {
+        const char *hexString = meth->i2s(meth, ext_internal);
+        QVariant result(hexString ? QString::fromUtf8(hexString) : QString{});
+        q_OPENSSL_free((void *)hexString);
         return result;
-    } else if (meth->i2r && ext_internal) {
+    } else if (meth->i2r) {
         QByteArray result;
 
         BIO *bio = q_BIO_new(q_BIO_s_mem());
@@ -254,6 +273,31 @@ QVariant x509ExtensionToValue(X509_EXTENSION *ext)
 {
     ASN1_OBJECT *obj = q_X509_EXTENSION_get_object(ext);
     int nid = q_OBJ_obj2nid(obj);
+
+    // We cast away the const-ness here because some versions of openssl
+    // don't use const for the parameters in the functions pointers stored
+    // in the object.
+    X509V3_EXT_METHOD *meth = const_cast<X509V3_EXT_METHOD *>(q_X509V3_EXT_get(ext));
+
+    void *ext_internal = nullptr; // The value, returned by X509V3_EXT_d2i.
+    const auto extCleaner = qScopeGuard([meth, &ext_internal]() {
+        if (!meth || !ext_internal)
+            return;
+
+        if (meth->it)
+            q_ASN1_item_free(static_cast<ASN1_VALUE *>(ext_internal), ASN1_ITEM_ptr(meth->it));
+        else if (meth->ext_free)
+            meth->ext_free(ext_internal);
+        else
+            qWarning(lcTlsBackend, "Cannot free an extension, a potential memory leak?");
+    });
+
+    const char * hexString = nullptr; // The value returned by meth->i2s.
+    const auto hexStringCleaner = qScopeGuard([&hexString](){
+        if (hexString)
+            q_OPENSSL_free((void*)hexString);
+    });
+
     switch (nid) {
     case NID_basic_constraints:
         {
@@ -295,21 +339,18 @@ QVariant x509ExtensionToValue(X509_EXTENSION *ext)
                 }
             }
 
-            q_OPENSSL_sk_pop_free((OPENSSL_STACK*)info, reinterpret_cast<void(*)(void *)>(q_OPENSSL_sk_free));
+            q_AUTHORITY_INFO_ACCESS_free(info);
             return result;
         }
         break;
     case NID_subject_key_identifier:
         {
-            void *ext_internal = q_X509V3_EXT_d2i(ext);
+            ext_internal = q_X509V3_EXT_d2i(ext);
             if (!ext_internal)
                 return {};
-            // we cast away the const-ness here because some versions of openssl
-            // don't use const for the parameters in the functions pointers stored
-            // in the object.
-            X509V3_EXT_METHOD *meth = const_cast<X509V3_EXT_METHOD *>(q_X509V3_EXT_get(ext));
 
-            return QVariant(QString::fromUtf8(meth->i2s(meth, ext_internal)));
+            hexString = meth->i2s(meth, ext_internal);
+            return QVariant(QString::fromUtf8(hexString));
         }
         break;
     case NID_authority_key_identifier:
