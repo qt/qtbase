@@ -252,6 +252,7 @@ struct QVkShaderResourceBindings : public QRhiShaderResourceBindings
     ~QVkShaderResourceBindings();
     void destroy() override;
     bool create() override;
+    void updateResources(UpdateFlags flags) override;
 
     QVarLengthArray<QRhiShaderResourceBinding, 8> sortedBindings;
     bool hasSlottedResource = false;

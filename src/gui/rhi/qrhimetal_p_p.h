@@ -195,6 +195,7 @@ struct QMetalShaderResourceBindings : public QRhiShaderResourceBindings
     ~QMetalShaderResourceBindings();
     void destroy() override;
     bool create() override;
+    void updateResources(UpdateFlags flags) override;
 
     QVarLengthArray<QRhiShaderResourceBinding, 8> sortedBindings;
     int maxBinding = -1;

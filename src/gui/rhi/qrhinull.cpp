@@ -902,6 +902,11 @@ bool QNullShaderResourceBindings::create()
     return true;
 }
 
+void QNullShaderResourceBindings::updateResources(UpdateFlags flags)
+{
+    Q_UNUSED(flags);
+}
+
 QNullGraphicsPipeline::QNullGraphicsPipeline(QRhiImplementation *rhi)
     : QRhiGraphicsPipeline(rhi)
 {

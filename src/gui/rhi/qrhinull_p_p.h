@@ -155,6 +155,7 @@ struct QNullShaderResourceBindings : public QRhiShaderResourceBindings
     ~QNullShaderResourceBindings();
     void destroy() override;
     bool create() override;
+    void updateResources(UpdateFlags flags) override;
 };
 
 struct QNullGraphicsPipeline : public QRhiGraphicsPipeline
