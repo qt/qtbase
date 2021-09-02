@@ -2945,8 +2945,8 @@ QString QCalendarBackend::standaloneWeekDayName(const QLocale &locale, int day,
 #ifndef QT_NO_SYSTEMLOCALE
     if (locale.d->m_data == &systemLocaleData) {
         QVariant res = systemLocale()->query(format == QLocale::LongFormat
-                                             ? QSystemLocale::DayNameLong
-                                             : QSystemLocale::DayNameShort,
+                                             ? QSystemLocale::StandaloneDayNameLong
+                                             : QSystemLocale::StandaloneDayNameShort,
                                              day);
         if (!res.isNull())
             return res.toString();
