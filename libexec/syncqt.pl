@@ -193,6 +193,33 @@ sub shouldMasterInclude {
 }
 
 ######################################################################
+# Syntax:  filterDeprecationMacros(line)
+# Params:  line: a line of C++ source
+#
+# Purpose: Removes occurrences of QT_DEPRECATED_* macro calls.
+#          The calls may have an argument list that is also removed.
+# Returns: The filtered line.
+######################################################################
+sub filterDeprecationMacros {
+    my $line = $_[0];
+    my $rest;
+    if ($line =~ /(.*\s+)QT_DEPRECATED_[[:upper:][:digit:]_]+\s*(.*)/) {
+        $line = $1;
+        $rest = $2;
+
+        # Does the macro call have an argument list? If so, remove it.
+        # The regular expression matches balanced parenthesis anywhere in $rest.
+        # Therefore, we must check whether the match starts at index zero.
+        if ($rest =~ /\((?:[^)(]+|(?R))*+\)/ && $-[0] == 0) {
+            $line .= substr($rest, $+[0]);
+        } else {
+            $line .= $rest;
+        }
+    }
+    return $line;
+}
+
+######################################################################
 # Syntax:  classNames(iheader, clean, requires)
 # Params:  iheader, string, filename to parse for classname "symlinks"
 #          (out) clean, boolean, will be set to false if the header isn't clean
@@ -298,7 +325,7 @@ sub classNames {
 
         if($definition) {
             $definition =~ s=[\n\r]==g;
-            $definition =~ s/QT_DEPRECATED_X\s*\(\s*".*?"\s*\)//g;
+            $definition = filterDeprecationMacros($definition);
             my @symbols;
             my $post_kw = qr/Q_DECL_FINAL|final|sealed/; # add here macros and keywords that go after the class-name of a class definition
             if($definition =~ m/^ *typedef *.*\(\*([^\)]*)\)\(.*\);$/) {
