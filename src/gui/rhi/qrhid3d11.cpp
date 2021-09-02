@@ -3622,6 +3622,21 @@ bool QD3D11ShaderResourceBindings::create()
     return true;
 }
 
+void QD3D11ShaderResourceBindings::updateResources(UpdateFlags flags)
+{
+    sortedBindings.clear();
+    std::copy(m_bindings.cbegin(), m_bindings.cend(), std::back_inserter(sortedBindings));
+    if (!flags.testFlag(BindingsAreSorted)) {
+        std::sort(sortedBindings.begin(), sortedBindings.end(),
+                  [](const QRhiShaderResourceBinding &a, const QRhiShaderResourceBinding &b)
+        {
+            return a.data()->binding < b.data()->binding;
+        });
+    }
+
+    generation += 1;
+}
+
 QD3D11GraphicsPipeline::QD3D11GraphicsPipeline(QRhiImplementation *rhi)
     : QRhiGraphicsPipeline(rhi)
 {

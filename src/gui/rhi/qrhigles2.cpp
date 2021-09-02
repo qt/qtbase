@@ -4992,6 +4992,12 @@ bool QGles2ShaderResourceBindings::create()
     return true;
 }
 
+void QGles2ShaderResourceBindings::updateResources(UpdateFlags flags)
+{
+    Q_UNUSED(flags);
+    generation += 1;
+}
+
 QGles2GraphicsPipeline::QGles2GraphicsPipeline(QRhiImplementation *rhi)
     : QRhiGraphicsPipeline(rhi)
 {

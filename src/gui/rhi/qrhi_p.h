@@ -1039,6 +1039,13 @@ public:
 
     virtual bool create() = 0;
 
+    enum UpdateFlag {
+        BindingsAreSorted = 0x01
+    };
+    Q_DECLARE_FLAGS(UpdateFlags, UpdateFlag)
+
+    virtual void updateResources(UpdateFlags flags = {}) = 0;
+
 protected:
     static const int BINDING_PREALLOC = 12;
     static const int LAYOUT_DESC_FIELD_COUNT = 4;
@@ -1051,6 +1058,8 @@ protected:
     friend Q_GUI_EXPORT QDebug operator<<(QDebug, const QRhiShaderResourceBindings &);
 #endif
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(QRhiShaderResourceBindings::UpdateFlags)
 
 #ifndef QT_NO_DEBUG_STREAM
 Q_GUI_EXPORT QDebug operator<<(QDebug, const QRhiShaderResourceBindings &);

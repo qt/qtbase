@@ -3179,6 +3179,21 @@ bool QMetalShaderResourceBindings::create()
     return true;
 }
 
+void QMetalShaderResourceBindings::updateResources(UpdateFlags flags)
+{
+    sortedBindings.clear();
+    std::copy(m_bindings.cbegin(), m_bindings.cend(), std::back_inserter(sortedBindings));
+    if (!flags.testFlag(BindingsAreSorted)) {
+        std::sort(sortedBindings.begin(), sortedBindings.end(),
+                  [](const QRhiShaderResourceBinding &a, const QRhiShaderResourceBinding &b)
+        {
+            return a.data()->binding < b.data()->binding;
+        });
+    }
+
+    generation += 1;
+}
+
 QMetalGraphicsPipeline::QMetalGraphicsPipeline(QRhiImplementation *rhi)
     : QRhiGraphicsPipeline(rhi),
       d(new QMetalGraphicsPipelineData)

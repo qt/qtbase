@@ -213,6 +213,7 @@ struct QD3D11ShaderResourceBindings : public QRhiShaderResourceBindings
     ~QD3D11ShaderResourceBindings();
     void destroy() override;
     bool create() override;
+    void updateResources(UpdateFlags flags) override;
 
     bool hasDynamicOffset = false;
     QVarLengthArray<QRhiShaderResourceBinding, 8> sortedBindings;
