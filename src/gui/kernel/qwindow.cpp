@@ -2254,6 +2254,7 @@ bool QWindow::close()
     if (!d->platformWindow)
         return true;
 
+    QBoolBlocker inCloseReset(d->inClose);
     return d->platformWindow->close();
 }
 

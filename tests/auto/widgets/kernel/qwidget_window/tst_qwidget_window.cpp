@@ -90,6 +90,8 @@ private slots:
     void tst_show_resize();
     void tst_show_resize_hide_show();
 
+    void close();
+
     void tst_windowFilePathAndwindowTitle_data();
     void tst_windowFilePathAndwindowTitle();
     void tst_windowFilePath_data();
@@ -245,6 +247,70 @@ void tst_QWidget_window::tst_show_resize_hide_show()
     w.hide();
     w.show();
     QCOMPARE(w.size(), m_testWidgetSize);
+}
+
+void tst_QWidget_window::close()
+{
+    // Verfy that closing a QWidgetWindow deletes its platform window,
+    // as expected of a QWindow subclass. This must be done also
+    // if QWidget API is used to close. The QCloseEvent must not be
+    // spontaneous if the close is triggered by a Qt API that the application
+    // would call in response to an event, and spontaneous if it is directly
+    // caused by user interaction, such as clicking the (x) in the titlebar.
+    // We can simulate this only by generating a WindowSystemEvent.
+    // Children of the window should get a hide event (never spontaneous when
+    // caused by closing the window).
+
+    struct Widget : public QWidget
+    {
+        using QWidget::QWidget;
+        int spontClose = -1;
+        int spontHide = -1;
+    protected:
+        void hideEvent(QHideEvent *e)
+        { spontHide = e->spontaneous() ? 1 : 0; }
+        void closeEvent(QCloseEvent *e)
+        { spontClose = e->spontaneous() ? 1 : 0; }
+    };
+
+    // QWindow::close()
+    {
+        Widget w;
+        Widget child(&w);
+        w.winId();
+        QVERIFY(w.windowHandle());
+        QVERIFY(w.windowHandle()->handle());
+        w.windowHandle()->close();
+        QCOMPARE(w.spontClose, 0);
+        QCOMPARE(child.spontHide, -1); // was never shown
+        QVERIFY(w.windowHandle());
+        QVERIFY(!w.windowHandle()->handle());
+    }
+
+    // QWidget::close()
+    {
+        Widget w;
+        Widget child(&w);
+        w.show();
+        QVERIFY(w.windowHandle());
+        QVERIFY(w.windowHandle()->handle());
+        w.close();
+        QCOMPARE(w.spontClose, 0);
+        QCOMPARE(child.spontHide, 0);
+        QVERIFY(w.windowHandle());
+        QVERIFY(!w.windowHandle()->handle());
+    }
+
+    // User-initiated close
+    {
+        Widget w;
+        Widget child(&w);
+        w.show();
+        QWindowSystemInterface::handleCloseEvent(w.windowHandle());
+        QApplication::processEvents();
+        QCOMPARE(w.spontClose, 1);
+        QCOMPARE(child.spontHide, 0);
+    }
 }
 
 class PaintTestWidget : public QWidget
