@@ -231,6 +231,7 @@ Q_AUTOTEST_EXPORT BIO *q_BIO_new(const BIO_METHOD *a);
 Q_AUTOTEST_EXPORT const BIO_METHOD *q_BIO_s_mem();
 
 int q_DSA_bits(DSA *a);
+void q_AUTHORITY_INFO_ACCESS_free(AUTHORITY_INFO_ACCESS *a);
 int q_EVP_CIPHER_CTX_reset(EVP_CIPHER_CTX *c);
 Q_AUTOTEST_EXPORT int q_EVP_PKEY_up_ref(EVP_PKEY *a);
 EVP_PKEY_CTX *q_EVP_PKEY_CTX_new(EVP_PKEY *pkey, ENGINE *e);
@@ -255,6 +256,8 @@ const SSL_METHOD *q_TLS_client_method();
 const SSL_METHOD *q_TLS_server_method();
 ASN1_TIME *q_X509_getm_notBefore(X509 *a);
 ASN1_TIME *q_X509_getm_notAfter(X509 *a);
+void q_ASN1_item_free(ASN1_VALUE *val, const ASN1_ITEM *it);
+void q_X509V3_conf_free(CONF_VALUE *val);
 
 Q_AUTOTEST_EXPORT void q_X509_up_ref(X509 *a);
 long q_X509_get_version(X509 *a);
@@ -279,8 +282,6 @@ int q_DH_bits(DH *dh);
                                                                     | OPENSSL_INIT_ADD_ALL_DIGESTS, NULL)
 
 int q_OPENSSL_init_crypto(uint64_t opts, const OPENSSL_INIT_SETTINGS *settings);
-void q_CRYPTO_free(void *str, const char *file, int line);
-
 long q_OpenSSL_version_num();
 const char *q_OpenSSL_version(int type);
 
@@ -747,6 +748,8 @@ int q_OCSP_id_cmp(OCSP_CERTID *a, OCSP_CERTID *b);
 
 void *q_CRYPTO_malloc(size_t num, const char *file, int line);
 #define q_OPENSSL_malloc(num) q_CRYPTO_malloc(num, "", 0)
+void q_CRYPTO_free(void *str, const char *file, int line);
+#define q_OPENSSL_free(addr) q_CRYPTO_free(addr, "", 0)
 
 int q_SSL_CTX_get_security_level(const SSL_CTX *ctx);
 void q_SSL_CTX_set_security_level(SSL_CTX *ctx, int level);
