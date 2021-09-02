@@ -175,10 +175,53 @@ private:
     {
         const int m_category;
         const char *const m_prior;
+#if !defined(QT_NO_SYSTEMLOCALE) && defined(Q_OS_UNIX) \
+    && (!defined(Q_OS_DARWIN) || defined(Q_OS_NACL))
+#define TRANSIENT_ENV
+        // Unix system locale consults environment variables, so we need to set
+        // the appropriate one, too.
+        const QByteArray m_envVar, m_envPrior;
+        const bool m_envSet;
+        static QByteArray categoryToEnv(int category)
+        {
+            switch (category) {
+#define CASE(cat) case cat: return #cat
+            CASE(LC_ALL); CASE(LC_NUMERIC); CASE(LC_TIME); CASE(LC_MONETARY);
+            CASE(LC_MESSAGES); CASE(LC_MEASUREMENT); CASE(LC_COLLATE);
+#undef CASE
+            // Nothing in our code pays attention to any other LC_*
+            default:
+                Q_UNREACHABLE();
+                qFatal("You need to add a case for this category");
+            }
+        }
+#endif // TRANSIENT_ENV
     public:
         TransientLocale(int category, const char *locale)
-            : m_category(category), m_prior(setlocale(category, locale)) {}
-        ~TransientLocale() { setlocale(m_category, m_prior); }
+            : m_category(category),
+              m_prior(setlocale(category, locale))
+#ifdef TRANSIENT_ENV
+            , m_envVar(categoryToEnv(category)),
+              m_envPrior(qgetenv(m_envVar.constData())),
+              m_envSet(qputenv(m_envVar.constData(), locale))
+#endif
+        {
+            QSystemLocale dummy; // to provoke a refresh of the system locale
+        }
+        ~TransientLocale()
+        {
+#ifdef TRANSIENT_ENV
+            if (m_envSet) {
+                if (m_envPrior.isEmpty())
+                    qunsetenv(m_envVar.constData());
+                else
+                    qputenv(m_envVar.constData(), m_envPrior);
+            }
+#endif
+            setlocale(m_category, m_prior);
+            QSystemLocale dummy; // to provoke a refresh of the system locale
+        }
+#undef TRANSIENT_ENV
     };
 };
 
@@ -1180,6 +1223,7 @@ void tst_QLocale::doubleToString()
     const QLocale locale(localeName);
     QCOMPARE(locale.toString(num, mode, precision), numStr);
 
+    // System locale is irrelevant here:
     TransientLocale ignoreme(LC_ALL, "de_DE");
     QCOMPARE(locale.toString(num, mode, precision), numStr);
 }
