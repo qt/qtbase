@@ -136,6 +136,7 @@ public:
     bool visible= false;
     bool visibilityOnDestroy = false;
     bool exposed = false;
+    bool inClose = false;
     QSurfaceFormat requestedFormat;
     QString windowTitle;
     QString windowFilePath;

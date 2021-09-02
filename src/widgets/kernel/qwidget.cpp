@@ -8360,6 +8360,24 @@ void QWidgetPrivate::hideChildren(bool spontaneous)
     }
 }
 
+/*!
+    \internal
+
+    For windows, this is called from the QWidgetWindow::handleCloseEvent implementation,
+    which QWidget::close indirectly calls by closing the QWindow. \a mode will be
+    CloseWithEvent if QWidgetWindow::handleCloseEvent is called indirectly by
+    QWindow::close, and CloseWithSpontaneousEvent if the close event originates from the
+    system (i.e. the user clicked the close button in the title bar).
+
+    QDialog calls this method directly in its hide() implementation, which might be
+    called from the QDialog::closeEvent override. \a mode will be set to CloseNoEvent
+    to prevent recursion.
+
+    For non-windows, this is called directly by QWidget::close, and \a mode will be
+    CloseWithEvent.
+
+    The function is also called by the QWidget destructor, with \a mode set to CloseNoEvent.
+*/
 bool QWidgetPrivate::close_helper(CloseMode mode)
 {
     if (data.is_closing)
@@ -8384,6 +8402,7 @@ bool QWidgetPrivate::close_helper(CloseMode mode)
         }
     }
 
+    // even for windows, make sure we deliver a hide event and that all children get hidden
     if (!that.isNull() && !q->isHidden())
         q->hide();
 
@@ -8446,6 +8465,12 @@ bool QWidgetPrivate::close_helper(CloseMode mode)
 
 bool QWidget::close()
 {
+    // Close native widgets via QWindow::close() in order to run QWindow
+    // close code. The QWidget-specific close code in close_helper() will
+    // in this case be called from the Close event handler in QWidgetWindow.
+    if (QWindow *widgetWindow = windowHandle())
+        return widgetWindow->close();
+
     return d_func()->close_helper(QWidgetPrivate::CloseWithEvent);
 }
 
