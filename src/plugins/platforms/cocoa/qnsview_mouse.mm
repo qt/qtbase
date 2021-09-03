@@ -743,6 +743,7 @@ static const QPointingDevice *pointingDeviceFor(qint64 deviceID)
         auto *devicePriv = QPointingDevicePrivate::get(const_cast<QPointingDevice *>(device));
         if (!devicePriv->capabilities.testFlag(QInputDevice::Capability::PixelScroll)) {
             devicePriv->name = QLatin1String("trackpad or magic mouse");
+            devicePriv->deviceType = QInputDevice::DeviceType::TouchPad;
             devicePriv->capabilities |= QInputDevice::Capability::PixelScroll;
             qCDebug(lcInputDevices) << "mouse scrolling: updated capabilities" << device;
         }
