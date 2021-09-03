@@ -95,7 +95,7 @@ QStyle *MyStylePlugin::create(const QString &key)
     } else if (lcKey == "starbuster") {
         return new StarBusterStyle;
     }
-    return 0;
+    return nullptr;
 }
 //! [1]
 
