@@ -20,3 +20,27 @@ The xcb-xinput files where modified to use system includes, see:
 src/3rdparty/xcb/include/xcb/fixup-xinput-h.patch
 src/3rdparty/xcb/libxcb/fixup-xinput-c.patch
 
+*****************************************************************
+
+Additionally, a forwards compatibility bug in libxcb xinput has been addressed
+by the following patch:
+
+src/3rdparty/xcb/libxcb/xinput-device-class-sizeof.patch
+
+The crux of the issue is that libxcb thinks that it knows about all device
+class types sent by the X server XInput extension. With the addition of
+touchpad gestures in XInput 2.4 and X server 21.1 this is no longer the case
+and libxcb fails horribly by thinking that the protocol was malformed.
+
+The X server currently has a workaround, but it would not address the following
+situation:
+
+ - there are multiple modules within the same X client (e.g. part of the application
+   uses Qt, another part talks to X server via another library)
+ - both of the modules talk to XI
+ - at least one module requests for XI 2.4 protocol support.
+
+The request for XI 2.4 disables the workaround on the X server and Qt side would
+crash horribly.
+
+For more details, see https://gitlab.freedesktop.org/xorg/lib/libxcb/-/merge_requests/20

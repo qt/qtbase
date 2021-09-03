@@ -1,0 +1,38 @@
+diff --git a/src/3rdparty/xcb/libxcb/xinput.c b/src/3rdparty/xcb/libxcb/xinput.c
+index d4e3c250bc..5113213a61 100644
+--- a/src/3rdparty/xcb/libxcb/xinput.c
++++ b/src/3rdparty/xcb/libxcb/xinput.c
+@@ -10535,32 +10535,8 @@ xcb_input_device_class_data_sizeof (const void  *_buffer,
+ int
+ xcb_input_device_class_sizeof (const void  *_buffer)
+ {
+-    char *xcb_tmp = (char *)_buffer;
+     const xcb_input_device_class_t *_aux = (xcb_input_device_class_t *)_buffer;
+-    unsigned int xcb_buffer_len = 0;
+-    unsigned int xcb_block_len = 0;
+-    unsigned int xcb_pad = 0;
+-    unsigned int xcb_align_to = 0;
+-
+-
+-    xcb_block_len += sizeof(xcb_input_device_class_t);
+-    xcb_tmp += xcb_block_len;
+-    xcb_buffer_len += xcb_block_len;
+-    xcb_block_len = 0;
+-    /* data */
+-    xcb_block_len += xcb_input_device_class_data_sizeof(xcb_tmp, _aux->type);
+-    xcb_tmp += xcb_block_len;
+-    xcb_align_to = ALIGNOF(char);
+-    /* insert padding */
+-    xcb_pad = -xcb_block_len & (xcb_align_to - 1);
+-    xcb_buffer_len += xcb_block_len + xcb_pad;
+-    if (0 != xcb_pad) {
+-        xcb_tmp += xcb_pad;
+-        xcb_pad = 0;
+-    }
+-    xcb_block_len = 0;
+-
+-    return xcb_buffer_len;
++    return (_aux->len * 4);
+ }
+ 
+ void *
