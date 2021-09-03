@@ -492,7 +492,7 @@ bool QSemaphore::tryAcquire(int n, int timeout)
 */
 
 /*!
-    \fn QSemaphore::try_acquire()
+    \fn bool QSemaphore::try_acquire()
     \since 6.3
 
     This function is provided for \c{std::counting_semaphore} compatibility.
@@ -503,7 +503,7 @@ bool QSemaphore::tryAcquire(int n, int timeout)
 */
 
 /*!
-    \fn template <typename Rep, typename Period> QSemaphore::try_acquire_for(std::chrono::duration<Rep, Period> timeout)
+    \fn template <typename Rep, typename Period> bool QSemaphore::try_acquire_for(const std::chrono::duration<Rep, Period> &timeout)
     \since 6.3
 
     This function is provided for \c{std::counting_semaphore} compatibility.
@@ -514,12 +514,12 @@ bool QSemaphore::tryAcquire(int n, int timeout)
 */
 
 /*!
-    \fn template <typename Clock, typename Duration> QSemaphore::try_acquire_until(std::chrono::time_point<Clock, Duration> timeout)
+    \fn template <typename Clock, typename Duration> bool QSemaphore::try_acquire_until(const std::chrono::time_point<Clock, Duration> &tp)
     \since 6.3
 
     This function is provided for \c{std::counting_semaphore} compatibility.
 
-    It is equivalent to calling \c{tryAcquire(1, timeout - Clock::now())},
+    It is equivalent to calling \c{tryAcquire(1, tp - Clock::now())},
     which means that adjustments to \c{Clock} are ignored while waiting.
 
     \sa tryAcquire(), try_acquire(), try_acquire_for()
