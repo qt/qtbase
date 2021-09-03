@@ -450,8 +450,7 @@ void QCryptographicHash::addData(const char *data, qsizetype length)
 #endif
 
 /*!
-    Adds the first \a length chars of \a data to the cryptographic
-    hash.
+    Adds the characters in \a bytes to the cryptographic hash.
 
     \note In Qt versions prior to 6.3, this function took QByteArray,
     not QByteArrayView.

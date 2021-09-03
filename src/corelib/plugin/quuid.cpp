@@ -383,10 +383,10 @@ static QUuid createFromName(const QUuid &ns, const QByteArray &baseData, QCrypto
 */
 
 /*!
-    \fn static QUuid::fromString(QAnyStringView text)
+    \fn static QUuid::fromString(QAnyStringView string)
     \since 5.10
 
-    Creates a QUuid object from the string \a text, which must be
+    Creates a QUuid object from the string \a string, which must be
     formatted as five hex fields separated by '-', e.g.,
     "{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}" where each 'x' is a hex
     digit. The curly braces shown here are optional, but it is normal to
