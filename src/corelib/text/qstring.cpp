@@ -9252,12 +9252,6 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
 */
 
 /*!
-    \fn qsizetype QLatin1String::lastIndexOf(QLatin1Char ch, qsizetype from, Qt::CaseSensitivity cs) const
-    \since 6.3
-    \overload
-*/
-
-/*!
     \fn QLatin1String::const_iterator QLatin1String::begin() const
     \since 5.10
 
