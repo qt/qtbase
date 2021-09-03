@@ -5,6 +5,8 @@ release
 target_wrapper.*
 
 # The executables
+c90/c90
+c90/c90.exe
 cpp/cpp
 cpp/cpp.exe
 encoder/encoder

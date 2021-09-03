@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 Intel Corporation
+** Copyright (C) 2021 Intel Corporation
 **
 ** Permission is hereby granted, free of charge, to any person obtaining a copy
 ** of this software and associated documentation files (the "Software"), to deal
@@ -1147,7 +1147,7 @@ static CborError get_string_chunk(CborValue *it, const void **bufferptr, size_t 
  */
 
 CborError _cbor_value_get_string_chunk(const CborValue *value, const void **bufferptr,
-                                       size_t *len, CborValue *next)
+                                                        size_t *len, CborValue *next)
 {
     CborValue tmp;
     if (!next)
