@@ -2208,6 +2208,9 @@ void QWindow::showMaximized()
     Equivalent to calling setWindowStates(Qt::WindowFullScreen) and then
     setVisible(true).
 
+    See the \l{QWidget::showFullScreen()} documentation for platform-specific
+    considerations and limitations.
+
     \sa setWindowStates(), setVisible()
 */
 void QWindow::showFullScreen()
