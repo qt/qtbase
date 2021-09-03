@@ -591,7 +591,7 @@ static qsizetype decode(QString &appendTo, QStringView in)
     const int origSize = appendTo.size();
     appendTo.resize(origSize + (end - begin));
     QChar *output = appendTo.data() + origSize;
-    memcpy(static_cast<void *>(output), static_cast<const void *>(begin), (input - begin) * sizeof(QChar));
+    memcpy(output, begin, (input - begin) * sizeof(QChar));
     output += input - begin;
 
     while (input != end) {
@@ -601,8 +601,7 @@ static qsizetype decode(QString &appendTo, QStringView in)
         if (Q_UNLIKELY(end - input < 3 || !isHex(input[1]) || !isHex(input[2]))) {
             // badly-encoded data
             appendTo.resize(origSize + (end - begin));
-            memcpy(static_cast<void *>(appendTo.begin() + origSize),
-                   static_cast<const void *>(begin), (end - begin) * sizeof(*end));
+            memcpy(appendTo.begin() + origSize, begin, (end - begin) * sizeof(*end));
             return end - begin;
         }
 
