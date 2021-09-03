@@ -127,11 +127,20 @@ void ExecCloseHelper::timerEvent(QTimerEvent *te)
         return;
 
     QWidget *modalWidget = QApplication::activeModalWidget();
-
     if (!m_testCandidate && modalWidget)
         m_testCandidate = modalWidget;
 
-    if (m_testCandidate && m_testCandidate == modalWidget) {
+    QWidget *activeWindow = QApplication::activeWindow();
+    if (!m_testCandidate && activeWindow)
+        m_testCandidate = activeWindow;
+
+    if (!m_testCandidate)
+        return;
+
+    bool shouldHelp = (m_testCandidate->isModal() && m_testCandidate == modalWidget)
+        || (!m_testCandidate->isModal() && m_testCandidate == activeWindow);
+
+    if (shouldHelp) {
         if (m_key == CloseWindow) {
             m_testCandidate->close();
         } else {

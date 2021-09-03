@@ -1830,6 +1830,7 @@ void QMessageBox::about(QWidget *parent, const QString &title, const QString &te
 #else
     msgBox->d_func()->buttonBox->setCenterButtons(true);
 #endif
+    msgBox->setModal(false);
     msgBox->show();
 #else
     msgBox->exec();
@@ -1915,6 +1916,7 @@ void QMessageBox::aboutQt(QWidget *parent, const QString &title)
 #else
     msgBox->d_func()->buttonBox->setCenterButtons(true);
 #endif
+    msgBox->setModal(false);
     msgBox->show();
 #else
     msgBox->exec();
