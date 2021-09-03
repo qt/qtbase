@@ -105,14 +105,26 @@ QVariant QAndroidSystemLocale::query(QueryType type, QVariant in) const
         return m_locale.dayName(in.toInt(), QLocale::LongFormat);
     case DayNameShort:
         return m_locale.dayName(in.toInt(), QLocale::ShortFormat);
+    case DayNameNarrow:
+        return m_locale.dayName(in.toInt(), QLocale::NarrowFormat);
+    case StandaloneDayNameLong:
+        return m_locale.standaloneDayName(in.toInt(), QLocale::LongFormat);
+    case StandaloneDayNameShort:
+        return m_locale.standaloneDayName(in.toInt(), QLocale::ShortFormat);
+    case StandaloneDayNameNarrow:
+        return m_locale.standaloneDayName(in.toInt(), QLocale::NarrowFormat);
     case MonthNameLong:
         return m_locale.monthName(in.toInt(), QLocale::LongFormat);
     case MonthNameShort:
         return m_locale.monthName(in.toInt(), QLocale::ShortFormat);
+    case MonthNameNarrow:
+        return m_locale.monthName(in.toInt(), QLocale::NarrowFormat);
     case StandaloneMonthNameLong:
         return m_locale.standaloneMonthName(in.toInt(), QLocale::LongFormat);
     case StandaloneMonthNameShort:
         return m_locale.standaloneMonthName(in.toInt(), QLocale::ShortFormat);
+    case StandaloneMonthNameNarrow:
+        return m_locale.standaloneMonthName(in.toInt(), QLocale::NarrowFormat);
     case DateToStringLong:
         return m_locale.toString(in.toDate(), QLocale::LongFormat);
     case DateToStringShort:
