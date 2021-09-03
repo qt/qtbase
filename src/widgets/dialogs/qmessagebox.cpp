@@ -1593,6 +1593,7 @@ void QMessageBox::showEvent(QShowEvent *e)
     }
     if (d->detailsButton)
         addButton(d->detailsButton, QMessageBox::ActionRole);
+    d->clickedButton = nullptr;
     d->detectEscapeButton();
     d->updateSize();
 
