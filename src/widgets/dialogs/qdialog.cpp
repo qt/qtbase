@@ -146,16 +146,33 @@ bool QDialogPrivate::canBeNativeDialog() const
 /*!
     \internal
 
-    Properly hides dialog and sets the \a resultCode.
+    Properly closes dialog and sets the \a resultCode.
  */
-void QDialogPrivate::hide(int resultCode)
+void QDialogPrivate::close(int resultCode)
 {
     Q_Q(QDialog);
 
     q->setResult(resultCode);
     q->hide();
+    if (!data.is_closing) {
+        // Until Qt 6.3 we didn't close dialogs, so they didn't receive a QCloseEvent.
+        // It is likely that subclasses implement closeEvent and handle them as rejection
+        // (like QMessageBox and QProgressDialog do), so eat those events.
+        struct CloseEventEater : QObject
+        {
+            using QObject::QObject;
+        protected:
+            bool eventFilter(QObject *o, QEvent *e) override
+            {
+                if (e->type() == QEvent::Close)
+                    return true;
+                return QObject::eventFilter(o, e);
+            }
+        } closeEventEater;
+        q->installEventFilter(&closeEventEater);
+        QWidgetPrivate::close();
+    }
 
-    handleClose(QWidgetPrivate::CloseNoEvent);
     resetModalitySetByOpen();
 }
 
@@ -632,7 +649,7 @@ int QDialog::exec()
 void QDialog::done(int r)
 {
     Q_D(QDialog);
-    d->hide(r);
+    d->close(r);
     d->finalize(r, r);
 }
 

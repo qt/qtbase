@@ -615,7 +615,9 @@ void tst_QDialog::virtualsOnClose()
         dialog.show();
         QVERIFY(QTest::qWaitForWindowExposed(&dialog));
         dialog.accept();
-        QCOMPARE(dialog.closeEventCount, 0); // we only hide the dialog
+        // we used to only hide the dialog, and we still don't want a
+        // closeEvent call for application-triggered calls to QDialog::done
+        QCOMPARE(dialog.closeEventCount, 0);
         QCOMPARE(dialog.acceptCount, 1);
         QCOMPARE(dialog.rejectCount, 0);
         QCOMPARE(dialog.doneCount, 1);
@@ -626,7 +628,7 @@ void tst_QDialog::virtualsOnClose()
         dialog.show();
         QVERIFY(QTest::qWaitForWindowExposed(&dialog));
         dialog.reject();
-        QCOMPARE(dialog.closeEventCount, 0); // we only hide the dialog
+        QCOMPARE(dialog.closeEventCount, 0);
         QCOMPARE(dialog.acceptCount, 0);
         QCOMPARE(dialog.rejectCount, 1);
         QCOMPARE(dialog.doneCount, 1);

@@ -518,7 +518,7 @@ void QMessageBoxPrivate::setClickedButton(QAbstractButton *button)
     emit q->buttonClicked(clickedButton);
 
     auto resultCode = execReturnCode(button);
-    hide(resultCode);
+    close(resultCode);
     finalize(resultCode, dialogCodeForButton(button));
 }
 
@@ -1420,8 +1420,10 @@ void QMessageBox::closeEvent(QCloseEvent *e)
         return;
     }
     QDialog::closeEvent(e);
-    d->clickedButton = d->detectedEscapeButton;
-    setResult(d->execReturnCode(d->detectedEscapeButton));
+    if (!d->clickedButton) {
+        d->clickedButton = d->detectedEscapeButton;
+        setResult(d->execReturnCode(d->detectedEscapeButton));
+    }
 }
 
 /*!
