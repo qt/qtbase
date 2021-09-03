@@ -80,6 +80,7 @@ private:
 
 /*!
     \headerfile <qdrawutil.h>
+    \inmodule QtWidgets
     \title Drawing Utility Functions
 
     \sa QPainter
