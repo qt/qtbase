@@ -69,6 +69,9 @@ set(QT_BUILD_EXAMPLES_BY_DEFAULT @QT_BUILD_EXAMPLES_BY_DEFAULT@ CACHE BOOL
 set(QT_BUILD_TOOLS_BY_DEFAULT @QT_BUILD_TOOLS_BY_DEFAULT@ CACHE BOOL
     "Should tools be built as part of the default 'all' target.")
 
+set(QT_BUILD_EXAMPLES_AS_EXTERNAL "@QT_BUILD_EXAMPLES_AS_EXTERNAL@" CACHE BOOL
+    "Should examples be built as ExternalProjects.")
+
 # Propagate usage of ccache.
 set(QT_USE_CCACHE @QT_USE_CCACHE@ CACHE BOOL "Enable the use of ccache")
 
