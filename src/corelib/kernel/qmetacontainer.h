@@ -299,10 +299,8 @@ class QMetaContainerForContainer
                     return new Iterator;
                 case QMetaContainerInterface::AtBegin:
                     return new Iterator(static_cast<C *>(c)->begin());
-                    break;
                 case QMetaContainerInterface::AtEnd:
                     return new Iterator(static_cast<C *>(c)->end());
-                    break;
                 }
                 return nullptr;
             };
