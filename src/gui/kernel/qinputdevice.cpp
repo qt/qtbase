@@ -101,6 +101,11 @@ QT_BEGIN_NAMESPACE
     \value Scroll
            Indicates that the device has a scroll capability.
 
+    \value PixelScroll \since 6.2
+           Indicates that the device (usually a
+           \l {QInputDevice::DeviceType::TouchPad}{touchpad})
+           scrolls with \l {QWheelEvent::pixelDelta()}{pixel precision}.
+
     \value Hover
            Indicates that the device has a hover capability.
 
