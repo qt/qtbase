@@ -571,7 +571,7 @@ QByteArray QCryptographicHash::result() const
   Note that the returned view remains valid only as long as the QCryptographicHash object is
   not modified by other means.
 
-  \sa result(), QByteArrayView::toHex()
+  \sa result()
 */
 QByteArrayView QCryptographicHash::resultView() const noexcept
 {
