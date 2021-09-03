@@ -50,6 +50,7 @@ private slots:
     void sanityTest();
     void defaultButton();
     void escapeButton();
+    void clickedButton();
     void button();
     void statics();
     void about();
@@ -300,6 +301,28 @@ void tst_QMessageBox::escapeButton()
     closeHelper.start(ExecCloseHelper::CloseWindow, &msgBox3);
     msgBox3.exec();
     QVERIFY(msgBox3.clickedButton() == msgBox3.button(QMessageBox::Ok)); // auto detected
+}
+
+void tst_QMessageBox::clickedButton()
+{
+    QMessageBox msgBox;
+    msgBox.addButton(QMessageBox::Yes);
+    msgBox.addButton(QMessageBox::No);
+    msgBox.addButton(QMessageBox::Retry);
+
+    QVERIFY(!msgBox.clickedButton());
+
+    for (int i = 0; i < 2; ++i) {
+        QAbstractButton *clickedButtonAfterExex = nullptr;
+        QTimer::singleShot(100, [&] {
+            clickedButtonAfterExex = msgBox.clickedButton();
+            msgBox.close();
+        });
+        msgBox.exec();
+
+        QVERIFY(!clickedButtonAfterExex);
+        QVERIFY(msgBox.clickedButton());
+    }
 }
 
 void tst_QMessageBox::statics()
