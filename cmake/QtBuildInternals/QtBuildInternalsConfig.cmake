@@ -669,8 +669,8 @@ macro(qt_examples_build_begin)
 
     cmake_parse_arguments(arg "${options}" "${singleOpts}" "${multiOpts}" ${ARGN})
 
-    # FIXME: Support prefix builds as well
-    if(arg_EXTERNAL_BUILD AND NOT QT_WILL_INSTALL)
+    # FIXME: Support prefix builds as well QTBUG-96232
+    if(arg_EXTERNAL_BUILD AND QT_BUILD_EXAMPLES_AS_EXTERNAL)
         # Examples will be built using ExternalProject.
         # We always depend on all plugins so as to prevent opportunities for
         # weird errors associated with loading out-of-date plugins from
