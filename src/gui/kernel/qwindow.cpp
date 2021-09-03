@@ -614,6 +614,13 @@ QWindow::SurfaceType QWindow::surfaceType() const
     By default, the window is not visible, you must call setVisible(true), or
     show() or similar to make it visible.
 
+    \note Hiding a window does not remove the window from the windowing system,
+    it only hides it. On windowing systems that give full screen applications a
+    dedicated desktop (such as macOS), hiding a full screen window will not remove
+    that desktop, but leave it blank. Another window from the same application
+    might be shown full screen, and will fill that desktop. Use QWindow::close to
+    completely remove a window from the windowing system.
+
     \sa show()
 */
 void QWindow::setVisible(bool visible)
