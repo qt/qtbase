@@ -61,11 +61,11 @@ static QString getMacLocaleName()
     return QString::fromCFString(locale);
 }
 
-static QString macMonthName(int month, QSystemLocale::QueryType type)
+static QVariant macMonthName(int month, QSystemLocale::QueryType type)
 {
     month -= 1;
     if (month < 0 || month > 11)
-        return QString();
+        return {};
 
     QCFType<CFDateFormatterRef> formatter
         = CFDateFormatterCreate(0, QCFType<CFLocaleRef>(CFLocaleCopyCurrent()),
@@ -93,7 +93,7 @@ static QString macMonthName(int month, QSystemLocale::QueryType type)
             break;
         default:
             qWarning("macMonthName: Unsupported query type %d", type);
-            return QString();
+            return {};
     }
     QCFType<CFArrayRef> values
         = static_cast<CFArrayRef>(CFDateFormatterCopyProperty(formatter, formatterType));
@@ -102,13 +102,13 @@ static QString macMonthName(int month, QSystemLocale::QueryType type)
         CFStringRef cfstring = static_cast<CFStringRef>(CFArrayGetValueAtIndex(values, month));
         return QString::fromCFString(cfstring);
     }
-    return QString();
+    return {};
 }
 
-static QString macDayName(int day, QSystemLocale::QueryType type)
+static QVariant macDayName(int day, QSystemLocale::QueryType type)
 {
     if (day < 1 || day > 7)
-        return QString();
+        return {};
 
     QCFType<CFDateFormatterRef> formatter
         = CFDateFormatterCreate(0, QCFType<CFLocaleRef>(CFLocaleCopyCurrent()),
@@ -136,7 +136,7 @@ static QString macDayName(int day, QSystemLocale::QueryType type)
         break;
     default:
         qWarning("macDayName: Unsupported query type %d", type);
-        return QString();
+        return {};
     }
     QCFType<CFArrayRef> values =
             static_cast<CFArrayRef>(CFDateFormatterCopyProperty(formatter, formatterType));
@@ -145,10 +145,10 @@ static QString macDayName(int day, QSystemLocale::QueryType type)
         CFStringRef cfstring = static_cast<CFStringRef>(CFArrayGetValueAtIndex(values, day % 7));
         return QString::fromCFString(cfstring);
     }
-    return QString();
+    return {};
 }
 
-static QString macDateToString(QDate date, bool short_format)
+static QVariant macDateToString(QDate date, bool short_format)
 {
     QCFType<CFDateRef> myDate = QDateTime(date, QTime()).toCFDate();
     QCFType<CFLocaleRef> mylocale = CFLocaleCopyCurrent();
@@ -157,10 +157,10 @@ static QString macDateToString(QDate date, bool short_format)
         = CFDateFormatterCreate(kCFAllocatorDefault,
                                 mylocale, style,
                                 kCFDateFormatterNoStyle);
-    return QCFString(CFDateFormatterCreateStringWithDate(0, myFormatter, myDate));
+    return QString::fromCFString(CFDateFormatterCreateStringWithDate(0, myFormatter, myDate));
 }
 
-static QString macTimeToString(QTime time, bool short_format)
+static QVariant macTimeToString(QTime time, bool short_format)
 {
     QCFType<CFDateRef> myDate = QDateTime(QDate::currentDate(), time).toCFDate();
     QCFType<CFLocaleRef> mylocale = CFLocaleCopyCurrent();
@@ -169,7 +169,7 @@ static QString macTimeToString(QTime time, bool short_format)
                                                                     mylocale,
                                                                     kCFDateFormatterNoStyle,
                                                                     style);
-    return QCFString(CFDateFormatterCreateStringWithDate(0, myFormatter, myDate));
+    return QString::fromCFString(CFDateFormatterCreateStringWithDate(0, myFormatter, myDate));
 }
 
 // Mac uses the Unicode CLDR format codes
@@ -177,7 +177,7 @@ static QString macTimeToString(QTime time, bool short_format)
 // See also qtbase/util/locale_database/dateconverter.py
 // Makes the assumption that input formats are always well formed and consecutive letters
 // never exceed the maximum for the format code.
-static QString macToQtFormat(QStringView sys_fmt)
+static QVariant macToQtFormat(QStringView sys_fmt)
 {
     QString result;
     int i = 0;
@@ -293,10 +293,10 @@ static QString macToQtFormat(QStringView sys_fmt)
         i += repeat;
     }
 
-    return result;
+    return !result.isEmpty() ? QVariant::fromValue(result) : QVariant();
 }
 
-QString getMacDateFormat(CFDateFormatterStyle style)
+static QVariant getMacDateFormat(CFDateFormatterStyle style)
 {
     QCFType<CFLocaleRef> l = CFLocaleCopyCurrent();
     QCFType<CFDateFormatterRef> formatter = CFDateFormatterCreate(kCFAllocatorDefault,
@@ -304,7 +304,7 @@ QString getMacDateFormat(CFDateFormatterStyle style)
     return macToQtFormat(QString::fromCFString(CFDateFormatterGetFormat(formatter)));
 }
 
-static QString getMacTimeFormat(CFDateFormatterStyle style)
+static QVariant getMacTimeFormat(CFDateFormatterStyle style)
 {
     QCFType<CFLocaleRef> l = CFLocaleCopyCurrent();
     QCFType<CFDateFormatterRef> formatter = CFDateFormatterCreate(kCFAllocatorDefault,
@@ -321,7 +321,7 @@ static QVariant getCFLocaleValue(CFStringRef key)
     return QString::fromCFString(CFStringRef(static_cast<CFTypeRef>(value)));
 }
 
-static QLocale::MeasurementSystem macMeasurementSystem()
+static QVariant macMeasurementSystem()
 {
     QCFType<CFLocaleRef> locale = CFLocaleCopyCurrent();
     CFStringRef system = static_cast<CFStringRef>(CFLocaleGetValue(locale, kCFLocaleMeasurementSystem));
@@ -342,7 +342,7 @@ static quint8 macFirstDayOfWeek()
     return day;
 }
 
-static QString macCurrencySymbol(QLocale::CurrencySymbolFormat format)
+static QVariant macCurrencySymbol(QLocale::CurrencySymbolFormat format)
 {
     QCFType<CFLocaleRef> locale = CFLocaleCopyCurrent();
     switch (format) {
@@ -358,10 +358,10 @@ static QString macCurrencySymbol(QLocale::CurrencySymbolFormat format)
     default:
         break;
     }
-    return QString();
+    return {};
 }
 
-static QString macZeroDigit()
+static QVariant macZeroDigit()
 {
     QCFType<CFLocaleRef> locale = CFLocaleCopyCurrent();
     QCFType<CFNumberFormatterRef> numberFormatter =
@@ -373,7 +373,7 @@ static QString macZeroDigit()
 }
 
 #ifndef QT_NO_SYSTEMLOCALE
-static QString macFormatCurrency(const QSystemLocale::CurrencyToStringArgument &arg)
+static QVariant macFormatCurrency(const QSystemLocale::CurrencyToStringArgument &arg)
 {
     QCFType<CFNumberRef> value;
     switch (arg.value.metaType().id()) {
@@ -395,7 +395,7 @@ static QString macFormatCurrency(const QSystemLocale::CurrencyToStringArgument &
         break;
     }
     default:
-        return QString();
+        return {};
     }
 
     QCFType<CFLocaleRef> locale = CFLocaleCopyCurrent();
@@ -500,10 +500,10 @@ QVariant QSystemLocale::query(QueryType type, QVariant in) const
     case PositiveSign:
         break;
     case ZeroDigit:
-        return QVariant(macZeroDigit());
+        return macZeroDigit();
 
     case MeasurementSystem:
-        return QVariant(static_cast<int>(macMeasurementSystem()));
+        return macMeasurementSystem();
 
     case AMText:
     case PMText: {
@@ -516,7 +516,7 @@ QVariant QSystemLocale::query(QueryType type, QVariant in) const
     case FirstDayOfWeek:
         return QVariant(macFirstDayOfWeek());
     case CurrencySymbol:
-        return QVariant(macCurrencySymbol(QLocale::CurrencySymbolFormat(in.toUInt())));
+        return macCurrencySymbol(QLocale::CurrencySymbolFormat(in.toUInt()));
     case CurrencyToString:
         return macFormatCurrency(in.value<QSystemLocale::CurrencyToStringArgument>());
     case UILanguages: {
