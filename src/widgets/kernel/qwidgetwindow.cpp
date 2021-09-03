@@ -115,6 +115,9 @@ public:
         if (QWidget *widget = q->widget())
             QWidgetPrivate::get(widget)->updateContentsRect();
     }
+
+    bool shouldTriggerQuitOnClose() const override;
+    bool shouldCancelQuitOnClose() const override;
 };
 
 QRectF QWidgetWindowPrivate::closestAcceptableGeometry(const QRectF &rect) const
@@ -841,6 +844,37 @@ void QWidgetWindow::handleCloseEvent(QCloseEvent *event)
     bool accepted = m_widget->d_func()->handleClose(d->inClose ? QWidgetPrivate::CloseWithEvent
                                                                   : QWidgetPrivate::CloseWithSpontaneousEvent);
     event->setAccepted(accepted);
+}
+
+bool QWidgetWindowPrivate::shouldTriggerQuitOnClose() const
+{
+    Q_Q(const QWidgetWindow);
+    QWidget *widget = q->widget();
+
+    // Closing a window without WA_QuitOnClose should stop us from even
+    // looking at the other windows. Otherwise we might find that all the
+    // other windows miss WA_QuitOnClose as well, and end up quitting,
+    // but that's not what the user intended.
+    if (!widget->testAttribute(Qt::WA_QuitOnClose))
+        return false;
+
+    // Qt::Tool windows do not have WA_QuitOnClose set by default, which
+    // means that if you open a dialog from one, and the tool window is
+    // the only remaining window, then closing the dialog would result
+    // in quitting the application. To prevent this we check if the
+    // closed widget has a visible parent (the Qt:Tool window in this
+    // case), and if so bail out.
+    if (widget->parentWidget() && widget->parentWidget()->isVisible())
+        return false;
+
+    return true;
+}
+
+bool QWidgetWindowPrivate::shouldCancelQuitOnClose() const
+{
+    Q_Q(const QWidgetWindow);
+    QWidget *w = q->widget();
+    return w->isVisible() && !w->parentWidget() & w->testAttribute(Qt::WA_QuitOnClose);
 }
 
 #if QT_CONFIG(wheelevent)

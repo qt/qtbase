@@ -109,6 +109,7 @@ public:
     void quit() override;
 
     bool shouldQuitInternal(const QWindowList &processedWindows);
+    void maybeQuitOnLastWindowClosed(QWindow *closedWindow);
 
     static void captureGlobalModifierState(QEvent *e);
     static Qt::KeyboardModifiers modifier_buttons;

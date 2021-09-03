@@ -81,7 +81,6 @@ public:
 
     void init(QScreen *targetScreen = nullptr);
 
-    void maybeQuitOnLastWindowClosed();
 #ifndef QT_NO_CURSOR
     void setCursor(const QCursor *c = nullptr);
     bool applyCursor();
@@ -118,6 +117,9 @@ public:
     virtual QRectF closestAcceptableGeometry(const QRectF &rect) const;
 
     virtual void processSafeAreaMarginsChanged() {}
+
+    virtual bool shouldTriggerQuitOnClose() const;
+    virtual bool shouldCancelQuitOnClose() const;
 
     bool isPopup() const { return (windowFlags & Qt::WindowType_Mask) == Qt::Popup; }
     void setAutomaticPositionAndResizeEnabled(bool a)

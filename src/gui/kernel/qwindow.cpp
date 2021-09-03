@@ -2268,6 +2268,18 @@ bool QWindow::close()
     return d->platformWindow->close();
 }
 
+bool QWindowPrivate::shouldTriggerQuitOnClose() const
+{
+    Q_Q(const QWindow);
+    return q->isTopLevel();
+}
+
+bool QWindowPrivate::shouldCancelQuitOnClose() const
+{
+    Q_Q(const QWindow);
+    return q->isVisible() && !q->transientParent() && q->type() != Qt::ToolTip;
+}
+
 /*!
     The expose event (\a ev) is sent by the window system when a window moves
     between the un-exposed and exposed states.
@@ -2444,17 +2456,8 @@ bool QWindow::event(QEvent *ev)
 
     case QEvent::Close:
         closeEvent(static_cast<QCloseEvent*>(ev));
-        if (ev->isAccepted()) {
-            Q_D(QWindow);
-            bool wasVisible = isVisible();
+        if (ev->isAccepted())
             destroy();
-            if (wasVisible) {
-                // FIXME: This check for visibility is a workaround for both QWidgetWindow
-                // and QWindow having logic to emit lastWindowClosed, and possibly quit the
-                // application. We should find a better way to handle this.
-                d->maybeQuitOnLastWindowClosed();
-            }
-        }
         break;
 
     case QEvent::Expose:
@@ -2804,34 +2807,6 @@ QPoint QWindowPrivate::globalPosition() const
 Q_GUI_EXPORT QWindowPrivate *qt_window_private(QWindow *window)
 {
     return window->d_func();
-}
-
-void QWindowPrivate::maybeQuitOnLastWindowClosed()
-{
-    if (!QCoreApplication::instance())
-        return;
-
-    Q_Q(QWindow);
-    if (!q->isTopLevel())
-        return;
-
-    QWindowList list = QGuiApplication::topLevelWindows();
-    bool lastWindowClosed = true;
-    for (int i = 0; i < list.size(); ++i) {
-        QWindow *w = list.at(i);
-        if (!w->isVisible() || w->transientParent() || w->type() == Qt::ToolTip)
-            continue;
-        lastWindowClosed = false;
-        break;
-    }
-    if (lastWindowClosed) {
-        QGuiApplicationPrivate::emitLastWindowClosed();
-
-        if (QGuiApplication::quitOnLastWindowClosed()) {
-            QCoreApplicationPrivate *applicationPrivate = static_cast<QCoreApplicationPrivate*>(QObjectPrivate::get(QCoreApplication::instance()));
-            applicationPrivate->maybeQuit();
-        }
-    }
 }
 
 QWindow *QWindowPrivate::topLevelWindow(QWindow::AncestorMode mode) const

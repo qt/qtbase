@@ -1918,6 +1918,8 @@ void QGuiApplicationPrivate::captureGlobalModifierState(QEvent *e)
 */
 bool QGuiApplication::notify(QObject *object, QEvent *event)
 {
+    Q_D(QGuiApplication);
+
     if (object->isWindowType()) {
         if (QGuiApplicationPrivate::sendQWindowEventToQPlatformWindow(static_cast<QWindow *>(object), event))
             return true; // Platform plugin ate the event
@@ -1925,7 +1927,12 @@ bool QGuiApplication::notify(QObject *object, QEvent *event)
 
     QGuiApplicationPrivate::captureGlobalModifierState(event);
 
-    return QCoreApplication::notify(object, event);
+    bool accepted = QCoreApplication::notify(object, event);
+
+    if (event->type() == QEvent::Close && object->isWindowType() && accepted)
+        d->maybeQuitOnLastWindowClosed(static_cast<QWindow*>(object));
+
+    return accepted;
 }
 
 /*! \reimp
@@ -3533,13 +3540,30 @@ void QGuiApplication::setQuitOnLastWindowClosed(bool quit)
     QCoreApplication::setQuitLockEnabled(quit);
 }
 
-
-
 bool QGuiApplication::quitOnLastWindowClosed()
 {
     return QCoreApplication::isQuitLockEnabled();
 }
 
+void QGuiApplicationPrivate::maybeQuitOnLastWindowClosed(QWindow *closedWindow)
+{
+    Q_ASSERT(closedWindow);
+
+    if (!qt_window_private(closedWindow)->shouldTriggerQuitOnClose())
+        return;
+
+    // Check if there are any remaining windows that should prevent us from quitting
+    for (auto *topLevelWindow : QGuiApplication::topLevelWindows()) {
+        auto *windowPrivate = qt_window_private(topLevelWindow);
+        if (windowPrivate->shouldCancelQuitOnClose())
+            return;
+    }
+
+    emitLastWindowClosed();
+
+    if (QGuiApplication::quitOnLastWindowClosed())
+        maybeQuit();
+}
 
 /*!
     \fn void QGuiApplication::lastWindowClosed()

@@ -8399,8 +8399,6 @@ bool QWidgetPrivate::handleClose(CloseMode mode)
     QPointer<QWidget> that = q;
     QPointer<QWidget> parentWidget = (q->parentWidget() && !QObjectPrivate::get(q->parentWidget())->wasDeleted) ? q->parentWidget() : nullptr;
 
-    bool quitOnClose = q->testAttribute(Qt::WA_QuitOnClose);
-
     if (data.in_destructor)
         mode = CloseNoEvent;
 
@@ -8419,30 +8417,6 @@ bool QWidgetPrivate::handleClose(CloseMode mode)
     // even for windows, make sure we deliver a hide event and that all children get hidden
     if (!that.isNull() && !q->isHidden())
         q->hide();
-
-    // Attempt to close the application only if this has WA_QuitOnClose set and a non-visible parent
-    quitOnClose = quitOnClose && (parentWidget.isNull() || !parentWidget->isVisible());
-
-    if (quitOnClose) {
-        /* if there is no non-withdrawn primary window left (except
-           the ones without QuitOnClose), we emit the lastWindowClosed
-           signal */
-        QWidgetList list = QApplication::topLevelWidgets();
-        bool lastWindowClosed = true;
-        for (int i = 0; i < list.size(); ++i) {
-            QWidget *w = list.at(i);
-            if (!w->isVisible() || w->parentWidget() || !w->testAttribute(Qt::WA_QuitOnClose))
-                continue;
-            lastWindowClosed = false;
-            break;
-        }
-        if (lastWindowClosed) {
-            QGuiApplicationPrivate::emitLastWindowClosed();
-            QCoreApplicationPrivate *applicationPrivate = static_cast<QCoreApplicationPrivate*>(QObjectPrivate::get(QCoreApplication::instance()));
-            applicationPrivate->maybeQuit();
-        }
-    }
-
 
     if (!that.isNull()) {
         data.is_closing = false;
