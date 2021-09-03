@@ -4039,8 +4039,7 @@ qsizetype QString::lastIndexOf(const QString &str, qsizetype from, Qt::CaseSensi
   \overload lastIndexOf()
 
   Returns the index position of the last occurrence of the string \a
-  str in this string, searching backward from index position \a
-  from. Returns -1 if \a str is not found.
+  str in this string. Returns -1 if \a str is not found.
 
   If \a cs is Qt::CaseSensitive (default), the search is case
   sensitive; otherwise the search is case insensitive.
@@ -4091,8 +4090,7 @@ qsizetype QString::lastIndexOf(QLatin1String str, qsizetype from, Qt::CaseSensit
   \overload lastIndexOf()
 
   Returns the index position of the last occurrence of the string \a
-  str in this string, searching backward from index position \a
-  from. Returns -1 if \a str is not found.
+  str in this string. Returns -1 if \a str is not found.
 
   If \a cs is Qt::CaseSensitive (default), the search is case
   sensitive; otherwise the search is case insensitive.
@@ -4145,8 +4143,7 @@ qsizetype QString::lastIndexOf(QChar ch, qsizetype from, Qt::CaseSensitivity cs)
   \overload lastIndexOf()
 
   Returns the index position of the last occurrence of the string view \a
-  str in this string, searching backward from index position \a
-  from. Returns -1 if \a str is not found.
+  str in this string. Returns -1 if \a str is not found.
 
   If \a cs is Qt::CaseSensitive (default), the search is case
   sensitive; otherwise the search is case insensitive.

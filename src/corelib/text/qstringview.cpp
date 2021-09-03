@@ -964,8 +964,8 @@ QT_BEGIN_NAMESPACE
     \since 6.2
 
     Returns the index position of the last match of the regular
-    expression \a re in the string view, which starts before the index
-    position \a from. Returns -1 if \a re didn't match anywhere.
+    expression \a re in the string view. Returns -1 if \a re didn't match
+    anywhere.
 
     If the match is successful and \a rmatch is not \nullptr, it also
     writes the results of the match into the QRegularExpressionMatch object
