@@ -37,7 +37,9 @@
 #include <qpushbutton.h>
 #include <qstyle.h>
 #include <QVBoxLayout>
+#include <QSignalSpy>
 #include <QSizeGrip>
+#include <QTimer>
 #include <QGraphicsProxyWidget>
 #include <QGraphicsView>
 #include <QWindow>
@@ -81,6 +83,9 @@ private slots:
     void transientParent();
     void dialogInGraphicsView();
     void keepPositionOnClose();
+    void virtualsOnClose();
+    void deleteOnDone();
+    void quitOnDone();
 };
 
 // Testing get/set functions
@@ -564,6 +569,171 @@ void tst_QDialog::keepPositionOnClose()
     QVERIFY(QTest::qWaitForWindowExposed(&dialog));
     QTest::qWait(50);
     QCOMPARE(dialog.pos(), pos);
+}
+
+/*!
+    Verify that the virtual functions related to closing a dialog are
+    called exactly once, no matter how the dialog gets closed.
+*/
+void tst_QDialog::virtualsOnClose()
+{
+    class Dialog : public QDialog
+    {
+    public:
+        using QDialog::QDialog;
+        int closeEventCount = 0;
+        int acceptCount = 0;
+        int rejectCount = 0;
+        int doneCount = 0;
+
+        void accept() override
+        {
+            ++acceptCount;
+            QDialog::accept();
+        }
+        void reject() override
+        {
+            ++rejectCount;
+            QDialog::reject();
+        }
+        void done(int result) override
+        {
+            ++doneCount;
+            QDialog::done(result);
+        }
+
+    protected:
+        void closeEvent(QCloseEvent *e) override
+        {
+            ++closeEventCount;
+            QDialog::closeEvent(e);
+        }
+    };
+
+    {
+        Dialog dialog;
+        dialog.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&dialog));
+        dialog.accept();
+        QCOMPARE(dialog.closeEventCount, 0); // we only hide the dialog
+        QCOMPARE(dialog.acceptCount, 1);
+        QCOMPARE(dialog.rejectCount, 0);
+        QCOMPARE(dialog.doneCount, 1);
+    }
+
+    {
+        Dialog dialog;
+        dialog.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&dialog));
+        dialog.reject();
+        QCOMPARE(dialog.closeEventCount, 0); // we only hide the dialog
+        QCOMPARE(dialog.acceptCount, 0);
+        QCOMPARE(dialog.rejectCount, 1);
+        QCOMPARE(dialog.doneCount, 1);
+    }
+
+    {
+        Dialog dialog;
+        dialog.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&dialog));
+        dialog.close();
+        QCOMPARE(dialog.closeEventCount, 1);
+        QCOMPARE(dialog.acceptCount, 0);
+        QCOMPARE(dialog.rejectCount, 1);
+        QCOMPARE(dialog.doneCount, 1);
+    }
+
+    {
+        // user clicks close button in title bar
+        Dialog dialog;
+        dialog.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&dialog));
+        QWindowSystemInterface::handleCloseEvent(dialog.windowHandle());
+        QApplication::processEvents();
+        QCOMPARE(dialog.closeEventCount, 1);
+        QCOMPARE(dialog.acceptCount, 0);
+        QCOMPARE(dialog.rejectCount, 1);
+        QCOMPARE(dialog.doneCount, 1);
+    }
+
+    {
+        struct EventFilter : QObject {
+            EventFilter(Dialog *dialog)
+            { dialog->installEventFilter(this); }
+            int closeEventCount = 0;
+            bool eventFilter(QObject *r, QEvent *e) override
+            {
+                if (e->type() == QEvent::Close) {
+                    ++closeEventCount;
+                }
+                return QObject::eventFilter(r, e);
+            }
+        };
+        // dialog gets destroyed while shown
+        Dialog *dialog = new Dialog;
+        QSignalSpy rejectedSpy(dialog, &QDialog::rejected);
+        EventFilter filter(dialog);
+
+        dialog->show();
+        QVERIFY(QTest::qWaitForWindowExposed(dialog));
+        delete dialog;
+        // Qt doesn't deliver events to QWidgets closed during destruction
+        QCOMPARE(filter.closeEventCount, 0);
+        // QDialog doesn't emit signals when closed by destruction
+        QCOMPARE(rejectedSpy.count(), 0);
+    }
+}
+
+/*!
+    QDialog::done is documented to respect Qt::WA_DeleteOnClose.
+*/
+void tst_QDialog::deleteOnDone()
+{
+    {
+        std::unique_ptr<QDialog> dialog(new QDialog);
+        QPointer<QDialog> watcher(dialog.get());
+        dialog->setAttribute(Qt::WA_DeleteOnClose);
+        dialog->show();
+        QVERIFY(QTest::qWaitForWindowExposed(dialog.get()));
+
+        dialog->accept();
+        QTRY_COMPARE(watcher.isNull(), true);
+        dialog.release(); // if we get here, the dialog is destroyed
+    }
+
+    // it is still safe to delete the dialog explicitly as long as events
+    // have not yet been processed
+    {
+        std::unique_ptr<QDialog> dialog(new QDialog);
+        dialog->setAttribute(Qt::WA_DeleteOnClose);
+        dialog->show();
+        QVERIFY(QTest::qWaitForWindowExposed(dialog.get()));
+
+        dialog->accept();
+        dialog.reset();
+        QApplication::processEvents();
+    }
+}
+
+/*!
+    QDialog::done is documented to make QApplication emit lastWindowClosed if
+    the dialog was the last window.
+*/
+void tst_QDialog::quitOnDone()
+{
+    QSignalSpy quitSpy(qApp, &QGuiApplication::lastWindowClosed);
+
+    QDialog dialog;
+    dialog.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&dialog));
+
+    // QGuiApplication::lastWindowClosed is documented to only be emitted
+    // when we are in exec()
+    QTimer::singleShot(0, &dialog, &QDialog::accept);
+    // also quit with a timer in case the test fails
+    QTimer::singleShot(1000, QApplication::instance(), &QApplication::quit);
+    QApplication::exec();
+    QCOMPARE(quitSpy.count(), 1);
 }
 
 QTEST_MAIN(tst_QDialog)
