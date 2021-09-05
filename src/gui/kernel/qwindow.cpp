@@ -223,11 +223,15 @@ QWindow::~QWindow()
     if (!QGuiApplicationPrivate::is_app_closing)
         QGuiApplicationPrivate::instance()->modalWindowList.removeOne(this);
 
-    // focus_window is normally cleared in destroy(), but the window may in
-    // some cases end up becoming the focus window again. Clear it again
-    // here as a workaround. See QTBUG-75326.
+    // thse are normally cleared in destroy(), but the window may in
+    // some cases end up becoming the focus window again, or receive an enter
+    // event. Clear it again here as a workaround. See QTBUG-75326.
     if (QGuiApplicationPrivate::focus_window == this)
         QGuiApplicationPrivate::focus_window = nullptr;
+    if (QGuiApplicationPrivate::currentMouseWindow == this)
+        QGuiApplicationPrivate::currentMouseWindow = nullptr;
+    if (QGuiApplicationPrivate::currentMousePressWindow == this)
+        QGuiApplicationPrivate::currentMousePressWindow = nullptr;
 }
 
 void QWindowPrivate::init(QScreen *targetScreen)
