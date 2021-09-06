@@ -482,14 +482,17 @@ inline T qobject_cast(const QObject *object)
 
 
 template <class T> constexpr const char * qobject_interface_iid() = delete;
-
-inline const QBindingStorage *qGetBindingStorage(const QObject *o)
+template <class T> inline T *
+qobject_iid_cast(QObject *object, const char *IId = qobject_interface_iid<T *>())
 {
-    return o->bindingStorage();
+    return reinterpret_cast<T *>((object ? object->qt_metacast(IId) : nullptr));
 }
-inline QBindingStorage *qGetBindingStorage(QObject *o)
+template <class T> inline std::enable_if_t<std::is_const<T>::value, T *>
+qobject_iid_cast(const QObject *object)
 {
-    return o->bindingStorage();
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+    QObject *o = const_cast<QObject *>(object);
+    return qobject_iid_cast<std::remove_cv_t<T>>(o);
 }
 
 #if defined(Q_CLANG_QDOC)
@@ -499,10 +502,19 @@ inline QBindingStorage *qGetBindingStorage(QObject *o)
     template <> constexpr const char *qobject_interface_iid<IFace *>() \
     { return IId; } \
     template <> inline IFace *qobject_cast<IFace *>(QObject *object) \
-    { return reinterpret_cast<IFace *>((object ? object->qt_metacast(IId) : nullptr)); } \
+    { return qobject_iid_cast<IFace>(object); } \
     template <> inline const IFace *qobject_cast<const IFace *>(const QObject *object) \
-    { return reinterpret_cast<IFace *>((object ? const_cast<QObject *>(object)->qt_metacast(IId) : nullptr)); }
+    { return qobject_iid_cast<const IFace>(object); }
 #endif // Q_MOC_RUN
+
+inline const QBindingStorage *qGetBindingStorage(const QObject *o)
+{
+    return o->bindingStorage();
+}
+inline QBindingStorage *qGetBindingStorage(QObject *o)
+{
+    return o->bindingStorage();
+}
 
 #ifndef QT_NO_DEBUG_STREAM
 Q_CORE_EXPORT QDebug operator<<(QDebug, const QObject *);
