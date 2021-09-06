@@ -501,7 +501,7 @@ inline QBindingStorage *qGetBindingStorage(QObject *o)
     { return IId; } \
     template <> inline IFace *qobject_cast<IFace *>(QObject *object) \
     { return reinterpret_cast<IFace *>((object ? object->qt_metacast(IId) : nullptr)); } \
-    template <> inline IFace *qobject_cast<IFace *>(const QObject *object) \
+    template <> inline const IFace *qobject_cast<const IFace *>(const QObject *object) \
     { return reinterpret_cast<IFace *>((object ? const_cast<QObject *>(object)->qt_metacast(IId) : nullptr)); }
 #endif // Q_MOC_RUN
 
