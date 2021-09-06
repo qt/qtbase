@@ -63,6 +63,9 @@
 #include <QtCore/QList>
 #include <QtCore/QTypeInfo>
 
+#include <vector>
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 
 class QIconLoader;
@@ -111,7 +114,7 @@ struct PixmapEntry : public QIconLoaderEngineEntry
     QPixmap basePixmap;
 };
 
-typedef QList<QIconLoaderEngineEntry*> QThemeIconEntries;
+using QThemeIconEntries = std::vector<std::unique_ptr<QIconLoaderEngineEntry>>;
 
 struct QThemeIconInfo
 {
