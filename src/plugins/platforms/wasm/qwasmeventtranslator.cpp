@@ -444,9 +444,6 @@ bool QWasmEventTranslator::processMouse(int eventType, const EmscriptenMouseEven
     if (resizeMode == QWasmWindow::ResizeNone)
         window2 = screen()->compositor()->windowAt(globalPoint, 5);
 
-    if (lastWindow && lastWindow->cursor() != Qt::ArrowCursor) {
-        lastWindow->setCursor(Qt::ArrowCursor);
-    }
     if (window2 == nullptr) {
         window2 = lastWindow;
     } else {
