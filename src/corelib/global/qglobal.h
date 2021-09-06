@@ -1204,6 +1204,7 @@ void qAsConst(const T &&) = delete;
 // like std::exchange
 template <typename T, typename U = T>
 constexpr T qExchange(T &t, U &&newValue)
+noexcept(std::conjunction_v<std::is_nothrow_move_constructible<T>, std::is_nothrow_assignable<T &, U>>)
 {
     T old = std::move(t);
     t = std::forward<U>(newValue);
