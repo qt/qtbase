@@ -1037,6 +1037,8 @@ public:
 
     bool isLayoutCompatible(const QRhiShaderResourceBindings *other) const;
 
+    QVector<uint> serializedLayoutDescription() const { return m_layoutDesc; }
+
     virtual bool create() = 0;
 
     enum UpdateFlag {
@@ -1052,7 +1054,10 @@ protected:
     QRhiShaderResourceBindings(QRhiImplementation *rhi);
     QVarLengthArray<QRhiShaderResourceBinding, BINDING_PREALLOC> m_bindings;
     uint m_layoutDescHash = 0;
-    QVarLengthArray<uint, BINDING_PREALLOC * LAYOUT_DESC_FIELD_COUNT> m_layoutDesc;
+    // Intentionally not using QVLA for m_layoutDesc: clients like Qt Quick are much
+    // better served with an implicitly shared container here, because they will likely
+    // throw this directly into structs serving as cache keys.
+    QVector<uint> m_layoutDesc;
     friend class QRhiImplementation;
 #ifndef QT_NO_DEBUG_STREAM
     friend Q_GUI_EXPORT QDebug operator<<(QDebug, const QRhiShaderResourceBindings &);

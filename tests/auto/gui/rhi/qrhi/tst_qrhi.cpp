@@ -3271,6 +3271,8 @@ void tst_QRhi::srbLayoutCompatibility()
 
         QVERIFY(srb1->isLayoutCompatible(srb2.data()));
         QVERIFY(srb2->isLayoutCompatible(srb1.data()));
+
+        QCOMPARE(srb1->serializedLayoutDescription(), srb2->serializedLayoutDescription());
     }
 
     // different count (not compatible)
@@ -3286,6 +3288,8 @@ void tst_QRhi::srbLayoutCompatibility()
 
         QVERIFY(!srb1->isLayoutCompatible(srb2.data()));
         QVERIFY(!srb2->isLayoutCompatible(srb1.data()));
+
+        QVERIFY(srb1->serializedLayoutDescription() != srb2->serializedLayoutDescription());
     }
 
     // full match (compatible)
@@ -3306,6 +3310,10 @@ void tst_QRhi::srbLayoutCompatibility()
 
         QVERIFY(srb1->isLayoutCompatible(srb2.data()));
         QVERIFY(srb2->isLayoutCompatible(srb1.data()));
+
+        QVERIFY(!srb1->serializedLayoutDescription().isEmpty());
+        QVERIFY(!srb2->serializedLayoutDescription().isEmpty());
+        QCOMPARE(srb1->serializedLayoutDescription(), srb2->serializedLayoutDescription());
     }
 
     // different visibility (not compatible)
@@ -3324,6 +3332,8 @@ void tst_QRhi::srbLayoutCompatibility()
 
         QVERIFY(!srb1->isLayoutCompatible(srb2.data()));
         QVERIFY(!srb2->isLayoutCompatible(srb1.data()));
+
+        QVERIFY(srb1->serializedLayoutDescription() != srb2->serializedLayoutDescription());
     }
 
     // different binding points (not compatible)
@@ -3342,6 +3352,8 @@ void tst_QRhi::srbLayoutCompatibility()
 
         QVERIFY(!srb1->isLayoutCompatible(srb2.data()));
         QVERIFY(!srb2->isLayoutCompatible(srb1.data()));
+
+        QVERIFY(srb1->serializedLayoutDescription() != srb2->serializedLayoutDescription());
     }
 
     // different buffer region offset and size (compatible)
@@ -3362,6 +3374,8 @@ void tst_QRhi::srbLayoutCompatibility()
 
         QVERIFY(srb1->isLayoutCompatible(srb2.data()));
         QVERIFY(srb2->isLayoutCompatible(srb1.data()));
+
+        QCOMPARE(srb1->serializedLayoutDescription(), srb2->serializedLayoutDescription());
     }
 
     // different resources (compatible)
@@ -3382,6 +3396,8 @@ void tst_QRhi::srbLayoutCompatibility()
 
         QVERIFY(srb1->isLayoutCompatible(srb2.data()));
         QVERIFY(srb2->isLayoutCompatible(srb1.data()));
+
+        QCOMPARE(srb1->serializedLayoutDescription(), srb2->serializedLayoutDescription());
     }
 }
 

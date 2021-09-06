@@ -3002,6 +3002,7 @@ QRhiResource::Type QRhiTextureRenderTarget::resourceType() const
 QRhiShaderResourceBindings::QRhiShaderResourceBindings(QRhiImplementation *rhi)
     : QRhiResource(rhi)
 {
+    m_layoutDesc.reserve(BINDING_PREALLOC * LAYOUT_DESC_FIELD_COUNT);
 }
 
 /*!
@@ -5619,6 +5620,13 @@ void QRhiCommandBuffer::setGraphicsPipeline(QRhiGraphicsPipeline *ps)
     back the QRhiBuffer, QRhiTexture, QRhiSampler objects referenced from \a
     srb. In this case setShaderResources() must be called even if \a srb is
     the same as in the last call.
+
+    When \a srb is not null, the QRhiShaderResourceBindings object the pipeline
+    was built with in create() is guaranteed to be not accessed in any form. In
+    fact, it does not need to be valid even at this point: destroying the
+    pipeline's associated srb after create() and instead explicitly specifying
+    another, \l{QRhiShaderResourceBindings::isLayoutCompatible()}{layout
+    compatible} one in every setShaderResources() call is valid.
 
     \a dynamicOffsets allows specifying buffer offsets for uniform buffers that
     were associated with \a srb via
