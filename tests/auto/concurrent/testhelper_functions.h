@@ -28,6 +28,8 @@
 #ifndef FUNCTIONS_H
 #define FUNCTIONS_H
 
+#include <QList>
+
 #include <vector>
 
 bool keepEvenIntegers(const int &x)
@@ -194,6 +196,13 @@ public:
 
 private:
     std::vector<T> data;
+};
+
+struct NonTemplateSequence : public QList<int>
+{
+    NonTemplateSequence() = default;
+
+    NonTemplateSequence(std::initializer_list<int> args) : QList(args) { }
 };
 
 #endif

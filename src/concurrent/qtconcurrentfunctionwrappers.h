@@ -190,7 +190,13 @@ struct ReduceResultTypeHelper<Callable,
 // -- MapSequenceResultType
 
 template <class InputSequence, class MapFunctor>
-struct MapSequenceResultType;
+struct MapSequenceResultType
+{
+    static_assert(std::is_same_v<typename InputSequence::value_type,
+                                 QtPrivate::MapResultType<InputSequence, MapFunctor>>,
+                  "Couldn't deduce the output sequence type, you must specify it explicitly.");
+    typedef InputSequence ResultType;
+};
 
 #ifndef QT_NO_TEMPLATE_TEMPLATE_PARAMETERS
 

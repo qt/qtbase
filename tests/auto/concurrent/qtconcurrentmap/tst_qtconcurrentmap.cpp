@@ -201,6 +201,13 @@ void tst_QtConcurrentMap::map()
         QCOMPARE(moveOnlyVector, MoveOnlyVector<int>({ 2, 4, 6 }));
     }
 
+    // non-template sequences
+    {
+        NonTemplateSequence list { 1, 2, 3 };
+        QtConcurrent::map(list, multiplyBy2InPlace).waitForFinished();
+        QCOMPARE(list, NonTemplateSequence({ 2, 4, 6 }));
+    }
+
 #if 0
     // not allowed: map() with immutable sequences makes no sense
     {
@@ -329,6 +336,13 @@ void tst_QtConcurrentMap::blockingMap()
         QCOMPARE(list, QList<int>() << 1 << 2 << 3);
         QtConcurrent::blockingMap(list.begin(), list.end(), [](int x) { x *= 2; });
         QCOMPARE(list, QList<int>() << 1 << 2 << 3);
+    }
+
+    // non-template sequences
+    {
+        NonTemplateSequence list { 1, 2, 3 };
+        QtConcurrent::blockingMap(list, multiplyBy2InPlace);
+        QCOMPARE(list, NonTemplateSequence({ 2, 4, 6 }));
     }
 
 #if 0
@@ -564,6 +578,17 @@ void tst_QtConcurrentMap::mapped()
 #endif
 
     {
+        // non-template sequences
+        NonTemplateSequence list { 1, 2, 3 };
+
+        auto future = QtConcurrent::mapped(list, multiplyBy2);
+        QCOMPARE(future.results(), QList({ 2, 4, 6 }));
+
+        auto result = QtConcurrent::blockingMapped(list, multiplyBy2);
+        QCOMPARE(result, NonTemplateSequence({ 2, 4, 6 }));
+    }
+
+    {
         // rvalue sequences
         auto future = QtConcurrent::mapped(std::vector { 1, 2, 3 }, multiplyBy2);
         QCOMPARE(future.results(), QList<int>({ 2, 4, 6 }));
@@ -665,6 +690,17 @@ void tst_QtConcurrentMap::mappedThreadPool()
     CHECK_FAIL("function");
     testMappedThreadPool(&pool, intList, intListMultipiedBy3, lambdaMultiplyBy3);
     CHECK_FAIL("lambda");
+
+    {
+        // non-template sequences
+        NonTemplateSequence list { 1, 2, 3 };
+
+        auto future = QtConcurrent::mapped(&pool, list, multiplyBy2);
+        QCOMPARE(future.results(), QList({ 2, 4, 6 }));
+
+        auto result = QtConcurrent::blockingMapped(&pool, list, multiplyBy2);
+        QCOMPARE(result, NonTemplateSequence({ 2, 4, 6 }));
+    }
 
     {
         // rvalue sequences
@@ -881,6 +917,17 @@ void tst_QtConcurrentMap::mappedReduced()
     CHECK_FAIL("lambda-lambda");
 
     {
+        // non-template sequences
+        NonTemplateSequence list { 1, 2, 3 };
+
+        auto future = QtConcurrent::mappedReduced(list, multiplyBy2, intSumReduce);
+        QCOMPARE(future.result(), 12);
+
+        auto result = QtConcurrent::blockingMappedReduced(list, multiplyBy2, intSumReduce);
+        QCOMPARE(result, 12);
+    }
+
+    {
         // rvalue sequences
         auto future = QtConcurrent::mappedReduced(std::vector { 1, 2, 3 }, intSquare, intSumReduce);
         QCOMPARE(future.result(), sumOfSquares);
@@ -1018,6 +1065,17 @@ void tst_QtConcurrentMap::mappedReducedThreadPool()
     CHECK_FAIL("lambda-function");
     testMappedReducedThreadPool(&pool, intList, sumOfCubes, lambdaCube, lambdaSumReduce);
     CHECK_FAIL("lambda-lambda");
+
+    {
+        // non-template sequences
+        NonTemplateSequence list { 1, 2, 3 };
+
+        auto future = QtConcurrent::mappedReduced(&pool, list, multiplyBy2, intSumReduce);
+        QCOMPARE(future.result(), 12);
+
+        auto result = QtConcurrent::blockingMappedReduced(&pool, list, multiplyBy2, intSumReduce);
+        QCOMPARE(result, 12);
+    }
 
     {
         // rvalue sequences
@@ -1283,6 +1341,18 @@ void tst_QtConcurrentMap::mappedReducedInitialValue()
     CHECK_FAIL("lambda-lambda");
 
     {
+        // non-template sequences
+        NonTemplateSequence list { 1, 2, 3 };
+
+        auto future = QtConcurrent::mappedReduced(list, multiplyBy2, intSumReduce, intInitial);
+        QCOMPARE(future.result(), intInitial + 12);
+
+        auto result =
+                QtConcurrent::blockingMappedReduced(list, multiplyBy2, intSumReduce, intInitial);
+        QCOMPARE(result, intInitial + 12);
+    }
+
+    {
         // rvalue sequences
         auto future = QtConcurrent::mappedReduced(std::vector { 1, 2, 3 }, intSquare, intSumReduce,
                                                   intInitial);
@@ -1418,6 +1488,19 @@ void tst_QtConcurrentMap::mappedReducedInitialValueThreadPool()
     testMappedReducedInitialValueThreadPool(&pool, intList, sumOfCubes, lambdaCube,
                                             lambdaSumReduce, intInitial);
     CHECK_FAIL("lambda-lambda");
+
+    {
+        // non-template sequences
+        NonTemplateSequence list { 1, 2, 3 };
+
+        auto future =
+                QtConcurrent::mappedReduced(&pool, list, multiplyBy2, intSumReduce, intInitial);
+        QCOMPARE(future.result(), intInitial + 12);
+
+        auto result = QtConcurrent::blockingMappedReduced(&pool, list, multiplyBy2, intSumReduce,
+                                                          intInitial);
+        QCOMPARE(result, intInitial + 12);
+    }
 
     {
         // rvalue sequences
