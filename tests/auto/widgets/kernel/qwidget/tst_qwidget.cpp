@@ -52,6 +52,7 @@
 #include <qmainwindow.h>
 #include <qdockwidget.h>
 #include <qrandom.h>
+#include <qsignalspy.h>
 #include <qstylehints.h>
 #include <qtoolbar.h>
 #include <qtoolbutton.h>
@@ -426,6 +427,7 @@ private slots:
     void receivesApplicationFontChangeEvent();
     void receivesApplicationPaletteChangeEvent();
     void deleteWindowInCloseEvent();
+    void quitOnClose();
 
 private:
     bool ensureScreenSize(int width, int height);
@@ -12011,6 +12013,35 @@ void tst_QWidget::deleteWindowInCloseEvent()
     auto widget = new DeleteOnCloseEventWidget;
     widget->close();
     QVERIFY(true);
+}
+
+/*!
+    Verify that both closing and deleting the last (only) window-widget
+    exits the application event loop.
+*/
+void tst_QWidget::quitOnClose()
+{
+    QSignalSpy quitSpy(qApp, &QApplication::lastWindowClosed);
+
+    std::unique_ptr<QWidget>widget(new QWidget);
+    widget->show();
+    QVERIFY(QTest::qWaitForWindowExposed(widget.get()));
+
+    // QGuiApplication::lastWindowClosed is documented to only be emitted
+    // when we are in exec()
+    QTimer::singleShot(0, widget.get(), [&]{
+        widget->close();
+    });
+    QApplication::exec();
+    QCOMPARE(quitSpy.count(), 1);
+
+    widget->show();
+    QVERIFY(QTest::qWaitForWindowExposed(widget.get()));
+    QTimer::singleShot(0, widget.get(), [&]{
+        widget.reset();
+    });
+    QApplication::exec();
+    QCOMPARE(quitSpy.count(), 2);
 }
 
 QTEST_MAIN(tst_QWidget)
