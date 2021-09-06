@@ -4,3 +4,5 @@ android
 b2qt
 [updateFocusChainWhenChildDie]
 b2qt
+[initialShow]
+macos ci
