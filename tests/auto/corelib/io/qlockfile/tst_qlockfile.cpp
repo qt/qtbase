@@ -29,7 +29,9 @@
 
 #include <QTest>
 #include <QtConcurrentRun>
+#if QT_CONFIG(process)
 #include <QProcess>
+#endif
 #include <QSemaphore>
 #include <QFutureSynchronizer>
 

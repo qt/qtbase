@@ -32,7 +32,9 @@
 #include <QSemaphore>
 #include <QTestEventLoop>
 #include <QSignalSpy>
+#if QT_CONFIG(process)
 #include <QProcess>
+#endif
 #include <QTimer>
 #include <QWaitCondition>
 #include <QScopeGuard>
@@ -91,6 +93,10 @@ Q_DECLARE_METATYPE(QSharedPointer<char>)
 #include <time.h>
 
 #include "../../../network-settings.h"
+
+#ifdef Q_OS_INTEGRITY
+#include "qplatformdefs.h"
+#endif
 
 Q_DECLARE_METATYPE(QAuthenticator*)
 #if QT_CONFIG(networkproxy)

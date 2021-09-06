@@ -27,7 +27,9 @@
 ****************************************************************************/
 
 #include <QTest>
+#if QT_CONFIG(process)
 #include <QProcess>
+#endif
 #include <QTestEventLoop>
 
 #include <qcoreapplication.h>

@@ -7224,11 +7224,14 @@ void tst_QObject::checkArgumentsForNarrowing()
 
     // integral to integral with different signedness. smaller ones tested above
     NARROWS(signed char, unsigned char);
+
+    // Issue is reported to Green Hills, 2021-09-14.
+#if !defined(Q_CC_GHS)
     NARROWS(signed char, unsigned short);
     NARROWS(signed char, unsigned int);
     NARROWS(signed char, unsigned long);
     NARROWS(signed char, unsigned long long);
-
+#endif // Q_CC_GHS
     NARROWS(unsigned char, signed char);
     FITS(unsigned char, short);
     FITS(unsigned char, int);
@@ -7236,19 +7239,23 @@ void tst_QObject::checkArgumentsForNarrowing()
     FITS(unsigned char, long long);
 
     NARROWS(short, unsigned short);
+#if !defined(Q_CC_GHS)
     NARROWS(short, unsigned int);
     NARROWS(short, unsigned long);
-    NARROWS(short, unsigned long long);
 
+    NARROWS(short, unsigned long long);
+#endif // Q_CC_GHS
     NARROWS(unsigned short, short);
+
     FITS(unsigned short, int);
     FITS(unsigned short, long);
     FITS(unsigned short, long long);
 
     NARROWS(int, unsigned int);
+#if !defined(Q_CC_GHS)
     NARROWS(int, unsigned long);
     NARROWS(int, unsigned long long);
-
+#endif // Q_CC_GHS
     NARROWS(unsigned int, int);
     NARROWS_IF(unsigned int, long, (sizeof(int) >= sizeof(long)));
     FITS(unsigned int, long long);
@@ -7306,17 +7313,19 @@ void tst_QObject::checkArgumentsForNarrowing()
         /* implicit */ operator double() const { return 42.0; }
     };
 
+#if !defined(Q_CC_GHS)
     NARROWS(ConvertingToDouble, char);
     NARROWS(ConvertingToDouble, short);
     NARROWS(ConvertingToDouble, int);
     NARROWS(ConvertingToDouble, long);
     NARROWS(ConvertingToDouble, long long);
     NARROWS(ConvertingToDouble, float);
+#endif // Q_CC_GHS
     FITS(ConvertingToDouble, double);
     FITS(ConvertingToDouble, long double);
 
 
-    // GCC and clang don't implement this properly yet:
+    // GCC, GHS and clang don't implement this properly yet:
     // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=99625
     // https://bugs.llvm.org/show_bug.cgi?id=49676
 #if defined(Q_CC_MSVC) // at least since VS2017

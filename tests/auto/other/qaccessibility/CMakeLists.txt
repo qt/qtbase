@@ -32,7 +32,7 @@ qt_internal_add_test(tst_qaccessibility
 ## Scopes:
 #####################################################################
 
-qt_internal_extend_target(tst_qaccessibility CONDITION UNIX AND NOT APPLE AND NOT HAIKU AND NOT integity
+qt_internal_extend_target(tst_qaccessibility CONDITION UNIX AND NOT APPLE AND NOT HAIKU AND NOT INTEGRITY
     PUBLIC_LIBRARIES
         m
 )

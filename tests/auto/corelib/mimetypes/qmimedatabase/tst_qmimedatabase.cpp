@@ -46,7 +46,9 @@
 #include <QTest>
 #include <QBuffer>
 #include <QTemporaryFile>
+#if QT_CONFIG(process)
 #include <QProcess>
+#endif
 
 static const char *const additionalMimeFiles[] = {
     "yast2-metapackage-handler-mimetypes.xml",
@@ -676,7 +678,7 @@ void tst_QMimeDatabase::knownSuffix()
 
 void tst_QMimeDatabase::symlinkToFifo() // QTBUG-48529
 {
-#ifdef Q_OS_UNIX
+#if defined(Q_OS_UNIX) && !defined(Q_OS_INTEGRITY)
     QTemporaryDir tempDir;
     QVERIFY(tempDir.isValid());
     const QString dir = tempDir.path();
@@ -885,7 +887,7 @@ static bool runUpdateMimeDatabase(const QString &path) // TODO make it a QMimeDa
         qWarning("%s does not exist.", qPrintable(umdCommand));
         return false;
     }
-
+#if QT_CONFIG(process)
     QElapsedTimer timer;
     QProcess proc;
     proc.setProcessChannelMode(QProcess::MergedChannels); // silence output
@@ -900,6 +902,7 @@ static bool runUpdateMimeDatabase(const QString &path) // TODO make it a QMimeDa
     const bool success = proc.waitForFinished(UpdateMimeDatabaseTimeout);
     qDebug().noquote() << "runUpdateMimeDatabase: done,"
         << success << timer.elapsed() << "ms";
+#endif
     return true;
 }
 

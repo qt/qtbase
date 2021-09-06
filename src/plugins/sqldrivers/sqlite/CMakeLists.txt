@@ -82,6 +82,10 @@ qt_internal_extend_target(QSQLiteDriverPlugin CONDITION UNIX AND NOT QT_FEATURE_
         HAVE_USLEEP=1
 )
 
+qt_internal_extend_target(QSQLiteDriverPlugin CONDITION INTEGRITY
+    COMPILE_OPTIONS -include qplatformdefs.h
+)
+
 qt_internal_extend_target(QSQLiteDriverPlugin CONDITION QT_FEATURE_dlopen AND NOT QT_FEATURE_system_sqlite
     LIBRARIES
         ${CMAKE_DL_LIBS}
@@ -91,6 +95,3 @@ qt_internal_extend_target(QSQLiteDriverPlugin CONDITION NOT QT_FEATURE_dlopen AN
     DEFINES
         SQLITE_OMIT_LOAD_EXTENSION
 )
-
-#### Keys ignored in scope 12:.:../../../3rdparty:../../../3rdparty/sqlite.pri:INTEGRITY:
-# QMAKE_CFLAGS = "-include" "qplatformdefs.h"

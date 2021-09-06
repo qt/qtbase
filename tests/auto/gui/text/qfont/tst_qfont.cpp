@@ -29,7 +29,9 @@
 #include <QTest>
 #include <QBuffer>
 #include <QtEndian>
+#if QT_CONFIG(process)
 #include <QProcess>
+#endif
 
 #include <qfont.h>
 #include <private/qfont_p.h>

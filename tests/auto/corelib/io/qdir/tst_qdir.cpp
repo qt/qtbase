@@ -29,7 +29,9 @@
 
 #include <QTest>
 #include <QTemporaryFile>
+#if QT_CONFIG(process)
 #include <QProcess>
+#endif
 
 #include <qcoreapplication.h>
 #include <qdebug.h>
@@ -51,6 +53,10 @@
 #if defined(Q_OS_UNIX)
 # include <unistd.h>
 # include <sys/stat.h>
+#endif
+
+#ifdef Q_OS_INTEGRITY
+#include "qplatformdefs.h"
 #endif
 
 #if defined(Q_OS_VXWORKS)
@@ -398,7 +404,7 @@ void tst_QDir::mkdirRmdir()
 
 void tst_QDir::mkdirOnSymlink()
 {
-#if !defined(Q_OS_UNIX) || defined(Q_NO_SYMLINKS)
+#if !defined(Q_OS_UNIX) || defined(Q_NO_SYMLINKS) || defined(Q_OS_INTEGRITY)
     QSKIP("Test only valid on an OS that supports symlinks");
 #else
     // Create the structure:

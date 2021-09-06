@@ -33,10 +33,11 @@
 
 #include <algorithm>
 
-#ifdef Q_OS_UNIX
+#if defined(Q_OS_UNIX) && !defined(Q_OS_INTEGRITY)
 #  include <unistd.h>
 #  include <sys/types.h>
 #  include <sys/wait.h>
+#  define USE_PIPE_EXEC
 #endif
 
 
@@ -63,9 +64,9 @@ private:
     QString getDefaultPrinterFromSystem();
     QStringList getPrintersFromSystem();
 
-#ifdef Q_OS_UNIX
+#ifdef USE_PIPE_EXEC
     QString getOutputFromCommand(const QStringList& command);
-#endif // Q_OS_UNIX
+#endif // USE_PIPE_EXEC
 #endif
 };
 
@@ -89,7 +90,7 @@ QString tst_QPrinterInfo::getDefaultPrinterFromSystem()
 #ifdef Q_OS_WIN32
     // TODO "cscript c:\windows\system32\prnmngr.vbs -g"
 #endif // Q_OS_WIN32
-#ifdef Q_OS_UNIX
+#ifdef USE_PIPE_EXEC
     QStringList command;
     command << "lpstat" << "-d";
     QString output = getOutputFromCommand(command);
@@ -103,7 +104,7 @@ QString tst_QPrinterInfo::getDefaultPrinterFromSystem()
     QRegularExpression defaultReg("default.*: *([a-zA-Z0-9_-]+)");
     match = defaultReg.match(output);
     printer = match.captured(1);
-#endif // Q_OS_UNIX
+#endif // USE_PIPE_EXEC
     return printer;
 }
 
@@ -114,7 +115,7 @@ QStringList tst_QPrinterInfo::getPrintersFromSystem()
 #ifdef Q_OS_WIN32
     // TODO "cscript c:\windows\system32\prnmngr.vbs -l"
 #endif // Q_OS_WIN32
-#ifdef Q_OS_UNIX
+#ifdef USE_PIPE_EXEC
     QString output = getOutputFromCommand({ "lpstat", "-e" });
     QStringList list = output.split(QChar::fromLatin1('\n'));
 
@@ -127,12 +128,12 @@ QStringList tst_QPrinterInfo::getPrintersFromSystem()
             ans << printer;
         }
     }
-#endif // Q_OS_UNIX
+#endif // USE_PIPE_EXEC
 
     return ans;
 }
 
-#ifdef Q_OS_UNIX
+#ifdef USE_PIPE_EXEC
 // This function does roughly the same as the `command substitution` in
 // the shell.
 QString getOutputFromCommandInternal(const QStringList &command)

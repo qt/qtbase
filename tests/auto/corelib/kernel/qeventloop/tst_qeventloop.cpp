@@ -570,7 +570,8 @@ void tst_QEventLoop::deliverInDefinedOrder()
     using namespace DeliverInDefinedOrder;
     qMetaTypeId<QThread*>();
     QThread threads[NbThread];
-    Object objects[NbObject];
+    // GHS compiler needs the namespace prefix, despite using above.
+    DeliverInDefinedOrder::Object objects[NbObject];
     for (int t = 0; t < NbThread; t++) {
         threads[t].start();
     }
