@@ -3686,12 +3686,18 @@ def write_jar(cm_fh: IO[str], scope: Scope, *, indent: int = 0) -> str:
     return target
 
 
-def write_win32_and_mac_bundle_properties(
-    cm_fh: IO[str], scope: Scope, target: str, *, handling_first_scope=False, indent: int = 0
-):
+def get_win32_and_mac_bundle_properties(scope: Scope) -> tuple:
     config = scope.get("CONFIG")
     win32 = all(val not in config for val in ["cmdline", "console"])
     mac_bundle = all(val not in config for val in ["cmdline", "-app_bundle"])
+
+    return win32, mac_bundle
+
+
+def write_win32_and_mac_bundle_properties(
+    cm_fh: IO[str], scope: Scope, target: str, *, handling_first_scope=False, indent: int = 0
+):
+    win32, mac_bundle = get_win32_and_mac_bundle_properties(scope)
 
     true_value = "TRUE"
     false_value = "FALSE"
@@ -3710,7 +3716,7 @@ def write_win32_and_mac_bundle_properties(
     # without creating excess noise of setting the properties in every
     # single scope.
     for name, value in properties_mapping.items():
-        if handling_first_scope or (not handling_first_scope and value != true_value):
+        if not handling_first_scope and value != true_value:
             properties.extend([name, value])
 
     if properties:
@@ -3731,7 +3737,7 @@ def write_example(
     )
 
     cm_fh.write(
-        "cmake_minimum_required(VERSION 3.14)\n"
+        f"cmake_minimum_required(VERSION {cmake_version_string})\n"
         f"project({binary_name} LANGUAGES CXX)\n\n"
         "set(CMAKE_INCLUDE_CURRENT_DIR ON)\n\n"
         "set(CMAKE_AUTOMOC ON)\n"
@@ -3855,6 +3861,13 @@ def write_example(
 
     else:
         add_target = f"qt_add_executable({binary_name}"
+
+        property_win32, property_mac_bundle = get_win32_and_mac_bundle_properties(scope)
+
+        if property_win32:
+            add_target += ' ' + "WIN32"
+        if property_mac_bundle:
+            add_target += ' ' + "MACOSX_BUNDLE"
 
     write_all_source_file_lists(cm_fh, scope, add_target, indent=0)
     cm_fh.write(")\n")
