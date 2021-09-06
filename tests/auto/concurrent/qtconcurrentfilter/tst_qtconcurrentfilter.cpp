@@ -102,6 +102,19 @@ void tst_QtConcurrentFilter::filter()
     CHECK_FAIL("member");
     testFilter(intList, intListEven, lambdaIsEven);
     CHECK_FAIL("lambda");
+
+    // non-template sequences
+    {
+
+        NonTemplateSequence list({ 1, 2, 3, 4 });
+        QtConcurrent::filter(list, keepEvenNumbers).waitForFinished();
+        QCOMPARE(list, NonTemplateSequence({ 2, 4 }));
+    }
+    {
+        NonTemplateSequence list({ 1, 2, 3, 4 });
+        QtConcurrent::blockingFilter(list, keepEvenNumbers);
+        QCOMPARE(list, NonTemplateSequence({ 2, 4 }));
+    }
 }
 
 static QSemaphore semaphore(1);
@@ -179,6 +192,19 @@ void tst_QtConcurrentFilter::filterThreadPool()
     CHECK_FAIL("function");
     testFilterThreadPool(&pool, intList, intListEven, lambdaIsOdd);
     CHECK_FAIL("lambda");
+
+    // non-template sequences
+    {
+
+        NonTemplateSequence list({ 1, 2, 3, 4 });
+        QtConcurrent::filter(list, keepEvenIntegers).waitForFinished();
+        QCOMPARE(list, NonTemplateSequence({ 2, 4 }));
+    }
+    {
+        NonTemplateSequence list({ 1, 2, 3, 4 });
+        QtConcurrent::blockingFilter(list, keepEvenIntegers);
+        QCOMPARE(list, NonTemplateSequence({ 2, 4 }));
+    }
 }
 
 void tst_QtConcurrentFilter::filterWithMoveOnlyCallable()
@@ -254,6 +280,18 @@ void tst_QtConcurrentFilter::filtered()
     testFiltered(intList, intListEven, lambdaIsEven);
     CHECK_FAIL("lambda");
 
+    // non-template sequences
+    {
+        NonTemplateSequence list({ 1, 2, 3, 4 });
+        auto future = QtConcurrent::filtered(list, keepEvenIntegers);
+        QCOMPARE(future.results(), QList({ 2, 4 }));
+    }
+    {
+        NonTemplateSequence list({ 1, 2, 3, 4 });
+        auto result = QtConcurrent::blockingFiltered(list, keepEvenIntegers);
+        QCOMPARE(result, NonTemplateSequence({ 2, 4 }));
+    }
+
     {
         // rvalue sequences
         auto future = QtConcurrent::filtered(std::vector { 1, 2, 3, 4 }, keepEvenIntegers);
@@ -328,6 +366,18 @@ void tst_QtConcurrentFilter::filteredThreadPool()
     CHECK_FAIL("function");
     testFilteredThreadPool(&pool, intList, intListEven, lambdaIsOdd);
     CHECK_FAIL("lambda");
+
+    // non-template sequences
+    {
+        NonTemplateSequence list({ 1, 2, 3, 4 });
+        auto future = QtConcurrent::filtered(&pool, list, keepEvenIntegers);
+        QCOMPARE(future.results(), QList({ 2, 4 }));
+    }
+    {
+        NonTemplateSequence list({ 1, 2, 3, 4 });
+        auto result = QtConcurrent::blockingFiltered(&pool, list, keepEvenIntegers);
+        QCOMPARE(result, NonTemplateSequence({ 2, 4 }));
+    }
 
     {
         // rvalue sequences
@@ -537,6 +587,18 @@ void tst_QtConcurrentFilter::filteredReduced()
     testFilteredReduced(intList, intSum, lambdaIsEven, lambdaIntSumReduce);
     CHECK_FAIL("lambda-lambda");
 
+    // non-template sequences
+    {
+        NonTemplateSequence list({ 1, 2, 3, 4 });
+        auto future = QtConcurrent::filteredReduced(list, keepEvenIntegers, intSumReduce);
+        QCOMPARE(future.result(), intSum);
+    }
+    {
+        NonTemplateSequence list({ 1, 2, 3, 4 });
+        auto result = QtConcurrent::blockingFilteredReduced(list, keepEvenIntegers, intSumReduce);
+        QCOMPARE(result, intSum);
+    }
+
     {
         // rvalue sequences
         auto future = QtConcurrent::filteredReduced(std::vector { 1, 2, 3, 4 }, keepEvenIntegers,
@@ -635,6 +697,19 @@ void tst_QtConcurrentFilter::filteredReducedThreadPool()
     CHECK_FAIL("lambda-function");
     testFilteredReducedThreadPool(&pool, intList, intSum, lambdaIsOdd, lambdaSumReduce);
     CHECK_FAIL("lambda-lambda");
+
+    // non-template sequences
+    {
+        NonTemplateSequence list({ 1, 2, 3, 4 });
+        auto future = QtConcurrent::filteredReduced(&pool, list, keepOddIntegers, intSumReduce);
+        QCOMPARE(future.result(), intSum);
+    }
+    {
+        NonTemplateSequence list({ 1, 2, 3, 4 });
+        auto result =
+                QtConcurrent::blockingFilteredReduced(&pool, list, keepOddIntegers, intSumReduce);
+        QCOMPARE(result, intSum);
+    }
 
     {
         // rvalue sequences
@@ -910,6 +985,20 @@ void tst_QtConcurrentFilter::filteredReducedInitialValue()
                                     lambdaIntSumReduce, intInitial);
     CHECK_FAIL("lambda-lambda");
 
+    // non-template sequences
+    {
+        NonTemplateSequence list({ 1, 2, 3, 4 });
+        auto future =
+                QtConcurrent::filteredReduced(list, keepEvenIntegers, intSumReduce, intInitial);
+        QCOMPARE(future.result(), intSum);
+    }
+    {
+        NonTemplateSequence list({ 1, 2, 3, 4 });
+        auto result = QtConcurrent::blockingFilteredReduced(list, keepEvenIntegers, intSumReduce,
+                                                            intInitial);
+        QCOMPARE(result, intSum);
+    }
+
     {
         // rvalue sequences
         auto future = QtConcurrent::filteredReduced(std::vector { 1, 2, 3, 4 }, keepEvenIntegers,
@@ -1020,6 +1109,20 @@ void tst_QtConcurrentFilter::filteredReducedInitialValueThreadPool()
     testFilteredReducedInitialValueThreadPool(&pool, intList, intSum, lambdaIsOdd,
                                               lambdaSumReduce, intInitial);
     CHECK_FAIL("lambda-lambda");
+
+    // non-template sequences
+    {
+        NonTemplateSequence list({ 1, 2, 3, 4 });
+        auto future =
+                QtConcurrent::filteredReduced(list, keepOddIntegers, intSumReduce, intInitial);
+        QCOMPARE(future.result(), intSum);
+    }
+    {
+        NonTemplateSequence list({ 1, 2, 3, 4 });
+        auto result = QtConcurrent::blockingFilteredReduced(list, keepOddIntegers, intSumReduce,
+                                                            intInitial);
+        QCOMPARE(result, intSum);
+    }
 
     {
         // rvalue sequences
