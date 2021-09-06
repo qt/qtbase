@@ -481,8 +481,7 @@ inline T qobject_cast(const QObject *object)
 }
 
 
-template <class T> inline const char * qobject_interface_iid()
-{ return nullptr; }
+template <class T> constexpr const char * qobject_interface_iid() = delete;
 
 inline const QBindingStorage *qGetBindingStorage(const QObject *o)
 {
@@ -497,7 +496,7 @@ inline QBindingStorage *qGetBindingStorage(QObject *o)
 #  define Q_DECLARE_INTERFACE(IFace, IId)
 #elif !defined(Q_MOC_RUN)
 #  define Q_DECLARE_INTERFACE(IFace, IId) \
-    template <> inline const char *qobject_interface_iid<IFace *>() \
+    template <> constexpr const char *qobject_interface_iid<IFace *>() \
     { return IId; } \
     template <> inline IFace *qobject_cast<IFace *>(QObject *object) \
     { return reinterpret_cast<IFace *>((object ? object->qt_metacast(IId) : nullptr)); } \

@@ -3582,8 +3582,6 @@ void tst_QObject::interfaceIid()
              QByteArray(Bleh_iid));
     QCOMPARE(QByteArray(qobject_interface_iid<Foo::Bar *>()),
              QByteArray("com.qtest.foobar"));
-    QCOMPARE(QByteArray(qobject_interface_iid<FooObject *>()),
-             QByteArray());
 }
 
 void tst_QObject::deleteQObjectWhenDeletingEvent()
