@@ -384,7 +384,6 @@ endif()
 # INSTALLS = "ctest_qt5_module_files" "cmake_qt5_umbrella_module_files"
 # MODULE = "core"
 # MODULE_CONFIG = "moc" "resources"
-# QMAKE_DSYM_DEBUG_SCRIPT = "$$PWD/debug_script.py"
 # QMAKE_PKGCONFIG_VARIABLES = "host_bins" "qt_conf"
 # QMAKE_SUBSTITUTES = "ctest_macros_file" "cmake_umbrella_config_file" "cmake_umbrella_config_module_location" "cmake_umbrella_config_module_location_for_install" "cmake_umbrella_config_version_file" "cmake_extras_mkspec_dir" "cmake_extras_mkspec_dir_for_install"
 # cmake_extras_mkspec_dir.input = "$$PWD/Qt5CoreConfigExtrasMkspecDir.cmake.in"
@@ -1373,4 +1372,29 @@ endif()
 
 qt_internal_add_optimize_full_flags()
 
-# special case end
+# Copy / install an lldb python script into the QtCore.framework.dSYM bundle which searches
+# for the latest installed Qt Creator and loads its lldbbridge.py script.
+# When debugging a Qt app, lldb will prompt the developer to explicitly import the shim script.
+# It will then enable Qt C++ type pretty printers when using command-line lldb or Xcode
+# (e.g. show contents of QString).
+if(APPLE AND QT_FEATURE_framework AND QT_FEATURE_separate_debug_info)
+    qt_internal_module_info(dsym_module_name "Core")
+
+    set(dsym_dir "${dsym_module_name}.framework.dSYM")
+    set(script_name "${dsym_module_name}.py")
+    set(dsym_script_dir_suffix "${INSTALL_LIBDIR}/${dsym_dir}/Contents/Resources/Python")
+    set(dsym_script_build_path "${QT_BUILD_DIR}/${dsym_script_dir_suffix}/${script_name}")
+
+    qt_path_join(dsym_script_install_dir
+                 ${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX} ${dsym_script_dir_suffix})
+
+    configure_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/debug_script.py"
+        "${dsym_script_build_path}"
+        @ONLY
+    )
+    qt_install(FILES
+        "${dsym_script_build_path}"
+        DESTINATION "${dsym_script_install_dir}"
+    )
+endif()
