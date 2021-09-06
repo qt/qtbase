@@ -67,6 +67,8 @@ QSocketPoller::QSocketPoller(const QLocalSocketPrivate &socket)
 }
 
 /*!
+    \internal
+
     Waits until new data is available for reading or write operation
     completes. Returns \c true, if we need to check pipe workers;
     otherwise it returns \c false (if an error occurred or the operation
