@@ -68,15 +68,11 @@ struct QNetworkAccessCache::Node
     QDeadlineTimer timer;
     QByteArray key;
 
-    Node *previous; // "previous" nodes expire "previous"ly (before us)
-    Node *next; // "next" nodes expire "next" (after us)
-    CacheableObject *object;
+    Node *previous = nullptr; // "previous" nodes expire "previous"ly (before us)
+    Node *next = nullptr; // "next" nodes expire "next" (after us)
+    CacheableObject *object = nullptr;
 
-    int useCount;
-
-    Node()
-        : previous(nullptr), next(nullptr), object(nullptr), useCount(0)
-    { }
+    int useCount = 0;
 };
 
 QNetworkAccessCache::CacheableObject::CacheableObject()
