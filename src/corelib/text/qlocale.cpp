@@ -2620,8 +2620,8 @@ QString QLocale::toString(double f, char format, int precision) const
 
 QLocale QLocale::system()
 {
+    QT_PREPEND_NAMESPACE(systemData)(); // Ensure system data is up to date.
     static QLocalePrivate locale(systemData(), defaultIndex(), DefaultNumberOptions, 1);
-    QT_PREPEND_NAMESPACE(systemData)(); // trigger updating of the system data if necessary
 
     return QLocale(locale);
 }
