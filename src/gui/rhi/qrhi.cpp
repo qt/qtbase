@@ -3002,7 +3002,7 @@ QRhiResource::Type QRhiTextureRenderTarget::resourceType() const
 QRhiShaderResourceBindings::QRhiShaderResourceBindings(QRhiImplementation *rhi)
     : QRhiResource(rhi)
 {
-    m_layoutDesc.reserve(BINDING_PREALLOC * LAYOUT_DESC_FIELD_COUNT);
+    m_layoutDesc.reserve(BINDING_PREALLOC * QRhiShaderResourceBinding::LAYOUT_DESC_ENTRIES_PER_BINDING);
 }
 
 /*!
@@ -3053,13 +3053,12 @@ void QRhiImplementation::updateLayoutDesc(QRhiShaderResourceBindings *srb)
 {
     srb->m_layoutDescHash = 0;
     srb->m_layoutDesc.clear();
+    auto layoutDescAppender = std::back_inserter(srb->m_layoutDesc);
     for (const QRhiShaderResourceBinding &b : qAsConst(srb->m_bindings)) {
         const QRhiShaderResourceBinding::Data *d = b.data();
-        // the logic must match QRhiShaderResourceBinding::isLayoutCompatible()
-        const int count = d->type == QRhiShaderResourceBinding::SampledTexture ? d->u.stex.count : 1;
-        // the number of entries here should match LAYOUT_DESC_FIELD_COUNT
-        srb->m_layoutDescHash ^= uint(d->binding) ^ uint(d->stage) ^ uint(d->type) ^ uint(count);
-        srb->m_layoutDesc << uint(d->binding) << uint(d->stage) << uint(d->type) << uint(count);
+        srb->m_layoutDescHash ^= uint(d->binding) ^ uint(d->stage) ^ uint(d->type)
+            ^ uint(d->type == QRhiShaderResourceBinding::SampledTexture ? d->u.stex.count : 1);
+        d->serialize(layoutDescAppender);
     }
 }
 

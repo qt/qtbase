@@ -3314,6 +3314,15 @@ void tst_QRhi::srbLayoutCompatibility()
         QVERIFY(!srb1->serializedLayoutDescription().isEmpty());
         QVERIFY(!srb2->serializedLayoutDescription().isEmpty());
         QCOMPARE(srb1->serializedLayoutDescription(), srb2->serializedLayoutDescription());
+
+        // see what we would get if a binding list got serialized "manually", without pulling it out from the srb after building
+        // (the results should be identical)
+        QVector<quint32> layoutDesc1;
+        QRhiShaderResourceBinding::serializeLayoutDescription(srb1->cbeginBindings(), srb1->cendBindings(), std::back_inserter(layoutDesc1));
+        QCOMPARE(layoutDesc1, srb1->serializedLayoutDescription());
+        QVector<quint32> layoutDesc2;
+        QRhiShaderResourceBinding::serializeLayoutDescription(srb2->cbeginBindings(), srb2->cendBindings(), std::back_inserter(layoutDesc2));
+        QCOMPARE(layoutDesc2, srb2->serializedLayoutDescription());
     }
 
     // different visibility (not compatible)
