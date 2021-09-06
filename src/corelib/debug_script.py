@@ -38,6 +38,8 @@ def import_bridge(path, debugger, session_dict, reload_module = False):
     if not reload_module and MODULE_NAME in sys.modules:
         del sys.modules[MODULE_NAME]
 
+    if sys.version_info[0] >= 3:
+        sys.path.append(os.path.dirname(path))
     bridge = imp.load_source(MODULE_NAME, path)
 
     if not hasattr(bridge, '__lldb_init_module'):
