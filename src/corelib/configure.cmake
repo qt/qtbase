@@ -120,7 +120,7 @@ int pipes[2];
 
 # special case begin
 # cxx11_future
-if (UNIX AND NOT ANDROID AND NOT QNX)
+if (UNIX AND NOT ANDROID AND NOT QNX AND NOT INTEGRITY)
     set(cxx11_future_TEST_LIBRARIES pthread)
 endif()
 qt_config_compile_test(cxx11_future

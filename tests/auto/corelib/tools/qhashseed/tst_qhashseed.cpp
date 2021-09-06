@@ -29,7 +29,9 @@
 #include <QTest>
 
 #include <qhashfunctions.h>
+#if QT_CONFIG(process)
 #include <qprocess.h>
+#endif
 
 class tst_QHashSeed : public QObject
 {
@@ -77,6 +79,7 @@ void tst_QHashSeed::environmentVariable_data()
 
 void tst_QHashSeed::environmentVariable()
 {
+ #if QT_CONFIG(process)
     QFETCH(QByteArray, envVar);
     QFETCH(bool, isZero);
     QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
@@ -97,6 +100,7 @@ void tst_QHashSeed::environmentVariable()
     QByteArray line2 = helper.readLine().trimmed();
     QCOMPARE(line2, line1);
     QCOMPARE(line1 == "0", isZero);
+#endif
 }
 
 void tst_QHashSeed::deterministicSeed()

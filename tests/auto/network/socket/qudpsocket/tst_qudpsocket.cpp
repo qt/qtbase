@@ -31,7 +31,9 @@
 #include <QTest>
 #include <QSignalSpy>
 #include <QtEndian>
+#if QT_CONFIG(process)
 #include <QProcess>
+#endif
 #include <QScopeGuard>
 #include <QVersionNumber>
 

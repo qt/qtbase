@@ -43,6 +43,10 @@
 # include <windows.h>
 #endif
 
+#ifdef Q_OS_INTEGRITY
+#include "qplatformdefs.h"
+#endif
+
 // Restore permissions so that the QTemporaryDir cleanup can happen
 class PermissionRestorer
 {

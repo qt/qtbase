@@ -31,8 +31,9 @@
 #include <QBuffer>
 #include <QStandardPaths>
 #include <QPainter>
+#if QT_CONFIG(process)
 #include <QProcess>
-
+#endif
 #include <qicon.h>
 #include <qiconengine.h>
 

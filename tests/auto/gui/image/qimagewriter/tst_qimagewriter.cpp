@@ -43,6 +43,10 @@
 # include <unistd.h>
 #endif
 
+#ifdef Q_OS_INTEGRITY
+#include "qplatformdefs.h"
+#endif
+
 #include <algorithm>
 
 typedef QMap<QString, QString> QStringMap;

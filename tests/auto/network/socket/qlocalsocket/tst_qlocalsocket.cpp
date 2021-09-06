@@ -30,7 +30,9 @@
 
 #include <QTest>
 #include <QSignalSpy>
+#if QT_CONFIG(process)
 #include <QProcess>
+#endif
 #include <QWaitCondition>
 #include <QLoggingCategory>
 #include <QMutex>

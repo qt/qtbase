@@ -56,6 +56,10 @@
 #include <QStandardPaths>
 #endif
 
+#ifdef Q_OS_INTEGRITY
+#include "qplatformdefs.h"
+#endif
+
 class tst_QTemporaryFile : public QObject
 {
     Q_OBJECT

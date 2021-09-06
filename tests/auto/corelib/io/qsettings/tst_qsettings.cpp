@@ -67,6 +67,10 @@
 #include <CoreFoundation/CoreFoundation.h>
 #endif
 
+#ifdef Q_OS_INTEGRITY
+#include "qplatformdefs.h"
+#endif
+
 Q_DECLARE_METATYPE(QSettings::Format)
 
 #ifndef QSETTINGS_P_H_VERSION

@@ -28,7 +28,9 @@
 
 
 #include <QTest>
+#if QT_CONFIG(process)
 #include <QProcess>
+#endif
 
 #include <qcoreapplication.h>
 #include <quuid.h>

@@ -31,7 +31,9 @@
 #include <QAction>
 #include <QUndoStack>
 #include <QSignalSpy>
+#if QT_CONFIG(process)
 #include <QProcess>
+#endif
 #include <QTranslator>
 #include <QLibraryInfo>
 

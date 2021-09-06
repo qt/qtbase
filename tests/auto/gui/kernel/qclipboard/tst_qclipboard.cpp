@@ -30,8 +30,9 @@
 #include <QTest>
 #include <QMimeData>
 #include <QSignalSpy>
+#if QT_CONFIG(process)
 #include <QProcess>
-
+#endif
 #include <QtCore/QDebug>
 #include <QtCore/QFileInfo>
 #include <QtCore/QDir>
