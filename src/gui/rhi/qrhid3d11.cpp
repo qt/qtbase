@@ -3634,6 +3634,10 @@ void QD3D11ShaderResourceBindings::updateResources(UpdateFlags flags)
         });
     }
 
+    Q_ASSERT(boundResourceData.count() == sortedBindings.count());
+    for (BoundResourceData &bd : boundResourceData)
+        memset(&bd, 0, sizeof(BoundResourceData));
+
     generation += 1;
 }
 

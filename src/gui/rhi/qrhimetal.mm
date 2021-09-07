@@ -3191,6 +3191,9 @@ void QMetalShaderResourceBindings::updateResources(UpdateFlags flags)
         });
     }
 
+    for (BoundResourceData &bd : boundResourceData)
+        memset(&bd, 0, sizeof(BoundResourceData));
+
     generation += 1;
 }
 

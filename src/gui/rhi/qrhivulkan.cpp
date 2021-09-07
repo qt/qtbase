@@ -6637,6 +6637,21 @@ void QVkShaderResourceBindings::updateResources(UpdateFlags flags)
         });
     }
 
+    // Reset the state tracking table too - it can deal with assigning a
+    // different QRhiBuffer/Texture/Sampler for a binding point, but it cannot
+    // detect changes in the associated data, such as the buffer offset. And
+    // just like after a create(), a call to updateResources() may lead to now
+    // specifying a different offset for the same QRhiBuffer for a given binding
+    // point. The same applies to other type of associated data that is not part
+    // of the layout, such as the mip level for a StorageImage. Instead of
+    // complicating the checks in setShaderResources(), reset the table here
+    // just like we do in create().
+    for (int i = 0; i < QVK_FRAMES_IN_FLIGHT; ++i) {
+        Q_ASSERT(boundResourceData[i].count() == sortedBindings.count());
+        for (BoundResourceData &bd : boundResourceData[i])
+            memset(&bd, 0, sizeof(BoundResourceData));
+    }
+
     generation += 1;
 }
 
