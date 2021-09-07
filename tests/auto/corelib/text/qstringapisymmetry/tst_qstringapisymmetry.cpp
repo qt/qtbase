@@ -1041,16 +1041,14 @@ MAKE(QAnyStringViewUsingU8)  { return {QAnyStringView{u8}}; }
 MAKE(QAnyStringViewUsingU16) { return {QAnyStringView{sv}}; }
 #undef MAKE
 
-template <typename> struct is_utf8_encoded              : std::false_type {};
-template <>         struct is_utf8_encoded<const char*> : std::true_type {};
-template <>         struct is_utf8_encoded<QByteArray>  : std::true_type {};
-template <>         struct is_utf8_encoded<QUtf8StringView> : std::true_type {};
-
-template <typename> struct is_latin1_encoded                : std::false_type {};
-template <>         struct is_latin1_encoded<QLatin1String> : std::true_type {};
+// Some types have ASCII-only case-insensitive compare, but are handled as containing
+// UTF-8 when implicitly converted to QString.
+template <typename> constexpr bool is_bytearray_like_v = false;
+template <> constexpr bool is_bytearray_like_v<const char *> = true;
+template <> constexpr bool is_bytearray_like_v<QByteArray> = true;
 
 template <typename LHS, typename RHS>
-constexpr bool has_nothrow_member_compare_v = is_utf8_encoded<LHS>::value == is_utf8_encoded<RHS>::value;
+constexpr bool has_nothrow_member_compare_v = is_bytearray_like_v<LHS> == is_bytearray_like_v<RHS>;
 
 template <typename LHS, typename RHS>
 void tst_QStringApiSymmetry::compare_impl() const
@@ -1119,11 +1117,11 @@ void tst_QStringApiSymmetry::member_compare_impl() const
 
     QCOMPARE(sign(lhs.compare(rhs)),                      caseSensitiveCompareResult);
     QCOMPARE(sign(lhs.compare(rhs, Qt::CaseSensitive)),   caseSensitiveCompareResult);
-    if (is_utf8_encoded<LHS>::value && is_utf8_encoded<RHS>::value &&
+    if (is_bytearray_like_v<LHS> && is_bytearray_like_v<RHS> &&
             caseSensitiveCompareResult != caseInsensitiveCompareResult &&
             (!QtPrivate::isAscii(lhsUnicode) || !QtPrivate::isAscii(rhsUnicode)))
     {
-        QEXPECT_FAIL("", "Qt is missing a case-insensitive UTF-8/UTF-8 comparator", Continue);
+        QEXPECT_FAIL("", "The types don't support non-ASCII case-insensitive comparison", Continue);
     }
     QCOMPARE(sign(lhs.compare(rhs, Qt::CaseInsensitive)), caseInsensitiveCompareResult);
 }
