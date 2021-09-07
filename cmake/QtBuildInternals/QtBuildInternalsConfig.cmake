@@ -555,12 +555,47 @@ function(qt_get_standalone_tests_config_files_path out_var)
     set("${out_var}" "${path}" PARENT_SCOPE)
 endfunction()
 
+function(qt_internal_get_standalone_tests_config_file_name out_var)
+    # When doing a "single repo target set" build (like in qtscxqml) ensure we use a unique tests
+    # config file for each repo target set. Using the PROJECT_NAME only is not enough because
+    # the same file will be overridden with different content on each repo set install.
+    set(tests_config_file_name "${PROJECT_NAME}")
+
+    if(QT_BUILD_SINGLE_REPO_TARGET_SET)
+        string(APPEND tests_config_file_name "RepoSet${QT_BUILD_SINGLE_REPO_TARGET_SET}")
+    endif()
+    string(APPEND tests_config_file_name "TestsConfig.cmake")
+
+    set(${out_var} "${tests_config_file_name}" PARENT_SCOPE)
+endfunction()
+
 macro(qt_build_tests)
     if(QT_BUILD_STANDALONE_TESTS)
         # Find location of TestsConfig.cmake. These contain the modules that need to be
         # find_package'd when testing.
         qt_get_standalone_tests_config_files_path(_qt_build_tests_install_prefix)
-        include("${_qt_build_tests_install_prefix}/${PROJECT_NAME}TestsConfig.cmake" OPTIONAL)
+
+        qt_internal_get_standalone_tests_config_file_name(_qt_tests_config_file_name)
+        set(_qt_standalone_tests_config_file_path
+            "${_qt_build_tests_install_prefix}/${_qt_tests_config_file_name}")
+        include("${_qt_standalone_tests_config_file_path}"
+            OPTIONAL
+            RESULT_VARIABLE _qt_standalone_tests_included)
+        if(NOT _qt_standalone_tests_included)
+            message(DEBUG
+                "Standalone tests config file not included because it does not exist: "
+                "${_qt_standalone_tests_config_file_path}"
+            )
+        else()
+            message(DEBUG
+                "Standalone tests config file included successfully: "
+                "${_qt_standalone_tests_config_file_path}"
+            )
+        endif()
+
+        unset(_qt_standalone_tests_config_file_path)
+        unset(_qt_standalone_tests_included)
+        unset(_qt_tests_config_file_name)
 
         # Of course we always need the test module as well.
         find_package(Qt6 ${PROJECT_VERSION} CONFIG REQUIRED COMPONENTS Test)
