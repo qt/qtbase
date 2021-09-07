@@ -1,7 +1,4 @@
 function(qt_ensure_perl)
-    if(DEFINED HOST_PERL)
-        return()
-    endif()
     find_program(HOST_PERL "perl" DOC "Perl binary")
     if (NOT HOST_PERL)
         message(FATAL_ERROR "Perl needs to be available to build Qt.")
