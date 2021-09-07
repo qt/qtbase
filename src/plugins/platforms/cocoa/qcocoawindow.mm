@@ -368,7 +368,11 @@ void QCocoaWindow::setVisible(bool visible)
             if (window()->windowState() != Qt::WindowMinimized) {
                 if (parentCocoaWindow && (window()->modality() == Qt::WindowModal || window()->type() == Qt::Sheet)) {
                     // Show the window as a sheet
-                    [parentCocoaWindow->nativeWindow() beginSheet:m_view.window completionHandler:nil];
+                    NSWindow *nativeParentWindow = parentCocoaWindow->nativeWindow();
+                    if (!nativeParentWindow.attachedSheet)
+                        [nativeParentWindow beginSheet:m_view.window completionHandler:nil];
+                    else
+                        [nativeParentWindow beginCriticalSheet:m_view.window completionHandler:nil];
                 } else if (window()->modality() == Qt::ApplicationModal) {
                     // Show the window as application modal
                     eventDispatcher()->beginModalSession(window());
