@@ -236,13 +236,6 @@ public:
     Q_DECLARE_FLAGS(DrawWidgetFlags, DrawWidgetFlag)
     Q_FLAG(DrawWidgetFlags)
 
-    enum CloseMode {
-        CloseNoEvent,
-        CloseWithEvent,
-        CloseWithSpontaneousEvent
-    };
-    Q_ENUM(CloseMode)
-
     enum Direction {
         DirectionNorth = 0x01,
         DirectionEast = 0x10,
@@ -374,7 +367,14 @@ public:
     const QRegion &getOpaqueChildren() const;
     void setDirtyOpaqueRegion();
 
-    bool close_helper(CloseMode mode);
+    bool close();
+    enum CloseMode {
+        CloseNoEvent,
+        CloseWithEvent,
+        CloseWithSpontaneousEvent
+    };
+    Q_ENUM(CloseMode)
+    bool handleClose(CloseMode mode);
 
     void setWindowIcon_helper();
     void setWindowIcon_sys();

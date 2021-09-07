@@ -841,9 +841,9 @@ void QWidgetWindow::handleResizeEvent(QResizeEvent *event)
 void QWidgetWindow::handleCloseEvent(QCloseEvent *event)
 {
     Q_D(QWidgetWindow);
-    bool is_closing = m_widget->d_func()->close_helper(d->inClose ? QWidgetPrivate::CloseWithEvent
+    bool accepted = m_widget->d_func()->handleClose(d->inClose ? QWidgetPrivate::CloseWithEvent
                                                                   : QWidgetPrivate::CloseWithSpontaneousEvent);
-    event->setAccepted(is_closing);
+    event->setAccepted(accepted);
 }
 
 #if QT_CONFIG(wheelevent)

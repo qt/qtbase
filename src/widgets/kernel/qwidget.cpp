@@ -1005,7 +1005,7 @@ void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
     data.window_modality = Qt::NonModal;
 
     data.sizehint_forced = 0;
-    data.is_closing = 0;
+    data.is_closing = false;
     data.in_show = 0;
     data.in_set_window_state = 0;
     data.in_destructor = false;
@@ -1466,7 +1466,7 @@ QWidget::~QWidget()
 
     if (isWindow() && isVisible() && internalWinId()) {
         QT_TRY {
-            d->close_helper(QWidgetPrivate::CloseNoEvent);
+            d->handleClose(QWidgetPrivate::CloseNoEvent);
         } QT_CATCH(...) {
             // if we're out of memory, at least hide the window.
             QT_TRY {
@@ -8385,13 +8385,12 @@ void QWidgetPrivate::hideChildren(bool spontaneous)
 
     The function is also called by the QWidget destructor, with \a mode set to CloseNoEvent.
 */
-bool QWidgetPrivate::close_helper(CloseMode mode)
+bool QWidgetPrivate::handleClose(CloseMode mode)
 {
-    if (data.is_closing)
-        return true;
-
     Q_Q(QWidget);
-    data.is_closing = 1;
+
+    // We might not have initiated the close, so update the state now that we know
+    data.is_closing = true;
 
     QPointer<QWidget> that = q;
     QPointer<QWidget> parentWidget = (q->parentWidget() && !QObjectPrivate::get(q->parentWidget())->wasDeleted) ? q->parentWidget() : nullptr;
@@ -8404,7 +8403,7 @@ bool QWidgetPrivate::close_helper(CloseMode mode)
         else
             QCoreApplication::sendEvent(q, &e);
         if (!that.isNull() && !e.isAccepted()) {
-            data.is_closing = 0;
+            data.is_closing = false;
             return false;
         }
     }
@@ -8438,7 +8437,7 @@ bool QWidgetPrivate::close_helper(CloseMode mode)
 
 
     if (!that.isNull()) {
-        data.is_closing = 0;
+        data.is_closing = false;
         if (q->testAttribute(Qt::WA_DeleteOnClose)) {
             q->setAttribute(Qt::WA_DeleteOnClose, false);
             q->deleteLater();
@@ -8472,13 +8471,23 @@ bool QWidgetPrivate::close_helper(CloseMode mode)
 
 bool QWidget::close()
 {
+    return d_func()->close();
+}
+
+bool QWidgetPrivate::close()
+{
+    if (data.is_closing)
+        return true;
+
+    data.is_closing = true;
+
     // Close native widgets via QWindow::close() in order to run QWindow
-    // close code. The QWidget-specific close code in close_helper() will
+    // close code. The QWidget-specific close code in handleClose() will
     // in this case be called from the Close event handler in QWidgetWindow.
     if (QWindow *widgetWindow = windowHandle())
         return widgetWindow->close();
 
-    return d_func()->close_helper(QWidgetPrivate::CloseWithEvent);
+    return handleClose(QWidgetPrivate::CloseWithEvent);
 }
 
 /*!

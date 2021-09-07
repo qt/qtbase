@@ -155,7 +155,7 @@ void QDialogPrivate::hide(int resultCode)
     q->setResult(resultCode);
     q->hide();
 
-    close_helper(QWidgetPrivate::CloseNoEvent);
+    handleClose(QWidgetPrivate::CloseNoEvent);
     resetModalitySetByOpen();
 }
 
