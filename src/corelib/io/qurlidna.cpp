@@ -58,7 +58,7 @@ static const uint damp = 700;
 static const uint initial_bias = 72;
 static const uint initial_n = 128;
 
-static constexpr unsigned MaxDomainLabelLength = 63;
+static constexpr qsizetype MaxDomainLabelLength = 63;
 
 static inline uint encodeDigit(uint digit)
 {
@@ -139,7 +139,7 @@ Q_AUTOTEST_EXPORT void qt_punycodeEncoder(QStringView in, QString *output)
         *output += QLatin1Char{'-'};
 
     // compute the input length in Unicode code points.
-    qsizetype inputLength = 0;
+    uint inputLength = 0;
     for (QStringIterator iter(in); iter.hasNext();) {
         inputLength++;
 
