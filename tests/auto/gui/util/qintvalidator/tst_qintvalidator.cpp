@@ -41,6 +41,8 @@ private slots:
     void validateArabic();
     void validateFrench();
     void notifySignals();
+    void fixup();
+    void fixup_data();
 };
 
 Q_DECLARE_METATYPE(QValidator::State);
@@ -273,6 +275,65 @@ void tst_QIntValidator::notifySignals()
 
     iv.setLocale(QLocale("en"));
     QCOMPARE(changedSpy.count(), 6);
+}
+
+void tst_QIntValidator::fixup()
+{
+    QFETCH(QString, localeName);
+    QFETCH(QString, input);
+    QFETCH(QString, output);
+
+    QIntValidator val;
+    val.setLocale(QLocale(localeName));
+
+    val.fixup(input);
+    QCOMPARE(input, output);
+}
+
+void tst_QIntValidator::fixup_data()
+{
+    QTest::addColumn<QString>("localeName");
+    QTest::addColumn<QString>("input");
+    QTest::addColumn<QString>("output");
+
+    // C locale uses '.' as decimal point and ',' as a grouping separator.
+    // C locale does not group digits by default.
+    QTest::newRow("C no digit grouping") << "C" << "1000" << "1000";
+    QTest::newRow("C with digit grouping") << "C" << "1,000" << "1000";
+    QTest::newRow("C invalid digit grouping") << "C" << "100,00" << "10000";
+    QTest::newRow("C float with valid digit grouping") << "C" << "1,000.23" << "1,000.23";
+    QTest::newRow("C float with invalid digit grouping") << "C" << "10,00.23" << "10,00.23";
+
+    // en locale uses '.' as decimal point and ',' as a grouping separator.
+    // en locale groups digits by default.
+    QTest::newRow("en no digit grouping") << "en" << "1234567" << "1,234,567";
+    QTest::newRow("en with digit grouping") << "en" << "12,345,678" << "12,345,678";
+    QTest::newRow("en invalid digit grouping") << "en" << "1,2,34,5678" << "12,345,678";
+    QTest::newRow("en float with valid digit grouping") << "en" << "12,345.67" << "12,345.67";
+    QTest::newRow("en float with invalid digit grouping") << "en" << "1,2345.67" << "1,2345.67";
+
+    // de locale uses ',' as decimal point and '.' as grouping separator.
+    // de locale groups digits by default.
+    QTest::newRow("de no digit grouping") << "de" << "1234567" << "1.234.567";
+    QTest::newRow("de with digit grouping") << "de" << "12.345.678" << "12.345.678";
+    QTest::newRow("de invalid digit grouping") << "de" << "1.2.34.5678" << "12.345.678";
+    QTest::newRow("de float with valid digit grouping") << "de" << "12.345,67" << "12.345,67";
+    QTest::newRow("de float with invalid digit grouping") << "de" << "1.2345,67" << "1.2345,67";
+
+    // hi locale uses '.' as decimal point and ',' as grouping separator.
+    // The rightmost group is of three digits, all the others contain two
+    // digits.
+    QTest::newRow("hi no digit grouping") << "hi" << "1234567" << "12,34,567";
+    QTest::newRow("hi with digit grouping") << "hi" << "12,34,567" << "12,34,567";
+    QTest::newRow("hi invalid digit grouping") << "hi" << "1,234,567" << "12,34,567";
+
+    // es locale uses ',' as decimal point and '.' as grouping separator.
+    // Normally the groups contain three digits, but the leftmost group should
+    // have at least two digits.
+    QTest::newRow("es no digit grouping 1000") << "es" << "1000" << "1000";
+    QTest::newRow("es no digit grouping 10000") << "es" << "10000" << "10.000";
+    QTest::newRow("es with digit grouping") << "es" << "1000.000" << "1000.000";
+    QTest::newRow("es invalid digit grouping") << "es" << "1.000.000" << "1000.000";
 }
 
 QTEST_APPLESS_MAIN(tst_QIntValidator)
