@@ -132,6 +132,7 @@ static void qRegisterNotificationCallbacks()
 Q_CONSTRUCTOR_FUNCTION(qRegisterNotificationCallbacks)
 
 const int QCocoaWindow::NoAlertRequest = -1;
+QPointer<QCocoaWindow> QCocoaWindow::s_windowUnderMouse;
 
 QCocoaWindow::QCocoaWindow(QWindow *win, WId nativeHandle)
     : QPlatformWindow(win)
@@ -139,7 +140,6 @@ QCocoaWindow::QCocoaWindow(QWindow *win, WId nativeHandle)
     , m_nsWindow(nil)
     , m_lastReportedWindowState(Qt::WindowNoState)
     , m_windowModality(Qt::NonModal)
-    , m_windowUnderMouse(false)
     , m_initialized(false)
     , m_inSetVisible(false)
     , m_inSetGeometry(false)
@@ -1180,13 +1180,6 @@ void QCocoaWindow::windowDidBecomeKey()
 
     if (isForeignWindow())
         return;
-
-    if (m_windowUnderMouse) {
-        QPointF windowPoint;
-        QPointF screenPoint;
-        [qnsview_cast(m_view) convertFromScreen:[NSEvent mouseLocation] toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
-        QWindowSystemInterface::handleEnterEvent(m_enterLeaveTargetWindow, windowPoint, screenPoint);
-    }
 
     QNSView *firstResponderView = qt_objc_cast<QNSView *>(m_view.window.firstResponder);
     if (!firstResponderView)

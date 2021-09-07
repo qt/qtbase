@@ -278,8 +278,13 @@ static const QPointingDevice *pointingDeviceFor(qint64 deviceID)
 
     m_mouseMoveHelper = [[QNSViewMouseMoveHelper alloc] initWithView:self];
 
-    NSUInteger trackingOptions = NSTrackingActiveInActiveApp
-        | NSTrackingMouseEnteredAndExited | NSTrackingCursorUpdate;
+    NSUInteger trackingOptions = NSTrackingCursorUpdate | NSTrackingMouseEnteredAndExited;
+
+    // Ideally we should have used NSTrackingActiveInActiveApp, but that
+    // fails when the application is deactivated from using e.g cmd+tab, and later
+    // reactivated again from a mouse click. So as a work-around we use NSTrackingActiveAlways
+    // instead, and simply ignore any related callbacks while the application is inactive.
+    trackingOptions |= NSTrackingActiveAlways;
 
     // Ideally, NSTrackingMouseMoved should be turned on only if QWidget::mouseTracking
     // is enabled, hover is on, or a tool tip is set. Unfortunately, Qt will send "tooltip"
@@ -499,6 +504,9 @@ static const QPointingDevice *pointingDeviceFor(qint64 deviceID)
     // uses the legacy cursorRect API, so the cursor is reset to the arrow
     // cursor. See rdar://34183708
 
+    if (!NSApp.active)
+        return;
+
     auto previousCursor = NSCursor.currentCursor;
 
     if (self.cursor)
@@ -515,29 +523,42 @@ static const QPointingDevice *pointingDeviceFor(qint64 deviceID)
     if (!m_platformWindow)
         return;
 
-    if ([self isTransparentForUserInput])
-        return;
-
-    QPointF windowPoint;
-    QPointF screenPoint;
-    [self convertFromScreen:[self screenMousePoint:theEvent] toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
-    QWindow *childWindow = m_platformWindow->childWindowAt(windowPoint.toPoint());
-
     // Top-level windows generate enter-leave events for sub-windows.
     // Qt wants to know which window (if any) will be entered at the
     // the time of the leave. This is dificult to accomplish by
     // handling mouseEnter and mouseLeave envents, since they are sent
     // individually to different views.
-    if (m_platformWindow->isContentView() && childWindow) {
-        if (childWindow != m_platformWindow->m_enterLeaveTargetWindow) {
-            QWindowSystemInterface::handleEnterLeaveEvent(childWindow, m_platformWindow->m_enterLeaveTargetWindow, windowPoint, screenPoint);
-            m_platformWindow->m_enterLeaveTargetWindow = childWindow;
+    QPointF windowPoint;
+    QPointF screenPoint;
+    QCocoaWindow *windowToLeave = nullptr;
+
+    if (m_platformWindow->isContentView()) {
+        [self convertFromScreen:[self screenMousePoint:theEvent] toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
+        QWindow *childUnderMouse = m_platformWindow->childWindowAt(windowPoint.toPoint());
+        QCocoaWindow *childWindow = static_cast<QCocoaWindow *>(childUnderMouse->handle());
+        if (childWindow != QCocoaWindow::s_windowUnderMouse) {
+            if (QCocoaWindow::s_windowUnderMouse)
+                windowToLeave = QCocoaWindow::s_windowUnderMouse;
+            QCocoaWindow::s_windowUnderMouse = childWindow;
         }
+    }
+
+    if (!NSApp.active)
+        return;
+
+    if ([self isTransparentForUserInput])
+        return;
+
+    if (windowToLeave) {
+        qCInfo(lcQpaMouse) << "Detected new window under mouse at" << windowPoint << "; sending"
+                           << QEvent::Enter << QCocoaWindow::s_windowUnderMouse->window()
+                           << QEvent::Leave << windowToLeave->window();
+        QWindowSystemInterface::handleEnterLeaveEvent(QCocoaWindow::s_windowUnderMouse->window(), windowToLeave->window(), windowPoint, screenPoint);
     }
 
     // Cocoa keeps firing mouse move events for obscured parent views. Qt should not
     // send those events so filter them out here.
-    if (childWindow != m_platformWindow->window())
+    if (m_platformWindow != QCocoaWindow::s_windowUnderMouse)
         return;
 
     [self handleMouseEvent: theEvent];
@@ -549,10 +570,22 @@ static const QPointingDevice *pointingDeviceFor(qint64 deviceID)
     if (!m_platformWindow)
         return;
 
-    m_platformWindow->m_windowUnderMouse = true;
-
-    if ([self isTransparentForUserInput])
-        return;
+    // We send out enter and leave events mainly from mouse move events (mouseMovedImpl).
+    // Therefore, in most cases, we should not send out enter/leave events from here, as
+    // this results in duplicated enter/leave events being delivered.
+    // This is especially important when working with NSTrackingArea, since AppKit documents that
+    // the order of enter/exit events when several NSTrackingAreas are in use is not guaranteed.
+    // So if we just forwarded enter/leave events from NSTrackingArea directly, it would not only
+    // result in duplicated events, but also sometimes events that would be out of sync.
+    // But not all enter events can be resolved from mouse move events. E.g if a window is raised
+    // in front of the mouse, or if the application is activated while the mouse is on top of a
+    // window, we need to send out enter events for those cases as well. And we do so from this
+    // function to support the former case. But only when we receive an enter event for the
+    // top-level window, when no child QWindows are being hovered from before.
+    // Since QWSI expects us to send both the window entered, and the window left, in the same
+    // callback, we manually keep track of which child QWindow is under the mouse at any point
+    // in time (s_windowUnderMouse). The latter is also used to also send out enter/leave
+    // events when the application is activated/deactivated.
 
     // Top-level windows generate enter events for sub-windows.
     if (!m_platformWindow->isContentView())
@@ -561,10 +594,18 @@ static const QPointingDevice *pointingDeviceFor(qint64 deviceID)
     QPointF windowPoint;
     QPointF screenPoint;
     [self convertFromScreen:[self screenMousePoint:theEvent] toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
-    m_platformWindow->m_enterLeaveTargetWindow = m_platformWindow->childWindowAt(windowPoint.toPoint());
+    QWindow *childUnderMouse = m_platformWindow->childWindowAt(windowPoint.toPoint());
+    QCocoaWindow::s_windowUnderMouse = static_cast<QCocoaWindow *>(childUnderMouse->handle());
 
-    qCInfo(lcQpaMouse) << QEvent::Enter << self << "at" << windowPoint << "with" << currentlyPressedMouseButtons();
-    QWindowSystemInterface::handleEnterEvent(m_platformWindow->m_enterLeaveTargetWindow, windowPoint, screenPoint);
+    if ([self isTransparentForUserInput])
+        return;
+
+    if (!NSApp.active)
+        return;
+
+    qCInfo(lcQpaMouse) << "Mouse entered" << self << "at" << windowPoint << "with" << currentlyPressedMouseButtons()
+                       << "; sending" << QEvent::Enter << "to" << QCocoaWindow::s_windowUnderMouse->window();
+    QWindowSystemInterface::handleEnterEvent(QCocoaWindow::s_windowUnderMouse->window(), windowPoint, screenPoint);
 }
 
 - (void)mouseExitedImpl:(NSEvent *)theEvent
@@ -573,18 +614,24 @@ static const QPointingDevice *pointingDeviceFor(qint64 deviceID)
     if (!m_platformWindow)
         return;
 
-    m_platformWindow->m_windowUnderMouse = false;
-
-    if ([self isTransparentForUserInput])
-        return;
-
     // Top-level windows generate leave events for sub-windows.
     if (!m_platformWindow->isContentView())
         return;
 
-    qCInfo(lcQpaMouse) << QEvent::Leave << self;
-    QWindowSystemInterface::handleLeaveEvent(m_platformWindow->m_enterLeaveTargetWindow);
-    m_platformWindow->m_enterLeaveTargetWindow = 0;
+    QCocoaWindow *windowToLeave = QCocoaWindow::s_windowUnderMouse;
+    QCocoaWindow::s_windowUnderMouse = nullptr;
+
+    if ([self isTransparentForUserInput])
+        return;
+
+    if (!NSApp.active)
+        return;
+
+    if (!windowToLeave)
+        return;
+
+    qCInfo(lcQpaMouse) << "Mouse left" << self << "; sending" << QEvent::Leave << "to" << windowToLeave->window();
+    QWindowSystemInterface::handleLeaveEvent(windowToLeave->window());
 }
 
 #if QT_CONFIG(wheelevent)

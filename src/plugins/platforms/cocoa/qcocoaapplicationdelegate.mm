@@ -269,6 +269,16 @@ QT_USE_NAMESPACE
         [reflectionDelegate applicationDidBecomeActive:notification];
 
     QWindowSystemInterface::handleApplicationStateChanged(Qt::ApplicationActive);
+
+    if (QCocoaWindow::s_windowUnderMouse) {
+        QPointF windowPoint;
+        QPointF screenPoint;
+        QNSView *view = qnsview_cast(QCocoaWindow::s_windowUnderMouse->m_view);
+        [view convertFromScreen:[NSEvent mouseLocation] toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
+        QWindow *windowUnderMouse = QCocoaWindow::s_windowUnderMouse->window();
+        qCInfo(lcQpaMouse) << "Application activated with mouse at" << windowPoint << "; sending" << QEvent::Enter << "to" << windowUnderMouse;
+        QWindowSystemInterface::handleEnterEvent(windowUnderMouse, windowPoint, screenPoint);
+    }
 }
 
 - (void)applicationDidResignActive:(NSNotification *)notification
@@ -277,6 +287,12 @@ QT_USE_NAMESPACE
         [reflectionDelegate applicationDidResignActive:notification];
 
     QWindowSystemInterface::handleApplicationStateChanged(Qt::ApplicationInactive);
+
+    if (QCocoaWindow::s_windowUnderMouse) {
+        QWindow *windowUnderMouse = QCocoaWindow::s_windowUnderMouse->window();
+        qCInfo(lcQpaMouse) << "Application deactivated; sending" << QEvent::Leave << "to" << windowUnderMouse;
+        QWindowSystemInterface::handleLeaveEvent(windowUnderMouse);
+    }
 }
 
 - (BOOL)applicationShouldHandleReopen:(NSApplication *)theApplication hasVisibleWindows:(BOOL)flag

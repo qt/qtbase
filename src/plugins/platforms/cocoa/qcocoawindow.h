@@ -248,8 +248,8 @@ public: // for QNSView
 
     Qt::WindowStates m_lastReportedWindowState;
     Qt::WindowModality m_windowModality;
-    QPointer<QWindow> m_enterLeaveTargetWindow;
-    bool m_windowUnderMouse;
+
+    static QPointer<QCocoaWindow> s_windowUnderMouse;
 
     bool m_initialized;
     bool m_inSetVisible;
