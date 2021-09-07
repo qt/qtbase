@@ -19,7 +19,15 @@ endfunction()
 
 # Generate the deployment settings json file for a cmake target.
 function(qt6_android_generate_deployment_settings target)
-    # Avoid calling the function twice
+    # When parsing JSON file format backslashes and follow up symbols are regarded as special
+    # characters. This puts Windows path format into a trouble.
+    # _qt_internal_android_format_deployment_paths converts sensitive paths to the CMake format
+    # that is supported by JSON as well. The function should be called as many times as
+    # qt6_android_generate_deployment_settings, because users may change properties that contain
+    # paths inbetween the calls.
+    _qt_internal_android_format_deployment_paths(${target})
+
+    # Avoid calling the function body twice because of 'file(GENERATE'.
     get_target_property(is_called ${target} _qt_is_android_generate_deployment_settings_called)
     if(is_called)
         return()
@@ -124,93 +132,47 @@ function(qt6_android_generate_deployment_settings target)
         "   \"architectures\": { \"${CMAKE_ANDROID_ARCH_ABI}\" : \"${arch_value}\" },\n")
 
     # deployment dependencies
-    get_target_property(android_deployment_dependencies
-        ${target} QT_ANDROID_DEPLOYMENT_DEPENDENCIES)
-    if (android_deployment_dependencies)
-        list(JOIN android_deployment_dependencies "," android_deployment_dependencies)
-        string(APPEND file_contents
-            "   \"deployment-dependencies\": \"${android_deployment_dependencies}\",\n")
-    endif()
+    _qt_internal_add_android_deployment_multi_value_property(file_contents ${target}
+         "QT_ANDROID_DEPLOYMENT_DEPENDENCIES" "dependencies")
 
     # Extra plugins
-    get_target_property(android_extra_plugins ${target} QT_ANDROID_EXTRA_PLUGINS)
-    if (android_extra_plugins)
-        list(JOIN android_extra_plugins "," android_extra_plugins)
-        string(APPEND file_contents
-            "   \"android-extra-plugins\": \"${android_extra_plugins}\",\n")
-    endif()
+    _qt_internal_add_android_deployment_multi_value_property(file_contents ${target}
+        "QT_ANDROID_EXTRA_PLUGINS" "android-extra-plugins")
 
     # Extra libs
-    get_target_property(android_extra_libs ${target} QT_ANDROID_EXTRA_LIBS)
-    if (android_extra_libs)
-        list(JOIN android_extra_libs "," android_extra_libs)
-        string(APPEND file_contents
-            "   \"android-extra-libs\": \"${android_extra_libs}\",\n")
-    endif()
+    _qt_internal_add_android_deployment_multi_value_property(file_contents ${target}
+        "QT_ANDROID_EXTRA_LIBS" "android-extra-libs")
 
     # package source dir
-    set(android_package_source_dir_genex
-        "$<TARGET_PROPERTY:${target},QT_ANDROID_PACKAGE_SOURCE_DIR>")
-    string(APPEND file_contents
-        "$<$<BOOL:${android_package_source_dir_genex}>:"
-        "   \"android-package-source-directory\": \"${android_package_source_dir_genex}\"\,\n"
-        ">")
+    _qt_internal_add_android_deployment_property(file_contents ${target}
+        "_qt_android_native_package_source_dir" "android-package-source-directory")
 
     # version code
-    get_target_property(android_version_code ${target} QT_ANDROID_VERSION_CODE)
-    if (android_version_code)
-        string(APPEND file_contents
-            "   \"android-version-code\": \"${android_version_code}\",\n")
-    endif()
+    _qt_internal_add_android_deployment_property(file_contents ${target}
+        "QT_ANDROID_VERSION_CODE" "android-version-code")
 
     # version name
-    get_target_property(android_version_name ${target} QT_ANDROID_VERSION_NAME)
-    if (android_version_name)
-        string(APPEND file_contents
-            "   \"android-version-name\": \"${android_version_name}\",\n")
-    endif()
+    _qt_internal_add_android_deployment_property(file_contents ${target}
+        "QT_ANDROID_VERSION_NAME" "android-version-name")
 
     # minimum SDK version
-    get_target_property(android_min_sdk_version ${target} QT_ANDROID_MIN_SDK_VERSION)
-    if(android_min_sdk_version)
-        string(APPEND file_contents
-            "   \"android-min-sdk-version\": \"${android_min_sdk_version}\",\n")
-    endif()
+    _qt_internal_add_android_deployment_property(file_contents ${target}
+        "QT_ANDROID_MIN_SDK_VERSION" "android-min-sdk-version")
 
     # target SDK version
-    get_target_property(android_target_sdk_version ${target} QT_ANDROID_TARGET_SDK_VERSION)
-    if(android_target_sdk_version)
-        string(APPEND file_contents
-            "   \"android-target-sdk-version\": \"${android_target_sdk_version}\",\n")
-    endif()
+    _qt_internal_add_android_deployment_property(file_contents ${target}
+        "QT_ANDROID_TARGET_SDK_VERSION" "android-target-sdk-version")
 
-    get_target_property(qml_import_path ${target} QT_QML_IMPORT_PATH)
-    if (qml_import_path)
-        set(_import_paths "")
-        foreach(_path IN LISTS qml_import_path)
-            file(TO_CMAKE_PATH "${_path}" _path)
-            list(APPEND _import_paths ${_path})
-        endforeach()
-        list(JOIN _import_paths "," _import_paths)
-        string(APPEND file_contents
-            "   \"qml-import-paths\": \"${_import_paths}\",\n")
-    endif()
+    # QML import paths
+    _qt_internal_add_android_deployment_multi_value_property(file_contents ${target}
+        "_qt_native_qml_import_paths" "qml-import-paths")
 
-    get_target_property(qml_root_paths ${target} QT_QML_ROOT_PATH)
-    if(NOT qml_root_paths)
-        set(qml_root_paths "${target_source_dir}")
-    endif()
-
-    set(qml_native_root_paths "")
-    foreach(root_path IN LISTS qml_root_paths)
-        file(TO_CMAKE_PATH "${root_path}" qml_root_path_native)
-        list(APPEND qml_native_root_paths "\"${qml_root_path_native}\"")
-    endforeach()
-
-    list(JOIN qml_native_root_paths "," qml_native_root_paths)
-
-    string(APPEND file_contents
-        "   \"qml-root-path\": [${qml_native_root_paths}],\n")
+    # QML root paths
+    file(TO_CMAKE_PATH "${target_source_dir}" native_target_source_dir)
+    set_property(TARGET ${target} APPEND PROPERTY
+        _qt_android_native_qml_root_paths "${native_target_source_dir}")
+    _qt_internal_add_android_deployment_list_property(file_contents ${target}
+        "_qt_android_native_qml_root_paths" "qml-root-path")
 
     # App binary
     string(APPEND file_contents
@@ -244,6 +206,7 @@ function(qt6_android_generate_deployment_settings target)
     foreach(prefix IN LISTS CMAKE_FIND_ROOT_PATH)
         if (NOT "${prefix}" STREQUAL "${qt_android_install_dir_native}"
             AND NOT "${prefix}" STREQUAL "${android_ndk_root_native}")
+            file(TO_CMAKE_PATH "${prefix}" prefix)
             list(APPEND extra_prefix_list "\"${prefix}\"")
         endif()
     endforeach()
@@ -255,22 +218,8 @@ function(qt6_android_generate_deployment_settings target)
     #
     # Unlike 'extraPrefixDirs', the 'extraLibraryDirs' key doesn't expect the 'lib' subfolder
     # when looking for dependencies.
-    set(extra_library_dirs_property_genex
-        "$<TARGET_PROPERTY:${target},_qt_android_extra_library_dirs>"
-    )
-    set(extra_library_dirs_add_quote_genex
-        "$<$<BOOL:${extra_library_dirs_property_genex}>:\">"
-    )
-    string(JOIN "" extra_library_dirs
-        "${extra_library_dirs_add_quote_genex}"
-        "$<JOIN:"
-            "$<GENEX_EVAL:${extra_library_dirs_property_genex}>,"
-            "\",\""
-        ">"
-        "${extra_library_dirs_add_quote_genex}"
-    )
-    string(APPEND file_contents
-        "   \"extraLibraryDirs\" : [ ${extra_library_dirs} ],\n")
+    _qt_internal_add_android_deployment_list_property(file_contents ${target}
+        "_qt_android_extra_library_dirs" "extraLibraryDirs")
 
     if(QT_FEATURE_zstd)
         set(is_zstd_enabled "true")
@@ -516,6 +465,97 @@ function(_qt_internal_create_global_apk_all_target_if_needed)
 
         add_custom_target(apk_all ${part_of_all})
         add_dependencies(apk_all apk)
+    endif()
+endfunction()
+
+# The function converts the target property to a json record and appends it to the output
+# variable.
+function(_qt_internal_add_android_deployment_property out_var target property json_key)
+    set(property_genex "$<TARGET_PROPERTY:${target},${property}>")
+    string(APPEND ${out_var}
+        "$<$<BOOL:${property_genex}>:"
+            "   \"${json_key}\": \"${property_genex}\"\,\n"
+        ">"
+    )
+
+    set(${out_var} "${${out_var}}" PARENT_SCOPE)
+endfunction()
+
+# The function converts the target list property to a json list record and appends it to the output
+# variable.
+# The generated JSON object is the normal JSON array, e.g.:
+#    "qml-root-path": ["qml/root/path1","qml/root/path2"],
+function(_qt_internal_add_android_deployment_list_property out_var target property json_key)
+    set(property_genex
+        "$<TARGET_PROPERTY:${target},${property}>"
+    )
+    set(add_quote_genex
+        "$<$<BOOL:${property_genex}>:\">"
+    )
+    string(JOIN "" list_join_genex
+        "${add_quote_genex}"
+            "$<JOIN:"
+                "$<GENEX_EVAL:${property_genex}>,"
+                "\",\""
+            ">"
+        "${add_quote_genex}"
+    )
+    string(APPEND ${out_var}
+        "   \"${json_key}\" : [ ${list_join_genex} ],\n")
+    set(${out_var} "${${out_var}}" PARENT_SCOPE)
+endfunction()
+
+# The function converts the target list property to a json multi-value string record and appends it
+# to the output variable.
+# The generated JSON object is a simple string with the list property items separated by commas,
+# e.g:
+#    "android-extra-plugins": "plugin1,plugin2",
+function(_qt_internal_add_android_deployment_multi_value_property out_var target property json_key)
+    set(property_genex
+        "$<TARGET_PROPERTY:${target},${property}>"
+    )
+    string(JOIN "" list_join_genex
+        "$<JOIN:"
+            "$<GENEX_EVAL:${property_genex}>,"
+            ","
+        ">"
+    )
+    string(APPEND ${out_var}
+        "$<$<BOOL:${property_genex}>:"
+            "   \"${json_key}\" : \"${list_join_genex}\",\n"
+        ">"
+    )
+
+    set(${out_var} "${${out_var}}" PARENT_SCOPE)
+endfunction()
+
+# The function converts paths to the CMake format to make them acceptable for JSON.
+# It doesn't overwrite public properties, but instead writes formatted values to internal
+# properties.
+function(_qt_internal_android_format_deployment_paths target)
+    _qt_internal_android_format_deployment_path_property(${target}
+        QT_QML_IMPORT_PATH _qt_android_native_qml_import_paths)
+
+    _qt_internal_android_format_deployment_path_property(${target}
+        QT_QML_ROOT_PATH _qt_android_native_qml_root_paths)
+
+    _qt_internal_android_format_deployment_path_property(${target}
+        QT_ANDROID_PACKAGE_SOURCE_DIR _qt_android_native_package_source_dir)
+endfunction()
+
+# The function converts the value of target property to JSON compatible path and writes the
+# result to out_property. Property might be either single value, semicolon separated list or system
+# path spec.
+function(_qt_internal_android_format_deployment_path_property target property out_property)
+    get_target_property(_paths ${target} ${property})
+    if(_paths)
+        set(native_paths "")
+        foreach(_path IN LISTS _paths)
+            file(TO_CMAKE_PATH "${_path}" _path)
+            list(APPEND native_paths "${_path}")
+        endforeach()
+        set_target_properties(${target} PROPERTIES
+            ${out_property} "${native_paths}")
     endif()
 endfunction()
 
