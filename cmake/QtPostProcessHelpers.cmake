@@ -733,13 +733,14 @@ function(qt_internal_create_config_file_for_standalone_tests)
 
     # Ceate a Config file that calls find_package on the modules that were built as part
     # of the current repo. This is used for standalone tests.
+    qt_internal_get_standalone_tests_config_file_name(tests_config_file_name)
     configure_file(
         "${QT_CMAKE_DIR}/QtStandaloneTestsConfig.cmake.in"
-        "${config_build_dir}/${PROJECT_NAME}TestsConfig.cmake"
+        "${config_build_dir}/${tests_config_file_name}"
         @ONLY
     )
     qt_install(FILES
-        "${config_build_dir}/${PROJECT_NAME}TestsConfig.cmake"
+        "${config_build_dir}/${tests_config_file_name}"
         DESTINATION "${config_install_dir}"
         COMPONENT Devel
     )
