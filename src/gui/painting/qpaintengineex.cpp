@@ -388,7 +388,7 @@ Q_GUI_EXPORT extern bool qt_scaleForTransform(const QTransform &transform, qreal
 void QPaintEngineEx::stroke(const QVectorPath &path, const QPen &inPen)
 {
 #ifdef QT_DEBUG_DRAW
-    qDebug() << "QPaintEngineEx::stroke()" << pen;
+    qDebug() << "QPaintEngineEx::stroke()" << inPen;
 #endif
 
     Q_D(QPaintEngineEx);
