@@ -1848,9 +1848,6 @@ function(_qt_internal_process_resource target resourceName)
     if(isBinary)
         # Add generated .rcc target to 'all' set
         add_custom_target(binary_resource_${resourceName} ALL DEPENDS "${generatedOutfile}")
-        if(rcc_OUTPUT_TARGETS)
-            set(${rcc_OUTPUT_TARGETS} "" PARENT_SCOPE)
-        endif()
     else()
         # We can't rely on policy CMP0118 since user project controls it.
         # We also want SKIP_AUTOGEN known in the target's scope, where we can.
