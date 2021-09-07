@@ -111,6 +111,7 @@ namespace QTest {
     int passes = 0;
     int skips = 0;
     int blacklists = 0;
+    enum { Unresolved, Passed, Skipped, Suppressed, Failed } currentTestState;
 
     struct IgnoreResultList
     {
@@ -345,9 +346,15 @@ void QTestLog::clearIgnoreMessages()
     QTest::IgnoreResultList::clearList(QTest::ignoreResultList);
 }
 
+
 void QTestLog::clearFailOnWarnings()
 {
     QTest::failOnWarningList.clear();
+}
+
+void QTestLog::clearCurrentTestState()
+{
+    QTest::currentTestState = QTest::Unresolved;
 }
 
 void QTestLog::addPass(const char *msg)
@@ -356,8 +363,10 @@ void QTestLog::addPass(const char *msg)
         return;
 
     QTEST_ASSERT(msg);
+    Q_ASSERT(QTest::currentTestState == QTest::Unresolved);
 
     ++QTest::passes;
+    QTest::currentTestState = QTest::Passed;
 
     FOREACH_TEST_LOGGER
         logger->addIncident(QAbstractTestLogger::Pass, msg);
@@ -367,8 +376,18 @@ void QTestLog::addFail(const char *msg, const char *file, int line)
 {
     QTEST_ASSERT(msg);
 
-    ++QTest::fails;
+    if (QTest::currentTestState == QTest::Unresolved) {
+        ++QTest::fails;
+    } else {
+        // After an XPASS/Continue, or fail or skip in a function the test
+        // calls, we can subsequently fail.
+        Q_ASSERT(QTest::currentTestState == QTest::Failed
+                 || QTest::currentTestState == QTest::Skipped);
+    }
+    // It is up to particular loggers to decide whether to report such
+    // subsequent failures; they may carry useful information.
 
+    QTest::currentTestState = QTest::Failed;
     FOREACH_TEST_LOGGER
         logger->addIncident(QAbstractTestLogger::Fail, msg, file, line);
 }
@@ -387,8 +406,16 @@ void QTestLog::addXPass(const char *msg, const char *file, int line)
 {
     QTEST_ASSERT(msg);
 
-    ++QTest::fails;
+    if (QTest::currentTestState == QTest::Unresolved) {
+        ++QTest::fails;
+    } else {
+        // After an XPASS/Continue, we can subsequently XPASS again.
+        // Likewise after a fail or skip in a function called by the test.
+        Q_ASSERT(QTest::currentTestState == QTest::Failed
+                 || QTest::currentTestState == QTest::Skipped);
+    }
 
+    QTest::currentTestState = QTest::Failed;
     FOREACH_TEST_LOGGER
         logger->addIncident(QAbstractTestLogger::XPass, msg, file, line);
 }
@@ -396,8 +423,10 @@ void QTestLog::addXPass(const char *msg, const char *file, int line)
 void QTestLog::addBPass(const char *msg)
 {
     QTEST_ASSERT(msg);
+    Q_ASSERT(QTest::currentTestState == QTest::Unresolved);
 
-    ++QTest::blacklists;
+    ++QTest::blacklists; // Not passes ?
+    QTest::currentTestState = QTest::Suppressed;
 
     FOREACH_TEST_LOGGER
         logger->addIncident(QAbstractTestLogger::BlacklistedPass, msg);
@@ -407,8 +436,16 @@ void QTestLog::addBFail(const char *msg, const char *file, int line)
 {
     QTEST_ASSERT(msg);
 
-    ++QTest::blacklists;
+    if (QTest::currentTestState == QTest::Unresolved) {
+        ++QTest::blacklists;
+    } else {
+        // After a BXPASS/Continue, we can subsequently fail.
+        // Likewise after a fail or skip in a function called by a test.
+        Q_ASSERT(QTest::currentTestState == QTest::Suppressed
+                 || QTest::currentTestState == QTest::Skipped);
+    }
 
+    QTest::currentTestState = QTest::Suppressed;
     FOREACH_TEST_LOGGER
         logger->addIncident(QAbstractTestLogger::BlacklistedFail, msg, file, line);
 }
@@ -417,8 +454,16 @@ void QTestLog::addBXPass(const char *msg, const char *file, int line)
 {
     QTEST_ASSERT(msg);
 
-    ++QTest::blacklists;
+    if (QTest::currentTestState == QTest::Unresolved) {
+        ++QTest::blacklists;
+    } else {
+        // After a BXPASS/Continue, we may BXPASS again.
+        // Likewise after a fail or skip in a function called by a test.
+        Q_ASSERT(QTest::currentTestState == QTest::Suppressed
+                 || QTest::currentTestState == QTest::Skipped);
+    }
 
+    QTest::currentTestState = QTest::Suppressed;
     FOREACH_TEST_LOGGER
         logger->addIncident(QAbstractTestLogger::BlacklistedXPass, msg, file, line);
 }
@@ -437,7 +482,18 @@ void QTestLog::addSkip(const char *msg, const char *file, int line)
 {
     QTEST_ASSERT(msg);
 
-    ++QTest::skips;
+    if (QTest::currentTestState == QTest::Unresolved) {
+        ++QTest::skips;
+        QTest::currentTestState = QTest::Skipped;
+    } else {
+        // After an B?XPASS/Continue, we might subsequently skip.
+        // Likewise after a skip in a function called by a test.
+        Q_ASSERT(QTest::currentTestState == QTest::Suppressed
+                 || QTest::currentTestState == QTest::Failed
+                 || QTest::currentTestState == QTest::Skipped);
+    }
+    // It is up to particular loggers to decide whether to report such
+    // subsequent skips; they may carry useful information.
 
     FOREACH_TEST_LOGGER
         logger->addIncident(QAbstractTestLogger::Skip, msg, file, line);

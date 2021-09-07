@@ -9,6 +9,12 @@ obscure # no such platform; is ignored
 [fail]
 *
 
+[multiSkip]
+*
+
+[multiFail]
+*
+
 [xfail]
 *
 

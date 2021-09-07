@@ -47,7 +47,7 @@ Ran out of cabbage!
 # Ran out of tortillas!
 # Ran out of oil!
 # nope
-not ok 8 - testFailOnWarnings()
+not ok 7 - testFailOnWarnings()
   ---
   # Received a warning that resulted in a failure:
 Ran out of biscuits!
@@ -55,7 +55,7 @@ Ran out of biscuits!
   file: qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp
   line: 0
   ...
-not ok 9 - testFailOnWarnings()
+not ok 7 - testFailOnWarnings()
   ---
   # Received a warning that resulted in a failure:
 Running low on toothpaste!
@@ -67,8 +67,8 @@ Running low on toothpaste!
 # Running low on toothpaste!
 # Running low on toothpaste!
 # Ran out of muffins!
-ok 10 - testFailOnWarningsCleared()
-not ok 11 - testFailOnWarningsWithData(warning1)
+ok 8 - testFailOnWarningsCleared()
+not ok 9 - testFailOnWarningsWithData(warning1)
   ---
   # Received a warning that resulted in a failure:
 warning1
@@ -79,7 +79,7 @@ warning1
 # warning2
 # warning3
 # warning1
-not ok 12 - testFailOnWarningsWithData(warning2)
+not ok 10 - testFailOnWarningsWithData(warning2)
   ---
   # Received a warning that resulted in a failure:
 warning2
@@ -90,7 +90,7 @@ warning2
 # warning3
 # warning1
 # warning2
-not ok 13 - testFailOnWarningsWithData(warning3)
+not ok 11 - testFailOnWarningsWithData(warning3)
   ---
   # Received a warning that resulted in a failure:
 warning3
@@ -98,14 +98,14 @@ warning3
   file: qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp
   line: 0
   ...
-not ok 14 - testFailOnWarningsFailInHelper()
+not ok 12 - testFailOnWarningsFailInHelper()
   ---
   # This failure message should be printed but not cause the test to abort
   at: tst_Warnings::testFailOnWarningsFailInHelper() (qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp
   line: 0
   ...
-not ok 15 - testFailOnWarningsFailInHelper()
+not ok 12 - testFailOnWarningsFailInHelper()
   ---
   # Received a warning that resulted in a failure:
 Ran out of cabbage!
@@ -113,14 +113,14 @@ Ran out of cabbage!
   file: qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp
   line: 0
   ...
-not ok 16 - testFailOnWarningsFailInHelper()
+not ok 12 - testFailOnWarningsFailInHelper()
   ---
   # My cabbage! :(
   at: tst_Warnings::testFailOnWarningsFailInHelper() (qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp
   line: 0
   ...
-not ok 17 - testFailOnWarningsThenSkip()
+not ok 13 - testFailOnWarningsThenSkip()
   ---
   # Received a warning that resulted in a failure:
 Ran out of cabbage!
@@ -128,10 +128,10 @@ Ran out of cabbage!
   file: qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp
   line: 0
   ...
-ok 18 - testFailOnWarningsThenSkip() # SKIP My cabbage! :(
-ok 19 - testFailOnWarningsAndIgnoreWarnings()
-ok 20 - cleanupTestCase()
-1..20
-# tests 20
+ok 13 - testFailOnWarningsThenSkip() # SKIP My cabbage! :(
+ok 14 - testFailOnWarningsAndIgnoreWarnings()
+ok 15 - cleanupTestCase()
+1..15
+# tests 15
 # pass 5
-# fail 14
+# fail 10

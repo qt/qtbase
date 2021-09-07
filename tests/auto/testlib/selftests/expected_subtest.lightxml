@@ -195,6 +195,48 @@
   </Message>
     <Duration msecs="0"/>
   </TestFunction>
+  <TestFunction name="multiSkip">
+  <Message type="qdebug" file="" line="0">
+    <Description><![CDATA[init multiSkip (null)]]></Description>
+  </Message>
+    <Incident type="skip" file="qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp" line="0">
+      <Description><![CDATA[This skip should be repeated ten times]]></Description>
+    </Incident>
+    <Incident type="skip" file="qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp" line="0">
+      <Description><![CDATA[This skip should be repeated ten times]]></Description>
+    </Incident>
+    <Incident type="skip" file="qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp" line="0">
+      <Description><![CDATA[This skip should be repeated ten times]]></Description>
+    </Incident>
+    <Incident type="skip" file="qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp" line="0">
+      <Description><![CDATA[This skip should be repeated ten times]]></Description>
+    </Incident>
+    <Incident type="skip" file="qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp" line="0">
+      <Description><![CDATA[This skip should be repeated ten times]]></Description>
+    </Incident>
+    <Incident type="skip" file="qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp" line="0">
+      <Description><![CDATA[This skip should be repeated ten times]]></Description>
+    </Incident>
+    <Incident type="skip" file="qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp" line="0">
+      <Description><![CDATA[This skip should be repeated ten times]]></Description>
+    </Incident>
+    <Incident type="skip" file="qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp" line="0">
+      <Description><![CDATA[This skip should be repeated ten times]]></Description>
+    </Incident>
+    <Incident type="skip" file="qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp" line="0">
+      <Description><![CDATA[This skip should be repeated ten times]]></Description>
+    </Incident>
+    <Incident type="skip" file="qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp" line="0">
+      <Description><![CDATA[This skip should be repeated ten times]]></Description>
+    </Incident>
+    <Incident type="skip" file="qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp" line="0">
+      <Description><![CDATA[But this test should only contribute one to the skip count]]></Description>
+    </Incident>
+  <Message type="qdebug" file="" line="0">
+    <Description><![CDATA[cleanup multiSkip (null)]]></Description>
+  </Message>
+    <Duration msecs="0"/>
+  </TestFunction>
   <TestFunction name="cleanupTestCase">
   <Message type="qdebug" file="" line="0">
     <Description><![CDATA[cleanupTestCase cleanupTestCase (null)]]></Description>

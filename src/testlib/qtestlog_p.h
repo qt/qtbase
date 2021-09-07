@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtTest module of the Qt Toolkit.
@@ -113,6 +113,7 @@ public:
     static void printUnhandledIgnoreMessages();
     static void clearIgnoreMessages();
     static void clearFailOnWarnings();
+    static void clearCurrentTestState();
 
     static void warn(const char *msg, const char *file, int line);
     static void info(const char *msg, const char *file, int line);

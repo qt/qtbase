@@ -347,7 +347,6 @@ void tst_ExpectFail::xpassContinueSkip() const
     ++failed; // and *not* ++skipped
     QEXPECT_FAIL("", "This test should xpass", Continue);
     QVERIFY(true);
-    // FIXME: QTBUG-95661 skip-count is incremented.
     QSKIP("This should be reached but not increment skip-count");
 }
 

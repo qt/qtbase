@@ -219,6 +219,7 @@ void QTestResult::finishedCurrentTestDataCleanup()
             QTestLog::addPass("");
     }
 
+    QTestLog::clearCurrentTestState();
     QTest::resetFailed();
 }
 
@@ -232,6 +233,7 @@ void QTestResult::finishedCurrentTestDataCleanup()
 */
 void QTestResult::finishedCurrentTestFunction()
 {
+    QTestLog::clearCurrentTestState(); // Needed if _data() skipped.
     QTestLog::leaveTestFunction();
 
     QTest::currentTestFunc = nullptr;
@@ -296,6 +298,7 @@ static bool checkStatement(bool statement, const char *msg, const char *file, in
                 QTestLog::addXPass(msg, file, line);
 
             QTest::setFailed(true);
+            // Should B?XPass always (a) continue or (b) abort, regardless of mode ?
             bool doContinue = (QTest::expectFailMode == QTest::Continue);
             clearExpectFail();
             return doContinue;

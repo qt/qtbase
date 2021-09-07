@@ -2,6 +2,5 @@
 Config: Using QtTest library
 SKIP   : tst_SkipInit::initTestCase() Skip inside initTestCase. This should skip all tests in the class.
    Loc: [qtbase/tests/auto/testlib/selftests/skipinit/tst_skipinit.cpp(0)]
-PASS   : tst_SkipInit::cleanupTestCase()
-Totals: 1 passed, 0 failed, 1 skipped, 0 blacklisted, 0ms
+Totals: 0 passed, 0 failed, 1 skipped, 0 blacklisted, 0ms
 ********* Finished testing of tst_SkipInit *********

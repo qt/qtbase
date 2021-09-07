@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite name="tst_ExpectFail" timestamp="@TEST_START_TIME@" hostname="@HOSTNAME@" tests="44" failures="17" errors="0" skipped="5" time="@TEST_DURATION@">
+<testsuite name="tst_ExpectFail" timestamp="@TEST_START_TIME@" hostname="@HOSTNAME@" tests="44" failures="17" errors="0" skipped="4" time="@TEST_DURATION@">
   <properties>
     <property name="QTestVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtVersion" value="@INSERT_QT_VERSION_HERE@"/>

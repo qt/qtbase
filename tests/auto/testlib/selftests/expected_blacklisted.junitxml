@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite name="tst_Blacklisted" timestamp="@TEST_START_TIME@" hostname="@HOSTNAME@" tests="11" failures="0" errors="0" skipped="3" time="@TEST_DURATION@">
+<testsuite name="tst_Blacklisted" timestamp="@TEST_START_TIME@" hostname="@HOSTNAME@" tests="13" failures="0" errors="0" skipped="3" time="@TEST_DURATION@">
   <properties>
     <property name="QTestVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtVersion" value="@INSERT_QT_VERSION_HERE@"/>
@@ -16,6 +16,20 @@
   </testcase>
   <testcase name="fail" classname="tst_Blacklisted" time="@TEST_DURATION@"/>
   <testcase name="xfail" classname="tst_Blacklisted" time="@TEST_DURATION@"/>
+  <testcase name="multiSkip" classname="tst_Blacklisted" time="@TEST_DURATION@">
+    <skipped message="This skip should be repeated ten times"/>
+    <skipped message="This skip should be repeated ten times"/>
+    <skipped message="This skip should be repeated ten times"/>
+    <skipped message="This skip should be repeated ten times"/>
+    <skipped message="This skip should be repeated ten times"/>
+    <skipped message="This skip should be repeated ten times"/>
+    <skipped message="This skip should be repeated ten times"/>
+    <skipped message="This skip should be repeated ten times"/>
+    <skipped message="This skip should be repeated ten times"/>
+    <skipped message="This skip should be repeated ten times"/>
+    <skipped message="But this test should only contribute one to the skip count"/>
+  </testcase>
+  <testcase name="multiFail" classname="tst_Blacklisted" time="@TEST_DURATION@"/>
   <testcase name="xfailContinueSkip" classname="tst_Blacklisted" time="@TEST_DURATION@">
     <skipped message="This skip should be seen and counted"/>
   </testcase>
@@ -27,7 +41,7 @@
   <testcase name="xpassContinueFail" classname="tst_Blacklisted" time="@TEST_DURATION@"/>
   <testcase name="cleanupTestCase" classname="tst_Blacklisted" time="@TEST_DURATION@">
     <system-out>
-      <![CDATA[Totals should add up to 11: 2 passed, 0 failed, 2 skipped, 7 blacklisted]]>
+      <![CDATA[Totals should add up to 13: 2 passed, 0 failed, 3 skipped, 8 blacklisted]]>
     </system-out>
   </testcase>
 </testsuite>

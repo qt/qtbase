@@ -946,33 +946,38 @@ void TestMethods::invokeTestOnData(int index) const
         do {
             if (m_initMethod.isValid())
                 m_initMethod.invoke(QTest::currentTestObject, Qt::DirectConnection);
-            if (QTestResult::skipCurrentTest() || QTestResult::currentTestFailed())
-                break;
 
-            QBenchmarkTestMethodData::current->result = QBenchmarkResult();
-            QBenchmarkTestMethodData::current->resultAccepted = false;
+            const bool initQuit =
+                QTestResult::skipCurrentTest() || QTestResult::currentTestFailed();
+            if (!initQuit) {
+                QBenchmarkTestMethodData::current->result = QBenchmarkResult();
+                QBenchmarkTestMethodData::current->resultAccepted = false;
 
-            QBenchmarkGlobalData::current->context.tag =
-                QLatin1String(
-                    QTestResult::currentDataTag()
-                    ? QTestResult::currentDataTag() : "");
+                QBenchmarkGlobalData::current->context.tag = QLatin1String(
+                    QTestResult::currentDataTag() ? QTestResult::currentDataTag() : "");
 
-            invokeOk = m_methods[index].invoke(QTest::currentTestObject, Qt::DirectConnection);
-            if (!invokeOk)
-                QTestResult::addFailure("Unable to execute slot", __FILE__, __LINE__);
+                invokeOk = m_methods[index].invoke(QTest::currentTestObject, Qt::DirectConnection);
+                if (!invokeOk)
+                    QTestResult::addFailure("Unable to execute slot", __FILE__, __LINE__);
 
-            isBenchmark = QBenchmarkTestMethodData::current->isBenchmark();
+                isBenchmark = QBenchmarkTestMethodData::current->isBenchmark();
+            } else {
+                invokeOk = false;
+            }
 
             QTestResult::finishedCurrentTestData();
 
-            if (m_cleanupMethod.isValid())
-                m_cleanupMethod.invoke(QTest::currentTestObject, Qt::DirectConnection);
+            if (!initQuit) {
+                if (m_cleanupMethod.isValid())
+                    m_cleanupMethod.invoke(QTest::currentTestObject, Qt::DirectConnection);
 
-            // Process any deleteLater(), like event-loop based apps would do. Fixes memleak reports.
-            if (QCoreApplication::instance())
-                QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
-
-            // If the test isn't a benchmark, finalize the result after cleanup() has finished.
+                // Process any deleteLater(), used by event-loop-based apps.
+                // Fixes memleak reports.
+                if (QCoreApplication::instance())
+                    QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
+            }
+            // If the test isn't a benchmark, finalize the result after
+            // cleanup() has finished (or init has lead us to skip the test).
             if (!isBenchmark)
                 QTestResult::finishedCurrentTestDataCleanup();
 
@@ -1522,7 +1527,7 @@ void TestMethods::invokeTests(QObject *testObject) const
 
     QSignalDumper::startDump();
 
-    if (!QTestResult::skipCurrentTest() && !QTest::currentTestFailed()) {
+    if (!QTestResult::skipCurrentTest() && !QTestResult::currentTestFailed()) {
         if (m_initTestCaseMethod.isValid())
             m_initTestCaseMethod.invoke(testObject, Qt::DirectConnection);
 
@@ -1544,12 +1549,15 @@ void TestMethods::invokeTests(QObject *testObject) const
             }
         }
 
+        const bool wasSkipped = QTestResult::skipCurrentTest();
         QTestResult::setSkipCurrentTest(false);
         QTestResult::setBlacklistCurrentTest(false);
         QTestResult::setCurrentTestFunction("cleanupTestCase");
         if (m_cleanupTestCaseMethod.isValid())
             m_cleanupTestCaseMethod.invoke(testObject, Qt::DirectConnection);
         QTestResult::finishedCurrentTestData();
+        // Restore skip state as it affects decision on whether we passed:
+        QTestResult::setSkipCurrentTest(wasSkipped || QTestResult::skipCurrentTest());
         QTestResult::finishedCurrentTestDataCleanup();
     }
     QTestResult::finishedCurrentTestFunction();

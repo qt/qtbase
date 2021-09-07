@@ -145,29 +145,29 @@ ok 32 - xpassAbortXfailContinue() # TODO 'true' returned TRUE unexpectedly. ()
 ok 33 - xpassContinue() # TODO 'true' returned TRUE unexpectedly. ()
 # This should be reached
 ok 34 - xpassContinueSkip() # TODO 'true' returned TRUE unexpectedly. ()
-ok 35 - xpassContinueSkip() # SKIP This should be reached but not increment skip-count
-ok 36 - xpassContinueXfailAbort() # TODO 'true' returned TRUE unexpectedly. ()
-not ok 37 - xpassContinueXfailAbort() # TODO This test should xfail but not add to totals
+ok 34 - xpassContinueSkip() # SKIP This should be reached but not increment skip-count
+ok 35 - xpassContinueXfailAbort() # TODO 'true' returned TRUE unexpectedly. ()
+not ok 36 - xpassContinueXfailAbort() # TODO This test should xfail but not add to totals
   ---
   at: tst_ExpectFail::xpassContinueXfailAbort() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp
   line: 0
   ...
-ok 37 - xpassAbortDataDrivenWithQVerify(XPass) # TODO 'true' returned TRUE unexpectedly. ()
-ok 38 - xpassAbortDataDrivenWithQVerify(Pass)
-ok 39 - xpassContinueDataDrivenWithQVerify(XPass) # TODO 'true' returned TRUE unexpectedly. ()
+ok 36 - xpassAbortDataDrivenWithQVerify(XPass) # TODO 'true' returned TRUE unexpectedly. ()
+ok 37 - xpassAbortDataDrivenWithQVerify(Pass)
+ok 38 - xpassContinueDataDrivenWithQVerify(XPass) # TODO 'true' returned TRUE unexpectedly. ()
 # Test should Continue past XPASS
 # Test should simply PASS
-ok 40 - xpassContinueDataDrivenWithQVerify(Pass)
-ok 41 - xpassAbortDataDrivenWithQCompare(XPass) # TODO QCOMPARE(1, 1) returned TRUE unexpectedly.
-ok 42 - xpassAbortDataDrivenWithQCompare(Pass)
-ok 43 - xpassContinueDataDrivenWithQCompare(XPass) # TODO QCOMPARE(1, 1) returned TRUE unexpectedly.
+ok 39 - xpassContinueDataDrivenWithQVerify(Pass)
+ok 40 - xpassAbortDataDrivenWithQCompare(XPass) # TODO QCOMPARE(1, 1) returned TRUE unexpectedly.
+ok 41 - xpassAbortDataDrivenWithQCompare(Pass)
+ok 42 - xpassContinueDataDrivenWithQCompare(XPass) # TODO QCOMPARE(1, 1) returned TRUE unexpectedly.
 # Test should Continue past XPASS
 # Test should simply PASS
-ok 44 - xpassContinueDataDrivenWithQCompare(Pass)
+ok 43 - xpassContinueDataDrivenWithQCompare(Pass)
 # Totals should add up to 44: 23 passed, 17 failed, 4 skipped
-ok 45 - cleanupTestCase()
-1..45
-# tests 45
+ok 44 - cleanupTestCase()
+1..44
+# tests 44
 # pass 23
 # fail 17

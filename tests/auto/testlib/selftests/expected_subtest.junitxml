@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite name="tst_Subtest" timestamp="@TEST_START_TIME@" hostname="@HOSTNAME@" tests="10" failures="3" errors="0" skipped="0" time="@TEST_DURATION@">
+<testsuite name="tst_Subtest" timestamp="@TEST_START_TIME@" hostname="@HOSTNAME@" tests="11" failures="3" errors="0" skipped="1" time="@TEST_DURATION@">
   <properties>
     <property name="QTestVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtVersion" value="@INSERT_QT_VERSION_HERE@"/>
@@ -80,6 +80,23 @@
     <system-out>
       <![CDATA[init multiFail (null)]]>
       <![CDATA[cleanup multiFail (null)]]>
+    </system-out>
+  </testcase>
+  <testcase name="multiSkip" classname="tst_Subtest" time="@TEST_DURATION@">
+    <skipped message="This skip should be repeated ten times"/>
+    <skipped message="This skip should be repeated ten times"/>
+    <skipped message="This skip should be repeated ten times"/>
+    <skipped message="This skip should be repeated ten times"/>
+    <skipped message="This skip should be repeated ten times"/>
+    <skipped message="This skip should be repeated ten times"/>
+    <skipped message="This skip should be repeated ten times"/>
+    <skipped message="This skip should be repeated ten times"/>
+    <skipped message="This skip should be repeated ten times"/>
+    <skipped message="This skip should be repeated ten times"/>
+    <skipped message="But this test should only contribute one to the skip count"/>
+    <system-out>
+      <![CDATA[init multiSkip (null)]]>
+      <![CDATA[cleanup multiSkip (null)]]>
     </system-out>
   </testcase>
   <testcase name="cleanupTestCase" classname="tst_Subtest" time="@TEST_DURATION@">

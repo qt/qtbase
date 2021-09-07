@@ -49,6 +49,7 @@ private slots:
     void test3();
 
     void multiFail();
+    void multiSkip();
 private:
     void logNames(const char *caller);
     void table_data();
@@ -136,11 +137,18 @@ void tst_Subtest::test3()
 void tst_Subtest::multiFail()
 {
     // Simulates tests which call a shared function that does common checks, or
-    // that do checks in code run asynchronously from a messae loop.
+    // that do checks in code run asynchronously from a message loop.
     for (int i = 0; i < 10; ++i)
         []() { QFAIL("This failure message should be repeated ten times"); }();
-    // FIXME QTBUG-95661: it gets counted as eleven failures, of course.
     QFAIL("But this test should only contribute one to the failure count");
+}
+
+void tst_Subtest::multiSkip()
+{
+    // Similar to multiFail()
+    for (int i = 0; i < 10; ++i)
+        []() { QSKIP("This skip should be repeated ten times"); }();
+    QSKIP("But this test should only contribute one to the skip count");
 }
 
 QTEST_MAIN(tst_Subtest)

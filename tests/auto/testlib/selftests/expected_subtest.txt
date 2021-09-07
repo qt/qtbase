@@ -68,7 +68,31 @@ FAIL!  : tst_Subtest::multiFail() This failure message should be repeated ten ti
 FAIL!  : tst_Subtest::multiFail() But this test should only contribute one to the failure count
    Loc: [qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp(0)]
 QDEBUG : tst_Subtest::multiFail() cleanup multiFail (null)
+QDEBUG : tst_Subtest::multiSkip() init multiSkip (null)
+SKIP   : tst_Subtest::multiSkip() This skip should be repeated ten times
+   Loc: [qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp(0)]
+SKIP   : tst_Subtest::multiSkip() This skip should be repeated ten times
+   Loc: [qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp(0)]
+SKIP   : tst_Subtest::multiSkip() This skip should be repeated ten times
+   Loc: [qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp(0)]
+SKIP   : tst_Subtest::multiSkip() This skip should be repeated ten times
+   Loc: [qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp(0)]
+SKIP   : tst_Subtest::multiSkip() This skip should be repeated ten times
+   Loc: [qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp(0)]
+SKIP   : tst_Subtest::multiSkip() This skip should be repeated ten times
+   Loc: [qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp(0)]
+SKIP   : tst_Subtest::multiSkip() This skip should be repeated ten times
+   Loc: [qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp(0)]
+SKIP   : tst_Subtest::multiSkip() This skip should be repeated ten times
+   Loc: [qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp(0)]
+SKIP   : tst_Subtest::multiSkip() This skip should be repeated ten times
+   Loc: [qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp(0)]
+SKIP   : tst_Subtest::multiSkip() This skip should be repeated ten times
+   Loc: [qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp(0)]
+SKIP   : tst_Subtest::multiSkip() But this test should only contribute one to the skip count
+   Loc: [qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp(0)]
+QDEBUG : tst_Subtest::multiSkip() cleanup multiSkip (null)
 QDEBUG : tst_Subtest::cleanupTestCase() cleanupTestCase cleanupTestCase (null)
 PASS   : tst_Subtest::cleanupTestCase()
-Totals: 7 passed, 13 failed, 0 skipped, 0 blacklisted, 0ms
+Totals: 7 passed, 3 failed, 1 skipped, 0 blacklisted, 0ms
 ********* Finished testing of tst_Subtest *********

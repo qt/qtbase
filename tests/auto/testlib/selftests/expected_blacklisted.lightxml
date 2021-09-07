@@ -33,6 +33,78 @@
     <Incident type="bpass" file="" line="0" />
     <Duration msecs="0"/>
   </TestFunction>
+  <TestFunction name="multiSkip">
+    <Incident type="skip" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
+      <Description><![CDATA[This skip should be repeated ten times]]></Description>
+    </Incident>
+    <Incident type="skip" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
+      <Description><![CDATA[This skip should be repeated ten times]]></Description>
+    </Incident>
+    <Incident type="skip" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
+      <Description><![CDATA[This skip should be repeated ten times]]></Description>
+    </Incident>
+    <Incident type="skip" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
+      <Description><![CDATA[This skip should be repeated ten times]]></Description>
+    </Incident>
+    <Incident type="skip" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
+      <Description><![CDATA[This skip should be repeated ten times]]></Description>
+    </Incident>
+    <Incident type="skip" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
+      <Description><![CDATA[This skip should be repeated ten times]]></Description>
+    </Incident>
+    <Incident type="skip" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
+      <Description><![CDATA[This skip should be repeated ten times]]></Description>
+    </Incident>
+    <Incident type="skip" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
+      <Description><![CDATA[This skip should be repeated ten times]]></Description>
+    </Incident>
+    <Incident type="skip" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
+      <Description><![CDATA[This skip should be repeated ten times]]></Description>
+    </Incident>
+    <Incident type="skip" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
+      <Description><![CDATA[This skip should be repeated ten times]]></Description>
+    </Incident>
+    <Incident type="skip" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
+      <Description><![CDATA[But this test should only contribute one to the skip count]]></Description>
+    </Incident>
+    <Duration msecs="0"/>
+  </TestFunction>
+  <TestFunction name="multiFail">
+    <Incident type="bfail" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
+      <Description><![CDATA[This failure message should be repeated ten times]]></Description>
+    </Incident>
+    <Incident type="bfail" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
+      <Description><![CDATA[This failure message should be repeated ten times]]></Description>
+    </Incident>
+    <Incident type="bfail" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
+      <Description><![CDATA[This failure message should be repeated ten times]]></Description>
+    </Incident>
+    <Incident type="bfail" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
+      <Description><![CDATA[This failure message should be repeated ten times]]></Description>
+    </Incident>
+    <Incident type="bfail" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
+      <Description><![CDATA[This failure message should be repeated ten times]]></Description>
+    </Incident>
+    <Incident type="bfail" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
+      <Description><![CDATA[This failure message should be repeated ten times]]></Description>
+    </Incident>
+    <Incident type="bfail" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
+      <Description><![CDATA[This failure message should be repeated ten times]]></Description>
+    </Incident>
+    <Incident type="bfail" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
+      <Description><![CDATA[This failure message should be repeated ten times]]></Description>
+    </Incident>
+    <Incident type="bfail" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
+      <Description><![CDATA[This failure message should be repeated ten times]]></Description>
+    </Incident>
+    <Incident type="bfail" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
+      <Description><![CDATA[This failure message should be repeated ten times]]></Description>
+    </Incident>
+    <Incident type="bfail" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
+      <Description><![CDATA[But this test should only contribute one to the blacklisted count]]></Description>
+    </Incident>
+    <Duration msecs="0"/>
+  </TestFunction>
   <TestFunction name="xfailContinueSkip">
     <Incident type="bxfail" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
       <Description><![CDATA[This test should BXFAIL then SKIP]]></Description>
@@ -77,7 +149,7 @@
   </TestFunction>
   <TestFunction name="cleanupTestCase">
   <Message type="qdebug" file="" line="0">
-    <Description><![CDATA[Totals should add up to 11: 2 passed, 0 failed, 2 skipped, 7 blacklisted]]></Description>
+    <Description><![CDATA[Totals should add up to 13: 2 passed, 0 failed, 3 skipped, 8 blacklisted]]></Description>
   </Message>
     <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>

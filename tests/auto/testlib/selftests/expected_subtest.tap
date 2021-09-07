@@ -68,70 +68,70 @@ not ok 9 - multiFail()
   file: qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp
   line: 0
   ...
-not ok 10 - multiFail()
+not ok 9 - multiFail()
   ---
   # This failure message should be repeated ten times
   at: tst_Subtest::multiFail() (qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp
   line: 0
   ...
-not ok 11 - multiFail()
+not ok 9 - multiFail()
   ---
   # This failure message should be repeated ten times
   at: tst_Subtest::multiFail() (qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp
   line: 0
   ...
-not ok 12 - multiFail()
+not ok 9 - multiFail()
   ---
   # This failure message should be repeated ten times
   at: tst_Subtest::multiFail() (qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp
   line: 0
   ...
-not ok 13 - multiFail()
+not ok 9 - multiFail()
   ---
   # This failure message should be repeated ten times
   at: tst_Subtest::multiFail() (qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp
   line: 0
   ...
-not ok 14 - multiFail()
+not ok 9 - multiFail()
   ---
   # This failure message should be repeated ten times
   at: tst_Subtest::multiFail() (qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp
   line: 0
   ...
-not ok 15 - multiFail()
+not ok 9 - multiFail()
   ---
   # This failure message should be repeated ten times
   at: tst_Subtest::multiFail() (qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp
   line: 0
   ...
-not ok 16 - multiFail()
+not ok 9 - multiFail()
   ---
   # This failure message should be repeated ten times
   at: tst_Subtest::multiFail() (qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp
   line: 0
   ...
-not ok 17 - multiFail()
+not ok 9 - multiFail()
   ---
   # This failure message should be repeated ten times
   at: tst_Subtest::multiFail() (qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp
   line: 0
   ...
-not ok 18 - multiFail()
+not ok 9 - multiFail()
   ---
   # This failure message should be repeated ten times
   at: tst_Subtest::multiFail() (qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp
   line: 0
   ...
-not ok 19 - multiFail()
+not ok 9 - multiFail()
   ---
   # But this test should only contribute one to the failure count
   at: tst_Subtest::multiFail() (qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp:0)
@@ -139,9 +139,22 @@ not ok 19 - multiFail()
   line: 0
   ...
 # cleanup multiFail (null)
+# init multiSkip (null)
+ok 10 - multiSkip() # SKIP This skip should be repeated ten times
+ok 10 - multiSkip() # SKIP This skip should be repeated ten times
+ok 10 - multiSkip() # SKIP This skip should be repeated ten times
+ok 10 - multiSkip() # SKIP This skip should be repeated ten times
+ok 10 - multiSkip() # SKIP This skip should be repeated ten times
+ok 10 - multiSkip() # SKIP This skip should be repeated ten times
+ok 10 - multiSkip() # SKIP This skip should be repeated ten times
+ok 10 - multiSkip() # SKIP This skip should be repeated ten times
+ok 10 - multiSkip() # SKIP This skip should be repeated ten times
+ok 10 - multiSkip() # SKIP This skip should be repeated ten times
+ok 10 - multiSkip() # SKIP But this test should only contribute one to the skip count
+# cleanup multiSkip (null)
 # cleanupTestCase cleanupTestCase (null)
-ok 20 - cleanupTestCase()
-1..20
-# tests 20
+ok 11 - cleanupTestCase()
+1..11
+# tests 11
 # pass 7
-# fail 13
+# fail 3

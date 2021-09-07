@@ -10,6 +10,50 @@ BFAIL  : tst_Blacklisted::fail() 'false' returned FALSE. (This test should BFAIL
 BXFAIL : tst_Blacklisted::xfail() This test should BXFAIL then BPASS
    Loc: [qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp(0)]
 BPASS  : tst_Blacklisted::xfail()
+SKIP   : tst_Blacklisted::multiSkip() This skip should be repeated ten times
+   Loc: [qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp(0)]
+SKIP   : tst_Blacklisted::multiSkip() This skip should be repeated ten times
+   Loc: [qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp(0)]
+SKIP   : tst_Blacklisted::multiSkip() This skip should be repeated ten times
+   Loc: [qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp(0)]
+SKIP   : tst_Blacklisted::multiSkip() This skip should be repeated ten times
+   Loc: [qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp(0)]
+SKIP   : tst_Blacklisted::multiSkip() This skip should be repeated ten times
+   Loc: [qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp(0)]
+SKIP   : tst_Blacklisted::multiSkip() This skip should be repeated ten times
+   Loc: [qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp(0)]
+SKIP   : tst_Blacklisted::multiSkip() This skip should be repeated ten times
+   Loc: [qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp(0)]
+SKIP   : tst_Blacklisted::multiSkip() This skip should be repeated ten times
+   Loc: [qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp(0)]
+SKIP   : tst_Blacklisted::multiSkip() This skip should be repeated ten times
+   Loc: [qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp(0)]
+SKIP   : tst_Blacklisted::multiSkip() This skip should be repeated ten times
+   Loc: [qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp(0)]
+SKIP   : tst_Blacklisted::multiSkip() But this test should only contribute one to the skip count
+   Loc: [qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp(0)]
+BFAIL  : tst_Blacklisted::multiFail() This failure message should be repeated ten times
+   Loc: [qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp(0)]
+BFAIL  : tst_Blacklisted::multiFail() This failure message should be repeated ten times
+   Loc: [qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp(0)]
+BFAIL  : tst_Blacklisted::multiFail() This failure message should be repeated ten times
+   Loc: [qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp(0)]
+BFAIL  : tst_Blacklisted::multiFail() This failure message should be repeated ten times
+   Loc: [qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp(0)]
+BFAIL  : tst_Blacklisted::multiFail() This failure message should be repeated ten times
+   Loc: [qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp(0)]
+BFAIL  : tst_Blacklisted::multiFail() This failure message should be repeated ten times
+   Loc: [qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp(0)]
+BFAIL  : tst_Blacklisted::multiFail() This failure message should be repeated ten times
+   Loc: [qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp(0)]
+BFAIL  : tst_Blacklisted::multiFail() This failure message should be repeated ten times
+   Loc: [qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp(0)]
+BFAIL  : tst_Blacklisted::multiFail() This failure message should be repeated ten times
+   Loc: [qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp(0)]
+BFAIL  : tst_Blacklisted::multiFail() This failure message should be repeated ten times
+   Loc: [qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp(0)]
+BFAIL  : tst_Blacklisted::multiFail() But this test should only contribute one to the blacklisted count
+   Loc: [qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp(0)]
 BXFAIL : tst_Blacklisted::xfailContinueSkip() This test should BXFAIL then SKIP
    Loc: [qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp(0)]
 SKIP   : tst_Blacklisted::xfailContinueSkip() This skip should be seen and counted
@@ -28,7 +72,7 @@ BXPASS : tst_Blacklisted::xpassContinueFail() 'true' returned TRUE unexpectedly.
    Loc: [qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp(0)]
 BFAIL  : tst_Blacklisted::xpassContinueFail() This fail should be seen and not counted (due to prior XPASS)
    Loc: [qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp(0)]
-QDEBUG : tst_Blacklisted::cleanupTestCase() Totals should add up to 11: 2 passed, 0 failed, 2 skipped, 7 blacklisted
+QDEBUG : tst_Blacklisted::cleanupTestCase() Totals should add up to 13: 2 passed, 0 failed, 3 skipped, 8 blacklisted
 PASS   : tst_Blacklisted::cleanupTestCase()
 Totals: 2 passed, 0 failed, 3 skipped, 8 blacklisted, 0ms
 ********* Finished testing of tst_Blacklisted *********
