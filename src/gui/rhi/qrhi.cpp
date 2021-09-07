@@ -3052,7 +3052,7 @@ void QRhiImplementation::updateLayoutDesc(QRhiShaderResourceBindings *srb)
         const QRhiShaderResourceBinding::Data *d = b.data();
         srb->m_layoutDescHash ^= uint(d->binding) ^ uint(d->stage) ^ uint(d->type)
             ^ uint(d->type == QRhiShaderResourceBinding::SampledTexture ? d->u.stex.count : 1);
-        d->serialize(layoutDescAppender);
+        layoutDescAppender = d->serialize(layoutDescAppender);
     }
 }
 

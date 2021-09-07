@@ -413,13 +413,14 @@ public:
         } u;
 
         template<typename Output>
-        void serialize(Output dst) const
+        Output serialize(Output dst) const
         {
             // must write out exactly LAYOUT_DESC_ENTRIES_PER_BINDING elements here
             *dst++ = quint32(binding);
             *dst++ = quint32(stage);
             *dst++ = quint32(type);
             *dst++ = quint32(type == QRhiShaderResourceBinding::SampledTexture ? u.stex.count : 1);
+            return dst;
         }
     };
 
@@ -434,7 +435,7 @@ public:
                                            Output dst)
     {
         while (first != last) {
-            first->data()->serialize(dst);
+            dst = first->data()->serialize(dst);
             ++first;
         }
     }
