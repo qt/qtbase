@@ -1183,13 +1183,24 @@ function(qt6_extract_metatypes target)
         COMMENT "Running moc --collect-json for target ${target}"
     )
 
+    # We can't rely on policy CMP0118 since user project controls it
+    set(scope_args)
+    if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.18")
+        set(scope_args TARGET_DIRECTORY ${target})
+    endif()
+    set_source_files_properties(${metatypes_file_gen} ${metatypes_file}  ${scope_args}
+        PROPERTIES GENERATED TRUE
+    )
+
     # We still need to add this file as a source of the target, otherwise the file
     # rule above is not triggered. INTERFACE_SOURCES do not properly register
     # as dependencies to build the current target.
     # TODO: Can we pass ${metatypes_file} instead of ${metatypes_file_gen} as a source?
     # TODO: Do we still need the _gen variant at all?
     target_sources(${target} PRIVATE ${metatypes_file_gen})
-    set_source_files_properties(${metatypes_file} PROPERTIES HEADER_FILE_ONLY TRUE)
+    set_source_files_properties(${metatypes_file} ${scope_args}
+        PROPERTIES HEADER_FILE_ONLY TRUE
+    )
 
     set_target_properties(${target} PROPERTIES
         INTERFACE_QT_MODULE_HAS_META_TYPES YES
@@ -1459,6 +1470,11 @@ END
             target_link_libraries(${target} PRIVATE $<TARGET_OBJECTS:${target}_rc>)
         endif()
 
+        set(scope_args)
+        if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.18")
+            set(scope_args TARGET_DIRECTORY ${end_target})
+        endif()
+
         while(outputs)
             list(POP_FRONT cfgs cfg)
             list(POP_FRONT outputs output)
@@ -1466,6 +1482,10 @@ END
             add_custom_command(OUTPUT "${output}"
                 DEPENDS "${input}"
                 COMMAND ${CMAKE_COMMAND} -E copy_if_different "${input}" "${output}"
+            )
+            # We can't rely on policy CMP0118 since user project controls it
+            set_source_files_properties(${output} ${scope_args}
+                PROPERTIES GENERATED TRUE
             )
             target_sources(${end_target} PRIVATE "$<$<CONFIG:${cfg}>:${output}>")
         endwhile()
@@ -1731,8 +1751,7 @@ function(_qt_internal_process_resource target resourceName)
         endif()
         return()
     endif()
-    set(generatedBaseName "${resourceName}")
-    set(generatedResourceFile "${CMAKE_CURRENT_BINARY_DIR}/.rcc/${generatedBaseName}.qrc")
+    set(generatedResourceFile "${CMAKE_CURRENT_BINARY_DIR}/.rcc/${resourceName}.qrc")
 
     # Generate .qrc file:
 
@@ -1799,7 +1818,7 @@ function(_qt_internal_process_resource target resourceName)
 
     # Set output file name for rcc command
     if(isBinary)
-        set(generatedOutfile "${CMAKE_CURRENT_BINARY_DIR}/${generatedBaseName}.rcc")
+        set(generatedOutfile "${CMAKE_CURRENT_BINARY_DIR}/${resourceName}.rcc")
         if(rcc_DESTINATION)
             # Add .rcc suffix if it's not specified by user
             get_filename_component(destinationRccExt "${rcc_DESTINATION}" LAST_EXT)
@@ -1828,12 +1847,29 @@ function(_qt_internal_process_resource target resourceName)
     set(output_targets "")
     if(isBinary)
         # Add generated .rcc target to 'all' set
-        add_custom_target(binary_resource_${generatedBaseName} ALL DEPENDS "${generatedOutfile}")
+        add_custom_target(binary_resource_${resourceName} ALL DEPENDS "${generatedOutfile}")
         if(rcc_OUTPUT_TARGETS)
             set(${rcc_OUTPUT_TARGETS} "" PARENT_SCOPE)
         endif()
     else()
-        set_property(SOURCE "${generatedOutfile}" PROPERTY SKIP_AUTOGEN ON)
+        # We can't rely on policy CMP0118 since user project controls it.
+        # We also want SKIP_AUTOGEN known in the target's scope, where we can.
+        set(scope_args)
+        if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.18")
+            set(scope_args TARGET_DIRECTORY ${target})
+        endif()
+        set_source_files_properties(${generatedOutfile} ${scope_args} PROPERTIES
+            SKIP_AUTOGEN TRUE
+            GENERATED TRUE
+        )
+        get_target_property(target_source_dir ${target} SOURCE_DIR)
+        if(NOT target_source_dir STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+            # We have to create a separate target in this scope that depends on
+            # the generated file, otherwise the original target won't have the
+            # required dependencies in place to ensure correct build order.
+            add_custom_target(${target}_${resourceName} DEPENDS ${generatedOutfile})
+            add_dependencies(${target} ${target}_${resourceName})
+        endif()
         set_property(TARGET ${target} APPEND PROPERTY _qt_generated_qrc_files "${generatedResourceFile}")
 
         __qt_propagate_generated_resource(${target} ${resourceName} "${generatedOutfile}" output_targets)
