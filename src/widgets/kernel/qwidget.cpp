@@ -1466,7 +1466,7 @@ QWidget::~QWidget()
 
     if (isWindow() && isVisible() && internalWinId()) {
         QT_TRY {
-            d->handleClose(QWidgetPrivate::CloseNoEvent);
+            d->close();
         } QT_CATCH(...) {
             // if we're out of memory, at least hide the window.
             QT_TRY {
@@ -8396,6 +8396,10 @@ bool QWidgetPrivate::handleClose(CloseMode mode)
     QPointer<QWidget> parentWidget = (q->parentWidget() && !QObjectPrivate::get(q->parentWidget())->wasDeleted) ? q->parentWidget() : nullptr;
 
     bool quitOnClose = q->testAttribute(Qt::WA_QuitOnClose);
+
+    if (data.in_destructor)
+        mode = CloseNoEvent;
+
     if (mode != CloseNoEvent) {
         QCloseEvent e;
         if (mode == CloseWithSpontaneousEvent)
