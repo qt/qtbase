@@ -123,5 +123,5 @@ QString DummyDataGenerator::randomStatusItem()
         case 1: return Theme::p()->pixmapPath() + "contact_status_offline.svg";
         case 2: return Theme::p()->pixmapPath() + "contact_status_idle.svg";
     }
-    return 0;
+    return {};
 }
