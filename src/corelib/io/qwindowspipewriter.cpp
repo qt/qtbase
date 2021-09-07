@@ -126,41 +126,38 @@ qint64 QWindowsPipeWriter::bytesToWrite() const
 /*!
     Writes a shallow copy of \a ba to the internal buffer.
  */
-bool QWindowsPipeWriter::write(const QByteArray &ba)
+void QWindowsPipeWriter::write(const QByteArray &ba)
 {
-    return writeImpl(ba);
+    writeImpl(ba);
 }
 
 /*!
     Writes data to the internal buffer.
  */
-bool QWindowsPipeWriter::write(const char *data, qint64 size)
+void QWindowsPipeWriter::write(const char *data, qint64 size)
 {
-    return writeImpl(data, size);
+    writeImpl(data, size);
 }
 
 template <typename... Args>
-inline bool QWindowsPipeWriter::writeImpl(Args... args)
+inline void QWindowsPipeWriter::writeImpl(Args... args)
 {
     QMutexLocker locker(&mutex);
 
     if (lastError != ERROR_SUCCESS)
-        return false;
+        return;
 
     writeBuffer.append(args...);
 
     if (writeSequenceStarted)
-        return true;
+        return;
 
     stopped = false;
 
     // If we don't have an assigned handle yet, defer writing until
     // setHandle() is called.
-    if (handle == INVALID_HANDLE_VALUE)
-        return true;
-
-    startAsyncWriteLocked(&locker);
-    return true;
+    if (handle != INVALID_HANDLE_VALUE)
+        startAsyncWriteLocked(&locker);
 }
 
 /*!

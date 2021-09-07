@@ -68,8 +68,8 @@ public:
     ~QWindowsPipeWriter();
 
     void setHandle(HANDLE hPipeWriteEnd);
-    bool write(const QByteArray &ba);
-    bool write(const char *data, qint64 size);
+    void write(const QByteArray &ba);
+    void write(const char *data, qint64 size);
     void stop();
     bool checkForWrite() { return consumePendingAndEmit(false); }
     qint64 bytesToWrite() const;
@@ -83,7 +83,7 @@ protected:
 
 private:
     template <typename... Args>
-    inline bool writeImpl(Args... args);
+    inline void writeImpl(Args... args);
 
     void startAsyncWriteLocked(QMutexLocker<QMutex> *locker);
     static void CALLBACK waitCallback(PTP_CALLBACK_INSTANCE instance, PVOID context,
