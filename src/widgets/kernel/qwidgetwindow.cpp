@@ -236,14 +236,6 @@ bool QWidgetWindow::event(QEvent *event)
     if (!m_widget)
         return QWindow::event(event);
 
-    if (m_widget->testAttribute(Qt::WA_DontShowOnScreen)) {
-        // \a event is uninteresting for QWidgetWindow, the event was probably
-        // generated before WA_DontShowOnScreen was set
-        if (!shouldBePropagatedToWidget(event))
-            return true;
-        return QCoreApplication::forwardEvent(m_widget, event);
-    }
-
     switch (event->type()) {
     case QEvent::Close: {
         // The widget might be deleted in the close event handler.
@@ -723,6 +715,9 @@ bool QWidgetWindow::updateSize()
     bool changed = false;
     if (m_widget->testAttribute(Qt::WA_OutsideWSRange))
         return changed;
+    if (m_widget->testAttribute(Qt::WA_DontShowOnScreen))
+        return changed;
+
     if (m_widget->data->crect.size() != geometry().size()) {
         changed = true;
         m_widget->data->crect.setSize(geometry().size());
@@ -797,6 +792,8 @@ void QWidgetWindow::updateNormalGeometry()
 void QWidgetWindow::handleMoveEvent(QMoveEvent *event)
 {
     if (m_widget->testAttribute(Qt::WA_OutsideWSRange))
+        return;
+    if (m_widget->testAttribute(Qt::WA_DontShowOnScreen))
         return;
 
     auto oldPosition = m_widget->data->crect.topLeft();
@@ -983,6 +980,9 @@ void QWidgetWindow::handleDropEvent(QDropEvent *event)
 
 void QWidgetWindow::handleExposeEvent(QExposeEvent *event)
 {
+    if (m_widget->testAttribute(Qt::WA_DontShowOnScreen))
+        return; // Ignore for widgets that fake exposure
+
     QWidgetPrivate *wPriv = m_widget->d_func();
     const bool exposed = isExposed();
 
