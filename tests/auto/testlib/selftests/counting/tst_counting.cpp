@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -217,10 +217,13 @@ void tst_Counting::testFailFail()
 
 void tst_Counting::init()
 {
-    if (strcmp(QTest::currentTestFunction(), "testFailInInit") == 0 && strcmp(QTest::currentDataTag(), "fail") == 0)
+    if (strcmp(QTest::currentTestFunction(), "testFailInInit") == 0
+        && strcmp(QTest::currentDataTag(), "fail") == 0) {
         QFAIL("Fail in init()");
-    else if (strcmp(QTest::currentTestFunction(), "testSkipInInit") == 0 && strcmp(QTest::currentDataTag(), "skip") == 0)
+    } else if (strcmp(QTest::currentTestFunction(), "testSkipInInit") == 0
+               && strcmp(QTest::currentDataTag(), "skip") == 0) {
         QSKIP("Skip in init()");
+    }
 }
 
 void tst_Counting::cleanup()

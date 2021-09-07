@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -47,7 +47,7 @@ void tst_SkipInit::initTestCase() const
  */
 void tst_SkipInit::aTestFunction() const
 {
-    qDebug() << "ERROR: This function is NOT supposed to be run.";
+    QFAIL("ERROR: This function is NOT supposed to be run.");
 }
 
 QTEST_APPLESS_MAIN(tst_SkipInit)

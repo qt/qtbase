@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -57,7 +57,7 @@ void tst_Skip::test_data()
 
 void tst_Skip::test()
 {
-    qDebug("this line should never be reached, since we skip in the _data function");
+    QFAIL("this line should never be reached, since we skip in the _data function");
 }
 
 void tst_Skip::emptytest_data()
@@ -67,7 +67,7 @@ void tst_Skip::emptytest_data()
 
 void tst_Skip::emptytest()
 {
-    qDebug("this line should never be reached, since we skip in the _data function");
+    QFAIL("this line should never be reached, since we skip in the _data function");
 }
 
 void tst_Skip::singleSkip_data()
