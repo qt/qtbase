@@ -198,6 +198,8 @@ function(__qt_internal_add_static_plugin_import_macro
     __qt_internal_propagate_object_library(
         "${QT_CMAKE_EXPORT_NAMESPACE}::${plugin_target}"
         "${plugin_init_target_namespaced}"
+        EXTRA_CONDITIONS
+            "$<NOT:$<BOOL:$<TARGET_PROPERTY:_qt_static_plugins_finalizer_mode>>>"
     )
 endfunction()
 
