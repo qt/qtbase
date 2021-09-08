@@ -412,6 +412,8 @@ QVariant QCocoaIntegration::styleHint(StyleHint hint) const
         return QCoreTextFontEngine::fontSmoothingGamma();
     case ShowShortcutsInContextMenus:
         return QVariant(false);
+    case ReplayMousePressOutsidePopup:
+        return QVariant(false);
     default: break;
     }
 
