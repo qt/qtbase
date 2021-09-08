@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -50,6 +50,7 @@
 #include "qiosmenu.h"
 #endif
 
+#include <QtCore/qmath.h>
 #include <QtGui/qpointingdevice.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qwindow_p.h>
@@ -388,10 +389,10 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
             // azimuth unit vector: +x to the right, +y going downwards
             CGVector azimuth = [cTouch azimuthUnitVectorInView: self];
             // azimuthAngle given in radians, zero when the stylus points towards +x axis; converted to degrees with 0 pointing straight up
-            qreal azimuthAngle = [cTouch azimuthAngleInView: self] * 180 / M_PI + 90;
+            qreal azimuthAngle = qRadiansToDegrees([cTouch azimuthAngleInView: self]) + 90;
             // altitudeAngle given in radians, pi / 2 is with the stylus perpendicular to the iPad, smaller values mean more tilted, but never negative.
             // Convert to degrees with zero being perpendicular.
-            qreal altitudeAngle = 90 - cTouch.altitudeAngle * 180 / M_PI;
+            qreal altitudeAngle = 90 - qRadiansToDegrees(cTouch.altitudeAngle);
             qCDebug(lcQpaTablet) << i << ":" << timeStamp << localViewPosition << pressure << state << "azimuth" << azimuth.dx << azimuth.dy
                      << "angle" << azimuthAngle << "altitude" << cTouch.altitudeAngle
                      << "xTilt" << qBound(-60.0, altitudeAngle * azimuth.dx, 60.0) << "yTilt" << qBound(-60.0, altitudeAngle * azimuth.dy, 60.0);
