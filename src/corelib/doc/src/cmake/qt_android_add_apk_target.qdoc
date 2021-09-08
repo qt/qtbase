@@ -1,0 +1,72 @@
+/****************************************************************************
+**
+** Copyright (C) 2020 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file. Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: https://www.gnu.org/licenses/fdl-1.3.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+\page qt_android_add_apk_target.html
+\ingroup cmake-macros-qtcore
+
+\title qt_android_add_apk_target
+\target qt6_android_add_apk_target
+
+\brief Defines a build target that runs androiddeployqt to produce an APK.
+
+\preliminarycmakecommand
+\cmakecommandandroidonly
+
+\section1 Synopsis
+
+\badcode
+qt_android_add_apk_target(target)
+\endcode
+
+\versionlessCMakeCommandsNote qt6_android_add_apk_target()
+
+\section1 Description
+
+The \c{<target>_make_apk} custom target created by this command takes an Android
+deployment settings file and generates an APK by running \c{androiddeployqt}.
+The location of the settings file is taken from the \c{target}'s
+\c{QT_ANDROID_DEPLOYMENT_SETTINGS_FILE} property. This file is typically created by
+\l{qt6_android_generate_deployment_settings}{qt_android_generate_deployment_settings()}.
+The \c{.apk} file will be generated in an \c{android-build} subdirectory below
+the CMake build directory of the \c{target}.
+
+The \c{<target>_make_apk} target will be automatically added as a dependency of
+the \c{apk} build target, which will be created if it doesn't already exist.
+This can be disabled by setting the \c{QT_NO_GLOBAL_APK_TARGET} variable to true.
+
+\sa {qt6_android_generate_deployment_settings}{qt_android_generate_deployment_settings()},
+    {qt6_finalize_target}{qt_finalize_target()}
+
+\section1 Example
+
+\snippet cmake-macros/examples.cmake qt_android_deploy_basic
+
+The above commands define the build targets \c{myapp_make_apk} and \c{apk},
+which can be used to generate just the \c{myapp} APK or all APKs in the project
+respectively.
+*/

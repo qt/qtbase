@@ -1,0 +1,103 @@
+/****************************************************************************
+**
+** Copyright (C) 2020 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file. Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: https://www.gnu.org/licenses/fdl-1.3.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+\page qt_android_generate_deployment_settings.html
+\ingroup cmake-macros-qtcore
+
+\title qt_android_generate_deployment_settings
+\target qt6_android_generate_deployment_settings
+
+\brief Generates the deployment settings file needed by androiddeployqt.
+
+\preliminarycmakecommand
+\cmakecommandandroidonly
+
+\section1 Synopsis
+
+\badcode
+qt_android_generate_deployment_settings(target)
+\endcode
+
+\versionlessCMakeCommandsNote qt6_android_generate_deployment_settings()
+
+\section1 Description
+
+The \c{androiddeployqt} tool expects a deployment settings file as input. This
+command reads CMake variables and properties of the \c{target} to generate such
+a file in the target's binary directory. Upon return, the full path to this file
+is available in the target's \c{QT_ANDROID_DEPLOYMENT_SETTINGS_FILE} property.
+
+\section2 CMake Variables
+
+A number of variables are used while generating the deployment settings file.
+Some are provided by Qt, others by CMake or the Android NDK.
+
+\list
+\li \l{cmake-variable-ANDROID_NDK_HOST_SYSTEM_NAME}{ANDROID_NDK_HOST_SYSTEM_NAME}
+\li \l{cmake-variable-ANDROID_SDK_ROOT}{ANDROID_SDK_ROOT}
+\li \c{CMAKE_ANDROID_ARCH_ABI}
+\li \c{CMAKE_ANDROID_NDK}
+\li \c{CMAKE_SYSROOT}
+\li \l{cmake-variable-QT_ANDROID_APPLICATION_ARGUMENTS}{QT_ANDROID_APPLICATION_ARGUMENTS}
+\li \l{cmake-variable-QT_HOST_PATH}{QT_HOST_PATH}
+\endlist
+
+\section2 Target Properties
+
+The properties below will be read from the specified \c{target}. Note that this
+command is called as part of target finalization (see
+\l{qt6_finalize_target}{qt_finalize_target()}). If you are using
+\l{qt6_add_executable}{qt_add_executable()} to create the target and you need to
+modify some of these target properties, you need to ensure that target
+finalization is deferred. See \l{qt6_add_executable}{qt_add_executable()} for
+how to accomplish this.
+
+\list
+\li \l{cmake-target-property-QT_ANDROID_DEPLOYMENT_DEPENDENCIES}{QT_ANDROID_DEPLOYMENT_DEPENDENCIES}
+\li \l{cmake-target-property-QT_ANDROID_EXTRA_LIBS}{QT_ANDROID_EXTRA_LIBS}
+\li \l{cmake-target-property-QT_ANDROID_EXTRA_PLUGINS}{QT_ANDROID_EXTRA_PLUGINS}
+\li \l{cmake-target-property-QT_ANDROID_MIN_SDK_VERSION}{QT_ANDROID_MIN_SDK_VERSION}
+\li \l{cmake-target-property-QT_ANDROID_PACKAGE_SOURCE_DIR}{QT_ANDROID_PACKAGE_SOURCE_DIR}
+\li \l{cmake-target-property-QT_ANDROID_TARGET_SDK_VERSION}{QT_ANDROID_TARGET_SDK_VERSION}
+\li \l{cmake-target-property-QT_ANDROID_VERSION_NAME}{QT_ANDROID_VERSION_NAME}
+\li \l{cmake-target-property-QT_ANDROID_VERSION_CODE}{QT_ANDROID_VERSION_CODE}
+\li \l{cmake-target-property-QT_QML_IMPORT_PATH}{QT_QML_IMPORT_PATH}
+\li \l{cmake-target-property-QT_QML_ROOT_PATH}{QT_QML_ROOT_PATH}
+\li \l{cmake-target-property-qt_no_entrypoint}{qt_no_entrypoint}
+\endlist
+
+Upon return, the \c{QT_ANDROID_DEPLOYMENT_SETTINGS_FILE} target property will
+contain the location of the generated deployment settings file.
+
+\sa {qt6_android_add_apk_target}{qt_android_add_apk_target()},
+    {qt6_finalize_target}{qt_finalize_target()}
+
+\section1 Example
+
+\snippet cmake-macros/examples.cmake qt_android_deploy_basic
+*/
