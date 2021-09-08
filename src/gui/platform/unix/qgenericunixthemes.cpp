@@ -859,7 +859,8 @@ QStringList QGenericUnixTheme::themeNames()
                              << "UNITY"
                              << "MATE"
                              << "XFCE"
-                             << "LXDE";
+                             << "LXDE"
+                             << "DEEPIN";
         const QList<QByteArray> desktopNames = desktopEnvironment.split(':');
         for (const QByteArray &desktopName : desktopNames) {
             if (desktopEnvironment == "KDE") {
