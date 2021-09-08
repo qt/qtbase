@@ -1,0 +1,119 @@
+/****************************************************************************
+**
+** Copyright (C) 2020 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file. Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: https://www.gnu.org/licenses/fdl-1.3.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+\page qt_add_executable.html
+\ingroup cmake-macros-qtcore
+
+\title qt_add_executable
+\target qt6_add_executable
+
+\brief Creates and finalizes an application target of a platform-specific type.
+
+\preliminarycmakecommand
+
+\section1 Synopsis
+
+\badcode
+qt_add_executable(target
+                  [WIN32] [MACOSX_BUNDLE]
+                  [MANUAL_FINALIZATION]
+                  sources...)
+\endcode
+
+\versionlessCMakeCommandsNote qt6_add_executable()
+
+\section1 Description
+
+This command performs the following tasks:
+
+\list
+\li Create a CMake target of the appropriate type for the target platform.
+\li Link the target to the \c{Qt::Core} library.
+\li Handle finalization of the CMake target.
+\endlist
+
+\section2 Target Creation
+
+On all platforms except Android, an executable target will be created.
+All arguments will be passed through to the standard CMake \c{add_executable()}
+command, except \c{MANUAL_FINALIZATION} (if present). On Android, a \c{MODULE}
+library will be created and any \c{WIN32} or \c{MACOSX_BUNDLE} options will be
+ignored. Some target properties will also be set for Android:
+
+\list
+\li The \c{SUFFIX} target property will be set to give the library file name an
+    architecture-specific suffix.
+\li Various \c{<lang>_VISIBILITY_PRESET} target properties will be set to
+    \c{default} to ensure that the \c{main()} function is visible in the
+    resultant binary.
+\endlist
+
+\section2 Linking Qt::Core
+
+Since all Qt applications need to link to the \c{Qt::Core} library, this is done
+for you as a convenience.
+
+\section2 Finalization
+
+After a target is created, further processing or \e{finalization} steps are
+commonly needed. The steps to perform depend on the platform and on various
+properties of the target. The finalization processing is implemented by the
+\l{qt6_finalize_target}{qt_finalize_target()} command.
+
+Finalization can occur either as part of this call or be deferred to sometime
+after this command returns (but it should still be in the same directory scope).
+When using CMake 3.19 or later, finalization is automatically deferred to the
+end of the current directory scope. This gives the caller an opportunity to
+modify properties of the created target before it is finalized. When using
+CMake versions earlier than 3.19, automatic deferral isn't supported. In that
+case, finalization is performed immediately before this command returns.
+
+Regardless of the CMake version, the \c{MANUAL_FINALIZATION} keyword can be given to
+indicate that you will explicitly call \l{qt6_finalize_target}{qt_finalize_target()}
+yourself instead at some later time. In general, \c MANUAL_FINALIZATION should
+not be needed unless the project has to support CMake 3.18 or earlier.
+
+\sa {qt6_finalize_target}{qt_finalize_target()}
+
+\section1 Examples
+
+In the following simple case, finalization is handled automatically. If using a
+CMake version earlier than 3.19, finalization will be performed immediately as
+part of the call. When using CMake 3.19 or later, finalization will occur at the
+end of the current directory scope.
+
+\snippet cmake-macros/examples.cmake qt_add_executable_simple
+
+The following example shows a scenario where finalization must be deferred.
+The \c OUTPUT_NAME target property affects deployment settings on Android, but
+those settings are written out as part of finalizing the target. In order to
+support using CMake versions earlier than 3.19, we take over responsibility
+for finalizing the target by adding the \c{MANUAL_FINALIZATION} keyword.
+
+\snippet cmake-macros/examples.cmake qt_add_executable_deferred
+*/
