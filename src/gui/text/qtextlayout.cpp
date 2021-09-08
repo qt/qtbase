@@ -1289,13 +1289,16 @@ void QTextLayout::drawCursor(QPainter *p, const QPointF &pos, int cursorPosition
 
     QFixed base = sl.base();
     QFixed descent = sl.descent;
+    QFixed cursorDescent = descent;
     bool rightToLeft = d->isRightToLeft();
     if (itm >= 0) {
         const QScriptItem &si = d->layoutData->items.at(itm);
         if (si.ascent >= 0)
             base = si.ascent;
-        if (si.descent >= 0)
+        if (si.descent == 0)
             descent = si.descent;
+        else if (si.descent > 0 && si.descent < descent)
+            cursorDescent = si.descent;
         rightToLeft = si.analysis.bidiLevel % 2;
     }
     qreal y = position.y() + (sl.y + sl.base() + sl.descent - base - descent).toReal();
@@ -1306,7 +1309,7 @@ void QTextLayout::drawCursor(QPainter *p, const QPointF &pos, int cursorPosition
     QPainter::CompositionMode origCompositionMode = p->compositionMode();
     if (p->paintEngine()->hasFeature(QPaintEngine::RasterOpModes))
         p->setCompositionMode(QPainter::RasterOp_NotDestination);
-    p->fillRect(QRectF(x, y, qreal(width), (base + descent).toReal()), p->pen().brush());
+    p->fillRect(QRectF(x, y, qreal(width), (base + cursorDescent).toReal()), p->pen().brush());
     p->setCompositionMode(origCompositionMode);
     if (toggleAntialiasing)
         p->setRenderHint(QPainter::Antialiasing, false);
