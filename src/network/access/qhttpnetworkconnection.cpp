@@ -32,6 +32,7 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
+// Note: Only used from auto tests, normal usage is via QHttp1Configuration
 const int QHttpNetworkConnectionPrivate::defaultHttpChannelCount = 6;
 
 // The pipeline length. So there will be 4 requests in flight.
@@ -69,7 +70,7 @@ QHttpNetworkConnectionPrivate::QHttpNetworkConnectionPrivate(quint16 connectionC
                                                              QHttpNetworkConnection::ConnectionType type)
 : state(RunningState), networkLayerState(Unknown),
   hostName(hostName), port(port), encrypt(encrypt), delayIpv4(true),
-  activeChannelCount(connectionCount), channelCount(connectionCount)
+  channelCount(connectionCount)
 #ifndef QT_NO_NETWORKPROXY
   , networkProxy(QNetworkProxy::NoProxy)
 #endif
@@ -77,6 +78,14 @@ QHttpNetworkConnectionPrivate::QHttpNetworkConnectionPrivate(quint16 connectionC
   , connectionType(type)
 {
     channels = new QHttpNetworkConnectionChannel[channelCount];
+
+    activeChannelCount = (type == QHttpNetworkConnection::ConnectionTypeHTTP2 ||
+                          type == QHttpNetworkConnection::ConnectionTypeHTTP2Direct)
+                       ? 1 : connectionCount;
+    // We allocate all 6 channels even if it's an HTTP/2-enabled
+    // connection: in case the protocol negotiation via NPN/ALPN fails,
+    // we will have normally working HTTP/1.1.
+    Q_ASSERT(channelCount >= activeChannelCount);
 }
 
 

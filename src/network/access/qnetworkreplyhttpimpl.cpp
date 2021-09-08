@@ -784,6 +784,7 @@ void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpReq
     QHttpThreadDelegate *delegate = new QHttpThreadDelegate;
     // Propagate Http/2 settings:
     delegate->http2Parameters = request.http2Configuration();
+    delegate->http1Parameters = request.http1Configuration();
 
     if (request.attribute(QNetworkRequest::ConnectionCacheExpiryTimeoutSecondsAttribute).isValid())
         delegate->connectionCacheExpiryTimeoutSeconds = request.attribute(QNetworkRequest::ConnectionCacheExpiryTimeoutSecondsAttribute).toInt();

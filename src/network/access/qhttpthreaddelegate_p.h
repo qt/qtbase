@@ -26,6 +26,7 @@
 #include <QNetworkReply>
 #include "qhttpnetworkrequest_p.h"
 #include "qhttpnetworkconnection_p.h"
+#include "qhttp1configuration.h"
 #include "qhttp2configuration.h"
 #include <QSharedPointer>
 #include <QScopedPointer>
@@ -82,6 +83,7 @@ public:
     qint64 removedContentLength;
     QNetworkReply::NetworkError incomingErrorCode;
     QString incomingErrorDetail;
+    QHttp1Configuration http1Parameters;
     QHttp2Configuration http2Parameters;
 
     bool isCompressed;

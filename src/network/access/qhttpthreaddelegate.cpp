@@ -145,9 +145,9 @@ class QNetworkAccessCachedHttpConnection: public QHttpNetworkConnection,
 {
     // Q_OBJECT
 public:
-    QNetworkAccessCachedHttpConnection(const QString &hostName, quint16 port, bool encrypt,
+    QNetworkAccessCachedHttpConnection(quint16 connectionCount, const QString &hostName, quint16 port, bool encrypt,
                                        QHttpNetworkConnection::ConnectionType connectionType)
-        : QHttpNetworkConnection(hostName, port, encrypt, connectionType)
+        : QHttpNetworkConnection(connectionCount, hostName, port, encrypt, /*parent=*/nullptr, connectionType)
     {
         setExpires(true);
         setShareable(true);
@@ -297,7 +297,7 @@ void QHttpThreadDelegate::startRequest()
     if (!httpConnection) {
         // no entry in cache; create an object
         // the http object is actually a QHttpNetworkConnection
-        httpConnection = new QNetworkAccessCachedHttpConnection(urlCopy.host(), urlCopy.port(), ssl,
+        httpConnection = new QNetworkAccessCachedHttpConnection(http1Parameters.numberOfConnectionsPerHost(), urlCopy.host(), urlCopy.port(), ssl,
                                                                 connectionType);
         if (connectionType == QHttpNetworkConnection::ConnectionTypeHTTP2
             || connectionType == QHttpNetworkConnection::ConnectionTypeHTTP2Direct) {

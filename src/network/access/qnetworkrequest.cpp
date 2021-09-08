@@ -7,6 +7,7 @@
 #include "qnetworkcookie.h"
 #include "qsslconfiguration.h"
 #if QT_CONFIG(http) || defined(Q_QDOC)
+#include "qhttp1configuration.h"
 #include "qhttp2configuration.h"
 #include "private/http2protocol_p.h"
 #endif
@@ -439,6 +440,7 @@ public:
 #endif
         peerVerifyName = other.peerVerifyName;
 #if QT_CONFIG(http)
+        h1Configuration = other.h1Configuration;
         h2Configuration = other.h2Configuration;
         decompressedSafetyCheckThreshold = other.decompressedSafetyCheckThreshold;
 #endif
@@ -454,6 +456,7 @@ public:
             maxRedirectsAllowed == other.maxRedirectsAllowed &&
             peerVerifyName == other.peerVerifyName
 #if QT_CONFIG(http)
+            && h1Configuration == other.h1Configuration
             && h2Configuration == other.h2Configuration
             && decompressedSafetyCheckThreshold == other.decompressedSafetyCheckThreshold
 #endif
@@ -470,6 +473,7 @@ public:
     int maxRedirectsAllowed;
     QString peerVerifyName;
 #if QT_CONFIG(http)
+    QHttp1Configuration h1Configuration;
     QHttp2Configuration h2Configuration;
     qint64 decompressedSafetyCheckThreshold = 10ll * 1024ll * 1024ll;
 #endif
@@ -854,6 +858,30 @@ void QNetworkRequest::setPeerVerifyName(const QString &peerName)
 }
 
 #if QT_CONFIG(http) || defined(Q_QDOC)
+/*!
+    \since 6.5
+
+    Returns the current parameters that QNetworkAccessManager is
+    using for the underlying HTTP/1 connection of this request.
+
+    \sa setHttp1Configuration
+*/
+QHttp1Configuration QNetworkRequest::http1Configuration() const
+{
+    return d->h1Configuration;
+}
+/*!
+    \since 6.5
+
+    Sets request's HTTP/1 parameters from \a configuration.
+
+    \sa http1Configuration, QNetworkAccessManager, QHttp1Configuration
+*/
+void QNetworkRequest::setHttp1Configuration(const QHttp1Configuration &configuration)
+{
+    d->h1Configuration = configuration;
+}
+
 /*!
     \since 5.14
 

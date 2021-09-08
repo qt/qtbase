@@ -121,6 +121,7 @@ qt_internal_extend_target(Network CONDITION QT_FEATURE_http
         access/http2/huffman.cpp access/http2/huffman_p.h
         access/qabstractprotocolhandler.cpp access/qabstractprotocolhandler_p.h
         access/qdecompresshelper.cpp access/qdecompresshelper_p.h
+        access/qhttp1configuration.cpp access/qhttp1configuration.h
         access/qhttp2configuration.cpp access/qhttp2configuration.h
         access/qhttp2protocolhandler.cpp access/qhttp2protocolhandler_p.h
         access/qhttpmultipart.cpp access/qhttpmultipart.h access/qhttpmultipart_p.h
