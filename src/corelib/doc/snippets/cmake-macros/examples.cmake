@@ -72,11 +72,11 @@ qt5_import_plugins(myapp
 
 #! [qt_import_plugins]
 add_executable(myapp main.cpp)
-target_link_libraries(myapp Qt5::Gui Qt5::Sql)
+target_link_libraries(myapp Qt::Gui Qt::Sql)
 qt_import_plugins(myapp
-    INCLUDE Qt5::QCocoaIntegrationPlugin
-    EXCLUDE Qt5::QMinimalIntegrationPlugin
-    INCLUDE_BY_TYPE imageformats Qt5::QGifPlugin Qt5::QJpegPlugin
+    INCLUDE Qt::QCocoaIntegrationPlugin
+    EXCLUDE Qt::QMinimalIntegrationPlugin
+    INCLUDE_BY_TYPE imageformats Qt::QGifPlugin Qt::QJpegPlugin
     EXCLUDE_BY_TYPE sqldrivers
 )
 #! [qt_import_plugins]
