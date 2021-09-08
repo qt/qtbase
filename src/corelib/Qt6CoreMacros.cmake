@@ -834,25 +834,6 @@ function(_qt_internal_disable_static_default_plugins target)
     set_target_properties(${target} PROPERTIES QT_DEFAULT_PLUGINS 0)
 endfunction()
 
-# This function is used to indicate which plug-ins are going to be
-# used by a given target.
-# This allows static linking to a correct set of plugins.
-# Options :
-#    NO_DEFAULT: disable linking against any plug-in by default for that target, e.g. no platform plug-in.
-#    INCLUDE <list of additional plug-ins to be linked against>
-#    EXCLUDE <list of plug-ins to be removed from the default set>
-#    INCLUDE_BY_TYPE <type> <included plugins>
-#    EXCLUDE_BY_TYPE <type to be excluded>
-#
-# Example :
-# qt_import_plugins(myapp
-#     INCLUDE Qt::QCocoaIntegrationPlugin
-#     EXCLUDE Qt::QMinimalIntegrationPlugin
-#     INCLUDE_BY_TYPE imageformats Qt::QGifPlugin Qt::QJpegPlugin
-#     EXCLUDE_BY_TYPE sqldrivers
-# )
-
-# TODO : support qml plug-ins.
 function(qt6_import_plugins target)
     cmake_parse_arguments(arg "NO_DEFAULT" "" "INCLUDE;EXCLUDE;INCLUDE_BY_TYPE;EXCLUDE_BY_TYPE" ${ARGN})
 

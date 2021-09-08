@@ -94,4 +94,6 @@ In the snippet above, the following occurs with the executable \c myapp:
     overridden to only include Qt6::QGifPlugin and Qt6::QJpegPlugin.
 \li All \c sqldrivers plugins are excluded from automatic importing.
 \endlist
+
+\sa{qt6_import_qml_plugins}{qt_import_qml_plugins()}
 */
