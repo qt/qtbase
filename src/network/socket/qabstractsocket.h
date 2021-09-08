@@ -44,6 +44,9 @@
 #if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0)
 #include <QtNetwork/qabstractsocket.h>
 #endif
+#ifdef Q_CLANG_QDOC
+#include <QtNetwork/qhostaddress.h>
+#endif
 #include <QtCore/qiodevice.h>
 #include <QtCore/qobject.h>
 #ifndef QT_NO_DEBUG_STREAM
@@ -166,7 +169,7 @@ public:
     bool bind(QHostAddress::SpecialAddress addr, quint16 port = 0, BindMode mode = DefaultForPlatform)
     { return bind(QHostAddress(addr), port, mode); }
     bool bind(quint16 port = 0, BindMode mode = DefaultForPlatform)
-    { retrurn bind(QHostAddress::Any, port, mode); }
+    { return bind(QHostAddress::Any, port, mode); }
 #else
     bool bind(quint16 port = 0, BindMode mode = DefaultForPlatform);
 #endif
