@@ -455,7 +455,6 @@ def process_qrc_file(
 
     # Small not very thorough check to see if this a shared qrc resource
     # pattern is mostly used by the tests.
-    is_parent_path = dir_name.startswith("..")
     if not os.path.isfile(filepath):
         raise RuntimeError(f"Invalid file path given to process_qrc_file: {filepath}")
 
