@@ -51,8 +51,12 @@
 // We mean it.
 //
 
+#include <QtTest/qttestglobal.h>
+
 #include <QtTest/private/qabstracttestlogger_p.h>
 #include <QtTest/private/qtestelementattribute_p.h>
+
+#include <vector>
 
 QT_BEGIN_NAMESPACE
 
@@ -88,7 +92,7 @@ class QJUnitTestLogger : public QAbstractTestLogger
             const char *failureType, const QString &failureDescription);
 
         QTestElement *currentTestSuite = nullptr;
-        QTestElement *listOfTestcases = nullptr;
+        std::vector<QTestElement*> listOfTestcases;
         QTestElement *currentTestCase = nullptr;
         QTestElement *systemOutputElement = nullptr;
         QTestElement *systemErrorElement = nullptr;

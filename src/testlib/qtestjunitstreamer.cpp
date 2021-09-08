@@ -95,7 +95,7 @@ void QTestJUnitStreamer::formatEnd(const QTestElement *element, QTestCharBuffer 
     if (!element || !formatted )
         return;
 
-    if (!element->childElements()) {
+    if (element->childElements().empty()) {
         formatted->data()[0] = '\0';
         return;
     }
@@ -135,7 +135,7 @@ void QTestJUnitStreamer::formatAfterAttributes(const QTestElement *element, QTes
         return;
     }
 
-    if (!element->childElements())
+    if (element->childElements().empty())
         QTest::qt_asprintf(formatted, "/>\n");
     else
         QTest::qt_asprintf(formatted, ">\n");
@@ -145,54 +145,39 @@ void QTestJUnitStreamer::output(QTestElement *element) const
 {
     QTEST_ASSERT(element);
 
-    outputString("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n");
-    outputElements(element);
-}
+    if (!element->parentElement())
+        outputString("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n");
 
-void QTestJUnitStreamer::outputElements(QTestElement *element, bool) const
-{
     QTestCharBuffer buf;
-    bool hasChildren;
 
-    // Elements are in reverse order of occurrence, so
-    // start from the end and work our way backwards.
-    while (element && element->nextElement())
-        element = element->nextElement();
+    formatStart(element, &buf);
+    outputString(buf.data());
 
-    while (element) {
-        hasChildren = element->childElements();
+    outputElementAttributes(element, element->attributes());
 
-        formatStart(element, &buf);
-        outputString(buf.data());
+    formatAfterAttributes(element, &buf);
+    outputString(buf.data());
 
-        outputElementAttributes(element, element->attributes());
+    if (!element->childElements().empty())
+        outputElements(element->childElements());
 
-        formatAfterAttributes(element, &buf);
-        outputString(buf.data());
-
-        if (hasChildren)
-            outputElements(element->childElements(), true);
-
-        formatEnd(element, &buf);
-        outputString(buf.data());
-
-        element = element->previousElement();
-    }
+    formatEnd(element, &buf);
+    outputString(buf.data());
 }
 
-void QTestJUnitStreamer::outputElementAttributes(const QTestElement* element, QTestElementAttribute *attribute) const
+void QTestJUnitStreamer::outputElements(const std::vector<QTestElement*> &elements) const
+{
+    for (auto *element : elements)
+        output(element);
+}
+
+void QTestJUnitStreamer::outputElementAttributes(const QTestElement* element, const std::vector<QTestElementAttribute*> &attributes) const
 {
     QTestCharBuffer buf;
 
-    // Attributes are in reverse order of occurrence, so
-    // start from the end and work our way backwards.
-    while (attribute && attribute->nextElement())
-        attribute = attribute->nextElement();
-
-    while (attribute) {
+    for (auto *attribute : attributes) {
         formatAttributes(element, attribute, &buf);
         outputString(buf.data());
-        attribute = attribute->previousElement();
     }
 }
 

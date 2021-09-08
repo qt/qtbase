@@ -39,7 +39,6 @@ qt_internal_add_module(Test
         qtestblacklist.cpp qtestblacklist_p.h
         qtestcase.cpp qtestcase.h
         qtestcoreelement_p.h
-        qtestcorelist_p.h
         qtestdata.cpp qtestdata.h
         qtestelement.cpp qtestelement_p.h
         qtestelementattribute.cpp qtestelementattribute_p.h

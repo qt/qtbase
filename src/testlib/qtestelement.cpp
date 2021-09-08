@@ -48,16 +48,17 @@ QTestElement::QTestElement(int type)
 
 QTestElement::~QTestElement()
 {
-    delete listOfChildren;
+    for (auto *child : listOfChildren)
+        delete child;
 }
 
-bool QTestElement::addLogElement(QTestElement *element)
+bool QTestElement::addChild(QTestElement *element)
 {
     if (!element)
         return false;
 
     if (element->elementType() != QTest::LET_Undefined) {
-        element->addToList(&listOfChildren);
+        listOfChildren.push_back(element);
         element->setParent(this);
         return true;
     }
@@ -65,7 +66,7 @@ bool QTestElement::addLogElement(QTestElement *element)
     return false;
 }
 
-QTestElement *QTestElement::childElements() const
+const std::vector<QTestElement*> &QTestElement::childElements() const
 {
     return listOfChildren;
 }

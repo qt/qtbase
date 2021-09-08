@@ -72,8 +72,8 @@ class QTestJUnitStreamer
         void formatAfterAttributes(const QTestElement *element, QTestCharBuffer *formatted) const;
         void formatAttributes(const QTestElement *element, const QTestElementAttribute *attribute, QTestCharBuffer *formatted) const;
         void output(QTestElement *element) const;
-        void outputElements(QTestElement *element, bool isChildElement = false) const;
-        void outputElementAttributes(const QTestElement *element, QTestElementAttribute *attribute) const;
+        void outputElements(const std::vector<QTestElement*> &) const;
+        void outputElementAttributes(const QTestElement *element, const std::vector<QTestElementAttribute*> &attributes) const;
 
         void outputString(const char *msg) const;
 
