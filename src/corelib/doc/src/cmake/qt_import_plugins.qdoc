@@ -41,7 +41,9 @@ qt_import_plugins(target
                   [INCLUDE plugin ...]
                   [EXCLUDE plugin ...]
                   [INCLUDE_BY_TYPE plugin_type plugin ...]
-                  [EXCLUDE_BY_TYPE plugin_type])
+                  [EXCLUDE_BY_TYPE plugin_type]
+                  [NO_DEFAULT]
+)
 \endcode
 
 \versionlessCMakeCommandsNote qt6_import_plugins()
@@ -59,6 +61,8 @@ can be used more than once.
        import for a certain plugin type.
 \li \c EXCLUDE_BY_TYPE -- can be used to specify a plugin type to exclude;
        then no plugins of that type are imported.
+\li \c NO_DEFAULT -- prevent the default plugins from being included
+       automatically (for example, the default platform plugin).
 \endlist
 
 Qt provides plugin types such as \c imageformats, \c platforms,
