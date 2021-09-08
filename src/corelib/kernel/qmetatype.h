@@ -1935,10 +1935,9 @@ public:
 #if defined (Q_CC_CLANG)
         if (name.find("anonymous ") != std::string_view::npos)
             return normalizeType(begin, end);
-#else
+#endif
         if (name.find("unnamed ") != std::string_view::npos)
             return normalizeType(begin, end);
-#endif
         while (begin < end) {
             if (*begin == ' ') {
                 if (last == ',' || last == '>' || last == '<' || last == '*' || last == '&') {
