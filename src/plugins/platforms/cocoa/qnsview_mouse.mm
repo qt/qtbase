@@ -39,6 +39,36 @@
 
 // This file is included from qnsview.mm, and only used to organize the code
 
+static const QPointingDevice *pointingDeviceFor(qint64 deviceID)
+{
+    // macOS will in many cases not report a deviceID (0 value).
+    // We can't pass this on directly, as the QInputDevicePrivate
+    // constructor will treat this as a request to assign a new Id.
+    // Instead we use the default Id of the primary pointing device.
+    static const int kDefaultPrimaryPointingDeviceId = 1;
+    if (!deviceID)
+        deviceID = kDefaultPrimaryPointingDeviceId;
+
+    if (const auto *device = QPointingDevicePrivate::pointingDeviceById(deviceID))
+        return device; // All good, already have the device registered
+
+    const auto *primaryDevice = QPointingDevice::primaryPointingDevice();
+    if (primaryDevice->systemId() == kDefaultPrimaryPointingDeviceId) {
+        // Adopt existing primary device instead of creating a new one
+        QPointingDevicePrivate::get(const_cast<QPointingDevice *>(primaryDevice))->systemId = deviceID;
+        qCDebug(lcInputDevices) << "primaryPointingDevice is now" << primaryDevice;
+        return primaryDevice;
+    } else {
+        // Register a new device. Name and capabilities may need updating later.
+        const auto *device = new QPointingDevice(QLatin1String("mouse"), deviceID,
+            QInputDevice::DeviceType::Mouse, QPointingDevice::PointerType::Generic,
+            QInputDevice::Capability::Scroll | QInputDevice::Capability::Position,
+            1, 3, QString(), QPointingDeviceUniqueId(), QCocoaIntegration::instance());
+        QWindowSystemInterface::registerInputDevice(device);
+        return device;
+    }
+}
+
 /*
     The reason for using this helper is to ensure that QNSView doesn't implement
     the NSResponder callbacks for mouseEntered, mouseExited, and mouseMoved.
@@ -218,36 +248,6 @@
     return false;
 }
 @end
-
-static const QPointingDevice *pointingDeviceFor(qint64 deviceID)
-{
-    // macOS will in many cases not report a deviceID (0 value).
-    // We can't pass this on directly, as the QInputDevicePrivate
-    // constructor will treat this as a request to assign a new Id.
-    // Instead we use the default Id of the primary pointing device.
-    static const int kDefaultPrimaryPointingDeviceId = 1;
-    if (!deviceID)
-        deviceID = kDefaultPrimaryPointingDeviceId;
-
-    if (const auto *device = QPointingDevicePrivate::pointingDeviceById(deviceID))
-        return device; // All good, already have the device registered
-
-    const auto *primaryDevice = QPointingDevice::primaryPointingDevice();
-    if (primaryDevice->systemId() == kDefaultPrimaryPointingDeviceId) {
-        // Adopt existing primary device instead of creating a new one
-        QPointingDevicePrivate::get(const_cast<QPointingDevice *>(primaryDevice))->systemId = deviceID;
-        qCDebug(lcInputDevices) << "primaryPointingDevice is now" << primaryDevice;
-        return primaryDevice;
-    } else {
-        // Register a new device. Name and capabilities may need updating later.
-        const auto *device = new QPointingDevice(QLatin1String("mouse"), deviceID,
-            QInputDevice::DeviceType::Mouse, QPointingDevice::PointerType::Generic,
-            QInputDevice::Capability::Scroll | QInputDevice::Capability::Position,
-            1, 3, QString(), QPointingDeviceUniqueId(), QCocoaIntegration::instance());
-        QWindowSystemInterface::registerInputDevice(device);
-        return device;
-    }
-}
 
 @implementation QNSView (Mouse)
 
