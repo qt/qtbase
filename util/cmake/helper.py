@@ -148,7 +148,10 @@ _qt_library_map = [
         extra=["COMPONENTS", "EglFSDeviceIntegrationPrivate"],
     ),
     LibraryMapping(
-        "eglfs_kms_support", "Qt6", "Qt::EglFsKmsSupportPrivate", extra=["COMPONENTS", "EglFsKmsSupportPrivate"]
+        "eglfs_kms_support",
+        "Qt6",
+        "Qt::EglFsKmsSupportPrivate",
+        extra=["COMPONENTS", "EglFsKmsSupportPrivate"],
     ),
     LibraryMapping(
         "eglfs_kms_gbm_support",
@@ -170,8 +173,12 @@ _qt_library_map = [
         "Qt::EventDispatcherSupport",
         extra=["COMPONENTS", "EventDispatcherSupport"],
     ),
-    LibraryMapping("fbconvenience", "Qt6", "Qt::FbSupportPrivate", extra=["COMPONENTS", "FbSupportPrivate"]),
-    LibraryMapping("fb_support", "Qt6", "Qt::FbSupportPrivate", extra=["COMPONENTS", "FbSupportPrivate"]),
+    LibraryMapping(
+        "fbconvenience", "Qt6", "Qt::FbSupportPrivate", extra=["COMPONENTS", "FbSupportPrivate"]
+    ),
+    LibraryMapping(
+        "fb_support", "Qt6", "Qt::FbSupportPrivate", extra=["COMPONENTS", "FbSupportPrivate"]
+    ),
     LibraryMapping(
         "fontdatabase_support",
         "Qt6",
@@ -195,9 +202,14 @@ _qt_library_map = [
         "Qt::HunspellInputMethodPrivate",
         extra=["COMPONENTS", "HunspellInputMethodPrivate"],
     ),
-    LibraryMapping("input", "Qt6", "Qt::InputSupportPrivate", extra=["COMPONENTS", "InputSupportPrivate"]),
     LibraryMapping(
-        "input_support", "Qt6", "Qt::InputSupportPrivate", extra=["COMPONENTS", "InputSupportPrivate"]
+        "input", "Qt6", "Qt::InputSupportPrivate", extra=["COMPONENTS", "InputSupportPrivate"]
+    ),
+    LibraryMapping(
+        "input_support",
+        "Qt6",
+        "Qt::InputSupportPrivate",
+        extra=["COMPONENTS", "InputSupportPrivate"],
     ),
     LibraryMapping(
         "installer-lib", "Qt6", "Qt::AppManInstaller", extra=["COMPONENTS", "AppManInstaller"]
@@ -206,8 +218,12 @@ _qt_library_map = [
     LibraryMapping("ivicore", "Qt6", "Qt::IviCore", extra=["COMPONENTS", "IviCore"]),
     LibraryMapping("ivimedia", "Qt6", "Qt::IviMedia", extra=["COMPONENTS", "IviMedia"]),
     LibraryMapping("knx", "Qt6", "Qt::Knx", extra=["COMPONENTS", "Knx"]),
-    LibraryMapping("kmsconvenience", "Qt6", "Qt::KmsSupportPrivate", extra=["COMPONENTS", "KmsSupportPrivate"]),
-    LibraryMapping("kms_support", "Qt6", "Qt::KmsSupportPrivate", extra=["COMPONENTS", "KmsSupportPrivate"]),
+    LibraryMapping(
+        "kmsconvenience", "Qt6", "Qt::KmsSupportPrivate", extra=["COMPONENTS", "KmsSupportPrivate"]
+    ),
+    LibraryMapping(
+        "kms_support", "Qt6", "Qt::KmsSupportPrivate", extra=["COMPONENTS", "KmsSupportPrivate"]
+    ),
     LibraryMapping(
         "launcher-lib", "Qt6", "Qt::AppManLauncher", extra=["COMPONENTS", "AppManLauncher"]
     ),
@@ -251,10 +267,16 @@ _qt_library_map = [
         "package-lib", "Qt6", "Qt::AppManPackage", extra=["COMPONENTS", "AppManPackage"]
     ),
     LibraryMapping(
-        "packetprotocol", "Qt6", "Qt::PacketProtocolPrivate", extra=["COMPONENTS", "PacketProtocolPrivate"]
+        "packetprotocol",
+        "Qt6",
+        "Qt::PacketProtocolPrivate",
+        extra=["COMPONENTS", "PacketProtocolPrivate"],
     ),
     LibraryMapping(
-        "particles", "Qt6", "Qt::QuickParticlesPrivate", extra=["COMPONENTS", "QuickParticlesPrivate"]
+        "particles",
+        "Qt6",
+        "Qt::QuickParticlesPrivate",
+        extra=["COMPONENTS", "QuickParticlesPrivate"],
     ),
     LibraryMapping(
         "plugin-interfaces",
@@ -268,9 +290,15 @@ _qt_library_map = [
     ),
     LibraryMapping("printsupport", "Qt6", "Qt::PrintSupport", extra=["COMPONENTS", "PrintSupport"]),
     LibraryMapping("purchasing", "Qt6", "Qt::Purchasing", extra=["COMPONENTS", "Purchasing"]),
-    LibraryMapping("qmldebug", "Qt6", "Qt::QmlDebugPrivate", extra=["COMPONENTS", "QmlDebugPrivate"]),
-    LibraryMapping("qmldevtools", "Qt6", "Qt::QmlDevToolsPrivate", extra=["COMPONENTS", "QmlDevToolsPrivate"]),
-    LibraryMapping("qmlcompiler", "Qt6", "Qt::QmlCompilerPrivate", extra=["COMPONENTS", "QmlCompilerPrivate"]),
+    LibraryMapping(
+        "qmldebug", "Qt6", "Qt::QmlDebugPrivate", extra=["COMPONENTS", "QmlDebugPrivate"]
+    ),
+    LibraryMapping(
+        "qmldevtools", "Qt6", "Qt::QmlDevToolsPrivate", extra=["COMPONENTS", "QmlDevToolsPrivate"]
+    ),
+    LibraryMapping(
+        "qmlcompiler", "Qt6", "Qt::QmlCompilerPrivate", extra=["COMPONENTS", "QmlCompilerPrivate"]
+    ),
     LibraryMapping("qml", "Qt6", "Qt::Qml", extra=["COMPONENTS", "Qml"]),
     LibraryMapping("qmldom", "Qt6", "Qt::QmlDomPrivate", extra=["COMPONENTS", "QmlDomPrivate"]),
     LibraryMapping("qmlmodels", "Qt6", "Qt::QmlModels", extra=["COMPONENTS", "QmlModels"]),
@@ -309,7 +337,9 @@ _qt_library_map = [
         extra=["COMPONENTS", "QuickControls2Impl"],
     ),
     LibraryMapping("quick", "Qt6", "Qt::Quick", extra=["COMPONENTS", "Quick"]),
-    LibraryMapping("quickshapes", "Qt6", "Qt::QuickShapesPrivate", extra=["COMPONENTS", "QuickShapesPrivate"]),
+    LibraryMapping(
+        "quickshapes", "Qt6", "Qt::QuickShapesPrivate", extra=["COMPONENTS", "QuickShapesPrivate"]
+    ),
     LibraryMapping(
         "quicktemplates2", "Qt6", "Qt::QuickTemplates2", extra=["COMPONENTS", "QuickTemplates2"]
     ),
@@ -364,7 +394,9 @@ _qt_library_map = [
     LibraryMapping("window-lib", "Qt6", "Qt::AppManWindow", extra=["COMPONENTS", "AppManWindow"]),
     LibraryMapping("winextras", "Qt6", "Qt::WinExtras", extra=["COMPONENTS", "WinExtras"]),
     LibraryMapping("x11extras", "Qt6", "Qt::X11Extras", extra=["COMPONENTS", "X11Extras"]),
-    LibraryMapping("xcb_qpa_lib", "Qt6", "Qt::XcbQpaPrivate", extra=["COMPONENTS", "XcbQpaPrivate"]),
+    LibraryMapping(
+        "xcb_qpa_lib", "Qt6", "Qt::XcbQpaPrivate", extra=["COMPONENTS", "XcbQpaPrivate"]
+    ),
     LibraryMapping(
         "xkbcommon_support", "Qt6", "Qt::XkbCommonSupport", extra=["COMPONENTS", "XkbCommonSupport"]
     ),
@@ -374,7 +406,10 @@ _qt_library_map = [
         "qmlworkerscript", "Qt6", "Qt::QmlWorkerScript", extra=["COMPONENTS", "QmlWorkerScript"]
     ),
     LibraryMapping(
-        "quickparticles", "Qt6", "Qt::QuickParticlesPrivate", extra=["COMPONENTS", "QuickParticlesPrivate"]
+        "quickparticles",
+        "Qt6",
+        "Qt::QuickParticlesPrivate",
+        extra=["COMPONENTS", "QuickParticlesPrivate"],
     ),
     LibraryMapping(
         "linuxofono_support",
@@ -402,7 +437,9 @@ _qt_library_map = [
 _library_map = [
     # 3rd party:
     LibraryMapping("atspi", "ATSPI2", "PkgConfig::ATSPI2"),
-    LibraryMapping("backtrace", "WrapBacktrace", "WrapBacktrace::WrapBacktrace", emit_if="config.unix"),
+    LibraryMapping(
+        "backtrace", "WrapBacktrace", "WrapBacktrace::WrapBacktrace", emit_if="config.unix"
+    ),
     LibraryMapping("bluez", "BlueZ", "PkgConfig::BlueZ"),
     LibraryMapping("brotli", "WrapBrotli", "WrapBrotli::WrapBrotliDec"),
     LibraryMapping("corewlan", None, None),
@@ -496,7 +533,9 @@ _library_map = [
     LibraryMapping("sqlite2", None, None),  # No more sqlite2 support in Qt6!
     LibraryMapping("sqlite3", "SQLite3", "SQLite::SQLite3"),
     LibraryMapping("sqlite", "SQLite3", "SQLite::SQLite3"),
-    LibraryMapping("taglib", "WrapTagLib", "WrapTagLib::WrapTagLib", is_bundled_with_qt=True), # used in qtivi
+    LibraryMapping(
+        "taglib", "WrapTagLib", "WrapTagLib::WrapTagLib", is_bundled_with_qt=True
+    ),  # used in qtivi
     LibraryMapping("tslib", "Tslib", "PkgConfig::Tslib"),
     LibraryMapping("udev", "Libudev", "PkgConfig::Libudev"),
     LibraryMapping("udev", "Libudev", "PkgConfig::Libudev"),  # see also libudev!
@@ -681,7 +720,7 @@ def find_library_info_for_target(targetName: str) -> typing.Optional[LibraryMapp
 
 # For a given qmake library (e.g. 'openssl_headers'), check whether this is a fake library used
 # for the /nolink annotation, and return the actual annotated qmake library ('openssl/nolink').
-def find_annotated_qmake_lib_name(lib : str) -> str:
+def find_annotated_qmake_lib_name(lib: str) -> str:
     for entry in _library_map:
         if entry.no_link_so_name == lib:
             return entry.soName + "/nolink"

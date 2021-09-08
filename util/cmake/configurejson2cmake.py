@@ -611,7 +611,7 @@ def write_compile_test(
         head = detail.get("head")
         if isinstance(head, list):
             head = "\n".join(head)
-        return head + '\n' if head else ''
+        return head + "\n" if head else ""
 
     head = ""
     if inherit_details:
@@ -646,7 +646,7 @@ def write_compile_test(
         tail = detail.get("tail")
         if isinstance(tail, list):
             tail = "\n".join(tail)
-        return tail + '\n' if tail else ''
+        return tail + "\n" if tail else ""
 
     tail = ""
     if inherit_details:
@@ -655,8 +655,8 @@ def write_compile_test(
 
     sourceCode += tail
 
-    if sourceCode: # blank line before main
-        sourceCode += '\n'
+    if sourceCode:  # blank line before main
+        sourceCode += "\n"
     sourceCode += "int main(void)\n"
     sourceCode += "{\n"
     sourceCode += "    /* BEGIN TEST: */\n"
@@ -665,7 +665,7 @@ def write_compile_test(
         main = detail.get("main")
         if isinstance(main, list):
             main = "\n".join(main)
-        return main + '\n' if main else ''
+        return main + "\n" if main else ""
 
     main = ""
     if inherit_details:
@@ -943,7 +943,11 @@ endif()""",
         "qreal": {
             "condition": 'DEFINED QT_COORD_TYPE AND NOT QT_COORD_TYPE STREQUAL "double"',
             "output": [
-                {"type": "define", "name": "QT_COORD_TYPE", "value": "${QT_COORD_TYPE}",},
+                {
+                    "type": "define",
+                    "name": "QT_COORD_TYPE",
+                    "value": "${QT_COORD_TYPE}",
+                },
                 {
                     "type": "define",
                     "name": "QT_COORD_TYPE_STRING",
@@ -951,7 +955,9 @@ endif()""",
                 },
             ],
         },
-        "reduce_exports": {"condition": "NOT MSVC",},
+        "reduce_exports": {
+            "condition": "NOT MSVC",
+        },
         "release": None,
         "release_tools": None,
         "rpath": {
@@ -1524,6 +1530,7 @@ class special_cased_file:
             self.sc_handler.handle_special_cases()
         os.replace(self.gen_file_path, self.file_path)
 
+
 def processJson(path, ctx, data, skip_special_case_preservation=False):
     ctx["project_dir"] = path
     ctx["module"] = data.get("module", "global")
@@ -1571,7 +1578,7 @@ def main():
         quit(1)
 
     directory = sys.argv[1]
-    skip_special_case_preservation = '-s' in sys.argv[2:]
+    skip_special_case_preservation = "-s" in sys.argv[2:]
 
     print(f"Processing: {directory}.")
 

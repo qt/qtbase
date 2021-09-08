@@ -72,8 +72,8 @@ def _simplify_expressions(expr, op, matches, replacement):
 
 
 def _simplify_flavors_in_condition(base: str, flavors, expr):
-    """ Simplify conditions based on the knowledge of which flavors
-        belong to which OS. """
+    """Simplify conditions based on the knowledge of which flavors
+    belong to which OS."""
     base_expr = simplify_logic(base)
     false_expr = simplify_logic("false")
     for flavor in flavors:
@@ -100,8 +100,8 @@ def _simplify_os_families(expr, family_members, other_family_members):
 
 
 def _recursive_simplify(expr):
-    """ Simplify the expression as much as possible based on
-        domain knowledge. """
+    """Simplify the expression as much as possible based on
+    domain knowledge."""
     input_expr = expr
 
     # Simplify even further, based on domain knowledge:
