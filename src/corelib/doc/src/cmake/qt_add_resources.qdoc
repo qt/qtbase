@@ -1,0 +1,113 @@
+/****************************************************************************
+**
+** Copyright (C) 2020 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file. Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: https://www.gnu.org/licenses/fdl-1.3.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+\page qt_add_resources.html
+\ingroup cmake-macros-qtcore
+
+\title qt_add_resources
+\target qt6_add_resources
+
+\brief Compiles binary resources into source code.
+
+\section1 Synopsis
+
+\badcode
+qt_add_resources(<VAR> file1.qrc [file2.qrc ...]
+                  [OPTIONS ...])
+\endcode
+
+\versionlessCMakeCommandsNote qt6_add_resources()
+
+Since 6.0:
+
+\badcode
+qt_add_resources(<TARGET> <RESOURCE_NAME>
+                  [PREFIX <PATH>]
+                  [LANG <LANGUAGE>]
+                  [BASE <PATH>]
+                  [FILES ...] [OPTIONS ...])
+\endcode
+
+\versionlessCMakeCommandsNote qt6_add_resources()
+
+\section1 Description
+
+To add resources, you can pass either a variable name or a target as the first
+argument of the command.
+
+When passing a variable name as first argument, \c qt_add_resources creates
+source code from Qt resource files using the \l{Resource Compiler (rcc)}. Paths
+to the generated source files are added to \c{<VAR>}.
+
+When passing a target as first argument, the function creates a resource with
+the name \c{RESOURCE_NAME}, containing the specified \c{FILES}. The resource is
+automatically linked into \c{TARGET}.
+
+For embedding bigger resources, see \l qt_add_big_resources.
+
+See \l{The Qt Resource System} for a general description of Qt resources.
+
+\section1 Arguments of the target-based variant
+
+\c PREFIX specifies a path prefix under which all files of this resource are
+accessible from C++ code. This corresponds to the XML attribute \c prefix of the
+\c .qrc file format. If \c PREFIX is not given, the target property
+\l{cmake-target-property-QT_RESOURCE_PREFIX}{QT_RESOURCE_PREFIX} is used.
+
+\c LANG specifies the locale of this resource. This corresponds to the XML
+attribute \c lang of the \c .qrc file format.
+
+\c BASE is a path prefix that denotes the root point of the file's alias. For
+example, if \c BASE is \c{"assets"} and \c FILES is
+\c{"assets/images/logo.png"}, then the alias of that file is
+\c{"images/logo.png"}.
+
+Alias settings for files need to be set via the \c QT_RESOURCE_ALIAS source file
+property.
+
+\section1 Arguments of both variants
+
+You can set additional \c{OPTIONS} that should be added to the \c{rcc} calls.
+You can find possible options in the \l{rcc}{rcc documentation}.
+
+\section1 Examples
+
+Variable variant, using a .qrc file:
+\snippet cmake-macros/examples.cmake qt_add_resources
+
+Target variant, using immediate resources:
+\snippet cmake-macros/examples.cmake qt_add_resources_target
+
+\section1 Caveats
+
+When adding multiple resources, \c{RESOURCE_NAME} must be unique across all
+resources linked into the final target.
+
+This especially affects static builds. There, the same resource name in
+different static libraries conflict in the consuming target.
+*/
