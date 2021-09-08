@@ -133,14 +133,14 @@ QStringList QNetworkAccessManagerPrivate::backendSupportedSchemes() const
     \since 6.0
     \internal
 
-    //![semi-private-notice]
+//! [semi-private-notice]
     The class is considered semi-private and as such requires linking
     to "NetworkPrivate" to access the header. Furthermore it means
     the class is not under the same binary compatibility restrictions
     as the rest of Qt. While we still try to avoid breakage it may
     still occur. The class is primarily meant to be used by plugins
     which would be recompiled every time Qt is updated.
-    //![semi-private-notice]
+//! [semi-private-notice]
 
     This class acts as the primary interface to the plugin and must
     be derived from. It deals with both querying supported schemes
@@ -177,7 +177,7 @@ QStringList QNetworkAccessManagerPrivate::backendSupportedSchemes() const
     \since 6.0
     \internal
 
-    \snippet qnetworkaccessbackend.cpp semi-private-notice
+    \include access/qnetworkaccessbackend.cpp semi-private-notice
 
     This class can be derived from to add support for further schemes
     in QNetworkAccessManager.
