@@ -832,6 +832,7 @@ public:
     inline qreal height() const
     { return doubleProperty(ImageHeight); }
 
+    // TODO Qt7: remove default value; setQuality() with no value reads strange.
     inline void setQuality(int quality = 100);
     inline int quality() const
     { return intProperty(ImageQuality); }
