@@ -51,21 +51,23 @@
 // We mean it.
 //
 
-#include <QtTest/private/qtestcorelist_p.h>
+#include <QtTest/qttestglobal.h>
 #include <QtTest/private/qtestelementattribute_p.h>
+
+#include <vector>
 
 QT_BEGIN_NAMESPACE
 
 
 template <class ElementType>
-class QTestCoreElement: public QTestCoreList<ElementType>
+class QTestCoreElement
 {
     public:
         QTestCoreElement( int type = -1 );
         virtual ~QTestCoreElement();
 
         void addAttribute(const QTest::AttributeIndex index, const char *value);
-        QTestElementAttribute *attributes() const;
+        const std::vector<QTestElementAttribute*> &attributes() const;
         const char *attributeValue(QTest::AttributeIndex index) const;
         const char *attributeName(QTest::AttributeIndex index) const;
         const QTestElementAttribute *attribute(QTest::AttributeIndex index) const;
@@ -74,7 +76,7 @@ class QTestCoreElement: public QTestCoreList<ElementType>
         QTest::LogElementType elementType() const;
 
     private:
-        QTestElementAttribute *listOfAttributes = nullptr;
+        std::vector<QTestElementAttribute*> listOfAttributes;
         QTest::LogElementType type;
 };
 
@@ -87,7 +89,8 @@ QTestCoreElement<ElementType>::QTestCoreElement(int t)
 template<class ElementType>
 QTestCoreElement<ElementType>::~QTestCoreElement()
 {
-    delete listOfAttributes;
+    for (auto *attribute : listOfAttributes)
+        delete attribute;
 }
 
 template <class ElementType>
@@ -98,11 +101,11 @@ void QTestCoreElement<ElementType>::addAttribute(const QTest::AttributeIndex att
 
     QTestElementAttribute *testAttribute = new QTestElementAttribute;
     testAttribute->setPair(attributeIndex, value);
-    testAttribute->addToList(&listOfAttributes);
+    listOfAttributes.push_back(testAttribute);
 }
 
 template <class ElementType>
-QTestElementAttribute *QTestCoreElement<ElementType>::attributes() const
+const std::vector<QTestElementAttribute*> &QTestCoreElement<ElementType>::attributes() const
 {
     return listOfAttributes;
 }
@@ -159,12 +162,9 @@ QTest::LogElementType QTestCoreElement<ElementType>::elementType() const
 template <class ElementType>
 const QTestElementAttribute *QTestCoreElement<ElementType>::attribute(QTest::AttributeIndex index) const
 {
-    QTestElementAttribute *iterator = listOfAttributes;
-    while (iterator) {
-        if (iterator->index() == index)
-            return iterator;
-
-        iterator = iterator->nextElement();
+    for (auto *attribute : listOfAttributes) {
+        if (attribute->index() == index)
+            return attribute;
     }
 
     return nullptr;

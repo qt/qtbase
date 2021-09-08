@@ -51,26 +51,27 @@
 // We mean it.
 //
 
+#include <QtTest/qttestglobal.h>
 #include <QtTest/private/qtestcoreelement_p.h>
 
 QT_BEGIN_NAMESPACE
 
 
-class QTestElement: public QTestCoreElement<QTestElement>
+class QTestElement : public QTestCoreElement<QTestElement>
 {
     public:
         QTestElement(int type = -1);
         ~QTestElement();
 
-        bool addLogElement(QTestElement *element);
-        QTestElement *childElements() const;
+        bool addChild(QTestElement *element);
+        const std::vector<QTestElement*> &childElements() const;
 
         const QTestElement *parentElement() const;
         void setParent(const QTestElement *p);
 
     private:
-        QTestElement *listOfChildren = nullptr;
-        const QTestElement * parent = nullptr;
+        std::vector<QTestElement*> listOfChildren;
+        const QTestElement *parent = nullptr;
 
 };
 

@@ -51,7 +51,7 @@
 // We mean it.
 //
 
-#include <QtTest/private/qtestcorelist_p.h>
+#include <QtTest/qttestglobal.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -92,7 +92,7 @@ namespace QTest {
     };
 }
 
-class QTestElementAttribute: public QTestCoreList<QTestElementAttribute>
+class QTestElementAttribute
 {
     public:
         QTestElementAttribute();

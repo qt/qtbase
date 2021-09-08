@@ -105,19 +105,19 @@ void QJUnitTestLogger::startLogging()
     property = new QTestElement(QTest::LET_Property);
     property->addAttribute(QTest::AI_Name, "QTestVersion");
     property->addAttribute(QTest::AI_PropertyValue, QTEST_VERSION_STR);
-    properties->addLogElement(property);
+    properties->addChild(property);
 
     property = new QTestElement(QTest::LET_Property);
     property->addAttribute(QTest::AI_Name, "QtVersion");
     property->addAttribute(QTest::AI_PropertyValue, qVersion());
-    properties->addLogElement(property);
+    properties->addChild(property);
 
     property = new QTestElement(QTest::LET_Property);
     property->addAttribute(QTest::AI_Name, "QtBuild");
     property->addAttribute(QTest::AI_PropertyValue, QLibraryInfo::build());
-    properties->addLogElement(property);
+    properties->addChild(property);
 
-    currentTestSuite->addLogElement(properties);
+    currentTestSuite->addChild(properties);
 
     elapsedTestcaseTime.start();
 }
@@ -141,14 +141,9 @@ void QJUnitTestLogger::stopLogging()
     currentTestSuite->addAttribute(QTest::AI_Time,
         toSecondsFormat(QTestLog::msecsTotalTime()).constData());
 
-    currentTestSuite->addLogElement(listOfTestcases);
-
-    // For correct indenting, make sure every testcase knows its parent
-    QTestElement *testcase = listOfTestcases;
-    while (testcase) {
-        testcase->setParent(currentTestSuite);
-        testcase = testcase->nextElement();
-    }
+    for (auto *testCase : listOfTestcases)
+        currentTestSuite->addChild(testCase);
+    listOfTestcases.clear();
 
     logFormatter->output(currentTestSuite);
 
@@ -168,7 +163,7 @@ void QJUnitTestLogger::enterTestCase(const char *name)
     currentTestCase = new QTestElement(QTest::LET_TestCase);
     currentTestCase->addAttribute(QTest::AI_Name, name);
     currentTestCase->addAttribute(QTest::AI_Classname, QTestResult::currentTestObjectName());
-    currentTestCase->addToList(&listOfTestcases);
+    listOfTestcases.push_back(currentTestCase);
 
     Q_ASSERT(!systemOutputElement && !systemErrorElement);
     systemOutputElement = new QTestElement(QTest::LET_SystemOutput);
@@ -212,13 +207,13 @@ void QJUnitTestLogger::leaveTestCase()
     currentTestCase->addAttribute(QTest::AI_Time,
         toSecondsFormat(elapsedTestCaseSeconds()).constData());
 
-    if (systemOutputElement->childElements())
-        currentTestCase->addLogElement(systemOutputElement);
+    if (!systemOutputElement->childElements().empty())
+        currentTestCase->addChild(systemOutputElement);
     else
         delete systemOutputElement;
 
-    if (systemErrorElement->childElements())
-        currentTestCase->addLogElement(systemErrorElement);
+    if (!systemErrorElement->childElements().empty())
+        currentTestCase->addChild(systemErrorElement);
     else
         delete systemErrorElement;
 
@@ -252,8 +247,7 @@ void QJUnitTestLogger::addFailure(QTest::LogElementType elementType,
     if (elementType == QTest::LET_Failure) {
         // Make sure we're not adding failure when we already have error,
         // or adding additional failures when we already have a failure.
-        for (auto *childElement = currentTestCase->childElements();
-                   childElement; childElement = childElement->nextElement()) {
+        for (auto *childElement : currentTestCase->childElements()) {
             if (childElement->elementType() == QTest::LET_Error ||
                 childElement->elementType() == QTest::LET_Failure)
                 return;
@@ -272,10 +266,10 @@ void QJUnitTestLogger::addFailure(QTest::LogElementType elementType,
     if (!details.isEmpty()) {
         auto textNode = new QTestElement(QTest::LET_Text);
         textNode->addAttribute(QTest::AI_Value, details.toUtf8().constData());
-        failureElement->addLogElement(textNode);
+        failureElement->addChild(textNode);
     }
 
-    currentTestCase->addLogElement(failureElement);
+    currentTestCase->addChild(failureElement);
 
     switch (elementType) {
     case QTest::LET_Failure: ++failureCounter; break;
@@ -292,7 +286,7 @@ void QJUnitTestLogger::addMessage(MessageTypes type, const QString &message, con
     if (type == QAbstractTestLogger::Skip) {
         auto skippedElement = new QTestElement(QTest::LET_Skipped);
         skippedElement->addAttribute(QTest::AI_Message, message.toUtf8().constData());
-        currentTestCase->addLogElement(skippedElement);
+        currentTestCase->addChild(skippedElement);
         return;
     } else if (type == QAbstractTestLogger::QFatal) {
         addFailure(QTest::LET_Error, "qfatal", message);
@@ -316,7 +310,7 @@ void QJUnitTestLogger::addMessage(MessageTypes type, const QString &message, con
 
     auto textNode = new QTestElement(QTest::LET_Text);
     textNode->addAttribute(QTest::AI_Value, message.toUtf8().constData());
-    systemLogElement->addLogElement(textNode);
+    systemLogElement->addChild(textNode);
 }
 
 QT_END_NAMESPACE
