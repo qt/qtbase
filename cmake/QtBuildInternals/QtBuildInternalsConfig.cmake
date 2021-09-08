@@ -370,6 +370,23 @@ endmacro()
 
 macro(qt_build_repo_begin)
     qt_build_internals_set_up_private_api()
+
+    # Prevent installation in non-prefix builds.
+    # We need to associate targets with export names, and that is only possible to do with the
+    # install(TARGETS) command. But in a non-prefix build, we don't want to install anything.
+    # To make sure that developers don't accidentally run make install, add bail out code to
+    # cmake_install.cmake.
+    if(NOT QT_WILL_INSTALL)
+        # In a top-level build, print a message only in qtbase, which is the first repository.
+        if(NOT QT_SUPERBUILD OR (PROJECT_NAME STREQUAL "QtBase"))
+            install(CODE [[message(FATAL_ERROR
+                    "Qt was configured as non-prefix build. "
+                    "Installation is not supported for this arrangement.")]])
+        endif()
+
+        install(CODE [[return()]])
+    endif()
+
     qt_enable_cmake_languages()
 
     # Add global docs targets that will work both for per-repo builds, and super builds.

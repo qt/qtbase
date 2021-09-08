@@ -225,9 +225,6 @@ include(QtCompilerOptimization)
 ## Compiler flags:
 include(QtCompilerFlags)
 
-## Set up non-prefix build:
-qt_set_up_nonprefix_build()
-
 qt_set_language_standards()
 
 option(QT_USE_CCACHE "Enable the use of ccache")

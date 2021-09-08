@@ -88,44 +88,6 @@ function(qt_copy_or_install)
     qt_non_prefix_copy(COPY ${argv_copy} ${copy_arguments})
 endfunction()
 
-# Hacky way to remove the install target in non-prefix builds.
-# We need to associate targets with export names, and that is only possible to do with the
-# install(TARGETS) command. But in a non-prefix build, we don't want to install anything.
-# To make sure that developers don't accidentally run make install, replace the generated
-# cmake_install.cmake file with an empty file. To do this, always create a new temporary file
-# at CMake configuration step, and use it as an input to a custom command that replaces the
-# cmake_install.cmake file with an empty one. This means we will always replace the file on
-# every reconfiguration, but not when doing null builds.
-function(qt_remove_install_target)
-    # On superbuilds we only do this for qtbase - it will correctly remove the
-    # cmake_install.cmake at the root of the repository.
-    if(QT_SUPERBUILD)
-      if(NOT (PROJECT_NAME STREQUAL "QtBase"))
-        return()
-      endif()
-    endif()
-
-    set(file_in "${CMAKE_BINARY_DIR}/.remove_cmake_install_in.txt")
-    set(file_generated "${CMAKE_BINARY_DIR}/.remove_cmake_install_generated.txt")
-    set(cmake_install_file "${CMAKE_BINARY_DIR}/cmake_install.cmake")
-    file(WRITE ${file_in} "")
-
-    add_custom_command(OUTPUT ${file_generated}
-        COMMAND ${CMAKE_COMMAND} -E copy ${file_in} ${file_generated}
-        COMMAND ${CMAKE_COMMAND} -E remove ${cmake_install_file}
-        COMMAND ${CMAKE_COMMAND} -E touch ${cmake_install_file}
-        COMMENT "Removing cmake_install.cmake"
-        MAIN_DEPENDENCY ${file_in})
-
-    add_custom_target(remove_cmake_install ALL DEPENDS ${file_generated})
-endfunction()
-
-function(qt_set_up_nonprefix_build)
-    if(NOT QT_WILL_INSTALL)
-        qt_remove_install_target()
-    endif()
-endfunction()
-
 # Create a versioned hard-link for the given target.
 # E.g. "bin/qmake6" -> "bin/qmake".
 # If no hard link can be created, make a copy instead.
