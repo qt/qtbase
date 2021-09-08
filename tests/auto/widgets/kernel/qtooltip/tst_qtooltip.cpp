@@ -43,8 +43,8 @@ class tst_QToolTip : public QObject
 private slots:
     void init();
     void cleanup();
-    void task183679_data();
-    void task183679();
+    void keyEvent_data();
+    void keyEvent();
     void whatsThis();
     void setPalette();
     void qtbug64550_stylesheet();
@@ -62,11 +62,11 @@ void tst_QToolTip::cleanup()
     qApp->setStyleSheet(QString());
 }
 
-class Widget_task183679 : public QWidget
+class Widget : public QWidget
 {
     Q_OBJECT
 public:
-    Widget_task183679(QWidget *parent = nullptr) : QWidget(parent) {}
+    Widget(QWidget *parent = nullptr) : QWidget(parent) {}
 
     void showDelayedToolTip(int msecs)
     {
@@ -78,25 +78,32 @@ public:
 private slots:
     void showToolTip()
     {
-        QToolTip::showText(mapToGlobal(QPoint(0, 0)), Widget_task183679::toolTipText(), this);
+        QToolTip::showText(mapToGlobal(QPoint(0, 0)), Widget::toolTipText(), this);
     }
 };
 
 Q_DECLARE_METATYPE(Qt::Key)
 
-void tst_QToolTip::task183679_data()
+void tst_QToolTip::keyEvent_data()
 {
     QTest::addColumn<Qt::Key>("key");
     QTest::addColumn<bool>("visible");
 
-    QTest::newRow("non-modifier") << Qt::Key_A << true;
+    QTest::newRow("non-modifier") << Qt::Key_A <<
+#if defined(Q_OS_MACOS)
+        // macOS natively hides tooltips on non-modifier key events,
+        // so QTipLabel::eventFilter does the same. Match that here.
+        false;
+#else
+        true;
+#endif
     QTest::newRow("Shift") << Qt::Key_Shift << true;
     QTest::newRow("Control") << Qt::Key_Control << true;
     QTest::newRow("Alt") << Qt::Key_Alt << true;
     QTest::newRow("Meta") << Qt::Key_Meta << true;
 }
 
-void tst_QToolTip::task183679()
+void tst_QToolTip::keyEvent()
 {
     if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
         QSKIP("Wayland: This fails. Figure out why.");
@@ -104,11 +111,7 @@ void tst_QToolTip::task183679()
     QFETCH(Qt::Key, key);
     QFETCH(bool, visible);
 
-#ifdef Q_OS_MAC
-    QSKIP("This test fails in the CI system, QTBUG-30040");
-#endif
-
-    Widget_task183679 widget;
+    Widget widget;
     widget.move(QGuiApplication::primaryScreen()->availableGeometry().topLeft() + QPoint(50, 50));
     // Ensure cursor is not over tooltip, which causes it to hide
 #ifndef QT_NO_CURSOR
@@ -208,7 +211,7 @@ void tst_QToolTip::qtbug64550_stylesheet()
     if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
         QSKIP("Wayland: This fails. Figure out why.");
 
-    Widget_task183679 widget;
+    Widget widget;
     widget.setStyleSheet(QStringLiteral("* { font-size: 48pt; }\n"));
     widget.show();
     QApplication::setActiveWindow(&widget);
@@ -220,7 +223,7 @@ void tst_QToolTip::qtbug64550_stylesheet()
     QVERIFY(toolTip);
     QTRY_VERIFY(toolTip->isVisible());
 
-    const QRect boundingRect = QFontMetrics(widget.font()).boundingRect(Widget_task183679::toolTipText());
+    const QRect boundingRect = QFontMetrics(widget.font()).boundingRect(Widget::toolTipText());
     const QSize toolTipSize = toolTip->size();
     QVERIFY2(toolTipSize.width() >= boundingRect.width()
              && toolTipSize.height() >= boundingRect.height(),
