@@ -1,5 +1,4 @@
 # The whole file is written manually.
-# special case skip regeneration
 
 include(../../../../src/testlib/selfcover.cmake)
 
@@ -14,7 +13,6 @@ qt_internal_add_test(tst_selftests
         catch.cpp
     PUBLIC_LIBRARIES
         Qt::TestPrivate
-    # special case begin
     # These lines need to be commented out as they need to be enabled
     # COMPILE_OPTIONS
     #   conditionally
@@ -24,7 +22,6 @@ qt_internal_add_test(tst_selftests
     #   --cs-mcdc
     # LINK_OPTIONS
     #   "$$COVERAGE_OPTIONS"
-    # special case end
 )
 
 file(GLOB resource_glob_0 RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" "expected_*")
@@ -41,26 +38,15 @@ qt_internal_add_resource(tst_selftests "qmake_expected_files"
     PREFIX
         "/"
     BASE
-        "${CMAKE_CURRENT_SOURCE_DIR}" # special case
+        "${CMAKE_CURRENT_SOURCE_DIR}"
     FILES
         ${qmake_expected_files_resource_files}
 )
-
-
-## Scopes:
-#####################################################################
-
-#### Keys ignored in scope 5:.:.:test.pro:NOT ANDROID AND for(file,SUBPROGRAMS):
-# TEST_HELPER_INSTALLS = "../$${file}/$${file}"
-
-#### Keys ignored in scope 7:.:..:../selftests.pri:TARGET Qt::Gui:
-# SUBPROGRAMS = "keyboard" "mouse"
 
 qt_internal_apply_testlib_coverage_options(tst_selftests)
 
 # ------------- Sub tests -------------
 
-# special case begin
 set(subprograms
     assert
     badxml
@@ -131,6 +117,9 @@ add_definitions(-DQT_MESSAGELOGCONTEXT)
 
 foreach(subprogram IN LISTS subprograms)
     add_subdirectory(${subprogram})
+    if(QT_FEATURE_process)
+        add_dependencies(tst_selftests ${subprogram})
+    endif()
 endforeach()
 
 list(JOIN subprograms " " subprograms)
@@ -138,16 +127,3 @@ qt_internal_extend_target(tst_selftests
     DEFINES
         $<$<COMPILE_LANGUAGE:CXX>:SUBPROGRAMS=${subprograms}>
 )
-# special case end
-
-#### Keys ignored in scope 1:.:.:test.pro:<TRUE>:
-# CONFIG = "testcase"
-# expected_files.base = "$$PWD/.."
-# expected_files.files = "$$files$$PWD/../expected_*"
-
-## Scopes:
-#####################################################################
-
-#### Keys ignored in scope 5:.:.:test.pro:NOT ANDROID AND for(file,SUBPROGRAMS):
-# TEST_HELPER_INSTALLS = "../$${file}/$${file}"
-# special case end

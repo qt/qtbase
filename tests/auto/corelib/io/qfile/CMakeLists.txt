@@ -1,18 +1,14 @@
-# Generated from qfile.pro.
-
 #####################################################################
 ## tst_qfile Test:
 #####################################################################
 
 # Collect test data
-# list(APPEND test_data "BLACKLIST") # special case remove
 list(APPEND test_data "dosfile.txt")
 list(APPEND test_data "noendofline.txt")
 list(APPEND test_data "testfile.txt")
 list(APPEND test_data "testlog.txt")
 list(APPEND test_data "two.dots.file")
 list(APPEND test_data "tst_qfile.cpp")
-# list(APPEND test_data "Makefile") # special case remove
 list(APPEND test_data "forCopying.txt")
 list(APPEND test_data "forRenaming.txt")
 list(APPEND test_data "resources/file1.ext1")
@@ -83,3 +79,6 @@ qt_internal_extend_target(tst_qfile CONDITION WIN32
         uuid
 )
 add_subdirectory(stdinprocess)
+if(QT_FEATURE_process)
+    add_dependencies(tst_qfile stdinprocess_helper)
+endif()

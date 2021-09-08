@@ -1,5 +1,3 @@
-# Generated from test.pro.
-
 #####################################################################
 ## tst_qtextstream Test:
 #####################################################################
@@ -39,9 +37,12 @@ qt_internal_add_resource(tst_qtextstream "qtextstream"
 
 
 ## Scopes:
-#####################################################################
 
 qt_internal_extend_target(tst_qtextstream CONDITION builtin_testdata
     DEFINES
         BUILTIN_TESTDATA
 )
+
+if(QT_FEATURE_process)
+  add_dependencies(tst_qtextstream stdinProcess readAllStdinProcess readLineStdinProcess)
+endif()

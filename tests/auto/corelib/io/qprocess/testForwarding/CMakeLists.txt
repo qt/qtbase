@@ -1,5 +1,3 @@
-# Generated from testForwarding.pro.
-
 #####################################################################
 ## testForwarding Binary:
 #####################################################################
@@ -9,3 +7,5 @@ qt_internal_add_executable(testForwarding
     SOURCES
         main.cpp
 )
+
+add_dependencies(testForwarding testForwardingHelper)

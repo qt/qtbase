@@ -1,5 +1,3 @@
-# Generated from qsystemsemaphore.pro.
-
 #####################################################################
 ## tst_qsystemsemaphore Test:
 #####################################################################
@@ -9,6 +7,7 @@ qt_internal_add_test(tst_qsystemsemaphore
         tst_qsystemsemaphore.cpp
 )
 
-## Scopes:
-#####################################################################
 add_subdirectory(acquirerelease)
+if(QT_FEATURE_process)
+    add_dependencies(tst_qsystemsemaphore acquirerelease_helper)
+endif()
