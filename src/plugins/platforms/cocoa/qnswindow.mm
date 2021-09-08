@@ -45,6 +45,7 @@
 #include "qcocoawindow.h"
 #include "qcocoahelpers.h"
 #include "qcocoaeventdispatcher.h"
+#include "qcocoaintegration.h"
 
 #include <qpa/qwindowsysteminterface.h>
 #include <qoperatingsystemversion.h>
@@ -370,6 +371,17 @@ OSStatus CGSClearWindowTags(const CGSConnectionID, const CGSWindowID, int *, int
     if (!m_platformWindow)
         return; // Platform window went away while processing event
 
+    // Cocoa will not deliver mouse events to a window that is modally blocked (by Cocoa,
+    // not Qt). However, an active popup is expected to grab any mouse event within the
+    // application, so we need to handle those explicitly and trust Qt's isWindowBlocked
+    // implementation to eat events that shouldn't be delivered anyway.
+    if (isMouseEvent(theEvent) && QCocoaIntegration::instance()->activePopupWindow()
+        && QGuiApplicationPrivate::instance()->isWindowBlocked(m_platformWindow->window(), nullptr)) {
+        qCDebug(lcQpaWindow) << "Mouse event over modally blocked window" << m_platformWindow->window()
+                                << "while popup" << QCocoaIntegration::instance()->activePopupWindow()
+                                << "is open - redirecting";
+        [qnsview_cast(m_platformWindow->view()) handleMouseEvent:theEvent];
+    }
     if (m_platformWindow->frameStrutEventsEnabled() && mouseEventInFrameStrut)
         [qnsview_cast(m_platformWindow->view()) handleFrameStrutMouseEvent:theEvent];
 }

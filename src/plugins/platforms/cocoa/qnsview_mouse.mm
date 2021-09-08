@@ -446,16 +446,6 @@ static const QPointingDevice *pointingDeviceFor(qint64 deviceID)
         return [super mouseDown:theEvent];
     m_sendUpAsRightButton = false;
 
-    // Handle any active poup windows; clicking outisde them should close them
-    // all. Don't do anything or clicks inside one of the menus, let Cocoa
-    // handle that case. Note that in practice many windows of the Qt::Popup type
-    // will actually close themselves in this case using logic implemented in
-    // that particular poup type (for example context menus). However, Qt expects
-    // that plain popup QWindows will also be closed, so we implement the logic
-    // here as well.
-    if ([self closePopups:theEvent])
-        return;
-
     QPointF qtWindowPoint;
     QPointF qtScreenPoint;
     [self convertFromScreen:[self screenMousePoint:theEvent] toWindowPoint:&qtWindowPoint andScreenPoint:&qtScreenPoint];
