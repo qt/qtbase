@@ -234,6 +234,8 @@ QWindowContainer::QWindowContainer(QWindow *embeddedWindow, QWidget *parent, Qt:
     d->fakeParent.setObjectName(windowName + QLatin1String("ContainerFakeParent"));
 
     d->window->setParent(&d->fakeParent);
+    d->window->setFlag(Qt::SubWindow);
+
     setAcceptDrops(true);
 
     connect(QGuiApplication::instance(), SIGNAL(focusWindowChanged(QWindow*)), this, SLOT(focusWindowChanged(QWindow*)));
