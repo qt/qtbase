@@ -3194,7 +3194,9 @@ def write_main_part(
         cm_fh.write(f"{spaces(indent)}if (NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)\n")
         cm_fh.write(f"{spaces(indent+1)}cmake_minimum_required(VERSION 3.16)\n")
         cm_fh.write(f"{spaces(indent+1)}project({name} LANGUAGES C CXX ASM)\n")
-        cm_fh.write(f"{spaces(indent+1)}find_package(Qt6BuildInternals COMPONENTS STANDALONE_TEST)\n")
+        cm_fh.write(
+            f"{spaces(indent+1)}find_package(Qt6BuildInternals COMPONENTS STANDALONE_TEST)\n"
+        )
         cm_fh.write(f"{spaces(indent)}endif()\n\n")
 
         test_data = scope.expand("TESTDATA")
@@ -3445,7 +3447,7 @@ def write_module(cm_fh: IO[str], scope: Scope, *, indent: int = 0) -> str:
         extra.append("STATIC")
     if "internal_module" in scope.get("CONFIG"):
         is_public_module = False
-        cmake_target_name += "Private" # Assume all internal modules have the 'Private' suffix
+        cmake_target_name += "Private"  # Assume all internal modules have the 'Private' suffix
         extra.append("INTERNAL_MODULE")
     if "no_module_headers" in scope.get("CONFIG"):
         extra.append("NO_MODULE_HEADERS")
@@ -3865,9 +3867,9 @@ def write_example(
         property_win32, property_mac_bundle = get_win32_and_mac_bundle_properties(scope)
 
         if property_win32:
-            add_target += ' ' + "WIN32"
+            add_target += " " + "WIN32"
         if property_mac_bundle:
-            add_target += ' ' + "MACOSX_BUNDLE"
+            add_target += " " + "MACOSX_BUNDLE"
 
     write_all_source_file_lists(cm_fh, scope, add_target, indent=0)
     cm_fh.write(")\n")
