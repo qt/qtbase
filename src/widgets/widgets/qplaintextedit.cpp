@@ -793,7 +793,7 @@ void QPlainTextEditPrivate::init(const QString &txt)
     QObject::connect(control, SIGNAL(selectionChanged()), q, SIGNAL(selectionChanged()));
     QObject::connect(control, SIGNAL(cursorPositionChanged()), q, SLOT(_q_cursorPositionChanged()));
 
-    QObject::connect(control, SIGNAL(textChanged()), q, SLOT(_q_textChanged()));
+    QObject::connect(control, SIGNAL(textChanged()), q, SLOT(_q_updatePlaceholderVisibility()));
     QObject::connect(control, SIGNAL(textChanged()), q, SLOT(updateMicroFocus()));
 
     // set a null page size initially to avoid any relayouting until the textedit
@@ -822,7 +822,7 @@ void QPlainTextEditPrivate::init(const QString &txt)
 #endif
 }
 
-void QPlainTextEditPrivate::_q_textChanged()
+void QPlainTextEditPrivate::_q_updatePlaceholderVisibility()
 {
     Q_Q(QPlainTextEdit);
 
@@ -1368,8 +1368,7 @@ void QPlainTextEdit::setPlaceholderText(const QString &placeholderText)
     Q_D(QPlainTextEdit);
     if (d->placeholderText != placeholderText) {
         d->placeholderText = placeholderText;
-        if (d->control->document()->isEmpty())
-            d->viewport->update();
+        d->_q_updatePlaceholderVisibility();
     }
 }
 
