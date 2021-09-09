@@ -450,6 +450,9 @@ Qt::WindowState QPlatformIntegration::defaultWindowState(Qt::WindowFlags flags) 
     if (flags & Qt::Popup & ~Qt::Window)
         return Qt::WindowNoState;
 
+     if (flags & Qt::SubWindow)
+        return Qt::WindowNoState;
+
     if (styleHint(QPlatformIntegration::ShowIsFullScreen).toBool())
         return Qt::WindowFullScreen;
     else if (styleHint(QPlatformIntegration::ShowIsMaximized).toBool())
