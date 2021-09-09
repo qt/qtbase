@@ -110,7 +110,6 @@ public:
         uint antialiased : 1;
         uint bilinear : 1;
         uint fast_text : 1;
-        uint int_xform : 1;
         uint tx_noshear : 1;
         uint fast_images : 1;
     };
