@@ -1,6 +1,6 @@
 #############################################################################
 ##
-## Copyright (C) 2018 The Qt Company Ltd.
+## Copyright (C) 2021 The Qt Company Ltd.
 ## Contact: https://www.qt.io/licensing/
 ##
 ## This file is part of the plugins of the Qt Toolkit.
@@ -761,7 +761,6 @@ platform_mapping = {
     "hpux": "HPUX",
     "nacl": "NACL",
     "android": "ANDROID",
-    "android-embedded": "ANDROID_EMBEDDED",
     "uikit": "UIKIT",
     "tvos": "TVOS",
     "watchos": "WATCHOS",

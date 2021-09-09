@@ -1,6 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 John Layt <jlayt@kde.org>
+** Copyright (C) 2021 The Qt Company Ltd.
+** Copyright (C) 2013 John Layt <jlayt@kde.org>
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -37,7 +38,6 @@
 **
 ****************************************************************************/
 
-
 #include "qtimezone.h"
 #include "qtimezoneprivate_p.h"
 
@@ -62,9 +62,9 @@ static QTimeZonePrivate *newBackendTimeZone()
 #else
 #if defined Q_OS_MAC
     return new QMacTimeZonePrivate();
-#elif defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
+#elif defined(Q_OS_ANDROID)
     return new QAndroidTimeZonePrivate();
-#elif defined(Q_OS_UNIX) || defined(Q_OS_ANDROID_EMBEDDED)
+#elif defined(Q_OS_UNIX)
     return new QTzTimeZonePrivate();
 #elif QT_CONFIG(icu)
     return new QIcuTimeZonePrivate();
@@ -89,9 +89,9 @@ static QTimeZonePrivate *newBackendTimeZone(const QByteArray &ianaId)
 #else
 #if defined Q_OS_MAC
     return new QMacTimeZonePrivate(ianaId);
-#elif defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
+#elif defined(Q_OS_ANDROID)
     return new QAndroidTimeZonePrivate(ianaId);
-#elif defined(Q_OS_UNIX) || defined(Q_OS_ANDROID_EMBEDDED)
+#elif defined(Q_OS_UNIX)
     return new QTzTimeZonePrivate(ianaId);
 #elif QT_CONFIG(icu)
     return new QIcuTimeZonePrivate(ianaId);

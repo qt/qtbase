@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -45,7 +45,7 @@
 #  include "../../../network-settings.h"
 #endif
 
-#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
+#ifdef Q_OS_ANDROID
 #include <QStandardPaths>
 #endif
 
@@ -122,7 +122,7 @@ private:
 
 void tst_QDirIterator::initTestCase()
 {
-#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
+#ifdef Q_OS_ANDROID
     QString testdata_dir = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
     QString resourceSourcePath = QStringLiteral(":/testdata");
     QDirIterator it(resourceSourcePath, QDirIterator::Subdirectories);
@@ -130,7 +130,8 @@ void tst_QDirIterator::initTestCase()
         QFileInfo fileInfo = it.nextFileInfo();
 
         if (!fileInfo.isDir()) {
-            QString destination = testdata_dir + QLatin1Char('/') + fileInfo.filePath().mid(resourceSourcePath.length());
+            QString destination = testdata_dir + QLatin1Char('/')
+                                  + fileInfo.filePath().mid(resourceSourcePath.length());
             QFileInfo destinationFileInfo(destination);
             if (!destinationFileInfo.exists()) {
                 QDir().mkpath(destinationFileInfo.path());

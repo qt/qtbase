@@ -205,7 +205,7 @@ QTimeZonePrivate::Data QTimeZonePrivate::data(qint64 forMSecsSinceEpoch) const
 // Private only method for use by QDateTime to convert local msecs to epoch msecs
 QTimeZonePrivate::Data QTimeZonePrivate::dataForLocalTime(qint64 forLocalMSecs, int hint) const
 {
-#if !defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_EMBEDDED)
+#ifndef Q_OS_ANDROID
     // The Android back-end's hasDaylightTime() is only true for zones with
     // transitions in the future; we need it to mean "has ever had a transition"
     // though, so can't trust it here.
@@ -610,7 +610,7 @@ bool QTimeZonePrivate::isValidId(const QByteArray &ianaId)
 
     // Somewhat slack hand-rolled version:
     const int MinSectionLength = 1;
-#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
+#ifdef Q_OS_ANDROID
     // Android has its own naming of zones.
     // "Canada/East-Saskatchewan" has a 17-character second component.
     const int MaxSectionLength = 17;

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -44,7 +44,7 @@
 #include <QtGui/qopenglcontext.h>
 #include <QtCore/qdebug.h>
 
-#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
+#ifdef Q_OS_ANDROID
 #include <QtCore/private/qjnihelpers_p.h>
 #endif
 #ifndef Q_OS_WIN

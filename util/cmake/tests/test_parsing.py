@@ -239,7 +239,7 @@ def test_realworld_standardpaths():
 
     # android / else:
     (cond4, if_branch4, else_branch4) = evaluate_condition(else_branch3[0])
-    assert cond4 == 'android && !android-embedded'
+    assert cond4 == 'android'
     assert len(if_branch4) == 1
     validate_op('SOURCES', '+=', ['io/qstandardpaths_android.cpp'], if_branch4[0])
     assert len(else_branch4) == 1

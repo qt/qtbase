@@ -23,7 +23,7 @@ qt_internal_add_test(tst_qimage
 ## Scopes:
 #####################################################################
 
-if(ANDROID AND NOT ANDROID_EMBEDDED)
+if(ANDROID)
     # Resources:
     set(qimage_resource_files
         "images/image.bmp"

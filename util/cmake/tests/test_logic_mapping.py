@@ -182,5 +182,4 @@ def test_simplify_complex_false():
 
 
 def test_simplify_android_not_apple():
-    validate_simplify('ANDROID AND NOT ANDROID_EMBEDDED AND NOT MACOS',
-                      'ANDROID AND NOT ANDROID_EMBEDDED')
+    validate_simplify('ANDROID AND NOT MACOS', 'ANDROID')

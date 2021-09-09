@@ -42,7 +42,7 @@ qt_internal_extend_target(tst_qpainter CONDITION TARGET Qt::Widgets
         Qt::WidgetsPrivate
 )
 
-if(ANDROID AND NOT ANDROID_EMBEDDED)
+if(ANDROID)
     # Resources:
     set(testdata_resource_files
         "drawEllipse/10x10SizeAt0x0.png"

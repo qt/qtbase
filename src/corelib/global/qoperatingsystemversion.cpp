@@ -49,7 +49,7 @@
 #include <qversionnumber.h>
 #include <qdebug.h>
 
-#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
+#ifdef Q_OS_ANDROID
 #include <QJniObject>
 #endif
 
@@ -156,7 +156,7 @@ QOperatingSystemVersion QOperatingSystemVersion::current()
 {
     QOperatingSystemVersion version;
     version.m_os = currentType();
-#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
+#ifdef Q_OS_ANDROID
 #ifndef QT_BOOTSTRAPPED
     const QVersionNumber v = QVersionNumber::fromString(QJniObject::getStaticObjectField(
         "android/os/Build$VERSION", "RELEASE", "Ljava/lang/String;").toString());

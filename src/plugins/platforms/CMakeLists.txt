@@ -1,6 +1,6 @@
 # Generated from platforms.pro.
 
-if(ANDROID AND NOT ANDROID_EMBEDDED)
+if(ANDROID)
     add_subdirectory(android)
 endif()
 if(NOT ANDROID AND NOT WASM)

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -355,7 +355,7 @@ void tst_QLayout::adjustSizeShouldMakeSureLayoutIsActivated()
 
 void tst_QLayout::testRetainSizeWhenHidden()
 {
-#if (defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED))
+#ifdef Q_OS_ANDROID
     QSKIP("Test does not work on platforms which default to showMaximized()");
 #endif
 

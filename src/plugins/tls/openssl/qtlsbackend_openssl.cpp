@@ -368,7 +368,7 @@ QTlsPrivate::X509Certificate *QTlsBackendOpenSSL::createCertificate() const
 namespace QTlsPrivate {
 
 // TLSTODO: remove.
-#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
+#ifdef Q_OS_ANDROID
 QList<QByteArray> fetchSslCertificateData();
 #endif
 

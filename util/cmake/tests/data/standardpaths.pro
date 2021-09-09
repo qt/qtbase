@@ -7,7 +7,7 @@ win32 {
 } else:unix {
     mac {
         OBJECTIVE_SOURCES += io/qstandardpaths_mac.mm
-    } else:android:!android-embedded {
+    } else:android {
         SOURCES += io/qstandardpaths_android.cpp
     } else:haiku {
         SOURCES += io/qstandardpaths_haiku.cpp

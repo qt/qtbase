@@ -1,4 +1,4 @@
-contains(TEMPLATE, ".*app"):!build_pass:!android-embedded {
+contains(TEMPLATE, ".*app"):!build_pass {
 
     defineReplace(emitString) {
         return("\"$$clean_path($$1)\"")

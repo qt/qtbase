@@ -49,7 +49,7 @@ qt_internal_add_resource(tst_qimagereader "qmake_immediate"
 ## Scopes:
 #####################################################################
 
-if(ANDROID AND NOT ANDROID_EMBEDDED)
+if(ANDROID)
     # Resources:
     set(android_testdata_resource_files
         "images/kollada-noext"

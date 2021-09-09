@@ -31,7 +31,7 @@ qt_internal_add_test(tst_qresourceengine
 qt_add_resources(additional_sources testqrc/test.qrc)
 target_sources(tst_qresourceengine PRIVATE ${additional_sources})
 
-if(ANDROID AND NOT ANDROID_EMBEDDED)
+if(ANDROID)
     qt_add_resources(additional_sources android_testdata.qrc)
     target_sources(tst_qresourceengine PRIVATE ${additional_sources})
 endif()

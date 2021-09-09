@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Copyright (C) 2016 Olivier Goffart <ogoffart@woboq.com>
 ** Copyright (C) 2018 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
@@ -1632,7 +1632,7 @@ static bool syslog_default_message_handler(QtMsgType type, const QMessageLogCont
 }
 #endif
 
-#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
+#ifdef Q_OS_ANDROID
 static bool android_default_message_handler(QtMsgType type,
                                   const QMessageLogContext &context,
                                   const QString &message)
@@ -1775,7 +1775,7 @@ static void qDefaultMessageHandler(QtMsgType type, const QMessageLogContext &con
     handledStderr |= systemd_default_message_handler(type, context, message);
 # elif QT_CONFIG(syslog)
     handledStderr |= syslog_default_message_handler(type, context, message);
-# elif defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
+# elif defined(Q_OS_ANDROID)
     handledStderr |= android_default_message_handler(type, context, message);
 # elif defined(QT_USE_APPLE_UNIFIED_LOGGING)
     handledStderr |= AppleUnifiedLogger::messageHandler(type, context, message);

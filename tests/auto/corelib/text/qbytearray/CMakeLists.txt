@@ -25,7 +25,7 @@ qt_internal_extend_target(tst_qbytearray CONDITION APPLE
         ${FWFoundation}
 )
 
-if(ANDROID AND NOT ANDROID_EMBEDDED)
+if(ANDROID)
     # Resources:
     set(android_testdata_resource_files
         "rfc3252.txt"

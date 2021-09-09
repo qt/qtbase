@@ -24,7 +24,7 @@ qt_internal_add_test(tst_qimagewriter
 ## Scopes:
 #####################################################################
 
-if(ANDROID AND NOT ANDROID_EMBEDDED)
+if(ANDROID)
     # Resources:
     set(qimagewriter_resource_files
         "images/YCbCr_cmyk.jpg"

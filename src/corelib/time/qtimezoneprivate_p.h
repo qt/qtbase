@@ -69,7 +69,7 @@ Q_FORWARD_DECLARE_OBJC_CLASS(NSTimeZone);
 #include <qt_windows.h>
 #endif // Q_OS_WIN
 
-#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
+#ifdef Q_OS_ANDROID
 #include <QJniObject>
 #endif
 
@@ -273,7 +273,7 @@ private:
 };
 #endif
 
-#if defined(Q_OS_UNIX) && !defined(Q_OS_DARWIN) && (!defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_EMBEDDED))
+#if defined(Q_OS_UNIX) && !defined(Q_OS_DARWIN) && !defined(Q_OS_ANDROID)
 struct QTzTransitionTime
 {
     qint64 atMSecsSinceEpoch;
@@ -462,7 +462,7 @@ private:
 };
 #endif // Q_OS_WIN
 
-#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
+#ifdef Q_OS_ANDROID
 class QAndroidTimeZonePrivate final : public QTimeZonePrivate
 {
 public:

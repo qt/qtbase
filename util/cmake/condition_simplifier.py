@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #############################################################################
 ##
-## Copyright (C) 2019 The Qt Company Ltd.
+## Copyright (C) 2021 The Qt Company Ltd.
 ## Contact: https://www.qt.io/licensing/
 ##
 ## This file is part of the plugins of the Qt Toolkit.
@@ -108,7 +108,7 @@ def _recursive_simplify(expr):
     # windowses = ('WIN32', 'WINRT')
     apples = ("MACOS", "UIKIT", "IOS", "TVOS", "WATCHOS")
     bsds = ("FREEBSD", "OPENBSD", "NETBSD")
-    androids = ("ANDROID", "ANDROID_EMBEDDED")
+    androids = ("ANDROID",)
     unixes = (
         "APPLE",
         *apples,
@@ -140,7 +140,7 @@ def _recursive_simplify(expr):
     expr = _simplify_flavors_in_condition("APPLE", apples, expr)
     expr = _simplify_flavors_in_condition("BSD", bsds, expr)
     expr = _simplify_flavors_in_condition("UNIX", unixes, expr)
-    expr = _simplify_flavors_in_condition("ANDROID", ("ANDROID_EMBEDDED",), expr)
+    expr = _simplify_flavors_in_condition("ANDROID", (), expr)
 
     # Simplify families of OSes against other families:
     expr = _simplify_os_families(expr, ("WIN32", "WINRT"), unixes)

@@ -42,7 +42,7 @@
 
 #include <QtCore/QScopedPointer>
 
-#if defined(Q_QDOC) || (defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED))
+#if defined(Q_QDOC) || defined(Q_OS_ANDROID)
 #include <jni.h>
 
 QT_BEGIN_NAMESPACE

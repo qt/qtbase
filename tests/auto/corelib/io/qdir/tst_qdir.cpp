@@ -1,7 +1,7 @@
 /****************************************************************************
 **
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Copyright (C) 2017 Intel Corporation.
-** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -232,20 +232,21 @@ private:
 Q_DECLARE_METATYPE(tst_QDir::UncHandling)
 
 tst_QDir::tst_QDir()
-#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
+#ifdef Q_OS_ANDROID
     : m_dataPath(QStandardPaths::writableLocation(QStandardPaths::CacheLocation))
 #elif !defined(BUILTIN_TESTDATA)
     : m_dataPath(QFileInfo(QFINDTESTDATA("testData")).absolutePath())
 #endif
 {
-#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
+#ifdef Q_OS_ANDROID
     QString resourceSourcePath = QStringLiteral(":/android_testdata/");
     QDirIterator it(resourceSourcePath, QDirIterator::Subdirectories);
     while (it.hasNext()) {
         QFileInfo fileInfo = it.nextFileInfo();
 
         if (!fileInfo.isDir()) {
-            QString destination = m_dataPath + QLatin1Char('/') + fileInfo.filePath().mid(resourceSourcePath.length());
+            QString destination = m_dataPath + QLatin1Char('/')
+                                + fileInfo.filePath().mid(resourceSourcePath.length());
             QFileInfo destinationFileInfo(destination);
             if (!destinationFileInfo.exists()) {
                 QDir().mkpath(destinationFileInfo.path());
@@ -2217,7 +2218,7 @@ void tst_QDir::equalityOperator_data()
     //need a path in the root directory that is unlikely to be a symbolic link.
 #if defined (Q_OS_WIN)
     QString pathinroot("c:/windows/..");
-#elif defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
+#elif defined(Q_OS_ANDROID)
     QString pathinroot("/system/..");
 #elif defined(Q_OS_HAIKU)
     QString pathinroot("/boot/..");

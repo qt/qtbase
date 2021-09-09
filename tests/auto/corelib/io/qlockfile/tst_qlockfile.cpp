@@ -1,5 +1,6 @@
 /****************************************************************************
 **
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Copyright (C) 2013 David Faure <faure+bluesystems@kde.org>
 ** Contact: https://www.qt.io/licensing/
 **
@@ -83,7 +84,7 @@ public:
 
 void tst_QLockFile::initTestCase()
 {
-#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
+#ifdef Q_OS_ANDROID
     QSKIP("This test requires deploying and running external console applications");
 #elif !QT_CONFIG(process)
     QSKIP("This test requires QProcess support");

@@ -21,7 +21,7 @@ qt_internal_add_test(tst_qiodevice
 ## Scopes:
 #####################################################################
 
-if(ANDROID AND NOT ANDROID_EMBEDDED)
+if(ANDROID)
     # Resources:
     set(android_testdata_resource_files
         "tst_qiodevice.cpp"

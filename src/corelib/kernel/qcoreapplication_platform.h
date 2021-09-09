@@ -49,7 +49,7 @@
 #include <QtCore/qvariant.h>
 #endif
 
-#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
+#if defined(Q_OS_ANDROID)
 class _jobject;
 typedef _jobject* jobject;
 #endif
@@ -58,7 +58,7 @@ QT_BEGIN_NAMESPACE
 
 namespace QNativeInterface
 {
-#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED) || defined(Q_CLANG_QDOC)
+#if defined(Q_OS_ANDROID) || defined(Q_CLANG_QDOC)
 struct Q_CORE_EXPORT QAndroidApplication
 {
     QT_DECLARE_NATIVE_INTERFACE(QAndroidApplication, 1, QCoreApplication)

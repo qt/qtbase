@@ -94,7 +94,7 @@
 #endif
 #endif // QT_NO_QOBJECT
 
-#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
+#if defined(Q_OS_ANDROID)
 #include <QtCore/qjniobject.h>
 #endif
 
@@ -177,10 +177,10 @@ QString QCoreApplicationPrivate::appName() const
 QString QCoreApplicationPrivate::appVersion() const
 {
     QString applicationVersion;
-#ifndef QT_BOOTSTRAPPED
-#  ifdef Q_OS_DARWIN
+#ifdef QT_BOOTSTRAPPED
+#elif defined(Q_OS_DARWIN)
     applicationVersion = infoDictionaryStringProperty(QStringLiteral("CFBundleVersion"));
-#  elif defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
+#elif defined(Q_OS_ANDROID)
     QJniObject context(QNativeInterface::QAndroidApplication::context());
     if (context.isValid()) {
         QJniObject pm = context.callObjectMethod(
@@ -198,11 +198,10 @@ QString QCoreApplicationPrivate::appVersion() const
             }
         }
     }
-#  endif
 #endif
     return applicationVersion;
 }
-#endif
+#endif // !Q_OS_WIN
 
 QString *QCoreApplicationPrivate::cachedApplicationFilePath = nullptr;
 
@@ -2315,7 +2314,7 @@ QString QCoreApplication::applicationDirPath()
 #if !defined(Q_OS_WIN) && !defined(Q_OS_DARWIN)     // qcoreapplication_win.cpp or qcoreapplication_mac.cpp
 static QString qAppFileName()
 {
-#  if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
+#  if defined(Q_OS_ANDROID)
     // the actual process on Android is the Java VM, so this doesn't help us
     return QString();
 #  elif defined(Q_OS_LINUX)

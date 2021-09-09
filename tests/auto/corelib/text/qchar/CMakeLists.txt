@@ -18,7 +18,7 @@ qt_internal_add_test(tst_qchar
 ## Scopes:
 #####################################################################
 
-if(ANDROID AND NOT ANDROID_EMBEDDED)
+if(ANDROID)
     # Resources:
     set(testdata_resource_files
         "data/NormalizationTest.txt"

@@ -45,7 +45,7 @@ qt_internal_extend_target(tst_qdir CONDITION CONFIG___contains___builtin_testdat
         BUILTIN_TESTDATA
 )
 
-if(ANDROID AND NOT ANDROID_EMBEDDED)
+if(ANDROID)
     # Resources:
     set(android_testdata_resource_files
         "entrylist/directory/dummy"

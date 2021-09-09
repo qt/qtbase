@@ -28,7 +28,7 @@ qt_internal_add_resource(tst_qtranslator "qtranslator"
 ## Scopes:
 #####################################################################
 
-if(ANDROID AND NOT ANDROID_EMBEDDED)
+if(ANDROID)
     # Resources:
     set(android_testdata_resource_files
         "dependencies_la.qm"

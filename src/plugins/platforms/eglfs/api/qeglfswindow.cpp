@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -111,11 +111,11 @@ void QEglFSWindow::create()
     QOpenGLCompositor *compositor = QOpenGLCompositor::instance();
     if (screen->primarySurface() != EGL_NO_SURFACE) {
         if (Q_UNLIKELY(!isRaster() || !compositor->targetWindow())) {
-#if !defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_EMBEDDED)
+#  ifndef Q_OS_ANDROID
             // We can have either a single OpenGL window or multiple raster windows.
             // Other combinations cannot work.
             qFatal("EGLFS: OpenGL windows cannot be mixed with others.");
-#endif
+#  endif
             return;
         }
         m_format = compositor->targetWindow()->format();

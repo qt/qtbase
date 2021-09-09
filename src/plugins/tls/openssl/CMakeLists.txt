@@ -35,7 +35,7 @@ qt_internal_extend_target(QTlsBackendOpenSSLPlugin CONDITION APPLE
         ${FWSecurity}
 )
 
-qt_internal_extend_target(QTlsBackendOpenSSLPlugin CONDITION ANDROID AND NOT ANDROID_EMBEDDED
+qt_internal_extend_target(QTlsBackendOpenSSLPlugin CONDITION ANDROID
     SOURCES
         qsslsocket_openssl_android.cpp
 )
