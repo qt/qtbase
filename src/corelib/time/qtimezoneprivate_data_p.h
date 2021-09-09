@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Copyright (C) 2013 John Layt <jlayt@kde.org>
 ** Contact: https://www.qt.io/licensing/
 **
@@ -54,6 +54,8 @@
 //
 
 #include <QtCore/private/qglobal_p.h>
+#include "qbytearrayview.h"
+#include "qstring.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -73,22 +75,30 @@ QT_BEGIN_NAMESPACE
     table removed
 */
 
-struct QZoneData {
+struct QZoneData
+{
     quint16 windowsIdKey;      // Windows ID Key
     quint16 territory;         // Territory of IANA ID's, AnyTerritory means No Territory
-    quint16 ianaIdIndex;      // All IANA ID's for the Windows ID and Country, space separated
+    quint16 ianaIdIndex;       // All IANA ID's for the Windows ID and Country, space separated
+    inline QLatin1String id() const;
+    inline auto ids() const { return id().tokenize(QLatin1String(" ")); }
 };
 
-struct QWindowsData {
+struct QWindowsData
+{
     quint16 windowsIdKey;      // Windows ID Key
     quint16 windowsIdIndex;    // Windows ID Literal
-    quint16 ianaIdIndex;      // Default IANA ID for the Windows ID
+    quint16 ianaIdIndex;       // Default IANA ID for the Windows ID
     qint32 offsetFromUtc;      // Standard Time Offset from UTC, used for quick look-ups
+    inline QByteArrayView windowsId() const;
+    inline QByteArrayView ianaId() const;
 };
 
-struct QUtcData {
-    quint16 ianaIdIndex;      // IANA ID's
+struct QUtcData
+{
+    quint16 ianaIdIndex;       // IANA ID
     qint32 offsetFromUtc;      // Offset form UTC is seconds
+    inline QByteArrayView id() const;
 };
 
 /*
@@ -1256,6 +1266,11 @@ static const char ianaIdData[] = {
 0x43, 0x2b, 0x31, 0x33, 0x3a, 0x30, 0x30, 0x0, 0x55, 0x54, 0x43, 0x2b, 0x31, 0x34, 0x3a, 0x30, 0x30, 0x0
 };
 // GENERATED PART ENDS HERE
+
+inline QByteArrayView QWindowsData::windowsId() const { return windowsIdData + windowsIdIndex; }
+inline QByteArrayView QWindowsData::ianaId() const { return ianaIdData + ianaIdIndex; }
+inline QByteArrayView QUtcData::id() const { return ianaIdData + ianaIdIndex; }
+inline QLatin1String QZoneData::id() const { return QLatin1String(ianaIdData + ianaIdIndex); }
 
 QT_END_NAMESPACE
 

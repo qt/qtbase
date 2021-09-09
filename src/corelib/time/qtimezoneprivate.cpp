@@ -55,67 +55,20 @@ QT_BEGIN_NAMESPACE
     Static utilities for looking up Windows ID tables
 */
 
-static const qsizetype windowsDataTableSize = std::size(windowsDataTable);
-static const qsizetype zoneDataTableSize = std::size(zoneDataTable);
-static const qsizetype utcDataTableSize = std::size(utcDataTable);
-
-static const QZoneData *zoneData(quint16 index)
-{
-    Q_ASSERT(index < zoneDataTableSize);
-    return &zoneDataTable[index];
-}
-
-static const QWindowsData *windowsData(quint16 index)
-{
-    Q_ASSERT(index < windowsDataTableSize);
-    return &windowsDataTable[index];
-}
-
-static const QUtcData *utcData(quint16 index)
-{
-    Q_ASSERT(index < utcDataTableSize);
-    return &utcDataTable[index];
-}
-
-// Return the Windows ID literal for a given QWindowsData
-static QByteArrayView windowsId(const QWindowsData *windowsData)
-{
-    return (windowsIdData + windowsData->windowsIdIndex);
-}
-
-// Return the IANA ID literal for a given QWindowsData
-static QByteArray ianaId(const QWindowsData *windowsData)
-{
-    return (ianaIdData + windowsData->ianaIdIndex);
-}
-
-// Return the IANA ID literal for a given QZoneData
-static QByteArrayView ianaId(const QZoneData *zoneData)
-{
-    return (ianaIdData + zoneData->ianaIdIndex);
-}
-
-static QByteArrayView utcId(const QUtcData *utcData)
-{
-    return (ianaIdData + utcData->ianaIdIndex);
-}
-
 static quint16 toWindowsIdKey(const QByteArray &winId)
 {
-    for (quint16 i = 0; i < windowsDataTableSize; ++i) {
-        const QWindowsData *data = windowsData(i);
-        if (windowsId(data) == winId)
-            return data->windowsIdKey;
+    for (const QWindowsData &data : windowsDataTable) {
+        if (data.windowsId() == winId)
+            return data.windowsIdKey;
     }
     return 0;
 }
 
 static QByteArray toWindowsIdLiteral(quint16 windowsIdKey)
 {
-    for (quint16 i = 0; i < windowsDataTableSize; ++i) {
-        const QWindowsData *data = windowsData(i);
-        if (data->windowsIdKey == windowsIdKey)
-            return windowsId(data).toByteArray();
+    for (const QWindowsData &data : windowsDataTable) {
+        if (data.windowsIdKey == windowsIdKey)
+            return data.windowsId().toByteArray();
     }
     return QByteArray();
 }
@@ -168,12 +121,11 @@ QByteArray QTimeZonePrivate::id() const
 QLocale::Territory QTimeZonePrivate::territory() const
 {
     // Default fall-back mode, use the zoneTable to find Region of known Zones
-    for (int i = 0; i < zoneDataTableSize; ++i) {
-        const QZoneData *data = zoneData(i);
-        QLatin1String view(ianaId(data));
-        for (QLatin1String token : view.tokenize(QLatin1String(" "))) {
-            if (token == QLatin1String(m_id.data(), m_id.size()))
-                return QLocale::Territory(data->territory);
+    const QLatin1String sought(m_id.data(), m_id.size());
+    for (const QZoneData &data : zoneDataTable) {
+        for (QLatin1String token : data.ids()) {
+            if (token == sought)
+                return QLocale::Territory(data.territory);
         }
     }
     return QLocale::AnyTerritory;
@@ -529,10 +481,9 @@ QList<QByteArray> QTimeZonePrivate::availableTimeZoneIds(QLocale::Territory terr
     QList<QByteArray> regions;
 
     // First get all Zones in the Zones table belonging to the Region
-    for (int i = 0; i < zoneDataTableSize; ++i) {
-        if (zoneData(i)->territory == territory) {
-            QLatin1String l1Id(ianaId(zoneData(i)));
-            for (auto l1 : l1Id.tokenize(QLatin1String(" ")))
+    for (const QZoneData &data : zoneDataTable) {
+        if (data.territory == territory) {
+            for (auto l1 : data.ids())
                 regions << QByteArray(l1.data(), l1.size());
         }
     }
@@ -554,14 +505,11 @@ QList<QByteArray> QTimeZonePrivate::availableTimeZoneIds(int offsetFromUtc) cons
     // Default fall-back mode, use the zoneTable to find Offset of know Zones
     QList<QByteArray> offsets;
     // First get all Zones in the table using the Offset
-    for (int i = 0; i < windowsDataTableSize; ++i) {
-        const QWindowsData *winData = windowsData(i);
-        if (winData->offsetFromUtc == offsetFromUtc) {
-            for (int j = 0; j < zoneDataTableSize; ++j) {
-                const QZoneData *data = zoneData(j);
-                if (data->windowsIdKey == winData->windowsIdKey) {
-                    QLatin1String l1Id(ianaId(data));
-                    for (auto l1 : l1Id.tokenize(QLatin1String(" ")))
+    for (const QWindowsData &winData : windowsDataTable) {
+        if (winData.offsetFromUtc == offsetFromUtc) {
+            for (const QZoneData &data : zoneDataTable) {
+                if (data.windowsIdKey == winData.windowsIdKey) {
+                    for (auto l1 : data.ids())
                         offsets << QByteArray(l1.data(), l1.size());
                 }
             }
@@ -718,12 +666,10 @@ QString QTimeZonePrivate::isoOffsetFormat(int offsetFromUtc, QTimeZone::NameType
 
 QByteArray QTimeZonePrivate::ianaIdToWindowsId(const QByteArray &id)
 {
-    for (int i = 0; i < zoneDataTableSize; ++i) {
-        const QZoneData *data = zoneData(i);
-        QLatin1String l1Id(ianaId(data));
-        for (auto l1 : l1Id.tokenize(QLatin1String(" "))) {
+    for (const QZoneData &data : zoneDataTable) {
+        for (auto l1 : data.ids()) {
             if (l1 == QByteArrayView(id))
-                return toWindowsIdLiteral(data->windowsIdKey);
+                return toWindowsIdLiteral(data.windowsIdKey);
         }
     }
     return QByteArray();
@@ -731,23 +677,18 @@ QByteArray QTimeZonePrivate::ianaIdToWindowsId(const QByteArray &id)
 
 QByteArray QTimeZonePrivate::windowsIdToDefaultIanaId(const QByteArray &windowsId)
 {
-    const quint16 windowsIdKey = toWindowsIdKey(windowsId);
-    for (int i = 0; i < windowsDataTableSize; ++i) {
-        const QWindowsData *data = windowsData(i);
-        if (data->windowsIdKey == windowsIdKey)
-            return ianaId(data);
+    for (const QWindowsData &data : windowsDataTable) {
+        if (data.windowsId() == windowsId)
+            return data.ianaId().toByteArray();
     }
     return QByteArray();
 }
 
 QByteArray QTimeZonePrivate::windowsIdToDefaultIanaId(const QByteArray &windowsId,
-                                                       QLocale::Territory territory)
+                                                      QLocale::Territory territory)
 {
     const QList<QByteArray> list = windowsIdToIanaIds(windowsId, territory);
-    if (list.count() > 0)
-        return list.first();
-    else
-        return QByteArray();
+    return list.count() > 0 ? list.first() : QByteArray();
 }
 
 QList<QByteArray> QTimeZonePrivate::windowsIdToIanaIds(const QByteArray &windowsId)
@@ -755,11 +696,9 @@ QList<QByteArray> QTimeZonePrivate::windowsIdToIanaIds(const QByteArray &windows
     const quint16 windowsIdKey = toWindowsIdKey(windowsId);
     QList<QByteArray> list;
 
-    for (int i = 0; i < zoneDataTableSize; ++i) {
-        const QZoneData *data = zoneData(i);
-        if (data->windowsIdKey == windowsIdKey) {
-            QLatin1String l1Id(ianaId(data));
-            for (auto l1 : l1Id.tokenize(QLatin1String(" ")))
+    for (const QZoneData &data : zoneDataTable) {
+        if (data.windowsIdKey == windowsIdKey) {
+            for (auto l1 : data.ids())
                 list << QByteArray(l1.data(), l1.size());
         }
     }
@@ -770,17 +709,15 @@ QList<QByteArray> QTimeZonePrivate::windowsIdToIanaIds(const QByteArray &windows
 }
 
 QList<QByteArray> QTimeZonePrivate::windowsIdToIanaIds(const QByteArray &windowsId,
-                                                        QLocale::Territory territory)
+                                                       QLocale::Territory territory)
 {
     const quint16 windowsIdKey = toWindowsIdKey(windowsId);
-    for (int i = 0; i < zoneDataTableSize; ++i) {
-        const QZoneData *data = zoneData(i);
+    const qint16 land = static_cast<quint16>(territory);
+    for (const QZoneData &data : zoneDataTable) {
         // Return the region matches in preference order
-        if (data->windowsIdKey == windowsIdKey
-            && data->territory == static_cast<quint16>(territory)) {
-            QLatin1String l1Id(ianaId(data));
+        if (data.windowsIdKey == windowsIdKey && data.territory == land) {
             QList<QByteArray> list;
-            for (auto l1 : l1Id.tokenize(QLatin1String(" ")))
+            for (auto l1 : data.ids())
                 list << QByteArray(l1.data(), l1.size());
             return list;
         }
@@ -811,12 +748,10 @@ QUtcTimeZonePrivate::QUtcTimeZonePrivate()
 QUtcTimeZonePrivate::QUtcTimeZonePrivate(const QByteArray &id)
 {
     // Look for the name in the UTC list, if found set the values
-    for (int i = 0; i < utcDataTableSize; ++i) {
-        const QUtcData *data = utcData(i);
-        const QByteArrayView uid = utcId(data);
-        if (uid == id) {
+    for (const QUtcData &data : utcDataTable) {
+        if (data.id() == id) {
             QString name = QString::fromUtf8(id);
-            init(id, data->offsetFromUtc, name, name, QLocale::AnyTerritory, name);
+            init(id, data.offsetFromUtc, name, name, QLocale::AnyTerritory, name);
             break;
         }
     }
@@ -963,9 +898,8 @@ QByteArray QUtcTimeZonePrivate::systemTimeZoneId() const
 bool QUtcTimeZonePrivate::isTimeZoneIdAvailable(const QByteArray &ianaId) const
 {
     // Only the zone IDs supplied by CLDR and recognized by constructor.
-    for (int i = 0; i < utcDataTableSize; ++i) {
-        const QUtcData *data = utcData(i);
-        if (utcId(data) == ianaId)
+    for (const QUtcData &data : utcDataTable) {
+        if (data.id() == ianaId)
             return true;
     }
     // But see offsetFromUtcString(), which lets us accept some "unavailable" IDs.
@@ -976,9 +910,9 @@ QList<QByteArray> QUtcTimeZonePrivate::availableTimeZoneIds() const
 {
     // Only the zone IDs supplied by CLDR and recognized by constructor.
     QList<QByteArray> result;
-    result.reserve(utcDataTableSize);
-    for (int i = 0; i < utcDataTableSize; ++i)
-        result << utcId(utcData(i)).toByteArray();
+    result.reserve(std::size(utcDataTable));
+    for (const QUtcData &data : utcDataTable)
+        result << data.id().toByteArray();
     // Not guaranteed to be sorted, so sort:
     std::sort(result.begin(), result.end());
     // ### assuming no duplicates
@@ -998,10 +932,9 @@ QList<QByteArray> QUtcTimeZonePrivate::availableTimeZoneIds(qint32 offsetSeconds
     // Only if it's present in CLDR. (May get more than one ID: UTC, UTC+00:00
     // and UTC-00:00 all have the same offset.)
     QList<QByteArray> result;
-    for (int i = 0; i < utcDataTableSize; ++i) {
-        const QUtcData *data = utcData(i);
-        if (data->offsetFromUtc == offsetSeconds)
-            result << utcId(data).toByteArray();
+    for (const QUtcData &data : utcDataTable) {
+        if (data.offsetFromUtc == offsetSeconds)
+            result << data.id().toByteArray();
     }
     // Not guaranteed to be sorted, so sort:
     std::sort(result.begin(), result.end());
