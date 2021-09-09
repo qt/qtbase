@@ -752,7 +752,6 @@ qt_feature("vkgen" PRIVATE
 )
 qt_feature("vulkan" PUBLIC
     LABEL "Vulkan"
-    AUTODETECT NOT QNX # FIXME: CI QNX toolchain is broken and finds host vulkan QTQAINFRA-4502
     CONDITION QT_FEATURE_library AND QT_FEATURE_vkgen AND WrapVulkanHeaders_FOUND
 )
 qt_feature("vkkhrdisplay" PRIVATE
