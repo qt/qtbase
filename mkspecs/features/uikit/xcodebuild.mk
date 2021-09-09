@@ -87,6 +87,10 @@ ifeq ($(shell test $(XCODE_VERSION_MAJOR) -gt 7; echo $$?),0)
   XCODEBUILD_FLAGS += $(shell echo "$(MAKEFLAGS)" | sed -e 's/\([^ ]*\).*/\1/' | grep -qv 's' || echo -quiet)
 endif
 
+ifeq ($(shell test $(XCODE_VERSION_MAJOR) -ge 9; echo $$?),0)
+  XCODEBUILD_FLAGS += -allowProvisioningUpdates
+endif
+
 # Xcodebuild
 
 DESTINATION_MESSAGE = "Running $(call tolower,$(CONFIGURATION)) $(ACTION) \
