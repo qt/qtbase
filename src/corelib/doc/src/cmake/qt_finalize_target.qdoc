@@ -34,8 +34,6 @@
 
 \brief Handles various common platform-specific tasks associated with Qt targets.
 
-\preliminarycmakecommand
-
 \section1 Synopsis
 
 \badcode
