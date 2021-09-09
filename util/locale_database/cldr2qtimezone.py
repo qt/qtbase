@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #############################################################################
 ##
-## Copyright (C) 2020 The Qt Company Ltd.
+## Copyright (C) 2021 The Qt Company Ltd.
 ## Contact: https://www.qt.io/licensing/
 ##
 ## This file is part of the test suite of the Qt Toolkit.
@@ -299,7 +299,6 @@ class ZoneIdWriter (SourceFileEditor):
                     data['windowsKey'], data['territoryId'],
                     ianaIdData.append(data['ianaList']),
                     data['windowsId'], data['territory']))
-        out('    {      0,     0,     0 } // Trailing zeroes\n')
         out('};\n\n')
 
         # Write Windows ID key table
@@ -311,7 +310,6 @@ class ZoneIdWriter (SourceFileEditor):
                     windowsIdData.append(pair[0]),
                     ianaIdData.append(defaults[index]),
                     pair[1], pair[0]))
-        out('    {      0,     0,     0,     0 } // Trailing zeroes\n')
         out('};\n\n')
 
         # Write UTC ID key table
@@ -320,7 +318,6 @@ class ZoneIdWriter (SourceFileEditor):
         for pair in utcIdList:
             out('    {{ {:6d},{:6d} }}, // {}\n'.format(
                     ianaIdData.append(pair[0]), pair[1], pair[0]))
-        out('    {     0,      0 } // Trailing zeroes\n')
         out('};\n')
 
         return windowsIdData, ianaIdData

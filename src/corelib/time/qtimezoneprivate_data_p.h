@@ -115,7 +115,7 @@ struct QUtcData {
 // GENERATED PART STARTS HERE
 
 /*
-    This part of the file was generated on 2021-07-26 from the
+    This part of the file was generated on 2021-09-09 from the
     Common Locale Data Repository v39 file supplemental/windowsZones.xml
 
     http://www.unicode.org/cldr/
@@ -493,7 +493,6 @@ static const QZoneData zoneDataTable[] = {
     {    136,   182,  7221 }, // West Pacific Standard Time / Papua New Guinea
     {    137,   193,  7242 }, // Yakutsk Standard Time / Russia
     {    138,    41,  7269 }, // Yukon Standard Time / Canada
-    {      0,     0,     0 } // Trailing zeroes
 };
 
 // Windows ID Key, Windows ID Index, IANA ID Index, UTC Offset
@@ -636,7 +635,6 @@ static const QWindowsData windowsDataTable[] = {
     {    136,  3124,  7221, 36000 }, // West Pacific Standard Time
     {    137,  3151,  7752, 32400 }, // Yakutsk Standard Time
     {    138,  3173,  7765,-25200 }, // Yukon Standard Time
-    {      0,     0,     0,     0 } // Trailing zeroes
 };
 
 // IANA ID Index, UTC Offset
@@ -681,7 +679,6 @@ static const QUtcData utcDataTable[] = {
     {   8148, 43200 }, // UTC+12:00
     {   8158, 46800 }, // UTC+13:00
     {   8168, 50400 }, // UTC+14:00
-    {     0,      0 } // Trailing zeroes
 };
 
 static const char windowsIdData[] = {

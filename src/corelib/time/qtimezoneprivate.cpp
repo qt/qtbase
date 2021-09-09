@@ -55,10 +55,9 @@ QT_BEGIN_NAMESPACE
     Static utilities for looking up Windows ID tables
 */
 
-static const int windowsDataTableSize = sizeof(windowsDataTable) / sizeof(QWindowsData) - 1;
-static const int zoneDataTableSize = sizeof(zoneDataTable) / sizeof(QZoneData) - 1;
-static const int utcDataTableSize = sizeof(utcDataTable) / sizeof(QUtcData) - 1;
-
+static const qsizetype windowsDataTableSize = std::size(windowsDataTable);
+static const qsizetype zoneDataTableSize = std::size(zoneDataTable);
+static const qsizetype utcDataTableSize = std::size(utcDataTable);
 
 static const QZoneData *zoneData(quint16 index)
 {
