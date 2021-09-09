@@ -41,6 +41,7 @@
 
 #include "qcoreapplication.h"
 #include "qthread.h"
+#include <QPointer>
 
 QT_BEGIN_NAMESPACE
 
@@ -228,9 +229,10 @@ bool QWinEventNotifier::event(QEvent * e)
             == QWinEventNotifierPrivate::Posted && d->enabled) {
             d->unregisterWaitObject();
 
+            QPointer<QWinEventNotifier> alive(this);
             emit activated(d->handleToEvent, QPrivateSignal());
 
-            if (d->enabled && d->waitHandle == NULL)
+            if (alive && d->enabled && d->waitHandle == NULL)
                 d->registerWaitObject();
         }
         return true;
