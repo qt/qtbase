@@ -41,6 +41,7 @@
 
 #include "qcoreapplication.h"
 #include "qthread.h"
+#include <QPointer>
 
 QT_BEGIN_NAMESPACE
 
@@ -238,9 +239,10 @@ bool QWinEventNotifier::event(QEvent * e)
             // when the callback is queued.
             d->registered = false;
 
+            QPointer<QWinEventNotifier> alive(this);
             emit activated(d->handleToEvent, QPrivateSignal());
 
-            if (d->enabled && !d->registered) {
+            if (alive && d->enabled && !d->registered) {
                 SetThreadpoolWait(d->waitObject, d->handleToEvent, NULL);
                 d->registered = true;
             }
