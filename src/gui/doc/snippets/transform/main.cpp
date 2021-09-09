@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -48,7 +48,7 @@
 **
 ****************************************************************************/
 #include <QApplication>
-#include <QMath>
+#include <QtMath>
 #include <QPainter>
 #include <QVBoxLayout>
 #include <QWidget>
