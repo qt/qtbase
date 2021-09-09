@@ -2371,6 +2371,8 @@ void QRhiVulkan::beginPass(QRhiCommandBuffer *cb,
 
     if (cbD->passUsesSecondaryCb)
         cbD->activeSecondaryCbStack.append(startSecondaryCommandBuffer(rtD));
+
+    cbD->resetCachedState();
 }
 
 void QRhiVulkan::endPass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates)
@@ -2382,7 +2384,6 @@ void QRhiVulkan::endPass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourc
         VkCommandBuffer secondaryCb = cbD->activeSecondaryCbStack.last();
         cbD->activeSecondaryCbStack.removeLast();
         endAndEnqueueSecondaryCommandBuffer(secondaryCb, cbD);
-        cbD->resetCachedState();
     }
 
     QVkCommandBuffer::Command &cmd(cbD->commands.get());
@@ -2414,6 +2415,8 @@ void QRhiVulkan::beginComputePass(QRhiCommandBuffer *cb,
 
     if (cbD->passUsesSecondaryCb)
         cbD->activeSecondaryCbStack.append(startSecondaryCommandBuffer());
+
+    cbD->resetCachedState();
 }
 
 void QRhiVulkan::endComputePass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates)
@@ -2425,7 +2428,6 @@ void QRhiVulkan::endComputePass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *
         VkCommandBuffer secondaryCb = cbD->activeSecondaryCbStack.last();
         cbD->activeSecondaryCbStack.removeLast();
         endAndEnqueueSecondaryCommandBuffer(secondaryCb, cbD);
-        cbD->resetCachedState();
     }
 
     cbD->recordingPass = QVkCommandBuffer::NoPass;
