@@ -34,8 +34,6 @@
 
 \brief Creates and finalizes an application target of a platform-specific type.
 
-\preliminarycmakecommand
-
 \section1 Synopsis
 
 \badcode
