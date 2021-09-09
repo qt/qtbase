@@ -124,6 +124,8 @@ private slots:
     void renderToTextureMultipleUniformBuffersAndDynamicOffset();
     void renderToTextureSrbReuse_data();
     void renderToTextureSrbReuse();
+    void renderToTextureIndexedDraw_data();
+    void renderToTextureIndexedDraw();
     void renderToWindowSimple_data();
     void renderToWindowSimple();
     void finishWithinSwapchainFrame_data();
@@ -2984,6 +2986,143 @@ void tst_QRhi::setWindowType(QWindow *window, QRhi::Implementation impl)
     default:
         break;
     }
+}
+
+void tst_QRhi::renderToTextureIndexedDraw_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::renderToTextureIndexedDraw()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing rendering");
+
+    const QSize outputSize(1920, 1080);
+    QScopedPointer<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGBA8, outputSize, 1,
+                                                        QRhiTexture::RenderTarget | QRhiTexture::UsedAsTransferSource));
+    QVERIFY(texture->create());
+
+    QScopedPointer<QRhiTextureRenderTarget> rt(rhi->newTextureRenderTarget({ texture.data() }));
+    QScopedPointer<QRhiRenderPassDescriptor> rpDesc(rt->newCompatibleRenderPassDescriptor());
+    rt->setRenderPassDescriptor(rpDesc.data());
+    QVERIFY(rt->create());
+
+    QRhiCommandBuffer *cb = nullptr;
+    QVERIFY(rhi->beginOffscreenFrame(&cb) == QRhi::FrameOpSuccess);
+    QVERIFY(cb);
+
+    QRhiResourceUpdateBatch *updates = rhi->nextResourceUpdateBatch();
+
+    static const float vertices[] = {
+        -1.0f, -1.0f,
+        1.0f, -1.0f,
+        0.0f, 1.0f
+    };
+    static const quint16 indices[] = {
+        0, 1, 2
+    };
+
+    QScopedPointer<QRhiBuffer> vbuf(rhi->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, sizeof(vertices)));
+    QVERIFY(vbuf->create());
+    updates->uploadStaticBuffer(vbuf.data(), vertices);
+
+    QScopedPointer<QRhiBuffer> ibuf(rhi->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::IndexBuffer, sizeof(indices)));
+    QVERIFY(ibuf->create());
+    updates->uploadStaticBuffer(ibuf.data(), indices);
+
+    QScopedPointer<QRhiShaderResourceBindings> srb(rhi->newShaderResourceBindings());
+    QVERIFY(srb->create());
+
+    QScopedPointer<QRhiGraphicsPipeline> pipeline(rhi->newGraphicsPipeline());
+    QShader vs = loadShader(":/data/simple.vert.qsb");
+    QVERIFY(vs.isValid());
+    QShader fs = loadShader(":/data/simple.frag.qsb");
+    QVERIFY(fs.isValid());
+    pipeline->setShaderStages({ { QRhiShaderStage::Vertex, vs }, { QRhiShaderStage::Fragment, fs } });
+    QRhiVertexInputLayout inputLayout;
+    inputLayout.setBindings({ { 2 * sizeof(float) } });
+    inputLayout.setAttributes({ { 0, 0, QRhiVertexInputAttribute::Float2, 0 } });
+    pipeline->setVertexInputLayout(inputLayout);
+    pipeline->setShaderResourceBindings(srb.data());
+    pipeline->setRenderPassDescriptor(rpDesc.data());
+
+    QVERIFY(pipeline->create());
+
+    QRhiCommandBuffer::VertexInput vbindings(vbuf.data(), 0);
+
+    // Do three render passes, even though all render the same thing. This is done to
+    // verify that QTBUG-89765 is fixed.  One of them specifies ExternalContent which
+    // triggers special behavior with some backends (uses a secondary command buffer with
+    // Vulkan for example). This way we can see that optimizations, such as keeping track
+    // of what index buffer is active, are handled correctly across pass boundaries in the
+    // QRhi backends. Without the fix for QTBUG-89765 this test would show validation
+    // warnings and even crash when run with Vulkan.
+
+    cb->beginPass(rt.data(), Qt::blue, { 1.0f, 0 }, updates);
+    cb->setGraphicsPipeline(pipeline.data());
+    cb->setViewport({ 0, 0, float(outputSize.width()), float(outputSize.height()) });
+    cb->setVertexInput(0, 1, &vbindings, ibuf.data(), 0, QRhiCommandBuffer::IndexUInt16);
+    cb->drawIndexed(3);
+    cb->endPass();
+
+    cb->beginPass(rt.data(), Qt::blue, { 1.0f, 0 }, nullptr, QRhiCommandBuffer::ExternalContent);
+    cb->setGraphicsPipeline(pipeline.data());
+    cb->setViewport({ 0, 0, float(outputSize.width()), float(outputSize.height()) });
+    cb->setVertexInput(0, 1, &vbindings, ibuf.data(), 0, QRhiCommandBuffer::IndexUInt16);
+    cb->drawIndexed(3);
+    cb->endPass();
+
+    cb->beginPass(rt.data(), Qt::blue, { 1.0f, 0 }, nullptr);
+    cb->setGraphicsPipeline(pipeline.data());
+    cb->setViewport({ 0, 0, float(outputSize.width()), float(outputSize.height()) });
+    cb->setVertexInput(0, 1, &vbindings, ibuf.data(), 0, QRhiCommandBuffer::IndexUInt16);
+    cb->drawIndexed(3);
+
+    QRhiReadbackResult readResult;
+    QImage result;
+    readResult.completed = [&readResult, &result] {
+        result = QImage(reinterpret_cast<const uchar *>(readResult.data.constData()),
+                        readResult.pixelSize.width(), readResult.pixelSize.height(),
+                        QImage::Format_RGBA8888_Premultiplied);
+    };
+    QRhiResourceUpdateBatch *readbackBatch = rhi->nextResourceUpdateBatch();
+    readbackBatch->readBackTexture({ texture.data() }, &readResult);
+    cb->endPass(readbackBatch);
+
+    rhi->endOffscreenFrame();
+    QCOMPARE(result.size(), texture->pixelSize());
+
+    if (impl == QRhi::Null)
+        return;
+
+    // Now we have a red rectangle on blue background.
+    const int y = 100;
+    const quint32 *p = reinterpret_cast<const quint32 *>(result.constScanLine(y));
+    int x = result.width() - 1;
+    int redCount = 0;
+    int blueCount = 0;
+    const int maxFuzz = 1;
+    while (x-- >= 0) {
+        const QRgb c(*p++);
+        if (qRed(c) >= (255 - maxFuzz) && qGreen(c) == 0 && qBlue(c) == 0)
+            ++redCount;
+        else if (qRed(c) == 0 && qGreen(c) == 0 && qBlue(c) >= (255 - maxFuzz))
+            ++blueCount;
+        else
+            QFAIL("Encountered a pixel that is neither red or blue");
+    }
+
+    QCOMPARE(redCount + blueCount, texture->pixelSize().width());
+
+    if (rhi->isYUpInFramebuffer() == rhi->isYUpInNDC())
+        QVERIFY(redCount < blueCount);
+    else
+        QVERIFY(redCount > blueCount);
 }
 
 void tst_QRhi::renderToWindowSimple_data()
