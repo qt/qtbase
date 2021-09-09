@@ -34,6 +34,7 @@
 #include <qmutex.h>
 #include <qthread.h>
 #include <qwaitcondition.h>
+#include <private/qemulationdetector_p.h>
 #include <private/qvolatile_p.h>
 
 #ifdef Q_OS_UNIX
@@ -693,6 +694,9 @@ void tst_QReadWriteLock::multipleReadersBlockRelease()
 */
 void tst_QReadWriteLock::multipleReadersLoop()
 {
+    if (QTestPrivate::isRunningArmOnX86())
+        QSKIP("Flaky on QEMU, QTBUG-96103");
+
     constexpr int time = 500;
     constexpr int hold = 250;
     constexpr int wait = 0;
