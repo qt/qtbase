@@ -707,17 +707,17 @@ inline void QPropertyBindingPrivate::evaluateRecursive_inline(QBindingStatus *st
         return;
     }
 
-    QScopedValueRollback<bool> updateGuard(updating, true);
-
     /*
-         * Evaluating the binding might lead to the binding being broken. This can
-         * cause ref to reach zero at the end of the function.  However, the
-         * updateGuard's destructor will then still trigger, trying to set the
-         * updating bool to its old value
-         * To prevent this, we create a QPropertyBindingPrivatePtr which ensures
-         * that the object is still alive when updateGuard's dtor runs.
-         */
+     * Evaluating the binding might lead to the binding being broken. This can
+     * cause ref to reach zero at the end of the function.  However, the
+     * updateGuard's destructor will then still trigger, trying to set the
+     * updating bool to its old value
+     * To prevent this, we create a QPropertyBindingPrivatePtr which ensures
+     * that the object is still alive when updateGuard's dtor runs.
+     */
     QPropertyBindingPrivatePtr keepAlive {this};
+
+    QScopedValueRollback<bool> updateGuard(updating, true);
 
     QtPrivate::BindingEvaluationState evaluationFrame(this, status);
 
