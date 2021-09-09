@@ -111,7 +111,6 @@ public:
         uint bilinear : 1;
         uint legacy_rounding : 1;
         uint fast_text : 1;
-        uint int_xform : 1;
         uint tx_noshear : 1;
         uint fast_images : 1;
     };

@@ -560,31 +560,6 @@ void QRasterPaintEngine::updateMatrix(const QTransform &matrix)
     QRasterPaintEngineState *s = state();
     // FALCON: get rid of this line, see drawImage call below.
     s->matrix = matrix;
-    QTransform::TransformationType txop = s->matrix.type();
-
-    switch (txop) {
-
-    case QTransform::TxNone:
-        s->flags.int_xform = true;
-        break;
-
-    case QTransform::TxTranslate:
-        s->flags.int_xform = qreal(int(s->matrix.dx())) == s->matrix.dx()
-                            && qreal(int(s->matrix.dy())) == s->matrix.dy();
-        break;
-
-    case QTransform::TxScale:
-        s->flags.int_xform = qreal(int(s->matrix.dx())) == s->matrix.dx()
-                            && qreal(int(s->matrix.dy())) == s->matrix.dy()
-                            && qreal(int(s->matrix.m11())) == s->matrix.m11()
-                            && qreal(int(s->matrix.m22())) == s->matrix.m22();
-        break;
-
-    default: // shear / perspective...
-        s->flags.int_xform = false;
-        break;
-    }
-
     s->flags.tx_noshear = qt_scaleForTransform(s->matrix, &s->txscale);
 
     ensureOutlineMapper();
@@ -617,7 +592,6 @@ QRasterPaintEngineState::QRasterPaintEngineState()
     flags.bilinear = false;
     flags.legacy_rounding = false;
     flags.fast_text = true;
-    flags.int_xform = true;
     flags.tx_noshear = true;
     flags.fast_images = true;
 
