@@ -42,6 +42,7 @@
 #include "qabstracteventdispatcher.h"
 #include "qcoreapplication.h"
 #include "qobject_p.h"
+#include "qdebug.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -285,6 +286,7 @@ QSingleShotTimer::QSingleShotTimer(int msec, Qt::TimerType timerType, const QObj
     : QObject(QAbstractEventDispatcher::instance()), hasValidReceiver(r), receiver(r), slotObj(slotObj)
 {
     timerId = startTimer(msec, timerType);
+				qDebug() << " Started timer for " << msec <<"ms to run " << "slot " << slotObj << "to run on thread " << r->thread();
     if (r && thread() != r->thread()) {
         // Avoid leaking the QSingleShotTimer instance in case the application exits before the timer fires
         connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit, this, &QObject::deleteLater);
@@ -315,9 +317,12 @@ void QSingleShotTimer::timerEvent(QTimerEvent *)
             // We allocate only the return type - we previously checked the function had
             // no arguments.
             void *args[1] = { 0 };
+												qDebug() << "calling slot on thread " << thread();
             slotObj->call(const_cast<QObject*>(receiver.data()), args);
+												qDebug() << "slot finished running on thread" << thread();
         }
     } else {
+								qDebug() << "slot obj was null on thread " << thread();
         emit timeout();
     }
 
