@@ -26,32 +26,30 @@
 **
 ****************************************************************************/
 
-
 #include <QTest>
-#include <math.h>
-#include <qdebug.h>
-#include <qdir.h>
-#include <qfileinfo.h>
+#include <QLocale>
+
+#include <QDateTime>
+#include <QDebug>
+#include <QDir>
+#include <QFileInfo>
+#include <qnumeric.h>
+#if QT_CONFIG(process)
+#  include <QProcess>
+#endif
 #include <QScopedArrayPointer>
 #include <QTimeZone>
-#include <qdatetime.h>
-#if QT_CONFIG(process)
-# include <qprocess.h>
-#endif
-#include <float.h>
 
-#include <qlocale.h>
 #include <private/qlocale_p.h>
 #include <private/qlocale_tools_p.h>
-#include <qnumeric.h>
 #include "../../../../shared/localechange.h"
 
-#if defined(Q_OS_LINUX) && !defined(__UCLIBC__)
-#    define QT_USE_FENV
-#endif
+#include <float.h>
+#include <math.h>
 
-#ifdef QT_USE_FENV
-#    include <fenv.h>
+#if defined(Q_OS_LINUX) && !defined(__UCLIBC__)
+#  include <fenv.h>
+#  define QT_USE_FENV
 #endif
 
 #if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
