@@ -2432,7 +2432,7 @@ qint64 QCoreApplication::applicationPid()
     encoding problems might occur.
 
     Otherwise, the arguments() are constructed from the return value of
-    \l{http://msdn2.microsoft.com/en-us/library/ms683156(VS.85).aspx}{GetCommandLine()}.
+    \l{https://docs.microsoft.com/en-us/windows/win32/api/processenv/nf-processenv-getcommandlinea}{GetCommandLine()}.
     As a result of this, the string given by arguments().at(0) might not be
     the program name on Windows, depending on how the application was started.
 

@@ -990,7 +990,7 @@ QDir QFileDialog::directory() const
     by the CLSID value with the curly braces removed. For example the URL
     \c clsid:374DE290-123F-4565-9164-39C4925E467B denotes the download
     location. For a complete list of possible values, see the MSDN documentation on
-    \l{https://msdn.microsoft.com/en-us/library/windows/desktop/dd378457.aspx}{KNOWNFOLDERID}.
+    \l{https://docs.microsoft.com/en-us/windows/win32/shell/knownfolderid}{KNOWNFOLDERID}.
     This feature was added in Qt 5.5.
 
     \sa QUuid

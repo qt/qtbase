@@ -353,7 +353,7 @@
 */
 
 /*!
-    \externalpage http://msdn.microsoft.com/en-us/library/ms533046(VS.85).aspx
+    \externalpage https://docs.microsoft.com/en-us/previous-versions//ms533046(v=vs.85)
     \title Mitigating Cross-site Scripting With HTTP-only Cookies
 */
 
@@ -508,7 +508,7 @@
 */
 
 /*!
-    \externalpage http://msdn.microsoft.com/en-us/library/dd318066.aspx
+    \externalpage https://docs.microsoft.com/en-us/windows/win32/winauto/event-constants
     \title Microsoft Active Accessibility Event Constants
 */
 
