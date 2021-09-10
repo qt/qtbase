@@ -82,7 +82,6 @@ public:
         qelfoff_t  size;
     };
 
-    int m_bits;
     qelfoff_t m_stringTableFileOffset;
 
     const char *parseSectionHeader(const char* s, ElfSectionHeader *sh);
