@@ -143,6 +143,18 @@ QOpenGLContext *QNativeInterface::QGLXContext::fromNative(GLXContext visualBased
     \return the underlying EGLContext.
 */
 
+/*!
+    \fn EGLConfig QNativeInterface::QEGLContext::config() const
+    \since 6.3
+    \return the EGLConfig associated with the underlying EGLContext.
+*/
+
+/*!
+    \fn EGLDisplay QNativeInterface::QEGLContext::display() const
+    \since 6.3
+    \return the EGLDisplay associated with the underlying EGLContext.
+*/
+
 QT_DEFINE_NATIVE_INTERFACE(QEGLContext);
 QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QEGLIntegration);
 

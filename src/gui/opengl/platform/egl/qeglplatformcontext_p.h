@@ -108,6 +108,8 @@ public:
     bool isValid() const override { return m_eglContext != EGL_NO_CONTEXT; }
 
     EGLContext nativeContext() const override { return eglContext(); }
+    EGLConfig config() const override { return eglConfig(); }
+    EGLDisplay display() const override { return eglDisplay(); }
 
     EGLContext eglContext() const;
     EGLDisplay eglDisplay() const;
