@@ -143,6 +143,19 @@ void *QAndroidPlatformNativeInterface::nativeResourceForWindow(const QByteArray 
     return nullptr;
 }
 
+void *QAndroidPlatformNativeInterface::nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context)
+{
+    if (QEGLPlatformContext *platformContext = static_cast<QEGLPlatformContext *>(context->handle())) {
+        if (resource == "eglcontext")
+            return platformContext->eglContext();
+        else if (resource == "eglconfig")
+            return platformContext->eglConfig();
+        else if (resource == "egldisplay")
+            return platformContext->eglDisplay();
+    }
+    return nullptr;
+}
+
 void QAndroidPlatformNativeInterface::customEvent(QEvent *event)
 {
     if (event->type() != QEvent::User)

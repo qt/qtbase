@@ -65,6 +65,7 @@ class QAndroidPlatformNativeInterface: public QPlatformNativeInterface
 public:
     void *nativeResourceForIntegration(const QByteArray &resource) override;
     void *nativeResourceForWindow(const QByteArray &resource, QWindow *window) override;
+    void *nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context) override;
     std::shared_ptr<AndroidStyle> m_androidStyle;
 
 protected:
