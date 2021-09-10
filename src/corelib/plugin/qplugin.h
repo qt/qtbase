@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
-** Copyright (C) 2018 Intel Corporation.
+** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -46,15 +46,6 @@
 #include <QtCore/qjsonobject.h>
 
 QT_BEGIN_NAMESPACE
-
-
-#ifndef Q_EXTERN_C
-#  ifdef __cplusplus
-#    define Q_EXTERN_C extern "C"
-#  else
-#    define Q_EXTERN_C extern
-#  endif
-#endif
 
 inline constexpr unsigned char qPluginArchRequirements()
 {
@@ -156,10 +147,10 @@ void Q_CORE_EXPORT qRegisterStaticPluginFunction(QStaticPlugin staticPlugin);
 #else
 
 #  define QT_MOC_EXPORT_PLUGIN(PLUGINCLASS, PLUGINCLASSNAME)      \
-            Q_EXTERN_C Q_DECL_EXPORT \
+            extern "C" Q_DECL_EXPORT \
             QPluginMetaData qt_plugin_query_metadata() \
             { return { qt_pluginMetaData_##PLUGINCLASSNAME, sizeof qt_pluginMetaData_##PLUGINCLASSNAME }; } \
-            Q_EXTERN_C Q_DECL_EXPORT QT_PREPEND_NAMESPACE(QObject) *qt_plugin_instance() \
+            extern "C" Q_DECL_EXPORT QT_PREPEND_NAMESPACE(QObject) *qt_plugin_instance() \
             Q_PLUGIN_INSTANCE(PLUGINCLASS)
 
 #endif
