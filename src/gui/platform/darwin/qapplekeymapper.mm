@@ -551,7 +551,7 @@ const QAppleKeyMapper::KeyMap &QAppleKeyMapper::keyMapForKey(VirtualKeyCode virt
         qCDebug(lcQpaKeyMapper).verbosity(0) << "\t" << qtModifiers
             << "+" << qUtf8Printable(QString::asprintf("0x%02x", virtualKey))
             << "=" << qUtf8Printable(QString::asprintf("%d / 0x%02x /", qtKey, qtKey))
-                   << QString::asprintf("%c", qtKey);
+                   << QString(QChar(qtKey));
     }
 
     return keyMap;
@@ -577,6 +577,8 @@ const QAppleKeyMapper::KeyMap &QAppleKeyMapper::keyMapForKey(VirtualKeyCode virt
 QList<int> QAppleKeyMapper::possibleKeys(const QKeyEvent *event) const
 {
     QList<int> ret;
+
+    qCDebug(lcQpaKeyMapper) << "Computing possible keys for" << event;
 
     const auto nativeVirtualKey = event->nativeVirtualKey();
     if (!nativeVirtualKey)
@@ -610,6 +612,17 @@ QList<int> QAppleKeyMapper::possibleKeys(const QKeyEvent *event) const
             // will need to be included in the resulting key combination.
             auto additionalModifiers = eventModifiers & ~candidateModifiers;
             ret << int(additionalModifiers) + int(keyAfterApplyingModifiers);
+        }
+    }
+
+    if (lcQpaKeyMapper().isDebugEnabled()) {
+        qCDebug(lcQpaKeyMapper) << "Possible keys:";
+        for (int keyAndModifiers : ret) {
+            auto keyCombination = QKeyCombination::fromCombined(keyAndModifiers);
+            auto keySequence = QKeySequence(keyCombination);
+            qCDebug(lcQpaKeyMapper).verbosity(0) << "\t-"
+                << keyCombination << "/" << keySequence << "/"
+                << qUtf8Printable(keySequence.toString(QKeySequence::NativeText));
         }
     }
 
