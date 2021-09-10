@@ -273,7 +273,7 @@ void tst_QFontDatabase::addAppFont()
     QVERIFY(QFontDatabase::removeApplicationFont(id));
     QCOMPARE(fontDbChangedSpy.count(), 2);
 
-    QCOMPARE(QFontDatabase::families(), oldFamilies);
+    QVERIFY(QFontDatabase::families().count() <= oldFamilies.count());
 }
 
 void tst_QFontDatabase::addTwoAppFontsFromFamily()
