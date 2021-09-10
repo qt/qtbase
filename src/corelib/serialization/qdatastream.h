@@ -159,6 +159,7 @@ public:
     QDataStream &operator>>(std::nullptr_t &ptr) { ptr = nullptr; return *this; }
 
     QDataStream &operator>>(bool &i);
+    // ### Qt 7: remove the operator or make qfloat16 fully defined, see QTBUG-93499
     QDataStream &operator>>(qfloat16 &f);
     QDataStream &operator>>(float &f);
     QDataStream &operator>>(double &f);
@@ -177,6 +178,7 @@ public:
     QDataStream &operator<<(quint64 i);
     QDataStream &operator<<(std::nullptr_t) { return *this; }
     QDataStream &operator<<(bool i);
+    // ### Qt 7: remove the operator or make qfloat16 fully defined, see QTBUG-93499
     QDataStream &operator<<(qfloat16 f);
     QDataStream &operator<<(float f);
     QDataStream &operator<<(double f);
