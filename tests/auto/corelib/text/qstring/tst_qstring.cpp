@@ -60,6 +60,7 @@
 #include <ctype.h>
 
 #include "../shared/test_number_shared.h"
+#include "../../../../shared/localechange.h"
 
 #define CREATE_VIEW(string)                                              \
     const QString padded = QLatin1Char(' ') + string + QLatin1Char(' '); \
@@ -329,16 +330,7 @@ class tst_QString : public QObject
     void insert_impl() const { insert_impl<ArgType, QString &(QString::*)(qsizetype, const ArgType&)>(); }
     void insert_data(bool emptyIsNoop = false);
 
-    class TransientLocale
-    {
-        const int m_category;
-        const char *const m_prior;
-    public:
-        TransientLocale(int category, const char *locale)
-            : m_category(category), m_prior(setlocale(category, locale)) {}
-        bool isValid() const { return !!m_prior; }
-        ~TransientLocale() { if (m_prior) setlocale(m_category, m_prior); }
-    };
+    using TransientLocale = QTestLocaleChange::TransientLocale;
 
     class TransientDefaultLocale
     {
