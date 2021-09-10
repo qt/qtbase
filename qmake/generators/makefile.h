@@ -153,6 +153,7 @@ protected:
     void verifyCompilers();
     virtual void init();
     void initOutPaths();
+    virtual bool inhibitMakeDirOutPath(const ProKey &path) const;
     struct Compiler
     {
         QString variable_in;

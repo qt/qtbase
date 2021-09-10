@@ -68,6 +68,7 @@ public:
 protected:
     bool doPrecompiledHeaders() const override { return false; }
     bool doDepends() const override { return writingUnixMakefileGenerator && UnixMakefileGenerator::doDepends(); }
+    bool inhibitMakeDirOutPath(const ProKey &path) const override;
 };
 QT_END_NAMESPACE
 
