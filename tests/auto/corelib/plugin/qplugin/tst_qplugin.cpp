@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
-** Copyright (C) 2018 Intel Corporation.
+** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -138,11 +138,8 @@ void tst_QPlugin::scanInvalidPlugin_data()
     QTest::addColumn<QString>("errMsg");
 
     // CBOR metadata
-    QByteArray cprefix = "QTMETADATA !1234";
-    cprefix[12] = 0; // current version
-    cprefix[13] = QT_VERSION_MAJOR;
-    cprefix[14] = QT_VERSION_MINOR;
-    cprefix[15] = qPluginArchRequirements();
+    static constexpr QPluginMetaData::MagicHeader header = {};
+    QByteArray cprefix(reinterpret_cast<const char *>(&header), sizeof(header));
 
     QByteArray cborValid = [] {
         QCborMap m;

@@ -1573,62 +1573,76 @@ void Generator::generatePluginMetaData()
     if (cdef->pluginData.iid.isEmpty())
         return;
 
-    fprintf(out, "\nQT_PLUGIN_METADATA_SECTION\n"
-          "static constexpr unsigned char qt_pluginMetaData_%s[] = {\n"
-          "    'Q', 'T', 'M', 'E', 'T', 'A', 'D', 'A', 'T', 'A', ' ', '!',\n"
-          "    // metadata version, Qt version, architectural requirements\n"
-          "    0, QT_VERSION_MAJOR, QT_VERSION_MINOR, qPluginArchRequirements(),",
-          cdef->classname.constData());
+    auto outputCborData = [this]() {
+        CborDevice dev(out);
+        CborEncoder enc;
+        cbor_encoder_init_writer(&enc, CborDevice::callback, &dev);
 
+        CborEncoder map;
+        cbor_encoder_create_map(&enc, &map, CborIndefiniteLength);
 
-    CborDevice dev(out);
-    CborEncoder enc;
-    cbor_encoder_init_writer(&enc, CborDevice::callback, &dev);
+        dev.nextItem("\"IID\"");
+        cbor_encode_int(&map, int(QtPluginMetaDataKeys::IID));
+        cbor_encode_text_string(&map, cdef->pluginData.iid.constData(), cdef->pluginData.iid.size());
 
-    CborEncoder map;
-    cbor_encoder_create_map(&enc, &map, CborIndefiniteLength);
+        dev.nextItem("\"className\"");
+        cbor_encode_int(&map, int(QtPluginMetaDataKeys::ClassName));
+        cbor_encode_text_string(&map, cdef->classname.constData(), cdef->classname.size());
 
-    dev.nextItem("\"IID\"");
-    cbor_encode_int(&map, int(QtPluginMetaDataKeys::IID));
-    cbor_encode_text_string(&map, cdef->pluginData.iid.constData(), cdef->pluginData.iid.size());
+        QJsonObject o = cdef->pluginData.metaData.object();
+        if (!o.isEmpty()) {
+            dev.nextItem("\"MetaData\"");
+            cbor_encode_int(&map, int(QtPluginMetaDataKeys::MetaData));
+            jsonObjectToCbor(&map, o);
+        }
 
-    dev.nextItem("\"className\"");
-    cbor_encode_int(&map, int(QtPluginMetaDataKeys::ClassName));
-    cbor_encode_text_string(&map, cdef->classname.constData(), cdef->classname.size());
+        if (!cdef->pluginData.uri.isEmpty()) {
+            dev.nextItem("\"URI\"");
+            cbor_encode_int(&map, int(QtPluginMetaDataKeys::URI));
+            cbor_encode_text_string(&map, cdef->pluginData.uri.constData(), cdef->pluginData.uri.size());
+        }
 
-    QJsonObject o = cdef->pluginData.metaData.object();
-    if (!o.isEmpty()) {
-        dev.nextItem("\"MetaData\"");
-        cbor_encode_int(&map, int(QtPluginMetaDataKeys::MetaData));
-        jsonObjectToCbor(&map, o);
-    }
+        // Add -M args from the command line:
+        for (auto it = cdef->pluginData.metaArgs.cbegin(), end = cdef->pluginData.metaArgs.cend(); it != end; ++it) {
+            const QJsonArray &a = it.value();
+            QByteArray key = it.key().toUtf8();
+            dev.nextItem(QByteArray("command-line \"" + key + "\"").constData());
+            cbor_encode_text_string(&map, key.constData(), key.size());
+            jsonArrayToCbor(&map, a);
+        }
 
-    if (!cdef->pluginData.uri.isEmpty()) {
-        dev.nextItem("\"URI\"");
-        cbor_encode_int(&map, int(QtPluginMetaDataKeys::URI));
-        cbor_encode_text_string(&map, cdef->pluginData.uri.constData(), cdef->pluginData.uri.size());
-    }
-
-    // Add -M args from the command line:
-    for (auto it = cdef->pluginData.metaArgs.cbegin(), end = cdef->pluginData.metaArgs.cend(); it != end; ++it) {
-        const QJsonArray &a = it.value();
-        QByteArray key = it.key().toUtf8();
-        dev.nextItem(QByteArray("command-line \"" + key + "\"").constData());
-        cbor_encode_text_string(&map, key.constData(), key.size());
-        jsonArrayToCbor(&map, a);
-    }
-
-    // Close the CBOR map manually
-    dev.nextItem();
-    cbor_encoder_close_container(&enc, &map);
-    fputs("\n};\n", out);
+        // Close the CBOR map manually
+        dev.nextItem();
+        cbor_encoder_close_container(&enc, &map);
+    };
 
     // 'Use' all namespaces.
     int pos = cdef->qualified.indexOf("::");
     for ( ; pos != -1 ; pos = cdef->qualified.indexOf("::", pos + 2) )
         fprintf(out, "using namespace %s;\n", cdef->qualified.left(pos).constData());
-    fprintf(out, "QT_MOC_EXPORT_PLUGIN(%s, %s)\n\n",
+
+    fputs("\n#ifdef QT_MOC_EXPORT_PLUGIN_V2", out);
+
+    // Qt 6.3+ output
+    fprintf(out, "\nstatic constexpr unsigned char qt_pluginMetaDataV2_%s[] = {",
+          cdef->classname.constData());
+    outputCborData();
+    fprintf(out, "\n};\nQT_MOC_EXPORT_PLUGIN_V2(%s, %s, qt_pluginMetaDataV2_%s)\n",
+            cdef->qualified.constData(), cdef->classname.constData(), cdef->classname.constData());
+
+    // compatibility with Qt 6.0-6.2
+    fprintf(out, "#else\nQT_PLUGIN_METADATA_SECTION\n"
+          "static constexpr unsigned char qt_pluginMetaData_%s[] = {\n"
+          "    'Q', 'T', 'M', 'E', 'T', 'A', 'D', 'A', 'T', 'A', ' ', '!',\n"
+          "    // metadata version, Qt version, architectural requirements\n"
+          "    0, QT_VERSION_MAJOR, QT_VERSION_MINOR, qPluginArchRequirements(),",
+          cdef->classname.constData());
+    outputCborData();
+    fprintf(out, "\n};\nQT_MOC_EXPORT_PLUGIN(%s, %s)\n"
+                 "#endif  // QT_MOC_EXPORT_PLUGIN_V2\n",
             cdef->qualified.constData(), cdef->classname.constData());
+
+    fputs("\n", out);
 }
 
 QT_WARNING_DISABLE_GCC("-Wunused-function")
