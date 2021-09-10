@@ -72,6 +72,57 @@ enum class QtPluginMetaDataKeys {
     F(QtPluginMetaDataKeys::MetaData, "MetaData", "Other meta data")            \
     F(QtPluginMetaDataKeys::URI, "URI", "Plugin URI")
 
+namespace {
+struct DecodedArchRequirements
+{
+    quint8 level;
+    bool isDebug;
+    friend constexpr bool operator==(DecodedArchRequirements r1, DecodedArchRequirements r2)
+    {
+        return r1.level == r2.level && r1.isDebug == r2.isDebug;
+    }
+};
+
+static constexpr DecodedArchRequirements decodeVersion0ArchRequirements(quint8 value)
+{
+    // see qPluginArchRequirements() and QPluginMetaDataV2::archRequirements()
+    DecodedArchRequirements r = {};
+#ifdef Q_PROCESSOR_X86
+    if (value & 4)
+        r.level = 4;            // AVX512F -> x86-64-v4
+    else if (value & 2)
+        r.level = 3;            // AVX2 -> x86-64-v3
+#endif
+    if (value & 1)
+        r.isDebug = true;
+    return r;
+}
+// self checks
+static_assert(decodeVersion0ArchRequirements(0) == DecodedArchRequirements{ 0, false });
+static_assert(decodeVersion0ArchRequirements(1) == DecodedArchRequirements{ 0, true });
+#ifdef Q_PROCESSOR_X86
+static_assert(decodeVersion0ArchRequirements(2) == DecodedArchRequirements{ 3, false });
+static_assert(decodeVersion0ArchRequirements(3) == DecodedArchRequirements{ 3, true });
+static_assert(decodeVersion0ArchRequirements(4) == DecodedArchRequirements{ 4, false });
+static_assert(decodeVersion0ArchRequirements(5) == DecodedArchRequirements{ 4, true });
+#endif
+
+static constexpr DecodedArchRequirements decodeVersion1ArchRequirements(quint8 value)
+{
+    return { quint8(value & 0x7f), bool(value & 0x80) };
+}
+// self checks
+static_assert(decodeVersion1ArchRequirements(0) == DecodedArchRequirements{ 0, false });
+static_assert(decodeVersion1ArchRequirements(0x80) == DecodedArchRequirements{ 0, true });
+#ifdef Q_PROCESSOR_X86
+static_assert(decodeVersion1ArchRequirements(1) == DecodedArchRequirements{ 1, false });
+static_assert(decodeVersion1ArchRequirements(3) == DecodedArchRequirements{ 3, false});
+static_assert(decodeVersion1ArchRequirements(4) == DecodedArchRequirements{ 4, false });
+static_assert(decodeVersion1ArchRequirements(0x82) == DecodedArchRequirements{ 2, true });
+static_assert(decodeVersion1ArchRequirements(0x84) == DecodedArchRequirements{ 4, true });
+#endif
+} // unnamed namespace
+
 QT_END_NAMESPACE
 
 #endif // QPLUGIN_P_H

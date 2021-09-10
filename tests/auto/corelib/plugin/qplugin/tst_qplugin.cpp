@@ -139,6 +139,7 @@ void tst_QPlugin::scanInvalidPlugin_data()
 
     // CBOR metadata
     static constexpr QPluginMetaData::MagicHeader header = {};
+    static constexpr qsizetype MagicLen = sizeof(header.magic);
     QByteArray cprefix(reinterpret_cast<const char *>(&header), sizeof(header));
 
     QByteArray cborValid = [] {
@@ -150,27 +151,27 @@ void tst_QPlugin::scanInvalidPlugin_data()
     }();
     QTest::newRow("cbor-control") << (cprefix + cborValid) << true << "";
 
-    cprefix[12] = 1;
-    QTest::newRow("cbor-major-too-new") << (cprefix + cborValid) << false
-                                        << " Invalid metadata version";
-
-    cprefix[12] = 0;
-    cprefix[13] = QT_VERSION_MAJOR + 1;
+    cprefix[MagicLen + 1] = QT_VERSION_MAJOR + 1;
     QTest::newRow("cbor-major-too-new") << (cprefix + cborValid) << false << "";
 
-    cprefix[13] = QT_VERSION_MAJOR - 1;
+    cprefix[MagicLen + 1] = QT_VERSION_MAJOR - 1;
     QTest::newRow("cbor-major-too-old") << (cprefix + cborValid) << false << "";
 
-    cprefix[13] = QT_VERSION_MAJOR;
-    cprefix[14] = QT_VERSION_MINOR + 1;
+    cprefix[MagicLen + 1] = QT_VERSION_MAJOR;
+    cprefix[MagicLen + 2] = QT_VERSION_MINOR + 1;
     QTest::newRow("cbor-minor-too-new") << (cprefix + cborValid) << false << "";
 
+    cprefix[MagicLen + 2] = QT_VERSION_MINOR;
     QTest::newRow("cbor-invalid") << (cprefix + "\xff") << false
                                   << " Metadata parsing error: Invalid CBOR stream: unexpected 'break' byte";
     QTest::newRow("cbor-not-map1") << (cprefix + "\x01") << false
                                    << " Unexpected metadata contents";
     QTest::newRow("cbor-not-map2") << (cprefix + "\x81\x01") << false
                                    << " Unexpected metadata contents";
+
+    ++cprefix[MagicLen + 0];
+    QTest::newRow("cbor-major-too-new") << (cprefix + cborValid) << false
+                                        << " Invalid metadata version";
 }
 
 static const char invalidPluginSignature[] = "qplugin testfile";

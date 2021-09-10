@@ -95,11 +95,15 @@ QJsonDocument qJsonFromRawLibraryMetaData(const char *raw, qsizetype size, QStri
         return QJsonDocument();
     }
 
+    DecodedArchRequirements archReq =
+            header.version == 0 ? decodeVersion0ArchRequirements(header.plugin_arch_requirements)
+                                : decodeVersion1ArchRequirements(header.plugin_arch_requirements);
+
     QJsonObject o;
     o.insert(QLatin1String("version"),
              QT_VERSION_CHECK(header.qt_major_version, header.qt_minor_version, 0));
-    o.insert(QLatin1String("debug"), bool(header.plugin_arch_requirements & 1));
-    o.insert(QLatin1String("archreq"), header.plugin_arch_requirements);
+    o.insert(QLatin1String("debug"), archReq.isDebug);
+    o.insert(QLatin1String("archlevel"), archReq.level);
 
     // convert the top-level map integer keys
     for (auto it : metadata.toMap()) {
@@ -112,9 +116,7 @@ QJsonDocument qJsonFromRawLibraryMetaData(const char *raw, qsizetype size, QStri
 #undef CONVERT_TO_STRING
 
             case int(QtPluginMetaDataKeys::Requirements):
-                // special case: recreate the debug key
-                o.insert(QLatin1String("debug"), bool(it.second.toInteger() & 1));
-                key = QStringLiteral("archreq");
+                // ignore, handled above
                 break;
             }
         } else {

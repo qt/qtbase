@@ -47,6 +47,7 @@
 
 QT_BEGIN_NAMESPACE
 
+// Used up to Qt 6.2
 inline constexpr unsigned char qPluginArchRequirements()
 {
     return 0
@@ -65,7 +66,7 @@ inline constexpr unsigned char qPluginArchRequirements()
 typedef QObject *(*QtPluginInstanceFunction)();
 struct QPluginMetaData
 {
-    static constexpr quint8 CurrentMetaDataVersion = 0;
+    static constexpr quint8 CurrentMetaDataVersion = 1;
     static constexpr char MagicString[] = {
         'Q', 'T', 'M', 'E', 'T', 'A', 'D', 'A', 'T', 'A', ' ', '!'
     };
@@ -79,11 +80,29 @@ struct QPluginMetaData
             out[i] = in[i];
     }
 
+    static constexpr quint8 archRequirements()
+    {
+        quint8 v = 0;
+#if defined(__AVX512F__)
+        v = 4;      // x86-64-v4: AVX512F, AVX512BW, AVX512CD, AVX512DQ and AVX512VL
+#elif defined(__AVX__) || defined(__BMI__) || defined(__BMI2__) || defined(__MOVBE__)
+        v = 3;      // x86-64-v3: AVX, AVX2, BMI1, BMI2, F16C, FMA, LZCNT, MOVBE, XSAVE
+#elif defined(__SSE3__)
+        v = 2;      // x86-64-v2: POPCNT, SSE3, SSSE3, SSE4.1 and SSE4.2.
+#elif defined(__SSE__) || defined(__MMX___)
+        v = 1;      // x86-64 baseline: SSE and SSE2
+#endif
+#ifndef QT_NO_DEBUG
+        v |= 0x80;
+#endif
+        return v;
+    }
+
     struct Header {
         quint8 version = CurrentMetaDataVersion;
         quint8 qt_major_version = QT_VERSION_MAJOR;
         quint8 qt_minor_version = QT_VERSION_MINOR;
-        quint8 plugin_arch_requirements = qPluginArchRequirements();
+        quint8 plugin_arch_requirements = archRequirements();
     };
     static_assert(alignof(Header) == 1, "Alignment of header incorrect with this compiler");
 
