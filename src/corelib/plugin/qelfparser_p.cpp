@@ -50,15 +50,15 @@ QT_BEGIN_NAMESPACE
 
 const char *QElfParser::parseSectionHeader(const char *data, ElfSectionHeader *sh)
 {
-    sh->name = read<qelfword_t>(data);
+    sh->name = qFromUnaligned<qelfword_t>(data);
     data += sizeof(qelfword_t); // sh_name
-    sh->type = read<qelfword_t>(data);
+    sh->type = qFromUnaligned<qelfword_t>(data);
     data += sizeof(qelfword_t)  // sh_type
          + sizeof(qelfaddr_t)   // sh_flags
          + sizeof(qelfaddr_t);  // sh_addr
-    sh->offset = read<qelfoff_t>(data);
+    sh->offset = qFromUnaligned<qelfoff_t>(data);
     data += sizeof(qelfoff_t);  // sh_offset
-    sh->size = read<qelfoff_t>(data);
+    sh->size = qFromUnaligned<qelfoff_t>(data);
     data += sizeof(qelfoff_t);  // sh_size
     return data;
 }
@@ -97,13 +97,14 @@ auto QElfParser::parse(const char *dataStart, ulong fdlen, const QString &librar
             lib->errorString = QLibrary::tr("'%1' is an invalid ELF object (%2)").arg(library, QLibrary::tr("wrong cpu architecture"));
         return Corrupt;
     }
+
     // endian
-    if (data[5] == 0) {
+    constexpr int ExpectedEndianness = (Q_BYTE_ORDER == Q_LITTLE_ENDIAN) ? 1 : 2;
+    if (data[5] != ExpectedEndianness) {
         if (lib)
             lib->errorString = QLibrary::tr("'%1' is an invalid ELF object (%2)").arg(library, QLibrary::tr("odd endianness"));
         return Corrupt;
     }
-    m_endian = (data[5] == 1 ? ElfLittleEndian : ElfBigEndian);
 
     data += 16                  // e_ident
          +  sizeof(qelfhalf_t)  // e_type
@@ -112,11 +113,11 @@ auto QElfParser::parse(const char *dataStart, ulong fdlen, const QString &librar
          +  sizeof(qelfaddr_t)  // e_entry
          +  sizeof(qelfoff_t);  // e_phoff
 
-    qelfoff_t e_shoff = read<qelfoff_t> (data);
+    qelfoff_t e_shoff = qFromUnaligned<qelfoff_t> (data);
     data += sizeof(qelfoff_t)    // e_shoff
          +  sizeof(qelfword_t);  // e_flags
 
-    qelfhalf_t e_shsize = read<qelfhalf_t> (data);
+    qelfhalf_t e_shsize = qFromUnaligned<qelfhalf_t> (data);
 
     if (e_shsize > fdlen) {
         if (lib)
@@ -128,7 +129,7 @@ auto QElfParser::parse(const char *dataStart, ulong fdlen, const QString &librar
          +  sizeof(qelfhalf_t)  // e_phentsize
          +  sizeof(qelfhalf_t); // e_phnum
 
-    qelfhalf_t e_shentsize = read<qelfhalf_t> (data);
+    qelfhalf_t e_shentsize = qFromUnaligned<qelfhalf_t> (data);
 
     if (e_shentsize % 4) {
         if (lib)
@@ -136,9 +137,9 @@ auto QElfParser::parse(const char *dataStart, ulong fdlen, const QString &librar
         return Corrupt;
     }
     data += sizeof(qelfhalf_t); // e_shentsize
-    qelfhalf_t e_shnum     = read<qelfhalf_t> (data);
+    qelfhalf_t e_shnum     = qFromUnaligned<qelfhalf_t> (data);
     data += sizeof(qelfhalf_t); // e_shnum
-    qelfhalf_t e_shtrndx   = read<qelfhalf_t> (data);
+    qelfhalf_t e_shtrndx   = qFromUnaligned<qelfhalf_t> (data);
     data += sizeof(qelfhalf_t); // e_shtrndx
 
     if ((quint32)(e_shnum * e_shentsize) > fdlen) {
