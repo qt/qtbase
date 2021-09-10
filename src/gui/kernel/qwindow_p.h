@@ -62,8 +62,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#define QWINDOWSIZE_MAX ((1<<24)-1)
-
 class Q_GUI_EXPORT QWindowPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QWindow)
