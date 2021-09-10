@@ -244,6 +244,8 @@ public:
 
     inline char getChar()
     {
+        Q_ASSERT_X(!isEmpty(), "QByteDataBuffer::getChar",
+                   "Cannot read a char from an empty buffer!");
         char c;
         read(&c, 1);
         return c;
