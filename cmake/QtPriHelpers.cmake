@@ -641,7 +641,9 @@ function(qt_generate_global_device_pri_file)
 
     # Write android specific device info.
     if(ANDROID)
+        file(TO_CMAKE_PATH ${ANDROID_SDK_ROOT} ANDROID_SDK_ROOT)
         string(APPEND content "DEFAULT_ANDROID_SDK_ROOT = ${ANDROID_SDK_ROOT}\n")
+        file(TO_CMAKE_PATH ${ANDROID_NDK} ANDROID_NDK)
         string(APPEND content "DEFAULT_ANDROID_NDK_ROOT = ${ANDROID_NDK}\n")
 
         set(android_platform "android-23")
