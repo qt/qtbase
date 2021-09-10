@@ -87,12 +87,12 @@ auto QElfParser::parse(const char *dataStart, ulong fdlen, const QString &librar
             lib->errorString = QLibrary::tr("'%1' is an invalid ELF object (%2)").arg(library, QLibrary::tr("odd cpu architecture"));
         return Corrupt;
     }
-    m_bits = (data[4] << 5);
 
     /*  If you remove this check, to read ELF objects of a different arch, please make sure you modify the typedefs
         to match the _plugin_ architecture.
     */
-    if ((sizeof(void*) == 4 && m_bits != 32) || (sizeof(void*) == 8 && m_bits != 64)) {
+    constexpr int ExpectedClass = (sizeof(void *) == 4) ? 1 : 2;
+    if (data[4] != ExpectedClass) {
         if (lib)
             lib->errorString = QLibrary::tr("'%1' is an invalid ELF object (%2)").arg(library, QLibrary::tr("wrong cpu architecture"));
         return Corrupt;
