@@ -82,18 +82,8 @@ public:
         qelfoff_t  size;
     };
 
-    int m_endian;
     int m_bits;
     qelfoff_t m_stringTableFileOffset;
-
-    template <typename T>
-    T read(const char *s)
-    {
-        if (m_endian == ElfBigEndian)
-            return qFromBigEndian<T>(s);
-        else
-            return qFromLittleEndian<T>(s);
-    }
 
     const char *parseSectionHeader(const char* s, ElfSectionHeader *sh);
     ScanResult parse(const char *m_s, ulong fdlen, const QString &library, QLibraryPrivate *lib, qsizetype *pos, qsizetype *sectionlen);
