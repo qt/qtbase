@@ -93,7 +93,8 @@ QT_BEGIN_NAMESPACE
         \row
             \li Windows
             \li dwMajorVersion, dwMinorVersion, and dwBuildNumber from
-                \l{https://msdn.microsoft.com/en-us/library/mt723418.aspx}{RtlGetVersion} -
+                \l{https://docs.microsoft.com/en-us/windows/win32/devnotes/rtlgetversion}
+                {RtlGetVersion} -
                 note that this function ALWAYS return the version number of the
                 underlying operating system, as opposed to the shim underneath
                 GetVersionEx that hides the real version number if the
