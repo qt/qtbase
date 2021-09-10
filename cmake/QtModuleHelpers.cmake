@@ -14,6 +14,7 @@ macro(qt_internal_get_internal_add_module_keywords option_args single_args multi
         NO_GENERATE_METATYPES
         GENERATE_CPP_EXPORTS # TODO: Rename to NO_GENERATE_CPP_EXPORTS once migration is done
         GENERATE_METATYPES          # TODO: Remove once it is not used anymore
+        GENERATE_PRIVATE_CPP_EXPORTS
     )
     set(${single_args}
         MODULE_INCLUDE_NAME
@@ -21,6 +22,7 @@ macro(qt_internal_get_internal_add_module_keywords option_args single_args multi
         CONFIG_MODULE_NAME
         PRECOMPILED_HEADER
         CONFIGURE_FILE_PATH
+        CPP_EXPORT_HEADER_BASE_NAME
         ${__default_target_info_args}
     )
     set(${multi_args}
@@ -32,16 +34,6 @@ macro(qt_internal_get_internal_add_module_keywords option_args single_args multi
         ${__default_public_args}
         ${__default_private_module_args}
     )
-endmacro()
-
-macro(qt_internal_get_generate_cpp_global_exports_keywords option_args single_args multi_args)
-    set(${option_args}
-        GENERATE_PRIVATE_CPP_EXPORTS
-    )
-    set(${single_args}
-        CPP_EXPORT_HEADER_BASE_NAME
-    )
-    set(${multi_args} "")
 endmacro()
 
 # This is the main entry function for creating a Qt module, that typically
@@ -76,31 +68,10 @@ function(qt_internal_add_module target)
         module_multi_args
     )
 
-    qt_internal_get_generate_cpp_global_exports_keywords(
-        cpp_exports_option_args
-        cpp_exports_single_args
-        cpp_exports_multi_args
-    )
-
-    set(option_args
-        ${module_option_args}
-        ${cpp_exports_option_args}
-    )
-
-    set(single_args
-        ${module_single_args}
-        ${cpp_exports_single_args}
-    )
-
-    set(multi_args
-        ${module_multi_args}
-        ${cpp_exports_multi_args}
-    )
-
     qt_parse_all_arguments(arg "qt_internal_add_module"
-        "${option_args}"
-        "${single_args}"
-        "${multi_args}"
+        "${module_option_args}"
+        "${module_single_args}"
+        "${module_multi_args}"
         ${ARGN}
     )
 
@@ -965,16 +936,10 @@ endfunction()
 function(qt_internal_generate_cpp_global_exports target module_define_infix
     out_public_header out_private_header)
 
-    qt_internal_get_generate_cpp_global_exports_keywords(
-        option_args
-        single_args
-        multi_args
-    )
-
     cmake_parse_arguments(arg
-        "${option_args}"
-        "${single_args}"
-        "${multi_args}" ${ARGN}
+        "GENERATE_PRIVATE_CPP_EXPORTS"
+        "CPP_EXPORT_HEADER_BASE_NAME"
+        "" ${ARGN}
     )
 
     qt_internal_module_info(module "${target}")
