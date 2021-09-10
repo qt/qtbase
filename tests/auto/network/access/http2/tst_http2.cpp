@@ -914,6 +914,7 @@ void tst_Http2::authenticationRequired_data()
 void tst_Http2::authenticationRequired()
 {
     clearHTTP2State();
+    serverPort = 0;
     QFETCH(const bool, responseHEADOnly);
     POSTResponseHEADOnly = responseHEADOnly;
 
@@ -981,6 +982,10 @@ void tst_Http2::authenticationRequired()
     QCOMPARE(isAuthenticated(reqAuthHeader), success);
     if (success)
         QCOMPARE(receivedBody, expectedBody);
+    // In the `!success` case we need to wait for the server to emit this or it might cause issues
+    // in the next test running after this. In the `success` case we anyway expect it to have been
+    // received.
+    QTRY_VERIFY(serverGotSettingsACK);
 }
 
 void tst_Http2::serverStarted(quint16 port)
