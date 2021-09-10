@@ -341,7 +341,7 @@ static const QPointingDevice *pointingDeviceFor(qint64 deviceID)
     Q_UNUSED(qtScreenPoint);
 
     // Maintain masked state for the button for use by MouseDragged and MouseUp.
-    QRegion mask = m_platformWindow->window()->mask();
+    QRegion mask = QHighDpi::toNativeLocalPosition(m_platformWindow->window()->mask(), m_platformWindow->window());
     const bool masked = !mask.isEmpty() && !mask.contains(qtWindowPoint.toPoint());
     if (masked)
         m_acceptedMouseDowns &= ~button;
@@ -410,7 +410,7 @@ static const QPointingDevice *pointingDeviceFor(qint64 deviceID)
     [self convertFromScreen:[self screenMousePoint:theEvent] toWindowPoint:&qtWindowPoint andScreenPoint:&qtScreenPoint];
     Q_UNUSED(qtScreenPoint);
 
-    QRegion mask = m_platformWindow->window()->mask();
+    QRegion mask = QHighDpi::toNativeLocalPosition(m_platformWindow->window()->mask(), m_platformWindow->window());
     const bool masked = !mask.isEmpty() && !mask.contains(qtWindowPoint.toPoint());
     // Maintain masked state for the button for use by MouseDragged and Up.
     if (masked)
