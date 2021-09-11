@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
-** Copyright (C) 2018 Intel Corporation.
+** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -182,9 +182,7 @@ QT_BEGIN_NAMESPACE
     \sa loadHints
 */
 
-
-static qsizetype qt_find_pattern(const char *s, qsizetype s_len,
-                             const char *pattern, ulong p_len)
+static qsizetype qt_find_pattern(const char *s, qsizetype s_len)
 {
     /*
       We used to search from the end of the file so we'd skip the code and find
@@ -195,8 +193,8 @@ static qsizetype qt_find_pattern(const char *s, qsizetype s_len,
       More importantly, the pattern string may exist in the debug information due
       to it being used in the plugin in the first place.
     */
-
-    static const QByteArrayMatcher matcher(QByteArray(pattern, p_len));
+    QByteArrayView pattern = QPluginMetaData::MagicString;
+    static const QByteArrayMatcher matcher(pattern.toByteArray());
     return matcher.indexIn(s, s_len);
 }
 
@@ -278,10 +276,7 @@ static bool findPatternUnloaded(const QString &library, QLibraryPrivate *lib)
     }
 #endif // defined(Q_OF_ELF) && defined(Q_CC_GNU)
 
-    char pattern[] = "qTMETADATA ";
-    pattern[0] = 'Q'; // Ensure the pattern "QTMETADATA" is not found in this library should QPluginLoader ever encounter it.
-    const ulong plen = ulong(qstrlen(pattern));
-    if (qsizetype rel = qt_find_pattern(filedata + r.pos, r.length, pattern, plen);
+    if (qsizetype rel = qt_find_pattern(filedata + r.pos, r.length);
             rel >= 0) {
         const char *data = filedata + r.pos + rel;
         QString errMsg;

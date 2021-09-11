@@ -48,7 +48,6 @@
 #include "private/qobject_p.h"
 #include "qcbormap.h"
 #include "qcborvalue.h"
-#include "qendian.h"
 #include "qjsonarray.h"
 #include "qjsondocument.h"
 #include "qjsonobject.h"
@@ -65,24 +64,23 @@
 
 QT_BEGIN_NAMESPACE
 
-static inline int metaDataSignatureLength()
+QJsonDocument qJsonFromRawLibraryMetaData(const char *raw, qsizetype size, QString *errMsg)
 {
-    return sizeof("QTMETADATA  ") - 1;
-}
+    Q_ASSERT(size >= qsizetype(sizeof(QPluginMetaData::MagicString)));
+    raw += sizeof(QPluginMetaData::MagicString);
+    size -= sizeof(QPluginMetaData::MagicString);
 
-static QJsonDocument jsonFromCborMetaData(const char *raw, qsizetype size, QString *errMsg)
-{
     // extract the keys not stored in CBOR
-    int qt_metadataVersion = quint8(raw[0]);
-    int qt_version = qFromBigEndian<quint16>(raw + 1);
-    int qt_archRequirements = quint8(raw[3]);
-    if (Q_UNLIKELY(raw[-1] != '!' || qt_metadataVersion != 0)) {
+    QPluginMetaData::Header header;
+    Q_ASSERT(size >= qsizetype(sizeof(header)));
+    memcpy(&header, raw, sizeof(header));
+    if (Q_UNLIKELY(header.version > QPluginMetaData::CurrentMetaDataVersion)) {
         *errMsg = QStringLiteral("Invalid metadata version");
         return QJsonDocument();
     }
 
-    raw += 4;
-    size -= 4;
+    raw += sizeof(header);
+    size -= sizeof(header);
     QByteArray ba = QByteArray::fromRawData(raw, int(size));
     QCborParserError err;
     QCborValue metadata = QCborValue::fromCbor(ba, &err);
@@ -98,9 +96,10 @@ static QJsonDocument jsonFromCborMetaData(const char *raw, qsizetype size, QStri
     }
 
     QJsonObject o;
-    o.insert(QLatin1String("version"), qt_version << 8);
-    o.insert(QLatin1String("debug"), bool(qt_archRequirements & 1));
-    o.insert(QLatin1String("archreq"), qt_archRequirements);
+    o.insert(QLatin1String("version"),
+             QT_VERSION_CHECK(header.qt_major_version, header.qt_minor_version, 0));
+    o.insert(QLatin1String("debug"), bool(header.plugin_arch_requirements & 1));
+    o.insert(QLatin1String("archreq"), header.plugin_arch_requirements);
 
     // convert the top-level map integer keys
     for (auto it : metadata.toMap()) {
@@ -126,14 +125,6 @@ static QJsonDocument jsonFromCborMetaData(const char *raw, qsizetype size, QStri
             o.insert(key, it.second.toJsonValue());
     }
     return QJsonDocument(o);
-}
-
-QJsonDocument qJsonFromRawLibraryMetaData(const char *raw, qsizetype sectionSize, QString *errMsg)
-{
-    raw += metaDataSignatureLength();
-    sectionSize -= metaDataSignatureLength();
-
-    return jsonFromCborMetaData(raw, sectionSize, errMsg);
 }
 
 class QFactoryLoaderPrivate : public QObjectPrivate
