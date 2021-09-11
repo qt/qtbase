@@ -270,13 +270,13 @@ static bool findPatternUnloaded(const QString &library, QLibraryPrivate *lib)
     QString errMsg = library;
     QLibraryScanResult r = qt_find_pattern(filedata, fdlen, &errMsg);
     if (r.length) {
-        QJsonDocument doc = qJsonFromRawLibraryMetaData(filedata + r.pos, r.length, &errMsg);
-        if (doc.isNull()) {
+        if (!lib->metaData.parse(QByteArrayView(filedata + r.pos, r.length))) {
+            errMsg = lib->metaData.errorString();
             qWarning("Found invalid metadata in lib %ls: %ls",
                      qUtf16Printable(library), qUtf16Printable(errMsg));
         } else {
-            lib->metaData = doc.object();
             if (qt_debug_component()) {
+                QJsonDocument doc(lib->metaData.toJson());
                 qWarning("Found metadata in lib %s, metadata=\n%s\n",
                          library.toLocal8Bit().constData(), doc.toJson().constData());
             }
@@ -711,13 +711,10 @@ static bool qt_get_metadata(QLibraryPrivate *priv, QString *errMsg)
     if (metaData.size < sizeof(QPluginMetaData::Header))
         return error(QLibrary::tr("metadata too small"));
 
-    QJsonDocument doc = qJsonFromRawLibraryMetaData(reinterpret_cast<const char *>(metaData.data),
-                                                    metaData.size, errMsg);
-    if (doc.isNull())
-        return false;           // error message already set
-
-    priv->metaData = doc.object();
-    return true;
+    if (priv->metaData.parse(metaData))
+        return true;
+    *errMsg = priv->metaData.errorString();
+    return false;
 }
 
 bool QLibraryPrivate::isPlugin()
@@ -773,8 +770,8 @@ void QLibraryPrivate::updatePluginState()
 
     pluginState = IsNotAPlugin; // be pessimistic
 
-    uint qt_version = (uint)metaData.value(QLatin1String("version")).toDouble();
-    bool debug = metaData.value(QLatin1String("debug")).toBool();
+    uint qt_version = uint(metaData.value(QtPluginMetaDataKeys::QtVersion).toInteger());
+    bool debug = metaData.value(QtPluginMetaDataKeys::IsDebug).toBool();
     if ((qt_version & 0x00ff00) > (QT_VERSION & 0x00ff00) || (qt_version & 0xff0000) != (QT_VERSION & 0xff0000)) {
         if (qt_debug_component()) {
             qWarning("In %s:\n"

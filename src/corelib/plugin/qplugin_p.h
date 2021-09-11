@@ -61,7 +61,8 @@ enum class QtPluginMetaDataKeys {
     IID,
     ClassName,
     MetaData,
-    URI
+    URI,
+    IsDebug,
 };
 
 // F(IntKey, StringKey, Description)
@@ -70,7 +71,12 @@ enum class QtPluginMetaDataKeys {
     F(QtPluginMetaDataKeys::IID, "IID", "Plugin's Interface ID")                \
     F(QtPluginMetaDataKeys::ClassName, "className", "Plugin class name")        \
     F(QtPluginMetaDataKeys::MetaData, "MetaData", "Other meta data")            \
-    F(QtPluginMetaDataKeys::URI, "URI", "Plugin URI")
+    F(QtPluginMetaDataKeys::URI, "URI", "Plugin URI")                           \
+    /* not output by moc in CBOR */                                             \
+    F(QtPluginMetaDataKeys::QtVersion, "version", "Qt version")                 \
+    F(QtPluginMetaDataKeys::Requirements, "archlevel", "Architectural level")   \
+    F(QtPluginMetaDataKeys::IsDebug, "debug", "Debug-mode plugin")              \
+    /**/
 
 namespace {
 struct DecodedArchRequirements

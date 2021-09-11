@@ -47,6 +47,10 @@
 #include "qfileinfo.h"
 #include "qjsondocument.h"
 
+#if QT_CONFIG(library)
+#  include "qlibrary_p.h"
+#endif
+
 QT_BEGIN_NAMESPACE
 
 #if QT_CONFIG(library)
@@ -185,7 +189,7 @@ QJsonObject QPluginLoader::metaData() const
 {
     if (!d)
         return QJsonObject();
-    return d->metaData;
+    return d->metaData.toJson();
 }
 
 /*!
@@ -477,13 +481,10 @@ QList<QStaticPlugin> QPluginLoader::staticPlugins()
 */
 QJsonObject QStaticPlugin::metaData() const
 {
-    auto ptr = static_cast<const char *>(rawMetaData);
-
-    QString errMsg;
-    QJsonDocument doc = qJsonFromRawLibraryMetaData(ptr, rawMetaDataSize, &errMsg);
-    Q_ASSERT(doc.isObject());
-    Q_ASSERT(errMsg.isEmpty());
-    return doc.object();
+    QByteArrayView data(static_cast<const char *>(rawMetaData), rawMetaDataSize);
+    QPluginParsedMetaData parsed(data);
+    Q_ASSERT(!parsed.isError());
+    return parsed.toJson();
 }
 
 QT_END_NAMESPACE

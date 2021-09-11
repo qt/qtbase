@@ -46,8 +46,12 @@
 #include "private/qcoreapplication_p.h"
 #include "private/qduplicatetracker_p.h"
 #include "private/qobject_p.h"
+#include "qcborarray.h"
 #include "qcbormap.h"
 #include "qcborvalue.h"
+#include "qcborvalue.h"
+#include "qdir.h"
+#include "qfileinfo.h"
 #include "qjsonarray.h"
 #include "qjsondocument.h"
 #include "qjsonobject.h"
@@ -57,63 +61,61 @@
 #include "qplugin.h"
 #include "qplugin_p.h"
 #include "qpluginloader.h"
-#include <qdebug.h>
-#include <qdir.h>
+
+#if QT_CONFIG(library)
+#  include "qlibrary_p.h"
+#endif
 
 #include <qtcore_tracepoints_p.h>
 
 QT_BEGIN_NAMESPACE
 
-QJsonDocument qJsonFromRawLibraryMetaData(const char *raw, qsizetype size, QString *errMsg)
+bool QPluginParsedMetaData::parse(QByteArrayView raw)
 {
-    // extract the keys not stored in CBOR
     QPluginMetaData::Header header;
-    Q_ASSERT(size >= qsizetype(sizeof(header)));
-    memcpy(&header, raw, sizeof(header));
-    if (Q_UNLIKELY(header.version > QPluginMetaData::CurrentMetaDataVersion)) {
-        *errMsg = QStringLiteral("Invalid metadata version");
-        return QJsonDocument();
-    }
+    Q_ASSERT(raw.size() >= qsizetype(sizeof(header)));
+    memcpy(&header, raw.data(), sizeof(header));
+    if (Q_UNLIKELY(header.version > QPluginMetaData::CurrentMetaDataVersion))
+        return setError(QFactoryLoader::tr("Invalid metadata version"));
 
-    raw += sizeof(header);
-    size -= sizeof(header);
-    QByteArray ba = QByteArray::fromRawData(raw, int(size));
+    // use fromRawData to keep QCborStreamReader from copying
+    raw = raw.sliced(sizeof(header));
+    QByteArray ba = QByteArray::fromRawData(raw.data(), raw.size());
     QCborParserError err;
     QCborValue metadata = QCborValue::fromCbor(ba, &err);
 
-    if (err.error != QCborError::NoError) {
-        *errMsg = QLatin1String("Metadata parsing error: ") + err.error.toString();
-        return QJsonDocument();
-    }
-
-    if (!metadata.isMap()) {
-        *errMsg = QStringLiteral("Unexpected metadata contents");
-        return QJsonDocument();
-    }
+    if (err.error != QCborError::NoError)
+        return setError(QFactoryLoader::tr("Metadata parsing error: %1").arg(err.error.toString()));
+    if (!metadata.isMap())
+        return setError(QFactoryLoader::tr("Unexpected metadata contents"));
+    QCborMap map = metadata.toMap();
+    metadata = {};
 
     DecodedArchRequirements archReq =
             header.version == 0 ? decodeVersion0ArchRequirements(header.plugin_arch_requirements)
                                 : decodeVersion1ArchRequirements(header.plugin_arch_requirements);
 
-    QJsonObject o;
-    o.insert(QLatin1String("version"),
-             QT_VERSION_CHECK(header.qt_major_version, header.qt_minor_version, 0));
-    o.insert(QLatin1String("debug"), archReq.isDebug);
-    o.insert(QLatin1String("archlevel"), archReq.level);
+    // insert the keys not stored in the top-level CBOR map
+    map[int(QtPluginMetaDataKeys::QtVersion)] =
+               QT_VERSION_CHECK(header.qt_major_version, header.qt_minor_version, 0);
+    map[int(QtPluginMetaDataKeys::IsDebug)] = archReq.isDebug;
+    map[int(QtPluginMetaDataKeys::Requirements)] = archReq.level;
 
-    // convert the top-level map integer keys
-    for (auto it : metadata.toMap()) {
+    data = std::move(map);
+    return true;
+}
+
+QJsonObject QPluginParsedMetaData::toJson() const
+{
+    // convert from the internal CBOR representation to an external JSON one
+    QJsonObject o;
+    for (auto it : data.toMap()) {
         QString key;
         if (it.first.isInteger()) {
             switch (it.first.toInteger()) {
 #define CONVERT_TO_STRING(IntKey, StringKey, Description) \
             case int(IntKey): key = QStringLiteral(StringKey); break;
                 QT_PLUGIN_FOREACH_METADATA(CONVERT_TO_STRING)
-#undef CONVERT_TO_STRING
-
-            case int(QtPluginMetaDataKeys::Requirements):
-                // ignore, handled above
-                break;
             }
         } else {
             key = it.first.toString();
@@ -122,7 +124,7 @@ QJsonDocument qJsonFromRawLibraryMetaData(const char *raw, qsizetype size, QStri
         if (!key.isEmpty())
             o.insert(key, it.second.toJsonValue());
     }
-    return QJsonDocument(o);
+    return o;
 }
 
 class QFactoryLoaderPrivate : public QObjectPrivate
@@ -227,12 +229,12 @@ void QFactoryLoader::update()
             QStringList keys;
             bool metaDataOk = false;
 
-            QString iid = library->metaData.value(QLatin1String("IID")).toString();
+            QString iid = library->metaData.value(QtPluginMetaDataKeys::IID).toString();
             if (iid == QLatin1String(d->iid.constData(), d->iid.size())) {
-                QJsonObject object = library->metaData.value(QLatin1String("MetaData")).toObject();
+                QCborMap object = library->metaData.value(QtPluginMetaDataKeys::MetaData).toMap();
                 metaDataOk = true;
 
-                QJsonArray k = object.value(QLatin1String("Keys")).toArray();
+                QCborArray k = object.value(QLatin1String("Keys")).toArray();
                 for (int i = 0; i < k.size(); ++i)
                     keys += d->cs ? k.at(i).toString() : k.at(i).toString().toLower();
             }
@@ -251,14 +253,14 @@ void QFactoryLoader::update()
                 // library was built with a future Qt version,
                 // whereas the new one has a Qt version that fits
                 // better
+                constexpr int QtVersionNoPatch = QT_VERSION_CHECK(QT_VERSION_MAJOR, QT_VERSION_MINOR, 0);
                 const QString &key = keys.at(k);
                 QLibraryPrivate *previous = d->keyMap.value(key);
                 int prev_qt_version = 0;
-                if (previous) {
-                    prev_qt_version = (int)previous->metaData.value(QLatin1String("version")).toDouble();
-                }
-                int qt_version = (int)library->metaData.value(QLatin1String("version")).toDouble();
-                if (!previous || (prev_qt_version > QT_VERSION && qt_version <= QT_VERSION)) {
+                if (previous)
+                    prev_qt_version = int(previous->metaData.value(QtPluginMetaDataKeys::QtVersion).toInteger());
+                int qt_version = int(library->metaData.value(QtPluginMetaDataKeys::QtVersion).toInteger());
+                if (!previous || (prev_qt_version > QtVersionNoPatch && qt_version <= QtVersionNoPatch)) {
                     d->keyMap[key] = library;
                     ++keyUsageCount;
                 }
@@ -339,7 +341,7 @@ QList<QJsonObject> QFactoryLoader::metaData() const
 #if QT_CONFIG(library)
     QMutexLocker locker(&d->mutex);
     for (int i = 0; i < d->libraryList.size(); ++i)
-        metaData.append(d->libraryList.at(i)->metaData);
+        metaData.append(d->libraryList.at(i)->metaData.toJson());
 #endif
 
     const auto staticPlugins = QPluginLoader::staticPlugins();
