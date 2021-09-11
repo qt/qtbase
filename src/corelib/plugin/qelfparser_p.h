@@ -71,7 +71,7 @@ typedef quintptr qelfaddr_t;
 class QElfParser
 {
 public:
-    enum { QtMetaDataSection, NoQtSection, NotElf, Corrupt };
+    enum ScanResult { QtMetaDataSection, NoQtSection, NotElf, Corrupt };
     enum { ElfLittleEndian = 0, ElfBigEndian = 1 };
 
     struct ElfSectionHeader
@@ -96,7 +96,7 @@ public:
     }
 
     const char *parseSectionHeader(const char* s, ElfSectionHeader *sh);
-    int parse(const char *m_s, ulong fdlen, const QString &library, QLibraryPrivate *lib, qsizetype *pos, qsizetype *sectionlen);
+    ScanResult parse(const char *m_s, ulong fdlen, const QString &library, QLibraryPrivate *lib, qsizetype *pos, qsizetype *sectionlen);
 };
 
 QT_END_NAMESPACE
