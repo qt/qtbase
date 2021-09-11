@@ -56,35 +56,13 @@
 
 QT_REQUIRE_CONFIG(library);
 
-#if defined(Q_OF_ELF) && defined(Q_CC_GNU)
+#if defined(Q_OF_ELF) && __has_include(<elf.h>)
 
 QT_BEGIN_NAMESPACE
 
-class QString;
-class QLibraryPrivate;
-
-typedef quint16  qelfhalf_t;
-typedef quint32  qelfword_t;
-typedef quintptr qelfoff_t;
-typedef quintptr qelfaddr_t;
-
-class QElfParser
+struct QElfParser
 {
-public:
-    enum { ElfLittleEndian = 0, ElfBigEndian = 1 };
-
-    struct ElfSectionHeader
-    {
-        qelfword_t name;
-        qelfword_t type;
-        qelfoff_t  offset;
-        qelfoff_t  size;
-    };
-
-    qelfoff_t m_stringTableFileOffset;
-
-    const char *parseSectionHeader(const char* s, ElfSectionHeader *sh);
-    QLibraryScanResult parse(const char *m_s, ulong fdlen, QString *errMsg);
+    static QLibraryScanResult parse(QByteArrayView data, QString *errMsg);
 };
 
 QT_END_NAMESPACE

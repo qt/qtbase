@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
-** Copyright (C) 2018 Intel Corporation.
+** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -31,7 +31,10 @@
 #include <QSignalSpy>
 #include <QJsonArray>
 #include <qdir.h>
+#include <qendian.h>
 #include <qpluginloader.h>
+#include <qprocess.h>
+#include <qtemporaryfile.h>
 #include "theplugin/plugininterface.h"
 
 #if defined(QT_BUILD_INTERNAL) && defined(Q_OF_MACH_O)
@@ -91,6 +94,84 @@
 # define PREFIX         "lib"
 #endif
 
+#if defined(Q_OF_ELF)
+#  include <elf.h>
+#  include <memory>
+#  include <functional>
+
+#  ifdef _LP64
+using ElfHeader = Elf64_Ehdr;
+using ElfShdr = Elf64_Shdr;
+#  else
+using ElfHeader = Elf32_Ehdr;
+using ElfShdr = Elf32_Shdr;
+#  endif
+
+struct ElfPatcher
+{
+    using FullPatcher = void(ElfHeader *, QFile *);
+    FullPatcher *f;
+
+    ElfPatcher(FullPatcher *f = nullptr) : f(f) {}
+
+    template <typename T> using IsSingleArg = std::is_invocable<T, ElfHeader *>;
+    template <typename T> static std::enable_if_t<IsSingleArg<T>::value, ElfPatcher> fromLambda(T &&t)
+    {
+        using WithoutQFile = void(*)(ElfHeader *);
+        static const WithoutQFile f = t;
+        return { [](ElfHeader *h, QFile *) { f(h);} };
+    }
+    template <typename T> static std::enable_if_t<!IsSingleArg<T>::value, ElfPatcher> fromLambda(T &&t)
+    {
+        return { t };
+    }
+};
+
+Q_DECLARE_METATYPE(ElfPatcher)
+
+static std::unique_ptr<QTemporaryFile> patchElf(const QString &source, ElfPatcher patcher)
+{
+    std::unique_ptr<QTemporaryFile> tmplib;
+
+    bool ok = false;
+    [&]() {
+        QFile srclib(source);
+        QVERIFY2(srclib.open(QIODevice::ReadOnly), qPrintable(srclib.errorString()));
+        qint64 srcsize = srclib.size();
+        const uchar *srcdata = srclib.map(0, srcsize, QFile::MapPrivateOption);
+        QVERIFY2(srcdata, qPrintable(srclib.errorString()));
+
+        // copy our source plugin so we can modify it
+        tmplib.reset(new QTemporaryFile(QTest::currentDataTag() + QString(".XXXXXX" SUFFIX)));
+        QVERIFY2(tmplib->open(), qPrintable(tmplib->errorString()));
+
+        // sanity-check
+        QByteArray magic = QByteArray::fromRawData(reinterpret_cast<const char *>(srcdata), SELFMAG);
+        QCOMPARE(magic, QByteArray(ELFMAG));
+
+        // copy everything via mmap()
+        QVERIFY2(tmplib->resize(srcsize), qPrintable(tmplib->errorString()));
+        uchar *dstdata = tmplib->map(0, srcsize);
+        memcpy(dstdata, srcdata, srcsize);
+
+        // now patch the file
+        patcher.f(reinterpret_cast<ElfHeader *>(dstdata), tmplib.get());
+
+        ok = true;
+    }();
+    if (!ok)
+        tmplib.reset();
+    return tmplib;
+}
+
+// All ELF systems are expected to support GCC expression statements
+#define patchElf(source, patcher)   __extension__({     \
+        auto r = patchElf(source, patcher);             \
+        if (QTest::currentTestFailed()) return;         \
+        std::move(r);                                   \
+    })
+#endif
+
 static QString sys_qualifiedLibraryName(const QString &fileName)
 {
     QString name = QLatin1String("bin/") + QLatin1String(PREFIX) + fileName + QLatin1String(SUFFIX);
@@ -111,13 +192,13 @@ private slots:
     void errorString();
     void loadHints();
     void deleteinstanceOnUnload();
+#if defined (__ELF__)
     void loadDebugObj();
+    void loadCorruptElf_data();
     void loadCorruptElf();
+#endif
     void loadMachO_data();
     void loadMachO();
-#if defined (Q_OS_UNIX)
-    void loadGarbage();
-#endif
     void relativePath();
     void absolutePath();
     void reloadPlugin();
@@ -289,47 +370,252 @@ void tst_QPluginLoader::deleteinstanceOnUnload()
     }
 }
 
+#if defined (__ELF__)
 void tst_QPluginLoader::loadDebugObj()
 {
 #if !defined(QT_SHARED)
     QSKIP("This test requires a shared build of Qt, as QPluginLoader::setFileName is a no-op in static builds");
 #endif
-#if defined (__ELF__)
     QVERIFY(QFile::exists(QFINDTESTDATA("elftest/debugobj.so")));
     QPluginLoader lib1(QFINDTESTDATA("elftest/debugobj.so"));
     QCOMPARE(lib1.load(), false);
-#endif
 }
 
-void tst_QPluginLoader::loadCorruptElf()
+void tst_QPluginLoader::loadCorruptElf_data()
 {
 #if !defined(QT_SHARED)
     QSKIP("This test requires a shared build of Qt, as QPluginLoader::setFileName is a no-op in static builds");
 #endif
-#if defined (__ELF__)
-    if (sizeof(void*) == 8) {
-        QVERIFY(QFile::exists(QFINDTESTDATA("elftest/corrupt1.elf64.so")));
+    QTest::addColumn<QString>("snippet");
+    QTest::addColumn<ElfPatcher>("patcher");
+    auto newRow = [](const char *rowname, QString &&snippet, auto patcher) {
+        QTest::newRow(rowname) << std::move(snippet) << ElfPatcher::fromLambda(patcher);
+    };
 
-        QPluginLoader lib1(QFINDTESTDATA("elftest/corrupt1.elf64.so"));
-        QCOMPARE(lib1.load(), false);
-        QVERIFY2(lib1.errorString().contains("not an ELF object"), qPrintable(lib1.errorString()));
+    using H = ElfHeader *;          // because I'm lazy
+    newRow("not-elf", "invalid signature", [](H h) {
+        h->e_ident[EI_MAG0] = 'Q';
+        h->e_ident[EI_MAG1] = 't';
+    });
 
-        QPluginLoader lib2(QFINDTESTDATA("elftest/corrupt2.elf64.so"));
-        QCOMPARE(lib2.load(), false);
-        QVERIFY2(lib2.errorString().contains("invalid"), qPrintable(lib2.errorString()));
+    newRow("wrong-word-size", "file is for a different word size", [](H h) {
+        h->e_ident[EI_CLASS] = sizeof(void *) == 8 ? ELFCLASS32 : ELFCLASS64;
 
-        QPluginLoader lib3(QFINDTESTDATA("elftest/corrupt3.elf64.so"));
-        QCOMPARE(lib3.load(), false);
-        QVERIFY2(lib3.errorString().contains("invalid"), qPrintable(lib3.errorString()));
-    } else if (sizeof(void*) == 4) {
-        QPluginLoader libW(QFINDTESTDATA("elftest/corrupt3.elf64.so"));
-        QCOMPARE(libW.load(), false);
-        QVERIFY2(libW.errorString().contains("architecture"), qPrintable(libW.errorString()));
-    } else {
-        QFAIL("Please port QElfParser to this platform or blacklist this test.");
-    }
-#endif
+        // unnecessary, but we're doing it anyway
+#  ifdef _LP64
+        Elf32_Ehdr o;
+        o.e_phentsize = sizeof(Elf32_Phdr);
+        o.e_shentsize = sizeof(Elf32_Shdr);
+#  else
+        Elf64_Ehdr o;
+        o.e_phentsize = sizeof(Elf64_Phdr);
+        o.e_shentsize = sizeof(Elf64_Shdr);
+#  endif
+        memcpy(o.e_ident, h->e_ident, EI_NIDENT);
+        o.e_type = h->e_type;
+        o.e_machine = h->e_machine;
+        o.e_version = h->e_version;
+        o.e_entry = h->e_entry;
+        o.e_phoff = h->e_phoff;
+        o.e_shoff = h->e_shoff;
+        o.e_flags = h->e_flags;
+        o.e_ehsize = sizeof(o);
+        o.e_phnum = h->e_phnum;
+        o.e_shnum = h->e_shnum;
+        o.e_shstrndx = h->e_shstrndx;
+        memcpy(h, &o, sizeof(o));
+    });
+    newRow("invalid-word-size", "file is for a different word size", [](H h) {
+        h->e_ident[EI_CLASS] = ELFCLASSNONE;;
+    });
+    newRow("unknown-word-size", "file is for a different word size", [](H h) {
+        h->e_ident[EI_CLASS] |= 0x40;
+    });
+
+    newRow("wrong-endian", "file is for the wrong endianness", [](H h) {
+        h->e_ident[EI_DATA] = QSysInfo::ByteOrder == QSysInfo::LittleEndian ? ELFDATA2MSB : ELFDATA2LSB;
+
+        // unnecessary, but we're doing it anyway
+        h->e_type = qbswap(h->e_type);
+        h->e_machine = qbswap(h->e_machine);
+        h->e_version = qbswap(h->e_version);
+        h->e_entry = qbswap(h->e_entry);
+        h->e_phoff = qbswap(h->e_phoff);
+        h->e_shoff = qbswap(h->e_shoff);
+        h->e_flags = qbswap(h->e_flags);
+        h->e_ehsize = qbswap(h->e_ehsize);
+        h->e_phnum = qbswap(h->e_phnum);
+        h->e_phentsize = qbswap(h->e_phentsize);
+        h->e_shnum = qbswap(h->e_shnum);
+        h->e_shentsize = qbswap(h->e_shentsize);
+        h->e_shstrndx = qbswap(h->e_shstrndx);
+    });
+    newRow("invalid-endian", "file is for the wrong endianness", [](H h) {
+        h->e_ident[EI_DATA] = ELFDATANONE;
+    });
+    newRow("unknown-endian", "file is for the wrong endianness", [](H h) {
+        h->e_ident[EI_DATA] |= 0x40;
+    });
+
+    newRow("elf-version-0", "file has an unknown ELF version", [](H h) {
+        --h->e_ident[EI_VERSION];
+    });
+    newRow("elf-version-2", "file has an unknown ELF version", [](H h) {
+        ++h->e_ident[EI_VERSION];
+    });
+
+    newRow("executable", "file is not a shared object", [](H h) {
+        h->e_type = ET_EXEC;
+    });
+    newRow("relocatable", "file is not a shared object", [](H h) {
+        h->e_type = ET_REL;
+    });
+    newRow("core-file", "file is not a shared object", [](H h) {
+        h->e_type = ET_CORE;
+    });
+    newRow("invalid-type", "file is not a shared object", [](H h) {
+        h->e_type |= 0x100;
+    });
+
+    newRow("wrong-arch", "file is for a different processor", [](H h) {
+        // could just ++h->e_machine...
+#  if defined(Q_PROCESSOR_X86_64)
+        h->e_machine = EM_AARCH64;
+#  elif defined(Q_PROCESSOR_ARM_64)
+        h->e_machine = EM_X86_64;
+#  elif defined(Q_PROCESSOR_X86_32)
+        h->e_machine = EM_ARM;
+#  elif defined(Q_PROCESSOR_ARM)
+        h->e_machine = EM_386;
+#  elif defined(Q_PROCESSOR_MIPS_64)
+        h->e_machine = EM_PPC64;
+#  elif defined(Q_PROCESSOR_MIPS_32)
+        h->e_machine = EM_PPC;
+#  elif defined(Q_PROCESSOR_POWER_64)
+        h->e_machine = EM_S390;
+#  elif defined(Q_PROCESSOR_POWER_32)
+        h->e_machine = EM_MIPS;
+#  endif
+    });
+
+    newRow("file-version-0", "file has an unknown ELF version", [](H h) {
+        --h->e_version;
+    });
+    newRow("file-version-2", "file has an unknown ELF version", [](H h) {
+        ++h->e_version;
+    });
+
+    newRow("section-entry-size-zero", "unexpected section entry size", [](H h) {
+        h->e_shentsize = 0;
+    });
+    newRow("section-entry-small", "unexpected section entry size", [](H h) {
+        h->e_shentsize = alignof(ElfShdr);
+    });
+    newRow("section-entry-misaligned", "unexpected section entry size", [](H h) {
+        ++h->e_shentsize;
+    });
+    newRow("no-sections", "is not a Qt plugin (.qtmetadata section not found)", [](H h){
+        h->e_shnum = h->e_shoff = h->e_shstrndx = 0;
+    });
+
+    // section table tests
+    newRow("section-table-starts-past-eof", "section table extends past the end of the file",
+           [](H h, QFile *f) {
+        h->e_shoff = f->size();
+    });
+    newRow("section-table-ends-past-eof", "section table extends past the end of the file",
+           [](H h, QFile *f) {
+        h->e_shoff = f->size() + 1 - h->e_shentsize * h->e_shnum;
+    });
+
+    static auto getSection = +[](H h, int index) {
+        auto sections = reinterpret_cast<ElfShdr *>(h->e_shoff + reinterpret_cast<uchar *>(h));
+        return sections + index;
+    };
+
+    // arbitrary section bounds checks
+    // section index = 0 is usually a NULL section, so we try 1
+    newRow("section1-starts-past-eof", "a section data extends past the end of the file",
+           [](H h, QFile *f) {
+        ElfShdr *s = getSection(h, 1);
+        s->sh_offset = f->size();
+    });
+    newRow("section1-ends-past-eof", "a section data extends past the end of the file",
+           [](H h, QFile *f) {
+        ElfShdr *s = getSection(h, 1);
+        s->sh_size = f->size() + 1 - s->sh_offset;
+    });
+    newRow("section1-bounds-overflow", "a section data extends past the end of the file", [](H h) {
+        ElfShdr *s = getSection(h, 1);
+        s->sh_size = -sizeof(*s);
+    });
+
+    // section header string table tests
+    newRow("shstrndx-invalid", "e_shstrndx greater than the number of sections", [](H h) {
+        h->e_shstrndx = h->e_shnum;
+    });
+    newRow("shstrtab-starts-past-eof", "section header string table extends past the end of the file",
+           [](H h, QFile *f) {
+        ElfShdr *s = getSection(h, h->e_shstrndx);
+        s->sh_offset = f->size();
+    });
+    newRow("shstrtab-ends-past-eof", "section header string table extends past the end of the file",
+           [](H h, QFile *f) {
+        ElfShdr *s = getSection(h, h->e_shstrndx);
+        s->sh_size = f->size() + 1 - s->sh_offset;
+    });
+    newRow("shstrtab-bounds-overflow", "section header string table extends past the end of the file", [](H h) {
+        ElfShdr *s = getSection(h, h->e_shstrndx);
+        s->sh_size = -sizeof(*s);
+    });
+    newRow("section-name-past-eof", "section name extends past the end of the file", [](H h, QFile *f) {
+        ElfShdr *section1 = getSection(h, 1);
+        ElfShdr *shstrtab = getSection(h, h->e_shstrndx);
+        section1->sh_name = f->size() - shstrtab->sh_offset;
+    });
+    newRow("section-name-past-end-of-shstrtab", "section name extends past the end of the file", [](H h) {
+        ElfShdr *section1 = getSection(h, 1);
+        ElfShdr *shstrtab = getSection(h, h->e_shstrndx);
+        section1->sh_name = shstrtab->sh_size;
+    });
+
+    newRow("debug-symbols", ".qtmetadata section not found", [](H h) {
+        // attempt to make it look like extracted debug info
+        for (int i = 1; i < h->e_shnum; ++i) {
+            ElfShdr *s = getSection(h, i);
+            if (s->sh_type == SHT_NOBITS)
+                break;
+            if (s->sh_type != SHT_NOTE && s->sh_flags & SHF_ALLOC)
+                s->sh_type = SHT_NOBITS;
+        }
+    });
+
+    // we don't know which section is .qtmetadata, so we just apply to all of them
+    static auto applyToAllSectionFlags = +[](H h, int flag) {
+        for (int i = 0; i < h->e_shnum; ++i)
+            getSection(h, i)->sh_flags |= flag;
+    };
+    newRow("qtmetadata-executable", ".qtmetadata section is executable", [](H h) {
+        applyToAllSectionFlags(h, SHF_EXECINSTR);
+    });
+    newRow("qtmetadata-writable", ".qtmetadata section is writable", [](H h) {
+        applyToAllSectionFlags(h, SHF_WRITE);
+    });
 }
+
+void tst_QPluginLoader::loadCorruptElf()
+{
+    QFETCH(QString, snippet);
+    QFETCH(ElfPatcher, patcher);
+
+    std::unique_ptr<QTemporaryFile> tmplib =
+            patchElf(sys_qualifiedLibraryName("theplugin"), patcher);
+
+    QPluginLoader lib(tmplib->fileName());
+    QVERIFY(!lib.load());
+    QVERIFY2(lib.errorString().contains(snippet), qPrintable(lib.errorString()));
+}
+#endif // __ELF__
 
 void tst_QPluginLoader::loadMachO_data()
 {
@@ -403,21 +689,6 @@ void tst_QPluginLoader::loadMachO()
     } while (offeredlen);
 #endif
 }
-
-#if defined (Q_OS_UNIX)
-void tst_QPluginLoader::loadGarbage()
-{
-#if !defined(QT_SHARED)
-    QSKIP("This test requires a shared build of Qt, as QPluginLoader::setFileName is a no-op in static builds");
-#endif
-    for (int i=0; i<5; i++) {
-        const QString name = QLatin1String("elftest/garbage") + QString::number(i + 1) + QLatin1String(".so");
-        QPluginLoader lib(QFINDTESTDATA(name));
-        QCOMPARE(lib.load(), false);
-        QVERIFY(lib.errorString() != QString("Unknown error"));
-    }
-}
-#endif
 
 void tst_QPluginLoader::relativePath()
 {

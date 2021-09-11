@@ -193,8 +193,8 @@ static QLibraryScanResult qt_find_pattern(const char *s, qsizetype s_len, QStrin
       More importantly, the pattern string may exist in the debug information due
       to it being used in the plugin in the first place.
     */
-#if defined (Q_OF_ELF)
-    return QElfParser().parse(s, s_len, errMsg);
+#if defined (Q_OF_ELF) && __has_include(<elf.h>)
+    return QElfParser::parse({s, s_len}, errMsg);
 #elif defined(Q_OF_MACH_O)
     return QMachOParser::parse(s, s_len, errMsg);
 #endif
