@@ -1531,6 +1531,7 @@ void tst_QLocalSocket::writeToDisconnected()
     QVERIFY(server.listen("writeToDisconnected"));
 
     QLocalSocket client;
+    QSignalSpy spyError(&client, SIGNAL(errorOccurred(QLocalSocket::LocalSocketError)));
     client.connectToServer("writeToDisconnected");
     QVERIFY(client.waitForConnected(3000));
     QVERIFY(server.waitForNewConnection(3000));
@@ -1548,6 +1549,7 @@ void tst_QLocalSocket::writeToDisconnected()
 
     QCOMPARE(client.bytesToWrite(), qint64(1));
     QVERIFY(!client.waitForBytesWritten());
+    QCOMPARE(spyError.count(), 1);
     QCOMPARE(client.state(), QLocalSocket::UnconnectedState);
 }
 

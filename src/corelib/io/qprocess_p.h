@@ -287,6 +287,7 @@ public:
 #ifdef Q_OS_WIN
     qint64 pipeWriterBytesToWrite() const;
     void _q_bytesWritten(qint64 bytes);
+    void _q_writeFailed();
 #else
     bool _q_canWrite();
     bool writeToStdin();

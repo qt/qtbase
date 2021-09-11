@@ -841,6 +841,8 @@ qint64 QProcess::writeData(const char *data, qint64 len)
         d->stdinChannel.writer = new QWindowsPipeWriter(d->stdinChannel.pipe[1], this);
         QObjectPrivate::connect(d->stdinChannel.writer, &QWindowsPipeWriter::bytesWritten,
                                 d, &QProcessPrivate::_q_bytesWritten);
+        QObjectPrivate::connect(d->stdinChannel.writer, &QWindowsPipeWriter::writeFailed,
+                                d, &QProcessPrivate::_q_writeFailed);
     }
 
     if (d->isWriteChunkCached(data, len))
@@ -870,6 +872,12 @@ void QProcessPrivate::_q_bytesWritten(qint64 bytes)
     }
     if (stdinChannel.closed && pipeWriterBytesToWrite() == 0)
         closeWriteChannel();
+}
+
+void QProcessPrivate::_q_writeFailed()
+{
+    closeWriteChannel();
+    setErrorAndEmit(QProcess::WriteError);
 }
 
 // Use ShellExecuteEx() to trigger an UAC prompt when CreateProcess()fails

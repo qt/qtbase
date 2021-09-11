@@ -78,6 +78,7 @@ public:
 
 Q_SIGNALS:
     void bytesWritten(qint64 bytes);
+    void writeFailed();
 
 protected:
     bool event(QEvent *e) override;

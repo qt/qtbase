@@ -137,6 +137,7 @@ public:
     void _q_bytesWritten(qint64 bytes);
     void _q_pipeClosed();
     void _q_winError(ulong windowsError, const QString &function);
+    void _q_writeFailed();
     HANDLE handle;
     QWindowsPipeWriter *pipeWriter;
     QWindowsPipeReader *pipeReader;

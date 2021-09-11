@@ -341,6 +341,7 @@ bool QWindowsPipeWriter::consumePendingAndEmit(bool allowWinActPosting)
         if (alive) {
             writeBuffer.clear();
             completionState = WriteDisabled;
+            emit writeFailed();
         }
     } else if (emitBytesWritten) {
         emit bytesWritten(numberOfBytesWritten);

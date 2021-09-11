@@ -310,6 +310,8 @@ qint64 QLocalSocket::writeData(const char *data, qint64 len)
         d->pipeWriter = new QWindowsPipeWriter(d->handle, this);
         QObjectPrivate::connect(d->pipeWriter, &QWindowsPipeWriter::bytesWritten,
                                 d, &QLocalSocketPrivate::_q_bytesWritten);
+        QObjectPrivate::connect(d->pipeWriter, &QWindowsPipeWriter::writeFailed,
+                                d, &QLocalSocketPrivate::_q_writeFailed);
     }
 
     if (d->isWriteChunkCached(data, len))
@@ -453,6 +455,16 @@ void QLocalSocketPrivate::_q_bytesWritten(qint64 bytes)
     }
     if (state == QLocalSocket::ClosingState)
         q->disconnectFromServer();
+}
+
+void QLocalSocketPrivate::_q_writeFailed()
+{
+    Q_Q(QLocalSocket);
+    error = QLocalSocket::PeerClosedError;
+    errorString = QLocalSocket::tr("Remote closed");
+    emit q->errorOccurred(error);
+
+    _q_pipeClosed();
 }
 
 qintptr QLocalSocket::socketDescriptor() const
