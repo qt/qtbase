@@ -835,6 +835,7 @@ void tst_QProcess::closeReadChannel()
 void tst_QProcess::openModes()
 {
     QProcess proc;
+    QSignalSpy spyAboutToClose(&proc, &QProcess::aboutToClose);
     QVERIFY(!proc.isOpen());
     QCOMPARE(proc.openMode(), QProcess::NotOpen);
     proc.start("testProcessEcho3/testProcessEcho3");
@@ -870,6 +871,7 @@ void tst_QProcess::openModes()
     QVERIFY(!proc.isOpen());
     QVERIFY(!proc.isReadable());
     QVERIFY(!proc.isWritable());
+    QCOMPARE(spyAboutToClose.count(), 1);
     QCOMPARE(proc.state(), QProcess::NotRunning);
 }
 
