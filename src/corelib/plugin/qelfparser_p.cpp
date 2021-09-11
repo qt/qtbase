@@ -63,7 +63,8 @@ const char *QElfParser::parseSectionHeader(const char *data, ElfSectionHeader *s
     return data;
 }
 
-int QElfParser::parse(const char *dataStart, ulong fdlen, const QString &library, QLibraryPrivate *lib, qsizetype *pos, qsizetype *sectionlen)
+auto QElfParser::parse(const char *dataStart, ulong fdlen, const QString &library,
+                       QLibraryPrivate *lib, qsizetype *pos, qsizetype *sectionlen) -> ScanResult
 {
 #if defined(QELFPARSER_DEBUG)
     qDebug() << "QElfParser::parse " << library;
