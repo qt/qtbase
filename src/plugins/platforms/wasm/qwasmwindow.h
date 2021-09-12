@@ -122,6 +122,7 @@ protected:
     WId m_winid = 0;
     bool m_hasTitle = false;
     bool m_needsCompositor = false;
+    long m_requestAnimationFrameId = -1;
     friend class QWasmCompositor;
     friend class QWasmEventTranslator;
     bool windowIsPopupType(Qt::WindowFlags flags) const;

@@ -371,7 +371,6 @@ int QWasmEventTranslator::mouse_cb(int eventType, const EmscriptenMouseEvent *mo
 {
     QWasmEventTranslator *translator = (QWasmEventTranslator*)userData;
     bool accepted = translator->processMouse(eventType,mouseEvent);
-    QWasmEventDispatcher::maintainTimers();
     return accepted;
 }
 
@@ -592,7 +591,6 @@ int QWasmEventTranslator::wheel_cb(int eventType, const EmscriptenWheelEvent *wh
 
     bool accepted = QWindowSystemInterface::handleWheelEvent(window2, getTimestamp(), localPoint,
                                              globalPoint, QPoint(), pixelDelta, modifiers);
-    QWasmEventDispatcher::maintainTimers();
     return static_cast<int>(accepted);
 }
 
@@ -675,8 +673,6 @@ int QWasmEventTranslator::handleTouch(int eventType, const EmscriptenTouchEvent 
 
     if (eventType == EMSCRIPTEN_EVENT_TOUCHCANCEL)
         accepted = QWindowSystemInterface::handleTouchCancelEvent(window2, getTimestamp(), touchDevice, keyModifier);
-
-    QWasmEventDispatcher::maintainTimers();
 
     return static_cast<int>(accepted);
 }
@@ -872,8 +868,6 @@ bool QWasmEventTranslator::processKeyboard(int eventType, const EmscriptenKeyboa
                 QWasmIntegration::get()->getWasmClipboard()->isPaste = false;
         accepted = false; // continue on to event
     }
-
-    QWasmEventDispatcher::maintainTimers();
 
     return accepted;
 }

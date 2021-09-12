@@ -63,6 +63,8 @@ QWasmWindow::QWasmWindow(QWindow *w, QWasmCompositor *compositor, QWasmBackingSt
 QWasmWindow::~QWasmWindow()
 {
     m_compositor->removeWindow(this);
+    if (m_requestAnimationFrameId > -1)
+        emscripten_cancel_animation_frame(m_requestAnimationFrameId);
 }
 
 void QWasmWindow::destroy()
@@ -395,16 +397,14 @@ qreal QWasmWindow::devicePixelRatio() const
 
 void QWasmWindow::requestUpdate()
 {
-    QPointer<QWindow> windowPointer(window());
-    bool registered = QWasmEventDispatcher::registerRequestUpdateCallback([=](){
-        if (windowPointer.isNull())
-            return;
-
-        deliverUpdateRequest();
-    });
-
-    if (!registered)
-        QPlatformWindow::requestUpdate();
+    static auto frame = [](double time, void *context) -> int {
+        Q_UNUSED(time);
+        QWasmWindow *window = static_cast<QWasmWindow *>(context);
+        window->m_requestAnimationFrameId = -1;
+        window->deliverUpdateRequest();
+        return 0;
+    };
+    m_requestAnimationFrameId = emscripten_request_animation_frame(frame, this);
 }
 
 bool QWasmWindow::hasTitleBar() const

@@ -30,35 +30,14 @@
 #ifndef QWASMEVENTDISPATCHER_H
 #define QWASMEVENTDISPATCHER_H
 
-#include <QtCore/qhash.h>
-#include <QtCore/qloggingcategory.h>
-#include <QtGui/private/qunixeventdispatcher_qpa_p.h>
+#include <QtCore/private/qeventdispatcher_wasm_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class QWasmEventDispatcherPrivate;
-
-class QWasmEventDispatcher : public QUnixEventDispatcherQPA
+class QWasmEventDispatcher : public QEventDispatcherWasm
 {
-    Q_DECLARE_PRIVATE(QWasmEventDispatcher)
-public:
-    explicit QWasmEventDispatcher(QObject *parent = nullptr);
-    ~QWasmEventDispatcher();
-
-    static bool registerRequestUpdateCallback(std::function<void(void)> callback);
-    static void maintainTimers();
-
 protected:
-    bool processEvents(QEventLoop::ProcessEventsFlags flags) override;
-    void doMaintainTimers();
-    void wakeUp() override;
-    static void mainThreadWakeUp(void *eventDispatcher);
-
-private:
-    bool m_hasMainLoop = false;
-    bool m_hasZeroTimer = false;
-    uint64_t m_currentTargetTime = std::numeric_limits<uint64_t>::max();
-    QList<std::function<void(void)>> m_requestUpdateCallbacks;
+    void processWindowSystemEvents(QEventLoop::ProcessEventsFlags flags) override;
 };
 
 QT_END_NAMESPACE
