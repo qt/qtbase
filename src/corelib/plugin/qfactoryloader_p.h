@@ -58,6 +58,7 @@
 #include "QtCore/private/qplugin_p.h"
 #include "QtCore/qcbormap.h"
 #include "QtCore/qcborvalue.h"
+#include "QtCore/qjsonobject.h"
 #include "QtCore/qmap.h"
 #include "QtCore/qobject.h"
 #include "QtCore/qplugin.h"
@@ -65,7 +66,6 @@
 QT_BEGIN_NAMESPACE
 
 class QJsonDocument;
-class QJsonObject;
 class QLibraryPrivate;
 
 class QPluginParsedMetaData
@@ -87,7 +87,7 @@ public:
     bool parse(QPluginMetaData metaData)
     { return parse(QByteArrayView(reinterpret_cast<const char *>(metaData.data), metaData.size)); }
 
-    QJsonObject toJson() const;
+    Q_CORE_EXPORT QJsonObject toJson() const;
 
     // if data is not a map, toMap() returns empty, so shall these functions
     QCborMap toCbor() const                         { return data.toMap(); }
@@ -119,7 +119,25 @@ public:
     QMultiMap<int, QString> keyMap() const;
     int indexOf(const QString &needle) const;
 
-    QList<QJsonObject> metaData() const;
+    // this is a temporary gimmick to convert other Qt modules
+    struct TemporaryHolder {
+        QList<QPluginParsedMetaData> metaData;
+        TemporaryHolder(QList<QPluginParsedMetaData> &&md) : metaData(std::move(md)) {}
+        operator QList<QPluginParsedMetaData>() const { return std::move(metaData); }
+
+        Q_DECL_DEPRECATED_X("Update caller to use QList<QPluginParsedMetaData>()")
+        operator QList<QJsonObject>() const
+        {
+            QList<QJsonObject> result;
+            result.reserve(metaData.size());
+            for (const QPluginParsedMetaData &pmd : metaData)
+                result.append(pmd.toJson());
+            return result;
+        }
+    };
+    using MetaDataList = TemporaryHolder;
+
+    MetaDataList metaData() const;
     QObject *instance(int index) const;
 };
 

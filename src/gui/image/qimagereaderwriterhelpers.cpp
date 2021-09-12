@@ -39,7 +39,7 @@
 
 #include "private/qimagereaderwriterhelpers_p.h"
 
-#include <qjsonarray.h>
+#include <qcborarray.h>
 #include <qmutex.h>
 #include <private/qfactoryloader_p.h>
 
@@ -81,13 +81,12 @@ static void appendImagePluginMimeTypes(QFactoryLoader *loader,
                                        QList<QByteArray> *result,
                                        QList<QByteArray> *resultKeys = nullptr)
 {
-    QList<QJsonObject> metaDataList = loader->metaData();
-
+    QList<QPluginParsedMetaData> metaDataList = loader->metaData();
     const int pluginCount = metaDataList.size();
     for (int i = 0; i < pluginCount; ++i) {
-        const QJsonObject metaData = metaDataList.at(i).value(QLatin1String("MetaData")).toObject();
-        const QJsonArray keys = metaData.value(QLatin1String("Keys")).toArray();
-        const QJsonArray mimeTypes = metaData.value(QLatin1String("MimeTypes")).toArray();
+        const QCborMap metaData = metaDataList.at(i).value(QtPluginMetaDataKeys::MetaData).toMap();
+        const QCborArray keys = metaData.value(QLatin1String("Keys")).toArray();
+        const QCborArray mimeTypes = metaData.value(QLatin1String("MimeTypes")).toArray();
         QImageIOPlugin *plugin = qobject_cast<QImageIOPlugin *>(loader->instance(i));
         const int keyCount = keys.size();
         for (int k = 0; k < keyCount; ++k) {

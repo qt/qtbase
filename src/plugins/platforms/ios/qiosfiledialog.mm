@@ -87,7 +87,8 @@ bool QIOSFileDialog::showImagePickerDialog(QWindow *parent)
 {
     if (!m_viewController) {
         QFactoryLoader *plugins = QIOSIntegration::instance()->optionalPlugins();
-        for (int i = 0; i < plugins->metaData().size(); ++i) {
+        qsizetype size = QList<QPluginParsedMetaData>(plugins->metaData()).size();
+        for (qsizetype i = 0; i < size; ++i) {
             QIosOptionalPluginInterface *plugin = qobject_cast<QIosOptionalPluginInterface *>(plugins->instance(i));
             m_viewController = [plugin->createImagePickerController(this) retain];
             if (m_viewController)

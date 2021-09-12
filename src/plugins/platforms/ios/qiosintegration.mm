@@ -125,7 +125,8 @@ void QIOSIntegration::initialize()
 #endif
     QMacInternalPasteboardMime::initializeMimeTypes();
 
-    for (int i = 0; i < m_optionalPlugins->metaData().size(); ++i)
+    qsizetype size = QList<QPluginParsedMetaData>(m_optionalPlugins->metaData()).size();
+    for (qsizetype i = 0; i < size; ++i)
         qobject_cast<QIosOptionalPluginInterface *>(m_optionalPlugins->instance(i))->initPlugin();
 }
 

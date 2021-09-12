@@ -150,6 +150,7 @@ public:
 private:
     qsizetype rawMetaDataSize;
     const void *rawMetaData;
+    friend class QFactoryLoader;
 };
 Q_DECLARE_TYPEINFO(QStaticPlugin, Q_PRIMITIVE_TYPE);
 

@@ -334,22 +334,24 @@ QFactoryLoader::QFactoryLoader(const char *iid,
 #endif
 }
 
-QList<QJsonObject> QFactoryLoader::metaData() const
+QFactoryLoader::MetaDataList QFactoryLoader::metaData() const
 {
     Q_D(const QFactoryLoader);
-    QList<QJsonObject> metaData;
+    QList<QPluginParsedMetaData> metaData;
 #if QT_CONFIG(library)
     QMutexLocker locker(&d->mutex);
     for (int i = 0; i < d->libraryList.size(); ++i)
-        metaData.append(d->libraryList.at(i)->metaData.toJson());
+        metaData.append(d->libraryList.at(i)->metaData);
 #endif
 
+    QLatin1String iid(d->iid.constData(), d->iid.size());
     const auto staticPlugins = QPluginLoader::staticPlugins();
     for (const QStaticPlugin &plugin : staticPlugins) {
-        const QJsonObject object = plugin.metaData();
-        if (object.value(QLatin1String("IID")) != QLatin1String(d->iid.constData(), d->iid.size()))
+        QByteArrayView pluginData(static_cast<const char *>(plugin.rawMetaData), plugin.rawMetaDataSize);
+        QPluginParsedMetaData parsed(pluginData);
+        if (parsed.isError() || parsed.value(QtPluginMetaDataKeys::IID) != iid)
             continue;
-        metaData.append(object);
+        metaData.append(std::move(parsed));
     }
     return metaData;
 }
@@ -375,14 +377,16 @@ QObject *QFactoryLoader::instance(int index) const
     lock.unlock();
 #endif
 
-    QList<QStaticPlugin> staticPlugins = QPluginLoader::staticPlugins();
-    for (int i = 0; i < staticPlugins.count(); ++i) {
-        const QJsonObject object = staticPlugins.at(i).metaData();
-        if (object.value(QLatin1String("IID")) != QLatin1String(d->iid.constData(), d->iid.size()))
+    QLatin1String iid(d->iid.constData(), d->iid.size());
+    const QList<QStaticPlugin> staticPlugins = QPluginLoader::staticPlugins();
+    for (QStaticPlugin plugin : staticPlugins) {
+        QByteArrayView pluginData(static_cast<const char *>(plugin.rawMetaData), plugin.rawMetaDataSize);
+        QPluginParsedMetaData parsed(pluginData);
+        if (parsed.isError() || parsed.value(QtPluginMetaDataKeys::IID) != iid)
             continue;
 
         if (index == 0)
-            return staticPlugins.at(i).instance();
+            return plugin.instance();
         --index;
     }
 
@@ -392,10 +396,10 @@ QObject *QFactoryLoader::instance(int index) const
 QMultiMap<int, QString> QFactoryLoader::keyMap() const
 {
     QMultiMap<int, QString> result;
-    const QList<QJsonObject> metaDataList = metaData();
+    const QList<QPluginParsedMetaData> metaDataList = metaData();
     for (int i = 0; i < metaDataList.size(); ++i) {
-        const QJsonObject metaData = metaDataList.at(i).value(QLatin1String("MetaData")).toObject();
-        const QJsonArray keys = metaData.value(QLatin1String("Keys")).toArray();
+        const QCborMap metaData = metaDataList.at(i).value(QtPluginMetaDataKeys::MetaData).toMap();
+        const QCborArray keys = metaData.value(QLatin1String("Keys")).toArray();
         const int keyCount = keys.size();
         for (int k = 0; k < keyCount; ++k)
             result.insert(i, keys.at(k).toString());
@@ -405,10 +409,10 @@ QMultiMap<int, QString> QFactoryLoader::keyMap() const
 
 int QFactoryLoader::indexOf(const QString &needle) const
 {
-    const QList<QJsonObject> metaDataList = metaData();
+    const QList<QPluginParsedMetaData> metaDataList = metaData();
     for (int i = 0; i < metaDataList.size(); ++i) {
-        const QJsonObject metaData = metaDataList.at(i).value(QLatin1String("MetaData")).toObject();
-        const QJsonArray keys = metaData.value(QLatin1String("Keys")).toArray();
+        const QCborMap metaData = metaDataList.at(i).value(QtPluginMetaDataKeys::MetaData).toMap();
+        const QCborArray keys = metaData.value(QLatin1String("Keys")).toArray();
         const int keyCount = keys.size();
         for (int k = 0; k < keyCount; ++k) {
             if (!keys.at(k).toString().compare(needle, Qt::CaseInsensitive))
