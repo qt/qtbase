@@ -128,6 +128,59 @@ static const QPointingDevice *pointingDeviceFor(qint64 deviceID)
     m_frameStrutButtons = Qt::NoButton;
 }
 
+- (void)handleMouseEvent:(NSEvent *)theEvent
+{
+    if (!m_platformWindow)
+        return;
+
+#ifndef QT_NO_TABLETEVENT
+    // Tablet events may come in via the mouse event handlers,
+    // check if this is a valid tablet event first.
+    if ([self handleTabletEvent: theEvent])
+        return;
+#endif
+
+    QPointF qtWindowPoint;
+    QPointF qtScreenPoint;
+    QNSView *targetView = self;
+    if (!targetView.platformWindow)
+        return;
+
+    // Popups implicitly grap mouse events; forward to the active popup if there is one
+    if (QCocoaWindow *popup = QCocoaIntegration::instance()->activePopupWindow()) {
+        // Tooltips must be transparent for mouse events
+        // The bug reference is QTBUG-46379
+        if (!popup->window()->flags().testFlag(Qt::ToolTip)) {
+            if (QNSView *popupView = qnsview_cast(popup->view()))
+                targetView = popupView;
+        }
+    }
+
+    [targetView convertFromScreen:[self screenMousePoint:theEvent] toWindowPoint:&qtWindowPoint andScreenPoint:&qtScreenPoint];
+    ulong timestamp = [theEvent timestamp] * 1000;
+
+    QCocoaDrag* nativeDrag = QCocoaIntegration::instance()->drag();
+    nativeDrag->setLastMouseEvent(theEvent, self);
+
+    const auto modifiers = QAppleKeyMapper::fromCocoaModifiers(theEvent.modifierFlags);
+    auto button = cocoaButton2QtButton(theEvent);
+    if (button == Qt::LeftButton && m_sendUpAsRightButton)
+        button = Qt::RightButton;
+    const auto eventType = cocoaEvent2QtMouseEvent(theEvent);
+
+    const QPointingDevice *device = pointingDeviceFor(theEvent.deviceID);
+    Q_ASSERT(device);
+
+    if (eventType == QEvent::MouseMove)
+        qCDebug(lcQpaMouse) << eventType << "at" << qtWindowPoint << "with" << m_buttons;
+    else
+        qCInfo(lcQpaMouse) << eventType << "of" << button << "at" << qtWindowPoint << "with" << m_buttons;
+
+    QWindowSystemInterface::handleMouseEvent(targetView->m_platformWindow->window(),
+                                             timestamp, qtWindowPoint, qtScreenPoint,
+                                             m_buttons, button, eventType, modifiers);
+}
+
 - (void)handleFrameStrutMouseEvent:(NSEvent *)theEvent
 {
     if (!m_platformWindow)
@@ -314,59 +367,6 @@ static const QPointingDevice *pointingDeviceFor(qint64 deviceID)
         screenPoint = [NSEvent mouseLocation];
     }
     return screenPoint;
-}
-
-- (void)handleMouseEvent:(NSEvent *)theEvent
-{
-    if (!m_platformWindow)
-        return;
-
-#ifndef QT_NO_TABLETEVENT
-    // Tablet events may come in via the mouse event handlers,
-    // check if this is a valid tablet event first.
-    if ([self handleTabletEvent: theEvent])
-        return;
-#endif
-
-    QPointF qtWindowPoint;
-    QPointF qtScreenPoint;
-    QNSView *targetView = self;
-    if (!targetView.platformWindow)
-        return;
-
-    // Popups implicitly grap mouse events; forward to the active popup if there is one
-    if (QCocoaWindow *popup = QCocoaIntegration::instance()->activePopupWindow()) {
-        // Tooltips must be transparent for mouse events
-        // The bug reference is QTBUG-46379
-        if (!popup->window()->flags().testFlag(Qt::ToolTip)) {
-            if (QNSView *popupView = qnsview_cast(popup->view()))
-                targetView = popupView;
-        }
-    }
-
-    [targetView convertFromScreen:[self screenMousePoint:theEvent] toWindowPoint:&qtWindowPoint andScreenPoint:&qtScreenPoint];
-    ulong timestamp = [theEvent timestamp] * 1000;
-
-    QCocoaDrag* nativeDrag = QCocoaIntegration::instance()->drag();
-    nativeDrag->setLastMouseEvent(theEvent, self);
-
-    const auto modifiers = QAppleKeyMapper::fromCocoaModifiers(theEvent.modifierFlags);
-    auto button = cocoaButton2QtButton(theEvent);
-    if (button == Qt::LeftButton && m_sendUpAsRightButton)
-        button = Qt::RightButton;
-    const auto eventType = cocoaEvent2QtMouseEvent(theEvent);
-
-    const QPointingDevice *device = pointingDeviceFor(theEvent.deviceID);
-    Q_ASSERT(device);
-
-    if (eventType == QEvent::MouseMove)
-        qCDebug(lcQpaMouse) << eventType << "at" << qtWindowPoint << "with" << m_buttons;
-    else
-        qCInfo(lcQpaMouse) << eventType << "of" << button << "at" << qtWindowPoint << "with" << m_buttons;
-
-    QWindowSystemInterface::handleMouseEvent(targetView->m_platformWindow->window(),
-                                             timestamp, qtWindowPoint, qtScreenPoint,
-                                             m_buttons, button, eventType, modifiers);
 }
 
 - (bool)handleMouseDownEvent:(NSEvent *)theEvent
