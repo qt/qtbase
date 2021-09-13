@@ -456,6 +456,7 @@ class QtBase(ConanFile):
             "android_javac_source",
             "qpa",
             "translationsdir",
+            "headersclean",
         ]
         for item in rm_list:
             if item in self.info.options:
