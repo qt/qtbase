@@ -5318,6 +5318,11 @@ void QRhiResourceUpdateBatch::uploadTexture(QRhiTexture *tex, const QImage &imag
 
    \note The source texture \a src must be created with
    QRhiTexture::UsedAsTransferSource.
+
+   \note The format of the textures must match. With most graphics
+   APIs the data is copied as-is without any format conversions. If
+   \a dst and \a src are created with different formats, unspecified
+   issues may arise.
  */
 void QRhiResourceUpdateBatch::copyTexture(QRhiTexture *dst, QRhiTexture *src, const QRhiTextureCopyDescription &desc)
 {
