@@ -90,6 +90,7 @@ private:
     bool isMainThreadEventDispatcher();
     bool isSecondaryThreadEventDispatcher();
 
+    void handleEventLoopExec();
     void handleDialogExec();
     void pollForNativeEvents();
     bool waitForForEvents();

@@ -208,6 +208,8 @@ bool QEventDispatcherWasm::processEvents(QEventLoop::ProcessEventsFlags flags)
 
     if (flags & QEventLoop::DialogExec)
         handleDialogExec();
+    else if (flags & QEventLoop::EventLoopExec)
+        handleEventLoopExec();
 
     if (!(flags & QEventLoop::ExcludeUserInputEvents))
         pollForNativeEvents();
@@ -362,6 +364,22 @@ void QEventDispatcherWasm::wakeUp()
     } else
 #endif
     emscripten_async_call(&QEventDispatcherWasm::callProcessEvents, this, 0);
+}
+
+void QEventDispatcherWasm::handleEventLoopExec()
+{
+    // Start the main loop, and then stop it on the first callback. This
+    // is done for the "simulateInfiniteLoop" functionality where
+    // emscripten_set_main_loop() throws a JS exception which returns
+    // control to the browser while preserving the C++ stack.
+    //
+    // Note that we don't use asyncify here: Emscripten supports one level of
+    // asyncify only and we want to reserve that for dialog exec() instead of
+    // using it for the one qApp exec().
+    const bool simulateInfiniteLoop = true;
+    emscripten_set_main_loop([](){
+        emscripten_pause_main_loop();
+    }, 0, simulateInfiniteLoop);
 }
 
 void QEventDispatcherWasm::handleDialogExec()
