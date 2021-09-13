@@ -52,6 +52,7 @@
 //
 
 #include <QtCore/qglobal.h>
+#include <vector>
 
 QT_BEGIN_NAMESPACE
 
