@@ -1,0 +1,31 @@
+From 8cc32e6302edc38c0e525edc654cf57bf1f68bea Mon Sep 17 00:00:00 2001
+From: Tatiana Borisova <tatiana.borisova@qt.io>
+Date: Mon, 13 Sep 2021 15:45:26 +0300
+Subject: [PATCH] Fix Catch2 compiling for INTEGRITY
+
+- Exclude Green Hills compiler from Catch2's POSIX signal handling.
+  GHS, at least on INTEGRITY, doesn't support full POSIX signals.
+
+Task-number: QTBUG-96176
+Pick-to: 6.2 6.2.0
+Change-Id: Ifec06dca43ed766cb7335e40fc357d0d7bc463a6
+---
+ tests/auto/testlib/selftests/catch_p_p.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/tests/auto/testlib/selftests/catch_p_p.h b/tests/auto/testlib/selftests/catch_p_p.h
+index 596bfe63dd..47a31f9079 100644
+--- a/tests/auto/testlib/selftests/catch_p_p.h
++++ b/tests/auto/testlib/selftests/catch_p_p.h
+@@ -179,7 +179,7 @@ namespace Catch {
+ 
+ ////////////////////////////////////////////////////////////////////////////////
+ // We know some environments not to support full POSIX signals
+-#if defined(__CYGWIN__) || defined(__QNX__) || defined(__EMSCRIPTEN__) || defined(__DJGPP__)
++#if defined(__CYGWIN__) || defined(__QNX__) || defined(__ghs) || defined(__EMSCRIPTEN__) || defined(__DJGPP__)
+     #define CATCH_INTERNAL_CONFIG_NO_POSIX_SIGNALS
+ #endif
+ 
+-- 
+2.25.1
+
