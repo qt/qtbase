@@ -51,8 +51,7 @@
 // We mean it.
 //
 
-#include <qendian.h>
-#include <private/qglobal_p.h>
+#include "qlibrary_p.h"
 
 QT_REQUIRE_CONFIG(library);
 
@@ -66,8 +65,8 @@ class QLibraryPrivate;
 class Q_AUTOTEST_EXPORT QMachOParser
 {
 public:
-    enum { QtMetaDataSection, NoQtSection, NotSuitable };
-    static int parse(const char *m_s, ulong fdlen, const QString &library, QString *errorString, qsizetype *pos, qsizetype *sectionlen);
+    static QLibraryScanResult parse(const char *m_s, ulong fdlen, const QString &library,
+                                    QString *errorString);
 };
 
 QT_END_NAMESPACE

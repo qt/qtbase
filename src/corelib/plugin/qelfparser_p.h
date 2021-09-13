@@ -52,7 +52,7 @@
 //
 
 #include <qendian.h>
-#include <private/qglobal_p.h>
+#include "qlibrary_p.h"
 
 QT_REQUIRE_CONFIG(library);
 
@@ -71,7 +71,6 @@ typedef quintptr qelfaddr_t;
 class QElfParser
 {
 public:
-    enum ScanResult { QtMetaDataSection, NoQtSection, NotElf, Corrupt };
     enum { ElfLittleEndian = 0, ElfBigEndian = 1 };
 
     struct ElfSectionHeader
@@ -85,7 +84,7 @@ public:
     qelfoff_t m_stringTableFileOffset;
 
     const char *parseSectionHeader(const char* s, ElfSectionHeader *sh);
-    ScanResult parse(const char *m_s, ulong fdlen, const QString &library, QLibraryPrivate *lib, qsizetype *pos, qsizetype *sectionlen);
+    QLibraryScanResult parse(const char *m_s, ulong fdlen, const QString &library, QLibraryPrivate *lib);
 };
 
 QT_END_NAMESPACE

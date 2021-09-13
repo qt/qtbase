@@ -68,6 +68,12 @@ QT_BEGIN_NAMESPACE
 
 bool qt_debug_component();
 
+struct QLibraryScanResult
+{
+    qsizetype pos;
+    qsizetype length;
+};
+
 class QLibraryStore;
 class QLibraryPrivate
 {

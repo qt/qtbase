@@ -334,36 +334,36 @@ void tst_QPluginLoader::loadCorruptElf()
 void tst_QPluginLoader::loadMachO_data()
 {
 #if defined(QT_BUILD_INTERNAL) && defined(Q_OF_MACH_O)
-    QTest::addColumn<int>("parseResult");
+    QTest::addColumn<bool>("success");
 
-    QTest::newRow("/dev/null") << int(QMachOParser::NotSuitable);
-    QTest::newRow("elftest/debugobj.so") << int(QMachOParser::NotSuitable);
-    QTest::newRow("tst_qpluginloader.cpp") << int(QMachOParser::NotSuitable);
-    QTest::newRow("tst_qpluginloader") << int(QMachOParser::NotSuitable);
+    QTest::newRow("/dev/null") << false;
+    QTest::newRow("elftest/debugobj.so") << false;
+    QTest::newRow("tst_qpluginloader.cpp") << false;
+    QTest::newRow("tst_qpluginloader") << false;
 
 #  ifdef Q_PROCESSOR_X86_64
-    QTest::newRow("machtest/good.x86_64.dylib") << int(QMachOParser::QtMetaDataSection);
-    QTest::newRow("machtest/good.i386.dylib") << int(QMachOParser::NotSuitable);
-    QTest::newRow("machtest/good.fat.no-x86_64.dylib") << int(QMachOParser::NotSuitable);
-    QTest::newRow("machtest/good.fat.no-i386.dylib") << int(QMachOParser::QtMetaDataSection);
+    QTest::newRow("machtest/good.x86_64.dylib") << true;
+    QTest::newRow("machtest/good.i386.dylib") << false;
+    QTest::newRow("machtest/good.fat.no-x86_64.dylib") << false;
+    QTest::newRow("machtest/good.fat.no-i386.dylib") << true;
 #  elif defined(Q_PROCESSOR_X86_32)
-    QTest::newRow("machtest/good.i386.dylib") << int(QMachOParser::QtMetaDataSection);
-    QTest::newRow("machtest/good.x86_64.dylib") << int(QMachOParser::NotSuitable);
-    QTest::newRow("machtest/good.fat.no-i386.dylib") << int(QMachOParser::NotSuitable);
-    QTest::newRow("machtest/good.fat.no-x86_64.dylib") << int(QMachOParser::QtMetaDataSection);
+    QTest::newRow("machtest/good.i386.dylib") << true;
+    QTest::newRow("machtest/good.x86_64.dylib") << false;
+    QTest::newRow("machtest/good.fat.no-i386.dylib") << false;
+    QTest::newRow("machtest/good.fat.no-x86_64.dylib") << true;
 #  endif
 #  ifndef Q_PROCESSOR_POWER_64
-    QTest::newRow("machtest/good.ppc64.dylib") << int(QMachOParser::NotSuitable);
+    QTest::newRow("machtest/good.ppc64.dylib") << false;
 #  endif
 
-    QTest::newRow("machtest/good.fat.all.dylib") << int(QMachOParser::QtMetaDataSection);
-    QTest::newRow("machtest/good.fat.stub-x86_64.dylib") << int(QMachOParser::NotSuitable);
-    QTest::newRow("machtest/good.fat.stub-i386.dylib") << int(QMachOParser::NotSuitable);
+    QTest::newRow("machtest/good.fat.all.dylib") << true;
+    QTest::newRow("machtest/good.fat.stub-x86_64.dylib") << false;
+    QTest::newRow("machtest/good.fat.stub-i386.dylib") << false;
 
     QDir d(QFINDTESTDATA("machtest"));
     QStringList badlist = d.entryList(QStringList() << "bad*.dylib");
     foreach (const QString &bad, badlist)
-        QTest::newRow(qPrintable("machtest/" + bad)) << int(QMachOParser::NotSuitable);
+        QTest::newRow(qPrintable("machtest/" + bad)) << false;
 #endif
 }
 
@@ -374,31 +374,31 @@ void tst_QPluginLoader::loadMachO()
     QVERIFY(f.open(QIODevice::ReadOnly));
     QByteArray data = f.readAll();
 
-    qsizetype pos;
-    qsizetype len;
     QString errorString;
-    int r = QMachOParser::parse(data.constData(), data.size(), f.fileName(), &errorString, &pos, &len);
+    QLibraryScanResult r = QMachOParser::parse(data.constData(), data.size(), f.fileName(), &errorString);
 
-    QFETCH(int, parseResult);
-    QCOMPARE(r, parseResult);
-
-    if (r == QMachOParser::NotSuitable)
+    QFETCH(bool, success);
+    if (success) {
+        QVERIFY(r.length != 0);
+    } else {
+        QCOMPARE(r.length, 0);
         return;
+    }
 
-    QVERIFY(pos > 0);
-    QVERIFY(size_t(len) >= sizeof(void*));
-    QVERIFY(pos + long(len) < data.size());
-    QCOMPARE(pos & (sizeof(void*) - 1), 0UL);
+    QVERIFY(r.pos > 0);
+    QVERIFY(size_t(r.length) >= sizeof(void*));
+    QVERIFY(r.pos + r.length < data.size());
+    QCOMPARE(r.pos & (sizeof(void*) - 1), 0UL);
 
-    void *value = *(void**)(data.constData() + pos);
+    void *value = *(void**)(data.constData() + r.pos);
     QCOMPARE(value, sizeof(void*) > 4 ? (void*)(0xc0ffeec0ffeeL) : (void*)0xc0ffee);
 
     // now that we know it's valid, let's try to make it invalid
-    ulong offeredlen = pos;
+    ulong offeredlen = r.pos;
     do {
         --offeredlen;
-        r = QMachOParser::parse(data.constData(), offeredlen, f.fileName(), &errorString, &pos, &len);
-        QVERIFY2(r == QMachOParser::NotSuitable, qPrintable(QString("Failed at size 0x%1").arg(offeredlen, 0, 16)));
+        r = QMachOParser::parse(data.constData(), offeredlen, f.fileName(), &errorString);
+        QVERIFY2(r.length == 0, qPrintable(QString("Failed at size 0x%1").arg(offeredlen, 0, 16)));
     } while (offeredlen);
 #endif
 }

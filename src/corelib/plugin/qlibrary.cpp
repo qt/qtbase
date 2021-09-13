@@ -254,8 +254,10 @@ static bool findPatternUnloaded(const QString &library, QLibraryPrivate *lib)
     constexpr qint64 MaxMemoryMapSize =
             Q_INT64_C(1) << (sizeof(qsizetype) > 4 ? 40 : 29);
 
-    qsizetype fdlen = qMin(file.size(), MaxMemoryMapSize);
-    const char *filedata = reinterpret_cast<char *>(file.map(0, fdlen));
+    QLibraryScanResult r;
+    r.pos = 0;
+    r.length = qMin(file.size(), MaxMemoryMapSize);
+    const char *filedata = reinterpret_cast<char *>(file.map(0, r.length));
 
 #ifdef Q_OS_UNIX
     if (filedata == nullptr) {
@@ -274,65 +276,49 @@ static bool findPatternUnloaded(const QString &library, QLibraryPrivate *lib)
         // the side of doing a regular read into memory (up to 64 MB).
         data = file.read(64 * 1024 * 1024);
         filedata = data.constData();
-        fdlen = data.size();
+        r.length = data.size();
     }
 #endif
 
     /*
-       ELF and Mach-O binaries with GCC have .qplugin sections.
+       ELF and Mach-O binaries with GCC have .qtmetadata sections. Find them.
     */
     bool hasMetaData = false;
-    qsizetype pos = 0;
     char pattern[] = "qTMETADATA ";
     pattern[0] = 'Q'; // Ensure the pattern "QTMETADATA" is not found in this library should QPluginLoader ever encounter it.
     const ulong plen = ulong(qstrlen(pattern));
 #if defined (Q_OF_ELF)
-    QElfParser::ScanResult r = QElfParser().parse(filedata, fdlen, library, lib, &pos, &fdlen);
-    if (r == QElfParser::Corrupt || r == QElfParser::NotElf) {
-            if (lib && qt_debug_component()) {
-                qWarning("QElfParser: %ls", qUtf16Printable(lib->errorString));
-            }
-            return false;
-    } else if (r == QElfParser::QtMetaDataSection) {
-        qsizetype rel = qt_find_pattern(filedata + pos, fdlen, pattern, plen);
-        if (rel < 0)
-            pos = -1;
-        else
-            pos += rel;
-        hasMetaData = true;
+    r = QElfParser().parse(filedata, r.length, library, lib);
+    if (r.length == 0) {
+        if (lib && qt_debug_component())
+            qWarning("QElfParser: %ls", qUtf16Printable(lib->errorString));
+        return false;
     }
 #elif defined(Q_OF_MACH_O)
     {
         QString errorString;
-        int r = QMachOParser::parse(filedata, fdlen, library, &errorString, &pos, &fdlen);
-        if (r == QMachOParser::NotSuitable) {
+        r = QMachOParser::parse(filedata, r.length, library, &errorString);
+        if (r.length == 0) {
             if (qt_debug_component())
                 qWarning("QMachOParser: %ls", qUtf16Printable(errorString));
             if (lib)
                 lib->errorString = errorString;
             return false;
         }
-        // even if the metadata section was not found, the Mach-O parser will
-        // at least return the boundaries of the right architecture
-        qsizetype rel = qt_find_pattern(filedata + pos, fdlen, pattern, plen);
-        if (rel < 0)
-            pos = -1;
-        else
-            pos += rel;
+    }
+#endif // defined(Q_OF_ELF) && defined(Q_CC_GNU)
+    if (qsizetype rel = qt_find_pattern(filedata + r.pos, r.length, pattern, plen);
+            rel >= 0) {
+        r.pos += rel;
         hasMetaData = true;
     }
-#else
-    pos = qt_find_pattern(filedata, fdlen, pattern, plen);
-    if (pos > 0)
-        hasMetaData = true;
-#endif // defined(Q_OF_ELF) && defined(Q_CC_GNU)
 
     bool ret = false;
 
-    if (pos >= 0 && hasMetaData) {
-        const char *data = filedata + pos;
+    if (r.pos >= 0 && hasMetaData) {
+        const char *data = filedata + r.pos;
         QString errMsg;
-        QJsonDocument doc = qJsonFromRawLibraryMetaData(data, fdlen, &errMsg);
+        QJsonDocument doc = qJsonFromRawLibraryMetaData(data, r.length, &errMsg);
         if (doc.isNull()) {
             qWarning("Found invalid metadata in lib %ls: %ls",
                      qUtf16Printable(library), qUtf16Printable(errMsg));

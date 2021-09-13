@@ -42,7 +42,6 @@
 #if defined(Q_OF_MACH_O)
 
 #include <qendian.h>
-#include "qlibrary_p.h"
 
 #include <mach-o/loader.h>
 #include <mach-o/fat.h>
@@ -81,15 +80,16 @@ typedef section my_section;
 static const uint32_t my_magic = MH_MAGIC;
 #endif
 
-static int ns(const QString &reason, const QString &library, QString *errorString)
+Q_DECL_COLD_FUNCTION
+static QLibraryScanResult ns(const QString &reason, const QString &library, QString *errorString)
 {
     if (errorString)
         *errorString = QLibrary::tr("'%1' is not a valid Mach-O binary (%2)")
                 .arg(library, reason.isEmpty() ? QLibrary::tr("file is corrupt") : reason);
-    return QMachOParser::NotSuitable;
+    return {};
 }
 
-int QMachOParser::parse(const char *m_s, ulong fdlen, const QString &library, QString *errorString, qsizetype *pos, qsizetype *sectionlen)
+QLibraryScanResult  QMachOParser::parse(const char *m_s, ulong fdlen, const QString &library, QString *errorString)
 {
     // The minimum size of a Mach-O binary we're interested in.
     // It must have a full Mach header, at least one segment and at least one
@@ -146,9 +146,7 @@ int QMachOParser::parse(const char *m_s, ulong fdlen, const QString &library, QS
                       library, errorString);
     }
 
-    // from this point on, fdlen is specific to this architecture
     // from this point on, everything is in host byte order
-    *pos = reinterpret_cast<const char *>(header) - m_s;
 
     // (re-)check the CPU type
     // ### should we check the CPU subtype? Maybe on ARM?
@@ -197,9 +195,8 @@ int QMachOParser::parse(const char *m_s, ulong fdlen, const QString &library, QS
                         || Q_UNLIKELY(fdlen < sect[j].offset + sect[j].size))
                     return ns(QString(), library, errorString);
 
-                *pos += sect[j].offset;
-                *sectionlen = sect[j].size;
-                return QtMetaDataSection;
+                qsizetype pos = reinterpret_cast<const char *>(header) - m_s + sect[j].offset;
+                return { pos, qsizetype(sect[j].size) };
             }
         }
 
@@ -207,11 +204,10 @@ int QMachOParser::parse(const char *m_s, ulong fdlen, const QString &library, QS
         seg = reinterpret_cast<const my_segment_command *>(reinterpret_cast<const char *>(seg) + seg->cmdsize);
     }
 
-//    // No Qt section was found, but at least we know that where the proper architecture's boundaries are
-//    return NoQtSection;
+    // No .qtmetadata section was found
     if (errorString)
         *errorString = QLibrary::tr("'%1' is not a Qt plugin").arg(library);
-    return NotSuitable;
+    return {};
 }
 
 QT_END_NAMESPACE
