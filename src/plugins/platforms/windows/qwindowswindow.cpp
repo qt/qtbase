@@ -3027,7 +3027,7 @@ void *QWindowsWindow::surface(void *nativeConfig, int *err)
 #elif defined(QT_NO_OPENGL)
     Q_UNUSED(err);
     Q_UNUSED(nativeConfig);
-    return 0;
+    return nullptr;
 #endif
 #ifndef QT_NO_OPENGL
     if (!m_surface) {
