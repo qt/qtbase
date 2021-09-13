@@ -1389,14 +1389,14 @@ QKeyEvent::~QKeyEvent()
 }
 
 /*!
-  \fn quint32 QKeyEvent::nativeScanCode() const
-  \since 4.2
+    \fn quint32 QKeyEvent::nativeScanCode() const
+    \since 4.2
 
-  Returns the native scan code of the key event.  If the key event
-  does not contain this data 0 is returned.
+    Returns the native scan code of the key event.  If the key event
+    does not contain this data 0 is returned.
 
-  Note: The native scan code may be 0, even if the key event contains
-  extended information.
+    \note The native scan code may be 0, even if the key event contains
+    extended information.
 */
 
 /*!
@@ -1406,7 +1406,7 @@ QKeyEvent::~QKeyEvent()
     Returns the native virtual key, or key sym of the key event.
     If the key event does not contain this data 0 is returned.
 
-    Note: The native virtual key may be 0, even if the key event contains extended information.
+    \note The native virtual key may be 0, even if the key event contains extended information.
 */
 
 /*!
@@ -1416,7 +1416,7 @@ QKeyEvent::~QKeyEvent()
     Returns the native modifiers of a key event.
     If the key event does not contain this data 0 is returned.
 
-    Note: The native modifiers may be 0, even if the key event contains extended information.
+    \note The native modifiers may be 0, even if the key event contains extended information.
 */
 
 /*!
