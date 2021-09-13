@@ -609,7 +609,34 @@ function(_qt_internal_finalize_executable target)
     set_target_properties(${target} PROPERTIES _qt_executable_is_finalized TRUE)
 endfunction()
 
+# If a task needs to run before any targets are finalized in the current directory
+# scope, call this function and pass the ID of that task as the argument.
+function(_qt_internal_delay_finalization_until_after defer_id)
+    set_property(DIRECTORY APPEND PROPERTY qt_internal_finalizers_wait_for_ids "${defer_id}")
+endfunction()
+
 function(qt6_finalize_target target)
+    if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.19")
+        cmake_language(DEFER GET_CALL_IDS ids_queued)
+        get_directory_property(wait_for_ids qt_internal_finalizers_wait_for_ids)
+        while(wait_for_ids)
+            list(GET wait_for_ids 0 id_to_wait_for)
+            if(id_to_wait_for IN_LIST ids_queued)
+                # Something else needs to run before we finalize targets.
+                # Try again later by re-deferring ourselves, which effectively
+                # puts us at the end of the current list of deferred actions.
+                cmake_language(EVAL CODE "cmake_language(DEFER CALL ${CMAKE_CURRENT_FUNCTION} ${ARGV})")
+                set_directory_properties(PROPERTIES
+                    qt_internal_finalizers_wait_for_ids "${wait_for_ids}"
+                )
+                return()
+            endif()
+            list(POP_FRONT wait_for_ids)
+        endwhile()
+        # No other deferred tasks to wait for
+        set_directory_properties(PROPERTIES qt_internal_finalizers_wait_for_ids "")
+    endif()
+
     if(NOT TARGET "${target}")
         message(FATAL_ERROR "No target '${target}' found in current scope.")
     endif()
