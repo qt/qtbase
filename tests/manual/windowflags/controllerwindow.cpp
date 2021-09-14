@@ -289,19 +289,15 @@ private:
 
 LogWidget *LogWidget::m_instance = 0;
 
-#if QT_VERSION >= 0x050000
-static void qt5MessageHandler(QtMsgType, const QMessageLogContext &, const QString &text)
+static QtMessageHandler originalMessageHandler = nullptr;
+
+static void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &text)
 {
     if (LogWidget *lw = LogWidget::instance())
         lw->appendText(text);
+
+    originalMessageHandler(type, context, text);
 }
-#else // Qt 5
-static void qt4MessageHandler(QtMsgType, const char *text)
-{
-    if (LogWidget *lw = LogWidget::instance())
-        lw->appendText(QString::fromLocal8Bit(text));
-}
-#endif // Qt 4
 
 LogWidget::LogWidget(QWidget *parent)
     : QPlainTextEdit(parent)
@@ -318,7 +314,7 @@ LogWidget::~LogWidget()
 
 void LogWidget::install()
 {
-    qInstallMessageHandler(qt5MessageHandler);
+    originalMessageHandler = qInstallMessageHandler(messageHandler);
 }
 
 QString LogWidget::startupMessage()
