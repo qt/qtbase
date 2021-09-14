@@ -194,6 +194,11 @@ bool QThreadPoolPrivate::tryStart(QRunnable *task)
         ++activeThreads;
 
         thread->runnable = task;
+
+        // Ensure that the thread has actually finished, otherwise the following
+        // start() has no effect.
+        thread->wait();
+        Q_ASSERT(thread->isFinished());
         thread->start(threadPriority);
         return true;
     }
