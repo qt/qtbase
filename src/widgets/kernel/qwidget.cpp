@@ -910,6 +910,8 @@ void QWidget::setAutoFillBackground(bool enabled)
     and a compositing window manager.
     \li Windows: The widget needs to have the Qt::FramelessWindowHint window flag set
     for the translucency to work.
+    \li \macos: The widget needs to have the Qt::FramelessWindowHint window flag set
+    for the translucency to work.
     \endlist
 
 
