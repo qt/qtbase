@@ -53,11 +53,11 @@
 # define bundle_VALID   true
 # define dylib_VALID    true
 # define so_VALID       true
-//# ifdef QT_NO_DEBUG
+# ifdef QT_NO_DEBUG
 #  define SUFFIX         ".dylib"
-//# else
-//#  define SUFFIX         "_debug.dylib"
-//#endif
+# else
+#  define SUFFIX         "_debug.dylib"
+# endif
 # define PREFIX         "lib"
 
 #elif defined(Q_OS_HPUX) && !defined(__ia64)
@@ -427,7 +427,7 @@ void tst_QPluginLoader::relativePath()
     const QString binDir = QFINDTESTDATA("bin");
     QVERIFY(!binDir.isEmpty());
     QCoreApplication::addLibraryPath(binDir);
-    QPluginLoader loader("theplugin");
+    QPluginLoader loader("theplugin" SUFFIX);
     loader.load(); // not recommended, instance() should do the job.
     PluginInterface *instance = qobject_cast<PluginInterface*>(loader.instance());
     QVERIFY(instance);
@@ -444,7 +444,7 @@ void tst_QPluginLoader::absolutePath()
     const QString binDir = QFINDTESTDATA("bin");
     QVERIFY(!binDir.isEmpty());
     QVERIFY(QDir::isAbsolutePath(binDir));
-    QPluginLoader loader(binDir + "/theplugin");
+    QPluginLoader loader(binDir + "/" PREFIX "theplugin" SUFFIX);
     loader.load(); // not recommended, instance() should do the job.
     PluginInterface *instance = qobject_cast<PluginInterface*>(loader.instance());
     QVERIFY(instance);
