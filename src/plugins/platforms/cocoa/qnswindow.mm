@@ -324,8 +324,18 @@ OSStatus CGSClearWindowTags(const CGSConnectionID, const CGSWindowID, int *, int
 
 - (NSColor *)backgroundColor
 {
-    return self.styleMask == NSWindowStyleMaskBorderless ?
-        [NSColor clearColor] : [super backgroundColor];
+    // FIXME: Plumb to a WA_NoSystemBackground-like window flag,
+    // or a QWindow::backgroundColor() property. In the meantime
+    // we assume that if you have translucent content, without a
+    // frame then you intend to do all background drawing yourself.
+    const QWindow *window = m_platformWindow ? m_platformWindow->window() : nullptr;
+    if (!self.opaque && window && window->flags().testFlag(Qt::FramelessWindowHint))
+        return [NSColor clearColor];
+
+    // This still allows you to have translucent content with a frame,
+    // where the system background (or color set via NSWindow) will
+    // shine through.
+    return [super backgroundColor];
 }
 
 - (void)sendEvent:(NSEvent*)theEvent
