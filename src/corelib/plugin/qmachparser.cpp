@@ -204,8 +204,7 @@ QLibraryScanResult  QMachOParser::parse(const char *m_s, ulong fdlen, QString *e
     }
 
     // No .qtmetadata section was found
-    if (errorString)
-        *errorString = QLibrary::tr("'%1' is not a Qt plugin").arg(library);
+    *errorString = QLibrary::tr("'%1' is not a Qt plugin").arg(*errorString);
     return {};
 }
 

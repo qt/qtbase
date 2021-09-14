@@ -182,7 +182,7 @@ QT_BEGIN_NAMESPACE
     \sa loadHints
 */
 
-static qsizetype qt_find_pattern(const char *s, qsizetype s_len)
+static QLibraryScanResult qt_find_pattern(const char *s, qsizetype s_len, QString *errMsg)
 {
     /*
       We used to search from the end of the file so we'd skip the code and find
@@ -193,9 +193,19 @@ static qsizetype qt_find_pattern(const char *s, qsizetype s_len)
       More importantly, the pattern string may exist in the debug information due
       to it being used in the plugin in the first place.
     */
+#if defined (Q_OF_ELF)
+    return QElfParser().parse(s, s_len, errMsg);
+#elif defined(Q_OF_MACH_O)
+    return QMachOParser::parse(s, s_len, errMsg);
+#endif
     QByteArrayView pattern = QPluginMetaData::MagicString;
     static const QByteArrayMatcher matcher(pattern.toByteArray());
-    return matcher.indexIn(s, s_len);
+    qsizetype i = matcher.indexIn(s, s_len);
+    if (i < 0) {
+        *errMsg = QLibrary::tr("'%1' is not a Qt plugin").arg(*errMsg);
+        return QLibraryScanResult{};
+    }
+    return { i, s_len - i };
 }
 
 /*
@@ -226,10 +236,8 @@ static bool findPatternUnloaded(const QString &library, QLibraryPrivate *lib)
     constexpr qint64 MaxMemoryMapSize =
             Q_INT64_C(1) << (sizeof(qsizetype) > 4 ? 40 : 29);
 
-    QLibraryScanResult r;
-    r.pos = 0;
-    r.length = qMin(file.size(), MaxMemoryMapSize);
-    const char *filedata = reinterpret_cast<char *>(file.map(0, r.length));
+    qsizetype fdlen = qMin(file.size(), MaxMemoryMapSize);
+    const char *filedata = reinterpret_cast<char *>(file.map(0, fdlen));
 
 #ifdef Q_OS_UNIX
     if (filedata == nullptr) {
@@ -248,53 +256,32 @@ static bool findPatternUnloaded(const QString &library, QLibraryPrivate *lib)
         // the side of doing a regular read into memory (up to 64 MB).
         data = file.read(64 * 1024 * 1024);
         filedata = data.constData();
-        r.length = data.size();
+        fdlen = data.size();
     }
 #endif
 
-    /*
-       ELF and Mach-O binaries with GCC have .qtmetadata sections. Find them.
-    */
     QString errMsg = library;
-#if defined (Q_OF_ELF)
-    r = QElfParser().parse(filedata, r.length, &errMsg);
-    if (r.length == 0) {
-        if (lib && qt_debug_component())
-            qWarning("QElfParser: %ls", qUtf16Printable(errMsg));
-        if (lib)
-            lib->errorString = errMsg;
-        return false;
-    }
-#elif defined(Q_OF_MACH_O)
-    r = QMachOParser::parse(filedata, r.length, &errMsg);
-    if (r.length == 0) {
-        if (qt_debug_component())
-            qWarning("QMachOParser: %ls", qUtf16Printable(errMsg));
-        if (lib)
-            lib->errorString = errMsg;
-        return false;
-    }
-#endif // defined(Q_OF_ELF) && defined(Q_CC_GNU)
-
-    if (qsizetype rel = qt_find_pattern(filedata + r.pos, r.length);
-            rel >= 0) {
-        const char *data = filedata + r.pos + rel;
-        QJsonDocument doc = qJsonFromRawLibraryMetaData(data, r.length, &errMsg);
+    QLibraryScanResult r = qt_find_pattern(filedata, fdlen, &errMsg);
+    if (r.length) {
+        QJsonDocument doc = qJsonFromRawLibraryMetaData(filedata + r.pos, r.length, &errMsg);
         if (doc.isNull()) {
             qWarning("Found invalid metadata in lib %ls: %ls",
                      qUtf16Printable(library), qUtf16Printable(errMsg));
         } else {
             lib->metaData = doc.object();
-            if (qt_debug_component())
+            if (qt_debug_component()) {
                 qWarning("Found metadata in lib %s, metadata=\n%s\n",
                          library.toLocal8Bit().constData(), doc.toJson().constData());
-            if (!doc.isNull())
-                return true;
+            }
+            return true;
         }
+    } else if (qt_debug_component()) {
+        qWarning("Failed to find metadata in lib %ls: %ls",
+                 qUtf16Printable(library), qUtf16Printable(errMsg));
     }
 
-    if (lib)
-        lib->errorString = QLibrary::tr("Failed to extract plugin meta data from '%1'").arg(library);
+    lib->errorString = QLibrary::tr("Failed to extract plugin meta data from '%1': %2")
+            .arg(library, errMsg);
     return false;
 }
 
