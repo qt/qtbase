@@ -104,6 +104,7 @@ private slots:
     void stressTest();
     void takeAllAndIncreaseMaxThreadCount();
     void waitForDoneAfterTake();
+    void threadReuse();
 
 private:
     QMutex m_functionTestMutex;
@@ -1383,6 +1384,30 @@ void tst_QThreadPool::waitForDoneAfterTake()
     if (!manager.waitForDone(5 * 60 * 1000))
         qFatal("waitForDone returned false. Aborting to stop background threads.");
 
+}
+
+/*
+    Try trigger reuse of expired threads and check that all tasks execute.
+
+    This is a regression test for QTBUG-72872.
+*/
+void tst_QThreadPool::threadReuse()
+{
+    QThreadPool manager;
+    manager.setExpiryTimeout(-1);
+    manager.setMaxThreadCount(1);
+
+    constexpr int repeatCount = 10000;
+    constexpr int timeoutMs = 1000;
+    QSemaphore sem;
+
+    for (int i = 0; i < repeatCount; i++) {
+        manager.start([&sem]() { sem.release(); });
+        manager.start([&sem]() { sem.release(); });
+        manager.releaseThread();
+        QVERIFY(sem.tryAcquire(2, timeoutMs));
+        manager.reserveThread();
+    }
 }
 
 QTEST_MAIN(tst_QThreadPool);
