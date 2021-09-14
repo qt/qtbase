@@ -79,11 +79,17 @@ static QVariant macMonthName(int month, QSystemLocale::QueryType type)
         case QSystemLocale::MonthNameShort:
             formatterType = kCFDateFormatterShortMonthSymbols;
             break;
+        case QSystemLocale::MonthNameNarrow:
+            formatterType = kCFDateFormatterVeryShortMonthSymbols;
+            break;
         case QSystemLocale::StandaloneMonthNameLong:
             formatterType = kCFDateFormatterStandaloneMonthSymbols;
             break;
         case QSystemLocale::StandaloneMonthNameShort:
             formatterType = kCFDateFormatterShortStandaloneMonthSymbols;
+            break;
+        case QSystemLocale::StandaloneMonthNameNarrow:
+            formatterType = kCFDateFormatterVeryShortStandaloneMonthSymbols;
             break;
         default:
             qWarning("macMonthName: Unsupported query type %d", type);
@@ -116,17 +122,22 @@ static QVariant macDayName(int day, QSystemLocale::QueryType type)
     case QSystemLocale::DayNameShort:
         formatterType = kCFDateFormatterShortWeekdaySymbols;
         break;
+    case QSystemLocale::DayNameNarrow:
+        formatterType = kCFDateFormatterVeryShortWeekdaySymbols;
+        break;
     case QSystemLocale::StandaloneDayNameLong:
         formatterType = kCFDateFormatterStandaloneWeekdaySymbols;
         break;
     case QSystemLocale::StandaloneDayNameShort:
         formatterType = kCFDateFormatterShortStandaloneWeekdaySymbols;
         break;
+    case QSystemLocale::StandaloneDayNameNarrow:
+        formatterType = kCFDateFormatterVeryShortStandaloneWeekdaySymbols;
+        break;
     default:
         qWarning("macDayName: Unsupported query type %d", type);
         return {};
     }
-
     QCFType<CFArrayRef> values =
             static_cast<CFArrayRef>(CFDateFormatterCopyProperty(formatter, formatterType));
 
@@ -466,13 +477,17 @@ QVariant QSystemLocale::query(QueryType type, QVariant in) const
                                 : kCFDateFormatterLongStyle);
     case DayNameLong:
     case DayNameShort:
+    case DayNameNarrow:
     case StandaloneDayNameLong:
     case StandaloneDayNameShort:
+    case StandaloneDayNameNarrow:
         return macDayName(in.toInt(), type);
     case MonthNameLong:
     case MonthNameShort:
+    case MonthNameNarrow:
     case StandaloneMonthNameLong:
     case StandaloneMonthNameShort:
+    case StandaloneMonthNameNarrow:
         return macMonthName(in.toInt(), type);
     case DateToStringShort:
     case DateToStringLong:

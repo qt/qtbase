@@ -194,18 +194,26 @@ QVariant QSystemLocale::query(QueryType type, QVariant in) const
         return lc_time.dayName(in.toInt(), QLocale::LongFormat);
     case DayNameShort:
         return lc_time.dayName(in.toInt(), QLocale::ShortFormat);
+    case DayNameNarrow:
+        return lc_time.dayName(in.toInt(), QLocale::NarrowFormat);
     case StandaloneDayNameLong:
         return lc_time.standaloneDayName(in.toInt(), QLocale::LongFormat);
     case StandaloneDayNameShort:
         return lc_time.standaloneDayName(in.toInt(), QLocale::ShortFormat);
+    case StandaloneDayNameNarrow:
+        return lc_time.standaloneDayName(in.toInt(), QLocale::NarrowFormat);
     case MonthNameLong:
         return lc_time.monthName(in.toInt(), QLocale::LongFormat);
     case MonthNameShort:
         return lc_time.monthName(in.toInt(), QLocale::ShortFormat);
+    case MonthNameNarrow:
+        return lc_time.monthName(in.toInt(), QLocale::NarrowFormat);
     case StandaloneMonthNameLong:
         return lc_time.standaloneMonthName(in.toInt(), QLocale::LongFormat);
     case StandaloneMonthNameShort:
         return lc_time.standaloneMonthName(in.toInt(), QLocale::ShortFormat);
+    case StandaloneMonthNameNarrow:
+        return lc_time.standaloneMonthName(in.toInt(), QLocale::NarrowFormat);
     case DateToStringLong:
         return lc_time.toString(in.toDate(), QLocale::LongFormat);
     case DateToStringShort:

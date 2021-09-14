@@ -758,8 +758,11 @@ QVariant QSystemLocale::query(QueryType type, QVariant in) const
         return d->dayName(in.toInt(), QLocale::LongFormat);
     case DayNameShort:
         return d->dayName(in.toInt(), QLocale::ShortFormat);
+    case DayNameNarrow:
+        return d->dayName(in.toInt(), QLocale::NarrowFormat);
     case StandaloneDayNameLong:
     case StandaloneDayNameShort:
+    case StandaloneDayNameNarrow:
         // Windows does not provide standalone day names, so fall back to CLDR
         return QVariant();
     case MonthNameLong:
@@ -770,6 +773,10 @@ QVariant QSystemLocale::query(QueryType type, QVariant in) const
         return d->monthName(in.toInt(), QLocale::ShortFormat);
     case StandaloneMonthNameShort:
         return d->standaloneMonthName(in.toInt(), QLocale::ShortFormat);
+    case MonthNameNarrow:
+    case StandaloneMonthNameNarrow:
+        // Windows provides no narrow month names, so we fall back to CLDR
+        return QVariant();
     case DateToStringShort:
         return d->toString(in.toDate(), QLocale::ShortFormat);
     case DateToStringLong:

@@ -3162,6 +3162,11 @@ void tst_QLocale::systemLocaleDayAndMonthNames_data()
             << QByteArray("ru_RU") << QDate(2021, 8, 30) << QLocale::ShortFormat
             << QString("\u0430\u0432\u0433.") << QString("\u0430\u0432\u0433.")
             << QString("\u043f\u043d") << QString("\u043f\u043d");
+    // А, А, пн, П
+    QTest::newRow("ru_RU 30.08.2021 narrow")
+            << QByteArray("ru_RU") << QDate(2021, 8, 30) << QLocale::NarrowFormat
+            << QString("\u0410") << QString("\u0410") << QString("\u043f\u043d")
+            << QString("\u041f");
 #elif defined(Q_OS_DARWIN)
     // августа, август, понедельник, понедельник
     QTest::newRow("ru_RU 30.08.2021 long")
@@ -3175,6 +3180,11 @@ void tst_QLocale::systemLocaleDayAndMonthNames_data()
             << QByteArray("ru_RU") << QDate(2021, 8, 30) << QLocale::ShortFormat
             << QString("\u0430\u0432\u0433.") << QString("\u0430\u0432\u0433.")
             << QString("\u041f\u043d") << QString("\u041f\u043d");
+    // А, А, Пн, П
+    QTest::newRow("ru_RU 30.08.2021 narrow")
+            << QByteArray("ru_RU") << QDate(2021, 8, 30) << QLocale::NarrowFormat
+            << QString("\u0410") << QString("\u0410") << QString("\u041f\u043d")
+            << QString("\u041f");
 #endif
 
 #if QT_CONFIG(icu) || defined(Q_OS_DARWIN)
@@ -3184,6 +3194,9 @@ void tst_QLocale::systemLocaleDayAndMonthNames_data()
     QTest::newRow("en_US 30.08.2021 short")
             << QByteArray("en_US") << QDate(2021, 8, 30) << QLocale::ShortFormat
             << "Aug" << "Aug" << "Mon" << "Mon";
+    QTest::newRow("en_US 30.08.2021 narrow")
+            << QByteArray("en_US") << QDate(2021, 8, 30) << QLocale::NarrowFormat
+            << "A" << "A" << "M" << "M";
 
     QTest::newRow("de_DE 30.08.2021 long")
             << QByteArray("de_DE") << QDate(2021, 8, 30) << QLocale::LongFormat
@@ -3191,6 +3204,9 @@ void tst_QLocale::systemLocaleDayAndMonthNames_data()
     QTest::newRow("de_DE 30.08.2021 short")
             << QByteArray("de_DE") << QDate(2021, 8, 30) << QLocale::ShortFormat
             << "Aug." << "Aug" << "Mo." << "Mo";
+    QTest::newRow("de_DE 30.08.2021 narrow")
+            << QByteArray("de_DE") << QDate(2021, 8, 30) << QLocale::NarrowFormat
+            << "A" << "A" << "M" << "M";
 #elif defined(Q_OS_WIN)
     // августа, Август, понедельник, понедельник
     QTest::newRow("ru_RU 30.08.2021 long")
@@ -3204,6 +3220,11 @@ void tst_QLocale::systemLocaleDayAndMonthNames_data()
             << QByteArray("ru_RU") << QDate(2021, 8, 30) << QLocale::ShortFormat
             << QString("\u0430\u0432\u0433") << QString("\u0430\u0432\u0433")
             << QString("\u041f\u043d") << QString("\u043f\u043d");
+    // А, А, Пн, П
+    QTest::newRow("ru_RU 30.08.2021 narrow")
+            << QByteArray("ru_RU") << QDate(2021, 8, 30) << QLocale::NarrowFormat
+            << QString("\u0410") << QString("\u0410") << QString("\u041f\u043d")
+            << QString("\u041f");
 
     QTest::newRow("en_US 30.08.2021 long")
             << QByteArray("en_US") << QDate(2021, 8, 30) << QLocale::LongFormat
@@ -3211,6 +3232,9 @@ void tst_QLocale::systemLocaleDayAndMonthNames_data()
     QTest::newRow("en_US 30.08.2021 short")
             << QByteArray("en_US") << QDate(2021, 8, 30) << QLocale::ShortFormat
             << "Aug" << "Aug" << "Mon" << "Mon";
+    QTest::newRow("en_US 30.08.2021 narrow")
+            << QByteArray("en_US") << QDate(2021, 8, 30) << QLocale::NarrowFormat
+            << "A" << "A" << "Mo" << "M";
 
     QTest::newRow("de_DE 30.08.2021 long")
             << QByteArray("de_DE") << QDate(2021, 8, 30) << QLocale::LongFormat
@@ -3218,6 +3242,9 @@ void tst_QLocale::systemLocaleDayAndMonthNames_data()
     QTest::newRow("de_DE 30.08.2021 short")
             << QByteArray("de_DE") << QDate(2021, 8, 30) << QLocale::ShortFormat
             << "Aug" << "Aug" << "Mo" << "Mo";
+    QTest::newRow("de_DE 30.08.2021 narrow")
+            << QByteArray("de_DE") << QDate(2021, 8, 30) << QLocale::NarrowFormat
+            << "A" << "A" << "Mo" << "M";
 #else
     QSKIP("This test can't run on this OS");
 #endif
