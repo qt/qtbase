@@ -2642,8 +2642,13 @@ QString QLocale::toString(double f, char format, int precision) const
 /*!
     Returns a QLocale object initialized to the system locale.
 
-    On Windows and Mac, this locale will use the decimal/grouping characters and
-    date/time formats specified in the system configuration panel.
+    The system locale may use system-specific sources for locale data, where
+    available, otherwise falling back on QLocale's built-in database entry for
+    the language, script and territory the system reports.
+
+    For example, on Windows and Mac, this locale will use the decimal/grouping
+    characters and date/time formats specified in the system configuration
+    panel.
 
     \sa c()
 */
@@ -2906,10 +2911,19 @@ QString QGregorianCalendar::monthName(const QLocale &locale, int month, int year
 #ifndef QT_NO_SYSTEMLOCALE
     if (locale.d->m_data == &systemLocaleData) {
         Q_ASSERT(month >= 1 && month <= 12);
-        QVariant res = systemLocale()->query(format == QLocale::LongFormat
-                                             ? QSystemLocale::MonthNameLong
-                                             : QSystemLocale::MonthNameShort,
-                                             month);
+        QSystemLocale::QueryType queryType = QSystemLocale::MonthNameLong;
+        switch (format) {
+        case QLocale::LongFormat:
+            queryType = QSystemLocale::MonthNameLong;
+            break;
+        case QLocale::ShortFormat:
+            queryType = QSystemLocale::MonthNameShort;
+            break;
+        case QLocale::NarrowFormat:
+            queryType = QSystemLocale::MonthNameNarrow;
+            break;
+        }
+        QVariant res = systemLocale()->query(queryType, month);
         if (!res.isNull())
             return res.toString();
     }
@@ -2932,10 +2946,19 @@ QString QGregorianCalendar::standaloneMonthName(const QLocale &locale, int month
 #ifndef QT_NO_SYSTEMLOCALE
     if (locale.d->m_data == &systemLocaleData) {
         Q_ASSERT(month >= 1 && month <= 12);
-        QVariant res = systemLocale()->query(format == QLocale::LongFormat
-                                             ? QSystemLocale::StandaloneMonthNameLong
-                                             : QSystemLocale::StandaloneMonthNameShort,
-                                             month);
+        QSystemLocale::QueryType queryType = QSystemLocale::StandaloneMonthNameLong;
+        switch (format) {
+        case QLocale::LongFormat:
+            queryType = QSystemLocale::StandaloneMonthNameLong;
+            break;
+        case QLocale::ShortFormat:
+            queryType = QSystemLocale::StandaloneMonthNameShort;
+            break;
+        case QLocale::NarrowFormat:
+            queryType = QSystemLocale::StandaloneMonthNameNarrow;
+            break;
+        }
+        QVariant res = systemLocale()->query(queryType, month);
         if (!res.isNull())
             return res.toString();
     }
@@ -2954,10 +2977,19 @@ QString QCalendarBackend::weekDayName(const QLocale &locale, int day,
 
 #ifndef QT_NO_SYSTEMLOCALE
     if (locale.d->m_data == &systemLocaleData) {
-        QVariant res = systemLocale()->query(format == QLocale::LongFormat
-                                             ? QSystemLocale::DayNameLong
-                                             : QSystemLocale::DayNameShort,
-                                             day);
+        QSystemLocale::QueryType queryType = QSystemLocale::DayNameLong;
+        switch (format) {
+        case QLocale::LongFormat:
+            queryType = QSystemLocale::DayNameLong;
+            break;
+        case QLocale::ShortFormat:
+            queryType = QSystemLocale::DayNameShort;
+            break;
+        case QLocale::NarrowFormat:
+            queryType = QSystemLocale::DayNameNarrow;
+            break;
+        }
+        QVariant res = systemLocale()->query(queryType, day);
         if (!res.isNull())
             return res.toString();
     }
@@ -2974,10 +3006,19 @@ QString QCalendarBackend::standaloneWeekDayName(const QLocale &locale, int day,
 
 #ifndef QT_NO_SYSTEMLOCALE
     if (locale.d->m_data == &systemLocaleData) {
-        QVariant res = systemLocale()->query(format == QLocale::LongFormat
-                                             ? QSystemLocale::StandaloneDayNameLong
-                                             : QSystemLocale::StandaloneDayNameShort,
-                                             day);
+        QSystemLocale::QueryType queryType = QSystemLocale::StandaloneDayNameLong;
+        switch (format) {
+        case QLocale::LongFormat:
+            queryType = QSystemLocale::StandaloneDayNameLong;
+            break;
+        case QLocale::ShortFormat:
+            queryType = QSystemLocale::StandaloneDayNameShort;
+            break;
+        case QLocale::NarrowFormat:
+            queryType = QSystemLocale::StandaloneDayNameNarrow;
+            break;
+        }
+        QVariant res = systemLocale()->query(queryType, day);
         if (!res.isNull())
             return res.toString();
     }
