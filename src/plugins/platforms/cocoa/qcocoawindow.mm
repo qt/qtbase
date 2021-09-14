@@ -485,31 +485,51 @@ NSInteger QCocoaWindow::windowLevel(Qt::WindowFlags flags)
 NSUInteger QCocoaWindow::windowStyleMask(Qt::WindowFlags flags)
 {
     const Qt::WindowType type = static_cast<Qt::WindowType>(int(flags & Qt::WindowType_Mask));
-    const bool frameless = (flags & Qt::FramelessWindowHint) || windowIsPopupType(type);
 
-    // Remove zoom button by disabling resize for CustomizeWindowHint windows, except for
-    // Qt::Tool windows (e.g. dock windows) which should always be resizable.
-    const bool resizable = !(flags & Qt::CustomizeWindowHint) || (type == Qt::Tool);
+    // Determine initial style mask based on whether the window should
+    // have a frame and title or not. The NSWindowStyleMaskBorderless
+    // and NSWindowStyleMaskTitled styles are mutually exclusive, with
+    // values of 0 and 1 correspondingly.
+    NSUInteger styleMask = [&]{
+        // Honor explicit requests for borderless windows
+        if (flags & Qt::FramelessWindowHint)
+            return NSWindowStyleMaskBorderless;
 
-    // Select base window type. Note that the value of NSBorderlessWindowMask is 0.
-    NSUInteger styleMask = (frameless || !resizable) ? NSWindowStyleMaskBorderless : NSWindowStyleMaskResizable;
+        // Popup windows should always be borderless
+        if (windowIsPopupType(type))
+            return NSWindowStyleMaskBorderless;
 
-    if (frameless) {
+        if (flags & Qt::CustomizeWindowHint) {
+            // CustomizeWindowHint turns off the default window title hints,
+            // so the choice is then up to the user via Qt::WindowTitleHint.
+            return flags & Qt::WindowTitleHint
+                ? NSWindowStyleMaskTitled
+                : NSWindowStyleMaskBorderless;
+        } else {
+            // Otherwise, default to using titled windows
+            return NSWindowStyleMaskTitled;
+        }
+    }();
+
+    // FIXME: Control visibility of buttons directly, instead of affecting styleMask
+    if (styleMask == NSWindowStyleMaskBorderless) {
         // Frameless windows do not display the traffic lights buttons for
         // e.g. minimize, however StyleMaskMiniaturizable is required to allow
         // programmatic minimize.
         styleMask |= NSWindowStyleMaskMiniaturizable;
     } else if (flags & Qt::CustomizeWindowHint) {
-        if (flags & Qt::WindowTitleHint)
-            styleMask |= NSWindowStyleMaskTitled;
         if (flags & Qt::WindowCloseButtonHint)
             styleMask |= NSWindowStyleMaskClosable;
         if (flags & Qt::WindowMinimizeButtonHint)
             styleMask |= NSWindowStyleMaskMiniaturizable;
         if (flags & Qt::WindowMaximizeButtonHint)
             styleMask |= NSWindowStyleMaskResizable;
+
+        // Force tool windows to be resizable
+        if (type == Qt::Tool)
+            styleMask |= NSWindowStyleMaskResizable;
     } else {
-        styleMask |= NSWindowStyleMaskClosable | NSWindowStyleMaskTitled;
+        styleMask |= NSWindowStyleMaskClosable | NSWindowStyleMaskResizable;
 
         if (type != Qt::Dialog)
             styleMask |= NSWindowStyleMaskMiniaturizable;
@@ -518,6 +538,7 @@ NSUInteger QCocoaWindow::windowStyleMask(Qt::WindowFlags flags)
     if (type == Qt::Tool)
         styleMask |= NSWindowStyleMaskUtilityWindow;
 
+    // FIXME: Remove use of deprecated style mask
     if (m_drawContentBorderGradient)
         styleMask |= NSWindowStyleMaskTexturedBackground;
 
