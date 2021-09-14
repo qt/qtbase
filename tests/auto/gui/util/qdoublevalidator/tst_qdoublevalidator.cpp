@@ -45,6 +45,8 @@ private slots:
     void validateIntEquiv_data();
     void validateIntEquiv();
     void notifySignals();
+    void fixup();
+    void fixup_data();
 };
 
 Q_DECLARE_METATYPE(QValidator::State);
@@ -391,6 +393,224 @@ void tst_QDoubleValidator::notifySignals()
 
     dv.setLocale(QLocale("en"));
     QCOMPARE(changedSpy.count(), 9);
+}
+
+void tst_QDoubleValidator::fixup()
+{
+    QFETCH(QString, localeName);
+    QFETCH(QDoubleValidator::Notation, notation);
+    QFETCH(int, decimals);
+    QFETCH(QString, input);
+    QFETCH(QString, output);
+
+    QDoubleValidator val;
+    val.setLocale(QLocale(localeName));
+    val.setNotation(notation);
+    val.setDecimals(decimals);
+
+    val.fixup(input);
+    QCOMPARE(input, output);
+}
+
+void tst_QDoubleValidator::fixup_data()
+{
+    QTest::addColumn<QString>("localeName");
+    QTest::addColumn<QDoubleValidator::Notation>("notation");
+    QTest::addColumn<int>("decimals");
+    QTest::addColumn<QString>("input");
+    QTest::addColumn<QString>("output");
+
+    // C locale uses '.' as decimal point and ',' as grouping separator.
+    // C locale does not group digits by default.
+    QTest::newRow("C standard no digit grouping")
+            << "C" << QDoubleValidator::StandardNotation << -1 << "12.345"
+            << "12.345";
+    QTest::newRow("C standard with digit grouping")
+            << "C" << QDoubleValidator::StandardNotation << -1 << "-12,345.678"
+            << "-12345.678";
+    QTest::newRow("C standard with invalid digit grouping")
+            << "C" << QDoubleValidator::StandardNotation << -1 << "1,234,5.678"
+            << "12345.678";
+    QTest::newRow("C standard with invalid number of decimals")
+            << "C" << QDoubleValidator::StandardNotation << 2 << "-12,34.678"
+            << "-1234.68";
+    QTest::newRow("C standard truncate decimals")
+            << "C" << QDoubleValidator::StandardNotation << -1
+            << "1.23456789012345678901234567890"
+            << "1.2345678901234567";
+    QTest::newRow("C standard skip trailing zeroes")
+            << "C" << QDoubleValidator::StandardNotation << -1 << "1,234.5670000"
+            << "1234.567";
+    QTest::newRow("C standard zero value")
+            << "C" << QDoubleValidator::StandardNotation << -1 << "0.0"
+            << "0";
+    QTest::newRow("C standard scientific value")
+            << "C" << QDoubleValidator::StandardNotation << -1 << "1.23e-2"
+            << "1.23e-2";
+    QTest::newRow("C standard no fractional part")
+            << "C" << QDoubleValidator::StandardNotation << -1 << "-1,234"
+            << "-1234";
+
+    QTest::newRow("C scientific no digit grouping")
+            << "C" << QDoubleValidator::ScientificNotation << -1 << "0.98765e2"
+            << "9.8765e+01";
+    QTest::newRow("C scientific with digit grouping")
+            << "C" << QDoubleValidator::ScientificNotation << -1 << "-1,234.98765E-4"
+            << "-1.23498765E-01";
+    QTest::newRow("C scientific with invalid digit grouping")
+            << "C" << QDoubleValidator::ScientificNotation << -1 << "12,34.98765e2"
+            << "1.23498765e+05";
+    QTest::newRow("C scientific with invalid number of decimals")
+            << "C" << QDoubleValidator::ScientificNotation << 2 << "-12,34.98765e2"
+            << "-1.23e+05";
+    QTest::newRow("C scientific truncate decimals")
+            << "C" << QDoubleValidator::ScientificNotation << -1
+            << "1.23456789012345678901234567890E5"
+            << "1.2345678901234567E+05";
+    QTest::newRow("C scientific skip trailing zeroes")
+            << "C" << QDoubleValidator::ScientificNotation << -1 << "1,234.5670000e3"
+            << "1.234567e+06";
+    QTest::newRow("C scientific zero value")
+            << "C" << QDoubleValidator::ScientificNotation << -1 << "0.0"
+            << "0e+00";
+    QTest::newRow("C scientific standard value")
+            << "C" << QDoubleValidator::ScientificNotation << -1 << "12.345"
+            << "1.2345e+01";
+    QTest::newRow("C scientific no fractional part")
+            << "C" << QDoubleValidator::ScientificNotation << -1 << "1,234e2"
+            << "1.234e+05";
+    QTest::newRow("C scientific negative no fractional part")
+            << "C" << QDoubleValidator::ScientificNotation << -1 << "-1,234e2"
+            << "-1.234e+05";
+    QTest::newRow("C scientific no fractional and exponent")
+            << "C" << QDoubleValidator::ScientificNotation << -1 << "1,234"
+            << "1.234e+03";
+    QTest::newRow("C scientific negative no fractional and exponent")
+            << "C" << QDoubleValidator::ScientificNotation << -1 << "-1,234"
+            << "-1.234e+03";
+
+    // en locale uses '.' as decimal point and ',' as grouping separator.
+    // en locale groups digits by default. 'E' is used in scientific notation.
+    QTest::newRow("en standard no digit grouping")
+            << "en" << QDoubleValidator::StandardNotation << -1 << "-12.345"
+            << "-12.345";
+    QTest::newRow("en standard with digit grouping")
+            << "en" << QDoubleValidator::StandardNotation << -1 << "12,345.678"
+            << "12,345.678";
+    QTest::newRow("en standard with invalid digit grouping")
+            << "en" << QDoubleValidator::StandardNotation << -1 << "-1,234,5.678"
+            << "-12,345.678";
+    QTest::newRow("en standard with invalid number of decimals")
+            << "en" << QDoubleValidator::StandardNotation << 2 << "12,34.678"
+            << "1,234.68";
+    QTest::newRow("en standard no fractional part")
+            << "en" << QDoubleValidator::StandardNotation << -1 << "-12,34"
+            << "-1,234";
+
+    QTest::newRow("en scientific no digit grouping")
+            << "en" << QDoubleValidator::ScientificNotation << -1 << "-0.98765e2"
+            << "-9.8765E+01";
+    QTest::newRow("en scientific with digit grouping")
+            << "en" << QDoubleValidator::ScientificNotation << -1 << "1,234.98765E-4"
+            << "1.23498765E-01";
+    QTest::newRow("en scientific with invalid digit grouping")
+            << "en" << QDoubleValidator::ScientificNotation << -1 << "-12,34.98765e2"
+            << "-1.23498765E+05";
+    QTest::newRow("en scientific with invalid number of decimals")
+            << "en" << QDoubleValidator::ScientificNotation << 2 << "12,34.98765e2"
+            << "1.23E+05";
+    QTest::newRow("en scientific no fractional part")
+            << "en" << QDoubleValidator::ScientificNotation << -1 << "12,34e2"
+            << "1.234E+05";
+    QTest::newRow("en scientific negative no fractional part")
+            << "en" << QDoubleValidator::ScientificNotation << -1 << "-12,34e2"
+            << "-1.234E+05";
+    QTest::newRow("en scientific no fractional and exponent")
+            << "en" << QDoubleValidator::ScientificNotation << -1 << "1,234"
+            << "1.234E+03";
+    QTest::newRow("en scientific negative no fractional and exponent")
+            << "en" << QDoubleValidator::ScientificNotation << -1 << "-1,234"
+            << "-1.234E+03";
+
+    // de locale uses ',' as decimal point and '.' as grouping separator.
+    // de locale groups digits by default. 'E' is used in scientific notation.
+    QTest::newRow("de standard no digit grouping")
+            << "de" << QDoubleValidator::StandardNotation << -1 << "12,345"
+            << "12,345";
+    QTest::newRow("de standard with digit grouping")
+            << "de" << QDoubleValidator::StandardNotation << -1 << "-12.345,678"
+            << "-12.345,678";
+    QTest::newRow("de standard with invalid digit grouping")
+            << "de" << QDoubleValidator::StandardNotation << -1 << "1.234.5,678"
+            << "12.345,678";
+    QTest::newRow("de standard with invalid number of decimals")
+            << "de" << QDoubleValidator::StandardNotation << 2 << "-12.34,678"
+            << "-1.234,68";
+    QTest::newRow("de standard no fractional part")
+            << "de" << QDoubleValidator::StandardNotation << -1 << "12.34" << "1.234";
+
+    QTest::newRow("de scientific no digit grouping")
+            << "de" << QDoubleValidator::ScientificNotation << -1 << "0,98765e2"
+            << "9,8765E+01";
+    QTest::newRow("de scientific with digit grouping")
+            << "de" << QDoubleValidator::ScientificNotation << -1 << "-1.234,98765E-4"
+            << "-1,23498765E-01";
+    QTest::newRow("de scientific with invalid digit grouping")
+            << "de" << QDoubleValidator::ScientificNotation << -1 << "12.34,98765e2"
+            << "1,23498765E+05";
+    QTest::newRow("de scientific with invalid number of decimals")
+            << "de" << QDoubleValidator::ScientificNotation << 2 << "-12.34,98765e2"
+            << "-1,23E+05";
+    QTest::newRow("de scientific no fractional part")
+            << "de" << QDoubleValidator::ScientificNotation << -1 << "1.234e2"
+            << "1,234E+05";
+    QTest::newRow("de scientific negative no fractional part")
+            << "de" << QDoubleValidator::ScientificNotation << -1 << "-1.234e2"
+            << "-1,234E+05";
+    QTest::newRow("de scientific no fractional and exponent")
+            << "de" << QDoubleValidator::ScientificNotation << -1 << "12.34"
+            << "1,234E+03";
+    QTest::newRow("de scientific negative no fractional and exponent")
+            << "de" << QDoubleValidator::ScientificNotation << -1 << "-12.34"
+            << "-1,234E+03";
+
+    // hi locale uses '.' as decimal point and ',' as grouping separator.
+    // The rightmost group is of three digits, all the others contain two
+    // digits.
+    QTest::newRow("hi standard no digit grouping")
+            << "hi" << QDoubleValidator::StandardNotation << -1 << "123456.78"
+            << "1,23,456.78";
+    QTest::newRow("hi standard with digit grouping")
+            << "hi" << QDoubleValidator::StandardNotation << -1 << "-12,345.678"
+            << "-12,345.678";
+    QTest::newRow("hi standard with invalid digit grouping")
+            << "hi" << QDoubleValidator::StandardNotation << -1 << "12,34,56.78"
+            << "1,23,456.78";
+    QTest::newRow("hi standard no fractional part")
+            << "hi" << QDoubleValidator::StandardNotation << -1 << "-12,345,6"
+            << "-1,23,456";
+
+    QTest::newRow("hi scientific no digit grouping")
+            << "hi" << QDoubleValidator::ScientificNotation << -1 << "-0.123e-2"
+            << "-1.23E-03";
+    QTest::newRow("hi scientific with digit grouping")
+            << "hi" << QDoubleValidator::ScientificNotation << -1 << "12,345.678e-2"
+            << "1.2345678E+02";
+    QTest::newRow("hi scientific with invalid digit grouping")
+            << "hi" << QDoubleValidator::ScientificNotation << -1 << "-1,23,45.678e-2"
+            << "-1.2345678E+02";
+    QTest::newRow("hi scientific no fractional part")
+            << "hi" << QDoubleValidator::ScientificNotation << -1 << "1,23,456e2"
+            << "1.23456E+07";
+    QTest::newRow("hi scientific negative no fractional part")
+            << "hi" << QDoubleValidator::ScientificNotation << -1 << "-1,23,456e2"
+            << "-1.23456E+07";
+    QTest::newRow("hi scientific no fractional and exponent")
+            << "hi" << QDoubleValidator::ScientificNotation << -1 << "1,234,56"
+            << "1.23456E+05";
+    QTest::newRow("hi scientific negative no fractional and exponent")
+            << "hi" << QDoubleValidator::ScientificNotation << -1 << "-1,234,56"
+            << "-1.23456E+05";
 }
 
 void tst_QDoubleValidator::validateIntEquiv_data()

@@ -57,6 +57,7 @@ struct Wrapper : public QWidget {
     void wrapper0();
     void wrapper1();
     void wrapper2();
+    void wrapper3();
 };
 
 void Wrapper::wrapper0() {
@@ -163,5 +164,23 @@ s = "readm";       v.validate(s, pos); // Returns Intermediate
 //! [6]
 
 } // Wrapper::wrapper2
+
+void Wrapper::wrapper3()
+{
+//! [7]
+QString input = "0.98765e2";
+QDoubleValidator val;
+val.setLocale(QLocale::C);
+val.setNotation(QDoubleValidator::ScientificNotation);
+val.fixup(input); // input == "9.8765e+01"
+//! [7]
+//! [8]
+input = "-1234.6789";
+val.setDecimals(2);
+val.setLocale(QLocale::C);
+val.setNotation(QDoubleValidator::StandardNotation);
+val.fixup(input); // input == "-1234.68"
+//! [8]
+} // Wrapper::wrapper3
 
 } // src_gui_util_qvalidator
