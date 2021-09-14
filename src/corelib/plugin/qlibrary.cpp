@@ -283,10 +283,6 @@ static bool findPatternUnloaded(const QString &library, QLibraryPrivate *lib)
     /*
        ELF and Mach-O binaries with GCC have .qtmetadata sections. Find them.
     */
-    bool hasMetaData = false;
-    char pattern[] = "qTMETADATA ";
-    pattern[0] = 'Q'; // Ensure the pattern "QTMETADATA" is not found in this library should QPluginLoader ever encounter it.
-    const ulong plen = ulong(qstrlen(pattern));
 #if defined (Q_OF_ELF)
     r = QElfParser().parse(filedata, r.length, library, lib);
     if (r.length == 0) {
@@ -307,16 +303,13 @@ static bool findPatternUnloaded(const QString &library, QLibraryPrivate *lib)
         }
     }
 #endif // defined(Q_OF_ELF) && defined(Q_CC_GNU)
+
+    char pattern[] = "qTMETADATA ";
+    pattern[0] = 'Q'; // Ensure the pattern "QTMETADATA" is not found in this library should QPluginLoader ever encounter it.
+    const ulong plen = ulong(qstrlen(pattern));
     if (qsizetype rel = qt_find_pattern(filedata + r.pos, r.length, pattern, plen);
             rel >= 0) {
-        r.pos += rel;
-        hasMetaData = true;
-    }
-
-    bool ret = false;
-
-    if (r.pos >= 0 && hasMetaData) {
-        const char *data = filedata + r.pos;
+        const char *data = filedata + r.pos + rel;
         QString errMsg;
         QJsonDocument doc = qJsonFromRawLibraryMetaData(data, r.length, &errMsg);
         if (doc.isNull()) {
@@ -327,14 +320,14 @@ static bool findPatternUnloaded(const QString &library, QLibraryPrivate *lib)
             if (qt_debug_component())
                 qWarning("Found metadata in lib %s, metadata=\n%s\n",
                          library.toLocal8Bit().constData(), doc.toJson().constData());
-            ret = !doc.isNull();
+            if (!doc.isNull())
+                return true;
         }
     }
 
-    if (!ret && lib)
+    if (lib)
         lib->errorString = QLibrary::tr("Failed to extract plugin meta data from '%1'").arg(library);
-    file.close();
-    return ret;
+    return false;
 }
 
 static void installCoverageTool(QLibraryPrivate *libPrivate)
