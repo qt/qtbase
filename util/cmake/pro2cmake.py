@@ -3246,6 +3246,9 @@ def write_main_part(
     # Footer:
     cm_fh.write(f"{spaces(indent)})\n")
 
+    if typename == "Tool":
+        cm_fh.write(f"{spaces(indent)}qt_internal_return_unless_building_tools()\n")
+
     write_resources(cm_fh, name, scope, indent, target_ref=target_ref)
 
     write_statecharts(cm_fh, name, scope, indent)

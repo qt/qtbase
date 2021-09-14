@@ -18,3 +18,4 @@ qt_internal_add_tool(${target_name}
     INCLUDE_DIRECTORIES
         ${CMAKE_CURRENT_SOURCE_DIR}
 )
+qt_internal_return_unless_building_tools()

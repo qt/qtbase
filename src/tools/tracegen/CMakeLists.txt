@@ -18,6 +18,7 @@ qt_internal_add_tool(${target_name}
         qtheaders.cpp qtheaders.h
         tracegen.cpp
 )
+qt_internal_return_unless_building_tools()
 
 #### Keys ignored in scope 1:.:.:tracegen.pro:<TRUE>:
 # _OPTION = "host_build"

@@ -97,6 +97,7 @@ qt_internal_add_tool(${target_name}
         Qt::CorePrivate
         QtLibraryInfo
 )
+qt_internal_return_unless_building_tools()
 
 # Add QMAKE_VERSION_STR only if qmake is part of the build.
 target_compile_definitions(QtLibraryInfo PUBLIC

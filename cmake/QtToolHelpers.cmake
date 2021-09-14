@@ -441,6 +441,14 @@ function(qt_check_if_tools_will_be_built)
     set(QT_WILL_BUILD_TOOLS ${will_build_tools} CACHE INTERNAL "Are tools going to be built" FORCE)
 endfunction()
 
+# Use this macro to exit a file or function scope unless we're building tools. This is supposed to
+# be called after qt_internal_add_tools() to avoid special-casing operations on imported targets.
+macro(qt_internal_return_unless_building_tools)
+    if(NOT QT_WILL_BUILD_TOOLS)
+        return()
+    endif()
+endmacro()
+
 # Equivalent of qmake's qtNomakeTools(directory1 directory2).
 # If QT_BUILD_TOOLS_BY_DEFAULT is true, then targets within the given directories will be excluded
 # from the default 'all' target, as well as from install phase. The private variable is checked by

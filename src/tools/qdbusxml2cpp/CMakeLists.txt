@@ -22,6 +22,7 @@ qt_internal_add_tool(${target_name}
     # _LOADED = "qt_tool"
     # _OPTION = "host_build"
 )
+qt_internal_return_unless_building_tools()
 
 #### Keys ignored in scope 1:.:.:qdbusxml2cpp.pro:<TRUE>:
 # QMAKE_TARGET_DESCRIPTION = "Qt D-Bus XML to C++ Compiler"

@@ -40,6 +40,7 @@ qt_internal_add_tool(${target_name}
     #PUBLIC_LIBRARIES # special case remove
         #Qt::Gui # special case remove
 )
+qt_internal_return_unless_building_tools()
 
 #### Keys ignored in scope 1:.:.:uic.pro:<TRUE>:
 # QMAKE_TARGET_DESCRIPTION = "Qt User Interface Compiler"
