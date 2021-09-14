@@ -308,6 +308,10 @@ function(qt_internal_add_module target)
 
         ### FIXME: Can we replace headers.pri?
         qt_read_headers_pri("${module_build_interface_include_dir}" "module_headers")
+
+        set_property(TARGET ${target} APPEND PROPERTY
+            _qt_module_timestamp_dependencies "${module_headers_public}")
+
         if(arg_GENERATE_CPP_EXPORTS)
             if(arg_CPP_EXPORT_HEADER_BASE_NAME)
                 set(cpp_export_header_base_name
@@ -318,13 +322,9 @@ function(qt_internal_add_module target)
                 set(generate_private_cpp_export "GENERATE_PRIVATE_CPP_EXPORTS")
             endif()
             qt_internal_generate_cpp_global_exports(${target} ${module_define_infix}
-                generated_public_cpp_export
-                generated_private_cpp_export
                 "${cpp_export_header_base_name}"
                 "${generate_private_cpp_export}"
             )
-            list(APPEND module_headers_public "${generated_public_cpp_export}")
-            list(APPEND module_headers_private "${generated_private_cpp_export}")
         endif()
 
         set(module_depends_header
@@ -460,7 +460,7 @@ function(qt_internal_add_module target)
         set(timestamp_file "${CMAKE_CURRENT_BINARY_DIR}/timestamp")
         add_custom_command(OUTPUT "${timestamp_file}"
             COMMAND ${CMAKE_COMMAND} -E touch "${timestamp_file}"
-            DEPENDS ${module_headers_public}
+            DEPENDS "$<TARGET_PROPERTY:${target},_qt_module_timestamp_dependencies>"
             VERBATIM)
         add_custom_target(${target}_timestamp ALL DEPENDS "${timestamp_file}")
     endif()
@@ -933,9 +933,7 @@ function(qt_describe_module target)
     qt_install(FILES "${descfile_out}" DESTINATION "${install_dir}")
 endfunction()
 
-function(qt_internal_generate_cpp_global_exports target module_define_infix
-    out_public_header out_private_header)
-
+function(qt_internal_generate_cpp_global_exports target module_define_infix)
     cmake_parse_arguments(arg
         "GENERATE_PRIVATE_CPP_EXPORTS"
         "CPP_EXPORT_HEADER_BASE_NAME"
@@ -973,5 +971,37 @@ function(qt_internal_generate_cpp_global_exports target module_define_infix
 
         set(${out_private_header} "${generated_private_header_path}" PARENT_SCOPE)
         target_sources(${target} PRIVATE "${generated_private_header_path}")
+    endif()
+
+    get_target_property(is_framework ${target} FRAMEWORK)
+
+    get_target_property(target_type ${target} TYPE)
+    set(is_interface_lib 0)
+    if(target_type STREQUAL "INTERFACE_LIBRARY")
+        set(is_interface_lib 1)
+    endif()
+
+    set_property(TARGET ${target} APPEND PROPERTY
+        _qt_module_timestamp_dependencies "${generated_header_path}")
+
+    if(is_framework)
+        if(NOT is_interface_lib)
+            qt_copy_framework_headers(${target} PUBLIC "${generated_header_path}")
+
+            if(arg_GENERATE_PRIVATE_CPP_EXPORTS)
+                qt_copy_framework_headers(${target} PRIVATE "${generated_private_header_path}")
+            endif()
+        endif()
+    else()
+        set_property(TARGET ${target} APPEND PROPERTY PUBLIC_HEADER "${generated_header_path}")
+        qt_install(FILES "${generated_header_path}"
+            DESTINATION "${module_install_interface_include_dir}")
+
+        if(arg_GENERATE_PRIVATE_CPP_EXPORTS)
+            set_property(TARGET ${target} APPEND PROPERTY PRIVATE_HEADER
+                "${generated_private_header_path}")
+            qt_install(FILES "${generated_private_header_path}"
+                DESTINATION "${module_install_interface_private_include_dir}")
+        endif()
     endif()
 endfunction()
