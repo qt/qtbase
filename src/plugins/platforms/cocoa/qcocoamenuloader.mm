@@ -320,13 +320,8 @@
 - (BOOL)validateMenuItem:(NSMenuItem*)menuItem
 {
     if (menuItem.action == @selector(hideOtherApplications:)
-        || menuItem.action == @selector(unhideAllApplications:))
-        return [NSApp validateMenuItem:menuItem];
-
-    if (menuItem.action == @selector(hide:)) {
-        auto *w = QCocoaIntegration::instance()->activePopupWindow();
-        if (w && (w->window()->type() != Qt::ToolTip))
-            return NO;
+        || menuItem.action == @selector(unhideAllApplications:)
+        || menuItem.action == @selector(hide:)) {
         return [NSApp validateMenuItem:menuItem];
     }
 
