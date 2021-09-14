@@ -622,17 +622,27 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, QXcbVirtualDesktop *virtualDe
 
 void QXcbScreen::setMonitor(xcb_randr_monitor_info_t *monitorInfo, xcb_timestamp_t timestamp)
 {
-    if (!connection()->isAtLeastXRandR15() || !monitorInfo)
+    if (!connection()->isAtLeastXRandR15())
         return;
+
+    m_outputs.clear();
+    m_crtcs.clear();
+
+    if (!monitorInfo) {
+        m_monitor = nullptr;
+        m_output = XCB_NONE;
+        m_crtc = XCB_NONE;
+        m_mode = XCB_NONE;
+        m_outputName = defaultName();
+        // TODO: Send an event to the QScreen instance that the screen changed its name
+        return;
+    }
 
     xcb_randr_select_input(xcb_connection(), screen()->root, true);
 
     m_monitor = monitorInfo;
     QRect monitorGeometry = QRect(m_monitor->x, m_monitor->y,
                                   m_monitor->width, m_monitor->height);
-
-    m_outputs.clear();
-    m_crtcs.clear();
 
     int outputCount = xcb_randr_monitor_info_outputs_length(m_monitor);
     xcb_randr_output_t *outputs = nullptr;
@@ -702,6 +712,18 @@ void QXcbScreen::setMonitor(xcb_randr_monitor_info_t *monitorInfo, xcb_timestamp
     m_cursor = new QXcbCursor(connection(), this);
 }
 
+QString QXcbScreen::defaultName()
+{
+    QString name;
+    QByteArray displayName = connection()->displayName();
+    int dotPos = displayName.lastIndexOf('.');
+    if (dotPos != -1)
+        displayName.truncate(dotPos);
+    name = QString::fromLocal8Bit(displayName) + QLatin1Char('.')
+            + QString::number(m_virtualDesktop->number());
+    return name;
+}
+
 QXcbScreen::~QXcbScreen()
 {
     delete m_cursor;
@@ -714,12 +736,7 @@ QString QXcbScreen::getOutputName(xcb_randr_get_output_info_reply_t *outputInfo)
         name = QString::fromUtf8((const char*)xcb_randr_get_output_info_name(outputInfo),
                                  xcb_randr_get_output_info_name_length(outputInfo));
     } else {
-        QByteArray displayName = connection()->displayName();
-        int dotPos = displayName.lastIndexOf('.');
-        if (dotPos != -1)
-            displayName.truncate(dotPos);
-        name = QString::fromLocal8Bit(displayName) + QLatin1Char('.')
-                + QString::number(m_virtualDesktop->number());
+        name = defaultName();
     }
     return name;
 }

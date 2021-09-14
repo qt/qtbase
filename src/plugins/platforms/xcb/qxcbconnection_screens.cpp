@@ -378,7 +378,8 @@ void QXcbConnection::initializeScreens(bool initialized)
             }
         }
 
-        qCDebug(lcQpaScreen) << "primary output is" << qAsConst(m_screens).first()->name();
+        if (!m_screens.isEmpty())
+            qCDebug(lcQpaScreen) << "primary output is" << qAsConst(m_screens).first()->name();
     }
 }
 
@@ -499,6 +500,8 @@ void QXcbConnection::initializeScreensFromMonitor(xcb_screen_iterator_t *it, int
         m_virtualDesktops.append(virtualDesktop);
     }
     QList<QPlatformScreen*> old = virtualDesktop->m_screens;
+    if (initialized)
+        m_screens.clear();
 
     QList<QPlatformScreen *> siblings;
 
@@ -523,6 +526,7 @@ void QXcbConnection::initializeScreensFromMonitor(xcb_screen_iterator_t *it, int
                 screen = createScreen_monitor(virtualDesktop, monitor_info, monitors_r->timestamp);
                 QHighDpiScaling::updateHighDpiScaling();
             } else {
+                m_screens << screen;
                 updateScreen_monitor(screen, monitor_info, monitors_r->timestamp);
                 old.removeAll(screen);
             }
@@ -530,14 +534,29 @@ void QXcbConnection::initializeScreensFromMonitor(xcb_screen_iterator_t *it, int
 
         siblings << screen;
 
+        if (primaryScreenNumber() == xcbScreenNumber) {
+            primaryScreen = screen;
+            primaryScreen->setPrimary(true);
+        }
+
         xcb_randr_monitor_info_next(&monitor_iter);
     }
 
     if (siblings.isEmpty()) {
-        // If there are no XRandR outputs or XRandR extension is missing,
-        // then create a fake/legacy screen.
-        auto screen = new QXcbScreen(this, virtualDesktop, nullptr);
-        qCDebug(lcQpaScreen) << "created fake screen" << screen;
+        QXcbScreen *screen = nullptr;
+        if (initialized && !old.isEmpty()) {
+            // If there are no other screens on the same virtual desktop,
+            // then transform the physical screen into a fake screen.
+            screen = static_cast<QXcbScreen *>(old.takeFirst());
+            const QString nameWas = screen->name();
+            screen->setMonitor(nullptr, XCB_NONE);
+            qCDebug(lcQpaScreen) << "transformed" << nameWas << "to fake" << screen;
+        } else {
+            // If there are no XRandR outputs or XRandR extension is missing,
+            // then create a fake/legacy screen.
+            screen = new QXcbScreen(this, virtualDesktop, nullptr);
+            qCDebug(lcQpaScreen) << "create a fake screen: " << screen;
+        }
 
         if (primaryScreenNumber() == xcbScreenNumber) {
             primaryScreen = screen;
@@ -548,8 +567,11 @@ void QXcbConnection::initializeScreensFromMonitor(xcb_screen_iterator_t *it, int
     }
 
     if (initialized) {
-        for (QPlatformScreen *ps : old)
-            destroyScreen(static_cast<QXcbScreen*>(ps));
+        for (QPlatformScreen *ps : old) {
+            virtualDesktop->removeScreen(ps);
+            qCDebug(lcQpaScreen) << "destroy screen: " << ps;
+            QWindowSystemInterface::handleScreenRemoved(ps);
+        }
     }
 
     virtualDesktop->setScreens(std::move(siblings));
