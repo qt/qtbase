@@ -48,12 +48,6 @@
 
     // FIXME: Why is this the top level window and not m_platformWindow?
     QWindow *window = [self topLevelWindow];
-    if (QCocoaWindow *popup = QCocoaIntegration::instance()->activePopupWindow()) {
-        // Popups implicitly grab key events; forward to the active popup if there is one.
-        // This allows popups to e.g. intercept shortcuts and close the popup in response.
-        if (!popup->window()->flags().testFlag(Qt::ToolTip))
-            window = popup->window();
-    }
 
     // We will send a key event unless the input method handles it
     QBoolBlocker sendKeyEventGuard(m_sendKeyEvent, true);

@@ -146,15 +146,6 @@ static const QPointingDevice *pointingDeviceFor(qint64 deviceID)
     if (!targetView.platformWindow)
         return;
 
-    // Popups implicitly grap mouse events; forward to the active popup if there is one
-    if (QCocoaWindow *popup = QCocoaIntegration::instance()->activePopupWindow()) {
-        // Tooltips must be transparent for mouse events
-        // The bug reference is QTBUG-46379
-        if (!popup->window()->flags().testFlag(Qt::ToolTip)) {
-            if (QNSView *popupView = qnsview_cast(popup->view()))
-                targetView = popupView;
-        }
-    }
 
     [targetView convertFromScreen:[self screenMousePoint:theEvent] toWindowPoint:&qtWindowPoint andScreenPoint:&qtScreenPoint];
     ulong timestamp = [theEvent timestamp] * 1000;
