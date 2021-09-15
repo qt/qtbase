@@ -7,3 +7,6 @@ rhel-7.4
 opensuse-42.3
 sles
 
+# QTBUG-96271
+[closeAndThenShow]
+macos-11
