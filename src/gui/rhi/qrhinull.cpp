@@ -793,6 +793,11 @@ QRhiRenderPassDescriptor *QNullRenderPassDescriptor::newCompatibleRenderPassDesc
     return new QNullRenderPassDescriptor(m_rhi);
 }
 
+QVector<quint32> QNullRenderPassDescriptor::serializedFormat() const
+{
+    return {};
+}
+
 QNullReferenceRenderTarget::QNullReferenceRenderTarget(QRhiImplementation *rhi)
     : QRhiRenderTarget(rhi),
       d(rhi)

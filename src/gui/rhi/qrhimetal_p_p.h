@@ -146,6 +146,9 @@ struct QMetalRenderPassDescriptor : public QRhiRenderPassDescriptor
     void destroy() override;
     bool isCompatible(const QRhiRenderPassDescriptor *other) const override;
     QRhiRenderPassDescriptor *newCompatibleRenderPassDescriptor() const override;
+    QVector<quint32> serializedFormat() const override;
+
+    void updateSerializedFormat();
 
     // there is no MTLRenderPassDescriptor here as one will be created for each pass in beginPass()
 
@@ -155,6 +158,7 @@ struct QMetalRenderPassDescriptor : public QRhiRenderPassDescriptor
     bool hasDepthStencil = false;
     int colorFormat[MAX_COLOR_ATTACHMENTS];
     int dsFormat;
+    QVector<quint32> serializedFormatData;
 };
 
 struct QMetalRenderTargetData;
