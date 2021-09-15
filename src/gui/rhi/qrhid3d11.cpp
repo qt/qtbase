@@ -3371,6 +3371,11 @@ QRhiRenderPassDescriptor *QD3D11RenderPassDescriptor::newCompatibleRenderPassDes
     return new QD3D11RenderPassDescriptor(m_rhi);
 }
 
+QVector<quint32> QD3D11RenderPassDescriptor::serializedFormat() const
+{
+    return {};
+}
+
 QD3D11ReferenceRenderTarget::QD3D11ReferenceRenderTarget(QRhiImplementation *rhi)
     : QRhiRenderTarget(rhi),
       d(rhi)

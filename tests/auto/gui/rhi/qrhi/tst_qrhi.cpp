@@ -3505,6 +3505,7 @@ void tst_QRhi::renderPassDescriptorCompatibility()
 
         QVERIFY(rpDesc->isCompatible(rpDesc2.data()));
         QVERIFY(rpDesc2->isCompatible(rpDesc.data()));
+        QCOMPARE(rpDesc->serializedFormat(), rpDesc2->serializedFormat());
     }
 
     // two texture rendertargets with tex and tex2 as color0, and a depth-stencil attachment as well (compatible)
@@ -3522,6 +3523,7 @@ void tst_QRhi::renderPassDescriptorCompatibility()
 
         QVERIFY(rpDesc->isCompatible(rpDesc2.data()));
         QVERIFY(rpDesc2->isCompatible(rpDesc.data()));
+        QCOMPARE(rpDesc->serializedFormat(), rpDesc2->serializedFormat());
     }
 
     // now one of them does not have the ds attachment (not compatible)
@@ -3536,9 +3538,13 @@ void tst_QRhi::renderPassDescriptorCompatibility()
         rt2->setRenderPassDescriptor(rpDesc2.data());
         QVERIFY(rt2->create());
 
+        // these backends have a real concept of rp compatibility, with those we
+        // know that incompatibility must be reported; verify this
         if (impl == QRhi::Vulkan || impl == QRhi::Metal) {
             QVERIFY(!rpDesc->isCompatible(rpDesc2.data()));
             QVERIFY(!rpDesc2->isCompatible(rpDesc.data()));
+            QVERIFY(!rpDesc->serializedFormat().isEmpty());
+            QVERIFY(rpDesc->serializedFormat() != rpDesc2->serializedFormat());
         }
     }
 
@@ -3566,6 +3572,7 @@ void tst_QRhi::renderPassDescriptorCompatibility()
 
             QVERIFY(rpDesc->isCompatible(rpDesc2.data()));
             QVERIFY(rpDesc2->isCompatible(rpDesc.data()));
+            QCOMPARE(rpDesc->serializedFormat(), rpDesc2->serializedFormat());
         }
 
         // missing resolve for one of them (not compatible)
@@ -3591,6 +3598,8 @@ void tst_QRhi::renderPassDescriptorCompatibility()
             if (impl == QRhi::Vulkan) { // no Metal here
                 QVERIFY(!rpDesc->isCompatible(rpDesc2.data()));
                 QVERIFY(!rpDesc2->isCompatible(rpDesc.data()));
+                QVERIFY(!rpDesc->serializedFormat().isEmpty());
+                QVERIFY(rpDesc->serializedFormat() != rpDesc2->serializedFormat());
             }
         }
     } else {
@@ -3616,6 +3625,8 @@ void tst_QRhi::renderPassDescriptorCompatibility()
             if (impl == QRhi::Vulkan || impl == QRhi::Metal) {
                 QVERIFY(!rpDesc->isCompatible(rpDesc2.data()));
                 QVERIFY(!rpDesc2->isCompatible(rpDesc.data()));
+                QVERIFY(!rpDesc->serializedFormat().isEmpty());
+                QVERIFY(rpDesc->serializedFormat() != rpDesc2->serializedFormat());
             }
         }
     } else {

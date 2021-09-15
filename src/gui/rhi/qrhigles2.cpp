@@ -4769,6 +4769,11 @@ QRhiRenderPassDescriptor *QGles2RenderPassDescriptor::newCompatibleRenderPassDes
     return new QGles2RenderPassDescriptor(m_rhi);
 }
 
+QVector<quint32> QGles2RenderPassDescriptor::serializedFormat() const
+{
+    return {};
+}
+
 QGles2ReferenceRenderTarget::QGles2ReferenceRenderTarget(QRhiImplementation *rhi)
     : QRhiRenderTarget(rhi),
       d(rhi)

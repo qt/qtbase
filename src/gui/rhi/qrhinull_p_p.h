@@ -109,6 +109,7 @@ struct QNullRenderPassDescriptor : public QRhiRenderPassDescriptor
     void destroy() override;
     bool isCompatible(const QRhiRenderPassDescriptor *other) const override;
     QRhiRenderPassDescriptor *newCompatibleRenderPassDescriptor() const override;
+    QVector<quint32> serializedFormat() const override;
 };
 
 struct QNullRenderTargetData

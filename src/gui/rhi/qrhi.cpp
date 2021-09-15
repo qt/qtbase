@@ -2746,7 +2746,17 @@ QRhiResource::Type QRhiRenderPassDescriptor::resourceType() const
     \l{QRhiTextureRenderTarget::newCompatibleRenderPassDescriptor()}{created}
     from the same QRhiTextureRenderTarget are always compatible.
 
-    \sa newCompatibleRenderPassDescriptor()
+    Similarly to QRhiShaderResourceBindings, compatibility can also be tested
+    without having two existing objects available. Extracting the opaque blob by
+    calling serializedFormat() allows testing for compatibility by comparing the
+    returned vector to another QRhiRenderPassDescriptor's
+    serializedFormat(). This has benefits in certain situations, because it
+    allows testing the compatibility of a QRhiRenderPassDescriptor with a
+    QRhiGraphicsPipeline even when the QRhiRenderPassDescriptor the pipeline was
+    originally built was is no longer available (but the data returned from its
+    serializedFormat() still is).
+
+    \sa newCompatibleRenderPassDescriptor(), serializedFormat()
  */
 
 /*!
@@ -2766,6 +2776,18 @@ QRhiResource::Type QRhiRenderPassDescriptor::resourceType() const
     with the textures and render targets it was created from) In such a
     situation, it can be beneficial to store a cloned version in the data
     structures, and thus transferring ownership as well.
+
+    \sa isCompatible()
+ */
+
+/*!
+    \fn QVector<quint32> QRhiRenderPassDescriptor::serializedFormat() const
+
+    \return a vector of integers containing an opaque blob describing the data
+    relevant for \l{isCompatible()}{compatibility}. Given two
+    QRhiRenderPassDescriptor objects \c rp1 and \c rp2, if the data returned
+    from this function is identical, then \c{rp1->isCompatible(rp2)}, and vice
+    versa hold true as well.
 
     \sa isCompatible()
  */

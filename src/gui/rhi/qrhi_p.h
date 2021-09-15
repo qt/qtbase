@@ -993,6 +993,8 @@ public:
 
     virtual QRhiRenderPassDescriptor *newCompatibleRenderPassDescriptor() const = 0;
 
+    virtual QVector<quint32> serializedFormat() const = 0;
+
 protected:
     QRhiRenderPassDescriptor(QRhiImplementation *rhi);
 };

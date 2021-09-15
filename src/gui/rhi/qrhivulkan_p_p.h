@@ -186,7 +186,10 @@ struct QVkRenderPassDescriptor : public QRhiRenderPassDescriptor
     void destroy() override;
     bool isCompatible(const QRhiRenderPassDescriptor *other) const override;
     QRhiRenderPassDescriptor *newCompatibleRenderPassDescriptor() const override;
+    QVector<quint32> serializedFormat() const override;
     const QRhiNativeHandles *nativeHandles() override;
+
+    void updateSerializedFormat();
 
     VkRenderPass rp = VK_NULL_HANDLE;
     bool ownsRp = false;
@@ -196,6 +199,7 @@ struct QVkRenderPassDescriptor : public QRhiRenderPassDescriptor
     QVarLengthArray<VkSubpassDependency, 2> subpassDeps;
     bool hasDepthStencil = false;
     VkAttachmentReference dsRef;
+    QVector<quint32> serializedFormatData;
     QRhiVulkanRenderPassNativeHandles nativeHandlesStruct;
     int lastActiveFrameSlot = -1;
 };
