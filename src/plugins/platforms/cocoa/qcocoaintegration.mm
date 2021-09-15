@@ -454,30 +454,6 @@ void QCocoaIntegration::clearToolbars()
     mToolbars.clear();
 }
 
-void QCocoaIntegration::pushPopupWindow(QCocoaWindow *window)
-{
-    m_popupWindowStack.append(window);
-}
-
-QCocoaWindow *QCocoaIntegration::popPopupWindow()
-{
-    if (m_popupWindowStack.isEmpty())
-        return nullptr;
-    return m_popupWindowStack.takeLast();
-}
-
-QCocoaWindow *QCocoaIntegration::activePopupWindow() const
-{
-    if (m_popupWindowStack.isEmpty())
-        return nullptr;
-    return m_popupWindowStack.front();
-}
-
-QList<QCocoaWindow *> *QCocoaIntegration::popupWindowStack()
-{
-    return &m_popupWindowStack;
-}
-
 void QCocoaIntegration::setApplicationIcon(const QIcon &icon) const
 {
     // Fall back to a size that looks good on the highest resolution screen available

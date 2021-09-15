@@ -204,17 +204,13 @@ QCocoaWindow::~QCocoaWindow()
     if (!isForeignWindow())
         [[NSNotificationCenter defaultCenter] removeObserver:m_view];
 
-    if (QCocoaIntegration *cocoaIntegration = QCocoaIntegration::instance()) {
-        // While it is unlikely that this window will be in the popup stack
-        // during deletetion we clear any pointers here to make sure.
-        cocoaIntegration->popupWindowStack()->removeAll(this);
-
 #if QT_CONFIG(vulkan)
+    if (QCocoaIntegration *cocoaIntegration = QCocoaIntegration::instance()) {
         auto vulcanInstance = cocoaIntegration->getCocoaVulkanInstance();
         if (vulcanInstance)
             vulcanInstance->destroySurface(m_vulkanSurface);
-#endif
     }
+#endif
 
     [m_view release];
     [m_nsWindow close];
@@ -336,11 +332,6 @@ void QCocoaWindow::setVisible(bool visible)
         // so we can send the geometry change. FIXME: Get rid of this workaround.
         handleGeometryChange();
 
-        // Register popup windows. The Cocoa platform plugin will forward mouse events
-        // to them and close them when needed.
-        if (window()->type() == Qt::Popup || window()->type() == Qt::ToolTip)
-            QCocoaIntegration::instance()->pushPopupWindow(this);
-
         if (parentCocoaWindow) {
             // The parent window might have moved while this window was hidden,
             // update the window geometry if there is a parent.
@@ -448,9 +439,6 @@ void QCocoaWindow::setVisible(bool visible)
         }
 
         removeMonitor();
-
-        if (window()->type() == Qt::Popup || window()->type() == Qt::ToolTip)
-            QCocoaIntegration::instance()->popupWindowStack()->removeAll(this);
 
         if (parentCocoaWindow && window()->type() == Qt::Popup) {
             NSWindow *nativeParentWindow = parentCocoaWindow->nativeWindow();

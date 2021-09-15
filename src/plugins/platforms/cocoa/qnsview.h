@@ -58,7 +58,6 @@ QT_DECLARE_NAMESPACED_OBJC_INTERFACE(QNSView, NSView
 @interface QNSView (MouseAPI)
 - (void)handleMouseEvent:(NSEvent *)theEvent;
 - (void)handleFrameStrutMouseEvent:(NSEvent *)theEvent;
-- (bool)closePopups:(NSEvent *)theEvent;
 - (void)resetMouseButtons;
 @end
 
