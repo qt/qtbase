@@ -8389,11 +8389,13 @@ void QWidgetPrivate::hideChildren(bool spontaneous)
 */
 bool QWidgetPrivate::handleClose(CloseMode mode)
 {
-    Q_Q(QWidget);
+    if (data.is_closing)
+        return true;
 
     // We might not have initiated the close, so update the state now that we know
     data.is_closing = true;
 
+    Q_Q(QWidget);
     QPointer<QWidget> that = q;
     QPointer<QWidget> parentWidget = (q->parentWidget() && !QObjectPrivate::get(q->parentWidget())->wasDeleted) ? q->parentWidget() : nullptr;
 
@@ -8482,10 +8484,10 @@ bool QWidget::close()
 
 bool QWidgetPrivate::close()
 {
-    if (data.is_closing)
-        return true;
-
-    data.is_closing = true;
+    // FIXME: We're not setting is_closing here, even though that would
+    // make sense, as the code below will not end up in handleClose to
+    // reset is_closing when there's a QWindow, but no QPlatformWindow,
+    // and we can't assume close is synchronous so we can't reset it here.
 
     // Close native widgets via QWindow::close() in order to run QWindow
     // close code. The QWidget-specific close code in handleClose() will

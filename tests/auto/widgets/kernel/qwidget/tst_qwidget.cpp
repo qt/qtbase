@@ -11808,6 +11808,36 @@ void tst_QWidget::closeEvent()
     widget.windowHandle()->close();
     widget.windowHandle()->close();
     QCOMPARE(widget.closeCount, 1);
+
+    CloseCountingWidget widget2;
+    widget2.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&widget2));
+    widget2.close();
+    widget2.close();
+    QCOMPARE(widget2.closeCount, 1);
+    widget2.closeCount = 0;
+
+    widget2.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&widget2));
+    widget2.close();
+    QCOMPARE(widget2.closeCount, 1);
+
+    CloseCountingWidget widget3;
+    widget3.close();
+    widget3.close();
+    QEXPECT_FAIL("", "Closing a widget without a window will unconditionally send close events", Continue);
+    QCOMPARE(widget3.closeCount, 0);
+
+    QWidget parent;
+    CloseCountingWidget child;
+    child.setParent(&parent);
+    parent.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&parent));
+    child.close();
+    QCOMPARE(child.closeCount, 1);
+    child.close();
+    QEXPECT_FAIL("", "Closing a widget without a window will unconditionally send close events", Continue);
+    QCOMPARE(child.closeCount, 1);
 }
 
 void tst_QWidget::closeWithChildWindow()
