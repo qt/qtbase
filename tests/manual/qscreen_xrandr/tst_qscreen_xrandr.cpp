@@ -41,6 +41,7 @@ class tst_QScreen_Xrandr: public QObject
 private slots:
     void xrandr_15_merge_and_unmerge();
     void xrandr_15_scale();
+    void xrandr_15_off_and_on();
 
 private:
     void xrandr_process(const QStringList &arguments = {});
@@ -161,6 +162,41 @@ void tst_QScreen_Xrandr::xrandr_15_scale()
     qDebug() << "screen " << name1 << ": height=" << height3 << ", width=" << width3;
     QVERIFY(height3 == height1);
     QVERIFY(width3 == width1);
+}
+
+void tst_QScreen_Xrandr::xrandr_15_off_and_on()
+{
+    QList<QScreen *> screens = QGuiApplication::screens();
+    int ss = screens.size();
+    if (ss < 1)
+        QSKIP("This test requires at least one screen.");
+
+    QStringList names;
+    for (QScreen *s : screens)
+        names << s->name();
+
+    QStringList args;
+    for (int i = ss; i > 0; i--) {
+        QString name = names.at(i-1);
+        qDebug() << "i=" << i << ", name:" << name;
+        args.clear();
+        args << "--output" << name << "--off";
+        xrandr_process(args);
+        QTest::qWait(500);
+
+        QVERIFY(QGuiApplication::screens().size() == (i != 1 ? i - 1 : i));
+    }
+
+    for (int i = ss; i > 0; i--) {
+        QString name = names.at(i-1);
+        qDebug() << "i=" << i << ", name:" << name;
+        args.clear();
+        args << "--output" << name << "--auto";
+        xrandr_process(args);
+        QTest::qWait(500);
+
+        QVERIFY(QGuiApplication::screens().size() == (i == ss ? 1 : ss - i + 1));
+    }
 }
 
 void tst_QScreen_Xrandr::xrandr_process(const QStringList &args)
