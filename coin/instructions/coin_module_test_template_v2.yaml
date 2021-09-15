@@ -14,7 +14,7 @@ instructions:
               equals_property: target.os
             - condition: property
               property: target.osVersion
-              equals_value: QEMU
+              in_values: [QEMU, QNX_710]
     disable_if:
       condition: property
       property: features
