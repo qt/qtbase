@@ -41,6 +41,9 @@ class tst_QScreen_Xrandr: public QObject
 private slots:
     void xrandr_15_merge_and_unmerge();
     void xrandr_15_scale();
+
+private:
+    void xrandr_process(const QStringList &arguments = {});
 };
 
 // this test requires an X11 desktop with at least two screens
@@ -66,13 +69,9 @@ void tst_QScreen_Xrandr::xrandr_15_merge_and_unmerge()
 
     // combine the first two screens into one monitor
     // e.g. "xrandr --setmonitor Qt-merged auto eDP,HDMI-0"
-    QString prog1 = "xrandr";
-    QStringList args1;
-    args1 << "--setmonitor" << "Qt-merged" << "auto" << mergedScreenNames.join(',');
-    qDebug() << prog1 << args1;
-    QProcess *myProcess1 = new QProcess(this);
-    myProcess1->start(prog1, args1);
-    QVERIFY(myProcess1->waitForFinished());
+    QStringList args;
+    args << "--setmonitor" << "Qt-merged" << "auto" << mergedScreenNames.join(',');
+    xrandr_process(args);
 
     QTRY_COMPARE(removedSpy.count(), 2);
     QVERIFY(QGuiApplication::screens().size() != originalScreenNames.size());
@@ -91,12 +90,9 @@ void tst_QScreen_Xrandr::xrandr_15_merge_and_unmerge()
     removedSpy.clear();
 
     // "xrandr --delmonitor Qt-merged"
-    QString prog2 = "xrandr";
-    QStringList args2;
-    args2 << "--delmonitor" << "Qt-merged";
-    QProcess *myProcess2 = new QProcess(this);
-    myProcess2->start(prog2, args2);
-    QVERIFY(myProcess2->waitForFinished());
+    args.clear();
+    args << "--delmonitor" << "Qt-merged";
+    xrandr_process(args);
 
     QTRY_COMPARE(removedSpy.count(), 1);
     QVERIFY(QGuiApplication::screens().size() != combinedScreens.size());
@@ -127,12 +123,9 @@ void tst_QScreen_Xrandr::xrandr_15_scale()
     QSignalSpy geometryChangedSpy1(screen1, &QScreen::geometryChanged);
 
     // "xrandr --output name1 --scale 1.5x1.5"
-    QString prog1 = "xrandr";
-    QStringList args1;
-    args1 << "--output" << name1 << "--scale" << "1.5x1.5";
-    QProcess *myProcess1 = new QProcess(this);
-    myProcess1->start(prog1, args1);
-    QVERIFY(myProcess1->waitForFinished());
+    QStringList args;
+    args << "--output" << name1 << "--scale" << "1.5x1.5";
+    xrandr_process(args);
     QTRY_COMPARE(geometryChangedSpy1.count(), 1);
 
     QList<QScreen *> screens2 = QGuiApplication::screens();
@@ -148,15 +141,12 @@ void tst_QScreen_Xrandr::xrandr_15_scale()
     QVERIFY(height2 == expectedHeight);
     QVERIFY(width2 == expectedWidth);
 
-    QSignalSpy geometryChangedSpy2(screen2, &QScreen::geometryChanged);
+    QSignalSpy geometryChangedSpy2(screen1, &QScreen::geometryChanged);
 
     // "xrandr --output name1 --scale 1x1"
-    QString prog2 = "xrandr";
-    QStringList args2;
-    args2 << "--output" << name1 << "--scale" << "1x1";
-    QProcess *myProcess2 = new QProcess(this);
-    myProcess2->start(prog2, args2);
-    QVERIFY(myProcess2->waitForFinished());
+    args.clear();
+    args << "--output" << name1 << "--scale" << "1x1";
+    xrandr_process(args);
     QTRY_COMPARE(geometryChangedSpy2.count(), 1);
 
     QList<QScreen *> screens3 = QGuiApplication::screens();
@@ -171,6 +161,15 @@ void tst_QScreen_Xrandr::xrandr_15_scale()
     qDebug() << "screen " << name1 << ": height=" << height3 << ", width=" << width3;
     QVERIFY(height3 == height1);
     QVERIFY(width3 == width1);
+}
+
+void tst_QScreen_Xrandr::xrandr_process(const QStringList &args)
+{
+    QString prog = "xrandr";
+    QProcess *process = new QProcess(this);
+    qDebug() << Q_FUNC_INFO << prog << args;
+    process->start(prog, args);
+    QVERIFY(process->waitForFinished());
 }
 
 #include <tst_qscreen_xrandr.moc>
