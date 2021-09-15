@@ -448,8 +448,8 @@ class QtBase(ConanFile):
         # as those probably differ on each machine
         rm_list = [
             "sdk",
-            "android_sdk_path",
-            "android_ndk_path",
+            "android_sdk",
+            "android_ndk",
             "android_ndk_platform",
             "android_abis",
             "android_javac_target",
