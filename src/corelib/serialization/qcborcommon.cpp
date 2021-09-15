@@ -153,11 +153,11 @@ QDataStream &operator>>(QDataStream &ds, QCborSimpleType &st)
                                 is the exponent of the power of 10, the second the integral
                                 mantissa. The value 273.15 would be encoded as array \c{[-2, 27315]}.
    \value Bigfloat              Similar to Decimal, but the exponent is a power of 2 instead.
-   \value COSE_Encrypt0         An \c Encrypt0 map as specified by \l{https://tools.ietf.org/html/rfc8152}{RFC 8152}
+   \value COSE_Encrypt0         An \c Encrypt0 map as specified by \l{RFC 8152}
                                 (CBOR Object Signing and Encryption).
-   \value COSE_Mac0             A \c Mac0 map as specified by \l{https://tools.ietf.org/html/rfc8152}{RFC 8152}
+   \value COSE_Mac0             A \c Mac0 map as specified by \l{RFC 8152}
                                 (CBOR Object Signing and Encryption).
-   \value COSE_Sign1            A \c Sign1 map as specified by \l{https://tools.ietf.org/html/rfc8152}{RFC 8152}
+   \value COSE_Sign1            A \c Sign1 map as specified by \l{RFC 8152}
                                 (CBOR Object Signing and Encryption).
    \value ExpectedBase64url     Indicates that the byte array should be encoded using Base64url
                                 if the stream is converted to JSON.
@@ -172,13 +172,13 @@ QDataStream &operator>>(QDataStream &ds, QCborSimpleType &st)
    \value RegularExpression     Indicates that the string contains a Perl-Compatible Regular
                                 Expression pattern.
    \value MimeMessage           Indicates that the string contains a MIME message (according to
-                                \l{https://tools.ietf.org/html/rfc2045}){RFC 2045}.
+                                \l{RFC 2045}).
    \value Uuid                  Indicates that the byte array contains a UUID.
-   \value COSE_Encrypt          An \c Encrypt map as specified by \l{https://tools.ietf.org/html/rfc8152}{RFC 8152}
+   \value COSE_Encrypt          An \c Encrypt map as specified by \l{RFC 8152}
                                 (CBOR Object Signing and Encryption).
-   \value COSE_Mac              A \c Mac map as specified by \l{https://tools.ietf.org/html/rfc8152}{RFC 8152}
+   \value COSE_Mac              A \c Mac map as specified by \l{RFC 8152}
                                 (CBOR Object Signing and Encryption).
-   \value COSE_Sign             A \c Sign map as specified by \l{https://tools.ietf.org/html/rfc8152}{RFC 8152}
+   \value COSE_Sign             A \c Sign map as specified by \l{RFC 8152}
                                 (CBOR Object Signing and Encryption).
    \value Signature             No change in interpretation; this tag can be used as the outermost
                                 tag in a CBOR stream as the file header.

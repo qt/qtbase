@@ -204,7 +204,7 @@ Q_LOGGING_CATEGORY(lcSsl, "qt.network.ssl");
     \ingroup ssl
     \inmodule QtNetwork
 
-    See \l{https://tools.ietf.org/html/rfc8446#page-85}{RFC 8446, section 6}
+    See \l{RFC 8446, section 6}
     for the possible values and their meaning.
 
     \value CloseNotify,

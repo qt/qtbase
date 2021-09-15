@@ -95,7 +95,7 @@ QT_BEGIN_NAMESPACE
     \inmodule QtNetwork
 
 
-    This enumeration describes revocation reasons, defined in \l{https://tools.ietf.org/html/rfc5280#section-5.3.1}{RFC 5280, section 5.3.1}
+    This enumeration describes revocation reasons, defined in \l{RFC 5280, section 5.3.1}
 
     \value None
     \value Unspecified

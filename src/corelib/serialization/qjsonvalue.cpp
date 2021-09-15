@@ -468,7 +468,7 @@ void QJsonValue::swap(QJsonValue &other) noexcept
     fails the value is replaced by a null JSON value. Note that
     QVariant::toString() is also lossy for the majority of types. For example,
     if the passed QVariant is representing raw byte array data, it is recommended
-    to pre-encode it to \l {https://www.ietf.org/rfc/rfc4648.txt}{Base64} (or
+    to pre-encode it to \l {RFC 4686}{Base64} (or
     another lossless encoding), otherwise a lossy conversion using QString::fromUtf8()
     will be used.
 

@@ -58,7 +58,7 @@
 
     The QDtlsClientVerifier class implements server-side DTLS cookie generation
     and verification. Datagram security protocols are highly susceptible to a
-    variety of Denial-of-Service attacks. According to \l {https://tools.ietf.org/html/rfc6347#section-4.2.1}{RFC 6347, section 4.2.1},
+    variety of Denial-of-Service attacks. According to \l {RFC 6347, section 4.2.1},
     these are two of the more common types of attack:
 
     \list
@@ -71,7 +71,7 @@
     which can be quite large, thus flooding the victim machine with datagrams.
     \endlist
 
-    As a countermeasure to these attacks, \l {https://tools.ietf.org/html/rfc6347#section-4.2.1}{RFC 6347, section 4.2.1}
+    As a countermeasure to these attacks, \l {RFC 6347, section 4.2.1}
     proposes a stateless cookie technique that a server may deploy:
 
     \list
@@ -119,7 +119,7 @@
 
     \note The default secret is shared by all objects of the classes QDtlsClientVerifier
     and QDtls. Since this can impose security risks, RFC 6347 recommends to change
-    the server's secret frequently. Please see \l {https://tools.ietf.org/html/rfc6347}{RFC 6347, section 4.2.1}
+    the server's secret frequently. Please see \l {RFC 6347, section 4.2.1}
     for hints about possible server implementations. Cookie generator parameters
     can be set using the class QDtlsClientVerifier::GeneratorParameters and
     setCookieGeneratorParameters():
@@ -250,7 +250,7 @@
     \warning It's recommended to call shutdown() before destroying the client's QDtls
     object if you are planning to re-use the same port number to connect to the
     server later. Otherwise, the server may drop incoming ClientHello messages,
-    see \l{https://tools.ietf.org/html/rfc6347#page-25}{RFC 6347, section 4.2.8}
+    see \l {RFC 6347, section 4.2.8}
     for more details and implementation hints.
 
     If the server does not use QDtlsClientVerifier, it \e must configure its

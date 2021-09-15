@@ -109,7 +109,7 @@ static_assert(int(QCborStreamReader::Invalid) == CborInvalidType);
    Representation, a very compact form of binary data encoding that is
    compatible with JSON. It was created by the IETF Constrained RESTful
    Environments (CoRE) WG, which has used it in many new RFCs. It is meant to
-   be used alongside the \l{https://tools.ietf.org/html/rfc7252}{CoAP
+   be used alongside the \l{RFC 7252}{CoAP
    protocol}.
 
    QCborStreamReader provides a StAX-like API, similar to that of

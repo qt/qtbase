@@ -59,7 +59,7 @@ using namespace QtCbor;
     binary data encoding that is a superset of JSON. It was created by the IETF
     Constrained RESTful Environments (CoRE) WG, which has used it in many new
     RFCs. It is meant to be used alongside the
-    \l{https://tools.ietf.org/html/rfc7252}{CoAP protocol}.
+    \l{RFC 7252}{CoAP protocol}.
 
     QCborArray is very similar to \l QVariantList and \l QJsonArray and its API
     is almost identical to those two classes. It can also be converted to and

@@ -58,7 +58,7 @@ using namespace QtCbor;
     Representation, a very compact form of binary data encoding that is a
     superset of JSON. It was created by the IETF Constrained RESTful
     Environments (CoRE) WG, which has used it in many new RFCs. It is meant to
-    be used alongside the \l{https://tools.ietf.org/html/rfc7252}{CoAP
+    be used alongside the \l{RFC 7252}{CoAP
     protocol}.
 
     Unlike JSON and \l QVariantMap, CBOR map keys can be of any type, not just

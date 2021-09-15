@@ -75,7 +75,7 @@ QT_BEGIN_NAMESPACE
     binary data encoding that is a superset of JSON. It was created by the IETF
     Constrained RESTful Environments (CoRE) WG, which has used it in many
     new RFCs. It is meant to be used alongside the
-    \l{https://tools.ietf.org/html/rfc7252}{CoAP protocol}.
+    \l{RFC 7252}{CoAP protocol}.
 
     CBOR has three groups of built-in types:
 
@@ -159,7 +159,7 @@ QT_BEGIN_NAMESPACE
 
     QCborValue supports all CBOR features required to create canonical and
     strict streams. It implements almost all of the features specified in \l
-    {https://tools.ietf.org/html/rfc7049}{RFC 7049}.
+    {RFC 7049}.
 
     The following table lists the CBOR features that QCborValue supports.
 
@@ -1283,8 +1283,8 @@ inline int QCborContainerPrivate::compareElement_helper(const QCborContainerPriv
 
     \section3 Sorting order
 
-    Sorting order in CBOR is defined in RFC 7049
-    {https://tools.ietf.org/html/rfc7049#section-3.9}{section 3.9}, which
+    Sorting order in CBOR is defined in
+    \l{RFC 7049, section 3.9}, which
     discusses the sorting of keys in a map when following the Canonical
     encoding. According to the specification, "sorting is performed on the
     bytes of the representation of the key data items" and lists as

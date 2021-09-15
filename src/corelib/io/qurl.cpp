@@ -1958,7 +1958,7 @@ void QUrl::setUrl(const QString &url, ParsingMode parsingMode)
     The scheme describes the type (or protocol) of the URL. It's
     represented by one or more ASCII characters at the start the URL.
 
-    A scheme is strictly \l {http://www.ietf.org/rfc/rfc3986.txt} {RFC 3986}-compliant:
+    A scheme is strictly \l {RFC 3986}-compliant:
         \tt {scheme = ALPHA *( ALPHA / DIGIT / "+" / "-" / "." )}
 
     The following example shows a URL where the scheme is "ftp":
