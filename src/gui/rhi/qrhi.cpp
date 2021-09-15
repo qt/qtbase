@@ -2778,10 +2778,16 @@ QRhiResource::Type QRhiRenderPassDescriptor::resourceType() const
     \fn QVector<quint32> QRhiRenderPassDescriptor::serializedFormat() const
 
     \return a vector of integers containing an opaque blob describing the data
-    relevant for \l{isCompatible()}{compatibility}. Given two
-    QRhiRenderPassDescriptor objects \c rp1 and \c rp2, if the data returned
-    from this function is identical, then \c{rp1->isCompatible(rp2)}, and vice
-    versa hold true as well.
+    relevant for \l{isCompatible()}{compatibility}.
+
+    Given two QRhiRenderPassDescriptor objects \c rp1 and \c rp2, if the data
+    returned from this function is identical, then \c{rp1->isCompatible(rp2)},
+    and vice versa hold true as well.
+
+    \note The returned data is meant to be used for storing in memory and
+    comparisons during the lifetime of the QRhi the object belongs to. It is not
+    meant for storing on disk, reusing between processes, or using with multiple
+    QRhi instances with potentially different backends.
 
     \sa isCompatible()
  */
@@ -3054,6 +3060,8 @@ QRhiResource::Type QRhiShaderResourceBindings::resourceType() const
     is more efficient than iterating through two binding lists and calling
     QRhiShaderResourceBinding::isLayoutCompatible() on each pair. This becomes
     relevant especially when this function is called at a high frequency.
+
+    \sa serializedLayoutDescription()
  */
 bool QRhiShaderResourceBindings::isLayoutCompatible(const QRhiShaderResourceBindings *other) const
 {
@@ -3071,6 +3079,25 @@ bool QRhiShaderResourceBindings::isLayoutCompatible(const QRhiShaderResourceBind
     return m_layoutDescHash == other->m_layoutDescHash
             && m_layoutDesc == other->m_layoutDesc;
 }
+
+/*!
+    \fn QVector<quint32> QRhiShaderResourceBindings::serializedLayoutDescription() const
+
+    \return a vector of integers containing an opaque blob describing the layout
+    of the binding list, i.e. the data relevant for
+    \l{isLayoutCompatible()}{layout compatibility tests}.
+
+    Given two objects \c srb1 and \c srb2, if the data returned from this
+    function is identical, then \c{srb1->isLayoutCompatible(srb2), and vice
+    versa hold true as well.
+
+    \note The returned data is meant to be used for storing in memory and
+    comparisons during the lifetime of the QRhi the object belongs to. It is not
+    meant for storing on disk, reusing between processes, or using with multiple
+    QRhi instances with potentially different backends.
+
+    \sa isLayoutCompatible()
+ */
 
 void QRhiImplementation::updateLayoutDesc(QRhiShaderResourceBindings *srb)
 {
