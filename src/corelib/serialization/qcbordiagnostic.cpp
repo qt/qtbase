@@ -326,7 +326,7 @@ void DiagnosticNotation::appendValue(const QCborValue &v)
     would be possible.
 
     CBOR diagnostic notation is specified by
-    \l{https://tools.ietf.org/html/rfc7049#section-6}{section 6} of RFC 7049.
+    \l{RFC 7049, section 6}{section 6} of RFC 7049.
     It is a text representation of the CBOR stream and it is very similar to
     JSON, but it supports the CBOR types not found in JSON. The extended format
     enabled by the \l{DiagnosticNotationOption}{ExtendedFormat} flag is

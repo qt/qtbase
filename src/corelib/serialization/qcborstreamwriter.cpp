@@ -92,8 +92,7 @@ Q_DECLARE_TYPEINFO(CborEncoder, Q_PRIMITIVE_TYPE);
    Representation, a very compact form of binary data encoding that is
    compatible with JSON. It was created by the IETF Constrained RESTful
    Environments (CoRE) WG, which has used it in many new RFCs. It is meant to
-   be used alongside the \l{https://tools.ietf.org/html/rfc7252}{CoAP
-   protocol}.
+   be used alongside the \l{RFC 7252}{CoAP protocol}.
 
    QCborStreamWriter provides a StAX-like API, similar to that of
    \l{QXmlStreamWriter}. It is rather low-level and requires a bit of knowledge
@@ -123,7 +122,7 @@ Q_DECLARE_TYPEINFO(CborEncoder, Q_PRIMITIVE_TYPE);
 
    QCborStreamWriter supports all CBOR features required to create canonical
    and strict streams. It implements almost all of the features specified in
-   \l {https://tools.ietf.org/html/rfc7049}{RFC 7049}.
+   \l {RFC 7049}.
 
    The following table lists the CBOR features that QCborStreamWriter supports.
 
@@ -151,7 +150,7 @@ Q_DECLARE_TYPEINFO(CborEncoder, Q_PRIMITIVE_TYPE);
    \section2 Canonical CBOR encoding
 
    Canonical CBOR encoding is defined by
-   \l{https://tools.ietf.org/html/rfc7049#section-3.9}{Section 3.9 of RFC
+   \l{RFC 7049, section 3.9}{Section 3.9 of RFC
    7049}. Canonical encoding is not a requirement for Qt's CBOR decoding
    functionality, but it may be required for some protocols. In particular,
    protocols that require the ability to reproduce the same stream identically
@@ -181,7 +180,7 @@ Q_DECLARE_TYPEINFO(CborEncoder, Q_PRIMITIVE_TYPE);
    \section2 Strict CBOR mode
 
    Strict mode is defined by
-   \l{https://tools.ietf.org/html/rfc7049#section-3.10}{Section 3.10 of RFC
+   \l{RFC 7049, section 3.10}{Section 3.10 of RFC
    7049}. As for Canonical encoding above, QCborStreamWriter makes it possible
    to create strict CBOR streams, but does not require them or validate that
    the output is so.

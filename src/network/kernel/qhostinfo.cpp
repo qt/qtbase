@@ -234,7 +234,7 @@ bool QHostInfoResult::event(QEvent *event)
     QHostInfo::localHostName() function.
 
     QHostInfo uses the mechanisms provided by the operating system
-    to perform the lookup. As per {https://tools.ietf.org/html/rfc6724}{RFC 6724}
+    to perform the lookup. As per \l {RFC 6724}
     there is no guarantee that all IP addresses registered for a domain or
     host will be returned.
 
@@ -245,8 +245,7 @@ bool QHostInfoResult::event(QEvent *event)
     \note Since Qt 4.6.3 QHostInfo is using a small internal 60 second DNS cache
     for performance improvements.
 
-    \sa QAbstractSocket, {http://www.rfc-editor.org/rfc/rfc3492.txt}{RFC 3492},
-    {https://tools.ietf.org/html/rfc6724}{RFC 6724}
+    \sa QAbstractSocket, {RFC 3492}, {RFC 6724}
 */
 
 static int nextId()

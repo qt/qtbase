@@ -2074,7 +2074,7 @@ DtlsBase::~DtlsBase() = default;
     and \c false otherwise. If no valid cookie was found in the \a dgram, this verifier should use
     \a socket to send a HelloVerifyRequest message, using \a address and \a port as the destination
     and a source material for cookie generation, see also
-    \l {https://tools.ietf.org/html/rfc6347#section-4.2.1}{RFC 6347, section 4.2.1}
+    \l {RFC 6347, section 4.2.1}
 
     \sa QDtlsClientVerifier
 */

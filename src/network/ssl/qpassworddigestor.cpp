@@ -60,7 +60,7 @@ namespace QPasswordDigestor {
     \since 5.12
 
     Returns a hash computed using the PBKDF1-algorithm as defined in
-    \l {https://tools.ietf.org/html/rfc8018#section-5.1} {RFC 8018}.
+    \l {RFC 8018, section 5.1}.
 
     The function takes the \a data and \a salt, and then hashes it repeatedly
     for \a iterations iterations using the specified hash \a algorithm. If the
@@ -126,7 +126,7 @@ Q_NETWORK_EXPORT QByteArray deriveKeyPbkdf1(QCryptographicHash::Algorithm algori
     \since 5.12
 
     Derive a key using the PBKDF2-algorithm as defined in
-    \l {https://tools.ietf.org/html/rfc8018#section-5.2} {RFC 8018}.
+    \l {RFC 8018, section 5.2}.
 
     This function takes the \a data and \a salt, and then applies HMAC-X, where
     the X is \a algorithm, repeatedly. It internally concatenates intermediate

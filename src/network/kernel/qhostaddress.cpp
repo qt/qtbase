@@ -1143,7 +1143,7 @@ bool QHostAddress::isLoopback() const
 
     Note that IPv6 unique local unicast addresses are considered global
     addresses (see isUniqueLocalUnicast()), as are IPv4 addresses reserved for
-    local networks by \l {https://tools.ietf.org/html/rfc1918}{RFC 1918}.
+    local networks by \l {RFC 1918}.
 
     Also note that IPv6 site-local addresses are deprecated and should be
     considered as global in new applications. This function returns true for

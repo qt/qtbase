@@ -37,7 +37,7 @@
     game generally involves serializing each game object's member variables
     to a file. Many formats can be used for this purpose, one of which is JSON.
     With QJsonDocument, you also have the ability to serialize a document in a
-    \l {https://tools.ietf.org/html/rfc7049} {CBOR} format, which is great if you
+    \l {RFC 7049} {CBOR} format, which is great if you
     don't want the save file to be readable, or if you need to keep the file size down.
 
     In this example, we'll demonstrate how to save and load a simple game to

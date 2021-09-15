@@ -43,7 +43,7 @@
     modify and save JSON data.
 
     More details about the JSON data format can be found at \l{http://json.org}{json.org}
-    and in \l{https://datatracker.ietf.org/doc/html/rfc4627}{RFC-4627}.
+    and in \l {RFC 4627}.
 
     \tableofcontents
 
