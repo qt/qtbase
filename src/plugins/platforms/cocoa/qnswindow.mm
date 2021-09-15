@@ -374,7 +374,7 @@ OSStatus CGSClearWindowTags(const CGSConnectionID, const CGSWindowID, int *, int
     // close open popups. Presses within the window's content are handled to do that in the
     // NSView::mouseDown implementation.
     if (theEvent.type == NSEventTypeLeftMouseDown && mouseEventInFrameStrut)
-        [qnsview_cast(m_platformWindow->view()) closePopups:theEvent];
+        QGuiApplicationPrivate::instance()->closeAllPopups();
 
     [super sendEvent:theEvent];
 
@@ -385,11 +385,10 @@ OSStatus CGSClearWindowTags(const CGSConnectionID, const CGSWindowID, int *, int
     // not Qt). However, an active popup is expected to grab any mouse event within the
     // application, so we need to handle those explicitly and trust Qt's isWindowBlocked
     // implementation to eat events that shouldn't be delivered anyway.
-    if (isMouseEvent(theEvent) && QCocoaIntegration::instance()->activePopupWindow()
+    if (isMouseEvent(theEvent) && QGuiApplicationPrivate::instance()->popupActive()
         && QGuiApplicationPrivate::instance()->isWindowBlocked(m_platformWindow->window(), nullptr)) {
         qCDebug(lcQpaWindow) << "Mouse event over modally blocked window" << m_platformWindow->window()
-                                << "while popup" << QCocoaIntegration::instance()->activePopupWindow()
-                                << "is open - redirecting";
+                             << "while popup is open - redirecting";
         [qnsview_cast(m_platformWindow->view()) handleMouseEvent:theEvent];
     }
     if (m_platformWindow->frameStrutEventsEnabled() && mouseEventInFrameStrut)
