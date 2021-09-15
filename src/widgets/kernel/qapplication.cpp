@@ -2628,16 +2628,6 @@ bool QApplicationPrivate::shouldQuit()
     return QGuiApplicationPrivate::shouldQuitInternal(processedWindows);
 }
 
-static inline void closeAllPopups()
-{
-    // Close all popups: In case some popup refuses to close,
-    // we give up after 1024 attempts (to avoid an infinite loop).
-    int maxiter = 1024;
-    QWidget *popup;
-    while ((popup = QApplication::activePopupWidget()) && maxiter--)
-        popup->close();
-}
-
 /*! \reimp
  */
 bool QApplication::notify(QObject *receiver, QEvent *e)
@@ -2711,7 +2701,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         // Close all popups (triggers when switching applications
         // by pressing ALT-TAB on Windows, which is not receive as key event.
         // triggers when the screen rotates.)
-        closeAllPopups();
+        d->closeAllPopups();
         break;
     case QEvent::Wheel: // User input and window activation makes tooltips sleep
     case QEvent::ActivationChange:
@@ -3443,6 +3433,17 @@ static void grabForPopup(QWidget *popup)
 extern QWidget *qt_popup_down;
 extern bool qt_replay_popup_mouse_event;
 extern bool qt_popup_down_closed;
+
+bool QApplicationPrivate::closeAllPopups()
+{
+    // Close all popups: In case some popup refuses to close,
+    // we give up after 1024 attempts (to avoid an infinite loop).
+    int maxiter = 1024;
+    QWidget *popup;
+    while ((popup = QApplication::activePopupWidget()) && maxiter--)
+        popup->close(); // this will call QApplicationPrivate::closePopup
+    return true;
+}
 
 void QApplicationPrivate::closePopup(QWidget *popup)
 {

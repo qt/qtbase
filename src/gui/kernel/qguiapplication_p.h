@@ -223,6 +223,7 @@ public:
     static void updateBlockedStatus(QWindow *window);
     virtual bool isWindowBlocked(QWindow *window, QWindow **blockingWindow = nullptr) const;
     virtual bool popupActive() { return false; }
+    virtual bool closeAllPopups() { return false; }
 
     static Qt::MouseButton mousePressButton;
     static QPointF lastCursorPosition;

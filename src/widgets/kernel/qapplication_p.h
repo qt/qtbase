@@ -145,6 +145,7 @@ public:
 
     static bool inPopupMode();
     bool popupActive() override { return inPopupMode(); }
+    bool closeAllPopups() override;
     void closePopup(QWidget *popup);
     void openPopup(QWidget *popup);
     static void setFocusWidget(QWidget *focus, Qt::FocusReason reason);
