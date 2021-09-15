@@ -2524,7 +2524,7 @@ struct OverlapGraphEdge
 };
 
 /*
-    Returns a common supersting of all inputs.
+    Returns a common superstring of all inputs.
 
     Ideally this function would return the superstring of the smallest
     possible size, but the shortest common superstring problem is know to be
