@@ -834,11 +834,6 @@ void QCocoaWindow::windowDidExitFullScreen()
     }
 }
 
-void QCocoaWindow::windowWillMiniaturize()
-{
-    QCocoaIntegration::instance()->closePopups(window());
-}
-
 void QCocoaWindow::windowDidMiniaturize()
 {
     if (!isContentView())
@@ -1159,12 +1154,6 @@ void QCocoaWindow::viewDidChangeGlobalFrame()
 // callback should make sure to filter out notifications if they do not
 // apply to that QCocoaWindow, e.g. if the window is not a content view.
 
-void QCocoaWindow::windowWillMove()
-{
-    // Close any open popups on window move
-    QCocoaIntegration::instance()->closePopups();
-}
-
 void QCocoaWindow::windowDidMove()
 {
     if (!isContentView())
@@ -1303,13 +1292,6 @@ void QCocoaWindow::windowDidChangeScreen()
         // same screen.
         currentScreen->requestUpdate();
     }
-}
-
-void QCocoaWindow::windowWillClose()
-{
-    // Close any open popups on window closing.
-    if (window() && !windowIsPopupType(window()->type()))
-        QCocoaIntegration::instance()->closePopups();
 }
 
 // ----------------------- NSWindowDelegate callbacks -----------------------

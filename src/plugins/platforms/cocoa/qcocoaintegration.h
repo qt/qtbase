@@ -134,8 +134,6 @@ public:
     void beep() const override;
     void quit() const override;
 
-    void closePopups(QWindow *forWindow = nullptr);
-
 private Q_SLOTS:
     void focusWindowChanged(QWindow *);
 
