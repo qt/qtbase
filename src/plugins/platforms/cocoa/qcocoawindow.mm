@@ -511,29 +511,14 @@ NSUInteger QCocoaWindow::windowStyleMask(Qt::WindowFlags flags)
         }
     }();
 
-    // FIXME: Control visibility of buttons directly, instead of affecting styleMask
-    if (styleMask == NSWindowStyleMaskBorderless) {
-        // Frameless windows do not display the traffic lights buttons for
-        // e.g. minimize, however StyleMaskMiniaturizable is required to allow
-        // programmatic minimize.
-        styleMask |= NSWindowStyleMaskMiniaturizable;
-    } else if (flags & Qt::CustomizeWindowHint) {
-        if (flags & Qt::WindowCloseButtonHint)
-            styleMask |= NSWindowStyleMaskClosable;
-        if (flags & Qt::WindowMinimizeButtonHint)
-            styleMask |= NSWindowStyleMaskMiniaturizable;
-        if (flags & Qt::WindowMaximizeButtonHint)
-            styleMask |= NSWindowStyleMaskResizable;
-
-        // Force tool windows to be resizable
-        if (type == Qt::Tool)
-            styleMask |= NSWindowStyleMaskResizable;
-    } else {
-        styleMask |= NSWindowStyleMaskClosable | NSWindowStyleMaskResizable;
-
-        if (type != Qt::Dialog)
-            styleMask |= NSWindowStyleMaskMiniaturizable;
-    }
+    // We determine which buttons to show in updateTitleBarButtons,
+    // so we can enable all the relevant style masks here to ensure
+    // that behaviors that don't involve the title bar buttons are
+    // working (for example minimizing frameless windows, or resizing
+    // windows that don't have zoom or fullscreen titlebar buttons).
+    styleMask |= NSWindowStyleMaskClosable
+               | NSWindowStyleMaskResizable
+               | NSWindowStyleMaskMiniaturizable;
 
     if (type == Qt::Tool)
         styleMask |= NSWindowStyleMaskUtilityWindow;
@@ -551,20 +536,41 @@ NSUInteger QCocoaWindow::windowStyleMask(Qt::WindowFlags flags)
     return styleMask;
 }
 
-void QCocoaWindow::setWindowZoomButton(Qt::WindowFlags flags)
+bool QCocoaWindow::isFixedSize() const
+{
+    return windowMinimumSize().isValid() && windowMaximumSize().isValid()
+        && windowMinimumSize() == windowMaximumSize();
+}
+
+void QCocoaWindow::updateTitleBarButtons(Qt::WindowFlags windowFlags)
 {
     if (!isContentView())
         return;
 
-    // Disable the zoom (maximize) button for fixed-sized windows and customized
-    // no-WindowMaximizeButtonHint windows. From a Qt perspective it migth be expected
-    // that the button would be removed in the latter case, but disabling it is more
-    // in line with the platform style guidelines.
-    bool fixedSizeNoZoom = (windowMinimumSize().isValid() && windowMaximumSize().isValid()
-                            && windowMinimumSize() == windowMaximumSize());
-    bool customizeNoZoom = ((flags & Qt::CustomizeWindowHint)
-        && !(flags & (Qt::WindowMaximizeButtonHint | Qt::WindowFullscreenButtonHint)));
-    [[m_view.window standardWindowButton:NSWindowZoomButton] setEnabled:!(fixedSizeNoZoom || customizeNoZoom)];
+    NSWindow *window = m_view.window;
+
+    static constexpr std::pair<NSWindowButton, Qt::WindowFlags> buttons[] = {
+        { NSWindowCloseButton, Qt::WindowCloseButtonHint },
+        { NSWindowMiniaturizeButton, Qt::WindowMinimizeButtonHint},
+        { NSWindowZoomButton, Qt::WindowMaximizeButtonHint | Qt::WindowFullscreenButtonHint }
+    };
+
+    bool hideButtons = true;
+    for (const auto &[button, buttonHint] : buttons) {
+        bool enabled = true;
+        if (windowFlags & Qt::CustomizeWindowHint)
+            enabled = windowFlags & buttonHint;
+
+        if (button == NSWindowZoomButton && isFixedSize())
+            enabled = false;
+
+        [window standardWindowButton:button].enabled = enabled;
+        hideButtons &= !enabled;
+    }
+
+    // Hide buttons in case we disabled all of them
+    for (const auto &[button, buttonHint] : buttons)
+        [window standardWindowButton:button].hidden = hideButtons;
 }
 
 void QCocoaWindow::setWindowFlags(Qt::WindowFlags flags)
@@ -609,7 +615,7 @@ void QCocoaWindow::setWindowFlags(Qt::WindowFlags flags)
     if (!(flags & Qt::FramelessWindowHint))
         setWindowTitle(window()->title());
 
-    setWindowZoomButton(flags);
+    updateTitleBarButtons(flags);
 
     // Make window ignore mouse events if WindowTransparentForInput is set.
     // Note that ignoresMouseEvents has a special initial state where events
@@ -1016,7 +1022,7 @@ void QCocoaWindow::propagateSizeHints()
     window.contentMaxSize = NSSizeFromCGSize(windowMaximumSize().toCGSize());
 
     // The window may end up with a fixed size; in this case the zoom button should be disabled.
-    setWindowZoomButton(this->window()->flags());
+    updateTitleBarButtons(this->window()->flags());
 
     // sizeIncrement is observed to take values of (-1, -1) and (0, 0) for windows that should be
     // resizable and that have no specific size increment set. Cocoa expects (1.0, 1.0) in this case.

@@ -174,7 +174,8 @@ public:
 
     NSInteger windowLevel(Qt::WindowFlags flags);
     NSUInteger windowStyleMask(Qt::WindowFlags flags);
-    void setWindowZoomButton(Qt::WindowFlags flags);
+    void updateTitleBarButtons(Qt::WindowFlags flags);
+    bool isFixedSize() const;
 
     bool setWindowModified(bool modified) override;
 
