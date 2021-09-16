@@ -308,6 +308,9 @@ void QJUnitTestLogger::addMessage(MessageTypes type, const QString &message, con
         }
     }();
 
+    if (!systemLogElement)
+        return; // FIXME: Handle messages outside of test functions
+
     auto textNode = new QTestElement(QTest::LET_Text);
     textNode->addAttribute(QTest::AI_Value, message.toUtf8().constData());
     systemLogElement->addChild(textNode);
