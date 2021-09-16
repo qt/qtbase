@@ -2444,6 +2444,13 @@ bool QRhiRenderBuffer::createFrom(NativeRenderBuffer src)
      render target's color attachment refers to a slice in range [0..depth-1].
      The underlying graphics API may not support 3D textures at run time.
      Support is indicated by the QRhi::ThreeDimensionalTextures feature.
+
+     \value TextureRectangleGL The texture should use the GL_TEXTURE_RECTANGLE
+     target with OpenGL. This flag is ignored with other graphics APIs. Just
+     like ExternalOES, this flag is useful when working with platform APIs where
+     native OpenGL texture objects received from the platform are wrapped in a
+     QRhiTexture, and the platform can only provide textures for a non-2D
+     texture target.
  */
 
 /*!
