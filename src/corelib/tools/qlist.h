@@ -172,7 +172,12 @@ public:
         inline iterator &operator--() { --i; return *this; }
         inline iterator operator--(int) { auto copy = *this; --*this; return copy; }
         inline qsizetype operator-(iterator j) const { return i - j.i; }
+#if QT_DEPRECATED_SINCE(6, 3)
+        QT_DEPRECATED_VERSION_X_6_3("Use operator* or operator-> rather than relying on "
+                                    "the implicit conversion between a QList/QVector::iterator "
+                                    "and a raw pointer")
         inline operator T*() const { return i; }
+#endif
 
         template <typename Int> std::enable_if_t<std::is_integral_v<Int>, iterator>
         &operator+=(Int j) { i+=j; return *this; }
@@ -205,7 +210,7 @@ public:
 
         inline constexpr const_iterator() = default;
         inline const_iterator(const T *n) : i(n) {}
-        inline constexpr const_iterator(iterator o): i(o) {}
+        inline constexpr const_iterator(iterator o): i(o.i) {}
         inline const T &operator*() const { return *i; }
         inline const T *operator->() const { return i; }
         inline const T &operator[](qsizetype j) const { return *(i + j); }
@@ -228,7 +233,12 @@ public:
         inline const_iterator &operator--() { --i; return *this; }
         inline const_iterator operator--(int) { auto copy = *this; --*this; return copy; }
         inline qsizetype operator-(const_iterator j) const { return i - j.i; }
+#if QT_DEPRECATED_SINCE(6, 3)
+        QT_DEPRECATED_VERSION_X_6_3("Use operator* or operator-> rather than relying on "
+                                    "the implicit conversion between a QList/QVector::const_iterator "
+                                    "and a raw pointer")
         inline operator const T*() const { return i; }
+#endif
 
         template <typename Int> std::enable_if_t<std::is_integral_v<Int>, const_iterator>
         &operator+=(Int j) { i+=j; return *this; }
@@ -251,7 +261,7 @@ private:
     bool isValidIterator(const_iterator i) const
     {
         const std::less<const T*> less = {};
-        return !less(d->end(), i) && !less(i, d->begin());
+        return !less(d->end(), i.i) && !less(i.i, d->begin());
     }
 public:
     QList(DataPointer dd) noexcept
@@ -327,7 +337,7 @@ public:
             return true;
 
         // do element-by-element comparison
-        return d->compare(begin(), other.begin(), size());
+        return d->compare(data(), other.data(), size());
     }
     template <typename U = T>
     QTypeTraits::compare_eq_result_container<QList, U> operator!=(const QList &other) const
@@ -724,7 +734,7 @@ void QList<T>::reserve(qsizetype asize)
     }
 
     DataPointer detached(Data::allocate(qMax(asize, size())));
-    detached->copyAppend(constBegin(), constEnd());
+    detached->copyAppend(d->begin(), d->end());
     if (detached.d_ptr())
         detached->setFlag(Data::CapacityReserved);
     d.swap(detached);
@@ -740,7 +750,7 @@ inline void QList<T>::squeeze()
         DataPointer detached(Data::allocate(size()));
         if (size()) {
             if (d.needsDetach())
-                detached->copyAppend(constBegin(), constEnd());
+                detached->copyAppend(d.data(), d.data() + d.size);
             else
                 detached->moveAppend(d.data(), d.data() + d.size);
         }
@@ -789,7 +799,7 @@ inline T QList<T>::value(qsizetype i, parameter_type defaultValue) const
 template <typename T>
 inline void QList<T>::append(const_iterator i1, const_iterator i2)
 {
-    d->growAppend(i1, i2);
+    d->growAppend(i1.i, i2.i);
 }
 
 template <typename T>
@@ -804,7 +814,7 @@ inline void QList<T>::append(QList<T> &&other)
     // due to precondition &other != this, we can unconditionally modify 'this'
     d.detachAndGrow(QArrayData::GrowsAtEnd, other.size(), nullptr, nullptr);
     Q_ASSERT(d.freeSpaceAtEnd() >= other.size());
-    d->moveAppend(other.begin(), other.end());
+    d->moveAppend(other.d->begin(), other.d->end());
 }
 
 template<typename T>
@@ -949,7 +959,7 @@ inline QList<T> QList<T>::mid(qsizetype pos, qsizetype len) const
 
     // Allocate memory
     DataPointer copied(Data::allocate(l));
-    copied->copyAppend(constBegin() + p, constBegin() + p + l);
+    copied->copyAppend(data() + p, data() + p + l);
     return copied;
 }
 
