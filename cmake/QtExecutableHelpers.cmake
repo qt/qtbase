@@ -19,13 +19,11 @@ function(qt_internal_add_executable name)
         set(arg_INSTALL_DIRECTORY "${INSTALL_BINDIR}")
     endif()
 
+    # TODO: EXE_FLAGS doesn't seem to be used anywhere, we can probably remove it
+    _qt_internal_create_executable(${name} ${arg_EXE_FLAGS})
     if (ANDROID)
-        add_library("${name}" MODULE)
-        qt_android_apply_arch_suffix("${name}")
         qt_android_generate_deployment_settings("${name}")
         qt_android_add_apk_target("${name}")
-    else()
-        add_executable("${name}" ${arg_EXE_FLAGS})
     endif()
 
     if(arg_QT_APP AND QT_FEATURE_debug_and_release AND CMAKE_VERSION VERSION_GREATER_EQUAL "3.19.0")
@@ -74,15 +72,6 @@ function(qt_internal_add_executable name)
     endif()
 
     qt_set_common_target_properties(${name})
-    _qt_internal_set_up_static_runtime_library(${name})
-    if(ANDROID)
-        # On our qmake builds we don't compile the executables with
-        # visibility=hidden. Not having this flag set will cause the
-        # executable to have main() hidden and can then no longer be loaded
-        # through dlopen()
-        set_property(TARGET ${name} PROPERTY C_VISIBILITY_PRESET default)
-        set_property(TARGET ${name} PROPERTY CXX_VISIBILITY_PRESET default)
-    endif()
     qt_autogen_tools_initial_setup(${name})
     qt_skip_warnings_are_errors_when_repo_unclean("${name}")
 

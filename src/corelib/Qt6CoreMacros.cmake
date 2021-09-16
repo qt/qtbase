@@ -492,6 +492,7 @@ function(qt6_add_executable target)
     cmake_parse_arguments(PARSE_ARGV 1 arg "MANUAL_FINALIZATION" "" "")
 
     _qt_internal_create_executable("${target}" ${arg_UNPARSED_ARGUMENTS})
+    target_link_libraries("${target}" PRIVATE Qt6::Core)
 
     if(arg_MANUAL_FINALIZATION)
         # Caller says they will call qt6_finalize_target() themselves later
@@ -529,7 +530,6 @@ function(_qt_internal_create_executable target)
         add_executable("${target}" ${ARGN})
     endif()
 
-    target_link_libraries("${target}" PRIVATE Qt6::Core)
     _qt_internal_set_up_static_runtime_library("${target}")
 endfunction()
 
