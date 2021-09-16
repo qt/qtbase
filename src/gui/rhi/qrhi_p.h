@@ -778,7 +778,8 @@ public:
         UsedWithLoadStore = 1 << 7,
         UsedAsCompressedAtlas = 1 << 8,
         ExternalOES = 1 << 9,
-        ThreeDimensional = 1 << 10
+        ThreeDimensional = 1 << 10,
+        TextureRectangleGL = 1 << 11
     };
     Q_DECLARE_FLAGS(Flags, Flag)
 

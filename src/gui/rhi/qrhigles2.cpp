@@ -361,6 +361,10 @@ QT_BEGIN_NAMESPACE
 #define GL_TEXTURE_WRAP_R                 0x8072
 #endif
 
+#ifndef GL_TEXTURE_RECTANGLE
+#define GL_TEXTURE_RECTANGLE              0x84F5
+#endif
+
 /*!
     Constructs a new QRhiGles2InitParams.
 
@@ -4579,6 +4583,8 @@ bool QGles2Texture::prepareCreate(QSize *adjustedSize)
                     : m_sampleCount > 1 ? GL_TEXTURE_2D_MULTISAMPLE : (is3D ? GL_TEXTURE_3D : GL_TEXTURE_2D);
     if (m_flags.testFlag(ExternalOES))
         target = GL_TEXTURE_EXTERNAL_OES;
+    else if (m_flags.testFlag(TextureRectangleGL))
+        target = GL_TEXTURE_RECTANGLE;
 
     mipLevelCount = hasMipMaps ? rhiD->q->mipLevelsForSize(size) : 1;
     gltype = GL_UNSIGNED_BYTE;
