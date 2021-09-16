@@ -171,7 +171,12 @@ WId QWasmWindow::winId() const
 
 void QWasmWindow::propagateSizeHints()
 {
-// get rid of base class warning
+    QRect rect = windowGeometry();
+    if (rect.size().width() < windowMinimumSize().width()
+        && rect.size().height() < windowMinimumSize().height()) {
+        rect.setSize(windowMinimumSize());
+        setGeometry(rect);
+    }
 }
 
 void QWasmWindow::injectMousePressed(const QPoint &local, const QPoint &global,
