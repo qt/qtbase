@@ -333,7 +333,7 @@ template <> inline auto qHypot(qfloat16 x, qfloat16 y)
     return qfloat16(qHypot(float(x), float(y)));
 #endif
 }
-#if __cpp_lib_hypot >= 201603L // Expected to be true
+#if defined(__cpp_lib_hypot) && __cpp_lib_hypot >= 201603L // Expected to be true
 // If any are not qfloat16, convert each qfloat16 to float:
 /* (The following splits the some-but-not-all-qfloat16 cases up, using
    (X|Y|Z)&~(X&Y&Z) = X ? ~(Y&Z) : Y|Z = X&~(Y&Z) | ~X&Y | ~X&~Y&Z,

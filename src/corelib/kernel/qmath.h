@@ -192,7 +192,7 @@ auto qHypot(Tx x, Ty y)
     return hypot(x, y);
 }
 
-#if __cpp_lib_hypot >= 201603L // Expected to be true
+#if defined(__cpp_lib_hypot) && __cpp_lib_hypot >= 201603L // Expected to be true
 template <typename Tx, typename Ty, typename Tz>
 auto qHypot(Tx x, Ty y, Tz z)
 {
