@@ -312,7 +312,10 @@ function(qt_internal_add_module target)
         set_property(TARGET ${target} APPEND PROPERTY
             _qt_module_timestamp_dependencies "${module_headers_public}")
 
-        if(arg_GENERATE_CPP_EXPORTS)
+        # We should not generate export headers if module is defined as pure STATIC.
+        # Static libraries don't need to export their symbols, and corner cases when sources are
+        # also used in shared libraries, should be handled manually.
+        if(arg_GENERATE_CPP_EXPORTS AND NOT arg_STATIC)
             if(arg_CPP_EXPORT_HEADER_BASE_NAME)
                 set(cpp_export_header_base_name
                     "CPP_EXPORT_HEADER_BASE_NAME;${arg_CPP_EXPORT_HEADER_BASE_NAME}"
