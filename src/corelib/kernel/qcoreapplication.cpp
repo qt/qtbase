@@ -1133,6 +1133,9 @@ bool QCoreApplication::forwardEvent(QObject *receiver, QEvent *event, QEvent *or
 
 bool QCoreApplication::notify(QObject *receiver, QEvent *event)
 {
+    Q_ASSERT(receiver);
+    Q_ASSERT(event);
+
     // no events are delivered after ~QCoreApplication() has started
     if (QCoreApplicationPrivate::is_app_closing)
         return true;
@@ -1141,6 +1144,9 @@ bool QCoreApplication::notify(QObject *receiver, QEvent *event)
 
 static bool doNotify(QObject *receiver, QEvent *event)
 {
+    Q_ASSERT(event);
+
+    // ### Qt 7: turn into an assert
     if (receiver == nullptr) {                        // serious error
         qWarning("QCoreApplication::notify: Unexpected null receiver");
         return true;
@@ -1464,10 +1470,12 @@ void QCoreApplication::exit(int returnCode)
 */
 bool QCoreApplication::sendEvent(QObject *receiver, QEvent *event)
 {
+    Q_ASSERT_X(receiver, "QCoreApplication::sendEvent", "Unexpected null receiver");
+    Q_ASSERT_X(event, "QCoreApplication::sendEvent", "Unexpected null event");
+
     Q_TRACE(QCoreApplication_sendEvent, receiver, event, event->type());
 
-    if (event)
-        event->m_spont = false;
+    event->m_spont = false;
     return notifyInternal2(receiver, event);
 }
 
@@ -1476,10 +1484,12 @@ bool QCoreApplication::sendEvent(QObject *receiver, QEvent *event)
 */
 bool QCoreApplication::sendSpontaneousEvent(QObject *receiver, QEvent *event)
 {
+    Q_ASSERT_X(receiver, "QCoreApplication::sendSpontaneousEvent", "Unexpected null receiver");
+    Q_ASSERT_X(event, "QCoreApplication::sendSpontaneousEvent", "Unexpected null event");
+
     Q_TRACE(QCoreApplication_sendSpontaneousEvent, receiver, event, event->type());
 
-    if (event)
-        event->m_spont = true;
+    event->m_spont = true;
     return notifyInternal2(receiver, event);
 }
 
@@ -1544,8 +1554,11 @@ QCoreApplicationPrivate::QPostEventListLocker QCoreApplicationPrivate::lockThrea
 */
 void QCoreApplication::postEvent(QObject *receiver, QEvent *event, int priority)
 {
+    Q_ASSERT_X(event, "QCoreApplication::postEvent", "Unexpected null event");
+
     Q_TRACE_SCOPE(QCoreApplication_postEvent, receiver, event, event->type());
 
+    // ### Qt 7: turn into an assert
     if (receiver == nullptr) {
         qWarning("QCoreApplication::postEvent: Unexpected null receiver");
         delete event;
@@ -1615,11 +1628,11 @@ void QCoreApplication::postEvent(QObject *receiver, QEvent *event, int priority)
 */
 bool QCoreApplication::compressEvent(QEvent *event, QObject *receiver, QPostEventList *postedEvents)
 {
-#ifdef Q_OS_WIN
     Q_ASSERT(event);
     Q_ASSERT(receiver);
     Q_ASSERT(postedEvents);
 
+#ifdef Q_OS_WIN
     // compress posted timers to this object.
     if (event->type() == QEvent::Timer && receiver->d_func()->postedEvents > 0) {
         int timerId = ((QTimerEvent *) event)->timerId();
