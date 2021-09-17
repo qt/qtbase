@@ -1434,42 +1434,42 @@ bool qSharedBuild() noexcept
     \relates <QtGlobal>
 
     Deprecated synonym for \c Q_OS_DARWIN. Do not use.
- */
+*/
 
 /*!
     \macro Q_OS_OSX
     \relates <QtGlobal>
 
     Deprecated synonym for \c Q_OS_MACOS. Do not use.
- */
+*/
 
 /*!
     \macro Q_OS_MACOS
     \relates <QtGlobal>
 
     Defined on \macos.
- */
+*/
 
 /*!
     \macro Q_OS_IOS
     \relates <QtGlobal>
 
     Defined on iOS.
- */
+*/
 
 /*!
     \macro Q_OS_WATCHOS
     \relates <QtGlobal>
 
     Defined on watchOS.
- */
+*/
 
 /*!
     \macro Q_OS_TVOS
     \relates <QtGlobal>
 
     Defined on tvOS.
- */
+*/
 
 /*!
     \macro Q_OS_WIN
@@ -2082,7 +2082,7 @@ bool qSharedBuild() noexcept
   the ones deprecated in Qt 5.0.
 
   \sa QT_DEPRECATED_WARNINGS
- */
+*/
 
 
 /*!
@@ -2094,7 +2094,7 @@ bool qSharedBuild() noexcept
   deprecated by Qt is used.
 
   \sa QT_DISABLE_DEPRECATED_BEFORE, QT_NO_DEPRECATED_WARNINGS
- */
+*/
 
 /*!
   \macro QT_NO_DEPRECATED_WARNINGS
@@ -2449,7 +2449,7 @@ Marshmallow
 Nougat
 Nougat
 Oreo
- */
+*/
     static const char versions_string[] =
         "\0"
         "Cupcake\0"
@@ -2549,7 +2549,7 @@ QString QSysInfo::buildCpuArchitecture()
     \endlist
 
     \sa QSysInfo::buildAbi(), QSysInfo::buildCpuArchitecture()
- */
+*/
 QString QSysInfo::currentCpuArchitecture()
 {
 #if defined(Q_OS_WIN)
@@ -2935,7 +2935,7 @@ QString QSysInfo::prettyProductName()
     This function returns the same as QHostInfo::localHostName().
 
     \sa QHostInfo::localDomainName, machineUniqueId()
- */
+*/
 QString QSysInfo::machineHostName()
 {
     // the hostname can change, so we can't cache it
@@ -3242,7 +3242,7 @@ QByteArray QSysInfo::bootUniqueId()
     \tt{const TInputType& myMin(const TInputType&, const TInputType&) [with TInputType = int] was called with value1: 3 value2: 4}
 
     If this macro is used outside a function, the behavior is undefined.
- */
+*/
 
 /*!
     \internal
@@ -4429,7 +4429,7 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
 
  The two numbers are compared in a relative way, where the
  exactness is stronger the smaller the numbers are.
- */
+*/
 
 /*!
  \fn bool qFuzzyCompare(float p1, float p2)
@@ -4442,7 +4442,7 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
 
  The two numbers are compared in a relative way, where the
  exactness is stronger the smaller the numbers are.
- */
+*/
 
 /*!
  \fn bool qFuzzyIsNull(double d)
