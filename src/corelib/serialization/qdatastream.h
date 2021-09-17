@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -101,7 +101,7 @@ public:
         Qt_6_2 = Qt_6_0,
         Qt_6_3 = Qt_6_0,
         Qt_DefaultCompiledVersion = Qt_6_3
-#if QT_VERSION >= 0x060400
+#if QT_VERSION >= QT_VERSION_CHECK(6, 4, 0)
 #error Add the datastream version for this Qt version and update Qt_DefaultCompiledVersion
 #endif
     };

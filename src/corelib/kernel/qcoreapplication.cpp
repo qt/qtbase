@@ -141,10 +141,11 @@ QT_BEGIN_NAMESPACE
 extern QString qAppFileName();
 #endif
 
-#if QT_VERSION >= 0x070000
-# error "Bump QCoreApplicatoinPrivate::app_compile_version to 0x070000"
+#if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0)
+# error "Bump QCoreApplicatoinPrivate::app_compile_version to QT_VERSION_CHECK(7, 0, 0)"
 #endif
-int QCoreApplicationPrivate::app_compile_version = 0x060000; //we don't know exactly, but it's at least 6.0.0
+// We don't know exactly, but it's at least 6.0.0:
+int QCoreApplicationPrivate::app_compile_version = QT_VERSION_CHECK(6, 0, 0);
 
 bool QCoreApplicationPrivate::setuidAllowed = false;
 
