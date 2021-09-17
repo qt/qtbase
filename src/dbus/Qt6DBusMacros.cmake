@@ -76,11 +76,18 @@ function(qt6_add_dbus_interface _sources _interface _basename)
 endfunction()
 
 if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
-    function(qt_add_dbus_interface sources)
+    # All three positional arguments are mandatory and there are no optional
+    # arguments, so we can preserve them exactly. As an added bonus, if the
+    # caller doesn't provide enough arguments, they will get an error message
+    # for their call site instead of here in the wrapper.
+    function(qt_add_dbus_interface sources interface basename)
+        if(ARGC GREATER 3)
+            message(FATAL_ERROR "Unexpected arguments: ${ARGN}")
+        endif()
         if(QT_DEFAULT_MAJOR_VERSION EQUAL 5)
-            qt5_add_dbus_interface("${sources}" ${ARGN})
+            qt5_add_dbus_interface("${sources}" "${interface}" "${basename}")
         elseif(QT_DEFAULT_MAJOR_VERSION EQUAL 6)
-            qt6_add_dbus_interface("${sources}" ${ARGN})
+            qt6_add_dbus_interface("${sources}" "${interface}" "${basename}")
         endif()
         set("${sources}" "${${sources}}" PARENT_SCOPE)
     endfunction()
@@ -146,6 +153,8 @@ endfunction()
 
 if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
     function(qt_generate_dbus_interface)
+        # The versioned function's implementation doesn't preserve empty options,
+        # so we don't need to here either. Using ARGV is fine under those assumptions.
         if(QT_DEFAULT_MAJOR_VERSION EQUAL 5)
             qt5_generate_dbus_interface(${ARGV})
         elseif(QT_DEFAULT_MAJOR_VERSION EQUAL 6)
@@ -203,11 +212,42 @@ function(qt6_add_dbus_adaptor _sources _xml_file _include) # _optionalParentClas
 endfunction()
 
 if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
-    function(qt_add_dbus_adaptor sources)
+    function(qt_add_dbus_adaptor sources dbus_spec header)
+        # We need to preserve empty values in both positional and optional arguments.
+        # The following explicit use of ARGVx variables ensures we don't silently
+        # drop any empty values, which is especially important if there are any
+        # non-empty values after empty ones. Note that we must not try to read
+        # ARGVx variables where x >= ARGC, as that is undefined behavior.
+        # Also note that the parent_class argument is required for qt5, but is
+        # optional for qt6.
+        if(ARGC LESS 4)
+            set(parent_class "")
+        else()
+            set(parent_class "${ARGV3}")
+        endif()
+
+        if(ARGC LESS 5)
+            set(basename "")
+        else()
+            set(basename "${ARGV4}")
+        endif()
+
+        if(ARGC LESS 6)
+            set(classname "")
+        else()
+            set(classname "${ARGV5}")
+        endif()
+
         if(QT_DEFAULT_MAJOR_VERSION EQUAL 5)
-            qt5_add_dbus_adaptor("${sources}" ${ARGN})
+            qt5_add_dbus_adaptor(
+                "${sources}" "${dbus_spec}" "${header}"
+                "${parent_class}" "${basename}" "${classname}"
+            )
         elseif(QT_DEFAULT_MAJOR_VERSION EQUAL 6)
-            qt6_add_dbus_adaptor("${sources}" ${ARGN})
+            qt6_add_dbus_adaptor(
+                "${sources}" "${dbus_spec}" "${header}"
+                "${parent_class}" "${basename}" "${classname}"
+            )
         endif()
         set("${sources}" "${${sources}}" PARENT_SCOPE)
     endfunction()
