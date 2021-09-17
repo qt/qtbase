@@ -98,3 +98,36 @@ When cross-compiling, this must be set to the install location of Qt for the hos
 platform. It is used to locate tools to be run on the host (\l{moc}, \l{rcc},
 \l{androiddeployqt}, and so on).
 */
+
+/*!
+\page cmake-variable-QT_NO_SET_XCODE_DEVELOPMENT_TEAM_ID.html
+\ingroup cmake-variables
+\ingroup cmake-variables-qtcore
+
+\title QT_NO_SET_XCODE_DEVELOPMENT_TEAM_ID
+\target cmake-variable-QT_NO_SET_XCODE_DEVELOPMENT_TEAM_ID
+
+\brief Disables providing a fallback team ID during target finalization on iOS.
+
+When finalizing an executable target on iOS,
+\l{qt6_finalize_target}{qt_finalize_target()} will populate the target's
+\c XCODE_ATTRIBUTE_DEVELOPMENT_TEAM property if it hasn't been set.
+Set \c QT_NO_SET_XCODE_DEVELOPMENT_TEAM_ID to true if you want to prevent this.
+*/
+
+/*!
+\page cmake-variable-QT_NO_SET_XCODE_BUNDLE_IDENTIFIER.html
+\ingroup cmake-variables
+\ingroup cmake-variables-qtcore
+
+\title QT_NO_SET_XCODE_BUNDLE_IDENTIFIER
+\target cmake-variable-QT_NO_SET_XCODE_BUNDLE_IDENTIFIER
+
+\brief Disables providing a fallback app bundle ID during target finalization on iOS.
+
+When finalizing an executable target on iOS,
+\l{qt6_finalize_target}{qt_finalize_target()} will populate the target's
+\c XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER and
+\c MACOSX_BUNDLE_GUI_IDENTIFIER properties if they haven't been set.
+Set \c QT_NO_SET_XCODE_BUNDLE_IDENTIFIER to true if you want to prevent this.
+*/

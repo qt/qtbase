@@ -96,7 +96,8 @@ indicate that you will explicitly call \l{qt6_finalize_target}{qt_finalize_targe
 yourself instead at some later time. In general, \c MANUAL_FINALIZATION should
 not be needed unless the project has to support CMake 3.18 or earlier.
 
-\sa {qt6_finalize_target}{qt_finalize_target()}
+\sa {qt6_finalize_target}{qt_finalize_target()},
+    {qt6_add_library}{qt_add_library()}
 
 \section1 Examples
 
