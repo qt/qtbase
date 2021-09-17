@@ -17,3 +17,6 @@ android
 android
 [mouseMoveWithPopup]
 android
+# QTBUG-96270
+[tst_paintEventOnSecondShow]
+opensuse
