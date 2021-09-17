@@ -945,6 +945,16 @@ function(qt_get_platform_try_compile_vars out_var)
     # Use the regular variables that are used for source-based try_compile() calls.
     set(flags "${CMAKE_TRY_COMPILE_PLATFORM_VARIABLES}")
 
+    # Pass custom flags.
+    list(APPEND flags "CMAKE_C_FLAGS")
+    list(APPEND flags "CMAKE_C_FLAGS_DEBUG")
+    list(APPEND flags "CMAKE_C_FLAGS_RELEASE")
+    list(APPEND flags "CMAKE_C_FLAGS_RELWITHDEBINFO")
+    list(APPEND flags "CMAKE_CXX_FLAGS")
+    list(APPEND flags "CMAKE_CXX_FLAGS_DEBUG")
+    list(APPEND flags "CMAKE_CXX_FLAGS_RELEASE")
+    list(APPEND flags "CMAKE_CXX_FLAGS_RELWITHDEBINFO")
+
     # Pass toolchain files.
     if(CMAKE_TOOLCHAIN_FILE)
         list(APPEND flags "CMAKE_TOOLCHAIN_FILE")
