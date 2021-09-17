@@ -51,6 +51,20 @@
 #   include <time.h>
 #endif
 
+#if defined(Q_CC_MSVC)
+#   include <winrt/base.h>
+// Workaround for Windows SDK bug.
+// See https://github.com/microsoft/Windows.UI.Composition-Win32-Samples/issues/47
+namespace winrt::impl
+{
+    template <typename Async>
+    auto wait_for(Async const& async, Windows::Foundation::TimeSpan const& timeout);
+}
+#   include <winrt/Windows.Foundation.h>
+#   include <winrt/Windows.Foundation.Collections.h>
+#   include <winrt/Windows.System.UserProfile.h>
+#endif // defined(Q_CC_MSVC)
+
 QT_BEGIN_NAMESPACE
 
 static QByteArray getWinLocaleName(LCID id = LOCALE_USER_DEFAULT);
@@ -615,6 +629,18 @@ QVariant QSystemLocalePrivate::toCurrencyString(const QSystemLocale::CurrencyToS
 
 QVariant QSystemLocalePrivate::uiLanguages()
 {
+    QStringList result;
+#if defined(Q_CC_MSVC) // msvc supports WinRT calls
+    using namespace winrt;
+    using namespace Windows::Foundation;
+    using namespace Windows::System::UserProfile;
+    auto languages = GlobalizationPreferences::Languages();
+    for (const auto &lang : languages)
+        result << QString::fromStdString(winrt::to_string(lang));
+    if (!result.isEmpty())
+        return result; // else just fall back to WIN32 API implementation
+#endif // defined(Q_CC_MSVC)
+    // mingw and clang still have to use Win32 API
     unsigned long cnt = 0;
     QVarLengthArray<wchar_t, 64> buf(64);
 #    if !defined(QT_BOOTSTRAPPED) // Not present in MinGW 4.9/bootstrap builds.
@@ -629,7 +655,6 @@ QVariant QSystemLocalePrivate::uiLanguages()
         }
     }
 #    endif // !QT_BOOTSTRAPPED
-    QStringList result;
     result.reserve(cnt);
     const wchar_t *str = buf.constData();
     for (; cnt > 0; --cnt) {
