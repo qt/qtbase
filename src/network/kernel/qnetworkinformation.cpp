@@ -556,7 +556,7 @@ bool QNetworkInformation::supports(Features features) const
 bool QNetworkInformation::load(QStringView backend)
 {
     auto loadedBackend = QNetworkInformationPrivate::create(backend);
-    return loadedBackend && loadedBackend->backendName() == backend;
+    return loadedBackend && loadedBackend->backendName().compare(backend, Qt::CaseInsensitive) == 0;
 }
 
 /*!
