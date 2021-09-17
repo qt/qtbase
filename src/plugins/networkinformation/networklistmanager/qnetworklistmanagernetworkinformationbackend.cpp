@@ -252,7 +252,7 @@ QNetworkListManagerEvents::ConnectivityChanged(NLM_CONNECTIVITY newConnectivity)
 {
     // This function is run on a different thread than 'monitor' is created on, so we need to run
     // it on that thread
-    connectivityChanged(newConnectivity);
+    emit connectivityChanged(newConnectivity);
     return S_OK;
 }
 
@@ -272,11 +272,10 @@ bool QNetworkListManagerEvents::start()
     // Update connectivity since it might have changed since this class was constructed
     NLM_CONNECTIVITY connectivity;
     hr = networkListManager->GetConnectivity(&connectivity);
-    if (FAILED(hr)) {
+    if (FAILED(hr))
         qCWarning(lcNetInfoNLM) << "Could not get connectivity:" << errorStringFromHResult(hr);
-    } else {
+    else
         emit connectivityChanged(connectivity);
-    }
     return true;
 }
 
