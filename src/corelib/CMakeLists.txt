@@ -780,9 +780,14 @@ qt_internal_extend_target(Core CONDITION UNIX AND (NACL OR NOT APPLE)
         text/qlocale_unix.cpp
 )
 
-qt_internal_extend_target(Core CONDITION WIN32 AND (NACL OR NOT APPLE)
+qt_internal_extend_target(Core CONDITION WIN32
     SOURCES
         text/qlocale_win.cpp
+)
+
+qt_internal_extend_target(Core CONDITION WIN32 AND MSVC
+    LIBRARIES
+        runtimeobject
 )
 
 qt_internal_extend_target(Core CONDITION QT_FEATURE_icu
