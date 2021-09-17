@@ -149,7 +149,6 @@ QCocoaWindow::QCocoaWindow(QWindow *win, WId nativeHandle)
     , m_registerTouchCount(0)
     , m_resizableTransientParent(false)
     , m_alertRequest(NoAlertRequest)
-    , m_monitor(nil)
     , m_drawContentBorderGradient(false)
     , m_topContentBorderThickness(0)
     , m_bottomContentBorderThickness(0)
@@ -196,8 +195,6 @@ QCocoaWindow::~QCocoaWindow()
     [m_nsWindow setContentView:nil];
     if ([m_view superview])
         [m_view removeFromSuperview];
-
-    removeMonitor();
 
     // Make sure to disconnect observer in all case if view is valid
     // to avoid notifications received when deleting when using Qt::AA_NativeWindows attribute
@@ -382,21 +379,6 @@ void QCocoaWindow::setVisible(bool visible)
                 } else {
                     [m_view.window orderFront:nil];
                 }
-
-                // Close popup when clicking outside it
-                if (window()->type() == Qt::Popup && !(parentCocoaWindow && window()->transientParent()->isActive())) {
-                    removeMonitor();
-                    NSEventMask eventMask = NSEventMaskLeftMouseDown | NSEventMaskRightMouseDown
-                                          | NSEventMaskOtherMouseDown | NSEventMaskMouseMoved;
-                    m_monitor = [NSEvent addGlobalMonitorForEventsMatchingMask:eventMask handler:^(NSEvent *e) {
-                        const auto button = cocoaButton2QtButton(e);
-                        const auto buttons = currentlyPressedMouseButtons();
-                        const auto eventType = cocoaEvent2QtMouseEvent(e);
-                        const auto globalPoint = QCocoaScreen::mapFromNative(NSEvent.mouseLocation);
-                        const auto localPoint = window()->mapFromGlobal(globalPoint.toPoint());
-                        QWindowSystemInterface::handleMouseEvent(window(), localPoint, globalPoint, buttons, button, eventType);
-                    }];
-                }
             }
         }
 
@@ -437,8 +419,6 @@ void QCocoaWindow::setVisible(bool visible)
         } else {
             [m_view setHidden:YES];
         }
-
-        removeMonitor();
 
         if (parentCocoaWindow && window()->type() == Qt::Popup) {
             NSWindow *nativeParentWindow = parentCocoaWindow->nativeWindow();
@@ -1657,14 +1637,6 @@ QCocoaNSWindow *QCocoaWindow::createNSWindow(bool shouldBePanel)
 bool QCocoaWindow::alwaysShowToolWindow() const
 {
     return qt_mac_resolveOption(false, window(), "_q_macAlwaysShowToolWindow", "");
-}
-
-void QCocoaWindow::removeMonitor()
-{
-    if (!m_monitor)
-        return;
-    [NSEvent removeMonitor:m_monitor];
-    m_monitor = nil;
 }
 
 bool QCocoaWindow::setWindowModified(bool modified)

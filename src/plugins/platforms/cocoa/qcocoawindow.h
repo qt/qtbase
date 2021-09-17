@@ -233,7 +233,6 @@ public: // for QNSView
     bool isContentView() const;
 
     bool alwaysShowToolWindow() const;
-    void removeMonitor();
 
     enum HandleFlags {
         NoHandleFlags = 0,
@@ -265,7 +264,6 @@ public: // for QNSView
 
     static const int NoAlertRequest;
     NSInteger m_alertRequest;
-    NSObject *m_monitor;
 
     bool m_drawContentBorderGradient;
     int m_topContentBorderThickness;
