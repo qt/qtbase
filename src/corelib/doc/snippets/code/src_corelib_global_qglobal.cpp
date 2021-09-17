@@ -203,7 +203,7 @@ int boundedValue = qBound(minValue, myValue, maxValue);
 
 
 //! [16]
-#if QT_VERSION >= 0x040100
+#if QT_VERSION >= QT_VERSION_CHECK(4, 1, 0)
     QIcon icon = style()->standardIcon(QStyle::SP_TrashIcon);
 #else
     QPixmap pixmap = style()->standardPixmap(QStyle::SP_TrashIcon);
@@ -718,7 +718,7 @@ bool readConfiguration(const QFile &file)
 //! [qt-version-check]
 #include <QtGlobal>
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 #include <QtWidgets>
 #else
 #include <QtGui>
