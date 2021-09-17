@@ -352,8 +352,8 @@ QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &device, const 
         d->m_rotate *= QTransform::fromTranslate(0.5, 0.5).scale(1.0, -1.0).translate(-0.5, -0.5);
 
     QOutputMapping *mapping = QOutputMapping::get();
-    d->m_screenName = mapping->screenNameForDeviceNode(d->deviceNode);
     if (mapping->load()) {
+        d->m_screenName = mapping->screenNameForDeviceNode(d->deviceNode);
         if (!d->m_screenName.isEmpty())
             qCDebug(qLcEvdevTouch, "evdevtouch: Mapping device %ls to screen %ls",
                     qUtf16Printable(d->deviceNode), qUtf16Printable(d->m_screenName));
