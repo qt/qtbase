@@ -768,7 +768,7 @@ static_assert(sizeof(qint64) == 8, "Internal error, qint64 is misdefined");
     the value rounded up to the nearest integer and 64-bit integer
     respectively, the qInstallMessageHandler() function which installs
     the given QtMessageHandler, and the qVersion() function which
-    returns the version number of Qt at run-time as a string.
+    returns the version number of Qt at runtime as a string.
 
     \section1 Macros
 
@@ -801,9 +801,9 @@ static_assert(sizeof(qint64) == 8, "Internal error, qint64 is misdefined");
 
     The QT_POINTER_SIZE macro expands to the size of a pointer in bytes.
 
-    The macros QT_VERSION and QT_VERSION_STR expand to a numeric value
-    or a string, respectively, that specifies the version of Qt that the
-    application is compiled against.
+    The macros QT_VERSION and QT_VERSION_STR expand to a numeric value or a
+    string, respectively. These identify the version of Qt that the application
+    is compiled with.
 
     \sa <QtAlgorithms>, QSysInfo
 */
@@ -1349,9 +1349,10 @@ static_assert(sizeof(qint64) == 8, "Internal error, qint64 is misdefined");
     \macro QT_VERSION_STR
     \relates <QtGlobal>
 
-    This macro expands to a string that specifies Qt's version number
-    (for example, "4.1.2"). This is the version against which the
-    application is compiled.
+    This macro expands to a string that specifies Qt's version number (for
+    example, "6.1.2"). This is the version with which the application is
+    compiled. This may be a different version than the version the application
+    will find itself using at \e runtime.
 
     \sa qVersion(), QT_VERSION
 */
@@ -1359,9 +1360,9 @@ static_assert(sizeof(qint64) == 8, "Internal error, qint64 is misdefined");
 /*!
     \relates <QtGlobal>
 
-    Returns the version number of Qt at run-time as a string (for
-    example, "4.1.2"). This may be a different version than the
-    version the application was compiled against.
+    Returns the version number of Qt at runtime as a string (for example,
+    "6.1.2"). This may be a different version than the version the application
+    was \e compiled with.
 
     \sa QT_VERSION_STR, QLibraryInfo::version()
 */
@@ -2075,11 +2076,12 @@ bool qSharedBuild() noexcept
   a specified version of Qt or any earlier version. The default version number is 5.0,
   meaning that functions deprecated in or before Qt 5.0 will not be included.
 
-  For instance, when using a future release of Qt 5, set
-  \c{QT_DISABLE_DEPRECATED_BEFORE=0x050100} to disable functions deprecated in
-  Qt 5.1 and earlier. In any release, set
-  \c{QT_DISABLE_DEPRECATED_BEFORE=0x000000} to enable all functions, including
-  the ones deprecated in Qt 5.0.
+  For instance, when preparing to upgrade to Qt 6.3, setting
+  \c{QT_DISABLE_DEPRECATED_BEFORE=0x0602ff} will disable functions deprecated in
+  Qt 6.2 and earlier, making it easy to find changes worth making before the
+  upgrade. In any release, set \c{QT_DISABLE_DEPRECATED_BEFORE=0x000000} to
+  enable all functions, including the ones deprecated in Qt 5.0 (although most
+  of those have by now been removed entirely).
 
   \sa QT_DEPRECATED_WARNINGS
 */
@@ -4467,14 +4469,14 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
     \relates <QtGlobal>
 
     This macro can be used to ensure that the application is run
-    against a recent enough version of Qt. This is especially useful
+    with a recent enough version of Qt. This is especially useful
     if your application depends on a specific bug fix introduced in a
-    bug-fix release (e.g., 4.0.2).
+    bug-fix release (for example, 6.1.2).
 
     The \a argc and \a argv parameters are the \c main() function's
     \c argc and \c argv parameters. The \a version parameter is a
     string literal that specifies which version of Qt the application
-    requires (e.g., "4.0.2").
+    requires (for example, "6.1.2").
 
     Example:
 
@@ -4557,7 +4559,7 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
     puts a single space between each item, and outputs a newline at
     the end. It supports many C++ and Qt types.
 
-    To suppress the output at run-time, install your own message handler
+    To suppress the output at runtime, install your own message handler
     with qInstallMessageHandler().
 
     \sa qInfo(), qWarning(), qCritical(), qFatal(), qInstallMessageHandler(),
@@ -4595,8 +4597,8 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
     puts a single space between each item, and outputs a newline at
     the end. It supports many C++ and Qt types.
 
-    To suppress the output at run-time, install your own message handler
-    with qInstallMessageHandler().
+    To suppress the output at runtime, install your own message handler
+    using qInstallMessageHandler().
 
     \sa qDebug(), qWarning(), qCritical(), qFatal(), qInstallMessageHandler(),
         {Debugging Techniques}

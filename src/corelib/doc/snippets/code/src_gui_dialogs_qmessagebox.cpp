@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -108,7 +108,7 @@ if (messageBox.clickedButton() == disconnectButton) {
 
 int main(int argc, char *argv[])
 {
-    QT_REQUIRE_VERSION(argc, argv, "4.0.2")
+    QT_REQUIRE_VERSION(argc, argv, "6.1.2")
 
     QApplication app(argc, argv);
     ...
