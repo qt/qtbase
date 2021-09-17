@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -28,25 +28,20 @@
 
 #include "nativewindowdump.h"
 
-#if QT_VERSION >= 0x050000
-#  include <QtGui/QGuiApplication>
-#  include <qpa/qplatformnativeinterface.h>
-#endif
-
+#include <QtGui/QGuiApplication>
+#include <qpa/qplatformnativeinterface.h>
 #include <QtCore/QDebug>
 
 namespace QtDiag {
 
 void dumpNativeWindows(WId wid)
 {
-#if QT_VERSION >= 0x050000
     QPlatformNativeInterface *ni = QGuiApplication::platformNativeInterface();
     QString result;
     QMetaObject::invokeMethod(ni, "dumpNativeWindows", Qt::DirectConnection,
                               Q_RETURN_ARG(QString, result),
                               Q_ARG(WId, wid));
     qDebug().noquote() << result;
-#endif // Qt 5
 }
 
 void dumpNativeQtTopLevels()

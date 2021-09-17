@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -30,23 +30,15 @@
 
 #include <QOpenGLFunctions>
 #include <QtOpenGLWidgets/QOpenGLWidget>
-#if QT_VERSION > 0x050000
-#  if QT_VERSION >= 0x050400
-#    include <QtOpenGL/QOpenGLWindow>
-#  else // 5.4
-#    include <QtGui/QWindow>
-#  endif // 5.0..5.4
-#  include <QtGui/QOpenGLContext>
-#  include <QtGui/QOpenGLFunctions>
-#  include <QtGui/QWindow>
-#endif
+#include <QtOpenGL/QOpenGLWindow>
+#include <QtGui/QOpenGLContext>
+#include <QtGui/QOpenGLFunctions>
+#include <QtGui/QWindow>
 #include <QtCore/QDebug>
 #include <QtCore/QString>
 #include <QtCore/QTimer>
 
 namespace QtDiag {
-
-#if QT_VERSION > 0x050000
 
 static QString getGlString(const QOpenGLContext *ctx, GLenum name)
 {
@@ -64,7 +56,6 @@ static QString glInfo(const QOpenGLContext *ctx)
 
 QString glInfo(const QObject *o)
 {
-#  if QT_VERSION >= 0x050400
     if (o->isWindowType()) {
         if (const QOpenGLWindow *oglw = qobject_cast<const QOpenGLWindow *>(o))
             return glInfo(oglw->context());
@@ -74,25 +65,8 @@ QString glInfo(const QObject *o)
     if (o->isWidgetType()) {
         if (const QOpenGLWidget *g = qobject_cast<const QOpenGLWidget *>(o))
             return glInfo(g->context());
-#  endif // 5.4
     }
     return QString();
 }
-
-#else // Qt4:
-
-static QString getGlString(GLenum name)
-{
-    if (const GLubyte *p = glGetString(name))
-        return QString::fromLatin1(reinterpret_cast<const char *>(p));
-    return QString();
-}
-
-QString glInfo(const QObject *)
-{
-    return getGlString(GL_VENDOR) + QLatin1Char('\n') + getGlString(GL_RENDERER);
-}
-
-#endif
 
 } // namespace QtDiag

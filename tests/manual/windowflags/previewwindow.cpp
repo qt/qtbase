@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -79,13 +79,8 @@ static void formatWindowFlags(QTextStream &str, Qt::WindowFlags flags)
 
     if (flags & Qt::MSWindowsFixedSizeDialogHint)
         str << "\n| Qt::MSWindowsFixedSizeDialogHint";
-#if QT_VERSION >= 0x050000
     if (flags & Qt::BypassWindowManagerHint)
         str << "\n| Qt::BypassWindowManagerHint";
-#else
-    if (flags & Qt::X11BypassWindowManagerHint)
-        str << "\n| Qt::X11BypassWindowManagerHint";
-#endif
     if (flags & Qt::FramelessWindowHint)
         str << "\n| Qt::FramelessWindowHint";
     if (flags & Qt::WindowTitleHint)
@@ -108,7 +103,6 @@ static void formatWindowFlags(QTextStream &str, Qt::WindowFlags flags)
         str << "\n| Qt::CustomizeWindowHint";
     if (flags & Qt::WindowStaysOnBottomHint)
         str << "\n| Qt::WindowStaysOnBottomHint";
-#if QT_VERSION >= 0x050000
     if (flags & Qt::WindowFullscreenButtonHint)
         str << "\n| Qt::WindowFullscreenButtonHint";
     if (flags & Qt::WindowTransparentForInput)
@@ -121,7 +115,6 @@ static void formatWindowFlags(QTextStream &str, Qt::WindowFlags flags)
         str << "\n| Qt::MaximizeUsingFullscreenGeometryHint";
     if (flags & Qt::NoDropShadowWindowHint)
         str << "\n| Qt::NoDropShadowWindowHint";
-#endif // Qt 5
 }
 
 static void formatWindowStates(QTextStream &str, Qt::WindowStates states)

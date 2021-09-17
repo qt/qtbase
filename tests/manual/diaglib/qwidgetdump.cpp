@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -28,14 +28,13 @@
 
 #include "qwidgetdump.h"
 
-#include <QWidget>
-#if QT_VERSION > 0x050000
-#  include <QtGui/QScreen>
-#  include <QtGui/QWindow>
-#endif
 #include <QApplication>
-#include <QtCore/QMetaObject>
+#include <QWidget>
+#include <QtGui/QScreen>
+#include <QtGui/QWindow>
+
 #include <QtCore/QDebug>
+#include <QtCore/QMetaObject>
 #include <QtCore/QTextStream>
 
 namespace QtDiag {
@@ -99,11 +98,9 @@ static void dumpWidgetRecursion(QTextStream &str, const QWidget *w,
     formatRect(str, w->geometry());
     if (w->isWindow()) {
         str << ' ' << w->logicalDpiX() << "DPI";
-#if QT_VERSION > 0x050600
         const qreal dpr = w->devicePixelRatio();
         if (!qFuzzyCompare(dpr, qreal(1)))
             str << " dpr=" << dpr;
-#endif // Qt 5.6
         const QRect normalGeometry = w->normalGeometry();
         if (normalGeometry.isValid() && !normalGeometry.isEmpty() && normalGeometry != w->geometry()) {
             str << " normal=";
@@ -130,13 +127,11 @@ static void dumpWidgetRecursion(QTextStream &str, const QWidget *w,
             str << "maximumSize=" << maximumSize.width() << 'x' << maximumSize.height() << ' ';
     }
     str << '\n';
-#if QT_VERSION > 0x050000
     if (const QWindow *win = w->windowHandle()) {
         indentStream(str, 2 * (1 + depth));
         formatWindow(str, win, options);
         str << '\n';
     }
-#endif // Qt 5
     for (const QObject *co : w->children()) {
         if (co->isWidgetType())
             dumpWidgetRecursion(str, static_cast<const QWidget *>(co), options, depth + 1);
@@ -155,14 +150,8 @@ void dumpAllWidgets(FormatWindowOptions options, const QWidget *root)
         topLevels = QApplication::topLevelWidgets();
     for (QWidget *tw : qAsConst(topLevels))
         dumpWidgetRecursion(str, tw, options);
-#if QT_VERSION >= 0x050400
-    {
-        for (const QString &line : d.split(QLatin1Char('\n')))
-            qDebug().noquote() << line;
-    }
-#else
-    qDebug("%s", qPrintable(d));
-#endif
+    for (const QString &line : d.split(QLatin1Char('\n')))
+        qDebug().noquote() << line;
 }
 
 } // namespace QtDiag

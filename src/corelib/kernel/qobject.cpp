@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Copyright (C) 2013 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: https://www.qt.io/licensing/
@@ -158,14 +158,6 @@ static inline QBasicMutex *signalSlotLock(const QObject *o)
 {
     return &_q_ObjectMutexPool[uint(quintptr(o)) % sizeof(_q_ObjectMutexPool)/sizeof(QBasicMutex)];
 }
-
-#if QT_VERSION < 0x60000
-extern "C" Q_CORE_EXPORT void qt_addObject(QObject *)
-{}
-
-extern "C" Q_CORE_EXPORT void qt_removeObject(QObject *)
-{}
-#endif
 
 void (*QAbstractDeclarativeData::destroyed)(QAbstractDeclarativeData *, QObject *) = nullptr;
 void (*QAbstractDeclarativeData::signalEmitted)(QAbstractDeclarativeData *, QObject *, int, void **) = nullptr;
@@ -953,9 +945,6 @@ QObject::QObject(QObjectPrivate &dd, QObject *parent)
             QT_RETHROW;
         }
     }
-#if QT_VERSION < 0x60000
-    qt_addObject(this);
-#endif
     if (Q_UNLIKELY(qtHookData[QHooks::AddQObject]))
         reinterpret_cast<QHooks::AddQObjectCallback>(qtHookData[QHooks::AddQObject])(this);
     Q_TRACE(QObject_ctor, this);
@@ -1114,9 +1103,6 @@ QObject::~QObject()
     if (!d->children.isEmpty())
         d->deleteChildren();
 
-#if QT_VERSION < 0x60000
-    qt_removeObject(this);
-#endif
     if (Q_UNLIKELY(qtHookData[QHooks::RemoveQObject]))
         reinterpret_cast<QHooks::RemoveQObjectCallback>(qtHookData[QHooks::RemoveQObject])(this);
 

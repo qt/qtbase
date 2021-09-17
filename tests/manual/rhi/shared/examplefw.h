@@ -195,9 +195,7 @@ Window::Window()
         setSurfaceType(Direct3DSurface);
         break;
     case Metal:
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
         setSurfaceType(MetalSurface);
-#endif
         break;
     default:
         break;

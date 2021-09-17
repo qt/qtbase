@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -41,28 +41,20 @@ struct EnumLookup {
 static const EnumLookup specialCharactersEnumLookup[] =
 {
     {QChar::Null, "Null"},
-#if QT_VERSION >= 0x050000
     {QChar::Tabulation, "Tabulation"},
     {QChar::LineFeed, "LineFeed"},
-#  if QT_VERSION >= 0x050e00
     {QChar::FormFeed, "FormFeed"},
-#  endif
     {QChar::CarriageReturn, "CarriageReturn"},
     {QChar::Space, "Space"},
-#endif
     {QChar::Nbsp, "Nbsp"},
-#if QT_VERSION >= 0x050000
     {QChar::SoftHyphen, "SoftHyphen"},
-#endif
     {QChar::ReplacementCharacter, "ReplacementCharacter"},
     {QChar::ObjectReplacementCharacter, "ObjectReplacementCharacter"},
     {QChar::ByteOrderMark, "ByteOrderMark"},
     {QChar::ByteOrderSwapped, "ByteOrderSwapped"},
     {QChar::ParagraphSeparator, "ParagraphSeparator"},
     {QChar::LineSeparator, "LineSeparator"},
-#if QT_VERSION >= 0x050000
     {QChar::LastValidCodePoint, "LastValidCodePoint"}
-#endif
 };
 
 static const EnumLookup categoryEnumLookup[] =
@@ -104,8 +96,6 @@ static const EnumLookup categoryEnumLookup[] =
     {QChar::Symbol_Modifier, "Symbol_Modifier"},
     {QChar::Symbol_Other, "Symbol_Other"},
 };
-
-#if QT_VERSION >= 0x050100
 
 static const EnumLookup scriptEnumLookup[] =
 {
@@ -221,7 +211,6 @@ static const EnumLookup scriptEnumLookup[] =
     {QChar::Script_SoraSompeng, "Script_SoraSompeng"},
     {QChar::Script_Takri, "Script_Takri"},
 
-#if QT_VERSION >= 0x050500
     {QChar::Script_CaucasianAlbanian, "Script_CaucasianAlbanian"},
     {QChar::Script_BassaVah, "Script_BassaVah"},
     {QChar::Script_Duployan, "Script_Duployan"},
@@ -245,19 +234,14 @@ static const EnumLookup scriptEnumLookup[] =
     {QChar::Script_Khudawadi, "Script_Khudawadi"},
     {QChar::Script_Tirhuta, "Script_Tirhuta"},
     {QChar::Script_WarangCiti, "Script_WarangCiti"},
-#endif // Qt 5.5
 
-#if QT_VERSION >= 0x050600
     {QChar::Script_Ahom, "Script_Ahom"},
     {QChar::Script_AnatolianHieroglyphs, "Script_AnatolianHieroglyphs"},
     {QChar::Script_Hatran, "Script_Hatran"},
     {QChar::Script_Multani, "Script_Multani"},
     {QChar::Script_OldHungarian, "Script_OldHungarian"},
     {QChar::Script_SignWriting, "Script_SignWriting"},
-#endif // Qt 5.5
 };
-
-#endif // Qt 5.1
 
 static const EnumLookup directionEnumLookup[] =
 {
@@ -280,12 +264,10 @@ static const EnumLookup directionEnumLookup[] =
     {QChar::DirPDF, "DirPDF"},
     {QChar::DirNSM, "DirNSM"},
     {QChar::DirBN, "DirBN"},
-#if QT_VERSION >= 0x050000
     {QChar::DirLRI, "DirLRI"},
     {QChar::DirRLI, "DirRLI"},
     {QChar::DirFSI, "DirFSI"},
     {QChar::DirPDI, "DirPDI"},
-#endif
 };
 
 static const EnumLookup decompositionEnumLookup[] =
@@ -310,8 +292,6 @@ static const EnumLookup decompositionEnumLookup[] =
     {QChar::Fraction, "Fraction"},
 };
 
-#if QT_VERSION >= 0x050000
-
 static const EnumLookup joiningTypeEnumLookup[] =
 {
     {QChar::Joining_None, "Joining_None"},
@@ -321,8 +301,6 @@ static const EnumLookup joiningTypeEnumLookup[] =
     {QChar::Joining_Left, "Joining_Left"},
     {QChar::Joining_Transparent, "Joining_Transparent"}
 };
-
-#endif // Qt 5
 
 static const EnumLookup combiningClassEnumLookup[] =
 {
@@ -361,20 +339,14 @@ static const EnumLookup unicodeVersionEnumLookup[] =
     {QChar::Unicode_4_0, "Unicode_4_0"},
     {QChar::Unicode_4_1, "Unicode_4_1"},
     {QChar::Unicode_5_0, "Unicode_5_0"},
-#if QT_VERSION >= 0x050000
     {QChar::Unicode_5_1, "Unicode_5_1"},
     {QChar::Unicode_5_2, "Unicode_5_2"},
     {QChar::Unicode_6_0, "Unicode_6_0"},
     {QChar::Unicode_6_1, "Unicode_6_1"},
     {QChar::Unicode_6_2, "Unicode_6_2"},
     {QChar::Unicode_6_3, "Unicode_6_3"},
-#if QT_VERSION >= 0x050500
     {QChar::Unicode_7_0, "Unicode_7_0"},
-#endif // Qt 5.5
-#if QT_VERSION >= 0x050600
     {QChar::Unicode_8_0, "Unicode_8_0"},
-#endif // Qt 5.6
-#endif // Qt 5
 };
 
 static const EnumLookup *enumLookup(int v, const EnumLookup *array, size_t size)
@@ -423,7 +395,6 @@ static void formatCharacter(QTextStream &str, const QChar &qc, FormattingContext
             << enumName(category, categoryEnumLookup, sizeof(categoryEnumLookup) / sizeof(EnumLookup));
         context.category = category;
     }
-#if QT_VERSION >= 0x050100
     const int script = qc.script();
     if (script != context.script) {
         str << " script="
@@ -431,21 +402,18 @@ static void formatCharacter(QTextStream &str, const QChar &qc, FormattingContext
             << '(' << script << ')';
         context.script = script;
     }
-#endif // Qt 5
     const int direction = qc.direction();
     if (direction != context.direction) {
         str << " direction="
             << enumName(direction, directionEnumLookup, sizeof(directionEnumLookup) / sizeof(EnumLookup));
         context.direction = direction;
     }
-#if QT_VERSION >= 0x050000
     const int joiningType = qc.joiningType();
     if (joiningType != context.joiningType) {
         str << " joiningType="
             << enumName(joiningType, joiningTypeEnumLookup, sizeof(joiningTypeEnumLookup) / sizeof(EnumLookup));
         context.joiningType = joiningType;
     }
-#endif // Qt 5QWidget
     const int decompositionTag = qc.decompositionTag();
     if (decompositionTag != context.decompositionTag) {
         str << " decomposition="

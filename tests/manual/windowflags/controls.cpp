@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -89,9 +89,6 @@ HintControl::HintControl(QWidget *parent)
     layout->addWidget(windowStaysOnBottomCheckBox, 7, 1);
     layout->addWidget(customizeWindowHintCheckBox, 5, 0);
     layout->addWidget(transparentForInputCheckBox, 6, 0);
-#if QT_VERSION < 0x050000
-    transparentForInputCheckBox->setEnabled(false);
-#endif
 }
 
 Qt::WindowFlags HintControl::hints() const
@@ -111,10 +108,8 @@ Qt::WindowFlags HintControl::hints() const
         flags |= Qt::WindowMinimizeButtonHint;
     if (windowMaximizeButtonCheckBox->isChecked())
         flags |= Qt::WindowMaximizeButtonHint;
-#if QT_VERSION >= 0x050000
     if (windowFullscreenButtonCheckBox->isChecked())
         flags |= Qt::WindowFullscreenButtonHint;
-#endif
     if (windowCloseButtonCheckBox->isChecked())
         flags |= Qt::WindowCloseButtonHint;
     if (windowContextHelpButtonCheckBox->isChecked())
@@ -127,10 +122,8 @@ Qt::WindowFlags HintControl::hints() const
         flags |= Qt::WindowStaysOnBottomHint;
     if (customizeWindowHintCheckBox->isChecked())
         flags |= Qt::CustomizeWindowHint;
-#if QT_VERSION >= 0x050000
     if (transparentForInputCheckBox->isChecked())
         flags |= Qt::WindowTransparentForInput;
-#endif
     return flags;
 }
 
@@ -143,18 +136,14 @@ void HintControl::setHints(Qt::WindowFlags flags)
     windowSystemMenuCheckBox->setChecked(flags & Qt::WindowSystemMenuHint);
     windowMinimizeButtonCheckBox->setChecked(flags & Qt::WindowMinimizeButtonHint);
     windowMaximizeButtonCheckBox->setChecked(flags & Qt::WindowMaximizeButtonHint);
-#if QT_VERSION >= 0x050000
     windowFullscreenButtonCheckBox->setChecked(flags & Qt::WindowFullscreenButtonHint);
-#endif
     windowCloseButtonCheckBox->setChecked(flags & Qt::WindowCloseButtonHint);
     windowContextHelpButtonCheckBox->setChecked(flags & Qt::WindowContextHelpButtonHint);
     windowShadeButtonCheckBox->setChecked(flags & Qt::WindowShadeButtonHint);
     windowStaysOnTopCheckBox->setChecked(flags & Qt::WindowStaysOnTopHint);
     windowStaysOnBottomCheckBox->setChecked(flags & Qt::WindowStaysOnBottomHint);
     customizeWindowHintCheckBox->setChecked(flags & Qt::CustomizeWindowHint);
-#if QT_VERSION >= 0x050000
     transparentForInputCheckBox->setChecked(flags & Qt::WindowTransparentForInput);
-#endif
 }
 
 void HintControl::slotCheckBoxChanged()

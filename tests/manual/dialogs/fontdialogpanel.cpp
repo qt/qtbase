@@ -196,12 +196,10 @@ void FontDialogPanel::applySettings(QFontDialog *d) const
 {
     d->setOption(QFontDialog::NoButtons, m_noButtons->isChecked());
     d->setOption(QFontDialog::DontUseNativeDialog, m_dontUseNativeDialog->isChecked());
-#if QT_VERSION >= 0x050000
     d->setOption(QFontDialog::ScalableFonts, m_scalableFilter->isChecked());
     d->setOption(QFontDialog::NonScalableFonts, m_nonScalableFilter->isChecked());
     d->setOption(QFontDialog::MonospacedFonts, m_monospacedFilter->isChecked());
     d->setOption(QFontDialog::ProportionalFonts, m_proportionalFilter->isChecked());
-#endif // Qt 5
 
     QFont font = m_fontFamilyBox->currentFont();
     font.setPointSizeF(m_fontSizeBox->value());

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the qmake application of the Qt Toolkit.
@@ -38,16 +38,15 @@
 #include <qdir.h>
 #include <qfile.h>
 #include <qfileinfo.h>
+#include <qjsonarray.h>
+#include <qjsondocument.h>
+#include <qjsonobject.h>
 #include <qlist.h>
 #include <qregularexpression.h>
 #include <qset.h>
 #include <qstringlist.h>
 #include <qtextstream.h>
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
-# include <qjsondocument.h>
-# include <qjsonobject.h>
-# include <qjsonarray.h>
-#endif
+
 #ifdef PROEVALUATOR_THREAD_SAFE
 # include <qthreadpool.h>
 #endif
@@ -222,9 +221,7 @@ void QMakeEvaluator::initFunctionStatics()
         { "infile", T_INFILE, 2, 3, "file, var, [values]" },
         { "count", T_COUNT, 2, 3, "var, count, [op=operator]" },
         { "isEmpty", T_ISEMPTY, 1, 1, "var" },
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
         { "parseJson", T_PARSE_JSON, 2, 2, "var, into" },
-#endif
         { "load", T_LOAD, 1, 2, "feature, [ignore_errors=false]" },
         { "include", T_INCLUDE, 1, 3, "file, [into, [silent]]" },
         { "debug", T_DEBUG, 2, 2, "level, message" },
@@ -362,7 +359,6 @@ QMakeEvaluator::quoteValue(const ProString &val)
     return ret;
 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 static void addJsonValue(const QJsonValue &value, const QString &keyPrefix, ProValueMap *map);
 
 static void insertJsonKeyValue(const QString &key, const QStringList &values, ProValueMap *map)
@@ -474,7 +470,6 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::parseJsonInto(const QByteArray &json
 
     return QMakeEvaluator::ReturnTrue;
 }
-#endif
 
 QMakeEvaluator::VisitReturn
 QMakeEvaluator::writeFile(const QString &ctx, const QString &fn, QIODevice::OpenMode mode,
@@ -1729,14 +1724,12 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
             m_valuemapStack.top()[var] = statics.fakeValue;
         return ReturnTrue;
     }
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
     case T_PARSE_JSON: {
         QByteArray json = values(args.at(0).toKey()).join(QLatin1Char(' ')).toUtf8();
         ProStringRoUser u1(args.at(1), m_tmp2);
         QString parseInto = u1.str();
         return parseJsonInto(json, parseInto, &m_valuemapStack.top());
     }
-#endif
     case T_INCLUDE: {
         QString parseInto;
         LoadFlags flags;

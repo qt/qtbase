@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -58,11 +58,7 @@ struct Statistics {
     QLabel *output;
     void sleep()
     {
-#if QT_VERSION >= 0x050000
         QThread::msleep(sleepMsecs);
-#else
-        qWarning("%s unimplemented", Q_FUNC_INFO);
-#endif
     }
     int currentBenchmarkIteration;
     bool relayoutClicked;

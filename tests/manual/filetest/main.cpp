@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -196,10 +196,6 @@ static int rm(const char *fileName)
 
 static int rmr(const char *dirName)
 {
-#if QT_VERSION < 0x050000
-    Q_UNUSED(dirName);
-    return 1;
-#else
     QDir dir(QString::fromLocal8Bit(dirName));
     if (!dir.removeRecursively()) {
         qWarning().nospace() << "Failed to remove " << dir.absolutePath();
@@ -207,7 +203,6 @@ static int rmr(const char *dirName)
     }
 
     return 0;
-#endif
 }
 
 int main(int argc, char *argv[])

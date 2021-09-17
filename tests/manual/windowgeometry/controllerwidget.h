@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -147,9 +147,7 @@ public:
 
 private:
     QScopedPointer<QWidget> m_testWidget;
-#if QT_VERSION >= 0x050000
     QScopedPointer<QWindow> m_testWindow;
-#endif
 };
 
 #endif // CONTROLLERWIDGET_H

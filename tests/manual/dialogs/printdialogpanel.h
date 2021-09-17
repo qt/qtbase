@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -33,9 +33,7 @@
 
 #include "ui_printdialogpanel.h"
 
-#if QT_VERSION >= 0x050300
 #include <QPageLayout>
-#endif
 #include <QPrinter>
 #include <QWidget>
 
@@ -49,31 +47,6 @@ QT_END_NAMESPACE
 
 class PageSizeControl;
 class OptionsControl;
-
-#if QT_VERSION < 0x050300
-// Copied from class QPageLayout introduced in Qt 5.3
-namespace QPageLayout
-{
-    enum Unit {
-        Millimeter,
-        Point,
-        Inch,
-        Pica,
-        Didot,
-        Cicero
-    };
-
-    enum Orientation {
-        Portrait,
-        Landscape
-    };
-
-    enum Mode {
-        StandardMode,  // Paint Rect includes margins
-        FullPageMode   // Paint Rect excludes margins
-    };
-}
-#endif
 
 class PrintDialogPanel  : public QWidget
 {
@@ -107,12 +80,7 @@ private:
     bool m_blockSignals;
     Ui::PrintDialogPanel m_panel;
 
-#if QT_VERSION >= 0x050300
     QPageLayout m_pageLayout;
-#else
-    QPrinter m_printerLayout;
-    QPrinter::Unit m_units;
-#endif
     QScopedPointer<QPrinter> m_printer;
 };
 

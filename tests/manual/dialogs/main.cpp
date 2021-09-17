@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -59,15 +59,9 @@ AboutDialog::AboutDialog(QWidget *parent) : QDialog(parent)
 {
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     QFormLayout *mainLayout = new QFormLayout(this);
-#if QT_VERSION >= 0x050600
     mainLayout->addRow(new QLabel(QLibraryInfo::build()));
-#else
-    mainLayout->addRow(new QLabel(QLatin1String("Qt ") + QLatin1String(QT_VERSION_STR )));
-#endif
     mainLayout->addRow("Style:", new QLabel(qApp->style()->objectName()));
-#if QT_VERSION >= 0x050600
     mainLayout->addRow("DPR:", new QLabel(QString::number(qApp->devicePixelRatio())));
-#endif
     const QString resolution = QString::number(logicalDpiX()) + QLatin1Char(',')
                                + QString::number(logicalDpiY()) + QLatin1String("dpi");
     mainLayout->addRow("Resolution:", new QLabel(resolution));
@@ -129,9 +123,7 @@ int main(int argc, char *argv[])
     for (int a = 1; a < argc; ++a) {
         if (!qstrcmp(argv[a], "-n")) {
             qDebug("AA_DontUseNativeDialogs");
-#if QT_VERSION >= 0x050700
             QCoreApplication::setAttribute(Qt::AA_DontUseNativeDialogs);
-#endif
         } else if (!qstrcmp(argv[a], "-p")) {
             optNoPrinter = true; // Avoid startup slowdown by printer code
         }

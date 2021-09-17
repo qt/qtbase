@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -27,15 +27,13 @@
 ****************************************************************************/
 
 #include "logwidget.h"
-#if QT_VERSION >= 0x050000
-#  include <QtCore/qlogging.h>
-#  include <QtCore/QLibraryInfo>
-#endif
 #include <QApplication>
 #include <QStyle>
 
 #include <QtCore/QDebug>
+#include <QtCore/QLibraryInfo>
 #include <QtCore/QList>
+#include <QtCore/qlogging.h>
 #include <QtCore/QStringList>
 
 #include <iostream>
@@ -60,19 +58,13 @@ LogWidget::~LogWidget()
 QString LogWidget::startupMessage()
 {
     QString result;
-#if QT_VERSION >= 0x050300
     result += QLatin1String(QLibraryInfo::build());
-#else
-    result += QLatin1String("Qt ") + QLatin1String(QT_VERSION_STR);
-#endif
 
     const QCoreApplication *coreApp = QCoreApplication::instance();
-#if QT_VERSION >= 0x050000
     if (qobject_cast<const QGuiApplication *>(coreApp)) {
         result += QLatin1Char(' ');
         result += QGuiApplication::platformName();
     }
-#endif
     if (qobject_cast<const QApplication *>(coreApp)) {
         result += QLatin1Char(' ');
         result += QApplication::style()->objectName();

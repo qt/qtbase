@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -28,20 +28,17 @@
 
 #include "qwindowdump.h"
 
-#if QT_VERSION > 0x050000
-#  include <QtGui/QGuiApplication>
-#  include <QtGui/QScreen>
-#  include <QtGui/QWindow>
-#  include <qpa/qplatformwindow.h>
-#  include <private/qwindow_p.h>
-#  if QT_VERSION >= 0x050600
-#    include <private/qhighdpiscaling_p.h>
-#  endif
-#endif
+#include <QtGui/QGuiApplication>
+#include <QtGui/QScreen>
+#include <QtGui/QWindow>
+#include <QtCore/QDebug>
 #include <QtCore/QMetaObject>
 #include <QtCore/QRect>
-#include <QtCore/QDebug>
 #include <QtCore/QTextStream>
+
+#include <qpa/qplatformwindow.h>
+#include <private/qwindow_p.h>
+#include <private/qhighdpiscaling_p.h>
 
 namespace QtDiag {
 
@@ -87,10 +84,8 @@ void formatWindowFlags(QTextStream &str, Qt::WindowFlags flags)
     debugType(str, windowType, Qt::SplashScreen)
     debugType(str, windowType, Qt::Desktop)
     debugType(str, windowType, Qt::SubWindow)
-#if QT_VERSION > 0x050000
     debugType(str, windowType, Qt::ForeignWindow)
     debugType(str, windowType, Qt::CoverWindow)
-#endif
     debugFlag(str, flags, Qt::MSWindowsFixedSizeDialogHint)
     debugFlag(str, flags, Qt::MSWindowsOwnDC)
     debugFlag(str, flags, Qt::X11BypassWindowManagerHint)
@@ -103,19 +98,15 @@ void formatWindowFlags(QTextStream &str, Qt::WindowFlags flags)
     debugFlag(str, flags, Qt::WindowShadeButtonHint)
     debugFlag(str, flags, Qt::WindowStaysOnTopHint)
     debugFlag(str, flags, Qt::CustomizeWindowHint)
-#if QT_VERSION > 0x050000
     debugFlag(str, flags, Qt::WindowTransparentForInput)
     debugFlag(str, flags, Qt::WindowOverridesSystemGestures)
     debugFlag(str, flags, Qt::WindowDoesNotAcceptFocus)
     debugFlag(str, flags, Qt::NoDropShadowWindowHint)
     debugFlag(str, flags, Qt::WindowFullscreenButtonHint)
-#endif
     debugFlag(str, flags, Qt::WindowStaysOnBottomHint)
     debugFlag(str, flags, Qt::MacWindowToolBarButtonHint)
     debugFlag(str, flags, Qt::BypassGraphicsProxyWidget)
 }
-
-#if QT_VERSION > 0x050000
 
 void formatWindow(QTextStream &str, const QWindow *w, FormatWindowOptions options)
 {
@@ -137,10 +128,8 @@ void formatWindow(QTextStream &str, const QWindow *w, FormatWindowOptions option
     formatRect(str, w->geometry());
     if (w->isTopLevel()) {
         str << " \"" << w->screen()->name() << "\" ";
-#if QT_VERSION >= 0x050600
         if (QHighDpiScaling::isActive())
             str << "factor=" << QHighDpiScaling::factor(w) << " dpr=" << w->devicePixelRatio();
-#endif
     }
     if (!(options & DontPrintWindowFlags)) {
         str << ' ';
@@ -176,24 +165,7 @@ void dumpAllWindows(FormatWindowOptions options)
     str << "### QWindows:\n";
     for (QWindow *w : QGuiApplication::topLevelWindows())
         dumpWindowRecursion(str, w, options);
-#if QT_VERSION >= 0x050400
     qDebug().noquote() << d;
-#else
-    qDebug() << d;
-#endif
 }
-
-#else // Qt 5
-class QWindow {};
-
-void formatWindow(QTextStream &, const QWindow *, FormatWindowOptions)
-{
-}
-
-void dumpAllWindows(FormatWindowOptions options)
-{
-}
-
-#endif // Qt 4
 
 } // namespace QtDiag

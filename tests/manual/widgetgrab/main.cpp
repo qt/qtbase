@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -224,13 +224,9 @@ bool MainWindow::eventFilter(QObject *o, QEvent *e)
         case QEvent::Enter: {
             QString message;
             QDebug debug(&message);
-#if QT_VERSION >= 0x050000
             const QEnterEvent *ee = static_cast<QEnterEvent *>(e);
             debug.nospace()  << '#' << m_enterLeaveEventCount++ << " Enter for " << o->objectName()
                              << " at " << ee->localPos() << " global: " << ee->globalPos();
-#else
-            debug.nospace()  << '#' << m_enterLeaveEventCount++ << " Enter for " << o->objectName();
-#endif
             m_logEdit->appendPlainText(message);
         }
             break;
@@ -357,11 +353,7 @@ void MainWindow::grabKeyboardWindowToggled(bool g)
 void MainWindow::forceNativeWidgets()
 {
     const WId platformWid = m_forceNativeButton->winId();
-#if QT_VERSION < 0x050000 && defined(Q_OS_WIN)
-    const quintptr wid = quintptr(platformWid); // HWND on Qt 4.8/Windows.
-#else
     const WId wid = platformWid;
-#endif
     m_logEdit->appendPlainText(QString::fromLatin1("Created native widget %1").arg(wid));
     m_forceNativeButton->setEnabled(false);
     m_forceNativeButton->setText(QLatin1String("Native widgets created"));

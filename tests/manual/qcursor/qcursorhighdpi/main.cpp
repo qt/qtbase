@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -47,15 +47,10 @@
 #include <QStringList>
 #include <QTextStream>
 
-#if QT_VERSION > 0x050000
-#  include <QScreen>
-#  include <QWindow>
-#  include <private/qhighdpiscaling_p.h>
-#  include <qpa/qplatformwindow.h>
-#else
-#   define Q_NULLPTR 0
-#   define Q_DECL_OVERRIDE
-#endif
+#include <QScreen>
+#include <QWindow>
+#include <private/qhighdpiscaling_p.h>
+#include <qpa/qplatformwindow.h>
 
 #ifdef Q_OS_WIN
 #  include <qt_windows.h>
@@ -63,14 +58,6 @@
 
 #include <algorithm>
 #include <iterator>
-
-#if QT_VERSION < 0x050000
-QDebug operator<<(QDebug d, const QPixmap &p)
-{
-    d.nospace() << "QPixmap(" << p.size() << ')';
-    return d;
-}
-#endif // Qt 4
 
 // High DPI cursor test for testing cursor sizes in multi-screen setups.
 // It creates one widget per screen with a grid of standard cursors,
@@ -139,7 +126,6 @@ static QCursor bitmapCursor(int size)
     return QCursor(bitmaps.first, bitmaps.second, size / 2, size / 2);
 }
 
-#if QT_VERSION > 0x050000
 static QCursor pixmapCursorDevicePixelRatio(int size, int dpr)
 {
     QPixmap pixmap = paintPixmap(dpr * size, Qt::yellow);
@@ -154,7 +140,6 @@ static QCursor bitmapCursorDevicePixelRatio(int size, int dpr)
     bitmaps.second.setDevicePixelRatio(dpr);
     return QCursor(bitmaps.first, bitmaps.second, size / 2, size / 2);
 }
-#endif // Qt 5
 
 // A label from which a pixmap can be dragged for testing drag with pixmaps/DPR.
 class DraggableLabel : public QLabel {
@@ -191,9 +176,7 @@ void DraggableLabel::mousePressEvent(QMouseEvent *)
     drag->setMimeData(mimeData);
     drag->setPixmap(pixmap);
     QPoint sizeP = QPoint(m_pixmap.width(), m_pixmap.height());
-#if QT_VERSION > 0x050000
     sizeP /= int(m_pixmap.devicePixelRatio());
-#endif // Qt 5
     drag->setHotSpot(sizeP / 2);
     qDebug() << "Dragging:" << m_pixmap;
     drag->exec(Qt::CopyAction | Qt::MoveAction, Qt::CopyAction);
@@ -244,10 +227,8 @@ static QLabel *createCursorLabel(const QCursor &cursor, const QString &additiona
 {
     QString labelText;
     QDebug(&labelText).nospace() << cursor.shape();
-#if QT_VERSION > 0x050000
     labelText.remove(0, labelText.indexOf('(') + 1);
     labelText.chop(1);
-#endif // Qt 5
     if (!additionalText.isEmpty())
         labelText += ' ' + additionalText;
     const QPixmap cursorPixmap = cursor.pixmap();
@@ -279,9 +260,7 @@ MainWindow::MainWindow(QWidget *parent)
     , m_screenInfoLabel(new QLabel)
 {
     QString title = "Cursors ";
-#if QT_VERSION > 0x050000
     title += '(' + QGuiApplication::platformName() + ") ";
-#endif
     title += QT_VERSION_STR;
     setWindowTitle(title);
 
@@ -315,7 +294,6 @@ MainWindow::MainWindow(QWidget *parent)
                                 QLatin1String("Plain BM ") + QString::number(size)),
                                 gridLayout, columnCount, row, col);
 
-#if QT_VERSION > 0x050000
     addToGrid(createCursorLabel(QCursor(pixmapCursorDevicePixelRatio(size, 2)),
                                 "PX with DPR 2 " + QString::number(size)),
                                 gridLayout, columnCount, row, col);
@@ -323,7 +301,6 @@ MainWindow::MainWindow(QWidget *parent)
     addToGrid(createCursorLabel(QCursor(bitmapCursorDevicePixelRatio(size, 2)),
                                 "BM with DPR 2 " + QString::number(size)),
                                 gridLayout, columnCount, row, col);
-#endif // Qt 5
 
     gridLayout->addWidget(m_screenInfoLabel, row + 1, 0, 1, columnCount);
 
@@ -351,10 +328,8 @@ int main(int argc, char *argv[])
         windows.append(window);
         window->show();
         window->updateScreenInfo();
-#if QT_VERSION > 0x050000
         QObject::connect(window->windowHandle(), &QWindow::screenChanged,
                          window.data(), &MainWindow::updateScreenInfo);
-#endif
     }
     return app.exec();
 }
