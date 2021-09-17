@@ -56,13 +56,6 @@ Q_LOGGING_CATEGORY(lcEventDispatcherTimers, "qt.eventdispatcher.timers");
 
 #ifdef QT_HAVE_EMSCRIPTEN_ASYNCIFY
 
-// Enable/disable JavaScript-side debugging
-#if 0
-    #define QT_ASYNCIFY_DEBUG(X) out(X)
-#else
-    #define QT_ASYNCIFY_DEBUG(X)
-#endif
-
 // Emscripten asyncify currently supports one level of suspend -
 // recursion is not permitted. We track the suspend state here
 // on order to fail (more) gracefully, but we can of course only
@@ -70,28 +63,21 @@ Q_LOGGING_CATEGORY(lcEventDispatcherTimers, "qt.eventdispatcher.timers");
 static bool g_is_asyncify_suspended = false;
 
 EM_JS(void, qt_asyncify_suspend_js, (), {
-    QT_ASYNCIFY_DEBUG("qt_asyncify_suspend_js");
-    let sleepFn = (wakeUp) = >
-    {
-        QT_ASYNCIFY_DEBUG("setting Module.qtAsyncifyWakeUp")
-        Module.qtAsyncifyWakeUp = wakeUp; // ### not "Module" any more
+    let sleepFn = (wakeUp) => {
+        Module.qtAsyncifyWakeUp = wakeUp;
     };
     return Asyncify.handleSleep(sleepFn);
 });
 
 EM_JS(void, qt_asyncify_resume_js, (), {
-    QT_ASYNCIFY_DEBUG("qt_asyncify_resume_js");
     let wakeUp = Module.qtAsyncifyWakeUp;
-    if (wakeUp == = undefined) {
-        QT_ASYNCIFY_DEBUG("qt_asyncify_resume_js no wakeup fn set - did not wake");
+    if (wakeUp == undefined)
         return;
-    }
     Module.qtAsyncifyWakeUp = undefined;
 
     // Delayed wakeup with zero-timer. Workaround/fix for
     // https://github.com/emscripten-core/emscripten/issues/10515
     setTimeout(wakeUp);
-    QT_ASYNCIFY_DEBUG("qt_asyncify_resume_js done");
 });
 
 // Suspends the main thread until qt_asyncify_resume() is called. Returns
@@ -209,8 +195,8 @@ bool QEventDispatcherWasm::processEvents(QEventLoop::ProcessEventsFlags flags)
     if (isMainThreadEventDispatcher()) {
         if (flags & QEventLoop::DialogExec)
             handleDialogExec();
-        else if (flags & QEventLoop::EventLoopExec)
-            handleEventLoopExec();
+        else if (flags & QEventLoop::ApplicationExec)
+            handleApplicationExec();
     }
 
     if (!(flags & QEventLoop::ExcludeUserInputEvents))
@@ -368,7 +354,7 @@ void QEventDispatcherWasm::wakeUp()
     emscripten_async_call(&QEventDispatcherWasm::callProcessEvents, this, 0);
 }
 
-void QEventDispatcherWasm::handleEventLoopExec()
+void QEventDispatcherWasm::handleApplicationExec()
 {
     // Start the main loop, and then stop it on the first callback. This
     // is done for the "simulateInfiniteLoop" functionality where
@@ -386,7 +372,7 @@ void QEventDispatcherWasm::handleEventLoopExec()
 
 void QEventDispatcherWasm::handleDialogExec()
 {
-#if !QT_HAVE_EMSCRIPTEN_ASYNCIFY
+#ifndef QT_HAVE_EMSCRIPTEN_ASYNCIFY
     qWarning() << "Warning: dialog exec() is not supported on Qt for WebAssembly in this"
                << "configuration. Please use show() instead, or enable experimental support"
                << "for asyncify.\n"
@@ -432,7 +418,7 @@ bool QEventDispatcherWasm::waitForForEvents()
 
     Q_ASSERT(emscripten_is_main_runtime_thread());
 
-#if QT_HAVE_EMSCRIPTEN_ASYNCIFY
+#ifdef QT_HAVE_EMSCRIPTEN_ASYNCIFY
         // We can block on the main thread using asyncify:
         bool didSuspend = qt_asyncify_suspend();
         if (!didSuspend)
