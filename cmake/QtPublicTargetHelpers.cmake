@@ -124,8 +124,6 @@ function(__qt_internal_process_dependency_object_libraries target)
     # line.
     # So circular dependencies between static libraries and object files are resolved and no need
     # to call the finalizer code.
-    # TODO: This check is added before the actual release of CMake 3.21. So need to confirm that the
-    # target version meets the expectations.
     if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.21)
         return()
     endif()
