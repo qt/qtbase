@@ -235,7 +235,7 @@ QNetworkInformation *QNetworkInformationPrivate::create(QStringView name)
 #ifdef DEBUG_LOADING
     qDebug() << "Creating instance using loader named " << (*it)->name();
 #endif
-    QNetworkInformationBackend *backend = (*it)->create({});
+    QNetworkInformationBackend *backend = (*it)->create((*it)->featuresSupported());
     if (!backend)
         return nullptr;
     dataHolder->instanceHolder.reset(new QNetworkInformation(backend));
