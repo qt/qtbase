@@ -11472,9 +11472,6 @@ public:
 // when mousing over it.
 void tst_QWidget::taskQTBUG_27643_enterEvents()
 {
-#ifdef Q_OS_MACOS
-    QSKIP("QTBUG-52974: this test can crash!");
-#endif
     // Move the mouse cursor to a safe location so it won't interfere
     QCursor::setPos(m_safeCursorPos);
 
