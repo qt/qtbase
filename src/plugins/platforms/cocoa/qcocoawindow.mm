@@ -1248,12 +1248,32 @@ void QCocoaWindow::windowDidResignKey()
 
 void QCocoaWindow::windowDidOrderOnScreen()
 {
+    // The current mouse window needs to get a leave event when a popup window opens.
+    // For modal dialogs, QGuiApplicationPrivate::showModalWindow takes care of this.
+    if (QWindowPrivate::get(window())->isPopup()) {
+        QWindowSystemInterface::handleLeaveEvent<QWindowSystemInterface::SynchronousDelivery>
+            (QGuiApplicationPrivate::currentMouseWindow);
+    }
+
     [m_view setNeedsDisplay:YES];
 }
 
 void QCocoaWindow::windowDidOrderOffScreen()
 {
     handleExposeEvent(QRegion());
+    // We are closing a window, so the window that is now under the mouse
+    // might need to get an Enter event if it isn't already the mouse window.
+    if (window()->type() & Qt::Window) {
+        const QPointF screenPoint = QCocoaScreen::mapFromNative([NSEvent mouseLocation]);
+        if (QWindow *windowUnderMouse = QGuiApplication::topLevelAt(screenPoint.toPoint())) {
+            if (windowUnderMouse != QGuiApplicationPrivate::instance()->currentMouseWindow) {
+                const auto windowPoint = windowUnderMouse->mapFromGlobal(screenPoint);
+                // asynchronous delivery on purpose
+                QWindowSystemInterface::handleEnterEvent<QWindowSystemInterface::AsynchronousDelivery>
+                    (windowUnderMouse, windowPoint, screenPoint);
+            }
+        }
+    }
 }
 
 void QCocoaWindow::windowDidChangeOcclusionState()
