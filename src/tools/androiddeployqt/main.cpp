@@ -118,6 +118,16 @@ struct QtDependency
     QString absolutePath;
 };
 
+struct QtInstallDirectoryWithTriple
+{
+    QtInstallDirectoryWithTriple(const QString &dir = QString(), const QString &t = QString()) :
+        qtInstallDirectory(dir), triple(t), enabled(false) {}
+
+    QString qtInstallDirectory;
+    QString triple;
+    bool enabled;
+};
+
 struct Options
 {
     Options()
@@ -165,6 +175,7 @@ struct Options
 
     // Build paths
     QString qtInstallDirectory;
+    QString qtHostDirectory;
     std::vector<QString> extraPrefixDirs;
     // Unlike 'extraPrefixDirs', the 'extraLibraryDirs' key doesn't expect the 'lib' subfolder
     // when looking for dependencies.
@@ -193,7 +204,7 @@ struct Options
 
     // Build information
     QString androidPlatform;
-    QHash<QString, QString> architectures;
+    QHash<QString, QtInstallDirectoryWithTriple> architectures;
     QString currentArchitecture;
     QString toolchainPrefix;
     QString ndkHost;
@@ -234,9 +245,10 @@ struct Options
     QString installLocation;
 
     // Per architecture collected information
-    void clear(const QString &arch)
+    void setCurrentQtArchitecture(const QString &arch, const QString &directory)
     {
         currentArchitecture = arch;
+        qtInstallDirectory = directory;
     }
     typedef QPair<QString, QString> BundledFile;
     QHash<QString, QList<BundledFile>> bundledFiles;
@@ -913,7 +925,50 @@ bool readInputFile(Options *options)
             fprintf(stderr, "No Qt directory in json file %s\n", qPrintable(options->inputFileName));
             return false;
         }
-        options->qtInstallDirectory = qtInstallDirectory.toString();
+
+        if (qtInstallDirectory.isObject()) {
+            const QJsonObject object = qtInstallDirectory.toObject();
+            for (auto it = object.constBegin(); it != object.constEnd(); ++it) {
+                if (it.value().isUndefined()) {
+                    fprintf(stderr, "Invalid architecture: %s\n",
+                            qPrintable(it.value().toString()));
+                    return false;
+                }
+                if (it.value().isNull())
+                    continue;
+                options->architectures.insert(it.key(),
+                                              QtInstallDirectoryWithTriple(it.value().toString()));
+            }
+        } else if (qtInstallDirectory.isString()) {
+            // Format for Qt < 6 or when using the tool with Qt >= 6 but in single arch.
+            // We assume Qt > 5.14 where all architectures are in the same directory.
+            const QString directory = qtInstallDirectory.toString();
+            QtInstallDirectoryWithTriple qtInstallDirectoryWithTriple(directory);
+            options->architectures.insert(QLatin1String("arm64-v8a"), qtInstallDirectoryWithTriple);
+            options->architectures.insert(QLatin1String("armeabi-v7a"), qtInstallDirectoryWithTriple);
+            options->architectures.insert(QLatin1String("x86"), qtInstallDirectoryWithTriple);
+            options->architectures.insert(QLatin1String("x86_64"), qtInstallDirectoryWithTriple);
+            // In Qt < 6 rcc and qmlimportscanner are installed in the host and install directories
+            // In Qt >= 6 rcc and qmlimportscanner are only installed in the host directory
+            // So setting the "qtHostDir" is not necessary with Qt < 6.
+            options->qtHostDirectory = directory;
+        } else {
+            fprintf(stderr, "Invalid format for Qt install prefixes in json file %s.\n",
+                    qPrintable(options->inputFileName));
+            return false;
+        }
+    }
+    {
+        const QJsonValue qtHostDirectory = jsonObject.value(QLatin1String("qtHostDir"));
+        if (!qtHostDirectory.isUndefined()) {
+            if (qtHostDirectory.isString()) {
+                options->qtHostDirectory = qtHostDirectory.toString();
+            } else {
+                fprintf(stderr, "Invalid format for Qt host directory in json file %s.\n",
+                        qPrintable(options->inputFileName));
+                return false;
+            }
+        }
     }
 
     {
@@ -987,7 +1042,13 @@ bool readInputFile(Options *options)
             }
             if (it.value().isNull())
                 continue;
-            options->architectures.insert(it.key(), it.value().toString());
+            if (!options->architectures.contains(it.key())) {
+                fprintf(stderr, "Architecture %s unknown (%s).", qPrintable(it.key()),
+                        qPrintable(options->architectures.keys().join(QLatin1Char(','))));
+                return false;
+            }
+            options->architectures[it.key()].triple = it.value().toString();
+            options->architectures[it.key()].enabled = true;
         }
     }
 
@@ -1081,6 +1142,8 @@ bool readInputFile(Options *options)
         options->applicationBinary = applicationBinary.toString();
         if (options->build) {
             for (auto it = options->architectures.constBegin(); it != options->architectures.constEnd(); ++it) {
+                if (!it->enabled)
+                    continue;
                 auto appBinaryPath = QLatin1String("%1/libs/%2/lib%3_%2.so").arg(options->outputDirectory, it.key(), options->applicationBinary);
                 if (!QFile::exists(appBinaryPath)) {
                     fprintf(stderr, "Cannot find application binary in build dir %s.\n", qPrintable(appBinaryPath));
@@ -1101,7 +1164,8 @@ bool readInputFile(Options *options)
                 if (QFileInfo(path).isDir()) {
                     QDirIterator iterator(path, QDirIterator::Subdirectories);
                     while (iterator.hasNext()) {
-                        if (iterator.nextFileInfo().isFile()) {
+                        iterator.next();
+                        if (iterator.fileInfo().isFile()) {
                             QString subPath = iterator.filePath();
                             auto arch = fileArchitecture(*options, subPath);
                             if (!arch.isEmpty()) {
@@ -1401,6 +1465,8 @@ bool updateLibsXml(Options *options)
     QString extraLibs;
 
     for (auto it = options->architectures.constBegin(); it != options->architectures.constEnd(); ++it) {
+        if (!it->enabled)
+            continue;
         QString libsPath = QLatin1String("libs/") + it.key() + QLatin1Char('/');
 
         qtLibs += QLatin1String("        <item>%1;%2</item>\n").arg(it.key(), options->stdCppName);
@@ -2739,7 +2805,9 @@ bool copyStdCpp(Options *options)
     if (options->verbose)
         fprintf(stdout, "Copying STL library\n");
 
-    QString stdCppPath = QLatin1String("%1/%2/lib%3.so").arg(options->stdCppPath, options->architectures[options->currentArchitecture], options->stdCppName);
+    const QString triple = options->architectures[options->currentArchitecture].triple;
+    const QString stdCppPath = QLatin1String("%1/%2/lib%3.so").arg(options->stdCppPath, triple,
+                                                                   options->stdCppName);
     if (!QFile::exists(stdCppPath)) {
         fprintf(stderr, "STL library does not exist at %s\n", qPrintable(stdCppPath));
         fflush(stdout);
@@ -3095,20 +3163,26 @@ int main(int argc, char *argv[])
                 : "No"
             );
 
-    if (options.build && !options.auxMode) {
-        cleanAndroidFiles(options);
-        if (Q_UNLIKELY(options.timing))
-            fprintf(stdout, "[TIMING] %d ms: Cleaned Android file\n", options.timer.elapsed());
-
-        if (!copyAndroidTemplate(options))
-            return CannotCopyAndroidTemplate;
-
-        if (Q_UNLIKELY(options.timing))
-            fprintf(stdout, "[TIMING] %d ms: Copied Android template\n", options.timer.elapsed());
-    }
+    bool androidTemplatetCopied = false;
 
     for (auto it = options.architectures.constBegin(); it != options.architectures.constEnd(); ++it) {
-        options.clear(it.key());
+        if (!it->enabled)
+            continue;
+        options.setCurrentQtArchitecture(it.key(), it.value().qtInstallDirectory);
+
+        // All architectures have a copy of the gradle files but only one set needs to be copied.
+        if (!androidTemplatetCopied && options.build && !options.auxMode) {
+            cleanAndroidFiles(options);
+            if (Q_UNLIKELY(options.timing))
+                fprintf(stdout, "[TIMING] %d ms: Cleaned Android file\n", options.timer.elapsed());
+
+            if (!copyAndroidTemplate(options))
+                return CannotCopyAndroidTemplate;
+
+            if (Q_UNLIKELY(options.timing))
+                fprintf(stdout, "[TIMING] %d ms: Copied Android template\n", options.timer.elapsed());
+            androidTemplatetCopied = true;
+        }
 
         if (!readDependencies(&options))
             return CannotReadDependencies;
