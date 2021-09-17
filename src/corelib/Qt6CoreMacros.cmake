@@ -104,7 +104,8 @@ macro(_qt_internal_get_moc_flags _moc_flags)
 endmacro()
 
 # helper macro to set up a moc rule
-function(_qt_internal_create_moc_command infile outfile moc_flags moc_options moc_target moc_depends)
+function(_qt_internal_create_moc_command infile outfile moc_flags moc_options
+         moc_target moc_depends out_json_file)
     # Pass the parameters in a file.  Set the working directory to
     # be that containing the parameters file and reference it by
     # just the file name.  This is necessary because the moc tool on
@@ -117,6 +118,11 @@ function(_qt_internal_create_moc_command infile outfile moc_flags moc_options mo
     endif()
     set (_moc_parameters_file ${outfile}_parameters)
     set (_moc_parameters ${moc_flags} ${moc_options} -o "${outfile}" "${infile}")
+    if(out_json_file)
+        list(APPEND _moc_parameters --output-json)
+        set(extra_output_files "${outfile}.json")
+        set(${out_json_file} "${extra_output_files}" PARENT_SCOPE)
+    endif()
     string (REPLACE ";" "\n" _moc_parameters "${_moc_parameters}")
 
     if(moc_target)
@@ -139,7 +145,7 @@ function(_qt_internal_create_moc_command infile outfile moc_flags moc_options mo
     endif()
 
     set(_moc_extra_parameters_file @${_moc_parameters_file})
-    add_custom_command(OUTPUT ${outfile}
+    add_custom_command(OUTPUT ${outfile} ${extra_output_files}
                        COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::moc ${_moc_extra_parameters_file}
                        DEPENDS ${infile} ${moc_depends}
                        ${_moc_working_dir}
@@ -160,7 +166,10 @@ function(qt6_generate_moc infile outfile )
     if ("x${ARGV2}" STREQUAL "xTARGET")
         set(moc_target ${ARGV3})
     endif()
-    _qt_internal_create_moc_command(${abs_infile} ${_outfile} "${moc_flags}" "" "${moc_target}" "")
+    _qt_internal_create_moc_command(${abs_infile} ${_outfile} "${moc_flags}" "" "${moc_target}"
+        "" # moc_depends
+        "" # out_json_file
+    )
 endfunction()
 
 if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
@@ -181,7 +190,10 @@ function(qt6_wrap_cpp outfiles )
     _qt_internal_get_moc_flags(moc_flags)
 
     set(options)
-    set(oneValueArgs TARGET)
+    set(oneValueArgs
+        TARGET
+        __QT_INTERNAL_OUTPUT_MOC_JSON_FILES
+    )
     set(multiValueArgs OPTIONS DEPENDS)
 
     cmake_parse_arguments(_WRAP_CPP "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -191,14 +203,31 @@ function(qt6_wrap_cpp outfiles )
     set(moc_target ${_WRAP_CPP_TARGET})
     set(moc_depends ${_WRAP_CPP_DEPENDS})
 
+    set(metatypes_json_list "")
+
     foreach(it ${moc_files})
         get_filename_component(it ${it} ABSOLUTE)
         _qt_internal_make_output_file(${it} moc_ cpp outfile)
+
+        set(out_json_file_var "")
+        if(_WRAP_CPP___QT_INTERNAL_OUTPUT_MOC_JSON_FILES)
+            set(out_json_file_var "out_json_file")
+        endif()
+
         _qt_internal_create_moc_command(
-            ${it} ${outfile} "${moc_flags}" "${moc_options}" "${moc_target}" "${moc_depends}")
+            ${it} ${outfile} "${moc_flags}" "${moc_options}" "${moc_target}" "${moc_depends}"
+            "${out_json_file_var}")
         list(APPEND ${outfiles} ${outfile})
+        if(_WRAP_CPP___QT_INTERNAL_OUTPUT_MOC_JSON_FILES)
+            list(APPEND metatypes_json_list "${${out_json_file_var}}")
+        endif()
     endforeach()
     set(${outfiles} ${${outfiles}} PARENT_SCOPE)
+
+    if(metatypes_json_list)
+        set(${_WRAP_CPP___QT_INTERNAL_OUTPUT_MOC_JSON_FILES}
+            "${metatypes_json_list}" PARENT_SCOPE)
+    endif()
 endfunction()
 
 # This will override the CMake upstream command, because that one is for Qt 3.
