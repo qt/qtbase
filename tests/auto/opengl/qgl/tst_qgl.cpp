@@ -44,6 +44,7 @@
 #include <QGraphicsView>
 #include <QGraphicsProxyWidget>
 #include <QVBoxLayout>
+#include <QOperatingSystemVersion>
 
 #ifdef QT_BUILD_INTERNAL
 #include <qpa/qplatformpixmap.h>
@@ -2537,6 +2538,10 @@ public:
 
 void tst_QGL::closeAndThenShow()
 {
+#ifdef Q_OS_MACOS
+    if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSBigSur)
+        QSKIP("Test is crashing flaky on macos-11.0 - QTBUG-96271");
+#endif
     QWidget *w = new QWidget;
     w->resize(640, 480);
     QVBoxLayout *layout = new QVBoxLayout(w);
