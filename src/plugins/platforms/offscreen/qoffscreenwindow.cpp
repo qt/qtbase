@@ -44,6 +44,7 @@
 #include <qpa/qwindowsysteminterface.h>
 
 #include <private/qwindow_p.h>
+#include <private/qguiapplication_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -129,11 +130,26 @@ void QOffscreenWindow::setVisible(bool visible)
         }
     }
 
+    const QPoint cursorPos = QCursor::pos();
     if (visible) {
         QRect rect(QPoint(), geometry().size());
         QWindowSystemInterface::handleExposeEvent(window(), rect);
+        if (QWindowPrivate::get(window())->isPopup() && QGuiApplicationPrivate::currentMouseWindow) {
+            QWindowSystemInterface::handleLeaveEvent<QWindowSystemInterface::SynchronousDelivery>
+                (QGuiApplicationPrivate::currentMouseWindow);
+        }
+        if (geometry().contains(cursorPos))
+            QWindowSystemInterface::handleEnterEvent(window(),
+                                                     window()->mapFromGlobal(cursorPos), cursorPos);
     } else {
         QWindowSystemInterface::handleExposeEvent(window(), QRegion());
+        if (window()->type() & Qt::Window) {
+            if (QWindow *windowUnderMouse = QGuiApplication::topLevelAt(cursorPos)) {
+                QWindowSystemInterface::handleEnterEvent(windowUnderMouse,
+                                                        windowUnderMouse->mapFromGlobal(cursorPos),
+                                                        cursorPos);
+            }
+        }
     }
 
     m_visible = visible;

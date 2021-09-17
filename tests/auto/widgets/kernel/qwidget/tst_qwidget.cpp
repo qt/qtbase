@@ -358,6 +358,8 @@ private slots:
     void maskedUpdate();
 #ifndef QT_NO_CURSOR
     void syntheticEnterLeave();
+    void enterLeaveOnWindowShowHide_data();
+    void enterLeaveOnWindowShowHide();
     void taskQTBUG_4055_sendSyntheticEnterLeave();
     void underMouse();
     void taskQTBUG_27643_enterEvents();
@@ -9839,6 +9841,124 @@ void tst_QWidget::syntheticEnterLeave()
 #endif
 
 #ifndef QT_NO_CURSOR
+void tst_QWidget::enterLeaveOnWindowShowHide_data()
+{
+    QTest::addColumn<Qt::WindowType>("windowType");
+    QTest::addRow("dialog") << Qt::Dialog;
+    QTest::addRow("popup") << Qt::Popup;
+}
+
+
+/*!
+    Verify that a window that has the mouse gets a leave event
+    when a dialog or popup opens (even if that dialog or popup is
+    not under the mouse), and an enter event when the secondary window
+    closes again (while the mouse is still over the original widget.
+
+    Since mouse grabbing might cause some event interaction, simulate
+    the opening of the secondary window from a mouse press, like we would with
+    a button or context menu. See QTBUG-78970.
+*/
+void tst_QWidget::enterLeaveOnWindowShowHide()
+{
+    QFETCH(Qt::WindowType, windowType);
+    class Widget : public QWidget
+    {
+    public:
+        int numEnterEvents = 0;
+        int numLeaveEvents = 0;
+        QPoint enterPosition;
+        Qt::WindowType secondaryWindowType = {};
+    protected:
+        void enterEvent(QEnterEvent *e) override
+        {
+            enterPosition = e->position().toPoint();
+            ++numEnterEvents;
+        }
+        void leaveEvent(QEvent *) override
+        {
+            enterPosition = {};
+            ++numLeaveEvents;
+        }
+        void mousePressEvent(QMouseEvent *e) override
+        {
+            QWidget *secondary = nullptr;
+            switch (secondaryWindowType) {
+            case Qt::Dialog: {
+                QDialog *dialog = new QDialog(this);
+                dialog->setModal(true);
+                dialog->setWindowModality(Qt::ApplicationModal);
+                secondary = dialog;
+                break;
+            }
+            case Qt::Popup: {
+                QMenu *menu = new QMenu(this);
+                menu->addAction("Action 1");
+                menu->addAction("Action 2");
+                secondary = menu;
+                break;
+            }
+            default:
+                QVERIFY2(false, "Test case not implemented for window type");
+                break;
+            }
+
+            QPoint secondaryPos = e->globalPosition().toPoint();
+            if (e->button() == Qt::LeftButton)
+                secondaryPos += QPoint(10, 10); // cursor outside secondary
+            else
+                secondaryPos -= QPoint(10, 10); // cursor inside secondary
+            secondary->move(secondaryPos);
+            secondary->show();
+            if (!QTest::qWaitForWindowExposed(secondary))
+                QEXPECT_FAIL("", "Secondary window failed to show, test will fail", Abort);
+        }
+    };
+
+    int expectedEnter = 0;
+    int expectedLeave = 0;
+
+    Widget widget;
+    widget.secondaryWindowType = windowType;
+    const QRect screenGeometry = widget.screen()->availableGeometry();
+    const QPoint cursorPos = screenGeometry.topLeft() + QPoint(50, 50);
+    widget.setGeometry(QRect(cursorPos - QPoint(50, 50), screenGeometry.size() / 4));
+    QCursor::setPos(cursorPos);
+
+    if (!QTest::qWaitFor([&]{ return widget.geometry().contains(QCursor::pos()); }))
+        QSKIP("We can't move the cursor");
+    widget.show();
+    QApplication::setActiveWindow(&widget);
+    QVERIFY(QTest::qWaitForWindowActive(&widget));
+
+    ++expectedEnter;
+    QTRY_COMPARE_WITH_TIMEOUT(widget.numEnterEvents, expectedEnter, 250);
+    QCOMPARE(widget.enterPosition, widget.mapFromGlobal(cursorPos));
+    QVERIFY(widget.underMouse());
+
+    QTest::mouseClick(&widget, Qt::LeftButton, {}, widget.mapFromGlobal(cursorPos));
+    ++expectedLeave;
+    QTRY_COMPARE_WITH_TIMEOUT(widget.numLeaveEvents, expectedLeave, 500);
+    QVERIFY(!widget.underMouse());
+    if (QApplication::activeModalWidget())
+        QApplication::activeModalWidget()->close();
+    else if (QApplication::activePopupWidget())
+        QApplication::activePopupWidget()->close();
+    ++expectedEnter;
+    // Use default timeout, the test is flaky on Windows otherwise.
+    QVERIFY(QTest::qWaitFor([&]{ return widget.numEnterEvents >= expectedEnter; }));
+    // When a modal dialog closes we might get more than one enter event on macOS.
+    // This seems to depend on timing, so we tolerate that flakiness for now.
+    if (widget.numEnterEvents > expectedEnter && QGuiApplication::platformName() == "cocoa")
+        QEXPECT_FAIL("dialog", "On macOS, we might get more than one Enter event", Continue);
+
+    QCOMPARE(widget.numEnterEvents, expectedEnter);
+    QCOMPARE(widget.enterPosition, widget.mapFromGlobal(cursorPos));
+    QVERIFY(widget.underMouse());
+}
+#endif
+
+#ifndef QT_NO_CURSOR
 void tst_QWidget::taskQTBUG_4055_sendSyntheticEnterLeave()
 {
     if (m_platform == QStringLiteral("wayland"))
@@ -11281,9 +11401,10 @@ void tst_QWidget::underMouse()
     QCOMPARE(QApplication::activePopupWidget(), &popupWidget);
 
     // Send an artificial leave event for window, as it won't get generated automatically
-    // due to cursor not actually being over the window.
-    QWindowSystemInterface::handleLeaveEvent(window);
-    QApplication::processEvents();
+    // due to cursor not actually being over the window. The Cocoa and offscreen plugins
+    // do this for us.
+    if (QGuiApplication::platformName() != "cocoa" && QGuiApplication::platformName() != "offscreen")
+        QWindowSystemInterface::handleLeaveEvent<QWindowSystemInterface::SynchronousDelivery>(window);
 
     // If there is an active popup, undermouse should not be reported (QTBUG-27478),
     // but opening a popup causes leave for widgets under mouse.
