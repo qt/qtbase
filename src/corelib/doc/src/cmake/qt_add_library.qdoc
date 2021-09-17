@@ -1,0 +1,97 @@
+/****************************************************************************
+**
+** Copyright (C) 2021 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file. Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: https://www.gnu.org/licenses/fdl-1.3.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+\page qt_add_library.html
+\ingroup cmake-macros-qtcore
+
+\title qt_add_library
+\target qt6_add_library
+
+\brief Creates and finalizes a library.
+
+\section1 Synopsis
+
+\badcode
+qt_add_library(target
+    [STATIC | SHARED | MODULE | INTERFACE | OBJECT]
+    [MANUAL_FINALIZATION]
+    sources...
+)
+\endcode
+
+\versionlessCMakeCommandsNote qt6_add_library()
+
+\section1 Description
+
+\c{qt_add_library()} is a wrapper around CMake's built-in
+\c{add_library()} command. It performs the following tasks:
+
+\list
+\li Create a CMake target of an appropriate library type.
+\li Handle finalization of the CMake target.
+\endlist
+
+\section2 Target Creation
+
+The type of library created can be specified explicitly with one of the
+\c STATIC, \c SHARED, \c MODULE, \c INTERFACE or \c OBJECT keywords, just as
+one might for \c{add_library()}. If none of these keywords are given, the
+library type created depends on how Qt was built. If Qt was built statically,
+a static library will be created. Otherwise, a shared library will
+be created. Note that this is different to how CMake's \c{add_library()}
+command works, where the \c BUILD_SHARED_LIBS variable controls the type of
+library created. The \c{qt_add_library()} command does not consider
+\c BUILD_SHARED_LIBS when deciding the library type.
+
+Any \c{sources} provided will be passed through to the internal call to
+\c{add_library()}.
+
+\section2 Finalization
+
+After a target is created, further processing or \e{finalization} steps may be
+needed. The finalization processing is implemented by the
+\l{qt6_finalize_target}{qt_finalize_target()} command.
+
+Finalization can occur either as part of this call or be deferred to sometime
+after this command returns (but it should still be in the same directory scope).
+When using CMake 3.19 or later, finalization is automatically deferred to the
+end of the current directory scope. This gives the caller an opportunity to
+modify properties of the created target before it is finalized. When using
+CMake versions earlier than 3.19, automatic deferral isn't supported. In that
+case, finalization is performed immediately before this command returns.
+
+Regardless of the CMake version, the \c{MANUAL_FINALIZATION} keyword can be
+given to indicate that you will explicitly call
+\l{qt6_finalize_target}{qt_finalize_target()} yourself instead at some later
+time. In general, \c MANUAL_FINALIZATION should not be needed unless the
+project has to support CMake 3.18 or earlier.
+
+\sa {qt6_finalize_target}{qt_finalize_target()},
+    {qt6_add_executable}{qt_add_executable()}
+
+*/

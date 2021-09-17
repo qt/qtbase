@@ -45,21 +45,63 @@ qt_finalize_target(target)
 \section1 Description
 
 After a target is created, further processing or \e{finalization} steps are
-commonly needed. The steps to perform depend on the platform and on various
-properties of the target. These steps are expected to be performed within the
-same directory scope as the one in which the \c{target} was created, so this
-command should also be called from that same directory scope.
-
-This command implements the following, as appropriate for the platform and
-target provided:
-
-\list
-\li When targeting Android, generate a deployment settings file for the target.
-\li Create a build target for generating an APK if building for Android.
-\endlist
+sometimes needed. The steps to perform depend on the platform, the type of
+target, and on various properties of the target. These steps are expected to be
+performed within the same directory scope as the one in which the \c{target}
+was created, so this command should also be called from that same directory
+scope.
 
 This command is ordinarily invoked as part of a call to
-\l{qt6_add_executable}{qt_add_executable()}. The timing of when that call takes
+\l{qt6_add_executable}{qt_add_executable()} or
+\l{qt6_add_library}{qt_add_library()}. The timing of when that call takes
 place and when it might need to be called explicitly by a project is discussed
-in the documentation of that command.
+in the documentation of those commands.
+
+\section1 Executable Targets
+
+For executable targets, \c{qt_finalize_target()} implements the logic described
+in the subsections below, as appropriate for the platform and target provided.
+Later Qt releases may expand finalization processing further.
+
+\section2 All Platforms
+
+Some internal processing is performed to facilitate automatic linking of Qt
+plugins. This is especially important if using a statically built Qt or a
+CMake version earlier than 3.21.
+
+\section2 Android
+
+\list
+\li Generate a deployment settings file for the \c target.
+\li Create a build target for generating an APK.
+\endlist
+
+\section2 WASM
+
+Create \c{${target}.html} (a target-specific \c{wasm_shell.html} file),
+\c{qtloader.js} and \c{qtlogo.svg} files in the \c{CMAKE_CURRENT_BINARY_DIR}.
+
+\section2 iOS
+
+Finalization attempts to provide sensible values for the following target
+properties if they are not already set, and their corresponding \c{CMAKE_...}
+variable is also not set:
+
+\list
+\li \c XCODE_ATTRIBUTE_DEVELOPMENT_TEAM
+\li \c XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER
+\li \c MACOSX_BUNDLE_GUI_IDENTIFIER
+\endlist
+
+If required, the \l QT_NO_SET_XCODE_DEVELOPMENT_TEAM_ID variable can be used to
+disable setting \c XCODE_ATTRIBUTE_DEVELOPMENT_TEAM, and the
+\l QT_NO_SET_XCODE_BUNDLE_IDENTIFIER variable can be used to disable setting
+\c XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER and \c MACOSX_BUNDLE_GUI_IDENTIFIER.
+
+\section1 Library Targets
+
+As of this Qt version, finalization for library targets does not perform any
+processing. Future Qt versions may add finalization processing for libraries,
+so you should ensure finalization is still invoked in the expected way.
+
 */
