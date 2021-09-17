@@ -119,6 +119,7 @@ void tst_QNetworkInformation::initTestCase()
     QVERIFY(backends.contains(u"mock"));
     QVERIFY(QNetworkInformation::load(u"mock"));
     QVERIFY(QNetworkInformation::load(u"mock"));
+    QVERIFY(QNetworkInformation::load(u"mOcK"));
     QVERIFY(!QNetworkInformation::load(u"mocks"));
 }
 
