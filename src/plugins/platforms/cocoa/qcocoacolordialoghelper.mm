@@ -325,9 +325,9 @@ public:
     bool show(Qt::WindowModality windowModality, QWindow *parent)
     {
         Q_UNUSED(parent);
-        if (windowModality != Qt::WindowModal)
+        if (windowModality != Qt::ApplicationModal)
             [mDelegate showModelessPanel];
-        // no need to show a Qt::WindowModal dialog here, because it's necessary to call exec() in that case
+        // no need to show a Qt::ApplicationModal dialog here, because it will be shown in runApplicationModalPanel
         return true;
     }
 
@@ -391,9 +391,8 @@ void QCocoaColorDialogHelper::exec()
 
 bool QCocoaColorDialogHelper::show(Qt::WindowFlags, Qt::WindowModality windowModality, QWindow *parent)
 {
-    if (windowModality == Qt::WindowModal)
-        windowModality = Qt::ApplicationModal;
-
+    if (windowModality == Qt::ApplicationModal)
+        windowModality = Qt::WindowModal;
     // Workaround for Apple rdar://25792119: If you invoke
     // -setShowsAlpha: multiple times before showing the color
     // picker, its height grows irrevocably.  Instead, only
