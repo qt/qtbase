@@ -468,6 +468,10 @@
     code that was using QFuture with QtConcurrent. Only the code that was using
     it with the undocumented \c QFutureInterface may be affected.
 
+    \li QFutureWatcher::isFinished() now reflects the finished-state of the
+    QFuture rather than returning false until QFutureWatcher::finished() has
+    been emitted.
+
     \endlist
 
     \section2 The QPromise class
