@@ -57,6 +57,7 @@ class Q_NETWORK_EXPORT QNetworkInformation : public QObject
     Q_PROPERTY(Reachability reachability READ reachability NOTIFY reachabilityChanged)
     Q_PROPERTY(bool isBehindCaptivePortal READ isBehindCaptivePortal
                NOTIFY isBehindCaptivePortalChanged)
+    Q_PROPERTY(TransportMedium transportMedium READ transportMedium NOTIFY transportMediumChanged)
 public:
     enum class Reachability {
         Unknown,
@@ -67,9 +68,19 @@ public:
     };
     Q_ENUM(Reachability)
 
+    enum class TransportMedium {
+        Unknown,
+        Ethernet,
+        Cellular,
+        WiFi,
+        Bluetooth,
+    };
+    Q_ENUM(TransportMedium)
+
     enum class Feature {
         Reachability = 0x1,
         CaptivePortal = 0x2,
+        TransportMedium = 0x4,
     };
     Q_DECLARE_FLAGS(Features, Feature)
     Q_FLAG(Features)
@@ -77,6 +88,8 @@ public:
     Reachability reachability() const;
 
     bool isBehindCaptivePortal() const;
+
+    TransportMedium transportMedium() const;
 
     QString backendName() const;
 
@@ -90,6 +103,7 @@ public:
 Q_SIGNALS:
     void reachabilityChanged(Reachability newReachability);
     void isBehindCaptivePortalChanged(bool state);
+    void transportMediumChanged(TransportMedium current);
 
 private:
     friend struct QNetworkInformationDeleter;

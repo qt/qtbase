@@ -485,6 +485,8 @@ QNetworkInformation::QNetworkInformation(QNetworkInformationBackend *backend)
     connect(backend, &QNetworkInformationBackend::behindCaptivePortalChanged, this, [this]() {
         emit isBehindCaptivePortalChanged(d_func()->backend->behindCaptivePortal());
     });
+    connect(backend, &QNetworkInformationBackend::transportMediumChanged, this,
+            [this]() { emit transportMediumChanged(d_func()->backend->transportMedium()); });
 }
 
 /*!
@@ -525,6 +527,23 @@ QNetworkInformation::Reachability QNetworkInformation::reachability() const
 bool QNetworkInformation::isBehindCaptivePortal() const
 {
     return d_func()->backend->behindCaptivePortal();
+}
+
+/*!
+    \property QNetworkInformation::transportMedium
+    \brief The currently active transport medium for the application
+    \since 6.3
+
+    This property returns the currently active transport medium for the
+    application, on operating systems where such information is available.
+
+    When the current transport medium changes a signal is emitted, this can,
+    for instance, occur when a user leaves the range of a WiFi network, unplugs
+    their ethernet cable or enables Airplane mode.
+*/
+QNetworkInformation::TransportMedium QNetworkInformation::transportMedium() const
+{
+    return d_func()->backend->transportMedium();
 }
 
 /*!

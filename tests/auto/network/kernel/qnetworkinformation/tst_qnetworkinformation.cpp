@@ -41,6 +41,7 @@ private slots:
     void initTestCase();
     void reachability();
     void behindCaptivePortal();
+    void transportMedium();
     void cleanupTestCase();
 
 private:
@@ -78,6 +79,12 @@ public:
     {
         Q_ASSERT(instance);
         instance->setBehindCaptivePortal(value);
+    }
+
+    static void setNewTransportMedium(QNetworkInformation::TransportMedium medium)
+    {
+        Q_ASSERT(instance);
+        instance->setTransportMedium(medium);
     }
 
     static QNetworkInformation::Features featuresSupportedStatic()
@@ -184,6 +191,41 @@ void tst_QNetworkInformation::behindCaptivePortal()
     // Set the same value again, signal should not be emitted again
     signalEmitted = false;
     MockBackend::setNewBehindCaptivePortal(true);
+    QCoreApplication::processEvents();
+    QVERIFY(!signalEmitted);
+}
+
+void tst_QNetworkInformation::transportMedium()
+{
+    auto info = QNetworkInformation::instance();
+    using TransportMedium = QNetworkInformation::TransportMedium;
+    TransportMedium medium = TransportMedium::Unknown;
+    bool signalEmitted = false;
+
+    connect(info, &QNetworkInformation::transportMediumChanged, this, [&, info](TransportMedium tm) {
+        signalEmitted = true;
+        QCOMPARE(tm, info->transportMedium());
+        medium = info->transportMedium();
+    });
+    QCOMPARE(info->transportMedium(), TransportMedium::Unknown); // Default is unknown
+
+    auto transportMediumEnum = QMetaEnum::fromType<TransportMedium>();
+    auto mediumCount = transportMediumEnum.keyCount();
+    // Verify index 0 is Unknown and skip it in the loop, it's the default.
+    QCOMPARE(TransportMedium(transportMediumEnum.value(0)), TransportMedium::Unknown);
+    for (int i = 1; i < mediumCount; ++i) {
+        signalEmitted = false;
+        TransportMedium m = TransportMedium(transportMediumEnum.value(i));
+        MockBackend::setNewTransportMedium(m);
+        QCoreApplication::processEvents();
+        QVERIFY(signalEmitted);
+        QCOMPARE(info->transportMedium(), m);
+        QCOMPARE(medium, m);
+    }
+
+    // Set the current value again, signal should not be emitted again
+    signalEmitted = false;
+    MockBackend::setNewTransportMedium(medium);
     QCoreApplication::processEvents();
     QVERIFY(!signalEmitted);
 }

@@ -62,6 +62,10 @@ QT_BEGIN_NAMESPACE
 class Q_NETWORK_EXPORT QNetworkInformationBackend : public QObject
 {
     Q_OBJECT
+
+    using Reachability = QNetworkInformation::Reachability;
+    using TransportMedium = QNetworkInformation::TransportMedium;
+
 public:
     QNetworkInformationBackend() = default;
     ~QNetworkInformationBackend() override;
@@ -69,12 +73,14 @@ public:
     virtual QString name() const = 0;
     virtual QNetworkInformation::Features featuresSupported() const = 0;
 
-    QNetworkInformation::Reachability reachability() const { return m_reachability; }
+    Reachability reachability() const { return m_reachability; }
     bool behindCaptivePortal() const { return m_behindCaptivePortal; }
+    TransportMedium transportMedium() const { return m_transportMedium; }
 
 Q_SIGNALS:
     void reachabilityChanged();
     void behindCaptivePortalChanged();
+    void transportMediumChanged();
 
 protected:
     void setReachability(QNetworkInformation::Reachability reachability)
@@ -93,8 +99,17 @@ protected:
         }
     }
 
+    void setTransportMedium(TransportMedium medium)
+    {
+        if (m_transportMedium != medium) {
+            m_transportMedium = medium;
+            emit transportMediumChanged();
+        }
+    }
+
 private:
-    QNetworkInformation::Reachability m_reachability = QNetworkInformation::Reachability::Unknown;
+    Reachability m_reachability = Reachability::Unknown;
+    TransportMedium m_transportMedium = TransportMedium::Unknown;
     bool m_behindCaptivePortal = false;
 
     Q_DISABLE_COPY_MOVE(QNetworkInformationBackend)
@@ -105,12 +120,15 @@ private:
 class Q_NETWORK_EXPORT QNetworkInformationBackendFactory : public QObject
 {
     Q_OBJECT
+
+    using Features = QNetworkInformation::Features;
+
 public:
     QNetworkInformationBackendFactory();
     virtual ~QNetworkInformationBackendFactory();
     virtual QString name() const = 0;
-    virtual QNetworkInformationBackend *create(QNetworkInformation::Features requiredFeatures) const = 0;
-    virtual QNetworkInformation::Features featuresSupported() const = 0;
+    virtual QNetworkInformationBackend *create(Features requiredFeatures) const = 0;
+    virtual Features featuresSupported() const = 0;
 
 private:
     Q_DISABLE_COPY_MOVE(QNetworkInformationBackendFactory)
