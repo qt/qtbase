@@ -19,8 +19,7 @@ function(qt_internal_add_executable name)
         set(arg_INSTALL_DIRECTORY "${INSTALL_BINDIR}")
     endif()
 
-    # TODO: EXE_FLAGS doesn't seem to be used anywhere, we can probably remove it
-    _qt_internal_create_executable(${name} ${arg_EXE_FLAGS})
+    _qt_internal_create_executable(${name})
     if (ANDROID)
         qt_android_generate_deployment_settings("${name}")
         qt_android_add_apk_target("${name}")

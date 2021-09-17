@@ -506,7 +506,6 @@ set(__qt_internal_add_executable_single_args
     ${__default_target_info_args}
 )
 set(__qt_internal_add_executable_multi_args
-    EXE_FLAGS
     ${__default_private_args}
     ${__default_public_args}
 )
