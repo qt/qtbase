@@ -895,7 +895,7 @@ bool QDBusConnection::registerObject(const QString &path, const QString &interfa
     QDBusWriteLocker locker(RegisterObjectAction, d);
 
     // lower-bound search for where this object should enter in the tree
-    QDBusConnectionPrivate::ObjectTreeNode::DataList::Iterator node = &d->rootNode;
+    QDBusConnectionPrivate::ObjectTreeNode *node = &d->rootNode;
     int i = 1;
     while (node) {
         if (pathComponents.count() == i) {
@@ -934,7 +934,7 @@ bool QDBusConnection::registerObject(const QString &path, const QString &interfa
             std::lower_bound(node->children.begin(), node->children.end(), pathComponents.at(i));
         if (it != node->children.end() && it->name == pathComponents.at(i)) {
             // match: this node exists
-            node = it;
+            node = &(*it);
 
             // are we allowed to go deeper?
             if (node->flags & ExportChildObjects) {
@@ -945,7 +945,8 @@ bool QDBusConnection::registerObject(const QString &path, const QString &interfa
             }
         } else {
             // add entry
-            node = node->children.insert(it, pathComponents.at(i).toString());
+            it = node->children.insert(it, pathComponents.at(i).toString());
+            node = &(*it);
         }
 
         // iterate
@@ -1017,7 +1018,7 @@ QObject *QDBusConnection::objectRegisteredAt(const QString &path) const
         if (it == node->children.constEnd() || it->name != pathComponents.at(i))
             break;              // node not found
 
-        node = it;
+        node = &(*it);
         ++i;
     }
     return nullptr;

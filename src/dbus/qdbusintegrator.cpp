@@ -385,7 +385,7 @@ static bool findObject(const QDBusConnectionPrivate::ObjectTreeNode *root,
         start = 1;
 
     // walk the object tree
-    QDBusConnectionPrivate::ObjectTreeNode::DataList::ConstIterator node = root;
+    const QDBusConnectionPrivate::ObjectTreeNode *node = root;
     while (start < length && node) {
         if (node->flags & QDBusConnection::ExportChildObjects)
             break;
@@ -399,7 +399,7 @@ static bool findObject(const QDBusConnectionPrivate::ObjectTreeNode *root,
             std::lower_bound(node->children.constBegin(), node->children.constEnd(), pathComponent);
         if (it != node->children.constEnd() && it->name == pathComponent)
             // match
-            node = it;
+            node = &(*it);
         else
             node = nullptr;
 
@@ -624,7 +624,7 @@ static void huntAndUnregister(const QList<QStringView> &pathComponents, int i,
         if (it == end || it->name != pathComponents.at(i))
             return;              // node not found
 
-        huntAndUnregister(pathComponents, i + 1, mode, it);
+        huntAndUnregister(pathComponents, i + 1, mode, &(*it));
         if (!it->isActive())
             node->children.erase(it);
     }
