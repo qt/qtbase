@@ -235,7 +235,7 @@ public:
 };
 
 template <typename Mutex>
-class QMutexLocker
+class [[nodiscard]] QMutexLocker
 {
 public:
     inline explicit QMutexLocker(Mutex *mutex) QT_MUTEX_LOCK_NOEXCEPT
@@ -313,7 +313,7 @@ private:
 class QRecursiveMutex : public QMutex {};
 
 template <typename Mutex>
-class QMutexLocker
+class [[nodiscard]] QMutexLocker
 {
 public:
     inline explicit QMutexLocker(Mutex *) noexcept {}
