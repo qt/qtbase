@@ -250,15 +250,12 @@ void QWindowsPipeWriter::waitCallback(PTP_CALLBACK_INSTANCE instance, PVOID cont
  */
 bool QWindowsPipeWriter::writeCompleted(DWORD errorCode, DWORD numberOfBytesWritten)
 {
-    if (errorCode == ERROR_SUCCESS) {
+    switch (errorCode) {
+    case ERROR_SUCCESS:
         bytesWrittenPending = true;
         pendingBytesWrittenValue += numberOfBytesWritten;
         writeBuffer.free(numberOfBytesWritten);
         return true;
-    }
-
-    lastError = errorCode;
-    switch (errorCode) {
     case ERROR_PIPE_NOT_CONNECTED: // the other end has closed the pipe
     case ERROR_OPERATION_ABORTED: // the operation was canceled
     case ERROR_NO_DATA: // the pipe is being closed
@@ -267,8 +264,10 @@ bool QWindowsPipeWriter::writeCompleted(DWORD errorCode, DWORD numberOfBytesWrit
         qErrnoWarning(errorCode, "QWindowsPipeWriter: write failed.");
         break;
     }
+
     // The buffer is not cleared here, because the write progress
     // should appear on the main thread synchronously.
+    lastError = errorCode;
     return false;
 }
 
