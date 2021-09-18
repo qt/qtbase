@@ -905,11 +905,7 @@ void tst_QGuiApplication::quitOnLastWindowClosedMulti()
     QGuiApplication app(argc, nullptr);
     const QRect screenGeometry = QGuiApplication::primaryScreen()->availableVirtualGeometry();
 
-    QTimer timer;
-    timer.setInterval(100);
-
     QSignalSpy spyAboutToQuit(&app, &QCoreApplication::aboutToQuit);
-    QSignalSpy spyTimeout(&timer, &QTimer::timeout);
 
     QWindow mainWindow;
     mainWindow.setTitle(QStringLiteral("quitOnLastWindowClosedMultiMainWindow"));
@@ -928,15 +924,20 @@ void tst_QGuiApplication::quitOnLastWindowClosedMulti()
     dialog.show();
     QVERIFY(QTest::qWaitForWindowExposed(&dialog));
 
-    timer.start();
-    QTimer::singleShot(1000, &mainWindow, &QWindow::close); // This should not quit the application
-    QTimer::singleShot(2000, &app, &QCoreApplication::quit);
+    bool prematureQuit = true;
+    QTimer::singleShot(100, &mainWindow, [&]{
+        prematureQuit = true; // this should be reset by the other timer
+        mainWindow.close();
+    });
+    QTimer::singleShot(500, &mainWindow, [&]{
+        prematureQuit = false; // if we don't get here, then the app quit prematurely
+        dialog.close();
+    });
 
     app.exec();
 
-    QCOMPARE(spyAboutToQuit.count(), 1);
-    // Should be around 20 if closing did not cause the quit
-    QVERIFY2(spyTimeout.count() > 15, QByteArray::number(spyTimeout.count()).constData());
+    QVERIFY(!prematureQuit);
+    QCOMPARE(spyAboutToQuit.count(), 1); // fired only once
 }
 
 void tst_QGuiApplication::dontQuitOnLastWindowClosed()
