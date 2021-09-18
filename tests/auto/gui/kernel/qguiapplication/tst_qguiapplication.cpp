@@ -1114,16 +1114,23 @@ void tst_QGuiApplication::staticFunctions()
     QGuiApplication::setWindowIcon(QIcon());
     QGuiApplication::windowIcon();
     QGuiApplication::platformName();
+    QTest::ignoreMessage(QtWarningMsg, "Must construct a QGuiApplication first.");
     QGuiApplication::modalWindow();
     QGuiApplication::focusWindow();
     QGuiApplication::focusObject();
     QGuiApplication::primaryScreen();
     QGuiApplication::screens();
+    QTest::ignoreMessage(QtWarningMsg, "Must construct a QGuiApplication first.");
     QGuiApplication::overrideCursor();
+    QTest::ignoreMessage(QtWarningMsg, "Must construct a QGuiApplication first.");
     QGuiApplication::setOverrideCursor(QCursor());
+    QTest::ignoreMessage(QtWarningMsg, "Must construct a QGuiApplication first.");
     QGuiApplication::changeOverrideCursor(QCursor());
+    QTest::ignoreMessage(QtWarningMsg, "Must construct a QGuiApplication first.");
     QGuiApplication::restoreOverrideCursor();
+    QTest::ignoreMessage(QtWarningMsg, "Must construct a QGuiApplication first.");
     QGuiApplication::keyboardModifiers();
+    QTest::ignoreMessage(QtWarningMsg, "Must construct a QGuiApplication first.");
     QGuiApplication::queryKeyboardModifiers();
     QGuiApplication::mouseButtons();
     QGuiApplication::setLayoutDirection(Qt::LeftToRight);
@@ -1133,11 +1140,13 @@ void tst_QGuiApplication::staticFunctions()
     QGuiApplication::desktopSettingsAware();
     QGuiApplication::inputMethod();
     QGuiApplication::platformNativeInterface();
+    QTest::ignoreMessage(QtWarningMsg, "QGuiApplication::platformFunction(): Must construct a QGuiApplication before accessing a platform function");
     QGuiApplication::platformFunction(QByteArrayLiteral("bla"));
     QGuiApplication::setQuitOnLastWindowClosed(true);
     QGuiApplication::quitOnLastWindowClosed();
     QGuiApplication::applicationState();
 
+    QTest::ignoreMessage(QtWarningMsg, "QPixmap: QGuiApplication must be created before calling defaultDepth().");
     QPixmap::defaultDepth();
 }
 
