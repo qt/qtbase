@@ -11506,10 +11506,6 @@ void tst_QWidget::underMouse()
 
     // Mouse leaves popup and enters topLevelWidget, should cause leave for popup
     // but no enter to topLevelWidget.
-#ifdef Q_OS_DARWIN
-    // Artificial leave event needed for Cocoa.
-    QWindowSystemInterface::handleLeaveEvent(popupWindow);
-#endif
     QTest::mouseMove(popupWindow, popupWindow->mapFromGlobal(window->mapToGlobal(inWindowPoint)));
     QApplication::processEvents();
     QVERIFY(!topLevelWidget.underMouse());

@@ -392,14 +392,13 @@ QPointer<QWidget> qt_last_mouse_receiver = nullptr;
 
 void QWidgetWindow::handleEnterLeaveEvent(QEvent *event)
 {
-#if !defined(Q_OS_MACOS) && !defined(Q_OS_IOS) // Cocoa tracks popups
     // Ignore all enter/leave events from QPA if we are not on the first-level context menu.
     // This prevents duplicated events on most platforms. Fake events will be delivered in
     // QWidgetWindow::handleMouseEvent(QMouseEvent *). Make an exception whether the widget
     // is already under mouse - let the mouse leave.
     if (QApplicationPrivate::inPopupMode() && m_widget != QApplication::activePopupWidget() && !m_widget->underMouse())
         return;
-#endif
+
     if (event->type() == QEvent::Leave) {
         QWidget *enter = nullptr;
         // Check from window system event queue if the next queued enter targets a window
@@ -540,7 +539,6 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
             if (receiver != activePopupWidget)
                 widgetPos = receiver->mapFromGlobal(event->globalPosition().toPoint());
 
-#if !defined(Q_OS_MACOS) && !defined(Q_OS_IOS) // Cocoa tracks popups
             const bool reallyUnderMouse = activePopupWidget->rect().contains(mapped);
             const bool underMouse = activePopupWidget->underMouse();
             if (underMouse != reallyUnderMouse) {
@@ -558,7 +556,7 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
                     receiver = activePopupWidget;
                 }
             }
-#endif
+
             if ((event->type() != QEvent::MouseButtonPress) || !(QMutableSinglePointEvent::from(event)->isDoubleClick())) {
                 // if the widget that was pressed is gone, then deliver move events without buttons
                 const auto buttons = event->type() == QEvent::MouseMove && qt_popup_down_closed
