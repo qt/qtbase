@@ -452,9 +452,9 @@ public:
     class GestureEvent : public PointerEvent {
     public:
         GestureEvent(QWindow *window, ulong time, Qt::NativeGestureType type, const QPointingDevice *dev,
-                     int fingerCount, QPointF pos, QPointF globalPos)
+                     int fingerCount, QPointF pos, QPointF globalPos, qreal realValue, QPointF delta)
             : PointerEvent(window, time, Gesture, Qt::NoModifier, dev), type(type), pos(pos), globalPos(globalPos),
-              fingerCount(fingerCount), realValue(0), sequenceId(0), intValue(0) { }
+              delta(delta), fingerCount(fingerCount), realValue(realValue), sequenceId(0), intValue(0) { }
         Qt::NativeGestureType type;
         QPointF pos;
         QPointF globalPos;
@@ -532,8 +532,6 @@ public:
     static WindowSystemEvent *getNonUserInputWindowSystemEvent();
     static WindowSystemEvent *peekWindowSystemEvent(EventType t);
     static void removeWindowSystemEvent(WindowSystemEvent *event);
-    template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
-    static bool handleWindowSystemEvent(WindowSystemEvent *ev);
 
 public:
     static QElapsedTimer eventTime;
