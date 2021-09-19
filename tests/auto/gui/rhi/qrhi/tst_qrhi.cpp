@@ -33,6 +33,7 @@
 #include <QPainter>
 
 #include <QtGui/private/qrhi_p.h>
+#include <QtGui/private/qrhi_p_p.h>
 #include <QtGui/private/qrhinull_p.h>
 
 #if QT_CONFIG(opengl)
@@ -93,6 +94,8 @@ private slots:
     void resourceUpdateBatchRGBATextureMip();
     void resourceUpdateBatchTextureRawDataStride_data();
     void resourceUpdateBatchTextureRawDataStride();
+    void resourceUpdateBatchLotsOfResources_data();
+    void resourceUpdateBatchLotsOfResources();
     void invalidPipeline_data();
     void invalidPipeline();
     void srbLayoutCompatibility_data();
@@ -1367,6 +1370,49 @@ void tst_QRhi::resourceUpdateBatchTextureRawDataStride()
                                     QImage::Format_RGBA8888_Premultiplied);
         QVERIFY(imageRGBAEquals(wrapperImage, originalWrapperImage));
     }
+}
+
+void tst_QRhi::resourceUpdateBatchLotsOfResources_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::resourceUpdateBatchLotsOfResources()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing resource updates");
+
+    QImage image(128, 128, QImage::Format_RGBA8888_Premultiplied);
+    image.fill(Qt::red);
+    static const float bufferData[64] = {};
+
+    QRhiResourceUpdateBatch *b = rhi->nextResourceUpdateBatch();
+    std::vector<std::unique_ptr<QRhiTexture>> textures;
+    std::vector<std::unique_ptr<QRhiBuffer>> buffers;
+
+    // QTBUG-96619
+    static const int TEXTURE_COUNT = 3 * QRhiResourceUpdateBatchPrivate::TEXTURE_OPS_STATIC_ALLOC;
+    static const int BUFFER_COUNT = 3 * QRhiResourceUpdateBatchPrivate::BUFFER_OPS_STATIC_ALLOC;
+
+    for (int i = 0; i < TEXTURE_COUNT; ++i) {
+        std::unique_ptr<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGBA8, image.size()));
+        QVERIFY(texture->create());
+        b->uploadTexture(texture.get(), image);
+        textures.push_back(std::move(texture));
+    }
+
+    for (int i = 0; i < BUFFER_COUNT; ++i) {
+        std::unique_ptr<QRhiBuffer> buffer(rhi->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, 256));
+        QVERIFY(buffer->create());
+        b->uploadStaticBuffer(buffer.get(), bufferData);
+        buffers.push_back(std::move(buffer));
+    }
+
+    submitResourceUpdates(rhi.data(), b);
 }
 
 static QShader loadShader(const char *name)

@@ -519,9 +519,6 @@ public:
     static QRhiResourceUpdateBatchPrivate *get(QRhiResourceUpdateBatch *b) { return b->d; }
 };
 
-Q_DECLARE_TYPEINFO(QRhiResourceUpdateBatchPrivate::BufferOp, Q_RELOCATABLE_TYPE);
-Q_DECLARE_TYPEINFO(QRhiResourceUpdateBatchPrivate::TextureOp, Q_RELOCATABLE_TYPE);
-
 template<typename T>
 struct QRhiBatchedBindings
 {
