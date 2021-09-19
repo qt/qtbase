@@ -548,7 +548,7 @@ void QLibraryPrivate::setLoadHints(QLibrary::LoadHints lh)
 QObject *QLibraryPrivate::pluginInstance()
 {
     // first, check if the instance is cached and hasn't been deleted
-    QObject *obj = (QMutexLocker(&mutex), inst.data());
+    QObject *obj = [&](){ QMutexLocker locker(&mutex); return inst.data(); }();
     if (obj)
         return obj;
 
