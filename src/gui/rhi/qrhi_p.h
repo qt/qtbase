@@ -284,8 +284,6 @@ private:
     friend Q_GUI_EXPORT QDebug operator<<(QDebug, const QRhiVertexInputLayout &);
 };
 
-Q_DECLARE_TYPEINFO(QRhiVertexInputLayout, Q_RELOCATABLE_TYPE);
-
 Q_GUI_EXPORT bool operator==(const QRhiVertexInputLayout &a, const QRhiVertexInputLayout &b) noexcept;
 Q_GUI_EXPORT bool operator!=(const QRhiVertexInputLayout &a, const QRhiVertexInputLayout &b) noexcept;
 Q_GUI_EXPORT size_t qHash(const QRhiVertexInputLayout &v, size_t seed = 0) noexcept;
@@ -526,8 +524,6 @@ private:
     QRhiTexture *m_depthTexture = nullptr;
 };
 
-Q_DECLARE_TYPEINFO(QRhiTextureRenderTargetDescription, Q_RELOCATABLE_TYPE);
-
 class Q_GUI_EXPORT QRhiTextureSubresourceUploadDescription
 {
 public:
@@ -608,8 +604,6 @@ public:
 private:
     QVarLengthArray<QRhiTextureUploadEntry, 16> m_entries;
 };
-
-Q_DECLARE_TYPEINFO(QRhiTextureUploadDescription, Q_RELOCATABLE_TYPE);
 
 class Q_GUI_EXPORT QRhiTextureCopyDescription
 {
@@ -1470,7 +1464,7 @@ struct Q_GUI_EXPORT QRhiReadbackResult
     QRhiTexture::Format format;
     QSize pixelSize;
     QByteArray data;
-}; // non-movable due to the std::function
+};
 
 struct Q_GUI_EXPORT QRhiBufferReadbackResult
 {
