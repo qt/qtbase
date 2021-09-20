@@ -2223,7 +2223,6 @@ properties of both types."
     endforeach()
 endfunction()
 
-# Disables the default unicode definitions for the target
 function(qt6_disable_unicode_defines target)
     set_target_properties(${target} PROPERTIES QT_NO_UNICODE_DEFINES TRUE)
 endfunction()
