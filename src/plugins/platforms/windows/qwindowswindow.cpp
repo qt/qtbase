@@ -2695,6 +2695,8 @@ static int getBorderWidth(const QPlatformScreen *screen)
 
 void QWindowsWindow::getSizeHints(MINMAXINFO *mmi) const
 {
+    QWindowsGeometryHint::applyToMinMaxInfo(window(), fullFrameMargins(), mmi);
+
     // This block fixes QTBUG-8361, QTBUG-4362: Frameless/title-less windows shouldn't cover the
     // taskbar when maximized
     if ((testFlag(WithinMaximize) || window()->windowStates().testFlag(Qt::WindowMinimized))
