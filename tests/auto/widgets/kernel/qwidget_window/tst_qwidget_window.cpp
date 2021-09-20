@@ -405,6 +405,7 @@ void tst_QWidget_window::tst_paintEventOnSecondShow()
 {
     PaintTestWidget w;
     w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
     w.hide();
 
     w.paintEventCount = 0;
