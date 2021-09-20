@@ -49,6 +49,7 @@
 #include <qjsondocument.h>
 #include <qmap.h>
 #include <qmutex.h>
+#include <qoperatingsystemversion.h>
 #include <qstringlist.h>
 
 #ifdef Q_OS_MAC
@@ -65,17 +66,22 @@
 
 QT_BEGIN_NAMESPACE
 
+// On Unix systema and on Windows with MinGW, we can mix and match debug and
+// release plugins without problems. (unless compiled in debug-and-release mode
+// - why?)
+static constexpr bool PluginMustMatchQtDebug =
+        QOperatingSystemVersion::currentType() == QOperatingSystemVersion::Windows
+#if defined(Q_CC_MINGW)
+        && QT_CONFIG(debug_and_release)
+#endif
+        ;
+
 #ifdef QT_NO_DEBUG
-#  define QLIBRARY_AS_DEBUG false
+static constexpr bool QtBuildIsDebug = false;
 #else
-#  define QLIBRARY_AS_DEBUG true
+static constexpr bool QtBuildIsDebug = true;
 #endif
 
-#if defined(Q_OS_UNIX) || (defined(Q_CC_MINGW) && !QT_CONFIG(debug_and_release))
-// We don't use separate debug and release libs on UNIX, so we want
-// to allow loading plugins, regardless of how they were built.
-#  define QT_NO_DEBUG_PLUGIN_CHECK
-#endif
 
 /*!
     \class QLibrary
@@ -783,12 +789,10 @@ void QLibraryPrivate::updatePluginState()
             .arg((qt_version&0xff00) >> 8)
             .arg(qt_version&0xff)
             .arg(debug ? QLatin1String("debug") : QLatin1String("release"));
-#ifndef QT_NO_DEBUG_PLUGIN_CHECK
-    } else if (debug != QLIBRARY_AS_DEBUG) {
+    } else if (PluginMustMatchQtDebug && debug != QtBuildIsDebug) {
         //don't issue a qWarning since we will hopefully find a non-debug? --Sam
         errorString = QLibrary::tr("The plugin '%1' uses incompatible Qt library."
                  " (Cannot mix debug and release libraries.)").arg(fileName);
-#endif
     } else {
         pluginState = IsAPlugin;
     }
