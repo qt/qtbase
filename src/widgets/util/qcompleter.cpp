@@ -1208,7 +1208,7 @@ QCompleter::CompletionMode QCompleter::completionMode() const
 
 /*!
     \property QCompleter::filterMode
-    \brief how the filtering is performed
+    \brief This property controls how filtering is performed.
     \since 5.2
 
     If filterMode is set to Qt::MatchStartsWith, only those entries that start
@@ -1216,11 +1216,14 @@ QCompleter::CompletionMode QCompleter::completionMode() const
     the entries that contain the typed characters, and Qt::MatchEndsWith the
     ones that end with the typed characters.
 
-    Currently, only these three modes are implemented. Setting filterMode to
-    any other Qt::MatchFlag will issue a warning, and no action will be
-    performed.
+    Setting filterMode to any other Qt::MatchFlag will issue a warning, and no
+    action will be performed. Because of this, the \c Qt::MatchCaseSensitive
+    flag has no effect. Use the \l caseSensitivity property to control case
+    sensitivity.
 
     The default mode is Qt::MatchStartsWith.
+
+    \sa caseSensitivity
 */
 
 void QCompleter::setFilterMode(Qt::MatchFlags filterMode)
@@ -1747,9 +1750,9 @@ void QCompleter::setMaxVisibleItems(int maxItems)
     \property QCompleter::caseSensitivity
     \brief the case sensitivity of the matching
 
-    The default is Qt::CaseSensitive.
+    The default value is \c Qt::CaseSensitive.
 
-    \sa completionColumn, completionRole, modelSorting
+    \sa completionColumn, completionRole, modelSorting, filterMode
 */
 void QCompleter::setCaseSensitivity(Qt::CaseSensitivity cs)
 {
