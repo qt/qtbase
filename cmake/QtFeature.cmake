@@ -269,7 +269,11 @@ endfunction()
 # Saves the final user value to QT_FEATURE_${feature}, after checking that the condition is met.
 macro(qt_feature_check_and_save_internal_value
         feature saved_user_value condition label conditionExpression)
-    set(result "${saved_user_value}")
+    if(${saved_user_value})
+        set(result ON)
+    else()
+        set(result OFF)
+    endif()
 
     if ((NOT condition) AND result)
         _qt_internal_dump_expression_values(conditionDump "${conditionExpression}")
