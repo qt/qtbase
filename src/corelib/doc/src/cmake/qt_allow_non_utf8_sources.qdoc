@@ -26,29 +26,29 @@
 ****************************************************************************/
 
 /*!
-\page qt_disable_unicode_defines.html
+\page qt_allow_non_utf8_sources.html
 \ingroup cmake-macros-qtcore
 
-\title qt_disable_unicode_defines
-\target qt6_disable_unicode_defines
+\title qt_allow_non_utf8_sources
+\target qt6_allow_non_utf8_sources
 
-\brief Prevents some unicode-related compiler definitions being set automatically on a target.
+\brief Prevent forcing source files to be treated as UTF-8 for Windows.
 
 \section1 Synopsis
 
 \badcode
-qt_disable_unicode_defines(target)
+qt_allow_non_utf8_sources(target)
 \endcode
 
-\versionlessCMakeCommandsNote qt6_disable_unicode_defines()
+\versionlessCMakeCommandsNote qt6_allow_non_utf8_sources()
 
 \section1 Description
 
-In Qt 6, the \c UNICODE and \c{_UNICODE} compiler definitions are set by
-default for targets that link against Qt modules. This is in line with the
-qmake behavior, but it is a change compared to the CMake API behavior in Qt 5.
-Calling \c{qt_disable_unicode_defines()} on a \c target prevents these compiler
-definitions from being automatically set.
+When building with some compilers for Windows, targets that link to a Qt library
+will use flags that force the compiler to treat its source files as UTF-8. This
+is currently implemented for Visual Studio and Intel compilers. You can disable
+this behavior on a per-target basis by calling \c{qt_allow_non_utf8_sources()}
+and passing the target as the argument.
 
-\sa {qt6_allow_non_utf8_sources}{qt_allow_non_utf8_sources()}
+\sa {qt6_disable_unicode_defines}{qt_disable_unicode_defines()}
 */
