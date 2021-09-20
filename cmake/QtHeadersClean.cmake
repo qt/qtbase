@@ -158,6 +158,21 @@ function(qt_internal_add_headers_clean_target
             # generator expression we provide, so pass it explicitly and hope for the best.
             list(APPEND framework_includes
                  "-iframework" "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}/${INSTALL_LIBDIR}")
+
+            # If additional package prefixes are provided, we consider they can contain frameworks
+            # as well.
+            foreach(prefix IN LISTS _qt_additional_packages_prefix_paths)
+                if(prefix MATCHES "/lib/cmake$") # Cut CMake files path
+                    string(APPEND prefix "/../..")
+                endif()
+                get_filename_component(prefix "${prefix}" ABSOLUTE)
+
+                set(libdir "${prefix}/${INSTALL_LIBDIR}")
+                if(EXISTS "${libdir}")
+                    list(APPEND framework_includes
+                        "-iframework" "${libdir}")
+                endif()
+            endforeach()
         endif()
 
         foreach(header ${hclean_headers})
