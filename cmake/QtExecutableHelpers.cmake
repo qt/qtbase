@@ -71,6 +71,14 @@ function(qt_internal_add_executable name)
     endif()
 
     qt_set_common_target_properties(${name})
+    if(ANDROID)
+        # The above call to qt_set_common_target_properties() sets the symbol
+        # visibility to hidden, but for Android, we need main() to not be hidden
+        # because it has to be loadable at runtime using dlopen().
+        set_property(TARGET ${name} PROPERTY C_VISIBILITY_PRESET default)
+        set_property(TARGET ${name} PROPERTY CXX_VISIBILITY_PRESET default)
+    endif()
+
     qt_autogen_tools_initial_setup(${name})
     qt_skip_warnings_are_errors_when_repo_unclean("${name}")
 
