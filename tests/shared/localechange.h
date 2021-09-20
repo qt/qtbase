@@ -64,7 +64,10 @@ namespace QTestLocaleChange {
             switch (category) {
 #define CASE(cat) case cat: return #cat
             CASE(LC_ALL); CASE(LC_NUMERIC); CASE(LC_TIME); CASE(LC_MONETARY);
-            CASE(LC_MESSAGES); CASE(LC_MEASUREMENT); CASE(LC_COLLATE);
+            CASE(LC_MESSAGES); CASE(LC_COLLATE);
+#ifndef Q_OS_QNX
+            CASE(LC_MEASUREMENT);
+#endif
 #undef CASE
             // Nothing in our code pays attention to any other LC_*
             default:
