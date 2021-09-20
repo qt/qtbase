@@ -2121,9 +2121,6 @@ if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
     endfunction()
 endif()
 
-# By default Qt6 forces usage of utf8 sources for consumers of Qt.
-# Users can opt out of utf8 sources by calling this function with the target name of their
-# application or library.
 function(qt6_allow_non_utf8_sources target)
     set_target_properties("${target}" PROPERTIES QT_NO_UTF8_SOURCE TRUE)
 endfunction()
