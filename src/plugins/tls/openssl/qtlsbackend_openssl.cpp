@@ -361,7 +361,6 @@ QTlsPrivate::X509Certificate *QTlsBackendOpenSSL::createCertificate() const
 
 namespace QTlsPrivate {
 
-// TLSTODO: remove.
 #if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
 QList<QByteArray> fetchSslCertificateData();
 #endif
@@ -392,6 +391,10 @@ QList<QSslCertificate> systemCaCertificates()
         }
         CertCloseStore(hSystemStore, 0);
     }
+#elif defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
+    const QList<QByteArray> certData = fetchSslCertificateData();
+    for (auto certDatum : certData)
+        systemCerts.append(QSslCertificate::fromData(certDatum, QSsl::Der));
 #elif defined(Q_OS_UNIX)
     QSet<QString> certFiles;
     QDir currentDir;
