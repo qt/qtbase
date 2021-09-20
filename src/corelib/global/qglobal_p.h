@@ -72,6 +72,11 @@ QT_BEGIN_NAMESPACE
 Q_CORE_EXPORT void qTzSet();
 Q_CORE_EXPORT time_t qMkTime(struct tm *when);
 
+#if !defined(Q_CC_MSVC)
+Q_NORETURN
+#endif
+Q_CORE_EXPORT void qAbort();
+
 QT_END_NAMESPACE
 
 #if !__has_builtin(__builtin_available)
