@@ -441,6 +441,8 @@ class QtBase(ConanFile):
     def package_id(self):
         # https://docs.conan.io/en/latest/creating_packages/define_abi_compatibility.html
         self.info.requires.package_revision_mode()
+        # Enable 'qt-conan-common' updates on client side with $conan install .. --update
+        self.info.python_requires.recipe_revision_mode()
 
         # Remove those configure(.bat) options which should not affect package_id.
         # These point to local file system paths and in order to re-use pre-built
