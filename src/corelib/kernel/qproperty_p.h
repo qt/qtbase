@@ -551,7 +551,7 @@ public:
         const bool inWrapper = inBindingWrapper(storage);
         if (bd && !inWrapper)
             notify(bd);
-        if constexpr (Signal != nullptr) {
+        if constexpr (!std::is_null_pointer_v<decltype(Signal)>) {
             if constexpr (SignalTakesValue::value)
                 (owner()->*Signal)(value());
             else
