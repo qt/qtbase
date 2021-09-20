@@ -27,60 +27,14 @@
 ****************************************************************************/
 
 #ifdef MOBILE
-#include <QtWidgets/qapplication.h>
-#include <QtWidgets/qmainwindow.h>
-#include <QtWidgets/qlabel.h>
-#include <QtCore/qmetaobject.h>
+#    include "mainwindow.h"
+#    include <QtWidgets/qapplication.h>
 #else
-#include <QtCore/qcoreapplication.h>
+#    include <QtCore/qcoreapplication.h>
 #endif
+
 #include <QtCore/qdebug.h>
 #include <QtNetwork/qnetworkinformation.h>
-
-#ifdef MOBILE
-template<typename QEnum>
-QString enumToString (const QEnum value)
-{
-  return QString::fromUtf8(QMetaEnum::fromType<QEnum>().valueToKey(int(value)));
-}
-
-class MainWindow : public QMainWindow
-{
-    Q_OBJECT
-public:
-    MainWindow() : QMainWindow(nullptr)
-    {
-        label = new QLabel(this);
-        label->setText("hello");
-        setCentralWidget(label);
-    }
-
-    void updateReachability(QNetworkInformation::Reachability newValue)
-    {
-        reachability = newValue;
-        updateText();
-    }
-
-    void updateCaptiveState(bool newValue)
-    {
-        captive = newValue;
-        updateText();
-    }
-
-private:
-    void updateText()
-    {
-        QString str =
-                QLatin1String("Reachability: %1\nBehind captive portal: %2")
-                        .arg(enumToString(reachability), QStringView(captive ? u"true" : u"false"));
-        label->setText(str);
-    }
-
-    QLabel *label;
-    QNetworkInformation::Reachability reachability;
-    bool captive;
-};
-#endif
 
 int main(int argc, char **argv)
 {
@@ -92,7 +46,8 @@ int main(int argc, char **argv)
     QCoreApplication app(argc, argv);
 #endif
 
-    if (!QNetworkInformation::load(QNetworkInformation::Feature::Reachability)) {
+    if (!QNetworkInformation::load(QNetworkInformation::Feature::Reachability
+                                   | QNetworkInformation::Feature::CaptivePortal)) {
         qWarning("Failed to load any backend");
         qDebug() << "Backends available:" << QNetworkInformation::availableBackends().join(", ");
         return -1;
@@ -104,18 +59,18 @@ int main(int argc, char **argv)
     QObject::connect(info, &QNetworkInformation::reachabilityChanged,
                      [&](QNetworkInformation::Reachability newStatus) {
                          qDebug() << "Updated:" << newStatus;
-#ifdef MOBILE
-                         window.updateReachability(newStatus);
-#endif
                      });
 
     QObject::connect(info, &QNetworkInformation::isBehindCaptivePortalChanged,
-                     [&](bool status) {
-                         qDebug() << "Updated, behind captive portal:" << status;
+                     [&](bool status) { qDebug() << "Updated, behind captive portal:" << status; });
+
 #ifdef MOBILE
-                         window.updateCaptiveState(status);
+    // Some extra connections to update the window if we're on mobile
+    QObject::connect(info, &QNetworkInformation::reachabilityChanged, &window,
+                     &MainWindow::updateReachability);
+    QObject::connect(info, &QNetworkInformation::isBehindCaptivePortalChanged, &window,
+                     &MainWindow::updateCaptiveState);
 #endif
-                     });
 
     qDebug() << "Initial reachability:" << info->reachability();
     qDebug() << "Behind captive portal:" << info->isBehindCaptivePortal();
@@ -123,6 +78,7 @@ int main(int argc, char **argv)
     return app.exec();
 }
 
+// Include the moc output of the MainWindow from here
 #ifdef MOBILE
-#include "tst_qnetworkinformation.moc"
+#    include "moc_mainwindow.cpp"
 #endif
