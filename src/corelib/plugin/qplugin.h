@@ -113,6 +113,25 @@ struct QPluginMetaData
     };
     static_assert(alignof(MagicHeader) == 1, "Alignment of header incorrect with this compiler");
 
+    struct ElfNoteHeader {
+        static constexpr quint32 NoteType = 0x74510001;
+        static constexpr char NoteName[] = "qt-project!";
+
+        // ELF note header
+        quint32 n_namesz = sizeof(name);
+        quint32 n_descsz;
+        quint32 n_type = NoteType;
+        char name[sizeof(NoteName)] = {};
+
+        // payload
+        alignas(void *)         // mandatory alignment as per ELF note requirements
+        Header header = {};
+        constexpr ElfNoteHeader(quint32 payloadSize) : n_descsz(sizeof(header) + payloadSize)
+        { QPluginMetaData::copy(name, NoteName); }
+    };
+    static_assert(alignof(ElfNoteHeader) == alignof(void*), "Alignment of header incorrect with this compiler");
+    static_assert((sizeof(ElfNoteHeader::name) % 4) == 0, "ELF note name length not a multiple of 4");
+
     const void *data;
     size_t size;
 };
@@ -155,6 +174,13 @@ void Q_CORE_EXPORT qRegisterStaticPluginFunction(QStaticPlugin staticPlugin);
 // Since Qt 6.3
 template <auto (&PluginMetaData)> class QPluginMetaDataV2
 {
+    struct ElfNotePayload : QPluginMetaData::ElfNoteHeader {
+        static constexpr size_t HeaderOffset = offsetof(QPluginMetaData::ElfNoteHeader, header);
+        quint8 payload[sizeof(PluginMetaData)] = {};
+        constexpr ElfNotePayload() : ElfNoteHeader(sizeof(PluginMetaData))
+        { QPluginMetaData::copy(payload, PluginMetaData); }
+    };
+
     struct RegularPayload : QPluginMetaData::MagicHeader {
         static constexpr size_t HeaderOffset = offsetof(QPluginMetaData::MagicHeader, header);
         quint8 payload[sizeof(PluginMetaData)] = {};
@@ -171,6 +197,9 @@ template <auto (&PluginMetaData)> class QPluginMetaDataV2
 #if defined(QT_STATICPLUGIN)
 #  define QT_PLUGIN_METADATAV2_SECTION
     using Payload = StaticPayload;
+#elif defined(Q_OF_ELF)
+#  define QT_PLUGIN_METADATAV2_SECTION      __attribute__((section(".note.qt.metadata"), used, aligned(alignof(void*))))
+    using Payload = ElfNotePayload;
 #else
 #  define QT_PLUGIN_METADATAV2_SECTION      QT_PLUGIN_METADATA_SECTION
     using Payload = RegularPayload;

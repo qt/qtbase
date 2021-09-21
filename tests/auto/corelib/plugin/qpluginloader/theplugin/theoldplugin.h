@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 Intel Corporation.
+** Copyright (C) 2021 Intel Corportaion.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -25,26 +25,22 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#ifndef THEOLDPLUGIN_H
+#define THEOLDPLUGIN_H
 
-#include <qplugin.h>
+#include <QObject>
+#include <QtPlugin>
+#include "plugininterface.h"
 
-// be careful when updating to V2, the header is different on ELF systems
-QT_PLUGIN_METADATA_SECTION
-static const char pluginMetaData[512] = {
-    'q', 'p', 'l', 'u', 'g', 'i', 'n', ' ',
-    't', 'e', 's', 't', 'f', 'i', 'l', 'e'
+class TheOldPlugin : public QObject, public PluginInterface
+{
+    Q_OBJECT
+    // Q_PLUGIN_METADATA intentionally missing
+    Q_INTERFACES(PluginInterface)
+
+public:
+    virtual QString pluginName() const override;
 };
 
-extern "C" {
+#endif // THEOLDPLUGIN_H
 
-const void *qt_plugin_query_metadata()
-{
-    return pluginMetaData;
-}
-
-Q_DECL_EXPORT void *qt_plugin_instance()
-{
-    return nullptr;
-}
-
-}

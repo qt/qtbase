@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 Intel Corporation.
+** Copyright (C) 2021 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtCore module of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:GPL-EXCEPT$
 ** Commercial License Usage
@@ -25,12 +25,56 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
-#include <QtCore/qplugin.h>
-
-#if QT_POINTER_SIZE == 8
-QT_PLUGIN_METADATA_SECTION const uintptr_t pluginSection = 0xc0ffeec0ffeeULL;
-#else
-QT_PLUGIN_METADATA_SECTION const uintptr_t pluginSection = 0xc0ffee;
+#ifndef QT_VERSION_MAJOR
+#  include <QtCore/qglobal.h>
 #endif
-QT_PLUGIN_METADATA_SECTION const char message[] = "QTMETADATA";
+
+extern "C" void *qt_plugin_instance()
+{
+    return nullptr;
+}
+
+#ifdef QT_DEBUG
+static constexpr bool IsDebug = true;
+#else
+static constexpr bool IsDebug = false;
+#endif
+
+#ifndef PLUGIN_VERSION
+#  define PLUGIN_VERSION    (QT_VERSION_MAJOR >= 7 ? 1 : 0)
+#endif
+#if PLUGIN_VERSION == 1
+#  define PLUGIN_HEADER     1, QT_VERSION_MAJOR, 0, IsDebug ? 0x80 : 0
+#else
+#  define PLUGIN_HEADER     0, QT_VERSION_MAJOR, 0, IsDebug
+#endif
+
+#if defined(__ELF__) && PLUGIN_VERSION >= 1
+__attribute__((section(".note.qt.metadata"), used, aligned(4)))
+static const struct {
+    unsigned n_namesz = sizeof(name);
+    unsigned n_descsz = sizeof(payload);
+    unsigned n_type = 0x74510001;
+    char name[12] = "qt-project!";
+    alignas(unsigned) unsigned char payload[2 + 4] = {
+        PLUGIN_HEADER,
+        0xbf,
+        0xff,
+    };
+} qtnotemetadata;
+#elif PLUGIN_VERSION >= 0
+#  ifdef _MSC_VER
+#    pragma section(".qtmetadata",read,shared)
+__declspec(allocate(".qtmetadata"))
+#  elif defined(__APPLE__)
+__attribute__ ((section ("__TEXT,qtmetadata"), used))
+#  else
+__attribute__ ((section(".qtmetadata"), used))
+#  endif
+static const unsigned char qtmetadata[] = {
+    'Q', 'T', 'M', 'E', 'T', 'A', 'D', 'A', 'T', 'A', ' ', '!',
+    PLUGIN_HEADER,
+    0xbf,
+    0xff,
+};
+#endif

@@ -33,7 +33,6 @@
 #include <qdir.h>
 #include <qendian.h>
 #include <qpluginloader.h>
-#include <qprocess.h>
 #include <qtemporaryfile.h>
 #include "theplugin/plugininterface.h"
 
@@ -101,9 +100,13 @@
 
 #  ifdef _LP64
 using ElfHeader = Elf64_Ehdr;
+using ElfPhdr = Elf64_Phdr;
+using ElfNhdr = Elf64_Nhdr;
 using ElfShdr = Elf64_Shdr;
 #  else
 using ElfHeader = Elf32_Ehdr;
+using ElfPhdr = Elf32_Phdr;
+using ElfNhdr = Elf32_Nhdr;
 using ElfShdr = Elf32_Shdr;
 #  endif
 
@@ -142,7 +145,10 @@ static std::unique_ptr<QTemporaryFile> patchElf(const QString &source, ElfPatche
         QVERIFY2(srcdata, qPrintable(srclib.errorString()));
 
         // copy our source plugin so we can modify it
-        tmplib.reset(new QTemporaryFile(QTest::currentDataTag() + QString(".XXXXXX" SUFFIX)));
+        const char *basename = QTest::currentDataTag();
+        if (!basename)
+            basename = QTest::currentTestFunction();
+        tmplib.reset(new QTemporaryFile(basename + QString(".XXXXXX" SUFFIX)));
         QVERIFY2(tmplib->open(), qPrintable(tmplib->errorString()));
 
         // sanity-check
@@ -196,12 +202,17 @@ private slots:
     void loadDebugObj();
     void loadCorruptElf_data();
     void loadCorruptElf();
+#  if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+    void loadCorruptElfOldPlugin_data();
+    void loadCorruptElfOldPlugin();
+#  endif
 #endif
     void loadMachO_data();
     void loadMachO();
     void relativePath();
     void absolutePath();
     void reloadPlugin();
+    void loadSectionTableStrippedElf();
     void preloadedPlugin_data();
     void preloadedPlugin();
     void staticPlugins();
@@ -294,29 +305,36 @@ void tst_QPluginLoader::errorString()
     }
 #endif
 
-    {
-    QPluginLoader loader( sys_qualifiedLibraryName("theplugin"));     //a plugin
+    static constexpr std::initializer_list<const char *> validplugins = {
+        "theplugin",
+#if defined(Q_OF_ELF) && QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+        "theoldplugin"
+#endif
+    };
+    for (const char *basename : validplugins) {
+        QPluginLoader loader( sys_qualifiedLibraryName(basename));     //a plugin
 
-    // Check metadata
-    const QJsonObject metaData = loader.metaData();
-    QCOMPARE(metaData.value("IID").toString(), QStringLiteral("org.qt-project.Qt.autotests.plugininterface"));
-    const QJsonObject kpluginObject = metaData.value("MetaData").toObject().value("KPlugin").toObject();
-    QCOMPARE(kpluginObject.value("Name[mr]").toString(), QString::fromUtf8("चौकट भूमिती"));
+        // Check metadata
+        const QJsonObject metaData = loader.metaData();
+        QVERIFY2(!metaData.isEmpty(), "No metadata from " + loader.fileName().toLocal8Bit());
+        QCOMPARE(metaData.value("IID").toString(), QStringLiteral("org.qt-project.Qt.autotests.plugininterface"));
+        const QJsonObject kpluginObject = metaData.value("MetaData").toObject().value("KPlugin").toObject();
+        QCOMPARE(kpluginObject.value("Name[mr]").toString(), QString::fromUtf8("चौकट भूमिती"));
 
-    // Load
-    QCOMPARE(loader.load(), true);
-    QCOMPARE(loader.errorString(), unknown);
+        // Load
+        QVERIFY2(loader.load(), qPrintable(loader.errorString()));
+        QCOMPARE(loader.errorString(), unknown);
 
-    QVERIFY(loader.instance() !=  static_cast<QObject*>(0));
-    QCOMPARE(loader.errorString(), unknown);
+        QVERIFY(loader.instance() !=  static_cast<QObject*>(0));
+        QCOMPARE(loader.errorString(), unknown);
 
-    // Make sure that plugin really works
-    PluginInterface* theplugin = qobject_cast<PluginInterface*>(loader.instance());
-    QString pluginName = theplugin->pluginName();
-    QCOMPARE(pluginName, QLatin1String("Plugin ok"));
+        // Make sure that plugin really works
+        PluginInterface* theplugin = qobject_cast<PluginInterface*>(loader.instance());
+        QString pluginName = theplugin->pluginName();
+        QCOMPARE(pluginName, QLatin1String("Plugin ok"));
 
-    QCOMPARE(loader.unload(), true);
-    QCOMPARE(loader.errorString(), unknown);
+        QCOMPARE(loader.unload(), true);
+        QCOMPARE(loader.errorString(), unknown);
     }
 }
 
@@ -381,16 +399,23 @@ void tst_QPluginLoader::loadDebugObj()
     QCOMPARE(lib1.load(), false);
 }
 
-void tst_QPluginLoader::loadCorruptElf_data()
+template <typename Lambda>
+static void newRow(const char *rowname, QString &&snippet, Lambda &&patcher)
 {
-#if !defined(QT_SHARED)
-    QSKIP("This test requires a shared build of Qt, as QPluginLoader::setFileName is a no-op in static builds");
-#endif
+    QTest::newRow(rowname)
+            << std::move(snippet) << ElfPatcher::fromLambda(std::forward<Lambda>(patcher));
+}
+
+static ElfPhdr *getProgramEntry(ElfHeader *h, int index)
+{
+    auto phdr = reinterpret_cast<ElfPhdr *>(h->e_phoff + reinterpret_cast<uchar *>(h));
+    return phdr + index;
+}
+
+static void loadCorruptElfCommonRows()
+{
     QTest::addColumn<QString>("snippet");
     QTest::addColumn<ElfPatcher>("patcher");
-    auto newRow = [](const char *rowname, QString &&snippet, auto patcher) {
-        QTest::newRow(rowname) << std::move(snippet) << ElfPatcher::fromLambda(patcher);
-    };
 
     using H = ElfHeader *;          // because I'm lazy
     newRow("not-elf", "invalid signature", [](H h) {
@@ -505,6 +530,195 @@ void tst_QPluginLoader::loadCorruptElf_data()
         ++h->e_version;
     });
 
+    newRow("program-entry-size-zero", "unexpected program header entry size", [](H h) {
+        h->e_phentsize = 0;
+    });
+    newRow("program-entry-small", "unexpected program header entry size", [](H h) {
+        h->e_phentsize = alignof(ElfPhdr);
+    });
+
+    newRow("program-table-starts-past-eof", "program header table extends past the end of the file",
+           [](H h, QFile *f) {
+        h->e_phoff = f->size();
+    });
+    newRow("program-table-ends-past-eof", "program header table extends past the end of the file",
+           [](H h, QFile *f) {
+        h->e_phoff = f->size() + 1- h->e_phentsize * h->e_phnum;
+    });
+
+    newRow("segment-starts-past-eof", "a program header entry extends past the end of the file",
+           [](H h, QFile *f) {
+        for (int i = 0; i < h->e_phnum; ++i) {
+            ElfPhdr *p = getProgramEntry(h, i);
+            if (p->p_type != PT_LOAD)
+                continue;
+            p->p_offset = f->size();
+            break;
+        }
+    });
+    newRow("segment-ends-past-eof", "a program header entry extends past the end of the file",
+           [](H h, QFile *f) {
+        for (int i = 0; i < h->e_phnum; ++i) {
+            ElfPhdr *p = getProgramEntry(h, i);
+            if (p->p_type != PT_LOAD)
+                continue;
+            p->p_filesz = f->size() + 1 - p->p_offset;
+            break;
+        }
+    });
+    newRow("segment-bounds-overflow", "a program header entry extends past the end of the file",
+           [](H h) {
+        for (int i = 0; i < h->e_phnum; ++i) {
+            ElfPhdr *p = getProgramEntry(h, i);
+            if (p->p_type != PT_LOAD)
+                continue;
+            p->p_filesz = ~size_t(0);    // -1
+            break;
+        }
+    });
+
+    newRow("no-code", "file has no code", [](H h) {
+        for (int i = 0; i < h->e_phnum; ++i) {
+            ElfPhdr *p = getProgramEntry(h, i);
+            if (p->p_type == PT_LOAD)
+                p->p_flags &= ~PF_X;
+        }
+    });
+}
+
+void tst_QPluginLoader::loadCorruptElf_data()
+{
+#if !defined(QT_SHARED)
+    QSKIP("This test requires a shared build of Qt, as QPluginLoader::setFileName is a no-op in static builds");
+#endif
+    loadCorruptElfCommonRows();
+    using H = ElfHeader *;          // because I'm lazy
+
+    // PT_NOTE tests
+    // general validity is tested in the common rows, for all segments
+
+    newRow("misaligned-note-segment", "note segment start is not properly aligned", [](H h) {
+        for (int i = 0; i < h->e_phnum; ++i) {
+            ElfPhdr *p = getProgramEntry(h, i);
+            if (p->p_type == PT_NOTE)
+                ++p->p_offset;
+        }
+    });
+
+    static const auto getFirstNote = [](void *header, ElfPhdr *phdr) {
+        return reinterpret_cast<ElfNhdr *>(static_cast<uchar *>(header) + phdr->p_offset);
+    };
+    static const auto getNextNote = [](void *header, ElfPhdr *phdr, ElfNhdr *n) {
+        // how far into the segment are we?
+        size_t offset = reinterpret_cast<uchar *>(n) - static_cast<uchar *>(header) - phdr->p_offset;
+
+        size_t delta = sizeof(*n) + n->n_namesz + phdr->p_align - 1;
+        delta &= -phdr->p_align;
+        delta += n->n_descsz + phdr->p_align - 1;
+        delta &= -phdr->p_align;
+
+        offset += delta;
+        if (offset < phdr->p_filesz)
+            n = reinterpret_cast<ElfNhdr *>(reinterpret_cast<uchar *>(n) + delta);
+        else
+            n = nullptr;
+        return n;
+    };
+
+    // all the intra-note errors cause the notes simply to be skipped
+    auto newNoteRow = [](const char *rowname, auto &&lambda) {
+        newRow(rowname, "is not a Qt plugin (metadata not found)", std::move(lambda));
+    };
+    newNoteRow("no-notes", [](H h) {
+        for (int i = 0; i < h->e_phnum; ++i) {
+            ElfPhdr *p = getProgramEntry(h, i);
+            if (p->p_type == PT_NOTE)
+                p->p_type = PT_NULL;
+        }
+    });
+
+    newNoteRow("note-larger-than-segment-nonqt", [](H h) {
+        for (int i = 0; i < h->e_phnum; ++i) {
+            ElfPhdr *p = getProgramEntry(h, i);
+            if (p->p_type != PT_NOTE)
+                continue;
+            ElfNhdr *n = getFirstNote(h, p);
+            n->n_descsz = p->p_filesz;
+            n->n_type = 0;          // ensure it's not the Qt note
+        }
+    });
+    newNoteRow("note-larger-than-segment-qt", [](H h) {
+        for (int i = 0; i < h->e_phnum; ++i) {
+            ElfPhdr *p = getProgramEntry(h, i);
+            if (p->p_type != PT_NOTE || p->p_align != alignof(QPluginMetaData::ElfNoteHeader))
+                continue;
+
+            // find the Qt metadata note
+            constexpr QPluginMetaData::ElfNoteHeader header(0);
+            ElfNhdr *n = getFirstNote(h, p);
+            for ( ; n; n = getNextNote(h, p, n)) {
+                if (n->n_type == header.n_type && n->n_namesz == header.n_namesz) {
+                    if (memcmp(n + 1, header.name, sizeof(header.name)) == 0)
+                        break;
+                }
+            }
+
+            if (!n)
+                break;
+            n->n_descsz = p->p_filesz;
+            return;
+        }
+        qWarning("Could not find the Qt metadata note in this file. Test will fail.");
+    });
+    newNoteRow("note-size-overflow1", [](H h) {
+        // due to limited range, this will not overflow on 64-bit
+        for (int i = 0; i < h->e_phnum; ++i) {
+            ElfPhdr *p = getProgramEntry(h, i);
+            if (p->p_type != PT_NOTE)
+                continue;
+            ElfNhdr *n = getFirstNote(h, p);
+            n->n_namesz = ~decltype(n->n_namesz)(0);
+        }
+    });
+    newNoteRow("note-size-overflow2", [](H h) {
+        // due to limited range, this will not overflow on 64-bit
+        for (int i = 0; i < h->e_phnum; ++i) {
+            ElfPhdr *p = getProgramEntry(h, i);
+            if (p->p_type != PT_NOTE)
+                continue;
+            ElfNhdr *n = getFirstNote(h, p);
+            n->n_namesz = ~decltype(n->n_namesz)(0) / 2;
+            n->n_descsz = ~decltype(n->n_descsz)(0) / 2;
+        }
+    });
+}
+
+static void loadCorruptElf_helper(const QString &origLibrary)
+{
+    QFETCH(QString, snippet);
+    QFETCH(ElfPatcher, patcher);
+
+    std::unique_ptr<QTemporaryFile> tmplib = patchElf(origLibrary, patcher);
+
+    QPluginLoader lib(tmplib->fileName());
+    QVERIFY(!lib.load());
+    QVERIFY2(lib.errorString().contains(snippet), qPrintable(lib.errorString()));
+}
+
+void tst_QPluginLoader::loadCorruptElf()
+{
+    loadCorruptElf_helper(sys_qualifiedLibraryName("theplugin"));
+}
+
+#  if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+void tst_QPluginLoader::loadCorruptElfOldPlugin_data()
+{
+#if !defined(QT_SHARED)
+    QSKIP("This test requires a shared build of Qt, as QPluginLoader::setFileName is a no-op in static builds");
+#endif
+    loadCorruptElfCommonRows();
+    using H = ElfHeader *;          // because I'm lazy
+
     newRow("section-entry-size-zero", "unexpected section entry size", [](H h) {
         h->e_shentsize = 0;
     });
@@ -514,7 +728,7 @@ void tst_QPluginLoader::loadCorruptElf_data()
     newRow("section-entry-misaligned", "unexpected section entry size", [](H h) {
         ++h->e_shentsize;
     });
-    newRow("no-sections", "is not a Qt plugin (.qtmetadata section not found)", [](H h){
+    newRow("no-sections", "is not a Qt plugin (metadata not found)", [](H h){
         h->e_shnum = h->e_shoff = h->e_shstrndx = 0;
     });
 
@@ -579,7 +793,7 @@ void tst_QPluginLoader::loadCorruptElf_data()
         section1->sh_name = shstrtab->sh_size;
     });
 
-    newRow("debug-symbols", ".qtmetadata section not found", [](H h) {
+    newRow("debug-symbols", "metadata not found", [](H h) {
         // attempt to make it look like extracted debug info
         for (int i = 1; i < h->e_shnum; ++i) {
             ElfShdr *s = getSection(h, i);
@@ -603,18 +817,12 @@ void tst_QPluginLoader::loadCorruptElf_data()
     });
 }
 
-void tst_QPluginLoader::loadCorruptElf()
+void tst_QPluginLoader::loadCorruptElfOldPlugin()
 {
-    QFETCH(QString, snippet);
-    QFETCH(ElfPatcher, patcher);
-
-    std::unique_ptr<QTemporaryFile> tmplib =
-            patchElf(sys_qualifiedLibraryName("theplugin"), patcher);
-
-    QPluginLoader lib(tmplib->fileName());
-    QVERIFY(!lib.load());
-    QVERIFY2(lib.errorString().contains(snippet), qPrintable(lib.errorString()));
+    // ### Qt7: don't forget to remove theoldplugin from the build
+    loadCorruptElf_helper(sys_qualifiedLibraryName("theoldplugin"));
 }
+#  endif // Qt 7
 #endif // __ELF__
 
 void tst_QPluginLoader::loadMachO_data()
@@ -750,6 +958,36 @@ void tst_QPluginLoader::reloadPlugin()
     QCOMPARE(instance2->pluginName(), QLatin1String("Plugin ok"));
 
     QVERIFY(loader.unload());
+}
+
+void tst_QPluginLoader::loadSectionTableStrippedElf()
+{
+#if !defined(QT_SHARED)
+    QSKIP("This test requires a shared build of Qt, as QPluginLoader::setFileName is a no-op in static builds");
+#elif !defined(__ELF__)
+    QSKIP("Test specific to the ELF file format");
+#else
+    ElfPatcher patcher { [](ElfHeader *header, QFile *f) {
+        // modify the header to make it look like the section table was stripped
+        header->e_shoff = header->e_shnum = header->e_shstrndx = 0;
+
+        // and append a bad header at the end
+        QPluginMetaData::MagicHeader badHeader = {};
+        --badHeader.header.qt_major_version;
+        f->seek(f->size());
+        f->write(reinterpret_cast<const char *>(&badHeader), sizeof(badHeader));
+    } };
+    std::unique_ptr<QTemporaryFile> tmplib =
+            patchElf(sys_qualifiedLibraryName("theplugin"), patcher);
+
+    // now attempt to load it
+    QPluginLoader loader(tmplib->fileName());
+    QVERIFY2(loader.load(), qPrintable(loader.errorString()));
+    PluginInterface *instance = qobject_cast<PluginInterface*>(loader.instance());
+    QVERIFY(instance);
+    QCOMPARE(instance->pluginName(), QLatin1String("Plugin ok"));
+    QVERIFY(loader.unload());
+#endif
 }
 
 void tst_QPluginLoader::preloadedPlugin_data()

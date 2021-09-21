@@ -52,6 +52,9 @@
 
 QT_BEGIN_NAMESPACE
 
+// ### Qt7: propagate the constant and eliminate dead code
+static constexpr bool ElfNotesAreMandatory = QT_VERSION >= QT_VERSION_CHECK(7,0,0);
+
 // Whether we include some extra validity checks
 // (checks to ensure we don't read out-of-bounds are always included)
 static constexpr bool IncludeValidityChecks = true;
@@ -64,6 +67,19 @@ static Q_LOGGING_CATEGORY(lcElfParser, "qt.core.plugin.elfparser")
 #  define qEDebug       qCDebug(lcElfParser) << reinterpret_cast<const char16_t *>(error.errMsg->constData()) << ':'
 #else
 #  define qEDebug       if (false) {} else QNoDebug()
+#endif
+
+#ifndef PT_GNU_EH_FRAME
+#  define PT_GNU_EH_FRAME   0x6474e550
+#endif
+#ifndef PT_GNU_STACK
+#  define PT_GNU_STACK      0x6474e551
+#endif
+#ifndef PT_GNU_RELRO
+#  define PT_GNU_RELRO      0x6474e552
+#endif
+#ifndef PT_GNU_PROPERTY
+#  define PT_GNU_PROPERTY   0x6474e553
 #endif
 
 QT_WARNING_PUSH
@@ -445,23 +461,65 @@ Q_DECL_UNUSED static QDebug &operator<<(QDebug &d, ElfSectionDebug s)
     return d;
 }
 
+struct ElfProgramDebug { const ElfHeaderCheck<>::TypeTraits::Phdr *phdr; };
+Q_DECL_UNUSED static QDebug &operator<<(QDebug &d, ElfProgramDebug p)
+{
+    QDebugStateSaver saved(d);
+    d << Qt::hex << Qt::showbase << "program";
+    switch (p.phdr->p_type) {
+    case PT_NULL:       d << "NULL"; break;
+    case PT_LOAD:       d << "LOAD"; break;
+    case PT_DYNAMIC:    d << "DYNAMIC"; break;
+    case PT_INTERP:     d << "INTERP"; break;
+    case PT_NOTE:       d << "NOTE"; break;
+    case PT_PHDR:       d << "PHDR"; break;
+    case PT_TLS:        d << "TLS"; break;
+    case PT_GNU_EH_FRAME:   d << "GNU_EH_FRAME"; break;
+    case PT_GNU_STACK:      d << "GNU_STACK"; break;
+    case PT_GNU_RELRO:      d << "GNU_RELRO"; break;
+    case PT_GNU_PROPERTY:   d << "GNU_PROPERTY"; break;
+    default:            d << "type" << p.phdr->p_type; break;
+    }
+
+    d << "offset" << p.phdr->p_offset
+      << "virtaddr" << p.phdr->p_vaddr
+      << "filesz" << p.phdr->p_filesz
+      << "memsz" << p.phdr->p_memsz
+      << "align" << p.phdr->p_align
+      << "flags";
+
+    d.nospace();
+    if (p.phdr->p_flags & PF_R)
+        d << 'R';
+    if (p.phdr->p_flags & PF_W)
+        d << 'W';
+    if (p.phdr->p_flags & PF_X)
+        d << 'X';
+
+    return d;
+}
+
 struct ErrorMaker
 {
     QString *errMsg;
     constexpr ErrorMaker(QString *errMsg) : errMsg(errMsg) {}
 
+
     Q_DECL_COLD_FUNCTION QLibraryScanResult operator()(QString &&text) const
     {
-        *errMsg = QLibrary::tr("'%1' is not a valid ELF object (%2)")
-                .arg(*errMsg, std::move(text));
+        *errMsg = QLibrary::tr("'%1' is not a valid ELF object (%2)").arg(*errMsg, std::move(text));
         return {};
     }
 
-    QLibraryScanResult notfound() const
+    Q_DECL_COLD_FUNCTION QLibraryScanResult notplugin(QString &&explanation) const
     {
-        *errMsg = QLibrary::tr("'%1' is not a Qt plugin (.qtmetadata section not found)")
-                .arg(*errMsg);
+        *errMsg = QLibrary::tr("'%1' is not a Qt plugin (%2)").arg(*errMsg, explanation);
         return {};
+    }
+
+    Q_DECL_COLD_FUNCTION QLibraryScanResult notfound() const
+    {
+        return notplugin(QLibrary::tr("metadata not found"));
     }
 };
 } // unnamed namespace
@@ -469,6 +527,135 @@ struct ErrorMaker
 QT_WARNING_POP
 
 using T = ElfHeaderCheck<>::TypeTraits;
+
+template <typename F>
+static bool scanProgramHeaders(QByteArrayView data, const ErrorMaker &error, F f)
+{
+    auto header = reinterpret_cast<const T::Ehdr *>(data.data());
+    Q_UNUSED(error);
+
+    auto phdr = reinterpret_cast<const T::Phdr *>(data.data() + header->e_phoff);
+    auto phdr_end = phdr + header->e_phnum;
+    for ( ; phdr != phdr_end; ++phdr) {
+        if (!f(phdr))
+            return false;
+    }
+    return true;
+}
+
+static bool preScanProgramHeaders(QByteArrayView data, const ErrorMaker &error)
+{
+    auto header = reinterpret_cast<const T::Ehdr *>(data.data());
+
+    // first, validate the extent of the full program header table
+    T::Word e_phnum = header->e_phnum;
+    T::Off offset = e_phnum * sizeof(T::Phdr);  // can't overflow due to size of T::Half
+    if (qAddOverflow(offset, header->e_phoff, &offset) || offset > size_t(data.size()))
+        return error(QLibrary::tr("program header table extends past the end of the file")), false;
+
+    // confirm validity
+    bool hasCode = false;
+    auto checker = [&](const T::Phdr *phdr) {
+        qEDebug << ElfProgramDebug{phdr};
+
+        if (T::Off end; qAddOverflow(phdr->p_offset, phdr->p_filesz, &end)
+                || end > size_t(data.size()))
+            return error(QLibrary::tr("a program header entry extends past the end of the file")), false;
+
+        // this is not a validity check, it's to exclude debug symbol files
+        if (phdr->p_type == PT_LOAD && phdr->p_filesz != 0 && (phdr->p_flags & PF_X))
+            hasCode = true;
+
+        // this probably applies to all segments, but we'll only apply it to notes
+        if (phdr->p_type == PT_NOTE && qPopulationCount(phdr->p_align) == 1
+                && phdr->p_offset & (phdr->p_align - 1)) {
+            return error(QLibrary::tr("a note segment start is not properly aligned "
+                                      "(offset 0x%1, alignment %2)")
+                         .arg(phdr->p_offset, 6, 16, QChar(u'0'))
+                         .arg(phdr->p_align)), false;
+        }
+
+        return true;
+    };
+    if (!scanProgramHeaders(data, error, checker))
+        return false;
+    if (!hasCode)
+        return error.notplugin(QLibrary::tr("file has no code")), false;
+    return true;
+}
+
+static QLibraryScanResult scanProgramHeadersForNotes(QByteArrayView data, const ErrorMaker &error)
+{
+    // minimum metadata payload is 2 bytes
+    constexpr size_t MinPayloadSize = sizeof(QPluginMetaData::Header) + 2;
+    constexpr qptrdiff MinNoteSize = sizeof(QPluginMetaData::ElfNoteHeader) + 2;
+    constexpr size_t NoteNameSize = sizeof(QPluginMetaData::ElfNoteHeader::name);
+    constexpr size_t NoteAlignment = alignof(QPluginMetaData::ElfNoteHeader);
+    constexpr qptrdiff PayloadStartDelta = offsetof(QPluginMetaData::ElfNoteHeader, header);
+    static_assert(MinNoteSize > PayloadStartDelta);
+    static_assert((PayloadStartDelta & (NoteAlignment - 1)) == 0);
+
+    QLibraryScanResult r = {};
+    auto noteFinder = [&](const T::Phdr *phdr) {
+        if (phdr->p_type != PT_NOTE || phdr->p_align != NoteAlignment)
+            return true;
+
+        // check for signed integer overflows, to avoid issues with the
+        // arithmetic below
+        if (qptrdiff(phdr->p_filesz) < 0) {
+            auto h = reinterpret_cast<const T::Ehdr *>(data.data());
+            auto segments = reinterpret_cast<const T::Phdr *>(data.data() + h->e_phoff);
+            qEDebug << "segment" << (phdr - segments) << "contains a note with size"
+                    << Qt::hex << Qt::showbase << phdr->p_filesz
+                    << "which is larger than half the virtual memory space";
+            return true;
+        }
+
+        // iterate over the notes in this segment
+        T::Off offset = phdr->p_offset;
+        const T::Off end_offset = offset + phdr->p_filesz;
+        while (qptrdiff(end_offset - offset) >= MinNoteSize) {
+            auto nhdr = reinterpret_cast<const T::Nhdr *>(data.data() + offset);
+            T::Word n_namesz = nhdr->n_namesz;
+            T::Word n_descsz = nhdr->n_descsz;
+            T::Word n_type = nhdr->n_type;
+
+            // overflow check: calculate where the next note will be, if it exists
+            T::Off next_offset = offset;
+            next_offset += sizeof(T::Nhdr);          // can't overflow (we checked above)
+            next_offset += NoteAlignment - 3;        // offset is aligned, this can't overflow
+            if (qAddOverflow<T::Off>(next_offset, n_namesz, &next_offset))
+                break;
+            next_offset &= -NoteAlignment;
+
+            next_offset += NoteAlignment - 3;        // offset is aligned, this can't overflow
+            if (qAddOverflow<T::Off>(next_offset, n_descsz, &next_offset))
+                break;
+            next_offset &= -NoteAlignment;
+            if (next_offset > end_offset)
+                break;
+
+            if (n_namesz == NoteNameSize && n_descsz >= MinPayloadSize
+                    && n_type == QPluginMetaData::ElfNoteHeader::NoteType
+                    && memcmp(nhdr + 1, QPluginMetaData::ElfNoteHeader::NoteName, NoteNameSize) == 0) {
+                // yes, it's our note
+                r.pos = offset + PayloadStartDelta;
+                r.length = nhdr->n_descsz;
+                return false;
+            }
+            offset = next_offset;
+        }
+        return true;
+    };
+    scanProgramHeaders(data, error, noteFinder);
+
+    if (!r.length)
+        return r;
+
+    qEDebug << "found Qt metadata in ELF note at"
+                << Qt::hex << Qt::showbase << r.pos << "size" << Qt::reset << r.length;
+    return r;
+}
 
 static QLibraryScanResult scanSections(QByteArrayView data, const ErrorMaker &error)
 {
@@ -555,27 +742,43 @@ QLibraryScanResult QElfParser::parse(QByteArrayView data, QString *errMsg)
     if (!ElfHeaderCheck<>::checkHeader(*header))
         return error(ElfHeaderCheck<>::explainCheckFailure(*header));
 
+    qEDebug << "contains" << header->e_phnum << "program headers of"
+            << header->e_phentsize << "bytes at offset" << header->e_phoff;
     qEDebug << "contains" << header->e_shnum << "sections of" << header->e_shentsize
             << "bytes at offset" << header->e_shoff
             << "; section header string table (shstrtab) is entry" << header->e_shstrndx;
 
     // some sanity checks
     if constexpr (IncludeValidityChecks) {
-        if (header->e_shentsize != sizeof(T::Shdr))
-        return error(QLibrary::tr("unexpected section entry size (%1)")
-                     .arg(header->e_shentsize));
-    }
-    if (header->e_shoff == 0 || header->e_shnum == 0) {
-        // this is still a valid ELF file but we don't have a section table
-        qEDebug << "no section table present, not able to find Qt metadata";
-        return error.notfound();
+        if (header->e_phentsize != sizeof(T::Phdr))
+            return error(QLibrary::tr("unexpected program header entry size (%1)")
+                         .arg(header->e_phentsize));
     }
 
-    if (header->e_shnum && header->e_shstrndx >= header->e_shnum)
-        return error(QLibrary::tr("e_shstrndx greater than the number of sections e_shnum (%1 >= %2)")
-                     .arg(header->e_shstrndx).arg(header->e_shnum));
+    if (!preScanProgramHeaders(data, error))
+        return {};
 
-    return scanSections(data, error);
+    if (QLibraryScanResult r = scanProgramHeadersForNotes(data, error); r.length)
+        return r;
+
+    if (!ElfNotesAreMandatory) {
+        if constexpr (IncludeValidityChecks) {
+            if (header->e_shentsize != sizeof(T::Shdr))
+                return error(QLibrary::tr("unexpected section entry size (%1)")
+                             .arg(header->e_shentsize));
+        }
+        if (header->e_shoff == 0 || header->e_shnum == 0) {
+            // this is still a valid ELF file but we don't have a section table
+            qEDebug << "no section table present, not able to find Qt metadata";
+            return error.notfound();
+        }
+
+        if (header->e_shnum && header->e_shstrndx >= header->e_shnum)
+            return error(QLibrary::tr("e_shstrndx greater than the number of sections e_shnum (%1 >= %2)")
+                         .arg(header->e_shstrndx).arg(header->e_shnum));
+        return scanSections(data, error);
+    }
+    return error.notfound();
 }
 
 QT_END_NAMESPACE
