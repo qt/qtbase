@@ -52,7 +52,7 @@ namespace QTestLocaleChange {
         const int m_category;
         const QByteArray m_prior;
         const bool m_didSet;
-#if !defined(QT_NO_SYSTEMLOCALE) && defined(Q_OS_UNIX) && !defined(Q_OS_INTEGRITY) \
+#if !defined(QT_NO_SYSTEMLOCALE) && defined(Q_OS_UNIX) \
     && (!defined(Q_OS_DARWIN) || defined(Q_OS_NACL))
 #define TRANSIENT_ENV
         // Unix system locale consults environment variables, so we need to set
@@ -65,7 +65,7 @@ namespace QTestLocaleChange {
 #define CASE(cat) case cat: return #cat
             CASE(LC_ALL); CASE(LC_NUMERIC); CASE(LC_TIME); CASE(LC_MONETARY);
             CASE(LC_MESSAGES); CASE(LC_COLLATE);
-#ifndef Q_OS_QNX
+#if !defined(Q_OS_QNX) && !defined(Q_OS_INTEGRITY)
             CASE(LC_MEASUREMENT);
 #endif
 #undef CASE
