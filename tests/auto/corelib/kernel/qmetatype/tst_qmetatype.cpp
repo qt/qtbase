@@ -130,7 +130,9 @@ static_assert(!QTypeTraits::has_operator_less_than_v<std::map<int, NoOperators>>
 
 // std::optional
 static_assert(QTypeTraits::has_operator_equal_v<std::optional<QString>>);
+static_assert(QTypeTraits::has_operator_less_than_v<std::optional<QString>>);
 static_assert(!QTypeTraits::has_operator_equal_v<std::optional<NoOperators>>);
+static_assert(!QTypeTraits::has_operator_less_than_v<std::optional<NoOperators>>);
 
 // nested types
 static_assert(QTypeTraits::has_operator_equal_v<Nested>);
