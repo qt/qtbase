@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtTest module of the Qt Toolkit.
@@ -197,7 +197,7 @@ namespace QTest
         if (press && qt_sendShortcutOverrideEvent(widget, a.timestamp(), code, modifier, text, repeat))
             return;
         if (!qApp->notify(widget, &a))
-            QTest::qWarn("Keyboard event not accepted by receiving widget");
+            qWarning("Keyboard event not accepted by receiving widget");
     }
 
     static void sendKeyEvent(KeyAction action, QWidget *widget, Qt::Key code,
