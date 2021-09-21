@@ -1,0 +1,86 @@
+/****************************************************************************
+**
+** Copyright (C) 2021 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file. Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: https://www.gnu.org/licenses/fdl-1.3.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+\page qt_add_plugin.html
+\ingroup cmake-macros-qtcore
+
+\title qt_add_plugin
+\target qt6_add_plugin
+
+\brief Creates a Qt plugin target.
+
+\section1 Synopsis
+
+\badcode
+qt_add_plugin(target
+              [SHARED | STATIC]
+              [CLASS_NAME class_name]
+              [OUTPUT_TARGETS variable_name]
+)
+\endcode
+
+\versionlessCMakeCommandsNote qt6_add_plugin()
+
+\section1 Description
+
+Qt plugin targets have additional requirements over and above an ordinary CMake
+library target. The \c{qt_add_plugin()} command adds the necessary handling to
+ensure these requirements are met. It should be called rather than the built-in
+CMake \c{add_library()} command when defining a Qt plugin target.
+
+By default, the plugin will be created as a \c STATIC library if Qt was built
+statically, or as a \c MODULE library otherwise. You can override this default
+by explicitly providing the \c STATIC or \c SHARED option.
+
+\note Non-static plugins are meant to be loaded dynamically at runtime, not
+linked to at build time. CMake differentiates between these two scenarios by
+providing the \c MODULE library type for dynamically loaded libraries, and
+the \c SHARED library type for libraries that may be linked to directly. This
+distinction is important for some toolchains (notably Visual Studio), due to
+the way symbol exports are handled. It may not be possible to link to
+\c MODULE libraries, and generating a \c SHARED library with no exported
+symbols can result in build-time errors. If the \c SHARED option is passed to
+\c{qt_add_plugin()}, it will therefore create a \c MODULE library rather than a
+\c SHARED library.
+
+Every Qt plugin has a class name. By default, this will be the same as the
+\c target, but it can be overridden with the \c CLASS_NAME option. The class
+name corresponds to the name of the C++ class that declares the metadata for
+the plugin. For static plugins, it is also the name passed to
+\l Q_IMPORT_PLUGIN, which imports the plugin into an application and ensures it
+is available at run time.
+
+If the plugin is built statically, \c{qt_add_plugin()} may define additional
+internal targets. These facilitate automatic importing of the plugin for any
+executable or shared library that links to the plugin. If the project installs
+the plugin and intends to make it available for other projects to link to, the
+project should also install these internal targets. The names of these targets
+can be obtained by providing the \c OUTPUT_TARGETS option, followed by the name
+of a variable in which to return the target list.
+
+*/

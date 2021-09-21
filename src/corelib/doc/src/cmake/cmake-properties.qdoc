@@ -102,11 +102,6 @@ convention similar to Qt plugins, that is, \e {plugins/<plugin name>}.
 The plugins libraries should have the name format
 \e {libplugins_<type>_<name>_<abi>.so}. This will ensure that the correct name
 mangling is applied to the plugin library.
-\omit
-TODO: Not yet documented, API still under review - see QTBUG-88763
-See the \l{qt6_add_plugin}{qt_add_plugin()} command for the easiest way to achieve
-that.
-\endomit
 
 \sa{qt6_android_generate_deployment_settings}{qt_android_generate_deployment_settings()}
 */
