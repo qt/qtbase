@@ -1864,16 +1864,14 @@ macro(_qt_internal_get_add_plugin_keywords option_args single_args multi_args)
         # use it
         TYPE
 
-        PLUGIN_TYPE
+        PLUGIN_TYPE   # Internal use only, may be changed or removed
         CLASS_NAME
-        OUTPUT_NAME
+        OUTPUT_NAME   # Internal use only, may be changed or removed
         OUTPUT_TARGETS
     )
     set(${multi_args})
 endmacro()
 
-# This function is currently in Technical Preview.
-# It's signature and behavior might change.
 function(qt6_add_plugin target)
     _qt_internal_get_add_plugin_keywords(opt_args single_args multi_args)
 
