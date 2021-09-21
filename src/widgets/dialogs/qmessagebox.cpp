@@ -363,7 +363,7 @@ void QMessageBoxPrivate::updateSize()
     if (!q->isVisible())
         return;
 
-    const QSize screenSize = QGuiApplication::screenAt(QCursor::pos())->availableGeometry().size();
+    const QSize screenSize = q->screen()->availableGeometry().size();
     int hardLimit = qMin(screenSize.width() - 480, 1000); // can never get bigger than this
     // on small screens allows the messagebox be the same size as the screen
     if (screenSize.width() <= 1024)
