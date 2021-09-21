@@ -371,6 +371,20 @@ void QLoggingRegistry::unregisterCategory(QLoggingCategory *cat)
 }
 
 /*!
+    \since 6.3
+    \internal
+
+    Registers the environment variable \a environment as the control variable
+    for enabling debugging by default for category \a categoryName. The
+    category name must start with "qt."
+*/
+void QLoggingRegistry::registerEnvironmentOverrideForCategory(QByteArrayView categoryName,
+                                                              QByteArrayView environment)
+{
+    qtCategoryEnvironmentOverrides.insert(categoryName, environment);
+}
+
+/*!
     \internal
     Installs logging rules as specified in \a content.
  */
@@ -451,8 +465,16 @@ void QLoggingRegistry::defaultCategoryFilter(QLoggingCategory *cat)
     //   qt.debug=false
     if (const char *categoryName = cat->categoryName()) {
         // == "qt" or startsWith("qt.")
-        if (strcmp(categoryName, "qt") == 0 || strncmp(categoryName, "qt.", 3) == 0)
+        if (strcmp(categoryName, "qt") == 0) {
             debug = false;
+        } else if (strncmp(categoryName, "qt.", 3) == 0) {
+            // may be overridden
+            auto it = reg->qtCategoryEnvironmentOverrides.find(categoryName);
+            if (it == reg->qtCategoryEnvironmentOverrides.end())
+                debug = false;
+            else
+                debug = qEnvironmentVariableIntValue(it.value().data());
+        }
     }
 
     const auto categoryName = QLatin1String(cat->categoryName());

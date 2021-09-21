@@ -63,6 +63,16 @@ class tst_QLoggingRegistry;
 
 QT_BEGIN_NAMESPACE
 
+#define Q_LOGGING_CATEGORY_WITH_ENV_OVERRIDE(name, env, categoryName) \
+    const QLoggingCategory &name() \
+    { \
+        static constexpr char cname[] = categoryName;                               \
+        static_assert(cname[0] == 'q' && cname[1] == 't' && cname[2] == '.'         \
+                      && cname[4] != '\0', "Category name must start with 'qt.'");  \
+        static const QLoggingCategoryWithEnvironmentOverride category(cname, env);  \
+        return category;                                                            \
+    }
+
 class Q_AUTOTEST_EXPORT QLoggingRule
 {
 public:
@@ -118,6 +128,11 @@ public:
     void registerCategory(QLoggingCategory *category, QtMsgType enableForLevel);
     void unregisterCategory(QLoggingCategory *category);
 
+#ifndef QT_BUILD_INTERNAL
+    Q_CORE_EXPORT   // always export from QtCore
+#endif
+    void registerEnvironmentOverrideForCategory(QByteArrayView categoryName, QByteArrayView environment);
+
     void setApiRules(const QString &content);
 
     QLoggingCategory::CategoryFilter
@@ -146,8 +161,26 @@ private:
     QList<QLoggingRule> ruleSets[NumRuleSets];
     QHash<QLoggingCategory *, QtMsgType> categories;
     QLoggingCategory::CategoryFilter categoryFilter;
+    QMap<QByteArrayView, QByteArrayView> qtCategoryEnvironmentOverrides;
 
     friend class ::tst_QLoggingRegistry;
+};
+
+class QLoggingCategoryWithEnvironmentOverride : public QLoggingCategory
+{
+public:
+    QLoggingCategoryWithEnvironmentOverride(const char *category, const char *env)
+        : QLoggingCategory(registerOverride(category, env), QtInfoMsg)
+    {}
+
+private:
+    static const char *registerOverride(QByteArrayView categoryName, QByteArrayView environment)
+    {
+        QLoggingRegistry *c = QLoggingRegistry::instance();
+        if (c)
+            c->registerEnvironmentOverrideForCategory(categoryName, environment);
+        return categoryName.data();
+    }
 };
 
 QT_END_NAMESPACE
