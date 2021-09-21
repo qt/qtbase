@@ -311,7 +311,10 @@ namespace QTest
     Q_TESTLIB_EXPORT void qSkip(const char *message, const char *file, int line);
     Q_TESTLIB_EXPORT bool qExpectFail(const char *dataIndex, const char *comment, TestFailMode mode,
                            const char *file, int line);
+#if QT_DEPRECATED_SINCE(6, 3)
+    QT_DEPRECATED_VERSION_X_6_3("Use qWarning() instead")
     Q_TESTLIB_EXPORT void qWarn(const char *message, const char *file = nullptr, int line = 0);
+#endif
     Q_TESTLIB_EXPORT void ignoreMessage(QtMsgType type, const char *message);
 #if QT_CONFIG(regularexpression)
     Q_TESTLIB_EXPORT void ignoreMessage(QtMsgType type, const QRegularExpression &messagePattern);
@@ -573,18 +576,7 @@ namespace QTest
 
 #undef QTEST_COMPARE_DECL
 
-#if QT_DEPRECATED_SINCE(6, 2)
-namespace QTestPrivate {
-QT_DEPRECATED_VERSION_X_6_2("Use qWarning() instead")
-Q_DECL_UNUSED static inline void qWarnMacro(const char *message, const char *file = nullptr, int line = 0)
-{
-    QTest::qWarn(message, file, line);
-}
-}
-#endif
-
-#define QWARN(msg) \
-    QTestPrivate::qWarnMacro(static_cast<const char *>(msg), __FILE__, __LINE__)
+#define QWARN(msg) QTest::qWarn(static_cast<const char *>(msg), __FILE__, __LINE__)
 
 QT_END_NAMESPACE
 

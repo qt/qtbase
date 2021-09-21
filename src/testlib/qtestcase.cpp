@@ -2064,12 +2064,16 @@ bool QTest::qExpectFail(const char *dataIndex, const char *comment,
     return QTestResult::expectFail(dataIndex, qstrdup(comment), mode, file, line);
 }
 
-/*! \internal
+#if QT_DEPRECATED_SINCE(6, 3)
+/*!
+  \internal
+  \deprecated [6.3] Use qWarning() instead
  */
 void QTest::qWarn(const char *message, const char *file, int line)
 {
     QTestLog::warn(message, file, line);
 }
+#endif
 
 /*!
     Ignores messages created by qDebug(), qInfo() or qWarning(). If the \a message
@@ -2315,7 +2319,7 @@ QString QTest::qFindTestData(const QString& base, const char *file, int line, co
 
 
     if (found.isEmpty()) {
-        QTest::qWarn(qPrintable(
+        QTestLog::warn(qPrintable(
             QString::fromLatin1("testdata %1 could not be located!").arg(base)),
             file, line);
     } else if (QTestLog::verboseLevel() >= 1) {
