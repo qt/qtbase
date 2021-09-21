@@ -447,13 +447,14 @@ namespace QtPrivate {
     void Q_CORE_EXPORT initBindingStatusThreadId();
 }
 
-template<typename Class, typename T, auto Offset, auto Setter, auto Signal=nullptr>
+template<typename Class, typename T, auto Offset, auto Setter, auto Signal = nullptr,
+         auto Getter = nullptr>
 class QObjectCompatProperty : public QPropertyData<T>
 {
     template<typename Property, typename>
     friend class QtPrivate::QBindableInterfaceForProperty;
 
-    using ThisType = QObjectCompatProperty<Class, T, Offset, Setter, Signal>;
+    using ThisType = QObjectCompatProperty<Class, T, Offset, Setter, Signal, Getter>;
     using SignalTakesValue = std::is_invocable<decltype(Signal), Class, T>;
     Class *owner()
     {
@@ -484,6 +485,14 @@ class QObjectCompatProperty : public QPropertyData<T>
     {
         return storage->bindingStatus->currentCompatProperty
             && QtPrivate::isPropertyInBindingWrapper(this);
+    }
+
+    inline static T getPropertyValue(const QUntypedPropertyData *d) {
+        auto prop = static_cast<const ThisType *>(d);
+        if constexpr (std::is_null_pointer_v<decltype(Getter)>)
+            return prop->value();
+        else
+            return (prop->owner()->*Getter)();
     }
 
 public:
@@ -596,7 +605,7 @@ public:
         }
         if constexpr (!std::is_null_pointer_v<decltype(Signal)>) {
             if constexpr (SignalTakesValue::value)
-                (owner()->*Signal)(value());
+                (owner()->*Signal)(getPropertyValue(this));
             else
                 (owner()->*Signal)();
         }
@@ -650,15 +659,16 @@ private:
 };
 
 namespace QtPrivate {
-template<typename Class, typename Ty, auto Offset, auto Setter, auto Signal>
-class QBindableInterfaceForProperty<QObjectCompatProperty<Class, Ty, Offset, Setter, Signal>, std::void_t<Class>>
+template<typename Class, typename Ty, auto Offset, auto Setter, auto Signal, auto Getter>
+class QBindableInterfaceForProperty<
+        QObjectCompatProperty<Class, Ty, Offset, Setter, Signal, Getter>, std::void_t<Class>>
 {
-    using Property = QObjectCompatProperty<Class, Ty, Offset, Setter, Signal>;
+    using Property = QObjectCompatProperty<Class, Ty, Offset, Setter, Signal, Getter>;
     using T = typename Property::value_type;
 public:
     static constexpr QBindableInterface iface = {
         [](const QUntypedPropertyData *d, void *value) -> void
-        { *static_cast<T*>(value) = static_cast<const Property *>(d)->value(); },
+        { *static_cast<T*>(value) = Property::getPropertyValue(d); },
         [](QUntypedPropertyData *d, const void *value) -> void
         {
             (static_cast<Property *>(d)->owner()->*Setter)(*static_cast<const T*>(value));
@@ -668,7 +678,7 @@ public:
         [](QUntypedPropertyData *d, const QUntypedPropertyBinding &binding) -> QUntypedPropertyBinding
         { return static_cast<Property *>(d)->setBinding(static_cast<const QPropertyBinding<T> &>(binding)); },
         [](const QUntypedPropertyData *d, const QPropertyBindingSourceLocation &location) -> QUntypedPropertyBinding
-        { return Qt::makePropertyBinding([d]() -> T { return static_cast<const Property *>(d)->value(); }, location); },
+        { return Qt::makePropertyBinding([d]() -> T { return Property::getPropertyValue(d); }, location); },
         [](const QUntypedPropertyData *d, QPropertyObserver *observer) -> void
         { observer->setSource(static_cast<const Property *>(d)->bindingData()); },
         []() { return QMetaType::fromType<T>(); }
@@ -716,6 +726,16 @@ public:
     QObjectCompatProperty<Class, Type, Class::_qt_property_##name##_offset, setter, signal> name = \
             QObjectCompatProperty<Class, Type, Class::_qt_property_##name##_offset, setter,        \
                                   signal>(value);
+
+#define QT_OBJECT_COMPAT_PROPERTY_WITH_ARGS_7(Class, Type, name, setter, signal, getter, value) \
+    static constexpr size_t _qt_property_##name##_offset() { \
+        QT_WARNING_PUSH QT_WARNING_DISABLE_INVALID_OFFSETOF \
+        return offsetof(Class, name); \
+        QT_WARNING_POP \
+    } \
+    QObjectCompatProperty<Class, Type, Class::_qt_property_##name##_offset, setter, signal, getter>\
+        name = QObjectCompatProperty<Class, Type, Class::_qt_property_##name##_offset, setter,     \
+                                     signal, getter>(value);
 
 #define Q_OBJECT_COMPAT_PROPERTY_WITH_ARGS(...) \
     QT_WARNING_PUSH QT_WARNING_DISABLE_INVALID_OFFSETOF \

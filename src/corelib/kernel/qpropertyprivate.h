@@ -61,7 +61,7 @@ QT_BEGIN_NAMESPACE
 
 class QBindingStorage;
 
-template<typename Class, typename T, auto Offset, auto Setter, auto Signal>
+template<typename Class, typename T, auto Offset, auto Setter, auto Signal, auto Getter>
 class QObjectCompatProperty;
 
 namespace QtPrivate {
@@ -263,7 +263,7 @@ class Q_CORE_EXPORT QPropertyBindingData
     friend class QT_PREPEND_NAMESPACE(QQmlPropertyBinding);
     friend struct QT_PREPEND_NAMESPACE(QPropertyDelayedNotifications);
 
-    template<typename Class, typename T, auto Offset, auto Setter, auto Signal>
+    template<typename Class, typename T, auto Offset, auto Setter, auto Signal, auto Getter>
     friend class QT_PREPEND_NAMESPACE(QObjectCompatProperty);
 
     Q_DISABLE_COPY(QPropertyBindingData)
