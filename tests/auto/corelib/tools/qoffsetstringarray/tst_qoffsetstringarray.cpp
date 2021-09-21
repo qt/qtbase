@@ -90,19 +90,17 @@ constexpr const auto messagesBigOffsets = qOffsetStringArray(
 
 void tst_QOffsetStringArray::init()
 {
-    static_assert(messages.sizeString == 51, "message.sizeString");
-    static_assert(messages.sizeOffsets == 6, "message.sizeOffsets");
-    static_assert(std::is_same<decltype(messages)::Type, quint8>::value, "messages::Type != quint8");
+    static_assert(messages.m_string.size() == 51);
+    static_assert(messages.m_offsets.size() == 6);
+    static_assert(std::is_same_v<decltype(messages.m_offsets)::value_type, quint8>);
 
-    static_assert(messages257.sizeOffsets == 257, "messages257.sizeOffsets");
-    static_assert(messages257.sizeString == 260, "messages257.sizeString");
-    static_assert(std::is_same<decltype(messages257)::Type, quint16>::value,
-                  "messages257::Type != quint16");
+    static_assert(messages257.m_offsets.size() == 257);
+    static_assert(messages257.m_string.size() == 260);
+    static_assert(std::is_same_v<decltype(messages257.m_offsets)::value_type, quint16>);
 
-    static_assert(messagesBigOffsets.sizeOffsets == 4, "messagesBigOffsets.sizeOffsets");
-    static_assert(messagesBigOffsets.sizeString == 364, "messagesBigOffsets.sizeString");
-    static_assert(std::is_same<decltype(messagesBigOffsets)::Type, quint16>::value,
-                  "messagesBigOffsets::Type != quint16");
+    static_assert(messagesBigOffsets.m_offsets.size() == 4);
+    static_assert(messagesBigOffsets.m_string.size() == 364);
+    static_assert(std::is_same_v<decltype(messagesBigOffsets.m_offsets)::value_type, quint16>);
 }
 
 void tst_QOffsetStringArray::access()
