@@ -339,10 +339,11 @@ bool QLocalSocket::canReadLine() const
 void QLocalSocket::close()
 {
     Q_D(QLocalSocket);
+
+    QIODevice::close();
     d->tcpSocket->close();
     d->serverName.clear();
     d->fullServerName.clear();
-    QIODevice::close();
 }
 
 bool QLocalSocket::waitForBytesWritten(int msecs)

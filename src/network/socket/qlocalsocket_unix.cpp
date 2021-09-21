@@ -521,6 +521,8 @@ bool QLocalSocket::canReadLine() const
 void QLocalSocket::close()
 {
     Q_D(QLocalSocket);
+
+    QIODevice::close();
     d->unixSocket.close();
     d->cancelDelayedConnect();
     if (d->connectingSocket != -1)
@@ -530,7 +532,6 @@ void QLocalSocket::close()
     d->connectingOpenMode = { };
     d->serverName.clear();
     d->fullServerName.clear();
-    QIODevice::close();
 }
 
 bool QLocalSocket::waitForBytesWritten(int msecs)
