@@ -102,11 +102,11 @@ public: \
 
 
 #define QT_DECLARE_CORE_MODULE_TYPES_ITER(TypeName, TypeId, Name) \
-    QT_ASSIGN_TYPE_TO_MODULE(Name, QModulesPrivate::Core);
+    QT_ASSIGN_TYPE_TO_MODULE(Name, QModulesPrivate::Core)
 #define QT_DECLARE_GUI_MODULE_TYPES_ITER(TypeName, TypeId, Name) \
-    QT_ASSIGN_TYPE_TO_MODULE(Name, QModulesPrivate::Gui);
+    QT_ASSIGN_TYPE_TO_MODULE(Name, QModulesPrivate::Gui)
 #define QT_DECLARE_WIDGETS_MODULE_TYPES_ITER(TypeName, TypeId, Name) \
-    QT_ASSIGN_TYPE_TO_MODULE(Name, QModulesPrivate::Widgets);
+    QT_ASSIGN_TYPE_TO_MODULE(Name, QModulesPrivate::Widgets)
 
 QT_WARNING_PUSH
 #if defined(Q_CC_CLANG) && Q_CC_CLANG >= 900
@@ -152,7 +152,7 @@ public:
     static constexpr auto makePair(int from, int to) -> quint64
     {
         return (quint64(from) << 32) + quint64(to);
-    };
+    }
 
     virtual const QtPrivate::QMetaTypeInterface *interfaceForType(int) const = 0;
     virtual bool convert(const void *, int, void *, int) const { return false; }
