@@ -1370,12 +1370,22 @@ void tst_QLocalSocket::delayedDisconnect()
     QVERIFY(server.waitForNewConnection(3000));
     QLocalSocket *serverSocket = server.nextPendingConnection();
     QVERIFY(serverSocket);
+    connect(serverSocket, &QLocalSocket::aboutToClose, [serverSocket]() {
+        QVERIFY(serverSocket->isOpen());
+        QVERIFY(serverSocket->getChar(nullptr));
+    });
+
     QVERIFY(socket.putChar(0));
     socket.disconnectFromServer();
     QCOMPARE(socket.state(), QLocalSocket::ClosingState);
     QVERIFY(socket.waitForDisconnected(3000));
     QCOMPARE(socket.state(), QLocalSocket::UnconnectedState);
     QVERIFY(socket.isOpen());
+
+    QVERIFY(serverSocket->waitForReadyRead(3000));
+    serverSocket->close();
+    QCOMPARE(serverSocket->state(), QLocalSocket::UnconnectedState);
+    QVERIFY(!serverSocket->isOpen());
 }
 
 void tst_QLocalSocket::removeServer()
