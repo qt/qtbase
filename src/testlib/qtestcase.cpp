@@ -1217,7 +1217,6 @@ bool TestMethods::invokeTest(int index, const char *data, WatchDog *watchDog) co
     QTestResult::finishedCurrentTestFunction();
     QTestResult::setSkipCurrentTest(false);
     QTestResult::setBlacklistCurrentTest(false);
-    QTestResult::setCurrentTestData(nullptr);
 
     return true;
 }
