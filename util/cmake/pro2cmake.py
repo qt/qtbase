@@ -241,15 +241,40 @@ def is_top_level_repo_examples_project(project_file_path: str = "") -> bool:
 
 
 def is_example_project(project_file_path: str = "") -> bool:
-    qmake_or_cmake_conf_path = find_qmake_or_cmake_conf(project_file_path)
-    qmake_or_cmake_conf_dir_path = os.path.dirname(qmake_or_cmake_conf_path)
+    # If there's a .qmake.conf or .cmake.conf file in the parent
+    # directories of the given project path, it is likely that the
+    # project is an internal Qt project that uses private Qt CMake
+    # API.
+    found_qt_repo_version = False
+    qmake_conf = find_qmake_conf(project_file_path)
+    if qmake_conf:
+        repo_version = parse_qt_repo_module_version_from_qmake_conf(qmake_conf)
+        if repo_version:
+            found_qt_repo_version = True
 
-    project_relative_path = os.path.relpath(project_file_path, qmake_or_cmake_conf_dir_path)
+    cmake_conf = find_cmake_conf(project_file_path)
+    if cmake_conf:
+        repo_version = parse_qt_repo_module_version_from_cmake_conf(cmake_conf)
+        if repo_version:
+            found_qt_repo_version = True
+
+    # If we haven't found a conf file, we assume this is an example
+    # project and not a project under a qt source repository.
+    if not found_qt_repo_version:
+        return True
+
     # If the project file is found in a subdir called 'examples'
     # relative to the repo source dir, then it must be an example, but
     # some examples contain 3rdparty libraries that do not need to be
     # built as examples.
-    return project_relative_path.startswith("examples") and "3rdparty" not in project_relative_path
+    qmake_or_cmake_conf_path = find_qmake_or_cmake_conf(project_file_path)
+    qmake_or_cmake_conf_dir_path = os.path.dirname(qmake_or_cmake_conf_path)
+    project_relative_path = os.path.relpath(project_file_path, qmake_or_cmake_conf_dir_path)
+
+    is_example_under_repo_sources = (
+        project_relative_path.startswith("examples") and "3rdparty" not in project_relative_path
+    )
+    return is_example_under_repo_sources
 
 
 def is_config_test_project(project_file_path: str = "") -> bool:
@@ -328,6 +353,20 @@ def find_qmake_or_cmake_conf(project_file_path: str = "") -> str:
         return qmake_conf
     cmake_conf = find_cmake_conf(project_file_path)
     return cmake_conf
+
+
+def parse_qt_repo_module_version_from_qmake_conf(qmake_conf_path: str = "") -> str:
+    with open(qmake_conf_path) as f:
+        file_contents = f.read()
+        m = re.search(fr"MODULE_VERSION\s*=\s*([0-9.]+)", file_contents)
+    return m.group(1) if m else ""
+
+
+def parse_qt_repo_module_version_from_cmake_conf(cmake_conf_path: str = "") -> str:
+    with open(cmake_conf_path) as f:
+        file_contents = f.read()
+        m = re.search(fr'set\(QT_REPO_MODULE_VERSION\s*"([0-9.]+)"\)', file_contents)
+    return m.group(1) if m else ""
 
 
 def set_up_cmake_api_calls():
