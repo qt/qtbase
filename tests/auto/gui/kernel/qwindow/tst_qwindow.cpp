@@ -89,6 +89,10 @@ private slots:
     void qobject_castOnDestruction();
     void touchToMouseTranslationByPopup();
     void stateChangeSignal();
+#ifndef QT_NO_CURSOR
+    void enterLeaveOnWindowShowHide_data();
+    void enterLeaveOnWindowShowHide();
+#endif
 
 private:
     QPoint m_availableTopLeft;
@@ -2875,6 +2879,84 @@ void tst_QWindow::stateChangeSignal()
     ++signalCount;
     CHECK_SIGNAL(Qt::WindowMinimized);
 }
+
+#ifndef QT_NO_CURSOR
+void tst_QWindow::enterLeaveOnWindowShowHide_data()
+{
+    QTest::addColumn<Qt::WindowType>("windowType");
+    QTest::addRow("dialog") << Qt::Dialog;
+    QTest::addRow("popup") << Qt::Popup;
+}
+
+/*!
+    Verify that we get enter and leave events if the window under the mouse
+    opens and closes a modal dialog or popup. QWindow might get multiple
+    events in a row, as the various QPA plugins need to use different techniques
+    to synthesize events if the native platform doesn't provide them for us.
+*/
+void tst_QWindow::enterLeaveOnWindowShowHide()
+{
+    QFETCH(Qt::WindowType, windowType);
+
+    class Window : public QWindow
+    {
+    public:
+        int numEnterEvents = 0;
+        int numLeaveEvents = 0;
+        QPoint enterPosition;
+    protected:
+        bool event(QEvent *e) override
+        {
+            switch (e->type()) {
+            case QEvent::Enter:
+                ++numEnterEvents;
+                enterPosition = static_cast<QEnterEvent*>(e)->position().toPoint();
+                break;
+            case QEvent::Leave:
+                ++numLeaveEvents;
+                break;
+            default:
+                break;
+            }
+            return QWindow::event(e);
+        }
+    };
+
+    int expectedEnter = 0;
+    int expectedLeave = 0;
+
+    Window window;
+    const QRect screenGeometry = window.screen()->availableGeometry();
+    const QPoint cursorPos = screenGeometry.topLeft() + QPoint(50, 50);
+    window.setGeometry(QRect(cursorPos - QPoint(50, 50), screenGeometry.size() / 4));
+    QCursor::setPos(cursorPos);
+
+    if (!QTest::qWaitFor([&]{ return window.geometry().contains(QCursor::pos()); }))
+        QSKIP("We can't move the cursor");
+
+    window.show();
+    window.requestActivate();
+    QVERIFY(QTest::qWaitForWindowActive(&window));
+
+    ++expectedEnter;
+    QTRY_COMPARE_WITH_TIMEOUT(window.numEnterEvents, expectedEnter, 250);
+    QCOMPARE(window.enterPosition, window.mapFromGlobal(QCursor::pos()));
+
+    QWindow secondary;
+    secondary.setFlag(windowType);
+    secondary.setModality(Qt::WindowModal);
+    secondary.setTransientParent(&window);
+    secondary.setPosition(cursorPos + QPoint(50, 50));
+    secondary.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&secondary));
+    ++expectedLeave;
+    QTRY_VERIFY(window.numLeaveEvents >= expectedLeave);
+    secondary.close();
+    ++expectedEnter;
+    QTRY_VERIFY(window.numEnterEvents >= expectedEnter);
+    QCOMPARE(window.enterPosition, window.mapFromGlobal(QCursor::pos()));
+}
+#endif
 
 #include <tst_qwindow.moc>
 QTEST_MAIN(tst_QWindow)
