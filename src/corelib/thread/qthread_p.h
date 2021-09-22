@@ -166,8 +166,6 @@ public:
     uint stackSize;
     QThread::Priority priority;
 
-    static QThread *threadForId(int id);
-
 #ifdef Q_OS_UNIX
     QWaitCondition thread_done;
 
@@ -218,7 +216,6 @@ public:
     bool running = false;
 
     static void setCurrentThread(QThread *) { }
-    static QThread *threadForId(int) { return QThread::currentThread(); }
     static QAbstractEventDispatcher *createEventDispatcher(QThreadData *data);
 
     void ref() {}
