@@ -147,8 +147,7 @@ QT_BEGIN_NAMESPACE
 
     \list
         \li On Windows, the returned value is a
-        \l{https://docs.microsoft.com/en-us/windows/win32/winsock/socket-handles-2}
-        {Winsock 2 Socket Handle}.
+        \l{Winsock 2 Socket Handle}.
 
         \li On INTEGRITY, the returned value is the
         QTcpSocket socket descriptor and the type is defined by

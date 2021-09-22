@@ -210,8 +210,7 @@ QBindable<QLocalServer::SocketOptions> QLocalServer::bindableSocketOptions()
     The type of the descriptor depends on the platform:
     \list
         \li On Windows, the returned value is a
-        \l{https://msdn.microsoft.com/en-us/library/windows/desktop/ms740522(v=vs.85).aspx}
-        {Winsock 2 Socket Handle}.
+        \l{Winsock 2 Socket Handle}.
 
         \li On INTEGRITY, the returned value is the
         QTcpServer socket descriptor and the type is defined by
