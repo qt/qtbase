@@ -161,8 +161,7 @@ QAbstractItemModel *QAbstractProxyModel::sourceModel() const
 QBindable<QAbstractItemModel *> QAbstractProxyModel::bindableSourceModel()
 {
     Q_D(QAbstractProxyModel);
-    return QBindable<QAbstractItemModel *>(QAbstractProxyModelBindable(
-            &d->model, &QtPrivate::QBindableInterfaceForSourceModel::iface));
+    return QBindable<QAbstractItemModel *>(&d->model);
 }
 
 /*!
