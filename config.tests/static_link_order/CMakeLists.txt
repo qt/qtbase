@@ -7,7 +7,7 @@
 # staticlib2.cpp.o.
 #
 # For now it's only applicable for ld-like linkers. 'lld' has no such issue.
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.16)
 
 project(static_link_order_test LANGUAGES CXX)
 

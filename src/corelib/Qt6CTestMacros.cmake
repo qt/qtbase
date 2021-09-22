@@ -372,7 +372,7 @@ list(APPEND CMAKE_PREFIX_PATH \"${CMAKE_PREFIX_PATH}\")
 
   file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/failbuild/${_dir}/CMakeLists.txt"
     "
-      cmake_minimum_required(VERSION 3.14)
+      cmake_minimum_required(VERSION 3.16)
       project(${_dir})
 
       try_compile(Result \${CMAKE_CURRENT_BINARY_DIR}/${_dir}
@@ -446,7 +446,7 @@ function(_qt_internal_test_module_includes)
 
   file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/module_includes/CMakeLists.txt"
     "
-      cmake_minimum_required(VERSION 3.14)
+      cmake_minimum_required(VERSION 3.16)
       project(module_includes)
 
       ${packages_string}
