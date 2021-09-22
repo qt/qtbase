@@ -56,7 +56,7 @@ QT_BEGIN_NAMESPACE
     \brief Windows native menu bar
 
     \list
-    \li \l{https://msdn.microsoft.com/de-de/library/windows/desktop/ms647553(v=vs.85).aspx#_win32_Menu_Creation_Functions},
+    \li \l{https://docs.microsoft.com/en-us/windows/win32/menurc/about-menus},
          \e{About Menus}
     \endlist
 

@@ -213,8 +213,8 @@
 */
 
 /*!
-    \externalpage http://msdn.microsoft.com/en-us/directx/default.aspx
-    \title Direct X SDK
+    \externalpage https://docs.microsoft.com/en-us/windows/win32/winsock/socket-handles-2
+    \title Winsock 2 Socket Handle
 */
 
 /*!
