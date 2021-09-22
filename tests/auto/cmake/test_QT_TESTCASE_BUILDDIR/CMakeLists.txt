@@ -1,6 +1,6 @@
 # The test is simply testing that manual specification of QT_TESTCASE_BUILDDIR works,
 # despite the weird paths.
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.16)
 
 project(test_qt_testcase_builddir)
 

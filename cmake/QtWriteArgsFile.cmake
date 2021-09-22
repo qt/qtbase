@@ -8,7 +8,7 @@
 # SKIP_ARGS: Number of arguments to skip from the front of the arguments list.
 # IGNORE_ARGS: List of arguments to be ignored, i.e. that are not written.
 
-cmake_minimum_required(VERSION 3.3)
+cmake_minimum_required(VERSION 3.16)
 
 # Read arguments from IN_FILE and separate them.
 file(READ "${IN_FILE}" raw_args)
