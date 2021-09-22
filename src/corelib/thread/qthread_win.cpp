@@ -316,7 +316,12 @@ unsigned int __stdcall QT_ENSURE_STACK_ALIGNED_FOR_SSE QThreadPrivate::start(voi
 
 #if !defined(QT_NO_DEBUG) && defined(Q_CC_MSVC)
     // sets the name of the current thread.
-    QByteArray objectName = thr->objectName().toLocal8Bit();
+
+    // avoid interacting with the binding system while thread is
+    // not properly running yet
+    auto priv = QObjectPrivate::get(thr);
+    QByteArray objectName = (priv->extraData ? priv->extraData->objectName.valueBypassingBindings()
+                                         : QString()).toLocal8Bit();
     qt_set_thread_name(HANDLE(-1),
                        objectName.isEmpty() ?
                        thr->metaObject()->className() : objectName.constData());
