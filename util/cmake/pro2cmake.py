@@ -202,48 +202,49 @@ def _parse_commandline():
 
 
 def get_top_level_repo_project_path(project_file_path: str = "") -> str:
-    qmake_conf_path = find_qmake_conf(project_file_path)
-    qmake_conf_dir_path = os.path.dirname(qmake_conf_path)
-    return qmake_conf_dir_path
+    qmake_or_cmake_conf_path = find_qmake_or_cmake_conf(project_file_path)
+    qmake_or_cmake_conf_dir_path = os.path.dirname(qmake_or_cmake_conf_path)
+    return qmake_or_cmake_conf_dir_path
 
 
 def is_top_level_repo_project(project_file_path: str = "") -> bool:
-    qmake_conf_path = find_qmake_conf(project_file_path)
-    qmake_conf_dir_path = os.path.dirname(qmake_conf_path)
+    qmake_or_cmake_conf_path = find_qmake_or_cmake_conf(project_file_path)
+    qmake_or_cmake_conf_dir_path = os.path.dirname(qmake_or_cmake_conf_path)
     project_dir_path = os.path.dirname(project_file_path)
-    return qmake_conf_dir_path == project_dir_path
+    return qmake_or_cmake_conf_dir_path == project_dir_path
 
 
 def is_top_level_repo_tests_project(project_file_path: str = "") -> bool:
-    qmake_conf_path = find_qmake_conf(project_file_path)
-    qmake_conf_dir_path = os.path.dirname(qmake_conf_path)
+    qmake_or_cmake_conf_path = find_qmake_or_cmake_conf(project_file_path)
+    qmake_or_cmake_conf_dir_path = os.path.dirname(qmake_or_cmake_conf_path)
     project_dir_path = os.path.dirname(project_file_path)
     project_dir_name = os.path.basename(project_dir_path)
     maybe_same_level_dir_path = os.path.join(project_dir_path, "..")
     normalized_maybe_same_level_dir_path = os.path.normpath(maybe_same_level_dir_path)
     return (
-        qmake_conf_dir_path == normalized_maybe_same_level_dir_path and project_dir_name == "tests"
+        qmake_or_cmake_conf_dir_path == normalized_maybe_same_level_dir_path
+        and project_dir_name == "tests"
     )
 
 
 def is_top_level_repo_examples_project(project_file_path: str = "") -> bool:
-    qmake_conf_path = find_qmake_conf(project_file_path)
-    qmake_conf_dir_path = os.path.dirname(qmake_conf_path)
+    qmake_or_cmake_conf_path = find_qmake_or_cmake_conf(project_file_path)
+    qmake_or_cmake_conf_dir_path = os.path.dirname(qmake_or_cmake_conf_path)
     project_dir_path = os.path.dirname(project_file_path)
     project_dir_name = os.path.basename(project_dir_path)
     maybe_same_level_dir_path = os.path.join(project_dir_path, "..")
     normalized_maybe_same_level_dir_path = os.path.normpath(maybe_same_level_dir_path)
     return (
-        qmake_conf_dir_path == normalized_maybe_same_level_dir_path
+        qmake_or_cmake_conf_dir_path == normalized_maybe_same_level_dir_path
         and project_dir_name == "examples"
     )
 
 
 def is_example_project(project_file_path: str = "") -> bool:
-    qmake_conf_path = find_qmake_conf(project_file_path)
-    qmake_conf_dir_path = os.path.dirname(qmake_conf_path)
+    qmake_or_cmake_conf_path = find_qmake_or_cmake_conf(project_file_path)
+    qmake_or_cmake_conf_dir_path = os.path.dirname(qmake_or_cmake_conf_path)
 
-    project_relative_path = os.path.relpath(project_file_path, qmake_conf_dir_path)
+    project_relative_path = os.path.relpath(project_file_path, qmake_or_cmake_conf_dir_path)
     # If the project file is found in a subdir called 'examples'
     # relative to the repo source dir, then it must be an example, but
     # some examples contain 3rdparty libraries that do not need to be
@@ -252,52 +253,52 @@ def is_example_project(project_file_path: str = "") -> bool:
 
 
 def is_config_test_project(project_file_path: str = "") -> bool:
-    qmake_conf_path = find_qmake_conf(project_file_path)
-    qmake_conf_dir_path = os.path.dirname(qmake_conf_path)
-    dir_name_with_qmake_confg = os.path.basename(qmake_conf_dir_path)
+    qmake_or_cmake_conf_path = find_qmake_or_cmake_conf(project_file_path)
+    qmake_or_cmake_conf_dir_path = os.path.dirname(qmake_or_cmake_conf_path)
+    dir_name_with_qmake_or_cmake_conf = os.path.basename(qmake_or_cmake_conf_dir_path)
 
-    project_relative_path = os.path.relpath(project_file_path, qmake_conf_dir_path)
+    project_relative_path = os.path.relpath(project_file_path, qmake_or_cmake_conf_dir_path)
     # If the project file is found in a subdir called 'config.tests'
     # relative to the repo source dir, then it's probably a config test.
     # Also if the .qmake.conf is found within config.tests dir (like in qtbase)
     # then the project is probably a config .test
     return (
         project_relative_path.startswith("config.tests")
-        or dir_name_with_qmake_confg == "config.tests"
+        or dir_name_with_qmake_or_cmake_conf == "config.tests"
     )
 
 
 def is_benchmark_project(project_file_path: str = "") -> bool:
-    qmake_conf_path = find_qmake_conf(project_file_path)
-    qmake_conf_dir_path = os.path.dirname(qmake_conf_path)
+    qmake_or_cmake_conf_path = find_qmake_or_cmake_conf(project_file_path)
+    qmake_or_cmake_conf_dir_path = os.path.dirname(qmake_or_cmake_conf_path)
 
-    project_relative_path = os.path.relpath(project_file_path, qmake_conf_dir_path)
+    project_relative_path = os.path.relpath(project_file_path, qmake_or_cmake_conf_dir_path)
     # If the project file is found in a subdir called 'tests/benchmarks'
     # relative to the repo source dir, then it must be a benchmark
     return project_relative_path.startswith("tests/benchmarks")
 
 
 def is_manual_test_project(project_file_path: str = "") -> bool:
-    qmake_conf_path = find_qmake_conf(project_file_path)
-    qmake_conf_dir_path = os.path.dirname(qmake_conf_path)
+    qmake_or_cmake_conf_path = find_qmake_or_cmake_conf(project_file_path)
+    qmake_or_cmake_conf_dir_path = os.path.dirname(qmake_or_cmake_conf_path)
 
-    project_relative_path = os.path.relpath(project_file_path, qmake_conf_dir_path)
+    project_relative_path = os.path.relpath(project_file_path, qmake_or_cmake_conf_dir_path)
     # If the project file is found in a subdir called 'tests/manual'
     # relative to the repo source dir, then it must be a manual test
     return project_relative_path.startswith("tests/manual")
 
 
 @lru_cache(maxsize=None)
-def find_qmake_conf(project_file_path: str = "") -> str:
+def find_file_walking_parent_dirs(file_name: str, project_file_path: str = "") -> str:
+    assert file_name
     if not os.path.isabs(project_file_path):
         print(
-            f"Warning: could not find .qmake.conf file, given path is not an "
+            f"Warning: could not find {file_name} file, given path is not an "
             f"absolute path: {project_file_path}"
         )
         return ""
 
     cwd = os.path.dirname(project_file_path)
-    file_name = ".qmake.conf"
 
     while os.path.isdir(cwd):
         maybe_file = posixpath.join(cwd, file_name)
@@ -310,8 +311,23 @@ def find_qmake_conf(project_file_path: str = "") -> str:
                 # reached the top level directory, stop looking
                 break
 
-    print(f"Warning: could not find .qmake.conf file")
     return ""
+
+
+def find_qmake_conf(project_file_path: str = "") -> str:
+    return find_file_walking_parent_dirs(".qmake.conf", project_file_path)
+
+
+def find_cmake_conf(project_file_path: str = "") -> str:
+    return find_file_walking_parent_dirs(".cmake.conf", project_file_path)
+
+
+def find_qmake_or_cmake_conf(project_file_path: str = "") -> str:
+    qmake_conf = find_qmake_conf(project_file_path)
+    if qmake_conf:
+        return qmake_conf
+    cmake_conf = find_cmake_conf(project_file_path)
+    return cmake_conf
 
 
 def set_up_cmake_api_calls():
@@ -438,10 +454,10 @@ def process_qrc_file(
     # as the qtbase source path.
     qt_source_tree_literal = "${QT_SOURCE_TREE}"
     if qt_source_tree_literal in filepath:
-        qmake_conf = find_qmake_conf(project_file_path)
+        qmake_or_cmake_conf = find_qmake_or_cmake_conf(project_file_path)
 
-        if qmake_conf:
-            qt_source_tree = os.path.dirname(qmake_conf)
+        if qmake_or_cmake_conf:
+            qt_source_tree = os.path.dirname(qmake_or_cmake_conf)
             filepath = filepath.replace(qt_source_tree_literal, qt_source_tree)
         else:
             print(
@@ -1346,9 +1362,9 @@ class Scope(object):
             relative_path = posixpath.relpath(self.currentdir, self.basedir)
 
         if key == "QQC2_SOURCE_TREE":
-            qmake_conf_path = find_qmake_conf(os.path.abspath(self.currentdir))
-            qmake_conf_dir_path = os.path.dirname(qmake_conf_path)
-            project_relative_path = os.path.relpath(qmake_conf_dir_path, self.currentdir)
+            qmake_or_cmake_conf_path = find_qmake_or_cmake_conf(os.path.abspath(self.currentdir))
+            qmake_or_cmake_conf_dir_path = os.path.dirname(qmake_or_cmake_conf_path)
+            project_relative_path = os.path.relpath(qmake_or_cmake_conf_dir_path, self.currentdir)
             return ["${CMAKE_CURRENT_SOURCE_DIR}/" + project_relative_path]
 
         if key == "QT_ARCH":
@@ -4377,12 +4393,12 @@ def create_top_level_cmake_conf():
 
 
 def find_top_level_repo_project_file(project_file_path: str = "") -> Optional[str]:
-    qmake_conf_path = find_qmake_conf(project_file_path)
-    qmake_dir = os.path.dirname(qmake_conf_path)
+    qmake_or_cmake_conf_path = find_qmake_or_cmake_conf(project_file_path)
+    qmake_or_cmake_dir = os.path.dirname(qmake_or_cmake_conf_path)
 
     # Hope to a programming god that there's only one .pro file at the
     # top level directory of repository.
-    glob_result = glob.glob(os.path.join(qmake_dir, "*.pro"))
+    glob_result = glob.glob(os.path.join(qmake_or_cmake_dir, "*.pro"))
     if len(glob_result) > 0:
         return glob_result[0]
     return None
@@ -4627,10 +4643,10 @@ def cmake_project_has_skip_marker(project_file_path: str = "") -> bool:
 
 
 def should_convert_project(project_file_path: str = "", ignore_skip_marker: bool = False) -> bool:
-    qmake_conf_path = find_qmake_conf(project_file_path)
-    qmake_conf_dir_path = os.path.dirname(qmake_conf_path)
+    qmake_or_cmake_conf_path = find_qmake_or_cmake_conf(project_file_path)
+    qmake_or_cmake_conf_dir_path = os.path.dirname(qmake_or_cmake_conf_path)
 
-    project_relative_path = os.path.relpath(project_file_path, qmake_conf_dir_path)
+    project_relative_path = os.path.relpath(project_file_path, qmake_or_cmake_conf_dir_path)
 
     # Skip cmake auto tests, they should not be converted.
     if project_relative_path.startswith("tests/auto/cmake"):
