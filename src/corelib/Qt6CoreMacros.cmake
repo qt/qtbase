@@ -927,26 +927,6 @@ if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
 endif()
 
 # This function is currently in Technical Preview. It's signature may change or be removed entirely.
-
-# This function allows enabling or disabling finalizer modes for a specific target.
-# Currently, the only supported finalizer mode is for plugin importing in static Qt builds which
-# is called 'static_plugins'. You can enable / disable it by calling
-#
-#   qt6_set_finalizer_mode(${target} ENABLE MODES "static_plugins")
-#   qt6_set_finalizer_mode(${target} DISABLE MODES "static_plugins")
-#
-# When the "static_plugins" finalizer mode is enabled, all plugins initializer object libraries are
-# directly linked to the given ${target} (executable or shared library).
-# This prevents cycles between Qt provided static libraries and reduces link time, thanks to the
-# libraries not being repeated on the link line because they are not part of a cycle anymore.
-#
-# When the finalizer mode is disabled, each plugin initializer is propagated via usage requirements
-# of its associated module, which may cause cycles in the current build system implementation.
-#
-# The "static_plugins" finalizer mode is enabled by default if:
-#   - the project calls qt_finalize_target explicitly at the end of the project file or
-#   - the project uses qt_add_executable and a CMake version greater than or equal to 3.19
-#     (which will DEFER CALL qt_finalize_target)
 function(qt6_set_finalizer_mode target)
     cmake_parse_arguments(arg "ENABLE;DISABLE" "" "MODES" ${ARGN})
     if(NOT arg_ENABLE AND NOT arg_DISABLE)

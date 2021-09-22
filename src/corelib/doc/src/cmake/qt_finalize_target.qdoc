@@ -57,6 +57,8 @@ This command is ordinarily invoked as part of a call to
 place and when it might need to be called explicitly by a project is discussed
 in the documentation of those commands.
 
+\sa {qt6_set_finalizer_mode}{qt_set_finalizer_mode()}
+
 \section1 Executable Targets
 
 For executable targets, \c{qt_finalize_target()} implements the logic described
