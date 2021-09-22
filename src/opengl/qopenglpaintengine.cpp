@@ -1124,6 +1124,10 @@ void QOpenGL2PaintEngineExPrivate::fillStencilWithVertexArray(const float *data,
 
     funcs.glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE); // Disable color writes
     useSimpleShader();
+#ifndef QT_NO_DEBUG
+    if (ctx->format().stencilBufferSize() <= 0)
+        qWarning("OpenGL paint engine: attempted to use stencil test without requesting a stencil buffer.");
+#endif
     funcs.glEnable(GL_STENCIL_TEST); // For some reason, this has to happen _after_ the simple shader is use()'d
 
     if (mode == WindingFillMode) {
@@ -2346,6 +2350,10 @@ void QOpenGL2PaintEngineExPrivate::updateClipScissorTest()
 {
     Q_Q(QOpenGL2PaintEngineEx);
     if (q->state()->clipTestEnabled) {
+#ifndef QT_NO_DEBUG
+        if (ctx->format().stencilBufferSize() <= 0)
+            qWarning("OpenGL paint engine: attempted to use stencil test for clipping without requesting a stencil buffer.");
+#endif
         funcs.glEnable(GL_STENCIL_TEST);
         funcs.glStencilFunc(GL_LEQUAL, q->state()->currentClip, ~GL_STENCIL_HIGH_BIT);
     } else {
