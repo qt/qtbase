@@ -167,8 +167,11 @@ enum AwaitStyle
     ProcessMainThreadEvents = 2
 };
 
-template <typename T>
-static inline HRESULT _await_impl(const Microsoft::WRL::ComPtr<T> &asyncOp, AwaitStyle awaitStyle, uint timeout)
+using EarlyExitConditionFunction = std::function<bool(void)>;
+
+template<typename T>
+static inline HRESULT _await_impl(const Microsoft::WRL::ComPtr<T> &asyncOp, AwaitStyle awaitStyle,
+                                  uint timeout, EarlyExitConditionFunction func)
 {
     Microsoft::WRL::ComPtr<IAsyncInfo> asyncInfo;
     HRESULT hr = asyncOp.As(&asyncInfo);
@@ -183,6 +186,8 @@ static inline HRESULT _await_impl(const Microsoft::WRL::ComPtr<T> &asyncOp, Awai
     case ProcessMainThreadEvents:
         while (SUCCEEDED(hr = asyncInfo->get_Status(&status)) && status == AsyncStatus::Started) {
             QCoreApplication::processEvents();
+            if (func && func())
+                return E_ABORT;
             if (timeout && t.hasExpired(timeout))
                 return ERROR_TIMEOUT;
         }
@@ -191,6 +196,8 @@ static inline HRESULT _await_impl(const Microsoft::WRL::ComPtr<T> &asyncOp, Awai
         if (QAbstractEventDispatcher *dispatcher = QThread::currentThread()->eventDispatcher()) {
             while (SUCCEEDED(hr = asyncInfo->get_Status(&status)) && status == AsyncStatus::Started) {
                 dispatcher->processEvents(QEventLoop::AllEvents);
+                if (func && func())
+                    return E_ABORT;
                 if (timeout && t.hasExpired(timeout))
                     return ERROR_TIMEOUT;
             }
@@ -221,20 +228,24 @@ static inline HRESULT _await_impl(const Microsoft::WRL::ComPtr<T> &asyncOp, Awai
     return hr;
 }
 
-template <typename T>
-static inline HRESULT await(const Microsoft::WRL::ComPtr<T> &asyncOp, AwaitStyle awaitStyle = YieldThread, uint timeout = 0)
+template<typename T>
+static inline HRESULT await(const Microsoft::WRL::ComPtr<T> &asyncOp,
+                            AwaitStyle awaitStyle = YieldThread, uint timeout = 0,
+                            EarlyExitConditionFunction func = nullptr)
 {
-    HRESULT hr = _await_impl(asyncOp, awaitStyle, timeout);
+    HRESULT hr = _await_impl(asyncOp, awaitStyle, timeout, func);
     if (FAILED(hr))
         return hr;
 
     return asyncOp->GetResults();
 }
 
-template <typename T, typename U>
-static inline HRESULT await(const Microsoft::WRL::ComPtr<T> &asyncOp, U *results, AwaitStyle awaitStyle = YieldThread, uint timeout = 0)
+template<typename T, typename U>
+static inline HRESULT await(const Microsoft::WRL::ComPtr<T> &asyncOp, U *results,
+                            AwaitStyle awaitStyle = YieldThread, uint timeout = 0,
+                            EarlyExitConditionFunction func = nullptr)
 {
-    HRESULT hr = _await_impl(asyncOp, awaitStyle, timeout);
+    HRESULT hr = _await_impl(asyncOp, awaitStyle, timeout, func);
     if (FAILED(hr))
         return hr;
 
