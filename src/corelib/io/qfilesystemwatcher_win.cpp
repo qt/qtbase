@@ -430,8 +430,9 @@ QStringList QWindowsFileSystemWatcherEngine::addPaths(const QStringList &paths,
                     FindCloseChangeNotification(hit.value().handle);
                     thread->handles[index] = hit.value().handle = fileHandle;
                     hit.value().flags = flags;
-                    thread->pathInfoForHandle.insert(fileHandle, pit.value());
+                    auto value = std::move(*pit);
                     thread->pathInfoForHandle.erase(pit);
+                    thread->pathInfoForHandle.insert(fileHandle, std::move(value));
                 }
             }
             // In addition, check on flags for sufficient notification attributes
