@@ -106,6 +106,30 @@ private:
     Q_DECL_UNUSED_MEMBER bool placeholder[4]; // reserved for future use
 };
 
+template <QtMsgType Which> struct QLoggingCategoryMacroHolder
+{
+    const QLoggingCategory &category;
+    bool control;
+    QLoggingCategoryMacroHolder(const QLoggingCategory &cat)
+        : category(cat)
+    {
+        // same as:
+        //  control = cat.isEnabled(Which);
+        // but without an out-of-line call
+        if constexpr (Which == QtDebugMsg) {
+            control = cat.isDebugEnabled();
+        } else if constexpr (Which == QtInfoMsg) {
+            control = cat.isInfoEnabled();
+        } else if constexpr (Which == QtWarningMsg) {
+            control = cat.isWarningEnabled();
+        } else {
+            control = cat.isCriticalEnabled();
+        }
+    }
+    operator const char *() const { return category.categoryName(); }
+    operator bool() const { return Q_UNLIKELY(control); }
+};
+
 #define Q_DECLARE_LOGGING_CATEGORY(name) \
     extern const QLoggingCategory &name();
 
@@ -116,33 +140,30 @@ private:
         return category; \
     }
 
+
+#define QT_MESSAGE_LOGGER_COMMON(category, level) \
+    for (QLoggingCategoryMacroHolder<level> qt_category(category()); qt_category; qt_category.control = false) \
+        QMessageLogger(QT_MESSAGELOG_FILE, QT_MESSAGELOG_LINE, QT_MESSAGELOG_FUNC, qt_category)
+
 #if !defined(QT_NO_DEBUG_OUTPUT)
-#  define qCDebug(category, ...) \
-    for (bool qt_category_enabled = category().isDebugEnabled(); qt_category_enabled; qt_category_enabled = false) \
-        QMessageLogger(QT_MESSAGELOG_FILE, QT_MESSAGELOG_LINE, QT_MESSAGELOG_FUNC, category().categoryName()).debug(__VA_ARGS__)
+#  define qCDebug(category, ...) QT_MESSAGE_LOGGER_COMMON(category, QtDebugMsg).debug(__VA_ARGS__)
 #else
 #  define qCDebug(category, ...) QT_NO_QDEBUG_MACRO()
 #endif
 
 #if !defined(QT_NO_INFO_OUTPUT)
-#  define qCInfo(category, ...) \
-    for (bool qt_category_enabled = category().isInfoEnabled(); qt_category_enabled; qt_category_enabled = false) \
-        QMessageLogger(QT_MESSAGELOG_FILE, QT_MESSAGELOG_LINE, QT_MESSAGELOG_FUNC, category().categoryName()).info(__VA_ARGS__)
+#  define qCInfo(category, ...) QT_MESSAGE_LOGGER_COMMON(category, QtInfoMsg).info(__VA_ARGS__)
 #else
 #  define qCInfo(category, ...) QT_NO_QDEBUG_MACRO()
 #endif
 
 #if !defined(QT_NO_WARNING_OUTPUT)
-#  define qCWarning(category, ...) \
-    for (bool qt_category_enabled = category().isWarningEnabled(); qt_category_enabled; qt_category_enabled = false) \
-        QMessageLogger(QT_MESSAGELOG_FILE, QT_MESSAGELOG_LINE, QT_MESSAGELOG_FUNC, category().categoryName()).warning(__VA_ARGS__)
+#  define qCWarning(category, ...) QT_MESSAGE_LOGGER_COMMON(category, QtWarningMsg).warning(__VA_ARGS__)
 #else
 #  define qCWarning(category, ...) QT_NO_QDEBUG_MACRO()
 #endif
 
-#define qCCritical(category, ...) \
-    for (bool qt_category_enabled = category().isCriticalEnabled(); qt_category_enabled; qt_category_enabled = false) \
-        QMessageLogger(QT_MESSAGELOG_FILE, QT_MESSAGELOG_LINE, QT_MESSAGELOG_FUNC, category().categoryName()).critical(__VA_ARGS__)
+#define qCCritical(category, ...) QT_MESSAGE_LOGGER_COMMON(category, QtCriticalMsg).critical(__VA_ARGS__)
 
 QT_END_NAMESPACE
 
