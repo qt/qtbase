@@ -982,26 +982,6 @@ if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
     endfunction()
 endif()
 
-# Extracts metatypes from a Qt target and generates a metatypes.json for it.
-#
-# By default we check whether AUTOMOC has been enabled and we extract the information from the
-# target's AUTOMOC supporting files.
-#
-# Should you not wish to use AUTOMOC you need to pass in all the generated json files via the
-# MANUAL_MOC_JSON_FILES parameter. The latter can be obtained by running moc with
-# the --output-json parameter.
-# Params:
-#   OUTPUT_FILES: a variable name in which to store the list of the extracted metatype json files.
-#                 A typical use case would to install them.
-#
-#   TODO: Move these internal options out into an internal function to be used by Qt only.
-#   __QT_INTERNAL_INSTALL_DIR: Location where to install the metatypes file. For public consumption,
-#                              defaults to a ${CMAKE_INSTALL_PREFIX}/${INSTALL_LIBDIR}/metatypes
-#                              directory.
-#                              Executable metatypes files are never installed.
-#   __QT_INTERNAL_NO_INSTALL: When passed, will skip installation of the metatype file.
-#   __QT_INTERNAL_INSTALL: Installs the metatypes files into the default Qt metatypes folder.
-#                          Only to be used by the Qt build.
 function(qt6_extract_metatypes target)
 
     get_target_property(existing_meta_types_file ${target} INTERFACE_QT_META_TYPES_BUILD_FILE)
@@ -1011,13 +991,20 @@ function(qt6_extract_metatypes target)
 
     set(args_option
         # TODO: Remove this once all leaf module usages of it are removed. It's now a no-op.
+        # It's original purpose was to skip installation of the metatypes file.
         __QT_INTERNAL_NO_INSTALL
 
         # TODO: Move this into a separate internal function, so it doesn't pollute the public one.
+        # When given, metatypes files will be installed into the default Qt
+        # metatypes folder. Only to be used by the Qt build.
         __QT_INTERNAL_INSTALL
     )
     set(args_single
         # TODO: Move this into a separate internal function, so it doesn't pollute the public one.
+        # Location where to install the metatypes file. Only used if
+        # __QT_INTERNAL_INSTALL is given. It defaults to the
+        # ${CMAKE_INSTALL_PREFIX}/${INSTALL_LIBDIR}/metatypes directory.
+        # Executable metatypes files are never installed.
         __QT_INTERNAL_INSTALL_DIR
 
         OUTPUT_FILES
