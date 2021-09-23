@@ -273,6 +273,7 @@ public:
     bool hasPen;
     bool hasBrush;
     bool simplePen;
+    bool needsTransform;
     qreal opacity;
     QPdfEngine::PdfVersion pdfVersion;
 
