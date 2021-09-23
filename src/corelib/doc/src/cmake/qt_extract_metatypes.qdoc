@@ -1,0 +1,78 @@
+/****************************************************************************
+**
+** Copyright (C) 2021 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file. Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: https://www.gnu.org/licenses/fdl-1.3.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+\page qt_extract_metatypes.html
+\ingroup cmake-macros-qtcore
+
+\title qt_extract_metatypes
+\target qt6_extract_metatypes
+
+\brief Extracts metatypes from a Qt target and generates an associated metatypes.json file.
+
+\preliminarycmakecommand
+
+\section1 Synopsis
+
+\badcode
+qt_extract_metatypes(target
+    [MANUAL_MOC_JSON_FILES json_files...]
+    [OUTPUT_FILES variable_name]
+)
+\endcode
+
+\versionlessCMakeCommandsNote qt6_extract_metatypes()
+
+\section1 Description
+
+Certain operations rely on metatype information being generated and collected
+on targets. This is typically handled internally by Qt commands, but for
+scenarios where this is not the case, \c{qt_extract_metatypes()} can be called
+to force the collection of this information for a specific \c target.
+
+Metatype information is generated for a target's source files in one of the
+following ways:
+
+\list
+\li Automatically by AUTOMOC. The \c{qt_extract_metatypes()} command detects
+    when AUTOMOC is enabled on the \c target and will automatically extract the
+    information it needs.
+\li Manually by invoking \c moc with the \c{--output-json} option. The project
+    is responsible for keeping track of all the JSON files generated using this
+    method and passing them to \c{qt_extract_metatypes()} with the
+    \c MANUAL_MOC_JSON_FILES option.
+\endlist
+
+\c{qt_extract_metatypes()} produces a target-specific metatypes JSON file which
+collects all the metatype details from the AUTOMOC and manual moc inputs.
+It does this by calling \c moc with the \c{--collect-json} option.
+If you need to know where to find the resultant metatypes JSON file (for
+example, to pass it to another command or to install it), use the
+\c OUTPUT_FILES option to provide the name of a variable in which to store its
+absolute path.
+
+*/
