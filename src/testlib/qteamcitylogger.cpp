@@ -1,6 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 Borgar Ovsthus
+** Copyright (C) 2021 The Qt Company Ltd.
+** Copyright (C) 2017 Borgar Ovsthus
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtTest module of the Qt Toolkit.
@@ -54,6 +55,8 @@ namespace QTest {
     static const char *incidentType2String(QAbstractTestLogger::IncidentTypes type)
     {
         switch (type) {
+        case QAbstractTestLogger::Skip:
+            return "SKIP";
         case QAbstractTestLogger::Pass:
             return "PASS";
         case QAbstractTestLogger::XFail:
@@ -77,22 +80,20 @@ namespace QTest {
     static const char *messageType2String(QAbstractTestLogger::MessageTypes type)
     {
         switch (type) {
-        case QAbstractTestLogger::Skip:
-            return "SKIP";
-        case QAbstractTestLogger::Warn:
-            return "WARNING";
-        case QAbstractTestLogger::QWarning:
-            return "QWARN";
         case QAbstractTestLogger::QDebug:
             return "QDEBUG";
         case QAbstractTestLogger::QInfo:
             return "QINFO";
+        case QAbstractTestLogger::QWarning:
+            return "QWARN";
         case QAbstractTestLogger::QCritical:
             return "QCRITICAL";
         case QAbstractTestLogger::QFatal:
             return "QFATAL";
         case QAbstractTestLogger::Info:
             return "INFO";
+        case QAbstractTestLogger::Warn:
+            return "WARNING";
         }
         return "??????";
     }
@@ -173,6 +174,14 @@ void QTeamCityLogger::addIncident(IncidentTypes type, const char *description,
                              flowID);
 
         outputString(qPrintable(buf));
+    } else if (type == QAbstractTestLogger::Skip) {
+        if (file)
+            detailedText.append(QLatin1String(" |[Loc: %1(%2)|]").arg(QString::fromUtf8(file)).arg(line));
+
+        buf = QLatin1String("##teamcity[testIgnored name='%1' message='%2' flowId='%3']\n")
+                .arg(escapedTestFuncName(), detailedText, flowID);
+
+        outputString(qPrintable(buf));
     }
 
     if (!pendingMessages.isEmpty()) {
@@ -201,21 +210,7 @@ void QTeamCityLogger::addMessage(MessageTypes type, const QString &message,
         return;
 
     QString escapedMessage = tcEscapedString(message);
-
-    QString buf;
-
-    if (type == QAbstractTestLogger::Skip) {
-        if (file)
-            escapedMessage.append(QString(QLatin1String(" |[Loc: %1(%2)|]")).arg(QString::fromUtf8(file)).arg(line));
-
-        buf = QString(QLatin1String("##teamcity[testIgnored name='%1' message='%2' flowId='%3']\n"))
-                .arg(escapedTestFuncName(), escapedMessage, flowID);
-
-        outputString(qPrintable(buf));
-    }
-    else {
-        addPendingMessage(QTest::messageType2String(type), escapedMessage, file, line);
-    }
+    addPendingMessage(QTest::messageType2String(type), escapedMessage, file, line);
 }
 
 QString QTeamCityLogger::tcEscapedString(const QString &str) const

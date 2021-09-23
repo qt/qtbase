@@ -440,7 +440,7 @@ void QTestLog::addSkip(const char *msg, const char *file, int line)
     ++QTest::skips;
 
     FOREACH_TEST_LOGGER
-        logger->addMessage(QAbstractTestLogger::Skip, QString::fromUtf8(msg), file, line);
+        logger->addIncident(QAbstractTestLogger::Skip, msg, file, line);
 }
 
 void QTestLog::addBenchmarkResult(const QBenchmarkResult &result)

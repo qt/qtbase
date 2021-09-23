@@ -14,9 +14,9 @@
     <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="cleanupTestCase">
-<Message type="skip" file="qtbase/tests/auto/testlib/selftests/skipcleanup/tst_skipcleanup.cpp" line="0">
+<Incident type="skip" file="qtbase/tests/auto/testlib/selftests/skipcleanup/tst_skipcleanup.cpp" line="0">
     <Description><![CDATA[Skip inside cleanupTestCase.]]></Description>
-</Message>
+</Incident>
     <Duration msecs="0"/>
 </TestFunction>
 <Duration msecs="0"/>

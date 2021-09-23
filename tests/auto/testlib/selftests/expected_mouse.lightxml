@@ -38,20 +38,20 @@
     <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="stateHandlingPart2">
-<Message type="skip" file="qtbase/tests/auto/testlib/selftests/mouse/tst_mouse.cpp" line="0">
+<Incident type="skip" file="qtbase/tests/auto/testlib/selftests/mouse/tst_mouse.cpp" line="0">
     <Description><![CDATA[Not implemented beyond this point!]]></Description>
-</Message>
+</Incident>
     <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="deterministicEvents">
-<Message type="skip" file="qtbase/tests/auto/testlib/selftests/mouse/tst_mouse.cpp" line="0">
+<Incident type="skip" file="qtbase/tests/auto/testlib/selftests/mouse/tst_mouse.cpp" line="0">
     <DataTag><![CDATA[first-run-true]]></DataTag>
     <Description><![CDATA[Not implemented!]]></Description>
-</Message>
-<Message type="skip" file="qtbase/tests/auto/testlib/selftests/mouse/tst_mouse.cpp" line="0">
+</Incident>
+<Incident type="skip" file="qtbase/tests/auto/testlib/selftests/mouse/tst_mouse.cpp" line="0">
     <DataTag><![CDATA[first-run-false]]></DataTag>
     <Description><![CDATA[Not implemented!]]></Description>
-</Message>
+</Incident>
     <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="cleanupTestCase">

@@ -54,6 +54,7 @@
 ##teamcity[testFailed name='testFailOnWarningsThenSkip()' message='Failure! |[Loc: qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp(0)|]' details='Received a warning that resulted in a failure:|nRan out of cabbage!' flowId='tst_Warnings']
 ##teamcity[testFinished name='testFailOnWarningsThenSkip()' flowId='tst_Warnings']
 ##teamcity[testIgnored name='testFailOnWarningsThenSkip()' message='My cabbage! :( |[Loc: qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp(0)|]' flowId='tst_Warnings']
+##teamcity[testFinished name='testFailOnWarningsThenSkip()' flowId='tst_Warnings']
 ##teamcity[testStarted name='testFailOnWarningsAndIgnoreWarnings()' flowId='tst_Warnings']
 ##teamcity[testFinished name='testFailOnWarningsAndIgnoreWarnings()' flowId='tst_Warnings']
 ##teamcity[testStarted name='cleanupTestCase()' flowId='tst_Warnings']

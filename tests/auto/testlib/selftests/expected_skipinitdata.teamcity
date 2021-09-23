@@ -1,3 +1,5 @@
 ##teamcity[testSuiteStarted name='tst_SkipInitData' flowId='tst_SkipInitData']
+##teamcity[testStarted name='initTestCase()' flowId='tst_SkipInitData']
 ##teamcity[testIgnored name='initTestCase()' message='Skip inside initTestCase_data. This should skip all tests in the class. |[Loc: qtbase/tests/auto/testlib/selftests/skipinitdata/tst_skipinitdata.cpp(0)|]' flowId='tst_SkipInitData']
+##teamcity[testFinished name='initTestCase()' flowId='tst_SkipInitData']
 ##teamcity[testSuiteFinished name='tst_SkipInitData' flowId='tst_SkipInitData']

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtTest module of the Qt Toolkit.
@@ -77,6 +77,8 @@ namespace QTest {
     static const char *incidentType2String(QAbstractTestLogger::IncidentTypes type)
     {
         switch (type) {
+        case QAbstractTestLogger::Skip:
+            return "SKIP   ";
         case QAbstractTestLogger::Pass:
             return "PASS   ";
         case QAbstractTestLogger::XFail:
@@ -105,22 +107,20 @@ namespace QTest {
     static const char *messageType2String(QAbstractTestLogger::MessageTypes type)
     {
         switch (type) {
-        case QAbstractTestLogger::Skip:
-            return "SKIP   ";
-        case QAbstractTestLogger::Warn:
-            return "WARNING";
-        case QAbstractTestLogger::QWarning:
-            return "QWARN  ";
         case QAbstractTestLogger::QDebug:
             return "QDEBUG ";
         case QAbstractTestLogger::QInfo:
             return "QINFO  ";
+        case QAbstractTestLogger::QWarning:
+            return "QWARN  ";
         case QAbstractTestLogger::QCritical:
             return "QCRITICAL";
         case QAbstractTestLogger::QFatal:
             return "QFATAL ";
         case QAbstractTestLogger::Info:
             return "INFO   ";
+        case QAbstractTestLogger::Warn:
+            return "WARNING";
         }
         return "??????";
     }

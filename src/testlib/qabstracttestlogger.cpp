@@ -83,6 +83,7 @@ QT_BEGIN_NAMESPACE
     \value XPass A check which was expected to fail actually passed. This is
            counted as a failure, as it means whatever caused the known failure
            no longer does, so the test needs an update.
+    \value Skip The current test ended prematurely, skipping some checks.
     \value BlacklistedPass As Pass but the test was blacklisted.
     \value BlacklistedXFail As XFail but the test was blacklisted.
     \value BlacklistedFail As Fail but the test was blacklisted.
@@ -122,7 +123,6 @@ QT_BEGIN_NAMESPACE
     \value QCritical A critical error from qCritical().
     \value QFatal A fatal error from qFatal(), or an unrecognised message from
            the Qt logging functions.
-    \value Skip The current test ended prematurely, skipping some checks.
     \value Info Messages QtTest generates as requested by the \c{-v1} or \c{-v2}
            command-line option being specified when running the test.
     \value Warn A warning generated internally by QtTest
@@ -131,7 +131,9 @@ QT_BEGIN_NAMESPACE
     functions to facilitate testing - such as \l QSignalSpy, \l
     QTestAccessibility, \l QTest::qExtractTestData(), and the facilities to
     deliver artificial mouse and keyboard events - are treated as test code,
-    rather than internal to QtTest.
+    rather than internal to QtTest; they call \l qWarning() and friends rather
+    than using the internal logging infrastructure, so that \l
+    QTest::ignoreMessage() can be used to anticipate the messages.
 
     \sa QAbstractTestLogger::addMessage()
 */
@@ -308,19 +310,21 @@ void QAbstractTestLogger::stopLogging()
 /*!
     \fn void QAbstractTestLogger::addIncident(IncidentTypes type, const char *description, const char *file, int line)
 
-    This virtual method is called when an event occurs that relates to whether
-    the test passes or fails. The \a type indicates whether this was a pass or a
-    fail, whether a failure was expected, and whether the test being run is
-    blacklisted. The \a description may be empty (for a pass), a message
-    describing the failure or, for an expected failure, the explanation of why a
-    failure was expected. Where the location in code of the incident is known,
-    it is indicated by \a file and \a line; otherwise, these are \a nullptr and
-    0, respectively.
+    This virtual method is called when an event occurs that relates to the
+    resolution of the test. The \a type indicates whether this was a pass, a
+    fail or a skip, whether a failure was expected, and whether the test being
+    run is blacklisted. The \a description may be empty (for a pass) or a
+    message describing the nature of the incident. Where the location in code of
+    the incident is known, it is indicated by \a file and \a line; otherwise,
+    these are \a nullptr and 0, respectively.
 
     Every logging implementation must implement this method. Note that there are
     circumstances where more than one incident may be reported, in this way, for
     a single run of a test on a single dataset. It is the implementation's
-    responsibility to recognize such cases and decide what to do about them.
+    responsibility to recognize such cases and decide what to do about them. For
+    purposes of counting resolutions of tests in the "Totals" report at the end
+    of a test run, QtTest considers the first incident (excluding XFail and its
+    blacklisted variant) decisive.
 
     \sa addMessage(), addBenchmarkResult()
 */
@@ -340,17 +344,17 @@ void QAbstractTestLogger::stopLogging()
     \fn void QAbstractTestLogger::addMessage(MessageTypes type, const QString &message, const char *file, int line)
 
     This virtual method is called, via its \c QtMsgType overload, from the
-    custom message handler QtTest installs. It is also used by the
-    implementations of QSKIP(), to warn about various situations detected by
-    QtTest itself, such as \e failure to see a message anticipated by
-    QTest::ignoreMessage() and, particularly when verbosity options have been
-    enabled via the command-line, to log some extra information.
+    custom message handler QtTest installs. It is also used to
+    warn about various situations detected by QtTest itself, such
+    as \e failure to see a message anticipated by QTest::ignoreMessage() and,
+    particularly when verbosity options have been enabled via the command-line,
+    to log some extra information.
 
     Every logging implementation must implement this method. The \a type
     indicates the category of message and the \a message is the content to be
     reported. When the message is associated with specific code, the name of the
-    \a file and \a line number within it are also supplied (otherwise, these are
-    \nullptr and 0, respectively).
+    \a file and \a line number within it are also supplied; otherwise, these are
+    \nullptr and 0, respectively.
 
     \sa QTest::ignoreMessage(), addIncident()
 */

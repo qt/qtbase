@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtTest module of the Qt Toolkit.
@@ -103,6 +103,8 @@ void QAppleTestLogger::addIncident(IncidentTypes type, const char *description,
 {
     MessageData messageData = [=]() {
         switch (type) {
+        case QAbstractTestLogger::Skip:
+            return MessageData{QtInfoMsg, "skip"};
         case QAbstractTestLogger::Pass:
             return MessageData{QtInfoMsg, "pass"};
         case QAbstractTestLogger::XFail:
@@ -153,8 +155,6 @@ void QAppleTestLogger::addMessage(MessageTypes type, const QString &message, con
             return MessageData{QtWarningMsg, "critical"};
         case QAbstractTestLogger::QFatal:
             return MessageData{QtFatalMsg, nullptr};
-        case QAbstractTestLogger::Skip:
-            return MessageData{QtInfoMsg, "skip"};
         case QAbstractTestLogger::Info:
         case QAbstractTestLogger::QInfo:
             return MessageData{QtInfoMsg, nullptr};
@@ -166,16 +166,8 @@ void QAppleTestLogger::addMessage(MessageTypes type, const QString &message, con
     messageData.generateCategory(&category);
 
     QMessageLogContext context(file, line, /* function = */ nullptr, category.data());
-    QString msg = message;
 
-    if (type == Skip) {
-        if (!message.isNull())
-            msg.prepend(testIdentifier() + QLatin1Char('\n'));
-        else
-            msg = testIdentifier();
-    }
-
-    AppleUnifiedLogger::messageHandler(messageData.messageType, context, msg, subsystem());
+    AppleUnifiedLogger::messageHandler(messageData.messageType, context, message, subsystem());
 }
 
 QString QAppleTestLogger::subsystem() const

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtTest module of the Qt Toolkit.
@@ -65,6 +65,7 @@ class Q_TESTLIB_EXPORT QAbstractTestLogger
 {
 public:
     enum IncidentTypes {
+        Skip,
         Pass,
         XFail,
         Fail,
@@ -76,14 +77,14 @@ public:
     };
 
     enum MessageTypes {
-        Warn,
-        QWarning,
         QDebug,
+        QInfo,
+        QWarning,
         QCritical,
         QFatal,
-        Skip,
+        // testlib's internal messages:
         Info,
-        QInfo
+        Warn
     };
 
     QAbstractTestLogger(const char *filename);

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtTest module of the Qt Toolkit.
@@ -121,7 +121,8 @@ void QTapTestLogger::addIncident(IncidentTypes type, const char *description,
         return;
     }
 
-    bool ok = type == Pass || type == XPass || type == BlacklistedPass || type == BlacklistedXPass;
+    bool ok = type == Pass || type == BlacklistedPass || type == Skip
+        || type == XPass || type == BlacklistedXPass;
 
     QTestCharBuffer directive;
     if (type == XFail || type == XPass || type == BlacklistedFail || type == BlacklistedPass
@@ -129,6 +130,8 @@ void QTapTestLogger::addIncident(IncidentTypes type, const char *description,
         // We treat expected or blacklisted failures/passes as TODO-failures/passes,
         // which should be treated as soft issues by consumers. Not all do though :/
         QTest::qt_asprintf(&directive, " # TODO %s", description);
+    } else if (type == Skip) {
+        QTest::qt_asprintf(&directive, " # SKIP %s", description);
     }
 
     int testNumber = QTestLog::totalCount();
@@ -246,13 +249,7 @@ void QTapTestLogger::addMessage(MessageTypes type, const QString &message,
 {
     Q_UNUSED(file);
     Q_UNUSED(line);
-
-    if (type == Skip) {
-        QTestCharBuffer directive;
-        QTest::qt_asprintf(&directive, " # SKIP %s", message.toUtf8().constData());
-        outputTestLine(/* ok  = */ true, QTestLog::totalCount(), directive);
-        return;
-    }
+    Q_UNUSED(type);
 
     QTestCharBuffer diagnostics;
     QTest::qt_asprintf(&diagnostics, "# %s\n", qPrintable(message));

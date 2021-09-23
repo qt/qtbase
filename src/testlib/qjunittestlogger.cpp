@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtTest module of the Qt Toolkit.
@@ -238,6 +238,10 @@ void QJUnitTestLogger::addIncident(IncidentTypes type, const char *description,
         // Since XFAIL does not add a failure to the testlog in JUnit XML we add a
         // message, so we still have some information about the expected failure.
         addMessage(QAbstractTestLogger::Info, QString::fromUtf8(description), file, line);
+    } else if (type == QAbstractTestLogger::Skip) {
+        auto skippedElement = new QTestElement(QTest::LET_Skipped);
+        skippedElement->addAttribute(QTest::AI_Message, description);
+        currentTestCase->addChild(skippedElement);
     }
 }
 
@@ -283,12 +287,7 @@ void QJUnitTestLogger::addMessage(MessageTypes type, const QString &message, con
     Q_UNUSED(file);
     Q_UNUSED(line);
 
-    if (type == QAbstractTestLogger::Skip) {
-        auto skippedElement = new QTestElement(QTest::LET_Skipped);
-        skippedElement->addAttribute(QTest::AI_Message, message.toUtf8().constData());
-        currentTestCase->addChild(skippedElement);
-        return;
-    } else if (type == QAbstractTestLogger::QFatal) {
+    if (type == QAbstractTestLogger::QFatal) {
         addFailure(QTest::LET_Error, "qfatal", message);
         return;
     }

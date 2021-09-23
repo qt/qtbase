@@ -8,22 +8,22 @@
     <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="test">
-<Message type="skip" file="qtbase/tests/auto/testlib/selftests/skip/tst_skip.cpp" line="0">
+<Incident type="skip" file="qtbase/tests/auto/testlib/selftests/skip/tst_skip.cpp" line="0">
     <Description><![CDATA[skipping all]]></Description>
-</Message>
+</Incident>
     <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="emptytest">
-<Message type="skip" file="qtbase/tests/auto/testlib/selftests/skip/tst_skip.cpp" line="0">
+<Incident type="skip" file="qtbase/tests/auto/testlib/selftests/skip/tst_skip.cpp" line="0">
     <Description><![CDATA[skipping all]]></Description>
-</Message>
+</Incident>
     <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="singleSkip">
-<Message type="skip" file="qtbase/tests/auto/testlib/selftests/skip/tst_skip.cpp" line="0">
+<Incident type="skip" file="qtbase/tests/auto/testlib/selftests/skip/tst_skip.cpp" line="0">
     <DataTag><![CDATA[local 1]]></DataTag>
     <Description><![CDATA[skipping one]]></Description>
-</Message>
+</Incident>
 <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[local 2]]></DataTag>
     <Description><![CDATA[this line should only be reached once (true)]]></Description>

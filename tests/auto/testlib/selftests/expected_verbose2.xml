@@ -46,10 +46,10 @@
 <Incident type="pass" file="" line="0">
     <DataTag><![CDATA[row 1]]></DataTag>
 </Incident>
-<Message type="skip" file="qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="0">
+<Incident type="skip" file="qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="0">
     <DataTag><![CDATA[row 2]]></DataTag>
     <Description><![CDATA[Skipping]]></Description>
-</Message>
+</Incident>
     <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="testPassFail">
@@ -75,10 +75,10 @@
     <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="testSkipPass">
-<Message type="skip" file="qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="0">
+<Incident type="skip" file="qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="0">
     <DataTag><![CDATA[row 1]]></DataTag>
     <Description><![CDATA[Skipping]]></Description>
-</Message>
+</Incident>
 <Message type="info" file="qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="0">
     <DataTag><![CDATA[row 2]]></DataTag>
     <Description><![CDATA[QVERIFY(true)]]></Description>
@@ -93,21 +93,21 @@
     <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="testSkipSkip">
-<Message type="skip" file="qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="0">
+<Incident type="skip" file="qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="0">
     <DataTag><![CDATA[row 1]]></DataTag>
     <Description><![CDATA[Skipping]]></Description>
-</Message>
-<Message type="skip" file="qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="0">
+</Incident>
+<Incident type="skip" file="qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="0">
     <DataTag><![CDATA[row 2]]></DataTag>
     <Description><![CDATA[Skipping]]></Description>
-</Message>
+</Incident>
     <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="testSkipFail">
-<Message type="skip" file="qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="0">
+<Incident type="skip" file="qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="0">
     <DataTag><![CDATA[row 1]]></DataTag>
     <Description><![CDATA[Skipping]]></Description>
-</Message>
+</Incident>
 <Message type="info" file="qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="0">
     <DataTag><![CDATA[row 2]]></DataTag>
     <Description><![CDATA[QVERIFY(false)]]></Description>
@@ -149,10 +149,10 @@
     <DataTag><![CDATA[row 1]]></DataTag>
     <Description><![CDATA['false' returned FALSE. ()]]></Description>
 </Incident>
-<Message type="skip" file="qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="0">
+<Incident type="skip" file="qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="0">
     <DataTag><![CDATA[row 2]]></DataTag>
     <Description><![CDATA[Skipping]]></Description>
-</Message>
+</Incident>
     <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="testFailFail">
@@ -208,10 +208,10 @@
 <Incident type="pass" file="" line="0">
     <DataTag><![CDATA[before]]></DataTag>
 </Incident>
-<Message type="skip" file="qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="0">
+<Incident type="skip" file="qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="0">
     <DataTag><![CDATA[skip]]></DataTag>
     <Description><![CDATA[Skip in init()]]></Description>
-</Message>
+</Incident>
 <Incident type="pass" file="" line="0">
     <DataTag><![CDATA[after]]></DataTag>
 </Incident>
@@ -225,10 +225,10 @@
     <DataTag><![CDATA[skip]]></DataTag>
     <Description><![CDATA[This test function should execute and then QSKIP in cleanup()]]></Description>
 </Message>
-<Message type="skip" file="qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="0">
+<Incident type="skip" file="qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="0">
     <DataTag><![CDATA[skip]]></DataTag>
     <Description><![CDATA[Skip in cleanup()]]></Description>
-</Message>
+</Incident>
 <Incident type="pass" file="" line="0">
     <DataTag><![CDATA[after]]></DataTag>
 </Incident>

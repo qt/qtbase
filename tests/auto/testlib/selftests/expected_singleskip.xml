@@ -10,9 +10,9 @@
     <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="myTest">
-<Message type="skip" file="qtbase/tests/auto/testlib/selftests/singleskip/tst_singleskip.cpp" line="0">
+<Incident type="skip" file="qtbase/tests/auto/testlib/selftests/singleskip/tst_singleskip.cpp" line="0">
     <Description><![CDATA[skipping test]]></Description>
-</Message>
+</Incident>
     <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="cleanupTestCase">

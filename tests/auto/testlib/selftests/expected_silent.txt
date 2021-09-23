@@ -1,4 +1,6 @@
 Testing tst_Silent
+SKIP   : tst_Silent::skip() This test should skip
+   Loc: [qtbase/tests/auto/testlib/selftests/silent/tst_silent.cpp(0)]
 FAIL!  : tst_Silent::fail() 'false' returned FALSE. (This test should fail)
    Loc: [qtbase/tests/auto/testlib/selftests/silent/tst_silent.cpp(0)]
 XPASS  : tst_Silent::xpass() 'true' returned TRUE unexpectedly. (This test should XPASS)

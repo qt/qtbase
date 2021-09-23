@@ -194,9 +194,9 @@ Ran out of cabbage!]]></Description>
     <Description><![CDATA[Received a warning that resulted in a failure:
 Ran out of cabbage!]]></Description>
 </Incident>
-<Message type="skip" file="qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp" line="0">
+<Incident type="skip" file="qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp" line="0">
     <Description><![CDATA[My cabbage! :(]]></Description>
-</Message>
+</Incident>
     <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="testFailOnWarningsAndIgnoreWarnings">

@@ -56,22 +56,20 @@ namespace QTest {
     static const char *xmlMessageType2String(QAbstractTestLogger::MessageTypes type)
     {
         switch (type) {
-        case QAbstractTestLogger::Warn:
-            return "warn";
-        case QAbstractTestLogger::QCritical:
-            return "qcritical";
         case QAbstractTestLogger::QDebug:
             return "qdebug";
         case QAbstractTestLogger::QInfo:
             return "qinfo";
         case QAbstractTestLogger::QWarning:
             return "qwarn";
+        case QAbstractTestLogger::QCritical:
+            return "qcritical";
         case QAbstractTestLogger::QFatal:
             return "qfatal";
-        case QAbstractTestLogger::Skip:
-            return "skip";
         case QAbstractTestLogger::Info:
             return "info";
+        case QAbstractTestLogger::Warn:
+            return "warn";
         }
         return "??????";
     }
@@ -79,6 +77,8 @@ namespace QTest {
     static const char *xmlIncidentType2String(QAbstractTestLogger::IncidentTypes type)
     {
         switch (type) {
+        case QAbstractTestLogger::Skip:
+            return "skip";
         case QAbstractTestLogger::Pass:
             return "pass";
         case QAbstractTestLogger::XFail:

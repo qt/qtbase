@@ -36,9 +36,9 @@
 <Incident type="xfail" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
     <Description><![CDATA[This should xfail then skip]]></Description>
 </Incident>
-<Message type="skip" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
+<Incident type="skip" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
     <Description><![CDATA[This skip should be reported and counted]]></Description>
-</Message>
+</Incident>
     <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="xfailAbortSkip">
@@ -84,14 +84,14 @@
     <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="xfailDataDrivenWithQString">
-<Message type="skip" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
+<Incident type="skip" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
     <DataTag><![CDATA[Pass Abort]]></DataTag>
     <Description><![CDATA[Each Continue or Pass reports this and increments skip-count]]></Description>
-</Message>
-<Message type="skip" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
+</Incident>
+<Incident type="skip" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
     <DataTag><![CDATA[Pass Continue]]></DataTag>
     <Description><![CDATA[Each Continue or Pass reports this and increments skip-count]]></Description>
-</Message>
+</Incident>
 <Incident type="xfail" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
     <DataTag><![CDATA[Fail Abort]]></DataTag>
     <Description><![CDATA[A string]]></Description>
@@ -107,10 +107,10 @@
     <DataTag><![CDATA[Fail Continue]]></DataTag>
     <Description><![CDATA[Bug 5 (The message)]]></Description>
 </Incident>
-<Message type="skip" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
+<Incident type="skip" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
     <DataTag><![CDATA[Fail Continue]]></DataTag>
     <Description><![CDATA[Each Continue or Pass reports this and increments skip-count]]></Description>
-</Message>
+</Incident>
     <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="xfailDataDrivenWithQVerify">
@@ -243,9 +243,9 @@
 <Incident type="xpass" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
     <Description><![CDATA['true' returned TRUE unexpectedly. ()]]></Description>
 </Incident>
-<Message type="skip" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
+<Incident type="skip" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
     <Description><![CDATA[This should be reached but not increment skip-count]]></Description>
-</Message>
+</Incident>
     <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="xpassContinueXfailAbort">

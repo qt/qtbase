@@ -6,9 +6,9 @@
     <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
 </Environment>
 <TestFunction name="initTestCase">
-<Message type="skip" file="qtbase/tests/auto/testlib/selftests/skipinitdata/tst_skipinitdata.cpp" line="0">
+<Incident type="skip" file="qtbase/tests/auto/testlib/selftests/skipinitdata/tst_skipinitdata.cpp" line="0">
     <Description><![CDATA[Skip inside initTestCase_data. This should skip all tests in the class.]]></Description>
-</Message>
+</Incident>
     <Duration msecs="0"/>
 </TestFunction>
 <Duration msecs="0"/>

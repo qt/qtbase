@@ -15,9 +15,9 @@
     <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="skippingBenchmark">
-<Message type="skip" file="qtbase/tests/auto/testlib/selftests/benchlibcounting/tst_benchlibcounting.cpp" line="0">
+<Incident type="skip" file="qtbase/tests/auto/testlib/selftests/benchlibcounting/tst_benchlibcounting.cpp" line="0">
     <Description><![CDATA[This is a skipping benchmark]]></Description>
-</Message>
+</Incident>
     <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="failingBenchmark">
