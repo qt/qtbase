@@ -65,13 +65,17 @@ public:
     static QNetworkInformation::Features featuresSupportedStatic()
     {
         using Feature = QNetworkInformation::Feature;
-        return QNetworkInformation::Features(Feature::Reachability | Feature::CaptivePortal);
+        return QNetworkInformation::Features(Feature::Reachability | Feature::CaptivePortal
+                                             | Feature::TransportMedium);
     }
 
     bool isValid() { return m_valid; }
 
 private:
     Q_DISABLE_COPY_MOVE(QAndroidNetworkInformationBackend);
+
+    void updateTransportMedium(AndroidConnectivityManager::AndroidTransport transport);
+
     bool m_valid = false;
 };
 
@@ -129,6 +133,36 @@ QAndroidNetworkInformationBackend::QAndroidNetworkInformationBackend()
 
     connect(conman, &AndroidConnectivityManager::captivePortalChanged, this,
             &QAndroidNetworkInformationBackend::setBehindCaptivePortal);
+
+    connect(conman, &AndroidConnectivityManager::transportMediumChanged, this,
+            &QAndroidNetworkInformationBackend::updateTransportMedium);
+}
+
+void QAndroidNetworkInformationBackend::updateTransportMedium(
+        AndroidConnectivityManager::AndroidTransport transport)
+{
+    using AndroidTransport = AndroidConnectivityManager::AndroidTransport;
+    using TransportMedium = QNetworkInformation::TransportMedium;
+    static const auto mapTransport = [](AndroidTransport state) -> TransportMedium {
+        switch (state) {
+        case AndroidTransport::Cellular:
+            return TransportMedium::Cellular;
+        case AndroidTransport::WiFi:
+            return TransportMedium::WiFi;
+        case AndroidTransport::Bluetooth:
+            return TransportMedium::Bluetooth;
+        case AndroidTransport::Ethernet:
+            return TransportMedium::Ethernet;
+        // These are not covered yet (but may be in the future)
+        case AndroidTransport::Usb:
+        case AndroidTransport::LoWPAN:
+        case AndroidTransport::WiFiAware:
+        case AndroidTransport::Unknown:
+            return TransportMedium::Unknown;
+        }
+    };
+
+    setTransportMedium(mapTransport(transport));
 }
 
 QT_END_NAMESPACE

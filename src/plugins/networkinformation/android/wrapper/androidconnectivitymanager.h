@@ -51,6 +51,20 @@ class AndroidConnectivityManager : public QObject
 public:
     enum class AndroidConnectivity { Connected, Unknown, Disconnected };
     Q_ENUM(AndroidConnectivity);
+
+    // Keep synchronized with Transport in QtAndroidNetworkInformation.java
+    enum class AndroidTransport {
+        Unknown,
+        Bluetooth,
+        Cellular,
+        Ethernet,
+        LoWPAN,
+        Usb,
+        WiFi,
+        WiFiAware,
+    };
+    Q_ENUM(AndroidTransport);
+
     static AndroidConnectivityManager *getInstance();
     ~AndroidConnectivityManager();
 
@@ -60,6 +74,7 @@ public:
 Q_SIGNALS:
     void connectivityChanged();
     void captivePortalChanged(bool state);
+    void transportMediumChanged(AndroidTransport transport);
 
 private:
     friend struct AndroidConnectivityManagerInstance;

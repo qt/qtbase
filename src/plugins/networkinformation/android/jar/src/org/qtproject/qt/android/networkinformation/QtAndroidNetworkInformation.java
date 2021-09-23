@@ -48,12 +48,14 @@ import android.net.ConnectivityManager.NetworkCallback;
 import android.net.NetworkRequest;
 import android.net.NetworkCapabilities;
 import android.net.Network;
+import android.os.Build;
 
 public class QtAndroidNetworkInformation {
     private static final String LOG_TAG = "QtAndroidNetworkInformation";
 
     private static native void connectivityChanged();
     private static native void behindCaptivePortalChanged(boolean state);
+    private static native void transportMediumChanged(Transport transportMedium);
 
     private static QtNetworkInformationCallback m_callback = null;
     private static final Object m_lock = new Object();
@@ -62,8 +64,21 @@ public class QtAndroidNetworkInformation {
         Connected, Unknown, Disconnected
     }
 
+    // Keep synchronized with AndroidTransport in androidconnectivitymanager.h
+    enum Transport {
+        Unknown,
+        Bluetooth,
+        Cellular,
+        Ethernet,
+        LoWPAN,
+        Usb,
+        WiFi,
+        WiFiAware,
+    }
+
     private static class QtNetworkInformationCallback extends NetworkCallback {
         public AndroidConnectivity previousState = null;
+        public Transport previousTransport = null;
 
         QtNetworkInformationCallback() {
         }
@@ -77,17 +92,53 @@ public class QtAndroidNetworkInformation {
                 s = AndroidConnectivity.Connected;
             else
                 s = AndroidConnectivity.Unknown; // = we _may_ have Internet access
+
+            final Transport transport = getTransport(capabilities);
+            if (transport == Transport.Unknown) // If we don't have any transport media: override
+                s = AndroidConnectivity.Unknown;
+
             setState(s);
+            setTransportMedium(transport);
 
             final boolean captive
                     = capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_CAPTIVE_PORTAL);
             behindCaptivePortalChanged(captive);
         }
 
+        private Transport getTransport(NetworkCapabilities capabilities)
+        {
+            if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
+                return Transport.WiFi;
+            } else if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
+                return Transport.Cellular;
+            } else if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH)) {
+                return Transport.Bluetooth;
+            } else if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) {
+                return Transport.Ethernet;
+            } else if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI_AWARE)) {
+                // Build.VERSION_CODES.O
+                return Transport.WiFiAware;
+            } else if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_LOWPAN)) {
+                // Build.VERSION_CODES.O_MR1
+                return Transport.LoWPAN;
+            }/* else if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_USB)) {
+                // Build.VERSION_CODES.S
+                return Transport.Usb;
+            }*/ // @todo: Uncomment once we can use SDK 31
+            return Transport.Unknown;
+        }
+
         private void setState(AndroidConnectivity s) {
             if (previousState != s) {
                 previousState = s;
                 connectivityChanged();
+            }
+        }
+
+        private void setTransportMedium(Transport t) {
+            if (previousTransport != t) {
+                previousTransport = t;
+                transportMediumChanged(t);
             }
         }
 
@@ -112,10 +163,17 @@ public class QtAndroidNetworkInformation {
                 ConnectivityManager manager = getConnectivityManager(context);
                 m_callback = new QtNetworkInformationCallback();
                 NetworkRequest.Builder builder = new NetworkRequest.Builder();
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
+                    builder = builder.clearCapabilities();
                 builder = builder.addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
-                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    builder = builder.addCapability(NetworkCapabilities.NET_CAPABILITY_NOT_SUSPENDED);
                     builder = builder.addCapability(NetworkCapabilities.NET_CAPABILITY_FOREGROUND);
+                }
                 NetworkRequest request = builder.build();
+
+                // Can't use registerDefaultNetworkCallback because it doesn't let us know when
+                // the network disconnects!
                 manager.registerNetworkCallback(request, m_callback);
             }
         }

@@ -70,6 +70,15 @@ static void behindCaptivePortalChanged(JNIEnv *env, jobject obj, jboolean state)
     Q_EMIT androidConnManagerInstance->connManager->captivePortalChanged(state);
 }
 
+static void transportMediumChangedCallback(JNIEnv *env, jobject obj, jobject enumValue)
+{
+    Q_UNUSED(env);
+    Q_UNUSED(obj);
+    const jint value = QJniObject(enumValue).callMethod<jint>("ordinal");
+    const auto transport = static_cast<AndroidConnectivityManager::AndroidTransport>(value);
+    emit androidConnManagerInstance->connManager->transportMediumChanged(transport);
+}
+
 AndroidConnectivityManager::AndroidConnectivityManager()
 {
     if (!registerNatives())
@@ -132,11 +141,16 @@ bool AndroidConnectivityManager::registerNatives()
     if (!networkReceiver.isValid())
         return false;
 
+    const QByteArray transportEnumSig =
+            QByteArray("(L") + networkInformationClass + "$Transport;)V";
+
     jclass clazz = env->GetObjectClass(networkReceiver.object());
     static JNINativeMethod methods[] = {
         { "connectivityChanged", "()V", reinterpret_cast<void *>(networkConnectivityChanged) },
         { "behindCaptivePortalChanged", "(Z)V",
-          reinterpret_cast<void *>(behindCaptivePortalChanged) }
+          reinterpret_cast<void *>(behindCaptivePortalChanged) },
+        { "transportMediumChanged", transportEnumSig.data(),
+          reinterpret_cast<void *>(transportMediumChangedCallback) },
     };
     const bool ret = (env->RegisterNatives(clazz, methods, std::size(methods)) == JNI_OK);
     env->DeleteLocalRef(clazz);
