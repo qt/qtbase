@@ -2805,7 +2805,7 @@ bool jarSignerSignPackage(const Options &options)
     auto signPackage = [&](const QString &file) {
         fprintf(stdout, "Signing file %s\n", qPrintable(file));
         fflush(stdout);
-        auto command = jarSignerTool + QLatin1String(" %1 %2")
+        QString command = jarSignerTool + QLatin1String(" %1 %2")
                 .arg(file)
                 .arg(shellQuote(options.keyStoreAlias));
 
