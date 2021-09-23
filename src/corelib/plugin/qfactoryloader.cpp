@@ -45,6 +45,7 @@
 
 #include "private/qcoreapplication_p.h"
 #include "private/qduplicatetracker_p.h"
+#include "private/qloggingregistry_p.h"
 #include "private/qobject_p.h"
 #include "qcborarray.h"
 #include "qcbormap.h"
@@ -55,7 +56,6 @@
 #include "qjsonarray.h"
 #include "qjsondocument.h"
 #include "qjsonobject.h"
-#include "qjsonvalue.h"
 #include "qmap.h"
 #include "qmutex.h"
 #include "qplugin.h"
@@ -146,6 +146,9 @@ public:
 
 #if QT_CONFIG(library)
 
+static Q_LOGGING_CATEGORY_WITH_ENV_OVERRIDE(lcFactoryLoader, "QT_DEBUG_PLUGINS",
+                                            "qt.core.plugin.factoryloader")
+
 Q_GLOBAL_STATIC(QList<QFactoryLoader *>, qt_factory_loaders)
 
 Q_GLOBAL_STATIC(QRecursiveMutex, qt_factoryloader_mutex)
@@ -173,8 +176,7 @@ void QFactoryLoader::update()
         QString path = pluginDir + d->suffix;
 #endif
 
-        if (qt_debug_component())
-            qDebug() << "QFactoryLoader::QFactoryLoader() checking directory path" << path << "...";
+        qCDebug(lcFactoryLoader) << "checking directory path" << path << "...";
 
         if (!QDir(path).exists(QLatin1String(".")))
             continue;
@@ -210,18 +212,14 @@ void QFactoryLoader::update()
                 continue;
             }
 #endif
-            if (qt_debug_component()) {
-                qDebug() << "QFactoryLoader::QFactoryLoader() looking at" << fileName;
-            }
+            qCDebug(lcFactoryLoader) << "looking at" << fileName;
 
             Q_TRACE(QFactoryLoader_update, fileName);
 
             library = QLibraryPrivate::findOrCreate(QFileInfo(fileName).canonicalFilePath());
             if (!library->isPlugin()) {
-                if (qt_debug_component()) {
-                    qDebug() << library->errorString << Qt::endl
-                             << "         not a plugin";
-                }
+                qCDebug(lcFactoryLoader) << library->errorString << Qt::endl
+                                         << "         not a plugin";
                 library->release();
                 continue;
             }
@@ -238,8 +236,7 @@ void QFactoryLoader::update()
                 for (int i = 0; i < k.size(); ++i)
                     keys += d->cs ? k.at(i).toString() : k.at(i).toString().toLower();
             }
-            if (qt_debug_component())
-                qDebug() << "Got keys from plugin meta data" << keys;
+            qCDebug(lcFactoryLoader) << "Got keys from plugin meta data" << keys;
 
 
             if (!metaDataOk) {
@@ -276,10 +273,8 @@ void QFactoryLoader::update()
     }
 #else
     Q_D(QFactoryLoader);
-    if (qt_debug_component()) {
-        qDebug() << "QFactoryLoader::QFactoryLoader() ignoring" << d->iid
-                 << "since plugins are disabled in static builds";
-    }
+    qCDebug(lcFactoryLoader) << "ignoring" << d->iid
+                             << "since plugins are disabled in static builds";
 #endif
 }
 

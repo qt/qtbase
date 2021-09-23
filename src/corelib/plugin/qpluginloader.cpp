@@ -271,8 +271,6 @@ static QString locatePlugin(const QString& fileName)
     const auto baseName = QStringView{fileName}.mid(slash + 1);
     const auto basePath = isAbsolute ? QStringView() : QStringView{fileName}.left(slash + 1); // keep the '/'
 
-    const bool debug = qt_debug_component();
-
     QStringList paths;
     if (isAbsolute) {
         paths.append(fileName.left(slash)); // don't include the '/'
@@ -287,22 +285,19 @@ static QString locatePlugin(const QString& fileName)
                 {
                     QString pluginPath = basePath + prefix + baseName + suffix;
                     const QString fn = path + QLatin1String("/lib") + pluginPath.replace(QLatin1Char('/'), QLatin1Char('_'));
-                    if (debug)
-                        qDebug() << "Trying..." << fn;
+                    qCDebug(qt_lcDebugPlugins) << "Trying..." << fn;
                     if (QFileInfo(fn).isFile())
                         return fn;
                 }
 #endif
                 const QString fn = path + QLatin1Char('/') + basePath + prefix + baseName + suffix;
-                if (debug)
-                    qDebug() << "Trying..." << fn;
+                qCDebug(qt_lcDebugPlugins) << "Trying..." << fn;
                 if (QFileInfo(fn).isFile())
                     return fn;
             }
         }
     }
-    if (debug)
-        qDebug() << fileName << "not found";
+    qCDebug(qt_lcDebugPlugins) << fileName << "not found";
     return QString();
 }
 #endif
@@ -347,11 +342,8 @@ void QPluginLoader::setFileName(const QString &fileName)
         d->updatePluginState();
 
 #else
-    if (qt_debug_component()) {
-        qWarning("Cannot load %s into a statically linked Qt library.",
-                 (const char *)QFile::encodeName(fileName));
-    }
-    Q_UNUSED(fileName);
+    qCWarning(qt_lcDebugPlugins, "Cannot load '%ls' into a statically linked Qt library.",
+              qUtf16Printable(fileName));
 #endif
 }
 

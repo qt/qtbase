@@ -56,6 +56,7 @@
 #  include <private/qcore_mac_p.h>
 #endif
 #include <private/qcoreapplication_p.h>
+#include <private/qloggingregistry_p.h>
 #include <private/qsystemerror_p.h>
 
 #include "qelfparser_p.h"
@@ -82,6 +83,8 @@ static constexpr bool QtBuildIsDebug = false;
 static constexpr bool QtBuildIsDebug = true;
 #endif
 
+Q_LOGGING_CATEGORY_WITH_ENV_OVERRIDE(qt_lcDebugPlugins, "QT_DEBUG_PLUGINS", "qt.core.plugin.loader")
+static Q_LOGGING_CATEGORY_WITH_ENV_OVERRIDE(lcDebugLibrary, "QT_DEBUG_PLUGINS", "qt.core.library")
 
 /*!
     \class QLibrary
@@ -231,10 +234,8 @@ static bool findPatternUnloaded(const QString &library, QLibraryPrivate *lib)
     if (!file.open(QIODevice::ReadOnly)) {
         if (lib)
             lib->errorString = file.errorString();
-        if (qt_debug_component()) {
-            qWarning("%s: %ls", QFile::encodeName(library).constData(),
-                     qUtf16Printable(QSystemError::stdString()));
-        }
+        qCWarning(qt_lcDebugPlugins, "%ls: cannot open: %ls", qUtf16Printable(library),
+                  qUtf16Printable(file.errorString()));
         return false;
     }
 
@@ -250,9 +251,8 @@ static bool findPatternUnloaded(const QString &library, QLibraryPrivate *lib)
     if (filedata == nullptr) {
         // If we can't mmap(), then the dynamic loader won't be able to either.
         // This can't be used as a plugin.
-        if (qt_debug_component())
-            qWarning("%s: failed to map to memory: %ls", QFile::encodeName(library).constData(),
-                     qUtf16Printable(file.errorString()));
+        qCWarning(qt_lcDebugPlugins, "%ls: failed to map to memory: %ls",
+                  qUtf16Printable(library), qUtf16Printable(file.errorString()));
         return false;
     }
 #else
@@ -272,19 +272,17 @@ static bool findPatternUnloaded(const QString &library, QLibraryPrivate *lib)
     if (r.length) {
         if (!lib->metaData.parse(QByteArrayView(filedata + r.pos, r.length))) {
             errMsg = lib->metaData.errorString();
-            qWarning("Found invalid metadata in lib %ls: %ls",
-                     qUtf16Printable(library), qUtf16Printable(errMsg));
+            qCWarning(qt_lcDebugPlugins, "Found invalid metadata in lib %ls: %ls",
+                      qUtf16Printable(library), qUtf16Printable(errMsg));
         } else {
-            if (qt_debug_component()) {
-                QJsonDocument doc(lib->metaData.toJson());
-                qWarning("Found metadata in lib %s, metadata=\n%s\n",
-                         library.toLocal8Bit().constData(), doc.toJson().constData());
-            }
+            qCDebug(qt_lcDebugPlugins, "Found metadata in lib %ls, metadata=\n%s\n",
+                    qUtf16Printable(library),
+                    QJsonDocument(lib->metaData.toJson()).toJson().constData());
             return true;
         }
-    } else if (qt_debug_component()) {
-        qWarning("Failed to find metadata in lib %ls: %ls",
-                 qUtf16Printable(library), qUtf16Printable(errMsg));
+    } else {
+        qCDebug(qt_lcDebugPlugins, "Failed to find metadata in lib %ls: %ls",
+                qUtf16Printable(library), qUtf16Printable(errMsg));
     }
 
     lib->errorString = QLibrary::tr("Failed to extract plugin meta data from '%1': %2")
@@ -310,8 +308,7 @@ static void installCoverageTool(QLibraryPrivate *libPrivate)
 
     int ret = __coveragescanner_register_library(libPrivate->fileName.toLocal8Bit());
 
-    if (qt_debug_component()) {
-        if (ret >= 0) {
+    if (ret >= 0) {
             qDebug("coverage data for %ls registered",
                    qUtf16Printable(libPrivate->fileName));
         } else {
@@ -384,12 +381,13 @@ inline void QLibraryStore::cleanup()
         }
     }
 
-    if (qt_debug_component()) {
-        // dump all objects that remain
+    // dump all objects that remain
+    if (lcDebugLibrary().isDebugEnabled()) {
         for (QLibraryPrivate *lib : qAsConst(data->libraryMap)) {
             if (lib)
-                qDebug() << "On QtCore unload," << lib->fileName << "was leaked, with"
-                         << lib->libraryRefCount.loadRelaxed() << "users";
+                qDebug(lcDebugLibrary)
+                        << "On QtCore unload," << lib->fileName << "was leaked, with"
+                        << lib->libraryRefCount.loadRelaxed() << "users";
         }
     }
 
@@ -538,13 +536,9 @@ bool QLibraryPrivate::load()
     Q_TRACE(QLibraryPrivate_load_entry, fileName);
 
     bool ret = load_sys();
-    if (qt_debug_component()) {
-        if (ret) {
-            qDebug() << "loaded library" << fileName;
-        } else {
-            qDebug() << qUtf8Printable(errorString);
-        }
-    }
+    qCDebug(lcDebugLibrary)
+            << fileName
+            << (ret ? "loaded library" : qUtf8Printable(u"cannot load: " + errorString));
     if (ret) {
         //when loading a library we add a reference to it so that the QLibraryPrivate won't get deleted
         //this allows to unload the library at a later time
@@ -566,9 +560,8 @@ bool QLibraryPrivate::unload(UnloadFlag flag)
         QMutexLocker locker(&mutex);
         delete inst.data();
         if (flag == NoUnloadSys || unload_sys()) {
-            if (qt_debug_component())
-                qWarning() << "QLibraryPrivate::unload succeeded on" << fileName
-                           << (flag == NoUnloadSys ? "(faked)" : "");
+            qCDebug(lcDebugLibrary) << fileName << "unloaded library"
+                                    << (flag == NoUnloadSys ? "(faked)" : "");
             // when the library is unloaded, we release the reference on it so that 'this'
             // can get deleted
             libraryRefCount.deref();
@@ -599,8 +592,7 @@ QtPluginInstanceFunction QLibraryPrivate::loadPlugin()
         instanceFactory.storeRelease(ptr); // two threads may store the same value
         return ptr;
     }
-    if (qt_debug_component())
-        qWarning() << "QLibraryPrivate::loadPlugin failed on" << fileName << ":" << errorString;
+    qCDebug(qt_lcDebugPlugins) << "QLibraryPrivate::loadPlugin failed on" << fileName << ":" << errorString;
     pluginState = IsNotAPlugin;
     return nullptr;
 }
@@ -773,13 +765,11 @@ void QLibraryPrivate::updatePluginState()
     uint qt_version = uint(metaData.value(QtPluginMetaDataKeys::QtVersion).toInteger());
     bool debug = metaData.value(QtPluginMetaDataKeys::IsDebug).toBool();
     if ((qt_version & 0x00ff00) > (QT_VERSION & 0x00ff00) || (qt_version & 0xff0000) != (QT_VERSION & 0xff0000)) {
-        if (qt_debug_component()) {
-            qWarning("In %s:\n"
+        qCWarning(qt_lcDebugPlugins, "In %s:\n"
                  "  Plugin uses incompatible Qt library (%d.%d.%d) [%s]",
                  QFile::encodeName(fileName).constData(),
                  (qt_version&0xff0000) >> 16, (qt_version&0xff00) >> 8, qt_version&0xff,
                  debug ? "debug" : "release");
-        }
         errorString = QLibrary::tr("The plugin '%1' uses incompatible Qt library. (%2.%3.%4) [%5]")
             .arg(fileName)
             .arg((qt_version&0xff0000) >> 16)
