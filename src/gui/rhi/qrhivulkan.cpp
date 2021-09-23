@@ -6236,33 +6236,35 @@ void QVkRenderPassDescriptor::updateSerializedFormat()
     *p++ = resolveRefs.count();
     *p++ = hasDepthStencil;
 
-    auto serializeAttachmentData = [&p](const VkAttachmentDescription &a, bool used) {
-        *p++ = used ? a.format : 0;
-        *p++ = used ? a.samples : 0;
-        *p++ = used ? a.loadOp : 0;
-        *p++ = used ? a.storeOp : 0;
-        *p++ = used ? a.stencilLoadOp : 0;
-        *p++ = used ? a.stencilStoreOp : 0;
-        *p++ = used ? a.initialLayout : 0;
-        *p++ = used ? a.finalLayout : 0;
+    auto serializeAttachmentData = [this, &p](uint32_t attIdx) {
+        const bool used = attIdx != VK_ATTACHMENT_UNUSED;
+        const VkAttachmentDescription *a = used ? &attDescs[attIdx] : nullptr;
+        *p++ = used ? a->format : 0;
+        *p++ = used ? a->samples : 0;
+        *p++ = used ? a->loadOp : 0;
+        *p++ = used ? a->storeOp : 0;
+        *p++ = used ? a->stencilLoadOp : 0;
+        *p++ = used ? a->stencilStoreOp : 0;
+        *p++ = used ? a->initialLayout : 0;
+        *p++ = used ? a->finalLayout : 0;
     };
 
     for (int i = 0, ie = colorRefs.count(); i != ie; ++i) {
         const uint32_t attIdx = colorRefs[i].attachment;
         *p++ = attIdx;
-        serializeAttachmentData(attDescs[attIdx], attIdx != VK_ATTACHMENT_UNUSED);
+        serializeAttachmentData(attIdx);
     }
 
     if (hasDepthStencil) {
         const uint32_t attIdx = dsRef.attachment;
         *p++ = attIdx;
-        serializeAttachmentData(attDescs[attIdx], attIdx != VK_ATTACHMENT_UNUSED);
+        serializeAttachmentData(attIdx);
     }
 
     for (int i = 0, ie = resolveRefs.count(); i != ie; ++i) {
         const uint32_t attIdx = resolveRefs[i].attachment;
         *p++ = attIdx;
-        serializeAttachmentData(attDescs[attIdx], attIdx != VK_ATTACHMENT_UNUSED);
+        serializeAttachmentData(attIdx);
     }
 }
 
