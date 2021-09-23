@@ -78,10 +78,13 @@ public:
             // explicitly and not because the parent window in this case made it hidden.
             // In which case do not automatically show the widget when the parent
             // window is shown.
+            const bool wasExplicitShowHide = widget->testAttribute(Qt::WA_WState_ExplicitShowHide);
             const bool wasHidden = widget->testAttribute(Qt::WA_WState_Hidden);
             QWidgetPrivate::get(widget)->setVisible(visible);
-            if (!wasHidden)
-                widget->setAttribute(Qt::WA_WState_ExplicitShowHide, false);
+            if (wasExplicitShowHide) {
+                widget->setAttribute(Qt::WA_WState_ExplicitShowHide, wasExplicitShowHide);
+                widget->setAttribute(Qt::WA_WState_Hidden, wasHidden);
+            }
         } else {
             QWindowPrivate::setVisible(visible);
         }

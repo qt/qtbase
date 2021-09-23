@@ -243,6 +243,7 @@ private slots:
     void winIdChangeEvent();
     void persistentWinId();
     void showNativeChild();
+    void closeAndShowWithNativeChild();
     void transientParent();
     void qobject_castInDestroyedSlot();
 
@@ -4771,6 +4772,51 @@ void tst_QWidget::showNativeChild()
     child.winId();
     topLevel.show();
     QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
+}
+
+void tst_QWidget::closeAndShowWithNativeChild()
+{
+    bool dontCreateNativeWidgetSiblings = QApplication::testAttribute(Qt::AA_DontCreateNativeWidgetSiblings);
+    auto resetAttribute = qScopeGuard([&]{
+        QApplication::setAttribute(Qt::AA_DontCreateNativeWidgetSiblings, dontCreateNativeWidgetSiblings);
+    });
+    QApplication::setAttribute(Qt::AA_DontCreateNativeWidgetSiblings);
+
+    QWidget topLevel;
+    QWidget *nativeChild = new QWidget;
+    nativeChild->setFixedSize(200, 200);
+    QWidget *nativeHiddenChild = new QWidget;
+    nativeHiddenChild->setFixedSize(200, 200);
+    QWidget *normalChild = new QWidget;
+    normalChild->setFixedSize(200, 200);
+
+    QHBoxLayout *layout = new QHBoxLayout;
+    layout->addWidget(nativeChild);
+    layout->addWidget(nativeHiddenChild);
+    layout->addWidget(normalChild);
+    topLevel.setLayout(layout);
+
+    nativeHiddenChild->hide();
+
+    topLevel.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
+    nativeChild->winId();
+    const QSize originalSize = topLevel.size();
+    topLevel.close();
+
+    // all children must have the same state
+    QCOMPARE(nativeChild->isHidden(), normalChild->isHidden());
+    QCOMPARE(nativeChild->isVisible(), normalChild->isVisible());
+    QCOMPARE(nativeChild->testAttribute(Qt::WA_WState_Visible),
+             normalChild->testAttribute(Qt::WA_WState_Visible));
+    QCOMPARE(nativeChild->testAttribute(Qt::WA_WState_Hidden),
+             normalChild->testAttribute(Qt::WA_WState_Hidden));
+    QCOMPARE(nativeChild->testAttribute(Qt::WA_WState_ExplicitShowHide),
+             normalChild->testAttribute(Qt::WA_WState_ExplicitShowHide));
+
+    topLevel.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
+    QCOMPARE(topLevel.size(), originalSize);
 }
 
 class ShowHideEventWidget : public QWidget
