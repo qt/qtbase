@@ -75,26 +75,65 @@ QT_BEGIN_NAMESPACE
 /*!
     \enum QAbstractTestLogger::IncidentTypes
 
-    \value Pass
-    \value XFail
-    \value Fail
-    \value XPass
-    \value BlacklistedPass
-    \value BlacklistedFail
-    \value BlacklistedXPass
-    \value BlacklistedXFail
+    \value Pass The test ran to completion successfully.
+    \value XFail The test failed a check that is known to fail; this failure
+           does not prevent successful completion of the test and may be
+           followed by further checks.
+    \value Fail The test fails.
+    \value XPass A check which was expected to fail actually passed. This is
+           counted as a failure, as it means whatever caused the known failure
+           no longer does, so the test needs an update.
+    \value BlacklistedPass As Pass but the test was blacklisted.
+    \value BlacklistedXFail As XFail but the test was blacklisted.
+    \value BlacklistedFail As Fail but the test was blacklisted.
+    \value BlacklistedXPass As XPass but the test was blacklisted.
+
+    A test may also skip (see \l {QAbstractTestLogger::}{MessageTypes}). The
+    first of skip, Fail, XPass or the blacklisted equivalents of the last two to
+    arise is decisive for the outcome of the test: loggers which should only
+    report one outcome should thus record that as the outcome and either ignore
+    later incidents (or skips) in the same run of the test function or map them
+    to some form of message.
+
+    \note tests can be "blacklisted" when they are known to fail
+    unreliably. When testing is used to decide whether a change to the code
+    under test is acceptable, such failures are not automatic grounds for
+    rejecting the change, if the unreliable failure was known before the
+    change. QTest::qExec(), as a result, only returns a failing status code if
+    some non-blacklisted test failed. Logging backends may reasonably report a
+    blacklisted result just as they would report the non-blacklisted equivalent,
+    optionally with some annotation to indicate that the result should not be
+    taken as damning evidence against recent changes to the code under test.
+
+    \sa QAbstractTestLogger::addIncident()
 */
 
 /*!
     \enum QAbstractTestLogger::MessageTypes
-    \value Warn
-    \value QWarning
-    \value QDebug
-    \value QCritical
-    \value QFatal
-    \value Skip
-    \value Info
-    \value QInfo
+
+    The members whose names begin with \c Q describe messages that originate in
+    calls, by the test or code under test, to Qt logging functions (implemented
+    as macros) whose names are similar, with a \c q in place of the leading \c
+    Q. The other members describe messages generated internally by QtTest.
+
+    \value QInfo An informational message from qInfo().
+    \value QWarning A warning from qWarning().
+    \value QDebug A debug message from qDebug().
+    \value QCritical A critical error from qCritical().
+    \value QFatal A fatal error from qFatal(), or an unrecognised message from
+           the Qt logging functions.
+    \value Skip The current test ended prematurely, skipping some checks.
+    \value Info Messages QtTest generates as requested by the \c{-v1} or \c{-v2}
+           command-line option being specified when running the test.
+    \value Warn A warning generated internally by QtTest
+
+    \note For these purposes, some utilities provided by QtTestlib as helper
+    functions to facilitate testing - such as \l QSignalSpy, \l
+    QTestAccessibility, \l QTest::qExtractTestData(), and the facilities to
+    deliver artificial mouse and keyboard events - are treated as test code,
+    rather than internal to QtTest.
+
+    \sa QAbstractTestLogger::addMessage()
 */
 
 /*!
