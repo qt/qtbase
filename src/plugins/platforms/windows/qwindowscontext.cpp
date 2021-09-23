@@ -1453,6 +1453,9 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         return true;
 #endif
     }   break;
+    case QtWindows::DpiScaledSizeEvent:
+        platformWindow->handleDpiScaledSize(wParam, lParam, result);
+        return true;
     case QtWindows::DpiChangedEvent:
         platformWindow->handleDpiChanged(hwnd, wParam, lParam);
         return true;

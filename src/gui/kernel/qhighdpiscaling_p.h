@@ -124,6 +124,7 @@ public:
     static QPoint mapPositionFromNative(const QPoint &pos, const QPlatformScreen *platformScreen);
     static QPoint mapPositionToNative(const QPoint &pos, const QPlatformScreen *platformScreen);
     static QDpi logicalDpi(const QScreen *screen);
+    static qreal roundScaleFactor(qreal rawFactor);
 
 private:
     struct ScreenFactor {
@@ -134,7 +135,6 @@ private:
     };
 
     static qreal rawScaleFactor(const QPlatformScreen *screen);
-    static qreal roundScaleFactor(qreal rawFactor);
     static QDpi effectiveLogicalDpi(const QPlatformScreen *screen, qreal rawFactor, qreal roundedFactor);
     static qreal screenSubfactor(const QPlatformScreen *screen);
     static QScreen *screenForPosition(Point position, QScreen *guess);
