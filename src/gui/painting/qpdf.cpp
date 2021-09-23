@@ -856,14 +856,14 @@ void QPdfEngine::drawRects (const QRectF *rects, int rectCount)
     if (!d->hasPen && !d->hasBrush)
         return;
 
-    if (d->simplePen || !d->hasPen) {
-        // draw strokes natively in this case for better output
-        if(!d->simplePen && !d->stroker.matrix.isIdentity())
+    if ((d->simplePen && !d->needsTransform) || !d->hasPen) {
+        // draw natively in this case for better output
+        if (!d->hasPen && d->needsTransform) // i.e. this is just a fillrect
             *d->currentPage << "q\n" << QPdf::generateMatrix(d->stroker.matrix);
         for (int i = 0; i < rectCount; ++i)
             *d->currentPage << rects[i].x() << rects[i].y() << rects[i].width() << rects[i].height() << "re\n";
         *d->currentPage << (d->hasPen ? (d->hasBrush ? "B\n" : "S\n") : "f\n");
-        if(!d->simplePen && !d->stroker.matrix.isIdentity())
+        if (!d->hasPen && d->needsTransform)
             *d->currentPage << "Q\n";
     } else {
         QPainterPath p;
@@ -1136,12 +1136,12 @@ void QPdfEngine::updateState(const QPaintEngineState &state)
             d->pen = state.pen();
         }
         d->hasPen = d->pen.style() != Qt::NoPen;
+        bool oldCosmetic = d->stroker.cosmeticPen;
         d->stroker.setPen(d->pen, state.renderHints());
         QBrush penBrush = d->pen.brush();
-        bool cosmeticPen = qt_pen_is_cosmetic(d->pen, state.renderHints());
         bool oldSimple = d->simplePen;
-        d->simplePen = (d->hasPen && !cosmeticPen && (penBrush.style() == Qt::SolidPattern) && penBrush.isOpaque() && d->opacity == 1.0);
-        if (oldSimple != d->simplePen)
+        d->simplePen = (d->hasPen && (penBrush.style() == Qt::SolidPattern) && penBrush.isOpaque() && d->opacity == 1.0);
+        if (oldSimple != d->simplePen || oldCosmetic != d->stroker.cosmeticPen)
             flags |= DirtyTransform;
     } else if (flags & DirtyHints) {
         d->stroker.setPen(d->pen, state.renderHints());
@@ -1227,7 +1227,7 @@ void QPdfEngine::setupGraphicsState(QPaintEngine::DirtyFlags flags)
         *d->currentPage << "q\n";
         d->needsTransform = false;
         if (!d->stroker.matrix.isIdentity()) {
-            if (d->simplePen)
+            if (d->simplePen && !d->stroker.cosmeticPen)
                 *d->currentPage << QPdf::generateMatrix(d->stroker.matrix);
             else
                 d->needsTransform = true; // I.e. page-wide xf not set, local xf needed
