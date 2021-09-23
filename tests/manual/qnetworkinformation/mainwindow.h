@@ -46,6 +46,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
     using Reachability = QNetworkInformation::Reachability;
+    using TransportMedia = QNetworkInformation::TransportMedia;
 
 public:
     MainWindow() : QMainWindow(nullptr)
@@ -67,17 +68,25 @@ public slots:
         updateText();
     }
 
+    void updateTransportMedia(TransportMedia newValue)
+    {
+        transportMedia = newValue;
+        updateText();
+    }
+
 private:
     void updateText()
     {
         QString str =
-                QLatin1String("Reachability: %1\nBehind captive portal: %2")
-                        .arg(enumToString(reachability), QStringView(captive ? u"true" : u"false"));
+                QLatin1String("Reachability: %1\nBehind captive portal: %2\nTransport media: %3")
+                        .arg(enumToString(reachability), QStringView(captive ? u"true" : u"false"),
+                             enumToString(transportMedia));
         label->setText(str);
     }
 
     QLabel *const label = new QLabel(this);
     Reachability reachability = Reachability::Unknown;
+    TransportMedia transportMedia = TransportMedia::Unknown;
     bool captive = false;
 };
 

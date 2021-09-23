@@ -47,7 +47,8 @@ int main(int argc, char **argv)
 #endif
 
     if (!QNetworkInformation::load(QNetworkInformation::Feature::Reachability
-                                   | QNetworkInformation::Feature::CaptivePortal)) {
+                                   | QNetworkInformation::Feature::CaptivePortal
+                                   | QNetworkInformation::Feature::TransportMedia)) {
         qWarning("Failed to load any backend");
         qDebug() << "Backends available:" << QNetworkInformation::availableBackends().join(", ");
         return -1;
@@ -64,16 +65,24 @@ int main(int argc, char **argv)
     QObject::connect(info, &QNetworkInformation::isBehindCaptivePortalChanged,
                      [&](bool status) { qDebug() << "Updated, behind captive portal:" << status; });
 
+    QObject::connect(info, &QNetworkInformation::transportMediaChanged,
+                     [&](QNetworkInformation::TransportMedia newMedia) {
+                         qDebug() << "Updated, current transport media:" << newMedia;
+                     });
+
 #ifdef MOBILE
     // Some extra connections to update the window if we're on mobile
     QObject::connect(info, &QNetworkInformation::reachabilityChanged, &window,
                      &MainWindow::updateReachability);
     QObject::connect(info, &QNetworkInformation::isBehindCaptivePortalChanged, &window,
                      &MainWindow::updateCaptiveState);
+    QObject::connect(info, &QNetworkInformation::transportMediaChanged, &window,
+                     &MainWindow::updateTransportMedia);
 #endif
 
     qDebug() << "Initial reachability:" << info->reachability();
     qDebug() << "Behind captive portal:" << info->isBehindCaptivePortal();
+    qDebug() << "Transport media:" << info->transportMedia();
 
     return app.exec();
 }
