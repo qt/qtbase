@@ -318,6 +318,7 @@ public:
     void handleResized(int wParam);
     void handleHidden();
     void handleCompositionSettingsChanged();
+    void handleDpiChanged(HWND hwnd, WPARAM wParam, LPARAM lParam);
 
     static void displayChanged();
     static void settingsChanged();

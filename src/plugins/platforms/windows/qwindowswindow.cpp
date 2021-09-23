@@ -1833,6 +1833,33 @@ void QWindowsWindow::handleCompositionSettingsChanged()
     }
 }
 
+void QWindowsWindow::handleDpiChanged(HWND hwnd, WPARAM wParam, LPARAM lParam)
+{
+    const UINT dpi = HIWORD(wParam);
+    const qreal scale = qreal(dpi) / qreal(savedDpi());
+    setSavedDpi(dpi);
+
+    // Send screen change first, so that the new sceen is set during any following resize
+    checkForScreenChanged(QWindowsWindow::FromDpiChange);
+
+    // Apply the suggested window geometry to the native window. This will make
+    // sure the window tracks the mouse cursor during screen change, and also
+    // that the window size is scaled according to the DPI change.
+    updateFullFrameMargins();
+    const auto prcNewWindow = reinterpret_cast<RECT *>(lParam);
+    SetWindowPos(hwnd, nullptr, prcNewWindow->left, prcNewWindow->top,
+                 prcNewWindow->right - prcNewWindow->left,
+                 prcNewWindow->bottom - prcNewWindow->top, SWP_NOZORDER | SWP_NOACTIVATE);
+
+    // Scale child QPlatformWindow size. Windows sends WM_DPICHANGE to top-level windows only.
+    for (QWindow *childWindow : window()->findChildren<QWindow *>()) {
+        QWindowsWindow *platformChildWindow = static_cast<QWindowsWindow *>(childWindow->handle());
+        QRect currentGeometry = platformChildWindow->geometry();
+        QRect scaledGeometry = QRect(currentGeometry.topLeft() * scale, currentGeometry.size() * scale);
+        platformChildWindow->setGeometry(scaledGeometry);
+    }
+}
+
 static QRect normalFrameGeometry(HWND hwnd)
 {
     WINDOWPLACEMENT wp;
