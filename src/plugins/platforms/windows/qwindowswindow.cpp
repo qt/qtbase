@@ -1834,6 +1834,24 @@ void QWindowsWindow::handleCompositionSettingsChanged()
     }
 }
 
+void QWindowsWindow::handleDpiScaledSize(WPARAM wParam, LPARAM lParam, LRESULT *result)
+{
+    // We want to keep QWindow's device independent size constant across the
+    // DPI change. To accomplish this, scale QPlatformWindow's native size
+    // by the change of DPI (e.g. 120 -> 144 = 1.2), also taking any scale
+    // factor rounding into account. The win32 window size includes the margins;
+    // add the margins for the new DPI to the window size.
+    const int dpi = int(wParam);
+    const qreal scale = QHighDpiScaling::roundScaleFactor(qreal(dpi) / QWindowsScreen::baseDpi) /
+                        QHighDpiScaling::roundScaleFactor(qreal(savedDpi()) / QWindowsScreen::baseDpi);
+    const QMargins margins = QWindowsGeometryHint::frame(style(), exStyle(), dpi);
+    const QSize windowSize = (geometry().size() * scale).grownBy(margins);
+    SIZE *size = reinterpret_cast<SIZE *>(lParam);
+    size->cx = windowSize.width();
+    size->cy = windowSize.height();
+    *result = true; // Inform Windows that we've set a size
+}
+
 void QWindowsWindow::handleDpiChanged(HWND hwnd, WPARAM wParam, LPARAM lParam)
 {
     const UINT dpi = HIWORD(wParam);

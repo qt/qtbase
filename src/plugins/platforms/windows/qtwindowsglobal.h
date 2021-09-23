@@ -60,6 +60,10 @@
 #  define WM_DPICHANGED 0x02E0
 #endif
 
+#ifndef WM_GETDPISCALEDSIZE
+#  define WM_GETDPISCALEDSIZE 0x02E4
+#endif
+
 // WM_POINTER support from Windows 8 onwards (WINVER >= 0x0602)
 #ifndef WM_POINTERUPDATE
 #  define WM_NCPOINTERUPDATE 0x0241
@@ -129,6 +133,7 @@ enum WindowsEventType // Simplify event types
     EnterSizeMoveEvent = WindowEventFlag + 22,
     ExitSizeMoveEvent = WindowEventFlag + 23,
     PointerActivateWindowEvent = WindowEventFlag + 24,
+    DpiScaledSizeEvent = WindowEventFlag + 25,
     MouseEvent = MouseEventFlag + 1,
     MouseWheelEvent = MouseEventFlag + 2,
     CursorEvent = MouseEventFlag + 3,
@@ -316,6 +321,8 @@ inline QtWindows::WindowsEventType windowsEventType(UINT message, WPARAM wParamI
         return HIWORD(wParamIn) ? QtWindows::AcceleratorCommandEvent : QtWindows::MenuCommandEvent;
     case WM_DPICHANGED:
         return QtWindows::DpiChangedEvent;
+    case WM_GETDPISCALEDSIZE:
+        return QtWindows::DpiScaledSizeEvent;
     case WM_ENTERSIZEMOVE:
         return QtWindows::EnterSizeMoveEvent;
     case WM_EXITSIZEMOVE:
