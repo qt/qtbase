@@ -1567,6 +1567,7 @@ qint64 QProcess::processId() const
 void QProcess::close()
 {
     Q_D(QProcess);
+    emit aboutToClose();
     while (waitForBytesWritten(-1))
         ;
     kill();
