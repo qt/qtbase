@@ -51,7 +51,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QCocoaBackingStore : public QRasterBackingStore
+class QCocoaBackingStore : public QPlatformBackingStore
 {
 protected:
     QCocoaBackingStore(QWindow *window);

@@ -52,7 +52,7 @@
 QT_BEGIN_NAMESPACE
 
 QCocoaBackingStore::QCocoaBackingStore(QWindow *window)
-    : QRasterBackingStore(window)
+    : QPlatformBackingStore(window)
 {
 }
 
