@@ -53,7 +53,7 @@ QT_BEGIN_NAMESPACE
 
 namespace QTest {
 
-    static const char* xmlMessageType2String(QAbstractTestLogger::MessageTypes type)
+    static const char *xmlMessageType2String(QAbstractTestLogger::MessageTypes type)
     {
         switch (type) {
         case QAbstractTestLogger::Warn:
@@ -76,7 +76,7 @@ namespace QTest {
         return "??????";
     }
 
-    static const char* xmlIncidentType2String(QAbstractTestLogger::IncidentTypes type)
+    static const char *xmlIncidentType2String(QAbstractTestLogger::IncidentTypes type)
     {
         switch (type) {
         case QAbstractTestLogger::Pass:
@@ -313,7 +313,7 @@ void QXmlTestLogger::addMessage(MessageTypes type, const QString &message,
     XML characters as necessary so that dest is suitable for use in an XML
     quoted attribute string.
 */
-int QXmlTestLogger::xmlQuote(QTestCharBuffer* destBuf, char const* src, size_t n)
+int QXmlTestLogger::xmlQuote(QTestCharBuffer *destBuf, char const *src, size_t n)
 {
     if (n == 0) return 0;
 
@@ -321,24 +321,24 @@ int QXmlTestLogger::xmlQuote(QTestCharBuffer* destBuf, char const* src, size_t n
     *dest = 0;
     if (!src) return 0;
 
-    char* begin = dest;
-    char* end = dest + n;
+    char *begin = dest;
+    char *end = dest + n;
 
     while (dest < end) {
         switch (*src) {
 
-#define MAP_ENTITY(chr, ent) \
-            case chr:                                   \
-                if (dest + sizeof(ent) < end) {         \
-                    strcpy(dest, ent);                  \
-                    dest += sizeof(ent) - 1;            \
-                }                                       \
-                else {                                  \
-                    *dest = 0;                          \
-                    return (dest+sizeof(ent)-begin);    \
-                }                                       \
-                ++src;                                  \
-                break;
+#define MAP_ENTITY(chr, ent)                        \
+        case chr:                                   \
+            if (dest + sizeof(ent) < end) {         \
+                strcpy(dest, ent);                  \
+                dest += sizeof(ent) - 1;            \
+            }                                       \
+            else {                                  \
+                *dest = 0;                          \
+                return (dest+sizeof(ent)-begin);    \
+            }                                       \
+            ++src;                                  \
+            break;
 
             MAP_ENTITY('>', "&gt;");
             MAP_ENTITY('<', "&lt;");
@@ -352,15 +352,15 @@ int QXmlTestLogger::xmlQuote(QTestCharBuffer* destBuf, char const* src, size_t n
 
 #undef MAP_ENTITY
 
-            case 0:
-                *dest = 0;
-                return (dest-begin);
+        case 0:
+            *dest = 0;
+            return (dest-begin);
 
-            default:
-                *dest = *src;
-                ++dest;
-                ++src;
-                break;
+        default:
+            *dest = *src;
+            ++dest;
+            ++src;
+            break;
         }
     }
 
@@ -373,7 +373,7 @@ int QXmlTestLogger::xmlQuote(QTestCharBuffer* destBuf, char const* src, size_t n
     Copy up to n characters from the src string into dest, escaping any
     special strings such that dest is suitable for use in an XML CDATA section.
 */
-int QXmlTestLogger::xmlCdata(QTestCharBuffer *destBuf, char const* src, size_t n)
+int QXmlTestLogger::xmlCdata(QTestCharBuffer *destBuf, char const *src, size_t n)
 {
     if (!n) return 0;
 
@@ -387,8 +387,8 @@ int QXmlTestLogger::xmlCdata(QTestCharBuffer *destBuf, char const* src, size_t n
     static char const CDATA_END[] = "]]>";
     static char const CDATA_END_ESCAPED[] = "]]]><![CDATA[]>";
 
-    char* begin = dest;
-    char* end = dest + n;
+    char *begin = dest;
+    char *end = dest + n;
     while (dest < end) {
         if (!*src) {
             *dest = 0;
@@ -418,13 +418,13 @@ int QXmlTestLogger::xmlCdata(QTestCharBuffer *destBuf, char const* src, size_t n
     return (dest-begin);
 }
 
-typedef int (*StringFormatFunction)(QTestCharBuffer*,char const*,size_t);
+typedef int (*StringFormatFunction)(QTestCharBuffer *, char const *, size_t);
 
 /*
     A wrapper for string functions written to work with a fixed size buffer so they can be called
     with a dynamically allocated buffer.
 */
-int allocateStringFn(QTestCharBuffer* str, char const* src, StringFormatFunction func)
+int allocateStringFn(QTestCharBuffer *str, char const *src, StringFormatFunction func)
 {
     static const int MAXSIZE = 1024*1024*2;
 
@@ -451,12 +451,12 @@ int allocateStringFn(QTestCharBuffer* str, char const* src, StringFormatFunction
     return res;
 }
 
-int QXmlTestLogger::xmlQuote(QTestCharBuffer* str, char const* src)
+int QXmlTestLogger::xmlQuote(QTestCharBuffer *str, char const *src)
 {
     return allocateStringFn(str, src, QXmlTestLogger::xmlQuote);
 }
 
-int QXmlTestLogger::xmlCdata(QTestCharBuffer* str, char const* src)
+int QXmlTestLogger::xmlCdata(QTestCharBuffer *str, char const *src)
 {
     return allocateStringFn(str, src, QXmlTestLogger::xmlCdata);
 }
