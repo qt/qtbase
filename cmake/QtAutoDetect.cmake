@@ -56,6 +56,10 @@ function(qt_auto_detect_wasm)
             set(QT_EMCC_RECOMMENDED_VERSION "${recommended_version}" CACHE STRING INTERNAL FORCE)
 
             set(QT_AUTODETECT_WASM_IS_DONE TRUE CACHE BOOL "")
+        else()
+            message(STATUS
+                "Reusing cached Emscripten ${EMCC_VERSION} toolchain file detected at "
+                "${CMAKE_TOOLCHAIN_FILE}")
         endif()
     endif()
 endfunction()
