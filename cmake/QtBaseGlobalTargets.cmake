@@ -283,6 +283,10 @@ set(__public_cmake_helpers
     cmake/QtPublicWalkLibsHelpers.cmake
     cmake/QtPublicFindPackageHelpers.cmake
     cmake/QtPublicDependencyHelpers.cmake
+
+    # Public CMake files that are installed next Qt6Config.cmake, but are NOT included by it.
+    # Instead they are included by the generated CMake toolchain file.
+    cmake/QtPublicWasmToolchainHelpers.cmake
 )
 
 qt_copy_or_install(FILES ${__public_cmake_helpers} DESTINATION "${__GlobalConfig_install_dir}")
