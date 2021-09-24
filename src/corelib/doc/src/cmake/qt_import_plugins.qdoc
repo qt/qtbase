@@ -34,6 +34,8 @@
 
 \summary Specifies a custom set of plugins to import for a static Qt build.
 
+\include cmake-find-package-core.qdocinc
+
 \section1 Synopsis
 
 \badcode

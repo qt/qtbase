@@ -34,6 +34,8 @@
 
 \summary Prevents some unicode-related compiler definitions being set automatically on a target.
 
+\include cmake-find-package-core.qdocinc
+
 \section1 Synopsis
 
 \badcode

@@ -49,6 +49,8 @@ find_package(Qt6 COMPONENTS DBus REQUIRED)
 \summary Generates C++ sources implementing an interface for a D-Bus interface
 description file.
 
+\include cmake-find-package-dbus.qdocinc
+
 \section1 Synopsis
 
 \badcode
@@ -113,6 +115,8 @@ Options can be set using \c set_source_file_property on the \c dbus_spec:
 \summary Generates C++ sources implementing interfaces for D-Bus interface
 description files.
 
+\include cmake-find-package-dbus.qdocinc
+
 \section1 Synopsis
 
 \badcode
@@ -169,6 +173,8 @@ arguments:
 
 \summary Generates a D-Bus interface from a header file.
 
+\include cmake-find-package-dbus.qdocinc
+
 \section1 Synopsis
 
 \badcode
@@ -203,6 +209,8 @@ arguments to the tool can be set after \c{OPTIONS}.
 \target qt6_add_dbus_adaptor
 
 \summary Generates an adaptor class for a D-Bus interface.
+
+\include cmake-find-package-dbus.qdocinc
 
 \section1 Synopsis
 

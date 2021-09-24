@@ -34,6 +34,8 @@
 
 \summary Prevents forcing source files to be treated as UTF-8 for Windows.
 
+\include cmake-find-package-core.qdocinc
+
 \section1 Synopsis
 
 \badcode

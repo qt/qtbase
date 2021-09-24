@@ -34,6 +34,8 @@
 
 \summary Defines a build target that runs androiddeployqt to produce an APK.
 
+\include cmake-find-package-core.qdocinc
+
 \preliminarycmakecommand
 \cmakecommandandroidonly
 

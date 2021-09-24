@@ -34,6 +34,8 @@
 
 \summary Creates an RCC file from a list of Qt resource files.
 
+\include cmake-find-package-core.qdocinc
+
 \section1 Synopsis
 
 \badcode
