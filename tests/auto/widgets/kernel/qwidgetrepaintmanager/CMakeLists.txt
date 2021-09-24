@@ -1,0 +1,10 @@
+qt_internal_add_test(tst_qwidgetrepaintmanager
+    SOURCES
+        tst_qwidgetrepaintmanager.cpp
+    PUBLIC_LIBRARIES
+        Qt::CorePrivate
+        Qt::Gui
+        Qt::GuiPrivate
+        Qt::TestPrivate
+        Qt::Widgets
+)

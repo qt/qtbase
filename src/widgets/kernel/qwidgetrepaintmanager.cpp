@@ -449,12 +449,8 @@ void QWidgetPrivate::moveRect(const QRect &rect, int dx, int dy)
     QWidget *pw = q->parentWidget();
     QPoint toplevelOffset = pw->mapTo(tlw, QPoint());
     QWidgetPrivate *pd = pw->d_func();
-    QRect clipR(pd->clipRect());
+    const QRect clipR(pd->clipRect());
     const QRect newRect(rect.translated(dx, dy));
-    QRect destRect = rect.intersected(clipR);
-    if (destRect.isValid())
-        destRect = destRect.translated(dx, dy).intersected(clipR);
-    const QRect sourceRect(destRect.translated(-dx, -dy));
     const QRect parentRect(rect & clipR);
     const bool nativeWithTextureChild = textureChildSeen && hasPlatformWindow(q);
 
@@ -476,9 +472,13 @@ void QWidgetPrivate::moveRect(const QRect &rect, int dx, int dy)
         pd->invalidateBackingStore(parentR);
         invalidateBackingStore((newRect & clipR).translated(-data.crect.topLeft()));
     } else {
+        QRect destRect = rect.intersected(clipR);
+        if (destRect.isValid())
+            destRect = destRect.translated(dx, dy).intersected(clipR);
+        const QRect sourceRect(destRect.translated(-dx, -dy));
 
         QWidgetRepaintManager *repaintManager = x->repaintManager.get();
-        QRegion childExpose(newRect & clipR);
+        QRegion childExpose = QRegion(newRect) & clipR;
         QRegion overlappedExpose;
 
         if (sourceRect.isValid()) {
@@ -493,6 +493,7 @@ void QWidgetPrivate::moveRect(const QRect &rect, int dx, int dy)
                         childExpose -= r.translated(dx, dy);
                     }
                 }
+                isMoved = true;
             }
 
             childExpose -= overlappedExpose;
@@ -503,14 +504,17 @@ void QWidgetPrivate::moveRect(const QRect &rect, int dx, int dy)
 
         const bool childUpdatesEnabled = q->updatesEnabled();
         if (childUpdatesEnabled) {
+            // As per paintAndFlush, reset isMoved if we have overlapping
+            // or child regions that need to be painted.
             if (!overlappedExpose.isEmpty()) {
                 overlappedExpose.translate(-data.crect.topLeft());
                 invalidateBackingStore(overlappedExpose);
+                isMoved = false;
             }
             if (!childExpose.isEmpty()) {
                 childExpose.translate(-data.crect.topLeft());
                 repaintManager->markDirty(childExpose, q);
-                isMoved = true;
+                isMoved = false;
             }
         }
 
@@ -519,12 +523,10 @@ void QWidgetPrivate::moveRect(const QRect &rect, int dx, int dy)
         if (extra && extra->hasMask)
             parentExpose += QRegion(newRect) - extra->mask.translated(data.crect.topLeft());
 
-        if (!parentExpose.isEmpty()) {
+        if (!parentExpose.isEmpty())
             repaintManager->markDirty(parentExpose, pw);
-            pd->isMoved = true;
-        }
 
-        if (childUpdatesEnabled) {
+        if (childUpdatesEnabled && sourceRect.isValid()) {
             QRegion needsFlush(sourceRect);
             needsFlush += destRect;
             repaintManager->markNeedsFlush(pw, needsFlush, toplevelOffset);
