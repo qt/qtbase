@@ -2926,6 +2926,18 @@ void tst_QDateTime::fromStringStringFormat_localTimeZone_data()
             << QString("2008-10-13 GMT 11.50") << QString("yyyy-MM-dd t hh.mm")
             << QDateTime(QDate(2008, 10, 13), QTime(11, 50), gmt);
     }
+    QTimeZone helsinki("Europe/Helsinki");
+    if (helsinki.isValid()) {
+        // QTBUG-96861: QAsn1Element::toDateTime() tripped over an assert in
+        // QTimeZonePrivate::dataForLocalTime() on macOS and iOS.
+        // The first 20m 11s of 1921-05-01 were skipped, so the parser's attempt
+        // to construct a local time after scanning yyMM tripped up on the start
+        // of the day, when the zone backend lacked transition data.
+        QTest::newRow("Helsinki-joins-EET")
+            << QByteArrayLiteral("Europe/Helsinki")
+            << QString("210506000000Z") << QString("yyMMddHHmmsst")
+            << QDateTime(QDate(1921, 5, 6), QTime(0, 0), Qt::UTC);
+    }
 #endif
 }
 

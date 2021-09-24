@@ -416,8 +416,10 @@ QTimeZonePrivate::Data QTimeZonePrivate::dataForLocalTime(qint64 forLocalMSecs, 
             utcEpochMSecs = forStd;
         } else {
             // Invalid forLocalMSecs: in spring-forward gap.
-            const int dstStep = daylightTimeOffset(early < late ? imminent : recent) * 1000;
-            Q_ASSERT(dstStep); // There can't be a transition without it !
+            const int dstStep = (offsetInDst - offsetInStd) * 1000;
+            // That'll typically be the DST offset at imminent, but changes to
+            // standard time have zero DST offset both before and after.
+            Q_ASSERT(dstStep > 0); // There can't be a gap without it !
             utcEpochMSecs = (hint > 0) ? forStd - dstStep : forDst + dstStep;
         }
     }
