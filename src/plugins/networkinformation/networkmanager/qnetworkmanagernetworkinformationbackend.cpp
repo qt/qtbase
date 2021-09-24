@@ -70,6 +70,54 @@ QNetworkInformation::Reachability reachabilityFromNMState(QNetworkManagerInterfa
     }
     return QNetworkInformation::Reachability::Unknown;
 }
+
+QNetworkInformation::TransportMedium
+transportMediumFromDeviceType(QNetworkManagerInterface::NMDeviceType type)
+{
+    switch (type) {
+    case QNetworkManagerInterface::NM_DEVICE_TYPE_ETHERNET:
+        return QNetworkInformation::TransportMedium::Ethernet;
+    case QNetworkManagerInterface::NM_DEVICE_TYPE_WIFI:
+        return QNetworkInformation::TransportMedium::WiFi;
+    case QNetworkManagerInterface::NM_DEVICE_TYPE_BT:
+        return QNetworkInformation::TransportMedium::Bluetooth;
+    case QNetworkManagerInterface::NM_DEVICE_TYPE_MODEM:
+        return QNetworkInformation::TransportMedium::Cellular;
+
+    case QNetworkManagerInterface::NM_DEVICE_TYPE_UNKNOWN:
+    case QNetworkManagerInterface::NM_DEVICE_TYPE_GENERIC:
+    case QNetworkManagerInterface::NM_DEVICE_TYPE_UNUSED1:
+    case QNetworkManagerInterface::NM_DEVICE_TYPE_UNUSED2:
+    case QNetworkManagerInterface::NM_DEVICE_TYPE_OLPC_MESH:
+    case QNetworkManagerInterface::NM_DEVICE_TYPE_WIMAX:
+    case QNetworkManagerInterface::NM_DEVICE_TYPE_INFINIBAND:
+    case QNetworkManagerInterface::NM_DEVICE_TYPE_BOND:
+    case QNetworkManagerInterface::NM_DEVICE_TYPE_VLAN:
+    case QNetworkManagerInterface::NM_DEVICE_TYPE_ADSL:
+    case QNetworkManagerInterface::NM_DEVICE_TYPE_BRIDGE:
+    case QNetworkManagerInterface::NM_DEVICE_TYPE_TEAM:
+    case QNetworkManagerInterface::NM_DEVICE_TYPE_TUN:
+    case QNetworkManagerInterface::NM_DEVICE_TYPE_IP_TUNNEL:
+    case QNetworkManagerInterface::NM_DEVICE_TYPE_MACVLAN:
+    case QNetworkManagerInterface::NM_DEVICE_TYPE_VXLAN:
+    case QNetworkManagerInterface::NM_DEVICE_TYPE_VETH:
+    case QNetworkManagerInterface::NM_DEVICE_TYPE_MACSEC:
+    case QNetworkManagerInterface::NM_DEVICE_TYPE_DUMMY:
+    case QNetworkManagerInterface::NM_DEVICE_TYPE_PPP:
+    case QNetworkManagerInterface::NM_DEVICE_TYPE_OVS_INTERFACE:
+    case QNetworkManagerInterface::NM_DEVICE_TYPE_OVS_PORT:
+    case QNetworkManagerInterface::NM_DEVICE_TYPE_OVS_BRIDGE:
+    case QNetworkManagerInterface::NM_DEVICE_TYPE_WPAN:
+    case QNetworkManagerInterface::NM_DEVICE_TYPE_6LOWPAN:
+    case QNetworkManagerInterface::NM_DEVICE_TYPE_WIREGUARD:
+    case QNetworkManagerInterface::NM_DEVICE_TYPE_WIFI_P2P:
+    case QNetworkManagerInterface::NM_DEVICE_TYPE_VRF:
+        break;
+    }
+    // While the list is exhaustive of the enum there can be additional
+    // entries added in NetworkManager that isn't listed here
+    return QNetworkInformation::TransportMedium::Unknown;
+}
 }
 
 static QString backendName = QStringLiteral("networkmanager");
@@ -92,7 +140,8 @@ public:
     static QNetworkInformation::Features featuresSupportedStatic()
     {
         using Feature = QNetworkInformation::Feature;
-        return QNetworkInformation::Features(Feature::Reachability | Feature::CaptivePortal);
+        return QNetworkInformation::Features(Feature::Reachability | Feature::CaptivePortal
+                                             | Feature::TransportMedium);
     }
 
     bool isValid() const { return iface.isValid(); }
@@ -153,6 +202,14 @@ QNetworkManagerNetworkInformationBackend::QNetworkManagerNetworkInformationBacke
             [this](ConnectivityState state) {
                 const bool behindPortal = (state == ConnectivityState::NM_CONNECTIVITY_PORTAL);
                 setBehindCaptivePortal(behindPortal);
+            });
+
+    using NMDeviceType = QNetworkManagerInterface::NMDeviceType;
+    setTransportMedium(transportMediumFromDeviceType(iface.deviceType()));
+
+    connect(&iface, &QNetworkManagerInterface::deviceTypeChanged, this,
+            [this](NMDeviceType newDevice) {
+                setTransportMedium(transportMediumFromDeviceType(newDevice));
             });
 }
 

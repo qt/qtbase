@@ -52,6 +52,13 @@
 
 #define DBUS_PROPERTIES_INTERFACE "org.freedesktop.DBus.Properties"
 
+#define NM_DBUS_SERVICE "org.freedesktop.NetworkManager"
+
+#define NM_DBUS_PATH "/org/freedesktop/NetworkManager"
+#define NM_DBUS_INTERFACE NM_DBUS_SERVICE
+#define NM_CONNECTION_DBUS_INTERFACE NM_DBUS_SERVICE ".Connection.Active"
+#define NM_DEVICE_DBUS_INTERFACE NM_DBUS_SERVICE ".Device"
+
 QT_BEGIN_NAMESPACE
 
 QNetworkManagerInterfaceBase::QNetworkManagerInterfaceBase(QObject *parent)
@@ -112,6 +119,34 @@ QNetworkManagerInterface::NMConnectivityState QNetworkManagerInterface::connecti
     return QNetworkManagerInterface::NM_CONNECTIVITY_UNKNOWN;
 }
 
+QNetworkManagerInterface::NMDeviceType QNetworkManagerInterface::deviceType() const
+{
+    auto it = propertyMap.constFind("PrimaryConnection");
+    if (it != propertyMap.cend())
+        return extractDeviceType(it->value<QDBusObjectPath>());
+    return NM_DEVICE_TYPE_UNKNOWN;
+}
+
+auto QNetworkManagerInterface::extractDeviceType(QDBusObjectPath devicePath) const -> NMDeviceType
+{
+    const QDBusInterface connection(NM_DBUS_SERVICE, devicePath.path(),
+                                    NM_CONNECTION_DBUS_INTERFACE, QDBusConnection::systemBus());
+    if (!connection.isValid())
+        return NM_DEVICE_TYPE_UNKNOWN;
+
+    const auto devicePaths = connection.property("Devices").value<QList<QDBusObjectPath>>();
+    if (devicePaths.isEmpty())
+        return NM_DEVICE_TYPE_UNKNOWN;
+
+    const QDBusObjectPath primaryDevicePath = devicePaths.front();
+    const QDBusInterface device(NM_DBUS_SERVICE, primaryDevicePath.path(), NM_DEVICE_DBUS_INTERFACE,
+                                QDBusConnection::systemBus());
+    const QVariant deviceType = device.property("DeviceType");
+    if (!deviceType.isValid())
+        return NM_DEVICE_TYPE_UNKNOWN;
+    return static_cast<NMDeviceType>(deviceType.toUInt());
+}
+
 void QNetworkManagerInterface::setProperties(const QMap<QString, QVariant> &map)
 {
     for (auto i = map.cbegin(), end = map.cend(); i != end; ++i) {
@@ -132,6 +167,8 @@ void QNetworkManagerInterface::setProperties(const QMap<QString, QVariant> &map)
             } else if (i.key() == QLatin1String("Connectivity")) {
                 quint32 state = i.value().toUInt();
                 Q_EMIT connectivityChanged(static_cast<NMConnectivityState>(state));
+            } else if (i.key() == QLatin1String("PrimaryConnection")) {
+                Q_EMIT deviceTypeChanged(extractDeviceType(i->value<QDBusObjectPath>()));
             }
         }
     }
