@@ -86,6 +86,7 @@ private slots:
     void virtualsOnClose();
     void deleteOnDone();
     void quitOnDone();
+    void focusWidgetAfterOpen();
 };
 
 // Testing get/set functions
@@ -734,6 +735,23 @@ void tst_QDialog::quitOnDone()
     QTimer::singleShot(1000, QApplication::instance(), &QApplication::quit);
     QApplication::exec();
     QCOMPARE(quitSpy.count(), 1);
+}
+
+void tst_QDialog::focusWidgetAfterOpen()
+{
+    QDialog dialog;
+    dialog.setLayout(new QVBoxLayout);
+
+    QPushButton *pb1 = new QPushButton;
+    QPushButton *pb2 = new QPushButton;
+    dialog.layout()->addWidget(pb1);
+    dialog.layout()->addWidget(pb2);
+
+    pb2->setFocus();
+    QCOMPARE(dialog.focusWidget(), static_cast<QWidget *>(pb2));
+
+    dialog.open();
+    QCOMPARE(dialog.focusWidget(), static_cast<QWidget *>(pb2));
 }
 
 QTEST_MAIN(tst_QDialog)

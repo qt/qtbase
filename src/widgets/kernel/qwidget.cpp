@@ -10424,8 +10424,8 @@ void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
     });
 #endif
 
-    bool resized = testAttribute(Qt::WA_Resized);
-    bool wasCreated = testAttribute(Qt::WA_WState_Created);
+    const bool resized = testAttribute(Qt::WA_Resized);
+    const bool wasCreated = testAttribute(Qt::WA_WState_Created);
     QWidget *oldtlw = window();
 
     if (f & Qt::Window) // Frame geometry likely changes, refresh.
@@ -10434,7 +10434,7 @@ void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
     QWidget *desktopWidget = nullptr;
     if (parent && parent->windowType() == Qt::Desktop)
         desktopWidget = parent;
-    bool newParent = (parent != parentWidget()) || !wasCreated || desktopWidget;
+    bool newParent = (parent != parentWidget()) || desktopWidget;
 
     if (newParent && parent && !desktopWidget) {
         if (testAttribute(Qt::WA_NativeWindow) && !QCoreApplication::testAttribute(Qt::AA_DontCreateNativeWidgetSiblings))
@@ -10453,7 +10453,9 @@ void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
             QCoreApplication::sendEvent(this, &e);
         }
     }
-    if (newParent && isAncestorOf(focusWidget()))
+    // If we get parented into another window, children will be folded
+    // into the new parent's focus chain, so clear focus now.
+    if (newParent && isAncestorOf(focusWidget()) && !(f & Qt::Window))
         focusWidget()->clearFocus();
 
     d->setParent_sys(parent, f);
@@ -10500,7 +10502,7 @@ void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
     // event to handle recreation/rebinding of the GL context, hence the
     // (f & Qt::MSWindowsOwnDC) clause (which is set on QGLWidgets on all
     // platforms).
-    if (newParent
+    if (newParent || !wasCreated
 #if QT_CONFIG(opengles2)
         || (f & Qt::MSWindowsOwnDC)
 #endif

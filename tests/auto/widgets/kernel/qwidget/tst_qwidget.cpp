@@ -430,6 +430,9 @@ private slots:
     void deleteWindowInCloseEvent();
     void quitOnClose();
 
+    void setParentChangesFocus_data();
+    void setParentChangesFocus();
+
 private:
     bool ensureScreenSize(int width, int height);
 
@@ -12096,6 +12099,75 @@ void tst_QWidget::quitOnClose()
     });
     QApplication::exec();
     QCOMPARE(quitSpy.count(), 2);
+}
+
+void tst_QWidget::setParentChangesFocus_data()
+{
+    QTest::addColumn<Qt::WindowType>("initialType");
+    QTest::addColumn<bool>("initialParent");
+    QTest::addColumn<Qt::WindowType>("targetType");
+    QTest::addColumn<bool>("targetParent");
+    QTest::addColumn<bool>("reparentBeforeShow");
+    QTest::addColumn<QString>("focusWidget");
+
+    for (const bool before : {true, false}) {
+        const char *tag = before ? "before" : "after";
+        QTest::addRow("give dialog parent, %s", tag)
+            << Qt::Dialog << false << Qt::Dialog << true << before << "lineEdit";
+        QTest::addRow("make dialog parentless, %s", tag)
+            << Qt::Dialog << true << Qt::Dialog << false << before << "lineEdit";
+        QTest::addRow("dialog to sheet, %s", tag)
+            << Qt::Dialog << true << Qt::Sheet << true << before << "lineEdit";
+        QTest::addRow("window to widget, %s", tag)
+            << Qt::Window << true << Qt::Widget << true << before << "windowEdit";
+        QTest::addRow("widget to window, %s", tag)
+            << Qt::Widget << true << Qt::Window << true << before << "lineEdit";
+    }
+}
+
+void tst_QWidget::setParentChangesFocus()
+{
+    QFETCH(Qt::WindowType, initialType);
+    QFETCH(bool, initialParent);
+    QFETCH(Qt::WindowType, targetType);
+    QFETCH(bool, targetParent);
+    QFETCH(bool, reparentBeforeShow);
+    QFETCH(QString, focusWidget);
+
+    QWidget window;
+    window.setObjectName("window");
+    QLineEdit *windowEdit = new QLineEdit(&window);
+    windowEdit->setObjectName("windowEdit");
+    windowEdit->setFocus();
+
+    std::unique_ptr<QWidget> secondary(new QWidget(initialParent ? &window : nullptr, initialType));
+    secondary->setObjectName("secondary");
+    QLineEdit *lineEdit = new QLineEdit(secondary.get());
+    lineEdit->setObjectName("lineEdit");
+    QPushButton *pushButton = new QPushButton(secondary.get());
+    pushButton->setObjectName("pushButton");
+    lineEdit->setFocus();
+
+    window.show();
+    QVERIFY(QTest::qWaitForWindowActive(&window));
+
+    if (reparentBeforeShow) {
+        secondary->setParent(targetParent ? &window : nullptr, targetType);
+        // making a widget into a window doesn't set a focusWidget until shown
+        if (secondary->focusWidget())
+            QCOMPARE(secondary->focusWidget()->objectName(), focusWidget);
+    }
+    secondary->show();
+    QApplication::setActiveWindow(secondary.get());
+    QVERIFY(QTest::qWaitForWindowActive(secondary.get()));
+
+    if (!reparentBeforeShow) {
+        secondary->setParent(targetParent ? &window : nullptr, targetType);
+        secondary->show(); // reparenting hides, so show again
+        QApplication::setActiveWindow(secondary.get());
+        QVERIFY(QTest::qWaitForWindowActive(secondary.get()));
+    }
+    QCOMPARE(QApplication::focusWidget()->objectName(), focusWidget);
 }
 
 QTEST_MAIN(tst_QWidget)
