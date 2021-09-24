@@ -43,7 +43,6 @@ qt_wrap_cpp(<VAR> src_file1 [src_file2 ...]
             [TARGET target]
             [OPTIONS ...]
             [DEPENDS ...])
-
 \endcode
 
 \versionlessCMakeCommandsNote qt6_wrap_cpp()
