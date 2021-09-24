@@ -32,7 +32,7 @@
 \title qt_import_plugins
 \target qt6_import_plugins
 
-\brief Specifies a custom set of plugins to import for a static Qt build.
+\summary Specifies a custom set of plugins to import for a static Qt build.
 
 \section1 Synopsis
 

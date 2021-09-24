@@ -32,7 +32,7 @@
 \title qt_extract_metatypes
 \target qt6_extract_metatypes
 
-\brief Extracts metatypes from a Qt target and generates an associated metatypes.json file.
+\summary Extracts metatypes from a Qt target and generates an associated metatypes.json file.
 
 \preliminarycmakecommand
 

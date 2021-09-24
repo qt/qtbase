@@ -32,7 +32,7 @@
 \title qt_add_library
 \target qt6_add_library
 
-\brief Creates and finalizes a library.
+\summary Creates and finalizes a library.
 
 \section1 Synopsis
 

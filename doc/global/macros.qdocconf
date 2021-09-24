@@ -46,6 +46,9 @@ macro.endfloat.HTML         = "</div>"
 macro.clearfloat.HTML       = "<br style=\"clear: both\" />"
 macro.emptyspan.HTML        = "<span></span>"
 
+# Use like \brief, but replicates sentence also as text
+macro.summary = "\\brief \1\n\n\1\n"
+
 # Expands to the minor version based on the QT_VER environment variable
 macro.QtMinorVersion        = "$QT_VER"
 macro.QtMinorVersion.match  = "\\d+\\.(\\d+)"

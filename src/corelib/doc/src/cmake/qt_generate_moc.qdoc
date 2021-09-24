@@ -32,7 +32,7 @@
 \title qt_generate_moc
 \target qt6_generate_moc
 
-\brief Calls moc on an input file.
+\summary Calls moc on an input file.
 
 \section1 Synopsis
 

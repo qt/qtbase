@@ -32,7 +32,7 @@
 \title qt_add_big_resources
 \target qt6_add_big_resources
 
-\brief Compiles big binary resources into object code.
+\summary Compiles big binary resources into object code.
 
 \section1 Synopsis
 
