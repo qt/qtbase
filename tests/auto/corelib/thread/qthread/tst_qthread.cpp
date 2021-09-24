@@ -107,6 +107,7 @@ private slots:
     void quitLock();
 
     void create();
+    void threadIdReuse();
 };
 
 enum { one_minute = 60 * 1000, five_minutes = 5 * one_minute };
@@ -1631,6 +1632,72 @@ void tst_QThread::requestTermination()
     sem.acquire();
     QVERIFY(thread.wait(1000));
     QVERIFY(!thread.isInterruptionRequested());
+}
+
+/*
+    This is a regression test for QTBUG-96846.
+
+    Incorrect system thread ID cleanup can cause QThread::wait() to report that
+    a thread is trying to wait for itself.
+*/
+void tst_QThread::threadIdReuse()
+{
+    class Thread1 : public QThread {
+    public:
+        // It's important that those thread ID's are not accessed concurrently
+        Qt::HANDLE savedThreadId;
+
+        void run() override { savedThreadId = QThread::currentThreadId(); }
+    };
+
+    class Thread2 : public Thread1 {
+    public:
+        bool waitOk;
+        Thread2(QThread *otherThread) : Thread1(), waitOk(false), otherThread(otherThread) {}
+
+        void run() override {
+            Thread1::run();
+            waitOk = otherThread->wait();
+        }
+
+    private:
+        QThread *const otherThread;
+    };
+
+    Thread1 thread1;
+    thread1.start();
+    QVERIFY(thread1.wait());
+
+    // If the system thread allocated for thread1 is destroyed before thread2 is
+    // started, at least on some versions of Linux the system thread ID for
+    // thread2 would be the same as one that was used for thread1.
+
+    // The system thread may be alive for some time after returning from
+    // QThread::wait() because the implementation is using detachable threads, so
+    // some additional time is required for the system thread to terminate. Not
+    // waiting long enough here would result in a new system thread ID being
+    // allocated for thread2 and this test passing even without a fix for
+    // QTBUG-96846.
+    bool threadIdReused = false;
+
+    for (int i = 0; i < 42; i++) {
+        QThread::msleep(1);
+
+        Thread2 thread2(&thread1);
+        thread2.start();
+        QVERIFY(thread2.wait());
+        QVERIFY(thread2.waitOk);
+
+        if (thread1.savedThreadId == thread2.savedThreadId) {
+          qDebug("Thread ID reused at iteration %d", i);
+          threadIdReused = true;
+          break;
+        }
+    }
+
+    if (!threadIdReused) {
+        QSKIP("Thread ID was not reused");
+    }
 }
 
 QTEST_MAIN(tst_QThread)
