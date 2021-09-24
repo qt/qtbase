@@ -5650,9 +5650,12 @@ void QRhiCommandBuffer::endPass(QRhiResourceUpdateBatch *resourceUpdates)
 
     \note This function can only be called inside a render pass, meaning
     between a beginPass() and endPass() call.
+
+    \note The new graphics pipeline \a ps must be a valid pointer.
  */
 void QRhiCommandBuffer::setGraphicsPipeline(QRhiGraphicsPipeline *ps)
 {
+    Q_ASSERT(ps != nullptr);
     m_rhi->setGraphicsPipeline(this, ps);
 }
 
