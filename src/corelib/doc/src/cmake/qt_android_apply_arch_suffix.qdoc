@@ -34,6 +34,8 @@
 
 \summary Configures the target binary's name to include an architecture-specific suffix.
 
+\include cmake-find-package-core.qdocinc
+
 \preliminarycmakecommand
 \cmakecommandandroidonly
 

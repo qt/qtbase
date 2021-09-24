@@ -34,6 +34,8 @@
 
 \summary Handles various common platform-specific tasks associated with Qt targets.
 
+\include cmake-find-package-core.qdocinc
+
 \section1 Synopsis
 
 \badcode

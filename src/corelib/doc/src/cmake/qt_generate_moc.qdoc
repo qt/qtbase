@@ -34,6 +34,8 @@
 
 \summary Calls moc on an input file.
 
+\include cmake-find-package-core.qdocinc
+
 \section1 Synopsis
 
 \badcode

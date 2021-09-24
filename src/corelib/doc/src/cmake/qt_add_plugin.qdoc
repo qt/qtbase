@@ -34,6 +34,8 @@
 
 \summary Creates a Qt plugin target.
 
+\include cmake-find-package-core.qdocinc
+
 \section1 Synopsis
 
 \badcode
