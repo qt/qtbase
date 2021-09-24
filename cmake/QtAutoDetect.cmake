@@ -16,57 +16,46 @@ function(qt_internal_ensure_static_qt_config)
     endif()
 endfunction()
 
+include("${CMAKE_CURRENT_LIST_DIR}/QtPublicWasmToolchainHelpers.cmake")
 function(qt_auto_detect_wasm)
     if("${QT_QMAKE_TARGET_MKSPEC}" STREQUAL "wasm-emscripten")
         if (NOT DEFINED ENV{EMSDK})
             message(FATAL_ERROR
-                "Can't find EMSDK! Make sure EMSDK environment variable "
-                "is available and emcc is in your path.")
+                "Can't find an Emscripten SDK! Make sure the EMSDK environment variable is "
+                "available by activating and sourcing the emscripten sdk. Also ensure emcc is in "
+                "your path.")
         endif()
-        if(NOT DEFINED QT_AUTODETECT_WASM)
-            # detect EMSCRIPTEN_ROOT path
-            file(READ "$ENV{EMSDK}/.emscripten" ver)
-            string(REGEX MATCH "EMSCRIPTEN_ROOT.*$" EMROOT "${ver}")
-            string(REGEX MATCH "'([^' ]*)'" EMROOT2 "${EMROOT}")
-            string(REPLACE "'" "" EMROOT_PATH "${EMROOT2}")
+        if(NOT DEFINED QT_AUTODETECT_WASM_IS_DONE)
+            message(STATUS "Extracting Emscripten SDK info from EMSDK env var: $ENV{EMSDK}")
+            __qt_internal_get_emroot_path_suffix_from_emsdk_env(EMROOT_PATH)
 
-            # get emscripten version
-            if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
-                set (EXECUTE_COMMANDPATH "$ENV{EMSDK}/${EMROOT_PATH}/emcc.bat")
-            else()
-                set (EXECUTE_COMMANDPATH "$ENV{EMSDK}/${EMROOT_PATH}/emcc")
-            endif()
+            __qt_internal_query_emsdk_version("${EMROOT_PATH}" TRUE CMAKE_EMSDK_REGEX_VERSION)
+            set(EMCC_VERSION "${CMAKE_EMSDK_REGEX_VERSION}" CACHE STRING INTERNAL FORCE)
 
-            file(TO_NATIVE_PATH "${EXECUTE_COMMANDPATH}" EXECUTE_COMMAND)
-            execute_process(COMMAND ${EXECUTE_COMMAND} --version
-                OUTPUT_VARIABLE emOutput
-                OUTPUT_STRIP_TRAILING_WHITESPACE
-                ERROR_VARIABLE emrun_error
-                RESULT_VARIABLE result)
-            if(NOT emOutput)
-                message(FATAL_ERROR
-                        "Can't determine Emscripten version! Error: ${emrun_error}")
-            endif()
-            string(REGEX MATCH "[0-9]+\\.[0-9]+\\.[0-9]+" CMAKE_EMSDK_REGEX_VERSION "${emOutput}")
-            set(EMCC_VERSION "${CMAKE_EMSDK_REGEX_VERSION}" CACHE STRING  INTERNAL FORCE)
-
-            # find toolchain file
+            # Find toolchain file
             if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
-                set(wasm_toolchain_file "$ENV{EMSDK}/${EMROOT_PATH}/cmake/Modules/Platform/Emscripten.cmake")
+                __qt_internal_get_emscripten_cmake_toolchain_file_path_from_emsdk_env(
+                    "${EMROOT_PATH}" wasm_toolchain_file)
                 set(CMAKE_TOOLCHAIN_FILE "${wasm_toolchain_file}" CACHE STRING "" FORCE)
             endif()
 
             if(EXISTS "${CMAKE_TOOLCHAIN_FILE}")
-                message(STATUS "Emscripten ${CMAKE_EMSDK_REGEX_VERSION} toolchain file detected at ${CMAKE_TOOLCHAIN_FILE}")
+                message(STATUS
+                    "Emscripten ${EMCC_VERSION} toolchain file detected at ${CMAKE_TOOLCHAIN_FILE}")
             else()
-                message(FATAL_ERROR "Cannot find the toolchain file Emscripten.cmake. "
-                "Please specify the toolchain file with -DCMAKE_TOOLCHAIN_FILE=<file>.")
+                message(FATAL_ERROR
+                    "Cannot find the toolchain file Emscripten.cmake. "
+                    "Please specify the toolchain file with -DCMAKE_TOOLCHAIN_FILE=<file> "
+                    "or provide a path to a valid emscripten installation via the EMSDK "
+                    "environment variable.")
             endif()
-            set(QT_AUTODETECT_WASM TRUE CACHE BOOL "")
 
             qt_internal_ensure_static_qt_config()
-            # this version of Qt needs this version of emscripten
-            set(QT_EMCC_RECOMMENDED_VERSION 2.0.14 CACHE STRING INTERNAL FORCE)
+
+            __qt_internal_get_emcc_recommended_version(recommended_version)
+            set(QT_EMCC_RECOMMENDED_VERSION "${recommended_version}" CACHE STRING INTERNAL FORCE)
+
+            set(QT_AUTODETECT_WASM_IS_DONE TRUE CACHE BOOL "")
         endif()
     endif()
 endfunction()
