@@ -102,7 +102,7 @@ QT_BEGIN_NAMESPACE
 
     Derived classes should pass this base-constructor the \a filename of the
     file to which they shall log test results, or \nullptr to write to standard
-    output. The protected member \c stream is set to the open file desriptor.
+    output. The protected member \c stream is set to the open file descriptor.
 */
 QAbstractTestLogger::QAbstractTestLogger(const char *filename)
 {
@@ -142,7 +142,7 @@ QAbstractTestLogger::~QAbstractTestLogger()
 }
 
 /*!
-    Returns true precisely if the \c output stream is standard output.
+    Returns true if the \c output stream is standard output.
 */
 bool QAbstractTestLogger::isLoggingToStdout() const
 {
@@ -191,7 +191,7 @@ void QAbstractTestLogger::outputString(const char *msg)
     Called before the start of a test run.
 
     This virtual method is called before the first tests are run. A logging
-    implementation might open a file, write some preamble or prepare in other
+    implementation might open a file, write some preamble, or prepare in other
     ways, such as setting up initial values of variables. It can use the usual
     Qt logging infrastucture, since it is also called before QtTest installs its
     own custom message handler.
@@ -207,7 +207,7 @@ void QAbstractTestLogger::startLogging()
 
     This virtual method is called after all tests have run. A logging
     implementation might collate information gathered from the run, write a
-    summary or close a file. It can use the usual Qt logging infrastucture,
+    summary, or close a file. It can use the usual Qt logging infrastucture,
     since it is also called after QtTest has restored the default message
     handler it replaced with its own custom message handler.
 
@@ -225,7 +225,7 @@ void QAbstractTestLogger::stopLogging()
     function. It is likewise called for \c{initTestCase()} at the start of
     testing, after \l startLogging(), and for \c{cleanupTestCase()} at the end
     of testing, in each case passing the name of the function. It is also called
-    with \nullptr as \function after the last of these functions, or in the
+    with \nullptr as \a function after the last of these functions, or in the
     event of an early end to testing, before \l stopLogging().
 
     For data-driven test functions, this is called only once, before the data
@@ -246,8 +246,8 @@ void QAbstractTestLogger::stopLogging()
 
     Every logging implementation must implement this method. In some cases it
     may be called more than once without an intervening call to \l
-    enterTestFunction(); in such cases, the implementation should ignore the
-    second (and later) calls.
+    enterTestFunction(). In such cases, the implementation should ignore these
+    later calls, until the next call to enterTestFunction().
 
     \sa enterTestFunction(), enterTestData()
 */
@@ -269,9 +269,9 @@ void QAbstractTestLogger::stopLogging()
 /*!
     \fn void QAbstractTestLogger::addIncident(IncidentTypes type, const char *description, const char *file, int line)
 
-    This virtual method is called when an event occurs that bears on whether the
-    test passes or fails. The \a type indicates whether this was a pass or a
-    fail, whether a failure was expected and whether the test being run is
+    This virtual method is called when an event occurs that relates to whether
+    the test passes or fails. The \a type indicates whether this was a pass or a
+    fail, whether a failure was expected, and whether the test being run is
     blacklisted. The \a description may be empty (for a pass), a message
     describing the failure or, for an expected failure, the explanation of why a
     failure was expected. Where the location in code of the incident is known,
@@ -280,9 +280,8 @@ void QAbstractTestLogger::stopLogging()
 
     Every logging implementation must implement this method. Note that there are
     circumstances where more than one incident may be reported, in this way, for
-    a single run of a test on a single dataset.  It is (for now) the
-    implementation's responsibility to recognize such cases and decide what to
-    do about them.
+    a single run of a test on a single dataset. It is the implementation's
+    responsibility to recognize such cases and decide what to do about them.
 
     \sa addMessage(), addBenchmarkResult()
 */
@@ -326,10 +325,10 @@ void QAbstractTestLogger::stopLogging()
     messages have previously been processed. (The limiting number of messages is
     controlled by the -maxwarnings option to a test and defaults to 2002.)
 
-    Logging implementation should not normally need to over-ride this method.
+    Logging implementations should not normally need to override this method.
     The base implementation converts \a type to the matching \l MessageType,
-    formats the given \a message suitably for the specified \a context and
-    forwards the converted type and formatted message to the overload taking
+    formats the given \a message suitably for the specified \a context, and
+    forwards the converted type and formatted message to the overload that takes
     MessageType and QString.
 
     \sa QTest::ignoreMessage(), addIncident()
