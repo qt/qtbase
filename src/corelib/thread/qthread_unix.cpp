@@ -393,6 +393,8 @@ void QThreadPrivate::finish(void *arg)
         d->interruptionRequested = false;
 
         d->isInFinish = false;
+        d->data->threadId.storeRelaxed(nullptr);
+
         d->thread_done.wakeAll();
     }
 #ifndef QT_NO_EXCEPTIONS
@@ -775,6 +777,8 @@ bool QThread::wait(QDeadlineTimer deadline)
         if (!d->thread_done.wait(locker.mutex(), deadline))
             return false;
     }
+    Q_ASSERT(d->data->threadId.loadRelaxed() == nullptr);
+
     return true;
 }
 

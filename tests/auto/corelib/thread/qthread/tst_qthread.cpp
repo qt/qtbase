@@ -111,6 +111,7 @@ private slots:
     void quitLock();
 
     void create();
+    void threadIdReuse();
 };
 
 enum { one_minute = 60 * 1000, five_minutes = 5 * one_minute };
@@ -1626,6 +1627,58 @@ void tst_QThread::requestTermination()
     sem.acquire();
     QVERIFY(thread.wait(1000));
     QVERIFY(!thread.isInterruptionRequested());
+}
+
+/*
+    This is a regression test for QTBUG-96846.
+
+    Incorrect system thread ID cleanup can cause QThread::wait() to report that
+    a thread is trying to wait for itself.
+*/
+void tst_QThread::threadIdReuse()
+{
+    // It's important that those thread ID's are not accessed concurrently
+    Qt::HANDLE threadId1;
+
+    auto thread1Fn = [&threadId1]() -> void { threadId1 = QThread::currentThreadId(); };
+    QScopedPointer<QThread> thread1(QThread::create(thread1Fn));
+    thread1->start();
+    QVERIFY(thread1->wait());
+
+    // If the system thread allocated for thread1 is destroyed before thread2 is started,
+    // at least on some versions of Linux the system thread ID for thread2 would be the
+    // same as one that was used for thread1.
+
+    // The system thread may be alive for some time after returning from QThread::wait()
+    // because the implementation is using detachable threads, so some additional time is
+    // required for the system thread to terminate. Not waiting long enough here would result
+    // in a new system thread ID being allocated for thread2 and this test passing even without
+    // a fix for QTBUG-96846.
+    bool threadIdReused = false;
+
+    for (int i = 0; i < 42; i++) {
+        QThread::msleep(1);
+
+        Qt::HANDLE threadId2;
+        auto waitForThread1 = [&thread1, &threadId2]() -> void {
+            threadId2 = QThread::currentThreadId();
+            QVERIFY(thread1->wait());
+        };
+
+        QScopedPointer<QThread> thread2(QThread::create(waitForThread1));
+        thread2->start();
+        QVERIFY(thread2->wait());
+
+        if (threadId1 == threadId2) {
+            qDebug("Thread ID reused at iteration %d", i);
+            threadIdReused = true;
+            break;
+        }
+    }
+
+    if (!threadIdReused) {
+        QSKIP("Thread ID was not reused");
+    }
 }
 
 QTEST_MAIN(tst_QThread)
