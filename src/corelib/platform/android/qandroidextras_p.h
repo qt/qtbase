@@ -273,8 +273,6 @@ namespace QtAndroidPrivate
         PhysicalActivity,
         Contacts,
         Storage,
-        // TODO: remove after usages in other modules are renamed.
-        WriteStorage,
         Calendar
     };
 
