@@ -27,7 +27,7 @@
 
 /*!
 \page qt_add_library.html
-\ingroup cmake-macros-qtcore
+\ingroup cmake-commands-qtcore
 
 \title qt_add_library
 \target qt6_add_library

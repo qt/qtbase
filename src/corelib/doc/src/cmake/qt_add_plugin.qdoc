@@ -27,7 +27,7 @@
 
 /*!
 \page qt_add_plugin.html
-\ingroup cmake-macros-qtcore
+\ingroup cmake-commands-qtcore
 
 \title qt_add_plugin
 \target qt6_add_plugin

@@ -27,7 +27,7 @@
 
 /*!
 \page qt_wrap_cpp.html
-\ingroup cmake-macros-qtcore
+\ingroup cmake-commands-qtcore
 
 \title qt_wrap_cpp
 \target qt6_wrap_cpp

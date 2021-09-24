@@ -27,7 +27,7 @@
 
 /*!
 \page qt_add_bigresources.html
-\ingroup cmake-macros-qtcore
+\ingroup cmake-commands-qtcore
 
 \title qt_add_big_resources
 \target qt6_add_big_resources

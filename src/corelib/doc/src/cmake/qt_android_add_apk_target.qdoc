@@ -27,7 +27,7 @@
 
 /*!
 \page qt_android_add_apk_target.html
-\ingroup cmake-macros-qtcore
+\ingroup cmake-commands-qtcore
 
 \title qt_android_add_apk_target
 \target qt6_android_add_apk_target

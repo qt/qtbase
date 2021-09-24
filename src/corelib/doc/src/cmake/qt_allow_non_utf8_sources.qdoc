@@ -27,7 +27,7 @@
 
 /*!
 \page qt_allow_non_utf8_sources.html
-\ingroup cmake-macros-qtcore
+\ingroup cmake-commands-qtcore
 
 \title qt_allow_non_utf8_sources
 \target qt6_allow_non_utf8_sources

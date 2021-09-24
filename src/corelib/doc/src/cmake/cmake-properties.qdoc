@@ -26,6 +26,16 @@
 ****************************************************************************/
 
 /*!
+\group cmake-target-properties-qtcore
+\title CMake Target Properties in Qt6 Core
+
+\l{CMake Commands in Qt6 Core}{CMake Commands} know about the following CMake
+target properties:
+
+\sa{CMake Property Reference}
+*/
+
+/*!
 \page cmake-target-property-QT_ANDROID_DEPLOYMENT_DEPENDENCIES.html
 \ingroup cmake-properties-qtcore
 \ingroup cmake-target-properties-qtcore

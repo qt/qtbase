@@ -239,6 +239,7 @@
     \li \l{The Qt D-Bus Type System}
     \li \l{Qt D-Bus XML compiler (qdbusxml2cpp)}
     \li \l{Qt D-Bus C++ Classes}
+    \li \l{CMake Commands in Qt6 DBus}
     \li \l{Qt D-Bus Examples}
     \li \l{D-Bus Viewer}
     \endlist
