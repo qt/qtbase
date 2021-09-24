@@ -27,7 +27,7 @@
 
 /*!
 \page qt_disable_unicode_defines.html
-\ingroup cmake-macros-qtcore
+\ingroup cmake-commands-qtcore
 
 \title qt_disable_unicode_defines
 \target qt6_disable_unicode_defines

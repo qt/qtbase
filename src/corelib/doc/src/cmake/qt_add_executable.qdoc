@@ -27,7 +27,7 @@
 
 /*!
 \page qt_add_executable.html
-\ingroup cmake-macros-qtcore
+\ingroup cmake-commands-qtcore
 
 \title qt_add_executable
 \target qt6_add_executable

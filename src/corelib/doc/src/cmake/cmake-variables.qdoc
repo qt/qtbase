@@ -26,6 +26,20 @@
 ****************************************************************************/
 
 /*!
+\group cmake-variables-qtcore
+\title CMake Variables in Qt6 Core
+
+The following CMake variables are defined when Qt6::Core is loaded, for instance
+with
+
+\badcode
+find_package(Qt6 COMPONENTS Core REQUIRED)
+\endcode
+
+\sa{CMake Variable Reference}
+*/
+
+*/*!
 \page cmake-variable-ANDROID_NDK_HOST_SYSTEM_NAME.html
 \ingroup cmake-variables
 \ingroup cmake-variables-qtcore

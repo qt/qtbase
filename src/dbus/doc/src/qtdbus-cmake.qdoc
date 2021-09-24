@@ -26,6 +26,20 @@
 ****************************************************************************/
 
 /*!
+\group cmake-commands-qtdbus
+\title CMake Commands in Qt6 DBus
+
+The following CMake commands are defined when Qt6::DBus is loaded, for instance
+with
+
+\code
+find_package(Qt6 COMPONENTS DBus REQUIRED)
+\endcode
+
+\sa{CMake Command Reference}
+*/
+
+/*!
 \page qtdbus-cmake-qt-add-dbus-interface.html
 \ingroup cmake-commands-qtdbus
 

@@ -27,7 +27,7 @@
 
 /*!
 \page qt_android_apply_arch_suffix.html
-\ingroup cmake-macros-qtcore
+\ingroup cmake-commands-qtcore
 
 \title qt_android_apply_arch_suffix
 \target qt6_android_apply_arch_suffix

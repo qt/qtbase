@@ -136,6 +136,12 @@
         \li \l{Input/Output and Networking}{Input/Output Classes}
         \li \l{Event Classes}
         \endlist
+    \li CMake API
+        \list
+        \li \l{CMake Commands in Qt6 Core}{CMake Commands}
+        \li \l{CMake Variables in Qt6 Core}{CMake Variables}
+        \li \l{CMake Target Properties in Qt6 Core}{CMake Target Properties}
+        \endlist
     \endlist
 
 */

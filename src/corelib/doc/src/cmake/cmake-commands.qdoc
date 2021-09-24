@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -26,40 +26,15 @@
 ****************************************************************************/
 
 /*!
-\page qt_generate_moc.html
-\ingroup cmake-commands-qtcore
+\group cmake-commands-qtcore
+\title CMake Commands in Qt6 Core
 
-\title qt_generate_moc
-\target qt6_generate_moc
+The following CMake commands are defined when Qt6::Core is loaded, for instance
+with
 
-\summary Calls moc on an input file.
-
-\section1 Synopsis
-
-\badcode
-qt_generate_moc(src_file dest_file
-                [TARGET target])
+\code
+find_package(Qt6 COMPONENTS Core REQUIRED)
 \endcode
 
-\versionlessCMakeCommandsNote qt6_generate_moc()
-
-\section1 Description
-
-Creates a rule to call the \l{moc}{Meta-Object Compiler (moc)} on \c src_file
-and store the output in \c dest_file.
-
-\note This is a low-level macro. See the \l{CMake AUTOMOC Documentation} for a
-more convenient way to let source files be processed with \c{moc}.
-\l qt_wrap_cpp is also similar, but automatically generates a temporary file
-path for you.
-
-\section1 Arguments
-
-You can set an explicit \c{TARGET}. This will make sure that the target
-properties \c{INCLUDE_DIRECTORIES} and \c{COMPILE_DEFINITIONS} are also used
-when scanning the source files with \c{moc}.
-
-\section1 Examples
-
-\snippet cmake-macros/examples.cmake qt_generate_moc
+\sa{CMake Command Reference}
 */

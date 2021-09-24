@@ -27,7 +27,7 @@
 
 /*!
 \page qt_android_generate_deployment_settings.html
-\ingroup cmake-macros-qtcore
+\ingroup cmake-commands-qtcore
 
 \title qt_android_generate_deployment_settings
 \target qt6_android_generate_deployment_settings
