@@ -32,7 +32,7 @@
 \title qt_android_add_apk_target
 \target qt6_android_add_apk_target
 
-\brief Defines a build target that runs androiddeployqt to produce an APK.
+\summary Defines a build target that runs androiddeployqt to produce an APK.
 
 \preliminarycmakecommand
 \cmakecommandandroidonly

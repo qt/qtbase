@@ -32,7 +32,7 @@
 \title qt_disable_unicode_defines
 \target qt6_disable_unicode_defines
 
-\brief Prevents some unicode-related compiler definitions being set automatically on a target.
+\summary Prevents some unicode-related compiler definitions being set automatically on a target.
 
 \section1 Synopsis
 

@@ -32,7 +32,7 @@
 \title qt_add_dbus_interface
 \target qt6_add_dbus_interface
 
-\brief Generates C++ sources implementing an interface for a D-Bus interface
+\summary Generates C++ sources implementing an interface for a D-Bus interface
 description file.
 
 \section1 Synopsis
@@ -94,9 +94,9 @@ Options can be set using \c set_source_file_property on the \c dbus_spec:
 \ingroup cmake-commands-qtdbus
 
 \title qt_add_dbus_interfaces
-\target qt6_add_dbus_interface
+\target qt6_add_dbus_interfaces
 
-\brief Generates C++ sources implementing interfaces for D-Bus interface
+\summary Generates C++ sources implementing interfaces for D-Bus interface
 description files.
 
 \section1 Synopsis
@@ -153,7 +153,7 @@ arguments:
 \title qt_generate_dbus_interface
 \target qt6_generate_dbus_interface
 
-\brief Generates a D-Bus interface from a header file.
+\summary Generates a D-Bus interface from a header file.
 
 \section1 Synopsis
 
@@ -188,7 +188,7 @@ arguments to the tool can be set after \c{OPTIONS}.
 \title qt_add_dbus_adaptor
 \target qt6_add_dbus_adaptor
 
-\brief Generates an adaptor class for a D-Bus interface.
+\summary Generates an adaptor class for a D-Bus interface.
 
 \section1 Synopsis
 

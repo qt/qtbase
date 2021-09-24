@@ -32,7 +32,7 @@
 \title qt_allow_non_utf8_sources
 \target qt6_allow_non_utf8_sources
 
-\brief Prevent forcing source files to be treated as UTF-8 for Windows.
+\summary Prevents forcing source files to be treated as UTF-8 for Windows.
 
 \section1 Synopsis
 

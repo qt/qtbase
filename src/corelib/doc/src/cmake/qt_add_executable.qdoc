@@ -32,7 +32,7 @@
 \title qt_add_executable
 \target qt6_add_executable
 
-\brief Creates and finalizes an application target of a platform-specific type.
+\summary Creates and finalizes an application target of a platform-specific type.
 
 \section1 Synopsis
 

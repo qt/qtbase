@@ -32,7 +32,7 @@
 \title qt_add_binary_resources
 \target qt6_add_binary_resources
 
-\brief Creates an \c{RCC} file from a list of Qt resource files.
+\summary Creates an RCC file from a list of Qt resource files.
 
 \section1 Synopsis
 

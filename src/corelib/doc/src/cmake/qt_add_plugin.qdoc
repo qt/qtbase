@@ -32,7 +32,7 @@
 \title qt_add_plugin
 \target qt6_add_plugin
 
-\brief Creates a Qt plugin target.
+\summary Creates a Qt plugin target.
 
 \section1 Synopsis
 

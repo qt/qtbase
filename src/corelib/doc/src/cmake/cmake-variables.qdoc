@@ -33,7 +33,7 @@
 \title ANDROID_NDK_HOST_SYSTEM_NAME
 \target cmake-variable-ANDROID_NDK_HOST_SYSTEM_NAME
 
-\brief Android-specific architecture of the host system.
+\summary Android-specific architecture of the host system.
 
 \preliminarycmakevariable
 \cmakevariableandroidonly
@@ -52,7 +52,7 @@ part of the deployment settings for a target.
 \title ANDROID_SDK_ROOT
 \target cmake-variable-ANDROID_SDK_ROOT
 
-\brief Location of the Android SDK.
+\summary Location of the Android SDK.
 
 \preliminarycmakevariable
 \cmakevariableandroidonly
@@ -71,7 +71,7 @@ It is written out as part of the deployment settings for a target.
 \title QT_ANDROID_APPLICATION_ARGUMENTS
 \target cmake-variable-QT_ANDROID_APPLICATION_ARGUMENTS
 
-\brief List of arguments to pass to Android applications.
+\summary List of arguments to pass to Android applications.
 
 \preliminarycmakevariable
 \cmakevariableandroidonly
@@ -90,7 +90,7 @@ out as part of the deployment settings for a target.
 \title QT_HOST_PATH
 \target cmake-variable-QT_HOST_PATH
 
-\brief Location of the host Qt installation when cross-compiling.
+\summary Location of the host Qt installation when cross-compiling.
 
 \preliminarycmakevariable
 
@@ -107,7 +107,7 @@ platform. It is used to locate tools to be run on the host (\l{moc}, \l{rcc},
 \title QT_NO_SET_XCODE_DEVELOPMENT_TEAM_ID
 \target cmake-variable-QT_NO_SET_XCODE_DEVELOPMENT_TEAM_ID
 
-\brief Disables providing a fallback team ID during target finalization on iOS.
+\summary Disables providing a fallback team ID during target finalization on iOS.
 
 When finalizing an executable target on iOS,
 \l{qt6_finalize_target}{qt_finalize_target()} will populate the target's
@@ -123,7 +123,7 @@ Set \c QT_NO_SET_XCODE_DEVELOPMENT_TEAM_ID to true if you want to prevent this.
 \title QT_NO_SET_XCODE_BUNDLE_IDENTIFIER
 \target cmake-variable-QT_NO_SET_XCODE_BUNDLE_IDENTIFIER
 
-\brief Disables providing a fallback app bundle ID during target finalization on iOS.
+\summary Disables providing a fallback app bundle ID during target finalization on iOS.
 
 When finalizing an executable target on iOS,
 \l{qt6_finalize_target}{qt_finalize_target()} will populate the target's
