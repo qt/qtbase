@@ -676,19 +676,20 @@ bool QLibrary::isLibrary(const QString &fileName)
 
 static bool qt_get_metadata(QLibraryPrivate *priv, QString *errMsg)
 {
-    auto getMetaData = [](QFunctionPointer fptr) {
-        auto f = reinterpret_cast<QPluginMetaData (*)()>(fptr);
-        return f();
+    auto error = [=](QString &&explanation) {
+        *errMsg = QLibrary::tr("'%1' is not a Qt plugin (%2)").arg(priv->fileName, std::move(explanation));
+        return false;
     };
 
     QFunctionPointer pfn = priv->resolve("qt_plugin_query_metadata");
     if (!pfn)
-        return false;
+        return error(QLibrary::tr("entrypoint 'qt_plugin_query_metadata' not found"));
 
-    auto metaData = getMetaData(pfn);
+    auto metaData = reinterpret_cast<QPluginMetaData (*)()>(pfn)();
     QJsonDocument doc = qJsonFromRawLibraryMetaData(reinterpret_cast<const char *>(metaData.data), metaData.size, errMsg);
     if (doc.isNull())
-        return false;
+        return false;           // error message already set
+
     priv->metaData = doc.object();
     return true;
 }
