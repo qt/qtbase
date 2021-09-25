@@ -66,10 +66,6 @@ QT_BEGIN_NAMESPACE
 
 QJsonDocument qJsonFromRawLibraryMetaData(const char *raw, qsizetype size, QString *errMsg)
 {
-    Q_ASSERT(size >= qsizetype(sizeof(QPluginMetaData::MagicString)));
-    raw += sizeof(QPluginMetaData::MagicString);
-    size -= sizeof(QPluginMetaData::MagicString);
-
     // extract the keys not stored in CBOR
     QPluginMetaData::Header header;
     Q_ASSERT(size >= qsizetype(sizeof(header)));

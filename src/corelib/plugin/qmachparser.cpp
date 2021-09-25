@@ -194,8 +194,12 @@ QLibraryScanResult  QMachOParser::parse(const char *m_s, ulong fdlen, QString *e
                         || Q_UNLIKELY(fdlen < sect[j].offset + sect[j].size))
                     return notfound(QString(), errorString);
 
+                if (sect[j].size < sizeof(QPluginMetaData::MagicHeader))
+                    return notfound(QLibrary::tr("section .qtmetadata is too small"), errorString);
+
                 qsizetype pos = reinterpret_cast<const char *>(header) - m_s + sect[j].offset;
-                return { pos, qsizetype(sect[j].size) };
+                pos += sizeof(QPluginMetaData::MagicString);
+                return { pos, qsizetype(sect[j].size - sizeof(QPluginMetaData::MagicString)) };
             }
         }
 

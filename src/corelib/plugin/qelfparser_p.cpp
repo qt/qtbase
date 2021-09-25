@@ -210,6 +210,13 @@ QLibraryScanResult QElfParser::parse(const char *dataStart, ulong fdlen, QString
                         .arg(*errMsg, QLibrary::tr("missing section data. This is not a library."));
                 return {};
             }
+            if (sh.size < sizeof(QPluginMetaData::MagicHeader)) {
+                *errMsg = QLibrary::tr("'%1' is an invalid ELF object (%2)")
+                        .arg(*errMsg, QLibrary::tr("section .qtmetadata is too small"));
+                return {};
+            }
+            sh.offset += sizeof(QPluginMetaData::MagicString);
+            sh.size -= sizeof(QPluginMetaData::MagicString);
             return { qsizetype(sh.offset), qsizetype(sh.size) };
         }
         s += e_shentsize;

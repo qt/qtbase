@@ -205,6 +205,7 @@ static QLibraryScanResult qt_find_pattern(const char *s, qsizetype s_len, QStrin
         *errMsg = QLibrary::tr("'%1' is not a Qt plugin").arg(*errMsg);
         return QLibraryScanResult{};
     }
+    i += sizeof(QPluginMetaData::MagicString);
     return { i, s_len - i };
 }
 
@@ -686,7 +687,13 @@ static bool qt_get_metadata(QLibraryPrivate *priv, QString *errMsg)
         return error(QLibrary::tr("entrypoint 'qt_plugin_query_metadata' not found"));
 
     auto metaData = reinterpret_cast<QPluginMetaData (*)()>(pfn)();
-    QJsonDocument doc = qJsonFromRawLibraryMetaData(reinterpret_cast<const char *>(metaData.data), metaData.size, errMsg);
+    auto data = reinterpret_cast<const char *>(metaData.data);
+    if (metaData.size < sizeof(QPluginMetaData::MagicHeader))
+        return error(QLibrary::tr("metadata too small"));
+
+    data += sizeof(QPluginMetaData::MagicString);
+    metaData.size -= sizeof(QPluginMetaData::MagicString);
+    QJsonDocument doc = qJsonFromRawLibraryMetaData(data, metaData.size, errMsg);
     if (doc.isNull())
         return false;           // error message already set
 
