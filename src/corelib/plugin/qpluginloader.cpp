@@ -477,12 +477,10 @@ QList<QStaticPlugin> QPluginLoader::staticPlugins()
 */
 QJsonObject QStaticPlugin::metaData() const
 {
-    Q_ASSERT(rawMetaDataSize >= qsizetype(sizeof(QPluginMetaData::MagicHeader)));
     auto ptr = static_cast<const char *>(rawMetaData);
-    ptr += sizeof(QPluginMetaData::MagicString);
 
     QString errMsg;
-    QJsonDocument doc = qJsonFromRawLibraryMetaData(ptr, rawMetaDataSize - sizeof(QPluginMetaData::MagicString), &errMsg);
+    QJsonDocument doc = qJsonFromRawLibraryMetaData(ptr, rawMetaDataSize, &errMsg);
     Q_ASSERT(doc.isObject());
     Q_ASSERT(errMsg.isEmpty());
     return doc.object();

@@ -155,13 +155,26 @@ void Q_CORE_EXPORT qRegisterStaticPluginFunction(QStaticPlugin staticPlugin);
 // Since Qt 6.3
 template <auto (&PluginMetaData)> class QPluginMetaDataV2
 {
-    struct Payload {
+    struct RegularPayload {
         QPluginMetaData::MagicHeader header = {};
         quint8 payload[sizeof(PluginMetaData)] = {};
-        constexpr Payload() { QPluginMetaData::copy(payload, PluginMetaData); }
+        constexpr RegularPayload() { QPluginMetaData::copy(payload, PluginMetaData); }
     };
 
-#define QT_PLUGIN_METADATAV2_SECTION      QT_PLUGIN_METADATA_SECTION
+    struct StaticPayload {
+        QPluginMetaData::Header header = {};
+        quint8 payload[sizeof(PluginMetaData)] = {};
+        constexpr StaticPayload() { QPluginMetaData::copy(payload, PluginMetaData); }
+    };
+
+#if defined(QT_STATICPLUGIN)
+#  define QT_PLUGIN_METADATAV2_SECTION
+    using Payload = StaticPayload;
+#else
+#  define QT_PLUGIN_METADATAV2_SECTION      QT_PLUGIN_METADATA_SECTION
+    using Payload = RegularPayload;
+#endif
+
     Payload payload = {};
 
 public:
