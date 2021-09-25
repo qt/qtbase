@@ -1468,20 +1468,11 @@ void tst_Moc::environmentIncludePaths()
 // plugin_metadata.h contains a plugin which we register here. Since we're not building this
 // application as a plugin, we need top copy some of the initializer code found in qplugin.h:
 extern "C" QObject *qt_plugin_instance();
-extern "C" QPluginMetaData qt_plugin_query_metadata();
+extern "C" QPluginMetaData qt_plugin_query_metadata_v2();
 class StaticPluginInstance{
 public:
     StaticPluginInstance() {
-        decltype(&qt_plugin_query_metadata) queryFn;
-        queryFn = []() {
-            // Static plugins don't carry the magic string (since Qt 6.3)
-            QPluginMetaData md = qt_plugin_query_metadata();
-            int delta = sizeof(QPluginMetaData::MagicString);
-            md.data = static_cast<const char *>(md.data) + delta;
-            md.size -= delta;
-            return md;
-        };
-        QStaticPlugin plugin(qt_plugin_instance, queryFn);
+        QStaticPlugin plugin(qt_plugin_instance, qt_plugin_query_metadata_v2);
         qRegisterStaticPluginFunction(plugin);
     }
 };

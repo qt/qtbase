@@ -155,13 +155,14 @@ void Q_CORE_EXPORT qRegisterStaticPluginFunction(QStaticPlugin staticPlugin);
 // Since Qt 6.3
 template <auto (&PluginMetaData)> class QPluginMetaDataV2
 {
-    struct RegularPayload {
-        QPluginMetaData::MagicHeader header = {};
+    struct RegularPayload : QPluginMetaData::MagicHeader {
+        static constexpr size_t HeaderOffset = offsetof(QPluginMetaData::MagicHeader, header);
         quint8 payload[sizeof(PluginMetaData)] = {};
         constexpr RegularPayload() { QPluginMetaData::copy(payload, PluginMetaData); }
     };
 
     struct StaticPayload {
+        static constexpr size_t HeaderOffset = 0;
         QPluginMetaData::Header header = {};
         quint8 payload[sizeof(PluginMetaData)] = {};
         constexpr StaticPayload() { QPluginMetaData::copy(payload, PluginMetaData); }
@@ -180,7 +181,9 @@ template <auto (&PluginMetaData)> class QPluginMetaDataV2
 public:
     operator QPluginMetaData() const
     {
-        return { &payload, sizeof(payload) };
+        Q_ASSERT(reinterpret_cast<const char *>(&payload) + Payload::HeaderOffset ==
+                 reinterpret_cast<const char *>(&payload.header));
+        return { &payload.header, sizeof(payload) - Payload::HeaderOffset };
     }
 };
 
@@ -242,7 +245,7 @@ public:
             QT_MOC_EXPORT_PLUGIN_COMMON(PLUGINCLASS, PLUGINCLASSNAME)
 
 #  define QT_MOC_EXPORT_PLUGIN_V2(PLUGINCLASS, MANGLEDNAME, MD)                                 \
-    extern "C" Q_DECL_EXPORT QT_PREPEND_NAMESPACE(QPluginMetaData) qt_plugin_query_metadata()   \
+    extern "C" Q_DECL_EXPORT QT_PREPEND_NAMESPACE(QPluginMetaData) qt_plugin_query_metadata_v2()\
     { static constexpr QT_PLUGIN_METADATAV2_SECTION QPluginMetaDataV2<MD> md{}; return md; }    \
     QT_MOC_EXPORT_PLUGIN_COMMON(PLUGINCLASS, MANGLEDNAME)
 #endif

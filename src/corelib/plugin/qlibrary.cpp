@@ -682,18 +682,31 @@ static bool qt_get_metadata(QLibraryPrivate *priv, QString *errMsg)
         return false;
     };
 
-    QFunctionPointer pfn = priv->resolve("qt_plugin_query_metadata");
-    if (!pfn)
-        return error(QLibrary::tr("entrypoint 'qt_plugin_query_metadata' not found"));
+    QPluginMetaData metaData;
+    QFunctionPointer pfn = priv->resolve("qt_plugin_query_metadata_v2");
+    if (pfn) {
+        metaData = reinterpret_cast<QPluginMetaData (*)()>(pfn)();
+#if QT_VERSION <= QT_VERSION_CHECK(7, 0, 0)
+    } else if ((pfn = priv->resolve("qt_plugin_query_metadata"))) {
+        metaData = reinterpret_cast<QPluginMetaData (*)()>(pfn)();
+        if (metaData.size < sizeof(QPluginMetaData::MagicHeader))
+            return error(QLibrary::tr("metadata too small"));
 
-    auto metaData = reinterpret_cast<QPluginMetaData (*)()>(pfn)();
-    auto data = reinterpret_cast<const char *>(metaData.data);
-    if (metaData.size < sizeof(QPluginMetaData::MagicHeader))
+        // adjust the meta data to point to the header
+        auto data = reinterpret_cast<const char *>(metaData.data);
+        data += sizeof(QPluginMetaData::MagicString);
+        metaData.data = data;
+        metaData.size -= sizeof(QPluginMetaData::MagicString);
+#endif
+    } else {
+        return error(QLibrary::tr("entrypoint to query the plugin meta data not found"));
+    }
+
+    if (metaData.size < sizeof(QPluginMetaData::Header))
         return error(QLibrary::tr("metadata too small"));
 
-    data += sizeof(QPluginMetaData::MagicString);
-    metaData.size -= sizeof(QPluginMetaData::MagicString);
-    QJsonDocument doc = qJsonFromRawLibraryMetaData(data, metaData.size, errMsg);
+    QJsonDocument doc = qJsonFromRawLibraryMetaData(reinterpret_cast<const char *>(metaData.data),
+                                                    metaData.size, errMsg);
     if (doc.isNull())
         return false;           // error message already set
 
