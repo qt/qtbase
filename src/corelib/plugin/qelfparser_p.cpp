@@ -63,28 +63,24 @@ const char *QElfParser::parseSectionHeader(const char *data, ElfSectionHeader *s
     return data;
 }
 
-QLibraryScanResult QElfParser::parse(const char *dataStart, ulong fdlen, const QString &library,
-                                     QLibraryPrivate *lib)
+QLibraryScanResult QElfParser::parse(const char *dataStart, ulong fdlen, QString *errMsg)
 {
 #if defined(QELFPARSER_DEBUG)
     qDebug() << "QElfParser::parse " << library;
 #endif
 
     if (fdlen < 64) {
-        if (lib)
-            lib->errorString = QLibrary::tr("'%1' is not an ELF object (%2)").arg(library, QLibrary::tr("file too small"));
+        *errMsg = QLibrary::tr("'%1' is not an ELF object (%2)").arg(*errMsg, QLibrary::tr("file too small"));
         return {};
     }
     const char *data = dataStart;
     if (qstrncmp(data, "\177ELF", 4) != 0) {
-        if (lib)
-            lib->errorString = QLibrary::tr("'%1' is not an ELF object").arg(library);
+        *errMsg = QLibrary::tr("'%1' is not an ELF object").arg(*errMsg);
         return {};
     }
     // 32 or 64 bit
     if (data[4] != 1 && data[4] != 2) {
-        if (lib)
-            lib->errorString = QLibrary::tr("'%1' is an invalid ELF object (%2)").arg(library, QLibrary::tr("odd cpu architecture"));
+        *errMsg = QLibrary::tr("'%1' is an invalid ELF object (%2)").arg(*errMsg, QLibrary::tr("odd cpu architecture"));
         return {};
     }
 
@@ -93,16 +89,14 @@ QLibraryScanResult QElfParser::parse(const char *dataStart, ulong fdlen, const Q
     */
     constexpr int ExpectedClass = (sizeof(void *) == 4) ? 1 : 2;
     if (data[4] != ExpectedClass) {
-        if (lib)
-            lib->errorString = QLibrary::tr("'%1' is an invalid ELF object (%2)").arg(library, QLibrary::tr("wrong cpu architecture"));
+        *errMsg = QLibrary::tr("'%1' is an invalid ELF object (%2)").arg(*errMsg, QLibrary::tr("wrong cpu architecture"));
         return {};
     }
 
     // endian
     constexpr int ExpectedEndianness = (Q_BYTE_ORDER == Q_LITTLE_ENDIAN) ? 1 : 2;
     if (data[5] != ExpectedEndianness) {
-        if (lib)
-            lib->errorString = QLibrary::tr("'%1' is an invalid ELF object (%2)").arg(library, QLibrary::tr("odd endianness"));
+        *errMsg = QLibrary::tr("'%1' is an invalid ELF object (%2)").arg(*errMsg, QLibrary::tr("odd endianness"));
         return {};
     }
 
@@ -120,8 +114,7 @@ QLibraryScanResult QElfParser::parse(const char *dataStart, ulong fdlen, const Q
     qelfhalf_t e_shsize = qFromUnaligned<qelfhalf_t> (data);
 
     if (e_shsize > fdlen) {
-        if (lib)
-            lib->errorString = QLibrary::tr("'%1' is an invalid ELF object (%2)").arg(library, QLibrary::tr("unexpected e_shsize"));
+        *errMsg = QLibrary::tr("'%1' is an invalid ELF object (%2)").arg(*errMsg, QLibrary::tr("unexpected e_shsize"));
         return {};
     }
 
@@ -132,8 +125,7 @@ QLibraryScanResult QElfParser::parse(const char *dataStart, ulong fdlen, const Q
     qelfhalf_t e_shentsize = qFromUnaligned<qelfhalf_t> (data);
 
     if (e_shentsize % 4) {
-        if (lib)
-            lib->errorString = QLibrary::tr("'%1' is an invalid ELF object (%2)").arg(library, QLibrary::tr("unexpected e_shentsize"));
+        *errMsg = QLibrary::tr("'%1' is an invalid ELF object (%2)").arg(*errMsg, QLibrary::tr("unexpected e_shentsize"));
         return {};
     }
     data += sizeof(qelfhalf_t); // e_shentsize
@@ -143,12 +135,10 @@ QLibraryScanResult QElfParser::parse(const char *dataStart, ulong fdlen, const Q
     data += sizeof(qelfhalf_t); // e_shtrndx
 
     if ((quint32)(e_shnum * e_shentsize) > fdlen) {
-        if (lib) {
             const QString message =
                 QLibrary::tr("announced %n section(s), each %1 byte(s), exceed file size",
                              nullptr, int(e_shnum)).arg(e_shentsize);
-            lib->errorString = QLibrary::tr("'%1' is an invalid ELF object (%2)").arg(library, message);
-        }
+        *errMsg = QLibrary::tr("'%1' is an invalid ELF object (%2)").arg(*errMsg, message);
         return {};
     }
 
@@ -160,9 +150,8 @@ QLibraryScanResult QElfParser::parse(const char *dataStart, ulong fdlen, const Q
     qulonglong soff = e_shoff + qelfword_t(e_shentsize) * qelfword_t(e_shtrndx);
 
     if ((soff + e_shentsize) > fdlen || soff % 4 || soff == 0) {
-        if (lib)
-            lib->errorString = QLibrary::tr("'%1' is an invalid ELF object (%2)")
-                               .arg(library, QLibrary::tr("shstrtab section header seems to be at %1")
+        *errMsg = QLibrary::tr("'%1' is an invalid ELF object (%2)")
+                               .arg(*errMsg, QLibrary::tr("shstrtab section header seems to be at %1")
                                              .arg(QString::number(soff, 16)));
         return {};
     }
@@ -171,9 +160,8 @@ QLibraryScanResult QElfParser::parse(const char *dataStart, ulong fdlen, const Q
     m_stringTableFileOffset = strtab.offset;
 
     if ((quint32)(strtab.offset + strtab.size) > fdlen || strtab.offset == 0) {
-        if (lib)
-            lib->errorString = QLibrary::tr("'%1' is an invalid ELF object (%2)")
-                               .arg(library, QLibrary::tr("string table seems to be at %1")
+        *errMsg = QLibrary::tr("'%1' is an invalid ELF object (%2)")
+                               .arg(*errMsg, QLibrary::tr("string table seems to be at %1")
                                              .arg(QString::number(strtab.offset, 16)));
         return {};
     }
@@ -193,9 +181,8 @@ QLibraryScanResult QElfParser::parse(const char *dataStart, ulong fdlen, const Q
         const char *shnam = dataStart + m_stringTableFileOffset + sh.name;
 
         if (m_stringTableFileOffset + sh.name > fdlen) {
-            if (lib)
-                lib->errorString = QLibrary::tr("'%1' is an invalid ELF object (%2)")
-                    .arg(library, QLibrary::tr("section name %1 of %2 behind end of file")
+            *errMsg = QLibrary::tr("'%1' is an invalid ELF object (%2)")
+                    .arg(*errMsg, QLibrary::tr("section name %1 of %2 behind end of file")
                                   .arg(i).arg(e_shnum));
             return {};
         }
@@ -207,9 +194,8 @@ QLibraryScanResult QElfParser::parse(const char *dataStart, ulong fdlen, const Q
         if (qstrcmp(shnam, ".qtmetadata") == 0 ) {
             if (!(sh.type & 0x1)) {
                 if (shnam[1] == 'r') {
-                    if (lib)
-                        lib->errorString = QLibrary::tr("'%1' is an invalid ELF object (%2)")
-                            .arg(library, QLibrary::tr("empty .rodata. not a library."));
+                    *errMsg = QLibrary::tr("'%1' is an invalid ELF object (%2)")
+                            .arg(*errMsg, QLibrary::tr("empty .rodata. not a library."));
                     return {};
                 }
 #if defined(QELFPARSER_DEBUG)
@@ -220,9 +206,8 @@ QLibraryScanResult QElfParser::parse(const char *dataStart, ulong fdlen, const Q
             }
 
             if (sh.offset == 0 || (sh.offset + sh.size) > fdlen || sh.size < 1) {
-                if (lib)
-                    lib->errorString = QLibrary::tr("'%1' is an invalid ELF object (%2)")
-                        .arg(library, QLibrary::tr("missing section data. This is not a library."));
+                *errMsg = QLibrary::tr("'%1' is an invalid ELF object (%2)")
+                        .arg(*errMsg, QLibrary::tr("missing section data. This is not a library."));
                 return {};
             }
             return { qsizetype(sh.offset), qsizetype(sh.size) };

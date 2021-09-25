@@ -374,8 +374,8 @@ void tst_QPluginLoader::loadMachO()
     QVERIFY(f.open(QIODevice::ReadOnly));
     QByteArray data = f.readAll();
 
-    QString errorString;
-    QLibraryScanResult r = QMachOParser::parse(data.constData(), data.size(), f.fileName(), &errorString);
+    QString errorString = f.fileName();
+    QLibraryScanResult r = QMachOParser::parse(data.constData(), data.size(), &errorString);
 
     QFETCH(bool, success);
     if (success) {
@@ -397,7 +397,8 @@ void tst_QPluginLoader::loadMachO()
     ulong offeredlen = r.pos;
     do {
         --offeredlen;
-        r = QMachOParser::parse(data.constData(), offeredlen, f.fileName(), &errorString);
+        errorString = f.fileName();
+        r = QMachOParser::parse(data.constData(), offeredlen, &errorString);
         QVERIFY2(r.length == 0, qPrintable(QString("Failed at size 0x%1").arg(offeredlen, 0, 16)));
     } while (offeredlen);
 #endif

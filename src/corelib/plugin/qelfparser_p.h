@@ -84,7 +84,7 @@ public:
     qelfoff_t m_stringTableFileOffset;
 
     const char *parseSectionHeader(const char* s, ElfSectionHeader *sh);
-    QLibraryScanResult parse(const char *m_s, ulong fdlen, const QString &library, QLibraryPrivate *lib);
+    QLibraryScanResult parse(const char *m_s, ulong fdlen, QString *errMsg);
 };
 
 QT_END_NAMESPACE

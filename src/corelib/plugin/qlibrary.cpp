@@ -255,31 +255,30 @@ static bool findPatternUnloaded(const QString &library, QLibraryPrivate *lib)
     /*
        ELF and Mach-O binaries with GCC have .qtmetadata sections. Find them.
     */
+    QString errMsg = library;
 #if defined (Q_OF_ELF)
-    r = QElfParser().parse(filedata, r.length, library, lib);
+    r = QElfParser().parse(filedata, r.length, &errMsg);
     if (r.length == 0) {
         if (lib && qt_debug_component())
-            qWarning("QElfParser: %ls", qUtf16Printable(lib->errorString));
+            qWarning("QElfParser: %ls", qUtf16Printable(errMsg));
+        if (lib)
+            lib->errorString = errMsg;
         return false;
     }
 #elif defined(Q_OF_MACH_O)
-    {
-        QString errorString;
-        r = QMachOParser::parse(filedata, r.length, library, &errorString);
-        if (r.length == 0) {
-            if (qt_debug_component())
-                qWarning("QMachOParser: %ls", qUtf16Printable(errorString));
-            if (lib)
-                lib->errorString = errorString;
-            return false;
-        }
+    r = QMachOParser::parse(filedata, r.length, &errMsg);
+    if (r.length == 0) {
+        if (qt_debug_component())
+            qWarning("QMachOParser: %ls", qUtf16Printable(errMsg));
+        if (lib)
+            lib->errorString = errMsg;
+        return false;
     }
 #endif // defined(Q_OF_ELF) && defined(Q_CC_GNU)
 
     if (qsizetype rel = qt_find_pattern(filedata + r.pos, r.length);
             rel >= 0) {
         const char *data = filedata + r.pos + rel;
-        QString errMsg;
         QJsonDocument doc = qJsonFromRawLibraryMetaData(data, r.length, &errMsg);
         if (doc.isNull()) {
             qWarning("Found invalid metadata in lib %ls: %ls",

@@ -65,8 +65,7 @@ class QLibraryPrivate;
 class Q_AUTOTEST_EXPORT QMachOParser
 {
 public:
-    static QLibraryScanResult parse(const char *m_s, ulong fdlen, const QString &library,
-                                    QString *errorString);
+    static QLibraryScanResult parse(const char *m_s, ulong fdlen, QString *errorString);
 };
 
 QT_END_NAMESPACE
