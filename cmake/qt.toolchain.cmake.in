@@ -43,9 +43,12 @@ if(__qt_chainload_toolchain_file)
             "'${__qt_chainload_toolchain_file}' does not exist.")
     else()
         include("${__qt_chainload_toolchain_file}")
+        set(__qt_chainload_toolchain_file_included TRUE)
     endif()
     unset(__qt_chainload_toolchain_file)
 endif()
+
+@init_post_chainload_toolchain@
 
 # Compute dynamically the Qt installation prefix from the location of this file. This allows
 # the usage of the toolchain file when the Qt installation is relocated.
