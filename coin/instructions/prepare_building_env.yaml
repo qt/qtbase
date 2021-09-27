@@ -273,14 +273,14 @@ instructions:
       enable_if:
         condition: property
         property: target.osVersion
-        equals_value: QEMU
+        in_values: [QEMU, QNX_710]
     - type: EnvironmentVariable
       variableName: TARGET_ENV_PREFIX
       variableValue: ""
       disable_if:
         condition: property
         property: target.osVersion
-        equals_value: QEMU
+        in_values: [QEMU, QNX_710]
 
   # Windows on Arm, cross-compilation with MSVC
   - type: Group
@@ -305,6 +305,12 @@ instructions:
       property: target.os
       equals_value: QNX
     instructions:
+    - type: WriteFile
+      fileContents: "#!/bin/bash\nexport TESTARGS={{.Env.TESTARGS}}\nexport TESTRUNNER={{.Env.TESTRUNNER}}\nexport COIN_CTEST_RESULTSDIR={{.Env.COIN_CTEST_RESULTSDIR}}\n$*"
+      filename: "{{.Env.HOME}}/prefix.sh"
+      fileMode: 493
+      maxTimeInSeconds: 20
+      maxTimeBetweenOutput: 20
     - type: EnvironmentVariable
       variableName: QNX_TARGET
       variableValue: "{{.Env.QNX_710}}/target/qnx7"
@@ -326,6 +332,9 @@ instructions:
     - type: EnvironmentVariable
       variableName: QNX_HOST
       variableValue: "{{.Env.QNX_710}}/host/linux/x86_64"
+    - type: AppendToEnvironmentVariable
+      variableName: PATH
+      variableValue: ":{{.Env.QEMUARMV7_TOOLCHAIN_SYSROOT}}/../x86_64-pokysdk-linux/usr/bin:"
       enable_if:
         condition: property
         property: host.os

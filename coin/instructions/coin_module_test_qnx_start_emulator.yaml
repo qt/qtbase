@@ -1,0 +1,90 @@
+type: Group
+instructions:
+  - type: Group
+    instructions:
+      - type: WriteFile
+        fileContents: |
+            #!/bin/bash
+            RESULT=1 # 0 upon success
+            TIMEOUT=60
+            COUNT=0
+            QEMUPID=0
+            QEMUIPADDR="{{.Env.QNX_QEMU_IPADDR}}"
+            mkqnximage --type=qemu --hostname=QNX_QEMU_CI --graphics=no --ip=${QEMUIPADDR} --build --run=-h </dev/null &>/dev/null & disown
+
+            while [[ "QEMUPID" -eq 0 ]]
+            do
+                QEMUPID=`pidof qemu-system-x86_64`
+
+                if [[ "QEMUPID" -eq 0 ]]; then
+                    echo "QEMU not yet started, wait 1 sec."
+                    COUNT=$((COUNT+1))
+                    sleep 1
+                else
+                    echo "QEMU running with PID: $QEMUPID"
+                fi
+
+                if [[ "COUNT" -eq "TIMEOUT" ]]; then
+                    echo "Timeout waiting QEMU to start"
+                    exit 1
+                fi
+            done
+
+            while :; do
+                echo "Waiting QEMU SSH coming up"
+                status=$(ssh -o BatchMode=yes -o ConnectTimeout=1 ${QEMUIPADDR} echo ok 2>&1)
+                RESULT=$?
+                if [ $RESULT -eq 0 ]; then
+                    echo "QEMU SSH Connected ok"
+                    break
+                fi
+                if [ $RESULT -eq 255 ]; then
+                    # connection refused also gets you here
+                    if [[ $status == *"Permission denied"* ]] ; then
+                        # permission denied indicates the ssh link is okay
+                        echo "QEMU SSH server up"
+                        RESULT=0
+                        break
+                    fi
+                fi
+                TIMEOUT=$((TIMEOUT-1))
+                if [ $TIMEOUT -eq 0 ]; then
+                    echo "QEMU SSH timed out"
+                    exit $RESULT
+                fi
+                sleep 1
+            done
+            exit $RESULT
+        filename: "{{.Env.QNX_QEMU}}/start_qnx_qemu.sh"
+        fileMode: 755
+      - type: ChangeDirectory
+        directory: "{{.Env.QNX_QEMU}}"
+      - type: ExecuteCommand
+        command: "chmod 755 {{.Env.QNX_QEMU}}/start_qnx_qemu.sh"
+        maxTimeInSeconds: 10
+        maxTimeBetweenOutput: 10
+        userMessageOnFailure: >
+          Failed to change file permission.
+        disable_if:
+          condition: property
+          property: host.os
+          equals_value: Windows
+      - type: ExecuteCommand
+        command: "{{.Env.QNX_QEMU}}/start_qnx_qemu.sh"
+        maxTimeInSeconds: 100
+        maxTimeBetweenOutput: 100
+        userMessageOnFailure: >
+          Failed to start QNX qemu, check logs.
+        disable_if:
+          condition: property
+          property: host.os
+          equals_value: Windows
+    enable_if:
+      condition: and
+      conditions:
+        - condition: property
+          property: target.osVersion
+          equals_value: QNX_710
+        - condition: property
+          property: features
+          not_contains_value: DisableTests

@@ -1,0 +1,40 @@
+type: Group
+instructions:
+  - type: WriteFile
+    fileContents: |
+        #!/usr/bin/python3
+        import subprocess
+        import calendar
+        import datetime
+        import time
+        import sys
+        import os
+        import re
+
+        file=os.path.basename(sys.argv[1])
+        timestamp = str(round(time.time() * 1000))
+        resultdir = os.getenv('COIN_CTEST_RESULTSDIR')
+        results_file = resultdir + "/testresults/" + file +"-" + timestamp + ".xml,xml"
+        testargs = [" -o", results_file, "-o", "-,txt"]
+        if re.search("testlib.selftests.tst_selftests", sys.argv[1]):
+            testargs = []
+        testcmd = sys.argv[1]
+        testcmd += ' '.join(testargs)
+        qemuargs = os.getenv('TESTARGS')
+        sshcmd, ldenv, backend, qpa = qemuargs.split()
+        testdir = sys.argv[1][::-1].split('/', 1)[1][::-1]
+        testcmd = "cd " + testdir + ";" + ldenv + " " + backend + " " + qpa  + " " + testcmd
+        proc = subprocess.run(["ssh", sshcmd, testcmd])
+        exit(proc.returncode)
+    filename: "{{.SourceDir}}/coin_qnx_qemu_runner.py"
+    fileMode: 755
+  - type: ExecuteCommand
+    command: "chmod 755 {{.SourceDir}}/coin_qnx_qemu_runner.py"
+    maxTimeInSeconds: 10
+    maxTimeBetweenOutput: 10
+    userMessageOnFailure: >
+      Failed to change file permission.
+    disable_if:
+      condition: property
+      property: host.os
+      equals_value: Windows
