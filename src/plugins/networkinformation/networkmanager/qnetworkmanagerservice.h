@@ -164,7 +164,8 @@ Q_SIGNALS:
     void deviceTypeChanged(NMDeviceType);
 
 private Q_SLOTS:
-    void setProperties(const QMap<QString, QVariant> &map);
+    void setProperties(const QString &interfaceName, const QMap<QString, QVariant> &map,
+                       const QStringList &invalidatedProperties);
 
 private:
     Q_DISABLE_COPY_MOVE(QNetworkManagerInterface)

@@ -93,16 +93,16 @@ QNetworkManagerInterface::QNetworkManagerInterface(QObject *parent)
 
     QDBusConnection::systemBus().connect(
             QLatin1String(NM_DBUS_SERVICE), QLatin1String(NM_DBUS_PATH),
-            QLatin1String(NM_DBUS_INTERFACE), QLatin1String("PropertiesChanged"), this,
-            SLOT(setProperties(QMap<QString, QVariant>)));
+            QLatin1String(DBUS_PROPERTIES_INTERFACE), QLatin1String("PropertiesChanged"), this,
+            SLOT(setProperties(QString, QMap<QString, QVariant>, QList<QString>)));
 }
 
 QNetworkManagerInterface::~QNetworkManagerInterface()
 {
     QDBusConnection::systemBus().disconnect(
             QLatin1String(NM_DBUS_SERVICE), QLatin1String(NM_DBUS_PATH),
-            QLatin1String(NM_DBUS_INTERFACE), QLatin1String("PropertiesChanged"), this,
-            SLOT(setProperties(QMap<QString, QVariant>)));
+            QLatin1String(DBUS_PROPERTIES_INTERFACE), QLatin1String("PropertiesChanged"), this,
+            SLOT(setProperties(QString, QMap<QString, QVariant>, QList<QString>)));
 }
 
 QNetworkManagerInterface::NMState QNetworkManagerInterface::state() const
@@ -147,8 +147,13 @@ auto QNetworkManagerInterface::extractDeviceType(QDBusObjectPath devicePath) con
     return static_cast<NMDeviceType>(deviceType.toUInt());
 }
 
-void QNetworkManagerInterface::setProperties(const QMap<QString, QVariant> &map)
+void QNetworkManagerInterface::setProperties(const QString &interfaceName,
+                                             const QMap<QString, QVariant> &map,
+                                             const QStringList &invalidatedProperties)
 {
+    Q_UNUSED(interfaceName);
+    Q_UNUSED(invalidatedProperties);
+
     for (auto i = map.cbegin(), end = map.cend(); i != end; ++i) {
         bool valueChanged = true;
 
