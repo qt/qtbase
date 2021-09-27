@@ -8,18 +8,6 @@ not ok 3 - compareByteArray() # TODO Next test should fail
   file: qtbase/tests/auto/testlib/selftests/strcmp/tst_strcmp.cpp
   line: 0
   ...
-not ok 3 - compareByteArray() # TODO Next test should fail
-  ---
-  at: tst_StrCmp::compareByteArray() (qtbase/tests/auto/testlib/selftests/strcmp/tst_strcmp.cpp:0)
-  file: qtbase/tests/auto/testlib/selftests/strcmp/tst_strcmp.cpp
-  line: 0
-  ...
-not ok 3 - compareByteArray() # TODO Next test should fail
-  ---
-  at: tst_StrCmp::compareByteArray() (qtbase/tests/auto/testlib/selftests/strcmp/tst_strcmp.cpp:0)
-  file: qtbase/tests/auto/testlib/selftests/strcmp/tst_strcmp.cpp
-  line: 0
-  ...
 not ok 3 - compareByteArray()
   ---
   type: QCOMPARE

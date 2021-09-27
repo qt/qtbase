@@ -70,12 +70,6 @@ not ok 11 - xfailWithQString() # TODO A string
   file: qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp
   line: 0
   ...
-not ok 11 - xfailWithQString() # TODO Bug 5 (The message)
-  ---
-  at: tst_ExpectFail::xfailWithQString() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:0)
-  file: qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp
-  line: 0
-  ...
 ok 12 - xfailDataDrivenWithQString(Pass Abort) # SKIP Each Continue or Pass reports this and increments skip-count
 ok 13 - xfailDataDrivenWithQString(Pass Continue) # SKIP Each Continue or Pass reports this and increments skip-count
 not ok 14 - xfailDataDrivenWithQString(Fail Abort) # TODO A string
@@ -85,12 +79,6 @@ not ok 14 - xfailDataDrivenWithQString(Fail Abort) # TODO A string
   line: 0
   ...
 not ok 15 - xfailDataDrivenWithQString(Fail Continue) # TODO A string
-  ---
-  at: tst_ExpectFail::xfailDataDrivenWithQString() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:0)
-  file: qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp
-  line: 0
-  ...
-not ok 15 - xfailDataDrivenWithQString(Fail Continue) # TODO Bug 5 (The message)
   ---
   at: tst_ExpectFail::xfailDataDrivenWithQString() (qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp

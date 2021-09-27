@@ -115,7 +115,8 @@ void QTapTestLogger::outputTestLine(bool ok, int testNumber, QTestCharBuffer &di
 void QTapTestLogger::addIncident(IncidentTypes type, const char *description,
                                    const char *file, int line)
 {
-    if (m_wasExpectedFail && (type == Pass || type == BlacklistedPass)) {
+    if (m_wasExpectedFail && (type == Pass || type == BlacklistedPass
+                              || type == XFail || type == BlacklistedXFail)) {
         // XFail comes with a corresponding Pass incident, but we only want
         // to emit a single test point for it, so skip the this pass.
         return;
