@@ -370,8 +370,8 @@ void QPlainTestLogger::leaveTestFunction()
 void QPlainTestLogger::addIncident(IncidentTypes type, const char *description,
                                    const char *file, int line)
 {
-    // suppress PASS and XFAIL in silent mode
-    if ((type == QAbstractTestLogger::Pass || type == QAbstractTestLogger::XFail)
+    // suppress B?PASS and B?XFAIL in silent mode
+    if ((type == Pass || type == BlacklistedPass || type == XFail || type == BlacklistedXFail)
         && QTestLog::verboseLevel() < 0)
         return;
 

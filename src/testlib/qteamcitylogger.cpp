@@ -137,8 +137,8 @@ void QTeamCityLogger::leaveTestFunction()
 void QTeamCityLogger::addIncident(IncidentTypes type, const char *description,
                                   const char *file, int line)
 {
-    // suppress PASS and XFAIL in silent mode
-    if ((type == QAbstractTestLogger::Pass || type == QAbstractTestLogger::XFail) && QTestLog::verboseLevel() < 0)
+    // suppress B?PASS and B?XFAIL in silent mode
+    if ((type == Pass || type == XFail || type == BlacklistedPass || type == BlacklistedXFail) && QTestLog::verboseLevel() < 0)
         return;
 
     QString buf;
