@@ -467,6 +467,11 @@ void tst_QDir::makedirReturnCode()
     QVERIFY(!QDir::current().mkdir(dirName)); // calling mkdir on an existing dir will fail.
     QVERIFY(QDir::current().mkpath(dirName)); // calling mkpath on an existing dir will pass
 
+#ifdef Q_OS_WIN
+    // the next line specifically targets Windows, see QTBUG-85997
+    QVERIFY(QDir().mkpath(QDir::rootPath())); // calling mkpath on an existing drive name will pass
+#endif
+
     // Remove the directory and create a file with the same path
     QDir::current().rmdir(dirName);
     QVERIFY(!f.exists());
