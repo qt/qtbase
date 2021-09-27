@@ -285,16 +285,48 @@ QT_BEGIN_NAMESPACE
 #define GL_COMPUTE_SHADER                 0x91B9
 #endif
 
-#ifndef GL_ALL_BARRIER_BITS
-#define GL_ALL_BARRIER_BITS               0xFFFFFFFF
+#ifndef GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT
+#define GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT 0x00000001
+#endif
+
+#ifndef GL_ELEMENT_ARRAY_BARRIER_BIT
+#define GL_ELEMENT_ARRAY_BARRIER_BIT       0x00000002
+#endif
+
+#ifndef GL_UNIFORM_BARRIER_BIT
+#define GL_UNIFORM_BARRIER_BIT             0x00000004
+#endif
+
+#ifndef GL_BUFFER_UPDATE_BARRIER_BIT
+#define GL_BUFFER_UPDATE_BARRIER_BIT       0x00000200
+#endif
+
+#ifndef GL_SHADER_STORAGE_BARRIER_BIT
+#define GL_SHADER_STORAGE_BARRIER_BIT      0x00002000
+#endif
+
+#ifndef GL_TEXTURE_FETCH_BARRIER_BIT
+#define GL_TEXTURE_FETCH_BARRIER_BIT       0x00000008
 #endif
 
 #ifndef GL_SHADER_IMAGE_ACCESS_BARRIER_BIT
 #define GL_SHADER_IMAGE_ACCESS_BARRIER_BIT 0x00000020
 #endif
 
-#ifndef GL_SHADER_STORAGE_BARRIER_BIT
-#define GL_SHADER_STORAGE_BARRIER_BIT     0x00002000
+#ifndef GL_PIXEL_BUFFER_BARRIER_BIT
+#define GL_PIXEL_BUFFER_BARRIER_BIT        0x00000080
+#endif
+
+#ifndef GL_TEXTURE_UPDATE_BARRIER_BIT
+#define GL_TEXTURE_UPDATE_BARRIER_BIT      0x00000100
+#endif
+
+#ifndef GL_FRAMEBUFFER_BARRIER_BIT
+#define GL_FRAMEBUFFER_BARRIER_BIT         0x00000400
+#endif
+
+#ifndef GL_ALL_BARRIER_BITS
+#define GL_ALL_BARRIER_BITS               0xFFFFFFFF
 #endif
 
 #ifndef GL_VERTEX_PROGRAM_POINT_SIZE
@@ -1780,9 +1812,30 @@ static bool textureAccessIsWrite(QGles2Texture::Access access)
         || access == QGles2Texture::AccessFramebuffer;
 }
 
+static inline GLbitfield barriersForBuffer()
+{
+    return GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT
+        | GL_ELEMENT_ARRAY_BARRIER_BIT
+        | GL_UNIFORM_BARRIER_BIT
+        | GL_BUFFER_UPDATE_BARRIER_BIT
+        | GL_SHADER_STORAGE_BARRIER_BIT;
+}
+
+static inline GLbitfield barriersForTexture()
+{
+    return GL_TEXTURE_FETCH_BARRIER_BIT
+        | GL_SHADER_IMAGE_ACCESS_BARRIER_BIT
+        | GL_PIXEL_BUFFER_BARRIER_BIT
+        | GL_TEXTURE_UPDATE_BARRIER_BIT
+        | GL_FRAMEBUFFER_BARRIER_BIT;
+}
+
 void QRhiGles2::trackedBufferBarrier(QGles2CommandBuffer *cbD, QGles2Buffer *bufD, QGles2Buffer::Access access)
 {
     Q_ASSERT(cbD->recordingPass == QGles2CommandBuffer::NoPass); // this is for resource updates only
+    if (!bufD->m_usage.testFlag(QRhiBuffer::StorageBuffer))
+        return;
+
     const QGles2Buffer::Access prevAccess = bufD->usageState.access;
     if (access == prevAccess)
         return;
@@ -1794,7 +1847,7 @@ void QRhiGles2::trackedBufferBarrier(QGles2CommandBuffer *cbD, QGles2Buffer *buf
         // for now.
         QGles2CommandBuffer::Command &cmd(cbD->commands.get());
         cmd.cmd = QGles2CommandBuffer::Command::Barrier;
-        cmd.args.barrier.barriers = GL_ALL_BARRIER_BITS;
+        cmd.args.barrier.barriers = barriersForBuffer();
     }
 
     bufD->usageState.access = access;
@@ -1803,6 +1856,9 @@ void QRhiGles2::trackedBufferBarrier(QGles2CommandBuffer *cbD, QGles2Buffer *buf
 void QRhiGles2::trackedImageBarrier(QGles2CommandBuffer *cbD, QGles2Texture *texD, QGles2Texture::Access access)
 {
     Q_ASSERT(cbD->recordingPass == QGles2CommandBuffer::NoPass); // this is for resource updates only
+    if (!texD->m_flags.testFlag(QRhiTexture::UsedWithLoadStore))
+        return;
+
     const QGles2Texture::Access prevAccess = texD->usageState.access;
     if (access == prevAccess)
         return;
@@ -1810,7 +1866,7 @@ void QRhiGles2::trackedImageBarrier(QGles2CommandBuffer *cbD, QGles2Texture *tex
     if (textureAccessIsWrite(prevAccess)) {
         QGles2CommandBuffer::Command &cmd(cbD->commands.get());
         cmd.cmd = QGles2CommandBuffer::Command::Barrier;
-        cmd.args.barrier.barriers = GL_ALL_BARRIER_BITS;
+        cmd.args.barrier.barriers = barriersForTexture();
     }
 
     texD->usageState.access = access;
@@ -2991,12 +3047,12 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
             for (auto it = tracker.cbeginBuffers(), itEnd = tracker.cendBuffers(); it != itEnd; ++it) {
                 QGles2Buffer::Access accessBeforePass = QGles2Buffer::Access(it->stateAtPassBegin.access);
                 if (bufferAccessIsWrite(accessBeforePass))
-                    barriers |= GL_ALL_BARRIER_BITS;
+                    barriers |= barriersForBuffer();
             }
             for (auto it = tracker.cbeginTextures(), itEnd = tracker.cendTextures(); it != itEnd; ++it) {
                 QGles2Texture::Access accessBeforePass = QGles2Texture::Access(it->stateAtPassBegin.access);
                 if (textureAccessIsWrite(accessBeforePass))
-                    barriers |= GL_ALL_BARRIER_BITS;
+                    barriers |= barriersForTexture();
             }
             if (barriers)
                 f->glMemoryBarrier(barriers);
@@ -3514,6 +3570,7 @@ void QRhiGles2::bindShaderResources(QGles2CommandBuffer *cbD,
         case QRhiShaderResourceBinding::ImageLoadStore:
         {
             QGles2Texture *texD = QRHI_RES(QGles2Texture, b->u.simage.tex);
+            Q_ASSERT(texD->m_flags.testFlag(QRhiTexture::UsedWithLoadStore));
             const bool layered = texD->m_flags.testFlag(QRhiTexture::CubeMap);
             GLenum access = GL_READ_WRITE;
             if (b->type == QRhiShaderResourceBinding::ImageLoad)
@@ -3530,6 +3587,7 @@ void QRhiGles2::bindShaderResources(QGles2CommandBuffer *cbD,
         case QRhiShaderResourceBinding::BufferLoadStore:
         {
             QGles2Buffer *bufD = QRHI_RES(QGles2Buffer, b->u.sbuf.buf);
+            Q_ASSERT(bufD->m_usage.testFlag(QRhiBuffer::StorageBuffer));
             if (b->u.sbuf.offset == 0 && b->u.sbuf.maybeSize == 0)
                 f->glBindBufferBase(GL_SHADER_STORAGE_BUFFER, GLuint(b->binding), bufD->buffer);
             else
