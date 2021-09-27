@@ -250,6 +250,61 @@ void QCALayerBackingStore::endPaint()
     // we defer finalizing the back buffer until its content is needed.
 }
 
+bool QCALayerBackingStore::scroll(const QRegion &region, int dx, int dy)
+{
+    if (!m_buffers.back()) {
+        qCInfo(lcQpaBackingStore) << "Scroll requested with no back buffer. Ignoring.";
+        return false;
+    }
+
+    const QPoint scrollDelta(dx, dy);
+    qCInfo(lcQpaBackingStore) << "Scrolling" << region << "by" << scrollDelta;
+
+    ensureBackBuffer();
+    recreateBackBufferIfNeeded();
+
+    const QRegion inPlaceRegion = region - m_buffers.back()->dirtyRegion;
+    const QRegion frontBufferRegion = region - inPlaceRegion;
+
+    QMacAutoReleasePool pool;
+
+    m_buffers.back()->lock(QPlatformGraphicsBuffer::SWWriteAccess);
+
+    if (!inPlaceRegion.isEmpty()) {
+        qCDebug(lcQpaBackingStore) << "Scrolling" << inPlaceRegion << "in place";
+        QImage *backBufferImage = m_buffers.back()->asImage();
+        const qreal devicePixelRatio = backBufferImage->devicePixelRatio();
+        const QPoint devicePixelDelta = scrollDelta * devicePixelRatio;
+
+        extern void qt_scrollRectInImage(QImage &, const QRect &, const QPoint &);
+
+        for (const QRect &rect : inPlaceRegion) {
+            qt_scrollRectInImage(*backBufferImage,
+                QRect(rect.topLeft() * devicePixelRatio,
+                      rect.size() * devicePixelRatio),
+                      devicePixelDelta);
+        }
+
+    }
+
+    if (!frontBufferRegion.isEmpty()) {
+        qCDebug(lcQpaBackingStore) << "Scrolling" << frontBufferRegion << "by copying from front buffer";
+        preserveFromFrontBuffer(frontBufferRegion, scrollDelta);
+    }
+
+    m_buffers.back()->unlock();
+
+    // Mark the target region as filled. Note: We do not mark the source region
+    // as dirty, even though the content has conceptually been "moved", as that
+    // would complicate things when preserving from the front buffer. This matches
+    // the behavior of other backingstore implementations using qt_scrollRectInImage.
+    updateDirtyStates(region.translated(scrollDelta));
+
+    qCInfo(lcQpaBackingStore) << "Scroll ended. Back buffer valid region is now" << m_buffers.back()->validRegion();
+
+    return true;
+}
+
 void QCALayerBackingStore::flush(QWindow *flushedWindow, const QRegion &region, const QPoint &offset)
 {
     Q_UNUSED(region);
