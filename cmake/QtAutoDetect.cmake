@@ -43,11 +43,7 @@ function(qt_auto_detect_wasm)
                 message(STATUS
                     "Emscripten ${EMCC_VERSION} toolchain file detected at ${CMAKE_TOOLCHAIN_FILE}")
             else()
-                message(FATAL_ERROR
-                    "Cannot find the toolchain file Emscripten.cmake. "
-                    "Please specify the toolchain file with -DCMAKE_TOOLCHAIN_FILE=<file> "
-                    "or provide a path to a valid emscripten installation via the EMSDK "
-                    "environment variable.")
+                __qt_internal_show_error_no_emscripten_toolchain_file_found_when_building_qt()
             endif()
 
             qt_internal_ensure_static_qt_config()

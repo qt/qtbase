@@ -53,3 +53,19 @@ function(__qt_internal_get_emcc_recommended_version out_var)
     set(QT_EMCC_RECOMMENDED_VERSION "2.0.14")
     set(${out_var} "${QT_EMCC_RECOMMENDED_VERSION}" PARENT_SCOPE)
 endfunction()
+
+function(__qt_internal_show_error_no_emscripten_toolchain_file_found_when_building_qt)
+    message(FATAL_ERROR
+        "Cannot find the toolchain file Emscripten.cmake. "
+        "Please specify the toolchain file with -DCMAKE_TOOLCHAIN_FILE=<file> "
+        "or provide a path to a valid emscripten installation via the EMSDK "
+        "environment variable.")
+endfunction()
+
+function(__qt_internal_show_error_no_emscripten_toolchain_file_found_when_using_qt)
+    message(FATAL_ERROR
+        "Cannot find the toolchain file Emscripten.cmake. "
+        "Please specify the toolchain file with -DQT_CHAINLOAD_TOOLCHAIN_FILE=<file> "
+        "or provide a path to a valid emscripten installation via the EMSDK "
+        "environment variable.")
+endfunction()

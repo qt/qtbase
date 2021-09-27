@@ -236,13 +236,24 @@ if(DEFINED ENV{EMSDK} AND NOT \"\$ENV{EMSDK}\" STREQUAL \"\")
     set(__qt_chainload_toolchain_file \"\${_qt_candidate_emscripten_toolchain_path}\")
 endif()
 ")
+        list(APPEND init_post_chainload_toolchain "
+if(NOT __qt_chainload_toolchain_file_included)
+    __qt_internal_show_error_no_emscripten_toolchain_file_found_when_using_qt()
+endif()
+")
     endif()
 
     string(REPLACE ";" "\n" init_additional_used_variables
         "${init_additional_used_variables}")
     string(REPLACE ";" "\n" init_vcpkg "${init_vcpkg}")
+
     string(REPLACE ";" "\n" init_platform "${init_platform}")
     string(REPLACE "LITERAL_SEMICOLON" ";" init_platform "${init_platform}")
+
+    string(REPLACE ";" "\n" init_post_chainload_toolchain "${init_post_chainload_toolchain}")
+    string(REPLACE "LITERAL_SEMICOLON" ";" init_post_chainload_toolchain
+           "${init_post_chainload_toolchain}")
+
     qt_compute_relative_path_from_cmake_config_dir_to_prefix()
     configure_file(
         "${CMAKE_CURRENT_SOURCE_DIR}/cmake/qt.toolchain.cmake.in"
