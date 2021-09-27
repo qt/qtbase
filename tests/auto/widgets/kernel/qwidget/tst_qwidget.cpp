@@ -5884,8 +5884,7 @@ void tst_QWidget::moveChild()
     QTRY_COMPARE(pos, child.pos());
 
     QTRY_COMPARE(parent.r, QRegion(oldGeometry) - child.geometry());
-    if (QGuiApplication::platformName() == "cocoa")
-        QEXPECT_FAIL("", "Cocoa backing store doesn't implement scroll", Abort);
+
     // should be scrolled in backingstore
     QCOMPARE(child.r, QRegion());
     VERIFY_COLOR(child, child.rect(), child.color);

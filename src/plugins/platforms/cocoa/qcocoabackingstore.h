@@ -71,6 +71,8 @@ public:
     QPaintDevice *paintDevice() override;
     void endPaint() override;
 
+    bool scroll(const QRegion &region, int dx, int dy) override;
+
     void flush(QWindow *, const QRegion &, const QPoint &) override;
 #ifndef QT_NO_OPENGL
     void composeAndFlush(QWindow *window, const QRegion &region, const QPoint &offset,
