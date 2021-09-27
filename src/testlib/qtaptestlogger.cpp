@@ -207,18 +207,13 @@ void QTapTestLogger::addIncident(IncidentTypes type, const char *description,
                 );
 
                 outputString(diagnosticsYamlish.data());
-            } else {
+            } else
+#endif
+            {
                 QTestCharBuffer unparsableDescription;
-                QTest::qt_asprintf(&unparsableDescription,
-                    YAML_INDENT "# %s\n", description);
+                QTest::qt_asprintf(&unparsableDescription, YAML_INDENT "# %s\n", description);
                 outputString(unparsableDescription.data());
             }
-#else
-            QTestCharBuffer unparsableDescription;
-            QTest::qt_asprintf(&unparsableDescription,
-                YAML_INDENT "# %s\n", description);
-            outputString(unparsableDescription.data());
-#endif
         }
 
         if (file) {
