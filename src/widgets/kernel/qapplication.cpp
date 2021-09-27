@@ -2746,7 +2746,12 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
     }
 
     bool res = false;
-    if (!receiver->isWidgetType()) {
+    if (receiver->isWindowType()) {
+        res = d->notify_helper(receiver, e);
+        // We don't call QGuiApplication::notify here, so we need to duplicate the logic
+        if (res && e->type() == QEvent::Close)
+            d->maybeQuitOnLastWindowClosed(static_cast<QWindow *>(receiver));
+    } else if (!receiver->isWidgetType()) {
         res = d->notify_helper(receiver, e);
     } else switch (e->type()) {
     case QEvent::ShortcutOverride:
@@ -3341,10 +3346,6 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         res = d->notify_helper(receiver, e);
         break;
     }
-
-    // We don't call QGuiApplication::notify here, so we need to duplicate the logic
-    if (e->type() == QEvent::Close && receiver->isWindowType() && res)
-        d->maybeQuitOnLastWindowClosed(static_cast<QWindow *>(receiver));
 
     return res;
 }
