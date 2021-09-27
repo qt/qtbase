@@ -74,6 +74,9 @@ struct Options
     QHash<QString, QString> outFiles;
     QString testArgs;
     QString apkPath;
+    int sdkVersion = -1;
+    int pid = -1;
+    bool showLogcatOutput = false;
     QHash<QString, std::function<bool(const QByteArray &)>> checkFiles = {
     {QStringLiteral("txt"), [](const QByteArray &data) -> bool {
         return data.indexOf("\nFAIL!  : ") < 0;
@@ -126,6 +129,10 @@ static bool execCommand(const QString &command, QByteArray *output = nullptr, bo
         if (verbose)
             fprintf(stdout, "%s", buffer);
     }
+
+    fflush(stdout);
+    fflush(stderr);
+
     return pclose(process) == 0;
 }
 
@@ -233,6 +240,8 @@ static bool parseOptions()
                 g_options.activity = arguments.at(++i);
         } else if (argument.compare(QStringLiteral("--skip-install-root"), Qt::CaseInsensitive) == 0) {
             g_options.skipAddInstallRoot = true;
+        } else if (argument.compare(QStringLiteral("--show-logcat"), Qt::CaseInsensitive) == 0) {
+            g_options.showLogcatOutput = true;
         } else if (argument.compare(QStringLiteral("--timeout"), Qt::CaseInsensitive) == 0) {
             if (i + 1 == arguments.size())
                 g_options.helpRequested = true;
@@ -288,6 +297,8 @@ static void printHelp()
                     "    --timeout <seconds>: Timeout to run the test. Default is 5 minutes.\n"
                     "\n"
                     "    --skip-install-root: Do not append INSTALL_ROOT=... to the make command.\n"
+                    "\n"
+                    "    --show-logcat: Print Logcat output to stdout.\n"
                     "\n"
                     "    -- Arguments that will be passed to the test application.\n"
                     "\n"
@@ -403,6 +414,24 @@ static bool waitToFinish()
             return false;
     }
 
+    if (g_options.sdkVersion > 23) { // pidof is broken in SDK 23, non-existent before
+        QByteArray output;
+        const QString command(QStringLiteral("%1 shell pidof -s %2")
+                                      .arg(g_options.adbCommand, shellQuote(g_options.package)));
+        execCommand(command, &output, g_options.verbose);
+        bool ok = false;
+        int pid = output.toInt(&ok); // If we got more than one pid, fail.
+        if (ok) {
+            g_options.pid = pid;
+        } else {
+            fprintf(stderr,
+                    "Unable to obtain the PID of the running unit test. Command \"%s\" "
+                    "returned \"%s\"\n",
+                    command.toUtf8().constData(), output.constData());
+            fflush(stderr);
+        }
+    }
+
     // Wait to finish
     while (isRunning()) {
         std::this_thread::sleep_for(std::chrono::milliseconds(250));
@@ -412,6 +441,26 @@ static bool waitToFinish()
     return true;
 }
 
+static void obtainSDKVersion()
+{
+    // SDK version is necessary, as in SDK 23 pidof is broken, so we cannot obtain the pid.
+    // Also, Logcat cannot filter by pid in SDK 23, so we don't offer the --show-logcat option.
+    QByteArray output;
+    const QString command(
+            QStringLiteral("%1 shell getprop ro.build.version.sdk").arg(g_options.adbCommand));
+    execCommand(command, &output, g_options.verbose);
+    bool ok = false;
+    int sdkVersion = output.toInt(&ok);
+    if (ok) {
+        g_options.sdkVersion = sdkVersion;
+    } else {
+        fprintf(stderr,
+                "Unable to obtain the SDK version of the target. Command \"%s\" "
+                "returned \"%s\"\n",
+                command.toUtf8().constData(), output.constData());
+        fflush(stderr);
+    }
+}
 
 static bool pullFiles()
 {
@@ -496,6 +545,8 @@ int main(int argc, char *argv[])
         return 1;
     }
 
+    obtainSDKVersion();
+
     RunnerLocker lock; // do not install or run packages while another test is running
     if (!execCommand(QStringLiteral("%1 install -r -g %2")
                         .arg(g_options.adbCommand, g_options.apkPath), nullptr, g_options.verbose)) {
@@ -513,7 +564,24 @@ int main(int argc, char *argv[])
 
     // start the tests
     bool res = execCommand(QStringLiteral("%1 %2").arg(g_options.adbCommand, g_options.testArgs),
-                           nullptr, g_options.verbose) && waitToFinish();
+                           nullptr, g_options.verbose)
+            && waitToFinish();
+
+    // get logcat output
+    if (res && g_options.showLogcatOutput) {
+        if (g_options.sdkVersion <= 23) {
+            fprintf(stderr, "Cannot show logcat output on Android 23 and below.\n");
+            fflush(stderr);
+        } else if (g_options.pid > 0) {
+            fprintf(stdout, "Logcat output:\n");
+            res &= execCommand(QStringLiteral("%1 logcat -d --pid=%2")
+                                       .arg(g_options.adbCommand)
+                                       .arg(g_options.pid),
+                               nullptr, true);
+            fprintf(stdout, "End Logcat output.\n");
+        }
+    }
+
     if (res)
         res &= pullFiles();
     res &= execCommand(QStringLiteral("%1 uninstall %2").arg(g_options.adbCommand, g_options.package),
