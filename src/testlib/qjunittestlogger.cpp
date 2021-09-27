@@ -224,7 +224,7 @@ void QJUnitTestLogger::leaveTestCase()
 void QJUnitTestLogger::addIncident(IncidentTypes type, const char *description,
                                    const char *file, int line)
 {
-    if (type == QAbstractTestLogger::Fail || type == QAbstractTestLogger::XPass) {
+    if (type == Fail || type == XPass) {
         auto failureType = [&]() {
             switch (type) {
             case QAbstractTestLogger::Fail: return "fail";
@@ -234,11 +234,11 @@ void QJUnitTestLogger::addIncident(IncidentTypes type, const char *description,
         }();
 
         addFailure(QTest::LET_Failure, failureType, QString::fromUtf8(description));
-    } else if (type == QAbstractTestLogger::XFail) {
+    } else if (type == XFail) {
         // Since XFAIL does not add a failure to the testlog in JUnit XML we add a
         // message, so we still have some information about the expected failure.
-        addMessage(QAbstractTestLogger::Info, QString::fromUtf8(description), file, line);
-    } else if (type == QAbstractTestLogger::Skip) {
+        addMessage(Info, QString::fromUtf8(description), file, line);
+    } else if (type == Skip) {
         auto skippedElement = new QTestElement(QTest::LET_Skipped);
         skippedElement->addAttribute(QTest::AI_Message, description);
         currentTestCase->addChild(skippedElement);
@@ -287,7 +287,7 @@ void QJUnitTestLogger::addMessage(MessageTypes type, const QString &message, con
     Q_UNUSED(file);
     Q_UNUSED(line);
 
-    if (type == QAbstractTestLogger::QFatal) {
+    if (type == QFatal) {
         addFailure(QTest::LET_Error, "qfatal", message);
         return;
     }

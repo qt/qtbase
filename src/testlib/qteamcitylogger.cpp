@@ -161,7 +161,7 @@ void QTeamCityLogger::addIncident(IncidentTypes type, const char *description,
     detailedText = tcEscapedString(detailedText);
 
     // Test failed
-    if ((type == QAbstractTestLogger::Fail) || (type == QAbstractTestLogger::XPass)) {
+    if (type == Fail || type == XPass) {
         QString messageText(QLatin1String("Failure!"));
 
         if (file)
@@ -174,7 +174,7 @@ void QTeamCityLogger::addIncident(IncidentTypes type, const char *description,
                              flowID);
 
         outputString(qPrintable(buf));
-    } else if (type == QAbstractTestLogger::Skip) {
+    } else if (type == Skip) {
         if (file)
             detailedText.append(QLatin1String(" |[Loc: %1(%2)|]").arg(QString::fromUtf8(file)).arg(line));
 
@@ -206,7 +206,7 @@ void QTeamCityLogger::addMessage(MessageTypes type, const QString &message,
                                  const char *file, int line)
 {
     // suppress non-fatal messages in silent mode
-    if (type != QAbstractTestLogger::QFatal && QTestLog::verboseLevel() < 0)
+    if (type != QFatal && QTestLog::verboseLevel() < 0)
         return;
 
     QString escapedMessage = tcEscapedString(message);
