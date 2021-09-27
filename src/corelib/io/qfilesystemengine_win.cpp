@@ -1180,7 +1180,7 @@ bool QFileSystemEngine::createDirectory(const QFileSystemEntry &entry, bool crea
     // mkpath should return true, if the directory already exists, mkdir false.
     if (!createParents)
         return false;
-    if (lastError == ERROR_ALREADY_EXISTS)
+    if (lastError == ERROR_ALREADY_EXISTS || lastError == ERROR_ACCESS_DENIED)
         return isDirPath(dirName, nullptr);
 
     return createDirectoryWithParents(dirName, false);
