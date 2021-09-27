@@ -122,9 +122,11 @@ function(qt_generate_qmake_wrapper_for_target)
         set(sysrootify_prefix true)
     else()
         set(sysrootify_prefix false)
-        string(APPEND content "[DevicePaths]
+        if(NOT ext_prefix STREQUAL prefix)
+            string(APPEND content "[DevicePaths]
 Prefix=${prefix}
 ")
+        endif()
     endif()
 
     string(APPEND content
