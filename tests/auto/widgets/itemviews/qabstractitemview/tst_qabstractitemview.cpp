@@ -164,6 +164,8 @@ private slots:
     void mouseSelection_data();
     void mouseSelection();
     void scrollerSmoothScroll();
+    void inputMethodOpensEditor_data();
+    void inputMethodOpensEditor();
 
 private:
     static QAbstractItemView *viewFromString(const QByteArray &viewType, QWidget *parent = nullptr)
@@ -3100,6 +3102,79 @@ void tst_QAbstractItemView::scrollerSmoothScroll()
     }
 
     QTest::mouseRelease(view.viewport(), Qt::LeftButton, Qt::NoModifier, dragPosition);
+}
+
+/*!
+    Verify that starting the editing of an item with a key press while a composing
+    input method is active doesn't break the input method. See QTBUG-54848.
+*/
+void tst_QAbstractItemView::inputMethodOpensEditor_data()
+{
+    QTest::addColumn<QPoint>("editItem");
+    QTest::addColumn<QString>("preedit");
+    QTest::addColumn<QString>("commit");
+
+    QTest::addRow("IM accepted") << QPoint(1, 1) << "chang" << QString("长");
+    QTest::addRow("IM cancelled") << QPoint(25, 25) << "chang" << QString();
+}
+
+void tst_QAbstractItemView::inputMethodOpensEditor()
+{
+    QTableWidget tableWidget(50, 50);
+    tableWidget.setEditTriggers(QAbstractItemView::AnyKeyPressed);
+    for (int r = 0; r < 50; ++r) {
+        for (int c = 0; c < 50; ++c )
+            tableWidget.setItem(r, c, new QTableWidgetItem(QString("Item %1:%2").arg(r).arg(c)));
+    }
+
+    tableWidget.show();
+    QVERIFY(QTest::qWaitForWindowActive(&tableWidget));
+
+    const auto sendInputMethodEvent = [](const QString &preeditText, const QString &commitString = {}){
+        QInputMethodEvent imEvent(preeditText, {});
+        imEvent.setCommitString(commitString);
+        QApplication::sendEvent(QApplication::focusWidget(), &imEvent);
+    };
+
+    QCOMPARE(QApplication::focusWidget(), &tableWidget);
+
+    QFETCH(QPoint, editItem);
+    QFETCH(QString, preedit);
+    QFETCH(QString, commit);
+
+    tableWidget.setCurrentCell(editItem.y(), editItem.x());
+    const QString orgText = tableWidget.currentItem()->text();
+    const QModelIndex currentIndex = tableWidget.currentIndex();
+    QCOMPARE(tableWidget.inputMethodQuery(Qt::ImCursorRectangle), tableWidget.visualRect(currentIndex));
+
+    // simulate the start of input via a composing input method
+    sendInputMethodEvent(preedit.left(1));
+    QCOMPARE(tableWidget.state(), QAbstractItemView::EditingState);
+    QLineEdit *editor = tableWidget.findChild<QLineEdit*>();
+    QVERIFY(editor);
+    QCOMPARE(editor->text(), QString());
+    // the focus must remain with the tableWidget, as otherwise the compositing is interrupted
+    QCOMPARE(QApplication::focusWidget(), &tableWidget);
+    // the item view delegates input method queries to the editor
+    const QRect cursorRect = tableWidget.inputMethodQuery(Qt::ImCursorRectangle).toRect();
+    QVERIFY(cursorRect.isValid());
+    QVERIFY(tableWidget.visualRect(currentIndex).intersects(cursorRect));
+
+    // finish preediting, then commit or cancel the input
+    sendInputMethodEvent(preedit);
+    sendInputMethodEvent(QString(), commit);
+    // editing continues, the editor now has focus
+    QCOMPARE(tableWidget.state(), QAbstractItemView::EditingState);
+    QVERIFY(editor->hasFocus());
+    // finish editing
+    QTest::keyClick(editor, Qt::Key_Return);
+    if (commit.isEmpty()) {
+        // if composition was cancelled, then the item's value is unchanged
+        QCOMPARE(tableWidget.currentItem()->text(), orgText);
+    } else {
+        // otherwise, the item's value is now the commit string
+        QTRY_COMPARE(tableWidget.currentItem()->text(), commit);
+    }
 }
 
 QTEST_MAIN(tst_QAbstractItemView)
