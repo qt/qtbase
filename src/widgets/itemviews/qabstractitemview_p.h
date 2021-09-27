@@ -140,6 +140,7 @@ public:
     bool sendDelegateEvent(const QModelIndex &index, QEvent *event) const;
     bool openEditor(const QModelIndex &index, QEvent *event);
     void updateEditorData(const QModelIndex &topLeft, const QModelIndex &bottomRight);
+    void selectAllInEditor(QWidget *w);
 
     QItemSelectionModel::SelectionFlags multiSelectionCommand(const QModelIndex &index,
                                                               const QEvent *event) const;
@@ -367,6 +368,7 @@ public:
     QBasicTimer pressClosedEditorWatcher;
     QPersistentModelIndex lastEditedIndex;
     bool pressClosedEditor;
+    bool waitForIMCommit;
 
     QPersistentModelIndex enteredIndex;
     QPersistentModelIndex pressedIndex;

@@ -87,6 +87,7 @@ QAbstractItemViewPrivate::QAbstractItemViewPrivate()
         selectionBehavior(QAbstractItemView::SelectItems),
         currentlyCommittingEditor(nullptr),
         pressClosedEditor(false),
+        waitForIMCommit(false),
         pressedModifiers(Qt::NoModifier),
         pressedPosition(QPoint(-1, -1)),
         pressedAlreadySelected(false),
@@ -885,10 +886,26 @@ QAbstractItemDelegate *QAbstractItemView::itemDelegate() const
 */
 QVariant QAbstractItemView::inputMethodQuery(Qt::InputMethodQuery query) const
 {
+    Q_D(const QAbstractItemView);
     const QModelIndex current = currentIndex();
-    if (!current.isValid() || query != Qt::ImCursorRectangle)
-        return QAbstractScrollArea::inputMethodQuery(query);
-    return visualRect(current);
+    QVariant result;
+    if (current.isValid()) {
+        if (QWidget *currentEditor;
+            d->waitForIMCommit && (currentEditor = d->editorForIndex(current).widget)) {
+            // An editor is open but the initial preedit is still ongoing. Delegate
+            // queries to the editor and map coordinates from editor to this view.
+            result = currentEditor->inputMethodQuery(query);
+            if (result.typeId() == QMetaType::QRect) {
+                const QRect editorRect = result.value<QRect>();
+                result = QRect(currentEditor->mapTo(this, editorRect.topLeft()), editorRect.size());
+            }
+        } else if (query == Qt::ImCursorRectangle) {
+            result = visualRect(current);
+        }
+    }
+    if (!result.isValid())
+        result = QAbstractScrollArea::inputMethodQuery(query);
+    return result;
 }
 
 /*!
@@ -2599,14 +2616,53 @@ void QAbstractItemView::timerEvent(QTimerEvent *event)
 */
 void QAbstractItemView::inputMethodEvent(QInputMethodEvent *event)
 {
-    if (event->commitString().isEmpty() && event->preeditString().isEmpty()) {
+    Q_D(QAbstractItemView);
+    // When QAbstractItemView::AnyKeyPressed is used, a new IM composition might
+    // start before the editor widget acquires focus. Changing focus would interrupt
+    // the composition, so we keep focus on the view until that first composition
+    // is complete, and pass QInputMethoEvents on to the editor widget so that the
+    // user gets the expected feedback. See also inputMethodQuery, which redirects
+    // calls to the editor widget during that period.
+    bool forwardEventToEditor = false;
+    const bool commit = !event->commitString().isEmpty();
+    const bool preediting = !event->preeditString().isEmpty();
+    if (QWidget *currentEditor = d->editorForIndex(currentIndex()).widget) {
+        if (d->waitForIMCommit) {
+            if (commit || !preediting) {
+                // commit or cancel
+                d->waitForIMCommit = false;
+                QApplication::sendEvent(currentEditor, event);
+                if (!commit) {
+                    QAbstractItemDelegate *delegate = itemDelegateForIndex(currentIndex());
+                    if (delegate)
+                        delegate->setEditorData(currentEditor, currentIndex());
+                    d->selectAllInEditor(currentEditor);
+                }
+                if (currentEditor->focusPolicy() != Qt::NoFocus)
+                    currentEditor->setFocus();
+            } else {
+                // more pre-editing
+                QApplication::sendEvent(currentEditor, event);
+            }
+            return;
+        }
+    } else if (preediting) {
+        // don't set focus when the editor opens
+        d->waitForIMCommit = true;
+        // but pass preedit on to editor
+        forwardEventToEditor = true;
+    } else if (!commit) {
         event->ignore();
         return;
     }
     if (!edit(currentIndex(), AnyKeyPressed, event)) {
-        if (!event->commitString().isEmpty())
+        d->waitForIMCommit = false;
+        if (commit)
             keyboardSearch(event->commitString());
         event->ignore();
+    } else if (QWidget *currentEditor; forwardEventToEditor
+               && (currentEditor = d->editorForIndex(currentIndex()).widget)) {
+        QApplication::sendEvent(currentEditor, event);
     }
 }
 
@@ -2685,7 +2741,10 @@ bool QAbstractItemView::edit(const QModelIndex &index, EditTrigger trigger, QEve
     if (QWidget *w = (d->persistent.isEmpty() ? static_cast<QWidget*>(nullptr) : d->editorForIndex(index).widget.data())) {
         if (w->focusPolicy() == Qt::NoFocus)
             return false;
-        w->setFocus();
+        if (!d->waitForIMCommit)
+            w->setFocus();
+        else
+            updateMicroFocus();
         return true;
     }
 
@@ -4241,6 +4300,28 @@ void QAbstractItemViewPrivate::updateGeometry()
         q->updateGeometry();
 }
 
+/*
+    Handles selection of content for some editors containing QLineEdit.
+
+    ### Qt 7 This should be done by a virtual method in QAbstractItemDelegate.
+*/
+void QAbstractItemViewPrivate::selectAllInEditor(QWidget *editor)
+{
+    while (QWidget *fp = editor->focusProxy())
+        editor = fp;
+
+#if QT_CONFIG(lineedit)
+    if (QLineEdit *le = qobject_cast<QLineEdit*>(editor))
+        le->selectAll();
+#endif
+#if QT_CONFIG(spinbox)
+    if (QSpinBox *sb = qobject_cast<QSpinBox*>(editor))
+        sb->selectAll();
+    else if (QDoubleSpinBox *dsb = qobject_cast<QDoubleSpinBox*>(editor))
+        dsb->selectAll();
+#endif
+}
+
 QWidget *QAbstractItemViewPrivate::editor(const QModelIndex &index,
                                           const QStyleOptionViewItem &options)
 {
@@ -4260,20 +4341,7 @@ QWidget *QAbstractItemViewPrivate::editor(const QModelIndex &index,
             if (w->parent() == viewport)
                 QWidget::setTabOrder(q, w);
 
-            // Special cases for some editors containing QLineEdit
-            QWidget *focusWidget = w;
-            while (QWidget *fp = focusWidget->focusProxy())
-                focusWidget = fp;
-#if QT_CONFIG(lineedit)
-            if (QLineEdit *le = qobject_cast<QLineEdit*>(focusWidget))
-                le->selectAll();
-#endif
-#if QT_CONFIG(spinbox)
-            if (QSpinBox *sb = qobject_cast<QSpinBox*>(focusWidget))
-                sb->selectAll();
-            else if (QDoubleSpinBox *dsb = qobject_cast<QDoubleSpinBox*>(focusWidget))
-                dsb->selectAll();
-#endif
+            selectAllInEditor(w);
         }
     }
 
@@ -4444,7 +4512,10 @@ bool QAbstractItemViewPrivate::openEditor(const QModelIndex &index, QEvent *even
 
     q->setState(QAbstractItemView::EditingState);
     w->show();
-    w->setFocus();
+    if (!waitForIMCommit)
+        w->setFocus();
+    else
+        q->updateMicroFocus();
 
     if (event)
         QCoreApplication::sendEvent(w->focusProxy() ? w->focusProxy() : w, event);
