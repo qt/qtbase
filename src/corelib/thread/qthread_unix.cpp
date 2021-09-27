@@ -300,7 +300,9 @@ void *QThreadPrivate::start(void *arg)
                 thr->d_func()->setPriority(QThread::Priority(thr->d_func()->priority & ~ThreadPriorityResetFlag));
             }
 
-            data->threadId.storeRelaxed(to_HANDLE(pthread_self()));
+            // threadId is set in QThread::start()
+            Q_ASSERT(pthread_equal(from_HANDLE<pthread_t>(data->threadId.loadRelaxed()),
+                                   pthread_self()));
             set_thread_data(data);
 
             data->ref();
