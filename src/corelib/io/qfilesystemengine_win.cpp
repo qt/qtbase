@@ -1035,7 +1035,7 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
     // Check for ".lnk": Directories named ".lnk" should be skipped, corrupted
     // link files should still be detected as links.
     const QString origFilePath = entry.filePath();
-    if (origFilePath.endsWith(QLatin1String(".lnk")) && !isDirPath(origFilePath, 0)) {
+    if (origFilePath.endsWith(QLatin1String(".lnk")) && !isDirPath(origFilePath, nullptr)) {
         data.entryFlags |= QFileSystemMetaData::WinLnkType;
         fname = QFileSystemEntry(readLink(entry));
     } else {
@@ -1199,7 +1199,7 @@ bool QFileSystemEngine::removeDirectory(const QFileSystemEntry &entry, bool remo
             if (chunkRef.length() == 2 && chunkRef.at(0).isLetter() && chunkRef.at(1) == QLatin1Char(':'))
                 break;
             const QString chunk = chunkRef.toString();
-            if (!isDirPath(chunk, 0))
+            if (!isDirPath(chunk, nullptr))
                 return false;
             if (!rmDir(chunk))
                 return oldslash != 0;
