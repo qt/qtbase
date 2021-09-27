@@ -3305,15 +3305,6 @@ inline qint64 QDateTimePrivate::zoneMSecsToEpochMSecs(qint64 zoneMSecs, const QT
             *zoneTime = QTime();
     } else {
         Q_ASSERT(zone.d->offsetFromUtc(data.atMSecsSinceEpoch) == data.offsetFromUtc);
-        Q_ASSERT(([data](qint64 offset) {
-                    return offset == data.offsetFromUtc
-                        // When zoneMSecs falls in a spring-forward's gap:
-                        || offset == data.standardTimeOffset
-                        // When it falls in the gap leading into double-DST:
-                        || offset == 2 * data.standardTimeOffset
-                        // When it falls in a skipped day (Pacific date-line crossings):
-                        || (data.offsetFromUtc - offset) % SECS_PER_DAY == 0;
-                })((zoneMSecs - data.atMSecsSinceEpoch) / MSECS_PER_SEC));
         msecsToTime(data.atMSecsSinceEpoch + data.offsetFromUtc * MSECS_PER_SEC,
                     zoneDate, zoneTime);
         if (hint) {
