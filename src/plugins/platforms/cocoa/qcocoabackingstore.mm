@@ -67,7 +67,9 @@ QCFType<CGColorSpaceRef> QCocoaBackingStore::colorSpace() const
 QCALayerBackingStore::QCALayerBackingStore(QWindow *window)
     : QCocoaBackingStore(window)
 {
-    qCDebug(lcQpaBackingStore) << "Creating QCALayerBackingStore for" << window;
+    qCDebug(lcQpaBackingStore) << "Creating QCALayerBackingStore for" << window
+        << "with" << window->format();
+
     m_buffers.resize(1);
 
     observeBackingPropertiesChanges();
@@ -145,13 +147,6 @@ void QCALayerBackingStore::ensureBackBuffer()
 {
     if (window()->format().swapBehavior() == QSurfaceFormat::SingleBuffer)
         return;
-
-    // The current back buffer may have been assigned to a layer in a previous flush,
-    // but we deferred the swap. Do it now if the surface has been picked up by CA.
-    if (m_buffers.back() && m_buffers.back()->isInUse() && m_buffers.back() != m_buffers.front()) {
-        qCInfo(lcQpaBackingStore) << "Back buffer has been picked up by CA, swapping to front";
-        std::swap(m_buffers.back(), m_buffers.front());
-    }
 
     if (Q_UNLIKELY(lcQpaBackingStore().isDebugEnabled())) {
         // ┌───────┬───────┬───────┬─────┬──────┐
@@ -264,6 +259,11 @@ void QCALayerBackingStore::flush(QWindow *flushedWindow, const QRegion &region, 
         return;
     }
 
+    if (m_buffers.front()->isInUse() && m_buffers.front()->dirtyRegion.isEmpty()) {
+        qCInfo(lcQpaBackingStore) << "Asked to flush, but front buffer is up to date. Ignoring.";
+        return;
+    }
+
     QMacAutoReleasePool pool;
 
     NSView *flushedView = static_cast<QCocoaWindow *>(flushedWindow->handle())->view();
@@ -287,16 +287,6 @@ void QCALayerBackingStore::flush(QWindow *flushedWindow, const QRegion &region, 
     const bool isSingleBuffered = window()->format().swapBehavior() == QSurfaceFormat::SingleBuffer;
 
     id backBufferSurface = (__bridge id)m_buffers.back()->surface();
-    if (!isSingleBuffered && flushedView.layer.contents == backBufferSurface) {
-        // We've managed to paint to the back buffer again before Core Animation had time
-        // to flush the transaction and persist the layer changes to the window server, or
-        // we've been asked to flush without painting anything. The layer already knows about
-        // the back buffer, and we don't need to re-apply it to pick up any possible surface
-        // changes, so bail out early.
-        qCInfo(lcQpaBackingStore).nospace() << "Skipping flush of " << flushedView
-            << ", layer already reflects back buffer";
-        return;
-    }
 
     // Trigger a new display cycle if there isn't one. This ensures that our layer updates
     // are committed as part of a display-cycle instead of on the next runloop pass. This
@@ -315,14 +305,17 @@ void QCALayerBackingStore::flush(QWindow *flushedWindow, const QRegion &region, 
 
     flushedView.layer.contents = backBufferSurface;
 
-    // Since we may receive multiple flushes before a new frame is started, we do not
-    // swap any buffers just yet. Instead we check in the next beginPaint if the layer's
-    // surface is in use, and if so swap to an unused surface as the new back buffer.
+    if (!isSingleBuffered) {
+        // Mark the surface as in use, so that we don't end up rendering
+        // to it while it's assigned to a layer.
+        IOSurfaceIncrementUseCount(m_buffers.back()->surface());
 
-    // Note: Ideally CoreAnimation would mark a surface as in use the moment we assign
-    // it to a layer, but as that's not the case we may end up painting to the same back
-    // buffer once more if we are painting faster than CA can ship the surfaces over to
-    // the window server.
+        if (m_buffers.back() != m_buffers.front()) {
+            qCInfo(lcQpaBackingStore) << "Swapping back buffer to front";
+            std::swap(m_buffers.back(), m_buffers.front());
+            IOSurfaceDecrementUseCount(m_buffers.back()->surface());
+        }
+    }
 }
 
 void QCALayerBackingStore::flushSubWindow(QWindow *subWindow)
