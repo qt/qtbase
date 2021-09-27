@@ -2646,9 +2646,11 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
     QCoreApplicationPrivate::checkReceiverThread(receiver);
 #endif
 
-    if (receiver->isWindowType()) {
-        if (QGuiApplicationPrivate::sendQWindowEventToQPlatformWindow(static_cast<QWindow *>(receiver), e))
-            return true; // Platform plugin ate the event
+    const bool isWindowType = receiver->isWindowType();
+    const bool isWidgetType = receiver->isWidgetType();
+    if (isWindowType
+        && QGuiApplicationPrivate::sendQWindowEventToQPlatformWindow(static_cast<QWindow *>(receiver), e)) {
+        return true; // Platform plugin ate the event
     }
 
     QGuiApplicationPrivate::captureGlobalModifierState(e);
@@ -2679,7 +2681,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             break;
         default:
             if (d->gestureManager->thread() == QThread::currentThread()) {
-                if (receiver->isWidgetType()) {
+                if (isWidgetType) {
                     if (d->gestureManager->filterEvent(static_cast<QWidget *>(receiver), e))
                         return true;
                 } else {
@@ -2721,99 +2723,73 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
     }
 
     switch (e->type()) {
-        case QEvent::KeyPress: {
-            QKeyEvent* keyEvent = static_cast<QKeyEvent*>(e);
-            const int key = keyEvent->key();
-            // When a key press is received which is not spontaneous then it needs to
-            // be manually sent as a shortcut override event to ensure that any
-            // matching shortcut is triggered first. This enables emulation/playback
-            // of recorded events to still have the same effect.
-            if (!e->spontaneous() && receiver->isWidgetType()) {
-                if (qt_sendShortcutOverrideEvent(qobject_cast<QWidget *>(receiver), keyEvent->timestamp(),
-                                                 key, keyEvent->modifiers(), keyEvent->text(),
-                                                 keyEvent->isAutoRepeat(), keyEvent->count()))
-                    return true;
-            }
-            qt_in_tab_key_event = (key == Qt::Key_Backtab
-                        || key == Qt::Key_Tab
-                        || key == Qt::Key_Left
-                        || key == Qt::Key_Up
-                        || key == Qt::Key_Right
-                        || key == Qt::Key_Down);
+    case QEvent::KeyPress: {
+        QKeyEvent* keyEvent = static_cast<QKeyEvent*>(e);
+        const int key = keyEvent->key();
+        // When a key press is received which is not spontaneous then it needs to
+        // be manually sent as a shortcut override event to ensure that any
+        // matching shortcut is triggered first. This enables emulation/playback
+        // of recorded events to still have the same effect.
+        if (!e->spontaneous() && isWidgetType
+            && qt_sendShortcutOverrideEvent(static_cast<QWidget *>(receiver), keyEvent->timestamp(),
+                                            key, keyEvent->modifiers(), keyEvent->text(),
+                                            keyEvent->isAutoRepeat(), keyEvent->count())) {
+            return true;
         }
-        default:
-            break;
+        qt_in_tab_key_event = (key == Qt::Key_Backtab
+                    || key == Qt::Key_Tab
+                    || key == Qt::Key_Left
+                    || key == Qt::Key_Up
+                    || key == Qt::Key_Right
+                    || key == Qt::Key_Down);
+    }
+    default:
+        break;
     }
 
     bool res = false;
-    if (receiver->isWindowType()) {
-        res = d->notify_helper(receiver, e);
-        // We don't call QGuiApplication::notify here, so we need to duplicate the logic
-        if (res && e->type() == QEvent::Close)
-            d->maybeQuitOnLastWindowClosed(static_cast<QWindow *>(receiver));
-    } else if (!receiver->isWidgetType()) {
-        res = d->notify_helper(receiver, e);
-    } else switch (e->type()) {
-    case QEvent::ShortcutOverride:
-    case QEvent::KeyPress:
-    case QEvent::KeyRelease:
-        {
-            bool isWidget = receiver->isWidgetType();
-#if QT_CONFIG(graphicsview)
-            const bool isGraphicsWidget = !isWidget && qobject_cast<QGraphicsWidget *>(receiver);
-#endif
+    if (isWidgetType) {
+        QWidget * w = static_cast<QWidget *>(receiver);
+        switch (e->type()) {
+        case QEvent::ShortcutOverride:
+        case QEvent::KeyPress:
+        case QEvent::KeyRelease: {
             QKeyEvent* key = static_cast<QKeyEvent*>(e);
             bool def = key->isAccepted();
+            /*
+                QLineEdit will emit a signal on Key_Return, but
+                ignore the event, and sometimes the connected
+                slot deletes the QLineEdit (common in itemview
+                delegates), so we have to check if the widget
+                was destroyed even if the event was ignored (to
+                prevent a crash)
+
+                Note that we don't have to reset pr while
+                propagating (because the original receiver will
+                be destroyed if one of its ancestors is)
+            */
             QPointer<QObject> pr = receiver;
-            while (receiver) {
+            while (w) {
                 if (def)
                     key->accept();
                 else
                     key->ignore();
-                QWidget *w = isWidget ? static_cast<QWidget *>(receiver) : nullptr;
-#if QT_CONFIG(graphicsview)
-                QGraphicsWidget *gw = isGraphicsWidget ? static_cast<QGraphicsWidget *>(receiver) : nullptr;
-#endif
-                res = d->notify_helper(receiver, e);
+                res = d->notify_helper(w, e);
 
-                if ((res && key->isAccepted())
-                    /*
-                       QLineEdit will emit a signal on Key_Return, but
-                       ignore the event, and sometimes the connected
-                       slot deletes the QLineEdit (common in itemview
-                       delegates), so we have to check if the widget
-                       was destroyed even if the event was ignored (to
-                       prevent a crash)
-
-                       note that we don't have to reset pw while
-                       propagating (because the original receiver will
-                       be destroyed if one of its ancestors is)
-                    */
-                    || !pr
-                    || (isWidget && (w->isWindow() || !w->parentWidget()))
-#if QT_CONFIG(graphicsview)
-                    || (isGraphicsWidget && (gw->isWindow() || !gw->parentWidget()))
-#endif
-                    ) {
+                if (res && key->isAccepted())
                     break;
-                }
+                if (!pr || w->isWindow())
+                    break;
 
-#if QT_CONFIG(graphicsview)
-                receiver = w ? (QObject *)w->parentWidget() : (QObject *)gw->parentWidget();
-#else
-                receiver = w->parentWidget();
-#endif
+                w = w->parentWidget();
             }
             qt_in_tab_key_event = false;
+            break;
         }
-        break;
-    case QEvent::MouseButtonPress:
-    case QEvent::MouseButtonRelease:
-    case QEvent::MouseButtonDblClick:
-    case QEvent::MouseMove:
-        {
-            QWidget* w = static_cast<QWidget *>(receiver);
-
+        case QEvent::MouseButtonPress:
+        case QEvent::MouseButtonRelease:
+        case QEvent::MouseButtonDblClick:
+        case QEvent::MouseMove: {
             QMouseEvent* mouse = static_cast<QMouseEvent*>(e);
             QPoint relpos = mouse->position().toPoint();
 
@@ -2821,8 +2797,8 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                 if (e->type() != QEvent::MouseMove)
                     QApplicationPrivate::giveFocusAccordingToFocusPolicy(w, e, relpos);
 
-                // ### Qt 5 These dynamic tool tips should be an OPT-IN feature. Some platforms
-                // like OS X (probably others too), can optimize their views by not
+                // ### Qt 7 These dynamic tool tips should be an OPT-IN feature. Some platforms
+                // like macOS (probably others too), can optimize their views by not
                 // dispatching mouse move events. We have attributes to control hover,
                 // and mouse tracking, but as long as we are deciding to implement this
                 // feature without choice of opting-in or out, you ALWAYS have to have
@@ -2892,13 +2868,10 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             }
 
             d->hoverGlobalPos = mouse->globalPosition().toPoint();
+            break;
         }
-        break;
 #if QT_CONFIG(wheelevent)
-    case QEvent::Wheel:
-        {
-            QWidget* w = static_cast<QWidget *>(receiver);
-
+        case QEvent::Wheel: {
             // QTBUG-40656, QTBUG-42731: ignore wheel events when a popup (QComboBox) is open.
             if (const QWidget *popup = QApplication::activePopupWidget()) {
                 if (w->window() != popup)
@@ -2908,9 +2881,9 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             QWheelEvent* wheel = static_cast<QWheelEvent*>(e);
             if (!wheel->spontaneous()) {
                 /*
-                   Synthesized events shouldn't propagate, e.g. QScrollArea passes events from the
-                   viewport on to the scrollbars, which might ignore the event if there is no more
-                   space to scroll. If we would propagate, the event would come back to the viewport.
+                    Synthesized events shouldn't propagate, e.g. QScrollArea passes events from the
+                    viewport on to the scrollbars, which might ignore the event if there is no more
+                    space to scroll. If we would propagate, the event would come back to the viewport.
                 */
                 res = d->notify_helper(w, wheel);
                 break;
@@ -2989,13 +2962,11 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                 w = w->parentWidget();
             } while (w);
             wheel->setAccepted(eventAccepted);
+            break;
         }
-        break;
 #endif
 #ifndef QT_NO_CONTEXTMENU
-    case QEvent::ContextMenu:
-        {
-            QWidget* w = static_cast<QWidget *>(receiver);
+        case QEvent::ContextMenu: {
             QContextMenuEvent *context = static_cast<QContextMenuEvent*>(e);
             QPoint relpos = context->pos();
             bool eventAccepted = context->isAccepted();
@@ -3006,23 +2977,22 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                 eventAccepted = ((w == receiver) ? context : &ce)->isAccepted();
                 e->m_spont = false;
 
-                if ((res && eventAccepted)
-                    || w->isWindow() || w->testAttribute(Qt::WA_NoMousePropagation))
+                if (res && eventAccepted)
+                    break;
+                if (w->isWindow() || w->testAttribute(Qt::WA_NoMousePropagation))
                     break;
 
                 relpos += w->pos();
                 w = w->parentWidget();
             }
             context->setAccepted(eventAccepted);
+            break;
         }
-        break;
 #endif // QT_NO_CONTEXTMENU
 #if QT_CONFIG(tabletevent)
-    case QEvent::TabletMove:
-    case QEvent::TabletPress:
-    case QEvent::TabletRelease:
-        {
-            QWidget *w = static_cast<QWidget *>(receiver);
+        case QEvent::TabletMove:
+        case QEvent::TabletPress:
+        case QEvent::TabletRelease: {
             QTabletEvent *tablet = static_cast<QTabletEvent*>(e);
             QPointF relpos = tablet->position();
             bool eventAccepted = tablet->isAccepted();
@@ -3036,25 +3006,23 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                 res = d->notify_helper(w, w == receiver ? tablet : &te);
                 eventAccepted = ((w == receiver) ? tablet : &te)->isAccepted();
                 e->m_spont = false;
-                if ((res && eventAccepted)
-                     || w->isWindow()
-                     || w->testAttribute(Qt::WA_NoMousePropagation))
+                if (res && eventAccepted)
+                    break;
+                if (w->isWindow() || w->testAttribute(Qt::WA_NoMousePropagation))
                     break;
 
                 relpos += w->pos();
                 w = w->parentWidget();
             }
             tablet->setAccepted(eventAccepted);
+            break;
         }
-        break;
 #endif // QT_CONFIG(tabletevent)
 
 #if QT_CONFIG(tooltip) || QT_CONFIG(whatsthis)
-    case QEvent::ToolTip:
-    case QEvent::WhatsThis:
-    case QEvent::QueryWhatsThis:
-        {
-            QWidget* w = static_cast<QWidget *>(receiver);
+        case QEvent::ToolTip:
+        case QEvent::WhatsThis:
+        case QEvent::QueryWhatsThis: {
             QHelpEvent *help = static_cast<QHelpEvent*>(e);
             QPoint relpos = help->pos();
             bool eventAccepted = help->isAccepted();
@@ -3064,34 +3032,34 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                 res = d->notify_helper(w, w == receiver ? help : &he);
                 e->m_spont = false;
                 eventAccepted = (w == receiver ? help : &he)->isAccepted();
-                if ((res && eventAccepted) || w->isWindow())
+                if (res && eventAccepted)
+                    break;
+                if (w->isWindow())
                     break;
 
                 relpos += w->pos();
                 w = w->parentWidget();
             }
             help->setAccepted(eventAccepted);
+            break;
         }
-        break;
 #endif
 #if QT_CONFIG(statustip) || QT_CONFIG(whatsthis)
-    case QEvent::StatusTip:
-    case QEvent::WhatsThisClicked:
-        {
-            QWidget *w = static_cast<QWidget *>(receiver);
+        case QEvent::StatusTip:
+        case QEvent::WhatsThisClicked:
             while (w) {
                 res = d->notify_helper(w, e);
-                if ((res && e->isAccepted()) || w->isWindow())
+                if (res && e->isAccepted())
+                    break;
+                if (w->isWindow())
                     break;
                 w = w->parentWidget();
             }
-        }
-        break;
+            break;
 #endif
 
 #if QT_CONFIG(draganddrop)
-    case QEvent::DragEnter: {
-            QWidget* w = static_cast<QWidget *>(receiver);
+        case QEvent::DragEnter: {
             QDragEnterEvent *dragEvent = static_cast<QDragEnterEvent *>(e);
 #if QT_CONFIG(graphicsview)
             // QGraphicsProxyWidget handles its own propagation,
@@ -3115,12 +3083,11 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                 dragEvent->m_pos = w->mapToParent(dragEvent->m_pos);
                 w = w->parentWidget();
             }
+            break;
         }
-        break;
-    case QEvent::DragMove:
-    case QEvent::Drop:
-    case QEvent::DragLeave: {
-            QWidget* w = static_cast<QWidget *>(receiver);
+        case QEvent::DragMove:
+        case QEvent::Drop:
+        case QEvent::DragLeave: {
 #if QT_CONFIG(graphicsview)
             // QGraphicsProxyWidget handles its own propagation,
             // and we must not change QDragManagers currentTarget.
@@ -3130,15 +3097,14 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
 #endif
                 w = qobject_cast<QWidget *>(QDragManager::self()->currentTarget());
 
-            if (!w) {
-                    break;
-            }
+            if (!w)
+                break;
             if (e->type() == QEvent::DragMove || e->type() == QEvent::Drop) {
                 QDropEvent *dragEvent = static_cast<QDropEvent *>(e);
-                QWidget *origReciver = static_cast<QWidget *>(receiver);
-                while (origReciver && w != origReciver) {
-                    dragEvent->m_pos = origReciver->mapToParent(dragEvent->m_pos);
-                    origReciver = origReciver->parentWidget();
+                QWidget *origReceiver = static_cast<QWidget *>(receiver);
+                while (origReceiver && w != origReceiver) {
+                    dragEvent->m_pos = origReceiver->mapToParent(dragEvent->m_pos);
+                    origReceiver = origReceiver->parentWidget();
                 }
             }
             res = d->notify_helper(w, e);
@@ -3148,109 +3114,99 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
 #endif
                 )
                 QDragManager::self()->setCurrentTarget(nullptr, e->type() == QEvent::Drop);
-        }
-        break;
+            break;
 #endif
-    case QEvent::TouchBegin:
-    // Note: TouchUpdate and TouchEnd events are never propagated
-    {
-        QWidget *widget = static_cast<QWidget *>(receiver);
-        QMutableTouchEvent *touchEvent = QMutableTouchEvent::from(static_cast<QTouchEvent *>(e));
-        bool eventAccepted = touchEvent->isAccepted();
-        bool acceptTouchEvents = widget->testAttribute(Qt::WA_AcceptTouchEvents);
-
-        if (acceptTouchEvents && e->spontaneous()) {
-            const QPoint localPos = touchEvent->points()[0].position().toPoint();
-            QApplicationPrivate::giveFocusAccordingToFocusPolicy(widget, e, localPos);
         }
+        case QEvent::TouchBegin: {
+            // Note: TouchUpdate and TouchEnd events are never propagated
+            QMutableTouchEvent *touchEvent = QMutableTouchEvent::from(static_cast<QTouchEvent *>(e));
+            bool eventAccepted = touchEvent->isAccepted();
+            bool acceptTouchEvents = w->testAttribute(Qt::WA_AcceptTouchEvents);
 
-#ifndef QT_NO_GESTURES
-        QPointer<QWidget> gesturePendingWidget;
-#endif
-
-        while (widget) {
-            // first, try to deliver the touch event
-            acceptTouchEvents = widget->testAttribute(Qt::WA_AcceptTouchEvents);
-            touchEvent->setTarget(widget);
-            touchEvent->setAccepted(acceptTouchEvents);
-            QPointer<QWidget> p = widget;
-            res = acceptTouchEvents && d->notify_helper(widget, touchEvent);
-            eventAccepted = touchEvent->isAccepted();
-            if (p.isNull()) {
-                // widget was deleted
-                widget = nullptr;
-            } else {
-                widget->setAttribute(Qt::WA_WState_AcceptedTouchBeginEvent, res && eventAccepted);
+            if (acceptTouchEvents && e->spontaneous()) {
+                const QPoint localPos = touchEvent->points()[0].position().toPoint();
+                QApplicationPrivate::giveFocusAccordingToFocusPolicy(w, e, localPos);
             }
-            touchEvent->m_spont = false;
-            if (res && eventAccepted) {
-                // the first widget to accept the TouchBegin gets an implicit grab.
-                d->activateImplicitTouchGrab(widget, touchEvent);
-                break;
-            }
-#ifndef QT_NO_GESTURES
-            if (gesturePendingWidget.isNull() && widget && QGestureManager::gesturePending(widget))
-                gesturePendingWidget = widget;
-#endif
-            if (p.isNull() || widget->isWindow() || widget->testAttribute(Qt::WA_NoMousePropagation))
-                break;
-
-            QPoint offset = widget->pos();
-            widget = widget->parentWidget();
-            touchEvent->setTarget(widget);
-            for (int i = 0; i < touchEvent->pointCount(); ++i) {
-                auto &pt = QMutableEventPoint::from(touchEvent->point(i));
-                pt.setPosition(pt.position() + offset);
-            }
-        }
 
 #ifndef QT_NO_GESTURES
-        if (!eventAccepted && !gesturePendingWidget.isNull()) {
-            // the first widget subscribed to a gesture gets an implicit grab
-            d->activateImplicitTouchGrab(gesturePendingWidget, touchEvent);
-        }
+            QPointer<QWidget> gesturePendingWidget;
 #endif
 
-        touchEvent->setAccepted(eventAccepted);
-        break;
-    }
-    case QEvent::TouchUpdate:
-    case QEvent::TouchEnd:
-    {
-        QWidget *widget = static_cast<QWidget *>(receiver);
-        // We may get here if the widget is subscribed to a gesture,
-        // but has not accepted TouchBegin. Propagate touch events
-        // only if TouchBegin has been accepted.
-        if (widget->testAttribute(Qt::WA_WState_AcceptedTouchBeginEvent))
-            res = d->notify_helper(widget, e);
-        break;
-    }
-    case QEvent::RequestSoftwareInputPanel:
-        inputMethod()->show();
-        break;
-    case QEvent::CloseSoftwareInputPanel:
-        inputMethod()->hide();
-        break;
+            while (w) {
+                // first, try to deliver the touch event
+                acceptTouchEvents = w->testAttribute(Qt::WA_AcceptTouchEvents);
+                touchEvent->setTarget(w);
+                touchEvent->setAccepted(acceptTouchEvents);
+                QPointer<QWidget> p = w;
+                res = acceptTouchEvents && d->notify_helper(w, touchEvent);
+                eventAccepted = touchEvent->isAccepted();
+                if (p.isNull()) {
+                    // widget was deleted
+                    w = nullptr;
+                } else {
+                    w->setAttribute(Qt::WA_WState_AcceptedTouchBeginEvent, res && eventAccepted);
+                }
+                touchEvent->m_spont = false;
+                if (res && eventAccepted) {
+                    // the first widget to accept the TouchBegin gets an implicit grab.
+                    d->activateImplicitTouchGrab(w, touchEvent);
+                    break;
+                }
+#ifndef QT_NO_GESTURES
+                if (gesturePendingWidget.isNull() && w && QGestureManager::gesturePending(w))
+                    gesturePendingWidget = w;
+#endif
+                if (p.isNull() || w->isWindow()|| w->testAttribute(Qt::WA_NoMousePropagation))
+                    break;
+
+                const QPoint offset = w->pos();
+                w = w->parentWidget();
+                touchEvent->setTarget(w);
+                for (int i = 0; i < touchEvent->pointCount(); ++i) {
+                    auto &pt = QMutableEventPoint::from(touchEvent->point(i));
+                    pt.setPosition(pt.position() + offset);
+                }
+            }
 
 #ifndef QT_NO_GESTURES
-    case QEvent::NativeGesture:
-    {
-        // only propagate the first gesture event (after the GID_BEGIN)
-        QWidget *w = static_cast<QWidget *>(receiver);
-        while (w) {
-            e->ignore();
-            res = d->notify_helper(w, e);
-            if ((res && e->isAccepted()) || w->isWindow())
-                break;
-            w = w->parentWidget();
+            if (!eventAccepted && !gesturePendingWidget.isNull()) {
+                // the first widget subscribed to a gesture gets an implicit grab
+                d->activateImplicitTouchGrab(gesturePendingWidget, touchEvent);
+            }
+#endif
+
+            touchEvent->setAccepted(eventAccepted);
+            break;
         }
-        break;
-    }
-    case QEvent::Gesture:
-    case QEvent::GestureOverride:
-    {
-        if (receiver->isWidgetType()) {
-            QWidget *w = static_cast<QWidget *>(receiver);
+        case QEvent::TouchUpdate:
+        case QEvent::TouchEnd:
+            // We may get here if the widget is subscribed to a gesture,
+            // but has not accepted TouchBegin. Propagate touch events
+            // only if TouchBegin has been accepted.
+            if (w->testAttribute(Qt::WA_WState_AcceptedTouchBeginEvent))
+                res = d->notify_helper(w, e);
+            break;
+        case QEvent::RequestSoftwareInputPanel:
+            inputMethod()->show();
+            break;
+        case QEvent::CloseSoftwareInputPanel:
+            inputMethod()->hide();
+            break;
+
+#ifndef QT_NO_GESTURES
+        case QEvent::NativeGesture:
+            while (w) {
+                e->ignore();
+                res = d->notify_helper(w, e);
+                if (res && e->isAccepted())
+                    break;
+                if (w->isWindow())
+                    break;
+                w = w->parentWidget();
+            }
+            break;
+        case QEvent::Gesture:
+        case QEvent::GestureOverride: {
             QGestureEvent *gestureEvent = static_cast<QGestureEvent *>(e);
             QList<QGesture *> allGestures = gestureEvent->gestures();
 
@@ -3267,7 +3223,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                             wd->gestureContext.find(type);
                     bool deliver = contextit != wd->gestureContext.end() &&
                         (g->state() == Qt::GestureStarted || w == receiver ||
-                         (contextit.value() & Qt::ReceivePartialGestures));
+                        (contextit.value() & Qt::ReceivePartialGestures));
                     if (deliver) {
                         allGestures.removeAt(i);
                         gestures.append(g);
@@ -3308,43 +3264,42 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             for (QGesture *g : qAsConst(allGestures))
                 gestureEvent->setAccepted(g, false);
             gestureEvent->m_accept = false; // to make sure we check individual gestures
-        } else {
-            res = d->notify_helper(receiver, e);
+            break;
         }
-        break;
-    }
 #endif // QT_NO_GESTURES
 #ifdef Q_OS_MAC
-    // Enable touch events on enter, disable on leave.
-    typedef void (*RegisterTouchWindowFn)(QWindow *,  bool);
-    case QEvent::Enter:
-        if (receiver->isWidgetType()) {
-            QWidget *w = static_cast<QWidget *>(receiver);
+        // Enable touch events on enter, disable on leave.
+        typedef void (*RegisterTouchWindowFn)(QWindow *,  bool);
+        case QEvent::Enter:
             if (w->testAttribute(Qt::WA_AcceptTouchEvents)) {
                 RegisterTouchWindowFn registerTouchWindow = reinterpret_cast<RegisterTouchWindowFn>
                         (platformNativeInterface()->nativeResourceFunctionForIntegration("registertouchwindow"));
                 if (registerTouchWindow)
                     registerTouchWindow(w->window()->windowHandle(), true);
             }
-        }
-        res = d->notify_helper(receiver, e);
-    break;
-    case QEvent::Leave:
-        if (receiver->isWidgetType()) {
-            QWidget *w = static_cast<QWidget *>(receiver);
+            res = d->notify_helper(receiver, e);
+            break;
+        case QEvent::Leave:
             if (w->testAttribute(Qt::WA_AcceptTouchEvents)) {
                 RegisterTouchWindowFn registerTouchWindow = reinterpret_cast<RegisterTouchWindowFn>
                         (platformNativeInterface()->nativeResourceFunctionForIntegration("registertouchwindow"));
                 if (registerTouchWindow)
                     registerTouchWindow(w->window()->windowHandle(), false);
             }
-        }
-        res = d->notify_helper(receiver, e);
-    break;
+            res = d->notify_helper(receiver, e);
+            break;
 #endif
-    default:
+        default:
+            res = d->notify_helper(receiver, e);
+            break;
+        }
+    } else if (receiver->isWindowType()) {
         res = d->notify_helper(receiver, e);
-        break;
+        // We don't call QGuiApplication::notify here, so we need to duplicate the logic
+        if (res && e->type() == QEvent::Close)
+            d->maybeQuitOnLastWindowClosed(static_cast<QWindow *>(receiver));
+    } else {
+        res = d->notify_helper(receiver, e);
     }
 
     return res;
