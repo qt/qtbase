@@ -1909,14 +1909,18 @@ QWidget *qt_tlw_for_window(QWindow *wnd)
 void QApplicationPrivate::notifyActiveWindowChange(QWindow *previous)
 {
     Q_UNUSED(previous);
-    QWindow *wnd = QGuiApplicationPrivate::focus_window;
-    if (inPopupMode()) // some delayed focus event to ignore
+#ifndef Q_OS_MACOS
+    // Some delayed focus event to ignore, unless we are on cocoa where
+    // popups can be opened via right-click on inactive applications
+    if (inPopupMode())
         return;
-    QWidget *tlw = qt_tlw_for_window(wnd);
-    QApplication::setActiveWindow(tlw);
+#endif
+    QWindow *focusWindow = QGuiApplicationPrivate::focus_window;
+    QWidget *focusWidget = qt_tlw_for_window(focusWindow);
+    QApplication::setActiveWindow(focusWidget);
     // QTBUG-37126, Active X controls may set the focus on native child widgets.
-    if (wnd && tlw && wnd != tlw->windowHandle()) {
-        if (QWidgetWindow *widgetWindow = qobject_cast<QWidgetWindow *>(wnd))
+    if (focusWindow && focusWidget && focusWindow != focusWidget->windowHandle()) {
+        if (QWidgetWindow *widgetWindow = qobject_cast<QWidgetWindow *>(focusWindow))
             if (QWidget *widget = widgetWindow->widget())
                 if (widget->inherits("QAxHostWidget"))
                     widget->setFocus(Qt::ActiveWindowFocusReason);
