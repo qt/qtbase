@@ -55,8 +55,14 @@ using qt_xcb_input_device_event_t = xcb_input_button_press_event_t;
 
 struct qt_xcb_input_event_mask_t {
     xcb_input_event_mask_t header;
-    uint32_t               mask;
+    alignas(4) uint8_t     mask[4] = {};
 };
+
+static inline void setXcbMask(uint8_t* mask, int bit)
+{
+    // note that XI protocol always uses little endian for masks over the wire
+    mask[bit >> 3] |= 1 << (bit & 7);
+}
 
 void QXcbConnection::xi2SelectStateEvents()
 {
@@ -65,9 +71,9 @@ void QXcbConnection::xi2SelectStateEvents()
     qt_xcb_input_event_mask_t xiEventMask;
     xiEventMask.header.deviceid = XCB_INPUT_DEVICE_ALL;
     xiEventMask.header.mask_len = 1;
-    xiEventMask.mask = XCB_INPUT_XI_EVENT_MASK_HIERARCHY;
-    xiEventMask.mask |= XCB_INPUT_XI_EVENT_MASK_DEVICE_CHANGED;
-    xiEventMask.mask |= XCB_INPUT_XI_EVENT_MASK_PROPERTY;
+    setXcbMask(xiEventMask.mask, XCB_INPUT_HIERARCHY);
+    setXcbMask(xiEventMask.mask, XCB_INPUT_DEVICE_CHANGED);
+    setXcbMask(xiEventMask.mask, XCB_INPUT_PROPERTY);
     xcb_input_xi_select_events(xcb_connection(), rootWindow(), 1, &xiEventMask.header);
 }
 
@@ -76,23 +82,23 @@ void QXcbConnection::xi2SelectDeviceEvents(xcb_window_t window)
     if (window == rootWindow())
         return;
 
-    uint32_t bitMask = XCB_INPUT_XI_EVENT_MASK_BUTTON_PRESS;
-    bitMask |= XCB_INPUT_XI_EVENT_MASK_BUTTON_RELEASE;
-    bitMask |= XCB_INPUT_XI_EVENT_MASK_MOTION;
+    qt_xcb_input_event_mask_t mask;
+
+    setXcbMask(mask.mask, XCB_INPUT_BUTTON_PRESS);
+    setXcbMask(mask.mask, XCB_INPUT_BUTTON_RELEASE);
+    setXcbMask(mask.mask, XCB_INPUT_MOTION);
     // There is a check for enter/leave events in plain xcb enter/leave event handler,
     // core enter/leave events will be ignored in this case.
-    bitMask |= XCB_INPUT_XI_EVENT_MASK_ENTER;
-    bitMask |= XCB_INPUT_XI_EVENT_MASK_LEAVE;
+    setXcbMask(mask.mask, XCB_INPUT_ENTER);
+    setXcbMask(mask.mask, XCB_INPUT_LEAVE);
     if (isAtLeastXI22()) {
-        bitMask |= XCB_INPUT_XI_EVENT_MASK_TOUCH_BEGIN;
-        bitMask |= XCB_INPUT_XI_EVENT_MASK_TOUCH_UPDATE;
-        bitMask |= XCB_INPUT_XI_EVENT_MASK_TOUCH_END;
+        setXcbMask(mask.mask, XCB_INPUT_TOUCH_BEGIN);
+        setXcbMask(mask.mask, XCB_INPUT_TOUCH_UPDATE);
+        setXcbMask(mask.mask, XCB_INPUT_TOUCH_END);
     }
 
-    qt_xcb_input_event_mask_t mask;
     mask.header.deviceid = XCB_INPUT_DEVICE_ALL;
     mask.header.mask_len = 1;
-    mask.mask = bitMask;
     xcb_void_cookie_t cookie =
             xcb_input_xi_select_events_checked(xcb_connection(), window, 1, &mask.header);
     xcb_generic_error_t *error = xcb_request_check(xcb_connection(), cookie);
@@ -974,22 +980,23 @@ bool QXcbConnection::xi2SetMouseGrabEnabled(xcb_window_t w, bool grab)
     bool ok = false;
 
     if (grab) { // grab
-        uint32_t mask = XCB_INPUT_XI_EVENT_MASK_BUTTON_PRESS
-                | XCB_INPUT_XI_EVENT_MASK_BUTTON_RELEASE
-                | XCB_INPUT_XI_EVENT_MASK_MOTION
-                | XCB_INPUT_XI_EVENT_MASK_ENTER
-                | XCB_INPUT_XI_EVENT_MASK_LEAVE;
+        uint8_t mask[8] = {};
+        setXcbMask(mask, XCB_INPUT_BUTTON_PRESS);
+        setXcbMask(mask, XCB_INPUT_BUTTON_RELEASE);
+        setXcbMask(mask, XCB_INPUT_MOTION);
+        setXcbMask(mask, XCB_INPUT_ENTER);
+        setXcbMask(mask, XCB_INPUT_LEAVE);
         if (isAtLeastXI22()) {
-            mask |= XCB_INPUT_XI_EVENT_MASK_TOUCH_BEGIN;
-            mask |= XCB_INPUT_XI_EVENT_MASK_TOUCH_UPDATE;
-            mask |= XCB_INPUT_XI_EVENT_MASK_TOUCH_END;
+            setXcbMask(mask, XCB_INPUT_TOUCH_BEGIN);
+            setXcbMask(mask, XCB_INPUT_TOUCH_UPDATE);
+            setXcbMask(mask, XCB_INPUT_TOUCH_END);
         }
 
         for (int id : qAsConst(m_xiMasterPointerIds)) {
             xcb_generic_error_t *error = nullptr;
             auto cookie = xcb_input_xi_grab_device(xcb_connection(), w, XCB_CURRENT_TIME, XCB_CURSOR_NONE, id,
                                                    XCB_INPUT_GRAB_MODE_22_ASYNC, XCB_INPUT_GRAB_MODE_22_ASYNC,
-                                                   false, 1, &mask);
+                                                   false, 1, reinterpret_cast<uint32_t *>(mask));
             auto *reply = xcb_input_xi_grab_device_reply(xcb_connection(), cookie, &error);
             if (error) {
                 qCDebug(lcQpaXInput, "failed to grab events for device %d on window %x"
