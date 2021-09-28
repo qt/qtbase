@@ -1454,6 +1454,7 @@ void tst_QProperty::modifyObserverListWhileIterating()
             DestructingObserver observer = {};
             char* memory;
             ~ObserverOrUninit() {}
+            ObserverOrUninit() {}
         };
     {
         // observer deletes itself while running the notification
