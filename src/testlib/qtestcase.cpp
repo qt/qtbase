@@ -1872,7 +1872,7 @@ static void initEnvironment()
     from the arguments in \c main(), it is likely of interest to use
     QTest::qExec(QObject *, const QStringList &) since it is Unicode safe.
 
-    \sa QTEST_MAIN()
+    \sa QTEST_MAIN(), QTEST_GUILESS_MAIN(), QTEST_APPLESS_MAIN()
 */
 
 int QTest::qExec(QObject *testObject, int argc, char **argv)
