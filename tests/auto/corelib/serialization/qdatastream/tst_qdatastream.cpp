@@ -221,6 +221,8 @@ private slots:
     void nestedTransactionsResult_data();
     void nestedTransactionsResult();
 
+    void typedefQt5Compat();
+
 private:
     void writebool(QDataStream *s);
     void writeQBitArray(QDataStream *s);
@@ -3870,6 +3872,48 @@ void tst_QDataStream::nestedTransactionsResult()
     QCOMPARE(stream.commitTransaction(), successExpected);
     QCOMPARE(stream.atEnd(), expectedAtEnd);
     QCOMPARE(int(stream.status()), expectedStatus);
+}
+
+using CustomPair = QPair<int, int>;
+QDataStream &operator<<(QDataStream &ds, CustomPair pd)
+{ return ds << pd.first << pd.second; }
+QDataStream &operator>>(QDataStream &ds, CustomPair &pd)
+{ return ds >> pd.first >> pd.second; }
+
+
+void tst_QDataStream::typedefQt5Compat()
+{
+    qRegisterMetaType<CustomPair>("CustomPair");
+    QByteArray qt5Data;
+    {
+        // we can read the qt5 version
+        QFile in(QFINDTESTDATA("typedef.q5"));
+        QVERIFY(in.open(QIODevice::ReadOnly));
+        qt5Data = in.readAll();
+        QVERIFY(in.seek(0));
+        QDataStream stream(&in);
+        stream.setVersion(QDataStream::Qt_5_15);
+        QVariant var;
+        stream >> var;
+        QCOMPARE(stream.status(), QDataStream::Ok);
+        CustomPair p = var.value<CustomPair>();
+        QCOMPARE(p.first, 42);
+        QCOMPARE(p.second, 100);
+    }
+    {
+        // writing in Qt 6 results in the same file
+        QTemporaryDir dir;
+        QVERIFY(dir.isValid());
+        QFile file(dir.filePath(u"typedef.q6"_qs));
+        file.open(QIODevice::WriteOnly);
+        QDataStream stream(&file);
+        stream.setVersion(QDataStream::Qt_5_15);
+        CustomPair p {42, 100};
+        stream << QVariant::fromValue(p);
+        file.close();
+        file.open(QIODevice::ReadOnly);
+        QCOMPARE(file.readAll(), qt5Data);
+    }
 }
 
 QTEST_MAIN(tst_QDataStream)
