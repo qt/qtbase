@@ -50,6 +50,9 @@
 
 #ifdef Q_OS_WASM
 #include <emscripten.h>
+#if QT_CONFIG(thread)
+#include <emscripten/threading.h>
+#endif
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -295,6 +298,9 @@ void QEventLoop::exit(int returnCode)
     // QEventLoop::exec() never returns in emscripten. We implement approximate behavior here.
     // QTBUG-70185
     if (threadData->loopLevel == 1) {
+#if QT_CONFIG(thread)
+    if (emscripten_is_main_browser_thread())
+#endif
         emscripten_force_exit(returnCode);
     } else {
         d->inExec = false;
