@@ -194,7 +194,7 @@ class Scanner (object):
     def __init__(self):
         pass
 
-    def subdirs(self, given, skip_benchlib=False):
+    def subdirs(self, given, skip_callgrind=False):
         if given:
             for d in given:
                 if not os.path.isdir(d):
@@ -205,7 +205,7 @@ class Scanner (object):
                     print(f'Directory {d} is not in the list of tests')
         else:
             tests = TESTS
-            if skip_benchlib:
+            if skip_callgrind:
                 tests.remove('benchlibcallgrind')
             missing = 0
             for d in tests:
@@ -324,7 +324,7 @@ def main(argv):
     argument_parser = ArgumentParser(description=USAGE, formatter_class=RawTextHelpFormatter)
     argument_parser.add_argument('--formats', '-f',
                                  help='Comma-separated list of formats')
-    argument_parser.add_argument('--skip-benchlib', '-s', action='store_true',
+    argument_parser.add_argument('--skip-callgrind', '-s', action='store_true',
                                  help='Skip the expensive benchlib callgrind test')
     argument_parser.add_argument('subtests', help='subtests to regenerate',
                                  nargs='*', type=str)
@@ -335,7 +335,7 @@ def main(argv):
     cleaner = Cleaner()
     src_dir = cleaner.sourceDir
 
-    tests = tuple(Scanner().subdirs(options.subtests, options.skip_benchlib))
+    tests = tuple(Scanner().subdirs(options.subtests, options.skip_callgrind))
     print("Generating", len(tests), "test results for", cleaner.version, "in:", src_dir)
     for path in tests:
         generateTestData(path, src_dir, cleaner.clean, formats)
