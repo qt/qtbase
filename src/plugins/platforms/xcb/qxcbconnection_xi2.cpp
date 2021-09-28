@@ -51,11 +51,17 @@
 
 #include <xcb/xinput.h>
 
+#define QT_XCB_HAS_TOUCHPAD_GESTURES (XCB_INPUT_MINOR_VERSION >= 4)
+
 using qt_xcb_input_device_event_t = xcb_input_button_press_event_t;
+#if QT_XCB_HAS_TOUCHPAD_GESTURES
+using qt_xcb_input_pinch_event_t = xcb_input_gesture_pinch_begin_event_t;
+using qt_xcb_input_swipe_event_t = xcb_input_gesture_swipe_begin_event_t;
+#endif
 
 struct qt_xcb_input_event_mask_t {
     xcb_input_event_mask_t header;
-    alignas(4) uint8_t     mask[4] = {};
+    alignas(4) uint8_t     mask[8] = {}; // up to 2 units of 4 bytes
 };
 
 static inline void setXcbMask(uint8_t* mask, int bit)
@@ -96,9 +102,19 @@ void QXcbConnection::xi2SelectDeviceEvents(xcb_window_t window)
         setXcbMask(mask.mask, XCB_INPUT_TOUCH_UPDATE);
         setXcbMask(mask.mask, XCB_INPUT_TOUCH_END);
     }
+#if QT_CONFIG(gestures) && QT_XCB_HAS_TOUCHPAD_GESTURES
+    if (isAtLeastXI24()) {
+        setXcbMask(mask.mask, XCB_INPUT_GESTURE_PINCH_BEGIN);
+        setXcbMask(mask.mask, XCB_INPUT_GESTURE_PINCH_UPDATE);
+        setXcbMask(mask.mask, XCB_INPUT_GESTURE_PINCH_END);
+        setXcbMask(mask.mask, XCB_INPUT_GESTURE_SWIPE_BEGIN);
+        setXcbMask(mask.mask, XCB_INPUT_GESTURE_SWIPE_UPDATE);
+        setXcbMask(mask.mask, XCB_INPUT_GESTURE_SWIPE_END);
+    }
+#endif // QT_CONFIG(gestures) && QT_XCB_HAS_TOUCHPAD_GESTURES
 
     mask.header.deviceid = XCB_INPUT_DEVICE_ALL;
-    mask.header.mask_len = 1;
+    mask.header.mask_len = 2;
     xcb_void_cookie_t cookie =
             xcb_input_xi_select_events_checked(xcb_connection(), window, 1, &mask.header);
     xcb_generic_error_t *error = xcb_request_check(xcb_connection(), cookie);
@@ -335,6 +351,9 @@ void QXcbConnection::xi2SetupSlavePointerDevice(void *info, bool removeExisting,
             qCDebug(lcQpaXInputDevices) << "   it's a keyboard";
             break;
         case XCB_INPUT_DEVICE_CLASS_TYPE_TOUCH:
+#if QT_CONFIG(gestures) && QT_XCB_HAS_TOUCHPAD_GESTURES
+        case XCB_INPUT_DEVICE_CLASS_TYPE_GESTURE:
+#endif // QT_CONFIG(gestures) && QT_XCB_HAS_TOUCHPAD_GESTURES
             // will be handled in populateTouchDevices()
             break;
         default:
@@ -555,6 +574,18 @@ QXcbConnection::TouchDeviceData *QXcbConnection::populateTouchDevices(void *info
             }
             break;
         }
+#if QT_CONFIG(gestures) && QT_XCB_HAS_TOUCHPAD_GESTURES
+        case XCB_INPUT_DEVICE_CLASS_TYPE_GESTURE: {
+            // Note that gesture devices can only be touchpads (i.e. dependent devices in XInput
+            // naming convention). According to XI 2.4, the same device can't have touch and
+            // gesture device classes.
+            auto *gci = reinterpret_cast<xcb_input_gesture_class_t *>(classinfo);
+            maxTouchPoints = gci->num_touches;
+            qCDebug(lcQpaXInputDevices, "   has gesture class");
+            type = QInputDevice::DeviceType::TouchPad;
+            break;
+        }
+#endif // QT_CONFIG(gestures) && QT_XCB_HAS_TOUCHPAD_GESTURES
         case XCB_INPUT_DEVICE_CLASS_TYPE_VALUATOR: {
             auto *vci = reinterpret_cast<xcb_input_valuator_class_t *>(classinfo);
             const QXcbAtom::Atom valuatorAtom = qatom(vci->label);
@@ -680,6 +711,18 @@ void QXcbConnection::xi2HandleEvent(xcb_ge_event_t *event)
         sourceDeviceId = xiDeviceEvent->sourceid; // use the actual device id instead of the master
         break;
     }
+#if QT_CONFIG(gestures) && QT_XCB_HAS_TOUCHPAD_GESTURES
+    case XCB_INPUT_GESTURE_PINCH_BEGIN:
+    case XCB_INPUT_GESTURE_PINCH_UPDATE:
+    case XCB_INPUT_GESTURE_PINCH_END:
+        xi2HandleGesturePinchEvent(event);
+        return;
+    case XCB_INPUT_GESTURE_SWIPE_BEGIN:
+    case XCB_INPUT_GESTURE_SWIPE_UPDATE:
+    case XCB_INPUT_GESTURE_SWIPE_END:
+        xi2HandleGestureSwipeEvent(event);
+        return;
+#endif // QT_CONFIG(gestures) && QT_XCB_HAS_TOUCHPAD_GESTURES
     case XCB_INPUT_ENTER:
     case XCB_INPUT_LEAVE: {
         xiEnterEvent = reinterpret_cast<xcb_input_enter_event_t *>(event);
@@ -991,12 +1034,22 @@ bool QXcbConnection::xi2SetMouseGrabEnabled(xcb_window_t w, bool grab)
             setXcbMask(mask, XCB_INPUT_TOUCH_UPDATE);
             setXcbMask(mask, XCB_INPUT_TOUCH_END);
         }
+#if QT_CONFIG(gestures) && QT_XCB_HAS_TOUCHPAD_GESTURES
+        if (isAtLeastXI24()) {
+            setXcbMask(mask, XCB_INPUT_GESTURE_PINCH_BEGIN);
+            setXcbMask(mask, XCB_INPUT_GESTURE_PINCH_UPDATE);
+            setXcbMask(mask, XCB_INPUT_GESTURE_PINCH_END);
+            setXcbMask(mask, XCB_INPUT_GESTURE_SWIPE_BEGIN);
+            setXcbMask(mask, XCB_INPUT_GESTURE_SWIPE_UPDATE);
+            setXcbMask(mask, XCB_INPUT_GESTURE_SWIPE_END);
+        }
+#endif // QT_CONFIG(gestures) && QT_XCB_HAS_TOUCHPAD_GESTURES
 
         for (int id : qAsConst(m_xiMasterPointerIds)) {
             xcb_generic_error_t *error = nullptr;
             auto cookie = xcb_input_xi_grab_device(xcb_connection(), w, XCB_CURRENT_TIME, XCB_CURSOR_NONE, id,
                                                    XCB_INPUT_GRAB_MODE_22_ASYNC, XCB_INPUT_GRAB_MODE_22_ASYNC,
-                                                   false, 1, reinterpret_cast<uint32_t *>(mask));
+                                                   false, 2, reinterpret_cast<uint32_t *>(mask));
             auto *reply = xcb_input_xi_grab_device_reply(xcb_connection(), cookie, &error);
             if (error) {
                 qCDebug(lcQpaXInput, "failed to grab events for device %d on window %x"
@@ -1040,6 +1093,163 @@ void QXcbConnection::xi2HandleHierarchyEvent(void *event)
 
     xi2SetupDevices();
 }
+
+#if QT_XCB_HAS_TOUCHPAD_GESTURES
+void QXcbConnection::xi2HandleGesturePinchEvent(void *event)
+{
+    auto *xiEvent = reinterpret_cast<qt_xcb_input_pinch_event_t *>(event);
+
+    if (Q_UNLIKELY(lcQpaXInputEvents().isDebugEnabled())) {
+        qCDebug(lcQpaXInputEvents, "XI2 gesture event type %d seq %d fingers %d pos %6.1f, "
+                "%6.1f root pos %6.1f, %6.1f delta_angle %6.1f scale %6.1f on window %x",
+                xiEvent->event_type, xiEvent->sequence, xiEvent->detail,
+                fixed1616ToReal(xiEvent->event_x), fixed1616ToReal(xiEvent->event_y),
+                fixed1616ToReal(xiEvent->root_x), fixed1616ToReal(xiEvent->root_y),
+                fixed1616ToReal(xiEvent->delta_angle), fixed1616ToReal(xiEvent->scale),
+                xiEvent->event);
+    }
+    QXcbWindow *platformWindow = platformWindowFromId(xiEvent->event);
+    if (!platformWindow)
+        return;
+
+    setTime(xiEvent->time);
+
+    TouchDeviceData *dev = touchDeviceForId(xiEvent->sourceid);
+    Q_ASSERT(dev);
+
+    uint32_t fingerCount = xiEvent->detail;
+
+    switch (xiEvent->event_type) {
+    case XCB_INPUT_GESTURE_PINCH_BEGIN:
+        // Gestures must be accepted when we are grabbing gesture events. Otherwise the entire
+        // sequence will get replayed when the grab ends.
+        if (m_xiGrab) {
+            xcb_input_xi_allow_events(xcb_connection(), XCB_CURRENT_TIME, xiEvent->deviceid,
+                                      XCB_INPUT_EVENT_MODE_ASYNC_DEVICE, 0, xiEvent->event);
+        }
+        m_lastPinchScale = 1.0;
+        QWindowSystemInterface::handleGestureEvent(platformWindow->window(), xiEvent->time,
+                                                   dev->qtTouchDevice,
+                                                   Qt::BeginNativeGesture,
+                                                   platformWindow->lastPointerPosition(),
+                                                   platformWindow->lastPointerGlobalPosition(),
+                                                   fingerCount);
+        break;
+
+    case XCB_INPUT_GESTURE_PINCH_UPDATE: {
+        qreal rotationDelta = fixed1616ToReal(xiEvent->delta_angle);
+        qreal scale = fixed1616ToReal(xiEvent->scale);
+        qreal scaleDelta = scale - m_lastPinchScale;
+        m_lastPinchScale = scale;
+
+        QPointF delta = QPointF(fixed1616ToReal(xiEvent->delta_x),
+                                fixed1616ToReal(xiEvent->delta_y));
+
+        if (!delta.isNull()) {
+            QWindowSystemInterface::handleGestureEventWithValueAndDelta(
+                        platformWindow->window(), xiEvent->time, dev->qtTouchDevice,
+                        Qt::PanNativeGesture, 0, delta,
+                        platformWindow->lastPointerPosition(),
+                        platformWindow->lastPointerGlobalPosition(),
+                        fingerCount);
+        }
+        if (rotationDelta != 0) {
+            QWindowSystemInterface::handleGestureEventWithRealValue(
+                        platformWindow->window(), xiEvent->time, dev->qtTouchDevice,
+                        Qt::RotateNativeGesture,
+                        rotationDelta,
+                        platformWindow->lastPointerPosition(),
+                        platformWindow->lastPointerGlobalPosition(),
+                        fingerCount);
+        }
+        if (scaleDelta != 0) {
+            QWindowSystemInterface::handleGestureEventWithRealValue(
+                        platformWindow->window(), xiEvent->time, dev->qtTouchDevice,
+                        Qt::ZoomNativeGesture,
+                        scaleDelta,
+                        platformWindow->lastPointerPosition(),
+                        platformWindow->lastPointerGlobalPosition(),
+                        fingerCount);
+        }
+        break;
+    }
+    case XCB_INPUT_GESTURE_PINCH_END:
+        QWindowSystemInterface::handleGestureEvent(platformWindow->window(), xiEvent->time,
+                                                   dev->qtTouchDevice,
+                                                   Qt::EndNativeGesture,
+                                                   platformWindow->lastPointerPosition(),
+                                                   platformWindow->lastPointerGlobalPosition(),
+                                                   fingerCount);
+        break;
+    }
+}
+
+void QXcbConnection::xi2HandleGestureSwipeEvent(void *event)
+{
+    auto *xiEvent = reinterpret_cast<qt_xcb_input_swipe_event_t *>(event);
+
+    if (Q_UNLIKELY(lcQpaXInputEvents().isDebugEnabled())) {
+        qCDebug(lcQpaXInputEvents, "XI2 gesture event type %d seq %d detail %d pos %6.1f, %6.1f root pos %6.1f, %6.1f on window %x",
+                xiEvent->event_type, xiEvent->sequence, xiEvent->detail,
+                fixed1616ToReal(xiEvent->event_x), fixed1616ToReal(xiEvent->event_y),
+                fixed1616ToReal(xiEvent->root_x), fixed1616ToReal(xiEvent->root_y),
+                xiEvent->event);
+    }
+    QXcbWindow *platformWindow = platformWindowFromId(xiEvent->event);
+    if (!platformWindow)
+        return;
+
+    setTime(xiEvent->time);
+
+    TouchDeviceData *dev = touchDeviceForId(xiEvent->sourceid);
+    Q_ASSERT(dev);
+
+    uint32_t fingerCount = xiEvent->detail;
+
+    switch (xiEvent->event_type) {
+    case XCB_INPUT_GESTURE_SWIPE_BEGIN:
+        // Gestures must be accepted when we are grabbing gesture events. Otherwise the entire
+        // sequence will get replayed when the grab ends.
+        if (m_xiGrab) {
+            xcb_input_xi_allow_events(xcb_connection(), XCB_CURRENT_TIME, xiEvent->deviceid,
+                                      XCB_INPUT_EVENT_MODE_ASYNC_DEVICE, 0, xiEvent->event);
+        }
+        QWindowSystemInterface::handleGestureEvent(platformWindow->window(), xiEvent->time,
+                                                   dev->qtTouchDevice,
+                                                   Qt::BeginNativeGesture,
+                                                   platformWindow->lastPointerPosition(),
+                                                   platformWindow->lastPointerGlobalPosition(),
+                                                   fingerCount);
+        break;
+    case XCB_INPUT_GESTURE_SWIPE_UPDATE: {
+        QPointF delta = QPointF(fixed1616ToReal(xiEvent->delta_x),
+                                fixed1616ToReal(xiEvent->delta_y));
+
+        if (xiEvent->delta_x != 0 || xiEvent->delta_y != 0) {
+            QWindowSystemInterface::handleGestureEventWithValueAndDelta(
+                        platformWindow->window(), xiEvent->time, dev->qtTouchDevice,
+                        Qt::PanNativeGesture, 0, delta,
+                        platformWindow->lastPointerPosition(),
+                        platformWindow->lastPointerGlobalPosition(),
+                        fingerCount);
+        }
+        break;
+    }
+    case XCB_INPUT_GESTURE_SWIPE_END:
+        QWindowSystemInterface::handleGestureEvent(platformWindow->window(), xiEvent->time,
+                                                   dev->qtTouchDevice,
+                                                   Qt::EndNativeGesture,
+                                                   platformWindow->lastPointerPosition(),
+                                                   platformWindow->lastPointerGlobalPosition(),
+                                                   fingerCount);
+        break;
+    }
+}
+
+#else // QT_XCB_HAS_TOUCHPAD_GESTURES
+void QXcbConnection::xi2HandleGesturePinchEvent(void*) {}
+void QXcbConnection::xi2HandleGestureSwipeEvent(void*) {}
+#endif
 
 void QXcbConnection::xi2HandleDeviceChangedEvent(void *event)
 {

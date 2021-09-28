@@ -358,7 +358,9 @@ void QXcbBasicConnection::initializeXInput2()
         return;
     }
 
-    auto xinputQuery = Q_XCB_REPLY(xcb_input_xi_query_version, m_xcbConnection, 2, 2);
+    // depending on whether bundled xcb is used we may support different XCB protocol versions.
+    auto xinputQuery = Q_XCB_REPLY(xcb_input_xi_query_version, m_xcbConnection,
+                                   2, XCB_INPUT_MINOR_VERSION);
     if (!xinputQuery || xinputQuery->major_version != 2) {
         qCWarning(lcQpaXcb, "X server does not support XInput 2");
         return;

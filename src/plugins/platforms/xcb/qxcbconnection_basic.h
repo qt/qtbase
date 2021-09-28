@@ -103,6 +103,7 @@ public:
 
     bool isAtLeastXI21() const { return m_xi2Enabled && m_xi2Minor >= 1; }
     bool isAtLeastXI22() const { return m_xi2Enabled && m_xi2Minor >= 2; }
+    bool isAtLeastXI24() const { return m_xi2Enabled && m_xi2Minor >= 4; }
     bool isXIEvent(xcb_generic_event_t *event) const;
     bool isXIType(xcb_generic_event_t *event, uint16_t type) const;
 

@@ -299,6 +299,8 @@ private:
     TouchDeviceData *populateTouchDevices(void *info, QXcbScrollingDevicePrivate *scrollingDeviceP);
     TouchDeviceData *touchDeviceForId(int id);
     void xi2HandleEvent(xcb_ge_event_t *event);
+    void xi2HandleGesturePinchEvent(void *event);
+    void xi2HandleGestureSwipeEvent(void *event);
     void xi2HandleHierarchyEvent(void *event);
     void xi2HandleDeviceChangedEvent(void *event);
     void xi2ProcessTouch(void *xiDevEvent, QXcbWindow *platformWindow);
@@ -372,6 +374,10 @@ private:
     QXcbWindow *m_focusWindow = nullptr;
     QXcbWindow *m_mouseGrabber = nullptr;
     QXcbWindow *m_mousePressWindow = nullptr;
+
+#if QT_CONFIG(gestures)
+    qreal m_lastPinchScale = 0;
+#endif
 
     xcb_window_t m_clientLeader = 0;
     QByteArray m_startupId;

@@ -2147,6 +2147,7 @@ void QXcbWindow::handleMouseEvent(xcb_timestamp_t time, const QPoint &local, con
         Qt::KeyboardModifiers modifiers, QEvent::Type type, Qt::MouseEventSource source)
 {
     m_lastPointerPosition = local;
+    m_lastPointerGlobalPosition = global;
     connection()->setTime(time);
     Qt::MouseButton button = type == QEvent::MouseMove ? Qt::NoButton : connection()->button();
     QWindowSystemInterface::handleMouseEvent(window(), time, local, global,
