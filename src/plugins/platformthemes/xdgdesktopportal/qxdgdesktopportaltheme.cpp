@@ -111,6 +111,7 @@ QXdgDesktopPortalTheme::QXdgDesktopPortalTheme()
         if (reply.isValid()) {
             d->fileChooserPortalVersion = reply.value().toUInt();
         }
+        watcher->deleteLater();
     });
 }
 
