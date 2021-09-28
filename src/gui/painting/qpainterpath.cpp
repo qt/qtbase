@@ -1222,7 +1222,7 @@ void QPainterPath::addText(const QPointF &point, const QFont &f, const QString &
 
         if (si.analysis.flags < QScriptAnalysis::TabOrObject) {
             QGlyphLayout glyphs = eng->shapedGlyphs(&si);
-            QFontEngine *fe = f.d->engineForScript(si.analysis.script);
+            QFontEngine *fe = eng->fontEngine(si);
             Q_ASSERT(fe);
             fe->addOutlineToPath(x, y, glyphs, this,
                                  si.analysis.bidiLevel % 2
