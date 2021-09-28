@@ -1,6 +1,8 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
+** Copyright (C) 2021 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
+** Copyright (C) 2021 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -180,6 +182,42 @@ struct QMetaTypeCustomRegistry
 Q_GLOBAL_STATIC(QMetaTypeCustomRegistry, customTypeRegistry)
 
 } // namespace
+
+// used by QVariant::save(): returns the name used in the Q_DECLARE_METATYPE
+// macro (one of them, indetermine which one)
+const char *QtMetaTypePrivate::typedefNameForType(const QtPrivate::QMetaTypeInterface *type_d)
+{
+    const char *name = nullptr;
+    QMetaTypeCustomRegistry *r = customTypeRegistry;
+    if (!r)
+        return name;
+
+    QByteArrayView officialName(type_d->name);
+    QReadLocker l(&r->lock);
+    auto it = r->aliases.constBegin();
+    auto end = r->aliases.constEnd();
+    for ( ; it != end; ++it) {
+        if (it.value() != type_d)
+            continue;
+        if (it.key() == officialName)
+            continue;               // skip the official name
+        name = it.key().constData();
+        break;
+    }
+
+#ifndef QT_NO_DEBUG
+    QByteArrayList otherNames;
+    for ( ; it != end; ++it) {
+        if (it.value() == type_d)
+            otherNames << it.key();
+    }
+    if (!otherNames.isEmpty())
+        qWarning("QMetaType: type %s has more than one typedef alias: %s, %s",
+                 type_d->name, name, otherNames.join(", ").constData());
+#endif
+
+    return name;
+}
 
 /*!
     \macro Q_DECLARE_OPAQUE_POINTER(PointerType)

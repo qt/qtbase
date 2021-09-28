@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
-** Copyright (C) 2018 Intel Corporation.
+** Copyright (C) 2021 The Qt Company Ltd.
+** Copyright (C) 2021 Intel Corporation.
 ** Copyright (C) 2015 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: https://www.qt.io/licensing/
 **
@@ -1314,13 +1314,17 @@ void QVariant::save(QDataStream &s) const
         }
     }
     const char *typeName = nullptr;
-    if (saveAsUserType)
-        typeName = d.type().name();
+    if (saveAsUserType) {
+        if (s.version() < QDataStream::Qt_6_0)
+            typeName = QtMetaTypePrivate::typedefNameForType(d.type().d_ptr);
+        if (!typeName)
+            typeName = d.type().name();
+    }
     s << typeId;
     if (s.version() >= QDataStream::Qt_4_2)
         s << qint8(d.is_null);
     if (typeName)
-        s << d.type().name();
+        s << typeName;
 
     if (!isValid()) {
         if (s.version() < QDataStream::Qt_5_0)

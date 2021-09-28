@@ -233,6 +233,7 @@ static const QT_PREPEND_NAMESPACE(QtPrivate::QMetaTypeInterface) *getInterfaceFr
     case QMetaType::MetaTypeName:                                                                  \
         return QtMetaTypePrivate::getInterfaceFromType<RealName>();
 
+const char *typedefNameForType(const QtPrivate::QMetaTypeInterface *type_d);
 } //namespace QtMetaTypePrivate
 
 QT_END_NAMESPACE
