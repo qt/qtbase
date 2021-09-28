@@ -59,7 +59,7 @@ QFileSystemIterator::QFileSystemIterator(const QFileSystemEntry &entry, QDir::Fi
 {
     Q_UNUSED(nameFilters);
     Q_UNUSED(flags);
-    if (nativePath.endsWith(QLatin1String(".lnk"))) {
+    if (nativePath.endsWith(u".lnk"_qs) && !QFileSystemEngine::isDirPath(dirPath, nullptr)) {
         QFileSystemMetaData metaData;
         QFileSystemEntry link = QFileSystemEngine::getLinkTarget(entry, metaData);
         nativePath = link.nativeFilePath();

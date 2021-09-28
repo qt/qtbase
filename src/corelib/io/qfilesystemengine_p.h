@@ -144,6 +144,7 @@ public:
                             QAbstractFileEngine::FileTime whatTime, QSystemError &error);
     static QString owner(const QFileSystemEntry &entry, QAbstractFileEngine::FileOwner own);
     static QString nativeAbsoluteFilePath(const QString &path);
+    static bool isDirPath(const QString &path, bool *existed);
 #endif
     //homePath, rootPath and tempPath shall return clean paths
     static QString homePath();

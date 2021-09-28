@@ -723,13 +723,16 @@ void tst_QDir::entryList_data()
               << QString("qdir.pro,qrc_qdir.cpp,tst_qdir.cpp").split(',');
     QTest::newRow("testdir1")  << (m_dataPath + "/testdir") << QStringList()
               << (int)(QDir::AllDirs) << (int)(QDir::NoSort)
-              << QString(".,..,dir,spaces").split(',');
+              << QString(".,..,dir,dir.lnk,spaces").split(',');
     QTest::newRow("resources1") << QString(":/tst_qdir/resources/entryList") << QStringList("*.data")
                              << (int)(QDir::NoFilter) << (int)(QDir::NoSort)
                              << QString("file1.data,file2.data,file3.data").split(',');
     QTest::newRow("resources2") << QString(":/tst_qdir/resources/entryList") << QStringList("*.data")
                              << (int)(QDir::Files) << (int)(QDir::NoSort)
                              << QString("file1.data,file2.data,file3.data").split(',');
+    QTest::newRow("testdir.lnk") << (m_dataPath + "/testdir/dir.lnk") << QStringList()
+                             << (int)(QDir::NoFilter) << (int)(QDir::NoSort)
+                             << QString(".,..,aaaaa.txt,subdir,subdir.lnk").split(',');
 }
 
 void tst_QDir::entryList()
@@ -1686,9 +1689,9 @@ void tst_QDir::dotAndDotDot()
 {
     QDir dir(QString((m_dataPath + "/testdir/")));
     QStringList entryList = dir.entryList(QDir::Dirs);
-    QCOMPARE(entryList, QStringList() << QString(".") << QString("..") << QString("dir") << QString("spaces"));
+    QCOMPARE(entryList, QStringList({ u"."_qs, u".."_qs, u"dir"_qs, u"dir.lnk"_qs, u"spaces"_qs }));
     entryList = dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
-    QCOMPARE(entryList, QStringList() << QString("dir") << QString("spaces"));
+    QCOMPARE(entryList, QStringList({ u"dir"_qs, u"dir.lnk"_qs, u"spaces"_qs }));
 }
 
 void tst_QDir::homePath()
