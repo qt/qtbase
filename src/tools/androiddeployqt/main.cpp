@@ -2529,6 +2529,10 @@ bool buildAndroidProject(const Options &options)
     GradleProperties gradleProperties = readGradleProperties(gradlePropertiesPath);
     gradleProperties["android.bundle.enableUncompressedNativeLibs"] = "false";
     gradleProperties["buildDir"] = "build";
+    gradleProperties["qtAndroidDir"] = (options.qtInstallDirectory + QLatin1String("/src/android/java")).toUtf8();
+    // The following property "qt5AndroidDir" is only for compatibility.
+    // Projects using a custom build.gradle file may use this variable.
+    // ### Qt7: Remove the following line
     gradleProperties["qt5AndroidDir"] = (options.qtInstallDirectory + QLatin1String("/src/android/java")).toUtf8();
     gradleProperties["androidCompileSdkVersion"] = options.androidPlatform.split(QLatin1Char('-')).last().toLocal8Bit();
     gradleProperties["qtMinSdkVersion"] = options.minSdkVersion;
