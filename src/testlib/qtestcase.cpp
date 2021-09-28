@@ -734,15 +734,18 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, const char *const argv[], bool 
             QTest::noCrashHandler = true;
 #if QT_CONFIG(valgrind)
         } else if (strcmp(argv[i], "-callgrind") == 0) {
-            if (QBenchmarkValgrindUtils::haveValgrind())
-                if (QFileInfo(QDir::currentPath()).isWritable()) {
-                    QBenchmarkGlobalData::current->setMode(QBenchmarkGlobalData::CallgrindParentProcess);
-                } else {
-                    fprintf(stderr, "WARNING: Current directory not writable. Using the walltime measurer.\n");
-                }
-            else {
-                fprintf(stderr, "WARNING: Valgrind not found or too old. Make sure it is installed and in your path. "
-                       "Using the walltime measurer.\n");
+            if (!QBenchmarkValgrindUtils::haveValgrind()) {
+                fprintf(stderr,
+                        "WARNING: Valgrind not found or too old. "
+                        "Make sure it is installed and in your path. "
+                        "Using the walltime measurer.\n");
+            } else if (QFileInfo(QDir::currentPath()).isWritable()) {
+                QBenchmarkGlobalData::current->setMode(
+                    QBenchmarkGlobalData::CallgrindParentProcess);
+            } else {
+                fprintf(stderr,
+                        "WARNING: Current directory not writable. "
+                        "Using the walltime measurer.\n");
             }
         } else if (strcmp(argv[i], "-callgrindchild") == 0) { // "private" option
             QBenchmarkGlobalData::current->setMode(QBenchmarkGlobalData::CallgrindChildProcess);
