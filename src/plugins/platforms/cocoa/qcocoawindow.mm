@@ -1208,13 +1208,18 @@ void QCocoaWindow::windowDidResignKey()
     if (isForeignWindow())
         return;
 
+    // Make sure popups are closed before we deliver activation changes, which are
+    // otherwise ignored by QApplication.
+    QGuiApplicationPrivate::instance()->closeAllPopups();
+
     // The current key window will be non-nil if another window became key. If that
     // window is a Qt window, we delay the window activation event until the didBecomeKey
     // notification is delivered to the active window, to ensure an atomic update.
     NSWindow *newKeyWindow = [NSApp keyWindow];
     if (newKeyWindow && newKeyWindow != m_view.window
-        && [newKeyWindow conformsToProtocol:@protocol(QNSWindowProtocol)])
+        && [newKeyWindow conformsToProtocol:@protocol(QNSWindowProtocol)]) {
         return;
+    }
 
     // Lost key window, go ahead and set the active window to zero
     if (!windowIsPopupType()) {
