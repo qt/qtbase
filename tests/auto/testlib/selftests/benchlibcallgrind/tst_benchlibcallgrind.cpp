@@ -30,9 +30,9 @@
 #include <QtCore/QCoreApplication>
 #include <QTest>
 
-/* This test must be explicitly enabled since there are no compile tests for valgrind.h */
-#ifdef QT_BUG236484
-#include <valgrind/valgrind.h>
+#if __has_include(<valgrind/valgrind.h>)
+#  include <valgrind/valgrind.h>
+#  define HAVE_VALGRIND_H
 #endif
 
 class tst_BenchlibCallgrind: public QObject
@@ -40,16 +40,14 @@ class tst_BenchlibCallgrind: public QObject
     Q_OBJECT
 
 private slots:
-#ifdef QT_BUG236484
     void failInChildProcess();
-#endif
 
     void twoHundredMillionInstructions();
 };
 
-#ifdef QT_BUG236484
 void tst_BenchlibCallgrind::failInChildProcess()
 {
+#ifdef HAVE_VALGRIND_H
     static double f = 1.0;
     QBENCHMARK {
         for (int i = 0; i < 1000000; ++i) {
@@ -57,8 +55,10 @@ void tst_BenchlibCallgrind::failInChildProcess()
             if (RUNNING_ON_VALGRIND) QFAIL("Running under valgrind!");
         }
     }
-}
+#else
+    QSKIP("Skipping test because I can't see <valgrind/valgrind.h> - is valgrind installed ?");
 #endif
+}
 
 void tst_BenchlibCallgrind::twoHundredMillionInstructions()
 {
@@ -89,4 +89,5 @@ int main(int argc, char *argv[])
     QTEST_MAIN_IMPL(tst_BenchlibCallgrind)
 }
 
+#undef HAVE_VALGRIND_H
 #include "tst_benchlibcallgrind.moc"
