@@ -1022,8 +1022,6 @@ bool QFileSystemEngine::fillMetaData(HANDLE fHandle, QFileSystemMetaData &data,
     return data.hasFlags(what);
 }
 
-static bool isDirPath(const QString &dirPath, bool *existed);
-
 //static
 bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemMetaData &data,
                                      QFileSystemMetaData::MetaDataFlags what)
@@ -1103,7 +1101,8 @@ static inline bool rmDir(const QString &path)
     return ::RemoveDirectory((wchar_t*)QFSFileEnginePrivate::longFileName(path).utf16());
 }
 
-static bool isDirPath(const QString &dirPath, bool *existed)
+//static
+bool QFileSystemEngine::isDirPath(const QString &dirPath, bool *existed)
 {
     QString path = dirPath;
     if (path.length() == 2 && path.at(1) == QLatin1Char(':'))
@@ -1141,7 +1140,7 @@ static bool createDirectoryWithParents(const QString &nativeName, bool shouldMkd
     };
     const auto isDir = [](const QString &nativeName) {
         bool exists = false;
-        return isDirPath(nativeName, &exists) && exists;
+        return QFileSystemEngine::isDirPath(nativeName, &exists) && exists;
     };
     // Do not try to mkdir a UNC root path or a drive letter.
     if (isUNCRoot(nativeName) || isDriveName(nativeName))
