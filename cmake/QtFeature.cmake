@@ -958,6 +958,7 @@ function(qt_get_platform_try_compile_vars out_var)
     list(APPEND flags "CMAKE_CXX_FLAGS_DEBUG")
     list(APPEND flags "CMAKE_CXX_FLAGS_RELEASE")
     list(APPEND flags "CMAKE_CXX_FLAGS_RELWITHDEBINFO")
+    list(APPEND flags "CMAKE_OBJCOPY")
 
     # Pass toolchain files.
     if(CMAKE_TOOLCHAIN_FILE)
