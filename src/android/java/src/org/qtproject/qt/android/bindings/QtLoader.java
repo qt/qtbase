@@ -275,16 +275,24 @@ public abstract class QtLoader {
                         Log.e(QtApplication.QtTAG, "Using " + SYSTEM_LIB_PATH + " as default path");
                     }
                     File systemLibraryDir = new File(systemLibsPrefix);
-                    if (systemLibraryDir.exists() && systemLibraryDir.isDirectory() && systemLibraryDir.list().length > 0)
+                    if (systemLibraryDir.exists() && systemLibraryDir.isDirectory() && systemLibraryDir.list().length > 0) {
                         libsDir = systemLibsPrefix;
+                    } else {
+                        Log.e(QtApplication.QtTAG,
+                              "System library directory " + systemLibsPrefix
+                                      + " does not exist or is empty.");
+                    }
                 } else {
                     String nativeLibraryPrefix = m_context.getApplicationInfo().nativeLibraryDir + "/";
                     File nativeLibraryDir = new File(nativeLibraryPrefix);
                     if (nativeLibraryDir.exists() && nativeLibraryDir.isDirectory() && nativeLibraryDir.list().length > 0) {
                         libsDir = nativeLibraryPrefix;
                         bundledLibsDir = nativeLibraryPrefix;
+                    } else {
+                        Log.e(QtApplication.QtTAG,
+                              "Native library directory " + nativeLibraryPrefix
+                                      + " does not exist or is empty.");
                     }
-
                 }
 
                 if (apkDeployFromSystem && libsDir == null)
