@@ -1,7 +1,6 @@
 # special case skip regeneration
 cmake_minimum_required(VERSION 3.16)
 project(objcopytest LANGUAGES CXX)
-include(CMakeFindBinUtils)
 add_executable(objcopytest main.cpp)
 add_custom_command(
     TARGET objcopytest
