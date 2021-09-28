@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Copyright (C) 2020 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -612,15 +612,22 @@ struct QtCoverageScanner
 #define TESTLIB_SELFCOVERAGE_START(name)
 #endif
 
-#define QTEST_APPLESS_MAIN(TestObject) \
+// Internal (but used by some testlib selftests to hack argc and argv).
+// Tests should normally implement initMain() if they have set-up to do before
+// instantiating the test class.
+#define QTEST_MAIN_WRAPPER(TestObject, ...) \
 int main(int argc, char *argv[]) \
 { \
-    TESTLIB_SELFCOVERAGE_START(TestObject) \
+    TESTLIB_SELFCOVERAGE_START(#TestObject) \
     QT_PREPEND_NAMESPACE(QTest::Internal::callInitMain)<TestObject>(); \
+    __VA_ARGS__ \
     TestObject tc; \
     QTEST_SET_MAIN_SOURCE_PATH \
     return QTest::qExec(&tc, argc, argv); \
 }
+
+// For when you don't even want a QApplication:
+#define QTEST_APPLESS_MAIN(TestObject) QTEST_MAIN_WRAPPER(TestObject)
 
 #include <QtTest/qtestsystem.h>
 
@@ -628,68 +635,34 @@ int main(int argc, char *argv[]) \
 #  include <QtTest/qtest_network.h>
 #endif
 
+// Internal
+#define QTEST_QAPP_SETUP(klaz) \
+    klaz app(argc, argv); \
+    app.setAttribute(Qt::AA_Use96Dpi, true);
+
 #if defined(QT_WIDGETS_LIB)
-
-#include <QtTest/qtest_widgets.h>
-
-#ifdef QT_KEYPAD_NAVIGATION
-#  define QTEST_DISABLE_KEYPAD_NAVIGATION QApplication::setNavigationMode(Qt::NavigationModeNone);
-#else
-#  define QTEST_DISABLE_KEYPAD_NAVIGATION
-#endif
-
-#define QTEST_MAIN_IMPL(TestObject) \
-    TESTLIB_SELFCOVERAGE_START(#TestObject) \
-    QT_PREPEND_NAMESPACE(QTest::Internal::callInitMain)<TestObject>(); \
-    QApplication app(argc, argv); \
-    app.setAttribute(Qt::AA_Use96Dpi, true); \
-    QTEST_DISABLE_KEYPAD_NAVIGATION \
-    TestObject tc; \
-    QTEST_SET_MAIN_SOURCE_PATH \
-    return QTest::qExec(&tc, argc, argv);
-
+#  include <QtTest/qtest_widgets.h>
+#  ifdef QT_KEYPAD_NAVIGATION
+#    define QTEST_DISABLE_KEYPAD_NAVIGATION QApplication::setNavigationMode(Qt::NavigationModeNone);
+#  else
+#    define QTEST_DISABLE_KEYPAD_NAVIGATION
+#  endif
+// Internal
+#  define QTEST_MAIN_SETUP() QTEST_QAPP_SETUP(QApplication) QTEST_DISABLE_KEYPAD_NAVIGATION
 #elif defined(QT_GUI_LIB)
-
-#include <QtTest/qtest_gui.h>
-
-#define QTEST_MAIN_IMPL(TestObject) \
-    TESTLIB_SELFCOVERAGE_START(#TestObject) \
-    QT_PREPEND_NAMESPACE(QTest::Internal::callInitMain)<TestObject>(); \
-    QGuiApplication app(argc, argv); \
-    app.setAttribute(Qt::AA_Use96Dpi, true); \
-    TestObject tc; \
-    QTEST_SET_MAIN_SOURCE_PATH \
-    return QTest::qExec(&tc, argc, argv);
-
+#  include <QtTest/qtest_gui.h>
+// Internal
+#  define QTEST_MAIN_SETUP() QTEST_QAPP_SETUP(QGuiApplication)
 #else
-
-#define QTEST_MAIN_IMPL(TestObject) \
-    TESTLIB_SELFCOVERAGE_START(#TestObject) \
-    QT_PREPEND_NAMESPACE(QTest::Internal::callInitMain)<TestObject>(); \
-    QCoreApplication app(argc, argv); \
-    app.setAttribute(Qt::AA_Use96Dpi, true); \
-    TestObject tc; \
-    QTEST_SET_MAIN_SOURCE_PATH \
-    return QTest::qExec(&tc, argc, argv);
-
+// Internal
+#  define QTEST_MAIN_SETUP() QTEST_QAPP_SETUP(QCoreApplication)
 #endif // QT_GUI_LIB
 
-#define QTEST_MAIN(TestObject) \
-int main(int argc, char *argv[]) \
-{ \
-    QTEST_MAIN_IMPL(TestObject) \
-}
+// For most tests:
+#define QTEST_MAIN(TestObject) QTEST_MAIN_WRAPPER(TestObject, QTEST_MAIN_SETUP())
 
+// For command-line tests
 #define QTEST_GUILESS_MAIN(TestObject) \
-int main(int argc, char *argv[]) \
-{ \
-    TESTLIB_SELFCOVERAGE_START(#TestObject) \
-    QT_PREPEND_NAMESPACE(QTest::Internal::callInitMain)<TestObject>(); \
-    QCoreApplication app(argc, argv); \
-    app.setAttribute(Qt::AA_Use96Dpi, true); \
-    TestObject tc; \
-    QTEST_SET_MAIN_SOURCE_PATH \
-    return QTest::qExec(&tc, argc, argv); \
-}
+    QTEST_MAIN_WRAPPER(TestObject, QTEST_QAPP_SETUP(QCoreApplication))
 
 #endif

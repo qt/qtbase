@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -63,16 +63,13 @@ void tst_DataTable::fiveTablePasses_data() const
     QTest::newRow("fiveTablePasses_data5") << true;
 }
 
-int main(int argc, char *argv[])
-{
+QTEST_MAIN_WRAPPER(tst_DataTable,
     std::vector<const char*> args(argv, argv + argc);
     args.push_back("fiveTablePasses");
     args.push_back("fiveTablePasses:fiveTablePasses_data1");
     args.push_back("-v2");
     argc = int(args.size());
     argv = const_cast<char**>(&args[0]);
-
-    QTEST_MAIN_IMPL(tst_DataTable)
-}
+    QTEST_MAIN_SETUP())
 
 #include "tst_commandlinedata.moc"

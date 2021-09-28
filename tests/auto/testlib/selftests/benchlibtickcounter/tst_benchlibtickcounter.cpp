@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -62,14 +62,11 @@ void tst_BenchlibTickCounter::threeBillionTicks()
 #endif
 }
 
-int main(int argc, char *argv[])
-{
+QTEST_MAIN_WRAPPER(tst_BenchlibTickCounter,
     std::vector<const char*> args(argv, argv + argc);
     args.push_back("-tickcounter");
     argc = args.size();
     argv = const_cast<char**>(&args[0]);
-
-    QTEST_MAIN_IMPL(tst_BenchlibTickCounter)
-}
+    QTEST_MAIN_SETUP())
 
 #include "tst_benchlibtickcounter.moc"

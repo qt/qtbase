@@ -78,8 +78,7 @@ void tst_BenchlibCallgrind::twoHundredMillionInstructions()
 #endif
 }
 
-int main(int argc, char *argv[])
-{
+QTEST_MAIN_WRAPPER(tst_BenchlibCallgrind,
     std::vector<const char*> args(argv, argv + argc);
     // Add the -callgrind argument unless (it's there anyway or) we're the
     // recursive invocation with -callgrindchild passed.
@@ -92,9 +91,7 @@ int main(int argc, char *argv[])
         argc = args.size();
         argv = const_cast<char**>(&args[0]);
     }
-
-    QTEST_MAIN_IMPL(tst_BenchlibCallgrind)
-}
+    QTEST_MAIN_SETUP())
 
 #undef HAVE_VALGRIND_H
 #include "tst_benchlibcallgrind.moc"
