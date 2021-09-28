@@ -1,8 +1,0 @@
-##teamcity[testSuiteStarted name='tst_BenchlibTickCounter' flowId='tst_BenchlibTickCounter']
-##teamcity[testStarted name='initTestCase()' flowId='tst_BenchlibTickCounter']
-##teamcity[testFinished name='initTestCase()' flowId='tst_BenchlibTickCounter']
-##teamcity[testStarted name='threeBillionTicks()' flowId='tst_BenchlibTickCounter']
-##teamcity[testFinished name='threeBillionTicks()' flowId='tst_BenchlibTickCounter']
-##teamcity[testStarted name='cleanupTestCase()' flowId='tst_BenchlibTickCounter']
-##teamcity[testFinished name='cleanupTestCase()' flowId='tst_BenchlibTickCounter']
-##teamcity[testSuiteFinished name='tst_BenchlibTickCounter' flowId='tst_BenchlibTickCounter']

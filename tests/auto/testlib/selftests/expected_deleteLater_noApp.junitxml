@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite name="tst_DeleteLater_noApp" timestamp="@TEST_START_TIME@" hostname="@HOSTNAME@" tests="5" failures="0" errors="0" skipped="0" time="@TEST_DURATION@">
+  <properties>
+    <property name="QTestVersion" value="@INSERT_QT_VERSION_HERE@"/>
+    <property name="QtVersion" value="@INSERT_QT_VERSION_HERE@"/>
+    <property name="QtBuild" value=""/>
+  </properties>
+  <testcase name="initTestCase" classname="tst_DeleteLater_noApp" time="@TEST_DURATION@"/>
+  <testcase name="qtestLibShouldNotFlushDeleteLaterBetweenTests_setup" classname="tst_DeleteLater_noApp" time="@TEST_DURATION@"/>
+  <testcase name="qtestLibShouldNotFlushDeleteLaterBetweenTests_check" classname="tst_DeleteLater_noApp" time="@TEST_DURATION@"/>
+  <testcase name="qtestLibShouldNotFlushDeleteLaterOnExit" classname="tst_DeleteLater_noApp" time="@TEST_DURATION@"/>
+  <testcase name="cleanupTestCase" classname="tst_DeleteLater_noApp" time="@TEST_DURATION@"/>
+</testsuite>

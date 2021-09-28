@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -658,9 +658,6 @@ bool TestLogger::shouldIgnoreTest(const QString &test) const
         return true;
 #endif
 
-    if (test == "deleteLater" || test == "deleteLater_noApp" || test == "mouse")
-        return true; // Missing expectation files
-
     // These tests are affected by timing and whether the CPU tick counter
     // is monotonically increasing. They won't work on some machines so
     // leave them off by default. Feel free to enable them for your own
@@ -744,11 +741,9 @@ bool TestLogger::shouldIgnoreTest(const QString &test) const
             || logger == QTestLog::LightXML || logger == QTestLog::JUnitXML))
         return true;
 
-    if (logger == QTestLog::CSV && !test.startsWith("benchlib"))
+    // Skip benchmark for TeamCity logger, skip everything else for CSV:
+    if (logger == (test.startsWith("benchlib") ? QTestLog::TeamCity : QTestLog::CSV))
         return true;
-
-    if (logger == QTestLog::TeamCity && test.startsWith("benchlib"))
-        return true; // Skip benchmark for TeamCity logger
 
     if (logger != QTestLog::JUnitXML && test == "junit")
         return true;

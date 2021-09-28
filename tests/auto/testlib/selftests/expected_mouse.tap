@@ -1,0 +1,19 @@
+TAP version 13
+# tst_Mouse
+ok 1 - initTestCase()
+ok 2 - timestampBetweenTestFunction(press, release)
+ok 3 - timestampBetweenTestFunction(press, release, hover)
+ok 4 - timestampBetweenTestFunction(hover)
+ok 5 - timestampBetweenTestFunction(hover #2)
+ok 6 - timestampBetweenTestFunction(press, release #2)
+ok 7 - timestampBetweenTestFunction(press, release, hover #2)
+ok 8 - stateHandlingPart1(dummy-1)
+ok 9 - stateHandlingPart1(dummy-2)
+ok 10 - stateHandlingPart2() # SKIP Not implemented beyond this point!
+ok 11 - deterministicEvents(first-run-true) # SKIP Not implemented!
+ok 12 - deterministicEvents(first-run-false) # SKIP Not implemented!
+ok 13 - cleanupTestCase()
+1..13
+# tests 13
+# pass 10
+# fail 0

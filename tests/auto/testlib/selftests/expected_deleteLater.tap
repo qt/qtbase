@@ -1,0 +1,11 @@
+TAP version 13
+# tst_DeleteLater
+ok 1 - initTestCase()
+ok 2 - qtestLibShouldFlushDeleteLaterBetweenTests_setup()
+ok 3 - qtestLibShouldFlushDeleteLaterBetweenTests_check()
+ok 4 - qtestLibShouldFlushDeleteLaterOnExit()
+ok 5 - cleanupTestCase()
+1..5
+# tests 5
+# pass 5
+# fail 0

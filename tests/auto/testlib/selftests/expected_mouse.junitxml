@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite name="tst_Mouse" timestamp="@TEST_START_TIME@" hostname="@HOSTNAME@" tests="13" failures="0" errors="0" skipped="3" time="@TEST_DURATION@">
+  <properties>
+    <property name="QTestVersion" value="@INSERT_QT_VERSION_HERE@"/>
+    <property name="QtVersion" value="@INSERT_QT_VERSION_HERE@"/>
+    <property name="QtBuild" value=""/>
+  </properties>
+  <testcase name="initTestCase" classname="tst_Mouse" time="@TEST_DURATION@"/>
+  <testcase name="timestampBetweenTestFunction(press, release)" classname="tst_Mouse" time="@TEST_DURATION@"/>
+  <testcase name="timestampBetweenTestFunction(press, release, hover)" classname="tst_Mouse" time="@TEST_DURATION@"/>
+  <testcase name="timestampBetweenTestFunction(hover)" classname="tst_Mouse" time="@TEST_DURATION@"/>
+  <testcase name="timestampBetweenTestFunction(hover #2)" classname="tst_Mouse" time="@TEST_DURATION@"/>
+  <testcase name="timestampBetweenTestFunction(press, release #2)" classname="tst_Mouse" time="@TEST_DURATION@"/>
+  <testcase name="timestampBetweenTestFunction(press, release, hover #2)" classname="tst_Mouse" time="@TEST_DURATION@"/>
+  <testcase name="stateHandlingPart1(dummy&#x002D;1)" classname="tst_Mouse" time="@TEST_DURATION@"/>
+  <testcase name="stateHandlingPart1(dummy&#x002D;2)" classname="tst_Mouse" time="@TEST_DURATION@"/>
+  <testcase name="stateHandlingPart2" classname="tst_Mouse" time="@TEST_DURATION@">
+    <skipped message="Not implemented beyond this point!"/>
+  </testcase>
+  <testcase name="deterministicEvents(first&#x002D;run&#x002D;true)" classname="tst_Mouse" time="@TEST_DURATION@">
+    <skipped message="Not implemented!"/>
+  </testcase>
+  <testcase name="deterministicEvents(first&#x002D;run&#x002D;false)" classname="tst_Mouse" time="@TEST_DURATION@">
+    <skipped message="Not implemented!"/>
+  </testcase>
+  <testcase name="cleanupTestCase" classname="tst_Mouse" time="@TEST_DURATION@"/>
+</testsuite>

@@ -7,11 +7,15 @@
 <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>
 </TestFunction>
-<TestFunction name="sleep">
+<TestFunction name="qtestLibShouldNotFlushDeleteLaterBetweenTests_setup">
 <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>
 </TestFunction>
-<TestFunction name="wait">
+<TestFunction name="qtestLibShouldNotFlushDeleteLaterBetweenTests_check">
+<Incident type="pass" file="" line="0" />
+    <Duration msecs="0"/>
+</TestFunction>
+<TestFunction name="qtestLibShouldNotFlushDeleteLaterOnExit">
 <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>
 </TestFunction>

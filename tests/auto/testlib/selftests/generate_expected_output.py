@@ -49,7 +49,7 @@ the saved copies of the output.
 """
 
 
-DEFAULT_FORMATS = ['xml', 'txt', 'junitxml', 'lightxml', 'teamcity', 'tap']
+DEFAULT_FORMATS = ['xml', 'txt', 'junitxml', 'lightxml', 'teamcity', 'tap', 'csv']
 
 
 TESTS = ['assert', 'badxml', 'benchlibcallgrind', 'benchlibcounting',
@@ -59,7 +59,7 @@ TESTS = ['assert', 'badxml', 'benchlibcallgrind', 'benchlibcounting',
          'deleteLater_noApp', 'differentexec', 'exceptionthrow', 'expectfail',
          'failcleanup', 'faildatatype', 'failfetchtype', 'failinit',
          'failinitdata', 'fetchbogus', 'findtestdata', 'float', 'globaldata',
-         'longstring', 'maxwarnings', 'multiexec', 'pairdiagnostics', 'pass',
+         'longstring', 'maxwarnings', 'mouse', 'multiexec', 'pairdiagnostics', 'pass',
          'printdatatags', 'printdatatagswithglobaltags', 'qexecstringlist',
          'signaldumper', 'silent', 'singleskip', 'skip', 'skipcleanup',
          'skipinit', 'skipinitdata', 'sleep', 'strcmp', 'subtest', 'testlib',
@@ -199,6 +199,8 @@ class Scanner (object):
             for d in given:
                 if not os.path.isdir(d):
                     print('No such directory:', d, '- skipped')
+                elif skip_callgrind and d == 'benchlibcallgrind':
+                    pass # Skip this test, as requeted.
                 elif d in TESTS:
                     yield d
                 else:
@@ -281,11 +283,38 @@ def testEnv(testname,
         data.update(extraEnv[testname])
     return data
 
-# See TestLogger::shouldIgnoreTest() in tst_selftest.cpp
 def shouldIgnoreTest(testname, format):
-    if testname == "junit" and not format == "junitxml":
+    """Test whether to exclude a test/format combination.
+
+    See TestLogger::shouldIgnoreTest() in tst_selftests.cpp; it starts
+    with various exclusions for opt-in tests, platform dependencies
+    and tool availability; we ignore those, as we need the test data
+    to be present when those exclusions aren't in effect.
+
+    In the remainder, exclude what it always excludes.
+    """
+    if format != 'txt':
+        if testname in ("differentexec",
+                        "multiexec",
+                        "qexecstringlist",
+                        "benchliboptions",
+                        "printdatatags",
+                        "printdatatagswithglobaltags",
+                        "silent",
+                        "crashes",
+                        "benchlibcallgrind",
+                        "float",
+                        "sleep"):
+            return True
+
+    if testname == "badxml" and not format.endswith('xml'):
         return True
-    if testname in ["float", "silent"] and not format == "txt":
+
+    # Skip benchlib* for teamcity, and everything else for csv:
+    if format == ('teamcity' if testname.startswith('benchlib') else 'csv'):
+        return True
+
+    if testname == "junit" and format != "junitxml":
         return True
 
     return False
@@ -334,6 +363,15 @@ def main(argv):
 
     cleaner = Cleaner()
     src_dir = cleaner.sourceDir
+
+    if not options.skip_callgrind:
+        # Skip it, even if not requested, when valgrind isn't available:
+        try:
+            probe = subprocess.Popen(['valgrind', '--version'], stdout=subprocess.PIPE,
+                                     env=testEnv('benchlibcallgrind'), universal_newlines=True)
+        except FileNotFoundError:
+            options.skip_callgrind = True
+            print("Failed to find valgrind, skipping benchlibcallgrind test")
 
     tests = tuple(Scanner().subdirs(options.subtests, options.skip_callgrind))
     print("Generating", len(tests), "test results for", cleaner.version, "in:", src_dir)
