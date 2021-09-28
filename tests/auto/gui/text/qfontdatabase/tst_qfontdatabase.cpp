@@ -80,6 +80,8 @@ private slots:
     void registerOpenTypePreferredNamesSystem();
     void registerOpenTypePreferredNamesApplication();
 
+    void stretchRespected();
+
 private:
     QString m_ledFont;
     QString m_testFont;
@@ -347,6 +349,28 @@ void tst_QFontDatabase::fallbackFonts()
 static QString testString()
 {
     return QStringLiteral("foo bar");
+}
+
+void tst_QFontDatabase::stretchRespected()
+{
+    int italicId = QFontDatabase::addApplicationFont(m_testFontItalic);
+    QVERIFY(italicId != -1);
+
+    QVERIFY(!QFontDatabase::applicationFontFamilies(italicId).isEmpty());
+
+    QString italicFontName = QFontDatabase::applicationFontFamilies(italicId).first();
+
+    QFont italicFont = QFontDatabase::font(italicFontName,
+                                           QString::fromLatin1("Italic"), 14);
+    QVERIFY(italicFont.italic());
+
+    QFont italicStretchedFont = italicFont;
+    italicStretchedFont.setStretch( 400 );
+
+    QVERIFY(QFontMetricsF(italicFont).horizontalAdvance(QStringLiteral("foobar")) <
+            QFontMetricsF(italicStretchedFont).horizontalAdvance(QStringLiteral("foobar")));
+
+    QFontDatabase::removeApplicationFont(italicId);
 }
 
 void tst_QFontDatabase::condensedFontWidthNoFontMerging()

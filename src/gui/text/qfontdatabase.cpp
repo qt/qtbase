@@ -783,7 +783,7 @@ QFontEngine *loadSingleEngine(int script,
         if (style->key.stretch != 0 && request.stretch != 0
             && (request.styleName.isEmpty() || request.styleName != style->styleName)) {
             def.stretch = (request.stretch * 100 + style->key.stretch / 2) / style->key.stretch;
-        } else {
+        } else if (request.stretch == QFont::AnyStretch) {
             def.stretch = 100;
         }
 
