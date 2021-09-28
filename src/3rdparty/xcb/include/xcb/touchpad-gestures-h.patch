@@ -1,0 +1,207 @@
+diff --git a/src/3rdparty/xcb/include/xcb/xinput.h b/src/3rdparty/xcb/include/xcb/xinput.h
+index 729c0b5169..f2e38bb920 100644
+--- a/src/3rdparty/xcb/include/xcb/xinput.h
++++ b/src/3rdparty/xcb/include/xcb/xinput.h
+@@ -20,7 +20,7 @@ extern "C" {
+ #endif
+ 
+ #define XCB_INPUT_MAJOR_VERSION 2
+-#define XCB_INPUT_MINOR_VERSION 3
++#define XCB_INPUT_MINOR_VERSION 4
+ 
+ extern xcb_extension_t xcb_input_id;
+ 
+@@ -2671,7 +2671,8 @@ typedef enum xcb_input_device_class_type_t {
+     XCB_INPUT_DEVICE_CLASS_TYPE_BUTTON = 1,
+     XCB_INPUT_DEVICE_CLASS_TYPE_VALUATOR = 2,
+     XCB_INPUT_DEVICE_CLASS_TYPE_SCROLL = 3,
+-    XCB_INPUT_DEVICE_CLASS_TYPE_TOUCH = 8
++    XCB_INPUT_DEVICE_CLASS_TYPE_TOUCH = 8,
++    XCB_INPUT_DEVICE_CLASS_TYPE_GESTURE = 9
+ } xcb_input_device_class_type_t;
+ 
+ typedef enum xcb_input_device_type_t {
+@@ -2778,6 +2779,26 @@ typedef struct xcb_input_touch_class_iterator_t {
+     int                      index;
+ } xcb_input_touch_class_iterator_t;
+ 
++/**
++ * @brief xcb_input_gesture_class_t
++ **/
++typedef struct xcb_input_gesture_class_t {
++    uint16_t              type;
++    uint16_t              len;
++    xcb_input_device_id_t sourceid;
++    uint8_t               num_touches;
++    uint8_t               pad0;
++} xcb_input_gesture_class_t;
++
++/**
++ * @brief xcb_input_gesture_class_iterator_t
++ **/
++typedef struct xcb_input_gesture_class_iterator_t {
++    xcb_input_gesture_class_t *data;
++    int                        rem;
++    int                        index;
++} xcb_input_gesture_class_iterator_t;
++
+ /**
+  * @brief xcb_input_valuator_class_t
+  **/
+@@ -2838,6 +2859,10 @@ typedef struct xcb_input_device_class_data_t {
+         uint8_t            mode;
+         uint8_t            num_touches;
+     } touch;
++    struct {
++        uint8_t            num_touches;
++        uint8_t            pad2;
++    } gesture;
+ } xcb_input_device_class_data_t;
+ 
+ /**
+@@ -3065,7 +3090,9 @@ typedef enum xcb_input_grab_type_t {
+     XCB_INPUT_GRAB_TYPE_KEYCODE = 1,
+     XCB_INPUT_GRAB_TYPE_ENTER = 2,
+     XCB_INPUT_GRAB_TYPE_FOCUS_IN = 3,
+-    XCB_INPUT_GRAB_TYPE_TOUCH_BEGIN = 4
++    XCB_INPUT_GRAB_TYPE_TOUCH_BEGIN = 4,
++    XCB_INPUT_GRAB_TYPE_GESTURE_PINCH_BEGIN = 5,
++    XCB_INPUT_GRAB_TYPE_GESTURE_SWIPE_BEGIN = 6
+ } xcb_input_grab_type_t;
+ 
+ typedef enum xcb_input_modifier_mask_t {
+@@ -4028,6 +4055,104 @@ typedef struct xcb_input_class_error_t {
+     uint16_t sequence;
+ } xcb_input_class_error_t;
+ 
++typedef enum xcb_input_gesture_pinch_event_flags_t {
++    XCB_INPUT_GESTURE_PINCH_EVENT_FLAGS_GESTURE_PINCH_CANCELLED = 1
++} xcb_input_gesture_pinch_event_flags_t;
++
++/** Opcode for xcb_input_gesture_pinch_begin. */
++#define XCB_INPUT_GESTURE_PINCH_BEGIN 27
++
++/**
++ * @brief xcb_input_gesture_pinch_begin_event_t
++ **/
++typedef struct xcb_input_gesture_pinch_begin_event_t {
++    uint8_t                   response_type;
++    uint8_t                   extension;
++    uint16_t                  sequence;
++    uint32_t                  length;
++    uint16_t                  event_type;
++    xcb_input_device_id_t     deviceid;
++    xcb_timestamp_t           time;
++    uint32_t                  detail;
++    xcb_window_t              root;
++    xcb_window_t              event;
++    xcb_window_t              child;
++    uint32_t                  full_sequence;
++    xcb_input_fp1616_t        root_x;
++    xcb_input_fp1616_t        root_y;
++    xcb_input_fp1616_t        event_x;
++    xcb_input_fp1616_t        event_y;
++    xcb_input_fp1616_t        delta_x;
++    xcb_input_fp1616_t        delta_y;
++    xcb_input_fp1616_t        delta_unaccel_x;
++    xcb_input_fp1616_t        delta_unaccel_y;
++    xcb_input_fp1616_t        scale;
++    xcb_input_fp1616_t        delta_angle;
++    xcb_input_device_id_t     sourceid;
++    uint8_t                   pad0[2];
++    xcb_input_modifier_info_t mods;
++    xcb_input_group_info_t    group;
++    uint32_t                  flags;
++} xcb_input_gesture_pinch_begin_event_t;
++
++/** Opcode for xcb_input_gesture_pinch_update. */
++#define XCB_INPUT_GESTURE_PINCH_UPDATE 28
++
++typedef xcb_input_gesture_pinch_begin_event_t xcb_input_gesture_pinch_update_event_t;
++
++/** Opcode for xcb_input_gesture_pinch_end. */
++#define XCB_INPUT_GESTURE_PINCH_END 29
++
++typedef xcb_input_gesture_pinch_begin_event_t xcb_input_gesture_pinch_end_event_t;
++
++typedef enum xcb_input_gesture_swipe_event_flags_t {
++    XCB_INPUT_GESTURE_SWIPE_EVENT_FLAGS_GESTURE_SWIPE_CANCELLED = 1
++} xcb_input_gesture_swipe_event_flags_t;
++
++/** Opcode for xcb_input_gesture_swipe_begin. */
++#define XCB_INPUT_GESTURE_SWIPE_BEGIN 30
++
++/**
++ * @brief xcb_input_gesture_swipe_begin_event_t
++ **/
++typedef struct xcb_input_gesture_swipe_begin_event_t {
++    uint8_t                   response_type;
++    uint8_t                   extension;
++    uint16_t                  sequence;
++    uint32_t                  length;
++    uint16_t                  event_type;
++    xcb_input_device_id_t     deviceid;
++    xcb_timestamp_t           time;
++    uint32_t                  detail;
++    xcb_window_t              root;
++    xcb_window_t              event;
++    xcb_window_t              child;
++    uint32_t                  full_sequence;
++    xcb_input_fp1616_t        root_x;
++    xcb_input_fp1616_t        root_y;
++    xcb_input_fp1616_t        event_x;
++    xcb_input_fp1616_t        event_y;
++    xcb_input_fp1616_t        delta_x;
++    xcb_input_fp1616_t        delta_y;
++    xcb_input_fp1616_t        delta_unaccel_x;
++    xcb_input_fp1616_t        delta_unaccel_y;
++    xcb_input_device_id_t     sourceid;
++    uint8_t                   pad0[2];
++    xcb_input_modifier_info_t mods;
++    xcb_input_group_info_t    group;
++    uint32_t                  flags;
++} xcb_input_gesture_swipe_begin_event_t;
++
++/** Opcode for xcb_input_gesture_swipe_update. */
++#define XCB_INPUT_GESTURE_SWIPE_UPDATE 31
++
++typedef xcb_input_gesture_swipe_begin_event_t xcb_input_gesture_swipe_update_event_t;
++
++/** Opcode for xcb_input_gesture_swipe_end. */
++#define XCB_INPUT_GESTURE_SWIPE_END 32
++
++typedef xcb_input_gesture_swipe_begin_event_t xcb_input_gesture_swipe_end_event_t;
++
+ /**
+  * Get the next element of the iterator
+  * @param i Pointer to a xcb_input_event_class_iterator_t
+@@ -8080,6 +8205,29 @@ xcb_input_touch_class_next (xcb_input_touch_class_iterator_t *i);
+ xcb_generic_iterator_t
+ xcb_input_touch_class_end (xcb_input_touch_class_iterator_t i);
+ 
++/**
++ * Get the next element of the iterator
++ * @param i Pointer to a xcb_input_gesture_class_iterator_t
++ *
++ * Get the next element in the iterator. The member rem is
++ * decreased by one. The member data points to the next
++ * element. The member index is increased by sizeof(xcb_input_gesture_class_t)
++ */
++void
++xcb_input_gesture_class_next (xcb_input_gesture_class_iterator_t *i);
++
++/**
++ * Return the iterator pointing to the last element
++ * @param i An xcb_input_gesture_class_iterator_t
++ * @return  The iterator pointing to the last element
++ *
++ * Set the current element in the iterator to the last element.
++ * The member rem is set to 0. The member data points to the
++ * last element.
++ */
++xcb_generic_iterator_t
++xcb_input_gesture_class_end (xcb_input_gesture_class_iterator_t i);
++
+ /**
+  * Get the next element of the iterator
+  * @param i Pointer to a xcb_input_valuator_class_iterator_t

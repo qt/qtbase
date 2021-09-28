@@ -10059,6 +10059,24 @@ xcb_input_touch_class_end (xcb_input_touch_class_iterator_t i)
 }
 
 void
+xcb_input_gesture_class_next (xcb_input_gesture_class_iterator_t *i)
+{
+    --i->rem;
+    ++i->data;
+    i->index += sizeof(xcb_input_gesture_class_t);
+}
+
+xcb_generic_iterator_t
+xcb_input_gesture_class_end (xcb_input_gesture_class_iterator_t i)
+{
+    xcb_generic_iterator_t ret;
+    ret.data = i.data + i.rem;
+    ret.index = i.index + ((char *) ret.data - (char *) i.data);
+    ret.rem = 0;
+    return ret;
+}
+
+void
 xcb_input_valuator_class_next (xcb_input_valuator_class_iterator_t *i)
 {
     --i->rem;
@@ -10160,7 +10178,7 @@ xcb_input_device_class_data_serialize (void                                **_bu
 
     unsigned int xcb_pad = 0;
     char xcb_pad0[3] = {0, 0, 0};
-    struct iovec xcb_parts[24];
+    struct iovec xcb_parts[26];
     unsigned int xcb_parts_idx = 0;
     unsigned int xcb_block_len = 0;
     unsigned int i;
@@ -10324,6 +10342,20 @@ xcb_input_device_class_data_serialize (void                                **_bu
         xcb_align_to = ALIGNOF(uint8_t);
         /* xcb_input_device_class_data_t.touch.num_touches */
         xcb_parts[xcb_parts_idx].iov_base = (char *) &_aux->touch.num_touches;
+        xcb_block_len += sizeof(uint8_t);
+        xcb_parts[xcb_parts_idx].iov_len = sizeof(uint8_t);
+        xcb_parts_idx++;
+        xcb_align_to = ALIGNOF(uint8_t);
+    }
+    if(type == XCB_INPUT_DEVICE_CLASS_TYPE_GESTURE) {
+        /* xcb_input_device_class_data_t.gesture.num_touches */
+        xcb_parts[xcb_parts_idx].iov_base = (char *) &_aux->gesture.num_touches;
+        xcb_block_len += sizeof(uint8_t);
+        xcb_parts[xcb_parts_idx].iov_len = sizeof(uint8_t);
+        xcb_parts_idx++;
+        xcb_align_to = ALIGNOF(uint8_t);
+        /* xcb_input_device_class_data_t.gesture.pad2 */
+        xcb_parts[xcb_parts_idx].iov_base = (char *) &xcb_pad;
         xcb_block_len += sizeof(uint8_t);
         xcb_parts[xcb_parts_idx].iov_len = sizeof(uint8_t);
         xcb_parts_idx++;
@@ -10507,6 +10539,18 @@ xcb_input_device_class_data_unpack (const void                     *_buffer,
         xcb_align_to = ALIGNOF(uint8_t);
         /* xcb_input_device_class_data_t.touch.num_touches */
         _aux->touch.num_touches = *(uint8_t *)xcb_tmp;
+        xcb_block_len += sizeof(uint8_t);
+        xcb_tmp += sizeof(uint8_t);
+        xcb_align_to = ALIGNOF(uint8_t);
+    }
+    if(type == XCB_INPUT_DEVICE_CLASS_TYPE_GESTURE) {
+        /* xcb_input_device_class_data_t.gesture.num_touches */
+        _aux->gesture.num_touches = *(uint8_t *)xcb_tmp;
+        xcb_block_len += sizeof(uint8_t);
+        xcb_tmp += sizeof(uint8_t);
+        xcb_align_to = ALIGNOF(uint8_t);
+        /* xcb_input_device_class_data_t.gesture.pad2 */
+        _aux->gesture.pad2 = *(uint8_t *)xcb_tmp;
         xcb_block_len += sizeof(uint8_t);
         xcb_tmp += sizeof(uint8_t);
         xcb_align_to = ALIGNOF(uint8_t);
