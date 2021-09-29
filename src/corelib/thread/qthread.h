@@ -120,7 +120,7 @@ public:
     bool wait(QDeadlineTimer deadline = QDeadlineTimer(QDeadlineTimer::Forever));
     bool wait(unsigned long time)
     {
-        if (time == std::numeric_limits<unsigned long>::max())
+        if (time == (std::numeric_limits<unsigned long>::max)())
             return wait(QDeadlineTimer(QDeadlineTimer::Forever));
         return wait(QDeadlineTimer(time));
     }
