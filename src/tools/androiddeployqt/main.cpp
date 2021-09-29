@@ -36,10 +36,10 @@
 #include <QDebug>
 #include <QDataStream>
 #include <QXmlStreamReader>
-#include <QDateTime>
 #include <QStandardPaths>
 #include <QUuid>
 #include <QDirIterator>
+#include <QElapsedTimer>
 #include <QRegularExpression>
 
 #include <depfile_shared.h>
@@ -57,21 +57,6 @@
 #else
 #define QT_POPEN_READ "r"
 #endif
-
-class ActionTimer
-{
-    qint64 started;
-public:
-    ActionTimer() = default;
-    void start()
-    {
-        started = QDateTime::currentMSecsSinceEpoch();
-    }
-    int elapsed()
-    {
-        return int(QDateTime::currentMSecsSinceEpoch() - started);
-    }
-};
 
 static const bool mustReadOutputAnyway = true; // pclose seems to return the wrong error code unless we read the output
 
@@ -165,7 +150,7 @@ struct Options
     bool timing;
     bool build;
     bool auxMode;
-    ActionTimer timer;
+    QElapsedTimer timer;
 
     // External tools
     QString sdkPath;
@@ -3146,7 +3131,7 @@ int main(int argc, char *argv[])
         return CannotReadInputFile;
 
     if (Q_UNLIKELY(options.timing))
-        fprintf(stdout, "[TIMING] %d ms: Read input file\n", options.timer.elapsed());
+        fprintf(stdout, "[TIMING] %lld ns: Read input file\n", options.timer.nsecsElapsed());
 
     fprintf(stdout,
 //          "012345678901234567890123456789012345678901234567890123456789012345678901"
@@ -3176,13 +3161,13 @@ int main(int argc, char *argv[])
         if (!androidTemplatetCopied && options.build && !options.auxMode) {
             cleanAndroidFiles(options);
             if (Q_UNLIKELY(options.timing))
-                fprintf(stdout, "[TIMING] %d ms: Cleaned Android file\n", options.timer.elapsed());
+                fprintf(stdout, "[TIMING] %lld ns: Cleaned Android file\n", options.timer.nsecsElapsed());
 
             if (!copyAndroidTemplate(options))
                 return CannotCopyAndroidTemplate;
 
             if (Q_UNLIKELY(options.timing))
-                fprintf(stdout, "[TIMING] %d ms: Copied Android template\n", options.timer.elapsed());
+                fprintf(stdout, "[TIMING] %lld ns: Copied Android template\n", options.timer.nsecsElapsed());
             androidTemplatetCopied = true;
         }
 
@@ -3190,42 +3175,42 @@ int main(int argc, char *argv[])
             return CannotReadDependencies;
 
         if (Q_UNLIKELY(options.timing))
-            fprintf(stdout, "[TIMING] %d ms: Read dependencies\n", options.timer.elapsed());
+            fprintf(stdout, "[TIMING] %lld ns: Read dependencies\n", options.timer.nsecsElapsed());
 
         if (!copyQtFiles(&options))
             return CannotCopyQtFiles;
 
         if (Q_UNLIKELY(options.timing))
-            fprintf(stdout, "[TIMING] %d ms: Copied Qt files\n", options.timer.elapsed());
+            fprintf(stdout, "[TIMING] %lld ns: Copied Qt files\n", options.timer.nsecsElapsed());
 
         if (!copyAndroidExtraLibs(&options))
             return CannotCopyAndroidExtraLibs;
 
         if (Q_UNLIKELY(options.timing))
-            fprintf(stdout, "[TIMING] %d ms: Copied extra libs\n", options.timer.elapsed());
+            fprintf(stdout, "[TIMING] %lld ms: Copied extra libs\n", options.timer.nsecsElapsed());
 
         if (!copyAndroidExtraResources(&options))
             return CannotCopyAndroidExtraResources;
 
         if (Q_UNLIKELY(options.timing))
-            fprintf(stdout, "[TIMING] %d ms: Copied extra resources\n", options.timer.elapsed());
+            fprintf(stdout, "[TIMING] %lld ns: Copied extra resources\n", options.timer.nsecsElapsed());
 
         if (!options.auxMode) {
             if (!copyStdCpp(&options))
                 return CannotCopyGnuStl;
 
             if (Q_UNLIKELY(options.timing))
-                fprintf(stdout, "[TIMING] %d ms: Copied GNU STL\n", options.timer.elapsed());
+                fprintf(stdout, "[TIMING] %lld ns: Copied GNU STL\n", options.timer.nsecsElapsed());
         }
 
         if (!containsApplicationBinary(&options))
             return CannotFindApplicationBinary;
 
         if (Q_UNLIKELY(options.timing))
-            fprintf(stdout, "[TIMING] %d ms: Checked for application binary\n", options.timer.elapsed());
+            fprintf(stdout, "[TIMING] %lld ns: Checked for application binary\n", options.timer.nsecsElapsed());
 
         if (Q_UNLIKELY(options.timing))
-            fprintf(stdout, "[TIMING] %d ms: Bundled Qt libs\n", options.timer.elapsed());
+            fprintf(stdout, "[TIMING] %lld ns: Bundled Qt libs\n", options.timer.nsecsElapsed());
     }
 
     if (!createRcc(options))
@@ -3243,22 +3228,22 @@ int main(int argc, char *argv[])
             return CannotCopyAndroidSources;
 
         if (Q_UNLIKELY(options.timing))
-            fprintf(stdout, "[TIMING] %d ms: Copied android sources\n", options.timer.elapsed());
+            fprintf(stdout, "[TIMING] %lld ns: Copied android sources\n", options.timer.nsecsElapsed());
 
         if (!updateAndroidFiles(options))
             return CannotUpdateAndroidFiles;
 
         if (Q_UNLIKELY(options.timing))
-            fprintf(stdout, "[TIMING] %d ms: Updated files\n", options.timer.elapsed());
+            fprintf(stdout, "[TIMING] %lld ns: Updated files\n", options.timer.nsecsElapsed());
 
         if (Q_UNLIKELY(options.timing))
-            fprintf(stdout, "[TIMING] %d ms: Created project\n", options.timer.elapsed());
+            fprintf(stdout, "[TIMING] %lld ns: Created project\n", options.timer.nsecsElapsed());
 
         if (!buildAndroidProject(options))
             return CannotBuildAndroidProject;
 
         if (Q_UNLIKELY(options.timing))
-            fprintf(stdout, "[TIMING] %d ms: Built project\n", options.timer.elapsed());
+            fprintf(stdout, "[TIMING] %lld ns: Built project\n", options.timer.nsecsElapsed());
 
         if (!options.keyStore.isEmpty() && !signPackage(options))
             return CannotSignPackage;
@@ -3267,14 +3252,14 @@ int main(int argc, char *argv[])
             return CannotCopyApk;
 
         if (Q_UNLIKELY(options.timing))
-            fprintf(stdout, "[TIMING] %d ms: Signed package\n", options.timer.elapsed());
+            fprintf(stdout, "[TIMING] %lld ns: Signed package\n", options.timer.nsecsElapsed());
     }
 
     if (options.installApk && !installApk(options))
         return CannotInstallApk;
 
     if (Q_UNLIKELY(options.timing))
-        fprintf(stdout, "[TIMING] %d ms: Installed APK\n", options.timer.elapsed());
+        fprintf(stdout, "[TIMING] %lld ns: Installed APK\n", options.timer.nsecsElapsed());
 
     if (!options.depFilePath.isEmpty())
         writeDependencyFile(options);
