@@ -209,6 +209,12 @@ messageDebugEntries[] = {
     {WM_POINTERROUTEDAWAY, "WM_POINTERROUTEDAWAY", true},
     {WM_POINTERROUTEDRELEASED, "WM_POINTERROUTEDRELEASED", true},
 #endif // WM_POINTERROUTEDTO
+#ifdef WM_GETDPISCALEDSIZE
+    {WM_GETDPISCALEDSIZE, "WM_GETDPISCALEDSIZE", true},
+#endif
+#ifdef WM_DPICHANGED
+    {WM_DPICHANGED, "WM_DPICHANGED", true},
+#endif
 };
 
 static inline const MessageDebugEntry *messageDebugEntry(UINT msg)
