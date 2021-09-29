@@ -541,21 +541,6 @@ public:
         return registerConverter<From, To>(QtPrivate::convertImplicit<From, To>);
     }
 
-#ifdef Q_CLANG_QDOC
-    template<typename MemberFunction, int>
-    static bool registerConverter(MemberFunction function);
-    template<typename MemberFunctionOk, char>
-    static bool registerConverter(MemberFunctionOk function);
-    template<typename UnaryFunction>
-    static bool registerConverter(UnaryFunction function);
-
-    template<typename MemberFunction, int>
-    static bool registerMutableView(MemberFunction function);
-    template<typename MemberFunctionOk, char>
-    static bool registerMutableView(MemberFunctionOk function);
-    template<typename UnaryFunction>
-    static bool registerMutableView(UnaryFunction function);
-#else
     // member function as in "QString QFont::toString() const"
     template<typename From, typename To>
     static bool registerConverter(To(From::*function)() const)
@@ -675,7 +660,6 @@ private:
             return false;
         }
     }
-#endif // Q_CLANG_DOC
 public:
 
     static bool convert(QMetaType fromType, const void *from, QMetaType toType, void *to);
