@@ -558,23 +558,6 @@ qt_internal_extend_target(Core CONDITION GCC AND (CMAKE_CXX_COMPILER_VERSION VER
 # CMAKE_INSTALL_DATA_DIR = "$$[QT_HOST_DATA]/"
 # CMAKE_INSTALL_DATA_DIR_IS_ABSOLUTE = "True"
 
-#### Keys ignored in scope 20:.:global:global/global.pri:QT_CPU_FEATURES__ss_QT_ARCH___contains___f16c:
-# f16c_cxx = "true"
-
-#### Keys ignored in scope 22:.:global:global/global.pri:CLANG OR intel_icl OR ICC:
-# f16c_cxx = "false"
-
-#### Keys ignored in scope 24:.:global:global/global.pri:GCC AND f16c AND x86SimdAlways:
-# f16c_cxx = "true"
-
-#### Keys ignored in scope 26:.:global:global/global.pri:MSVC AND QT_CPU_FEATURES__ss_QT_ARCH___contains___avx:
-# f16c_cxx = "true"
-
-#### Keys ignored in scope 27:.:global:global/global.pri:else:
-# f16c_cxx = "false"
-
-# qt_internal_extend_target(Core CONDITION _ss_f16c_cxx ... # special case remove: Handled manually
-
 # special case begin
 # Remove this because it's handled manually
 #qt_internal_extend_target(Core CONDITION NOT _x_-armcc_x_ AND NOT cross_compile AND NOT static AND (hurd_x_ OR linux_x_)
@@ -1290,21 +1273,6 @@ qt_internal_extend_target(Core CONDITION WASM
         platform/wasm/qstdweb.cpp platform/wasm/qstdweb_p.h
         kernel/qeventdispatcher_wasm.cpp kernel/qeventdispatcher_wasm_p.h
 )
-
-# special case begin
-# needs refinement for the other compiler specific cases.
-if(TEST_arch_${TEST_architecture_arch}_subarch_f16c)
-    # Equivalent to contains(QT_CPU_FEATURES.$$QT_ARCH, f16c)
-    qt_internal_extend_target(Core
-        DEFINES
-            QFLOAT16_INCLUDE_FAST
-    )
-else()
-    qt_internal_add_simd_part(Core SIMD f16c
-        SOURCES
-            global/qfloat16_f16c.c
-    )
-endif()
 
 set_source_files_properties(
     thread/qmutex_mac.cpp
