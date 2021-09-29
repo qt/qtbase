@@ -3621,13 +3621,16 @@ QGles2RenderTargetData *QRhiGles2::enqueueBindFramebuffer(QRhiRenderTarget *rt, 
     QGles2CommandBuffer::Command &fbCmd(cbD->commands.get());
     fbCmd.cmd = QGles2CommandBuffer::Command::BindFramebuffer;
 
+    static const bool doClearBuffers = qEnvironmentVariableIntValue("QT_GL_NO_CLEAR_BUFFERS") == 0;
+    static const bool doClearColorBuffer = qEnvironmentVariableIntValue("QT_GL_NO_CLEAR_COLOR_BUFFER") == 0;
+
     switch (rt->resourceType()) {
     case QRhiResource::RenderTarget:
         rtD = &QRHI_RES(QGles2ReferenceRenderTarget, rt)->d;
         if (wantsColorClear)
-            *wantsColorClear = true;
+            *wantsColorClear = doClearBuffers && doClearColorBuffer;
         if (wantsDsClear)
-            *wantsDsClear = true;
+            *wantsDsClear = doClearBuffers;
         fbCmd.args.bindFramebuffer.fbo = 0;
         fbCmd.args.bindFramebuffer.colorAttCount = 1;
         break;
