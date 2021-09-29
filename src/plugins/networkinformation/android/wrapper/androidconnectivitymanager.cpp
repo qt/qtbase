@@ -56,11 +56,13 @@ Q_GLOBAL_STATIC(AndroidConnectivityManagerInstance, androidConnManagerInstance)
 static const char networkInformationClass[] =
         "org/qtproject/qt/android/networkinformation/QtAndroidNetworkInformation";
 
-static void networkConnectivityChanged(JNIEnv *env, jobject obj)
+static void networkConnectivityChanged(JNIEnv *env, jobject obj, jobject enumValue)
 {
     Q_UNUSED(env);
     Q_UNUSED(obj);
-    Q_EMIT androidConnManagerInstance->connManager->connectivityChanged();
+    const jint value = QJniObject(enumValue).callMethod<jint>("ordinal");
+    const auto connectivity = static_cast<AndroidConnectivityManager::AndroidConnectivity>(value);
+    Q_EMIT androidConnManagerInstance->connManager->connectivityChanged(connectivity);
 }
 
 static void behindCaptivePortalChanged(JNIEnv *env, jobject obj, jboolean state)
@@ -110,30 +112,6 @@ AndroidConnectivityManager::~AndroidConnectivityManager()
                                        "(Landroid/content/Context;)V", QAndroidApplication::context());
 }
 
-AndroidConnectivityManager::AndroidConnectivity AndroidConnectivityManager::networkConnectivity()
-{
-    QJniEnvironment env;
-    QJniObject networkReceiver(networkInformationClass);
-    jclass clazz = env->GetObjectClass(networkReceiver.object());
-    static const QByteArray functionSignature =
-            QByteArray(QByteArray("()L") + networkInformationClass + "$AndroidConnectivity;");
-    QJniObject enumObject =
-            QJniObject::callStaticObjectMethod(clazz, "state", functionSignature.data());
-    if (!enumObject.isValid())
-        return AndroidConnectivityManager::AndroidConnectivity::Unknown;
-
-    QJniObject enumName = enumObject.callObjectMethod<jstring>("name");
-    if (!enumName.isValid())
-        return AndroidConnectivityManager::AndroidConnectivity::Unknown;
-
-    QString name = enumName.toString();
-    if (name == u"Connected")
-        return AndroidConnectivity::Connected;
-    if (name == u"Disconnected")
-        return AndroidConnectivity::Disconnected;
-    return AndroidConnectivity::Unknown;
-}
-
 bool AndroidConnectivityManager::registerNatives()
 {
     QJniEnvironment env;
@@ -141,12 +119,15 @@ bool AndroidConnectivityManager::registerNatives()
     if (!networkReceiver.isValid())
         return false;
 
+    const QByteArray connectivityEnumSig =
+            QByteArray("(L") + networkInformationClass + "$AndroidConnectivity;)V";
     const QByteArray transportEnumSig =
             QByteArray("(L") + networkInformationClass + "$Transport;)V";
 
     jclass clazz = env->GetObjectClass(networkReceiver.object());
     static JNINativeMethod methods[] = {
-        { "connectivityChanged", "()V", reinterpret_cast<void *>(networkConnectivityChanged) },
+        { "connectivityChanged", connectivityEnumSig.data(),
+          reinterpret_cast<void *>(networkConnectivityChanged) },
         { "behindCaptivePortalChanged", "(Z)V",
           reinterpret_cast<void *>(behindCaptivePortalChanged) },
         { "transportMediumChanged", transportEnumSig.data(),

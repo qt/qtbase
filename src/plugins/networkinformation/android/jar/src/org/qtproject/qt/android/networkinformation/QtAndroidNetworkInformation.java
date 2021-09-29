@@ -53,13 +53,14 @@ import android.os.Build;
 public class QtAndroidNetworkInformation {
     private static final String LOG_TAG = "QtAndroidNetworkInformation";
 
-    private static native void connectivityChanged();
+    private static native void connectivityChanged(AndroidConnectivity connectivity);
     private static native void behindCaptivePortalChanged(boolean state);
     private static native void transportMediumChanged(Transport transportMedium);
 
     private static QtNetworkInformationCallback m_callback = null;
     private static final Object m_lock = new Object();
 
+    // Keep synchronized with AndroidConnectivity in androidconnectivitymanager.h
     enum AndroidConnectivity {
         Connected, Unknown, Disconnected
     }
@@ -131,7 +132,7 @@ public class QtAndroidNetworkInformation {
         private void setState(AndroidConnectivity s) {
             if (previousState != s) {
                 previousState = s;
-                connectivityChanged();
+                connectivityChanged(s);
             }
         }
 

@@ -74,6 +74,7 @@ public:
 private:
     Q_DISABLE_COPY_MOVE(QAndroidNetworkInformationBackend);
 
+    void updateConnectivity(AndroidConnectivityManager::AndroidConnectivity connectivity);
     void updateTransportMedium(AndroidConnectivityManager::AndroidTransport transport);
 
     bool m_valid = false;
@@ -115,27 +116,33 @@ QAndroidNetworkInformationBackend::QAndroidNetworkInformationBackend()
         return;
     m_valid = true;
     setReachability(QNetworkInformation::Reachability::Unknown);
-    connect(conman, &AndroidConnectivityManager::connectivityChanged, this, [this, conman]() {
-        static const auto mapState = [](AndroidConnectivityManager::AndroidConnectivity state) {
-            switch (state) {
-            case AndroidConnectivityManager::AndroidConnectivity::Connected:
-                return QNetworkInformation::Reachability::Online;
-            case AndroidConnectivityManager::AndroidConnectivity::Disconnected:
-                return QNetworkInformation::Reachability::Disconnected;
-            case AndroidConnectivityManager::AndroidConnectivity::Unknown:
-            default:
-                return QNetworkInformation::Reachability::Unknown;
-            }
-        };
-
-        setReachability(mapState(conman->networkConnectivity()));
-    });
+    connect(conman, &AndroidConnectivityManager::connectivityChanged, this,
+            &QAndroidNetworkInformationBackend::updateConnectivity);
 
     connect(conman, &AndroidConnectivityManager::captivePortalChanged, this,
             &QAndroidNetworkInformationBackend::setBehindCaptivePortal);
 
     connect(conman, &AndroidConnectivityManager::transportMediumChanged, this,
             &QAndroidNetworkInformationBackend::updateTransportMedium);
+}
+
+void QAndroidNetworkInformationBackend::updateConnectivity(
+        AndroidConnectivityManager::AndroidConnectivity connectivity)
+{
+    using AndroidConnectivity = AndroidConnectivityManager::AndroidConnectivity;
+    static const auto mapState = [](AndroidConnectivity state) {
+        switch (state) {
+        case AndroidConnectivity::Connected:
+            return QNetworkInformation::Reachability::Online;
+        case AndroidConnectivity::Disconnected:
+            return QNetworkInformation::Reachability::Disconnected;
+        case AndroidConnectivity::Unknown:
+        default:
+            return QNetworkInformation::Reachability::Unknown;
+        }
+    };
+
+    setReachability(mapState(connectivity));
 }
 
 void QAndroidNetworkInformationBackend::updateTransportMedium(

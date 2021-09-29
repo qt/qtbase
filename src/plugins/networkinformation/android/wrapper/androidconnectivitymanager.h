@@ -49,6 +49,7 @@ class AndroidConnectivityManager : public QObject
 {
     Q_OBJECT
 public:
+    // Keep synchronized with AndroidConnectivity in QtAndroidNetworkInformation.java
     enum class AndroidConnectivity { Connected, Unknown, Disconnected };
     Q_ENUM(AndroidConnectivity);
 
@@ -68,11 +69,10 @@ public:
     static AndroidConnectivityManager *getInstance();
     ~AndroidConnectivityManager();
 
-    AndroidConnectivity networkConnectivity();
     inline bool isValid() const { return m_connectivityManager.isValid(); }
 
 Q_SIGNALS:
-    void connectivityChanged();
+    void connectivityChanged(AndroidConnectivity connectivity);
     void captivePortalChanged(bool state);
     void transportMediumChanged(AndroidTransport transport);
 
