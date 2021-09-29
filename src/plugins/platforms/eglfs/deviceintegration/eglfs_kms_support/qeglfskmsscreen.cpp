@@ -254,4 +254,13 @@ void QEglFSKmsScreen::setPowerState(QPlatformScreen::PowerState state)
     m_powerState = state;
 }
 
+/* Informs exact page flip timing which can be used rendering optimization.
+   Consider this is from drm event reader thread. */
+void QEglFSKmsScreen::pageFlipped(unsigned int sequence, unsigned int tv_sec, unsigned int tv_usec)
+{
+    Q_UNUSED(sequence);
+    Q_UNUSED(tv_sec);
+    Q_UNUSED(tv_usec);
+}
+
 QT_END_NAMESPACE

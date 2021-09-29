@@ -115,6 +115,7 @@ public:
     bool isCursorOutOfRange() const { return m_cursorOutOfRange; }
     void setCursorOutOfRange(bool b) { m_cursorOutOfRange = b; }
 
+    virtual void pageFlipped(unsigned int sequence, unsigned int tv_sec, unsigned int tv_usec);
 protected:
     QEglFSKmsDevice *m_device;
 
