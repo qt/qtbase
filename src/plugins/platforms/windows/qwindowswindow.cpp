@@ -1345,6 +1345,7 @@ void QWindowCreationContext::applyToMinMaxInfo(MINMAXINFO *mmi) const
 const char *QWindowsWindow::embeddedNativeParentHandleProperty = "_q_embedded_native_parent_handle";
 const char *QWindowsWindow::hasBorderInFullScreenProperty = "_q_has_border_in_fullscreen";
 bool QWindowsWindow::m_borderInFullScreenDefault = false;
+bool QWindowsWindow::m_inSetgeometry = false;
 
 QWindowsWindow::QWindowsWindow(QWindow *aWindow, const QWindowsWindowData &data) :
     QWindowsBaseWindow(aWindow),
@@ -1842,14 +1843,29 @@ void QWindowsWindow::handleDpiChanged(HWND hwnd, WPARAM wParam, LPARAM lParam)
     // Send screen change first, so that the new sceen is set during any following resize
     checkForScreenChanged(QWindowsWindow::FromDpiChange);
 
-    // Apply the suggested window geometry to the native window. This will make
-    // sure the window tracks the mouse cursor during screen change, and also
-    // that the window size is scaled according to the DPI change.
-    updateFullFrameMargins();
-    const auto prcNewWindow = reinterpret_cast<RECT *>(lParam);
-    SetWindowPos(hwnd, nullptr, prcNewWindow->left, prcNewWindow->top,
-                 prcNewWindow->right - prcNewWindow->left,
-                 prcNewWindow->bottom - prcNewWindow->top, SWP_NOZORDER | SWP_NOACTIVATE);
+    // We get WM_DPICHANGED in one of two situations:
+    //
+    // 1. The DPI change is a "spontaneous" DPI change as a result of e.g.
+    // the user dragging the window to a new screen. In this case Windows
+    // first sends WM_GETDPISCALEDSIZE, where we set the new window size,
+    // followed by this event where we apply the suggested window geometry
+    // to the native window. This will make sure the window tracks the mouse
+    // cursor during screen change, and also that the window size is scaled
+    // according to the DPI change.
+    //
+    // 2. The DPI change is a result of a setGeometry() call. In this case
+    // Qt has already scaled the window size for the new DPI. Further, Windows
+    // does not call WM_GETDPISCALEDSIZE, and also applies its own scaling
+    // to the already scaled window size. Since there is no need to set the
+    // window geometry again, and the provided geometry is incorrect, we omit
+    // making the SetWindowPos() call.
+    if (!m_inSetgeometry) {
+        updateFullFrameMargins();
+        const auto prcNewWindow = reinterpret_cast<RECT *>(lParam);
+        SetWindowPos(hwnd, nullptr, prcNewWindow->left, prcNewWindow->top,
+                     prcNewWindow->right - prcNewWindow->left,
+                     prcNewWindow->bottom - prcNewWindow->top, SWP_NOZORDER | SWP_NOACTIVATE);
+    }
 
     // Scale child QPlatformWindow size. Windows sends WM_DPICHANGE to top-level windows only.
     for (QWindow *childWindow : window()->findChildren<QWindow *>()) {
@@ -1930,6 +1946,8 @@ static QString msgUnableToSetGeometry(const QWindowsWindow *platformWindow,
 
 void QWindowsWindow::setGeometry(const QRect &rectIn)
 {
+    QBoolBlocker b(m_inSetgeometry);
+
     QRect rect = rectIn;
     // This means it is a call from QWindow::setFramePosition() and
     // the coordinates include the frame (size is still the contents rectangle).
