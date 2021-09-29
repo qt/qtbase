@@ -46,6 +46,8 @@
 #endif
 #endif
 
+#include <unistd.h> // Defines _POSIX_THREAD_SAFE_FUNCTIONS and others
+
 // Get Qt defines/settings
 
 #include "qglobal.h"
