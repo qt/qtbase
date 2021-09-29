@@ -101,13 +101,17 @@ function(qt_internal_add_docs)
     # prepare docs target
     set(prepare_qdoc_args
         -outputdir "${qdoc_output_dir}"
-        -installdir "${QT_INSTALL_DIR}/${INSTALL_DOCDIR}"
         "${target_source_dir}/${doc_project}"
         -prepare
         -indexdir "${index_dir}"
         -no-link-errors
         "${include_path_args}"
     )
+    if(NOT QT_BUILD_ONLINE_DOCS)
+        list(PREPEND prepare_qdoc_args
+            -installdir "${QT_INSTALL_DIR}/${INSTALL_DOCDIR}"
+        )
+    endif()
 
     if(QT_SUPERBUILD)
         set(qt_install_docs_env "${QtBase_BINARY_DIR}/${INSTALL_DOCDIR}")
@@ -136,12 +140,16 @@ function(qt_internal_add_docs)
     # generate docs target
     set(generate_qdocs_args
         -outputdir "${qdoc_output_dir}"
-        -installdir "${INSTALL_DOCDIR}"
         "${target_source_dir}/${doc_project}"
         -generate
         -indexdir "${index_dir}"
         "${include_path_args}"
     )
+    if(NOT QT_BUILD_ONLINE_DOCS)
+        list(PREPEND generate_qdoc_args
+            -installdir "${QT_INSTALL_DIR}/${INSTALL_DOCDIR}"
+        )
+    endif()
 
     foreach(target_prefix generate_top_level_docs generate_repo_docs generate_docs)
         set(depends_arg "")
