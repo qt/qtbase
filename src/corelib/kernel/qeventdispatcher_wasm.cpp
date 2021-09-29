@@ -206,10 +206,12 @@ bool QEventDispatcherWasm::processEvents(QEventLoop::ProcessEventsFlags flags)
     qCDebug(lcEventDispatcher) << "QEventDispatcherWasm::processEvents flags" << flags
                                << "pending events" << hasPendingEvents;
 
-    if (flags & QEventLoop::DialogExec)
-        handleDialogExec();
-    else if (flags & QEventLoop::EventLoopExec)
-        handleEventLoopExec();
+    if (isMainThreadEventDispatcher()) {
+        if (flags & QEventLoop::DialogExec)
+            handleDialogExec();
+        else if (flags & QEventLoop::EventLoopExec)
+            handleEventLoopExec();
+    }
 
     if (!(flags & QEventLoop::ExcludeUserInputEvents))
         pollForNativeEvents();
