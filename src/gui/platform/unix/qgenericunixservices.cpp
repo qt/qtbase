@@ -186,14 +186,6 @@ static inline bool checkNeedPortalSupport()
     return !QStandardPaths::locate(QStandardPaths::RuntimeLocation, QLatin1String("flatpak-info")).isEmpty() || qEnvironmentVariableIsSet("SNAP");
 }
 
-static inline bool isPortalReturnPermanent(const QDBusError &error)
-{
-    // A service unknown error isn't permanent, it just indicates that we
-    // should fall back to the regular way. This check includes
-    // QDBusError::NoError.
-    return error.type() != QDBusError::ServiceUnknown && error.type() != QDBusError::AccessDenied;
-}
-
 static inline QDBusMessage xdgDesktopPortalOpenFile(const QUrl &url)
 {
     // DBus signature:
@@ -312,8 +304,8 @@ bool QGenericUnixServices::openUrl(const QUrl &url)
 #if QT_CONFIG(dbus)
         if (checkNeedPortalSupport()) {
             QDBusError error = xdgDesktopPortalSendEmail(url);
-            if (isPortalReturnPermanent(error))
-                return !error.isValid();
+            if (!error.isValid())
+                return true;
 
             // service not running, fall back
         }
@@ -324,8 +316,8 @@ bool QGenericUnixServices::openUrl(const QUrl &url)
 #if QT_CONFIG(dbus)
     if (checkNeedPortalSupport()) {
         QDBusError error = xdgDesktopPortalOpenUrl(url);
-        if (isPortalReturnPermanent(error))
-            return !error.isValid();
+        if (!error.isValid())
+            return true;
     }
 #endif
 
@@ -341,8 +333,8 @@ bool QGenericUnixServices::openDocument(const QUrl &url)
 #if QT_CONFIG(dbus)
     if (checkNeedPortalSupport()) {
         QDBusError error = xdgDesktopPortalOpenFile(url);
-        if (isPortalReturnPermanent(error))
-            return !error.isValid();
+        if (!error.isValid())
+            return true;
     }
 #endif
 
