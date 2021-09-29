@@ -3,7 +3,9 @@ qt_internal_add_plugin(QNLMNIPlugin
     CLASS_NAME QNetworkListManagerNetworkInformationBackendFactory
     PLUGIN_TYPE networkinformation
     DEFAULT_IF WIN32 AND QT_FEATURE_networklistmanager
-    SOURCES qnetworklistmanagernetworkinformationbackend.cpp
+    SOURCES
+        qnetworklistmanagernetworkinformationbackend.cpp
+        qnetworklistmanagerevents.h qnetworklistmanagerevents.cpp
     LIBRARIES
         Qt::NetworkPrivate
 )

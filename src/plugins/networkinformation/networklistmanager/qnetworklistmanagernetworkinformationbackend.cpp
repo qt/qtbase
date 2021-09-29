@@ -39,42 +39,20 @@
 
 #include <QtNetwork/private/qnetworkinformation_p.h>
 
+#include "qnetworklistmanagerevents.h"
+
 #include <QtCore/qglobal.h>
 #include <QtCore/private/qobject_p.h>
 #include <QtCore/qscopeguard.h>
 
-#include <objbase.h>
-#include <netlistmgr.h>
-#include <wrl/client.h>
-#include <wrl/wrappers/corewrappers.h>
-#include <comdef.h>
-#include <iphlpapi.h>
-using namespace Microsoft::WRL;
-
 QT_BEGIN_NAMESPACE
-Q_DECLARE_LOGGING_CATEGORY(lcNetInfoNLM)
+
+// Declared in qnetworklistmanagerevents.h
 Q_LOGGING_CATEGORY(lcNetInfoNLM, "qt.network.info.netlistmanager");
 
 static const QString backendName = QStringLiteral("networklistmanager");
 
 namespace {
-QString errorStringFromHResult(HRESULT hr)
-{
-    _com_error error(hr);
-    return QString::fromWCharArray(error.ErrorMessage());
-}
-
-template<typename T>
-bool QueryInterfaceImpl(IUnknown *from, REFIID riid, void **ppvObject)
-{
-    if (riid == __uuidof(T)) {
-        *ppvObject = static_cast<T *>(from);
-        from->AddRef();
-        return true;
-    }
-    return false;
-}
-
 bool testCONNECTIVITY(NLM_CONNECTIVITY connectivity, NLM_CONNECTIVITY flag)
 {
     return (connectivity & flag) == flag;
@@ -105,7 +83,6 @@ QNetworkInformation::Reachability reachabilityFromNLM_CONNECTIVITY(NLM_CONNECTIV
 }
 }
 
-class QNetworkListManagerEvents;
 class QNetworkListManagerNetworkInformationBackend : public QNetworkInformationBackend
 {
     Q_OBJECT
@@ -171,164 +148,6 @@ public:
         return backend;
     }
 };
-
-class QNetworkListManagerEvents : public QObject, public INetworkListManagerEvents
-{
-    Q_OBJECT
-public:
-    QNetworkListManagerEvents();
-    virtual ~QNetworkListManagerEvents();
-
-    HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void **ppvObject) override;
-
-    ULONG STDMETHODCALLTYPE AddRef() override { return ++ref; }
-    ULONG STDMETHODCALLTYPE Release() override
-    {
-        if (--ref == 0) {
-            delete this;
-            return 0;
-        }
-        return ref;
-    }
-
-    HRESULT STDMETHODCALLTYPE ConnectivityChanged(NLM_CONNECTIVITY newConnectivity) override;
-
-    [[nodiscard]] bool start();
-    bool stop();
-
-    [[nodiscard]] bool checkBehindCaptivePortal();
-
-signals:
-    void connectivityChanged(NLM_CONNECTIVITY);
-
-private:
-    ComPtr<INetworkListManager> networkListManager = nullptr;
-    ComPtr<IConnectionPoint> connectionPoint = nullptr;
-
-    QAtomicInteger<ULONG> ref = 0;
-    DWORD cookie = 0;
-};
-
-QNetworkListManagerEvents::QNetworkListManagerEvents() : QObject(nullptr)
-{
-    auto hr = CoCreateInstance(CLSID_NetworkListManager, nullptr, CLSCTX_INPROC_SERVER,
-                               IID_INetworkListManager, &networkListManager);
-    if (FAILED(hr)) {
-        qCWarning(lcNetInfoNLM) << "Could not get a NetworkListManager instance:"
-                                << errorStringFromHResult(hr);
-        return;
-    }
-
-    ComPtr<IConnectionPointContainer> connectionPointContainer;
-    hr = networkListManager.As(&connectionPointContainer);
-    if (SUCCEEDED(hr)) {
-        hr = connectionPointContainer->FindConnectionPoint(IID_INetworkListManagerEvents,
-                                                           &connectionPoint);
-    }
-    if (FAILED(hr)) {
-        qCWarning(lcNetInfoNLM) << "Failed to get connection point for network list manager events:"
-                                << errorStringFromHResult(hr);
-    }
-}
-
-QNetworkListManagerEvents::~QNetworkListManagerEvents()
-{
-    Q_ASSERT(ref == 0);
-}
-
-HRESULT STDMETHODCALLTYPE QNetworkListManagerEvents::QueryInterface(REFIID riid, void **ppvObject)
-{
-    if (!ppvObject)
-        return E_INVALIDARG;
-
-    return QueryInterfaceImpl<IUnknown>(this, riid, ppvObject)
-                    || QueryInterfaceImpl<INetworkListManagerEvents>(this, riid, ppvObject)
-            ? S_OK
-            : E_NOINTERFACE;
-}
-
-HRESULT STDMETHODCALLTYPE
-QNetworkListManagerEvents::ConnectivityChanged(NLM_CONNECTIVITY newConnectivity)
-{
-    // This function is run on a different thread than 'monitor' is created on, so we need to run
-    // it on that thread
-    emit connectivityChanged(newConnectivity);
-    return S_OK;
-}
-
-bool QNetworkListManagerEvents::start()
-{
-    if (!connectionPoint) {
-        qCWarning(lcNetInfoNLM, "Initialization failed, can't start!");
-        return false;
-    }
-    auto hr = connectionPoint->Advise(this, &cookie);
-    if (FAILED(hr)) {
-        qCWarning(lcNetInfoNLM) << "Failed to subscribe to network connectivity events:"
-                                << errorStringFromHResult(hr);
-        return false;
-    }
-
-    // Update connectivity since it might have changed since this class was constructed
-    NLM_CONNECTIVITY connectivity;
-    hr = networkListManager->GetConnectivity(&connectivity);
-    if (FAILED(hr))
-        qCWarning(lcNetInfoNLM) << "Could not get connectivity:" << errorStringFromHResult(hr);
-    else
-        emit connectivityChanged(connectivity);
-    return true;
-}
-
-bool QNetworkListManagerEvents::stop()
-{
-    Q_ASSERT(connectionPoint);
-    auto hr = connectionPoint->Unadvise(cookie);
-    if (FAILED(hr)) {
-        qCWarning(lcNetInfoNLM) << "Failed to unsubscribe from network connectivity events:"
-                                << errorStringFromHResult(hr);
-        return false;
-    }
-    cookie = 0;
-    return true;
-}
-
-bool QNetworkListManagerEvents::checkBehindCaptivePortal()
-{
-    if (!networkListManager)
-        return false;
-    ComPtr<IEnumNetworks> networks;
-    HRESULT hr =
-            networkListManager->GetNetworks(NLM_ENUM_NETWORK_CONNECTED, networks.GetAddressOf());
-    if (FAILED(hr) || networks == nullptr)
-        return false;
-
-    // @note: This checks all connected networks, but that might not be necessary
-    ComPtr<INetwork> network;
-    hr = networks->Next(1, network.GetAddressOf(), nullptr);
-    while (SUCCEEDED(hr) && network != nullptr) {
-        ComPtr<IPropertyBag> propertyBag;
-        hr = network.As(&propertyBag);
-        if (SUCCEEDED(hr) && propertyBag != nullptr) {
-            VARIANT variant;
-            VariantInit(&variant);
-            const auto scopedVariantClear = qScopeGuard([&variant]() { VariantClear(&variant); });
-
-            const wchar_t *versions[] = { NA_InternetConnectivityV6, NA_InternetConnectivityV4 };
-            for (const auto version : versions) {
-                hr = propertyBag->Read(version, &variant, nullptr);
-                if (SUCCEEDED(hr)
-                    && (V_UINT(&variant) & NLM_INTERNET_CONNECTIVITY_WEBHIJACK)
-                            == NLM_INTERNET_CONNECTIVITY_WEBHIJACK) {
-                    return true;
-                }
-            }
-        }
-
-        hr = networks->Next(1, network.GetAddressOf(), nullptr);
-    }
-
-    return false;
-}
 
 QNetworkListManagerNetworkInformationBackend::QNetworkListManagerNetworkInformationBackend()
 {
