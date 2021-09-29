@@ -131,7 +131,10 @@ QByteArrayMatcher::QByteArrayMatcher()
 QByteArrayMatcher::QByteArrayMatcher(const char *pattern, qsizetype length) : d(nullptr)
 {
     p.p = reinterpret_cast<const uchar *>(pattern);
-    p.l = length;
+    if (length < 0)
+        p.l = qstrlen(pattern);
+    else
+        p.l = length;
     bm_init_skiptable(p.p, p.l, p.q_skiptable);
 }
 
@@ -146,6 +149,15 @@ QByteArrayMatcher::QByteArrayMatcher(const QByteArray &pattern)
     p.l = pattern.size();
     bm_init_skiptable(p.p, p.l, p.q_skiptable);
 }
+
+/*!
+    \fn QByteArrayMatcher::QByteArrayMatcher(QByteArrayView pattern)
+    \since 6.3
+    \overload
+
+    Constructs a byte array matcher that will search for \a pattern.
+    Call indexIn() to perform a search.
+*/
 
 /*!
     Copies the \a other byte array matcher to this byte array matcher.
@@ -217,6 +229,18 @@ qsizetype QByteArrayMatcher::indexIn(const char *str, qsizetype len, qsizetype f
     return bm_find(reinterpret_cast<const uchar *>(str), len, from,
                    p.p, p.l, p.q_skiptable);
 }
+
+/*!
+    \fn qsizetype QByteArrayMatcher::indexIn(QByteArrayView data, qsizetype from) const
+    \since 6.3
+    \overload
+
+    Searches the byte array \a view, from byte position \a from (default
+    0, i.e. from the first byte), for the byte array pattern() that
+    was set in the constructor or in the most recent call to
+    setPattern(). Returns the position where the pattern() matched in
+    \a data, or -1 if no match was found.
+*/
 
 /*!
     \fn QByteArray QByteArrayMatcher::pattern() const

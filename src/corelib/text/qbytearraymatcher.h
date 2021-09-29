@@ -54,7 +54,10 @@ class Q_CORE_EXPORT QByteArrayMatcher
 public:
     QByteArrayMatcher();
     explicit QByteArrayMatcher(const QByteArray &pattern);
-    explicit QByteArrayMatcher(const char *pattern, qsizetype length);
+    explicit QByteArrayMatcher(QByteArrayView pattern)
+        : QByteArrayMatcher(pattern.data(), pattern.size())
+    {}
+    explicit QByteArrayMatcher(const char *pattern, qsizetype length = -1);
     QByteArrayMatcher(const QByteArrayMatcher &other);
     ~QByteArrayMatcher();
 
@@ -64,6 +67,10 @@ public:
 
     qsizetype indexIn(const QByteArray &ba, qsizetype from = 0) const;
     qsizetype indexIn(const char *str, qsizetype len, qsizetype from = 0) const;
+    qsizetype indexIn(QByteArrayView data, qsizetype from = 0) const
+    {
+        return indexIn(data.data(), data.size(), from);
+    }
     inline QByteArray pattern() const
     {
         if (q_pattern.isNull())
