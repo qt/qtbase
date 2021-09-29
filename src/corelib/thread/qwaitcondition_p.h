@@ -58,12 +58,20 @@
 #include <condition_variable>
 #include <mutex>
 
+// There's no feature macro for C++11 std::mutex, so we use the C++14 one
+// for shared_mutex to detect it.
+// Needed for: MinGW without gthreads, Integrity
+#if __has_include(<shared_mutex>)
+#  include <shared_mutex>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 namespace QtPrivate {
 
-#if defined(Q_OS_INTEGRITY)
+#if !defined(__cpp_lib_shared_timed_mutex)
 
+enum class cv_status { no_timeout, timeout };
 class condition_variable;
 
 class mutex : private QMutex
@@ -97,12 +105,12 @@ public:
     }
 
     template <typename Rep, typename Period>
-    std::cv_status wait_for(std::unique_lock<QtPrivate::mutex> &lock,
+    cv_status wait_for(std::unique_lock<QtPrivate::mutex> &lock,
                             const std::chrono::duration<Rep, Period> &d)
     {
         return QWaitCondition::wait(lock.mutex(), QDeadlineTimer{d})
-                ? std::cv_status::no_timeout
-                : std::cv_status::timeout;
+                ? cv_status::no_timeout
+                : cv_status::timeout;
     }
     template <typename Rep, typename Period, typename Predicate>
     bool wait_for(std::unique_lock<QtPrivate::mutex> &lock,
@@ -117,12 +125,12 @@ public:
     }
 
     template <typename Clock, typename Duration>
-    std::cv_status wait_until(std::unique_lock<QtPrivate::mutex> &lock,
+    cv_status wait_until(std::unique_lock<QtPrivate::mutex> &lock,
                               const std::chrono::time_point<Clock, Duration> &t)
     {
         return QWaitCondition::wait(lock.mutex(), QDeadlineTimer{t})
-                ? std::cv_status::no_timeout
-                : std::cv_status::timeout;
+                ? cv_status::no_timeout
+                : cv_status::timeout;
     }
 
     template <typename Clock, typename Duration, typename Predicate>
@@ -139,12 +147,12 @@ public:
 
 };
 
-#else // Integrity
+#else // C++11 threads
 
 using mutex = std::mutex;
 using condition_variable = std::condition_variable;
 
-#endif // Integrity
+#endif // C++11 threads
 
 } // namespace QtPrivate
 
