@@ -41,6 +41,7 @@
 #include "qlibrary_p.h"
 
 #include <q20algorithm.h>
+#include <qbytearraymatcher.h>
 #include <qdebug.h>
 #include <qendian.h>
 #include <qfile.h>
@@ -186,38 +187,17 @@ static qsizetype qt_find_pattern(const char *s, qsizetype s_len,
                              const char *pattern, ulong p_len)
 {
     /*
-      we search from the end of the file because on the supported
-      systems, the read-only data/text segments are placed at the end
-      of the file.  HOWEVER, when building with debugging enabled, all
-      the debug symbols are placed AFTER the data/text segments.
+      We used to search from the end of the file so we'd skip the code and find
+      the read-only data that usually follows. Unfortunately, in debug builds,
+      the debug sections come after and are usually much bigger than everything
+      else, making this process slower than necessary with debug plugins.
 
-      what does this mean?  when building in release mode, the search
-      is fast because the data we are looking for is at the end of the
-      file... when building in debug mode, the search is slower
-      because we have to skip over all the debugging symbols first
+      More importantly, the pattern string may exist in the debug information due
+      to it being used in the plugin in the first place.
     */
 
-    if (!s || !pattern || qsizetype(p_len) > s_len)
-        return -1;
-
-    size_t i, hs = 0, hp = 0, delta = s_len - p_len;
-
-    for (i = 0; i < p_len; ++i) {
-        hs += s[delta + i];
-        hp += pattern[i];
-    }
-    i = delta;
-    for (;;) {
-        if (hs == hp && qstrncmp(s + i, pattern, p_len) == 0)
-            return i;   // can't overflow, by construction
-        if (i == 0)
-            break;
-        --i;
-        hs -= s[i + p_len];
-        hs += s[i];
-    }
-
-    return -1;
+    static const QByteArrayMatcher matcher(QByteArray(pattern, p_len));
+    return matcher.indexIn(s, s_len);
 }
 
 /*
