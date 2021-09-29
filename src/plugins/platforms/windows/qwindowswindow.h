@@ -418,6 +418,7 @@ private:
     VkSurfaceKHR m_vkSurface = VK_NULL_HANDLE;
 #endif
     static bool m_borderInFullScreenDefault;
+    static bool m_inSetgeometry;
 };
 
 #ifndef QT_NO_DEBUG_STREAM
