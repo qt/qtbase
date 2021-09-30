@@ -377,7 +377,9 @@ void QCocoaWindow::setVisible(bool visible)
                     // Show the window as application modal
                     eventDispatcher()->beginModalSession(window());
                 } else if (m_view.window.canBecomeKeyWindow) {
-                    bool shouldBecomeKeyNow = !NSApp.modalWindow || m_view.window.worksWhenModal;
+                    bool shouldBecomeKeyNow = !NSApp.modalWindow
+                                              || m_view.window.worksWhenModal
+                                              || !NSApp.modalWindow.visible;
 
                     // Panels with becomesKeyOnlyIfNeeded set should not activate until a view
                     // with needsPanelToBecomeKey, for example a line edit, is clicked.

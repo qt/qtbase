@@ -433,6 +433,8 @@ private slots:
     void setParentChangesFocus_data();
     void setParentChangesFocus();
 
+    void activateWhileModalHidden();
+
 private:
     bool ensureScreenSize(int width, int height);
 
@@ -12168,6 +12170,25 @@ void tst_QWidget::setParentChangesFocus()
         QVERIFY(QTest::qWaitForWindowActive(secondary.get()));
     }
     QCOMPARE(QApplication::focusWidget()->objectName(), focusWidget);
+}
+
+void tst_QWidget::activateWhileModalHidden()
+{
+    QDialog dialog;
+    dialog.setWindowModality(Qt::ApplicationModal);
+    dialog.show();
+    QVERIFY(QTest::qWaitForWindowActive(&dialog));
+    QVERIFY(dialog.isActiveWindow());
+    QCOMPARE(QApplication::activeWindow(), &dialog);
+
+    dialog.hide();
+    QTRY_VERIFY(!dialog.isVisible());
+
+    QMainWindow window;
+    window.show();
+    QVERIFY(QTest::qWaitForWindowActive(&window));
+    QVERIFY(window.isActiveWindow());
+    QCOMPARE(QApplication::activeWindow(), &window);
 }
 
 QTEST_MAIN(tst_QWidget)
