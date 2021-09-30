@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtTest module of the Qt Toolkit.
@@ -106,23 +106,26 @@ void QTestJUnitStreamer::formatEnd(const QTestElement *element, QTestCharBuffer 
     QTest::qt_asprintf(formatted, "%s</%s>\n", indent, element->elementName());
 }
 
-void QTestJUnitStreamer::formatAttributes(const QTestElement* element, const QTestElementAttribute *attribute, QTestCharBuffer *formatted) const
+bool QTestJUnitStreamer::formatAttributes(const QTestElement* element,
+                                          const QTestElementAttribute *attribute,
+                                          QTestCharBuffer *formatted) const
 {
     if (!attribute || !formatted )
-        return;
+        return false;
 
     QTest::AttributeIndex attrindex = attribute->index();
 
     if (element && element->elementType() == QTest::LET_Text) {
         QTEST_ASSERT(attrindex == QTest::AI_Value);
-        QXmlTestLogger::xmlCdata(formatted, attribute->value());
-        return;
+        return QXmlTestLogger::xmlCdata(formatted, attribute->value());
     }
 
     QTestCharBuffer quotedValue;
-    QXmlTestLogger::xmlQuote(&quotedValue, attribute->value());
-    QTest::qt_asprintf(formatted, " %s=\"%s\"",
-        attribute->name(), quotedValue.constData());
+    if (QXmlTestLogger::xmlQuote(&quotedValue, attribute->value())) {
+        return QTest::qt_asprintf(formatted, " %s=\"%s\"",
+                                  attribute->name(), quotedValue.constData()) != 0;
+    }
+    return false;
 }
 
 void QTestJUnitStreamer::formatAfterAttributes(const QTestElement *element, QTestCharBuffer *formatted) const
@@ -176,8 +179,8 @@ void QTestJUnitStreamer::outputElementAttributes(const QTestElement* element, co
     QTestCharBuffer buf;
 
     for (auto *attribute : attributes) {
-        formatAttributes(element, attribute, &buf);
-        outputString(buf.data());
+        if (formatAttributes(element, attribute, &buf))
+            outputString(buf.data());
     }
 }
 

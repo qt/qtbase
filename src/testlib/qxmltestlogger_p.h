@@ -77,11 +77,11 @@ public:
     void addMessage(MessageTypes type, const QString &message,
                     const char *file = nullptr, int line = 0) override;
 
-    static int xmlCdata(QTestCharBuffer *dest, char const *src);
-    static int xmlQuote(QTestCharBuffer *dest, char const *src);
+    [[nodiscard]] static bool xmlCdata(QTestCharBuffer *dest, char const *src);
+    [[nodiscard]] static bool xmlQuote(QTestCharBuffer *dest, char const *src);
 private:
-    static int xmlCdata(QTestCharBuffer *dest, char const *src, qsizetype n);
-    static int xmlQuote(QTestCharBuffer *dest, char const *src, qsizetype n);
+    [[nodiscard]] static int xmlCdata(QTestCharBuffer *dest, char const *src, qsizetype n);
+    [[nodiscard]] static int xmlQuote(QTestCharBuffer *dest, char const *src, qsizetype n);
 
     XmlMode xmlmode;
 };

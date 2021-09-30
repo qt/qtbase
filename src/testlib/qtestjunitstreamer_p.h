@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtTest module of the Qt Toolkit.
@@ -71,7 +71,6 @@ class QTestJUnitStreamer
         void formatStart(const QTestElement *element, QTestCharBuffer *formatted) const;
         void formatEnd(const QTestElement *element, QTestCharBuffer *formatted) const;
         void formatAfterAttributes(const QTestElement *element, QTestCharBuffer *formatted) const;
-        void formatAttributes(const QTestElement *element, const QTestElementAttribute *attribute, QTestCharBuffer *formatted) const;
         void output(QTestElement *element) const;
         void outputElements(const std::vector<QTestElement*> &) const;
         void outputElementAttributes(const QTestElement *element, const std::vector<QTestElementAttribute*> &attributes) const;
@@ -79,6 +78,9 @@ class QTestJUnitStreamer
         void outputString(const char *msg) const;
 
     private:
+        [[nodiscard]] bool formatAttributes(const QTestElement *element,
+                                            const QTestElementAttribute *attribute,
+                                            QTestCharBuffer *formatted) const;
         static void indentForElement(const QTestElement* element, char* buf, int size);
 
         QJUnitTestLogger *testLogger;
