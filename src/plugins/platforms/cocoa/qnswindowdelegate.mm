@@ -112,6 +112,14 @@ static QCocoaWindow *toPlatformWindow(NSWindow *window)
     return QCocoaScreen::mapToNative(maximizedFrame);
 }
 
+- (BOOL)windowShouldZoom:(NSWindow*)window toFrame:(NSRect)newFrame
+{
+    QCocoaWindow *platformWindow = toPlatformWindow(window);
+    Q_ASSERT(platformWindow);
+    platformWindow->windowWillZoom();
+    return YES;
+}
+
 - (BOOL)window:(NSWindow *)window shouldPopUpDocumentPathMenu:(NSMenu *)menu
 {
     Q_UNUSED(menu);
