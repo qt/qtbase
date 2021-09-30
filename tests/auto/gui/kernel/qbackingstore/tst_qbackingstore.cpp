@@ -28,6 +28,7 @@
 
 #include <qwindow.h>
 #include <qbackingstore.h>
+#include <qpa/qplatformbackingstore.h>
 #include <qpainter.h>
 
 #include <QTest>
@@ -42,11 +43,102 @@ class tst_QBackingStore : public QObject
     Q_OBJECT
 
 private slots:
-    void flush();
+
+    void initTestCase_data();
+    void init();
+
+    void resize();
+    void paint();
 
     void scrollRectInImage_data();
     void scrollRectInImage();
+
+    void scroll();
+    void flush();
 };
+
+void tst_QBackingStore::initTestCase_data()
+{
+    QTest::addColumn<QSurfaceFormat::SwapBehavior>("swapBehavior");
+
+    QTest::newRow("single-buffer") << QSurfaceFormat::SingleBuffer;
+    QTest::newRow("double-buffer") << QSurfaceFormat::DoubleBuffer;
+}
+
+void tst_QBackingStore::init()
+{
+    QFETCH_GLOBAL(QSurfaceFormat::SwapBehavior, swapBehavior);
+
+    QSurfaceFormat defaultFormat = QSurfaceFormat::defaultFormat();
+    defaultFormat.setSwapBehavior(swapBehavior);
+    QSurfaceFormat::setDefaultFormat(defaultFormat);
+}
+
+void tst_QBackingStore::resize()
+{
+    QWindow window;
+    window.create();
+
+    QBackingStore backingStore(&window);
+
+    QRect rect(0, 0, 100, 100);
+    backingStore.resize(rect.size());
+    QCOMPARE(backingStore.size(), rect.size());
+
+    // The paint device should reflect the requested
+    // size, taking the window's DPR into account.
+    backingStore.beginPaint(rect);
+    auto paintDevice = backingStore.paintDevice();
+    QCOMPARE(paintDevice->devicePixelRatio(), window.devicePixelRatio());
+    QCOMPARE(QSize(paintDevice->width(), paintDevice->height()),
+        rect.size() * window.devicePixelRatio());
+    backingStore.endPaint();
+
+    // So should the platform backingstore when accessed as an QImage
+    QImage image = backingStore.handle()->toImage();
+    if (!image.isNull()) // toImage might not be implemented
+        QCOMPARE(image.size(), rect.size() * window.devicePixelRatio());
+}
+
+void tst_QBackingStore::paint()
+{
+    QWindow window;
+    window.create();
+
+    // The resize() test verifies that the backingstore image
+    // has a size that takes the window's DPR into account.
+    auto dpr = window.devicePixelRatio();
+
+    QBackingStore backingStore(&window);
+
+    QRect rect(0, 0, 100, 100);
+    backingStore.resize(rect.size());
+
+    // Two rounds, with flush in between
+    for (int i = 0; i < 2; ++i) {
+        backingStore.beginPaint(rect);
+        QPainter p(backingStore.paintDevice());
+        QColor bgColor = i ? Qt::red : Qt::blue;
+        QColor fgColor = i ? Qt::green : Qt::yellow;
+        p.fillRect(rect, bgColor);
+        p.fillRect(QRect(50, 50, 10, 10), fgColor);
+        p.end();
+        backingStore.endPaint();
+
+        QImage image = backingStore.handle()->toImage();
+        if (image.isNull())
+            QSKIP("Platform backingstore does not implement toImage");
+
+        QCOMPARE(image.pixelColor(50 * dpr, 50 * dpr), fgColor);
+        QCOMPARE(image.pixelColor(49 * dpr, 50 * dpr), bgColor);
+        QCOMPARE(image.pixelColor(50 * dpr, 49 * dpr), bgColor);
+        QCOMPARE(image.pixelColor(59 * dpr, 59 * dpr), fgColor);
+        QCOMPARE(image.pixelColor(60 * dpr, 59 * dpr), bgColor);
+        QCOMPARE(image.pixelColor(59 * dpr, 60 * dpr), bgColor);
+
+        backingStore.flush(rect);
+    }
+}
 
 void tst_QBackingStore::scrollRectInImage_data()
 {
@@ -82,6 +174,81 @@ void tst_QBackingStore::scrollRectInImage()
     QFETCH(QPoint, offset);
 
     qt_scrollRectInImage(test, rect, offset);
+}
+
+void tst_QBackingStore::scroll()
+{
+    QWindow window;
+    window.create();
+
+    // The resize() test verifies that the backingstore image
+    // has a size that takes the window's DPR into account.
+    auto dpr = window.devicePixelRatio();
+
+    QBackingStore backingStore(&window);
+    QRect rect(0, 0, 100, 100);
+
+    // Scrolling a backingstore without a size shouldn't crash
+    backingStore.scroll(rect, 10, 10);
+    backingStore.scroll(rect, -10, -10);
+
+    backingStore.resize(rect.size());
+
+    // Scrolling a backingstore without painting to it shouldn't crash
+    backingStore.scroll(rect, 10, 10);
+    backingStore.scroll(rect, -10, -10);
+
+    // Two rounds, with flush in between
+    for (int i = 0; i < 2; ++i) {
+
+        backingStore.beginPaint(rect);
+        QPainter p(backingStore.paintDevice());
+        QColor bgColor = i ? Qt::red : Qt::blue;
+        QColor fgColor = i ? Qt::green : Qt::yellow;
+        p.fillRect(rect, bgColor);
+        p.fillRect(QRect(50, 50, 10, 10), fgColor);
+        p.end();
+        backingStore.endPaint();
+
+        QImage image = backingStore.handle()->toImage();
+        if (image.isNull())
+            QSKIP("Platform backingstore does not implement toImage");
+
+        QCOMPARE(image.pixelColor(50 * dpr, 50 * dpr), fgColor);
+        QCOMPARE(image.pixelColor(49 * dpr, 50 * dpr), bgColor);
+        QCOMPARE(image.pixelColor(50 * dpr, 49 * dpr), bgColor);
+        QCOMPARE(image.pixelColor(59 * dpr, 59 * dpr), fgColor);
+        QCOMPARE(image.pixelColor(60 * dpr, 59 * dpr), bgColor);
+        QCOMPARE(image.pixelColor(59 * dpr, 60 * dpr), bgColor);
+        image = {};
+
+        bool supportsScroll = backingStore.scroll(QRect(52, 52, 6, 6), -12, -12);
+        if (!supportsScroll)
+            QSKIP("Platform backingstore does not support scrolling");
+
+        image = backingStore.handle()->toImage();
+        QCOMPARE(image.pixelColor(40 * dpr, 40 * dpr), fgColor);
+        QCOMPARE(image.pixelColor(39 * dpr, 40 * dpr), bgColor);
+        QCOMPARE(image.pixelColor(40 * dpr, 39 * dpr), bgColor);
+        QCOMPARE(image.pixelColor(45 * dpr, 45 * dpr), fgColor);
+        QCOMPARE(image.pixelColor(46 * dpr, 45 * dpr), bgColor);
+        QCOMPARE(image.pixelColor(45 * dpr, 46 * dpr), bgColor);
+        image = {};
+
+        backingStore.flush(rect);
+
+        // Scroll again after flush, but before new round of painting
+        backingStore.scroll(QRect(52, 52, 6, 6), 12, 12);
+
+        image = backingStore.handle()->toImage();
+        QCOMPARE(image.pixelColor(64 * dpr, 64 * dpr), fgColor);
+        QCOMPARE(image.pixelColor(63 * dpr, 64 * dpr), bgColor);
+        QCOMPARE(image.pixelColor(64 * dpr, 63 * dpr), bgColor);
+        QCOMPARE(image.pixelColor(69 * dpr, 69 * dpr), fgColor);
+        QCOMPARE(image.pixelColor(70 * dpr, 69 * dpr), bgColor);
+        QCOMPARE(image.pixelColor(69 * dpr, 70 * dpr), bgColor);
+        image = {};
+    }
 }
 
 class Window : public QWindow
