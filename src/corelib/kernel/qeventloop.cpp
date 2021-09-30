@@ -199,9 +199,7 @@ int QEventLoop::exec(ProcessEventsFlags flags)
             if (exceptionCaught) {
                 qWarning("Qt has caught an exception thrown from an event handler. Throwing\n"
                          "exceptions from an event handler is not supported in Qt.\n"
-                         "You must not let any exception whatsoever propagate through Qt code.\n"
-                         "If that is not possible, in Qt 5 you must at least reimplement\n"
-                         "QCoreApplication::notify() and catch all exceptions there.\n");
+                         "You must not let any exception whatsoever propagate through Qt code.");
             }
             locker.relock();
             auto threadData = d->threadData.loadRelaxed();
