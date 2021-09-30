@@ -2486,6 +2486,24 @@ void tst_QWidget::activation()
 }
 #endif // Q_OS_WIN
 
+struct WindowStateChangeWatcher : public QObject
+{
+    WindowStateChangeWatcher(QWidget *widget)
+    {
+        Q_ASSERT(widget->window()->windowHandle());
+        widget->window()->windowHandle()->installEventFilter(this);
+        lastWindowStates = widget->window()->windowHandle()->windowState();
+    }
+    Qt::WindowStates lastWindowStates;
+protected:
+    bool eventFilter(QObject *receiver, QEvent *event) override
+    {
+        if (event->type() == QEvent::WindowStateChange)
+            lastWindowStates = static_cast<QWindow *>(receiver)->windowState();
+        return QObject::eventFilter(receiver, event);
+    }
+};
+
 void tst_QWidget::windowState()
 {
 #ifdef Q_OS_MACOS
@@ -3165,10 +3183,6 @@ void tst_QWidget::hideWhenFocusWidgetIsChild()
 
 void tst_QWidget::normalGeometry()
 {
-#ifdef Q_OS_MACOS
-    QSKIP("QTBUG-52974");
-#endif
-
     if (m_platform == QStringLiteral("wayland"))
         QSKIP("Wayland: This fails. Figure out why.");
     QWidget parent;
@@ -3179,96 +3193,101 @@ void tst_QWidget::normalGeometry()
     QCOMPARE(parent.normalGeometry(), parent.geometry());
     QCOMPARE(child->normalGeometry(), QRect());
 
-    const QRect testGeom = QRect(m_availableTopLeft + QPoint(100 ,100), m_testWidgetSize);
-    parent.setGeometry(testGeom);
+    parent.setGeometry(QRect(m_availableTopLeft + QPoint(100 ,100), m_testWidgetSize));
     parent.showNormal();
     QVERIFY(QTest::qWaitForWindowExposed(&parent));
-    QApplication::processEvents();
+    WindowStateChangeWatcher stateChangeWatcher(&parent);
 
-    QRect geom = parent.geometry();
-    // ### the window manager places the top-left corner at
-    // ### 100,100... making geom something like 102,124 (offset by
-    // ### the frame/frame)... this indicates a rather large different
-    // ### between how X11 and Windows works
-    // QCOMPARE(geom, QRect(100, 100, 200, 200));
-    QCOMPARE(parent.normalGeometry(), geom);
+    const QRect normalGeometry = parent.geometry();
+    // We can't make any assumptions about the actual geometry compared to the
+    // requested geometry. In this test, we only care about normalGeometry.
+    QCOMPARE(parent.normalGeometry(), normalGeometry);
 
     parent.setWindowState(parent.windowState() ^ Qt::WindowMaximized);
     QTRY_VERIFY(parent.windowState() & Qt::WindowMaximized);
-    QTRY_VERIFY(parent.geometry() != geom);
-    QTRY_COMPARE(parent.normalGeometry(), geom);
+    QTRY_COMPARE(stateChangeWatcher.lastWindowStates, parent.windowState());
+    QTRY_VERIFY(parent.geometry() != normalGeometry);
+    QTRY_COMPARE(parent.normalGeometry(), normalGeometry);
 
     parent.setWindowState(parent.windowState() ^ Qt::WindowMaximized);
     QTRY_VERIFY(!(parent.windowState() & Qt::WindowMaximized));
-    QTRY_COMPARE(parent.geometry(), geom);
-    QTRY_COMPARE(parent.normalGeometry(), geom);
+    QTRY_COMPARE(stateChangeWatcher.lastWindowStates, parent.windowState());
+    QTRY_COMPARE(parent.geometry(), normalGeometry);
+    QTRY_COMPARE(parent.normalGeometry(), normalGeometry);
 
     parent.showMaximized();
-    QTRY_VERIFY(parent.windowState() & Qt::WindowMaximized);
-    QTRY_VERIFY(parent.geometry() != geom);
-    QCOMPARE(parent.normalGeometry(), geom);
+    QTRY_VERIFY(parent.windowHandle()->windowState() & Qt::WindowMaximized);
+    QTRY_COMPARE(stateChangeWatcher.lastWindowStates, parent.windowState());
+    QTRY_VERIFY(parent.geometry() != normalGeometry);
+    QCOMPARE(parent.normalGeometry(), normalGeometry);
 
     parent.showNormal();
     QTRY_VERIFY(!(parent.windowState() & Qt::WindowMaximized));
-    QTRY_COMPARE(parent.geometry(), geom);
-    QCOMPARE(parent.normalGeometry(), geom);
+    QTRY_COMPARE(stateChangeWatcher.lastWindowStates, parent.windowState());
+    QTRY_COMPARE(parent.geometry(), normalGeometry);
+    QCOMPARE(parent.normalGeometry(), normalGeometry);
 
-    parent.setWindowState(parent.windowState() ^ Qt::WindowMinimized);
-    QTest::qWait(10);
-    parent.setWindowState(parent.windowState() ^ Qt::WindowMaximized);
-    QTest::qWait(10);
+    parent.setWindowState(parent.windowState() ^ Qt::WindowFullScreen);
+    QTRY_VERIFY(parent.windowState() & Qt::WindowFullScreen);
+    QTRY_COMPARE(stateChangeWatcher.lastWindowStates, parent.windowState());
+    QTRY_VERIFY(parent.geometry() != normalGeometry);
+    QTRY_COMPARE(parent.normalGeometry(), normalGeometry);
+
+    parent.setWindowState(Qt::WindowNoState);
+    QTRY_VERIFY(!(parent.windowState() & Qt::WindowFullScreen));
+    QTRY_COMPARE(stateChangeWatcher.lastWindowStates, parent.windowState());
+    QTRY_COMPARE(parent.geometry(), normalGeometry);
+    QTRY_COMPARE(parent.normalGeometry(), normalGeometry);
+
+    parent.showFullScreen();
+    QTRY_VERIFY(parent.window()->windowState() & Qt::WindowFullScreen);
+    QTRY_COMPARE(stateChangeWatcher.lastWindowStates, parent.windowState());
+    QTRY_VERIFY(parent.geometry() != normalGeometry);
+    QTRY_COMPARE(parent.normalGeometry(), normalGeometry);
+
+    parent.showNormal();
+    QTRY_VERIFY(!(parent.windowHandle()->windowState() & Qt::WindowFullScreen));
+    QTRY_COMPARE(stateChangeWatcher.lastWindowStates, parent.windowState());
+    QTRY_COMPARE(parent.geometry(), normalGeometry);
+    QTRY_COMPARE(parent.normalGeometry(), normalGeometry);
+
     if (m_platform == QStringLiteral("xcb"))
         QSKIP("QTBUG-26424");
-    QTRY_VERIFY(parent.windowState() & (Qt::WindowMinimized|Qt::WindowMaximized));
+
+    parent.setWindowState(parent.windowState() ^ Qt::WindowMaximized);
+    QTRY_VERIFY(stateChangeWatcher.lastWindowStates & Qt::WindowMaximized);
+    parent.setWindowState(parent.windowState() ^ Qt::WindowMinimized);
+    QTRY_VERIFY(stateChangeWatcher.lastWindowStates & Qt::WindowMinimized);
+
+    QTRY_COMPARE(parent.windowState() & (Qt::WindowMinimized|Qt::WindowMaximized), Qt::WindowMinimized|Qt::WindowMaximized);
+    QTRY_VERIFY(stateChangeWatcher.lastWindowStates & (Qt::WindowMinimized|Qt::WindowMaximized));
     // ### when minimized and maximized at the same time, the geometry
     // ### does *NOT* have to be the normal geometry, it could be the
     // ### maximized geometry.
     // QCOMPARE(parent.geometry(), geom);
-    QTRY_COMPARE(parent.normalGeometry(), geom);
+    QTRY_COMPARE(parent.normalGeometry(), normalGeometry);
 
     parent.setWindowState(parent.windowState() ^ Qt::WindowMinimized);
-    QTest::qWait(10);
     QTRY_VERIFY(!(parent.windowState() & Qt::WindowMinimized));
     QTRY_VERIFY(parent.windowState() & Qt::WindowMaximized);
-    QTRY_VERIFY(parent.geometry() != geom);
-    QTRY_COMPARE(parent.normalGeometry(), geom);
+    QTRY_COMPARE(stateChangeWatcher.lastWindowStates, parent.windowState());
+    QTRY_VERIFY(parent.geometry() != normalGeometry);
+    QTRY_COMPARE(parent.normalGeometry(), normalGeometry);
 
     parent.setWindowState(parent.windowState() ^ Qt::WindowMaximized);
-    QTest::qWait(10);
     QTRY_VERIFY(!(parent.windowState() & Qt::WindowMaximized));
-    QTRY_COMPARE(parent.geometry(), geom);
-    QTRY_COMPARE(parent.normalGeometry(), geom);
-
-    parent.setWindowState(parent.windowState() ^ Qt::WindowFullScreen);
-    QTest::qWait(10);
-    QTRY_VERIFY(parent.windowState() & Qt::WindowFullScreen);
-    QTRY_VERIFY(parent.geometry() != geom);
-    QTRY_COMPARE(parent.normalGeometry(), geom);
-
-    parent.setWindowState(parent.windowState() ^ Qt::WindowFullScreen);
-    QTest::qWait(10);
-    QVERIFY(!(parent.windowState() & Qt::WindowFullScreen));
-    QTRY_COMPARE(parent.geometry(), geom);
-    QTRY_COMPARE(parent.normalGeometry(), geom);
-
-    parent.showFullScreen();
-    QTest::qWait(10);
-    QTRY_VERIFY(parent.windowState() & Qt::WindowFullScreen);
-    QTRY_VERIFY(parent.geometry() != geom);
-    QTRY_COMPARE(parent.normalGeometry(), geom);
+    QTRY_COMPARE(stateChangeWatcher.lastWindowStates, parent.windowState());
+    QTRY_COMPARE(parent.geometry(), normalGeometry);
+    QTRY_COMPARE(parent.normalGeometry(), normalGeometry);
 
     parent.showNormal();
-    QTest::qWait(10);
-    QTRY_VERIFY(!(parent.windowState() & Qt::WindowFullScreen));
-    QTRY_COMPARE(parent.geometry(), geom);
-    QTRY_COMPARE(parent.normalGeometry(), geom);
-
-    parent.showNormal();
+    stateChangeWatcher.lastWindowStates = {};
     parent.setWindowState(Qt:: WindowFullScreen | Qt::WindowMaximized);
     parent.setWindowState(Qt::WindowMinimized | Qt:: WindowFullScreen | Qt::WindowMaximized);
     parent.setWindowState(Qt:: WindowFullScreen | Qt::WindowMaximized);
-    QTest::qWait(10);
-    QTRY_COMPARE(parent.normalGeometry(), geom);
+    // the actual window will be either fullscreen or maximized
+    QTRY_VERIFY(stateChangeWatcher.lastWindowStates & (Qt:: WindowFullScreen | Qt::WindowMaximized));
+    QTRY_COMPARE(parent.normalGeometry(), normalGeometry);
 }
 
 void tst_QWidget::setGeometry()

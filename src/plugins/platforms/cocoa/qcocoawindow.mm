@@ -261,6 +261,40 @@ QRect QCocoaWindow::geometry() const
     return QPlatformWindow::geometry();
 }
 
+/*!
+    \brief the geometry of the window as it will appear when shown as
+    a normal (not maximized or full screen) top-level window.
+
+    For child windows this property always holds an empty rectangle.
+
+    \sa QWidget::normalGeometry()
+*/
+QRect QCocoaWindow::normalGeometry() const
+{
+    if (!isContentView())
+        return QRect();
+
+    // We only persist the normal the geometry when going into
+    // fullscreen and maximized states. For all other cases we
+    // can just report the geometry as is.
+
+    if (!(windowState() & (Qt::WindowFullScreen | Qt::WindowMaximized)))
+        return geometry();
+
+    return m_normalGeometry;
+}
+
+void QCocoaWindow::updateNormalGeometry()
+{
+    if (!isContentView())
+        return;
+
+    if (windowState() != Qt::WindowNoState)
+        return;
+
+    m_normalGeometry = geometry();
+}
+
 void QCocoaWindow::setCocoaGeometry(const QRect &rect)
 {
     qCDebug(lcQpaWindow) << "QCocoaWindow::setCocoaGeometry" << window() << rect;
@@ -754,6 +788,11 @@ void QCocoaWindow::toggleMaximized()
         window.styleMask &= ~NSWindowStyleMaskResizable;
 }
 
+void QCocoaWindow::windowWillZoom()
+{
+    updateNormalGeometry();
+}
+
 void QCocoaWindow::toggleFullScreen()
 {
     const NSWindow *window = m_view.window;
@@ -771,6 +810,8 @@ void QCocoaWindow::windowWillEnterFullScreen()
 {
     if (!isContentView())
         return;
+
+    updateNormalGeometry();
 
     // The NSWindow needs to be resizable, otherwise we'll end up with
     // the normal window geometry, centered in the middle of the screen
