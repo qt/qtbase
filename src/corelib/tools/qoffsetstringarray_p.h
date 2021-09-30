@@ -54,9 +54,11 @@
 
 #include "private/qglobal_p.h"
 
+#include <QByteArrayView>
+
 #include <array>
 #include <limits>
-#include <string>
+#include <string_view>
 #include <tuple>
 
 class tst_QOffsetStringArray;
@@ -80,7 +82,7 @@ public:
 
     constexpr const char *operator[](const int index) const noexcept
     {
-        return m_string.data() + m_offsets[qBound(int(0), index, count() - 1)];
+        return m_string.data() + m_offsets[qBound(int(0), index, count())];
     }
 
     constexpr const char *at(const int index) const noexcept
@@ -88,7 +90,13 @@ public:
         return m_string.data() + m_offsets[index];
     }
 
-    constexpr int count() const { return int(m_offsets.size()); }
+    constexpr QByteArrayView viewAt(qsizetype index) const noexcept
+    {
+        return { m_string.data() + m_offsets[index],
+                    qsizetype(m_offsets[index + 1]) - qsizetype(m_offsets[index]) - 1 };
+    }
+
+    constexpr int count() const { return int(m_offsets.size()) - 1; }
 
 private:
     StaticString m_string;
@@ -162,9 +170,9 @@ constexpr auto qOffsetStringArray(StringExtractor extractString, const T &... en
     size_t offset = 0;
     std::array fullOffsetList = { offset += sizeof(extractString(T{}))... };
 
-    // prepend zero, drop last element
-    std::array<MinifiedOffsetType, Count> minifiedOffsetList = {};
-    QtPrivate::copyData(fullOffsetList.begin(), Count - 1, minifiedOffsetList.begin() + 1);
+    // prepend zero
+    std::array<MinifiedOffsetType, Count + 1> minifiedOffsetList = {};
+    QtPrivate::copyData(fullOffsetList.begin(), Count, minifiedOffsetList.begin() + 1);
 
     std::array staticString = QtPrivate::makeStaticString<StringLength>(extractString, entries...);
     return QOffsetStringArray(staticString, minifiedOffsetList);

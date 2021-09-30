@@ -304,35 +304,6 @@ QVersionNumber QLibraryInfo::version() noexcept
     return QVersionNumber(QT_VERSION_MAJOR, QT_VERSION_MINOR, QT_VERSION_PATCH);
 }
 
-/*
- * To add a new entry in QLibraryInfo::LibraryPath, add it to the enum
- * in qtbase/src/corelib/global/qlibraryinfo.h and:
- * - add its relative path in the qtConfEntries[] array below
- *   (the key is what appears in a qt.conf file)
- */
-
-static const struct {
-    char key[19], value[13];
-} qtConfEntries[] = {
-    { "Prefix", "." },
-    { "Documentation", "doc" }, // should be ${Data}/doc
-    { "Headers", "include" },
-    { "Libraries", "lib" },
-#ifdef Q_OS_WIN
-    { "LibraryExecutables", "bin" },
-#else
-    { "LibraryExecutables", "libexec" }, // should be ${ArchData}/libexec
-#endif
-    { "Binaries", "bin" },
-    { "Plugins", "plugins" }, // should be ${ArchData}/plugins
-    { "Qml2Imports", "qml" }, // should be ${ArchData}/qml
-    { "ArchData", "." },
-    { "Data", "." },
-    { "Translations", "translations" }, // should be ${Data}/translations
-    { "Examples", "examples" },
-    { "Tests", "tests" },
-};
-
 static QString prefixFromAppDirHelper()
 {
     QString appDir;
@@ -515,17 +486,44 @@ static QString getPrefix()
 void QLibraryInfoPrivate::keyAndDefault(QLibraryInfo::LibraryPath loc, QString *key,
                                               QString *value)
 {
-    if (unsigned(loc) < sizeof(qtConfEntries)/sizeof(qtConfEntries[0])) {
-        *key = QLatin1String(qtConfEntries[loc].key);
-        *value = QLatin1String(qtConfEntries[loc].value);
-    }
-#ifndef Q_OS_WIN // On Windows we use the registry
-    else if (loc == QLibraryInfo::SettingsPath) {
-        *key = QLatin1String("Settings");
-        *value = QLatin1String(".");
-    }
+    /*
+     * To add a new entry in QLibraryInfo::LibraryPath, add it to the enum
+     * in qtbase/src/corelib/global/qlibraryinfo.h and:
+     * - add its relative path in the qtConfEntries[] array below
+     *   (the key is what appears in a qt.conf file)
+     */
+    static constexpr auto qtConfEntries = qOffsetStringArray(
+        "Prefix", ".",
+        "Documentation", "doc", // should be ${Data}/doc
+        "Headers", "include",
+        "Libraries", "lib",
+#ifdef Q_OS_WIN
+        "LibraryExecutables", "bin",
+#else
+        "LibraryExecutables", "libexec", // should be ${ArchData}/libexec
 #endif
-    else {
+        "Binaries", "bin",
+        "Plugins", "plugins", // should be ${ArchData}/plugins
+        "Qml2Imports", "qml", // should be ${ArchData}/qml
+        "ArchData", ".",
+        "Data", ".",
+        "Translations", "translations", // should be ${Data}/translations
+        "Examples", "examples",
+        "Tests", "tests"
+    );
+    static constexpr QByteArrayView dot = qtConfEntries.viewAt(1);
+    static_assert(dot.size() == 1);
+    static_assert(dot[0] == '.');
+
+    if (int(loc) < qtConfEntries.count()) {
+        *key = QLatin1String(qtConfEntries.viewAt(loc * 2));
+        *value = QLatin1String(qtConfEntries.viewAt(loc * 2 + 1));
+#ifndef Q_OS_WIN // On Windows we use the registry
+    } else if (loc == QLibraryInfo::SettingsPath) {
+        *key = QLatin1String("Settings");
+        *value = QLatin1String(dot);
+#endif
+    } else {
         key->clear();
         value->clear();
     }
