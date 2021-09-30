@@ -1524,7 +1524,7 @@ static const struct : QMetaTypeModuleHelper
         }
         return false;
     }
-} metatypeHelper;
+} metatypeHelper = {};
 
 static const QMetaTypeModuleHelper *qMetaTypeCoreHelper = &metatypeHelper;
 Q_CORE_EXPORT const QMetaTypeModuleHelper *qMetaTypeGuiHelper = nullptr;
