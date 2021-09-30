@@ -735,7 +735,7 @@ void qt_core_boilerplate()
            "Installation prefix: %s\n"
            "Library path:        %s\n"
            "Plugin path:         %s\n",
-           qt_configure_prefix_path_str + 12,
+           QT_CONFIGURE_PREFIX_PATH,
            qt_configure_strs[QT_PREPEND_NAMESPACE(QLibraryInfo)::LibrariesPath - 1],
            qt_configure_strs[QT_PREPEND_NAMESPACE(QLibraryInfo)::PluginsPath - 1]);
 
