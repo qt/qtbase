@@ -398,41 +398,34 @@ void QAbstractTestLogger::addMessage(QtMsgType type, const QMessageLogContext &c
 namespace QTest
 {
 
-extern void filter_unprintable(char *str);
-
 /*!
     \fn int QTest::qt_asprintf(QTestCharBuffer *buf, const char *format, ...);
     \internal
  */
 int qt_asprintf(QTestCharBuffer *str, const char *format, ...)
 {
-    static const int MAXSIZE = 1024*1024*2;
-
+    constexpr int MAXSIZE = 1024 * 1024 * 2;
     Q_ASSERT(str);
-
     int size = str->size();
+    Q_ASSERT(size > 0);
 
     va_list ap;
     int res = 0;
 
-    for (;;) {
+    do {
         va_start(ap, format);
         res = qvsnprintf(str->data(), size, format, ap);
         va_end(ap);
-        str->data()[size - 1] = '\0';
-        if (res >= 0 && res < size) {
-            // We succeeded
-            break;
-        }
-        // buffer wasn't big enough, try again.
+        // vsnprintf() reliably '\0'-terminates
+        Q_ASSERT(res < 0 || str->data()[res < size ? res : size - 1] == '\0');
         // Note, we're assuming that a result of -1 is always due to running out of space.
-        size *= 2;
-        if (size > MAXSIZE) {
+        if (res >= 0 && res < size) // Success
             break;
-        }
-        if (!str->reset(size))
-            break; // out of memory - take what we have
-    }
+
+        // Buffer wasn't big enough, try again:
+        size *= 2;
+        // If too large or out of memory, take what we have:
+    } while (size <= MAXSIZE && str->reset(size));
 
     return res;
 }
