@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtTest module of the Qt Toolkit.
@@ -77,12 +77,12 @@ public:
     void addMessage(MessageTypes type, const QString &message,
                     const char *file = nullptr, int line = 0) override;
 
-    static int xmlCdata(QTestCharBuffer *dest, char const* src);
-    static int xmlQuote(QTestCharBuffer *dest, char const* src);
-    static int xmlCdata(QTestCharBuffer *dest, char const* src, size_t n);
-    static int xmlQuote(QTestCharBuffer *dest, char const* src, size_t n);
-
+    static int xmlCdata(QTestCharBuffer *dest, char const *src);
+    static int xmlQuote(QTestCharBuffer *dest, char const *src);
 private:
+    static int xmlCdata(QTestCharBuffer *dest, char const *src, qsizetype n);
+    static int xmlQuote(QTestCharBuffer *dest, char const *src, qsizetype n);
+
     XmlMode xmlmode;
 };
 
