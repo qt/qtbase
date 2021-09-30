@@ -198,7 +198,7 @@ static const char *incidentFormatString(bool noDescription, bool noTag)
 
 static const char *benchmarkResultFormatString()
 {
-    return "<BenchmarkResult metric=\"%s\" tag=\"%s\" value=\"%s\" iterations=\"%d\" />\n";
+    return "<BenchmarkResult metric=\"%s\" tag=\"%s\" value=\"%.6g\" iterations=\"%d\" />\n";
 }
 
 static const char *messageFormatString(bool noDescription, bool noTag)
@@ -266,13 +266,12 @@ void QXmlTestLogger::addBenchmarkResult(const QBenchmarkResult &result)
         benchmarkMetricName(result.metric));
     xmlQuote(&quotedTag, result.context.tag.toUtf8().constData());
 
-    const qreal valuePerIteration = qreal(result.value) / qreal(result.iterations);
     QTest::qt_asprintf(
         &buf,
         QTest::benchmarkResultFormatString(),
         quotedMetric.constData(),
         quotedTag.constData(),
-        QByteArray::number(valuePerIteration).constData(),  //no 64-bit qsnprintf support
+        result.value / double(result.iterations),
         result.iterations);
     outputString(buf.constData());
 }
