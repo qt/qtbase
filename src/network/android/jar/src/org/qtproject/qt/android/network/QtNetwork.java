@@ -43,7 +43,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.util.Log;
 import android.net.ConnectivityManager;
 import android.net.Proxy;
 import android.net.ProxyInfo;
