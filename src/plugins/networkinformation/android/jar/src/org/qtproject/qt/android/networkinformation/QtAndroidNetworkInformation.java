@@ -39,10 +39,8 @@
 
 package org.qtproject.qt.android.networkinformation;
 
-import android.content.BroadcastReceiver;
+import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.ConnectivityManager.NetworkCallback;
 import android.net.NetworkRequest;
@@ -106,6 +104,7 @@ public class QtAndroidNetworkInformation {
         return AndroidConnectivity.Unknown;
     }
 
+    @SuppressLint("MissingPermission")
     public static void registerReceiver(final Context context) {
         synchronized (m_lock) {
             if (m_callback == null) {
