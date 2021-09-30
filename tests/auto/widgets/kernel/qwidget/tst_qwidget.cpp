@@ -421,6 +421,8 @@ private slots:
     void receivesLanguageChangeEvent();
     void deleteWindowInCloseEvent();
 
+    void activateWhileModalHidden();
+
 private:
     bool ensureScreenSize(int width, int height);
 
@@ -11801,6 +11803,25 @@ void tst_QWidget::deleteWindowInCloseEvent()
     auto widget = new DeleteOnCloseEventWidget;
     widget->close();
     QVERIFY(true);
+}
+
+void tst_QWidget::activateWhileModalHidden()
+{
+    QDialog dialog;
+    dialog.setWindowModality(Qt::ApplicationModal);
+    dialog.show();
+    QVERIFY(QTest::qWaitForWindowActive(&dialog));
+    QVERIFY(dialog.isActiveWindow());
+    QCOMPARE(QApplication::activeWindow(), &dialog);
+
+    dialog.hide();
+    QTRY_VERIFY(!dialog.isVisible());
+
+    QMainWindow window;
+    window.show();
+    QVERIFY(QTest::qWaitForWindowActive(&window));
+    QVERIFY(window.isActiveWindow());
+    QCOMPARE(QApplication::activeWindow(), &window);
 }
 
 QTEST_MAIN(tst_QWidget)
