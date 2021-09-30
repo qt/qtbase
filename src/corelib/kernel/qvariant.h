@@ -58,7 +58,7 @@
 #include <memory>
 #include <type_traits>
 
-#if __has_include(<variant>) && __cplusplus >= 201703L
+#if __has_include(<variant>)
 #include <variant>
 #elif defined(Q_CLANG_QDOC)
 namespace std { template<typename...> struct variant; }
@@ -402,7 +402,7 @@ class Q_CORE_EXPORT QVariant
         return QVariant(QMetaType::fromType<T>(), std::addressof(value));
     }
 
-#if (__has_include(<variant>) && __cplusplus >= 201703L) || defined(Q_CLANG_QDOC)
+#if __has_include(<variant>) || defined(Q_CLANG_QDOC)
     template<typename... Types>
     static inline QVariant fromStdVariant(const std::variant<Types...> &value)
     {
@@ -580,7 +580,7 @@ inline QVariant QVariant::fromValue(const QVariant &value)
     return value;
 }
 
-#if __has_include(<variant>) && __cplusplus >= 201703L
+#if __has_include(<variant>)
 template<>
 inline QVariant QVariant::fromValue(const std::monostate &)
 {

@@ -35,7 +35,7 @@
 #if __has_include(<source_location>) && __cplusplus >= 202002L && !defined(Q_CLANG_QDOC)
 #include <source_location>
 #define QT_SOURCE_LOCATION_NAMESPACE std
-#elif __has_include(<experimental/source_location>) && __cplusplus >= 201703L && !defined(Q_CLANG_QDOC)
+#elif __has_include(<experimental/source_location>) && !defined(Q_CLANG_QDOC)
 #include <experimental/source_location>
 #define QT_SOURCE_LOCATION_NAMESPACE std::experimental
 #endif

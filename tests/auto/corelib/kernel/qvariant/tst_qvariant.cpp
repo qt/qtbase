@@ -48,7 +48,7 @@
 #include <limits.h>
 #include <float.h>
 #include <cmath>
-#if __has_include(<variant>) && __cplusplus >= 201703L
+#if __has_include(<variant>)
 #include <variant>
 #endif
 #include <QRegularExpression>
@@ -4882,7 +4882,7 @@ void tst_QVariant::shouldDeleteVariantDataWorksForAssociative()
 
 void tst_QVariant::fromStdVariant()
 {
-#if __has_include(<variant>) && __cplusplus >= 201703L
+#if __has_include(<variant>)
     {
         typedef std::variant<int, bool> intorbool_t;
         intorbool_t stdvar = 5;

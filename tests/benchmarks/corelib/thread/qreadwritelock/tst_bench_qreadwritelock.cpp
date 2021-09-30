@@ -30,9 +30,7 @@
 #include <QTest>
 #include <mutex>
 #if __has_include(<shared_mutex>)
-#if __cplusplus > 201103L
 #include <shared_mutex>
-#endif
 #endif
 #include <vector>
 

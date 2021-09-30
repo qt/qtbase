@@ -56,7 +56,7 @@
 #endif
 #endif
 
-#if !defined(QT_PROPERTY_COLLECT_BINDING_LOCATION) && __has_include(<experimental/source_location>) && __cplusplus >= 201703L && !defined(Q_CLANG_QDOC)
+#if !defined(QT_PROPERTY_COLLECT_BINDING_LOCATION) && __has_include(<experimental/source_location>) && !defined(Q_CLANG_QDOC)
 #include <experimental/source_location>
 #if defined(__cpp_lib_experimental_source_location)
 #define QT_SOURCE_LOCATION_NAMESPACE std::experimental

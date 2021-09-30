@@ -46,9 +46,7 @@ QT_BEGIN_NAMESPACE
 
 template <typename, typename> class QStringBuilder;
 
-#if defined(Q_QDOC) || 1 || (defined(__cpp_range_based_for) && __cpp_range_based_for >= 201603)
-#  define Q_STRINGTOKENIZER_USE_SENTINEL
-#endif
+#define Q_STRINGTOKENIZER_USE_SENTINEL
 
 class QStringTokenizerBaseBase
 {
