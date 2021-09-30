@@ -265,6 +265,11 @@ qt_copy_or_install(FILES
     DESTINATION "${__GlobalConfig_install_dir}"
 )
 
+# Install our custom platform modules.
+qt_copy_or_install(DIRECTORY cmake/platforms
+    DESTINATION "${__GlobalConfig_install_dir}"
+)
+
 # Install public config.tests files.
 qt_copy_or_install(DIRECTORY
     "config.tests/static_link_order"
