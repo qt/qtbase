@@ -433,6 +433,12 @@ function(qt_auto_detect_integrity)
     endif()
 endfunction()
 
+# Let CMake load our custom platform modules.
+# CMake-provided platform modules take precedence.
+if(NOT QT_AVOID_CUSTOM_PLATFORM_MODULES)
+    list(PREPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/platforms")
+endif()
+
 qt_auto_detect_cmake_generator()
 qt_auto_detect_cyclic_toolchain()
 qt_auto_detect_cmake_config()
