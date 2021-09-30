@@ -1660,14 +1660,17 @@ void tst_QThread::threadIdReuse()
         QThread::msleep(1);
 
         Qt::HANDLE threadId2;
-        auto waitForThread1 = [&thread1, &threadId2]() -> void {
+        bool waitOk = false;
+
+        auto waitForThread1 = [&thread1, &threadId2, &waitOk]() -> void {
             threadId2 = QThread::currentThreadId();
-            QVERIFY(thread1->wait());
+            waitOk = thread1->wait();
         };
 
         QScopedPointer<QThread> thread2(QThread::create(waitForThread1));
         thread2->start();
         QVERIFY(thread2->wait());
+        QVERIFY(waitOk);
 
         if (threadId1 == threadId2) {
             qDebug("Thread ID reused at iteration %d", i);
