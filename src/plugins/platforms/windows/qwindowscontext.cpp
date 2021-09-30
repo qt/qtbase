@@ -1474,6 +1474,8 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         // Scale child QPlatformWindow size. Windows sends WM_DPICHANGE to top-level windows only.
         for (QWindow *childWindow : platformWindow->window()->findChildren<QWindow *>()) {
             QWindowsWindow *platformChildWindow = static_cast<QWindowsWindow *>(childWindow->handle());
+            if (!platformChildWindow)
+                continue;
             QRect currentGeometry = platformChildWindow->geometry();
             QRect scaledGeometry = QRect(currentGeometry.topLeft() * scale, currentGeometry.size() * scale);
             platformChildWindow->setGeometry(scaledGeometry);
