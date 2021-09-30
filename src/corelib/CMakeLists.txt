@@ -481,6 +481,7 @@ qt_internal_extend_target(Core CONDITION WIN32
         io/qstorageinfo_win.cpp
         io/qwindowspipereader.cpp io/qwindowspipereader_p.h
         io/qwindowspipewriter.cpp io/qwindowspipewriter_p.h
+        io/qntdll_p.h
         kernel/qcoreapplication_win.cpp
         kernel/qelapsedtimer_win.cpp
         kernel/qeventdispatcher_win.cpp kernel/qeventdispatcher_win_p.h

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Ivan Komissarov <ABBAPOH@gmail.com>
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#ifndef QSTORAGEINFO_P_H
-#define QSTORAGEINFO_P_H
+#ifndef QNTDLL_P_H
+#define QNTDLL_P_H
 
 //
 //  W A R N I N G
@@ -51,56 +51,46 @@
 // We mean it.
 //
 
-#include <QtCore/private/qglobal_p.h>
-#include "qstorageinfo.h"
+#include <winternl.h>
 
 QT_BEGIN_NAMESPACE
 
-class QStorageInfoPrivate : public QSharedData
-{
-public:
-    inline QStorageInfoPrivate() : QSharedData(),
-        bytesTotal(-1), bytesFree(-1), bytesAvailable(-1), blockSize(-1),
-        readOnly(false), ready(false), valid(false)
-    {}
+// keep the following structure as is, taken from
+// https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/ntddk/ns-ntddk-_file_fs_sector_size_information
+// Unfortunately we can't include the ntddk.h header, so we duplicate the code here.
+typedef struct _FILE_FS_SECTOR_SIZE_INFORMATION {
+    ULONG LogicalBytesPerSector;
+    ULONG PhysicalBytesPerSectorForAtomicity;
+    ULONG PhysicalBytesPerSectorForPerformance;
+    ULONG FileSystemEffectivePhysicalBytesPerSectorForAtomicity;
+    ULONG Flags;
+    ULONG ByteOffsetForSectorAlignment;
+    ULONG ByteOffsetForPartitionAlignment;
+} FILE_FS_SECTOR_SIZE_INFORMATION, *PFILE_FS_SECTOR_SIZE_INFORMATION;
 
-    void initRootPath();
-    void doStat();
-
-    static QList<QStorageInfo> mountedVolumes();
-    static QStorageInfo root();
-
-protected:
-#if defined(Q_OS_WIN)
-    void retrieveVolumeInfo();
-    void retrieveDiskFreeSpace();
-    bool queryStorageProperty();
-    void queryFileFsSectorSizeInformation();
-#elif defined(Q_OS_MAC)
-    void retrievePosixInfo();
-    void retrieveUrlProperties(bool initRootPath = false);
-    void retrieveLabel();
-#elif defined(Q_OS_UNIX)
-    void retrieveVolumeInfo();
+#if !defined(Q_CC_CLANG) && !defined(Q_CC_MINGW)
+// keep the following enumeration as is, taken from
+// https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/ne-wdm-_fsinfoclass
+// Unfortunately we can't include the wdm.h header, so we duplicate the code here.
+typedef enum _FSINFOCLASS {
+    FileFsVolumeInformation,
+    FileFsLabelInformation,
+    FileFsSizeInformation,
+    FileFsDeviceInformation,
+    FileFsAttributeInformation,
+    FileFsControlInformation,
+    FileFsFullSizeInformation,
+    FileFsObjectIdInformation,
+    FileFsDriverPathInformation,
+    FileFsVolumeFlagsInformation,
+    FileFsSectorSizeInformation,
+    FileFsDataCopyInformation,
+    FileFsMetadataSizeInformation,
+    FileFsFullSizeInformationEx,
+    FileFsMaximumInformation
+} FS_INFORMATION_CLASS, *PFS_INFORMATION_CLASS;
 #endif
-
-public:
-    QString rootPath;
-    QByteArray device;
-    QByteArray subvolume;
-    QByteArray fileSystemType;
-    QString name;
-
-    qint64 bytesTotal;
-    qint64 bytesFree;
-    qint64 bytesAvailable;
-    int blockSize;
-
-    bool readOnly;
-    bool ready;
-    bool valid;
-};
 
 QT_END_NAMESPACE
 
-#endif // QSTORAGEINFO_P_H
+#endif // QNTDLL_P_H

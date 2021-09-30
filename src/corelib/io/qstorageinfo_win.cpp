@@ -41,11 +41,13 @@
 
 #include <QtCore/qdir.h>
 #include <QtCore/qfileinfo.h>
+#include <QtCore/qmutex.h>
 #include <QtCore/qvarlengtharray.h>
 
 #include "qfilesystementry_p.h"
+#include "private/qsystemlibrary_p.h"
 
-#include <qt_windows.h>
+#include "qntdll_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -134,6 +136,9 @@ void QStorageInfoPrivate::doStat()
         return;
     device = getDevice(rootPath);
     retrieveDiskFreeSpace();
+
+    if (!queryStorageProperty())
+        queryFileFsSectorSizeInformation();
 }
 
 void QStorageInfoPrivate::retrieveVolumeInfo()
@@ -202,6 +207,141 @@ QList<QStorageInfo> QStorageInfoPrivate::mountedVolumes()
 QStorageInfo QStorageInfoPrivate::root()
 {
     return QStorageInfo(QDir::fromNativeSeparators(QFile::decodeName(qgetenv("SystemDrive"))));
+}
+
+bool QStorageInfoPrivate::queryStorageProperty()
+{
+    QString path = QDir::toNativeSeparators(uR"(\\.\)" + rootPath);
+    if (path.endsWith(u'\\'))
+        path.chop(1);
+
+    HANDLE handle = CreateFile(reinterpret_cast<const wchar_t *>(path.utf16()),
+                               0, // no access to the drive
+                               FILE_SHARE_READ | FILE_SHARE_WRITE,
+                               nullptr,
+                               OPEN_EXISTING,
+                               0,
+                               nullptr);
+    if (handle == INVALID_HANDLE_VALUE)
+        return false;
+
+    STORAGE_PROPERTY_QUERY spq;
+    memset(&spq, 0, sizeof(spq));
+    spq.PropertyId = StorageAccessAlignmentProperty;
+    spq.QueryType = PropertyStandardQuery;
+
+    STORAGE_ACCESS_ALIGNMENT_DESCRIPTOR saad;
+    memset(&saad, 0, sizeof(saad));
+
+    DWORD bytes = 0;
+    BOOL result = DeviceIoControl(handle,
+                                  IOCTL_STORAGE_QUERY_PROPERTY,
+                                  &spq, sizeof(spq),
+                                  &saad, sizeof(saad),
+                                  &bytes,
+                                  nullptr);
+    CloseHandle(handle);
+    if (result)
+        blockSize = saad.BytesPerPhysicalSector;
+    return result;
+}
+
+struct Helper
+{
+    QBasicMutex mutex;
+    QSystemLibrary ntdll {u"ntdll"_qs};
+};
+Q_GLOBAL_STATIC(Helper, gNtdllHelper)
+
+inline QFunctionPointer resolveSymbol(QSystemLibrary *ntdll, const char *name)
+{
+    QFunctionPointer symbolFunctionPointer = ntdll->resolve(name);
+    if (Q_UNLIKELY(!symbolFunctionPointer))
+        qWarning("Failed to resolve the symbol: %s", name);
+    return symbolFunctionPointer;
+}
+
+#define GENERATE_SYMBOL(symbolName, returnType, ...) \
+using Qt##symbolName = returnType (NTAPI *) (__VA_ARGS__); \
+static Qt##symbolName qt##symbolName = nullptr;
+
+#define RESOLVE_SYMBOL(name) \
+    do { \
+        qt##name = reinterpret_cast<Qt##name>(resolveSymbol(ntdll, #name)); \
+        if (!qt##name) \
+            return false; \
+    } while (false)
+
+GENERATE_SYMBOL(RtlInitUnicodeString, void, PUNICODE_STRING, PCWSTR);
+GENERATE_SYMBOL(NtCreateFile, NTSTATUS, PHANDLE, ACCESS_MASK, POBJECT_ATTRIBUTES,
+    PIO_STATUS_BLOCK, PLARGE_INTEGER, ULONG, ULONG, ULONG, ULONG, PVOID, ULONG);
+GENERATE_SYMBOL(NtQueryVolumeInformationFile, NTSTATUS, HANDLE, PIO_STATUS_BLOCK, PVOID, ULONG,
+    FS_INFORMATION_CLASS);
+
+void QStorageInfoPrivate::queryFileFsSectorSizeInformation()
+{
+    static bool symbolsResolved = [](auto ntdllHelper) {
+        QMutexLocker locker(&ntdllHelper->mutex);
+        auto ntdll = &ntdllHelper->ntdll;
+        if (!ntdll->isLoaded()) {
+            if (!ntdll->load()) {
+                qWarning("Unable to load ntdll.dll.");
+                return false;
+            }
+        }
+
+        RESOLVE_SYMBOL(RtlInitUnicodeString);
+        RESOLVE_SYMBOL(NtCreateFile);
+        RESOLVE_SYMBOL(NtQueryVolumeInformationFile);
+
+        return true;
+    }(gNtdllHelper());
+    if (!symbolsResolved)
+        return;
+
+    FILE_FS_SECTOR_SIZE_INFORMATION ffssi;
+    memset(&ffssi, 0, sizeof(ffssi));
+
+    HANDLE handle = nullptr;
+
+    OBJECT_ATTRIBUTES attrs;
+    memset(&attrs, 0, sizeof(attrs));
+
+    IO_STATUS_BLOCK isb;
+    memset(&isb, 0, sizeof(isb));
+
+    QString path = QDir::toNativeSeparators(uR"(\??\\)" + rootPath);
+    if (!path.endsWith(u'\\'))
+        path.append(u'\\');
+
+    UNICODE_STRING name;
+    qtRtlInitUnicodeString(&name, reinterpret_cast<const wchar_t *>(path.utf16()));
+
+    InitializeObjectAttributes(&attrs, &name, 0, nullptr, nullptr);
+
+    NTSTATUS status = qtNtCreateFile(&handle,
+                                     FILE_READ_ATTRIBUTES,
+                                     &attrs,
+                                     &isb,
+                                     nullptr,
+                                     FILE_ATTRIBUTE_NORMAL,
+                                     FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                                     FILE_OPEN,
+                                     0,
+                                     nullptr,
+                                     0);
+    if (!NT_SUCCESS(status))
+        return;
+
+    memset(&isb, 0, sizeof(isb));
+    status = qtNtQueryVolumeInformationFile(handle,
+                                            &isb,
+                                            &ffssi,
+                                            sizeof(ffssi),
+                                            FS_INFORMATION_CLASS(10)); // FileFsSectorSizeInformation
+    CloseHandle(handle);
+    if (NT_SUCCESS(status))
+        blockSize = ffssi.PhysicalBytesPerSectorForAtomicity;
 }
 
 QT_END_NAMESPACE
