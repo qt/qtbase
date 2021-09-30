@@ -94,7 +94,6 @@ static int s_globalState = 0;
 
 void tst_QScopeGuard::construction()
 {
-#ifdef __cpp_deduction_guides
     QScopeGuard fromLambda([] { });
     QScopeGuard fromFunction(func);
     QScopeGuard fromFunctionPointer(&func);
@@ -105,14 +104,10 @@ void tst_QScopeGuard::construction()
     std::function<void()> stdFunction(func);
     QScopeGuard fromNamedStdFunction(stdFunction);
 #endif
-#else
-    QSKIP("This test requires C++17 Class Template Argument Deduction support enabled in the compiler.");
-#endif
 }
 
 void tst_QScopeGuard::constructionFromLvalue()
 {
-#ifdef __cpp_deduction_guides
     Callable::resetCounts();
     {
         Callable callable;
@@ -127,14 +122,10 @@ void tst_QScopeGuard::constructionFromLvalue()
     }
     QCOMPARE(Callable::copied, 1);
     QCOMPARE(Callable::moved, 0);
-#else
-    QSKIP("This test requires C++17 Class Template Argument Deduction support enabled in the compiler.");
-#endif
 }
 
 void tst_QScopeGuard::constructionFromRvalue()
 {
-#ifdef __cpp_deduction_guides
     Callable::resetCounts();
     {
         Callable callable;
@@ -149,9 +140,6 @@ void tst_QScopeGuard::constructionFromRvalue()
     }
     QCOMPARE(Callable::copied, 0);
     QCOMPARE(Callable::moved, 1);
-#else
-    QSKIP("This test requires C++17 Class Template Argument Deduction support enabled in the compiler.");
-#endif
 }
 
 void tst_QScopeGuard::leavingScope()

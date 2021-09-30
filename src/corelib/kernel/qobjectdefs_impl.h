@@ -158,7 +158,6 @@ namespace QtPrivate {
             (o->*f)((*reinterpret_cast<typename RemoveRef<SignalArgs>::Type *>(arg[II+1]))...), ApplyReturnValue<R>(arg[0]);
         }
     };
-#if defined(__cpp_noexcept_function_type) && __cpp_noexcept_function_type >= 201510
     template <int... II, typename... SignalArgs, typename R, typename... SlotArgs, typename SlotRet, class Obj>
     struct FunctorCall<IndexesList<II...>, List<SignalArgs...>, R, SlotRet (Obj::*)(SlotArgs...) noexcept> {
         static void call(SlotRet (Obj::*f)(SlotArgs...) noexcept, Obj *o, void **arg) {
@@ -171,7 +170,6 @@ namespace QtPrivate {
             (o->*f)((*reinterpret_cast<typename RemoveRef<SignalArgs>::Type *>(arg[II+1]))...), ApplyReturnValue<R>(arg[0]);
         }
     };
-#endif
 
     template<class Obj, typename Ret, typename... Args> struct FunctionPointer<Ret (Obj::*) (Args...)>
     {
@@ -210,7 +208,6 @@ namespace QtPrivate {
         }
     };
 
-#if defined(__cpp_noexcept_function_type) && __cpp_noexcept_function_type >= 201510
     template<class Obj, typename Ret, typename... Args> struct FunctionPointer<Ret (Obj::*) (Args...) noexcept>
     {
         typedef Obj Object;
@@ -247,7 +244,6 @@ namespace QtPrivate {
             FunctorCall<typename Indexes<ArgumentCount>::Value, SignalArgs, R, Function>::call(f, arg);
         }
     };
-#endif
 
     template<typename Function, int N> struct Functor
     {

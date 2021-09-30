@@ -118,7 +118,6 @@ public:
     constexpr quint8 alpha8() const { return div_257(alpha()); }
     constexpr uint toArgb32() const
     {
-#if defined(__cpp_constexpr) && __cpp_constexpr-0 >= 201304
         quint64 br = rgba & Q_UINT64_C(0xffff0000ffff);
         quint64 ag = (rgba >> 16) & Q_UINT64_C(0xffff0000ffff);
         br += Q_UINT64_C(0x8000000080);
@@ -135,9 +134,6 @@ public:
              | ((br << 16) & 0xff0000)
              | (ag         & 0xff00)
              | ((br >> 32) & 0xff);
-#endif
-#else
-        return uint((alpha8() << 24) | (red8() << 16) | (green8() << 8) | blue8());
 #endif
     }
     constexpr ushort toRgb16() const

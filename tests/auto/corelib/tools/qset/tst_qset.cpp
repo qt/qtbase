@@ -339,7 +339,6 @@ void tst_QSet::clear()
 
 void tst_QSet::cpp17ctad()
 {
-#ifdef __cpp_deduction_guides
 #define QVERIFY_IS_SET_OF(obj, Type) \
     QVERIFY2((std::is_same<decltype(obj), QSet<Type>>::value), \
              QMetaType::fromType<decltype(obj)::value_type>().name())
@@ -359,9 +358,6 @@ void tst_QSet::cpp17ctad()
     CHECK(QString, QStringLiteral("one"), QStringLiteral("two"), QStringLiteral("three"));
 #undef QVERIFY_IS_SET_OF
 #undef CHECK
-#else
-    QSKIP("This test requires C++17 Constructor Template Argument Deduction support enabled in the compiler.");
-#endif
 }
 
 void tst_QSet::remove()

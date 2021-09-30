@@ -84,15 +84,11 @@ QT_BEGIN_NAMESPACE
 namespace {
 
 template <typename Mutex, typename Lock =
-#if defined(__cpp_guaranteed_copy_elision) && __cpp_guaranteed_copy_elision >= 201606L
 # if defined(__cpp_lib_scoped_lock) && __cpp_lib_scoped_lock >= 201703L
           std::scoped_lock
 # else
           std::lock_guard
 # endif
-#else
-          std::unique_lock
-#endif
           <typename std::decay<Mutex>::type>
 >
 Lock qt_scoped_lock(Mutex &mutex)

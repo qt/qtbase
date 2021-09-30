@@ -1509,7 +1509,6 @@ void tst_QStringApiSymmetry::tok_impl() const
         QCOMPARE(toQStringList(tok), resultCS);
     }
 
-#ifdef __cpp_deduction_guides
     QCOMPARE(toQStringList(QStringTokenizer{haystack, needle}), resultCS);
     QCOMPARE(toQStringList(QStringTokenizer{haystack, needle, Qt::KeepEmptyParts, Qt::CaseSensitive}), resultCS);
     QCOMPARE(toQStringList(QStringTokenizer{haystack, needle, Qt::CaseInsensitive, Qt::KeepEmptyParts}), resultCIS);
@@ -1522,7 +1521,6 @@ void tst_QStringApiSymmetry::tok_impl() const
         // yet `tok` should have kept a copy alive as needed:
         QCOMPARE(toQStringList(tok), resultCS);
     }
-#endif // __cpp_deduction_guides
 
     if constexpr (has_tokenize_method_v<Haystack>) {
         QCOMPARE(toQStringList(haystack.tokenize(needle)), resultCS);

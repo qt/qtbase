@@ -86,9 +86,7 @@ private:
     bool m_invoke = true;
 };
 
-#ifdef __cpp_deduction_guides
 template <typename F> QScopeGuard(F(&)()) -> QScopeGuard<F(*)()>;
-#endif
 
 //! [qScopeGuard]
 template <typename F>

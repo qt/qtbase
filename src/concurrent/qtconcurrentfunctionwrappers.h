@@ -129,7 +129,6 @@ struct ReduceResultType<R(*)(A...)>
     using ResultType = typename std::tuple_element<0, std::tuple<A...>>::type;
 };
 
-#if defined(__cpp_noexcept_function_type) && __cpp_noexcept_function_type >= 201510
 template <class U, class V>
 struct ReduceResultType<void(*)(U&,V) noexcept>
 {
@@ -141,7 +140,6 @@ struct ReduceResultType<T(C::*)(U) noexcept>
 {
     using ResultType = C;
 };
-#endif
 
 template<class T, class Enable = void>
 struct hasCallOperator : std::false_type

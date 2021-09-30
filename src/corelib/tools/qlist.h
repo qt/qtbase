@@ -663,12 +663,10 @@ public:
     }
 };
 
-#if defined(__cpp_deduction_guides) && __cpp_deduction_guides >= 201606
 template <typename InputIterator,
           typename ValueType = typename std::iterator_traits<InputIterator>::value_type,
           QtPrivate::IfIsInputIterator<InputIterator> = true>
 QList(InputIterator, InputIterator) -> QList<ValueType>;
-#endif
 
 template <typename T>
 inline void QList<T>::resize_internal(qsizetype newSize)
