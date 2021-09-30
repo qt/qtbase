@@ -48,9 +48,7 @@
 #include <limits.h>
 #include <float.h>
 #include <cmath>
-#if __has_include(<variant>)
 #include <variant>
-#endif
 #include <QRegularExpression>
 #include <QDir>
 #include <QBuffer>
@@ -4882,7 +4880,6 @@ void tst_QVariant::shouldDeleteVariantDataWorksForAssociative()
 
 void tst_QVariant::fromStdVariant()
 {
-#if __has_include(<variant>)
     {
         typedef std::variant<int, bool> intorbool_t;
         intorbool_t stdvar = 5;
@@ -4913,7 +4910,6 @@ void tst_QVariant::fromStdVariant()
         QCOMPARE(qvar.type(), QVariant::Char);
         QCOMPARE(qvar.value<QChar>(), std::get<QChar>(stdvar));
     }
-#endif
 }
 
 void tst_QVariant::qt4UuidDataStream()

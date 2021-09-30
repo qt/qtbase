@@ -57,12 +57,7 @@
 #endif
 #include <memory>
 #include <type_traits>
-
-#if __has_include(<variant>)
 #include <variant>
-#elif defined(Q_CLANG_QDOC)
-namespace std { template<typename...> struct variant; }
-#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -402,7 +397,6 @@ class Q_CORE_EXPORT QVariant
         return QVariant(QMetaType::fromType<T>(), std::addressof(value));
     }
 
-#if __has_include(<variant>) || defined(Q_CLANG_QDOC)
     template<typename... Types>
     static inline QVariant fromStdVariant(const std::variant<Types...> &value)
     {
@@ -410,7 +404,6 @@ class Q_CORE_EXPORT QVariant
             return QVariant();
         return std::visit([](const auto &arg) { return fromValue(arg); }, value);
     }
-#endif
 
     template<typename T>
     bool canConvert() const
@@ -580,13 +573,11 @@ inline QVariant QVariant::fromValue(const QVariant &value)
     return value;
 }
 
-#if __has_include(<variant>)
 template<>
 inline QVariant QVariant::fromValue(const std::monostate &)
 {
     return QVariant();
 }
-#endif
 
 inline bool QVariant::isValid() const
 {
