@@ -567,16 +567,20 @@ void QEventDispatcherWasm::callProcessTimers(void *context)
 }
 
 #if QT_CONFIG(thread)
-// Runs a function on the main thread
-void QEventDispatcherWasm::runOnMainThread(std::function<void(void)> fn)
-{
-    static auto trampoline = [](void *context) {
+
+namespace {
+    void trampoline(void *context) {
         std::function<void(void)> *fn = reinterpret_cast<std::function<void(void)> *>(context);
         (*fn)();
         delete fn;
-    };
+    }
+}
+
+// Runs a function on the main thread
+void QEventDispatcherWasm::runOnMainThread(std::function<void(void)> fn)
+{
     void *context = new std::function<void(void)>(fn);
-    emscripten_async_run_in_main_runtime_thread_(EM_FUNC_SIG_VI, reinterpret_cast<void *>(&trampoline), context);
+    emscripten_async_run_in_main_runtime_thread_(EM_FUNC_SIG_VI, reinterpret_cast<void *>(trampoline), context);
 }
 #endif
 
