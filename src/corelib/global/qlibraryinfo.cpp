@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
-** Copyright (C) 2016 Intel Corporation.
+** Copyright (C) 2021 The Qt Company Ltd.
+** Copyright (C) 2021 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -51,13 +51,12 @@
 #include "qcoreapplication.h"
 
 #include "private/qglobal_p.h"
+#include "archdetect.cpp"
 #include "qconfig.cpp"
 
 #ifdef Q_OS_DARWIN
 #  include "private/qcore_mac_p.h"
 #endif // Q_OS_DARWIN
-
-#include "archdetect.cpp"
 
 #if QT_CONFIG(relocatable) && QT_CONFIG(dlopen) && !QT_CONFIG(framework)
 #    include <dlfcn.h>
@@ -454,7 +453,7 @@ static QString getRelocatablePrefix()
         // executable within the QT_HOST_BIN directory. We're detecting the latter case by checking
         // whether there's an import library corresponding to our QtCore DLL in PREFIX/lib.
         const QString libdir = QString::fromLocal8Bit(
-            qt_configure_strs + qt_configure_str_offsets[QLibraryInfo::LibrariesPath - 1]);
+            qt_configure_strs[QLibraryInfo::LibrariesPath - 1]);
         const QLatin1Char slash('/');
 #if defined(Q_CC_MINGW)
         const QString implibPrefix = QStringLiteral("lib");
@@ -486,7 +485,7 @@ static QString getRelocatablePrefix()
     // See "Hardware capabilities" in the ld.so documentation and the Qt 5.3.0
     // changelog regarding SSE2 support.
     const QString libdir = QString::fromLocal8Bit(
-        qt_configure_strs + qt_configure_str_offsets[QLibraryInfo::LibrariesPath - 1]);
+        qt_configure_strs[QLibraryInfo::LibrariesPath - 1]);
     QDir prefixDir(prefixPath);
     while (!prefixDir.exists(libdir)) {
         prefixDir.cdUp();
@@ -596,8 +595,8 @@ QString QLibraryInfo::path(LibraryPath p)
         const char * volatile path = nullptr;
         if (loc == PrefixPath) {
             ret = getPrefix();
-        } else if (unsigned(loc) <= sizeof(qt_configure_str_offsets)/sizeof(qt_configure_str_offsets[0])) {
-            path = qt_configure_strs + qt_configure_str_offsets[loc - 1];
+        } else if (int(loc) <= qt_configure_strs.count()) {
+            path = qt_configure_strs[loc - 1];
 #ifndef Q_OS_WIN // On Windows we use the registry
         } else if (loc == SettingsPath) {
             path = QT_CONFIGURE_SETTINGS_PATH;
@@ -691,6 +690,7 @@ QT_END_NAMESPACE
 
 #include "private/qcoreapplication_p.h"
 
+QT_WARNING_DISABLE_GCC("-Wformat-overflow")
 QT_WARNING_DISABLE_GCC("-Wattributes")
 QT_WARNING_DISABLE_CLANG("-Wattributes")
 QT_WARNING_DISABLE_INTEL(2621)
@@ -738,8 +738,8 @@ void qt_core_boilerplate()
            "Library path:        %s\n"
            "Plugin path:         %s\n",
            qt_configure_prefix_path_str + 12,
-           qt_configure_strs + qt_configure_str_offsets[QT_PREPEND_NAMESPACE(QLibraryInfo)::LibrariesPath - 1],
-           qt_configure_strs + qt_configure_str_offsets[QT_PREPEND_NAMESPACE(QLibraryInfo)::PluginsPath - 1]);
+           qt_configure_strs[QT_PREPEND_NAMESPACE(QLibraryInfo)::LibrariesPath - 1],
+           qt_configure_strs[QT_PREPEND_NAMESPACE(QLibraryInfo)::PluginsPath - 1]);
 
     QT_PREPEND_NAMESPACE(qDumpCPUFeatures)();
 

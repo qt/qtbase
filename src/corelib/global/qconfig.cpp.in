@@ -5,19 +5,16 @@
  *
  * - QLibraryInfo::LibraryPath enum in qtbase/src/corelib/global/qlibraryinfo.h
  * - qtConfEntries in qtbase/src/corelib/global/qlibraryinfo.cpp
- *
- * The reason for this is pointer mathematics in the QLibraryInfo implementation when iterating
- * qt_configure_strs. Also qtConfEntries are strongly bound to QLibraryInfo::LibraryPath.
  */
+#include "private/qoffsetstringarray_p.h"
 
 /* Installation Info */
 static const char qt_configure_prefix_path_str  [12+256] = "qt_prfxpath=@QT_CONFIGURE_PREFIX_PATH_STR@";
-static const short qt_configure_str_offsets[] = {
-@QT_CONFIG_STR_OFFSETS_FIRST@
-};
-static const char qt_configure_strs[] =
-@QT_CONFIG_STRS_FIRST@
-;
+
+static constexpr auto qt_configure_strs = QT_PREPEND_NAMESPACE(qOffsetStringArray)(
+@QT_CONFIG_STRS@
+);
+
 #define QT_CONFIGURE_SETTINGS_PATH "@QT_SYS_CONF_DIR@"
 #define QT_CONFIGURE_LIBLOCATION_TO_PREFIX_PATH "@QT_CONFIGURE_LIBLOCATION_TO_PREFIX_PATH@"
 #define QT_CONFIGURE_PREFIX_PATH qt_configure_prefix_path_str + 12

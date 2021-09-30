@@ -63,6 +63,12 @@ class tst_QOffsetStringArray;
 
 QT_BEGIN_NAMESPACE
 
+QT_WARNING_PUSH
+#if defined(Q_CC_GNU) && Q_CC_GNU >= 1100
+// we usually don't overread, but GCC has a false positive
+QT_WARNING_DISABLE_GCC("-Wstringop-overread")
+#endif
+
 
 template <typename StaticString, typename OffsetList>
 class QOffsetStringArray
@@ -172,6 +178,7 @@ constexpr auto qOffsetStringArray(const char (&...strings)[Nx]) noexcept
     return QtPrivate::qOffsetStringArray(extractString, QtPrivate::StaticString(strings)...);
 }
 
+QT_WARNING_POP
 QT_END_NAMESPACE
 
 #endif // QOFFSETSTRINGARRAY_P_H
