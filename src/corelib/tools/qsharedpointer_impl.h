@@ -634,10 +634,6 @@ public:
     // std::weak_ptr compatibility:
     inline QSharedPointer<T> lock() const { return toStrongRef(); }
 
-#if defined(QWEAKPOINTER_ENABLE_ARROW)
-    inline T *operator->() const { return data(); }
-#endif
-
     template <class X>
     bool operator==(const QWeakPointer<X> &o) const noexcept
     { return d == o.d && value == static_cast<const T *>(o.value); }
