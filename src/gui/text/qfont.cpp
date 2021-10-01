@@ -2878,7 +2878,10 @@ static QBasicAtomicInt font_cache_id = Q_BASIC_ATOMIC_INITIALIZER(0);
 
 QFontCache::QFontCache()
     : QObject(), total_cost(0), max_cost(min_cost),
-      current_timestamp(0), fast(false), timer_id(-1),
+      current_timestamp(0), fast(false),
+      autoClean(QGuiApplication::instance()
+                && (QGuiApplication::instance()->thread() == QThread::currentThread())),
+      timer_id(-1),
       m_id(font_cache_id.fetchAndAddRelaxed(1) + 1)
 {
 }
@@ -3048,10 +3051,14 @@ void QFontCache::increaseCost(uint cost)
     if (total_cost > max_cost) {
         max_cost = total_cost;
 
+        if (!autoClean)
+            return;
+
         if (timer_id == -1 || ! fast) {
             FC_DEBUG("  TIMER: starting fast timer (%d ms)", fast_timeout);
 
-            if (timer_id != -1) killTimer(timer_id);
+            if (timer_id != -1)
+                killTimer(timer_id);
             timer_id = startTimer(fast_timeout);
             fast = true;
         }
@@ -3142,22 +3149,26 @@ void QFontCache::decreaseCache()
     FC_DEBUG("  after sweep, in use %u kb, total %u kb, max %u kb, new max %u kb",
               in_use_cost, total_cost, max_cost, new_max_cost);
 
-    if (new_max_cost == max_cost) {
-        if (fast) {
-            FC_DEBUG("  cannot shrink cache, slowing timer");
+    if (autoClean) {
+        if (new_max_cost == max_cost) {
+            if (fast) {
+                FC_DEBUG("  cannot shrink cache, slowing timer");
 
-            killTimer(timer_id);
-            timer_id = startTimer(slow_timeout);
-            fast = false;
+                if (timer_id != -1) {
+                    killTimer(timer_id);
+                timer_id = startTimer(slow_timeout);
+                fast = false;
+            }
+
+            return;
+        } else if (! fast) {
+            FC_DEBUG("  dropping into passing gear");
+
+            if (timer_id != -1)
+                killTimer(timer_id);
+            timer_id = startTimer(fast_timeout);
+            fast = true;        }
         }
-
-        return;
-    } else if (! fast) {
-        FC_DEBUG("  dropping into passing gear");
-
-        killTimer(timer_id);
-        timer_id = startTimer(fast_timeout);
-        fast = true;
     }
 
     max_cost = new_max_cost;

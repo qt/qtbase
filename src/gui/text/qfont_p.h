@@ -295,6 +295,7 @@ private:
     uint total_cost, max_cost;
     uint current_timestamp;
     bool fast;
+    const bool autoClean;
     int timer_id;
     const int m_id;
 };
