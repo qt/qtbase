@@ -203,7 +203,7 @@ static thread_local QBindingStatus bindingStatus;
 /*!
     \since 6.2
 
-    \relates template<typename T> QProperty<T>
+    \relates QProperty
 
     Marks the beginning of a property update group. Inside this group,
     changing a property does neither immediately update any dependent properties
@@ -230,7 +230,7 @@ void Qt::beginPropertyUpdateGroup()
 
 /*!
     \since 6.2
-    \relates template<typename T> QProperty<T>
+    \relates QProperty
 
     Ends a property update group. If the outermost group has been ended, and deferred
     binding evaluations and notifications happen now.
