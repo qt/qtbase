@@ -55,6 +55,8 @@
 #include <MoltenVK/mvk_vulkan.h>
 #endif
 
+#include <QHash>
+
 Q_FORWARD_DECLARE_OBJC_CLASS(NSWindow);
 Q_FORWARD_DECLARE_OBJC_CLASS(NSView);
 Q_FORWARD_DECLARE_OBJC_CLASS(NSCursor);
