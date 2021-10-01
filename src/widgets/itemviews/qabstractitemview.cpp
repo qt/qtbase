@@ -2755,16 +2755,23 @@ bool QAbstractItemView::edit(const QModelIndex &index, EditTrigger trigger, QEve
         d->delayedEditing.stop();
     }
 
+    // in case e.g. setData() triggers a reset()
+    QPersistentModelIndex safeIndex(index);
+
     if (d->sendDelegateEvent(index, event)) {
-        update(index);
+        update(safeIndex);
         return true;
+    }
+
+    if (!safeIndex.isValid()) {
+        return false;
     }
 
     // save the previous trigger before updating
     EditTriggers lastTrigger = d->lastTrigger;
     d->lastTrigger = trigger;
 
-    if (!d->shouldEdit(trigger, d->model->buddy(index)))
+    if (!d->shouldEdit(trigger, d->model->buddy(safeIndex)))
         return false;
 
     if (d->delayedEditing.isActive())
@@ -2779,7 +2786,7 @@ bool QAbstractItemView::edit(const QModelIndex &index, EditTrigger trigger, QEve
     if (trigger == SelectedClicked)
         d->delayedEditing.start(QApplication::doubleClickInterval(), this);
     else
-        d->openEditor(index, d->shouldForwardEvent(trigger, event) ? event : nullptr);
+        d->openEditor(safeIndex, d->shouldForwardEvent(trigger, event) ? event : nullptr);
 
     return true;
 }
