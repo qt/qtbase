@@ -73,6 +73,8 @@ public:
     QSurface *surface() const;
     virtual QPlatformScreen *screen() const = 0;
 
+    static bool isRasterSurface(QSurface *surface);
+
 private:
     explicit QPlatformSurface(QSurface *surface);
 
