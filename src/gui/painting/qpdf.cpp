@@ -2760,6 +2760,8 @@ int QPdfEnginePrivate::addBrushPattern(const QTransform &m, bool *specifyColor, 
         return gradientBrush(brush, matrix, gStateObject);
     }
 
+    matrix = brush.transform() * matrix;
+
     if ((!brush.isOpaque() && brush.style() < Qt::LinearGradientPattern) || opacity != 1.0)
         *gStateObject = addConstantAlphaObject(qRound(brush.color().alpha() * opacity),
                                                qRound(pen.color().alpha() * opacity));
