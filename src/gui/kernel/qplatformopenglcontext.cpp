@@ -165,4 +165,20 @@ bool QPlatformOpenGLContext::parseOpenGLVersion(const QByteArray &versionString,
     return (majorOk && minorOk);
 }
 
+/*!
+   Called when the RHI begins rendering a new frame in the context. Will always be paired with a
+   call to \l endFrame().
+*/
+void QPlatformOpenGLContext::beginFrame()
+{
+}
+
+/*!
+   Called when the RHI ends rendering a in the context. Is always preceded by a call to
+   \l beginFrame().
+*/
+void QPlatformOpenGLContext::endFrame()
+{
+}
+
 QT_END_NAMESPACE

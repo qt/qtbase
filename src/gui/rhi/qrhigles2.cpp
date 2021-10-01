@@ -43,6 +43,7 @@
 #include <QOpenGLContext>
 #include <QtGui/private/qopenglextensions_p.h>
 #include <QtGui/private/qopenglprogrambinarycache_p.h>
+#include <qpa/qplatformopenglcontext.h>
 #include <qmath.h>
 
 QT_BEGIN_NAMESPACE
@@ -1769,6 +1770,8 @@ QRhi::FrameOpResult QRhiGles2::beginFrame(QRhiSwapChain *swapChain, QRhi::BeginF
     if (!ensureContext(swapChainD->surface))
         return contextLost ? QRhi::FrameOpDeviceLost : QRhi::FrameOpError;
 
+    ctx->handle()->beginFrame();
+
     currentSwapChain = swapChainD;
 
     QRhiProfilerPrivate *rhiP = profilerPrivateOrNull();
@@ -1807,6 +1810,9 @@ QRhi::FrameOpResult QRhiGles2::endFrame(QRhiSwapChain *swapChain, QRhi::EndFrame
 
     swapChainD->frameCount += 1;
     currentSwapChain = nullptr;
+
+    ctx->handle()->endFrame();
+
     return QRhi::FrameOpSuccess;
 }
 

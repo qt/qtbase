@@ -84,6 +84,9 @@ public:
     virtual bool makeCurrent(QPlatformSurface *surface) = 0;
     virtual void doneCurrent() = 0;
 
+    virtual void beginFrame();
+    virtual void endFrame();
+
     virtual bool isSharing() const { return false; }
     virtual bool isValid() const { return true; }
 
