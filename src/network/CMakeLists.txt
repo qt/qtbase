@@ -349,7 +349,7 @@ qt_internal_extend_target(Network CONDITION QT_FEATURE_openssl AND QT_FEATURE_ss
         WrapOpenSSLHeaders::WrapOpenSSLHeaders
 )
 
-qt_internal_extend_target(Network CONDITION QT_FEATURE_dnslookup AND UNIX AND NOT ANDROID AND NOT INTEGRITY
+qt_internal_extend_target(Network CONDITION QT_FEATURE_dnslookup AND UNIX AND NOT ANDROID
     SOURCES
         kernel/qdnslookup_unix.cpp
 )
