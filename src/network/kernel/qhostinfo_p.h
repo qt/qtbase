@@ -118,7 +118,6 @@ class QHostInfoAgent
 {
 public:
     static QHostInfo fromName(const QString &hostName);
-private:
     static QHostInfo lookup(const QString &hostName);
     static QHostInfo reverseLookup(const QHostAddress &address);
 };
