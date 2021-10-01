@@ -562,8 +562,8 @@ QFontEngineData::~QFontEngineData()
 
     For more general information on fonts, see the
     \l{comp.fonts FAQ}{comp.fonts FAQ}.
-    Information on encodings can be found from
-    \l{Roman Czyborra's} page.
+    Information on encodings can be found from the
+    \l{UTR17} page.
 
     \sa QFontMetrics, QFontInfo, QFontDatabase, {Character Map Example}
 */
