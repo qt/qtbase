@@ -45,7 +45,7 @@
 #include <pwd.h>
 #endif
 
-#if defined(Q_OS_UNIX) && !defined(Q_OS_MAC) && !defined(Q_OS_ANDROID)
+#if defined(Q_OS_UNIX) && !defined(Q_OS_MACOS) && !defined(Q_OS_ANDROID)
 #define Q_XDG_PLATFORM
 #endif
 
@@ -468,7 +468,9 @@ void tst_qstandardpaths::testRuntimeDirectory()
 #endif
 }
 
-#ifdef Q_XDG_PLATFORM
+// INTEGRITY PJF System doesn't support user ID related APIs. getpwuid is not defined.
+// testCustomRuntimeDirectory_data test will always FAIL for INTEGRITY.
+#if defined(Q_XDG_PLATFORM) && !defined(Q_OS_INTEGRITY)
 static QString fallbackXdgRuntimeDir()
 {
     static QString username = [] {
@@ -491,7 +493,7 @@ static QString fallbackXdgRuntimeDir()
 {
     qunsetenv("XDG_RUNTIME_DIR");
 #ifdef Q_XDG_PLATFORM
-#ifndef Q_OS_WASM
+#if !defined(Q_OS_WASM) && !defined(Q_OS_INTEGRITY)
     QTest::ignoreMessage(QtWarningMsg,
                          qPrintable("QStandardPaths: XDG_RUNTIME_DIR not set, defaulting to '"
                                     + fallbackXdgRuntimeDir() + '\''));
@@ -501,7 +503,9 @@ static QString fallbackXdgRuntimeDir()
 
 void tst_qstandardpaths::testCustomRuntimeDirectory_data()
 {
-#if defined(Q_XDG_PLATFORM)
+#ifdef Q_OS_INTEGRITY
+    QSKIP("Test requires getgid/getpwuid API that are not available on INTEGRITY");
+#elif defined(Q_XDG_PLATFORM)
     QTest::addColumn<RuntimeDirSetup>("setup");
     auto addRow = [](const char *name, RuntimeDirSetup f) {
         QTest::newRow(name) << f;
