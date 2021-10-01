@@ -2628,6 +2628,8 @@ bool buildAndroidProject(const Options &options)
         gradleProperties["androidBuildToolsVersion"] = options.sdkBuildToolsVersion.toLocal8Bit();
     QString abiList;
     for (auto it = options.architectures.constBegin(); it != options.architectures.constEnd(); ++it) {
+        if (!it->enabled)
+            continue;
         if (abiList.size())
             abiList.append(u",");
         abiList.append(it.key());
