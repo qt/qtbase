@@ -787,6 +787,26 @@ function(qt_internal_link_internal_platform_for_object_library target)
     target_link_libraries("${target}" PRIVATE Qt::PlatformModuleInternal)
 endfunction()
 
+# Use ${dep_target}'s include dirs when building ${target}.
+#
+# Assumes ${dep_target} is an INTERFACE_LIBRARY that only propagates include dirs and ${target}
+# is a Qt module / plugin.
+#
+# Building ${target} requires ${dep_target}'s include dirs.
+# Using ${target} does not require ${dep_target}'s include dirs.
+#
+# The main use case is adding the private header-only dependency PkgConfig::ATSPI2.
+function(qt_internal_add_target_include_dirs target dep_target)
+    if(NOT TARGET "${target}")
+        message(FATAL_ERROR "${target} is not a valid target.")
+    endif()
+    if(NOT TARGET "${dep_target}")
+        message(FATAL_ERROR "${dep_target} is not a valid target.")
+    endif()
+
+    target_include_directories("${target}" PRIVATE
+        "$<TARGET_PROPERTY:${dep_target},INTERFACE_INCLUDE_DIRECTORIES>")
+endfunction()
 
 # Use ${dep_target}'s include dirs when building ${target} and optionally propagate the include
 # dirs to consumers of ${target}.
@@ -809,15 +829,7 @@ endfunction()
 #
 # The main use case is for propagating WrapVulkanHeaders::WrapVulkanHeaders.
 function(qt_internal_add_target_include_dirs_and_optionally_propagate target dep_target)
-    if(NOT TARGET "${target}")
-        message(FATAL_ERROR "${target} is not a valid target.")
-    endif()
-    if(NOT TARGET "${dep_target}")
-        message(FATAL_ERROR "${dep_target} is not a valid target.")
-    endif()
-
-    target_include_directories("${target}" PRIVATE
-        "$<TARGET_PROPERTY:${dep_target},INTERFACE_INCLUDE_DIRECTORIES>")
+    qt_internal_add_target_include_dirs(${target} ${dep_target})
 
     target_link_libraries("${target}" INTERFACE "$<TARGET_NAME_IF_EXISTS:${dep_target}>")
 
