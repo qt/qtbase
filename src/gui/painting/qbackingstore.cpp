@@ -192,17 +192,6 @@ void QBackingStore::endPaint()
     handle()->endPaint();
 }
 
-static bool isRasterSurface(QWindow *window)
-{
-    switch (window->surfaceType()) {
-    case QSurface::RasterSurface:
-    case QSurface::RasterGLSurface:
-        return true;
-    default:
-        return false;
-    };
-}
-
 /*!
     Flushes the given \a region from the specified \a window onto the
     screen.
@@ -229,7 +218,7 @@ void QBackingStore::flush(const QRegion &region, QWindow *window, const QPoint &
         return;
     }
 
-    if (!isRasterSurface(window)) {
+    if (!QPlatformSurface::isRasterSurface(window)) {
         qWarning() << "Attempted flush to non-raster surface" << window << "of type" << window->surfaceType()
             << (window->inherits("QWidgetWindow") ? "(consider using Qt::WA_PaintOnScreen to exclude "
                                                    "from backingstore sync)" : "");

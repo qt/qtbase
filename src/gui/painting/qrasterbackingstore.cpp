@@ -82,7 +82,7 @@ QImage QRasterBackingStore::toImage() const
 
 bool QRasterBackingStore::scroll(const QRegion &region, int dx, int dy)
 {
-    if (window()->surfaceType() != QSurface::RasterSurface)
+    if (!QPlatformSurface::isRasterSurface(window()))
         return false;
 
     extern void qt_scrollRectInImage(QImage &, const QRect &, const QPoint &);

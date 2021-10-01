@@ -68,6 +68,17 @@ QPlatformSurface::QPlatformSurface(QSurface *surface) : m_surface(surface)
 {
 }
 
+bool QPlatformSurface::isRasterSurface(QSurface *surface)
+{
+    switch (surface->surfaceType()) {
+    case QSurface::RasterSurface:
+    case QSurface::RasterGLSurface:
+        return true;
+    default:
+        return false;
+    };
+}
+
 #ifndef QT_NO_DEBUG_STREAM
 Q_GUI_EXPORT QDebug operator<<(QDebug debug, const QPlatformSurface *surface)
 {
