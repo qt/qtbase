@@ -512,13 +512,9 @@ private:
         qSwap(this->value, other.value);
     }
 
-#if defined(Q_NO_TEMPLATE_FRIENDS)
-public:
-#else
     template <class X> friend class QSharedPointer;
     template <class X> friend class QWeakPointer;
     template <class X, class Y> friend QSharedPointer<X> QtSharedPointer::copyAndSetPointer(X * ptr, const QSharedPointer<Y> &src);
-#endif
     void ref() const noexcept { d->weakref.ref(); d->strongref.ref(); }
 
     inline void internalSet(Data *o, T *actual)
@@ -676,12 +672,8 @@ public:
 
 private:
     friend struct QtPrivate::EnableInternalData;
-#if defined(Q_NO_TEMPLATE_FRIENDS)
-public:
-#else
     template <class X> friend class QSharedPointer;
     template <class X> friend class QPointer;
-#endif
 
     template <class X>
     inline QWeakPointer &assign(X *ptr)
@@ -738,12 +730,8 @@ public:
     inline QSharedPointer<T> sharedFromThis() { return QSharedPointer<T>(weakPointer); }
     inline QSharedPointer<const T> sharedFromThis() const { return QSharedPointer<const T>(weakPointer); }
 
-#ifndef Q_NO_TEMPLATE_FRIENDS
 private:
     template <class X> friend class QSharedPointer;
-#else
-public:
-#endif
     template <class X>
     inline void initializeFromSharedPointer(const QSharedPointer<X> &ptr) const
     {

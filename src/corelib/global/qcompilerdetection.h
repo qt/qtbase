@@ -409,15 +409,6 @@
    documentation. It also follows conventions like _BOOL and this documented */
 #  elif defined(sinix)
 #    define Q_CC_CDS
-
-/* The MIPSpro compiler defines __EDG */
-#  elif defined(__sgi)
-#    define Q_CC_MIPS
-#    define Q_NO_TEMPLATE_FRIENDS
-#    if defined(_COMPILER_VERSION) && (_COMPILER_VERSION >= 740)
-#      define Q_OUTOFLINE_TEMPLATE inline
-#      pragma set woff 3624,3625,3649 /* turn off some harmless warnings */
-#    endif
 #  endif
 
 /* VxWorks' DIAB toolchain has an additional EDG type C++ compiler
@@ -446,9 +437,6 @@
 #    if __SUNPRO_CC >= 0x550
 #      define Q_DECL_EXPORT     __global
 #    endif
-#    if __SUNPRO_CC < 0x5a0
-#      define Q_NO_TEMPLATE_FRIENDS
-#    endif
 #    if !defined(_BOOL)
 #      error "Compiler not supported"
 #    endif
@@ -466,26 +454,6 @@
 #    error "Compiler not supported"
 #  endif
 #  define Q_BROKEN_TEMPLATE_SPECIALIZATION
-
-#elif defined(Q_OS_HPUX)
-/* __HP_aCC was not defined in first aCC releases */
-#  if defined(__HP_aCC) || __cplusplus >= 199707L
-#    define Q_NO_TEMPLATE_FRIENDS
-#    define Q_CC_HPACC
-#    define Q_FUNC_INFO         __PRETTY_FUNCTION__
-#    if __HP_aCC-0 < 060000
-#      define QT_NO_TEMPLATE_TEMPLATE_PARAMETERS
-#      define Q_DECL_EXPORT     __declspec(dllexport)
-#      define Q_DECL_IMPORT     __declspec(dllimport)
-#    endif
-#    if __HP_aCC-0 >= 062000
-#      define Q_DECL_EXPORT     __attribute__((visibility("default")))
-#      define Q_DECL_HIDDEN     __attribute__((visibility("hidden")))
-#      define Q_DECL_IMPORT     Q_DECL_EXPORT
-#    endif
-#  else
-#    error "Compiler not supported"
-#  endif
 
 #else
 #  error "Qt has not been tested with this compiler - see http://www.qt-project.org/"
