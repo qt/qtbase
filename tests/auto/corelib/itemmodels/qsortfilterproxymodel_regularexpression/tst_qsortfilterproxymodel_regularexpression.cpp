@@ -29,14 +29,11 @@
 #include <QTest>
 #include <QSignalSpy>
 #include <QStringListModel>
+#include <QSortFilterProxyModel>
 
-#include "tst_qsortfilterproxymodel.h"
-
-class tst_QSortFilterProxyModelRegularExpression : public tst_QSortFilterProxyModel
+class tst_QSortFilterProxyModelRegularExpression : public QObject
 {
     Q_OBJECT
-public:
-    tst_QSortFilterProxyModelRegularExpression();
 private slots:
     void tst_invalid();
     void tst_caseSensitivity();
@@ -44,11 +41,6 @@ private slots:
     void tst_keepPatternOptions_QTBUG_92260();
     void tst_regexCaseSensitivityNotification();
 };
-
-tst_QSortFilterProxyModelRegularExpression::tst_QSortFilterProxyModelRegularExpression() :
-    tst_QSortFilterProxyModel()
-{
-}
 
 void tst_QSortFilterProxyModelRegularExpression::tst_invalid()
 {

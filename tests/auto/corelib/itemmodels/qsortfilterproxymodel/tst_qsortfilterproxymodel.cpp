@@ -5522,4 +5522,5 @@ void tst_QSortFilterProxyModel::createPersistentOnLayoutAboutToBeChanged() // QT
     QCOMPARE(layoutChangedSpy.size(), 1);
 }
 
+QTEST_MAIN(tst_QSortFilterProxyModel)
 #include "tst_qsortfilterproxymodel.moc"
