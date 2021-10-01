@@ -32,7 +32,9 @@
 #include <QPainter>
 #include <QPdfWriter>
 #include <QTemporaryFile>
+#if QT_CONFIG(process)
 #include <QProcess>
+#endif
 
 #ifndef QT_NO_OPENGL
 #include <QOpenGLFramebufferObjectFormat>
@@ -421,6 +423,7 @@ void tst_Lancelot::runTestSuite(GraphicsEngine engine, QImage::Format format, co
         rendered = fbo.toImage().convertToFormat(format);
 #endif
     } else if (engine == Pdf) {
+#if QT_CONFIG(process)
         QString tempStem(QDir::tempPath() + QLatin1String("/lancelot_XXXXXX_") + qpsFile.chopped(4));
 
         QTemporaryFile pdfFile(tempStem + QLatin1String(".pdf"));
@@ -442,6 +445,7 @@ void tst_Lancelot::runTestSuite(GraphicsEngine engine, QImage::Format format, co
         proc.waitForFinished(2 * 60 * 1000); // May need some time
 
         rendered = QImage(pngFile.fileName());
+#endif
     }
 
     QBASELINE_TEST(rendered);
