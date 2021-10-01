@@ -1623,8 +1623,7 @@ void QSortFilterProxyModelPrivate::_q_sourceReset()
     _q_clearMapping();
     // All internal structures are deleted in clear()
     q->endResetModel();
-    update_source_sort_column();
-    if (dynamic_sortfilter && update_source_sort_column())
+    if (update_source_sort_column() && dynamic_sortfilter)
         sort();
 }
 
