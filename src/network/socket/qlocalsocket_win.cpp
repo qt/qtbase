@@ -582,7 +582,7 @@ bool QLocalSocket::waitForBytesWritten(int msecs)
         if (d->pipeWriter->checkForWrite())
             return true;
 
-        if (poller.waitForClose)
+        if (poller.waitForClose && isValid())
             d->pipeReader->checkPipeState();
 
         d->pipeReader->checkForReadyRead();
