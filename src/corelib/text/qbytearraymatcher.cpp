@@ -124,10 +124,12 @@ QByteArrayMatcher::QByteArrayMatcher()
 }
 
 /*!
-  Constructs a byte array matcher from \a pattern. \a pattern
-  has the given \a length. \a pattern must remain in scope, but
-  the destructor does not delete \a pattern.
- */
+    Constructs a byte array matcher from \a pattern. \a pattern
+    has the given \a length. Call indexIn() to perform a search.
+
+    \note the data that \a pattern is referencing must remain valid while this
+    object is used.
+*/
 QByteArrayMatcher::QByteArrayMatcher(const char *pattern, qsizetype length) : d(nullptr)
 {
     p.p = reinterpret_cast<const uchar *>(pattern);
