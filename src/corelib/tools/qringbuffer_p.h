@@ -73,7 +73,7 @@ public:
         chunk(other.chunk), headOffset(other.headOffset), tailOffset(other.tailOffset)
     {
     }
-    explicit inline QRingChunk(int alloc) :
+    explicit inline QRingChunk(qsizetype alloc) :
         chunk(alloc, Qt::Uninitialized), headOffset(0), tailOffset(0)
     {
     }
@@ -104,7 +104,7 @@ public:
     }
 
     // allocating and sharing
-    void allocate(int alloc);
+    void allocate(qsizetype alloc);
     inline bool isShared() const
     {
         return !chunk.isDetached();
@@ -113,19 +113,19 @@ public:
     QByteArray toByteArray();
 
     // getters
-    inline int head() const
+    inline qsizetype head() const
     {
         return headOffset;
     }
-    inline int size() const
+    inline qsizetype size() const
     {
         return tailOffset - headOffset;
     }
-    inline int capacity() const
+    inline qsizetype capacity() const
     {
         return chunk.size();
     }
-    inline int available() const
+    inline qsizetype available() const
     {
         return chunk.size() - tailOffset;
     }
@@ -141,14 +141,14 @@ public:
     }
 
     // array management
-    inline void advance(int offset)
+    inline void advance(qsizetype offset)
     {
         Q_ASSERT(headOffset + offset >= 0);
         Q_ASSERT(size() - offset > 0);
 
         headOffset += offset;
     }
-    inline void grow(int offset)
+    inline void grow(qsizetype offset)
     {
         Q_ASSERT(size() + offset > 0);
         Q_ASSERT(head() + size() + offset <= capacity());
@@ -172,7 +172,8 @@ public:
 
 private:
     QByteArray chunk;
-    int headOffset, tailOffset;
+    qsizetype headOffset;
+    qsizetype tailOffset;
 };
 Q_DECLARE_SHARED(QRingChunk)
 
