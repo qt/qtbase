@@ -37,36 +37,30 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include "qplatformdefs.h"
 #include "qlibrary.h"
-
-#include "qfactoryloader_p.h"
 #include "qlibrary_p.h"
-#include <qstringlist.h>
+
+#include <q20algorithm.h>
+#include <qdebug.h>
+#include <qendian.h>
 #include <qfile.h>
 #include <qfileinfo.h>
-#include <qmutex.h>
+#include <qjsondocument.h>
 #include <qmap.h>
-#include <private/qcoreapplication_p.h>
-#include <private/qsystemerror_p.h>
+#include <qmutex.h>
+#include <qstringlist.h>
+
 #ifdef Q_OS_MAC
 #  include <private/qcore_mac_p.h>
 #endif
-#ifndef NO_ERRNO_H
-#include <errno.h>
-#endif // NO_ERROR_H
-#include <qdebug.h>
-#include <qlist.h>
-#include <qdir.h>
-#include <qendian.h>
-#include <qjsondocument.h>
-#include <qjsonvalue.h>
+#include <private/qcoreapplication_p.h>
+#include <private/qsystemerror_p.h>
+
 #include "qelfparser_p.h"
+#include "qfactoryloader_p.h"
 #include "qmachparser_p.h"
 
 #include <qtcore_tracepoints_p.h>
-
-#include <QtCore/q20algorithm.h>
 
 QT_BEGIN_NAMESPACE
 

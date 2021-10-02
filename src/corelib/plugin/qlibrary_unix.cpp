@@ -40,9 +40,9 @@
 
 #include "qplatformdefs.h"
 
+#include <qcoreapplication.h>
 #include <qfile.h>
 #include "qlibrary_p.h"
-#include <qcoreapplication.h>
 #include <private/qfilesystementry_p.h>
 #include <private/qsimd_p.h>
 

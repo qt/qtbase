@@ -53,11 +53,12 @@
 //
 
 #include <QtCore/private/qglobal_p.h>
+
 #include "QtCore/qlibrary.h"
 #include "QtCore/qmutex.h"
+#include "QtCore/qplugin.h"
 #include "QtCore/qpointer.h"
 #include "QtCore/qstringlist.h"
-#include "QtCore/qplugin.h"
 #ifdef Q_OS_WIN
 #  include "QtCore/qt_windows.h"
 #endif

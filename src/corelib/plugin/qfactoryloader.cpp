@@ -42,22 +42,24 @@
 
 #ifndef QT_NO_QOBJECT
 #include "qfactoryinterface.h"
+
+#include "private/qcoreapplication_p.h"
+#include "private/qduplicatetracker_p.h"
+#include "private/qobject_p.h"
+#include "qcbormap.h"
+#include "qcborvalue.h"
+#include "qendian.h"
+#include "qjsonarray.h"
+#include "qjsondocument.h"
+#include "qjsonobject.h"
+#include "qjsonvalue.h"
 #include "qmap.h"
-#include <qdir.h>
-#include <qdebug.h>
 #include "qmutex.h"
 #include "qplugin.h"
 #include "qplugin_p.h"
 #include "qpluginloader.h"
-#include "private/qobject_p.h"
-#include "private/qcoreapplication_p.h"
-#include "qcbormap.h"
-#include "qcborvalue.h"
-#include "qjsondocument.h"
-#include "qjsonvalue.h"
-#include "qjsonobject.h"
-#include "qjsonarray.h"
-#include "private/qduplicatetracker_p.h"
+#include <qdebug.h>
+#include <qdir.h>
 
 #include <qtcore_tracepoints_p.h>
 

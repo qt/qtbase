@@ -54,18 +54,17 @@
 #include "QtCore/qglobal.h"
 #ifndef QT_NO_QOBJECT
 
-#include "QtCore/qobject.h"
-#include "QtCore/qstringlist.h"
-#include "QtCore/qcborvalue.h"
-#include "QtCore/qjsonobject.h"
-#include "QtCore/qjsondocument.h"
 #include "QtCore/qmap.h"
-#include "QtCore/qendian.h"
+#include "QtCore/qobject.h"
+
 #if QT_CONFIG(library)
-#include "private/qlibrary_p.h"
+#  include "qlibrary_p.h"
 #endif
 
 QT_BEGIN_NAMESPACE
+
+class QJsonDocument;
+class QJsonObject;
 
 QJsonDocument qJsonFromRawLibraryMetaData(const char *raw, qsizetype size, QString *errMsg);
 

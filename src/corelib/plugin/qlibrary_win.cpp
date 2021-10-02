@@ -39,8 +39,9 @@
 
 #include "qplatformdefs.h"
 #include "qlibrary_p.h"
-#include "qfile.h"
+
 #include "qdir.h"
+#include "qfile.h"
 #include "qfileinfo.h"
 #include <private/qfilesystementry_p.h>
 

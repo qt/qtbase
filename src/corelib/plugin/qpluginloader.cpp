@@ -38,15 +38,14 @@
 **
 ****************************************************************************/
 
-#include "qplatformdefs.h"
-
-#include "qplugin.h"
-#include "qcoreapplication.h"
 #include "qpluginloader.h"
-#include <qfileinfo.h>
-#include "qfactoryloader_p.h"
+
+#include "qcoreapplication.h"
 #include "qdebug.h"
 #include "qdir.h"
+#include "qfactoryloader_p.h"
+#include "qfileinfo.h"
+#include "qjsondocument.h"
 
 QT_BEGIN_NAMESPACE
 
