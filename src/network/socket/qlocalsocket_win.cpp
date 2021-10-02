@@ -396,6 +396,7 @@ void QLocalSocket::close()
     Q_D(QLocalSocket);
 
     QIODevice::close();
+    d->pipeReader->stopAndClear();
     d->serverName = QString();
     d->fullServerName = QString();
     disconnectFromServer();

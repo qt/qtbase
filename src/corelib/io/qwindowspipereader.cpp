@@ -104,6 +104,7 @@ void QWindowsPipeReader::setHandle(HANDLE hPipeReadEnd)
 void QWindowsPipeReader::stop()
 {
     cancelAsyncRead(Stopped);
+    pipeBroken = true;
 }
 
 /*!
@@ -113,6 +114,22 @@ void QWindowsPipeReader::stop()
 void QWindowsPipeReader::drainAndStop()
 {
     cancelAsyncRead(Draining);
+    pipeBroken = true;
+}
+
+/*!
+    Stops the asynchronous read sequence.
+    Clears the internal buffer and discards any pending data.
+ */
+void QWindowsPipeReader::stopAndClear()
+{
+    cancelAsyncRead(Stopped);
+    readBuffer.clear();
+    actualReadBufferSize = 0;
+    // QLocalSocket is supposed to write data in the 'Closing'
+    // state, so we don't set 'pipeBroken' flag here. Also, avoid
+    // setting this flag in checkForReadyRead().
+    lastError = ERROR_SUCCESS;
 }
 
 /*!
@@ -120,7 +137,6 @@ void QWindowsPipeReader::drainAndStop()
  */
 void QWindowsPipeReader::cancelAsyncRead(State newState)
 {
-    pipeBroken = true;
     if (state != Running)
         return;
 
@@ -147,9 +163,9 @@ void QWindowsPipeReader::cancelAsyncRead(State newState)
     }
     mutex.unlock();
 
-    // Because pipeBroken was set earlier, finish reading to keep the class
-    // state consistent. Note that signals are not emitted in the call
-    // below, as the caller is expected to do that synchronously.
+    // Finish reading to keep the class state consistent. Note that
+    // signals are not emitted in the call below, as the caller is
+    // expected to do that synchronously.
     consumePending();
 }
 

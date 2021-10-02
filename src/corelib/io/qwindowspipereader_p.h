@@ -71,6 +71,7 @@ public:
     void startAsyncRead();
     void stop();
     void drainAndStop();
+    void stopAndClear();
 
     void setMaxReadBufferSize(qint64 size);
     qint64 maxReadBufferSize() const { return readBufferMaxSize; }
