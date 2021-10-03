@@ -98,9 +98,12 @@ function(qt6_android_generate_deployment_settings target)
         "   \"sdk\": \"${android_sdk_root_native}\",\n")
 
     # Android SDK Build Tools Revision
-    _qt_internal_android_get_sdk_build_tools_revision(QT_ANDROID_SDK_BUILD_TOOLS_REVISION)
+    get_target_property(android_sdk_build_tools ${target} QT_ANDROID_SDK_BUILD_TOOLS_REVISION)
+    if (NOT android_sdk_build_tools)
+        _qt_internal_android_get_sdk_build_tools_revision(android_sdk_build_tools)
+    endif()
     string(APPEND file_contents
-        "   \"sdkBuildToolsRevision\": \"${QT_ANDROID_SDK_BUILD_TOOLS_REVISION}\",\n")
+        "   \"sdkBuildToolsRevision\": \"${android_sdk_build_tools}\",\n")
 
     # Android NDK
     file(TO_CMAKE_PATH "${CMAKE_ANDROID_NDK}" android_ndk_root_native)
