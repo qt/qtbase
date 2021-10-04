@@ -92,6 +92,14 @@ const char *PaintCommands::fontHintingTable[] = {
     "Full"
 };
 
+const char *PaintCommands::fontCapitalizationTable[] = {
+    "MixedCase",
+    "AllUppercase",
+    "AllLowercase",
+    "SmallCaps",
+    "Capitalize"
+};
+
 const char *PaintCommands::clipOperationTable[] = {
     "NoClip",
     "ReplaceClip",
@@ -305,8 +313,8 @@ void PaintCommands::staticInit()
                       "setCompositionMode <composition mode enum>",
                       "setCompositionMode SourceOver");
     DECL_PAINTCOMMAND("setFont", command_setFont,
-                      "^setFont\\s+\"([\\w\\s]*)\"\\s*(\\w*)\\s*(\\w*)\\s*(\\w*)\\s*(\\w*)\\s*(\\w*)\\s*(\\w*)\\s*(\\w*)$",
-                      "setFont <fontFace> [size] [font weight|font weight enum] [italic] [hinting enum] [underline] [strikeout] [overline]\n  - font weight is an integer between 0 and 99",
+                      "^setFont\\s+\"([\\w\\s]*)\"\\s*(\\w*)\\s*(\\w*)\\s*(\\w*)\\s*(\\w*)\\s*(\\w*)\\s*(\\w*)\\s*(\\w*)\\s*(\\w*)$",
+                      "setFont <fontFace> [size] [font weight|font weight enum] [italic] [hinting enum] [underline] [strikeout] [overline] [capitalization enum]\n  - font weight is an integer between 0 and 99",
                       "setFont \"times\" 12");
     DECL_PAINTCOMMAND("setPen", command_setPen,
                       "^setPen\\s+#?(\\w*)$",
@@ -2144,6 +2152,12 @@ void PaintCommands::command_setFont(QRegularExpressionMatch re)
     font.setUnderline(underline);
     font.setStrikeOut(strikeOut);
     font.setOverline(overline);
+
+    int capitalization = translateEnum(fontCapitalizationTable, caps.at(9), 5);
+    if (capitalization == -1)
+        capitalization = 0;
+    else
+        font.setCapitalization(QFont::Capitalization(capitalization));
 
     if (m_verboseMode)
         printf(" -(lance) setFont(family=%s, size=%d, weight=%d, italic=%d hinting=%s\n",
