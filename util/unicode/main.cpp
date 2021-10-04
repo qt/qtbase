@@ -39,8 +39,8 @@
 #include <private/qunicodetables_p.h>
 #endif
 
-#define DATA_VERSION_S "13.0"
-#define DATA_VERSION_STR "QChar::Unicode_13_0"
+#define DATA_VERSION_S "14.0"
+#define DATA_VERSION_STR "QChar::Unicode_14_0"
 
 
 static QHash<QByteArray, QChar::UnicodeVersion> age_map;
@@ -74,6 +74,7 @@ static void initAgeMap()
         { QChar::Unicode_12_0,   "12.0" },
         { QChar::Unicode_12_1,   "12.1" }, // UCD Revision 24
         { QChar::Unicode_13_0,   "13.0" }, // UCD Revision 26
+        { QChar::Unicode_14_0,   "14.0" }, // UCD Revision 28
         { QChar::Unicode_Unassigned, 0 }
     };
     AgeMap *d = ageMap;
@@ -796,6 +797,13 @@ static void initScriptMap()
         { QChar::Script_DivesAkuru,             "DivesAkuru" },
         { QChar::Script_KhitanSmallScript,      "KhitanSmallScript" },
         { QChar::Script_Yezidi,                 "Yezidi" },
+
+        // 14.0
+        { QChar::Script_CyproMinoan,            "CyproMinoan"},
+        { QChar::Script_OldUyghur,              "OldUyghur"},
+        { QChar::Script_Tangsa,                 "Tangsa"},
+        { QChar::Script_Toto,                   "Toto"},
+        { QChar::Script_Vithkuqi,               "Vithkuqi"},
 
         // unhandled
         { QChar::Script_Unknown,                0 }

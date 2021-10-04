@@ -363,6 +363,13 @@ public:
         Script_KhitanSmallScript,
         Script_Yezidi,
 
+        // Unicode 14.0 additions
+        Script_CyproMinoan,
+        Script_OldUyghur,
+        Script_Tangsa,
+        Script_Toto,
+        Script_Vithkuqi,
+
         ScriptCount
     };
 
@@ -453,7 +460,8 @@ public:
         Unicode_11_0,
         Unicode_12_0,
         Unicode_12_1,
-        Unicode_13_0
+        Unicode_13_0,
+        Unicode_14_0
     };
 
     inline Category category() const noexcept { return QChar::category(ucs); }

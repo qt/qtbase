@@ -125,24 +125,12 @@ void tst_QUrlUts46::idnaTestV2()
         });
     };
 
-    // Some input file entries claim P1 error when none can be found.
-    // This is fixed in Unicode 14.0.0
-    QEXPECT_FAIL("line 1076", "Invalid P1 in the input file", Continue);
-    QEXPECT_FAIL("line 1077", "Invalid P1 in the input file", Continue);
-    QEXPECT_FAIL("line 4453", "Invalid P1 in the input file", Continue);
-    QEXPECT_FAIL("line 4454", "Invalid P1 in the input file", Continue);
-    QEXPECT_FAIL("line 5667", "Invalid P1 in the input file", Continue);
     QString toAceN = QUrl::toAce(source);
     if (toAsciiNOk && dashesOk(toAsciiN))
         QCOMPARE(toAceN, toAsciiN);
     else
         QCOMPARE(toAceN, QString());
 
-    QEXPECT_FAIL("line 1076", "Invalid P1 in the input file", Continue);
-    QEXPECT_FAIL("line 1077", "Invalid P1 in the input file", Continue);
-    QEXPECT_FAIL("line 4453", "Invalid P1 in the input file", Continue);
-    QEXPECT_FAIL("line 4454", "Invalid P1 in the input file", Continue);
-    QEXPECT_FAIL("line 5667", "Invalid P1 in the input file", Continue);
     QString toAceT = QUrl::toAce(source, QUrl::AceTransitionalProcessing);
     if (toAsciiTOk && dashesOk(toAsciiT))
         QCOMPARE(toAceT, toAsciiT);

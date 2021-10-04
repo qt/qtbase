@@ -242,7 +242,21 @@ static const hb_script_t _qtscript_to_hbscript[] = {
     HB_SCRIPT_CHORASMIAN,
     HB_SCRIPT_DIVES_AKURU,
     HB_SCRIPT_KHITAN_SMALL_SCRIPT,
-    HB_SCRIPT_YEZIDI
+    HB_SCRIPT_YEZIDI,
+#endif
+    // Unicode 14.0 additions (not present in harfbuzz-ng 2.9.1 and earlier)
+#if !HB_VERSION_ATLEAST(3, 0, 0)
+    hb_script_t(HB_TAG('C','p','m','n')), // Script_CyproMinoan
+    hb_script_t(HB_TAG('O','u','g','r')), // Script_OldUyghur
+    hb_script_t(HB_TAG('T','n','s','a')), // Script_Tangsa
+    hb_script_t(HB_TAG('T','o','t','o')), // Script_Toto
+    hb_script_t(HB_TAG('V','i','t','h')), // Script_Vithkuqi
+#else
+    HB_SCRIPT_CYPRO_MINOAN,
+    HB_SCRIPT_OLD_UYGHUR,
+    HB_SCRIPT_TANGSA,
+    HB_SCRIPT_TOTO,
+    HB_SCRIPT_VITHKUQI,
 #endif
 };
 static_assert(QChar::ScriptCount == sizeof(_qtscript_to_hbscript) / sizeof(_qtscript_to_hbscript[0]));

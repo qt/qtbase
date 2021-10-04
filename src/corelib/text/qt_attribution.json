@@ -11,12 +11,12 @@
  define the Unicode character properties and internal mappings.",
     "Homepage": "https://www.unicode.org/ucd/",
     "Version": "Don't use the Unicode standard version;
- UCD has its own 'Revision' numbers, see the 'UAX #44, UCD' page",
-    "Version": "26",
+ UCD has its own 'Revision' numbers, see the 'UAX #44, UCD' page (https://www.unicode.org/reports/tr44/)",
+    "Version": "28",
     "License": "Unicode License Agreement - Data Files and Software (2016)",
     "LicenseId": "Unicode-DFS-2016",
     "LicenseFile": "UNICODE_LICENSE.txt",
-    "Copyright": "Copyright (C) 1991-2018 Unicode, Inc."
+    "Copyright": "Copyright (C) 1991-2021 Unicode, Inc."
 },
 {
     "Id": "unicode-cldr",

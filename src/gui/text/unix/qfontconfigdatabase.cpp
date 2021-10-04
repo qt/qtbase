@@ -276,7 +276,12 @@ static const char specialLanguages[][6] = {
     "", // Chorasmian
     "", // DivesAkuru
     "", // KhitanSmallScript
-    "" // Yezidi
+    "", // Yezidi
+    "", // CyproMinoan
+    "", // OldUyghur
+    "", // Tangsa
+    "", // Toto
+    "", // Vithkuqi
 };
 static_assert(sizeof specialLanguages / sizeof *specialLanguages == QChar::ScriptCount);
 
