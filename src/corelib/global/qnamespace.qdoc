@@ -1128,7 +1128,7 @@
 
     \value WA_QuitOnClose Makes Qt quit the application when the last widget
     with the attribute set has accepted closeEvent(). This behavior can be
-    modified with the QApplication::quitOnLastWindowClosed property. By default
+    modified with the QGuiApplication::quitOnLastWindowClosed property. By default
     this attribute is set for all widgets of type Qt::Window.
 
     \value WA_Resized Indicates that the widget has an explicit size. This flag
