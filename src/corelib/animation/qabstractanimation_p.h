@@ -224,6 +224,7 @@ private:
     bool slowMode;
     bool startTimersPending;
     bool stopTimerPending;
+    bool allowNegativeDelta;
 
     // This factor will be used to divide the DEFAULT_TIMER_INTERVAL at each tick
     // when slowMode is enabled. Setting it to 0 or higher than DEFAULT_TIMER_INTERVAL (16)
