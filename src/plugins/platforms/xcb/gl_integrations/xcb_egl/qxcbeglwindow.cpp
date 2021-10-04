@@ -6,7 +6,6 @@
 #include "qxcbeglintegration.h"
 
 #include <QtGui/private/qeglconvenience_p.h>
-#include <QtGui/private/qxlibeglintegration_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -29,29 +28,15 @@ void QXcbEglWindow::resolveFormat(const QSurfaceFormat &format)
     m_format = q_glFormatFromConfig(m_glIntegration->eglDisplay(), m_config, format);
 }
 
-#if QT_CONFIG(xcb_xlib)
 const xcb_visualtype_t *QXcbEglWindow::createVisual()
 {
     QXcbScreen *scr = xcbScreen();
     if (!scr)
         return QXcbWindow::createVisual();
 
-    Display *xdpy = static_cast<Display *>(m_glIntegration->xlib_display());
-    VisualID id = QXlibEglIntegration::getCompatibleVisualId(xdpy, m_glIntegration->eglDisplay(), m_config);
-
-    XVisualInfo visualInfoTemplate;
-    memset(&visualInfoTemplate, 0, sizeof(XVisualInfo));
-    visualInfoTemplate.visualid = id;
-
-    XVisualInfo *visualInfo;
-    int matchingCount = 0;
-    visualInfo = XGetVisualInfo(xdpy, VisualIDMask, &visualInfoTemplate, &matchingCount);
-    const xcb_visualtype_t *xcb_visualtype = scr->visualForId(visualInfo->visualid);
-    XFree(visualInfo);
-
-    return xcb_visualtype;
+    xcb_visualid_t id = m_glIntegration->getCompatibleVisualId(scr->screen(), m_config);
+    return scr->visualForId(id);
 }
-#endif
 
 void QXcbEglWindow::create()
 {

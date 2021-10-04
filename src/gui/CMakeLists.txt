@@ -853,13 +853,6 @@ qt_internal_extend_target(Gui CONDITION QT_FEATURE_egl AND QT_FEATURE_opengl
         opengl/platform/egl/qeglplatformcontext.cpp opengl/platform/egl/qeglplatformcontext_p.h
 )
 
-qt_internal_extend_target(Gui CONDITION QT_FEATURE_egl AND QT_FEATURE_egl_x11
-    SOURCES
-        opengl/platform/egl/qxlibeglintegration.cpp opengl/platform/egl/qxlibeglintegration_p.h
-    LIBRARIES
-        X11::X11
-)
-
 qt_internal_extend_target(Gui CONDITION QT_FEATURE_egl AND NOT QT_FEATURE_egl_x11
     DEFINES
         QT_EGL_NO_X11

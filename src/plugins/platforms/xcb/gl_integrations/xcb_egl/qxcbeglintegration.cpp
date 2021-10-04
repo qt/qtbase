@@ -6,11 +6,54 @@
 #include "qxcbeglcontext.h"
 
 #include <QtGui/QOffscreenSurface>
+#include <QtGui/private/qeglconvenience_p.h>
 #include <QtGui/private/qeglstreamconvenience_p.h>
+#include <optional>
 
 #include "qxcbeglnativeinterfacehandler.h"
 
 QT_BEGIN_NAMESPACE
+
+namespace {
+
+struct VisualInfo
+{
+    xcb_visualtype_t visualType;
+    uint8_t depth;
+};
+
+std::optional<VisualInfo> getVisualInfo(xcb_screen_t *screen,
+                                        std::optional<xcb_visualid_t> requestedVisualId,
+                                        std::optional<uint8_t> requestedDepth = std::nullopt)
+{
+    xcb_depth_iterator_t depthIterator = xcb_screen_allowed_depths_iterator(screen);
+
+    while (depthIterator.rem) {
+        xcb_depth_t *depth = depthIterator.data;
+        xcb_visualtype_iterator_t visualTypeIterator = xcb_depth_visuals_iterator(depth);
+
+        while (visualTypeIterator.rem) {
+            xcb_visualtype_t *visualType = visualTypeIterator.data;
+            if (requestedVisualId && visualType->visual_id != *requestedVisualId) {
+                xcb_visualtype_next(&visualTypeIterator);
+                continue;
+            }
+
+            if (requestedDepth && depth->depth != *requestedDepth) {
+                xcb_visualtype_next(&visualTypeIterator);
+                continue;
+            }
+
+            return VisualInfo{ *visualType, depth->depth };
+        }
+
+        xcb_depth_next(&depthIterator);
+    }
+
+    return std::nullopt;
+}
+
+} // namespace
 
 QXcbEglIntegration::QXcbEglIntegration()
     : m_connection(nullptr)
@@ -91,6 +134,101 @@ void *QXcbEglIntegration::xlib_display() const
 #else
     return EGL_DEFAULT_DISPLAY;
 #endif
+}
+
+xcb_visualid_t QXcbEglIntegration::getCompatibleVisualId(xcb_screen_t *screen, EGLConfig config) const
+{
+    xcb_visualid_t visualId = 0;
+    EGLint eglValue = 0;
+
+    EGLint configRedSize = 0;
+    eglGetConfigAttrib(eglDisplay(), config, EGL_RED_SIZE, &configRedSize);
+
+    EGLint configGreenSize = 0;
+    eglGetConfigAttrib(eglDisplay(), config, EGL_GREEN_SIZE, &configGreenSize);
+
+    EGLint configBlueSize = 0;
+    eglGetConfigAttrib(eglDisplay(), config, EGL_BLUE_SIZE, &configBlueSize);
+
+    EGLint configAlphaSize = 0;
+    eglGetConfigAttrib(eglDisplay(), config, EGL_ALPHA_SIZE, &configAlphaSize);
+
+    eglGetConfigAttrib(eglDisplay(), config, EGL_CONFIG_ID, &eglValue);
+    int configId = eglValue;
+
+    // See if EGL provided a valid VisualID:
+    eglGetConfigAttrib(eglDisplay(), config, EGL_NATIVE_VISUAL_ID, &eglValue);
+    visualId = eglValue;
+    if (visualId) {
+        // EGL has suggested a visual id, so get the rest of the visual info for that id:
+        std::optional<VisualInfo> chosenVisualInfo = getVisualInfo(screen, visualId);
+        if (chosenVisualInfo) {
+            // Skip size checks if implementation supports non-matching visual
+            // and config (QTBUG-9444).
+            if (q_hasEglExtension(eglDisplay(), "EGL_NV_post_convert_rounding"))
+                return visualId;
+            // Skip also for i.MX6 where 565 visuals are suggested for the default 444 configs and it works just fine.
+            const char *vendor = eglQueryString(eglDisplay(), EGL_VENDOR);
+            if (vendor && strstr(vendor, "Vivante"))
+                return visualId;
+
+            int visualRedSize = qPopulationCount(chosenVisualInfo->visualType.red_mask);
+            int visualGreenSize = qPopulationCount(chosenVisualInfo->visualType.green_mask);
+            int visualBlueSize = qPopulationCount(chosenVisualInfo->visualType.blue_mask);
+            int visualAlphaSize = chosenVisualInfo->depth - visualRedSize - visualBlueSize - visualGreenSize;
+
+            const bool visualMatchesConfig = visualRedSize >= configRedSize
+                && visualGreenSize >= configGreenSize
+                && visualBlueSize >= configBlueSize
+                && visualAlphaSize >= configAlphaSize;
+
+            // In some cases EGL tends to suggest a 24-bit visual for 8888
+            // configs. In such a case we have to fall back to getVisualInfo.
+            if (!visualMatchesConfig) {
+                visualId = 0;
+                qCDebug(lcQpaGl,
+                        "EGL suggested using X Visual ID %d (%d %d %d %d depth %d) for EGL config %d"
+                        "(%d %d %d %d), but this is incompatible",
+                        visualId, visualRedSize, visualGreenSize, visualBlueSize, visualAlphaSize, chosenVisualInfo->depth,
+                        configId, configRedSize, configGreenSize, configBlueSize, configAlphaSize);
+            }
+        } else {
+            qCDebug(lcQpaGl, "EGL suggested using X Visual ID %d for EGL config %d, but that isn't a valid ID",
+                    visualId, configId);
+            visualId = 0;
+        }
+    }
+    else
+        qCDebug(lcQpaGl, "EGL did not suggest a VisualID (EGL_NATIVE_VISUAL_ID was zero) for EGLConfig %d", configId);
+
+    if (visualId) {
+        qCDebug(lcQpaGl, configAlphaSize > 0
+                ? "Using ARGB Visual ID %d provided by EGL for config %d"
+                : "Using Opaque Visual ID %d provided by EGL for config %d", visualId, configId);
+        return visualId;
+    }
+
+    // Finally, try to use getVisualInfo and only use the bit depths to match on:
+    if (!visualId) {
+        uint8_t depth = configRedSize + configGreenSize + configBlueSize + configAlphaSize;
+        std::optional<VisualInfo> matchingVisual = getVisualInfo(screen, std::nullopt, depth);
+        if (!matchingVisual) {
+            // Try again without taking the alpha channel into account:
+            depth = configRedSize + configGreenSize + configBlueSize;
+            matchingVisual = getVisualInfo(screen, std::nullopt, depth);
+        }
+
+        if (matchingVisual)
+            visualId = matchingVisual->visualType.visual_id;
+    }
+
+    if (visualId) {
+        qCDebug(lcQpaGl, "Using Visual ID %d provided by getVisualInfo for EGL config %d", visualId, configId);
+        return visualId;
+    }
+
+    qWarning("Unable to find an X11 visual which matches EGL config %d", configId);
+    return 0;
 }
 
 QT_END_NAMESPACE
