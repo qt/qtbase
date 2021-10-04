@@ -153,13 +153,6 @@ qt_internal_export_modern_cmake_config_targets_file(TARGETS ${__export_targets}
 qt_internal_get_supported_min_cmake_version_for_using_qt(supported_min_version_for_using_qt)
 qt_internal_get_computed_min_cmake_version_for_using_qt(computed_min_version_for_using_qt)
 
-# Save the minimum required CMake version to use Qt that should appear in a project's
-# cmake_minimum_required() call.
-qt_internal_get_supported_min_cmake_version_for_using_qt_in_cmake_min_required(
-    supported_min_version_for_using_qt_in_cmake_min_required)
-qt_internal_get_computed_min_cmake_version_for_using_qt_in_cmake_min_required(
-    computed_min_version_for_using_qt_in_cmake_min_required)
-
 # Get the lower and upper policy range to embed into the Qt6 config file.
 qt_internal_get_min_new_policy_cmake_version(min_new_policy_version)
 qt_internal_get_max_new_policy_cmake_version(max_new_policy_version)

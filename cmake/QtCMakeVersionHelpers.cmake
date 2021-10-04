@@ -36,25 +36,6 @@ function(qt_internal_get_supported_min_cmake_version_for_using_qt out_var)
     set(${out_var} "${supported_version}" PARENT_SCOPE)
 endfunction()
 
-# Returns the minimum CMake version that needs to be specified in the cmake_minimum_required() call
-# of a Qt user project as originally advertised by Qt.
-function(qt_internal_get_supported_min_cmake_version_for_using_qt_in_cmake_min_required out_var)
-    if(NOT DEFINED BUILD_SHARED_LIBS)
-        message(FATAL_ERROR "BUILD_SHARED_LIBS is needed to decide the minimum CMake version. "
-            "It should have been set by this point.")
-    endif()
-
-    if(BUILD_SHARED_LIBS)
-        set(supported_version
-            "${QT_SUPPORTED_MIN_CMAKE_VERSION_FOR_USING_QT_SHARED_IN_CMAKE_MIN_REQUIRED}")
-    else()
-        set(supported_version
-            "${QT_SUPPORTED_MIN_CMAKE_VERSION_FOR_USING_QT_STATIC_IN_CMAKE_MIN_REQUIRED}")
-    endif()
-
-    set(${out_var} "${supported_version}" PARENT_SCOPE)
-endfunction()
-
 # Returns the computed minimum supported CMake version required to /build/ Qt.
 function(qt_internal_get_computed_min_cmake_version_for_building_qt out_var)
     # An explicit override for those that take it upon themselves to fix the build system
@@ -88,23 +69,6 @@ function(qt_internal_get_computed_min_cmake_version_for_using_qt out_var)
     # No override was given, thus initialize with the default minimum.
     else()
         qt_internal_get_supported_min_cmake_version_for_using_qt(min_supported_version)
-        set(computed_min_version "${min_supported_version}")
-    endif()
-    set(${out_var} "${computed_min_version}" PARENT_SCOPE)
-endfunction()
-
-# Returns the computed minimum CMake version that needs to be specified in the
-# cmake_minimum_required() call of a Qt user project.
-function(qt_internal_get_computed_min_cmake_version_for_using_qt_in_cmake_min_required out_var)
-    # Allow overriding the version for user projects, without forcing
-    # each project developer to have to override it manually.
-    if(QT_FORCE_MIN_CMAKE_VERSION_FOR_USING_QT_IN_CMAKE_MIN_REQUIRED)
-        set(computed_min_version "${QT_FORCE_MIN_CMAKE_VERSION_FOR_USING_QT_IN_CMAKE_MIN_REQUIRED}")
-
-    # No override was given, thus initialize with the default minimum.
-    else()
-        qt_internal_get_supported_min_cmake_version_for_using_qt_in_cmake_min_required(
-            min_supported_version)
         set(computed_min_version "${min_supported_version}")
     endif()
     set(${out_var} "${computed_min_version}" PARENT_SCOPE)
