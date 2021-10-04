@@ -87,43 +87,49 @@ _remap_indexes (const hb_set_t *indexes,
 #ifndef HB_NO_SUBSET_LAYOUT
 typedef void (*layout_collect_func_t) (hb_face_t *face, hb_tag_t table_tag, const hb_tag_t *scripts, const hb_tag_t *languages, const hb_tag_t *features, hb_set_t *lookup_indexes /* OUT */);
 
-static void _collect_subset_layout (hb_face_t		 *face,
-				    hb_tag_t		  table_tag,
-				    const hb_set_t	 *layout_features_to_retain,
-				    bool		  retain_all_features,
-				    layout_collect_func_t layout_collect_func,
-				    hb_set_t		 *lookup_indices /* OUT */)
+
+template <typename T>
+static void _collect_layout_indices (hb_face_t		  *face,
+                                     const T&              table,
+                                     const hb_set_t	  *layout_features_to_retain,
+                                     layout_collect_func_t layout_collect_func,
+                                     hb_set_t		  *indices /* OUT */)
 {
-  if (retain_all_features)
+  hb_vector_t<hb_tag_t> features;
+  if (!features.alloc (table.get_feature_count () + 1))
+    return;
+
+  for (unsigned i = 0; i < table.get_feature_count (); i++)
   {
+    hb_tag_t tag = table.get_feature_tag (i);
+    if (tag && layout_features_to_retain->has (tag))
+      features.push (tag);
+  }
+
+  if (!features)
+    return;
+
+  // The collect function needs a null element to signal end of the array.
+  features.push (0);
+
+  if (features.get_size () == table.get_feature_count () + 1)
+  {
+    // Looking for all features, trigger the faster collection method.
     layout_collect_func (face,
-			 table_tag,
-			 nullptr,
-			 nullptr,
-			 nullptr,
-			 lookup_indices);
+                         T::tableTag,
+                         nullptr,
+                         nullptr,
+                         nullptr,
+                         indices);
     return;
   }
 
-  if (hb_set_is_empty (layout_features_to_retain)) return;
-  unsigned num = layout_features_to_retain->get_population () + 1;
-  hb_tag_t *features = (hb_tag_t *) hb_malloc (num * sizeof (hb_tag_t));
-  if (!features) return;
-
-  unsigned i = 0;
-  for (hb_tag_t f : layout_features_to_retain->iter ())
-    features[i++] = f;
-
-  features[i] = 0;
-
   layout_collect_func (face,
-		       table_tag,
+                       T::tableTag,
 		       nullptr,
 		       nullptr,
-		       features,
-		       lookup_indices);
-
-  hb_free (features);
+		       features.arrayZ,
+		       indices);
 }
 
 template <typename T>
@@ -131,7 +137,6 @@ static inline void
 _closure_glyphs_lookups_features (hb_face_t	     *face,
 				  hb_set_t	     *gids_to_retain,
 				  const hb_set_t     *layout_features_to_retain,
-				  bool		      retain_all_features,
 				  hb_map_t	     *lookups,
 				  hb_map_t	     *features,
 				  script_langsys_map *langsys_map)
@@ -139,12 +144,11 @@ _closure_glyphs_lookups_features (hb_face_t	     *face,
   hb_blob_ptr_t<T> table = hb_sanitize_context_t ().reference_table<T> (face);
   hb_tag_t table_tag = table->tableTag;
   hb_set_t lookup_indices;
-  _collect_subset_layout (face,
-			  table_tag,
-			  layout_features_to_retain,
-			  retain_all_features,
-			  hb_ot_layout_collect_lookups,
-			  &lookup_indices);
+  _collect_layout_indices<T> (face,
+                              *table,
+                              layout_features_to_retain,
+                              hb_ot_layout_collect_lookups,
+                              &lookup_indices);
 
   if (table_tag == HB_OT_TAG_GSUB)
     hb_ot_layout_lookups_substitute_closure (face,
@@ -157,12 +161,11 @@ _closure_glyphs_lookups_features (hb_face_t	     *face,
 
   // Collect and prune features
   hb_set_t feature_indices;
-  _collect_subset_layout (face,
-			  table_tag,
-			  layout_features_to_retain,
-			  retain_all_features,
-			  hb_ot_layout_collect_features,
-			  &feature_indices);
+  _collect_layout_indices<T> (face,
+                              *table,
+                              layout_features_to_retain,
+                              hb_ot_layout_collect_features,
+                              &feature_indices);
 
   table->prune_features (lookups, &feature_indices);
   hb_map_t duplicate_feature_map;
@@ -238,41 +241,58 @@ _populate_unicodes_to_retain (const hb_set_t *unicodes,
   OT::cmap::accelerator_t cmap;
   cmap.init (plan->source);
 
-  for (hb_codepoint_t cp : *unicodes)
+  constexpr static const int size_threshold = 4096;
+
+  if (glyphs->is_empty () && unicodes->get_population () < size_threshold)
   {
-    hb_codepoint_t gid;
-    if (!cmap.get_nominal_glyph (cp, &gid))
+    /* This is the fast path if it's anticipated that size of unicodes
+     * is << than the number of codepoints in the font. */
+    for (hb_codepoint_t cp : *unicodes)
     {
-      DEBUG_MSG(SUBSET, nullptr, "Drop U+%04X; no gid", cp);
-      continue;
+      hb_codepoint_t gid;
+      if (!cmap.get_nominal_glyph (cp, &gid))
+      {
+        DEBUG_MSG(SUBSET, nullptr, "Drop U+%04X; no gid", cp);
+        continue;
+      }
+
+      plan->codepoint_to_glyph->set (cp, gid);
     }
-    plan->unicodes->add (cp);
-    plan->codepoint_to_glyph->set (cp, gid);
-    plan->_glyphset_gsub->add (gid);
   }
-
-  if (glyphs->is_empty ())
+  else
   {
-    cmap.fini ();
-    return;
+    hb_map_t unicode_glyphid_map;
+    cmap.collect_mapping (hb_set_get_empty (), &unicode_glyphid_map);
+
+    for (hb_pair_t<hb_codepoint_t, hb_codepoint_t> cp_gid :
+	 + unicode_glyphid_map.iter ())
+    {
+      if (!unicodes->has (cp_gid.first) && !glyphs->has (cp_gid.second))
+	continue;
+
+      plan->codepoint_to_glyph->set (cp_gid.first, cp_gid.second);
+    }
+
+    /* Add gids which where requested, but not mapped in cmap */
+    // TODO(garretrieger):
+    // Once https://github.com/harfbuzz/harfbuzz/issues/3169
+    // is implemented, this can be done with union and del_range
+    for (hb_codepoint_t gid : glyphs->iter ())
+    {
+      if (gid >= plan->source->get_num_glyphs ())
+	break;
+      plan->_glyphset_gsub->add (gid);
+    }
   }
 
-  hb_map_t unicode_glyphid_map;
-  cmap.collect_mapping (hb_set_get_empty (), &unicode_glyphid_map);
+  + plan->codepoint_to_glyph->keys ()   | hb_sink (plan->unicodes);
+  + plan->codepoint_to_glyph->values () | hb_sink (plan->_glyphset_gsub);
+
   cmap.fini ();
-
-  for (hb_pair_t<hb_codepoint_t, hb_codepoint_t> cp_gid :
-       + unicode_glyphid_map.iter () | hb_filter (glyphs, hb_second))
-  {
-    plan->unicodes->add (cp_gid.first);
-    plan->codepoint_to_glyph->set (cp_gid.first, cp_gid.second);
-  }
 }
 
 static void
 _populate_gids_to_retain (hb_subset_plan_t* plan,
-			  const hb_set_t *unicodes,
-			  const hb_set_t *input_glyphs_to_retain,
 			  bool close_over_gsub,
 			  bool close_over_gpos,
 			  bool close_over_gdef)
@@ -289,7 +309,6 @@ _populate_gids_to_retain (hb_subset_plan_t* plan,
   colr.init (plan->source);
 
   plan->_glyphset_gsub->add (0); // Not-def
-  hb_set_union (plan->_glyphset_gsub, input_glyphs_to_retain);
 
   _cmap_closure (plan->source, plan->unicodes, plan->_glyphset_gsub);
 
@@ -300,7 +319,6 @@ _populate_gids_to_retain (hb_subset_plan_t* plan,
         plan->source,
         plan->_glyphset_gsub,
         plan->layout_features,
-        plan->flags & HB_SUBSET_FLAGS_RETAIN_ALL_FEATURES,
         plan->gsub_lookups,
         plan->gsub_features,
         plan->gsub_langsys);
@@ -310,7 +328,6 @@ _populate_gids_to_retain (hb_subset_plan_t* plan,
         plan->source,
         plan->_glyphset_gsub,
         plan->layout_features,
-        plan->flags & HB_SUBSET_FLAGS_RETAIN_ALL_FEATURES,
         plan->gpos_lookups,
         plan->gpos_features,
         plan->gpos_langsys);
@@ -439,13 +456,13 @@ hb_subset_plan_create (hb_face_t	 *face,
   plan->successful = true;
   plan->flags = input->flags;
   plan->unicodes = hb_set_create ();
-  plan->name_ids = hb_set_copy (input->name_ids);
+  plan->name_ids = hb_set_copy (input->sets.name_ids);
   _nameid_closure (face, plan->name_ids);
-  plan->name_languages = hb_set_copy (input->name_languages);
-  plan->layout_features = hb_set_copy (input->layout_features);
-  plan->glyphs_requested = hb_set_copy (input->glyphs);
-  plan->drop_tables = hb_set_copy (input->drop_tables);
-  plan->no_subset_tables = hb_set_copy (input->no_subset_tables);
+  plan->name_languages = hb_set_copy (input->sets.name_languages);
+  plan->layout_features = hb_set_copy (input->sets.layout_features);
+  plan->glyphs_requested = hb_set_copy (input->sets.glyphs);
+  plan->drop_tables = hb_set_copy (input->sets.drop_tables);
+  plan->no_subset_tables = hb_set_copy (input->sets.no_subset_tables);
   plan->source = hb_face_reference (face);
   plan->dest = hb_face_builder_create ();
 
@@ -473,14 +490,12 @@ hb_subset_plan_create (hb_face_t	 *face,
     return plan;
   }
 
-  _populate_unicodes_to_retain (input->unicodes, input->glyphs, plan);
+  _populate_unicodes_to_retain (input->sets.unicodes, input->sets.glyphs, plan);
 
   _populate_gids_to_retain (plan,
-			    input->unicodes,
-			    input->glyphs,
-			    !input->drop_tables->has (HB_OT_TAG_GSUB),
-			    !input->drop_tables->has (HB_OT_TAG_GPOS),
-			    !input->drop_tables->has (HB_OT_TAG_GDEF));
+			    !input->sets.drop_tables->has (HB_OT_TAG_GSUB),
+			    !input->sets.drop_tables->has (HB_OT_TAG_GPOS),
+			    !input->sets.drop_tables->has (HB_OT_TAG_GDEF));
 
   _create_old_gid_to_new_gid_map (face,
                                   input->flags & HB_SUBSET_FLAGS_RETAIN_GIDS,
