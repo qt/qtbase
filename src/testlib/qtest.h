@@ -616,6 +616,7 @@ struct QtCoverageScanner
 int main(int argc, char *argv[]) \
 { \
     TESTLIB_SELFCOVERAGE_START(TestObject) \
+    QT_PREPEND_NAMESPACE(QTest::Internal::callInitMain)<TestObject>(); \
     TestObject tc; \
     QTEST_SET_MAIN_SOURCE_PATH \
     return QTest::qExec(&tc, argc, argv); \
