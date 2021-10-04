@@ -219,7 +219,7 @@ Q_GLOBAL_STATIC(QThreadStorage<QUnifiedTimer *>, unifiedTimer)
 QUnifiedTimer::QUnifiedTimer() :
     QObject(), defaultDriver(this), lastTick(0), timingInterval(DEFAULT_TIMER_INTERVAL),
     currentAnimationIdx(0), insideTick(false), insideRestart(false), consistentTiming(false), slowMode(false),
-    startTimersPending(false), stopTimerPending(false),
+    startTimersPending(false), stopTimerPending(false), allowNegativeDelta(false),
     slowdownFactor(5.0f), profilerCallback(nullptr),
     driverStartTime(0), temporalDrift(0)
 {
@@ -315,7 +315,7 @@ void QUnifiedTimer::updateAnimationTimers()
     //  when the CPU load is high
     //* it might happen in some cases that the delta is negative because the animation driver
     //  advances faster than time.elapsed()
-    if (delta > 0) {
+    if (delta != 0 && (allowNegativeDelta || delta > 0)) {
         QScopedValueRollback<bool> guard(insideTick, true);
         if (profilerCallback)
             profilerCallback(delta);
@@ -517,6 +517,8 @@ void QUnifiedTimer::installAnimationDriver(QAnimationDriver *d)
     if (running)
         stopAnimationDriver();
     driver = d;
+    if (driver)
+        allowNegativeDelta = driver->property("allowNegativeDelta").toBool();
     if (running)
         startAnimationDriver();
 }
@@ -532,6 +534,7 @@ void QUnifiedTimer::uninstallAnimationDriver(QAnimationDriver *d)
     if (running)
         stopAnimationDriver();
     driver = &defaultDriver;
+    allowNegativeDelta = false;
     if (running)
         startAnimationDriver();
 }
