@@ -827,6 +827,10 @@ public class QtActivityDelegate
                 DisplayMetrics metrics = new DisplayMetrics();
                 m_activity.getWindowManager().getDefaultDisplay().getMetrics(metrics);
                 final int kbHeight = metrics.heightPixels - r.bottom;
+                if (kbHeight < 0) {
+                    setKeyboardVisibility(false, System.nanoTime());
+                    return true;
+                }
                 final int[] location = new int[2];
                 m_layout.getLocationOnScreen(location);
                 QtNative.keyboardGeometryChanged(location[0], r.bottom - location[1],
