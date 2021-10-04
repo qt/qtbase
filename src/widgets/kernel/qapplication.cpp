@@ -3156,7 +3156,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                 if (gesturePendingWidget.isNull() && w && QGestureManager::gesturePending(w))
                     gesturePendingWidget = w;
 #endif
-                if (p.isNull() || w->isWindow()|| w->testAttribute(Qt::WA_NoMousePropagation))
+                if (!w || w->isWindow() || w->testAttribute(Qt::WA_NoMousePropagation))
                     break;
 
                 const QPoint offset = w->pos();
