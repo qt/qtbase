@@ -414,6 +414,7 @@ public:
 
     QSize sizeHint() const;
     QSize minimumSize() const;
+    bool fits() const;
     void fitLayout();
 
     QLayoutItem *itemAt(int index, int *x) const;
@@ -451,6 +452,7 @@ class Q_AUTOTEST_EXPORT QMainWindowLayout
 
 public:
     QMainWindowLayoutState layoutState, savedState;
+    std::unique_ptr<QMainWindowLayoutState> restoredState;
 
     QMainWindowLayout(QMainWindow *mainwindow, QLayout *parentLayout);
     ~QMainWindowLayout();
@@ -546,6 +548,7 @@ public:
     };
     void saveState(QDataStream &stream) const;
     bool restoreState(QDataStream &stream);
+    QBasicTimer discardRestoredStateTimer;
 
     // QLayout interface
 
@@ -583,6 +586,9 @@ public:
     void applyState(QMainWindowLayoutState &newState, bool animate = true);
     void restore(bool keepSavedState = false);
     void animationFinished(QWidget *widget);
+
+protected:
+    void timerEvent(QTimerEvent *e) override;
 
 private Q_SLOTS:
     void updateGapIndicator();

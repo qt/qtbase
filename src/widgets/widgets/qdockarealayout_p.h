@@ -271,6 +271,9 @@ public:
 
     QSize sizeHint() const;
     QSize minimumSize() const;
+    QSize minimumStableSize() const;
+    template<typename SizePMF, typename CenterPMF>
+    QSize size_helper(SizePMF sizeFn, CenterPMF centerFn) const;
 
     void addDockWidget(QInternal::DockPosition pos, QDockWidget *dockWidget, Qt::Orientation orientation);
     bool restoreDockWidget(QDockWidget *dockWidget);

@@ -675,6 +675,31 @@ QSize QMainWindowLayoutState::minimumSize() const
     return result;
 }
 
+/*!
+    \internal
+
+    Returns whether the layout fits into the main window.
+*/
+bool QMainWindowLayoutState::fits() const
+{
+    Q_ASSERT(mainWindow);
+
+    QSize size;
+
+#if QT_CONFIG(dockwidget)
+    size = dockAreaLayout.minimumStableSize();
+#endif
+
+#if QT_CONFIG(toolbar)
+    size.rwidth() += toolBarAreaLayout.docks[QInternal::LeftDock].rect.width();
+    size.rwidth() += toolBarAreaLayout.docks[QInternal::RightDock].rect.width();
+    size.rheight() += toolBarAreaLayout.docks[QInternal::TopDock].rect.height();
+    size.rheight() += toolBarAreaLayout.docks[QInternal::BottomDock].rect.height();
+#endif
+
+    return size.width() <= mainWindow->width() && size.height() <= mainWindow->height();
+}
+
 void QMainWindowLayoutState::apply(bool animated)
 {
 #if QT_CONFIG(toolbar)
@@ -1974,9 +1999,45 @@ void QMainWindowLayout::setGeometry(const QRect &_r)
         r.setBottom(sbr.top() - 1);
     }
 
+    if (restoredState) {
+        /*
+            The main window was hidden and was going to be maximized or full-screened when
+            the state was restored. The state might have been for a larger window size than
+            the current size (in _r), and the window might still be in the process of being
+            shown and transitioning to the final size (there's no reliable way of knowing
+            this across different platforms). Try again with the restored state.
+        */
+        layoutState = *restoredState;
+        if (restoredState->fits()) {
+            restoredState.reset();
+            discardRestoredStateTimer.stop();
+        } else {
+            /*
+                Try again in the next setGeometry call, but discard the restored state
+                after 150ms without any further tries. That's a reasonably short amount of
+                time during which we can expect the windowing system to either have completed
+                showing the window, or resized the window once more (which then restarts the
+                timer in timerEvent).
+                If the windowing system is done, then the user won't have had a chance to
+                change the layout interactively AND trigger another resize.
+            */
+            discardRestoredStateTimer.start(150, this);
+        }
+    }
+
     layoutState.rect = r;
+
     layoutState.fitLayout();
     applyState(layoutState, false);
+}
+
+void QMainWindowLayout::timerEvent(QTimerEvent *e)
+{
+    if (e->timerId() == discardRestoredStateTimer.timerId()) {
+        discardRestoredStateTimer.stop();
+        restoredState.reset();
+    }
+    QLayout::timerEvent(e);
 }
 
 void QMainWindowLayout::addItem(QLayoutItem *)
@@ -2781,6 +2842,18 @@ bool QMainWindowLayout::restoreState(QDataStream &stream)
     if (parentWidget()->isVisible()) {
         layoutState.fitLayout();
         applyState(layoutState, false);
+    } else {
+        /*
+            The state might not fit into the size of the widget as it gets shown, but
+            if the window is expected to be maximized or full screened, then we might
+            get several resizes as part of that transition, at the end of which the
+            state might fit. So keep the restored state around for now and try again
+            later in setGeometry.
+        */
+        if ((parentWidget()->windowState() & (Qt::WindowFullScreen | Qt::WindowMaximized))
+            && !layoutState.fits()) {
+            restoredState.reset(new QMainWindowLayoutState(layoutState));
+        }
     }
 
     savedState.deleteAllLayoutItems();

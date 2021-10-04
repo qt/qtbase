@@ -126,6 +126,8 @@ private slots:
     void dockWidgetArea();
     void restoreState();
     void restoreStateFromPreviousVersion();
+    void restoreStateSizeChanged_data();
+    void restoreStateSizeChanged();
     void createPopupMenu();
     void hideBeforeLayout();
 #ifdef QT_BUILD_INTERNAL
@@ -1391,6 +1393,67 @@ void tst_QMainWindow::restoreStateFromPreviousVersion()
 
 }
 
+void tst_QMainWindow::restoreStateSizeChanged_data()
+{
+    QTest::addColumn<Qt::WindowState>("saveState");
+    QTest::addColumn<Qt::WindowState>("showState");
+    QTest::addColumn<bool>("sameSize");
+
+    QTest::addRow("fullscreen") << Qt::WindowFullScreen << Qt::WindowFullScreen << true;
+    QTest::addRow("maximized") << Qt::WindowMaximized << Qt::WindowMaximized << true;
+    QTest::addRow("maximized->normal") << Qt::WindowMaximized << Qt::WindowNoState << false;
+    QTest::addRow("fullscreen->normal") << Qt::WindowFullScreen << Qt::WindowNoState << false;
+    QTest::addRow("fullscreen->maximized") << Qt::WindowFullScreen << Qt::WindowMaximized << false;
+    QTest::addRow("maximized->fullscreen") << Qt::WindowMaximized << Qt::WindowFullScreen << true;
+}
+
+void tst_QMainWindow::restoreStateSizeChanged()
+{
+    QFETCH(Qt::WindowState, saveState);
+    QFETCH(Qt::WindowState, showState);
+    QFETCH(bool, sameSize);
+
+    auto createMainWindow = []{
+        QMainWindow *mainWindow = new QMainWindow;
+        mainWindow->move(QGuiApplication::primaryScreen()->availableGeometry().topLeft());
+        mainWindow->setCentralWidget(new QLabel("X"));
+        QDockWidget *dockWidget = new QDockWidget;
+        dockWidget->setObjectName("Dock Widget");
+        mainWindow->addDockWidget(Qt::LeftDockWidgetArea, dockWidget);
+        return mainWindow;
+    };
+
+    QByteArray geometryData;
+    QByteArray stateData;
+    int dockWidgetWidth = 0;
+    QRect normalGeometry;
+
+    {
+        auto mainWindow = QScopedPointer<QMainWindow>(createMainWindow());
+        mainWindow->setWindowState(saveState);
+        mainWindow->show();
+        QVERIFY(QTest::qWaitForWindowExposed(mainWindow.data()));
+        dockWidgetWidth = mainWindow->width() - 100;
+        QDockWidget *dockWidget = mainWindow->findChild<QDockWidget*>("Dock Widget");
+        mainWindow->resizeDocks({dockWidget}, {dockWidgetWidth}, Qt::Horizontal);
+        geometryData = mainWindow->saveGeometry();
+        stateData = mainWindow->saveState();
+        normalGeometry = mainWindow->normalGeometry();
+    }
+
+    auto mainWindow = QScopedPointer<QMainWindow>(createMainWindow());
+    mainWindow->restoreGeometry(geometryData);
+    mainWindow->restoreState(stateData);
+    mainWindow->setWindowState(showState);
+    mainWindow->show();
+    QVERIFY(QTest::qWaitForWindowExposed(mainWindow.data()));
+
+    QDockWidget *dockWidget = mainWindow->findChild<QDockWidget*>("Dock Widget");
+    QVERIFY(dockWidget);
+    QCOMPARE(mainWindow->normalGeometry().size(), normalGeometry.size());
+    if (sameSize)
+        QTRY_COMPARE(dockWidget->width(), dockWidgetWidth);
+}
 
 void tst_QMainWindow::createPopupMenu()
 {
@@ -1692,6 +1755,7 @@ void tst_QMainWindow::saveRestore()
             adw.apply(&mainWindow);
 
         mainWindow.show();
+
         mainWindow.restoreState(stateData);
 
         COMPARE_DOCK_WIDGET_GEOS(dockWidgetGeos, dockWidgetGeometries(&mainWindow));
@@ -1710,6 +1774,7 @@ void tst_QMainWindow::saveRestore()
         mainWindow.restoreState(stateData);
 
         mainWindow.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&mainWindow));
         COMPARE_DOCK_WIDGET_GEOS(dockWidgetGeos, dockWidgetGeometries(&mainWindow));
     }
 }

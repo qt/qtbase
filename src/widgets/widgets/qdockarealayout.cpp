@@ -2914,7 +2914,8 @@ void QDockAreaLayout::clear()
     centralWidgetRect = QRect();
 }
 
-QSize QDockAreaLayout::sizeHint() const
+template<typename SizePMF, typename CenterPMF>
+QSize QDockAreaLayout::size_helper(SizePMF sizeFn, CenterPMF centerFn) const
 {
     int left_sep = 0;
     int right_sep = 0;
@@ -2928,11 +2929,12 @@ QSize QDockAreaLayout::sizeHint() const
         bottom_sep = docks[QInternal::BottomDock].isEmpty() ? 0 : sep;
     }
 
-    QSize left = docks[QInternal::LeftDock].sizeHint() + QSize(left_sep, 0);
-    QSize right = docks[QInternal::RightDock].sizeHint() + QSize(right_sep, 0);
-    QSize top = docks[QInternal::TopDock].sizeHint() + QSize(0, top_sep);
-    QSize bottom = docks[QInternal::BottomDock].sizeHint() + QSize(0, bottom_sep);
-    QSize center = centralWidgetItem == nullptr ? QSize(0, 0) : centralWidgetItem->sizeHint();
+    const QSize left = (docks[QInternal::LeftDock].*sizeFn)() + QSize(left_sep, 0);
+    const QSize right = (docks[QInternal::RightDock].*sizeFn)() + QSize(right_sep, 0);
+    const QSize top = (docks[QInternal::TopDock].*sizeFn)() + QSize(0, top_sep);
+    const QSize bottom = (docks[QInternal::BottomDock].*sizeFn)() + QSize(0, bottom_sep);
+    const QSize center = centralWidgetItem == nullptr
+                       ? QSize(0, 0) : (centralWidgetItem->*centerFn)();
 
     int row1 = top.width();
     int row2 = left.width() + center.width() + right.width();
@@ -2964,54 +2966,24 @@ QSize QDockAreaLayout::sizeHint() const
     return QSize(qMax(row1, row2, row3), qMax(col1, col2, col3));
 }
 
+QSize QDockAreaLayout::sizeHint() const
+{
+    return size_helper(&QDockAreaLayoutInfo::sizeHint, &QLayoutItem::sizeHint);
+}
+
 QSize QDockAreaLayout::minimumSize() const
 {
-    int left_sep = 0;
-    int right_sep = 0;
-    int top_sep = 0;
-    int bottom_sep = 0;
+    return size_helper(&QDockAreaLayoutInfo::minimumSize, &QLayoutItem::minimumSize);
+}
 
-    if (centralWidgetItem != nullptr) {
-        left_sep = docks[QInternal::LeftDock].isEmpty() ? 0 : sep;
-        right_sep = docks[QInternal::RightDock].isEmpty() ? 0 : sep;
-        top_sep = docks[QInternal::TopDock].isEmpty() ? 0 : sep;
-        bottom_sep = docks[QInternal::BottomDock].isEmpty() ? 0 : sep;
-    }
+/*!
+    \internal
 
-    QSize left = docks[QInternal::LeftDock].minimumSize() + QSize(left_sep, 0);
-    QSize right = docks[QInternal::RightDock].minimumSize() + QSize(right_sep, 0);
-    QSize top = docks[QInternal::TopDock].minimumSize() + QSize(0, top_sep);
-    QSize bottom = docks[QInternal::BottomDock].minimumSize() + QSize(0, bottom_sep);
-    QSize center = centralWidgetItem == nullptr ? QSize(0, 0) : centralWidgetItem->minimumSize();
-
-    int row1 = top.width();
-    int row2 = left.width() + center.width() + right.width();
-    int row3 = bottom.width();
-    int col1 = left.height();
-    int col2 = top.height() + center.height() + bottom.height();
-    int col3 = right.height();
-
-    if (corners[Qt::TopLeftCorner] == Qt::LeftDockWidgetArea)
-        row1 += left.width();
-    else
-        col1 += top.height();
-
-    if (corners[Qt::TopRightCorner] == Qt::RightDockWidgetArea)
-        row1 += right.width();
-    else
-        col3 += top.height();
-
-    if (corners[Qt::BottomLeftCorner] == Qt::LeftDockWidgetArea)
-        row3 += left.width();
-    else
-        col1 += bottom.height();
-
-    if (corners[Qt::BottomRightCorner] == Qt::RightDockWidgetArea)
-        row3 += right.width();
-    else
-        col3 += bottom.height();
-
-    return QSize(qMax(row1, row2, row3), qMax(col1, col2, col3));
+    Returns the smallest size that doesn't change the size of any of the dock areas.
+*/
+QSize QDockAreaLayout::minimumStableSize() const
+{
+    return size_helper(&QDockAreaLayoutInfo::size, &QLayoutItem::minimumSize);
 }
 
 /*! \internal
