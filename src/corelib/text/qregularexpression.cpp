@@ -52,6 +52,10 @@
 #include <QtCore/qatomic.h>
 #include <QtCore/qdatastream.h>
 
+#if defined(Q_OS_MACOS)
+#include <QtCore/private/qcore_mac_p.h>
+#endif
+
 #define PCRE2_CODE_UNIT_WIDTH 16
 
 #include <pcre2.h>
@@ -1011,6 +1015,8 @@ static bool isJitEnabled()
 
 #ifdef QT_DEBUG
     return false;
+#elif defined(Q_OS_MACOS)
+    return !qt_mac_runningUnderRosetta();
 #else
     return true;
 #endif
