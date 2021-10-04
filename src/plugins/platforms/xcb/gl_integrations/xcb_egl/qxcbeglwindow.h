@@ -25,10 +25,7 @@ public:
 protected:
     void create() override;
     void resolveFormat(const QSurfaceFormat &format) override;
-
-#if QT_CONFIG(xcb_xlib)
     const xcb_visualtype_t *createVisual() override;
-#endif
 
 private:
     QXcbEglIntegration *m_glIntegration;
