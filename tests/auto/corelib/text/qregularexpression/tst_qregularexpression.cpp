@@ -37,6 +37,7 @@
 #include <qregularexpression.h>
 #include <qthread.h>
 
+#include <iostream>
 #include <optional>
 
 Q_DECLARE_METATYPE(QRegularExpression::PatternOptions)
@@ -46,6 +47,9 @@ Q_DECLARE_METATYPE(QRegularExpression::MatchOptions)
 class tst_QRegularExpression : public QObject
 {
     Q_OBJECT
+
+public:
+    static void initMain();
 
 private slots:
     void defaultConstructors();
@@ -467,6 +471,16 @@ void tst_QRegularExpression::provideRegularExpressions()
                                << QRegularExpression::PatternOptions(QRegularExpression::CaseInsensitiveOption
                                                                      | QRegularExpression::DotMatchesEverythingOption
                                                                      | QRegularExpression::InvertedGreedinessOption);
+}
+
+static const char enableJitEnvironmentVariable[] = "QT_ENABLE_REGEXP_JIT";
+
+void tst_QRegularExpression::initMain()
+{
+    if (!qEnvironmentVariableIsSet(enableJitEnvironmentVariable)) {
+        std::cerr << "Enabling QRegularExpression JIT for testing; set QT_ENABLE_REGEXP_JIT to 0 to disable it.\n";
+        qputenv(enableJitEnvironmentVariable, "1");
+    }
 }
 
 void tst_QRegularExpression::defaultConstructors()
