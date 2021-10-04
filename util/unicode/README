@@ -1,21 +1,22 @@
 Unicode is used to generate the unicode data in src/corelib/text/.
 
 To update:
-* Find the data (UAX #44, UCD; not the XML version) at
-  ftp://www.unicode.org/Public/zipped/$Version/
-* Unpack the zip file; for each file in data/, replace with the new
-  version; find the *BreakProperty.txt in auxiliary/ and emoji-data.txt
-  in emoji/.
-* In tst_QTextBoundaryFinder's data/ sub-directory, update its files
-  from the auxiliary/ sub-directory of the UCD data.
+* Run `./update_ucd.sh $Version`. This automates the following steps:
+  * Find the data (UAX #44, UCD; not the XML version) at
+    https://www.unicode.org/Public/zipped/$Version/
+  * Unpack the zip file; for each file in data/, replace with the new
+    version; find the *BreakProperty.txt in auxiliary/ and emoji-data.txt
+    in emoji/.
+  * In tst_QTextBoundaryFinder's data/ sub-directory, update its files
+    from the auxiliary/ sub-directory of the UCD data.
+  * Download https://www.unicode.org/Public/idna/$Version/IdnaMappingTable.txt
+    and put it into data/.
+  * Download https://www.unicode.org/Public/idna/$Version/IdnaTestV2.txt
+    and put it into tests/auto/corelib/io/qurluts46/testdata.
 * If needed, add an entry to enum QChar::UnicodeVersion for the new
   Unicode version
 * In that case, also update main.cpp's initAgeMap and DATA_VERSION_S*
   to match
-* Download https://www.unicode.org/Public/idna/$Version/IdnaMappingTable.txt
-  and put it into data/.
-* Download https://www.unicode.org/Public/idna/$Version/IdnaTestV2.txt
-  and put it into tests/auto/corelib/io/qurluts46/testdata.
 * Build this project. Its binary, unicode, ignores command-line
   options and assumes it is being run from this directory. When run,
   it produces lots of output. If it gets as far as updating
