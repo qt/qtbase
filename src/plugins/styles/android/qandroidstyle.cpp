@@ -677,6 +677,9 @@ int QAndroidStyle::styleHint(QStyle::StyleHint hint, const QStyleOption *option,
     case SH_RequestSoftwareInputPanel:
         return RSIP_OnMouseClick;
 
+    case SH_SpinBox_SelectOnStep:
+        return 0;
+
     default:
         return QFusionStyle::styleHint(hint, option, widget, returnData);
     }

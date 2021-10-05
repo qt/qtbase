@@ -737,6 +737,7 @@ public:
         SH_SpinBox_StepModifier,
         SH_TabBar_AllowWheelScrolling,
         SH_Table_AlwaysDrawLeftTopGridLines,
+        SH_SpinBox_SelectOnStep,
         // Add new style hint values here
 
         SH_CustomBase = 0xf0000000

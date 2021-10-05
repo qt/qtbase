@@ -671,7 +671,8 @@ void QAbstractSpinBox::stepBy(int steps)
     } else if (e == AlwaysEmit) {
         d->emitSignals(e, old);
     }
-    selectAll();
+    if (style()->styleHint(QStyle::SH_SpinBox_SelectOnStep, nullptr, this, nullptr))
+        selectAll();
 }
 
 /*!

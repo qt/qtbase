@@ -5393,6 +5393,9 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
     case SH_TabBar_AllowWheelScrolling:
         ret = true;
         break;
+    case SH_SpinBox_SelectOnStep:
+        ret = true;
+        break;
     default:
         ret = 0;
         break;

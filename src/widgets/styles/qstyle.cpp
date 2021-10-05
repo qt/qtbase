@@ -1853,6 +1853,10 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     spinbox mouse clicks.
     \value SH_SpinBox_ClickAutoRepeatThreshold  Auto-repeat threshold for
     spinbox mouse clicks.
+    \value SH_SpinBox_SelectOnStep  Whether changing the value using
+    the buttons or up/down keys automatically selects the text. This enum
+    value has been introduced in Qt 6.3.
+
     \value SH_ToolTipLabel_Opacity  An integer indicating the opacity for
     the tip label, 0 is completely transparent, 255 is completely
     opaque.

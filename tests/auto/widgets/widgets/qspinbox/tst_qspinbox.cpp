@@ -130,6 +130,28 @@ public:
     Qt::KeyboardModifier stepModifier = Qt::ControlModifier;
 };
 
+class SelectAllOnStepStyle : public QProxyStyle
+{
+public:
+    SelectAllOnStepStyle(bool selectAll)
+    : selectAll(selectAll)
+    {}
+
+    int styleHint(QStyle::StyleHint hint, const QStyleOption *option,
+                  const QWidget *widget, QStyleHintReturn *returnData = nullptr) const override
+    {
+        switch (hint) {
+        case QStyle::SH_SpinBox_SelectOnStep:
+            return selectAll;
+        default:
+            return QProxyStyle::styleHint(hint, option, widget, returnData);
+        }
+    }
+
+private:
+    const bool selectAll;
+};
+
 class tst_QSpinBox : public QObject
 {
     Q_OBJECT
@@ -210,6 +232,10 @@ private slots:
 
     void stepModifierPressAndHold_data();
     void stepModifierPressAndHold();
+
+    void stepSelectAll_data();
+    void stepSelectAll();
+
 public slots:
     void textChangedHelper(const QString &);
     void valueChangedHelper(int);
@@ -1853,6 +1879,43 @@ void tst_QSpinBox::stepModifierPressAndHold()
     const auto value = spy.last().at(0);
     QVERIFY(value.metaType().id() == QMetaType::Int);
     QCOMPARE(value.toInt(), spy.length() * expectedStepModifier);
+}
+
+void tst_QSpinBox::stepSelectAll_data()
+{
+    QTest::addColumn<bool>("stepShouldSelectAll");
+    QTest::addColumn<QStringList>("selectedText");
+
+    QTest::addRow("select all") << true << QStringList{"1", "0", "5", "4", "9"};
+    QTest::addRow("don't select all") << false << QStringList{{}, {}, {}, {}, "94"};
+}
+
+void tst_QSpinBox::stepSelectAll()
+{
+    QFETCH(bool, stepShouldSelectAll);
+    QFETCH(QStringList, selectedText);
+    SelectAllOnStepStyle style(stepShouldSelectAll);
+
+    SpinBox spinBox;
+    spinBox.setStyle(&style);
+
+    QCOMPARE(spinBox.lineEdit()->selectedText(), QString());
+
+    auto it = selectedText.cbegin();
+    spinBox.stepUp();
+    QCOMPARE(spinBox.lineEdit()->selectedText(), *(it++));
+    spinBox.lineEdit()->deselect();
+    spinBox.stepDown();
+    QCOMPARE(spinBox.lineEdit()->selectedText(), *(it++));
+    spinBox.lineEdit()->deselect();
+    spinBox.stepBy(5);
+    QCOMPARE(spinBox.lineEdit()->selectedText(), *(it++));
+    spinBox.lineEdit()->deselect();
+    QTest::keyClick(&spinBox, Qt::Key_Down);
+    QCOMPARE(spinBox.lineEdit()->selectedText(), *(it++));
+    QTest::keyClicks(&spinBox, "9");
+    QCOMPARE(spinBox.lineEdit()->selectedText(), QString());
+    QCOMPARE(spinBox.lineEdit()->text(), *(it++));
 }
 
 QTEST_MAIN(tst_QSpinBox)
