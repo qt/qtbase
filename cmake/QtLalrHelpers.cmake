@@ -39,13 +39,22 @@ function(qt_process_qlalr consuming_target input_file_list flags)
         qt_qlalr_find_option_in_list("${input_file_lines}" "^%impl(.+)" "impl")
         get_filename_component(base_file_name ${input_file} NAME_WE)
 
+        # Pass a relative input file path to qlalr to generate relative #line directives.
+        if(IS_ABSOLUTE "${input_file}")
+            set(absolute_input_file "${input_file}")
+        else()
+            get_filename_component(absolute_input_file "${input_file}" ABSOLUTE)
+        endif()
+        file(RELATIVE_PATH relative_input_file "${CMAKE_CURRENT_BINARY_DIR}"
+            "${absolute_input_file}")
+
         set(cpp_file "${parser}.cpp")
         set(private_file "${parser}_p.h")
         set(decl_file "${decl}")
         set(impl_file "${impl}")
         add_custom_command(
             OUTPUT ${cpp_file} ${private_file} ${decl_file} ${impl_file}
-            COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::qlalr ${flags} ${input_file}
+            COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::qlalr ${flags} ${relative_input_file}
             DEPENDS ${QT_CMAKE_EXPORT_NAMESPACE}::qlalr
             MAIN_DEPENDENCY ${input_file}
         )
