@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -42,6 +42,8 @@ private slots:
     void constructByName();
 
     void convertUtf8();
+    void roundtrip_data();
+    void roundtrip();
 
     void nonFlaggedCodepointFFFF() const;
     void flagF7808080() const;
@@ -146,6 +148,59 @@ void tst_QStringConverter::convertUtf8()
             reencoded += encoder.encode(QStringView(uniString).sliced(i, 1));
         QCOMPARE(ba, encoder(uniString));
     }
+}
+
+void tst_QStringConverter::roundtrip_data()
+{
+    QTest::addColumn<QString>("utf16");
+    QTest::addColumn<QStringConverter::Encoding>("code");
+
+    const struct {
+        QStringConverter::Encoding code;
+        const char *name;
+    } codes[] = {
+        { QStringConverter::Utf8, "UTF-8" },
+        { QStringConverter::Utf16, "UTF-16" },
+        { QStringConverter::Utf16LE, "UTF-16-le" },
+        { QStringConverter::Utf16BE, "UTF-16-be" },
+        { QStringConverter::Utf32, "UTF-32" },
+        { QStringConverter::Utf32LE, "UTF-32-le" },
+        { QStringConverter::Utf32BE, "UTF-32-be" },
+        // Latin1, System: not guaranteed to be able to represent arbitrary Unicode.
+    };
+    // TODO: include flag variations, too.
+
+    for (const auto code : codes) {
+        QTest::addRow("empty-%s", code.name) << u""_qs << code.code;
+        {
+            const char32_t zeroVal = 0x11136; // Unicode's representation of Chakma zero
+            const QChar data[] = {
+                QChar::highSurrogate(zeroVal), QChar::lowSurrogate(zeroVal),
+                QChar::highSurrogate(zeroVal + 1), QChar::lowSurrogate(zeroVal + 1),
+                QChar::highSurrogate(zeroVal + 2), QChar::lowSurrogate(zeroVal + 2),
+                QChar::highSurrogate(zeroVal + 3), QChar::lowSurrogate(zeroVal + 3),
+                QChar::highSurrogate(zeroVal + 4), QChar::lowSurrogate(zeroVal + 4),
+                QChar::highSurrogate(zeroVal + 5), QChar::lowSurrogate(zeroVal + 5),
+                QChar::highSurrogate(zeroVal + 6), QChar::lowSurrogate(zeroVal + 6),
+                QChar::highSurrogate(zeroVal + 7), QChar::lowSurrogate(zeroVal + 7),
+                QChar::highSurrogate(zeroVal + 8), QChar::lowSurrogate(zeroVal + 8),
+                QChar::highSurrogate(zeroVal + 9), QChar::lowSurrogate(zeroVal + 9)
+            };
+            QTest::addRow("Chakma-digits-%s", code.name)
+                << QString(data, std::size(data)) << code.code;
+        }
+    }
+}
+
+void tst_QStringConverter::roundtrip()
+{
+    QFETCH(QString, utf16);
+    QFETCH(QStringConverter::Encoding, code);
+    QStringEncoder out(code);
+    const QByteArray encoded = out.encode(utf16);
+    QStringDecoder back(code);
+    const QString decoded = back.decode(encoded);
+    QCOMPARE(decoded, utf16);
 }
 
 void tst_QStringConverter::nonFlaggedCodepointFFFF() const
