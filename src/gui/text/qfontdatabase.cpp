@@ -304,11 +304,9 @@ void QFontDatabasePrivate::invalidate()
     emit static_cast<QGuiApplication *>(QCoreApplication::instance())->fontDatabaseChanged();
 }
 
-QtFontFamily *QFontDatabasePrivate::family(const QString &family, FamilyRequestFlags flags)
+QtFontFamily *QFontDatabasePrivate::family(const QString &f, FamilyRequestFlags flags)
 {
     QtFontFamily *fam = nullptr;
-
-    const QString f = family.trimmed();
 
     int low = 0;
     int high = count;
