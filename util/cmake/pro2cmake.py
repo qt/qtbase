@@ -4507,6 +4507,13 @@ def handle_config_test_project(scope: Scope, cm_fh: IO[str]):
         f"cmake_minimum_required(VERSION 3.16)\n"
         f"project(config_test_{project_name} LANGUAGES C CXX)\n"
         """
+if(DEFINED QT_CONFIG_COMPILE_TEST_CMAKE_SYSTEM_PREFIX_PATH)
+    set(CMAKE_SYSTEM_PREFIX_PATH "${QT_CONFIG_COMPILE_TEST_CMAKE_SYSTEM_PREFIX_PATH}")
+endif()
+if(DEFINED QT_CONFIG_COMPILE_TEST_CMAKE_SYSTEM_FRAMEWORK_PATH)
+    set(CMAKE_SYSTEM_FRAMEWORK_PATH "${QT_CONFIG_COMPILE_TEST_CMAKE_SYSTEM_FRAMEWORK_PATH}")
+endif()
+
 foreach(p ${QT_CONFIG_COMPILE_TEST_PACKAGES})
     find_package(${p})
 endforeach()
