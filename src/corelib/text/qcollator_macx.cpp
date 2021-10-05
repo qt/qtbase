@@ -126,17 +126,19 @@ QCollatorSortKey QCollator::sortKey(const QString &string) const
         return QCollatorSortKey(nullptr);
     }
 
-    //Documentation recommends having it 5 times as big as the input
+    auto text = reinterpret_cast<const UniChar *>(string.constData());
+    // Documentation recommends having it 5 times as big as the input
     QList<UCCollationValue> ret(string.size() * 5);
     ItemCount actualSize;
-    int status = UCGetCollationKey(d->collator,
-                                   reinterpret_cast<const UniChar *>(string.constData()),
-                                   string.count(), ret.size(), &actualSize, ret.data());
+    int status = UCGetCollationKey(d->collator, text, string.count(),
+                                   ret.size(), &actualSize, ret.data());
 
     ret.resize(actualSize + 1);
     if (status == kUCOutputBufferTooSmall) {
-        UCGetCollationKey(d->collator, reinterpret_cast<const UniChar *>(string.constData()),
-                          string.count(), ret.size(), &actualSize, ret.data());
+        status = UCGetCollationKey(d->collator, text, string.count(),
+                                   ret.size(), &actualSize, ret.data());
+        Q_ASSERT(status != kUCOutputBufferTooSmall);
+        Q_ASSERT(ret.size() == actualSize + 1);
     }
     ret[actualSize] = 0;
     return QCollatorSortKey(new QCollatorSortKeyPrivate(std::move(ret)));
@@ -150,7 +152,7 @@ int QCollatorSortKey::compare(const QCollatorSortKey &key) const
     SInt32 order;
     UCCompareCollationKeys(d->m_key.data(), d->m_key.size(),
                            key.d->m_key.data(), key.d->m_key.size(),
-                           0, &order);
+                           nullptr, &order);
     return order;
 }
 
