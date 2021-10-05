@@ -74,15 +74,26 @@ bool QXcbEglIntegration::initialize(QXcbConnection *connection)
 
     const char *extensions = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
 
+#if QT_CONFIG(xcb_xlib)
     if (extensions && strstr(extensions, "EGL_EXT_platform_x11")) {
         QEGLStreamConvenience streamFuncs;
         m_egl_display = streamFuncs.get_platform_display(EGL_PLATFORM_X11_KHR,
-                                                         xlib_display(),
+                                                         m_connection->xlib_display(),
                                                          nullptr);
     }
 
+#if QT_CONFIG(egl_x11)
     if (!m_egl_display)
-        m_egl_display = eglGetDisplay(reinterpret_cast<EGLNativeDisplayType>(xlib_display()));
+        m_egl_display = eglGetDisplay(reinterpret_cast<EGLNativeDisplayType>(m_connection->xlib_display()));
+#endif
+#else
+    if (extensions && (strstr(extensions, "EGL_EXT_platform_xcb") || strstr(extensions, "EGL_MESA_platform_xcb"))) {
+        QEGLStreamConvenience streamFuncs;
+        m_egl_display = streamFuncs.get_platform_display(EGL_PLATFORM_XCB_KHR,
+                                                         reinterpret_cast<void *>(connection->xcb_connection()),
+                                                         nullptr);
+    }
+#endif
 
     EGLint major, minor;
     bool success = eglInitialize(m_egl_display, &major, &minor);
@@ -125,15 +136,6 @@ QPlatformOffscreenSurface *QXcbEglIntegration::createPlatformOffscreenSurface(QO
 {
     QXcbScreen *screen = static_cast<QXcbScreen *>(surface->screen()->handle());
     return new QEGLPbuffer(eglDisplay(), screen->surfaceFormatFor(surface->requestedFormat()), surface);
-}
-
-void *QXcbEglIntegration::xlib_display() const
-{
-#if QT_CONFIG(xcb_xlib)
-    return m_connection->xlib_display();
-#else
-    return EGL_DEFAULT_DISPLAY;
-#endif
 }
 
 xcb_visualid_t QXcbEglIntegration::getCompatibleVisualId(xcb_screen_t *screen, EGLConfig config) const

@@ -38,7 +38,6 @@ public:
     bool supportsThreadedOpenGL() const override { return true; }
 
     EGLDisplay eglDisplay() const { return m_egl_display; }
-    void *xlib_display() const;
 
     xcb_visualid_t getCompatibleVisualId(xcb_screen_t *screen, EGLConfig config) const;
 private:

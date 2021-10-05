@@ -113,6 +113,10 @@ typedef EGLBoolean (EGLAPIENTRYP PFNEGLSTREAMCONSUMEROUTPUTEXTPROC) (EGLDisplay 
 #define EGL_PLATFORM_X11_KHR              0x31D5
 #endif
 
+#ifndef EGL_PLATFORM_XCB_KHR
+#define EGL_PLATFORM_XCB_KHR              0x31DC
+#endif
+
 #ifndef EGL_NV_stream_attrib
 typedef EGLStreamKHR (EGLAPIENTRYP PFNEGLCREATESTREAMATTRIBNVPROC) (EGLDisplay dpy, const EGLAttrib *attrib_list);
 typedef EGLBoolean (EGLAPIENTRYP PFNEGLSETSTREAMATTRIBNVPROC) (EGLDisplay dpy, EGLStreamKHR stream, EGLenum attribute, EGLAttrib value);
