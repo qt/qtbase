@@ -1027,8 +1027,7 @@ QByteArray QUtf32::convertFromUnicode(QStringView in, QStringConverter::State *s
         length += 4;
     QByteArray ba(length, Qt::Uninitialized);
     char *end = convertFromUnicode(ba.data(), in, state, endian);
-    Q_ASSERT(end - ba.constData() == length);
-    Q_UNUSED(end);
+    ba.truncate(end - ba.constData());
     return ba;
 }
 
