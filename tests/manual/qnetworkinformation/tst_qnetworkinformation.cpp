@@ -48,7 +48,7 @@ int main(int argc, char **argv)
 
     if (!QNetworkInformation::load(QNetworkInformation::Feature::Reachability
                                    | QNetworkInformation::Feature::CaptivePortal
-                                   | QNetworkInformation::Feature::TransportMedia)) {
+                                   | QNetworkInformation::Feature::TransportMedium)) {
         qWarning("Failed to load any backend");
         qDebug() << "Backends available:" << QNetworkInformation::availableBackends().join(", ");
         return -1;
@@ -65,9 +65,9 @@ int main(int argc, char **argv)
     QObject::connect(info, &QNetworkInformation::isBehindCaptivePortalChanged,
                      [&](bool status) { qDebug() << "Updated, behind captive portal:" << status; });
 
-    QObject::connect(info, &QNetworkInformation::transportMediaChanged,
-                     [&](QNetworkInformation::TransportMedia newMedia) {
-                         qDebug() << "Updated, current transport media:" << newMedia;
+    QObject::connect(info, &QNetworkInformation::transportMediumChanged,
+                     [&](QNetworkInformation::TransportMedium newMedium) {
+                         qDebug() << "Updated, current transport medium:" << newMedium;
                      });
 
 #ifdef MOBILE
@@ -76,13 +76,13 @@ int main(int argc, char **argv)
                      &MainWindow::updateReachability);
     QObject::connect(info, &QNetworkInformation::isBehindCaptivePortalChanged, &window,
                      &MainWindow::updateCaptiveState);
-    QObject::connect(info, &QNetworkInformation::transportMediaChanged, &window,
-                     &MainWindow::updateTransportMedia);
+    QObject::connect(info, &QNetworkInformation::transportMediumChanged, &window,
+                     &MainWindow::updateTransportMedium);
 #endif
 
     qDebug() << "Initial reachability:" << info->reachability();
     qDebug() << "Behind captive portal:" << info->isBehindCaptivePortal();
-    qDebug() << "Transport media:" << info->transportMedia();
+    qDebug() << "Transport medium:" << info->transportMedium();
 
     return app.exec();
 }
