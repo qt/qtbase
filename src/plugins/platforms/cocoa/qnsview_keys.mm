@@ -165,8 +165,10 @@
 
     // Handling the key event may recurse back here through interpretKeyEvents
     // (when IM is enabled), so we need to guard against that.
-    if (currentEvent == m_currentlyInterpretedKeyEvent)
+    if (currentEvent == m_currentlyInterpretedKeyEvent) {
+        m_sendKeyEvent = true;
         return;
+    }
 
     // Send Command+Key_Period and Escape as normal keypresses so that
     // the key sequence is delivered through Qt. That way clients can
