@@ -3621,7 +3621,7 @@ void tst_QVariant::movabilityTest()
         QCOMPARE(buffer[0].type(), QVariant::Invalid);
         buffer[0].~QVariant();
 
-        memcpy(buffer, &variant, sizeof(QVariant));
+        memcpy(buffer, static_cast<void *>(&variant), sizeof(QVariant));
         QCOMPARE(buffer[0].type(), QVariant::UserType);
         QCOMPARE(buffer[0].userType(), qMetaTypeId<MyNotMovable>());
         MyNotMovable tmp(buffer[0].value<MyNotMovable>());
