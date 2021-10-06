@@ -100,9 +100,6 @@ Qt sets the following manifest configuration by default:
     \li android:label
     \li The application name label. Default value is the Qt project's target name.
 \row
-    \li android:extractNativeLibs
-    \li Extracts the native C++ libraries on installation. The default value is \c true.
-\row
     \li android:hardwareAccelerated
     \li Sets hardware acceleration preference. The default value is \c true.
 \row
