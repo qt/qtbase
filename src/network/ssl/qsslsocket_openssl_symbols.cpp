@@ -904,12 +904,24 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(OpenSSL_version_num)
     RESOLVEFUNC(OpenSSL_version)
 
-    if (!_q_OpenSSL_version) {
+    if (!_q_OpenSSL_version || !_q_OpenSSL_version_num) {
         // Apparently, we were built with OpenSSL 1.1 enabled but are now using
         // a wrong library.
         qCWarning(lcSsl, "Incompatible version of OpenSSL");
         return false;
     }
+
+#if OPENSSL_VERSION_NUMBER >= 0x30000000
+    if (q_OpenSSL_version_num() < 0x30000000) {
+        qCWarning(lcSsl, "Incompatible version of OpenSSL (built with OpenSSL >= 3.x, runtime version is < 3.x)");
+        return false;
+    }
+#else
+    if (q_OpenSSL_version_num() >= 0x30000000) {
+        qCWarning(lcSsl, "Incompatible version of OpenSSL (built with OpenSSL 1.x, runtime version is >= 3.x)");
+        return false;
+    }
+#endif // OPENSSL_VERSION_NUMBER
 
     RESOLVEFUNC(SSL_SESSION_get_ticket_lifetime_hint)
     RESOLVEFUNC(DH_bits)
