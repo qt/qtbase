@@ -92,7 +92,7 @@ Qt sets the following manifest configuration by default:
         default values are \c anyDensity, \c largeScreens,
         \c normalScreens, and \c smallScreens.
 \row
-    \li {1, 5} \l {Android: App Manifest <application>}{<application>}
+    \li {1, 8} \l {Android: App Manifest <application>}{<application>}
     \li android:name
     \li The application class name. Default value is
         \c {org.qtproject.qt.android.bindings.QtApplication}.
@@ -116,7 +116,16 @@ Qt sets the following manifest configuration by default:
         For more information, see \l {Android: Tagged Pointers}{Tagged Pointers}.
         The default value is \c false.
 \row
-    \li {1, 6} \l {Android: App Manifest <activity>}{<activity>}
+    \li android:allowBackup
+    \li Whether to allow the application to participate in the backup and restore
+        infrastructure. If this is set to \c false, no backup or restore of the
+        application will ever be performed. The default value is \c true.
+\row
+    \li android:fullBackupOnly
+    \li Whether or not to use Auto Backup on devices where it is available.
+        The default value is \c false.
+\row
+    \li {1, 7} \l {Android: App Manifest <activity>}{<activity>}
     \li android:name
     \li The activity class name. The default value is \c {org.qtproject.qt.android.bindings.QtActivity}.
 \row
@@ -141,6 +150,10 @@ Qt sets the following manifest configuration by default:
         <action android:name="android.intent.action.MAIN"/>
         <category android:name="android.intent.category.LAUNCHER"/>
         \endcode
+\row
+    \li android:exported
+    \li Sets whether the activity can be launched by components of other applications.
+        The default value is \c true.
 \endtable
 
 \section1 Qt Specific Meta-data
