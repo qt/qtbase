@@ -75,7 +75,7 @@ END
 mkdir build-sqldrivers
 cd build-sqldrivers
 
-qt-cmake -G"Ninja" <qt_installation_path>/Src/qtbase/src/plugins/sqldrivers -DCMAKE_INSTALL_PREFIX=<qt_installation_path>/<platform> -DMySQL_INCLUDE_DIR="/usr/local/mysql/include" -DMySQL_LIBRARY="/usr/local/mysql/lib/libmysqlclient.<so|dylib>"
+qt-cmake -G Ninja <qt_installation_path>/Src/qtbase/src/plugins/sqldrivers -DCMAKE_INSTALL_PREFIX=<qt_installation_path>/<platform> -DMySQL_INCLUDE_DIR="/usr/local/mysql/include" -DMySQL_LIBRARY="/usr/local/mysql/lib/libmysqlclient.<so|dylib>"
 cmake --build .
 cmake --install .
 //! [3]
@@ -85,7 +85,7 @@ cmake --install .
 mkdir build-sqldrivers
 cd build-sqldrivers
 
-qt-cmake -G"Ninja" <qt_installation_path>\Src\qtbase\src\plugins\sqldrivers -DCMAKE_INSTALL_PREFIX=<qt_installation_path>\<platform> -DMySQL_INCLUDE_DIR="C:\mysql-8.0.22-winx64\include" -DMySQL_LIBRARY="C:\mysql-8.0.22-winx64\lib\libmysql.lib"
+qt-cmake -G Ninja <qt_installation_path>\Src\qtbase\src\plugins\sqldrivers -DCMAKE_INSTALL_PREFIX=<qt_installation_path>\<platform> -DMySQL_INCLUDE_DIR="C:\mysql-8.0.22-winx64\include" -DMySQL_LIBRARY="C:\mysql-8.0.22-winx64\lib\libmysql.lib"
 cmake --build .
 cmake --install .
 //! [5]
@@ -95,7 +95,7 @@ cmake --install .
 mkdir build-sqldrivers
 cd build-sqldrivers
 
-qt-cmake -G"Ninja" <qt_installation_path>/Src/qtbase/src/plugins/sqldrivers -DCMAKE_INSTALL_PREFIX=<qt_installation_path>/<platform> -DOracle_INCLUDE_DIR="/usr/include/oracle/21/client64" -DOracle_LIBRARY="/usr/lib/oracle/21/client64/lib/libclntsh.<so|dylib>"
+qt-cmake -G Ninja <qt_installation_path>/Src/qtbase/src/plugins/sqldrivers -DCMAKE_INSTALL_PREFIX=<qt_installation_path>/<platform> -DOracle_INCLUDE_DIR="/usr/include/oracle/21/client64" -DOracle_LIBRARY="/usr/lib/oracle/21/client64/lib/libclntsh.<so|dylib>"
 cmake --build .
 cmake --install .
 //! [7]
@@ -104,7 +104,7 @@ cmake --install .
 //! [8]
 mkdir build-sqldrivers
 cd build-sqldrivers
-qt-cmake -G"Ninja" <qt_installation_path>\Src\qtbase\src\plugins\sqldrivers -DCMAKE_INSTALL_PREFIX=<qt_installation_path>\<platform> -DOracle_INCLUDE_DIR="C:\oracle\sdk\include" -DOracle_LIBRARY="C:\oracle\oci.lib"
+qt-cmake -G Ninja <qt_installation_path>\Src\qtbase\src\plugins\sqldrivers -DCMAKE_INSTALL_PREFIX=<qt_installation_path>\<platform> -DOracle_INCLUDE_DIR="C:\oracle\sdk\include" -DOracle_LIBRARY="C:\oracle\oci.lib"
 cmake --build .
 cmake --install .
 //! [8]
@@ -119,7 +119,7 @@ set PATH=%PATH%;C:\oracle
 mkdir build-sqldrivers
 cd build-sqldrivers
 
-qt-cmake -G"Ninja" <qt_installation_path>/Src/qtbase/src/plugins/sqldrivers -DCMAKE_INSTALL_PREFIX=<qt_installation_path>/<platform> -DODBC_INCLUDE_DIR="/usr/local/unixODBC/include" -DODBC_LIBRARY="/usr/local/unixODBC/lib/libodbc.<so|dylib>"
+qt-cmake -G Ninja <qt_installation_path>/Src/qtbase/src/plugins/sqldrivers -DCMAKE_INSTALL_PREFIX=<qt_installation_path>/<platform> -DODBC_INCLUDE_DIR="/usr/local/unixODBC/include" -DODBC_LIBRARY="/usr/local/unixODBC/lib/libodbc.<so|dylib>"
 cmake --build .
 cmake --install .
 //! [11]
@@ -129,7 +129,7 @@ cmake --install .
 mkdir build-sqldrivers
 cd build-sqldrivers
 
-qt-cmake -G"Ninja" <qt_installation_path>\Src\qtbase\src\plugins\sqldrivers -DCMAKE_INSTALL_PREFIX=<qt_installation_path>\<platform>
+qt-cmake -G Ninja <qt_installation_path>\Src\qtbase\src\plugins\sqldrivers -DCMAKE_INSTALL_PREFIX=<qt_installation_path>\<platform>
 cmake --build .
 cmake --install .
 //! [12]
@@ -139,7 +139,7 @@ cmake --install .
 mkdir build-psql-driver
 cd build-psql-driver
 
-qt-cmake -G"Ninja" <qt_installation_path>/Src/qtbase/src/plugins/sqldrivers-DCMAKE_INSTALL_PREFIX=<qt_installation_path>/<platform> -DCMAKE_INCLUDE_PATH="/usr/local/pgsql/include" -DCMAKE_LIBRARY_PATH="/usr/local/pgsql/lib"
+qt-cmake -G Ninja <qt_installation_path>/Src/qtbase/src/plugins/sqldrivers-DCMAKE_INSTALL_PREFIX=<qt_installation_path>/<platform> -DCMAKE_INCLUDE_PATH="/usr/local/pgsql/include" -DCMAKE_LIBRARY_PATH="/usr/local/pgsql/lib"
 cmake --build .
 cmake --install .
 //! [13]
@@ -149,7 +149,7 @@ cmake --install .
 mkdir build-sqldrivers
 cd build-sqldrivers
 
-qt-cmake -G"Ninja" <qt_installation_path>\Src\qtbase\src\plugins\sqldrivers -DCMAKE_INSTALL_PREFIX=<qt_installation_path>\<platform> -DCMAKE_INCLUDE_PATH="C:\pgsql\include" -DCMAKE_LIBRARY_PATH="C:\pgsql\lib"
+qt-cmake -G Ninja <qt_installation_path>\Src\qtbase\src\plugins\sqldrivers -DCMAKE_INSTALL_PREFIX=<qt_installation_path>\<platform> -DCMAKE_INCLUDE_PATH="C:\pgsql\include" -DCMAKE_LIBRARY_PATH="C:\pgsql\lib"
 cmake --build .
 cmake --install .
 //! [15]
@@ -159,7 +159,7 @@ cmake --install .
 mkdir build-sqldrivers
 cd build-sqldrivers
 
-qt-cmake -G"Ninja" <qt_installation_path>/Src/qtbase/src/plugins/sqldrivers -DCMAKE_INSTALL_PREFIX=<qt_installation_path>/<platform> -DDB2_INCLUDE_DIR="/usr/local/db2/include" -DDB2_LIBRARY="/usr/local/db2/lib/libdb2.<so|dylib>"
+qt-cmake -G Ninja <qt_installation_path>/Src/qtbase/src/plugins/sqldrivers -DCMAKE_INSTALL_PREFIX=<qt_installation_path>/<platform> -DDB2_INCLUDE_DIR="/usr/local/db2/include" -DDB2_LIBRARY="/usr/local/db2/lib/libdb2.<so|dylib>"
 cmake --build .
 cmake --install .
 //! [18]
@@ -169,7 +169,7 @@ cmake --install .
 mkdir build-sqldrivers
 cd build-sqldrivers
 
-qt-cmake -G"Ninja" <qt_installation_path>\Src\qtbase\src\plugins\sqldrivers -DCMAKE_INSTALL_PREFIX=<qt_installation_path>\<platform> -DDB2_INCLUDE_DIR="C:\db2\include" -DDB2_LIBRARY="C:\db2\lib\db2.lib"
+qt-cmake -G Ninja <qt_installation_path>\Src\qtbase\src\plugins\sqldrivers -DCMAKE_INSTALL_PREFIX=<qt_installation_path>\<platform> -DDB2_INCLUDE_DIR="C:\db2\include" -DDB2_LIBRARY="C:\db2\lib\db2.lib"
 cmake --build .
 cmake --install .
 //! [20]
@@ -179,7 +179,7 @@ cmake --install .
 mkdir build-sqldrivers
 cd build-sqldrivers
 
-qt-cmake -G"Ninja" <qt_installation_path>/Src/qtbase/src/plugins/sqldrivers -DCMAKE_INSTALL_PREFIX=<qt_installation_path>/<platform> -DFEATURE_system_sqlite=ON -DCMAKE_INCLUDE_PATH="$SQLITE/include" -DCMAKE_LIBRARY_PATH="$SQLITE/lib"
+qt-cmake -G Ninja <qt_installation_path>/Src/qtbase/src/plugins/sqldrivers -DCMAKE_INSTALL_PREFIX=<qt_installation_path>/<platform> -DFEATURE_system_sqlite=ON -DCMAKE_INCLUDE_PATH="$SQLITE/include" -DCMAKE_LIBRARY_PATH="$SQLITE/lib"
 cmake --build .
 cmake --install .
 //! [21]
@@ -189,7 +189,7 @@ cmake --install .
 mkdir build-sqldrivers
 cd build-sqldrivers
 
-qt-cmake -G"Ninja" <qt_installation_path>\Src\qtbase\src\plugins\sqldrivers -DCMAKE_INSTALL_PREFIX=<qt_installation_path>\<platform> -DFEATURE_system_sqlite=ON -DCMAKE_INCLUDE_PATH="C:\SQLITE\include" -DCMAKE_LIBRARY_PATH="C:\SQLITE\lib"
+qt-cmake -G Ninja <qt_installation_path>\Src\qtbase\src\plugins\sqldrivers -DCMAKE_INSTALL_PREFIX=<qt_installation_path>\<platform> -DFEATURE_system_sqlite=ON -DCMAKE_INCLUDE_PATH="C:\SQLITE\include" -DCMAKE_LIBRARY_PATH="C:\SQLITE\lib"
 cmake --build .
 cmake --install .
 //! [23]
@@ -199,7 +199,7 @@ cmake --install .
 mkdir build-sqldrivers
 cd build-sqldrivers
 
-qt-cmake -G"Ninja" <qt_installation_path>/Src/qtbase/src/plugins/sqldrivers -DCMAKE_INSTALL_PREFIX=<qt_installation_path>/<platform> -DInterbase_INCLUDE_DIR="/opt/interbase/include" -DInterbase_LIBRARY="/opt/interbase/lib/libgds.<so|dylib>"
+qt-cmake -G Ninja <qt_installation_path>/Src/qtbase/src/plugins/sqldrivers -DCMAKE_INSTALL_PREFIX=<qt_installation_path>/<platform> -DInterbase_INCLUDE_DIR="/opt/interbase/include" -DInterbase_LIBRARY="/opt/interbase/lib/libgds.<so|dylib>"
 cmake --build .
 cmake --install .
 //! [27]
@@ -209,7 +209,7 @@ cmake --install .
 mkdir build-sqldrivers
 cd build-sqldrivers
 
-qt-cmake -G"Ninja" <qt_installation_path>/Src/qtbase/src/plugins/sqldrivers -DCMAKE_INSTALL_PREFIX=<qt_installation_path>/<platform> -DInterbase_INCLUDE_DIR="/opt/interbase/include" -DInterbase_LIBRARY="/opt/interbase/lib/libfbclient.<so|dylib>"
+qt-cmake -G Ninja <qt_installation_path>/Src/qtbase/src/plugins/sqldrivers -DCMAKE_INSTALL_PREFIX=<qt_installation_path>/<platform> -DInterbase_INCLUDE_DIR="/opt/interbase/include" -DInterbase_LIBRARY="/opt/interbase/lib/libfbclient.<so|dylib>"
 cmake --build .
 cmake --install .
 //! [28]
@@ -219,7 +219,7 @@ cmake --install .
 mkdir build-sqldrivers
 cd build-sqldrivers
 
-qt-cmake -G"Ninja" <qt_installation_path>\Src\qtbase\src\plugins\sqldrivers -DCMAKE_INSTALL_PREFIX=<qt_installation_path>\<platform> -DInterbase_INCLUDE_DIR="C:\interbase\include" -DInterbase_LIBRARY="C:\interbase\gds.lib"
+qt-cmake -G Ninja <qt_installation_path>\Src\qtbase\src\plugins\sqldrivers -DCMAKE_INSTALL_PREFIX=<qt_installation_path>\<platform> -DInterbase_INCLUDE_DIR="C:\interbase\include" -DInterbase_LIBRARY="C:\interbase\gds.lib"
 cmake --build .
 cmake --install .
 //! [29]
@@ -229,7 +229,7 @@ cmake --install .
 mkdir build-sqldrivers
 cd build-sqldrivers
 
-qt-cmake -G"Ninja" <qt_installation_path>\Src\qtbase\src\plugins\sqldrivers -DCMAKE_INSTALL_PREFIX=<qt_installation_path>\<platform> -DInterbase_INCLUDE_DIR="C:\interbase\include" -DInterbase_LIBRARY="C:\interbase\lib\fbclient_ms.lib"
+qt-cmake -G Ninja <qt_installation_path>\Src\qtbase\src\plugins\sqldrivers -DCMAKE_INSTALL_PREFIX=<qt_installation_path>\<platform> -DInterbase_INCLUDE_DIR="C:\interbase\include" -DInterbase_LIBRARY="C:\interbase\lib\fbclient_ms.lib"
 cmake --build .
 cmake --install .
 //! [30]
@@ -260,7 +260,7 @@ QSqlRecord rec = database.record(tableString.toLower());
 //! [40]
 
 //! [41]
-C:\Qt\6.0.0\mingw81_64\bin\qt-cmake -G"Ninja" C:\Qt\6.0.0\Src\qtbase\src\plugins\sqldrivers -DMySQL_INCLUDE_DIR="C:\mysql-8.0.22-winx64\include" -DMySQL_LIBRARY="C:\mysql-8.0.22-winx64\lib\libmysql.lib" -DCMAKE_INSTALL_PREFIX="C:\Qt\6.0.0\mingw81_64"
+C:\Qt\6.0.0\mingw81_64\bin\qt-cmake -G Ninja C:\Qt\6.0.0\Src\qtbase\src\plugins\sqldrivers -DMySQL_INCLUDE_DIR="C:\mysql-8.0.22-winx64\include" -DMySQL_LIBRARY="C:\mysql-8.0.22-winx64\lib\libmysql.lib" -DCMAKE_INSTALL_PREFIX="C:\Qt\6.0.0\mingw81_64"
 Configure summary:
 
 Qt Sql Drivers:
