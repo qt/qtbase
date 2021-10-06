@@ -35,8 +35,8 @@ android {
      *******************************************************/
 
     compileSdkVersion androidCompileSdkVersion.toInteger()
-
     buildToolsVersion androidBuildToolsVersion
+    ndkVersion androidNdkVersion
 
     sourceSets {
         main {

@@ -41,6 +41,7 @@
 #include <QDirIterator>
 #include <QElapsedTimer>
 #include <QRegularExpression>
+#include <QSettings>
 
 #include <depfile_shared.h>
 
@@ -156,6 +157,7 @@ struct Options
     QString sdkPath;
     QString sdkBuildToolsVersion;
     QString ndkPath;
+    QString ndkVersion;
     QString jdkPath;
 
     // Build paths
@@ -1044,6 +1046,15 @@ bool readInputFile(Options *options)
             return false;
         }
         options->ndkPath = ndk.toString();
+        const QString ndkPropertiesPath = options->ndkPath + QStringLiteral("/source.properties");
+        const QSettings settings(ndkPropertiesPath, QSettings::IniFormat);
+        const QString ndkVersion = settings.value(QStringLiteral("Pkg.Revision")).toString();
+        if (ndkVersion.isEmpty()) {
+            fprintf(stderr, "Couldn't retrieve the NDK version from \"%s\".\n",
+                    qPrintable(ndkPropertiesPath));
+            return false;
+        }
+        options->ndkVersion = ndkVersion;
     }
 
     {
@@ -2592,9 +2603,8 @@ bool buildAndroidProject(const Options &options)
 {
     GradleProperties localProperties;
     localProperties["sdk.dir"] = QDir::fromNativeSeparators(options.sdkPath).toUtf8();
-    localProperties["ndk.dir"] = QDir::fromNativeSeparators(options.ndkPath).toUtf8();
-
-    if (!mergeGradleProperties(options.outputDirectory + QLatin1String("local.properties"), localProperties))
+    const QString localPropertiesPath = options.outputDirectory + QLatin1String("local.properties");
+    if (!mergeGradleProperties(localPropertiesPath, localProperties))
         return false;
 
     QString gradlePropertiesPath = options.outputDirectory + QLatin1String("gradle.properties");
@@ -2609,6 +2619,7 @@ bool buildAndroidProject(const Options &options)
     gradleProperties["androidCompileSdkVersion"] = options.androidPlatform.split(QLatin1Char('-')).last().toLocal8Bit();
     gradleProperties["qtMinSdkVersion"] = options.minSdkVersion;
     gradleProperties["qtTargetSdkVersion"] = options.targetSdkVersion;
+    gradleProperties["androidNdkVersion"] = options.ndkVersion.toUtf8();
     if (gradleProperties["androidBuildToolsVersion"].isEmpty())
         gradleProperties["androidBuildToolsVersion"] = options.sdkBuildToolsVersion.toLocal8Bit();
     QString abiList;
