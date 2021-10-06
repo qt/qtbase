@@ -656,7 +656,7 @@ struct Q_CORE_EXPORT QDynamicMetaObjectData
     virtual ~QDynamicMetaObjectData();
     virtual void objectDestroyed(QObject *) { delete this; }
 
-    virtual QAbstractDynamicMetaObject *toDynamicMetaObject(QObject *) = 0;
+    virtual QMetaObject *toDynamicMetaObject(QObject *) = 0;
     virtual int metaCall(QObject *, QMetaObject::Call, int _id, void **) = 0;
 };
 
@@ -664,7 +664,7 @@ struct Q_CORE_EXPORT QAbstractDynamicMetaObject : public QDynamicMetaObjectData,
 {
     ~QAbstractDynamicMetaObject();
 
-    QAbstractDynamicMetaObject *toDynamicMetaObject(QObject *) override { return this; }
+    QMetaObject *toDynamicMetaObject(QObject *) override { return this; }
     virtual int createProperty(const char *, const char *) { return -1; }
     int metaCall(QObject *, QMetaObject::Call c, int _id, void **a) override
     { return metaCall(c, _id, a); }

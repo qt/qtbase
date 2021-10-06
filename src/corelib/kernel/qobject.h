@@ -111,6 +111,9 @@ public:
     int postedEvents;
     QDynamicMetaObjectData *metaObject;
     QBindingStorage bindingStorage;
+
+    // ### Qt7: Make this return a const QMetaObject *. You should not mess with
+    //          the metaobjects of existing objects.
     QMetaObject *dynamicMetaObject() const;
 
 #ifdef QT_DEBUG
