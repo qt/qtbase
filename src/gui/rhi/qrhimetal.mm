@@ -440,6 +440,12 @@ bool QRhiMetal::create(QRhi::Flags flags)
     }
 #endif
 
+    caps.supportedSampleCounts = { 1 };
+    for (int sampleCount : { 2, 4, 8 }) {
+        if ([d->dev supportsTextureSampleCount: sampleCount])
+            caps.supportedSampleCounts.append(sampleCount);
+    }
+
     nativeHandlesStruct.dev = (MTLDevice *) d->dev;
     nativeHandlesStruct.cmdQueue = (MTLCommandQueue *) d->cmdQueue;
 
@@ -469,7 +475,7 @@ void QRhiMetal::destroy()
 
 QVector<int> QRhiMetal::supportedSampleCounts() const
 {
-    return { 1, 2, 4, 8 };
+    return caps.supportedSampleCounts;
 }
 
 int QRhiMetal::effectiveSampleCount(int sampleCount) const

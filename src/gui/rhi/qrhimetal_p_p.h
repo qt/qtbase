@@ -482,6 +482,7 @@ public:
     struct {
         int maxTextureSize = 4096;
         bool baseVertexAndInstance = true;
+        QVector<int> supportedSampleCounts;
     } caps;
 
     QRhiMetalData *d = nullptr;
