@@ -8053,7 +8053,7 @@ void tst_QNetworkReply::varyingCacheExpiry()
         u"http://localhost"_qs,
         u"http://localhost"_qs,
     };
-    for (int i = 0; i < std::size(urls); ++i)
+    for (size_t i = 0; i < std::size(urls); ++i)
         urls[i].setPort(servers[i].serverPort());
 
     // After the initial request is completed the connection is kept alive
