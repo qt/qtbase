@@ -13,7 +13,6 @@
         android:smallScreens="true" />
     <application
         android:name="org.qtproject.qt.android.bindings.QtApplication"
-        android:extractNativeLibs="true"
         android:hardwareAccelerated="true"
         android:label="-- %%INSERT_APP_NAME%% --"
         android:requestLegacyExternalStorage="true"
