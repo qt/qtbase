@@ -81,7 +81,9 @@ class QtConfigureOption(object):
 
         if self._binary_option and self.possible_values:
             raise QtConanError(
-                f"A binary option: '{name}' can not contain values: " f"{self.possible_values}"
+                "A binary option: '{0}' can not contain values: {1}".format(
+                    name, self.possible_values
+                )
             )
 
         self.default = default
@@ -149,8 +151,8 @@ class QtOptionParser:
                     configure = root_path.joinpath(script).resolve(strict=True)
                 else:
                     raise QtConanError(
-                        f"Unable to locate 'configure(.bat)' "
-                        f"from current context: {recipe_folder}"
+                        "Unable to locate 'configure(.bat)' "
+                        "from current context: {0}".format(recipe_folder)
                     )
 
             self.write_configure_options(configure, output_file=configure_options)
@@ -163,17 +165,17 @@ class QtOptionParser:
         self.set_features(feature_name_prefix="feature-", features=features)
 
     def write_configure_options(self, configure: Path, output_file: Path) -> None:
-        print(f"QtOptionParser: writing Qt configure options to: {output_file}")
+        print("QtOptionParser: writing Qt configure options to: {0}".format(output_file))
         cmd = [str(configure), "-write-options-for-conan", str(output_file)]
         subprocess.run(cmd, check=True, timeout=60 * 2)
 
     def read_configure_options(self, input_file: Path) -> Dict[str, Any]:
-        print(f"QtOptionParser: reading Qt configure options from: {input_file}")
+        print("QtOptionParser: reading Qt configure options from: {0}".format(input_file))
         with open(str(input_file)) as f:
             return json.load(f)
 
     def write_configure_features(self, configure: Path, output_file: Path) -> None:
-        print(f"QtOptionParser: writing Qt configure features to: {output_file}")
+        print("QtOptionParser: writing Qt configure features to: {0}".format(output_file))
         cmd = [str(configure), "-list-features"]
         with open(output_file, "w") as f:
             subprocess.run(
@@ -186,7 +188,7 @@ class QtOptionParser:
             )
 
     def read_configure_features(self, input_file: Path) -> List[str]:
-        print(f"QtOptionParser: reading Qt configure features from: {input_file}")
+        print("QtOptionParser: reading Qt configure features from: {0}".format(input_file))
         with open(str(input_file)) as f:
             return f.readlines()
 
@@ -199,13 +201,14 @@ class QtOptionParser:
 
             if not option_type:
                 raise QtConanError(
-                    "Qt 'configure(.bat) -write-options-for-conan' produced output that is "
-                    f"missing 'type'. Unable to set options dynamically. Item: {option_name}"
+                    "Qt 'configure(.bat) -write-options-for-conan' produced output "
+                    "that is missing 'type'. Unable to set options dynamically. "
+                    "Item: {0}".format(option_name)
                 )
             if not isinstance(values, list):
-                raise QtConanError(f"The 'values' field is not a list: {option_name}")
+                raise QtConanError("The 'values' field is not a list: {0}".format(option_name))
             if option_type == "enum" and not values:
-                raise QtConanError(f"The enum values are missing for: {option_name}")
+                raise QtConanError("The enum values are missing for: {0}".format(option_name))
 
             opt = QtConfigureOption(
                 name=option_name, type=option_type, values=values, default=default
@@ -265,7 +268,9 @@ class QtOptionParser:
                     return qt_opt
             else:
                 raise QtConanError(
-                    "Could not find a matching Qt configure option for: " f"{conan_option_name}"
+                    "Could not find a matching Qt configure option for: {0}".format(
+                        conan_option_name
+                    )
                 )
 
         def _is_excluded_from_configure() -> bool:
@@ -336,12 +341,12 @@ def _build_qtbase(conan_file: ConanFile):
     )
     cmake_args = parser.get_cmake_args_for_configure(conan_file.options)
     if cmake_args:
-        cmd += f" -- {' '.join(cmake_args)}"
-    conan_file.output.info(f"Calling: {cmd}")
+        cmd += " -- {0}".format(" ".join(cmake_args))
+    conan_file.output.info("Calling: {0}".format(cmd))
     conan_file.run(cmd)
 
     cmd = " ".join(["cmake", "--build", ".", "--parallel"])
-    conan_file.output.info(f"Calling: {cmd}")
+    conan_file.output.info("Calling: {0}".format(cmd))
     conan_file.run(cmd)
 
 
@@ -371,7 +376,7 @@ class QtBase(ConanFile):
     exports_sources = "*", "!conan*.*"
     # use commit ID as the RREV (recipe revision)
     revision_mode = "scm"
-    python_requires = f"qt-conan-common/{_get_qt_minor_version()}@qt/everywhere"
+    python_requires = "qt-conan-common/{0}@qt/everywhere".format(_get_qt_minor_version())
 
     def set_version(self):
         # Executed during "conan export" i.e. in source tree
