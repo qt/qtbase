@@ -1266,7 +1266,7 @@ static QByteArray decNext(QByteArray &&big)
     while (big.at(i) == '9')
         big[i--] = '0';
     big[i] += 1;
-    return big;
+    return std::move(big);
 }
 
 void tst_QByteArrayApiSymmetry::toLongLong_data() const
