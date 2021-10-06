@@ -41,6 +41,7 @@
 #include "qgtk3dialoghelpers.h"
 #include "qgtk3menu.h"
 #include <QVariant>
+#include <QtCore/qregularexpression.h>
 
 #undef signals
 #include <gtk/gtk.h>
@@ -145,6 +146,47 @@ QString QGtk3Theme::gtkFontName() const
     if (!cfgFontName.isEmpty())
         return cfgFontName;
     return QGnomeTheme::gtkFontName();
+}
+
+QPlatformTheme::Appearance QGtk3Theme::appearance() const
+{
+    /*
+        https://docs.gtk.org/gtk3/running.html
+
+        It's possible to set a theme variant after the theme name when using GTK_THEME:
+
+            GTK_THEME=Adwaita:dark
+
+        Some themes also have "-dark" as part of their name.
+
+        We test this environment variable first because the documentation says
+        it's mainly used for easy debugging, so it should be possible to use it
+        to override any other settings.
+    */
+    QString themeName = qEnvironmentVariable("GTK_THEME");
+    const QRegularExpression darkRegex(QStringLiteral("[:-]dark"), QRegularExpression::CaseInsensitiveOption);
+    if (!themeName.isEmpty())
+        return darkRegex.match(themeName).hasMatch() ? Appearance::Dark : Appearance::Light;
+
+    /*
+        https://docs.gtk.org/gtk3/property.Settings.gtk-application-prefer-dark-theme.html
+
+        This setting controls which theme is used when the theme specified by
+        gtk-theme-name provides both light and dark variants. We can save a
+        regex check by testing this property first.
+    */
+    const auto preferDark = gtkSetting<bool>("gtk-application-prefer-dark-theme");
+    if (preferDark)
+        return Appearance::Dark;
+
+    /*
+        https://docs.gtk.org/gtk3/property.Settings.gtk-theme-name.html
+    */
+    themeName = gtkSetting("gtk-theme-name");
+    if (!themeName.isEmpty())
+        return darkRegex.match(themeName).hasMatch() ? Appearance::Dark : Appearance::Light;
+
+    return Appearance::Unknown;
 }
 
 bool QGtk3Theme::usePlatformNativeDialog(DialogType type) const
