@@ -110,14 +110,36 @@ static inline int switch_from_to(QAtomicInt &a, int from, int to)
 
 void QFutureInterfaceBase::cancel()
 {
-    QMutexLocker locker(&d->m_mutex);
-    if (d->state.loadRelaxed() & Canceled)
-        return;
+    cancel(CancelMode::CancelOnly);
+}
 
-    switch_from_to(d->state, suspendingOrSuspended, Canceled);
+void QFutureInterfaceBase::cancel(QFutureInterfaceBase::CancelMode mode)
+{
+    QMutexLocker locker(&d->m_mutex);
+
+    const auto oldState = d->state.loadRelaxed();
+
+    switch (mode) {
+    case CancelMode::CancelAndFinish:
+        if ((oldState & Finished) && (oldState & Canceled))
+            return;
+        switch_from_to(d->state, suspendingOrSuspended | Running, Canceled | Finished);
+        break;
+    case CancelMode::CancelOnly:
+        if (oldState & Canceled)
+            return;
+        switch_from_to(d->state, suspendingOrSuspended, Canceled);
+        break;
+    }
+
     d->waitCondition.wakeAll();
     d->pausedWaitCondition.wakeAll();
-    d->sendCallOut(QFutureCallOutEvent(QFutureCallOutEvent::Canceled));
+
+    if (!(oldState & Canceled))
+        d->sendCallOut(QFutureCallOutEvent(QFutureCallOutEvent::Canceled));
+    if (mode == CancelMode::CancelAndFinish && !(oldState & Finished))
+        d->sendCallOut(QFutureCallOutEvent(QFutureCallOutEvent::Finished));
+
     d->isValid = false;
 }
 

@@ -107,6 +107,7 @@ private slots:
     void futureInterface();
     void refcounting();
     void cancel();
+    void cancelAndFinish();
     void statePropagation();
     void multipleResults();
     void indexedResults();
@@ -862,6 +863,39 @@ void tst_QFuture::cancel()
         futureInterface.reportResult(&result);
         futureInterface.reportFinished();
         QVERIFY(f.results().isEmpty());
+    }
+}
+
+void tst_QFuture::cancelAndFinish()
+{
+    {
+        QFutureInterface<void> fi;
+
+        fi.reportStarted();
+        fi.cancelAndFinish();
+
+        QVERIFY(fi.isStarted());
+        QVERIFY(!fi.isRunning());
+        QVERIFY(!fi.isSuspended());
+        QVERIFY(!fi.isSuspending());
+        QVERIFY(fi.isCanceled());
+        QVERIFY(fi.isFinished());
+    }
+
+    // The same with suspended state
+    {
+        QFutureInterface<void> fi;
+
+        fi.reportStarted();
+        fi.setSuspended(true);
+        fi.cancelAndFinish();
+
+        QVERIFY(fi.isStarted());
+        QVERIFY(!fi.isRunning());
+        QVERIFY(!fi.isSuspended());
+        QVERIFY(!fi.isSuspending());
+        QVERIFY(fi.isCanceled());
+        QVERIFY(fi.isFinished());
     }
 }
 

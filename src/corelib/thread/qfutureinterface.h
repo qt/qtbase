@@ -154,6 +154,8 @@ public:
     int loadState() const;
 
     void cancel();
+    void cancelAndFinish() { cancel(CancelMode::CancelAndFinish); }
+
     void setSuspended(bool suspend);
     void toggleSuspended();
     void reportSuspended() const;
@@ -216,6 +218,9 @@ protected:
     bool launchAsync() const;
 
     bool isRunningOrPending() const;
+
+    enum class CancelMode { CancelOnly, CancelAndFinish };
+    void cancel(CancelMode mode);
 };
 
 inline void swap(QFutureInterfaceBase &lhs, QFutureInterfaceBase &rhs) noexcept

@@ -46,6 +46,8 @@ private slots:
     void startFinish();
     void progressValueChanged();
     void canceled();
+    void cancelAndFinish_data();
+    void cancelAndFinish();
     void resultAt();
     void resultReadyAt();
     void futureSignals();
@@ -227,6 +229,42 @@ void tst_QFutureWatcher::canceled()
     QVERIFY(cancelObject.wasCanceled);
     futureWatcher.disconnect();
     future.waitForFinished();
+}
+
+void tst_QFutureWatcher::cancelAndFinish_data()
+{
+    QTest::addColumn<bool>("isCanceled");
+    QTest::addColumn<bool>("isFinished");
+
+    QTest::addRow("running") << false << false;
+    QTest::addRow("canceled") << true << false;
+    QTest::addRow("finished") << false << true;
+    QTest::addRow("canceledAndFinished") << true << true;
+}
+
+void tst_QFutureWatcher::cancelAndFinish()
+{
+    QFETCH(bool, isCanceled);
+    QFETCH(bool, isFinished);
+
+    QFutureInterface<void> fi;
+    QFutureWatcher<void> futureWatcher;
+    QSignalSpy finishedSpy(&futureWatcher, &QFutureWatcher<void>::finished);
+    QSignalSpy canceledSpy(&futureWatcher, &QFutureWatcher<void>::canceled);
+    futureWatcher.setFuture(fi.future());
+
+    fi.reportStarted();
+
+    if (isCanceled)
+        fi.cancel();
+    if (isFinished)
+        fi.reportFinished();
+
+    fi.cancelAndFinish();
+
+    // The signals should be emitted only once
+    QTRY_COMPARE(canceledSpy.count(), 1);
+    QTRY_COMPARE(finishedSpy.count(), 1);
 }
 
 class IntTask : public RunFunctionTaskBase<int>
