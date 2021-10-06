@@ -165,8 +165,8 @@ QSupportedWritingSystems &QSupportedWritingSystems::operator=(const QSupportedWr
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug debug, const QSupportedWritingSystems &sws)
 {
-    QMetaObject mo = QFontDatabase::staticMetaObject;
-    QMetaEnum me = mo.enumerator(mo.indexOfEnumerator("WritingSystem"));
+    const QMetaObject *mo = &QFontDatabase::staticMetaObject;
+    QMetaEnum me = mo->enumerator(mo->indexOfEnumerator("WritingSystem"));
 
     QDebugStateSaver saver(debug);
     debug.nospace() << "QSupportedWritingSystems(";
