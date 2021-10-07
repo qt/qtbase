@@ -106,8 +106,6 @@ public:
     void stop();
 
 private:
-    friend class QNetworkListManagerEvents;
-
     bool event(QEvent *event) override;
     void setConnectivity(NLM_CONNECTIVITY newConnectivity);
     void checkCaptivePortal();
