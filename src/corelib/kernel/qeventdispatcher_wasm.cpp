@@ -526,9 +526,6 @@ void QEventDispatcherWasm::callProcessTimers(void *context)
 {
     Q_ASSERT(emscripten_is_main_runtime_thread());
 
-    // Bail out if Qt has been shut down
-    if (!g_mainThreadEventDispatcher)
-        return;
 
     // Note: "context" may be a stale pointer here,
     // take care before casting and dereferencing!
