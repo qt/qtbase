@@ -99,7 +99,11 @@ public:
     static QNetworkInformation::Features featuresSupportedStatic()
     {
         return QNetworkInformation::Features(QNetworkInformation::Feature::Reachability
-                                             | QNetworkInformation::Feature::CaptivePortal);
+                                             | QNetworkInformation::Feature::CaptivePortal
+#ifdef SUPPORTS_WINRT
+                                             | QNetworkInformation::Feature::TransportMedium
+#endif
+                                             );
     }
 
     [[nodiscard]] bool start();
@@ -158,6 +162,9 @@ QNetworkListManagerNetworkInformationBackend::QNetworkListManagerNetworkInformat
     managerEvents = new QNetworkListManagerEvents();
     connect(managerEvents.Get(), &QNetworkListManagerEvents::connectivityChanged, this,
             &QNetworkListManagerNetworkInformationBackend::setConnectivity);
+
+    connect(managerEvents.Get(), &QNetworkListManagerEvents::transportMediumChanged, this,
+            &QNetworkListManagerNetworkInformationBackend::setTransportMedium);
 }
 
 QNetworkListManagerNetworkInformationBackend::~QNetworkListManagerNetworkInformationBackend()

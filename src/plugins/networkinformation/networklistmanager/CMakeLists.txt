@@ -10,6 +10,11 @@ qt_internal_add_plugin(QNLMNIPlugin
         Qt::NetworkPrivate
 )
 
+qt_internal_extend_target(QNLMNIPlugin CONDITION WIN32 AND MSVC AND NOT CLANG
+    LIBRARIES
+        runtimeobject
+)
+
 # Don't repeat the target name in AUTOGEN_BUILD_DIR to work around issues with overlong paths.
 set_property(TARGET QNLMNIPlugin PROPERTY
     AUTOGEN_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}/autogen")

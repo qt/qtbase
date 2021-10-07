@@ -39,6 +39,19 @@
 
 #include "qnetworklistmanagerevents.h"
 
+#ifdef SUPPORTS_WINRT
+#include <winrt/base.h>
+// Workaround for Windows SDK bug.
+// See https://github.com/microsoft/Windows.UI.Composition-Win32-Samples/issues/47
+namespace winrt::impl
+{
+    template <typename Async>
+    auto wait_for(Async const& async, Windows::Foundation::TimeSpan const& timeout);
+}
+
+#include <winrt/Windows.Networking.Connectivity.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 namespace {
@@ -121,6 +134,19 @@ bool QNetworkListManagerEvents::start()
         qCWarning(lcNetInfoNLM) << "Could not get connectivity:" << errorStringFromHResult(hr);
     else
         emit connectivityChanged(connectivity);
+
+#ifdef SUPPORTS_WINRT
+    using namespace winrt::Windows::Networking::Connectivity;
+    // Register for changes in the network and store a token to unregister later:
+    token = NetworkInformation::NetworkStatusChanged(
+            [this](const winrt::Windows::Foundation::IInspectable sender) {
+                Q_UNUSED(sender);
+                emit transportMediumChanged(getTransportMedium());
+            });
+    // Emit initial state
+    emit transportMediumChanged(getTransportMedium());
+#endif
+
     return true;
 }
 
@@ -134,6 +160,13 @@ bool QNetworkListManagerEvents::stop()
         return false;
     }
     cookie = 0;
+
+#ifdef SUPPORTS_WINRT
+    using namespace winrt::Windows::Networking::Connectivity;
+    // Pass the token we stored earlier to unregister:
+    NetworkInformation::NetworkStatusChanged(token);
+    token = {};
+#endif
     return true;
 }
 
@@ -173,6 +206,45 @@ bool QNetworkListManagerEvents::checkBehindCaptivePortal()
     }
 
     return false;
+}
+
+// NB: this isn't part of "network list manager", but sadly NLM doesn't have an
+// equivalent API (at least not that I've found...)!
+QNetworkInformation::TransportMedium QNetworkListManagerEvents::getTransportMedium()
+{
+#ifdef SUPPORTS_WINRT
+    using namespace winrt::Windows::Networking::Connectivity;
+    ConnectionProfile profile = NetworkInformation::GetInternetConnectionProfile();
+    if (profile == nullptr)
+        return QNetworkInformation::TransportMedium::Unknown;
+
+    if (profile.IsWwanConnectionProfile())
+        return QNetworkInformation::TransportMedium::Cellular;
+    if (profile.IsWlanConnectionProfile())
+        return QNetworkInformation::TransportMedium::WiFi;
+
+    NetworkAdapter adapter = profile.NetworkAdapter();
+    if (adapter == nullptr)
+        return QNetworkInformation::TransportMedium::Unknown;
+
+    // Note: Bluetooth is given an iana iftype of 6, which is the same as Ethernet.
+    // In Windows itself there is clearly a distinction between a Bluetooth PAN
+    // and an Ethernet LAN, though it is not clear how they make this distinction.
+    auto fromIanaId = [](quint32 ianaId) -> QNetworkInformation::TransportMedium {
+        // https://www.iana.org/assignments/ianaiftype-mib/ianaiftype-mib
+        switch (ianaId) {
+            case 6:
+                return QNetworkInformation::TransportMedium::Ethernet;
+            case 71: // Should be handled before entering this lambda
+                return QNetworkInformation::TransportMedium::WiFi;
+        }
+        return QNetworkInformation::TransportMedium::Unknown;
+    };
+
+    return fromIanaId(adapter.IanaInterfaceType());
+#else
+    return QNetworkInformation::TransportMedium::Unknown;
+#endif
 }
 
 QT_END_NAMESPACE

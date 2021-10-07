@@ -39,6 +39,8 @@
 
 #include <QtNetwork/private/qtnetworkglobal_p.h>
 
+#include <QtNetwork/qnetworkinformation.h>
+
 #include <QtCore/qstring.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qloggingcategory.h>
@@ -48,6 +50,14 @@
 #include <wrl/client.h>
 #include <wrl/wrappers/corewrappers.h>
 #include <comdef.h>
+
+#if defined(Q_CC_MSVC) && !defined(Q_CC_CLANG)
+#define SUPPORTS_WINRT 1
+#endif
+
+#ifdef SUPPORTS_WINRT
+#include <winrt/base.h>
+#endif
 
 using namespace Microsoft::WRL;
 
@@ -88,10 +98,17 @@ public:
 
 signals:
     void connectivityChanged(NLM_CONNECTIVITY);
+    void transportMediumChanged(QNetworkInformation::TransportMedium);
 
 private:
+    [[nodiscard]] QNetworkInformation::TransportMedium getTransportMedium();
+
     ComPtr<INetworkListManager> networkListManager = nullptr;
     ComPtr<IConnectionPoint> connectionPoint = nullptr;
+
+#ifdef SUPPORTS_WINRT
+    winrt::event_token token;
+#endif
 
     QAtomicInteger<ULONG> ref = 0;
     DWORD cookie = 0;
