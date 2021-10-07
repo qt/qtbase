@@ -3900,7 +3900,7 @@ void doActivate(QObject *sender, int signal_index, void **argv)
                 SlotObjectGuard obj{c->slotObj};
 
                 {
-                    Q_TRACE_SCOPE(QMetaObject_activate_slot_functor, obj.get());
+                    Q_TRACE_SCOPE(QMetaObject_activate_slot_functor, c->slotObj);
                     obj->call(receiver, argv);
                 }
             } else if (c->callFunction && c->method_offset <= receiver->metaObject()->methodOffset()) {
