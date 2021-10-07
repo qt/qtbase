@@ -9974,20 +9974,12 @@ QDataStream &operator>>(QDataStream &in, QString &str)
 */
 bool QtPrivate::isRightToLeft(QStringView string) noexcept
 {
-    const char16_t *p = string.utf16();
-    const char16_t * const end = p + string.size();
     int isolateLevel = 0;
-    while (p < end) {
-        uint ucs4 = *p;
-        if (QChar::isHighSurrogate(ucs4) && p < end - 1) {
-            char16_t low = p[1];
-            if (QChar::isLowSurrogate(low)) {
-                ucs4 = QChar::surrogateToUcs4(ucs4, low);
-                ++p;
-            }
-        }
-        switch (QChar::direction(ucs4))
-        {
+
+    for (QStringIterator i(string); i.hasNext();) {
+        const char32_t c = i.next();
+
+        switch (QChar::direction(c)) {
         case QChar::DirRLI:
         case QChar::DirLRI:
         case QChar::DirFSI:
@@ -10006,10 +9998,24 @@ bool QtPrivate::isRightToLeft(QStringView string) noexcept
             if (isolateLevel)
                 break;
             return true;
-        default:
+        case QChar::DirEN:
+        case QChar::DirES:
+        case QChar::DirET:
+        case QChar::DirAN:
+        case QChar::DirCS:
+        case QChar::DirB:
+        case QChar::DirS:
+        case QChar::DirWS:
+        case QChar::DirON:
+        case QChar::DirLRE:
+        case QChar::DirLRO:
+        case QChar::DirRLE:
+        case QChar::DirRLO:
+        case QChar::DirPDF:
+        case QChar::DirNSM:
+        case QChar::DirBN:
             break;
         }
-        ++p;
     }
     return false;
 }
