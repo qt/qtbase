@@ -1288,6 +1288,11 @@ void QHttp2ProtocolHandler::updateStream(Stream &stream, const Frame &frame,
                 if (read > 0) {
                     output.resize(read);
                     replyPrivate->responseData.append(std::move(output));
+                } else if (read < 0) {
+                    finishStreamWithError(
+                            stream, QNetworkReply::ProtocolFailure,
+                            QCoreApplication::translate("QHttp", "Data corrupted"));
+                    return;
                 }
             }
         } else {
