@@ -1957,7 +1957,7 @@ void QTextLine::layout_helper(int maxGlyphs)
                 // spaces to behave as in previous Qt versions in the line breaking algorithm.
                 // The line breaks do not currently follow the Unicode specs, but fixing this would
                 // require refactoring the code and would cause behavioral regressions.
-                bool isBreakableSpace = lbh.currentPosition < eng->layoutData->string.length()
+                const bool isBreakableSpace = lbh.currentPosition < eng->layoutData->string.length()
                                         && attributes[lbh.currentPosition].whiteSpace
                                         && eng->layoutData->string.at(lbh.currentPosition).decompositionTag() != QChar::NoBreak;
 

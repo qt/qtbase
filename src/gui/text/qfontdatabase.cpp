@@ -1579,12 +1579,12 @@ bool QFontDatabase::isSmoothlyScalable(const QString &family, const QString &sty
     }
     if (!f) return smoothScalable;
 
-    QtFontStyle::Key styleKey(style);
+    const QtFontStyle::Key styleKey(style);
     for (int j = 0; j < f->count; j++) {
         QtFontFoundry *foundry = f->foundries[j];
         if (foundryName.isEmpty() || foundry->name.compare(foundryName, Qt::CaseInsensitive) == 0) {
             for (int k = 0; k < foundry->count; k++) {
-                QtFontStyle *fontStyle = foundry->styles[k];
+                const QtFontStyle *fontStyle = foundry->styles[k];
                 smoothScalable =
                         fontStyle->smoothScalable
                         && ((style.isEmpty()
