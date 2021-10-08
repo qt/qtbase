@@ -248,6 +248,8 @@ template<typename Container, typename ...T>
 using QDebugIfHasDebugStreamContainer =
     std::enable_if_t<std::conjunction_v<QTypeTraits::has_ostream_operator_container<QDebug, Container, T>...>, QDebug>;
 
+#ifndef Q_CLANG_QDOC
+
 template<typename T>
 inline QDebugIfHasDebugStreamContainer<QList<T>, T> operator<<(QDebug debug, const QList<T> &vec)
 {
@@ -335,6 +337,51 @@ inline QDebugIfHasDebugStream<T> operator<<(QDebug debug, const QContiguousCache
     debug << ')';
     return debug;
 }
+
+#else
+template <class T>
+QDebug operator<<(QDebug debug, const QList<T> &list);
+
+template <class T, qsizetype P>
+QDebug operator<<(QDebug debug, const QVarLengthArray<T, P> &array);
+
+template <typename T, typename Alloc>
+QDebug operator<<(QDebug debug, const std::vector<T, Alloc> &vec);
+
+template <typename T, typename Alloc>
+QDebug operator<<(QDebug debug, const std::list<T, Alloc> &vec);
+
+template <typename Key, typename T, typename Compare, typename Alloc>
+QDebug operator<<(QDebug debug, const std::map<Key, T, Compare, Alloc> &map);
+
+template <typename Key, typename T, typename Compare, typename Alloc>
+QDebug operator<<(QDebug debug, const std::multimap<Key, T, Compare, Alloc> &map);
+
+template <class Key, class T>
+QDebug operator<<(QDebug debug, const QMap<Key, T> &map);
+
+template <class Key, class T>
+QDebug operator<<(QDebug debug, const QMultiMap(<Key, T> &map);
+
+template <class Key, class T>
+QDebug operator<<(QDebug debug, const QHash<Key, T> &hash);
+
+template <class Key, class T>
+QDebug operator<<(QDebug debug, const QMultiHash<Key, T> &hash);
+
+template <typename T>
+QDebug operator<<(QDebug debug, const QSet<T> &set);
+
+template <class T1, class T2>
+QDebug operator<<(QDebug debug, const QPair<T1, T2> &pair);
+
+template <class T1, class T2>
+QDebug operator<<(QDebug debug, const std::pair<T1, T2> &pair);
+
+template <typename T>
+QDebug operator<<(QDebug debug, const QContiguousCache<T> &cache);
+
+#endif // Q_CLANG_QDOC
 
 template <class T>
 inline QDebug operator<<(QDebug debug, const QSharedPointer<T> &ptr)
