@@ -2726,6 +2726,7 @@ static auto computeSystemMillisRange()
         local.tm_year = tmYearFromQYear(1901);
         local.tm_mon = 11;
         local.tm_mday = 15; // A day and a bit after the start of 32-bit time_t:
+        local.tm_isdst = -1;
         return R{qMkTime(&local) == -1 ? 0 : msecsMin, msecsMax, false, false};
     } else {
         const struct { int year; qint64 millis; } starts[] = {
@@ -2754,6 +2755,7 @@ static auto computeSystemMillisRange()
             local.tm_mday = 31;
             local.tm_hour = 23;
             local.tm_min = local.tm_sec = 59;
+            local.tm_isdst = -1;
             if (qMkTime(&local) != -1) {
                 stop = c.millis;
                 break;
@@ -2766,6 +2768,7 @@ static auto computeSystemMillisRange()
             local.tm_year = tmYearFromQYear(c.year);
             local.tm_mon = 1;
             local.tm_mday = 1;
+            local.tm_isdst = -1;
             if (qMkTime(&local) != -1)
                 return R{c.millis, stop, startMin, stopMax};
             startMin = false;
