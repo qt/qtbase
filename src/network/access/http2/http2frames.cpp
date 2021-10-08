@@ -233,7 +233,8 @@ quint32 Frame::dataSize() const
     Q_ASSERT(validatePayload() == FrameStatus::goodFrame);
 
     quint32 size = payloadSize();
-    if (const uchar pad = padding()) {
+    if (flags().testFlag(FrameFlag::PADDED)) {
+        const uchar pad = padding();
         // + 1 one for a byte with padding number itself:
         size -= pad + 1;
     }
@@ -269,7 +270,7 @@ const uchar *Frame::dataBegin() const
         return nullptr;
 
     const uchar *src = &buffer[0] + frameHeaderSize;
-    if (padding())
+    if (flags().testFlag(FrameFlag::PADDED))
         ++src;
 
     if (priority())
