@@ -1381,7 +1381,7 @@ int QCoreApplication::exec()
     QEventLoop eventLoop;
     self->d_func()->in_exec = true;
     self->d_func()->aboutToQuitEmitted = false;
-    int returnCode = eventLoop.exec();
+    int returnCode = eventLoop.exec(QEventLoop::ApplicationExec);
     threadData->quitNow = false;
 
     if (self)

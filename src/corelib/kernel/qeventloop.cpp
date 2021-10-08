@@ -88,6 +88,7 @@ QT_BEGIN_NAMESPACE
     \omitvalue X11ExcludeTimers
     \omitvalue EventLoopExec
     \omitvalue DialogExec
+    \omitvalue ApplicationExec
 
     \sa processEvents()
 */

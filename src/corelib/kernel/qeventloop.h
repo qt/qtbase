@@ -62,7 +62,8 @@ public:
         WaitForMoreEvents = 0x04,
         X11ExcludeTimers = 0x08,
         EventLoopExec = 0x20,
-        DialogExec = 0x40
+        DialogExec = 0x40,
+        ApplicationExec = 0x80,
     };
     Q_DECLARE_FLAGS(ProcessEventsFlags, ProcessEventsFlag)
 
