@@ -2127,6 +2127,68 @@ void QTest::ignoreMessage(QtMsgType type, const QRegularExpression &messagePatte
 }
 #endif // QT_CONFIG(regularexpression)
 
+/*!
+    \since 6.3
+    \overload failOnWarning()
+
+    Appends a test failure to the test log if the \a message is output.
+
+    \sa failOnWarning()
+*/
+void QTest::failOnWarning(const char *message)
+{
+    return QTestLog::failOnWarning(message);
+}
+
+#if QT_CONFIG(regularexpression)
+/*!
+    \since 6.3
+
+    Appends a test failure to the test log for each warning that matches
+    \a messagePattern.
+
+    The test function will continue execution when a failure is added. To abort
+    the test instead, you can check \l currentTestFailed() and return early if
+    it's \c true.
+
+    For each warning, the first pattern that matches will cause a failure,
+    and the remaining patterns will be ignored.
+
+    All patterns are cleared at the end of each test function.
+
+    \code
+    void FileTest::loadFiles()
+    {
+        QTest::failOnWarning(QRegularExpression("^Failed to load"));
+
+        // Each of these will cause a test failure:
+        qWarning() << "Failed to load image";
+        qWarning() << "Failed to load video";
+    }
+    \endcode
+
+    To fail every test that triggers a given warning, pass a suitable regular
+    expression to this function in \l {Creating a Test}{init()}:
+
+    \code
+    void FileTest::init()
+    {
+        QTest::failOnWarning(QRegularExpression(".?"));
+    }
+    \endcode
+
+    \note \l ignoreMessage() takes precedence over this function, so any
+    warnings that match a pattern given to both \c ignoreMessage() and
+    \c failOnWarning() will be ignored.
+
+    \sa {Qt Test Environment Variables}{QTEST_FATAL_FAIL}
+*/
+void QTest::failOnWarning(const QRegularExpression &messagePattern)
+{
+    QTestLog::failOnWarning(messagePattern);
+}
+#endif // QT_CONFIG(regularexpression)
+
 /*! \internal
  */
 

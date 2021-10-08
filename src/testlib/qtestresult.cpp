@@ -191,6 +191,7 @@ void QTestResult::finishedCurrentTestData()
         addFailure("Not all expected messages were received");
     }
     QTestLog::clearIgnoreMessages();
+    QTestLog::clearFailOnWarnings();
 }
 
 /*!

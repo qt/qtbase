@@ -68,6 +68,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
+#include <vector>
 
 #include <vector>
 #include <memory>
@@ -171,6 +172,8 @@ namespace QTest {
 
     static IgnoreResultList *ignoreResultList = nullptr;
 
+    static std::vector<QVariant> failOnWarningList;
+
     Q_GLOBAL_STATIC(std::vector<std::unique_ptr<QAbstractTestLogger>>, loggers)
 
     static int verbosity = 0;
@@ -205,6 +208,32 @@ namespace QTest {
         return false;
     }
 
+    static bool handleFailOnWarning(const QMessageLogContext &context, const QString &message)
+    {
+        // failOnWarnings can be called multiple times per test function, so let
+        // each call cause a failure if required.
+        for (const auto &pattern : failOnWarningList) {
+            if (pattern.metaType() == QMetaType::fromType<QString>()) {
+                if (message != pattern.toString())
+                    continue;
+            }
+#if QT_CONFIG(regularexpression)
+            else if (pattern.metaType() == QMetaType::fromType<QRegularExpression>()) {
+                if (!message.contains(pattern.toRegularExpression()))
+                    continue;
+            }
+#endif
+
+            const size_t maxMsgLen = 1024;
+            char msg[maxMsgLen] = {'\0'};
+            qsnprintf(msg, maxMsgLen, "Received a warning that resulted in a failure:\n%s",
+                      qPrintable(message));
+            QTestResult::addFailure(msg, context.file, context.line);
+            return true;
+        }
+        return false;
+    }
+
     static void messageHandler(QtMsgType type, const QMessageLogContext & context, const QString &message)
     {
         static QBasicAtomicInt counter = Q_BASIC_ATOMIC_INITIALIZER(QTest::maxWarnings);
@@ -219,6 +248,9 @@ namespace QTest {
             // the message is expected, so just swallow it.
             return;
         }
+
+        if (type == QtWarningMsg && handleFailOnWarning(context, message))
+            return;
 
         if (type != QtFatalMsg) {
             if (counter.loadRelaxed() <= 0)
@@ -311,6 +343,11 @@ void QTestLog::printUnhandledIgnoreMessages()
 void QTestLog::clearIgnoreMessages()
 {
     QTest::IgnoreResultList::clearList(QTest::ignoreResultList);
+}
+
+void QTestLog::clearFailOnWarnings()
+{
+    QTest::failOnWarningList.clear();
 }
 
 void QTestLog::addPass(const char *msg)
@@ -543,6 +580,20 @@ void QTestLog::ignoreMessage(QtMsgType type, const QRegularExpression &expressio
     QTEST_ASSERT(expression.isValid());
 
     QTest::IgnoreResultList::append(QTest::ignoreResultList, type, QVariant(expression));
+}
+#endif // QT_CONFIG(regularexpression)
+
+void QTestLog::failOnWarning(const char *msg)
+{
+    QTest::failOnWarningList.push_back(QString::fromUtf8(msg));
+}
+
+#if QT_CONFIG(regularexpression)
+void QTestLog::failOnWarning(const QRegularExpression &expression)
+{
+    QTEST_ASSERT(expression.isValid());
+
+    QTest::failOnWarningList.push_back(QVariant::fromValue(expression));
 }
 #endif // QT_CONFIG(regularexpression)
 

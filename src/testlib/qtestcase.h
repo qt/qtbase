@@ -331,6 +331,10 @@ namespace QTest
 #if QT_CONFIG(regularexpression)
     Q_TESTLIB_EXPORT void ignoreMessage(QtMsgType type, const QRegularExpression &messagePattern);
 #endif
+    Q_TESTLIB_EXPORT void failOnWarning(const char *message);
+#if QT_CONFIG(regularexpression)
+    Q_TESTLIB_EXPORT void failOnWarning(const QRegularExpression &messagePattern);
+#endif
 
 #if QT_CONFIG(temporaryfile)
     Q_TESTLIB_EXPORT QSharedPointer<QTemporaryDir> qExtractTestData(const QString &dirName);

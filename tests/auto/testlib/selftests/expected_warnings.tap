@@ -35,8 +35,103 @@ not ok 6 - testMissingWarningsWithData(second row)
   ---
   # Not all expected messages were received
   ...
-ok 7 - cleanupTestCase()
-1..7
-# tests 7
-# pass 3
-# fail 4
+# Ran out of space!
+not ok 7 - testFailOnWarnings()
+  ---
+  # Received a warning that resulted in a failure:
+Ran out of cabbage!
+  at: tst_Warnings::testFailOnWarnings() (qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp:0)
+  file: qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp
+  line: 0
+  ...
+# Ran out of tortillas!
+# Ran out of oil!
+# nope
+not ok 8 - testFailOnWarnings()
+  ---
+  # Received a warning that resulted in a failure:
+Ran out of biscuits!
+  at: tst_Warnings::testFailOnWarnings() (qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp:0)
+  file: qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp
+  line: 0
+  ...
+not ok 9 - testFailOnWarnings()
+  ---
+  # Received a warning that resulted in a failure:
+Running low on toothpaste!
+  at: tst_Warnings::testFailOnWarnings() (qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp:0)
+  file: qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp
+  line: 0
+  ...
+# Running low on flour!
+# Running low on toothpaste!
+# Running low on toothpaste!
+# Ran out of muffins!
+ok 10 - testFailOnWarningsCleared()
+not ok 11 - testFailOnWarningsWithData(warning1)
+  ---
+  # Received a warning that resulted in a failure:
+warning1
+  at: tst_Warnings::testFailOnWarningsWithData() (qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp:0)
+  file: qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp
+  line: 0
+  ...
+# warning2
+# warning3
+# warning1
+not ok 12 - testFailOnWarningsWithData(warning2)
+  ---
+  # Received a warning that resulted in a failure:
+warning2
+  at: tst_Warnings::testFailOnWarningsWithData() (qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp:0)
+  file: qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp
+  line: 0
+  ...
+# warning3
+# warning1
+# warning2
+not ok 13 - testFailOnWarningsWithData(warning3)
+  ---
+  # Received a warning that resulted in a failure:
+warning3
+  at: tst_Warnings::testFailOnWarningsWithData() (qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp:0)
+  file: qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp
+  line: 0
+  ...
+not ok 14 - testFailOnWarningsFailInHelper()
+  ---
+  # This failure message should be printed but not cause the test to abort
+  at: tst_Warnings::testFailOnWarningsFailInHelper() (qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp:0)
+  file: qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp
+  line: 0
+  ...
+not ok 15 - testFailOnWarningsFailInHelper()
+  ---
+  # Received a warning that resulted in a failure:
+Ran out of cabbage!
+  at: tst_Warnings::testFailOnWarningsFailInHelper() (qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp:0)
+  file: qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp
+  line: 0
+  ...
+not ok 16 - testFailOnWarningsFailInHelper()
+  ---
+  # My cabbage! :(
+  at: tst_Warnings::testFailOnWarningsFailInHelper() (qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp:0)
+  file: qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp
+  line: 0
+  ...
+not ok 17 - testFailOnWarningsThenSkip()
+  ---
+  # Received a warning that resulted in a failure:
+Ran out of cabbage!
+  at: tst_Warnings::testFailOnWarningsThenSkip() (qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp:0)
+  file: qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp
+  line: 0
+  ...
+ok 18 - testFailOnWarningsThenSkip() # SKIP My cabbage! :(
+ok 19 - testFailOnWarningsAndIgnoreWarnings()
+ok 20 - cleanupTestCase()
+1..20
+# tests 20
+# pass 5
+# fail 14
