@@ -445,7 +445,13 @@ class QtBase(ConanFile):
 
     def package_id(self):
         # https://docs.conan.io/en/latest/creating_packages/define_abi_compatibility.html
-        self.info.requires.package_revision_mode()
+
+        # The package_revision_mode() is too strict for Qt CI. This mode includes artifacts
+        # checksum in package_id which is problematic in Qt CI re-runs (re-run flaky
+        # build) which contain different build timestamps (cmake) which end up in library
+        # files -> different package_id.
+        self.info.requires.recipe_revision_mode()
+
         # Enable 'qt-conan-common' updates on client side with $conan install .. --update
         self.info.python_requires.recipe_revision_mode()
 
