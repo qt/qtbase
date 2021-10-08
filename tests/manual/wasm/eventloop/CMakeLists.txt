@@ -1,3 +1,4 @@
+add_subdirectory(asyncify_exec)
 add_subdirectory(main_exec)
 add_subdirectory(main_noexec)
 if(QT_FEATURE_widgets)
