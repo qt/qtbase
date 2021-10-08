@@ -301,6 +301,7 @@ public:
 
     void swap(QList<T> &other) noexcept { qSwap(d, other.d); }
 
+#ifndef Q_CLANG_QDOC
     template <typename U = T>
     QTypeTraits::compare_eq_result_container<QList, U> operator==(const QList &other) const
     {
@@ -349,6 +350,14 @@ public:
     {
         return !(*this < other);
     }
+#else
+    bool operator==(const QList &other) const;
+    bool operator!=(const QList &other) const;
+    bool operator<(const QList &other) const;
+    bool operator>(const QList &other) const;
+    bool operator<=(const QList &other) const;
+    bool operator>=(const QList &other) const;
+#endif // Q_CLANG_QDOC
 
     qsizetype size() const noexcept { return d->size; }
     qsizetype count() const noexcept { return size(); }

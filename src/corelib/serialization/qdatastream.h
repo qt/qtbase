@@ -431,6 +431,8 @@ typename std::enable_if_t<std::is_enum<T>::value, QDataStream &>
 operator>>(QDataStream &s, T &t)
 { return s >> reinterpret_cast<typename std::underlying_type<T>::type &>(t); }
 
+#ifndef Q_CLANG_QDOC
+
 template<typename T>
 inline QDataStreamIfHasIStreamOperatorsContainer<QList<T>, T> operator>>(QDataStream &s, QList<T> &v)
 {
@@ -519,6 +521,52 @@ inline QDataStreamIfHasOStreamOperators<T1, T2> operator<<(QDataStream& s, const
     return s;
 }
 #endif
+
+#else
+
+template <class T>
+QDataStream &operator>>(QDataStream &s, QList<T> &l);
+
+template <class T>
+QDataStream &operator<<(QDataStream &s, const QList<T> &l);
+
+template <class T>
+QDataStream &operator>>(QDataStream &s, QSet<T> &set);
+
+template <class T>
+QDataStream &operator<<(QDataStream &s, const QSet<T> &set);
+
+template <class Key, class T>
+QDataStream &operator>>(QDataStream &s, QHash<Key, T> &hash);
+
+template <class Key, class T>
+QDataStream &operator<<(QDataStream &s, const QHash<Key, T> &hash);
+
+template <class Key, class T>
+QDataStream &operator>>(QDataStream &s, QMultiHash<Key, T> &hash);
+
+template <class Key, class T>
+QDataStream &operator<<(QDataStream &s, const QMultiHash<Key, T> &hash);
+
+template <class Key, class T>
+QDataStream &operator>>(QDataStream &s, QMap<Key, T> &map);
+
+template <class Key, class T>
+QDataStream &operator<<(QDataStream &s, const QMap<Key, T> &map);
+
+template <class Key, class T>
+QDataStream &operator>>(QDataStream &s, QMultiMap<Key, T> &map);
+
+template <class Key, class T>
+QDataStream &operator<<(QDataStream &s, const QMultiMap<Key, T> &map);
+
+template <class T1, class T2>
+QDataStream &operator>>(QDataStream& s, std::pair<T1, T2> &p);
+
+template <class T1, class T2>
+QDataStream &operator<<(QDataStream& s, const std::pair<T1, T2> &p);
+
+#endif // Q_CLANG_QDOC
 
 inline QDataStream &operator>>(QDataStream &s, QKeyCombination &combination)
 {

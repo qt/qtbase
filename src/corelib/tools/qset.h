@@ -71,12 +71,17 @@ public:
 
     inline void swap(QSet<T> &other) noexcept { q_hash.swap(other.q_hash); }
 
+#ifndef Q_CLANG_QDOC
     template <typename U = T>
     QTypeTraits::compare_eq_result_container<QSet, U> operator==(const QSet<T> &other) const
     { return q_hash == other.q_hash; }
     template <typename U = T>
     QTypeTraits::compare_eq_result_container<QSet, U> operator!=(const QSet<T> &other) const
     { return q_hash != other.q_hash; }
+#else
+    bool operator==(const QSet &other) const;
+    bool operator!=(const QSet &other) const;
+#endif
 
     inline qsizetype size() const { return q_hash.size(); }
 

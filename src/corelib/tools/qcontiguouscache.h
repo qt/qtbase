@@ -99,6 +99,7 @@ public:
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QContiguousCache)
     inline void swap(QContiguousCache<T> &other) noexcept { qSwap(d, other.d); }
 
+#ifndef Q_CLANG_QDOC
     template <typename U = T>
     QTypeTraits::compare_eq_result<U> operator==(const QContiguousCache<T> &other) const
     {
@@ -117,6 +118,10 @@ public:
     template <typename U = T>
     QTypeTraits::compare_eq_result<U> operator!=(const QContiguousCache<T> &other) const
     { return !(*this == other); }
+#else
+    bool operator==(const QContiguousCache &other) const;
+    bool operator!=(const QContiguousCache &other) const;
+#endif // Q_CLANG_QDOC
 
     inline qsizetype capacity() const {return d->alloc; }
     inline qsizetype count() const { return d->count; }

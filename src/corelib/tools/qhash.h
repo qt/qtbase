@@ -819,6 +819,7 @@ public:
 #endif
     void swap(QHash &other) noexcept { qSwap(d, other.d); }
 
+#ifndef Q_CLANG_QDOC
     template <typename U = T>
     QTypeTraits::compare_eq_result_container<QHash, U> operator==(const QHash &other) const noexcept
     {
@@ -838,6 +839,10 @@ public:
     template <typename U = T>
     QTypeTraits::compare_eq_result_container<QHash, U> operator!=(const QHash &other) const noexcept
     { return !(*this == other); }
+#else
+    bool operator==(const QHash &other) const;
+    bool operator!=(const QHash &other) const;
+#endif // Q_CLANG_QDOC
 
     inline qsizetype size() const noexcept { return d ? qsizetype(d->size) : 0; }
     inline bool isEmpty() const noexcept { return !d || d->size == 0; }

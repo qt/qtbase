@@ -847,6 +847,14 @@ QDebug &QDebug::resetFormat()
 */
 
 /*!
+    \fn template <class Key, class T> QDebug operator<<(QDebug debug, const QMultiMap<Key, T> &map)
+    \relates QDebug
+
+    Writes the contents of \a map to \a debug. Both \c Key and
+    \c T need to support streaming into QDebug.
+*/
+
+/*!
     \fn template <typename Key, typename T, typename Compare, typename Alloc> QDebug operator<<(QDebug debug, const std::map<Key, T, Compare, Alloc> &map)
     \relates QDebug
     \since 5.7
@@ -873,11 +881,35 @@ QDebug &QDebug::resetFormat()
 */
 
 /*!
+    \fn template <class Key, class T> QDebug operator<<(QDebug debug, const QMultiHash<Key, T> &hash)
+    \relates QDebug
+
+    Writes the contents of \a hash to \a debug. Both \c Key and
+    \c T need to support streaming into QDebug.
+*/
+
+/*!
     \fn template <class T1, class T2> QDebug operator<<(QDebug debug, const QPair<T1, T2> &pair)
     \relates QDebug
 
     Writes the contents of \a pair to \a debug. Both \c T1 and
     \c T2 need to support streaming into QDebug.
+*/
+
+/*!
+    \fn template <class T1, class T2> QDebug operator<<(QDebug debug, const std::pair<T1, T2> &pair)
+    \relates QDebug
+
+    Writes the contents of \a pair to \a debug. Both \c T1 and
+    \c T2 need to support streaming into QDebug.
+*/
+
+/*!
+    \fn template <typename T> QDebug operator<<(QDebug debug, const QContiguousCache<T> &cache)
+    \relates QDebug
+
+    Writes the contents of \a cache to \a debug. \c T needs to
+    support streaming into QDebug.
 */
 
 /*!
