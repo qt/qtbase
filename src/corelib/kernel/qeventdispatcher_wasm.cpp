@@ -480,13 +480,21 @@ void QEventDispatcherWasm::updateNativeTimer()
         return ts.tv_sec * 1000 + ts.tv_nsec / (1000 * 1000);
     };
     timespec toWait;
-    m_timerInfo->timerWait(toWait);
+    bool hasTimer = m_timerInfo->timerWait(toWait);
     uint64_t currentTime = timespecToNanosec(m_timerInfo->currentTime);
     uint64_t toWaitDuration = timespecToNanosec(toWait);
     uint64_t newTargetTime = currentTime + toWaitDuration;
 
-    auto maintainNativeTimer = [this, toWaitDuration, newTargetTime]() {
+    auto maintainNativeTimer = [this, hasTimer, toWaitDuration, newTargetTime]() {
         Q_ASSERT(emscripten_is_main_runtime_thread());
+
+        if (!hasTimer) {
+            if (m_timerId > 0) {
+                emscripten_clear_timeout(m_timerId);
+                m_timerId = 0;
+            }
+            return;
+        }
 
         if (m_timerTargetTime != 0 && newTargetTime >= m_timerTargetTime)
             return; // existing timer is good
