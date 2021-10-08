@@ -406,10 +406,7 @@ bool QFileSystemEngine::fillMetaData(int fd, QFileSystemMetaData &data)
     data.entryFlags &= ~QFileSystemMetaData::PosixStatFlags;
     data.knownFlagsMask |= QFileSystemMetaData::PosixStatFlags;
 
-    union {
-        struct statx statxBuffer;
-        QT_STATBUF statBuffer;
-    };
+    struct statx statxBuffer;
 
     int ret = qt_fstatx(fd, &statxBuffer);
     if (ret != -ENOSYS) {
@@ -419,6 +416,8 @@ bool QFileSystemEngine::fillMetaData(int fd, QFileSystemMetaData &data)
         }
         return false;
     }
+
+    QT_STATBUF statBuffer;
 
     if (QT_FSTAT(fd, &statBuffer) == 0) {
         data.fillFromStatBuf(statBuffer);
