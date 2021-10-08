@@ -1,0 +1,76 @@
+# There was no serration in either case
+save
+setBrush black SolidPattern
+drawRect 0.0 0.0 500.0 300.0
+restore
+
+save
+setRenderHint Antialiasing true
+path_addEllipse mypath1 10.0 10.0 200.0 200.0
+path_addRect mypath1 10.0 210.0 200.0 40.0
+path_addPolygon mypath1 [ 10 250  50 280  90 300 130 300  170 280  210 250]
+
+setClipPath mypath1 ReplaceClip
+setPen NoPen
+setBrush cyan SolidPattern
+drawRect 10.0 10.0 400.0 400.0
+restore
+save
+setRenderHint Antialiasing false
+path_addEllipse mypath2 220.0 10.0 200.0 200.0
+path_addRect mypath2 220.0 210.0 200.0 40.0
+path_addPolygon mypath2 [ 220 250  270 280  300 300 340 300  380 280  420 250]
+setClipPath mypath2 ReplaceClip
+setRenderHint Antialiasing true
+setPen NoPen
+setBrush cyan SolidPattern
+drawRect 220.0 10.0 300.0 300.0
+restore
+
+setPen red
+setBrush NoBrush
+drawText 20 250 "Antialiasing before setClipPath"
+drawText 240 250 "Antialiasing after setClipPath"
+
+# Test that the clipping region is not abnormal after some transformations
+translate 100 300
+
+save
+path_addEllipse mypath3 10.0 10.0 200.0 200.0
+path_addRect mypath3 10.0 210.0 200.0 40.0
+setPen black SolidLine
+setBrush NoBrush
+setRenderHint Antialiasing true
+drawPath mypath3
+setClipPath mypath3 ReplaceClip
+rotate 60
+setFont "times" 10 Bold
+drawText 10 70 "Antialiasing before setClipPath - Transformation"
+drawText 10 40 "Antialiasing before setClipPath - Transformation"
+drawText 10 10 "Antialiasing before setClipPath - Transformation"
+drawText 10 -20 "Antialiasing before setClipPath - Transformation"
+drawText 10 -50 "Antialiasing before setClipPath - Transformation"
+drawText 10 -80 "Antialiasing before setClipPath - Transformation"
+restore
+
+translate 0 250
+
+save
+path_addEllipse mypath4 10.0 10.0 200.0 200.0
+path_addRect mypath4 10.0 210.0 200.0 40.0
+setPen black SolidLine
+setBrush NoBrush
+drawPath mypath4
+setClipPath mypath4 ReplaceClip
+setRenderHint Antialiasing true
+rotate 60
+setFont "times" 10 Bold
+drawText 10 70 "Antialiasing after setClipPath - Transformation"
+drawText 10 40 "Antialiasing after setClipPath - Transformation"
+drawText 10 10 "Antialiasing after setClipPath - Transformation"
+drawText 10 -20 "Antialiasing after setClipPath - Transformation"
+drawText 10 -50 "Antialiasing after setClipPath - Transformation"
+drawText 10 -80 "Antialiasing after setClipPath - Transformation"
+restore
+
+

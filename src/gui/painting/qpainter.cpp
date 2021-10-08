@@ -2844,6 +2844,7 @@ void QPainter::setClipRegion(const QRegion &r, Qt::ClipOperation op)
             d->state->clipInfo.clear();
         d->state->clipInfo.append(QPainterClipInfo(r, op, d->state->matrix));
         d->state->clipOperation = op;
+        d->state->clipRegion = r;
         return;
     }
 
@@ -3057,6 +3058,7 @@ void QPainter::setClipPath(const QPainterPath &path, Qt::ClipOperation op)
             d->state->clipInfo.clear();
         d->state->clipInfo.append(QPainterClipInfo(path, op, d->state->matrix));
         d->state->clipOperation = op;
+        d->state->clipPath = path;
         return;
     }
 
