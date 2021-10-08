@@ -104,6 +104,7 @@ private slots:
     void connectToHost_data();
     void connectToHost();
     void maxFrameSize();
+    void http2DATAFrames();
 
     void moreActivitySignals_data();
     void moreActivitySignals();
@@ -786,6 +787,89 @@ void tst_Http2::maxFrameSize()
     QVERIFY(nRequests == 0);
     QVERIFY(prefaceOK);
     QVERIFY(serverGotSettingsACK);
+}
+
+void tst_Http2::http2DATAFrames()
+{
+    using namespace Http2;
+
+    {
+        // 0. DATA frame with payload, no padding.
+
+        FrameWriter writer(FrameType::DATA, FrameFlag::EMPTY, 1);
+        writer.append('a');
+        writer.append('b');
+        writer.append('c');
+
+        const Frame frame = writer.outboundFrame();
+        const auto &buffer = frame.buffer;
+        // Frame's header is 9 bytes + 3 bytes of payload
+        // (+ 0 bytes of padding and no padding length):
+        QCOMPARE(int(buffer.size()), 12);
+
+        QVERIFY(!frame.padding());
+        QCOMPARE(int(frame.payloadSize()), 3);
+        QCOMPARE(int(frame.dataSize()), 3);
+        QCOMPARE(frame.dataBegin() - buffer.data(), 9);
+        QCOMPARE(char(*frame.dataBegin()), 'a');
+    }
+
+    {
+        // 1. DATA with padding.
+
+        const int padLength = 10;
+        FrameWriter writer(FrameType::DATA, FrameFlag::END_STREAM | FrameFlag::PADDED, 1);
+        writer.append(uchar(padLength)); // The length of padding is 1 byte long.
+        writer.append('a');
+        for (int i = 0; i < padLength; ++i)
+            writer.append('b');
+
+        const Frame frame = writer.outboundFrame();
+        const auto &buffer = frame.buffer;
+        // Frame's header is 9 bytes + 1 byte for padding length
+        // + 1 byte of data + 10 bytes of padding:
+        QCOMPARE(int(buffer.size()), 21);
+
+        QCOMPARE(frame.padding(), padLength);
+        QCOMPARE(int(frame.payloadSize()), 12); // Includes padding, its length + data.
+        QCOMPARE(int(frame.dataSize()), 1);
+
+        // Skipping 9 bytes long header and padding length:
+        QCOMPARE(frame.dataBegin() - buffer.data(), 10);
+
+        QCOMPARE(char(frame.dataBegin()[0]), 'a');
+        QCOMPARE(char(frame.dataBegin()[1]), 'b');
+
+        QVERIFY(frame.flags().testFlag(FrameFlag::END_STREAM));
+        QVERIFY(frame.flags().testFlag(FrameFlag::PADDED));
+    }
+    {
+        // 2. DATA with PADDED flag, but 0 as padding length.
+
+        FrameWriter writer(FrameType::DATA, FrameFlag::END_STREAM | FrameFlag::PADDED, 1);
+
+        writer.append(uchar(0)); // Number of padding bytes is 1 byte long.
+        writer.append('a');
+
+        const Frame frame = writer.outboundFrame();
+        const auto &buffer = frame.buffer;
+
+        // Frame's header is 9 bytes + 1 byte for padding length + 1 byte of data
+        // + 0 bytes of padding:
+        QCOMPARE(int(buffer.size()), 11);
+
+        QCOMPARE(frame.padding(), 0);
+        QCOMPARE(int(frame.payloadSize()), 2); // Includes padding (0 bytes), its length + data.
+        QCOMPARE(int(frame.dataSize()), 1);
+
+        // Skipping 9 bytes long header and padding length:
+        QCOMPARE(frame.dataBegin() - buffer.data(), 10);
+
+        QCOMPARE(char(*frame.dataBegin()), 'a');
+
+        QVERIFY(frame.flags().testFlag(FrameFlag::END_STREAM));
+        QVERIFY(frame.flags().testFlag(FrameFlag::PADDED));
+    }
 }
 
 void tst_Http2::moreActivitySignals_data()
