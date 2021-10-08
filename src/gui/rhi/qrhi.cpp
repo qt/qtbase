@@ -5537,6 +5537,8 @@ void QRhiResourceUpdateBatchPrivate::free()
     const quint64 mask = 1ULL << quint64(poolIndex);
     rhi->resUpdPoolMap &= ~mask;
     poolIndex = -1;
+
+    textureOps.clear();
 }
 
 void QRhiResourceUpdateBatchPrivate::merge(QRhiResourceUpdateBatchPrivate *other)
