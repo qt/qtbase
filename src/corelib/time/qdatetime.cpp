@@ -2619,8 +2619,8 @@ static bool qt_localtime(qint64 msecsSinceEpoch, QDate *localDate, QTime *localT
             Q_ASSERT(res == &local);
             valid = true;
         }
-#elif defined(Q_CC_MSVC)
-        if (!_localtime64_s(&local, &secsSinceEpoch))
+#elif defined(Q_OS_WIN)
+        if (!localtime_s(&local, &secsSinceEpoch))
             valid = true;
 #else
         // Returns shared static data which may be overwritten at any time
