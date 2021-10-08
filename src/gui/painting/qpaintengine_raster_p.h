@@ -276,6 +276,7 @@ public:
     void rasterize(QT_FT_Outline *outline, ProcessSpans callback, QSpanData *spanData, QRasterBuffer *rasterBuffer);
     void rasterize(QT_FT_Outline *outline, ProcessSpans callback, void *userData, QRasterBuffer *rasterBuffer);
     void updateMatrixData(QSpanData *spanData, const QBrush &brush, const QTransform &brushMatrix);
+    void updateClipping();
 
     void systemStateChanged() override;
 
@@ -374,6 +375,7 @@ public:
 
     QRect clipRect;
     QRegion clipRegion;
+    QTransform clipTransform;
 
     uint enabled : 1;
     uint hasRectClip : 1;
