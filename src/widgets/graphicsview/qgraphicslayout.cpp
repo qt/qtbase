@@ -146,7 +146,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    Contructs a QGraphicsLayout object.
+    Constructs a QGraphicsLayout object.
 
     \a parent is passed to QGraphicsLayoutItem's constructor and the
     QGraphicsLayoutItem's isLayout argument is set to \e true.

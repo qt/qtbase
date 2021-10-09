@@ -202,7 +202,7 @@ void QAbstractScrollAreaScrollBarContainer::addWidget(QWidget *widget, LogicalPo
 }
 
 /*! \internal
-    Retuns a list of scroll bar widgets for the given position. The scroll bar
+    Returns a list of scroll-bar widgets for the given position. The scroll bar
     itself is not returned.
 */
 QWidgetList QAbstractScrollAreaScrollBarContainer::widgets(LogicalPosition position)
