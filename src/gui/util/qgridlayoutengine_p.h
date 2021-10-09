@@ -100,7 +100,7 @@ enum {
     Minimal container to store Qt::Orientation-discriminated values.
 
     The salient feature is the indexing operator, which takes
-    Qt::Orientation (and assumes it's passed only Qt::Horizonal or Qt::Vertical).
+    Qt::Orientation (and assumes it's passed only Qt::Horizontal or Qt::Vertical).
 */
 template <typename T>
 class QHVContainer {

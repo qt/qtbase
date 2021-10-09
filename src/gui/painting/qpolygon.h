@@ -51,7 +51,7 @@ class QTransform;
 class QRect;
 class QVariant;
 
-// We export each out-of-line method invidually to prevent MSVC from
+// We export each out-of-line method individually to prevent MSVC from
 // exporting the whole QList class.
 class QPolygon : public QList<QPoint>
 {

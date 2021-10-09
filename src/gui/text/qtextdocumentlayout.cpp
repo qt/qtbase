@@ -1519,7 +1519,7 @@ static inline qreal collapseOffset(const QTextDocumentLayoutPrivate *p, const Ed
 // there was no edge B (due to a rowspan or the axis C-D being the table's right
 // border).
 //
-// ignoreEdgesAbove: true if an egde (left, right or top) for the first row
+// ignoreEdgesAbove: true if an edge (left, right or top) for the first row
 // after a table page break should be painted. In this case the edges of the
 // row above must be ignored.
 static inline double prioritizedEdgeAnchorOffset(const QTextDocumentLayoutPrivate *p,

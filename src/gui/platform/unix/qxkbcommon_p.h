@@ -82,7 +82,7 @@ public:
                              bool superAsMeta = false, bool hyperAsMeta = false);
 
     // xkbcommon_* API is part of libxkbcommon internals, with modifications as
-    // desribed in the header of the implementation file.
+    // described in the header of the implementation file.
     static void xkbcommon_XConvertCase(xkb_keysym_t sym, xkb_keysym_t *lower, xkb_keysym_t *upper);
     static xkb_keysym_t qxkbcommon_xkb_keysym_to_upper(xkb_keysym_t ks);
 

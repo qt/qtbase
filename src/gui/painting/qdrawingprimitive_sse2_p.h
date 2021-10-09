@@ -64,7 +64,7 @@ QT_BEGIN_NAMESPACE
  * Multiply the components of pixelVector by alphaChannel
  * Each 32bits components of alphaChannel must be in the form 0x00AA00AA
  * colorMask must have 0x00ff00ff on each 32 bits component
- * half must have the value 128 (0x80) for each 32 bits compnent
+ * half must have the value 128 (0x80) for each 32 bits component
  */
 #define BYTE_MUL_SSE2(result, pixelVector, alphaChannel, colorMask, half) \
 { \
@@ -102,7 +102,7 @@ QT_BEGIN_NAMESPACE
  * Each 32bits components of alphaChannel must be in the form 0x00AA00AA
  * oneMinusAlphaChannel must be 255 - alpha for each 32 bits component
  * colorMask must have 0x00ff00ff on each 32 bits component
- * half must have the value 128 (0x80) for each 32 bits compnent
+ * half must have the value 128 (0x80) for each 32 bits component
  */
 #define INTERPOLATE_PIXEL_255_SSE2(result, srcVector, dstVector, alphaChannel, oneMinusAlphaChannel, colorMask, half) { \
     /* interpolate AG */\

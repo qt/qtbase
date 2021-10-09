@@ -47,7 +47,7 @@
 QT_BEGIN_NAMESPACE
 
 /* The instruction palignr uses direct arguments, so we have to generate the code fo the different
-   shift (4, 8, 12). Checking the alignment inside the loop is unfortunatelly way too slow.
+   shift (4, 8, 12). Checking the alignment inside the loop is unfortunately way too slow.
  */
 #define BLENDING_LOOP(palignrOffset, length)\
     for (; x-minusOffsetToAlignSrcOn16Bytes < length-7; x += 4) { \

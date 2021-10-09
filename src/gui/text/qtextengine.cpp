@@ -81,7 +81,7 @@ public:
     }
 
     /// generate the script items
-    /// The caps parameter is used to choose the algoritm of splitting text and assiging roles to the textitems
+    /// The caps parameter is used to choose the algorithm of splitting text and assigning roles to the textitems
     void generate(int start, int length, QFont::Capitalization caps)
     {
         if (caps == QFont::SmallCaps)
@@ -3264,7 +3264,7 @@ QFixed QTextEngine::calculateTabWidth(int item, QFixed x) const
                     }
                 }
                 else if (tabSpec.type == QTextOption::DelimiterTab)
-                    // find delimitor character to calculate the width required
+                    // find delimiter character to calculate the width required
                     tabSectionEnd = qMax(si.position, layoutData->string.indexOf(tabSpec.delimiter, si.position) + 1);
 
                 if (tabSectionEnd > si.position) {

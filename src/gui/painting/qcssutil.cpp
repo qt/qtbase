@@ -352,7 +352,7 @@ void qDrawBorder(QPainter *p, const QRect &rect, const QCss::BorderStyle *styles
     QSize tlr, trr, blr, brr;
     qNormalizeRadii(rect, radii, &tlr, &trr, &blr, &brr);
 
-    // Drawn in increasing order of precendence
+    // Drawn in increasing order of precedence
     if (styles[BottomEdge] != BorderStyle_None && borders[BottomEdge] > 0) {
         qreal dw1 = (blr.width() || paintsOver(styles, colors, BottomEdge, LeftEdge)) ? 0 : borders[LeftEdge];
         qreal dw2 = (brr.width() || paintsOver(styles, colors, BottomEdge, RightEdge)) ? 0 : borders[RightEdge];

@@ -240,7 +240,7 @@ QBitmap QBitmap::fromData(const QSize &size, const uchar *bits, QImage::Format m
     image.setColor(0, QColor(Qt::color0).rgb());
     image.setColor(1, QColor(Qt::color1).rgb());
 
-    // Need to memcpy each line separatly since QImage is 32bit aligned and
+    // Need to memcpy each line separately since QImage is 32bit aligned and
     // this data is only byte aligned...
     int bytesPerLine = (size.width() + 7) / 8;
     for (int y = 0; y < size.height(); ++y)

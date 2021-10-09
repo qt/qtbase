@@ -896,7 +896,7 @@ bool QFileSystemModel::setData(const QModelIndex &idx, const QVariant &value, in
             *After re-naming something we don't want the selection to change*
             - can't remove rows and later insert
             - can't quickly remove and insert
-            - index pointer can't change because treeview doesn't use persistant index's
+            - index pointer can't change because treeview doesn't use persistent index's
 
             - if this get any more complicated think of changing it to just
               use layoutChanged

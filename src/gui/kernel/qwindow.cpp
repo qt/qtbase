@@ -1991,7 +1991,7 @@ void QWindowPrivate::destroy()
     // Let subclasses act, typically by doing graphics resource cleaup, when
     // the window, to which graphics resource may be tied, is going away.
     //
-    // NB! This is disfunctional when destroy() is invoked from the dtor since
+    // NB! This is dysfunctional when destroy() is invoked from the dtor since
     // a reimplemented event() will not get called in the subclasses at that
     // stage. However, the typical QWindow cleanup involves either close() or
     // going through QWindowContainer, both of which will do an explicit, early
@@ -2771,7 +2771,7 @@ QPointF QWindow::mapFromGlobal(const QPointF &pos) const
         return pos - d->globalPosition();
 
     // Calculate local position in the native coordinate system. (See comment for the
-    // correspinding mapToGlobal() code above).
+    // corresponding mapToGlobal() code above).
     QPointF nativeGlobalPos = QHighDpi::toNativeGlobalPosition(pos, this);
     QPointF nativeWindowGlobalPos = QHighDpi::toNativeGlobalPosition(QPointF(d->globalPosition()), this);
     QPointF nativeLocalPos = nativeGlobalPos - nativeWindowGlobalPos;

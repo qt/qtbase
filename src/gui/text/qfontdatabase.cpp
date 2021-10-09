@@ -2403,7 +2403,7 @@ QFontEngine *QFontDatabasePrivate::findFont(const QFontDef &request,
     unsigned int score = UINT_MAX;
     int index = match(multi ? QChar::Script_Common : script, request, family_name, foundry_name, &desc, blackListed, &score);
     if (score > 0 && QGuiApplicationPrivate::platformIntegration()->fontDatabase()->populateFamilyAliases(family_name)) {
-        // We populated familiy aliases (e.g. localized families), so try again
+        // We populated family aliases (e.g. localized families), so try again
         index = match(multi ? QChar::Script_Common : script, request, family_name, foundry_name, &desc, blackListed);
     }
 

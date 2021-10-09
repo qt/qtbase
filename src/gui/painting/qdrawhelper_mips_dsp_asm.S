@@ -1970,7 +1970,7 @@ LEAF_MIPS_DSP(fetchUntransformed_444_asm_mips_dsp)
 2:
     andi             t0, a1, 0x3
     beqz             t0, 3f         /* memory is word aligned */
-     andi            a3, a2, 0x1    /* set the a3 register as the comparation
+     andi            a3, a2, 0x1    /* set the a3 register as the comparison
                                      * for ending the unrolled loop
                                      * (1 if odd, 0 if even) */
     b                1b             /* not word aligned,

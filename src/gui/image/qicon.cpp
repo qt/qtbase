@@ -192,9 +192,9 @@ static QPixmapIconEngineEntry *bestSizeScaleMatch(const QSize &size, qreal scale
     // scale: we can only differentiate on scale if the scale differs
     if (pa->scale != pb->scale) {
 
-        // Score the pixmaps: 0 is an exact scale match, postive
+        // Score the pixmaps: 0 is an exact scale match, positive
         // scores have more detail than requested, negative scores
-        // have less detail than rquested.
+        // have less detail than requested.
         qreal ascore = pa->scale - scale;
         qreal bscore = pb->scale - scale;
 
@@ -358,7 +358,7 @@ QSize QPixmapIconEngine::actualSize(const QSize &size, QIcon::Mode mode, QIcon::
 {
     QSize actualSize;
 
-    // The returned actiual size is the size in device independent pixels,
+    // The returned actual size is the size in device independent pixels,
     // so we limit the search to scale 1 and assume that e.g. @2x versions
     // does not proviode extra actual sizes not also provided by the 1x versions.
     qreal scale = 1;

@@ -969,7 +969,7 @@ void QRasterPaintEnginePrivate::drawImage(const QPointF &pt,
     if (iw <= 0)
         return;
 
-    // adapt the y paremeters...
+    // adapt the y parameters...
     int cy1 = clip.y();
     int cy2 = clip.y() + clip.height();
     int y = qRound(pt.y());
@@ -1039,7 +1039,7 @@ void QRasterPaintEnginePrivate::blitImage(const QPointF &pt,
     if (iw <= 0)
         return;
 
-    // adapt the y paremeters...
+    // adapt the y parameters...
     int cy1 = clip.y();
     int cy2 = clip.y() + clip.height();
     int y = qRound(pt.y());
