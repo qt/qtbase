@@ -47,7 +47,7 @@
 #include <qobjectdefs.h>
 #include <qvarlengtharray.h>
 
-// accordding to rtnetlink(7)
+// according to rtnetlink(7)
 #include <asm/types.h>
 #include <linux/if.h>
 #include <linux/if_arp.h>

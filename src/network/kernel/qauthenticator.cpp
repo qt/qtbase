@@ -195,7 +195,7 @@ QAuthenticator &QAuthenticator::operator=(const QAuthenticator &other)
     if (d == other.d)
         return *this;
 
-    // Do not share the d since challange reponse/based changes
+    // Do not share the d since challenge response/based changes
     // could corrupt the internal store and different network requests
     // can utilize different types of proxies.
     detach();

@@ -74,7 +74,7 @@ private:
 
 }
 
-// TODO: Put channel specific stuff here so it does not polute qhttpnetworkconnection.cpp
+// TODO: Put channel specific stuff here so it does not pollute qhttpnetworkconnection.cpp
 
 // Because in-flight when sending a request, the server might close our connection (because the persistent HTTP
 // connection times out)

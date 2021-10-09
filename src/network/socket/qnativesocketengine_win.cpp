@@ -849,7 +849,7 @@ int QNativeSocketEnginePrivate::nativeAccept()
         // Because of WSAAsyncSelect() WSAAccept returns a non blocking socket
         // with the same attributes as the listening socket including the current
         // WSAAsyncSelect(). To be able to change the socket to blocking mode the
-        // WSAAsyncSelect() call must be cancled.
+        // WSAAsyncSelect() call must be canceled.
         QSocketNotifier n(acceptedDescriptor, QSocketNotifier::Read);
         n.setEnabled(true);
         n.setEnabled(false);

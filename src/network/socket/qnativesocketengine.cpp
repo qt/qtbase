@@ -485,7 +485,7 @@ bool QNativeSocketEngine::initialize(QAbstractSocket::SocketType socketType, QAb
     // Before Qt 4.6, we always set the send and receive buffer size to 49152 as
     // this was found to be an optimal value. However, modern OS
     // all have some kind of auto tuning for this and we therefore don't set
-    // this explictly anymore.
+    // this explicitly anymore.
     // If it introduces any performance regressions for Qt 4.6.x (x > 0) then
     // it will be put back in.
     //

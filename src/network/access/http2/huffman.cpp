@@ -78,7 +78,7 @@ namespace HPack
      ...
     [00001 | 4 remaining bits]
 
-    All entires with indices between these two will 'point' to value 48
+    All entries with indices between these two will 'point' to value 48
     with bitLength == 5 so that bit stream (for example) 000001010 will be
     decoded as: 48 + "put 1010 back into bitstream".
 
