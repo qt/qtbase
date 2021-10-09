@@ -993,7 +993,7 @@ qt_feature_definition("cssparser" "QT_NO_CSSPARSER" NEGATE VALUE "1")
 qt_feature("draganddrop" PUBLIC
     SECTION "Kernel"
     LABEL "Drag and Drop"
-    PURPOSE "Supports the drag and drop mechansim."
+    PURPOSE "Supports the drag and drop mechanism."
     CONDITION QT_FEATURE_imageformat_xpm
 )
 qt_feature_definition("draganddrop" "QT_NO_DRAGANDDROP" NEGATE VALUE "1")
