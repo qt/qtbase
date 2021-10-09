@@ -793,7 +793,7 @@ void QDialog::setVisible(bool visible)
 
             /*
             The following block is to handle a special case, and does not
-            really follow propper logic in concern of autoDefault and TAB
+            really follow proper logic in concern of autoDefault and TAB
             order. However, it's here to ease usage for the users. If a
             dialog has a default QPushButton, and first widget in the TAB
             order also is a QPushButton, then we give focus to the main

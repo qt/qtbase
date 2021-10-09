@@ -5036,7 +5036,7 @@ bool QGraphicsItem::collidesWithPath(const QPainterPath &path, Qt::ItemSelection
     _q_adjustRect(&rectB);
     if (!rectA.intersects(rectB)) {
         // This we can determine efficiently. If the two rects neither
-        // intersect nor contain eachother, then the two items do not collide.
+        // intersect nor contain each other, then the two items do not collide.
         return false;
     }
 

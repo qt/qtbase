@@ -191,7 +191,7 @@ public:
 
             result = true; // consume this event
         } else if (mouseTarget && scrollerIsActive) {
-            // we grabbed the mouse expicitly when the scroller became active, so undo that now
+            // we grabbed the mouse explicitly when the scroller became active, so undo that now
             sendMouseEvent(nullptr, UngrabMouseBefore);
         }
         pressDelayEvent.reset(nullptr);

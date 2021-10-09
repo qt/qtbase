@@ -1290,7 +1290,7 @@ void QLabelPrivate::_q_movieUpdated(const QRect& rect)
 void QLabelPrivate::_q_movieResized(const QSize& size)
 {
     Q_Q(QLabel);
-    q->update(); //we need to refresh the whole background in case the new size is smaler
+    q->update(); //we need to refresh the whole background in case the new size is smaller
     valid_hints = false;
     _q_movieUpdated(QRect(QPoint(0,0), size));
     q->updateGeometry();
@@ -1674,7 +1674,7 @@ QRectF QLabelPrivate::layoutRect() const
     if (!control)
         return cr;
     ensureTextLayouted();
-    // Caculate y position manually
+    // Calculate y position manually
     qreal rh = control->document()->documentLayout()->documentSize().height();
     qreal yo = 0;
     if (align & Qt::AlignVCenter)

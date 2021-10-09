@@ -2547,7 +2547,7 @@ bool QMdiArea::eventFilter(QObject *object, QEvent *event)
     if (event->type() == QEvent::KeyPress || event->type() == QEvent::KeyRelease) {
 
         QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
-        // Ingore key events without a Ctrl modifier (except for press/release on the modifier itself).
+        // Ignore key events without a Ctrl modifier (except for press/release on the modifier itself).
         if (!(keyEvent->modifiers() & Qt::ControlModifier) && keyEvent->key() != Qt::Key_Control)
             return QAbstractScrollArea::eventFilter(object, event);
 

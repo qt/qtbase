@@ -348,7 +348,7 @@ bool QWizardHeader::vistaDisabled() const
     bool styleDisabled = false;
     QWizard *wiz = parentWidget() ? qobject_cast <QWizard *>(parentWidget()->parentWidget()) : 0;
     if (wiz) {
-        // Designer dosen't support the Vista style for Wizards. This property is used to turn
+        // Designer doesn't support the Vista style for Wizards. This property is used to turn
         // off the Vista style.
         const QVariant v = wiz->property("_q_wizard_vista_off");
         styleDisabled = v.isValid() && v.toBool();

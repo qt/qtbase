@@ -2451,7 +2451,7 @@ void QApplicationPrivate::sendSyntheticEnterLeave(QWidget *widget)
         return; // Widget was not under the cursor when it was hidden/deleted.
 
     if (widgetInShow && widget->parentWidget()->data->in_show)
-        return; // Ingore recursive show.
+        return; // Ignore recursive show.
 
     QWidget *mouseGrabber = QWidget::mouseGrabber();
     if (mouseGrabber && mouseGrabber != widget)
