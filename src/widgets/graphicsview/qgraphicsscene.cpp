@@ -712,7 +712,7 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
     if (item == dragDropItem)
         dragDropItem = nullptr;
 
-    // Reenable selectionChanged() for individual items
+    // Re-enable selectionChanged() for individual items
     --selectionChanging;
     if (!selectionChanging && selectedItems.size() != oldSelectedItemsSize)
         emit q->selectionChanged();
@@ -1439,9 +1439,9 @@ void QGraphicsScenePrivate::mousePressEventHandler(QGraphicsSceneMouseEvent *mou
         if (mouseEvent->type() == QEvent::GraphicsSceneMouseDoubleClick
             && item != lastMouseGrabberItem && lastMouseGrabberItem) {
             // If this item is different from the item that received the last
-            // mouse event, and mouseEvent is a doubleclick event, then the
+            // mouse event, and mouseEvent is a double-click event, then the
             // event is converted to a press. Known limitation:
-            // Triple-clicking will not generate a doubleclick, though.
+            // Triple-clicking will not generate a double-click, though.
             QGraphicsSceneMouseEvent mousePress(QEvent::GraphicsSceneMousePress);
             mousePress.m_spont = mouseEvent->spontaneous();
             mousePress.accept();
@@ -2266,7 +2266,7 @@ void QGraphicsScene::setSelectionArea(const QPainterPath &path,
         break;
     }
 
-    // Reenable emitting selectionChanged() for individual items.
+    // Re-enable emitting selectionChanged() for individual items.
     --d->selectionChanging;
 
     if (!d->selectionChanging && changed)
@@ -2290,7 +2290,7 @@ void QGraphicsScene::clearSelection()
         item->setSelected(false);
     d->selectedItems.clear();
 
-    // Reenable emitting selectionChanged() for individual items.
+    // Re-enable emitting selectionChanged() for individual items.
     --d->selectionChanging;
 
     if (!d->selectionChanging && changed)
@@ -2552,7 +2552,7 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
     item->d_ptr->resolvePalette(d->palette.resolveMask());
 
 
-    // Reenable selectionChanged() for individual items
+    // Re-enable selectionChanged() for individual items
     --d->selectionChanging;
     if (!d->selectionChanging && d->selectedItems.size() != oldSelectedItemSize)
         emit selectionChanged();
@@ -4734,7 +4734,7 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
 
         if (itemIsTooSmallToRender || itemIsOutsideVisibleRect) {
             // We cannot simply use !drawItem here. If we did it is possible
-            // to enter the outter if statement with drawItem == false and minimumRenderSize > 0
+            // to enter the outer if statement with drawItem == false and minimumRenderSize > 0
             // and finally end up inside this inner if, even though none of the above two
             // conditions are met. In that case we should not return from this function
             // but call draw() instead.

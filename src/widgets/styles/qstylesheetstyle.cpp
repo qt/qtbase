@@ -151,7 +151,7 @@ static QStyleSheetStyleCaches *styleSheetCaches = nullptr;
  * the QStyleSheetStyle is a proxy. If used with others proxy style, we may end up with something like:
  * QStyleSheetStyle -> ProxyStyle -> QStyleSheetStyle -> OriginalStyle
  * Recursion may happen if the style call the widget()->style() again.
- * Not to mention the performence penalty of having two lookup of rules.
+ * Not to mention the performance penalty of having two lookup of rules.
  *
  * The first instance of QStyleSheetStyle will set globalStyleSheetStyle to itself. The second one
  * will notice the globalStyleSheetStyle is not istelf and call its base style directly.
@@ -1418,7 +1418,7 @@ void QRenderRule::drawBackground(QPainter *p, const QRect& rect, const QPoint& o
         // ### fix for  gradients
         const QPainterPath &borderPath = borderClip(originRect(rect, origin));
         if (!borderPath.isEmpty()) {
-            // Drawn intead of being used as clipping path for better visual quality
+            // Drawn instead of being used as clipping path for better visual quality
             bool wasAntialiased = p->renderHints() & QPainter::Antialiasing;
             p->setRenderHint(QPainter::Antialiasing);
             p->fillPath(borderPath, brush);
@@ -2903,7 +2903,7 @@ void QStyleSheetStyle::polish(QWidget *w)
 
     if (styleSheetCaches->styleRulesCache.contains(w)) {
         // the widget accessed its style pointer before polish (or repolish)
-        // (exemple: the QAbstractSpinBox constructor ask for the stylehint)
+        // (example: the QAbstractSpinBox constructor ask for the stylehint)
         styleSheetCaches->styleRulesCache.remove(w);
         styleSheetCaches->hasStyleRuleCache.remove(w);
         styleSheetCaches->renderRulesCache.remove(w);
@@ -3956,7 +3956,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                 QWindowsStyle::drawControl(ce, &mi, p, w);
                 if (mi.checkType != QStyleOptionMenuItem::NotCheckable && !mi.checked) {
                     // We have a style defined, but QWindowsStyle won't draw anything if not checked.
-                    // So we mimick what QWindowsStyle would do.
+                    // So we mimic what QWindowsStyle would do.
                     int checkcol = qMax<int>(mi.maxIconWidth, QWindowsStylePrivate::windowsCheckMarkWidth);
                     QRect vCheckRect = visualRect(opt->direction, mi.rect, QRect(mi.rect.x(), mi.rect.y(), checkcol, mi.rect.height()));
                     if (mi.state.testFlag(State_Enabled) && mi.state.testFlag(State_Selected)) {
@@ -6257,7 +6257,7 @@ QRect QStyleSheetStyle::subElementRect(SubElement se, const QStyleOption *opt, c
 #endif // QT_CONFIG(toolbar)
 
     // On mac we make pixel adjustments to layouts which are not
-    // desireable when you have custom style sheets on them
+    // desirable when you have custom style sheets on them
     case SE_CheckBoxLayoutItem:
     case SE_ComboBoxLayoutItem:
     case SE_DateTimeEditLayoutItem:

@@ -779,7 +779,7 @@ Qt::DropActions QTreeModel::supportedDropActions() const
 
 void QTreeModel::itemChanged(QTreeWidgetItem *item)
 {
-    SkipSorting skipSorting(this); //this is kind of wrong, but not doing this would kill performence
+    SkipSorting skipSorting(this); //this is kind of wrong, but not doing this would kill performance
     QModelIndex left = index(item, 0);
     QModelIndex right = index(item, item->columnCount() - 1);
     emit dataChanged(left, right);
@@ -810,7 +810,7 @@ void QTreeModel::emitDataChanged(QTreeWidgetItem *item, int column, const QList<
         return;
     }
 
-    SkipSorting skipSorting(this); //This is a little bit wrong, but not doing it would kill performence
+    SkipSorting skipSorting(this); //This is a little bit wrong, but not doing it would kill performance
 
     QModelIndex bottomRight, topLeft;
     if (column == -1) {

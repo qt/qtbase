@@ -2642,7 +2642,7 @@ void QWidget::setStyle(QStyle *style)
 #ifndef QT_NO_STYLE_STYLESHEET
     if (QStyleSheetStyle *styleSheetStyle = qt_styleSheet(style)) {
         //if for some reason someone try to set a QStyleSheetStyle, ref it
-        //(this may happen for exemple in QButtonDialogBox which propagates its style)
+        //(this may happen for example in QButtonDialogBox which propagates its style)
         styleSheetStyle->ref();
         d->setStyle_helper(style, false);
     } else if (qt_styleSheet(d->extra->style) || !qApp->styleSheet().isEmpty()) {

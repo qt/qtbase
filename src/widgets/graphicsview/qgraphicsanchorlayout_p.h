@@ -169,7 +169,7 @@ struct AnchorData : public QSimplexVariable {
     qreal sizeAtMaximum;
 
     // References to the classes that represent this anchor in the public world
-    // An anchor may represent a LayoutItem, it may also be acessible externally
+    // An anchor may represent a LayoutItem, it may also be accessible externally
     // through a GraphicsAnchor "handler".
     QGraphicsLayoutItem *item;
     QGraphicsAnchor *graphicsAnchor;

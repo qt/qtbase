@@ -3298,7 +3298,7 @@ int QDockAreaLayoutInfo::separatorMove(const QList<int> &separator, const QPoint
 
 #if QT_CONFIG(tabbar)
 // Sets the correct positions for the separator widgets
-// Allocates new sepearator widgets with getSeparatorWidget
+// Allocates new separator widgets with getSeparatorWidget
 void QDockAreaLayout::updateSeparatorWidgets() const
 {
     int j = 0;

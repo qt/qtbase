@@ -1513,7 +1513,7 @@ QDateTimeEdit::StepEnabled QDateTimeEdit::stepEnabled() const
         if (d->wrapping)
             return StepEnabled(StepUpEnabled | StepDownEnabled);
         // 3 cases.  date, time, datetime.  each case look
-        // at just the relavant component.
+        // at just the relevant component.
         QVariant max, min, val;
         if (!(d->sections & DateSections_Mask)) {
             // time only, no date

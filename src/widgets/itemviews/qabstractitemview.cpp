@@ -2523,7 +2523,7 @@ void QAbstractItemView::keyPressEvent(QKeyEvent *event)
         break;
     case Qt::Key_Enter:
     case Qt::Key_Return:
-        // ### we can't open the editor on enter, becuse
+        // ### we can't open the editor on enter, because
         // some widgets will forward the enter event back
         // to the viewport, starting an endless loop
         if (state() != EditingState || hasFocus()) {
@@ -3354,7 +3354,7 @@ void QAbstractItemView::update(const QModelIndex &index)
     Q_D(QAbstractItemView);
     if (index.isValid()) {
         const QRect rect = visualRect(index);
-        //this test is important for peformance reason
+        //this test is important for performance reason
         //For example in dataChanged we simply update all the cells without checking
         //it can be a major bottleneck to update rects that aren't even part of the viewport
         if (d->viewport->rect().intersects(rect))

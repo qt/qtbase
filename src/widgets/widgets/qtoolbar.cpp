@@ -1053,7 +1053,7 @@ bool QToolBar::event(QEvent *event)
     case QEvent::Leave:
         if (d->state != nullptr && d->state->dragging) {
 #ifdef Q_OS_WIN
-            // This is a workaround for loosing the mouse on Vista.
+            // This is a workaround for losing the mouse on Vista.
             QPoint pos = QCursor::pos();
             QMouseEvent fake(QEvent::MouseMove, mapFromGlobal(pos), pos, Qt::NoButton,
                              QGuiApplication::mouseButtons(), QGuiApplication::keyboardModifiers());

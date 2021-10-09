@@ -264,7 +264,7 @@ public:
     int autoExpandDelay;
     QBasicTimer openTimer;
 
-    // used for drawing hilighted expand/collapse indicators
+    // used for drawing highlighted expand/collapse indicators
     mutable int hoverBranch;
 
     // used for blocking recursion when calling setViewportMargins from updateGeometries

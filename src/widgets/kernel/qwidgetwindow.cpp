@@ -1037,7 +1037,7 @@ void QWidgetWindow::handleExposeEvent(QExposeEvent *event)
             // If the window becomes not exposed...
             if (wPriv->childrenShownByExpose) {
                 // ... and child widgets was previously shown by the expose event - hide widgets again.
-                // This is a workaround, because sometimes when window is minimized programatically,
+                // This is a workaround, because sometimes when window is minimized programmatically,
                 // the QPA can notify that the window is exposed after changing window state to minimized
                 // and then, the QPA can send next expose event with null exposed region (not exposed).
                 wPriv->hideChildren(true);

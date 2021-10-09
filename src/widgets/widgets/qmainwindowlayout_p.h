@@ -384,7 +384,7 @@ private:
 #endif // QT_CONFIG(dockwidget)
 
 /* This data structure represents the state of all the tool-bars and dock-widgets. It's value based
-   so it can be easilly copied into a temporary variable. All operations are performed without moving
+   so it can be easily copied into a temporary variable. All operations are performed without moving
    any widgets. Only when we are sure we have the desired state, we call apply(), which moves the
    widgets.
 */

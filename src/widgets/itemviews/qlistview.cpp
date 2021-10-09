@@ -1417,7 +1417,7 @@ void QListView::setSelection(const QRect &rect, QItemSelectionModel::SelectionFl
                         top = bottom;
                         bottom = tmp;
                     }
-                    // if the rect are on differnet lines, expand
+                    // if the rect are on different lines, expand
                     if (top.top() != bottom.top()) {
                         // top rectangle
                         if (isRightToLeft())
@@ -1934,7 +1934,7 @@ QSize QListViewPrivate::itemSize(const QStyleOptionViewItem &option, const QMode
         const QAbstractItemDelegate *delegate = q->itemDelegateForIndex(index);
         return delegate ? delegate->sizeHint(option, index) : QSize();
     }
-    if (!cachedItemSize.isValid()) { // the last item is probaly the largest, so we use its size
+    if (!cachedItemSize.isValid()) { // the last item is probably the largest, so we use its size
         int row = model->rowCount(root) - 1;
         QModelIndex sample = model->index(row, column, root);
         const QAbstractItemDelegate *delegate = q->itemDelegateForIndex(sample);
@@ -2671,7 +2671,7 @@ void QListModeViewBase::doStaticLayout(const QListViewLayoutInfo &info)
         flowPositions.append(flowPosition);
         segmentPositions.append(info.wrap ? segPosition + deltaSegPosition : INT_MAX);
     }
-    // if the new items are visble, update the viewport
+    // if the new items are visible, update the viewport
     QRect changedRect(topLeft, rect.bottomRight());
     if (clipRect().intersects(changedRect))
         viewport()->update();
@@ -2977,7 +2977,7 @@ bool QIconModeViewBase::filterDropEvent(QDropEvent *e)
     // do not delete item on internal move, see filterStartDrag()
     dd->dropEventMoved = true;
     e->accept(); // we have handled the event
-    // if the size has not grown, we need to check if it has shrinked
+    // if the size has not grown, we need to check if it has shrunk
     if (contentsSize != contents) {
         if ((contentsSize.width() <= contents.width()
             || contentsSize.height() <= contents.height())) {
@@ -3269,7 +3269,7 @@ void QIconModeViewBase::doDynamicLayout(const QListViewLayoutInfo &info)
     // insert items in tree
     for (int row = insertFrom; row <= info.last; ++row)
         tree.insertLeaf(items.at(row).rect(), row);
-    // if the new items are visble, update the viewport
+    // if the new items are visible, update the viewport
     QRect changedRect(topLeft, rect.bottomRight());
     if (clipRect().intersects(changedRect))
         viewport()->update();

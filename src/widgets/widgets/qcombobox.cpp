@@ -2711,7 +2711,7 @@ void QComboBox::showPopup()
         // Position horizontally.
         listRect.moveLeft(above.x());
 
-        // Position vertically so the curently selected item lines up
+        // Position vertically so the currently selected item lines up
         // with the combo box.
         const QRect currentItemRect = view()->visualRect(view()->currentIndex());
         const int offset = listRect.top() - currentItemRect.top();
@@ -3269,7 +3269,7 @@ void QComboBox::keyPressEvent(QKeyEvent *e)
             if (!hasEditFocus() || !d->lineEdit)
                 e->ignore();
         } else {
-            e->ignore(); // let the surounding dialog have it
+            e->ignore(); // let the surrounding dialog have it
         }
         break;
 #endif

@@ -40,7 +40,7 @@
 /* This is the default Qt style sheet.
 
    IMPORTANT: This style sheet is primarily meant for defining feature
-   capablities of styles. Do NOT add default styling rules here. When in
+   capabilities of styles. Do NOT add default styling rules here. When in
    doubt ask the stylesheet maintainer.
 
    The stylesheet in here used to be in a CSS file, but was moved here to
@@ -116,7 +116,7 @@ using namespace QCss;
 // found among the Value_* constants, in which case the second should be that
 // constant. Otherwise the first parameter is Value::Identifier and the second
 // is a string.
-// Adding more values is the same as seperating by spaces in CSS.
+// Adding more values is the same as separating by spaces in CSS.
 // Ex. border: 2px solid black;
 //              ^    ^     ^
 
