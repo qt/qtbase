@@ -772,8 +772,8 @@ static void qt_to_latin1_internal(uchar *dst, const char16_t *src, qsizetype len
     });
 #  endif
 #elif defined(__ARM_NEON__)
-    // Refer to the documentation of the SSE2 implementation
-    // this use eactly the same method as for SSE except:
+    // Refer to the documentation of the SSE2 implementation.
+    // This uses exactly the same method as for SSE except:
     // 1) neon has unsigned comparison
     // 2) packing is done to 64 bits (8 x 8bits component).
     if (length >= 16) {
@@ -8395,7 +8395,7 @@ static int getEscape(const Char *uc, qsizetype *pos, qsizetype len, int maxNumbe
        the int contains the numerical number as parsed from the placeholder.
     3. Next, collect all the non-negative ints found, sort them in ascending order and
        remove duplicates.
-       3a. If the result has more entires than multiArg() was given replacement strings,
+       3a. If the result has more entries than multiArg() was given replacement strings,
            we have found placeholders we can't satisfy with replacement strings. That is
            fine (there could be another .arg() call coming after this one), so just
            truncate the result to the number of actual multiArg() replacement strings.

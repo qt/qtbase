@@ -281,7 +281,7 @@ bool QEventDispatcherCoreFoundation::processEvents(QEventLoop::ProcessEventsFlag
     }
 
     if (m_processEvents.deferredWakeUp) {
-        // We may be processing events recursivly as a result of processing a posted event,
+        // We may be processing events recursively as a result of processing a posted event,
         // in which case we need to signal the run-loop source so that this iteration of
         // processEvents will take care of the newly posted events.
         m_postedEventsRunLoopSource.signal();

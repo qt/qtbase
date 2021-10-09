@@ -53,7 +53,7 @@ QT_BEGIN_NAMESPACE
     ResultStore stores indexed results. Results can be added and retrieved
     either individually batched in a QList. Retriveing results and checking
     which indexes are in the store can be done either by iterating or by random
-    accees. In addition results kan be removed from the front of the store,
+    access. In addition results can be removed from the front of the store,
     either individually or in batches.
 */
 
@@ -62,7 +62,7 @@ namespace QtPrivate {
 class ResultItem
 {
 public:
-    ResultItem(const void *_result, int _count) : m_count(_count), result(_result) { } // contruct with vector of results
+    ResultItem(const void *_result, int _count) : m_count(_count), result(_result) { } // construct with vector of results
     ResultItem(const void *_result) : m_count(0), result(_result) { } // construct with result
     ResultItem() : m_count(0), result(nullptr) { }
     bool isValid() const { return result != nullptr; }

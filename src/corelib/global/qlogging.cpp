@@ -1090,7 +1090,7 @@ struct QMessagePattern
         QString backtraceSeparator;
         int backtraceDepth;
     };
-    QList<BacktraceParams> backtraceArgs; // backtrace argumens in sequence of %{backtrace
+    QList<BacktraceParams> backtraceArgs; // backtrace arguments in sequence of %{backtrace
 #endif
 
     bool fromEnvironment;
@@ -1497,7 +1497,7 @@ static QBasicAtomicPointer<void (QtMsgType, const QMessageLogContext &, const QS
 // ------------------------ Alternate logging sinks -------------------------
 
 #if defined(QT_BOOTSTRAPPED)
-    // Boostrapped tools always print to stderr, so no need for alternate sinks
+    // Bootstrapped tools always print to stderr, so no need for alternate sinks
 #else
 
 #if QT_CONFIG(slog2)

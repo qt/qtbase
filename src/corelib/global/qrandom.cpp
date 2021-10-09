@@ -231,7 +231,7 @@ static void fallback_fill(quint32 *ptr, qsizetype left) noexcept
 static QBasicAtomicInteger<unsigned> seed = Q_BASIC_ATOMIC_INITIALIZER(0U);
 static void fallback_update_seed(unsigned value)
 {
-    // Update the seed to be used for the fallback mechansim, if we need to.
+    // Update the seed to be used for the fallback mechanism, if we need to.
     // We can't use QtPrivate::QHashCombine here because that is not an atomic
     // operation. A simple XOR will have to do then.
     seed.fetchAndXorRelaxed(value);

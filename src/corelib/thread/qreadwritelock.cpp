@@ -505,7 +505,7 @@ bool QReadWriteLockPrivate::lockForWrite(int timeout)
             if (elapsed > timeout) {
                 if (waitingReaders && !waitingWriters && !writerCount) {
                     // We timed out and now there is no more writers or waiting writers, but some
-                    // readers were queueud (probably because of us). Wake the waiting readers.
+                    // readers were queued (probably because of us). Wake the waiting readers.
                     readerCond.wakeAll();
                 }
                 return false;

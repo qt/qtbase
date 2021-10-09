@@ -643,13 +643,13 @@ static QList<QTimeZonePrivate::Data> calculatePosixTransitions(const QByteArray 
     if (parts.count() < 3 || parts.at(1).isEmpty() || parts.at(2).isEmpty())
         return result; // Malformed.
 
-    // Get the std to dst transtion details
+    // Get the std to dst transition details
     const int twoOClock = 7200; // Default transition time, when none specified
     const auto dstParts = parts.at(1).split('/');
     const QByteArray dstDateRule = dstParts.at(0);
     const int dstTime = dstParts.count() < 2 ? twoOClock : parsePosixTransitionTime(dstParts.at(1));
 
-    // Get the dst to std transtion details
+    // Get the dst to std transition details
     const auto stdParts = parts.at(2).split('/');
     const QByteArray stdDateRule = stdParts.at(0);
     const int stdTime = stdParts.count() < 2 ? twoOClock : parsePosixTransitionTime(stdParts.at(1));

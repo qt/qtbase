@@ -212,7 +212,7 @@ private:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QItemSelectionModel::SelectionFlags)
 
-// We export each out-of-line method invidually to prevent MSVC from
+// We export each out-of-line method individually to prevent MSVC from
 // exporting the whole QList class.
 class QItemSelection : public QList<QItemSelectionRange>
 {

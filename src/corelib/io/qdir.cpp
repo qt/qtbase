@@ -2265,7 +2265,7 @@ QString qt_normalizePathSegments(const QString &name, QDirPrivate::PathNormaliza
 
     if (prefixLength) {
         if (!isEmpty && out[used] == '/') {
-            // Eventhough there is a prefix the out string is a slash. This happens, if the input
+            // Even though there is a prefix the out string is a slash. This happens, if the input
             // string only consists of a prefix followed by one or more slashes. Just skip the slash.
             ++used;
         }

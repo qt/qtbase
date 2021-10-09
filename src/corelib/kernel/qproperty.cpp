@@ -766,7 +766,7 @@ void QPropertyObserverPointer::notify(QUntypedPropertyData *propertyDataPtr)
      * 1. Before executing any action which might modify the list, we insert a placeholder node after the current node.
      *    As that one is stack allocated and owned by us, we can rest assured that it is
      *    still there after the action has executed, and placeHolder->next points to the actual next node in the list.
-     *    Note that taking next at the beginning of the loop does not work, as the execuated action might either move
+     *    Note that taking next at the beginning of the loop does not work, as the executed action might either move
      *    or delete that node.
      * 2. After the triggered action has finished, we can use the next pointer in the placeholder node as a safe way to
      *    retrieve the next node.

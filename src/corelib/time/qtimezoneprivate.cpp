@@ -127,7 +127,7 @@ static QByteArray toWindowsIdLiteral(quint16 windowsIdKey)
 }
 
 /*
-    Base class implementing common utility routines, only intantiate for a null tz.
+    Base class implementing common utility routines, only instantiate for a null tz.
 */
 
 QTimeZonePrivate::QTimeZonePrivate()

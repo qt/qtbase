@@ -89,7 +89,7 @@
 
 QT_BEGIN_NAMESPACE
 
-namespace { // annonymous used to hide QVariant handlers
+namespace { // anonymous used to hide QVariant handlers
 
 /*!
   \internal
@@ -292,7 +292,7 @@ static void customClear(QVariant::Private *d)
 }
 
 
-} // annonymous used to hide QVariant handlers
+} // anonymous used to hide QVariant handlers
 
 /*!
     \class QVariant

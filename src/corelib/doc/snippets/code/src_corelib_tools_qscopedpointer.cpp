@@ -122,7 +122,7 @@ public:
 
 private:
     Q_DISABLE_COPY(MyClass) // OK - copy constructor and assignment operators
-                             // are now disabled, so the compiler won't implicitely
+                             // are now disabled, so the compiler won't implicitly
                              // generate them.
 };
 //! [4]

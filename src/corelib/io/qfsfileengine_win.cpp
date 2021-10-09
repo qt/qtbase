@@ -214,7 +214,7 @@ qint64 QFSFileEnginePrivate::nativeSize() const
     // ### Don't flush; for buffered files, we should get away with ftell.
     thatQ->flush();
 
-    // Always retrive the current information
+    // Always retrieve the current information
     metaData.clearFlags(QFileSystemMetaData::SizeAttribute);
     bool filled = false;
     if (fileHandle != INVALID_HANDLE_VALUE && openMode != QIODevice::NotOpen )

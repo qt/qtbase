@@ -1258,7 +1258,7 @@ static inline Form form(unsigned short uc) {
    (Consonant Nukta? Halant)* Consonant Halant
    IndependentVowel VowelMark? StressMark?
 
-   We return syllable boundaries on invalid combinations aswell
+   We return syllable boundaries on invalid combinations as well
 */
 static qsizetype indic_nextSyllableBoundary(QChar::Script script, const char16_t *s, qsizetype start, qsizetype end, bool *invalid)
 {

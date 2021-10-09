@@ -1,6 +1,6 @@
 /* This file is used to generate the Qt configuration info for the Core library.
  * The 'qt_generate_qconfig_cpp' cmake routine
- * contains variables that replace '@' entires in this file. It's important to
+ * contains variables that replace '@' entries in this file. It's important to
  * align these values with the following:
  *
  * - QLibraryInfo::LibraryPath enum in qtbase/src/corelib/global/qlibraryinfo.h

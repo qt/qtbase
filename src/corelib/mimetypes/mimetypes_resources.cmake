@@ -1,6 +1,6 @@
 # List of files that need to be packaged as resources.
 # This file exists solely because of unit tests that need access to this
-# information as well. This was previosly handled by referrencing a qrc
+# information as well. This was previously handled by referencing a qrc
 # file with the same information
 
 set(corelib_mimetypes_resource_file

@@ -980,7 +980,7 @@ public:
         detach();
 
         // key and value may belong to this map. As such, we need to copy
-        // them to ensure they stay valid througout the iteration below
+        // them to ensure they stay valid throughout the iteration below
         // (which may destroy them)
         const Key keyCopy = key;
         const T valueCopy = value;

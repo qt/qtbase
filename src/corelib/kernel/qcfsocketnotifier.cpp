@@ -163,7 +163,7 @@ void QCFSocketNotifier::registerSocketNotifier(QSocketNotifier *notifier)
         CFOptionFlags flags = CFSocketGetSocketFlags(socketInfo->socket);
         // QSocketNotifier doesn't close the socket upon destruction/invalidation
         flags &= ~kCFSocketCloseOnInvalidate;
-        // Expicitly disable automatic re-enable, as we do that manually on each runloop pass
+        // Explicitly disable automatic re-enable, as we do that manually on each runloop pass
         flags &= ~(kCFSocketAutomaticallyReenableWriteCallBack | kCFSocketAutomaticallyReenableReadCallBack);
         CFSocketSetSocketFlags(socketInfo->socket, flags);
 

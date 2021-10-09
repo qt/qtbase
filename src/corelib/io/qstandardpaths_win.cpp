@@ -108,7 +108,7 @@ static bool isProcessLowIntegrity() {
     auto* token_info = reinterpret_cast<TOKEN_MANDATORY_LABEL*>(token_info_buf.data());
     DWORD token_info_length = token_info_buf.size();
     if (!GetTokenInformation(process_token, TokenIntegrityLevel, token_info, token_info_length, &token_info_length)) {
-        // grow bufer and retry GetTokenInformation
+        // grow buffer and retry GetTokenInformation
         token_info_buf.resize(token_info_length);
         token_info = reinterpret_cast<TOKEN_MANDATORY_LABEL*>(token_info_buf.data());
         if (!GetTokenInformation(process_token, TokenIntegrityLevel, token_info, token_info_length, &token_info_length))
