@@ -80,7 +80,7 @@ QT_BEGIN_NAMESPACE
 
 /* ##### new TODOs:
 
-  Remove emtpy emthods in the *Private classes
+  Remove empty emthods in the *Private classes
 
   Make a lot of the (mostly empty) methods in the public classes inline.
   Specially constructors assignment operators and comparison operators are candidates.
@@ -3016,7 +3016,7 @@ QDomNodePrivate* QDomDocumentTypePrivate::cloneNode(bool deep)
 
 QDomNodePrivate* QDomDocumentTypePrivate::insertBefore(QDomNodePrivate* newChild, QDomNodePrivate* refChild)
 {
-    // Call the origianl implementation
+    // Call the original implementation
     QDomNodePrivate* p = QDomNodePrivate::insertBefore(newChild, refChild);
     // Update the maps
     if (p && p->isEntity())
@@ -3029,7 +3029,7 @@ QDomNodePrivate* QDomDocumentTypePrivate::insertBefore(QDomNodePrivate* newChild
 
 QDomNodePrivate* QDomDocumentTypePrivate::insertAfter(QDomNodePrivate* newChild, QDomNodePrivate* refChild)
 {
-    // Call the origianl implementation
+    // Call the original implementation
     QDomNodePrivate* p = QDomNodePrivate::insertAfter(newChild, refChild);
     // Update the maps
     if (p && p->isEntity())
@@ -3042,7 +3042,7 @@ QDomNodePrivate* QDomDocumentTypePrivate::insertAfter(QDomNodePrivate* newChild,
 
 QDomNodePrivate* QDomDocumentTypePrivate::replaceChild(QDomNodePrivate* newChild, QDomNodePrivate* oldChild)
 {
-    // Call the origianl implementation
+    // Call the original implementation
     QDomNodePrivate* p = QDomNodePrivate::replaceChild(newChild, oldChild);
     // Update the maps
     if (p) {
@@ -3062,7 +3062,7 @@ QDomNodePrivate* QDomDocumentTypePrivate::replaceChild(QDomNodePrivate* newChild
 
 QDomNodePrivate* QDomDocumentTypePrivate::removeChild(QDomNodePrivate* oldChild)
 {
-    // Call the origianl implementation
+    // Call the original implementation
     QDomNodePrivate* p = QDomNodePrivate::removeChild( oldChild);
     // Update the maps
     if (p && p->isEntity())

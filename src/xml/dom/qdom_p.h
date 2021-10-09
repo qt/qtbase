@@ -62,7 +62,7 @@ QT_BEGIN_NAMESPACE
 
 /**************************************************************
  *
- * Private class declerations
+ * Private class declarations
  *
  **************************************************************/
 
