@@ -1507,7 +1507,7 @@ QByteArray TlsKey::pemFooter() const
     \fn QStringList X509Certificate::issuerInfo(const QByteArray &attribute) const
     \internal
 
-    This function is excpected to return the issuer information for attribute from
+    This function is expected to return the issuer information for attribute from
     the certificate, or an empty list if there is no information for \a attribute
     in the certificate. There can be more than one entry for an attribute.
 
@@ -1842,7 +1842,7 @@ TlsKey *X509Certificate::publicKey() const
     the handshake.
 
     \note This function is responsible for emitting QSslSocket's signals, that occur during the
-    handshake (e.g. QSslSocket::sslErrors() or QSslSocket::encrytped()), and also read/write signals,
+    handshake (e.g. QSslSocket::sslErrors() or QSslSocket::encrypted()), and also read/write signals,
     e.g. QSslSocket::bytesWritten() and QSslSocket::readyRead().
 
     \sa init()
@@ -1938,7 +1938,7 @@ QList<QOcspResponse> TlsCryptograph::ocsps() const
     \internal
 
     A helper function that can be used during a handshake. Returns \c true if the \a peerName
-    matches one of subject alternative names or commond names found in the \a certificate.
+    matches one of subject alternative names or common names found in the \a certificate.
 */
 bool TlsCryptograph::isMatchingHostname(const QSslCertificate &certificate, const QString &peerName)
 {

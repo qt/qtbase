@@ -43,9 +43,9 @@
 
     \section1 API changes
 
-    \section2 Ambigous name overloads
+    \section2 Ambiguous name overloads
 
-    Several ambigous overloaded functions are removed. The error() signal
+    Several ambiguous overloaded functions are removed. The error() signal
     is replaced by errorOccurred() in QAbstractSocket and its heirs
     (QTcpSocket, QUdpSocket, QLocalSocket, and QSslSocket), and in QNetworkReply.
     Code such as:
