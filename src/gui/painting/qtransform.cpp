@@ -1725,7 +1725,7 @@ QPolygon QTransform::mapToPolygon(const QRect &rect) const
         MAP(rect.x(), bottom, x[3], y[3]);
     }
 
-    // all coordinates are correctly, tranform to a pointarray
+    // all coordinates are correctly, transform to a pointarray
     // (rounding to the next integer)
     a.setPoints(4, qRound(x[0]), qRound(y[0]),
                 qRound(x[1]), qRound(y[1]),

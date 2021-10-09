@@ -354,7 +354,7 @@ void QOutlineMapper::clipElements(const QPointF *elements,
                                     int element_count)
 {
     // We could save a bit of time by actually implementing them fully
-    // instead of going through convenience functionallity, but since
+    // instead of going through convenience functionality, but since
     // this part of code hardly every used, it shouldn't matter.
 
     QScopedValueRollback<bool> in_clip_elements(m_in_clip_elements, true);

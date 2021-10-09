@@ -1193,7 +1193,7 @@ int QKeySequencePrivate::decodeString(QString accel, QKeySequence::SequenceForma
     } else if (accelRef.at(0) == QLatin1Char('f') && (fnum = accelRef.mid(1).toInt()) >= 1 && fnum <= 35) {
         ret |= Qt::Key_F1 + fnum - 1;
     } else {
-        // For NativeText, check the traslation table first,
+        // For NativeText, check the translation table first,
         // if we don't find anything then try it out with just the untranlated stuff.
         // PortableText will only try the untranlated table.
         bool found = false;

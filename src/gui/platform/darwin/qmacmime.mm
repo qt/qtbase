@@ -168,7 +168,7 @@ QMacInternalPasteboardMime::QMacInternalPasteboardMime(char t) : type(t)
 
 /*
   Destroys a conversion object, removing it from the global
-  list of available convertors.
+  list of available converters.
 */
 QMacInternalPasteboardMime::~QMacInternalPasteboardMime()
 {

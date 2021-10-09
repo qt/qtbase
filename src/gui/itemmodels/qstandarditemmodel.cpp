@@ -3160,7 +3160,7 @@ QMimeData *QStandardItemModel::mimeData(const QModelIndexList &indexes) const
         }
     }
 
-    //remove duplicates childrens
+    //remove duplicates children
     {
         QDuplicateTracker<QStandardItem *> seen;
         while (!stack.isEmpty()) {

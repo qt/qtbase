@@ -101,7 +101,7 @@ public:
         ReadingEnd,
         Error
     };
-    // Defines the order of how the various ways of setting colorspace overrides eachother:
+    // Defines the order of how the various ways of setting colorspace overrides each other:
     enum ColorSpaceState {
         Undefined = 0,
         GammaChrm = 1, // gAMA+cHRM chunks

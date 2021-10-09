@@ -749,7 +749,7 @@ void QXkbCommon::verifyHasLatinLayout(xkb_keymap *keymap)
     // This means that lookupLatinKeysym() will not find anything and latin
     // key shortcuts might not work. This is a bug in the affected desktop
     // environment. Usually can be solved via system settings by adding e.g. 'us'
-    // layout to the list of seleced layouts, or by using command line, "setxkbmap
+    // layout to the list of selected layouts, or by using command line, "setxkbmap
     // -layout rus,en". The position of latin key based layout in the list of the
     // selected layouts is irrelevant. Properly functioning desktop environments
     // handle this behind the scenes, even if no latin key based layout has been

@@ -165,7 +165,7 @@ QT_BEGIN_NAMESPACE
 #if !QT_CONFIG(opengles2)
 
 // OS X 10.6 doesn't define these which are needed below
-// OS X 10.7 and later defien them in gl3.h
+// OS X 10.7 and later define them in gl3.h
 #ifndef APIENTRY
 #define APIENTRY
 #endif

@@ -1436,7 +1436,7 @@ void QPixmap::detach()
         return;
 
     // QPixmap.data member may be QRuntimePlatformPixmap so use handle() function to get
-    // the actual underlaying runtime pixmap data.
+    // the actual underlying runtime pixmap data.
     QPlatformPixmap *pd = handle();
     QPlatformPixmap::ClassId id = pd->classId();
     if (id == QPlatformPixmap::RasterClass) {

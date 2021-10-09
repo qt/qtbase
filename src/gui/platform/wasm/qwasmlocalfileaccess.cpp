@@ -166,7 +166,7 @@ void openFile(const std::string &accept,
 
 void saveFile(const char *content, size_t size, const std::string &fileNameHint)
 {
-    // Save a file by creating programatically clicking a download
+    // Save a file by creating programmatically clicking a download
     // link to an object url to a Blob containing the file content.
     // File content is copied once, so that the passed in content
     // buffer can be released as soon as this function returns - we

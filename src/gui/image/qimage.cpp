@@ -1025,7 +1025,7 @@ QImage::QImage(const char * const xpm[])
     if (!xpm)
         return;
     if (!qt_read_xpm_image_or_array(nullptr, xpm, *this))
-        // Issue: Warning because the constructor may be ambigious
+        // Issue: Warning because the constructor may be ambiguous
         qWarning("QImage::QImage(), XPM is not supported");
 }
 #endif // QT_NO_IMAGEFORMAT_XPM

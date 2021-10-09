@@ -1986,7 +1986,7 @@ void QRhiGles2::enqueueSubresUpload(QGles2Texture *texD, QGles2CommandBuffer *cb
         cmd.args.subImage.h = size.height();
         cmd.args.subImage.glformat = texD->glformat;
         cmd.args.subImage.gltype = texD->gltype;
-        // Default unpack alignment (row start aligment
+        // Default unpack alignment (row start alignment
         // requirement) is 4. QImage guarantees 4 byte aligned
         // row starts, but our raw data here does not.
         cmd.args.subImage.rowStartAlign = (bytesPerLine & 3) ? 1 : 4;

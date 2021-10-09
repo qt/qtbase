@@ -2002,7 +2002,7 @@ void QTextLine::layout_helper(int maxGlyphs)
                 // and when we then end up breaking on the next glyph we compute the right bearing
                 // and end up with a line width that is slightly larger width than what was requested.
                 // Unfortunately we can't remove this optimization as it will slow down text
-                // layouting significantly, so we accept the slight correctnes issue.
+                // layouting significantly, so we accept the slight correctness issue.
                 if ((lbh.calculateNewWidth(line) + qAbs(lbh.minimumRightBearing)) > line.width)
                     lbh.calculateRightBearing();
 

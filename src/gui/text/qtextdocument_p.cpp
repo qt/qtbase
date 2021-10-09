@@ -59,7 +59,7 @@ QT_BEGIN_NAMESPACE
 
 #define PMDEBUG if(0) qDebug
 
-// The VxWorks DIAB compiler crashes when initializing the anonymouse union with { a7 }
+// The VxWorks DIAB compiler crashes when initializing the anonymous union with { a7 }
 #if !defined(Q_CC_DIAB)
 #  define QT_INIT_TEXTUNDOCOMMAND(c, a1, a2, a3, a4, a5, a6, a7, a8) \
           QTextUndoCommand c = { a1, a2, 0, 0, quint8(a3), a4, quint32(a5), quint32(a6), { int(a7) }, quint32(a8) }

@@ -2126,7 +2126,7 @@ bool QPainterPath::intersects(const QRectF &rect) const
 
     Q_D(QPainterPath);
 
-    // Check if the rectangle surounds any subpath...
+    // Check if the rectangle surrounds any subpath...
     for (int i=0; i<d->elements.size(); ++i) {
         const Element &e = d->elements.at(i);
         if (e.type == QPainterPath::MoveToElement && rect.contains(e))
