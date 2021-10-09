@@ -1591,7 +1591,7 @@ void QCborMap::detach(qsizetype reserved)
 /*!
     \fn QCborMap::ConstIterator::value_type QCborMap::ConstIterator::operator*() const
 
-    Returns a pair containing the curent item's key and value.
+    Returns a pair containing the current item's key and value.
 
     \sa key(), value()
  */

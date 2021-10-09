@@ -145,7 +145,7 @@ QDataStream &operator>>(QDataStream &ds, QCborSimpleType &st)
    \value PositiveBignum        A positive number of arbitrary length, encoded as a byte array in
                                 network byte order. For example, the number 2\sup{64} is represented by
                                 a byte array containing the byte value 0x01 followed by 8 zero bytes.
-   \value NegativeBignum        A negative number of arbirary length, encoded as the absolute value
+   \value NegativeBignum        A negative number of arbitrary length, encoded as the absolute value
                                 of that number, minus one. For example, a byte array containing
                                 byte value 0x02 followed by 8 zero bytes represents the number
                                 -2\sup{65} - 1.
@@ -230,7 +230,7 @@ QDataStream &operator>>(QDataStream &ds, QCborSimpleType &st)
                             element.
    \value UnexpectedBreak   The CBOR stream contains a Break where it is not allowed (data is
                             corrupt and the error is not recoverable).
-   \value UnknownType       The CBOR stream contains an unknown/unparseable Type (data is corrupt
+   \value UnknownType       The CBOR stream contains an unknown/unparsable Type (data is corrupt
                             and the and the error is not recoverable).
    \value IllegalType       The CBOR stream contains a known type in a position it is not allowed
                             to exist (data is corrupt and the error is not recoverable).

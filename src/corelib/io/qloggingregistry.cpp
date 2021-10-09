@@ -209,7 +209,7 @@ void QLoggingSettingsParser::setContent(QTextStream &stream)
 
 /*!
     \internal
-    Parses one line of the configuation file
+    Parses one line of the configuration file
 */
 
 void QLoggingSettingsParser::parseNextLine(QStringView line)

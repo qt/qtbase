@@ -256,7 +256,7 @@ QThreadPrivate::~QThreadPrivate()
 
     \section1 Managing Threads
 
-    QThread will notifiy you via a signal when the thread is
+    QThread will notify you via a signal when the thread is
     started() and finished(), or you can use isFinished() and
     isRunning() to query the state of the thread.
 

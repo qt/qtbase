@@ -79,7 +79,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn QBasicTimer::QBasicTimer()
 
-    Contructs a basic timer.
+    Constructs a basic timer.
 
     \sa start()
 */

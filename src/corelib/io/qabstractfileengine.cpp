@@ -1199,7 +1199,7 @@ qint64 QAbstractFileEngine::readLine(char *data, qint64 maxlen)
    QIODevice can provide a faster implementation by making use of its
    internal buffer. For engines that already provide a fast readLine()
    implementation, returning false for this extension can avoid
-   unnnecessary double-buffering in QIODevice.
+   unnecessary double-buffering in QIODevice.
 
    \value MapExtension Whether the file engine provides the ability to map
    a file to memory.

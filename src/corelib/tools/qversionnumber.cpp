@@ -189,7 +189,7 @@ QVector<int> QVersionNumber::segments() const
 /*!
     \fn int QVersionNumber::segmentAt(int index) const
 
-    Returns the segement value at \a index.  If the index does not exist,
+    Returns the segment value at \a index.  If the index does not exist,
     returns 0.
 
     \sa segments(), segmentCount()

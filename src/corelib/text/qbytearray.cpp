@@ -1274,7 +1274,7 @@ QByteArray &QByteArray::operator=(const char *str)
     functions that expect '\\0'-terminated strings. If the QByteArray object
     was created from a \l{fromRawData()}{raw data} that didn't include the
     trailing null-termination character then QByteArray doesn't add it
-    automaticall unless the \l{deep copy} is created.
+    automatically unless the \l{deep copy} is created.
 
     Example:
     \snippet code/src_corelib_tools_qbytearray.cpp 6

@@ -3213,7 +3213,7 @@ QVariant QMetaProperty::read(const QObject *object) const
 
     If \a value is not of the same type type as the property, a conversion
     is attempted. An empty QVariant() is equivalent to a call to reset()
-    if this property is resetable, or setting a default-constructed object
+    if this property is resettable, or setting a default-constructed object
     otherwise.
 
     \sa read(), reset(), isWritable()
