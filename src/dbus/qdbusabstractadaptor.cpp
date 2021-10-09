@@ -166,7 +166,7 @@ QDBusAbstractAdaptor::~QDBusAbstractAdaptor()
     Toggles automatic signal relaying from the real object (see object()).
 
     Automatic signal relaying consists of signal-to-signal connection of the signals on the parent
-    that have the exact same method signatue in both classes.
+    that have the exact same method signature in both classes.
 
     If \a enable is set to true, connect the signals; if set to false, disconnect all signals.
 */
