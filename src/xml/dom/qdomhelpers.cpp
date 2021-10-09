@@ -437,7 +437,7 @@ bool QDomParser::parseMarkupDecl()
 
     const auto entities = reader->entityDeclarations();
     for (const auto &entityDecl : entities) {
-        // Entity declarations are created only for Extrenal Entities. Internal Entities
+        // Entity declarations are created only for External Entities. Internal Entities
         // are parsed, and QXmlStreamReader handles the parsing itself and returns the
         // parsed result. So we don't need to do anything for the Internal Entities.
         if (!entityDecl.publicId().isEmpty() || !entityDecl.systemId().isEmpty()) {
