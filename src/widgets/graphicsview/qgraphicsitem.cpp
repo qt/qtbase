@@ -244,7 +244,7 @@
     \li keyPressEvent() and keyReleaseEvent() handle key press and release events
     \li mousePressEvent(), mouseMoveEvent(), mouseReleaseEvent(), and
     mouseDoubleClickEvent() handles mouse press, move, release, click and
-    doubleclick events
+    double-click events
     \endlist
 
     You can filter events for any other item by installing event filters. This
@@ -2738,7 +2738,7 @@ void QGraphicsItemPrivate::setEnabledHelper(bool newEnabled, bool explicitly, bo
     If you disable a parent item, all its children will also be disabled. If
     you enable a parent item, all children will be enabled, unless they have
     been explicitly disabled (i.e., if you call setEnabled(false) on a child,
-    it will not be reenabled if its parent is disabled, and then enabled
+    it will not be re-enabled if its parent is disabled, and then enabled
     again).
 
     Items are enabled by default.
@@ -3031,7 +3031,7 @@ QRectF QGraphicsItemPrivate::effectiveBoundingRect(const QRectF &rect) const
     Returns the effective bounding rect of the item.
     If the item has no effect, this is the same as the item's bounding rect.
     If the item has an effect, the effective rect can be larger than the item's
-    bouding rect, depending on the effect.
+    bounding rect, depending on the effect.
 
     \sa boundingRect()
 */
@@ -4357,7 +4357,8 @@ QMatrix QGraphicsItem::sceneMatrix() const
     \snippet code/src_gui_graphicsview_qgraphicsitem.cpp 4
 
     Unlike transform(), which returns only an item's local transformation, this
-    function includes the item's (and any parents') position, and all the transfomation properties.
+    function includes the item's (and any parents') position, and all the
+    transformation properties.
 
     \sa transform(), setTransform(), scenePos(), {The Graphics View Coordinate System}, {Transformations}
 */
@@ -4610,7 +4611,7 @@ QT_WARNING_POP
     To simplify interaction with items using a transformed view, QGraphicsItem
     provides mapTo... and mapFrom... functions that can translate between
     items' and the scene's coordinates. For example, you can call mapToScene()
-    to map an item coordiate to a scene coordinate, or mapFromScene() to map
+    to map an item coordinate to a scene coordinate, or mapFromScene() to map
     from scene coordinates to item coordinates.
 
     The transformation matrix is combined with the item's rotation(), scale()
@@ -5167,7 +5168,7 @@ bool QGraphicsItem::contains(const QPointF &point) const
     The default implementation is based on shape intersection, and it calls
     shape() on both items. Because the complexity of arbitrary shape-shape
     intersection grows with an order of magnitude when the shapes are complex,
-    this operation can be noticably time consuming. You have the option of
+    this operation can be noticeably time-consuming. You have the option of
     reimplementing this function in a subclass of QGraphicsItem to provide a
     custom algorithm. This allows you to make use of natural constraints in
     the shapes of your own items, in order to improve the performance of the
@@ -7231,7 +7232,7 @@ void QGraphicsItem::keyReleaseEvent(QKeyEvent *event)
     If you do reimplement this function, \a event will by default be
     accepted (see QEvent::accept()), and this item is then the mouse
     grabber. This allows the item to receive future move, release and
-    doubleclick events. If you call QEvent::ignore() on \a event, this
+    double-click events. If you call QEvent::ignore() on \a event, this
     item will lose the mouse grab, and \a event will propagate to any
     topmost item beneath. No further mouse events will be delivered to
     this item unless a new mouse press event is received.
@@ -7452,11 +7453,11 @@ void QGraphicsItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 
 /*!
     This event handler, for event \a event, can be reimplemented to
-    receive mouse doubleclick events for this item.
+    receive mouse double-click events for this item.
 
     When doubleclicking an item, the item will first receive a mouse
     press event, followed by a release event (i.e., a click), then a
-    doubleclick event, and finally a release event.
+    double-click event, and finally a release event.
 
     Calling QEvent::ignore() or QEvent::accept() on \a event has no
     effect.
@@ -8127,7 +8128,7 @@ void QGraphicsItemPrivate::resetHeight()
 /*!
   \fn QGraphicsObject::rotationChanged()
 
-  This signal gets emitted whenever the roation of the item changes.
+  This signal gets emitted whenever the rotation of the item changes.
 */
 
 /*!
@@ -8166,7 +8167,7 @@ void QGraphicsItemPrivate::resetHeight()
 /*!
   \fn void QGraphicsObject::enabledChanged()
 
-  This signal gets emitted whenever the item get's enabled or disabled.
+  This signal gets emitted whenever the item gets enabled or disabled.
 
   \sa isEnabled()
 */
@@ -8194,7 +8195,7 @@ void QGraphicsItemPrivate::resetHeight()
   \property QGraphicsObject::transformOriginPoint
   \brief the transformation origin
 
-  This property sets a specific point in the items coordiante system as the
+  This property sets a specific point in the item's coordinate system as the
   origin for scale and rotation.
 
   \sa scale, rotation, QGraphicsItem::transformOriginPoint()

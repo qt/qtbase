@@ -1242,7 +1242,7 @@ QBoxLayout::Direction QBoxLayout::direction() const
     layout. \c window will be the parent of the widgets that are
     added to the layout.
 
-    If you don't pass parent \c window in the constrcutor, you can
+    If you don't pass a parent \c window to the constructor, you can
     at a later point use QWidget::setLayout() to install the QHBoxLayout
     object onto \c window. At that point, the widgets in the layout are
     reparented to have \c window as their parent.
@@ -1315,7 +1315,7 @@ QHBoxLayout::~QHBoxLayout()
     layout. \c window will be the parent of the widgets that are
     added to the layout.
 
-    If you don't pass parent \c window in the constrcutor, you can
+    If you don't pass a parent \c window to the constructor, you can
     at a later point use QWidget::setLayout() to install the QVBoxLayout
     object onto \c window. At that point, the widgets in the layout are
     reparented to have \c window as their parent.

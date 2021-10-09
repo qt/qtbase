@@ -91,7 +91,7 @@ static int unpackControlTypes(QSizePolicy::ControlTypes controls, QSizePolicy::C
     look of the different platforms supported by Qt (QWindowsStyle,
     QMacStyle, etc.). These styles are built into the
     Qt GUI module, other styles can be made available using Qt's
-    plugin mechansim.
+    plugin mechanism.
 
     Most functions for drawing style elements take four arguments:
 
@@ -697,7 +697,7 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     \value PE_IndicatorToolBarSeparator  The separator in a toolbar.
     \value PE_PanelToolBar  The panel for a toolbar.
     \value PE_PanelTipLabel The panel for a tip label.
-    \value PE_FrameTabBarBase The frame that is drawn for a tab bar, ususally drawn for a tab bar that isn't part of a tab widget.
+    \value PE_FrameTabBarBase The frame that is drawn for a tab bar, usually drawn for a tab bar that isn't part of a tab widget.
     \value PE_IndicatorTabTear Deprecated. Use \l{PE_IndicatorTabTearLeft} instead.
     \value PE_IndicatorTabTearLeft An indicator that a tab is partially scrolled out on the left side of the visible tab bar when there are many tabs.
     \value PE_IndicatorTabTearRight An indicator that a tab is partially scrolled out on the right side of the visible tab bar when there are many tabs.
@@ -1796,7 +1796,7 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
         cause a list view expansion to be selected.
 
     \value SH_TabBar_PreferNoArrows  Whether a tab bar should suggest a size
-        to prevent scoll arrows.
+        to prevent scroll arrows.
 
     \value SH_ComboBox_Popup  Allows popups as a combobox drop-down
         menu.

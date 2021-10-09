@@ -250,7 +250,7 @@ QStyle::SubControl QSliderPrivate::newHoverControl(const QPoint &pos)
         \li Up/Down move a vertical slider by one single step.
         \li PageUp moves up one page.
         \li PageDown moves down one page.
-        \li Home moves to the start (mininum).
+        \li Home moves to the start (minimum).
         \li End moves to the end (maximum).
     \endlist
 

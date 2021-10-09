@@ -1852,7 +1852,7 @@ void QGraphicsScene::render(QPainter *painter, const QRectF &target, const QRect
     item discovery functions like items() and itemAt(). Indexing is most
     efficient for static scenes (i.e., where items don't move around). For
     dynamic scenes, or scenes with many animated items, the index bookkeeping
-    can outweight the fast lookup speeds.
+    can outweigh the fast lookup speeds.
 
     For the common case, the default index method BspTreeIndex works fine.  If
     your scene uses many animations and you are experiencing slowness, you can
@@ -2480,7 +2480,7 @@ void QGraphicsScene::destroyItemGroup(QGraphicsItemGroup *group)
 }
 
 /*!
-    Adds or moves the \a item and all its childen to this scene.
+    Adds or moves the \a item and all its children to this scene.
     This scene takes ownership of the \a item.
 
     If the item is visible (i.e., QGraphicsItem::isVisible() returns
@@ -4142,15 +4142,15 @@ void QGraphicsScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent)
 
 /*!
     This event handler, for event \a mouseEvent, can be reimplemented
-    in a subclass to receive mouse doubleclick events for the scene.
+    in a subclass to receive mouse double-click events for the scene.
 
     If someone doubleclicks on the scene, the scene will first receive
     a mouse press event, followed by a release event (i.e., a click),
-    then a doubleclick event, and finally a release event. If the
-    doubleclick event is delivered to a different item than the one
+    then a double-click event, and finally a release event. If the
+    double-click event is delivered to a different item than the one
     that received the first press and release, it will be delivered as
     a press event. However, tripleclick events are not delivered as
-    doubleclick events in this case.
+    double-click events in this case.
 
     The default implementation is similar to mousePressEvent().
 

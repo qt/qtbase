@@ -347,13 +347,13 @@ void QScrollerProperties::setScrollMetric(ScrollMetric metric, const QVariant &v
     \value AcceleratingFlickSpeedupFactor The current speed is multiplied by this number if an
     accelerating flick is detected. Should be \c{>= 1}.
 
-    \value SnapPositionRatio This is the distance that the user must drag the area beween two snap
+    \value SnapPositionRatio This is the distance that the user must drag the area between two snap
     points in order to snap it to the next position. \c{0.33} means that the scroll must only
     reach one third of the distance between two snap points to snap to the next one. The ratio must
     be between \c 0 and \c 1.
 
     \value SnapTime This is the time factor for the scrolling curve. A lower value means that the
-    scrolling will take longer. The scrolling distance is independet of this value.
+    scrolling will take longer. The scrolling distance is independent of this value.
 
     \value OvershootDragResistanceFactor This value is the factor between the mouse dragging and
     the actual scroll area movement (during overshoot). The factor must be between \c 0 and \c 1.

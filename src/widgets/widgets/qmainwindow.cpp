@@ -954,10 +954,10 @@ void QMainWindow::setDockNestingEnabled(bool enabled)
     \since 4.2
 
     If this property is set to false, dock areas containing tabbed dock widgets
-    display horizontal tabs, simmilar to Visual Studio.
+    display horizontal tabs, similar to Visual Studio.
 
     If this property is set to true, then the right and left dock areas display vertical
-    tabs, simmilar to KDevelop.
+    tabs, similar to KDevelop.
 
     This property should be set before any dock widgets are added to the main window.
 */
@@ -1223,7 +1223,7 @@ Qt::DockWidgetArea QMainWindow::dockWidgetArea(QDockWidget *dockwidget) const
     resized such that the yellowWidget is twice as big as the blueWidget
 
     If some widgets are grouped in tabs, only one widget per group should be
-    specified. Widgets not in the list might be changed to repect the constraints.
+    specified. Widgets not in the list might be changed to respect the constraints.
 */
 void QMainWindow::resizeDocks(const QList<QDockWidget *> &docks,
                               const QList<int> &sizes, Qt::Orientation orientation)

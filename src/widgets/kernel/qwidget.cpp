@@ -2305,7 +2305,7 @@ void QWidgetPrivate::deactivateWidgetCleanup()
 
 
 /*!
-    Returns a pointer to the widget with window identifer/handle \a
+    Returns a pointer to the widget with window identifier/handle \a
     id.
 
     The window identifier type depends on the underlying window

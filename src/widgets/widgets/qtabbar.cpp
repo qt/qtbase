@@ -2404,7 +2404,7 @@ void QTabBar::timerEvent(QTimerEvent *event)
     This property controls how items are elided when there is not
     enough space to show them for a given tab bar size.
 
-    By default the value is style dependent.
+    By default the value is style-dependent.
 
     \sa QTabWidget::elideMode, usesScrollButtons, QStyle::SH_TabBar_ElideMode
 */
@@ -2433,7 +2433,7 @@ void QTabBar::setElideMode(Qt::TextElideMode mode)
     When there are too many tabs in a tab bar for its size, the tab bar can either choose
     to expand its size or to add buttons that allow you to scroll through the tabs.
 
-    By default the value is style dependant.
+    By default the value is style-dependent.
 
     \sa elideMode, QTabWidget::usesScrollButtons, QStyle::SH_TabBar_PreferNoArrows
 */

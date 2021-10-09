@@ -222,7 +222,7 @@ int QDialPrivate::valueFromPoint(const QPoint &p) const
 
     If you are using the mouse wheel to adjust the dial, the increment
     value is determined by the lesser value of
-    \l{QApplication::wheelScrollLines()} {wheelScrollLines} multipled
+    \l{QApplication::wheelScrollLines()} {wheelScrollLines} multiplied
     by \l {QAbstractSlider::singleStep} {singleStep}, and
     \l {QAbstractSlider::pageStep} {pageStep}.
 

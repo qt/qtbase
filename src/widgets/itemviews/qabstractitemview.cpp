@@ -4348,7 +4348,7 @@ void QAbstractItemViewPrivate::updateEditorData(const QModelIndex &tl, const QMo
 
     In DND if something has been moved then this is called.
     Typically this means you should "remove" the selected item or row,
-    but the behavior is view dependant (table just clears the selected indexes for example).
+    but the behavior is view-dependent (table just clears the selected indexes for example).
 
     Either remove the selected rows or clear them
 */

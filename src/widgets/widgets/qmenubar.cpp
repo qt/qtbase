@@ -583,7 +583,7 @@ void QMenuBar::initStyleOption(QStyleOptionMenuItem *option, const QAction *acti
     \inmodule QtWidgets
 
     A menu bar consists of a list of pull-down menu items. You add
-    menu items with addMenu(). For example, asuming that \c menubar
+    menu items with addMenu(). For example, assuming that \c menubar
     is a pointer to a QMenuBar and \c fileMenu is a pointer to a
     QMenu, the following statement inserts the menu into the menu bar:
     \snippet code/src_gui_widgets_qmenubar.cpp 0

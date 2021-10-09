@@ -2441,11 +2441,12 @@ static QWidget *embeddedWidget(QWidget *w)
 }
 
 /** \internal
-  in case w is an embedded widget, return the container widget
-  (i.e, the widget for which the rules actualy apply)
-  (exemple, if w is a lineedit embedded in a combobox, return the combobox)
+  Returns the widget whose style rules apply to \a w.
 
-  if w is not embedded, return w itself
+  When \a w is an embedded widget, this is the container widget.
+  For example, if w is a line edit embedded in a combobox, this returns the combobox.
+  When \a w is not embedded, this function return \a w itself.
+
 */
 static QWidget *containerWidget(const QWidget *w)
 {
