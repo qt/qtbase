@@ -313,7 +313,7 @@ void ThreadEngineBase::handleException(const QException &exception)
 #endif
 
 
-} // namepsace QtConcurrent
+} // namespace QtConcurrent
 
 QT_END_NAMESPACE
 
