@@ -780,7 +780,7 @@
     Example:
     \snippet code/src_corelib_tools_qlist.cpp emplace
 
-    \note It is garanteed that the element will be created in place
+    \note It is guaranteed that the element will be created in place
           at the beginning, but after that it might be copied or
           moved to the right position.
 

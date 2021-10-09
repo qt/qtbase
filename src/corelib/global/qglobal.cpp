@@ -582,7 +582,7 @@ static_assert(sizeof(qint64) == 8, "Internal error, qint64 is misdefined");
     \relates QFlags
 
     Calculates the hash for the flags \a flags, using \a seed
-    to seed the calcualtion.
+    to seed the calculation.
 */
 
 /*!
@@ -4180,7 +4180,7 @@ bool qunsetenv(const char *varName)
 
     Qt will try to detect the class of a type using
     \l {https://en.cppreference.com/w/cpp/types/is_trivial} {std::is_trivial_v<T>}
-    to indentify primitive
+    to identify primitive
     types and it will require both
     \l {https://en.cppreference.com/w/cpp/types/is_trivially_copyable} {std::is_trivially_copyable_v<T>}
     and

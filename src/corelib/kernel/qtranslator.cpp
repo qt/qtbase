@@ -1105,7 +1105,7 @@ void QTranslatorPrivate::clear()
     If \a n is not -1, it is used to choose an appropriate form for
     the translation (e.g. "%n file found" vs. "%n files found").
 
-    If you need to programatically insert translations into a
+    If you need to programmatically insert translations into a
     QTranslator, this function can be reimplemented.
 
     \sa load()

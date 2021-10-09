@@ -889,7 +889,7 @@ QDeadlineTimer QDeadlineTimer::addNSecs(QDeadlineTimer dt, qint64 nsecs) noexcep
     \fn bool QDeadlineTimer::operator!=(QDeadlineTimer d1, QDeadlineTimer d2)
 
     Returns true if the deadline on \a d1 and the deadline in \a d2 are
-    diferent, false otherwise. The timer type used to create the two deadlines
+    different, false otherwise. The timer type used to create the two deadlines
     is ignored. This function is equivalent to:
 
     \snippet code/src_corelib_kernel_qdeadlinetimer.cpp 9

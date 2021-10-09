@@ -669,7 +669,7 @@
     from the map, and returns an iterator to the next item in the
     map.
 
-    \note The iterator \a pos \e must be valid and dereferencable.
+    \note The iterator \a pos \e must be valid and dereferenceable.
 
     \sa remove()
 */

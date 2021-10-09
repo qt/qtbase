@@ -1619,7 +1619,7 @@ Q_GLOBAL_STATIC(QMetaTypeMutableViewRegistry, customTypesMutableViewRegistry)
     Registers a method \a function like To From::function(bool *ok) const as converter from type From
     to type To in the meta type system. Returns \c true if the registration succeeded, otherwise false.
 
-    The \a ok pointer can be used by the function to indicate whether the conversion succceeded.
+    The \a ok pointer can be used by the function to indicate whether the conversion succeeded.
     \snippet qmetatype/registerConverters.cpp [memberOk]
 
 */
