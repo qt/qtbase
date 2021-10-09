@@ -876,7 +876,7 @@ bool QDtls::startHandshake(QUdpSocket *socket, const QByteArray &datagram)
 }
 
 /*!
-    If a timeout occures during the handshake, the handshakeTimeout() signal
+    If a timeout occurs during the handshake, the handshakeTimeout() signal
     is emitted. The application must call handleTimeout() to retransmit handshake
     messages; handleTimeout() returns \c true if a timeout has occurred, false
     otherwise. \a socket must be a valid pointer.

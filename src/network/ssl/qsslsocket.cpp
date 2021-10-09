@@ -188,7 +188,7 @@
     behavior is identical to QTcpSocket.
 
     \value SslClientMode The socket is a client-side SSL socket.
-    It is either alreayd encrypted, or it is in the SSL handshake
+    It is either already encrypted, or it is in the SSL handshake
     phase (see QSslSocket::isEncrypted()).
 
     \value SslServerMode The socket is a server-side SSL socket.

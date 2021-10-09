@@ -189,7 +189,7 @@
 
     QNetworkProxy sets different capabilities by default when the
     object is created (see QNetworkProxy::ProxyType for a list of the
-    defaults). However, it is possible to change the capabitilies
+    defaults). However, it is possible to change the capabilities
     after the object has been created with setCapabilities().
 
     The capabilities that QNetworkProxy supports are:

@@ -437,7 +437,7 @@
 
     \value DontShareAddress Bind the address and port exclusively, so that
     no other services are allowed to rebind. By passing this option to
-    QAbstractSocket::bind(), you are guaranteed that on successs, your service
+    QAbstractSocket::bind(), you are guaranteed that on success, your service
     is the only one that listens to the address and port. No services are
     allowed to rebind, even if they pass ReuseAddressHint. This option
     provides more security than ShareAddress, but on certain operating

@@ -53,7 +53,7 @@ QT_BEGIN_NAMESPACE
     \ingroup ssl
     \inmodule QtNetwork
 
-    The QOcspResponse class represents the revocation status of a server's certficate,
+    The QOcspResponse class represents the revocation status of a server's certificate,
     received by the client-side socket during the TLS handshake. QSslSocket must be
     configured with OCSP stapling enabled.
 

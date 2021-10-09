@@ -147,7 +147,7 @@ QLocalServer::~QLocalServer()
     In some cases, such as with Unix domain sockets on Linux, the
     access to the socket will be determined by file system permissions,
     and are created based on the umask. Setting the access flags will
-    overide this and will restrict or permit access as specified.
+    override this and will restrict or permit access as specified.
 
     Other Unix-based operating systems, such as \macos, do not
     honor file permissions for Unix domain sockets and by default
