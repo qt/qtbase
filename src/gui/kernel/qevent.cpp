@@ -4441,7 +4441,7 @@ QWindowStateChangeEvent::~QWindowStateChangeEvent()
     describes the different states that a touch point may have.
 
     \note The list of points() will never be partial: A touch event will always contain a touch
-    point for each existing physical touch contacts targetting the window or widget to which the
+    point for each existing physical touch contacts targeting the window or widget to which the
     event is sent. For instance, assuming that all touches target the same window or widget, an
     event with a condition of points().count()==2 is guaranteed to imply that the number of
     fingers touching the touchscreen or touchpad is exactly two.

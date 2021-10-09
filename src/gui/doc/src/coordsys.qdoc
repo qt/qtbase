@@ -111,7 +111,7 @@
     \endtable
 
     When rendering with a pen with an even number of pixels, the
-    pixels will be rendered symetrically around the mathematical
+    pixels will be rendered symmetrically around the mathematical
     defined points, while rendering with a pen with an odd number of
     pixels, the spare pixel will be rendered to the right and below
     the mathematical point as in the one pixel case. See the QRectF
@@ -160,7 +160,7 @@
     \section2 Anti-aliased Painting
 
     If you set QPainter's \l {QPainter::Antialiasing}{anti-aliasing}
-    render hint, the pixels will be rendered symetrically on both
+    render hint, the pixels will be rendered symmetrically on both
     sides of the mathematically defined points:
 
     \table

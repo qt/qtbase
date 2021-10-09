@@ -295,7 +295,7 @@ void QStrokerOps::strokePath(const QPainterPath &path, void *customData, const Q
 /*!
     Convenience function for stroking a polygon of the \a pointCount
     first points in \a points. If \a implicit_close is set to true a
-    line is implictly drawn between the first and last point in the
+    line is implicitly drawn between the first and last point in the
     polygon. Typically true for polygons and false for polylines.
 
     The \a matrix is used to transform the points before they enter the

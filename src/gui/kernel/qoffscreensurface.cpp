@@ -203,7 +203,7 @@ void QOffscreenSurface::destroy()
 /*!
     Returns \c true if this offscreen surface is valid; otherwise returns \c false.
 
-    The offscreen surface is valid if the platform resources have been successfuly allocated.
+    The offscreen surface is valid if the platform resources have been successfully allocated.
 
     \sa create()
 */

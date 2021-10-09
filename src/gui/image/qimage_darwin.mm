@@ -88,7 +88,7 @@ QT_BEGIN_NAMESPACE
 
     Other formats are not supported; this function returns a null
     CGImageRef for those cases. Users of this function may then
-    convert the QImage to a supported formate first, for example
+    convert the QImage to a supported format first, for example
     Format_ARGB32_Premultiplied.
 
     The CGImageRef color space is set to the sRGB color space.

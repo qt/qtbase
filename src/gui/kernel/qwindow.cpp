@@ -2873,7 +2873,7 @@ QWindow *QWindow::fromWinId(WId id)
 }
 
 /*!
-    Causes an alert to be shown for \a msec miliseconds. If \a msec is \c 0 (the
+    Causes an alert to be shown for \a msec milliseconds. If \a msec is \c 0 (the
     default), then the alert is shown indefinitely until the window becomes
     active again. This function has no effect on an active window.
 

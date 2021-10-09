@@ -185,7 +185,7 @@ QFont QTextItem::font() const
   emulated results. Some features cannot be emulated: AlphaBlend and PorterDuff.
 
   \value AlphaBlend         The engine can alpha blend primitives.
-  \value Antialiasing       The engine can use antialising to improve the appearance
+  \value Antialiasing       The engine can use antialiasing to improve the appearance
                             of rendered primitives.
   \value BlendModes         The engine supports blending modes.
   \value BrushStroke        The engine supports drawing strokes that

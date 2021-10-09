@@ -1273,7 +1273,7 @@ QDataStream &operator>>(QDataStream &s, QBrush &b)
     \snippet brush/brush.cpp 1
 
     It is possible to repeat or reflect the gradient outside its area
-    by specifiying the \l {QGradient::Spread}{spread method} using the
+    by specifying the \l {QGradient::Spread}{spread method} using the
     setSpread() function. The default is to pad the outside area with
     the color at the closest stop point. The currently set \l
     {QGradient::Spread}{spread method} can be retrieved using the

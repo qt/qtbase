@@ -449,7 +449,7 @@ QFontEngineData::~QFontEngineData()
     The attributes set in the constructor can also be set later, e.g.
     setFamily(), setPointSize(), setPointSizeF(), setWeight() and
     setItalic(). The remaining attributes must be set after
-    contstruction, e.g. setBold(), setUnderline(), setOverline(),
+    construction, e.g. setBold(), setUnderline(), setOverline(),
     setStrikeOut() and setFixedPitch(). QFontInfo objects should be
     created \e after the font's attributes have been set. A QFontInfo
     object will not change, even if you change the font's

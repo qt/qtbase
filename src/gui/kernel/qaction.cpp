@@ -1262,7 +1262,7 @@ void QAction::setMenuObject(QObject *object)
 
     The default is to follow whether the Qt::AA_DontShowIconsInMenus attribute
     is set for the application. Explicitly settings this property overrides
-    the presence (or abscence) of the attribute.
+    the presence (or absence) of the attribute.
 
     For example:
     \snippet code/src_gui_kernel_qaction.cpp 0

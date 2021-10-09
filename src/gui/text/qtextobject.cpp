@@ -359,14 +359,14 @@ QTextFrameLayoutData::~QTextFrameLayoutData()
 /*!
     \fn bool QTextFrame::iterator::operator==(const iterator &other) const
 
-    Retuns true if the iterator is the same as the \a other iterator;
+    Returns true if the iterator is the same as the \a other iterator;
     otherwise returns \c false.
 */
 
 /*!
     \fn bool QTextFrame::iterator::operator!=(const iterator &other) const
 
-    Retuns true if the iterator is different from the \a other iterator;
+    Returns true if the iterator is different from the \a other iterator;
     otherwise returns \c false.
 */
 
@@ -922,14 +922,14 @@ bool QTextBlock::isValid() const
 /*!
     \fn bool QTextBlock::iterator::operator==(const iterator &other) const
 
-    Retuns true if this iterator is the same as the \a other iterator;
+    Returns true if this iterator is the same as the \a other iterator;
     otherwise returns \c false.
 */
 
 /*!
     \fn bool QTextBlock::iterator::operator!=(const iterator &other) const
 
-    Retuns true if this iterator is different from the \a other iterator;
+    Returns true if this iterator is different from the \a other iterator;
     otherwise returns \c false.
 */
 

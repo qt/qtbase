@@ -85,7 +85,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \variable QTextLayout::FormatRange::length
-    Specifies the numer of characters the format range spans.
+    Specifies the number of characters the format range spans.
 */
 
 /*!
@@ -763,7 +763,7 @@ int QTextLayout::leftCursorPosition(int oldPos) const
     A grapheme cluster is a sequence of two or more Unicode characters
     that form one indivisible entity on the screen. For example the
     latin character `\unicode{0xC4}' can be represented in Unicode by two
-    characters, `A' (0x41), and the combining diaresis (0x308). A text
+    characters, `A' (0x41), and the combining diaeresis (0x308). A text
     cursor can only validly be positioned before or after these two
     characters, never between them since that wouldn't make sense. In
     indic languages every syllable forms a grapheme cluster.

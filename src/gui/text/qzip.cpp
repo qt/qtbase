@@ -856,7 +856,7 @@ QZipReader::QZipReader(QIODevice *device)
 }
 
 /*!
-    Desctructor
+    Destructor
 */
 QZipReader::~QZipReader()
 {

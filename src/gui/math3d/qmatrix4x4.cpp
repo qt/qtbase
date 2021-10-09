@@ -1617,7 +1617,7 @@ void QMatrix4x4::viewport(float left, float bottom, float width, float height, f
     \deprecated
 
     Flips between right-handed and left-handed coordinate systems
-    by multiplying the y and z co-ordinates by -1.  This is normally
+    by multiplying the y and z coordinates by -1.  This is normally
     used to create a left-handed orthographic view without scaling
     the viewport as ortho() does.
 
@@ -1662,7 +1662,7 @@ void QMatrix4x4::copyDataTo(float *values) const
 
     The returned QTransform is formed by simply dropping the
     third row and third column of the QMatrix4x4.  This is suitable
-    for implementing orthographic projections where the z co-ordinate
+    for implementing orthographic projections where the z coordinate
     should be dropped rather than projected.
 */
 QTransform QMatrix4x4::toTransform() const
@@ -1677,14 +1677,14 @@ QTransform QMatrix4x4::toTransform() const
     corresponds to this matrix.
 
     If \a distanceToPlane is non-zero, it indicates a projection
-    factor to use to adjust for the z co-ordinate.  The value of
+    factor to use to adjust for the z coordinate.  The value of
     1024 corresponds to the projection factor used
     by QTransform::rotate() for the x and y axes.
 
     If \a distanceToPlane is zero, then the returned QTransform
     is formed by simply dropping the third row and third column
     of the QMatrix4x4.  This is suitable for implementing
-    orthographic projections where the z co-ordinate should
+    orthographic projections where the z coordinate should
     be dropped rather than projected.
 */
 QTransform QMatrix4x4::toTransform(float distanceToPlane) const

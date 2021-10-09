@@ -186,7 +186,7 @@ QT_BEGIN_NAMESPACE
     \enum QPixelFormat::YUVLayout
 
     YUV is not represented by describing the size of the color channels. This is
-    because YUV often use macro pixels, making the concept of sperate color channels
+    because YUV often use macro pixels, making the concept of separate color channels
     invalid. Instead the different YUV layouts are described with this enum.
 
     \value YUV444

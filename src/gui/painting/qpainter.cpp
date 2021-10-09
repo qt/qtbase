@@ -1223,7 +1223,7 @@ void QPainterPrivate::updateState(QPainterState *newState)
     \li \inlineimage qpainter-affinetransformations.png
     \endtable
 
-    All the tranformation operations operate on the transformation
+    All the transformation operations operate on the transformation
     worldTransform(). A matrix transforms a point in the plane to another
     point. For more information about the transformation matrix, see
     the \l {Coordinate System} and QTransform documentation.
@@ -5910,7 +5910,7 @@ void QPainter::drawText(const QRectF &r, const QString &text, const QTextOption 
     It ignores the font set on the painter as the text item has one of its own.
 
     The underline and strikeout parameters of the text items font are
-    ignored aswell. You'll need to pass in the correct flags to get
+    ignored as well. You'll need to pass in the correct flags to get
     underlining and strikeout.
 */
 
