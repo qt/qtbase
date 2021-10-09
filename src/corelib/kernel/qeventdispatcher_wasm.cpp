@@ -170,7 +170,7 @@ QEventDispatcherWasm::QEventDispatcherWasm()
 
 QEventDispatcherWasm::~QEventDispatcherWasm()
 {
-    qCDebug(lcEventDispatcher) << "Detroying QEventDispatcherWasm instance" << this;
+    qCDebug(lcEventDispatcher) << "Destroying QEventDispatcherWasm instance" << this;
 
     delete m_timerInfo;
 
