@@ -1264,7 +1264,7 @@ QByteArray &QByteArray::operator=(const char *str)
     you can use the return value of data() and constData() as arguments to
     functions that expect '\\0'-terminated strings. If the QByteArray object was
     created from a \l{fromRawData()}{raw data} that didn't include the trailing
-    '\\0'-termination byte, then QByteArray doesn't add it automaticall unless a
+    '\\0'-termination byte, then QByteArray doesn't add it automatically unless a
     \l{deep copy} is created.
 
     Example:
@@ -4083,7 +4083,7 @@ QByteArray &QByteArray::setNum(qulonglong n, int base)
 
     Represent the floating-point number \a n as text.
 
-    Sets this byte array to a string representating \a n, with a given \a format
+    Sets this byte array to a string representing \a n, with a given \a format
     and \a precision (with the same meanings as for \l {QString::number(double,
     char, int)}), and returns a reference to this byte array.
 
@@ -4101,7 +4101,7 @@ QByteArray &QByteArray::setNum(double n, char format, int precision)
 
     Represent the floating-point number \a n as text.
 
-    Sets this byte array to a string representating \a n, with a given \a format
+    Sets this byte array to a string representing \a n, with a given \a format
     and \a precision (with the same meanings as for \l {QString::number(double,
     char, int)}), and returns a reference to this byte array.
 
@@ -4111,7 +4111,7 @@ QByteArray &QByteArray::setNum(double n, char format, int precision)
 /*!
     Returns a byte-array representing the whole number \a n as text.
 
-    Returns a byte array containing a string representating \a n, using the
+    Returns a byte array containing a string representing \a n, using the
     specified \a base (ten by default). Bases 2 through 36 are supported, using
     letters for digits beyond 9: A is ten, B is eleven and so on.
 

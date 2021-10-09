@@ -427,7 +427,7 @@ void QThreadPoolPrivate::stealAndRunRunnable(QRunnable *runnable)
 
     \ingroup thread
 
-    QThreadPool manages and recyles individual QThread objects to help reduce
+    QThreadPool manages and recycles individual QThread objects to help reduce
     thread creation costs in programs that use threads. Each Qt application
     has one global QThreadPool object, which can be accessed by calling
     globalInstance().

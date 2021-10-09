@@ -2150,7 +2150,7 @@ int QMetaMethod::revision() const
 
     Returns whether the method is const qualified.
 
-    \note This method might errorneously return \c false for a const method
+    \note This method might erroneously return \c false for a const method
     if it belongs to a library compiled against an older version of Qt.
  */
 bool QMetaMethod::isConst() const
@@ -3280,7 +3280,7 @@ QVariant QMetaProperty::read(const QObject *object) const
 
     If \a value is not of the same type type as the property, a conversion
     is attempted. An empty QVariant() is equivalent to a call to reset()
-    if this property is resetable, or setting a default-constructed object
+    if this property is resettable, or setting a default-constructed object
     otherwise.
 
     \sa read(), reset(), isWritable()

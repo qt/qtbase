@@ -191,7 +191,7 @@
     }
     \endcode
 
-    All the common rules and recomendations regarding writing to bindable
+    All the common rules and recommendations regarding writing to bindable
     properties also apply here. As soon as the base class implementation is
     called, all the observers are notified about the change to the property.
     This means that class invariants must be met before calling the base

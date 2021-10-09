@@ -1628,13 +1628,13 @@ static qsizetype toLatin1Len(qsizetype l) { return l + 1; }
     \value Utf16 Create a converter to or from UTF-16. When decoding, the byte order will get automatically
            detected by a leading byte order mark. If none exists or when encoding, the system byte order will
            be assumed.
-    \value Utf16BE Create a converter to or from big endian UTF-16.
-    \value Utf16LE Create a converter to or from litte endian UTF-16.
+    \value Utf16BE Create a converter to or from big-endian UTF-16.
+    \value Utf16LE Create a converter to or from little-endian UTF-16.
     \value Utf32 Create a converter to or from UTF-32. When decoding, the byte order will get automatically
            detected by a leading byte order mark. If none exists or when encoding, the system byte order will
            be assumed.
-    \value Utf32BE Create a converter to or from big endian UTF-32.
-    \value Utf32LE Create a converter to or from litte endian UTF-32.
+    \value Utf32BE Create a converter to or from big-endian UTF-32.
+    \value Utf32LE Create a converter to or from little-endian UTF-32.
     \value Latin1 Create a converter to or from ISO-8859-1 (Latin1).
     \value System Create a converter to or from the underlying encoding of the
            operating systems locale. This is always assumed to be UTF-8 for Unix based

@@ -4483,7 +4483,7 @@ QDateTime QDateTime::addSecs(qint64 s) const
 }
 
 /*!
-    Returns a QDateTime object containing a datetime \a msecs miliseconds
+    Returns a QDateTime object containing a datetime \a msecs milliseconds
     later than the datetime of this object (or earlier if \a msecs is
     negative).
 

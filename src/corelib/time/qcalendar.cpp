@@ -498,7 +498,7 @@ Q_GLOBAL_STATIC(QtPrivate::QCalendarRegistry, calendarRegistry);
     \section1 Instantiating backends
 
     Backends may be defined by third-party, plugin or user code. When such
-    custom backends are registered they shall be alloced a unique ID, by
+    custom backends are registered they shall be allocated a unique ID, by
     which client code may access it. A custom backend instance can have no names
     if access by name is not needed, or impractical (e.g. because the backend
     is not a singleton and constructing names for each instance would not make

@@ -3199,7 +3199,7 @@ void QXmlStreamWriter::setAutoFormatting(bool enable)
 /*!
  \since 4.4
 
- Returns \c true if auto formattting is enabled, otherwise \c false.
+ Returns \c true if auto formatting is enabled, otherwise \c false.
  */
 bool QXmlStreamWriter::autoFormatting() const
 {

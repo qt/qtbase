@@ -311,7 +311,7 @@ private:
         Returns a reference to d_ptr, except when d_ptr points to a proxy.
         In that case, a reference to proxy->d_ptr is returned instead.
 
-        To properly support proxying, direct access to d_ptr only occcurs when
+        To properly support proxying, direct access to d_ptr only occurs when
         - a function actually deals with proxying (e.g.
           QPropertyDelayedNotifications::addProperty),
         - only the tag value is accessed (e.g. hasBinding) or

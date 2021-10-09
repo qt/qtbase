@@ -99,7 +99,7 @@
     If \c testFuture gets canceled, its state is propagated to the next then(),
     which will be also canceled. So in this case \c {Block 6} will be called.
 
-    QFuture also offers ways to interact with a runnning computation. For
+    QFuture also offers ways to interact with a running computation. For
     instance, the computation can be canceled with the cancel() function. To
     suspend or resume the computation, use the setSuspended() function or one of
     the suspend(), resume(), or toggleSuspended() convenience functions. Be aware
@@ -173,8 +173,8 @@
 /*! \fn template <typename T> void QFuture<T>::cancel()
 
     Cancels the asynchronous computation represented by this future. Note that
-    the cancelation is asynchronous. Use waitForFinished() after calling
-    cancel() when you need synchronous cancelation.
+    the cancellation is asynchronous. Use waitForFinished() after calling
+    cancel() when you need synchronous cancellation.
 
     Results currently available may still be accessed on a canceled future,
     but new results will \e not become available after calling this function.

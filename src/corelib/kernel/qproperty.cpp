@@ -1479,7 +1479,7 @@ QString QPropertyBindingError::description() const
   instance of T and behaves mostly like \l QProperty.
   It is one of the classes implementing \l {Qt Bindable Properties}.
   Unlike QProperty, it stores its management data structure in
-  the sourrounding QObject.
+  the surrounding QObject.
   The extra template parameters are used to identify the surrounding
   class and a member function of that class acting as a change handler.
 
