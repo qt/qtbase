@@ -86,7 +86,7 @@
     any other existing effects) and reimplement the virtual function draw().
     This function is called whenever the effect needs to redraw. The draw()
     function takes the painter with which to draw as an argument. For more
-    information, refer to the documenation for draw(). In the draw() function
+    information, refer to the documentation for draw(). In the draw() function
     you can call sourcePixmap() to get a pixmap of the graphics effect source
     which you can then process.
 
@@ -750,7 +750,7 @@ void QGraphicsColorizeEffect::draw(QPainter *painter)
     at the potential cost of lower performance.
 
     \value AnimationHint Indicates that the blur radius is going to be animated, hinting
-    that the implementation can keep a cache of blurred verisons of the source.
+    that the implementation can keep a cache of blurred versions of the source.
     Do not use this hint if the source is going to be dynamically changing.
 
     \sa blurHints(), setBlurHints()

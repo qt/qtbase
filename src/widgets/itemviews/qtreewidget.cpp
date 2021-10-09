@@ -2614,7 +2614,7 @@ QTreeWidget::~QTreeWidget()
 }
 
 /*
-  Retuns the number of header columns in the view.
+  Returns the number of header columns in the view.
 
   \sa sortColumn(), currentColumn(), topLevelItemCount()
 */
