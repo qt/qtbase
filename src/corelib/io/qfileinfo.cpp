@@ -130,11 +130,11 @@ uint QFileInfoPrivate::getFileFlags(QAbstractFileEngine::FileFlags request) cons
     Q_ASSERT(fileEngine); // should never be called when using the native FS
     // We split the testing into tests for for LinkType, BundleType, PermsMask
     // and the rest.
-    // Tests for file permissions on Windows can be slow, expecially on network
+    // Tests for file permissions on Windows can be slow, especially on network
     // paths and NTFS drives.
     // In order to determine if a file is a symlink or not, we have to lstat().
     // If we're not interested in that information, we might as well avoid one
-    // extra syscall. Bundle detecton on Mac can be slow, expecially on network
+    // extra syscall. Bundle detecton on Mac can be slow, especially on network
     // paths, so we separate out that as well.
 
     QAbstractFileEngine::FileFlags req;
@@ -1677,7 +1677,7 @@ QDebug operator<<(QDebug dbg, const QFileInfo &fi)
     QDirIterator it(dir);
     while (it.hasNext()) {
         // Implicit conversion from QString (returned by it.next()):
-        // may create unnecessary data strucutres and cause additional
+        // may create unnecessary data structures and cause additional
         // accesses to the file system. Unless this macro is defined,
         // this line does not compile.
 

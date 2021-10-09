@@ -127,7 +127,7 @@ inline constexpr quint8 qbswap_helper(quint8 source)
 
 /*
  * T qbswap(T source).
- * Changes the byte order of a value from big endian to little endian or vice versa.
+ * Changes the byte order of a value from big-endian to little-endian or vice versa.
  * This function can be used if you are not concerned about alignment issues,
  * and it is therefore a bit more convenient and in most cases more efficient.
 */
@@ -164,7 +164,7 @@ inline double qbswap(double source)
 
 /*
  * qbswap(const T src, const void *dest);
- * Changes the byte order of \a src from big endian to little endian or vice versa
+ * Changes the byte order of \a src from big-endian to little-endian or vice versa
  * and stores the result in \a dest.
  * There is no alignment requirements for \a dest.
 */

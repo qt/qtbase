@@ -61,7 +61,7 @@ QT_BEGIN_NAMESPACE
 namespace qstdweb {
 
     // DOM API in C++, implemented using emscripten val.h and bind.h.
-    // This is private API and can be extened and changed as needed.
+    // This is private API and can be extended and changed as needed.
 
     class ArrayBuffer;
     class Blob;

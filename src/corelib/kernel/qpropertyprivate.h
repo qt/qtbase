@@ -201,7 +201,7 @@ struct BindingFunctionVTable
                     static_assert (std::is_invocable_r_v<bool, Callable, QMetaType, QUntypedPropertyData *> );
                     auto untypedEvaluationFunction = static_cast<Callable *>(f);
                     return std::invoke(*untypedEvaluationFunction, metaType, dataPtr);
-                } else if constexpr (!std::is_same_v<PropertyType, void>) { // check for void to woraround MSVC issue
+                } else if constexpr (!std::is_same_v<PropertyType, void>) { // check for void to workaround MSVC issue
                     Q_UNUSED(metaType);
                     QPropertyData<PropertyType> *propertyPtr = static_cast<QPropertyData<PropertyType> *>(dataPtr);
                     // That is allowed by POSIX even if Callable is a function pointer

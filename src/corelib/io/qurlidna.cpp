@@ -533,7 +533,7 @@ private:
 } // anonymous namespace
 
 /*
-    Check CONTEXTJ rules accroding to RFC 5892, appendix A.1 & A.2.
+    Check CONTEXTJ rules according to RFC 5892, appendix A.1 & A.2.
 
     Rule Set for U+200C (ZWNJ):
 

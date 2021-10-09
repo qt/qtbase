@@ -1080,7 +1080,7 @@ static int compareElementNoData(const Element &e1, const Element &e2)
         //  -1          ->      INT64_MAX + 1 = INT64_MAX - (-1)
         //  -2          ->      INT64_MAX + 2 = INT64_MAX - (-2)
         //  INT64_MIN   ->      UINT64_MAX = INT64_MAX - INT64_MIN
-        // Note how the unsigned arithmethic is well defined in C++ (it's
+        // Note how the unsigned arithmetic is well defined in C++ (it's
         // always performed modulo 2^64).
         auto makeSortable = [](qint64 v) {
             quint64 u = quint64(v);

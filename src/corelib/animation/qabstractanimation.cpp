@@ -792,7 +792,7 @@ void QAnimationDriver::advanceAnimation()
 
 
 /*!
-    Advances the animation. This function should be continously called
+    Advances the animation. This function should be continuously called
     by the driver while the animation is running.
  */
 

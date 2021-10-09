@@ -52,9 +52,9 @@
 // may use these definitions in your own code, but be aware that we
 // will remove them once Qt depends on the C++ version that supports
 // them in namespace std. There will be NO deprecation warning, the
-// definitons will JUST go away.
+// definitions will JUST go away.
 //
-// If you can't agree to these terms, don't use these definitons!
+// If you can't agree to these terms, don't use these definitions!
 //
 // We mean it.
 //

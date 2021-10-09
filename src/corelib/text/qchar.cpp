@@ -1568,7 +1568,7 @@ static auto fullConvertCase(char32_t uc, QUnicodeTables::Case which) noexcept
         while (length--)
             *pp++ = *specialCase++;
     } else {
-        // so far, case convertion never changes planes (guaranteed by the qunicodetables generator)
+        // so far, case conversion never changes planes (guaranteed by the qunicodetables generator)
         for (char16_t c : QChar::fromUcs4(uc + caseDiff))
             *pp++ = c;
     }

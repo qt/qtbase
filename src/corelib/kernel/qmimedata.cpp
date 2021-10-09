@@ -141,7 +141,7 @@ QVariant QMimeDataPrivate::retrieveTypedData(const QString &format, QMetaType ty
     if (data.metaType() == type || !data.isValid())
         return data;
 
-    // provide more conversion possiblities than just what QVariant provides
+    // provide more conversion possibilities than just what QVariant provides
 
     // URLs can be lists as well...
     if ((typeId == QMetaType::QUrl && data.metaType().id() == QMetaType::QVariantList)

@@ -24,7 +24,7 @@ function(qt6_android_generate_deployment_settings target)
     # _qt_internal_android_format_deployment_paths converts sensitive paths to the CMake format
     # that is supported by JSON as well. The function should be called as many times as
     # qt6_android_generate_deployment_settings, because users may change properties that contain
-    # paths inbetween the calls.
+    # paths in between the calls.
     _qt_internal_android_format_deployment_paths(${target})
 
     # Avoid calling the function body twice because of 'file(GENERATE'.

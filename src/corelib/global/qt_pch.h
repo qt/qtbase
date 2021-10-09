@@ -72,7 +72,7 @@ __declspec(selectany) auto *__wmemchr_symbol_loader_value = wmemchr(L"", L'0', 0
 #    include <qcoreevent.h>
 #    include <qiodevice.h>
 #    include <qlist.h>
-#    include <qvariant.h> /* All moc genereated code has this include */
+#    include <qvariant.h> /* All moc generated code has this include */
 #    include <qobject.h>
 #    if QT_CONFIG(regularexpression)
 #        include <qregularexpression.h>

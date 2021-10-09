@@ -1100,7 +1100,7 @@ QConfFileSettingsPrivate::QConfFileSettingsPrivate(QSettings::Format format,
         for (const auto &dir : qAsConst(dirs))
             paths.append(dir + QLatin1Char('/') + orgFile);
 
-        // Note: No check for existence of files is done intentionaly.
+        // Note: No check for existence of files is done intentionally.
         for (const auto &path : qAsConst(paths))
             confFiles.append(QConfFile::fromName(path, false));
     } else

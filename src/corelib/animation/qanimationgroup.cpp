@@ -247,7 +247,7 @@ QAbstractAnimation *QAnimationGroup::takeAnimation(int index)
     }
     QAbstractAnimation *animation = d->animations.at(index);
     QAbstractAnimationPrivate::get(animation)->group = nullptr;
-    // ### removing from list before doing setParent to avoid inifinite recursion
+    // ### removing from list before doing setParent to avoid infinite recursion
     // in ChildRemoved event
     d->animations.removeAt(index);
     animation->setParent(nullptr);

@@ -275,7 +275,7 @@ static int ucalDaylightOffset(const QByteArray &id)
 QIcuTimeZonePrivate::QIcuTimeZonePrivate()
     : m_ucal(nullptr)
 {
-    // TODO No ICU C API to obtain sysem tz, assume default hasn't been changed
+    // TODO No ICU C API to obtain system tz, assume default hasn't been changed
     init(ucalDefaultTimeZoneId());
 }
 
@@ -459,7 +459,7 @@ QTimeZonePrivate::Data QIcuTimeZonePrivate::previousTransition(qint64 beforeMSec
 
 QByteArray QIcuTimeZonePrivate::systemTimeZoneId() const
 {
-    // No ICU C API to obtain sysem tz
+    // No ICU C API to obtain system tz
     // TODO Assume default hasn't been changed and is the latests system
     return ucalDefaultTimeZoneId();
 }

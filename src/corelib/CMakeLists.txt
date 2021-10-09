@@ -297,7 +297,7 @@ set_target_properties(Core PROPERTIES INTERFACE_QT_COORD_TYPE "${QT_COORD_TYPE}"
 set_property(TARGET Core APPEND PROPERTY COMPATIBLE_INTERFACE_STRING QT_COORD_TYPE)
 
 # Handle qtConfig(thread): CONFIG += thread like in qt.prf.
-# Aka if the feature is enabled, publically link against the threading library.
+# Aka if the feature is enabled, publicly link against the threading library.
 # This also ensures the link flag is in the .prl file.
 if(QT_FEATURE_thread)
     target_link_libraries(Platform INTERFACE Threads::Threads)

@@ -3814,7 +3814,7 @@ QUrl QUrl::fromUserInput(const QString &userInput, const QString &workingDirecto
             return QUrl::fromLocalFile(fileInfo.absoluteFilePath());
     }
 
-    // Check first for files, since on Windows drive letters can be interpretted as schemes
+    // Check first for files, since on Windows drive letters can be interpreted as schemes
     if (QDir::isAbsolutePath(trimmedString))
         return QUrl::fromLocalFile(trimmedString);
 
@@ -3822,7 +3822,7 @@ QUrl QUrl::fromUserInput(const QString &userInput, const QString &workingDirecto
 
     // Check the most common case of a valid url with a scheme
     // We check if the port would be valid by adding the scheme to handle the case host:port
-    // where the host would be interpretted as the scheme
+    // where the host would be interpreted as the scheme
     if (url.isValid()
         && !url.scheme().isEmpty()
         && urlPrepended.port() == -1)

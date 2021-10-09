@@ -145,7 +145,7 @@ private:
 #endif
 
 /*
-    Helper class that automates refernce counting for CFtypes.
+    Helper class that automates reference counting for CFtypes.
     After constructing the QCFType object, it can be copied like a
     value-based type.
 

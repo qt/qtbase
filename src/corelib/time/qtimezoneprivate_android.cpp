@@ -198,7 +198,7 @@ int QAndroidTimeZonePrivate::daylightTimeOffset(qint64 atMSecsSinceEpoch) const
 bool QAndroidTimeZonePrivate::hasDaylightTime() const
 {
     if ( androidTimeZone.isValid() )
-        /* note: the Java function only tests for future DST transtions, not past */
+        /* note: the Java function only tests for future DST transitions, not past */
         return androidTimeZone.callMethod<jboolean>("useDaylightTime" );
     else
         return false;

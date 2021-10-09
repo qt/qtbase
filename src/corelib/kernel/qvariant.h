@@ -548,7 +548,7 @@ private:
     // int variant, so delete this constructor:
     QVariant(QMetaType::Type) = delete;
 
-    // These constructors don't create QVariants of the type associcated
+    // These constructors don't create QVariants of the type associated
     // with the enum, as expected, but they would create a QVariant of
     // type int with the value of the enum value.
     // Use QVariant v = QColor(Qt::red) instead of QVariant v = Qt::red for

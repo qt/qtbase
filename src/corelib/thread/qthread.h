@@ -181,7 +181,7 @@ QThread *QThread::create(Function &&f, Args &&... args)
     value for anything. In Qt we use the handle to check if threads are identical,
     for which the TCB is sufficient.
 
-    So we use the fastest possible way, rathern than spend time on returning
+    So we use the fastest possible way, rather than spend time on returning
     some pseudo-interoperable value.
 */
 inline Qt::HANDLE QThread::currentThreadId() noexcept

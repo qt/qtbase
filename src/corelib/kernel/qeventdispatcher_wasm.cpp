@@ -108,7 +108,7 @@ bool qt_asyncify_suspend()
 }
 
 // Wakes any currently suspended main thread. Returns true if the main
-// thread was suspended, in which case it will now be asynchonously woken.
+// thread was suspended, in which case it will now be asynchronously woken.
 bool qt_asyncify_resume()
 {
     if (!g_is_asyncify_suspended)
@@ -456,7 +456,7 @@ void QEventDispatcherWasm::callProcessEvents(void *context)
 
     // In the unlikely event that we get a callProcessEvents() call for
     // a previous main thread event dispatcher (i.e. the QApplication
-    // object was deleted and crated again): just ignore it and return.
+    // object was deleted and created again): just ignore it and return.
     if (context != g_mainThreadEventDispatcher)
         return;
 
@@ -534,7 +534,7 @@ void QEventDispatcherWasm::updateNativeTimer()
 }
 
 // Static timer activation callback. Must be called on the main thread
-// and will then either process timers on the main thrad or wake and
+// and will then either process timers on the main thread or wake and
 // process timers on a secondary thread.
 void QEventDispatcherWasm::callProcessTimers(void *context)
 {

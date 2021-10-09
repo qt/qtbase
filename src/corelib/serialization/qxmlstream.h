@@ -105,7 +105,7 @@ public:
 
 Q_DECLARE_TYPEINFO(QXmlStreamAttribute, Q_RELOCATABLE_TYPE);
 
-// We export each out-of-line method invidually to prevent MSVC from
+// We export each out-of-line method individually to prevent MSVC from
 // exporting the whole QList class.
 class QXmlStreamAttributes : public QList<QXmlStreamAttribute>
 {

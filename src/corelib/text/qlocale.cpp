@@ -572,7 +572,7 @@ QString qt_readEscapedFormatString(QStringView format, int *idx)
     ++i;
     if (i == format.size())
         return QString();
-    if (format.at(i).unicode() == '\'') { // "''" outside of a quoted stirng
+    if (format.at(i).unicode() == '\'') { // "''" outside of a quoted string
         ++i;
         return QLatin1String("'");
     }

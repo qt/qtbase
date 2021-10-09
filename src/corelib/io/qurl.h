@@ -169,7 +169,7 @@ public:
 #ifdef Q_QDOC
 private:
     // We need to let qdoc think that FormattingOptions is a normal QFlags, but
-    // it needs to be a QUrlTwoFlags for compiling default arguments of somme functions.
+    // it needs to be a QUrlTwoFlags for compiling default arguments of some functions.
     template<typename T> struct QFlags : QUrlTwoFlags<T, ComponentFormattingOption>
     { using QUrlTwoFlags<T, ComponentFormattingOption>::QUrlTwoFlags; };
 public:
