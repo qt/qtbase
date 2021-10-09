@@ -1290,7 +1290,7 @@ void QSocks5SocketEnginePrivate::_q_udpSocketReadNotification()
         int pos = 0;
         const char *buf = inBuf.constData();
         if (inBuf.size() < 4) {
-            QSOCKS5_D_DEBUG << "bugus udp data, discarding";
+            QSOCKS5_D_DEBUG << "bogus udp data, discarding";
             return;
         }
         QSocks5RevivedDatagram datagram;
