@@ -143,7 +143,7 @@ const QStringList& qt_mac_enabledDraggedTypes()
     \li com.apple.pict - converts to "application/x-qt-image"
   \endlist
 
-  When working with MIME data, Qt will interate through all instances of QMacPasteboardMime to
+  When working with MIME data, Qt will iterate through all instances of QMacPasteboardMime to
   find an instance that can convert to, or from, a specific MIME type. It will do this by calling
   canConvert() on each instance, starting with (and choosing) the last created instance first.
   The actual conversions will be done by using convertToMime() and convertFromMime().
@@ -159,7 +159,7 @@ const QStringList& qt_mac_enabledDraggedTypes()
 
 /*
   Constructs a new conversion object of type \a t, adding it to the
-  globally accessed list of available convertors.
+  globally accessed list of available converters.
 */
 QMacInternalPasteboardMime::QMacInternalPasteboardMime(char t) : type(t)
 {

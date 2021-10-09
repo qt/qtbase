@@ -1114,7 +1114,7 @@ QAccessibleInterface *QAccessibleInterface::focusChild() const
     If there are no children at this position this function returns \nullptr.
     The returned accessible must be a child, but not necessarily a direct child.
 
-    This function is only relyable for visible objects (invisible
+    This function is only reliable for visible objects (invisible
     object might not be laid out correctly).
 
     All visual objects provide this information.
@@ -2417,8 +2417,8 @@ QAccessibleValueInterface::~QAccessibleValueInterface()
     \fn QVariant QAccessibleValueInterface::minimumStepSize() const
 
     Returns the minimum step size for the accessible.
-    This is the smalles increment that makes sense when changing the value.
-    When programatically changing the value it should always be a multiple
+    This is the smallest increment that makes sense when changing the value.
+    When programmatically changing the value it should always be a multiple
     of the minimum step size.
 
     Some tools use this value even when the setCurrentValue does not
@@ -2686,7 +2686,7 @@ QAccessibleTableInterface::~QAccessibleTableInterface()
     \row    \li \l toggleAction()   \li toggles the item (checkbox, radio button, switch, ...)
     \row    \li \l decreaseAction() \li decrease the value of the accessible (e.g. spinbox)
     \row    \li \l increaseAction() \li increase the value of the accessible (e.g. spinbox)
-    \row    \li \l pressAction()    \li press or click or activate the accessible (should correspont to clicking the object with the mouse)
+    \row    \li \l pressAction()    \li press or click or activate the accessible (should correspond to clicking the object with the mouse)
     \row    \li \l setFocusAction() \li set the focus to this accessible
     \row    \li \l showMenuAction() \li show a context menu, corresponds to right-clicks
     \endtable

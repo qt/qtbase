@@ -146,7 +146,7 @@
     For more information, see the \l {OpenGL Window Example}.
 
     The Qt GUI module also contains a few math classes to aid with the
-    most common mathmatical operations related to 3D graphics. These
+    most common mathematical operations related to 3D graphics. These
     classes include \l {QMatrix4x4}, \l {QVector4D} and \l {QQuaternion}
 
     A \l {QWindow} created with the \l {QSurface::OpenGLSurface} can

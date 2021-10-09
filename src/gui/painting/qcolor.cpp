@@ -780,7 +780,7 @@ QColor::QColor(QRgba64 rgba64) noexcept
 
     Constructs a color with the given \a spec.
 
-    This function is primarly present to avoid that QColor::Invalid
+    This function is primarily present to avoid that QColor::Invalid
     becomes a valid color by accident.
 */
 

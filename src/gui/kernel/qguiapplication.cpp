@@ -1746,7 +1746,7 @@ static QClipboard *clipboard();
 
 /*!
     Returns the current state of the modifier keys on the keyboard. The current
-    state is updated sychronously as the event queue is emptied of events that
+    state is updated synchronously as the event queue is emptied of events that
     will spontaneously change the keyboard state (QEvent::KeyPress and
     QEvent::KeyRelease events).
 
@@ -3991,7 +3991,7 @@ static inline void applyWindowCursor(const QList<QWindow *> &l)
 
     Application cursors are stored on an internal stack. setOverrideCursor()
     pushes the cursor onto the stack, and restoreOverrideCursor() pops the
-    active cursor off the stack. changeOverrideCursor() changes the curently
+    active cursor off the stack. changeOverrideCursor() changes the currently
     active application override cursor.
 
     Every setOverrideCursor() must eventually be followed by a corresponding

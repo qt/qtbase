@@ -448,7 +448,7 @@ bool QImageData::checkForAlphaPixels() const
 
     The color of a pixel can be retrieved by passing its coordinates
     to the pixel() function.  The pixel() function returns the color
-    as a QRgb value indepedent of the image's format.
+    as a QRgb value independent of the image's format.
 
     In case of monochrome and 8-bit images, the colorCount() and
     colorTable() functions provide information about the color
@@ -4726,7 +4726,7 @@ static QImage rotated270(const QImage &image)
     image where not all pixels are covered by the transformed pixels of the
     original image. In such cases, those background pixels will be assigned a
     transparent color value, and the transformed image will be given a format
-    with an alpha channel, even if the orginal image did not have that.
+    with an alpha channel, even if the original image did not have that.
 
     The transformation \a matrix is internally adjusted to compensate
     for unwanted translation; i.e. the image produced is the smallest

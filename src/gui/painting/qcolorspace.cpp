@@ -493,7 +493,7 @@ QColorTransform QColorSpacePrivate::transformationToXYZ() const
     the transfer function how values are mapped on the axes.
     The primaries are defined by three primary colors that represent exactly how red, green,
     and blue look in this particular color space, and a white color that represents where
-    and how bright pure white is. The range of colors expressable by the primary colors is
+    and how bright pure white is. The range of colors expressible by the primary colors is
     called the gamut, and a color space that can represent a wider range of colors is also
     known as a wide-gamut color space.
 

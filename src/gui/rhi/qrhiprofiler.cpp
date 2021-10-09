@@ -153,7 +153,7 @@ QT_BEGIN_NAMESPACE
 
     Once sufficient number of frames have been rendered, the minimum, maximum,
     and average values (in milliseconds) from various measurements are made
-    available in this struct queriable from QRhiProfiler::frameToFrameTimes()
+    available in this struct queryable from QRhiProfiler::frameToFrameTimes()
     and QRhiProfiler::frameBuildTimes().
 
     \sa QRhiProfiler::setFrameTimingWriteInterval()
@@ -167,7 +167,7 @@ QT_BEGIN_NAMESPACE
 
     Once sufficient number of frames have been rendered, the minimum, maximum,
     and average values (in milliseconds) calculated from GPU command buffer
-    timestamps are made available in this struct queriable from
+    timestamps are made available in this struct queryable from
     QRhiProfiler::gpuFrameTimes().
 
     \sa QRhiProfiler::setFrameTimingWriteInterval()

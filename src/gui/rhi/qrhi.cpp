@@ -1055,7 +1055,7 @@ QDebug operator<<(QDebug dbg, const QRhiScissor &s)
 
     Now let's assume also that 3 component vertex positions \c{(x, y, z)} and 2
     component texture coordinates \c{(u, v)} are provided in a non-interleaved
-    format in a buffer (or separate buffers even). Definining two bindings
+    format in a buffer (or separate buffers even). Defining two bindings
     could then be done like this:
 
     \badcode
@@ -2240,7 +2240,7 @@ QRhiBuffer::NativeBuffer QRhiBuffer::nativeBuffer()
     depending on the backend.
 
     \warning When updating buffer data via this method, the update must be done
-    in every frame, otherwise backends that perform double or tripple buffering
+    in every frame, otherwise backends that perform double or triple buffering
     of resources may end up in unexpected behavior.
 
     \warning Partial updates are not possible with this approach since some
@@ -2934,7 +2934,7 @@ QRhiResource::Type QRhiTextureRenderTarget::resourceType() const
     descriptor as long as they have the same number and type of attachments.
     The associated QRhiTexture or QRhiRenderBuffer instances are not part of
     the render pass descriptor so those can differ in the two
-    QRhiTextureRenderTarget intances.
+    QRhiTextureRenderTarget instances.
 
     \note resources, such as QRhiTexture instances, referenced in description()
     must already have create() called on them.
@@ -6711,7 +6711,7 @@ bool QRhi::isRecordingFrame() const
     C++ containers and other types. It may also be similar to what an OpenGL or
     Direct 3D 11 implementation performs internally for certain type of objects.
 
-    In practice, such double (or tripple) buffering resources is realized in
+    In practice, such double (or triple) buffering resources is realized in
     the Vulkan, Metal, and similar QRhi backends by having a fixed number of
     native resource (such as, VkBuffer) \c slots behind a QRhiResource. That
     can then be indexed by a frame slot index running 0, 1, ..,
@@ -6719,7 +6719,7 @@ bool QRhi::isRecordingFrame() const
 
     All this is managed transparently to the users of QRhi. However,
     applications that integrate rendering done directly with the graphics API
-    may want to perform a similar double or tripple buffering of their own
+    may want to perform a similar double or triple buffering of their own
     graphics resources. That is then most easily achieved by knowing the values
     of the maximum number of in-flight frames (retrievable via resourceLimit())
     and the current frame (slot) index (returned by this function).

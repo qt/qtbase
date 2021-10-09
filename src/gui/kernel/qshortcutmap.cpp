@@ -396,7 +396,7 @@ QKeySequence::SequenceMatch QShortcutMap::nextState(QKeyEvent *e)
 
 
 /*! \internal
-    Determines if an enabled shortcut has a matcing key sequence.
+    Determines if an enabled shortcut has a matching key sequence.
 */
 bool QShortcutMap::hasShortcutForKeySequence(const QKeySequence &seq) const
 {

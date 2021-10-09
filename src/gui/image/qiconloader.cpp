@@ -135,7 +135,7 @@ void QIconLoader::ensureInitialized()
     created, to avoid a race condition (QTBUG-74252). When this function is
     called from there, ensureInitialized() does not succeed because there
     is no QPlatformTheme yet, so systemThemeName() is empty, and we don't want
-    m_systemTheme to get intialized to the fallback theme instead of the normal one.
+    m_systemTheme to get initialized to the fallback theme instead of the normal one.
 */
 QIconLoader *QIconLoader::instance()
 {

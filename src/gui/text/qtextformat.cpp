@@ -1418,7 +1418,7 @@ bool QTextFormat::operator==(const QTextFormat &rhs) const
     \value SingleUnderline      A line is drawn using Qt::SolidLine.
     \value DashUnderline        Dashes are drawn using Qt::DashLine.
     \value DotLine              Dots are drawn using Qt::DotLine;
-    \value DashDotLine          Dashs and dots are drawn using Qt::DashDotLine.
+    \value DashDotLine          Dashes and dots are drawn using Qt::DashDotLine.
     \value DashDotDotLine       Underlines draw drawn using Qt::DashDotDotLine.
     \value WaveUnderline        The text is underlined using a wave shaped line.
     \value SpellCheckUnderline  The underline is drawn depending on the SpellCheckUnderlineStyle
@@ -3412,7 +3412,7 @@ QTextImageFormat::QTextImageFormat(const QTextFormat &fmt)
     \fn void QTextCharFormat::setFontCapitalization(QFont::Capitalization capitalization)
     \since 4.4
 
-    Sets the capitalization of the text that apppears in this font to \a capitalization.
+    Sets the capitalization of the text that appears in this font to \a capitalization.
 
     A font's capitalization makes the text appear in the selected capitalization mode.
 
