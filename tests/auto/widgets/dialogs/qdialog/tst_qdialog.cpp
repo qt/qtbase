@@ -307,9 +307,8 @@ void tst_QDialog::showFullScreen()
 
 void tst_QDialog::showAsTool()
 {
-#if defined(Q_OS_UNIX)
-    QSKIP("Qt/X11: Skipped since activeWindow() is not respected by all window managers");
-#endif
+    if (QStringList{"xcb", "offscreen"}.contains(QGuiApplication::platformName()))
+        QSKIP("activeWindow() is not respected by all Xcb window managers and the offscreen plugin");
     DummyDialog testWidget;
     testWidget.resize(200, 200);
     testWidget.setWindowTitle(QTest::currentTestFunction());
