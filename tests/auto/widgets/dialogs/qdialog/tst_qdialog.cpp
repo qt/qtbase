@@ -70,6 +70,8 @@ private slots:
     void showMinimized();
     void showFullScreen();
     void showAsTool();
+    void showWithoutActivating_data();
+    void showWithoutActivating();
     void toolDialogPosition();
     void deleteMainDefault();
     void deleteInExec();
@@ -321,6 +323,33 @@ void tst_QDialog::showAsTool()
     } else {
         QCOMPARE(dialog.wasActive(), false);
     }
+}
+
+void tst_QDialog::showWithoutActivating_data()
+{
+    QTest::addColumn<bool>("showWithoutActivating");
+    QTest::addColumn<int>("focusInCount");
+
+    QTest::addRow("showWithoutActivating") << true << 0;
+    QTest::addRow("showWithActivating") << false << 1;
+}
+
+void tst_QDialog::showWithoutActivating()
+{
+    QFETCH(bool, showWithoutActivating);
+    QFETCH(int, focusInCount);
+
+    struct Dialog : public QDialog
+    {
+        int focusInCount = 0;
+    protected:
+        void focusInEvent(QFocusEvent *) override { ++focusInCount; }
+    } dialog;
+    dialog.setAttribute(Qt::WA_ShowWithoutActivating, showWithoutActivating);
+
+    dialog.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&dialog));
+    QCOMPARE(dialog.focusInCount, focusInCount);
 }
 
 // Verify that pos() returns the same before and after show()

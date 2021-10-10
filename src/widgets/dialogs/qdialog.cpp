@@ -783,42 +783,47 @@ void QDialog::setVisible(bool visible)
             return;
 
         QWidget::setVisible(visible);
-        QWidget *fw = window()->focusWidget();
-        if (!fw)
-            fw = this;
 
-        /*
-          The following block is to handle a special case, and does not
-          really follow propper logic in concern of autoDefault and TAB
-          order. However, it's here to ease usage for the users. If a
-          dialog has a default QPushButton, and first widget in the TAB
-          order also is a QPushButton, then we give focus to the main
-          default QPushButton. This simplifies code for the developers,
-          and actually catches most cases... If not, then they simply
-          have to use [widget*]->setFocus() themselves...
-        */
+        // Window activation might be prevented. We can't test isActiveWindow here,
+        // as the window will be activated asynchronously by the window manager.
+        if (!testAttribute(Qt::WA_ShowWithoutActivating)) {
+            QWidget *fw = window()->focusWidget();
+            if (!fw)
+                fw = this;
+
+            /*
+            The following block is to handle a special case, and does not
+            really follow propper logic in concern of autoDefault and TAB
+            order. However, it's here to ease usage for the users. If a
+            dialog has a default QPushButton, and first widget in the TAB
+            order also is a QPushButton, then we give focus to the main
+            default QPushButton. This simplifies code for the developers,
+            and actually catches most cases... If not, then they simply
+            have to use [widget*]->setFocus() themselves...
+            */
 #if QT_CONFIG(pushbutton)
-        if (d->mainDef && fw->focusPolicy() == Qt::NoFocus) {
-            QWidget *first = fw;
-            while ((first = first->nextInFocusChain()) != fw && first->focusPolicy() == Qt::NoFocus)
-                ;
-            if (first != d->mainDef && qobject_cast<QPushButton*>(first))
-                d->mainDef->setFocus();
-        }
-        if (!d->mainDef && isWindow()) {
-            QWidget *w = fw;
-            while ((w = w->nextInFocusChain()) != fw) {
-                QPushButton *pb = qobject_cast<QPushButton *>(w);
-                if (pb && pb->autoDefault() && pb->focusPolicy() != Qt::NoFocus) {
-                    pb->setDefault(true);
-                    break;
+            if (d->mainDef && fw->focusPolicy() == Qt::NoFocus) {
+                QWidget *first = fw;
+                while ((first = first->nextInFocusChain()) != fw && first->focusPolicy() == Qt::NoFocus)
+                    ;
+                if (first != d->mainDef && qobject_cast<QPushButton*>(first))
+                    d->mainDef->setFocus();
+            }
+            if (!d->mainDef && isWindow()) {
+                QWidget *w = fw;
+                while ((w = w->nextInFocusChain()) != fw) {
+                    QPushButton *pb = qobject_cast<QPushButton *>(w);
+                    if (pb && pb->autoDefault() && pb->focusPolicy() != Qt::NoFocus) {
+                        pb->setDefault(true);
+                        break;
+                    }
                 }
             }
-        }
 #endif
-        if (fw && !fw->hasFocus()) {
-            QFocusEvent e(QEvent::FocusIn, Qt::TabFocusReason);
-            QCoreApplication::sendEvent(fw, &e);
+            if (fw && !fw->hasFocus()) {
+                QFocusEvent e(QEvent::FocusIn, Qt::TabFocusReason);
+                QCoreApplication::sendEvent(fw, &e);
+            }
         }
 
 #ifndef QT_NO_ACCESSIBILITY
