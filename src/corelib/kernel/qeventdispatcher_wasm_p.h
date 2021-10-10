@@ -103,6 +103,15 @@ private:
     void updateNativeTimer();
     static void callProcessTimers(void *eventDispatcher);
 
+    void setEmscriptenSocketCallbacks();
+    void clearEmscriptenSocketCallbacks();
+    static void socketError(int fd, int err, const char* msg, void *context);
+    static void socketOpen(int fd, void *context);
+    static void socketListen(int fd, void *context);
+    static void socketConnection(int fd, void *context);
+    static void socketMessage(int fd, void *context);
+    static void socketClose(int fd, void *context);
+
 #if QT_CONFIG(thread)
     void runOnMainThread(std::function<void(void)> fn);
 #endif
@@ -125,6 +134,7 @@ private:
     static QVector<QEventDispatcherWasm *> g_secondaryThreadEventDispatchers;
     static std::mutex g_secondaryThreadEventDispatchersMutex;
 #endif
+    static std::multimap<int, QSocketNotifier *> g_socketNotifiers;
 };
 
 #endif // QEVENTDISPATCHER_WASM_P_H
