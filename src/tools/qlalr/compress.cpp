@@ -186,7 +186,7 @@ void Compress::operator () (int *table, int row_count, int column_count)
           if (pos == info.begin ())
             {
               // try to find a perfect match
-              QList<int>::iterator pm = std::search(&*pos, &*info.end(), row.beginNonZeros(),
+              QList<int>::iterator pm = std::search(pos, info.end(), row.beginNonZeros(),
                                                     row.endNonZeros(), _PerfectMatch());
 
               if (pm != info.end ())
@@ -196,7 +196,7 @@ void Compress::operator () (int *table, int row_count, int column_count)
                 }
             }
 
-          pos = std::search (&*pos, &*info.end (), row.beginNonZeros (), row.endNonZeros (), _Fit ());
+          pos = std::search (pos, info.end (), row.beginNonZeros (), row.endNonZeros (), _Fit ());
 
           if (pos == info.end ())
             break;
