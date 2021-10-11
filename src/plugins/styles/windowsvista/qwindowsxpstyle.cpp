@@ -270,7 +270,7 @@ void QWindowsXPStylePrivate::cleanup(bool force)
 /* In order to obtain the correct VistaTreeViewTheme (arrows for PE_IndicatorBranch),
  * we need to set the windows "explorer" theme explicitly on a native
  * window and open the "TREEVIEW" theme handle passing its window handle
- * in order to get Vista-style item view themes (particulary drawBackground()
+ * in order to get Vista-style item view themes (particularly drawBackground()
  * for selected items needs this).
  * We invoke a service of the native Windows interface to create
  * a non-visible window handle, open the theme on it and insert it into
@@ -360,7 +360,7 @@ bool QWindowsXPStylePrivate::isItemViewDelegateLineEdit(const QWidget *widget)
     if (!widget)
         return false;
     const QWidget *parent1 = widget->parentWidget();
-    // Exlude dialogs or other toplevels parented on item views.
+    // Exclude dialogs or other toplevels parented on item views.
     if (!parent1 || parent1->isWindow())
         return false;
     const QWidget *parent2 = parent1->parentWidget();

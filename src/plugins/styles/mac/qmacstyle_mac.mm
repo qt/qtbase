@@ -288,7 +288,7 @@ static const QColor titlebarSeparatorLineInactive(131, 131, 131);
 static const QColor darkModeSeparatorLine(88, 88, 88);
 
 // Gradient colors used for the dock widget title bar and
-// non-unifed tool bar bacground.
+// non-unifed tool bar background.
 static const QColor lightMainWindowGradientBegin(240, 240, 240);
 static const QColor lightMainWindowGradientEnd(200, 200, 200);
 static const QColor darkMainWindowGradientBegin(47, 47, 47);
@@ -1087,7 +1087,7 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QStyleOption 
 #if QT_CONFIG(combobox)
     case QStyle::CT_LineEdit:
         if (!widg || !qobject_cast<QComboBox *>(widg->parentWidget())) {
-            //should I take into account the font dimentions of the lineedit? -Sam
+            //should I take into account the font dimensions of the lineedit? -Sam
             if (sz == QStyleHelper::SizeLarge)
                 ret = QSize(-1, 21);
             else
@@ -3112,7 +3112,7 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
             // vertically and even worse, if QTabWidget has autoFillBackground
             // set, this background overpaints NSBox making it to disappear.
             // We trick our NSBox to render in a larger rectangle, so that
-            // the actuall result (which is again smaller than requested),
+            // the actual result (which is again smaller than requested),
             // more or less is what we really want. We'll have to adjust CTM
             // and translate accordingly.
             adjustedRect.adjust(0, 0, 6, 6);
@@ -3722,7 +3722,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             const auto cw = QMacStylePrivate::CocoaControl(ct, cs);
             auto *pb = static_cast<NSButton *>(d->cocoaControl(cw));
             // Ensure same size and location as we used to have with HITheme.
-            // This is more convoluted than we initialy thought. See for example
+            // This is more convoluted than we initially thought. See for example
             // differences between plain and menu button frames.
             const QRectF frameRect = cw.adjustedControlFrame(btn->rect);
             pb.frame = frameRect.toCGRect();
@@ -4362,7 +4362,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                         const QChar key = rightMarginText.at(rightMarginText.length() - 1);
                         const QString modifiers = rightMarginText.left(rightMarginText.size() - 1);
                         p->drawText(xp + tabwidth - maxKeyWidth, yPos, maxKeyWidth, mi->rect.height(), text_flags, key);
-                        // don't clip the shortcuts; maxKeyWidth might be more than what we have been alotted by the menu
+                        // don't clip the shortcuts; maxKeyWidth might be more than what we have been allotted by the menu
                         p->drawText(xp, yPos, tabwidth - maxKeyWidth, mi->rect.height(),
                                     text_flags | Qt::AlignRight | Qt::TextDontClip, modifiers);
                     } else { // draw the whole thing left-aligned for complex or unparsable cases
@@ -5449,7 +5449,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                 }
 
 #if 0
-                // FIXME: Sadly, this part doesn't work. It seems to somehow polute the
+                // FIXME: Sadly, this part doesn't work. It seems to somehow pollute the
                 // NSSlider's internal state and, when we need to use the "else" part,
                 // the slider's frame is not in sync with its cell dimensions.
                 const bool drawAllParts = drawKnob && drawBar && (!hasTicks || drawTicks);
