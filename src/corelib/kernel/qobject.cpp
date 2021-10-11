@@ -2305,7 +2305,7 @@ void QObject::removeEventFilter(QObject *obj)
     event loop was still running: the Qt event loop will delete those objects
     as soon as the new nested event loop starts.
 
-    \b{Note:} It is safe to call this function more than once; when the
+    \note It is safe to call this function more than once; when the
     first deferred deletion event is delivered, any pending events for the
     object are removed from the event queue.
 
@@ -4184,7 +4184,7 @@ static void dumpRecursive(int level, const QObject *object)
 /*!
     Dumps a tree of children to the debug output.
 
-    \note before Qt 5.9, this function was not const.
+    \note Before Qt 5.9, this function was not const.
 
     \sa dumpObjectInfo()
 */
@@ -4198,7 +4198,7 @@ void QObject::dumpObjectTree() const
     Dumps information about signal connections, etc. for this object
     to the debug output.
 
-    \note before Qt 5.9, this function was not const.
+    \note Before Qt 5.9, this function was not const.
 
     \sa dumpObjectTree()
 */
