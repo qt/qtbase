@@ -449,6 +449,10 @@ QNetworkInformationBackendFactory::~QNetworkInformationBackendFactory()
     \value CaptivePortal
         If the plugin supports this feature then
         the \c isBehindCaptivePortal property will be available.
+
+    \value TransportMedium
+        If the plugin supports this feature then the \c transportMedium
+        property will be available.
 */
 
 /*!
@@ -472,6 +476,32 @@ QNetworkInformationBackendFactory::~QNetworkInformationBackendFactory()
         able to access the Internet.
 
     \sa QNetworkInformation::reachability
+*/
+
+/*!
+    \enum QNetworkInformation::TransportMedium
+    \since 6.3
+
+    Lists the currently recognized media with which one can connect to the
+    internet.
+
+    \value Unknown
+        Returned if either the OS reports no active medium, the active medium is
+        not recognized by Qt, or the TransportMedium feature is not supported.
+    \value Ethernet
+        Indicates that the currently active connection is using ethernet.
+        Note: This value may also be returned when Windows is connected to a
+        Bluetooth personal area network.
+    \value Cellular
+        Indicates that the currently active connection is using a cellular
+        network.
+    \value WiFi
+        Indicates that the currently active connection is using Wi-Fi.
+    \value Bluetooth
+        Indicates that the currently active connection is connected using
+        Bluetooth.
+
+    \sa QNetworkInformation::transportMedium
 */
 
 /*!
