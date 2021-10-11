@@ -240,7 +240,7 @@ bool QQnxVirtualKeyboardPps::showKeyboard()
     if (!prepareToSend())
         return false;
 
-    // NOTE:  This must be done everytime the keyboard is shown even if there is no change because
+    // NOTE:  This must be done every time the keyboard is shown even if there is no change because
     // hiding the keyboard wipes the setting.
     applyKeyboardOptions();
 

@@ -79,7 +79,7 @@ bool QQnxEglWindow::isInitialized() const
 void QQnxEglWindow::ensureInitialized(QQnxGLContext* context)
 {
     if (m_newSurfaceRequested.testAndSetOrdered(true, false)) {
-        const QMutexLocker locker(&m_mutex); // Set geomety must not reset the requestedBufferSize till
+        const QMutexLocker locker(&m_mutex); // Set geometry must not reset the requestedBufferSize till
                                              // the surface is created
 
         if (m_requestedBufferSize != bufferSize() || m_eglSurface == EGL_NO_SURFACE) {

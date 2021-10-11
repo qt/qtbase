@@ -577,7 +577,7 @@ void QQnxScreenEventHandler::handleTouchEvent(screen_event_t event, int qnxType)
                 parent = parent->parent();
             }
 
-            //Qt expects the pressure between 0 and 1. There is however no definit upper limit for
+            //Qt expects the pressure between 0 and 1. There is however no definite upper limit for
             //the integer value of touch event pressure. The 200 was determined by experiment, it
             //usually does not get higher than that.
             m_touchPoints[touchId].pressure = static_cast<qreal>(touchPressure)/200.0;
