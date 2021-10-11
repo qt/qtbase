@@ -124,7 +124,10 @@ private slots:
     void clonePreservesIndentWidth();
     void clonePreservesFormatsWhenEmpty();
     void blockCount();
+
     void defaultStyleSheet();
+    void defaultTableStyle_data();
+    void defaultTableStyle();
 
     void resolvedFontInEmptyFormat();
 
@@ -2646,6 +2649,127 @@ void tst_QTextDocument::defaultStyleSheet()
     cursor.insertHtml("<p>test");
     fmt = doc->begin().blockFormat();
     QVERIFY(fmt.background().color() != QColor("green"));
+}
+
+void tst_QTextDocument::defaultTableStyle_data()
+{
+    QTest::addColumn<QString>("css");
+    QTest::addColumn<QString>("html");
+    QTest::addColumn<QList<QBrush>>("borderBrushes");
+
+    const QString htmlHeader(R"(
+        <tr>
+            <th>1</th> <th>2</th>
+        </tr>
+    )");
+
+    const QString htmlCells(R"(
+        <tr>
+            <td>A</td> <td>B</td>
+        </tr>
+    )");
+
+    const QString cssEachSide = R"({
+        border-top-color: red;
+        border-bottom-color: blue;
+        border-left-color: green;
+        border-right-color: yellow;
+    })";
+    const QString cssOneColor = R"({ border-color: red; })";
+    const QString cssFourColors = R"({ border-color: red blue green yellow; })";
+
+    QTest::addRow("td, each side") << QString("td ") + cssEachSide
+        << htmlCells
+        << QList<QBrush>{Qt::red, Qt::blue, QColor("green"), Qt::yellow};
+
+    QTest::addRow("th, each side") << QString("th ") + cssEachSide
+        << htmlHeader
+        << QList<QBrush>{Qt::red, Qt::blue, QColor("green"), Qt::yellow};
+
+    QTest::addRow("th+td, each side") << QString("th %1 td %1").arg(cssEachSide)
+        << htmlHeader + htmlCells
+        << QList<QBrush>{Qt::red, Qt::blue, QColor("green"), Qt::yellow};
+
+    QTest::addRow("td, one color") << QString("td ") + cssOneColor
+        << htmlCells
+        << QList<QBrush>{Qt::red, Qt::red, Qt::red, Qt::red};
+
+    QTest::addRow("th, one color") << QString("th ") + cssOneColor
+        << htmlHeader
+        << QList<QBrush>{Qt::red, Qt::red, Qt::red, Qt::red};
+
+    QTest::addRow("th+td, one color") << QString("th %1 td %1").arg(cssOneColor)
+        << htmlHeader + htmlCells
+        << QList<QBrush>{Qt::red, Qt::red, Qt::red, Qt::red};
+
+    // css order is top, right, bottom, left
+    QTest::addRow("td, four colors") << QString("td ") + cssFourColors
+        << htmlCells
+        << QList<QBrush>{Qt::red, QColor("green"), Qt::yellow, Qt::blue};
+
+}
+
+void tst_QTextDocument::defaultTableStyle()
+{
+    QFETCH(QString, css);
+    QFETCH(QString, html);
+    QFETCH(QList<QBrush>, borderBrushes);
+
+    CREATE_DOC_AND_CURSOR();
+    doc.setDefaultStyleSheet(css);
+    doc.setHtml(QString("<html><body><table>%1</table></body></html>").arg(html));
+
+    const QTextFrame *frame = doc.rootFrame();
+    const QTextTable *table = nullptr;
+    for (auto it = frame->begin(); !table && !it.atEnd(); ++it)
+        table = qobject_cast<const QTextTable*>(it.currentFrame());
+    QVERIFY(table);
+
+    const QList<QTextFormat::Property> brushProperties = {
+        QTextFormat::TableCellTopBorderBrush,
+        QTextFormat::TableCellBottomBorderBrush,
+        QTextFormat::TableCellLeftBorderBrush,
+        QTextFormat::TableCellRightBorderBrush
+    };
+
+    for (int row = 0; row < table->rows(); ++row) {
+        for (int column = 0; column < table->columns(); ++column) {
+            auto cellDetails = qScopeGuard([&]{
+                qWarning("Failure was in cell %d/%d", row, column);
+            });
+            const QTextTableCell cell = table->cellAt(row, column);
+            const QTextTableCellFormat cellFormat = cell.format().toTableCellFormat();
+            QList<QBrush> brushes;
+            for (const auto side : brushProperties) {
+                QVariant sideProperty = cellFormat.property(side);
+                QVERIFY(sideProperty.isValid());
+                QVERIFY(sideProperty.typeId() == qMetaTypeId<QBrush>());
+                brushes << sideProperty.value<QBrush>();
+            }
+            auto errorDetails = qScopeGuard([&]{
+                if (brushes.count() != borderBrushes.count()) {
+                    qWarning("Different count: %lld vs %lld", brushes.count(), borderBrushes.count());
+                    return;
+                }
+                for (int i = 0; i < brushes.count(); ++i) {
+                    QString side;
+                    QDebug(&side) << QTextFormat::Property(QTextFormat::TableCellTopBorderBrush + i);
+                    QString actual;
+                    QDebug(&actual) << brushes.at(i);
+                    QString expected;
+                    QDebug(&expected) << borderBrushes.at(i);
+                    if (expected != actual) {
+                        qWarning("\n  %s:\n\tActual:  %s\n\tExpected:%s", qPrintable(side),
+                                qPrintable(actual), qPrintable(expected));
+                    }
+                }
+            });
+            QVERIFY2(borderBrushes == brushes, // QCOMPARE doesn't generate helpful output anyway
+                     qPrintable(QString("for cell %1/%2").arg(row).arg(column)));
+            errorDetails.dismiss();
+            cellDetails.dismiss();
+        }
+    }
 }
 
 void tst_QTextDocument::maximumBlockCount()
