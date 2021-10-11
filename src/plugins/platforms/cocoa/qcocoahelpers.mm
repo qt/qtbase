@@ -157,7 +157,7 @@ Qt::DropActions qt_mac_mapNSDragOperations(NSDragOperation nsActions)
     that the platform window is not a foreign window before using
     this cast, via QPlatformWindow::isForeignWindow().
 
-    Do not use this method soley to check for foreign windows, as
+    Do not use this method solely to check for foreign windows, as
     that will make the code harder to read for people not working
     primarily on macOS, who do not know the difference between the
     NSView and QNSView cases.

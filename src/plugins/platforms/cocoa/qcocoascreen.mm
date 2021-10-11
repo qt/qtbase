@@ -552,7 +552,7 @@ QWindow *QCocoaScreen::topLevelAt(const QPoint &point) const
     \internal
 
     Coordinates are in screen coordinates if \a view is 0, otherwise they are in view
-    coordiantes.
+    coordinates.
 */
 QPixmap QCocoaScreen::grabWindow(WId view, int x, int y, int width, int height) const
 {
