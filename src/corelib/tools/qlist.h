@@ -187,7 +187,6 @@ public:
                                     "the implicit conversion between a QList/QVector::iterator "
                                     "and a raw pointer")
         inline operator T*() const { return i; }
-#endif
 
         template <typename Int> std::enable_if_t<std::is_integral_v<Int>, iterator>
         &operator+=(Int j) { i+=j; return *this; }
@@ -199,6 +198,13 @@ public:
         operator-(Int j) const { return iterator(i-j); }
         template <typename Int> friend std::enable_if_t<std::is_integral_v<Int>, iterator>
         operator+(Int j, iterator k) { return k + j; }
+#else
+        inline iterator &operator+=(qsizetype j) { i += j; return *this; }
+        inline iterator &operator-=(qsizetype j) { i -= j; return *this; }
+        inline iterator operator+(qsizetype j) const { return iterator(i + j); }
+        inline iterator operator-(qsizetype j) const { return iterator(i - j); }
+        friend inline iterator operator+(qsizetype j, iterator k) { return k + j; }
+#endif
     };
 
     class const_iterator {
@@ -254,7 +260,6 @@ public:
                                     "the implicit conversion between a QList/QVector::const_iterator "
                                     "and a raw pointer")
         inline operator const T*() const { return i; }
-#endif
 
         template <typename Int> std::enable_if_t<std::is_integral_v<Int>, const_iterator>
         &operator+=(Int j) { i+=j; return *this; }
@@ -266,6 +271,13 @@ public:
         operator-(Int j) const { return const_iterator(i-j); }
         template <typename Int> friend std::enable_if_t<std::is_integral_v<Int>, const_iterator>
         operator+(Int j, const_iterator k) { return k + j; }
+#else
+        inline const_iterator &operator+=(qsizetype j) { i += j; return *this; }
+        inline const_iterator &operator-=(qsizetype j) { i -= j; return *this; }
+        inline const_iterator operator+(qsizetype j) const { return const_iterator(i + j); }
+        inline const_iterator operator-(qsizetype j) const { return const_iterator(i - j); }
+        friend inline const_iterator operator+(qsizetype j, const_iterator k) { return k + j; }
+#endif
     };
     using Iterator = iterator;
     using ConstIterator = const_iterator;
