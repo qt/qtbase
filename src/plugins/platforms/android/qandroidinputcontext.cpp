@@ -1029,7 +1029,7 @@ jboolean QAndroidInputContext::deleteSurroundingText(jint leftLength, jint right
       absolutely not what Android's native EditText does. It deletes leftLength characters before
       min(selection start, composing region start) and rightLength characters after max(selection
       end, composing region end). There are no known keyboards that depend on this behavior, but
-      it is better to be consistent with EditText behavior, because there definetly should be no
+      it is better to be consistent with EditText behavior, because there definitely should be no
       keyboards that depend on documented behavior.
      */
     const int leftEnd =
