@@ -1184,7 +1184,7 @@ void QRegularExpressionPrivate::doMatch(QRegularExpressionMatchPrivate *priv,
     // its length is zero. We however allow it in input: a QStringView
     // subject may have data == nullptr. In this case, to keep PCRE
     // happy, pass a pointer to a dummy character.
-    constexpr char16_t dummySubject = 0;
+    const char16_t dummySubject = 0;
     const char16_t * const subjectUtf16 = [&]()
     {
         const auto subjectUtf16 = priv->subject.utf16();
