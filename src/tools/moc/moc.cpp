@@ -1708,7 +1708,7 @@ bool Moc::until(Token target) {
     }
 
     //when searching commas within the default argument, we should take care of template depth (anglecount)
-    // unfortunatelly, we do not have enough semantic information to know if '<' is the operator< or
+    // unfortunately, we do not have enough semantic information to know if '<' is the operator< or
     // the beginning of a template type. so we just use heuristics.
     int possible = -1;
 
@@ -1829,7 +1829,7 @@ void Moc::checkSuperClasses(ClassDef *def)
 void Moc::checkProperties(ClassDef *cdef)
 {
     //
-    // specify get function, for compatibiliy we accept functions
+    // specify get function, for compatibility we accept functions
     // returning pointers, or const char * for QByteArray.
     //
     QDuplicateTracker<QByteArray> definedProperties(cdef->propertyList.count());

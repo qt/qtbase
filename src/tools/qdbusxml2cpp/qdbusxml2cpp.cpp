@@ -537,7 +537,7 @@ static void writeProxy(const QString &filename, const QDBusIntrospection::Interf
 
             // getter:
             if (property.access != QDBusIntrospection::Property::Write)
-                // it's readble
+                // it's readable
                 hs << " READ " << getter;
 
             // setter

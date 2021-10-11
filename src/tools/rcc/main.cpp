@@ -90,7 +90,7 @@ int createProject(const QString &outFileName)
     out << QLatin1String("<!DOCTYPE RCC><RCC version=\"1.0\">\n"
                          "<qresource>\n");
 
-    // use "." as dir to get relative file pathes
+    // use "." as dir to get relative file paths
     dumpRecursive(QDir(QLatin1String(".")), out);
 
     out << QLatin1String("</qresource>\n"
