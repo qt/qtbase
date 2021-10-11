@@ -2047,7 +2047,7 @@ HDC QWindowsWindow::getDC()
 }
 
 /*!
-    Relases the HDC for the window or does nothing in
+    Releases the HDC for the window or does nothing in
     case it was obtained from WinAPI BeginPaint within a WM_PAINT event.
 
     \sa getDC()
