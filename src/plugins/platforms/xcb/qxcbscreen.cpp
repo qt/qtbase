@@ -271,7 +271,7 @@ void QXcbVirtualDesktop::handleScreenChange(xcb_randr_screen_change_notify_event
     _NET_WORKAREA means with multiple attached monitors. This gets worse when monitors have
     different dimensions and/or screens are not virtually aligned. In Qt we want the available
     geometry per monitor (QScreen), not desktop (represented by _NET_WORKAREA). WM specification
-    does not have an atom for this. Thus, QScreen is limted by the lack of support from the
+    does not have an atom for this. Thus, QScreen is limited by the lack of support from the
     underlying system.
 
     One option could be that Qt does WM's job of calculating this by subtracting geometries of
