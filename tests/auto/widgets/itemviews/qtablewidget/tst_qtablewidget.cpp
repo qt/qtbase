@@ -60,6 +60,8 @@ private slots:
     void takeItem();
     void selectedItems_data();
     void selectedItems();
+    void selectedSpannedCells_data();
+    void selectedSpannedCells();
     void removeRow_data();
     void removeRow();
     void removeColumn_data();
@@ -569,6 +571,79 @@ void tst_QTableWidget::selectedItems()
                 QVERIFY(selectedItems.contains(item));
         }
     }
+}
+
+void tst_QTableWidget::selectedSpannedCells_data()
+{
+    QTest::addColumn<QRect>("spannedCells"); // in cells, not pixels
+    QTest::addColumn<QPoint>("selectionStartCell");
+    QTest::addColumn<QPoint>("selectionEndCell");
+    QTest::addColumn<int>("expectedSelectionRangeCount");
+    QTest::addColumn<QTableWidgetSelectionRange>("expectedFirstSelectionRange");
+
+    QTest::newRow("merge 2 cells in column, select adjacent left")
+            << QRect(1, 2, 1, 2) << QPoint(0, 1) << QPoint(0, 3)
+            << 1 << QTableWidgetSelectionRange(1, 0, 3, 0);
+
+    QTest::newRow("merge 2 cells in column, select those and one more")
+            << QRect(1, 2, 1, 2) << QPoint(1, 1) << QPoint(1, 3)
+            << 3 << QTableWidgetSelectionRange(1, 1, 1, 1);
+
+    QTest::newRow("merge 2 cells in column, select rows above")
+            << QRect(1, 2, 1, 2) << QPoint(0, 0) << QPoint(3, 1)
+            << 1 << QTableWidgetSelectionRange(0, 0, 1, 3);
+
+    QTest::newRow("merge 4 cells in column, select adjacent right")
+            << QRect(1, 0, 1, 4) << QPoint(2, 0) << QPoint(3, 3)
+            << 1 << QTableWidgetSelectionRange(0, 2, 3, 3);
+
+    QTest::newRow("merge 3 cells in row, select those and one more")
+            << QRect(0, 1, 3, 1) << QPoint(0, 1) << QPoint(3, 1)
+            << 4 << QTableWidgetSelectionRange(1, 0, 1, 0);
+
+    QTest::newRow("merge 3 cells in row, select adjacent to right")
+            << QRect(0, 1, 3, 1) << QPoint(3, 0) << QPoint(3, 2)
+            << 1 << QTableWidgetSelectionRange(0, 3, 2, 3);
+
+    QTest::newRow("merge 3 cells in row, select adjacent above")
+            << QRect(0, 2, 3, 2) << QPoint(0, 1) << QPoint(2, 1)
+            << 1 << QTableWidgetSelectionRange(1, 0, 1, 2);
+}
+
+void tst_QTableWidget::selectedSpannedCells() // QTBUG-255
+{
+    QFETCH(QRect, spannedCells);
+    QFETCH(QPoint, selectionStartCell);
+    QFETCH(QPoint, selectionEndCell);
+    QFETCH(int, expectedSelectionRangeCount);
+    QFETCH(const QTableWidgetSelectionRange, expectedFirstSelectionRange);
+
+    QTableWidget testWidget(4, 4);
+    testWidget.resize(600, 200);
+    testWidget.show();
+
+    // create and set items
+    for (int c = 0; c < 4; ++c) {
+        for (int r = 0; r < 4; ++r)
+            testWidget.setItem(r, c, new QTableWidgetItem(QString("Item %1 %2").arg(c).arg(r)));
+    }
+
+    // merge some cells
+    testWidget.setSpan(spannedCells.top(), spannedCells.left(), spannedCells.height(), spannedCells.width());
+
+    // click one cell and shift-click another, to select a range
+    QTest::mouseClick(testWidget.viewport(), Qt::LeftButton, Qt::NoModifier,
+                      testWidget.visualRect(testWidget.model()->index(selectionStartCell.y(), selectionStartCell.x())).center());
+    QTest::mouseClick(testWidget.viewport(), Qt::LeftButton, Qt::ShiftModifier,
+                      testWidget.visualRect(testWidget.model()->index(selectionEndCell.y(), selectionEndCell.x())).center());
+
+    auto ranges = testWidget.selectedRanges();
+    QCOMPARE(ranges.count(), expectedSelectionRangeCount);
+    // QTableWidgetSelectionRange::operator== is added in 6.3; but for now, check it the hard way
+    QCOMPARE(ranges.first().leftColumn(), expectedFirstSelectionRange.leftColumn());
+    QCOMPARE(ranges.first().rightColumn(), expectedFirstSelectionRange.rightColumn());
+    QCOMPARE(ranges.first().topRow(), expectedFirstSelectionRange.topRow());
+    QCOMPARE(ranges.first().bottomRow(), expectedFirstSelectionRange.bottomRow());
 }
 
 void tst_QTableWidget::removeRow_data()
