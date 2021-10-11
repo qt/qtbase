@@ -159,9 +159,9 @@ public:
         inline constexpr bool operator==(pointer p) const { return i == p; }
         inline constexpr bool operator!=(pointer p) const { return i != p; }
         inline iterator &operator++() { ++i; return *this; }
-        inline iterator operator++(int) { T *n = i; ++i; return n; }
-        inline iterator &operator--() { i--; return *this; }
-        inline iterator operator--(int) { T *n = i; i--; return n; }
+        inline iterator operator++(int) { auto copy = *this; ++*this; return copy; }
+        inline iterator &operator--() { --i; return *this; }
+        inline iterator operator--(int) { auto copy = *this; --*this; return copy; }
         inline qsizetype operator-(iterator j) const { return i - j.i; }
         inline operator T*() const { return i; }
 
@@ -209,9 +209,9 @@ public:
         inline constexpr bool operator==(pointer p) const { return i == p; }
         inline constexpr bool operator!=(pointer p) const { return i != p; }
         inline const_iterator &operator++() { ++i; return *this; }
-        inline const_iterator operator++(int) { const T *n = i; ++i; return n; }
-        inline const_iterator &operator--() { i--; return *this; }
-        inline const_iterator operator--(int) { const T *n = i; i--; return n; }
+        inline const_iterator operator++(int) { auto copy = *this; ++*this; return copy; }
+        inline const_iterator &operator--() { --i; return *this; }
+        inline const_iterator operator--(int) { auto copy = *this; --*this; return copy; }
         inline qsizetype operator-(const_iterator j) const { return i - j.i; }
         inline operator const T*() const { return i; }
 
@@ -559,15 +559,15 @@ public:
     }
 
     // STL-style
-    iterator begin() { detach(); return d->begin(); }
-    iterator end() { detach(); return d->end(); }
+    iterator begin() { detach(); return iterator(d->begin()); }
+    iterator end() { detach(); return iterator(d->end()); }
 
-    const_iterator begin() const noexcept { return d->constBegin(); }
-    const_iterator end() const noexcept { return d->constEnd(); }
-    const_iterator cbegin() const noexcept { return d->constBegin(); }
-    const_iterator cend() const noexcept { return d->constEnd(); }
-    const_iterator constBegin() const noexcept { return d->constBegin(); }
-    const_iterator constEnd() const noexcept { return d->constEnd(); }
+    const_iterator begin() const noexcept { return const_iterator(d->constBegin()); }
+    const_iterator end() const noexcept { return const_iterator(d->constEnd()); }
+    const_iterator cbegin() const noexcept { return const_iterator(d->constBegin()); }
+    const_iterator cend() const noexcept { return const_iterator(d->constEnd()); }
+    const_iterator constBegin() const noexcept { return const_iterator(d->constBegin()); }
+    const_iterator constEnd() const noexcept { return const_iterator(d->constEnd()); }
     reverse_iterator rbegin() { return reverse_iterator(end()); }
     reverse_iterator rend() { return reverse_iterator(begin()); }
     const_reverse_iterator rbegin() const noexcept { return const_reverse_iterator(end()); }
@@ -807,7 +807,7 @@ QList<T>::insert(qsizetype i, qsizetype n, parameter_type t)
     Q_ASSERT_X(n >= 0, "QList::insert", "invalid count");
     if (Q_LIKELY(n))
         d->insert(i, n, t);
-    return d.begin() + i;
+    return begin() + i;
 }
 
 template <typename T>
@@ -817,7 +817,7 @@ QList<T>::emplace(qsizetype i, Args&&... args)
 {
     Q_ASSERT_X(i >= 0 && i <= d->size, "QList<T>::insert", "index out of range");
     d->emplace(i, std::forward<Args>(args)...);
-    return d.begin() + i;
+    return begin() + i;
 }
 
 template<typename T>
@@ -825,7 +825,7 @@ template<typename... Args>
 inline typename QList<T>::reference QList<T>::emplaceBack(Args &&... args)
 {
     d->emplace(d->size, std::forward<Args>(args)...);
-    return *(d.end() - 1);
+    return *(end() - 1);
 }
 
 template <typename T>
@@ -839,7 +839,7 @@ typename QList<T>::iterator QList<T>::erase(const_iterator abegin, const_iterato
     qsizetype n = std::distance(abegin, aend);
     remove(i, n);
 
-    return d.begin() + i;
+    return begin() + i;
 }
 
 template <typename T>
