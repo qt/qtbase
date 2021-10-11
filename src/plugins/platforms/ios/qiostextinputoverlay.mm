@@ -1048,14 +1048,38 @@ void QIOSTextInputOverlay::updateFocusObject()
         s_editMenu = nullptr;
     }
 
-    if (platformInputContext()->inputMethodAccepted()) {
-        s_editMenu = [QIOSEditMenu new];
-        m_cursorRecognizer = [QIOSCursorRecognizer new];
+    const QVariant hintsVariant = QGuiApplication::inputMethod()->queryFocusObject(Qt::ImHints, QVariant());
+    const Qt::InputMethodHints hints = Qt::InputMethodHints(hintsVariant.toUInt());
+    if (hints & Qt::ImhNoTextHandles)
+        return;
+
+    // The focus object can emit selection updates (e.g from mouse drag), and
+    // accept modifying it through IM when dragging on the handles, even if it
+    // doesn't accept text input and IM in general (and hence return false from
+    // inputMethodAccepted()). This is the case for read-only text fields.
+    // Therefore, listen for selection changes also when the focus object
+    // reports that it's ImReadOnly (which we take as a hint that it's actually
+    // a text field, and that selections therefore might happen). But since
+    // we have no guarantee that the focus object can actually accept new selections
+    // through IM (and since we also need to respect if the input accepts selections
+    // in the first place), we only support selections started by the text field (e.g from
+    // mouse drag), even if we in theory could also start selections from a loupe.
+
+    const bool inputAccepted = platformInputContext()->inputMethodAccepted();
+    const bool readOnly = QGuiApplication::inputMethod()->queryFocusObject(Qt::ImReadOnly, QVariant()).toBool();
+
+    if (inputAccepted || readOnly) {
+        if (!(hints & Qt::ImhNoEditMenu))
+            s_editMenu = [QIOSEditMenu new];
         m_selectionRecognizer = [QIOSSelectionRecognizer new];
         m_openMenuOnTapRecognizer = [QIOSTapRecognizer new];
-        m_cursorRecognizer.enabled = YES;
         m_selectionRecognizer.enabled = YES;
         m_openMenuOnTapRecognizer.enabled = YES;
+    }
+
+    if (inputAccepted) {
+        m_cursorRecognizer = [QIOSCursorRecognizer new];
+        m_cursorRecognizer.enabled = YES;
     }
 }
 
