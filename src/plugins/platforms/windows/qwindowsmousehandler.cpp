@@ -353,7 +353,7 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
 
     auto *platformWindow = static_cast<QWindowsWindow *>(window->handle());
 
-    // If the window was recently resized via mouse doubleclick on the frame or title bar,
+    // If the window was recently resized via mouse double-click on the frame or title bar,
     // we don't get WM_LBUTTONDOWN or WM_LBUTTONDBLCLK for the second click,
     // but we will get at least one WM_MOUSEMOVE with left button down and the WM_LBUTTONUP,
     // which will result undesired mouse press and release events.

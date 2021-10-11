@@ -1296,7 +1296,7 @@ bool QWindowsGLContext::makeCurrent(QPlatformSurface *surface)
     if (const QOpenGLContextData *contextData = findByHWND(m_windowContexts, hwnd)) {
         // Repeated calls to wglMakeCurrent when vsync is enabled in the driver will
         // often result in 100% cpuload. This check is cheap and avoids the problem.
-        // This is reproducable on NVidia cards and Intel onboard chips.
+        // This is reproducible on NVidia cards and Intel onboard chips.
         if (QOpenGLStaticContext::opengl32.wglGetCurrentContext() == contextData->renderingContext
                 && QOpenGLStaticContext::opengl32.wglGetCurrentDC() == contextData->hdc) {
             return true;

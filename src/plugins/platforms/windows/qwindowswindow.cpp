@@ -1858,7 +1858,7 @@ void QWindowsWindow::handleDpiChanged(HWND hwnd, WPARAM wParam, LPARAM lParam)
     const qreal scale = qreal(dpi) / qreal(savedDpi());
     setSavedDpi(dpi);
 
-    // Send screen change first, so that the new sceen is set during any following resize
+    // Send screen change first, so that the new screen is set during any following resize
     checkForScreenChanged(QWindowsWindow::FromDpiChange);
 
     // We get WM_DPICHANGED in one of two situations:

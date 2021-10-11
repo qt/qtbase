@@ -75,7 +75,7 @@ QT_BEGIN_NAMESPACE
 using namespace QWindowsUiAutomation;
 
 
-// Returns a cached instance of the provider for a specific acessible interface.
+// Returns a cached instance of the provider for a specific accessible interface.
 QWindowsUiaMainProvider *QWindowsUiaMainProvider::providerForAccessible(QAccessibleInterface *accessible)
 {
     if (!accessible)
@@ -440,7 +440,7 @@ HRESULT QWindowsUiaMainProvider::GetPropertyValue(PROPERTYID idProp, VARIANT *pR
             // Control type converted from role.
             auto controlType = roleToControlTypeId(accessible->role());
 
-            // The native OSK should be disbled if the Qt OSK is in use,
+            // The native OSK should be disabled if the Qt OSK is in use,
             // or if disabled via application attribute.
             static bool imModuleEmpty = qEnvironmentVariableIsEmpty("QT_IM_MODULE");
             bool nativeVKDisabled = QCoreApplication::testAttribute(Qt::AA_DisableNativeVirtualKeyboard);
