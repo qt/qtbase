@@ -275,7 +275,6 @@ void QMimeBinaryProvider::matchGlobList(QMimeGlobMatchResult &result, CacheFile 
         //qDebug() << pattern << mimeType << weight << caseSensitive;
         QMimeGlobPattern glob(pattern, QString() /*unused*/, weight, qtCaseSensitive);
 
-        // TODO: this could be done faster for literals where a simple == would do.
         if (glob.matchFileName(fileName))
             result.addMatch(QLatin1String(mimeType), weight, pattern);
     }
