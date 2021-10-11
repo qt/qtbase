@@ -27,6 +27,11 @@
 **
 ****************************************************************************/
 
+// This test actually wants to practice narrowing conditions, so never define this.
+#ifdef QT_NO_NARROWING_CONVERSIONS_IN_CONNECT
+#undef QT_NO_NARROWING_CONVERSIONS_IN_CONNECT
+#endif
+
 #include <QTest>
 #include <QtTest/private/qpropertytesthelper_p.h>
 #include <QStringListModel>

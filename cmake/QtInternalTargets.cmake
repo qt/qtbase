@@ -131,6 +131,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" AND CMAKE_SYSTEM_NAME STREQUAL "
     target_compile_options(PlatformCommonInternal INTERFACE -Wno-ignored-attributes)
 endif()
 
+target_compile_definitions(PlatformCommonInternal INTERFACE QT_NO_NARROWING_CONVERSIONS_IN_CONNECT)
 target_compile_definitions(PlatformCommonInternal INTERFACE $<$<NOT:$<CONFIG:Debug>>:QT_NO_DEBUG>)
 
 function(qt_internal_apply_bitcode_flags target)
