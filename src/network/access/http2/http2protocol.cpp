@@ -71,9 +71,12 @@ Frame configurationToSettingsFrame(const QHttp2Configuration &config)
     // Server push:
     builder.append(Settings::ENABLE_PUSH_ID);
     builder.append(int(config.serverPushEnabled()));
-    // Stream receive window size:
-    builder.append(Settings::INITIAL_WINDOW_SIZE_ID);
-    builder.append(config.streamReceiveWindowSize());
+
+    // Stream receive window size (if it's a default value, don't include):
+    if (config.streamReceiveWindowSize() != defaultSessionWindowSize) {
+        builder.append(Settings::INITIAL_WINDOW_SIZE_ID);
+        builder.append(config.streamReceiveWindowSize());
+    }
 
     if (config.maxFrameSize() != minPayloadLimit) {
         builder.append(Settings::MAX_FRAME_SIZE_ID);
