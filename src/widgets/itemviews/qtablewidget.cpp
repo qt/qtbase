@@ -919,6 +919,20 @@ Qt::DropActions QTableModel::supportedDropActions() const
 */
 
 /*!
+    \fn bool QTableWidgetSelectionRange::operator==(const QTableWidgetSelectionRange &lhs, const QTableWidgetSelectionRange &rhs)
+    \since 6.3
+
+    Returns true if \a lhs and \a rhs are equal, otherwise returns false.
+*/
+
+/*!
+    \fn bool QTableWidgetSelectionRange::operator!=(const QTableWidgetSelectionRange &lhs, const QTableWidgetSelectionRange &rhs)
+    \since 6.3
+
+    Returns true if \a lhs and \a rhs are not equal, otherwise returns false.
+*/
+
+/*!
     \fn int QTableWidgetSelectionRange::topRow() const
 
     Returns the top row of the range.

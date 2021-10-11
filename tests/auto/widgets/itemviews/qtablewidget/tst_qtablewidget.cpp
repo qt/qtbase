@@ -49,6 +49,7 @@ private slots:
     void initTestCase();
     void init();
     void getSetCheck();
+    void selectionRange();
     void clear();
     void clearContents();
     void rowCount();
@@ -153,6 +154,19 @@ void tst_QTableWidget::getSetCheck()
     QCOMPARE(var4, obj1.itemPrototype());
     obj1.setItemPrototype(nullptr);
     QCOMPARE(obj1.itemPrototype(), nullptr);
+}
+
+void tst_QTableWidget::selectionRange()
+{
+    QTableWidgetSelectionRange defaultSelection;
+    QTableWidgetSelectionRange selection(1, 2, 3, 4);
+
+    QTableWidgetSelectionRange copy(selection);
+    QCOMPARE(copy, selection);
+    QVERIFY(copy != defaultSelection);
+
+    defaultSelection = copy;
+    QCOMPARE(defaultSelection, copy);
 }
 
 void tst_QTableWidget::initTestCase()
