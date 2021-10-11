@@ -148,7 +148,7 @@ void eatMouseMove()
 
     Base classes for native dialogs (using the CLSID-based
     dialog interfaces "IFileDialog", etc. available from Windows
-    Vista on) that mimick the behaviour of their QDialog
+    Vista on) that mimic the behavior of their QDialog
     counterparts as close as possible.
 
     Instances of derived classes are controlled by
