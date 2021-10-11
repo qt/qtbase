@@ -817,7 +817,7 @@ bool QIBaseResultPrivate::writeArray(int column, const QList<QVariant> &list)
     ba.resize(int(bufLen));
 
     if (list.size() > arraySize) {
-        error = QLatin1String("Array size missmatch: size of %1 is %2, size of provided list is %3");
+        error = QLatin1String("Array size mismatch: size of %1 is %2, size of provided list is %3");
         error = error.arg(QLatin1String(sqlname)).arg(arraySize).arg(list.size());
         q->setLastError(QSqlError(error, QLatin1String(""), QSqlError::StatementError));
         return false;
