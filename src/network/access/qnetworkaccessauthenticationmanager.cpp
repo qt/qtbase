@@ -62,20 +62,23 @@ public:
         reserve(1);
     }
 
-    QNetworkAuthenticationCredential *findClosestMatch(const QString &domain)
+    using QList<QNetworkAuthenticationCredential>::begin;
+    using QList<QNetworkAuthenticationCredential>::end;
+
+    iterator findClosestMatch(const QString &domain)
     {
         iterator it = std::lower_bound(begin(), end(), domain);
         if (it == end() && !isEmpty())
             --it;
         if (it == end() || !domain.startsWith(it->domain))
-            return nullptr;
-        return &*it;
+            return end();
+        return it;
     }
 
     void insert(const QString &domain, const QString &user, const QString &password)
     {
-        QNetworkAuthenticationCredential *closestMatch = findClosestMatch(domain);
-        if (closestMatch && closestMatch->domain == domain) {
+        iterator closestMatch = findClosestMatch(domain);
+        if (closestMatch != end() && closestMatch->domain == domain) {
             // we're overriding the current credentials
             closestMatch->user = user;
             closestMatch->password = password;
@@ -85,7 +88,7 @@ public:
             newCredential.user = user;
             newCredential.password = password;
 
-            if (closestMatch)
+            if (closestMatch != end())
                 QList<QNetworkAuthenticationCredential>::insert(++closestMatch, newCredential);
             else
                 QList<QNetworkAuthenticationCredential>::insert(end(), newCredential);
@@ -287,9 +290,9 @@ QNetworkAccessAuthenticationManager::fetchCachedCredentials(const QUrl &url,
 
     QNetworkAuthenticationCache *auth =
         static_cast<QNetworkAuthenticationCache *>(authenticationCache.requestEntryNow(cacheKey));
-    QNetworkAuthenticationCredential *cred = auth->findClosestMatch(url.path());
+    auto cred = auth->findClosestMatch(url.path());
     QNetworkAuthenticationCredential ret;
-    if (cred)
+    if (cred != auth->end())
         ret = *cred;
     authenticationCache.releaseEntry(cacheKey);
     return ret;
