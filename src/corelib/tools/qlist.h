@@ -92,6 +92,10 @@ public:
 template <> struct QListSpecialMethods<QByteArray>;
 template <> struct QListSpecialMethods<QString>;
 
+#if !defined(QT_STRICT_QLIST_ITERATORS) && (QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)) && !defined(Q_OS_WIN)
+#define QT_STRICT_QLIST_ITERATORS
+#endif
+
 #ifdef Q_QDOC // define QVector for QDoc
 template<typename T> class QVector : public QList<T> {};
 #endif
@@ -134,6 +138,10 @@ public:
         friend class QList<T>;
         friend class const_iterator;
         T *i = nullptr;
+#ifdef QT_STRICT_QLIST_ITERATORS
+        inline constexpr explicit iterator(T *n) : i(n) {}
+#endif
+
     public:
         using difference_type = qsizetype;
         using value_type = T;
@@ -149,7 +157,9 @@ public:
         using reference = T &;
 
         inline constexpr iterator() = default;
-        inline iterator(T *n) : i(n) {}
+#ifndef QT_STRICT_QLIST_ITERATORS
+        inline constexpr explicit iterator(T *n) : i(n) {}
+#endif
         inline T &operator*() const { return *i; }
         inline T *operator->() const { return i; }
         inline T &operator[](qsizetype j) const { return *(i + j); }
@@ -172,7 +182,7 @@ public:
         inline iterator &operator--() { --i; return *this; }
         inline iterator operator--(int) { auto copy = *this; --*this; return copy; }
         inline qsizetype operator-(iterator j) const { return i - j.i; }
-#if QT_DEPRECATED_SINCE(6, 3)
+#if QT_DEPRECATED_SINCE(6, 3) && !defined(QT_STRICT_QLIST_ITERATORS)
         QT_DEPRECATED_VERSION_X_6_3("Use operator* or operator-> rather than relying on "
                                     "the implicit conversion between a QList/QVector::iterator "
                                     "and a raw pointer")
@@ -195,6 +205,10 @@ public:
         friend class QList<T>;
         friend class iterator;
         const T *i = nullptr;
+#ifdef QT_STRICT_QLIST_ITERATORS
+        inline constexpr explicit const_iterator(const T *n) : i(n) {}
+#endif
+
     public:
         using difference_type = qsizetype;
         using value_type = T;
@@ -209,7 +223,9 @@ public:
         using reference = const T &;
 
         inline constexpr const_iterator() = default;
-        inline const_iterator(const T *n) : i(n) {}
+#ifndef QT_STRICT_QLIST_ITERATORS
+        inline constexpr explicit const_iterator(const T *n) : i(n) {}
+#endif
         inline constexpr const_iterator(iterator o): i(o.i) {}
         inline const T &operator*() const { return *i; }
         inline const T *operator->() const { return i; }
@@ -233,7 +249,7 @@ public:
         inline const_iterator &operator--() { --i; return *this; }
         inline const_iterator operator--(int) { auto copy = *this; --*this; return copy; }
         inline qsizetype operator-(const_iterator j) const { return i - j.i; }
-#if QT_DEPRECATED_SINCE(6, 3)
+#if QT_DEPRECATED_SINCE(6, 3) && !defined(QT_STRICT_QLIST_ITERATORS)
         QT_DEPRECATED_VERSION_X_6_3("Use operator* or operator-> rather than relying on "
                                     "the implicit conversion between a QList/QVector::const_iterator "
                                     "and a raw pointer")

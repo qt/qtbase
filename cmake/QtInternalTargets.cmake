@@ -111,6 +111,13 @@ endif()
 target_compile_definitions(PlatformCommonInternal INTERFACE QT_NO_NARROWING_CONVERSIONS_IN_CONNECT)
 target_compile_definitions(PlatformCommonInternal INTERFACE $<$<NOT:$<CONFIG:Debug>>:QT_NO_DEBUG>)
 
+if(FEATURE_developer_build)
+    # This causes an ABI break on Windows, so we cannot unconditionally
+    # enable it. Keep it for developer builds only for now.
+    ### Qt 7: remove the if.
+    target_compile_definitions(PlatformCommonInternal INTERFACE QT_STRICT_QLIST_ITERATORS)
+endif()
+
 function(qt_internal_apply_bitcode_flags target)
     # See mkspecs/features/uikit/bitcode.prf
     set(release_flags "-fembed-bitcode")
