@@ -1460,10 +1460,18 @@ QColor Declaration::colorValue(const QPalette &pal) const
         return QColor();
 
     if (d->parsed.isValid()) {
-        if (d->parsed.userType() == QMetaType::QColor)
+        switch (d->parsed.typeId()) {
+        case qMetaTypeId<QColor>():
             return qvariant_cast<QColor>(d->parsed);
-        if (d->parsed.userType() == QMetaType::Int)
+        case qMetaTypeId<int>():
             return pal.color((QPalette::ColorRole)(d->parsed.toInt()));
+        case qMetaTypeId<QList<QVariant>>():
+            if (d->parsed.toList().size() == 1) {
+                const auto &value = d->parsed.toList().at(0);
+                return qvariant_cast<QColor>(value);
+            }
+            break;
+        }
     }
 
     ColorData color = parseColorValue(d->values.at(0));
@@ -1507,6 +1515,7 @@ void Declaration::brushValues(QBrush *c, const QPalette &pal) const
     int i = 0;
     if (d->parsed.isValid()) {
         needParse = 0;
+        Q_ASSERT(d->parsed.metaType() == QMetaType::fromType<QList<QVariant>>());
         QList<QVariant> v = d->parsed.toList();
         for (i = 0; i < qMin(v.count(), 4); i++) {
             if (v.at(i).userType() == QMetaType::QBrush) {
