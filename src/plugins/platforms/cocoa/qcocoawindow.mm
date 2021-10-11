@@ -105,7 +105,7 @@ static void qRegisterNotificationCallbacks()
                 if (QNSView *qnsView = qnsview_cast(notification.object))
                     cocoaWindows += qnsView.platformWindow;
             } else {
-                qCWarning(lcCocoaNotifications) << "Unhandled notifcation"
+                qCWarning(lcCocoaNotifications) << "Unhandled notification"
                     << notification.name << "for" << notification.object;
                 return;
             }
