@@ -1102,13 +1102,16 @@ QForeachContainer<typename std::decay<T>::type> qMakeForeachContainer(T &&t)
 
 }
 
+#define Q_FOREACH_JOIN(A, B) Q_FOREACH_JOIN_IMPL(A, B)
+#define Q_FOREACH_JOIN_IMPL(A, B) A ## B
+
 #if __cplusplus >= 201703L
 // Use C++17 if statement with initializer. User's code ends up in a else so
 // scoping of different ifs is not broken
-#define Q_FOREACH(variable, container)                                   \
-for (auto _container_ = QtPrivate::qMakeForeachContainer(container);     \
-     _container_.i != _container_.e;  ++_container_.i)                   \
-    if (variable = *_container_.i; false) {} else
+#define Q_FOREACH_IMPL(variable, name, container)                 \
+    for (auto name = QtPrivate::qMakeForeachContainer(container); \
+        name.i != name.e; ++name.i)                               \
+        if (variable = *name.i; false) {} else
 #else
 // Explanation of the control word:
 //  - it's initialized to 1
@@ -1119,12 +1122,15 @@ for (auto _container_ = QtPrivate::qMakeForeachContainer(container);     \
 //    the outer loop to continue executing
 //  - if there was a break inside the inner loop, it will exit with control still
 //    set to 1; in that case, the outer loop will invert it to 0 and will exit too
-#define Q_FOREACH(variable, container)                                \
-for (auto _container_ = QtPrivate::qMakeForeachContainer(container); \
-     _container_.control && _container_.i != _container_.e;         \
-     ++_container_.i, _container_.control ^= 1)                     \
-    for (variable = *_container_.i; _container_.control; _container_.control = 0)
+#define Q_FOREACH_IMPL(variable, name, container)             \
+for (auto name = QtPrivate::qMakeForeachContainer(container); \
+     name.control && name.i != name.e;                        \
+     ++name.i, name.control ^= 1)                             \
+    for (variable = *name.i; name.control; name.control = 0)
 #endif
+
+#define Q_FOREACH(variable, container) \
+    Q_FOREACH_IMPL(variable, Q_FOREACH_JOIN(_container_, __LINE__), container)
 #endif // QT_NO_FOREACH
 
 #define Q_FOREVER for(;;)
