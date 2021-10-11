@@ -792,7 +792,7 @@ void tst_QApplication::quitOnLastWindowClosed()
     {
         int argc = 0;
         QApplication app(argc, nullptr);
-        QSignalSpy appSpy(&app, &QApplication::lastWindowClosed);
+        QSignalSpy appSpy(&app, &QGuiApplication::lastWindowClosed);
 
         // exec a dialog for 1 second, then show the window
         QuitOnLastWindowClosedWindow window;
@@ -1335,7 +1335,7 @@ void tst_QApplication::testDeleteLater()
 #endif
     int argc = 0;
     QApplication app(argc, nullptr);
-    connect(&app, &QApplication::lastWindowClosed, &app, &QCoreApplication::quit);
+    connect(&app, &QGuiApplication::lastWindowClosed, &app, &QCoreApplication::quit);
 
     DeleteLaterWidget *wgt = new DeleteLaterWidget(&app);
     QTimer::singleShot(500, wgt, &DeleteLaterWidget::runTest);

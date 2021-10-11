@@ -12080,7 +12080,7 @@ void tst_QWidget::deleteWindowInCloseEvent()
 */
 void tst_QWidget::quitOnClose()
 {
-    QSignalSpy quitSpy(qApp, &QApplication::lastWindowClosed);
+    QSignalSpy quitSpy(qApp, &QGuiApplication::lastWindowClosed);
 
     std::unique_ptr<QWidget>widget(new QWidget);
     widget->show();

@@ -8334,7 +8334,7 @@ bool QWidgetPrivate::close_helper(CloseMode mode)
     is also deleted. A close events is delivered to the widget no
     matter if the widget is visible or not.
 
-    The \l QApplication::lastWindowClosed() signal is emitted when the
+    The \l QGuiApplication::lastWindowClosed() signal is emitted when the
     last visible primary window (i.e. window with no parent) with the
     Qt::WA_QuitOnClose attribute set is closed. By default this
     attribute is set for all widgets except transient windows such as
