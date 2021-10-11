@@ -209,7 +209,7 @@ static QHash<QPlatformTheme::Palette, QPalette*> qt_mac_createRolePalettes()
             } else {
                 // selectedMenuItemColor would presumably be the correct color to use as the background
                 // for selected menu items. But that color is always blue, and doesn't follow the
-                // appearance color in system preferences. So we therefore deliberatly choose to use
+                // appearance color in system preferences. So we therefore deliberately choose to use
                 // keyboardFocusIndicatorColor instead, which appears to have the same color value.
                 selectedMenuItemColor = [NSColor keyboardFocusIndicatorColor];
             }

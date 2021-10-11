@@ -324,7 +324,7 @@ void QCocoaMenu::syncSeparatorsCollapsible(bool enable)
             if (!item->isSeparator())
                 continue;
 
-            // sync the visiblity directly
+            // sync the visibility directly
             item->sync();
         }
     }

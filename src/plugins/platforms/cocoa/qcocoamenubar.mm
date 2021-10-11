@@ -196,7 +196,7 @@ void QCocoaMenuBar::syncMenu_helper(QPlatformMenu *menu, bool menubarUpdate)
 
     BOOL shouldHide = YES;
     if (cocoaMenu->isVisible()) {
-        // If the NSMenu has no visble items, or only separators, we should hide it
+        // If the NSMenu has no visible items, or only separators, we should hide it
         // on the menubar. This can happen after syncing the menu items since they
         // can be moved to other menus.
         for (NSMenuItem *item in cocoaMenu->nsMenu().itemArray)

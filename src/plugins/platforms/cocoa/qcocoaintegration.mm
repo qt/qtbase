@@ -163,7 +163,7 @@ QCocoaIntegration::QCocoaIntegration(const QStringList &paramList)
 
     if (qEnvironmentVariableIsEmpty("QT_MAC_DISABLE_FOREGROUND_APPLICATION_TRANSFORM")) {
         // Applications launched from plain executables (without an app
-        // bundle) are "background" applications that does not take keybaord
+        // bundle) are "background" applications that does not take keyboard
         // focus or have a dock icon or task switcher entry. Qt Gui apps generally
         // wants to be foreground applications so change the process type. (But
         // see the function implementation for exceptions.)
