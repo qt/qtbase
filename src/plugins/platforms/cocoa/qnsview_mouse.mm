@@ -123,7 +123,7 @@ static const QPointingDevice *pointingDeviceFor(qint64 deviceID)
 
 - (void)resetMouseButtons
 {
-    qCDebug(lcQpaMouse) << "Reseting mouse buttons";
+    qCDebug(lcQpaMouse) << "Resetting mouse buttons";
     m_buttons = Qt::NoButton;
     m_frameStrutButtons = Qt::NoButton;
 }
