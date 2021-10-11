@@ -2004,6 +2004,9 @@ void QTableView::setSelection(const QRect &rect, QItemSelectionModel::SelectionF
 
     if (d->hasSpans()) {
         bool expanded;
+        // when the current selection does not intersect with any spans of merged cells,
+        // the range of selected cells must be the same as if there were no merged cells
+        bool intersectsSpan = false;
         int top = qMin(d->visualRow(tl.row()), d->visualRow(br.row()));
         int left = qMin(d->visualColumn(tl.column()), d->visualColumn(br.column()));
         int bottom = qMax(d->visualRow(tl.row()), d->visualRow(br.row()));
@@ -2018,6 +2021,7 @@ void QTableView::setSelection(const QRect &rect, QItemSelectionModel::SelectionF
                 int r = d->visualColumn(d->columnSpanEndLogical(span.left(), span.width()));
                 if ((t > bottom) || (l > right) || (top > b) || (left > r))
                     continue; // no intersect
+                intersectsSpan = true;
                 if (t < top) {
                     top = t;
                     expanded = true;
@@ -2038,14 +2042,20 @@ void QTableView::setSelection(const QRect &rect, QItemSelectionModel::SelectionF
                     break;
             }
         } while (expanded);
-         selection.reserve((right - left + 1) * (bottom - top + 1));
-         for (int horizontal = left; horizontal <= right; ++horizontal) {
-             int column = d->logicalColumn(horizontal);
-             for (int vertical = top; vertical <= bottom; ++vertical) {
-                 int row = d->logicalRow(vertical);
-                 QModelIndex index = d->model->index(row, column, d->root);
-                 selection.append(QItemSelectionRange(index));
+         if (intersectsSpan) {
+             selection.reserve((right - left + 1) * (bottom - top + 1));
+             for (int horizontal = left; horizontal <= right; ++horizontal) {
+                 int column = d->logicalColumn(horizontal);
+                 for (int vertical = top; vertical <= bottom; ++vertical) {
+                     int row = d->logicalRow(vertical);
+                     QModelIndex index = d->model->index(row, column, d->root);
+                     selection.append(QItemSelectionRange(index));
+                 }
              }
+         } else {
+             QItemSelectionRange range(tl, br);
+             if (!range.isEmpty())
+                 selection.append(range);
          }
     } else if (verticalMoved && horizontalMoved) {
          int top = d->visualRow(tl.row());
