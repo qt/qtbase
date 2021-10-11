@@ -146,7 +146,7 @@ QWasmIntegration::QWasmIntegration()
 
 QWasmIntegration::~QWasmIntegration()
 {
-    // Remove event listenes
+    // Remove event listener
     emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, EM_TRUE, nullptr);
     emscripten::val visualViewport = emscripten::val::global("window")["visualViewport"];
     if (!visualViewport.isUndefined()) {

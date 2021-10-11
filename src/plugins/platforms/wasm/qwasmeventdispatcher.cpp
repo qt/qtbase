@@ -148,7 +148,7 @@ void QWasmEventDispatcher::doMaintainTimers()
 {
     Q_D(QWasmEventDispatcher);
 
-    // This functon schedules native timers in order to wake up to
+    // This function schedules native timers in order to wake up to
     // process events and activate Qt timers. This is done using the
     // emscripten_async_call() API which schedules a new timer.
     // There is unfortunately no way to cancel or update a current

@@ -146,7 +146,7 @@ void QWasmCompositor::setVisible(QWasmWindow *window, bool visible)
     if (visible)
         compositedWindow.damage = compositedWindow.window->geometry();
     else
-        m_globalDamage = compositedWindow.window->geometry(); // repaint previosly covered area.
+        m_globalDamage = compositedWindow.window->geometry(); // repaint previously covered area.
 
     requestRedraw();
 }
@@ -172,7 +172,7 @@ void QWasmCompositor::lower(QWasmWindow *window)
     m_windowStack.removeAll(window);
     m_windowStack.prepend(window);
     QWasmCompositedWindow &compositedWindow = m_compositedWindows[window];
-    m_globalDamage = compositedWindow.window->geometry(); // repaint previosly covered area.
+    m_globalDamage = compositedWindow.window->geometry(); // repaint previously covered area.
 
     notifyTopWindowChanged(window);
 }

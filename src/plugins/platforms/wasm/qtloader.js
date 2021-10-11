@@ -68,7 +68,7 @@
 //
 //  containerElements : [container-element, ...]
 //      One or more HTML elements. QtLoader will display loader elements
-//      on these while loading the applicaton, and replace the loader with a
+//      on these while loading the application, and replace the loader with a
 //      canvas on load complete.
 //  canvasElements : [canvas-element, ...]
 //      One or more canvas elements.
@@ -280,7 +280,7 @@ function QtLoader(config)
     function fetchThenCompileWasm(response) {
         return response.arrayBuffer().then(function(data) {
             self.loaderSubState = "Compiling";
-            setStatus("Loading") // trigger loaderSubState udpate
+            setStatus("Loading") // trigger loaderSubState update
             return WebAssembly.compile(data);
         });
     }
