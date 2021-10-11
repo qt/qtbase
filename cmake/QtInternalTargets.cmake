@@ -140,6 +140,7 @@ if (ANDROID AND NOT CMAKE_HOST_WIN32)
     target_link_options(PlatformModuleInternal INTERFACE -fuse-ld=lld)
 endif()
 
+target_compile_definitions(PlatformCommonInternal INTERFACE QT_NO_NARROWING_CONVERSIONS_IN_CONNECT)
 target_compile_definitions(PlatformCommonInternal INTERFACE $<$<NOT:$<CONFIG:Debug>>:QT_NO_DEBUG>)
 
 function(qt_internal_apply_bitcode_flags target)
