@@ -590,7 +590,7 @@ xcb_cursor_t QXcbCursor::createFontCursor(int cshape)
     // Non-standard X11 cursors are created from bitmaps
     cursor = createNonStandardCursor(cshape);
 
-    // Create a glpyh cursor if everything else failed
+    // Create a glyph cursor if everything else failed
     if (!cursor && cursorId) {
         cursor = xcb_generate_id(conn);
         xcb_create_glyph_cursor(conn, cursor, cursorFont, cursorFont,

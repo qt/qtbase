@@ -268,7 +268,7 @@ QTessellatorPrivate::Edge::Edge(const QTessellatorPrivate::Vertices &vertices, i
 //
 
 // WARNING: It's absolutely critical that the intersect() and isLeftOf() methods use
-// exactly the same algorithm to calulate yi. It's also important to be sure the algorithms
+// exactly the same algorithm to calculate yi. It's also important to be sure the algorithms
 // are transitive (ie. the conditions below are true for all input data):
 //
 // a.intersect(b) == b.intersect(a)

@@ -884,7 +884,7 @@ QDpi QXcbScreen::logicalDpi() const
         return QDpi(forcedDpi, forcedDpi);
 
     // Fall back to 96 DPI in case no logical DPI is set. We don't want to
-    // return physical DPI here, since that is a differnt type of DPI: Logical
+    // return physical DPI here, since that is a different type of DPI: Logical
     // DPI typically accounts for user preference and viewing distance, and is
     // quantized into DPI classes (96, 144, 192, etc); pysical DPI is an exact
     // physical measure.

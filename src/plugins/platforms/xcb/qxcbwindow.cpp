@@ -1771,7 +1771,7 @@ void QXcbWindow::handleConfigureNotifyEvent(const xcb_configure_notify_event_t *
     if (!qFuzzyCompare(QHighDpiScaling::factor(newScreen), m_sizeHintsScaleFactor))
         propagateSizeHints();
 
-    // Send the synthetic expose event on resize only when the window is shrinked,
+    // Send the synthetic expose event on resize only when the window is shrunk,
     // because the "XCB_GRAVITY_NORTH_WEST" flag doesn't send it automatically.
     if (!m_oldWindowSize.isEmpty()
             && (actualGeometry.width() < m_oldWindowSize.width()

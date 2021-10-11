@@ -56,7 +56,7 @@ enum {
 };
 
 // QXcbSystemTrayTracker provides API for accessing the tray window and tracks
-// its lifecyle by listening for its destruction and recreation.
+// its lifecycle by listening for its destruction and recreation.
 // See http://standards.freedesktop.org/systemtray-spec/systemtray-spec-latest.html
 
 QXcbSystemTrayTracker *QXcbSystemTrayTracker::create(QXcbConnection *connection)

@@ -763,7 +763,7 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
         if (xkb_event->any.deviceID == m_keyboard->coreDeviceId()) {
             switch (xkb_event->any.xkbType) {
                 // XkbNewKkdNotify and XkbMapNotify together capture all sorts of keymap
-                // updates (e.g. xmodmap, xkbcomp, setxkbmap), with minimal redundent recompilations.
+                // updates (e.g. xmodmap, xkbcomp, setxkbmap), with minimal redundant recompilations.
                 case XCB_XKB_STATE_NOTIFY:
                     m_keyboard->updateXKBState(&xkb_event->state_notify);
                     break;
