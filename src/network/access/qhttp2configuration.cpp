@@ -98,9 +98,6 @@ class QHttp2ConfigurationPrivate : public QSharedData
 {
 public:
     unsigned sessionWindowSize = Http2::defaultSessionWindowSize;
-    // The size below is quite a limiting default value, QNetworkRequest
-    // by default sets a larger number, an application can change this using
-    // QNetworkRequest::setHttp2Configuration.
     unsigned streamWindowSize = Http2::defaultSessionWindowSize;
 
     unsigned maxFrameSize = Http2::minPayloadLimit; // Initial (default) value of 16Kb.
@@ -256,7 +253,7 @@ bool QHttp2Configuration::setStreamReceiveWindowSize(unsigned size)
 /*!
     Returns the window size for stream-level flow control.
     The default value QNetworkAccessManager will be using is
-    21474836 octets.
+    65535 octets (see \l {https://httpwg.org/specs/rfc7540.html#SettingValues}{RFC 7540}).
 */
 unsigned QHttp2Configuration::streamReceiveWindowSize() const
 {

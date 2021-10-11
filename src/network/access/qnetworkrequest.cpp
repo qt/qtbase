@@ -492,13 +492,14 @@ public:
 QNetworkRequest::QNetworkRequest()
     : d(new QNetworkRequestPrivate)
 {
-
 #if QT_CONFIG(http)
-    // Initial values proposed by RFC 7540 are quite draconian,
-    // so unless an application will set its own parameters, we
-    // make stream window size larger and increase (via WINDOW_UPDATE)
-    // the session window size. These are our 'defaults':
-    d->h2Configuration.setStreamReceiveWindowSize(Http2::qtDefaultStreamReceiveWindowSize);
+    // Initial values proposed by RFC 7540 are quite draconian, but we
+    // know about servers configured with this value as maximum possible,
+    // rejecting our SETTINGS frame and sending us a GOAWAY frame with the
+    // flow control error set. Unless an application sets its own parameters,
+    // we don't send SETTINGS_INITIAL_WINDOW_SIZE, but increase
+    // (via WINDOW_UPDATE) the session window size. These are our 'defaults':
+    d->h2Configuration.setStreamReceiveWindowSize(Http2::defaultSessionWindowSize);
     d->h2Configuration.setSessionReceiveWindowSize(Http2::maxSessionReceiveWindowSize);
     d->h2Configuration.setServerPushEnabled(false);
 #endif // QT_CONFIG(http)
