@@ -25,8 +25,8 @@ if(Vulkan_INCLUDE_DIR)
         _qt_skip_include_dir_for_pri TRUE)
 
     # Also propagate MoltenVK include directory on Apple platforms if found.
-    # Assumes the folder structure of the LunarG Vulkan SDK.
     if(APPLE)
+        # Check for the LunarG Vulkan SDK folder structure.
         set(__qt_molten_vk_include_path "${Vulkan_INCLUDE_DIR}/../../MoltenVK/include")
         get_filename_component(
             __qt_molten_vk_include_path
@@ -34,6 +34,16 @@ if(Vulkan_INCLUDE_DIR)
         if(EXISTS "${__qt_molten_vk_include_path}")
             target_include_directories(WrapVulkanHeaders::WrapVulkanHeaders INTERFACE
                 ${__qt_molten_vk_include_path})
+        endif()
+
+        # Check for homebrew molten-vk folder structure
+        set(__qt_molten_vk_homebrew_include_path "${Vulkan_INCLUDE_DIR}/../../include")
+        get_filename_component(
+            __qt_molten_vk_homebrew_include_path
+            "${__qt_molten_vk_homebrew_include_path}" ABSOLUTE)
+        if(EXISTS "${__qt_molten_vk_homebrew_include_path}")
+            target_include_directories(WrapVulkanHeaders::WrapVulkanHeaders INTERFACE
+                ${__qt_molten_vk_homebrew_include_path})
         endif()
     endif()
 endif()
