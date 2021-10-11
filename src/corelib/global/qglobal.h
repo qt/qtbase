@@ -1244,10 +1244,15 @@ QForeachContainer<typename std::decay<T>::type> qMakeForeachContainer(T &&t)
 
 // Use C++17 if statement with initializer. User's code ends up in a else so
 // scoping of different ifs is not broken
-#define Q_FOREACH(variable, container)                                   \
-for (auto _container_ = QtPrivate::qMakeForeachContainer(container);     \
-     _container_.i != _container_.e;  ++_container_.i)                   \
-    if (variable = *_container_.i; false) {} else
+#define Q_FOREACH_IMPL(variable, name, container)                                             \
+    for (auto name = QtPrivate::qMakeForeachContainer(container); name.i != name.e; ++name.i) \
+        if (variable = *name.i; false) {} else
+
+#define Q_FOREACH_JOIN(A, B) Q_FOREACH_JOIN_IMPL(A, B)
+#define Q_FOREACH_JOIN_IMPL(A, B) A ## B
+
+#define Q_FOREACH(variable, container) \
+    Q_FOREACH_IMPL(variable, Q_FOREACH_JOIN(_container_, __LINE__), container)
 #endif // QT_NO_FOREACH
 
 #define Q_FOREVER for(;;)
