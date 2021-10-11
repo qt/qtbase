@@ -322,7 +322,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSViewMouseMoveHelper);
         // the QWindow. The latter means that the QWindow should have keyboard
         // focus. But those two are not necessarily the same; A tool window could e.g be
         // rendered as Active while the parent window, which is also Active, has
-        // input focus. But we currently don't distiguish between that cleanly in Qt.
+        // input focus. But we currently don't distinguish between that cleanly in Qt.
         // Since we don't want a QWindow to be rendered as Active when the NSWindow
         // it belongs to is not key, we skip calling handleWindowActivated when
         // that is the case. Instead, we wait for the window to become key, and handle

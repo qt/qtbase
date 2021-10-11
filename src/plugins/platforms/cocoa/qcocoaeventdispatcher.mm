@@ -688,7 +688,7 @@ bool QCocoaEventDispatcherPrivate::hasModalSession() const
 void QCocoaEventDispatcherPrivate::cleanupModalSessions()
 {
     // Go through the list of modal sessions, and end those
-    // that no longer has a window assosiated; no window means
+    // that no longer has a window associated; no window means
     // the session has logically ended. The reason we wait like
     // this to actually end the sessions for real (rather than at the
     // point they were marked as stopped), is that ending a session

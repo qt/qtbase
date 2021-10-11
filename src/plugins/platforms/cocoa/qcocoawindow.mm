@@ -253,7 +253,7 @@ bool QCocoaWindow::isForeignWindow() const
 
 QRect QCocoaWindow::geometry() const
 {
-    // QWindows that are embedded in a NSView hiearchy may be considered
+    // QWindows that are embedded in a NSView hierarchy may be considered
     // top-level from Qt's point of view but are not from Cocoa's point
     // of view. Embedded QWindows get global (screen) geometry.
     if (isEmbedded()) {
@@ -1125,7 +1125,7 @@ NSWindow *QCocoaWindow::nativeWindow() const
 
 void QCocoaWindow::setEmbeddedInForeignView()
 {
-    // Release any previosly created NSWindow.
+    // Release any previously created NSWindow.
     [m_nsWindow closeAndRelease];
     m_nsWindow = 0;
 }
@@ -1828,7 +1828,7 @@ void QCocoaWindow::applyContentBorderThickness(NSWindow *window)
         if (!m_enabledContentBorderAreas.value(range.identifier, false))
             continue;
 
-        // Is this sub-range adjacent to or overlaping the
+        // Is this sub-range adjacent to or overlapping the
         // existing total border area range? If so merge
         // it into the total range,
         if (range.upper <= (effectiveTopContentBorderThickness + 1))
@@ -1879,7 +1879,7 @@ bool QCocoaWindow::testContentBorderAreaPosition(int position) const
     if (!m_drawContentBorderGradient || !isContentView())
         return false;
 
-    // Determine if the given y postion (relative to the content area) is inside the
+    // Determine if the given y position (relative to the content area) is inside the
     // unified toolbar area. Note that the value returned by contentBorderThicknessForEdge
     // includes the title bar height; subtract it.
     const int contentBorderThickness = [m_view.window contentBorderThicknessForEdge:NSMaxYEdge];

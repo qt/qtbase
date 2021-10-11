@@ -191,7 +191,7 @@ OSStatus QMacPasteboard::promiseKeeper(PasteboardRef paste, PasteboardItemID id,
 
     if (!promise.itemId) {
         // There was no promise that could deliver data for the
-        // given id and flavor. This should not happend.
+        // given id and flavor. This should not happen.
         qDebug("Pasteboard: %d: Request for %ld, %s, but no promise found!", __LINE__, promise_id, qPrintable(flavorAsQString));
         return cantGetFlavorErr;
     }

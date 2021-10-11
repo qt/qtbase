@@ -343,7 +343,7 @@ QT_USE_NAMESPACE
         return item.enabled; // FIXME Test with with Qt as plugin or embedded QWindow.
 
     auto *platformItem = nativeItem.platformMenuItem;
-    if (!platformItem) // Try a bit harder with orphan menu itens
+    if (!platformItem) // Try a bit harder with orphan menu items
         return item.hasSubmenu || (item.enabled && (item.action != @selector(qt_itemFired:)));
 
     // Menu-holding items are always enabled, as it's conventional in Cocoa
