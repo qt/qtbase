@@ -295,7 +295,7 @@ bool X509CertificateGeneric::parse(const QByteArray &data)
                         // subjectAltName
 
                         // Note, parseExtension() returns true for this extensions,
-                        // but considers it to be unsupported and assignes a useless
+                        // but considers it to be unsupported and assigns a useless
                         // value. OpenSSL also treats this extension as unsupported,
                         // but properly creates a map with 'name' and 'value' taken
                         // from the extension. We only support 'email', 'IP' and 'DNS',

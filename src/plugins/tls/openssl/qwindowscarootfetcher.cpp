@@ -84,7 +84,7 @@ const QList<QSslCertificate> buildVerifiedChain(const QList<QSslCertificate> &ca
     // by setting custom CA certificates. We convert wincrypt's
     // structures in QSslCertificate and give OpenSSL the second
     // chance to verify the now (apparently) complete chain.
-    // In addition, wincrypt gives us a benifit of some checks
+    // In addition, wincrypt gives us a benefit of some checks
     // we don't have in OpenSSL back-end.
     Q_ASSERT(chainContext);
 

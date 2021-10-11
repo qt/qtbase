@@ -333,7 +333,7 @@ int qt_OCSP_status_server_callback(SSL *ssl, void *ocspRequest)
         return SSL_TLSEXT_ERR_ALERT_FATAL;
 
     std::copy(response.data(), response.data() + response.size(), derCopy);
-    // We don't check the return value: internally OpenSSL simply assignes the
+    // We don't check the return value: internally OpenSSL simply assigns the
     // pointer (it assumes it now owns this memory btw!) and the length.
     q_SSL_set_tlsext_status_ocsp_resp(ssl, derCopy, response.size());
 

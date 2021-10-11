@@ -144,7 +144,7 @@ private:
 
     QList<QOcspResponse> ocspResponses;
 
-    // This decription will go to setErrorAndEmit(SslHandshakeError, ocspErrorDescription)
+    // This description will go to setErrorAndEmit(SslHandshakeError, ocspErrorDescription)
     QString ocspErrorDescription;
     // These will go to sslErrors()
     QList<QSslError> ocspErrors;
