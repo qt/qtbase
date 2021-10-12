@@ -496,7 +496,7 @@ void QHighDpiScaling::initHighDpiScaling()
 
     // Resolve DpiAdjustmentPolicy to m_dpiAdjustmentPolicy
     if (envDpiAdjustmentPolicy.has_value()) {
-        QByteArray policyText = envScaleFactorRoundingPolicy.value();
+        QByteArray policyText = envDpiAdjustmentPolicy.value();
         auto policyEnumValue = lookupDpiAdjustmentPolicy(policyText);
         if (policyEnumValue != DpiAdjustmentPolicy::Unset) {
             QHighDpiScaling::m_dpiAdjustmentPolicy = policyEnumValue;
