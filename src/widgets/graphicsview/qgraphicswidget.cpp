@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
@@ -55,6 +55,7 @@
 #include <private/qshortcutmap_p.h>
 #endif
 #include <QtCore/qmutex.h>
+#include <QtCore/QScopeGuard>
 #include <QtWidgets/qapplication.h>
 #include <QtWidgets/qgraphicsview.h>
 #include <QtWidgets/qgraphicsproxywidget.h>
@@ -352,6 +353,19 @@ void QGraphicsWidget::resize(const QSizeF &size)
 void QGraphicsWidget::setGeometry(const QRectF &rect)
 {
     QGraphicsWidgetPrivate *wd = QGraphicsWidget::d_func();
+    // Package relayout of children in a scope guard so we can just return early
+    // when this widget's geometry is sorted out.
+    const auto relayoutChildren = qScopeGuard([this, wd]() {
+        if (QGraphicsLayout::instantInvalidatePropagation()) {
+            if (QGraphicsLayout *lay = wd->layout) {
+                if (!lay->isActivated()) {
+                    QEvent layoutRequest(QEvent::LayoutRequest);
+                    QCoreApplication::sendEvent(this, &layoutRequest);
+                }
+            }
+        }
+    });
+
     QGraphicsLayoutItemPrivate *d = QGraphicsLayoutItem::d_ptr.data();
     QRectF newGeom;
     QPointF oldPos = d->geom.topLeft();
@@ -361,9 +375,8 @@ void QGraphicsWidget::setGeometry(const QRectF &rect)
         newGeom.setSize(rect.size().expandedTo(effectiveSizeHint(Qt::MinimumSize))
                                    .boundedTo(effectiveSizeHint(Qt::MaximumSize)));
 
-        if (newGeom == d->geom) {
-            goto relayoutChildrenAndReturn;
-        }
+        if (newGeom == d->geom)
+            return;
 
         // setPos triggers ItemPositionChange, which can adjust position
         wd->inSetGeometry = 1;
@@ -371,9 +384,8 @@ void QGraphicsWidget::setGeometry(const QRectF &rect)
         wd->inSetGeometry = 0;
         newGeom.moveTopLeft(pos());
 
-        if (newGeom == d->geom) {
-            goto relayoutChildrenAndReturn;
-        }
+        if (newGeom == d->geom)
+            return;
 
          // Update and prepare to change the geometry (remove from index) if the size has changed.
         if (wd->scene) {
@@ -396,7 +408,7 @@ void QGraphicsWidget::setGeometry(const QRectF &rect)
                 //set the new pos
                 d->geom.moveTopLeft(pos());
                 emit geometryChanged();
-                goto relayoutChildrenAndReturn;
+                return;
             }
         }
         QSizeF oldSize = size();
@@ -423,15 +435,6 @@ void QGraphicsWidget::setGeometry(const QRectF &rect)
     }
 
     emit geometryChanged();
-relayoutChildrenAndReturn:
-    if (QGraphicsLayout::instantInvalidatePropagation()) {
-        if (QGraphicsLayout *lay = wd->layout) {
-            if (!lay->isActivated()) {
-                QEvent layoutRequest(QEvent::LayoutRequest);
-                QCoreApplication::sendEvent(this, &layoutRequest);
-            }
-        }
-    }
 }
 
 /*!
