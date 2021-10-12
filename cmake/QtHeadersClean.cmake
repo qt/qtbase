@@ -97,7 +97,7 @@ function(qt_internal_add_headers_clean_target
         "$<${compile_flags_exist_genex}:$<JOIN:${target_compile_flags_genex},;>>")
 
     if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU"
-            OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang"
+            OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang|IntelLLVM"
             OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
         # Turn on some extra warnings not found in -Wall -Wextra.
 

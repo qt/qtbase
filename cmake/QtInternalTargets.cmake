@@ -1,17 +1,8 @@
 
 function(qt_internal_set_warnings_are_errors_flags target)
     set(flags "")
-    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" AND NOT MSVC)
-        # Regular clang 3.0+
-        if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "3.0.0")
-            list(APPEND flags -Werror -Wno-error=\#warnings -Wno-error=deprecated-declarations)
-        endif()
-    elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
-        # using AppleClang
-        # Apple clang 4.0+
-        if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "4.0.0" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS_EQUAL "9.2")
-            list(APPEND flags -Werror -Wno-error=\#warnings -Wno-error=deprecated-declarations)
-        endif()
+    if (CLANG AND NOT MSVC)
+        list(APPEND flags -Werror -Wno-error=\#warnings -Wno-error=deprecated-declarations)
     elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
         # using GCC
         list(APPEND flags -Werror -Wno-error=cpp -Wno-error=deprecated-declarations)
@@ -297,15 +288,7 @@ qt_auto_detect_implicit_sse2()
 function(qt_auto_detect_fpmath)
     # fpmath configuration adjustment in qt_module.prf
     set(fpmath_supported FALSE)
-    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-        if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "3.4")
-            set(fpmath_supported TRUE)
-        endif()
-    elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
-        if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "5.1")
-            set(fpmath_supported TRUE)
-        endif()
-    elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang|GNU|IntelLLVM")
         set(fpmath_supported TRUE)
     endif()
     if(fpmath_supported AND TEST_architecture_arch STREQUAL "i386" AND __implicit_sse2_for_qt_modules_enabled)
