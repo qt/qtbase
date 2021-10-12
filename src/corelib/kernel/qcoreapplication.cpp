@@ -400,7 +400,7 @@ struct QCoreApplicationData {
 Q_GLOBAL_STATIC(QCoreApplicationData, coreappdata)
 
 #ifndef QT_NO_QOBJECT
-static bool quitLockRefEnabled = true;
+static bool quitLockEnabled = true;
 #endif
 
 #if defined(Q_OS_WIN)
@@ -1020,14 +1020,14 @@ bool QCoreApplication::testAttribute(Qt::ApplicationAttribute attribute)
 
 bool QCoreApplication::isQuitLockEnabled()
 {
-    return quitLockRefEnabled;
+    return quitLockEnabled;
 }
 
 static bool doNotify(QObject *, QEvent *);
 
 void QCoreApplication::setQuitLockEnabled(bool enabled)
 {
-    quitLockRefEnabled = enabled;
+    quitLockEnabled = enabled;
 }
 
 /*!
@@ -1982,14 +1982,34 @@ void QCoreApplicationPrivate::ref()
 
 void QCoreApplicationPrivate::deref()
 {
-    if (!quitLockRef.deref())
-        maybeQuit();
+    quitLockRef.deref();
+
+    if (quitLockEnabled && canQuitAutomatically())
+        quitAutomatically();
 }
 
-void QCoreApplicationPrivate::maybeQuit()
+bool QCoreApplicationPrivate::canQuitAutomatically()
 {
-    if (quitLockRef.loadRelaxed() == 0 && in_exec && quitLockRefEnabled && shouldQuit())
-        QCoreApplication::postEvent(QCoreApplication::instance(), new QEvent(QEvent::Quit));
+    if (!in_exec)
+        return false;
+
+    if (quitLockEnabled && quitLockRef.loadRelaxed())
+        return false;
+
+    return true;
+}
+
+void QCoreApplicationPrivate::quitAutomatically()
+{
+    Q_Q(QCoreApplication);
+
+    // Explicit requests by the user to quit() is plumbed via the platform
+    // if possible, and delivers the quit event synchronously. For automatic
+    // quits we implicitly support cancelling the quit by showing another
+    // window, which currently relies on removing any posted quit events
+    // from the event queue. As a result, we can't use the normal quit()
+    // code path, and need to post manually.
+    QCoreApplication::postEvent(q, new QEvent(QEvent::Quit));
 }
 
 /*!

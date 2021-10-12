@@ -105,11 +105,12 @@ public:
 #if QT_CONFIG(commandlineparser)
     void addQtOptions(QList<QCommandLineOption> *options) override;
 #endif
-    virtual bool shouldQuit() override;
+    bool canQuitAutomatically() override;
     void quit() override;
 
     void maybeLastWindowClosed(QWindow *closedWindow);
     bool lastWindowClosed() const;
+    static bool quitOnLastWindowClosed;
 
     static void captureGlobalModifierState(QEvent *e);
     static Qt::KeyboardModifiers modifier_buttons;

@@ -136,12 +136,9 @@ public:
     QAtomicInt quitLockRef;
     void ref();
     void deref();
-    virtual bool shouldQuit() {
-      return true;
-    }
-
+    virtual bool canQuitAutomatically();
+    void quitAutomatically();
     virtual void quit();
-    void maybeQuit();
 
     static QBasicAtomicPointer<QThread> theMainThread;
     static QThread *mainThread();

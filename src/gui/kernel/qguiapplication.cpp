@@ -210,6 +210,8 @@ qreal QGuiApplicationPrivate::m_maxDevicePixelRatio = 0.0;
 
 static qreal fontSmoothingGamma = 1.7;
 
+bool QGuiApplicationPrivate::quitOnLastWindowClosed = true;
+
 extern void qRegisterGuiVariant();
 #if QT_CONFIG(animation)
 extern void qRegisterGuiGetInterpolator();
@@ -3538,12 +3540,12 @@ void QGuiApplicationPrivate::notifyWindowIconChanged()
 
 void QGuiApplication::setQuitOnLastWindowClosed(bool quit)
 {
-    QCoreApplication::setQuitLockEnabled(quit);
+    QGuiApplicationPrivate::quitOnLastWindowClosed = quit;
 }
 
 bool QGuiApplication::quitOnLastWindowClosed()
 {
-    return QCoreApplication::isQuitLockEnabled();
+    return QGuiApplicationPrivate::quitOnLastWindowClosed;
 }
 
 void QGuiApplicationPrivate::maybeLastWindowClosed(QWindow *closedWindow)
@@ -3561,8 +3563,8 @@ void QGuiApplicationPrivate::maybeLastWindowClosed(QWindow *closedWindow)
     if (in_exec)
         emit q_func()->lastWindowClosed();
 
-    if (QGuiApplication::quitOnLastWindowClosed())
-        maybeQuit();
+    if (quitOnLastWindowClosed && canQuitAutomatically())
+        quitAutomatically();
 }
 
 /*!
@@ -3591,9 +3593,12 @@ bool QGuiApplicationPrivate::lastWindowClosed() const
      return true;
 }
 
-bool QGuiApplicationPrivate::shouldQuit()
+bool QGuiApplicationPrivate::canQuitAutomatically()
 {
-    return lastWindowClosed();
+    if (quitOnLastWindowClosed && !lastWindowClosed())
+        return false;
+
+    return QCoreApplicationPrivate::canQuitAutomatically();
 }
 
 void QGuiApplicationPrivate::quit()

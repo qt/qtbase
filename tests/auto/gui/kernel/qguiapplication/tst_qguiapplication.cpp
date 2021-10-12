@@ -77,6 +77,7 @@ private slots:
     void quitOnLastWindowClosed();
     void quitOnLastWindowClosedMulti();
     void dontQuitOnLastWindowClosed();
+    void quitOnLastWindowClosedWithEventLoopLocker();
     void genericPluginsAndWindowSystemEvents();
     void layoutDirection();
     void globalShareContext();
@@ -967,6 +968,121 @@ void tst_QGuiApplication::dontQuitOnLastWindowClosed()
 
     QCOMPARE(spyTimeout.count(), 1); // quit timer fired
     QCOMPARE(spyLastWindowClosed.count(), 1); // lastWindowClosed emitted
+}
+
+class QuitSpy : public QObject
+{
+    Q_OBJECT
+public:
+    QuitSpy()
+    {
+        qGuiApp->installEventFilter(this);
+    }
+    bool eventFilter(QObject *o, QEvent *e) override
+    {
+        Q_UNUSED(o);
+        if (e->type() == QEvent::Quit)
+            ++quits;
+
+        return false;
+    }
+
+    int quits = 0;
+};
+
+void tst_QGuiApplication::quitOnLastWindowClosedWithEventLoopLocker()
+{
+    int argc = 0;
+    QGuiApplication app(argc, nullptr);
+
+    QVERIFY(app.quitOnLastWindowClosed());
+    QVERIFY(app.isQuitLockEnabled());
+
+    auto defaultRestorer = qScopeGuard([&]{
+        app.setQuitLockEnabled(true);
+        app.setQuitOnLastWindowClosed(true);
+    });
+
+    {
+        // Disabling QEventLoopLocker support should not affect
+        // quitting when last window is closed.
+        app.setQuitLockEnabled(false);
+
+        QuitSpy quitSpy;
+        QWindow window;
+        window.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&window));
+        QTimer::singleShot(0, &window, &QWindow::close);
+        QTimer::singleShot(200, &app, []{ QCoreApplication::exit(0); });
+        app.exec();
+        QCOMPARE(quitSpy.quits, 1);
+    }
+
+    {
+        // Disabling quitOnLastWindowClosed support should not affect
+        // quitting when last QEventLoopLocker goes out of scope.
+        app.setQuitLockEnabled(true);
+        app.setQuitOnLastWindowClosed(false);
+
+        QuitSpy quitSpy;
+        QScopedPointer<QEventLoopLocker> locker(new QEventLoopLocker);
+        QWindow window;
+        window.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&window));
+        QTimer::singleShot(0, [&]{ locker.reset(nullptr); });
+        QTimer::singleShot(200, &app, []{ QCoreApplication::exit(0); });
+        app.exec();
+        QCOMPARE(quitSpy.quits, 1);
+    }
+
+    {
+        // With both properties enabled we need to get rid of both
+        // the window and locker to trigger a quit.
+        app.setQuitLockEnabled(true);
+        app.setQuitOnLastWindowClosed(true);
+
+        QuitSpy quitSpy;
+        QScopedPointer<QEventLoopLocker> locker(new QEventLoopLocker);
+        QWindow window;
+        window.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&window));
+        QTimer::singleShot(0, &window, &QWindow::close);
+        QTimer::singleShot(200, &app, []{ QCoreApplication::exit(0); });
+        app.exec();
+        QCOMPARE(quitSpy.quits, 0);
+
+        window.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&window));
+        QTimer::singleShot(0, [&]{ locker.reset(nullptr); });
+        QTimer::singleShot(200, &app, []{ QCoreApplication::exit(0); });
+        app.exec();
+        QCOMPARE(quitSpy.quits, 0);
+
+        window.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&window));
+        QTimer::singleShot(0, [&]{ locker.reset(nullptr); });
+        QTimer::singleShot(0, &window, &QWindow::close);
+        QTimer::singleShot(200, &app, []{ QCoreApplication::exit(0); });
+        app.exec();
+        QCOMPARE(quitSpy.quits, 1);
+    }
+
+    {
+        // With neither properties enabled we don't get automatic quit.
+        app.setQuitLockEnabled(false);
+        app.setQuitOnLastWindowClosed(false);
+
+        QuitSpy quitSpy;
+        QScopedPointer<QEventLoopLocker> locker(new QEventLoopLocker);
+        QWindow window;
+        window.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&window));
+        QTimer::singleShot(0, [&]{ locker.reset(nullptr); });
+        QTimer::singleShot(0, &window, &QWindow::close);
+        QTimer::singleShot(200, &app, []{ QCoreApplication::exit(0); });
+        app.exec();
+        QCOMPARE(quitSpy.quits, 0);
+    }
 }
 
 static Qt::ScreenOrientation testOrientationToSend = Qt::PrimaryOrientation;
