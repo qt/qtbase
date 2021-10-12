@@ -106,8 +106,6 @@ public:
     virtual void notifyLayoutDirectionChange() override;
     virtual void notifyActiveWindowChange(QWindow *) override;
 
-    virtual bool shouldQuit() override;
-
     static bool autoSipEnabled;
     static QString desktopStyleKey();
 

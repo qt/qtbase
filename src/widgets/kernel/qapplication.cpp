@@ -2614,24 +2614,6 @@ int QApplication::exec()
     return QGuiApplication::exec();
 }
 
-bool QApplicationPrivate::shouldQuit()
-{
-    /* if there is no non-withdrawn primary window left (except
-        the ones without QuitOnClose), we emit the lastWindowClosed
-        signal */
-    QWidgetList list = QApplication::topLevelWidgets();
-    QWindowList processedWindows;
-    for (int i = 0; i < list.size(); ++i) {
-        QWidget *w = list.at(i);
-        if (QWindow *window = w->windowHandle()) { // Menus, popup widgets may not have a QWindow
-            processedWindows.push_back(window);
-            if (w->isVisible() && !w->parentWidget() && w->testAttribute(Qt::WA_QuitOnClose))
-                return false;
-        }
-    }
-    return QGuiApplicationPrivate::shouldQuitInternal(processedWindows);
-}
-
 /*! \reimp
  */
 bool QApplication::notify(QObject *receiver, QEvent *e)
@@ -3301,7 +3283,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         res = d->notify_helper(receiver, e);
         // We don't call QGuiApplication::notify here, so we need to duplicate the logic
         if (res && e->type() == QEvent::Close)
-            d->maybeQuitOnLastWindowClosed(static_cast<QWindow *>(receiver));
+            d->maybeLastWindowClosed(static_cast<QWindow *>(receiver));
     } else {
         res = d->notify_helper(receiver, e);
     }

@@ -118,8 +118,7 @@ public:
 
     virtual void processSafeAreaMarginsChanged() {}
 
-    virtual bool shouldTriggerQuitOnClose() const;
-    virtual bool shouldCancelQuitOnClose() const;
+    virtual bool participatesInLastWindowClosed() const;
 
     bool isPopup() const { return (windowFlags & Qt::WindowType_Mask) == Qt::Popup; }
     void setAutomaticPositionAndResizeEnabled(bool a)

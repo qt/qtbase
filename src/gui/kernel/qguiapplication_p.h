@@ -108,8 +108,8 @@ public:
     virtual bool shouldQuit() override;
     void quit() override;
 
-    bool shouldQuitInternal(const QWindowList &processedWindows);
-    void maybeQuitOnLastWindowClosed(QWindow *closedWindow);
+    void maybeLastWindowClosed(QWindow *closedWindow);
+    bool lastWindowClosed() const;
 
     static void captureGlobalModifierState(QEvent *e);
     static Qt::KeyboardModifiers modifier_buttons;

@@ -1930,7 +1930,7 @@ bool QGuiApplication::notify(QObject *object, QEvent *event)
     bool accepted = QCoreApplication::notify(object, event);
 
     if (event->type() == QEvent::Close && object->isWindowType() && accepted)
-        d->maybeQuitOnLastWindowClosed(static_cast<QWindow*>(object));
+        d->maybeLastWindowClosed(static_cast<QWindow*>(object));
 
     return accepted;
 }
@@ -3530,7 +3530,8 @@ void QGuiApplicationPrivate::notifyWindowIconChanged()
     The default is \c true.
 
     If this property is \c true, the applications quits when the last visible
-    primary window (i.e. window with no parent) is closed.
+    \l{Primary and Secondary Windows}{primary window} (i.e. top level window
+    with no transient parent) is closed.
 
     \sa quit(), QWindow::close()
  */
@@ -3545,19 +3546,17 @@ bool QGuiApplication::quitOnLastWindowClosed()
     return QCoreApplication::isQuitLockEnabled();
 }
 
-void QGuiApplicationPrivate::maybeQuitOnLastWindowClosed(QWindow *closedWindow)
+void QGuiApplicationPrivate::maybeLastWindowClosed(QWindow *closedWindow)
 {
     Q_ASSERT(closedWindow);
 
-    if (!qt_window_private(closedWindow)->shouldTriggerQuitOnClose())
+    // Only windows that themselves participates in last-window-closed
+    // should be allowed to trigger lastWindowClosed.
+    if (!qt_window_private(closedWindow)->participatesInLastWindowClosed())
         return;
 
-    // Check if there are any remaining windows that should prevent us from quitting
-    for (auto *topLevelWindow : QGuiApplication::topLevelWindows()) {
-        auto *windowPrivate = qt_window_private(topLevelWindow);
-        if (windowPrivate->shouldCancelQuitOnClose())
-            return;
-    }
+    if (!lastWindowClosed())
+        return;
 
     if (in_exec)
         emit q_func()->lastWindowClosed();
@@ -3570,32 +3569,31 @@ void QGuiApplicationPrivate::maybeQuitOnLastWindowClosed(QWindow *closedWindow)
     \fn void QGuiApplication::lastWindowClosed()
 
     This signal is emitted from exec() when the last visible
-    primary window (i.e. window with no parent) is closed.
+    \l{Primary and Secondary Windows}{primary window} (i.e.
+    top level window with no transient parent) is closed.
 
     By default, QGuiApplication quits after this signal is emitted. This feature
     can be turned off by setting \l quitOnLastWindowClosed to \c false.
 
-    \sa QWindow::close(), QWindow::isTopLevel()
+    \sa QWindow::close(), QWindow::isTopLevel(), QWindow::transientParent()
 */
+
+bool QGuiApplicationPrivate::lastWindowClosed() const
+{
+    for (auto *window : QGuiApplication::topLevelWindows()) {
+        if (!qt_window_private(window)->participatesInLastWindowClosed())
+            continue;
+
+        if (window->isVisible())
+            return false;
+     }
+
+     return true;
+}
 
 bool QGuiApplicationPrivate::shouldQuit()
 {
-    const QWindowList processedWindows;
-    return shouldQuitInternal(processedWindows);
-}
-
-bool QGuiApplicationPrivate::shouldQuitInternal(const QWindowList &processedWindows)
-{
-    /* if there is no visible top-level window left, we allow the quit */
-    QWindowList list = QGuiApplication::topLevelWindows();
-    for (int i = 0; i < list.size(); ++i) {
-        QWindow *w = list.at(i);
-        if (processedWindows.contains(w))
-            continue;
-        if (w->isVisible() && !w->transientParent())
-            return false;
-    }
-    return true;
+    return lastWindowClosed();
 }
 
 void QGuiApplicationPrivate::quit()

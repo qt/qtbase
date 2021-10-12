@@ -2269,16 +2269,25 @@ bool QWindow::close()
     return d->platformWindow->close();
 }
 
-bool QWindowPrivate::shouldTriggerQuitOnClose() const
+bool QWindowPrivate::participatesInLastWindowClosed() const
 {
     Q_Q(const QWindow);
-    return q->isTopLevel();
-}
 
-bool QWindowPrivate::shouldCancelQuitOnClose() const
-{
-    Q_Q(const QWindow);
-    return q->isVisible() && !q->transientParent() && q->type() != Qt::ToolTip;
+    if (!q->isTopLevel())
+        return false;
+
+    // Tool-tip widgets do not normally have Qt::WA_QuitOnClose,
+    // but since we do not have a similar flag for non-widget
+    // windows we need an explicit exclusion here as well.
+    if (q->type() == Qt::ToolTip)
+        return false;
+
+    // A window with a transient parent is not a primary window,
+    // it's a secondary window.
+    if (q->transientParent())
+        return false;
+
+    return true;
 }
 
 /*!
