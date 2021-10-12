@@ -69,7 +69,6 @@ public:
     ArthurFrame(QWidget *parent);
     virtual void paint(QPainter *) {}
 
-
     void paintDescription(QPainter *p);
 
     void loadDescription(const QString &filename);
@@ -77,13 +76,13 @@ public:
 
     void loadSourceFile(const QString &fileName);
 
-    bool preferImage() const { return m_prefer_image; }
+    bool preferImage() const { return m_preferImage; }
 #if QT_CONFIG(opengl)
     QOpenGLWindow *glWindow() const { return m_glWindow; }
 #endif
 
 public slots:
-    void setPreferImage(bool pi) { m_prefer_image = pi; }
+    void setPreferImage(bool pi) { m_preferImage = pi; }
     void setDescriptionEnabled(bool enabled);
     void showSource();
 
@@ -101,18 +100,17 @@ protected:
 
 #if QT_CONFIG(opengl)
     virtual void createGlWindow();
-    QOpenGLWindow *m_glWindow;
-    QWidget *m_glWidget;
-    bool m_use_opengl;
+    QOpenGLWindow *m_glWindow = nullptr;
+    QWidget *m_glWidget = nullptr;
+    bool m_use_opengl = false;
 #endif
     QPixmap m_tile;
 
-    bool m_show_doc;
-    bool m_prefer_image;
-    QTextDocument *m_document;
+    bool m_showDoc = false;
+    bool m_preferImage = false;
+    QTextDocument *m_document = nullptr;;
 
     QString m_sourceFileName;
-
 };
 
 #endif

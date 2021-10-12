@@ -124,35 +124,33 @@ public:
     void firePointChange();
 
 private:
-    inline QRectF pointBoundingRect(int i) const;
-    void movePoint(int i, const QPointF &newPos, bool emitChange = true);
+    inline QRectF pointBoundingRect(const QPointF &p) const;
+    void movePoint(qsizetype i, const QPointF &newPos, bool emitChange = true);
 
     QWidget *m_widget;
 
     QPolygonF m_points;
     QRectF m_bounds;
     PointShape m_shape;
-    SortType m_sortType;
-    ConnectionType m_connectionType;
+    SortType m_sortType = NoSort;
+    ConnectionType m_connectionType = CurveConnection;
 
     QList<uint> m_locks;
 
-    QSizeF m_pointSize;
-    int m_currentIndex;
-    bool m_editable;
-    bool m_enabled;
+    QSizeF m_pointSize{11, 11};
+    qsizetype m_currentIndex= -1;
+    bool m_editable = true;
+    bool m_enabled = true;
 
-    QHash<int, int> m_fingerPointMapping;
+    QHash<int, qsizetype> m_fingerPointMapping;
 
-    QPen m_pointPen;
-    QBrush m_pointBrush;
-    QPen m_connectionPen;
+    QPen m_pointPen{QColor(255, 255, 255, 191), 1};
+    QBrush m_pointBrush{QColor(191, 191, 191, 127)};
+    QPen m_connectionPen{QColor(255, 255, 255, 127), 2};
 };
 
-
-inline QRectF HoverPoints::pointBoundingRect(int i) const
+inline QRectF HoverPoints::pointBoundingRect(const QPointF &p) const
 {
-    QPointF p = m_points.at(i);
     qreal w = m_pointSize.width();
     qreal h = m_pointSize.height();
     qreal x = p.x() - w / 2;

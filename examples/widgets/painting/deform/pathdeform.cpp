@@ -481,7 +481,7 @@ void PathDeformRenderer::timerEvent(QTimerEvent *e)
 
 void PathDeformRenderer::mousePressEvent(QMouseEvent *e)
 {
-    if (m_show_doc) {
+    if (m_showDoc) {
         setDescriptionEnabled(false);
         return;
     }
