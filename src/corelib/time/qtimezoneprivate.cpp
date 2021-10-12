@@ -452,9 +452,12 @@ QTimeZonePrivate::Data QTimeZonePrivate::dataForLocalTime(qint64 forLocalMSecs, 
 
     int early = offsetFromUtc(recent);
     int late = offsetFromUtc(imminent);
-    if (early == late) { // > 99% of the time
-        if (sub_overflow(forLocalMSecs, early * qint64(1000), &utcEpochMSecs))
+    if (early == late // > 99% of the time
+        || late == invalidSeconds()) {
+        if (early == invalidSeconds()
+            || sub_overflow(forLocalMSecs, early * qint64(1000), &utcEpochMSecs)) {
             return invalidData(); // Outside representable range
+        }
     } else {
         // Close to a DST transition: early > late is near a fall-back,
         // early < late is near a spring-forward.
