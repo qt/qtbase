@@ -88,7 +88,7 @@ public:
     constexpr explicit QLatin1String(const char *f, const char *l)
         : QLatin1String(f, qsizetype(l - f)) {}
     constexpr inline explicit QLatin1String(const char *s, qsizetype sz) noexcept : m_size(sz), m_data(s) {}
-    explicit QLatin1String(const QByteArray &s) noexcept : m_size(qsizetype(qstrnlen(s.constData(), s.size()))), m_data(s.constData()) {}
+    explicit QLatin1String(const QByteArray &s) noexcept : m_size(s.size()), m_data(s.constData()) {}
     constexpr explicit QLatin1String(QByteArrayView s) noexcept : m_size(s.size()), m_data(s.data()) {}
 
     inline QString toString() const;
@@ -1424,9 +1424,9 @@ QT_ASCII_CAST_WARN inline bool QString::operator>=(const QByteArray &s) const
 { return QString::compare_helper(constData(), size(), s.constData(), s.size()) >= 0; }
 
 inline bool QByteArray::operator==(const QString &s) const
-{ return QString::compare_helper(s.constData(), s.size(), constData(), qstrnlen(constData(), size())) == 0; }
+{ return QString::compare_helper(s.constData(), s.size(), constData(), size()) == 0; }
 inline bool QByteArray::operator!=(const QString &s) const
-{ return QString::compare_helper(s.constData(), s.size(), constData(), qstrnlen(constData(), size())) != 0; }
+{ return QString::compare_helper(s.constData(), s.size(), constData(), size()) != 0; }
 inline bool QByteArray::operator<(const QString &s) const
 { return QString::compare_helper(s.constData(), s.size(), constData(), size()) > 0; }
 inline bool QByteArray::operator>(const QString &s) const
