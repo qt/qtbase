@@ -801,14 +801,19 @@ function(qt_config_compile_test name)
         # If the repo has its own cmake modules, include those in the module path, so that various
         # find_package calls work.
         if(EXISTS "${PROJECT_SOURCE_DIR}/cmake")
+            set(must_append_module_path_flag TRUE)
             set(flags_copy "${flags}")
             set(flags)
             foreach(flag IN LISTS flags_copy)
                 if(flag MATCHES "^-DCMAKE_MODULE_PATH:STRING=")
-                    set(flag "${flag};${PROJECT_SOURCE_DIR}/cmake")
+                    set(must_append_module_path_flag FALSE)
+                    set(flag "${flag}\\;${PROJECT_SOURCE_DIR}/cmake")
                 endif()
                 list(APPEND flags "${flag}")
             endforeach()
+            if(must_append_module_path_flag)
+                list(APPEND flags "-DCMAKE_MODULE_PATH:STRING=${PROJECT_SOURCE_DIR}/cmake")
+            endif()
         endif()
 
         # Pass which packages need to be found.
