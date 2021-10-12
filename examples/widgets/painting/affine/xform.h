@@ -88,7 +88,7 @@ public:
 
     void mousePressEvent(QMouseEvent *e) override;
     void resizeEvent(QResizeEvent *e) override;
-    HoverPoints *hoverPoints() { return pts; }
+    HoverPoints *hoverPoints() { return m_hoverPoints; }
 
     bool animation() const { return timer.isActive(); }
     qreal shear() const { return m_shear; }
@@ -104,7 +104,7 @@ public:
 
 public slots:
     void setAnimation(bool animate);
-    void updateCtrlPoints(const QPolygonF &);
+    void updateControlPoints(const QPolygonF &);
     void changeRotation(int rotation);
     void changeScale(int scale);
     void changeShear(int shear);
@@ -130,12 +130,12 @@ protected:
 #endif
 
 private:
-    QPolygonF ctrlPoints;
-    HoverPoints *pts;
-    qreal m_rotation;
-    qreal m_scale;
-    qreal m_shear;
-    XFormType m_type;
+    QPolygonF m_controlPoints{{250, 250}, {350, 250}};
+    HoverPoints *m_hoverPoints;
+    qreal m_rotation = 0;
+    qreal m_scale = 1;
+    qreal m_shear = 0;
+    XFormType m_type = VectorType;
     QPixmap m_pixmap;
     QString m_text;
     QBasicTimer timer;

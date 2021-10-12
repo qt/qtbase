@@ -58,27 +58,22 @@
 const int alpha = 155;
 
 XFormView::XFormView(QWidget *parent)
-    : ArthurFrame(parent)
+    : ArthurFrame(parent),
+      m_pixmap(QPixmap(":res/affine/bg1.jpg"))
 {
     setAttribute(Qt::WA_MouseTracking);
-    m_type = VectorType;
-    m_rotation = 0.0;
-    m_scale = 1.0;
-    m_shear = 0.0;
 
-    m_pixmap = QPixmap(":res/affine/bg1.jpg");
-    pts = new HoverPoints(this, HoverPoints::CircleShape);
-    pts->setConnectionType(HoverPoints::LineConnection);
-    pts->setEditable(false);
-    pts->setPointSize(QSize(15, 15));
-    pts->setShapeBrush(QBrush(QColor(151, 0, 0, alpha)));
-    pts->setShapePen(QPen(QColor(255, 100, 50, alpha)));
-    pts->setConnectionPen(QPen(QColor(151, 0, 0, 50)));
-    pts->setBoundingRect(QRectF(0, 0, 500, 500));
-    ctrlPoints << QPointF(250, 250) << QPointF(350, 250);
-    pts->setPoints(ctrlPoints);
-    connect(pts, &HoverPoints::pointsChanged,
-            this,&XFormView::updateCtrlPoints);
+    m_hoverPoints = new HoverPoints(this, HoverPoints::CircleShape);
+    m_hoverPoints->setConnectionType(HoverPoints::LineConnection);
+    m_hoverPoints->setEditable(false);
+    m_hoverPoints->setPointSize(QSize(15, 15));
+    m_hoverPoints->setShapeBrush(QBrush(QColor(151, 0, 0, alpha)));
+    m_hoverPoints->setShapePen(QPen(QColor(255, 100, 50, alpha)));
+    m_hoverPoints->setConnectionPen(QPen(QColor(151, 0, 0, 50)));
+    m_hoverPoints->setBoundingRect(QRectF(0, 0, 500, 500));
+    m_hoverPoints->setPoints(m_controlPoints);
+    connect(m_hoverPoints, &HoverPoints::pointsChanged,
+            this, &XFormView::updateControlPoints);
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 }
 
@@ -122,7 +117,7 @@ void XFormView::mousePressEvent(QMouseEvent *)
 
 void XFormView::resizeEvent(QResizeEvent *e)
 {
-    pts->setBoundingRect(rect());
+    m_hoverPoints->setBoundingRect(rect());
     ArthurFrame::resizeEvent(e);
 }
 
@@ -145,24 +140,24 @@ void XFormView::paint(QPainter *p)
     p->restore();
 }
 
-void XFormView::updateCtrlPoints(const QPolygonF &points)
+void XFormView::updateControlPoints(const QPolygonF &points)
 {
-    QPointF trans = points.at(0) - ctrlPoints.at(0);
+    QPointF trans = points.at(0) - m_controlPoints.at(0);
 
     if (qAbs(points.at(0).x() - points.at(1).x()) < 10
         && qAbs(points.at(0).y() - points.at(1).y()) < 10)
-        pts->setPoints(ctrlPoints);
+        m_hoverPoints->setPoints(m_controlPoints);
     if (!trans.isNull()) {
-        ctrlPoints[0] = points.at(0);
-        ctrlPoints[1] += trans;
-        pts->setPoints(ctrlPoints);
+        m_controlPoints[0] = points.at(0);
+        m_controlPoints[1] += trans;
+        m_hoverPoints->setPoints(m_controlPoints);
     }
-    ctrlPoints = points;
+    m_controlPoints = points;
 
-    QLineF line(ctrlPoints.at(0), ctrlPoints.at(1));
+    QLineF line(m_controlPoints.at(0), m_controlPoints.at(1));
     m_rotation = 360 - QLineF(0, 0, 1, 0).angleTo(line);
     if (trans.isNull())
-        emit rotationChanged(int(m_rotation*10));
+        emit rotationChanged(int(m_rotation * 10));
 }
 
 void XFormView::setVectorType()
@@ -222,12 +217,12 @@ void XFormView::setRotation(qreal r)
     qreal old_rot = m_rotation;
     m_rotation = r;
 
-    QPointF center(pts->points().at(0));
+    QPointF center(m_hoverPoints->points().at(0));
     QTransform m;
     m.translate(center.x(), center.y());
     m.rotate(m_rotation - old_rot);
     m.translate(-center.x(), -center.y());
-    pts->setPoints(pts->points() * m);
+    m_hoverPoints->setPoints(m_hoverPoints->points() * m);
 
     update();
 }
@@ -235,12 +230,12 @@ void XFormView::setRotation(qreal r)
 void XFormView::timerEvent(QTimerEvent *e)
 {
     if (e->timerId() == timer.timerId()) {
-        QPointF center(pts->points().at(0));
+        QPointF center(m_hoverPoints->points().at(0));
         QTransform m;
         m.translate(center.x(), center.y());
         m.rotate(0.2);
         m.translate(-center.x(), -center.y());
-        pts->setPoints(pts->points() * m);
+        m_hoverPoints->setPoints(m_hoverPoints->points() * m);
 
         setUpdatesEnabled(false);
         static qreal scale_inc = 0.003;
@@ -253,7 +248,7 @@ void XFormView::timerEvent(QTimerEvent *e)
             shear_inc = -shear_inc;
         setUpdatesEnabled(true);
 
-        pts->firePointChange();
+        m_hoverPoints->firePointChange();
     }
 }
 
@@ -271,16 +266,15 @@ void XFormView::reset()
     emit rotationChanged(0);
     emit scaleChanged(1000);
     emit shearChanged(0);
-    ctrlPoints = QPolygonF();
-    ctrlPoints << QPointF(250, 250) << QPointF(350, 250);
-    pts->setPoints(ctrlPoints);
-    pts->firePointChange();
+    m_controlPoints = {{250, 250}, {350, 250}};
+    m_hoverPoints->setPoints(m_controlPoints);
+    m_hoverPoints->firePointChange();
 }
 
 void XFormView::drawPixmapType(QPainter *painter)
 {
     QPointF center(m_pixmap.width() / qreal(2), m_pixmap.height() / qreal(2));
-    painter->translate(ctrlPoints.at(0) - center);
+    painter->translate(m_controlPoints.at(0) - center);
 
     painter->translate(center);
     painter->rotate(m_rotation);
@@ -289,9 +283,11 @@ void XFormView::drawPixmapType(QPainter *painter)
     painter->translate(-center);
 
     painter->drawPixmap(QPointF(0, 0), m_pixmap);
-    painter->setPen(QPen(QColor(255, 0, 0, alpha), 0.25, Qt::SolidLine, Qt::FlatCap, Qt::BevelJoin));
+    painter->setPen(QPen(QColor(255, 0, 0, alpha), 0.25,
+                         Qt::SolidLine, Qt::FlatCap, Qt::BevelJoin));
     painter->setBrush(Qt::NoBrush);
-    painter->drawRect(QRectF(0, 0, m_pixmap.width(), m_pixmap.height()).adjusted(-2, -2, 2, 2));
+    painter->drawRect(QRectF(0, 0, m_pixmap.width(),
+                             m_pixmap.height()).adjusted(-2, -2, 2, 2));
 }
 
 void XFormView::drawTextType(QPainter *painter)
@@ -306,7 +302,7 @@ void XFormView::drawTextType(QPainter *painter)
     QFontMetrics fm(f);
     QRectF br(fm.boundingRect(m_text));
     QPointF center(br.center());
-    painter->translate(ctrlPoints.at(0) - center);
+    painter->translate(m_controlPoints.at(0) - center);
 
     painter->translate(center);
     painter->rotate(m_rotation);
@@ -316,7 +312,8 @@ void XFormView::drawTextType(QPainter *painter)
 
     painter->fillPath(path, Qt::black);
 
-    painter->setPen(QPen(QColor(255, 0, 0, alpha), 0.25, Qt::SolidLine, Qt::FlatCap, Qt::BevelJoin));
+    painter->setPen(QPen(QColor(255, 0, 0, alpha), 0.25,
+                         Qt::SolidLine, Qt::FlatCap, Qt::BevelJoin));
     painter->setBrush(Qt::NoBrush);
     painter->drawRect(br.adjusted(-1, -1, 1, 1));
 }
@@ -324,7 +321,7 @@ void XFormView::drawTextType(QPainter *painter)
 void XFormView::drawVectorType(QPainter *painter)
 {
     QPainterPath path;
-    painter->translate(ctrlPoints.at(0) - QPointF(250,250));
+    painter->translate(m_controlPoints.at(0) - QPointF(250,250));
 
     painter->scale(0.77, 0.77);
     painter->translate(98.9154 + 30 , -217.691 - 20);
@@ -339,10 +336,10 @@ void XFormView::drawVectorType(QPainter *painter)
 
     painter->setPen(Qt::NoPen);
     path.moveTo(120, 470);
-    path.lineTo(60+245, 470);
-    path.lineTo(60+245, 470+350);
-    path.lineTo(60, 470+350);
-    path.lineTo(60, 470+80);
+    path.lineTo(60 + 245, 470);
+    path.lineTo(60 + 245, 470 + 350);
+    path.lineTo(60, 470 + 350);
+    path.lineTo(60, 470 + 80);
 
     painter->setBrush(Qt::white);
     painter->drawPath(path);
