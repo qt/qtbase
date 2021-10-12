@@ -85,11 +85,11 @@ qt_internal_extend_target(tst_moc CONDITION CMAKE_CROSSCOMPILING
         MOC_CROSS_COMPILED
 )
 
-if (UNIX AND (CLANG OR GCC OR ICC OR QCC))
+if (UNIX AND (CLANG OR GCC OR QCC))
     qt_wrap_cpp(os9_moc os9-newlines.h)
 endif()
 
-qt_internal_extend_target(tst_moc CONDITION UNIX AND (CLANG OR GCC OR ICC OR QCC)
+qt_internal_extend_target(tst_moc CONDITION UNIX AND (CLANG OR GCC OR QCC)
     SOURCES
         os9-newlines.h
         win-newlines.h

@@ -111,7 +111,7 @@ qt_internal_extend_target(XcbQpaPrivate CONDITION QT_FEATURE_dlopen
         ${CMAKE_DL_LIBS}
 )
 
-qt_internal_extend_target(XcbQpaPrivate CONDITION CLANG AND NOT ICC
+qt_internal_extend_target(XcbQpaPrivate CONDITION CLANG
     COMPILE_OPTIONS
         -ftemplate-depth=1024
 )

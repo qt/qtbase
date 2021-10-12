@@ -690,12 +690,6 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_std_atomic64
         WrapAtomic::WrapAtomic
 )
 
-qt_internal_extend_target(Core CONDITION ICC
-    COMPILE_OPTIONS
-        -fp-model
-        strict
-)
-
 qt_internal_extend_target(Core CONDITION QT_FEATURE_system_zlib
     LIBRARIES
         WrapZLIB::WrapZLIB
@@ -776,7 +770,7 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_easingcurve
         tools/qtimeline.cpp tools/qtimeline.h
 )
 
-qt_internal_extend_target(Core CONDITION UNIX AND NOT HAIKU AND NOT INTEGRITY AND NOT VXWORKS AND NOT WASM AND (NOT ICC OR NOT MACOS)
+qt_internal_extend_target(Core CONDITION UNIX AND NOT HAIKU AND NOT INTEGRITY AND NOT VXWORKS AND NOT WASM AND NOT MACOS
     LIBRARIES
         m
 )

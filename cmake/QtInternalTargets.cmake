@@ -47,20 +47,6 @@ function(qt_internal_set_warnings_are_errors_flags target)
         if (ANDROID)
             list(APPEND flags -Wno-error=literal-suffix)
         endif()
-    elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
-        # Intel CC 13.0 +, on Linux only
-        if (LINUX)
-            if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "13.0.0")
-                # 177: function "entity" was declared but never referenced
-                #      (too aggressive; ICC reports even for functions created due to template instantiation)
-                # 1224: #warning directive
-                # 1478: function "entity" (declared at line N) was declared deprecated
-                # 1786: function "entity" (declared at line N of "file") was declared deprecated ("message")
-                # 1881: argument must be a constant null pointer value
-                #      (NULL in C++ is usually a literal 0)
-                list(APPEND flags -Werror -ww177,1224,1478,1786,1881)
-            endif()
-        endif()
     elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
         # Only enable for versions of MSVC that are known to work
         # 1929 is Visual Studio 2019 version 16.0
