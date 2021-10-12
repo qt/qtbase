@@ -47,6 +47,8 @@
 
 #if defined(Q_OS_DARWIN)
 #  include <private/qeventdispatcher_cf_p.h>
+#elif defined(Q_OS_WASM)
+#    include <private/qeventdispatcher_wasm_p.h>
 #else
 #  if !defined(QT_NO_GLIB)
 #    include "../kernel/qeventdispatcher_glib_p.h"
@@ -250,6 +252,8 @@ QAbstractEventDispatcher *QThreadPrivate::createEventDispatcher(QThreadData *dat
         return new QEventDispatcherCoreFoundation;
     else
         return new QEventDispatcherUNIX;
+#elif defined(Q_OS_WASM)
+    return new QEventDispatcherWasm();
 #elif !defined(QT_NO_GLIB)
     const bool isQtMainThread = data->thread.loadAcquire() == QCoreApplicationPrivate::mainThread();
     if (qEnvironmentVariableIsEmpty("QT_NO_GLIB")
