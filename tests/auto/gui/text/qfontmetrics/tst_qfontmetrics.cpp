@@ -43,6 +43,7 @@ private slots:
     void same();
     void metrics();
     void boundingRect();
+    void boundingRect2();
     void elidedText_data();
     void elidedText();
     void veryNarrowElidedText();
@@ -147,6 +148,21 @@ void tst_QFontMetrics::boundingRect()
     QVERIFY(r.top() < 0);
     r = fm.boundingRect(QString("Y"));
     QVERIFY(r.top() < 0);
+}
+
+void tst_QFontMetrics::boundingRect2()
+{
+    QFont f;
+    f.setPixelSize(16);
+    QFontMetricsF fm(f);
+    QString str("AVAVAVA vvvvvvvvvv fffffffff file");
+    QRectF br = fm.boundingRect(str);
+    QRectF tbr = fm.tightBoundingRect(str);
+    qreal advance = fm.horizontalAdvance(str);
+    // Bounding rect plus bearings should be similar to advance
+    qreal bearings = fm.leftBearing(QChar('A')) + fm.rightBearing(QChar('e'));
+    QVERIFY(qAbs(br.width() + bearings - advance) < fm.averageCharWidth()/2.0);
+    QVERIFY(qAbs(tbr.width() + bearings - advance) < fm.averageCharWidth()/2.0);
 }
 
 void tst_QFontMetrics::elidedText_data()
@@ -374,6 +390,8 @@ void tst_QFontMetrics::zeroWidthMetrics()
     QCOMPARE(fm.horizontalAdvance(string3), fm.horizontalAdvance(string4));
     QCOMPARE(fm.boundingRect(string1).width(), fm.boundingRect(string2).width());
     QCOMPARE(fm.boundingRect(string3).width(), fm.boundingRect(string4).width());
+    QCOMPARE(fm.tightBoundingRect(string1).width(), fm.tightBoundingRect(string2).width());
+    QCOMPARE(fm.tightBoundingRect(string3).width(), fm.tightBoundingRect(string4).width());
 }
 
 QTEST_MAIN(tst_QFontMetrics)

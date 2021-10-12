@@ -611,9 +611,9 @@ glyph_metrics_t QFontEngine::tightBoundingBox(const QGlyphLayout &glyphs)
         QFixed y = overall.yoff + glyphs.offsets[i].y + bb.y;
         overall.x = qMin(overall.x, x);
         overall.y = qMin(overall.y, y);
-        xmax = qMax(xmax, x + bb.width);
-        ymax = qMax(ymax, y + bb.height);
-        overall.xoff += bb.xoff;
+        xmax = qMax(xmax, x.ceil() + bb.width);
+        ymax = qMax(ymax, y.ceil() + bb.height);
+        overall.xoff += glyphs.effectiveAdvance(i);
         overall.yoff += bb.yoff;
     }
     overall.height = qMax(overall.height, ymax - overall.y);

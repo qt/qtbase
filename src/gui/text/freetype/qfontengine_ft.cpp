@@ -1705,9 +1705,8 @@ glyph_metrics_t QFontEngineFT::boundingBox(const QGlyphLayout &glyphs)
             QFixed y = overall.yoff + glyphs.offsets[i].y - g->y;
             overall.x = qMin(overall.x, x);
             overall.y = qMin(overall.y, y);
-            xmax = qMax(xmax, x + g->width);
-            ymax = qMax(ymax, y + g->height);
-            overall.xoff += g->advance;
+            xmax = qMax(xmax, x.ceil() + g->width);
+            ymax = qMax(ymax, y.ceil() + g->height);
             if (!cacheEnabled && g != &emptyGlyph)
                 delete g;
         } else {
@@ -1722,8 +1721,8 @@ glyph_metrics_t QFontEngineFT::boundingBox(const QGlyphLayout &glyphs)
             overall.y = qMin(overall.y, y);
             xmax = qMax(xmax, x + TRUNC(right - left));
             ymax = qMax(ymax, y + TRUNC(top - bottom));
-            overall.xoff += int(TRUNC(ROUND(face->glyph->advance.x)));
         }
+        overall.xoff += glyphs.effectiveAdvance(i);
     }
     overall.height = qMax(overall.height, ymax - overall.y);
     overall.width = xmax - overall.x;
