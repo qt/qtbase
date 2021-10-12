@@ -32,7 +32,7 @@
 \title qt_set_finalizer_mode
 \target qt6_set_finalizer_mode
 
-\summary Customizes aspects of a target's finalization.
+\summary {Customizes aspects of a target's finalization.}
 
 \preliminarycmakecommand
 

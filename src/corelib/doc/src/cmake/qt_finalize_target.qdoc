@@ -32,7 +32,7 @@
 \title qt_finalize_target
 \target qt6_finalize_target
 
-\summary Handles various common platform-specific tasks associated with Qt targets.
+\summary {Handles various common platform-specific tasks associated with Qt targets.}
 
 \include cmake-find-package-core.qdocinc
 

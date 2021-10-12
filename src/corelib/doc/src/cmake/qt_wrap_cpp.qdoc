@@ -32,7 +32,7 @@
 \title qt_wrap_cpp
 \target qt6_wrap_cpp
 
-\summary Creates .moc files from sources.
+\summary {Creates .moc files from sources.}
 
 \include cmake-find-package-core.qdocinc
 

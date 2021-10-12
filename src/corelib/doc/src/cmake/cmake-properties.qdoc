@@ -73,7 +73,7 @@ is listed before its dependencies, it will fail to load on some devices.
 \title QT_ANDROID_EXTRA_LIBS
 \target cmake-target-property-QT_ANDROID_EXTRA_LIBS
 
-\summary Extra libraries to deploy with the target.
+\summary {Extra libraries to deploy with the target.}
 
 \preliminarycmakeproperty
 \cmakepropertyandroidonly
@@ -94,7 +94,7 @@ to enable OpenSSL in your application. For more information, see
 \title QT_ANDROID_EXTRA_PLUGINS
 \target cmake-target-property-QT_ANDROID_EXTRA_PLUGINS
 
-\summary Extra Qt plugins to deploy with the target.
+\summary {Extra Qt plugins to deploy with the target.}
 
 \preliminarycmakeproperty
 \cmakepropertyandroidonly
@@ -124,7 +124,7 @@ mangling is applied to the plugin library.
 \title QT_ANDROID_MIN_SDK_VERSION
 \target cmake-target-property-QT_ANDROID_MIN_SDK_VERSION
 
-\summary Minimum Android SDK version.
+\summary {Minimum Android SDK version.}
 
 \preliminarycmakeproperty
 \cmakepropertyandroidonly
@@ -142,7 +142,7 @@ Specifies the minimum Android API level for the target.
 \title QT_ANDROID_PACKAGE_SOURCE_DIR
 \target cmake-target-property-QT_ANDROID_PACKAGE_SOURCE_DIR
 
-\summary Path to a custom Android package template.
+\summary {Path to a custom Android package template.}
 
 \preliminarycmakeproperty
 \cmakepropertyandroidonly
@@ -174,7 +174,7 @@ then place this directly into the directory specified by this variable.
 \title QT_ANDROID_TARGET_SDK_VERSION
 \target cmake-target-property-QT_ANDROID_TARGET_SDK_VERSION
 
-\summary Android target SDK version.
+\summary {Android target SDK version.}
 
 \preliminarycmakeproperty
 \cmakepropertyandroidonly
@@ -192,7 +192,7 @@ Specifies the target Android API level for the target.
 \title QT_ANDROID_VERSION_CODE
 \target cmake-target-property-QT_ANDROID_VERSION_CODE
 
-\summary Internal Android app version.
+\summary {Internal Android app version.}
 
 \preliminarycmakeproperty
 \cmakepropertyandroidonly
@@ -213,7 +213,7 @@ For more information, see \l{Android: App Versioning}{Android App Versioning}.
 \title QT_ANDROID_VERSION_NAME
 \target cmake-target-property-QT_ANDROID_VERSION_NAME
 
-\summary Human-readable Android app version.
+\summary {Human-readable Android app version.}
 
 \preliminarycmakeproperty
 \cmakepropertyandroidonly
@@ -234,7 +234,7 @@ For more information, see \l{Android: App Versioning}{Android App Versioning}.
 \title QT_QML_ROOT_PATH
 \target cmake-target-property-QT_QML_ROOT_PATH
 
-\summary Overrides the location of the application's qml directory.
+\summary {Overrides the location of the application's qml directory.}
 
 \preliminarycmakeproperty
 
@@ -254,7 +254,7 @@ will be used instead.
 \title QT_QML_IMPORT_PATH
 \target cmake-target-property-QT_QML_IMPORT_PATH
 
-\summary Specifies a list of directories to search for QML imports.
+\summary {Specifies a list of directories to search for QML imports.}
 
 \preliminarycmakeproperty
 
@@ -275,7 +275,7 @@ For application-specific QML imports, use
 \title QT_ANDROID_DEPLOYMENT_SETTINGS_FILE
 \target cmake-target-property-QT_ANDROID_DEPLOYMENT_SETTINGS_FILE
 
-\summary Specifies the location of a target's generated deployment settings file.
+\summary {Specifies the location of a target's generated deployment settings file.}
 
 \preliminarycmakeproperty
 \cmakepropertyandroidonly
@@ -294,7 +294,7 @@ and overwritten by that command.
 \title qt_no_entrypoint
 \target cmake-target-property-qt_no_entrypoint
 
-\summary Specifies to inhibit linking against Qt's entrypoint lib.
+\summary {Specifies to inhibit linking against Qt's entrypoint lib.}
 
 \preliminarycmakeproperty
 
@@ -312,7 +312,7 @@ On targets that must provide their own entry point, set the property \c qt_no_en
 \title QT_RESOURCE_PREFIX
 \target cmake-target-property-QT_RESOURCE_PREFIX
 
-\summary Specifies the default Qt resource prefix.
+\summary {Specifies the default Qt resource prefix.}
 
 \preliminarycmakeproperty
 

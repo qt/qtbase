@@ -32,7 +32,7 @@
 \title qt_add_resources
 \target qt6_add_resources
 
-\summary Compiles binary resources into source code.
+\summary {Compiles binary resources into source code.}
 
 \include cmake-find-package-core.qdocinc
 
