@@ -3439,7 +3439,7 @@ void tst_QList::fromReadOnlyData() const
         QCOMPARE(v.size(), qsizetype(11));
         // v.capacity() is unspecified, for now
 
-        QCOMPARE((void*)(const char*)(v.constBegin() + v.size()), (void*)(const char*)v.constEnd());
+        QCOMPARE((void*)(v.constBegin() + v.size()).operator->(), (void*)v.constEnd().operator->());
 
         for (int i = 0; i < 10; ++i)
             QCOMPARE(v[i], char('A' + i));
