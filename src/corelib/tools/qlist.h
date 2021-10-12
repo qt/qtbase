@@ -129,8 +129,10 @@ public:
     using rvalue_ref = T &&;
 #endif
 
+    class const_iterator;
     class iterator {
         friend class QList<T>;
+        friend class const_iterator;
         T *i = nullptr;
     public:
         using difference_type = qsizetype;
@@ -157,6 +159,12 @@ public:
         inline constexpr bool operator<=(iterator other) const { return i <= other.i; }
         inline constexpr bool operator>(iterator other) const { return i > other.i; }
         inline constexpr bool operator>=(iterator other) const { return i >= other.i; }
+        inline constexpr bool operator==(const_iterator o) const { return i == o.i; }
+        inline constexpr bool operator!=(const_iterator o) const { return i != o.i; }
+        inline constexpr bool operator<(const_iterator other) const { return i < other.i; }
+        inline constexpr bool operator<=(const_iterator other) const { return i <= other.i; }
+        inline constexpr bool operator>(const_iterator other) const { return i > other.i; }
+        inline constexpr bool operator>=(const_iterator other) const { return i >= other.i; }
         inline constexpr bool operator==(pointer p) const { return i == p; }
         inline constexpr bool operator!=(pointer p) const { return i != p; }
         inline iterator &operator++() { ++i; return *this; }
@@ -180,6 +188,7 @@ public:
 
     class const_iterator {
         friend class QList<T>;
+        friend class iterator;
         const T *i = nullptr;
     public:
         using difference_type = qsizetype;
@@ -206,8 +215,12 @@ public:
         inline constexpr bool operator<=(const_iterator other) const { return i <= other.i; }
         inline constexpr bool operator>(const_iterator other) const { return i > other.i; }
         inline constexpr bool operator>=(const_iterator other) const { return i >= other.i; }
-        inline constexpr bool operator==(iterator o) const { return i == const_iterator(o).i; }
-        inline constexpr bool operator!=(iterator o) const { return i != const_iterator(o).i; }
+        inline constexpr bool operator==(iterator o) const { return i == o.i; }
+        inline constexpr bool operator!=(iterator o) const { return i != o.i; }
+        inline constexpr bool operator<(iterator other) const { return i < other.i; }
+        inline constexpr bool operator<=(iterator other) const { return i <= other.i; }
+        inline constexpr bool operator>(iterator other) const { return i > other.i; }
+        inline constexpr bool operator>=(iterator other) const { return i >= other.i; }
         inline constexpr bool operator==(pointer p) const { return i == p; }
         inline constexpr bool operator!=(pointer p) const { return i != p; }
         inline const_iterator &operator++() { ++i; return *this; }
