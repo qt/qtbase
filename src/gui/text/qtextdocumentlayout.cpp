@@ -2044,7 +2044,9 @@ void QTextDocumentLayoutPrivate::drawBlock(const QPointF &offset, QPainter *pain
             rect.setRight((fd->size.width - fd->rightMargin).toReal());
         }
 
-        fillBackground(painter, rect, bg, r.topLeft());
+        // in the case of <hr>, the background-color CSS style fills only the rule's thickness instead of the whole line
+        if (!blockFormat.hasProperty(QTextFormat::BlockTrailingHorizontalRulerWidth))
+            fillBackground(painter, rect, bg, r.topLeft());
     }
 
     QList<QTextLayout::FormatRange> selections;
@@ -2104,7 +2106,10 @@ void QTextDocumentLayoutPrivate::drawBlock(const QPointF &offset, QPainter *pain
 
     if (blockFormat.hasProperty(QTextFormat::BlockTrailingHorizontalRulerWidth)) {
         const qreal width = blockFormat.lengthProperty(QTextFormat::BlockTrailingHorizontalRulerWidth).value(r.width());
-        painter->setPen(context.palette.color(QPalette::Dark));
+        const auto color = blockFormat.hasProperty(QTextFormat::BackgroundBrush)
+                         ? qvariant_cast<QBrush>(blockFormat.property(QTextFormat::BackgroundBrush)).color()
+                         : context.palette.color(QPalette::Dark);
+        painter->setPen(color);
         qreal y = r.bottom();
         if (bl.length() == 1)
             y = r.top() + r.height() / 2;

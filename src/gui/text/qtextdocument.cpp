@@ -2359,6 +2359,7 @@ QString QTextHtmlExporter::toHtml(ExportMode mode)
         html += QString::fromLatin1("<title>") + title + QString::fromLatin1("</title>");
     html += QLatin1String("<style type=\"text/css\">\n");
     html += QLatin1String("p, li { white-space: pre-wrap; }\n");
+    html += QLatin1String("hr { height: 1px; border-width: 0; }\n");
     html += QLatin1String("</style>");
     html += QLatin1String("</head><body");
 
@@ -3047,8 +3048,15 @@ void QTextHtmlExporter::emitBlock(const QTextBlock &block)
         QTextLength width = blockFormat.lengthProperty(QTextFormat::BlockTrailingHorizontalRulerWidth);
         if (width.type() != QTextLength::VariableLength)
             emitTextLength("width", width);
-        else
-            html += QLatin1Char(' ');
+        html += QLatin1Char(' ');
+
+        if (blockFormat.hasProperty(QTextFormat::BackgroundBrush)) {
+            html += QLatin1String("style=\"");
+            html += QLatin1String("background-color:");
+            html += colorValue(qvariant_cast<QBrush>(blockFormat.property(QTextFormat::BackgroundBrush)).color());
+            html += QLatin1Char(';');
+            html += QLatin1Char('\"');
+        }
 
         html += QLatin1String("/>");
         return;

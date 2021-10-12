@@ -3499,6 +3499,12 @@ void tst_QTextDocumentFragment::html_hr()
     doc->setHtml("<hr />");
     QCOMPARE(doc->blockCount(), 1);
     QVERIFY(doc->begin().blockFormat().hasProperty(QTextFormat::BlockTrailingHorizontalRulerWidth));
+    doc->setHtml("<hr style=\"background-color:green;\"/>");
+    QCOMPARE(doc->blockCount(), 1);
+    QVERIFY(doc->begin().blockFormat().hasProperty(QTextFormat::BlockTrailingHorizontalRulerWidth));
+    QVERIFY(doc->begin().blockFormat().hasProperty(QTextFormat::BackgroundBrush));
+    const auto brush = qvariant_cast<QBrush>(doc->begin().blockFormat().property(QTextFormat::BackgroundBrush));
+    QCOMPARE(brush.color(), QColor("green"));
 }
 
 void tst_QTextDocumentFragment::html_hrMargins()
