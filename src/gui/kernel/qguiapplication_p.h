@@ -205,8 +205,6 @@ public:
         return alignment;
     }
 
-    static void emitLastWindowClosed();
-
     QPixmap getPixmapCursor(Qt::CursorShape cshape);
 
     void _q_updateFocusObject(QObject *object);

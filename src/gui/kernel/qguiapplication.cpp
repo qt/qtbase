@@ -3559,7 +3559,8 @@ void QGuiApplicationPrivate::maybeQuitOnLastWindowClosed(QWindow *closedWindow)
             return;
     }
 
-    emitLastWindowClosed();
+    if (in_exec)
+        emit q_func()->lastWindowClosed();
 
     if (QGuiApplication::quitOnLastWindowClosed())
         maybeQuit();
@@ -3576,13 +3577,6 @@ void QGuiApplicationPrivate::maybeQuitOnLastWindowClosed(QWindow *closedWindow)
 
     \sa QWindow::close(), QWindow::isTopLevel()
 */
-
-void QGuiApplicationPrivate::emitLastWindowClosed()
-{
-    if (qGuiApp && qGuiApp->d_func()->in_exec) {
-        emit qGuiApp->lastWindowClosed();
-    }
-}
 
 bool QGuiApplicationPrivate::shouldQuit()
 {
