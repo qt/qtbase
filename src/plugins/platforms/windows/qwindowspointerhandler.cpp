@@ -712,8 +712,13 @@ bool QWindowsPointerHandler::translateMouseEvent(QWindow *window,
         globalPos = eventPos;
         localPos = QWindowsGeometryHint::mapFromGlobal(hwnd, eventPos);
     } else {
-        localPos = eventPos;
         globalPos = QWindowsGeometryHint::mapToGlobal(hwnd, eventPos);
+        auto targetHwnd = hwnd;
+        if (auto *pw = window->handle())
+            targetHwnd = HWND(pw->winId());
+        localPos = targetHwnd == hwnd
+            ? eventPos
+            : QWindowsGeometryHint::mapFromGlobal(targetHwnd, globalPos);
     }
 
     const Qt::KeyboardModifiers keyModifiers = QWindowsKeyMapper::queryKeyboardModifiers();
