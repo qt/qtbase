@@ -801,6 +801,18 @@ bool QWidgetRepaintManager::syncAllowed()
     return true;
 }
 
+static bool isDrawnInEffect(const QWidget *w)
+{
+#if QT_CONFIG(graphicseffect)
+    do {
+        if (w->graphicsEffect())
+            return true;
+        w = w->parentWidget();
+    } while (w);
+#endif
+    return false;
+}
+
 void QWidgetRepaintManager::paintAndFlush()
 {
     qCInfo(lcWidgetPainting) << "Painting and flushing dirty"
@@ -888,7 +900,8 @@ void QWidgetRepaintManager::paintAndFlush()
         }
 #endif
 
-        if (!hasDirtySiblingsAbove && wd->isOpaque && !dirty.intersects(widgetDirty.boundingRect())) {
+        if (!isDrawnInEffect(w) && !hasDirtySiblingsAbove && wd->isOpaque
+                && !dirty.intersects(widgetDirty.boundingRect())) {
             opaqueNonOverlappedWidgets.append(w);
         } else {
             resetWidget(w);
