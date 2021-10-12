@@ -2390,14 +2390,16 @@ QString::QString(QChar ch)
 /*! \fn QString::QString(const QByteArray &ba)
 
     Constructs a string initialized with the byte array \a ba. The
-    given byte array is converted to Unicode using fromUtf8(). Stops
-    copying at the first 0 character, otherwise copies the entire byte
-    array.
+    given byte array is converted to Unicode using fromUtf8().
 
     You can disable this constructor by defining
     \l QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
+
+    \note: any null ('\\0') bytes in the byte array will be included in this
+    string, converted to Unicode null characters (U+0000). This behavior is
+    different from Qt 5.x.
 
     \sa fromLatin1(), fromLocal8Bit(), fromUtf8()
 */
@@ -2664,8 +2666,7 @@ QString &QString::operator=(QLatin1String other)
     \overload operator=()
 
     Assigns \a ba to this string. The byte array is converted to Unicode
-    using the fromUtf8() function. This function stops conversion at the
-    first NUL character found, or the end of the \a ba byte array.
+    using the fromUtf8() function.
 
     You can disable this operator by defining
     \l QT_NO_CAST_FROM_ASCII when you compile your applications. This
@@ -3644,8 +3645,7 @@ QString &QString::replace(QChar c, QLatin1String after, Qt::CaseSensitivity cs)
     \overload operator==()
 
     The \a other byte array is converted to a QString using the
-    fromUtf8() function. This function stops conversion at the
-    first NUL character found, or the end of the byte array.
+    fromUtf8() function.
 
     You can disable this operator by defining
     \l QT_NO_CAST_FROM_ASCII when you compile your applications. This
@@ -5284,6 +5284,9 @@ QList<uint> QtPrivate::convertToUcs4(QStringView string)
     \since 6.0
 
     Returns a QString initialized with the Latin-1 string \a str.
+
+    \note: any null ('\\0') bytes in the byte array will be included in this
+    string, converted to Unicode null characters (U+0000).
 */
 QString QString::fromLatin1(QByteArrayView ba)
 {
@@ -5319,6 +5322,10 @@ QString QString::fromLatin1(QByteArrayView ba)
     \since 5.0
 
     Returns a QString initialized with the Latin-1 string \a str.
+
+    \note: any null ('\\0') bytes in the byte array will be included in this
+    string, converted to Unicode null characters (U+0000). This behavior is
+    different from Qt 5.x.
 */
 
 /*!
@@ -5340,6 +5347,10 @@ QString QString::fromLatin1(QByteArrayView ba)
     \since 5.0
 
     Returns a QString initialized with the 8-bit string \a str.
+
+    \note: any null ('\\0') bytes in the byte array will be included in this
+    string, converted to Unicode null characters (U+0000). This behavior is
+    different from Qt 5.x.
 */
 
 /*!
@@ -5348,6 +5359,9 @@ QString QString::fromLatin1(QByteArrayView ba)
     \since 6.0
 
     Returns a QString initialized with the 8-bit string \a str.
+
+    \note: any null ('\\0') bytes in the byte array will be included in this
+    string, converted to Unicode null characters (U+0000).
 */
 QString QString::fromLocal8Bit(QByteArrayView ba)
 {
@@ -5402,6 +5416,10 @@ QString QString::fromLocal8Bit(QByteArrayView ba)
     \since 5.0
 
     Returns a QString initialized with the UTF-8 string \a str.
+
+    \note: any null ('\\0') bytes in the byte array will be included in this
+    string, converted to Unicode null characters (U+0000). This behavior is
+    different from Qt 5.x.
 */
 
 /*!
@@ -5410,6 +5428,9 @@ QString QString::fromLocal8Bit(QByteArrayView ba)
     \since 6.0
 
     Returns a QString initialized with the UTF-8 string \a str.
+
+    \note: any null ('\\0') bytes in the byte array will be included in this
+    string, converted to Unicode null characters (U+0000).
 */
 QString QString::fromUtf8(QByteArrayView ba)
 {
@@ -8922,6 +8943,10 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     guarantee that \a str will not be deleted or modified as long as
     the QLatin1String object exists.
 
+    \note: any null ('\\0') bytes in the byte array will be included in this
+    string, which will be converted to Unicode null characters (U+0000) if this
+    string is used by QString. This behavior is different from Qt 5.x.
+
     \sa latin1()
 */
 
@@ -8964,6 +8989,10 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     be deleted or modified as long as the QLatin1String object
     exists. The size is obtained from \a str as-is, without checking
     for a null-terminator.
+
+    \note: any null ('\\0') bytes in the byte array will be included in this
+    string, which will be converted to Unicode null characters (U+0000) if this
+    string is used by QString.
 
     \sa latin1()
 */
