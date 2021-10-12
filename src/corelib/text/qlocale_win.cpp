@@ -51,7 +51,7 @@
 #   include <time.h>
 #endif
 
-#if defined(Q_CC_MSVC)
+#if defined(Q_CC_MSVC) && !defined(Q_CC_CLANG)
 #   include <winrt/base.h>
 // Workaround for Windows SDK bug.
 // See https://github.com/microsoft/Windows.UI.Composition-Win32-Samples/issues/47
@@ -63,7 +63,7 @@ namespace winrt::impl
 #   include <winrt/Windows.Foundation.h>
 #   include <winrt/Windows.Foundation.Collections.h>
 #   include <winrt/Windows.System.UserProfile.h>
-#endif // defined(Q_CC_MSVC)
+#endif // defined(Q_CC_MSVC) && !defined(Q_CC_CLANG)
 
 QT_BEGIN_NAMESPACE
 
@@ -631,7 +631,7 @@ QVariant QSystemLocalePrivate::toCurrencyString(const QSystemLocale::CurrencyToS
 QVariant QSystemLocalePrivate::uiLanguages()
 {
     QStringList result;
-#if defined(Q_CC_MSVC) // msvc supports WinRT calls
+#if defined(Q_CC_MSVC) && !defined(Q_CC_CLANG) // msvc supports WinRT calls
     using namespace winrt;
     using namespace Windows::Foundation;
     using namespace Windows::System::UserProfile;
@@ -640,7 +640,7 @@ QVariant QSystemLocalePrivate::uiLanguages()
         result << QString::fromStdString(winrt::to_string(lang));
     if (!result.isEmpty())
         return result; // else just fall back to WIN32 API implementation
-#endif // defined(Q_CC_MSVC)
+#endif // defined(Q_CC_MSVC) && !defined(Q_CC_CLANG)
     // mingw and clang still have to use Win32 API
     unsigned long cnt = 0;
     QVarLengthArray<wchar_t, 64> buf(64);
