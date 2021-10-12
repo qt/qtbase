@@ -183,6 +183,94 @@ inline uint qHash(const Custom &key, uint seed = 0) { return qHash(key.i, seed);
 
 Q_DECLARE_METATYPE(Custom);
 
+// Similar to Custom but not default-constructible and has move constructor and assignment
+struct NonDefaultConstructible {
+    NonDefaultConstructible() = delete;
+    NonDefaultConstructible(char input)
+        : i(input)
+        , that(this)
+        , state(Constructed)
+    {
+        counter.fetchAndAddRelaxed(1);
+    }
+    NonDefaultConstructible(const NonDefaultConstructible &other)
+        : i(other.i)
+        , that(this)
+        , state(Constructed)
+    {
+        check(&other);
+        counter.fetchAndAddRelaxed(1);
+    }
+    NonDefaultConstructible(NonDefaultConstructible &&other)
+        : i(other.i)
+        , that(this)
+        , state(Constructed)
+    {
+        check(&other);
+        other.state = MovedFrom;
+        counter.fetchAndAddRelaxed(1);
+    }
+    ~NonDefaultConstructible()
+    {
+        check(this, true);
+        i = 0;
+        counter.fetchAndAddRelaxed(-1);
+        state = Destructed;
+    }
+
+    bool operator==(const NonDefaultConstructible &other) const
+    {
+        check(&other);
+        check(this);
+        return i == other.i;
+    }
+
+    bool operator<(const NonDefaultConstructible &other) const
+    {
+        check(&other);
+        check(this);
+        return i < other.i;
+    }
+
+    NonDefaultConstructible &operator=(const NonDefaultConstructible &other)
+    {
+        check(&other);
+        check(this, true);
+        i = other.i;
+        state = Constructed;
+        return *this;
+    }
+
+    NonDefaultConstructible &operator=(NonDefaultConstructible &&other)
+    {
+        check(&other);
+        check(this, true);
+        i = other.i;
+        state = Constructed;
+        other.state = MovedFrom;
+        return *this;
+    }
+    static QAtomicInt counter;
+
+    char i; // used to identify origin of an instance
+private:
+    NonDefaultConstructible *that; // used to catch copying using mem{cpy,move}()
+
+    enum State { Constructed = 106, Destructed = 110, MovedFrom = 120 };
+    State state;
+
+    static void check(const NonDefaultConstructible *c, bool movedOk = false)
+    {
+        // check if c object has been moved incorrectly
+        QCOMPARE(c, c->that);
+        if (!movedOk || c->state != MovedFrom)
+            QCOMPARE(c->state, Constructed);
+    }
+};
+QAtomicInt NonDefaultConstructible::counter = 0;
+
+inline uint qHash(const NonDefaultConstructible &key, uint seed = 0) { return qHash(key.i, seed); }
+
 // tests depends on the fact that:
 Q_STATIC_ASSERT(!QTypeInfo<int>::isStatic);
 Q_STATIC_ASSERT(!QTypeInfo<int>::isComplex);
@@ -190,6 +278,8 @@ Q_STATIC_ASSERT(!QTypeInfo<Movable>::isStatic);
 Q_STATIC_ASSERT(QTypeInfo<Movable>::isComplex);
 Q_STATIC_ASSERT(QTypeInfo<Custom>::isStatic);
 Q_STATIC_ASSERT(QTypeInfo<Custom>::isComplex);
+Q_STATIC_ASSERT(QTypeInfo<NonDefaultConstructible>::isStatic);
+Q_STATIC_ASSERT(QTypeInfo<NonDefaultConstructible>::isComplex);
 
 
 class tst_QVector : public QObject
@@ -263,6 +353,7 @@ private slots:
     void insertInt() const;
     void insertMovable() const;
     void insertCustom() const;
+    void insertNonDefaultConstructible() const;
     void isEmpty() const;
     void last() const;
     void lastIndexOf() const;
@@ -273,6 +364,7 @@ private slots:
     void prependInt() const;
     void prependMovable() const;
     void prependCustom() const;
+    void prependNonDefaultConstructible() const;
     void qhashInt() const { qhash<int>(); }
     void qhashMovable() const { qhash<Movable>(); }
     void qhashCustom() const { qhash<Custom>(); }
@@ -390,6 +482,10 @@ template<>
 const Movable SimpleValue<Movable>::Values[] = { 110, 105, 101, 114, 111, 98 };
 template<>
 const Custom SimpleValue<Custom>::Values[] = { 110, 105, 101, 114, 111, 98 };
+template<>
+const NonDefaultConstructible SimpleValue<NonDefaultConstructible>::Values[] =
+    { 110, 105, 101, 114, 111, 98 };
+
 
 // Make some macros for the tests to use in order to be slightly more readable...
 #define T_FOO SimpleValue<T>::at(0)
@@ -1592,6 +1688,11 @@ void tst_QVector::insertCustom() const
     insert<Custom>();
 }
 
+void tst_QVector::insertNonDefaultConstructible() const
+{
+    insert<NonDefaultConstructible>();
+}
+
 void tst_QVector::isEmpty() const
 {
     QVector<QString> myvec;
@@ -1829,6 +1930,13 @@ void tst_QVector::prependCustom() const
     const int instancesCount = Custom::counter.loadAcquire();
     prepend<Custom>();
     QCOMPARE(instancesCount, Custom::counter.loadAcquire());
+}
+
+void tst_QVector::prependNonDefaultConstructible() const
+{
+    const int instancesCount = NonDefaultConstructible::counter.loadAcquire();
+    prepend<NonDefaultConstructible>();
+    QCOMPARE(instancesCount, NonDefaultConstructible::counter.loadAcquire());
 }
 
 void tst_QVector::removeAllWithAlias() const
