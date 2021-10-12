@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
@@ -97,7 +97,7 @@ static const int QGRAPHICSVIEW_PREALLOC_STYLE_OPTIONS = 503; // largest prime < 
     convenience functions rotate(), scale(), translate() or shear(). The most
     two common transformations are scaling, which is used to implement
     zooming, and rotation. QGraphicsView keeps the center of the view fixed
-    during a transformation. Because of the scene alignment (setAligment()),
+    during a transformation. Because of the scene alignment (setAlignment()),
     translating the view will have no visual impact.
 
     You can interact with the items on the scene by using the mouse and
