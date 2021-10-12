@@ -685,6 +685,7 @@ QStringList QLibraryInfo::platformPluginArguments(const QString &platformName)
 QT_END_NAMESPACE
 
 #if defined(Q_CC_GNU) && defined(ELF_INTERPRETER)
+#  include <elf.h>
 #  include <stdio.h>
 #  include <stdlib.h>
 
@@ -693,6 +694,35 @@ QT_END_NAMESPACE
 QT_WARNING_DISABLE_GCC("-Wattributes")
 QT_WARNING_DISABLE_CLANG("-Wattributes")
 QT_WARNING_DISABLE_INTEL(2621)
+
+#  if defined(Q_OS_LINUX)
+#    include "minimum-linux_p.h"
+#  endif
+#  ifdef QT_ELF_NOTE_OS_TYPE
+struct ElfNoteAbiTag
+{
+    static_assert(sizeof(Elf32_Nhdr) == sizeof(Elf64_Nhdr),
+        "The size of an ELF note is wrong (should be 12 bytes)");
+    struct Payload {
+        Elf32_Word ostype = QT_ELF_NOTE_OS_TYPE;
+        Elf32_Word major = QT_ELF_NOTE_OS_MAJOR;
+        Elf32_Word minor = QT_ELF_NOTE_OS_MINOR;
+#    ifdef QT_ELF_NOTE_OS_PATCH
+        Elf32_Word patch = QT_ELF_NOTE_OS_PATCH;
+#    endif
+    };
+
+    Elf32_Nhdr header = {
+        .n_namesz = sizeof(name),
+        .n_descsz = sizeof(Payload),
+        .n_type = NT_GNU_ABI_TAG
+    };
+    char name[sizeof ELF_NOTE_GNU] = ELF_NOTE_GNU;  // yes, include the null terminator
+    Payload payload = {};
+};
+__attribute__((section(".note.ABI-tag"), aligned(4), used))
+extern constexpr ElfNoteAbiTag QT_MANGLE_NAMESPACE(qt_abi_tag) = {};
+#  endif
 
 extern const char qt_core_interpreter[] __attribute__((section(".interp")))
     = ELF_INTERPRETER;

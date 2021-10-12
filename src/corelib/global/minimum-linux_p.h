@@ -83,24 +83,25 @@ QT_BEGIN_NAMESPACE
 // falls back to stat() for us.
 // (Using QT_CONFIG(glibc) instead of __GLIBC__ because the macros aren't
 // defined in assembler mode)
-#  define MINLINUX_MAJOR        4
-#  define MINLINUX_MINOR        11
-#  define MINLINUX_PATCH        0
+#  define QT_ELF_NOTE_OS_MAJOR      4
+#  define QT_ELF_NOTE_OS_MINOR      11
+#  define QT_ELF_NOTE_OS_PATCH      0
 #elif QT_CONFIG(getentropy)
-#  define MINLINUX_MAJOR        3
-#  define MINLINUX_MINOR        17
-#  define MINLINUX_PATCH        0
+#  define QT_ELF_NOTE_OS_MAJOR      3
+#  define QT_ELF_NOTE_OS_MINOR      17
+#  define QT_ELF_NOTE_OS_PATCH      0
 #elif QT_CONFIG(renameat2)
-#  define MINLINUX_MAJOR        3
-#  define MINLINUX_MINOR        16
-#  define MINLINUX_PATCH        0
+#  define QT_ELF_NOTE_OS_MAJOR      3
+#  define QT_ELF_NOTE_OS_MINOR      16
+#  define QT_ELF_NOTE_OS_PATCH      0
 #else
-#  define MINLINUX_MAJOR        2
-#  define MINLINUX_MINOR        6
-#  define MINLINUX_PATCH        28
+#  define QT_ELF_NOTE_OS_MAJOR      2
+#  define QT_ELF_NOTE_OS_MINOR      6
+#  define QT_ELF_NOTE_OS_PATCH      28
 #endif
 
-#define MINIMUM_LINUX_VERSION  QT_VERSION_CHECK(MINLINUX_MAJOR, MINLINUX_MINOR, MINLINUX_PATCH)
+/* you must include <elf.h> */
+#define QT_ELF_NOTE_OS_TYPE         ELF_NOTE_OS_LINUX
 
 QT_END_NAMESPACE
 

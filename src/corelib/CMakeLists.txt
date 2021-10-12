@@ -573,23 +573,6 @@ qt_internal_extend_target(Core CONDITION LINUX AND QT_BUILD_SHARED_LIBS
         global/minimum-linux_p.h
 )
 
-#### Keys ignored in scope 34:.:global:global/global.pri:precompile_header:
-# NO_PCH_ASM = "global/minimum-linux.S"
-# QMAKE_EXTRA_COMPILERS = "no_pch_assembler"
-# no_pch_assembler.commands = "$$QMAKE_CC" "-c" "$(CFLAGS)" "$(INCPATH)" "${QMAKE_FILE_IN}" "-o" "${QMAKE_FILE_OUT}"
-# no_pch_assembler.dependency_type = "TYPE_C"
-# no_pch_assembler.input = "NO_PCH_ASM"
-# no_pch_assembler.name = "compiling[no_pch]" "${QMAKE_FILE_IN}"
-# no_pch_assembler.output = "${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${firstQMAKE_EXT_OBJ}"
-
-#### Keys ignored in scope 35:.:global:global/global.pri:silent:
-# no_pch_assembler.commands = "@echo" "compiling[no_pch]" "${QMAKE_FILE_IN}" "&&"
-
-qt_internal_extend_target(Core CONDITION LINUX AND NOT precompile_header AND QT_BUILD_SHARED_LIBS
-    SOURCES
-        global/minimum-linux.S
-)
-
 qt_internal_extend_target(Core CONDITION QT_FEATURE_slog2
     LIBRARIES
         Slog2::Slog2
