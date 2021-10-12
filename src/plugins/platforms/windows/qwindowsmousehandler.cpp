@@ -258,8 +258,13 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
         globalPosition = winEventPosition;
         clientPosition = QWindowsGeometryHint::mapFromGlobal(hwnd, globalPosition);
     } else {
-        clientPosition = winEventPosition;
         globalPosition = QWindowsGeometryHint::mapToGlobal(hwnd, winEventPosition);
+        auto targetHwnd = hwnd;
+        if (auto *pw = window->handle())
+            targetHwnd = HWND(pw->winId());
+        clientPosition = targetHwnd == hwnd
+            ? winEventPosition
+            : QWindowsGeometryHint::mapFromGlobal(targetHwnd, globalPosition);
     }
 
     // Windows sends a mouse move with no buttons pressed to signal "Enter"
@@ -476,7 +481,7 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
     }
 
     if (!discardEvent && mouseEvent.type != QEvent::None) {
-        QWindowSystemInterface::handleMouseEvent(window, device, winEventPosition, globalPosition, buttons,
+        QWindowSystemInterface::handleMouseEvent(window, device, clientPosition, globalPosition, buttons,
                                                  mouseEvent.button, mouseEvent.type,
                                                  keyModifiers, source);
     }
