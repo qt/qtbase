@@ -911,10 +911,20 @@ public:
         Q_ASSERT(distance >= 0 && distance <= this->allocatedCapacity() - this->size);
         Q_UNUSED(distance);
 
-        T *iter = this->end();
-        for (; b != e; ++iter, ++b) {
-            new (iter) T(*b);
-            ++this->size;
+#if __cplusplus >= 202002L
+        if constexpr (
+            std::is_convertible_v<
+                    typename std::iterator_traits<It>::iterator_category,
+                    std::contiguous_iterator_tag>) {
+            this->copyAppend(std::to_address(b), std::to_address(e));
+        } else
+#endif
+        {
+            T *iter = this->end();
+            for (; b != e; ++iter, ++b) {
+                new (iter) T(*b);
+                ++this->size;
+            }
         }
     }
 
