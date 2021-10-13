@@ -410,11 +410,40 @@ function(qt_internal_create_plugins_files)
 
         if(QT_MODULE STREQUAL "Qml")
             set(QT_MODULE_PLUGIN_INCLUDES "${QT_MODULE_PLUGIN_INCLUDES}
+# Qml plugin targets might have dependencies on other qml plugin targets, but the Targets.cmake
+# files are included in the order that file(GLOB) returns, which means certain targets that are
+# referenced might not have been created yet, and \${CMAKE_FIND_PACKAGE_NAME}_NOT_FOUND_MESSAGE
+# might be set to a message saying those targets don't exist.
+#
+# Postpone checking of which targets don't exist until all Qml PluginConfig.cmake files have been
+# included, by including all the files one more time and checking for errors at each step.
+#
+# TODO: Find a better way to deal with this, perhaps by using find_package() instead of include
+# for the Qml PluginConfig.cmake files.
+
 file(GLOB __qt_qml_plugins_config_file_list \"\${CMAKE_CURRENT_LIST_DIR}/QmlPlugins/${INSTALL_CMAKE_NAMESPACE}*Config.cmake\")
 if (__qt_qml_plugins_config_file_list AND NOT QT_SKIP_AUTO_QML_PLUGIN_INCLUSION)
+    # First round of inclusions ensure all qml plugin targets are brought into scope.
     foreach(__qt_qml_plugin_config_file \${__qt_qml_plugins_config_file_list})
         include(\${__qt_qml_plugin_config_file})
+
+        # Temporarily unset any failure markers.
+        unset(\${CMAKE_FIND_PACKAGE_NAME}_NOT_FOUND_MESSAGE)
+        unset(\${CMAKE_FIND_PACKAGE_NAME}_FOUND)
     endforeach()
+
+    # For the second round of inclusions, check and bail out early if there are errors.
+    foreach(__qt_qml_plugin_config_file \${__qt_qml_plugins_config_file_list})
+        include(\${__qt_qml_plugin_config_file})
+
+        if(\${CMAKE_FIND_PACKAGE_NAME}_NOT_FOUND_MESSAGE)
+            string(APPEND \${CMAKE_FIND_PACKAGE_NAME}_NOT_FOUND_MESSAGE
+                \"\nThe message was set in \${__qt_qml_plugin_config_file} \")
+            set(\${CMAKE_FIND_PACKAGE_NAME}_FOUND FALSE)
+            return()
+        endif()
+    endforeach()
+
 endif()")
         endif()
 
