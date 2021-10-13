@@ -13,7 +13,6 @@ qt_internal_add_tool(${target_name}
         QT_MOC
         QT_NO_CAST_FROM_ASCII
         QT_NO_CAST_FROM_BYTEARRAY
-        QT_NO_COMPRESS
         QT_NO_FOREACH
     INCLUDE_DIRECTORIES
         ${CMAKE_CURRENT_SOURCE_DIR}

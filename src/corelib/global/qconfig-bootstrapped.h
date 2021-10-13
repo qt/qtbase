@@ -136,6 +136,8 @@
 #define QT_NO_TRANSLATION
 #define QT_FEATURE_translation -1
 
+#define QT_NO_COMPRESS
+
 // rcc.pro will DEFINES+= this
 #ifndef QT_FEATURE_zstd
 #define QT_FEATURE_zstd -1
