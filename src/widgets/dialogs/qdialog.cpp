@@ -153,7 +153,7 @@ void QDialogPrivate::close(int resultCode)
     Q_Q(QDialog);
 
     q->setResult(resultCode);
-    q->hide();
+
     if (!data.is_closing) {
         // Until Qt 6.3 we didn't close dialogs, so they didn't receive a QCloseEvent.
         // It is likely that subclasses implement closeEvent and handle them as rejection
@@ -171,6 +171,12 @@ void QDialogPrivate::close(int resultCode)
         } closeEventEater;
         q->installEventFilter(&closeEventEater);
         QWidgetPrivate::close();
+    } else {
+        // If the close was initiated outside of QDialog we will end up
+        // here via QDialog::closeEvent calling reject(), in which case
+        // we need to hide the dialog to ensure QDialog::closeEvent does
+        // not ignore the close event. FIXME: Why is QDialog doing this?
+        q->hide();
     }
 
     resetModalitySetByOpen();
