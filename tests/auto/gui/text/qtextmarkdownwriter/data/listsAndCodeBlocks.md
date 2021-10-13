@@ -22,3 +22,10 @@
 - still didn't fix it, expecting a breakthrough any day now
 - some sort of miracle
 - profit!
+- Alternatively we can have a non-indented fenced code block under a list item:
+
+```qml
+import QtQuick
+Text { text: "hello world" }
+```
+- but that means the code block is not part of the list item.
