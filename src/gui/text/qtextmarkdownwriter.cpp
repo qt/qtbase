@@ -370,8 +370,7 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
     const bool codeBlock = blockFmt.hasProperty(QTextFormat::BlockCodeFence) ||
             blockFmt.stringProperty(QTextFormat::BlockCodeLanguage).length() > 0;
     if (m_fencedCodeBlock && !codeBlock) {
-        m_stream << m_linePrefix << QString(m_wrappedLineIndent, Space)
-                 << m_codeBlockFence << Newline;
+        m_stream << m_linePrefix << m_codeBlockFence << Newline;
         m_fencedCodeBlock = false;
         m_codeBlockFence.clear();
     }
@@ -445,8 +444,10 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
             if (fenceChar.isEmpty())
                 fenceChar = QLatin1String("`");
             m_codeBlockFence = QString(3, fenceChar.at(0));
+            if (blockFmt.hasProperty(QTextFormat::BlockIndent))
+                m_codeBlockFence = QString(m_wrappedLineIndent, Space) + m_codeBlockFence;
             // A block quote can contain an indented code block, but not vice-versa.
-            m_stream << m_linePrefix << QString(m_wrappedLineIndent, Space) << m_codeBlockFence
+            m_stream << m_linePrefix << m_codeBlockFence
                      << blockFmt.stringProperty(QTextFormat::BlockCodeLanguage) << Newline;
             m_fencedCodeBlock = true;
         }
