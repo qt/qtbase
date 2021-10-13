@@ -243,6 +243,7 @@ private slots:
     void winIdChangeEvent();
     void persistentWinId();
     void showNativeChild();
+    void closeAndShowNativeChild();
     void closeAndShowWithNativeChild();
     void transientParent();
     void qobject_castInDestroyedSlot();
@@ -4774,6 +4775,25 @@ void tst_QWidget::showNativeChild()
     child.winId();
     topLevel.show();
     QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
+}
+
+void tst_QWidget::closeAndShowNativeChild()
+{
+    QWidget topLevel;
+    QWidget *nativeChild = new QWidget;
+    nativeChild->winId();
+    nativeChild->setFixedSize(200, 200);
+
+    QHBoxLayout *layout = new QHBoxLayout;
+    layout->addWidget(nativeChild);
+    topLevel.setLayout(layout);
+
+    topLevel.show();
+    QVERIFY(!nativeChild->isHidden());
+    nativeChild->close();
+    QVERIFY(nativeChild->isHidden());
+    nativeChild->show();
+    QVERIFY(!nativeChild->isHidden());
 }
 
 void tst_QWidget::closeAndShowWithNativeChild()

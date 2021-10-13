@@ -2258,7 +2258,7 @@ bool QWindow::close()
     Q_D(QWindow);
 
     // Do not close non top level windows
-    if (parent())
+    if (!isTopLevel())
         return false;
 
     if (!d->platformWindow)

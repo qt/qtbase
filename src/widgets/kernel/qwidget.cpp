@@ -8466,8 +8466,10 @@ bool QWidgetPrivate::close()
     // Close native widgets via QWindow::close() in order to run QWindow
     // close code. The QWidget-specific close code in handleClose() will
     // in this case be called from the Close event handler in QWidgetWindow.
-    if (QWindow *widgetWindow = windowHandle())
-        return widgetWindow->close();
+    if (QWindow *widgetWindow = windowHandle()) {
+        if (widgetWindow->isTopLevel())
+            return widgetWindow->close();
+    }
 
     return handleClose(QWidgetPrivate::CloseWithEvent);
 }
