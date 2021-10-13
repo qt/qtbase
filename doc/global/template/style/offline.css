@@ -112,39 +112,18 @@ a[href*="http://"], a[href*="ftp://"], a[href*="https://"] {
 NOTE styles
 -------------------------------
 */
-
-.notetitle, .tiptitle, .fastpathtitle {
-    font-weight: bold
+.admonition {
+    padding: 5px 0 5px 40px;
+    border: #ccc 1px solid;
 }
 
-.attentiontitle, .cautiontitle, .dangertitle, .importanttitle, .remembertitle, .restrictiontitle {
-    font-weight: bold
+.admonition.note, .admonition.important {
+    background: #f2f2f2 3px 6px no-repeat url(../images/ico_note.png);
 }
 
-.note, .tip, .fastpath {
-    background: #F2F2F2 url(../images/ico_note.png);
-    background-repeat: no-repeat;
-    background-position: top left;
-    padding: 5px;
-    padding-left: 40px;
-    padding-bottom: 10px;
-    border: #999 1px dotted;
-    color: #666666;
-    margin: 5px;
+.admonition.warning {
+    background: #f2f2f2 3px 6px no-repeat url(../images/ico_note_attention.png);
 }
-
-.attention, .caution, .danger, .important, .remember, .restriction {
-    background: #F2F2F2 url(../images/ico_note_attention.png);
-    background-repeat: no-repeat;
-    background-position: top left;
-    padding: 5px;
-    padding-left: 40px;
-    padding-bottom: 10px;
-    border: #999 1px dotted;
-    color: #666666;
-    margin: 5px;
-}
-
 /*
 -------------------------------
 Top navigation
