@@ -627,6 +627,12 @@ macro(qt_build_tests)
             # prefix. For super builds it needs to be done in qt5/CMakeLists.txt.
             qt_set_up_fake_standalone_tests_install_prefix()
         endif()
+    else()
+        if(ANDROID)
+            # When building in-tree tests we need to specify the QT_ANDROID_ABIS list. Since we
+            # build Qt for the single ABI, build tests for this ABI only.
+            set(QT_ANDROID_ABIS "${CMAKE_ANDROID_ARCH_ABI}")
+        endif()
     endif()
 
     if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/auto/CMakeLists.txt")
