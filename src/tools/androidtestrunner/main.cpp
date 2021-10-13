@@ -420,7 +420,16 @@ static bool pullFiles()
         QByteArray output;
         if (!execCommand(QStringLiteral("%1 shell run-as %2 cat files/output.%3")
                          .arg(g_options.adbCommand, g_options.package, it.key()), &output)) {
-            return false;
+            // Cannot find output file. Check in path related to current user
+            QByteArray userId;
+            execCommand(QStringLiteral("%1 shell cmd activity get-current-user")
+                        .arg(g_options.adbCommand), &userId);
+            const QString userIdSimplified(QString::fromUtf8(userId).simplified());
+            if (!execCommand(QStringLiteral("%1 shell run-as %2 --user %3 cat files/output.%4")
+                        .arg(g_options.adbCommand, g_options.package, userIdSimplified, it.key()),
+                         &output)) {
+                return false;
+            }
         }
         auto checkerIt = g_options.checkFiles.find(it.key());
         ret = ret && checkerIt != g_options.checkFiles.end() && checkerIt.value()(output);
