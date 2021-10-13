@@ -130,6 +130,7 @@ public:
 #endif
 
     class iterator {
+        friend class QList<T>;
         T *i = nullptr;
     public:
         using difference_type = qsizetype;
@@ -178,6 +179,7 @@ public:
     };
 
     class const_iterator {
+        friend class QList<T>;
         const T *i = nullptr;
     public:
         using difference_type = qsizetype;
@@ -282,9 +284,11 @@ public:
             const auto distance = std::distance(i1, i2);
             if (distance) {
                 d = DataPointer(Data::allocate(distance));
+                // appendIteratorRange can deal with contiguous iterators on its own,
+                // this is an optimization for C++17 code.
                 if constexpr (std::is_same_v<std::decay_t<InputIterator>, iterator> ||
                               std::is_same_v<std::decay_t<InputIterator>, const_iterator>) {
-                    d->copyAppend(i1, i2);
+                    d->copyAppend(i1.i, i2.i);
                 } else {
                     d->appendIteratorRange(i1, i2);
                }
