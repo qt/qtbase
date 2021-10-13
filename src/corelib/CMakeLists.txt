@@ -605,7 +605,7 @@ target_sources(Core PRIVATE ${core_version_tagging_files})
 
 # Disable LTO, as the symbols disappear somehow under GCC
 # (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=48200)
-if(GCC AND FEATURE_ltcg)
+if(GCC)
     set_source_files_properties(${core_version_tagging_files}
                                 PROPERTIES COMPILE_OPTIONS "-fno-lto")
 endif()
