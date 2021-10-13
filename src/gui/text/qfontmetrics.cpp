@@ -537,6 +537,33 @@ int QFontMetrics::horizontalAdvance(const QString &text, int len) const
 }
 
 /*!
+    Returns the horizontal advance in pixels of \a text laid out using \a option.
+
+    The advance is the distance appropriate for drawing a subsequent
+    character after \a text.
+
+    \since 6.3
+
+    \sa boundingRect()
+*/
+int QFontMetrics::horizontalAdvance(const QString &text, const QTextOption &option) const
+{
+    int pos = text.indexOf(QLatin1Char('\x9c'));
+    int len = -1;
+    if (pos != -1) {
+        len = (len < 0) ? pos : qMin(pos, len);
+    } else if (len < 0) {
+        len = text.length();
+    }
+    if (len == 0)
+        return 0;
+
+    QStackTextEngine layout(text, QFont(d.data()));
+    layout.option = option;
+    return qRound(layout.width(0, len));
+}
+
+/*!
     \overload
 
     \image bearings.png Bearings
@@ -617,6 +644,42 @@ QRect QFontMetrics::boundingRect(const QString &text) const
         return QRect();
 
     QStackTextEngine layout(text, QFont(d.data()));
+    layout.itemize();
+    glyph_metrics_t gm = layout.boundingBox(0, text.length());
+    return QRect(qRound(gm.x), qRound(gm.y), qRound(gm.width), qRound(gm.height));
+}
+
+/*!
+    Returns the bounding rectangle of the characters in the string
+    specified by \a text laid out using \a option. The bounding rectangle always
+    covers at least the set of pixels the text would cover if drawn at (0, 0).
+
+    Note that the bounding rectangle may extend to the left of (0, 0),
+    e.g. for italicized fonts, and that the width of the returned
+    rectangle might be different than what the horizontalAdvance() method
+    returns.
+
+    If you want to know the advance width of the string (to lay out
+    a set of strings next to each other), use horizontalAdvance() instead.
+
+    Newline characters are processed as normal characters, \e not as
+    linebreaks.
+
+    The height of the bounding rectangle is at least as large as the
+    value returned by height().
+
+    \since 6.3
+
+    \sa horizontalAdvance(), height(), QPainter::boundingRect(),
+        tightBoundingRect()
+*/
+QRect QFontMetrics::boundingRect(const QString &text, const QTextOption &option) const
+{
+    if (text.length() == 0)
+        return QRect();
+
+    QStackTextEngine layout(text, QFont(d.data()));
+    layout.option = option;
     layout.itemize();
     glyph_metrics_t gm = layout.boundingBox(0, text.length());
     return QRect(qRound(gm.x), qRound(gm.y), qRound(gm.width), qRound(gm.height));
@@ -758,8 +821,6 @@ QSize QFontMetrics::size(int flags, const QString &text, int tabStops, int *tabA
 }
 
 /*!
-  \since 4.3
-
     Returns a tight bounding rectangle around the characters in the
     string specified by \a text. The bounding rectangle always covers
     at least the set of pixels the text would cover if drawn at (0,
@@ -776,7 +837,7 @@ QSize QFontMetrics::size(int flags, const QString &text, int tabStops, int *tabA
     Newline characters are processed as normal characters, \e not as
     linebreaks.
 
-    \warning Calling this method is very slow on Windows.
+    \since 4.3
 
     \sa horizontalAdvance(), height(), boundingRect()
 */
@@ -791,6 +852,38 @@ QRect QFontMetrics::tightBoundingRect(const QString &text) const
     return QRect(qRound(gm.x), qRound(gm.y), qRound(gm.width), qRound(gm.height));
 }
 
+/*!
+    Returns a tight bounding rectangle around the characters in the
+    string specified by \a text laid out using \a option. The bounding
+    rectangle always covers at least the set of pixels the text would
+    cover if drawn at (0, 0).
+
+    Note that the bounding rectangle may extend to the left of (0, 0),
+    e.g. for italicized fonts, and that the width of the returned
+    rectangle might be different than what the horizontalAdvance() method
+    returns.
+
+    If you want to know the advance width of the string (to lay out
+    a set of strings next to each other), use horizontalAdvance() instead.
+
+    Newline characters are processed as normal characters, \e not as
+    linebreaks.
+
+    \since 6.3
+
+    \sa horizontalAdvance(), height(), boundingRect()
+*/
+QRect QFontMetrics::tightBoundingRect(const QString &text, const QTextOption &option) const
+{
+    if (text.length() == 0)
+        return QRect();
+
+    QStackTextEngine layout(text, QFont(d.data()));
+    layout.option = option;
+    layout.itemize();
+    glyph_metrics_t gm = layout.tightBoundingBox(0, text.length());
+    return QRect(qRound(gm.x), qRound(gm.y), qRound(gm.width), qRound(gm.height));
+}
 
 /*!
     \since 4.2
@@ -1356,6 +1449,34 @@ qreal QFontMetricsF::horizontalAdvance(const QString &text, int length) const
 }
 
 /*!
+    Returns the horizontal advance in pixels of \a text laid out using \a option.
+
+    The advance is the distance appropriate for drawing a subsequent
+    character after \a text.
+
+    \since 6.3
+
+    \sa boundingRect()
+*/
+qreal QFontMetricsF::horizontalAdvance(const QString &text, const QTextOption &option) const
+{
+    int pos = text.indexOf(QLatin1Char('\x9c'));
+    int length = -1;
+    if (pos != -1)
+        length = (length < 0) ? pos : qMin(pos, length);
+    else if (length < 0)
+        length = text.length();
+
+    if (length == 0)
+        return 0;
+
+    QStackTextEngine layout(text, QFont(d.data()));
+    layout.option = option;
+    layout.itemize();
+    return layout.width(0, length).toReal();
+}
+
+/*!
     \overload
 
     \image bearings.png Bearings
@@ -1441,6 +1562,42 @@ QRectF QFontMetricsF::boundingRect(const QString &text) const
     return QRectF(gm.x.toReal(), gm.y.toReal(),
                   gm.width.toReal(), gm.height.toReal());
 }
+
+/*!
+    Returns the bounding rectangle of the characters in the string
+    specified by \a text laid out using \a option. The bounding
+    rectangle always covers at least the set of pixels the text
+    would cover if drawn at (0, 0).
+
+    Note that the bounding rectangle may extend to the left of (0, 0),
+    e.g. for italicized fonts, and that the width of the returned
+    rectangle might be different than what the horizontalAdvance() method returns.
+
+    If you want to know the advance width of the string (to lay out
+    a set of strings next to each other), use horizontalAdvance() instead.
+
+    Newline characters are processed as normal characters, \e not as
+    linebreaks.
+
+    The height of the bounding rectangle is at least as large as the
+    value returned height().
+
+    \since 6.3
+    \sa horizontalAdvance(), height(), QPainter::boundingRect()
+*/
+QRectF QFontMetricsF::boundingRect(const QString &text, const QTextOption &option) const
+{
+    if (text.length() == 0)
+        return QRectF();
+
+    QStackTextEngine layout(text, QFont(d.data()));
+    layout.option = option;
+    layout.itemize();
+    glyph_metrics_t gm = layout.boundingBox(0, text.length());
+    return QRectF(gm.x.toReal(), gm.y.toReal(),
+                  gm.width.toReal(), gm.height.toReal());
+}
+
 
 /*!
     Returns the bounding rectangle of the character \a ch relative to
@@ -1600,16 +1757,47 @@ QSizeF QFontMetricsF::size(int flags, const QString &text, int tabStops, int *ta
     Newline characters are processed as normal characters, \e not as
     linebreaks.
 
-    \warning Calling this method is very slow on Windows.
-
     \sa horizontalAdvance(), height(), boundingRect()
 */
 QRectF QFontMetricsF::tightBoundingRect(const QString &text) const
 {
     if (text.length() == 0)
-        return QRect();
+        return QRectF();
 
     QStackTextEngine layout(text, QFont(d.data()));
+    layout.itemize();
+    glyph_metrics_t gm = layout.tightBoundingBox(0, text.length());
+    return QRectF(gm.x.toReal(), gm.y.toReal(), gm.width.toReal(), gm.height.toReal());
+}
+
+/*!
+    Returns a tight bounding rectangle around the characters in the
+    string specified by \a text laid out using \a option. The bounding
+    rectangle always covers at least the set of pixels the text would
+    cover if drawn at (0,0).
+
+    Note that the bounding rectangle may extend to the left of (0, 0),
+    e.g. for italicized fonts, and that the width of the returned
+    rectangle might be different than what the horizontalAdvance() method
+    returns.
+
+    If you want to know the advance width of the string (to lay out
+    a set of strings next to each other), use horizontalAdvance() instead.
+
+    Newline characters are processed as normal characters, \e not as
+    linebreaks.
+
+    \since 6.3
+
+    \sa horizontalAdvance(), height(), boundingRect()
+*/
+QRectF QFontMetricsF::tightBoundingRect(const QString &text, const QTextOption &option) const
+{
+    if (text.length() == 0)
+        return QRectF();
+
+    QStackTextEngine layout(text, QFont(d.data()));
+    layout.option = option;
     layout.itemize();
     glyph_metrics_t gm = layout.tightBoundingBox(0, text.length());
     return QRectF(gm.x.toReal(), gm.y.toReal(), gm.width.toReal(), gm.height.toReal());
