@@ -412,7 +412,7 @@ QFile::exists(const QString &fileName)
 QString QFile::symLinkTarget() const
 {
     Q_D(const QFile);
-    return d->engine()->fileName(QAbstractFileEngine::LinkName);
+    return d->engine()->fileName(QAbstractFileEngine::AbsoluteLinkTarget);
 }
 
 /*!

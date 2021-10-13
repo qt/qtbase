@@ -102,7 +102,7 @@ public:
         PathName,
         AbsoluteName,
         AbsolutePathName,
-        LinkName,
+        AbsoluteLinkTarget,
         CanonicalName,
         CanonicalPathName,
         BundleName,

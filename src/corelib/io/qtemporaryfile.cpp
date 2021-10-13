@@ -439,7 +439,7 @@ bool QTemporaryFileEngine::close()
 QString QTemporaryFileEngine::fileName(QAbstractFileEngine::FileName file) const
 {
     if (isUnnamedFile()) {
-        if (file == LinkName) {
+        if (file == AbsoluteLinkTarget) {
             // we know our file isn't (won't be) a symlink
             return QString();
         }

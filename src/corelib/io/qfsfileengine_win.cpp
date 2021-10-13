@@ -646,7 +646,7 @@ QString QFSFileEngine::fileName(FileName file) const
             return entry.path();
         return entry.filePath();
     }
-    case LinkName:
+    case AbsoluteLinkTarget:
         return QFileSystemEngine::getLinkTarget(d->fileEntry, d->metaData).filePath();
     case BundleName:
         return QString();

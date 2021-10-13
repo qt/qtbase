@@ -67,7 +67,7 @@ QString QFileInfoPrivate::getFileName(QAbstractFileEngine::FileName name) const
                     ret = entry.path();
                 break;
             }
-            case QAbstractFileEngine::LinkName:
+            case QAbstractFileEngine::AbsoluteLinkTarget:
                 ret = QFileSystemEngine::getLinkTarget(fileEntry, metaData).filePath();
                 break;
             case QAbstractFileEngine::JunctionName:
@@ -1224,7 +1224,7 @@ QString QFileInfo::symLinkTarget() const
     Q_D(const QFileInfo);
     if (d->isDefaultConstructed)
         return QLatin1String("");
-    return d->getFileName(QAbstractFileEngine::LinkName);
+    return d->getFileName(QAbstractFileEngine::AbsoluteLinkTarget);
 }
 
 /*!

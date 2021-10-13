@@ -470,7 +470,7 @@ QString QFSFileEngine::fileName(FileName file) const
         QFileSystemEntry entry(QFileSystemEngine::canonicalName(d->fileEntry, d->metaData));
         return file == CanonicalPathName ? entry.path() : entry.filePath();
     }
-    case LinkName:
+    case AbsoluteLinkTarget:
         if (d->isSymlink()) {
             QFileSystemEntry entry = QFileSystemEngine::getLinkTarget(d->fileEntry, d->metaData);
             return entry.filePath();
