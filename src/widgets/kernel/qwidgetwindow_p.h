@@ -83,7 +83,8 @@ public:
 protected:
     bool event(QEvent *) override;
 
-    void handleCloseEvent(QCloseEvent *);
+    void closeEvent(QCloseEvent *) override;
+
     void handleEnterLeaveEvent(QEvent *);
     void handleFocusInEvent(QFocusEvent *);
     void handleKeyEvent(QKeyEvent *);

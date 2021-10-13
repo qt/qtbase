@@ -2292,6 +2292,12 @@ bool QWindowPrivate::participatesInLastWindowClosed() const
     return true;
 }
 
+bool QWindowPrivate::treatAsVisible() const
+{
+    Q_Q(const QWindow);
+    return q->isVisible();
+}
+
 /*!
     The expose event (\a ev) is sent by the window system when a window moves
     between the un-exposed and exposed states.
@@ -2466,11 +2472,25 @@ bool QWindow::event(QEvent *ev)
         break;
 #endif
 
-    case QEvent::Close:
+    case QEvent::Close: {
+
+        Q_D(QWindow);
+        const bool wasVisible = d->treatAsVisible();
+        const bool participatesInLastWindowClosed = d->participatesInLastWindowClosed();
+
+        // The window might be deleted in the close event handler
+        QPointer<QWindow> deletionGuard(this);
         closeEvent(static_cast<QCloseEvent*>(ev));
-        if (ev->isAccepted())
-            destroy();
+
+        if (ev->isAccepted()) {
+            if (deletionGuard)
+                destroy();
+            if (wasVisible && participatesInLastWindowClosed)
+                QGuiApplicationPrivate::instance()->maybeLastWindowClosed();
+        }
+
         break;
+    }
 
     case QEvent::Expose:
         exposeEvent(static_cast<QExposeEvent *>(ev));

@@ -1920,8 +1920,6 @@ void QGuiApplicationPrivate::captureGlobalModifierState(QEvent *e)
 */
 bool QGuiApplication::notify(QObject *object, QEvent *event)
 {
-    Q_D(QGuiApplication);
-
     if (object->isWindowType()) {
         if (QGuiApplicationPrivate::sendQWindowEventToQPlatformWindow(static_cast<QWindow *>(object), event))
             return true; // Platform plugin ate the event
@@ -1929,12 +1927,7 @@ bool QGuiApplication::notify(QObject *object, QEvent *event)
 
     QGuiApplicationPrivate::captureGlobalModifierState(event);
 
-    bool accepted = QCoreApplication::notify(object, event);
-
-    if (event->type() == QEvent::Close && object->isWindowType() && accepted)
-        d->maybeLastWindowClosed(static_cast<QWindow*>(object));
-
-    return accepted;
+    return QCoreApplication::notify(object, event);
 }
 
 /*! \reimp
@@ -3548,15 +3541,8 @@ bool QGuiApplication::quitOnLastWindowClosed()
     return QGuiApplicationPrivate::quitOnLastWindowClosed;
 }
 
-void QGuiApplicationPrivate::maybeLastWindowClosed(QWindow *closedWindow)
+void QGuiApplicationPrivate::maybeLastWindowClosed()
 {
-    Q_ASSERT(closedWindow);
-
-    // Only windows that themselves participates in last-window-closed
-    // should be allowed to trigger lastWindowClosed.
-    if (!qt_window_private(closedWindow)->participatesInLastWindowClosed())
-        return;
-
     if (!lastWindowClosed())
         return;
 
@@ -3583,10 +3569,11 @@ void QGuiApplicationPrivate::maybeLastWindowClosed(QWindow *closedWindow)
 bool QGuiApplicationPrivate::lastWindowClosed() const
 {
     for (auto *window : QGuiApplication::topLevelWindows()) {
-        if (!qt_window_private(window)->participatesInLastWindowClosed())
+        auto *windowPrivate = qt_window_private(window);
+        if (!windowPrivate->participatesInLastWindowClosed())
             continue;
 
-        if (window->isVisible())
+        if (windowPrivate->treatAsVisible())
             return false;
      }
 

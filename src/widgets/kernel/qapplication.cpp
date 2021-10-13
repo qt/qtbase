@@ -3279,11 +3279,6 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             res = d->notify_helper(receiver, e);
             break;
         }
-    } else if (receiver->isWindowType()) {
-        res = d->notify_helper(receiver, e);
-        // We don't call QGuiApplication::notify here, so we need to duplicate the logic
-        if (res && e->type() == QEvent::Close)
-            d->maybeLastWindowClosed(static_cast<QWindow *>(receiver));
     } else {
         res = d->notify_helper(receiver, e);
     }

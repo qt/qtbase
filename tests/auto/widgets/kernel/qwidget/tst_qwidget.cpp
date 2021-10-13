@@ -12253,10 +12253,19 @@ protected:
 
 void tst_QWidget::deleteWindowInCloseEvent()
 {
-    // Just checking if closing this widget causes a crash
+    QSignalSpy quitSpy(qApp, &QGuiApplication::lastWindowClosed);
+
+    // Closing this widget should not cause a crash
     auto widget = new DeleteOnCloseEventWidget;
-    widget->close();
-    QVERIFY(true);
+    widget->show();
+    QVERIFY(QTest::qWaitForWindowExposed(widget));
+    QTimer::singleShot(0, widget, [&]{
+        widget->close();
+    });
+    QApplication::exec();
+
+    // It should still result in a single lastWindowClosed emit
+    QCOMPARE(quitSpy.count(), 1);
 }
 
 /*!

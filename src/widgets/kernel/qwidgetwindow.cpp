@@ -120,6 +120,7 @@ public:
     }
 
     bool participatesInLastWindowClosed() const override;
+    bool treatAsVisible() const override;
 };
 
 QRectF QWidgetWindowPrivate::closestAcceptableGeometry(const QRectF &rect) const
@@ -230,6 +231,7 @@ static inline bool shouldBePropagatedToWidget(QEvent *event)
     case QEvent::ChildAdded:
     case QEvent::ChildRemoved:
     case QEvent::Paint:
+    case QEvent::Close: // Propagated manually in closeEvent
         return false;
     default:
         return true;
@@ -242,15 +244,6 @@ bool QWidgetWindow::event(QEvent *event)
         return QWindow::event(event);
 
     switch (event->type()) {
-    case QEvent::Close: {
-        // The widget might be deleted in the close event handler.
-        QPointer<QObject> guard = this;
-        handleCloseEvent(static_cast<QCloseEvent *>(event));
-        if (guard)
-            QWindow::event(event);
-        return true;
-    }
-
     case QEvent::Enter:
     case QEvent::Leave:
         handleEnterLeaveEvent(event);
@@ -838,7 +831,7 @@ void QWidgetWindow::handleResizeEvent(QResizeEvent *event)
     }
 }
 
-void QWidgetWindow::handleCloseEvent(QCloseEvent *event)
+void QWidgetWindow::closeEvent(QCloseEvent *event)
 {
     Q_D(QWidgetWindow);
     bool accepted = m_widget->d_func()->handleClose(d->inClose ? QWidgetPrivate::CloseWithEvent
@@ -858,6 +851,18 @@ bool QWidgetWindowPrivate::participatesInLastWindowClosed() const
         return false;
 
     return QWindowPrivate::participatesInLastWindowClosed();
+}
+
+bool QWidgetWindowPrivate::treatAsVisible() const
+{
+    Q_Q(const QWidgetWindow);
+
+    // Widget windows may have Qt::WA_DontShowOnScreen, in which case the
+    // QQWidget will be visible, but the corresponding QWindow will not.
+    // Since the lastWindowClosed logic relies on checking whether the
+    // closed window was visible, and if there are any remaining visible
+    // windows, we need to reflect the QWidget state, not the QWindow one.
+    return q->widget()->isVisible();
 }
 
 #if QT_CONFIG(wheelevent)

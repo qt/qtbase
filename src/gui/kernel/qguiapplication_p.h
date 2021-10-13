@@ -108,7 +108,7 @@ public:
     bool canQuitAutomatically() override;
     void quit() override;
 
-    void maybeLastWindowClosed(QWindow *closedWindow);
+    void maybeLastWindowClosed();
     bool lastWindowClosed() const;
     static bool quitOnLastWindowClosed;
 
