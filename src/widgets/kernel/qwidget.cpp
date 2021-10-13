@@ -8398,7 +8398,6 @@ bool QWidgetPrivate::handleClose(CloseMode mode)
 
     Q_Q(QWidget);
     QPointer<QWidget> that = q;
-    QPointer<QWidget> parentWidget = (q->parentWidget() && !QObjectPrivate::get(q->parentWidget())->wasDeleted) ? q->parentWidget() : nullptr;
 
     if (data.in_destructor)
         mode = CloseNoEvent;
