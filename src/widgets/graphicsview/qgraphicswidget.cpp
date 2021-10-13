@@ -387,50 +387,41 @@ void QGraphicsWidget::setGeometry(const QRectF &rect)
         if (newGeom == d->geom)
             return;
 
-         // Update and prepare to change the geometry (remove from index) if the size has changed.
-        if (wd->scene) {
-            if (rect.topLeft() == d->geom.topLeft()) {
-                prepareGeometryChange();
-            }
-        }
+        // Update and prepare to change the geometry (remove from index) if
+        // the size has changed.
+        if (wd->scene && rect.topLeft() == d->geom.topLeft())
+            prepareGeometryChange();
     }
 
     // Update the layout item geometry
-    {
-        bool moved = oldPos != pos();
-        if (moved) {
-            // Send move event.
-            QGraphicsSceneMoveEvent event;
-            event.setOldPos(oldPos);
-            event.setNewPos(pos());
-            QCoreApplication::sendEvent(this, &event);
-            if (wd->inSetPos) {
-                //set the new pos
-                d->geom.moveTopLeft(pos());
-                emit geometryChanged();
-                return;
-            }
+    if (oldPos != pos()) {
+        // Send move event.
+        QGraphicsSceneMoveEvent event;
+        event.setOldPos(oldPos);
+        event.setNewPos(pos());
+        QCoreApplication::sendEvent(this, &event);
+        if (wd->inSetPos) {
+            // Set the new position:
+            d->geom.moveTopLeft(pos());
+            emit geometryChanged();
+            return;
         }
-        QSizeF oldSize = size();
-        QGraphicsLayoutItem::setGeometry(newGeom);
-        // Send resize event
-        bool resized = newGeom.size() != oldSize;
-        if (resized) {
+    }
+
+    QSizeF oldSize = size();
+    QGraphicsLayoutItem::setGeometry(newGeom);
+    // Send resize event, if appropriate:
+    if (newGeom.size() != oldSize) {
+        if (oldSize.width() != newGeom.size().width())
+            emit widthChanged();
+        if (oldSize.height() != newGeom.size().height())
+            emit heightChanged();
+        QGraphicsLayout *lay = wd->layout;
+        if (!QGraphicsLayout::instantInvalidatePropagation() || !lay || lay->isActivated()) {
             QGraphicsSceneResizeEvent re;
             re.setOldSize(oldSize);
             re.setNewSize(newGeom.size());
-            if (oldSize.width() != newGeom.size().width())
-                emit widthChanged();
-            if (oldSize.height() != newGeom.size().height())
-                emit heightChanged();
-            QGraphicsLayout *lay = wd->layout;
-            if (QGraphicsLayout::instantInvalidatePropagation()) {
-                if (!lay || lay->isActivated()) {
-                    QCoreApplication::sendEvent(this, &re);
-                }
-            } else {
-                QCoreApplication::sendEvent(this, &re);
-            }
+            QCoreApplication::sendEvent(this, &re);
         }
     }
 
