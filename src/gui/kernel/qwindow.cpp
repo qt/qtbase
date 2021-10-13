@@ -2263,6 +2263,8 @@ void QWindow::showNormal()
 bool QWindow::close()
 {
     Q_D(QWindow);
+    if (d->inClose)
+        return true;
 
     // Do not close non top level windows
     if (!isTopLevel())

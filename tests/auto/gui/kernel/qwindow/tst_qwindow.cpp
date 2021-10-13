@@ -1602,6 +1602,23 @@ void tst_QWindow::sizes()
     QCOMPARE(maximumHeightSpy.count(), 1);
 }
 
+class CloseOnCloseEventWindow : public QWindow
+{
+public:
+    inline static int closeEvents;
+    CloseOnCloseEventWindow() { closeEvents = 0; }
+
+protected:
+    void closeEvent(QCloseEvent *e) override
+    {
+        if (++closeEvents > 1)
+            return;
+
+        close();
+        e->accept();
+    }
+};
+
 void tst_QWindow::close()
 {
     {
@@ -1682,6 +1699,16 @@ void tst_QWindow::close()
             QVERIFY(w.handle());
             QVERIFY(c.handle());
         }
+    }
+
+    {
+        // A QWidget will call close() from the destructor, and
+        // we allow widgets deleting itself in the closeEvent,
+        // so we need to guard against close being called recursively.
+        CloseOnCloseEventWindow w;
+        w.create();
+        w.close();
+        QCOMPARE(CloseOnCloseEventWindow::closeEvents, 1);
     }
 }
 
