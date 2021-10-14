@@ -208,9 +208,7 @@ bool ICOReader::canRead(QIODevice *iodev)
 
         ICONDIR ikonDir;
         if (readIconDir(iodev, &ikonDir)) {
-            qint64 readBytes = ICONDIR_SIZE;
             if (readIconDirEntry(iodev, &ikonDir.idEntries[0])) {
-                readBytes += ICONDIRENTRY_SIZE;
                 // ICO format does not have a magic identifier, so we read 6 different values, which will hopefully be enough to identify the file.
                 if (   ikonDir.idReserved == 0
                     && (ikonDir.idType == 1 || ikonDir.idType == 2)
