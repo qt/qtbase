@@ -407,7 +407,6 @@ bool QWasmWindow::hasTitleBar() const
     auto flags = window()->flags();
     return !(m_windowState & Qt::WindowFullScreen)
         && flags.testFlag(Qt::WindowTitleHint)
-        && !flags.testFlag(Qt::Popup)
         && !flags.testFlag(Qt::ToolTip)
         && m_needsCompositor;
 }
