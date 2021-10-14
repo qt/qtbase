@@ -3139,7 +3139,10 @@ void QSignalEventGenerator::execute(void **_a)
     if (machinePrivate->state != QStateMachinePrivate::Running)
         return;
     int signalIndex = senderSignalIndex();
-    Q_ASSERT(signalIndex != -1);
+    if (signalIndex == -1) {
+        qWarning() << "StateMachine: Could not execute transition because originating object has been deleted";
+        return;
+    }
     machinePrivate->handleTransitionSignal(sender(), signalIndex, _a);
 }
 
