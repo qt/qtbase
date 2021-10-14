@@ -438,6 +438,15 @@ QThread::QThread(QThreadPrivate &dd, QObject *parent)
     isFinished() returns \c false) will result in a program
     crash. Wait for the finished() signal before deleting the
     QThread.
+
+    Since Qt 6.3, it is allowed to delete a QThread instance created by
+    a call to QThread::create() even if the corresponding thread is
+    still running. In such a case, Qt will post an interruption request
+    to that thread (via requestInterruption()); will ask the thread's
+    event loop (if any) to quit (via quit()); and will block until the
+    thread has finished.
+
+    \sa create(), isInterruptionRequested(), exec(), quit()
 */
 QThread::~QThread()
 {
@@ -1099,6 +1108,13 @@ public:
     explicit QThreadCreateThread(std::future<void> &&future)
         : m_future(std::move(future))
     {
+    }
+
+    ~QThreadCreateThread()
+    {
+        requestInterruption();
+        quit();
+        wait();
     }
 
 private:

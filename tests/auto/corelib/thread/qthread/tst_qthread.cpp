@@ -28,6 +28,7 @@
 
 #include <QTest>
 #include <QTestEventLoop>
+#include <QSignalSpy>
 #include <QSemaphore>
 #include <QAbstractEventDispatcher>
 #include <QWinEventNotifier>
@@ -111,6 +112,7 @@ private slots:
     void quitLock();
 
     void create();
+    void createDestruction();
     void threadIdReuse();
 };
 
@@ -1589,6 +1591,66 @@ void tst_QThread::create()
     }
 #endif // QT_NO_EXCEPTIONS
 #endif // QT_CONFIG(cxx11_future)
+}
+
+void tst_QThread::createDestruction()
+{
+    for (int delay : {0, 10, 20}) {
+        auto checkForInterruptions = []() {
+            for (;;) {
+                if (QThread::currentThread()->isInterruptionRequested())
+                    return;
+                QThread::msleep(1);
+            }
+        };
+
+        QScopedPointer<QThread> thread(QThread::create(checkForInterruptions));
+        QSignalSpy finishedSpy(thread.get(), &QThread::finished);
+        QVERIFY(finishedSpy.isValid());
+
+        thread->start();
+        if (delay)
+            QThread::msleep(delay);
+        thread.reset();
+
+        QCOMPARE(finishedSpy.size(), 1);
+    }
+
+    for (int delay : {0, 10, 20}) {
+        auto runEventLoop = []() {
+            QEventLoop loop;
+            loop.exec();
+        };
+
+        QScopedPointer<QThread> thread(QThread::create(runEventLoop));
+        QSignalSpy finishedSpy(thread.get(), &QThread::finished);
+        QVERIFY(finishedSpy.isValid());
+
+        thread->start();
+        if (delay)
+            QThread::msleep(delay);
+        thread.reset();
+
+        QCOMPARE(finishedSpy.size(), 1);
+    }
+
+    for (int delay : {0, 10, 20}) {
+        auto runEventLoop = [delay]() {
+            if (delay)
+                QThread::msleep(delay);
+            QEventLoop loop;
+            loop.exec();
+        };
+
+        QScopedPointer<QThread> thread(QThread::create(runEventLoop));
+        QSignalSpy finishedSpy(thread.get(), &QThread::finished);
+        QVERIFY(finishedSpy.isValid());
+
+        thread->start();
+        thread.reset();
+
+        QCOMPARE(finishedSpy.size(), 1);
+    }
 }
 
 class StopableJob : public QObject
