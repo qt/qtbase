@@ -36,6 +36,7 @@ class tst_QProcessEnvironment: public QObject
 private slots:
     void operator_eq();
     void clearAndIsEmpty();
+    void clearAndInheritsFromParent();
     void insert();
     void emptyNull();
     void toStringList();
@@ -58,6 +59,10 @@ void tst_QProcessEnvironment::operator_eq()
     QProcessEnvironment e2;
     QCOMPARE(e1, e2);
 
+    auto parentEnv = QProcessEnvironment(QProcessEnvironment::InheritFromParent);
+    QVERIFY(parentEnv != e2);
+    QVERIFY(e2 != parentEnv);
+
     e1.clear();
     QCOMPARE(e1, e2);
 
@@ -72,15 +77,39 @@ void tst_QProcessEnvironment::operator_eq()
 
     e2.insert("FOO", "baz");
     QVERIFY(e1 != e2);
+
+    QVERIFY(e2 != parentEnv);
+    QVERIFY(parentEnv != e2);
 }
 
 void tst_QProcessEnvironment::clearAndIsEmpty()
 {
     QProcessEnvironment e;
+    QVERIFY(e.isEmpty());
+    QVERIFY(!e.inheritsFromParent());
     e.insert("FOO", "bar");
     QVERIFY(!e.isEmpty());
+    QVERIFY(!e.inheritsFromParent());
     e.clear();
     QVERIFY(e.isEmpty());
+    QVERIFY(!e.inheritsFromParent());
+}
+
+void tst_QProcessEnvironment::clearAndInheritsFromParent()
+{
+    QProcessEnvironment e(QProcessEnvironment::InheritFromParent);
+    QVERIFY(e.isEmpty());
+    QVERIFY(e.inheritsFromParent());
+    // Clearing null environment keeps it null
+    e.clear();
+    QVERIFY(e.isEmpty());
+    QVERIFY(e.inheritsFromParent());
+    e.insert("FOO", "bar");
+    QVERIFY(!e.isEmpty());
+    QVERIFY(!e.inheritsFromParent());
+    e.clear();
+    QVERIFY(e.isEmpty());
+    QVERIFY(!e.inheritsFromParent());
 }
 
 void tst_QProcessEnvironment::insert()

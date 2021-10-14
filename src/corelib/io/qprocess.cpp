@@ -152,10 +152,27 @@ void QProcessEnvironmentPrivate::insert(const QProcessEnvironmentPrivate &other)
     empty environment. If set on a QProcess, this will cause the current
     environment variables to be removed.
 */
-QProcessEnvironment::QProcessEnvironment()
-    : d(nullptr)
-{
-}
+QProcessEnvironment::QProcessEnvironment() : d(new QProcessEnvironmentPrivate) { }
+
+/*!
+    Creates an object that when set on QProcess will cause it to be executed with
+    environment variables inherited from the parent process.
+
+    \note The created object does not store any environment variables by itself,
+    it just indicates to QProcess to arrange for inheriting the environment at the
+    time when the new process is started. Adding any environment variables to
+    the created object will disable inheritance of the environment and result in
+    an environment containing only the added environment variables.
+
+    If a modified version of the parent environment is wanted, start with the
+    return value of \c systemEnvironment() and modify that (but note that changes to
+    the parent process's environment after that is created won't be reflected
+    in the modified environment).
+
+    \sa inheritsFromParent(), systemEnvironment()
+    \since 6.3
+*/
+QProcessEnvironment::QProcessEnvironment(QProcessEnvironment::Initialization) : d(nullptr) { }
 
 /*!
     Frees the resources associated with this QProcessEnvironment object.
@@ -211,22 +228,18 @@ bool QProcessEnvironment::operator==(const QProcessEnvironment &other) const
 {
     if (d == other.d)
         return true;
-    if (d) {
-        if (other.d) {
-            return d->vars == other.d->vars;
-        } else {
-            return isEmpty();
-        }
-    } else {
-        return other.isEmpty();
-    }
+
+    return d && other.d && d->vars == other.d->vars;
 }
 
 /*!
     Returns \c true if this QProcessEnvironment object is empty: that is
     there are no key=value pairs set.
 
-    \sa clear(), systemEnvironment(), insert()
+    This method also returns \c true for objects that were constructed using
+    \c{QProcessEnvironment::InheritFromParent}.
+
+    \sa clear(), systemEnvironment(), insert(), inheritsFromParent()
 */
 bool QProcessEnvironment::isEmpty() const
 {
@@ -235,8 +248,23 @@ bool QProcessEnvironment::isEmpty() const
 }
 
 /*!
+    Returns \c true if this QProcessEnvironment was constructed using
+    \c{QProcessEnvironment::InheritFromParent}.
+
+    \since 6.3
+    \sa isEmpty()
+*/
+bool QProcessEnvironment::inheritsFromParent() const
+{
+    return !d;
+}
+
+/*!
     Removes all key=value pairs from this QProcessEnvironment object, making
     it empty.
+
+    If the environment was constructed using \c{QProcessEnvironment::InheritFromParent}
+    it remains unchanged.
 
     \sa isEmpty(), systemEnvironment()
 */
@@ -341,6 +369,9 @@ QStringList QProcessEnvironment::toStringList() const
 
     Returns a list containing all the variable names in this QProcessEnvironment
     object.
+
+    The returned list is empty for objects constructed using
+    \c{QProcessEnvironment::InheritFromParent}.
 */
 QStringList QProcessEnvironment::keys() const
 {

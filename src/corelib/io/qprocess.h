@@ -65,7 +65,10 @@ class QProcessEnvironmentPrivate;
 class Q_CORE_EXPORT QProcessEnvironment
 {
 public:
+    enum Initialization { InheritFromParent };
+
     QProcessEnvironment();
+    QProcessEnvironment(Initialization);
     QProcessEnvironment(const QProcessEnvironment &other);
     ~QProcessEnvironment();
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QProcessEnvironment)
@@ -78,6 +81,7 @@ public:
     { return !(*this == other); }
 
     bool isEmpty() const;
+    [[nodiscard]] bool inheritsFromParent() const;
     void clear();
 
     bool contains(const QString &name) const;

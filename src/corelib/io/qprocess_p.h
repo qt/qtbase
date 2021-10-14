@@ -331,7 +331,7 @@ public:
 #else
     std::function<void(void)> childProcessModifier;
 #endif
-    QProcessEnvironment environment;
+    QProcessEnvironment environment = QProcessEnvironment::InheritFromParent;
 
 #ifdef Q_OS_UNIX
     Q_PIPE childStartedPipe[2] = {INVALID_Q_PIPE, INVALID_Q_PIPE};

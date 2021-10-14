@@ -438,60 +438,59 @@ static QString qt_create_commandline(const QString &program, const QStringList &
 static QByteArray qt_create_environment(const QProcessEnvironmentPrivate::Map &environment)
 {
     QByteArray envlist;
-    if (!environment.isEmpty()) {
-        QProcessEnvironmentPrivate::Map copy = environment;
+    QProcessEnvironmentPrivate::Map copy = environment;
 
-        // add PATH if necessary (for DLL loading)
-        QProcessEnvironmentPrivate::Key pathKey(QLatin1String("PATH"));
-        if (!copy.contains(pathKey)) {
-            QByteArray path = qgetenv("PATH");
-            if (!path.isEmpty())
-                copy.insert(pathKey, QString::fromLocal8Bit(path));
-        }
-
-        // add systemroot if needed
-        QProcessEnvironmentPrivate::Key rootKey(QLatin1String("SystemRoot"));
-        if (!copy.contains(rootKey)) {
-            QByteArray systemRoot = qgetenv("SystemRoot");
-            if (!systemRoot.isEmpty())
-                copy.insert(rootKey, QString::fromLocal8Bit(systemRoot));
-        }
-
-        qsizetype pos = 0;
-        auto it = copy.constBegin();
-        const auto end = copy.constEnd();
-
-        static const wchar_t equal = L'=';
-        static const wchar_t nul = L'\0';
-
-        for ( ; it != end; ++it) {
-            qsizetype tmpSize = sizeof(wchar_t) * (it.key().length() + it.value().length() + 2);
-            // ignore empty strings
-            if (tmpSize == sizeof(wchar_t) * 2)
-                continue;
-            envlist.resize(envlist.size() + tmpSize);
-
-            tmpSize = it.key().length() * sizeof(wchar_t);
-            memcpy(envlist.data()+pos, it.key().utf16(), tmpSize);
-            pos += tmpSize;
-
-            memcpy(envlist.data()+pos, &equal, sizeof(wchar_t));
-            pos += sizeof(wchar_t);
-
-            tmpSize = it.value().length() * sizeof(wchar_t);
-            memcpy(envlist.data()+pos, it.value().utf16(), tmpSize);
-            pos += tmpSize;
-
-            memcpy(envlist.data()+pos, &nul, sizeof(wchar_t));
-            pos += sizeof(wchar_t);
-        }
-        // add the 2 terminating 0 (actually 4, just to be on the safe side)
-        envlist.resize( envlist.size()+4 );
-        envlist[pos++] = 0;
-        envlist[pos++] = 0;
-        envlist[pos++] = 0;
-        envlist[pos++] = 0;
+    // add PATH if necessary (for DLL loading)
+    QProcessEnvironmentPrivate::Key pathKey(QLatin1String("PATH"));
+    if (!copy.contains(pathKey)) {
+        QByteArray path = qgetenv("PATH");
+        if (!path.isEmpty())
+            copy.insert(pathKey, QString::fromLocal8Bit(path));
     }
+
+    // add systemroot if needed
+    QProcessEnvironmentPrivate::Key rootKey(QLatin1String("SystemRoot"));
+    if (!copy.contains(rootKey)) {
+        QByteArray systemRoot = qgetenv("SystemRoot");
+        if (!systemRoot.isEmpty())
+            copy.insert(rootKey, QString::fromLocal8Bit(systemRoot));
+    }
+
+    qsizetype pos = 0;
+    auto it = copy.constBegin();
+    const auto end = copy.constEnd();
+
+    static const wchar_t equal = L'=';
+    static const wchar_t nul = L'\0';
+
+    for (; it != end; ++it) {
+        qsizetype tmpSize = sizeof(wchar_t) * (it.key().length() + it.value().length() + 2);
+        // ignore empty strings
+        if (tmpSize == sizeof(wchar_t) * 2)
+            continue;
+        envlist.resize(envlist.size() + tmpSize);
+
+        tmpSize = it.key().length() * sizeof(wchar_t);
+        memcpy(envlist.data() + pos, it.key().utf16(), tmpSize);
+        pos += tmpSize;
+
+        memcpy(envlist.data() + pos, &equal, sizeof(wchar_t));
+        pos += sizeof(wchar_t);
+
+        tmpSize = it.value().length() * sizeof(wchar_t);
+        memcpy(envlist.data() + pos, it.value().utf16(), tmpSize);
+        pos += tmpSize;
+
+        memcpy(envlist.data() + pos, &nul, sizeof(wchar_t));
+        pos += sizeof(wchar_t);
+    }
+    // add the 2 terminating 0 (actually 4, just to be on the safe side)
+    envlist.resize(envlist.size() + 4);
+    envlist[pos++] = 0;
+    envlist[pos++] = 0;
+    envlist[pos++] = 0;
+    envlist[pos++] = 0;
+
     return envlist;
 }
 
@@ -564,7 +563,7 @@ void QProcessPrivate::startProcess()
 
     const QString args = qt_create_commandline(program, arguments, nativeArguments);
     QByteArray envlist;
-    if (environment.d.constData())
+    if (!environment.inheritsFromParent())
         envlist = qt_create_environment(environment.d.constData()->vars);
 
 #if defined QPROCESS_DEBUG
@@ -586,7 +585,7 @@ void QProcessPrivate::startProcess()
     QProcess::CreateProcessArguments cpargs = {
         nullptr, reinterpret_cast<wchar_t *>(const_cast<ushort *>(args.utf16())),
         nullptr, nullptr, true, dwCreationFlags,
-        environment.isEmpty() ? nullptr : envlist.data(),
+        environment.inheritsFromParent() ? nullptr : envlist.data(),
         nativeWorkingDirectory.isEmpty()
             ? nullptr : reinterpret_cast<const wchar_t *>(nativeWorkingDirectory.utf16()),
         &startupInfo, pid
@@ -926,7 +925,7 @@ bool QProcessPrivate::startDetached(qint64 *pid)
 
     void *envPtr = nullptr;
     QByteArray envlist;
-    if (environment.d.constData()) {
+    if (!environment.inheritsFromParent()) {
         envlist = qt_create_environment(environment.d.constData()->vars);
         envPtr = envlist.data();
     }
