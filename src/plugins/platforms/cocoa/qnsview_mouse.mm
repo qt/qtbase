@@ -475,13 +475,16 @@ static const QPointingDevice *pointingDeviceFor(qint64 deviceID)
         return;
     }
 
-    // FIXME: AppKit doesn't limit itself to passing the event on to the input method
-    // based on there being marked text or not. It also transfers first responder to
-    // the view before calling mouseDown, whereas we only transfer focus once the mouse
-    // press is delivered.
-    if ([self hasMarkedText]) {
+    // FIXME: AppKit transfers first responder to the view before calling mouseDown,
+    // whereas we only transfer focus once the mouse press is delivered, which means
+    // on first click the focus item won't be the correct one when transferring focus.
+    auto *focusObject = m_platformWindow->window()->focusObject();
+    if (queryInputMethod(focusObject)) {
+        // Input method is enabled. Pass on to the input context if we
+        // are hitting the input item.
         if (QPlatformInputContext::inputItemClipRectangle().contains(qtWindowPoint)) {
-            qCDebug(lcQpaInputMethods) << "Asking input context to handle mouse press";
+            qCDebug(lcQpaInputMethods) << "Asking input context to handle mouse press"
+                << "for focus object" << focusObject;
             if ([NSTextInputContext.currentInputContext handleEvent:theEvent]) {
                 // NSTextView bails out if the input context handled the event,
                 // which is e.g. the case for 2-Set Korean input. We follow suit,
