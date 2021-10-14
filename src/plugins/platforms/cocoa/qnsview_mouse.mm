@@ -429,9 +429,20 @@ static const QPointingDevice *pointingDeviceFor(qint64 deviceID)
         return;
     }
 
+    bool handleMouseEvent = true;
+    // FIXME: AppKit doesn't limit itself to passing the event on to the input method
+    // based on there being marked text or not. It also transfers first responder to
+    // the view before calling mouseDown, whereas we only transfer focus once the mouse
+    // press is delivered.
     if ([self hasMarkedText]) {
-        [[NSTextInputContext currentInputContext] handleEvent:theEvent];
-    } else {
+        if (QPlatformInputContext::inputItemClipRectangle().contains(qtWindowPoint)) {
+            qCDebug(lcQpaInputMethods) << "Asking input context to handle mouse press";
+            [NSTextInputContext.currentInputContext handleEvent:theEvent];
+            handleMouseEvent = false;
+        }
+    }
+
+    if (handleMouseEvent) {
         if (!m_dontOverrideCtrlLMB && (theEvent.modifierFlags & NSEventModifierFlagControl)) {
             m_buttons |= Qt::RightButton;
             m_sendUpAsRightButton = true;
