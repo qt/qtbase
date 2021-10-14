@@ -490,7 +490,10 @@ int QTextMarkdownImporter::cbText(int textType, const char *text, unsigned size)
         break;
 #if QT_CONFIG(texthtmlparser)
     case MD_TEXT_ENTITY:
-        m_cursor->insertHtml(s);
+        if (m_htmlTagDepth)
+            m_htmlAccumulator += s;
+        else
+            m_cursor->insertHtml(s);
         s = QString();
         break;
 #endif
