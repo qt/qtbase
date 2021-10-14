@@ -1738,8 +1738,11 @@ bool QItemSelectionModel::hasSelection() const
     // d->ranges here. It sorts itself in executePendingOperations,
     // thus preventing the sort to happen inside of selectionIsEmpty below.
     // Sad story, read more in QTBUG-94546
-    auto model_p = static_cast<const QAbstractItemModelPrivate *>(QObjectPrivate::get(model()));
-    model_p->executePendingOperations();
+    const QAbstractItemModel *model = QItemSelectionModel::model();
+    if (model != nullptr) {
+        auto model_p = static_cast<const QAbstractItemModelPrivate *>(QObjectPrivate::get(model));
+        model_p->executePendingOperations();
+    }
 
     if (d->currentCommand & (Toggle | Deselect)) {
         QItemSelection sel = d->ranges;
