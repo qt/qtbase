@@ -3584,19 +3584,6 @@ QPoint QWidget::pos() const
 */
 
 /*!
-    \property QWidget::normalGeometry
-
-    \brief the geometry of the widget as it will appear when shown as
-    a normal (not maximized or full screen) top-level widget
-
-    For child widgets this property always holds an empty rectangle.
-
-    By default, this property contains an empty rectangle.
-
-    \sa QWidget::windowState(), QWidget::geometry
-*/
-
-/*!
     \property QWidget::size
     \brief the size of the widget excluding any window frame
 
@@ -3664,7 +3651,21 @@ QPoint QWidget::pos() const
     \sa size
 */
 
+/*!
+    \property QWidget::normalGeometry
 
+    \brief the geometry of the widget as it will appear when shown as
+    a normal (not maximized or full screen) top-level widget
+
+    If the widget is already in this state the normal geometry will
+    reflect the widget's current geometry().
+
+    For child widgets this property always holds an empty rectangle.
+
+    By default, this property contains an empty rectangle.
+
+    \sa QWidget::windowState(), QWidget::geometry
+*/
 QRect QWidget::normalGeometry() const
 {
     Q_D(const QWidget);
