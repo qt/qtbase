@@ -253,6 +253,8 @@ void QTimer::start()
 
     If \l singleShot is true, the timer will be activated only once.
 
+    \note   Keeping the event loop busy with a zero-timer is bound to
+            cause trouble and highly erratic behavior of the UI.
 */
 void QTimer::start(int msec)
 {
