@@ -1248,13 +1248,21 @@ bool QAndroidInputContext::focusObjectStopComposing()
 
     m_composingCursor = -1;
 
-    // Moving Qt's cursor to where the preedit cursor used to be
-    QList<QInputMethodEvent::Attribute> attributes;
-    attributes.append(QInputMethodEvent::Attribute(QInputMethodEvent::Selection, localCursorPos, 0));
-
-    QInputMethodEvent event(QString(), attributes);
-    event.setCommitString(m_composingText);
-    sendInputMethodEvent(&event);
+    {
+        // commit the composing test
+        QList<QInputMethodEvent::Attribute> attributes;
+        QInputMethodEvent event(QString(), attributes);
+        event.setCommitString(m_composingText);
+        sendInputMethodEvent(&event);
+    }
+    {
+        // Moving Qt's cursor to where the preedit cursor used to be
+        QList<QInputMethodEvent::Attribute> attributes;
+        attributes.append(
+                QInputMethodEvent::Attribute(QInputMethodEvent::Selection, localCursorPos, 0));
+        QInputMethodEvent event(QString(), attributes);
+        sendInputMethodEvent(&event);
+    }
 
     return true;
 }
