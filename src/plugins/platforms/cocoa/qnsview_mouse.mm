@@ -475,7 +475,6 @@ static const QPointingDevice *pointingDeviceFor(qint64 deviceID)
         return;
     }
 
-    bool handleMouseEvent = true;
     // FIXME: AppKit doesn't limit itself to passing the event on to the input method
     // based on there being marked text or not. It also transfers first responder to
     // the view before calling mouseDown, whereas we only transfer focus once the mouse
@@ -483,20 +482,25 @@ static const QPointingDevice *pointingDeviceFor(qint64 deviceID)
     if ([self hasMarkedText]) {
         if (QPlatformInputContext::inputItemClipRectangle().contains(qtWindowPoint)) {
             qCDebug(lcQpaInputMethods) << "Asking input context to handle mouse press";
-            [NSTextInputContext.currentInputContext handleEvent:theEvent];
-            handleMouseEvent = false;
+            if ([NSTextInputContext.currentInputContext handleEvent:theEvent]) {
+                // NSTextView bails out if the input context handled the event,
+                // which is e.g. the case for 2-Set Korean input. We follow suit,
+                // even if that means having to click twice to move the cursor
+                // for these input methods when they are composing.
+                qCDebug(lcQpaInputMethods) << "Input context handled event; bailing out.";
+                return;
+            }
         }
     }
 
-    if (handleMouseEvent) {
-        if (!m_dontOverrideCtrlLMB && (theEvent.modifierFlags & NSEventModifierFlagControl)) {
-            m_buttons |= Qt::RightButton;
-            m_sendUpAsRightButton = true;
-        } else {
-            m_buttons |= Qt::LeftButton;
-        }
-        [self handleMouseEvent:theEvent];
+    if (!m_dontOverrideCtrlLMB && (theEvent.modifierFlags & NSEventModifierFlagControl)) {
+        m_buttons |= Qt::RightButton;
+        m_sendUpAsRightButton = true;
+    } else {
+        m_buttons |= Qt::LeftButton;
     }
+
+    [self handleMouseEvent:theEvent];
 }
 
 - (void)mouseDragged:(NSEvent *)theEvent
