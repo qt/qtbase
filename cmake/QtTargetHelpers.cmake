@@ -120,7 +120,7 @@ function(qt_internal_extend_target target)
             message(AUTHOR_WARNING "${warning_message}")
         endif()
         qt_register_target_dependencies("${target}"
-                                        "${arg_PUBLIC_LIBRARIES}"
+                                        "${arg_PUBLIC_LIBRARIES};${arg_PRIVATE_MODULE_INTERFACE}"
                                         "${qt_libs_private};${arg_LIBRARIES}")
 
 
