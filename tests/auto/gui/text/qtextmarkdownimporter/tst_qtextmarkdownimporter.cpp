@@ -62,6 +62,8 @@ private slots:
     void nestedSpans();
     void avoidBlankLineAtBeginning_data();
     void avoidBlankLineAtBeginning();
+    void fragmentsAndProperties_data();
+    void fragmentsAndProperties();
     void pathological_data();
     void pathological();
 
@@ -376,6 +378,70 @@ void tst_QTextMarkdownImporter::avoidBlankLineAtBeginning() // QTBUG-81060
         ++i;
     }
     QCOMPARE(i, expectedNumberOfParagraphs);
+}
+
+void tst_QTextMarkdownImporter::fragmentsAndProperties_data()
+{
+    QTest::addColumn<QString>("input");
+    QTest::addColumn<int>("fragmentToCheck");
+    QTest::addColumn<QString>("expectedText");
+    QTest::addColumn<QTextFormat::Property>("propertyToCheck");
+    QTest::addColumn<QVariant>("expectedPropertyValue");
+    QTest::addColumn<int>("expectedNumberOfBlocks");
+    QTest::addColumn<int>("expectedNumberOfFragments");
+
+    QTest::newRow("entitiesInHtmlFontBlock") // QTBUG-94245
+            << QString("<font color='red'>&lt;123 test&gt;</font>&nbsp;test")
+            << 0 << "<123 test>" << QTextFormat::ForegroundBrush << QVariant(QBrush(QColor("red")))
+            << 1 << 2;
+    QTest::newRow("entitiesInHtmlBoldBlock") // QTBUG-91222
+            << QString("<b>x&amp;lt;</b>")
+            << 0 << "x&lt;" << QTextFormat::FontWeight << QVariant(700)
+            << 1 << 1;
+}
+
+void tst_QTextMarkdownImporter::fragmentsAndProperties()
+{
+    QFETCH(QString, input);
+    QFETCH(int, fragmentToCheck);
+    QFETCH(QString, expectedText);
+    QFETCH(QTextFormat::Property, propertyToCheck);
+    QFETCH(QVariant, expectedPropertyValue);
+    QFETCH(int, expectedNumberOfBlocks);
+    QFETCH(int, expectedNumberOfFragments);
+
+    QTextDocument doc;
+    QTextMarkdownImporter(QTextMarkdownImporter::DialectGitHub).import(&doc, input);
+#ifdef DEBUG_WRITE_HTML
+    {
+        QFile out("/tmp/" + QLatin1String(QTest::currentDataTag()) + ".html");
+        out.open(QFile::WriteOnly);
+        out.write(doc.toHtml().toLatin1());
+        out.close();
+    }
+#endif
+    QTextFrame::iterator blockIter = doc.rootFrame()->begin();
+    int blockCount = 0;
+    int fragCount = 0;
+    while (!blockIter.atEnd()) {
+        QTextBlock block = blockIter.currentBlock();
+        auto fragIter = block.begin();
+        while (!fragIter.atEnd()) {
+            auto frag = fragIter.fragment();
+            qCDebug(lcTests) << "fragment" << fragCount << ':' << frag.text() << Qt::hex << frag.charFormat().properties();
+            if (fragCount == fragmentToCheck) {
+                QVariant prop = frag.charFormat().property(propertyToCheck);
+                QCOMPARE(prop, expectedPropertyValue);
+                QCOMPARE(frag.text(), expectedText);
+            }
+            ++fragIter;
+            ++fragCount;
+        }
+        ++blockIter;
+        ++blockCount;
+    }
+    QCOMPARE(blockCount, expectedNumberOfBlocks);
+    QCOMPARE(fragCount, expectedNumberOfFragments);
 }
 
 void tst_QTextMarkdownImporter::pathological_data()
