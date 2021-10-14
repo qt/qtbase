@@ -1036,10 +1036,6 @@ char *QUtf32::convertFromUnicode(char *out, QStringView in, QStringConverter::St
     Q_ASSERT(state);
 
     bool writeBom = !(state->internalState & HeaderDone) && state->flags & QStringConverter::Flag::WriteBom;
-    qsizetype length =  4*in.length();
-    if (writeBom)
-        length += 4;
-
     if (endian == DetectEndianness)
         endian = (QSysInfo::ByteOrder == QSysInfo::BigEndian) ? BigEndianness : LittleEndianness;
 
