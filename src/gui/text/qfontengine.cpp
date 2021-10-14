@@ -562,6 +562,16 @@ qreal QFontEngine::minRightBearing() const
     return m_minRightBearing;
 }
 
+glyph_metrics_t QFontEngine::boundingBox(const QGlyphLayout &glyphs)
+{
+    QFixed w;
+    for (int i = 0; i < glyphs.numGlyphs; ++i)
+        w += glyphs.effectiveAdvance(i);
+    const QFixed leftBearing = firstLeftBearing(glyphs);
+    const QFixed rightBearing = lastRightBearing(glyphs);
+    return glyph_metrics_t(leftBearing, -(ascent()), w - leftBearing - rightBearing, ascent() + descent(), w, 0);
+}
+
 glyph_metrics_t QFontEngine::tightBoundingBox(const QGlyphLayout &glyphs)
 {
     glyph_metrics_t overall;
@@ -1450,6 +1460,17 @@ bool QFontEngine::hasUnreliableGlyphOutline() const
 {
     // Color glyphs (Emoji) are generally not suited for outlining
     return glyphFormat == QFontEngine::Format_ARGB;
+}
+
+QFixed QFontEngine::firstLeftBearing(const QGlyphLayout &glyphs)
+{
+    if (glyphs.numGlyphs >= 1) {
+        glyph_t glyph = glyphs.glyphs[0];
+        glyph_metrics_t gi = boundingBox(glyph);
+        if (gi.isValid())
+            return gi.leftBearing();
+    }
+    return 0;
 }
 
 QFixed QFontEngine::lastRightBearing(const QGlyphLayout &glyphs)

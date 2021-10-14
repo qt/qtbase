@@ -57,7 +57,6 @@ public:
 
     HGDIOBJ selectDesignFont() const;
 
-    glyph_metrics_t boundingBox(const QGlyphLayout &glyphs) override;
     glyph_metrics_t boundingBox(glyph_t g) override { return boundingBox(g, QTransform()); }
     glyph_metrics_t boundingBox(glyph_t g, const QTransform &t) override;
 

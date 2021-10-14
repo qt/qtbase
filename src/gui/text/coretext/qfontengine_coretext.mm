@@ -301,14 +301,6 @@ bool QCoreTextFontEngine::stringToCMap(const QChar *str, int len, QGlyphLayout *
     return true;
 }
 
-glyph_metrics_t QCoreTextFontEngine::boundingBox(const QGlyphLayout &glyphs)
-{
-    QFixed w;
-    for (int i = 0; i < glyphs.numGlyphs; ++i)
-        w += glyphs.effectiveAdvance(i);
-    return glyph_metrics_t(0, -(ascent()), w - lastRightBearing(glyphs), ascent()+descent(), w, 0);
-}
-
 glyph_metrics_t QCoreTextFontEngine::boundingBox(glyph_t glyph)
 {
     glyph_metrics_t ret;

@@ -352,18 +352,6 @@ void QWindowsFontEngine::recalcAdvances(QGlyphLayout *glyphs, QFontEngine::Shape
     }
 }
 
-glyph_metrics_t QWindowsFontEngine::boundingBox(const QGlyphLayout &glyphs)
-{
-    if (glyphs.numGlyphs == 0)
-        return glyph_metrics_t();
-
-    QFixed w = 0;
-    for (int i = 0; i < glyphs.numGlyphs; ++i)
-        w += glyphs.effectiveAdvance(i);
-
-    return glyph_metrics_t(0, -tm.tmAscent, w - lastRightBearing(glyphs), tm.tmHeight, w, 0);
-}
-
 bool QWindowsFontEngine::getOutlineMetrics(glyph_t glyph, const QTransform &t, glyph_metrics_t *metrics) const
 {
     Q_ASSERT(metrics != 0);

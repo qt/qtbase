@@ -189,7 +189,7 @@ public:
 
     virtual void removeGlyphFromCache(glyph_t);
 
-    virtual glyph_metrics_t boundingBox(const QGlyphLayout &glyphs) = 0;
+    virtual glyph_metrics_t boundingBox(const QGlyphLayout &glyphs);
     virtual glyph_metrics_t boundingBox(glyph_t glyph) = 0;
     virtual glyph_metrics_t boundingBox(glyph_t glyph, const QTransform &matrix);
     glyph_metrics_t tightBoundingBox(const QGlyphLayout &glyphs);
@@ -332,6 +332,7 @@ public:
 protected:
     explicit QFontEngine(Type type);
 
+    QFixed firstLeftBearing(const QGlyphLayout &glyphs);
     QFixed lastRightBearing(const QGlyphLayout &glyphs);
 
     QFixed calculatedCapHeight() const;
