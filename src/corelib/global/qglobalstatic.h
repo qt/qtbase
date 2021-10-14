@@ -122,6 +122,8 @@ struct QGlobalStatic
 };
 
 #define Q_GLOBAL_STATIC_WITH_ARGS(TYPE, NAME, ARGS)                         \
+    QT_WARNING_PUSH                                                         \
+    QT_WARNING_DISABLE_CLANG("-Wunevaluated-expression")                    \
     namespace { namespace Q_QGS_ ## NAME {                                  \
         typedef TYPE Type;                                                  \
         QBasicAtomicInt guard = Q_BASIC_ATOMIC_INITIALIZER(QtGlobalStatic::Uninitialized); \
@@ -129,7 +131,8 @@ struct QGlobalStatic
     } }                                                                     \
     static QGlobalStatic<TYPE,                                              \
                          Q_QGS_ ## NAME::innerFunction,                     \
-                         Q_QGS_ ## NAME::guard> NAME;
+                         Q_QGS_ ## NAME::guard> NAME;                       \
+    QT_WARNING_POP
 
 #define Q_GLOBAL_STATIC(TYPE, NAME)                                         \
     Q_GLOBAL_STATIC_WITH_ARGS(TYPE, NAME, ())
