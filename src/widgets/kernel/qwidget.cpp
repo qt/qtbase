@@ -3668,7 +3668,7 @@ QPoint QWidget::pos() const
 QRect QWidget::normalGeometry() const
 {
     Q_D(const QWidget);
-    if (!d->extra || !d->extra->topextra)
+    if (!isWindow())
         return QRect();
 
     if (!isMaximized() && !isFullScreen())
