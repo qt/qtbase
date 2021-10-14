@@ -899,6 +899,7 @@ void QPixmap::fill(const QColor &color)
         // it will be filled with new pixel data anyway.
         QPlatformPixmap *d = data->createCompatiblePlatformPixmap();
         d->resize(data->width(), data->height());
+        d->setDevicePixelRatio(data->devicePixelRatio());
         data = d;
     }
     data->fill(color);

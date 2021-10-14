@@ -121,6 +121,7 @@ private slots:
     void copy();
     void move();
     void deepCopyPreservesDpr();
+    void fillPreservesDpr();
     void dprPassthrough();
     void depthOfNullObjects();
 
@@ -1169,6 +1170,19 @@ void tst_QPixmap::deepCopyPreservesDpr()
     src.fill(Qt::red);
     QPainter painter(&src);
     const QPixmap dest = src.copy();
+    QCOMPARE(dest.devicePixelRatio(), dpr);
+}
+
+// Check that the DPR is preserved after doing a fill after an
+// assigned copy of the QPixmap
+void tst_QPixmap::fillPreservesDpr()
+{
+    const qreal dpr = 2;
+    QPixmap src(32, 32);
+    src.setDevicePixelRatio(dpr);
+    src.fill(Qt::red);
+    QPixmap dest = src;
+    dest.fill(Qt::blue);
     QCOMPARE(dest.devicePixelRatio(), dpr);
 }
 
