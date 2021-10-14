@@ -3093,6 +3093,7 @@ void tst_QWidget::normalGeometry()
     if (m_platform == QStringLiteral("wayland"))
         QSKIP("Wayland: This fails. Figure out why.");
     QWidget parent;
+    QCOMPARE(parent.normalGeometry(), parent.geometry());
     parent.setWindowTitle("NormalGeometry parent");
     QWidget *child = new QWidget(&parent);
 
