@@ -1278,10 +1278,10 @@ bool QMYSQLDriver::open(const QString& db,
                                       optionFlags);
 
     // now ask the server to match the charset we selected
-    if (!cs || mysql_set_character_set(d->mysql, cs->csname)) {
+    if (!cs || mysql_set_character_set(d->mysql, cs->csname) != 0) {
         bool ok = false;
         for (const char *p : wanted_charsets) {
-            if (mysql_set_character_set(d->mysql, p)) {
+            if (mysql_set_character_set(d->mysql, p) == 0) {
                 ok = true;
                 break;
             }
