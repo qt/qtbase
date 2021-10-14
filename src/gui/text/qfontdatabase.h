@@ -109,7 +109,7 @@ public:
 
     static QList<int> standardSizes();
 
-#if QT_DEPRECATED_SINCE(6, 0)
+#if QT_DEPRECATED_SINCE(6, 0) && !defined(QT_BUILD_GUI_LIB)
     QT_DEPRECATED_VERSION_X_6_0("Call the static functions instead") explicit QFontDatabase() = default;
 #else
     QFontDatabase() = delete;
