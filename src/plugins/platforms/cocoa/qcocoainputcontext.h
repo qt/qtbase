@@ -59,6 +59,7 @@ public:
 
     void setFocusObject(QObject *object) override;
 
+    void commit() override;
     void reset() override;
 
     QLocale locale() const override { return m_locale; }

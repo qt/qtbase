@@ -96,6 +96,33 @@ QCocoaInputContext::~QCocoaInputContext()
 }
 
 /*!
+    Commits the current composition if there is one,
+    by "unmarking" the text in the edit buffer, and
+    informing the system input context of this fact.
+*/
+void QCocoaInputContext::commit()
+{
+    qCDebug(lcQpaInputMethods) << "Committing composition";
+
+    if (!m_focusWindow)
+        return;
+
+    auto *platformWindow = m_focusWindow->handle();
+    if (!platformWindow)
+        return;
+
+    auto *cocoaWindow = static_cast<QCocoaWindow *>(platformWindow);
+    QNSView *view = qnsview_cast(cocoaWindow->view());
+    if (!view)
+        return;
+
+    QMacAutoReleasePool pool;
+    [view unmarkText];
+    [view.inputContext discardMarkedText];
+}
+
+
+/*!
     \brief Cancels a composition.
 */
 void QCocoaInputContext::reset()
