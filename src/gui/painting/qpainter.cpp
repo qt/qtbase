@@ -180,6 +180,23 @@ static bool qt_painter_thread_test(int devType, int engineType, const char *what
 }
 #endif
 
+static bool needsEmulation(const QBrush &brush)
+{
+    bool res = false;
+
+    const QGradient *bg = brush.gradient();
+    if (bg) {
+        res = (bg->coordinateMode() > QGradient::LogicalMode);
+    } else if (brush.style() == Qt::TexturePattern) {
+        if (qHasPixmapTexture(brush))
+            res = !qFuzzyCompare(brush.texture().devicePixelRatio(), qreal(1.0));
+        else
+            res = !qFuzzyCompare(brush.textureImage().devicePixelRatio(), qreal(1.0));
+    }
+
+    return res;
+}
+
 void QPainterPrivate::checkEmulation()
 {
     Q_ASSERT(extended);
@@ -187,20 +204,11 @@ void QPainterPrivate::checkEmulation()
     if (state->bgMode == Qt::OpaqueMode)
         doEmulation = true;
 
-    const QGradient *bg = state->brush.gradient();
-    if (bg && bg->coordinateMode() > QGradient::LogicalMode)
+    if (needsEmulation(state->brush))
         doEmulation = true;
 
-    const QGradient *pg = qpen_brush(state->pen).gradient();
-    if (pg && pg->coordinateMode() > QGradient::LogicalMode)
+    if (needsEmulation(qpen_brush(state->pen)))
         doEmulation = true;
-
-    if (state->brush.style() == Qt::TexturePattern) {
-        if (qHasPixmapTexture(state->brush))
-            doEmulation |= !qFuzzyCompare(state->brush.texture().devicePixelRatio(), qreal(1.0));
-        else
-            doEmulation |= !qFuzzyCompare(state->brush.textureImage().devicePixelRatio(), qreal(1.0));
-    }
 
     if (doEmulation && extended->flags() & QPaintEngineEx::DoNotEmulate)
         return;
@@ -3083,12 +3091,9 @@ void QPainter::strokePath(const QPainterPath &path, const QPen &pen)
     if (path.isEmpty())
         return;
 
-    if (d->extended) {
-        const QGradient *g = qpen_brush(pen).gradient();
-        if (!g || g->coordinateMode() == QGradient::LogicalMode) {
-            d->extended->stroke(qtVectorPathForPath(path), pen);
-            return;
-        }
+    if (d->extended && !needsEmulation(pen.brush())) {
+        d->extended->stroke(qtVectorPathForPath(path), pen);
+        return;
     }
 
     QBrush oldBrush = d->state->brush;
@@ -3126,12 +3131,9 @@ void QPainter::fillPath(const QPainterPath &path, const QBrush &brush)
     if (path.isEmpty())
         return;
 
-    if (d->extended) {
-        const QGradient *g = brush.gradient();
-        if (!g || g->coordinateMode() == QGradient::LogicalMode) {
-            d->extended->fill(qtVectorPathForPath(path), brush);
-            return;
-        }
+    if (d->extended && !needsEmulation(brush)) {
+        d->extended->fill(qtVectorPathForPath(path), brush);
+        return;
     }
 
     QBrush oldBrush = d->state->brush;
@@ -6641,12 +6643,9 @@ void QPainter::fillRect(const QRectF &r, const QBrush &brush)
     if (!d->engine)
         return;
 
-    if (d->extended) {
-        const QGradient *g = brush.gradient();
-        if (!g || g->coordinateMode() == QGradient::LogicalMode) {
-            d->extended->fillRect(r, brush);
-            return;
-        }
+    if (d->extended && !needsEmulation(brush)) {
+        d->extended->fillRect(r, brush);
+        return;
     }
 
     QPen oldPen = pen();
@@ -6679,12 +6678,9 @@ void QPainter::fillRect(const QRect &r, const QBrush &brush)
     if (!d->engine)
         return;
 
-    if (d->extended) {
-        const QGradient *g = brush.gradient();
-        if (!g || g->coordinateMode() == QGradient::LogicalMode) {
-            d->extended->fillRect(r, brush);
-            return;
-        }
+    if (d->extended && !needsEmulation(brush)) {
+        d->extended->fillRect(r, brush);
+        return;
     }
 
     QPen oldPen = pen();
