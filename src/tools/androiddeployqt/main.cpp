@@ -63,23 +63,6 @@ static const bool mustReadOutputAnyway = true; // pclose seems to return the wro
 
 static QStringList dependenciesForDepfile;
 
-void deleteRecursively(const QString &dirName)
-{
-    QDir dir(dirName);
-    if (!dir.exists())
-        return;
-
-    const QFileInfoList entries = dir.entryInfoList(QDir::NoDotAndDotDot | QDir::Files | QDir::Dirs);
-    for (const QFileInfo &entry : entries) {
-        if (entry.isDir())
-            deleteRecursively(entry.absoluteFilePath());
-        else
-            QFile::remove(entry.absoluteFilePath());
-    }
-
-    QDir().rmdir(dirName);
-}
-
 FILE *openProcess(const QString &command)
 {
 #if defined(Q_OS_WIN32)
@@ -407,7 +390,7 @@ void deleteMissingFiles(const Options &options, const QDir &srcDir, const QDir &
                 fprintf(stdout, "%s not found in %s, removing it.\n", qPrintable(dst.fileName()), qPrintable(srcDir.absolutePath()));
 
             if (dst.isDir())
-                deleteRecursively(dst.absolutePath());
+                QDir{dst.absolutePath()}.removeRecursively();
             else
                 QFile::remove(dst.absoluteFilePath());
         }
