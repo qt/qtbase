@@ -5463,10 +5463,11 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
         QWidgetEffectSourcePrivate *sourced = static_cast<QWidgetEffectSourcePrivate *>
                                                          (source->d_func());
         if (!sourced->context) {
-            QWidgetPaintContext context(pdev, rgn, offset, flags, sharedPainter, repaintManager);
+            const QRegion effectRgn(rgn.boundingRect());
+            QWidgetPaintContext context(pdev, effectRgn, offset, flags, sharedPainter, repaintManager);
             sourced->context = &context;
             if (!sharedPainter) {
-                setSystemClip(pdev->paintEngine(), pdev->devicePixelRatio(), rgn.translated(offset));
+                setSystemClip(pdev->paintEngine(), pdev->devicePixelRatio(), effectRgn.translated(offset));
                 QPainter p(pdev);
                 p.translate(offset);
                 context.painter = &p;
@@ -5480,7 +5481,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
                 }
                 sharedPainter->save();
                 sharedPainter->translate(offset);
-                setSystemClip(sharedPainter->paintEngine(), sharedPainter->device()->devicePixelRatio(), rgn.translated(offset));
+                setSystemClip(sharedPainter->paintEngine(), sharedPainter->device()->devicePixelRatio(), effectRgn.translated(offset));
                 graphicsEffect->draw(sharedPainter);
                 setSystemClip(sharedPainter->paintEngine(), 1, QRegion());
                 sharedPainter->restore();
@@ -5488,7 +5489,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
             sourced->context = nullptr;
 
             if (repaintManager)
-                repaintManager->markNeedsFlush(q, rgn, offset);
+                repaintManager->markNeedsFlush(q, effectRgn, offset);
 
             return;
         }
