@@ -1123,6 +1123,8 @@ static bool createDirectoryWithParents(const QByteArray &nativeName, bool should
 
     if (shouldMkdirFirst && QT_MKDIR(nativeName, 0777) == 0)
         return true;
+    if (errno == EISDIR)
+        return true;
     if (errno == EEXIST)
         return isDir(nativeName);
     if (errno != ENOENT)
