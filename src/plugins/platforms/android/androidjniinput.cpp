@@ -79,16 +79,15 @@ namespace QtAndroidInput
                                                   candidatesEnd);
     }
 
-    void showSoftwareKeyboard(int left, int top, int width, int height, int editorHeight, int inputHints, int enterKeyType)
+    void showSoftwareKeyboard(int left, int top, int width, int height, int inputHints, int enterKeyType)
     {
         QJNIObjectPrivate::callStaticMethod<void>(applicationClass(),
                                                   "showSoftwareKeyboard",
-                                                  "(IIIIIII)V",
+                                                  "(IIIIII)V",
                                                   left,
                                                   top,
                                                   width,
                                                   height,
-                                                  editorHeight,
                                                   inputHints,
                                                   enterKeyType);
 #ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
@@ -128,17 +127,6 @@ namespace QtAndroidInput
                                                   mode, editMenuPos.x(), editMenuPos.y(), editButtons,
                                                   cursor.x(), cursor.y(),
                                                   anchor.x(), anchor.y(), rtl);
-    }
-
-    void updateInputItemRectangle(int left, int top, int width, int height)
-    {
-        QJNIObjectPrivate::callStaticMethod<void>(applicationClass(),
-                                                  "updateInputItemRectangle",
-                                                  "(IIII)V",
-                                                  left,
-                                                  top,
-                                                  width,
-                                                  height);
     }
 
     static void mouseDown(JNIEnv */*env*/, jobject /*thiz*/, jint /*winId*/, jint x, jint y)
