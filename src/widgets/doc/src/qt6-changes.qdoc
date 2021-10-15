@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -79,6 +79,18 @@
     \section2 The QComboBox class
 
     The QComboBox::setModel() function is now virtual.
+
+    \section2 The QDateTimeEdit class
+
+    When QDateTimeEdit::setDateTime() is called with a date-time whose
+    time-spec doesn't match that of the QDateTimeEdit instance, the
+    date-time is converted to the time-spec of the QDateTimeEdit. This
+    gives a date-time that describes the same instant in time, but
+    does so in the same terms as the QDateTimeEdit uses. Previously,
+    the date and time from the passed date-time were combined with the
+    time-spec of the widget, ignoring the time-spec of the date-time;
+    this could describe a different point in time than the one
+    described by the date-time passed.
 
     \section1 ItemViews
 
