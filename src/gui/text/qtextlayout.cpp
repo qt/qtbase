@@ -2909,18 +2909,10 @@ int QTextLine::xToCursor(qreal _x, CursorPosition cpos) const
     bool visual = eng->visualCursorMovement();
     if (x <= 0) {
         // left of first item
-        int item = visualOrder[0]+firstItem;
-        QScriptItem &si = eng->layoutData->items[item];
-        if (!si.num_glyphs)
-            eng->shape(item);
-        int pos = si.position;
-        if (si.analysis.bidiLevel % 2)
-            pos += eng->length(item);
-        pos = qMax(line.from, pos);
-        pos = qMin(line.from + line_length, pos);
-        return pos;
-    } else if (x < line.textWidth
-               || (line.justified && x < line.width)) {
+        if (eng->isRightToLeft())
+            return line.from + line_length;
+        return line.from;
+    }   else if (x < line.textWidth || (line.justified && x < line.width)) {
         // has to be in one of the runs
         QFixed pos;
         bool rtl = eng->isRightToLeft();
@@ -3070,26 +3062,17 @@ int QTextLine::xToCursor(qreal _x, CursorPosition cpos) const
         }
     }
     // right of last item
-//     qDebug("right of last");
-    int item = visualOrder[nItems-1]+firstItem;
-    QScriptItem &si = eng->layoutData->items[item];
-    if (!si.num_glyphs)
-        eng->shape(item);
-    int pos = si.position;
-    if (!(si.analysis.bidiLevel % 2))
-        pos += eng->length(item);
-    pos = qMax(line.from, pos);
-
-    int maxPos = line.from + line_length;
+    int pos = line.from;
+    if (!eng->isRightToLeft())
+        pos += line_length;
 
     // except for the last line we assume that the
     // character between lines is a space and we want
     // to position the cursor to the left of that
     // character.
-    if (this->index < eng->lines.count() - 1)
-        maxPos = eng->previousLogicalPosition(maxPos);
+    if (index < eng->lines.count() - 1)
+        pos = qMin(eng->previousLogicalPosition(pos), pos);
 
-    pos = qMin(pos, maxPos);
     return pos;
 }
 
