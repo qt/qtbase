@@ -675,7 +675,14 @@ static LoadedOpenSsl loadOpenSsl()
     LoadedOpenSsl result;
 
     // With OpenSSL 1.1 the names have changed to libssl-1_1 and libcrypto-1_1 for builds using
-    // MSVC and GCC, with architecture suffixes for non-x86 builds.
+    // MSVC and GCC. For 3.0 the version suffix changed again, to just '3'.
+    // For non-x86 builds, an architecture suffix is also appended.
+
+#if (OPENSSL_VERSION_NUMBER >> 28) < 3
+#define QT_OPENSSL_VERSION "1_1"
+#elif OPENSSL_VERSION_MAJOR == 3 // Starting with 3.0 this define is available
+#define QT_OPENSSL_VERSION "3"
+#endif // > 3 intentionally left undefined
 
 #if defined(Q_PROCESSOR_X86_64)
 #define QT_SSL_SUFFIX "-x64"
@@ -687,8 +694,8 @@ static LoadedOpenSsl loadOpenSsl()
 #define QT_SSL_SUFFIX
 #endif
 
-    tryToLoadOpenSslWin32Library(QLatin1String("libssl-1_1" QT_SSL_SUFFIX),
-                                 QLatin1String("libcrypto-1_1" QT_SSL_SUFFIX), result);
+    tryToLoadOpenSslWin32Library(QLatin1String("libssl-" QT_OPENSSL_VERSION QT_SSL_SUFFIX),
+                                 QLatin1String("libcrypto-" QT_OPENSSL_VERSION QT_SSL_SUFFIX), result);
 
 #undef QT_SSL_SUFFIX
     return result;
