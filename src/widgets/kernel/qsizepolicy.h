@@ -108,9 +108,10 @@ public:
     constexpr void setVerticalPolicy(Policy d) noexcept { bits.verPolicy = d; }
     void setControlType(ControlType type) noexcept;
 
+    // ### Qt 7: consider making Policy a QFlags and removing these casts
     constexpr Qt::Orientations expandingDirections() const noexcept {
-        return ( (verticalPolicy()   & int(ExpandFlag)) ? Qt::Vertical   : Qt::Orientations() )
-             | ( (horizontalPolicy() & int(ExpandFlag)) ? Qt::Horizontal : Qt::Orientations() ) ;
+        return ( (verticalPolicy()   & static_cast<Policy>(ExpandFlag)) ? Qt::Vertical   : Qt::Orientations() )
+             | ( (horizontalPolicy() & static_cast<Policy>(ExpandFlag)) ? Qt::Horizontal : Qt::Orientations() ) ;
     }
 
     constexpr void setHeightForWidth(bool b) noexcept { bits.hfw = b;  }
