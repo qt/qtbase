@@ -2080,6 +2080,7 @@ void tst_QStringApiSymmetry::toNumber_data()
     QTest::addRow("-32768") << QString::fromUtf8("-32768") << qint64(-32768) << true;
     QTest::addRow("100x") << QString::fromUtf8("100x") << qint64(0) << false;
     QTest::addRow("-100x") << QString::fromUtf8("-100x") << qint64(0) << false;
+    QTest::addRow("-min64") << QString::fromUtf8("--9223372036854775808") << qint64(0) << false;
 }
 
 template<typename T>

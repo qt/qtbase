@@ -437,6 +437,19 @@ static auto scanPrefix(const char *p, const char *stop, int base)
     return R{p, base};
 }
 
+static bool isDigitForBase(char d, int base)
+{
+    if (d < '0')
+        return false;
+    if (d - '0' < qMin(base, 10))
+        return true;
+    if (base > 10) {
+        d |= 0x20; // tolower
+        return d >= 'a' && d < 'a' + base - 10;
+    }
+    return false;
+}
+
 unsigned long long
 qstrntoull(const char *begin, qsizetype size, const char **endptr, int base, bool *ok)
 {
@@ -479,7 +492,9 @@ qstrntoll(const char *begin, qsizetype size, const char **endptr, int base, bool
         ++p;
 
     const auto prefix = scanPrefix(p, stop, base);
-    if (!prefix.base || prefix.next >= stop) {
+    // Must check for digit, as from_chars() will accept a sign, which would be
+    // a second sign, that we should reject.
+    if (!prefix.base || prefix.next >= stop || !isDigitForBase(*prefix.next, prefix.base)) {
         if (endptr)
             *endptr = begin;
         *ok = false;
