@@ -1278,28 +1278,44 @@ void QTextLayout::drawCursor(QPainter *p, const QPointF &pos, int cursorPosition
 
     qreal x = position.x() + l.cursorToX(cursorPosition);
 
-    int itm;
-
-    if (d->visualCursorMovement()) {
-        if (cursorPosition == sl.from + sl.length)
-            cursorPosition--;
-        itm = d->findItem(cursorPosition);
-    } else
-        itm = d->findItem(cursorPosition - 1);
-
     QFixed base = sl.base();
     QFixed descent = sl.descent;
     QFixed cursorDescent = descent;
     bool rightToLeft = d->isRightToLeft();
+
+    const int realCursorPosition = cursorPosition;
+    if (d->visualCursorMovement()) {
+        if (cursorPosition == sl.from + sl.length)
+            --cursorPosition;
+    } else {
+        --cursorPosition;
+    }
+    int itm = d->findItem(cursorPosition);
+
     if (itm >= 0) {
-        const QScriptItem &si = d->layoutData->items.at(itm);
-        if (si.ascent >= 0)
-            base = si.ascent;
-        if (si.descent == 0)
-            descent = si.descent;
-        else if (si.descent > 0 && si.descent < descent)
-            cursorDescent = si.descent;
-        rightToLeft = si.analysis.bidiLevel % 2;
+        const QScriptItem *si = &d->layoutData->items.at(itm);
+        // Same logic as in cursorToX to handle edges between writing directions to prioritise the script item
+        // that matches the writing direction of the paragraph.
+        if (d->layoutData->hasBidi && !d->visualCursorMovement() && si->analysis.bidiLevel % 2 != rightToLeft) {
+            int neighborItem = itm;
+            if (neighborItem > 0 && si->position == realCursorPosition)
+                --neighborItem;
+            else if (neighborItem < d->layoutData->items.count() - 1 && si->position + si->num_glyphs == realCursorPosition)
+                ++neighborItem;
+            const bool onBoundary = neighborItem != itm
+                                 && si->analysis.bidiLevel != d->layoutData->items[neighborItem].analysis.bidiLevel;
+            if (onBoundary && rightToLeft != si->analysis.bidiLevel % 2) {
+                itm = neighborItem;
+                si = &d->layoutData->items[itm];
+            }
+        }
+        if (si->ascent >= 0)
+            base = si->ascent;
+        if (si->descent == 0)
+            descent = si->descent;
+        else if (si->descent > 0 && si->descent < descent)
+            cursorDescent = si->descent;
+        rightToLeft = si->analysis.bidiLevel % 2;
     }
     qreal y = position.y() + (sl.y + sl.base() + sl.descent - base - descent).toReal();
     bool toggleAntialiasing = !(p->renderHints() & QPainter::Antialiasing)
@@ -2743,7 +2759,6 @@ qreal QTextLine::cursorToX(int *cursorPos, Edge edge) const
 
     int lineEnd = line.from + line.length + line.trailingSpaces;
     int pos = qBound(line.from, *cursorPos, lineEnd);
-    int itm;
     const QCharAttributes *attributes = eng->attributes();
     if (!attributes) {
         *cursorPos = line.from;
@@ -2751,38 +2766,54 @@ qreal QTextLine::cursorToX(int *cursorPos, Edge edge) const
     }
     while (pos < lineEnd && !attributes[pos].graphemeBoundary)
         pos++;
-    if (pos == lineEnd) {
-        // end of line ensure we have the last item on the line
-        itm = eng->findItem(pos-1);
-    }
-    else
-        itm = eng->findItem(pos);
+    // end of line ensure we have the last item on the line
+    int itm = pos == lineEnd ? eng->findItem(pos-1) : eng->findItem(pos);
     if (itm < 0) {
         *cursorPos = line.from;
         return x.toReal();
     }
     eng->shapeLine(line);
 
-    const QScriptItem *si = &eng->layoutData->items[itm];
-    if (!si->num_glyphs)
+    const QScriptItem *scriptItem = &eng->layoutData->items[itm];
+    if (!scriptItem->num_glyphs)
         eng->shape(itm);
 
-    const int l = eng->length(itm);
-    pos = qBound(0, pos - si->position, l);
+    if ((scriptItem->analysis.bidiLevel % 2 != eng->isRightToLeft()) && !eng->visualCursorMovement()) {
+        // If the item we found has a different writing direction than the engine,
+        // check if the cursor is between two items with different writing direction
+        int neighborItem = itm;
+        if (neighborItem > 0 && scriptItem->position == pos)
+            --neighborItem;
+        else if (neighborItem < eng->layoutData->items.count() - 1 && scriptItem->position + scriptItem->num_glyphs == pos)
+            ++neighborItem;
+        const bool onBoundary = neighborItem != itm && scriptItem->analysis.bidiLevel != eng->layoutData->items[neighborItem].analysis.bidiLevel;
+        // If we are, prioritise the neighbor item that has the same direction as the engine
+        if (onBoundary) {
+            if (eng->isRightToLeft() != scriptItem->analysis.bidiLevel % 2) {
+                itm = neighborItem;
+                scriptItem = &eng->layoutData->items[itm];
+                if (!scriptItem->num_glyphs)
+                    eng->shape(itm);
+            }
+        }
+    }
 
-    QGlyphLayout glyphs = eng->shapedGlyphs(si);
-    unsigned short *logClusters = eng->logClusters(si);
+    const int l = eng->length(itm);
+    pos = qBound(0, pos - scriptItem->position, l);
+
+    QGlyphLayout glyphs = eng->shapedGlyphs(scriptItem);
+    unsigned short *logClusters = eng->logClusters(scriptItem);
     Q_ASSERT(logClusters);
 
-    int glyph_pos = pos == l ? si->num_glyphs : logClusters[pos];
-    if (edge == Trailing && glyph_pos < si->num_glyphs) {
+    int glyph_pos = pos == l ? scriptItem->num_glyphs : logClusters[pos];
+    if (edge == Trailing && glyph_pos < scriptItem->num_glyphs) {
         // trailing edge is leading edge of next cluster
         glyph_pos++;
-        while (glyph_pos < si->num_glyphs && !glyphs.attributes[glyph_pos].clusterStart)
+        while (glyph_pos < scriptItem->num_glyphs && !glyphs.attributes[glyph_pos].clusterStart)
             glyph_pos++;
     }
 
-    bool reverse = si->analysis.bidiLevel % 2;
+    bool reverse = scriptItem->analysis.bidiLevel % 2;
 
 
     // add the items left of the cursor
@@ -2827,32 +2858,32 @@ qreal QTextLine::cursorToX(int *cursorPos, Edge edge) const
         }
     }
 
-    logClusters = eng->logClusters(si);
-    glyphs = eng->shapedGlyphs(si);
-    if (si->analysis.flags >= QScriptAnalysis::TabOrObject) {
+    logClusters = eng->logClusters(scriptItem);
+    glyphs = eng->shapedGlyphs(scriptItem);
+    if (scriptItem->analysis.flags >= QScriptAnalysis::TabOrObject) {
         if (pos == (reverse ? 0 : l))
-            x += si->width;
+            x += scriptItem->width;
     } else {
         bool rtl = eng->isRightToLeft();
         bool visual = eng->visualCursorMovement();
-        int end = qMin(lineEnd, si->position + l) - si->position;
+        int end = qMin(lineEnd, scriptItem->position + l) - scriptItem->position;
         if (reverse) {
-            int glyph_end = end == l ? si->num_glyphs : logClusters[end];
+            int glyph_end = end == l ? scriptItem->num_glyphs : logClusters[end];
             int glyph_start = glyph_pos;
             if (visual && !rtl && !(lastLine && itm == (visualOrder[nItems - 1] + firstItem)))
                 glyph_start++;
             for (int i = glyph_end - 1; i >= glyph_start; i--)
                 x += glyphs.effectiveAdvance(i);
-            x -= eng->offsetInLigature(si, pos, end, glyph_pos);
+            x -= eng->offsetInLigature(scriptItem, pos, end, glyph_pos);
         } else {
-            int start = qMax(line.from - si->position, 0);
+            int start = qMax(line.from - scriptItem->position, 0);
             int glyph_start = logClusters[start];
             int glyph_end = glyph_pos;
             if (!visual || !rtl || (lastLine && itm == visualOrder[0] + firstItem))
                 glyph_end--;
             for (int i = glyph_start; i <= glyph_end; i++)
                 x += glyphs.effectiveAdvance(i);
-            x += eng->offsetInLigature(si, pos, end, glyph_pos);
+            x += eng->offsetInLigature(scriptItem, pos, end, glyph_pos);
         }
     }
 
@@ -2861,7 +2892,7 @@ qreal QTextLine::cursorToX(int *cursorPos, Edge edge) const
     if (eng->option.wrapMode() != QTextOption::NoWrap && x < 0)
         x = 0;
 
-    *cursorPos = pos + si->position;
+    *cursorPos = pos + scriptItem->position;
     return x.toReal();
 }
 
