@@ -68,11 +68,13 @@ private slots:
     void forcedBreaks();
     void breakAny();
     void noWrap();
+
     void cursorToXForInlineObjects();
     void cursorToXForSetColumns();
     void cursorToXForTrailingSpaces_data();
     void cursorToXForTrailingSpaces();
     void cursorToXInvalidInput();
+
     void horizontalAlignment_data();
     void horizontalAlignment();
     void horizontalAlignmentMultiline_data();
@@ -86,6 +88,8 @@ private slots:
 #ifdef QT_BUILD_INTERNAL
     void xToCursorAtEndOfLine();
 #endif
+    void xToCursorForBidiEnds_data();
+    void xToCursorForBidiEnds();
     void boundingRectTopLeft();
     void graphemeBoundaryForSurrogatePairs();
     void tabStops();
@@ -1125,6 +1129,56 @@ void tst_QTextLayout::xToCursorAtEndOfLine()
     QCOMPARE(line.xToCursor(100000), 20);
 }
 #endif
+
+
+void tst_QTextLayout::xToCursorForBidiEnds_data()
+{
+    QTest::addColumn<Qt::LayoutDirection>("textDirection");
+    QTest::addColumn<QString>("text");
+    QTest::addColumn<int>("leftPosition");
+    QTest::addColumn<int>("rightPosition");
+
+    QTest::addRow("LTR, abcشزذ") << Qt::LeftToRight << "abcشزذ"
+        << 0 << 6;
+    QTest::addRow("RTL, abcشزذ") << Qt::RightToLeft << "abcشزذ"
+        << 6 << 0;
+    QTest::addRow("LTR, شزذabc") << Qt::LeftToRight << "شزذabc"
+        << 0 << 6;
+    QTest::addRow("RTL, شزذabc") << Qt::RightToLeft << "شزذabc"
+        << 6 << 0;
+
+    QTest::addRow("LTR, abcشزذabc") << Qt::LeftToRight << "abcشزذabc"
+        << 0 << 9;
+    QTest::addRow("RTL, abcشزذabc") << Qt::RightToLeft << "abcشزذabc"
+        << 9 << 0;
+    QTest::addRow("LTR, شزذabcشزذ") << Qt::LeftToRight << "شزذabcشزذ"
+        << 0 << 9;
+    QTest::addRow("RTL, شزذabcشزذ") << Qt::RightToLeft << "شزذabcشزذ"
+        << 9 << 0;
+}
+
+void tst_QTextLayout::xToCursorForBidiEnds()
+{
+    QFETCH(Qt::LayoutDirection, textDirection);
+    QFETCH(QString, text);
+    QFETCH(int, leftPosition);
+    QFETCH(int, rightPosition);
+
+    QTextOption option;
+    option.setTextDirection(textDirection);
+
+    QTextLayout layout(text, testFont);
+    layout.setTextOption(option);
+    layout.beginLayout();
+
+    QTextLine line = layout.createLine();
+    line.setLineWidth(0x10000);
+
+    QCOMPARE(line.xToCursor(0), leftPosition);
+    QCOMPARE(line.xToCursor(line.width()), rightPosition);
+
+    layout.endLayout();
+}
 
 void tst_QTextLayout::boundingRectTopLeft()
 {
