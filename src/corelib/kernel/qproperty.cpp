@@ -2318,8 +2318,10 @@ bool isAnyBindingEvaluating()
 
 bool isPropertyInBindingWrapper(const QUntypedPropertyData *property)
 {
-    return bindingStatus.currentCompatProperty &&
-           bindingStatus.currentCompatProperty->property == property;
+    // Accessing bindingStatus is expensive because it's thread-local. Do it only once.
+    if (const auto current = bindingStatus.currentCompatProperty)
+        return current->property == property;
+    return false;
 }
 
 namespace BindableWarnings {
