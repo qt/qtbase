@@ -465,6 +465,11 @@ bool QWasmEventTranslator::processMouse(int eventType, const EmscriptenMouseEven
 
         pressedButtons.setFlag(button);
 
+        // button overview:
+        // 0 = primary mouse button, usually left click
+        // 1 = middle mouse button, usually mouse wheel
+        // 2 = right mouse button, usually right click
+        // from: https://w3c.github.io/uievents/#dom-mouseevent-button
         if (mouseEvent->button == 0) {
             pressedWindow = window2;
             buttonEventType = QEvent::MouseButtonPress;
