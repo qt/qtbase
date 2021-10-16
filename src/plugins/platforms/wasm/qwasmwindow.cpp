@@ -192,6 +192,9 @@ void QWasmWindow::injectMousePressed(const QPoint &local, const QPoint &global,
     else if (normButtonRect().contains(global))
         m_activeControl = QWasmCompositor::SC_TitleBarNormalButton;
 
+    if (button == Qt::LeftButton)
+        QGuiApplicationPrivate::instance()->closeAllPopups();
+
     invalidate();
 }
 
