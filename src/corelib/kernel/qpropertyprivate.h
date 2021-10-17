@@ -61,6 +61,9 @@ QT_BEGIN_NAMESPACE
 
 class QBindingStorage;
 
+template<typename Class, typename T, auto Offset, auto Setter, auto Signal>
+class QObjectCompatProperty;
+
 namespace QtPrivate {
 // QPropertyBindingPrivatePtr operates on a RefCountingMixin solely so that we can inline
 // the constructor and copy constructor
@@ -259,6 +262,10 @@ class Q_CORE_EXPORT QPropertyBindingData
     friend struct QT_PREPEND_NAMESPACE(QPropertyBindingDataPointer);
     friend class QT_PREPEND_NAMESPACE(QQmlPropertyBinding);
     friend struct QT_PREPEND_NAMESPACE(QPropertyDelayedNotifications);
+
+    template<typename Class, typename T, auto Offset, auto Setter, auto Signal>
+    friend class QT_PREPEND_NAMESPACE(QObjectCompatProperty);
+
     Q_DISABLE_COPY(QPropertyBindingData)
 public:
     QPropertyBindingData() = default;
