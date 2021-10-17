@@ -37,11 +37,8 @@
 **
 ****************************************************************************/
 
-#if defined(WINVER) && WINVER < 0x0601
-#  undef WINVER
-#endif
-#if !defined(WINVER)
-#  define WINVER 0x0601 // Enable touch functions for MinGW
+#ifndef WINVER
+#  define WINVER 0x0A00 // Enable touch functions for MinGW
 #endif
 
 #include "qwindowswindow.h"

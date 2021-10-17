@@ -138,9 +138,34 @@ VERS_1;
     set(TEST_ld_version_script "${HAVE_LD_VERSION_SCRIPT}" CACHE INTERNAL "linker version script support")
 endfunction()
 
+function(qt_internal_ensure_latest_win_nt_api)
+    if(NOT WIN32)
+        return()
+    endif()
+    check_cxx_source_compiles([=[
+        #include <windows.h>
+        #if !defined(_WIN32_WINNT) && !defined(WINVER)
+        #error "_WIN32_WINNT and WINVER are not defined"
+        #endif
+        #if defined(_WIN32_WINNT) && (_WIN32_WINNT < 0x0A00)
+        #error "_WIN32_WINNT version too low"
+        #endif
+        #if defined(WINVER) && (WINVER < 0x0A00)
+        #error "WINVER version too low"
+        #endif
+        int main() { return 0; }
+    ]=] HAVE_WIN10_WIN32_WINNT)
+    if(NOT HAVE_WIN10_WIN32_WINNT)
+        list(APPEND QT_PLATFORM_DEFINITIONS _WIN32_WINNT=0x0A00 WINVER=0x0A00)
+        set(QT_PLATFORM_DEFINITIONS ${QT_PLATFORM_DEFINITIONS}
+            CACHE STRING "Qt platform specific pre-processor defines" FORCE)
+    endif()
+endfunction()
+
 function(qt_run_qtbase_config_tests)
     qt_run_config_test_architecture()
     qt_run_linker_version_script_support()
+    qt_internal_ensure_latest_win_nt_api()
 endfunction()
 
 # The qmake build of android does not perform the right architecture tests and

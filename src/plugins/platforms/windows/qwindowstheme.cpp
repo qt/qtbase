@@ -38,9 +38,8 @@
 ****************************************************************************/
 
 // SHSTOCKICONINFO is only available since Vista
-#if _WIN32_WINNT < 0x0601
-#  undef _WIN32_WINNT
-#  define _WIN32_WINNT 0x0601
+#ifndef _WIN32_WINNT
+#  define _WIN32_WINNT 0x0A00
 #endif
 
 #include "qwindowstheme.h"

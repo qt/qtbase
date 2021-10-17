@@ -45,30 +45,23 @@
 #pragma qt_sync_stop_processing
 #endif
 
-#if defined(Q_CC_MINGW)
-// mingw's windows.h does not set _WIN32_WINNT, resulting breaking compilation
-#  ifndef WINVER
-#    define WINVER 0x601
-#  endif
-#  ifndef _WIN32_WINNT
-#    define _WIN32_WINNT 0x601
-#  endif
-#  ifndef NTDDI_VERSION
-#    define NTDDI_VERSION 0x06010000
-#  endif
+#ifndef WINVER
+#  define WINVER 0x0A00 // _WIN32_WINNT_WIN10
+#endif
+#ifndef _WIN32_WINNT
+#  define _WIN32_WINNT 0x0A00
+#endif
+#ifndef _WIN32_IE
+#  define _WIN32_IE 0x0A00
+#endif
+#ifndef NTDDI_VERSION
+#  define NTDDI_VERSION 0x0A00000B // NTDDI_WIN10_CO
 #endif
 
 #ifndef NOMINMAX
 #  define NOMINMAX
 #endif
 #include <windows.h>
-
-#if defined(_WIN32_IE) && _WIN32_IE < 0x0501
-#  undef _WIN32_IE
-#endif
-#if !defined(_WIN32_IE)
-#  define _WIN32_IE 0x0501
-#endif
 
 // already defined when compiled with WINVER >= 0x0500
 #ifndef SPI_SETMENUANIMATION
