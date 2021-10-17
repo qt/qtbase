@@ -151,6 +151,7 @@ private:
 class QUntypedPropertyBinding;
 class QPropertyBindingPrivate;
 struct QPropertyBindingDataPointer;
+struct QPropertyObserverPointer;
 
 class QUntypedPropertyData
 {
@@ -334,6 +335,11 @@ private:
     quintptr d() const { return d_ref(); }
     void registerWithCurrentlyEvaluatingBinding_helper(BindingEvaluationState *currentBinding) const;
     void removeBinding_helper();
+
+    enum NotificationResult { Delayed, Evaluated };
+    NotificationResult notifyObserver_helper(
+            QUntypedPropertyData *propertyDataPtr, QPropertyObserverPointer observer,
+            QBindingStorage *storage) const;
 };
 
 template <typename T, typename Tag>

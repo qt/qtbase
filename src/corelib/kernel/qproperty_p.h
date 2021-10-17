@@ -600,8 +600,22 @@ public:
     {
         QBindingStorage *storage = qGetBindingStorage(owner());
         if (auto bd = storage->bindingData(this, false)) {
-            if (!inBindingWrapper(storage))
-                notify(bd);
+            // This partly duplicates QPropertyBindingData::notifyObservers because we want to
+            // check for inBindingWrapper() after checking for isNotificationDelayed() and
+            // firstObserver. This is because inBindingWrapper() is the most expensive check.
+            if (!bd->isNotificationDelayed()) {
+                QPropertyBindingDataPointer d{bd};
+                if (QPropertyObserverPointer observer = d.firstObserver()) {
+                    if (!inBindingWrapper(storage)) {
+                        if (bd->notifyObserver_helper(this, observer, storage)
+                                == QtPrivate::QPropertyBindingData::Evaluated) {
+                            // evaluateBindings() can trash the observers. We need to re-fetch here.
+                            if (QPropertyObserverPointer observer = d.firstObserver())
+                                observer.notify(this);
+                        }
+                    }
+                }
+            }
         }
         if constexpr (!std::is_null_pointer_v<decltype(Signal)>) {
             if constexpr (SignalTakesValue::value)
@@ -648,13 +662,6 @@ public:
     {
         auto *storage = const_cast<QBindingStorage *>(qGetBindingStorage(owner()));
         return *storage->bindingData(const_cast<QObjectCompatProperty *>(this), true);
-    }
-
-private:
-    void notify(const QtPrivate::QPropertyBindingData *binding)
-    {
-        if (binding)
-            binding->notifyObservers(this, qGetBindingStorage(owner()));
     }
 };
 

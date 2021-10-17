@@ -579,27 +579,33 @@ void QPropertyBindingData::notifyObservers(QUntypedPropertyData *propertyDataPtr
     QPropertyBindingDataPointer d{this};
 
     if (QPropertyObserverPointer observer = d.firstObserver()) {
-        auto status = storage ? storage->bindingStatus : nullptr;
-        QPropertyDelayedNotifications *delay;
-#ifndef QT_HAS_FAST_CURRENT_THREAD_ID
+        if (notifyObserver_helper(propertyDataPtr, observer, storage) == Evaluated) {
+            // evaluateBindings() can trash the observers. We need to re-fetch here.
+            if (QPropertyObserverPointer observer = d.firstObserver())
+                observer.notify(propertyDataPtr);
+        }
+    }
+}
+
+QPropertyBindingData::NotificationResult QPropertyBindingData::notifyObserver_helper(
+        QUntypedPropertyData *propertyDataPtr, QPropertyObserverPointer observer,
+        QBindingStorage *storage) const
+{
+#ifdef QT_HAS_FAST_CURRENT_THREAD_ID
+    QBindingStatus *status = storage ? storage->bindingStatus : nullptr;
+    if (!status || status->threadId != QThread::currentThreadId())
         status = &bindingStatus;
 #else
-        if (!status || status->threadId != QThread::currentThreadId())
-            status = &bindingStatus;
+    Q_UNUSED(storage);
+    QBindingStatus *status = &bindingStatus;
 #endif
-        delay = status->groupUpdateData;
-        if (delay) {
-            delay->addProperty(this, propertyDataPtr);
-            return;
-        }
-        observer.evaluateBindings(status);
-    } else {
-        return;
+    if (QPropertyDelayedNotifications *delay = status->groupUpdateData) {
+        delay->addProperty(this, propertyDataPtr);
+        return Delayed;
     }
 
-    // evaluateBindings() can trash the observers. We need to re-fetch here.
-    if (QPropertyObserverPointer observer = d.firstObserver())
-        observer.notify(propertyDataPtr);
+    observer.evaluateBindings(status);
+    return Evaluated;
 }
 
 int QPropertyBindingDataPointer::observerCount() const
