@@ -40,7 +40,7 @@
 #define QT_NO_URL_CAST_FROM_STRING 1
 
 #ifndef _WIN32_WINNT
-#define _WIN32_WINNT 0x0601
+#define _WIN32_WINNT 0x0A00
 #endif
 
 #include "qwindowscombase.h"

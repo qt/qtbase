@@ -45,7 +45,7 @@
 #endif
 
 #if defined(Q_OS_WIN) && !defined(_WIN32_WINNT)
-#define _WIN32_WINNT  0x500
+#define _WIN32_WINNT 0x0A00
 #endif
 
 #include "../../../../shared/filesystem.h"

@@ -46,7 +46,7 @@
 #if defined(Q_CC_MINGW) || defined(Q_CC_CLANG)
 #  define HAS_UI_VIEW_SETTINGS_INTEROP
 // Present from MSVC2015 + SDK 10 onwards
-#elif (!defined(Q_CC_MSVC) || _MSC_VER >= 1900) && NTDDI_VERSION >= 0xa000000
+#elif (!defined(Q_CC_MSVC) || _MSC_VER >= 1900) && WINVER >= 0x0A00
 #  define HAS_UI_VIEW_SETTINGS_INTEROP
 #  define HAS_UI_VIEW_SETTINGS
 #endif

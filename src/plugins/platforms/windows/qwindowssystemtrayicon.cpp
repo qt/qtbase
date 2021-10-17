@@ -37,18 +37,12 @@
 **
 ****************************************************************************/
 
-#if defined(WINVER) && WINVER < 0x0601
-#  undef WINVER
-#endif
-#if !defined(WINVER)
-#  define WINVER 0x0601 // required for NOTIFYICONDATA_V2_SIZE, ChangeWindowMessageFilterEx() (MinGW 5.3)
+#ifndef WINVER
+#  define WINVER 0x0A00 // required for NOTIFYICONDATA_V2_SIZE, ChangeWindowMessageFilterEx() (MinGW 5.3)
 #endif
 
-#if defined(NTDDI_VERSION) && NTDDI_VERSION < 0x06010000
-#  undef NTDDI_VERSION
-#endif
-#if !defined(NTDDI_VERSION)
-#  define NTDDI_VERSION 0x06010000 // required for Shell_NotifyIconGetRect (MinGW 5.3)
+#ifndef NTDDI_VERSION
+#  define NTDDI_VERSION 0x0A00000B // required for Shell_NotifyIconGetRect (MinGW 5.3)
 #endif
 
 #include "qwindowssystemtrayicon.h"
