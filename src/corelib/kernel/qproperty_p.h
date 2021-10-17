@@ -456,8 +456,8 @@ public:
     {
         const QBindingStorage *storage = qGetBindingStorage(owner());
         // make sure we don't register this binding as a dependency to itself
-        if (!inBindingWrapper(storage))
-            storage->registerDependency(this);
+        if (storage->bindingStatus->currentlyEvaluatingBinding && !inBindingWrapper(storage))
+            storage->registerDependency_helper(this);
         return this->val;
     }
 
@@ -488,8 +488,8 @@ public:
         QBindingStorage *storage = qGetBindingStorage(owner());
         if (auto *bd = storage->bindingData(this)) {
             // make sure we don't remove the binding if called from the bindingWrapper
-            if (!inBindingWrapper(storage))
-                bd->removeBinding();
+            if (bd->hasBinding() && !inBindingWrapper(storage))
+                bd->removeBinding_helper();
         }
         this->val = t;
     }
@@ -539,8 +539,8 @@ public:
         QBindingStorage *storage = qGetBindingStorage(owner());
         if (auto *bd = storage->bindingData(this)) {
             // make sure we don't remove the binding if called from the bindingWrapper
-            if (!inBindingWrapper(storage))
-                bd->removeBinding();
+            if (bd->hasBinding() && !inBindingWrapper(storage))
+                bd->removeBinding_helper();
         }
     }
 
