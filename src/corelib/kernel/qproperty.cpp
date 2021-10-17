@@ -668,37 +668,20 @@ QPropertyObserver &QPropertyObserver::operator=(QPropertyObserver &&other) noexc
     return *this;
 }
 
-#define UNLINK_COMMON \
-    if (ptr->next) \
-        ptr->next->prev = ptr->prev; \
-    if (ptr->prev) \
-        ptr->prev.setPointer(ptr->next.data()); \
-    ptr->next = nullptr; \
-    ptr->prev.clear();
-
 /*!
+    \fn QPropertyObserverPointer::unlink()
     \internal
     Unlinks
  */
-void QPropertyObserverPointer::unlink()
-{
-    UNLINK_COMMON
-    if (ptr->next.tag() == QPropertyObserver::ObserverIsAlias)
-        ptr->aliasData = nullptr;
-}
+
 
 /*!
+    \fn QPropertyObserverPointer::unlink_fast()
     \internal
     Like unlink, but does not handle ObserverIsAlias.
     Must only be called in places where we know that we are not dealing
     with such an observer.
  */
-void QPropertyObserverPointer::unlink_fast()
-{
-    Q_ASSERT(ptr->next.tag() != QPropertyObserver::ObserverIsAlias);
-    UNLINK_COMMON
-}
-#undef UNLINK_COMMON
 
 void QPropertyObserverPointer::setChangeHandler(QPropertyObserver::ChangeHandler changeHandler)
 {
@@ -725,90 +708,17 @@ void QPropertyObserverPointer::setBindingToNotify_unsafe(QPropertyBindingPrivate
 }
 
 /*!
+ \class QPropertyObserverNodeProtector
  \internal
  QPropertyObserverNodeProtector is a RAII wrapper which takes care of the internal switching logic
  for QPropertyObserverPointer::notify (described ibidem)
 */
-struct [[nodiscard]] QPropertyObserverNodeProtector {
-    QPropertyObserverBase m_placeHolder;
-    QPropertyObserverNodeProtector(QPropertyObserver *observer)
-    {
-        // insert m_placeholder after observer into the linked list
-        QPropertyObserver *next = observer->next.data();
-        m_placeHolder.next = next;
-        observer->next = static_cast<QPropertyObserver *>(&m_placeHolder);
-        if (next)
-            next->prev = &m_placeHolder.next;
-        m_placeHolder.prev = &observer->next;
-        m_placeHolder.next.setTag(QPropertyObserver::ObserverIsPlaceholder);
-    }
 
-    QPropertyObserver *next() const { return m_placeHolder.next.data(); }
-
-    ~QPropertyObserverNodeProtector() {
-        QPropertyObserverPointer d{static_cast<QPropertyObserver *>(&m_placeHolder)};
-        d.unlink_fast();
-    }
-};
-
-/*! \internal
+/*!
+  \fn QPropertyObserverNodeProtector::notify(QUntypedPropertyData *propertyDataPtr)
+  \internal
   \a propertyDataPtr is a pointer to the observed property's property data
 */
-void QPropertyObserverPointer::notify(QUntypedPropertyData *propertyDataPtr)
-{
-    auto observer = const_cast<QPropertyObserver*>(ptr);
-    /*
-     * The basic idea of the loop is as follows: We iterate over all observers in the linked list,
-     * and execute the functionality corresponding to their tag.
-     * However, complication arise due to the fact that the triggered operations might modify the list,
-     * which includes deletion and move of the current and next nodes.
-     * Therefore, we take a few safety precautions:
-     * 1. Before executing any action which might modify the list, we insert a placeholder node after the current node.
-     *    As that one is stack allocated and owned by us, we can rest assured that it is
-     *    still there after the action has executed, and placeHolder->next points to the actual next node in the list.
-     *    Note that taking next at the beginning of the loop does not work, as the executed action might either move
-     *    or delete that node.
-     * 2. After the triggered action has finished, we can use the next pointer in the placeholder node as a safe way to
-     *    retrieve the next node.
-     * 3. Some care needs to be taken to avoid infinite recursion with change handlers, so we add an extra test there, that
-     *    checks whether we're already have the same change handler in our call stack. This can be done by checking whether
-     *    the node after the current one is a placeholder node.
-     */
-    while (observer) {
-        QPropertyObserver *next = observer->next.data();
-        switch (QPropertyObserver::ObserverTag(observer->next.tag())) {
-        case QPropertyObserver::ObserverNotifiesChangeHandler:
-        {
-            auto handlerToCall = observer->changeHandler;
-            // prevent recursion
-            if (next && next->next.tag() == QPropertyObserver::ObserverIsPlaceholder) {
-                observer = next->next.data();
-                continue;
-            }
-            // handlerToCall might modify the list
-            QPropertyObserverNodeProtector protector(observer);
-            handlerToCall(observer, propertyDataPtr);
-            next = protector.next();
-            break;
-        }
-        case QPropertyObserver::ObserverNotifiesBinding:
-        {
-            auto bindingToNotify =  observer->binding;
-            QPropertyObserverNodeProtector protector(observer);
-            bindingToNotify->notifyRecursive();
-            next = protector.next();
-            break;
-        }
-        case QPropertyObserver::ObserverIsPlaceholder:
-            // recursion is already properly handled somewhere else
-            break;
-        case QPropertyObserver::ObserverIsAlias:
-            break;
-        default: Q_UNREACHABLE();
-        }
-        observer = next;
-    }
-}
 
 #ifndef QT_NO_DEBUG
 void QPropertyObserverPointer::noSelfDependencies(QPropertyBindingPrivate *binding)
