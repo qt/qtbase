@@ -180,6 +180,33 @@ void tst_QVarLengthArray::emplace()
         QCOMPARE(&r, &strings.back());
         QCOMPARE(strings.size(), 3);
         QCOMPARE(strings.back(), QString(42, u'y'));
+
+        // test growing from empty arrays
+        QVarLengthArray<QString> emptyArrDefaultPrealloc;
+        QCOMPARE(emptyArrDefaultPrealloc.size(), 0);
+        emptyArrDefaultPrealloc.emplace_back();
+        QCOMPARE(emptyArrDefaultPrealloc.size(), 1);
+        emptyArrDefaultPrealloc.resize(1024);
+        QCOMPARE(emptyArrDefaultPrealloc.size(), 1024);
+        emptyArrDefaultPrealloc.resize(0);
+        QCOMPARE(emptyArrDefaultPrealloc.size(), 0);
+        emptyArrDefaultPrealloc.squeeze();
+        QCOMPARE(emptyArrDefaultPrealloc.size(), 0);
+        emptyArrDefaultPrealloc.emplace_back();
+        QCOMPARE(emptyArrDefaultPrealloc.size(), 1);
+
+        QVarLengthArray<QString, 1> emptyArrSmallPrealloc;
+        QCOMPARE(emptyArrSmallPrealloc.size(), 0);
+        emptyArrSmallPrealloc.emplace_back();
+        QCOMPARE(emptyArrSmallPrealloc.size(), 1);
+        emptyArrSmallPrealloc.resize(1024);
+        QCOMPARE(emptyArrSmallPrealloc.size(), 1024);
+        emptyArrSmallPrealloc.resize(0);
+        QCOMPARE(emptyArrSmallPrealloc.size(), 0);
+        emptyArrSmallPrealloc.squeeze();
+        QCOMPARE(emptyArrSmallPrealloc.size(), 0);
+        emptyArrSmallPrealloc.emplace_back();
+        QCOMPARE(emptyArrSmallPrealloc.size(), 1);
     }
 }
 

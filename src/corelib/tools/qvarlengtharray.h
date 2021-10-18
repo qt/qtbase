@@ -621,7 +621,8 @@ Q_OUTOFLINE_TEMPLATE auto QVarLengthArray<T, Prealloc>::emplace(const_iterator b
     Q_ASSERT_X(isValidIterator(before), "QVarLengthArray::insert", "The specified const_iterator argument 'before' is invalid");
 
     qsizetype offset = qsizetype(before - ptr);
-    reserve(s + 1);
+    if (s == a)
+        reserve(s * 2);
     if (!QTypeInfo<T>::isRelocatable) {
         T *b = ptr + offset;
         T *i = ptr + s;
