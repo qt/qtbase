@@ -124,6 +124,9 @@ public:
     void updateState(SCNetworkReachabilityFlags newState);
     void reset();
     bool isReachable() const;
+#ifdef QT_PLATFORM_UIKIT
+    bool isWwan() const;
+#endif
 
     static void probeCallback(SCNetworkReachabilityRef probe, SCNetworkReachabilityFlags flags, void *info);
 
@@ -139,9 +142,19 @@ void QNetworkConnectionMonitorPrivate::updateState(SCNetworkReachabilityFlags ne
     // is set. There are more possible flags that require more tests/some special
     // setup. So in future this part and related can change/be extended.
     const bool wasReachable = isReachable();
+
+#ifdef QT_PLATFORM_UIKIT
+    const bool hadWwan = isWwan();
+#endif
+
     state = newState;
     if (wasReachable != isReachable())
         emit q->reachabilityChanged(isReachable());
+
+#ifdef QT_PLATFORM_UIKIT
+    if (hadWwan != isWwan())
+        emit q->isWwanChanged(isWwan());
+#endif
 }
 
 void QNetworkConnectionMonitorPrivate::reset()
@@ -159,6 +172,13 @@ bool QNetworkConnectionMonitorPrivate::isReachable() const
 {
     return !!(state & kSCNetworkReachabilityFlagsReachable);
 }
+
+#ifdef QT_PLATFORM_UIKIT // The IsWWAN flag is not available on macOS
+bool QNetworkConnectionMonitorPrivate::isWwan() const
+{
+    return !!(state & kSCNetworkReachabilityFlagsIsWWAN);
+}
+#endif
 
 void QNetworkConnectionMonitorPrivate::probeCallback(SCNetworkReachabilityRef probe, SCNetworkReachabilityFlags flags, void *info)
 {
@@ -300,6 +320,25 @@ bool QNetworkConnectionMonitor::isReachable()
 
     return d->isReachable();
 }
+
+#ifdef QT_PLATFORM_UIKIT
+bool QNetworkConnectionMonitor::isWwan() const
+{
+    Q_D(const QNetworkConnectionMonitor);
+
+    if (isMonitoring()) {
+        qCWarning(lcNetMon, "Calling isReachable() is unsafe after the monitoring started");
+        return false;
+    }
+
+    if (!d->probe) {
+        qCWarning(lcNetMon, "Reachability is unknown, set the target first");
+        return false;
+    }
+
+    return d->isWwan();
+}
+#endif
 
 bool QNetworkConnectionMonitor::isEnabled()
 {

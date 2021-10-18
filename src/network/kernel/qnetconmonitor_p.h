@@ -73,7 +73,11 @@ public:
     bool setTargets(const QHostAddress &local, const QHostAddress &remote);
     bool isReachable();
 
-    // Important: on Darwin you should not call isReachable() after
+#ifdef QT_PLATFORM_UIKIT
+    bool isWwan() const;
+#endif
+
+    // Important: on Darwin you should not call isReachable/isWwan() after
     // startMonitoring(), you have to listen to reachabilityChanged()
     // signal instead.
     bool startMonitoring();
@@ -86,6 +90,10 @@ Q_SIGNALS:
     // Important: connect to this using QueuedConnection. On Darwin
     // callback is coming on a special dispatch queue.
     void reachabilityChanged(bool isOnline);
+
+#ifdef QT_PLATFORM_UIKIT
+    void isWwanChanged(bool isWwan);
+#endif
 
 private:
     Q_DECLARE_PRIVATE(QNetworkConnectionMonitor)
