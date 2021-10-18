@@ -40,6 +40,8 @@
 #include <qregularexpression.h>
 
 #include <stdlib.h>
+#include <tuple>
+#include <utility>
 
 //#define DEBUG_SOLUTION_GEN
 
@@ -806,33 +808,62 @@ void VcprojGenerator::init()
         }
     }
 
-    // Add all input files for a custom compiler into a map for uniqueness,
-    // unless the compiler is configure as a combined stage, then use the first one
+    // Helper function to create a fake file foo.cbt for the project view.
+    //
+    // This prevents VS from complaining about a circular dependency from "foo -> foo".
+    //
+    // The .cbt file is added as "source" of the Custom Build Tool.  This means, in the project
+    // view, this is the file the Custom Build Tool property page is attached to.
+    //
+    // This function returns a pair with
+    //   - the fully resolved output file path
+    //   - the file path of the .cbt file
+    auto addExtraCompilerSourceWithCustomBuildToolFakeFile
+        = [this](const QString &compilerOutput, const ProString &extraCompiler,
+                 const QStringList &inputs) -> std::pair<QString, QString>
+    {
+        QString realOut = replaceExtraCompilerVariables(compilerOutput, inputs, {}, NoShell);
+        QString out = realOut + customBuildToolFilterFileSuffix;
+        createCustomBuildToolFakeFile(out, realOut);
+        out = Option::fixPathToTargetOS(out, false);
+        extraCompilerSources[out] += extraCompiler.toQString();
+        return { realOut, out };
+    };
+
+    // Add all input files for a custom compiler into a map for uniqueness.
+    //
+    // Use .cbt files for the following cases:
+    //   - CONFIG += combine
+    //   - the input has a built-in compiler (e.g. C++ source file)
     for (const ProString &quc : project->values("QMAKE_EXTRA_COMPILERS")) {
         const ProStringList &invar = project->values(ProKey(quc + ".input"));
         const QString compiler_out = project->first(ProKey(quc + ".output")).toQString();
-        for (ProStringList::ConstIterator iit = invar.constBegin(); iit != invar.constEnd(); ++iit) {
-            ProStringList fileList = project->values((*iit).toKey());
-            if (!fileList.isEmpty()) {
-                if (project->values(ProKey(quc + ".CONFIG")).indexOf("combine") != -1)
-                    fileList.erase(fileList.begin() + 1, fileList.end());
-                for (ProStringList::ConstIterator fit = fileList.constBegin(); fit != fileList.constEnd(); ++fit) {
-                    QString file = (*fit).toQString();
-                    if (verifyExtraCompiler(quc, file)) {
-                        if (!hasBuiltinCompiler(file)) {
-                            extraCompilerSources[file] += quc.toQString();
-                        } else {
-                            // Create a fake file foo.moc.cbt for the project view.
-                            // This prevents VS from complaining about a circular
-                            // dependency from foo.moc -> foo.moc.
-                            QString realOut = replaceExtraCompilerVariables(
-                                compiler_out, file, QString(), NoShell);
-                            QString out = realOut + customBuildToolFilterFileSuffix;
-                            createCustomBuildToolFakeFile(out, realOut);
-                            out = Option::fixPathToTargetOS(out, false);
-                            extraCompilerSources[out] += quc.toQString();
-                            extraCompilerOutputs[out] = file;
-                        }
+
+        QStringList inputFiles;
+        for (auto it = invar.begin(); it != invar.end(); ++it)
+            inputFiles += project->values(it->toKey()).toQStringList();
+
+        if (project->values(ProKey(quc + ".CONFIG")).contains("combine")) {
+            // Handle "CONFIG += combine" extra compilers.
+            QString realOut;
+            QString out;
+            std::tie(realOut, out)
+                = addExtraCompilerSourceWithCustomBuildToolFakeFile(compiler_out, quc, inputFiles);
+            if (hasBuiltinCompiler(realOut))
+                extraCompilerOutputs[out] = realOut;
+        } else {
+            // Handle regular 1-to-1 extra compilers.
+            for (const QString &file : inputFiles) {
+                if (verifyExtraCompiler(quc, file)) {
+                    if (!hasBuiltinCompiler(file)) {
+                        extraCompilerSources[file] += quc.toQString();
+                    } else {
+                        QString out;
+                        std::tie(std::ignore, out)
+                            = addExtraCompilerSourceWithCustomBuildToolFakeFile(compiler_out,
+                                                                                quc,
+                                                                                QStringList(file));
+                        extraCompilerOutputs[out] = file;
                     }
                 }
             }
@@ -1545,9 +1576,10 @@ void VcprojGenerator::initExtraCompilerOutputs()
             if (!outputs.isEmpty())
                 tmp_out = outputs.first().toQString();
             if (project->values(ProKey(*it + ".CONFIG")).indexOf("combine") != -1) {
-                // Combined output, only one file result
+                // Combined output, only one file result. Use .cbt file.
                 extraCompile.addFile(Option::fixPathToTargetOS(
-                        replaceExtraCompilerVariables(tmp_out, QString(), QString(), NoShell), false));
+                        replaceExtraCompilerVariables(tmp_out + customBuildToolFilterFileSuffix,
+                                                      QString(), QString(), NoShell), false));
             } else if (!inputVars.isEmpty()) {
                 // One output file per input
                 const ProStringList &tmp_in = project->values(inputVars.first().toKey());
