@@ -79,6 +79,7 @@ public:
     Q_ENUM(AcceptMode)
     enum DialogLabel { LookIn, FileName, FileType, Accept, Reject };
 
+    // keep this in sync with QFileDialogOption::FileDialogOptions
     enum Option
     {
         ShowDirsOnly                = 0x00000001,
