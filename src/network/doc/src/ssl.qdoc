@@ -33,8 +33,9 @@
     \keyword SSL
 
     The classes below provide support for secure network communication using
-    the Secure Sockets Layer (SSL) protocol, using the \l{OpenSSL Toolkit}
-    to perform encryption and protocol handling.
+    the Secure Sockets Layer (SSL) protocol, using a native TLS backend,
+    the \l{OpenSSL Toolkit}, or any appropriate TLS plugin to perform encryption
+    and protocol handling.
 
     From Qt version 5.15 onwards, the officially supported version for OpenSSL
     is 1.1.1 or later.
@@ -44,13 +45,21 @@
 
     \section1 Enabling and Disabling SSL Support
 
-    When building Qt from source, the configuration system checks for the presence
-    of the \c{openssl/opensslv.h} header provided by source or developer packages
-    of OpenSSL.
+    When building Qt from source, Qt builds plugins for native TLS libraries
+    that are supported for the operating system you are building for. For
+    Windows this means
+    \l{Schannel}{https://docs.microsoft.com/en-us/windows/win32/com/schannel},
+    while for macOS this is
+    \l{Secure Transport}{https://developer.apple.com/documentation/security/secure_transport}.
 
-    By default, an SSL-enabled Qt library dynamically loads any installed OpenSSL
-    library at run-time. However, it is possible to link against the library at
-    compile-time by configuring Qt with the \c{-openssl-linked} option.
+    On all platforms, the configuration system checks for the presence of the
+    \c{openssl/opensslv.h} header provided by source or developer packages
+    of OpenSSL. If found, it will enable and build the OpenSSL backend for Qt.
+
+    By default, an OpenSSL-enabled Qt library dynamically loads any installed
+    OpenSSL library at run-time. However, it is possible to link against the
+    library at compile-time by configuring Qt with the \c{-openssl-linked}
+    option.
 
     When building a version of Qt linked against OpenSSL, Qt's build system will
     use CMake's \c{FindOpenSSL} command to find OpenSSL in several standard
@@ -64,6 +73,20 @@
 
     To disable SSL support in a Qt build, configure Qt with the \c{-no-openssl}
     option.
+
+    \section1 Considerations While Packaging Your Application
+
+    When you package your application, you may run a tool like \l{windeployqt}. This
+    copies all the plugins for the libraries you use to the \c{plugins/} folder.
+    However, for TLS you only need one backend, and you may delete the other
+    plugins before packaging your application. For example, if you're on Windows
+    and don't require any of the extra features the OpenSSL backend provides,
+    you can choose to forego shipping the \c{qopensslbackend} plugin as well as
+    the OpenSSL library, and simply ship the \c{qschannelbackend} plugin.
+
+    However, shipping multiple backends is not a problem. Qt will
+    attempt to load the backends in order (with OpenSSL attempted first) until
+    one is successfully loaded. The other backends are then unused.
 
     \section1 Datagram Transport Layer Security
 
