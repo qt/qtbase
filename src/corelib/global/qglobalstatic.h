@@ -57,6 +57,27 @@ enum GuardValues {
 };
 }
 
+#define Q_GLOBAL_STATIC_INTERNAL_HOLDER(ARGS)                               \
+    struct HolderBase                                                       \
+    {                                                                       \
+        HolderBase() = default;                                             \
+        ~HolderBase() noexcept                                              \
+        {                                                                   \
+            if (guard.loadRelaxed() == QtGlobalStatic::Initialized)         \
+                guard.storeRelaxed(QtGlobalStatic::Destroyed);              \
+        }                                                                   \
+        Q_DISABLE_COPY_MOVE(HolderBase)                                     \
+    };                                                                      \
+    struct Holder : public HolderBase                                       \
+    {                                                                       \
+        Type value;                                                         \
+        Holder() noexcept(noexcept(typename std::remove_cv<Type>::type ARGS)) \
+            : value ARGS                                                    \
+        {                                                                   \
+            guard.storeRelaxed(QtGlobalStatic::Initialized);                \
+        }                                                                   \
+    };
+
 #if defined(Q_OS_UNIX) && defined(Q_CC_INTEL)
 // Work around Intel issue ID 6000058488:
 // local statics inside an inline function inside an anonymous namespace are global
@@ -69,23 +90,10 @@ enum GuardValues {
 #define Q_GLOBAL_STATIC_INTERNAL(ARGS)                          \
     Q_GLOBAL_STATIC_INTERNAL_DECORATION Type *innerFunction()   \
     {                                                           \
-        struct HolderBase {                                     \
-            HolderBase() = default;                             \
-            ~HolderBase() noexcept                        \
-            { if (guard.loadRelaxed() == QtGlobalStatic::Initialized)  \
-                  guard.storeRelaxed(QtGlobalStatic::Destroyed); }     \
-            Q_DISABLE_COPY_MOVE(HolderBase)                     \
-        };                                                      \
-        static struct Holder : public HolderBase {              \
-            Type value;                                         \
-            Holder()                                            \
-                noexcept(noexcept(typename std::remove_cv<Type>::type ARGS)) \
-                : value ARGS                                    \
-            { guard.storeRelaxed(QtGlobalStatic::Initialized); }       \
-        } holder;                                               \
+        Q_GLOBAL_STATIC_INTERNAL_HOLDER(ARGS)                   \
+        static Holder holder;                                   \
         return &holder.value;                                   \
     }
-
 
 // this class must be POD, unless the compiler supports thread-safe statics
 template <typename T, T *(&innerFunction)(), QBasicAtomicInt &guard>

@@ -1,5 +1,6 @@
 # Generated from kernel.pro.
 
+add_subdirectory(qapplicationstatic)
 add_subdirectory(qcoreapplication)
 add_subdirectory(qdeadlinetimer)
 add_subdirectory(qelapsedtimer)

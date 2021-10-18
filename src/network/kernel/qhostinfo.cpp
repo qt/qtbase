@@ -43,6 +43,7 @@
 #include "qhostinfo_p.h"
 #include <qplatformdefs.h>
 
+#include "QtCore/qapplicationstatic.h"
 #include "QtCore/qscopedpointer.h"
 #include <qabstracteventdispatcher.h>
 #include <qcoreapplication.h>
@@ -99,24 +100,7 @@ std::pair<OutputIt1, OutputIt2> separate_if(InputIt first, InputIt last, OutputI
     return std::make_pair(dest1, dest2);
 }
 
-QHostInfoLookupManager* theHostInfoLookupManager()
-{
-    static QHostInfoLookupManager* theManager = nullptr;
-    static QBasicMutex theMutex;
-
-    const QMutexLocker locker(&theMutex);
-    if (theManager == nullptr) {
-        theManager = new QHostInfoLookupManager();
-        Q_ASSERT(QCoreApplication::instance());
-        QObject::connect(QCoreApplication::instance(), &QCoreApplication::destroyed, [] {
-            const QMutexLocker locker(&theMutex);
-            delete theManager;
-            theManager = nullptr;
-        });
-    }
-
-    return theManager;
-}
+Q_APPLICATION_STATIC(QHostInfoLookupManager, theHostInfoLookupManager)
 
 }
 
