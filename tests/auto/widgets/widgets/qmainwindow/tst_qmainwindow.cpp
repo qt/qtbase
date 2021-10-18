@@ -1443,6 +1443,8 @@ void tst_QMainWindow::restoreStateSizeChanged()
 
     auto mainWindow = QScopedPointer<QMainWindow>(createMainWindow());
     mainWindow->restoreGeometry(geometryData);
+    QElapsedTimer timer;
+    timer.start();
     mainWindow->restoreState(stateData);
     mainWindow->setWindowState(showState);
     mainWindow->show();
@@ -1451,8 +1453,33 @@ void tst_QMainWindow::restoreStateSizeChanged()
     QDockWidget *dockWidget = mainWindow->findChild<QDockWidget*>("Dock Widget");
     QVERIFY(dockWidget);
     QCOMPARE(mainWindow->normalGeometry().size(), normalGeometry.size());
-    if (sameSize)
-        QTRY_COMPARE(dockWidget->width(), dockWidgetWidth);
+    if (sameSize) {
+        // The implementation discards the restored state 150ms after a resize
+        // event. If it takes too long to get here, then the test cannot pass anymore
+        // and we want to XFAIL rather then skip it with some information that might
+        // help us adjust the timeout in QMainWindowLayout.
+        bool expectFail = false;
+        const auto waitForLastResize = [&]() -> bool {
+            if (dockWidget->width() == dockWidgetWidth)
+                return true;
+            if (timer.elapsed() > 150) {
+                QMainWindowLayout *l = mainWindow->findChild<QMainWindowLayout *>();
+                Q_ASSERT(l);
+                if (!l->restoredState) {
+                    qWarning("Restored state discarded after %lld", timer.elapsed());
+                    expectFail = true;
+                    return true;
+                }
+            }
+            return false;
+        };
+        QTRY_VERIFY_WITH_TIMEOUT(waitForLastResize(), 500);
+        if (expectFail) {
+            QEXPECT_FAIL("fullscreen", "Restored state probably discarded too early", Continue);
+            QEXPECT_FAIL("maximized->fullscreen", "Restored state probably discarded too early", Continue);
+        }
+        QCOMPARE(dockWidget->width(), dockWidgetWidth);
+    }
 }
 
 void tst_QMainWindow::createPopupMenu()
