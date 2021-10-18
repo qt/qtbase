@@ -1689,7 +1689,7 @@ void QRhiVulkan::ensureCommandPoolForNewFrame()
         flags |= VK_COMMAND_POOL_RESET_RELEASE_RESOURCES_BIT;
 
     // put all command buffers allocated from this slot's pool to initial state
-    df->vkResetCommandPool(dev, cmdPool[currentFrameSlot], 0);
+    df->vkResetCommandPool(dev, cmdPool[currentFrameSlot], flags);
 }
 
 QRhi::FrameOpResult QRhiVulkan::beginFrame(QRhiSwapChain *swapChain, QRhi::BeginFrameFlags)
