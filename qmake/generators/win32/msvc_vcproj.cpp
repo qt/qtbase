@@ -843,7 +843,7 @@ void VcprojGenerator::init()
     for (auto it = extraCompilerSources.cbegin(), end = extraCompilerSources.cend(); it != end; ++it)
         qDebug("Extracompilers for %s are (%s)", it.key().toLatin1().constData(), it.value().join(", ").toLatin1().constData());
     for (auto it = extraCompilerOutputs.cbegin(), end = extraCompilerOutputs.cend(); it != end; ++it)
-        qDebug("Object mapping for %s is (%s)", it.key().toLatin1().constData(), it.value().join(", ").toLatin1().constData());
+        qDebug("Object mapping for %s is (%s)", qPrintable(it.key()), qPrintable(it.value()));
     qDebug("");
 #endif
 }
