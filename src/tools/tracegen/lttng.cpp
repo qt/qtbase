@@ -130,6 +130,12 @@ static void writePrologue(QTextStream &stream, const QString &fileName, const Pr
            << "#define TRACEPOINT_INCLUDE \"" << fileName << "\"\n\n";
 
     stream << "#include <lttng/tracepoint.h>\n\n";
+
+    const QString namespaceGuard = guard + QStringLiteral("_USE_NAMESPACE");
+    stream << "#if !defined(" << namespaceGuard << ")\n"
+           << "#define " << namespaceGuard << "\n"
+           << "QT_USE_NAMESPACE\n"
+           << "#endif // " << namespaceGuard << "\n\n";
 }
 
 static void writeEpilogue(QTextStream &stream, const QString &fileName)
@@ -154,6 +160,7 @@ static void writeWrapper(QTextStream &stream,
     stream << "\n"
            << "#ifndef " << includeGuard << "\n"
            << "#define " << includeGuard << "\n"
+           << "QT_BEGIN_NAMESPACE\n"
            << "namespace QtPrivate {\n";
 
     stream << "inline void trace_" << name << "(" << argList << ")\n"
@@ -172,6 +179,7 @@ static void writeWrapper(QTextStream &stream,
            << "}\n";
 
     stream << "} // namespace QtPrivate\n"
+           << "QT_END_NAMESPACE\n"
            << "#endif // " << includeGuard << "\n\n";
 }
 
