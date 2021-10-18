@@ -78,17 +78,39 @@ function(qt_internal_add_tool target_name)
         set(BACKUP_QT_NO_CREATE_TARGETS ${QT_NO_CREATE_TARGETS})
         set(QT_NO_CREATE_TARGETS OFF)
 
-        # Only search in path provided by QT_HOST_PATH. We need to do it with CMAKE_PREFIX_PATH
-        # instead of PATHS option, because any find_dependency call inside a Tools package would
-        # not get the proper prefix when using PATHS.
-        set(BACKUP_CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH})
-        set(CMAKE_PREFIX_PATH "${QT_HOST_PATH}")
+        # When cross-compiling, we want to search for Tools packages in QT_HOST_PATH.
+        # To do that, we override CMAKE_PREFIX_PATH and CMAKE_FIND_ROOT_PATH.
+        #
+        # We don't use find_package + PATHS option because any recursive find_dependency call
+        # inside a Tools package would not inherit the initial PATHS value given.
+        # TODO: Potentially we could set a global __qt_cmake_host_dir var like we currently
+        # do with _qt_cmake_dir in Qt6Config and change all our host tool find_package calls
+        # everywhere to specify that var in PATHS.
+        #
+        # Note though that due to path rerooting issue in
+        # https://gitlab.kitware.com/cmake/cmake/-/issues/21937
+        # we have to append a lib/cmake suffix to CMAKE_PREFIX_PATH so the value does not get
+        # rerooted on top of CMAKE_FIND_ROOT_PATH.
+        # Use QT_HOST_PATH_CMAKE_DIR for the suffix when available (it would be set by
+        # the qt.toolchain.cmake file when building other repos or given by the user when
+        # configuring qtbase) or derive it from from the Qt6HostInfo package which is
+        # found in QtSetup.
+        set(${tools_package_name}_BACKUP_CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH})
+        set(${tools_package_name}_BACKUP_CMAKE_FIND_ROOT_PATH "${CMAKE_FIND_ROOT_PATH}")
+        if(QT_HOST_PATH_CMAKE_DIR)
+            set(CMAKE_PREFIX_PATH "${QT_HOST_PATH_CMAKE_DIR}")
+        elseif(Qt${PROJECT_VERSION_MAJOR}HostInfo_DIR)
+            get_filename_component(qt_host_path_cmake_dir_absolute
+                "${Qt${PROJECT_VERSION_MAJOR}HostInfo_DIR}/.." ABSOLUTE)
+            set(CMAKE_PREFIX_PATH "${qt_host_path_cmake_dir_absolute}")
+        else()
+            # This should never happen, serves as an assert.
+            message(FATAL_ERROR
+                "Neither QT_HOST_PATH_CMAKE_DIR nor "
+                "Qt${PROJECT_VERSION_MAJOR}HostInfo_DIR} available.")
+        endif()
+        list(PREPEND CMAKE_FIND_ROOT_PATH "${QT_HOST_PATH}")
 
-        # Search both with sysroots prepended as well as in the host system. When cross compiling
-        # the mode_package might be set to ONLY only, and the Qt6 tools packages are actually
-        # in the host system.
-        set(BACKUP_CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ${CMAKE_FIND_ROOT_PATH_MODE_PACKAGE})
-        set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE "BOTH")
         find_package(
             ${tools_package_name}
             ${PROJECT_VERSION}
@@ -98,8 +120,10 @@ function(qt_internal_add_tool target_name)
             NO_CMAKE_PACKAGE_REGISTRY
             NO_CMAKE_SYSTEM_PATH
             NO_CMAKE_SYSTEM_PACKAGE_REGISTRY)
-        set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE "${BACKUP_CMAKE_FIND_ROOT_PATH_MODE_PACKAGE}")
-        set(CMAKE_PREFIX_PATH "${BACKUP_CMAKE_PREFIX_PATH}")
+
+        # Restore backups.
+        set(CMAKE_FIND_ROOT_PATH "${${tools_package_name}_BACKUP_CMAKE_FIND_ROOT_PATH}")
+        set(CMAKE_PREFIX_PATH "${${tools_package_name}_BACKUP_CMAKE_PREFIX_PATH}")
         set(QT_NO_CREATE_TARGETS ${BACKUP_QT_NO_CREATE_TARGETS})
 
         if(${${tools_package_name}_FOUND} AND TARGET ${full_name})
