@@ -70,6 +70,7 @@ class tst_QVarLengthArray : public QObject
 private slots:
     void append();
     void prepend();
+    void insertToEmpty();
     void move_int_1() { move_int<1>(); }
     void move_int_2() { move_int<2>(); }
     void move_int_3() { move_int<3>(); }
@@ -162,6 +163,36 @@ void tst_QVarLengthArray::prepend()
     // transition from heap to larger heap:
     v.prepend(v.back());
     QCOMPARE(v.front(), v.back());
+}
+
+void tst_QVarLengthArray::insertToEmpty()
+{
+    // test growing from empty arrays
+    QVarLengthArray<QString> emptyArrDefaultPrealloc;
+    QCOMPARE(emptyArrDefaultPrealloc.size(), 0);
+    emptyArrDefaultPrealloc.insert(emptyArrDefaultPrealloc.cend(), QString());
+    QCOMPARE(emptyArrDefaultPrealloc.size(), 1);
+    emptyArrDefaultPrealloc.resize(1024);
+    QCOMPARE(emptyArrDefaultPrealloc.size(), 1024);
+    emptyArrDefaultPrealloc.resize(0);
+    QCOMPARE(emptyArrDefaultPrealloc.size(), 0);
+    emptyArrDefaultPrealloc.squeeze();
+    QCOMPARE(emptyArrDefaultPrealloc.size(), 0);
+    emptyArrDefaultPrealloc.insert(emptyArrDefaultPrealloc.cend(), QString());
+    QCOMPARE(emptyArrDefaultPrealloc.size(), 1);
+
+    QVarLengthArray<QString, 1> emptyArrSmallPrealloc;
+    QCOMPARE(emptyArrSmallPrealloc.size(), 0);
+    emptyArrSmallPrealloc.insert(emptyArrSmallPrealloc.cend(), QString());
+    QCOMPARE(emptyArrSmallPrealloc.size(), 1);
+    emptyArrSmallPrealloc.resize(1024);
+    QCOMPARE(emptyArrSmallPrealloc.size(), 1024);
+    emptyArrSmallPrealloc.resize(0);
+    QCOMPARE(emptyArrSmallPrealloc.size(), 0);
+    emptyArrSmallPrealloc.squeeze();
+    QCOMPARE(emptyArrSmallPrealloc.size(), 0);
+    emptyArrSmallPrealloc.insert(emptyArrSmallPrealloc.cend(), QString());
+    QCOMPARE(emptyArrSmallPrealloc.size(), 1);
 }
 
 template <qsizetype N>
