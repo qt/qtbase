@@ -33,8 +33,8 @@ set -ex
 
 EMULATOR_TIMEOUT=30
 EMULATOR_MAX_RETRIES=5
-EMULATOR_EXEC="$ANDROID_SDK_HOME/emulator/emulator"
-ADB_EXEC="$ANDROID_SDK_HOME/platform-tools/adb"
+EMULATOR_EXEC="$ANDROID_SDK_ROOT/emulator/emulator"
+ADB_EXEC="$ANDROID_SDK_ROOT/platform-tools/adb"
 if [[ -z "${ANDROID_EMULATOR}" ]]; then
     EMULATOR_NAME="@x86emulator"
 else
