@@ -831,8 +831,8 @@ public:
     void swap(QHash &other) noexcept { qSwap(d, other.d); }
 
 #ifndef Q_CLANG_QDOC
-    template <typename U = T>
-    QTypeTraits::compare_eq_result_container<QHash, U> operator==(const QHash &other) const noexcept
+    template <typename AKey = Key, typename AT = T>
+    QTypeTraits::compare_eq_result_container<QHash, AKey, AT> operator==(const QHash &other) const noexcept
     {
         if (d == other.d)
             return true;
@@ -847,8 +847,8 @@ public:
         // all values must be the same as size is the same
         return true;
     }
-    template <typename U = T>
-    QTypeTraits::compare_eq_result_container<QHash, U> operator!=(const QHash &other) const noexcept
+    template <typename AKey = Key, typename AT = T>
+    QTypeTraits::compare_eq_result_container<QHash, AKey, AT> operator!=(const QHash &other) const noexcept
     { return !(*this == other); }
 #else
     bool operator==(const QHash &other) const;
@@ -1306,7 +1306,9 @@ public:
     }
     void swap(QMultiHash &other) noexcept { qSwap(d, other.d); qSwap(m_size, other.m_size); }
 
-    bool operator==(const QMultiHash &other) const noexcept
+#ifndef Q_CLANG_QDOC
+    template <typename AKey = Key, typename AT = T>
+    QTypeTraits::compare_eq_result_container<QMultiHash, AKey, AT> operator==(const QMultiHash &other) const noexcept
     {
         if (d == other.d)
             return true;
@@ -1339,7 +1341,13 @@ public:
         // all values must be the same as size is the same
         return true;
     }
-    bool operator!=(const QMultiHash &other) const noexcept { return !(*this == other); }
+    template <typename AKey = Key, typename AT = T>
+    QTypeTraits::compare_eq_result_container<QMultiHash, AKey, AT> operator!=(const QMultiHash &other) const noexcept
+    { return !(*this == other); }
+#else
+    bool operator==(const QMultiHash &other) const;
+    bool operator!=(const QMultiHash &other) const;
+#endif // Q_CLANG_QDOC
 
     inline qsizetype size() const noexcept { return m_size; }
 

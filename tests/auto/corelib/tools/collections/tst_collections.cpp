@@ -253,11 +253,9 @@ Q_DECLARE_METATYPE(NoCmpParamRecursiveMapK);
 Q_DECLARE_METATYPE(NoCmpParamRecursiveMultiMapV);
 Q_DECLARE_METATYPE(NoCmpParamRecursiveMultiMapK);
 Q_DECLARE_METATYPE(NoCmpParamRecursiveHashK);
-// TODO: fix, this requires operator== from key type (QTBUG-96256)
-// Q_DECLARE_METATYPE(NoCmpParamRecursiveHashV);
+Q_DECLARE_METATYPE(NoCmpParamRecursiveHashV);
 Q_DECLARE_METATYPE(NoCmpParamRecursiveMultiHashK);
-// TODO: fix, this requires operator== from key type (QTBUG-96256)
-// Q_DECLARE_METATYPE(NoCmpParamRecursiveMultiHashK);
+Q_DECLARE_METATYPE(NoCmpParamRecursiveMultiHashV);
 
 Q_DECLARE_METATYPE(NoCmpRecursiveList);
 // TODO: fix, this requires operator== (QTBUG-96257)
@@ -287,9 +285,9 @@ static_assert(!QTypeTraits::has_operator_equal_v<NoCmpParamRecursiveMapV>);
 static_assert(!QTypeTraits::has_operator_equal_v<NoCmpParamRecursiveMapK>);
 static_assert(!QTypeTraits::has_operator_equal_v<NoCmpParamRecursiveMultiMapV>);
 static_assert(!QTypeTraits::has_operator_equal_v<NoCmpParamRecursiveMultiMapK>);
-static_assert(QTypeTraits::has_operator_equal_v<NoCmpParamRecursiveHashV>);
+static_assert(!QTypeTraits::has_operator_equal_v<NoCmpParamRecursiveHashV>);
 static_assert(!QTypeTraits::has_operator_equal_v<NoCmpParamRecursiveHashK>);
-static_assert(QTypeTraits::has_operator_equal_v<NoCmpParamRecursiveMultiHashV>);
+static_assert(!QTypeTraits::has_operator_equal_v<NoCmpParamRecursiveMultiHashV>);
 static_assert(!QTypeTraits::has_operator_equal_v<NoCmpParamRecursiveMultiHashK>);
 
 static_assert(!QTypeTraits::has_operator_equal_v<NoCmpRecursiveList>);
