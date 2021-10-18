@@ -151,8 +151,13 @@ static ParsedRfcDateTime rfcDateImpl(QStringView s)
     ParsedRfcDateTime result;
 
     QVarLengthArray<QStringView, 6> words;
-    s.tokenize(u' ', Qt::SkipEmptyParts).toContainer(words);
-    if (words.size() < 3 || words.size() > 6)
+
+    auto tokens = s.tokenize(u' ', Qt::SkipEmptyParts);
+    auto it = tokens.begin();
+    for (int i = 0; i < 6 && it != tokens.end(); ++i, ++it)
+        words.emplace_back(*it);
+
+    if (words.size() < 3 || it != tokens.end())
         return result;
     const QChar colon(u':');
     bool ok = true;
@@ -1481,9 +1486,12 @@ QDate QDate::fromString(QStringView string, Qt::DateFormat format)
     case Qt::TextDate: {
         // Documented as "ddd MMM d yyyy"
         QVarLengthArray<QStringView, 4> parts;
-        string.tokenize(u' ', Qt::SkipEmptyParts).toContainer(parts);
+        auto tokens = string.tokenize(u' ', Qt::SkipEmptyParts);
+        auto it = tokens.begin();
+        for (int i = 0; i < 4 && it != tokens.end(); ++i, ++it)
+            parts.emplace_back(*it);
 
-        if (parts.count() != 4)
+        if (parts.size() != 4 || it != tokens.end())
             return QDate();
 
         bool ok = false;
@@ -5119,11 +5127,15 @@ QDateTime QDateTime::fromString(QStringView string, Qt::DateFormat format)
     }
     case Qt::TextDate: {
         QVarLengthArray<QStringView, 6> parts;
-        string.tokenize(u' ', Qt::SkipEmptyParts).toContainer(parts);
+
+        auto tokens = string.tokenize(u' ', Qt::SkipEmptyParts);
+        auto it = tokens.begin();
+        for (int i = 0; i < 6 && it != tokens.end(); ++i, ++it)
+            parts.emplace_back(*it);
 
         // Documented as "ddd MMM d HH:mm:ss yyyy" with optional offset-suffix;
         // and allow time either before or after year.
-        if (parts.count() < 5 || parts.count() > 6)
+        if (parts.count() < 5 || it != tokens.end())
             return QDateTime();
 
         // Year and time can be in either order.
