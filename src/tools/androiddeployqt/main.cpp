@@ -134,6 +134,7 @@ struct Options
     bool timing;
     bool build;
     bool auxMode;
+    bool noRccBundleCleanup = false;
     QElapsedTimer timer;
 
     // External tools
@@ -559,6 +560,9 @@ Options parseOptions()
             options.auxMode = true;
         } else if (argument.compare(QLatin1String("--qml-importscanner-binary"), Qt::CaseInsensitive) == 0) {
             options.qmlImportScannerBinaryPath = arguments.at(++i).trimmed();
+        } else if (argument.compare(QLatin1String("--no-rcc-bundle-cleanup"),
+                                    Qt::CaseInsensitive) == 0) {
+            options.noRccBundleCleanup = true;
         }
     }
 
@@ -677,6 +681,11 @@ void printHelp()
                     "\n"
                     "   --builddir <path/to/build/directory>: build directory. Necessary when\n"
                     "       generating a depfile because ninja requires relative paths.\n"
+                    "\n"
+                    "   --no-rcc-bundle-cleanup: skip cleaning rcc bundle directory after\n"
+                    "      running androiddeployqt. This option simplifies debugging of\n"
+                    "      the resource bundle content, but it should not be used when deploying\n"
+                    "      a project, since it litters the 'assets' directory.\n"
                     "\n"
                     "    --help: Displays this information.\n",
                     qPrintable(QCoreApplication::arguments().at(0))
@@ -2191,8 +2200,10 @@ bool createRcc(const Options &options)
         fprintf(stderr, "Cannot set current dir to: %s\n", qPrintable(currentDir));
         return false;
     }
-    QFile::remove(QLatin1String("%1/android_rcc_bundle.qrc").arg(assetsDir));
-    QDir{QLatin1String("%1/android_rcc_bundle").arg(assetsDir)}.removeRecursively();
+    if (!options.noRccBundleCleanup) {
+        QFile::remove(QLatin1String("%1/android_rcc_bundle.qrc").arg(assetsDir));
+        QDir{QLatin1String("%1/android_rcc_bundle").arg(assetsDir)}.removeRecursively();
+    }
     return res;
 }
 

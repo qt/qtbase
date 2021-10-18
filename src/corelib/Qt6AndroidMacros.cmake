@@ -338,6 +338,10 @@ function(qt6_android_add_apk_target target)
         COMMENT "Copying ${target} binary to apk folder"
     )
 
+    set(extra_args "")
+    if(QT_INTERNAL_NO_ANDROID_RCC_BUNDLE_CLEANUP)
+        list(APPEND extra_args "--no-rcc-bundle-cleanup")
+    endif()
     # The DEPFILE argument to add_custom_command is only available with Ninja or CMake>=3.20 and make.
     if (CMAKE_GENERATOR MATCHES "Ninja" OR
         (CMAKE_VERSION VERSION_GREATER_EQUAL 3.20 AND CMAKE_GENERATOR MATCHES "Makefiles"))
@@ -354,6 +358,7 @@ function(qt6_android_add_apk_target target)
                 --apk "${apk_intermediate_file_path}"
                 --depfile "${dep_intermediate_file_path}"
                 --builddir "${CMAKE_BINARY_DIR}"
+                ${extra_args}
             COMMENT "Creating APK for ${target}"
             DEPENDS "${target}" "${deployment_file}"
             DEPFILE "${dep_intermediate_file_path}")
@@ -371,6 +376,7 @@ function(qt6_android_add_apk_target target)
                 --input ${deployment_file}
                 --output ${apk_final_dir}
                 --apk ${apk_final_file_path}
+                ${extra_args}
             COMMENT "Creating APK for ${target}"
         )
     endif()
