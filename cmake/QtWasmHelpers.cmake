@@ -28,8 +28,12 @@ function (qt_internal_setup_wasm_target_properties wasmTarget)
     # (ALLOW_MEMORY_GROWTH) in pthreads mode, and requires specifying the memory size
     # at build time. Further, browsers limit the maximum initial memory size to 1GB.
     # QT_WASM_INITIAL_MEMORY must be a multiple of 64KB (i.e. 65536)
-    if(NOT DEFINED QT_WASM_INITIAL_MEMORY AND QT_FEATURE_thread)
-        set(QT_WASM_INITIAL_MEMORY "1GB")
+    if(NOT DEFINED QT_WASM_INITIAL_MEMORY)
+        if(QT_FEATURE_thread)
+            set(QT_WASM_INITIAL_MEMORY "1GB")
+        else()
+            set(QT_WASM_INITIAL_MEMORY "20MB") # emscripten default is 16MB, we need slightly more sometimes
+        endif()
     endif()
 
     if(DEFINED QT_WASM_INITIAL_MEMORY)
