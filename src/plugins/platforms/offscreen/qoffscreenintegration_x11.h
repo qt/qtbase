@@ -47,6 +47,7 @@
 #include <qscopedpointer.h>
 
 #include <qpa/qplatformopenglcontext.h>
+#include <QtGui/qguiapplication.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -54,6 +55,9 @@ class QOffscreenX11Connection;
 class QOffscreenX11Info;
 
 class QOffscreenX11PlatformNativeInterface : public QOffscreenPlatformNativeInterface
+#if QT_CONFIG(xcb)
+                                           , public QNativeInterface::QX11Application
+#endif
 {
 public:
     QOffscreenX11PlatformNativeInterface(QOffscreenIntegration *integration);
@@ -63,7 +67,10 @@ public:
 #if !defined(QT_NO_OPENGL) && QT_CONFIG(xcb_glx_plugin)
     void *nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context) override;
 #endif
-
+#if QT_CONFIG(xcb)
+    Display *display() const override;
+    xcb_connection_t *connection() const override { return nullptr; };
+#endif
     QScopedPointer<QOffscreenX11Connection> m_connection;
 };
 
