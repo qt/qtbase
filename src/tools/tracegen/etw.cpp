@@ -59,7 +59,8 @@ static void writeEtwMacro(QTextStream &stream, const Tracepoint::Field &field)
     switch (field.backendType) {
     case Tracepoint::Field::QtString:
         stream << "TraceLoggingCountedWideString(reinterpret_cast<LPCWSTR>("
-               << name << ".utf16()), " << name << ".size(), \"" << name << "\")";
+               << name << ".utf16()), static_cast<ULONG>(" << name << ".size()), \""
+               << name << "\")";
         return;
     case Tracepoint::Field::QtByteArray:
         stream << "TraceLoggingBinary(" << name << ".constData(), "
@@ -76,6 +77,13 @@ static void writeEtwMacro(QTextStream &stream, const Tracepoint::Field &field)
         return;
     case Tracepoint::Field::Pointer:
         stream << "TraceLoggingPointer(" << name << ", \"" << name << "\")";
+        return;
+    case Tracepoint::Field::Unknown:
+        // Write down the previously stringified data (like we do for QString).
+        // The string is already created in writeWrapper().
+        // Variable name is name##Str.
+        stream << "TraceLoggingCountedWideString(reinterpret_cast<LPCWSTR>(" << name
+               << "Str.utf16()), static_cast<ULONG>(" << name << "Str.size()), \"" << name << "\")";
         return;
     default:
         break;
@@ -181,8 +189,17 @@ static void writeWrapper(QTextStream &stream, const Tracepoint &tracepoint,
     stream << "\n";
 
     stream << "inline void trace_" << name << "(" << argList << ")\n"
-           << "{\n"
-           << "    TraceLoggingWrite(" << provider << ", \"" << name << "\"";
+           << "{\n";
+
+    // Convert all unknown types to QString's using QDebug.
+    // Note the naming convention: it's field.name##Str
+    for (const Tracepoint::Field &field : tracepoint.fields) {
+        if (field.backendType == Tracepoint::Field::Unknown) {
+            stream << "    const QString " << field.name << "Str = QDebug::toString(" << field.name
+                   << ");\n";
+        }
+    }
+    stream << "    TraceLoggingWrite(" << provider << ", \"" << name << "\"";
 
     for (const Tracepoint::Field &field : tracepoint.fields) {
         stream << ",\n";
@@ -213,12 +230,14 @@ static void writeTracepoints(QTextStream &stream, const Provider &provider)
 
     stream << "#if !defined(" << includeGuard << ") && !defined(TRACEPOINT_DEFINE)\n"
            << "#define " << includeGuard << "\n"
+           << "QT_BEGIN_NAMESPACE\n"
            << "namespace QtPrivate {\n";
 
     for (const Tracepoint &t : provider.tracepoints)
         writeWrapper(stream, t, provider.name);
 
     stream << "} // namespace QtPrivate\n"
+           << "QT_END_NAMESPACE\n"
            << "#endif // " << includeGuard << "\n\n";
 }
 
