@@ -70,8 +70,9 @@ static WriteImports::ClassesPerModule defaultClasses()
              QStringLiteral("QPainter"), QStringLiteral("QPixmap"),
              QStringLiteral("QTransform"), QStringLiteral("QRadialGradient")}
         },
+        // Add QWidget for QWidget.setTabOrder()
         {QStringLiteral("QtWidgets"),
-            {QStringLiteral("QSizePolicy")}
+          {QStringLiteral("QSizePolicy"), QStringLiteral("QWidget")}
         }
     };
 }
