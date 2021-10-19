@@ -46,7 +46,7 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
 from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QDialog,
     QGridLayout, QGroupBox, QHBoxLayout, QLabel,
     QPushButton, QRadioButton, QSizePolicy, QSlider,
-    QSpacerItem, QSpinBox, QVBoxLayout)
+    QSpacerItem, QSpinBox, QVBoxLayout, QWidget)
 
 from gammaview import GammaView
 
