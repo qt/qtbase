@@ -404,8 +404,17 @@ public:
         const QVariant result = QIdentityProxyModel::data(index, role);
         if (role != Qt::DisplayRole)
             return result;
-        return result.toString() + "_appended";
+        return result.toString() + QLatin1String("_appended");
     }
+    QMap<int, QVariant> itemData(const QModelIndex &index) const override
+    {
+        QMap<int, QVariant> result = QIdentityProxyModel::itemData(index);
+        auto displayIter = result.find(Qt::DisplayRole);
+        if (displayIter != result.end())
+            displayIter.value() = displayIter.value().toString() + QLatin1String("_appended");
+        return result;
+    }
+
 };
 
 void tst_QIdentityProxyModel::itemData()

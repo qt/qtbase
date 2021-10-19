@@ -268,7 +268,8 @@ QVariant QAbstractProxyModel::headerData(int section, Qt::Orientation orientatio
  */
 QMap<int, QVariant> QAbstractProxyModel::itemData(const QModelIndex &proxyIndex) const
 {
-    return QAbstractItemModel::itemData(proxyIndex);
+    Q_D(const QAbstractProxyModel);
+    return d->model->itemData(mapToSource(proxyIndex));
 }
 
 /*!
@@ -294,7 +295,8 @@ bool QAbstractProxyModel::setData(const QModelIndex &index, const QVariant &valu
  */
 bool QAbstractProxyModel::setItemData(const QModelIndex &index, const QMap< int, QVariant >& roles)
 {
-    return QAbstractItemModel::setItemData(index, roles);
+    Q_D(QAbstractProxyModel);
+    return d->model->setItemData(mapToSource(index), roles);
 }
 
 /*!
