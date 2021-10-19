@@ -97,7 +97,10 @@ struct Q_AUTOTEST_EXPORT QPropertyBindingDataPointer
     }
 };
 
-struct [[nodiscard]] QPropertyObserverNodeProtector {
+struct [[nodiscard]] QPropertyObserverNodeProtector
+{
+    Q_DISABLE_COPY_MOVE(QPropertyObserverNodeProtector)
+
     QPropertyObserverBase m_placeHolder;
     QPropertyObserverNodeProtector(QPropertyObserver *observer)
     {
