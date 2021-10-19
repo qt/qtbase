@@ -258,8 +258,6 @@ DEFINEFUNC3(int, BIO_read, BIO *a, a, void *b, b, int c, c, return -1, return)
 DEFINEFUNC3(int, BIO_write, BIO *a, a, const void *b, b, int c, c, return -1, return)
 DEFINEFUNC(int, BN_num_bits, const BIGNUM *a, a, return 0, return)
 DEFINEFUNC2(BN_ULONG, BN_mod_word, const BIGNUM *a, a, BN_ULONG w, w, return static_cast<BN_ULONG>(-1), return)
-DEFINEFUNC(DSA *, DSA_new, DUMMYARG, DUMMYARG, return nullptr, return)
-DEFINEFUNC(void, DSA_free, DSA *a, a, return, DUMMYARG)
 DEFINEFUNC3(X509 *, d2i_X509, X509 **a, a, const unsigned char **b, b, long c, c, return nullptr, return)
 DEFINEFUNC2(char *, ERR_error_string, unsigned long a, a, char *b, b, return nullptr, return)
 DEFINEFUNC3(void, ERR_error_string_n, unsigned long e, e, char *b, b, size_t len, len, return, DUMMYARG)
@@ -307,8 +305,6 @@ DEFINEFUNC2(int, PEM_write_bio_PUBKEY, BIO *a, a, EVP_PKEY *b, b, return 0, retu
 DEFINEFUNC2(void, RAND_seed, const void *a, a, int b, b, return, DUMMYARG)
 DEFINEFUNC(int, RAND_status, void, DUMMYARG, return -1, return)
 DEFINEFUNC2(int, RAND_bytes, unsigned char *b, b, int n, n, return 0, return)
-DEFINEFUNC(RSA *, RSA_new, DUMMYARG, DUMMYARG, return nullptr, return)
-DEFINEFUNC(void, RSA_free, RSA *a, a, return, DUMMYARG)
 DEFINEFUNC(int, SSL_accept, SSL *a, a, return -1, return)
 DEFINEFUNC(int, SSL_clear, SSL *a, a, return -1, return)
 DEFINEFUNC3(char *, SSL_CIPHER_description, const SSL_CIPHER *a, a, char *b, b, int c, c, return nullptr, return)
@@ -327,7 +323,6 @@ DEFINEFUNC2(void, SSL_CTX_set_verify_depth, SSL_CTX *a, a, int b, b, return, DUM
 DEFINEFUNC2(int, SSL_CTX_use_certificate, SSL_CTX *a, a, X509 *b, b, return -1, return)
 DEFINEFUNC3(int, SSL_CTX_use_certificate_file, SSL_CTX *a, a, const char *b, b, int c, c, return -1, return)
 DEFINEFUNC2(int, SSL_CTX_use_PrivateKey, SSL_CTX *a, a, EVP_PKEY *b, b, return -1, return)
-DEFINEFUNC2(int, SSL_CTX_use_RSAPrivateKey, SSL_CTX *a, a, RSA *b, b, return -1, return)
 DEFINEFUNC3(int, SSL_CTX_use_PrivateKey_file, SSL_CTX *a, a, const char *b, b, int c, c, return -1, return)
 DEFINEFUNC(X509_STORE *, SSL_CTX_get_cert_store, const SSL_CTX *a, a, return nullptr, return)
 DEFINEFUNC(SSL_CONF_CTX *, SSL_CONF_CTX_new, DUMMYARG, DUMMYARG, return nullptr, return);
@@ -476,9 +471,6 @@ DEFINEFUNC2(int, DH_check, DH *dh, dh, int *codes, codes, return 0, return)
 DEFINEFUNC3(BIGNUM *, BN_bin2bn, const unsigned char *s, s, int len, len, BIGNUM *ret, ret, return nullptr, return)
 
 #ifndef OPENSSL_NO_EC
-DEFINEFUNC(EC_KEY *, EC_KEY_dup, const EC_KEY *ec, ec, return nullptr, return)
-DEFINEFUNC(EC_KEY *, EC_KEY_new_by_curve_name, int nid, nid, return nullptr, return)
-DEFINEFUNC(void, EC_KEY_free, EC_KEY *ecdh, ecdh, return, DUMMYARG)
 DEFINEFUNC2(size_t, EC_get_builtin_curves, EC_builtin_curve * r, r, size_t nitems, nitems, return 0, return)
 DEFINEFUNC(int, EC_curve_nist2nid, const char *name, name, return 0, return)
 #endif // OPENSSL_NO_EC
@@ -499,6 +491,14 @@ DEFINEFUNC2(int, PEM_write_bio_DSA_PUBKEY, BIO *a, a, DSA *b, b, return 0, retur
 DEFINEFUNC2(int, PEM_write_bio_RSA_PUBKEY, BIO *a, a, RSA *b, b, return 0, return)
 DEFINEFUNC7(int, PEM_write_bio_DSAPrivateKey, BIO *a, a, DSA *b, b, const EVP_CIPHER *c, c, unsigned char *d, d, int e, e, pem_password_cb *f, f, void *g, g, return 0, return)
 DEFINEFUNC7(int, PEM_write_bio_RSAPrivateKey, BIO *a, a, RSA *b, b, const EVP_CIPHER *c, c, unsigned char *d, d, int e, e, pem_password_cb *f, f, void *g, g, return 0, return)
+
+DEFINEFUNC2(int, SSL_CTX_use_RSAPrivateKey, SSL_CTX *a, a, RSA *b, b, return -1, return)
+
+DEFINEFUNC(DSA *, DSA_new, DUMMYARG, DUMMYARG, return nullptr, return)
+DEFINEFUNC(void, DSA_free, DSA *a, a, return, DUMMYARG)
+
+DEFINEFUNC(RSA *, RSA_new, DUMMYARG, DUMMYARG, return nullptr, return)
+DEFINEFUNC(void, RSA_free, RSA *a, a, return, DUMMYARG)
 
 DEFINEFUNC(int, RSA_bits, RSA *a, a, return 0, return)
 DEFINEFUNC(int, DSA_bits, DSA *a, a, return 0, return)
@@ -528,6 +528,10 @@ DEFINEFUNC(int, EC_GROUP_get_degree, const EC_GROUP* g, g, return 0, return)
 
 DEFINEFUNC2(int, EVP_PKEY_set1_EC_KEY, EVP_PKEY *a, a, EC_KEY *b, b, return -1, return)
 DEFINEFUNC(EC_KEY *, EVP_PKEY_get1_EC_KEY, EVP_PKEY *a, a, return nullptr, return)
+
+DEFINEFUNC(EC_KEY *, EC_KEY_dup, const EC_KEY *ec, ec, return nullptr, return)
+DEFINEFUNC(EC_KEY *, EC_KEY_new_by_curve_name, int nid, nid, return nullptr, return)
+DEFINEFUNC(void, EC_KEY_free, EC_KEY *ecdh, ecdh, return, DUMMYARG)
 
 #endif // OPENSSL_NO_EC
 
@@ -1021,8 +1025,6 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(BN_num_bits)
     RESOLVEFUNC(BN_is_word)
     RESOLVEFUNC(BN_mod_word)
-    RESOLVEFUNC(DSA_new)
-    RESOLVEFUNC(DSA_free)
     RESOLVEFUNC(ERR_error_string)
     RESOLVEFUNC(ERR_error_string_n)
     RESOLVEFUNC(ERR_get_error)
@@ -1067,8 +1069,6 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(RAND_seed)
     RESOLVEFUNC(RAND_status)
     RESOLVEFUNC(RAND_bytes)
-    RESOLVEFUNC(RSA_new)
-    RESOLVEFUNC(RSA_free)
     RESOLVEFUNC(SSL_CIPHER_description)
     RESOLVEFUNC(SSL_CIPHER_get_bits)
     RESOLVEFUNC(SSL_get_rbio)
@@ -1084,7 +1084,6 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(SSL_CTX_use_certificate)
     RESOLVEFUNC(SSL_CTX_use_certificate_file)
     RESOLVEFUNC(SSL_CTX_use_PrivateKey)
-    RESOLVEFUNC(SSL_CTX_use_RSAPrivateKey)
     RESOLVEFUNC(SSL_CTX_use_PrivateKey_file)
     RESOLVEFUNC(SSL_CTX_get_cert_store);
     RESOLVEFUNC(SSL_CONF_CTX_new);
@@ -1133,6 +1132,13 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(PEM_write_bio_RSA_PUBKEY)
     RESOLVEFUNC(PEM_write_bio_DSAPrivateKey)
     RESOLVEFUNC(PEM_write_bio_RSAPrivateKey)
+    RESOLVEFUNC(SSL_CTX_use_RSAPrivateKey)
+
+    RESOLVEFUNC(DSA_new)
+    RESOLVEFUNC(DSA_free)
+
+    RESOLVEFUNC(RSA_new)
+    RESOLVEFUNC(RSA_free)
 
     RESOLVEFUNC(DH_bits)
     RESOLVEFUNC(DSA_bits)
@@ -1148,6 +1154,9 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(PEM_write_bio_ECPrivateKey)
     RESOLVEFUNC(EC_KEY_get0_group)
     RESOLVEFUNC(EC_GROUP_get_degree)
+    RESOLVEFUNC(EC_KEY_dup)
+    RESOLVEFUNC(EC_KEY_new_by_curve_name)
+    RESOLVEFUNC(EC_KEY_free)
 
 #endif // OPENSSL_NO_EC
 
@@ -1255,9 +1264,6 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(BN_bin2bn)
 
 #ifndef OPENSSL_NO_EC
-    RESOLVEFUNC(EC_KEY_dup)
-    RESOLVEFUNC(EC_KEY_new_by_curve_name)
-    RESOLVEFUNC(EC_KEY_free)
     RESOLVEFUNC(EC_get_builtin_curves)
 #endif // OPENSSL_NO_EC
 

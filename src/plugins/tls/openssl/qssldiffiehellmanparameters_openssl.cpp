@@ -53,6 +53,8 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef OPENSSL_NO_DEPRECATED_3_0
+
 namespace {
 
 bool isSafeDH(DH *dh)
@@ -102,8 +104,11 @@ bool isSafeDH(DH *dh)
 
 } // unnamed namespace
 
+#endif
+
 int QTlsBackendOpenSSL::dhParametersFromDer(const QByteArray &der, QByteArray *derData) const
 {
+#ifndef OPENSSL_NO_DEPRECATED_3_0
     Q_ASSERT(derData);
 
     if (der.isEmpty())
@@ -127,12 +132,17 @@ int QTlsBackendOpenSSL::dhParametersFromDer(const QByteArray &der, QByteArray *d
     } else {
         return DHParams::InvalidInputDataError;
     }
-
+#else
+    Q_UNUSED(der);
+    Q_UNUSED(derData);
+    qCWarning(lcTlsBackend, "Diffie-Hellman parameters are not supported, because OpenSSL v3 was built with deprecated API removed");
+#endif
     return DHParams::NoError;
 }
 
 int QTlsBackendOpenSSL::dhParametersFromPem(const QByteArray &pem, QByteArray *data) const
 {
+#ifndef OPENSSL_NO_DEPRECATED_3_0
     Q_ASSERT(data);
 
     if (pem.isEmpty())
@@ -173,7 +183,11 @@ int QTlsBackendOpenSSL::dhParametersFromPem(const QByteArray &pem, QByteArray *d
     } else {
         return DHParams::InvalidInputDataError;
     }
-
+#else
+    Q_UNUSED(pem);
+    Q_UNUSED(data);
+    qCWarning(lcTlsBackend, "Diffie-Hellman parameters are not supported, because OpenSSL v3 was built with deprecated API removed");
+#endif
     return DHParams::NoError;
 }
 

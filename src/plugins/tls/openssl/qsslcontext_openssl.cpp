@@ -725,6 +725,7 @@ init_context:
     }
 
     if (!dhparams.isEmpty()) {
+#ifndef OPENSSL_NO_DEPRECATED_3_0
         const QByteArray &params = dhparams.d->derData;
         const char *ptr = params.constData();
         DH *dh = q_d2i_DHparams(nullptr, reinterpret_cast<const unsigned char **>(&ptr),
@@ -733,6 +734,9 @@ init_context:
             qFatal("q_d2i_DHparams failed to convert QSslDiffieHellmanParameters to DER form");
         q_SSL_CTX_set_tmp_dh(sslContext->ctx, dh);
         q_DH_free(dh);
+#else
+        qCWarning(lcTlsBackend, "Diffie-Hellman parameters are not supported, because OpenSSL v3 was built with deprecated API removed");
+#endif
     }
 
 #ifndef OPENSSL_NO_PSK
