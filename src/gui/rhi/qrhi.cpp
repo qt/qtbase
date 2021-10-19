@@ -680,6 +680,11 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     texture is supported. This can be unsupported with Vulkan 1.0 due to
     relying on VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT which is a Vulkan 1.1
     feature.
+
+    \value TextureArrays Indicates that texture arrays are supported and
+    QRhi::newTextureArray() is functional. Note that even when texture arrays
+    are not supported, arrays of textures are still available as those are two
+    independent features.
  */
 
 /*!
@@ -767,6 +772,10 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     \value MaxThreadGroupZ The maximum size of a work/thread group in the Z
     dimension. Effectively the maximum value of \c local_size_z in the compute
     shader. Typically 64 or 256.
+
+    \value TextureArraySizeMax Maximum texture array size. Typically in range
+    256 - 2048. Attempting to \l{QRhi::newTextureArray()}{create a texture
+    array} with more elements will likely fail.
  */
 
 /*!
@@ -1503,7 +1512,7 @@ QDebug operator<<(QDebug dbg, const QRhiShaderStage &s)
     When targeting a non-multisample texture, the layer() and level() indicate
     the targeted layer (face index \c{0-5} for cubemaps) and mip level. For 3D
     textures layer() specifies the slice (one 2D image within the 3D texture)
-    to render to.
+    to render to. For texture arrays layer() is the array index.
 
     When texture() or renderBuffer() is multisample, resolveTexture() can be
     set optionally. When set, samples are resolved automatically into that
@@ -1700,7 +1709,9 @@ QRhiTextureSubresourceUploadDescription::QRhiTextureSubresourceUploadDescription
     \class QRhiTextureUploadEntry
     \internal
     \inmodule QtGui
-    \brief Describes one layer (face for cubemaps) in a texture upload operation.
+
+    \brief Describes one layer (face for cubemaps, slice for 3D textures,
+    element for texture arrays) in a texture upload operation.
  */
 
 /*!
@@ -1840,12 +1851,12 @@ QRhiTextureUploadDescription::QRhiTextureUploadDescription(std::initializer_list
     sourceTopLeft(), and destinationTopLeft() must fit the source and
     destination textures, respectively. The behavior is undefined otherwise.
 
-    With cubemap and 3D textures one face or slice can be copied at a time. The
-    face or slice is specified by the source and destination layer indices.
-    With mipmapped textures one mip level can be copied at a time. The source
-    and destination layer and mip level indices can differ, but the size and
-    position must be carefully controlled to avoid out of bounds copies, in
-    which case the behavior is undefined.
+    With cubemaps, 3D textures, and texture arrays one face or slice can be
+    copied at a time. The face or slice is specified by the source and
+    destination layer indices.  With mipmapped textures one mip level can be
+    copied at a time. The source and destination layer and mip level indices can
+    differ, but the size and position must be carefully controlled to avoid out
+    of bounds copies, in which case the behavior is undefined.
  */
 
 /*!
@@ -2440,10 +2451,11 @@ bool QRhiRenderBuffer::createFrom(NativeRenderBuffer src)
      \value ThreeDimensional The texture is a 3D texture. Such textures should
      be created with the QRhi::newTexture() overload taking a depth in addition
      to width and height. A 3D texture can have mipmaps but cannot be
-     multisample. When rendering into a 3D texture, the layer specified in the
-     render target's color attachment refers to a slice in range [0..depth-1].
-     The underlying graphics API may not support 3D textures at run time.
-     Support is indicated by the QRhi::ThreeDimensionalTextures feature.
+     multisample. When rendering into, or uploading data to a 3D texture, the \c
+     layer specified in the render target's color attachment or the upload
+     description refers to a single slice in range [0..depth-1]. The underlying
+     graphics API may not support 3D textures at run time. Support is indicated
+     by the QRhi::ThreeDimensionalTextures feature.
 
      \value TextureRectangleGL The texture should use the GL_TEXTURE_RECTANGLE
      target with OpenGL. This flag is ignored with other graphics APIs. Just
@@ -2451,6 +2463,14 @@ bool QRhiRenderBuffer::createFrom(NativeRenderBuffer src)
      native OpenGL texture objects received from the platform are wrapped in a
      QRhiTexture, and the platform can only provide textures for a non-2D
      texture target.
+
+     \value TextureArray The texture is a texture array, i.e. a single texture
+     object that is a homogeneous array of 2D textures. Texture arrays are
+     created with QRhi::newTextureArray(). The underlying graphics API may not
+     support texture array objects at run time. Support is indicated by the
+     QRhi::TextureArrays feature. When rendering into, or uploading data to a
+     texture array, the \c layer specified in the render target's color
+     attachment or the upload description selects a single element in the array.
  */
 
 /*!
@@ -2542,9 +2562,10 @@ bool QRhiRenderBuffer::createFrom(NativeRenderBuffer src)
     \internal
  */
 QRhiTexture::QRhiTexture(QRhiImplementation *rhi, Format format_, const QSize &pixelSize_, int depth_,
-                         int sampleCount_, Flags flags_)
+                         int arraySize_, int sampleCount_, Flags flags_)
     : QRhiResource(rhi),
-      m_format(format_), m_pixelSize(pixelSize_), m_depth(depth_), m_sampleCount(sampleCount_), m_flags(flags_)
+      m_format(format_), m_pixelSize(pixelSize_), m_depth(depth_),
+      m_arraySize(arraySize_), m_sampleCount(sampleCount_), m_flags(flags_)
 {
 }
 
@@ -2599,6 +2620,10 @@ QRhiTexture::NativeTexture QRhiTexture::nativeTexture()
     The opposite of this operation, exposing a QRhiTexture-created native
     texture object to a foreign engine, is possible via nativeTexture().
 
+    \note When importing a 3D texture, or a texture array object, or, with
+    OpenGL ES, an external texture, it is then especially important to set the
+    corresponding flags (ThreeDimensional, TextureArray, ExternalOES) via
+    setFlags() before calling this function.
 */
 bool QRhiTexture::createFrom(QRhiTexture::NativeTexture src)
 {
@@ -3118,8 +3143,9 @@ void QRhiImplementation::updateLayoutDesc(QRhiShaderResourceBindings *srb)
     \inmodule QtGui
     \brief Describes the shader resource for a single binding point.
 
-    A QRhiShaderResourceBinding cannot be constructed directly. Instead, use
-    the static functions uniformBuffer(), sampledTexture() to get an instance.
+    A QRhiShaderResourceBinding cannot be constructed directly. Instead, use the
+    static functions such as uniformBuffer() or sampledTexture() to get an
+    instance.
  */
 
 /*!
@@ -5432,8 +5458,8 @@ void QRhiResourceUpdateBatch::copyTexture(QRhiTexture *dst, QRhiTexture *src, co
    QRhi::MaxAsyncReadbackFrames.
 
    A single readback operation copies one mip level of one layer (cubemap face
-   or 3D slice) at a time. The level and layer are specified by the respective
-   fields in \a rb.
+   or 3D slice or texture array element) at a time. The level and layer are
+   specified by the respective fields in \a rb.
 
    \sa readBackBuffer(), QRhi::resourceLimit()
  */
@@ -6496,7 +6522,7 @@ QRhiRenderBuffer *QRhi::newRenderBuffer(QRhiRenderBuffer::Type type,
 }
 
 /*!
-    \return a new texture with the specified \a format, \a pixelSize, \a
+    \return a new 2D texture with the specified \a format, \a pixelSize, \a
     sampleCount, and \a flags.
 
     \note \a format specifies the requested internal and external format,
@@ -6511,18 +6537,21 @@ QRhiTexture *QRhi::newTexture(QRhiTexture::Format format,
                               int sampleCount,
                               QRhiTexture::Flags flags)
 {
-    return d->createTexture(format, pixelSize, 1, sampleCount, flags);
+    return d->createTexture(format, pixelSize, 1, 0, sampleCount, flags);
 }
 
 /*!
-    \return a new texture with the specified \a format, \a width, \a height, \a
-    depth, \a sampleCount, and \a flags.
+    \return a new 2D or 3D texture with the specified \a format, \a width, \a
+    height, \a depth, \a sampleCount, and \a flags.
 
     This overload is suitable for 3D textures because it allows specifying \a
     depth. A 3D texture must have QRhiTexture::ThreeDimensional set in \a
     flags, but using this overload that can be omitted because the flag is set
     implicitly whenever \a depth is greater than 0. For 2D and cube textures \a
     depth should be set to 0.
+
+    \note 3D textures are only functional when the ThreeDimensionalTextures
+    feature is reported as supported at run time.
 
     \overload
  */
@@ -6534,7 +6563,36 @@ QRhiTexture *QRhi::newTexture(QRhiTexture::Format format,
     if (depth > 0)
         flags |= QRhiTexture::ThreeDimensional;
 
-    return d->createTexture(format, QSize(width, height), depth, sampleCount, flags);
+    return d->createTexture(format, QSize(width, height), depth, 0, sampleCount, flags);
+}
+
+/*!
+    \return a new 2D texture array with the specified \a format, \a arraySize,
+    \a pixelSize, \a sampleCount, and \a flags.
+
+    This function implicitly sets QRhiTexture::TextureArray in \a flags.
+
+    \note Do not confuse texture arrays with arrays of textures. A QRhiTexture
+    created by this function is usable with 2D array samplers in the shader, for
+    example: \c{layout(binding = 1) uniform sampler2DArray texArr;}. Arrays of
+    textures refers to a list of textures that are exposed to the shader via
+    QRhiShaderResourceBinding::sampledTextures() and a count > 1, and declared
+    in the shader for example like this: \c{layout(binding = 1) uniform
+    sampler2D textures[4];}
+
+    \note This is only functional when the TextureArrays feature is reported as
+    supported at run time.
+
+    \sa newTexture()
+ */
+QRhiTexture *QRhi::newTextureArray(QRhiTexture::Format format,
+                                   int arraySize,
+                                   const QSize &pixelSize,
+                                   int sampleCount,
+                                   QRhiTexture::Flags flags)
+{
+    flags |= QRhiTexture::TextureArray;
+    return d->createTexture(format, pixelSize, 1, arraySize, sampleCount, flags);
 }
 
 /*!

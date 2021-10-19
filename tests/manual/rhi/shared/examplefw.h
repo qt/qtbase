@@ -109,7 +109,7 @@ QString graphicsApiName()
     case Null:
         return QLatin1String("Null (no output)");
     case OpenGL:
-        return QLatin1String("OpenGL 2.x");
+        return QLatin1String("OpenGL");
     case Vulkan:
         return QLatin1String("Vulkan");
     case D3D11:
@@ -462,7 +462,7 @@ int main(int argc, char **argv)
     cmdLineParser.addHelpOption();
     QCommandLineOption nullOption({ "n", "null" }, QLatin1String("Null"));
     cmdLineParser.addOption(nullOption);
-    QCommandLineOption glOption({ "g", "opengl" }, QLatin1String("OpenGL (2.x)"));
+    QCommandLineOption glOption({ "g", "opengl" }, QLatin1String("OpenGL"));
     cmdLineParser.addOption(glOption);
     QCommandLineOption vkOption({ "v", "vulkan" }, QLatin1String("Vulkan"));
     cmdLineParser.addOption(vkOption);
@@ -475,6 +475,8 @@ int main(int argc, char **argv)
     // Use this parameter for the latter.
     QCommandLineOption sdOption({ "s", "self-destruct" }, QLatin1String("Self-destruct after 5 seconds."));
     cmdLineParser.addOption(sdOption);
+    QCommandLineOption coreProfOption({ "c", "core" }, QLatin1String("Request a core profile context for OpenGL"));
+    cmdLineParser.addOption(coreProfOption);
     // Attempt testing device lost situations on D3D at least.
     QCommandLineOption tdrOption(QLatin1String("curse"), QLatin1String("Curse the graphics device. "
                                                         "(generate a device reset every <count> frames when on D3D11)"),
@@ -517,6 +519,14 @@ int main(int argc, char **argv)
     QSurfaceFormat fmt;
     fmt.setDepthBufferSize(24);
     fmt.setStencilBufferSize(8);
+    if (cmdLineParser.isSet(coreProfOption)) {
+#ifdef Q_OS_DARWIN
+        fmt.setVersion(4, 1);
+#else
+        fmt.setVersion(4, 3);
+#endif
+        fmt.setProfile(QSurfaceFormat::CoreProfile);
+    }
     if (sampleCount > 1)
         fmt.setSamples(sampleCount);
     if (scFlags.testFlag(QRhiSwapChain::NoVSync))

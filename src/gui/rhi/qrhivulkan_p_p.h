@@ -129,7 +129,7 @@ struct QVkRenderBuffer : public QRhiRenderBuffer
 struct QVkTexture : public QRhiTexture
 {
     QVkTexture(QRhiImplementation *rhi, Format format, const QSize &pixelSize, int depth,
-               int sampleCount, Flags flags);
+               int arraySize, int sampleCount, Flags flags);
     ~QVkTexture();
     void destroy() override;
     bool create() override;
@@ -682,6 +682,7 @@ public:
     QRhiTexture *createTexture(QRhiTexture::Format format,
                                const QSize &pixelSize,
                                int depth,
+                               int arraySize,
                                int sampleCount,
                                QRhiTexture::Flags flags) override;
     QRhiSampler *createSampler(QRhiSampler::Filter magFilter,

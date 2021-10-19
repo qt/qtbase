@@ -83,7 +83,7 @@ struct QNullRenderBuffer : public QRhiRenderBuffer
 struct QNullTexture : public QRhiTexture
 {
     QNullTexture(QRhiImplementation *rhi, Format format, const QSize &pixelSize, int depth,
-                  int sampleCount, Flags flags);
+                 int arraySize, int sampleCount, Flags flags);
     ~QNullTexture();
     void destroy() override;
     bool create() override;
@@ -224,6 +224,7 @@ public:
     QRhiTexture *createTexture(QRhiTexture::Format format,
                                const QSize &pixelSize,
                                int depth,
+                               int arraySize,
                                int sampleCount,
                                QRhiTexture::Flags flags) override;
     QRhiSampler *createSampler(QRhiSampler::Filter magFilter,

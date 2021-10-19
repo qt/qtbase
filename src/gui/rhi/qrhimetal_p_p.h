@@ -103,7 +103,7 @@ struct QMetalTextureData;
 struct QMetalTexture : public QRhiTexture
 {
     QMetalTexture(QRhiImplementation *rhi, Format format, const QSize &pixelSize, int depth,
-                  int sampleCount, Flags flags);
+                  int arraySize, int sampleCount, Flags flags);
     ~QMetalTexture();
     void destroy() override;
     bool create() override;
@@ -366,6 +366,7 @@ public:
     QRhiTexture *createTexture(QRhiTexture::Format format,
                                const QSize &pixelSize,
                                int depth,
+                               int arraySize,
                                int sampleCount,
                                QRhiTexture::Flags flags) override;
     QRhiSampler *createSampler(QRhiSampler::Filter magFilter,

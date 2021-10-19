@@ -397,6 +397,14 @@ QT_BEGIN_NAMESPACE
 #define GL_TEXTURE_RECTANGLE              0x84F5
 #endif
 
+#ifndef GL_TEXTURE_2D_ARRAY
+#define GL_TEXTURE_2D_ARRAY               0x8C1A
+#endif
+
+#ifndef GL_MAX_ARRAY_TEXTURE_LAYERS
+#define GL_MAX_ARRAY_TEXTURE_LAYERS       0x88FF
+#endif
+
 /*!
     Constructs a new QRhiGles2InitParams.
 
@@ -677,6 +685,14 @@ bool QRhiGles2::create(QRhi::Flags flags)
     }
 
     caps.texture3D = caps.ctxMajor >= 3; // 3.0
+
+    if (caps.ctxMajor >= 3) { // 3.0 or ES 3.0
+        GLint maxArraySize = 0;
+        f->glGetIntegerv(GL_MAX_ARRAY_TEXTURE_LAYERS, &maxArraySize);
+        caps.maxTextureArraySize = maxArraySize;
+    } else {
+        caps.maxTextureArraySize = 0;
+    }
 
     if (!caps.gles) {
         f->glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
@@ -1074,6 +1090,8 @@ bool QRhiGles2::isFeatureSupported(QRhi::Feature feature) const
         return caps.texture3D;
     case QRhi::RenderTo3DTextureSlice:
         return caps.texture3D;
+    case QRhi::TextureArrays:
+        return caps.maxTextureArraySize > 0;
     default:
         Q_UNREACHABLE();
         return false;
@@ -1105,6 +1123,8 @@ int QRhiGles2::resourceLimit(QRhi::ResourceLimit limit) const
         return caps.maxThreadGroupsY;
     case QRhi::MaxThreadGroupZ:
         return caps.maxThreadGroupsZ;
+    case QRhi::TextureArraySizeMax:
+        return 2048;
     default:
         Q_UNREACHABLE();
         return 0;
@@ -1291,10 +1311,10 @@ QRhiRenderBuffer *QRhiGles2::createRenderBuffer(QRhiRenderBuffer::Type type, con
 }
 
 QRhiTexture *QRhiGles2::createTexture(QRhiTexture::Format format,
-                                      const QSize &pixelSize, int depth,
+                                      const QSize &pixelSize, int depth, int arraySize,
                                       int sampleCount, QRhiTexture::Flags flags)
 {
-    return new QGles2Texture(this, format, pixelSize, depth, sampleCount, flags);
+    return new QGles2Texture(this, format, pixelSize, depth, arraySize, sampleCount, flags);
 }
 
 QRhiSampler *QRhiGles2::createSampler(QRhiSampler::Filter magFilter, QRhiSampler::Filter minFilter,
@@ -1878,7 +1898,10 @@ void QRhiGles2::enqueueSubresUpload(QGles2Texture *texD, QGles2CommandBuffer *cb
     trackedImageBarrier(cbD, texD, QGles2Texture::AccessUpdate);
     const bool isCompressed = isCompressedFormat(texD->m_format);
     const bool isCubeMap = texD->m_flags.testFlag(QRhiTexture::CubeMap);
+    const bool is3D = texD->m_flags.testFlag(QRhiTexture::ThreeDimensional);
+    const bool isArray = texD->m_flags.testFlag(QRhiTexture::TextureArray);
     const GLenum faceTargetBase = isCubeMap ? GL_TEXTURE_CUBE_MAP_POSITIVE_X : texD->target;
+    const GLenum effectiveTarget = faceTargetBase + (isCubeMap ? uint(layer) : 0u);
     const QPoint dp = subresDesc.destinationTopLeft();
     const QByteArray rawData = subresDesc.data();
     if (!subresDesc.image().isNull()) {
@@ -1894,11 +1917,11 @@ void QRhiGles2::enqueueSubresUpload(QGles2Texture *texD, QGles2CommandBuffer *cb
         }
         cmd.args.subImage.target = texD->target;
         cmd.args.subImage.texture = texD->texture;
-        cmd.args.subImage.faceTarget = faceTargetBase + uint(layer);
+        cmd.args.subImage.faceTarget = effectiveTarget;
         cmd.args.subImage.level = level;
         cmd.args.subImage.dx = dp.x();
         cmd.args.subImage.dy = dp.y();
-        cmd.args.subImage.dz = texD->m_flags.testFlag(QRhiTexture::ThreeDimensional) ? layer : 0;
+        cmd.args.subImage.dz = is3D || isArray ? layer : 0;
         cmd.args.subImage.w = size.width();
         cmd.args.subImage.h = size.height();
         cmd.args.subImage.glformat = texD->glformat;
@@ -1907,8 +1930,7 @@ void QRhiGles2::enqueueSubresUpload(QGles2Texture *texD, QGles2CommandBuffer *cb
         cmd.args.subImage.rowLength = 0;
         cmd.args.subImage.data = cbD->retainImage(img);
     } else if (!rawData.isEmpty() && isCompressed) {
-        const bool is3D = texD->flags().testFlag(QRhiTexture::ThreeDimensional);
-        if ((texD->flags().testFlag(QRhiTexture::UsedAsCompressedAtlas) || is3D)
+        if ((texD->flags().testFlag(QRhiTexture::UsedAsCompressedAtlas) || is3D || isArray)
                 && !texD->zeroInitialized)
         {
             // Create on first upload since glCompressedTexImage2D cannot take
@@ -1920,17 +1942,19 @@ void QRhiGles2::enqueueSubresUpload(QGles2Texture *texD, QGles2CommandBuffer *cb
             compressedFormatInfo(texD->m_format, texD->m_pixelSize, nullptr, &byteSize, nullptr);
             if (is3D)
                 byteSize *= texD->m_depth;
+            if (isArray)
+                byteSize *= texD->m_arraySize;
             QByteArray zeroBuf(byteSize, 0);
             QGles2CommandBuffer::Command &cmd(cbD->commands.get());
             cmd.cmd = QGles2CommandBuffer::Command::CompressedImage;
             cmd.args.compressedImage.target = texD->target;
             cmd.args.compressedImage.texture = texD->texture;
-            cmd.args.compressedImage.faceTarget = faceTargetBase + uint(layer);
+            cmd.args.compressedImage.faceTarget = effectiveTarget;
             cmd.args.compressedImage.level = level;
             cmd.args.compressedImage.glintformat = texD->glintformat;
             cmd.args.compressedImage.w = texD->m_pixelSize.width();
             cmd.args.compressedImage.h = texD->m_pixelSize.height();
-            cmd.args.compressedImage.depth = is3D ? texD->m_depth : 0;
+            cmd.args.compressedImage.depth = is3D ? texD->m_depth : (isArray ? texD->m_arraySize : 0);
             cmd.args.compressedImage.size = byteSize;
             cmd.args.compressedImage.data = cbD->retainData(zeroBuf);
             texD->zeroInitialized = true;
@@ -1943,11 +1967,11 @@ void QRhiGles2::enqueueSubresUpload(QGles2Texture *texD, QGles2CommandBuffer *cb
             cmd.cmd = QGles2CommandBuffer::Command::CompressedSubImage;
             cmd.args.compressedSubImage.target = texD->target;
             cmd.args.compressedSubImage.texture = texD->texture;
-            cmd.args.compressedSubImage.faceTarget = faceTargetBase + uint(layer);
+            cmd.args.compressedSubImage.faceTarget = effectiveTarget;
             cmd.args.compressedSubImage.level = level;
             cmd.args.compressedSubImage.dx = dp.x();
             cmd.args.compressedSubImage.dy = dp.y();
-            cmd.args.compressedSubImage.dz = texD->m_flags.testFlag(QRhiTexture::ThreeDimensional) ? layer : 0;
+            cmd.args.compressedSubImage.dz = is3D || isArray ? layer : 0;
             cmd.args.compressedSubImage.w = size.width();
             cmd.args.compressedSubImage.h = size.height();
             cmd.args.compressedSubImage.glintformat = texD->glintformat;
@@ -1958,12 +1982,12 @@ void QRhiGles2::enqueueSubresUpload(QGles2Texture *texD, QGles2CommandBuffer *cb
             cmd.cmd = QGles2CommandBuffer::Command::CompressedImage;
             cmd.args.compressedImage.target = texD->target;
             cmd.args.compressedImage.texture = texD->texture;
-            cmd.args.compressedImage.faceTarget = faceTargetBase + uint(layer);
+            cmd.args.compressedImage.faceTarget = effectiveTarget;
             cmd.args.compressedImage.level = level;
             cmd.args.compressedImage.glintformat = texD->glintformat;
             cmd.args.compressedImage.w = size.width();
             cmd.args.compressedImage.h = size.height();
-            cmd.args.compressedImage.depth = is3D ? texD->m_depth : 0;
+            cmd.args.compressedImage.depth = is3D ? texD->m_depth : (isArray ? texD->m_arraySize : 0);
             cmd.args.compressedImage.size = rawData.size();
             cmd.args.compressedImage.data = cbD->retainData(rawData);
         }
@@ -1977,11 +2001,11 @@ void QRhiGles2::enqueueSubresUpload(QGles2Texture *texD, QGles2CommandBuffer *cb
         cmd.cmd = QGles2CommandBuffer::Command::SubImage;
         cmd.args.subImage.target = texD->target;
         cmd.args.subImage.texture = texD->texture;
-        cmd.args.subImage.faceTarget = faceTargetBase + uint(layer);
+        cmd.args.subImage.faceTarget = effectiveTarget;
         cmd.args.subImage.level = level;
         cmd.args.subImage.dx = dp.x();
         cmd.args.subImage.dy = dp.y();
-        cmd.args.subImage.dz = texD->m_flags.testFlag(QRhiTexture::ThreeDimensional) ? layer : 0;
+        cmd.args.subImage.dz = is3D || isArray ? layer : 0;
         cmd.args.subImage.w = size.width();
         cmd.args.subImage.h = size.height();
         cmd.args.subImage.glformat = texD->glformat;
@@ -2090,21 +2114,24 @@ void QRhiGles2::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
             QGles2CommandBuffer::Command &cmd(cbD->commands.get());
             cmd.cmd = QGles2CommandBuffer::Command::CopyTex;
 
+            const bool srcHasZ = srcD->m_flags.testFlag(QRhiTexture::ThreeDimensional) || srcD->m_flags.testFlag(QRhiTexture::TextureArray);
+            const bool dstHasZ = dstD->m_flags.testFlag(QRhiTexture::ThreeDimensional) || dstD->m_flags.testFlag(QRhiTexture::TextureArray);
+
             cmd.args.copyTex.srcTarget = srcD->target;
-            cmd.args.copyTex.srcFaceTarget = srcFaceTargetBase + uint(u.desc.sourceLayer());
+            cmd.args.copyTex.srcFaceTarget = srcFaceTargetBase + (srcHasZ ? 0u : uint(u.desc.sourceLayer()));
             cmd.args.copyTex.srcTexture = srcD->texture;
             cmd.args.copyTex.srcLevel = u.desc.sourceLevel();
             cmd.args.copyTex.srcX = sp.x();
             cmd.args.copyTex.srcY = sp.y();
-            cmd.args.copyTex.srcZ = srcD->m_flags.testFlag(QRhiTexture::ThreeDimensional) ? u.desc.sourceLayer() : 0;
+            cmd.args.copyTex.srcZ = srcHasZ ? u.desc.sourceLayer() : 0;
 
             cmd.args.copyTex.dstTarget = dstD->target;
-            cmd.args.copyTex.dstFaceTarget = dstFaceTargetBase + uint(u.desc.destinationLayer());
+            cmd.args.copyTex.dstFaceTarget = dstFaceTargetBase + (dstHasZ ? 0u : uint(u.desc.destinationLayer()));
             cmd.args.copyTex.dstTexture = dstD->texture;
             cmd.args.copyTex.dstLevel = u.desc.destinationLevel();
             cmd.args.copyTex.dstX = dp.x();
             cmd.args.copyTex.dstY = dp.y();
-            cmd.args.copyTex.dstZ = dstD->m_flags.testFlag(QRhiTexture::ThreeDimensional) ? u.desc.destinationLayer() : 0;
+            cmd.args.copyTex.dstZ = dstHasZ ? u.desc.destinationLayer() : 0;
 
             cmd.args.copyTex.w = copySize.width();
             cmd.args.copyTex.h = copySize.height();
@@ -2122,7 +2149,9 @@ void QRhiGles2::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
                 cmd.args.readPixels.w = readImageSize.width();
                 cmd.args.readPixels.h = readImageSize.height();
                 cmd.args.readPixels.format = texD->m_format;
-                if (texD->m_flags.testFlag(QRhiTexture::ThreeDimensional)) {
+                if (texD->m_flags.testFlag(QRhiTexture::ThreeDimensional)
+                    || texD->m_flags.testFlag(QRhiTexture::TextureArray))
+                {
                     cmd.args.readPixels.readTarget = texD->target;
                     cmd.args.readPixels.slice3D = u.rb.layer();
                 } else {
@@ -2843,7 +2872,7 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
             GLuint fbo;
             f->glGenFramebuffers(1, &fbo);
             f->glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-            if (cmd.args.copyTex.srcTarget == GL_TEXTURE_3D) {
+            if (cmd.args.copyTex.srcTarget == GL_TEXTURE_3D || cmd.args.copyTex.srcTarget == GL_TEXTURE_2D_ARRAY) {
                 f->glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, cmd.args.copyTex.srcTexture,
                                              cmd.args.copyTex.srcLevel, cmd.args.copyTex.srcZ);
             } else {
@@ -2851,7 +2880,7 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
                                           cmd.args.copyTex.srcFaceTarget, cmd.args.copyTex.srcTexture, cmd.args.copyTex.srcLevel);
             }
             f->glBindTexture(cmd.args.copyTex.dstTarget, cmd.args.copyTex.dstTexture);
-            if (cmd.args.copyTex.dstTarget == GL_TEXTURE_3D) {
+            if (cmd.args.copyTex.dstTarget == GL_TEXTURE_3D || cmd.args.copyTex.dstTarget == GL_TEXTURE_2D_ARRAY) {
                 f->glCopyTexSubImage3D(cmd.args.copyTex.dstTarget, cmd.args.copyTex.dstLevel,
                                        cmd.args.copyTex.dstX, cmd.args.copyTex.dstY, cmd.args.copyTex.dstZ,
                                        cmd.args.copyTex.srcX, cmd.args.copyTex.srcY,
@@ -2951,7 +2980,7 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
                 f->glPixelStorei(GL_UNPACK_ALIGNMENT, cmd.args.subImage.rowStartAlign);
             if (cmd.args.subImage.rowLength != 0)
                 f->glPixelStorei(GL_UNPACK_ROW_LENGTH, cmd.args.subImage.rowLength);
-            if (cmd.args.subImage.target == GL_TEXTURE_3D) {
+            if (cmd.args.subImage.target == GL_TEXTURE_3D || cmd.args.subImage.target == GL_TEXTURE_2D_ARRAY) {
                 f->glTexSubImage3D(cmd.args.subImage.target, cmd.args.subImage.level,
                                    cmd.args.subImage.dx, cmd.args.subImage.dy, cmd.args.subImage.dz,
                                    cmd.args.subImage.w, cmd.args.subImage.h, 1,
@@ -2971,7 +3000,7 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
             break;
         case QGles2CommandBuffer::Command::CompressedImage:
             f->glBindTexture(cmd.args.compressedImage.target, cmd.args.compressedImage.texture);
-            if (cmd.args.compressedImage.target == GL_TEXTURE_3D) {
+            if (cmd.args.compressedImage.target == GL_TEXTURE_3D || cmd.args.compressedImage.target == GL_TEXTURE_2D_ARRAY) {
                 f->glCompressedTexImage3D(cmd.args.compressedImage.target, cmd.args.compressedImage.level,
                                           cmd.args.compressedImage.glintformat,
                                           cmd.args.compressedImage.w, cmd.args.compressedImage.h, cmd.args.compressedImage.depth,
@@ -2985,7 +3014,7 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
             break;
         case QGles2CommandBuffer::Command::CompressedSubImage:
             f->glBindTexture(cmd.args.compressedSubImage.target, cmd.args.compressedSubImage.texture);
-            if (cmd.args.compressedSubImage.target == GL_TEXTURE_3D) {
+            if (cmd.args.compressedSubImage.target == GL_TEXTURE_3D || cmd.args.compressedSubImage.target == GL_TEXTURE_2D_ARRAY) {
                 f->glCompressedTexSubImage3D(cmd.args.compressedSubImage.target, cmd.args.compressedSubImage.level,
                                              cmd.args.compressedSubImage.dx, cmd.args.compressedSubImage.dy, cmd.args.compressedSubImage.dz,
                                              cmd.args.compressedSubImage.w, cmd.args.compressedSubImage.h, 1,
@@ -3007,9 +3036,13 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
             f->glFramebufferRenderbuffer(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                                          GL_RENDERBUFFER, cmd.args.blitFromRb.renderbuffer);
             f->glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo[1]);
-
-            f->glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, cmd.args.blitFromRb.target,
-                                      cmd.args.blitFromRb.texture, cmd.args.blitFromRb.dstLevel);
+            if (cmd.args.blitFromRb.target == GL_TEXTURE_3D || cmd.args.blitFromRb.target == GL_TEXTURE_2D_ARRAY) {
+                f->glFramebufferTextureLayer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                                             cmd.args.blitFromRb.texture, cmd.args.blitFromRb.dstLevel, cmd.args.blitFromRb.dstLayer);
+            } else {
+                f->glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, cmd.args.blitFromRb.target,
+                                          cmd.args.blitFromRb.texture, cmd.args.blitFromRb.dstLevel);
+            }
             f->glBlitFramebuffer(0, 0, cmd.args.blitFromRb.w, cmd.args.blitFromRb.h,
                                  0, 0, cmd.args.blitFromRb.w, cmd.args.blitFromRb.h,
                                  GL_COLOR_BUFFER_BIT,
@@ -3755,11 +3788,15 @@ void QRhiGles2::endPass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resource
                 cmd.args.blitFromRb.w = size.width();
                 cmd.args.blitFromRb.h = size.height();
                 QGles2Texture *colorTexD = QRHI_RES(QGles2Texture, colorAtt.resolveTexture());
-                const GLenum faceTargetBase = colorTexD->m_flags.testFlag(QRhiTexture::CubeMap) ? GL_TEXTURE_CUBE_MAP_POSITIVE_X
-                                                                                                : colorTexD->target;
-                cmd.args.blitFromRb.target = faceTargetBase + uint(colorAtt.resolveLayer());
+                if (colorTexD->m_flags.testFlag(QRhiTexture::CubeMap))
+                    cmd.args.blitFromRb.target = GL_TEXTURE_CUBE_MAP_POSITIVE_X + uint(colorAtt.resolveLayer());
+                else
+                    cmd.args.blitFromRb.target = colorTexD->target;
                 cmd.args.blitFromRb.texture = colorTexD->texture;
                 cmd.args.blitFromRb.dstLevel = colorAtt.resolveLevel();
+                const bool hasZ = colorTexD->m_flags.testFlag(QRhiTexture::ThreeDimensional)
+                    || colorTexD->m_flags.testFlag(QRhiTexture::TextureArray);
+                cmd.args.blitFromRb.dstLayer = hasZ ? colorAtt.resolveLayer() : 0;
             }
         }
     }
@@ -4576,8 +4613,8 @@ QRhiTexture::Format QGles2RenderBuffer::backingFormat() const
 }
 
 QGles2Texture::QGles2Texture(QRhiImplementation *rhi, Format format, const QSize &pixelSize, int depth,
-                             int sampleCount, Flags flags)
-    : QRhiTexture(rhi, format, pixelSize, depth, sampleCount, flags)
+                             int arraySize, int sampleCount, Flags flags)
+    : QRhiTexture(rhi, format, pixelSize, depth, arraySize, sampleCount, flags)
 {
 }
 
@@ -4622,6 +4659,7 @@ bool QGles2Texture::prepareCreate(QSize *adjustedSize)
     const QSize size = m_pixelSize.isEmpty() ? QSize(1, 1) : m_pixelSize;
 
     const bool isCube = m_flags.testFlag(CubeMap);
+    const bool isArray = m_flags.testFlag(QRhiTexture::TextureArray);
     const bool is3D = m_flags.testFlag(ThreeDimensional);
     const bool hasMipMaps = m_flags.testFlag(MipMapped);
     const bool isCompressed = rhiD->isCompressedFormat(m_format);
@@ -4634,14 +4672,28 @@ bool QGles2Texture::prepareCreate(QSize *adjustedSize)
         qWarning("Texture cannot be both cube and 3D");
         return false;
     }
+    if (isArray && is3D) {
+        qWarning("Texture cannot be both array and 3D");
+        return false;
+    }
     m_depth = qMax(1, m_depth);
     if (m_depth > 1 && !is3D) {
         qWarning("Texture cannot have a depth of %d when it is not 3D", m_depth);
         return false;
     }
+    m_arraySize = qMax(0, m_arraySize);
+    if (m_arraySize > 0 && !isArray) {
+        qWarning("Texture cannot have an array size of %d when it is not an array", m_arraySize);
+        return false;
+    }
+    if (m_arraySize < 1 && isArray) {
+        qWarning("Texture is an array but array size is %d", m_arraySize);
+        return false;
+    }
 
     target = isCube ? GL_TEXTURE_CUBE_MAP
-                    : m_sampleCount > 1 ? GL_TEXTURE_2D_MULTISAMPLE : (is3D ? GL_TEXTURE_3D : GL_TEXTURE_2D);
+        : m_sampleCount > 1 ? GL_TEXTURE_2D_MULTISAMPLE
+        : (is3D ? GL_TEXTURE_3D : (isArray ? GL_TEXTURE_2D_ARRAY : GL_TEXTURE_2D));
     if (m_flags.testFlag(ExternalOES))
         target = GL_TEXTURE_EXTERNAL_OES;
     else if (m_flags.testFlag(TextureRectangleGL))
@@ -4687,21 +4739,23 @@ bool QGles2Texture::create()
     rhiD->f->glGenTextures(1, &texture);
 
     const bool isCube = m_flags.testFlag(CubeMap);
+    const bool isArray = m_flags.testFlag(QRhiTexture::TextureArray);
     const bool is3D = m_flags.testFlag(ThreeDimensional);
     const bool hasMipMaps = m_flags.testFlag(MipMapped);
     const bool isCompressed = rhiD->isCompressedFormat(m_format);
     if (!isCompressed) {
         rhiD->f->glBindTexture(target, texture);
         if (!m_flags.testFlag(UsedWithLoadStore)) {
-            if (is3D) {
+            if (is3D || isArray) {
+                const int layerCount = is3D ? m_depth : m_arraySize;
                 if (hasMipMaps) {
                     for (int level = 0; level != mipLevelCount; ++level) {
                         const QSize mipSize = rhiD->q->sizeForMipLevel(level, size);
-                        rhiD->f->glTexImage3D(target, level, GLint(glintformat), mipSize.width(), mipSize.height(), m_depth,
+                        rhiD->f->glTexImage3D(target, level, GLint(glintformat), mipSize.width(), mipSize.height(), layerCount,
                                               0, glformat, gltype, nullptr);
                     }
                 } else {
-                    rhiD->f->glTexImage3D(target, 0, GLint(glintformat), size.width(), size.height(), m_depth,
+                    rhiD->f->glTexImage3D(target, 0, GLint(glintformat), size.width(), size.height(), layerCount,
                                           0, glformat, gltype, nullptr);
                 }
             } else if (hasMipMaps || isCube) {
@@ -4722,8 +4776,8 @@ bool QGles2Texture::create()
             // Must be specified with immutable storage functions otherwise
             // bindImageTexture may fail. Also, the internal format must be a
             // sized format here.
-            if (is3D)
-                rhiD->f->glTexStorage3D(target, mipLevelCount, glsizedintformat, size.width(), size.height(), m_depth);
+            if (is3D || isArray)
+                rhiD->f->glTexStorage3D(target, mipLevelCount, glsizedintformat, size.width(), size.height(), is3D ? m_depth : m_arraySize);
             else
                 rhiD->f->glTexStorage2D(target, mipLevelCount, glsizedintformat, size.width(), size.height());
         }
@@ -4942,7 +4996,7 @@ bool QGles2TextureRenderTarget::create()
         if (texture) {
             QGles2Texture *texD = QRHI_RES(QGles2Texture, texture);
             Q_ASSERT(texD->texture && texD->specified);
-            if (texD->flags().testFlag(QRhiTexture::ThreeDimensional)) {
+            if (texD->flags().testFlag(QRhiTexture::ThreeDimensional) || texD->flags().testFlag(QRhiTexture::TextureArray)) {
                 rhiD->f->glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + uint(attIndex), texD->texture,
                                                    colorAtt.level(), colorAtt.layer());
             } else {

@@ -113,6 +113,8 @@ private slots:
     void renderToTextureMip();
     void renderToTextureCubemapFace_data();
     void renderToTextureCubemapFace();
+    void renderToTextureTextureArray_data();
+    void renderToTextureTextureArray();
     void renderToTextureTexturedQuad_data();
     void renderToTextureTexturedQuad();
     void renderToTextureArrayOfTexturedQuad_data();
@@ -336,10 +338,13 @@ void tst_QRhi::create()
         const int texMax = rhi->resourceLimit(QRhi::TextureSizeMax);
         const int maxAtt = rhi->resourceLimit(QRhi::MaxColorAttachments);
         const int framesInFlight = rhi->resourceLimit(QRhi::FramesInFlight);
+        const int texArrayMax = rhi->resourceLimit(QRhi::TextureArraySizeMax);
         QVERIFY(texMin >= 1);
         QVERIFY(texMax >= texMin);
         QVERIFY(maxAtt >= 1);
         QVERIFY(framesInFlight >= 1);
+        if (rhi->isFeatureSupported(QRhi::TextureArrays))
+            QVERIFY(texArrayMax > 1);
 
         QVERIFY(rhi->nativeHandles());
         QVERIFY(rhi->profiler());
@@ -1880,6 +1885,133 @@ void tst_QRhi::renderToTextureCubemapFace()
             QFAIL("Encountered a pixel that is neither red or blue");
     }
 
+    QVERIFY(redCount > 0 && blueCount > 0);
+    QCOMPARE(redCount + blueCount, outputSize.width());
+
+    if (rhi->isYUpInFramebuffer() == rhi->isYUpInNDC())
+        QVERIFY(redCount < blueCount); // 100, 412
+    else
+        QVERIFY(redCount > blueCount); // 412, 100
+}
+
+void tst_QRhi::renderToTextureTextureArray_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::renderToTextureTextureArray()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing rendering");
+
+    if (!rhi->isFeatureSupported(QRhi::TextureArrays))
+        QSKIP("TextureArrays is not supported with this backend, skipping test");
+
+    const QSize outputSize(512, 256);
+    const int ARRAY_SIZE = 8;
+    QScopedPointer<QRhiTexture> texture(rhi->newTextureArray(QRhiTexture::RGBA8,
+                                                             ARRAY_SIZE,
+                                                             outputSize,
+                                                             1,
+                                                             QRhiTexture::RenderTarget
+                                                             | QRhiTexture::UsedAsTransferSource));
+    QVERIFY(texture->create());
+
+    const int LAYER = 5; // render into element #5
+
+    QRhiColorAttachment colorAtt(texture.data());
+    colorAtt.setLayer(LAYER);
+    QRhiTextureRenderTargetDescription rtDesc(colorAtt);
+    QScopedPointer<QRhiTextureRenderTarget> rt(rhi->newTextureRenderTarget(rtDesc));
+    QScopedPointer<QRhiRenderPassDescriptor> rpDesc(rt->newCompatibleRenderPassDescriptor());
+    rt->setRenderPassDescriptor(rpDesc.data());
+    QVERIFY(rt->create());
+
+    QCOMPARE(rt->pixelSize(), texture->pixelSize());
+    QCOMPARE(rt->pixelSize(), outputSize);
+
+    QRhiCommandBuffer *cb = nullptr;
+    QVERIFY(rhi->beginOffscreenFrame(&cb) == QRhi::FrameOpSuccess);
+    QVERIFY(cb);
+
+    QRhiResourceUpdateBatch *updates = rhi->nextResourceUpdateBatch();
+
+    static const float vertices[] = {
+        -1.0f, -1.0f,
+        1.0f, -1.0f,
+        0.0f, 1.0f
+    };
+    QScopedPointer<QRhiBuffer> vbuf(rhi->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, sizeof(vertices)));
+    QVERIFY(vbuf->create());
+    updates->uploadStaticBuffer(vbuf.data(), vertices);
+
+    QScopedPointer<QRhiShaderResourceBindings> srb(rhi->newShaderResourceBindings());
+    QVERIFY(srb->create());
+
+    QScopedPointer<QRhiGraphicsPipeline> pipeline(rhi->newGraphicsPipeline());
+    QShader vs = loadShader(":/data/simple.vert.qsb");
+    QVERIFY(vs.isValid());
+    QShader fs = loadShader(":/data/simple.frag.qsb");
+    QVERIFY(fs.isValid());
+    pipeline->setShaderStages({ { QRhiShaderStage::Vertex, vs }, { QRhiShaderStage::Fragment, fs } });
+    QRhiVertexInputLayout inputLayout;
+    inputLayout.setBindings({ { 2 * sizeof(float) } });
+    inputLayout.setAttributes({ { 0, 0, QRhiVertexInputAttribute::Float2, 0 } });
+    pipeline->setVertexInputLayout(inputLayout);
+    pipeline->setShaderResourceBindings(srb.data());
+    pipeline->setRenderPassDescriptor(rpDesc.data());
+
+    QVERIFY(pipeline->create());
+
+    cb->beginPass(rt.data(), Qt::blue, { 1.0f, 0 }, updates);
+    cb->setGraphicsPipeline(pipeline.data());
+    cb->setViewport({ 0, 0, float(rt->pixelSize().width()), float(rt->pixelSize().height()) });
+    QRhiCommandBuffer::VertexInput vbindings(vbuf.data(), 0);
+    cb->setVertexInput(0, 1, &vbindings);
+    cb->draw(3);
+
+    QRhiReadbackResult readResult;
+    QImage result;
+    readResult.completed = [&readResult, &result] {
+        result = QImage(reinterpret_cast<const uchar *>(readResult.data.constData()),
+                        readResult.pixelSize.width(), readResult.pixelSize.height(),
+                        QImage::Format_RGBA8888);
+    };
+    QRhiResourceUpdateBatch *readbackBatch = rhi->nextResourceUpdateBatch();
+    QRhiReadbackDescription readbackDescription(texture.data());
+    readbackDescription.setLayer(LAYER);
+    readbackBatch->readBackTexture(readbackDescription, &readResult);
+
+    cb->endPass(readbackBatch);
+
+    rhi->endOffscreenFrame();
+
+    QCOMPARE(result.size(), outputSize);
+
+    if (impl == QRhi::Null)
+        return;
+
+    const int y = 100;
+    const quint32 *p = reinterpret_cast<const quint32 *>(result.constScanLine(y));
+    int x = result.width() - 1;
+    int redCount = 0;
+    int blueCount = 0;
+    const int maxFuzz = 1;
+    while (x-- >= 0) {
+        const QRgb c(*p++);
+        if (qRed(c) >= (255 - maxFuzz) && qGreen(c) == 0 && qBlue(c) == 0)
+            ++redCount;
+        else if (qRed(c) == 0 && qGreen(c) == 0 && qBlue(c) >= (255 - maxFuzz))
+            ++blueCount;
+        else
+            QFAIL("Encountered a pixel that is neither red or blue");
+    }
+
+    QVERIFY(redCount > 0 && blueCount > 0);
     QCOMPARE(redCount + blueCount, outputSize.width());
 
     if (rhi->isYUpInFramebuffer() == rhi->isYUpInNDC())

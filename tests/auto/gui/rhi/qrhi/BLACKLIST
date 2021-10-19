@@ -7,3 +7,6 @@ android
 # Skip 3D textures with Android emulator, the sw-based GL there is no good
 [threeDimTexture]
 android
+# Same here, GLES 3.0 features seem hopeless
+[renderToTextureTextureArray]
+android

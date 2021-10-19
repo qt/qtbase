@@ -102,7 +102,7 @@ struct QD3D11RenderBuffer : public QRhiRenderBuffer
 struct QD3D11Texture : public QRhiTexture
 {
     QD3D11Texture(QRhiImplementation *rhi, Format format, const QSize &pixelSize, int depth,
-                  int sampleCount, Flags flags);
+                  int arraySize, int sampleCount, Flags flags);
     ~QD3D11Texture();
     void destroy() override;
     bool create() override;
@@ -607,6 +607,7 @@ public:
     QRhiTexture *createTexture(QRhiTexture::Format format,
                                const QSize &pixelSize,
                                int depth,
+                               int arraySize,
                                int sampleCount,
                                QRhiTexture::Flags flags) override;
     QRhiSampler *createSampler(QRhiSampler::Filter magFilter,

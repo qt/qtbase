@@ -88,6 +88,7 @@ public:
     virtual QRhiTexture *createTexture(QRhiTexture::Format format,
                                        const QSize &pixelSize,
                                        int depth,
+                                       int arraySize,
                                        int sampleCount,
                                        QRhiTexture::Flags flags) = 0;
     virtual QRhiSampler *createSampler(QRhiSampler::Filter magFilter,

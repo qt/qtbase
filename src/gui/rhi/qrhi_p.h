@@ -773,7 +773,8 @@ public:
         UsedAsCompressedAtlas = 1 << 8,
         ExternalOES = 1 << 9,
         ThreeDimensional = 1 << 10,
-        TextureRectangleGL = 1 << 11
+        TextureRectangleGL = 1 << 11,
+        TextureArray = 1 << 12
     };
     Q_DECLARE_FLAGS(Flags, Flag)
 
@@ -842,6 +843,9 @@ public:
     int depth() const { return m_depth; }
     void setDepth(int depth) { m_depth = depth; }
 
+    int arraySize() const { return m_arraySize; }
+    void setArraySize(int arraySize) { m_arraySize = arraySize; }
+
     Flags flags() const { return m_flags; }
     void setFlags(Flags f) { m_flags = f; }
 
@@ -855,10 +859,11 @@ public:
 
 protected:
     QRhiTexture(QRhiImplementation *rhi, Format format_, const QSize &pixelSize_, int depth_,
-                int sampleCount_, Flags flags_);
+                int arraySize_, int sampleCount_, Flags flags_);
     Format m_format;
     QSize m_pixelSize;
     int m_depth;
+    int m_arraySize;
     int m_sampleCount;
     Flags m_flags;
 };
@@ -1583,7 +1588,8 @@ public:
         ImageDataStride,
         RenderBufferImport,
         ThreeDimensionalTextures,
-        RenderTo3DTextureSlice
+        RenderTo3DTextureSlice,
+        TextureArrays
     };
 
     enum BeginFrameFlag {
@@ -1605,7 +1611,8 @@ public:
         MaxThreadsPerThreadGroup,
         MaxThreadGroupX,
         MaxThreadGroupY,
-        MaxThreadGroupZ
+        MaxThreadGroupZ,
+        TextureArraySizeMax
     };
 
     ~QRhi();
@@ -1647,6 +1654,12 @@ public:
                             int width, int height, int depth,
                             int sampleCount = 1,
                             QRhiTexture::Flags flags = {});
+
+    QRhiTexture *newTextureArray(QRhiTexture::Format format,
+                                 int arraySize,
+                                 const QSize &pixelSize,
+                                 int sampleCount = 1,
+                                 QRhiTexture::Flags flags = {});
 
     QRhiSampler *newSampler(QRhiSampler::Filter magFilter,
                             QRhiSampler::Filter minFilter,

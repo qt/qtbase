@@ -139,7 +139,7 @@ inline bool operator!=(const QGles2SamplerData &a, const QGles2SamplerData &b)
 struct QGles2Texture : public QRhiTexture
 {
     QGles2Texture(QRhiImplementation *rhi, Format format, const QSize &pixelSize, int depth,
-                  int sampleCount, Flags flags);
+                  int arraySize, int sampleCount, Flags flags);
     ~QGles2Texture();
     void destroy() override;
     bool create() override;
@@ -521,6 +521,7 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
                 GLenum target;
                 GLuint texture;
                 int dstLevel;
+                int dstLayer;
             } blitFromRb;
             struct {
                 GLenum target;
@@ -752,6 +753,7 @@ public:
     QRhiTexture *createTexture(QRhiTexture::Format format,
                                const QSize &pixelSize,
                                int depth,
+                               int arraySize,
                                int sampleCount,
                                QRhiTexture::Flags flags) override;
     QRhiSampler *createSampler(QRhiSampler::Filter magFilter,
@@ -910,6 +912,7 @@ public:
               maxTextureSize(2048),
               maxDrawBuffers(4),
               maxSamples(16),
+              maxTextureArraySize(0),
               maxThreadGroupsPerDimension(0),
               maxThreadsPerThreadGroup(0),
               maxThreadGroupsX(0),
@@ -951,6 +954,7 @@ public:
         int maxTextureSize;
         int maxDrawBuffers;
         int maxSamples;
+        int maxTextureArraySize;
         int maxThreadGroupsPerDimension;
         int maxThreadsPerThreadGroup;
         int maxThreadGroupsX;
