@@ -206,6 +206,10 @@ typedef QSharedPointer<QFileDialogOptions> SharedPointerFileDialogOptions;
 
     auto result = [m_panel runModal];
     m_helper->panelClosed(result);
+
+    // Wake up the event dispatcher so it can check whether the
+    // current event loop should continue spinning or not.
+    QCoreApplication::eventDispatcher()->wakeUp();
 }
 
 - (void)closePanel
