@@ -1682,7 +1682,7 @@ static void win_outputDebugString_helper(QStringView message)
     } else {
         wchar_t *messagePart = new wchar_t[maxOutputStringLength + 1];
         for (qsizetype i = 0; i < message.length(); i += maxOutputStringLength) {
-            const qsizetype length = std::min(message.length() - i, maxOutputStringLength);
+            const qsizetype length = qMin(message.length() - i, maxOutputStringLength);
             const qsizetype len = message.mid(i, length).toWCharArray(messagePart);
             Q_ASSERT(len == length);
             messagePart[len] = 0;
