@@ -143,6 +143,13 @@ void *QOffscreenX11PlatformNativeInterface::nativeResourceForContext(const QByte
 }
 #endif
 
+#if QT_CONFIG(xcb)
+Display *QOffscreenX11PlatformNativeInterface::display() const
+{
+    return m_connection ? reinterpret_cast<Display *>(m_connection->display()) : nullptr;
+}
+#endif
+
 QOffscreenX11Connection::QOffscreenX11Connection()
 {
     XInitThreads();
