@@ -194,6 +194,11 @@ void QCocoaMenuBar::syncMenu_helper(QPlatformMenu *menu, bool menubarUpdate)
     for (QCocoaMenuItem *item : cocoaMenu->items())
         cocoaMenu->syncMenuItem_helper(item, menubarUpdate);
 
+    const QString captionNoAmpersand = QString::fromNSString(cocoaMenu->nsMenu().title)
+                                       .remove(QLatin1Char('&'));
+    if (captionNoAmpersand == QCoreApplication::translate("QCocoaMenu", "Edit"))
+        insertDefaultEditItems(cocoaMenu);
+
     BOOL shouldHide = YES;
     if (cocoaMenu->isVisible()) {
         // If the NSMenu has no visible items, or only separators, we should hide it
@@ -398,6 +403,48 @@ NSMenuItem *QCocoaMenuBar::itemForRole(QPlatformMenuItem::MenuRole role)
 QCocoaWindow *QCocoaMenuBar::cocoaWindow() const
 {
     return m_window.data();
+}
+
+void QCocoaMenuBar::insertDefaultEditItems(QCocoaMenu *menu)
+{
+    if (menu->items().isEmpty())
+        return;
+
+    NSMenu *nsEditMenu = menu->nsMenu();
+    if ([nsEditMenu itemAtIndex:nsEditMenu.numberOfItems - 1].action
+        == @selector(orderFrontCharacterPalette:)) {
+        for (auto defaultEditMenuItem : qAsConst(m_defaultEditMenuItems)) {
+            if (menu->items().contains(defaultEditMenuItem))
+                menu->removeMenuItem(defaultEditMenuItem);
+        }
+        qDeleteAll(m_defaultEditMenuItems);
+        m_defaultEditMenuItems.clear();
+    } else {
+        if (m_defaultEditMenuItems.isEmpty()) {
+            QCocoaMenuItem *separator = new QCocoaMenuItem;
+            separator->setIsSeparator(true);
+
+            QCocoaMenuItem *dictationItem = new QCocoaMenuItem;
+            dictationItem->setText(QCoreApplication::translate("QCocoaMenuItem", "Start Dictation..."));
+            QObject::connect(dictationItem, &QPlatformMenuItem::activated, this, []{
+                [NSApplication.sharedApplication performSelector:@selector(startDictation:)];
+            });
+
+            QCocoaMenuItem *emojiItem = new QCocoaMenuItem;
+            emojiItem->setText(QCoreApplication::translate("QCocoaMenuItem", "Emoji && Symbols"));
+            emojiItem->setShortcut(QKeyCombination(Qt::MetaModifier|Qt::ControlModifier, Qt::Key_Space));
+            QObject::connect(emojiItem, &QPlatformMenuItem::activated, this, []{
+                [NSApplication.sharedApplication orderFrontCharacterPalette:nil];
+            });
+
+            m_defaultEditMenuItems << separator << dictationItem << emojiItem;
+        }
+        for (auto defaultEditMenuItem : qAsConst(m_defaultEditMenuItems)) {
+            if (menu->items().contains(defaultEditMenuItem))
+                menu->removeMenuItem(defaultEditMenuItem);
+            menu->insertMenuItem(defaultEditMenuItem, nullptr);
+        }
+    }
 }
 
 QT_END_NAMESPACE
