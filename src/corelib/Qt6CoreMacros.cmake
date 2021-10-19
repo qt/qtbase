@@ -544,7 +544,7 @@ endfunction()
 function(_qt_internal_create_executable target)
     cmake_parse_arguments(arg "" "" "ANDROID_ABIS" ${ARGN})
     if(ANDROID)
-        list(REMOVE_ITEM ARGN "WIN32" "MACOSX_BUNDLE")
+        list(REMOVE_ITEM arg_UNPARSED_ARGUMENTS "WIN32" "MACOSX_BUNDLE")
         add_library("${target}" MODULE ${arg_UNPARSED_ARGUMENTS})
         # On our qmake builds we do don't compile the executables with
         # visibility=hidden. Not having this flag set will cause the
