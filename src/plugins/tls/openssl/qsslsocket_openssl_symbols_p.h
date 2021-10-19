@@ -378,8 +378,6 @@ int q_BN_num_bits(const BIGNUM *a);
 int q_BN_is_word(BIGNUM *a, BN_ULONG w);
 BN_ULONG q_BN_mod_word(const BIGNUM *a, BN_ULONG w);
 
-DSA *q_DSA_new();
-void q_DSA_free(DSA *a);
 X509 *q_d2i_X509(X509 **a, const unsigned char **b, long c);
 char *q_ERR_error_string(unsigned long a, char *b);
 void q_ERR_error_string_n(unsigned long e, char *buf, size_t len);
@@ -436,8 +434,6 @@ int q_PEM_write_bio_PUBKEY(BIO *a, EVP_PKEY *b);
 void q_RAND_seed(const void *a, int b);
 int q_RAND_status();
 int q_RAND_bytes(unsigned char *b, int n);
-RSA *q_RSA_new();
-void q_RSA_free(RSA *a);
 int q_SSL_accept(SSL *a);
 int q_SSL_clear(SSL *a);
 char *q_SSL_CIPHER_description(const SSL_CIPHER *a, char *b, int c);
@@ -459,7 +455,6 @@ long q_SSL_CTX_callback_ctrl(SSL_CTX *, int, GenericCallbackType);
 int q_SSL_CTX_use_certificate(SSL_CTX *a, X509 *b);
 int q_SSL_CTX_use_certificate_file(SSL_CTX *a, const char *b, int c);
 int q_SSL_CTX_use_PrivateKey(SSL_CTX *a, EVP_PKEY *b);
-int q_SSL_CTX_use_RSAPrivateKey(SSL_CTX *a, RSA *b);
 int q_SSL_CTX_use_PrivateKey_file(SSL_CTX *a, const char *b, int c);
 X509_STORE *q_SSL_CTX_get_cert_store(const SSL_CTX *a);
 SSL_CONF_CTX *q_SSL_CONF_CTX_new();
@@ -552,9 +547,6 @@ BIGNUM *q_BN_bin2bn(const unsigned char *s, int len, BIGNUM *ret);
 
 #ifndef OPENSSL_NO_EC
 // EC Diffie-Hellman support
-EC_KEY *q_EC_KEY_dup(const EC_KEY *src);
-EC_KEY *q_EC_KEY_new_by_curve_name(int nid);
-void q_EC_KEY_free(EC_KEY *ecdh);
 #define q_SSL_CTX_set_tmp_ecdh(ctx, ecdh) q_SSL_CTX_ctrl((ctx), SSL_CTRL_SET_TMP_ECDH, 0, (char *)ecdh)
 
 // EC curves management
@@ -723,6 +715,22 @@ int q_EVP_PKEY_base_id(EVP_PKEY *a);
 #endif // OPENSSL_VERSION_MAJOR >= 3
 
 #ifndef OPENSSL_NO_DEPRECATED_3_0
+
+DSA *q_DSA_new();
+void q_DSA_free(DSA *a);
+
+RSA *q_RSA_new();
+void q_RSA_free(RSA *a);
+
+#ifndef OPENSSL_NO_EC
+
+EC_KEY *q_EC_KEY_dup(const EC_KEY *src);
+EC_KEY *q_EC_KEY_new_by_curve_name(int nid);
+void q_EC_KEY_free(EC_KEY *ecdh);
+
+#endif // OPENSSL_NO_EC
+
+int q_SSL_CTX_use_RSAPrivateKey(SSL_CTX *a, RSA *b);
 
 DSA *q_PEM_read_bio_DSA_PUBKEY(BIO *a, DSA **b, pem_password_cb *c, void *d);
 RSA *q_PEM_read_bio_RSA_PUBKEY(BIO *a, RSA **b, pem_password_cb *c, void *d);
