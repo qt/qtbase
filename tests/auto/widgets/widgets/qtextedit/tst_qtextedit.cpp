@@ -58,6 +58,8 @@
 #include "../../../shared/platforminputcontext.h"
 #include <private/qinputmethod_p.h>
 
+Q_LOGGING_CATEGORY(lcTests, "qt.widgets.tests")
+
 //Used in copyAvailable
 typedef QPair<Qt::Key, Qt::KeyboardModifier> keyPairType;
 typedef QList<keyPairType> pairListType;
@@ -208,6 +210,9 @@ private slots:
 
     void preeditCharFormat_data();
     void preeditCharFormat();
+
+    void nextFormatAfterEnterPressed_data();
+    void nextFormatAfterEnterPressed();
 
 private:
     void createSelection();
@@ -2893,6 +2898,95 @@ void tst_QTextEdit::preeditCharFormat()
         QCOMPARE(device.m_paintEngine->itemFonts.at(i).second.pointSize(), pointSizeList.at(i));
 
     delete w;
+}
+
+void tst_QTextEdit::nextFormatAfterEnterPressed_data()
+{
+    typedef QMap<int, QVariant> pmap;
+    QTest::addColumn<QString>("html");
+    QTest::addColumn<int>("enterKeyCount");
+    QTest::addColumn<pmap>("expectedPrevBlockProps");
+    QTest::addColumn<pmap>("expectedPrevCharProps");
+    QTest::addColumn<pmap>("expectedNewBlockProps");
+    QTest::addColumn<pmap>("expectedNewCharProps");
+
+    // the BlockBottomMargin on "two" will be removed: property() returns invalid QVariant
+    QTest::newRow("bottom margin after ordered list") << "<ol><li>one</li><li>two</li></ol>" << 1
+        << pmap{{QTextFormat::BlockBottomMargin, {}}} << pmap{}
+        << pmap{{QTextFormat::BlockBottomMargin, 12}} << pmap{};
+    QTest::newRow("double enter after list: default format") << "<ol><li>one</li><li>two</li></ol>" << 2
+        << pmap{{QTextFormat::BlockBottomMargin, {}}} << pmap{}
+        << pmap{} << pmap{};
+    QTest::newRow("continue block quote") << "<blockquote>I'll be back</blockquote>" << 1
+        << pmap{{QTextFormat::BlockLeftMargin, 40}} << pmap{}
+        << pmap{{QTextFormat::BlockLeftMargin, 40}} << pmap{};
+    QTest::newRow("double enter after block quote") << "<blockquote>I'll be back</blockquote>" << 2
+        << pmap{{QTextFormat::BlockLeftMargin, 40}} << pmap{}
+        << pmap{{QTextFormat::BlockLeftMargin, {}}} << pmap{};
+    QTest::newRow("bottom margin after bullet list") << "<ul><li>one</li><li>two</li></ul>" << 1
+        << pmap{{QTextFormat::BlockBottomMargin, {}}} << pmap{}
+        << pmap{{QTextFormat::BlockBottomMargin, 12}} << pmap{};
+    QTest::newRow("paragraph after heading") << "<h1>so big!</h1>" << 1
+        << pmap{{QTextFormat::HeadingLevel, 1}} << pmap{}
+        << pmap{{QTextFormat::HeadingLevel, {}}} << pmap{};
+    QTest::newRow("paragraph after hrule") << "<p style='font-size:18px;'>blah blah<hr/></p>" << 1
+        << pmap{} << pmap{}
+        << pmap{{QTextFormat::BlockTrailingHorizontalRulerWidth, {}}} << pmap{};
+}
+
+void tst_QTextEdit::nextFormatAfterEnterPressed()
+{
+    typedef QMap<int, QVariant> pmap;
+    QFETCH(QString, html);
+    QFETCH(int, enterKeyCount);
+    QFETCH(pmap, expectedPrevBlockProps);
+    QFETCH(pmap, expectedPrevCharProps);
+    QFETCH(pmap, expectedNewBlockProps);
+    QFETCH(pmap, expectedNewCharProps);
+
+    ed->setHtml(html);
+    QTextCursor cursor = ed->textCursor();
+    cursor.movePosition(QTextCursor::End);
+    ed->setTextCursor(cursor);
+
+    if (lcTests().isDebugEnabled()) {
+        ed->show();
+        QTest::qWait(500);
+    }
+
+    for (int i = 0; i < enterKeyCount; ++i)
+        QTest::keyClick(ed, Qt::Key_Enter);
+    QTest::keyClicks(ed, "foo");
+
+    if (lcTests().isDebugEnabled()) {
+        // visually see what happened when debug is enabled
+        QTest::qWait(500);
+        qCDebug(lcTests) << "new block" << Qt::hex << ed->textCursor().blockFormat().properties();
+        qCDebug(lcTests) << "new char" << Qt::hex << ed->textCursor().charFormat().properties();
+    }
+
+    // if expectedNewBlockProps is empty, we expect the current block format to be the default format
+    if (expectedNewBlockProps.isEmpty())
+        QCOMPARE(ed->textCursor().blockFormat(), QTextBlockFormat());
+    // otherwise we expect to find certain property values in the current block format
+    else for (auto it = expectedNewBlockProps.constBegin(); it != expectedNewBlockProps.constEnd(); ++it)
+        QCOMPARE(ed->textCursor().blockFormat().property(it.key()), it.value());
+
+    // if expectedNewCharProps is empty, we expect the current char format to be the default format
+    if (expectedNewCharProps.isEmpty())
+        QCOMPARE(ed->textCursor().charFormat(), QTextCharFormat());
+    // otherwise we expect to find certain property values in the current char format
+    else for (auto it = expectedNewCharProps.constBegin(); it != expectedNewCharProps.constEnd(); ++it)
+        QCOMPARE(ed->textCursor().charFormat().property(it.key()), it.value());
+
+    // check the cases where QWidgetTextControlPrivate::insertParagraphSeparator() should modify
+    // the previous block's block format and/or char format
+    auto prevBlockCursor = ed->textCursor();
+    prevBlockCursor.movePosition(QTextCursor::PreviousBlock);
+    for (auto it = expectedPrevBlockProps.constBegin(); it != expectedPrevBlockProps.constEnd(); ++it)
+        QCOMPARE(prevBlockCursor.blockFormat().property(it.key()), it.value());
+    for (auto it = expectedPrevCharProps.constBegin(); it != expectedPrevCharProps.constEnd(); ++it)
+        QCOMPARE(prevBlockCursor.charFormat().property(it.key()), it.value());
 }
 
 QTEST_MAIN(tst_QTextEdit)
