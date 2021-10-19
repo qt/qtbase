@@ -218,6 +218,11 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSFontPanelDelegate);
 
     [NSApp runModalForWindow:mFontPanel];
     mDialogIsExecuting = false;
+
+    // Wake up the event dispatcher so it can check whether the
+    // current event loop should continue spinning or not.
+    QCoreApplication::eventDispatcher()->wakeUp();
+
     return (mResultCode == NSModalResponseOK);
 }
 
