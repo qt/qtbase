@@ -58,18 +58,32 @@ function(qt_internal_add_tool target_name)
     endif()
 
     set(full_name "${QT_CMAKE_EXPORT_NAMESPACE}::${name}")
-    set(imported_tool_target_found FALSE)
+    set(imported_tool_target_already_found FALSE)
+
+    # This condition can only be TRUE if a previous find_package(Qt6${arg_TOOLS_TARGET}Tools)
+    # was already done. That can happen if we are cross compiling or QT_FORCE_FIND_TOOLS was ON.
+    # In such a case, we need to exit early if we're not going to also cross-build the tools.
     if(TARGET ${full_name})
         get_property(path TARGET ${full_name} PROPERTY LOCATION)
         message(STATUS "Tool '${full_name}' was found at ${path}.")
-        set(imported_tool_target_found TRUE)
-        if(CMAKE_CROSSCOMPILING AND NOT QT_BUILD_TOOLS_WHEN_CROSSCOMPILING)
+        set(imported_tool_target_already_found TRUE)
+        if(NOT QT_WILL_BUILD_TOOLS)
             return()
         endif()
     endif()
 
-    if(arg_TOOLS_TARGET AND (NOT QT_WILL_BUILD_TOOLS OR QT_BUILD_TOOLS_WHEN_CROSSCOMPILING)
-            AND NOT imported_tool_target_found)
+    # We need to search for the host Tools package when:
+    # - doing a cross-build and tools are not cross-built
+    # - doing a cross-build and tools ARE cross-built
+    # - QT_FORCE_FIND_TOOLS is ON
+    # This collapses to the condition below.
+    # As an optimiziation, we don't search for the package one more time if the target
+    # was already brought into scope from a previous find_package.
+    set(search_for_host_package FALSE)
+    if(NOT QT_WILL_BUILD_TOOLS OR QT_BUILD_TOOLS_WHEN_CROSSCOMPILING)
+        set(search_for_host_package TRUE)
+    endif()
+    if(search_for_host_package AND NOT imported_tool_target_already_found)
         set(tools_package_name "Qt6${arg_TOOLS_TARGET}Tools")
         message(STATUS "Searching for tool '${full_name}' in package ${tools_package_name}.")
 
@@ -286,8 +300,8 @@ function(qt_internal_add_tool target_name)
 endfunction()
 
 function(qt_export_tools module_name)
-    # Bail out when cross-compiling, unless QT_BUILD_TOOLS_WHEN_CROSSCOMPILING is on.
-    if(CMAKE_CROSSCOMPILING AND NOT QT_BUILD_TOOLS_WHEN_CROSSCOMPILING)
+    # Bail out when not building tools.
+    if(NOT QT_WILL_BUILD_TOOLS)
         return()
     endif()
 
