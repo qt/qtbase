@@ -258,8 +258,6 @@ Q_DECLARE_METATYPE(NoCmpParamRecursiveMultiHashK);
 Q_DECLARE_METATYPE(NoCmpParamRecursiveMultiHashV);
 
 Q_DECLARE_METATYPE(NoCmpRecursiveList);
-// TODO: fix, this requires operator== (QTBUG-96257)
-// Q_DECLARE_METATYPE(NoCmpRecursiveSet);
 Q_DECLARE_METATYPE(NoCmpRecursiveMapV);
 Q_DECLARE_METATYPE(NoCmpRecursiveMapK);
 Q_DECLARE_METATYPE(NoCmpRecursiveMultiMapV);
