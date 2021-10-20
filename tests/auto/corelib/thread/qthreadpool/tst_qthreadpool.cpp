@@ -465,6 +465,9 @@ void tst_QThreadPool::setMaxThreadCount()
     QFETCH(int, limit);
     QThreadPool *threadPool = QThreadPool::globalInstance();
     int savedLimit = threadPool->maxThreadCount();
+    auto restoreThreadCount = qScopeGuard([=]{
+        threadPool->setMaxThreadCount(savedLimit);
+    });
 
     // maxThreadCount() should always return the previous argument to
     // setMaxThreadCount(), regardless of input
@@ -569,7 +572,11 @@ void tst_QThreadPool::reserveThread()
 {
     QFETCH(int, limit);
     QThreadPool *threadpool = QThreadPool::globalInstance();
-    int savedLimit = threadpool->maxThreadCount();
+    const int savedLimit = threadpool->maxThreadCount();
+    auto restoreThreadCount = qScopeGuard([=]{
+        threadpool->setMaxThreadCount(savedLimit);
+    });
+
     threadpool->setMaxThreadCount(limit);
 
     // reserve up to the limit
@@ -618,9 +625,6 @@ void tst_QThreadPool::reserveThread()
         while (threadpool2.activeThreadCount() > 0)
             threadpool2.releaseThread();
     }
-
-    // reset limit on global QThreadPool
-    threadpool->setMaxThreadCount(savedLimit);
 }
 
 void tst_QThreadPool::releaseThread_data()
@@ -632,7 +636,10 @@ void tst_QThreadPool::releaseThread()
 {
     QFETCH(int, limit);
     QThreadPool *threadpool = QThreadPool::globalInstance();
-    int savedLimit = threadpool->maxThreadCount();
+    const int savedLimit = threadpool->maxThreadCount();
+    auto restoreThreadCount = qScopeGuard([=]{
+        threadpool->setMaxThreadCount(savedLimit);
+    });
     threadpool->setMaxThreadCount(limit);
 
     // reserve up to the limit
@@ -680,9 +687,6 @@ void tst_QThreadPool::releaseThread()
         QCOMPARE(threadpool2.activeThreadCount(), 0);
         QCOMPARE(threadpool->activeThreadCount(), 0);
     }
-
-    // reset limit on global QThreadPool
-    threadpool->setMaxThreadCount(savedLimit);
 }
 
 void tst_QThreadPool::reserveAndStart() // QTBUG-21051
@@ -707,6 +711,10 @@ void tst_QThreadPool::reserveAndStart() // QTBUG-21051
     // Set up
     QThreadPool *threadpool = QThreadPool::globalInstance();
     int savedLimit = threadpool->maxThreadCount();
+    auto restoreThreadCount = qScopeGuard([=]{
+        threadpool->setMaxThreadCount(savedLimit);
+    });
+
     threadpool->setMaxThreadCount(1);
     QCOMPARE(threadpool->activeThreadCount(), 0);
 
@@ -736,8 +744,6 @@ void tst_QThreadPool::reserveAndStart() // QTBUG-21051
 
     threadpool->releaseThread();
     QTRY_COMPARE(threadpool->activeThreadCount(), 0);
-
-    threadpool->setMaxThreadCount(savedLimit);
 }
 
 void tst_QThreadPool::releaseAndBlock()
@@ -758,6 +764,10 @@ void tst_QThreadPool::releaseAndBlock()
     // Set up
     QThreadPool *threadpool = QThreadPool::globalInstance();
     const int savedLimit = threadpool->maxThreadCount();
+    auto restoreThreadCount = qScopeGuard([=]{
+        threadpool->setMaxThreadCount(savedLimit);
+    });
+
     threadpool->setMaxThreadCount(1);
     QCOMPARE(threadpool->activeThreadCount(), 0);
 
@@ -784,8 +794,6 @@ void tst_QThreadPool::releaseAndBlock()
     QCOMPARE(threadpool->activeThreadCount(), 1);
     task1.waitBeforeDone.release();
     QTRY_COMPARE(threadpool->activeThreadCount(), 0);
-
-    threadpool->setMaxThreadCount(savedLimit);
 }
 
 static QAtomicInt count;
