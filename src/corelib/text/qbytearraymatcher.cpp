@@ -240,7 +240,7 @@ qsizetype QByteArrayMatcher::indexIn(const char *str, qsizetype len, qsizetype f
     \since 6.3
     \overload
 
-    Searches the byte array \a view, from byte position \a from (default
+    Searches the byte array \a data, from byte position \a from (default
     0, i.e. from the first byte), for the byte array pattern() that
     was set in the constructor or in the most recent call to
     setPattern(). Returns the position where the pattern() matched in

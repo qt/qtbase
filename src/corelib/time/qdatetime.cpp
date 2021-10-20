@@ -1900,7 +1900,7 @@ QString QTime::toString(Qt::DateFormat format) const
          \li Use AM/PM display (since 6.3). \c aP/Ap will be replaced by 'AM' or
              'PM'. In localized forms (only relevant to
              \l{QLocale::toString()}), the locale-appropriate text (returned by
-             \l{QLocale::amText()} or \l{QLocaleie:pmText()}) is used without
+             \l{QLocale::amText()} or \l{QLocale::pmText()}) is used without
              change of case.
     \row \li t \li The timezone (for example "CEST")
     \endtable

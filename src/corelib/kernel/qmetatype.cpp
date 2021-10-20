@@ -1601,7 +1601,7 @@ Q_GLOBAL_STATIC(QMetaTypeMutableViewRegistry, customTypesMutableViewRegistry)
     Registers the possibility of an implicit conversion from type From to type To in the meta
     type system. Returns \c true if the registration succeeded, otherwise false.
 
-    \snippet qmetatype/registerConverters.cpp [implicit]
+    \snippet qmetatype/registerConverters.cpp implicit
 */
 
 /*!
@@ -1611,7 +1611,7 @@ Q_GLOBAL_STATIC(QMetaTypeMutableViewRegistry, customTypesMutableViewRegistry)
     Registers a method \a function like To From::function() const as converter from type From
     to type To in the meta type system. Returns \c true if the registration succeeded, otherwise false.
 
-    \snippet qmetatype/registerConverters.cpp [member]
+    \snippet qmetatype/registerConverters.cpp member
 */
 
 /*!
@@ -1622,7 +1622,7 @@ Q_GLOBAL_STATIC(QMetaTypeMutableViewRegistry, customTypesMutableViewRegistry)
     to type To in the meta type system. Returns \c true if the registration succeeded, otherwise false.
 
     The \a ok pointer can be used by the function to indicate whether the conversion succeeded.
-    \snippet qmetatype/registerConverters.cpp [memberOk]
+    \snippet qmetatype/registerConverters.cpp memberOk
 
 */
 
@@ -1635,7 +1635,7 @@ Q_GLOBAL_STATIC(QMetaTypeMutableViewRegistry, customTypesMutableViewRegistry)
 
     \a function must take an instance of type \a From and return an instance of \a To. It can be a function
     pointer, a lambda or a functor object.
-    \snippet qmetatype/registerConverters.cpp [unaryfunc]
+    \snippet qmetatype/registerConverters.cpp unaryfunc
 */
 
 /*!

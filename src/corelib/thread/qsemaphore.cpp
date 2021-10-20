@@ -497,7 +497,8 @@ bool QSemaphore::tryAcquire(int n, int timeout)
 
     This function is provided for \c{std::counting_semaphore} compatibility.
 
-    It is equivalent to calling \c{tryAcquire(1)}.
+    It is equivalent to calling \c{tryAcquire(1)}, where the function returns
+    \c true on acquiring the resource successfully.
 
     \sa tryAcquire(), try_acquire_for(), try_acquire_until()
 */
@@ -508,7 +509,9 @@ bool QSemaphore::tryAcquire(int n, int timeout)
 
     This function is provided for \c{std::counting_semaphore} compatibility.
 
-    It is equivalent to calling \c{tryAcquire(1, timeout)}.
+    It is equivalent to calling \c{tryAcquire(1, timeout)}, where the call
+    times out on the given \a timeout value. The function returns \c true
+    on accquiring the resource successfully.
 
     \sa tryAcquire(), try_acquire(), try_acquire_until()
 */
@@ -520,7 +523,9 @@ bool QSemaphore::tryAcquire(int n, int timeout)
     This function is provided for \c{std::counting_semaphore} compatibility.
 
     It is equivalent to calling \c{tryAcquire(1, tp - Clock::now())},
-    which means that adjustments to \c{Clock} are ignored while waiting.
+    which means that the \a tp (time point) is recorded, ignoring the
+    adjustments to \c{Clock} while waiting. The function returns \c true
+    on acquiring the resource successfully.
 
     \sa tryAcquire(), try_acquire(), try_acquire_for()
 */
