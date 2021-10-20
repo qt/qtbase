@@ -1497,7 +1497,7 @@ QTextCharFormat::QTextCharFormat(const QTextFormat &fmt)
     \sa font()
 */
 #else
-/*!
+/* // Qt 7 documents this function
     \fn QStringList QTextCharFormat::fontFamilies() const
     \since 5.13
 
@@ -1530,7 +1530,7 @@ QTextCharFormat::QTextCharFormat(const QTextFormat &fmt)
     \sa font(), QFont::styleName()
 */
 #else
-/*!
+/* // Qt 7 documents this function
     \fn QStringList QTextCharFormat::fontStyleName() const
     \since 5.13
 

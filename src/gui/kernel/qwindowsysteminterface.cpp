@@ -73,6 +73,8 @@ extern QPointer<QWindow> qt_last_mouse_receiver;
 // ------------------- QWindowSystemInterfacePrivate -------------------
 
 /*!
+    \internal
+
     The QWindowSystemHelper creates synchronously delivered events on the stack, unless
     the calling thread is not the Gui thread.
 
