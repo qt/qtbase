@@ -2,32 +2,19 @@
 # as well as CMake application projects.
 # Expects various global variables to be set.
 function(qt_internal_create_toolchain_file)
+    set(qt_host_path_required FALSE)
+
     if(NOT "${QT_HOST_PATH}" STREQUAL "")
-        # TODO: Figure out how to make these relocatable.
+        # If a QT_HOST_PATH is provided when configuring qtbase, we assume it's a cross build
+        # and thus we require the QT_HOST_PATH to be provided also when using the cross-built Qt.
+        # This tells the Qt toolchain file to do appropriate requirement checks.
+        set(qt_host_path_required TRUE)
 
-        get_filename_component(__qt_host_path_absolute "${QT_HOST_PATH}" ABSOLUTE)
-        set(init_qt_host_path "
-    set(__qt_initial_qt_host_path \"${__qt_host_path_absolute}\")
-    if(NOT DEFINED QT_HOST_PATH AND EXISTS \"\${__qt_initial_qt_host_path}\")
-        set(QT_HOST_PATH \"\${__qt_initial_qt_host_path}\" CACHE PATH \"\" FORCE)
-    endif()")
-
-        get_filename_component(__qt_host_path_cmake_dir_absolute
+        # TODO: Figure out how to make the initial QT_HOST_PATH var relocatable in relation
+        # to the target CMAKE_INSTALL_DIR, if at all possible to do so in a reliable way.
+        get_filename_component(qt_host_path_absolute "${QT_HOST_PATH}" ABSOLUTE)
+        get_filename_component(qt_host_path_cmake_dir_absolute
             "${Qt${PROJECT_VERSION_MAJOR}HostInfo_DIR}/.." ABSOLUTE)
-        set(init_qt_host_path_cmake_dir
-            "
-    set(__qt_initial_qt_host_path_cmake_dir \"${__qt_host_path_cmake_dir_absolute}\")
-    if(NOT DEFINED QT_HOST_PATH_CMAKE_DIR AND EXISTS \"\${__qt_initial_qt_host_path_cmake_dir}\")
-        set(QT_HOST_PATH_CMAKE_DIR \"\${__qt_initial_qt_host_path_cmake_dir}\" CACHE PATH \"\" FORCE)
-    endif()")
-
-        set(init_qt_host_path_checks "
-    if(\"\${QT_HOST_PATH}\" STREQUAL \"\" OR NOT EXISTS \"\${QT_HOST_PATH}\")
-        message(FATAL_ERROR \"To use a cross-compiled Qt, please specify a path to a host Qt installation by setting the QT_HOST_PATH cache variable.\")
-    endif()
-    if(\"\${QT_HOST_PATH_CMAKE_DIR}\" STREQUAL \"\" OR NOT EXISTS \"\${QT_HOST_PATH_CMAKE_DIR}\")
-        message(FATAL_ERROR \"To use a cross-compiled Qt, please specify a path to a host Qt installation CMake directory by setting the QT_HOST_PATH_CMAKE_DIR cache variable.\")
-    endif()")
     endif()
 
     if(CMAKE_TOOLCHAIN_FILE)
