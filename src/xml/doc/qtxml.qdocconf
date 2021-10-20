@@ -41,3 +41,6 @@ navigation.cppclassespage = "Qt XML C++ Classes"
 
 # Add a thumbnail for examples that do not have images
 manifestmeta.thumbnail.names = "QtXml/XML Stream Lint Example"
+
+# Fail the documentation build if there are more warnings than the limit
+warninglimit = 0

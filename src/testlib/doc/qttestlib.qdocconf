@@ -52,3 +52,6 @@ manifestmeta.thumbnail.names = "QtTestLib/Chapter *"
 
 navigation.landingpage = "Qt Test"
 navigation.cppclassespage = "Qt Test C++ Classes"
+
+# Fail the documentation build if there are more warnings than the limit
+warninglimit = 0

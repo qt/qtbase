@@ -41,3 +41,6 @@ imagedirs   += images
 
 navigation.landingpage = "Qt Concurrent"
 navigation.cppclassespage = "Qt Concurrent C++ Classes"
+
+# Fail the documentation build if there are more warnings than the limit
+warninglimit = 0

@@ -40,3 +40,6 @@ imagedirs   += images \
 
 navigation.landingpage = "Qt Print Support"
 navigation.cppclassespage = "Qt Print Support C++ Classes"
+
+# Fail the documentation build if there are more warnings than the limit
+warninglimit = 0
