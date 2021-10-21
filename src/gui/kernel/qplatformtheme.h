@@ -76,7 +76,9 @@ class QFileInfo;
 
 class Q_GUI_EXPORT QPlatformTheme
 {
+    Q_GADGET
     Q_DECLARE_PRIVATE(QPlatformTheme)
+
 public:
     Q_DISABLE_COPY_MOVE(QPlatformTheme)
 
@@ -121,6 +123,7 @@ public:
         InteractiveResizeAcrossScreens,
         ShowDirectoriesFirst,
     };
+    Q_ENUM(ThemeHint)
 
     enum DialogType {
         FileDialog,
