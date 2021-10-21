@@ -76,7 +76,7 @@ public:
 private:
     QJniObject getFileDialogIntent(const QString &intentType);
     void takePersistableUriPermission(const QJniObject &uri);
-    void setIntentTitle(const QString &title);
+    void setInitialFileName(const QString &title);
     void setOpenableCategory();
     void setAllowMultipleSelections(bool allowMultiple);
     void setMimeTypes();
