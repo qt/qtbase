@@ -527,6 +527,8 @@ QVariant QCocoaTheme::themeHint(ThemeHint hint) const
         return QVariant(bool([[NSApplication sharedApplication] presentationOptions] & NSApplicationPresentationFullScreen));
     case QPlatformTheme::InteractiveResizeAcrossScreens:
         return !NSScreen.screensHaveSeparateSpaces;
+    case QPlatformTheme::ShowDirectoriesFirst:
+        return false;
     default:
         break;
     }

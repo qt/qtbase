@@ -167,6 +167,10 @@ QT_BEGIN_NAMESPACE
                         as basis for the resize.
                         This enum value has been added in Qt 6.2.
 
+    \value ShowDirectoriesFirst (bool) Whether directories should be shown
+           first (before files) in file dialogs.
+           This enum value was added in Qt 6.2.
+
     \sa themeHint(), QStyle::pixelMetric()
 */
 
@@ -573,6 +577,8 @@ QVariant QPlatformTheme::defaultThemeHint(ThemeHint hint)
     case MouseQuickSelectionThreshold:
         return QVariant(10);
     case InteractiveResizeAcrossScreens:
+        return true;
+    case ShowDirectoriesFirst:
         return true;
     }
     return QVariant();

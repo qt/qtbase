@@ -119,6 +119,7 @@ public:
         IconFallbackSearchPaths,
         MouseQuickSelectionThreshold,
         InteractiveResizeAcrossScreens,
+        ShowDirectoriesFirst,
     };
 
     enum DialogType {
