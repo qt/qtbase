@@ -166,6 +166,8 @@ private slots:
     void scrollerSmoothScroll();
     void inputMethodOpensEditor_data();
     void inputMethodOpensEditor();
+    void selectionAutoScrolling_data();
+    void selectionAutoScrolling();
 
 private:
     static QAbstractItemView *viewFromString(const QByteArray &viewType, QWidget *parent = nullptr)
@@ -3175,6 +3177,121 @@ void tst_QAbstractItemView::inputMethodOpensEditor()
         // otherwise, the item's value is now the commit string
         QTRY_COMPARE(tableWidget.currentItem()->text(), commit);
     }
+}
+
+void tst_QAbstractItemView::selectionAutoScrolling_data()
+{
+    QTest::addColumn<Qt::Orientation>("orientation");
+    QTest::addColumn<int>("direction"); // negative or positive
+
+    QTest::addRow("scroll up") << Qt::Vertical << -1;
+    QTest::addRow("scroll left") << Qt::Horizontal << -1;
+    QTest::addRow("scroll down") << Qt::Vertical << +1;
+    QTest::addRow("scroll right") << Qt::Horizontal << +1;
+}
+
+void tst_QAbstractItemView::selectionAutoScrolling()
+{
+    QFETCH(Qt::Orientation, orientation);
+    QFETCH(int, direction);
+
+    QListView listview;
+    listview.setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    listview.setResizeMode(QListView::Fixed);
+    listview.setAutoScroll(true);
+    listview.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    listview.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    listview.setSpacing(10);
+    listview.setGeometry(0, 0, 500, 500);
+    listview.setFrameShape(QFrame::Shape::NoFrame);
+    listview.setEditTriggers(QListView::NoEditTriggers);
+
+    QStandardItemModel *listModel = new QStandardItemModel(&listview);
+    listview.setModel(listModel);
+    listview.setViewMode(QListView::IconMode);
+    listview.setSelectionMode(QListView::ExtendedSelection);
+
+    QPixmap pm(50, 50);
+    pm.fill(Qt::red);
+    for (int i = 0; i < 80; i++) {
+        QStandardItem *item = new QStandardItem(pm, QString::number(i));
+        listModel->appendRow(item);
+    }
+
+    listview.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&listview));
+
+    listview.resize(200, 200);
+    // scroll to the middle
+    listview.verticalScrollBar()->setValue(listview.verticalScrollBar()->maximum() / 2);
+    listview.horizontalScrollBar()->setValue(listview.horizontalScrollBar()->maximum() / 2);
+
+    // remove all visible items so that we don't select any items at the edges, as that
+    // would scroll the view already
+    for (int x = 0; x < listview.viewport()->width(); x += 5) {
+        for (int y = 0; y < listview.viewport()->height(); y += 5) {
+            const QModelIndex index = listview.indexAt(QPoint(x, y));
+            if (index.isValid())
+                delete listModel->itemFromIndex(index);
+        }
+    }
+    // remove all items around the edges of the model
+    QRect topLeftRect = listview.visualRect(listModel->index(0, 0));
+    const QPoint topLeftCenter(topLeftRect.center());
+    QPoint bottomRightCenter;
+    for (int x = 0; x < listview.horizontalScrollBar()->maximum() + listview.viewport()->width(); x += 5) {
+        const QModelIndex index = listview.indexAt(topLeftCenter + QPoint(x, 0));
+        if (index.isValid()) {
+            delete listModel->itemFromIndex(index);
+            bottomRightCenter.rx() = x;
+        }
+    }
+    for (int y = 0; y < listview.verticalScrollBar()->maximum() + listview.viewport()->height(); y += 5) {
+        const QModelIndex index = listview.indexAt(topLeftCenter + QPoint(0, y));
+        if (index.isValid()) {
+            delete listModel->itemFromIndex(index);
+            bottomRightCenter.ry() = y;
+        }
+    }
+    for (int x = 0; x < bottomRightCenter.x(); x += 5) {
+        const QModelIndex index = listview.indexAt(topLeftCenter + QPoint(x, bottomRightCenter.y()));
+        if (index.isValid())
+            delete listModel->itemFromIndex(index);
+    }
+    for (int y = 0; y < bottomRightCenter.y(); y += 5) {
+        const QModelIndex index = listview.indexAt(topLeftCenter + QPoint(bottomRightCenter.x(), y));
+        if (index.isValid())
+            delete listModel->itemFromIndex(index);
+    }
+
+
+    // Simulate multiple select behavior; start in the middle, drag to the edge
+    const QPoint pressPoint(listview.viewport()->width() / 2, listview.viewport()->height() / 2);
+    QPoint dragPoint = pressPoint;
+    if (orientation == Qt::Vertical) {
+        dragPoint.rx() += 50;
+        dragPoint.ry() = direction > 0 ? listview.viewport()->height() : 0;
+    } else {
+        dragPoint.rx() = direction > 0 ? listview.viewport()->width() : 0;
+        dragPoint.ry() += 50;
+    }
+
+    QTest::mousePress(listview.viewport(), Qt::LeftButton, Qt::NoModifier, pressPoint);
+    QMouseEvent mmEvent(QEvent::MouseMove, dragPoint, Qt::NoButton, Qt::LeftButton, Qt::NoModifier);
+    QApplication::sendEvent(listview.viewport(), &mmEvent); // QTest::mouseMove is useless
+
+    // check that we scrolled to the end
+    QScrollBar *scrollBar = orientation == Qt::Vertical
+                          ? listview.verticalScrollBar()
+                          : listview.horizontalScrollBar();
+
+    if (direction < 0)
+        QTRY_COMPARE(scrollBar->value(), 0);
+    else
+        QTRY_COMPARE(scrollBar->value(), scrollBar->maximum());
+    QVERIFY(listview.selectionModel()->selectedIndexes().count() > 0);
+
+    QTest::mouseRelease(listview.viewport(), Qt::LeftButton, Qt::NoModifier, dragPoint);
 }
 
 QTEST_MAIN(tst_QAbstractItemView)

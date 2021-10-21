@@ -375,6 +375,7 @@ public:
     QPersistentModelIndex currentSelectionStartIndex;
     Qt::KeyboardModifiers pressedModifiers;
     QPoint pressedPosition;
+    QPoint draggedPosition;
     bool pressedAlreadySelected;
     bool releaseFromDoubleClick;
 
