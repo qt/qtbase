@@ -67,6 +67,17 @@ class Q_NETWORK_EXPORT QNetworkInformationBackend : public QObject
     using TransportMedium = QNetworkInformation::TransportMedium;
 
 public:
+    static inline const char16_t PluginNames[4][22] = {
+        { u"networklistmanager" },
+        { u"scnetworkreachability" },
+        { u"android" },
+        { u"networkmanager" },
+    };
+    static constexpr int PluginNamesWindowsIndex = 0;
+    static constexpr int PluginNamesAppleIndex = 1;
+    static constexpr int PluginNamesAndroidIndex = 2;
+    static constexpr int PluginNamesLinuxIndex = 3;
+
     QNetworkInformationBackend() = default;
     ~QNetworkInformationBackend() override;
 

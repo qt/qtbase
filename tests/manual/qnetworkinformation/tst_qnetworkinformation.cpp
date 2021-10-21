@@ -46,9 +46,8 @@ int main(int argc, char **argv)
     QCoreApplication app(argc, argv);
 #endif
 
-    if (!QNetworkInformation::load(QNetworkInformation::Feature::Reachability
-                                   | QNetworkInformation::Feature::CaptivePortal
-                                   | QNetworkInformation::Feature::TransportMedium)) {
+    // Use the platform-default:
+    if (!QNetworkInformation::load()) {
         qWarning("Failed to load any backend");
         qDebug() << "Backends available:" << QNetworkInformation::availableBackends().join(", ");
         return -1;

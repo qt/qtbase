@@ -47,7 +47,10 @@ QT_BEGIN_NAMESPACE
 Q_DECLARE_LOGGING_CATEGORY(lcNetInfoAndroid)
 Q_LOGGING_CATEGORY(lcNetInfoAndroid, "qt.network.info.android");
 
-static const QString backendName = QStringLiteral("android");
+static QString backendName() {
+    return QString::fromUtf16(QNetworkInformationBackend::PluginNames
+                                      [QNetworkInformationBackend::PluginNamesAndroidIndex]);
+}
 
 class QAndroidNetworkInformationBackend : public QNetworkInformationBackend
 {
@@ -56,7 +59,7 @@ public:
     QAndroidNetworkInformationBackend();
     ~QAndroidNetworkInformationBackend() { m_valid = false; }
 
-    QString name() const override { return backendName; }
+    QString name() const override { return backendName(); }
     QNetworkInformation::Features featuresSupported() const override
     {
         return featuresSupportedStatic();
@@ -88,7 +91,7 @@ class QAndroidNetworkInformationBackendFactory : public QNetworkInformationBacke
 public:
     QAndroidNetworkInformationBackendFactory() = default;
     ~QAndroidNetworkInformationBackendFactory() = default;
-    QString name() const override { return backendName; }
+    QString name() const override { return backendName(); }
     QNetworkInformation::Features featuresSupported() const override
     {
         return QAndroidNetworkInformationBackend::featuresSupportedStatic();

@@ -120,7 +120,11 @@ transportMediumFromDeviceType(QNetworkManagerInterface::NMDeviceType type)
 }
 }
 
-static QString backendName = QStringLiteral("networkmanager");
+static QString backendName()
+{
+    return QString::fromUtf16(QNetworkInformationBackend::PluginNames
+                                      [QNetworkInformationBackend::PluginNamesLinuxIndex]);
+}
 
 class QNetworkManagerNetworkInformationBackend : public QNetworkInformationBackend
 {
@@ -129,7 +133,7 @@ public:
     QNetworkManagerNetworkInformationBackend();
     ~QNetworkManagerNetworkInformationBackend() = default;
 
-    QString name() const override { return backendName; }
+    QString name() const override { return backendName(); }
     QNetworkInformation::Features featuresSupported() const override
     {
         if (!isValid())
@@ -160,7 +164,7 @@ class QNetworkManagerNetworkInformationBackendFactory : public QNetworkInformati
 public:
     QNetworkManagerNetworkInformationBackendFactory() = default;
     ~QNetworkManagerNetworkInformationBackendFactory() = default;
-    QString name() const override { return backendName; }
+    QString name() const override { return backendName(); }
     QNetworkInformation::Features featuresSupported() const override
     {
         if (!QNetworkManagerInterfaceBase::networkManagerAvailable())

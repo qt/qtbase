@@ -604,11 +604,62 @@ QNetworkInformation::Features QNetworkInformation::supportedFeatures() const
 }
 
 /*!
+    \since 6.3
+
+    Attempts to load the platform-default backend.
+
+    This platform-to-plugin mapping is as follows:
+
+    \table
+    \header
+        \li Platform
+        \li Plugin-name
+    \row
+        \li Windows
+        \li networklistmanager
+    \row
+        \li Apple (macOS/iOS)
+        \li scnetworkreachability
+    \row
+        \li Android
+        \li android
+    \row
+        \li Linux
+        \li networkmanager
+    \endtable
+
+    This function is provided for convenience where the default for a given
+    platform is good enough. If you are not using the default plugins you must
+    use one of the other load() overloads.
+
+    Returns \c true if it managed to load the backend or if it was already
+    loaded. Returns \c false otherwise.
+
+    \sa instance
+*/
+bool QNetworkInformation::load()
+{
+    int index = -1;
+#ifdef Q_OS_WIN
+    index = QNetworkInformationBackend::PluginNamesWindowsIndex;
+#elif defined(Q_OS_DARWIN)
+    index = QNetworkInformationBackend::PluginNamesAppleIndex;
+#elif defined(Q_OS_ANDROID)
+    index = QNetworkInformationBackend::PluginNamesAndroidIndex;
+#elif defined(Q_OS_LINUX)
+    index = QNetworkInformationBackend::PluginNamesLinuxIndex;
+#endif
+    if (index == -1)
+        return false;
+    return load(QNetworkInformationBackend::PluginNames[index]);
+}
+
+/*!
     Attempts to load a backend whose name matches \a backend
     (case insensitively).
 
     Returns \c true if it managed to load the requested backend or
-    if it was already loaded. Returns \c false otherwise
+    if it was already loaded. Returns \c false otherwise.
 
     \sa instance
 */
@@ -622,7 +673,7 @@ bool QNetworkInformation::load(QStringView backend)
     Load a backend which supports \a features.
 
     Returns \c true if it managed to load the requested backend or
-    if it was already loaded. Returns \c false otherwise
+    if it was already loaded. Returns \c false otherwise.
 
     \sa instance
 */

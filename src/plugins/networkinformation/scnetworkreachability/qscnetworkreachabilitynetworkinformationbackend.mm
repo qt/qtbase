@@ -48,8 +48,11 @@ QT_BEGIN_NAMESPACE
 Q_DECLARE_LOGGING_CATEGORY(lcNetInfoSCR)
 Q_LOGGING_CATEGORY(lcNetInfoSCR, "qt.network.info.scnetworkreachability");
 
-
-static QString backendName = QStringLiteral("scnetworkreachability");
+static QString backendName()
+{
+    return QString::fromUtf16(QNetworkInformationBackend::PluginNames
+                                      [QNetworkInformationBackend::PluginNamesAppleIndex]);
+}
 
 class QSCNetworkReachabilityNetworkInformationBackend : public QNetworkInformationBackend
 {
@@ -58,7 +61,7 @@ public:
     QSCNetworkReachabilityNetworkInformationBackend();
     ~QSCNetworkReachabilityNetworkInformationBackend();
 
-    QString name() const override { return backendName; }
+    QString name() const override { return backendName(); }
     QNetworkInformation::Features featuresSupported() const override
     {
         return featuresSupportedStatic();
@@ -87,7 +90,7 @@ class QSCNetworkReachabilityNetworkInformationBackendFactory : public QNetworkIn
 public:
     QSCNetworkReachabilityNetworkInformationBackendFactory() = default;
     ~QSCNetworkReachabilityNetworkInformationBackendFactory() = default;
-    QString name() const override { return backendName; }
+    QString name() const override { return backendName(); }
     QNetworkInformation::Features featuresSupported() const override
     {
         return QSCNetworkReachabilityNetworkInformationBackend::featuresSupportedStatic();

@@ -50,7 +50,11 @@ QT_BEGIN_NAMESPACE
 // Declared in qnetworklistmanagerevents.h
 Q_LOGGING_CATEGORY(lcNetInfoNLM, "qt.network.info.netlistmanager");
 
-static const QString backendName = QStringLiteral("networklistmanager");
+static QString backendName()
+{
+    return QString::fromUtf16(QNetworkInformationBackend::PluginNames
+                                      [QNetworkInformationBackend::PluginNamesWindowsIndex]);
+}
 
 namespace {
 bool testCONNECTIVITY(NLM_CONNECTIVITY connectivity, NLM_CONNECTIVITY flag)
@@ -90,7 +94,7 @@ public:
     QNetworkListManagerNetworkInformationBackend();
     ~QNetworkListManagerNetworkInformationBackend();
 
-    QString name() const override { return backendName; }
+    QString name() const override { return backendName(); }
     QNetworkInformation::Features featuresSupported() const override
     {
         return featuresSupportedStatic();
@@ -130,7 +134,7 @@ class QNetworkListManagerNetworkInformationBackendFactory : public QNetworkInfor
 public:
     QNetworkListManagerNetworkInformationBackendFactory() = default;
     ~QNetworkListManagerNetworkInformationBackendFactory() = default;
-    QString name() const override { return backendName; }
+    QString name() const override { return backendName(); }
     QNetworkInformation::Features featuresSupported() const override
     {
         return QNetworkListManagerNetworkInformationBackend::featuresSupportedStatic();
