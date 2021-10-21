@@ -63,7 +63,6 @@
 #include "private/qobject_p.h"
 #include "private/qlocking_p.h"
 #if QT_CONFIG(future)
-#include <QtCore/qapplicationpermission.h>
 #include <QtCore/qfuture.h>
 #endif
 #endif
