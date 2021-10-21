@@ -1748,6 +1748,13 @@ static void stderr_message_handler(QtMsgType type, const QMessageLogContext &con
     if (formattedMessage.isNull())
         return;
 
+#ifdef Q_OS_WASM
+    // Prevent thread cross-talk, which causes Emscripten to log
+    // non-valid UTF-8. FIXME: remove once we upgrade to emsdk > 2.0.30
+    static QBasicMutex m;
+    auto locker = qt_unique_lock(m);
+#endif
+
     fprintf(stderr, "%s\n", formattedMessage.toLocal8Bit().constData());
     fflush(stderr);
 }
