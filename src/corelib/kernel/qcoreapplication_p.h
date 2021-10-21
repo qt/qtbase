@@ -62,9 +62,6 @@
 #ifndef QT_NO_QOBJECT
 #include "private/qobject_p.h"
 #include "private/qlocking_p.h"
-#if QT_CONFIG(future)
-#include <QtCore/qfuture.h>
-#endif
 #endif
 
 #ifdef Q_OS_MACOS

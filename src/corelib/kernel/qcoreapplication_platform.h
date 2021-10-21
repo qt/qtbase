@@ -44,10 +44,12 @@
 #include <QtCore/qnativeinterface.h>
 #include <QtCore/qcoreapplication.h>
 
+#if defined(Q_OS_ANDROID) || defined(Q_CLANG_QDOC)
 #if QT_CONFIG(future) && !defined(QT_NO_QOBJECT)
 #include <QtCore/qfuture.h>
 #include <QtCore/qvariant.h>
 #endif
+#endif // #if defined(Q_OS_ANDROID) || defined(Q_CLANG_QDOC)
 
 #if defined(Q_OS_ANDROID)
 class _jobject;
