@@ -806,7 +806,13 @@ xcb_timestamp_t QXcbConnection::getTimestamp()
 
 xcb_window_t QXcbConnection::getSelectionOwner(xcb_atom_t atom) const
 {
-    return Q_XCB_REPLY(xcb_get_selection_owner, xcb_connection(), atom)->owner;
+    auto reply = Q_XCB_REPLY(xcb_get_selection_owner, xcb_connection(), atom);
+    if (!reply) {
+        qCDebug(lcQpaXcb) << "failed to query selection owner";
+        return XCB_NONE;
+    }
+
+    return reply->owner;
 }
 
 xcb_window_t QXcbConnection::getQtSelectionOwner()
