@@ -101,17 +101,9 @@ void QTemporaryDirPrivate::create(const QString &templateName)
     for (int i = 0; i < 256; ++i) {
         tfn.generateNext();
         QFileSystemEntry fileSystemEntry(tfn.path, QFileSystemEntry::FromNativePath());
-        if (QFileSystemEngine::createDirectory(fileSystemEntry, false)) {
-            QSystemError error;
-            QFileSystemEngine::setPermissions(fileSystemEntry,
-                                              QFile::ReadOwner |
-                                              QFile::WriteOwner |
-                                              QFile::ExeOwner, error);
-            if (error.error() != 0) {
-                if (!QFileSystemEngine::removeDirectory(fileSystemEntry, false))
-                    qWarning() << "Unable to remove unused directory" << templateName;
-                continue;
-            }
+        if (QFileSystemEngine::createDirectory(fileSystemEntry, false,
+                                               QFile::ReadOwner | QFile::WriteOwner
+                                                       | QFile::ExeOwner)) {
             success = true;
             pathOrError = fileSystemEntry.filePath();
             return;
