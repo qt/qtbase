@@ -300,6 +300,20 @@ function(qt_record_extra_third_party_dependency main_target_name dep_target)
     endif()
 endfunction()
 
+# Sets out_var to TRUE if the non-namespaced ${lib} target is exported as part of Qt6Targets.cmake.
+function(qt_internal_is_lib_part_of_qt6_package lib out_var)
+    if (lib STREQUAL "Platform"
+            OR lib STREQUAL "GlobalConfig"
+            OR lib STREQUAL "GlobalConfigPrivate"
+            OR lib STREQUAL "PlatformModuleInternal"
+            OR lib STREQUAL "PlatformPluginInternal"
+            OR lib STREQUAL "PlatformToolInternal")
+        set(${out_var} "TRUE" PARENT_SCOPE)
+    else()
+        set(${out_var} "FALSE" PARENT_SCOPE)
+    endif()
+endfunction()
+
 # This function stores the list of Qt targets a library depend on,
 # along with their version info, for usage in ${target}Depends.cmake file
 function(qt_register_target_dependencies target public_libs private_libs)
@@ -308,28 +322,59 @@ function(qt_register_target_dependencies target public_libs private_libs)
         set(target_deps "")
     endif()
 
-    # Only process private dependencies if target is a static library
     get_target_property(target_type ${target} TYPE)
     set(lib_list ${public_libs})
-    if (target_type STREQUAL "STATIC_LIBRARY")
+
+    set(target_is_shared FALSE)
+    set(target_is_static FALSE)
+    if(target_type STREQUAL "SHARED_LIBRARY")
+        set(target_is_shared TRUE)
+    elseif(target_type STREQUAL "STATIC_LIBRARY")
+        set(target_is_static TRUE)
+    endif()
+
+    # Record 'Qt::Foo'-like private dependencies of static library targets, this will be used to
+    # generate find_dependency() calls.
+    #
+    # Private static library dependencies will become $<LINK_ONLY:> dependencies in
+    # INTERFACE_LINK_LIBRARIES.
+    if(target_is_static)
         list(APPEND lib_list ${private_libs})
     endif()
 
     foreach(lib IN LISTS lib_list)
         if ("${lib}" MATCHES "^Qt::(.*)")
             set(lib "${CMAKE_MATCH_1}")
-            if (lib STREQUAL "Platform"
-                    OR lib STREQUAL "GlobalConfig"
-                    OR lib STREQUAL "GlobalConfigPrivate"
-                    OR lib STREQUAL "PlatformModuleInternal"
-                    OR lib STREQUAL "PlatformPluginInternal"
-                    OR lib STREQUAL "PlatformToolInternal")
+            qt_internal_is_lib_part_of_qt6_package("${lib}" is_part_of_qt6)
+            if (is_part_of_qt6)
                 list(APPEND target_deps "Qt6\;${PROJECT_VERSION}")
             else()
                 list(APPEND target_deps "${INSTALL_CMAKE_NAMESPACE}${lib}\;${PROJECT_VERSION}")
             endif()
         endif()
     endforeach()
+
+    # Record 'Qt::Foo'-like shared private dependencies of shared library targets.
+    #
+    # Private shared library dependencies are listed in the target's
+    # IMPORTED_LINK_DEPENDENT_LIBRARIES and used in rpath-link calculation.
+    # See QTBUG-86533 for some details.
+    # We filter out static libraries and common platform targets, but include both SHARED and
+    # INTERFACE libraries. INTERFACE libraries in most cases will be FooPrivate libraries.
+    if(target_is_shared AND private_libs)
+        foreach(lib IN LISTS private_libs)
+            if ("${lib}" MATCHES "^Qt::(.*)")
+                set(lib_namespaced "${lib}")
+                set(lib "${CMAKE_MATCH_1}")
+
+                qt_internal_is_lib_part_of_qt6_package("${lib}" is_part_of_qt6)
+                get_target_property(lib_type "${lib_namespaced}" TYPE)
+                if(NOT lib_type STREQUAL "STATIC_LIBRARY" AND NOT is_part_of_qt6)
+                    list(APPEND target_deps "${INSTALL_CMAKE_NAMESPACE}${lib}\;${PROJECT_VERSION}")
+                endif()
+            endif()
+        endforeach()
+    endif()
 
     set_target_properties("${target}" PROPERTIES _qt_target_deps "${target_deps}")
 endfunction()
