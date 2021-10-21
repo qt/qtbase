@@ -53,6 +53,7 @@
 
 //! [1]
 #include <QtGui>
+#include <QScopedPointer>
 
 class RasterWindow : public QWindow
 {
@@ -73,7 +74,7 @@ protected:
     void exposeEvent(QExposeEvent *event) override;
 
 private:
-    QBackingStore *m_backingStore;
+    QScopedPointer<QBackingStore> m_backingStore;
 };
 //! [1]
 #endif // RASTERWINDOW_H
