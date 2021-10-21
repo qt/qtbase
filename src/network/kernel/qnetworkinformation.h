@@ -94,6 +94,7 @@ public:
     QString backendName() const;
 
     bool supports(Features features) const;
+    Features supportedFeatures() const;
 
     static bool load(QStringView backend);
     static bool load(Features features);

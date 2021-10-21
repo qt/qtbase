@@ -594,6 +594,16 @@ bool QNetworkInformation::supports(Features features) const
 }
 
 /*!
+    \since 6.3
+
+    Returns all the supported features of the current backend.
+*/
+QNetworkInformation::Features QNetworkInformation::supportedFeatures() const
+{
+    return d_func()->backend->featuresSupported();
+}
+
+/*!
     Attempts to load a backend whose name matches \a backend
     (case insensitively).
 

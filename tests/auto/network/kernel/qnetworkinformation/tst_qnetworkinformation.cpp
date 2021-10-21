@@ -39,6 +39,7 @@ class tst_QNetworkInformation : public QObject
     Q_OBJECT
 private slots:
     void initTestCase();
+    void supportedFeatures();
     void reachability();
     void behindCaptivePortal();
     void transportMedium();
@@ -89,8 +90,9 @@ public:
 
     static QNetworkInformation::Features featuresSupportedStatic()
     {
-        return { QNetworkInformation::Feature::Reachability,
-                 QNetworkInformation::Feature::CaptivePortal };
+        return { QNetworkInformation::Feature::Reachability
+                 | QNetworkInformation::Feature::CaptivePortal
+                 | QNetworkInformation::Feature::TransportMedium };
     }
 
 private:
@@ -136,6 +138,22 @@ void tst_QNetworkInformation::cleanupTestCase()
     mockFactory.reset();
     auto backends = QNetworkInformation::availableBackends();
     QVERIFY(!backends.contains(u"mock"));
+}
+
+void tst_QNetworkInformation::supportedFeatures()
+{
+    auto info = QNetworkInformation::instance();
+
+    auto allFeatures = QNetworkInformation::Features(
+            QNetworkInformation::Feature::CaptivePortal | QNetworkInformation::Feature::Reachability
+            | QNetworkInformation::Feature::TransportMedium);
+
+    QCOMPARE(info->supportedFeatures(), allFeatures);
+
+    QVERIFY(info->supports(allFeatures));
+    QVERIFY(info->supports(QNetworkInformation::Feature::CaptivePortal));
+    QVERIFY(info->supports(QNetworkInformation::Feature::Reachability));
+    QVERIFY(info->supports(QNetworkInformation::Feature::TransportMedium));
 }
 
 void tst_QNetworkInformation::reachability()

@@ -55,6 +55,7 @@ int main(int argc, char **argv)
     }
     QNetworkInformation *info = QNetworkInformation::instance();
     qDebug() << "Backend loaded:" << info->backendName();
+    qDebug() << "Supports:" << info->supportedFeatures();
     qDebug() << "Now you can make changes to the current network connection. Qt should see the "
                 "changes and notify about it.";
     QObject::connect(info, &QNetworkInformation::reachabilityChanged,
