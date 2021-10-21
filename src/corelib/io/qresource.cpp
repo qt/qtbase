@@ -471,6 +471,10 @@ qint64 QResourcePrivate::uncompressedSize() const
 qsizetype QResourcePrivate::decompress(char *buffer, qsizetype bufferSize) const
 {
     Q_ASSERT(data);
+#if defined(QT_NO_COMPRESS) && !QT_CONFIG(zstd)
+    Q_UNUSED(buffer);
+    Q_UNUSED(bufferSize);
+#endif
 
     switch (compressionAlgo) {
     case QResource::NoCompression:
