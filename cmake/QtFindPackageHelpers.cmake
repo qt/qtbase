@@ -308,18 +308,10 @@ function(qt_register_target_dependencies target public_libs private_libs)
         set(target_deps "")
     endif()
 
+    # Only process private dependencies if target is a static library
     get_target_property(target_type ${target} TYPE)
     set(lib_list ${public_libs})
-    # Record Qt target private dependencies information which will be used to generate
-    # find_dependency() calls.
-    #
-    # Private static library dependencies become $<LINK_ONLY:> dependencies in
-    # INTERFACE_LINK_LIBRARIES.
-    #
-    # Private shared library dependencies are listed in the target's
-    # IMPORTED_LINK_DEPENDENT_LIBRARIES and used in rpath-link calculation.
-    # See QTBUG-86533 for some details.
-    if (target_type STREQUAL "STATIC_LIBRARY" OR target_type STREQUAL "SHARED_LIBRARY")
+    if (target_type STREQUAL "STATIC_LIBRARY")
         list(APPEND lib_list ${private_libs})
     endif()
 
