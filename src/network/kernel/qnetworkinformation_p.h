@@ -89,16 +89,16 @@ public:
     TransportMedium transportMedium() const { return m_transportMedium; }
 
 Q_SIGNALS:
-    void reachabilityChanged();
-    void behindCaptivePortalChanged();
-    void transportMediumChanged();
+    void reachabilityChanged(Reachability reachability);
+    void behindCaptivePortalChanged(bool behindPortal);
+    void transportMediumChanged(TransportMedium medium);
 
 protected:
     void setReachability(QNetworkInformation::Reachability reachability)
     {
         if (m_reachability != reachability) {
             m_reachability = reachability;
-            emit reachabilityChanged();
+            emit reachabilityChanged(reachability);
         }
     }
 
@@ -106,7 +106,7 @@ protected:
     {
         if (m_behindCaptivePortal != behindPortal) {
             m_behindCaptivePortal = behindPortal;
-            emit behindCaptivePortalChanged();
+            emit behindCaptivePortalChanged(behindPortal);
         }
     }
 
@@ -114,7 +114,7 @@ protected:
     {
         if (m_transportMedium != medium) {
             m_transportMedium = medium;
-            emit transportMediumChanged();
+            emit transportMediumChanged(medium);
         }
     }
 

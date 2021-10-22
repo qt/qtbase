@@ -511,12 +511,11 @@ QNetworkInformation::QNetworkInformation(QNetworkInformationBackend *backend)
     : QObject(*(new QNetworkInformationPrivate(backend)))
 {
     connect(backend, &QNetworkInformationBackend::reachabilityChanged, this,
-            [this]() { emit reachabilityChanged(d_func()->backend->reachability()); });
-    connect(backend, &QNetworkInformationBackend::behindCaptivePortalChanged, this, [this]() {
-        emit isBehindCaptivePortalChanged(d_func()->backend->behindCaptivePortal());
-    });
+            &QNetworkInformation::reachabilityChanged);
+    connect(backend, &QNetworkInformationBackend::behindCaptivePortalChanged, this,
+            &QNetworkInformation::isBehindCaptivePortalChanged);
     connect(backend, &QNetworkInformationBackend::transportMediumChanged, this,
-            [this]() { emit transportMediumChanged(d_func()->backend->transportMedium()); });
+            &QNetworkInformation::transportMediumChanged);
 }
 
 /*!
