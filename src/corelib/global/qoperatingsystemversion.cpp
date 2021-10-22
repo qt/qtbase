@@ -467,6 +467,12 @@ const QOperatingSystemVersion QOperatingSystemVersion::Windows10 =
  */
 
 /*!
+    \variable QOperatingSystemVersion::Windows11
+    \brief a version corresponding to Windows 11 (version 10.0.22000).
+    \since 6.3
+ */
+
+/*!
     \variable QOperatingSystemVersion::OSXMavericks
     \brief a version corresponding to OS X Mavericks (version 10.9).
     \since 5.9

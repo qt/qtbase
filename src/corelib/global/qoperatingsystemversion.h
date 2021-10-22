@@ -230,6 +230,7 @@ public:
     static constexpr QOperatingSystemVersionBase Windows10_20H2 { QOperatingSystemVersionBase::Windows, 10, 0, 19042 };
     static constexpr QOperatingSystemVersionBase Windows10_21H1 { QOperatingSystemVersionBase::Windows, 10, 0, 19043 };
     static constexpr QOperatingSystemVersionBase Windows10_21H2 { QOperatingSystemVersionBase::Windows, 10, 0, 19044 };
+    static constexpr QOperatingSystemVersionBase Windows11 { QOperatingSystemVersionBase::Windows, 10, 0, 22000 };
 
     constexpr QOperatingSystemVersion(const QOperatingSystemVersionBase &osversion)
         : QOperatingSystemVersionBase(osversion) {}
