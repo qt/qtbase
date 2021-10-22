@@ -886,7 +886,9 @@ QFile::copy(const QString &fileName, const QString &newName)
 
     \note In \l{QIODevice::}{WriteOnly} or \l{QIODevice::}{ReadWrite}
     mode, if the relevant file does not already exist, this function
-    will try to create a new file before opening it.
+    will try to create a new file before opening it. The file will be
+    created with mode 0666 masked by the umask on POSIX systems, and
+    with permissions inherited from the parent directory on Windows.
 
     \sa QIODevice::OpenMode, setFileName()
 */
@@ -906,6 +908,51 @@ bool QFile::open(OpenMode mode)
 
     // QIODevice provides the buffering, so there's no need to request it from the file engine.
     if (d->engine()->open(mode | QIODevice::Unbuffered)) {
+        QIODevice::open(mode);
+        if (mode & Append)
+            seek(size());
+        return true;
+    }
+    QFile::FileError err = d->fileEngine->error();
+    if (err == QFile::UnspecifiedError)
+        err = QFile::OpenError;
+    d->setError(err, d->fileEngine->errorString());
+    return false;
+}
+
+/*!
+    \overload
+
+    If the file does not exist and \a mode implies creating it, it is created
+    with the specified \a permissions.
+
+    On POSIX systems the actual permissions are influenced by the
+    value of \c umask.
+
+    On Windows the permissions are emulated using ACLs. These ACLs may be in non-canonical
+    order when the group is granted less permissions than others. Files and directories with
+    such permissions will generate warnings when the Security tab of the Properties dialog
+    is opened. Granting the group all permissions granted to others avoids such warnings.
+
+    \sa QIODevice::OpenMode, setFileName()
+    \since 6.3
+*/
+bool QFile::open(OpenMode mode, QFile::Permissions permissions)
+{
+    Q_D(QFile);
+    if (isOpen())
+        return file_already_open(*this);
+    // Either Append or NewOnly implies WriteOnly
+    if (mode & (Append | NewOnly))
+        mode |= WriteOnly;
+    unsetError();
+    if ((mode & (ReadOnly | WriteOnly)) == 0) {
+        qWarning("QIODevice::open: File access not specified");
+        return false;
+    }
+
+    // QIODevice provides the buffering, so there's no need to request it from the file engine.
+    if (d->engine()->open(mode | QIODevice::Unbuffered, permissions)) {
         QIODevice::open(mode);
         if (mode & Append)
             seek(size());

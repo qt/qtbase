@@ -183,6 +183,8 @@ private slots:
     void ungetChar();
     void createFile();
     void createFileNewOnly();
+    void createFilePermissions_data();
+    void createFilePermissions();
     void openFileExistingOnly();
     void append();
     void permissions_data();
@@ -1266,6 +1268,56 @@ void tst_QFile::createFileNewOnly()
     QVERIFY(!f.open(QIODevice::NewOnly));
     QVERIFY(QFile::exists("createme.txt"));
     QFile::remove("createme.txt");
+}
+
+void tst_QFile::createFilePermissions_data()
+{
+    QTest::addColumn<QFile::Permissions>("permissions");
+
+    for (int u = 0; u < 8; ++u) {
+        for (int g = 0; g < 8; ++g) {
+            for (int o = 0; o < 8; ++o) {
+                auto permissions = QFileDevice::Permissions::fromInt((u << 12) | (g << 4) | o);
+                QTest::addRow("%04x", permissions.toInt()) << permissions;
+            }
+        }
+    }
+}
+
+void tst_QFile::createFilePermissions()
+{
+    QFETCH(QFile::Permissions, permissions);
+
+#ifdef Q_OS_WIN
+    QScopedValueRollback<int> ntfsMode(qt_ntfs_permission_lookup);
+    ++qt_ntfs_permission_lookup;
+#endif
+#ifdef Q_OS_UNIX
+    auto restoreMask = qScopeGuard([oldMask = umask(0)] { umask(oldMask); });
+#endif
+
+    const QFile::Permissions setPermissions = {
+        QFile::ReadOther, QFile::WriteOther, QFile::ExeOther,
+        QFile::ReadGroup, QFile::WriteGroup, QFile::ExeGroup,
+        QFile::ReadOwner, QFile::WriteOwner, QFile::ExeOwner
+    };
+
+    const QString fileName = u"createme.txt"_qs;
+
+    QFile::remove(fileName);
+    QVERIFY(!QFile::exists(fileName));
+
+    QFile f(fileName);
+    auto removeFile = qScopeGuard([&f] {
+        f.close();
+        f.remove();
+    });
+    QVERIFY2(f.open(QIODevice::WriteOnly, permissions), msgOpenFailed(f).constData());
+
+    QVERIFY(QFile::exists(fileName));
+
+    auto actualPermissions = QFileInfo(fileName).permissions();
+    QCOMPARE(actualPermissions & setPermissions, permissions);
 }
 
 void tst_QFile::openFileExistingOnly()

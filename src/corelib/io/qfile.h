@@ -284,6 +284,7 @@ public:
 #endif // QT_CONFIG(cxx17_filesystem)
 
     bool open(OpenMode flags) override;
+    bool open(OpenMode flags, Permissions permissions);
     bool open(FILE *f, OpenMode ioFlags, FileHandleFlags handleFlags=DontCloseHandle);
     bool open(int fd, OpenMode ioFlags, FileHandleFlags handleFlags=DontCloseHandle);
 
