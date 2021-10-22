@@ -142,9 +142,9 @@ if(QT_TOOLCHAIN_INCLUDE_FILE)
 endif()
 
 # Compile tests only see a restricted set of variables.
-# All cache variables, this toolchain file uses, must be made available to compile tests,
-# because this toolchain file will be included there too.
-if(NOT ENV{_QT_TOOLCHAIN_VARS_INITIALIZED})
+# All cache variables, this toolchain file uses, must be made available to project-based
+# try_compile tests because this toolchain file will be included there too.
+if(NOT "$ENV{_QT_TOOLCHAIN_VARS_INITIALIZED}")
     set(ENV{_QT_TOOLCHAIN_VARS_INITIALIZED} ON)
     foreach(var ${__qt_toolchain_used_variables})
         set(ENV{_QT_TOOLCHAIN_${var}} "${${var}}")
