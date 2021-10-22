@@ -2437,6 +2437,7 @@ bool VCFilter::addExtraCompiler(const VCFilterFile &info)
                 cmd_name = cmd.left(space);
             else
                 cmd_name = cmd;
+            cmd_name = cmd_name.trimmed();
         }
 
         // Fixify paths
