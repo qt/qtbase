@@ -5,6 +5,7 @@ set(__qt_toolchain_used_variables
     QT_TOOLCHAIN_RELOCATABLE_PREFIX
     QT_HOST_PATH
     QT_HOST_PATH_CMAKE_DIR
+    QT_REQUIRE_HOST_PATH_CHECK
 )
 @init_additional_used_variables@
 
@@ -142,7 +143,12 @@ endif()
 
 # Set up QT_HOST_PATH and do sanity checks.
 # A host path is required when cross-compiling but optional when doing a native build.
-set(__qt_toolchain_host_path_required "@qt_host_path_required@")
+# Requiredness can be overridden via variable.
+if(DEFINED QT_REQUIRE_HOST_PATH_CHECK)
+    set(__qt_toolchain_host_path_required "${QT_REQUIRE_HOST_PATH_CHECK}")
+else()
+    set(__qt_toolchain_host_path_required "@qt_host_path_required@")
+endif()
 set(__qt_toolchain_initial_qt_host_path
     "@qt_host_path_absolute@")
 set(__qt_toolchain_initial_qt_host_path_cmake_dir
