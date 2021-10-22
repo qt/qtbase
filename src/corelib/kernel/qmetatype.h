@@ -2369,9 +2369,13 @@ public:
 };
 #undef QT_METATYPE_CONSTEXPRLAMDA
 
-#ifndef QT_BOOTSTRAPPED
+/*
+ MSVC instantiates extern templates
+(https://developercommunity.visualstudio.com/t/c11-extern-templates-doesnt-work-for-class-templat/157868)
+ */
+#if !defined(QT_BOOTSTRAPPED) && !defined(Q_CC_MSVC)
 
-#if !defined(Q_CC_MSVC) || !defined(QT_BUILD_CORE_LIB)
+#if !defined(QT_BUILD_CORE_LIB)
 #define QT_METATYPE_TEMPLATE_EXPORT Q_CORE_EXPORT
 #else
 #define QT_METATYPE_TEMPLATE_EXPORT
