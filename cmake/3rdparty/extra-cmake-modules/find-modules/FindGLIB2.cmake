@@ -71,6 +71,30 @@ find_library(GTHREAD2_LIBRARIES
              HINTS ${PC_GTHREAD2_LIBDIR}
 )
 
+pkg_check_modules(PC_GOBJECT QUIET gobject-2.0)
+
+find_path(GOBJECT_INCLUDE_DIRS
+          NAMES glib-object.h
+          HINTS ${PC_GOBJECT_INCLUDEDIR}
+          PATH_SUFFIXES glib-2.0)
+
+find_library(GOBJECT_LIBRARIES
+             NAMES gobject-2.0
+             HINTS ${PC_GOBJECT_LIBDIR}
+)
+
+pkg_check_modules(PC_GIO QUIET gio-2.0)
+
+find_path(GIO_INCLUDE_DIRS
+          NAMES gio/gio.h
+          HINTS ${PC_GIO_INCLUDEDIR}
+          PATH_SUFFIXES glib-2.0)
+
+find_library(GIO_LIBRARIES
+             NAMES gio-2.0
+             HINTS ${PC_GIO_LIBDIR}
+)
+
 # search the glibconfig.h include dir under the same root where the library is found
 get_filename_component(glib2LibDir "${GLIB2_LIBRARIES}" PATH)
 
@@ -82,6 +106,8 @@ find_path(GLIB2_INTERNAL_INCLUDE_DIR glibconfig.h
 # for now it is optional
 if(GLIB2_INTERNAL_INCLUDE_DIR)
   list(APPEND GLIB2_INCLUDE_DIRS "${GLIB2_INTERNAL_INCLUDE_DIR}")
+  list(APPEND GOBJECT_INCLUDE_DIRS "${GLIB2_INTERNAL_INCLUDE_DIR}")
+  list(APPEND GIO_INCLUDE_DIRS "${GLIB2_INTERNAL_INCLUDE_DIR}")
 endif()
 
 # Deprecated synonyms
@@ -90,6 +116,8 @@ set(GLIB2_LIBRARY "${GLIB2_LIBRARIES}")
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(GLIB2 DEFAULT_MSG GLIB2_LIBRARIES GTHREAD2_LIBRARIES GLIB2_INCLUDE_DIRS)
+find_package_handle_standard_args(GOBJECT DEFAULT_MSG GOBJECT_LIBRARIES GOBJECT_INCLUDE_DIRS)
+find_package_handle_standard_args(GIO DEFAULT_MSG GIO_LIBRARIES GIO_INCLUDE_DIRS)
 
 if(GLIB2_FOUND AND NOT TARGET GLIB2::GLIB2)
   add_library(GLIB2::GLIB2 UNKNOWN IMPORTED)
@@ -99,8 +127,26 @@ if(GLIB2_FOUND AND NOT TARGET GLIB2::GLIB2)
                         INTERFACE_INCLUDE_DIRECTORIES "${GLIB2_INCLUDE_DIRS}")
 endif()
 
+if(GOBJECT_FOUND AND NOT TARGET GLIB2::GOBJECT)
+  add_library(GLIB2::GOBJECT UNKNOWN IMPORTED)
+  set_target_properties(GLIB2::GOBJECT PROPERTIES
+                        IMPORTED_LOCATION "${GOBJECT_LIBRARIES}"
+                        INTERFACE_INCLUDE_DIRECTORIES "${GOBJECT_INCLUDE_DIRS}")
+endif()
+
+if(GIO_FOUND AND NOT TARGET GLIB2::GIO)
+  add_library(GLIB2::GIO UNKNOWN IMPORTED)
+  set_target_properties(GLIB2::GIO PROPERTIES
+                        IMPORTED_LOCATION "${GIO_LIBRARIES}"
+                        INTERFACE_INCLUDE_DIRECTORIES "${GIO_INCLUDE_DIRS}")
+endif()
+
 mark_as_advanced(GLIB2_INCLUDE_DIRS GLIB2_INCLUDE_DIR
-                 GLIB2_LIBRARIES GLIB2_LIBRARY)
+                 GLIB2_LIBRARIES GLIB2_LIBRARY
+                 GOBJECT_INCLUDE_DIRS GOBJECT_INCLUDE_DIR
+                 GOBJECT_LIBRARIES GOBJECT_LIBRARY
+                 GIO_INCLUDE_DIRS GIO_INCLUDE_DIR
+                 GIO_LIBRARIES GIO_LIBRARY)
 
 include(FeatureSummary)
 set_package_properties(GLIB2 PROPERTIES
