@@ -35,14 +35,19 @@ configure_file(
     )
 
 write_basic_package_version_file(
-    "${__build_internals_build_dir}/${INSTALL_CMAKE_NAMESPACE}BuildInternalsConfigVersion.cmake"
+    "${__build_internals_build_dir}/${INSTALL_CMAKE_NAMESPACE}BuildInternalsConfigVersionImpl.cmake"
     VERSION ${PROJECT_VERSION}
     COMPATIBILITY AnyNewerVersion
+)
+qt_internal_write_qt_package_version_file(
+    "${INSTALL_CMAKE_NAMESPACE}BuildInternals"
+    "${__build_internals_build_dir}/${INSTALL_CMAKE_NAMESPACE}BuildInternalsConfigVersion.cmake"
 )
 
 qt_install(FILES
     "${__build_internals_build_dir}/${INSTALL_CMAKE_NAMESPACE}BuildInternalsConfig.cmake"
     "${__build_internals_build_dir}/${INSTALL_CMAKE_NAMESPACE}BuildInternalsConfigVersion.cmake"
+    "${__build_internals_build_dir}/${INSTALL_CMAKE_NAMESPACE}BuildInternalsConfigVersionImpl.cmake"
     "${__build_internals_build_dir}/QtBuildInternalsExtra.cmake"
     DESTINATION "${__build_internals_install_dir}"
     COMPONENT Devel
@@ -172,15 +177,20 @@ configure_file(
 )
 
 write_basic_package_version_file(
-    "${__GlobalConfig_build_dir}/${INSTALL_CMAKE_NAMESPACE}ConfigVersion.cmake"
+    "${__GlobalConfig_build_dir}/${INSTALL_CMAKE_NAMESPACE}ConfigVersionImpl.cmake"
     VERSION ${PROJECT_VERSION}
     COMPATIBILITY AnyNewerVersion
+)
+qt_internal_write_qt_package_version_file(
+    "${INSTALL_CMAKE_NAMESPACE}"
+    "${__GlobalConfig_build_dir}/${INSTALL_CMAKE_NAMESPACE}ConfigVersion.cmake"
 )
 
 qt_install(FILES
     "${__GlobalConfig_build_dir}/${INSTALL_CMAKE_NAMESPACE}Config.cmake"
     "${__GlobalConfig_build_dir}/${INSTALL_CMAKE_NAMESPACE}ConfigExtras.cmake"
     "${__GlobalConfig_build_dir}/${INSTALL_CMAKE_NAMESPACE}ConfigVersion.cmake"
+    "${__GlobalConfig_build_dir}/${INSTALL_CMAKE_NAMESPACE}ConfigVersionImpl.cmake"
     DESTINATION "${__GlobalConfig_install_dir}"
     COMPONENT Devel
 )
@@ -199,6 +209,7 @@ qt_copy_or_install(FILES
                    cmake/QtBuildInformation.cmake
                    cmake/QtCMakeHelpers.cmake
                    cmake/QtCMakeVersionHelpers.cmake
+                   cmake/QtCMakePackageVersionFile.cmake.in
                    cmake/QtCompilerFlags.cmake
                    cmake/QtCompilerOptimization.cmake
                    cmake/QtConfigDependencies.cmake.in

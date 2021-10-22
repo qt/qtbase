@@ -184,3 +184,25 @@ function(qt_internal_get_target_property out_var target property)
     endif()
     set(${out_var} "${result}" PARENT_SCOPE)
 endfunction()
+
+# Creates a wrapper ConfigVersion.cmake file to be loaded by find_package when checking for
+# compatible versions. It expects a ConfigVersionImpl.cmake file in the same directory which will
+# be included to do the regular version checks.
+# The version check result might be overridden by the wrapper.
+# package_name is used by the content of the wrapper file to include the basic package version file.
+#   example: Qt6Gui
+# out_path should be the build path where the write the file.
+function(qt_internal_write_qt_package_version_file package_name out_path)
+    set(extra_code "")
+
+    # Need to check for FEATURE_developer_build as well, because QT_FEATURE_developer_build is not
+    # yet available when configuring the file for the BuildInternals package.
+    if(FEATURE_developer_build OR QT_FEATURE_developer_build)
+        string(APPEND extra_code "
+# Disabling version check because Qt was configured with -developer-build.
+set(__qt_disable_package_version_check TRUE)
+set(__qt_disable_package_version_check_due_to_developer_build TRUE)")
+    endif()
+
+    configure_file("${QT_CMAKE_DIR}/QtCMakePackageVersionFile.cmake.in" "${out_path}" @ONLY)
+endfunction()
