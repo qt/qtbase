@@ -1101,7 +1101,8 @@ QString QPropertyBindingError::description() const
 
    \ingroup tools
 
-   QBindable\<T\> helps to integrate Qt's traditional Q_PROPERTY with binding-enabled properties.
+   QBindable\<T\> helps to integrate Qt's traditional Q_PROPERTY with
+   \l {Qt Bindable Properties}{binding-enabled} properties.
    If a property is backed by a QProperty, QObjectBindableProperty or QObjectComputedProperty,
    you can add \c BINDABLE bindablePropertyName to the Q_PROPERTY
    declaration, where bindablePropertyName is a function returning an instance of QBindable
@@ -1112,7 +1113,8 @@ QString QPropertyBindingError::description() const
    \snippet code/src_corelib_kernel_qproperty.cpp 0
    \snippet code/src_corelib_kernel_qproperty.cpp 3
 
-   \sa QMetaProperty::isBindable, QProperty, QObjectBindableProperty
+   \sa QMetaProperty::isBindable, QProperty, QObjectBindableProperty,
+       QObjectComputedProperty, {Qt Bindable Properties}
 */
 
 /*!
@@ -1438,6 +1440,9 @@ QString QPropertyBindingError::description() const
   "NOTIFY xChanged" in the Q_PROPERTY macro as well as the last argument
   of the Q_OBJECT_BINDABLE_PROPERTY and Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS
   macros.
+
+  \sa Q_OBJECT_BINDABLE_PROPERTY, Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS, QProperty,
+      QObjectComputedProperty, {Qt's Property System}, {Qt Bindable Properties}
 */
 
 /*!
@@ -1592,8 +1597,8 @@ QString QPropertyBindingError::description() const
   QObjectComputedProperty is not suitable for use with a computation that depends
   on any input that might change without notice, such as the contents of a file.
 
-  \sa Q_OBJECT_COMPUTED_PROPERTY, QObjectBindableProperty, {Qt's Property System},
-      {Qt Bindable Properties}
+  \sa Q_OBJECT_COMPUTED_PROPERTY, QProperty, QObjectBindableProperty,
+      {Qt's Property System}, {Qt Bindable Properties}
 */
 
 /*!

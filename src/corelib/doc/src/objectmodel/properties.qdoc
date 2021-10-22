@@ -296,4 +296,21 @@
 
     Like other meta-data, class information is accessible at run-time
     through the meta-object; see QMetaObject::classInfo() for details.
+
+    \section1 Using Bindable Properties
+
+    Three different types can be used to implement bindable properties:
+    \list
+        \li \l QProperty
+        \li \l QObjectBindableProperty
+        \li \l QObjectComputedProperty.
+    \endlist
+    The first one is a general class for bindable properties. The latter
+    two can only be used inside a \l QObject.
+
+    For more information, including examples, see the classes mentioned above
+    and the general tips on implementing and using
+    \l {Qt Bindable Properties}{bindable properties}.
+
+    \sa {Qt Bindable Properties}
 */
