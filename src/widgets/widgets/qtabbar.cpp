@@ -1433,6 +1433,13 @@ void QTabBar::setCurrentIndex(int index)
     int oldIndex = d->currentIndex;
     if (auto tab = d->at(index)) {
         d->currentIndex = index;
+        // If the size hint depends on whether the tab is selected (for instance a style
+        // sheet rule that sets a bold font on the 'selected' tab) then we need to
+        // re-layout the entire tab bar. To minimize the cost, do that only if the
+        // size hint changes for the tab that becomes the current tab (the old curent tab
+        // will most certainly do the same). QTBUG-6905
+        if (tabRect(index).size() != tabSizeHint(index))
+            d->layoutTabs();
         update();
         d->makeVisible(index);
         if (d->validIndex(oldIndex)) {
