@@ -2264,7 +2264,17 @@ static const char *osVer_helper(QOperatingSystemVersion version = QOperatingSyst
     case Q_WINVER(6, 3):
         return workstation ? "8.1" : "Server 2012 R2";
     case Q_WINVER(10, 0):
-        return workstation ? "10" : "Server 2016";
+        if (workstation) {
+            if (osver.dwBuildNumber >= 22000)
+                return "11";
+            return "10";
+        }
+        // else: Server
+        if (osver.dwBuildNumber >= 20348)
+            return "Server 2022";
+        if (osver.dwBuildNumber >= 17763)
+            return "Server 2019";
+        return "Server 2016";
     }
 #undef Q_WINVER
     // unknown, future version
