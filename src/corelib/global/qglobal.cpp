@@ -2215,7 +2215,17 @@ static const char *osVer_helper(QOperatingSystemVersion version = QOperatingSyst
 #define Q_WINVER(major, minor) (major << 8 | minor)
     switch (Q_WINVER(osver.dwMajorVersion, osver.dwMinorVersion)) {
     case Q_WINVER(10, 0):
-        return workstation ? "10" : "Server 2016";
+        if (workstation) {
+            if (osver.dwBuildNumber >= 22000)
+                return "11";
+            return "10";
+        }
+        // else: Server
+        if (osver.dwBuildNumber >= 20348)
+            return "Server 2022";
+        if (osver.dwBuildNumber >= 17763)
+            return "Server 2019";
+        return "Server 2016";
     }
 #undef Q_WINVER
     // unknown, future version
