@@ -39,6 +39,7 @@
 
 #include "qplatformdefs.h"
 #include "private/qabstractfileengine_p.h"
+#include "private/qfiledevice_p.h"
 #include "private/qfsfileengine_p.h"
 #include "private/qcore_unix_p.h"
 #include "qfilesystementry_p.h"
@@ -107,7 +108,16 @@ static inline QString msgOpenDirectory()
 /*!
     \internal
 */
-bool QFSFileEnginePrivate::nativeOpen(QIODevice::OpenMode openMode)
+bool QFSFileEnginePrivate::nativeOpen(QIODevice::OpenMode openMode,
+                                      std::optional<QFile::Permissions> permissions)
+{
+    return nativeOpenImpl(openMode, permissions ? QtPrivate::toMode_t(*permissions) : 0666);
+}
+
+/*!
+    \internal
+*/
+bool QFSFileEnginePrivate::nativeOpenImpl(QIODevice::OpenMode openMode, mode_t mode)
 {
     Q_Q(QFSFileEngine);
 
@@ -118,7 +128,7 @@ bool QFSFileEnginePrivate::nativeOpen(QIODevice::OpenMode openMode)
 
         // Try to open the file in unbuffered mode.
         do {
-            fd = QT_OPEN(fileEntry.nativeFilePath().constData(), flags, 0666);
+            fd = QT_OPEN(fileEntry.nativeFilePath().constData(), flags, mode);
         } while (fd == -1 && errno == EINTR);
 
         // On failure, return and report the error.

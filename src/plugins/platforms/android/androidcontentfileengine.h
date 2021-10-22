@@ -46,7 +46,7 @@ class AndroidContentFileEngine : public QFSFileEngine
 {
 public:
     AndroidContentFileEngine(const QString &fileName);
-    bool open(QIODevice::OpenMode openMode) override;
+    bool open(QIODevice::OpenMode openMode, std::optional<QFile::Permissions> permissions) override;
     qint64 size() const override;
     FileFlags fileFlags(FileFlags type = FileInfoAll) const override;
     QString fileName(FileName file = DefaultName) const override;

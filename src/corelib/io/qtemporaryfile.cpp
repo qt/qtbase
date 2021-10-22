@@ -340,7 +340,8 @@ void QTemporaryFileEngine::setFileName(const QString &file)
     QFSFileEngine::setFileName(file);
 }
 
-bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
+bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode,
+                                std::optional<QFile::Permissions> permissions)
 {
     Q_D(QFSFileEngine);
     Q_ASSERT(!isReallyOpen());
@@ -348,7 +349,7 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
     openMode |= QIODevice::ReadWrite;
 
     if (!filePathIsTemplate)
-        return QFSFileEngine::open(openMode);
+        return QFSFileEngine::open(openMode, permissions);
 
     QTemporaryFileName tfn(templateName);
 

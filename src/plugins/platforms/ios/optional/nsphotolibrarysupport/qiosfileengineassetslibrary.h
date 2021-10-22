@@ -54,7 +54,7 @@ public:
     QIOSFileEngineAssetsLibrary(const QString &fileName);
     ~QIOSFileEngineAssetsLibrary();
 
-    bool open(QIODevice::OpenMode openMode) override;
+    bool open(QIODevice::OpenMode openMode, std::optional<QFile::Permissions> permissions) override;
     bool close() override;
     FileFlags fileFlags(FileFlags type) const override;
     qint64 size() const override;

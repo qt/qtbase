@@ -263,7 +263,7 @@ void tst_qfile::readBigFile()
 #ifdef QT_BUILD_INTERNAL
         case QFSFileEngineBenchmark: {
             QFSFileEngine fse(tempDir.filename);
-            fse.open(QIODevice::ReadOnly|textMode|bufferedMode);
+            fse.open(QIODevice::ReadOnly | textMode | bufferedMode, std::nullopt);
             QBENCHMARK {
                 //qWarning() << fse.supportsExtension(QAbstractFileEngine::AtEndExtension);
                 while (fse.read(buffer, blockSize)) {}
@@ -349,7 +349,7 @@ void tst_qfile::seek()
 #ifdef QT_BUILD_INTERNAL
         case QFSFileEngineBenchmark: {
             QFSFileEngine fse(tempDir.filename);
-            fse.open(QIODevice::ReadOnly | QIODevice::Unbuffered);
+            fse.open(QIODevice::ReadOnly | QIODevice::Unbuffered, std::nullopt);
             QBENCHMARK {
                 i=(i+1)%sp_size;
                 fse.seek(seekpos[i]);
@@ -426,7 +426,7 @@ void tst_qfile::open()
         case QFSFileEngineBenchmark: {
             QBENCHMARK {
                 QFSFileEngine fse(tempDir.filename);
-                fse.open(QIODevice::ReadOnly | QIODevice::Unbuffered);
+                fse.open(QIODevice::ReadOnly | QIODevice::Unbuffered, std::nullopt);
                 fse.close();
             }
         }
@@ -550,7 +550,7 @@ void tst_qfile::readSmallFiles()
             QList<QFSFileEngine*> fileList;
             for (const QString &file : files) {
                 QFSFileEngine *fse = new QFSFileEngine(tempDir.filePath(file));
-                fse->open(QIODevice::ReadOnly|textMode|bufferedMode);
+                fse->open(QIODevice::ReadOnly | textMode | bufferedMode, std::nullopt);
                 fileList.append(fse);
             }
 

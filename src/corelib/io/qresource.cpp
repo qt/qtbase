@@ -1409,8 +1409,11 @@ void QResourceFileEngine::setFileName(const QString &file)
     d->resource.setFileName(file);
 }
 
-bool QResourceFileEngine::open(QIODevice::OpenMode flags)
+bool QResourceFileEngine::open(QIODevice::OpenMode flags,
+                               std::optional<QFile::Permissions> permissions)
 {
+    Q_UNUSED(permissions);
+
     Q_D(QResourceFileEngine);
     if (d->resource.fileName().isEmpty()) {
         qWarning("QResourceFileEngine::open: Missing file name");

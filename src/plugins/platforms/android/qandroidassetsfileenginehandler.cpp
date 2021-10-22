@@ -261,8 +261,10 @@ public:
         close();
     }
 
-    bool open(QIODevice::OpenMode openMode) override
+    bool open(QIODevice::OpenMode openMode, std::optional<QFile::Permissions> permissions) override
     {
+        Q_UNUSED(permissions);
+
         if (m_isFolder || (openMode & QIODevice::WriteOnly))
             return false;
         close();
@@ -358,7 +360,7 @@ public:
         m_fileName = cleanedAssetPath(file);
         switch (FolderIterator::fileType(m_fileName)) {
         case AssetItem::Type::File:
-            open(QIODevice::ReadOnly);
+            open(QIODevice::ReadOnly, std::nullopt);
             break;
         case AssetItem::Type::Folder:
             m_isFolder = true;

@@ -383,10 +383,16 @@ QAbstractFileEngine::~QAbstractFileEngine()
 
     The \a mode is an OR combination of QIODevice::OpenMode and
     QIODevice::HandlingMode values.
+
+    If the file is created as a result of this call, its permissions are
+    set according to \a permissision. Null value means an implementation-
+    specific default.
 */
-bool QAbstractFileEngine::open(QIODevice::OpenMode openMode)
+bool QAbstractFileEngine::open(QIODevice::OpenMode openMode,
+                               std::optional<QFile::Permissions> permissions)
 {
     Q_UNUSED(openMode);
+    Q_UNUSED(permissions);
     return false;
 }
 

@@ -353,8 +353,11 @@ ALAsset *QIOSFileEngineAssetsLibrary::loadAsset() const
     return m_data->m_asset;
 }
 
-bool QIOSFileEngineAssetsLibrary::open(QIODevice::OpenMode openMode)
+bool QIOSFileEngineAssetsLibrary::open(QIODevice::OpenMode openMode,
+                                       std::optional<QFile::Permissions> permissions)
 {
+    Q_UNUSED(permissions);
+
     if (openMode & (QIODevice::WriteOnly | QIODevice::Text))
         return false;
     return loadAsset();

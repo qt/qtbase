@@ -76,8 +76,10 @@ public:
     {
     }
 
-    bool open(QIODevice::OpenMode openMode) override
+    bool open(QIODevice::OpenMode openMode, std::optional<QFile::Permissions> permissions) override
     {
+        Q_UNUSED(permissions);
+
         if (openForRead_ || openForWrite_) {
             qWarning("%s: file is already open for %s",
                      Q_FUNC_INFO,

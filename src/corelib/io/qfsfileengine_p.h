@@ -59,6 +59,10 @@
 
 #include <optional>
 
+#ifdef Q_OS_UNIX
+#include <sys/types.h> // for mode_t
+#endif
+
 #ifndef QT_NO_FSFILEENGINE
 
 QT_BEGIN_NAMESPACE
@@ -81,7 +85,7 @@ public:
     explicit QFSFileEngine(const QString &file);
     ~QFSFileEngine();
 
-    bool open(QIODevice::OpenMode openMode) override;
+    bool open(QIODevice::OpenMode openMode, std::optional<QFile::Permissions> permissions) override;
     bool open(QIODevice::OpenMode flags, FILE *fh);
     bool close() override;
     bool flush() override;
@@ -156,7 +160,7 @@ public:
     QFileSystemEntry fileEntry;
     QIODevice::OpenMode openMode;
 
-    bool nativeOpen(QIODevice::OpenMode openMode);
+    bool nativeOpen(QIODevice::OpenMode openMode, std::optional<QFile::Permissions> permissions);
     bool openFh(QIODevice::OpenMode flags, FILE *fh);
     bool openFd(QIODevice::OpenMode flags, int fd);
     bool nativeClose();
@@ -246,6 +250,10 @@ protected:
     void init();
 
     QAbstractFileEngine::FileFlags getPermissions(QAbstractFileEngine::FileFlags type) const;
+
+#ifdef Q_OS_UNIX
+    bool nativeOpenImpl(QIODevice::OpenMode openMode, mode_t mode);
+#endif
 };
 
 QT_END_NAMESPACE

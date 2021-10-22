@@ -39,6 +39,7 @@
 
 #include "qplatformdefs.h"
 #include "private/qabstractfileengine_p.h"
+#include "private/qfiledevice_p.h"
 #include "private/qfsfileengine_p.h"
 #include "qfilesystemengine_p.h"
 #include <qdebug.h>
@@ -95,7 +96,8 @@ QString QFSFileEnginePrivate::longFileName(const QString &path)
 /*
     \internal
 */
-bool QFSFileEnginePrivate::nativeOpen(QIODevice::OpenMode openMode)
+bool QFSFileEnginePrivate::nativeOpen(QIODevice::OpenMode openMode,
+                                      std::optional<QFile::Permissions> permissions)
 {
     Q_Q(QFSFileEngine);
 
@@ -115,11 +117,14 @@ bool QFSFileEnginePrivate::nativeOpen(QIODevice::OpenMode openMode)
                                 ? OPEN_ALWAYS
                                 : OPEN_EXISTING;
     // Create the file handle.
-    SECURITY_ATTRIBUTES securityAtts = { sizeof(SECURITY_ATTRIBUTES), NULL, FALSE };
+    QNativeFilePermissions nativePermissions(permissions, false);
+    if (!nativePermissions.isOk())
+        return false;
+
     fileHandle = CreateFile((const wchar_t*)fileEntry.nativeFilePath().utf16(),
                             accessRights,
                             shareMode,
-                            &securityAtts,
+                            nativePermissions.securityAttributes(),
                             creationDisp,
                             FILE_ATTRIBUTE_NORMAL,
                             NULL);

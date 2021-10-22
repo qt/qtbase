@@ -133,7 +133,7 @@ public:
     bool isReallyOpen() const;
     void setFileName(const QString &file) override;
 
-    bool open(QIODevice::OpenMode flags) override;
+    bool open(QIODevice::OpenMode flags, std::optional<QFile::Permissions> permissions) override;
     bool remove() override;
     bool rename(const QString &newName) override;
     bool renameOverwrite(const QString &newName) override;

@@ -54,8 +54,10 @@ AndroidContentFileEngine::AndroidContentFileEngine(const QString &f)
     setFileName(f);
 }
 
-bool AndroidContentFileEngine::open(QIODevice::OpenMode openMode)
+bool AndroidContentFileEngine::open(QIODevice::OpenMode openMode,
+                                    std::optional<QFile::Permissions> permissions)
 {
+    Q_UNUSED(permissions);
     QString openModeStr;
     if (openMode & QFileDevice::ReadOnly) {
         openModeStr += QLatin1Char('r');

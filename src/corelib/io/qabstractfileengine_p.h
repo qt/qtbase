@@ -124,7 +124,8 @@ public:
 
     virtual ~QAbstractFileEngine();
 
-    virtual bool open(QIODevice::OpenMode openMode);
+    virtual bool open(QIODevice::OpenMode openMode,
+                      std::optional<QFile::Permissions> permissions = std::nullopt);
     virtual bool close();
     virtual bool flush();
     virtual bool syncToDisk();
