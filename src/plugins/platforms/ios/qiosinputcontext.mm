@@ -732,8 +732,7 @@ void QIOSInputContext::reset()
 
     update(Qt::ImQueryAll);
 
-    [m_textResponder setMarkedText:@"" selectedRange:NSMakeRange(0, 0)];
-    [m_textResponder notifyInputDelegate:Qt::ImQueryInput];
+    [m_textResponder reset];
 }
 
 /*!
@@ -747,9 +746,7 @@ void QIOSInputContext::reset()
 void QIOSInputContext::commit()
 {
     qImDebug("unmarking text");
-
-    [m_textResponder unmarkText];
-    [m_textResponder notifyInputDelegate:Qt::ImSurroundingText];
+    [m_textResponder commit];
 }
 
 QLocale QIOSInputContext::locale() const

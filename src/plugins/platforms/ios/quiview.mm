@@ -306,7 +306,7 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
 
     // Nor do we want to deactivate the Qt window if the new responder
     // is temporarily handling text input on behalf of a Qt window.
-    if ([responder isKindOfClass:[QIOSTextInputResponder class]]) {
+    if ([responder isKindOfClass:[QIOSTextResponder class]]) {
         while ((responder = [responder nextResponder])) {
             if ([responder isKindOfClass:[QUIView class]])
                 return NO;

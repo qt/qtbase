@@ -54,7 +54,7 @@ const char kImePlatformDataReturnKeyType[] = "returnKeyType";
 
 @class QIOSLocaleListener;
 @class QIOSKeyboardListener;
-@class QIOSTextInputResponder;
+@class QIOSTextResponder;
 @protocol KeyboardState;
 
 QT_BEGIN_NAMESPACE
@@ -125,7 +125,7 @@ private:
 
     QIOSLocaleListener *m_localeListener;
     QIOSKeyboardListener *m_keyboardHideGesture;
-    QIOSTextInputResponder *m_textResponder;
+    QIOSTextResponder *m_textResponder;
     KeyboardState m_keyboardState;
     ImeState m_imeState;
 };

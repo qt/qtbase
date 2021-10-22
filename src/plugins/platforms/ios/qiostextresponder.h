@@ -48,7 +48,18 @@ class QIOSInputContext;
 
 QT_END_NAMESPACE
 
-@interface QIOSTextInputResponder : UIResponder <UITextInputTraits, UIKeyInput, UITextInput>
+@interface QIOSTextResponder : UIResponder
+
+- (instancetype)initWithInputContext:(QT_PREPEND_NAMESPACE(QIOSInputContext) *)context;
+
+- (void)notifyInputDelegate:(Qt::InputMethodQueries)updatedProperties;
+- (BOOL)needsKeyboardReconfigure:(Qt::InputMethodQueries)updatedProperties;
+- (void)reset;
+- (void)commit;
+
+@end
+
+@interface QIOSTextInputResponder : QIOSTextResponder <UITextInputTraits, UIKeyInput, UITextInput>
 
 - (instancetype)initWithInputContext:(QT_PREPEND_NAMESPACE(QIOSInputContext) *)context;
 - (BOOL)needsKeyboardReconfigure:(Qt::InputMethodQueries)updatedProperties;

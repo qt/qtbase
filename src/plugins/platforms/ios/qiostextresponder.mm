@@ -161,12 +161,11 @@
 
 // -------------------------------------------------------------------------
 
-@implementation QIOSTextInputResponder {
+@implementation QIOSTextResponder {
+    @public
     QT_PREPEND_NAMESPACE(QIOSInputContext) *m_inputContext;
     QT_PREPEND_NAMESPACE(QInputMethodQueryEvent) *m_configuredImeState;
-    QString m_markedText;
     BOOL m_inSendEventToFocusObject;
-    BOOL m_inSelectionChange;
 }
 
 - (instancetype)initWithInputContext:(QT_PREPEND_NAMESPACE(QIOSInputContext) *)inputContext
@@ -174,14 +173,207 @@
     if (!(self = [self init]))
         return self;
 
-    m_inSendEventToFocusObject = NO;
-    m_inSelectionChange = NO;
     m_inputContext = inputContext;
-
     m_configuredImeState = static_cast<QInputMethodQueryEvent*>(m_inputContext->imeState().currentState.clone());
+    m_inSendEventToFocusObject = NO;
+
+    return self;
+}
+
+- (void)dealloc
+{
+    delete m_configuredImeState;
+    [super dealloc];
+}
+
+- (QVariant)currentImeState:(Qt::InputMethodQuery)query
+{
+    return m_inputContext->imeState().currentState.value(query);
+}
+
+- (BOOL)canBecomeFirstResponder
+{
+    return YES;
+}
+
+- (BOOL)becomeFirstResponder
+{
+    FirstResponderCandidate firstResponderCandidate(self);
+
+    qImDebug() << "self:" << self << "first:" << [UIResponder currentFirstResponder];
+
+    if (![super becomeFirstResponder]) {
+        qImDebug() << self << "was not allowed to become first responder";
+        return NO;
+    }
+
+    qImDebug() << self << "became first responder";
+
+    return YES;
+}
+
+- (BOOL)resignFirstResponder
+{
+    qImDebug() << "self:" << self << "first:" << [UIResponder currentFirstResponder];
+
+    // Don't allow activation events of the window that we're doing text on behalf on
+    // to steal responder.
+    if (FirstResponderCandidate::currentCandidate() == [self nextResponder]) {
+        qImDebug("not allowing parent window to steal responder");
+        return NO;
+    }
+
+    if (![super resignFirstResponder])
+        return NO;
+
+    qImDebug() << self << "resigned first responder";
+
+    // Dismissing the keyboard will trigger resignFirstResponder, but so will
+    // a regular responder transfer to another window. In the former case, iOS
+    // will set the new first-responder to our next-responder, and in the latter
+    // case we'll have an active responder candidate.
+    if (![UIResponder currentFirstResponder] && !FirstResponderCandidate::currentCandidate()) {
+        // No first responder set anymore, sync this with Qt by clearing the
+        // focus object.
+        m_inputContext->clearCurrentFocusObject();
+    } else if ([UIResponder currentFirstResponder] == [self nextResponder]) {
+        // We have resigned the keyboard, and transferred first responder back to the parent view
+        Q_ASSERT(!FirstResponderCandidate::currentCandidate());
+        if ([self currentImeState:Qt::ImEnabled].toBool()) {
+            // The current focus object expects text input, but there
+            // is no keyboard to get input from. So we clear focus.
+            qImDebug("no keyboard available, clearing focus object");
+            m_inputContext->clearCurrentFocusObject();
+        }
+    } else {
+        // We've lost responder status because another Qt window was made active,
+        // another QIOSTextResponder was made first-responder, another UIView was
+        // made first-responder, or the first-responder was cleared globally. In
+        // either of these cases we don't have to do anything.
+        qImDebug("lost first responder, but not clearing focus object");
+    }
+
+    return YES;
+}
+
+- (UIResponder*)nextResponder
+{
+    return qApp->focusWindow() ?
+        reinterpret_cast<QUIView *>(qApp->focusWindow()->handle()->winId()) : 0;
+}
+
+// -------------------------------------------------------------------------
+
+- (void)notifyInputDelegate:(Qt::InputMethodQueries)updatedProperties
+{
+    Q_UNUSED(updatedProperties);
+}
+
+- (BOOL)needsKeyboardReconfigure:(Qt::InputMethodQueries)updatedProperties
+{
+    if (updatedProperties & Qt::ImEnabled) {
+        qImDebug() << "Qt::ImEnabled has changed since text responder was configured, need reconfigure";
+        return YES;
+    }
+
+    if (updatedProperties & Qt::ImReadOnly) {
+        qImDebug() << "Qt::ImReadOnly has changed since text responder was configured, need reconfigure";
+        return YES;
+    }
+
+    return NO;
+}
+
+- (void)reset
+{
+    // Nothing to reset for read-only text fields
+}
+
+- (void)commit
+{
+    // Nothing to commit for read-only text fields
+}
+
+// -------------------------------------------------------------------------
+
+#ifndef QT_NO_SHORTCUT
+
+- (void)sendKeyPressRelease:(Qt::Key)key modifiers:(Qt::KeyboardModifiers)modifiers
+{
+    QScopedValueRollback<BOOL> rollback(m_inSendEventToFocusObject, true);
+    QWindowSystemInterface::handleKeyEvent(qApp->focusWindow(), QEvent::KeyPress, key, modifiers);
+    QWindowSystemInterface::handleKeyEvent(qApp->focusWindow(), QEvent::KeyRelease, key, modifiers);
+}
+
+- (void)sendShortcut:(QKeySequence::StandardKey)standardKey
+{
+    const QKeyCombination combination = QKeySequence(standardKey)[0];
+    [self sendKeyPressRelease:combination.key() modifiers:combination.keyboardModifiers()];
+}
+
+- (BOOL)hasSelection
+{
+    QInputMethodQueryEvent query(Qt::ImAnchorPosition | Qt::ImCursorPosition);
+    QGuiApplication::sendEvent(QGuiApplication::focusObject(), &query);
+    int anchorPos = query.value(Qt::ImAnchorPosition).toInt();
+    int cursorPos = query.value(Qt::ImCursorPosition).toInt();
+    return anchorPos != cursorPos;
+}
+
+- (BOOL)canPerformAction:(SEL)action withSender:(id)sender
+{
+    const bool isSelectAction =
+            action == @selector(select:) ||
+            action == @selector(selectAll:);
+
+    const bool isReadAction = action == @selector(copy:);
+
+    if (!isSelectAction && !isReadAction)
+        return [super canPerformAction:action withSender:sender];
+
+    const bool hasSelection = [self hasSelection];
+    return (!hasSelection && isSelectAction) || (hasSelection && isReadAction);
+}
+
+- (void)copy:(id)sender
+{
+    Q_UNUSED(sender);
+    [self sendShortcut:QKeySequence::Copy];
+}
+
+- (void)select:(id)sender
+{
+    Q_UNUSED(sender);
+    [self sendShortcut:QKeySequence::MoveToPreviousWord];
+    [self sendShortcut:QKeySequence::SelectNextWord];
+}
+
+- (void)selectAll:(id)sender
+{
+    Q_UNUSED(sender);
+    [self sendShortcut:QKeySequence::SelectAll];
+}
+
+#endif // QT_NO_SHORTCUT
+
+@end
+
+// -------------------------------------------------------------------------
+
+@implementation QIOSTextInputResponder {
+    QString m_markedText;
+    BOOL m_inSelectionChange;
+}
+
+- (instancetype)initWithInputContext:(QT_PREPEND_NAMESPACE(QIOSInputContext) *)inputContext
+{
+    if (!(self = [super initWithInputContext:inputContext]))
+        return self;
+
+    m_inSelectionChange = NO;
+
     QVariantMap platformData = m_configuredImeState->value(Qt::ImPlatformData).toMap();
     Qt::InputMethodHints hints = Qt::InputMethodHints(m_configuredImeState->value(Qt::ImHints).toUInt());
-
     Qt::EnterKeyType enterKeyType = Qt::EnterKeyType(m_configuredImeState->value(Qt::ImEnterKeyType).toUInt());
 
     switch (enterKeyType) {
@@ -264,29 +456,27 @@
 {
     self.inputView = 0;
     self.inputAccessoryView = 0;
-    delete m_configuredImeState;
 
     [super dealloc];
 }
 
 - (BOOL)needsKeyboardReconfigure:(Qt::InputMethodQueries)updatedProperties
 {
-    if ((updatedProperties & Qt::ImEnabled)) {
-        Q_ASSERT([self currentImeState:Qt::ImEnabled].toBool());
-
+    Qt::InputMethodQueries relevantProperties = updatedProperties;
+    if ((relevantProperties & Qt::ImEnabled)) {
         // When switching on input-methods we need to consider hints and platform data
         // as well, as the IM state that we were based on may have been invalidated when
         // IM was switched off.
 
         qImDebug("IM was turned on, we need to check hints and platform data as well");
-        updatedProperties |= (Qt::ImHints | Qt::ImPlatformData);
+        relevantProperties |= (Qt::ImHints | Qt::ImPlatformData);
     }
 
     // Based on what we set up in initWithInputContext above
-    updatedProperties &= (Qt::ImHints | Qt::ImEnterKeyType | Qt::ImPlatformData);
+    relevantProperties &= (Qt::ImHints | Qt::ImEnterKeyType | Qt::ImPlatformData);
 
-    if (!updatedProperties)
-        return NO;
+    if (!relevantProperties)
+        return [super needsKeyboardReconfigure:updatedProperties];
 
     for (uint i = 0; i < (sizeof(Qt::ImQueryAll) * CHAR_BIT); ++i) {
         if (Qt::InputMethodQuery property = Qt::InputMethodQuery(int(updatedProperties & (1 << i)))) {
@@ -297,99 +487,12 @@
         }
     }
 
-    return NO;
-}
-
-- (BOOL)canBecomeFirstResponder
-{
-    return YES;
-}
-
-- (BOOL)becomeFirstResponder
-{
-    FirstResponderCandidate firstResponderCandidate(self);
-
-    qImDebug() << "self:" << self << "first:" << [UIResponder currentFirstResponder];
-
-    if (![super becomeFirstResponder]) {
-        qImDebug() << self << "was not allowed to become first responder";
-        return NO;
-    }
-
-    qImDebug() << self << "became first responder";
-
-    return YES;
-}
-
-- (BOOL)resignFirstResponder
-{
-    qImDebug() << "self:" << self << "first:" << [UIResponder currentFirstResponder];
-
-    // Don't allow activation events of the window that we're doing text on behalf on
-    // to steal responder.
-    if (FirstResponderCandidate::currentCandidate() == [self nextResponder]) {
-        qImDebug("not allowing parent window to steal responder");
-        return NO;
-    }
-
-    if (![super resignFirstResponder])
-        return NO;
-
-    qImDebug() << self << "resigned first responder";
-
-    // Dismissing the keyboard will trigger resignFirstResponder, but so will
-    // a regular responder transfer to another window. In the former case, iOS
-    // will set the new first-responder to our next-responder, and in the latter
-    // case we'll have an active responder candidate.
-    if (![UIResponder currentFirstResponder] && !FirstResponderCandidate::currentCandidate()) {
-        // No first responder set anymore, sync this with Qt by clearing the
-        // focus object.
-        m_inputContext->clearCurrentFocusObject();
-    } else if ([UIResponder currentFirstResponder] == [self nextResponder]) {
-        // We have resigned the keyboard, and transferred first responder back to the parent view
-        Q_ASSERT(!FirstResponderCandidate::currentCandidate());
-        if ([self currentImeState:Qt::ImEnabled].toBool()) {
-            // The current focus object expects text input, but there
-            // is no keyboard to get input from. So we clear focus.
-            qImDebug("no keyboard available, clearing focus object");
-            m_inputContext->clearCurrentFocusObject();
-        }
-    } else {
-        // We've lost responder status because another Qt window was made active,
-        // another QIOSTextResponder was made first-responder, another UIView was
-        // made first-responder, or the first-responder was cleared globally. In
-        // either of these cases we don't have to do anything.
-        qImDebug("lost first responder, but not clearing focus object");
-    }
-
-    return YES;
-}
-
-
-- (UIResponder*)nextResponder
-{
-    return qApp->focusWindow() ?
-        reinterpret_cast<QUIView *>(qApp->focusWindow()->handle()->winId()) : 0;
+    return [super needsKeyboardReconfigure:updatedProperties];
 }
 
 // -------------------------------------------------------------------------
 
-- (void)sendKeyPressRelease:(Qt::Key)key modifiers:(Qt::KeyboardModifiers)modifiers
-{
-    QScopedValueRollback<BOOL> rollback(m_inSendEventToFocusObject, true);
-    QWindowSystemInterface::handleKeyEvent(qApp->focusWindow(), QEvent::KeyPress, key, modifiers);
-    QWindowSystemInterface::handleKeyEvent(qApp->focusWindow(), QEvent::KeyRelease, key, modifiers);
-}
-
 #ifndef QT_NO_SHORTCUT
-
-- (void)sendShortcut:(QKeySequence::StandardKey)standardKey
-{
-    const int keys = QKeySequence(standardKey)[0];
-    Qt::Key key = Qt::Key(keys & 0x0000FFFF);
-    Qt::KeyboardModifiers modifiers = Qt::KeyboardModifiers(keys & 0xFFFF0000);
-    [self sendKeyPressRelease:key modifiers:modifiers];
-}
 
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender
 {
@@ -410,7 +513,7 @@
         || action == @selector(redo));
 
     const bool unknownAction = !isEditAction && !isSelectAction;
-    const bool hasSelection = ![self selectedTextRange].empty;
+    const bool hasSelection = [self hasSelection];
 
     if (unknownAction)
         return [super canPerformAction:action withSender:sender];
@@ -434,29 +537,10 @@
     [self sendShortcut:QKeySequence::Cut];
 }
 
-- (void)copy:(id)sender
-{
-    Q_UNUSED(sender);
-    [self sendShortcut:QKeySequence::Copy];
-}
-
 - (void)paste:(id)sender
 {
     Q_UNUSED(sender);
     [self sendShortcut:QKeySequence::Paste];
-}
-
-- (void)select:(id)sender
-{
-    Q_UNUSED(sender);
-    [self sendShortcut:QKeySequence::MoveToPreviousWord];
-    [self sendShortcut:QKeySequence::SelectNextWord];
-}
-
-- (void)selectAll:(id)sender
-{
-    Q_UNUSED(sender);
-    [self sendShortcut:QKeySequence::SelectAll];
 }
 
 - (void)delete:(id)sender
@@ -645,11 +729,6 @@
     QScopedValueRollback<BOOL> rollback(m_inSendEventToFocusObject);
     m_inSendEventToFocusObject = YES;
     QCoreApplication::sendEvent(focusObject, &e);
-}
-
-- (QVariant)currentImeState:(Qt::InputMethodQuery)query
-{
-    return m_inputContext->imeState().currentState.value(query);
 }
 
 - (id<UITextInputTokenizer>)tokenizer
