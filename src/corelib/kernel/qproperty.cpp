@@ -1640,7 +1640,6 @@ QString QPropertyBindingError::description() const
          properties to the bindable property system.
   \since 6.0
   \ingroup tools
-  \internal
 
   QObjectComputedProperty is a read-only property which is recomputed on each read.
   It does not store the computed value.
@@ -1720,7 +1719,6 @@ QString QPropertyBindingError::description() const
   \macro Q_OBJECT_COMPUTED_PROPERTY(containingClass, type, name, callback)
   \since 6.0
   \relates QObjectCompatProperty
-  \internal
   \brief Declares a \l QObjectComputedProperty inside \a containingClass
   of type \a type with name \a name. The argument \a callback specifies
   a GETTER function to be called when the property is evaluated.
