@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -104,6 +104,8 @@ private slots:
 
     void scrollButtons_data();
     void scrollButtons();
+
+    void currentTabLargeFont();
 
 private:
     void checkPositions(const TabBar &tabbar, const QList<int> &positions);
@@ -229,6 +231,7 @@ public:
     using QTabBar::initStyleOption;
     using QTabBar::moveTab;
     using QTabBar::QTabBar;
+    using QTabBar::tabSizeHint;
 };
 
 void tst_QTabBar::insertAtCurrentIndex()
@@ -933,6 +936,8 @@ void tst_QTabBar::mouseWheel()
     QVERIFY(tabbar.currentIndex() != startIndex);
 }
 
+#endif // QT_CONFIG(wheelevent)
+
 void tst_QTabBar::scrollButtons_data()
 {
     QTest::addColumn<QTabWidget::TabPosition>("tabPosition");
@@ -999,7 +1004,30 @@ void tst_QTabBar::scrollButtons()
     QVERIFY(!leftB->isEnabled());
 }
 
-#endif // QT_CONFIG(wheelevent)
+void tst_QTabBar::currentTabLargeFont()
+{
+    TabBar tabBar;
+    tabBar.setStyleSheet(R"(
+        QTabBar::tab::selected {
+            font-size: 24pt;
+        }
+    )");
+
+    tabBar.addTab("Tab Item 1");
+    tabBar.addTab("Tab Item 2");
+    tabBar.addTab("Tab Item 3");
+
+    tabBar.setCurrentIndex(0);
+    tabBar.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&tabBar));
+
+    QList<QRect> oldTabRects;
+    oldTabRects << tabBar.tabRect(0) << tabBar.tabRect(1) << tabBar.tabRect(2);
+    tabBar.setCurrentIndex(1);
+    QList<QRect> newTabRects;
+    newTabRects << tabBar.tabRect(0) << tabBar.tabRect(1) << tabBar.tabRect(2);
+    QVERIFY(oldTabRects != newTabRects);
+}
 
 QTEST_MAIN(tst_QTabBar)
 #include "tst_qtabbar.moc"
