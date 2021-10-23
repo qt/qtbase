@@ -164,7 +164,7 @@
     The range \c{[first,last)} must remain valid for the lifetime of
     this string view object.
 
-    Passing \c \nullptr as \a first is safe if \a last is \nullptr, too,
+    Passing \nullptr as \a first is safe if \a last is \nullptr, too,
     and results in a null string view.
 
     The behavior is undefined if \a last precedes \a first, or \a first
