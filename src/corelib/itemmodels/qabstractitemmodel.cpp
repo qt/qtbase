@@ -2086,7 +2086,7 @@ bool QAbstractItemModel::clearItemData(const QModelIndex &index)
     by the \a index.
 
     \note If you do not have a value to return, return an \b invalid
-    QVariant instead of returning 0.
+    (default-constructed) QVariant.
 
     \sa Qt::ItemDataRole, setData(), headerData()
 */
