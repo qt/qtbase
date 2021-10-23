@@ -36,6 +36,8 @@
 #include <qaction.h>
 #include <qactiongroup.h>
 #include <qmenu.h>
+#include <qmenubar.h>
+#include <qtoolbar.h>
 #include <qpa/qplatformtheme.h>
 #include <qpa/qplatformintegration.h>
 #include <private/qguiapplication_p.h>
@@ -65,6 +67,8 @@ private slots:
     void disableShortcutsWithBlockedWidgets_data();
     void disableShortcutsWithBlockedWidgets();
     void shortcutFromKeyEvent(); // QTBUG-48325
+    void disableShortcutInMenuAction_data();
+    void disableShortcutInMenuAction();
 #endif
 
 private:
@@ -416,6 +420,76 @@ void tst_QAction::shortcutFromKeyEvent()
     QApplication::sendEvent(&testWidget, &e);
     QCOMPARE(spy.count(), 1);
     QCOMPARE(testWidget.shortcutOverrideCount, 1);
+}
+
+/*
+    Ignore actions in menus whose menu action has been hidden or disabled.
+    The menu entry will not be in the menu bar or parent menu, so the action
+    is not reachable through interactive means. QTBUG-25743
+*/
+void tst_QAction::disableShortcutInMenuAction_data()
+{
+    QTest::addColumn<QByteArray>("property");
+
+    QTest::addRow("visible") << QByteArray("visible");
+    QTest::addRow("enabled") << QByteArray("enabled");
+}
+
+void tst_QAction::disableShortcutInMenuAction()
+{
+    QFETCH(QByteArray, property);
+
+    QMainWindow mw;
+    QMenu *testMenu = mw.menuBar()->addMenu("Test");
+    QAction *testAction = testMenu->addAction("Test Action");
+    testAction->setShortcut(Qt::ControlModifier | Qt::Key_A);
+    QToolBar *toolBar = new QToolBar;
+    mw.addToolBar(toolBar);
+
+    mw.show();
+    QVERIFY(QTest::qWaitForWindowActive(&mw));
+
+    int expectedTriggerCount = 0;
+    QSignalSpy spy(testAction, &QAction::triggered);
+
+    QKeyEvent event(QEvent::KeyPress, Qt::Key_A, Qt::ControlModifier);
+    QApplication::sendEvent(&mw, &event);
+    QCOMPARE(spy.count(), ++expectedTriggerCount);
+
+    testMenu->menuAction()->setProperty(property, false);
+    QApplication::sendEvent(&mw, &event);
+    QCOMPARE(spy.count(), expectedTriggerCount);
+
+    testMenu->menuAction()->setProperty(property, true);
+    QApplication::sendEvent(&mw, &event);
+    QCOMPARE(spy.count(), ++expectedTriggerCount);
+
+    // If the action lives somewhere else, then keep firing even
+    // if the menu has been hidden or disabled.
+    toolBar->addAction(testAction);
+    QApplication::sendEvent(&mw, &event);
+    QCOMPARE(spy.count(), ++expectedTriggerCount);
+
+    testMenu->menuAction()->setProperty(property, false);
+    QApplication::sendEvent(&mw, &event);
+    QCOMPARE(spy.count(), ++expectedTriggerCount);
+
+    // unless all other widgets in which the action lives have
+    // been hidden...
+    toolBar->hide();
+    QApplication::sendEvent(&mw, &event);
+    QCOMPARE(spy.count(), expectedTriggerCount);
+
+    // ... or disabled
+    toolBar->show();
+    toolBar->setEnabled(false);
+    QApplication::sendEvent(&mw, &event);
+    QCOMPARE(spy.count(), expectedTriggerCount);
+
+    // back to normal
+    toolBar->setEnabled(true);
+    QApplication::sendEvent(&mw, &event);
+    QCOMPARE(spy.count(), ++expectedTriggerCount);
 }
 
 #endif // QT_CONFIG(shortcut)
