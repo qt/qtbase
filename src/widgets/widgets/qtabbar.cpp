@@ -2388,10 +2388,48 @@ void QTabBar::wheelEvent(QWheelEvent *event)
 {
     Q_D(QTabBar);
     if (style()->styleHint(QStyle::SH_TabBar_AllowWheelScrolling)) {
-        int delta = (qAbs(event->angleDelta().x()) > qAbs(event->angleDelta().y()) ?
-                         event->angleDelta().x() : event->angleDelta().y());
-        int offset = delta > 0 ? -1 : 1;
-        d->setCurrentNextEnabledIndex(offset);
+        const bool wheelVertical = qAbs(event->angleDelta().y()) > qAbs(event->angleDelta().x());
+        const bool tabsVertical = verticalTabs(d->shape);
+        if (event->device()->capabilities().testFlag(QInputDevice::Capability::PixelScroll)) {
+            // For wheels/touch pads with pixel precision, scroll the tab bar if
+            // it has the right orientation.
+            int delta = 0;
+            if (tabsVertical == wheelVertical)
+                delta = wheelVertical ? event->pixelDelta().y() : event->pixelDelta().x();
+            if (layoutDirection() == Qt::RightToLeft)
+                delta = -delta;
+            if (delta && d->validIndex(d->lastVisible)) {
+                const int oldScrollOffset = d->scrollOffset;
+                const QRect lastTabRect = d->tabList.at(d->lastVisible)->rect;
+                const QRect scrollRect = d->normalizedScrollRect(d->lastVisible);
+                int scrollRectExtent = scrollRect.right();
+                if (!d->leftB->isVisible())
+                    scrollRectExtent += tabsVertical ? d->leftB->height() : d->leftB->width();
+                if (!d->rightB->isVisible())
+                    scrollRectExtent += tabsVertical ? d->rightB->height() : d->rightB->width();
+
+                const int maxScrollOffset = (tabsVertical ? lastTabRect.bottom()
+                                                          : lastTabRect.right())
+                                          - scrollRectExtent;
+                d->scrollOffset = qBound(0, d->scrollOffset - delta, maxScrollOffset);
+                d->leftB->setEnabled(d->scrollOffset > -scrollRect.left());
+                d->rightB->setEnabled(maxScrollOffset > d->scrollOffset);
+                if (oldScrollOffset != d->scrollOffset) {
+                    event->accept();
+                    update();
+                    return;
+                }
+            }
+        } else {
+            const int delta = wheelVertical ? event->angleDelta().y() : event->angleDelta().x();
+            const int offset = delta > 0 ? -1 : 1;
+            const int oldCurrentIndex = d->currentIndex;
+            d->setCurrentNextEnabledIndex(offset);
+            if (oldCurrentIndex != d->currentIndex) {
+                event->accept();
+                return;
+            }
+        }
         QWidget::wheelEvent(event);
     }
 }

@@ -101,6 +101,8 @@ private slots:
     void mouseReleaseOutsideTabBar();
 
     void mouseWheel();
+    void kineticWheel_data();
+    void kineticWheel();
 
     void scrollButtons_data();
     void scrollButtons();
@@ -889,20 +891,25 @@ void tst_QTabBar::checkPositions(const TabBar &tabbar, const QList<int> &positio
 }
 
 #if QT_CONFIG(wheelevent)
-// defined to be 120 by the wheel mouse vendors according to the docs
-#define WHEEL_DELTA 120
 
 class TabBarScrollingProxyStyle : public QProxyStyle
 {
 public:
-    TabBarScrollingProxyStyle() : QProxyStyle(), scrolling(true)
+    TabBarScrollingProxyStyle(const QString &defStyle = {})
+        : QProxyStyle(defStyle), scrolling(true)
     { }
 
     int styleHint(StyleHint hint, const QStyleOption *option = 0,
                   const QWidget *widget = 0, QStyleHintReturn *returnData = 0) const override
     {
-        if (hint == QStyle::SH_TabBar_AllowWheelScrolling)
+        switch (hint) {
+        case QStyle::SH_TabBar_AllowWheelScrolling:
             return scrolling;
+        case SH_TabBar_ElideMode:
+            return Qt::ElideNone;
+        default:
+            break;
+        }
 
         return QProxyStyle::styleHint(hint, option, widget, returnData);
     }
@@ -912,35 +919,191 @@ public:
 
 void tst_QTabBar::mouseWheel()
 {
+    TabBar tabbar;
 
-    // apply custom style to app, which can toggle tabbar scrolling behavior
-    QCoreApplication *applicationInstance = QApplication::instance();
-    QVERIFY(applicationInstance != 0);
-    auto *proxyStyle = new TabBarScrollingProxyStyle;
-    QApplication::setStyle(proxyStyle);
+    // apply custom style to the tabbar, which can toggle tabbar scrolling behavior
+    TabBarScrollingProxyStyle proxyStyle;
+    tabbar.setStyle(&proxyStyle);
 
     // make tabbar with three tabs, select the middle one
-    TabBar tabbar;
     tabbar.addTab("one");
     tabbar.addTab("two");
     tabbar.addTab("three");
     int startIndex = 1;
     tabbar.setCurrentIndex(startIndex);
 
+    const auto systemId = QPointingDevice::primaryPointingDevice()->systemId() + 1;
+    QPointingDevice clickyWheel("test clicky wheel", systemId, QInputDevice::DeviceType::Mouse,
+                                QPointingDevice::PointerType::Generic,
+                                QInputDevice::Capability::Position | QInputDevice::Capability::Scroll,
+                                1, 3);
+
     // define scroll event
     const QPoint wheelPoint = tabbar.rect().bottomRight();
-    QWheelEvent event(wheelPoint, tabbar.mapToGlobal(wheelPoint), QPoint(), QPoint(0, WHEEL_DELTA),
-                      Qt::NoButton, Qt::NoModifier, Qt::NoScrollPhase, false);
+    QWheelEvent event(wheelPoint, tabbar.mapToGlobal(wheelPoint),
+                      QPoint(), QPoint(0, QWheelEvent::DefaultDeltasPerStep),
+                      Qt::NoButton, Qt::NoModifier, Qt::NoScrollPhase, false,
+                      Qt::MouseEventSynthesizedByApplication, &clickyWheel);
 
     // disable scrolling, send scroll event, confirm that tab did not change
-    proxyStyle->scrolling = false;
-    QVERIFY(applicationInstance->sendEvent(&tabbar, &event));
+    proxyStyle.scrolling = false;
+    QVERIFY(QApplication::sendEvent(&tabbar, &event));
     QVERIFY(tabbar.currentIndex() == startIndex);
 
     // enable scrolling, send scroll event, confirm that tab changed
-    proxyStyle->scrolling = true;
-    QVERIFY(applicationInstance->sendEvent(&tabbar, &event));
+    proxyStyle.scrolling = true;
+    QVERIFY(QApplication::sendEvent(&tabbar, &event));
     QVERIFY(tabbar.currentIndex() != startIndex);
+}
+
+void tst_QTabBar::kineticWheel_data()
+{
+    QTest::addColumn<QTabBar::Shape>("tabShape");
+
+    QTest::addRow("North") << QTabBar::RoundedNorth;
+    QTest::addRow("East") << QTabBar::RoundedEast;
+    QTest::addRow("South") << QTabBar::RoundedSouth;
+    QTest::addRow("West") << QTabBar::RoundedWest;
+}
+
+void tst_QTabBar::kineticWheel()
+{
+    const auto systemId = QPointingDevice::primaryPointingDevice()->systemId() + 1;
+    QPointingDevice pixelPad("test pixel pad", systemId, QInputDevice::DeviceType::TouchPad,
+                             QPointingDevice::PointerType::Generic,
+                             QInputDevice::Capability::Position | QInputDevice::Capability::PixelScroll,
+                             1, 3);
+
+    QFETCH(QTabBar::Shape, tabShape);
+    QWidget window;
+    TabBar tabbar(&window);
+    // Since the macOS style makes sure that all tabs are always visible, we
+    // replace it with the windows style for this test, and use the proxy that
+    // makes sure that scrolling is enabled and that tab texts are not elided.
+    QString defaultStyle;
+    if (QApplication::style()->name() == QStringLiteral("macos"))
+        defaultStyle = "windows";
+    TabBarScrollingProxyStyle proxyStyle(defaultStyle);
+    tabbar.setStyle(&proxyStyle);
+
+    tabbar.addTab("long tab text 1");
+    tabbar.addTab("long tab text 2");
+    tabbar.addTab("long tab text 3");
+
+    // Make sure we don't have enough space for the tabs and need to scroll
+    const int tabbarLength = tabbar.tabRect(0).width() * 2;
+
+    tabbar.setShape(tabShape);
+    const bool horizontal = tabShape == QTabBar::RoundedNorth
+                         || tabShape == QTabBar::RoundedSouth;
+    if (horizontal)
+        tabbar.setFixedWidth(tabbarLength);
+    else
+        tabbar.setFixedHeight(tabbarLength);
+
+    // start with the middle tab, QTabBar will scroll to make it visible
+    const int startIndex = 1;
+    tabbar.setCurrentIndex(startIndex);
+
+    window.setMinimumSize(tabbarLength, tabbarLength);
+    window.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+
+    const auto *leftButton = tabbar.findChild<QAbstractButton*>(u"ScrollLeftButton"_qs);
+    const auto *rightButton = tabbar.findChild<QAbstractButton*>(u"ScrollRightButton"_qs);
+    QVERIFY(leftButton && rightButton);
+    QVERIFY(leftButton->isEnabled() && rightButton->isEnabled());
+
+    // Figure out if any of the buttons is laid out to be in front of the tabs.
+    // We can't use setUsesScrollButtons(false), as then several styles will enforce
+    // a minimum size for the tab bar.
+    const bool leftInFront = ((horizontal && leftButton->pos().x() < tabbar.rect().center().x())
+                           || (!horizontal && leftButton->pos().y() < tabbar.rect().center().y()));
+    const bool rightInFront = ((horizontal && rightButton->pos().x() < tabbar.rect().center().x())
+                            || (!horizontal && rightButton->pos().y() < tabbar.rect().center().y()));
+    QPoint leftEdge;
+    QPoint rightEdge;
+    if (leftInFront && rightInFront) { // both on the left
+        leftEdge = rightButton->geometry().bottomRight();
+        rightEdge = tabbar.rect().bottomRight();
+    } else if (leftInFront && !rightInFront) {
+        leftEdge = leftButton->geometry().bottomRight();
+        rightEdge = rightButton->geometry().topLeft();
+    } else { // both on the right
+        leftEdge = QPoint(0, 0);
+        rightEdge = leftButton->geometry().topLeft();
+    }
+    // avoid border lines
+    leftEdge += QPoint(2, 2);
+    if (horizontal) {
+        rightEdge += QPoint(-2, 2);
+    } else {
+        rightEdge += QPoint(2, -2);
+    }
+
+    QCOMPARE(tabbar.tabAt(leftEdge), 0);
+    QCOMPARE(tabbar.tabAt(rightEdge), 1);
+
+    const QPoint delta = horizontal ? QPoint(10, 0) : QPoint(0, 10);
+    const QPoint wheelPoint = tabbar.rect().center();
+
+    bool accepted = true;
+    Qt::ScrollPhase phase = Qt::ScrollBegin;
+    // scroll all the way to the end
+    while (accepted) {
+        QWheelEvent event(wheelPoint, tabbar.mapToGlobal(wheelPoint), -delta, -delta,
+                          Qt::NoButton, Qt::NoModifier, phase, false,
+                          Qt::MouseEventSynthesizedByApplication, &pixelPad);
+        if (phase == Qt::ScrollBegin)
+            phase = Qt::ScrollUpdate;
+        QApplication::sendEvent(&tabbar, &event);
+        accepted = event.isAccepted();
+    }
+    QCOMPARE(tabbar.tabAt(leftEdge), 1);
+    QCOMPARE(tabbar.tabAt(rightEdge), 2);
+    QVERIFY(leftButton->isEnabled());
+    QVERIFY(!rightButton->isEnabled());
+    // kinetic wheel events don't change the current index
+    QVERIFY(tabbar.currentIndex() == startIndex);
+
+    // scroll all the way to the beginning
+    accepted = true;
+    while (accepted) {
+        QWheelEvent event(wheelPoint, tabbar.mapToGlobal(wheelPoint), delta, delta,
+                          Qt::NoButton, Qt::NoModifier, phase, false,
+                          Qt::MouseEventSynthesizedByApplication, &pixelPad);
+        QApplication::sendEvent(&tabbar, &event);
+        accepted = event.isAccepted();
+    }
+
+    QCOMPARE(tabbar.tabAt(leftEdge), 0);
+    QCOMPARE(tabbar.tabAt(rightEdge), 1);
+    QVERIFY(!leftButton->isEnabled());
+    QVERIFY(rightButton->isEnabled());
+    // kinetic wheel events don't change the current index
+    QVERIFY(tabbar.currentIndex() == startIndex);
+
+    // make tabs small so that we have enough space, and verify sure we can't scroll
+    tabbar.setTabText(0, "A");
+    tabbar.setTabText(1, "B");
+    tabbar.setTabText(2, "C");
+    QVERIFY(tabbar.sizeHint().width() <= tabbar.width() && tabbar.sizeHint().height() <= tabbar.height());
+
+    {
+        QWheelEvent event(wheelPoint, tabbar.mapToGlobal(wheelPoint), -delta, -delta,
+                          Qt::NoButton, Qt::NoModifier, phase, false,
+                          Qt::MouseEventSynthesizedByApplication, &pixelPad);
+        QApplication::sendEvent(&tabbar, &event);
+        QVERIFY(!event.isAccepted());
+    }
+
+    {
+        QWheelEvent event(wheelPoint, tabbar.mapToGlobal(wheelPoint), delta, delta,
+                          Qt::NoButton, Qt::NoModifier, phase, false,
+                          Qt::MouseEventSynthesizedByApplication, &pixelPad);
+        QApplication::sendEvent(&tabbar, &event);
+        QVERIFY(!event.isAccepted());
+    }
 }
 
 #endif // QT_CONFIG(wheelevent)
