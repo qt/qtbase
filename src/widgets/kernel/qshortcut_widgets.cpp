@@ -307,7 +307,7 @@ static bool correctActionContext(Qt::ShortcutContext context, QAction *a, QWidge
                 continue;
 #endif
             QAction *a = menu->menuAction();
-            if (correctActionContext(context, a, active_window))
+            if (a->isVisible() && a->isEnabled() && correctActionContext(context, a, active_window))
                 return true;
         } else
 #endif
