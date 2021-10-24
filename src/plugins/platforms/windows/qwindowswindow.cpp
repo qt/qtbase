@@ -2481,6 +2481,11 @@ void QWindowsWindow::propagateSizeHints()
 bool QWindowsWindow::handleGeometryChangingMessage(MSG *message, const QWindow *qWindow, const QMargins &margins)
 {
     auto *windowPos = reinterpret_cast<WINDOWPOS *>(message->lParam);
+
+    // Tell Windows to discard the entire contents of the client area, as re-using
+    // parts of the client area would lead to jitter during resize.
+    windowPos->flags |= SWP_NOCOPYBITS;
+
     if ((windowPos->flags & SWP_NOZORDER) == 0) {
         if (QWindowsWindow *platformWindow = QWindowsWindow::windowsWindowOf(qWindow)) {
             QWindow *parentWindow = qWindow->parent();
@@ -2493,7 +2498,7 @@ bool QWindowsWindow::handleGeometryChangingMessage(MSG *message, const QWindow *
     }
     if (!qWindow->isTopLevel()) // Implement hasHeightForWidth().
         return false;
-    if ((windowPos->flags & (SWP_NOCOPYBITS | SWP_NOSIZE)))
+    if (windowPos->flags & SWP_NOSIZE)
         return false;
     const QRect suggestedFrameGeometry(windowPos->x, windowPos->y,
                                        windowPos->cx, windowPos->cy);
