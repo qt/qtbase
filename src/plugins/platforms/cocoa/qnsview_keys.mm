@@ -240,6 +240,9 @@
 KeyEvent::KeyEvent(NSEvent *nsevent)
 {
     timestamp = nsevent.timestamp * 1000;
+    nativeModifiers = nsevent.modifierFlags;
+    nativeVirtualKey = nsevent.keyCode;
+    modifiers = QAppleKeyMapper::fromCocoaModifiers(nativeModifiers);
 
     switch (nsevent.type) {
     case NSEventTypeKeyDown: type = QEvent::KeyPress; break;
@@ -275,11 +278,6 @@ KeyEvent::KeyEvent(NSEvent *nsevent)
 
         isRepeat = nsevent.ARepeat;
     }
-
-    nativeVirtualKey = nsevent.keyCode;
-
-    nativeModifiers = nsevent.modifierFlags;
-    modifiers = QAppleKeyMapper::fromCocoaModifiers(nativeModifiers);
 }
 
 bool KeyEvent::sendWindowSystemEvent(QWindow *window) const
