@@ -53,3 +53,6 @@ excludefiles += ../kernel/qtestsupport_core.cpp
 
 navigation.landingpage = "Qt Core"
 navigation.cppclassespage = "Qt Core C++ Classes"
+
+# Fail the documentation build if there are more warnings than the limit
+warninglimit = 0

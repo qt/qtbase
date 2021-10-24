@@ -71,3 +71,6 @@ spurious += "Undocumented enum item '.*' in QGradient::Preset"
 
 # \svgcolor {#ffdead}
 macro.svgcolor.HTML = "<div style=\"padding:10px;color:#fff;background:\1;\"></div>"
+
+# Fail the documentation build if there are more warnings than the limit
+warninglimit = 0
