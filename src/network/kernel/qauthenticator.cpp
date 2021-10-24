@@ -1548,27 +1548,16 @@ static QByteArray qNtlmPhase3(QAuthenticatorPrivate *ctx, const QByteArray& phas
 // See http://davenport.sourceforge.net/ntlm.html
 // and libcurl http_ntlm.c
 
-// Handle of secur32.dll
-static HMODULE securityDLLHandle = nullptr;
 // Pointer to SSPI dispatch table
-static PSecurityFunctionTable pSecurityFunctionTable = nullptr;
+static PSecurityFunctionTableW pSecurityFunctionTable = nullptr;
 
 static bool q_SSPI_library_load()
 {
     static QBasicMutex mutex;
     QMutexLocker l(&mutex);
 
-    // Initialize security interface
-    if (pSecurityFunctionTable == nullptr) {
-        securityDLLHandle = LoadLibrary(L"secur32.dll");
-        if (securityDLLHandle != nullptr) {
-            INIT_SECURITY_INTERFACE pInitSecurityInterface =
-                reinterpret_cast<INIT_SECURITY_INTERFACE>(
-                    reinterpret_cast<QFunctionPointer>(GetProcAddress(securityDLLHandle, "InitSecurityInterfaceW")));
-            if (pInitSecurityInterface != nullptr)
-                pSecurityFunctionTable = pInitSecurityInterface();
-        }
-    }
+    if (pSecurityFunctionTable == nullptr)
+        pSecurityFunctionTable = InitSecurityInterfaceW();
 
     if (pSecurityFunctionTable == nullptr)
         return false;

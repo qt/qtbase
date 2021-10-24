@@ -886,14 +886,6 @@ static bool startDetachedUacPrompt(const QString &programIn, const QStringList &
                                    const QString &nativeArguments,
                                    const QString &workingDir, qint64 *pid)
 {
-    typedef BOOL (WINAPI *ShellExecuteExType)(SHELLEXECUTEINFOW *);
-
-    static const ShellExecuteExType shellExecuteEx = // XP ServicePack 1 onwards.
-        reinterpret_cast<ShellExecuteExType>(QSystemLibrary::resolve(QLatin1String("shell32"),
-                                                                     "ShellExecuteExW"));
-    if (!shellExecuteEx)
-        return false;
-
     const QString args = qt_create_commandline(QString(),                   // needs arguments only
                                                arguments, nativeArguments);
     SHELLEXECUTEINFOW shellExecuteExInfo;
@@ -910,7 +902,7 @@ static bool startDetachedUacPrompt(const QString &programIn, const QStringList &
         shellExecuteExInfo.lpDirectory = reinterpret_cast<LPCWSTR>(workingDir.utf16());
     shellExecuteExInfo.nShow = SW_SHOWNORMAL;
 
-    if (!shellExecuteEx(&shellExecuteExInfo))
+    if (!ShellExecuteExW(&shellExecuteExInfo))
         return false;
     if (pid)
         *pid = qint64(GetProcessId(shellExecuteExInfo.hProcess));
