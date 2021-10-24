@@ -107,6 +107,9 @@ private slots:
 
     void currentTabLargeFont();
 
+    void hoverTab_data();
+    void hoverTab();
+
 private:
     void checkPositions(const TabBar &tabbar, const QList<int> &positions);
 };
@@ -1031,6 +1034,87 @@ void tst_QTabBar::currentTabLargeFont()
     QList<QRect> newTabRects;
     newTabRects << tabBar.tabRect(0) << tabBar.tabRect(1) << tabBar.tabRect(2);
     QVERIFY(oldTabRects != newTabRects);
+}
+
+void tst_QTabBar::hoverTab_data()
+{
+    // Since we still rely on moving the mouse via QCursor::setPos in QTest::mouseMove,
+    // skip this test if we can't
+    const QPoint cursorPos = QCursor::pos() + QPoint(10, 10);
+    QCursor::setPos(cursorPos);
+    if (!QTest::qWaitFor([cursorPos]{ return QCursor::pos() == cursorPos; }, 500))
+        QSKIP("Can't move mouse");
+
+    QTest::addColumn<bool>("documentMode");
+    QTest::addRow("normal mode") << true;
+    QTest::addRow("document mode") << true;
+}
+
+void tst_QTabBar::hoverTab()
+{
+    QFETCH(bool, documentMode);
+    QWidget window;
+    class TabBar : public QTabBar
+    {
+    public:
+        using QTabBar::QTabBar;
+        void initStyleOption(QStyleOptionTab *option, int tabIndex) const override
+        {
+            QTabBar::initStyleOption(option, tabIndex);
+            styleOptions[tabIndex] = *option;
+        }
+        mutable QHash<int, QStyleOptionTab> styleOptions;
+    } tabbar(&window);
+
+    tabbar.setDocumentMode(documentMode);
+    tabbar.addTab("A");
+    tabbar.addTab("B");
+    tabbar.addTab("C");
+    tabbar.addTab("D");
+
+    tabbar.move(0,0);
+    window.setMinimumSize(tabbar.sizeHint());
+    tabbar.ensurePolished();
+
+    // some styles set those flags, some don't. If not, use a style sheet
+    if (!(tabbar.testAttribute(Qt::WA_Hover) || tabbar.hasMouseTracking())) {
+        tabbar.setStyleSheet(R"(
+            QTabBar::tab { background: blue; }
+            QTabBar::tab::hover { background: yellow; }
+            QTabBar::tab::selected { background: red; }
+        )");
+    }
+
+    window.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+
+    QTest::mouseMove(&tabbar, tabbar.tabRect(0).center());
+    QTRY_VERIFY(tabbar.styleOptions[0].state & QStyle::State_Selected);
+    QTRY_COMPARE(tabbar.styleOptions[1].state & QStyle::State_MouseOver, QStyle::State_None);
+    QTRY_COMPARE(tabbar.styleOptions[2].state & QStyle::State_MouseOver, QStyle::State_None);
+    QTRY_COMPARE(tabbar.styleOptions[3].state & QStyle::State_MouseOver, QStyle::State_None);
+
+    QTest::mouseMove(&tabbar, tabbar.tabRect(1).center());
+    QTRY_COMPARE(tabbar.styleOptions[1].state & QStyle::State_MouseOver, QStyle::State_MouseOver);
+    QCOMPARE(tabbar.styleOptions[2].state & QStyle::State_MouseOver, QStyle::State_None);
+    QCOMPARE(tabbar.styleOptions[3].state & QStyle::State_MouseOver, QStyle::State_None);
+
+    QTest::mouseMove(&tabbar, tabbar.tabRect(2).center());
+    QTRY_COMPARE(tabbar.styleOptions[2].state & QStyle::State_MouseOver, QStyle::State_MouseOver);
+    QCOMPARE(tabbar.styleOptions[1].state & QStyle::State_MouseOver, QStyle::State_None);
+    QCOMPARE(tabbar.styleOptions[3].state & QStyle::State_MouseOver, QStyle::State_None);
+
+    // removing tab 2 lays the tabs out so that they stretch across the
+    // tab bar; tab 1 is now where the cursor was. What matters is that a
+    // different tab is now hovered (rather than none).
+    tabbar.removeTab(2);
+    QTRY_COMPARE(tabbar.styleOptions[1].state & QStyle::State_MouseOver, QStyle::State_MouseOver);
+    QCOMPARE(tabbar.styleOptions[2].state & QStyle::State_MouseOver, QStyle::State_None);
+
+    // inserting a tab at index 2 again should paint the new tab hovered
+    tabbar.insertTab(2, "C2");
+    QTRY_COMPARE(tabbar.styleOptions[2].state & QStyle::State_MouseOver, QStyle::State_MouseOver);
+    QCOMPARE(tabbar.styleOptions[1].state & QStyle::State_MouseOver, QStyle::State_None);
 }
 
 QTEST_MAIN(tst_QTabBar)

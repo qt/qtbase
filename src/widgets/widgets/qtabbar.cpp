@@ -42,8 +42,6 @@
 #include "qabstractitemdelegate.h"
 #endif
 #include "qapplication.h"
-#include "qbitmap.h"
-#include "qcursor.h"
 #include "qevent.h"
 #include "qpainter.h"
 #include "qstyle.h"
@@ -1020,6 +1018,11 @@ int QTabBar::insertTab(int index, const QIcon& icon, const QString &text)
             ++tab->lastTab;
     }
 
+    if (tabAt(d->mousePosition) == index) {
+        d->hoverIndex = index;
+        d->hoverRect = tabRect(index);
+    }
+
     tabInserted(index);
     d->autoHideTabs();
     return index;
@@ -1104,16 +1107,15 @@ void QTabBar::removeTab(int index)
         }
         d->refresh();
         d->autoHideTabs();
-        if (!d->hoverRect.isEmpty()) {
-            for (int i = 0; i < d->tabList.count(); ++i) {
-                const QRect area = tabRect(i);
-                if (area.contains(mapFromGlobal(QCursor::pos()))) {
-                    d->hoverIndex = i;
-                    d->hoverRect = area;
-                    break;
-                }
-            }
+        if (d->hoverRect.isValid()) {
             update(d->hoverRect);
+            d->hoverIndex = tabAt(d->mousePosition);
+            if (d->validIndex(d->hoverIndex)) {
+                d->hoverRect = tabRect(d->hoverIndex);
+                update(d->hoverRect);
+            } else {
+                d->hoverRect = QRect();
+            }
         }
         tabRemoved(index);
     }
@@ -1696,33 +1698,26 @@ bool QTabBar::event(QEvent *event)
     case QEvent::HoverMove:
     case QEvent::HoverEnter: {
         QHoverEvent *he = static_cast<QHoverEvent *>(event);
-        if (!d->hoverRect.contains(he->position().toPoint())) {
-            QRect oldHoverRect = d->hoverRect;
-            bool cursorOverTabs = false;
-            for (int i = 0; i < d->tabList.count(); ++i) {
-                QRect area = tabRect(i);
-                if (area.contains(he->position().toPoint())) {
-                    d->hoverIndex = i;
-                    d->hoverRect = area;
-                    cursorOverTabs = true;
-                    break;
-                }
-            }
-            if (!cursorOverTabs) {
-                d->hoverIndex = -1;
+        d->mousePosition = he->position().toPoint();
+        if (!d->hoverRect.contains(d->mousePosition)) {
+            if (d->hoverRect.isValid())
+                update(d->hoverRect);
+            d->hoverIndex = tabAt(d->mousePosition);
+            if (d->validIndex(d->hoverIndex)) {
+                d->hoverRect = tabRect(d->hoverIndex);
+                update(d->hoverRect);
+            } else {
                 d->hoverRect = QRect();
             }
-            if (he->oldPos() != QPoint(-1, -1))
-                update(oldHoverRect);
-            update(d->hoverRect);
         }
         return true;
     }
     case QEvent::HoverLeave: {
-        QRect oldHoverRect = d->hoverRect;
+        d->mousePosition = {-1, -1};
+        if (d->hoverRect.isValid())
+            update(d->hoverRect);
         d->hoverIndex = -1;
         d->hoverRect = QRect();
-        update(oldHoverRect);
         return true;
     }
 #if QT_CONFIG(tooltip)
@@ -1796,6 +1791,7 @@ bool QTabBar::event(QEvent *event)
     case QEvent::MouseButtonPress:
     case QEvent::MouseButtonRelease:
     case QEvent::MouseMove:
+        d->mousePosition = static_cast<QMouseEvent *>(event)->position().toPoint();
         d->mouseButtons = static_cast<QMouseEvent *>(event)->buttons();
         break;
     default:

@@ -101,6 +101,7 @@ public:
 
     QRect hoverRect;
     QPoint dragStartPosition;
+    QPoint mousePosition = {-1, -1};
     QSize iconSize;
     QToolButton* rightB = nullptr; // right or bottom
     QToolButton* leftB = nullptr; // left or top
