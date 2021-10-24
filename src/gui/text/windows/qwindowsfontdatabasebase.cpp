@@ -582,36 +582,19 @@ bool QWindowsFontDatabaseBase::init(QSharedPointer<QWindowsFontEngineData> d)
 }
 
 #if QT_CONFIG(directwrite) && QT_CONFIG(direct2d)
-// ### Qt 6: Link directly to dwrite instead
-typedef HRESULT (WINAPI *DWriteCreateFactoryType)(DWRITE_FACTORY_TYPE, const IID &, IUnknown **);
-static inline DWriteCreateFactoryType resolveDWriteCreateFactory()
-{
-    QSystemLibrary library(QStringLiteral("dwrite"));
-    QFunctionPointer result = library.resolve("DWriteCreateFactory");
-    if (Q_UNLIKELY(!result)) {
-        qWarning("Unable to load dwrite.dll");
-        return nullptr;
-    }
-    return reinterpret_cast<DWriteCreateFactoryType>(result);
-}
-
 void QWindowsFontDatabaseBase::createDirectWriteFactory(IDWriteFactory **factory)
 {
     *factory = nullptr;
-
-    static const DWriteCreateFactoryType dWriteCreateFactory = resolveDWriteCreateFactory();
-    if (!dWriteCreateFactory)
-        return;
-
     IUnknown *result = nullptr;
+
 #  if QT_CONFIG(directwrite3)
-    dWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory3), &result);
+    DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory3), &result);
 #  endif
     if (result == nullptr)
-        dWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory2), &result);
+        DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory2), &result);
 
     if (result == nullptr) {
-        if (FAILED(dWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), &result))) {
+        if (FAILED(DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), &result))) {
             qErrnoWarning("DWriteCreateFactory failed");
             return;
         }

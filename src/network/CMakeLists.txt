@@ -193,6 +193,8 @@ qt_internal_extend_target(Network CONDITION WIN32
         advapi32
         dnsapi
         iphlpapi
+        secur32
+        winhttp
 )
 
 qt_internal_extend_target(Network CONDITION QT_FEATURE_dnslookup AND WIN32

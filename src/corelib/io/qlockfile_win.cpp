@@ -42,6 +42,7 @@
 #include "private/qlockfile_p.h"
 #include "private/qfilesystementry_p.h"
 #include <qt_windows.h>
+#include <psapi.h>
 
 #include "QtCore/qfileinfo.h"
 #include "QtCore/qdatetime.h"
@@ -131,27 +132,13 @@ bool QLockFilePrivate::isProcessRunning(qint64 pid, const QString &appname)
 
 QString QLockFilePrivate::processNameByPid(qint64 pid)
 {
-    typedef DWORD (WINAPI *GetModuleFileNameExFunc)(HANDLE, HMODULE, LPTSTR, DWORD);
-
-    HMODULE hPsapi = LoadLibraryA("psapi");
-    if (!hPsapi)
-        return QString();
-    GetModuleFileNameExFunc qGetModuleFileNameEx = reinterpret_cast<GetModuleFileNameExFunc>(
-        reinterpret_cast<QFunctionPointer>(GetProcAddress(hPsapi, "GetModuleFileNameExW")));
-    if (!qGetModuleFileNameEx) {
-        FreeLibrary(hPsapi);
-        return QString();
-    }
-
     HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, DWORD(pid));
     if (!hProcess) {
-        FreeLibrary(hPsapi);
         return QString();
     }
     wchar_t buf[MAX_PATH];
-    const DWORD length = qGetModuleFileNameEx(hProcess, NULL, buf, sizeof(buf) / sizeof(wchar_t));
+    const DWORD length = GetModuleFileNameExW(hProcess, NULL, buf, sizeof(buf) / sizeof(wchar_t));
     CloseHandle(hProcess);
-    FreeLibrary(hPsapi);
     if (!length)
         return QString();
     QString name = QString::fromWCharArray(buf, length);

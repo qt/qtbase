@@ -89,18 +89,6 @@ QT_BEGIN_NAMESPACE
 
 // common DC for all fonts
 
-typedef BOOL (WINAPI *PtrGetCharWidthI)(HDC, UINT, UINT, LPWORD, LPINT);
-static PtrGetCharWidthI ptrGetCharWidthI = 0;
-static bool resolvedGetCharWidthI = false;
-
-static void resolveGetCharWidthI()
-{
-    if (resolvedGetCharWidthI)
-        return;
-    resolvedGetCharWidthI = true;
-    ptrGetCharWidthI = (PtrGetCharWidthI)QSystemLibrary::resolve(QStringLiteral("gdi32"), "GetCharWidthI");
-}
-
 // general font engine
 
 QFixed QWindowsFontEngine::lineThickness() const
@@ -252,9 +240,6 @@ QWindowsFontEngine::QWindowsFontEngine(const QString &name,
     cache_cost = tm.tmHeight * tm.tmAveCharWidth * 2000;
     getCMap();
 
-    if (!resolvedGetCharWidthI)
-        resolveGetCharWidthI();
-
     hasUnreliableOutline = (tm.tmPitchAndFamily & (TMPF_TRUETYPE | TMPF_VECTOR)) == 0;
 }
 
@@ -326,8 +311,7 @@ bool QWindowsFontEngine::stringToCMap(const QChar *str, int len, QGlyphLayout *g
 
 inline void calculateTTFGlyphWidth(HDC hdc, UINT glyph, int &width)
 {
-    if (ptrGetCharWidthI)
-        ptrGetCharWidthI(hdc, glyph, 1, 0, &width);
+    GetCharWidthI(hdc, glyph, 1, 0, &width);
 }
 
 void QWindowsFontEngine::recalcAdvances(QGlyphLayout *glyphs, QFontEngine::ShaperFlags flags) const
