@@ -40,6 +40,8 @@ private slots:
 
     void comparison_data();
     void comparison();
+
+    void mixedComparison();
 };
 
 void tst_QOperatingSystemVersion::construction_data()
@@ -175,6 +177,15 @@ void tst_QOperatingSystemVersion::comparison()
 
     QFETCH(bool, moreEqualResult);
     QCOMPARE(lhsSystemInfo >= rhsSystemInfo, moreEqualResult);
+}
+
+void tst_QOperatingSystemVersion::mixedComparison()
+{
+    // ==
+    QVERIFY(QOperatingSystemVersion::Windows10
+            >= QOperatingSystemVersionBase(QOperatingSystemVersionBase::Windows, 10, 0));
+    QVERIFY(QOperatingSystemVersion::Windows10
+            <= QOperatingSystemVersionBase(QOperatingSystemVersionBase::Windows, 10, 0));
 }
 
 QTEST_MAIN(tst_QOperatingSystemVersion)

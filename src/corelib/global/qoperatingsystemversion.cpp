@@ -38,6 +38,7 @@
 ****************************************************************************/
 
 #include "qoperatingsystemversion.h"
+
 #if !defined(Q_OS_DARWIN) && !defined(Q_OS_WIN)
 #include "qoperatingsystemversion_p.h"
 #endif
@@ -145,16 +146,19 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QOperatingSystemVersion QOperatingSystemVersion::current()
-
     Returns a QOperatingSystemVersion indicating the current OS and its version number.
 
     \sa currentType()
 */
-#if !defined(Q_OS_DARWIN) && !defined(Q_OS_WIN)
 QOperatingSystemVersion QOperatingSystemVersion::current()
 {
-    QOperatingSystemVersion version;
+    return QOperatingSystemVersionBase::current();
+}
+
+#if !defined(Q_OS_DARWIN) && !defined(Q_OS_WIN)
+QOperatingSystemVersionBase QOperatingSystemVersionBase::current()
+{
+    QOperatingSystemVersionBase version;
     version.m_os = currentType();
 #ifdef Q_OS_ANDROID
 #ifndef QT_BOOTSTRAPPED
@@ -231,8 +235,8 @@ static inline int compareVersionComponents(int lhs, int rhs)
     return lhs >= 0 && rhs >= 0 ? lhs - rhs : 0;
 }
 
-int QOperatingSystemVersion::compare(const QOperatingSystemVersion &v1,
-                                     const QOperatingSystemVersion &v2)
+int QOperatingSystemVersionBase::compare(QOperatingSystemVersionBase v1,
+                                         QOperatingSystemVersionBase v2)
 {
     if (v1.m_major == v2.m_major) {
         if (v1.m_minor == v2.m_minor) {
@@ -241,6 +245,12 @@ int QOperatingSystemVersion::compare(const QOperatingSystemVersion &v1,
         return compareVersionComponents(v1.m_minor, v2.m_minor);
     }
     return compareVersionComponents(v1.m_major, v2.m_major);
+}
+
+int QOperatingSystemVersion::compare(const QOperatingSystemVersion &v1,
+                                     const QOperatingSystemVersion &v2)
+{
+    return QOperatingSystemVersionBase::compare(v1, v2);
 }
 
 /*!
@@ -331,30 +341,35 @@ int QOperatingSystemVersion::compare(const QOperatingSystemVersion &v1,
 */
 QString QOperatingSystemVersion::name() const
 {
-    switch (type()) {
-    case QOperatingSystemVersion::Windows:
+    return QOperatingSystemVersionBase::name();
+}
+
+QString QOperatingSystemVersionBase::name(QOperatingSystemVersionBase osversion)
+{
+    switch (osversion.type()) {
+    case QOperatingSystemVersionBase::Windows:
         return QStringLiteral("Windows");
-    case QOperatingSystemVersion::MacOS: {
-        if (majorVersion() < 10)
+    case QOperatingSystemVersionBase::MacOS: {
+        if (osversion.majorVersion() < 10)
             return QStringLiteral("Mac OS");
-        if (majorVersion() == 10 && minorVersion() < 8)
+        if (osversion.majorVersion() == 10 && osversion.minorVersion() < 8)
             return QStringLiteral("Mac OS X");
-        if (majorVersion() == 10 && minorVersion() < 12)
+        if (osversion.majorVersion() == 10 && osversion.minorVersion() < 12)
             return QStringLiteral("OS X");
         return QStringLiteral("macOS");
     }
-    case QOperatingSystemVersion::IOS: {
-        if (majorVersion() < 4)
+    case QOperatingSystemVersionBase::IOS: {
+        if (osversion.majorVersion() < 4)
             return QStringLiteral("iPhone OS");
         return QStringLiteral("iOS");
     }
-    case QOperatingSystemVersion::TvOS:
+    case QOperatingSystemVersionBase::TvOS:
         return QStringLiteral("tvOS");
-    case QOperatingSystemVersion::WatchOS:
+    case QOperatingSystemVersionBase::WatchOS:
         return QStringLiteral("watchOS");
-    case QOperatingSystemVersion::Android:
+    case QOperatingSystemVersionBase::Android:
         return QStringLiteral("Android");
-    case QOperatingSystemVersion::Unknown:
+    case QOperatingSystemVersionBase::Unknown:
     default:
         return QString();
     }
@@ -368,11 +383,13 @@ QString QOperatingSystemVersion::name() const
 */
 bool QOperatingSystemVersion::isAnyOfType(std::initializer_list<OSType> types) const
 {
-    for (const auto &t : qAsConst(types)) {
-        if (type() == t)
-            return true;
-    }
-    return false;
+    // ### Qt7: Remove this function
+    return std::find(types.begin(), types.end(), type()) != types.end();
+}
+
+bool QOperatingSystemVersionBase::isAnyOfType(std::initializer_list<OSType> types, OSType type)
+{
+    return std::find(types.begin(), types.end(), type) != types.end();
 }
 
 /*!
