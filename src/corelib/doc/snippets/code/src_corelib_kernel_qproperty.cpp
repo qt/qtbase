@@ -160,3 +160,40 @@ int main()
 
 #include "main.moc"
 //! [4]
+
+//! [5]
+class Client{};
+
+class MyClassPrivate : public QObjectPrivate
+{
+public:
+    QList<Client> clients;
+    bool hasClientsActualCalculation() const { return clients.size() > 0; }
+    Q_OBJECT_COMPUTED_PROPERTY(MyClassPrivate, bool, hasClientsData,
+                               &MyClassPrivate::hasClientsActualCalculation)
+};
+
+class MyClass : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(bool hasClients READ hasClients STORED false BINDABLE bindableHasClients)
+public:
+    QBindable<bool> bindableHasClients()
+    {
+        return QBindable<bool>(&d_func()->hasClientsData);
+    }
+    bool hasClients() const
+    {
+        return d_func()->hasClientsData.value();
+    }
+    void addClient(const Client &c)
+    {
+        Q_D(MyClass);
+        d->clients.push_back(c);
+        // notify that the value could have changed
+        d->hasClientsData.markDirty();
+    }
+private:
+    Q_DECLARE_PRIVATE(MyClass)
+};
+//! [5]
