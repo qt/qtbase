@@ -74,13 +74,20 @@ public slots:
         updateText();
     }
 
+    void updateMetered(bool newValue)
+    {
+        metered = newValue;
+        updateText();
+    }
+
 private:
     void updateText()
     {
         QString str =
-                QLatin1String("Reachability: %1\nBehind captive portal: %2\nTransport medium: %3")
+                QLatin1String("Reachability: %1\nBehind captive portal: %2\nTransport medium: %3"
+                              "\nMetered: %4")
                         .arg(enumToString(reachability), QStringView(captive ? u"true" : u"false"),
-                             enumToString(transportMedium));
+                             enumToString(transportMedium), metered ? u"true" : u"false");
         label->setText(str);
     }
 
@@ -88,6 +95,7 @@ private:
     Reachability reachability = Reachability::Unknown;
     TransportMedium transportMedium = TransportMedium::Unknown;
     bool captive = false;
+    bool metered = false;
 };
 
 #endif

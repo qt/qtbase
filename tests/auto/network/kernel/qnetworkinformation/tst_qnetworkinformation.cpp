@@ -29,6 +29,7 @@
 #include <QtNetwork/private/qnetworkinformation_p.h>
 #include <QtNetwork/qnetworkinformation.h>
 #include <QtTest/qtest.h>
+#include <QtTest/qsignalspy.h>
 
 #include <limits>
 #include <memory>
@@ -43,6 +44,7 @@ private slots:
     void reachability();
     void behindCaptivePortal();
     void transportMedium();
+    void isMetered();
     void cleanupTestCase();
 
 private:
@@ -88,11 +90,18 @@ public:
         instance->setTransportMedium(medium);
     }
 
+    static void setNewMetered(bool metered)
+    {
+        Q_ASSERT(instance);
+        instance->setMetered(metered);
+    }
+
     static QNetworkInformation::Features featuresSupportedStatic()
     {
         return { QNetworkInformation::Feature::Reachability
                  | QNetworkInformation::Feature::CaptivePortal
-                 | QNetworkInformation::Feature::TransportMedium };
+                 | QNetworkInformation::Feature::TransportMedium
+                 | QNetworkInformation::Feature::Metered };
     }
 
 private:
@@ -144,9 +153,10 @@ void tst_QNetworkInformation::supportedFeatures()
 {
     auto info = QNetworkInformation::instance();
 
-    auto allFeatures = QNetworkInformation::Features(
-            QNetworkInformation::Feature::CaptivePortal | QNetworkInformation::Feature::Reachability
-            | QNetworkInformation::Feature::TransportMedium);
+    auto allFeatures = QNetworkInformation::Features(QNetworkInformation::Feature::CaptivePortal
+                                                     | QNetworkInformation::Feature::Reachability
+                                                     | QNetworkInformation::Feature::TransportMedium
+                                                     | QNetworkInformation::Feature::Metered);
 
     QCOMPARE(info->supportedFeatures(), allFeatures);
 
@@ -154,6 +164,7 @@ void tst_QNetworkInformation::supportedFeatures()
     QVERIFY(info->supports(QNetworkInformation::Feature::CaptivePortal));
     QVERIFY(info->supports(QNetworkInformation::Feature::Reachability));
     QVERIFY(info->supports(QNetworkInformation::Feature::TransportMedium));
+    QVERIFY(info->supports(QNetworkInformation::Feature::Metered));
 }
 
 void tst_QNetworkInformation::reachability()
@@ -246,6 +257,23 @@ void tst_QNetworkInformation::transportMedium()
     MockBackend::setNewTransportMedium(medium);
     QCoreApplication::processEvents();
     QVERIFY(!signalEmitted);
+}
+
+void tst_QNetworkInformation::isMetered()
+{
+    auto info = QNetworkInformation::instance();
+
+    QSignalSpy spy(info, &QNetworkInformation::isMeteredChanged);
+    QVERIFY(!info->isMetered());
+    MockBackend::setNewMetered(true);
+    QCOMPARE(spy.count(), 1);
+    QVERIFY(info->isMetered());
+    QVERIFY(spy[0][0].toBool());
+    spy.clear();
+
+    // Set the same value again, signal should not be emitted again
+    MockBackend::setNewMetered(true);
+    QCOMPARE(spy.count(), 0);
 }
 
 QTEST_MAIN(tst_QNetworkInformation);

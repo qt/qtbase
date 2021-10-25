@@ -87,11 +87,13 @@ public:
     Reachability reachability() const { return m_reachability; }
     bool behindCaptivePortal() const { return m_behindCaptivePortal; }
     TransportMedium transportMedium() const { return m_transportMedium; }
+    bool isMetered() const { return m_metered; }
 
 Q_SIGNALS:
     void reachabilityChanged(Reachability reachability);
     void behindCaptivePortalChanged(bool behindPortal);
     void transportMediumChanged(TransportMedium medium);
+    void isMeteredChanged(bool isMetered);
 
 protected:
     void setReachability(QNetworkInformation::Reachability reachability)
@@ -118,10 +120,19 @@ protected:
         }
     }
 
+    void setMetered(bool isMetered)
+    {
+        if (m_metered != isMetered) {
+            m_metered = isMetered;
+            emit isMeteredChanged(isMetered);
+        }
+    }
+
 private:
     Reachability m_reachability = Reachability::Unknown;
     TransportMedium m_transportMedium = TransportMedium::Unknown;
     bool m_behindCaptivePortal = false;
+    bool m_metered = false;
 
     Q_DISABLE_COPY_MOVE(QNetworkInformationBackend)
     friend class QNetworkInformation;

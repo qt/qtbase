@@ -70,6 +70,11 @@ int main(int argc, char **argv)
                          qDebug() << "Updated, current transport medium:" << newMedium;
                      });
 
+    QObject::connect(info, &QNetworkInformation::isMeteredChanged,
+                     [](bool metered) {
+                         qDebug() << "Updated, metered:" << metered;
+                     });
+
 #ifdef MOBILE
     // Some extra connections to update the window if we're on mobile
     QObject::connect(info, &QNetworkInformation::reachabilityChanged, &window,
@@ -78,11 +83,14 @@ int main(int argc, char **argv)
                      &MainWindow::updateCaptiveState);
     QObject::connect(info, &QNetworkInformation::transportMediumChanged, &window,
                      &MainWindow::updateTransportMedium);
+    QObject::connect(info, &QNetworkInformation::isMeteredChanged, &window,
+                     &MainWindow::updateMetered);
 #endif
 
     qDebug() << "Initial reachability:" << info->reachability();
     qDebug() << "Behind captive portal:" << info->isBehindCaptivePortal();
     qDebug() << "Transport medium:" << info->transportMedium();
+    qDebug() << "Is metered:" << info->isMetered();
 
     return app.exec();
 }

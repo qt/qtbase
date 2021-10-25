@@ -457,6 +457,11 @@ QNetworkInformationBackendFactory::~QNetworkInformationBackendFactory()
         property will provide useful results. Otherwise it will always return
         \c{TransportMedium::Unknown}.
         See also QNetworkInformation::TransportMedium.
+
+    \value Metered
+        If the plugin supports this feature then the \c isMetered
+        property will provide useful results. Otherwise it will always return
+        \c{false}.
 */
 
 /*!
@@ -520,6 +525,8 @@ QNetworkInformation::QNetworkInformation(QNetworkInformationBackend *backend)
             &QNetworkInformation::isBehindCaptivePortalChanged);
     connect(backend, &QNetworkInformationBackend::transportMediumChanged, this,
             &QNetworkInformation::transportMediumChanged);
+    connect(backend, &QNetworkInformationBackend::isMeteredChanged, this,
+           &QNetworkInformation::isMeteredChanged);
 }
 
 /*!
@@ -577,6 +584,22 @@ bool QNetworkInformation::isBehindCaptivePortal() const
 QNetworkInformation::TransportMedium QNetworkInformation::transportMedium() const
 {
     return d_func()->backend->transportMedium();
+}
+
+/*!
+    \property QNetworkInformation::isMetered
+    \brief Check if the current connection is metered
+    \since 6.3
+
+    This property returns whether the current connection is (known to be)
+    metered or not. You can use this as a guiding factor to decide whether your
+    application should perform certain network requests or uploads.
+    For instance, you may not want to upload logs or diagnostics while this
+    property is \c true.
+*/
+bool QNetworkInformation::isMetered() const
+{
+    return d_func()->backend->isMetered();
 }
 
 /*!
