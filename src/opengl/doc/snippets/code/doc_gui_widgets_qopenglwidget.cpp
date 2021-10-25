@@ -173,9 +173,14 @@ void MyGLWidget::initializeGL()
 //! [4]
 
 //! [5]
+MyGLWidget::~MyGLWidget()
+{
+    cleanup();
+}
+
 void MyGLWidget::initializeGL()
 {
-    // context() and QOpenGLContext::currentContext() are equivalent when called from initializeGL or paintGL.
+    ...
     connect(context(), &QOpenGLContext::aboutToBeDestroyed, this, &MyGLWidget::cleanup);
 }
 
@@ -186,6 +191,7 @@ void MyGLWidget::cleanup()
     m_texture = 0;
     ...
     doneCurrent();
+    disconnect(context(), &QOpenGLContext::aboutToBeDestroyed, this, &MyGLWidget::cleanup);
 }
 //! [5]
 

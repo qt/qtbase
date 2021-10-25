@@ -218,13 +218,6 @@ void QBackingStore::flush(const QRegion &region, QWindow *window, const QPoint &
         return;
     }
 
-    if (!QPlatformSurface::isRasterSurface(window)) {
-        qWarning() << "Attempted flush to non-raster surface" << window << "of type" << window->surfaceType()
-            << (window->inherits("QWidgetWindow") ? "(consider using Qt::WA_PaintOnScreen to exclude "
-                                                   "from backingstore sync)" : "");
-        return;
-    }
-
     Q_ASSERT(window == topLevelWindow || topLevelWindow->isAncestorOf(window, QWindow::ExcludeTransients));
 
     handle()->flush(window, QHighDpi::toNativeLocalRegion(region, window),

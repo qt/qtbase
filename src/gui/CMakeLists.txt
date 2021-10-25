@@ -145,6 +145,8 @@ qt_internal_add_module(Gui
         math3d/qvector4d.h
         math3d/qvectornd.cpp math3d/qvectornd.h
         painting/qbackingstore.cpp painting/qbackingstore.h
+        painting/qbackingstoredefaultcompositor.cpp painting/qbackingstoredefaultcompositor_p.h
+        painting/qbackingstorerhisupport.cpp painting/qbackingstorerhisupport_p.h
         painting/qbezier.cpp painting/qbezier_p.h
         painting/qblendfunctions.cpp painting/qblendfunctions_p.h
         painting/qblittable.cpp painting/qblittable_p.h
@@ -289,6 +291,14 @@ qt_internal_add_resource(Gui "qpdf"
         ${qpdf_resource_files}
 )
 
+qt_internal_add_resource(Gui "gui_shaders"
+    PREFIX
+        "/qt-project.org/gui"
+    FILES
+        "painting/shaders/backingstorecompose.vert.qsb"
+        "painting/shaders/backingstorecompose.frag.qsb"
+)
+
 if(QT_FEATURE_reduce_relocations AND UNIX AND GCC)
     target_link_options(Gui PRIVATE
                         "LINKER:--dynamic-list=${CMAKE_CURRENT_LIST_DIR}/QtGui.dynlist")
@@ -358,6 +368,7 @@ qt_internal_extend_target(Gui CONDITION APPLE
         image/qimage_darwin.mm
         painting/qcoregraphics.mm painting/qcoregraphics_p.h
         painting/qrasterbackingstore.cpp painting/qrasterbackingstore_p.h
+        painting/qrhibackingstore.cpp painting/qrhibackingstore_p.h
         platform/darwin/qmacmime.mm platform/darwin/qmacmime_p.h
         platform/darwin/qapplekeymapper.mm platform/darwin/qapplekeymapper_p.h
         text/coretext/qcoretextfontdatabase.mm text/coretext/qcoretextfontdatabase_p.h

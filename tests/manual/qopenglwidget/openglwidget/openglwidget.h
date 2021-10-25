@@ -29,7 +29,7 @@
 #ifndef OPENGLWIDGET_H
 #define OPENGLWIDGET_H
 
-#include <QtWidgets/QOpenGLWidget>
+#include <QOpenGLWidget>
 #include <QtGui/QVector3D>
 
 class OpenGLWidgetPrivate;

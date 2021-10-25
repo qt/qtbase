@@ -39,7 +39,7 @@
 #include <QtGui/QOpenGLFunctions>
 #include <QtGui/QGuiApplication>
 #include <QtGui/QMatrix4x4>
-#include <QtGui/QOpenGLShaderProgram>
+#include <QOpenGLShaderProgram>
 #include <QtGui/QScreen>
 
 #include <QtCore/qmath.h>

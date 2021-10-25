@@ -290,6 +290,7 @@ QT_BEGIN_NAMESPACE
     \omitvalue NativeGesture
     \omitvalue WindowChangeInternal
     \omitvalue ScreenChangeInternal
+    \omitvalue WindowAboutToChangeInternal
 */
 
 /*!

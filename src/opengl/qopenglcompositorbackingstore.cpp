@@ -43,6 +43,7 @@
 #include <QtGui/QOffscreenSurface>
 #include <qpa/qplatformbackingstore.h>
 #include <private/qwindow_p.h>
+#include <private/qrhi_p.h>
 
 #include "qopenglcompositorbackingstore_p.h"
 #include "qopenglcompositor_p.h"
@@ -79,9 +80,11 @@ QOpenGLCompositorBackingStore::QOpenGLCompositorBackingStore(QWindow *window)
     : QPlatformBackingStore(window),
       m_window(window),
       m_bsTexture(0),
+      m_bsTextureWrapper(nullptr),
       m_bsTextureContext(0),
       m_textures(new QPlatformTextureList),
-      m_lockedWidgetTextures(0)
+      m_lockedWidgetTextures(0),
+      m_rhi(nullptr)
 {
 }
 
@@ -103,10 +106,12 @@ QOpenGLCompositorBackingStore::~QOpenGLCompositorBackingStore()
             }
         }
 
-        if (m_bsTextureContext && ctx && ctx->shareGroup() == m_bsTextureContext->shareGroup())
+        if (m_bsTextureContext && ctx && ctx->shareGroup() == m_bsTextureContext->shareGroup()) {
+            delete m_bsTextureWrapper;
             glDeleteTextures(1, &m_bsTexture);
-        else
+        } else {
             qWarning("QOpenGLCompositorBackingStore: Texture is not valid in the current context");
+        }
 
         if (tempSurface && ctx)
             ctx->doneCurrent();
@@ -132,6 +137,8 @@ void QOpenGLCompositorBackingStore::updateTexture()
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_image.width(), m_image.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+        m_bsTextureWrapper = m_rhi->newTexture(QRhiTexture::RGBA8, m_image.size());
+        m_bsTextureWrapper->createFrom({m_bsTexture, 0});
     } else {
         glBindTexture(GL_TEXTURE_2D, m_bsTexture);
     }
@@ -198,14 +205,16 @@ void QOpenGLCompositorBackingStore::flush(QWindow *window, const QRegion &region
     dstCtx->makeCurrent(dstWin);
     updateTexture();
     m_textures->clear();
-    m_textures->appendTexture(nullptr, m_bsTexture, window->geometry());
+    m_textures->appendTexture(nullptr, m_bsTextureWrapper, window->geometry());
 
     compositor->update();
 }
 
-void QOpenGLCompositorBackingStore::composeAndFlush(QWindow *window, const QRegion &region, const QPoint &offset,
-                                               QPlatformTextureList *textures,
-                                               bool translucentBackground)
+QPlatformBackingStore::FlushResult QOpenGLCompositorBackingStore::rhiFlush(QWindow *window,
+                                                                           const QRegion &region,
+                                                                           const QPoint &offset,
+                                                                           QPlatformTextureList *textures,
+                                                                           bool translucentBackground)
 {
     // QOpenGLWidget/QQuickWidget content provided as textures. The raster content goes on top.
 
@@ -213,34 +222,35 @@ void QOpenGLCompositorBackingStore::composeAndFlush(QWindow *window, const QRegi
     Q_UNUSED(offset);
     Q_UNUSED(translucentBackground);
 
+    m_rhi = rhi();
+
     QOpenGLCompositor *compositor = QOpenGLCompositor::instance();
     QOpenGLContext *dstCtx = compositor->context();
     Q_ASSERT(dstCtx); // setTarget() must have been called before, e.g. from QEGLFSWindow
 
-    // The compositor's context and the context to which QOpenGLWidget/QQuickWidget
-    // textures belong are not the same. They share resources, though.
-    Q_ASSERT(qt_window_private(window)->shareContext()->shareGroup() == dstCtx->shareGroup());
-
     QWindow *dstWin = compositor->targetWindow();
     if (!dstWin)
-        return;
+        return FlushFailed;
 
     dstCtx->makeCurrent(dstWin);
 
     QWindowPrivate::get(window)->lastComposeTime.start();
 
     m_textures->clear();
-    for (int i = 0; i < textures->count(); ++i)
-        m_textures->appendTexture(textures->source(i), textures->textureId(i), textures->geometry(i),
+    for (int i = 0; i < textures->count(); ++i) {
+        m_textures->appendTexture(textures->source(i), textures->texture(i), textures->geometry(i),
                                   textures->clipRect(i), textures->flags(i));
+    }
 
     updateTexture();
-    m_textures->appendTexture(nullptr, m_bsTexture, window->geometry());
+    m_textures->appendTexture(nullptr, m_bsTextureWrapper, window->geometry());
 
     textures->lock(true);
     m_lockedWidgetTextures = textures;
 
     compositor->update();
+
+    return FlushSuccess;
 }
 
 void QOpenGLCompositorBackingStore::notifyComposited()
@@ -280,6 +290,8 @@ void QOpenGLCompositorBackingStore::resize(const QSize &size, const QRegion &sta
 
     dstCtx->makeCurrent(dstWin);
     if (m_bsTexture) {
+        delete m_bsTextureWrapper;
+        m_bsTextureWrapper = nullptr;
         glDeleteTextures(1, &m_bsTexture);
         m_bsTexture = 0;
         m_bsTextureContext = nullptr;

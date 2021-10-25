@@ -65,6 +65,9 @@ QIOSWindow::QIOSWindow(QWindow *window)
     , m_windowLevel(0)
 {
 #ifdef Q_OS_IOS
+    if (window->surfaceType() == QSurface::RasterSurface)
+        window->setSurfaceType(QSurface::MetalSurface);
+
     if (window->surfaceType() == QSurface::MetalSurface)
         m_view = [[QUIMetalView alloc] initWithQIOSWindow:this];
     else

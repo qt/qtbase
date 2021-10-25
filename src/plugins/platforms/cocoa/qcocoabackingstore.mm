@@ -428,20 +428,21 @@ void QCALayerBackingStore::windowDestroyed(QObject *object)
     m_subWindowBackingstores.erase(window);
 }
 
-#ifndef QT_NO_OPENGL
-void QCALayerBackingStore::composeAndFlush(QWindow *window, const QRegion &region, const QPoint &offset,
-                                    QPlatformTextureList *textures, bool translucentBackground)
+QPlatformBackingStore::FlushResult QCALayerBackingStore::rhiFlush(QWindow *window,
+                                                                  const QRegion &region,
+                                                                  const QPoint &offset,
+                                                                  QPlatformTextureList *textures,
+                                                                  bool translucentBackground)
 {
     if (!m_buffers.back()) {
         qCWarning(lcQpaBackingStore) << "Tried to flush backingstore without painting to it first";
-        return;
+        return FlushFailed;
     }
 
     finalizeBackBuffer();
 
-    QPlatformBackingStore::composeAndFlush(window, region, offset, textures, translucentBackground);
+    return QPlatformBackingStore::rhiFlush(window, region, offset, textures, translucentBackground);
 }
-#endif
 
 QImage QCALayerBackingStore::toImage() const
 {

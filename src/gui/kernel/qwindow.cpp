@@ -2867,13 +2867,6 @@ QWindow *QWindowPrivate::topLevelWindow(QWindow::AncestorMode mode) const
     return window;
 }
 
-#if QT_CONFIG(opengl)
-QOpenGLContext *QWindowPrivate::shareContext() const
-{
-    return qt_gl_global_share_context();
-};
-#endif
-
 /*!
     Creates a local representation of a window created by another process or by
     using native libraries below Qt.

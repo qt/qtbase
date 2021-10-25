@@ -68,7 +68,7 @@
 
 #include <QtGui/private/qcoregraphics_p.h>
 #include <QtGui/private/qopenglcontext_p.h>
-
+#include <QtGui/private/qrhibackingstore_p.h>
 #include <QtGui/private/qfontengine_coretext_p.h>
 
 #include <IOKit/graphics/IOGraphicsLib.h>
@@ -339,7 +339,15 @@ QPlatformBackingStore *QCocoaIntegration::createPlatformBackingStore(QWindow *wi
         return nullptr;
     }
 
-    return new QCALayerBackingStore(window);
+    switch (window->surfaceType()) {
+    case QSurface::RasterSurface:
+        return new QCALayerBackingStore(window);
+    case QSurface::MetalSurface:
+    case QSurface::OpenGLSurface:
+        return new QRhiBackingStore(window);
+    default:
+        return nullptr;
+    }
 }
 
 QAbstractEventDispatcher *QCocoaIntegration::createEventDispatcher() const

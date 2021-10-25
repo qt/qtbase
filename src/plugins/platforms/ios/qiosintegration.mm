@@ -41,7 +41,6 @@
 #include "qioseventdispatcher.h"
 #include "qiosglobal.h"
 #include "qioswindow.h"
-#include "qiosbackingstore.h"
 #include "qiosscreen.h"
 #include "qiosplatformaccessibility.h"
 #include "qioscontext.h"
@@ -55,6 +54,7 @@
 
 #include <QtGui/qpointingdevice.h>
 #include <QtGui/private/qguiapplication_p.h>
+#include <QtGui/private/qrhibackingstore_p.h>
 
 #include <qoffscreensurface.h>
 #include <qpa/qplatformoffscreensurface.h>
@@ -185,10 +185,9 @@ QPlatformWindow *QIOSIntegration::createPlatformWindow(QWindow *window) const
     return new QIOSWindow(window);
 }
 
-// Used when the QWindow's surface type is set by the client to QSurface::RasterSurface
 QPlatformBackingStore *QIOSIntegration::createPlatformBackingStore(QWindow *window) const
 {
-    return new QIOSBackingStore(window);
+    return new QRhiBackingStore(window);
 }
 
 // Used when the QWindow's surface type is set by the client to QSurface::OpenGLSurface

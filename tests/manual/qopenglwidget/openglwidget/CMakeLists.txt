@@ -13,6 +13,8 @@ qt_internal_add_manual_test(openglwidget
         Qt::CorePrivate
         Qt::Gui
         Qt::GuiPrivate
+        Qt::OpenGL
+        Qt::OpenGLWidgets
         Qt::Widgets
         Qt::WidgetsPrivate
 )

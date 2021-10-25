@@ -108,9 +108,6 @@ public:
     }
 
     QRectF closestAcceptableGeometry(const QRectF &rect) const override;
-#if QT_CONFIG(opengl)
-    QOpenGLContext *shareContext() const override;
-#endif
 
     void processSafeAreaMarginsChanged() override
     {
@@ -152,26 +149,19 @@ QRectF QWidgetWindowPrivate::closestAcceptableGeometry(const QRectF &rect) const
     return result;
 }
 
-#if QT_CONFIG(opengl)
-QOpenGLContext *QWidgetWindowPrivate::shareContext() const
-{
-    Q_Q(const QWidgetWindow);
-    const QWidgetPrivate *widgetPrivate = QWidgetPrivate::get(q->widget());
-    return widgetPrivate->shareContext();
-}
-#endif // opengl
+bool q_evaluateRhiConfig(const QWidget *w, QPlatformBackingStoreRhiConfig *outConfig, QSurface::SurfaceType *outType);
 
 QWidgetWindow::QWidgetWindow(QWidget *widget)
     : QWindow(*new QWidgetWindowPrivate(), nullptr)
     , m_widget(widget)
 {
     updateObjectName();
-    // Enable QOpenGLWidget/QQuickWidget children if the platform plugin supports it,
-    // and the application developer has not explicitly disabled it.
-    if (QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::RasterGLSurface)
-        && !QCoreApplication::testAttribute(Qt::AA_ForceRasterWidgets)) {
-        setSurfaceType(QSurface::RasterGLSurface);
+    if (!QCoreApplication::testAttribute(Qt::AA_ForceRasterWidgets)) {
+        QSurface::SurfaceType type = QSurface::RasterSurface;
+        q_evaluateRhiConfig(m_widget, nullptr, &type);
+        setSurfaceType(type);
     }
+
     connect(widget, &QObject::objectNameChanged, this, &QWidgetWindow::updateObjectName);
     connect(this, SIGNAL(screenChanged(QScreen*)), this, SLOT(handleScreenChange()));
 }

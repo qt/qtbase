@@ -72,6 +72,9 @@
 #include <vector>
 #include <memory>
 
+#ifdef Q_OS_WIN
+# include <qt_windows.h>
+#endif
 #ifdef DrawText
 #  undef DrawText
 #endif

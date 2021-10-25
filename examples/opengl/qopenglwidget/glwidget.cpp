@@ -66,9 +66,8 @@ const int bubbleNum = 8;
 #define GL_SRGB8_ALPHA8 0x8C43
 #endif
 
-GLWidget::GLWidget(MainWindow *mw, bool button, const QColor &background)
-    : m_mainWindow(mw),
-      m_hasButton(button),
+GLWidget::GLWidget(MainWindow *maybeMainWindow, const QColor &background)
+    : m_mainWindow(maybeMainWindow),
       m_background(background)
 {
     setMinimumSize(300, 250);
@@ -78,20 +77,41 @@ GLWidget::GLWidget(MainWindow *mw, bool button, const QColor &background)
 
 GLWidget::~GLWidget()
 {
+    reset();
+}
+
+void GLWidget::reset()
+{
     qDeleteAll(m_bubbles);
+    // Leave everything in a state suitable for a subsequent call to
+    // initialize(). This matters when coming from the context's
+    // aboutToBeDestroyed signal, would not matter when invoked from the
+    // destructor.
+    m_bubbles.clear();
 
     // And now release all OpenGL resources.
     makeCurrent();
     delete m_texture;
+    m_texture = nullptr;
     delete m_program1;
+    m_program1 = nullptr;
     delete m_program2;
+    m_program2 = nullptr;
     delete m_vshader1;
+    m_vshader1 = nullptr;
     delete m_fshader1;
+    m_fshader1 = nullptr;
     delete m_vshader2;
+    m_vshader2 = nullptr;
     delete m_fshader2;
+    m_fshader2 = nullptr;
     m_vbo1.destroy();
     m_vbo2.destroy();
     doneCurrent();
+
+    // We are done with the current QOpenGLContext, forget it. If there is a
+    // subsequent initialize(), that will then connect to the new context.
+    QObject::disconnect(m_contextWatchConnection);
 }
 
 void GLWidget::setScaling(int scale)
@@ -334,6 +354,13 @@ void GLWidget::initializeGL()
     m_vbo1.release();
 
     createBubbles(bubbleNum - m_bubbles.count());
+
+    // A well-behaved QOpenGLWidget releases OpenGL resources not only upon
+    // destruction, but also when the associated OpenGL context disappears. If
+    // the widget continues to exist, the context's destruction will be
+    // followed by a call to initialize(). This is not strictly mandatory in
+    // widgets that never change their parents.
+    m_contextWatchConnection = QObject::connect(context(), &QOpenGLContext::aboutToBeDestroyed, context(), [this] { reset(); });
 }
 
 void GLWidget::paintGL()
@@ -403,7 +430,7 @@ void GLWidget::paintGL()
 
     // When requested, follow the ideal way to animate: Rely on
     // blocking swap and just schedule updates continuously.
-    if (!m_mainWindow->timerEnabled())
+    if (!m_mainWindow || !m_mainWindow->timerEnabled())
         update();
 }
 
@@ -545,16 +572,16 @@ void GLWidget::setTransparent(bool transparent)
 
 void GLWidget::resizeGL(int, int)
 {
-    if (m_hasButton) {
+    if (m_mainWindow) {
         if (!m_btn) {
-            m_btn = new QPushButton("A widget on top.\nPress for more widgets.", this);
-            connect(m_btn, &QPushButton::clicked, this, &GLWidget::handleButtonPress);
+            m_btn = new QPushButton("\nAdd widget\n", this);
+            connect(m_btn, &QPushButton::clicked, this, [this] { m_mainWindow->addNew(); });
         }
         m_btn->move(20, 80);
+        if (!m_btn2) {
+            m_btn2 = new QPushButton("\nI prefer tabbed widgets\n", this);
+            connect(m_btn2, &QPushButton::clicked, this, [this] { m_mainWindow->showNewWindow(); });
+        }
+        m_btn2->move(20, 160);
     }
-}
-
-void GLWidget::handleButtonPress()
-{
-    m_mainWindow->addNew();
 }

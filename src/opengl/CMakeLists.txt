@@ -30,7 +30,6 @@ qt_internal_add_module(OpenGL
         qopenglversionprofile.cpp qopenglversionprofile.h
         qopenglvertexarrayobject.cpp qopenglvertexarrayobject.h
         qopenglwindow.cpp qopenglwindow.h
-        qplatformbackingstoreopenglsupport.cpp qplatformbackingstoreopenglsupport.h
         qtopenglglobal.h
     DEFINES
         QT_NO_FOREACH

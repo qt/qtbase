@@ -55,9 +55,12 @@
 #include <QtGui/private/qopenglcontext_p.h>
 #include <QtOpenGL/private/qopenglframebufferobject_p.h>
 #include <QtOpenGL/private/qopenglpaintdevice_p.h>
-#include <QtOpenGL/qpa/qplatformbackingstoreopenglsupport.h>
 
 #include <QtWidgets/private/qwidget_p.h>
+#include <QtWidgets/private/qwidgetrepaintmanager_p.h>
+
+#include <QtGui/private/qrhi_p.h>
+#include <QtGui/private/qrhigles2_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -324,31 +327,34 @@ QT_BEGIN_NAMESPACE
 
   \snippet code/doc_gui_widgets_qopenglwidget.cpp 4
 
-  This is naturally not the only possible solution. One alternative is to use
-  the \l{QOpenGLContext::aboutToBeDestroyed()}{aboutToBeDestroyed()} signal of
-  QOpenGLContext. By connecting a slot, using direct connection, to this signal,
-  it is possible to perform cleanup whenever the underlying native context
-  handle, or the entire QOpenGLContext instance, is going to be released. The
-  following snippet is in principle equivalent to the previous one:
+  This works for most cases, but not fully ideal as a generic solution. When
+  the widget is reparented so that it ends up in an entirely different
+  top-level window, something more is needed: by connecting to the
+  \l{QOpenGLContext::aboutToBeDestroyed()}{aboutToBeDestroyed()} signal of
+  QOpenGLContext, cleanup can be performed whenever the OpenGL context is about
+  to be released.
+
+  \note For widgets that change their associated top-level window multiple
+  times during their lifetime, a combined cleanup approach, as demonstrated in
+  the code snippet below, is essential. Whenever the widget or a parent of it
+  gets reparented so that the top-level window becomes different, the widget's
+  associated context is destroyed and a new one is created. This is then
+  followed by a call to initializeGL() where all OpenGL resources must get
+  reinitialized. Due to this the only option to perform proper cleanup is to
+  connect to the context's aboutToBeDestroyed() signal. Note that the context
+  in question may not be the current one when the signal gets emitted.
+  Therefore it is good practice to call makeCurrent() in the connected slot.
+  Additionally, the same cleanup steps must be performed from the derived
+  class' destructor, since the slot or lambda connected to the signal may not
+  invoked when the widget is being destroyed.
 
   \snippet code/doc_gui_widgets_qopenglwidget.cpp 5
 
-  \note For widgets that change their associated top-level window multiple times
-  during their lifetime, a combined approach is essential. Whenever the widget
-  or a parent of it gets reparented so that the top-level window becomes
-  different, the widget's associated context is destroyed and a new one is
-  created. This is then followed by a call to initializeGL() where all OpenGL
-  resources must get reinitialized. Due to this the only option to perform
-  proper cleanup is to connect to the context's aboutToBeDestroyed()
-  signal. Note that the context in question may not be the current one when the
-  signal gets emitted. Therefore it is good practice to call makeCurrent() in
-  the connected slot. Additionally, the same cleanup steps must be performed
-  from the derived class' destructor, since the slot connected to the signal
-  will not get invoked when the widget is being destroyed.
-
   \note When Qt::AA_ShareOpenGLContexts is set, the widget's context never
   changes, not even when reparenting because the widget's associated texture is
-  guaranteed to be accessible also from the new top-level's context.
+  going to be accessible also from the new top-level's context. Therefore,
+  acting on the aboutToBeDestroyed() signal of the context is not mandatory
+  with this flag set.
 
   Proper cleanup is especially important due to context sharing. Even though
   each QOpenGLWidget's associated context is destroyed together with the
@@ -361,7 +367,7 @@ QT_BEGIN_NAMESPACE
   explicit cleanup for all resources and resource wrappers used in the
   QOpenGLWidget.
 
-  \section1 Limitations
+  \section1 Limitations and Other Considerations
 
   Putting other widgets underneath and making the QOpenGLWidget transparent will
   not lead to the expected results: The widgets underneath will not be
@@ -400,6 +406,20 @@ QT_BEGIN_NAMESPACE
   QOpenGLWindow in that the color and ancillary buffers are invalidated for
   each frame. To restore the preserved behavior, call setUpdateBehavior() with
   \c PartialUpdate.
+
+  \note When dynamically adding a QOpenGLWidget into a widget hierarchy, e.g.
+  by parenting a new QOpenGLWidget to a widget where the corresponding
+  top-level widget is already shown on screen, the associated native window may
+  get implicitly destroyed and recreated if the QOpenGLWidget is the first of
+  its kind within its window. This is because the window type changes from
+  \l{QSurface::RasterSurface}{RasterSurface} to
+  \l{QSurface::OpenGLSurface}{OpenGLSurface} and that has platform-specific
+  implications. This behavior is new in Qt 6.4.
+
+  Once a QOpenGLWidget is added to a widget hierarchy, the contents of the
+  top-level window is flushed via OpenGL-based rendering. Widgets other than
+  the QOpenGLWidget continue to draw their content using a software-based
+  painter, but the final composition is done through the 3D API.
 
   \note Displaying a QOpenGLWidget requires an alpha channel in the associated
   top-level window's backing store due to the way composition with other
@@ -518,13 +538,16 @@ public:
     QOpenGLWidgetPrivate() = default;
 
     void reset();
+    void resetRhiDependentResources();
     void recreateFbo();
+    void ensureRhiDependentResources();
 
-    GLuint textureId() const override;
+    QRhiTexture *texture() const override;
     QPlatformTextureList::Flags textureListFlags() override;
 
+    QPlatformBackingStoreRhiConfig rhiConfig() const override { return { QPlatformBackingStoreRhiConfig::OpenGL }; }
+
     void initialize();
-    void invokeUserPaint();
     void render();
 
     void invalidateFbo();
@@ -539,6 +562,7 @@ public:
     void resolveSamples() override;
 
     QOpenGLContext *context = nullptr;
+    QRhiTexture *wrapperTexture = nullptr;
     QOpenGLFramebufferObject *fbo = nullptr;
     QOpenGLFramebufferObject *resolvedFbo = nullptr;
     QOffscreenSurface *surface = nullptr;
@@ -605,9 +629,9 @@ void QOpenGLWidgetPaintDevice::ensureActiveTarget()
     wd->flushPending = true;
 }
 
-GLuint QOpenGLWidgetPrivate::textureId() const
+QRhiTexture *QOpenGLWidgetPrivate::texture() const
 {
-    return resolvedFbo ? resolvedFbo->texture() : (fbo ? fbo->texture() : 0);
+    return wrapperTexture;
 }
 
 #ifndef GL_SRGB
@@ -654,6 +678,8 @@ void QOpenGLWidgetPrivate::reset()
     delete resolvedFbo;
     resolvedFbo = nullptr;
 
+    resetRhiDependentResources();
+
     if (initialized)
         q->doneCurrent();
 
@@ -665,6 +691,16 @@ void QOpenGLWidgetPrivate::reset()
     delete surface;
     surface = nullptr;
     initialized = fakeHidden = inBackingStorePaint = false;
+}
+
+void QOpenGLWidgetPrivate::resetRhiDependentResources()
+{
+    // QRhi resource created from the QRhi. These must be released whenever the
+    // widget gets associated with a different QRhi, even when all OpenGL
+    // contexts share resources.
+
+    delete wrapperTexture;
+    wrapperTexture = nullptr;
 }
 
 void QOpenGLWidgetPrivate::recreateFbo()
@@ -705,7 +741,32 @@ void QOpenGLWidgetPrivate::recreateFbo()
     paintDevice->setSize(deviceSize);
     paintDevice->setDevicePixelRatio(q->devicePixelRatio());
 
+    ensureRhiDependentResources();
+
     emit q->resized();
+}
+
+void QOpenGLWidgetPrivate::ensureRhiDependentResources()
+{
+    Q_Q(QOpenGLWidget);
+
+    QRhi *rhi = nullptr;
+    if (QWidgetRepaintManager *repaintManager = QWidgetPrivate::get(q->window())->maybeRepaintManager())
+        rhi = repaintManager->rhi();
+
+    // If there is no rhi, because we are completely offscreen, then there's no wrapperTexture either
+    if (rhi) {
+        const QSize deviceSize = q->size() * q->devicePixelRatio();
+        if (!wrapperTexture || wrapperTexture->pixelSize() != deviceSize) {
+            const uint textureId = resolvedFbo ? resolvedFbo->texture() : (fbo ? fbo->texture() : 0);
+            if (!wrapperTexture)
+                wrapperTexture = rhi->newTexture(QRhiTexture::RGBA8, deviceSize, 1, QRhiTexture::RenderTarget);
+            else
+                wrapperTexture->setPixelSize(deviceSize);
+            if (!wrapperTexture->createFrom({textureId, 0 }))
+                qWarning("QOpenGLWidget: Failed to create wrapper texture");
+        }
+    }
 }
 
 void QOpenGLWidgetPrivate::beginCompose()
@@ -735,11 +796,7 @@ void QOpenGLWidgetPrivate::initialize()
     // If no global shared context get our toplevel's context with which we
     // will share in order to make the texture usable by the underlying window's backingstore.
     QWidget *tlw = q->window();
-    QOpenGLContext *shareContext = qt_gl_global_share_context();
-    if (!shareContext)
-        shareContext = get(tlw)->shareContext();
-    // If shareContext is null, showing content on-screen will not work.
-    // However, offscreen rendering and grabFramebuffer() will stay fully functional.
+    QWidgetPrivate *tlwd = get(tlw);
 
     // Do not include the sample count. Requesting a multisampled context is not necessary
     // since we render into an FBO, never to an actual surface. What's more, attempting to
@@ -748,14 +805,41 @@ void QOpenGLWidgetPrivate::initialize()
     requestedSamples = requestedFormat.samples();
     requestedFormat.setSamples(0);
 
-    auto ctx = std::make_unique<QOpenGLContext>();
-    ctx->setFormat(requestedFormat);
-    if (shareContext) {
-        ctx->setShareContext(shareContext);
-        ctx->setScreen(shareContext->screen());
+    QRhi *rhi = nullptr;
+    if (QWidgetRepaintManager *repaintManager = tlwd->maybeRepaintManager())
+        rhi = repaintManager->rhi();
+
+    // Could be that something else already initialized the window with some
+    // other graphics API for the QRhi, that's not good.
+    if (rhi && rhi->backend() != QRhi::OpenGLES2) {
+        qWarning("The top-level window is not using OpenGL for composition, '%s' is not compatible with QOpenGLWidget",
+                 rhi->backendName());
+        return;
     }
-    if (Q_UNLIKELY(!ctx->create())) {
+
+    // If rhi or contextFromRhi is null, showing content on-screen will not work.
+    // However, offscreen rendering and grabFramebuffer() will stay fully functional.
+
+    QOpenGLContext *contextFromRhi = rhi ? static_cast<const QRhiGles2NativeHandles *>(rhi->nativeHandles())->context : nullptr;
+
+    context = new QOpenGLContext;
+    context->setFormat(requestedFormat);
+    if (contextFromRhi) {
+        context->setShareContext(contextFromRhi);
+        context->setScreen(contextFromRhi->screen());
+    }
+    if (Q_UNLIKELY(!context->create())) {
         qWarning("QOpenGLWidget: Failed to create context");
+        return;
+    }
+
+    surface = new QOffscreenSurface;
+    surface->setFormat(context->format());
+    surface->setScreen(context->screen());
+    surface->create();
+
+    if (Q_UNLIKELY(!context->makeCurrent(surface))) {
+        qWarning("QOpenGLWidget: Failed to make context current");
         return;
     }
 
@@ -776,24 +860,10 @@ void QOpenGLWidgetPrivate::initialize()
         }
     }
 
-    // The top-level window's surface is not good enough since it causes way too
-    // much trouble with regards to the QSurfaceFormat for example. So just like
-    // in QQuickWidget, use a dedicated QOffscreenSurface.
-    surface = new QOffscreenSurface;
-    surface->setFormat(ctx->format());
-    surface->setScreen(ctx->screen());
-    surface->create();
-
-    if (Q_UNLIKELY(!ctx->makeCurrent(surface))) {
-        qWarning("QOpenGLWidget: Failed to make context current");
-        return;
-    }
-
     paintDevice = new QOpenGLWidgetPaintDevice(q);
     paintDevice->setSize(q->size() * q->devicePixelRatio());
     paintDevice->setDevicePixelRatio(q->devicePixelRatio());
 
-    context = ctx.release();
     initialized = true;
 
     q->initializeGL();
@@ -810,12 +880,22 @@ void QOpenGLWidgetPrivate::resolveSamples()
     }
 }
 
-void QOpenGLWidgetPrivate::invokeUserPaint()
+void QOpenGLWidgetPrivate::render()
 {
     Q_Q(QOpenGLWidget);
 
+    if (fakeHidden || !initialized)
+        return;
+
+    q->makeCurrent();
+
     QOpenGLContext *ctx = QOpenGLContext::currentContext();
     Q_ASSERT(ctx && fbo);
+
+    if (updateBehavior == QOpenGLWidget::NoPartialUpdate && hasBeenComposed) {
+        invalidateFbo();
+        hasBeenComposed = false;
+    }
 
     QOpenGLFunctions *f = ctx->functions();
     QOpenGLContextPrivate::get(ctx)->defaultFboRedirect = fbo->handle();
@@ -827,23 +907,6 @@ void QOpenGLWidgetPrivate::invokeUserPaint()
     flushPending = true;
 
     QOpenGLContextPrivate::get(ctx)->defaultFboRedirect = 0;
-}
-
-void QOpenGLWidgetPrivate::render()
-{
-    Q_Q(QOpenGLWidget);
-
-    if (fakeHidden || !initialized)
-        return;
-
-    q->makeCurrent();
-
-    if (updateBehavior == QOpenGLWidget::NoPartialUpdate && hasBeenComposed) {
-        invalidateFbo();
-        hasBeenComposed = false;
-    }
-
-    invokeUserPaint();
 }
 
 void QOpenGLWidgetPrivate::invalidateFbo()
@@ -933,7 +996,8 @@ QOpenGLWidget::QOpenGLWidget(QWidget *parent, Qt::WindowFlags f)
     : QWidget(*(new QOpenGLWidgetPrivate), parent, f)
 {
     Q_D(QOpenGLWidget);
-    if (Q_UNLIKELY(!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::RasterGLSurface)))
+    if (Q_UNLIKELY(!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::RhiBasedRendering)
+                   || !QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL)))
         qWarning("QOpenGLWidget is not supported on this platform.");
     else
         d->setRenderToTexture();
@@ -958,6 +1022,12 @@ QOpenGLWidget::QOpenGLWidget(QWidget *parent, Qt::WindowFlags f)
 */
 QOpenGLWidget::~QOpenGLWidget()
 {
+    // NB! resetting graphics resources must be done from this destructor,
+    // *not* from the private class' destructor. This is due to how destruction
+    // works and due to the QWidget dtor (for toplevels) destroying the repaint
+    // manager and rhi before the (QObject) private gets destroyed. Hence must
+    // do it here early on.
+
     Q_D(QOpenGLWidget);
     d->reset();
 }
@@ -1249,11 +1319,13 @@ void QOpenGLWidget::paintEvent(QPaintEvent *e)
 {
     Q_UNUSED(e);
     Q_D(QOpenGLWidget);
-    if (!d->initialized)
-        return;
 
-    if (updatesEnabled())
-        d->render();
+    d->initialize();
+    if (d->initialized) {
+        d->ensureRhiDependentResources();
+        if (updatesEnabled())
+            d->render();
+    }
 }
 
 /*!
@@ -1375,6 +1447,9 @@ bool QOpenGLWidget::event(QEvent *e)
 {
     Q_D(QOpenGLWidget);
     switch (e->type()) {
+    case QEvent::WindowAboutToChangeInternal:
+        d->resetRhiDependentResources();
+        break;
     case QEvent::WindowChangeInternal:
         if (QCoreApplication::testAttribute(Qt::AA_ShareOpenGLContexts))
             break;
@@ -1384,22 +1459,22 @@ bool QOpenGLWidget::event(QEvent *e)
             break;
         Q_FALLTHROUGH();
     case QEvent::Show: // reparenting may not lead to a resize so reinitalize on Show too
-        if (d->initialized && window()->windowHandle()
-                && d->context->shareContext() != QWidgetPrivate::get(window())->shareContext())
-        {
+        if (d->initialized && !d->wrapperTexture && window()->windowHandle()) {
             // Special case: did grabFramebuffer() for a hidden widget that then became visible.
             // Recreate all resources since the context now needs to share with the TLW's.
             if (!QCoreApplication::testAttribute(Qt::AA_ShareOpenGLContexts))
                 d->reset();
         }
-        if (!d->initialized && !size().isEmpty() && window()->windowHandle()) {
-            d->initialize();
-            if (d->initialized) {
-                d->recreateFbo();
-                // QTBUG-89812: generate a paint event, like resize would do,
-                // otherwise a QOpenGLWidget in a QDockWidget may not show the
-                // content upon (un)docking.
-                d->sendPaintEvent(QRect(QPoint(0, 0), size()));
+        if (QWidgetRepaintManager *repaintManager = QWidgetPrivate::get(window())->maybeRepaintManager()) {
+            if (!d->initialized && !size().isEmpty() && repaintManager->rhi()) {
+                d->initialize();
+                if (d->initialized) {
+                    d->recreateFbo();
+                    // QTBUG-89812: generate a paint event, like resize would do,
+                    // otherwise a QOpenGLWidget in a QDockWidget may not show the
+                    // content upon (un)docking.
+                    d->sendPaintEvent(QRect(QPoint(0, 0), size()));
+                }
             }
         }
         break;
@@ -1412,8 +1487,6 @@ bool QOpenGLWidget::event(QEvent *e)
     }
     return QWidget::event(e);
 }
-
-Q_CONSTRUCTOR_FUNCTION(qt_registerDefaultPlatformBackingStoreOpenGLSupport);
 
 QT_END_NAMESPACE
 

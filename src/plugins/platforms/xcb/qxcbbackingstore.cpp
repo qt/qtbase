@@ -901,17 +901,18 @@ void QXcbBackingStore::render(xcb_window_t window, const QRegion &region, const 
     m_image->put(window, region, offset);
 }
 
-#ifndef QT_NO_OPENGL
-void QXcbBackingStore::composeAndFlush(QWindow *window, const QRegion &region, const QPoint &offset,
-                                       QPlatformTextureList *textures,
-                                       bool translucentBackground)
+QPlatformBackingStore::FlushResult QXcbBackingStore::rhiFlush(QWindow *window,
+                                                              const QRegion &region,
+                                                              const QPoint &offset,
+                                                              QPlatformTextureList *textures,
+                                                              bool translucentBackground)
 {
     if (!m_image || m_image->size().isEmpty())
-        return;
+        return FlushFailed;
 
     m_image->flushScrolledRegion(true);
 
-    QPlatformBackingStore::composeAndFlush(window, region, offset, textures, translucentBackground);
+    QPlatformBackingStore::rhiFlush(window, region, offset, textures, translucentBackground);
 
     QXcbWindow *platformWindow = static_cast<QXcbWindow *>(window->handle());
     if (platformWindow->needsSync()) {
@@ -919,8 +920,9 @@ void QXcbBackingStore::composeAndFlush(QWindow *window, const QRegion &region, c
     } else {
         xcb_flush(xcb_connection());
     }
+
+    return FlushSuccess;
 }
-#endif // QT_NO_OPENGL
 
 void QXcbBackingStore::resize(const QSize &size, const QRegion &)
 {

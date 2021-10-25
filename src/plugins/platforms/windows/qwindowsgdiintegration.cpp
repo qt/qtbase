@@ -45,10 +45,6 @@
 #include <QtCore/qdebug.h>
 #include <QtGui/private/qpixmap_raster_p.h>
 
-#if QT_CONFIG(opengl)
-#include <QtOpenGL/qpa/qplatformbackingstoreopenglsupport.h>
-#endif
-
 QT_BEGIN_NAMESPACE
 
 class QWindowsGdiIntegrationPrivate

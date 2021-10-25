@@ -285,7 +285,7 @@ public:
         StyleAnimationUpdate = 213,             // style animation target should be updated
         ApplicationStateChange = 214,
 
-        WindowChangeInternal = 215,             // internal for QQuickWidget
+        WindowChangeInternal = 215,             // internal for QQuickWidget and texture-based widgets
         ScreenChangeInternal = 216,
 
         PlatformSurface = 217,                  // Platform surface created or about to be destroyed
@@ -293,6 +293,8 @@ public:
         Pointer = 218,                          // Qt 5: QQuickPointerEvent; Qt 6: unused so far
 
         TabletTrackingChange = 219,             // tablet tracking state has changed
+
+        WindowAboutToChangeInternal = 220,      // internal for QQuickWidget and texture-based widgets
 
         // 512 reserved for Qt Jambi's MetaCall event
         // 513 reserved for Qt Jambi's DeleteOnMainThread event

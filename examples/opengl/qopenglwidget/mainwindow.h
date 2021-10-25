@@ -68,6 +68,9 @@ public:
 
     void resizeEvent(QResizeEvent *);
 
+public slots:
+    void showNewWindow();
+
 private slots:
     void updateIntervalChanged(int value);
     void timerUsageChanged(bool enabled);

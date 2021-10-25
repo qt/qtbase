@@ -62,6 +62,7 @@ QT_BEGIN_NAMESPACE
 
 class QOpenGLContext;
 class QPlatformTextureList;
+class QRhiTexture;
 
 class Q_OPENGL_EXPORT QOpenGLCompositorBackingStore : public QPlatformBackingStore
 {
@@ -77,7 +78,10 @@ public:
     void resize(const QSize &size, const QRegion &staticContents) override;
 
     QImage toImage() const override;
-    void composeAndFlush(QWindow *window, const QRegion &region, const QPoint &offset,
+
+    FlushResult rhiFlush(QWindow *window,
+                         const QRegion &region,
+                         const QPoint &offset,
                          QPlatformTextureList *textures,
                          bool translucentBackground) override;
 
@@ -92,9 +96,11 @@ private:
     QImage m_image;
     QRegion m_dirty;
     uint m_bsTexture;
+    QRhiTexture *m_bsTextureWrapper;
     QOpenGLContext *m_bsTextureContext;
     QPlatformTextureList *m_textures;
     QPlatformTextureList *m_lockedWidgetTextures;
+    QRhi *m_rhi;
 };
 
 QT_END_NAMESPACE

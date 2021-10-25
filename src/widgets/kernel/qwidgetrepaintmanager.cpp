@@ -65,12 +65,11 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_OPENGL
 Q_GLOBAL_STATIC(QPlatformTextureList, qt_dummy_platformTextureList)
 
 // Watches one or more QPlatformTextureLists for changes in the lock state and
 // triggers a backingstore sync when all the registered lists turn into
-// unlocked state. This is essential when a custom composeAndFlush()
+// unlocked state. This is essential when a custom rhiFlush()
 // implementation in a platform plugin is not synchronous and keeps
 // holding on to the textures for some time even after returning from there.
 class QPlatformTextureListWatcher : public QObject
@@ -105,7 +104,6 @@ private:
      QHash<QPlatformTextureList *, bool> m_locked;
      QWidgetRepaintManager *m_repaintManager;
 };
-#endif
 
 // ---------------------------------------------------------------------------
 
@@ -374,7 +372,6 @@ void QWidgetRepaintManager::sendUpdateRequest(QWidget *widget, UpdateTime update
 
     qCInfo(lcWidgetPainting) << "Sending update request to" << widget << "with" << updateTime;
 
-#ifndef QT_NO_OPENGL
     // Having every repaint() leading to a sync/flush is bad as it causes
     // compositing and waiting for vsync each and every time. Change to
     // UpdateLater, except for approx. once per frame to prevent starvation in
@@ -392,7 +389,6 @@ void QWidgetRepaintManager::sendUpdateRequest(QWidget *widget, UpdateTime update
                 updateTime = UpdateLater;
        }
     }
-#endif
 
     switch (updateTime) {
     case UpdateLater:
@@ -571,7 +567,6 @@ bool QWidgetRepaintManager::bltRect(const QRect &rect, int dx, int dy, QWidget *
 
 // ---------------------------------------------------------------------------
 
-#ifndef QT_NO_OPENGL
 static void findTextureWidgetsRecursively(QWidget *tlw, QWidget *widget,
                                           QPlatformTextureList *widgetTextures,
                                           QList<QWidget *> *nativeChildren)
@@ -580,7 +575,7 @@ static void findTextureWidgetsRecursively(QWidget *tlw, QWidget *widget,
     if (wd->renderToTexture) {
         QPlatformTextureList::Flags flags = wd->textureListFlags();
         const QRect rect(widget->mapTo(tlw, QPoint()), widget->size());
-        widgetTextures->appendTexture(widget, wd->textureId(), rect, wd->clipRect(), flags);
+        widgetTextures->appendTexture(widget, wd->texture(), rect, wd->clipRect(), flags);
     }
 
     for (int i = 0; i < wd->children.size(); ++i) {
@@ -624,32 +619,11 @@ static QPlatformTextureList *widgetTexturesFor(QWidget *tlw, QWidget *widget)
         }
     }
 
-    if (QWidgetPrivate::get(widget)->textureChildSeen) {
-        // No render-to-texture widgets in the (sub-)tree due to hidden or native
-        // children. Returning null results in using the normal backingstore flush path
-        // without OpenGL-based compositing. This is very desirable normally. However,
-        // some platforms cannot handle switching between the non-GL and GL paths for
-        // their windows so it has to be opt-in.
-        static bool switchableWidgetComposition =
-            QGuiApplicationPrivate::instance()->platformIntegration()
-                ->hasCapability(QPlatformIntegration::SwitchableWidgetComposition);
-        if (!switchableWidgetComposition)
-            return qt_dummy_platformTextureList();
-    }
+    if (QWidgetPrivate::get(widget)->textureChildSeen)
+        return qt_dummy_platformTextureList();
 
     return nullptr;
 }
-
-#else
-
-static QPlatformTextureList *widgetTexturesFor(QWidget *tlw, QWidget *widget)
-{
-    Q_UNUSED(tlw);
-    Q_UNUSED(widget);
-    return nullptr;
-}
-
-#endif // QT_NO_OPENGL
 
 // ---------------------------------------------------------------------------
 
@@ -725,7 +699,6 @@ bool QWidgetPrivate::shouldDiscardSyncRequest() const
 
 bool QWidgetRepaintManager::syncAllowed()
 {
-#ifndef QT_NO_OPENGL
     QTLWExtra *tlwExtra = tlw->d_func()->maybeTopData();
     if (textureListWatcher && !textureListWatcher->isLocked()) {
         textureListWatcher->deleteLater();
@@ -744,7 +717,6 @@ bool QWidgetRepaintManager::syncAllowed()
         if (skipSync)  // cannot compose due to widget textures being in use
             return false;
     }
-#endif
     return true;
 }
 
@@ -857,7 +829,6 @@ void QWidgetRepaintManager::paintAndFlush()
     }
     dirtyWidgets.clear();
 
-#ifndef QT_NO_OPENGL
     // Find all render-to-texture child widgets (including self).
     // The search is cut at native widget boundaries, meaning that each native child widget
     // has its own list for the subtree below it.
@@ -865,13 +836,12 @@ void QWidgetRepaintManager::paintAndFlush()
     tlwExtra->widgetTextures.clear();
     findAllTextureWidgetsRecursively(tlw, tlw);
     qt_window_private(tlw->windowHandle())->compositing = false; // will get updated in flush()
-#endif
 
     if (toClean.isEmpty()) {
         // Nothing to repaint. However renderToTexture widgets are handled
         // specially, they are not in the regular dirty list, in order to
         // prevent triggering unnecessary backingstore painting when only the
-        // OpenGL content changes. Check if we have such widgets in the special
+        // texture content changes. Check if we have such widgets in the special
         // dirty list.
         QVarLengthArray<QWidget *, 16> paintPending;
         const int numPaintPending = dirtyRenderToTextureWidgets.count();
@@ -903,7 +873,6 @@ void QWidgetRepaintManager::paintAndFlush()
         return;
     }
 
-#ifndef QT_NO_OPENGL
     for (const auto &tl : tlwExtra->widgetTextures) {
         for (int i = 0; i < tl->count(); ++i) {
             QWidget *w = static_cast<QWidget *>(tl->source(i));
@@ -920,7 +889,6 @@ void QWidgetRepaintManager::paintAndFlush()
     for (int i = 0; i < dirtyRenderToTextureWidgets.count(); ++i)
         resetWidget(dirtyRenderToTextureWidgets.at(i));
     dirtyRenderToTextureWidgets.clear();
-#endif
 
 #if QT_CONFIG(graphicsview)
     if (tlw->d_func()->extra->proxyWidget) {
@@ -1046,12 +1014,10 @@ void QWidgetRepaintManager::flush()
 
     // Render-to-texture widgets are not in topLevelNeedsFlush so flush if we have not done it above.
     if (!flushed && !hasNeedsFlushWidgets) {
-#ifndef QT_NO_OPENGL
         if (!tlw->d_func()->topData()->widgetTextures.empty()) {
             if (QPlatformTextureList *widgetTextures = widgetTexturesFor(tlw, tlw))
                 flush(tlw, QRegion(), widgetTextures);
         }
-#endif
     }
 
     if (!hasNeedsFlushWidgets)
@@ -1073,12 +1039,7 @@ void QWidgetRepaintManager::flush()
  */
 void QWidgetRepaintManager::flush(QWidget *widget, const QRegion &region, QPlatformTextureList *widgetTextures)
 {
-#ifdef QT_NO_OPENGL
-    Q_UNUSED(widgetTextures);
-    Q_ASSERT(!region.isEmpty());
-#else
     Q_ASSERT(!region.isEmpty() || widgetTextures);
-#endif
     Q_ASSERT(widget);
     Q_ASSERT(tlw);
 
@@ -1090,8 +1051,6 @@ void QWidgetRepaintManager::flush(QWidget *widget, const QRegion &region, QPlatf
         if (widgetWindow->type() == Qt::ForeignWindow)
             return;
     }
-
-    qCInfo(lcWidgetPainting) << "Flushing" << region << "of" << widget;
 
     static bool fpsDebug = qEnvironmentVariableIntValue("QT_DEBUG_FPS");
     if (fpsDebug) {
@@ -1108,40 +1067,37 @@ void QWidgetRepaintManager::flush(QWidget *widget, const QRegion &region, QPlatf
     if (widget != tlw)
         offset += widget->mapTo(tlw, QPoint());
 
-    QRegion effectiveRegion = region;
-#ifndef QT_NO_OPENGL
-    const bool compositionWasActive = widget->d_func()->renderToTextureComposeActive;
-    if (!widgetTextures) {
-        widget->d_func()->renderToTextureComposeActive = false;
-        // Detect the case of falling back to the normal flush path when no
-        // render-to-texture widgets are visible anymore. We will force one
-        // last flush to go through the OpenGL-based composition to prevent
-        // artifacts. The next flush after this one will use the normal path.
-        if (compositionWasActive)
+    if (widget->d_func()->usesRhiFlush) {
+        QRhi *rhi = store->handle()->rhi();
+        qCDebug(lcWidgetPainting) << "Flushing" << region << "of" << widget
+                                  << "with QRhi" << rhi
+                                  << "to window" << widget->windowHandle();
+        if (!widgetTextures)
             widgetTextures = qt_dummy_platformTextureList;
-    } else {
-        widget->d_func()->renderToTextureComposeActive = true;
-    }
-    // When changing the composition status, make sure the dirty region covers
-    // the entire widget.  Just having e.g. the shown/hidden render-to-texture
-    // widget's area marked as dirty is incorrect when changing flush paths.
-    if (compositionWasActive != widget->d_func()->renderToTextureComposeActive)
-        effectiveRegion = widget->rect();
 
-    // re-test since we may have been forced to this path via the dummy texture list above
-    if (widgetTextures) {
         qt_window_private(tlw->windowHandle())->compositing = true;
-        widget->window()->d_func()->sendComposeStatus(widget->window(), false);
+        QWidgetPrivate *widgetWindowPrivate = widget->window()->d_func();
+        widgetWindowPrivate->sendComposeStatus(widget->window(), false);
         // A window may have alpha even when the app did not request
         // WA_TranslucentBackground. Therefore the compositor needs to know whether the app intends
         // to rely on translucency, in order to decide if it should clear to transparent or opaque.
         const bool translucentBackground = widget->testAttribute(Qt::WA_TranslucentBackground);
-        store->handle()->composeAndFlush(widget->windowHandle(), effectiveRegion, offset,
-                                                widgetTextures, translucentBackground);
-        widget->window()->d_func()->sendComposeStatus(widget->window(), true);
-    } else
-#endif
-        store->flush(effectiveRegion, widget->windowHandle(), offset);
+
+        QPlatformBackingStore::FlushResult flushResult;
+        flushResult = store->handle()->rhiFlush(widget->windowHandle(),
+                                                region,
+                                                offset,
+                                                widgetTextures,
+                                                translucentBackground);
+        widgetWindowPrivate->sendComposeStatus(widget->window(), true);
+        if (flushResult == QPlatformBackingStore::FlushFailedDueToLostDevice) {
+            store->handle()->graphicsDeviceReportedLost();
+            widget->update();
+        }
+    } else {
+        qCInfo(lcWidgetPainting) << "Flushing" << region << "of" << widget;
+        store->flush(region, widget->windowHandle(), offset);
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -1351,6 +1307,11 @@ void QWidgetPrivate::invalidateBackingStore_resizeHelper(const QPoint &oldPos, c
         parentExpose -= data.crect;
         q->parentWidget()->d_func()->invalidateBackingStore(parentExpose);
     }
+}
+
+QRhi *QWidgetRepaintManager::rhi() const
+{
+    return store->handle()->rhi();
 }
 
 QT_END_NAMESPACE

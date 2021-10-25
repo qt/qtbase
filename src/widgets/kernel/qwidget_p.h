@@ -61,7 +61,6 @@
 #include "QtCore/qset.h"
 #include "QtGui/qregion.h"
 #include "QtGui/qinputmethod.h"
-#include "QtGui/qopengl.h"
 #include "QtGui/qsurfaceformat.h"
 #include "QtGui/qscreen.h"
 #include "QtWidgets/qsizepolicy.h"
@@ -77,6 +76,7 @@
 #endif
 #include <private/qgesture_p.h>
 #include <qpa/qplatformbackingstore.h>
+#include <QtGui/private/qbackingstorerhisupport_p.h>
 
 #include <vector>
 #include <memory>
@@ -94,7 +94,6 @@ class QPixmap;
 class QWidgetRepaintManager;
 class QGraphicsProxyWidget;
 class QWidgetItemV2;
-class QOpenGLContext;
 
 class QStyle;
 
@@ -130,9 +129,6 @@ struct QTLWExtra {
     QBackingStore *backingStore;
     QPainter *sharedPainter;
     QWidgetWindow *window;
-#ifndef QT_NO_OPENGL
-    mutable std::unique_ptr<QOpenGLContext> shareContext;
-#endif
 
     // Implicit pointers (shared_null).
     QString caption; // widget caption
@@ -149,9 +145,7 @@ struct QTLWExtra {
     Qt::WindowFlags savedFlags; // Save widget flags while showing fullscreen
     QScreen *initialScreen; // Screen when passing a QDesktop[Screen]Widget as parent.
 
-#ifndef QT_NO_OPENGL
     std::vector<std::unique_ptr<QPlatformTextureList>> widgetTextures;
-#endif
 
     // *************************** Cross-platform bit fields ****************************
     uint opacity : 8;
@@ -627,12 +621,11 @@ public:
     inline QRect mapFromWS(const QRect &r) const
     { return r.translated(data.wrect.topLeft()); }
 
-    QOpenGLContext *shareContext() const;
-
     virtual QObject *focusObject() { return nullptr; }
 
-#ifndef QT_NO_OPENGL
-    virtual GLuint textureId() const { return 0; }
+    virtual QPlatformBackingStoreRhiConfig rhiConfig() const { return {}; }
+
+    virtual QRhiTexture *texture() const { return nullptr; }
     virtual QPlatformTextureList::Flags textureListFlags() {
         Q_Q(QWidget);
         return q->testAttribute(Qt::WA_AlwaysStackOnTop)
@@ -667,7 +660,6 @@ public:
     virtual void resizeViewportFramebuffer() { }
     // Called after each paint event.
     virtual void resolveSamples() { }
-#endif
 
     static void setWidgetParentHelper(QObject *widgetAsObject, QObject *newParent);
 
@@ -758,10 +750,8 @@ public:
 #ifndef QT_NO_IM
     uint inheritsInputMethodHints : 1;
 #endif
-#ifndef QT_NO_OPENGL
     uint renderToTextureReallyDirty : 1;
-    uint renderToTextureComposeActive : 1;
-#endif
+    uint usesRhiFlush : 1;
     uint childrenHiddenByWState : 1;
     uint childrenShownByExpose : 1;
 

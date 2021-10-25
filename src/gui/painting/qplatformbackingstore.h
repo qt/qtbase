@@ -56,7 +56,6 @@
 
 #include <QtGui/qwindow.h>
 #include <QtGui/qregion.h>
-#include <QtGui/qopengl.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -70,9 +69,73 @@ class QPlatformBackingStorePrivate;
 class QPlatformTextureList;
 class QPlatformTextureListPrivate;
 class QPlatformGraphicsBuffer;
-class QPlatformBackingStoreOpenGLSupportBase;
+class QRhi;
+class QRhiTexture;
+class QRhiResourceUpdateBatch;
+class QRhiSwapChain;
 
-#ifndef QT_NO_OPENGL
+struct Q_GUI_EXPORT QPlatformBackingStoreRhiConfig
+{
+    enum Api {
+        OpenGL,
+        Metal,
+        Vulkan,
+        D3D11,
+        Null
+    };
+
+    QPlatformBackingStoreRhiConfig()
+        : m_enable(false)
+    { }
+
+    QPlatformBackingStoreRhiConfig(Api api)
+        : m_enable(true),
+          m_api(api)
+    { }
+
+    bool isEnabled() const { return m_enable; }
+    void setEnabled(bool enable) { m_enable = enable; }
+
+    Api api() const { return m_api; }
+    void setApi(Api api) { m_api = api; }
+
+    bool isDebugLayerEnabled() const { return m_debugLayer; }
+    void setDebugLayer(bool enable) { m_debugLayer = enable; }
+
+    QByteArrayList instanceExtensions() const { return m_instanceExtensions; }
+    void setInstanceExtensions(const QByteArrayList &e) { m_instanceExtensions = e; }
+
+    QByteArrayList instanceLayers() const { return m_instanceLayers; }
+    void setInstanceLayers(const QByteArrayList &e) { m_instanceLayers = e; }
+
+    QByteArrayList deviceExtensions() const { return m_deviceExtensions; }
+    void setDeviceExtensions(const QByteArrayList &e) { m_deviceExtensions = e; }
+
+private:
+    bool m_enable;
+    Api m_api = Null;
+    bool m_debugLayer = false;
+    QByteArrayList m_instanceExtensions;
+    QByteArrayList m_instanceLayers;
+    QByteArrayList m_deviceExtensions;
+    friend bool operator==(const QPlatformBackingStoreRhiConfig &a, const QPlatformBackingStoreRhiConfig &b);
+};
+
+inline bool operator==(const QPlatformBackingStoreRhiConfig &a, const QPlatformBackingStoreRhiConfig &b)
+{
+    return a.m_enable == b.m_enable
+            && a.m_api == b.m_api
+            && a.m_debugLayer == b.m_debugLayer
+            && a.m_instanceExtensions == b.m_instanceExtensions
+            && a.m_instanceLayers == b.m_instanceLayers
+            && a.m_deviceExtensions == b.m_deviceExtensions;
+}
+
+inline bool operator!=(const QPlatformBackingStoreRhiConfig &a, const QPlatformBackingStoreRhiConfig &b)
+{
+    return !(a == b);
+}
+
 class Q_GUI_EXPORT QPlatformTextureList : public QObject
 {
     Q_OBJECT
@@ -90,7 +153,7 @@ public:
 
     int count() const;
     bool isEmpty() const { return count() == 0; }
-    GLuint textureId(int index) const;
+    QRhiTexture *texture(int index) const;
     QRect geometry(int index) const;
     QRect clipRect(int index) const;
     void *source(int index);
@@ -98,7 +161,7 @@ public:
     void lock(bool on);
     bool isLocked() const;
 
-    void appendTexture(void *source, GLuint textureId, const QRect &geometry,
+    void appendTexture(void *source, QRhiTexture *texture, const QRect &geometry,
                        const QRect &clipRect = QRect(), Flags flags = { });
     void clear();
 
@@ -106,11 +169,16 @@ public:
     void locked(bool);
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(QPlatformTextureList::Flags)
-#endif
 
 class Q_GUI_EXPORT QPlatformBackingStore
 {
 public:
+    enum FlushResult {
+        FlushSuccess,
+        FlushFailed,
+        FlushFailedDueToLostDevice
+    };
+
     explicit QPlatformBackingStore(QWindow *window);
     virtual ~QPlatformBackingStore();
 
@@ -119,22 +187,25 @@ public:
 
     virtual QPaintDevice *paintDevice() = 0;
 
-    virtual void flush(QWindow *window, const QRegion &region, const QPoint &offset) = 0;
-#ifndef QT_NO_OPENGL
-    virtual void composeAndFlush(QWindow *window, const QRegion &region, const QPoint &offset,
+    virtual void flush(QWindow *window, const QRegion &region, const QPoint &offset);
+
+    virtual FlushResult rhiFlush(QWindow *window,
+                                 const QRegion &region,
+                                 const QPoint &offset,
                                  QPlatformTextureList *textures,
                                  bool translucentBackground);
-#endif
+
     virtual QImage toImage() const;
-#ifndef QT_NO_OPENGL
+
     enum TextureFlag {
         TextureSwizzle = 0x01,
         TextureFlip = 0x02,
-        TexturePremultiplied = 0x04,
+        TexturePremultiplied = 0x04
     };
     Q_DECLARE_FLAGS(TextureFlags, TextureFlag)
-    virtual GLuint toTexture(const QRegion &dirtyRegion, QSize *textureSize, TextureFlags *flags) const;
-#endif
+    virtual QRhiTexture *toTexture(QRhiResourceUpdateBatch *resourceUpdates,
+                                   const QRegion &dirtyRegion,
+                                   TextureFlags *flags) const;
 
     virtual QPlatformGraphicsBuffer *graphicsBuffer() const;
 
@@ -145,6 +216,12 @@ public:
     virtual void beginPaint(const QRegion &);
     virtual void endPaint();
 
+    void setRhiConfig(const QPlatformBackingStoreRhiConfig &config);
+    QRhi *rhi() const;
+    QRhiSwapChain *rhiSwapChain() const;
+    void surfaceAboutToBeDestroyed();
+    void graphicsDeviceReportedLost();
+
 private:
     QPlatformBackingStorePrivate *d_ptr;
 
@@ -152,31 +229,7 @@ private:
     friend class QBackingStore;
 };
 
-#ifndef QT_NO_OPENGL
-class Q_GUI_EXPORT QPlatformBackingStoreOpenGLSupportBase
-{
-public:
-    virtual void composeAndFlush(QWindow *window, const QRegion &region, const QPoint &offset,
-                                 QPlatformTextureList *textures, bool translucentBackground) = 0;
-    virtual GLuint toTexture(const QRegion &dirtyRegion, QSize *textureSize, QPlatformBackingStore::TextureFlags *flags) const = 0;
-    virtual ~QPlatformBackingStoreOpenGLSupportBase() {}
-
-    using FactoryFunction = QPlatformBackingStoreOpenGLSupportBase *(*)();
-    static void setFactoryFunction(FactoryFunction);
-    static FactoryFunction factoryFunction();
-
-protected:
-    QPlatformBackingStore *backingStore = nullptr;
-    friend class QPlatformBackingStore;
-
-private:
-    static FactoryFunction s_factoryFunction;
-};
-#endif // QT_NO_OPENGL
-
-#ifndef QT_NO_OPENGL
 Q_DECLARE_OPERATORS_FOR_FLAGS(QPlatformBackingStore::TextureFlags)
-#endif
 
 QT_END_NAMESPACE
 

@@ -84,6 +84,7 @@ int main( int argc, char ** argv )
     QSurfaceFormat::setDefaultFormat(format);
 
     MainWindow mw;
-    mw.showMaximized();
+    mw.resize(1280, 720);
+    mw.show();
     return a.exec();
 }

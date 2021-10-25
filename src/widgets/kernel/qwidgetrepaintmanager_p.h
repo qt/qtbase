@@ -62,8 +62,10 @@ QT_BEGIN_NAMESPACE
 class QPlatformTextureList;
 class QPlatformTextureListWatcher;
 class QWidgetRepaintManager;
+class QRhi;
+class QRhiSwapChain;
 
-class Q_AUTOTEST_EXPORT QWidgetRepaintManager
+class Q_WIDGETS_EXPORT QWidgetRepaintManager
 {
     Q_GADGET
 public:
@@ -105,6 +107,8 @@ public:
     bool isDirty() const;
 
     bool bltRect(const QRect &rect, int dx, int dy, QWidget *widget);
+
+    QRhi *rhi() const;
 
 private:
     void updateLists(QWidget *widget);

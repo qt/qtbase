@@ -77,9 +77,6 @@
 #include "qscopeguard.h"
 #include <QtGui/private/qhighdpiscaling_p.h>
 #include <QtGui/qinputmethod.h>
-#include <QtGui/qopenglcontext.h>
-#include <QtGui/private/qopenglcontext_p.h>
-#include <QtGui/qoffscreensurface.h>
 
 #if QT_CONFIG(graphicseffect)
 #include <private/qgraphicseffect_p.h>
@@ -178,10 +175,8 @@ QWidgetPrivate::QWidgetPrivate(int version)
 #ifndef QT_NO_IM
       , inheritsInputMethodHints(0)
 #endif
-#ifndef QT_NO_OPENGL
       , renderToTextureReallyDirty(1)
-      , renderToTextureComposeActive(0)
-#endif
+      , usesRhiFlush(0)
       , childrenHiddenByWState(0)
       , childrenShownByExpose(0)
 #if defined(Q_OS_WIN)
@@ -1114,6 +1109,47 @@ QScreen *QWidgetPrivate::associatedScreen() const
     return nullptr;
 }
 
+// finds the first rhiconfig in the hierarchy that has enable==true
+static bool q_evaluateRhiConfigRecursive(const QWidget *w, QPlatformBackingStoreRhiConfig *outConfig, QSurface::SurfaceType *outType)
+{
+    QPlatformBackingStoreRhiConfig config = QWidgetPrivate::get(w)->rhiConfig();
+    if (config.isEnabled()) {
+        if (outConfig)
+            *outConfig = config;
+        if (outType)
+            *outType = QBackingStoreRhiSupport::surfaceTypeForConfig(config);
+        return true;
+    }
+    QObjectList children = w->children();
+    for (int i = 0; i < children.size(); i++) {
+        if (children.at(i)->isWidgetType()) {
+            const QWidget *childWidget = qobject_cast<const QWidget *>(children.at(i));
+            if (childWidget) {
+                if (q_evaluateRhiConfigRecursive(childWidget, outConfig, outType))
+                    return true;
+            }
+        }
+    }
+    return false;
+}
+
+// First tries q_evaluateRhiConfigRecursive, then if that did not indicate that rhi is wanted,
+// then checks env.vars or something else to see if we need to force using rhi-based composition.
+bool q_evaluateRhiConfig(const QWidget *w, QPlatformBackingStoreRhiConfig *outConfig, QSurface::SurfaceType *outType)
+{
+    if (q_evaluateRhiConfigRecursive(w, outConfig, outType)) {
+        qCDebug(lcWidgetPainting) << "Tree with root" << w << "evaluates to flushing with QRhi";
+        return true;
+    }
+
+    if (QBackingStoreRhiSupport::checkForceRhi(outConfig, outType)) {
+        qCDebug(lcWidgetPainting) << "Tree with root" << w << "evaluated to forced flushing with QRhi";
+        return true;
+    }
+
+    return false;
+}
+
 // ### fixme: Qt 6: Remove parameter window from QWidget::create()
 
 /*!
@@ -1336,14 +1372,21 @@ void QWidgetPrivate::create()
 #endif
 
     QBackingStore *store = q->backingStore();
+    usesRhiFlush = false;
 
     if (!store) {
         if (q->windowType() != Qt::Desktop) {
-            if (q->isWindow())
+            if (q->isWindow()) {
                 q->setBackingStore(new QBackingStore(win));
+                QPlatformBackingStoreRhiConfig rhiConfig;
+                usesRhiFlush = q_evaluateRhiConfig(q, &rhiConfig, nullptr);
+                topData()->backingStore->handle()->setRhiConfig(rhiConfig);
+            }
         } else {
             q->setAttribute(Qt::WA_PaintOnScreen, true);
         }
+    } else if (win->handle()) {
+        usesRhiFlush = q_evaluateRhiConfig(q, nullptr, nullptr);
     }
 
     setWindowModified_helper();
@@ -1685,10 +1728,7 @@ void QWidgetPrivate::deleteTLSysExtra()
 
         extra->topextra->repaintManager.reset(nullptr);
         deleteBackingStore(this);
-#ifndef QT_NO_OPENGL
         extra->topextra->widgetTextures.clear();
-        extra->topextra->shareContext.reset();
-#endif
 
         //the toplevel might have a context with a "qglcontext associated with it. We need to
         //delete the qglcontext before we delete the qplatformopenglcontext.
@@ -5538,30 +5578,22 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
                 //paint the background
                 if ((asRoot || q->autoFillBackground() || onScreen || q->testAttribute(Qt::WA_StyledBackground))
                     && !q->testAttribute(Qt::WA_OpaquePaintEvent) && !q->testAttribute(Qt::WA_NoSystemBackground)) {
-#ifndef QT_NO_OPENGL
                     beginBackingStorePainting();
-#endif
                     QPainter p(q);
                     paintBackground(&p, toBePainted, (asRoot || onScreen) ? (flags | DrawAsRoot) : DrawWidgetFlags());
-#ifndef QT_NO_OPENGL
                     endBackingStorePainting();
-#endif
                 }
 
                 if (!sharedPainter)
                     setSystemClip(pdev->paintEngine(), pdev->devicePixelRatio(), toBePainted.translated(offset));
 
                 if (!onScreen && !asRoot && !isOpaque && q->testAttribute(Qt::WA_TintedBackground)) {
-#ifndef QT_NO_OPENGL
                     beginBackingStorePainting();
-#endif
                     QPainter p(q);
                     QColor tint = q->palette().window().color();
                     tint.setAlphaF(.6f);
                     p.fillRect(toBePainted.boundingRect(), tint);
-#ifndef QT_NO_OPENGL
                     endBackingStorePainting();
-#endif
                 }
             }
 
@@ -5572,7 +5604,6 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
 #endif
 
             bool skipPaintEvent = false;
-#ifndef QT_NO_OPENGL
             if (renderToTexture) {
                 // This widget renders into a texture which is composed later. We just need to
                 // punch a hole in the backingstore, so the texture will be visible.
@@ -5598,7 +5629,6 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
                 else
                     skipPaintEvent = true;
             }
-#endif // QT_NO_OPENGL
 
             if (!skipPaintEvent) {
                 //actually send the paint event
@@ -5654,10 +5684,8 @@ void QWidgetPrivate::sendPaintEvent(const QRegion &toBePainted)
     QPaintEvent e(toBePainted);
     QCoreApplication::sendSpontaneousEvent(q, &e);
 
-#ifndef QT_NO_OPENGL
     if (renderToTexture)
         resolveSamples();
-#endif // QT_NO_OPENGL
 }
 
 void QWidgetPrivate::render(QPaintDevice *target, const QPoint &targetOffset,
@@ -9232,9 +9260,7 @@ bool QWidget::event(QEvent *event)
         }
         if (d->data.fnt.d->dpi != logicalDpiY())
             d->updateFont(d->data.fnt);
-#ifndef QT_NO_OPENGL
         d->renderToTextureReallyDirty = 1;
-#endif
         break;
     case QEvent::DynamicPropertyChange: {
         const QByteArray &propName = static_cast<QDynamicPropertyChangeEvent *>(event)->propertyName();
@@ -10511,22 +10537,20 @@ void QWidget::setParent(QWidget *parent)
     setParent((QWidget*)parent, windowFlags() & ~Qt::WindowType_Mask);
 }
 
-#ifndef QT_NO_OPENGL
-static void sendWindowChangeToTextureChildrenRecursively(QWidget *widget)
+static void sendWindowChangeToTextureChildrenRecursively(QWidget *widget, QEvent::Type eventType)
 {
     QWidgetPrivate *d = QWidgetPrivate::get(widget);
     if (d->renderToTexture) {
-        QEvent e(QEvent::WindowChangeInternal);
+        QEvent e(eventType);
         QCoreApplication::sendEvent(widget, &e);
     }
 
     for (int i = 0; i < d->children.size(); ++i) {
         QWidget *w = qobject_cast<QWidget *>(d->children.at(i));
         if (w && !w->isWindow() && QWidgetPrivate::get(w)->textureChildSeen)
-            sendWindowChangeToTextureChildrenRecursively(w);
+            sendWindowChangeToTextureChildrenRecursively(w, eventType);
     }
 }
-#endif
 
 /*!
     \overload
@@ -10582,6 +10606,12 @@ void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
             QCoreApplication::sendEvent(this, &e);
         }
     }
+
+    // texture-based widgets need a pre-notification when their associated top-level window changes
+    // This is not under the wasCreated/newParent conditions above in order to also play nice with QDockWidget.
+    if (d->textureChildSeen && ((!parent && parentWidget()) || (parent && parent->window() != oldtlw)))
+        sendWindowChangeToTextureChildrenRecursively(this, QEvent::WindowAboutToChangeInternal);
+
     // If we get parented into another window, children will be folded
     // into the new parent's focus chain, so clear focus now.
     if (newParent && isAncestorOf(focusWidget()) && !(f & Qt::Window))
@@ -10592,12 +10622,10 @@ void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
     if (desktopWidget)
         parent = nullptr;
 
-#ifndef QT_NO_OPENGL
     if (d->textureChildSeen && parent) {
         // set the textureChildSeen flag up the whole parent chain
         QWidgetPrivate::get(parent)->setTextureChildSeen();
     }
-#endif
 
     if (QWidgetRepaintManager *oldPaintManager = oldtlw->d_func()->maybeRepaintManager()) {
         if (newParent)
@@ -10659,12 +10687,11 @@ void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
         QEvent e(QEvent::ParentChange);
         QCoreApplication::sendEvent(this, &e);
     }
-#ifndef QT_NO_OPENGL
-    //renderToTexture widgets also need to know when their top-level window changes
-    if (d->textureChildSeen && oldtlw != window()) {
-        sendWindowChangeToTextureChildrenRecursively(this);
-    }
-#endif
+
+    // texture-based widgets need another event when their top-level window
+    // changes (more precisely, has already changed at this point)
+    if (d->textureChildSeen && oldtlw != window())
+        sendWindowChangeToTextureChildrenRecursively(this, QEvent::WindowChangeInternal);
 
     if (!wasCreated) {
         if (isWindow() || parentWidget()->isVisible())
@@ -10690,6 +10717,20 @@ void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
 
     if (d->extra && d->extra->hasWindowContainer)
         QWindowContainer::parentWasChanged(this);
+
+    QWidget *newtlw = window();
+    if (oldtlw != newtlw) {
+        QSurface::SurfaceType surfaceType = QSurface::RasterSurface;
+        if (q_evaluateRhiConfig(this, nullptr, &surfaceType)) {
+            newtlw->d_func()->usesRhiFlush = true;
+            if (QWindow *w = newtlw->windowHandle()) {
+                if (w->surfaceType() != surfaceType) {
+                    newtlw->destroy();
+                    newtlw->create();
+                }
+            }
+        }
+    }
 }
 
 void QWidgetPrivate::setParent_sys(QWidget *newparent, Qt::WindowFlags f)
@@ -10947,7 +10988,7 @@ void QWidgetPrivate::repaint(T r)
         return;
 
     QTLWExtra *tlwExtra = q->window()->d_func()->maybeTopData();
-    if (tlwExtra && tlwExtra->backingStore)
+    if (tlwExtra && tlwExtra->backingStore && tlwExtra->repaintManager)
         tlwExtra->repaintManager->markDirty(r, q, QWidgetRepaintManager::UpdateNow);
 }
 
@@ -11022,7 +11063,7 @@ void QWidgetPrivate::update(T r)
     }
 
     QTLWExtra *tlwExtra = q->window()->d_func()->maybeTopData();
-    if (tlwExtra && tlwExtra->backingStore)
+    if (tlwExtra && tlwExtra->backingStore && tlwExtra->repaintManager)
         tlwExtra->repaintManager->markDirty(clipped, q);
 }
 
@@ -12158,27 +12199,6 @@ void QWidgetPrivate::adjustQuitOnCloseAttribute()
     }
 }
 
-QOpenGLContext *QWidgetPrivate::shareContext() const
-{
-#ifdef QT_NO_OPENGL
-    return nullptr;
-#else
-    if (!extra || !extra->topextra || !extra->topextra->window)
-        return nullptr;
-
-    if (!extra->topextra->shareContext) {
-        auto ctx = std::make_unique<QOpenGLContext>();
-        ctx->setShareContext(qt_gl_global_share_context());
-        ctx->setFormat(extra->topextra->window->format());
-        ctx->setScreen(extra->topextra->window->screen());
-        ctx->create();
-        extra->topextra->shareContext = std::move(ctx);
-    }
-    return extra->topextra->shareContext.get();
-#endif // QT_NO_OPENGL
-}
-
-#ifndef QT_NO_OPENGL
 void QWidgetPrivate::sendComposeStatus(QWidget *w, bool end)
 {
     QWidgetPrivate *wd = QWidgetPrivate::get(w);
@@ -12194,7 +12214,6 @@ void QWidgetPrivate::sendComposeStatus(QWidget *w, bool end)
             sendComposeStatus(w, end);
     }
 }
-#endif // QT_NO_OPENGL
 
 Q_WIDGETS_EXPORT QWidgetData *qt_qwidget_data(QWidget *widget)
 {

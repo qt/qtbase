@@ -173,7 +173,7 @@ void QWasmBackingStore::resize(const QSize &size, const QRegion &staticContents)
 
 QImage QWasmBackingStore::toImage() const
 {
-    // used by QPlatformBackingStore::composeAndFlush
+    // used by QPlatformBackingStore::rhiFlush
     return m_image;
 }
 

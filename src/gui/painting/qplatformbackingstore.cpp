@@ -40,6 +40,9 @@
 #include "qplatformbackingstore.h"
 #include <qwindow.h>
 #include <qpixmap.h>
+#include <private/qbackingstorerhisupport_p.h>
+#include <private/qbackingstoredefaultcompositor_p.h>
+#include <private/qwindow_p.h>
 
 #include <QtCore/private/qobject_p.h>
 
@@ -56,25 +59,20 @@ public:
     {
     }
 
-    ~QPlatformBackingStorePrivate()
-    {
-#ifndef QT_NO_OPENGL
-        delete openGLSupport;
-#endif
-    }
     QWindow *window;
     QBackingStore *backingStore;
-#ifndef QT_NO_OPENGL
-    QPlatformBackingStoreOpenGLSupportBase *openGLSupport = nullptr;
-#endif
-};
 
-#ifndef QT_NO_OPENGL
+    // The order matters. if it needs to be rearranged in the future, call
+    // reset() explicitly from the dtor in the correct order.
+    // (first the compositor, then the rhiSupport)
+    QBackingStoreRhiSupport rhiSupport;
+    QBackingStoreDefaultCompositor compositor;
+};
 
 struct QBackingstoreTextureInfo
 {
     void *source; // may be null
-    GLuint textureId;
+    QRhiTexture *texture;
     QRect rect;
     QRect clipRect;
     QPlatformTextureList::Flags flags;
@@ -109,10 +107,10 @@ int QPlatformTextureList::count() const
     return d->textures.count();
 }
 
-GLuint QPlatformTextureList::textureId(int index) const
+QRhiTexture *QPlatformTextureList::texture(int index) const
 {
     Q_D(const QPlatformTextureList);
-    return d->textures.at(index).textureId;
+    return d->textures.at(index).texture;
 }
 
 void *QPlatformTextureList::source(int index)
@@ -154,13 +152,13 @@ bool QPlatformTextureList::isLocked() const
     return d->locked;
 }
 
-void QPlatformTextureList::appendTexture(void *source, GLuint textureId, const QRect &geometry,
+void QPlatformTextureList::appendTexture(void *source, QRhiTexture *texture, const QRect &geometry,
                                          const QRect &clipRect, Flags flags)
 {
     Q_D(QPlatformTextureList);
     QBackingstoreTextureInfo bi;
     bi.source = source;
-    bi.textureId = textureId;
+    bi.texture = texture;
     bi.rect = geometry;
     bi.clipRect = clipRect;
     bi.flags = flags;
@@ -172,7 +170,6 @@ void QPlatformTextureList::clear()
     Q_D(QPlatformTextureList);
     d->textures.clear();
 }
-#endif // QT_NO_OPENGL
 
 /*!
     \class QPlatformBackingStore
@@ -185,36 +182,54 @@ void QPlatformTextureList::clear()
     windows.
 */
 
-#ifndef QT_NO_OPENGL
 /*!
-    Flushes the given \a region from the specified \a window onto the
-    screen, and composes it with the specified \a textures.
-
-    The default implementation retrieves the contents using toTexture()
-    and composes using OpenGL. May be reimplemented in subclasses if there
-    is a more efficient native way to do it.
+    Flushes the given \a region from the specified \a window.
 
     \note \a region is relative to the window which may not be top-level in case
     \a window corresponds to a native child widget. \a offset is the position of
     the native child relative to the top-level window.
- */
 
-void QPlatformBackingStore::composeAndFlush(QWindow *window, const QRegion &region,
-                                            const QPoint &offset,
-                                            QPlatformTextureList *textures,
-                                            bool translucentBackground)
+    Unlike rhiFlush(), this function's default implementation does nothing. It
+    is expected that subclasses provide a platform-specific (non-QRhi-based)
+    implementation, if applicable on the given platform.
+
+    \sa rhiFlush()
+ */
+void QPlatformBackingStore::flush(QWindow *window, const QRegion &region, const QPoint &offset)
 {
-    if (auto *c = d_ptr->openGLSupport)
-        c->composeAndFlush(window, region, offset, textures, translucentBackground);
-    else
-        qWarning() << Q_FUNC_INFO << "no opengl support set";
+    Q_UNUSED(window);
+    Q_UNUSED(region);
+    Q_UNUSED(offset);
 }
-#endif
+
+/*!
+    Flushes the given \a region from the specified \a window, and compositing
+    it with the specified \a textures list.
+
+    The default implementation retrieves the contents using toTexture() and
+    composes using QRhi with OpenGL, Metal, Vulkan, or Direct 3D underneath.
+    May be reimplemented in subclasses if customization is desired.
+
+    \note \a region is relative to the window which may not be top-level in case
+    \a window corresponds to a native child widget. \a offset is the position of
+    the native child relative to the top-level window.
+
+    \sa flush()
+ */
+QPlatformBackingStore::FlushResult QPlatformBackingStore::rhiFlush(QWindow *window,
+                                                                   const QRegion &region,
+                                                                   const QPoint &offset,
+                                                                   QPlatformTextureList *textures,
+                                                                   bool translucentBackground)
+{
+    return d_ptr->compositor.flush(this, d_ptr->rhiSupport.rhi(), d_ptr->rhiSupport.swapChainForWindow(window),
+                                   window, region, offset, textures, translucentBackground);
+}
 
 /*!
   Implemented in subclasses to return the content of the backingstore as a QImage.
 
-  If QPlatformIntegration::RasterGLSurface is supported, either this function or
+  If composition via a 3D graphics API is supported, either this function or
   toTexture() must be implemented.
 
   The returned image is only valid until the next operation (resize, paint, scroll,
@@ -228,22 +243,19 @@ QImage QPlatformBackingStore::toImage() const
     return QImage();
 }
 
-#ifndef QT_NO_OPENGL
 /*!
   May be reimplemented in subclasses to return the content of the
-  backingstore as an OpenGL texture. \a dirtyRegion is the part of the
+  backingstore as an QRhiTexture. \a dirtyRegion is the part of the
   backingstore which may have changed since the last call to this function. The
   caller of this function must ensure that there is a current context.
-
-  The size of the texture is returned in \a textureSize.
 
   The ownership of the texture is not transferred. The caller must not store
   the return value between calls, but instead call this function before each use.
 
-  The default implementation returns a cached texture if \a dirtyRegion is empty and
-  \a textureSize matches the backingstore size, otherwise it retrieves the content using
-  toImage() and performs a texture upload. This works only if the value of \a textureSize
-  is preserved between the calls to this function.
+  The default implementation returns a cached texture if \a dirtyRegion is
+  empty and the existing texture's size matches the backingstore size,
+  otherwise it retrieves the content using toImage() and performs a texture
+  upload.
 
   If the red and blue components have to swapped, \a flags will be set to include \c
   TextureSwizzle. This allows creating textures from images in formats like
@@ -257,16 +269,12 @@ QImage QPlatformBackingStore::toImage() const
 
   \note \a dirtyRegion is relative to the backingstore so no adjustment is needed.
  */
-GLuint QPlatformBackingStore::toTexture(const QRegion &dirtyRegion, QSize *textureSize, TextureFlags *flags) const
+QRhiTexture *QPlatformBackingStore::toTexture(QRhiResourceUpdateBatch *resourceUpdates,
+                                              const QRegion &dirtyRegion,
+                                              TextureFlags *flags) const
 {
-    if (auto *c = d_ptr->openGLSupport)
-        return c->toTexture(dirtyRegion, textureSize, flags);
-    else {
-        qWarning() << Q_FUNC_INFO << "no opengl support set";
-        return 0;
-    }
+    return d_ptr->compositor.toTexture(this, d_ptr->rhiSupport.rhi(), resourceUpdates, dirtyRegion, flags);
 }
-#endif // QT_NO_OPENGL
 
 /*!
     \fn QPaintDevice* QPlatformBackingStore::paintDevice()
@@ -280,12 +288,6 @@ GLuint QPlatformBackingStore::toTexture(const QRegion &dirtyRegion, QSize *textu
 QPlatformBackingStore::QPlatformBackingStore(QWindow *window)
     : d_ptr(new QPlatformBackingStorePrivate(window))
 {
-#ifndef QT_NO_OPENGL
-    if (auto createOpenGLSupport = QPlatformBackingStoreOpenGLSupportBase::factoryFunction()) {
-        d_ptr->openGLSupport = createOpenGLSupport();
-        d_ptr->openGLSupport->backingStore = this;
-    }
-#endif
 }
 
 /*!
@@ -321,30 +323,6 @@ QBackingStore *QPlatformBackingStore::backingStore() const
 {
     return d_ptr->backingStore;
 }
-
-#ifndef QT_NO_OPENGL
-
-using FactoryFunction = QPlatformBackingStoreOpenGLSupportBase::FactoryFunction;
-
-/*!
-    Registers a factory function for OpenGL implementation helper.
-
-    The QtOpenGL library automatically registers a default function,
-    unless already set by the platform plugin in other ways.
-*/
-void QPlatformBackingStoreOpenGLSupportBase::setFactoryFunction(FactoryFunction function)
-{
-    s_factoryFunction = function;
-}
-
-FactoryFunction QPlatformBackingStoreOpenGLSupportBase::factoryFunction()
-{
-    return s_factoryFunction;
-}
-
-FactoryFunction QPlatformBackingStoreOpenGLSupportBase::s_factoryFunction = nullptr;
-
-#endif // QT_NO_OPENGL
 
 /*!
     This function is called before painting onto the surface begins,
@@ -388,6 +366,35 @@ bool QPlatformBackingStore::scroll(const QRegion &area, int dx, int dy)
     Q_UNUSED(dy);
 
     return false;
+}
+
+void QPlatformBackingStore::setRhiConfig(const QPlatformBackingStoreRhiConfig &config)
+{
+    if (!config.isEnabled())
+        return;
+
+    d_ptr->rhiSupport.setConfig(config);
+    d_ptr->rhiSupport.setWindow(d_ptr->window);
+    d_ptr->rhiSupport.setFormat(d_ptr->window->format());
+    d_ptr->rhiSupport.create();
+}
+
+QRhi *QPlatformBackingStore::rhi() const
+{
+    // Returning null is valid, and means this is not a QRhi-capable backingstore.
+    return d_ptr->rhiSupport.rhi();
+}
+
+void QPlatformBackingStore::graphicsDeviceReportedLost()
+{
+    if (!d_ptr->rhiSupport.rhi())
+        return;
+
+    qWarning("Rhi backingstore: graphics device lost, attempting to reinitialize");
+    d_ptr->rhiSupport.reset();
+    d_ptr->rhiSupport.create();
+    if (!d_ptr->rhiSupport.rhi())
+        qWarning("Rhi backingstore: failed to reinitialize after losing the device");
 }
 
 QT_END_NAMESPACE

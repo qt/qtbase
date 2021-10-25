@@ -40,6 +40,7 @@
 #include <QtOpenGL/QOpenGLFramebufferObject>
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QWindow>
+#include <QtGui/private/qrhi_p.h>
 #include <qpa/qplatformbackingstore.h>
 
 #include "qopenglcompositor_p.h"
@@ -207,7 +208,8 @@ static void clippedBlit(const QPlatformTextureList *textures, int idx, const QRe
     const QMatrix3x3 source = QOpenGLTextureBlitter::sourceTransform(srcRect, rectInWindow.size(),
                                                                      QOpenGLTextureBlitter::OriginBottomLeft);
 
-    blitter->blit(textures->textureId(idx), target, source);
+    const uint textureId = textures->texture(idx)->nativeTexture().object;
+    blitter->blit(textureId, target, source);
 }
 
 void QOpenGLCompositor::render(QOpenGLCompositorWindow *window)
@@ -221,7 +223,7 @@ void QOpenGLCompositor::render(QOpenGLCompositorWindow *window)
     BlendStateBinder blend;
     const QRect sourceWindowRect = window->sourceWindow()->geometry();
     for (int i = 0; i < textures->count(); ++i) {
-        uint textureId = textures->textureId(i);
+        const uint textureId = textures->texture(i)->nativeTexture().object;
         const float opacity = window->sourceWindow()->opacity();
         if (opacity != currentOpacity) {
             currentOpacity = opacity;

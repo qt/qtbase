@@ -71,7 +71,7 @@ class GLWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
     Q_OBJECT
 public:
-    GLWidget(MainWindow *mw, bool button, const QColor &background);
+    GLWidget(MainWindow *maybeMainWindow, const QColor &background);
     ~GLWidget();
 
 public slots:
@@ -80,9 +80,6 @@ public slots:
     void setTexture();
     void setShowBubbles(bool);
     void setTransparent(bool transparent);
-
-private slots:
-    void handleButtonPress();
 
 protected:
     void resizeGL(int w, int h) override;
@@ -96,6 +93,7 @@ private:
     void createBubbles(int number);
     void quad(qreal x1, qreal y1, qreal x2, qreal y2, qreal x3, qreal y3, qreal x4, qreal y4);
     void extrude(qreal x1, qreal y1, qreal x2, qreal y2);
+    void reset();
 
     MainWindow *m_mainWindow;
     qreal m_fAngle = 0;
@@ -126,8 +124,9 @@ private:
     int m_textureUniform2 = 0;
     bool m_transparent = false;
     QPushButton *m_btn = nullptr;
-    bool m_hasButton;
+    QPushButton *m_btn2 = nullptr;
     QColor m_background;
+    QMetaObject::Connection m_contextWatchConnection;
 };
 
 #endif
