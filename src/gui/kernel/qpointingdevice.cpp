@@ -286,7 +286,7 @@ const QPointingDevice *QPointingDevice::primaryPointingDevice(const QString& sea
     const QPointingDevice *mouse = nullptr;
     const QPointingDevice *touchpad = nullptr;
     for (const QInputDevice *dev : v) {
-        if (dev->seatName() != seatName)
+        if (!seatName.isNull() && dev->seatName() != seatName)
             continue;
         if (dev->type() == QInputDevice::DeviceType::Mouse) {
             if (!mouse)

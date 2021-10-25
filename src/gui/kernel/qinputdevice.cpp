@@ -305,11 +305,13 @@ QStringList QInputDevice::seatNames()
 const QInputDevice *QInputDevice::primaryKeyboard(const QString& seatName)
 {
     QMutexLocker locker(&devicesMutex);
-    InputDevicesList v = *deviceList();
+    const InputDevicesList devices = *deviceList();
     locker.unlock();
     const QInputDevice *ret = nullptr;
-    for (const QInputDevice *d : v) {
-        if (d->type() == DeviceType::Keyboard && d->seatName() == seatName) {
+    for (const QInputDevice *d : devices) {
+        if (d->type() != DeviceType::Keyboard)
+            continue;
+        if (seatName.isNull() || d->seatName() == seatName) {
             // the master keyboard's parent is not another input device
             if (!d->parent() || !qobject_cast<const QInputDevice *>(d->parent()))
                 return d;
