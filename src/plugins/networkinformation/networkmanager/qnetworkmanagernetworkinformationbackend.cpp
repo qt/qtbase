@@ -118,7 +118,22 @@ transportMediumFromDeviceType(QNetworkManagerInterface::NMDeviceType type)
     // entries added in NetworkManager that isn't listed here
     return QNetworkInformation::TransportMedium::Unknown;
 }
+
+bool isMeteredFromNMMetered(QNetworkManagerInterface::NMMetered metered)
+{
+    switch (metered) {
+    case QNetworkManagerInterface::NM_METERED_YES:
+    case QNetworkManagerInterface::NM_METERED_GUESS_YES:
+        return true;
+    case QNetworkManagerInterface::NM_METERED_NO:
+    case QNetworkManagerInterface::NM_METERED_GUESS_NO:
+    case QNetworkManagerInterface::NM_METERED_UNKNOWN:
+        return false;
+    }
+    Q_UNREACHABLE();
+    return false;
 }
+} // unnamed namespace
 
 static QString backendName()
 {
@@ -145,7 +160,7 @@ public:
     {
         using Feature = QNetworkInformation::Feature;
         return QNetworkInformation::Features(Feature::Reachability | Feature::CaptivePortal
-                                             | Feature::TransportMedium);
+                                             | Feature::TransportMedium | Feature::Metered);
     }
 
     bool isValid() const { return iface.isValid(); }
@@ -215,6 +230,12 @@ QNetworkManagerNetworkInformationBackend::QNetworkManagerNetworkInformationBacke
             [this](NMDeviceType newDevice) {
                 setTransportMedium(transportMediumFromDeviceType(newDevice));
             });
+
+    auto updateMetered = [this](QNetworkManagerInterface::NMMetered metered) {
+        setMetered(isMeteredFromNMMetered(metered));
+    };
+    updateMetered(iface.meteredState());
+    connect(&iface, &QNetworkManagerInterface::meteredChanged, this, std::move(updateMetered));
 }
 
 QT_END_NAMESPACE

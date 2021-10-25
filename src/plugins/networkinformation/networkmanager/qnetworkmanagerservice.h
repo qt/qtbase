@@ -150,6 +150,15 @@ public:
         NM_DEVICE_TYPE_WIFI_P2P = 30,
         NM_DEVICE_TYPE_VRF = 31,
     };
+    // Matches 'NMMetered' from
+    // https://developer-old.gnome.org/NetworkManager/stable/nm-dbus-types.html#NMMetered
+    enum NMMetered {
+        NM_METERED_UNKNOWN,
+        NM_METERED_YES,
+        NM_METERED_NO,
+        NM_METERED_GUESS_YES,
+        NM_METERED_GUESS_NO,
+    };
 
     QNetworkManagerInterface(QObject *parent = nullptr);
     ~QNetworkManagerInterface();
@@ -157,11 +166,13 @@ public:
     NMState state() const;
     NMConnectivityState connectivityState() const;
     NMDeviceType deviceType() const;
+    NMMetered meteredState() const;
 
 Q_SIGNALS:
     void stateChanged(NMState);
     void connectivityChanged(NMConnectivityState);
     void deviceTypeChanged(NMDeviceType);
+    void meteredChanged(NMMetered);
 
 private Q_SLOTS:
     void setProperties(const QString &interfaceName, const QMap<QString, QVariant> &map,
@@ -171,6 +182,7 @@ private:
     Q_DISABLE_COPY_MOVE(QNetworkManagerInterface)
 
     NMDeviceType extractDeviceType(QDBusObjectPath devicePath) const;
+    NMMetered extractDeviceMetered(const QDBusObjectPath &devicePath) const;
 
     QVariantMap propertyMap;
 };

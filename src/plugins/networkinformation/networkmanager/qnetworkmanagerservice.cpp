@@ -119,7 +119,23 @@ QNetworkManagerInterface::NMConnectivityState QNetworkManagerInterface::connecti
     return QNetworkManagerInterface::NM_CONNECTIVITY_UNKNOWN;
 }
 
-QNetworkManagerInterface::NMDeviceType QNetworkManagerInterface::deviceType() const
+static QDBusInterface getPrimaryDevice(const QDBusObjectPath &devicePath)
+{
+    const QDBusInterface connection(NM_DBUS_SERVICE, devicePath.path(),
+                                    NM_CONNECTION_DBUS_INTERFACE, QDBusConnection::systemBus());
+    if (!connection.isValid())
+        return QDBusInterface({}, {});
+
+    const auto devicePaths = connection.property("Devices").value<QList<QDBusObjectPath>>();
+    if (devicePaths.isEmpty())
+        return QDBusInterface({}, {});
+
+    const QDBusObjectPath primaryDevicePath = devicePaths.front();
+    return QDBusInterface(NM_DBUS_SERVICE, primaryDevicePath.path(), NM_DEVICE_DBUS_INTERFACE,
+                          QDBusConnection::systemBus());
+}
+
+auto QNetworkManagerInterface::deviceType() const -> NMDeviceType
 {
     auto it = propertyMap.constFind("PrimaryConnection");
     if (it != propertyMap.cend())
@@ -127,24 +143,35 @@ QNetworkManagerInterface::NMDeviceType QNetworkManagerInterface::deviceType() co
     return NM_DEVICE_TYPE_UNKNOWN;
 }
 
+auto QNetworkManagerInterface::meteredState() const -> NMMetered
+{
+    auto it = propertyMap.constFind(u"PrimaryConnection"_qs);
+    if (it != propertyMap.cend())
+        return extractDeviceMetered(it->value<QDBusObjectPath>());
+    return NM_METERED_UNKNOWN;
+}
+
 auto QNetworkManagerInterface::extractDeviceType(QDBusObjectPath devicePath) const -> NMDeviceType
 {
-    const QDBusInterface connection(NM_DBUS_SERVICE, devicePath.path(),
-                                    NM_CONNECTION_DBUS_INTERFACE, QDBusConnection::systemBus());
-    if (!connection.isValid())
+    QDBusInterface primaryDevice = getPrimaryDevice(devicePath);
+    if (!primaryDevice.isValid())
         return NM_DEVICE_TYPE_UNKNOWN;
-
-    const auto devicePaths = connection.property("Devices").value<QList<QDBusObjectPath>>();
-    if (devicePaths.isEmpty())
-        return NM_DEVICE_TYPE_UNKNOWN;
-
-    const QDBusObjectPath primaryDevicePath = devicePaths.front();
-    const QDBusInterface device(NM_DBUS_SERVICE, primaryDevicePath.path(), NM_DEVICE_DBUS_INTERFACE,
-                                QDBusConnection::systemBus());
-    const QVariant deviceType = device.property("DeviceType");
+    const QVariant deviceType = primaryDevice.property("DeviceType");
     if (!deviceType.isValid())
         return NM_DEVICE_TYPE_UNKNOWN;
     return static_cast<NMDeviceType>(deviceType.toUInt());
+}
+
+auto QNetworkManagerInterface::extractDeviceMetered(const QDBusObjectPath &devicePath) const
+        -> NMMetered
+{
+    QDBusInterface primaryDevice = getPrimaryDevice(devicePath);
+    if (!primaryDevice.isValid())
+        return NM_METERED_UNKNOWN;
+    const QVariant metered = primaryDevice.property("Metered");
+    if (!metered.isValid())
+        return NM_METERED_UNKNOWN;
+    return static_cast<NMMetered>(metered.toUInt());
 }
 
 void QNetworkManagerInterface::setProperties(const QString &interfaceName,
@@ -173,7 +200,11 @@ void QNetworkManagerInterface::setProperties(const QString &interfaceName,
                 quint32 state = i.value().toUInt();
                 Q_EMIT connectivityChanged(static_cast<NMConnectivityState>(state));
             } else if (i.key() == QLatin1String("PrimaryConnection")) {
-                Q_EMIT deviceTypeChanged(extractDeviceType(i->value<QDBusObjectPath>()));
+                const QDBusObjectPath devicePath = i->value<QDBusObjectPath>();
+                Q_EMIT deviceTypeChanged(extractDeviceType(devicePath));
+                Q_EMIT meteredChanged(extractDeviceMetered(devicePath));
+            } else if (i.key() == QLatin1String("Metered")) {
+                Q_EMIT meteredChanged(static_cast<NMMetered>(i->toUInt()));
             }
         }
     }
