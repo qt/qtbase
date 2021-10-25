@@ -138,7 +138,7 @@ function(qt_internal_add_docs)
     add_dependencies(prepare_docs_${target} qattributionsscanner_${target})
 
     # generate docs target
-    set(generate_qdocs_args
+    set(generate_qdoc_args
         -outputdir "${qdoc_output_dir}"
         "${target_source_dir}/${doc_project}"
         -generate
@@ -158,7 +158,7 @@ function(qt_internal_add_docs)
         endif()
         add_custom_target(${target_prefix}_${target}
             ${depends_arg}
-            COMMAND ${CMAKE_COMMAND} -E env ${qdoc_env_args} ${qdoc_bin} ${generate_qdocs_args})
+            COMMAND ${CMAKE_COMMAND} -E env ${qdoc_env_args} ${qdoc_bin} ${generate_qdoc_args})
     endforeach()
 
     add_dependencies(generate_docs_${target} prepare_docs_${target})
