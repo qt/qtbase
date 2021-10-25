@@ -1565,42 +1565,7 @@ QString QPropertyBindingError::description() const
 
   See the following example.
 
-  \code
-    class Client{};
-
-    class MyClassPrivate : public QObjectPrivate
-    {
-    public:
-        QList<Client> clients;
-        bool hasClientsActualCalculation() const { return clients.size() > 0; }
-        Q_OBJECT_COMPUTED_PROPERTY(MyClassPrivate, bool, hasClientsData,
-                                   &MyClassPrivate::hasClientsActualCalculation)
-    };
-
-    class MyClass : public QObject
-    {
-        // add q-object macro here (confuses qdoc if we do it here)
-        Q_PROPERTY(bool hasClients READ hasClients STORED false BINDABLE bindableHasClients)
-    public:
-        QBindable<bool> bindableHasClients()
-        {
-            return QBindable<bool>(&d_func()->hasClientsData);
-        }
-        bool hasClients() const
-        {
-            return d_func()->hasClientsData.value();
-        }
-        void addClient(const Client &c)
-        {
-            Q_D(MyClass);
-            d->clients.push_back(c);
-            // notify that the value could have changed
-            d->hasClientsData.markDirty();
-        }
-    private:
-        Q_DECLARE_PRIVATE(MyClass)
-    };
-  \endcode
+  \snippet code/src_corelib_kernel_qproperty.cpp 5
 
   The rules for getters in \l {Bindable Property Getters and Setters}
   also apply for QObjectComputedProperty. Especially, the getter
