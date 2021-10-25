@@ -1053,6 +1053,16 @@ QAction *QMenu::menuAction() const
 }
 
 /*!
+    \fn static QMenu *QMenu::menuInAction(const QAction *action)
+
+    Returns the menu contained by \a action, or \nullptr if \a action does not
+    contain a menu.
+
+    In widget applications, actions that contain menus can be used to create menu
+    items with submenus, or inserted into toolbars to create buttons with popup menus.
+*/
+
+/*!
   \property QMenu::title
   \brief The title of the menu
 

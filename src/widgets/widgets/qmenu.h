@@ -189,6 +189,8 @@ public:
     QAction *actionAt(const QPoint &) const;
 
     QAction *menuAction() const;
+    static QMenu *menuInAction(const QAction *action)
+    { return qobject_cast<QMenu *>(action->menuObject()); }
 
     QString title() const;
     void setTitle(const QString &title);

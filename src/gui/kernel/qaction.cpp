@@ -1225,7 +1225,7 @@ QAction::MenuRole QAction::menuRole() const
 
 /*!
     \fn QMenu *QAction::menu() const
-    \deprecated
+    \deprecated Use QMenu::menuForAction instead.
 
     Returns the menu contained by this action.
 
