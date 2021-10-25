@@ -675,16 +675,23 @@ void QIOSInputContext::update(Qt::InputMethodQueries updatedProperties)
     }
 
     // Mask for properties that we are interested in and see if any of them changed
-    updatedProperties &= (Qt::ImEnabled | Qt::ImHints | Qt::ImQueryInput | Qt::ImEnterKeyType | Qt::ImPlatformData);
+    updatedProperties &= (Qt::ImEnabled | Qt::ImHints | Qt::ImQueryInput | Qt::ImEnterKeyType | Qt::ImPlatformData | Qt::ImReadOnly);
 
     // Perform update first, so we can trust the value of inputMethodAccepted()
     Qt::InputMethodQueries changedProperties = m_imeState.update(updatedProperties);
 
-    if (inputMethodAccepted()) {
+    const bool inputIsReadOnly = m_imeState.currentState.value(Qt::ImReadOnly).toBool();
+
+    if (inputMethodAccepted() || inputIsReadOnly) {
         if (!m_textResponder || [m_textResponder needsKeyboardReconfigure:changedProperties]) {
-            qImDebug("creating new text responder");
             [m_textResponder autorelease];
-            m_textResponder = [[QIOSTextInputResponder alloc] initWithInputContext:this];
+            if (inputIsReadOnly) {
+                qImDebug("creating new read-only text responder");
+                m_textResponder = [[QIOSTextResponder alloc] initWithInputContext:this];
+            } else {
+                qImDebug("creating new read/write text responder");
+                m_textResponder = [[QIOSTextInputResponder alloc] initWithInputContext:this];
+            }
         } else {
             qImDebug("no need to reconfigure keyboard, just notifying input delegate");
             [m_textResponder notifyInputDelegate:changedProperties];
