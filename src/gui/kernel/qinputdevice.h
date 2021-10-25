@@ -110,6 +110,7 @@ public:
     QString seatName() const;
     QRect availableVirtualGeometry() const;
 
+    static QStringList seatNames();
     static QList<const QInputDevice *> devices();
     static const QInputDevice *primaryKeyboard(const QString& seatName = QString());
 

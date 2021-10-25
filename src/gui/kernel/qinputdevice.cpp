@@ -281,6 +281,25 @@ QList<const QInputDevice *> QInputDevice::devices()
 }
 
 /*!
+    \since 6.3
+
+    Returns a list of seat names for all registered input devices (keyboards and pointing devices).
+*/
+QStringList QInputDevice::seatNames()
+{
+    QMutexLocker locker(&devicesMutex);
+    const InputDevicesList devices = *deviceList();
+    locker.unlock();
+    QStringList result;
+    for (const QInputDevice *d : devices) {
+        if (!result.contains(d->seatName()))
+            result.append(d->seatName());
+    }
+
+    return result;
+}
+
+/*!
     Returns the core or master keyboard on the given seat \a seatName.
 */
 const QInputDevice *QInputDevice::primaryKeyboard(const QString& seatName)
