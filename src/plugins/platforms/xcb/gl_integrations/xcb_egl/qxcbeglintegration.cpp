@@ -67,12 +67,7 @@ bool QXcbEglIntegration::initialize(QXcbConnection *connection)
 
     const char *extensions = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
 
-    if (extensions && (strstr(extensions, "EGL_EXT_platform_xcb") || strstr(extensions, "EGL_MESA_platform_xcb"))) {
-        QEGLStreamConvenience streamFuncs;
-        m_egl_display = streamFuncs.get_platform_display(EGL_PLATFORM_XCB_KHR,
-                                                         reinterpret_cast<void *>(connection->xcb_connection()),
-                                                         nullptr);
-    } else if (extensions && strstr(extensions, "EGL_EXT_platform_x11")) {
+    if (extensions && strstr(extensions, "EGL_EXT_platform_x11")) {
         QEGLStreamConvenience streamFuncs;
         m_egl_display = streamFuncs.get_platform_display(EGL_PLATFORM_X11_KHR,
                                                          xlib_display(),
