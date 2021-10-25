@@ -141,10 +141,10 @@ bool QNetworkListManagerEvents::start()
     token = NetworkInformation::NetworkStatusChanged(
             [this](const winrt::Windows::Foundation::IInspectable sender) {
                 Q_UNUSED(sender);
-                emit transportMediumChanged(getTransportMedium());
+                emitWinRTUpdates();
             });
     // Emit initial state
-    emit transportMediumChanged(getTransportMedium());
+    emitWinRTUpdates();
 #endif
 
     return true;
@@ -208,16 +208,14 @@ bool QNetworkListManagerEvents::checkBehindCaptivePortal()
     return false;
 }
 
+#ifdef SUPPORTS_WINRT
+namespace {
+using namespace winrt::Windows::Networking::Connectivity;
 // NB: this isn't part of "network list manager", but sadly NLM doesn't have an
 // equivalent API (at least not that I've found...)!
-QNetworkInformation::TransportMedium QNetworkListManagerEvents::getTransportMedium()
+[[nodiscard]]
+QNetworkInformation::TransportMedium getTransportMedium(const ConnectionProfile &profile)
 {
-#ifdef SUPPORTS_WINRT
-    using namespace winrt::Windows::Networking::Connectivity;
-    ConnectionProfile profile = NetworkInformation::GetInternetConnectionProfile();
-    if (profile == nullptr)
-        return QNetworkInformation::TransportMedium::Unknown;
-
     if (profile.IsWwanConnectionProfile())
         return QNetworkInformation::TransportMedium::Cellular;
     if (profile.IsWlanConnectionProfile())
@@ -233,18 +231,34 @@ QNetworkInformation::TransportMedium QNetworkListManagerEvents::getTransportMedi
     auto fromIanaId = [](quint32 ianaId) -> QNetworkInformation::TransportMedium {
         // https://www.iana.org/assignments/ianaiftype-mib/ianaiftype-mib
         switch (ianaId) {
-            case 6:
-                return QNetworkInformation::TransportMedium::Ethernet;
-            case 71: // Should be handled before entering this lambda
-                return QNetworkInformation::TransportMedium::WiFi;
+        case 6:
+            return QNetworkInformation::TransportMedium::Ethernet;
+        case 71: // Should be handled before entering this lambda
+            return QNetworkInformation::TransportMedium::WiFi;
         }
         return QNetworkInformation::TransportMedium::Unknown;
     };
 
     return fromIanaId(adapter.IanaInterfaceType());
-#else
-    return QNetworkInformation::TransportMedium::Unknown;
-#endif
 }
+
+[[nodiscard]] bool getMetered(const ConnectionProfile &profile)
+{
+    ConnectionCost cost = profile.GetConnectionCost();
+    NetworkCostType type = cost.NetworkCostType();
+    return type == NetworkCostType::Fixed || type == NetworkCostType::Variable;
+}
+} // unnamed namespace
+
+void QNetworkListManagerEvents::emitWinRTUpdates()
+{
+    using namespace winrt::Windows::Networking::Connectivity;
+    ConnectionProfile profile = NetworkInformation::GetInternetConnectionProfile();
+    if (profile == nullptr)
+        return;
+    emit transportMediumChanged(getTransportMedium(profile));
+    emit isMeteredChanged(getMetered(profile));
+}
+#endif
 
 QT_END_NAMESPACE

@@ -169,6 +169,9 @@ QNetworkListManagerNetworkInformationBackend::QNetworkListManagerNetworkInformat
 
     connect(managerEvents.Get(), &QNetworkListManagerEvents::transportMediumChanged, this,
             &QNetworkListManagerNetworkInformationBackend::setTransportMedium);
+
+    connect(managerEvents.Get(), &QNetworkListManagerEvents::isMeteredChanged, this,
+            &QNetworkListManagerNetworkInformationBackend::setMetered);
 }
 
 QNetworkListManagerNetworkInformationBackend::~QNetworkListManagerNetworkInformationBackend()

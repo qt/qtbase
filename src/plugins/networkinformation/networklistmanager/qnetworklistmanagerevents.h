@@ -99,14 +99,15 @@ public:
 signals:
     void connectivityChanged(NLM_CONNECTIVITY);
     void transportMediumChanged(QNetworkInformation::TransportMedium);
+    void isMeteredChanged(bool);
 
 private:
-    [[nodiscard]] QNetworkInformation::TransportMedium getTransportMedium();
-
     ComPtr<INetworkListManager> networkListManager = nullptr;
     ComPtr<IConnectionPoint> connectionPoint = nullptr;
 
 #ifdef SUPPORTS_WINRT
+    void emitWinRTUpdates();
+
     winrt::event_token token;
 #endif
 
