@@ -842,9 +842,10 @@ void tst_QTabBar::mouseReleaseOutsideTabBar()
         QRect rectToBeRepainted;
         bool eventFilter(QObject *, QEvent *event) override
         {
-            if (event->type() == QEvent::Paint
-                && rectToBeRepainted.contains(static_cast<QPaintEvent *>(event)->rect()))
+            if (event->type() == QEvent::Paint &&
+                static_cast<QPaintEvent *>(event)->rect().contains(rectToBeRepainted)) {
                 repainted = true;
+            }
             return false;
         }
     } repaintChecker;
@@ -859,14 +860,15 @@ void tst_QTabBar::mouseReleaseOutsideTabBar()
 
     QRect tabRect = tabBar.tabRect(1);
     QPoint tabCenter = tabRect.center();
-    QTest::mousePress(&tabBar, Qt::LeftButton, {}, tabCenter);
-    QTest::mouseEvent(QTest::MouseMove, &tabBar, Qt::LeftButton, {}, tabCenter + QPoint(tabCenter.x(), tabCenter.y() + tabRect.height()));
-
-    // make sure the holding tab is repainted after releasing the mouse
-    repaintChecker.repainted = false;
     repaintChecker.rectToBeRepainted = tabRect;
+    // if a press repaints the tab...
+    QTest::mousePress(&tabBar, Qt::LeftButton, {}, tabCenter);
+    const bool pressRepainted = QTest::qWaitFor([&]{ return repaintChecker.repainted; }, 250);
+
+    // ... then releasing the mouse outside the tabbar should repaint it as well
+    repaintChecker.repainted = false;
     QTest::mouseRelease(&tabBar, Qt::LeftButton, {}, tabCenter + QPoint(tabCenter.x(), tabCenter.y() + tabRect.height()));
-    QTRY_VERIFY(repaintChecker.repainted);
+    QTRY_COMPARE(repaintChecker.repainted, pressRepainted);
 }
 
 void tst_QTabBar::checkPositions(const TabBar &tabbar, const QList<int> &positions)
