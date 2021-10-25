@@ -1055,13 +1055,15 @@
 
     Attaches a continuation to this future, allowing to chain multiple asynchronous
     computations if desired, using the \l {QtFuture::Launch}{Sync} policy.
-    This method returns a new QFuture representing the result of the continuation.
+    \a function is a callable that takes an argument of the type packaged by this
+    future if this has a result (is not a QFuture<void>). Otherwise it takes no
+    arguments. This method returns a new QFuture that packages a value of the type
+    returned by \a function. The returned future will be in an uninitialized state
+    until the attached continuation is invoked, or until this future fails or is
+    canceled.
 
     \note Use other overloads of this method if you need to launch the continuation in
     a separate thread.
-
-    If this future has a result (is not a QFuture<void>), \a function takes the result
-    of this future as its argument.
 
     You can chain multiple operations like this:
 
@@ -1130,6 +1132,8 @@
           .then(QtFuture::Launch::Inherit, [](int res2){ ... });
     \endcode
 
+    See the documentation of the other overload for more details about \a function.
+
     \sa onFailed(), onCanceled()
 */
 
@@ -1191,17 +1195,26 @@
 
     \since 6.0
 
-    Attaches a failure handler to this future, to handle any exceptions that may
-    have been generated. Returns a QFuture of the same type as this future. The
-    handler will be invoked only in case of an exception, in the same thread that
-    reported that the promise associated with this future is finished with an exception.
-    If the handler is attached after this future has already finished, it will be
-    invoked immediately, in the thread that executes \c onFailed(). \a handler is a
-    callable which takes either no argument or one argument, to filter by specific error
-    types, similar to the \l {https://en.cppreference.com/w/cpp/language/try_catch} {catch}
-    statement.
+    Attaches a failure handler to this future, to handle any exceptions. The
+    returned future behaves exactly as this future (has the same state and result)
+    unless this future fails with an exception.
 
-    For example:
+    The \a handler is a callable which takes either no argument or one argument, to
+    filter by specific error types, similar to the
+    \l {https://en.cppreference.com/w/cpp/language/try_catch} {catch} statement.
+    It returns a value of the type packaged by this future. After the failure, the
+    returned future packages the value returned by \a handler.
+
+    The handler will only be invoked if an exception is raised. If the exception
+    is raised after this handler is attached, the handler is executed in the thread
+    that reports the future as finished as a result of the exception. If the handler
+    is attached after this future has already failed, it will be invoked immediately,
+    in the thread that executes \c onFailed(). Therefore, the handler cannot always
+    make assumptions about which thread it will be run on. Use the overload that
+    takes a context object if you want to control which thread the handler is
+    invoked on.
+
+    The example below demonstrates how to attach a failure handler:
 
     \snippet code/src_corelib_thread_qfuture.cpp 7
 
@@ -1241,6 +1254,8 @@
     \note When calling this method, it should be guaranteed that the \a context stays alive
     throughout the execution of the chain.
 
+    See the documentation of the other overload for more details about \a handler.
+
     \sa then(), onCanceled()
 */
 
@@ -1248,11 +1263,19 @@
 
     \since 6.0
 
-    Attaches a cancellation \a handler to this future, to be called when or if the future
-    is canceled. The \a handler is a callable which doesn't take any arguments. It will be
-    invoked in the same thread that canceled the promise associated with this future. If
-    the continuation is attached after this future has already finished, it will be invoked
-    immediately, in the thread that executes \c onCanceled().
+    Attaches a cancellation \a handler to this future. The returned future
+    behaves exactly as this future (has the same state and result) unless
+    this future is cancelled. The \a handler is a callable which takes no
+    arguments and returns a value of the type packaged by this future. After
+    cancellation, the returned future packages the value returned by \a handler.
+
+    If attached before the cancellation, \a handler will be invoked in the same
+    thread that reports the future as finished after the cancellation. If the
+    handler is attached after this future has already been canceled, it will be
+    invoked immediately in the thread that executes \c onCanceled(). Therefore,
+    the handler cannot always make assumptions about which thread it will be run
+    on. Use the overload that takes a context object if you want to control
+    which thread the handler is invoked on.
 
     \sa then(), onFailed()
 */
@@ -1269,6 +1292,8 @@
 
     \note When calling this method, it should be guaranteed that the \a context stays alive
     throughout the execution of the chain.
+
+    See the documentation of the other overload for more details about \a handler.
 
     \sa then(), onFailed()
 */
