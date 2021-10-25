@@ -127,6 +127,9 @@ QAndroidNetworkInformationBackend::QAndroidNetworkInformationBackend()
 
     connect(conman, &AndroidConnectivityManager::transportMediumChanged, this,
             &QAndroidNetworkInformationBackend::updateTransportMedium);
+
+    connect(conman, &AndroidConnectivityManager::meteredChanged, this,
+            &QAndroidNetworkInformationBackend::setMetered);
 }
 
 void QAndroidNetworkInformationBackend::updateConnectivity(

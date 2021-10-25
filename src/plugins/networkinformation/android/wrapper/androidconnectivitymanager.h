@@ -75,6 +75,7 @@ Q_SIGNALS:
     void connectivityChanged(AndroidConnectivity connectivity);
     void captivePortalChanged(bool state);
     void transportMediumChanged(AndroidTransport transport);
+    void meteredChanged(bool state);
 
 private:
     friend struct AndroidConnectivityManagerInstance;

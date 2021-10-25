@@ -52,7 +52,7 @@ public class QtAndroidNetworkInformation {
     private static final String LOG_TAG = "QtAndroidNetworkInformation";
 
     private static native void connectivityChanged(AndroidConnectivity connectivity);
-    private static native void behindCaptivePortalChanged(boolean state);
+    private static native void genericInfoChanged(boolean captivePortal, boolean metered);
     private static native void transportMediumChanged(Transport transportMedium);
 
     private static QtNetworkInformationCallback m_callback = null;
@@ -101,7 +101,9 @@ public class QtAndroidNetworkInformation {
 
             final boolean captive
                     = capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_CAPTIVE_PORTAL);
-            behindCaptivePortalChanged(captive);
+            final boolean metered
+                    = !capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED);
+            genericInfoChanged(captive, metered);
         }
 
         private Transport getTransport(NetworkCapabilities capabilities)

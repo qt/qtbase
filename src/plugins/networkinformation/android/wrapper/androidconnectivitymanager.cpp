@@ -65,11 +65,12 @@ static void networkConnectivityChanged(JNIEnv *env, jobject obj, jobject enumVal
     Q_EMIT androidConnManagerInstance->connManager->connectivityChanged(connectivity);
 }
 
-static void behindCaptivePortalChanged(JNIEnv *env, jobject obj, jboolean state)
+static void genericInfoChanged(JNIEnv *env, jobject obj, jboolean captivePortal, jboolean metered)
 {
     Q_UNUSED(env);
     Q_UNUSED(obj);
-    Q_EMIT androidConnManagerInstance->connManager->captivePortalChanged(state);
+    Q_EMIT androidConnManagerInstance->connManager->captivePortalChanged(captivePortal);
+    Q_EMIT androidConnManagerInstance->connManager->meteredChanged(metered);
 }
 
 static void transportMediumChangedCallback(JNIEnv *env, jobject obj, jobject enumValue)
@@ -128,8 +129,8 @@ bool AndroidConnectivityManager::registerNatives()
     static JNINativeMethod methods[] = {
         { "connectivityChanged", connectivityEnumSig.data(),
           reinterpret_cast<void *>(networkConnectivityChanged) },
-        { "behindCaptivePortalChanged", "(Z)V",
-          reinterpret_cast<void *>(behindCaptivePortalChanged) },
+        { "genericInfoChanged", "(ZZ)V",
+          reinterpret_cast<void *>(genericInfoChanged) },
         { "transportMediumChanged", transportEnumSig.data(),
           reinterpret_cast<void *>(transportMediumChangedCallback) },
     };
