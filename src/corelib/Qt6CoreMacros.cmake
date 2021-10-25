@@ -1373,9 +1373,16 @@ function(_qt_internal_generate_win32_rc_file target)
         return()
     endif()
 
+    if(MSVC)
+        set(extra_rc_flags "/nologo")
+    else()
+        set(extra_rc_flags)
+    endif()
+
     if (target_rc_file)
         # Use the provided RC file
         target_sources(${target} PRIVATE "${target_rc_file}")
+        set_property(SOURCE ${target_rc_file} PROPERTY COMPILE_FLAGS "${extra_rc_flags}")
     else()
         # Generate RC File
         set(rc_file_output "${target_binary_dir}/")
@@ -1563,8 +1570,9 @@ END
                 COMMAND ${CMAKE_COMMAND} -E copy_if_different "${input}" "${output}"
             )
             # We can't rely on policy CMP0118 since user project controls it
-            set_source_files_properties(${output} ${scope_args}
-                PROPERTIES GENERATED TRUE
+            set_source_files_properties(${output} ${scope_args} PROPERTIES
+                GENERATED TRUE
+                COMPILE_FLAGS "${extra_rc_flags}"
             )
             target_sources(${end_target} PRIVATE "$<$<CONFIG:${cfg}>:${output}>")
         endwhile()
