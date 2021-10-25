@@ -394,41 +394,66 @@ class QtBase(ConanFile):
             if not value or value == "None":
                 setattr(self.options, option_name, option_value)
 
-        default_all_os_options = [
-            "release",
-            "shared",
-            "gui",
-            "widgets",
-            "accessibility",
-            "system_proxies",
-            "ico",
-        ]
-        for item in default_all_os_options:
+        def _set_build_type(build_type: str) -> None:
+            if self.settings.build_type != build_type:
+                msg = (
+                    "The build_type '{0}' changed to '{1}'. Please check your Settings and "
+                    "Options. The used Qt options enforce '{2}' as a build_type. ".format(
+                        self.settings.build_type, build_type, build_type
+                    )
+                )
+                raise QtConanError(msg)
+            self.settings.build_type = build_type
+
+        def _check_mutually_exclusive_options(options: Dict[str, str]) -> None:
+            if list(options.values()).count("yes") > 1:
+                raise QtConanError(
+                    "These Qt options are mutually exclusive: {0}"
+                    ". Choose only one of them and try again.".format(list(options.keys()))
+                )
+
+        default_options = ["shared", "gui", "widgets", "accessibility", "system_proxies", "ico"]
+
+        if self.settings.os == "Macos":
+            default_options.append("framework")
+
+        for item in default_options:
             _set_default_if_not_set(item, "yes")
 
-        if self.settings.os == "Windows":
-            self.options.debug_and_release = "yes"
-        elif self.settings.os == "Linux":
-            pass
-        elif self.settings.os == "Macos":
-            self.options.debug_and_release = "yes"
-            self.options.framework = "yes"
+        release = self.options.get_safe("release", default="no")
+        debug = self.options.get_safe("debug", default="no")
+        debug_and_release = self.options.get_safe("debug_and_release", default="no")
+        force_debug_info = self.options.get_safe("force_debug_info", default="no")
+        optimize_size = self.options.get_safe("optimize_size", default="no")
 
-        if self.options.get_safe("debug_and_release", default="no") == "yes":
+        # these options are mutually exclusive options so do a sanity check
+        _check_mutually_exclusive_options(
+            {"release": release, "debug": debug, "debug_and_release": debug_and_release}
+        )
+
+        # Prioritize Qt's configure options over Settings.build_type
+        if debug_and_release == "yes":
             # Qt build system will build both debug and release binaries
-            del self.settings.build_type
-
-        # Map Conan build_type to Qt configure(.bat) options
-        if self.settings.get_safe("build_type", default="None") == "Release":
+            if force_debug_info == "yes":
+                _set_build_type("RelWithDebInfo")
+            else:
+                _set_build_type("Release")
+        elif release == "yes":
+            _check_mutually_exclusive_options(
+                {"force_debug_info": force_debug_info, "optimize_size": optimize_size}
+            )
+            if force_debug_info == "yes":
+                _set_build_type("RelWithDebInfo")
+            elif optimize_size == "yes":
+                _set_build_type("MinSizeRel")
+            else:
+                _set_build_type("Release")
+        elif debug == "yes":
+            _set_build_type("Debug")
+        else:
+            # set default that mirror the configure(.bat) default values
             self.options.release = "yes"
-            self.options.debug = "no"
-        elif self.settings.get_safe("build_type", default="None") == "Debug":
-            self.options.release = "no"
-            self.options.debug = "yes"
-        elif self.settings.get_safe("build_type", default="None") == "MinSizeRel":
-            self.options.optimize_size = "yes"
-        elif self.settings.get_safe("build_type", default="None") == "RelWithDebInfo":
-            self.options.force_debug_info = "yes"
+            _set_build_type("Release")
 
     def build(self):
         self.python_requires["qt-conan-common"].module.build_env_wrap(self, _build_qtbase)
