@@ -288,6 +288,8 @@ add_dependencies(Core qmodule_pri)
 
 if (NOT QT_NAMESPACE STREQUAL "")
     target_compile_definitions(Core PUBLIC "QT_NAMESPACE=${QT_NAMESPACE}")
+    set_target_properties(Core PROPERTIES _qt_namespace "${QT_NAMESPACE}")
+    set_property(TARGET Core APPEND PROPERTY EXPORT_PROPERTIES _qt_namespace)
 endif()
 
 qt_generate_qconfig_cpp(global/qconfig.cpp.in global/qconfig.cpp)
