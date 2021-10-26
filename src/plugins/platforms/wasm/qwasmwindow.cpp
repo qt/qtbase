@@ -404,20 +404,19 @@ void QWasmWindow::requestUpdate()
 
 bool QWasmWindow::hasTitleBar() const
 {
-    auto flags = window()->flags();
+    Qt::WindowFlags flags = window()->flags();
     return !(m_windowState & Qt::WindowFullScreen)
         && flags.testFlag(Qt::WindowTitleHint)
-        && !flags.testFlag(Qt::ToolTip)
+        && !(windowIsPopupType(flags))
         && m_needsCompositor;
 }
 
-bool QWasmWindow::windowIsPopupType(Qt::WindowType type) const
+bool QWasmWindow::windowIsPopupType(Qt::WindowFlags flags) const
 {
-    if (type == Qt::Widget)
-        type = window()->type();
-    if (type != Qt::Tool)
-        return true;
-    return false;
+    if (flags.testFlag(Qt::Tool))
+        return false; // Qt::Tool has the Popup bit set but isn't
+
+    return (flags.testFlag(Qt::Popup));
 }
 
 void QWasmWindow::requestActivateWindow()
