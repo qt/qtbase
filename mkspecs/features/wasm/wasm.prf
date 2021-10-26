@@ -37,13 +37,6 @@ exists($$QMAKE_QT_CONFIG) {
             EMCC_THREAD_LFLAGS += -s INITIAL_MEMORY=$$INITIAL_MEMORY
     }
 
-    qtConfig(sse2) {
-        QMAKE_CFLAGS += -O2 -msimd128 -msse -msse2
-        QMAKE_CXXFLAGS += -O2 -msimd128 -msse -msse2
-        QMAKE_LFLAGS       += -msimd128 -msse -msse2
-        QMAKE_LFLAGS_DEBUG += -msimd128 -msse -msse2
-    }
-
     QMAKE_LFLAGS       += $$EMCC_THREAD_LFLAGS
     QMAKE_LFLAGS_DEBUG += $$EMCC_THREAD_LFLAGS
     QMAKE_CFLAGS += $$EMCC_THREAD_LFLAGS
