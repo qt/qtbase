@@ -247,7 +247,6 @@ void QWindowPrivate::init(QScreen *targetScreen)
     // before the screen list is populated.
     if (Q_UNLIKELY(!parentWindow && !topLevelScreen)) {
         qFatal("Cannot create window: no screens available");
-        exit(1);
     }
     QGuiApplicationPrivate::window_list.prepend(q);
 
@@ -332,7 +331,6 @@ void QWindow::setVisibility(Visibility v)
         break;
     default:
         Q_ASSERT(false);
-        break;
     }
 }
 
