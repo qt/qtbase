@@ -489,8 +489,9 @@ struct Data
         bool resized = numBuckets != other.numBuckets;
         size_t nSpans = (numBuckets + Span::LocalBucketMask) / Span::NEntries;
         spans = new Span[nSpans];
+        size_t otherNSpans = (other.numBuckets + Span::LocalBucketMask) / Span::NEntries;
 
-        for (size_t s = 0; s < nSpans; ++s) {
+        for (size_t s = 0; s < otherNSpans; ++s) {
             const Span &span = other.spans[s];
             for (size_t index = 0; index < Span::NEntries; ++index) {
                 if (!span.hasNode(index))
