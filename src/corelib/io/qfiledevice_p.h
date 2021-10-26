@@ -54,6 +54,10 @@
 #include "private/qiodevice_p.h"
 
 #include <memory>
+#ifdef Q_OS_UNIX
+#  include <sys/types.h> // for mode_t
+#  include <sys/stat.h>  // for mode_t constants
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -97,6 +101,36 @@ inline bool QFileDevicePrivate::ensureFlushed() const
     }
     return true;
 }
+
+#ifdef Q_OS_UNIX
+namespace QtPrivate {
+
+constexpr mode_t toMode_t(QFileDevice::Permissions permissions)
+{
+    mode_t mode = 0;
+    if (permissions & (QFileDevice::ReadOwner | QFileDevice::ReadUser))
+        mode |= S_IRUSR;
+    if (permissions & (QFileDevice::WriteOwner | QFileDevice::WriteUser))
+        mode |= S_IWUSR;
+    if (permissions & (QFileDevice::ExeOwner | QFileDevice::ExeUser))
+        mode |= S_IXUSR;
+    if (permissions & QFileDevice::ReadGroup)
+        mode |= S_IRGRP;
+    if (permissions & QFileDevice::WriteGroup)
+        mode |= S_IWGRP;
+    if (permissions & QFileDevice::ExeGroup)
+        mode |= S_IXGRP;
+    if (permissions & QFileDevice::ReadOther)
+        mode |= S_IROTH;
+    if (permissions & QFileDevice::WriteOther)
+        mode |= S_IWOTH;
+    if (permissions & QFileDevice::ExeOther)
+        mode |= S_IXOTH;
+    return mode;
+}
+
+} // namespace QtPrivate
+#endif // Q_OS_UNIX
 
 QT_END_NAMESPACE
 

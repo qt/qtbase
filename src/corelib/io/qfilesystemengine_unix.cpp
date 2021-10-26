@@ -46,6 +46,7 @@
 
 #include <QtCore/qoperatingsystemversion.h>
 #include <QtCore/private/qcore_unix_p.h>
+#include <QtCore/private/qfiledevice_p.h>
 #include <QtCore/qvarlengtharray.h>
 #ifndef QT_BOOTSTRAPPED
 # include <QtCore/qstandardpaths.h>
@@ -53,8 +54,6 @@
 
 #include <pwd.h>
 #include <stdlib.h> // for realpath()
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <errno.h>
@@ -1527,36 +1526,12 @@ bool QFileSystemEngine::removeFile(const QFileSystemEntry &entry, QSystemError &
 
 }
 
-static mode_t toMode_t(QFile::Permissions permissions)
-{
-    mode_t mode = 0;
-    if (permissions & (QFile::ReadOwner | QFile::ReadUser))
-        mode |= S_IRUSR;
-    if (permissions & (QFile::WriteOwner | QFile::WriteUser))
-        mode |= S_IWUSR;
-    if (permissions & (QFile::ExeOwner | QFile::ExeUser))
-        mode |= S_IXUSR;
-    if (permissions & QFile::ReadGroup)
-        mode |= S_IRGRP;
-    if (permissions & QFile::WriteGroup)
-        mode |= S_IWGRP;
-    if (permissions & QFile::ExeGroup)
-        mode |= S_IXGRP;
-    if (permissions & QFile::ReadOther)
-        mode |= S_IROTH;
-    if (permissions & QFile::WriteOther)
-        mode |= S_IWOTH;
-    if (permissions & QFile::ExeOther)
-        mode |= S_IXOTH;
-    return mode;
-}
-
 //static
 bool QFileSystemEngine::setPermissions(const QFileSystemEntry &entry, QFile::Permissions permissions, QSystemError &error, QFileSystemMetaData *data)
 {
     Q_CHECK_FILE_NAME(entry, false);
 
-    mode_t mode = toMode_t(permissions);
+    mode_t mode = QtPrivate::toMode_t(permissions);
     bool success = ::chmod(entry.nativeFilePath().constData(), mode) == 0;
     if (success && data) {
         data->entryFlags &= ~QFileSystemMetaData::Permissions;
@@ -1571,7 +1546,7 @@ bool QFileSystemEngine::setPermissions(const QFileSystemEntry &entry, QFile::Per
 //static
 bool QFileSystemEngine::setPermissions(int fd, QFile::Permissions permissions, QSystemError &error, QFileSystemMetaData *data)
 {
-    mode_t mode = toMode_t(permissions);
+    mode_t mode = QtPrivate::toMode_t(permissions);
 
     bool success = ::fchmod(fd, mode) == 0;
     if (success && data) {
