@@ -101,6 +101,8 @@ private slots:
     void QTBUG98265();
 
     void detachAndReferences();
+
+    void lookupUsingKeyIterator();
 };
 
 struct IdentityTracker {
@@ -2697,6 +2699,21 @@ void tst_QHash::detachAndReferences()
         QCOMPARE(hash.value(kCopy), vCopy);
     }
 #endif
+}
+
+void tst_QHash::lookupUsingKeyIterator()
+{
+    QHash<QString, QString> hash;
+    hash.reserve(1);
+    qsizetype minCapacity = hash.capacity();
+    // Beholden to internal implementation details:
+    qsizetype rehashLimit = minCapacity == 64 ? 63 : 8;
+
+    for (char16_t c = u'a'; c <= u'a' + rehashLimit; ++c)
+        hash.insert(QString(QChar(c)), u"h"_qs);
+
+    for (auto it = hash.keyBegin(), end = hash.keyEnd(); it != end; ++it)
+        QVERIFY(!hash[*it].isEmpty());
 }
 
 QTEST_APPLESS_MAIN(tst_QHash)

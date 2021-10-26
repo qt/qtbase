@@ -641,15 +641,21 @@ struct Data
 
     InsertionResult findOrInsert(const Key &key) noexcept
     {
-        if (shouldGrow())
-            rehash(size + 1);
-        iterator it = find(key);
-        if (it.isUnused()) {
-            spans[it.span()].insert(it.index());
-            ++size;
-            return { it, false };
+        iterator it;
+        if (numBuckets > 0) {
+            it = find(key);
+            if (!it.isUnused())
+                return { it, true };
         }
-        return { it, true };
+        if (shouldGrow()) {
+            rehash(size + 1);
+            it = find(key); // need to get a new iterator after rehashing
+        }
+        Q_ASSERT(it.d);
+        Q_ASSERT(it.isUnused());
+        spans[it.span()].insert(it.index());
+        ++size;
+        return { it, false };
     }
 
     iterator erase(iterator it) noexcept(std::is_nothrow_destructible<Node>::value)
