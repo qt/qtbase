@@ -1,4 +1,5 @@
 
+QT_FOR_CONFIG += core-private
 
 # DESTDIR will be empty if not set in the app .pro file; make sure it has a value
 isEmpty(DESTDIR): DESTDIR = $$OUT_PWD
@@ -35,6 +36,13 @@ exists($$QMAKE_QT_CONFIG) {
             }
             message("Setting INITIAL_MEMORY to" $$INITIAL_MEMORY)
             EMCC_THREAD_LFLAGS += -s INITIAL_MEMORY=$$INITIAL_MEMORY
+    }
+
+    qtConfig(sse2) {
+        QMAKE_CFLAGS += -O2 -msimd128 -msse -msse2
+        QMAKE_CXXFLAGS += -O2 -msimd128 -msse -msse2
+        QMAKE_LFLAGS       += -msimd128 -msse -msse2
+        QMAKE_LFLAGS_DEBUG += -msimd128 -msse -msse2
     }
 
     QMAKE_LFLAGS       += $$EMCC_THREAD_LFLAGS
