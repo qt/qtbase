@@ -36,6 +36,8 @@
 #include <unordered_set>
 #include <string>
 
+#include <qsemaphore.h>
+
 class tst_QHash : public QObject
 {
     Q_OBJECT
@@ -97,6 +99,8 @@ private slots:
     void reserveShared();
 
     void QTBUG98265();
+
+    void detachAndReferences();
 };
 
 struct IdentityTracker {
@@ -2627,5 +2631,57 @@ void tst_QHash::QTBUG98265()
 
     QVERIFY(a != b);
 }
+
+/*
+    Calling functions which take a const-ref argument for a key with a reference
+    to a key inside the hash itself should keep the key valid as long as it is
+    needed. If not users may get hard-to-debug races where CoW should've
+    shielded them.
+*/
+void tst_QHash::detachAndReferences()
+{
+#if !QT_CONFIG(cxx11_future)
+    QSKIP("This test requires cxx11_future")
+#else
+    // Repeat a few times because it's not a guarantee
+    for (int i = 0; i < 50; ++i) {
+        QHash<char, char> hash;
+        hash.insert('a', 'a');
+        hash.insert('b', 'a');
+        hash.insert('c', 'a');
+        hash.insert('d', 'a');
+        hash.insert('e', 'a');
+        hash.insert('f', 'a');
+        hash.insert('g', 'a');
+
+        QSemaphore sem;
+        QSemaphore sem2;
+        std::thread th([&sem, &sem2, hash]() mutable {
+            sem.release();
+            sem2.acquire();
+            hash.reserve(100); // [2]: ...then this rehashes directly, without detaching
+        });
+
+        // The key is a reference to an entry in the hash. If we were already
+        // detached then no problem occurs! The problem happens because _after_
+        // we detach but before using the key the other thread resizes and
+        // rehashes, leaving our const-ref dangling.
+        auto it = hash.constBegin();
+        const auto &key = it.key(); // [3]: leaving our const-refs dangling
+        auto kCopy = key;
+        const auto &value = it.value();
+        auto vCopy = value;
+        sem2.release();
+        sem.acquire();
+        hash.insert(key, value); // [1]: this detaches first...
+
+        th.join();
+        QCOMPARE(hash.size(), 7);
+        QVERIFY(hash.contains(kCopy));
+        QCOMPARE(hash.value(kCopy), vCopy);
+    }
+#endif
+}
+
 QTEST_APPLESS_MAIN(tst_QHash)
 #include "tst_qhash.moc"
