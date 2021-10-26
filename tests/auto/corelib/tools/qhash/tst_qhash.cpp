@@ -93,6 +93,8 @@ private slots:
     void removeInEmptyHash();
     void valueInEmptyHash();
     void fineTuningInEmptyHash();
+
+    void reserveShared();
 };
 
 struct IdentityTracker {
@@ -2596,6 +2598,21 @@ void tst_QHash::fineTuningInEmptyHash()
     QVERIFY(hash.capacity() >= 10);
     hash.squeeze();
     QVERIFY(hash.capacity() > 0);
+}
+
+void tst_QHash::reserveShared()
+{
+    QHash<char, char> hash;
+    hash.insert('c', 'c');
+    auto hash2 = hash;
+
+    QCOMPARE(hash2.capacity(), hash.capacity());
+    auto oldCap = hash.capacity();
+
+    hash2.reserve(100); // This shouldn't crash
+
+    QVERIFY(hash2.capacity() >= 100);
+    QCOMPARE(hash.capacity(), oldCap);
 }
 
 QTEST_APPLESS_MAIN(tst_QHash)
