@@ -124,7 +124,7 @@ protected:
     bool m_needsCompositor = false;
     friend class QWasmCompositor;
     friend class QWasmEventTranslator;
-    bool windowIsPopupType(Qt::WindowType type = Qt::Widget) const;
+    bool windowIsPopupType(Qt::WindowFlags flags) const;
 };
 QT_END_NAMESPACE
 #endif // QWASMWINDOW_H
