@@ -615,6 +615,8 @@ template <class T, qsizetype Prealloc>
 Q_OUTOFLINE_TEMPLATE typename QVarLengthArray<T, Prealloc>::iterator QVarLengthArray<T, Prealloc>::insert(const_iterator before, T &&t)
 {
     Q_ASSERT_X(isValidIterator(before), "QVarLengthArray::insert", "The specified const_iterator argument 'before' is invalid");
+    Q_ASSERT(s <= a);
+    Q_ASSERT(a > 0);
 
     qsizetype offset = qsizetype(before - ptr);
     if (s == a)
