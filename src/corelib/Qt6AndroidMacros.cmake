@@ -351,6 +351,9 @@ function(qt6_android_add_apk_target target)
     if(QT_INTERNAL_NO_ANDROID_RCC_BUNDLE_CLEANUP)
         list(APPEND extra_args "--no-rcc-bundle-cleanup")
     endif()
+    if(QT_ENABLE_VERBOSE_DEPLOYMENT)
+        list(APPEND extra_args "--verbose")
+    endif()
     # The DEPFILE argument to add_custom_command is only available with Ninja or CMake>=3.20 and make.
     if (CMAKE_GENERATOR MATCHES "Ninja" OR
         (CMAKE_VERSION VERSION_GREATER_EQUAL 3.20 AND CMAKE_GENERATOR MATCHES "Makefiles"))

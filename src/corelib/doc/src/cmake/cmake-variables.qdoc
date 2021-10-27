@@ -145,3 +145,20 @@ When finalizing an executable target on iOS,
 \c MACOSX_BUNDLE_GUI_IDENTIFIER properties if they haven't been set.
 Set \c QT_NO_SET_XCODE_BUNDLE_IDENTIFIER to true if you want to prevent this.
 */
+
+/*!
+\page cmake-variable-QT_ENABLE_VERBOSE_DEPLOYMENT.html
+\ingroup cmake-variables
+\ingroup cmake-variables-qtcore
+
+\title QT_ENABLE_VERBOSE_DEPLOYMENT
+\target cmake-variable-QT_ENABLE_VERBOSE_DEPLOYMENT
+
+\summary {Enables verbose mode of deployment tools}
+
+\preliminarycmakevariable
+
+Enables verbose mode of the androiddeployqt deployment tool when it is implicitly called
+inside the Qt CMake commands.
+
+*/
