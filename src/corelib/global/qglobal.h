@@ -143,8 +143,6 @@ static_assert(!std::is_convertible_v<std::nullptr_t, bool>,
 
 #ifdef __cplusplus
 
-#include <algorithm>
-
 #if !defined(QT_NAMESPACE) || defined(Q_MOC_RUN) /* user namespace */
 
 # define QT_PREPEND_NAMESPACE(name) ::name
