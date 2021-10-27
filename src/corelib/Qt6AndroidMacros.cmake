@@ -21,7 +21,7 @@ endfunction()
 function(qt6_android_generate_deployment_settings target)
     # Information extracted from mkspecs/features/android/android_deployment_settings.prf
     if (NOT TARGET ${target})
-        message(SEND_ERROR "${target} is not a cmake target")
+        message(FATAL_ERROR "${target} is not a cmake target")
         return()
     endif()
 
