@@ -178,7 +178,14 @@ function(qt6_android_generate_deployment_settings target)
             "   \"android-target-sdk-version\": \"${android_target_sdk_version}\",\n")
     endif()
 
+    # QML import paths
     get_target_property(qml_import_path ${target} QT_QML_IMPORT_PATH)
+    if(NOT "${QT_QML_OUTPUT_DIRECTORY}" STREQUAL "")
+        # Need to prepend the default qml module output directory to take precedence
+        # over other qml import paths. By default QT_QML_OUTPUT_DIRECTORY is set to
+        # ${CMAKE_BINARY_DIR}/android-qml for Android.
+        list(PREPEND qml_import_path "${QT_QML_OUTPUT_DIRECTORY}")
+    endif()
     if (qml_import_path)
         set(_import_paths "")
         foreach(_path IN LISTS qml_import_path)
