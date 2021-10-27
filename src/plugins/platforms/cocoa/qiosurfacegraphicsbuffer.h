@@ -43,6 +43,7 @@
 #include <qpa/qplatformgraphicsbuffer.h>
 #include <private/qcore_mac_p.h>
 
+#include <CoreGraphics/CGColorSpace.h>
 #include <IOSurface/IOSurface.h>
 
 QT_BEGIN_NAMESPACE
