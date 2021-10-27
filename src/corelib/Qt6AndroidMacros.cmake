@@ -19,6 +19,11 @@ endfunction()
 
 # Generate the deployment settings json file for a cmake target.
 function(qt6_android_generate_deployment_settings target)
+    # Information extracted from mkspecs/features/android/android_deployment_settings.prf
+    if (NOT TARGET ${target})
+        message(FATAL_ERROR "${target} is not a cmake target")
+    endif()
+
     # When parsing JSON file format backslashes and follow up symbols are regarded as special
     # characters. This puts Windows path format into a trouble.
     # _qt_internal_android_format_deployment_paths converts sensitive paths to the CMake format
@@ -35,12 +40,6 @@ function(qt6_android_generate_deployment_settings target)
     set_target_properties(${target} PROPERTIES
         _qt_is_android_generate_deployment_settings_called TRUE
     )
-
-    # Information extracted from mkspecs/features/android/android_deployment_settings.prf
-    if (NOT TARGET ${target})
-        message(SEND_ERROR "${target} is not a cmake target")
-        return()
-    endif()
 
     get_target_property(target_type ${target} TYPE)
 
