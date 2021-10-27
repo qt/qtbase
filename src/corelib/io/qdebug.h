@@ -361,7 +361,7 @@ template <class Key, class T>
 QDebug operator<<(QDebug debug, const QMap<Key, T> &map);
 
 template <class Key, class T>
-QDebug operator<<(QDebug debug, const QMultiMap(<Key, T> &map);
+QDebug operator<<(QDebug debug, const QMultiMap<Key, T> &map);
 
 template <class Key, class T>
 QDebug operator<<(QDebug debug, const QHash<Key, T> &hash);
