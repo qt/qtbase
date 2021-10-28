@@ -93,7 +93,13 @@
 # define PREFIX         "lib"
 #endif
 
-#if defined(Q_OF_ELF)
+// Workaround for missing elf.h in QNX test environment
+// TODO: this can be removed after QTBUG-97833 has been solved
+#if defined(Q_OF_ELF) && defined(Q_OS_QNX) && !__has_include(<elf.h>)
+#undef Q_OF_ELF
+#endif
+
+#if defined (Q_OF_ELF)
 #  include <elf.h>
 #  include <memory>
 #  include <functional>
@@ -198,7 +204,7 @@ private slots:
     void errorString();
     void loadHints();
     void deleteinstanceOnUnload();
-#if defined (__ELF__)
+#if defined (Q_OF_ELF)
     void loadDebugObj();
     void loadCorruptElf_data();
     void loadCorruptElf();
@@ -388,7 +394,7 @@ void tst_QPluginLoader::deleteinstanceOnUnload()
     }
 }
 
-#if defined (__ELF__)
+#if defined (Q_OF_ELF)
 void tst_QPluginLoader::loadDebugObj()
 {
 #if !defined(QT_SHARED)
@@ -823,7 +829,7 @@ void tst_QPluginLoader::loadCorruptElfOldPlugin()
     loadCorruptElf_helper(sys_qualifiedLibraryName("theoldplugin"));
 }
 #  endif // Qt 7
-#endif // __ELF__
+#endif // Q_OF_ELF
 
 void tst_QPluginLoader::loadMachO_data()
 {
@@ -964,7 +970,7 @@ void tst_QPluginLoader::loadSectionTableStrippedElf()
 {
 #if !defined(QT_SHARED)
     QSKIP("This test requires a shared build of Qt, as QPluginLoader::setFileName is a no-op in static builds");
-#elif !defined(__ELF__)
+#elif !defined(Q_OF_ELF)
     QSKIP("Test specific to the ELF file format");
 #else
     ElfPatcher patcher { [](ElfHeader *header, QFile *f) {
