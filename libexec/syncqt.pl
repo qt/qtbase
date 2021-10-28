@@ -363,7 +363,7 @@ sub check_header {
     return if ($ignore_for_include_check{$header});
     if ($public_header) {
         $header_skip_qt_begin_namespace_test = $header &&
-             ($ignore_for_qt_begin_namespace_check{$header} || $header =~ m,(^|/)qt\w+global\.h$,);
+             ($ignore_for_qt_begin_namespace_check{$header} || $header =~ m,(^|/)q\w+global\.h$,);
     }
 
     local $/ = "\x0a";
