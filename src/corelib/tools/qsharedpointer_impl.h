@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Copyright (C) 2020 Intel Corporation.
 ** Copyright (C) 2019 Klarälvdalens Datakonsult AB.
 ** Contact: https://www.qt.io/licensing/
@@ -583,6 +583,23 @@ public:
         other.value = nullptr;
     }
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QWeakPointer)
+
+    template <class X, IfCompatible<X> = true>
+    QWeakPointer(QWeakPointer<X> &&other) noexcept
+        : d(other.d), value(other.value)
+    {
+        other.d = nullptr;
+        other.value = nullptr;
+    }
+
+    template <class X, IfCompatible<X> = true>
+    QWeakPointer &operator=(QWeakPointer<X> &&other) noexcept
+    {
+        QWeakPointer moved(std::move(other));
+        swap(moved);
+        return *this;
+    }
+
     QWeakPointer &operator=(const QWeakPointer &other) noexcept
     {
         QWeakPointer copy(other);
