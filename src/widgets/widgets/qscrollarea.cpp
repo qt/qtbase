@@ -203,10 +203,13 @@ void QScrollAreaPrivate::updateScrollBars()
             if (vbarpolicy == Qt::ScrollBarAsNeeded) {
                 int vbarWidth = vbar->sizeHint().width();
                 QSize m_hfw = m.expandedTo(min).boundedTo(max);
-                while (h > m.height() && vbarWidth) {
-                    --vbarWidth;
-                    --m_hfw.rwidth();
-                    h = widget->heightForWidth(m_hfw.width());
+                // is there any point in searching?
+                if (widget->heightForWidth(m_hfw.width() - vbarWidth) <= m.height()) {
+                    while (h > m.height() && vbarWidth) {
+                        --vbarWidth;
+                        --m_hfw.rwidth();
+                        h = widget->heightForWidth(m_hfw.width());
+                    }
                 }
                 max = QSize(m_hfw.width(), qMax(m_hfw.height(), h));
             }
