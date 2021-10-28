@@ -76,13 +76,15 @@ public:
     template <typename Deleter> QSharedPointer(std::nullptr_t, Deleter d);
     QSharedPointer(const QSharedPointer<T> &other);
     QSharedPointer(const QWeakPointer<T> &other);
+    QSharedPointer(QSharedPointer<T> &&other) noexcept;
 
     ~QSharedPointer() { }
 
     QSharedPointer<T> &operator=(const QSharedPointer<T> &other);
+    QSharedPointer<T> &operator=(QSharedPointer<T> &&other) noexcept;
     QSharedPointer<T> &operator=(const QWeakPointer<T> &other);
 
-    void swap(QSharedPointer<T> &other);
+    void swap(QSharedPointer<T> &other) noexcept;
 
     QWeakPointer<T> toWeakRef() const;
 
@@ -114,18 +116,20 @@ public:
 
     // constructors:
     QWeakPointer();
-    QWeakPointer(const QWeakPointer<T> &other);
+    QWeakPointer(const QWeakPointer<T> &other) noexcept;
+    QWeakPointer(QWeakPointer<T> &&other) noexcept;
     QWeakPointer(const QSharedPointer<T> &other);
 
     ~QWeakPointer();
 
-    QWeakPointer<T> &operator=(const QWeakPointer<T> &other);
+    QWeakPointer<T> &operator=(const QWeakPointer<T> &other) noexcept;
+    QWeakPointer<T> &operator=(QWeakPointer<T> &&other) noexcept;
     QWeakPointer<T> &operator=(const QSharedPointer<T> &other);
 
     QWeakPointer(const QObject *other);
     QWeakPointer<T> &operator=(const QObject *other);
 
-    void swap(QWeakPointer<T> &other);
+    void swap(QWeakPointer<T> &other) noexcept;
 
     T *data() const;
     void clear();
