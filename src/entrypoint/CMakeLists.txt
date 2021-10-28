@@ -10,6 +10,27 @@ endif()
 # dependencies that need to go _before_ the static library, to work around
 # CMake's lack of whole archive.
 
+# ---- Set up an intermediate imported library for libmingw32.a ----
+
+set(export_name_prefix "${INSTALL_CMAKE_NAMESPACE}EntryPointPrivate")
+qt_path_join(config_install_dir ${QT_CONFIG_INSTALL_DIR} ${export_name_prefix})
+
+set(extra_cmake_includes_arg)
+if(MINGW)
+    # The mingw32 library needs to come before the entry-point library in the linker line, so that
+    # the static linker will pick up the WinMain symbol from the entry-point library.  In order to
+    # achieve that reliably, we create an imported library EntryPointMinGW32 that represents
+    # libmingw32.a and add a link dependency to EntryPointImplementation.  The resulting dependency
+    # chain looks like this: EntryPointPrivate -> EntryPointMinGW32 -> EntryPointImplementation
+
+    set(mingw32target_config_file "${INSTALL_CMAKE_NAMESPACE}EntryPointMinGW32Target.cmake")
+    configure_file("EntryPointMinGW32Target.cmake.in" "${mingw32target_config_file}" @ONLY)
+    qt_copy_or_install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${mingw32target_config_file}"
+        DESTINATION "${config_install_dir}")
+    include("${CMAKE_CURRENT_BINARY_DIR}/${mingw32target_config_file}")
+    set(extra_cmake_includes_arg EXTRA_CMAKE_INCLUDES "${mingw32target_config_file}")
+endif()
+
 # ---- The header-only target produces the actual module ----
 qt_internal_add_module(EntryPointPrivate
     HEADER_MODULE
@@ -18,6 +39,7 @@ qt_internal_add_module(EntryPointPrivate
     NO_MODULE_HEADERS
     NO_PRIVATE_MODULE
     NO_ADDITIONAL_TARGET_INFO
+    ${extra_cmake_includes_arg}
 )
 
 set(export_targets EntryPointPrivate)
@@ -67,10 +89,8 @@ if(WIN32)
     endif()
 
     if(MINGW)
-        # The mingw32 library needs to come before the entry-point library in the
-        # linker line, so that the static linker will pick up the WinMain symbol
-        # from the entry-point library.
-        target_link_libraries(EntryPointPrivate INTERFACE mingw32)
+        # Link against EntryPointImplementation via EntryPointMinGW32
+        target_link_libraries(EntryPointPrivate INTERFACE EntryPointMinGW32)
         set_property(TARGET EntryPointPrivate
             APPEND PROPERTY INTERFACE_QT_MODULE_LDFLAGS "-lmingw32"
         )
@@ -113,8 +133,6 @@ QT.entrypoint_implementation.module_config = staticlib v2 internal_module
     qt_generate_prl_file(EntryPointImplementation "${INSTALL_LIBDIR}")
 endif()
 
-set(export_name_prefix "${INSTALL_CMAKE_NAMESPACE}EntryPointPrivate")
-qt_path_join(config_install_dir ${QT_CONFIG_INSTALL_DIR} ${export_name_prefix})
 qt_internal_export_additional_targets_file(
     TARGETS ${export_targets}
     EXPORT_NAME_PREFIX ${export_name_prefix}
