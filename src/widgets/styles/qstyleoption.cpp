@@ -1535,6 +1535,7 @@ QStyleOptionProgressBar::QStyleOptionProgressBar(int version)
       minimum(0), maximum(0), progress(0), textAlignment(Qt::AlignLeft), textVisible(false),
       invertedAppearance(false), bottomToTop(false)
 {
+    state |= QStyle::State_Horizontal;
 }
 
 /*!
