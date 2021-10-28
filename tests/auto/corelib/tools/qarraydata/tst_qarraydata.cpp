@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -1797,7 +1797,7 @@ void tst_QArrayData::literals()
 {
     {
         QArrayDataPointer<char> d = Q_ARRAY_LITERAL(char, "ABCDEFGHIJ");
-        QCOMPARE(d.size, 10u + 1u);
+        QCOMPARE(d.size, 10 + 1);
         for (int i = 0; i < 10; ++i)
             QCOMPARE(d.data()[i], char('A' + i));
     }
@@ -1820,7 +1820,7 @@ void tst_QArrayData::literals()
     {
         // wchar_t is not necessarily 2-bytes
         QArrayDataPointer<wchar_t> d = Q_ARRAY_LITERAL(wchar_t, L"ABCDEFGHIJ");
-        QCOMPARE(d.size, 10u + 1u);
+        QCOMPARE(d.size, 10 + 1);
         for (int i = 0; i < 10; ++i)
             QCOMPARE(d.data()[i], wchar_t('A' + i));
     }
@@ -1861,7 +1861,7 @@ void tst_QArrayData::variadicLiterals()
     {
         QArrayDataPointer<int> d =
             Q_ARRAY_LITERAL(int, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
-        QCOMPARE(d.size, 10u);
+        QCOMPARE(d.size, 10);
         for (int i = 0; i < 10; ++i)
             QCOMPARE(d.data()[i], i);
     }
@@ -1869,7 +1869,7 @@ void tst_QArrayData::variadicLiterals()
     {
         QArrayDataPointer<char> d = Q_ARRAY_LITERAL(char,
                 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J');
-        QCOMPARE(d.size, 10u);
+        QCOMPARE(d.size, 10);
         for (int i = 0; i < 10; ++i)
             QCOMPARE(d.data()[i], char('A' + i));
     }
@@ -1877,7 +1877,7 @@ void tst_QArrayData::variadicLiterals()
     {
         QArrayDataPointer<const char *> d = Q_ARRAY_LITERAL(const char *,
                 "A", "B", "C", "D", "E", "F", "G", "H", "I", "J");
-        QCOMPARE(d.size, 10u);
+        QCOMPARE(d.size, 10);
         for (int i = 0; i < 10; ++i) {
             QCOMPARE(d.data()[i][0], char('A' + i));
             QCOMPARE(d.data()[i][1], '\0');
