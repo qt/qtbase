@@ -635,7 +635,7 @@ bool QResource::isValid() const
     possible compression algorithm.
 
     If this function returns QResource::ZstdCompression, you need to use the
-    Zstandard library functions (\c{<zstd.h> header). Qt does not provide a
+    Zstandard library functions (\c{<zstd.h>} header). Qt does not provide a
     wrapper.
 
     See \l{http://facebook.github.io/zstd/zstd_manual.html}{Zstandard manual}.
