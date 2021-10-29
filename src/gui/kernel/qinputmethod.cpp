@@ -426,13 +426,17 @@ QVariant QInputMethod::queryFocusObject(Qt::InputMethodQuery query, const QVaria
     if (!focusObject)
         return retval;
 
-    bool newMethodWorks = QMetaObject::invokeMethod(focusObject, "inputMethodQuery",
-                                                    Qt::DirectConnection,
-                                                    Q_RETURN_ARG(QVariant, retval),
-                                                    Q_ARG(Qt::InputMethodQuery, query),
-                                                    Q_ARG(QVariant, argument));
-    if (newMethodWorks)
+    static const char *signature = "inputMethodQuery(Qt::InputMethodQuery,QVariant)";
+    const bool newMethodSupported = focusObject->metaObject()->indexOfMethod(signature) != -1;
+    if (newMethodSupported) {
+        const bool ok = QMetaObject::invokeMethod(focusObject, "inputMethodQuery",
+                                                        Qt::DirectConnection,
+                                                        Q_RETURN_ARG(QVariant, retval),
+                                                        Q_ARG(Qt::InputMethodQuery, query),
+                                                        Q_ARG(QVariant, argument));
+        Q_ASSERT(ok);
         return retval;
+    }
 
     QInputMethodQueryEvent queryEvent(query);
     QCoreApplication::sendEvent(focusObject, &queryEvent);
