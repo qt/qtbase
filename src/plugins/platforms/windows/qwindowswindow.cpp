@@ -1888,6 +1888,8 @@ void QWindowsWindow::handleDpiChanged(HWND hwnd, WPARAM wParam, LPARAM lParam)
     // Scale child QPlatformWindow size. Windows sends WM_DPICHANGE to top-level windows only.
     for (QWindow *childWindow : window()->findChildren<QWindow *>()) {
         QWindowsWindow *platformChildWindow = static_cast<QWindowsWindow *>(childWindow->handle());
+        if (!platformChildWindow)
+            continue;
         QRect currentGeometry = platformChildWindow->geometry();
         QRect scaledGeometry = QRect(currentGeometry.topLeft() * scale, currentGeometry.size() * scale);
         platformChildWindow->setGeometry(scaledGeometry);
