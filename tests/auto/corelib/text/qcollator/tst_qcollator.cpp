@@ -282,8 +282,8 @@ void tst_QCollator::compare()
     };
 
 #ifdef Q_OS_ANDROID
-    if (collator.locale() != QLocale())
-        QSKIP("Posix implementation of collation only supports default locale");
+    if (collator.locale() != QLocale::c() && collator.locale() != QLocale::system().collation())
+        QSKIP("POSIX implementation of collation only supports C and system collation locales");
 #endif
 
     if (numericMode)

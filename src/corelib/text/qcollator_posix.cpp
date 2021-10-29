@@ -1,6 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 Aleix Pol Gonzalez <aleixpol@kde.org>
+** Copyright (C) 2021 The Qt Company Ltd.
+** Copyright (C) 2013 Aleix Pol Gonzalez <aleixpol@kde.org>
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -49,8 +50,10 @@ QT_BEGIN_NAMESPACE
 void QCollatorPrivate::init()
 {
     if (!isC()) {
-        if (locale != QLocale())
-            qWarning("Only C and default locale supported with the posix collation implementation");
+        if (locale != QLocale::system().collation()) {
+            qWarning("Only the C and system collation locales are supported "
+                     "with the POSIX collation implementation");
+        }
         if (caseSensitivity != Qt::CaseSensitive)
             qWarning("Case insensitive sorting unsupported in the posix collation implementation");
     }
