@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -282,8 +282,8 @@ void tst_QCollator::compare()
     };
 
 #if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
-    if (collator.locale() != QLocale())
-        QSKIP("Posix implementation of collation only supports default locale");
+    if (collator.locale() != QLocale::c() && collator.locale() != QLocale::system().collation())
+        QSKIP("POSIX implementation of collation only supports C and system collation locales");
 #endif
 
     if (numericMode)
