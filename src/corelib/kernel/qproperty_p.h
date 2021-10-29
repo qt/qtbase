@@ -68,7 +68,7 @@ namespace QtPrivate {
 // we need to allow the compiler to inline where it makes sense.
 
 // This is a helper "namespace"
-struct Q_AUTOTEST_EXPORT QPropertyBindingDataPointer
+struct QPropertyBindingDataPointer
 {
     const QtPrivate::QPropertyBindingData *ptr = nullptr;
 
@@ -85,10 +85,10 @@ struct Q_AUTOTEST_EXPORT QPropertyBindingDataPointer
     }
     static void fixupAfterMove(QtPrivate::QPropertyBindingData *ptr);
     void Q_ALWAYS_INLINE addObserver(QPropertyObserver *observer);
-    void setFirstObserver(QPropertyObserver *observer);
-    QPropertyObserverPointer firstObserver() const;
+    inline void setFirstObserver(QPropertyObserver *observer);
+    inline QPropertyObserverPointer firstObserver() const;
 
-    int observerCount() const;
+    inline int observerCount() const;
 
     template <typename T>
     static QPropertyBindingDataPointer get(QProperty<T> &property)
@@ -440,6 +440,14 @@ inline QPropertyObserverPointer QPropertyBindingDataPointer::firstObserver() con
     if (auto *b = binding())
         return b->firstObserver;
     return { reinterpret_cast<QPropertyObserver *>(ptr->d()) };
+}
+
+inline int QPropertyBindingDataPointer::observerCount() const
+{
+    int count = 0;
+    for (auto observer = firstObserver(); observer; observer = observer.nextObserver())
+        ++count;
+    return count;
 }
 
 namespace QtPrivate {

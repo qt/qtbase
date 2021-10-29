@@ -608,13 +608,6 @@ QPropertyBindingData::NotificationResult QPropertyBindingData::notifyObserver_he
     return Evaluated;
 }
 
-int QPropertyBindingDataPointer::observerCount() const
-{
-    int count = 0;
-    for (auto observer = firstObserver(); observer; observer = observer.nextObserver())
-        ++count;
-    return count;
-}
 
 QPropertyObserver::QPropertyObserver(ChangeHandler changeHandler)
 {
