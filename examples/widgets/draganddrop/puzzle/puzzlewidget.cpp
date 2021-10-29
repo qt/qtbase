@@ -199,8 +199,8 @@ void PuzzleWidget::paintEvent(QPaintEvent *event)
 
 const QRect PuzzleWidget::targetSquare(const QPoint &position) const
 {
-    return QRect(position / pieceSize() * pieceSize(),
-                 QSize(pieceSize(), pieceSize()));
+    QPoint topLeft = QPoint(position.x() / pieceSize(), position.y() / pieceSize()) * pieceSize();
+    return QRect(topLeft, QSize(pieceSize(), pieceSize()));
 }
 
 int PuzzleWidget::pieceSize() const
