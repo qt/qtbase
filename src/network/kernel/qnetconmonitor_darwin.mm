@@ -327,12 +327,12 @@ bool QNetworkConnectionMonitor::isWwan() const
     Q_D(const QNetworkConnectionMonitor);
 
     if (isMonitoring()) {
-        qCWarning(lcNetMon, "Calling isReachable() is unsafe after the monitoring started");
+        qCWarning(lcNetMon, "Calling isWwan() is unsafe after the monitoring started");
         return false;
     }
 
     if (!d->probe) {
-        qCWarning(lcNetMon, "Reachability is unknown, set the target first");
+        qCWarning(lcNetMon, "Medium is unknown, set the target first");
         return false;
     }
 
