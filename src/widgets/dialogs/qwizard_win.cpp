@@ -187,8 +187,7 @@ void QVistaHelper::updateCustomMargins(bool vistaMargins)
 
 bool QVistaHelper::isCompositionEnabled()
 {
-    BOOL bEnabled;
-    return SUCCEEDED(DwmIsCompositionEnabled(&bEnabled)) && bEnabled;
+    return true;
 }
 
 bool QVistaHelper::isThemeActive()
@@ -669,26 +668,9 @@ bool QVistaHelper::drawBlackRect(const QRect &rect, HDC hdc)
     return value;
 }
 
-#ifndef Q_CC_MSVC
-static inline int getWindowBottomMargin()
-{
-    return GetSystemMetrics(SM_CYSIZEFRAME);
-}
-#else
-// QTBUG-36192, GetSystemMetrics(SM_CYSIZEFRAME) returns bogus values
-// for MSVC2012 which leads to the custom margin having no effect since
-// that only works when removing the entire margin.
-static inline int getWindowBottomMargin()
-{
-    RECT rect = {0, 0, 0, 0};
-    AdjustWindowRectEx(&rect, WS_POPUP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_THICKFRAME | WS_DLGFRAME, FALSE, 0);
-    return qAbs(rect.bottom);
-}
-#endif // Q_CC_MSVC
-
 int QVistaHelper::frameSizeDp()
 {
-    return getWindowBottomMargin();
+    return GetSystemMetrics(SM_CYSIZEFRAME);
 }
 
 int QVistaHelper::captionSizeDp()
