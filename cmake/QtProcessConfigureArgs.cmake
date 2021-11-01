@@ -543,6 +543,8 @@ if(options_json_file)
     return()
 endif()
 
+set(cmake_var_assignments)
+
 while(1)
     qtConfHasNextCommandlineArg(has_next)
     if(NOT has_next)
@@ -558,6 +560,12 @@ while(1)
         endif()
     endforeach()
     if(handled)
+        continue()
+    endif()
+
+    # Handle variable assignments
+    if(arg MATCHES "^([a-zA-Z0-9_-]+)=(.*)")
+        list(APPEND cmake_var_assignments "${arg}")
         continue()
     endif()
 
@@ -902,6 +910,11 @@ endif()
 if(generator)
     push(-G "${generator}")
 endif()
+
+# Add CMake variable assignments near the end to allow users to overwrite what configure sets.
+foreach(arg IN LISTS cmake_var_assignments)
+    push("-D${arg}")
+endforeach()
 
 push("${MODULE_ROOT}")
 
