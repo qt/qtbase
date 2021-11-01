@@ -1931,8 +1931,8 @@ void QRhiVulkan::prepareNewFrame(QRhiCommandBuffer *cb)
     //
     // With multiple swapchains on the same QRhi things get more convoluted
     // (and currentFrameSlot strictly alternating is not true anymore) but
-    // beginNonWrapperFrame() solves that by blocking as necessary so the rest
-    // here is safe regardless.
+    // begin(Offscreen)Frame() blocks anyway waiting for its current frame
+    // slot's previous commands to complete so this here is safe regardless.
 
     executeDeferredReleases();
 
@@ -2043,17 +2043,17 @@ void QRhiVulkan::waitCommandCompletion(int frameSlot)
 QRhi::FrameOpResult QRhiVulkan::beginOffscreenFrame(QRhiCommandBuffer **cb, QRhi::BeginFrameFlags)
 {
     // Switch to the next slot manually. Swapchains do not know about this
-    // which is good. So for example a - unusual but possible - onscreen,
-    // onscreen, offscreen, onscreen, onscreen, onscreen sequence of
-    // begin/endFrame leads to 0, 1, 0, 0, 1, 0. This works because the
-    // offscreen frame is synchronous in the sense that we wait for execution
-    // to complete in endFrame, and so no resources used in that frame are busy
+    // which is good. So for example an onscreen, onscreen, offscreen,
+    // onscreen, onscreen, onscreen sequence of frames leads to 0, 1, 0, 0, 1,
+    // 0. (no strict alternation anymore) But this is not different from what
+    // happens when multiple swapchains are involved. Offscreen frames are
+    // synchronous anyway in the sense that they wait for execution to complete
+    // in endOffscreenFrame, so no resources used in that frame are busy
     // anymore in the next frame.
+
     currentFrameSlot = (currentFrameSlot + 1) % QVK_FRAMES_IN_FLIGHT;
-    // except that this gets complicated with multiple swapchains so make sure
-    // any pending commands have finished for the frame slot we are going to use
-    if (swapchains.count() > 1)
-        waitCommandCompletion(currentFrameSlot);
+
+    waitCommandCompletion(currentFrameSlot);
 
     ensureCommandPoolForNewFrame();
 
