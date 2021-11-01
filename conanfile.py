@@ -31,6 +31,7 @@ from conans.errors import ConanInvalidConfiguration
 import os
 import re
 import json
+import shutil
 import subprocess
 from functools import lru_cache
 from pathlib import Path
@@ -328,10 +329,27 @@ class QtOptionParser:
         return ret
 
 
+def add_cmake_prefix_path(conan_file: ConanFile, dep: str) -> None:
+    if dep not in conan_file.deps_cpp_info.deps:
+        raise QtConanError("Unable to find dependency: {0}".format(dep))
+    dep_cpp_info = conan_file.deps_cpp_info[dep]
+    cmake_args_str = str(conan_file.options.get_safe("cmake_args_qtbase", default=""))
+    _common = conan_file.python_requires["qt-conan-common"].module
+    formatted_cmake_args_str = _common.append_cmake_prefix_path(
+        cmake_args_str, dep_cpp_info.rootpath
+    )
+    print("Adjusted cmake args for qtbase build: {0}".format(formatted_cmake_args_str))
+    setattr(conan_file.options, "cmake_args_qtbase", formatted_cmake_args_str)
+
+
 def _build_qtbase(conan_file: ConanFile):
     # we call the Qt's configure(.bat) directly
     script = Path("configure.bat") if tools.os_info.is_windows else Path("configure")
     configure = Path(conan_file.build_folder).joinpath(script).resolve(strict=True)
+
+    if conan_file.options.get_safe("icu", default="no"):
+        # we need to tell Qt build system where to find the ICU
+        add_cmake_prefix_path(conan_file, dep="icu")
 
     # convert the Conan options to Qt configure(.bat) arguments
     parser = conan_file._qt_option_parser
@@ -372,7 +390,6 @@ class QtBase(ConanFile):
     _qt_option_parser = QtOptionParser()
     options = _qt_option_parser.get_qt_conan_options()
     default_options = _qt_option_parser.get_default_qt_conan_options()
-    exports = "configure_options.json", "configure_features.txt", ".cmake.conf"
     exports_sources = "*", "!conan*.*"
     # use commit ID as the RREV (recipe revision)
     revision_mode = "scm"
@@ -384,6 +401,42 @@ class QtBase(ConanFile):
         _ver = _parse_qt_version_by_key("QT_REPO_MODULE_VERSION")
         _prerelease = _parse_qt_version_by_key("QT_REPO_MODULE_PRERELEASE_VERSION_SEGMENT")
         self.version = _ver + "-" + _prerelease if _prerelease else _ver
+
+    def export(self):
+        self.copy("configure_options.json")
+        self.copy("configure_features.txt")
+        self.copy(".cmake.conf")
+        _common = self.python_requires["qt-conan-common"].module
+        conf = _common.qt_sw_versions_config_folder() / _common.qt_sw_versions_config_name()
+        if not conf.exists():
+            # If using "conan export" outside Qt CI provisioned machines
+            print("Warning: Couldn't find '{0}'. 3rd party dependencies skipped.".format(conf))
+        else:
+            shutil.copy2(conf, self.export_folder)
+
+    def requirements(self):
+        parse_sw_req = self.python_requires["qt-conan-common"].module.parse_qt_sw_pkg_dependency
+        # list of tuples, (package_name, fallback version)
+        optional_requirements = [("icu", "56.1")]
+        for req_name, req_ver_fallback in optional_requirements:
+            if self.options.get_safe(req_name, default="no") == "yes":
+                # Note! If this conan package is being "conan export"ed outside Qt CI and the
+                # sw versions .ini file is not present then it will fall-back to default version
+                ver = parse_sw_req(
+                    config_folder=Path(self.recipe_folder),
+                    package_name=req_name,
+                    target_os=str(self.settings.os),
+                )
+                if not ver:
+                    print(
+                        "Warning: Using fallback version '{0}' for: {1}".format(
+                            req_name, req_ver_fallback
+                        )
+                    )
+                    ver = req_ver_fallback
+                requirement = "{0}/{1}@qt/everywhere".format(req_name, ver)
+                print("Setting 3rd party package requirement: {0}".format(requirement))
+                self.requires(requirement)
 
     def configure(self):
         if self.settings.compiler == "gcc" and tools.Version(self.settings.compiler.version) < "8":
