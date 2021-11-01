@@ -123,8 +123,6 @@ qt_commandline_prefix(I includes)
 qt_commandline_prefix(L lpaths)
 qt_commandline_prefix(R rpaths)
 qt_commandline_prefix(W wflags)
-qt_commandline_assignment(DBUS_HOST_PATH host_dbus.prefix)
-qt_commandline_assignment(DBUS_PATH dbus.prefix)
 
 # special case begin
 function(qt_commandline_qmakeArgs out_var arg)
