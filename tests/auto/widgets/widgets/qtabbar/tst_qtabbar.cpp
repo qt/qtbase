@@ -788,6 +788,7 @@ void tst_QTabBar::tabBarClicked()
         QCOMPARE(clickSpy.takeFirst().takeFirst().toInt(), 0);
         QCOMPARE(doubleClickSpy.count(), 1);
         QCOMPARE(doubleClickSpy.takeFirst().takeFirst().toInt(), 0);
+        QTest::mouseRelease(&tabBar, button, {}, tabPos);
 
         const QPoint barPos(tabBar.tabRect(0).right() + 5, tabBar.tabRect(0).center().y());
 
@@ -801,6 +802,7 @@ void tst_QTabBar::tabBarClicked()
         QCOMPARE(clickSpy.takeFirst().takeFirst().toInt(), -1);
         QCOMPARE(doubleClickSpy.count(), 1);
         QCOMPARE(doubleClickSpy.takeFirst().takeFirst().toInt(), -1);
+        QTest::mouseRelease(&tabBar, button, {}, barPos);
 
         button = Qt::MouseButton(button << 1);
     }
