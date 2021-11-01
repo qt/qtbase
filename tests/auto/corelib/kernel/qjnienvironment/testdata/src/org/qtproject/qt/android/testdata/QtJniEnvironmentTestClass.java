@@ -49,3 +49,13 @@ public class QtJniEnvironmentTestClass
     }
 }
 
+class QtJniEnvironmentTestClassNoCtor
+{
+    private static native void callbackFromJavaNoCtor(String message);
+
+    public static void appendJavaToString(String message)
+    {
+        callbackFromJavaNoCtor("From Java (no ctor): " + message);
+    }
+}
+
