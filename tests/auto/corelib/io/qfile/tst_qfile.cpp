@@ -2204,9 +2204,7 @@ public:
     MyEngine(int n) { number = n; }
 
     qint64 size() const override { return 123 + number; }
-    qint64 at() const { return -1; }
     QStringList entryList(QDir::Filters, const QStringList &) const override { return QStringList(); }
-    bool chmod(uint) { return false; }
     QString fileName(FileName) const override { return name; }
 
 private:
