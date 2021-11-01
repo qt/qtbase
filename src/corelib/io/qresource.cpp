@@ -1387,26 +1387,6 @@ protected:
     QResourceFileEnginePrivate() : offset(0) { }
 };
 
-bool QResourceFileEngine::mkdir(const QString &, bool) const
-{
-    return false;
-}
-
-bool QResourceFileEngine::rmdir(const QString &, bool) const
-{
-    return false;
-}
-
-bool QResourceFileEngine::setSize(qint64)
-{
-    return false;
-}
-
-QStringList QResourceFileEngine::entryList(QDir::Filters filters, const QStringList &filterNames) const
-{
-    return QAbstractFileEngine::entryList(filters, filterNames);
-}
-
 bool QResourceFileEngine::caseSensitive() const
 {
     return true;
@@ -1479,31 +1459,6 @@ qint64 QResourceFileEngine::read(char *data, qint64 len)
     return len;
 }
 
-qint64 QResourceFileEngine::write(const char *, qint64)
-{
-    return -1;
-}
-
-bool QResourceFileEngine::remove()
-{
-    return false;
-}
-
-bool QResourceFileEngine::copy(const QString &)
-{
-    return false;
-}
-
-bool QResourceFileEngine::rename(const QString &)
-{
-    return false;
-}
-
-bool QResourceFileEngine::link(const QString &)
-{
-    return false;
-}
-
 qint64 QResourceFileEngine::size() const
 {
     Q_D(const QResourceFileEngine);
@@ -1536,11 +1491,6 @@ bool QResourceFileEngine::seek(qint64 pos)
     return true;
 }
 
-bool QResourceFileEngine::isSequential() const
-{
-    return false;
-}
-
 QAbstractFileEngine::FileFlags QResourceFileEngine::fileFlags(QAbstractFileEngine::FileFlags type) const
 {
     Q_D(const QResourceFileEngine);
@@ -1563,11 +1513,6 @@ QAbstractFileEngine::FileFlags QResourceFileEngine::fileFlags(QAbstractFileEngin
             ret |= RootFlag;
     }
     return ret;
-}
-
-bool QResourceFileEngine::setPermissions(uint)
-{
-    return false;
 }
 
 QString QResourceFileEngine::fileName(FileName file) const
@@ -1600,20 +1545,10 @@ QString QResourceFileEngine::fileName(FileName file) const
     return d->resource.fileName();
 }
 
-bool QResourceFileEngine::isRelativePath() const
-{
-    return false;
-}
-
 uint QResourceFileEngine::ownerId(FileOwner) const
 {
     static const uint nobodyID = static_cast<uint>(-2);
     return nobodyID;
-}
-
-QString QResourceFileEngine::owner(FileOwner) const
-{
-    return QString();
 }
 
 QDateTime QResourceFileEngine::fileTime(FileTime time) const

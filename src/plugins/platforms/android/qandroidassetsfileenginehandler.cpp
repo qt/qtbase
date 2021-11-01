@@ -309,19 +309,9 @@ public:
         return -1;
     }
 
-    bool isSequential() const override
-    {
-        return false;
-    }
-
     bool caseSensitive() const override
     {
         return true;
-    }
-
-    bool isRelativePath() const override
-    {
-        return false;
     }
 
     FileFlags fileFlags(FileFlags type = FileInfoAll) const override

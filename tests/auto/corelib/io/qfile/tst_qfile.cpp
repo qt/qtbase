@@ -2202,35 +2202,12 @@ class MyEngine : public QAbstractFileEngine
 {
 public:
     MyEngine(int n) { number = n; }
-    virtual ~MyEngine() {}
 
-    void setFileName(const QString &) override {}
-    bool open(QIODevice::OpenMode) override { return false; }
-    bool close() override { return false; }
-    bool flush() override { return false; }
     qint64 size() const override { return 123 + number; }
     qint64 at() const { return -1; }
-    bool seek(qint64) override { return false; }
-    bool isSequential() const override { return false; }
-    qint64 read(char *, qint64) override { return -1; }
-    qint64 write(const char *, qint64) override { return -1; }
-    bool remove() override { return false; }
-    bool copy(const QString &) override { return false; }
-    bool rename(const QString &) override { return false; }
-    bool link(const QString &) override { return false; }
-    bool mkdir(const QString &, bool) const override { return false; }
-    bool rmdir(const QString &, bool) const override { return false; }
-    bool setSize(qint64) override { return false; }
     QStringList entryList(QDir::Filters, const QStringList &) const override { return QStringList(); }
-    bool caseSensitive() const override { return false; }
-    bool isRelativePath() const override { return false; }
-    FileFlags fileFlags(FileFlags) const override { return { }; }
     bool chmod(uint) { return false; }
     QString fileName(FileName) const override { return name; }
-    uint ownerId(FileOwner) const override { return 0; }
-    QString owner(FileOwner) const override { return QString(); }
-    QDateTime fileTime(FileTime) const override { return QDateTime(); }
-    bool setFileTime(const QDateTime &, FileTime) override { return false; }
 
 private:
     int number;

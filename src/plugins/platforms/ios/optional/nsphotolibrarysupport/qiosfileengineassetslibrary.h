@@ -63,7 +63,6 @@ public:
     bool seek(qint64 pos) override;
     QString fileName(FileName file) const override;
     void setFileName(const QString &file) override;
-    QStringList entryList(QDir::Filters filters, const QStringList &filterNames) const override;
 
 #ifndef QT_NO_FILESYSTEMITERATOR
     Iterator *beginEntryList(QDir::Filters filters, const QStringList &filterNames) override;

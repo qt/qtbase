@@ -456,11 +456,6 @@ void QIOSFileEngineAssetsLibrary::setFileName(const QString &file)
         m_assetUrl = QLatin1String("assets-library:/") + file.mid(index);
 }
 
-QStringList QIOSFileEngineAssetsLibrary::entryList(QDir::Filters filters, const QStringList &filterNames) const
-{
-    return QAbstractFileEngine::entryList(filters, filterNames);
-}
-
 #ifndef QT_NO_FILESYSTEMITERATOR
 
 QAbstractFileEngine::Iterator *QIOSFileEngineAssetsLibrary::beginEntryList(
