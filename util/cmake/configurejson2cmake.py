@@ -1413,11 +1413,6 @@ def parseCommandLinePrefixes(ctx, data, cm_fh):
         cm_fh.write(f"qt_commandline_prefix({key} {data[key]})\n")
 
 
-def parseCommandLineAssignments(ctx, data, cm_fh):
-    for key in data:
-        cm_fh.write(f"qt_commandline_assignment({key} {data[key]})\n")
-
-
 def processCommandLine(ctx, data, cm_fh):
     print("  commandline:")
 
@@ -1439,8 +1434,7 @@ def processCommandLine(ctx, data, cm_fh):
         print("    prefix:")
         parseCommandLinePrefixes(ctx, commandLine["prefix"], cm_fh)
     if "assignments" in commandLine:
-        print("    assignments:")
-        parseCommandLineAssignments(ctx, commandLine["assignments"], cm_fh)
+        print("    assignments are ignored")
 
 
 def processInputs(ctx, data, cm_fh):
