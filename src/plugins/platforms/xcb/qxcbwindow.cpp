@@ -1894,7 +1894,7 @@ void QXcbWindow::handleUnmapNotifyEvent(const xcb_unmap_notify_event_t *event)
     if (event->window == m_window) {
         m_mapped = false;
         QWindowSystemInterface::handleExposeEvent(window(), QRegion());
-        if (!m_isWmManagedWindow) {
+        if (!m_isWmManagedWindow || parent()) {
             m_wmStateValid = true;
             handleDeferredTasks();
         }
