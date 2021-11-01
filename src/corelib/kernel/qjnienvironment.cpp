@@ -347,11 +347,12 @@ JavaVM *QJniEnvironment::javaVM()
 bool QJniEnvironment::registerNativeMethods(const char *className, const JNINativeMethod methods[],
                                             int size)
 {
-    QJniObject classObject(className);
+    const jclass clazz = findClass(className);
 
-    if (!classObject.isValid())
+    if (!clazz)
         return false;
-    return registerNativeMethods(classObject.objectClass(), methods, size);
+
+    return registerNativeMethods(clazz, methods, size);
 }
 #if QT_DEPRECATED_SINCE(6, 2)
 /*!

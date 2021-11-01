@@ -34,6 +34,8 @@
 
 static const char javaTestClass[] =
         "org/qtproject/qt/android/testdatapackage/QtJniEnvironmentTestClass";
+static const char javaTestClassNoCtor[] =
+        "org/qtproject/qt/android/testdatapackage/QtJniEnvironmentTestClassNoCtor";
 
 static QString registerNativesString = QStringLiteral("Qt");
 static int registerNativeInteger = 0;
@@ -122,22 +124,46 @@ static void callbackFromJava(JNIEnv *env, jobject /*thiz*/, jstring value)
     registerNativesString = QJniObject(value).toString();
 }
 
+static void callbackFromJavaNoCtor(JNIEnv *env, jobject /*thiz*/, jstring value)
+{
+    Q_UNUSED(env)
+    registerNativesString = QJniObject(value).toString();
+}
+
 void tst_QJniEnvironment::registerNativeMethods()
 {
-    const JNINativeMethod methods[] {
-        {"callbackFromJava", "(Ljava/lang/String;)V", reinterpret_cast<void *>(callbackFromJava)}
-    };
-
-    QJniEnvironment env;
-    QVERIFY(env.registerNativeMethods(javaTestClass, methods, 1));
-
     QJniObject QtString = QJniObject::fromString(registerNativesString);
-    QJniObject::callStaticMethod<void>(javaTestClass,
-                                       "appendJavaToString",
-                                       "(Ljava/lang/String;)V",
-                                        QtString.object<jstring>());
-    QTest::qWait(200);
-    QVERIFY(registerNativesString == QStringLiteral("From Java: Qt"));
+    QJniEnvironment env;
+
+    {
+        const JNINativeMethod methods[] {
+          {"callbackFromJava", "(Ljava/lang/String;)V", reinterpret_cast<void *>(callbackFromJava)}
+        };
+
+        QVERIFY(env.registerNativeMethods(javaTestClass, methods, 1));
+
+        QJniObject::callStaticMethod<void>(javaTestClass,
+                                           "appendJavaToString",
+                                           "(Ljava/lang/String;)V",
+                                            QtString.object<jstring>());
+        QTest::qWait(200);
+        QVERIFY(registerNativesString == QStringLiteral("From Java: Qt"));
+    }
+
+    // No default constructor in class
+    {
+        const JNINativeMethod methods[] {{"callbackFromJavaNoCtor", "(Ljava/lang/String;)V",
+           reinterpret_cast<void *>(callbackFromJavaNoCtor)}};
+
+        QVERIFY(env.registerNativeMethods(javaTestClassNoCtor, methods, 1));
+
+        QJniObject::callStaticMethod<void>(javaTestClassNoCtor,
+                                           "appendJavaToString",
+                                           "(Ljava/lang/String;)V",
+                                            QtString.object<jstring>());
+        QTest::qWait(200);
+        QVERIFY(registerNativesString == QStringLiteral("From Java (no ctor): Qt"));
+    }
 }
 
 static void intCallbackFromJava(JNIEnv *env, jobject /*thiz*/, jint value)
