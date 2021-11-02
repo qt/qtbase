@@ -45,31 +45,26 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.concurrent.Semaphore;
-import java.io.IOException;
 import java.util.HashMap;
 
 import android.app.Activity;
 import android.app.Service;
-import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ApplicationInfo;
 import android.content.UriPermission;
-import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.content.ClipboardManager;
-import android.content.ClipboardManager.OnPrimaryClipChangedListener;
 import android.content.ClipData;
 import android.content.ClipDescription;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
-import android.util.DisplayMetrics;
 import android.view.ContextMenu;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -121,7 +116,8 @@ public class QtNative
     private static HashMap<String, Uri> m_cachedUris = new HashMap<String, Uri>();
     private static ArrayList<String> m_knownDirs = new ArrayList<String>();
     private static final int KEYBOARD_HEIGHT_THRESHOLD = 100;
-    private static final String NoPermissionErrorMessage = "No permissions to open Uri";
+
+    private static final String INVALID_OR_NULL_URI_ERROR_MESSAGE = "Received invalid/null Uri";
 
     private static final Runnable runPendingCppRunnablesRunnable = new Runnable() {
         @Override
@@ -175,10 +171,22 @@ public class QtNative
         return joinedString.split(",");
     }
 
+    private static String getCurrentMethodNameLog()
+    {
+        return new Exception().getStackTrace()[1].getMethodName() + ": ";
+    }
+
     private static Uri getUriWithValidPermission(Context context, String uri, String openMode)
     {
+        Uri parsedUri;
         try {
-            Uri parsedUri = Uri.parse(uri);
+            parsedUri = Uri.parse(uri);
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        try {
             String scheme = parsedUri.getScheme();
 
             // We only want to check permissions for content Uris
@@ -190,12 +198,12 @@ public class QtNative
 
             for (int i = 0; i < permissions.size(); ++i) {
                 Uri iterUri = permissions.get(i).getUri();
-                boolean isRightPermission = permissions.get(i).isReadPermission();
+                boolean isRequestPermission = permissions.get(i).isReadPermission();
 
                 if (!openMode.equals("r"))
-                   isRightPermission = permissions.get(i).isWritePermission();
+                   isRequestPermission = permissions.get(i).isWritePermission();
 
-                if (iterUri.getPath().equals(uriStr) && isRightPermission)
+                if (iterUri.getPath().equals(uriStr) && isRequestPermission)
                     return iterUri;
             }
 
@@ -204,17 +212,16 @@ public class QtNative
             // and check for SecurityExceptions later
             return parsedUri;
         } catch (SecurityException e) {
-            e.printStackTrace();
-            return null;
+            Log.e(QtTAG, getCurrentMethodNameLog() + e.toString());
+            return parsedUri;
         }
     }
 
     public static boolean openURL(Context context, String url, String mime)
     {
-        Uri uri = getUriWithValidPermission(context, url, "r");
-
+        final Uri uri = getUriWithValidPermission(context, url, "r");
         if (uri == null) {
-            Log.e(QtTAG, "openURL(): No permissions to open Uri");
+            Log.e(QtTAG, getCurrentMethodNameLog() + INVALID_OR_NULL_URI_ERROR_MESSAGE);
             return false;
         }
 
@@ -227,16 +234,8 @@ public class QtNative
             activity().startActivity(intent);
 
             return true;
-        } catch (IllegalArgumentException e) {
-            Log.e(QtTAG, "openURL(): Invalid Uri");
-            e.printStackTrace();
-            return false;
-        } catch (UnsupportedOperationException e) {
-            Log.e(QtTAG, "openURL(): Unsupported operation for given Uri");
-            e.printStackTrace();
-            return false;
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e(QtTAG, getCurrentMethodNameLog() + e.toString());
             return false;
         }
     }
@@ -246,26 +245,21 @@ public class QtNative
         Uri uri = m_cachedUris.get(contentUrl);
         if (uri == null)
             uri = getUriWithValidPermission(context, contentUrl, openMode);
-        int error = -1;
 
+        int fileDescriptor = -1;
         if (uri == null) {
-            Log.e(QtTAG, "openFdForContentUrl(): " + NoPermissionErrorMessage);
-            return error;
+            Log.e(QtTAG, getCurrentMethodNameLog() + INVALID_OR_NULL_URI_ERROR_MESSAGE);
+            return fileDescriptor;
         }
 
         try {
-            ContentResolver resolver = context.getContentResolver();
-            ParcelFileDescriptor fdDesc = resolver.openFileDescriptor(uri, openMode);
-            return fdDesc.detachFd();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IllegalArgumentException e) {
-            Log.e(QtTAG, "openFdForContentUrl(): Invalid Uri");
-            e.printStackTrace();
-        } catch (SecurityException e) {
-            Log.e(QtTAG, NoPermissionErrorMessage);
+            final ContentResolver resolver = context.getContentResolver();
+            fileDescriptor = resolver.openFileDescriptor(uri, openMode).detachFd();
+        } catch (IllegalArgumentException | SecurityException | FileNotFoundException e) {
+            Log.e(QtTAG, getCurrentMethodNameLog() + e.toString());
         }
-        return error;
+
+        return fileDescriptor;
     }
 
     public static long getSize(Context context, String contentUrl)
@@ -276,7 +270,7 @@ public class QtNative
             uri = getUriWithValidPermission(context, contentUrl, "r");
 
         if (uri == null) {
-            Log.e(QtTAG, NoPermissionErrorMessage);
+            Log.e(QtTAG, getCurrentMethodNameLog() + INVALID_OR_NULL_URI_ERROR_MESSAGE);
             return size;
         } else if (!m_cachedUris.containsKey(contentUrl)) {
             m_cachedUris.put(contentUrl, uri);
@@ -284,21 +278,17 @@ public class QtNative
 
         try {
             ContentResolver resolver = context.getContentResolver();
-            Cursor cur = resolver.query(uri, new String[] { DocumentsContract.Document.COLUMN_SIZE }, null, null, null);
+            Cursor cur = resolver.query(uri, new String[] {
+                    DocumentsContract.Document.COLUMN_SIZE },
+                    null, null, null);
             if (cur != null) {
                 if (cur.moveToFirst())
                     size = cur.getLong(0);
                 cur.close();
             }
             return size;
-        } catch (IllegalArgumentException e) {
-            Log.e(QtTAG, "getSize(): Invalid Uri");
-            e.printStackTrace();
-        }  catch (UnsupportedOperationException e) {
-            Log.e(QtTAG, "getSize(): Unsupported operation for given Uri");
-            e.printStackTrace();
-        } catch (SecurityException e) {
-            Log.e(QtTAG, NoPermissionErrorMessage);
+        } catch (IllegalArgumentException | SecurityException | UnsupportedOperationException e) {
+            Log.e(QtTAG, getCurrentMethodNameLog() + e.toString());
         }
         return size;
     }
@@ -310,7 +300,7 @@ public class QtNative
         if (uri == null)
             uri = getUriWithValidPermission(context, contentUrl, "r");
         if (uri == null) {
-            Log.e(QtTAG, NoPermissionErrorMessage);
+            Log.e(QtTAG, getCurrentMethodNameLog() + INVALID_OR_NULL_URI_ERROR_MESSAGE);
             return exists;
         } else {
             if (!m_cachedUris.containsKey(contentUrl))
@@ -325,14 +315,8 @@ public class QtNative
                 cur.close();
             }
             return exists;
-        } catch (IllegalArgumentException e) {
-            Log.e(QtTAG, "checkFileExists(): Invalid Uri");
-            e.printStackTrace();
-        } catch (UnsupportedOperationException e) {
-            Log.e(QtTAG, "checkFileExists(): Unsupported operation for given Uri");
-            e.printStackTrace();
-        } catch (SecurityException e) {
-            Log.e(QtTAG, NoPermissionErrorMessage);
+        } catch (IllegalArgumentException | SecurityException | UnsupportedOperationException e) {
+            Log.e(QtTAG, getCurrentMethodNameLog() + e.toString());
         }
         return exists;
     }
@@ -348,11 +332,11 @@ public class QtNative
         Uri uri = m_cachedUris.get(contentUrl);
         if (m_knownDirs.contains(contentUrl))
             return true;
-        if (uri == null) {
+        if (uri == null)
             uri = getUriWithValidPermission(context, contentUrl, "r");
-        }
+
         if (uri == null) {
-            Log.e(QtTAG, NoPermissionErrorMessage);
+            Log.e(QtTAG, getCurrentMethodNameLog() + INVALID_OR_NULL_URI_ERROR_MESSAGE);
             return isDir;
         } else {
             if (!m_cachedUris.containsKey(contentUrl))
@@ -365,10 +349,13 @@ public class QtNative
             if (!paths.get(0).equals("tree"))
                 return false;
             ContentResolver resolver = context.getContentResolver();
-            Uri docUri = DocumentsContract.buildDocumentUriUsingTree(uri, DocumentsContract.getTreeDocumentId(uri));
+            Uri docUri = DocumentsContract.buildDocumentUriUsingTree(uri,
+                    DocumentsContract.getTreeDocumentId(uri));
             if (!docUri.toString().startsWith(uri.toString()))
                 return false;
-            Cursor cur = resolver.query(docUri, new String[] { DocumentsContract.Document.COLUMN_MIME_TYPE }, null, null, null);
+            Cursor cur = resolver.query(docUri, new String[] {
+                    DocumentsContract.Document.COLUMN_MIME_TYPE },
+                    null, null, null);
             if (cur != null) {
                 if (cur.moveToFirst()) {
                     final String dirStr = new String(DocumentsContract.Document.MIME_TYPE_DIR);
@@ -379,23 +366,18 @@ public class QtNative
                 cur.close();
             }
             return isDir;
-        } catch (IllegalArgumentException e) {
-            Log.e(QtTAG, "checkIfDir(): Invalid Uri");
-            e.printStackTrace();
-        } catch (UnsupportedOperationException e) {
-            Log.e(QtTAG, "checkIfDir(): Unsupported operation for given Uri");
-            e.printStackTrace();
-        } catch (SecurityException e) {
-            Log.e(QtTAG, NoPermissionErrorMessage);
+        } catch (IllegalArgumentException | SecurityException | UnsupportedOperationException e) {
+            Log.e(QtTAG, getCurrentMethodNameLog() + e.toString());
         }
         return false;
     }
+
     public static String[] listContentsFromTreeUri(Context context, String contentUrl)
     {
         Uri treeUri = Uri.parse(contentUrl);
-        final ArrayList<String> results = new ArrayList<String>();
+        final ArrayList<String> results = new ArrayList<>();
         if (treeUri == null) {
-            Log.e(QtTAG, "listContentsFromTreeUri(): Invalid uri");
+            Log.e(QtTAG, getCurrentMethodNameLog() + INVALID_OR_NULL_URI_ERROR_MESSAGE);
             return results.toArray(new String[results.size()]);
         }
         final ContentResolver resolver = context.getContentResolver();
@@ -403,16 +385,20 @@ public class QtNative
                 DocumentsContract.getTreeDocumentId(treeUri));
         final Uri childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(docUri,
                                 DocumentsContract.getDocumentId(docUri));
-        Cursor c = null;
-        final String dirStr = new String(DocumentsContract.Document.MIME_TYPE_DIR);
+        Cursor c;
+        final String dirStr = DocumentsContract.Document.MIME_TYPE_DIR;
         try {
             c = resolver.query(childrenUri, new String[] {
-                    DocumentsContract.Document.COLUMN_DOCUMENT_ID, DocumentsContract.Document.COLUMN_DISPLAY_NAME, DocumentsContract.Document.COLUMN_MIME_TYPE }, null, null, null);
+                    DocumentsContract.Document.COLUMN_DOCUMENT_ID,
+                    DocumentsContract.Document.COLUMN_DISPLAY_NAME,
+                    DocumentsContract.Document.COLUMN_MIME_TYPE },
+                    null, null, null);
             while (c.moveToNext()) {
                 final String fileString = c.getString(1);
                 if (!m_cachedUris.containsKey(contentUrl + "/" + fileString)) {
                     m_cachedUris.put(contentUrl + "/" + fileString,
-                                     DocumentsContract.buildDocumentUriUsingTree(treeUri, c.getString(0)));
+                                     DocumentsContract.buildDocumentUriUsingTree(treeUri,
+                                             c.getString(0)));
                 }
                 results.add(fileString);
                 if (c.getString(2).equals(dirStr))
@@ -425,6 +411,7 @@ public class QtNative
         }
         return results.toArray(new String[results.size()]);
     }
+
     // this method loads full path libs
     public static void loadQtLibraries(final ArrayList<String> libraries)
     {
