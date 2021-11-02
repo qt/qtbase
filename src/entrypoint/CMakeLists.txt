@@ -27,6 +27,12 @@ if(MINGW)
     configure_file("EntryPointMinGW32Target.cmake.in" "${mingw32target_config_file}" @ONLY)
     qt_copy_or_install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${mingw32target_config_file}"
         DESTINATION "${config_install_dir}")
+    # In prefix builds we also need to copy the file into the build config directory, so that the
+    # build-dir Qt6Config.cmake finds the files when building other repos in a top-level build.
+    if(QT_WILL_INSTALL)
+        file(COPY "${CMAKE_CURRENT_BINARY_DIR}/${mingw32target_config_file}"
+             DESTINATION "${config_install_dir}")
+    endif()
     include("${CMAKE_CURRENT_BINARY_DIR}/${mingw32target_config_file}")
     set(extra_cmake_includes_arg EXTRA_CMAKE_INCLUDES "${mingw32target_config_file}")
 endif()
