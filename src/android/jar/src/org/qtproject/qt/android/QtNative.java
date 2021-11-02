@@ -41,6 +41,7 @@
 package org.qtproject.qt.android;
 
 import java.io.File;
+import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Objects;
@@ -238,6 +239,37 @@ public class QtNative
             Log.e(QtTAG, getCurrentMethodNameLog() + e.toString());
             return false;
         }
+    }
+
+    public static ParcelFileDescriptor openParcelFdForContentUrl(Context context, String contentUrl,
+                                                                 String openMode)
+    {
+        Uri uri = m_cachedUris.get(contentUrl);
+        if (uri == null)
+            uri = getUriWithValidPermission(context, contentUrl, openMode);
+
+        if (uri == null) {
+            Log.e(QtTAG, getCurrentMethodNameLog() + INVALID_OR_NULL_URI_ERROR_MESSAGE);
+            return null;
+        }
+
+        try {
+            final ContentResolver resolver = context.getContentResolver();
+            return resolver.openFileDescriptor(uri, openMode);
+        } catch (FileNotFoundException | IllegalArgumentException | SecurityException e) {
+            Log.e(QtTAG, getCurrentMethodNameLog() + e.toString());
+        }
+
+        return null;
+    }
+
+    public static FileDescriptor openFdObjectForContentUrl(Context context, String contentUrl,
+                                                           String openMode)
+    {
+        final ParcelFileDescriptor pfd = openParcelFdForContentUrl(context, contentUrl, openMode);
+        if (pfd != null)
+            return pfd.getFileDescriptor();
+        return null;
     }
 
     public static int openFdForContentUrl(Context context, String contentUrl, String openMode)
