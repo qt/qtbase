@@ -64,6 +64,13 @@ public:
     static const QOperatingSystemVersion Windows8;
     static const QOperatingSystemVersion Windows8_1;
     static const QOperatingSystemVersion Windows10;
+    static const QOperatingSystemVersion Windows10_1809; // RS5
+    static const QOperatingSystemVersion Windows10_1903; // 19H1
+    static const QOperatingSystemVersion Windows10_1909; // 19H2
+    static const QOperatingSystemVersion Windows10_2004; // 20H1
+    static const QOperatingSystemVersion Windows10_20H2; // 20H2
+    static const QOperatingSystemVersion Windows10_21H1; // 21H1
+    static const QOperatingSystemVersion Windows10_21H2; // 21H2
 
     static const QOperatingSystemVersion OSXMavericks;
     static const QOperatingSystemVersion OSXYosemite;
