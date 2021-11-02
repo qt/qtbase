@@ -1703,7 +1703,7 @@ size_t qHash(long double key, size_t seed) noexcept
     \sa operator==()
 */
 
-/*! \fn template <class Key, class T> int QHash<Key, T>::size() const
+/*! \fn template <class Key, class T> qsizetype QHash<Key, T>::size() const
 
     Returns the number of items in the hash.
 
@@ -1718,7 +1718,7 @@ size_t qHash(long double key, size_t seed) noexcept
     \sa size()
 */
 
-/*! \fn template <class Key, class T> int QHash<Key, T>::capacity() const
+/*! \fn template <class Key, class T> qsizetype QHash<Key, T>::capacity() const
 
     Returns the number of buckets in the QHash's internal hash table.
 
@@ -1946,14 +1946,14 @@ size_t qHash(long double key, size_t seed) noexcept
     by value.
 */
 
-/*! \fn template <class Key, class T> int QHash<Key, T>::count(const Key &key) const
+/*! \fn template <class Key, class T> qsizetype QHash<Key, T>::count(const Key &key) const
 
     Returns the number of items associated with the \a key.
 
     \sa contains()
 */
 
-/*! \fn template <class Key, class T> int QHash<Key, T>::count() const
+/*! \fn template <class Key, class T> qsizetype QHash<Key, T>::count() const
 
     \overload
 
@@ -2964,7 +2964,17 @@ size_t qHash(long double key, size_t seed) noexcept
 */
 
 /*!
-    \fn template <class Key, class T> int QMultiHash<Key, T>::remove(const Key &key, const T &value)
+    \fn template <class Key, class T> qsizetype QMultiHash<Key, T>::remove(const Key &key)
+    \since 4.3
+
+    Removes all the items that have the \a key from the hash.
+    Returns the number of items removed.
+
+    \sa remove()
+*/
+
+/*!
+    \fn template <class Key, class T> qsizetype QMultiHash<Key, T>::remove(const Key &key, const T &value)
     \since 4.3
 
     Removes all the items that have the \a key and the value \a
@@ -3056,7 +3066,7 @@ size_t qHash(long double key, size_t seed) noexcept
 */
 
 /*!
-    \fn template <class Key, class T> int QMultiHash<Key, T>::count(const Key &key, const T &value) const
+    \fn template <class Key, class T> qsizetype QMultiHash<Key, T>::count(const Key &key, const T &value) const
     \since 4.3
 
     Returns the number of items with the \a key and \a value.
