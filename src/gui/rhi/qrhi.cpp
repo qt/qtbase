@@ -1655,6 +1655,17 @@ QRhiTextureRenderTargetDescription::QRhiTextureRenderTargetDescription(const QRh
     QRhi::ImageDataStride is reported as
     \l{QRhi::isFeatureSupported()}{supported}. In practice this can be expected
     to be supported everywhere except for OpenGL ES 2.0.
+
+    \note When a QImage is given, the stride returned from
+    QImage::bytesPerLine() is taken into account automatically.
+
+    \warning When a QImage is given and the QImage does not own the underlying
+    pixel data, it is up to the caller to ensure that the associated data stays
+    valid until the end of the frame. (just submitting the resource update batch
+    is not sufficient, the data must stay valid until QRhi::endFrame() is called
+    in order to be portable across all backends) If this cannot be ensured, the
+    caller is strongly encouraged to call QImage::detach() on the image before
+    passing it to uploadTexture().
  */
 
 /*!
