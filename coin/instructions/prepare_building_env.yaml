@@ -340,3 +340,13 @@ instructions:
         property: host.os
         equals_value: Linux
 
+  # Enable warnings are errors
+  - type: Group
+    instructions:
+      - type: AppendToEnvironmentVariable
+        variableName: CONFIGURE_ARGS
+        variableValue: " -DWARNINGS_ARE_ERRORS=ON"
+    enable_if:
+      condition: property
+      property: features
+      contains_value: WarningsAreErrors
