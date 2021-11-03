@@ -509,7 +509,6 @@ inline QDataStreamIfHasOStreamOperatorsContainer<QMultiMap<Key, T>, Key, T> oper
     return QtPrivate::writeAssociativeMultiContainer(s, map);
 }
 
-#ifndef QT_NO_DATASTREAM
 template <class T1, class T2>
 inline QDataStreamIfHasIStreamOperators<T1, T2> operator>>(QDataStream& s, std::pair<T1, T2> &p)
 {
@@ -523,7 +522,6 @@ inline QDataStreamIfHasOStreamOperators<T1, T2> operator<<(QDataStream& s, const
     s << p.first << p.second;
     return s;
 }
-#endif
 
 #else
 
