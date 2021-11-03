@@ -111,6 +111,7 @@ private slots:
     void checkIntOverflow() const;
     void setContentWhitespace() const;
     void setContentWhitespace_data() const;
+    void setContentUnopenedQIODevice() const;
 
     void taskQTBUG4595_dontAssertWhenDocumentSpecifiesUnknownEncoding() const;
     void cloneDTD_QTBUG8398() const;
@@ -1917,6 +1918,23 @@ void tst_QDom::setContentWhitespace_data() const
     QTest::newRow("data23") << QString::fromLatin1("\t\t<?xml version='1.0' ?><e/>")      << false;
     QTest::newRow("data24") << QString::fromLatin1("\t\t\t<?xml version='1.0' ?><e/>")    << false;
     QTest::newRow("data25") << QString::fromLatin1("\t\t\t\t<?xml version='1.0' ?><e/>")  << false;
+}
+
+void tst_QDom::setContentUnopenedQIODevice() const
+{
+    QByteArray data("<foo>bar</foo>");
+    QBuffer buffer(&data);
+
+    QDomDocument doc;
+
+    QTest::ignoreMessage(QtWarningMsg,
+                         "QDomDocument called with unopened QIODevice. "
+                         "This will not be supported in future Qt versions");
+
+    // Note: the check below is expected to fail in Qt 7.
+    // Fix the test and remove the obsolete code from setContent().
+    QVERIFY(doc.setContent(&buffer, true));
+    QCOMPARE(doc.toString().trimmed(), data);
 }
 
 void tst_QDom::taskQTBUG4595_dontAssertWhenDocumentSpecifiesUnknownEncoding() const
