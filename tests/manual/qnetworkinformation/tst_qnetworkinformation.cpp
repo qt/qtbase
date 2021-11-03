@@ -58,15 +58,15 @@ int main(int argc, char **argv)
     qDebug() << "Now you can make changes to the current network connection. Qt should see the "
                 "changes and notify about it.";
     QObject::connect(info, &QNetworkInformation::reachabilityChanged,
-                     [&](QNetworkInformation::Reachability newStatus) {
+                     [](QNetworkInformation::Reachability newStatus) {
                          qDebug() << "Updated:" << newStatus;
                      });
 
     QObject::connect(info, &QNetworkInformation::isBehindCaptivePortalChanged,
-                     [&](bool status) { qDebug() << "Updated, behind captive portal:" << status; });
+                     [](bool status) { qDebug() << "Updated, behind captive portal:" << status; });
 
     QObject::connect(info, &QNetworkInformation::transportMediumChanged,
-                     [&](QNetworkInformation::TransportMedium newMedium) {
+                     [](QNetworkInformation::TransportMedium newMedium) {
                          qDebug() << "Updated, current transport medium:" << newMedium;
                      });
 

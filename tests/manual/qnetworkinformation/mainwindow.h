@@ -86,7 +86,7 @@ private:
         QString str =
                 QLatin1String("Reachability: %1\nBehind captive portal: %2\nTransport medium: %3"
                               "\nMetered: %4")
-                        .arg(enumToString(reachability), QStringView(captive ? u"true" : u"false"),
+                        .arg(enumToString(reachability), captive ? u"true" : u"false",
                              enumToString(transportMedium), metered ? u"true" : u"false");
         label->setText(str);
     }
