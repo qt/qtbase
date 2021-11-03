@@ -1791,6 +1791,7 @@ bool QAbstractItemView::viewportEvent(QEvent *event)
 void QAbstractItemView::mousePressEvent(QMouseEvent *event)
 {
     Q_D(QAbstractItemView);
+    d->releaseFromDoubleClick = false;
     d->delayedAutoScroll.stop(); //any interaction with the view cancel the auto scrolling
     QPoint pos = event->position().toPoint();
     QPersistentModelIndex index = indexAt(pos);
