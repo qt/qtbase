@@ -89,6 +89,13 @@ QUuid QUuid::fromRfc4122(const QByteArray &bytes)
     return fromRfc4122(qToByteArrayViewIgnoringNull(bytes));
 }
 
+#include "qbytearraylist.h"
+
+QByteArray QtPrivate::QByteArrayList_join(const QByteArrayList *that, const char *sep, int seplen)
+{
+    return QByteArrayList_join(that, {sep, seplen});
+}
+
 // #include <qotherheader.h>
 // // implement removed functions from qotherheader.h
 

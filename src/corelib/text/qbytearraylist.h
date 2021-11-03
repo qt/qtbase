@@ -58,7 +58,10 @@ typedef QMutableListIterator<QByteArray> QMutableByteArrayListIterator;
 #ifndef Q_CLANG_QDOC
 
 namespace QtPrivate {
+#if QT_REMOVED_SINCE(6, 3)
     QByteArray Q_CORE_EXPORT QByteArrayList_join(const QByteArrayList *that, const char *separator, int separatorLength);
+#endif
+    QByteArray Q_CORE_EXPORT QByteArrayList_join(const QByteArrayList *that, QByteArrayView separator);
 }
 #endif
 
@@ -78,17 +81,16 @@ public:
     using QListSpecialMethodsBase<QByteArray>::contains;
 
     inline QByteArray join() const
-    { return QtPrivate::QByteArrayList_join(self(), nullptr, 0); }
+    { return join(QByteArrayView{}); }
     inline QByteArray join(QByteArrayView sep) const // ### Qt 7: merge with the () overload
     {
-        Q_ASSERT(sep.size() <= (std::numeric_limits<int>::max)());
-        return QtPrivate::QByteArrayList_join(self(), sep.data(), sep.size());
+        return QtPrivate::QByteArrayList_join(self(), sep);
     }
     Q_WEAK_OVERLOAD
     inline QByteArray join(const QByteArray &sep) const
     { return join(QByteArrayView{sep}); }
     inline QByteArray join(char sep) const
-    { return QtPrivate::QByteArrayList_join(self(), &sep, 1); }
+    { return join({&sep, 1}); }
 };
 
 QT_END_NAMESPACE
