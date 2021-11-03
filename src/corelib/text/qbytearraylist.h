@@ -46,6 +46,8 @@
 
 #include <QtCore/qbytearray.h>
 
+#include <limits>
+
 QT_BEGIN_NAMESPACE
 
 #if !defined(QT_NO_JAVA_STYLE_ITERATORS)
@@ -78,7 +80,10 @@ public:
     inline QByteArray join() const
     { return QtPrivate::QByteArrayList_join(self(), nullptr, 0); }
     inline QByteArray join(const QByteArray &sep) const
-    { return QtPrivate::QByteArrayList_join(self(), sep.constData(), sep.size()); }
+    {
+        Q_ASSERT(sep.size() <= (std::numeric_limits<int>::max)());
+        return QtPrivate::QByteArrayList_join(self(), sep.data(), sep.size());
+    }
     inline QByteArray join(char sep) const
     { return QtPrivate::QByteArrayList_join(self(), &sep, 1); }
 };

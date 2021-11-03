@@ -122,12 +122,12 @@ QT_BEGIN_NAMESPACE
     element separated by the given \a separator.
 */
 
-static int QByteArrayList_joinedSize(const QByteArrayList *that, int seplen)
+static qsizetype QByteArrayList_joinedSize(const QByteArrayList *that, qsizetype seplen)
 {
-    int totalLength = 0;
-    const int size = that->size();
+    qsizetype totalLength = 0;
+    const qsizetype size = that->size();
 
-    for (int i = 0; i < size; ++i)
+    for (qsizetype i = 0; i < size; ++i)
         totalLength += that->at(i).size();
 
     if (size > 0)
@@ -139,10 +139,10 @@ static int QByteArrayList_joinedSize(const QByteArrayList *that, int seplen)
 QByteArray QtPrivate::QByteArrayList_join(const QByteArrayList *that, const char *sep, int seplen)
 {
     QByteArray res;
-    if (const int joinedSize = QByteArrayList_joinedSize(that, seplen))
+    if (const qsizetype joinedSize = QByteArrayList_joinedSize(that, seplen))
         res.reserve(joinedSize); // don't call reserve(0) - it allocates one byte for the NUL
-    const int size = that->size();
-    for (int i = 0; i < size; ++i) {
+    const qsizetype size = that->size();
+    for (qsizetype i = 0; i < size; ++i) {
         if (i)
             res.append(sep, seplen);
         res += that->at(i);
