@@ -74,6 +74,7 @@ private slots:
     void emitReleasedAfterChange();
     void hitButton();
     void iconOnlyStyleSheet();
+    void mousePressAndMove();
 
 protected slots:
     void resetCounters();
@@ -751,6 +752,36 @@ void tst_QPushButton::iconOnlyStyleSheet()
     "}");
     pb.show();
     QVERIFY(QTest::qWaitForWindowExposed(&pb));
+}
+
+/*
+    Test that mouse has been pressed,the signal is sent when moving the mouse.
+    QTBUG-97937
+*/
+void tst_QPushButton::mousePressAndMove()
+{
+    QPushButton button;
+    button.setGeometry(0, 0, 20, 20);
+    QSignalSpy pressSpy(&button, &QAbstractButton::pressed);
+    QSignalSpy releaseSpy(&button, &QAbstractButton::released);
+
+    QTest::mousePress(&button, Qt::LeftButton);
+    QCOMPARE(pressSpy.count(), 1);
+    QCOMPARE(releaseSpy.count(), 0);
+
+    // mouse pressed and moving out
+    QTest::mouseMove(&button, QPoint(100, 100));
+
+    // should emit released signal when the mouse is dragged out of boundary
+    QCOMPARE(pressSpy.count(), 1);
+    QCOMPARE(releaseSpy.count(), 1);
+
+    // mouse pressed and moving into
+    QTest::mouseMove(&button, QPoint(10, 10));
+
+    // should emit pressed signal when the mouse is dragged into of boundary
+    QCOMPARE(pressSpy.count(), 2);
+    QCOMPARE(releaseSpy.count(), 1);
 }
 
 QTEST_MAIN(tst_QPushButton)

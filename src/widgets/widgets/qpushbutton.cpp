@@ -525,6 +525,8 @@ void QPushButton::mouseMoveEvent(QMouseEvent *e)
             d->hovering = hit;
         }
     }
+
+    QAbstractButton::mouseMoveEvent(e);
 }
 
 /*!
