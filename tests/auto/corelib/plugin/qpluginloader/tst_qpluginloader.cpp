@@ -94,14 +94,12 @@
 # define PREFIX         "lib"
 #endif
 
-// Workaround for missing elf.h in QNX test environment
-// TODO: this can be removed after QTBUG-97833 has been solved
-#if defined(Q_OF_ELF) && defined(Q_OS_QNX) && !__has_include(<elf.h>)
-#undef Q_OF_ELF
+#if defined(Q_OF_ELF)
+#if __has_include(<elf.h>)
+# include <elf.h>
+#else
+# include <sys/elf.h>
 #endif
-
-#if defined (Q_OF_ELF)
-#  include <elf.h>
 #  include <memory>
 #  include <functional>
 
@@ -183,7 +181,7 @@ static std::unique_ptr<QTemporaryFile> patchElf(const QString &source, ElfPatche
         if (QTest::currentTestFailed()) return;         \
         std::move(r);                                   \
     })
-#endif
+#endif // Q_OF_ELF
 
 static QString sys_qualifiedLibraryName(const QString &fileName)
 {
@@ -395,7 +393,8 @@ void tst_QPluginLoader::deleteinstanceOnUnload()
     }
 }
 
-#if defined (Q_OF_ELF)
+#if defined(Q_OF_ELF)
+
 void tst_QPluginLoader::loadDebugObj()
 {
 #if !defined(QT_SHARED)

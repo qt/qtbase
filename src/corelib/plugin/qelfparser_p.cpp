@@ -40,7 +40,7 @@
 
 #include "qelfparser_p.h"
 
-#if defined (Q_OF_ELF) && __has_include(<elf.h>)
+#ifdef Q_OF_ELF
 
 #include "qlibrary_p.h"
 
@@ -48,7 +48,13 @@
 #include <qnumeric.h>
 #include <qsysinfo.h>
 
-#include <elf.h>
+#if __has_include(<elf.h>)
+#  include <elf.h>
+#elif __has_include(<sys/elf.h>)
+#  include <sys/elf.h>
+#else
+#  error "Need ELF header to parse plugins."
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -408,7 +414,9 @@ Q_DECL_UNUSED Q_DECL_COLD_FUNCTION static QDebug &operator<<(QDebug &d, ElfHeade
     case EM_MIPS:       d << ", MIPS"; break;
     case EM_PPC:        d << ", PowerPC"; break;
     case EM_PPC64:      d << ", PowerPC 64-bit"; break;
+#ifdef EM_RISCV
     case EM_RISCV:      d << ", RISC-V"; break;
+#endif
     case EM_S390:       d << ", S/390"; break;
     case EM_SH:         d << ", SuperH"; break;
     case EM_SPARC:      d << ", SPARC"; break;
@@ -790,4 +798,4 @@ QLibraryScanResult QElfParser::parse(QByteArrayView data, QString *errMsg)
 
 QT_END_NAMESPACE
 
-#endif // defined(Q_OF_ELF) && defined(Q_CC_GNU)
+#endif // Q_OF_ELF

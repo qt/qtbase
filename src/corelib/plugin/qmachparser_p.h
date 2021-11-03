@@ -70,6 +70,6 @@ public:
 
 QT_END_NAMESPACE
 
-#endif // defined(Q_OF_ELF) && defined(Q_CC_GNU)
+#endif // defined(Q_OF_MACH_O)
 
 #endif // QMACHPARSER_P_H

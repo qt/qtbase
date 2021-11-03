@@ -56,7 +56,7 @@
 
 QT_REQUIRE_CONFIG(library);
 
-#if defined(Q_OF_ELF) && __has_include(<elf.h>)
+#ifdef Q_OF_ELF
 
 QT_BEGIN_NAMESPACE
 
@@ -67,6 +67,6 @@ struct QElfParser
 
 QT_END_NAMESPACE
 
-#endif // defined(Q_OF_ELF) && defined(Q_CC_GNU)
+#endif // Q_OF_ELF
 
 #endif // QELFPARSER_P_H
