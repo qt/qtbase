@@ -300,24 +300,25 @@ void tst_QTimeZone::nullTest()
     QCOMPARE(nullTz1.isDaylightTime(jun), false);
 
     QTimeZone::OffsetData data = nullTz1.offsetData(jan);
+    constexpr auto invalidOffset = std::numeric_limits<int>::min();
     QCOMPARE(data.atUtc, QDateTime());
-    QCOMPARE(data.offsetFromUtc, std::numeric_limits<int>::min());
-    QCOMPARE(data.standardTimeOffset, std::numeric_limits<int>::min());
-    QCOMPARE(data.daylightTimeOffset, std::numeric_limits<int>::min());
+    QCOMPARE(data.offsetFromUtc, invalidOffset);
+    QCOMPARE(data.standardTimeOffset, invalidOffset);
+    QCOMPARE(data.daylightTimeOffset, invalidOffset);
 
     QCOMPARE(nullTz1.hasTransitions(), false);
 
     data = nullTz1.nextTransition(jan);
     QCOMPARE(data.atUtc, QDateTime());
-    QCOMPARE(data.offsetFromUtc, std::numeric_limits<int>::min());
-    QCOMPARE(data.standardTimeOffset, std::numeric_limits<int>::min());
-    QCOMPARE(data.daylightTimeOffset, std::numeric_limits<int>::min());
+    QCOMPARE(data.offsetFromUtc, invalidOffset);
+    QCOMPARE(data.standardTimeOffset, invalidOffset);
+    QCOMPARE(data.daylightTimeOffset, invalidOffset);
 
     data = nullTz1.previousTransition(jan);
     QCOMPARE(data.atUtc, QDateTime());
-    QCOMPARE(data.offsetFromUtc, std::numeric_limits<int>::min());
-    QCOMPARE(data.standardTimeOffset, std::numeric_limits<int>::min());
-    QCOMPARE(data.daylightTimeOffset, std::numeric_limits<int>::min());
+    QCOMPARE(data.offsetFromUtc, invalidOffset);
+    QCOMPARE(data.standardTimeOffset, invalidOffset);
+    QCOMPARE(data.daylightTimeOffset, invalidOffset);
 }
 
 void tst_QTimeZone::systemZone()
@@ -1232,11 +1233,13 @@ void tst_QTimeZone::tzTest()
     } else {
         QCOMPARE(dat.standardTimeOffset, 3600);
 
+        constexpr qint64 invalidTime = std::numeric_limits<qint64>::min();
+        constexpr int invalidOffset = std::numeric_limits<int>::min();
         // Test previous to low value is invalid
         dat = tzp.previousTransition(-9999999999999);
-        QCOMPARE(dat.atMSecsSinceEpoch, std::numeric_limits<qint64>::min());
-        QCOMPARE(dat.standardTimeOffset, std::numeric_limits<int>::min());
-        QCOMPARE(dat.daylightTimeOffset, std::numeric_limits<int>::min());
+        QCOMPARE(dat.atMSecsSinceEpoch, invalidTime);
+        QCOMPARE(dat.standardTimeOffset, invalidOffset);
+        QCOMPARE(dat.daylightTimeOffset, invalidOffset);
     }
 
     dat = tzp.nextTransition(-9999999999999);
