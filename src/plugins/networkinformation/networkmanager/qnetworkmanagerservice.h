@@ -181,7 +181,7 @@ private Q_SLOTS:
 private:
     Q_DISABLE_COPY_MOVE(QNetworkManagerInterface)
 
-    NMDeviceType extractDeviceType(QDBusObjectPath devicePath) const;
+    NMDeviceType extractDeviceType(const QDBusObjectPath &devicePath) const;
     NMMetered extractDeviceMetered(const QDBusObjectPath &devicePath) const;
 
     QVariantMap propertyMap;

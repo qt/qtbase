@@ -137,7 +137,7 @@ static QDBusInterface getPrimaryDevice(const QDBusObjectPath &devicePath)
 
 auto QNetworkManagerInterface::deviceType() const -> NMDeviceType
 {
-    auto it = propertyMap.constFind("PrimaryConnection");
+    auto it = propertyMap.constFind(u"PrimaryConnection"_qs);
     if (it != propertyMap.cend())
         return extractDeviceType(it->value<QDBusObjectPath>());
     return NM_DEVICE_TYPE_UNKNOWN;
@@ -151,7 +151,8 @@ auto QNetworkManagerInterface::meteredState() const -> NMMetered
     return NM_METERED_UNKNOWN;
 }
 
-auto QNetworkManagerInterface::extractDeviceType(QDBusObjectPath devicePath) const -> NMDeviceType
+auto QNetworkManagerInterface::extractDeviceType(const QDBusObjectPath &devicePath) const
+        -> NMDeviceType
 {
     QDBusInterface primaryDevice = getPrimaryDevice(devicePath);
     if (!primaryDevice.isValid())

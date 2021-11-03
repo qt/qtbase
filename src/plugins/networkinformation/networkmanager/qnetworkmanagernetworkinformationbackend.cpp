@@ -204,32 +204,26 @@ private:
 
 QNetworkManagerNetworkInformationBackend::QNetworkManagerNetworkInformationBackend()
 {
-    using NMState = QNetworkManagerInterface::NMState;
-    setReachability(reachabilityFromNMState(iface.state()));
-    connect(&iface, &QNetworkManagerInterface::stateChanged, this,
-            [this](NMState newState) {
-                setReachability(reachabilityFromNMState(newState));
-            });
+    auto updateReachability = [this](QNetworkManagerInterface::NMState newState) {
+        setReachability(reachabilityFromNMState(newState));
+    };
+    updateReachability(iface.state());
+    connect(&iface, &QNetworkManagerInterface::stateChanged, this, std::move(updateReachability));
 
-    using ConnectivityState = QNetworkManagerInterface::NMConnectivityState;
-
-    const auto connectivityState = iface.connectivityState();
-    const bool behindPortal = (connectivityState == ConnectivityState::NM_CONNECTIVITY_PORTAL);
-    setBehindCaptivePortal(behindPortal);
-
+    auto updateBehindCaptivePortal = [this](QNetworkManagerInterface::NMConnectivityState state) {
+        const bool behindPortal = (state == QNetworkManagerInterface::NM_CONNECTIVITY_PORTAL);
+        setBehindCaptivePortal(behindPortal);
+    };
+    updateBehindCaptivePortal(iface.connectivityState());
     connect(&iface, &QNetworkManagerInterface::connectivityChanged, this,
-            [this](ConnectivityState state) {
-                const bool behindPortal = (state == ConnectivityState::NM_CONNECTIVITY_PORTAL);
-                setBehindCaptivePortal(behindPortal);
-            });
+            std::move(updateBehindCaptivePortal));
 
-    using NMDeviceType = QNetworkManagerInterface::NMDeviceType;
-    setTransportMedium(transportMediumFromDeviceType(iface.deviceType()));
-
+    auto updateTransportMedium = [this](QNetworkManagerInterface::NMDeviceType newDevice) {
+        setTransportMedium(transportMediumFromDeviceType(newDevice));
+    };
+    updateTransportMedium(iface.deviceType());
     connect(&iface, &QNetworkManagerInterface::deviceTypeChanged, this,
-            [this](NMDeviceType newDevice) {
-                setTransportMedium(transportMediumFromDeviceType(newDevice));
-            });
+            std::move(updateTransportMedium));
 
     auto updateMetered = [this](QNetworkManagerInterface::NMMetered metered) {
         setMetered(isMeteredFromNMMetered(metered));
