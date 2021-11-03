@@ -149,8 +149,8 @@
         // to mirror mode, but defer it until after the view has been removed,
         // to ensure that we don't try to layout the view that's being removed.
         dispatch_async(dispatch_get_main_queue(), ^{
-            uiWindow.screen = [UIScreen mainScreen];
             uiWindow.hidden = YES;
+            uiWindow.screen = [UIScreen mainScreen];
         });
     }
 }
