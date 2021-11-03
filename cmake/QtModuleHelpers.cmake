@@ -761,10 +761,6 @@ set(QT_LIBINFIX \"${QT_LIBINFIX}\")")
         target_link_libraries("${target_private}" INTERFACE "${target}")
     endif()
 
-    if(is_framework AND NOT is_interface_lib)
-        qt_finalize_framework_headers_copy(${target})
-    endif()
-
     set(debug_install_dir "${INSTALL_LIBDIR}")
     if (MINGW)
         set(debug_install_dir "${INSTALL_BINDIR}")
@@ -787,6 +783,7 @@ set(QT_LIBINFIX \"${QT_LIBINFIX}\")")
 endfunction()
 
 function(qt_finalize_module target)
+    qt_finalize_framework_headers_copy(${target})
     qt_generate_prl_file(${target} "${INSTALL_LIBDIR}")
     qt_generate_module_pri_file("${target}" ${ARGN})
 endfunction()
