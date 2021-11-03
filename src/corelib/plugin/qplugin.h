@@ -199,7 +199,15 @@ template <auto (&PluginMetaData)> class QPluginMetaDataV2
 #  define QT_PLUGIN_METADATAV2_SECTION
     using Payload = StaticPayload;
 #elif defined(Q_OF_ELF)
-#  define QT_PLUGIN_METADATAV2_SECTION      __attribute__((section(".note.qt.metadata"), used, aligned(alignof(void*))))
+#  ifdef Q_CC_CLANG
+// the metadata section doesn't work well with clang's sanitizer - QTBUG-97941
+#        define QT_PLUGIN_METADATAV2_SECTION                                                       \
+            __attribute__((section(".note.qt.metadata"), used, aligned(alignof(void *)),           \
+                           no_sanitize("address")))
+#  else
+#        define QT_PLUGIN_METADATAV2_SECTION                                                       \
+            __attribute__((section(".note.qt.metadata"), used, aligned(alignof(void *))))
+#  endif
     using Payload = ElfNotePayload;
 #else
 #  define QT_PLUGIN_METADATAV2_SECTION      QT_PLUGIN_METADATA_SECTION

@@ -50,7 +50,9 @@ static constexpr bool IsDebug = false;
 #endif
 
 #if defined(__ELF__) && PLUGIN_VERSION >= 1
-__attribute__((section(".note.qt.metadata"), used, aligned(4)))
+// GCC will produce:
+// fakeplugin.cpp:64:3: warning: ‘no_sanitize_address’ attribute ignored [-Wattributes]
+__attribute__((section(".note.qt.metadata"), used, no_sanitize("address"), aligned(sizeof(void*))))
 static const struct {
     unsigned n_namesz = sizeof(name);
     unsigned n_descsz = sizeof(payload);
