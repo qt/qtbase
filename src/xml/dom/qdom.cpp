@@ -6197,11 +6197,27 @@ bool QDomDocument::setContent(const QByteArray &data, bool namespaceProcessing, 
 
     This function reads the XML document from the IO device \a dev, returning
     true if the content was successfully parsed; otherwise returns \c false.
+
+    \note This method will try to open \a dev in read-only mode if it is not
+    already open. In that case, the caller is responsible for calling close.
+    This will change in Qt 7, which will no longer open \a dev. Applications
+    shoul therefore open the device themselves before calling setContent.
 */
 bool QDomDocument::setContent(QIODevice* dev, bool namespaceProcessing, QString *errorMsg, int *errorLine, int *errorColumn)
 {
     if (!impl)
         impl = new QDomDocumentPrivate();
+
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+    if (!dev->isOpen()) {
+        qWarning("QDomDocument called with unopened QIODevice. "
+                 "This will not be supported in future Qt versions");
+        if (!dev->open(QIODevice::ReadOnly)) {
+            qWarning("QDomDocument::setContent: Failed to open device");
+            return false;
+        }
+    }
+#endif
 
     QXmlStreamReader streamReader(dev);
     streamReader.setNamespaceProcessing(namespaceProcessing);
