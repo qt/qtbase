@@ -46,6 +46,8 @@
 
 #include <QtCore/qbytearray.h>
 
+#include <limits>
+
 QT_BEGIN_NAMESPACE
 
 #if !defined(QT_NO_JAVA_STYLE_ITERATORS)
@@ -79,6 +81,7 @@ public:
     { return QtPrivate::QByteArrayList_join(self(), nullptr, 0); }
     inline QByteArray join(QByteArrayView sep) const // ### Qt 7: merge with the () overload
     {
+        Q_ASSERT(sep.size() <= (std::numeric_limits<int>::max)());
         return QtPrivate::QByteArrayList_join(self(), sep.data(), sep.size());
     }
     Q_WEAK_OVERLOAD
