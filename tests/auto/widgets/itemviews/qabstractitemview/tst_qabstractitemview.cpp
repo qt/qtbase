@@ -49,6 +49,7 @@
 #include <QStringListModel>
 #include <QStyledItemDelegate>
 #include <QTableWidget>
+#include <QTimer>
 #include <QTreeWidget>
 #include <QTest>
 #include <QVBoxLayout>
@@ -159,6 +160,7 @@ private slots:
     void dragSelectAfterNewPress();
     void dragWithSecondClick_data();
     void dragWithSecondClick();
+    void clickAfterDoubleClick();
     void selectionCommand_data();
     void selectionCommand();
     void mouseSelection_data();
@@ -2759,6 +2761,42 @@ void tst_QAbstractItemView::dragWithSecondClick()
     QVERIFY(QApplication::sendEvent(view->viewport(), &mouseMoveEvent));
     QVERIFY(dragRecorder->dragStarted);
     QTest::mouseRelease(view->viewport(), Qt::LeftButton, Qt::NoModifier, dragTo);
+}
+
+void tst_QAbstractItemView::clickAfterDoubleClick()
+{
+    QTableWidget view(5, 5);
+    view.horizontalHeader()->hide();
+    view.verticalHeader()->hide();
+    view.setEditTriggers(QAbstractItemView::NoEditTriggers);
+    view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+    const QModelIndex index = view.model()->index(1, 1);
+    QVERIFY(index.isValid());
+    const QPoint clickPoint = view.visualRect(index).center();
+
+    // must use the QWindow overloads so that modality is respected
+    QWindow *window = view.window()->windowHandle();
+    int clickCount = 0;
+
+    connect(&view, &QAbstractItemView::doubleClicked, [&]{
+        QDialog dialog(&view);
+        dialog.setModal(true);
+        QTimer::singleShot(0, [&]{ dialog.close(); });
+        dialog.exec();
+    });
+    connect(&view, &QAbstractItemView::clicked, [&]{
+        ++clickCount;
+    });
+
+    QTest::mouseClick(window, Qt::LeftButton, {}, clickPoint);
+    QCOMPARE(clickCount, 1);
+    // generates a click followed by a double click; double click opens
+    // dialog that eats second release
+    QTest::mouseDClick(window, Qt::LeftButton, {}, clickPoint);
+    QCOMPARE(clickCount, 2);
+    QTest::mouseClick(window, Qt::LeftButton, {}, clickPoint);
+    QCOMPARE(clickCount, 3);
 }
 
 void tst_QAbstractItemView::selectionCommand_data()
