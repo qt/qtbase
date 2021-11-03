@@ -1223,10 +1223,11 @@ void tst_QTimeZone::tzTest()
     // Warning: This could vary depending on age of TZ file!
 
     // Test low date uses first rule found
+    constexpr qint64 ancient = -Q_INT64_C(9999999999999);
     // Note: Depending on the OS in question, the database may be carrying the
     // Local Mean Time. which for Berlin is 0:53:28
-    QTimeZonePrivate::Data dat = tzp.data(-9999999999999);
-    QCOMPARE(dat.atMSecsSinceEpoch, (qint64)-9999999999999);
+    QTimeZonePrivate::Data dat = tzp.data(ancient);
+    QCOMPARE(dat.atMSecsSinceEpoch, ancient);
     QCOMPARE(dat.daylightTimeOffset, 0);
     if (dat.abbreviation == "LMT") {
         QCOMPARE(dat.standardTimeOffset, 3208);
@@ -1236,13 +1237,13 @@ void tst_QTimeZone::tzTest()
         constexpr qint64 invalidTime = std::numeric_limits<qint64>::min();
         constexpr int invalidOffset = std::numeric_limits<int>::min();
         // Test previous to low value is invalid
-        dat = tzp.previousTransition(-9999999999999);
+        dat = tzp.previousTransition(ancient);
         QCOMPARE(dat.atMSecsSinceEpoch, invalidTime);
         QCOMPARE(dat.standardTimeOffset, invalidOffset);
         QCOMPARE(dat.daylightTimeOffset, invalidOffset);
     }
 
-    dat = tzp.nextTransition(-9999999999999);
+    dat = tzp.nextTransition(ancient);
     QCOMPARE(QDateTime::fromMSecsSinceEpoch(dat.atMSecsSinceEpoch, Qt::OffsetFromUTC, 3600),
              QDateTime(QDate(1893, 4, 1), QTime(0, 6, 32), Qt::OffsetFromUTC, 3600));
     QCOMPARE(dat.standardTimeOffset, 3600);
@@ -1257,13 +1258,13 @@ void tst_QTimeZone::tzTest()
     QCOMPARE(Qt::DayOfWeek(QDate(2100, 10, 31).dayOfWeek()), Qt::Sunday);
 
     dat = tzp.data(stdHi);
-    QCOMPARE(dat.atMSecsSinceEpoch - stdHi, (qint64)0);
+    QCOMPARE(dat.atMSecsSinceEpoch - stdHi, qint64(0));
     QCOMPARE(dat.offsetFromUtc, 3600);
     QCOMPARE(dat.standardTimeOffset, 3600);
     QCOMPARE(dat.daylightTimeOffset, 0);
 
     dat = tzp.data(dstHi);
-    QCOMPARE(dat.atMSecsSinceEpoch - dstHi, (qint64)0);
+    QCOMPARE(dat.atMSecsSinceEpoch - dstHi, qint64(0));
     QCOMPARE(dat.offsetFromUtc, 7200);
     QCOMPARE(dat.standardTimeOffset, 3600);
     QCOMPARE(dat.daylightTimeOffset, 3600);
