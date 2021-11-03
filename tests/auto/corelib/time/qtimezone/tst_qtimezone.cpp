@@ -1301,7 +1301,7 @@ void tst_QTimeZone::tzTest()
     QCOMPARE(dat.standardTimeOffset, 3600);
     QCOMPARE(dat.daylightTimeOffset, 0);
 
-    // Test TZ timezone vs UTC timezone for fractionary negative offset
+    // Test TZ timezone vs UTC timezone for non-whole-hour negative offset:
     QTzTimeZonePrivate  tztz1("America/Caracas");
     QUtcTimeZonePrivate tzutc1("UTC-04:30");
     QVERIFY(tztz1.isValid());
@@ -1310,7 +1310,7 @@ void tst_QTimeZone::tzTest()
     QTzTimeZonePrivate::Data datautc1 = tzutc1.data(std);
     QCOMPARE(datatz1.offsetFromUtc, datautc1.offsetFromUtc);
 
-    // Test TZ timezone vs UTC timezone for fractionary positive offset
+    // Test TZ timezone vs UTC timezone for non-whole-hour positive offset:
     QTzTimeZonePrivate  tztz2("Asia/Calcutta");
     QUtcTimeZonePrivate tzutc2("UTC+05:30");
     QVERIFY(tztz2.isValid());
@@ -1319,7 +1319,7 @@ void tst_QTimeZone::tzTest()
     QTzTimeZonePrivate::Data datautc2 = tzutc2.data(std);
     QCOMPARE(datatz2.offsetFromUtc, datautc2.offsetFromUtc);
 
-    // Test a timezone with a name that isn't all letters
+    // Test a timezone with an abbreviation that isn't all letters:
     QTzTimeZonePrivate tzBarnaul("Asia/Barnaul");
     if (tzBarnaul.isValid()) {
         QCOMPARE(tzBarnaul.data(std).abbreviation, QString("+07"));
