@@ -55,6 +55,8 @@
 #include <QtDBus/QDBusPendingCallWatcher>
 #include <QtDBus/QDBusObjectPath>
 
+#include <optional>
+
 // Matches 'NMDeviceState' from https://developer.gnome.org/NetworkManager/stable/nm-dbus-types.html
 enum NMDeviceState {
     NM_DEVICE_STATE_UNKNOWN = 0,
@@ -183,6 +185,8 @@ private:
 
     NMDeviceType extractDeviceType(const QDBusObjectPath &devicePath) const;
     NMMetered extractDeviceMetered(const QDBusObjectPath &devicePath) const;
+
+    std::optional<QDBusObjectPath> primaryConnectionDevicePath() const;
 
     QVariantMap propertyMap;
 };

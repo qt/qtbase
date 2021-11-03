@@ -135,19 +135,25 @@ static QDBusInterface getPrimaryDevice(const QDBusObjectPath &devicePath)
                           QDBusConnection::systemBus());
 }
 
-auto QNetworkManagerInterface::deviceType() const -> NMDeviceType
+std::optional<QDBusObjectPath> QNetworkManagerInterface::primaryConnectionDevicePath() const
 {
     auto it = propertyMap.constFind(u"PrimaryConnection"_qs);
     if (it != propertyMap.cend())
-        return extractDeviceType(it->value<QDBusObjectPath>());
+        return it->value<QDBusObjectPath>();
+    return std::nullopt;
+}
+
+auto QNetworkManagerInterface::deviceType() const -> NMDeviceType
+{
+    if (const auto path = primaryConnectionDevicePath())
+        return extractDeviceType(*path);
     return NM_DEVICE_TYPE_UNKNOWN;
 }
 
 auto QNetworkManagerInterface::meteredState() const -> NMMetered
 {
-    auto it = propertyMap.constFind(u"PrimaryConnection"_qs);
-    if (it != propertyMap.cend())
-        return extractDeviceMetered(it->value<QDBusObjectPath>());
+    if (const auto path = primaryConnectionDevicePath())
+        return extractDeviceMetered(*path);
     return NM_METERED_UNKNOWN;
 }
 
