@@ -116,6 +116,14 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn QByteArray QByteArrayList::join(QByteArrayView separator) const
+    \since 6.3
+
+    Joins all the byte arrays into a single byte array with each
+    element separated by the given \a separator.
+*/
+
+/*!
     \fn QByteArray QByteArrayList::join(char separator) const
 
     Joins all the byte arrays into a single byte array with each

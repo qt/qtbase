@@ -77,8 +77,13 @@ public:
 
     inline QByteArray join() const
     { return QtPrivate::QByteArrayList_join(self(), nullptr, 0); }
+    inline QByteArray join(QByteArrayView sep) const // ### Qt 7: merge with the () overload
+    {
+        return QtPrivate::QByteArrayList_join(self(), sep.data(), sep.size());
+    }
+    Q_WEAK_OVERLOAD
     inline QByteArray join(const QByteArray &sep) const
-    { return QtPrivate::QByteArrayList_join(self(), sep.constData(), sep.size()); }
+    { return join(QByteArrayView{sep}); }
     inline QByteArray join(char sep) const
     { return QtPrivate::QByteArrayList_join(self(), &sep, 1); }
 };

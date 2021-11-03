@@ -27,10 +27,13 @@
 **
 ****************************************************************************/
 
+#define QT_USE_QSTRINGBUILDER
+
 #include <QTest>
 #include <qbytearraylist.h>
 
 #include <qmetatype.h>
+#include <qproperty.h>
 
 Q_DECLARE_METATYPE(QByteArrayList)
 
@@ -38,6 +41,7 @@ class tst_QByteArrayList : public QObject
 {
     Q_OBJECT
 private slots:
+    void join_overloads() const;
     void join() const;
     void join_data() const;
     void joinByteArray() const;
@@ -55,12 +59,34 @@ private slots:
     void initializerList() const;
 };
 
+void tst_QByteArrayList::join_overloads() const
+{
+    // Checks that there are no ambiguities between the different join() overloads:
+
+    const QByteArrayList list = {"a", "b", "c"};
+    const QByteArray expected = "aXbXc";
+
+    QCOMPARE(list.join('X'), expected);
+    QCOMPARE(list.join("X"), expected);
+    QCOMPARE(list.join(QByteArrayLiteral("X")), expected);
+    QCOMPARE(list.join(QByteArray("X")), expected);
+    QCOMPARE(list.join(QByteArrayView("X")), expected);
+    const char *sep = "X";
+    QCOMPARE(list.join(sep), expected);
+    QCOMPARE(list.join(QByteArray() % "X"), expected); // QStringBuilder expression
+    QProperty<QByteArray> prop("X"); // implicitly convertible to QByteArray
+    QCOMPARE(list.join(prop), expected);
+    QCOMPARE(list.join(std::as_const(prop)), expected);
+}
+
 void tst_QByteArrayList::join() const
 {
     QFETCH(QByteArrayList, input);
     QFETCH(QByteArray, expectedResult);
 
     QCOMPARE(input.join(), expectedResult);
+    QCOMPARE(input.join(QByteArrayView{}), expectedResult);
+    QCOMPARE(input.join(QByteArray{}), expectedResult);
 }
 
 void tst_QByteArrayList::join_data() const
@@ -88,6 +114,7 @@ void tst_QByteArrayList::joinByteArray() const
     QFETCH(QByteArray, expectedResult);
 
     QCOMPARE(input.join(separator), expectedResult);
+    QCOMPARE(input.join(QByteArrayView{separator}), expectedResult);
 }
 
 void tst_QByteArrayList::joinByteArray_data() const
@@ -132,6 +159,7 @@ void tst_QByteArrayList::joinChar() const
     QFETCH(QByteArray, expectedResult);
 
     QCOMPARE(input.join(separator), expectedResult);
+    QCOMPARE(input.join(QByteArrayView{&separator, 1}), expectedResult);
 }
 
 void tst_QByteArrayList::joinChar_data() const
