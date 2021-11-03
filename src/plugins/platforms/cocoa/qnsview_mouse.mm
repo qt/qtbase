@@ -718,11 +718,11 @@ static const QPointingDevice *pointingDeviceFor(qint64 deviceID)
         // had time to emit a momentum phase event.
         if ([NSApp nextEventMatchingMask:NSEventMaskScrollWheel untilDate:[NSDate distantPast]
                 inMode:@"QtMomementumEventSearchMode" dequeue:NO].momentumPhase == NSEventPhaseBegan) {
-            Q_ASSERT(pixelDelta.isNull() && angleDelta.isNull());
-            return; // Ignore this event, as it has a delta of 0,0
+            return; // Ignore, even if it has delta
+        } else {
+            phase = Qt::ScrollEnd;
+            m_scrolling = false;
         }
-        phase = Qt::ScrollEnd;
-        m_scrolling = false;
     } else if (theEvent.momentumPhase == NSEventPhaseBegan) {
         Q_ASSERT(!pixelDelta.isNull() && !angleDelta.isNull());
         phase = Qt::ScrollUpdate; // Send as update, it has a delta
