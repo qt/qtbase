@@ -442,13 +442,15 @@ QNetworkInformationBackendFactory::~QNetworkInformationBackendFactory()
     This can be used in QNetworkInformation::load().
 
     \value Reachability
-        If the plugin supports this feature then
-        the \c reachability property will be available.
+        If the plugin supports this feature then the \c reachability property
+        will provide useful results. Otherwise it will always return
+        \c{Reachability::Unknown}.
         See also QNetworkInformation::Reachability.
 
     \value CaptivePortal
-        If the plugin supports this feature then
-        the \c isBehindCaptivePortal property will be available.
+        If the plugin supports this feature then the \c isBehindCaptivePortal
+        property will provide useful results. Otherwise it will always return
+        \c{false}.
 */
 
 /*!
