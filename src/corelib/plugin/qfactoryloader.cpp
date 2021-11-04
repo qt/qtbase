@@ -289,7 +289,7 @@ void QFactoryLoader::update()
 QFactoryLoader::~QFactoryLoader()
 {
     QMutexLocker locker(qt_factoryloader_mutex());
-    qt_factory_loaders()->removeAll(this);
+    qt_factory_loaders()->removeOne(this);
 }
 
 #if defined(Q_OS_UNIX) && !defined (Q_OS_MAC)
