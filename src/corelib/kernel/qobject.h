@@ -54,7 +54,7 @@
 #include <QtCore/qmetatype.h>
 
 #include <QtCore/qobject_impl.h>
-#include <QtCore/qproperty.h>
+#include <QtCore/qbindingstorage.h>
 
 #if __has_include(<chrono>)
 #  include <chrono>
@@ -63,7 +63,7 @@
 QT_BEGIN_NAMESPACE
 
 
-class QBindingStorage;
+template <typename T> class QBindable;
 class QEvent;
 class QTimerEvent;
 class QChildEvent;
