@@ -451,11 +451,24 @@ void QCALayerBackingStore::finalizeBackBuffer()
     if (!m_buffers.back()->isDirty())
         return;
 
+    m_buffers.back()->lock(QPlatformGraphicsBuffer::SWWriteAccess);
+    preserveFromFrontBuffer(m_buffers.back()->dirtyRegion);
+    m_buffers.back()->unlock();
+
+    // The back buffer is now completely in sync, ready to be presented
+    m_buffers.back()->dirtyRegion = QRegion();
+}
+
+void QCALayerBackingStore::preserveFromFrontBuffer(const QRegion &region, const QPoint &offset)
+{
+
     if (m_buffers.front() == m_buffers.back())
         return; // Nothing to preserve from
 
-    QRegion preserveRegion = m_buffers.back()->dirtyRegion;
-    qCDebug(lcQpaBackingStore) << "Preserving" << preserveRegion << "from front to back buffer";
+    qCDebug(lcQpaBackingStore) << "Preserving" << region << "of front buffer to"
+        << region.translated(offset) << "of back buffer";
+
+    Q_ASSERT(m_buffers.back()->isLocked() == QPlatformGraphicsBuffer::SWWriteAccess);
 
     m_buffers.front()->lock(QPlatformGraphicsBuffer::SWReadAccess);
     const QImage *frontBuffer = m_buffers.front()->asImage();
@@ -463,7 +476,6 @@ void QCALayerBackingStore::finalizeBackBuffer()
     const QRect frontSurfaceBounds(QPoint(0, 0), m_buffers.front()->size());
     const qreal sourceDevicePixelRatio = frontBuffer->devicePixelRatio();
 
-    m_buffers.back()->lock(QPlatformGraphicsBuffer::SWWriteAccess);
     QPainter painter(m_buffers.back()->asImage());
     painter.setCompositionMode(QPainter::CompositionMode_Source);
 
@@ -471,9 +483,11 @@ void QCALayerBackingStore::finalizeBackBuffer()
     const qreal targetDevicePixelRatio = painter.device()->devicePixelRatio();
     painter.scale(1.0 / targetDevicePixelRatio, 1.0 / targetDevicePixelRatio);
 
-    for (const QRect &rect : preserveRegion) {
-        QRect sourceRect(rect.topLeft() * sourceDevicePixelRatio, rect.size() * sourceDevicePixelRatio);
-        QRect targetRect(rect.topLeft() * targetDevicePixelRatio, rect.size() * targetDevicePixelRatio);
+    for (const QRect &rect : region) {
+        QRect sourceRect(rect.topLeft() * sourceDevicePixelRatio,
+                         rect.size() * sourceDevicePixelRatio);
+        QRect targetRect((rect.topLeft() + offset) * targetDevicePixelRatio,
+                          rect.size() * targetDevicePixelRatio);
 
 #ifdef QT_DEBUG
         if (Q_UNLIKELY(!frontSurfaceBounds.contains(sourceRect.bottomRight()))) {
@@ -484,11 +498,7 @@ void QCALayerBackingStore::finalizeBackBuffer()
         painter.drawImage(targetRect, *frontBuffer, sourceRect);
     }
 
-    m_buffers.back()->unlock();
     m_buffers.front()->unlock();
-
-    // The back buffer is now completely in sync, ready to be presented
-    m_buffers.back()->dirtyRegion = QRegion();
 }
 
 // ----------------------------------------------------------------------------
