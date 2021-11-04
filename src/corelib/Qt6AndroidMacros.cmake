@@ -322,10 +322,19 @@ function(qt6_android_add_apk_target target)
     set(apk_intermediate_file_path "${apk_intermediate_dir}/${apk_file_name}")
     set(dep_intermediate_file_path "${apk_intermediate_dir}/${dep_file_name}")
 
+    set(extra_deps "")
+
+    # Plugins still might be added after creating the deployment targets.
+    if(NOT TARGET qt_internal_plugins)
+        add_custom_target(qt_internal_plugins)
+    endif()
+    # Before running androiddeployqt, we need to make sure all plugins are built.
+    list(APPEND extra_deps qt_internal_plugins)
+
     # This target is used by Qt Creator's Android support and by the ${target}_make_apk target
     # in case DEPFILEs are not supported.
     add_custom_target(${target}_prepare_apk_dir ALL
-        DEPENDS ${target}
+        DEPENDS ${target} ${extra_deps}
         COMMAND ${CMAKE_COMMAND}
             -E copy_if_different $<TARGET_FILE:${target}>
             "${apk_final_dir}/libs/${CMAKE_ANDROID_ARCH_ABI}/$<TARGET_FILE_NAME:${target}>"
@@ -349,7 +358,7 @@ function(qt6_android_add_apk_target target)
                 --depfile "${dep_intermediate_file_path}"
                 --builddir "${CMAKE_BINARY_DIR}"
             COMMENT "Creating APK for ${target}"
-            DEPENDS "${target}" "${deployment_file}"
+            DEPENDS "${target}" "${deployment_file}" ${extra_deps}
             DEPFILE "${dep_intermediate_file_path}")
 
         # Create a ${target}_make_apk target to copy the apk from the intermediate to its final
