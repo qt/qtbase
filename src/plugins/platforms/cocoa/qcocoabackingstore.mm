@@ -140,7 +140,8 @@ void QCALayerBackingStore::beginPaint(const QRegion &region)
             painter.fillRect(rect, Qt::transparent);
     }
 
-    m_paintedRegion += region;
+    // We assume the client is going to paint the entire region
+    updateDirtyStates(region);
 }
 
 void QCALayerBackingStore::ensureBackBuffer()
@@ -242,7 +243,7 @@ QPaintDevice *QCALayerBackingStore::paintDevice()
 
 void QCALayerBackingStore::endPaint()
 {
-    qCInfo(lcQpaBackingStore) << "Paint ended with painted region" << m_paintedRegion;
+    qCInfo(lcQpaBackingStore) << "Paint ended. Back buffer valid region is now" << m_buffers.back()->validRegion();
     m_buffers.back()->unlock();
 }
 
@@ -259,7 +260,7 @@ void QCALayerBackingStore::flush(QWindow *flushedWindow, const QRegion &region, 
         return;
     }
 
-    if (m_buffers.front()->isInUse() && m_buffers.front()->dirtyRegion.isEmpty()) {
+    if (m_buffers.front()->isInUse() && !m_buffers.front()->isDirty()) {
         qCInfo(lcQpaBackingStore) << "Asked to flush, but front buffer is up to date. Ignoring.";
         return;
     }
@@ -414,6 +415,20 @@ QPlatformGraphicsBuffer *QCALayerBackingStore::graphicsBuffer() const
     return m_buffers.back().get();
 }
 
+void QCALayerBackingStore::updateDirtyStates(const QRegion &paintedRegion)
+{
+    // Update dirty state of buffers based on what was painted. The back buffer will be
+    // less dirty, since we painted to it, while other buffers will become more dirty.
+    // This allows us to minimize copies between front and back buffers on swap in the
+    // cases where the painted region overlaps with the previous frame (front buffer).
+    for (const auto &buffer : m_buffers) {
+        if (buffer == m_buffers.back())
+            buffer->dirtyRegion -= paintedRegion;
+        else
+            buffer->dirtyRegion += paintedRegion;
+    }
+}
+
 bool QCALayerBackingStore::prepareForFlush()
 {
     if (!m_buffers.back()) {
@@ -421,21 +436,10 @@ bool QCALayerBackingStore::prepareForFlush()
         return false;
     }
 
-    // Update dirty state of buffers based on what was painted. The back buffer will be
-    // less dirty, since we painted to it, while other buffers will become more dirty.
-    // This allows us to minimize copies between front and back buffers on swap in the
-    // cases where the painted region overlaps with the previous frame (front buffer).
-    for (const auto &buffer : m_buffers) {
-        if (buffer == m_buffers.back())
-            buffer->dirtyRegion -= m_paintedRegion;
-        else
-            buffer->dirtyRegion += m_paintedRegion;
-    }
-
     // After painting, the back buffer is only guaranteed to have content for the painted
     // region, and may still have dirty areas that need to be synced up with the front buffer,
     // if we have one. We know that the front buffer is always up to date.
-    if (!m_buffers.back()->dirtyRegion.isEmpty() && m_buffers.front() != m_buffers.back()) {
+    if (m_buffers.back()->isDirty() && m_buffers.front() != m_buffers.back()) {
         QRegion preserveRegion = m_buffers.back()->dirtyRegion;
         qCDebug(lcQpaBackingStore) << "Preserving" << preserveRegion << "from front to back buffer";
 
@@ -473,9 +477,6 @@ bool QCALayerBackingStore::prepareForFlush()
         m_buffers.back()->dirtyRegion = QRegion();
     }
 
-    // Prepare for another round of painting
-    m_paintedRegion = QRegion();
-
     return true;
 }
 
@@ -484,10 +485,17 @@ bool QCALayerBackingStore::prepareForFlush()
 QCALayerBackingStore::GraphicsBuffer::GraphicsBuffer(const QSize &size, qreal devicePixelRatio,
                                 const QPixelFormat &format, QCFType<CGColorSpaceRef> colorSpace)
     : QIOSurfaceGraphicsBuffer(size, format)
-    , dirtyRegion(0, 0, size.width() / devicePixelRatio, size.height() / devicePixelRatio)
+    , dirtyRegion(QRect(QPoint(0, 0), size / devicePixelRatio))
     , m_devicePixelRatio(devicePixelRatio)
 {
     setColorSpace(colorSpace);
+}
+
+QRegion QCALayerBackingStore::GraphicsBuffer::validRegion() const
+{
+
+    QRegion fullRegion = QRect(QPoint(0, 0), size() / m_devicePixelRatio);
+    return fullRegion - dirtyRegion;
 }
 
 QImage *QCALayerBackingStore::GraphicsBuffer::asImage()
