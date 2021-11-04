@@ -3557,34 +3557,6 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
         }
 
         break;
-    case CE_HeaderLabel:
-        if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(opt)) {
-            p->save();
-            QRect textr = header->rect;
-            if (!header->icon.isNull()) {
-                QIcon::Mode mode = QIcon::Disabled;
-                if (opt->state & State_Enabled)
-                    mode = QIcon::Normal;
-                int iconExtent = proxy()->pixelMetric(PM_SmallIconSize);
-                QPixmap pixmap = header->icon.pixmap(QSize(iconExtent, iconExtent), p->device()->devicePixelRatio(), mode);
-
-                QRect pixr = header->rect;
-                QSizeF size = pixmap.deviceIndependentSize();
-                pixr.setY(header->rect.center().y() - (size.height() - 1) / 2);
-                proxy()->drawItemPixmap(p, pixr, Qt::AlignVCenter, pixmap);
-                textr.translate(size.width() + 2, 0);
-            }
-            QString text = header->text;
-            if (const QStyleOptionHeaderV2 *headerV2 = qstyleoption_cast<const QStyleOptionHeaderV2 *>(header)) {
-                if (headerV2->textElideMode != Qt::ElideNone)
-                    text = header->fontMetrics.elidedText(text, headerV2->textElideMode, textr.width());
-            }
-
-            proxy()->drawItemText(p, textr, header->textAlignment | Qt::AlignVCenter, header->palette,
-                                  header->state.testFlag(State_Enabled), text, QPalette::ButtonText);
-            p->restore();
-        }
-        break;
     case CE_ToolButtonLabel:
         if (const QStyleOptionToolButton *tb = qstyleoption_cast<const QStyleOptionToolButton *>(opt)) {
             QStyleOptionToolButton myTb = *tb;
