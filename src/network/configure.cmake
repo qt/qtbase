@@ -9,53 +9,6 @@
 
 qt_find_package(WrapBrotli PROVIDED_TARGETS WrapBrotli::WrapBrotliDec MODULE_NAME network QMAKE_LIB brotli)
 qt_find_package(Libproxy PROVIDED_TARGETS PkgConfig::Libproxy MODULE_NAME network QMAKE_LIB libproxy)
-qt_find_package(WrapOpenSSLHeaders PROVIDED_TARGETS WrapOpenSSLHeaders::WrapOpenSSLHeaders MODULE_NAME network)
-# openssl_headers
-qt_config_compile_test(openssl_headers
-    LIBRARIES
-        WrapOpenSSLHeaders::WrapOpenSSLHeaders
-    CODE
-"#include <openssl/ssl.h>
-#include <openssl/opensslv.h>
-#if !defined(OPENSSL_VERSION_NUMBER) || OPENSSL_VERSION_NUMBER-0 < 0x10101000L
-#  error OpenSSL >= 1.1.1 is required
-#endif
-#if !defined(OPENSSL_NO_EC) && !defined(SSL_CTRL_SET_CURVES)
-#  error OpenSSL was reported as >= 1.1.1 but is missing required features, possibly it is libressl which is unsupported
-#endif
-
-int main(void)
-{
-    /* BEGIN TEST: */
-    /* END TEST: */
-    return 0;
-}
-")
-
-qt_find_package(WrapOpenSSL PROVIDED_TARGETS WrapOpenSSL::WrapOpenSSL MODULE_NAME network QMAKE_LIB openssl)
-# openssl
-qt_config_compile_test(openssl
-    LIBRARIES
-        WrapOpenSSL::WrapOpenSSL
-    CODE
-"#include <openssl/ssl.h>
-#include <openssl/opensslv.h>
-#if !defined(OPENSSL_VERSION_NUMBER) || OPENSSL_VERSION_NUMBER-0 < 0x10101000L
-#  error OpenSSL >= 1.1.1 is required
-#endif
-#if !defined(OPENSSL_NO_EC) && !defined(SSL_CTRL_SET_CURVES)
-#  error OpenSSL was reported as >= 1.1.1 but is missing required features, possibly it is libressl which is unsupported
-#endif
-
-int main(void)
-{
-    /* BEGIN TEST: */
-SSL_free(SSL_new(0));
-    /* END TEST: */
-    return 0;
-}
-")
-
 qt_find_package(GSSAPI PROVIDED_TARGETS GSSAPI::GSSAPI MODULE_NAME network QMAKE_LIB gssapi)
 qt_find_package(GLIB2 OPTIONAL_COMPONENTS GOBJECT PROVIDED_TARGETS GLIB2::GOBJECT MODULE_NAME core QMAKE_LIB gobject)
 qt_find_package(GLIB2 OPTIONAL_COMPONENTS GIO PROVIDED_TARGETS GLIB2::GIO MODULE_NAME core QMAKE_LIB gio)
@@ -257,26 +210,6 @@ qt_feature("linux-netlink" PRIVATE
     LABEL "Linux AF_NETLINK"
     CONDITION LINUX AND NOT ANDROID AND TEST_linux_netlink
 )
-qt_feature("openssl" PRIVATE
-    LABEL "OpenSSL"
-    CONDITION QT_FEATURE_openssl_runtime OR QT_FEATURE_openssl_linked
-    ENABLE false
-)
-qt_feature_definition("openssl" "QT_NO_OPENSSL" NEGATE)
-qt_feature_config("openssl" QMAKE_PUBLIC_QT_CONFIG)
-qt_feature("openssl-runtime"
-    AUTODETECT NOT WASM
-    CONDITION TEST_openssl_headers
-    ENABLE INPUT_openssl STREQUAL 'yes' OR INPUT_openssl STREQUAL 'runtime'
-    DISABLE INPUT_openssl STREQUAL 'no' OR INPUT_openssl STREQUAL 'linked' OR INPUT_ssl STREQUAL 'no'
-)
-qt_feature("openssl-linked" PRIVATE
-    LABEL "  Qt directly linked to OpenSSL"
-    AUTODETECT OFF
-    CONDITION TEST_openssl
-    ENABLE INPUT_openssl STREQUAL 'linked'
-)
-qt_feature_definition("openssl-linked" "QT_LINKED_OPENSSL")
 qt_feature("securetransport" PUBLIC
     LABEL "SecureTransport"
     CONDITION APPLE
@@ -305,10 +238,6 @@ qt_feature("ocsp" PUBLIC
     LABEL "OCSP-stapling"
     PURPOSE "Provides OCSP stapling support"
     CONDITION QT_FEATURE_opensslv11 AND TEST_ocsp
-)
-qt_feature("opensslv11" PUBLIC
-    LABEL "OpenSSL 1.1"
-    CONDITION QT_FEATURE_openssl
 )
 qt_feature("sctp" PUBLIC
     LABEL "SCTP"
@@ -435,9 +364,6 @@ qt_configure_add_summary_entry(
     ARGS "schannel"
     CONDITION WIN32
 )
-qt_configure_add_summary_entry(ARGS "openssl")
-qt_configure_add_summary_entry(ARGS "openssl-linked")
-qt_configure_add_summary_entry(ARGS "opensslv11")
 qt_configure_add_summary_entry(ARGS "dtls")
 qt_configure_add_summary_entry(ARGS "ocsp")
 qt_configure_add_summary_entry(ARGS "sctp")

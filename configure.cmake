@@ -18,6 +18,93 @@ if(TARGET ZLIB::ZLIB)
     set_property(TARGET ZLIB::ZLIB PROPERTY IMPORTED_GLOBAL TRUE)
 endif()
 
+qt_find_package(WrapOpenSSLHeaders PROVIDED_TARGETS WrapOpenSSLHeaders::WrapOpenSSLHeaders MODULE_NAME core)
+# openssl_headers
+# OPENSSL_VERSION_MAJOR is not defined for OpenSSL 1.1.1
+qt_config_compile_test(opensslv11_headers
+    LIBRARIES
+        WrapOpenSSLHeaders::WrapOpenSSLHeaders
+    CODE
+"#include <openssl/ssl.h>
+#include <openssl/opensslv.h>
+#if !defined(OPENSSL_VERSION_NUMBER) || defined(OPENSSL_VERSION_MAJOR) || OPENSSL_VERSION_NUMBER-0 < 0x10101000L
+#  error OpenSSL >= 1.1.1 is required
+#endif
+#if !defined(OPENSSL_NO_EC) && !defined(SSL_CTRL_SET_CURVES)
+#  error OpenSSL was reported as >= 1.1.1 but is missing required features, possibly it is libressl which is unsupported
+#endif
+
+int main(void)
+{
+    /* BEGIN TEST: */
+    /* END TEST: */
+    return 0;
+}
+")
+
+qt_find_package(WrapOpenSSL PROVIDED_TARGETS WrapOpenSSL::WrapOpenSSL MODULE_NAME core QMAKE_LIB openssl)
+# openssl
+# OPENSSL_VERSION_MAJOR is not defined for OpenSSL 1.1.1
+qt_config_compile_test(opensslv11
+    LIBRARIES
+        WrapOpenSSL::WrapOpenSSL
+    CODE
+"#include <openssl/ssl.h>
+#include <openssl/opensslv.h>
+#if !defined(OPENSSL_VERSION_NUMBER) || defined(OPENSSL_VERSION_MAJOR) || OPENSSL_VERSION_NUMBER-0 < 0x10101000L
+#  error OpenSSL >= 1.1.1 is required
+#endif
+#if !defined(OPENSSL_NO_EC) && !defined(SSL_CTRL_SET_CURVES)
+#  error OpenSSL was reported as >= 1.1.1 but is missing required features, possibly it is libressl which is unsupported
+#endif
+
+int main(void)
+{
+    /* BEGIN TEST: */
+SSL_free(SSL_new(0));
+    /* END TEST: */
+    return 0;
+}
+")
+
+# opensslv30
+# openssl_headers
+qt_config_compile_test(opensslv30_headers
+    LIBRARIES
+        WrapOpenSSLHeaders::WrapOpenSSLHeaders
+    CODE
+"#include <openssl/ssl.h>
+#include <openssl/opensslv.h>
+#if !OPENSSL_VERSION_PREREQ(3,0)
+#  error OpenSSL >= 3.0 is required
+#endif
+
+int main(void)
+{
+    /* BEGIN TEST: */
+    /* END TEST: */
+    return 0;
+}
+")
+qt_config_compile_test(opensslv30
+    LIBRARIES
+        WrapOpenSSL::WrapOpenSSL
+    CODE
+"#include <openssl/ssl.h>
+#include <openssl/opensslv.h>
+#if !OPENSSL_VERSION_PREREQ(3,0)
+#  error OpenSSL >= 3.0 is required
+#endif
+
+int main(void)
+{
+    /* BEGIN TEST: */
+SSL_free(SSL_new(0));
+    /* END TEST: */
+    return 0;
+}
+")
+
 # special case end
 qt_find_package(WrapZSTD 1.3 PROVIDED_TARGETS WrapZSTD::WrapZSTD MODULE_NAME global QMAKE_LIB zstd)
 qt_find_package(WrapDBus1 1.2 PROVIDED_TARGETS dbus-1 MODULE_NAME global QMAKE_LIB dbus)
@@ -962,6 +1049,34 @@ qt_feature("libudev" PRIVATE
     LABEL "udev"
     CONDITION Libudev_FOUND AND NOT INTEGRITY
 )
+qt_feature("openssl" PRIVATE
+    LABEL "OpenSSL"
+    CONDITION QT_FEATURE_openssl_runtime OR QT_FEATURE_openssl_linked
+    ENABLE false
+)
+qt_feature_definition("openssl" "QT_NO_OPENSSL" NEGATE)
+qt_feature_config("openssl" QMAKE_PUBLIC_QT_CONFIG)
+qt_feature("openssl-runtime"
+    AUTODETECT NOT WASM
+    CONDITION TEST_opensslv11_headers OR TEST_opensslv30_headers
+    ENABLE INPUT_openssl STREQUAL 'yes' OR INPUT_openssl STREQUAL 'runtime'
+    DISABLE INPUT_openssl STREQUAL 'no' OR INPUT_openssl STREQUAL 'linked' OR INPUT_ssl STREQUAL 'no'
+)
+qt_feature("openssl-linked" PRIVATE
+    LABEL "  Qt directly linked to OpenSSL"
+    AUTODETECT OFF
+    CONDITION TEST_opensslv11 OR TEST_opensslv30
+    ENABLE INPUT_openssl STREQUAL 'linked'
+)
+qt_feature_definition("openssl-linked" "QT_LINKED_OPENSSL")
+qt_feature("opensslv11" PUBLIC
+    LABEL "OpenSSL 1.1"
+    CONDITION TEST_opensslv11 OR TEST_opensslv11_headers
+)
+qt_feature("opensslv30" PUBLIC
+    LABEL "OpenSSL 3.0"
+    CONDITION TEST_opensslv30 OR TEST_opensslv30_headers
+)
 qt_feature("ccache"
     LABEL "Using ccache"
     AUTODETECT 1
@@ -1090,6 +1205,10 @@ qt_configure_end_summary_section() # end of "Qt modules and options" section
 qt_configure_add_summary_section(NAME "Support enabled for")
 qt_configure_add_summary_entry(ARGS "pkg-config")
 qt_configure_add_summary_entry(ARGS "libudev")
+qt_configure_add_summary_entry(ARGS "openssl")
+qt_configure_add_summary_entry(ARGS "openssl-linked")
+qt_configure_add_summary_entry(ARGS "opensslv11")
+qt_configure_add_summary_entry(ARGS "opensslv30")
 qt_configure_add_summary_entry(ARGS "system-zlib")
 qt_configure_add_summary_entry(ARGS "zstd")
 qt_configure_add_summary_entry(ARGS "thread")
