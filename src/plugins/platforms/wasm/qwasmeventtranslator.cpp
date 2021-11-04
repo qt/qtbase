@@ -875,22 +875,17 @@ QCursor QWasmEventTranslator::cursorForMode(QWasmWindow::ResizeMode m)
     case QWasmWindow::ResizeTopLeft:
     case QWasmWindow::ResizeBottomRight:
         return Qt::SizeFDiagCursor;
-        break;
     case QWasmWindow::ResizeBottomLeft:
     case QWasmWindow::ResizeTopRight:
         return Qt::SizeBDiagCursor;
-        break;
     case QWasmWindow::ResizeTop:
     case QWasmWindow::ResizeBottom:
         return Qt::SizeVerCursor;
-        break;
     case QWasmWindow::ResizeLeft:
     case QWasmWindow::ResizeRight:
         return Qt::SizeHorCursor;
-        break;
     case QWasmWindow::ResizeNone:
         return Qt::ArrowCursor;
-        break;
     }
     return Qt::ArrowCursor;
 }
