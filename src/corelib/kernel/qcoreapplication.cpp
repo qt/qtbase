@@ -2837,10 +2837,11 @@ void QCoreApplication::setLibraryPaths(const QStringList &paths)
   it is searched for libraries first. If \a path is empty or already in the
   path list, the path list is not changed.
 
-  The default path list consists of a single entry, the installation
-  directory for plugins.  The default installation directory for plugins
-  is \c INSTALL/plugins, where \c INSTALL is the directory where Qt was
-  installed.
+  The default path list consists of one or two entries. The first is the
+  installation directory for plugins, which is \c INSTALL/plugins, where \c
+  INSTALL is the directory where Qt was installed. The second is the
+  application's own directory (\b not the current directory), but only after
+  the QCoreApplication object is instantiated.
 
   The library paths are reset to the default when an instance of
   QCoreApplication is destructed.
