@@ -109,6 +109,8 @@ private:
     bool recreateBackBufferIfNeeded();
     void finalizeBackBuffer();
 
+    void preserveFromFrontBuffer(const QRegion &region, const QPoint &offset = QPoint());
+
     void backingPropertiesChanged();
     QMacNotificationObserver m_backingPropertiesObserver;
 
