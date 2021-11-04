@@ -81,6 +81,7 @@ if (checkCommand("xmlstarlet")) {
 if ($cmd) {
     # Run the command and read everything
     open CMD, "$cmd |";
+    binmode CMD;
     $data = <CMD>;
     close CMD;
     die("Failed to run $cmd") if ($? >> 8);
