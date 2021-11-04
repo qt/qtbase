@@ -28,6 +28,7 @@
 
 #include <QTest>
 #include <QVariantAnimation>
+#include <QProperty>
 #include <QPropertyAnimation>
 #include <QSignalSpy>
 #include <QParallelAnimationGroup>

@@ -36,6 +36,7 @@
 #include <QLabel>
 #endif
 #include <QMovie>
+#include <QProperty>
 
 class tst_QMovie : public QObject
 {

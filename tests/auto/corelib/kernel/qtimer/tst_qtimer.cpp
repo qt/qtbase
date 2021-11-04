@@ -40,6 +40,7 @@
 #include <qtimer.h>
 #include <qthread.h>
 #include <qelapsedtimer.h>
+#include <qproperty.h>
 
 #if defined Q_OS_UNIX
 #include <unistd.h>
