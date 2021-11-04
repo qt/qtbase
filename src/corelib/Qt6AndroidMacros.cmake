@@ -469,9 +469,21 @@ function(_qt_internal_collect_target_apk_dependencies target)
 
     _qt_internal_collect_buildsystem_shared_libraries(libs "${CMAKE_SOURCE_DIR}")
 
+    if(NOT TARGET qt_internal_plugins)
+        add_custom_target(qt_internal_plugins)
+    endif()
+
     foreach(lib IN LISTS libs)
         if(NOT lib IN_LIST apk_targets)
             list(APPEND extra_prefix_dirs "$<TARGET_FILE_DIR:${lib}>")
+            get_target_property(target_type ${lib} TYPE)
+            # We collect all MODULE_LIBRARY targets since target APK may have implicit dependency
+            # to the plugin that will cause the runtime issue. Plugins that were added using
+            # qt6_add_plugin should be already added to the qt_internal_plugins dependency list,
+            # but it's ok to re-add them.
+            if(target_type STREQUAL "MODULE_LIBRARY")
+                add_dependencies(qt_internal_plugins ${lib})
+            endif()
         endif()
     endforeach()
 
