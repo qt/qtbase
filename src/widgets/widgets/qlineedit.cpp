@@ -1805,10 +1805,6 @@ QRect QLineEdit::cursorRect() const
 void QLineEdit::inputMethodEvent(QInputMethodEvent *e)
 {
     Q_D(QLineEdit);
-    if (!d->shouldEnableInputMethod()) {
-        e->ignore();
-        return;
-    }
 
     if (echoMode() == PasswordEchoOnEdit && !d->control->passwordEchoEditing()) {
         // Clear the edit and reset to normal echo mode while entering input
