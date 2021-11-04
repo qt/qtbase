@@ -85,7 +85,6 @@ private:
     bool eventFilter(QObject *watched, QEvent *event) override;
 
     QSize m_requestedSize;
-    QRegion m_paintedRegion;
 
     class GraphicsBuffer : public QIOSurfaceGraphicsBuffer
     {
@@ -96,11 +95,15 @@ private:
         QRegion dirtyRegion; // In unscaled coordinates
         QImage *asImage();
         qreal devicePixelRatio() const { return m_devicePixelRatio; }
+        bool isDirty() const { return !dirtyRegion.isEmpty(); }
+        QRegion validRegion() const;
 
     private:
         qreal m_devicePixelRatio;
         QImage m_image;
     };
+
+    void updateDirtyStates(const QRegion &paintedRegion);
 
     void ensureBackBuffer();
     bool recreateBackBufferIfNeeded();
