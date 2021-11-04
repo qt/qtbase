@@ -8891,8 +8891,7 @@ bool QWidget::event(QEvent *event)
         inputMethodEvent((QInputMethodEvent *) event);
         break;
 
-    case QEvent::InputMethodQuery:
-        if (testAttribute(Qt::WA_InputMethodEnabled)) {
+    case QEvent::InputMethodQuery: {
             QInputMethodQueryEvent *query = static_cast<QInputMethodQueryEvent *>(event);
             Qt::InputMethodQueries queries = query->queries();
             for (uint i = 0; i < 32; ++i) {
