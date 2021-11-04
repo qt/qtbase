@@ -52,6 +52,7 @@
 //
 
 #include <QtCore/QObject>
+#include <QtCore/QProperty>
 #include <QtTest/QSignalSpy>
 #include <QTest>
 

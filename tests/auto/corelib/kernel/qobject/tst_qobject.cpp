@@ -40,6 +40,7 @@
 
 #include <qcoreapplication.h>
 #include <qpointer.h>
+#include <qproperty.h>
 #include <qtimer.h>
 #include <qregularexpression.h>
 #include <qmetaobject.h>
