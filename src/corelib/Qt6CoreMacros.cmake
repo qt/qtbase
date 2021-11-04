@@ -2129,6 +2129,13 @@ function(qt6_add_plugin target)
         QT_PLUGIN
         QT_DEPRECATED_WARNINGS
     )
+
+    if(target_type STREQUAL "MODULE_LIBRARY")
+        if(NOT TARGET qt_internal_plugins)
+            add_custom_target(qt_internal_plugins)
+        endif()
+        add_dependencies(qt_internal_plugins ${target})
+    endif()
 endfunction()
 
 if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)

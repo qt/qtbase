@@ -339,8 +339,18 @@ function(qt6_android_add_apk_target target)
     # in case DEPFILEs are not supported.
     # Also the target is used to copy the library that belongs to ${target} when building multi-abi
     # apk to the abi-specific directory.
+
+    set(extra_deps "")
+
+    # Plugins still might be added after creating the deployment targets.
+    if(NOT TARGET qt_internal_plugins)
+        add_custom_target(qt_internal_plugins)
+    endif()
+    # Before running androiddeployqt, we need to make sure all plugins are built.
+    list(APPEND extra_deps qt_internal_plugins)
+
     add_custom_target(${target}_prepare_apk_dir ALL
-        DEPENDS ${target}
+        DEPENDS ${target} ${extra_deps}
         COMMAND ${CMAKE_COMMAND}
             -E copy_if_different $<TARGET_FILE:${target}>
             "${copy_target_path}/$<TARGET_FILE_NAME:${target}>"
@@ -372,7 +382,7 @@ function(qt6_android_add_apk_target target)
                 --builddir "${CMAKE_BINARY_DIR}"
                 ${extra_args}
             COMMENT "Creating APK for ${target}"
-            DEPENDS "${target}" "${deployment_file}"
+            DEPENDS "${target}" "${deployment_file}" ${extra_deps}
             DEPFILE "${dep_intermediate_file_path}")
 
         # Create a ${target}_make_apk target to copy the apk from the intermediate to its final
