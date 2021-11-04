@@ -245,6 +245,9 @@ void QCALayerBackingStore::endPaint()
 {
     qCInfo(lcQpaBackingStore) << "Paint ended. Back buffer valid region is now" << m_buffers.back()->validRegion();
     m_buffers.back()->unlock();
+
+    // Since we can have multiple begin/endPaint rounds before a flush
+    // we defer finalizing the back buffer until its content is needed.
 }
 
 void QCALayerBackingStore::flush(QWindow *flushedWindow, const QRegion &region, const QPoint &offset)
@@ -252,8 +255,12 @@ void QCALayerBackingStore::flush(QWindow *flushedWindow, const QRegion &region, 
     Q_UNUSED(region);
     Q_UNUSED(offset);
 
-    if (!prepareForFlush())
+    if (!m_buffers.back()) {
+        qCWarning(lcQpaBackingStore) << "Tried to flush backingstore without painting to it first";
         return;
+    }
+
+    finalizeBackBuffer();
 
     if (flushedWindow != window()) {
         flushSubWindow(flushedWindow);
@@ -370,8 +377,12 @@ void QCALayerBackingStore::windowDestroyed(QObject *object)
 void QCALayerBackingStore::composeAndFlush(QWindow *window, const QRegion &region, const QPoint &offset,
                                     QPlatformTextureList *textures, bool translucentBackground)
 {
-    if (!prepareForFlush())
+    if (!m_buffers.back()) {
+        qCWarning(lcQpaBackingStore) << "Tried to flush backingstore without painting to it first";
         return;
+    }
+
+    finalizeBackBuffer();
 
     QPlatformBackingStore::composeAndFlush(window, region, offset, textures, translucentBackground);
 }
@@ -379,8 +390,10 @@ void QCALayerBackingStore::composeAndFlush(QWindow *window, const QRegion &regio
 
 QImage QCALayerBackingStore::toImage() const
 {
-    if (!const_cast<QCALayerBackingStore*>(this)->prepareForFlush())
+    if (!m_buffers.back())
         return QImage();
+
+    const_cast<QCALayerBackingStore*>(this)->finalizeBackBuffer();
 
     // We need to make a copy here, as the returned image could be used just
     // for reading, in which case it won't detach, and then the underlying
@@ -429,55 +442,53 @@ void QCALayerBackingStore::updateDirtyStates(const QRegion &paintedRegion)
     }
 }
 
-bool QCALayerBackingStore::prepareForFlush()
+void QCALayerBackingStore::finalizeBackBuffer()
 {
-    if (!m_buffers.back()) {
-        qCWarning(lcQpaBackingStore) << "Tried to flush backingstore without painting to it first";
-        return false;
-    }
-
     // After painting, the back buffer is only guaranteed to have content for the painted
     // region, and may still have dirty areas that need to be synced up with the front buffer,
     // if we have one. We know that the front buffer is always up to date.
-    if (m_buffers.back()->isDirty() && m_buffers.front() != m_buffers.back()) {
-        QRegion preserveRegion = m_buffers.back()->dirtyRegion;
-        qCDebug(lcQpaBackingStore) << "Preserving" << preserveRegion << "from front to back buffer";
 
-        m_buffers.front()->lock(QPlatformGraphicsBuffer::SWReadAccess);
-        const QImage *frontBuffer = m_buffers.front()->asImage();
+    if (!m_buffers.back()->isDirty())
+        return;
 
-        const QRect frontSurfaceBounds(QPoint(0, 0), m_buffers.front()->size());
-        const qreal sourceDevicePixelRatio = frontBuffer->devicePixelRatio();
+    if (m_buffers.front() == m_buffers.back())
+        return; // Nothing to preserve from
 
-        m_buffers.back()->lock(QPlatformGraphicsBuffer::SWWriteAccess);
-        QPainter painter(m_buffers.back()->asImage());
-        painter.setCompositionMode(QPainter::CompositionMode_Source);
+    QRegion preserveRegion = m_buffers.back()->dirtyRegion;
+    qCDebug(lcQpaBackingStore) << "Preserving" << preserveRegion << "from front to back buffer";
 
-        // Let painter operate in device pixels, to make it easier to compare coordinates
-        const qreal targetDevicePixelRatio = painter.device()->devicePixelRatio();
-        painter.scale(1.0 / targetDevicePixelRatio, 1.0 / targetDevicePixelRatio);
+    m_buffers.front()->lock(QPlatformGraphicsBuffer::SWReadAccess);
+    const QImage *frontBuffer = m_buffers.front()->asImage();
 
-        for (const QRect &rect : preserveRegion) {
-            QRect sourceRect(rect.topLeft() * sourceDevicePixelRatio, rect.size() * sourceDevicePixelRatio);
-            QRect targetRect(rect.topLeft() * targetDevicePixelRatio, rect.size() * targetDevicePixelRatio);
+    const QRect frontSurfaceBounds(QPoint(0, 0), m_buffers.front()->size());
+    const qreal sourceDevicePixelRatio = frontBuffer->devicePixelRatio();
+
+    m_buffers.back()->lock(QPlatformGraphicsBuffer::SWWriteAccess);
+    QPainter painter(m_buffers.back()->asImage());
+    painter.setCompositionMode(QPainter::CompositionMode_Source);
+
+    // Let painter operate in device pixels, to make it easier to compare coordinates
+    const qreal targetDevicePixelRatio = painter.device()->devicePixelRatio();
+    painter.scale(1.0 / targetDevicePixelRatio, 1.0 / targetDevicePixelRatio);
+
+    for (const QRect &rect : preserveRegion) {
+        QRect sourceRect(rect.topLeft() * sourceDevicePixelRatio, rect.size() * sourceDevicePixelRatio);
+        QRect targetRect(rect.topLeft() * targetDevicePixelRatio, rect.size() * targetDevicePixelRatio);
 
 #ifdef QT_DEBUG
-            if (Q_UNLIKELY(!frontSurfaceBounds.contains(sourceRect.bottomRight()))) {
-                qCWarning(lcQpaBackingStore) << "Front buffer too small to preserve"
-                    << QRegion(sourceRect).subtracted(frontSurfaceBounds);
-            }
-#endif
-            painter.drawImage(targetRect, *frontBuffer, sourceRect);
+        if (Q_UNLIKELY(!frontSurfaceBounds.contains(sourceRect.bottomRight()))) {
+            qCWarning(lcQpaBackingStore) << "Front buffer too small to preserve"
+                << QRegion(sourceRect).subtracted(frontSurfaceBounds);
         }
-
-        m_buffers.back()->unlock();
-        m_buffers.front()->unlock();
-
-        // The back buffer is now completely in sync, ready to be presented
-        m_buffers.back()->dirtyRegion = QRegion();
+#endif
+        painter.drawImage(targetRect, *frontBuffer, sourceRect);
     }
 
-    return true;
+    m_buffers.back()->unlock();
+    m_buffers.front()->unlock();
+
+    // The back buffer is now completely in sync, ready to be presented
+    m_buffers.back()->dirtyRegion = QRegion();
 }
 
 // ----------------------------------------------------------------------------

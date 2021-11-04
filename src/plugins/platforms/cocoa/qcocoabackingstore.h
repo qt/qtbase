@@ -107,7 +107,7 @@ private:
 
     void ensureBackBuffer();
     bool recreateBackBufferIfNeeded();
-    bool prepareForFlush();
+    void finalizeBackBuffer();
 
     void backingPropertiesChanged();
     QMacNotificationObserver m_backingPropertiesObserver;
