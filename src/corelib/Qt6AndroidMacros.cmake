@@ -335,11 +335,6 @@ function(qt6_android_add_apk_target target)
         set(copy_target_path "${QT_ANDROID_ABI_TARGET_PATH}")
     endif()
 
-    # This target is used by Qt Creator's Android support and by the ${target}_make_apk target
-    # in case DEPFILEs are not supported.
-    # Also the target is used to copy the library that belongs to ${target} when building multi-abi
-    # apk to the abi-specific directory.
-
     set(extra_deps "")
 
     # Plugins still might be added after creating the deployment targets.
@@ -349,6 +344,10 @@ function(qt6_android_add_apk_target target)
     # Before running androiddeployqt, we need to make sure all plugins are built.
     list(APPEND extra_deps qt_internal_plugins)
 
+    # This target is used by Qt Creator's Android support and by the ${target}_make_apk target
+    # in case DEPFILEs are not supported.
+    # Also the target is used to copy the library that belongs to ${target} when building multi-abi
+    # apk to the abi-specific directory.
     add_custom_target(${target}_prepare_apk_dir ALL
         DEPENDS ${target} ${extra_deps}
         COMMAND ${CMAKE_COMMAND}
