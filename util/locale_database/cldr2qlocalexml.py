@@ -53,7 +53,7 @@ time zone names; see cldr2qtimezone.py for details.
 
 All the scripts mentioned support --help to tell you how to use them.
 
-.. _CLDR: ftp://unicode.org/Public/cldr/
+.. _CLDR: https://unicode.org/Public/cldr/
 """
 
 from pathlib import Path
