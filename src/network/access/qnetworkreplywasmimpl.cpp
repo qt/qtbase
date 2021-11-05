@@ -308,12 +308,6 @@ void QNetworkReplyWasmImplPrivate::dataReceived(const QByteArray &buffer, int bu
     downloadBuffer.append(buffer, bufferSize);
 
     emit q->readyRead();
-
-    if (downloadBufferCurrentSize == totalDownloadSize) {
-        q->setFinished(true);
-        emit q->readChannelFinished();
-        emit q->finished();
-    }
 }
 
 //taken from qnetworkrequest.cpp
@@ -450,10 +444,21 @@ void QNetworkReplyWasmImplPrivate::downloadSucceeded(emscripten_fetch_t *fetch)
         if (reply->state != QNetworkReplyPrivate::Aborted) {
             QByteArray buffer(fetch->data, fetch->numBytes);
             reply->dataReceived(buffer, buffer.size());
+            QByteArray statusText(fetch->statusText);
+            reply->setStatusCode(fetch->status, statusText);
+            reply->setReplyFinished();
         }
         reply->m_fetch = nullptr;
     }
     emscripten_fetch_close(fetch);
+}
+
+void QNetworkReplyWasmImplPrivate::setReplyFinished()
+{
+    Q_Q(QNetworkReplyWasmImpl);
+    q->setFinished(true);
+    emit q->readChannelFinished();
+    emit q->finished();
 }
 
 void QNetworkReplyWasmImplPrivate::setStatusCode(int status, const QByteArray &statusText)
