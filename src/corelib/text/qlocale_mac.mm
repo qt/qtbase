@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -43,6 +43,8 @@
 #include "qvariant.h"
 #include "qdatetime.h"
 
+#include "private/qstringiterator_p.h"
+#include "private/qgregoriancalendar_p.h"
 #ifdef Q_OS_DARWIN
 #include "private/qcore_mac_p.h"
 #include <CoreFoundation/CoreFoundation.h>
@@ -148,17 +150,121 @@ static QVariant macDayName(int day, QSystemLocale::QueryType type)
     return {};
 }
 
-static QVariant macDateToString(QDate date, bool short_format)
+static QString macZeroDigit()
 {
-    QCFType<CFDateRef> myDate = QDateTime(date, QTime()).toCFDate();
+    QCFType<CFLocaleRef> locale = CFLocaleCopyCurrent();
+    QCFType<CFNumberFormatterRef> numberFormatter =
+            CFNumberFormatterCreate(nullptr, locale, kCFNumberFormatterNoStyle);
+    const int zeroDigit = 0;
+    QCFType<CFStringRef> value
+        = CFNumberFormatterCreateStringWithValue(nullptr, numberFormatter,
+                                                 kCFNumberIntType, &zeroDigit);
+    return QString::fromCFString(value);
+}
+
+static QString zeroPad(QString &&number, int minDigits, const QString &zero)
+{
+    // Need to pad with zeros, possibly after a sign.
+    int insert = -1, digits = 0;
+    auto it = QStringIterator(number);
+    while (it.hasNext()) {
+        int here = it.index();
+        if (QChar::isDigit(it.next())) {
+            if (insert < 0)
+                insert = here;
+            ++digits;
+        } // else: assume we're stepping over a sign (or maybe grouping separator)
+    }
+    Q_ASSERT(digits > 0);
+    Q_ASSERT(insert >= 0);
+    while (digits++ < minDigits)
+        number.insert(insert, zero);
+
+    return std::move(number);
+}
+
+static QString trimTwoDigits(QString &&number)
+{
+    // Retain any sign, but remove all but the last two digits.
+    // We know number has at least four digits - it came from fourDigitYear().
+    // Note that each digit might be a surrogate pair.
+    int first = -1, prev = -1, last = -1;
+    auto it = QStringIterator(number);
+    while (it.hasNext()) {
+        int here = it.index();
+        if (QChar::isDigit(it.next())) {
+            if (first == -1)
+                last = first = here;
+            else if (last != -1)
+                prev = std::exchange(last, here);
+        }
+    }
+    Q_ASSERT(first >= 0);
+    Q_ASSERT(prev > first);
+    Q_ASSERT(last > prev);
+    number.remove(first, prev - first);
+    return std::move(number);
+}
+
+static QString fourDigitYear(int year, const QString &zero)
+{
+    // Return year formatted as an (at least) four digit number:
+    QCFType<CFLocaleRef> locale = CFLocaleCopyCurrent();
+    QCFType<CFNumberFormatterRef> numberFormatter =
+            CFNumberFormatterCreate(nullptr, locale, kCFNumberFormatterNoStyle);
+    QCFType<CFStringRef> value = CFNumberFormatterCreateStringWithValue(nullptr, numberFormatter,
+                                                                        kCFNumberIntType, &year);
+    auto text = QString::fromCFString(value);
+    if (year > -1000 && year < 1000)
+        text = zeroPad(std::move(text), 4, zero);
+    return text;
+}
+
+static QString macDateToStringImpl(QDate date, CFDateFormatterStyle style)
+{
+    QCFType<CFDateRef> myDate = date.startOfDay().toCFDate();
     QCFType<CFLocaleRef> mylocale = CFLocaleCopyCurrent();
-    CFDateFormatterStyle style = short_format ? kCFDateFormatterShortStyle : kCFDateFormatterLongStyle;
     QCFType<CFDateFormatterRef> myFormatter
-        = CFDateFormatterCreate(kCFAllocatorDefault,
-                                mylocale, style,
+        = CFDateFormatterCreate(kCFAllocatorDefault, mylocale, style,
                                 kCFDateFormatterNoStyle);
     QCFType<CFStringRef> text = CFDateFormatterCreateStringWithDate(0, myFormatter, myDate);
     return QString::fromCFString(text);
+}
+
+static QVariant macDateToString(QDate date, bool short_format)
+{
+    const int year = date.year();
+    QString fakeYear, trueYear;
+    if (year < 0) {
+        // System API (in macOS 11.0, at least) discards sign :-(
+        // Simply negating the year won't do as the resulting year typically has
+        // a different pattern of week-days.
+        int matcher = QGregorianCalendar::yearSharingWeekDays(date);
+        Q_ASSERT(matcher > 0);
+        Q_ASSERT(matcher % 100 != date.month());
+        Q_ASSERT(matcher % 100 != date.day());
+        // i.e. there can't be any confusion between the two-digit year and
+        // month or day-of-month in the formatted date.
+        QString zero = macZeroDigit();
+        fakeYear = fourDigitYear(matcher, zero);
+        trueYear = fourDigitYear(year, zero);
+        date = QDate(matcher, date.month(), date.day());
+    }
+    QString text = macDateToStringImpl(date, short_format
+                                       ? kCFDateFormatterShortStyle
+                                       : kCFDateFormatterLongStyle);
+    if (year < 0) {
+        if (text.contains(fakeYear))
+            return std::move(text).replace(fakeYear, trueYear);
+        // Cope with two-digit year:
+        fakeYear = trimTwoDigits(std::move(fakeYear));
+        trueYear = trimTwoDigits(std::move(trueYear));
+        if (text.contains(fakeYear))
+            return std::move(text).replace(fakeYear, trueYear);
+        // That should have worked.
+        qWarning("Failed to fix up year when formatting a date in year %d", year);
+    }
+    return text;
 }
 
 static QVariant macTimeToString(QTime time, bool short_format)
@@ -361,17 +467,6 @@ static QVariant macCurrencySymbol(QLocale::CurrencySymbolFormat format)
         break;
     }
     return {};
-}
-
-static QVariant macZeroDigit()
-{
-    QCFType<CFLocaleRef> locale = CFLocaleCopyCurrent();
-    QCFType<CFNumberFormatterRef> numberFormatter =
-            CFNumberFormatterCreate(nullptr, locale, kCFNumberFormatterNoStyle);
-    static const int zeroDigit = 0;
-    QCFType<CFStringRef> value = CFNumberFormatterCreateStringWithValue(nullptr, numberFormatter,
-                                                                        kCFNumberIntType, &zeroDigit);
-    return QString::fromCFString(value);
 }
 
 #ifndef QT_NO_SYSTEMLOCALE

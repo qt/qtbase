@@ -2650,9 +2650,6 @@ void tst_QLocale::dateFormat()
     // And, indeed, one for a negative year:
     old = sys.toString(QDate(-1173, 5, 1), QLocale::LongFormat);
     QVERIFY(!old.isEmpty());
-#ifdef Q_OS_DARWIN // bug in qlocale_mac.mm, fix coming shortly
-    QEXPECT_FAIL("", "Darwin converts year to positive", Continue);
-#endif
     QVERIFY2(old.contains(u"-1173"), qPrintable(old + QLatin1String(" for locale ") + sys.name()));
 }
 
