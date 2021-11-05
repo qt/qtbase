@@ -148,6 +148,11 @@ public:
             return appendTo(c); // lvalue version
         }
     }
+
+    void clear()
+    {
+        set.clear();
+    }
 };
 
 QT_END_NAMESPACE
