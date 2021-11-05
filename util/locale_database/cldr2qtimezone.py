@@ -159,6 +159,7 @@ windowsIdList = (
     ('SE Asia Standard Time',            25200),
     ('Singapore Standard Time',          28800),
     ('South Africa Standard Time',        7200),
+    ('South Sudan Standard Time',         7200),
     ('Sri Lanka Standard Time',          19800),
     ('Sudan Standard Time',               7200), # unless they mean South Sudan, +03:00
     ('Syria Standard Time',               7200),
