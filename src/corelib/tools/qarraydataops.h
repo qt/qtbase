@@ -912,10 +912,17 @@ public:
         Q_UNUSED(distance);
 
 #if __cplusplus >= 202002L
-        if constexpr (
-            std::is_convertible_v<
+        constexpr bool canUseCopyAppend = std::conjunction_v<
+                std::is_convertible<
                     typename std::iterator_traits<It>::iterator_category,
-                    std::contiguous_iterator_tag>) {
+                    std::contiguous_iterator_tag
+                >,
+                std::is_same<
+                    std::remove_cv_t<typename std::iterator_traits<It>::value_type>,
+                    T
+                >
+            >;
+        if constexpr (canUseCopyAppend) {
             this->copyAppend(std::to_address(b), std::to_address(e));
         } else
 #endif
