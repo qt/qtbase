@@ -81,10 +81,10 @@ function(qt_generate_qconfig_cpp in_file out_file)
 endfunction()
 
 # In the cross-compiling case, creates a wrapper around the host Qt's
-# qmake executable. Also creates a qmake configuration file that sets
+# qmake and qtpaths executables. Also creates a qmake configuration file that sets
 # up the host qmake's properties for cross-compiling with this Qt
 # build.
-function(qt_generate_qmake_wrapper_for_target)
+function(qt_generate_qmake_and_qtpaths_wrapper_for_target)
     if(NOT CMAKE_CROSSCOMPILING)
         return()
     endif()
@@ -140,27 +140,29 @@ TargetSpec=${QT_QMAKE_TARGET_MKSPEC}
 HostSpec=${QT_QMAKE_HOST_MKSPEC}
 ")
     file(GENERATE OUTPUT "${qt_conf_path}" CONTENT "${content}")
-
-    qt_path_join(qmake_wrapper_in_file "${CMAKE_CURRENT_SOURCE_DIR}/bin/qmake-wrapper-for-target")
-    set(qmake_wrapper "qmake")
-    if(QT_BUILD_TOOLS_WHEN_CROSSCOMPILING)
-        # Avoid collisions with the cross-compiled qmake binary.
-        string(PREPEND qmake_wrapper "host-")
-    endif()
-    if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
-        string(APPEND qmake_wrapper_in_file ".bat")
-        string(APPEND qmake_wrapper ".bat")
-    endif()
-    string(APPEND qmake_wrapper_in_file ".in")
-
-    set(host_qt_bindir "${host_prefix}/${QT${PROJECT_VERSION_MAJOR}_HOST_INFO_BINDIR}")
-    qt_path_join(qmake_wrapper "preliminary" "${qmake_wrapper}")
-
-    configure_file("${qmake_wrapper_in_file}" "${qmake_wrapper}" @ONLY)
     qt_install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${qt_conf_path}"
         DESTINATION "${INSTALL_BINDIR}")
-    qt_copy_or_install(PROGRAMS "${CMAKE_CURRENT_BINARY_DIR}/${qmake_wrapper}"
-        DESTINATION "${INSTALL_BINDIR}")
+
+    set(wrapper_prefix)
+    set(wrapper_extension)
+    if(QT_BUILD_TOOLS_WHEN_CROSSCOMPILING)
+        # Avoid collisions with the cross-compiled qmake/qtpaths binaries.
+        set(wrapper_prefix "host-")
+    endif()
+    if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
+        set(wrapper_extension ".bat")
+    endif()
+
+    set(wrapper_in_file
+        "${CMAKE_CURRENT_SOURCE_DIR}/bin/qmake-and-qtpaths-wrapper${wrapper_extension}.in")
+    set(host_qt_bindir "${host_prefix}/${QT${PROJECT_VERSION_MAJOR}_HOST_INFO_BINDIR}")
+
+    foreach(tool_name qmake qtpaths)
+        set(wrapper "preliminary/${wrapper_prefix}${tool_name}${wrapper_extension}")
+        configure_file("${wrapper_in_file}" "${wrapper}" @ONLY)
+        qt_copy_or_install(PROGRAMS "${CMAKE_CURRENT_BINARY_DIR}/${wrapper}"
+            DESTINATION "${INSTALL_BINDIR}")
+    endforeach()
 endfunction()
 
 # Transforms a CMake Qt module name to a qmake Qt module name.
