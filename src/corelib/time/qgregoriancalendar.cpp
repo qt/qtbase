@@ -146,6 +146,32 @@ int QGregorianCalendar::yearStartWeekDay(int year)
     return qMod(y + qDiv(y, 4) - qDiv(y, 100) + qDiv(y, 400), 7) + 1;
 }
 
+int QGregorianCalendar::yearSharingWeekDays(int year)
+{
+    // Returns a year, in the four-digit post-epoch range, that has the same
+    // pattern of week-days (in the proleptic Gregorian calendar) as the given
+    // year. For positive years, the last two decimal digits of the returned
+    // year shall also match those of the given year.
+
+    // Needed when formatting dates using system APIs with limited year ranges
+    // and possibly only a two-digit year. Fixing the negative year case is left
+    // as an exercise for the day a real user actually has a problem with it.
+
+    static_assert((400 * 365 + 97) % 7 == 0);
+    // A full 400-year cycle of the Gregorian calendar has 97 + 400 * 365 days;
+    // as 365 is one more than a multiple of seven and 497 is a multiple of
+    // seven, that full cycle is a whole number of weeks. So adding a multiple
+    // of four hundred years should get us a result that meets our needs.
+
+    const int res = (year < 1970
+                     ? 2400 - (2000 - (year < 0 ? year + 1 : year)) % 400
+                     : year > 9999 ? 2000 + (year - 2000) % 400 : year);
+    Q_ASSERT(res % 100 == (year > 0 ? year % 100 : year < -1 ? 100 + (year + 1) % 100 : 0));
+    Q_ASSERT(QDate(res, 1, 1).dayOfWeek() == QDate(year, 1, 1).dayOfWeek());
+    Q_ASSERT(QDate(res, 12, 31).dayOfWeek() == QDate(year, 12, 31).dayOfWeek());
+    return res;
+}
+
 QCalendar::YearMonthDay QGregorianCalendar::julianDayToDate(qint64 jd) const
 {
     return partsFromJulian(jd);
