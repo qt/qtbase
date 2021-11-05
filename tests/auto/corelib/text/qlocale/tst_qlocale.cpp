@@ -2456,7 +2456,7 @@ void tst_QLocale::dayName_data()
     QTest::newRow("ru_RU short")
         << QString("ru_RU") << QString::fromUtf8("\320\262\321\201") << 7 << QLocale::ShortFormat;
     QTest::newRow("ru_RU narrow")
-        << QString("ru_RU") << QString::fromUtf8("\320\262\321\201") << 7 << QLocale::NarrowFormat;
+        << QString("ru_RU") << u"\u0412"_qs << 7 << QLocale::NarrowFormat;
 }
 
 void tst_QLocale::dayName()
@@ -3221,10 +3221,10 @@ void tst_QLocale::systemLocaleDayAndMonthNames_data()
             << QByteArray("ru_RU") << QDate(2021, 8, 30) << QLocale::ShortFormat
             << QString("\u0430\u0432\u0433.") << QString("\u0430\u0432\u0433.")
             << QString("\u043f\u043d") << QString("\u043f\u043d");
-    // А, А, пн, П
+    // А, А, П, П
     QTest::newRow("ru_RU 30.08.2021 narrow")
             << QByteArray("ru_RU") << QDate(2021, 8, 30) << QLocale::NarrowFormat
-            << QString("\u0410") << QString("\u0410") << QString("\u043f\u043d")
+            << QString("\u0410") << QString("\u0410") << QString("\u041f")
             << QString("\u041f");
 #elif defined(Q_OS_DARWIN)
     // августа, август, понедельник, понедельник
