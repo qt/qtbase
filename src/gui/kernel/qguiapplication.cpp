@@ -1443,7 +1443,7 @@ void QGuiApplicationPrivate::createPlatformIntegration()
             ++arg;
         if (strcmp(arg, "-platformpluginpath") == 0) {
             if (++i < argc)
-                platformPluginPath = QString::fromLocal8Bit(argv[i]);
+                platformPluginPath = QFile::decodeName(argv[i]);
         } else if (strcmp(arg, "-platform") == 0) {
             if (++i < argc) {
                 platformExplicitlySelected = true;
@@ -1460,7 +1460,7 @@ void QGuiApplicationPrivate::createPlatformIntegration()
                 firstWindowTitle = QString::fromLocal8Bit(argv[i]);
         } else if (strcmp(arg, "-qwindowicon") == 0 || (xcbIsDefault && strcmp(arg, "-icon") == 0)) {
             if (++i < argc) {
-                icon = QString::fromLocal8Bit(argv[i]);
+                icon = QFile::decodeName(argv[i]);
             }
         } else {
             argv[j++] = argv[i];
