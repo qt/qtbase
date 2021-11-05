@@ -74,47 +74,17 @@ Q_LOGGING_CATEGORY(qLcEglDevDebug, "qt.qpa.egldeviceintegration")
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
                           (QEglFSDeviceIntegrationFactoryInterface_iid, QLatin1String("/egldeviceintegrations"), Qt::CaseInsensitive))
 
-#if QT_CONFIG(library)
-Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, directLoader,
-                          (QEglFSDeviceIntegrationFactoryInterface_iid, QLatin1String(""), Qt::CaseInsensitive))
-
-#endif // QT_CONFIG(library)
-
-QStringList QEglFSDeviceIntegrationFactory::keys(const QString &pluginPath)
+QStringList QEglFSDeviceIntegrationFactory::keys()
 {
     QStringList list;
-#if QT_CONFIG(library)
-    if (!pluginPath.isEmpty()) {
-        QCoreApplication::addLibraryPath(pluginPath);
-        list = directLoader()->keyMap().values();
-        if (!list.isEmpty()) {
-            const QString postFix = QLatin1String(" (from ")
-                    + QDir::toNativeSeparators(pluginPath)
-                    + QLatin1Char(')');
-            const QStringList::iterator end = list.end();
-            for (QStringList::iterator it = list.begin(); it != end; ++it)
-                (*it).append(postFix);
-        }
-    }
-#else
-    Q_UNUSED(pluginPath);
-#endif
     list.append(loader()->keyMap().values());
     qCDebug(qLcEglDevDebug) << "EGL device integration plugin keys:" << list;
     return list;
 }
 
-QEglFSDeviceIntegration *QEglFSDeviceIntegrationFactory::create(const QString &key, const QString &pluginPath)
+QEglFSDeviceIntegration *QEglFSDeviceIntegrationFactory::create(const QString &key)
 {
     QEglFSDeviceIntegration *integration = nullptr;
-#if QT_CONFIG(library)
-    if (!pluginPath.isEmpty()) {
-        QCoreApplication::addLibraryPath(pluginPath);
-        integration = qLoadPlugin<QEglFSDeviceIntegration, QEglFSDeviceIntegrationPlugin>(directLoader(), key);
-    }
-#else
-    Q_UNUSED(pluginPath);
-#endif
     if (!integration)
         integration = qLoadPlugin<QEglFSDeviceIntegration, QEglFSDeviceIntegrationPlugin>(loader(), key);
     if (integration)

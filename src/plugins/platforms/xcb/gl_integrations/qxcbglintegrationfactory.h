@@ -49,7 +49,7 @@ class QXcbGlIntegration;
 class QXcbGlIntegrationFactory
 {
 public:
-    static QXcbGlIntegration *create(const QString &name, const QString &platformPluginPath = QString());
+    static QXcbGlIntegration *create(const QString &name);
 };
 
 QT_END_NAMESPACE

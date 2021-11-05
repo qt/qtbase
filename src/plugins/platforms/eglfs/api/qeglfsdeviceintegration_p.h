@@ -126,8 +126,8 @@ public:
 class Q_EGLFS_EXPORT QEglFSDeviceIntegrationFactory
 {
 public:
-    static QStringList keys(const QString &pluginPath = QString());
-    static QEglFSDeviceIntegration *create(const QString &name, const QString &platformPluginPath = QString());
+    static QStringList keys();
+    static QEglFSDeviceIntegration *create(const QString &name);
 };
 
 QT_END_NAMESPACE
