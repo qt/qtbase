@@ -29,12 +29,12 @@
     "Description": "The Unicode CLDR provides key building blocks for software to support the
  world's languages, with the largest and most extensive standard repository of locale data
  available.",
-    "Homepage": "http://cldr.unicode.org/",
-    "Version": "v39",
+    "Homepage": "https://cldr.unicode.org/",
+    "Version": "v40",
     "License": "// as specified in https://spdx.org/licenses/Unicode-DFS-2016.html",
     "License": "Unicode License Agreement - Data Files and Software (2016)",
     "LicenseId": "Unicode-DFS-2016",
     "LicenseFile": "UNICODE_LICENSE.txt",
-    "Copyright": "Copyright (C) 1991-2019 Unicode, Inc."
+    "Copyright": "Copyright (C) 1991-2021 Unicode, Inc."
 }
 ]
