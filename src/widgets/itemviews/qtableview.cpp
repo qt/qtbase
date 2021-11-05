@@ -1496,7 +1496,7 @@ void QTableView::paintEvent(QPaintEvent *event)
     const int gridSize = showGrid ? 1 : 0;
     const int gridHint = style()->styleHint(QStyle::SH_Table_GridLineColor, &option, this);
     const QColor gridColor = QColor::fromRgba(static_cast<QRgb>(gridHint));
-    const QPen gridPen = QPen(gridColor, 0, d->gridStyle);
+    const QPen gridPen = QPen(gridColor, 1, d->gridStyle);
     const QHeaderView *verticalHeader = d->verticalHeader;
     const QHeaderView *horizontalHeader = d->horizontalHeader;
     const bool alternate = d->alternatingColors;
@@ -1630,7 +1630,8 @@ void QTableView::paintEvent(QPaintEvent *event)
                 int rowY = rowViewportPosition(row);
                 rowY += offset.y();
                 int rowh = rowHeight(row) - gridSize;
-                painter.drawLine(dirtyArea.left(), rowY + rowh, dirtyArea.right(), rowY + rowh);
+                QLineF line(dirtyArea.left(), rowY + rowh, dirtyArea.right(), rowY + rowh);
+                painter.drawLine(line.translated(0.5, 0.5));
             }
 
             // Paint each column
@@ -1642,7 +1643,8 @@ void QTableView::paintEvent(QPaintEvent *event)
                 colp += offset.x();
                 if (!rightToLeft)
                     colp +=  columnWidth(col) - gridSize;
-                painter.drawLine(colp, dirtyArea.top(), colp, dirtyArea.bottom());
+                QLineF line(colp, dirtyArea.top(), colp, dirtyArea.bottom());
+                painter.drawLine(line.translated(0.5, 0.5));
             }
             const bool drawWhenHidden = style()->styleHint(QStyle::SH_Table_AlwaysDrawLeftTopGridLines,
                                                            &option, this);
