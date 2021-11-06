@@ -51,8 +51,9 @@ macro.emptyspan.HTML        = "<span></span>"
 #     \summary {Creates a build target.}
 macro.summary = "\\brief \1\n\n\1\n"
 
-# Expands to the minor version based on the QT_VER environment variable
-macro.QtMinorVersion        = "$QT_VER"
+# Macros that expand to the major and minor versions based on the QT_VER environment variable
+{macro.QtMajorVersion,macro.QtMinorVersion} = "$QT_VER"
+macro.QtMajorVersion.match  = "^(\\d+)\\."
 macro.QtMinorVersion.match  = "\\d+\\.(\\d+)"
 
 # Embed YouTube content by video ID - Example: \youtube dQw4w9WgXcQ
