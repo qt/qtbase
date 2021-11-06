@@ -408,62 +408,6 @@ const QOperatingSystemVersion QOperatingSystemVersion::Windows10 =
     QOperatingSystemVersion(QOperatingSystemVersion::Windows, 10);
 
 /*!
-    \variable QOperatingSystemVersion::Windows10_1809
-    \brief a version corresponding to Windows 10 1809 (version 10.0.17763).
-    \since 6.3
- */
-const QOperatingSystemVersion QOperatingSystemVersion::Windows10_1809 =
-    QOperatingSystemVersion(QOperatingSystemVersion::Windows, 10, 0, 17763);
-
-/*!
-    \variable QOperatingSystemVersion::Windows10_1903
-    \brief a version corresponding to Windows 10 1903 (version 10.0.18362).
-    \since 6.3
- */
-const QOperatingSystemVersion QOperatingSystemVersion::Windows10_1903 =
-    QOperatingSystemVersion(QOperatingSystemVersion::Windows, 10, 0, 18362);
-
-/*!
-    \variable QOperatingSystemVersion::Windows10_1909
-    \brief a version corresponding to Windows 10 1909 (version 10.0.18363).
-    \since 6.3
- */
-const QOperatingSystemVersion QOperatingSystemVersion::Windows10_1909 =
-    QOperatingSystemVersion(QOperatingSystemVersion::Windows, 10, 0, 18363);
-
-/*!
-    \variable QOperatingSystemVersion::Windows10_2004
-    \brief a version corresponding to Windows 10 2004 (version 10.0.19041).
-    \since 6.3
- */
-const QOperatingSystemVersion QOperatingSystemVersion::Windows10_2004 =
-    QOperatingSystemVersion(QOperatingSystemVersion::Windows, 10, 0, 19041);
-
-/*!
-    \variable QOperatingSystemVersion::Windows10_20H2
-    \brief a version corresponding to Windows 10 20H2 (version 10.0.19042).
-    \since 6.3
- */
-const QOperatingSystemVersion QOperatingSystemVersion::Windows10_20H2 =
-    QOperatingSystemVersion(QOperatingSystemVersion::Windows, 10, 0, 19042);
-
-/*!
-    \variable QOperatingSystemVersion::Windows10_21H1
-    \brief a version corresponding to Windows 10 21H1 (version 10.0.19043).
-    \since 6.3
- */
-const QOperatingSystemVersion QOperatingSystemVersion::Windows10_21H1 =
-    QOperatingSystemVersion(QOperatingSystemVersion::Windows, 10, 0, 19043);
-
-/*!
-    \variable QOperatingSystemVersion::Windows10_21H2
-    \brief a version corresponding to Windows 10 21H2 (version 10.0.19044).
-    \since 6.3
- */
-const QOperatingSystemVersion QOperatingSystemVersion::Windows10_21H2 =
-    QOperatingSystemVersion(QOperatingSystemVersion::Windows, 10, 0, 19044);
-
-/*!
     \variable QOperatingSystemVersion::OSXMavericks
     \brief a version corresponding to OS X Mavericks (version 10.9).
     \since 5.9
