@@ -46,7 +46,7 @@ function(qt_internal_add_docs)
 
     set(qdoc_bin "${doc_tools_bin}/qdoc${CMAKE_EXECUTABLE_SUFFIX}")
     set(qtattributionsscanner_bin "${doc_tools_libexec}/qtattributionsscanner${CMAKE_EXECUTABLE_SUFFIX}")
-    set(qhelpgenerator_bin "${doc_tools_bin}/qhelpgenerator${CMAKE_EXECUTABLE_SUFFIX}")
+    set(qhelpgenerator_bin "${doc_tools_libexec}/qhelpgenerator${CMAKE_EXECUTABLE_SUFFIX}")
 
     get_target_property(target_type ${target} TYPE)
     if (NOT target_type STREQUAL "INTERFACE_LIBRARY")
