@@ -110,14 +110,15 @@ OSVERSIONINFOEX qWindowsVersionInfo()
 
 QOperatingSystemVersion QOperatingSystemVersion::current()
 {
-    static QOperatingSystemVersion v;
-    if (v.m_os == Unknown) {
+    static QOperatingSystemVersion v = [](){
+        QOperatingSystemVersion v;
         v.m_os = currentType();
         const OSVERSIONINFOEX osv = qWindowsVersionInfo();
         v.m_major = osv.dwMajorVersion;
         v.m_minor = osv.dwMinorVersion;
         v.m_micro = osv.dwBuildNumber;
-    }
+        return v;
+    }();
     return v;
 }
 
