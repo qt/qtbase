@@ -105,7 +105,6 @@ bool QPluginParsedMetaData::parse(QByteArrayView raw)
     return true;
 }
 
-#if QT_CONFIG(library)
 QJsonObject QPluginParsedMetaData::toJson() const
 {
     // convert from the internal CBOR representation to an external JSON one
@@ -127,7 +126,6 @@ QJsonObject QPluginParsedMetaData::toJson() const
     }
     return o;
 }
-#endif
 
 class QFactoryLoaderPrivate : public QObjectPrivate
 {
