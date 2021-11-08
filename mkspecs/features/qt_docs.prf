@@ -47,7 +47,7 @@ isEmpty(QDOC_WIN_INCLUDETEMP) {
 
 macos: QDOC_INCLUDE_PATHS += $$join(QMAKE_DEFAULT_INCDIRS," -I","-I")
 
-!build_online_docs: qtPrepareTool(QHELPGENERATOR, qhelpgenerator)
+!build_online_docs: qtPrepareLibExecTool(QHELPGENERATOR, qhelpgenerator)
 
 qtPrepareLibExecTool(QTATTRIBUTIONSSCANNER, qtattributionsscanner)
 

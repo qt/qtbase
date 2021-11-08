@@ -90,7 +90,7 @@ qt*-config.pri
 /bin/qglinfo
 /bin/qgltf
 /bin/qhelpconverter
-/bin/qhelpgenerator
+/libexec/qhelpgenerator
 /bin/qlalr
 /bin/qml
 /bin/qmleasing
