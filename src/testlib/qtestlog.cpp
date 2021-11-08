@@ -69,6 +69,9 @@
 #include <string.h>
 #include <limits.h>
 
+#include <vector>
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 
 static void saveCoverageTool(const char * appname, bool testfailed, bool installedTestCoverage)
@@ -99,7 +102,7 @@ static void saveCoverageTool(const char * appname, bool testfailed, bool install
 static QElapsedTimer elapsedFunctionTime;
 static QElapsedTimer elapsedTotalTime;
 
-#define FOREACH_TEST_LOGGER for (QAbstractTestLogger *logger : *QTest::loggers())
+#define FOREACH_TEST_LOGGER for (const auto &logger : qAsConst(*QTest::loggers()))
 
 namespace QTest {
 
@@ -168,7 +171,7 @@ namespace QTest {
 
     static IgnoreResultList *ignoreResultList = nullptr;
 
-    Q_GLOBAL_STATIC(QList<QAbstractTestLogger *>, loggers)
+    Q_GLOBAL_STATIC(std::vector<std::unique_ptr<QAbstractTestLogger>>, loggers)
 
     static int verbosity = 0;
     static int maxWarnings = 2002;
@@ -206,10 +209,10 @@ namespace QTest {
     {
         static QBasicAtomicInt counter = Q_BASIC_ATOMIC_INITIALIZER(QTest::maxWarnings);
 
-        if (QTestLog::loggerCount() == 0) {
+        if (!QTestLog::hasLoggers()) {
             // if this goes wrong, something is seriously broken.
             qInstallMessageHandler(oldMessageHandler);
-            QTEST_ASSERT(QTestLog::loggerCount() != 0);
+            QTEST_ASSERT(QTestLog::hasLoggers());
         }
 
         if (handleIgnoredMessage(type, message)) {
@@ -423,7 +426,6 @@ void QTestLog::stopLogging()
     qInstallMessageHandler(QTest::oldMessageHandler);
     FOREACH_TEST_LOGGER {
         logger->stopLogging();
-        delete logger;
     }
     QTest::loggers()->clear();
     saveCoverageTool(QTestResult::currentAppName(), failCount() != 0, QTestLog::installedTestCoverage());
@@ -484,12 +486,12 @@ void QTestLog::addLogger(LogMode mode, const char *filename)
 void QTestLog::addLogger(QAbstractTestLogger *logger)
 {
     QTEST_ASSERT(logger);
-    QTest::loggers()->append(logger);
+    QTest::loggers()->emplace_back(logger);
 }
 
-int QTestLog::loggerCount()
+bool QTestLog::hasLoggers()
 {
-    return QTest::loggers()->size();
+    return !QTest::loggers()->empty();
 }
 
 bool QTestLog::loggerUsingStdout()

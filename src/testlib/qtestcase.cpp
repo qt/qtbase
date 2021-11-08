@@ -863,7 +863,7 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, const char *const argv[], bool 
     // If no loggers were created by the long version of the -o command-line
     // option, but a logger was requested via the old-style option, add it.
     const bool explicitLoggerRequested = logFormat != -1;
-    if (QTestLog::loggerCount() == 0 && explicitLoggerRequested)
+    if (!QTestLog::hasLoggers() && explicitLoggerRequested)
         QTestLog::addLogger(QTestLog::LogMode(logFormat), logFilename);
 
     bool addFallbackLogger = !explicitLoggerRequested;

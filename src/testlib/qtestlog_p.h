@@ -118,7 +118,7 @@ public:
     static void addLogger(LogMode mode, const char *filename);
     static void addLogger(QAbstractTestLogger *logger);
 
-    static int loggerCount();
+    static bool hasLoggers();
     static bool loggerUsingStdout();
 
     static void setVerboseLevel(int level);
