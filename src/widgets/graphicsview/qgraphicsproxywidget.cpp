@@ -1555,6 +1555,10 @@ void QGraphicsProxyWidget::paint(QPainter *painter, const QStyleOptionGraphicsIt
     if (exposedWidgetRect.isEmpty())
         return;
 
+    // When rendering to pdf etc. painting may go outside widget boundaries unless clipped
+    if (painter->device()->devType() != QInternal::Widget && (flags() & ItemClipsChildrenToShape))
+        painter->setClipRect(d->widget->geometry(), Qt::IntersectClip);
+
     d->widget->render(painter, exposedWidgetRect.topLeft(), exposedWidgetRect);
 }
 
