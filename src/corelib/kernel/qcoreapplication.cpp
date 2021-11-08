@@ -2018,6 +2018,9 @@ void QCoreApplication::quit()
     if (!self)
         return;
 
+    if (!self->d_func()->in_exec)
+        return;
+
     self->d_func()->quit();
 }
 
