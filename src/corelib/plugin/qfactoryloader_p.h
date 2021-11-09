@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2017 The Qt Company Ltd.
-** Copyright (C) 2021 Intel Corporation.
+** Copyright (C) 2022 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -115,6 +115,7 @@ public:
 #endif // Q_OS_UNIX && !Q_OS_MAC
 #endif // QT_CONFIG(library)
 
+    void setExtraSearchPath(const QString &path);
     QMultiMap<int, QString> keyMap() const;
     int indexOf(const QString &needle) const;
 

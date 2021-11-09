@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
-** Copyright (C) 2018 Intel Corporation.
+** Copyright (C) 2021 The Qt Company Ltd.
+** Copyright (C) 2022 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -140,6 +140,7 @@ public:
     QList<QLibraryPrivate*> libraryList;
     QMap<QString,QLibraryPrivate*> keyMap;
     QString suffix;
+    QString extraSearchPath;
     Qt::CaseSensitivity cs;
 
     void updateSinglePath(const QString &pluginDir);
@@ -276,6 +277,8 @@ void QFactoryLoader::update()
 
         d->updateSinglePath(path);
     }
+    if (!d->extraSearchPath.isEmpty())
+        d->updateSinglePath(d->extraSearchPath);
 #else
     Q_D(QFactoryLoader);
     qCDebug(lcFactoryLoader) << "ignoring" << d->iid
@@ -314,6 +317,9 @@ QFactoryLoader::QFactoryLoader(const char *iid,
                                Qt::CaseSensitivity cs)
     : QObject(*new QFactoryLoaderPrivate)
 {
+    Q_ASSERT_X(suffix.startsWith(u'/'), "QFactoryLoader",
+               "For historical reasons, the suffix must start with '/' (and it can't be empty)");
+
     moveToThread(QCoreApplicationPrivate::mainThread());
     Q_D(QFactoryLoader);
     d->iid = iid;
@@ -331,6 +337,30 @@ QFactoryLoader::QFactoryLoader(const char *iid,
 #else
     Q_UNUSED(suffix);
     Q_UNUSED(cs);
+#endif
+}
+
+void QFactoryLoader::setExtraSearchPath(const QString &path)
+{
+#if QT_CONFIG(library)
+    Q_D(QFactoryLoader);
+    if (d->extraSearchPath == path)
+        return;             // nothing to do
+
+    QMutexLocker locker(qt_factoryloader_mutex());
+    QString oldPath = qExchange(d->extraSearchPath, path);
+    if (oldPath.isEmpty()) {
+        // easy case, just update this directory
+        d->updateSinglePath(d->extraSearchPath);
+    } else {
+        // must re-scan everything
+        d->loadedPaths.clear();
+        d->libraryList.clear();
+        d->keyMap.clear();
+        update();
+    }
+#else
+    Q_UNUSED(path);
 #endif
 }
 
