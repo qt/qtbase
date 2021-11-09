@@ -646,6 +646,8 @@ int QRhiMetal::resourceLimit(QRhi::ResourceLimit limit) const
 #else
         return 512;
 #endif
+    case QRhi::MaxUniformBufferRange:
+        return 65536;
     default:
         Q_UNREACHABLE();
         return 0;

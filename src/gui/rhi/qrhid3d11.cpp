@@ -576,6 +576,8 @@ int QRhiD3D11::resourceLimit(QRhi::ResourceLimit limit) const
         return D3D11_CS_THREAD_GROUP_MAX_Y;
     case QRhi::MaxThreadGroupZ:
         return D3D11_CS_THREAD_GROUP_MAX_Z;
+    case QRhi::MaxUniformBufferRange:
+        return 65536;
     default:
         Q_UNREACHABLE();
         return 0;

@@ -162,6 +162,8 @@ int QRhiNull::resourceLimit(QRhi::ResourceLimit limit) const
         return 0;
     case QRhi::MaxThreadGroupZ:
         return 0;
+    case QRhi::MaxUniformBufferRange:
+        return 65536;
     default:
         Q_UNREACHABLE();
         return 0;

@@ -397,6 +397,22 @@ QT_BEGIN_NAMESPACE
 #define GL_TEXTURE_RECTANGLE              0x84F5
 #endif
 
+#ifndef GL_MAX_VERTEX_UNIFORM_COMPONENTS
+#define GL_MAX_VERTEX_UNIFORM_COMPONENTS  0x8B4A
+#endif
+
+#ifndef GL_MAX_FRAGMENT_UNIFORM_COMPONENTS
+#define GL_MAX_FRAGMENT_UNIFORM_COMPONENTS 0x8B49
+#endif
+
+#ifndef GL_MAX_VERTEX_UNIFORM_VECTORS
+#define GL_MAX_VERTEX_UNIFORM_VECTORS     0x8DFB
+#endif
+
+#ifndef GL_MAX_FRAGMENT_UNIFORM_VECTORS
+#define GL_MAX_FRAGMENT_UNIFORM_VECTORS   0x8DFD
+#endif
+
 /*!
     Constructs a new QRhiGles2InitParams.
 
@@ -677,6 +693,23 @@ bool QRhiGles2::create(QRhi::Flags flags)
     }
 
     caps.texture3D = caps.ctxMajor >= 3; // 3.0
+
+    // The ES 2.0 spec only has MAX_xxxx_VECTORS. ES 3.0 and up has both
+    // *VECTORS and *COMPONENTS. OpenGL 2.0-4.0 only has MAX_xxxx_COMPONENTS.
+    // 4.1 and above has both. What a mess.
+    if (caps.gles) {
+        GLint maxVertexUniformVectors = 0;
+        f->glGetIntegerv(GL_MAX_VERTEX_UNIFORM_VECTORS, &maxVertexUniformVectors);
+        GLint maxFragmentUniformVectors = 0;
+        f->glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_VECTORS, &maxFragmentUniformVectors);
+        caps.maxUniformVectors = qMin(maxVertexUniformVectors, maxFragmentUniformVectors);
+    } else {
+        GLint maxVertexUniformComponents = 0;
+        f->glGetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS, &maxVertexUniformComponents);
+        GLint maxFragmentUniformComponents = 0;
+        f->glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, &maxFragmentUniformComponents);
+        caps.maxUniformVectors = qMin(maxVertexUniformComponents, maxFragmentUniformComponents) / 4;
+    }
 
     if (!caps.gles) {
         f->glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
@@ -1105,6 +1138,8 @@ int QRhiGles2::resourceLimit(QRhi::ResourceLimit limit) const
         return caps.maxThreadGroupsY;
     case QRhi::MaxThreadGroupZ:
         return caps.maxThreadGroupsZ;
+    case QRhi::MaxUniformBufferRange:
+        return int(qMin<qint64>(INT_MAX, caps.maxUniformVectors * qint64(16)));
     default:
         Q_UNREACHABLE();
         return 0;

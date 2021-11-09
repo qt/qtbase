@@ -1605,7 +1605,8 @@ public:
         MaxThreadsPerThreadGroup,
         MaxThreadGroupX,
         MaxThreadGroupY,
-        MaxThreadGroupZ
+        MaxThreadGroupZ,
+        MaxUniformBufferRange
     };
 
     ~QRhi();

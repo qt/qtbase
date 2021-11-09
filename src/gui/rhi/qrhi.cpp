@@ -767,6 +767,12 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     \value MaxThreadGroupZ The maximum size of a work/thread group in the Z
     dimension. Effectively the maximum value of \c local_size_z in the compute
     shader. Typically 64 or 256.
+
+    \value MaxUniformBufferRange The number of bytes that can be exposed from a
+    uniform buffer to the shaders at once. On OpenGL ES 2.0 and 3.0
+    implementations this may be as low as 3584 bytes (224 four component, 32
+    bits per component vectors). Elsewhere the value is typically 16384 (1024
+    vec4s) or 65536 (4096 vec4s).
  */
 
 /*!
@@ -3208,6 +3214,9 @@ bool QRhiShaderResourceBinding::isLayoutCompatible(const QRhiShaderResourceBindi
     suitable for creating pipelines. Such a pipeline must then always be used
     together with another, layout compatible QRhiShaderResourceBindings with
     resources present passed to QRhiCommandBuffer::setShaderResources().
+
+    \note If the size of \a buf exceeds the limit reported for
+    QRhi::MaxUniformBufferRange, unexpected errors may occur.
  */
 QRhiShaderResourceBinding QRhiShaderResourceBinding::uniformBuffer(
         int binding, StageFlags stage, QRhiBuffer *buf)
@@ -3242,6 +3251,9 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::uniformBuffer(
     suitable for creating pipelines. Such a pipeline must then always be used
     together with another, layout compatible QRhiShaderResourceBindings with
     resources present passed to QRhiCommandBuffer::setShaderResources().
+
+    \note If \a size exceeds the limit reported for QRhi::MaxUniformBufferRange,
+    unexpected errors may occur.
  */
 QRhiShaderResourceBinding QRhiShaderResourceBinding::uniformBuffer(
         int binding, StageFlags stage, QRhiBuffer *buf, int offset, int size)
@@ -3276,6 +3288,9 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::uniformBuffer(
     suitable for creating pipelines. Such a pipeline must then always be used
     together with another, layout compatible QRhiShaderResourceBindings with
     resources present passed to QRhiCommandBuffer::setShaderResources().
+
+    \note If \a size exceeds the limit reported for QRhi::MaxUniformBufferRange,
+    unexpected errors may occur.
  */
 QRhiShaderResourceBinding QRhiShaderResourceBinding::uniformBufferWithDynamicOffset(
         int binding, StageFlags stage, QRhiBuffer *buf, int size)
