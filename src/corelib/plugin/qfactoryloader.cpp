@@ -152,9 +152,17 @@ public:
 static Q_LOGGING_CATEGORY_WITH_ENV_OVERRIDE(lcFactoryLoader, "QT_DEBUG_PLUGINS",
                                             "qt.core.plugin.factoryloader")
 
-Q_GLOBAL_STATIC(QList<QFactoryLoader *>, qt_factory_loaders)
+namespace {
+struct QFactoryLoaderGlobals
+{
+    // needs to be recursive because loading one plugin could cause another
+    // factory to be initialized
+    QRecursiveMutex mutex;
+    QList<QFactoryLoader *> loaders;
+};
+}
 
-Q_GLOBAL_STATIC(QRecursiveMutex, qt_factoryloader_mutex)
+Q_GLOBAL_STATIC(QFactoryLoaderGlobals, qt_factoryloader_global)
 
 QFactoryLoaderPrivate::~QFactoryLoaderPrivate()
 {
@@ -284,8 +292,10 @@ void QFactoryLoader::update()
 
 QFactoryLoader::~QFactoryLoader()
 {
-    QMutexLocker locker(qt_factoryloader_mutex());
-    qt_factory_loaders()->removeOne(this);
+    if (!qt_factoryloader_global.isDestroyed()) {
+        QMutexLocker locker(&qt_factoryloader_global->mutex);
+        qt_factoryloader_global->loaders.removeOne(this);
+    }
 }
 
 #if defined(Q_OS_UNIX) && !defined (Q_OS_MAC)
@@ -298,11 +308,10 @@ QLibraryPrivate *QFactoryLoader::library(const QString &key) const
 
 void QFactoryLoader::refreshAll()
 {
-    QMutexLocker locker(qt_factoryloader_mutex());
-    QList<QFactoryLoader *> *loaders = qt_factory_loaders();
-    for (QList<QFactoryLoader *>::const_iterator it = loaders->constBegin();
-         it != loaders->constEnd(); ++it) {
-        (*it)->update();
+    if (qt_factoryloader_global.exists()) {
+        QMutexLocker locker(&qt_factoryloader_global->mutex);
+        for (QFactoryLoader *loader : std::as_const(qt_factoryloader_global->loaders))
+            loader->update();
     }
 }
 
@@ -327,9 +336,9 @@ QFactoryLoader::QFactoryLoader(const char *iid,
         d->suffix.remove(0, 1);
 # endif
 
-    QMutexLocker locker(qt_factoryloader_mutex());
+    QMutexLocker locker(&qt_factoryloader_global->mutex);
     update();
-    qt_factory_loaders()->append(this);
+    qt_factoryloader_global->loaders.append(this);
 #else
     Q_UNUSED(suffix);
     Q_UNUSED(cs);
@@ -343,7 +352,7 @@ void QFactoryLoader::setExtraSearchPath(const QString &path)
     if (d->extraSearchPath == path)
         return;             // nothing to do
 
-    QMutexLocker locker(qt_factoryloader_mutex());
+    QMutexLocker locker(&qt_factoryloader_global->mutex);
     QString oldPath = qExchange(d->extraSearchPath, path);
     if (oldPath.isEmpty()) {
         // easy case, just update this directory
