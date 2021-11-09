@@ -79,6 +79,7 @@ private slots:
     void arrayStringElements();
     void arraySelfAssign_data() { basics_data(); }
     void arraySelfAssign();
+    void arrayNested();
 
     void mapDefaultInitialization();
     void mapEmptyInitializerList();
@@ -97,6 +98,7 @@ private slots:
     void mapSelfAssign();
     void mapComplexKeys_data() { basics_data(); }
     void mapComplexKeys();
+    void mapNested();
 
     void sorting();
 
@@ -1579,6 +1581,91 @@ void tst_QCborValue::mapComplexKeys()
     QCOMPARE(m[tagged].toInteger(), 47);
     QCOMPARE(m.take(tagged).toInteger(), 47);
     QVERIFY(!m.contains(tagged));
+}
+
+void tst_QCborValue::arrayNested()
+{
+    const QCborArray wrongArray = { false, nullptr, QCborValue() };
+    {
+        QCborArray a1 = { 42, 47 };
+        QCborArray a2 = { QCborValue(a1) };
+        QCOMPARE(a2.size(), 1);
+        const QCborValue &first = qAsConst(a2).first();
+        QVERIFY(first.isArray());
+        QCOMPARE(first.toArray(wrongArray).size(), 2);
+        QCOMPARE(first.toArray(wrongArray).first(), 42);
+        QCOMPARE(first.toArray(wrongArray).last(), 47);
+    }
+    {
+        QCborArray a1 = { 42, 47 };
+        QCborArray a2 = { QCborValue(a1) };
+        QCOMPARE(a2.size(), 1);
+        QCborValueRef first = a2.first();
+        QVERIFY(first.isArray());
+        QCOMPARE(first.toArray(wrongArray).size(), 2);
+        QCOMPARE(first.toArray(wrongArray).first(), 42);
+        QCOMPARE(first.toArray(wrongArray).last(), 47);
+    }
+
+    {
+        QCborArray a1;
+        a1 = { QCborValue(a1) };        // insert it into itself
+        QCOMPARE(a1.size(), 1);
+        const QCborValue &first = qAsConst(a1).first();
+        QVERIFY(first.isArray());
+        QCOMPARE(first, QCborArray());
+        QCOMPARE(first.toArray(wrongArray), QCborArray());
+    }
+    {
+        QCborArray a1;
+        a1 = { QCborValue(a1) };        // insert it into itself
+        QCborValueRef first = a1.first();
+        QVERIFY(first.isArray());
+        QCOMPARE(first, QCborArray());
+        QCOMPARE(first.toArray(wrongArray), QCborArray());
+    }
+    {
+        QCborArray a1;
+        a1.append(a1);                  // insert into itself
+        QCOMPARE(a1.size(), 1);
+        const QCborValue &first = qAsConst(a1).first();
+        QVERIFY(first.isArray());
+        QCOMPARE(first, QCborArray());
+        QCOMPARE(first.toArray(), QCborArray());
+    }
+    {
+        QCborArray a1;
+        a1.append(a1);                  // insert into itself
+        QCborValueRef first = a1.first();
+        QVERIFY(first.isArray());
+        QCOMPARE(first, QCborArray());
+        QCOMPARE(first.toArray(), QCborArray());
+    }
+}
+
+void tst_QCborValue::mapNested()
+{
+    const QCborMap wrongMap = { { -1, false }, {-2, nullptr }, { -3, QCborValue() } };
+    {
+        QCborMap m1 = { {1, 42}, {2, 47} };
+        QCborMap m2 = { { QString(), m1 } };
+        QCOMPARE(m2.size(), 1);
+        const QCborValue &first = m2.constBegin().value();
+        QVERIFY(first.isMap());
+        QCOMPARE(first.toMap(wrongMap).size(), 2);
+        QCOMPARE(first.toMap(wrongMap).begin().key(), 1);
+        QCOMPARE(first.toMap(wrongMap).begin().value(), 42);
+    }
+
+    {
+        QCborMap m1;
+        m1 = { { QString(), QCborValue(m1) } };         // insert it into itself
+        QCOMPARE(m1.size(), 1);
+        const QCborValue &first = m1.constBegin().value();
+        QVERIFY(first.isMap());
+        QCOMPARE(first, QCborMap());
+        QCOMPARE(first.toMap(wrongMap), QCborMap());
+    }
 }
 
 void tst_QCborValue::sorting()

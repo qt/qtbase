@@ -2108,7 +2108,8 @@ QCborArray QCborValue::toArray(const QCborArray &defaultValue) const
     Q_ASSERT(n == -1 || container == nullptr);
     if (n < 0)
         dd = container;
-    return dd ? QCborArray(*dd) : defaultValue;
+    // return QCborArray(*dd); but that's UB if dd is nullptr
+    return dd ? QCborArray(*dd) : QCborArray();
 }
 
 /*!
@@ -2150,7 +2151,8 @@ QCborMap QCborValue::toMap(const QCborMap &defaultValue) const
     Q_ASSERT(n == -1 || container == nullptr);
     if (n < 0)
         dd = container;
-    return dd ? QCborMap(*dd) : defaultValue;
+    // return QCborMap(*dd); but that's UB if dd is nullptr
+    return dd ? QCborMap(*dd) : QCborMap();
 }
 
 /*!
