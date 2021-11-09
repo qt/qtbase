@@ -99,10 +99,11 @@ template <typename UcsInt>
     if (!digit)
         return zero;
 
-    // See QTBUG-85409: Suzhou's digits are U+3007, U+2021, ..., U+3029
+    // See QTBUG-85409: Suzhou's digits are U+3007, U+3021, ..., U+3029
     if (zero == u'\u3007')
         return u'\u3020' + digit;
-    // At CLDR 36.1, no other number system's digits were discontinuous.
+    // In util/locale_database/ldml.py, LocaleScanner.numericData() asserts no
+    // other number system in CLDR has discontinuous digits.
 
     return zero + digit;
 }
