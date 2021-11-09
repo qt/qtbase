@@ -171,6 +171,7 @@ public:
     static const QOperatingSystemVersion MacOSMojave;
     static const QOperatingSystemVersion MacOSCatalina;
     static const QOperatingSystemVersion MacOSBigSur;
+    static const QOperatingSystemVersion MacOSMonterey;
 
     static const QOperatingSystemVersion AndroidJellyBean;
     static const QOperatingSystemVersion AndroidJellyBean_MR1;
@@ -201,6 +202,7 @@ public:
     static constexpr QOperatingSystemVersionBase MacOSCatalina { QOperatingSystemVersionBase::MacOS, 10, 15 };
 #if QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_11_0)
     static constexpr QOperatingSystemVersionBase MacOSBigSur = { QOperatingSystemVersionBase::MacOS, 11, 0 };
+    static constexpr QOperatingSystemVersionBase MacOSMonterey = { QOperatingSystemVersionBase::MacOS, 12, 0 };
 #else // ### Qt 7: Verify the assumption
 #   error Either you are using an outdated SDK or my assumption that Qt7 would require at least 11.0 was wrong
 #endif
