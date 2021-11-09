@@ -331,9 +331,6 @@ function(qt_internal_get_xcode_version out_var)
         execute_process(COMMAND /usr/bin/xcrun  xcodebuild -version
                         OUTPUT_VARIABLE xcode_version
                         ERROR_VARIABLE xcrun_error)
-        if(NOT xcode_version)
-            message(NOTICE "Can't determine Xcode version. Error: ${xcrun_error}")
-        endif()
         string(REPLACE "\n" " " xcode_version "${xcode_version}")
         string(STRIP "${xcode_version}" xcode_version)
         set(${out_var} "${xcode_version}" PARENT_SCOPE)
