@@ -51,7 +51,7 @@
 #include "qcbormap.h"
 #include "qcborvalue.h"
 #include "qcborvalue.h"
-#include "qdir.h"
+#include "qdiriterator.h"
 #include "qfileinfo.h"
 #include "qjsonarray.h"
 #include "qjsondocument.h"
@@ -170,7 +170,7 @@ inline void QFactoryLoaderPrivate::updateSinglePath(const QString &path)
 
     qCDebug(lcFactoryLoader) << "checking directory path" << path << "...";
 
-    QStringList plugins = QDir(path).entryList(
+    QDirIterator plugins(path,
 #if defined(Q_OS_WIN)
                 QStringList(QStringLiteral("*.dll")),
 #elif defined(Q_OS_ANDROID)
@@ -178,8 +178,8 @@ inline void QFactoryLoaderPrivate::updateSinglePath(const QString &path)
 #endif
                 QDir::Files);
 
-    for (int j = 0; j < plugins.count(); ++j) {
-        QString fileName = QDir::cleanPath(path + QLatin1Char('/') + plugins.at(j));
+    while (plugins.hasNext()) {
+        QString fileName = plugins.next();
 #ifdef Q_OS_MAC
         const bool isDebugPlugin = fileName.endsWith(QLatin1String("_debug.dylib"));
         const bool isDebugLibrary =
