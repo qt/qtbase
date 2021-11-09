@@ -382,6 +382,8 @@ language_map = {
     325: ("Zarma",                       "dje"),
     326: ("Zhuang",                      "za"), # macrolanguage
     327: ("Zulu",                        "zu"),
+    328: ("Kaingang",                    "kgp"),
+    329: ("Nheengatu",                   "yrl")
 }
 
 language_aliases = {

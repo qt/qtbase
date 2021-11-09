@@ -690,6 +690,10 @@ static const QCalendarLocale locale_data[] = {
       {   324,    66,    25,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// Yoruba/Latin/Benin
       {   325,    66,   170,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// Zarma/Latin/Niger
       {   327,    66,   216,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// Zulu/Latin/South Africa
+      {   328,    66,    32,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// Kaingang/Latin/Brazil
+      {   329,    66,    32,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// Nheengatu/Latin/Brazil
+      {   329,    66,    54,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// Nheengatu/Latin/Colombia
+      {   329,    66,   254,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// Nheengatu/Latin/Venezuela
       {     0,     0,     0,    0,    0,    0,    0,    0,    0,  0,  0,  0,  0,  0,  0 },// trailing zeros
 };
 

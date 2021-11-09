@@ -247,6 +247,7 @@
     \value JolaFonyi
     \value Kabuverdianu
     \value Kabyle
+    \value Kaingang Since 6.3
     \value Kako
     \value Kalaallisut Since Qt 6.0
     \value Kalenjin
@@ -327,6 +328,7 @@
     \value Nepali
     \value Newari Since Qt 5.7
     \value Ngiemboon
+    \value Nheengatu Since 6.3
     \value NigerianPidgin Since Qt 6.0
     \value Ngomba
     \value Nko Since Qt 5.5

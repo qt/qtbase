@@ -403,6 +403,8 @@ public:
         Zarma = 325,
         Zhuang = 326,
         Zulu = 327,
+        Kaingang = 328,
+        Nheengatu = 329,
 
         Afan = Oromo,
         Bengali = Bangla,
@@ -424,7 +426,7 @@ public:
         Uigur = Uyghur,
         Walamo = Wolaytta,
 
-        LastLanguage = Zulu
+        LastLanguage = Nheengatu
     };
 
     enum Script : ushort {
