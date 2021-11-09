@@ -26,6 +26,7 @@ macro(qt_find_apple_system_frameworks)
         qt_internal_find_apple_system_framework(FWCoreMotion CoreMotion)
         qt_internal_find_apple_system_framework(FWWatchKit WatchKit)
         qt_internal_find_apple_system_framework(FWGameController GameController)
+        qt_internal_find_apple_system_framework(FWCoreBluetooth CoreBluetooth)
     endif()
 endmacro()
 
