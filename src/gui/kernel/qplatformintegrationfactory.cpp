@@ -51,23 +51,9 @@ QT_BEGIN_NAMESPACE
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
     (QPlatformIntegrationFactoryInterface_iid, QLatin1String("/platforms"), Qt::CaseInsensitive))
 
-#if QT_CONFIG(library)
-Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, directLoader,
-                          (QPlatformIntegrationFactoryInterface_iid, QLatin1String(""), Qt::CaseInsensitive))
-#endif // QT_CONFIG(library)
-
 QPlatformIntegration *QPlatformIntegrationFactory::create(const QString &platform, const QStringList &paramList, int &argc, char **argv, const QString &platformPluginPath)
 {
-#if QT_CONFIG(library)
-    // Try loading the plugin from platformPluginPath first:
-    if (!platformPluginPath.isEmpty()) {
-        QCoreApplication::addLibraryPath(platformPluginPath);
-        if (QPlatformIntegration *ret = qLoadPlugin<QPlatformIntegration, QPlatformIntegrationPlugin>(directLoader(), platform, paramList, argc, argv))
-            return ret;
-    }
-#else
-    Q_UNUSED(platformPluginPath);
-#endif
+    loader->setExtraSearchPath(platformPluginPath);
     return qLoadPlugin<QPlatformIntegration, QPlatformIntegrationPlugin>(loader(), platform, paramList, argc, argv);
 }
 
@@ -80,25 +66,8 @@ QPlatformIntegration *QPlatformIntegrationFactory::create(const QString &platfor
 
 QStringList QPlatformIntegrationFactory::keys(const QString &platformPluginPath)
 {
-    QStringList list;
-#if QT_CONFIG(library)
-    if (!platformPluginPath.isEmpty()) {
-        QCoreApplication::addLibraryPath(platformPluginPath);
-        list = directLoader()->keyMap().values();
-        if (!list.isEmpty()) {
-            const QString postFix = QLatin1String(" (from ")
-                                    + QDir::toNativeSeparators(platformPluginPath)
-                                    + QLatin1Char(')');
-            const QStringList::iterator end = list.end();
-            for (QStringList::iterator it = list.begin(); it != end; ++it)
-                (*it).append(postFix);
-        }
-    }
-#else
-    Q_UNUSED(platformPluginPath);
-#endif
-    list.append(loader()->keyMap().values());
-    return list;
+    loader->setExtraSearchPath(platformPluginPath);
+    return loader->keyMap().values();
 }
 
 QT_END_NAMESPACE

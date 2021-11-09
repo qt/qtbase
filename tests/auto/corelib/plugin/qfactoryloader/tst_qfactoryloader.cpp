@@ -47,11 +47,13 @@ class tst_QFactoryLoader : public QObject
     QSharedPointer<QTemporaryDir> directory;
 #endif
 
+    QString binFolder;
 public slots:
     void initTestCase();
 
 private slots:
     void usingTwoFactoriesFromSameDir();
+    void extraSearchPath();
 };
 
 static const char binFolderC[] = "bin";
@@ -64,15 +66,17 @@ void tst_QFactoryLoader::initTestCase()
     QVERIFY(directory->isValid());
     QVERIFY2(QDir::setCurrent(directory->path()), qPrintable("Could not chdir to " + directory->path()));
 #endif
-    const QString binFolder = QFINDTESTDATA(binFolderC);
+    binFolder = QFINDTESTDATA(binFolderC);
     QVERIFY2(!binFolder.isEmpty(), "Unable to locate 'bin' folder");
-#if QT_CONFIG(library)
-    QCoreApplication::setLibraryPaths(QStringList(QFileInfo(binFolder).absolutePath()));
-#endif
 }
 
 void tst_QFactoryLoader::usingTwoFactoriesFromSameDir()
 {
+#if QT_CONFIG(library)
+    // set the library path to contain the directory where the 'bin' dir is located
+    QCoreApplication::setLibraryPaths( { QFileInfo(binFolder).absolutePath() });
+#endif
+
     const QString suffix = QLatin1Char('/') + QLatin1String(binFolderC);
     QFactoryLoader loader1(PluginInterface1_iid, suffix);
 
@@ -90,6 +94,33 @@ void tst_QFactoryLoader::usingTwoFactoriesFromSameDir()
 
     QCOMPARE(plugin1->pluginName(), QLatin1String("Plugin1 ok"));
     QCOMPARE(plugin2->pluginName(), QLatin1String("Plugin2 ok"));
+}
+
+void tst_QFactoryLoader::extraSearchPath()
+{
+#if defined(Q_OS_ANDROID) && !QT_CONFIG(library)
+    QSKIP("Test not applicable in this configuration.");
+#else
+    QCoreApplication::setLibraryPaths(QStringList());
+
+    QString absoluteBinPath = QFileInfo(binFolder).absoluteFilePath();
+    QFactoryLoader loader1(PluginInterface1_iid, "/nonexistent");
+
+    // it shouldn't have scanned anything because we haven't given it a path yet
+    QVERIFY(loader1.metaData().isEmpty());
+
+    loader1.setExtraSearchPath(absoluteBinPath);
+    PluginInterface1 *plugin1 = qobject_cast<PluginInterface1 *>(loader1.instance(0));
+    QVERIFY2(plugin1,
+             qPrintable(QString::fromLatin1("Cannot load plugin '%1'")
+                        .arg(QLatin1String(PluginInterface1_iid))));
+
+    QCOMPARE(plugin1->pluginName(), QLatin1String("Plugin1 ok"));
+
+    // check that it forgets that plugin
+    loader1.setExtraSearchPath(QString());
+    QVERIFY(loader1.metaData().isEmpty());
+#endif
 }
 
 QTEST_MAIN(tst_QFactoryLoader)
