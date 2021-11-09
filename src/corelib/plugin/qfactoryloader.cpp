@@ -170,9 +170,6 @@ inline void QFactoryLoaderPrivate::updateSinglePath(const QString &path)
 
     qCDebug(lcFactoryLoader) << "checking directory path" << path << "...";
 
-    if (!QDir(path).exists(QLatin1String(".")))
-        return;
-
     QStringList plugins = QDir(path).entryList(
 #if defined(Q_OS_WIN)
                 QStringList(QStringLiteral("*.dll")),
