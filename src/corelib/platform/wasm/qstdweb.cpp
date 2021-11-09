@@ -95,6 +95,51 @@ uint64_t File::size() const
     return uint64_t(m_file["size"].as<uint53_t>());
 }
 
+// Streams partial file content into the given buffer asynchronously. The completed
+// callback is called on completion.
+void File::stream(uint32_t offset, uint32_t length, char *buffer, const std::function<void ()> &completed) const
+{
+    // Read file in chunks in order to avoid holding two copies in memory at the same time
+    const uint32_t chunkSize = 256 * 1024;
+    const uint32_t end = offset + length;
+    // assert end < file.size
+    auto fileReader = std::make_shared<qstdweb::FileReader>();
+
+    // "this" is valid now, but may not be by the time the chunkCompleted callback
+    // below is made. Make a copy of the file handle.
+    const File fileHandle = *this;
+    auto chunkCompleted = std::make_shared<std::function<void (uint32_t, char *buffer)>>();
+    *chunkCompleted = [=](uint32_t chunkBegin, char *chunkBuffer) mutable {
+
+        // Copy current chunk from JS memory to Wasm memory
+        qstdweb::ArrayBuffer result = fileReader->result();
+        qstdweb::Uint8Array(result).copyTo(chunkBuffer);
+
+        // Read next chunk if not at buffer end
+        uint32_t nextChunkBegin = std::min(chunkBegin + result.byteLength(), end);
+        uint32_t nextChunkEnd = std::min(nextChunkBegin + chunkSize, end);
+        if (nextChunkBegin == end) {
+            completed();
+            chunkCompleted.reset();
+            return;
+        }
+        char *nextChunkBuffer = chunkBuffer + result.byteLength();
+        fileReader->onLoad([=]() { (*chunkCompleted)(nextChunkBegin, nextChunkBuffer); });
+        qstdweb::Blob blob = fileHandle.slice(nextChunkBegin, nextChunkEnd);
+        fileReader->readAsArrayBuffer(blob);
+    };
+
+    // Read first chunk. First iteration is a dummy iteration with no available data.
+    (*chunkCompleted)(offset, buffer);
+}
+
+// Streams file content into the given buffer asynchronously. The completed
+// callback is called on completion.
+void File::stream(char *buffer, const std::function<void ()> &completed) const
+{
+    stream(0, size(), buffer, completed);
+}
+
 FileList::FileList(const emscripten::val &fileList)
     :m_fileList(fileList)
 {

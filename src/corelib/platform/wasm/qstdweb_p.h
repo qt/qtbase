@@ -99,6 +99,8 @@ namespace qstdweb {
         Blob slice(uint64_t begin, uint64_t end) const;
         std::string name() const;
         uint64_t size() const;
+        void stream(uint32_t offset, uint32_t length, char *buffer, const std::function<void ()> &completed) const;
+        void stream(char *buffer, const std::function<void ()> &completed) const;
 
     private:
         emscripten::val m_file = emscripten::val::undefined();
