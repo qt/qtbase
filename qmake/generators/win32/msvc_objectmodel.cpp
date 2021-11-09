@@ -50,6 +50,8 @@ DotNET vsVersionFromString(const ProString &versionString)
     int versionMajor = versionView.left(idx).toInt();
     int versionMinor = versionView.mid(idx + 1).toInt();
 
+    if (versionMajor == 17)
+        return NET2022;
     if (versionMajor == 16)
         return NET2019;
     if (versionMajor == 15)
