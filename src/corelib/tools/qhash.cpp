@@ -1865,14 +1865,15 @@ size_t qHash(long double key, size_t seed) noexcept
     \sa count(), QMultiHash::contains()
 */
 
-/*! \fn template <class Key, class T> T QHash<Key, T>::value(const Key &key, const T &defaultValue = T()) const
+/*! \fn template <class Key, class T> T QHash<Key, T>::value(const Key &key) const
+    \fn template <class Key, class T> T QHash<Key, T>::value(const Key &key, const T &defaultValue) const
     \overload
 
     Returns the value associated with the \a key.
 
     If the hash contains no item with the \a key, the function
-    returns \a defaultValue, which is a \l{default-constructed value} if the
-    parameter has not been specified.
+    returns \a defaultValue, or a \l{default-constructed value} if this
+    parameter has not been supplied.
 */
 
 /*! \fn template <class Key, class T> T &QHash<Key, T>::operator[](const Key &key)
@@ -1935,11 +1936,13 @@ size_t qHash(long double key, size_t seed) noexcept
 */
 
 /*!
-    \fn template <class Key, class T> Key QHash<Key, T>::key(const T &value, const Key &defaultKey = Key()) const
+    \fn template <class Key, class T> Key QHash<Key, T>::key(const T &value) const
+    \fn template <class Key, class T> Key QHash<Key, T>::key(const T &value, const Key &defaultKey) const
     \since 4.3
 
-    Returns the first key mapped to \a value, or \a defaultKey if the
-    hash contains no item mapped to \a value.
+    Returns the first key mapped to \a value. If the hash contains no item
+    mapped to \a value, returns \a defaultKey, or a \l{default-constructed
+    value}{default-constructed key} if this parameter has not been supplied.
 
     This function can be slow (\l{linear time}), because QHash's
     internal data structure is optimized for fast lookup by key, not
@@ -2899,14 +2902,14 @@ size_t qHash(long double key, size_t seed) noexcept
     \sa keys(), values()
 */
 
-/*! \fn template <class Key, class T> T QMultiHash<Key, T>::value(const Key &key, const T &defaultValue = T()) const
-    \overload
+/*! \fn template <class Key, class T> T QMultiHash<Key, T>::value(const Key &key) const
+    \fn template <class Key, class T> T QMultiHash<Key, T>::value(const Key &key, const T &defaultValue) const
 
     Returns the value associated with the \a key.
 
     If the hash contains no item with the \a key, the function
-    returns \a defaultValue, which is a \l{default-constructed value} if the
-    parameter has not been specified.
+    returns \a defaultValue, or a \l{default-constructed value} if this
+    parameter has not been supplied.
 
     If there are multiple
     items for the \a key in the hash, the value of the most recently
@@ -3054,11 +3057,13 @@ size_t qHash(long double key, size_t seed) noexcept
 */
 
 /*!
-    \fn template <class Key, class T> Key QMultiHash<Key, T>::key(const T &value, const Key &defaultKey = Key()) const
+    \fn template <class Key, class T> Key QMultiHash<Key, T>::key(const T &value) const
+    \fn template <class Key, class T> Key QMultiHash<Key, T>::key(const T &value, const Key &defaultKey) const
     \since 4.3
 
-    Returns the first key mapped to \a value, or \a defaultKey if the
-    hash contains no item mapped to \a value.
+    Returns the first key mapped to \a value. If the hash contains no item
+    mapped to \a value, returns \a defaultKey, or a \l{default-constructed
+    value}{default-constructed key} if this parameter has not been supplied.
 
     This function can be slow (\l{linear time}), because QMultiHash's
     internal data structure is optimized for fast lookup by key, not
