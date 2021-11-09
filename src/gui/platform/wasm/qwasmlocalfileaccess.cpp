@@ -129,27 +129,13 @@ void openFile(const std::string &accept,
 void saveFile(const char *content, size_t size, const std::string &fileNameHint)
 {
     // Save a file by creating programmatically clicking a download
-    // link to an object url to a Blob containing the file content.
-    // File content is copied once, so that the passed in content
-    // buffer can be released as soon as this function returns - we
-    // don't know for how long the browser will retain the TypedArray
-    // view used to create the Blob.
-
+    // link to an object url to a Blob containing a copy of the file
+    // content. The copy is made so that the passed in content buffer
+    // can be released as soon as this function returns.
+    qstdweb::Blob contentBlob = qstdweb::Blob::copyFrom(content, size);
     emscripten::val document = emscripten::val::global("document");
     emscripten::val window = emscripten::val::global("window");
-
-    emscripten::val fileContentView = emscripten::val(emscripten::typed_memory_view(size, content));
-    emscripten::val fileContentCopy = emscripten::val::global("ArrayBuffer").new_(size);
-    emscripten::val fileContentCopyView = emscripten::val::global("Uint8Array").new_(fileContentCopy);
-    fileContentCopyView.call<void>("set", fileContentView);
-
-    emscripten::val contentArray = emscripten::val::array();
-    contentArray.call<void>("push", fileContentCopyView);
-    emscripten::val type = emscripten::val::object();
-    type.set("type","application/octet-stream");
-    emscripten::val contentBlob = emscripten::val::global("Blob").new_(contentArray, type);
-
-    emscripten::val contentUrl = window["URL"].call<emscripten::val>("createObjectURL", contentBlob);
+    emscripten::val contentUrl = window["URL"].call<emscripten::val>("createObjectURL", contentBlob.val());
     emscripten::val contentLink = document.call<emscripten::val>("createElement", std::string("a"));
     contentLink.set("href", contentUrl);
     contentLink.set("download", fileNameHint);

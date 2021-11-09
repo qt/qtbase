@@ -49,6 +49,11 @@ namespace qstdweb {
 
 typedef double uint53_t; // see Number.MAX_SAFE_INTEGER
 
+ArrayBuffer::ArrayBuffer(uint32_t size)
+{
+    m_arrayBuffer = emscripten::val::global("ArrayBuffer").new_(size);
+}
+
 ArrayBuffer::ArrayBuffer(const emscripten::val &arrayBuffer)
     :m_arrayBuffer(arrayBuffer)
 {
@@ -72,6 +77,23 @@ Blob::Blob(const emscripten::val &blob)
 uint32_t Blob::size() const
 {
     return m_blob["size"].as<uint32_t>();
+}
+
+// Copies content from the given buffer into a Blob object
+Blob Blob::copyFrom(const char *buffer, uint32_t size)
+{
+    Uint8Array contentCopy = Uint8Array::copyFrom(buffer, size);
+
+    emscripten::val contentArray = emscripten::val::array();
+    contentArray.call<void>("push", contentCopy.m_uint8Array);
+    emscripten::val type = emscripten::val::object();
+    type.set("type","application/octet-stream");
+    return Blob(emscripten::val::global("Blob").new_(contentArray, type));
+}
+
+emscripten::val Blob::val()
+{
+    return m_blob;
 }
 
 File::File(const emscripten::val &file)
@@ -191,26 +213,37 @@ Uint8Array Uint8Array::heap()
     return Uint8Array(heap_());
 }
 
+// Constructs a Uint8Array which references the given emscripten::val, which must contain a JS Unit8Array
 Uint8Array::Uint8Array(const emscripten::val &uint8Array)
 : m_uint8Array(uint8Array)
 {
 
 }
 
+// Constructs a Uint8Array which references an ArrayBuffer
 Uint8Array::Uint8Array(const ArrayBuffer &buffer)
 : m_uint8Array(Uint8Array::constructor_().new_(buffer.m_arrayBuffer))
 {
 
 }
 
+// Constructs a Uint8Array which references a view into an ArrayBuffer
 Uint8Array::Uint8Array(const ArrayBuffer &buffer, uint32_t offset, uint32_t length)
 : m_uint8Array(Uint8Array::constructor_().new_(buffer.m_arrayBuffer, offset, length))
 {
 
 }
 
-Uint8Array::Uint8Array(char *buffer, uint32_t size)
+// Constructs a Uint8Array which references an area on the heap.
+Uint8Array::Uint8Array(const char *buffer, uint32_t size)
 :m_uint8Array(Uint8Array::constructor_().new_(Uint8Array::heap().buffer().m_arrayBuffer, uint32_t(buffer), size))
+{
+
+}
+
+// Constructs a Uint8Array which allocates and references a new ArrayBuffer with the given size.
+Uint8Array::Uint8Array(uint32_t size)
+: m_uint8Array(Uint8Array::constructor_().new_(size))
 {
 
 }
@@ -230,14 +263,24 @@ void Uint8Array::set(const Uint8Array &source)
     m_uint8Array.call<void>("set", source.m_uint8Array); // copies source content
 }
 
+// Copies the Uint8Array conent to a destination on the heap
 void Uint8Array::copyTo(char *destination) const
 {
     Uint8Array(destination, length()).set(*this);
 }
 
+// Copies the Uint8Array conent to a destination on the heap
 void Uint8Array::copy(char *destination, const Uint8Array &source)
 {
     Uint8Array(destination, source.length()).set(source);
+}
+
+// Copies content from a source on the heap to a new Uint8Array object
+Uint8Array Uint8Array::copyFrom(const char *buffer, uint32_t size)
+{
+    Uint8Array contentCopy(size);
+    contentCopy.set(Uint8Array(buffer, size));
+    return contentCopy;
 }
 
 emscripten::val Uint8Array::heap_()

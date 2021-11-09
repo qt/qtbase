@@ -73,6 +73,7 @@ namespace qstdweb {
 
     class ArrayBuffer {
     public:
+        explicit ArrayBuffer(uint32_t size);
         explicit ArrayBuffer(const emscripten::val &arrayBuffer);
         uint32_t byteLength() const;
 
@@ -85,6 +86,8 @@ namespace qstdweb {
     public:
         explicit Blob(const emscripten::val &blob);
         uint32_t size() const;
+        static Blob copyFrom(const char *buffer, uint32_t size);
+        emscripten::val val();
 
     private:
         friend class FileReader;
@@ -140,8 +143,9 @@ namespace qstdweb {
         static Uint8Array heap();
         explicit Uint8Array(const emscripten::val &uint8Array);
         explicit Uint8Array(const ArrayBuffer &buffer);
+        explicit Uint8Array(uint32_t size);
         Uint8Array(const ArrayBuffer &buffer, uint32_t offset, uint32_t length);
-        Uint8Array(char *buffer, uint32_t size);
+        Uint8Array(const char *buffer, uint32_t size);
 
         ArrayBuffer buffer() const;
         uint32_t length() const;
@@ -149,7 +153,9 @@ namespace qstdweb {
 
         void copyTo(char *destination) const;
         static void copy(char *destination, const Uint8Array &source);
+        static Uint8Array copyFrom(const char *buffer, uint32_t size);
     private:
+        friend class Blob;
         static emscripten::val heap_();
         static emscripten::val constructor_();
         emscripten::val m_uint8Array = emscripten::val::undefined();
