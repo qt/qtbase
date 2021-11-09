@@ -136,11 +136,13 @@ public:
 #if QT_CONFIG(library)
     ~QFactoryLoaderPrivate();
     mutable QMutex mutex;
+    QDuplicateTracker<QString> loadedPaths;
     QList<QLibraryPrivate*> libraryList;
     QMap<QString,QLibraryPrivate*> keyMap;
     QString suffix;
     Qt::CaseSensitivity cs;
-    QDuplicateTracker<QString> loadedPaths;
+
+    void updateSinglePath(const QString &pluginDir);
 #endif
 };
 
@@ -159,117 +161,120 @@ QFactoryLoaderPrivate::~QFactoryLoaderPrivate()
         library->release();
 }
 
+inline void QFactoryLoaderPrivate::updateSinglePath(const QString &path)
+{
+    // If we've already loaded, skip it...
+    if (loadedPaths.hasSeen(path))
+        return;
+
+    qCDebug(lcFactoryLoader) << "checking directory path" << path << "...";
+
+    if (!QDir(path).exists(QLatin1String(".")))
+        return;
+
+    QStringList plugins = QDir(path).entryList(
+#if defined(Q_OS_WIN)
+                QStringList(QStringLiteral("*.dll")),
+#elif defined(Q_OS_ANDROID)
+                QStringList(QLatin1String("libplugins_%1_*.so").arg(suffix)),
+#endif
+                QDir::Files);
+
+    for (int j = 0; j < plugins.count(); ++j) {
+        QString fileName = QDir::cleanPath(path + QLatin1Char('/') + plugins.at(j));
+#ifdef Q_OS_MAC
+        const bool isDebugPlugin = fileName.endsWith(QLatin1String("_debug.dylib"));
+        const bool isDebugLibrary =
+            #ifdef QT_DEBUG
+                true;
+            #else
+                false;
+            #endif
+
+        // Skip mismatching plugins so that we don't end up loading both debug and release
+        // versions of the same Qt libraries (due to the plugin's dependencies).
+        if (isDebugPlugin != isDebugLibrary)
+            continue;
+#elif defined(Q_PROCESSOR_X86)
+        if (fileName.endsWith(QLatin1String(".avx2")) || fileName.endsWith(QLatin1String(".avx512"))) {
+            // ignore AVX2-optimized file, we'll do a bait-and-switch to it later
+            continue;
+        }
+#endif
+        qCDebug(lcFactoryLoader) << "looking at" << fileName;
+
+        Q_TRACE(QFactoryLoader_update, fileName);
+
+        QLibraryPrivate *library = QLibraryPrivate::findOrCreate(QFileInfo(fileName).canonicalFilePath());
+        if (!library->isPlugin()) {
+            qCDebug(lcFactoryLoader) << library->errorString << Qt::endl
+                                     << "         not a plugin";
+            library->release();
+            continue;
+        }
+
+        QStringList keys;
+        bool metaDataOk = false;
+
+        QString iid = library->metaData.value(QtPluginMetaDataKeys::IID).toString();
+        if (iid == QLatin1String(this->iid.constData(), this->iid.size())) {
+            QCborMap object = library->metaData.value(QtPluginMetaDataKeys::MetaData).toMap();
+            metaDataOk = true;
+
+            QCborArray k = object.value(QLatin1String("Keys")).toArray();
+            for (int i = 0; i < k.size(); ++i)
+                keys += cs ? k.at(i).toString() : k.at(i).toString().toLower();
+        }
+        qCDebug(lcFactoryLoader) << "Got keys from plugin meta data" << keys;
+
+        if (!metaDataOk) {
+            library->release();
+            continue;
+        }
+
+        int keyUsageCount = 0;
+        for (int k = 0; k < keys.count(); ++k) {
+            // first come first serve, unless the first
+            // library was built with a future Qt version,
+            // whereas the new one has a Qt version that fits
+            // better
+            constexpr int QtVersionNoPatch = QT_VERSION_CHECK(QT_VERSION_MAJOR, QT_VERSION_MINOR, 0);
+            const QString &key = keys.at(k);
+            QLibraryPrivate *previous = keyMap.value(key);
+            int prev_qt_version = 0;
+            if (previous)
+                prev_qt_version = int(previous->metaData.value(QtPluginMetaDataKeys::QtVersion).toInteger());
+            int qt_version = int(library->metaData.value(QtPluginMetaDataKeys::QtVersion).toInteger());
+            if (!previous || (prev_qt_version > QtVersionNoPatch && qt_version <= QtVersionNoPatch)) {
+                keyMap[key] = library;
+                ++keyUsageCount;
+            }
+        }
+        if (keyUsageCount || keys.isEmpty()) {
+            library->setLoadHints(QLibrary::PreventUnloadHint); // once loaded, don't unload
+            QMutexLocker locker(&mutex);
+            libraryList += library;
+        } else {
+            library->release();
+        }
+    };
+}
+
 void QFactoryLoader::update()
 {
 #ifdef QT_SHARED
     Q_D(QFactoryLoader);
+
     QStringList paths = QCoreApplication::libraryPaths();
     for (int i = 0; i < paths.count(); ++i) {
         const QString &pluginDir = paths.at(i);
-        // Already loaded, skip it...
-        if (d->loadedPaths.hasSeen(pluginDir))
-            continue;
-
 #ifdef Q_OS_ANDROID
         QString path = pluginDir;
 #else
         QString path = pluginDir + d->suffix;
 #endif
 
-        qCDebug(lcFactoryLoader) << "checking directory path" << path << "...";
-
-        if (!QDir(path).exists(QLatin1String(".")))
-            continue;
-
-        QStringList plugins = QDir(path).entryList(
-#if defined(Q_OS_WIN)
-                    QStringList(QStringLiteral("*.dll")),
-#elif defined(Q_OS_ANDROID)
-                    QStringList(QLatin1String("libplugins_%1_*.so").arg(d->suffix)),
-#endif
-                    QDir::Files);
-        QLibraryPrivate *library = nullptr;
-
-        for (int j = 0; j < plugins.count(); ++j) {
-            QString fileName = QDir::cleanPath(path + QLatin1Char('/') + plugins.at(j));
-
-#ifdef Q_OS_MAC
-            const bool isDebugPlugin = fileName.endsWith(QLatin1String("_debug.dylib"));
-            const bool isDebugLibrary =
-                #ifdef QT_DEBUG
-                    true;
-                #else
-                    false;
-                #endif
-
-            // Skip mismatching plugins so that we don't end up loading both debug and release
-            // versions of the same Qt libraries (due to the plugin's dependencies).
-            if (isDebugPlugin != isDebugLibrary)
-                continue;
-#elif defined(Q_PROCESSOR_X86)
-            if (fileName.endsWith(QLatin1String(".avx2")) || fileName.endsWith(QLatin1String(".avx512"))) {
-                // ignore AVX2-optimized file, we'll do a bait-and-switch to it later
-                continue;
-            }
-#endif
-            qCDebug(lcFactoryLoader) << "looking at" << fileName;
-
-            Q_TRACE(QFactoryLoader_update, fileName);
-
-            library = QLibraryPrivate::findOrCreate(QFileInfo(fileName).canonicalFilePath());
-            if (!library->isPlugin()) {
-                qCDebug(lcFactoryLoader) << library->errorString << Qt::endl
-                                         << "         not a plugin";
-                library->release();
-                continue;
-            }
-
-            QStringList keys;
-            bool metaDataOk = false;
-
-            QString iid = library->metaData.value(QtPluginMetaDataKeys::IID).toString();
-            if (iid == QLatin1String(d->iid.constData(), d->iid.size())) {
-                QCborMap object = library->metaData.value(QtPluginMetaDataKeys::MetaData).toMap();
-                metaDataOk = true;
-
-                QCborArray k = object.value(QLatin1String("Keys")).toArray();
-                for (int i = 0; i < k.size(); ++i)
-                    keys += d->cs ? k.at(i).toString() : k.at(i).toString().toLower();
-            }
-            qCDebug(lcFactoryLoader) << "Got keys from plugin meta data" << keys;
-
-
-            if (!metaDataOk) {
-                library->release();
-                continue;
-            }
-
-            int keyUsageCount = 0;
-            for (int k = 0; k < keys.count(); ++k) {
-                // first come first serve, unless the first
-                // library was built with a future Qt version,
-                // whereas the new one has a Qt version that fits
-                // better
-                constexpr int QtVersionNoPatch = QT_VERSION_CHECK(QT_VERSION_MAJOR, QT_VERSION_MINOR, 0);
-                const QString &key = keys.at(k);
-                QLibraryPrivate *previous = d->keyMap.value(key);
-                int prev_qt_version = 0;
-                if (previous)
-                    prev_qt_version = int(previous->metaData.value(QtPluginMetaDataKeys::QtVersion).toInteger());
-                int qt_version = int(library->metaData.value(QtPluginMetaDataKeys::QtVersion).toInteger());
-                if (!previous || (prev_qt_version > QtVersionNoPatch && qt_version <= QtVersionNoPatch)) {
-                    d->keyMap[key] = library;
-                    ++keyUsageCount;
-                }
-            }
-            if (keyUsageCount || keys.isEmpty()) {
-                library->setLoadHints(QLibrary::PreventUnloadHint); // once loaded, don't unload
-                QMutexLocker locker(&d->mutex);
-                d->libraryList += library;
-            } else {
-                library->release();
-            }
-        }
+        d->updateSinglePath(path);
     }
 #else
     Q_D(QFactoryLoader);
