@@ -164,6 +164,11 @@ QFactoryLoaderPrivate::~QFactoryLoaderPrivate()
 
 inline void QFactoryLoaderPrivate::updateSinglePath(const QString &path)
 {
+    struct LibraryReleaser {
+        void operator()(QLibraryPrivate *library)
+        { if (library) library->release(); }
+    };
+
     // If we've already loaded, skip it...
     if (loadedPaths.hasSeen(path))
         return;
@@ -203,11 +208,11 @@ inline void QFactoryLoaderPrivate::updateSinglePath(const QString &path)
 
         Q_TRACE(QFactoryLoader_update, fileName);
 
-        QLibraryPrivate *library = QLibraryPrivate::findOrCreate(QFileInfo(fileName).canonicalFilePath());
+        std::unique_ptr<QLibraryPrivate, LibraryReleaser> library;
+        library.reset(QLibraryPrivate::findOrCreate(QFileInfo(fileName).canonicalFilePath()));
         if (!library->isPlugin()) {
             qCDebug(lcFactoryLoader) << library->errorString << Qt::endl
                                      << "         not a plugin";
-            library->release();
             continue;
         }
 
@@ -225,10 +230,8 @@ inline void QFactoryLoaderPrivate::updateSinglePath(const QString &path)
         }
         qCDebug(lcFactoryLoader) << "Got keys from plugin meta data" << keys;
 
-        if (!metaDataOk) {
-            library->release();
+        if (!metaDataOk)
             continue;
-        }
 
         int keyUsageCount = 0;
         for (int k = 0; k < keys.count(); ++k) {
@@ -244,16 +247,14 @@ inline void QFactoryLoaderPrivate::updateSinglePath(const QString &path)
                 prev_qt_version = int(previous->metaData.value(QtPluginMetaDataKeys::QtVersion).toInteger());
             int qt_version = int(library->metaData.value(QtPluginMetaDataKeys::QtVersion).toInteger());
             if (!previous || (prev_qt_version > QtVersionNoPatch && qt_version <= QtVersionNoPatch)) {
-                keyMap[key] = library;
+                keyMap[key] = library.get();    // we WILL .release()
                 ++keyUsageCount;
             }
         }
         if (keyUsageCount || keys.isEmpty()) {
             library->setLoadHints(QLibrary::PreventUnloadHint); // once loaded, don't unload
             QMutexLocker locker(&mutex);
-            libraryList += library;
-        } else {
-            library->release();
+            libraryList += library.release();
         }
     };
 }
