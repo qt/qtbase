@@ -1612,7 +1612,8 @@ public:
         MaxThreadGroupX,
         MaxThreadGroupY,
         MaxThreadGroupZ,
-        TextureArraySizeMax
+        TextureArraySizeMax,
+        MaxUniformBufferRange
     };
 
     ~QRhi();

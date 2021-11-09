@@ -650,6 +650,8 @@ int QRhiMetal::resourceLimit(QRhi::ResourceLimit limit) const
 #endif
     case QRhi::TextureArraySizeMax:
         return 2048;
+    case QRhi::MaxUniformBufferRange:
+        return 65536;
     default:
         Q_UNREACHABLE();
         return 0;

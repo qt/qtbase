@@ -4305,6 +4305,8 @@ int QRhiVulkan::resourceLimit(QRhi::ResourceLimit limit) const
         return int(physDevProperties.limits.maxComputeWorkGroupSize[2]);
     case QRhi::TextureArraySizeMax:
         return int(physDevProperties.limits.maxImageArrayLayers);
+    case QRhi::MaxUniformBufferRange:
+        return int(qMin<uint32_t>(INT_MAX, physDevProperties.limits.maxUniformBufferRange));
     default:
         Q_UNREACHABLE();
         return 0;

@@ -190,6 +190,8 @@ void Window::customInit()
     qDebug("MaxThreadGroupX: %d", m_r->resourceLimit(QRhi::MaxThreadGroupX));
     qDebug("MaxThreadGroupY: %d", m_r->resourceLimit(QRhi::MaxThreadGroupY));
     qDebug("MaxThreadGroupZ: %d", m_r->resourceLimit(QRhi::MaxThreadGroupZ));
+    qDebug("TextureArraySizeMax: %d", m_r->resourceLimit(QRhi::TextureArraySizeMax));
+    qDebug("MaxUniformBufferRange: %d", m_r->resourceLimit(QRhi::MaxUniformBufferRange));
 }
 
 void Window::customRelease()

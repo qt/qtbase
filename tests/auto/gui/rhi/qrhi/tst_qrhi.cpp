@@ -339,12 +339,14 @@ void tst_QRhi::create()
         const int maxAtt = rhi->resourceLimit(QRhi::MaxColorAttachments);
         const int framesInFlight = rhi->resourceLimit(QRhi::FramesInFlight);
         const int texArrayMax = rhi->resourceLimit(QRhi::TextureArraySizeMax);
+        const int uniBufRangeMax = rhi->resourceLimit(QRhi::MaxUniformBufferRange);
         QVERIFY(texMin >= 1);
         QVERIFY(texMax >= texMin);
         QVERIFY(maxAtt >= 1);
         QVERIFY(framesInFlight >= 1);
         if (rhi->isFeatureSupported(QRhi::TextureArrays))
             QVERIFY(texArrayMax > 1);
+        QVERIFY(uniBufRangeMax >= 224 * 4 * 4);
 
         QVERIFY(rhi->nativeHandles());
         QVERIFY(rhi->profiler());
