@@ -288,12 +288,24 @@ inline QCborValue::QCborValue(QCborArray &&a)
 {
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0) && !defined(QT_BOOTSTRAPPED)
 inline QCborArray QCborValueRef::toArray() const
 {
     return concrete().toArray();
 }
 
 inline QCborArray QCborValueRef::toArray(const QCborArray &a) const
+{
+    return concrete().toArray(a);
+}
+#endif
+
+inline QCborArray QCborValueConstRef::toArray() const
+{
+    return concrete().toArray();
+}
+
+inline QCborArray QCborValueConstRef::toArray(const QCborArray &a) const
 {
     return concrete().toArray(a);
 }

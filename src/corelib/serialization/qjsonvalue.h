@@ -150,19 +150,81 @@ private:
     static_assert(sizeof(QCborValue::Type) == sizeof(QJsonValue::Type));
 };
 
-class Q_CORE_EXPORT QJsonValueRef
+Q_DECLARE_SHARED(QJsonValue)
+
+class QJsonValueConstRef
+{
+public:
+    QJsonValueConstRef(const QJsonValueConstRef &) = default;
+    QJsonValueConstRef &operator=(const QJsonValueConstRef &) = delete;
+    inline operator QJsonValue() const { return concrete(*this); }
+
+    Q_CORE_EXPORT QVariant toVariant() const;
+    QJsonValue::Type type() const { return concrete(*this).type(); }
+    bool isNull() const { return type() == QJsonValue::Null; }
+    bool isBool() const { return type() == QJsonValue::Bool; }
+    bool isDouble() const { return type() == QJsonValue::Double; }
+    bool isString() const { return type() == QJsonValue::String; }
+    bool isArray() const { return type() == QJsonValue::Array; }
+    bool isObject() const { return type() == QJsonValue::Object; }
+    bool isUndefined() const { return type() == QJsonValue::Undefined; }
+
+    bool toBool(bool defaultValue = false) const
+    { return concrete(*this).toBool(defaultValue); }
+    int toInt(int defaultValue = 0) const
+    { return concrete(*this).toInt(defaultValue); }
+    qint64 toInteger(qint64 defaultValue = 0) const
+    { return concrete(*this).toInteger(defaultValue); }
+    double toDouble(double defaultValue = 0) const
+    { return concrete(*this).toDouble(defaultValue); }
+    QString toString(const QString &defaultValue = {}) const
+    { return concrete(*this).toString(defaultValue); }
+    Q_CORE_EXPORT QJsonArray toArray() const;
+    Q_CORE_EXPORT QJsonObject toObject() const;
+
+    const QJsonValue operator[](QStringView key) const { return concrete(*this)[key]; }
+    const QJsonValue operator[](QLatin1String key) const { return concrete(*this)[key]; }
+    const QJsonValue operator[](qsizetype i) const { return concrete(*this)[i]; }
+
+    inline bool operator==(const QJsonValue &other) const { return concrete(*this) == other; }
+    inline bool operator!=(const QJsonValue &other) const { return concrete(*this) != other; }
+
+protected:
+    QJsonValueConstRef(QJsonArray *array, qsizetype idx)
+        : a(array), is_object(false), index(static_cast<quint64>(idx)) {}
+    QJsonValueConstRef(QJsonObject *object, qsizetype idx)
+        : o(object), is_object(true), index(static_cast<quint64>(idx)) {}
+
+    Q_CORE_EXPORT static QJsonValue concrete(QJsonValueConstRef self) noexcept;
+
+    union {
+        QJsonArray *a;
+        QJsonObject *o;
+    };
+    quint64 is_object : 1;
+    quint64 index : 63;
+
+    friend class QJsonArray;
+    friend class QJsonObject;
+};
+
+class Q_CORE_EXPORT QJsonValueRef : public QJsonValueConstRef
 {
 public:
     QJsonValueRef(QJsonArray *array, qsizetype idx)
-        : a(array), is_object(false), index(static_cast<quint64>(idx)) {}
+        : QJsonValueConstRef(array, idx) {}
     QJsonValueRef(QJsonObject *object, qsizetype idx)
-        : o(object), is_object(true), index(static_cast<quint64>(idx)) {}
+        : QJsonValueConstRef(object, idx) {}
 
     QJsonValueRef(const QJsonValueRef &) = default;
-
-    inline operator QJsonValue() const { return toValue(); }
     QJsonValueRef &operator = (const QJsonValue &val);
     QJsonValueRef &operator = (const QJsonValueRef &val);
+
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0) && !defined(QT_BOOTSTRAPPED)
+    // retained for binary compatibility (due to the Q_CORE_EXPORT) because at
+    // least one compiler emits and exports all inlines in an exported class
+
+    operator QJsonValue() const { return toValue(); }
 
     QVariant toVariant() const;
     inline QJsonValue::Type type() const { return toValue().type(); }
@@ -191,19 +253,13 @@ public:
 
 private:
     QJsonValue toValue() const;
-
-    union {
-        QJsonArray *a;
-        QJsonObject *o;
-    };
-    quint64 is_object : 1;
-    quint64 index : 63;
-
-    friend class QJsonArray;
-    friend class QJsonObject;
+#endif // < Qt 7
 };
 
-Q_DECLARE_SHARED(QJsonValue)
+inline QJsonValue QCborValueConstRef::toJsonValue() const
+{
+    return concrete().toJsonValue();
+}
 
 inline bool operator==(const QJsonValueRef &lhs, const QJsonValueRef &rhs)
 { return QJsonValue(lhs) == QJsonValue(rhs); }

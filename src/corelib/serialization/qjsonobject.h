@@ -283,6 +283,7 @@ public:
 private:
     friend class QJsonValue;
     friend class QJsonDocument;
+    friend class QJsonValueConstRef;
     friend class QJsonValueRef;
     friend class QCborMap;
     friend Q_CORE_EXPORT QDebug operator<<(QDebug, const QJsonObject &);

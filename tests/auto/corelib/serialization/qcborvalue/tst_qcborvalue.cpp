@@ -135,6 +135,8 @@ private slots:
 
     void cborValueRef_data();
     void cborValueRef();
+    void cborValueConstRef_data() { cborValueRef_data(); }
+    void cborValueConstRef();
     void cborValueRefMutatingArray_data() { cborValueRef_data(); }
     void cborValueRefMutatingArray();
     void cborValueRefMutatingMapIntKey_data() { cborValueRef_data(); }
@@ -2637,7 +2639,7 @@ void tst_QCborValue::cborValueRef_data()
     QTest::newRow("Tagged") << QCborValue::Tag << QCborValue(QCborKnownTags::Base64, QByteArray());
 }
 
-void tst_QCborValue::cborValueRef()
+template <typename ValueRef> static void cborValueRef_template()
 {
     const QCborArray otherArray = {2};
     const QCborMap otherMap = { { 2, 21 } };
@@ -2648,7 +2650,7 @@ void tst_QCborValue::cborValueRef()
 
     QFETCH(QCborValue, v);
     QCborArray a = { v };
-    const QCborValueRef ref = a[0];
+    const ValueRef ref = a[0];
 
     QCOMPARE(ref, v);
     QVERIFY(ref.compare(v) == 0);
@@ -2715,6 +2717,16 @@ void tst_QCborValue::cborValueRef()
     QCOMPARE(ref.toJsonValue(), v.toJsonValue());
     QCOMPARE(ref.toCbor(), v.toCbor());
     QCOMPARE(ref.toDiagnosticNotation(), v.toDiagnosticNotation());
+}
+
+void tst_QCborValue::cborValueRef()
+{
+    cborValueRef_template<QCborValueRef>();
+}
+
+void tst_QCborValue::cborValueConstRef()
+{
+    cborValueRef_template<QCborValueConstRef>();
 }
 
 void tst_QCborValue::cborValueRefMutatingArray()

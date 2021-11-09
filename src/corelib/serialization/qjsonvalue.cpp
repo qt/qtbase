@@ -934,27 +934,49 @@ QJsonValueRef &QJsonValueRef::operator =(const QJsonValueRef &ref)
     return *this;
 }
 
+QVariant QJsonValueConstRef::toVariant() const
+{
+    return concrete(*this).toVariant();
+}
+
+QJsonArray QJsonValueConstRef::toArray() const
+{
+    return concrete(*this).toArray();
+}
+
+QJsonObject QJsonValueConstRef::toObject() const
+{
+    return concrete(*this).toObject();
+}
+
+QJsonValue QJsonValueConstRef::concrete(QJsonValueConstRef self) noexcept
+{
+    if (!self.is_object)
+        return self.a->at(self.index);
+    return self.o->valueAt(self.index);
+}
+
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0) && !defined(QT_BOOTSTRAPPED)
 QVariant QJsonValueRef::toVariant() const
 {
-    return toValue().toVariant();
+    return QJsonValueConstRef::toVariant();
 }
 
 QJsonArray QJsonValueRef::toArray() const
 {
-    return toValue().toArray();
+    return QJsonValueConstRef::toArray();
 }
 
 QJsonObject QJsonValueRef::toObject() const
 {
-    return toValue().toObject();
+    return QJsonValueConstRef::toObject();
 }
 
 QJsonValue QJsonValueRef::toValue() const
 {
-    if (!is_object)
-        return a->at(index);
-    return o->valueAt(index);
+    return concrete(*this);
 }
+#endif
 
 size_t qHash(const QJsonValue &value, size_t seed)
 {

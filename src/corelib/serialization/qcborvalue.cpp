@@ -2638,14 +2638,12 @@ Q_NEVER_INLINE void QCborValue::toCbor(QCborStreamWriter &writer, EncodingOption
     }
 }
 
+#  if QT_VERSION < QT_VERSION_CHECK(7, 0, 0) && !defined(QT_BOOTSTRAPPED)
 void QCborValueRef::toCbor(QCborStreamWriter &writer, QCborValue::EncodingOptions opt)
 {
     concrete().toCbor(writer, opt);
 }
-void QCborValueRef::toCbor(QCborStreamWriter &writer, QCborValue::EncodingOptions opt) const
-{
-    concrete().toCbor(writer, opt);
-}
+#  endif
 #endif // QT_CONFIG(cborstreamwriter)
 
 void QCborValueRef::assign(QCborValueRef that, const QCborValue &other)
@@ -2664,6 +2662,35 @@ void QCborValueRef::assign(QCborValueRef that, const QCborValueRef other)
     that = other.concrete();
 }
 
+QCborValue QCborValueConstRef::concrete(QCborValueConstRef self) noexcept
+{
+    return self.d->valueAt(self.i);
+}
+
+QCborValue::Type QCborValueConstRef::concreteType(QCborValueConstRef self) noexcept
+{
+    return self.d->elements.at(self.i).type;
+}
+
+const QCborValue QCborValueConstRef::operator[](const QString &key) const
+{
+    const QCborValue item = d->valueAt(i);
+    return item[key];
+}
+
+const QCborValue QCborValueConstRef::operator[](const QLatin1String key) const
+{
+    const QCborValue item = d->valueAt(i);
+    return item[key];
+}
+
+const QCborValue QCborValueConstRef::operator[](qint64 key) const
+{
+    const QCborValue item = d->valueAt(i);
+    return item[key];
+}
+
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0) && !defined(QT_BOOTSTRAPPED)
 QCborValue QCborValueRef::concrete(QCborValueRef self) noexcept
 {
     return self.d->valueAt(self.i);
@@ -2690,8 +2717,7 @@ QCborValue::Type QCborValueRef::concreteType(QCborValueRef self) noexcept
  */
 const QCborValue QCborValueRef::operator[](const QString &key) const
 {
-    const QCborValue item = d->valueAt(i);
-    return item[key];
+    return QCborValueConstRef::operator[](key);
 }
 
 /*!
@@ -2712,8 +2738,7 @@ const QCborValue QCborValueRef::operator[](const QString &key) const
  */
 const QCborValue QCborValueRef::operator[](QLatin1String key) const
 {
-    const QCborValue item = d->valueAt(i);
-    return item[key];
+    return QCborValueConstRef::operator[](key);
 }
 
 /*!
@@ -2730,8 +2755,7 @@ const QCborValue QCborValueRef::operator[](QLatin1String key) const
  */
 const QCborValue QCborValueRef::operator[](qint64 key) const
 {
-    const QCborValue item = d->valueAt(i);
-    return item[key];
+    return QCborValueConstRef::operator[](key);
 }
 
 /*!
@@ -2922,7 +2946,7 @@ QCborValueRef QCborValueRef::operator[](qint64 key)
     Q_ASSERT(index < e.container->elements.size());
     return { e.container, index };
 }
-
+#endif // < Qt 7
 
 inline QCborArray::QCborArray(QCborContainerPrivate &dd) noexcept
     : d(&dd)

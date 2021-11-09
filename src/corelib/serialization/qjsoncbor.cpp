@@ -428,10 +428,12 @@ QJsonValue QCborValue::toJsonValue() const
     return QJsonPrivate::Value::fromTrustedCbor(simpleTypeString(type()));
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0) && !defined(QT_BOOTSTRAPPED)
 QJsonValue QCborValueRef::toJsonValue() const
 {
     return qt_convertToJson(d, i);
 }
+#endif
 
 /*!
     Recursively converts every \l QCborValue element in this array to JSON

@@ -342,12 +342,24 @@ inline QCborValue::QCborValue(QCborMap &&m)
 {
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0) && !defined(QT_BOOTSTRAPPED)
 inline QCborMap QCborValueRef::toMap() const
 {
     return concrete().toMap();
 }
 
 inline QCborMap QCborValueRef::toMap(const QCborMap &m) const
+{
+    return concrete().toMap(m);
+}
+#endif
+
+inline QCborMap QCborValueConstRef::toMap() const
+{
+    return concrete().toMap();
+}
+
+inline QCborMap QCborValueConstRef::toMap(const QCborMap &m) const
 {
     return concrete().toMap(m);
 }
