@@ -189,6 +189,7 @@ private slots:
     void defaultTabOrder();
     void reverseTabOrder();
     void tabOrderWithProxy();
+    void tabOrderWithProxyDisabled();
     void tabOrderWithCompoundWidgets();
     void tabOrderWithCompoundWidgetsNoFocusPolicy();
     void tabOrderNoChange();
@@ -2107,6 +2108,57 @@ void tst_QWidget::tabOrderWithProxy()
 
     container.backTab();
     QVERIFY(firstEdit->hasFocus());
+}
+
+void tst_QWidget::tabOrderWithProxyDisabled()
+{
+    Container container;
+    container.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
+
+    QLineEdit lineEdit1;
+    lineEdit1.setObjectName("lineEdit1");
+
+    QWidget containingWidget;
+    containingWidget.setFocusPolicy(Qt::StrongFocus);
+    auto *containingLayout = new QVBoxLayout;
+    QLineEdit lineEdit2;
+    lineEdit2.setObjectName("lineEdit2");
+    QLineEdit lineEdit3;
+    lineEdit3.setObjectName("lineEdit3");
+    containingLayout->addWidget(&lineEdit2);
+    containingLayout->addWidget(&lineEdit3);
+    containingWidget.setLayout(containingLayout);
+    containingWidget.setFocusProxy(&lineEdit2);
+    lineEdit2.setEnabled(false);
+
+    container.box->addWidget(&lineEdit1);
+    container.box->addWidget(&containingWidget);
+
+    container.show();
+    container.activateWindow();
+
+    QApplication::setActiveWindow(&container);
+    if (!QTest::qWaitForWindowActive(&container))
+        QSKIP("Window failed to activate, skipping test");
+
+    QVERIFY2(lineEdit1.hasFocus(),
+             qPrintable(QApplication::focusWidget()->objectName()));
+    container.tab();
+    QVERIFY2(!lineEdit2.hasFocus(),
+             qPrintable(QApplication::focusWidget()->objectName()));
+    QVERIFY2(lineEdit3.hasFocus(),
+             qPrintable(QApplication::focusWidget()->objectName()));
+    container.tab();
+    QVERIFY2(lineEdit1.hasFocus(),
+             qPrintable(QApplication::focusWidget()->objectName()));
+    container.backTab();
+    QVERIFY2(lineEdit3.hasFocus(),
+             qPrintable(QApplication::focusWidget()->objectName()));
+    container.backTab();
+    QVERIFY2(!lineEdit2.hasFocus(),
+             qPrintable(QApplication::focusWidget()->objectName()));
+    QVERIFY2(lineEdit1.hasFocus(),
+             qPrintable(QApplication::focusWidget()->objectName()));
 }
 
 void tst_QWidget::tabOrderWithCompoundWidgets()
