@@ -78,6 +78,8 @@ const char _slnHeader141[]      = "Microsoft Visual Studio Solution File, Format
                                   "\n# Visual Studio 15";
 const char _slnHeader142[]      = "Microsoft Visual Studio Solution File, Format Version 12.00"
                                   "\n# Visual Studio Version 16";
+const char _slnHeader143[]      = "Microsoft Visual Studio Solution File, Format Version 12.00"
+                                  "\n# Visual Studio Version 17";
                                   // The following UUID _may_ change for later servicepacks...
                                   // If so we need to search through the registry at
                                   // HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\VisualStudio\7.0\Projects
@@ -311,6 +313,8 @@ QString VcprojGenerator::retrievePlatformToolSet() const
         return QStringLiteral("v141");
     case NET2019:
         return QStringLiteral("v142");
+    case NET2022:
+        return QStringLiteral("v143");
     default:
         return QString();
     }
@@ -538,6 +542,9 @@ void VcprojGenerator::writeSubDirs(QTextStream &t)
     }
 
     switch (vcProject.Configuration.CompilerVersion) {
+    case NET2022:
+        t << _slnHeader143;
+        break;
     case NET2019:
         t << _slnHeader142;
         break;
@@ -915,6 +922,9 @@ void VcprojGenerator::initProject()
     // Own elements -----------------------------
     vcProject.Name = project->first("QMAKE_ORIG_TARGET").toQString();
     switch (vcProject.Configuration.CompilerVersion) {
+    case NET2022:
+        vcProject.Version = "17.00";
+        break;
     case NET2019:
         vcProject.Version = "16.00";
         break;
