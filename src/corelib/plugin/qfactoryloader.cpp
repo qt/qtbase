@@ -224,9 +224,9 @@ inline void QFactoryLoaderPrivate::updateSinglePath(const QString &path)
             QCborMap object = library->metaData.value(QtPluginMetaDataKeys::MetaData).toMap();
             metaDataOk = true;
 
-            QCborArray k = object.value(QLatin1String("Keys")).toArray();
-            for (int i = 0; i < k.size(); ++i)
-                keys += cs ? k.at(i).toString() : k.at(i).toString().toLower();
+            const QCborArray k = object.value(QLatin1String("Keys")).toArray();
+            for (QCborValueRef v : k)
+                keys += cs ? v.toString() : v.toString().toLower();
         }
         qCDebug(lcFactoryLoader) << "Got keys from plugin meta data" << keys;
 
@@ -234,13 +234,12 @@ inline void QFactoryLoaderPrivate::updateSinglePath(const QString &path)
             continue;
 
         int keyUsageCount = 0;
-        for (int k = 0; k < keys.count(); ++k) {
+        for (const QString &key : std::as_const(keys)) {
             // first come first serve, unless the first
             // library was built with a future Qt version,
             // whereas the new one has a Qt version that fits
             // better
             constexpr int QtVersionNoPatch = QT_VERSION_CHECK(QT_VERSION_MAJOR, QT_VERSION_MINOR, 0);
-            const QString &key = keys.at(k);
             QLibraryPrivate *previous = keyMap.value(key);
             int prev_qt_version = 0;
             if (previous)
@@ -264,9 +263,8 @@ void QFactoryLoader::update()
 #ifdef QT_SHARED
     Q_D(QFactoryLoader);
 
-    QStringList paths = QCoreApplication::libraryPaths();
-    for (int i = 0; i < paths.count(); ++i) {
-        const QString &pluginDir = paths.at(i);
+    const QStringList paths = QCoreApplication::libraryPaths();
+    for (const QString &pluginDir : paths) {
 #ifdef Q_OS_ANDROID
         QString path = pluginDir;
 #else
@@ -368,8 +366,8 @@ QFactoryLoader::MetaDataList QFactoryLoader::metaData() const
     QList<QPluginParsedMetaData> metaData;
 #if QT_CONFIG(library)
     QMutexLocker locker(&d->mutex);
-    for (int i = 0; i < d->libraryList.size(); ++i)
-        metaData.append(d->libraryList.at(i)->metaData);
+    for (QLibraryPrivate *library : std::as_const(d->libraryList))
+        metaData.append(library->metaData);
 #endif
 
     QLatin1String iid(d->iid.constData(), d->iid.size());
@@ -428,9 +426,8 @@ QMultiMap<int, QString> QFactoryLoader::keyMap() const
     for (int i = 0; i < metaDataList.size(); ++i) {
         const QCborMap metaData = metaDataList.at(i).value(QtPluginMetaDataKeys::MetaData).toMap();
         const QCborArray keys = metaData.value(QLatin1String("Keys")).toArray();
-        const int keyCount = keys.size();
-        for (int k = 0; k < keyCount; ++k)
-            result.insert(i, keys.at(k).toString());
+        for (QCborValueRef key : keys)
+            result.insert(i, key.toString());
     }
     return result;
 }
@@ -441,9 +438,8 @@ int QFactoryLoader::indexOf(const QString &needle) const
     for (int i = 0; i < metaDataList.size(); ++i) {
         const QCborMap metaData = metaDataList.at(i).value(QtPluginMetaDataKeys::MetaData).toMap();
         const QCborArray keys = metaData.value(QLatin1String("Keys")).toArray();
-        const int keyCount = keys.size();
-        for (int k = 0; k < keyCount; ++k) {
-            if (!keys.at(k).toString().compare(needle, Qt::CaseInsensitive))
+        for (QCborValueRef key : keys) {
+            if (key.toString().compare(needle, Qt::CaseInsensitive) == 0)
                 return i;
         }
     }
