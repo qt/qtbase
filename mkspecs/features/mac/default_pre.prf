@@ -1,4 +1,25 @@
 CONFIG = asset_catalogs rez $$CONFIG
+
+macos {
+    count(QT_ARCHS, 1, >) {
+        # For universal builds all the config tests are run with the first
+        # architecture (as reflected by QT_ARCH). We have to manually enable
+        # CPU features we know exist on the secondary architecture. For
+        # simplicity we just hard-code the base features we know exist.
+        # Note that this hack means we end up with QT_CPU_FEATURES.x86_64
+        # containing neon, and QT_CPU_FEATURES.arm64 containing sse2 e.g.
+        QT_CPU_FEATURES.$$QT_ARCH += sse sse2
+        CONFIG += sse sse2
+        DEFINES += QT_COMPILER_SUPPORTS_SSE2
+        # FIXME: For x86_64 there are a bunch more. If building a universal
+        # build with arm64 as the primary architecture we'll miss those.
+
+        QT_CPU_FEATURES.$$QT_ARCH += neon
+        CONFIG += neon
+        DEFINES += QT_COMPILER_SUPPORTS_NEON
+    }
+}
+
 load(default_pre)
 
 isEmpty(QMAKE_XCODE_DEVELOPER_PATH) {
