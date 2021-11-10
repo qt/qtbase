@@ -145,8 +145,8 @@ typedef struct _REPARSE_DATA_BUFFER {
 #if QT_CONFIG(fslibs)
 #include <aclapi.h>
 #include <userenv.h>
-static TRUSTEE_W currentUserTrusteeW;
-static TRUSTEE_W worldTrusteeW;
+static TRUSTEE currentUserTrustee;
+static TRUSTEE worldTrustee;
 static PSID currentUserSID = nullptr;
 static PSID worldSID = nullptr;
 static HANDLE currentUserImpersonatedToken = nullptr;
@@ -198,7 +198,7 @@ GlobalSid::GlobalSid()
                 currentUserSID = reinterpret_cast<PSID>(malloc(sidLen));
                 Q_CHECK_PTR(currentUserSID);
                 if (::CopySid(sidLen, currentUserSID, tokenSid))
-                    BuildTrusteeWithSid(&currentUserTrusteeW, currentUserSID);
+                    BuildTrusteeWithSid(&currentUserTrustee, currentUserSID);
             }
             free(tokenBuffer);
         }
@@ -218,7 +218,7 @@ GlobalSid::GlobalSid()
         SID_IDENTIFIER_AUTHORITY worldAuth = { SECURITY_WORLD_SID_AUTHORITY };
         if (AllocateAndInitializeSid(&worldAuth, 1, SECURITY_WORLD_RID, 0, 0, 0, 0, 0, 0, 0,
                                      &worldSID)) {
-            BuildTrusteeWithSid(&worldTrusteeW, worldSID);
+            BuildTrusteeWithSid(&worldTrustee, worldSID);
         }
     }
 }
@@ -810,7 +810,7 @@ bool QFileSystemEngine::fillPermissions(const QFileSystemEntry &entry, QFileSyst
                                              &pOwner, &pGroup, &pDacl, nullptr, &pSD);
             if (res == ERROR_SUCCESS) {
                 ACCESS_MASK access_mask;
-                TRUSTEE_W trustee;
+                TRUSTEE trustee;
                 if (what & QFileSystemMetaData::UserPermissions) { // user
                     // Using AccessCheck because GetEffectiveRightsFromAcl doesn't account
                     // for elevation
@@ -854,7 +854,7 @@ bool QFileSystemEngine::fillPermissions(const QFileSystemEntry &entry, QFileSyst
                         }
                     } else { // fallback to GetEffectiveRightsFromAcl
                         data.knownFlagsMask |= QFileSystemMetaData::UserPermissions;
-                        if (GetEffectiveRightsFromAclW(pDacl, &currentUserTrusteeW, &access_mask)
+                        if (GetEffectiveRightsFromAcl(pDacl, &currentUserTrustee, &access_mask)
                             != ERROR_SUCCESS) {
                             access_mask = ACCESS_MASK(-1);
                         }
@@ -892,7 +892,7 @@ bool QFileSystemEngine::fillPermissions(const QFileSystemEntry &entry, QFileSyst
                 }
                 if (what & QFileSystemMetaData::OtherPermissions) { // other (world)
                     data.knownFlagsMask |= QFileSystemMetaData::OtherPermissions;
-                    if (GetEffectiveRightsFromAcl(pDacl, &worldTrusteeW, &access_mask)
+                    if (GetEffectiveRightsFromAcl(pDacl, &worldTrustee, &access_mask)
                         != ERROR_SUCCESS) {
                         access_mask = (ACCESS_MASK)-1; // ###
                     }
