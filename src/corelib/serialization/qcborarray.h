@@ -57,7 +57,7 @@ class Q_CORE_EXPORT QCborArray
 public:
     class ConstIterator;
     class Iterator {
-        mutable QCborValueRef item;
+        QCborValueRef item {};
         friend class ConstIterator;
         friend class QCborArray;
         Iterator(QCborContainerPrivate *dd, qsizetype ii) : item(dd, ii) {}
@@ -79,7 +79,8 @@ public:
         }
 
         QCborValueRef operator*() const { return item; }
-        QCborValueRef *operator->() const { return &item; }
+        QCborValueRef *operator->() { return &item; }
+        const QCborValueConstRef *operator->() const { return &item; }
         QCborValueRef operator[](qsizetype j) const { return { item.d, item.i + j }; }
 
         bool operator==(const Iterator &o) const { return item.d == o.item.d && item.i == o.item.i; }
@@ -106,7 +107,7 @@ public:
     };
 
     class ConstIterator {
-        QCborValueRef item;
+        QCborValueConstRef item;
         friend class Iterator;
         friend class QCborArray;
         ConstIterator(QCborContainerPrivate *dd, qsizetype ii) : item(dd, ii) {}
@@ -127,9 +128,9 @@ public:
             return *this;
         }
 
-        const QCborValueRef operator*() const { return item; }
-        const QCborValueRef *operator->() const { return &item; }
-        QCborValueRef operator[](qsizetype j) const { return QCborValueRef{ item.d, item.i + j }; }
+        QCborValueConstRef operator*() const { return item; }
+        const QCborValueConstRef *operator->() const { return &item; }
+        QCborValueConstRef operator[](qsizetype j) const { return QCborValueRef{ item.d, item.i + j }; }
 
         bool operator==(const Iterator &o) const { return item.d == o.item.d && item.i == o.item.i; }
         bool operator!=(const Iterator &o) const { return !(*this == o); }

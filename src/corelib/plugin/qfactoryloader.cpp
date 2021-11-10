@@ -233,7 +233,7 @@ inline void QFactoryLoaderPrivate::updateSinglePath(const QString &path)
             metaDataOk = true;
 
             const QCborArray k = object.value(QLatin1String("Keys")).toArray();
-            for (QCborValueRef v : k)
+            for (QCborValueConstRef v : k)
                 keys += cs ? v.toString() : v.toString().toLower();
         }
         qCDebug(lcFactoryLoader) << "Got keys from plugin meta data" << keys;
@@ -435,7 +435,7 @@ QMultiMap<int, QString> QFactoryLoader::keyMap() const
     for (int i = 0; i < metaDataList.size(); ++i) {
         const QCborMap metaData = metaDataList.at(i).value(QtPluginMetaDataKeys::MetaData).toMap();
         const QCborArray keys = metaData.value(QLatin1String("Keys")).toArray();
-        for (QCborValueRef key : keys)
+        for (QCborValueConstRef key : keys)
             result.insert(i, key.toString());
     }
     return result;
@@ -447,7 +447,7 @@ int QFactoryLoader::indexOf(const QString &needle) const
     for (int i = 0; i < metaDataList.size(); ++i) {
         const QCborMap metaData = metaDataList.at(i).value(QtPluginMetaDataKeys::MetaData).toMap();
         const QCborArray keys = metaData.value(QLatin1String("Keys")).toArray();
-        for (QCborValueRef key : keys) {
+        for (QCborValueConstRef key : keys) {
             if (key.toString().compare(needle, Qt::CaseInsensitive) == 0)
                 return i;
         }

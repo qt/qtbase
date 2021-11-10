@@ -326,7 +326,7 @@ struct QCborValueFormatter
     {
         QByteArray out(1, '[');
         const char *comma = "";
-        for (const QCborValueRef v : a) {
+        for (QCborValueConstRef v : a) {
             QScopedArrayPointer<char> s(format(v));
             out += comma;
             out += s.get();
