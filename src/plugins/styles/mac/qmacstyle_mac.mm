@@ -844,6 +844,8 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QStyleOption 
             return ret;
     }
 
+    const bool isBigSurOrAbove = QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSBigSur;
+
     if (ct == QStyle::CT_CustomBase && widg) {
 #if QT_CONFIG(pushbutton)
         if (qobject_cast<const QPushButton *>(widg))
@@ -1024,6 +1026,8 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QStyleOption 
                     w = qt_mac_aqua_get_metric(HSliderHeight);
                     if (sld->tickPosition != QSlider::NoTicks)
                         w += qt_mac_aqua_get_metric(HSliderTickHeight);
+                    else if (isBigSurOrAbove)
+                        w += 3;
                 } else {
                     w = qt_mac_aqua_get_metric(VSliderWidth);
                     if (sld->tickPosition != QSlider::NoTicks)

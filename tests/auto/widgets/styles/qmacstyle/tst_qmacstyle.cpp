@@ -83,6 +83,10 @@ private:
 #define SIZE(x, y, z) \
     ((size == QStyleHelper::SizeLarge) ? (x) : (size == QStyleHelper::SizeSmall) ? (y) : (z))
 
+static bool bigSurOrAbove() {
+    return QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSBigSur;
+}
+
 void tst_QMacStyle::sizeHints_data()
 {
     QTest::addColumn<QStyleHelper::WidgetSizePolicy>("size");
@@ -133,7 +137,7 @@ void tst_QMacStyle::sizeHints()
     QCOMPARE(sh(&comboBox3).height(), SIZE(32, -1, -1));
 
     QSlider slider1(Qt::Horizontal, &w);
-    QCOMPARE(sh(&slider1).height(), SIZE(15, 12, 10));
+    QCOMPARE(sh(&slider1).height(), SIZE(bigSurOrAbove() ? 18 : 15, 12, 10));
 
     slider1.setTickPosition(QSlider::TicksAbove);
     QCOMPARE(sh(&slider1).height(), SIZE(24, 17, 16));  // Builder
@@ -142,7 +146,7 @@ void tst_QMacStyle::sizeHints()
     QCOMPARE(sh(&slider1).height(), SIZE(24, 17, 16));  // Builder
 
     slider1.setTickPosition(QSlider::TicksBothSides);
-    QVERIFY(sh(&slider1).height() > SIZE(15, 12, 10));  // common sense
+    QVERIFY(sh(&slider1).height() > SIZE(bigSurOrAbove() ? 18 : 15, 12, 10));  // common sense
 
     QPushButton ok1("OK", &w);
     QPushButton cancel1("Cancel", &w);
