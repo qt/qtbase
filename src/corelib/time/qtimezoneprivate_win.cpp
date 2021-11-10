@@ -280,7 +280,7 @@ QDate calculateTransitionLocalDate(const SYSTEMTIME &rule, int year)
 inline bool timeToMSecs(QDate date, QTime time, qint64 *msecs)
 {
     qint64 dayms = 0;
-    return mul_overflow(date.toJulianDay() - JULIAN_DAY_FOR_EPOCH, qint64(MSECS_PER_DAY), &dayms)
+    return mul_overflow(date.toJulianDay() - JULIAN_DAY_FOR_EPOCH, std::integral_constant<qint64, MSECS_PER_DAY>(), &dayms)
         || add_overflow(dayms, qint64(time.msecsSinceStartOfDay()), msecs);
 }
 
