@@ -132,7 +132,8 @@ typedef struct _REPARSE_DATA_BUFFER {
 #  define IO_REPARSE_TAG_SYMLINK (0xA000000CL)
 #endif
 #ifndef FSCTL_GET_REPARSE_POINT
-#  define FSCTL_GET_REPARSE_POINT CTL_CODE(FILE_DEVICE_FILE_SYSTEM, 42, METHOD_BUFFERED, FILE_ANY_ACCESS)
+#    define FSCTL_GET_REPARSE_POINT                                                                \
+        CTL_CODE(FILE_DEVICE_FILE_SYSTEM, 42, METHOD_BUFFERED, FILE_ANY_ACCESS)
 #endif
 
 #if defined(QT_BOOTSTRAPPED)
@@ -205,7 +206,9 @@ GlobalSid::GlobalSid()
     }
 
     token = nullptr;
-    if (::OpenProcessToken(hnd, TOKEN_IMPERSONATE | TOKEN_QUERY | TOKEN_DUPLICATE | STANDARD_RIGHTS_READ, &token)) {
+    if (::OpenProcessToken(hnd,
+                           TOKEN_IMPERSONATE | TOKEN_QUERY | TOKEN_DUPLICATE | STANDARD_RIGHTS_READ,
+                           &token)) {
         ::DuplicateToken(token, SecurityImpersonation, &currentUserImpersonatedToken);
         ::CloseHandle(token);
     }
@@ -213,8 +216,10 @@ GlobalSid::GlobalSid()
     {
         // Create TRUSTEE for Everyone (World)
         SID_IDENTIFIER_AUTHORITY worldAuth = { SECURITY_WORLD_SID_AUTHORITY };
-        if (AllocateAndInitializeSid(&worldAuth, 1, SECURITY_WORLD_RID, 0, 0, 0, 0, 0, 0, 0, &worldSID))
+        if (AllocateAndInitializeSid(&worldAuth, 1, SECURITY_WORLD_RID, 0, 0, 0, 0, 0, 0, 0,
+                                     &worldSID)) {
             BuildTrusteeWithSid(&worldTrusteeW, worldSID);
+        }
     }
 }
 
@@ -301,15 +306,19 @@ static QString readSymLink(const QFileSystemEntry &link)
 
 #if QT_CONFIG(fslibs) && QT_CONFIG(regularexpression)
         initGlobalSid();
-        QRegularExpression matchVolumeRe(QLatin1String("^Volume\\{([a-z]|[0-9]|-)+\\}\\\\"), QRegularExpression::CaseInsensitiveOption);
+        QRegularExpression matchVolumeRe(QLatin1String("^Volume\\{([a-z]|[0-9]|-)+\\}\\\\"),
+                                         QRegularExpression::CaseInsensitiveOption);
         auto matchVolume = matchVolumeRe.match(result);
         if (matchVolume.hasMatch()) {
             Q_ASSERT(matchVolume.capturedStart() == 0);
             DWORD len;
             wchar_t buffer[MAX_PATH];
             const QString volumeName = QLatin1String("\\\\?\\") + matchVolume.captured();
-            if (GetVolumePathNamesForVolumeName(reinterpret_cast<LPCWSTR>(volumeName.utf16()), buffer, MAX_PATH, &len) != 0)
+            if (GetVolumePathNamesForVolumeName(reinterpret_cast<LPCWSTR>(volumeName.utf16()),
+                                                buffer, MAX_PATH, &len)
+                != 0) {
                 result.replace(0, matchVolume.capturedLength(), QString::fromWCharArray(buffer));
+            }
         }
 #endif // QT_CONFIG(fslibs)
     }
@@ -327,7 +336,8 @@ static QString readLink(const QFileSystemEntry &link)
     wchar_t szGotPath[MAX_PATH];
 
     // Get pointer to the IShellLink interface.
-    HRESULT hres = CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, IID_IShellLink, (LPVOID *)&psl);
+    HRESULT hres = CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, IID_IShellLink,
+                                    (LPVOID *)&psl);
 
     if (hres == CO_E_NOTINITIALIZED) { // COM was not initialized
         neededCoInit = true;
@@ -367,7 +377,8 @@ static bool uncShareExists(const QString &server)
     if (parts.count() >= 3) {
         QStringList shares;
         if (QFileSystemEngine::uncListSharesOnServer(QLatin1String("\\\\") + parts.at(2), &shares))
-            return parts.count() < 4 || shares.contains(parts.at(3).toString(), Qt::CaseInsensitive);
+            return parts.count() < 4
+                    || shares.contains(parts.at(3).toString(), Qt::CaseInsensitive);
     }
     return false;
 }
@@ -485,7 +496,8 @@ bool QFileSystemEngine::uncListSharesOnServer(const QString &server, QStringList
     SHARE_INFO_1 *BufPtr, *p;
     DWORD er = 0, tr = 0, resume = 0, i;
     do {
-        res = NetShareEnum((wchar_t*)server.utf16(), 1, (LPBYTE *)&BufPtr, DWORD(-1), &er, &tr, &resume);
+        res = NetShareEnum((wchar_t *)server.utf16(), 1, (LPBYTE *)&BufPtr, DWORD(-1), &er, &tr,
+                           &resume);
         if (res == ERROR_SUCCESS || res == ERROR_MORE_DATA) {
             p = BufPtr;
             for (i = 1; i <= er; ++i) {
@@ -552,7 +564,8 @@ QFileSystemEntry QFileSystemEngine::junctionTarget(const QFileSystemEntry &link,
 }
 
 //static
-QFileSystemEntry QFileSystemEngine::canonicalName(const QFileSystemEntry &entry, QFileSystemMetaData &data)
+QFileSystemEntry QFileSystemEngine::canonicalName(const QFileSystemEntry &entry,
+                                                  QFileSystemMetaData &data)
 {
     Q_CHECK_FILE_NAME(entry, entry);
 
@@ -644,15 +657,19 @@ QByteArray fileIdWin8(HANDLE handle)
 #if !defined(QT_BOOTSTRAPPED)
     QByteArray result;
     FILE_ID_INFO infoEx;
-    if (GetFileInformationByHandleEx(handle,
-                                     static_cast<FILE_INFO_BY_HANDLE_CLASS>(18), // FileIdInfo in Windows 8
-                                     &infoEx, sizeof(FILE_ID_INFO))) {
+    if (GetFileInformationByHandleEx(
+                handle,
+                static_cast<FILE_INFO_BY_HANDLE_CLASS>(18), // FileIdInfo in Windows 8
+                &infoEx, sizeof(FILE_ID_INFO))) {
         result = QByteArray::number(infoEx.VolumeSerialNumber, 16);
         result += ':';
         // Note: MinGW-64's definition of FILE_ID_128 differs from the MSVC one.
-        result += QByteArray(reinterpret_cast<const char *>(&infoEx.FileId), int(sizeof(infoEx.FileId))).toHex();
+        result += QByteArray(reinterpret_cast<const char *>(&infoEx.FileId),
+                             int(sizeof(infoEx.FileId)))
+                          .toHex();
     } else {
-        result = fileId(handle); // GetFileInformationByHandleEx() is observed to fail for FAT32, QTBUG-74759
+        // GetFileInformationByHandleEx() is observed to fail for FAT32, QTBUG-74759
+        result = fileId(handle);
     }
     return result;
 #else // !QT_BOOTSTRAPPED
@@ -731,10 +748,14 @@ QString QFileSystemEngine::owner(const QFileSystemEntry &entry, QAbstractFileEng
         {
             PSID pOwner = 0;
             PSECURITY_DESCRIPTOR pSD;
-            if (GetNamedSecurityInfo(reinterpret_cast<const wchar_t*>(entry.nativeFilePath().utf16()), SE_FILE_OBJECT,
-                                     own == QAbstractFileEngine::OwnerGroup ? GROUP_SECURITY_INFORMATION : OWNER_SECURITY_INFORMATION,
-                                     own == QAbstractFileEngine::OwnerUser ? &pOwner : 0, own == QAbstractFileEngine::OwnerGroup ? &pOwner : 0,
-                                     0, 0, &pSD) == ERROR_SUCCESS) {
+            if (GetNamedSecurityInfo(
+                        reinterpret_cast<const wchar_t *>(entry.nativeFilePath().utf16()),
+                        SE_FILE_OBJECT,
+                        own == QAbstractFileEngine::OwnerGroup ? GROUP_SECURITY_INFORMATION
+                                                               : OWNER_SECURITY_INFORMATION,
+                        own == QAbstractFileEngine::OwnerUser ? &pOwner : 0,
+                        own == QAbstractFileEngine::OwnerGroup ? &pOwner : 0, 0, 0, &pSD)
+                == ERROR_SUCCESS) {
                 DWORD lowner = 64;
                 DWORD ldomain = 64;
                 QVarLengthArray<wchar_t, 64> owner(lowner);
@@ -785,16 +806,20 @@ bool QFileSystemEngine::fillPermissions(const QFileSystemEntry &entry, QFileSyst
             PSID pGroup = 0;
             PACL pDacl;
             PSECURITY_DESCRIPTOR pSD;
-            DWORD res = GetNamedSecurityInfo(reinterpret_cast<const wchar_t*>(fname.utf16()), SE_FILE_OBJECT,
-                                             OWNER_SECURITY_INFORMATION | GROUP_SECURITY_INFORMATION | DACL_SECURITY_INFORMATION,
+            DWORD res = GetNamedSecurityInfo(reinterpret_cast<const wchar_t *>(fname.utf16()),
+                                             SE_FILE_OBJECT,
+                                             OWNER_SECURITY_INFORMATION | GROUP_SECURITY_INFORMATION
+                                                     | DACL_SECURITY_INFORMATION,
                                              &pOwner, &pGroup, &pDacl, 0, &pSD);
             if (res == ERROR_SUCCESS) {
                 ACCESS_MASK access_mask;
                 TRUSTEE_W trustee;
                 if (what & QFileSystemMetaData::UserPermissions) { // user
-                    // Using AccessCheck because GetEffectiveRightsFromAcl doesn't account for elevation
+                    // Using AccessCheck because GetEffectiveRightsFromAcl doesn't account
+                    // for elevation
                     if (currentUserImpersonatedToken) {
-                        GENERIC_MAPPING mapping = {FILE_GENERIC_READ, FILE_GENERIC_WRITE, FILE_GENERIC_EXECUTE, FILE_ALL_ACCESS};
+                        GENERIC_MAPPING mapping = { FILE_GENERIC_READ, FILE_GENERIC_WRITE,
+                                                    FILE_GENERIC_EXECUTE, FILE_ALL_ACCESS };
                         PRIVILEGE_SET privileges;
                         DWORD grantedAccess;
                         BOOL result;
@@ -805,7 +830,9 @@ bool QFileSystemEngine::fillPermissions(const QFileSystemEntry &entry, QFileSyst
 
                         DWORD privilegesLength = sizeof(privileges);
                         if (::AccessCheck(pSD, currentUserImpersonatedToken, genericAccessRights,
-                                          &mapping, &privileges, &privilegesLength, &grantedAccess, &result) && result) {
+                                          &mapping, &privileges, &privilegesLength, &grantedAccess,
+                                          &result)
+                            && result) {
                             data.entryFlags |= QFileSystemMetaData::UserReadPermission;
                         }
 
@@ -813,7 +840,9 @@ bool QFileSystemEngine::fillPermissions(const QFileSystemEntry &entry, QFileSyst
                         genericAccessRights = GENERIC_WRITE;
                         ::MapGenericMask(&genericAccessRights, &mapping);
                         if (::AccessCheck(pSD, currentUserImpersonatedToken, genericAccessRights,
-                                          &mapping, &privileges, &privilegesLength, &grantedAccess, &result) && result) {
+                                          &mapping, &privileges, &privilegesLength, &grantedAccess,
+                                          &result)
+                            && result) {
                             data.entryFlags |= QFileSystemMetaData::UserWritePermission;
                         }
 
@@ -821,13 +850,17 @@ bool QFileSystemEngine::fillPermissions(const QFileSystemEntry &entry, QFileSyst
                         genericAccessRights = GENERIC_EXECUTE;
                         ::MapGenericMask(&genericAccessRights, &mapping);
                         if (::AccessCheck(pSD, currentUserImpersonatedToken, genericAccessRights,
-                                          &mapping, &privileges, &privilegesLength, &grantedAccess, &result) && result) {
+                                          &mapping, &privileges, &privilegesLength, &grantedAccess,
+                                          &result)
+                            && result) {
                             data.entryFlags |= QFileSystemMetaData::UserExecutePermission;
                         }
                     } else { // fallback to GetEffectiveRightsFromAcl
                         data.knownFlagsMask |= QFileSystemMetaData::UserPermissions;
-                        if (GetEffectiveRightsFromAclW(pDacl, &currentUserTrusteeW, &access_mask) != ERROR_SUCCESS)
+                        if (GetEffectiveRightsFromAclW(pDacl, &currentUserTrusteeW, &access_mask)
+                            != ERROR_SUCCESS) {
                             access_mask = ACCESS_MASK(-1);
+                        }
                         if (access_mask & ReadMask)
                             data.entryFlags |= QFileSystemMetaData::UserReadPermission;
                         if (access_mask & WriteMask)
@@ -862,8 +895,10 @@ bool QFileSystemEngine::fillPermissions(const QFileSystemEntry &entry, QFileSyst
                 }
                 if (what & QFileSystemMetaData::OtherPermissions) { // other (world)
                     data.knownFlagsMask |= QFileSystemMetaData::OtherPermissions;
-                    if (GetEffectiveRightsFromAcl(pDacl, &worldTrusteeW, &access_mask) != ERROR_SUCCESS)
+                    if (GetEffectiveRightsFromAcl(pDacl, &worldTrusteeW, &access_mask)
+                        != ERROR_SUCCESS) {
                         access_mask = (ACCESS_MASK)-1; // ###
+                    }
                     if (access_mask & ReadMask)
                         data.entryFlags |= QFileSystemMetaData::OtherReadPermission;
                     if (access_mask & WriteMask)
@@ -892,14 +927,17 @@ bool QFileSystemEngine::fillPermissions(const QFileSystemEntry &entry, QFileSyst
 
         QString fname = entry.filePath();
         QString ext = fname.right(4).toLower();
-        if (data.isDirectory() ||
-            ext == QLatin1String(".exe") || ext == QLatin1String(".com") || ext == QLatin1String(".bat") ||
-            ext == QLatin1String(".pif") || ext == QLatin1String(".cmd")) {
-            data.entryFlags |= QFileSystemMetaData::OwnerExecutePermission | QFileSystemMetaData::GroupExecutePermission
-                               | QFileSystemMetaData::OtherExecutePermission | QFileSystemMetaData::UserExecutePermission;
+        if (data.isDirectory() || ext == QLatin1String(".exe") || ext == QLatin1String(".com")
+            || ext == QLatin1String(".bat") || ext == QLatin1String(".pif")
+            || ext == QLatin1String(".cmd")) {
+            data.entryFlags |= QFileSystemMetaData::OwnerExecutePermission
+                    | QFileSystemMetaData::GroupExecutePermission
+                    | QFileSystemMetaData::OtherExecutePermission
+                    | QFileSystemMetaData::UserExecutePermission;
         }
-        data.knownFlagsMask |= QFileSystemMetaData::OwnerPermissions | QFileSystemMetaData::GroupPermissions
-                                | QFileSystemMetaData::OtherPermissions | QFileSystemMetaData::UserExecutePermission;
+        data.knownFlagsMask |= QFileSystemMetaData::OwnerPermissions
+                | QFileSystemMetaData::GroupPermissions | QFileSystemMetaData::OtherPermissions
+                | QFileSystemMetaData::UserExecutePermission;
         // calculate user permissions
         if (what & QFileSystemMetaData::UserReadPermission) {
             if (::_waccess((wchar_t*)entry.nativeFilePath().utf16(), R_OK) == 0)
@@ -925,7 +963,8 @@ static bool tryDriveUNCFallback(const QFileSystemEntry &fname, QFileSystemMetaDa
         const UINT oldErrorMode = ::SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOOPENFILEERRORBOX);
         DWORD drivesBitmask = ::GetLogicalDrives();
         ::SetErrorMode(oldErrorMode);
-        int drivebit = 1 << (fname.filePath().at(0).toUpper().unicode() - QLatin1Char('A').unicode());
+        int drivebit =
+                1 << (fname.filePath().at(0).toUpper().unicode() - QLatin1Char('A').unicode());
         if (drivesBitmask & drivebit) {
             fileAttrib = FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_SYSTEM;
             entryExists = true;
@@ -1041,14 +1080,15 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
         WIN32_FIND_DATA findData;
         // The memory structure for WIN32_FIND_DATA is same as WIN32_FILE_ATTRIBUTE_DATA
         // for all members used by fillFindData().
-        bool ok = ::GetFileAttributesEx(reinterpret_cast<const wchar_t*>(fname.nativeFilePath().utf16()),
-                                        GetFileExInfoStandard,
-                                        reinterpret_cast<WIN32_FILE_ATTRIBUTE_DATA *>(&findData));
+        bool ok = ::GetFileAttributesEx(
+                reinterpret_cast<const wchar_t *>(fname.nativeFilePath().utf16()),
+                GetFileExInfoStandard, reinterpret_cast<WIN32_FILE_ATTRIBUTE_DATA *>(&findData));
         if (ok) {
             data.fillFromFindData(findData, false, fname.isDriveRoot());
         } else {
             const DWORD lastError = GetLastError();
-            if (lastError == ERROR_LOGON_FAILURE || lastError == ERROR_BAD_NETPATH // disconnected drive
+            // disconnected drive
+            if (lastError == ERROR_LOGON_FAILURE || lastError == ERROR_BAD_NETPATH
                 || (!tryFindFallback(fname, data) && !tryDriveUNCFallback(fname, data))) {
                 data.clearFlags();
                 SetErrorMode(oldmode);
@@ -1078,7 +1118,8 @@ static inline bool mkDir(const QString &path, DWORD *lastError = 0)
         *lastError = 0;
     const QString longPath = QFSFileEnginePrivate::longFileName(path);
     const bool result = ::CreateDirectory((wchar_t*)longPath.utf16(), 0);
-    if (lastError) // Capture lastError before any QString is freed since custom allocators might change it.
+    // Capture lastError before any QString is freed since custom allocators might change it.
+    if (lastError)
         *lastError = GetLastError();
     return result;
 }
@@ -1120,7 +1161,8 @@ bool QFileSystemEngine::isDirPath(const QString &dirPath, bool *existed)
 static bool createDirectoryWithParents(const QString &nativeName, bool shouldMkdirFirst = true)
 {
     const auto isUNCRoot = [](const QString &nativeName) {
-        return nativeName.startsWith(QLatin1String("\\\\")) && nativeName.count(QDir::separator()) <= 3;
+        return nativeName.startsWith(QLatin1String("\\\\"))
+                && nativeName.count(QDir::separator()) <= 3;
     };
     const auto isDriveName = [](const QString &nativeName) {
         return nativeName.size() == 2 && nativeName.at(1) == QLatin1Char(':');
@@ -1183,8 +1225,10 @@ bool QFileSystemEngine::removeDirectory(const QFileSystemEntry &entry, bool remo
         dirName = QDir::toNativeSeparators(QDir::cleanPath(dirName));
         for (int oldslash = 0, slash=dirName.length(); slash > 0; oldslash = slash) {
             const auto chunkRef = QStringView{dirName}.left(slash);
-            if (chunkRef.length() == 2 && chunkRef.at(0).isLetter() && chunkRef.at(1) == QLatin1Char(':'))
+            if (chunkRef.length() == 2 && chunkRef.at(0).isLetter()
+                && chunkRef.at(1) == QLatin1Char(':')) {
                 break;
+            }
             const QString chunk = chunkRef.toString();
             if (!isDirPath(chunk, nullptr))
                 return false;
@@ -1275,13 +1319,17 @@ QString QFileSystemEngine::tempPath()
 bool QFileSystemEngine::setCurrentPath(const QFileSystemEntry &entry)
 {
     QFileSystemMetaData meta;
-    fillMetaData(entry, meta, QFileSystemMetaData::ExistsAttribute | QFileSystemMetaData::DirectoryType);
+    fillMetaData(entry, meta,
+                 QFileSystemMetaData::ExistsAttribute | QFileSystemMetaData::DirectoryType);
     if (!(meta.exists() && meta.isDirectory()))
         return false;
 
-    //TODO: this should really be using nativeFilePath(), but that returns a path in long format \\?\c:\foo
-    //which causes many problems later on when it's returned through currentPath()
-    return ::SetCurrentDirectory(reinterpret_cast<const wchar_t*>(QDir::toNativeSeparators(entry.filePath()).utf16())) != 0;
+    // TODO: this should really be using nativeFilePath(), but that returns a path
+    // in long format \\?\c:\foo which causes many problems later on when it's
+    // returned through currentPath()
+    return ::SetCurrentDirectory(reinterpret_cast<const wchar_t *>(
+                   QDir::toNativeSeparators(entry.filePath()).utf16()))
+            != 0;
 }
 
 QFileSystemEntry QFileSystemEngine::currentPath()
@@ -1306,7 +1354,8 @@ QFileSystemEntry QFileSystemEngine::currentPath()
 }
 
 //static
-bool QFileSystemEngine::createLink(const QFileSystemEntry &source, const QFileSystemEntry &target, QSystemError &error)
+bool QFileSystemEngine::createLink(const QFileSystemEntry &source, const QFileSystemEntry &target,
+                                   QSystemError &error)
 {
     bool ret = false;
     IShellLink *psl = nullptr;
@@ -1325,10 +1374,12 @@ bool QFileSystemEngine::createLink(const QFileSystemEntry &source, const QFileSy
         const auto name = QDir::toNativeSeparators(source.filePath());
         const auto pathName = QDir::toNativeSeparators(source.path());
         if (SUCCEEDED(psl->SetPath(reinterpret_cast<const wchar_t *>(name.utf16())))
-            && SUCCEEDED(psl->SetWorkingDirectory(reinterpret_cast<const wchar_t *>(pathName.utf16())))) {
+            && SUCCEEDED(psl->SetWorkingDirectory(
+                    reinterpret_cast<const wchar_t *>(pathName.utf16())))) {
             IPersistFile *ppf = nullptr;
             if (SUCCEEDED(psl->QueryInterface(IID_IPersistFile, reinterpret_cast<void **>(&ppf)))) {
-                ret = SUCCEEDED(ppf->Save(reinterpret_cast<const wchar_t *>(target.filePath().utf16()), TRUE));
+                ret = SUCCEEDED(ppf->Save(
+                        reinterpret_cast<const wchar_t *>(target.filePath().utf16()), TRUE));
                 ppf->Release();
             }
         }
@@ -1345,7 +1396,8 @@ bool QFileSystemEngine::createLink(const QFileSystemEntry &source, const QFileSy
 }
 
 //static
-bool QFileSystemEngine::copyFile(const QFileSystemEntry &source, const QFileSystemEntry &target, QSystemError &error)
+bool QFileSystemEngine::copyFile(const QFileSystemEntry &source, const QFileSystemEntry &target,
+                                 QSystemError &error)
 {
     bool ret = ::CopyFile((wchar_t*)source.nativeFilePath().utf16(),
                           (wchar_t*)target.nativeFilePath().utf16(), true) != 0;
@@ -1355,7 +1407,8 @@ bool QFileSystemEngine::copyFile(const QFileSystemEntry &source, const QFileSyst
 }
 
 //static
-bool QFileSystemEngine::renameFile(const QFileSystemEntry &source, const QFileSystemEntry &target, QSystemError &error)
+bool QFileSystemEngine::renameFile(const QFileSystemEntry &source, const QFileSystemEntry &target,
+                                   QSystemError &error)
 {
     Q_CHECK_FILE_NAME(source, false);
     Q_CHECK_FILE_NAME(target, false);
@@ -1368,7 +1421,8 @@ bool QFileSystemEngine::renameFile(const QFileSystemEntry &source, const QFileSy
 }
 
 //static
-bool QFileSystemEngine::renameOverwriteFile(const QFileSystemEntry &source, const QFileSystemEntry &target, QSystemError &error)
+bool QFileSystemEngine::renameOverwriteFile(const QFileSystemEntry &source,
+                                            const QFileSystemEntry &target, QSystemError &error)
 {
     Q_CHECK_FILE_NAME(source, false);
     Q_CHECK_FILE_NAME(target, false);
@@ -1448,7 +1502,8 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
 }
 
 //static
-bool QFileSystemEngine::setPermissions(const QFileSystemEntry &entry, QFile::Permissions permissions, QSystemError &error,
+bool QFileSystemEngine::setPermissions(const QFileSystemEntry &entry,
+                                       QFile::Permissions permissions, QSystemError &error,
                                        QFileSystemMetaData *data)
 {
     Q_CHECK_FILE_NAME(entry, false);
@@ -1458,13 +1513,16 @@ bool QFileSystemEngine::setPermissions(const QFileSystemEntry &entry, QFile::Per
 
     if (permissions & (QFile::ReadOwner | QFile::ReadUser | QFile::ReadGroup | QFile::ReadOther))
         mode |= _S_IREAD;
-    if (permissions & (QFile::WriteOwner | QFile::WriteUser | QFile::WriteGroup | QFile::WriteOther))
+    if (permissions
+        & (QFile::WriteOwner | QFile::WriteUser | QFile::WriteGroup | QFile::WriteOther)) {
         mode |= _S_IWRITE;
+    }
 
     if (mode == 0) // not supported
         return false;
 
-    bool ret = ::_wchmod(reinterpret_cast<const wchar_t*>(entry.nativeFilePath().utf16()), mode) == 0;
+    bool ret =
+            ::_wchmod(reinterpret_cast<const wchar_t *>(entry.nativeFilePath().utf16()), mode) == 0;
     if (!ret)
         error = QSystemError(errno, QSystemError::StandardLibraryError);
     return ret;
