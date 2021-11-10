@@ -590,7 +590,7 @@ while(1)
     endif()
 
     # Handle variable assignments
-    if(arg MATCHES "^([a-zA-Z0-9_-]+)=(.*)")
+    if(arg MATCHES "^([a-zA-Z0-9_][a-zA-Z0-9_-]*)=(.*)")
         list(APPEND cmake_var_assignments "${arg}")
         continue()
     endif()
