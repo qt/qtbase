@@ -178,47 +178,43 @@ GlobalSid::~GlobalSid()
 
 GlobalSid::GlobalSid()
 {
-    {
-        {
-            // Create TRUSTEE for current user
-            HANDLE hnd = ::GetCurrentProcess();
-            HANDLE token = 0;
-            if (::OpenProcessToken(hnd, TOKEN_QUERY, &token)) {
-                DWORD retsize = 0;
-                // GetTokenInformation requires a buffer big enough for the TOKEN_USER struct and
-                // the SID struct. Since the SID struct can have variable number of subauthorities
-                // tacked at the end, its size is variable. Obtain the required size by first
-                // doing a dummy GetTokenInformation call.
-                ::GetTokenInformation(token, TokenUser, 0, 0, &retsize);
-                if (retsize) {
-                    void *tokenBuffer = malloc(retsize);
-                    Q_CHECK_PTR(tokenBuffer);
-                    if (::GetTokenInformation(token, TokenUser, tokenBuffer, retsize, &retsize)) {
-                        PSID tokenSid = reinterpret_cast<PTOKEN_USER>(tokenBuffer)->User.Sid;
-                        DWORD sidLen = ::GetLengthSid(tokenSid);
-                        currentUserSID = reinterpret_cast<PSID>(malloc(sidLen));
-                        Q_CHECK_PTR(currentUserSID);
-                        if (::CopySid(sidLen, currentUserSID, tokenSid))
-                            BuildTrusteeWithSid(&currentUserTrusteeW, currentUserSID);
-                    }
-                    free(tokenBuffer);
-                }
-                ::CloseHandle(token);
+    // Create TRUSTEE for current user
+    HANDLE hnd = ::GetCurrentProcess();
+    HANDLE token = 0;
+    if (::OpenProcessToken(hnd, TOKEN_QUERY, &token)) {
+        DWORD retsize = 0;
+        // GetTokenInformation requires a buffer big enough for the TOKEN_USER struct and
+        // the SID struct. Since the SID struct can have variable number of subauthorities
+        // tacked at the end, its size is variable. Obtain the required size by first
+        // doing a dummy GetTokenInformation call.
+        ::GetTokenInformation(token, TokenUser, 0, 0, &retsize);
+        if (retsize) {
+            void *tokenBuffer = malloc(retsize);
+            Q_CHECK_PTR(tokenBuffer);
+            if (::GetTokenInformation(token, TokenUser, tokenBuffer, retsize, &retsize)) {
+                PSID tokenSid = reinterpret_cast<PTOKEN_USER>(tokenBuffer)->User.Sid;
+                DWORD sidLen = ::GetLengthSid(tokenSid);
+                currentUserSID = reinterpret_cast<PSID>(malloc(sidLen));
+                Q_CHECK_PTR(currentUserSID);
+                if (::CopySid(sidLen, currentUserSID, tokenSid))
+                    BuildTrusteeWithSid(&currentUserTrusteeW, currentUserSID);
             }
-
-            token = nullptr;
-            if (::OpenProcessToken(hnd, TOKEN_IMPERSONATE | TOKEN_QUERY | TOKEN_DUPLICATE | STANDARD_RIGHTS_READ, &token)) {
-                ::DuplicateToken(token, SecurityImpersonation, &currentUserImpersonatedToken);
-                ::CloseHandle(token);
-            }
-
-            {
-                // Create TRUSTEE for Everyone (World)
-                SID_IDENTIFIER_AUTHORITY worldAuth = { SECURITY_WORLD_SID_AUTHORITY };
-                if (AllocateAndInitializeSid(&worldAuth, 1, SECURITY_WORLD_RID, 0, 0, 0, 0, 0, 0, 0, &worldSID))
-                    BuildTrusteeWithSid(&worldTrusteeW, worldSID);
-            }
+            free(tokenBuffer);
         }
+        ::CloseHandle(token);
+    }
+
+    token = nullptr;
+    if (::OpenProcessToken(hnd, TOKEN_IMPERSONATE | TOKEN_QUERY | TOKEN_DUPLICATE | STANDARD_RIGHTS_READ, &token)) {
+        ::DuplicateToken(token, SecurityImpersonation, &currentUserImpersonatedToken);
+        ::CloseHandle(token);
+    }
+
+    {
+        // Create TRUSTEE for Everyone (World)
+        SID_IDENTIFIER_AUTHORITY worldAuth = { SECURITY_WORLD_SID_AUTHORITY };
+        if (AllocateAndInitializeSid(&worldAuth, 1, SECURITY_WORLD_RID, 0, 0, 0, 0, 0, 0, 0, &worldSID))
+            BuildTrusteeWithSid(&worldTrusteeW, worldSID);
     }
 }
 
