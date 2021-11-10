@@ -117,6 +117,11 @@ uint64_t File::size() const
     return uint64_t(m_file["size"].as<uint53_t>());
 }
 
+std::string Blob::type() const
+{
+    return m_blob["type"].as<std::string>();
+}
+
 // Streams partial file content into the given buffer asynchronously. The completed
 // callback is called on completion.
 void File::stream(uint32_t offset, uint32_t length, char *buffer, const std::function<void ()> &completed) const
@@ -160,6 +165,11 @@ void File::stream(uint32_t offset, uint32_t length, char *buffer, const std::fun
 void File::stream(char *buffer, const std::function<void ()> &completed) const
 {
     stream(0, size(), buffer, completed);
+}
+
+std::string File::type() const
+{
+    return m_file["type"].as<std::string>();
 }
 
 FileList::FileList(const emscripten::val &fileList)
