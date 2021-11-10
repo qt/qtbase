@@ -158,6 +158,8 @@ QT_END_NAMESPACE
 
 #include <type_traits>
 
+QT_BEGIN_NAMESPACE
+
 template <typename T, typename U>
 inline bool qThreadStorage_hasLocalData(const QScopedPointer<T, U> &data)
 {
@@ -226,6 +228,8 @@ public:
         data.reset(new T(t));
     }
 };
+
+QT_END_NAMESPACE
 
 #endif // QT_CONFIG(thread)
 
