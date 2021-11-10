@@ -79,16 +79,16 @@ struct QLibrarySettings
 {
     QLibrarySettings();
     void load();
+    bool havePaths();
     QSettings *configuration();
 
     QScopedPointer<QSettings> settings;
-    bool havePaths;
+    bool paths;
     bool reloadOnQAppAvailable;
 };
 Q_GLOBAL_STATIC(QLibrarySettings, qt_library_settings)
 
-QLibrarySettings::QLibrarySettings() : havePaths(false)
-  , reloadOnQAppAvailable(false)
+QLibrarySettings::QLibrarySettings() : paths(false), reloadOnQAppAvailable(false)
 {
     load();
 }
@@ -98,6 +98,13 @@ QSettings *QLibrarySettings::configuration()
     if (reloadOnQAppAvailable && QCoreApplication::instance() != nullptr)
         load();
     return settings.data();
+}
+
+bool QLibrarySettings::havePaths()
+{
+    if (reloadOnQAppAvailable && QCoreApplication::instance() != nullptr)
+        load();
+    return paths;
 }
 
 void QLibrarySettings::load()
@@ -110,8 +117,8 @@ void QLibrarySettings::load()
         // This code needs to be in the regular library, as otherwise a qt.conf that
         // works for qmake would break things for dynamically built Qt tools.
         QStringList children = settings->childGroups();
-        havePaths = !children.contains(QLatin1String("Platforms"))
-                    || children.contains(QLatin1String("Paths"));
+        paths = !children.contains(QLatin1String("Platforms"))
+                || children.contains(QLatin1String("Paths"));
     }
 }
 
@@ -166,7 +173,7 @@ void QLibraryInfoPrivate::reload()
 
 static bool havePaths() {
     QLibrarySettings *ls = qt_library_settings();
-    return ls && ls->havePaths;
+    return ls && ls->havePaths();
 }
 
 #endif // settings
