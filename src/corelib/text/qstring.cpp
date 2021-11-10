@@ -4729,11 +4729,11 @@ QString QString::section(const QRegularExpression &re, qsizetype start, qsizetyp
     while (iterator.hasNext()) {
         QRegularExpressionMatch match = iterator.next();
         m = match.capturedStart();
-        sections.append(qt_section_chunk(last_len, QStringView{ *this }.mid(last_m, m - last_m)));
+        sections.append(qt_section_chunk(last_len, QStringView{ *this }.sliced(last_m, m - last_m)));
         last_m = m;
         last_len = match.capturedLength();
     }
-    sections.append(qt_section_chunk(last_len, QStringView{ *this }.mid(last_m, n - last_m)));
+    sections.append(qt_section_chunk(last_len, QStringView{ *this }.sliced(last_m, n - last_m)));
 
     return extractSections(sections, start, end, flags);
 }
@@ -7437,12 +7437,12 @@ static ResultList splitString(const StringSource &source, QStringView sep,
     typename StringSource::size_type extra = 0;
     while ((end = QtPrivate::findString(QStringView(source.constData(), source.size()), start + extra, sep, cs)) != -1) {
         if (start != end || behavior == Qt::KeepEmptyParts)
-            list.append(source.mid(start, end - start));
+            list.append(source.sliced(start, end - start));
         start = end + sep.size();
         extra = (sep.size() == 0 ? 1 : 0);
     }
     if (start != source.size() || behavior == Qt::KeepEmptyParts)
-        list.append(source.mid(start));
+        list.append(source.sliced(start));
     return list;
 }
 
@@ -7537,12 +7537,12 @@ static ResultList splitString(const String &source, const QRegularExpression &re
         QRegularExpressionMatch match = iterator.next();
         end = match.capturedStart();
         if (start != end || behavior == Qt::KeepEmptyParts)
-            list.append(source.mid(start, end - start));
+            list.append(source.sliced(start, end - start));
         start = match.capturedEnd();
     }
 
     if (start != source.size() || behavior == Qt::KeepEmptyParts)
-        list.append(source.mid(start));
+        list.append(source.sliced(start));
 
     return list;
 }
@@ -8397,8 +8397,8 @@ static ParseResult parseMultiArgFormatString(StringView s)
             int number = getEscape(uc, &i, len);
             if (number != -1) {
                 if (last != percent)
-                    result.push_back(Part{s.mid(last, percent - last)}); // literal text (incl. failed placeholders)
-                result.push_back(Part{s.mid(percent, i - percent), number});  // parsed placeholder
+                    result.push_back(Part{s.sliced(last, percent - last)}); // literal text (incl. failed placeholders)
+                result.push_back(Part{s.sliced(percent, i - percent), number});  // parsed placeholder
                 last = i;
                 continue;
             }
@@ -8407,7 +8407,7 @@ static ParseResult parseMultiArgFormatString(StringView s)
     }
 
     if (last < len)
-        result.push_back(Part{s.mid(last, len - last)}); // trailing literal text
+        result.push_back(Part{s.sliced(last, len - last)}); // trailing literal text
 
     return result;
 }
