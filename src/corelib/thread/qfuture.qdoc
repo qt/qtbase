@@ -1277,6 +1277,30 @@
     on. Use the overload that takes a context object if you want to control
     which thread the handler is invoked on.
 
+    The example below demonstrates how to attach a cancellation handler:
+
+    \snippet code/src_corelib_thread_qfuture.cpp 21
+
+    If \c testFuture is canceled, \c {Block 3} will be called and the
+    \c resultFuture will have \c -1 as its result. Unlike \c testFuture, it won't
+    be in a \c Canceled state. This means that you can get its result, attach
+    countinuations to it, and so on.
+
+    Also note that you can cancel the chain of continuations while they are
+    executing via the future that started the chain. Let's say \c testFuture.cancel()
+    was called while \c {Block 1} is already executing. The next continuation will
+    detect that cancellation was requested, so \c {Block 2} will be skipped, and
+    the cancellation handler (\c {Block 3}) will be called.
+
+    \note This method returns a new \c QFuture representing the result of the
+    continuation chain. Canceling the resulting \c QFuture itself won't invoke the
+    cancellation handler in the chain that lead to it. This means that if you call
+    \c resultFuture.cancel(), \c {Block 3} won't be called: because \c resultFuture is
+    the future that results from attaching the cancellation handler to \c testFuture,
+    no cancellation handlers have been attached to \c resultFuture itself. Only
+    cancellation of \c testFuture or the futures returned by continuations attached
+    before the \c onCancelled() call can trigger \c{Block 3}.
+
     \sa then(), onFailed()
 */
 
