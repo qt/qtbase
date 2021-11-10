@@ -467,7 +467,11 @@ static bool setupSlider(NSSlider *slider, const QStyleOptionSlider *sl)
     if (sl->minimum >= sl->maximum)
         return false;
 
-    slider.frame = sl->rect.toCGRect();
+    // NSSlider seems to cache values based on tracking and the last layout of the
+    // NSView, resulting in incorrect knob rects that break the interaction with
+    // multiple sliders. So completely reinitialize the slider.
+    [slider initWithFrame:sl->rect.toCGRect()];
+
     slider.minValue = sl->minimum;
     slider.maxValue = sl->maximum;
     slider.intValue = sl->sliderPosition;
@@ -496,6 +500,14 @@ static bool setupSlider(NSSlider *slider, const QStyleOptionSlider *sl)
     // Ensure the values set above are reflected when asking
     // the cell for its metrics and to draw itself.
     [slider layoutSubtreeIfNeeded];
+
+    if (sl->state & QStyle::State_Sunken) {
+        const CGRect knobRect = [slider.cell knobRectFlipped:slider.isFlipped];
+        CGPoint pressPoint;
+        pressPoint.x = CGRectGetMidX(knobRect);
+        pressPoint.y = CGRectGetMidY(knobRect);
+        [slider.cell startTrackingAt:pressPoint inView:slider];
+    }
 
     return true;
 }
