@@ -1,31 +1,28 @@
 type: Group
 instructions:
-  - type: MakeDirectory
-    directory: "{{.SourceDir}}_doc_build"
-  - type: SetBuildDirectory
-    directory: "{{.SourceDir}}_doc_build"
   - type: ChangeDirectory
-    directory: "{{.BuildDir}}"
+    directory: "{{.SourceDir}}"
+  # If documentation feature is present, Coin installs top-level documentation
+  # built by product(qt5) build into <module_name>_doc_build/doc. Coin will
+  # silently omit installing the top-level documentations if not built by the product.
   - type: ExecuteCommand
-    command: "rm -f {{.SourceDir}}/CMakeCache.txt"  # CMake configure does not apply if not removed.
+    command: "rsync -a {{.SourceDir}}_doc_build/doc {{.SourceDir}}"
     maxTimeInSeconds: 300
     maxTimeBetweenOutput: 300
-    userMessageOnFailure: Failed to remove CMake cache.
+    userMessageOnFailure: Failed to copy top-level docs to build dir.
+  # Filter list is created to exclude everything else than the
+  # generated documentation from the documentation archive.
   - type: CreateFileListFromDirectory
-    directory: "{{.BuildDir}}/doc"
+    directory: "{{.SourceDir}}/doc"
     filterListFileName: "doc_build_filter"
     userMessageOnFailure: "Failed to create filter list for docs"
-  - type: EnvironmentVariable
-    variableName: COIN_CMAKE_ARGS
-    variableValue: "-DCMAKE_INSTALL_PREFIX:PATH={{.InstallDir}} {{.SourceDir}}"
-  - !include "{{qt/qtbase}}/call_cmake.yaml"
   - type: ExecuteCommand
     command: "{{.Env.ENV_PREFIX}} cmake --build . --target docs -v"
     maxTimeInSeconds: 6000
     maxTimeBetweenOutput: 1200
     userMessageOnFailure: Failed to generate documentation.
   - type: UploadArtifact
-    archiveDirectory: "{{.BuildDir}}/doc"
+    archiveDirectory: "{{.SourceDir}}/doc"
     transferType: UploadModuleDocumentation
     filterListFileName: "doc_build_filter"
     maxTimeInSeconds: 1200
