@@ -121,7 +121,7 @@ public:
     {
         friend class const_iterator;
         friend class QJsonObject;
-        mutable QJsonValueRef item;
+        QJsonValueRef item;
 
     public:
         typedef std::random_access_iterator_tag iterator_category;
@@ -144,7 +144,8 @@ public:
         inline QString key() const { return item.o->keyAt(item.index); }
         inline QJsonValueRef value() const { return item; }
         inline QJsonValueRef operator*() const { return item; }
-        inline QJsonValueRef *operator->() const { return &item; }
+        inline const QJsonValueConstRef *operator->() const { return &item; }
+        inline QJsonValueRef *operator->() { return &item; }
         const QJsonValueRef operator[](qsizetype j) { return { item.o, qsizetype(item.index) + j }; }
 
         inline bool operator==(const iterator &other) const
@@ -184,14 +185,14 @@ public:
     class const_iterator
     {
         friend class iterator;
-        QJsonValueRef item;
+        QJsonValueConstRef item;
 
     public:
         typedef std::random_access_iterator_tag iterator_category;
         typedef qsizetype difference_type;
         typedef QJsonValue value_type;
-        typedef const QJsonValueRef reference;
-        typedef const QJsonValueRef *pointer;
+        typedef const QJsonValueConstRef reference;
+        typedef const QJsonValueConstRef *pointer;
 
         inline const_iterator() : item(static_cast<QJsonObject*>(nullptr), 0) { }
         inline const_iterator(const QJsonObject *obj, qsizetype index)
@@ -208,10 +209,10 @@ public:
         }
 
         inline QString key() const { return item.o->keyAt(item.index); }
-        inline QJsonValueRef value() const { return item; }
-        inline const QJsonValueRef operator*() const { return item; }
-        inline const QJsonValueRef *operator->() const { return &item; }
-        const QJsonValueRef operator[](qsizetype j) { return { item.o, qsizetype(item.index) + j }; }
+        inline QJsonValueConstRef value() const { return item; }
+        inline const QJsonValueConstRef operator*() const { return item; }
+        inline const QJsonValueConstRef *operator->() const { return &item; }
+        const QJsonValueConstRef operator[](qsizetype j) { return { item.o, qsizetype(item.index) + j }; }
 
         inline bool operator==(const const_iterator &other) const
         { return item.o == other.item.o && item.index == other.item.index; }

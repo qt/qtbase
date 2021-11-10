@@ -205,65 +205,6 @@ QJsonObject tst_QHighDpi::offscreenConfiguration()
     return getConfiguration(platformNativeInterface);
 }
 
-// JsonValueRef implements support for mutating nested JSON structures, e.g.
-//
-//   JsonValueRef::get(&config)["screens"][0]["logicalDpi"] = 192
-//
-class JsonValueRef {
-public:
-    static JsonValueRef get(QJsonValue *value) {
-        return JsonValueRef(value);
-    }
-
-    JsonValueRef(QJsonValue *value)
-        : m_value(value) { }
-
-    JsonValueRef(QJsonValue *value, JsonValueRef *parent, QString key)
-        : m_value(value), m_parent(parent), m_key(key) { }
-
-    JsonValueRef(QJsonValue *value, JsonValueRef *parent, int index)
-        : m_value(value), m_parent(parent), m_index(index) { }
-
-    ~JsonValueRef() {
-        if (m_parent) {
-            if (!m_key.isNull()) {
-                QJsonObject parentObject = m_parent->m_value->toObject();
-                parentObject[m_key] = *m_value;
-                *m_parent->m_value = parentObject;
-            } else if (m_index > -1) {
-                QJsonArray parentArray = m_parent->m_value->toArray();
-                parentArray[m_index] = *m_value;
-                *m_parent->m_value = parentArray;
-            }
-            delete m_value; // owned if we have a parent, see operator[]
-        }
-    }
-
-    JsonValueRef operator[](const char *str) {
-        QString key = QString::fromUtf8(str);
-        return JsonValueRef(new QJsonValue((*m_value)[key]), this, key);
-    }
-
-    JsonValueRef operator[](int index) {
-        return JsonValueRef(new QJsonValue((*m_value)[index]), this, index);
-    }
-
-    void operator=(int value) {
-        *m_value = QJsonValue(value);
-    }
-
-    void operator=(const char *str) {
-        *m_value = QJsonValue(QString(str));
-    }
-
-private:
-    Q_DISABLE_COPY(JsonValueRef);
-    QJsonValue *m_value = nullptr;
-    JsonValueRef *m_parent = nullptr;
-    QString m_key;
-    int m_index = -1;
-};
-
 void tst_QHighDpi::cleanup()
 {
     // Some test functions set environment variables. Unset them here,
@@ -329,10 +270,12 @@ void tst_QHighDpi::screenDpiChange()
     // Set new DPI
     int newDpi = 192;
     QJsonValue config = offscreenConfiguration();
-    JsonValueRef::get(&config)["screens"][0]["logicalDpi"] = newDpi;
-    JsonValueRef::get(&config)["screens"][1]["logicalDpi"] = newDpi;
-    JsonValueRef::get(&config)["screens"][2]["logicalDpi"] = newDpi;
-    setOffscreenConfiguration(config.toObject());
+    // API defect until Qt 7, so go indirectly via CBOR
+    QCborMap map = QCborMap::fromJsonObject(config.toObject());
+    map[QLatin1String("screens")][0][QLatin1String("logicalDpi")] = newDpi;
+    map[QLatin1String("screens")][1][QLatin1String("logicalDpi")] = newDpi;
+    map[QLatin1String("screens")][2][QLatin1String("logicalDpi")] = newDpi;
+    setOffscreenConfiguration(map.toJsonObject());
 
     // TODO check events
 
