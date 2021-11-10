@@ -56,6 +56,8 @@
 #include "qfilesystemmetadata_p.h"
 #include <QtCore/private/qsystemerror_p.h>
 
+#include <optional>
+
 QT_BEGIN_NAMESPACE
 
 #define Q_RETURN_ON_INVALID_FILENAME(message, result) \
@@ -151,7 +153,8 @@ public:
     static QString rootPath();
     static QString tempPath();
 
-    static bool createDirectory(const QFileSystemEntry &entry, bool createParents);
+    static bool createDirectory(const QFileSystemEntry &entry, bool createParents,
+                                std::optional<QFile::Permissions> permissions = std::nullopt);
     static bool removeDirectory(const QFileSystemEntry &entry, bool removeEmptyParents);
 
     static bool createLink(const QFileSystemEntry &source, const QFileSystemEntry &target, QSystemError &error);

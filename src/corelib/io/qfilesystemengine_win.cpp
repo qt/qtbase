@@ -43,6 +43,7 @@
 #include "qsysinfo.h"
 #include "qscopeguard.h"
 #include "private/qabstractfileengine_p.h"
+#include "private/qfiledevice_p.h"
 #include "private/qfsfileengine_p.h"
 #include <private/qsystemlibrary_p.h>
 #include <qdebug.h>
@@ -147,6 +148,7 @@ typedef struct _REPARSE_DATA_BUFFER {
 #include <authz.h>
 #include <userenv.h>
 static PSID currentUserSID = nullptr;
+static PSID currentGroupSID = nullptr;
 static PSID worldSID = nullptr;
 static HANDLE currentUserImpersonatedToken = nullptr;
 
@@ -164,6 +166,9 @@ GlobalSid::~GlobalSid()
     free(currentUserSID);
     currentUserSID = nullptr;
 
+    free(currentGroupSID);
+    currentGroupSID = nullptr;
+
     // worldSID was allocated with AllocateAndInitializeSid so it needs to be freed with FreeSid
     if (worldSID) {
         ::FreeSid(worldSID);
@@ -176,29 +181,54 @@ GlobalSid::~GlobalSid()
     }
 }
 
+/*
+    Helper for GetTokenInformation that allocates chunk of memory to hold the requested information.
+
+    The memory size is determined by doing a dummy call first. The returned memory should be
+    freed by calling free().
+*/
+template<typename T>
+static T *getTokenInfo(HANDLE token, TOKEN_INFORMATION_CLASS infoClass)
+{
+    DWORD retsize = 0;
+    GetTokenInformation(token, infoClass, nullptr, 0, &retsize);
+    if (retsize) {
+        void *tokenBuffer = malloc(retsize);
+        if (::GetTokenInformation(token, infoClass, tokenBuffer, retsize, &retsize))
+            return reinterpret_cast<T *>(tokenBuffer);
+        else
+            free(tokenBuffer);
+    }
+    return nullptr;
+}
+
+/*
+    Takes a copy of the original SID and stores it into dstSid.
+    The copy can be destroyed using free().
+*/
+static void copySID(PSID &dstSid, PSID srcSid)
+{
+    DWORD sidLen = GetLengthSid(srcSid);
+    dstSid = reinterpret_cast<PSID>(malloc(sidLen));
+    Q_CHECK_PTR(dstSid);
+    CopySid(sidLen, dstSid, srcSid);
+}
+
 GlobalSid::GlobalSid()
 {
-    // Create TRUSTEE for current user
     HANDLE hnd = ::GetCurrentProcess();
     HANDLE token = nullptr;
     if (::OpenProcessToken(hnd, TOKEN_QUERY, &token)) {
-        DWORD retsize = 0;
-        // GetTokenInformation requires a buffer big enough for the TOKEN_USER struct and
-        // the SID struct. Since the SID struct can have variable number of subauthorities
-        // tacked at the end, its size is variable. Obtain the required size by first
-        // doing a dummy GetTokenInformation call.
-        ::GetTokenInformation(token, TokenUser, nullptr, 0, &retsize);
-        if (retsize) {
-            void *tokenBuffer = malloc(retsize);
-            Q_CHECK_PTR(tokenBuffer);
-            if (::GetTokenInformation(token, TokenUser, tokenBuffer, retsize, &retsize)) {
-                PSID tokenSid = reinterpret_cast<PTOKEN_USER>(tokenBuffer)->User.Sid;
-                DWORD sidLen = ::GetLengthSid(tokenSid);
-                currentUserSID = reinterpret_cast<PSID>(malloc(sidLen));
-                Q_CHECK_PTR(currentUserSID);
-                ::CopySid(sidLen, currentUserSID, tokenSid);
-            }
-            free(tokenBuffer);
+        // Create SID for current user
+        if (auto info = getTokenInfo<TOKEN_USER>(token, TokenUser)) {
+            copySID(currentUserSID, info->User.Sid);
+            free(info);
+        }
+
+        // Create SID for the current user's primary group.
+        if (auto info = getTokenInfo<TOKEN_GROUPS>(token, TokenGroups)) {
+            copySID(currentGroupSID, info->Groups[0].Sid);
+            free(info);
         }
         ::CloseHandle(token);
     }
@@ -360,6 +390,29 @@ ACCESS_MASK QAuthzClientContext::accessMask(PSECURITY_DESCRIPTOR pSD) const
     return accessMask;
 }
 
+enum NonSpecificPermission {
+    ReadPermission = 0x4,
+    WritePermission = 0x2,
+    ExePermission = 0x1,
+    AllPermissions = ReadPermission | WritePermission | ExePermission
+};
+Q_DECLARE_FLAGS(NonSpecificPermissions, NonSpecificPermission)
+Q_DECLARE_OPERATORS_FOR_FLAGS(NonSpecificPermissions)
+
+enum PermissionTag { OtherTag = 0, GroupTag = 4, UserTag = 8, OwnerTag = 12 };
+
+constexpr NonSpecificPermissions toNonSpecificPermissions(PermissionTag tag,
+                                                          QFileDevice::Permissions permissions)
+{
+    return NonSpecificPermissions::fromInt((permissions.toInt() >> int(tag)) & 0x7);
+}
+
+constexpr QFileDevice::Permissions toSpecificPermissions(PermissionTag tag,
+                                                         NonSpecificPermissions permissions)
+{
+    return QFileDevice::Permissions::fromInt(permissions.toInt() << int(tag));
+}
+
 QT_END_NAMESPACE
 
 } // anonymous namespace
@@ -368,6 +421,195 @@ QT_END_NAMESPACE
 QT_BEGIN_NAMESPACE
 
 Q_CORE_EXPORT int qt_ntfs_permission_lookup = 0;
+
+/*!
+    \class QNativeFilePermissions
+    \internal
+
+    This class can be used to produce a security descriptor that contains ACL that produces
+    result similar to what is expected for POSIX permission corresponding to the supplied
+    \c QFileDevice::Permissions value. When supplied optional value is empty, a null
+    security descriptor is produced. Files or directories with such null security descriptor
+    will inherit ACLs from parent directories. Otherwise an ACL is generated and applied to
+    the security descriptor. The created ACL has permission bits set similar to what Cygwin
+    does. Unlike Cygwin, this code tries to reorder the access control entries (ACE) inside
+    the ACL to match the canonical ordering (deny ACEs followed by allow ACEs) if possible.
+
+    The default ordering of ACEs is as follows:
+
+       * User deny ACE, only lists permission that may be granted by the subsequent Group and
+         Other allow ACEs.
+       * User allow ACE.
+       * Group deny ACE, only lists permissions that may be granted by the subsequent Other
+         allow ACE.
+       * Group allow ACE.
+       * Other allow ACE.
+
+    Any ACEs that would have zero mask are skipped. Group deny ACE may be moved to before
+    User allow ACE if these 2 ACEs don't have any common mask bits set. This allows use of
+    canonical ordering in more cases. ACLs for permissions with group having less permissions
+    than both user and others (ex.: 0757) are still in noncanonical order. Files with
+    noncanonical ACLs generate warnings when one tries to edit permissions with Windows GUI,
+    and don't work correctly with API like GetEffectiveRightsFromAcl(), but otherwise access
+    checks work fine and such ACLs can still be edited with the "Advanced" GUI.
+*/
+QNativeFilePermissions::QNativeFilePermissions(std::optional<QFileDevice::Permissions> perms,
+                                               bool isDir)
+{
+#if QT_CONFIG(fslibs)
+    if (!perms) {
+        ok = true;
+        return;
+    }
+
+    initGlobalSid();
+
+    const auto permissions = *perms;
+
+    PACL acl = reinterpret_cast<PACL>(aclStorage);
+
+    if (!InitializeAcl(acl, sizeof(aclStorage), ACL_REVISION))
+        return;
+
+    struct Masks
+    {
+        ACCESS_MASK denyMask, allowMask;
+    };
+
+    auto makeMasks = [this, isDir](NonSpecificPermissions allowPermissions,
+                                   NonSpecificPermissions denyPermissions, bool owner) {
+        constexpr ACCESS_MASK AllowRead = FILE_READ_DATA | FILE_READ_ATTRIBUTES | FILE_READ_EA;
+        constexpr ACCESS_MASK DenyRead = FILE_READ_DATA | FILE_READ_EA;
+
+        constexpr ACCESS_MASK AllowWrite =
+                FILE_WRITE_DATA | FILE_WRITE_ATTRIBUTES | FILE_WRITE_EA | FILE_APPEND_DATA;
+        constexpr ACCESS_MASK DenyWrite = AllowWrite | FILE_DELETE_CHILD;
+        constexpr ACCESS_MASK DenyWriteOwner =
+                FILE_WRITE_DATA | FILE_WRITE_EA | FILE_APPEND_DATA | FILE_DELETE_CHILD;
+
+        constexpr ACCESS_MASK AllowExe = FILE_EXECUTE;
+        constexpr ACCESS_MASK DenyExe = AllowExe;
+
+        constexpr ACCESS_MASK StdRightsOther =
+                STANDARD_RIGHTS_READ | FILE_READ_ATTRIBUTES | SYNCHRONIZE;
+        constexpr ACCESS_MASK StdRightsOwner =
+                STANDARD_RIGHTS_ALL | FILE_READ_ATTRIBUTES | FILE_WRITE_ATTRIBUTES | SYNCHRONIZE;
+
+        ACCESS_MASK allow = owner ? StdRightsOwner : StdRightsOther;
+        ACCESS_MASK deny = 0;
+
+        if (denyPermissions & ReadPermission)
+            deny |= DenyRead;
+
+        if (denyPermissions & WritePermission)
+            deny |= owner ? DenyWriteOwner : DenyWrite;
+
+        if (denyPermissions & ExePermission)
+            deny |= DenyExe;
+
+        if (allowPermissions & ReadPermission)
+            allow |= AllowRead;
+
+        if (allowPermissions & WritePermission)
+            allow |= AllowWrite;
+
+        if (allowPermissions & ExePermission)
+            allow |= AllowExe;
+
+        // Give the owner "full access" if all the permissions are allowed
+        if (owner && allowPermissions == AllPermissions)
+            allow |= FILE_DELETE_CHILD;
+
+        if (isDir
+            && (allowPermissions & (WritePermission | ExePermission))
+                    == (WritePermission | ExePermission)) {
+            allow |= FILE_DELETE_CHILD;
+        }
+
+        return Masks { deny, allow };
+    };
+
+    auto userPermissions = toNonSpecificPermissions(OwnerTag, permissions)
+            | toNonSpecificPermissions(UserTag, permissions);
+    auto groupPermissions = toNonSpecificPermissions(GroupTag, permissions);
+    auto otherPermissions = toNonSpecificPermissions(OtherTag, permissions);
+
+    auto userMasks = makeMasks(userPermissions,
+                               ~userPermissions & (groupPermissions | otherPermissions), true);
+    auto groupMasks = makeMasks(groupPermissions, ~groupPermissions & otherPermissions, false);
+    auto otherMasks = makeMasks(otherPermissions, {}, false);
+
+    const DWORD aceFlags = isDir ? OBJECT_INHERIT_ACE | CONTAINER_INHERIT_ACE : 0;
+    const bool reorderGroupDeny = (groupMasks.denyMask & userMasks.allowMask) == 0;
+
+    const auto addDenyAce = [acl, aceFlags](const Masks &masks, PSID pSID) {
+        if (masks.denyMask)
+            return AddAccessDeniedAceEx(acl, ACL_REVISION, aceFlags, masks.denyMask, pSID);
+        return TRUE;
+    };
+
+    const auto addAllowAce = [acl, aceFlags](const Masks &masks, PSID pSID) {
+        if (masks.allowMask)
+            return AddAccessAllowedAceEx(acl, ACL_REVISION, aceFlags, masks.allowMask, pSID);
+        return TRUE;
+    };
+
+    if (!addDenyAce(userMasks, currentUserSID))
+        return;
+
+    if (reorderGroupDeny) {
+        if (!addDenyAce(groupMasks, currentGroupSID))
+            return;
+    }
+
+    if (!addAllowAce(userMasks, currentUserSID))
+        return;
+
+    if (!reorderGroupDeny) {
+        if (!addDenyAce(groupMasks, currentGroupSID))
+            return;
+    }
+
+    if (!addAllowAce(groupMasks, currentGroupSID))
+        return;
+
+    if (!addAllowAce(otherMasks, worldSID))
+        return;
+
+    if (!InitializeSecurityDescriptor(&sd, SECURITY_DESCRIPTOR_REVISION))
+        return;
+
+    if (!SetSecurityDescriptorOwner(&sd, currentUserSID, FALSE))
+        return;
+
+    if (!SetSecurityDescriptorGroup(&sd, currentGroupSID, FALSE))
+        return;
+
+    if (!SetSecurityDescriptorDacl(&sd, TRUE, acl, FALSE))
+        return;
+
+    sa.nLength = sizeof(sa);
+    sa.lpSecurityDescriptor = &sd;
+    sa.bInheritHandle = FALSE;
+
+    isNull = false;
+#endif // QT_CONFIG(fslibs)
+    ok = true;
+}
+
+/*!
+    \internal
+    Return pointer to a \c SECURITY_ATTRIBUTES object describing the permissions.
+
+    The returned pointer many be null if default permissions were requested or
+    during bootstrap. The calles must call \c isOk() to check if the object
+    was successfully constructed before using this method.
+*/
+SECURITY_ATTRIBUTES *QNativeFilePermissions::securityAttributes()
+{
+    Q_ASSERT(ok);
+    return isNull ? nullptr : &sa;
+}
 
 static inline bool toFileTime(const QDateTime &date, FILETIME *fileTime)
 {
@@ -1206,12 +1448,13 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
     return data.hasFlags(what);
 }
 
-static inline bool mkDir(const QString &path, DWORD *lastError = nullptr)
+static inline bool mkDir(const QString &path, SECURITY_ATTRIBUTES *securityAttributes,
+                         DWORD *lastError = nullptr)
 {
     if (lastError)
         *lastError = 0;
     const QString longPath = QFSFileEnginePrivate::longFileName(path);
-    const bool result = ::CreateDirectory((wchar_t *)longPath.utf16(), nullptr);
+    const bool result = ::CreateDirectory((wchar_t *)longPath.utf16(), securityAttributes);
     // Capture lastError before any QString is freed since custom allocators might change it.
     if (lastError)
         *lastError = GetLastError();
@@ -1252,7 +1495,9 @@ bool QFileSystemEngine::isDirPath(const QString &dirPath, bool *existed)
 
 // NOTE: if \a shouldMkdirFirst is false, we assume the caller did try to mkdir
 // before calling this function.
-static bool createDirectoryWithParents(const QString &nativeName, bool shouldMkdirFirst = true)
+static bool createDirectoryWithParents(const QString &nativeName,
+                                       SECURITY_ATTRIBUTES *securityAttributes,
+                                       bool shouldMkdirFirst = true)
 {
     const auto isUNCRoot = [](const QString &nativeName) {
         return nativeName.startsWith(QLatin1String("\\\\"))
@@ -1270,7 +1515,7 @@ static bool createDirectoryWithParents(const QString &nativeName, bool shouldMkd
         return false;
 
     if (shouldMkdirFirst) {
-        if (mkDir(nativeName))
+        if (mkDir(nativeName, securityAttributes))
             return true;
     }
 
@@ -1279,26 +1524,33 @@ static bool createDirectoryWithParents(const QString &nativeName, bool shouldMkd
         return false;
 
     const QString parentNativeName = nativeName.left(backSlash);
-    if (!createDirectoryWithParents(parentNativeName))
+    if (!createDirectoryWithParents(parentNativeName, securityAttributes))
         return false;
 
     // try again
-    if (mkDir(nativeName))
+    if (mkDir(nativeName, securityAttributes))
         return true;
     return isDir(nativeName);
 }
 
 //static
-bool QFileSystemEngine::createDirectory(const QFileSystemEntry &entry, bool createParents)
+bool QFileSystemEngine::createDirectory(const QFileSystemEntry &entry, bool createParents,
+                                        std::optional<QFile::Permissions> permissions)
 {
     QString dirName = entry.filePath();
     Q_CHECK_FILE_NAME(dirName, false);
 
     dirName = QDir::toNativeSeparators(QDir::cleanPath(dirName));
 
+    QNativeFilePermissions nativePermissions(permissions, true);
+    if (!nativePermissions.isOk())
+        return false;
+
+    auto securityAttributes = nativePermissions.securityAttributes();
+
     // try to mkdir this directory
     DWORD lastError;
-    if (mkDir(dirName, &lastError))
+    if (mkDir(dirName, securityAttributes, &lastError))
         return true;
     // mkpath should return true, if the directory already exists, mkdir false.
     if (!createParents)
@@ -1306,7 +1558,7 @@ bool QFileSystemEngine::createDirectory(const QFileSystemEntry &entry, bool crea
     if (lastError == ERROR_ALREADY_EXISTS || lastError == ERROR_ACCESS_DENIED)
         return isDirPath(dirName, nullptr);
 
-    return createDirectoryWithParents(dirName, false);
+    return createDirectoryWithParents(dirName, securityAttributes, false);
 }
 
 //static

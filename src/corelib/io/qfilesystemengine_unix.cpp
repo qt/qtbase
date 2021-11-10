@@ -1110,7 +1110,8 @@ bool QFileSystemEngine::cloneFile(int srcfd, int dstfd, const QFileSystemMetaDat
 
 // Note: if \a shouldMkdirFirst is false, we assume the caller did try to mkdir
 // before calling this function.
-static bool createDirectoryWithParents(const QByteArray &nativeName, bool shouldMkdirFirst = true)
+static bool createDirectoryWithParents(const QByteArray &nativeName, mode_t mode,
+                                       bool shouldMkdirFirst = true)
 {
     // helper function to check if a given path is a directory, since mkdir can
     // fail if the dir already exists (it may have been created by another
@@ -1120,7 +1121,7 @@ static bool createDirectoryWithParents(const QByteArray &nativeName, bool should
         return QT_STAT(nativeName.constData(), &st) == 0 && (st.st_mode & S_IFMT) == S_IFDIR;
     };
 
-    if (shouldMkdirFirst && QT_MKDIR(nativeName, 0777) == 0)
+    if (shouldMkdirFirst && QT_MKDIR(nativeName, mode) == 0)
         return true;
     if (errno == EISDIR)
         return true;
@@ -1135,17 +1136,18 @@ static bool createDirectoryWithParents(const QByteArray &nativeName, bool should
         return false;
 
     QByteArray parentNativeName = nativeName.left(slash);
-    if (!createDirectoryWithParents(parentNativeName))
+    if (!createDirectoryWithParents(parentNativeName, mode))
         return false;
 
     // try again
-    if (QT_MKDIR(nativeName, 0777) == 0)
+    if (QT_MKDIR(nativeName, mode) == 0)
         return true;
     return errno == EEXIST && isDir(nativeName);
 }
 
 //static
-bool QFileSystemEngine::createDirectory(const QFileSystemEntry &entry, bool createParents)
+bool QFileSystemEngine::createDirectory(const QFileSystemEntry &entry, bool createParents,
+                                        std::optional<QFile::Permissions> permissions)
 {
     QString dirName = entry.filePath();
     Q_CHECK_FILE_NAME(dirName, false);
@@ -1156,12 +1158,13 @@ bool QFileSystemEngine::createDirectory(const QFileSystemEntry &entry, bool crea
 
     // try to mkdir this directory
     QByteArray nativeName = QFile::encodeName(dirName);
-    if (QT_MKDIR(nativeName, 0777) == 0)
+    mode_t mode = permissions ? QtPrivate::toMode_t(*permissions) : 0777;
+    if (QT_MKDIR(nativeName, mode) == 0)
         return true;
     if (!createParents)
         return false;
 
-    return createDirectoryWithParents(nativeName, false);
+    return createDirectoryWithParents(nativeName, mode, false);
 }
 
 //static

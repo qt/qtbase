@@ -196,6 +196,7 @@ public:
                                 SortFlags sort = NoSort) const;
 
     bool mkdir(const QString &dirName) const;
+    bool mkdir(const QString &dirName, QFile::Permissions permissions) const;
     bool rmdir(const QString &dirName) const;
     bool mkpath(const QString &dirPath) const;
     bool rmpath(const QString &dirPath) const;

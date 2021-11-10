@@ -57,6 +57,8 @@
 #include <QtCore/private/qfilesystemmetadata_p.h>
 #include <qhash.h>
 
+#include <optional>
+
 #ifndef QT_NO_FSFILEENGINE
 
 QT_BEGIN_NAMESPACE
@@ -93,7 +95,8 @@ public:
     bool rename(const QString &newName) override;
     bool renameOverwrite(const QString &newName) override;
     bool link(const QString &newName) override;
-    bool mkdir(const QString &dirName, bool createParentDirectories) const override;
+    bool mkdir(const QString &dirName, bool createParentDirectories,
+               std::optional<QFile::Permissions> permissions) const override;
     bool rmdir(const QString &dirName, bool recurseParentDirectories) const override;
     bool setSize(qint64 size) override;
     bool caseSensitive() const override;

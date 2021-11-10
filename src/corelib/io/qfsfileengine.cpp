@@ -1057,9 +1057,11 @@ bool QFSFileEngine::renameOverwrite(const QString &newName)
 /*!
   \reimp
 */
-bool QFSFileEngine::mkdir(const QString &name, bool createParentDirectories) const
+bool QFSFileEngine::mkdir(const QString &name, bool createParentDirectories,
+                          std::optional<QFile::Permissions> permissions) const
 {
-    return QFileSystemEngine::createDirectory(QFileSystemEntry(name), createParentDirectories);
+    return QFileSystemEngine::createDirectory(QFileSystemEntry(name), createParentDirectories,
+                                              permissions);
 }
 
 /*!

@@ -534,19 +534,24 @@ bool QAbstractFileEngine::link(const QString &newName)
 }
 
 /*!
-    Requests that the directory \a dirName be created. If
-    \a createParentDirectories is true, then any sub-directories in \a dirName
+    Requests that the directory \a dirName be created with the specified \a permissions.
+    If \a createParentDirectories is true, then any sub-directories in \a dirName
     that don't exist must be created. If \a createParentDirectories is false then
     any sub-directories in \a dirName must already exist for the function to
     succeed. If the operation succeeds return true; otherwise return
     false.
 
+    If \a permissions is null then implementation-specific default permissions are
+    used.
+
     \sa setFileName(), rmdir(), isRelativePath()
  */
-bool QAbstractFileEngine::mkdir(const QString &dirName, bool createParentDirectories) const
+bool QAbstractFileEngine::mkdir(const QString &dirName, bool createParentDirectories,
+                                std::optional<QFile::Permissions> permissions) const
 {
     Q_UNUSED(dirName);
     Q_UNUSED(createParentDirectories);
+    Q_UNUSED(permissions);
     return false;
 }
 

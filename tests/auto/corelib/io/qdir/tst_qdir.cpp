@@ -37,6 +37,7 @@
 #include <qdebug.h>
 #include <qdir.h>
 #include <qfileinfo.h>
+#include <qscopedvaluerollback.h>
 #include <qstringlist.h>
 
 #if defined(Q_OS_WIN)
@@ -65,6 +66,7 @@
 
 #ifdef Q_OS_WIN
 #define DRIVE "Q:"
+extern Q_CORE_EXPORT int qt_ntfs_permission_lookup;
 #else
 #define DRIVE
 #endif
@@ -114,6 +116,8 @@ private slots:
     void mkdirRmdir_data();
     void mkdirRmdir();
     void mkdirOnSymlink();
+    void mkdirWithPermissions_data();
+    void mkdirWithPermissions();
 
     void makedirReturnCode();
 
@@ -449,6 +453,49 @@ void tst_QDir::mkdirOnSymlink()
     fi.setFile(path);
     QVERIFY2(fi.exists() && fi.isDir(), msgDoesNotExist(path).constData());
 #endif
+}
+
+void tst_QDir::mkdirWithPermissions_data()
+{
+    QTest::addColumn<QFile::Permissions>("permissions");
+
+    for (int u = 0; u < 8; ++u) {
+        for (int g = 0; g < 8; ++g) {
+            for (int o = 0; o < 8; ++o) {
+                auto permissions = QFileDevice::Permissions::fromInt((u << 12) | (g << 4) | o);
+                QTest::addRow("%04x", permissions.toInt()) << permissions;
+            }
+        }
+    }
+}
+
+void tst_QDir::mkdirWithPermissions()
+{
+    QFETCH(QFile::Permissions, permissions);
+
+#ifdef Q_OS_WIN
+    QScopedValueRollback<int> ntfsMode(qt_ntfs_permission_lookup);
+    ++qt_ntfs_permission_lookup;
+#endif
+#ifdef Q_OS_UNIX
+    auto restoreMask = qScopeGuard([oldMask = umask(0)] { umask(oldMask); });
+#endif
+
+    const QFile::Permissions setPermissions = {
+        QFile::ReadOther, QFile::WriteOther, QFile::ExeOther,
+        QFile::ReadGroup, QFile::WriteGroup, QFile::ExeGroup,
+        QFile::ReadOwner, QFile::WriteOwner, QFile::ExeOwner
+    };
+
+    const QString path = u"tmpdir"_qs;
+    QDir dir;
+    auto deleteDirectory = qScopeGuard([&dir, &path] { dir.rmdir(path); });
+
+    QVERIFY(dir.mkdir(path, permissions));
+    auto actualPermissions = QFileInfo(dir.filePath(path)).permissions();
+    QCOMPARE(actualPermissions & setPermissions, permissions);
+    QVERIFY(dir.rmdir(path));
+    deleteDirectory.dismiss();
 }
 
 void tst_QDir::makedirReturnCode()

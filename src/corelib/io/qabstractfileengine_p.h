@@ -55,6 +55,8 @@
 #include "QtCore/qfile.h"
 #include "QtCore/qdir.h"
 
+#include <optional>
+
 #ifdef open
 #error qabstractfileengine_p.h must be included before any header file that defines open
 #endif
@@ -135,7 +137,8 @@ public:
     virtual bool rename(const QString &newName);
     virtual bool renameOverwrite(const QString &newName);
     virtual bool link(const QString &newName);
-    virtual bool mkdir(const QString &dirName, bool createParentDirectories) const;
+    virtual bool mkdir(const QString &dirName, bool createParentDirectories,
+                       std::optional<QFile::Permissions> permissions = std::nullopt) const;
     virtual bool rmdir(const QString &dirName, bool recurseParentDirectories) const;
     virtual bool setSize(qint64 size);
     virtual bool caseSensitive() const;

@@ -1445,9 +1445,42 @@ QFileInfoList QDir::entryInfoList(const QStringList &nameFilters, Filters filter
 
     Returns \c true on success; otherwise returns \c false.
 
-    If the directory already exists when this function is called, it will return false.
+    If the directory already exists when this function is called, it will return \c false.
+
+    The permissions of the created directory are set to \a{permissions}.
+
+    On POSIX systems the permissions are influenced by the value of \c umask.
+
+    On Windows the permissions are emulated using ACLs. These ACLs may be in non-canonical
+    order when the group is granted less permissions than others. Files and directories with
+    such permissions will generate warnings when the Security tab of the Properties dialog
+    is opened. Granting the group all permissions granted to others avoids such warnings.
 
     \sa rmdir()
+
+    \since 6.3
+*/
+bool QDir::mkdir(const QString &dirName, QFile::Permissions permissions) const
+{
+    const QDirPrivate *d = d_ptr.constData();
+
+    if (dirName.isEmpty()) {
+        qWarning("QDir::mkdir: Empty or null file name");
+        return false;
+    }
+
+    QString fn = filePath(dirName);
+    if (!d->fileEngine)
+        return QFileSystemEngine::createDirectory(QFileSystemEntry(fn), false, permissions);
+    return d->fileEngine->mkdir(fn, false, permissions);
+}
+
+/*!
+    \overload
+    Creates a sub-directory called \a dirName with default permissions.
+
+    On POSIX systems the default is to grant all permissions allowed by \c umask.
+    On Windows, the new directory inherits its permissions from its parent directory.
 */
 bool QDir::mkdir(const QString &dirName) const
 {

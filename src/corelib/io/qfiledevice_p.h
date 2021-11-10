@@ -52,11 +52,16 @@
 //
 
 #include "private/qiodevice_p.h"
+#include "qfiledevice.h"
 
 #include <memory>
-#ifdef Q_OS_UNIX
+#if defined(Q_OS_UNIX)
 #  include <sys/types.h> // for mode_t
-#  include <sys/stat.h>  // for mode_t constants
+#  include <sys/stat.h> // for mode_t constants
+#elif defined(Q_OS_WINDOWS)
+#  include <qt_windows.h>
+#  include <winnt.h> // for SECURITY_DESCRIPTOR
+#  include <optional>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -130,6 +135,31 @@ constexpr mode_t toMode_t(QFileDevice::Permissions permissions)
 }
 
 } // namespace QtPrivate
+#elif defined(Q_OS_WINDOWS)
+
+class QNativeFilePermissions
+{
+public:
+    QNativeFilePermissions(std::optional<QFileDevice::Permissions> perms, bool isDir);
+
+    SECURITY_ATTRIBUTES *securityAttributes();
+    bool isOk() const { return ok; }
+
+private:
+    bool ok = false;
+    bool isNull = true;
+
+    // At most 1 allow + 1 deny ACEs for user and group, 1 allow ACE for others
+    static constexpr auto MaxNumACEs = 5;
+
+    static constexpr auto MaxACLSize =
+            sizeof(ACL) + (sizeof(ACCESS_ALLOWED_ACE) + SECURITY_MAX_SID_SIZE) * MaxNumACEs;
+
+    SECURITY_DESCRIPTOR sd;
+    SECURITY_ATTRIBUTES sa;
+    alignas(DWORD) char aclStorage[MaxACLSize];
+};
+
 #endif // Q_OS_UNIX
 
 QT_END_NAMESPACE
