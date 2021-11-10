@@ -1329,12 +1329,15 @@ void tst_QUrl::fromLocalFile_data()
                 << QString(suffix);
 #ifdef Q_OS_WIN32
         // debackslashification only happens on Windows
+        QString suffixWithBackslashes(suffix);
+        suffixWithBackslashes.replace('/', '\\');
+
         QTest::addRow("windows-backslash-unc-%s", pathDescription)
-                << QString(QString("//somehost") + suffix).replace('/', '\\')
+                << QString(QString("\\\\somehost") + suffixWithBackslashes)
                 << QString("file://somehost") + suffix
                 << QString(suffix);
         QTest::addRow("windows-backslash-extlen-%s", pathDescription)
-                << QString(QString("//?") + suffix).replace('/', '\\')
+                << QString(QString("\\\\?") + suffixWithBackslashes)
                 << QString("file:////%3F") + suffix
                 << QString("//?") + suffix;
 #endif
