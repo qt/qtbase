@@ -48,9 +48,9 @@
     When building Qt from source, Qt builds plugins for native TLS libraries
     that are supported for the operating system you are building for. For
     Windows this means
-    \l{Schannel}{https://docs.microsoft.com/en-us/windows/win32/com/schannel},
+    \l{https://docs.microsoft.com/en-us/windows/win32/com/schannel}{Schannel},
     while for macOS this is
-    \l{Secure Transport}{https://developer.apple.com/documentation/security/secure_transport}.
+    \l{https://developer.apple.com/documentation/security/secure_transport}{Secure Transport}.
 
     On all platforms, the configuration system checks for the presence of the
     \c{openssl/opensslv.h} header provided by source or developer packages

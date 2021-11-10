@@ -62,3 +62,6 @@ depends += \
     qtxmlpatterns
 
 navigation.landingpage = "qmake Manual"
+
+# Fail the documentation build if there are more warnings than the limit
+warninglimit = 0

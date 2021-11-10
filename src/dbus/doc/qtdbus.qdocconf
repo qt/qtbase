@@ -66,3 +66,6 @@ navigation.cppclassespage = "Qt D-Bus C++ Classes"
 manifestmeta.thumbnail.names    =   "QtDBus/D-Bus List Names Example" \
                                     "QtDBus/D-Bus Ping Pong Example" \
                                     "QtDBus/D-Bus Complex Ping Pong Example"
+
+# Fail the documentation build if there are more warnings than the limit
+warninglimit = 0
