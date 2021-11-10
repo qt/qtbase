@@ -71,13 +71,11 @@ QT_BEGIN_NAMESPACE
 static const wchar_t tzRegPath[] = LR"(SOFTWARE\Microsoft\Windows NT\CurrentVersion\Time Zones)";
 static const wchar_t currTzRegPath[] = LR"(SYSTEM\CurrentControlSet\Control\TimeZoneInformation)";
 
-enum {
-    MIN_YEAR = -292275056,
-    MAX_YEAR = 292278994,
-    MSECS_PER_DAY = 86400000,
-    TIME_T_MAX = 2145916799,  // int maximum 2037-12-31T23:59:59 UTC
-    JULIAN_DAY_FOR_EPOCH = 2440588 // result of julianDayFromDate(1970, 1, 1)
-};
+constexpr qint64 MIN_YEAR = -292275056;
+constexpr qint64 MAX_YEAR = 292278994;
+constexpr qint64 MSECS_PER_DAY = 86400000;
+constexpr qint64 TIME_T_MAX = 2145916799;  // int maximum 2037-12-31T23:59:59 UTC
+constexpr qint64 JULIAN_DAY_FOR_EPOCH = 2440588; // result of julianDayFromDate(1970, 1, 1)
 
 // Copied from MSDN, see above for link
 typedef struct _REG_TZI_FORMAT
