@@ -147,8 +147,8 @@ typedef struct _REPARSE_DATA_BUFFER {
 #include <userenv.h>
 static TRUSTEE_W currentUserTrusteeW;
 static TRUSTEE_W worldTrusteeW;
-static PSID currentUserSID = 0;
-static PSID worldSID = 0;
+static PSID currentUserSID = nullptr;
+static PSID worldSID = nullptr;
 static HANDLE currentUserImpersonatedToken = nullptr;
 
 QT_BEGIN_NAMESPACE
@@ -163,12 +163,12 @@ struct GlobalSid
 GlobalSid::~GlobalSid()
 {
     free(currentUserSID);
-    currentUserSID = 0;
+    currentUserSID = nullptr;
 
     // worldSID was allocated with AllocateAndInitializeSid so it needs to be freed with FreeSid
     if (worldSID) {
         ::FreeSid(worldSID);
-        worldSID = 0;
+        worldSID = nullptr;
     }
 
     if (currentUserImpersonatedToken) {
@@ -181,14 +181,14 @@ GlobalSid::GlobalSid()
 {
     // Create TRUSTEE for current user
     HANDLE hnd = ::GetCurrentProcess();
-    HANDLE token = 0;
+    HANDLE token = nullptr;
     if (::OpenProcessToken(hnd, TOKEN_QUERY, &token)) {
         DWORD retsize = 0;
         // GetTokenInformation requires a buffer big enough for the TOKEN_USER struct and
         // the SID struct. Since the SID struct can have variable number of subauthorities
         // tacked at the end, its size is variable. Obtain the required size by first
         // doing a dummy GetTokenInformation call.
-        ::GetTokenInformation(token, TokenUser, 0, 0, &retsize);
+        ::GetTokenInformation(token, TokenUser, nullptr, 0, &retsize);
         if (retsize) {
             void *tokenBuffer = malloc(retsize);
             Q_CHECK_PTR(tokenBuffer);
@@ -251,7 +251,7 @@ static inline bool toFileTime(const QDateTime &date, FILETIME *fileTime)
         lTime.wMilliseconds = t.msec();
         lTime.wDayOfWeek = d.dayOfWeek() % 7;
 
-        if (!::TzSpecificLocalTimeToSystemTime(0, &lTime, &sTime))
+        if (!::TzSpecificLocalTimeToSystemTime(nullptr, &lTime, &sTime))
             return false;
     } else {
         QDateTime utcDate = date.toUTC();
@@ -274,19 +274,17 @@ static inline bool toFileTime(const QDateTime &date, FILETIME *fileTime)
 static QString readSymLink(const QFileSystemEntry &link)
 {
     QString result;
-    HANDLE handle = CreateFile((wchar_t*)link.nativeFilePath().utf16(),
-                               FILE_READ_EA,
-                               FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                               0,
+    HANDLE handle = CreateFile((wchar_t *)link.nativeFilePath().utf16(), FILE_READ_EA,
+                               FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr,
                                OPEN_EXISTING,
-                               FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT,
-                               0);
+                               FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, nullptr);
     if (handle != INVALID_HANDLE_VALUE) {
         DWORD bufsize = MAXIMUM_REPARSE_DATA_BUFFER_SIZE;
         REPARSE_DATA_BUFFER *rdb = (REPARSE_DATA_BUFFER*)malloc(bufsize);
         Q_CHECK_PTR(rdb);
         DWORD retsize = 0;
-        if (::DeviceIoControl(handle, FSCTL_GET_REPARSE_POINT, 0, 0, rdb, bufsize, &retsize, 0)) {
+        if (::DeviceIoControl(handle, FSCTL_GET_REPARSE_POINT, nullptr, 0, rdb, bufsize, &retsize,
+                              nullptr)) {
             if (rdb->ReparseTag == IO_REPARSE_TAG_MOUNT_POINT) {
                 int length = rdb->MountPointReparseBuffer.SubstituteNameLength / sizeof(wchar_t);
                 int offset = rdb->MountPointReparseBuffer.SubstituteNameOffset / sizeof(wchar_t);
@@ -336,14 +334,14 @@ static QString readLink(const QFileSystemEntry &link)
     wchar_t szGotPath[MAX_PATH];
 
     // Get pointer to the IShellLink interface.
-    HRESULT hres = CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, IID_IShellLink,
+    HRESULT hres = CoCreateInstance(CLSID_ShellLink, nullptr, CLSCTX_INPROC_SERVER, IID_IShellLink,
                                     (LPVOID *)&psl);
 
     if (hres == CO_E_NOTINITIALIZED) { // COM was not initialized
         neededCoInit = true;
-        CoInitialize(NULL);
-        hres = CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER,
-                                    IID_IShellLink, (LPVOID *)&psl);
+        CoInitialize(nullptr);
+        hres = CoCreateInstance(CLSID_ShellLink, nullptr, CLSCTX_INPROC_SERVER, IID_IShellLink,
+                                (LPVOID *)&psl);
     }
     if (SUCCEEDED(hres)) {    // Get pointer to the IPersistFile interface.
         IPersistFile *ppf;
@@ -684,10 +682,8 @@ QByteArray QFileSystemEngine::id(const QFileSystemEntry &entry)
 
     QByteArray result;
 
-    const HANDLE handle =
-        CreateFile((wchar_t*)entry.nativeFilePath().utf16(), 0,
-                   FILE_SHARE_READ, NULL, OPEN_EXISTING,
-                   FILE_FLAG_BACKUP_SEMANTICS, NULL);
+    const HANDLE handle = CreateFile((wchar_t *)entry.nativeFilePath().utf16(), 0, FILE_SHARE_READ,
+                                     nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
     if (handle != INVALID_HANDLE_VALUE) {
         result = id(handle);
         CloseHandle(handle);
@@ -706,9 +702,9 @@ bool QFileSystemEngine::setFileTime(HANDLE fHandle, const QDateTime &newDate,
                                     QAbstractFileEngine::FileTime time, QSystemError &error)
 {
     FILETIME fTime;
-    FILETIME *pLastWrite = NULL;
-    FILETIME *pLastAccess = NULL;
-    FILETIME *pCreationTime = NULL;
+    FILETIME *pLastWrite = nullptr;
+    FILETIME *pLastAccess = nullptr;
+    FILETIME *pCreationTime = nullptr;
 
     switch (time) {
     case QAbstractFileEngine::ModificationTime:
@@ -753,8 +749,9 @@ QString QFileSystemEngine::owner(const QFileSystemEntry &entry, QAbstractFileEng
                         SE_FILE_OBJECT,
                         own == QAbstractFileEngine::OwnerGroup ? GROUP_SECURITY_INFORMATION
                                                                : OWNER_SECURITY_INFORMATION,
-                        own == QAbstractFileEngine::OwnerUser ? &pOwner : 0,
-                        own == QAbstractFileEngine::OwnerGroup ? &pOwner : 0, 0, 0, &pSD)
+                        own == QAbstractFileEngine::OwnerUser ? &pOwner : nullptr,
+                        own == QAbstractFileEngine::OwnerGroup ? &pOwner : nullptr, nullptr,
+                        nullptr, &pSD)
                 == ERROR_SUCCESS) {
                 DWORD lowner = 64;
                 DWORD ldomain = 64;
@@ -762,16 +759,16 @@ QString QFileSystemEngine::owner(const QFileSystemEntry &entry, QAbstractFileEng
                 QVarLengthArray<wchar_t, 64> domain(ldomain);
                 SID_NAME_USE use = SidTypeUnknown;
                 // First call, to determine size of the strings (with '\0').
-                if (!LookupAccountSid(NULL, pOwner, (LPWSTR)owner.data(), &lowner,
-                                      domain.data(), &ldomain, &use)) {
+                if (!LookupAccountSid(nullptr, pOwner, (LPWSTR)owner.data(), &lowner, domain.data(),
+                                      &ldomain, &use)) {
                     if (GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
                         if (lowner > (DWORD)owner.size())
                             owner.resize(lowner);
                         if (ldomain > (DWORD)domain.size())
                             domain.resize(ldomain);
                         // Second call, try on resized buf-s
-                        if (!LookupAccountSid(NULL, pOwner, owner.data(), &lowner,
-                                              domain.data(), &ldomain, &use)) {
+                        if (!LookupAccountSid(nullptr, pOwner, owner.data(), &lowner, domain.data(),
+                                              &ldomain, &use)) {
                             lowner = 0;
                         }
                     } else {
@@ -802,15 +799,15 @@ bool QFileSystemEngine::fillPermissions(const QFileSystemEntry &entry, QFileSyst
             enum { ReadMask = 0x00000001, WriteMask = 0x00000002, ExecMask = 0x00000020 };
 
             QString fname = entry.nativeFilePath();
-            PSID pOwner = 0;
-            PSID pGroup = 0;
+            PSID pOwner = nullptr;
+            PSID pGroup = nullptr;
             PACL pDacl;
             PSECURITY_DESCRIPTOR pSD;
             DWORD res = GetNamedSecurityInfo(reinterpret_cast<const wchar_t *>(fname.utf16()),
                                              SE_FILE_OBJECT,
                                              OWNER_SECURITY_INFORMATION | GROUP_SECURITY_INFORMATION
                                                      | DACL_SECURITY_INFORMATION,
-                                             &pOwner, &pGroup, &pDacl, 0, &pSD);
+                                             &pOwner, &pGroup, &pDacl, nullptr, &pSD);
             if (res == ERROR_SUCCESS) {
                 ACCESS_MASK access_mask;
                 TRUSTEE_W trustee;
@@ -1112,12 +1109,12 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
     return data.hasFlags(what);
 }
 
-static inline bool mkDir(const QString &path, DWORD *lastError = 0)
+static inline bool mkDir(const QString &path, DWORD *lastError = nullptr)
 {
     if (lastError)
         *lastError = 0;
     const QString longPath = QFSFileEnginePrivate::longFileName(path);
-    const bool result = ::CreateDirectory((wchar_t*)longPath.utf16(), 0);
+    const bool result = ::CreateDirectory((wchar_t *)longPath.utf16(), nullptr);
     // Capture lastError before any QString is freed since custom allocators might change it.
     if (lastError)
         *lastError = GetLastError();
@@ -1259,12 +1256,12 @@ QString QFileSystemEngine::homePath()
     initGlobalSid();
     {
         HANDLE hnd = ::GetCurrentProcess();
-        HANDLE token = 0;
+        HANDLE token = nullptr;
         BOOL ok = ::OpenProcessToken(hnd, TOKEN_QUERY, &token);
         if (ok) {
             DWORD dwBufferSize = 0;
             // First call, to determine size of the strings (with '\0').
-            ok = GetUserProfileDirectory(token, NULL, &dwBufferSize);
+            ok = GetUserProfileDirectory(token, nullptr, &dwBufferSize);
             if (!ok && dwBufferSize != 0) {        // We got the required buffer size
                 wchar_t *userDirectory = new wchar_t[dwBufferSize];
                 // Second call, now we can fill the allocated buffer.
@@ -1460,7 +1457,7 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
     const QString sourcePath = QDir::toNativeSeparators(absoluteName(source).filePath());
 
 #  if defined(__IFileOperation_INTERFACE_DEFINED__)
-    CoInitialize(NULL);
+    CoInitialize(nullptr);
     IFileOperation *pfo = nullptr;
     IShellItem *deleteItem = nullptr;
     FileOperationProgressSink *sink = nullptr;
