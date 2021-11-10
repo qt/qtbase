@@ -155,6 +155,13 @@ void QSlider::initStyleOption(QStyleOptionSlider *option) const
     option->pageStep = d->pageStep;
     if (d->orientation == Qt::Horizontal)
         option->state |= QStyle::State_Horizontal;
+
+    if (d->pressedControl) {
+        option->activeSubControls = d->pressedControl;
+        option->state |= QStyle::State_Sunken;
+    } else {
+        option->activeSubControls = d->hoverControl;
+    }
 }
 
 bool QSliderPrivate::updateHoverControl(const QPoint &pos)
@@ -317,12 +324,6 @@ void QSlider::paintEvent(QPaintEvent *)
     opt.subControls = QStyle::SC_SliderGroove | QStyle::SC_SliderHandle;
     if (d->tickPosition != NoTicks)
         opt.subControls |= QStyle::SC_SliderTickmarks;
-    if (d->pressedControl) {
-        opt.activeSubControls = d->pressedControl;
-        opt.state |= QStyle::State_Sunken;
-    } else {
-        opt.activeSubControls = d->hoverControl;
-    }
 
     style()->drawComplexControl(QStyle::CC_Slider, &opt, &p, this);
 }
