@@ -75,6 +75,7 @@
 
 #include "qcocoaapplicationdelegate.h"
 #include "qcocoaintegration.h"
+#include "qcocoamenubar.h"
 #include "qcocoamenu.h"
 #include "qcocoamenuloader.h"
 #include "qcocoamenuitem.h"
@@ -230,6 +231,8 @@ QT_USE_NAMESPACE
         // (See the activateIgnoringOtherApps docs.)
         [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
     }
+
+    QCocoaMenuBar::insertWindowMenu();
 }
 
 - (void)application:(NSApplication *)sender openFiles:(NSArray *)filenames

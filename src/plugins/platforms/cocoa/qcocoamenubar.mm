@@ -333,7 +333,34 @@ void QCocoaMenuBar::updateMenuBarImmediately()
 
     [mergedItems release];
     [NSApp setMainMenu:mb->nsMenu()];
+    insertWindowMenu();
     [loader qtTranslateApplicationMenu];
+}
+
+void QCocoaMenuBar::insertWindowMenu()
+{
+    // For such an item/menu we get for 'free' an additional feature -
+    // a list of windows the application has created in the Dock's menu.
+
+    NSApplication *app = NSApplication.sharedApplication;
+    if (app.windowsMenu)
+        return;
+
+    NSMenu *mainMenu = app.mainMenu;
+    NSMenuItem *winMenuItem = [[[NSMenuItem alloc] initWithTitle:@"QtWindowMenu"
+                                                   action:nil keyEquivalent:@""] autorelease];
+    // We don't want to show this menu, nobody asked us to do so:
+    winMenuItem.hidden = YES;
+
+    winMenuItem.submenu = [[[NSMenu alloc] initWithTitle:@"QtWindowMenu"] autorelease];
+    [mainMenu insertItem:winMenuItem atIndex:mainMenu.itemArray.count];
+    app.windowsMenu = winMenuItem.submenu;
+
+    // Windows, created and 'ordered front' before, will not be in this menu:
+    for (NSWindow *win in app.windows) {
+        if (win.title && ![win.title isEqualToString:@""])
+            [app addWindowsItem:win title:win.title filename:NO];
+    }
 }
 
 QList<QCocoaMenuItem*> QCocoaMenuBar::merged() const
