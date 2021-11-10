@@ -311,6 +311,10 @@ public:
 void QFontComboBoxPrivate::_q_updateModel()
 {
     Q_Q(QFontComboBox);
+
+    if (QCoreApplication::closingDown())
+        return;
+
     const int scalableMask = (QFontComboBox::ScalableFonts | QFontComboBox::NonScalableFonts);
     const int spacingMask = (QFontComboBox::ProportionalFonts | QFontComboBox::MonospacedFonts);
 
