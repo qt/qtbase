@@ -68,6 +68,11 @@ uint32_t ArrayBuffer::byteLength() const
     return m_arrayBuffer["byteLength"].as<uint32_t>();
 }
 
+emscripten::val ArrayBuffer::val()
+{
+    return m_arrayBuffer;
+}
+
 Blob::Blob(const emscripten::val &blob)
     :m_blob(blob)
 {
@@ -85,7 +90,7 @@ Blob Blob::copyFrom(const char *buffer, uint32_t size)
     Uint8Array contentCopy = Uint8Array::copyFrom(buffer, size);
 
     emscripten::val contentArray = emscripten::val::array();
-    contentArray.call<void>("push", contentCopy.m_uint8Array);
+    contentArray.call<void>("push", contentCopy.val());
     emscripten::val type = emscripten::val::object();
     type.set("type","application/octet-stream");
     return Blob(emscripten::val::global("Blob").new_(contentArray, type));
@@ -172,6 +177,11 @@ std::string File::type() const
     return m_file["type"].as<std::string>();
 }
 
+emscripten::val File::val()
+{
+    return m_file;
+}
+
 FileList::FileList(const emscripten::val &fileList)
     :m_fileList(fileList)
 {
@@ -216,6 +226,11 @@ void FileReader::onError(const std::function<void(emscripten::val)> &onError)
 void FileReader::onAbort(const std::function<void(emscripten::val)> &onAbort)
 {
     m_onAbort.reset(new EventCallback(m_fileReader, "abort", onAbort));
+}
+
+emscripten::val FileReader::val()
+{
+    return m_fileReader;
 }
 
 Uint8Array Uint8Array::heap()
@@ -291,6 +306,11 @@ Uint8Array Uint8Array::copyFrom(const char *buffer, uint32_t size)
     Uint8Array contentCopy(size);
     contentCopy.set(Uint8Array(buffer, size));
     return contentCopy;
+}
+
+emscripten::val Uint8Array::val()
+{
+    return m_uint8Array;
 }
 
 emscripten::val Uint8Array::heap_()

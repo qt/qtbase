@@ -62,6 +62,8 @@ namespace qstdweb {
 
     // DOM API in C++, implemented using emscripten val.h and bind.h.
     // This is private API and can be extended and changed as needed.
+    // The API mirrors that of the native API, with some extensions
+    // to ease usage from C++ code.
 
     class ArrayBuffer;
     class Blob;
@@ -76,6 +78,7 @@ namespace qstdweb {
         explicit ArrayBuffer(uint32_t size);
         explicit ArrayBuffer(const emscripten::val &arrayBuffer);
         uint32_t byteLength() const;
+        emscripten::val val();
 
     private:
         friend class Uint8Array;
@@ -106,6 +109,7 @@ namespace qstdweb {
         std::string type() const;
         void stream(uint32_t offset, uint32_t length, char *buffer, const std::function<void ()> &completed) const;
         void stream(char *buffer, const std::function<void ()> &completed) const;
+        emscripten::val val();
 
     private:
         emscripten::val m_file = emscripten::val::undefined();
@@ -119,6 +123,7 @@ namespace qstdweb {
         int length() const;
         File item(int index) const;
         File operator[](int index) const;
+        emscripten::val val();
 
     private:
         emscripten::val m_fileList = emscripten::val::undefined();
@@ -132,6 +137,7 @@ namespace qstdweb {
         void onLoad(const std::function<void(emscripten::val)> &onLoad);
         void onError(const std::function<void(emscripten::val)> &onError);
         void onAbort(const std::function<void(emscripten::val)> &onAbort);
+        emscripten::val val();
 
     private:
         emscripten::val m_fileReader = emscripten::val::global("FileReader").new_();
@@ -156,8 +162,9 @@ namespace qstdweb {
         void copyTo(char *destination) const;
         static void copy(char *destination, const Uint8Array &source);
         static Uint8Array copyFrom(const char *buffer, uint32_t size);
+        emscripten::val val();
+
     private:
-        friend class Blob;
         static emscripten::val heap_();
         static emscripten::val constructor_();
         emscripten::val m_uint8Array = emscripten::val::undefined();
@@ -173,6 +180,7 @@ namespace qstdweb {
         EventCallback(emscripten::val element, const std::string &name,
                       const std::function<void(emscripten::val)> &fn);
         static void activate(emscripten::val event);
+
     private:
         static std::string contextPropertyName(const std::string &eventName);
         emscripten::val m_element = emscripten::val::undefined();
