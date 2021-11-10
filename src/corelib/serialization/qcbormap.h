@@ -63,16 +63,16 @@ public:
 
     class ConstIterator;
     class Iterator {
-        mutable QCborValueRef item;     // points to the value
+        QCborValueRef item {};      // points to the value
         friend class ConstIterator;
         friend class QCborMap;
         Iterator(QCborContainerPrivate *dd, qsizetype ii) : item(dd, ii) {}
     public:
         typedef std::random_access_iterator_tag iterator_category;
         typedef qsizetype difference_type;
-        typedef QPair<const QCborValueRef, QCborValueRef> value_type;
-        typedef QPair<const QCborValueRef, QCborValueRef> reference;
-        typedef QPair<const QCborValueRef, QCborValueRef> pointer;
+        typedef QPair<QCborValueConstRef, QCborValueRef> value_type;
+        typedef QPair<QCborValueConstRef, QCborValueRef> reference;
+        typedef QPair<QCborValueConstRef, QCborValueRef> pointer;
 
         constexpr Iterator() = default;
         constexpr Iterator(const Iterator &) = default;
@@ -84,10 +84,16 @@ public:
             return *this;
         }
 
-        value_type operator*() const { return { {item.d, item.i - 1}, item }; }
+        value_type operator*() const { return { QCborValueRef{item.d, item.i - 1}, item }; }
         value_type operator[](qsizetype j) const { return *(*this + j); }
-        QCborValueRef *operator->() const { return &item; }
-        QCborValue key() const { return QCborValueRef(item.d, item.i - 1); }
+        QCborValueRef *operator->() { return &item; }
+        const QCborValueConstRef *operator->() const { return &item; }
+#if QT_VERSION >= QT_VERSION_CHECK(7,0,0)
+        QCborValueConstRef
+#else
+        QCborValue
+#endif
+        key() const { return QCborValueRef(item.d, item.i - 1); }
         QCborValueRef value() const { return item; }
 
         bool operator==(const Iterator &o) const { return item.d == o.item.d && item.i == o.item.i; }
@@ -114,18 +120,19 @@ public:
     };
 
     class ConstIterator {
-        QCborValueRef item;     // points to the value
+        QCborValueConstRef item;     // points to the value
         friend class Iterator;
         friend class QCborMap;
         friend class QCborValue;
         friend class QCborValueRef;
+        constexpr ConstIterator(QCborValueConstRef it) : item{it} {}
         ConstIterator(QCborContainerPrivate *dd, qsizetype ii) : item(dd, ii) {}
     public:
         typedef std::random_access_iterator_tag iterator_category;
         typedef qsizetype difference_type;
-        typedef QPair<const QCborValueRef, const QCborValueRef> value_type;
-        typedef QPair<const QCborValueRef, const QCborValueRef> reference;
-        typedef QPair<const QCborValueRef, const QCborValueRef> pointer;
+        typedef QPair<QCborValueConstRef, QCborValueConstRef> value_type;
+        typedef QPair<QCborValueConstRef, QCborValueConstRef> reference;
+        typedef QPair<QCborValueConstRef, QCborValueConstRef> pointer;
 
         constexpr ConstIterator() = default;
         constexpr ConstIterator(const ConstIterator &) = default;
@@ -137,11 +144,16 @@ public:
             return *this;
         }
 
-        value_type operator*() const { return { {item.d, item.i - 1}, item }; }
+        value_type operator*() const { return { QCborValueRef(item.d, item.i - 1), item }; }
         value_type operator[](qsizetype j) const { return *(*this + j); }
-        const QCborValueRef *operator->() const { return &item; }
-        QCborValue key() const { return QCborValueRef(item.d, item.i - 1); }
-        QCborValueRef value() const { return item; }
+        const QCborValueConstRef *operator->() const { return &item; }
+#if QT_VERSION >= QT_VERSION_CHECK(7,0,0)
+        QCborValueConstRef
+#else
+        QCborValue
+#endif
+        key() const { return QCborValueRef(item.d, item.i - 1); }
+        QCborValueConstRef value() const { return item; }
 
         bool operator==(const Iterator &o) const { return item.d == o.item.d && item.i == o.item.i; }
         bool operator!=(const Iterator &o) const { return !(*this == o); }
@@ -161,8 +173,8 @@ public:
         ConstIterator operator--(int) { ConstIterator n = *this; item.i -= 2; return n; }
         ConstIterator &operator+=(qsizetype j) { item.i += 2 * j; return *this; }
         ConstIterator &operator-=(qsizetype j) { item.i -= 2 * j; return *this; }
-        ConstIterator operator+(qsizetype j) const { return ConstIterator({ item.d, item.i + 2 * j }); }
-        ConstIterator operator-(qsizetype j) const { return ConstIterator({ item.d, item.i - 2 * j }); }
+        ConstIterator operator+(qsizetype j) const { return ConstIterator{ item.d, item.i + 2 * j }; }
+        ConstIterator operator-(qsizetype j) const { return ConstIterator{ item.d, item.i - 2 * j }; }
         qsizetype operator-(ConstIterator j) const { return (item.i - j.item.i) / 2; }
     };
 
@@ -326,6 +338,7 @@ public:
     QJsonObject toJsonObject() const;
 
 private:
+    friend class QCborContainerPrivate;
     friend class QCborValue;
     friend class QCborValueRef;
     friend class QJsonPrivate::Variant;
