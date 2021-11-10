@@ -176,6 +176,8 @@ public:
     // ### Qt 7: inline
     void swap(QFutureInterfaceBase &other) noexcept;
 
+    bool isChainCanceled() const;
+
 protected:
     // ### Qt 7: remove const from refT/derefT
     bool refT() const noexcept;
@@ -206,6 +208,8 @@ private:
 
 protected:
     void setContinuation(std::function<void(const QFutureInterfaceBase &)> func);
+    void setContinuation(std::function<void(const QFutureInterfaceBase &)> func,
+                         QFutureInterfaceBasePrivate *continuationFutureData);
     void runContinuation() const;
 
     void setLaunchAsync(bool value);
