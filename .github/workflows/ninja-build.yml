@@ -38,7 +38,7 @@ jobs:
             # NOTE: system libb2 is not detected because version < 0.98.1 lacks pkg-config module
             # NOTE: system libharfbuzz is not detected because system has old version
             deps:  libgl-dev libglu-dev 'libxcb*-dev' libx11-xcb-dev libxkbcommon-x11-dev libpcre2-dev libz-dev libfreetype6-dev libpng-dev libjpeg-dev libsqlite3-dev libharfbuzz-dev libb2-dev libdouble-conversion-dev
-            tools: ninja-build ccache
+            tools: ninja-build ccache gcc-10
             install_cmd: sudo apt-get -y install
             configure_flags: -xcb -system-sqlite -system-pcre -system-zlib -system-freetype -system-libpng -system-libjpeg -system-harfbuzz -system-libb2 -system-doubleconversion
           - name: macos-10.15
@@ -65,7 +65,10 @@ jobs:
 
     - name: prepare Linux
       if: runner.os == 'Linux'
-      run: sudo apt-get update
+      run: |
+        sudo apt-get update
+        sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 100
+        sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-10 100
     - name: prepare macOS
       if: runner.os == 'macOS'
       run: echo noop
@@ -124,7 +127,7 @@ jobs:
       run:  mkdir build
     - name: configure
       working-directory: build
-      run:  "../source/configure -cmake -opensource -confirm-license -ccache -no-pch
+      run:  "../source/configure -opensource -confirm-license -ccache -no-pch
         -debug -nomake tests -nomake examples
         -prefix '${{ runner.temp }}'/install_dir
         ${{ matrix.configure_flags }}"
