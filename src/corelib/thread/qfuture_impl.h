@@ -425,7 +425,7 @@ bool Continuation<Function, ResultType, ParentResultType>::execute()
 {
     Q_ASSERT(parentFuture.isFinished());
 
-    if (parentFuture.isCanceled()) {
+    if (parentFuture.d.isChainCanceled()) {
 #ifndef QT_NO_EXCEPTIONS
         if (parentFuture.d.hasException()) {
             // If the continuation doesn't take a QFuture argument, propagate the exception
@@ -498,7 +498,7 @@ void Continuation<Function, ResultType, ParentResultType>::create(F &&func,
         }
     };
 
-    f->d.setContinuation(std::move(continuation));
+    f->d.setContinuation(std::move(continuation), p.d);
 }
 
 template<typename Function, typename ResultType, typename ParentResultType>
@@ -527,7 +527,7 @@ void Continuation<Function, ResultType, ParentResultType>::create(F &&func,
         }
     };
 
-    f->d.setContinuation(std::move(continuation));
+    f->d.setContinuation(std::move(continuation), p.d);
 }
 
 template<typename Function, typename ResultType, typename ParentResultType>
@@ -550,7 +550,7 @@ void Continuation<Function, ResultType, ParentResultType>::create(F &&func,
         });
     };
 
-    f->d.setContinuation(std::move(continuation));
+    f->d.setContinuation(std::move(continuation), p.d);
 }
 
 template<typename Function, typename ResultType, typename ParentResultType>

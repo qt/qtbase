@@ -182,6 +182,8 @@ public:
     template<typename T>
     static QFutureInterfaceBase get(const QFuture<T> &future);  // implemented in qfuture.h
 
+    bool isChainCanceled() const;
+
 protected:
     // ### Qt 7: remove const from refT/derefT
     bool refT() const noexcept;
@@ -212,6 +214,8 @@ private:
 
 protected:
     void setContinuation(std::function<void(const QFutureInterfaceBase &)> func);
+    void setContinuation(std::function<void(const QFutureInterfaceBase &)> func,
+                         QFutureInterfaceBasePrivate *continuationFutureData);
     void runContinuation() const;
 
     void setLaunchAsync(bool value);

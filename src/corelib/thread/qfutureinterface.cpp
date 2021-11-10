@@ -835,7 +835,17 @@ void QFutureInterfaceBasePrivate::setState(QFutureInterfaceBase::State newState)
 
 void QFutureInterfaceBase::setContinuation(std::function<void(const QFutureInterfaceBase &)> func)
 {
+    setContinuation(func, nullptr);
+}
+
+void QFutureInterfaceBase::setContinuation(std::function<void(const QFutureInterfaceBase &)> func,
+                                           QFutureInterfaceBasePrivate *continuationFutureData)
+{
     QMutexLocker lock(&d->continuationMutex);
+
+    if (continuationFutureData)
+        continuationFutureData->parentData = d;
+
     // If the state is ready, run continuation immediately,
     // otherwise save it for later.
     if (isFinished()) {
@@ -853,6 +863,24 @@ void QFutureInterfaceBase::runContinuation() const
         lock.unlock();
         d->continuation(*this);
     }
+}
+
+bool QFutureInterfaceBase::isChainCanceled() const
+{
+    if (isCanceled())
+        return true;
+
+    auto parent = d->parentData;
+    while (parent) {
+        // If the future is in Canceled state because it had an exception, we want to
+        // continue checking the chain of parents for cancellation, otherwise if the exception
+        // is handeled inside the chain, it won't be interrupted even though cancellation has
+        // been requested.
+        if ((parent->state.loadRelaxed() & Canceled) && !parent->hasException)
+            return true;
+        parent = parent->parentData;
+    }
+    return false;
 }
 
 void QFutureInterfaceBase::setLaunchAsync(bool value)

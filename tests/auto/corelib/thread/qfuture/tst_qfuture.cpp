@@ -143,6 +143,7 @@ private slots:
     void onFailedForMoveOnlyTypes();
 #endif
     void onCanceled();
+    void cancelContinuations();
     void continuationsWithContext();
 #if 0
     // TODO: enable when QFuture::takeResults() is enabled
@@ -2879,6 +2880,131 @@ void tst_QFuture::onCanceled()
         QCOMPARE(future.result(), -2);
     }
 
+#endif // QT_NO_EXCEPTIONS
+}
+
+void tst_QFuture::cancelContinuations()
+{
+    // The chain is cancelled in the middle of execution of continuations
+    {
+        QPromise<int> promise;
+
+        int checkpoint = 0;
+        auto future = promise.future().then([&](int value) {
+            ++checkpoint;
+            return value + 1;
+        }).then([&](int value) {
+            ++checkpoint;
+            promise.future().cancel();
+            return value + 1;
+        }).then([&](int value) {
+            ++checkpoint;
+            return value + 1;
+        }).onCanceled([] {
+            return -1;
+        });
+
+        promise.start();
+        promise.addResult(42);
+        promise.finish();
+
+        QCOMPARE(future.result(), -1);
+        QCOMPARE(checkpoint, 2);
+    }
+
+    // The chain is cancelled before the execution of continuations
+    {
+        auto f = QtFuture::makeReadyFuture(42);
+        f.cancel();
+
+        int checkpoint = 0;
+        auto future = f.then([&](int value) {
+            ++checkpoint;
+            return value + 1;
+        }).then([&](int value) {
+            ++checkpoint;
+            return value + 1;
+        }).then([&](int value) {
+            ++checkpoint;
+            return value + 1;
+        }).onCanceled([] {
+            return -1;
+        });
+
+        QCOMPARE(future.result(), -1);
+        QCOMPARE(checkpoint, 0);
+    }
+
+    // The chain is canceled partially, through an intermediate future
+    {
+        QPromise<int> promise;
+
+        int checkpoint = 0;
+        auto intermediate = promise.future().then([&](int value) {
+            ++checkpoint;
+            return value + 1;
+        });
+
+        auto future = intermediate.then([&](int value) {
+            ++checkpoint;
+            return value + 1;
+        }).then([&](int value) {
+            ++checkpoint;
+            return value + 1;
+        }).onCanceled([] {
+            return -1;
+        });
+
+        promise.start();
+        promise.addResult(42);
+
+        // This should cancel only the chain starting from intermediate
+        intermediate.cancel();
+
+        promise.finish();
+
+        QCOMPARE(future.result(), -1);
+        QCOMPARE(checkpoint, 1);
+    }
+
+#ifndef QT_NO_EXCEPTIONS
+    // The chain is cancelled in the middle of execution of continuations,
+    // while there's an exception in the chain, which is handeled inside
+    // the continuations.
+    {
+        QPromise<int> promise;
+
+        int checkpoint = 0;
+        auto future = promise.future().then([&](int value) {
+            ++checkpoint;
+            throw QException();
+            return value + 1;
+        }).then([&](QFuture<int> future) {
+            try {
+                auto res = future.result();
+                Q_UNUSED(res);
+            } catch (const QException &) {
+                ++checkpoint;
+            }
+            return 2;
+        }).then([&](int value) {
+            ++checkpoint;
+            promise.future().cancel();
+            return value + 1;
+        }).then([&](int value) {
+            ++checkpoint;
+            return value + 1;
+        }).onCanceled([] {
+            return -1;
+        });
+
+        promise.start();
+        promise.addResult(42);
+        promise.finish();
+
+        QCOMPARE(future.result(), -1);
+        QCOMPARE(checkpoint, 3);
+    }
 #endif // QT_NO_EXCEPTIONS
 }
 
