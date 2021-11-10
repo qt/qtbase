@@ -294,3 +294,20 @@ auto continuation = future.then(context, [] (Results results) {
     // May or may not run in the context's thread
 });
 //! [20]
+
+//! [21]
+QFuture<int> testFuture = ...;
+auto resultFuture = testFuture.then([](int res) {
+    // Block 1
+    ...
+    return 1;
+}).then([](int res) {
+    // Block 2
+    ...
+    return 2;
+}).onCanceled([] {
+    // Block 3
+    ...
+    return -1;
+});
+//! [21]
