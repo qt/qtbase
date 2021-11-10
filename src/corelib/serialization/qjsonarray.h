@@ -126,7 +126,8 @@ public:
         }
 
         inline QJsonValueRef operator*() const { return item; }
-        inline QJsonValueRef *operator->() const { return &item; }
+        inline const QJsonValueConstRef *operator->() const { return &item; }
+        inline QJsonValueRef *operator->() { return &item; }
         inline QJsonValueRef operator[](qsizetype j) const
         { return { item.a, qsizetype(item.index) + j }; }
 
@@ -161,7 +162,7 @@ public:
         inline qsizetype operator-(iterator j) const { return item.index - j.item.index; }
 
     private:
-        mutable QJsonValueRef item;
+        QJsonValueRef item;
         friend class QJsonArray;
     };
     friend class iterator;
@@ -187,11 +188,11 @@ public:
             return *this;
         }
 
-        inline const QJsonValueRef operator*() const { return item; }
-        inline const QJsonValueRef *operator->() const { return &item; }
+        inline const QJsonValueConstRef operator*() const { return item; }
+        inline const QJsonValueConstRef *operator->() const { return &item; }
 
-        inline QJsonValueRef operator[](qsizetype j) const
-        { return { item.a, qsizetype(item.index) + j }; }
+        inline QJsonValueConstRef operator[](qsizetype j) const
+        { return QJsonValueRef{ item.a, qsizetype(item.index) + j }; }
         inline bool operator==(const const_iterator &o) const
         { return item.a == o.item.a && item.index == o.item.index; }
         inline bool operator!=(const const_iterator &o) const { return !(*this == o); }
@@ -214,7 +215,7 @@ public:
         inline qsizetype operator-(const_iterator j) const { return item.index - j.item.index; }
 
     private:
-        QJsonValueRef item;
+        QJsonValueConstRef item;
         friend class QJsonArray;
     };
     friend class const_iterator;
