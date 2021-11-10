@@ -490,20 +490,18 @@ void QItemSelection::merge(const QItemSelection &other, QItemSelectionModel::Sel
           command & QItemSelectionModel::Toggle))
         return;
 
-    QItemSelection newSelection = other;
+    QItemSelection newSelection;
+    newSelection.reserve(other.size());
     // Collect intersections
     QItemSelection intersections;
-    QItemSelection::iterator it = newSelection.begin();
-    while (it != newSelection.end()) {
-        if (!(*it).isValid()) {
-            it = newSelection.erase(it);
+    for (const auto &range : other) {
+        if (!range.isValid())
             continue;
-        }
+        newSelection.push_back(range);
         for (int t = 0; t < count(); ++t) {
-            if ((*it).intersects(at(t)))
-                intersections.append(at(t).intersected(*it));
+            if (range.intersects(at(t)))
+                intersections.append(at(t).intersected(range));
         }
-        ++it;
     }
 
     //  Split the old (and new) ranges using the intersections
