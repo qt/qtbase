@@ -373,3 +373,18 @@ instructions:
       condition: property
       property: features
       contains_value: Sccache
+
+  - type: SetEnvironmentFromScript
+    command: [C:\Utils\emsdk\emsdk_env.bat]
+    userMessageOnFailure: "Failed to set emscripten environment"
+    maxTimeInSeconds: 60
+    maxTimeBetweenOutput: 60
+    enable_if:
+      condition: and
+      conditions:
+        - condition: property
+          property: target.osVersion
+          contains_value: WebAssembly
+        - condition: property
+          property: host.os
+          contains_value: Windows
