@@ -767,6 +767,7 @@ function(qt_finalize_module target)
     qt_finalize_framework_headers_copy(${target})
     qt_generate_prl_file(${target} "${INSTALL_LIBDIR}")
     qt_generate_module_pri_file("${target}" ${ARGN})
+    qt_internal_generate_pkg_config_file(${target})
 endfunction()
 
 # Get a set of Qt module related values based on the target.

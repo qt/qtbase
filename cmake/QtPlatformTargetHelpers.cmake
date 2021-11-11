@@ -32,4 +32,7 @@ function(qt_internal_setup_public_platform_target)
 
     # By default enable unicode on WIN32 platforms for both Qt and Qt consumers. Can be opted out.
     qt_internal_enable_unicode_defines(Platform)
+
+    # Generate a pkgconfig for Qt::Platform.
+    qt_internal_generate_pkg_config_file(Platform)
 endfunction()

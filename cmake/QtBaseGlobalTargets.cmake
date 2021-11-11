@@ -205,6 +205,7 @@ qt_install(FILES
 # They can only be used while building Qt itself.
 qt_copy_or_install(FILES
                    cmake/ModuleDescription.json.in
+                   cmake/PkgConfigLibrary.pc.in
                    cmake/Qt3rdPartyLibraryConfig.cmake.in
                    cmake/Qt3rdPartyLibraryHelpers.cmake
                    cmake/QtAndroidHelpers.cmake
@@ -226,6 +227,7 @@ qt_copy_or_install(FILES
                    cmake/QtFindPackageHelpers.cmake
                    cmake/QtFindWrapConfigExtra.cmake.in
                    cmake/QtFindWrapHelper.cmake
+                   cmake/QtFinishPkgConfigFile.cmake
                    cmake/QtFinishPrlFile.cmake
                    cmake/QtFlagHandlingHelpers.cmake
                    cmake/QtFrameworkHelpers.cmake
@@ -244,6 +246,7 @@ qt_copy_or_install(FILES
                    cmake/QtModuleToolsDependencies.cmake.in
                    cmake/QtModuleToolsVersionlessTargets.cmake.in
                    cmake/QtNoLinkTargetHelpers.cmake
+                   cmake/QtPkgConfigHelpers.cmake
                    cmake/QtPlatformAndroid.cmake
                    cmake/QtPlatformSupport.cmake
                    cmake/QtPluginConfig.cmake.in
