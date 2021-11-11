@@ -2876,6 +2876,7 @@ QCborValueRef QCborValueRef::operator[](qint64 key)
     auto &e = d->elements[i];
     if (e.type == QCborValue::Array && key >= 0 && key < 0x10000) {
         e.container = maybeGrow(e.container, key);
+        e.flags |= QtCbor::Element::IsContainer;
         return { e.container, qsizetype(key) };
     }
     qsizetype size = 0;

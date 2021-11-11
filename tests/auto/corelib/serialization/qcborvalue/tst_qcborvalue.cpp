@@ -88,6 +88,12 @@ private slots:
     void mapEmptyDetach();
     void mapNonEmptyDetach();
     void mapSimpleInitializerList();
+    void mapFromArrayLargeIntKey_data() { basics_data(); }
+    void mapFromArrayLargeIntKey();
+    void mapFromArrayNegativeIntKey_data() { basics_data(); }
+    void mapFromArrayNegativeIntKey();
+    void mapFromArrayStringKey_data() { basics_data(); }
+    void mapFromArrayStringKey();
     void mapMutation();
     void mapMutateWithCopies();
     void mapStringValues();
@@ -129,6 +135,14 @@ private slots:
 
     void cborValueRef_data();
     void cborValueRef();
+    void cborValueRefMutatingArray_data() { cborValueRef_data(); }
+    void cborValueRefMutatingArray();
+    void cborValueRefMutatingMapIntKey_data() { cborValueRef_data(); }
+    void cborValueRefMutatingMapIntKey();
+    void cborValueRefMutatingMapLatin1StringKey_data() { cborValueRef_data(); }
+    void cborValueRefMutatingMapLatin1StringKey();
+    void cborValueRefMutatingMapStringKey_data() { cborValueRef_data(); }
+    void cborValueRefMutatingMapStringKey();
 
     void datastreamSerialization_data();
     void datastreamSerialization();
@@ -912,6 +926,60 @@ void tst_QCborValue::mapSimpleInitializerList()
     QCOMPARE(i, m.size());
 }
 
+template <typename T> static void mapFromArray_template(T key)
+{
+    QFETCH(QCborValue::Type, type);
+    QFETCH(QCborValue, v);
+    if (v.isMap())
+        return;     // already a map, nothing will happen
+
+    auto ignoreMessage = [type]() {
+        if (type == QCborValue::Array)
+            QTest::ignoreMessage(QtWarningMsg, "Using CBOR array as map forced conversion");
+    };
+
+    // verify forced conversions work
+    // (our only Array row is an empty array, so it doesn't produce the warning)
+    QCborValue v2 = v;
+    QVERIFY(v2[key].isUndefined());
+    QCOMPARE(v2.type(), QCborValue::Map);
+    QCOMPARE(v.type(), type);
+    QCborMap m = v2.toMap();
+    QCOMPARE(m.size(), 1);
+    QCOMPARE(m.begin().key(), QCborValue(key));
+
+    // non-empty array conversions
+    QCborValue va = QCborArray{v};
+    v2 = va;
+    ignoreMessage();
+    QVERIFY(v2[key].isUndefined());
+    QCOMPARE(v2.type(), QCborValue::Map);
+    QCOMPARE(va.type(), QCborValue::Array);
+    m = v2.toMap();
+    QCOMPARE(m.size(), 2);
+    auto it = m.constBegin();
+    QCOMPARE(it.key(), QCborValue(0));
+    QCOMPARE(it.value(), v);
+    ++it;
+    QCOMPARE(it.key(), QCborValue(key));
+    QCOMPARE(it.value(), QCborValue());
+}
+
+void tst_QCborValue::mapFromArrayLargeIntKey()
+{
+    mapFromArray_template(Q_INT64_C(1) << 20);
+}
+
+void tst_QCborValue::mapFromArrayNegativeIntKey()
+{
+    mapFromArray_template(-1);
+}
+
+void tst_QCborValue::mapFromArrayStringKey()
+{
+    mapFromArray_template(QLatin1String("Hello"));
+}
+
 void tst_QCborValue::arrayMutation()
 {
     QCborArray a{42};
@@ -983,14 +1051,6 @@ void tst_QCborValue::arrayMutation()
     QVERIFY(val.isArray());
     QCOMPARE(val.toArray().size(), 4);
     QCOMPARE(val[3], 42);
-
-    // Coerce to map on string key:
-    const QLatin1String any("any");
-    val[any] = any;
-    QVERIFY(val.isMap());
-    QCOMPARE(val.toMap().size(), 5);
-    QVERIFY(val[2].isArray());
-    QCOMPARE(val[2].toArray().size(), 5);
 }
 
 void tst_QCborValue::arrayMutateWithCopies()
@@ -2655,6 +2715,145 @@ void tst_QCborValue::cborValueRef()
     QCOMPARE(ref.toJsonValue(), v.toJsonValue());
     QCOMPARE(ref.toCbor(), v.toCbor());
     QCOMPARE(ref.toDiagnosticNotation(), v.toDiagnosticNotation());
+}
+
+void tst_QCborValue::cborValueRefMutatingArray()
+{
+    // complements arrayMutation()
+    QFETCH(QCborValue, v);
+
+    {
+        QCborArray origArray = { 123 };
+        QCborArray a = { QCborValue(origArray) };
+        QCborValueRef ref = a[0];
+        QVERIFY(ref.isArray());
+        QVERIFY(!ref.toArray().isEmpty());
+
+        // this will force the array to grow
+        ref[1] = v;
+
+        QCborValue va = a.at(0);
+        QVERIFY(va.isArray());
+        QCOMPARE(va.toArray().size(), 2);
+        QCOMPARE(va.toArray().first(), 123);
+        QCOMPARE(va.toArray().last(), v);
+
+        // ensure the array didn't get modified
+        QCOMPARE(origArray, QCborArray{123});
+    }
+    {
+        QCborArray emptyArray;
+        QCborArray a = { QCborValue(emptyArray) };
+        QCborValueRef ref = a[0];
+        QVERIFY(ref.isArray());
+        QVERIFY(ref.toArray().isEmpty());
+
+        // this will force the array to become non-empty
+        ref[1] = v;
+
+        QCborValue va = a.at(0);
+        QVERIFY(va.isArray());
+        QCOMPARE(va.toArray().size(), 2);
+        QCOMPARE(va.toArray().first(), QCborValue());
+        QCOMPARE(va.toArray().last(), v);
+
+        // ensure the array didn't get modified
+        QCOMPARE(emptyArray, QCborArray());
+    }
+    {
+        QCborArray emptyArray = { 123, 456 };
+        emptyArray.takeFirst();
+        emptyArray.takeFirst();
+        QCborArray a = { QCborValue(emptyArray) };
+        QCborValueRef ref = a[0];
+        QVERIFY(ref.isArray());
+        QVERIFY(ref.toArray().isEmpty());
+
+        // this will force the array to become non-empty
+        ref[1] = v;
+
+        QCborValue va = a.at(0);
+        QVERIFY(va.isArray());
+        QCOMPARE(va.toArray().size(), 2);
+        QCOMPARE(va.toArray().first(), QCborValue());
+        QCOMPARE(va.toArray().last(), v);
+
+        // ensure the array didn't get modified
+        QCOMPARE(emptyArray, QCborArray());
+    }
+}
+
+void tst_QCborValue::cborValueRefMutatingMapIntKey()
+{
+    // complements mapMutation()
+    QFETCH(QCborValue, v);
+    QCborValue::Type type = v.type();
+
+    auto executeTest = [=](qint64 index) {
+        QCborArray a = { v };
+        QCborValueRef ref = a[0];
+
+        if (type == QCborValue::Array && !v.toArray().isEmpty())
+            QTest::ignoreMessage(QtWarningMsg, "Using CBOR array as map forced conversion");
+        ref[index] = v;
+
+        QCborValue vm = a.at(0);
+        QVERIFY(vm.isMap());
+        QCOMPARE(vm.toMap()[index].type(), type);
+        QCOMPARE(vm.toMap()[index], v);
+
+        if (type == QCborValue::Array && !v.toArray().isEmpty())
+            QCOMPARE(vm.toMap()[0], v.toArray()[0]);
+        else if (type == QCborValue::Map && !v.toMap().isEmpty())
+            QCOMPARE(vm.toMap()[0], v.toMap()[0]);
+    };
+    // accessing a negative index causes it to become a map
+    executeTest(-1);
+    if (QTest::currentTestFailed())
+        return;
+
+    // if the index is bigger than 0x10000, the array becomes a map
+    executeTest(0x10000);
+    if (QTest::currentTestFailed())
+        return;
+
+    if (type != QCborValue::Array)
+        executeTest(5);
+}
+
+template <typename String> static void cborValueRefMutatingMapStringKey_template(const String &key)
+{
+    // complements mapMutation() too
+    QFETCH(QCborValue, v);
+    QCborValue::Type type = v.type();
+    QCborArray a = { v };
+    QCborValueRef ref = a[0];
+
+    if (type == QCborValue::Array && !v.toArray().isEmpty())
+        QTest::ignoreMessage(QtWarningMsg, "Using CBOR array as map forced conversion");
+
+    // force conversion to map
+    ref[key] = v;
+
+    QCborValue vm = a.at(0);
+    QVERIFY(vm.isMap());
+    QCOMPARE(vm.toMap()[key].type(), type);
+    QCOMPARE(vm.toMap()[key], v);
+
+    if (type == QCborValue::Array && !v.toArray().isEmpty())
+        QCOMPARE(vm.toMap()[0], v.toArray()[0]);
+    else if (type == QCborValue::Map && !v.toMap().isEmpty())
+        QCOMPARE(vm.toMap()[0], v.toMap()[0]);
+}
+
+void tst_QCborValue::cborValueRefMutatingMapLatin1StringKey()
+{
+    cborValueRefMutatingMapStringKey_template(QLatin1String("other"));
+}
+
+void tst_QCborValue::cborValueRefMutatingMapStringKey()
+{
+    cborValueRefMutatingMapStringKey_template(QString("other"));
 }
 
 void tst_QCborValue::datastreamSerialization_data()
