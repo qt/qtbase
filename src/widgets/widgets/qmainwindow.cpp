@@ -522,10 +522,10 @@ void QMainWindow::setMenuBar(QMenuBar *menuBar)
 {
     QLayout *topLayout = layout();
 
-    if (topLayout->menuBar() && topLayout->menuBar() != menuBar) {
+    if (QWidget *existingMenuBar = topLayout->menuBar(); existingMenuBar && existingMenuBar != menuBar) {
         // Reparent corner widgets before we delete the old menu bar.
-        QMenuBar *oldMenuBar = qobject_cast<QMenuBar *>(topLayout->menuBar());
-        if (menuBar) {
+        QMenuBar *oldMenuBar = qobject_cast<QMenuBar *>(existingMenuBar);
+        if (oldMenuBar && menuBar) {
             // TopLeftCorner widget.
             QWidget *cornerWidget = oldMenuBar->cornerWidget(Qt::TopLeftCorner);
             if (cornerWidget)
@@ -535,9 +535,10 @@ void QMainWindow::setMenuBar(QMenuBar *menuBar)
             if (cornerWidget)
                 menuBar->setCornerWidget(cornerWidget, Qt::TopRightCorner);
         }
-        oldMenuBar->hide();
-        oldMenuBar->setParent(nullptr);
-        oldMenuBar->deleteLater();
+
+        existingMenuBar->hide();
+        existingMenuBar->setParent(nullptr);
+        existingMenuBar->deleteLater();
     }
     topLayout->setMenuBar(menuBar);
 }

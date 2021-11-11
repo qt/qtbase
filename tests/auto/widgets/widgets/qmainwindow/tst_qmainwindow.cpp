@@ -111,6 +111,7 @@ private slots:
     void iconSize();
     void toolButtonStyle();
     void menuBar();
+    void customMenuBar();
     void centralWidget();
     void takeCentralWidget();
     void corner();
@@ -670,6 +671,18 @@ void tst_QMainWindow::menuBar()
         QVERIFY(!topLeftCornerWidget);
         QVERIFY(!topRightCornerWidget);
     }
+}
+
+// QTBUG-98247
+void tst_QMainWindow::customMenuBar()
+{
+    QMainWindow w;
+    std::unique_ptr<QWidget> menuWidget(new QWidget);
+    w.setMenuWidget(menuWidget.get());
+    QVERIFY(menuWidget->parentWidget());
+    QVERIFY(w.menuBar()); // implicitly calls setMenuBar
+    QVERIFY(!menuWidget->parentWidget());
+    menuWidget.reset();
 }
 
 #ifdef QT_BUILD_INTERNAL
