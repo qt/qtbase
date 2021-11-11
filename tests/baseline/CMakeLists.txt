@@ -1,3 +1,6 @@
 if(TARGET Qt::Network)
     add_subdirectory(painting)
 endif()
+if(TARGET Qt::Network AND TARGET Qt::Widgets)
+    add_subdirectory(widgets)
+endif()
