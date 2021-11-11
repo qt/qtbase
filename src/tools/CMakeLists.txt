@@ -10,7 +10,7 @@ if (QT_FEATURE_commandlineparser)
 endif()
 
 # Only include the following tools when performing a host build
-if(NOT CMAKE_CROSSCOMPILING)
+if(NOT CMAKE_CROSSCOMPILING AND QT_FEATURE_regularexpression)
     add_subdirectory(androiddeployqt)
     if(QT_FEATURE_gui AND QT_FEATURE_systemsemaphore)
         add_subdirectory(androidtestrunner)
