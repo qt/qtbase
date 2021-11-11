@@ -29,6 +29,7 @@
 
 #include <QTest>
 #include <QSignalSpy>
+#include <QFontDatabase>
 
 #include <qfontcombobox.h>
 
@@ -49,6 +50,7 @@ private slots:
     void writingSystem_data();
     void writingSystem();
     void currentFontChanged();
+    void emptyFont();
 };
 
 // Subclass that exposes the protected functions.
@@ -275,6 +277,36 @@ void tst_QFontComboBox::currentFontChanged()
         QCOMPARE(spy0.count(), 2);
     } else
         qWarning("Not enough fonts installed on test system. Consider adding some");
+}
+
+void tst_QFontComboBox::emptyFont()
+{
+    QFontComboBox fontCB;
+    if (fontCB.count() < 2)
+        QSKIP("Not enough fonts on system to run test.");
+
+    QFont font;
+    font.setFamilies(QStringList());
+
+    // Due to QTBUG-98341, we need to find an index in the family list
+    // which does not match the default index for the empty font, otherwise
+    // the font selection will not be properly updated.
+    {
+        QFontInfo fi(font);
+        QStringList families = QFontDatabase::families();
+        int index = families.indexOf(fi.family());
+        if (index < 0)
+            index = 0;
+        if (index > 0)
+            index--;
+        else
+            index++;
+
+        fontCB.setCurrentIndex(index);
+    }
+
+    fontCB.setCurrentFont(font);
+    QVERIFY(!fontCB.currentFont().families().isEmpty());
 }
 
 QTEST_MAIN(tst_QFontComboBox)
