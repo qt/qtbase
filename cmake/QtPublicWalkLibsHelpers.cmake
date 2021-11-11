@@ -73,6 +73,8 @@ endfunction()
 #                           Used for prl file generation.
 #            'promote_global' promotes walked imported targets to global scope.
 #            'collect_targets' collects all target names (discards framework or link flags)
+#            'direct_targets' collects only the direct target names (discards framework or link
+#                             flags)
 #
 #
 function(__qt_internal_walk_libs
@@ -82,6 +84,12 @@ function(__qt_internal_walk_libs
         return()
     endif()
     list(APPEND collected ${target})
+
+    if(operation MATCHES "^direct")
+        set(direct TRUE)
+    else()
+        set(direct FALSE)
+    endif()
 
     if(target STREQUAL "${QT_CMAKE_EXPORT_NAMESPACE}::EntryPointPrivate")
         # We can't (and don't need to) process EntryPointPrivate because it brings in
@@ -184,21 +192,25 @@ function(__qt_internal_walk_libs
                 endif()
                 get_target_property(lib_target_type ${lib_target} TYPE)
                 if(lib_target_type STREQUAL "INTERFACE_LIBRARY")
-                    __qt_internal_walk_libs(
-                        ${lib_target}
-                        lib_libs_${target}
-                        lib_rcc_objects_${target}
-                        "${dict_name}" "${operation}" ${collected})
-                    if(lib_libs_${target})
-                        __qt_internal_merge_libs(libs ${lib_libs_${target}})
-                        set(is_module 0)
-                    endif()
-                    if(lib_rcc_objects_${target})
-                        __qt_internal_merge_libs(rcc_objects ${lib_rcc_objects_${target}})
+                    if(NOT ${direct})
+                        __qt_internal_walk_libs(
+                            ${lib_target}
+                            lib_libs_${target}
+                            lib_rcc_objects_${target}
+                            "${dict_name}" "${operation}" ${collected})
+                        if(lib_libs_${target})
+                            __qt_internal_merge_libs(libs ${lib_libs_${target}})
+                            set(is_module 0)
+                        endif()
+                        if(lib_rcc_objects_${target})
+                            __qt_internal_merge_libs(rcc_objects ${lib_rcc_objects_${target}})
+                        endif()
+                    else()
+                        __qt_internal_merge_libs(libs ${lib})
                     endif()
                 elseif(NOT lib_target_type STREQUAL "OBJECT_LIBRARY")
 
-                    if(operation STREQUAL "collect_targets")
+                    if(operation MATCHES "^(collect|direct)_targets$")
                         __qt_internal_merge_libs(libs ${lib_target})
                     else()
                         __qt_internal_merge_libs(libs "$<TARGET_LINKER_FILE:${lib_target}>")
@@ -209,11 +221,13 @@ function(__qt_internal_walk_libs
                         __qt_internal_merge_libs(rcc_objects ${target_rcc_objects})
                     endif()
 
-                    __qt_internal_walk_libs(
-                        ${lib_target}
-                        lib_libs_${target}
-                        lib_rcc_objects_${target}
-                        "${dict_name}" "${operation}" ${collected})
+                    if(NOT ${direct})
+                        __qt_internal_walk_libs(
+                            ${lib_target}
+                            lib_libs_${target}
+                            lib_rcc_objects_${target}
+                            "${dict_name}" "${operation}" ${collected})
+                    endif()
                     if(lib_libs_${target})
                         __qt_internal_merge_libs(libs ${lib_libs_${target}})
                     endif()
@@ -242,7 +256,7 @@ function(__qt_internal_walk_libs
                 message(FATAL_ERROR "The ${CMAKE_MATCH_1} target is mentioned as a dependency for \
 ${target}, but not declared.")
             else()
-                if(NOT operation STREQUAL "collect_targets")
+                if(NOT operation MATCHES "^(collect|direct)_targets$")
                     set(final_lib_name_to_merge "${lib_target}")
                     if(lib_target MATCHES "/([^/]+).framework$")
                         set(final_lib_name_to_merge "-framework ${CMAKE_MATCH_1}")
