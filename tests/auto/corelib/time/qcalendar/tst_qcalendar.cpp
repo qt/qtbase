@@ -29,6 +29,7 @@
 #include <QTest>
 
 #include <QCalendar>
+#include <private/qgregoriancalendar_p.h>
 Q_DECLARE_METATYPE(QCalendar::System)
 
 class tst_QCalendar : public QObject
@@ -51,6 +52,8 @@ private slots:
     void properties_data();
     void properties();
     void aliases();
+
+    void gregory();
 };
 
 // Support for basic():
@@ -378,6 +381,51 @@ void tst_QCalendar::aliases()
     // Invalid is handled gracefully:
     QCOMPARE(QCalendar(u"").name(), QString());
     QCOMPARE(QCalendar(QCalendar::System::User).name(), QString());
+}
+
+void tst_QCalendar::gregory()
+{
+    // Test QGregorianCalendar's internal-use methods.
+
+    // Julian day number 0 is in 4713; and reach past the end of four-digit years:
+    for (int year = -4720; year < 12345; ++year) {
+        // Test yearStartWeekDay() and yearSharingWeekDays() are consistent with
+        // dateToJulianDay() and weekDayOfJulian():
+        if (!year) // No year zero.
+            continue;
+        qint64 first, last;
+        QVERIFY2(QGregorianCalendar::julianFromParts(year, 1, 1, &first),
+                 "Only year zero should lack a first day");
+        QCOMPARE(QGregorianCalendar::yearStartWeekDay(year),
+                 QGregorianCalendar::weekDayOfJulian(first));
+        QVERIFY2(QGregorianCalendar::julianFromParts(year, 12, 31, &last),
+                 "Only year zero should lack a last day");
+
+        const int lastTwo = (year + (year < 0 ? 1 : 0)) % 100 + (year < -1 ? 100 : 0);
+        const QDate probe(year, lastTwo && lastTwo <= 12 ? lastTwo : 8,
+                          lastTwo <= 31 && lastTwo > 12 ? lastTwo : 17);
+        const int match = QGregorianCalendar::yearSharingWeekDays(probe);
+        // A post-epoch year, no later than 2400 (implies four-digit):
+        QVERIFY(match >= 1970);
+        QVERIFY(match <= 2400);
+        // Either that's the year we started with or:
+        if (match != year) {
+            // Its last two digits can't be mistaken for month or day:
+            QVERIFY(match % 100 != probe.month());
+            QVERIFY(match % 100 != probe.day());
+            // If that wasn't in danger of happening, with year positive, they match lastTwo:
+            if (year > 0 && lastTwo > 31)
+                QCOMPARE(match % 100, lastTwo);
+            // Its first and last days of the year match those of year:
+            qint64 day;
+            QVERIFY(QGregorianCalendar::julianFromParts(match, 1, 1, &day));
+            QCOMPARE(QGregorianCalendar::weekDayOfJulian(day),
+                     QGregorianCalendar::weekDayOfJulian(first));
+            QVERIFY(QGregorianCalendar::julianFromParts(match, 12, 31, &day));
+            QCOMPARE(QGregorianCalendar::weekDayOfJulian(day),
+                     QGregorianCalendar::weekDayOfJulian(last));
+        }
+    }
 }
 
 QTEST_APPLESS_MAIN(tst_QCalendar)

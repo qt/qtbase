@@ -84,7 +84,7 @@ public:
     static bool julianFromParts(int year, int month, int day, qint64 *jd);
     // Used internally:
     static int yearStartWeekDay(int year);
-    static int yearSharingWeekDays(int year);
+    static int yearSharingWeekDays(QDate date);
 };
 
 QT_END_NAMESPACE

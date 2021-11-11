@@ -146,16 +146,22 @@ int QGregorianCalendar::yearStartWeekDay(int year)
     return qMod(y + qDiv(y, 4) - qDiv(y, 100) + qDiv(y, 400), 7) + 1;
 }
 
-int QGregorianCalendar::yearSharingWeekDays(int year)
+int QGregorianCalendar::yearSharingWeekDays(QDate date)
 {
-    // Returns a year, in the four-digit post-epoch range, that has the same
-    // pattern of week-days (in the proleptic Gregorian calendar) as the given
-    // year. For positive years, the last two decimal digits of the returned
-    // year shall also match those of the given year.
+    // Returns a post-epoch year, no later than 2400, that has the same pattern
+    // of week-days (in the proleptic Gregorian calendar) as the year in which
+    // the given date falls. This will be the year in question if it's in the
+    // given range. Otherwise, the returned year's last two (decimal) digits
+    // won't coincide with the month number or day-of-month of the given date.
+    // For positive years, except when necessary to avoid such a clash, the
+    // returned year's last two digits shall coincide with those of the original
+    // year.
 
     // Needed when formatting dates using system APIs with limited year ranges
-    // and possibly only a two-digit year. Fixing the negative year case is left
-    // as an exercise for the day a real user actually has a problem with it.
+    // and possibly only a two-digit year. (The need to be able to safely
+    // replace the two-digit form of the returned year with a suitable form of
+    // the true year, when they don't coincide, is why the last two digits are
+    // treated specially.)
 
     static_assert((400 * 365 + 97) % 7 == 0);
     // A full 400-year cycle of the Gregorian calendar has 97 + 400 * 365 days;
@@ -163,12 +169,26 @@ int QGregorianCalendar::yearSharingWeekDays(int year)
     // seven, that full cycle is a whole number of weeks. So adding a multiple
     // of four hundred years should get us a result that meets our needs.
 
-    const int res = (year < 1970
-                     ? 2400 - (2000 - (year < 0 ? year + 1 : year)) % 400
-                     : year > 9999 ? 2000 + (year - 2000) % 400 : year);
-    Q_ASSERT(res % 100 == (year > 0 ? year % 100 : year < -1 ? 100 + (year + 1) % 100 : 0));
-    Q_ASSERT(QDate(res, 1, 1).dayOfWeek() == QDate(year, 1, 1).dayOfWeek());
-    Q_ASSERT(QDate(res, 12, 31).dayOfWeek() == QDate(year, 12, 31).dayOfWeek());
+    const int year = date.year();
+    int res = (year < 1970
+               ? 2400 - (2000 - (year < 0 ? year + 1 : year)) % 400
+               : year > 2399 ? 2000 + (year - 2000) % 400 : year);
+    Q_ASSERT(res > 0);
+    if (res != year) {
+        const int lastTwo = res % 100;
+        if (lastTwo == date.month() || lastTwo == date.day()) {
+            Q_ASSERT(lastTwo && !(lastTwo & ~31));
+            // Last two digits of these years are all > 31:
+            static constexpr int usual[] = { 2198, 2199, 2098, 2099, 2399, 2298, 2299 };
+            static constexpr int leaps[] = { 2396, 2284, 2296, 2184, 2196, 2084, 2096 };
+            // Indexing is: first day of year's day-of-week, Monday = 0, one less
+            // than Qt's, as it's simpler to subtract one than to s/7/0/.
+            res = (leapTest(year) ? leaps : usual)[yearStartWeekDay(year) - 1];
+        }
+        Q_ASSERT(QDate(res, 1, 1).dayOfWeek() == QDate(year, 1, 1).dayOfWeek());
+        Q_ASSERT(QDate(res, 12, 31).dayOfWeek() == QDate(year, 12, 31).dayOfWeek());
+    }
+    Q_ASSERT(res >= 1970 && res <= 2400);
     return res;
 }
 

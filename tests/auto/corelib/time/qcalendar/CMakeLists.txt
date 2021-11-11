@@ -7,4 +7,6 @@
 qt_internal_add_test(tst_qcalendar
     SOURCES
         tst_qcalendar.cpp
+    LIBRARIES
+        Qt::CorePrivate
 )
