@@ -36,7 +36,7 @@ include(configure.cmake)
 qt_feature_module_end(NO_MODULE)
 
 
-if(QT_FEATURE_sql_psql)
+if(QT_FEATURE_sql_psql AND QT_FEATURE_regularexpression)
     add_subdirectory(psql)
 endif()
 
