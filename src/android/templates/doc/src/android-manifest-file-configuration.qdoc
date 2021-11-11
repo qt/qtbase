@@ -1,0 +1,290 @@
+/****************************************************************************
+**
+** Copyright (C) 2021 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file. Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: https://www.gnu.org/licenses/fdl-1.3.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+\page android-manifest-file-configuration.html
+\title Qt Android Manifest File Configuration
+\ingroup androidplatform
+\brief Provides details on the AndroidManifest.xml configuration.
+\previouspage android-openssl-support.html
+\nextpage android-services.html
+
+The Android Manifest is an XML file necessary for any Android app. It contains
+app configuration for different settings and features that the app use, as well
+as details on the app itself, such as, package name, app name, version, etc.
+Permissions and hardware features can also be set from the manifest.
+
+Qt for Android maintains a version of \c {AndroidManifest.xml} with default
+configuration that include features, permissions and other configuration
+used by the build system which are needed for building and running Qt apps
+on Android.
+
+\section1 Qt Project to Manifest Configuration
+
+Qt defines some \l {Android: App Manifest <meta-data>}{meta-data} that is passed
+from the build systems and to \l {Deploying an Application on Android}{androiddeployqt}
+which populates the manifest with the correct values without explicitly setting
+these in the manifest file. Such \l {Android: App Manifest <meta-data>}{meta-data}
+is assigned a value in the form \c {"-- %%INSERT_VALUE%% --"}, for example:
+
+\badcode
+<manifest ...
+    android:versionCode="-- %%INSERT_VERSION_CODE%% --"
+    ...
+</manifest>
+\endcode
+
+This would be populated with the version code that is set in, for example,
+\c CMake.
+
+\section1 Qt Default Configuration
+
+Qt sets the following manifest configuration by default:
+
+\table
+\header
+    \li Section
+    \li Option
+    \li Description
+\row
+    \li {1, 5} \l {Android: App Manifest <manifest>}{<manifest>}
+    \li package
+    \li Sets the package name. Default: \c {org.qtproject.example.app_name}.
+\row
+    \li \c {android:installLocation}
+    \li Sets the app's installation location, whether internal or external storage.
+        Default: \c auto.
+\row
+    \li android:versionCode
+    \li Sets the internal version code. Populated from \c ANDROID_VERSION_CODE (qmake)
+        and \c QT_ANDROID_VERSION_CODE (CMake). Default: \c 1.
+\row
+    \li android:versionName
+    \li Sets the public version name. Populated from \c ANDROID_VERSION_NAME (qmake)
+        and \c QT_ANDROID_VERSION_NAME (CMake). Default: \c {1.0}.
+\row
+    \li \c {<supports-screens>}
+    \li Sets the screen sizes that the app supports,
+        default values are \c anyDensity, \c largeScreens,
+        \c normalScreens, and \c smallScreens.
+\row
+    \li {1, 5} \l {Android: App Manifest <application>}{<application>}
+    \li android:name
+    \li The application class name. Default:
+        \c {org.qtproject.qt.android.bindings.QtApplication}.
+\row
+    \li android:label
+    \li The application name label. Default: the Qt project's target name.
+\row
+    \li android:extractNativeLibs
+    \li Extracts the native C++ libraries on installation. Default: \c true.
+\row
+    \li android:hardwareAccelerated
+    \li Sets hardware acceleration preference. Default: \c true.
+\row
+    \li android:requestLegacyExternalStorage
+    \li Whether to use Android scoped storage. Default \c true.
+\row
+    \li {1, 6} \l {Android: App Manifest <activity>}{<activity>}
+    \li android:name
+    \li The activity class name. Default: \c {org.qtproject.qt.android.bindings.QtActivity}.
+\row
+    \li android:label
+    \li The activity name label. Default: the Qt project's target name.
+\row
+    \li android:configChanges
+    \li Lists configuration changes that the activity handles. Default:
+        \c orientation, \c uiMode, \c screenLayout, \c screenSize,
+        \c smallestScreenSize, \c layoutDirection, \c locale, \c fontScale,
+        \c keyboard, \c keyboardHidden, \c navigation, \c mcc, \c mnc, \c density.
+\row
+    \li android:launchMode
+    \li The method used to launch the activity. Default: \c singleTop.
+\row
+    \li android:screenOrientation
+    \li The orientation of the activity's display on the device. Default: \c unspecified.
+\row
+    \li <intent-filter>
+    \li Specifies the types of intents that the activity can respond to. Default:
+        \badcode
+        <action android:name="android.intent.action.MAIN"/>
+        <category android:name="android.intent.category.LAUNCHER"/>
+        \endcode
+\endtable
+
+\section1 Qt Specific Meta-data
+
+In addition to the default manifest configuration that Qt sets, Qt defines
+some meta-data that is valid for Qt apps only. Such meta-data is usually
+under the \c <activity> section in the form:
+
+\badcode
+<meta-data
+    android:name="meta-data-name"
+    android:value="meta-data-value" />
+\endcode
+
+The following is a list of such meta-data defined by Qt:
+
+\table
+\header
+    \li meta-data name
+    \li Description
+\row
+    \target android.app.lib_name
+    \li android.app.lib_name
+    \li The filename of the native C++ library that is used by the activity.
+        \note This attribute is mandatory and shouldn't be removed.
+        Default: the Qt project's target name.
+\row
+    \li android.app.extract_android_style
+    \li The method used to extract the native Android Style information.
+        For more information, see \l {Style Extraction}.
+        Default: \c minimal.
+\row
+    \target android.app.background_running
+    \li android.app.background_running
+    \li Sets whether the app keeps running tasks in the background.
+        Setting this to \c true is the equivalent of setting the environment
+        variable \c QT_BLOCK_EVENT_LOOPS_WHEN_SUSPENDED to \c 0.
+        Default: \c false.
+
+        \warning Setting this to \c true may cause unexpected crash if the
+        application tries to draw after \l {QGuiApplication::applicationStateChanged()}
+        signal is sent with a \l {Qt::ApplicationSuspended} state.
+\row
+    \target android.app.arguments
+    \li android.app.arguments
+    \li Sets a list of arguments to pass to the app \c {"arg1 arg2"}.
+        Populated from \c ANDROID_APPLICATION_ARGUMENTS (qmake) and
+        \c QT_ANDROID_APPLICATION_ARGUMENTS (CMake).
+        Default: not set.
+\row
+    \li android.app.splash_screen_drawable_portrait
+    \li Sets a drawable for a splash screen specific to portrait mode.
+        For example: \c {android:resource="@drawable/splash_portrait"}.
+        Default: not set.
+\row
+    \li android.app.splash_screen_drawable_landscape
+    \li Sets a drawable for a splash screen specific to landscape mode.
+        For example: \c {android:resource="@drawable/splash_landscape"}.
+        Default: not set.
+\row
+    \li android.app.splash_screen_drawable
+    \li Sets a drawable for a splash screen at the start of the app.
+        \note Orientation specific splash screens are checked first,
+        if not set, this is used instead.
+        For example: \c {android:resource="@drawable/splash"}.
+        Default: not set.
+\row
+    \li android.app.splash_screen_sticky
+    \li Sets whether the splash screen stays visible until explicitly hidden
+        by the app.
+        For more information, see
+        \l {QNativeInterface::}{QAndroidApplication::hideSplashScreen()}.
+\row
+    \target android.app.system_libs_prefix
+    \li android.app.system_libs_prefix
+    \li Specifies a custom system library path to use for library loading lookup.
+        This is necessary when running as a system app.
+        Default: \c {/system/lib/}.
+\endtable
+
+\section2 Meta-data in Services
+
+Some meta-data attributes can also be used in \l {Android Services}{Services}.
+The main ones are:
+
+\list
+    \li \l {android.app.lib_name}
+    \li \l {android.app.background_running}
+    \li \l {android.app.arguments}
+    \li \l {android.app.system_libs_prefix}
+\endlist
+
+\section2 Qt Permissions and Features
+
+Different Qt modules might require some Android permissions or features to
+function properly, for example, Camera permission in \l {QtMultimedia}.
+l{The androiddeployqt Tool} takes care of including such requirements into the
+Android manifest during the build. Qt defines the following lines into the
+manifest, which they get replaced by
+the actual values:
+
+\badcode
+<manifest ...
+    <!-- %%INSERT_PERMISSIONS -->
+    <!-- %%INSERT_FEATURES -->
+    ...
+</manifest>
+\endcode
+
+\note If those lines are removed from the project manifest, Qt won't be
+able to include the correct permissions. So some functionalities
+might not work properly.
+
+\section2 Style Extraction
+
+Qt uses different methods to determine how Qt Widgets and Qt Quick Controls
+should be styled:
+
+\list
+    \li \c default or \c full: when using Qt Widgets or Qt Quick Controls 1.
+        \note This method uses some Android non-SDK interfaces, that are being
+        restricted and removed by Google starting from Android 9.0 (API 28).
+        For that reason, this is not recommended for Android 9.0 or greater.
+    \li \c minimal: when using Qt Quick Controls 2 and no Qt Widgets or Qt Quick
+        Controls 1. This is faster than using the default or full options.
+    \li \c none: no style extraction.
+\endlist
+
+\section1 Qt Manifest before 6.2 Release
+
+Versions of Qt earlier than 6.2 used to have an additional set of meta-data
+defined by Qt. These attributes used to manage dependencies and some were
+used by the discontinued \c Ministro service. With Qt 6.2, they should be removed.
+Here is a list of these attributes:
+
+\list
+    \li android.app.qt_sources_resource_id
+    \li android.app.repository
+    \li android.app.bundled_libs_resource_id
+    \li android.app.bundle_local_qt_libs
+    \li android.app.use_local_qt_libs
+    \li android.app.libs_prefix
+    \li android.app.load_local_libs_resource_id
+    \li android.app.load_local_jars
+    \li android.app.static_init_classes
+    \li android.app.qt_libs_resource_id
+    \li android.app.ministro_not_found_msg
+    \li android.app.ministro_needed_msg
+    \li android.app.fatal_error_msg
+\endlist
+
+For more information on the Android Manifest, see
+\l{Android: App Manifest}{Android App Manifest}.
+*/
