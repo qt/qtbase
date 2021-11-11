@@ -1323,12 +1323,12 @@ public:
         if (d->size != other.d->size)
             return false;
         for (auto it = other.d->begin(); it != other.d->end(); ++it) {
-            auto i = d->find(it.node()->key);
-            if (i == d->end())
+            auto *n = d->findNode(it.node()->key);
+            if (!n)
                 return false;
             Chain *e = it.node()->value;
             while (e) {
-                Chain *oe = i.node()->value;
+                Chain *oe = n->value;
                 while (oe) {
                     if (oe->value == e->value)
                         break;
