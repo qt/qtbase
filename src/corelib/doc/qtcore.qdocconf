@@ -35,7 +35,9 @@ depends                 = *
 
 headerdirs  += ..
 
-sourcedirs  += ..
+sourcedirs  += .. \
+                ../../tools/androiddeployqt \
+                ../../android/templates
 
 exampledirs += \
                ../ \
