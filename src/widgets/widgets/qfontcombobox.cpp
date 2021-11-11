@@ -371,7 +371,8 @@ void QFontComboBoxPrivate::_q_updateModel()
 void QFontComboBoxPrivate::_q_currentChanged(const QString &text)
 {
     Q_Q(QFontComboBox);
-    if (currentFont.families().first() != text) {
+    QStringList families = currentFont.families();
+    if (families.isEmpty() || families.first() != text) {
         currentFont.setFamilies(QStringList{text});
         emit q->currentFontChanged(currentFont);
     }
