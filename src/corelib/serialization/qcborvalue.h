@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 Intel Corporation.
+** Copyright (C) 2022 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -371,6 +371,10 @@ public:
     {
         return type() == QCborValue::type_helper(st);
     }
+    QCborSimpleType toSimpleType(QCborSimpleType defaultValue = QCborSimpleType::Undefined) const
+    {
+        return isSimpleType() ? QCborSimpleType(type() & 0xff) : defaultValue;
+    }
 
     QCborTag tag(QCborTag defaultValue = QCborTag(-1)) const
     { return concrete().tag(defaultValue); }
@@ -436,13 +440,19 @@ public:
     QVariant toVariant() const                  { return concrete().toVariant(); }
     QJsonValue toJsonValue() const;
 
+    // ### TEMPORARY
 #if QT_CONFIG(cborstreamwriter)
     QByteArray toCbor(QCborValue::EncodingOptions opt = QCborValue::NoTransformation)
+    { return qAsConst(*this).toCbor(opt); }
+    QByteArray toCbor(QCborValue::EncodingOptions opt = QCborValue::NoTransformation) const
     { return concrete().toCbor(opt); }
     void toCbor(QCborStreamWriter &writer, QCborValue::EncodingOptions opt = QCborValue::NoTransformation);
+    void toCbor(QCborStreamWriter &writer, QCborValue::EncodingOptions opt = QCborValue::NoTransformation) const;
 #endif
 
     QString toDiagnosticNotation(QCborValue::DiagnosticNotationOptions opt = QCborValue::Compact)
+    { return qAsConst(*this).toDiagnosticNotation(opt); }
+    QString toDiagnosticNotation(QCborValue::DiagnosticNotationOptions opt = QCborValue::Compact) const
     { return concrete().toDiagnosticNotation(opt); }
 
 private:

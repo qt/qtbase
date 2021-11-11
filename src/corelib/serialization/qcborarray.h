@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 Intel Corporation.
+** Copyright (C) 2022 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -80,7 +80,7 @@ public:
 
         QCborValueRef operator*() const { return item; }
         QCborValueRef *operator->() const { return &item; }
-        QCborValueRef operator[](qsizetype j) { return { item.d, item.i + j }; }
+        QCborValueRef operator[](qsizetype j) const { return { item.d, item.i + j }; }
 
         bool operator==(const Iterator &o) const { return item.d == o.item.d && item.i == o.item.i; }
         bool operator!=(const Iterator &o) const { return !(*this == o); }
@@ -129,7 +129,7 @@ public:
 
         const QCborValueRef operator*() const { return item; }
         const QCborValueRef *operator->() const { return &item; }
-        const QCborValueRef operator[](qsizetype j) { return { item.d, item.i + j }; }
+        QCborValueRef operator[](qsizetype j) const { return QCborValueRef{ item.d, item.i + j }; }
 
         bool operator==(const Iterator &o) const { return item.d == o.item.d && item.i == o.item.i; }
         bool operator!=(const Iterator &o) const { return !(*this == o); }

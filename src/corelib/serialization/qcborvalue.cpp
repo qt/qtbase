@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 Intel Corporation.
+** Copyright (C) 2022 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -2639,6 +2639,10 @@ Q_NEVER_INLINE void QCborValue::toCbor(QCborStreamWriter &writer, EncodingOption
 }
 
 void QCborValueRef::toCbor(QCborStreamWriter &writer, QCborValue::EncodingOptions opt)
+{
+    concrete().toCbor(writer, opt);
+}
+void QCborValueRef::toCbor(QCborStreamWriter &writer, QCborValue::EncodingOptions opt) const
 {
     concrete().toCbor(writer, opt);
 }

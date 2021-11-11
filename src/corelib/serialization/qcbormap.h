@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 Intel Corporation.
+** Copyright (C) 2022 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -85,6 +85,7 @@ public:
         }
 
         value_type operator*() const { return { {item.d, item.i - 1}, item }; }
+        value_type operator[](qsizetype j) const { return *(*this + j); }
         QCborValueRef *operator->() const { return &item; }
         QCborValue key() const { return QCborValueRef(item.d, item.i - 1); }
         QCborValueRef value() const { return item; }
@@ -137,6 +138,7 @@ public:
         }
 
         value_type operator*() const { return { {item.d, item.i - 1}, item }; }
+        value_type operator[](qsizetype j) const { return *(*this + j); }
         const QCborValueRef *operator->() const { return &item; }
         QCborValue key() const { return QCborValueRef(item.d, item.i - 1); }
         QCborValueRef value() const { return item; }

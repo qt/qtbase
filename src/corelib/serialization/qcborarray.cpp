@@ -809,7 +809,7 @@ void QCborArray::detach(qsizetype reserved)
 */
 
 /*!
-    \fn QCborValueRef QCborArray::Iterator::operator[](qsizetype j)
+    \fn QCborValueRef QCborArray::Iterator::operator[](qsizetype j) const
 
     Returns a modifiable reference to the item at a position \a j steps forward
     from the item pointed to by this iterator.
@@ -1055,7 +1055,7 @@ void QCborArray::detach(qsizetype reserved)
 */
 
 /*!
-    \fn const QCborValueRef QCborArray::ConstIterator::operator[](qsizetype j)
+    \fn QCborValueRef QCborArray::ConstIterator::operator[](qsizetype j) const
 
     Returns the item at a position \a j steps forward from the item pointed to
     by this iterator.
