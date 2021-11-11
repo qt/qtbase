@@ -4061,6 +4061,26 @@ bool qunsetenv(const char *varName)
 */
 
 /*!
+    \macro QT_TRID_N_NOOP(id)
+    \relates <QtGlobal>
+    \since 6.3
+
+    \brief The QT_TRID_N_NOOP macro marks an id for numerator
+    dependent dynamic translation.
+
+    The only purpose of this macro is to provide an anchor for attaching
+    meta data like to qtTrId().
+
+    The macro expands to \a id.
+
+    Example:
+
+    \snippet code/src_corelib_global_qglobal.cpp qttrid_n_noop
+
+    \sa qtTrId(), {Internationalization with Qt}
+*/
+
+/*!
     \macro Q_LIKELY(expr)
     \relates <QtGlobal>
     \since 4.8

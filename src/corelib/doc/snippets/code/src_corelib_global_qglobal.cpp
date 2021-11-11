@@ -512,6 +512,20 @@ void TheClass::addLabels()
 }
 //! [qttrid_noop]
 
+//! [qttrid_n_noop]
+static const char * const ids[] = {
+    //% "%n foo(s) found."
+    QT_TRID_N_NOOP("qtn_foo"),
+    //% "%n bar(s) found."
+    QT_TRID_N_NOOP("qtn_bar"),
+    0
+};
+
+QString result(int type, int n)
+{
+    return qtTrId(ids[type], n);
+}
+//! [qttrid_n_noop]
 
 //! [37]
 qWarning("%s: %s", qUtf8Printable(key), qUtf8Printable(value));
