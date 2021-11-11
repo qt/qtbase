@@ -2215,6 +2215,21 @@ const QCborValue QCborValue::operator[](qint64 key) const
     return QCborValue();
 }
 
+static bool shouldArrayRemainArray(qint64 key, QCborValue::Type t, QCborContainerPrivate *container)
+{
+    constexpr qint64 LargeKey = 0x10000;
+    if (t != QCborValue::Array)
+        return false;
+    if (key < 0)
+        return false;           // negative keys can't be an array index
+    if (key < LargeKey)
+        return true;
+
+    // Only convert to map if key is greater than array size + 1
+    qsizetype currentSize = container ? container->elements.size() : 0;
+    return key <= currentSize;
+}
+
 /*!
   \internal
  */
@@ -2369,7 +2384,7 @@ QCborValueRef QCborValue::operator[](QLatin1String key)
  */
 QCborValueRef QCborValue::operator[](qint64 key)
 {
-    if (isArray() && key >= 0 && key < 0x10000) {
+    if (shouldArrayRemainArray(key, t, container)) {
         container = maybeGrow(container, key);
         return { container, qsizetype(key) };
     }
@@ -2898,7 +2913,7 @@ QCborValueRef QCborValueRef::operator[](QLatin1String key)
 QCborValueRef QCborValueRef::operator[](qint64 key)
 {
     auto &e = d->elements[i];
-    if (e.type == QCborValue::Array && key >= 0 && key < 0x10000) {
+    if (shouldArrayRemainArray(key, e.type, e.container)) {
         e.container = maybeGrow(e.container, key);
         e.flags |= QtCbor::Element::IsContainer;
         return { e.container, qsizetype(key) };

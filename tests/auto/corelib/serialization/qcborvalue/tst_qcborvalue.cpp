@@ -74,6 +74,7 @@ private slots:
     void arrayPrepend();
     void arrayValueRef_data() { basics_data(); }
     void arrayValueRef();
+    void arrayValueRefLargeKey();
     void arrayInsertRemove_data() { basics_data(); }
     void arrayInsertRemove();
     void arrayInsertTagged_data() { basics_data(); }
@@ -1318,6 +1319,30 @@ void tst_QCborValue::arrayValueRef()
     if (QTest::currentTestFailed())
         return;
     iteratorCheck(a.constBegin());
+}
+
+void tst_QCborValue::arrayValueRefLargeKey()
+{
+    // make sure the access via QCborValue & QCborValueRef don't convert this
+    // array to a map
+    constexpr qsizetype LargeKey = 0x10000;
+    QCborArray a;
+    a[LargeKey + 1] = 123;
+
+    QCborValue v(a);
+    QCOMPARE(qAsConst(v)[LargeKey], QCborValue());
+    QCOMPARE(qAsConst(v)[LargeKey + 1], 123);
+    QCOMPARE(v[LargeKey], QCborValue());
+    QCOMPARE(v[LargeKey + 1], 123);
+    QCOMPARE(v.type(), QCborValue::Array);
+
+    QCborArray outer = { QCborValue(a) };
+    QCborValueRef ref = outer[0];
+    QCOMPARE(qAsConst(ref)[LargeKey], QCborValue());
+    QCOMPARE(qAsConst(ref)[LargeKey + 1], 123);
+    QCOMPARE(ref[LargeKey], QCborValue());
+    QCOMPARE(ref[LargeKey + 1], 123);
+    QCOMPARE(ref.type(), QCborValue::Array);
 }
 
 void tst_QCborValue::mapValueRef()
