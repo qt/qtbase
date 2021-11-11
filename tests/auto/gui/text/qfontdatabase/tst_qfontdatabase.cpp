@@ -407,7 +407,9 @@ void tst_QFontDatabase::condensedFontMatching()
     tfcByStyleName.setStyleName("Condensed");
 
 #ifdef Q_OS_WIN
-    QFontPrivate *font_d = QFontPrivate::get(tfcByStretch);
+    QFont f;
+    f.setStyleStrategy(QFont::NoFontMerging);
+    QFontPrivate *font_d = QFontPrivate::get(f);
     if (font_d->engineForScript(QChar::Script_Common)->type() != QFontEngine::Freetype)
         QEXPECT_FAIL("","No matching of sub-family by stretch on Windows", Continue);
 #endif
