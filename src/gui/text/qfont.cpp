@@ -2387,8 +2387,12 @@ QDataStream &operator<<(QDataStream &s, const QFont &font)
         s << (quint8)font.d->request.hintingPreference;
     if (s.version() >= QDataStream::Qt_5_6)
         s << (quint8)font.d->capital;
-    if (s.version() >= QDataStream::Qt_5_13)
-        s << font.d->request.families;
+    if (s.version() >= QDataStream::Qt_5_13) {
+        if (s.version() < QDataStream::Qt_6_0)
+            s << font.d->request.families.mid(1);
+        else
+            s << font.d->request.families;
+    }
     return s;
 }
 
@@ -2498,7 +2502,10 @@ QDataStream &operator>>(QDataStream &s, QFont &font)
     if (s.version() >= QDataStream::Qt_5_13) {
         QStringList value;
         s >> value;
-        font.d->request.families = value;
+        if (s.version() < QDataStream::Qt_6_0)
+            font.d->request.families.append(value);
+        else
+            font.d->request.families = value;
     }
     return s;
 }

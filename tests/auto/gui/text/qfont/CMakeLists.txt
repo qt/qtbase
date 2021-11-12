@@ -16,6 +16,7 @@ qt_internal_add_test(tst_qfont
 
 # Resources:
 set(testfont_resource_files
+    "datastream.515"
     "weirdfont.otf"
 )
 
