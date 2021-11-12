@@ -2848,7 +2848,7 @@ static int systemTimeYearMatching(int year)
 
 // Convert an MSecs Since Epoch into Local Time
 bool QDateTimePrivate::epochMSecsToLocalTime(qint64 msecs, QDate *localDate, QTime *localTime,
-                                             QDateTimePrivate::DaylightStatus *daylightStatus)
+                                             DaylightStatus *daylightStatus)
 {
     if (!millisInSystemRange(msecs)) {
         // Docs state any LocalTime after 2038-01-18 *will* have any DST applied.
@@ -2891,7 +2891,7 @@ bool QDateTimePrivate::epochMSecsToLocalTime(qint64 msecs, QDate *localDate, QTi
 // DST status into a UTC epoch msecs. Optionally populate the returned
 // values from mktime for the adjusted local date and time.
 qint64 QDateTimePrivate::localMSecsToEpochMSecs(qint64 localMsecs,
-                                                QDateTimePrivate::DaylightStatus *daylightStatus,
+                                                DaylightStatus *daylightStatus,
                                                 QDate *localDate, QTime *localTime,
                                                 QString *abbreviation)
 {

@@ -124,9 +124,9 @@ public:
 #endif // timezone
 
     static bool epochMSecsToLocalTime(qint64 msecs, QDate *localDate, QTime *localTime,
-                                      QDateTimePrivate::DaylightStatus *daylightStatus = nullptr);
+                                      DaylightStatus *daylightStatus = nullptr);
     static qint64 localMSecsToEpochMSecs(qint64 localMsecs,
-                                         QDateTimePrivate::DaylightStatus *daylightStatus,
+                                         DaylightStatus *daylightStatus,
                                          QDate *localDate = nullptr, QTime *localTime = nullptr,
                                          QString *abbreviation = nullptr);
 
