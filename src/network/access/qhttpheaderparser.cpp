@@ -39,7 +39,15 @@
 
 #include "qhttpheaderparser_p.h"
 
+#include <algorithm>
+
 QT_BEGIN_NAMESPACE
+
+// both constants are taken from the default settings of Apache
+// see: http://httpd.apache.org/docs/2.2/mod/core.html#limitrequestfieldsize and
+// http://httpd.apache.org/docs/2.2/mod/core.html#limitrequestfields
+static const int MAX_HEADER_FIELD_SIZE = 8 * 1024;
+static const int MAX_HEADER_FIELDS = 100;
 
 QHttpHeaderParser::QHttpHeaderParser()
     : statusCode(100) // Required by tst_QHttpNetworkConnection::ignoresslerror(failure)
@@ -57,36 +65,66 @@ void QHttpHeaderParser::clear()
     fields.clear();
 }
 
+static bool fieldNameCheck(QByteArrayView name)
+{
+    static constexpr QByteArrayView otherCharacters("!#$%&'*+-.^_`|~");
+    static const auto fieldNameChar = [](char c) {
+        return ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') || ('0' <= c && c <= '9')
+                || otherCharacters.contains(c);
+    };
+
+    return name.size() > 0 && std::all_of(name.begin(), name.end(), fieldNameChar);
+}
+
 bool QHttpHeaderParser::parseHeaders(QByteArrayView header)
 {
     // see rfc2616, sec 4 for information about HTTP/1.1 headers.
     // allows relaxed parsing here, accepts both CRLF & LF line endings
-    int i = 0;
-    while (i < header.size()) {
-        int j = header.indexOf(':', i); // field-name
-        if (j == -1)
-            break;
-        QByteArrayView field = header.sliced(i, j - i).trimmed();
-        j++;
-        // any number of LWS is allowed before and after the value
-        QByteArray value;
-        do {
-            i = header.indexOf('\n', j);
-            if (i == -1)
-                break;
-            if (!value.isEmpty())
-                value += ' ';
-            // check if we have CRLF or only LF
-            bool hasCR = i && header[i - 1] == '\r';
-            int length = i - (hasCR ? 1: 0) - j;
-            value += header.sliced(j, length).trimmed();
-            j = ++i;
-        } while (i < header.size() && (header.at(i) == ' ' || header.at(i) == '\t'));
-        if (i == -1)
-            return false; // something is wrong
+    Q_ASSERT(fields.isEmpty());
+    const auto hSpaceStart = [](QByteArrayView h) {
+        return h.startsWith(' ') || h.startsWith('\t');
+    };
+    // Headers, if non-empty, start with a non-space and end with a newline:
+    if (hSpaceStart(header) || (header.size() && !header.endsWith('\n')))
+        return false;
 
-        fields.append(qMakePair(field.toByteArray(), value));
+    while (int tail = header.endsWith("\n\r\n") ? 2 : header.endsWith("\n\n") ? 1 : 0)
+        header.chop(tail);
+
+    QList<QPair<QByteArray, QByteArray>> result;
+    while (header.size()) {
+        const int colon = header.indexOf(':');
+        if (colon == -1) // if no colon check if empty headers
+            return result.size() == 0 && (header == "\n" || header == "\r\n");
+        if (result.size() >= MAX_HEADER_FIELDS)
+            return false;
+        QByteArrayView name = header.first(colon);
+        if (!fieldNameCheck(name))
+            return false;
+        header = header.sliced(colon + 1);
+        QByteArray value;
+        int valueSpace = MAX_HEADER_FIELD_SIZE - name.size() - 1;
+        do {
+            const int endLine = header.indexOf('\n');
+            Q_ASSERT(endLine != -1);
+            auto line = header.first(endLine); // includes space
+            valueSpace -= line.size() - (line.endsWith('\r') ? 1 : 0);
+            if (valueSpace < 0)
+                return false;
+            line = line.trimmed();
+            if (line.size()) {
+                if (value.size())
+                    value += ' ' + line.toByteArray();
+                else
+                    value = line.toByteArray();
+            }
+            header = header.sliced(endLine + 1);
+        } while (hSpaceStart(header));
+        Q_ASSERT(name.size() + 1 + value.size() <= MAX_HEADER_FIELD_SIZE);
+        result.append(qMakePair(name.toByteArray(), value));
     }
+
+    fields = result;
     return true;
 }
 

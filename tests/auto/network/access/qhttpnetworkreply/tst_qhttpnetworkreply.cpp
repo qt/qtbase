@@ -40,6 +40,9 @@ private Q_SLOTS:
     void parseHeader_data();
     void parseHeader();
 
+    void parseHeaderVerification_data();
+    void parseHeaderVerification();
+
     void parseEndOfHeader_data();
     void parseEndOfHeader();
 };
@@ -50,6 +53,7 @@ void tst_QHttpNetworkReply::parseHeader_data()
     QTest::addColumn<QStringList>("fields");
     QTest::addColumn<QStringList>("values");
 
+    QTest::newRow("no-fields") << QByteArray("\r\n") << QStringList() << QStringList();
     QTest::newRow("empty-field") << QByteArray("Set-Cookie: \r\n")
                                  << (QStringList() << "Set-Cookie")
                                  << (QStringList() << "");
@@ -60,6 +64,9 @@ void tst_QHttpNetworkReply::parseHeader_data()
                                                           " charset=utf-8\r\n")
                                             << (QStringList() << "Content-Type")
                                             << (QStringList() << "text/html; charset=utf-8");
+    QTest::newRow("single-field-on-five-lines")
+            << QByteArray("Name:\r\n first\r\n \r\n \r\n last\r\n") << (QStringList() << "Name")
+            << (QStringList() << "first last");
 
     QTest::newRow("multi-field") << QByteArray("Content-Type: text/html; charset=utf-8\r\n"
                                                "Content-Length: 1024\r\n"
@@ -99,6 +106,73 @@ void tst_QHttpNetworkReply::parseHeader()
         QString field = reply.headerField(fields.at(i).toLatin1());
         QCOMPARE(field, values.at(i));
     }
+}
+
+// both constants are taken from the default settings of Apache
+// see: http://httpd.apache.org/docs/2.2/mod/core.html#limitrequestfieldsize and
+// http://httpd.apache.org/docs/2.2/mod/core.html#limitrequestfields
+const int MAX_HEADER_FIELD_SIZE = 8 * 1024;
+const int MAX_HEADER_FIELDS = 100;
+
+void tst_QHttpNetworkReply::parseHeaderVerification_data()
+{
+    QTest::addColumn<QByteArray>("headers");
+    QTest::addColumn<bool>("success");
+
+    QTest::newRow("no-header-fields") << QByteArray("\r\n") << true;
+    QTest::newRow("starting-with-space") << QByteArray(" Content-Encoding: gzip\r\n") << false;
+    QTest::newRow("starting-with-tab") << QByteArray("\tContent-Encoding: gzip\r\n") << false;
+    QTest::newRow("only-colon") << QByteArray(":\r\n") << false;
+    QTest::newRow("colon-and-value") << QByteArray(": only-value\r\n") << false;
+    QTest::newRow("name-with-space") << QByteArray("Content Length: 10\r\n") << false;
+    QTest::newRow("missing-colon-1") << QByteArray("Content-Encoding\r\n") << false;
+    QTest::newRow("missing-colon-2")
+            << QByteArray("Content-Encoding\r\nContent-Length: 10\r\n") << false;
+    QTest::newRow("missing-colon-3")
+            << QByteArray("Content-Encoding: gzip\r\nContent-Length\r\n") << false;
+    QTest::newRow("header-field-too-long")
+            << (QByteArray("Content-Type: ") + QByteArray(MAX_HEADER_FIELD_SIZE, 'a')
+                + QByteArray("\r\n"))
+            << false;
+
+    QByteArray name = "Content-Type: ";
+    QTest::newRow("max-header-field-size")
+            << (name + QByteArray(MAX_HEADER_FIELD_SIZE - name.size(), 'a') + QByteArray("\r\n"))
+            << true;
+
+    QByteArray tooManyHeaders = QByteArray("Content-Type: text/html; charset=utf-8\r\n")
+                                        .repeated(MAX_HEADER_FIELDS + 1);
+    QTest::newRow("too-many-headers") << tooManyHeaders << false;
+
+    QByteArray maxHeaders =
+            QByteArray("Content-Type: text/html; charset=utf-8\r\n").repeated(MAX_HEADER_FIELDS);
+    QTest::newRow("max-headers") << maxHeaders << true;
+
+    QByteArray firstValue(MAX_HEADER_FIELD_SIZE / 2, 'a');
+    constexpr int obsFold = 1;
+    QTest::newRow("max-continuation-size")
+            << (name + firstValue + QByteArray("\r\n ")
+                + QByteArray(MAX_HEADER_FIELD_SIZE - name.size() - firstValue.size() - obsFold, 'b')
+                + QByteArray("\r\n"))
+            << true;
+    QTest::newRow("too-long-continuation-size")
+            << (name + firstValue + QByteArray("\r\n ")
+                + QByteArray(MAX_HEADER_FIELD_SIZE - name.size() - firstValue.size() - obsFold + 1,
+                             'b')
+                + QByteArray("\r\n"))
+            << false;
+}
+
+void tst_QHttpNetworkReply::parseHeaderVerification()
+{
+    QFETCH(QByteArray, headers);
+    QFETCH(bool, success);
+    QHttpNetworkReply reply;
+    reply.parseHeader(headers);
+    if (success && QByteArrayView(headers).trimmed().size())
+        QVERIFY(reply.header().size() > 0);
+    else
+        QCOMPARE(reply.header().size(), 0);
 }
 
 class TestHeaderSocket : public QAbstractSocket
