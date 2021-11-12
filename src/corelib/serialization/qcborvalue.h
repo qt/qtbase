@@ -437,9 +437,9 @@ public:
 
 protected:
     friend class QCborValue;
-    friend class QCborValueRef;
     friend class QCborArray;
     friend class QCborMap;
+    friend class QCborContainerPrivate;
 
     QCborValue concrete() const noexcept  { return concrete(*this); }
 

@@ -2169,9 +2169,7 @@ QCborMap QCborValue::toMap(const QCborMap &defaultValue) const
  */
 const QCborValue QCborValue::operator[](const QString &key) const
 {
-    if (isMap())
-        return toMap().value(key);
-    return QCborValue();
+    return QCborContainerPrivate::findCborMapKey(*this, qToStringViewIgnoringNull(key));
 }
 
 /*!
@@ -2190,9 +2188,7 @@ const QCborValue QCborValue::operator[](const QString &key) const
  */
 const QCborValue QCborValue::operator[](QLatin1String key) const
 {
-    if (isMap())
-        return toMap().value(key);
-    return QCborValue();
+    return QCborContainerPrivate::findCborMapKey(*this, key);
 }
 
 /*!
@@ -2208,11 +2204,9 @@ const QCborValue QCborValue::operator[](QLatin1String key) const
  */
 const QCborValue QCborValue::operator[](qint64 key) const
 {
-    if (isMap())
-        return toMap().value(key);
-    if (isArray())
-        return toArray().at(key);
-    return QCborValue();
+    if (isArray() && container && quint64(key) < quint64(container->elements.size()))
+        return container->valueAt(key);
+    return QCborContainerPrivate::findCborMapKey(*this, key);
 }
 
 static bool shouldArrayRemainArray(qint64 key, QCborValue::Type t, QCborContainerPrivate *container)

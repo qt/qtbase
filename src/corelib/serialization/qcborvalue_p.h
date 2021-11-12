@@ -420,7 +420,7 @@ public:
     }
 
     // doesn't apply to JSON
-    template <typename KeyType> QCborValueRef findCborMapKey(KeyType key)
+    template <typename KeyType> QCborValueConstRef findCborMapKey(KeyType key)
     {
         qsizetype i = 0;
         for ( ; i < elements.size(); i += 2) {
@@ -437,7 +437,16 @@ public:
             if (equals)
                 break;
         }
-        return QCborValueRef{ this, i + 1 };
+        return { this, i + 1 };
+    }
+    template <typename KeyType> static QCborValue findCborMapKey(const QCborValue &self, KeyType key)
+    {
+        if (self.isMap() && self.container) {
+            qsizetype idx = self.container->findCborMapKey(key).i;
+            if (idx < self.container->elements.size())
+                return self.container->valueAt(idx);
+        }
+        return QCborValue();
     }
     template <typename KeyType> static QCborValueRef
     findOrAddMapKey(QCborContainerPrivate *container, KeyType key)
