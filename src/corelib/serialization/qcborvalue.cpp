@@ -2237,19 +2237,36 @@ static bool shouldArrayRemainArray(qint64 key, QCborValue::Type t, QCborContaine
 /*!
   \internal
  */
-static Q_DECL_COLD_FUNCTION QCborMap arrayAsMap(const QCborArray &array)
+static void convertArrayToMap(QCborContainerPrivate *&array)
 {
-    if (array.size())
-        qWarning("Using CBOR array as map forced conversion");
-    QCborMap map;
-    for (qsizetype i = array.size(); i-- > 0; ) {
-        QCborValue entry = array.at(i);
-        // Ignore padding entries that may have been added to grow the array
-        // when inserting past its end:
-        if (!entry.isInvalid())
-            map[i] = entry;
+    if (Q_LIKELY(!array || array->elements.isEmpty()))
+        return;
+
+    // The Q_LIKELY and the qWarning mark the rest of this function as unlikely
+    qWarning("Using CBOR array as map forced conversion");
+
+    qsizetype size = array->elements.size();
+    QCborContainerPrivate *map = QCborContainerPrivate::detach(array, size * 2);
+    map->elements.resize(size * 2);
+
+    // this may be an in-place copy, so we have to do it from the end
+    auto dst = map->elements.begin();
+    auto src = array->elements.constBegin();
+    for (qsizetype i = size - 1; i >= 0; --i) {
+        Q_ASSERT(src->type != QCborValue::Invalid);
+        dst[i * 2 + 1] = src[i];
     }
-    return map;
+    for (qsizetype i = 0; i < size; ++i)
+        dst[i * 2] = { i, QCborValue::Integer };
+
+    // only do this last portion if we're not modifying in-place
+    for (qsizetype i = 0; src != dst && i < size; ++i) {
+        if (dst[i * 2 + 1].flags & QtCbor::Element::IsContainer)
+            dst[i * 2 + 1].container->ref.ref();
+    }
+
+    // update reference counts
+    assignContainer(array, map);
 }
 
 /*!
@@ -2276,9 +2293,11 @@ QCborContainerPrivate::findOrAddMapKey(QCborValue &self, KeyType key)
 {
     // we need a map, so convert if necessary
     if (self.isArray())
-        self = arrayAsMap(self.toArray());
+        convertArrayToMap(self.container);
     else if (!self.isMap())
         self = QCborValue(QCborValue::Map);
+    self.t = QCborValue::Map;
+    self.n = -1;
 
     QCborValueRef result = findOrAddMapKey<KeyType>(self.container, key);
     assignContainer(self.container, result.d);
@@ -2291,15 +2310,11 @@ QCborContainerPrivate::findOrAddMapKey(QCborValueRef self, KeyType key)
     auto &e = self.d->elements[self.i];
 
     // we need a map, so convert if necessary
-    if (e.flags & QtCbor::Element::IsContainer) {
-        if (e.type == QCborValue::Array) {
-            QCborValue repack = QCborValue(arrayAsMap(QCborArray(*e.container)));
-            qSwap(e.container, repack.container);
-        } else if (e.type != QCborValue::Map) {
+    if (e.type == QCborValue::Array) {
+        convertArrayToMap(e.container);
+    } else if (e.type != QCborValue::Map) {
+        if (e.flags & QtCbor::Element::IsContainer)
             e.container->deref();
-            e.container = nullptr;
-        }
-    } else {
         e.container = nullptr;
     }
     e.flags = QtCbor::Element::IsContainer;
