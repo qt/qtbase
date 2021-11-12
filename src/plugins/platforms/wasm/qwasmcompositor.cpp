@@ -554,13 +554,11 @@ void QWasmCompositor::drawTitlebarWindow(QWasmTitleBarOptions tb, QPainter *pain
                           Qt::AlignLeft | Qt::AlignVCenter | Qt::TextSingleLine, tb.titleBarOptionsString);
     } // SC_TitleBarLabel
 
-    bool down = false;
     QPixmap pixmap;
 
     if (tb.subControls.testFlag(SC_TitleBarCloseButton)
             && tb.flags & Qt::WindowSystemMenuHint) {
         ir = titlebarRect(tb, SC_TitleBarCloseButton);
-        down = tb.subControls & SC_TitleBarCloseButton && (tb.state & State_Sunken);
         pixmap = cachedPixmapFromXPM(qt_close_xpm).scaled(QSize(10, 10));
         drawItemPixmap(painter, ir, Qt::AlignCenter, pixmap);
     } //SC_TitleBarCloseButton
@@ -569,7 +567,6 @@ void QWasmCompositor::drawTitlebarWindow(QWasmTitleBarOptions tb, QPainter *pain
             && tb.flags & Qt::WindowMaximizeButtonHint
             && !(tb.state & Qt::WindowMaximized)) {
         ir = titlebarRect(tb, SC_TitleBarMaxButton);
-        down = tb.subControls & SC_TitleBarMaxButton && (tb.state & State_Sunken);
         pixmap = cachedPixmapFromXPM(qt_maximize_xpm).scaled(QSize(10, 10));
         drawItemPixmap(painter, ir, Qt::AlignCenter, pixmap);
     } //SC_TitleBarMaxButton
@@ -582,7 +579,6 @@ void QWasmCompositor::drawTitlebarWindow(QWasmTitleBarOptions tb, QPainter *pain
 
     if (drawNormalButton) {
         ir = titlebarRect(tb, SC_TitleBarNormalButton);
-        down = tb.subControls & SC_TitleBarNormalButton && (tb.state & State_Sunken);
         pixmap = cachedPixmapFromXPM(qt_normalizeup_xpm).scaled( QSize(10, 10));
 
         drawItemPixmap(painter, ir, Qt::AlignCenter, pixmap);
