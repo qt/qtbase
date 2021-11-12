@@ -275,6 +275,7 @@ public:
 private:
     void detach(qsizetype reserve = 0);
 
+    friend QCborContainerPrivate;
     friend QCborValue;
     friend QCborValueRef;
     friend class QJsonPrivate::Variant;
