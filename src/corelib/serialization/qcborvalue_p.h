@@ -419,6 +419,27 @@ public:
         elements.remove(idx);
     }
 
+    // doesn't apply to JSON
+    template <typename KeyType> QCborValueRef findCborMapKey(KeyType key)
+    {
+        qsizetype i = 0;
+        for ( ; i < elements.size(); i += 2) {
+            const auto &e = elements.at(i);
+            bool equals;
+            if constexpr (std::is_same_v<std::decay_t<KeyType>, QCborValue>) {
+                equals = (compareElement(i, key) == 0);
+            } else if constexpr (std::is_integral_v<KeyType>) {
+                equals = (e.type == QCborValue::Integer && e.value == key);
+            } else {
+                // assume it's a string
+                equals = stringEqualsElement(i, key);
+            }
+            if (equals)
+                break;
+        }
+        return QCborValueRef{ this, i + 1 };
+    }
+
 #if QT_CONFIG(cborstreamreader)
     void decodeValueFromCbor(QCborStreamReader &reader, int remainingStackDepth);
     void decodeStringFromCbor(QCborStreamReader &reader);

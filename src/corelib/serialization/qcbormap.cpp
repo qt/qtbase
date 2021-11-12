@@ -932,12 +932,7 @@ QCborMap::iterator QCborMap::find(const QCborValue &key)
  */
 QCborMap::const_iterator QCborMap::constFind(qint64 key) const
 {
-    for (qsizetype i = 0; i < 2 * size(); i += 2) {
-        const auto &e = d->elements.at(i);
-        if (e.type == QCborValue::Integer && e.value == key)
-            return { d.data(), i + 1 };
-    }
-    return constEnd();
+    return d ? d->findCborMapKey(key) : constEnd();
 }
 
 /*!
@@ -958,11 +953,7 @@ QCborMap::const_iterator QCborMap::constFind(qint64 key) const
  */
 QCborMap::const_iterator QCborMap::constFind(QLatin1String key) const
 {
-    for (qsizetype i = 0; i < 2 * size(); i += 2) {
-        if (d->stringEqualsElement(i, key))
-            return { d.data(), i + 1 };
-    }
-    return constEnd();
+    return d ? d->findCborMapKey(key) : constEnd();
 }
 
 /*!
@@ -981,13 +972,9 @@ QCborMap::const_iterator QCborMap::constFind(QLatin1String key) const
         remove(const QString &), contains(const QString &)
         value(qint64), value(QLatin1String), value(const QCborValue &)
  */
-QCborMap::const_iterator QCborMap::constFind(const QString & key) const
+QCborMap::const_iterator QCborMap::constFind(const QString &key) const
 {
-    for (qsizetype i = 0; i < 2 * size(); i += 2) {
-        if (d->stringEqualsElement(i, key))
-            return { d.data(), i + 1 };
-    }
-    return constEnd();
+    return d ? d->findCborMapKey(qToStringViewIgnoringNull(key)) : constEnd();
 }
 
 /*!
@@ -1008,12 +995,7 @@ QCborMap::const_iterator QCborMap::constFind(const QString & key) const
  */
 QCborMap::const_iterator QCborMap::constFind(const QCborValue &key) const
 {
-    for (qsizetype i = 0; i < 2 * size(); i += 2) {
-        int cmp = d->compareElement(i, key);
-        if (cmp == 0)
-            return { d.data(), i + 1 };
-    }
-    return constEnd();
+    return d ? d->findCborMapKey<const QCborValue &>(key) : constEnd();
 }
 
 /*!
