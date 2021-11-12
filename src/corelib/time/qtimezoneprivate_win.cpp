@@ -70,7 +70,6 @@ QT_BEGIN_NAMESPACE
 static const wchar_t tzRegPath[] = LR"(SOFTWARE\Microsoft\Windows NT\CurrentVersion\Time Zones)";
 static const wchar_t currTzRegPath[] = LR"(SYSTEM\CurrentControlSet\Control\TimeZoneInformation)";
 
-constexpr qint64 MIN_YEAR = -292275056LL;
 constexpr qint64 MSECS_PER_DAY = 86400000LL;
 constexpr qint64 JULIAN_DAY_FOR_EPOCH = 2440588LL; // result of julianDayFromDate(1970, 1, 1)
 
@@ -487,9 +486,10 @@ void QWinTimeZonePrivate::init(const QByteArray &ianaId)
                 const auto endYear = dynamicKey.dwordValue(L"LastEntry");
                 for (int year = int(startYear.first); year <= int(endYear.first); ++year) {
                     bool ruleOk;
-                    QWinTransitionRule rule = readRegistryRule(dynamicKey,
-                                                               reinterpret_cast<LPCWSTR>(QString::number(year).utf16()),
-                                                               &ruleOk);
+                    QWinTransitionRule rule =
+                        readRegistryRule(dynamicKey,
+                                         reinterpret_cast<LPCWSTR>(QString::number(year).utf16()),
+                                         &ruleOk);
                     if (ruleOk
                         // Don't repeat a recurrent rule:
                         && (m_tranRules.isEmpty()
@@ -502,7 +502,8 @@ void QWinTimeZonePrivate::init(const QByteArray &ianaId)
                                      "this may cause mistakes for %s from %d",
                                      ianaId.constData(), year);
                         }
-                        rule.startYear = m_tranRules.isEmpty() ? MIN_YEAR : year;
+                        rule.startYear =
+                            m_tranRules.isEmpty() ? int(QDateTime::YearRange::First) : year;
                         m_tranRules.append(rule);
                     }
                 }
@@ -510,7 +511,7 @@ void QWinTimeZonePrivate::init(const QByteArray &ianaId)
                 // No dynamic data so use the base data
                 bool ruleOk;
                 QWinTransitionRule rule = readRegistryRule(baseKey, L"TZI", &ruleOk);
-                rule.startYear = MIN_YEAR;
+                rule.startYear = int(QDateTime::YearRange::First);
                 if (ruleOk)
                     m_tranRules.append(rule);
             }
