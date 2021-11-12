@@ -422,14 +422,7 @@ QList<QCborValue> QCborMap::keys() const
  */
 QCborValueRef QCborMap::operator[](qint64 key)
 {
-    auto it = find(key);
-    if (it == constEnd()) {
-        // insert element
-        detach(it.item.i + 2);
-        d->append(key);
-        d->append(Undefined{});
-    }
-    return { d.data(), it.item.i };
+    return QCborContainerPrivate::findOrAddMapKey(*this, key);
 }
 
 /*!
@@ -549,14 +542,7 @@ QCborValueRef QCborMap::operator[](qint64 key)
  */
 QCborValueRef QCborMap::operator[](QLatin1String key)
 {
-    auto it = find(key);
-    if (it == constEnd()) {
-        // insert element
-        detach(it.item.i + 2);
-        d->append(key);
-        d->append(Undefined{});
-    }
-    return { d.data(), it.item.i };
+    return QCborContainerPrivate::findOrAddMapKey(*this, key);
 }
 
 /*!
@@ -678,14 +664,7 @@ QCborValueRef QCborMap::operator[](QLatin1String key)
  */
 QCborValueRef QCborMap::operator[](const QString & key)
 {
-    auto it = find(key);
-    if (it == constEnd()) {
-        // insert element
-        detach(it.item.i + 2);
-        d->append(key);
-        d->append(Undefined{});
-    }
-    return { d.data(), it.item.i };
+    return QCborContainerPrivate::findOrAddMapKey(*this, qToStringViewIgnoringNull(key));
 }
 
 /*!
@@ -803,14 +782,15 @@ QCborValueRef QCborMap::operator[](const QString & key)
  */
 QCborValueRef QCborMap::operator[](const QCborValue &key)
 {
-    auto it = find(key);
-    if (it == constEnd()) {
-        // insert element
-        detach(it.item.i + 2);
-        d->append(key);
-        d->append(Undefined{});
-    }
-    return { d.data(), it.item.i };
+    return QCborContainerPrivate::findOrAddMapKey<const QCborValue &>(*this, key);
+}
+
+template <typename KeyType> inline QCborValueRef
+QCborContainerPrivate::findOrAddMapKey(QCborMap &map, KeyType key)
+{
+    QCborValueRef result = findOrAddMapKey<KeyType>(map.d.data(), key);
+    map.d = result.d;
+    return result;
 }
 
 /*!

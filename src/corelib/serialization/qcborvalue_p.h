@@ -439,6 +439,30 @@ public:
         }
         return QCborValueRef{ this, i + 1 };
     }
+    template <typename KeyType> static QCborValueRef
+    findOrAddMapKey(QCborContainerPrivate *container, KeyType key)
+    {
+        qsizetype size = 0;
+        qsizetype index = size + 1;
+        if (container) {
+            size = container->elements.size();
+            index = container->findCborMapKey<KeyType>(key).i; // returns size + 1 if not found
+        }
+        Q_ASSERT(index & 1);
+        Q_ASSERT((size & 1) == 0);
+
+        container = detach(container, qMax(index + 1, size));
+        Q_ASSERT(container);
+        Q_ASSERT((container->elements.size() & 1) == 0);
+
+        if (index >= size) {
+            container->append(key);
+            container->append(QCborValue());
+        }
+        Q_ASSERT(index < container->elements.size());
+        return { container, index };
+    }
+    template <typename KeyType> static QCborValueRef findOrAddMapKey(QCborMap &map, KeyType key);
 
 #if QT_CONFIG(cborstreamreader)
     void decodeValueFromCbor(QCborStreamReader &reader, int remainingStackDepth);
