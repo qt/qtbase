@@ -463,6 +463,7 @@ public:
         return { container, index };
     }
     template <typename KeyType> static QCborValueRef findOrAddMapKey(QCborMap &map, KeyType key);
+    template <typename KeyType> static QCborValueRef findOrAddMapKey(QCborValue &self, KeyType key);
 
 #if QT_CONFIG(cborstreamreader)
     void decodeValueFromCbor(QCborStreamReader &reader, int remainingStackDepth);

@@ -2251,6 +2251,7 @@ static Q_DECL_COLD_FUNCTION QCborMap arrayAsMap(const QCborArray &array)
 /*!
   \internal
  */
+[[maybe_unused]]
 static QCborContainerPrivate *maybeDetach(QCborContainerPrivate *container, qsizetype size)
 {
     auto replace = QCborContainerPrivate::detach(container, size);
@@ -2282,6 +2283,25 @@ static QCborContainerPrivate *maybeGrow(QCborContainerPrivate *container, qsizet
     return replace;
 }
 
+template <typename KeyType> inline QCborValueRef
+QCborContainerPrivate::findOrAddMapKey(QCborValue &self, KeyType key)
+{
+    // we need a map, so convert if necessary
+    if (self.isArray())
+        self = arrayAsMap(self.toArray());
+    else if (!self.isMap())
+        self = QCborValue(QCborValue::Map);
+
+    QCborValueRef result = findOrAddMapKey<KeyType>(self.container, key);
+    if (result.d != self.container) {
+        if (self.container)
+            self.container->deref();
+        self.container = result.d;
+        self.container->ref.ref();
+    }
+    return result;
+}
+
 /*!
     Returns a QCborValueRef that can be used to read or modify the entry in
     this, as a map, with the given \a key. When this QCborValue is a QCborMap,
@@ -2297,30 +2317,7 @@ static QCborContainerPrivate *maybeGrow(QCborContainerPrivate *container, qsizet
  */
 QCborValueRef QCborValue::operator[](const QString &key)
 {
-    if (!isMap())
-        *this = QCborValue(isArray() ? arrayAsMap(toArray()) : QCborMap());
-
-    const qsizetype size = container ? container->elements.size() : 0;
-    qsizetype index = size + 1;
-    bool found = false;
-    if (container) {
-        QCborMap proxy(*container);
-        auto it = proxy.constFind(key);
-        if (it < proxy.constEnd()) {
-            found = true;
-            index = it.item.i;
-        }
-    }
-
-    container = maybeDetach(container, size + (found ? 0 : 2));
-    Q_ASSERT(container);
-    if (!found) {
-        container->append(key);
-        container->append(QCborValue());
-    }
-    Q_ASSERT(index & 1 && !(container->elements.size() & 1));
-    Q_ASSERT(index < container->elements.size());
-    return { container, index };
+    return QCborContainerPrivate::findOrAddMapKey(*this, qToStringViewIgnoringNull(key));
 }
 
 /*!
@@ -2340,30 +2337,7 @@ QCborValueRef QCborValue::operator[](const QString &key)
  */
 QCborValueRef QCborValue::operator[](QLatin1String key)
 {
-    if (!isMap())
-        *this = QCborValue(isArray() ? arrayAsMap(toArray()) : QCborMap());
-
-    const qsizetype size = container ? container->elements.size() : 0;
-    qsizetype index = size + 1;
-    bool found = false;
-    if (container) {
-        QCborMap proxy(*container);
-        auto it = proxy.constFind(key);
-        if (it < proxy.constEnd()) {
-            found = true;
-            index = it.item.i;
-        }
-    }
-
-    container = maybeDetach(container, size + (found ? 0 : 2));
-    Q_ASSERT(container);
-    if (!found) {
-        container->append(key);
-        container->append(QCborValue());
-    }
-    Q_ASSERT(index & 1 && !(container->elements.size() & 1));
-    Q_ASSERT(index < container->elements.size());
-    return { container, index };
+    return QCborContainerPrivate::findOrAddMapKey(*this, key);
 }
 
 /*!
@@ -2388,31 +2362,7 @@ QCborValueRef QCborValue::operator[](qint64 key)
         container = maybeGrow(container, key);
         return { container, qsizetype(key) };
     }
-    if (!isMap())
-        *this = QCborValue(isArray() ? arrayAsMap(toArray()) : QCborMap());
-
-    const qsizetype size = container ? container->elements.size() : 0;
-    Q_ASSERT(!(size & 1));
-    qsizetype index = size + 1;
-    bool found = false;
-    if (container) {
-        QCborMap proxy(*container);
-        auto it = proxy.constFind(key);
-        if (it < proxy.constEnd()) {
-            found = true;
-            index = it.item.i;
-        }
-    }
-
-    container = maybeDetach(container, size + (found ? 0 : 2));
-    Q_ASSERT(container);
-    if (!found) {
-        container->append(key);
-        container->append(QCborValue());
-    }
-    Q_ASSERT(index & 1 && !(container->elements.size() & 1));
-    Q_ASSERT(index < container->elements.size());
-    return { container, index };
+    return QCborContainerPrivate::findOrAddMapKey(*this, key);
 }
 
 #if QT_CONFIG(cborstreamreader)
