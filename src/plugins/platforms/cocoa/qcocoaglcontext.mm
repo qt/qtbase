@@ -422,6 +422,15 @@ bool QCocoaGLContext::setDrawable(QPlatformSurface *surface)
     m_updateObservers.append(QMacNotificationObserver([NSApplication sharedApplication],
         NSApplicationDidChangeScreenParametersNotification, updateCallback));
 
+    m_updateObservers.append(QMacNotificationObserver(view,
+        QCocoaWindowWillReleaseQNSViewNotification, [this, view] {
+            if (QT_IGNORE_DEPRECATIONS(m_context.view) != view)
+                return;
+            qCDebug(lcQpaOpenGLContext) << view << "about to be released."
+                << "Clearing current drawable for" << m_context;
+            [m_context clearDrawable];
+        }));
+
     // If any of the observers fire at this point it's fine. We check the
     // view association (atomically) in the update callback, and skip the
     // update if we haven't associated yet. Setting the drawable below will

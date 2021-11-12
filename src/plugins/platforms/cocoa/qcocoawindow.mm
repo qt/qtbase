@@ -186,6 +186,8 @@ void QCocoaWindow::initialize()
     m_initialized = true;
 }
 
+const NSNotificationName QCocoaWindowWillReleaseQNSViewNotification = @"QCocoaWindowWillReleaseQNSViewNotification";
+
 QCocoaWindow::~QCocoaWindow()
 {
     qCDebug(lcQpaWindow) << "QCocoaWindow::~QCocoaWindow" << window();
@@ -208,6 +210,13 @@ QCocoaWindow::~QCocoaWindow()
             vulcanInstance->destroySurface(m_vulkanSurface);
     }
 #endif
+
+    // Must send notification before calling release, as doing it from
+    // [QNSView dealloc] would mean that any weak references to the view
+    // would already return nil.
+    [NSNotificationCenter.defaultCenter
+        postNotificationName:QCocoaWindowWillReleaseQNSViewNotification
+        object:m_view];
 
     [m_view release];
     [m_nsWindow close];
