@@ -209,7 +209,10 @@ Q_GLOBAL_STATIC(QTimeZoneSingleton, global_tz);
     standard time in the time zone.  The daylight-saving time offset is the
     number of seconds to add to the standard time offset to obtain
     daylight-saving time (abbreviated DST and sometimes called "daylight time"
-    or "summer time") in the time zone.
+    or "summer time") in the time zone. The usual case for DST (using
+    standard time in winter, DST in summer) has a positive daylight-saving
+    time offset. However, some zones have negative DST offsets, used in
+    winter, with summer using standard time.
 
     Note that the standard and DST offsets for a time zone may change over time
     as countries have changed DST laws or even their standard time offset.
