@@ -772,7 +772,8 @@ static QCborContainerPrivate *assignContainer(QCborContainerPrivate *&d, QCborCo
         return d;
     if (d)
         d->deref();
-    x->ref.ref();
+    if (x)
+        x->ref.ref();
     return d = x;
 }
 
@@ -1911,13 +1912,8 @@ void QCborValue::dispose()
  */
 QCborValue &QCborValue::operator=(const QCborValue &other)
 {
-    if (other.container)
-        other.container->ref.ref();
-    if (container)
-        container->deref();
-
     n = other.n;
-    container = other.container;
+    assignContainer(container, other.container);
     t = other.t;
     return *this;
 }
@@ -2276,16 +2272,11 @@ static QCborContainerPrivate *maybeGrow(QCborContainerPrivate *container, qsizet
 {
     auto replace = QCborContainerPrivate::grow(container, index);
     Q_ASSERT(replace);
-    if (replace != container) {
-        if (container)
-            container->deref();
-        replace->ref.ref();
-    }
     if (replace->elements.size() == index)
         replace->append(Undefined());
     else
         Q_ASSERT(replace->elements.size() > index);
-    return replace;
+    return assignContainer(container, replace);
 }
 
 template <typename KeyType> inline QCborValueRef
