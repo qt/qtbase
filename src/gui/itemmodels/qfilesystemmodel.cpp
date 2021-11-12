@@ -142,7 +142,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QIcon QFileSystemModel::fileName(const QModelIndex &index) const
+    \fn QString QFileSystemModel::fileName(const QModelIndex &index) const
 
     Returns the file name for the item stored in the model under the given
     \a index.
