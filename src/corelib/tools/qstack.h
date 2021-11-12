@@ -49,25 +49,12 @@ class QStack : public QList<T>
 {
 public:
     // compiler-generated special member functions are fine!
-    inline void swap(QStack<T> &other) noexcept { QList<T>::swap(other); } // prevent QList<->QStack swaps
-    inline void push(const T &t) { QList<T>::append(t); }
-    T pop();
-    T &top();
-    const T &top() const;
+    void swap(QStack<T> &other) noexcept { QList<T>::swap(other); } // prevent QList<->QStack swaps
+    void push(const T &t) { QList<T>::append(t); }
+    T pop() { return QList<T>::takeLast(); }
+    T &top() { return QList<T>::last(); }
+    const T &top() const { return QList<T>::last(); }
 };
-
-template<class T>
-inline T QStack<T>::pop()
-{ Q_ASSERT(!this->isEmpty()); T t = this->data()[this->size() -1];
-  this->resize(this->size()-1); return t; }
-
-template<class T>
-inline T &QStack<T>::top()
-{ Q_ASSERT(!this->isEmpty()); this->detach(); return this->data()[this->size()-1]; }
-
-template<class T>
-inline const T &QStack<T>::top() const
-{ Q_ASSERT(!this->isEmpty()); return this->data()[this->size()-1]; }
 
 QT_END_NAMESPACE
 
