@@ -299,6 +299,8 @@ public: // for QNSView
 #endif
 };
 
+extern const NSNotificationName QCocoaWindowWillReleaseQNSViewNotification;
+
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug debug, const QCocoaWindow *window);
 #endif
