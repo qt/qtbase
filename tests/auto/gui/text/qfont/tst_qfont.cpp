@@ -62,6 +62,7 @@ private slots:
     void insertAndRemoveSubstitutions();
     void serialize_data();
     void serialize();
+    void deserializeQt515();
 
     void styleName();
     void defaultFamily_data();
@@ -509,6 +510,43 @@ void tst_QFont::serialize()
         QVERIFY2(readFont == font, qPrintable(QString::fromLatin1("Fonts do not compare equal for QDataStream version ") +
             QString::fromLatin1("%1:\nactual: %2\nexpected: %3").arg(version).arg(readFont.toString()).arg(font.toString())));
     }
+}
+
+void tst_QFont::deserializeQt515()
+{
+    QFile file;
+    file.setFileName(QFINDTESTDATA("datastream.515"));
+    QVERIFY(file.open(QIODevice::ReadOnly));
+
+    QFont font;
+    {
+        QDataStream stream(&file);
+        stream.setVersion(QDataStream::Qt_5_15);
+        stream >> font;
+    }
+
+    QCOMPARE(font.family(), QStringLiteral("FirstFamily"));
+    QCOMPARE(font.families().size(), 3);
+    QCOMPARE(font.families().at(0), QStringLiteral("FirstFamily"));
+    QCOMPARE(font.families().at(1), QStringLiteral("OtherFamily1"));
+    QCOMPARE(font.families().at(2), QStringLiteral("OtherFamily2"));
+    QCOMPARE(font.pointSize(), 12);
+
+    QVERIFY(file.reset());
+    QByteArray fileContent = file.readAll();
+    QByteArray serializedContent;
+    {
+        QBuffer buffer(&serializedContent);
+        QVERIFY(buffer.open(QIODevice::WriteOnly));
+
+        QDataStream stream(&buffer);
+        stream.setVersion(QDataStream::Qt_5_15);
+        stream << font;
+    }
+
+    QCOMPARE(serializedContent, fileContent);
+
+    file.close();
 }
 
 void tst_QFont::styleName()
