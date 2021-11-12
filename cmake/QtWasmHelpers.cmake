@@ -17,8 +17,6 @@ function (qt_internal_setup_wasm_target_properties wasmTarget)
     "SHELL:-s MODULARIZE=1"
     "SHELL:-s EXPORT_NAME=createQtAppInstance")
 
-    target_compile_options("${wasmTarget}" INTERFACE --bind)
-
     #simd
     if (QT_FEATURE_sse2)
         target_compile_options("${wasmTarget}" INTERFACE -O2 -msimd128 -msse -msse2)
