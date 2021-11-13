@@ -934,6 +934,7 @@ qt_feature("xcb-sm" PRIVATE
 )
 qt_feature("system-xcb-xinput" PRIVATE
     LABEL "Using system-provided xcb-xinput"
+    AUTODETECT OFF
     CONDITION XCB_XINPUT_FOUND
     ENABLE INPUT_bundled_xcb_xinput STREQUAL 'no'
     DISABLE INPUT_bundled_xcb_xinput STREQUAL 'yes'
