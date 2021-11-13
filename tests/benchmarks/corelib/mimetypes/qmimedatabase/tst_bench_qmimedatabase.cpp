@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 Igor Kushnir <igorkuo@gmail.com>
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -29,6 +30,36 @@
 #include <QTest>
 #include <QMimeDatabase>
 
+namespace {
+struct MatchModeInfo
+{
+    QMimeDatabase::MatchMode mode;
+    const char *name;
+};
+
+constexpr MatchModeInfo matchModes[] = { { QMimeDatabase::MatchDefault, "Default" },
+                                         { QMimeDatabase::MatchExtension, "Extension" },
+                                         { QMimeDatabase::MatchContent, "Content" } };
+
+void addFileRows(const char *tag, const QString &fileName, const QStringList &expectedMimeNames)
+{
+    QCOMPARE(static_cast<std::size_t>(expectedMimeNames.size()), std::size(matchModes));
+    for (int i = 0; i < expectedMimeNames.size(); ++i) {
+        QTest::addRow(qPrintable(tag + QStringLiteral(" - %s")), matchModes[i].name)
+                << fileName << matchModes[i].mode << expectedMimeNames[i];
+    }
+}
+
+void addExistentFileRows(const char *tag, const QString &fileName,
+                         const QStringList &expectedMimeNames)
+{
+    const QString filePath = QFINDTESTDATA("files/" + fileName);
+    QVERIFY2(!filePath.isEmpty(),
+             qPrintable(QStringLiteral("Cannot find test file %1 in files/").arg(fileName)));
+    addFileRows(tag, filePath, expectedMimeNames);
+}
+}
+
 class tst_QMimeDatabase: public QObject
 {
 
@@ -37,6 +68,8 @@ class tst_QMimeDatabase: public QObject
 private slots:
     void inheritsPerformance();
     void benchMimeTypeForName();
+    void benchMimeTypeForFile_data();
+    void benchMimeTypeForFile();
 };
 
 void tst_QMimeDatabase::inheritsPerformance()
@@ -79,6 +112,50 @@ void tst_QMimeDatabase::benchMimeTypeForName()
     QBENCHMARK {
         const auto s = db.mimeTypeForName(QStringLiteral("text/plain"));
         QVERIFY(s.isValid());
+    }
+}
+
+void tst_QMimeDatabase::benchMimeTypeForFile_data()
+{
+    QTest::addColumn<QString>("fileName");
+    QTest::addColumn<QMimeDatabase::MatchMode>("mode");
+    QTest::addColumn<QString>("expectedMimeName");
+
+    addFileRows("archive", "a.tar.gz",
+                { "application/x-compressed-tar",
+                  "application/x-compressed-tar",
+                  "application/octet-stream" });
+    addFileRows("OpenDocument Text", "b.odt",
+                { "application/vnd.oasis.opendocument.text",
+                  "application/vnd.oasis.opendocument.text",
+                  "application/octet-stream" });
+
+    addExistentFileRows(
+            "existent archive with extension", "N.tar.gz",
+            { "application/x-compressed-tar", "application/x-compressed-tar", "application/gzip" });
+    addExistentFileRows("existent C with extension", "t.c",
+                        { "text/x-csrc", "text/x-csrc", "text/plain" });
+    addExistentFileRows("existent text file with extension", "u.txt",
+                        { "text/plain", "text/plain", "text/plain" });
+    addExistentFileRows("existent C w/o extension", "X",
+                        { "text/x-csrc", "application/octet-stream", "text/x-csrc" });
+    addExistentFileRows("existent patch w/o extension", "y",
+                        { "text/x-patch", "application/octet-stream", "text/x-patch" });
+    addExistentFileRows("existent archive w/o extension", "z",
+                        { "application/gzip", "application/octet-stream", "application/gzip" });
+}
+
+void tst_QMimeDatabase::benchMimeTypeForFile()
+{
+    QFETCH(const QString, fileName);
+    QFETCH(const QMimeDatabase::MatchMode, mode);
+    QFETCH(const QString, expectedMimeName);
+
+    QMimeDatabase db;
+
+    QBENCHMARK {
+        const auto mimeType = db.mimeTypeForFile(fileName, mode);
+        QCOMPARE(mimeType.name(), expectedMimeName);
     }
 }
 
