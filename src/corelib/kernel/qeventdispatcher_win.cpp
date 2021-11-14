@@ -336,15 +336,47 @@ static HWND qt_create_internal_window(const QEventDispatcherWin32 *eventDispatch
     return wnd;
 }
 
-static void calculateNextTimeout(WinTimerInfo *t, quint64 currentTime)
+static ULONG calculateNextTimeout(WinTimerInfo *t, quint64 currentTime)
 {
     uint interval = t->interval;
-    if ((interval >= 20000u && t->timerType != Qt::PreciseTimer) || t->timerType == Qt::VeryCoarseTimer) {
-        // round the interval, VeryCoarseTimers only have full second accuracy
-        interval = ((interval + 500)) / 1000 * 1000;
+    ULONG tolerance = TIMERV_DEFAULT_COALESCING;
+    switch (t->timerType) {
+    case Qt::PreciseTimer:
+        // high precision timer is based on millisecond precision
+        // so no adjustment is necessary
+        break;
+
+    case Qt::CoarseTimer:
+        // this timer has up to 5% coarseness
+        // so our boundaries are 20 ms and 20 s
+        // below 20 ms, 5% inaccuracy is below 1 ms, so we convert to high precision
+        // above 20 s, 5% inaccuracy is above 1 s, so we convert to VeryCoarseTimer
+        if (interval >= 20000) {
+            t->timerType = Qt::VeryCoarseTimer;
+        } else if (interval <= 20) {
+            // no adjustment necessary
+            t->timerType = Qt::PreciseTimer;
+            break;
+        } else {
+            tolerance = interval / 20;
+            break;
+        }
+        Q_FALLTHROUGH();
+    case Qt::VeryCoarseTimer:
+        // the very coarse timer is based on full second precision,
+        // so we round to closest second (but never to zero)
+        tolerance = 1000;
+        if (interval < 1000)
+            interval = 1000;
+        else
+            interval = (interval + 500) / 1000 * 1000;
+        currentTime = currentTime / 1000 * 1000;
+        break;
     }
+
     t->interval = interval;
     t->timeout = currentTime + interval;
+    return tolerance;
 }
 
 void QEventDispatcherWin32Private::registerTimer(WinTimerInfo *t)
@@ -354,13 +386,13 @@ void QEventDispatcherWin32Private::registerTimer(WinTimerInfo *t)
     Q_Q(QEventDispatcherWin32);
 
     bool ok = false;
-    calculateNextTimeout(t, qt_msectime());
+    ULONG tolerance = calculateNextTimeout(t, qt_msectime());
     uint interval = t->interval;
     if (interval == 0u) {
         // optimization for single-shot-zero-timer
         QCoreApplication::postEvent(q, new QZeroTimerEvent(t->timerId));
         ok = true;
-    } else if (interval < 20u || t->timerType == Qt::PreciseTimer) {
+    } else if (tolerance == TIMERV_DEFAULT_COALESCING) {
         // 3/2016: Although MSDN states timeSetEvent() is deprecated, the function
         // is still deemed to be the most reliable precision timer.
         t->fastTimerId = timeSetEvent(interval, 1, qt_fast_timer_proc, DWORD_PTR(t),
@@ -370,8 +402,10 @@ void QEventDispatcherWin32Private::registerTimer(WinTimerInfo *t)
 
     if (!ok) {
         // user normal timers for (Very)CoarseTimers, or if no more multimedia timers available
-        ok = SetTimer(internalHwnd, t->timerId, interval, 0);
+        ok = SetCoalescableTimer(internalHwnd, t->timerId, interval, nullptr, tolerance);
     }
+    if (!ok)
+        ok = SetTimer(internalHwnd, t->timerId, interval, nullptr);
 
     if (!ok)
         qErrnoWarning("QEventDispatcherWin32::registerTimer: Failed to create a timer");
