@@ -59,6 +59,7 @@
 #include <private/qloggingregistry_p.h>
 #include <private/qsystemerror_p.h>
 
+#include "qcoffpeparser_p.h"
 #include "qelfparser_p.h"
 #include "qfactoryloader_p.h"
 #include "qmachparser_p.h"
@@ -206,6 +207,8 @@ static QLibraryScanResult qt_find_pattern(const char *s, qsizetype s_len, QStrin
     return QElfParser::parse({s, s_len}, errMsg);
 #elif defined(Q_OF_MACH_O)
     return QMachOParser::parse(s, s_len, errMsg);
+#elif defined(Q_OS_WIN)
+    return QCoffPeParser::parse({s, s_len}, errMsg);
 #endif
     QByteArrayView pattern = QPluginMetaData::MagicString;
     static const QByteArrayMatcher matcher(pattern.toByteArray());

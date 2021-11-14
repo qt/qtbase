@@ -1017,6 +1017,7 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_library
 )
 qt_internal_extend_target(Core CONDITION QT_FEATURE_library AND WIN32
     SOURCES
+        plugin/qcoffpeparser.cpp plugin/qcoffpeparser_p.h
         plugin/qlibrary_win.cpp
 )
 qt_internal_extend_target(Core CONDITION QT_FEATURE_library AND APPLE
