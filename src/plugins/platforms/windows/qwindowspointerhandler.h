@@ -47,6 +47,7 @@
 #include <QtCore/qscopedpointer.h>
 #include <QtCore/qhash.h>
 #include <QtGui/qevent.h>
+#include <qpa/qwindowsysteminterface.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -74,7 +75,7 @@ private:
     void handleEnterLeave(QWindow *window, QWindow *currentWindowUnderPointer, QPoint globalPos);
 
     QTouchDevice *m_touchDevice = nullptr;
-    QHash<int, QPointF> m_lastTouchPositions;
+    QHash<int, QWindowSystemInterface::TouchPoint> m_lastTouchPoints;
     QHash<DWORD, int> m_touchInputIDToTouchPointID;
     QPointer<QWindow> m_windowUnderPointer;
     QPointer<QWindow> m_currentWindow;
