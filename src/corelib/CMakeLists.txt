@@ -1227,7 +1227,7 @@ if(QT_FEATURE_mimetype AND QT_FEATURE_mimetype_database)
                     set(corelib_mimetypes_resource_file "${mimetypes_resource_file_minified}")
                 endif()
             else()
-                message(WARNING "xmlstarlet was not found. ${mime_types_resource_file} will not be minified!")
+                message(STATUS "xmlstarlet command was not found. ${mime_types_resource_file} will not be minified.")
             endif()
 
             if (CMAKE_VERSION GREATER_EQUAL 3.19)
