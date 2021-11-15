@@ -28,7 +28,7 @@
 
 #include <QTest>
 #include <QDebug>
-#include <QEventLoop>
+#include <QTestEventLoop>
 #include <QByteArray>
 #include <QString>
 #include <QHostAddress>
