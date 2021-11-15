@@ -1,4 +1,4 @@
-LANCELOT_DIR = $$PWD/../../auto/other/lancelot
+LANCELOT_DIR = $$PWD/../../baseline/painting
 CONFIG += cmdline moc
 TEMPLATE = app
 INCLUDEPATH += . $$LANCELOT_DIR

@@ -486,4 +486,4 @@ int main(int argc, char *argv[])
     return _realmain(argc, argv);
 }
 
-#include "tst_lancelot.moc"
+#include "tst_baseline_painting.moc"

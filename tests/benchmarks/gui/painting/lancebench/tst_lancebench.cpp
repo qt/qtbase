@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include "../../../../auto/other/lancelot/paintcommands.h"
+#include "paintcommands.h"
 
 #include <qtest.h>
 #include <QDir>

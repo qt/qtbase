@@ -6,8 +6,10 @@
 
 qt_internal_add_benchmark(tst_bench_lancebench
     SOURCES
-        ../../../../auto/other/lancelot/paintcommands.cpp ../../../../auto/other/lancelot/paintcommands.h
+        ../../../../baseline/painting/paintcommands.cpp ../../../../baseline/painting/paintcommands.h
         tst_lancebench.cpp
+    INCLUDE_DIRECTORIES
+        ../../../../baseline/painting
     PUBLIC_LIBRARIES
         Qt::Gui
         Qt::GuiPrivate
@@ -47,13 +49,13 @@ set(images_resource_files
     "images/zebra.png"
 )
 
-list(TRANSFORM images_resource_files PREPEND "../../../../auto/other/lancelot/")
+list(TRANSFORM images_resource_files PREPEND "../../../../baseline/painting/")
 
 qt_internal_add_resource(tst_bench_lancebench "images"
     PREFIX
         "/"
     BASE
-        "../../../../auto/other/lancelot"
+        "../../../../baseline/painting"
     FILES
         ${images_resource_files}
 )
@@ -61,7 +63,7 @@ qt_internal_add_resource(tst_bench_lancebench "images"
 
 #### Keys ignored in scope 1:.:.:lancebench.pro:<TRUE>:
 # TEMPLATE = "app"
-# TESTDATA = "../../../../auto/other/lancelot/scripts/*"
+# TESTDATA = "../../../../baseline/painting/scripts/*"
 
 ## Scopes:
 #####################################################################
