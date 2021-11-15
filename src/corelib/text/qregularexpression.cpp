@@ -1452,6 +1452,8 @@ QString QRegularExpression::pattern() const
 */
 void QRegularExpression::setPattern(const QString &pattern)
 {
+    if (d->pattern == pattern)
+        return;
     d.detach();
     d->isDirty = true;
     d->pattern = pattern;
@@ -1475,6 +1477,8 @@ QRegularExpression::PatternOptions QRegularExpression::patternOptions() const
 */
 void QRegularExpression::setPatternOptions(PatternOptions options)
 {
+    if (d->patternOptions == options)
+        return;
     d.detach();
     d->isDirty = true;
     d->patternOptions = options;
