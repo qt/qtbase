@@ -511,7 +511,11 @@ void QLibraryInfoPrivate::keyAndDefault(QLibraryInfo::LibraryPath loc, QString *
 #endif
         "Binaries", "bin",
         "Plugins", "plugins", // should be ${ArchData}/plugins
+
+        // TODO: Find a way to rename this to QmlImports
+        //       without breaking compatibility with old qt.conf files.
         "Qml2Imports", "qml", // should be ${ArchData}/qml
+
         "ArchData", ".",
         "Data", ".",
         "Translations", "translations", // should be ${Data}/translations
@@ -670,7 +674,7 @@ QStringList QLibraryInfo::platformPluginArguments(const QString &platformName)
     \value BinariesPath The path to installed Qt binaries (tools and applications).
     \value PluginsPath The path to installed Qt plugins.
     \value QmlImportsPath The path to installed QML extensions to import.
-    \value Qml2ImportsPath The path to installed QML extensions to import.
+    \value Qml2ImportsPath This value is deprecated. Use QmlImportsPath instead.
     \value ArchDataPath The path to general architecture-dependent Qt data.
     \value DataPath The path to general architecture-independent Qt data.
     \value TranslationsPath The path to translation information for Qt strings.
