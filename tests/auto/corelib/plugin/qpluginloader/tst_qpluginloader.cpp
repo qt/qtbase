@@ -341,22 +341,19 @@ void tst_QPluginLoader::loadMachO_data()
 
 #  ifdef Q_PROCESSOR_X86_64
     QTest::newRow("machtest/good.x86_64.dylib") << int(QMachOParser::QtMetaDataSection);
-    QTest::newRow("machtest/good.i386.dylib") << int(QMachOParser::NotSuitable);
+    QTest::newRow("machtest/good.arm64.dylib") << int(QMachOParser::NotSuitable);
     QTest::newRow("machtest/good.fat.no-x86_64.dylib") << int(QMachOParser::NotSuitable);
-    QTest::newRow("machtest/good.fat.no-i386.dylib") << int(QMachOParser::QtMetaDataSection);
-#  elif defined(Q_PROCESSOR_X86_32)
-    QTest::newRow("machtest/good.i386.dylib") << int(QMachOParser::QtMetaDataSection);
+    QTest::newRow("machtest/good.fat.no-arm64.dylib") << int(QMachOParser::QtMetaDataSection);
+#  elif defined(Q_PROCESSOR_ARM)
+    QTest::newRow("machtest/good.arm64.dylib") << int(QMachOParser::QtMetaDataSection);
     QTest::newRow("machtest/good.x86_64.dylib") << int(QMachOParser::NotSuitable);
-    QTest::newRow("machtest/good.fat.no-i386.dylib") << int(QMachOParser::NotSuitable);
+    QTest::newRow("machtest/good.fat.no-arm64.dylib") << int(QMachOParser::NotSuitable);
     QTest::newRow("machtest/good.fat.no-x86_64.dylib") << int(QMachOParser::QtMetaDataSection);
-#  endif
-#  ifndef Q_PROCESSOR_POWER_64
-    QTest::newRow("machtest/good.ppc64.dylib") << int(QMachOParser::NotSuitable);
 #  endif
 
     QTest::newRow("machtest/good.fat.all.dylib") << int(QMachOParser::QtMetaDataSection);
     QTest::newRow("machtest/good.fat.stub-x86_64.dylib") << int(QMachOParser::NotSuitable);
-    QTest::newRow("machtest/good.fat.stub-i386.dylib") << int(QMachOParser::NotSuitable);
+    QTest::newRow("machtest/good.fat.stub-arm64.dylib") << int(QMachOParser::NotSuitable);
 
     QDir d(QFINDTESTDATA("machtest"));
     QStringList badlist = d.entryList(QStringList() << "bad*.dylib");
