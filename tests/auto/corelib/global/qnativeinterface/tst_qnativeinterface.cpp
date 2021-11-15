@@ -29,6 +29,7 @@
 #include <QTest>
 
 #include <QtCore/qnativeinterface.h>
+#include <QtCore/private/qnativeinterface_p.h>
 
 class tst_QNativeInterface: public QObject
 {

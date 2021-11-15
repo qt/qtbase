@@ -39,6 +39,7 @@
 
 #include <QtCore/qcoreapplication_platform.h>
 
+#include <QtCore/private/qnativeinterface_p.h>
 #include <QtCore/private/qjnihelpers_p.h>
 #include <QtCore/qjniobject.h>
 #if QT_CONFIG(future) && !defined(QT_NO_QOBJECT)

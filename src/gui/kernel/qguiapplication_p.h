@@ -60,6 +60,7 @@
 #include <QtCore/private/qcoreapplication_p.h>
 
 #include <QtCore/qnativeinterface.h>
+#include <QtCore/private/qnativeinterface_p.h>
 #include <QtCore/private/qthread_p.h>
 
 #include <qpa/qwindowsysteminterface.h>
