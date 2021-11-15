@@ -32,5 +32,3 @@ qt_internal_extend_target(QODBCDriverPlugin CONDITION UNIX
     DEFINES
         UNICODE
 )
-
-qt_internal_force_macos_intel_arch(QODBCDriverPlugin)
