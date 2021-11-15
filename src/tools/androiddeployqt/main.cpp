@@ -135,6 +135,7 @@ struct Options
     bool build;
     bool auxMode;
     bool noRccBundleCleanup = false;
+    bool copyDependenciesOnly = false;
     QElapsedTimer timer;
 
     // External tools
@@ -563,6 +564,9 @@ Options parseOptions()
         } else if (argument.compare(QLatin1String("--no-rcc-bundle-cleanup"),
                                     Qt::CaseInsensitive) == 0) {
             options.noRccBundleCleanup = true;
+        } else if (argument.compare(QLatin1String("--copy-dependencies-only"),
+                                    Qt::CaseInsensitive) == 0) {
+            options.copyDependenciesOnly = true;
         }
     }
 
@@ -686,6 +690,10 @@ void printHelp()
                     "      running androiddeployqt. This option simplifies debugging of\n"
                     "      the resource bundle content, but it should not be used when deploying\n"
                     "      a project, since it litters the 'assets' directory.\n"
+                    "\n"
+                    "   --copy-dependencies-only: resolve application dependencies and stop\n"
+                    "      deploying process after all libraries and resources that the\n"
+                    "      application depends on have been copied.\n"
                     "\n"
                     "    --help: Displays this information.\n",
                     qPrintable(QCoreApplication::arguments().at(0))
@@ -2347,7 +2355,7 @@ bool copyQtFiles(Options *options)
     if (options->verbose) {
         switch (options->deploymentMechanism) {
         case Options::Bundled:
-            fprintf(stdout, "Copying %zd dependencies from Qt into package.\n", size_t(options->qtDependencies.size()));
+            fprintf(stdout, "Copying %zd dependencies from Qt into package.\n", size_t(options->qtDependencies[options->currentArchitecture].size()));
             break;
         };
     }
@@ -3163,7 +3171,7 @@ int main(int argc, char *argv[])
         options.setCurrentQtArchitecture(it.key(), it.value().qtInstallDirectory);
 
         // All architectures have a copy of the gradle files but only one set needs to be copied.
-        if (!androidTemplatetCopied && options.build && !options.auxMode) {
+        if (!androidTemplatetCopied && options.build && !options.auxMode && !options.copyDependenciesOnly) {
             cleanAndroidFiles(options);
             if (Q_UNLIKELY(options.timing))
                 fprintf(stdout, "[TIMING] %lld ns: Cleaned Android file\n", options.timer.nsecsElapsed());
@@ -3216,6 +3224,10 @@ int main(int argc, char *argv[])
 
         if (Q_UNLIKELY(options.timing))
             fprintf(stdout, "[TIMING] %lld ns: Bundled Qt libs\n", options.timer.nsecsElapsed());
+    }
+
+    if (options.copyDependenciesOnly) {
+        return 0;
     }
 
     if (!createRcc(options))

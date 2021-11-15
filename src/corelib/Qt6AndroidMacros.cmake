@@ -92,13 +92,14 @@ function(qt6_android_generate_deployment_settings target)
 
     set(abi_records "")
     get_target_property(qt_android_abis ${target} _qt_android_abis)
-    if(qt_android_abis)
-        foreach(abi IN LISTS qt_android_abis)
-            _qt_internal_get_android_abi_path(qt_abi_path ${abi})
-            file(TO_CMAKE_PATH "${qt_abi_path}" qt_android_install_dir_native)
-            list(APPEND abi_records "\"${abi}\": \"${qt_android_install_dir_native}\"")
-        endforeach()
+    if(NOT qt_android_abis)
+        set(qt_android_abis "")
     endif()
+    foreach(abi IN LISTS qt_android_abis)
+        _qt_internal_get_android_abi_path(qt_abi_path ${abi})
+        file(TO_CMAKE_PATH "${qt_abi_path}" qt_android_install_dir_native)
+        list(APPEND abi_records "\"${abi}\": \"${qt_android_install_dir_native}\"")
+    endforeach()
 
     # Required to build unit tests in developer build
     if(QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX)
@@ -336,14 +337,8 @@ function(qt6_android_add_apk_target target)
     set(dep_file_name "${target}.d")
     set(apk_final_file_path "${apk_final_dir}/${apk_file_name}")
     set(dep_file_path "${apk_final_dir}/${dep_file_name}")
-
-    # Temporary location of the library target file. If the library is built as an external project
-    # inside multi-abi build the QT_ANDROID_ABI_TARGET_PATH variable will point to the ABI related
-    # folder in the top-level build directory.
-    set(copy_target_path "${apk_final_dir}/libs/${CMAKE_ANDROID_ARCH_ABI}")
-    if(QT_IS_ANDROID_MULTI_ABI_EXTERNAL_PROJECT AND QT_ANDROID_ABI_TARGET_PATH)
-        set(copy_target_path "${QT_ANDROID_ABI_TARGET_PATH}")
-    endif()
+    set(target_file_copy_relative_path
+        "libs/${CMAKE_ANDROID_ARCH_ABI}/$<TARGET_FILE_NAME:${target}>")
 
     set(extra_deps "")
 
@@ -362,7 +357,7 @@ function(qt6_android_add_apk_target target)
         DEPENDS ${target} ${extra_deps}
         COMMAND ${CMAKE_COMMAND}
             -E copy_if_different $<TARGET_FILE:${target}>
-            "${copy_target_path}/$<TARGET_FILE_NAME:${target}>"
+            "${apk_final_dir}/$<TARGET_FILE_NAME:${target}>"
         COMMENT "Copying ${target} binary to apk folder"
     )
 
@@ -394,7 +389,7 @@ function(qt6_android_add_apk_target target)
         add_custom_command(OUTPUT "${apk_final_file_path}"
             COMMAND ${CMAKE_COMMAND}
                 -E copy "$<TARGET_FILE:${target}>"
-                "${apk_final_dir}/libs/${CMAKE_ANDROID_ARCH_ABI}/$<TARGET_FILE_NAME:${target}>"
+                "${apk_final_dir}/${target_file_copy_relative_path}"
             COMMAND "${deployment_tool}"
                 --input "${deployment_file}"
                 --output "${apk_final_dir}"
@@ -435,6 +430,34 @@ function(qt6_android_add_apk_target target)
             ${extra_args}
         COMMENT "Creating AAB for ${target}"
     )
+
+    if(QT_IS_ANDROID_MULTI_ABI_EXTERNAL_PROJECT)
+        # When building per-ABI external projects we only need to copy ABI-specific libraries and
+        # resources to the "main" ABI android build folder.
+
+        if("${QT_INTERNAL_ANDROID_MULTI_ABI_BINARY_DIR}" STREQUAL "")
+            message(FATAL_ERROR "QT_INTERNAL_ANDROID_MULTI_ABI_BINARY_DIR is not set when building"
+                " ABI specific external project. This should not happen and might mean an issue"
+                " in Qt. Please report a bug with CMake traces attached.")
+        endif()
+        # Assume that external project mirrors build structure of the top-level ABI project and
+        # replace the build root when specifying the output directory of androiddeployqt.
+        file(RELATIVE_PATH androiddeployqt_output_path "${CMAKE_BINARY_DIR}" "${apk_final_dir}")
+        set(androiddeployqt_output_path
+            "${QT_INTERNAL_ANDROID_MULTI_ABI_BINARY_DIR}/${androiddeployqt_output_path}")
+        add_custom_target(qt_internal_${target}_copy_apk_dependencies
+            DEPENDS ${target} ${extra_deps}
+            COMMAND ${CMAKE_COMMAND}
+                -E copy_if_different $<TARGET_FILE:${target}>
+                "${androiddeployqt_output_path}/${target_file_copy_relative_path}"
+            COMMAND  ${deployment_tool}
+                --input ${deployment_file}
+                --output ${androiddeployqt_output_path}
+                --copy-dependencies-only
+                ${extra_args}
+            COMMENT "Resolving ${CMAKE_ANDROID_ARCH_ABI} dependencies for the ${target} APK"
+        )
+    endif()
 
     set_property(GLOBAL APPEND PROPERTY _qt_apk_targets ${target})
     _qt_internal_collect_target_apk_dependencies_defer(${target})
