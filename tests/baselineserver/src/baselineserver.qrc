@@ -1,5 +1,0 @@
-<RCC>
-    <qresource prefix="/">
-        <file>templates/view.html</file>
-    </qresource>
-</RCC>

@@ -11,7 +11,6 @@ if(TARGET Qt::Widgets)
     # add_subdirectory(windowsmobile) <- does not exist # special case
 endif()
 if(TARGET Qt::Network AND TARGET Qt::Widgets)
-    add_subdirectory(lancelot)
     add_subdirectory(qnetworkaccessmanager_and_qprogressdialog)
 endif()
 if(MACOS AND TARGET Qt::Gui AND TARGET Qt::Widgets)

@@ -1,7 +1,5 @@
-# Generated from lancelot.pro.
-
 #####################################################################
-## tst_lancelot Test:
+## tst_baseline_painting Test:
 #####################################################################
 
 # Collect test data
@@ -10,17 +8,14 @@ file(GLOB_RECURSE test_data_glob
     scripts/*)
 list(APPEND test_data ${test_data_glob})
 
-qt_internal_add_test(tst_lancelot
+qt_internal_add_test(tst_baseline_painting
     SOURCES
-        ../../../baselineserver/shared/baselineprotocol.cpp ../../../baselineserver/shared/baselineprotocol.h
-        ../../../baselineserver/shared/lookup3.cpp
-        ../../../baselineserver/shared/qbaselinetest.cpp ../../../baselineserver/shared/qbaselinetest.h
+        ../shared/baselineprotocol.cpp ../shared/baselineprotocol.h ../shared/lookup3.cpp
+        ../shared/qbaselinetest.cpp ../shared/qbaselinetest.h
         paintcommands.cpp paintcommands.h
-        tst_lancelot.cpp
-    DEFINES
-        QMAKESPEC=\\\"\\\"
+        tst_baseline_painting.cpp
     INCLUDE_DIRECTORIES
-        ../../../baselineserver/shared
+        ../shared
     PUBLIC_LIBRARIES
         Qt::Gui
         Qt::GuiPrivate
@@ -61,7 +56,7 @@ set(images_resource_files
     "images/zebra.png"
 )
 
-qt_internal_add_resource(tst_lancelot "images"
+qt_internal_add_resource(tst_baseline_painting "images"
     PREFIX
         "/"
     FILES
@@ -72,13 +67,7 @@ qt_internal_add_resource(tst_lancelot "images"
 ## Scopes:
 #####################################################################
 
-qt_internal_extend_target(tst_lancelot CONDITION QT_FEATURE_opengl
+qt_internal_extend_target(tst_baseline_painting CONDITION QT_FEATURE_opengl
     PUBLIC_LIBRARIES
         Qt::OpenGL
 )
-
-#### Keys ignored in scope 4:.:../../../baselineserver/shared:../../../baselineserver/shared/qbaselinetest.pri:WIN32:
-# MKSPEC = "$$replace(QMAKESPEC, \\\\, /)"
-
-#### Keys ignored in scope 5:.:../../../baselineserver/shared:../../../baselineserver/shared/qbaselinetest.pri:else:
-# MKSPEC = "$$QMAKESPEC"

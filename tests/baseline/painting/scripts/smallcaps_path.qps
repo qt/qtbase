@@ -1,0 +1,9 @@
+# Version: 1
+
+setPen black 1
+setBrush 7f7fff
+
+setFont "times" 50 Light false Default false false false SmallCaps
+path_addText text 0 50 "Hello Qt"
+
+drawPath text

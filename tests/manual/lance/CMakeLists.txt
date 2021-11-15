@@ -6,13 +6,13 @@
 
 qt_internal_add_manual_test(lance
     SOURCES
-        ../../auto/other/lancelot/paintcommands.cpp ../../auto/other/lancelot/paintcommands.h
+        ../../baseline/painting/paintcommands.cpp ../../baseline/painting/paintcommands.h
         interactivewidget.cpp interactivewidget.h
         main.cpp
         widgets.h
     INCLUDE_DIRECTORIES
         .
-        ../../auto/other/lancelot
+        ../../baseline/painting
     PUBLIC_LIBRARIES
         Qt::CorePrivate
         Qt::Gui
@@ -35,41 +35,41 @@ qt_internal_add_resource(lance "icons"
         ${icons_resource_files}
 )
 set(images_resource_files
-    "../../auto/other/lancelot/images/alpha.png"
-    "../../auto/other/lancelot/images/alpha2x2.png"
-    "../../auto/other/lancelot/images/bitmap.png"
-    "../../auto/other/lancelot/images/border.png"
-    "../../auto/other/lancelot/images/borderimage.png"
-    "../../auto/other/lancelot/images/dome_argb32.png"
-    "../../auto/other/lancelot/images/dome_indexed.png"
-    "../../auto/other/lancelot/images/dome_indexed_mask.png"
-    "../../auto/other/lancelot/images/dome_mono.png"
-    "../../auto/other/lancelot/images/dome_mono_128.png"
-    "../../auto/other/lancelot/images/dome_mono_palette.png"
-    "../../auto/other/lancelot/images/dome_rgb32.png"
-    "../../auto/other/lancelot/images/dot.png"
-    "../../auto/other/lancelot/images/face.png"
-    "../../auto/other/lancelot/images/gam030.png"
-    "../../auto/other/lancelot/images/gam045.png"
-    "../../auto/other/lancelot/images/gam056.png"
-    "../../auto/other/lancelot/images/gam100.png"
-    "../../auto/other/lancelot/images/gam200.png"
-    "../../auto/other/lancelot/images/image.png"
-    "../../auto/other/lancelot/images/mask.png"
-    "../../auto/other/lancelot/images/mask_100.png"
-    "../../auto/other/lancelot/images/masked.png"
-    "../../auto/other/lancelot/images/sign.png"
-    "../../auto/other/lancelot/images/solid.png"
-    "../../auto/other/lancelot/images/solid2x2.png"
-    "../../auto/other/lancelot/images/struct-image-01.jpg"
-    "../../auto/other/lancelot/images/struct-image-01.png"
-    "../../auto/other/lancelot/images/zebra.png"
+    "../../baseline/painting/images/alpha.png"
+    "../../baseline/painting/images/alpha2x2.png"
+    "../../baseline/painting/images/bitmap.png"
+    "../../baseline/painting/images/border.png"
+    "../../baseline/painting/images/borderimage.png"
+    "../../baseline/painting/images/dome_argb32.png"
+    "../../baseline/painting/images/dome_indexed.png"
+    "../../baseline/painting/images/dome_indexed_mask.png"
+    "../../baseline/painting/images/dome_mono.png"
+    "../../baseline/painting/images/dome_mono_128.png"
+    "../../baseline/painting/images/dome_mono_palette.png"
+    "../../baseline/painting/images/dome_rgb32.png"
+    "../../baseline/painting/images/dot.png"
+    "../../baseline/painting/images/face.png"
+    "../../baseline/painting/images/gam030.png"
+    "../../baseline/painting/images/gam045.png"
+    "../../baseline/painting/images/gam056.png"
+    "../../baseline/painting/images/gam100.png"
+    "../../baseline/painting/images/gam200.png"
+    "../../baseline/painting/images/image.png"
+    "../../baseline/painting/images/mask.png"
+    "../../baseline/painting/images/mask_100.png"
+    "../../baseline/painting/images/masked.png"
+    "../../baseline/painting/images/sign.png"
+    "../../baseline/painting/images/solid.png"
+    "../../baseline/painting/images/solid2x2.png"
+    "../../baseline/painting/images/struct-image-01.jpg"
+    "../../baseline/painting/images/struct-image-01.png"
+    "../../baseline/painting/images/zebra.png"
 )
 qt_internal_add_resource(lance "images"
     PREFIX
         "/"
     BASE
-        "../../auto/other/lancelot"
+        "../../baseline/painting"
     FILES
         ${images_resource_files}
 )

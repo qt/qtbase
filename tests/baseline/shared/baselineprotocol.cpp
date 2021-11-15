@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -84,9 +84,7 @@ PlatformInfo PlatformInfo::localHostInfo()
     pi.insert(PI_HostName, QHostInfo::localHostName());
     pi.insert(PI_QtVersion, QLS(qVersion()));
     pi.insert(PI_QMakeSpec, QString(QLS(QMAKESPEC)).remove(QRegularExpression(QLS("^.*mkspecs/"))));
-#if QT_VERSION >= 0x050000
     pi.insert(PI_QtBuildMode, QLibraryInfo::isDebugBuild() ? QLS("QtDebug") : QLS("QtRelease"));
-#endif
 #if defined(Q_OS_LINUX) && QT_CONFIG(process)
     pi.insert(PI_OSName, QLS("Linux"));
 #elif defined(Q_OS_WIN)
