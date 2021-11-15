@@ -35,5 +35,3 @@ if(MINGW)
             DISABLE_PRECOMPILE_HEADERS ON
     )
 endif()
-
-qt_internal_force_macos_intel_arch(QPSQLDriverPlugin)
