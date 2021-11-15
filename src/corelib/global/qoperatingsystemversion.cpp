@@ -156,7 +156,7 @@ QOperatingSystemVersion QOperatingSystemVersion::current()
 }
 
 #if !defined(Q_OS_DARWIN) && !defined(Q_OS_WIN)
-QOperatingSystemVersionBase QOperatingSystemVersionBase::current()
+QOperatingSystemVersionBase QOperatingSystemVersionBase::current_impl()
 {
     QOperatingSystemVersionBase version;
     version.m_os = currentType();
@@ -227,6 +227,12 @@ QOperatingSystemVersionBase QOperatingSystemVersionBase::current()
     version.m_micro = -1;
 #endif
     return version;
+}
+
+QOperatingSystemVersionBase QOperatingSystemVersionBase::current()
+{
+    static const QOperatingSystemVersionBase v = current_impl();
+    return v;
 }
 #endif
 

@@ -127,6 +127,7 @@ protected:
 
     QOperatingSystemVersionBase() = default;
 private:
+    static QOperatingSystemVersionBase current_impl();
 
 
     OSType m_os;
