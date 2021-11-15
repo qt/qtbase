@@ -157,7 +157,8 @@ static QVariant macDateToString(QDate date, bool short_format)
         = CFDateFormatterCreate(kCFAllocatorDefault,
                                 mylocale, style,
                                 kCFDateFormatterNoStyle);
-    return QString::fromCFString(CFDateFormatterCreateStringWithDate(0, myFormatter, myDate));
+    QCFType<CFStringRef> text = CFDateFormatterCreateStringWithDate(0, myFormatter, myDate);
+    return QString::fromCFString(text);
 }
 
 static QVariant macTimeToString(QTime time, bool short_format)
@@ -169,7 +170,8 @@ static QVariant macTimeToString(QTime time, bool short_format)
                                                                     mylocale,
                                                                     kCFDateFormatterNoStyle,
                                                                     style);
-    return QString::fromCFString(CFDateFormatterCreateStringWithDate(0, myFormatter, myDate));
+    QCFType<CFStringRef> text = CFDateFormatterCreateStringWithDate(0, myFormatter, myDate);
+    return QString::fromCFString(text);
 }
 
 // Mac uses the Unicode CLDR format codes
