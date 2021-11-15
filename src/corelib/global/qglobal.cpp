@@ -52,6 +52,7 @@
 #endif // Q_OS_WIN || Q_OS_CYGWIN
 #include <private/qlocale_tools_p.h>
 #include "qnativeinterface.h"
+#include "qnativeinterface_p.h"
 
 #include <qmutex.h>
 #include <QtCore/private/qlocking_p.h>
@@ -4923,8 +4924,8 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
     declares __CFMutableString and CFMutableStringRef.
 */
 
-namespace QNativeInterface::Private {
-    Q_LOGGING_CATEGORY(lcNativeInterface, "qt.nativeinterface")
+namespace QtPrivate {
+Q_LOGGING_CATEGORY(lcNativeInterface, "qt.nativeinterface")
 }
 
 QT_END_NAMESPACE

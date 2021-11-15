@@ -41,7 +41,6 @@
 #define QNATIVEINTERFACE_H
 
 #include <QtCore/qglobal.h>
-#include <QtCore/qloggingcategory.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -159,9 +158,6 @@ namespace QNativeInterface::Private {
     // of incompatible interface types read better.
     template <typename I>
     struct NativeInterface : TypeInfo<I> {};
-
-    Q_CORE_EXPORT Q_DECLARE_LOGGING_CATEGORY(lcNativeInterface)
-
 } // QNativeInterface::Private
 
 // Declares an accessor for the native interface
@@ -182,35 +178,6 @@ namespace QNativeInterface::Private {
         void *resolveInterface(const char *name, int revision) const; \
     public:
 #endif
-
-// Provides a definition for the interface destructor
-#define QT_DEFINE_NATIVE_INTERFACE_2(Namespace, InterfaceClass) \
-    QT_PREPEND_NAMESPACE(Namespace)::InterfaceClass::~InterfaceClass() = default
-
-#define QT_DEFINE_NATIVE_INTERFACE(...) QT_OVERLOADED_MACRO(QT_DEFINE_NATIVE_INTERFACE, QNativeInterface, __VA_ARGS__)
-#define QT_DEFINE_PRIVATE_NATIVE_INTERFACE(...) QT_OVERLOADED_MACRO(QT_DEFINE_NATIVE_INTERFACE, QNativeInterface::Private, __VA_ARGS__)
-
-#define QT_NATIVE_INTERFACE_RETURN_IF(NativeInterface, baseType) \
-    { \
-        using QNativeInterface::Private::lcNativeInterface; \
-        using QNativeInterface::Private::TypeInfo; \
-        qCDebug(lcNativeInterface, "Comparing requested interface name %s with available %s", \
-                name, TypeInfo<NativeInterface>::name()); \
-        if (qstrcmp(name, TypeInfo<NativeInterface>::name()) == 0) { \
-            qCDebug(lcNativeInterface, "Match for interface %s. Comparing revisions (requested %d / available %d)", \
-                name, revision, TypeInfo<NativeInterface>::revision()); \
-            if (revision == TypeInfo<NativeInterface>::revision()) { \
-                qCDebug(lcNativeInterface) << "Full match. Returning dynamic cast of" << baseType; \
-                return dynamic_cast<NativeInterface*>(baseType); \
-            } else { \
-                qCWarning(lcNativeInterface, "Native interface revision mismatch (requested %d / available %d) for interface %s", \
-                    revision, TypeInfo<NativeInterface>::revision(), name); \
-                return nullptr; \
-            } \
-        } else { \
-            qCDebug(lcNativeInterface, "No match for requested interface name %s", name); \
-        } \
-    }
 
 QT_END_NAMESPACE
 
