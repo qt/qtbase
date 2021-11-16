@@ -57,3 +57,6 @@ instructions:
         - condition: property
           property: target.os
           equals_value: Linux
+        - condition: property
+          property: features
+          contains_value: EnableBicTests
