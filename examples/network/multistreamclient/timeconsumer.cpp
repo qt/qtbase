@@ -82,7 +82,7 @@ void TimeConsumer::readDatagram(const QByteArray &ba)
 void TimeConsumer::timerTick()
 {
     QByteArray buf;
-    QDataStream ds(&buf, QIODevice::WriteOnly);
+    QDataStream ds(&buf, QIODeviceBase::WriteOnly);
 
     ds << lastTime;
     emit writeDatagram(buf);
