@@ -490,8 +490,7 @@ static QString getPrefix()
 #endif
 }
 
-void QLibraryInfoPrivate::keyAndDefault(QLibraryInfo::LibraryPath loc, QString *key,
-                                              QString *value)
+QLibraryInfoPrivate::LocationInfo QLibraryInfoPrivate::locationInfo(QLibraryInfo::LibraryPath loc)
 {
     /*
      * To add a new entry in QLibraryInfo::LibraryPath, add it to the enum
@@ -512,9 +511,7 @@ void QLibraryInfoPrivate::keyAndDefault(QLibraryInfo::LibraryPath loc, QString *
         "Binaries", "bin",
         "Plugins", "plugins", // should be ${ArchData}/plugins
 
-        // TODO: Find a way to rename this to QmlImports
-        //       without breaking compatibility with old qt.conf files.
-        "Qml2Imports", "qml", // should be ${ArchData}/qml
+        "QmlImports", "qml", // should be ${ArchData}/qml
 
         "ArchData", ".",
         "Data", ".",
@@ -526,18 +523,21 @@ void QLibraryInfoPrivate::keyAndDefault(QLibraryInfo::LibraryPath loc, QString *
     static_assert(dot.size() == 1);
     static_assert(dot[0] == '.');
 
+    LocationInfo result;
+
     if (int(loc) < qtConfEntries.count()) {
-        *key = QLatin1String(qtConfEntries.viewAt(loc * 2));
-        *value = QLatin1String(qtConfEntries.viewAt(loc * 2 + 1));
+        result.key = QLatin1String(qtConfEntries.viewAt(loc * 2));
+        result.defaultValue = QLatin1String(qtConfEntries.viewAt(loc * 2 + 1));
+        if (result.key == u"QmlImports")
+            result.fallbackKey = u"Qml2Imports"_qs;
 #ifndef Q_OS_WIN // On Windows we use the registry
     } else if (loc == QLibraryInfo::SettingsPath) {
-        *key = QLatin1String("Settings");
-        *value = QLatin1String(dot);
+        result.key = QLatin1String("Settings");
+        result.defaultValue = QLatin1String(dot);
 #endif
-    } else {
-        key->clear();
-        value->clear();
     }
+
+    return result;
 }
 
 /*! \fn QString QLibraryInfo::location(LibraryLocation loc)
@@ -559,15 +559,21 @@ QString QLibraryInfo::path(LibraryPath p)
     if (havePaths()) {
         fromConf = true;
 
-        QString key;
-        QString defaultValue;
-        QLibraryInfoPrivate::keyAndDefault(loc, &key, &defaultValue);
-        if (!key.isNull()) {
+        auto li = QLibraryInfoPrivate::locationInfo(loc);
+        if (!li.key.isNull()) {
             QSettings *config = QLibraryInfoPrivate::configuration();
             Q_ASSERT(config != nullptr);
             config->beginGroup(QLatin1String("Paths"));
 
-            ret = config->value(key, defaultValue).toString();
+            if (li.fallbackKey.isNull()) {
+                ret = config->value(li.key, li.defaultValue).toString();
+            } else {
+                QVariant v = config->value(li.key);
+                if (!v.isValid())
+                    v = config->value(li.fallbackKey, li.defaultValue);
+                ret = v.toString();
+            }
+
             int startIndex = 0;
             forever {
                 startIndex = ret.indexOf(QLatin1Char('$'), startIndex);

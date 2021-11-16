@@ -148,21 +148,14 @@ static QLibraryInfo::LibraryPath hostToTargetPathEnum(int loc)
     Q_UNREACHABLE();
 }
 
-struct LocationInfo
+static QLibraryInfoPrivate::LocationInfo defaultLocationInfo(int loc)
 {
-    QString key;
-    QString defaultValue;
-};
-
-static LocationInfo defaultLocationInfo(int loc)
-{
-    LocationInfo result;
+    QLibraryInfoPrivate::LocationInfo result;
 
     if (loc < QMakeLibraryInfo::FirstHostPath) {
-        QLibraryInfoPrivate::keyAndDefault(static_cast<QLibraryInfo::LibraryPath>(loc),
-                                   &result.key, &result.defaultValue);
+        result = QLibraryInfoPrivate::locationInfo(static_cast<QLibraryInfo::LibraryPath>(loc));
     } else if (loc <= QMakeLibraryInfo::LastHostPath) {
-        QLibraryInfoPrivate::keyAndDefault(hostToTargetPathEnum(loc), &result.key, &result.defaultValue);
+        result = QLibraryInfoPrivate::locationInfo(hostToTargetPathEnum(loc));
         result.key.prepend(QStringLiteral("Host"));
     } else if (loc == QMakeLibraryInfo::SysrootPath) {
         result.key = QStringLiteral("Sysroot");
@@ -219,7 +212,7 @@ QString QMakeLibraryInfo::rawLocation(int loc, QMakeLibraryInfo::PathGroup group
         || (group = orig_group, false)) {
         fromConf = true;
 
-        LocationInfo locinfo = defaultLocationInfo(loc);
+        QLibraryInfoPrivate::LocationInfo locinfo = defaultLocationInfo(loc);
         if (!locinfo.key.isNull()) {
             QSettings *config = QLibraryInfoPrivate::configuration();
             Q_ASSERT(config != nullptr);
@@ -229,7 +222,15 @@ QString QMakeLibraryInfo::rawLocation(int loc, QMakeLibraryInfo::PathGroup group
                                                      : group == EffectivePaths ? "EffectivePaths"
                                                                                : "Paths"));
 
-            ret = config->value(locinfo.key).toString();
+            if (locinfo.fallbackKey.isNull()) {
+                ret = config->value(locinfo.key, locinfo.defaultValue).toString();
+            } else {
+                QVariant v = config->value(locinfo.key);
+                if (!v.isValid())
+                    v = config->value(locinfo.fallbackKey, locinfo.defaultValue);
+                ret = v.toString();
+            }
+
             if (ret.isEmpty()) {
                 if (loc == HostPrefixPath || loc == TargetSpecPath || loc == HostSpecPath
                            || loc == SysrootifyPrefixPath || loc == QLibraryInfo::PrefixPath) {
