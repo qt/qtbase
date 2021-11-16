@@ -873,7 +873,7 @@ bool QFileSystemEngine::fillPermissions(const QFileSystemEntry &entry, QFileSyst
                     if (access_mask & WriteMask)
                         data.entryFlags |= QFileSystemMetaData::OtherWritePermission;
                     if (access_mask & ExecMask)
-                        data.entryFlags |= QFileSystemMetaData::OwnerExecutePermission;
+                        data.entryFlags |= QFileSystemMetaData::OtherExecutePermission;
                 }
                 LocalFree(pSD);
             }
