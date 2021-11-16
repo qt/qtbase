@@ -494,6 +494,7 @@ qt_internal_extend_target(Core CONDITION WIN32
     # DEFINES # special case: remove
     LIBRARIES
         advapi32
+        authz
         kernel32
         netapi32
         ole32

@@ -144,9 +144,8 @@ typedef struct _REPARSE_DATA_BUFFER {
 
 #if QT_CONFIG(fslibs)
 #include <aclapi.h>
+#include <authz.h>
 #include <userenv.h>
-static TRUSTEE currentUserTrustee;
-static TRUSTEE worldTrustee;
 static PSID currentUserSID = nullptr;
 static PSID worldSID = nullptr;
 static HANDLE currentUserImpersonatedToken = nullptr;
@@ -197,8 +196,7 @@ GlobalSid::GlobalSid()
                 DWORD sidLen = ::GetLengthSid(tokenSid);
                 currentUserSID = reinterpret_cast<PSID>(malloc(sidLen));
                 Q_CHECK_PTR(currentUserSID);
-                if (::CopySid(sidLen, currentUserSID, tokenSid))
-                    BuildTrusteeWithSid(&currentUserTrustee, currentUserSID);
+                ::CopySid(sidLen, currentUserSID, tokenSid);
             }
             free(tokenBuffer);
         }
@@ -213,17 +211,154 @@ GlobalSid::GlobalSid()
         ::CloseHandle(token);
     }
 
-    {
-        // Create TRUSTEE for Everyone (World)
-        SID_IDENTIFIER_AUTHORITY worldAuth = { SECURITY_WORLD_SID_AUTHORITY };
-        if (AllocateAndInitializeSid(&worldAuth, 1, SECURITY_WORLD_RID, 0, 0, 0, 0, 0, 0, 0,
-                                     &worldSID)) {
-            BuildTrusteeWithSid(&worldTrustee, worldSID);
-        }
-    }
+    // Create SID for Everyone (World)
+    SID_IDENTIFIER_AUTHORITY worldAuth = { SECURITY_WORLD_SID_AUTHORITY };
+    AllocateAndInitializeSid(&worldAuth, 1, SECURITY_WORLD_RID, 0, 0, 0, 0, 0, 0, 0, &worldSID);
 }
 
 Q_GLOBAL_STATIC(GlobalSid, initGlobalSid)
+
+/*!
+    \class QAuthzResourceManager
+    \internal
+
+    RAII wrapper around Windows Authz resource manager.
+*/
+class QAuthzResourceManager
+{
+public:
+    QAuthzResourceManager();
+    ~QAuthzResourceManager();
+
+    bool isValid() const { return resourceManager != nullptr; }
+
+private:
+    friend class QAuthzClientContext;
+    Q_DISABLE_COPY_MOVE(QAuthzResourceManager)
+
+    AUTHZ_RESOURCE_MANAGER_HANDLE resourceManager;
+};
+
+/*!
+    \class QAuthzClientContext
+    \internal
+
+    RAII wrapper around Windows Authz client context.
+*/
+class QAuthzClientContext
+{
+public:
+    // Tag to differentiate SID and TOKEN constructors. Those two types are pointers to void.
+    struct TokenTag
+    {
+    };
+
+    QAuthzClientContext(const QAuthzResourceManager &rm, PSID pSID);
+    QAuthzClientContext(const QAuthzResourceManager &rm, HANDLE tokenHandle, TokenTag);
+
+    ~QAuthzClientContext();
+
+    bool isValid() const { return context != nullptr; }
+
+    static constexpr ACCESS_MASK InvalidAccess = ~ACCESS_MASK(0);
+
+    ACCESS_MASK accessMask(PSECURITY_DESCRIPTOR pSD) const;
+
+private:
+    Q_DISABLE_COPY_MOVE(QAuthzClientContext)
+    AUTHZ_CLIENT_CONTEXT_HANDLE context = nullptr;
+};
+
+QAuthzResourceManager::QAuthzResourceManager()
+{
+    if (!AuthzInitializeResourceManager(AUTHZ_RM_FLAG_NO_AUDIT, nullptr, nullptr, nullptr, nullptr,
+                                        &resourceManager)) {
+        resourceManager = nullptr;
+    }
+}
+
+QAuthzResourceManager::~QAuthzResourceManager()
+{
+    if (resourceManager)
+        AuthzFreeResourceManager(resourceManager);
+}
+
+/*!
+    \internal
+
+    Create an Authz client context from a security identifier.
+
+    The created context will not include any group information associated with \a pSID.
+*/
+QAuthzClientContext::QAuthzClientContext(const QAuthzResourceManager &rm, PSID pSID)
+{
+    if (!rm.isValid())
+        return;
+
+    LUID unusedId = {};
+
+    if (!AuthzInitializeContextFromSid(AUTHZ_SKIP_TOKEN_GROUPS, pSID, rm.resourceManager, nullptr,
+                                       unusedId, nullptr, &context)) {
+        context = nullptr;
+    }
+}
+
+/*!
+    \internal
+
+    Create an Authz client context from a token handle.
+*/
+QAuthzClientContext::QAuthzClientContext(const QAuthzResourceManager &rm, HANDLE tokenHandle,
+                                         TokenTag)
+{
+    if (!rm.isValid())
+        return;
+
+    LUID unusedId = {};
+
+    if (!AuthzInitializeContextFromToken(0, tokenHandle, rm.resourceManager, nullptr, unusedId,
+                                         nullptr, &context)) {
+        context = nullptr;
+    }
+}
+
+QAuthzClientContext::~QAuthzClientContext()
+{
+    if (context)
+        AuthzFreeContext(context);
+}
+
+/*!
+    \internal
+
+    Returns permissions that are granted to this client by \a pSD.
+
+    Returns \c InvalidAccess in case of an error.
+*/
+ACCESS_MASK QAuthzClientContext::accessMask(PSECURITY_DESCRIPTOR pSD) const
+{
+    if (!isValid())
+        return InvalidAccess;
+
+    AUTHZ_ACCESS_REQUEST accessRequest = {};
+    AUTHZ_ACCESS_REPLY accessReply = {};
+    ACCESS_MASK accessMask = 0;
+    DWORD error = 0;
+
+    accessRequest.DesiredAccess = MAXIMUM_ALLOWED;
+
+    accessReply.ResultListLength = 1;
+    accessReply.GrantedAccessMask = &accessMask;
+    accessReply.Error = &error;
+
+    if (!AuthzAccessCheck(0, context, &accessRequest, nullptr, pSD, nullptr, 0, &accessReply,
+                          nullptr)
+        || error != 0) {
+        return InvalidAccess;
+    }
+
+    return accessMask;
+}
 
 QT_END_NAMESPACE
 
@@ -795,116 +930,78 @@ bool QFileSystemEngine::fillPermissions(const QFileSystemEntry &entry, QFileSyst
 #if QT_CONFIG(fslibs)
     if (qt_ntfs_permission_lookup > 0) {
         initGlobalSid();
-        {
-            enum { ReadMask = 0x00000001, WriteMask = 0x00000002, ExecMask = 0x00000020 };
 
-            QString fname = entry.nativeFilePath();
-            PSID pOwner = nullptr;
-            PSID pGroup = nullptr;
-            PACL pDacl;
-            PSECURITY_DESCRIPTOR pSD;
-            DWORD res = GetNamedSecurityInfo(reinterpret_cast<const wchar_t *>(fname.utf16()),
-                                             SE_FILE_OBJECT,
-                                             OWNER_SECURITY_INFORMATION | GROUP_SECURITY_INFORMATION
-                                                     | DACL_SECURITY_INFORMATION,
-                                             &pOwner, &pGroup, &pDacl, nullptr, &pSD);
-            if (res == ERROR_SUCCESS) {
-                ACCESS_MASK access_mask;
-                TRUSTEE trustee;
-                if (what & QFileSystemMetaData::UserPermissions) { // user
-                    // Using AccessCheck because GetEffectiveRightsFromAcl doesn't account
-                    // for elevation
-                    if (currentUserImpersonatedToken) {
-                        GENERIC_MAPPING mapping = { FILE_GENERIC_READ, FILE_GENERIC_WRITE,
-                                                    FILE_GENERIC_EXECUTE, FILE_ALL_ACCESS };
-                        PRIVILEGE_SET privileges;
-                        DWORD grantedAccess;
-                        BOOL result;
+        QString fname = entry.nativeFilePath();
+        PSID pOwner;
+        PSID pGroup;
+        PACL pDacl;
+        PSECURITY_DESCRIPTOR pSD;
 
-                        data.knownFlagsMask |= QFileSystemMetaData::UserPermissions;
-                        DWORD genericAccessRights = GENERIC_READ;
-                        ::MapGenericMask(&genericAccessRights, &mapping);
+        // pDacl is unused directly by the code below, but it is still needed here because
+        // access checks below return incorrect results unless DACL_SECURITY_INFORMATION is
+        // passed to this call.
+        DWORD res = GetNamedSecurityInfo(
+                reinterpret_cast<const wchar_t *>(fname.utf16()), SE_FILE_OBJECT,
+                OWNER_SECURITY_INFORMATION | GROUP_SECURITY_INFORMATION | DACL_SECURITY_INFORMATION,
+                &pOwner, &pGroup, &pDacl, nullptr, &pSD);
+        if (res == ERROR_SUCCESS) {
+            QAuthzResourceManager rm;
 
-                        DWORD privilegesLength = sizeof(privileges);
-                        if (::AccessCheck(pSD, currentUserImpersonatedToken, genericAccessRights,
-                                          &mapping, &privileges, &privilegesLength, &grantedAccess,
-                                          &result)
-                            && result) {
-                            data.entryFlags |= QFileSystemMetaData::UserReadPermission;
-                        }
+            auto addPermissions = [&data](ACCESS_MASK accessMask,
+                                          QFileSystemMetaData::MetaDataFlag readFlags,
+                                          QFileSystemMetaData::MetaDataFlag writeFlags,
+                                          QFileSystemMetaData::MetaDataFlag executeFlags) {
+                // Check for generic permissions and file-specific bits that most closely
+                // represent POSIX permissions.
 
-                        privilegesLength = sizeof(privileges);
-                        genericAccessRights = GENERIC_WRITE;
-                        ::MapGenericMask(&genericAccessRights, &mapping);
-                        if (::AccessCheck(pSD, currentUserImpersonatedToken, genericAccessRights,
-                                          &mapping, &privileges, &privilegesLength, &grantedAccess,
-                                          &result)
-                            && result) {
-                            data.entryFlags |= QFileSystemMetaData::UserWritePermission;
-                        }
+                // Contants like FILE_GENERIC_{READ,WRITE,EXECUTE} cannot be used
+                // here because they contain permission bits shared between all of them.
+                if (accessMask & (GENERIC_READ | FILE_READ_DATA))
+                    data.entryFlags |= readFlags;
+                if (accessMask & (GENERIC_WRITE | FILE_WRITE_DATA))
+                    data.entryFlags |= writeFlags;
+                if (accessMask & (GENERIC_EXECUTE | FILE_EXECUTE))
+                    data.entryFlags |= executeFlags;
+            };
 
-                        privilegesLength = sizeof(privileges);
-                        genericAccessRights = GENERIC_EXECUTE;
-                        ::MapGenericMask(&genericAccessRights, &mapping);
-                        if (::AccessCheck(pSD, currentUserImpersonatedToken, genericAccessRights,
-                                          &mapping, &privileges, &privilegesLength, &grantedAccess,
-                                          &result)
-                            && result) {
-                            data.entryFlags |= QFileSystemMetaData::UserExecutePermission;
-                        }
-                    } else { // fallback to GetEffectiveRightsFromAcl
-                        data.knownFlagsMask |= QFileSystemMetaData::UserPermissions;
-                        if (GetEffectiveRightsFromAcl(pDacl, &currentUserTrustee, &access_mask)
-                            != ERROR_SUCCESS) {
-                            access_mask = ACCESS_MASK(-1);
-                        }
-                        if (access_mask & ReadMask)
-                            data.entryFlags |= QFileSystemMetaData::UserReadPermission;
-                        if (access_mask & WriteMask)
-                            data.entryFlags|= QFileSystemMetaData::UserWritePermission;
-                        if (access_mask & ExecMask)
-                            data.entryFlags|= QFileSystemMetaData::UserExecutePermission;
-                    }
-                }
-                if (what & QFileSystemMetaData::OwnerPermissions) { // owner
-                    data.knownFlagsMask |= QFileSystemMetaData::OwnerPermissions;
-                    BuildTrusteeWithSid(&trustee, pOwner);
-                    if (GetEffectiveRightsFromAcl(pDacl, &trustee, &access_mask) != ERROR_SUCCESS)
-                        access_mask = (ACCESS_MASK)-1;
-                    if (access_mask & ReadMask)
-                        data.entryFlags |= QFileSystemMetaData::OwnerReadPermission;
-                    if (access_mask & WriteMask)
-                        data.entryFlags |= QFileSystemMetaData::OwnerWritePermission;
-                    if (access_mask & ExecMask)
-                        data.entryFlags |= QFileSystemMetaData::OwnerExecutePermission;
-                }
-                if (what & QFileSystemMetaData::GroupPermissions) { // group
-                    data.knownFlagsMask |= QFileSystemMetaData::GroupPermissions;
-                    BuildTrusteeWithSid(&trustee, pGroup);
-                    if (GetEffectiveRightsFromAcl(pDacl, &trustee, &access_mask) != ERROR_SUCCESS)
-                        access_mask = (ACCESS_MASK)-1;
-                    if (access_mask & ReadMask)
-                        data.entryFlags |= QFileSystemMetaData::GroupReadPermission;
-                    if (access_mask & WriteMask)
-                        data.entryFlags |= QFileSystemMetaData::GroupWritePermission;
-                    if (access_mask & ExecMask)
-                        data.entryFlags |= QFileSystemMetaData::GroupExecutePermission;
-                }
-                if (what & QFileSystemMetaData::OtherPermissions) { // other (world)
-                    data.knownFlagsMask |= QFileSystemMetaData::OtherPermissions;
-                    if (GetEffectiveRightsFromAcl(pDacl, &worldTrustee, &access_mask)
-                        != ERROR_SUCCESS) {
-                        access_mask = (ACCESS_MASK)-1; // ###
-                    }
-                    if (access_mask & ReadMask)
-                        data.entryFlags |= QFileSystemMetaData::OtherReadPermission;
-                    if (access_mask & WriteMask)
-                        data.entryFlags |= QFileSystemMetaData::OtherWritePermission;
-                    if (access_mask & ExecMask)
-                        data.entryFlags |= QFileSystemMetaData::OtherExecutePermission;
-                }
-                LocalFree(pSD);
+            if (what & QFileSystemMetaData::UserPermissions && currentUserImpersonatedToken) {
+                data.knownFlagsMask |= QFileSystemMetaData::UserPermissions;
+                QAuthzClientContext context(rm, currentUserImpersonatedToken,
+                                            QAuthzClientContext::TokenTag {});
+                addPermissions(context.accessMask(pSD),
+                               QFileSystemMetaData::UserReadPermission,
+                               QFileSystemMetaData::UserWritePermission,
+                               QFileSystemMetaData::UserExecutePermission);
             }
+
+            if (what & QFileSystemMetaData::OwnerPermissions) {
+                data.knownFlagsMask |= QFileSystemMetaData::OwnerPermissions;
+                QAuthzClientContext context(rm, pOwner);
+                addPermissions(context.accessMask(pSD),
+                               QFileSystemMetaData::OwnerReadPermission,
+                               QFileSystemMetaData::OwnerWritePermission,
+                               QFileSystemMetaData::OwnerExecutePermission);
+            }
+
+            if (what & QFileSystemMetaData::GroupPermissions) {
+                data.knownFlagsMask |= QFileSystemMetaData::GroupPermissions;
+                QAuthzClientContext context(rm, pGroup);
+                addPermissions(context.accessMask(pSD),
+                               QFileSystemMetaData::GroupReadPermission,
+                               QFileSystemMetaData::GroupWritePermission,
+                               QFileSystemMetaData::GroupExecutePermission);
+            }
+
+            if (what & QFileSystemMetaData::OtherPermissions) {
+                data.knownFlagsMask |= QFileSystemMetaData::OtherPermissions;
+                QAuthzClientContext context(rm, worldSID);
+                addPermissions(context.accessMask(pSD),
+                               QFileSystemMetaData::OtherReadPermission,
+                               QFileSystemMetaData::OtherWritePermission,
+                               QFileSystemMetaData::OtherExecutePermission);
+            }
+
+            LocalFree(pSD);
         }
     } else
 #endif
