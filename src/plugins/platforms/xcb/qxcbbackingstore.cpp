@@ -491,12 +491,12 @@ bool QXcbBackingStoreImage::scroll(const QRegion &area, int dx, int dy)
         for (const QRect &rect : scrollArea)
             qt_scrollRectInImage(m_qimage, rect, delta);
     } else {
+        ensureGC(m_xcb_pixmap);
+
         if (hasShm())
             shmPutImage(m_xcb_pixmap, m_pendingFlush.intersected(scrollArea));
         else
             flushPixmap(scrollArea);
-
-        ensureGC(m_xcb_pixmap);
 
         for (const QRect &src : scrollArea) {
             const QRect dst = src.translated(delta).intersected(bounds);
