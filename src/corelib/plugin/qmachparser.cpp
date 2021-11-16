@@ -39,8 +39,6 @@
 
 #include "qmachparser_p.h"
 
-#if defined(Q_OF_MACH_O)
-
 #include <qendian.h>
 
 #include <mach-o/loader.h>
@@ -213,5 +211,3 @@ QLibraryScanResult  QMachOParser::parse(const char *m_s, ulong fdlen, QString *e
 }
 
 QT_END_NAMESPACE
-
-#endif

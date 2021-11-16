@@ -1013,19 +1013,21 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_stringlistmodel
 
 qt_internal_extend_target(Core CONDITION QT_FEATURE_library
     SOURCES
-        plugin/qelfparser_p.cpp plugin/qelfparser_p.h
         plugin/qlibrary.cpp plugin/qlibrary.h plugin/qlibrary_p.h
-        plugin/qmachparser.cpp plugin/qmachparser_p.h
 )
-
-qt_internal_extend_target(Core CONDITION QT_FEATURE_library AND UNIX
-    SOURCES
-        plugin/qlibrary_unix.cpp
-)
-
 qt_internal_extend_target(Core CONDITION QT_FEATURE_library AND WIN32
     SOURCES
         plugin/qlibrary_win.cpp
+)
+qt_internal_extend_target(Core CONDITION QT_FEATURE_library AND APPLE
+    SOURCES
+        plugin/qlibrary_unix.cpp
+        plugin/qmachparser.cpp plugin/qmachparser_p.h
+)
+qt_internal_extend_target(Core CONDITION QT_FEATURE_library AND UNIX AND NOT APPLE
+    SOURCES
+        plugin/qelfparser_p.cpp plugin/qelfparser_p.h
+        plugin/qlibrary_unix.cpp
 )
 
 qt_internal_extend_target(Core CONDITION QT_FEATURE_dlopen AND QT_FEATURE_library
