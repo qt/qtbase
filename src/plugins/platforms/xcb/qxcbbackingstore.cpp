@@ -493,10 +493,13 @@ bool QXcbBackingStoreImage::scroll(const QRegion &area, int dx, int dy)
     } else {
         ensureGC(m_xcb_pixmap);
 
-        if (hasShm())
-            shmPutImage(m_xcb_pixmap, m_pendingFlush.intersected(scrollArea));
-        else
+        if (hasShm()) {
+            QRegion partialFlushRegion = m_pendingFlush.intersected(scrollArea);
+            shmPutImage(m_xcb_pixmap, partialFlushRegion);
+            m_pendingFlush -= partialFlushRegion;
+        } else {
             flushPixmap(scrollArea);
+        }
 
         for (const QRect &src : scrollArea) {
             const QRect dst = src.translated(delta).intersected(bounds);
@@ -508,14 +511,12 @@ bool QXcbBackingStoreImage::scroll(const QRegion &area, int dx, int dy)
                           dst.x(), dst.y(),
                           dst.width(), dst.height());
         }
+
+        if (hasShm())
+            m_pendingFlush -= destinationRegion;
     }
 
     m_scrolledRegion |= destinationRegion;
-
-    if (hasShm()) {
-        m_pendingFlush -= scrollArea;
-        m_pendingFlush -= m_scrolledRegion;
-    }
 
     return true;
 }
