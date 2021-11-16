@@ -1670,7 +1670,7 @@ public:
         sigemptyset(&handledSignals);
 
         const int fatalSignals[] = {
-             SIGHUP, SIGINT, SIGQUIT, SIGILL, SIGBUS, SIGFPE, SIGSEGV, SIGPIPE, SIGTERM, 0 };
+             SIGHUP, SIGINT, SIGQUIT, SIGILL, SIGBUS, SIGFPE, SIGSEGV, SIGPIPE, SIGTERM };
 
         struct sigaction act;
         memset(&act, 0, sizeof(act));
@@ -1703,8 +1703,8 @@ public:
         // Block all fatal signals in our signal handler so we don't try to close
         // the testlog twice.
         sigemptyset(&act.sa_mask);
-        for (int i = 0; fatalSignals[i]; ++i)
-            sigaddset(&act.sa_mask, fatalSignals[i]);
+        for (int sig : fatalSignals)
+            sigaddset(&act.sa_mask, sig);
 
         // The destructor can only restore SIG_DFL, so only register for signals
         // that had default handling previously.
@@ -1720,14 +1720,14 @@ public:
         };
 
         struct sigaction oldact;
-        for (int i = 0; fatalSignals[i]; ++i) {
+        for (int sig : fatalSignals) {
             // Registering reveals the existing handler:
-            if (sigaction(fatalSignals[i], &act, &oldact))
+            if (sigaction(sig, &act, &oldact))
                 continue; // Failed to set our handler; nothing to restore.
             if (isDefaultHandler(oldact))
-                sigaddset(&handledSignals, fatalSignals[i]);
+                sigaddset(&handledSignals, sig);
             else // Restore non-default handler:
-                sigaction(fatalSignals[i], &oldact, nullptr);
+                sigaction(sig, &oldact, nullptr);
         }
 #endif // defined(Q_OS_UNIX) && !defined(Q_OS_WASM)
     }
