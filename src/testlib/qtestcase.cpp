@@ -1706,20 +1706,28 @@ public:
         for (int i = 0; fatalSignals[i]; ++i)
             sigaddset(&act.sa_mask, fatalSignals[i]);
 
-        struct sigaction oldact;
-
-        for (int i = 0; fatalSignals[i]; ++i) {
-            sigaction(fatalSignals[i], &act, &oldact);
-            if (
+        // The destructor can only restore SIG_DFL, so only register for signals
+        // that had default handling previously.
+        const auto isDefaultHandler = [](const struct sigaction &old) {
 #  ifdef SA_SIGINFO
-                oldact.sa_flags & SA_SIGINFO ||
+            // void sa_sigaction(int, siginfo_t *, void *) is never the default:
+            if (old.sa_flags & SA_SIGINFO)
+                return false;
 #  endif
-                oldact.sa_handler != SIG_DFL) {
-                sigaction(fatalSignals[i], &oldact, nullptr);
-            } else
-            {
+            // Otherwise, the handler is void sa_handler(int) but may be
+            // SIG_DFL (default action) or SIG_IGN (ignore signal):
+            return old.sa_handler == SIG_DFL;
+        };
+
+        struct sigaction oldact;
+        for (int i = 0; fatalSignals[i]; ++i) {
+            // Registering reveals the existing handler:
+            if (sigaction(fatalSignals[i], &act, &oldact))
+                continue; // Failed to set our handler; nothing to restore.
+            if (isDefaultHandler(oldact))
                 sigaddset(&handledSignals, fatalSignals[i]);
-            }
+            else // Restore non-default handler:
+                sigaction(fatalSignals[i], &oldact, nullptr);
         }
 #endif // defined(Q_OS_UNIX) && !defined(Q_OS_WASM)
     }
