@@ -41,6 +41,7 @@
 #include <vector>
 #include <algorithm>
 #include <memory>
+#include <q20iterator.h>
 
 // for negative testing (can't convert from)
 #include <deque>
@@ -528,19 +529,6 @@ void tst_QAnyStringView::fromContainers() const
     fromContainer<Char, QList<Char>>();
     fromContainer<Char, QVarLengthArray<Char>>();
     fromContainer<Char, std::vector<Char>>();
-}
-
-namespace q20 {
-#ifdef __cpp_lib_ssize
-    using std::ssize;
-#else
-    template<class C> constexpr auto ssize(const C& c)
-      -> std::common_type_t<std::ptrdiff_t, std::make_signed_t<decltype(c.size())>>
-    { return static_cast<std::common_type_t<ptrdiff_t, std::make_signed_t<decltype(c.size())>>>(c.size()); }
-
-    template<class T, ptrdiff_t N> constexpr ptrdiff_t ssize(const T (&array)[N]) noexcept
-    { return N; }
-#endif
 }
 
 namespace help {
