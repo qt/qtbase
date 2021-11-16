@@ -155,7 +155,6 @@ public:
     qreal pageUpDownLastCursorY = 0;
     QPlainTextEdit::LineWrapMode lineWrap = QPlainTextEdit::WidgetWidth;
     QTextOption::WrapMode wordWrap = QTextOption::WrapAtWordBoundaryOrAnywhere;
-    Qt::KeyboardModifiers keyboardModifiers = {};
     int originalOffsetY = 0;
     int topLine = 0;
 
