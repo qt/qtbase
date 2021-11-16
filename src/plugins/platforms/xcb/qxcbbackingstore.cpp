@@ -479,13 +479,14 @@ bool QXcbBackingStoreImage::scroll(const QRegion &area, int dx, int dy)
     const QRect bounds(QPoint(), size());
     const QRegion scrollArea(area & bounds);
     const QPoint delta(dx, dy);
+    const QRegion destinationRegion = scrollArea.translated(delta).intersected(bounds);
 
     if (m_clientSideScroll) {
         if (m_qimage.isNull())
             return false;
 
         if (hasShm())
-            preparePaint(scrollArea);
+            preparePaint(destinationRegion);
 
         for (const QRect &rect : scrollArea)
             qt_scrollRectInImage(m_qimage, rect, delta);
@@ -509,7 +510,8 @@ bool QXcbBackingStoreImage::scroll(const QRegion &area, int dx, int dy)
         }
     }
 
-    m_scrolledRegion |= scrollArea.translated(delta).intersected(bounds);
+    m_scrolledRegion |= destinationRegion;
+
     if (hasShm()) {
         m_pendingFlush -= scrollArea;
         m_pendingFlush -= m_scrolledRegion;
