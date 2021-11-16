@@ -67,6 +67,8 @@ public:
     }
 
     static QFileSystemEntry getLinkTarget(const QFileSystemEntry &link, QFileSystemMetaData &data);
+    static QFileSystemEntry getRawLinkPath(const QFileSystemEntry &link,
+                                           QFileSystemMetaData &data);
     static QFileSystemEntry getJunctionTarget(const QFileSystemEntry &link, QFileSystemMetaData &data);
     static QFileSystemEntry canonicalName(const QFileSystemEntry &entry, QFileSystemMetaData &data);
     static QFileSystemEntry absoluteName(const QFileSystemEntry &entry);

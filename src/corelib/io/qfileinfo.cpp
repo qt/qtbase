@@ -38,6 +38,9 @@ QString QFileInfoPrivate::getFileName(QAbstractFileEngine::FileName name) const
             case QAbstractFileEngine::AbsoluteLinkTarget:
                 ret = QFileSystemEngine::getLinkTarget(fileEntry, metaData).filePath();
                 break;
+            case QAbstractFileEngine::RawLinkPath:
+                ret = QFileSystemEngine::getRawLinkPath(fileEntry, metaData).filePath();
+                break;
             case QAbstractFileEngine::JunctionName:
                 ret = QFileSystemEngine::getJunctionTarget(fileEntry, metaData).filePath();
                 break;
@@ -1219,6 +1222,25 @@ QString QFileInfo::symLinkTarget() const
     if (d->isDefaultConstructed)
         return ""_L1;
     return d->getFileName(QAbstractFileEngine::AbsoluteLinkTarget);
+}
+
+/*!
+    \since 6.6
+    Read the path the symlink references.
+
+    Returns the raw path referenced by the symbolic link, without resolving a relative
+    path relative to the directory containing the symbolic link. The returned string will
+    only be an absolute path if the symbolic link actually references it as such. Returns
+    an empty string if the object is not a symbolic link.
+
+    \sa symLinkTarget(), exists(), isSymLink(), isDir(), isFile()
+*/
+QString QFileInfo::readSymLink() const
+{
+    Q_D(const QFileInfo);
+    if (d->isDefaultConstructed)
+        return {};
+    return d->getFileName(QAbstractFileEngine::RawLinkPath);
 }
 
 /*!

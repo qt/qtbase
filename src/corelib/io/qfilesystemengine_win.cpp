@@ -856,6 +856,18 @@ void QFileSystemEngine::clearWinStatData(QFileSystemMetaData &data)
 QFileSystemEntry QFileSystemEngine::getLinkTarget(const QFileSystemEntry &link,
                                                   QFileSystemMetaData &data)
 {
+    QFileSystemEntry ret = getRawLinkPath(link, data);
+    if (!ret.isEmpty() && ret.isRelative()) {
+        QString target = absoluteName(link).path() + u'/' + ret.filePath();
+        ret = QFileSystemEntry(QDir::cleanPath(target));
+    }
+    return ret;
+}
+
+//static
+QFileSystemEntry QFileSystemEngine::getRawLinkPath(const QFileSystemEntry &link,
+                                                   QFileSystemMetaData &data)
+{
     Q_CHECK_FILE_NAME(link, link);
 
     if (data.missingFlags(QFileSystemMetaData::LinkType))
@@ -866,12 +878,7 @@ QFileSystemEntry QFileSystemEngine::getLinkTarget(const QFileSystemEntry &link,
         target = readLink(link);
     else if (data.isLink())
         target = readSymLink(link);
-    QFileSystemEntry ret(target);
-    if (!target.isEmpty() && ret.isRelative()) {
-        target.prepend(absoluteName(link).path() + u'/');
-        ret = QFileSystemEntry(QDir::cleanPath(target));
-    }
-    return ret;
+    return QFileSystemEntry(target);
 }
 
 //static

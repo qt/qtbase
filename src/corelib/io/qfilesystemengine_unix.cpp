@@ -629,6 +629,16 @@ QFileSystemEntry QFileSystemEngine::getLinkTarget(const QFileSystemEntry &link, 
 }
 
 //static
+QFileSystemEntry QFileSystemEngine::getRawLinkPath(const QFileSystemEntry &link,
+                                                   QFileSystemMetaData &data)
+{
+    Q_UNUSED(data)
+    const QByteArray path = qt_readlink(link.nativeFilePath().constData());
+    const QString ret = QFile::decodeName(path);
+    return QFileSystemEntry(ret);
+}
+
+//static
 QFileSystemEntry QFileSystemEngine::canonicalName(const QFileSystemEntry &entry, QFileSystemMetaData &data)
 {
     Q_CHECK_FILE_NAME(entry, entry);

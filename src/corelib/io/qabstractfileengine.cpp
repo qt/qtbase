@@ -225,6 +225,8 @@ QAbstractFileEngine *QAbstractFileEngine::create(const QString &fileName)
     the base name).
     \value AbsoluteLinkTarget The full file name of the file that this file is a
     link to. (This will be empty if this file is not a link.)
+    \value RawLinkPath The raw link path of the file that this file is a
+    link to. (This will be empty if this file is not a link.)
     \value CanonicalName Often very similar to AbsoluteLinkTarget. Will return the true path to the file.
     \value CanonicalPathName Same as CanonicalName, excluding the base name.
     \value BundleName Returns the name of the bundle implies BundleType is set.

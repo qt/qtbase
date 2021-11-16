@@ -242,6 +242,7 @@ private slots:
     void nonExistingFile();
 
     void stdfilesystem();
+    void readSymLink();
 
 private:
     const QString m_currentDir;
@@ -2391,5 +2392,20 @@ void tst_QFileInfo::stdfilesystem()
 #endif
 }
 
+void tst_QFileInfo::readSymLink()
+{
+    QString symLinkName("./a.link");
+    const auto tidier = qScopeGuard([symLinkName]() { QFile::remove(symLinkName); });
+
+#ifdef Q_OS_WIN
+    QVERIFY2(CreateSymbolicLink(L"a.link", L"..\\..\\a",   SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE)
+             != 0,
+             "Failed to create symlink for test");
+#else
+    QVERIFY2(QFile::link("../../a", symLinkName), "Failed to create symlink for test");
+#endif
+    QFileInfo info(symLinkName);
+    QCOMPARE(info.readSymLink(), QString("../../a"));
+}
 QTEST_MAIN(tst_QFileInfo)
 #include "tst_qfileinfo.moc"

@@ -450,6 +450,12 @@ QString QFSFileEngine::fileName(FileName file) const
             return entry.filePath();
         }
         return QString();
+    case RawLinkPath:
+        if (d->isSymlink()) {
+            QFileSystemEntry entry = QFileSystemEngine::getRawLinkPath(d->fileEntry, d->metaData);
+            return entry.filePath();
+        }
+        return QString();
     case JunctionName:
         return QString();
     case DefaultName:

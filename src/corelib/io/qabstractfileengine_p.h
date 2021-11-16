@@ -73,6 +73,7 @@ public:
         CanonicalPathName,
         BundleName,
         JunctionName,
+        RawLinkPath,
         NFileNames  // Must be last.
     };
     enum FileOwner {
