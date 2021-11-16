@@ -46,6 +46,8 @@ QT_BEGIN_NAMESPACE
 
 class QIODeviceBase
 {
+protected:
+    ~QIODeviceBase() = default;
 public:
     enum OpenModeFlag {
         NotOpen = 0x0000,
