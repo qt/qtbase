@@ -501,19 +501,22 @@ public:
 
     int globalRequestCode(int localRequestCode) const
     {
-        if (!localToGlobalRequestCode.contains(localRequestCode)) {
+        const auto oldSize = localToGlobalRequestCode.size();
+        auto &e = localToGlobalRequestCode[localRequestCode];
+        if (localToGlobalRequestCode.size() != oldSize) {
+            // new entry, populate:
             int globalRequestCode = uniqueActivityRequestCode();
-            localToGlobalRequestCode[localRequestCode] = globalRequestCode;
+            e = globalRequestCode;
             globalToLocalRequestCode[globalRequestCode] = localRequestCode;
         }
-        return localToGlobalRequestCode.value(localRequestCode);
+        return e;
     }
 
     bool handleActivityResult(jint requestCode, jint resultCode, jobject data)
     {
-        if (globalToLocalRequestCode.contains(requestCode)) {
-            q->handleActivityResult(globalToLocalRequestCode.value(requestCode),
-                                    resultCode, QJniObject(data));
+        const auto it = std::as_const(globalToLocalRequestCode).find(requestCode);
+        if (it != globalToLocalRequestCode.cend()) {
+            q->handleActivityResult(*it, resultCode, QJniObject(data));
             return true;
         }
 
