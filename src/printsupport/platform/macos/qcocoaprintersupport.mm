@@ -128,8 +128,6 @@ QPlatformPrinterSupport *QCocoaPrinterSupportPlugin::create(const QString &key)
     return new QCocoaPrinterSupport();
 }
 
-Q_IMPORT_PLUGIN(QCocoaPrinterSupportPlugin)
-
 #include "qcocoaprintersupport.moc"
 
 QT_END_NAMESPACE
