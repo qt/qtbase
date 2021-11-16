@@ -468,7 +468,7 @@ QString &operator+=(QString &a, const QStringBuilder<A, B> &b)
 
 template <typename A, typename B>
 QAnyStringView::QAnyStringView(const QStringBuilder<A, B> &expr,
-                               typename QStringBuilder<A, B>::ConvertTo &&capacity)
+                               typename QConcatenable<QStringBuilder<A, B>>::ConvertTo &&capacity)
     : QAnyStringView(capacity = expr) {}
 
 QT_END_NAMESPACE
