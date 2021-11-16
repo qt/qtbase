@@ -50,6 +50,7 @@
 QT_BEGIN_NAMESPACE
 
 template <typename, typename> class QStringBuilder;
+template <typename> struct QConcatenable;
 
 class QAnyStringView
 {
@@ -163,7 +164,7 @@ public:
     // defined in qstringbuilder.h
     template <typename A, typename B>
     inline QAnyStringView(const QStringBuilder<A, B> &expr,
-                          typename QStringBuilder<A, B>::ConvertTo &&capacity = {});
+                          typename QConcatenable<QStringBuilder<A, B>>::ConvertTo &&capacity = {});
 
     template <typename Container, if_compatible_container<Container> = true>
     constexpr QAnyStringView(const Container &c) noexcept

@@ -30,6 +30,7 @@
 #include <QChar>
 #include <QList>
 #include <QString>
+#include <QStringBuilder>
 #include <QVarLengthArray>
 
 #include <QTest>
@@ -230,6 +231,12 @@ static_assert(CanConvert<std::array<wchar_t, 123>> == CanConvertFromWCharT);
 static_assert(!CanConvert<std::deque<wchar_t>>);
 static_assert(!CanConvert<std::list<wchar_t>>);
 
+//
+// QStringBuilder
+//
+
+static_assert(CanConvert<QStringBuilder<QString, QString>>);
+
 
 class tst_QAnyStringView : public QObject
 {
@@ -303,9 +310,13 @@ private Q_SLOTS:
     void fromChar16TContainers() const { fromContainers<char16_t>(); }
     void fromWCharTContainers() const { ONLY_WIN(fromContainers<wchar_t>()); }
 
+    void fromQStringBuilder_QString_QString() const { fromQStringBuilder(u"1"_qs % u"2"_qs, u"12"); }
+
     void comparison();
 
 private:
+    template <typename StringBuilder>
+    void fromQStringBuilder(StringBuilder &&sb, QStringView expected) const;
     template <typename Char>
     void fromArray() const;
     template <typename String>
@@ -417,6 +428,13 @@ void tst_QAnyStringView::basics() const
 
     QVERIFY(sv2 == sv1);
     QVERIFY(!(sv2 != sv1));
+}
+
+template <typename StringBuilder>
+void tst_QAnyStringView::fromQStringBuilder(StringBuilder &&sb, QStringView expected) const
+{
+    auto toAnyStringView = [](QAnyStringView sv) { return sv; };
+    QCOMPARE(toAnyStringView(std::forward<StringBuilder>(sb)), expected);
 }
 
 template <typename Char>
