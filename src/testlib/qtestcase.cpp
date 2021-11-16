@@ -1691,11 +1691,12 @@ public:
         // interfere with normal .bss symbols
         __attribute__((section(".lbss.altstack"), aligned(4096)))
 #    endif
-        static char alternate_stack[16 * 1024];
+        static QVarLengthArray<char, 32 * 1024> alternateStack;
+        alternateStack.resize(qMax(SIGSTKSZ, alternateStack.size()));
         stack_t stack;
         stack.ss_flags = 0;
-        stack.ss_size = sizeof alternate_stack;
-        stack.ss_sp = alternate_stack;
+        stack.ss_size = alternateStack.size();
+        stack.ss_sp = alternateStack.data();
         sigaltstack(&stack, nullptr);
         act.sa_flags |= SA_ONSTACK;
 #  endif
