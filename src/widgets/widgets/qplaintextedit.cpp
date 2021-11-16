@@ -1616,7 +1616,7 @@ void QPlainTextEdit::timerEvent(QTimerEvent *e)
             const QPoint globalPos = QCursor::pos();
             pos = d->viewport->mapFromGlobal(globalPos);
             QMouseEvent ev(QEvent::MouseMove, pos, d->viewport->mapTo(d->viewport->topLevelWidget(), pos), globalPos,
-                           Qt::LeftButton, Qt::LeftButton, d->keyboardModifiers);
+                           Qt::LeftButton, Qt::LeftButton, QGuiApplication::keyboardModifiers());
             mouseMoveEvent(&ev);
         }
         int deltaY = qMax(pos.y() - visible.top(), visible.bottom() - pos.y()) - visible.height();
@@ -1681,7 +1681,6 @@ void QPlainTextEdit::setPlainText(const QString &text)
 void QPlainTextEdit::keyPressEvent(QKeyEvent *e)
 {
     Q_D(QPlainTextEdit);
-    d->keyboardModifiers = e->modifiers();
 
 #ifdef QT_KEYPAD_NAVIGATION
     switch (e->key()) {
@@ -1832,7 +1831,6 @@ void QPlainTextEdit::keyReleaseEvent(QKeyEvent *e)
     Q_D(QPlainTextEdit);
     if (!isReadOnly())
         d->handleSoftwareInputPanel();
-    d->keyboardModifiers = e->modifiers();
 
 #ifdef QT_KEYPAD_NAVIGATION
     if (QApplicationPrivate::keypadNavigationEnabled()) {
