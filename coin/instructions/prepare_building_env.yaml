@@ -208,6 +208,13 @@ instructions:
           condition: property
           property: host.compiler
           equals_value: MSVC2022_PREVIEW
+      - type: EnvironmentVariable
+        variableName: VC_SCRIPT
+        variableValue: "%ProgramFiles%\\Microsoft Visual Studio\\2022\\Professional\\VC\\Auxiliary\\Build\\vcvarsall.bat"
+        enable_if:
+          condition: property
+          property: host.compiler
+          equals_value: MSVC2022
 
 
   # With MSVC we need setup the environment before every subprocess call, the group below creates a script that
