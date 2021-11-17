@@ -71,7 +71,7 @@ void TimeProvider::readDatagram(QSctpSocket &from, const QByteArray &ba)
         || curTime.minute() != clientTime.minute()
         || curTime.hour() != clientTime.hour()) {
         QByteArray buf;
-        QDataStream out_ds(&buf, QIODevice::WriteOnly);
+        QDataStream out_ds(&buf, QIODeviceBase::WriteOnly);
 
         out_ds << curTime;
         emit writeDatagram(&from, buf);
