@@ -136,7 +136,8 @@ public:
 
     enum MetaInformation {
         DocumentTitle,
-        DocumentUrl
+        DocumentUrl,
+        CssMedia
     };
     void setMetaInformation(MetaInformation info, const QString &);
     QString metaInformation(MetaInformation info) const;

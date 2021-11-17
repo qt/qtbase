@@ -384,6 +384,7 @@ public:
     QSizeF pageSize;
     QString title;
     QString url;
+    QString cssMedia;
     qreal indentWidth;
     qreal documentMargin;
     QUrl baseUrl;

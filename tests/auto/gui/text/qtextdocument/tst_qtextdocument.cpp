@@ -96,6 +96,7 @@ private slots:
     void toHtml2();
 
     void setFragmentMarkersInHtmlExport();
+    void setMediaRule();
 
     void toHtmlBodyBgColor();
     void toHtmlBodyBgColorRgba();
@@ -1910,6 +1911,39 @@ void tst_QTextDocument::setFragmentMarkersInHtmlExport()
     }
 }
 
+void tst_QTextDocument::setMediaRule()
+{
+    {
+        CREATE_DOC_AND_CURSOR();
+        doc.setDefaultStyleSheet("@media screen { p { background:#000000 } } @media print { p { background:#ffffff } }");
+        doc.setHtml("<p>Hello World</p>");
+
+        QString expected = htmlHead;
+        expected += QString("<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; background-color:#000000;\"><span style=\" background-color:#000000;\">Hello World</span></p>") + htmlTail;
+        QCOMPARE(doc.toHtml(), expected);
+    }
+    {
+        CREATE_DOC_AND_CURSOR();
+        doc.setDefaultStyleSheet("@media screen { p { background:#000000 } } @media print { p { background:#ffffff } }");
+        doc.setMetaInformation(QTextDocument::CssMedia, "screen");
+        doc.setHtml("<p>Hello World</p>");
+
+        QString expected = htmlHead;
+        expected += QString("<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; background-color:#000000;\"><span style=\" background-color:#000000;\">Hello World</span></p>") + htmlTail;
+        QCOMPARE(doc.toHtml(), expected);
+    }
+    {
+        CREATE_DOC_AND_CURSOR();
+        doc.setDefaultStyleSheet("@media screen { p { background:#000000 } } @media print { p { background:#ffffff } }");
+        doc.setMetaInformation(QTextDocument::CssMedia, "print");
+        doc.setHtml("<p>Hello World</p>");
+
+        QString expected = htmlHead;
+        expected += QString("<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; background-color:#ffffff;\"><span style=\" background-color:#ffffff;\">Hello World</span></p>") + htmlTail;
+        QCOMPARE(doc.toHtml(), expected);
+    }
+}
+
 void tst_QTextDocument::toHtmlBodyBgColor()
 {
     CREATE_DOC_AND_CURSOR();
@@ -2294,14 +2328,18 @@ void tst_QTextDocument::clonePreservesMetaInformation()
 {
     const QString title("Foobar");
     const QString url("about:blank");
+    const QString media("print");
     doc->setHtml("<html><head><title>" + title + "</title></head><body>Hrm</body></html>");
     doc->setMetaInformation(QTextDocument::DocumentUrl, url);
+    doc->setMetaInformation(QTextDocument::CssMedia, media);
     QCOMPARE(doc->metaInformation(QTextDocument::DocumentTitle), title);
     QCOMPARE(doc->metaInformation(QTextDocument::DocumentUrl), url);
+    QCOMPARE(doc->metaInformation(QTextDocument::CssMedia), media);
 
     QTextDocument *clone = doc->clone();
     QCOMPARE(clone->metaInformation(QTextDocument::DocumentTitle), title);
     QCOMPARE(clone->metaInformation(QTextDocument::DocumentUrl), url);
+    QCOMPARE(clone->metaInformation(QTextDocument::CssMedia), media);
     delete clone;
 }
 
