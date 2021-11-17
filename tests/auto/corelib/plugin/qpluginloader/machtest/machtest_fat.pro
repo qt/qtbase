@@ -19,12 +19,12 @@ fat_no_x86_64.target = good.fat.no-x86_64.dylib
 fat_no_x86_64.commands = lipo -create -output $@ -arch arm64 good.arm64.dylib
 fat_no_x86_64.depends += good.arm64.dylib
 
-sdk_flags = -L$$system(xcrun --show-sdk-path)/usr/lib/
+stub_flags = -L$$system(xcrun --show-sdk-path)/usr/lib/ -stdlib=libc++
 
-stub_arm64.commands = $$QMAKE_CXX $$sdk_flags -shared -arch arm64 -o stub.arm64.dylib $$PWD/stub.cpp
+stub_arm64.commands = $$QMAKE_CXX $$stub_flags -shared -arch arm64 -o stub.arm64.dylib $$PWD/stub.cpp
 stub_arm64.depends += $$PWD/stub.cpp
 
-stub_x86_64.commands = $$QMAKE_CXX $$sdk_flags -shared -arch x86_64 -o stub.x86_64.dylib $$PWD/stub.cpp
+stub_x86_64.commands = $$QMAKE_CXX $$stub_flags -shared -arch x86_64 -o stub.x86_64.dylib $$PWD/stub.cpp
 stub_x86_64.depends += $$PWD/stub.cpp
 
 fat_stub_arm64.target = good.fat.stub-arm64.dylib
