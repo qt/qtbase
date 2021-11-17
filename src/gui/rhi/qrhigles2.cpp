@@ -501,21 +501,33 @@ QRhiGles2::QRhiGles2(QRhiGles2InitParams *params, QRhiGles2NativeHandles *import
     }
 }
 
+static inline QSurface *currentSurfaceForCurrentContext(QOpenGLContext *ctx)
+{
+    if (QOpenGLContext::currentContext() != ctx)
+        return nullptr;
+
+    QSurface *currentSurface = ctx->surface();
+    if (!currentSurface)
+        return nullptr;
+
+    if (currentSurface->surfaceClass() == QSurface::Window && !currentSurface->surfaceHandle())
+        return nullptr;
+
+    return currentSurface;
+}
+
 bool QRhiGles2::ensureContext(QSurface *surface) const
 {
-    bool nativeWindowGone = false;
-    if (surface && surface->surfaceClass() == QSurface::Window && !surface->surfaceHandle()) {
+    if (!surface) {
+        if (currentSurfaceForCurrentContext(ctx))
+            return true;
         surface = fallbackSurface;
-        nativeWindowGone = true;
-    }
-
-    if (!surface)
+    } else if (surface->surfaceClass() == QSurface::Window && !surface->surfaceHandle()) {
         surface = fallbackSurface;
-
-    if (needsMakeCurrent)
-        needsMakeCurrent = false;
-    else if (!nativeWindowGone && QOpenGLContext::currentContext() == ctx && (surface == fallbackSurface || ctx->surface() == surface))
+    } else if (!needsMakeCurrentDueToSwap && currentSurfaceForCurrentContext(ctx) == surface) {
         return true;
+    }
+    needsMakeCurrentDueToSwap = false;
 
     if (!ctx->makeCurrent(surface)) {
         if (ctx->isValid()) {
@@ -1788,7 +1800,7 @@ QRhi::FrameOpResult QRhiGles2::endFrame(QRhiSwapChain *swapChain, QRhi::EndFrame
 
     if (swapChainD->surface && !flags.testFlag(QRhi::SkipPresent)) {
         ctx->swapBuffers(swapChainD->surface);
-        needsMakeCurrent = true;
+        needsMakeCurrentDueToSwap = true;
     } else {
         f->glFlush();
     }
