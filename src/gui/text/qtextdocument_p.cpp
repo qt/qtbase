@@ -187,7 +187,8 @@ QTextDocumentPrivate::QTextDocumentPrivate()
     framesDirty(true),
     rtFrame(nullptr),
     initialBlockCharFormatIndex(-1), // set correctly later in init()
-    resourceProvider(nullptr)
+    resourceProvider(nullptr),
+    cssMedia(QStringLiteral("screen"))
 {
     editBlock = 0;
     editBlockCursorPosition = -1;
