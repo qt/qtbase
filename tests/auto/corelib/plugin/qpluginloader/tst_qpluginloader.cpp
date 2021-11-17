@@ -34,6 +34,7 @@
 #include <qendian.h>
 #include <qpluginloader.h>
 #include <qtemporaryfile.h>
+#include <QScopeGuard>
 #include "theplugin/plugininterface.h"
 
 #if defined(QT_BUILD_INTERNAL) && defined(Q_OF_MACH_O)
@@ -983,11 +984,25 @@ void tst_QPluginLoader::loadSectionTableStrippedElf()
         f->seek(f->size());
         f->write(reinterpret_cast<const char *>(&badHeader), sizeof(badHeader));
     } };
-    std::unique_ptr<QTemporaryFile> tmplib =
-            patchElf(sys_qualifiedLibraryName("theplugin"), patcher);
+
+    QString tmpLibName;
+    {
+        std::unique_ptr<QTemporaryFile> tmplib =
+                patchElf(sys_qualifiedLibraryName("theplugin"), patcher);
+
+        tmpLibName = tmplib->fileName();
+        tmplib->setAutoRemove(false);
+    }
+#if defined(Q_OS_QNX)
+    // On QNX plugin access is still too early, even when QTemporaryFile is closed
+    QTest::qSleep(1000);
+#endif
+    auto removeTmpLib = qScopeGuard([=]{
+        QFile::remove(tmpLibName);
+    });
 
     // now attempt to load it
-    QPluginLoader loader(tmplib->fileName());
+    QPluginLoader loader(tmpLibName);
     QVERIFY2(loader.load(), qPrintable(loader.errorString()));
     PluginInterface *instance = qobject_cast<PluginInterface*>(loader.instance());
     QVERIFY(instance);
