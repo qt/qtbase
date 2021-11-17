@@ -116,9 +116,9 @@ public:
 
 class QLocalSocketPrivate : public QIODevicePrivate
 {
+public:
     Q_DECLARE_PUBLIC(QLocalSocket)
 
-public:
     QLocalSocketPrivate();
     void init();
 

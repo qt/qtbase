@@ -73,8 +73,9 @@ class QAbstractScrollArea;
 
 class QWidgetTextControlPrivate : public QObjectPrivate
 {
-    Q_DECLARE_PUBLIC(QWidgetTextControl)
 public:
+    Q_DECLARE_PUBLIC(QWidgetTextControl)
+
     QWidgetTextControlPrivate();
 
     bool cursorMoveKeyEvent(QKeyEvent *e);

@@ -50,6 +50,7 @@
 
 QT_BEGIN_NAMESPACE
 class QObject;
+class QObjectPrivate;
 
 namespace QtPrivate {
     template <typename T> struct RemoveRef { typedef T Type; };
@@ -139,6 +140,22 @@ namespace QtPrivate {
 
     template<typename Func> struct FunctionPointer { enum {ArgumentCount = -1, IsPointerToMemberFunction = false}; };
 
+    template<typename ObjPrivate> inline void assertObjectType(QObjectPrivate *d);
+    template<typename Obj> inline void assertObjectType(QObject *o)
+    {
+        // ensure all three compile
+        [[maybe_unused]] auto staticcast = [](QObject *obj) { return static_cast<Obj *>(obj); };
+        [[maybe_unused]] auto qobjcast = [](QObject *obj) { return Obj::staticMetaObject.cast(obj); };
+#ifdef __cpp_rtti
+        [[maybe_unused]] auto dyncast = [](QObject *obj) { return dynamic_cast<Obj *>(obj); };
+        auto cast = dyncast;
+#else
+        auto cast = qobjcast;
+#endif
+        Q_ASSERT_X(cast(o), Obj::staticMetaObject.className(),
+                   "Called object is not of the correct type (class destructor may have already run)");
+    }
+
     template <typename, typename, typename, typename> struct FunctorCall;
     template <int... II, typename... SignalArgs, typename R, typename Function>
     struct FunctorCall<IndexesList<II...>, List<SignalArgs...>, R, Function> {
@@ -148,25 +165,33 @@ namespace QtPrivate {
     };
     template <int... II, typename... SignalArgs, typename R, typename... SlotArgs, typename SlotRet, class Obj>
     struct FunctorCall<IndexesList<II...>, List<SignalArgs...>, R, SlotRet (Obj::*)(SlotArgs...)> {
-        static void call(SlotRet (Obj::*f)(SlotArgs...), Obj *o, void **arg) {
+        static void call(SlotRet (Obj::*f)(SlotArgs...), Obj *o, void **arg)
+        {
+            assertObjectType<Obj>(o);
             (o->*f)((*reinterpret_cast<typename RemoveRef<SignalArgs>::Type *>(arg[II+1]))...), ApplyReturnValue<R>(arg[0]);
         }
     };
     template <int... II, typename... SignalArgs, typename R, typename... SlotArgs, typename SlotRet, class Obj>
     struct FunctorCall<IndexesList<II...>, List<SignalArgs...>, R, SlotRet (Obj::*)(SlotArgs...) const> {
-        static void call(SlotRet (Obj::*f)(SlotArgs...) const, Obj *o, void **arg) {
+        static void call(SlotRet (Obj::*f)(SlotArgs...) const, Obj *o, void **arg)
+        {
+            assertObjectType<Obj>(o);
             (o->*f)((*reinterpret_cast<typename RemoveRef<SignalArgs>::Type *>(arg[II+1]))...), ApplyReturnValue<R>(arg[0]);
         }
     };
     template <int... II, typename... SignalArgs, typename R, typename... SlotArgs, typename SlotRet, class Obj>
     struct FunctorCall<IndexesList<II...>, List<SignalArgs...>, R, SlotRet (Obj::*)(SlotArgs...) noexcept> {
-        static void call(SlotRet (Obj::*f)(SlotArgs...) noexcept, Obj *o, void **arg) {
+        static void call(SlotRet (Obj::*f)(SlotArgs...) noexcept, Obj *o, void **arg)
+        {
+            assertObjectType<Obj>(o);
             (o->*f)((*reinterpret_cast<typename RemoveRef<SignalArgs>::Type *>(arg[II+1]))...), ApplyReturnValue<R>(arg[0]);
         }
     };
     template <int... II, typename... SignalArgs, typename R, typename... SlotArgs, typename SlotRet, class Obj>
     struct FunctorCall<IndexesList<II...>, List<SignalArgs...>, R, SlotRet (Obj::*)(SlotArgs...) const noexcept> {
-        static void call(SlotRet (Obj::*f)(SlotArgs...) const noexcept, Obj *o, void **arg) {
+        static void call(SlotRet (Obj::*f)(SlotArgs...) const noexcept, Obj *o, void **arg)
+        {
+            assertObjectType<Obj>(o);
             (o->*f)((*reinterpret_cast<typename RemoveRef<SignalArgs>::Type *>(arg[II+1]))...), ApplyReturnValue<R>(arg[0]);
         }
     };

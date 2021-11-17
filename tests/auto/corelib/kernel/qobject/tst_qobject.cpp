@@ -1,7 +1,8 @@
 /****************************************************************************
 **
 ** Copyright (C) 2021 The Qt Company Ltd.
-** Copyright (C) 2015 Olivier Goffart <ogoffart@woboq.com>
+** Copyright (C) 2020 Olivier Goffart <ogoffart@woboq.com>
+** Copyright (C) 2021 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -169,6 +170,7 @@ private slots:
     void disconnectDisconnects();
     void singleShotConnection();
     void objectNameBinding();
+    void emitToDestroyedClass();
 };
 
 struct QObjectCreatedOnShutdown
@@ -5946,8 +5948,8 @@ public:
 };
 
 class ConnectToPrivateSlotPrivate : public QObjectPrivate {
-    Q_DECLARE_PUBLIC(ConnectToPrivateSlot)
 public:
+    Q_DECLARE_PUBLIC(ConnectToPrivateSlot)
     int receivedCount;
     QVariant receivedValue;
 
@@ -8138,6 +8140,71 @@ void tst_QObject::objectNameBinding()
     QObject obj;
     QTestPrivate::testReadWritePropertyBasics<QObject, QString>(obj, "test1", "test2",
                                                                 "objectName");
+}
+
+namespace EmitToDestroyedClass {
+static int assertionCallCount = 0;
+static int wouldHaveAssertedCount = 0;
+struct WouldAssert : std::exception {};
+class Base : public QObject
+{
+    Q_OBJECT
+public:
+    ~Base()
+    {
+        try {
+            emit theSignal();
+        } catch (const WouldAssert &) {
+            ++wouldHaveAssertedCount;
+        }
+    }
+
+signals:
+    void theSignal();
+};
+
+class Derived : public Base
+{
+    Q_OBJECT
+public:
+    ~Derived() { }
+
+public slots:
+    void doNothing() {}
+};
+} // namespace EmitToDestroyedClass
+
+QT_BEGIN_NAMESPACE
+namespace QtPrivate {
+template<> void assertObjectType<EmitToDestroyedClass::Derived>(QObject *o)
+{
+    // override the assertion so we don't assert and so something does happen
+    // when assertions are disabled. By throwing, we also prevent the UB from
+    // happening.
+    using namespace EmitToDestroyedClass;
+    ++assertionCallCount;
+    if (!qobject_cast<Derived *>(o))
+        throw WouldAssert();
+}
+}
+QT_END_NAMESPACE
+
+void tst_QObject::emitToDestroyedClass()
+{
+    using namespace EmitToDestroyedClass;
+    std::unique_ptr ptr = std::make_unique<Derived>();
+    QObject::connect(ptr.get(), &Base::theSignal, ptr.get(), &Derived::doNothing);
+    QCOMPARE(assertionCallCount, 0);
+    QCOMPARE(wouldHaveAssertedCount, 0);
+
+    // confirm our replacement function did get called
+    emit ptr->theSignal();
+    QCOMPARE(assertionCallCount, 1);
+    QCOMPARE(wouldHaveAssertedCount, 0);
+
+    ptr.reset();
+    QCOMPARE(assertionCallCount, 2);
+    QCOMPARE(wouldHaveAssertedCount, 1);
 }
 
 // Test for QtPrivate::HasQ_OBJECT_Macro

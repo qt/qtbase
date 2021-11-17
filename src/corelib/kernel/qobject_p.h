@@ -98,9 +98,9 @@ public:
 
 class Q_CORE_EXPORT QObjectPrivate : public QObjectData
 {
+public:
     Q_DECLARE_PUBLIC(QObject)
 
-public:
     struct ExtraData
     {
         ExtraData(QObjectPrivate *ptr) : parent(ptr) { }
@@ -491,6 +491,12 @@ using FunctionStorage = typename std::conditional_t<
         FunctionStorageEmptyBaseClassOptimization<Func>,
         FunctionStorageByValue<Func>
     >;
+
+template <typename ObjPrivate> inline void assertObjectType(QObjectPrivate *d)
+{
+    using Obj = std::remove_pointer_t<decltype(std::declval<ObjPrivate *>()->q_func())>;
+    assertObjectType<Obj>(d->q_ptr);
+}
 
 template<typename Func, typename Args, typename R>
 class QPrivateSlotObject : public QSlotObjectBase, private FunctionStorage<Func>
