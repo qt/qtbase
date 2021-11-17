@@ -900,7 +900,7 @@ public:
     QSurface *fallbackSurface = nullptr;
     QWindow *maybeWindow = nullptr;
     QOpenGLContext *maybeShareContext = nullptr;
-    mutable bool needsMakeCurrent = false;
+    mutable bool needsMakeCurrentDueToSwap = false;
     QOpenGLExtensions *f = nullptr;
     uint vao = 0;
     struct Caps {
