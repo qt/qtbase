@@ -217,12 +217,17 @@ void QPlatformBackingStore::composeAndFlush(QWindow *window, const QRegion &regi
   If QPlatformIntegration::RasterGLSurface is supported, either this function or
   toTexture() must be implemented.
 
+  The returned image is only valid until the next operation (resize, paint, scroll,
+  or flush) on the backingstore. The caller must not store the return value between
+  calls, but instead call this function before each use, or make an explicit copy.
+
   \sa toTexture()
  */
 QImage QPlatformBackingStore::toImage() const
 {
     return QImage();
 }
+
 #ifndef QT_NO_OPENGL
 /*!
   May be reimplemented in subclasses to return the content of the
