@@ -850,7 +850,13 @@ QImage QXcbBackingStore::toImage() const
         return QImage();
 
     m_image->flushScrolledRegion(true);
-    return *m_image->image();
+
+    QImage image = *m_image->image();
+
+    // Return an image that does not share QImageData with the original image,
+    // even if they both point to the same data of the m_xcb_image, otherwise
+    // painting to m_qimage would detach it from the m_xcb_image data.
+    return QImage(image.constBits(), image.width(), image.height(), image.format());
 }
 
 QPlatformGraphicsBuffer *QXcbBackingStore::graphicsBuffer() const
