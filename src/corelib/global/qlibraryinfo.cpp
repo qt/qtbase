@@ -431,7 +431,7 @@ static QString getRelocatablePrefix()
         // executable within the QT_HOST_BIN directory. We're detecting the latter case by checking
         // whether there's an import library corresponding to our QtCore DLL in PREFIX/lib.
         const QString libdir = QString::fromLocal8Bit(
-            qt_configure_strs[QLibraryInfo::LibrariesPath - 1]);
+            qt_configure_strs.viewAt(QLibraryInfo::LibrariesPath - 1));
         const QLatin1Char slash('/');
 #if defined(Q_CC_MINGW)
         const QString implibPrefix = QStringLiteral("lib");
@@ -463,7 +463,7 @@ static QString getRelocatablePrefix()
     // See "Hardware capabilities" in the ld.so documentation and the Qt 5.3.0
     // changelog regarding SSE2 support.
     const QString libdir = QString::fromLocal8Bit(
-        qt_configure_strs[QLibraryInfo::LibrariesPath - 1]);
+        qt_configure_strs.viewAt(QLibraryInfo::LibrariesPath - 1));
     QDir prefixDir(prefixPath);
     while (!prefixDir.exists(libdir)) {
         prefixDir.cdUp();
