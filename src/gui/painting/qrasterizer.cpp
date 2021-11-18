@@ -744,6 +744,63 @@ static inline QScFixed qSafeFloatToQScFixed(qreal x)
     return QScFixed(tmp);
 }
 
+// returns true if the whole line gets clipped away
+static inline bool qClipLine(QPointF *pt1, QPointF *pt2, const QRectF &clip)
+{
+    qreal &x1 = pt1->rx();
+    qreal &y1 = pt1->ry();
+    qreal &x2 = pt2->rx();
+    qreal &y2 = pt2->ry();
+
+    if (!qIsFinite(x1) || !qIsFinite(y1) || !qIsFinite(x2) || !qIsFinite(y2))
+        return true;
+
+    const qreal xmin = clip.left();
+    const qreal xmax = clip.right();
+    const qreal ymin = clip.top();
+    const qreal ymax = clip.bottom();
+
+    if (x1 < xmin) {
+        if (x2 <= xmin)
+            return true;
+        y1 += (y2 - y1) / (x2 - x1) * (xmin - x1);
+        x1 = xmin;
+    } else if (x1 > xmax) {
+        if (x2 >= xmax)
+            return true;
+        y1 += (y2 - y1) / (x2 - x1) * (xmax - x1);
+        x1 = xmax;
+    }
+    if (x2 < xmin) {
+        y2 += (y2 - y1) / (x2 - x1) * (xmin - x2);
+        x2 = xmin;
+    } else if (x2 > xmax) {
+        y2 += (y2 - y1) / (x2 - x1) * (xmax - x2);
+        x2 = xmax;
+    }
+
+    if (y1 < ymin) {
+        if (y2 <= ymin)
+            return true;
+        x1 += (x2 - x1) / (y2 - y1) * (ymin - y1);
+        y1 = ymin;
+    } else if (y1 > ymax) {
+        if (y2 >= ymax)
+            return true;
+        x1 += (x2 - x1) / (y2 - y1) * (ymax - y1);
+        y1 = ymax;
+    }
+    if (y2 < ymin) {
+        x2 += (x2 - x1) / (y2 - y1) * (ymin - y2);
+        y2 = ymin;
+    } else if (y2 > ymax) {
+        x2 += (x2 - x1) / (y2 - y1) * (ymax - y2);
+        y2 = ymax;
+    }
+
+    return false;
+}
+
 void QRasterizer::rasterizeLine(const QPointF &a, const QPointF &b, qreal width, bool squareCap)
 {
     if (a == b || !(width > 0.0) || d->clipRect.isEmpty())
@@ -760,42 +817,8 @@ void QRasterizer::rasterizeLine(const QPointF &a, const QPointF &b, qreal width,
 
     QPointF offs = QPointF(qAbs(b.y() - a.y()), qAbs(b.x() - a.x())) * width * 0.5;
     const QRectF clip(d->clipRect.topLeft() - offs, d->clipRect.bottomRight() + QPoint(1, 1) + offs);
-
-    if (!clip.contains(pa) || !clip.contains(pb)) {
-        qreal t1 = 0;
-        qreal t2 = 1;
-
-        const qreal o[2] = { pa.x(), pa.y() };
-        const qreal d[2] = { pb.x() - pa.x(), pb.y() - pa.y() };
-
-        const qreal low[2] = { clip.left(), clip.top() };
-        const qreal high[2] = { clip.right(), clip.bottom() };
-
-        for (int i = 0; i < 2; ++i) {
-            if (d[i] == 0) {
-                if (o[i] <= low[i] || o[i] >= high[i])
-                    return;
-                continue;
-            }
-            const qreal d_inv = 1 / d[i];
-            qreal t_low = (low[i] - o[i]) * d_inv;
-            qreal t_high = (high[i] - o[i]) * d_inv;
-            if (t_low > t_high)
-                qSwap(t_low, t_high);
-            if (t1 < t_low)
-                t1 = t_low;
-            if (t2 > t_high)
-                t2 = t_high;
-            if (t1 >= t2)
-                return;
-        }
-
-        QPointF npa = pa + (pb - pa) * t1;
-        QPointF npb = pa + (pb - pa) * t2;
-
-        pa = npa;
-        pb = npb;
-    }
+    if (qClipLine(&pa, &pb, clip))
+        return;
 
     {
         // old delta
