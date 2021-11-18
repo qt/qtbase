@@ -1,3 +1,8 @@
+# The configure.cmake here does not get picked up automatically.
+# Manually evaluate tool-related features.
+include("${CMAKE_CURRENT_SOURCE_DIR}/configure.cmake")
+qt_feature_evaluate_features("${CMAKE_CURRENT_SOURCE_DIR}/configure.cmake")
+
 add_subdirectory(uic)
 if (QT_FEATURE_dbus)
     add_subdirectory(qdbuscpp2xml)
@@ -9,8 +14,7 @@ if (QT_FEATURE_commandlineparser)
     add_subdirectory(qtpaths)
 endif()
 
-# Only include the following tools when performing a host build
-if(NOT CMAKE_CROSSCOMPILING AND QT_FEATURE_regularexpression)
+if(QT_FEATURE_androiddeployqt)
     add_subdirectory(androiddeployqt)
     if(QT_FEATURE_gui AND QT_FEATURE_systemsemaphore)
         add_subdirectory(androidtestrunner)
