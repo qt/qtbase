@@ -259,8 +259,13 @@ public abstract class QtLoader {
                 boolean apkDeployFromSystem = false;
                 String apkPath = m_context.getApplicationInfo().publicSourceDir;
                 File apkFile = new File(apkPath);
-                if (apkFile.exists() && Arrays.asList(SYSTEM_APP_PATHS).contains(apkFile.getParentFile().getAbsolutePath() + "/"))
-                    apkDeployFromSystem = true;
+                if (apkFile.exists()) {
+                    for (String systemAppPath : SYSTEM_APP_PATHS) {
+                        apkDeployFromSystem = apkFile.getAbsolutePath().startsWith(systemAppPath);
+                        if (apkDeployFromSystem)
+                            break;
+                    }
+                }
 
                 String libsDir = null;
                 String bundledLibsDir = null;
