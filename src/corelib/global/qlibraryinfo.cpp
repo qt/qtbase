@@ -602,24 +602,20 @@ QString QLibraryInfo::path(LibraryPath p)
 #endif // settings
 
     if (!fromConf) {
-        // "volatile" here is a hack to prevent compilers from doing a
-        // compile-time strlen() on "path". The issue is that Qt installers
-        // will binary-patch the Qt installation paths -- in such scenarios, Qt
-        // will be built with a dummy path, thus the compile-time result of
-        // strlen is meaningless.
-        const char * volatile path = nullptr;
         if (loc == PrefixPath) {
             ret = getPrefix();
         } else if (int(loc) <= qt_configure_strs.count()) {
-            path = qt_configure_strs[loc - 1];
+            ret = QString::fromLocal8Bit(qt_configure_strs.viewAt(loc - 1));
 #ifndef Q_OS_WIN // On Windows we use the registry
         } else if (loc == SettingsPath) {
-            path = QT_CONFIGURE_SETTINGS_PATH;
+            // Use of volatile is a hack to discourage compilers from calling
+            // strlen(), in the inlined fromLocal8Bit(const char *)'s body, at
+            // compile-time, as Qt installers binary-patch the path, replacing
+            // the dummy path seen at compile-time, typically changing length.
+            const char *volatile path = QT_CONFIGURE_SETTINGS_PATH;
+            ret = QString::fromLocal8Bit(path);
 #endif
         }
-
-        if (path)
-            ret = QString::fromLocal8Bit(path);
     }
 
     if (!ret.isEmpty() && QDir::isRelativePath(ret)) {
