@@ -51,9 +51,6 @@ QT_BEGIN_NAMESPACE
 class QIODevice;
 class QTextStream;
 
-class QXmlInputSource;
-class QXmlReader;
-
 class QDomDocumentPrivate;
 class QDomDocumentTypePrivate;
 class QDomDocumentFragmentPrivate;

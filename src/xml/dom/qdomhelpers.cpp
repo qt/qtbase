@@ -51,36 +51,20 @@ QT_BEGIN_NAMESPACE
 
 /**************************************************************
  *
- * QXmlDocumentLocators
- *
- **************************************************************/
-
-int QDomDocumentLocator::column() const
-{
-    Q_ASSERT(reader);
-    return static_cast<int>(reader->columnNumber());
-}
-
-int QDomDocumentLocator::line() const
-{
-    Q_ASSERT(reader);
-    return static_cast<int>(reader->lineNumber());
-}
-
-/**************************************************************
- *
  * QDomBuilder
  *
  **************************************************************/
 
-QDomBuilder::QDomBuilder(QDomDocumentPrivate *d, QXmlDocumentLocator *l, bool namespaceProcessing)
+QDomBuilder::QDomBuilder(QDomDocumentPrivate *d, QXmlStreamReader *r, bool namespaceProcessing)
     : errorLine(0),
       errorColumn(0),
       doc(d),
       node(d),
-      locator(l),
+      reader(r),
       nsProcessing(namespaceProcessing)
 {
+    Q_ASSERT(doc);
+    Q_ASSERT(reader);
 }
 
 QDomBuilder::~QDomBuilder() {}
@@ -109,7 +93,7 @@ bool QDomBuilder::startElement(const QString &nsURI, const QString &qName,
     if (!n)
         return false;
 
-    n->setLocation(locator->line(), locator->column());
+    n->setLocation(int(reader->lineNumber()), int(reader->columnNumber()));
 
     node->appendChild(n);
     node = n;
@@ -159,7 +143,7 @@ bool QDomBuilder::characters(const QString &characters, bool cdata)
     } else {
         n.reset(doc->createTextNode(characters));
     }
-    n->setLocation(locator->line(), locator->column());
+    n->setLocation(int(reader->lineNumber()), int(reader->columnNumber()));
     node->appendChild(n.data());
     n.take();
 
@@ -171,7 +155,7 @@ bool QDomBuilder::processingInstruction(const QString &target, const QString &da
     QDomNodePrivate *n;
     n = doc->createProcessingInstruction(target, data);
     if (n) {
-        n->setLocation(locator->line(), locator->column());
+        n->setLocation(int(reader->lineNumber()), int(reader->columnNumber()));
         node->appendChild(n);
         return true;
     } else
@@ -181,7 +165,7 @@ bool QDomBuilder::processingInstruction(const QString &target, const QString &da
 bool QDomBuilder::skippedEntity(const QString &name)
 {
     QDomNodePrivate *n = doc->createEntityReference(name);
-    n->setLocation(locator->line(), locator->column());
+    n->setLocation(int(reader->lineNumber()), int(reader->columnNumber()));
     node->appendChild(n);
     return true;
 }
@@ -189,8 +173,8 @@ bool QDomBuilder::skippedEntity(const QString &name)
 void QDomBuilder::fatalError(const QString &message)
 {
     errorMsg = message;
-    errorLine = static_cast<int>(locator->line());
-    errorColumn = static_cast<int>(locator->column());
+    errorLine = static_cast<int>(reader->lineNumber());
+    errorColumn = static_cast<int>(reader->columnNumber());
 }
 
 QDomBuilder::ErrorInfo QDomBuilder::error() const
@@ -214,7 +198,7 @@ bool QDomBuilder::comment(const QString &characters)
 {
     QDomNodePrivate *n;
     n = doc->createComment(characters);
-    n->setLocation(locator->line(), locator->column());
+    n->setLocation(int(reader->lineNumber()), int(reader->columnNumber()));
     node->appendChild(n);
     return true;
 }
@@ -253,7 +237,7 @@ bool QDomBuilder::notationDecl(const QString &name, const QString &publicId,
  **************************************************************/
 
 QDomParser::QDomParser(QDomDocumentPrivate *d, QXmlStreamReader *r, bool namespaceProcessing)
-    : reader(r), locator(r), domBuilder(d, &locator, namespaceProcessing)
+    : reader(r), domBuilder(d, r, namespaceProcessing)
 {
 }
 

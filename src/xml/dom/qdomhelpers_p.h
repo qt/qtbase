@@ -62,38 +62,6 @@ class QXmlStreamAttributes;
 
 /**************************************************************
  *
- * QXmlDocumentLocators
- *
- **************************************************************/
-
-/* TODO: QXmlDocumentLocator can be removed when the SAX-based
- * implementation is removed. Right now it is needed for QDomBuilder
- * to work with both QXmlStreamReader and QXmlInputSource (SAX)
- * based implementations.
- */
-class QXmlDocumentLocator
-{
-public:
-    virtual ~QXmlDocumentLocator() = default;
-    virtual int column() const = 0;
-    virtual int line() const = 0;
-};
-
-class QDomDocumentLocator : public QXmlDocumentLocator
-{
-public:
-    QDomDocumentLocator(QXmlStreamReader *r) : reader(r) {}
-    ~QDomDocumentLocator() override = default;
-
-    int column() const override;
-    int line() const override;
-
-private:
-    QXmlStreamReader *reader;
-};
-
-/**************************************************************
- *
  * QDomBuilder
  *
  **************************************************************/
@@ -101,7 +69,7 @@ private:
 class QDomBuilder
 {
 public:
-    QDomBuilder(QDomDocumentPrivate *d, QXmlDocumentLocator *l, bool namespaceProcessing);
+    QDomBuilder(QDomDocumentPrivate *d, QXmlStreamReader *r, bool namespaceProcessing);
     ~QDomBuilder();
 
     bool endDocument();
@@ -131,7 +99,7 @@ public:
 private:
     QDomDocumentPrivate *doc;
     QDomNodePrivate *node;
-    QXmlDocumentLocator *locator;
+    QXmlStreamReader *reader;
     QString entityName;
     bool nsProcessing;
 };
@@ -157,7 +125,6 @@ private:
     bool parseMarkupDecl();
 
     QXmlStreamReader *reader;
-    QDomDocumentLocator locator;
     QDomBuilder domBuilder;
 };
 
