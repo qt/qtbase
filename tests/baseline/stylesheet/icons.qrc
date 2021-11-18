@@ -1,0 +1,9 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+<qresource>
+   <file>icons/align-center.png</file>
+   <file>icons/align-left.png</file>
+   <file>icons/align-right.png</file>
+   <file>icons/arrow-up.png</file>
+</qresource>
+</RCC>
