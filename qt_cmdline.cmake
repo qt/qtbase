@@ -8,7 +8,6 @@ qt_commandline_subconfig(src/printsupport)
 qt_commandline_subconfig(src/plugins/sqldrivers)
 qt_commandline_subconfig(src/testlib)
 qt_commandline_subconfig(src/tools)
-qt_commandline_custom(qmakeArgs)
 qt_commandline_option(prefix TYPE string)
 qt_commandline_option(extprefix TYPE string)
 qt_commandline_option(archdatadir TYPE string)
@@ -124,18 +123,6 @@ qt_commandline_prefix(L lpaths)
 qt_commandline_prefix(R rpaths)
 qt_commandline_prefix(W wflags)
 
-# special case begin
-function(qt_commandline_qmakeArgs out_var arg)
-    if(arg MATCHES "^QMAKE_[A-Z0-9_]+ *[-+]?=.*")
-        message(FATAL_ERROR
-            "${arg} is not a valid configure argument. "
-            "Assignments to QMake variables are not supported. "
-            "Consider passing the equivalent CMake argument via "
-            "'configure ... -- -DCMAKE_VARIABLE=VALUE'")
-    endif()
-    set(${out_var} FALSE PARENT_SCOPE)
-endfunction()
-
 function(qt_commandline_cxxstd arg val nextok)
     if("${val}" STREQUAL "")
         qtConfGetNextCommandlineArg(val)
@@ -187,4 +174,3 @@ function(qt_commandline_sanitize arg val nextok)
         qtConfAddError("Invalid argument '${val}' to command line parameter '${arg}'")
     endif()
 endfunction()
-# special case end
