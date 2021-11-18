@@ -3275,7 +3275,6 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
             rule.configurePalette(&toolOpt.palette, QPalette::ButtonText, QPalette::Button);
             toolOpt.font = rule.font.resolve(toolOpt.font);
             toolOpt.rect = rule.borderRect(opt->rect);
-            bool customArrow = tool->features & QStyleOptionToolButton::Arrow;
             const auto customArrowElement = [tool]{
                 switch (tool->arrowType) {
                 case Qt::DownArrow: return PseudoElement_DownArrow;
@@ -3286,9 +3285,29 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
                 }
                 return PseudoElement_None;
             };
-            bool customDropDown = tool->features & QStyleOptionToolButton::MenuButtonPopup;
+            // if arrow/menu/indicators are requested, either draw them using the available rule,
+            // or let the base style draw them; but not both
+            const bool drawArrow = tool->features & QStyleOptionToolButton::Arrow;
+            bool customArrow = drawArrow && hasStyleRule(w, customArrowElement());
+            if (customArrow) {
+                toolOpt.features &= ~QStyleOptionToolButton::Arrow;
+                toolOpt.text = QString(); // we need to draw the arrow and the text ourselves
+            }
+            const bool drawDropDown = tool->features & QStyleOptionToolButton::MenuButtonPopup;
+            bool customDropDown = drawDropDown && hasStyleRule(w, PseudoElement_ToolButtonMenu);
             bool customDropDownArrow = false;
-            bool customMenuIndicator = !customDropDown && (tool->features & QStyleOptionToolButton::HasMenu);
+            const bool drawMenuIndicator = tool->features & QStyleOptionToolButton::HasMenu;
+            if (customDropDown) {
+                toolOpt.subControls &= ~QStyle::SC_ToolButtonMenu;
+                customDropDownArrow = hasStyleRule(w, PseudoElement_ToolButtonMenuArrow);
+                if (customDropDownArrow)
+                    toolOpt.features &= ~(QStyleOptionToolButton::Menu | QStyleOptionToolButton::HasMenu);
+            }
+            bool customMenuIndicator = (!customDropDown && drawMenuIndicator)
+                                    && hasStyleRule(w, PseudoElement_ToolButtonMenuIndicator);
+            if (customMenuIndicator)
+                toolOpt.features &= ~QStyleOptionToolButton::HasMenu;
+
             if (rule.hasNativeBorder()) {
                 if (tool->subControls & SC_ToolButton) {
                     //in some case (eg. the button is "auto raised") the style doesn't draw the background
@@ -3302,28 +3321,12 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
                     if (!(bflags & (State_Sunken | State_On | State_Raised)))
                         rule.drawBackground(p, toolOpt.rect);
                 }
-                customArrow = customArrow && hasStyleRule(w, customArrowElement());
-                if (customArrow)
-                    toolOpt.features &= ~QStyleOptionToolButton::Arrow;
-                customDropDown = customDropDown && hasStyleRule(w, PseudoElement_ToolButtonMenu);
-                if (customDropDown) {
-                    toolOpt.subControls &= ~QStyle::SC_ToolButtonMenu;
-                    customDropDownArrow = hasStyleRule(w, PseudoElement_ToolButtonMenuArrow);
-                    if (customDropDownArrow)
-                        toolOpt.features &= ~(QStyleOptionToolButton::Menu | QStyleOptionToolButton::HasMenu);
-                }
-                customMenuIndicator = customMenuIndicator && hasStyleRule(w, PseudoElement_ToolButtonMenuIndicator);
-                if (customMenuIndicator)
-                    toolOpt.features &= ~QStyleOptionToolButton::HasMenu;
 
                 if (rule.baseStyleCanDraw() && !(tool->features & QStyleOptionToolButton::Arrow)) {
                     baseStyle()->drawComplexControl(cc, &toolOpt, p, w);
                 } else {
                     QWindowsStyle::drawComplexControl(cc, &toolOpt, p, w);
                 }
-
-                if (!customArrow && !customDropDown && !customMenuIndicator)
-                    return;
             } else {
                 rule.drawRule(p, opt->rect);
                 toolOpt.rect = rule.contentsRect(opt->rect);
@@ -3333,7 +3336,7 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
             }
 
             const QRect cr = toolOpt.rect;
-            if (customDropDown) {
+            if (drawDropDown) {
                 if (opt->subControls & QStyle::SC_ToolButtonMenu) {
                     QRenderRule subRule = renderRule(w, opt, PseudoElement_ToolButtonMenu);
                     QRect menuButtonRect = subControlRect(CC_ToolButton, opt, QStyle::SC_ToolButtonMenu, w);
@@ -3344,7 +3347,7 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
                         baseStyle()->drawPrimitive(PE_IndicatorButtonDropDown, &toolOpt, p, w);
                     }
 
-                    if (customDropDownArrow) {
+                    if (customDropDownArrow || drawMenuIndicator) {
                         QRenderRule arrowRule = renderRule(w, opt, PseudoElement_ToolButtonMenuArrow);
                         QRect arrowRect = arrowRule.hasGeometry()
                                         ? positionRect(w, arrowRule, PseudoElement_ToolButtonMenuArrow, menuButtonRect, toolOpt.direction)
@@ -3357,7 +3360,7 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
                         }
                     }
                 }
-            } else if (customMenuIndicator) {
+            } else if (drawMenuIndicator) {
                 QRenderRule subRule = renderRule(w, opt, PseudoElement_ToolButtonMenuIndicator);
                 QRect r = subRule.hasGeometry()
                         ? positionRect(w, subRule, PseudoElement_ToolButtonMenuIndicator, toolOpt.rect, toolOpt.direction)
@@ -3371,27 +3374,36 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
             }
             toolOpt.rect = cr;
 
+            // If we don't have a custom arrow, then the arrow will have been rendered
+            // already by the base style when drawing the label.
             if (customArrow) {
                 const auto arrowElement = customArrowElement();
                 QRenderRule subRule = renderRule(w, opt, arrowElement);
-                QRect r = subRule.hasGeometry() ? positionRect(w, subRule, arrowElement, toolOpt.rect, toolOpt.direction)
-                                                : subRule.contentsRect(toolOpt.rect);
-                if (subRule.hasDrawable()) {
-                    subRule.drawRule(p, r);
-                } else {
-                    toolOpt.rect = r;
-                    const auto arrowElement = [&toolOpt] {
-                        switch (toolOpt.arrowType) {
-                        case Qt::DownArrow: return QStyle::PE_IndicatorArrowDown;
-                        case Qt::UpArrow: return QStyle::PE_IndicatorArrowUp;
-                        case Qt::LeftArrow: return QStyle::PE_IndicatorArrowLeft;
-                        case Qt::RightArrow: return QStyle::PE_IndicatorArrowRight;
-                        case Qt::NoArrow: break;
-                        }
-                        return QStyle::PE_IndicatorArrowDown; // never happens
-                    };
-                    baseStyle()->drawPrimitive(arrowElement(), &toolOpt, p, w);
+                QRect arrowRect = subRule.hasGeometry() ? positionRect(w, subRule, arrowElement, toolOpt.rect, toolOpt.direction)
+                                                        : subRule.contentsRect(toolOpt.rect);
+
+                switch (toolOpt.toolButtonStyle) {
+                case Qt::ToolButtonIconOnly:
+                    break;
+                case Qt::ToolButtonTextOnly:
+                case Qt::ToolButtonTextBesideIcon:
+                case Qt::ToolButtonTextUnderIcon: {
+                    // The base style needs to lay out the contents and will render the styled
+                    // arrow icons, unless the geometry is defined in the style sheet.
+                    toolOpt.text = tool->text;
+                    if (!subRule.hasGeometry())
+                        toolOpt.features |= QStyleOptionToolButton::Arrow;
+                    drawControl(CE_ToolButtonLabel, &toolOpt, p, w);
+                    if (!subRule.hasGeometry())
+                        return;
+                    break;
                 }
+                case Qt::ToolButtonFollowStyle:
+                    // QToolButton handles this, so must never happen
+                    Q_ASSERT(false);
+                    break;
+                }
+                subRule.drawRule(p, arrowRect);
             }
 
             return;
