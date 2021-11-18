@@ -1292,7 +1292,7 @@ struct QMetaTypeIdQObject<T*, QMetaType::PointerToQObject>
             return id;
         const char *const cName = T::staticMetaObject.className();
         QByteArray typeName;
-        typeName.reserve(int(strlen(cName)) + 1);
+        typeName.reserve(strlen(cName) + 1);
         typeName.append(cName).append('*');
         const int newId = qRegisterNormalizedMetaType<T *>(typeName);
         metatype_id.storeRelease(newId);
@@ -1333,7 +1333,7 @@ struct QMetaTypeIdQObject<T*, QMetaType::PointerToGadget>
             return id;
         const char *const cName = T::staticMetaObject.className();
         QByteArray typeName;
-        typeName.reserve(int(strlen(cName)) + 1);
+        typeName.reserve(strlen(cName) + 1);
         typeName.append(cName).append('*');
         const int newId = qRegisterNormalizedMetaType<T *>(typeName);
         metatype_id.storeRelease(newId);
@@ -1356,7 +1356,7 @@ struct QMetaTypeIdQObject<T, QMetaType::IsEnumeration>
         const char *eName = qt_getEnumName(T());
         const char *cName = qt_getEnumMetaObject(T())->className();
         QByteArray typeName;
-        typeName.reserve(int(strlen(cName) + 2 + strlen(eName)));
+        typeName.reserve(strlen(cName) + 2 + strlen(eName));
         typeName.append(cName).append("::").append(eName);
         const int newId = qRegisterNormalizedMetaType<T>(typeName);
         metatype_id.storeRelease(newId);
@@ -1438,9 +1438,9 @@ struct QMetaTypeId< SINGLE_ARG_TEMPLATE<T> > \
             return id; \
         const char *tName = QMetaType::fromType<T>().name(); \
         Q_ASSERT(tName); \
-        const int tNameLen = int(qstrlen(tName)); \
+        const size_t tNameLen = qstrlen(tName); \
         QByteArray typeName; \
-        typeName.reserve(int(sizeof(#SINGLE_ARG_TEMPLATE)) + 1 + tNameLen + 1 + 1); \
+        typeName.reserve(sizeof(#SINGLE_ARG_TEMPLATE) + 1 + tNameLen + 1 + 1); \
         typeName.append(#SINGLE_ARG_TEMPLATE, int(sizeof(#SINGLE_ARG_TEMPLATE)) - 1) \
             .append('<').append(tName, tNameLen); \
         typeName.append('>'); \
@@ -1468,10 +1468,10 @@ struct QMetaTypeId< DOUBLE_ARG_TEMPLATE<T, U> > \
         const char *uName = QMetaType::fromType<U>().name(); \
         Q_ASSERT(tName); \
         Q_ASSERT(uName); \
-        const int tNameLen = int(qstrlen(tName)); \
-        const int uNameLen = int(qstrlen(uName)); \
+        const size_t tNameLen = qstrlen(tName); \
+        const size_t uNameLen = qstrlen(uName); \
         QByteArray typeName; \
-        typeName.reserve(int(sizeof(#DOUBLE_ARG_TEMPLATE)) + 1 + tNameLen + 1 + uNameLen + 1 + 1); \
+        typeName.reserve(sizeof(#DOUBLE_ARG_TEMPLATE) + 1 + tNameLen + 1 + uNameLen + 1 + 1); \
         typeName.append(#DOUBLE_ARG_TEMPLATE, int(sizeof(#DOUBLE_ARG_TEMPLATE)) - 1) \
             .append('<').append(tName, tNameLen).append(',').append(uName, uNameLen); \
         typeName.append('>'); \
@@ -1514,7 +1514,7 @@ struct SharedPointerMetaTypeIdHelper<SMART_POINTER<T>, true> \
             return id; \
         const char * const cName = T::staticMetaObject.className(); \
         QByteArray typeName; \
-        typeName.reserve(int(sizeof(#SMART_POINTER) + 1 + strlen(cName) + 1)); \
+        typeName.reserve(sizeof(#SMART_POINTER) + 1 + strlen(cName) + 1); \
         typeName.append(#SMART_POINTER, int(sizeof(#SMART_POINTER)) - 1) \
             .append('<').append(cName).append('>'); \
         const int newId = qRegisterNormalizedMetaType< SMART_POINTER<T> >(typeName); \
