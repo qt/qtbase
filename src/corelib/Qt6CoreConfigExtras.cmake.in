@@ -46,7 +46,7 @@ set(_Qt6CTestMacros "${_Qt6CoreConfigDir}/Qt6CTestMacros.cmake")
 
 if(ANDROID_PLATFORM)
     include("${CMAKE_CURRENT_LIST_DIR}/@QT_CMAKE_EXPORT_NAMESPACE@AndroidMacros.cmake")
-    _qt_internal_create_global_apk_target()
+    _qt_internal_create_global_android_targets()
 endif()
 
 if(EMSCRIPTEN)

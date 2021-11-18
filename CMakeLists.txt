@@ -117,7 +117,7 @@ if(NOT QT_BUILD_STANDALONE_TESTS)
     # Needed when building qtbase for android.
     if(ANDROID)
         include(src/corelib/Qt6AndroidMacros.cmake)
-        _qt_internal_create_global_apk_target()
+        _qt_internal_create_global_android_targets()
     endif()
 
     if(WASM)

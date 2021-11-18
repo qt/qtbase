@@ -307,9 +307,10 @@ function(qt6_android_add_apk_target target)
         message(FATAL_ERROR "Target ${target} is not a valid android executable target\n")
     endif()
 
-    # Make global apk target depend on the current apk target.
+    # Make global apk and aab targets depend on the current apk target.
     if(TARGET apk)
         add_dependencies(apk ${target}_make_apk)
+        add_dependencies(aab ${target}_make_aab)
         _qt_internal_create_global_apk_all_target_if_needed()
     endif()
 
@@ -377,17 +378,41 @@ function(qt6_android_add_apk_target target)
             COMMENT "Creating APK for ${target}"
         )
     endif()
+
+    # Add target triggering AAB creation. Since the _make_aab target is not added to the ALL
+    # set, we may avoid dependency check for it and admit that the target is "always out
+    # of date".
+    add_custom_target(${target}_make_aab
+        DEPENDS ${target}_prepare_apk_dir
+        COMMAND  ${deployment_tool}
+            --input ${deployment_file}
+            --output ${apk_final_dir}
+            --apk ${apk_final_file_path}
+            --aab
+            ${extra_args}
+        COMMENT "Creating AAB for ${target}"
+    )
 endfunction()
 
-function(_qt_internal_create_global_apk_target)
+function(_qt_internal_create_global_android_targets)
+    macro(_qt_internal_create_global_android_targets_impl target)
+        string(TOUPPER "${target}" target_upper)
+        if(NOT QT_NO_GLOBAL_${target_upper}_TARGET)
+            if(NOT TARGET ${target})
+                add_custom_target(${target} COMMENT "Building all apks")
+            endif()
+        endif()
+    endmacro()
+
     # Create a top-level "apk" target for convenience, so that users can call 'ninja apk'.
     # It will trigger building all the apk build targets that are added as part of the project.
     # Allow opting out.
-    if(NOT QT_NO_GLOBAL_APK_TARGET)
-        if(NOT TARGET apk)
-            add_custom_target(apk COMMENT "Building all apks")
-        endif()
-    endif()
+    _qt_internal_create_global_android_targets_impl(apk)
+
+    # Create a top-level "aab" target for convenience, so that users can call 'ninja aab'.
+    # It will trigger building all the apk build targets that are added as part of the project.
+    # Allow opting out.
+    _qt_internal_create_global_android_targets_impl(aab)
 endfunction()
 
 # This function allows deciding whether apks should be built as part of the ALL target at first
