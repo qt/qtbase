@@ -46,6 +46,10 @@
 
 QT_BEGIN_NAMESPACE
 
+// Whether we include some extra validity checks
+// (checks to ensure we don't read out-of-bounds are always included)
+static constexpr bool IncludeValidityChecks = true;
+
 #if defined(Q_PROCESSOR_X86_64)
 #  define MACHO64
 static const cpu_type_t my_cputype = CPU_TYPE_X86_64;
@@ -193,9 +197,16 @@ QLibraryScanResult  QMachOParser::parse(const char *m_s, ulong fdlen, QString *e
                     return notfound(QString(), errorString);
 
                 if (sect[j].size < sizeof(QPluginMetaData::MagicHeader))
-                    return notfound(QLibrary::tr("section .qtmetadata is too small"), errorString);
+                    return notfound(QLibrary::tr(".qtmetadata section is too small"), errorString);
 
                 qsizetype pos = reinterpret_cast<const char *>(header) - m_s + sect[j].offset;
+                if (IncludeValidityChecks) {
+                    QByteArrayView expectedMagic = QByteArrayView::fromArray(QPluginMetaData::MagicString);
+                    QByteArrayView actualMagic = QByteArrayView(m_s + pos, expectedMagic.size());
+                    if (expectedMagic != actualMagic)
+                        return notfound(QLibrary::tr(".qtmetadata section has incorrect magic"), errorString);
+                }
+
                 pos += sizeof(QPluginMetaData::MagicString);
                 return { pos, qsizetype(sect[j].size - sizeof(QPluginMetaData::MagicString)) };
             }

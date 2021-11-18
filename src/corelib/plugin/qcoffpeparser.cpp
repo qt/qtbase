@@ -396,15 +396,20 @@ QLibraryScanResult QCoffPeParser::parse(QByteArrayView data, QString *errMsg)
             continue;
         peDebug << "found .qtmetadata section";
 
+        size_t size = qMin(section->SizeOfRawData, section->Misc.VirtualSize);
+        if (size < sizeof(QPluginMetaData::MagicHeader))
+            return error(QLibrary::tr(".qtmetadata section is too small"));
         if (IncludeValidityChecks) {
+            QByteArrayView expectedMagic = QByteArrayView::fromArray(QPluginMetaData::MagicString);
+            QByteArrayView actualMagic = data.sliced(offset, expectedMagic.size());
+            if (expectedMagic != actualMagic)
+                return error(QLibrary::tr(".qtmetadata section has incorrect magic"));
+
             if (section->Characteristics & IMAGE_SCN_MEM_WRITE)
                 return error(QLibrary::tr(".qtmetadata section is writable"));
             if (section->Characteristics & IMAGE_SCN_MEM_EXECUTE)
                 return error(QLibrary::tr(".qtmetadata section is executable"));
         }
-        size_t size = qMin(section->SizeOfRawData, section->Misc.VirtualSize);
-        if (size < sizeof(QPluginMetaData::MagicHeader))
-            return error(QLibrary::tr("section .qtmetadata is too small"));
 
         return { qsizetype(offset + sizeof(QPluginMetaData::MagicString)),
                  qsizetype(size - sizeof(QPluginMetaData::MagicString)) };

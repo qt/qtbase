@@ -712,13 +712,20 @@ static QLibraryScanResult scanSections(QByteArrayView data, const ErrorMaker &er
         if (name != QLatin1String(".qtmetadata"))
             continue;
         qEDebug << "found .qtmetadata section";
-        if (IncludeValidityChecks && shdr->sh_flags & (SHF_WRITE | SHF_EXECINSTR)) {
+        if (shdr->sh_size < sizeof(QPluginMetaData::MagicHeader))
+            return error(QLibrary::tr(".qtmetadata section is too small"));
+
+        if (IncludeValidityChecks) {
+            QByteArrayView expectedMagic = QByteArrayView::fromArray(QPluginMetaData::MagicString);
+            QByteArrayView actualMagic = data.sliced(shdr->sh_offset, expectedMagic.size());
+            if (expectedMagic != actualMagic)
+                return error(QLibrary::tr(".qtmetadata section has incorrect magic"));
+
             if (shdr->sh_flags & SHF_WRITE)
                 return error(QLibrary::tr(".qtmetadata section is writable"));
-            return error(QLibrary::tr(".qtmetadata section is executable"));
+            if (shdr->sh_flags & SHF_EXECINSTR)
+                return error(QLibrary::tr(".qtmetadata section is executable"));
         }
-        if (shdr->sh_size < sizeof(QPluginMetaData::MagicHeader))
-            return error(QLibrary::tr("section .qtmetadata is too small"));
 
         return { qsizetype(shdr->sh_offset + sizeof(QPluginMetaData::MagicString)),
                  qsizetype(shdr->sh_size - sizeof(QPluginMetaData::MagicString)) };
