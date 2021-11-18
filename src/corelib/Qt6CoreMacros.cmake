@@ -590,6 +590,13 @@ function(_qt_internal_create_executable target)
                     continue()
                 endif()
 
+                get_cmake_property(is_multi_config GENERATOR_IS_MULTI_CONFIG)
+                if(is_multi_config)
+                    list(JOIN CMAKE_CONFIGURATION_TYPES "$<SEMICOLON>" escaped_configuration_types)
+                    set(config_arg "-DCMAKE_CONFIGURATION_TYPES=${escaped_configuration_types}")
+                else()
+                    set(config_arg "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}")
+                endif()
                 _qt_internal_get_android_abi_path(qt_abi_path ${abi})
                 set(qt_abi_toolchain_path
                     "${qt_abi_path}/lib/cmake/${QT_CMAKE_EXPORT_NAMESPACE}/qt.toolchain.cmake")
@@ -600,10 +607,12 @@ function(_qt_internal_create_executable target)
                     CMAKE_ARGS "-DCMAKE_TOOLCHAIN_FILE=${qt_abi_toolchain_path}"
                         "-DQT_IS_ANDROID_MULTI_ABI_EXTERNAL_PROJECT=ON"
                         "-DQT_ANDROID_ABI_TARGET_PATH=${abi_copy_target_path}"
+                        "${config_arg}"
                     STEP_TARGETS build
                     EXCLUDE_FROM_ALL TRUE
                     BUILD_COMMAND "${CMAKE_COMMAND}"
                         "--build" "${CMAKE_CURRENT_BINARY_DIR}/${target}_${abi}"
+                        "--config" "$<CONFIG>"
                         "--target" "${target}_prepare_apk_dir"
                 )
                 add_dependencies(${target} "${target}_${abi}-build")
