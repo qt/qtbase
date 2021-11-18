@@ -127,12 +127,7 @@ CONFIG(debug):!isEmpty(QT_WASM_SOURCE_MAP) {
 
     EMCC_VERSION = $$qtSystemEmccVersion()
 
-    greaterThan(EMCC_VERSION, 2.0.16) {
-        # emsdk 2.0.17 depreciates use of -g4
-        QMAKE_LFLAGS += -gsource-map
-    } else {
-        QMAKE_LFLAGS += -g4
-    }
+    QMAKE_LFLAGS += -gsource-map
     # Pass --source-map-base on the linker line. This informs the
     # browser where to find the source files when debugging.
     WASM_SOURCE_MAP_BASE = http://localhost:8000/

@@ -81,7 +81,7 @@ function (qt_internal_setup_wasm_target_properties wasmTarget)
         # Pass --source-map-base on the linker line. This informs the
         # browser where to find the source files when debugging.
         # -g4 to make source maps for debugging
-        target_link_options("${wasmTarget}" INTERFACE  "-g4" "--source-map-base" "${WASM_SOURCE_MAP_BASE}")
+        target_link_options("${wasmTarget}" INTERFACE  "-gsource-map" "--source-map-base" "${WASM_SOURCE_MAP_BASE}")
 
     endif()
 
