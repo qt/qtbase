@@ -20,3 +20,11 @@ if(QT_FEATURE_androiddeployqt)
         add_subdirectory(androidtestrunner)
     endif()
 endif()
+
+if(QT_FEATURE_macdeployqt)
+    add_subdirectory(macdeployqt)
+endif()
+
+if(QT_FEATURE_windeployqt)
+    add_subdirectory(windeployqt)
+endif()

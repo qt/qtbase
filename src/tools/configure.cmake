@@ -4,6 +4,18 @@ qt_feature("androiddeployqt" PRIVATE
     PURPOSE "The Android deployment tool automates the process of creating Android packages."
     CONDITION NOT CMAKE_CROSSCOMPILING AND QT_FEATURE_regularexpression)
 
+qt_feature("macdeployqt" PRIVATE
+    SECTION "Deployment"
+    LABEL "macOS deployment tool"
+    PURPOSE "The Mac deployment tool automates the process of creating a deployable application bundle that contains the Qt libraries as private frameworks."
+    CONDITION MACOS)
+
+qt_feature("windeployqt" PRIVATE
+    SECTION "Deployment"
+    LABEL "Windows deployment tool"
+    PURPOSE "The Windows deployment tool is designed to automate the process of creating a deployable folder containing the Qt-related dependencies (libraries, QML imports, plugins, and translations) required to run the application from that folder. It creates a sandbox for Universal Windows Platform (UWP) or an installation tree for Windows desktop applications, which can be easily bundled into an installation package."
+    CONDITION WIN32)
+
 qt_feature("qmake" PRIVATE
     PURPOSE "The qmake tool helps simplify the build process for development projects across different platforms."
     CONDITION QT_FEATURE_settings AND QT_FEATURE_alloca AND
@@ -12,5 +24,7 @@ qt_feature("qmake" PRIVATE
 
 qt_configure_add_summary_section(NAME "Core tools")
 qt_configure_add_summary_entry(ARGS "androiddeployqt")
+qt_configure_add_summary_entry(ARGS "macdeployqt")
+qt_configure_add_summary_entry(ARGS "windeployqt")
 qt_configure_add_summary_entry(ARGS "qmake")
 qt_configure_end_summary_section()
