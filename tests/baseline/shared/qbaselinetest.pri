@@ -6,8 +6,9 @@ SOURCES += \
 HEADERS += \
         $$PWD/qbaselinetest.h
 
-win32:MKSPEC=$$replace(QMAKESPEC, \\\\, /)
-else:MKSPEC=$$QMAKESPEC
-DEFINES += QMAKESPEC=\\\"$$MKSPEC\\\"
+qtHaveModule(widgets) {
+        SOURCES += $$PWD/qwidgetbaselinetest.cpp
+        HEADERS += $$PWD/qwidgetbaselinetest.h
+}
 
 include($$PWD/baselineprotocol.pri)

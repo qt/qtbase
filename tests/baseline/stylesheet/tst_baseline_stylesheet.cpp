@@ -27,104 +27,39 @@
 ****************************************************************************/
 
 #include <qbaselinetest.h>
+#include <qwidgetbaselinetest.h>
 #include <QtWidgets>
 #include <QByteArray>
 
-class tst_Stylesheet : public QObject
+class tst_Stylesheet : public QWidgetBaselineTest
 {
     Q_OBJECT
 
 public:
     tst_Stylesheet();
 
-    QWidget *testWindow() const { return window; }
     void loadTestFiles();
 
-private slots:
-    void initTestCase();
-    void init();
-    void cleanup();
+    void doInit() override;
 
+private slots:
     void tst_QToolButton_data();
     void tst_QToolButton();
 
 private:
-    void makeVisible();
-    QImage takeSnapshot();
     QDir styleSheetDir;
-
-    QWidget *window = nullptr;
 };
 
 tst_Stylesheet::tst_Stylesheet()
 {
-    QBaselineTest::addClientProperty("Project", "Widgets");
-
-    // Set key platform properties that are relevant for the appearance of widgets
-    const QString platformName = QGuiApplication::platformName() + "-" + QSysInfo::productType();
-    QBaselineTest::addClientProperty("PlatformName", platformName);
-    QBaselineTest::addClientProperty("OSVersion", QSysInfo::productVersion());
-
-    // Encode a number of parameters that impact the UI
-    QPalette palette;
-    QFont font;
-    QByteArray appearanceBytes;
-    {
-        QDataStream appearanceStream(&appearanceBytes, QIODevice::WriteOnly);
-        appearanceStream << palette << font <<
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            QApplication::style()->metaObject()->className();
-#else
-            QApplication::style()->name();
-#endif
-        const qreal screenDpr = QApplication::primaryScreen()->devicePixelRatio();
-        if (screenDpr != 1.0)
-            qWarning() << "DPR is" << screenDpr << "- images will be scaled";
-    }
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    const quint16 appearanceId = qChecksum(appearanceBytes, appearanceBytes.size());
-#else
-    const quint16 appearanceId = qChecksum(appearanceBytes);
-#endif
-
-    // Assume that text that's darker than the background means we run in light mode
-    // This results in a more meaningful appearance ID between different runs than
-    // just the checksum of the various attributes.
-    const QColor windowColor = palette.window().color();
-    const QColor textColor = palette.text().color();
-    const QString appearanceIdString = (windowColor.value() > textColor.value()
-                                        ? QString("light-%1") : QString("dark-%1"))
-                                       .arg(appearanceId, 0, 16);
-    QBaselineTest::addClientProperty("AppearanceID", appearanceIdString);
-
-    // let users know where they can find the results
-    qDebug() << "PlatformName computed to be:" << platformName;
-    qDebug() << "Appearance ID computed as:" << appearanceIdString;
-}
-
-void tst_Stylesheet::initTestCase()
-{
     QString baseDir = QFINDTESTDATA("qss/default.qss");
     styleSheetDir = QDir(QFileInfo(baseDir).path());
-
-    // Check and setup the environment. Failure to do so skips the test.
-    QByteArray msg;
-    if (!QBaselineTest::connectToBaselineServer(&msg))
-        QSKIP(msg);
 }
 
-void tst_Stylesheet::init()
+void tst_Stylesheet::doInit()
 {
     QFETCH(QString, styleSheet);
-
-    QVERIFY(!window);
-    window = new QWidget;
-    window->setWindowTitle(QTest::currentDataTag());
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-    window->setScreen(QGuiApplication::primaryScreen());
-#endif
-    window->move(QGuiApplication::primaryScreen()->availableGeometry().topLeft());
-    window->setStyleSheet(styleSheet);
+    testWindow()->setStyleSheet(styleSheet);
 }
 
 void tst_Stylesheet::loadTestFiles()
@@ -151,36 +86,6 @@ void tst_Stylesheet::loadTestFiles()
         QString styleSheet = QString::fromUtf8(file.readAll());
         QBaselineTest::newRow(fileInfo.baseName().toUtf8()) << styleSheet;
     }
-}
-
-void tst_Stylesheet::makeVisible()
-{
-    window->show();
-    window->window()->windowHandle()->requestActivate();
-    // explicitly unset focus, the test needs to control when focus is shown
-    if (window->focusWidget())
-        window->focusWidget()->clearFocus();
-    QVERIFY(QTest::qWaitForWindowActive(window));
-}
-
-/*
-    Always return images scaled to a DPR of 1.0.
-
-    This might produce some fuzzy differences, but lets us
-    compare those.
-*/
-QImage tst_Stylesheet::takeSnapshot()
-{
-    QGuiApplication::processEvents();
-    QPixmap pm = window->grab();
-    QTransform scaleTransform = QTransform::fromScale(1.0 / pm.devicePixelRatioF(), 1.0 / pm.devicePixelRatioF());
-    return pm.toImage().transformed(scaleTransform, Qt::SmoothTransformation);
-}
-
-void tst_Stylesheet::cleanup()
-{
-    delete window;
-    window = nullptr;
 }
 
 void tst_Stylesheet::tst_QToolButton_data()
