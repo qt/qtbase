@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2021 The Qt Company Ltd.
-** Copyright (C) 2019 Intel Corporation.
+** Copyright (C) 2021 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -39,6 +39,10 @@
 ****************************************************************************/
 
 #include "qglobal.h"
+
+#if (defined(QT_STATIC) || defined(QT_BOOTSTRAPPED)) && defined(Q_CC_GNU) && Q_CC_GNU >= 1000
+QT_WARNING_DISABLE_GCC("-Wfree-nonheap-object") // false positive tracking
+#endif
 
 #if defined(Q_OS_MACOS)
 #   include "private/qcore_mac_p.h"
