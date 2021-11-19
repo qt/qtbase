@@ -46,7 +46,7 @@
 #include <pthread.h>
 #endif
 #if defined(Q_OS_WIN)
-#include <windows.h>
+#include <qt_windows.h>
 #if defined(Q_OS_WIN32)
 #include <process.h>
 #endif

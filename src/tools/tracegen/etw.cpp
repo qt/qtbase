@@ -129,7 +129,7 @@ static void writePrologue(QTextStream &stream, const QString &fileName, const Pr
     stream << "#ifndef " << guard << "\n"
            << "#define " << guard << "\n"
            << "\n"
-           << "#include <windows.h>\n"
+           << "#include <qt_windows.h>\n"
            << "#include <TraceLoggingProvider.h>\n"
            << "\n";
 

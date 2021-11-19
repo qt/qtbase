@@ -57,7 +57,7 @@
 #    include <sys/sysctl.h>
 #  endif
 #else
-#include <windows.h>
+#include <qt_windows.h>
 #endif
 #include <stdio.h>
 #include <stdlib.h>

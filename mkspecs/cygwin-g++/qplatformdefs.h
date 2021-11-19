@@ -76,7 +76,7 @@
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
-//#include <windows.h>
+//#include <qt_windows.h>
 #include <netinet/in.h>
 
 #define QT_NO_USE_FSEEKO

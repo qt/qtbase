@@ -362,7 +362,7 @@ namespace QTest {
             "}\n"
             "\n"
             "#ifdef Q_OS_WIN\n"
-            "#include <windows.h>\n"
+            "#include <qt_windows.h>\n"
             "#if defined(Q_CC_MSVC)\n"
             "#include <crtdbg.h>\n"
             "#endif\n"

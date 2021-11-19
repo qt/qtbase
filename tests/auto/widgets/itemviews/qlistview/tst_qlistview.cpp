@@ -47,7 +47,7 @@
 using namespace QTestPrivate;
 
 #if defined(Q_OS_WIN)
-#  include <windows.h>
+#  include <qt_windows.h>
 #  include <QDialog>
 #  include <QGuiApplication>
 #  include <QVBoxLayout>

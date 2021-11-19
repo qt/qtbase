@@ -79,7 +79,7 @@ void NativeMutexUnlock(NativeMutexType *mutex)
 #  if !defined(_WIN32_WINNT)
 #    define _WIN32_WINNT 0x0A00
 #  endif
-#  include <windows.h>
+#  include <qt_windows.h>
 typedef CRITICAL_SECTION NativeMutexType;
 void NativeMutexInitialize(NativeMutexType *mutex)
 {

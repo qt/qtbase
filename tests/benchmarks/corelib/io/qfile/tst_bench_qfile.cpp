@@ -38,7 +38,7 @@
 #include <stdio.h>
 
 #ifdef Q_OS_WIN
-# include <windows.h>
+# include <qt_windows.h>
 #endif
 
 #if defined(Q_OS_QNX) && defined(open)

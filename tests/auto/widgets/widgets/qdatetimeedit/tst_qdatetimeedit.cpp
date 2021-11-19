@@ -73,9 +73,7 @@
 #include <private/qdatetimeedit_p.h>
 
 #ifdef Q_OS_WIN
-# include <windows.h>
-# undef min
-# undef max
+# include <qt_windows.h>
 #endif
 
 

@@ -48,7 +48,7 @@
 **
 ****************************************************************************/
 
-#include <windows.h>
+#include <qt_windows.h>
 #include <shellapi.h>
 
 /*

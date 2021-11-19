@@ -38,7 +38,7 @@
 #include <QTemporaryDir>
 
 #if defined(Q_OS_WIN)
-#include <windows.h>
+#include <qt_windows.h>
 #include <winioctl.h>
 #ifndef IO_REPARSE_TAG_MOUNT_POINT
 #define IO_REPARSE_TAG_MOUNT_POINT       (0xA0000003L)

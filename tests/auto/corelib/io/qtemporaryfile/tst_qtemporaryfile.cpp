@@ -41,7 +41,7 @@
 
 #if defined(Q_OS_WIN)
 # include <shlwapi.h>
-# include <windows.h>
+# include <qt_windows.h>
 #endif
 #if defined(Q_OS_UNIX)
 # include <sys/types.h>

@@ -33,7 +33,7 @@
 #include <qregularexpression.h>
 
 #ifdef Q_OS_WIN
-#  include <windows.h>
+#  include <qt_windows.h>
 #else
 #  include <sys/types.h>
 #  include <sys/stat.h>

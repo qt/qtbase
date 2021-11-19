@@ -46,7 +46,7 @@
 #include <private/qdrawhelper_p.h>
 
 #ifdef Q_OS_WIN
-#include <windows.h>
+#include <qt_windows.h>
 #endif
 
 

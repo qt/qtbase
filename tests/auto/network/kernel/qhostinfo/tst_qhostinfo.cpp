@@ -52,7 +52,7 @@
 
 #include <time.h>
 #if defined(Q_OS_WIN)
-#include <windows.h>
+#include <qt_windows.h>
 #else
 #include <unistd.h>
 #include <signal.h>

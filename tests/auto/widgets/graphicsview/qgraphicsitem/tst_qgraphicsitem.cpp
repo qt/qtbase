@@ -74,7 +74,7 @@ Q_DECLARE_METATYPE(QSizeF)
 Q_DECLARE_METATYPE(QTransform)
 
 #if defined(Q_OS_WIN)
-#include <windows.h>
+#include <qt_windows.h>
 #define Q_CHECK_PAINTEVENTS \
     if (::SwitchDesktop(::GetThreadDesktop(::GetCurrentThreadId())) == 0) \
         QSKIP("The Graphics View doesn't get the paint events");

@@ -38,7 +38,7 @@
 #include <QtTest/private/qtesthelpers_p.h>
 #ifdef Q_OS_WIN
 # include <shlwapi.h>
-# include <windows.h>
+# include <qt_windows.h>
 #endif
 #ifdef Q_OS_UNIX // for geteuid()
 # include <sys/types.h>

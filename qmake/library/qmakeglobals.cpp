@@ -51,7 +51,7 @@
 #include <unistd.h>
 #include <sys/utsname.h>
 #else
-#include <windows.h>
+#include <qt_windows.h>
 #endif
 #include <stdio.h>
 #include <stdlib.h>

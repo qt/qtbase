@@ -38,7 +38,7 @@
 #include <QTimer>
 #include <QTemporaryFile>
 #if defined(Q_OS_WIN)
-#include <windows.h>
+#include <qt_windows.h>
 #endif
 
 #ifdef Q_OS_ANDROID
