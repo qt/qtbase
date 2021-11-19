@@ -478,18 +478,19 @@ QJniObject QAndroidServiceConnection::handle() const
  */
 
 
+static QBasicAtomicInteger<uint> nextUniqueActivityRequestCode = Q_BASIC_ATOMIC_INITIALIZER(0);
 
 // Get a unique activity request code.
 static int uniqueActivityRequestCode()
 {
-    static QMutex mutex;
-    static int requestCode = 0x1000; // Reserve all request codes under 0x1000 for Qt.
+    constexpr uint ReservedForQtOffset = 0x1000; // Reserve all request codes under 0x1000 for Qt
 
-    QMutexLocker locker(&mutex);
-    if (requestCode == INT_MAX)
+    const uint requestCodeBase = nextUniqueActivityRequestCode.fetchAndAddRelaxed(1);
+    if (requestCodeBase == uint(INT_MAX) - ReservedForQtOffset)
         qWarning("Unique activity request code has wrapped. Unexpected behavior may occur.");
 
-    return requestCode++;
+    const int requestCode = static_cast<int>(requestCodeBase + ReservedForQtOffset);
+    return requestCode;
 }
 
 class QAndroidActivityResultReceiverPrivate: public QtAndroidPrivate::ActivityResultListener
