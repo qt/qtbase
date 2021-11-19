@@ -402,9 +402,6 @@ void tst_QNumeric::distance()
     QFETCH(F, from);
     QFETCH(F, stop);
     QFETCH(Count, expectedDistance);
-#ifdef Q_OS_QNX
-    QEXPECT_FAIL("denormal", "See QTBUG-37094", Continue);
-#endif
     QCOMPARE(qFloatDistance(from, stop), expectedDistance);
     QCOMPARE(qFloatDistance(stop, from), expectedDistance);
 }

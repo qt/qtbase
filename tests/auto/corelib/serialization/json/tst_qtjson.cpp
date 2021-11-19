@@ -386,10 +386,6 @@ void tst_QtJson::testNumbers_2()
     QJsonDocument jDocument2(QJsonDocument::fromJson(ba));
     for (int power = 0; power <= 1075; power++) {
         floatValues_1[power] = jDocument2.object().value(QString::number(power)).toDouble();
-#ifdef Q_OS_QNX
-        if (power >= 970)
-            QEXPECT_FAIL("", "See QTBUG-37066", Abort);
-#endif
         QVERIFY2(floatValues[power] == floatValues_1[power], QString("floatValues[%1] != floatValues_1[%1]").arg(power).toLatin1());
     }
 
@@ -1824,17 +1820,11 @@ void tst_QtJson::toJsonLargeNumericValues()
             "    ]\n"
             "}\n";
 
-#ifdef Q_OS_QNX
-    QEXPECT_FAIL("", "See QTBUG-37066", Continue);
-#endif
     QCOMPARE(json, expected);
 
     QJsonDocument doc;
     doc.setObject(object);
     json = doc.toJson();
-#ifdef Q_OS_QNX
-    QEXPECT_FAIL("", "See QTBUG-37066", Continue);
-#endif
     QCOMPARE(json, expected);
 }
 
@@ -2194,10 +2184,6 @@ void tst_QtJson::parseNumbers()
             json += numbers[i].str;
             json += " ]";
             QJsonDocument doc = QJsonDocument::fromJson(json);
-#ifdef Q_OS_QNX
-            if (0 == QString::compare(numbers[i].str, "1.1e-308"))
-                QEXPECT_FAIL("", "See QTBUG-37066", Abort);
-#endif
             QVERIFY(!doc.isEmpty());
             QCOMPARE(doc.isArray(), true);
             QCOMPARE(doc.isObject(), false);
