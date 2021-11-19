@@ -580,7 +580,7 @@ bool QImageIOHandler::allocateImage(QSize size, QImage::Format format, QImage *i
         image->detach();
     } else {
         if (const int mbLimit = QImageReader::allocationLimit()) {
-            qsizetype depth = qt_depthForFormat(format);
+            qsizetype depth = qMax(qt_depthForFormat(format), 32); // Effective gui depth = 32
             QImageData::ImageSizeParameters szp =
                     QImageData::calculateImageParameters(size.width(), size.height(), depth);
             if (!szp.isValid())

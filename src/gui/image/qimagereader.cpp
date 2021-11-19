@@ -1584,7 +1584,13 @@ QList<QByteArray> QImageReader::imageFormatsForMimeType(const QByteArray &mimeTy
 */
 int QImageReader::allocationLimit()
 {
-    return QImageReaderPrivate::maxAlloc;
+    static int envLimit = []() {
+        bool ok = false;
+        int res = qEnvironmentVariableIntValue("QT_IMAGEIO_MAXALLOC", &ok);
+        return ok ? res : -1;
+    }();
+
+    return envLimit >= 0 ? envLimit : QImageReaderPrivate::maxAlloc;
 }
 
 /*!
@@ -1592,10 +1598,15 @@ int QImageReader::allocationLimit()
 
     Sets the allocation limit to \a mbLimit megabytes. Images that would
     require a QImage memory allocation above this limit will be rejected.
+    If \a mbLimit is 0, the allocation size check will be disabled.
 
     This limit helps applications avoid unexpectedly large memory usage from
     loading corrupt image files. It is normally not needed to change it. The
     default limit is large enough for all commonly used image sizes.
+
+    \note The memory requirements are calculated for a minimum of 32 bits per pixel, since Qt will
+    typically convert an image to that depth when it is used in GUI. This means that the effective
+    allocation limit is significantly smaller than \a mbLimit when reading 1 bpp and 8 bpp images.
 
     \sa allocationLimit()
 */
