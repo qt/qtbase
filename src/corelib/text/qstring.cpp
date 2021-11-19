@@ -5492,11 +5492,8 @@ QString QString::fromUtf16(const char16_t *unicode, qsizetype size)
 {
     if (!unicode)
         return QString();
-    if (size < 0) {
-        size = 0;
-        while (unicode[size] != 0)
-            ++size;
-    }
+    if (size < 0)
+        size = QtPrivate::qustrlen(unicode);
     QStringDecoder toUtf16(QStringDecoder::Utf16, QStringDecoder::Flag::Stateless);
     return toUtf16(QByteArrayView(reinterpret_cast<const char *>(unicode), size * 2));
 }
