@@ -199,7 +199,7 @@ if (MSVC)
     target_compile_options(PlatformCommonInternal INTERFACE -Zc:wchar_t)
 
     target_compile_options(PlatformCommonInternal INTERFACE
-        $<$<NOT:$<CONFIG:Debug>>:-guard:cf>
+        $<$<NOT:$<CONFIG:Debug>>:-guard:cf -Gw>
     )
 
     target_link_options(PlatformCommonInternal INTERFACE
