@@ -203,7 +203,7 @@ if (MSVC)
     )
 
     target_link_options(PlatformCommonInternal INTERFACE
-        -DYNAMICBASE -NXCOMPAT
+        -DYNAMICBASE -NXCOMPAT -LARGEADDRESSAWARE
         $<$<NOT:$<CONFIG:Debug>>:-OPT:REF -OPT:ICF -GUARD:CF>
     )
 endif()
