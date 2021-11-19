@@ -278,6 +278,21 @@ if (GCC AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "9.2")
     target_compile_options(PlatformCommonInternal INTERFACE $<$<COMPILE_LANGUAGE:CXX>:-Wsuggest-override>)
 endif()
 
+if(QT_FEATURE_intelcet)
+    if(MSVC)
+        target_compile_options(PlatformCommonInternal INTERFACE
+            -guard:ehcont
+        )
+        target_link_options(PlatformCommonInternal INTERFACE
+            -guard:ehcont -CETCOMPAT
+        )
+    else()
+        target_compile_options(PlatformCommonInternal INTERFACE
+            -fcf-protection
+        )
+    endif()
+endif()
+
 if(QT_FEATURE_force_asserts)
     target_compile_definitions(PlatformCommonInternal INTERFACE QT_FORCE_ASSERTS)
 endif()

@@ -137,6 +137,7 @@ Build options:
 
   -pch ................. Use precompiled headers [auto]
   -ltcg ................ Use Link Time Code Generation [no]
+  -intelcet ............ Use Intel Control-flow Enforcement Technology [no]
   -linker [bfd,gold,lld,mold]
                          Force use of the GNU ld, GNU gold, LLVM/LLD or mold
                          linker instead of default one (GCC and clang only)

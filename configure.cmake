@@ -1034,7 +1034,7 @@ qt_feature("relocatable" PRIVATE
 )
 qt_feature("intelcet" PRIVATE
     LABEL "Using Intel CET"
-    CONDITION TEST_intelcet
+    CONDITION ( INPUT_intelcet STREQUAL yes ) OR TEST_intelcet
 )
 qt_configure_add_summary_build_type_and_config()
 qt_configure_add_summary_section(NAME "Build options")
@@ -1085,6 +1085,7 @@ qt_configure_add_summary_entry(
 qt_configure_add_summary_entry(ARGS "relocatable")
 qt_configure_add_summary_entry(ARGS "precompile_header")
 qt_configure_add_summary_entry(ARGS "ltcg")
+qt_configure_add_summary_entry(ARGS "intelcet")
 qt_configure_add_summary_section(NAME "Target compiler supports")
 qt_configure_add_summary_entry(
     TYPE "featureList"
