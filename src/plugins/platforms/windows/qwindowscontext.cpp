@@ -601,7 +601,7 @@ QString QWindowsContext::registerWindowClass(const QWindow *w)
     const Qt::WindowFlags flags = w->flags();
     const Qt::WindowFlags type = flags & Qt::WindowType_Mask;
     // Determine style and icon.
-    uint style = CS_DBLCLKS;
+    uint style = CS_DBLCLKS | CS_HREDRAW | CS_VREDRAW;
     bool icon = true;
     // The following will not set CS_OWNDC for any widget window, even if it contains a
     // QOpenGLWidget or QQuickWidget later on. That cannot be detected at this stage.
