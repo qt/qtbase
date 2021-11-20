@@ -704,7 +704,6 @@ void WindowCreationData::fromWindow(const QWindow *w, const Qt::WindowFlags flag
         if (topLevel) {
             if ((type == Qt::Window || dialog || tool)) {
                 if (!(flags & Qt::FramelessWindowHint)) {
-                    style |= WS_POPUP;
                     if (flags & Qt::MSWindowsFixedSizeDialogHint) {
                         style |= WS_DLGFRAME;
                     } else {
