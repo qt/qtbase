@@ -52,6 +52,7 @@
 // We mean it.
 //
 
+#include "qmimedatabase.h"
 #include "qmimetype.h"
 
 QT_REQUIRE_CONFIG(mimetype);
@@ -68,6 +69,7 @@ QT_REQUIRE_CONFIG(mimetype);
 
 QT_BEGIN_NAMESPACE
 
+class QFileInfo;
 class QIODevice;
 class QMimeDatabase;
 class QMimeProviderBase;
@@ -92,6 +94,9 @@ public:
     QStringList parents(const QString &mimeName);
     QMimeType mimeTypeForName(const QString &nameOrAlias);
     QMimeType mimeTypeForFileNameAndData(const QString &fileName, QIODevice *device, int *priorityPtr);
+    QMimeType mimeTypeForFileExtension(const QString &fileName);
+    QMimeType mimeTypeForData(QIODevice *device);
+    QMimeType mimeTypeForFile(const QString &fileName, const QFileInfo *fileInfo, QMimeDatabase::MatchMode mode);
     QMimeType findByData(const QByteArray &data, int *priorityPtr);
     QStringList mimeTypeForFileName(const QString &fileName);
     QMimeGlobMatchResult findByFileName(const QString &fileName);
