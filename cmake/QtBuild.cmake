@@ -593,3 +593,21 @@ endif()
 if(CMAKE_VERSION VERSION_LESS "3.19.0")
     variable_watch(CMAKE_CURRENT_LIST_DIR qt_watch_current_list_dir)
 endif()
+
+# VC-LTL is an open source CRT library based on the MS VCRT
+# that reduce program binary size and say goodbye to Microsoft
+# runtime DLLs, such as msvcr120.dll, api-ms-win-crt-time-l1-1-0.dll
+# and other dependencies.
+#
+# After using the VC-LTL, the binaries will be dynamically linked
+# to the built-in msvcrt.dll or ucrtbase.dll in the Windows to reduce
+# the binaries size. It is generally available if you use the VC-LTL
+# in the project using the C Runtime, STL or MFC.
+#
+# Repository homepage: https://github.com/Chuyu-Team/VC-LTL5
+if(MSVC) # MinGW don't need such techniques, it will always link to msvcrt.dll
+    # Helper script provided by VC-LTL
+    include(VC-LTL)
+    # To make use of VC-LTL we have to use "/MT(d)" unconditionally.
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>" CACHE STRING "" FORCE)
+endif()
