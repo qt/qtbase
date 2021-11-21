@@ -606,6 +606,14 @@ endif()
 #
 # Repository homepage: https://github.com/Chuyu-Team/VC-LTL5
 if(MSVC) # MinGW don't need such techniques, it will always link to msvcrt.dll
+    # VC-LTL will error out if "CMAKE_SYSTEM_NAME" is not set.
+    if(NOT CMAKE_SYSTEM_NAME)
+        set(CMAKE_SYSTEM_NAME "Windows" CACHE STRING "" FORCE)
+    endif()
+    # VC-LTL will error out if "CMAKE_SYSTEM_VERSION" is not set.
+    if(NOT CMAKE_SYSTEM_VERSION)
+        set(CMAKE_SYSTEM_VERSION "10.0" CACHE STRING "" FORCE)
+    endif()
     # Helper script provided by VC-LTL
     include(VC-LTL)
     # To make use of VC-LTL we have to use "/MT(d)" unconditionally.
