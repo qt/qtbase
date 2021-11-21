@@ -568,6 +568,7 @@ inline QByteArray QStorageIterator::fileSystemType() const
 
 inline QByteArray QStorageIterator::device() const
 {
+#ifdef Q_OS_LINUX
     // check that the device exists
     if (mnt.mnt_fsname[0] == '/' && access(mnt.mnt_fsname, F_OK) != 0) {
         // It doesn't, so let's try to resolve the dev_t from /dev/block.
@@ -583,6 +584,7 @@ inline QByteArray QStorageIterator::device() const
             return dev;
         }
     }
+#endif
     return QByteArray(mnt.mnt_fsname);
 }
 
