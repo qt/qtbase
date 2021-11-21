@@ -311,3 +311,90 @@ auto resultFuture = testFuture.then([](int res) {
     return -1;
 });
 //! [21]
+
+//! [22]
+QList<QFuture<int>> inputFutures {...};
+
+// whenAll has type QFuture<QList<QFuture<int>>>
+auto whenAll = QtFuture::whenAll(inputFutures.begin(), inputFutures.end());
+
+// whenAllVector has type QFuture<std::vector<QFuture<int>>>
+auto whenAllVector =
+        QtFuture::whenAll<std::vector<QFuture<int>>>(inputFutures.begin(), inputFutures.end());
+//! [22]
+
+//! [23]
+QList<QFuture<int>> inputFutures {...};
+
+QtFuture::whenAll(inputFutures.begin(), inputFutures.end())
+        .then([](const QList<QFuture<int>> &results) {
+            for (auto future : results) {
+                if (future.isCanceled())
+                    // handle the cancellation (possibly due to an exception)
+                else
+                    // do something with the result
+            }
+        });
+//! [23]
+
+//! [24]
+
+QFuture<int> intFuture = ...;
+QFuture<QString> stringFuture = ...;
+QFuture<void> voidFuture = ...;
+
+using FuturesVariant = std::variant<QFuture<int>, QFuture<QString>, QFuture<void>>;
+
+// whenAll has type QFuture<QList<FuturesVariant>>
+auto whenAll = QtFuture::whenAll(intFuture, stringFuture, voidFuture);
+
+// whenAllVector has type QFuture<std::vector<FuturesVariant>>
+auto whenAllVector =
+        QtFuture::whenAll<std::vector<FuturesVariant>>(intFuture, stringFuture, voidFuture);
+
+//! [24]
+
+//! [25]
+QFuture<int> intFuture = ...;
+QFuture<QString> stringFuture = ...;
+QFuture<void> voidFuture = ...;
+
+using FuturesVariant = std::variant<QFuture<int>, QFuture<QString>, QFuture<void>>;
+
+QtFuture::whenAll(intFuture, stringFuture, voidFuture)
+        .then([](const QList<FuturesVariant> &results) {
+            ...
+            for (auto result : results)
+            {
+                // assuming handleResult() is overloaded based on the QFuture type
+                std::visit([](auto &&future) { handleResult(future); }, result);
+            }
+            ...
+        });
+//! [25]
+
+//! [26]
+QList<QFuture<int>> inputFutures = ...;
+
+QtFuture::whenAny(inputFutures.begin(), inputFutures.end())
+        .then([](const QtFuture::WhenAnyResult<int> &result) {
+            qsizetype index = result.index;
+            QFuture<int> future = result.future;
+            // ...
+        });
+//! [26]
+
+//! [27]
+QFuture<int> intFuture = ...;
+QFuture<QString> stringFuture = ...;
+QFuture<void> voidFuture = ...;
+
+using FuturesVariant = std::variant<QFuture<int>, QFuture<QString>, QFuture<void>>;
+
+QtFuture::whenAny(intFuture, stringFuture, voidFuture).then([](const FuturesVariant &result) {
+    ...
+    // assuming handleResult() is overloaded based on the QFuture type
+    std::visit([](auto &&future) { handleResult(future); }, result);
+    ...
+});
+//! [27]

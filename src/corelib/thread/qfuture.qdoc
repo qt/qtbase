@@ -908,6 +908,38 @@
 
 */
 
+/*!
+    \class QtFuture::WhenAnyResult
+    \inmodule QtCore
+    \ingroup thread
+    \brief QtFuture::WhenAnyResult is used to represent the result of QtFuture::whenAny().
+    \since 6.3
+
+    The \c {QtFuture::WhenAnyResult<T>} struct is used for packaging the copy and
+    the index of the first completed \c QFuture<T> in the sequence of futures
+    packaging type \c T that are passed to QtFuture::whenAny().
+
+    \sa QFuture, QtFuture::whenAny()
+*/
+
+/*!
+    \variable QtFuture::WhenAnyResult::index
+
+    The field contains the index of the first completed QFuture in the sequence
+    of futures passed to whenAny(). It has type \c qsizetype.
+
+    \sa QtFuture::whenAny()
+*/
+
+/*!
+    \variable QtFuture::WhenAnyResult::future
+
+    The field contains the copy of the first completed QFuture that packages type
+    \c T, where \c T is the type packaged by the futures passed to whenAny().
+
+    \sa QtFuture::whenAny()
+*/
+
 /*! \fn template<class Sender, class Signal> static QFuture<ArgsType<Signal>> QtFuture::connect(Sender *sender, Signal signal)
 
     Creates and returns a QFuture which will become available when the \a sender emits
@@ -1320,4 +1352,120 @@
     See the documentation of the other overload for more details about \a handler.
 
     \sa then(), onFailed()
+*/
+
+/*! \fn template<typename OutputSequence, typename InputIt> QFuture<OutputSequence> QtFuture::whenAll(InputIt first, InputIt last)
+
+    \since 6.3
+
+    Returns a new QFuture that succeeds when all futures from \a first to \a last
+    complete. \a first and \a last are iterators to a sequence of futures packaging
+    type \c T. \c OutputSequence is a sequence containing all completed futures
+    from \a first to \a last, appearing in the same order as in the input. If the
+    type of \c OutputSequence is not specified, the resulting futures will be
+    returned in a \c QList of \c QFuture<T>. For example:
+
+    \snippet code/src_corelib_thread_qfuture.cpp 22
+
+    \note The output sequence must support random access and support \c resize()
+    operation.
+
+    If \c first equals \c last, this function returns a ready QFuture that
+    contains an empty \c OutputSequence.
+
+//! [whenAll]
+    The returned future always completes successfully after all the specified
+    futures complete. It doesn't matter if any of these futures completes with
+    error or is canceled. You can use \c .then() to process the completed futures
+    after the future returned by \c whenAll() succeeds:
+//! [whenAll]
+
+    \snippet code/src_corelib_thread_qfuture.cpp 23
+
+//! [whenAll-note]
+    \note If the input futures complete on different threads, the future returned
+    by this method will complete in the thread that the last future completes in.
+    Therefore, the continuations attached to the future returned by \c whenAll()
+    cannot always make assumptions about which thread they will be run on. Use the
+    overload of \c .then() that takes a context object if you want to control which
+    thread the continuations are invoked on.
+//! [whenAll-note]
+*/
+
+/*! \fn template<typename OutputSequence, typename... Futures> QFuture<OutputSequence> QtFuture::whenAll(Futures &&... futures)
+
+    \since 6.3
+
+    Returns a new QFuture that succeeds when all \a futures packaging arbitrary
+    types complete. \c OutputSequence is a sequence of completed futures. The type
+    of its entries is \c std::variant<Futures...>. For each \c QFuture<T> passed to
+    \c whenAll(), the entry at the corresponding position in \c OutputSequence
+    will be a \c std::variant holding that \c QFuture<T>, in its completed state.
+    If the type of \c OutputSequence is not specified, the resulting futures will
+    be returned in a QList of \c std::variant<Futures...>. For example:
+
+    \snippet code/src_corelib_thread_qfuture.cpp 24
+
+    \note The output sequence should support random access and the \c resize()
+    operation.
+
+    \include qfuture.qdoc whenAll
+
+    \snippet code/src_corelib_thread_qfuture.cpp 25
+
+    \include qfuture.qdoc whenAll-note
+*/
+
+/*! \fn template<typename T, typename InputIt> QFuture<QtFuture::WhenAnyResult<T>> QtFuture::whenAny(InputIt first, InputIt last)
+
+    \since 6.3
+
+    Returns a new QFuture that succeeds when any of the futures from \a first to
+    \a last completes. \a first and \a last are iterators to a sequence of futures
+    packaging type \c T. The returned future packages a value of type
+    \c {QtFuture::WhenAnyResult<T>} which in turn packages the index of the
+    first completed \c QFuture and the \c QFuture itself. If \a first equals \a last,
+    this function returns a ready \c QFuture that has \c -1 for the \c index field in
+    the QtFuture::WhenAnyResult struct and a default-constructed \c QFuture<T> for
+    the \c future field. Note that a default-constructed QFuture is a completed
+    future in a cancelled state.
+
+//! [whenAny]
+    The returned future always completes successfully after the first future
+    from the specified futures completes. It doesn't matter if the first future
+    completes with error or is canceled. You can use \c .then() to process the
+    result after the future returned by \c whenAny() succeeds:
+//! [whenAny]
+
+    \snippet code/src_corelib_thread_qfuture.cpp 26
+
+//! [whenAny-note]
+    \note If the input futures complete on different threads, the future returned
+    by this method will complete in the thread that the first future completes in.
+    Therefore, the continuations attached to the future returned by \c whenAny()
+    cannot always make assumptions about which thread they will be run on. Use the
+    overload of \c .then() that takes a context object if you want to control which
+    thread the continuations are invoked on.
+//! [whenAny-note]
+
+    \sa QtFuture::WhenAnyResult
+*/
+
+/*! \fn template<typename... Futures> QFuture<std::variant<std::decay_t<Futures>...>> QtFuture::whenAny(Futures &&... futures)
+
+    \since 6.3
+
+    Returns a new QFuture that succeeds when any of the \a futures completes.
+    \a futures can package arbitrary types. The returned future packages the
+    value of type \c std::variant<Futures...> which in turn packages the first
+    completed QFuture from \a futures. You can use
+    \l {https://en.cppreference.com/w/cpp/utility/variant/index} {std::variant::index()}
+    to find out the index of the future in the sequence of \a futures that
+    finished first.
+
+    \include qfuture.qdoc whenAny
+
+    \snippet code/src_corelib_thread_qfuture.cpp 27
+
+    \include qfuture.qdoc whenAny-note
 */
