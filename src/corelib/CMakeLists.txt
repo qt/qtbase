@@ -339,7 +339,7 @@ set_property(TARGET Core APPEND PROPERTY
     PRIVATE_HEADER "${CMAKE_CURRENT_BINARY_DIR}/global/qconfig_p.h")
 
 # Find ELF interpreter and define a macro for that:
-if (LINUX AND NOT CMAKE_CROSSCOMPILING AND BUILD_SHARED_LIBS)
+if ((LINUX OR HURD) AND NOT CMAKE_CROSSCOMPILING AND BUILD_SHARED_LIBS)
     if (NOT DEFINED ELF_INTERPRETER)
         execute_process(COMMAND ${CMAKE_COMMAND} -E env LC_ALL=C readelf -l /bin/ls
                         RESULT_VARIABLE readelf_ok

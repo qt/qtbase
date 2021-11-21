@@ -578,7 +578,7 @@ qt_feature("glib" PUBLIC PRIVATE
 qt_feature_definition("glib" "QT_NO_GLIB" NEGATE VALUE "1")
 qt_feature("glibc" PRIVATE
     LABEL "GNU libc"
-    AUTODETECT LINUX
+    AUTODETECT ( LINUX OR HURD )
     CONDITION TEST_glibc
 )
 qt_feature("icu" PRIVATE
@@ -612,7 +612,7 @@ qt_feature("system-libb2" PRIVATE
 # Currently only used by QTemporaryFile; linkat() exists on Android, but hardlink creation fails due to security rules
 qt_feature("linkat" PRIVATE
     LABEL "linkat()"
-    AUTODETECT LINUX AND NOT ANDROID
+    AUTODETECT ( LINUX AND NOT ANDROID ) OR HURD
     CONDITION TEST_linkat
 )
 qt_feature("std-atomic64" PUBLIC
@@ -669,7 +669,7 @@ qt_feature("qqnx_pps" PRIVATE
 )
 qt_feature("renameat2" PRIVATE
     LABEL "renameat2()"
-    CONDITION LINUX AND TEST_renameat2
+    CONDITION ( LINUX OR HURD ) AND TEST_renameat2
 )
 qt_feature("slog2" PRIVATE
     LABEL "slog2"
@@ -677,7 +677,7 @@ qt_feature("slog2" PRIVATE
 )
 qt_feature("statx" PRIVATE
     LABEL "statx() in libc"
-    CONDITION LINUX AND TEST_statx
+    CONDITION ( LINUX OR HURD ) AND TEST_statx
 )
 qt_feature("syslog" PRIVATE
     LABEL "syslog"

@@ -362,6 +362,8 @@ elseif(SOLARIS)
              set(QT_DEFAULT_MKSPEC solaris-cc)
         endif()
     endif()
+elseif(HURD)
+    set(QT_DEFAULT_MKSPEC hurd-g++)
 endif()
 
 if(NOT QT_QMAKE_TARGET_MKSPEC)
