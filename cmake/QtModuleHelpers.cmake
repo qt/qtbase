@@ -265,8 +265,10 @@ function(qt_internal_add_module target)
                 OUTPUT_NAME ${fw_name}
             )
         else()
+            set(_qt_repo_name ${PROJECT_NAME})
+            string(REPLACE "Qt" "" _qt_repo_name "${_qt_repo_name}")
             set_target_properties(${target} PROPERTIES
-                OUTPUT_NAME "${INSTALL_CMAKE_NAMESPACE}${module_interface_name}${QT_LIBINFIX}"
+                OUTPUT_NAME "Digia.Qt.${_qt_repo_name}.${target}${QT_LIBINFIX}"
             )
         endif()
 
