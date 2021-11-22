@@ -48,6 +48,8 @@ private Q_SLOTS:
     void ntlmAuth_data();
     void ntlmAuth();
 
+    void sha256AndMd5Digest();
+
     void equalityOperators();
 };
 
@@ -147,6 +149,34 @@ void tst_QAuthenticator::ntlmAuth()
     QCOMPARE(auth.realm(), realm);
 
     QVERIFY(priv->calculateResponse("GET", "/", "").startsWith("NTLM "));
+}
+
+// We don't (currently) support SHA256. So, when presented with the option of MD5 or SHA256,
+// we should always pick MD5.
+void tst_QAuthenticator::sha256AndMd5Digest()
+{
+    QByteArray md5 = "Digest realm=\"\", nonce=\"\", algorithm=MD5, qop=\"auth\"";
+    QByteArray sha256 = "Digest realm=\"\", nonce=\"\", algorithm=SHA-256, qop=\"auth\"";
+
+    QAuthenticator auth;
+    auth.setUser("unimportant");
+    auth.setPassword("unimportant");
+
+    QAuthenticatorPrivate *priv = QAuthenticatorPrivate::getPrivate(auth);
+
+    QCOMPARE(priv->phase, QAuthenticatorPrivate::Start);
+    QList<QPair<QByteArray, QByteArray>> headers;
+    // Put sha256 first, so that its parsed first...
+    headers.push_back({"WWW-Authenticate", sha256});
+    headers.push_back({"WWW-Authenticate", md5});
+    priv->parseHttpResponse(headers, false, QString());
+
+    QByteArray response = priv->calculateResponse("GET", "/index", {});
+    QCOMPARE(priv->phase, QAuthenticatorPrivate::Done);
+
+    QVERIFY(!response.isEmpty());
+    QVERIFY(!response.contains("algorithm=SHA-256"));
+    QVERIFY(response.contains("algorithm=MD5"));
 }
 
 void tst_QAuthenticator::equalityOperators()
