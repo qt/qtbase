@@ -171,10 +171,10 @@ private: \
 #define Q_OBJECT_FAKE Q_OBJECT QT_ANNOTATE_CLASS(qt_fake, "")
 
 #ifndef QT_NO_META_MACROS
-/* qmake ignore Q_GADGET */
-#define Q_GADGET \
+/* qmake ignore Q_GADGET_EXPORT */
+#define Q_GADGET_EXPORT(...) \
 public: \
-    static const QMetaObject staticMetaObject; \
+    static __VA_ARGS__ const QMetaObject staticMetaObject; \
     void qt_check_for_QGADGET_macro(); \
     typedef void QtGadgetHelper; \
 private: \
@@ -185,7 +185,10 @@ private: \
     QT_ANNOTATE_CLASS(qt_qgadget, "") \
     /*end*/
 
-/* qmake ignore Q_NAMESPACE_EXPORT */
+/* qmake ignore Q_GADGET */
+#define Q_GADGET Q_GADGET_EXPORT()
+
+    /* qmake ignore Q_NAMESPACE_EXPORT */
 #define Q_NAMESPACE_EXPORT(...) \
     extern __VA_ARGS__ const QMetaObject staticMetaObject; \
     QT_ANNOTATE_CLASS(qt_qnamespace, "") \

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Copyright (C) 2019 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: https://www.qt.io/licensing/
 **
@@ -770,6 +770,12 @@ void Moc::parse()
                     case Q_OBJECT_TOKEN:
                         def.hasQObject = true;
                         break;
+                    case Q_GADGET_EXPORT_TOKEN:
+                        next(LPAREN);
+                        while (test(IDENTIFIER))
+                            {}
+                        next(RPAREN);
+                        Q_FALLTHROUGH();
                     case Q_GADGET_TOKEN:
                         def.hasQGadget = true;
                         break;
@@ -847,6 +853,12 @@ void Moc::parse()
                     if (def.classname != "Qt" && def.classname != "QObject" && def.superclassList.isEmpty())
                         error("Class contains Q_OBJECT macro but does not inherit from QObject");
                     break;
+                case Q_GADGET_EXPORT_TOKEN:
+                    next(LPAREN);
+                    while (test(IDENTIFIER))
+                        {}
+                    next(RPAREN);
+                    Q_FALLTHROUGH();
                 case Q_GADGET_TOKEN:
                     def.hasQGadget = true;
                     if (templateClass)

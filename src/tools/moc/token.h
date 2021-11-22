@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the tools applications of the Qt Toolkit.
@@ -154,6 +154,7 @@ QT_BEGIN_NAMESPACE
     F(RETURN) \
     F(Q_OBJECT_TOKEN) \
     F(Q_GADGET_TOKEN) \
+    F(Q_GADGET_EXPORT_TOKEN) \
     F(Q_NAMESPACE_TOKEN) \
     F(Q_NAMESPACE_EXPORT_TOKEN) \
     F(Q_PROPERTY_TOKEN) \

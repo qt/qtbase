@@ -36,7 +36,7 @@ function(qt_enable_autogen_tool target tool enable)
     # that the moc scanner has to look for. Inform the CMake moc scanner about it.
     if(tool STREQUAL "moc" AND enable)
         set_target_properties("${target}" PROPERTIES
-            AUTOMOC_MACRO_NAMES "Q_OBJECT;Q_GADGET;Q_NAMESPACE;Q_NAMESPACE_EXPORT;Q_ENUM_NS")
+            AUTOMOC_MACRO_NAMES "Q_OBJECT;Q_GADGET;Q_GADGET_EXPORT;Q_NAMESPACE;Q_NAMESPACE_EXPORT;Q_ENUM_NS")
 
         if (TARGET Qt::Platform)
             get_target_property(_abi_tag Qt::Platform qt_libcpp_abi_tag)

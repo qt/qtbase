@@ -92,6 +92,7 @@ Cpp.ignoretokens        += \
                           Q_EXPORT_PLUGIN \
                           Q_EXPORT_PLUGIN2 \
                           Q_GADGET \
+                          Q_GADGET_EXPORT \
                           Q_GFX_INLINE \
                           Q_GUI_EXPORT \
                           Q_GUI_EXPORT_INLINE \

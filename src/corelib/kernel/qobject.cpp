@@ -4400,8 +4400,8 @@ QDebug operator<<(QDebug dbg, const QObject *o)
     \since 5.5
 
     This macro registers an enum type with the meta-object system.
-    It must be placed after the enum declaration in a class that has the Q_OBJECT or the
-    Q_GADGET macro. For namespaces use \l Q_ENUM_NS() instead.
+    It must be placed after the enum declaration in a class that has the Q_OBJECT,
+    Q_GADGET or Q_GADGET_EXPORT macro. For namespaces use \l Q_ENUM_NS() instead.
 
     For example:
 
@@ -4519,7 +4519,7 @@ QDebug operator<<(QDebug dbg, const QObject *o)
     \snippet signalsandslots/signalsandslots.h 3
 
     \note This macro requires the class to be a subclass of QObject. Use
-    Q_GADGET instead of Q_OBJECT to enable the meta object system's support
+    Q_GADGET or Q_GADGET_EXPORT instead of Q_OBJECT to enable the meta object system's support
     for enums in a class that is not a QObject subclass.
 
     \sa {Meta-Object System}, {Signals and Slots}, {Qt's Property System}
@@ -4540,6 +4540,33 @@ QDebug operator<<(QDebug dbg, const QObject *o)
     Q_GADGET makes a class member, \c{staticMetaObject}, available.
     \c{staticMetaObject} is of type QMetaObject and provides access to the
     enums declared with Q_ENUMS.
+
+    \sa Q_GADGET_EXPORT
+*/
+
+/*!
+    \macro Q_GADGET_EXPORT(EXPORT_MACRO)
+    \relates QObject
+    \since 6.3
+
+    The Q_GADGET_EXPORT macro works exactly like the Q_GADGET macro.
+    However, the \c{staticMetaObject} variable that is made available (see
+    Q_GADGET) is declared with the supplied \a EXPORT_MACRO qualifier. This is
+    useful if the object needs to be exported from a dynamic library, but the
+    enclosing class as a whole should not be (e.g. because it consists of mostly
+    inline functions).
+
+    For example:
+
+    \code
+    class Point {
+        Q_GADGET_EXPORT(EXPORT_MACRO)
+        Q_PROPERTY(int x MEMBER x)
+        Q_PROPERTY(int y MEMBER y)
+        ~~~
+    \endcode
+
+    \sa Q_GADGET, {Creating Shared Libraries}
 */
 
 /*!

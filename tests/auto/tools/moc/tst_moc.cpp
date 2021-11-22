@@ -89,6 +89,8 @@ const char *string_hash_hash = STRING_HASH_HASH("baz");
 
 Q_DECLARE_METATYPE(const QMetaObject*);
 
+#define TESTEXPORTMACRO Q_DECL_EXPORT
+
 namespace TestNonQNamespace {
 
 struct TestGadget {
@@ -140,6 +142,22 @@ namespace TestQNamespace {
         Q_ENUM(TestGEnum2)
     };
 
+    struct TestGadgetExport {
+        Q_GADGET_EXPORT(TESTEXPORTMACRO)
+        Q_CLASSINFO("key", "exported")
+    public:
+        enum class TestGeEnum1 {
+            Key1 = 20,
+            Key2
+        };
+        Q_ENUM(TestGeEnum1)
+        enum class TestGeEnum2 {
+            Key1 = 23,
+            Key2
+        };
+        Q_ENUM(TestGeEnum2)
+    };
+
     enum class TestFlag1 {
         None = 0,
         Flag1 = 1,
@@ -157,8 +175,6 @@ namespace TestQNamespace {
     Q_FLAG_NS(TestFlag2)
 }
 
-
-#define TESTEXPORTMACRO Q_DECL_EXPORT
 
 namespace TestExportNamespace {
     Q_NAMESPACE_EXPORT(TESTEXPORTMACRO)
@@ -3952,6 +3968,12 @@ void tst_Moc::testQNamespace()
     checkEnum(TestQNamespace::TestGadget::staticMetaObject.enumerator(0), "TestGEnum1",
                 {{"Key1", 13}, {"Key2", 14}});
     checkEnum(TestQNamespace::TestGadget::staticMetaObject.enumerator(1), "TestGEnum2",
+                {{"Key1", 23}, {"Key2", 24}});
+
+    QCOMPARE(TestQNamespace::TestGadgetExport::staticMetaObject.enumeratorCount(), 2);
+    checkEnum(TestQNamespace::TestGadgetExport::staticMetaObject.enumerator(0), "TestGeEnum1",
+                {{"Key1", 20}, {"Key2", 21}});
+    checkEnum(TestQNamespace::TestGadgetExport::staticMetaObject.enumerator(1), "TestGeEnum2",
                 {{"Key1", 23}, {"Key2", 24}});
 
     QMetaEnum meta = QMetaEnum::fromType<TestQNamespace::TestEnum1>();

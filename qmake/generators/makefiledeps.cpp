@@ -927,6 +927,7 @@ bool QMakeSourceFileInfo::findMocs(SourceFile *file)
     enum Keywords {
         Q_OBJECT_Keyword,
         Q_GADGET_Keyword,
+        Q_GADGET_EXPORT_Keyword,
         Q_NAMESPACE_Keyword,
         Q_NAMESPACE_EXPORT_Keyword,
 
@@ -935,12 +936,14 @@ bool QMakeSourceFileInfo::findMocs(SourceFile *file)
     static const char keywords[][19] = {
         "Q_OBJECT",
         "Q_GADGET",
+        "Q_GADGET_EXPORT",
         "Q_NAMESPACE",
         "Q_NAMESPACE_EXPORT",
     };
     static_assert(std::size(keywords) == NumKeywords);
     bool ignore[NumKeywords] = {};
  /* qmake ignore Q_GADGET */
+ /* qmake ignore Q_GADGET_EXPORT */
  /* qmake ignore Q_OBJECT */
  /* qmake ignore Q_NAMESPACE */
  /* qmake ignore Q_NAMESPACE_EXPORT */
