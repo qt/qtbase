@@ -331,8 +331,8 @@ function(qt6_android_add_apk_target target)
     endif()
 
     set(deployment_tool "${QT_HOST_PATH}/${QT6_HOST_INFO_BINDIR}/androiddeployqt")
-    get_target_property(apk_final_dir ${target} BINARY_DIR)
-    set(apk_final_dir "${apk_final_dir}/android-build")
+    get_target_property(target_binary_dir ${target} BINARY_DIR)
+    set(apk_final_dir "${target_binary_dir}/android-build")
     set(apk_file_name "${target}.apk")
     set(dep_file_name "${target}.d")
     set(apk_final_file_path "${apk_final_dir}/${apk_file_name}")
@@ -371,8 +371,13 @@ function(qt6_android_add_apk_target target)
 
     # The DEPFILE argument to add_custom_command is only available with Ninja or CMake>=3.20 and
     # make.
+    set(has_depfile_support FALSE)
     if(CMAKE_GENERATOR MATCHES "Ninja" OR
         (CMAKE_VERSION VERSION_GREATER_EQUAL 3.20 AND CMAKE_GENERATOR MATCHES "Makefiles"))
+        set(has_depfile_support TRUE)
+    endif()
+
+    if(has_depfile_support)
         cmake_policy(PUSH)
         if(POLICY CMP0116)
             # Without explicitly setting this policy to NEW, we get a warning
@@ -445,18 +450,43 @@ function(qt6_android_add_apk_target target)
         file(RELATIVE_PATH androiddeployqt_output_path "${CMAKE_BINARY_DIR}" "${apk_final_dir}")
         set(androiddeployqt_output_path
             "${QT_INTERNAL_ANDROID_MULTI_ABI_BINARY_DIR}/${androiddeployqt_output_path}")
-        add_custom_target(qt_internal_${target}_copy_apk_dependencies
-            DEPENDS ${target} ${extra_deps}
-            COMMAND ${CMAKE_COMMAND}
-                -E copy_if_different $<TARGET_FILE:${target}>
-                "${androiddeployqt_output_path}/${target_file_copy_relative_path}"
-            COMMAND  ${deployment_tool}
-                --input ${deployment_file}
-                --output ${androiddeployqt_output_path}
-                --copy-dependencies-only
-                ${extra_args}
-            COMMENT "Resolving ${CMAKE_ANDROID_ARCH_ABI} dependencies for the ${target} APK"
-        )
+        if(has_depfile_support)
+            set(deploy_android_deps_dir "${apk_final_dir}/${target}_deploy_android")
+            set(timestamp_file "${deploy_android_deps_dir}/timestamp")
+            set(dep_file "${deploy_android_deps_dir}/${target}.d")
+            add_custom_command(OUTPUT "${timestamp_file}"
+                DEPENDS ${target} ${extra_deps}
+                COMMAND ${CMAKE_COMMAND} -E make_directory "${deploy_android_deps_dir}"
+                COMMAND ${CMAKE_COMMAND} -E touch "${timestamp_file}"
+                COMMAND ${CMAKE_COMMAND}
+                    -E copy_if_different $<TARGET_FILE:${target}>
+                    "${androiddeployqt_output_path}/${target_file_copy_relative_path}"
+                COMMAND  ${deployment_tool}
+                    --input ${deployment_file}
+                    --output ${androiddeployqt_output_path}
+                    --copy-dependencies-only
+                    ${extra_args}
+                    --depfile "${dep_file}"
+                    --builddir "${CMAKE_BINARY_DIR}"
+                COMMENT "Resolving ${CMAKE_ANDROID_ARCH_ABI} dependencies for the ${target} APK"
+                DEPFILE "${dep_file}"
+            )
+            add_custom_target(qt_internal_${target}_copy_apk_dependencies
+                DEPENDS "${timestamp_file}")
+        else()
+            add_custom_target(qt_internal_${target}_copy_apk_dependencies
+                DEPENDS ${target} ${extra_deps}
+                COMMAND ${CMAKE_COMMAND}
+                    -E copy_if_different $<TARGET_FILE:${target}>
+                    "${androiddeployqt_output_path}/${target_file_copy_relative_path}"
+                COMMAND  ${deployment_tool}
+                    --input ${deployment_file}
+                    --output ${androiddeployqt_output_path}
+                    --copy-dependencies-only
+                    ${extra_args}
+                COMMENT "Resolving ${CMAKE_ANDROID_ARCH_ABI} dependencies for the ${target} APK"
+            )
+        endif()
     endif()
 
     set_property(GLOBAL APPEND PROPERTY _qt_apk_targets ${target})

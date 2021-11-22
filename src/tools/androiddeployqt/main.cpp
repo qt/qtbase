@@ -3110,12 +3110,19 @@ bool writeDependencyFile(const Options &options)
     if (options.verbose)
         fprintf(stdout, "Writing dependency file.\n");
 
+    QString relativeTargetPath;
+    if (options.copyDependenciesOnly) {
+        // When androiddeploy Qt is running in copyDependenciesOnly mode we need to use
+        // the timestamp file as the target to collect dependencies.
+        QString timestampAbsPath = QFileInfo(options.depFilePath).absolutePath() + QLatin1String("/timestamp");
+        relativeTargetPath = QDir(options.buildDirectory).relativeFilePath(timestampAbsPath);
+    } else {
+        relativeTargetPath = QDir(options.buildDirectory).relativeFilePath(options.apkPath);
+    }
+
     QFile depFile(options.depFilePath);
-
-    QString relativeApkPath = QDir(options.buildDirectory).relativeFilePath(options.apkPath);
-
     if (depFile.open(QIODevice::WriteOnly)) {
-        depFile.write(escapeAndEncodeDependencyPath(relativeApkPath));
+        depFile.write(escapeAndEncodeDependencyPath(relativeTargetPath));
         depFile.write(": ");
 
         for (const auto &file : dependenciesForDepfile) {
@@ -3227,6 +3234,8 @@ int main(int argc, char *argv[])
     }
 
     if (options.copyDependenciesOnly) {
+        if (!options.depFilePath.isEmpty())
+            writeDependencyFile(options);
         return 0;
     }
 
