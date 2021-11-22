@@ -111,14 +111,15 @@ endif()
 
 # Windows MSVC
 if(MSVC)
-    set(QT_CFLAGS_OPTIMIZE "-O2")
-    set(QT_CFLAGS_OPTIMIZE_DEBUG "-Od")
-    set(QT_CFLAGS_OPTIMIZE_SIZE "-O1")
-    set(QT_CFLAGS_OPTIMIZE_VALID_VALUES "/O2" "/O1" "/Od" "/Ob0" "/Ob1" "/Ob2" "/O0" "-O0")
+    set(QT_CFLAGS_OPTIMIZE "-O2 -Ob2 -Oi")
+    set(QT_CFLAGS_OPTIMIZE_DEBUG "-Od -Ob0")
+    set(QT_CFLAGS_OPTIMIZE_SIZE "-O1 -Ob1")
+    set(QT_CFLAGS_OPTIMIZE_FULL "-O2 -Ob3 -Oi")
+    set(QT_CFLAGS_OPTIMIZE_VALID_VALUES "/O2" "/O1" "/Od" "/Ob0" "/Ob1" "/Ob2" "/Ob3" "/Oi")
 
     if(CLANG)
-        set(QT_CFLAGS_OPTIMIZE_FULL "/clang:-O3")
-        set(QT_CFLAGS_OPTIMIZE_SIZE "/clang:-Oz")
+        set(QT_CFLAGS_OPTIMIZE_FULL "/clang:-O3 -Ob2 -Oi")
+        set(QT_CFLAGS_OPTIMIZE_SIZE "/clang:-Oz -Ob1")
     endif()
 endif()
 
@@ -146,6 +147,6 @@ if(WASM)
     set(QT_CFLAGS_OPTIMIZE_SIZE "-Os")
     set(QT_CFLAGS_OPTIMIZE_DEBUG "-g2")
 
-    set(QT_CFLAGS_SSE2 -O2 -msimd128 -msse -msse2)
+    set(QT_CFLAGS_SSE2 "-O2 -msimd128 -msse -msse2")
 
 endif()
