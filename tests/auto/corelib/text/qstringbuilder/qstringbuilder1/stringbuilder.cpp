@@ -305,6 +305,10 @@ void runScenario()
         QCOMPARE(r, ba);
         r = zero P ba;
         QCOMPARE(r, ba);
+
+        QByteArrayView qbav = LITERAL;
+        superba = qbav P qbav P LITERAL;
+        QCOMPARE(superba, QByteArray(LITERAL LITERAL LITERAL));
     }
 
     //operator QString  +=

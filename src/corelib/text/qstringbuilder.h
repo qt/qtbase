@@ -187,6 +187,27 @@ template <> struct QConcatenable<char> : private QAbstractConcatenable
     { *out++ = c; }
 };
 
+template <> struct QConcatenable<QByteArrayView> : private QAbstractConcatenable
+{
+    typedef QByteArrayView type;
+    typedef QByteArray ConvertTo;
+    enum { ExactSize = true };
+    static qsizetype size(QByteArrayView bav) { return bav.size(); }
+#ifndef QT_NO_CAST_FROM_ASCII
+    QT_ASCII_CAST_WARN static inline void appendTo(QByteArrayView bav, QChar *&out)
+    {
+        QAbstractConcatenable::convertFromUtf8(bav, out);
+    }
+#endif
+    static inline void appendTo(QByteArrayView bav, char *&out)
+    {
+        qsizetype n = bav.size();
+        if (n)
+            memcpy(out, bav.data(), n);
+        out += n;
+    }
+};
+
 template <> struct QConcatenable<char16_t> : private QAbstractConcatenable
 {
     typedef char16_t type;
