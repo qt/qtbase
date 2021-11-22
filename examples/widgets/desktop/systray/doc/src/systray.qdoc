@@ -173,11 +173,11 @@
 
     We have reimplemented the QWidget::closeEvent() event handler to
     receive widget close events, showing the above message to the
-    users when they are closing the editor window. On \macos we need to
+    users when they are closing the editor window. We need to
     avoid showing the message and accepting the close event when the
-    user really intends to quit the application, that is, when the
-    user has triggered "Quit" in the menu bar or pressed the Command+Q
-    shortcut.
+    user really intends to quit the application: that is, when the
+    user has triggered "Quit" in the menu bar, or in the tray icon's
+    context menu, or pressed Command+Q shortcut on \macOS.
 
     In addition to the functions and slots discussed above, we have
     also implemented several convenience functions to simplify the
