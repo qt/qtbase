@@ -40,7 +40,7 @@
 #ifndef QAPPLICATIONSTATIC_H
 #define QAPPLICATIONSTATIC_H
 
-#include <QMutex>
+#include <QtCore/QMutex>
 #include <QtCore/qglobalstatic.h>
 
 QT_BEGIN_NAMESPACE
