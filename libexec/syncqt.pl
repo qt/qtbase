@@ -47,6 +47,7 @@
 use File::Basename;
 use File::Path;
 use File::Spec;
+use File::Spec::Win32;
 use Cwd;
 use Cwd 'abs_path';
 use Config;
@@ -506,7 +507,8 @@ sub cleanupPath {
 sub fixPaths {
     my ($file, $dir) = @_;
 
-    my $out = File::Spec->abs2rel(cleanupPath($file), cleanupPath($dir));
+    my $fileSpecModule = $isunix ? "File::Spec" : "File::Spec::Win32";
+    my $out = $fileSpecModule->abs2rel(cleanupPath($file), cleanupPath($dir));
     $out =~ s,\\,/,g;
     $out = "\"$out\"" if ($out =~ / /);
     return $out;
