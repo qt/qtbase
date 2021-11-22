@@ -103,12 +103,12 @@ static QIcon messageIcon2qIcon(QSystemTrayIcon::MessageIcon icon)
 
     \list
     \li All supported versions of Windows.
-    \li All window managers and independent tray implementations for X11 that implement the
-       \l{http://standards.freedesktop.org/systemtray-spec/systemtray-spec-0.2.html freedesktop.org}
-       XEmbed system tray specification.
-    \li All X11 desktop environments that implement the D-Bus
+    \li All Linux desktop environments that implement the D-Bus
        \l{http://www.freedesktop.org/wiki/Specifications/StatusNotifierItem/StatusNotifierItem}
-       specification, including recent versions of KDE and Unity.
+       {StatusNotifierItem specification}, including KDE, Gnome, Xfce, LXQt, and DDE.
+    \li All window managers and independent tray implementations for X11 that implement the
+       \l{http://standards.freedesktop.org/systemtray-spec/systemtray-spec-0.2.html}
+       {freedesktop.org XEmbed system tray specification}.
     \li All supported versions of \macos.
     \endlist
 
