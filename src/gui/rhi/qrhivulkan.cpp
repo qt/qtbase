@@ -49,7 +49,9 @@
 #endif
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_GCC("-Wsuggest-override")
+#if defined(Q_CC_CLANG) && Q_CC_CLANG >= 1100
 QT_WARNING_DISABLE_CLANG("-Wdeprecated-copy")
+#endif
 #include "vk_mem_alloc.h"
 QT_WARNING_POP
 
