@@ -57,11 +57,34 @@
 
 QT_BEGIN_NAMESPACE
 
+template <size_t Size, size_t Align, qsizetype Prealloc>
+class QVLAStorage
+{
+protected:
+    ~QVLAStorage() = default;
+
+    std::aligned_storage_t<Size, Align> array[Prealloc];
+};
+
+template<class T>
+class QVLABase
+{
+protected:
+    ~QVLABase() = default;
+
+    qsizetype a;      // capacity
+    qsizetype s;      // size
+    T *ptr;     // data
+};
 
 // Prealloc = 256 by default, specified in qcontainerfwd.h
 template<class T, qsizetype Prealloc>
 class QVarLengthArray
+    : public QVLABase<T>, // ### Qt 7: swap base class order
+      public QVLAStorage<sizeof(T), alignof(T), Prealloc>
 {
+    using Base = QVLABase<T>;
+    using Storage = QVLAStorage<sizeof(T), alignof(T), Prealloc>;
     static_assert(std::is_nothrow_destructible_v<T>, "Types with throwing destructors are not supported in Qt containers.");
 
     Q_ALWAYS_INLINE void verify(qsizetype pos = 0, qsizetype n = 1) const
@@ -75,8 +98,10 @@ class QVarLengthArray
 
 public:
     QVarLengthArray() noexcept
-        : a{Prealloc}, s{0}, ptr{reinterpret_cast<T *>(array)}
     {
+        this->a = Prealloc;
+        this->s = 0;
+        this->ptr = reinterpret_cast<T *>(this->array);
     }
 
     inline explicit QVarLengthArray(qsizetype size);
@@ -89,14 +114,12 @@ public:
 
     QVarLengthArray(QVarLengthArray &&other)
             noexcept(std::is_nothrow_move_constructible_v<T>)
-        : a{other.a},
-          s{other.s},
-          ptr{other.ptr}
+        : Base(other)
     {
         const auto otherInlineStorage = reinterpret_cast<T*>(other.array);
         if (data() == otherInlineStorage) {
             // inline buffer - move into our inline buffer:
-            ptr = reinterpret_cast<T*>(array);
+            this->ptr = reinterpret_cast<T*>(this->array);
             QtPrivate::q_uninitialized_relocate_n(otherInlineStorage, size(), data());
         } else {
             // heap buffer - we just stole the memory
@@ -124,7 +147,7 @@ public:
     {
         if constexpr (QTypeInfo<T>::isComplex)
             std::destroy_n(data(), size());
-        if (data() != reinterpret_cast<T *>(array))
+        if (data() != reinterpret_cast<T *>(this->array))
             free(data());
     }
     inline QVarLengthArray<T, Prealloc> &operator=(const QVarLengthArray<T, Prealloc> &other)
@@ -147,13 +170,13 @@ public:
         const auto otherInlineStorage = reinterpret_cast<T *>(other.array);
         if (other.ptr != otherInlineStorage) {
             // heap storage: steal the external buffer, reset other to otherInlineStorage
-            a = std::exchange(other.a, Prealloc);
-            ptr = std::exchange(other.ptr, otherInlineStorage);
+            this->a = std::exchange(other.a, Prealloc);
+            this->ptr = std::exchange(other.ptr, otherInlineStorage);
         } else {
             // inline storage: move into our storage (doesn't matter whether inline or external)
             QtPrivate::q_uninitialized_relocate_n(other.data(), other.size(), data());
         }
-        s = std::exchange(other.s, 0);
+        this->s = std::exchange(other.s, 0);
         return *this;
     }
 
@@ -161,7 +184,7 @@ public:
     {
         resize(qsizetype(list.size()));
         std::copy(list.begin(), list.end(),
-                  QT_MAKE_CHECKED_ARRAY_ITERATOR(this->begin(), this->size()));
+                  QT_MAKE_CHECKED_ARRAY_ITERATOR(begin(), size()));
         return *this;
     }
 
@@ -170,9 +193,9 @@ public:
         verify();
         if constexpr (QTypeInfo<T>::isComplex)
             data()[size() - 1].~T();
-        --s;
+        --this->s;
     }
-    inline qsizetype size() const { return s; }
+    inline qsizetype size() const { return this->s; }
     inline qsizetype count() const { return size(); }
     inline qsizetype length() const { return size(); }
     inline T &first()
@@ -200,7 +223,7 @@ public:
     inline void clear() { resize(0); }
     void squeeze() { reallocate(size(), size()); }
 
-    inline qsizetype capacity() const { return a; }
+    qsizetype capacity() const { return this->a; }
     void reserve(qsizetype sz) { if (sz > capacity()) reallocate(size(), sz); }
 
     template <typename AT = T>
@@ -262,8 +285,8 @@ public:
     template <typename Predicate>
     qsizetype removeIf(Predicate pred);
 
-    inline T *data() { return ptr; }
-    inline const T *data() const { return ptr; }
+    inline T *data() { return this->ptr; }
+    inline const T *data() const { return this->ptr; }
     inline const T *constData() const { return data(); }
     typedef qsizetype size_type;
     typedef T value_type;
@@ -374,11 +397,6 @@ public:
 private:
     void reallocate(qsizetype size, qsizetype alloc);
 
-    qsizetype a;      // capacity
-    qsizetype s;      // size
-    T *ptr;     // data
-    std::aligned_storage_t<sizeof(T), alignof(T)> array[Prealloc];
-
     bool isValidIterator(const const_iterator &i) const
     {
         const std::less<const T *> less = {};
@@ -393,16 +411,17 @@ QVarLengthArray(InputIterator, InputIterator) -> QVarLengthArray<ValueType>;
 
 template <class T, qsizetype Prealloc>
 Q_INLINE_TEMPLATE QVarLengthArray<T, Prealloc>::QVarLengthArray(qsizetype asize)
-    : s(asize) {
+{
+    this->s = asize;
     static_assert(Prealloc > 0, "QVarLengthArray Prealloc must be greater than 0.");
     Q_ASSERT_X(size() >= 0, "QVarLengthArray::QVarLengthArray()", "Size must be greater than or equal to 0.");
     if (size() > Prealloc) {
-        ptr = reinterpret_cast<T *>(malloc(s * sizeof(T)));
+        this->ptr = reinterpret_cast<T *>(malloc(size() * sizeof(T)));
         Q_CHECK_PTR(data());
-        a = size();
+        this->a = size();
     } else {
-        ptr = reinterpret_cast<T *>(array);
-        a = Prealloc;
+        this->ptr = reinterpret_cast<T *>(this->array);
+        this->a = Prealloc;
     }
     if constexpr (QTypeInfo<T>::isComplex) {
         T *i = end();
@@ -476,7 +495,7 @@ Q_OUTOFLINE_TEMPLATE void QVarLengthArray<T, Prealloc>::append(const T *abuf, qs
     else
         memcpy(static_cast<void *>(end()), static_cast<const void *>(abuf), increment * sizeof(T));
 
-    s = asize;
+    this->s = asize;
 }
 
 template <class T, qsizetype Prealloc>
@@ -504,16 +523,16 @@ Q_OUTOFLINE_TEMPLATE void QVarLengthArray<T, Prealloc>::reallocate(qsizetype asi
             // by design: in case of QT_NO_EXCEPTIONS malloc must not fail or it crashes here
             newA = aalloc;
         } else {
-            newPtr = reinterpret_cast<T *>(array);
+            newPtr = reinterpret_cast<T *>(this->array);
             newA = Prealloc;
         }
         QtPrivate::q_uninitialized_relocate_n(oldPtr, copySize, newPtr);
         // commit:
-        ptr = newPtr;
+        this->ptr = newPtr;
         guard.release();
-        a = newA;
+        this->a = newA;
     }
-    s = copySize;
+    this->s = copySize;
 
     // destroy remaining old objects
     if constexpr (QTypeInfo<T>::isComplex) {
@@ -521,17 +540,17 @@ Q_OUTOFLINE_TEMPLATE void QVarLengthArray<T, Prealloc>::reallocate(qsizetype asi
             std::destroy(oldPtr + asize, oldPtr + osize);
     }
 
-    if (oldPtr != reinterpret_cast<T *>(array) && oldPtr != data())
+    if (oldPtr != reinterpret_cast<T *>(this->array) && oldPtr != data())
         free(oldPtr);
 
     if constexpr (QTypeInfo<T>::isComplex) {
         // call default constructor for new objects (which can throw)
         while (size() < asize) {
             new (data() + size()) T;
-            ++s;
+            ++this->s;
         }
     } else {
-        s = asize;
+        this->s = asize;
     }
 
 }
@@ -620,7 +639,7 @@ Q_OUTOFLINE_TEMPLATE auto QVarLengthArray<T, Prealloc>::emplace(const_iterator b
         memmove(static_cast<void *>(b + 1), static_cast<const void *>(b), (size() - offset) * sizeof(T));
         new (b) T(std::forward<Args>(args)...);
     }
-    s += 1;
+    this->s += 1;
     return data() + offset;
 }
 
@@ -669,7 +688,7 @@ Q_OUTOFLINE_TEMPLATE typename QVarLengthArray<T, Prealloc>::iterator QVarLengthA
     } else {
         memmove(static_cast<void *>(data() + f), static_cast<const void *>(data() + l), (size() - l) * sizeof(T));
     }
-    s -= n;
+    this->s -= n;
     return data() + f;
 }
 
