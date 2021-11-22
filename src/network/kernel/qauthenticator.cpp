@@ -443,6 +443,21 @@ bool QAuthenticatorPrivate::isMethodSupported(QByteArrayView method)
     return std::any_of(methods, methods + std::size(methods), isSupported);
 }
 
+static bool verifyDigestMD5(QByteArrayView value)
+{
+    auto opts = QAuthenticatorPrivate::parseDigestAuthenticationChallenge(value.toByteArray());
+    if (auto it = opts.constFind("algorithm"); it != opts.cend()) {
+        QByteArray alg = it.value();
+        if (alg.size() < 3)
+            return false;
+        // Just compare the first 3 characters, that way we match other subvariants as well, such as
+        // "MD5-sess"
+        auto view = QByteArrayView(alg).first(3);
+        return view.compare("MD5", Qt::CaseInsensitive) == 0;
+    }
+    return true; // assume it's ok if algorithm is not specified
+}
+
 void QAuthenticatorPrivate::parseHttpResponse(const QList<QPair<QByteArray, QByteArray> > &values, bool isProxy, const QString &host)
 {
 #if !QT_CONFIG(gssapi)
@@ -474,6 +489,10 @@ void QAuthenticatorPrivate::parseHttpResponse(const QList<QPair<QByteArray, QByt
             method = Ntlm;
             headerVal = current.second.mid(5);
         } else if (method < DigestMd5 && str.startsWith("digest")) {
+            // Make sure the algorithm is actually MD5 before committing to it:
+            if (!verifyDigestMD5(QByteArrayView(current.second).sliced(7)))
+                continue;
+
             method = DigestMd5;
             headerVal = current.second.mid(7);
         } else if (method < Negotiate && str.startsWith("negotiate")) {
