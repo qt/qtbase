@@ -77,14 +77,13 @@ static QByteArray qNtlmPhase3(QAuthenticatorPrivate *ctx, const QByteArray& phas
 #if QT_CONFIG(sspi) // SSPI
 static bool q_SSPI_library_load();
 static QByteArray qSspiStartup(QAuthenticatorPrivate *ctx, QAuthenticatorPrivate::Method method,
-                               const QString& host);
+                               QStringView host);
 static QByteArray qSspiContinue(QAuthenticatorPrivate *ctx, QAuthenticatorPrivate::Method method,
-                                const QString& host, const QByteArray& challenge = QByteArray());
+                                QStringView host, QByteArrayView challenge = {});
 #elif QT_CONFIG(gssapi) // GSSAPI
-static bool qGssapiTestGetCredentials(const QString &host);
-static QByteArray qGssapiStartup(QAuthenticatorPrivate *ctx, const QString& host);
-static QByteArray qGssapiContinue(QAuthenticatorPrivate *ctx,
-                                  const QByteArray& challenge = QByteArray());
+static bool qGssapiTestGetCredentials(QStringView host);
+static QByteArray qGssapiStartup(QAuthenticatorPrivate *ctx, QStringView host);
+static QByteArray qGssapiContinue(QAuthenticatorPrivate *ctx, QByteArrayView challenge = {});
 #endif // gssapi
 
 /*!
@@ -445,7 +444,7 @@ bool QAuthenticatorPrivate::isMethodSupported(QByteArrayView method)
 
 static bool verifyDigestMD5(QByteArrayView value)
 {
-    auto opts = QAuthenticatorPrivate::parseDigestAuthenticationChallenge(value.toByteArray());
+    auto opts = QAuthenticatorPrivate::parseDigestAuthenticationChallenge(value);
     if (auto it = opts.constFind("algorithm"); it != opts.cend()) {
         QByteArray alg = it.value();
         if (alg.size() < 3)
@@ -458,7 +457,8 @@ static bool verifyDigestMD5(QByteArrayView value)
     return true; // assume it's ok if algorithm is not specified
 }
 
-void QAuthenticatorPrivate::parseHttpResponse(const QList<QPair<QByteArray, QByteArray> > &values, bool isProxy, const QString &host)
+void QAuthenticatorPrivate::parseHttpResponse(const QList<QPair<QByteArray, QByteArray>> &values,
+                                              bool isProxy, QStringView host)
 {
 #if !QT_CONFIG(gssapi)
     Q_UNUSED(host);
@@ -553,7 +553,8 @@ void QAuthenticatorPrivate::parseHttpResponse(const QList<QPair<QByteArray, QByt
     }
 }
 
-QByteArray QAuthenticatorPrivate::calculateResponse(const QByteArray &requestMethod, const QByteArray &path, const QString& host)
+QByteArray QAuthenticatorPrivate::calculateResponse(QByteArrayView requestMethod,
+                                                    QByteArrayView path, QStringView host)
 {
 #if !QT_CONFIG(sspi) && !QT_CONFIG(gssapi)
     Q_UNUSED(host);
@@ -661,11 +662,12 @@ QByteArray QAuthenticatorPrivate::calculateResponse(const QByteArray &requestMet
 
 // ---------------------------- Digest Md5 code ----------------------------------------
 
-QHash<QByteArray, QByteArray> QAuthenticatorPrivate::parseDigestAuthenticationChallenge(const QByteArray &challenge)
+QHash<QByteArray, QByteArray>
+QAuthenticatorPrivate::parseDigestAuthenticationChallenge(QByteArrayView challenge)
 {
     QHash<QByteArray, QByteArray> options;
     // parse the challenge
-    const char *d = challenge.constData();
+    const char *d = challenge.data();
     const char *end = d + challenge.length();
     while (d < end) {
         while (d < end && (*d == ' ' || *d == '\n' || *d == '\r'))
@@ -736,17 +738,17 @@ QHash<QByteArray, QByteArray> QAuthenticatorPrivate::parseDigestAuthenticationCh
 
 /* calculate request-digest/response-digest as per HTTP Digest spec */
 static QByteArray digestMd5ResponseHelper(
-    const QByteArray &alg,
-    const QByteArray &userName,
-    const QByteArray &realm,
-    const QByteArray &password,
-    const QByteArray &nonce,       /* nonce from server */
-    const QByteArray &nonceCount,  /* 8 hex digits */
-    const QByteArray &cNonce,      /* client nonce */
-    const QByteArray &qop,         /* qop-value: "", "auth", "auth-int" */
-    const QByteArray &method,      /* method from the request */
-    const QByteArray &digestUri,   /* requested URL */
-    const QByteArray &hEntity       /* H(entity body) if qop="auth-int" */
+    QByteArrayView alg,
+    QByteArrayView userName,
+    QByteArrayView realm,
+    QByteArrayView password,
+    QByteArrayView nonce,       /* nonce from server */
+    QByteArrayView nonceCount,  /* 8 hex digits */
+    QByteArrayView cNonce,      /* client nonce */
+    QByteArrayView qop,         /* qop-value: "", "auth", "auth-int" */
+    QByteArrayView method,      /* method from the request */
+    QByteArrayView digestUri,   /* requested URL */
+    QByteArrayView hEntity       /* H(entity body) if qop="auth-int" */
     )
 {
     QCryptographicHash hash(QCryptographicHash::Md5);
@@ -800,7 +802,8 @@ static QByteArray digestMd5ResponseHelper(
     return hash.result().toHex();
 }
 
-QByteArray QAuthenticatorPrivate::digestMd5Response(const QByteArray &challenge, const QByteArray &method, const QByteArray &path)
+QByteArray QAuthenticatorPrivate::digestMd5Response(QByteArrayView challenge, QByteArrayView method,
+                                                    QByteArrayView path)
 {
     QHash<QByteArray,QByteArray> options = parseDigestAuthenticationChallenge(challenge);
 
@@ -1251,7 +1254,7 @@ static QString qStringFromUcs2Le(QByteArray src)
 *        ---------------------------------------
 *
 *********************************************************************/
-QByteArray qEncodeHmacMd5(QByteArray &key, const QByteArray &message)
+QByteArray qEncodeHmacMd5(QByteArray &key, QByteArrayView message)
 {
     Q_ASSERT_X(!(message.isEmpty()),"qEncodeHmacMd5", "Empty message check");
     Q_ASSERT_X(!(key.isEmpty()),"qEncodeHmacMd5", "Empty key check");
@@ -1584,7 +1587,7 @@ static bool q_SSPI_library_load()
 }
 
 static QByteArray qSspiStartup(QAuthenticatorPrivate *ctx, QAuthenticatorPrivate::Method method,
-                               const QString& host)
+                               QStringView host)
 {
     if (!q_SSPI_library_load())
         return QByteArray();
@@ -1624,7 +1627,7 @@ static QByteArray qSspiStartup(QAuthenticatorPrivate *ctx, QAuthenticatorPrivate
 }
 
 static QByteArray qSspiContinue(QAuthenticatorPrivate *ctx, QAuthenticatorPrivate::Method method,
-                                  const QString &host, const QByteArray &challenge)
+                                QStringView host, QByteArrayView challenge)
 {
     QByteArray result;
     SecBuffer challengeBuf;
@@ -1717,7 +1720,7 @@ static void q_GSSAPI_error(const char *message, OM_uint32 majStat, OM_uint32 min
     q_GSSAPI_error_int(message, minStat, GSS_C_MECH_CODE);
 }
 
-static gss_name_t qGSsapiGetServiceName(const QString &host)
+static gss_name_t qGSsapiGetServiceName(QStringView host)
 {
     QByteArray serviceName = "HTTPS@" + host.toLocal8Bit();
     gss_buffer_desc nameDesc = {static_cast<std::size_t>(serviceName.size()), serviceName.data()};
@@ -1735,7 +1738,7 @@ static gss_name_t qGSsapiGetServiceName(const QString &host)
 }
 
 // Send initial GSS authentication token
-static QByteArray qGssapiStartup(QAuthenticatorPrivate *ctx, const QString &host)
+static QByteArray qGssapiStartup(QAuthenticatorPrivate *ctx, QStringView host)
 {
     if (!ctx->gssApiHandles)
         ctx->gssApiHandles.reset(new QGssApiHandles);
@@ -1754,7 +1757,7 @@ static QByteArray qGssapiStartup(QAuthenticatorPrivate *ctx, const QString &host
 }
 
 // Continue GSS authentication with next token as needed
-static QByteArray qGssapiContinue(QAuthenticatorPrivate *ctx, const QByteArray& challenge)
+static QByteArray qGssapiContinue(QAuthenticatorPrivate *ctx, QByteArrayView challenge)
 {
     OM_uint32 majStat, minStat, ignored;
     QByteArray result;
@@ -1800,7 +1803,7 @@ static QByteArray qGssapiContinue(QAuthenticatorPrivate *ctx, const QByteArray& 
     return result;
 }
 
-static bool qGssapiTestGetCredentials(const QString &host)
+static bool qGssapiTestGetCredentials(QStringView host)
 {
     gss_name_t serviceName = qGSsapiGetServiceName(host);
     if (!serviceName)

@@ -105,15 +105,18 @@ public:
     QString workstation;
     QString userDomain;
 
-    QByteArray calculateResponse(const QByteArray &method, const QByteArray &path, const QString& host);
+    QByteArray calculateResponse(QByteArrayView method, QByteArrayView path, QStringView host);
 
     inline static QAuthenticatorPrivate *getPrivate(QAuthenticator &auth) { return auth.d; }
     inline static const QAuthenticatorPrivate *getPrivate(const QAuthenticator &auth) { return auth.d; }
 
-    QByteArray digestMd5Response(const QByteArray &challenge, const QByteArray &method, const QByteArray &path);
-    static QHash<QByteArray, QByteArray> parseDigestAuthenticationChallenge(const QByteArray &challenge);
+    QByteArray digestMd5Response(QByteArrayView challenge, QByteArrayView method,
+                                 QByteArrayView path);
+    static QHash<QByteArray, QByteArray>
+    parseDigestAuthenticationChallenge(QByteArrayView challenge);
 
-    void parseHttpResponse(const QList<QPair<QByteArray, QByteArray> >&, bool isProxy, const QString &host);
+    void parseHttpResponse(const QList<QPair<QByteArray, QByteArray>> &, bool isProxy,
+                           QStringView host);
     void updateCredentials();
 
     static bool isMethodSupported(QByteArrayView method);
