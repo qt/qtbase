@@ -1088,8 +1088,32 @@ public:
 
     QStringList uiLanguages() const;
 
+    enum LanguageCodeType {
+        ISO639Part1 = 1 << 0,
+        ISO639Part2B = 1 << 1,
+        ISO639Part2T = 1 << 2,
+        ISO639Part3 = 1 << 3,
+        LegacyLanguageCode = 1 << 15,
+
+        ISO639Part2 = ISO639Part2B | ISO639Part2T,
+        ISO639Alpha2 = ISO639Part1,
+        ISO639Alpha3 = ISO639Part2 | ISO639Part3,
+        ISO639 = ISO639Alpha2 | ISO639Alpha3,
+
+        AnyLanguageCode = -1
+    };
+    Q_DECLARE_FLAGS(LanguageCodeTypes, LanguageCodeType)
+
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
     static QString languageToCode(Language language);
+    static QString languageToCode(Language language, LanguageCodeTypes codeTypes);
     static Language codeToLanguage(QStringView languageCode) noexcept;
+    static Language codeToLanguage(QStringView languageCode, LanguageCodeTypes codeTypes) noexcept;
+#else
+    static QString languageToCode(Language language, LanguageCodeTypes codeTypes = AnyLanguageCode);
+    static Language codeToLanguage(QStringView languageCode,
+                                   LanguageCodeTypes codeTypes = AnyLanguageCode) noexcept;
+#endif
     static QString territoryToCode(Territory territory);
     static Territory codeToTerritory(QStringView territoryCode) noexcept;
 #if QT_DEPRECATED_SINCE(6, 6)
@@ -1146,6 +1170,7 @@ private:
 };
 Q_DECLARE_SHARED(QLocale)
 Q_DECLARE_OPERATORS_FOR_FLAGS(QLocale::NumberOptions)
+Q_DECLARE_OPERATORS_FOR_FLAGS(QLocale::LanguageCodeTypes)
 
 #ifndef QT_NO_DATASTREAM
 Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QLocale &);

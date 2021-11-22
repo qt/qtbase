@@ -548,12 +548,18 @@ static QVariant getLocaleValue(CFStringRef key)
     return QVariant();
 }
 
+static QLocale::Language codeToLanguage(QStringView s)
+{
+    return QLocalePrivate::codeToLanguage(s);
+}
+
 QVariant QSystemLocale::query(QueryType type, QVariant in) const
 {
     QMacAutoReleasePool pool;
+
     switch(type) {
     case LanguageId:
-        return getLocaleValue<QLocalePrivate::codeToLanguage>(kCFLocaleLanguageCode);
+        return getLocaleValue<codeToLanguage>(kCFLocaleLanguageCode);
     case TerritoryId:
         return getLocaleValue<QLocalePrivate::codeToTerritory>(kCFLocaleCountryCode);
     case ScriptId:

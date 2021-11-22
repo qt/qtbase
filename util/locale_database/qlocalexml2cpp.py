@@ -30,15 +30,22 @@
 
 See ``cldr2qlocalexml.py`` for how to generate the QLocaleXML data itself.
 Pass the output file from that as first parameter to this script; pass
-the root of the qtbase check-out as second parameter.
+the ISO 639-3 data file as second parameter; pass the root of the qtbase
+check-out as third parameter.
+
+The ISO 639-3 data file can be downloaded from the SIL website:
+
+    https://iso639-3.sil.org/sites/iso639-3/files/downloads/iso-639-3.tab
 """
 
 import datetime
 import argparse
 from pathlib import Path
+from typing import Optional
 
 from qlocalexml import QLocaleXmlReader
 from localetools import unicode2hex, wrap_list, Error, Transcriber, SourceFileEditor
+from iso639_3 import LanguageCodeData
 
 class LocaleKeySorter:
     """Sort-ordering representation of a locale key.
@@ -389,8 +396,42 @@ class LocaleDataWriter (LocaleSourceEditor):
     # TODO: unify these next three into the previous three; kept
     # separate for now to verify we're not changing data.
 
-    def languageCodes(self, languages):
-        self.__writeCodeList(self.writer.write, languages, 'language', 3)
+    def languageCodes(self, languages, code_data: LanguageCodeData):
+        out = self.writer.write
+
+        out(f'constexpr std::array<LanguageCodeEntry, {len(languages)}> languageCodeList {{\n')
+
+        def q(val: Optional[str], size: int) -> str:
+            """Quote the value and adjust the result for tabular view."""
+            chars = []
+            if val is not None:
+                for c in val:
+                    chars.append(f"'{c}'")
+                s = ', '.join(chars)
+                s = f'{{{s}}}'
+            else:
+                s = ''
+            if size == 0:
+                return f'{{{s}}}'
+            else:
+                return f'{{{s}}},'.ljust(size * 5 + 4)
+
+        for key, value in languages.items():
+            code = value[1]
+            if key < 2:
+                result = code_data.query('und')
+            else:
+                result = code_data.query(code)
+                assert code == result.id()
+            assert result is not None
+
+            codeString = q(result.part1Code, 2)
+            codeString += q(result.part2BCode, 3)
+            codeString += q(result.part2TCode, 3)
+            codeString += q(result.part3Code, 0)
+            out(f'    LanguageCodeEntry {{{codeString}}}, // {value[0]}\n')
+
+        out('};\n\n')
 
     def scriptCodes(self, scripts):
         self.__writeCodeList(self.writer.write, scripts, 'script', 4)
@@ -519,6 +560,8 @@ def main(out, err):
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('input_file', help='input XML file name',
                         metavar='input-file.xml')
+    parser.add_argument('iso_path', help='path to the ISO 639-3 data file',
+                        metavar='iso-639-3.tab')
     parser.add_argument('qtbase_path', help='path to the root of the qtbase source tree')
     parser.add_argument('--calendars', help='select calendars to emit data for',
                         nargs='+', metavar='CALENDAR',
@@ -538,6 +581,8 @@ def main(out, err):
     locale_map = dict(reader.loadLocaleMap(calendars, err.write))
     locale_keys = sorted(locale_map.keys(), key=LocaleKeySorter(reader.defaultMap()))
 
+    code_data = LanguageCodeData(args.iso_path)
+
     try:
         with LocaleDataWriter(qtsrcdir.joinpath('src/corelib/text/qlocale_data_p.h'),
                               qtsrcdir, reader.cldrVersion) as writer:
@@ -549,7 +594,7 @@ def main(out, err):
             writer.scriptNames(reader.scripts)
             writer.territoryNames(reader.territories)
             # TODO: merge the next three into the previous three
-            writer.languageCodes(reader.languages)
+            writer.languageCodes(reader.languages, code_data)
             writer.scriptCodes(reader.scripts)
             writer.territoryCodes(reader.territories)
     except Exception as e:

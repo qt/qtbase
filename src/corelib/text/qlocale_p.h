@@ -418,18 +418,25 @@ public:
 
     [[nodiscard]] QByteArray bcp47Name(char separator = '-') const;
 
-    [[nodiscard]] inline QLatin1String languageCode() const
-    { return languageToCode(QLocale::Language(m_data->m_language_id)); }
+    [[nodiscard]] inline QLatin1String
+    languageCode(QLocale::LanguageCodeTypes codeTypes = QLocale::AnyLanguageCode) const
+    {
+        return languageToCode(QLocale::Language(m_data->m_language_id), codeTypes);
+    }
     [[nodiscard]] inline QLatin1String scriptCode() const
     { return scriptToCode(QLocale::Script(m_data->m_script_id)); }
     [[nodiscard]] inline QLatin1String territoryCode() const
     { return territoryToCode(QLocale::Territory(m_data->m_territory_id)); }
 
     [[nodiscard]] static const QLocalePrivate *get(const QLocale &l) { return l.d; }
-    [[nodiscard]] static QLatin1String languageToCode(QLocale::Language language);
+    [[nodiscard]] static QLatin1String
+    languageToCode(QLocale::Language language,
+                   QLocale::LanguageCodeTypes codeTypes = QLocale::AnyLanguageCode);
     [[nodiscard]] static QLatin1String scriptToCode(QLocale::Script script);
     [[nodiscard]] static QLatin1String territoryToCode(QLocale::Territory territory);
-    [[nodiscard]] static QLocale::Language codeToLanguage(QStringView code) noexcept;
+    [[nodiscard]] static QLocale::Language
+    codeToLanguage(QStringView code,
+                   QLocale::LanguageCodeTypes codeTypes = QLocale::AnyLanguageCode) noexcept;
     [[nodiscard]] static QLocale::Script codeToScript(QStringView code) noexcept;
     [[nodiscard]] static QLocale::Territory codeToTerritory(QStringView code) noexcept;
 

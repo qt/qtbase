@@ -102,22 +102,58 @@ QT_BEGIN_INCLUDE_NAMESPACE
 #include "qlocale_data_p.h"
 QT_END_INCLUDE_NAMESPACE
 
-QLocale::Language QLocalePrivate::codeToLanguage(QStringView code) noexcept
+QLocale::Language QLocalePrivate::codeToLanguage(QStringView code,
+                                                 QLocale::LanguageCodeTypes codeTypes) noexcept
 {
     const auto len = code.size();
     if (len != 2 && len != 3)
         return QLocale::AnyLanguage;
-    char16_t uc1 = code[0].toLower().unicode();
-    char16_t uc2 = code[1].toLower().unicode();
-    char16_t uc3 = len > 2 ? code[2].toLower().unicode() : 0;
 
-    const unsigned char *c = language_code_list;
-    for (; *c != 0; c += 3) {
-        if (uc1 == c[0] && uc2 == c[1] && uc3 == c[2])
-            return QLocale::Language((c - language_code_list)/3);
+    const char16_t uc1 = code[0].toLower().unicode();
+    const char16_t uc2 = code[1].toLower().unicode();
+    const char16_t uc3 = len > 2 ? code[2].toLower().unicode() : 0;
+
+    // All language codes are ASCII.
+    if (uc1 > 0x7F || uc2 > 0x7F || uc3 > 0x7F)
+        return QLocale::AnyLanguage;
+
+    const AlphaCode codeBuf = { { char(uc1), char(uc2), char(uc3) } };
+
+    auto searchCode = [codeBuf](auto f) {
+        return std::find_if(languageCodeList.begin(), languageCodeList.end(),
+                            [=](const LanguageCodeEntry &i) { return f(i) == codeBuf; });
+    };
+
+    if (codeTypes.testFlag(QLocale::ISO639Part1) && uc3 == 0) {
+        auto i = searchCode([](const LanguageCodeEntry &i) { return i.part1; });
+        if (i != languageCodeList.end())
+            return QLocale::Language(std::distance(languageCodeList.begin(), i));
     }
 
-    if (uc3 == 0) {
+    if (uc3 != 0) {
+        if (codeTypes.testFlag(QLocale::ISO639Part2B)) {
+            auto i = searchCode([](const LanguageCodeEntry &i) { return i.part2B; });
+            if (i != languageCodeList.end())
+                return QLocale::Language(std::distance(languageCodeList.begin(), i));
+        }
+
+        // Optimization: Part 2T code if present is always the same as Part 3 code.
+        // This is asserted in iso639_3.LanguageCodeData.
+        if (codeTypes.testFlag(QLocale::ISO639Part2T)
+            && !codeTypes.testFlag(QLocale::ISO639Part3)) {
+            auto i = searchCode([](const LanguageCodeEntry &i) { return i.part2T; });
+            if (i != languageCodeList.end())
+                return QLocale::Language(std::distance(languageCodeList.begin(), i));
+        }
+
+        if (codeTypes.testFlag(QLocale::ISO639Part3)) {
+            auto i = searchCode([](const LanguageCodeEntry &i) { return i.part3; });
+            if (i != languageCodeList.end())
+                return QLocale::Language(std::distance(languageCodeList.begin(), i));
+        }
+    }
+
+    if (codeTypes.testFlag(QLocale::LegacyLanguageCode) && uc3 == 0) {
         // legacy codes
         if (uc1 == 'n' && uc2 == 'o') // no -> nb
             return QLocale::NorwegianBokmal;
@@ -177,15 +213,29 @@ QLocale::Territory QLocalePrivate::codeToTerritory(QStringView code) noexcept
     return QLocale::AnyTerritory;
 }
 
-QLatin1String QLocalePrivate::languageToCode(QLocale::Language language)
+QLatin1String QLocalePrivate::languageToCode(QLocale::Language language,
+                                             QLocale::LanguageCodeTypes codeTypes)
 {
     if (language == QLocale::AnyLanguage || language > QLocale::LastLanguage)
         return QLatin1String();
     if (language == QLocale::C)
         return QLatin1String("C");
 
-    const unsigned char *c = language_code_list + 3 * language;
-    return QLatin1String(reinterpret_cast<const char*>(c), c[2] == 0 ? 2 : 3);
+    const LanguageCodeEntry &i = languageCodeList[language];
+
+    if (codeTypes.testFlag(QLocale::ISO639Part1) && i.part1.isValid())
+        return QLatin1String(i.part1.code, 2);
+
+    if (codeTypes.testFlag(QLocale::ISO639Part2B) && i.part2B.isValid())
+        return QLatin1String(i.part2B.code, 3);
+
+    if (codeTypes.testFlag(QLocale::ISO639Part2T) && i.part2T.isValid())
+        return QLatin1String(i.part2T.code, 3);
+
+    if (codeTypes.testFlag(QLocale::ISO639Part3))
+        return QLatin1String(i.part3.code, 3);
+
+    return QLatin1String();
 }
 
 QLatin1String QLocalePrivate::scriptToCode(QLocale::Script script)
@@ -370,20 +420,32 @@ QByteArray QLocaleId::name(char separator) const
     if (language_id == QLocale::C)
         return QByteArrayLiteral("C");
 
-    const unsigned char *lang = language_code_list + 3 * language_id;
+    const LanguageCodeEntry &language = languageCodeList[language_id];
+    const char *lang;
+    qsizetype langLen;
+
+    if (language.part1.isValid()) {
+        lang = language.part1.code;
+        langLen = 2;
+    } else {
+        lang = language.part2B.isValid() ? language.part2B.code : language.part3.code;
+        langLen = 3;
+    }
+
     const unsigned char *script =
             (script_id != QLocale::AnyScript ? script_code_list + 4 * script_id : nullptr);
     const unsigned char *country =
             (territory_id != QLocale::AnyTerritory
              ? territory_code_list + 3 * territory_id : nullptr);
-    char len = (lang[2] != 0 ? 3 : 2) + (script ? 4 + 1 : 0)
-        + (country ? (country[2] != 0 ? 3 : 2) + 1 : 0);
+    qsizetype len = langLen + (script ? 4 + 1 : 0) + (country ? (country[2] != 0 ? 3 : 2) + 1 : 0);
     QByteArray name(len, Qt::Uninitialized);
     char *uc = name.data();
+
     *uc++ = lang[0];
     *uc++ = lang[1];
-    if (lang[2] != 0)
+    if (langLen > 2)
         *uc++ = lang[2];
+
     if (script) {
         *uc++ = separator;
         *uc++ = script[0];
@@ -1348,30 +1410,66 @@ QString QLocale::bcp47Name() const
     Returns the two- or three-letter language code for \a language, as defined
     in the ISO 639 standards.
 
+    If specified, \a codeTypes selects which set of codes to consider. The first
+    code from the set that is defined for \a language is returned. Otherwise,
+    all ISO-639 codes are considered. The codes are considered in the following
+    order: \c ISO639Part1, \c ISO639Part2B, \c ISO639Part2T, \c ISO639Part3.
+    \c LegacyLanguageCode is ignored by this function.
+
     \note For \c{QLocale::C} the function returns \c{"C"}.
     For \c QLocale::AnyLanguage an empty string is returned.
+    If the language has no code in any selected code set, an empty string
+    is returned.
 
-    \since 6.1
+    \since 6.3
     \sa codeToLanguage(), language(), name(), bcp47Name(), territoryToCode(), scriptToCode()
+*/
+QString QLocale::languageToCode(Language language, LanguageCodeTypes codeTypes)
+{
+    return QLocalePrivate::languageToCode(language, codeTypes);
+}
+
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+/*!
+    \overload
+    \since 6.1
 */
 QString QLocale::languageToCode(Language language)
 {
     return QLocalePrivate::languageToCode(language);
 }
+#endif
 
 /*!
     Returns the QLocale::Language enum corresponding to the two- or three-letter
     \a languageCode, as defined in the ISO 639 standards.
 
-    If the code is invalid or not known QLocale::AnyLanguage is returned.
+    If specified, \a codeTypes selects which set of codes to consider for
+    conversion. By default all codes known to Qt are considered. The codes are
+    matched in the following order: \c ISO639Part1, \c ISO639Part2B,
+    \c ISO639Part2T, \c ISO639Part3, \c LegacyLanguageCode.
 
-    \since 6.1
+    If the code is invalid or not known \c QLocale::AnyLanguage is returned.
+
+    \since 6.3
     \sa languageToCode(), codeToTerritory(), codeToScript()
+*/
+QLocale::Language QLocale::codeToLanguage(QStringView languageCode,
+                                          LanguageCodeTypes codeTypes) noexcept
+{
+    return QLocalePrivate::codeToLanguage(languageCode, codeTypes);
+}
+
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+/*!
+    \overload
+    \since 6.1
 */
 QLocale::Language QLocale::codeToLanguage(QStringView languageCode) noexcept
 {
     return QLocalePrivate::codeToLanguage(languageCode);
 }
+#endif
 
 /*!
     \since 6.2

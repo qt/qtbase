@@ -3501,6 +3501,23 @@ void tst_QLocale::lcsToCode()
     QCOMPARE(QLocale::languageToCode(QLocale::AnyLanguage), QString());
     QCOMPARE(QLocale::languageToCode(QLocale::C), QString("C"));
     QCOMPARE(QLocale::languageToCode(QLocale::English), QString("en"));
+    QCOMPARE(QLocale::languageToCode(QLocale::Albanian), u"sq"_qs);
+    QCOMPARE(QLocale::languageToCode(QLocale::Albanian, QLocale::ISO639Part1), u"sq"_qs);
+    QCOMPARE(QLocale::languageToCode(QLocale::Albanian, QLocale::ISO639Part2B), u"alb"_qs);
+    QCOMPARE(QLocale::languageToCode(QLocale::Albanian, QLocale::ISO639Part2T), u"sqi"_qs);
+    QCOMPARE(QLocale::languageToCode(QLocale::Albanian, QLocale::ISO639Part3), u"sqi"_qs);
+
+    QCOMPARE(QLocale::languageToCode(QLocale::Taita), u"dav"_qs);
+    QCOMPARE(QLocale::languageToCode(QLocale::Taita,
+                                     QLocale::ISO639Part1 | QLocale::ISO639Part2B
+                                             | QLocale::ISO639Part2T),
+             QString());
+    QCOMPARE(QLocale::languageToCode(QLocale::Taita, QLocale::ISO639Part3), u"dav"_qs);
+    QCOMPARE(QLocale::languageToCode(QLocale::English, QLocale::LanguageCodeTypes {}), QString());
+
+    // Legacy codes can only be used to convert them to Language values, not other way around.
+    QCOMPARE(QLocale::languageToCode(QLocale::NorwegianBokmal, QLocale::LegacyLanguageCode),
+             QString());
 
     QCOMPARE(QLocale::territoryToCode(QLocale::AnyTerritory), QString());
     QCOMPARE(QLocale::territoryToCode(QLocale::UnitedStates), QString("US"));
@@ -3518,9 +3535,28 @@ void tst_QLocale::codeToLcs()
     QCOMPARE(QLocale::codeToLanguage(QString("e")), QLocale::AnyLanguage);
     QCOMPARE(QLocale::codeToLanguage(QString("en")), QLocale::English);
     QCOMPARE(QLocale::codeToLanguage(QString("EN")), QLocale::English);
-    QCOMPARE(QLocale::codeToLanguage(QString("eng")), QLocale::AnyLanguage);
+    QCOMPARE(QLocale::codeToLanguage(QString("eng")), QLocale::English);
     QCOMPARE(QLocale::codeToLanguage(QString("ha")), QLocale::Hausa);
+    QCOMPARE(QLocale::codeToLanguage(QString("ha"), QLocale::ISO639Alpha3), QLocale::AnyLanguage);
     QCOMPARE(QLocale::codeToLanguage(QString("haw")), QLocale::Hawaiian);
+    QCOMPARE(QLocale::codeToLanguage(QString("haw"), QLocale::ISO639Alpha2), QLocale::AnyLanguage);
+
+    QCOMPARE(QLocale::codeToLanguage(u"sq"), QLocale::Albanian);
+    QCOMPARE(QLocale::codeToLanguage(u"alb"), QLocale::Albanian);
+    QCOMPARE(QLocale::codeToLanguage(u"sqi"), QLocale::Albanian);
+    QCOMPARE(QLocale::codeToLanguage(u"sq", QLocale::ISO639Part1), QLocale::Albanian);
+    QCOMPARE(QLocale::codeToLanguage(u"sq", QLocale::ISO639Part3), QLocale::AnyLanguage);
+    QCOMPARE(QLocale::codeToLanguage(u"alb", QLocale::ISO639Part2B), QLocale::Albanian);
+    QCOMPARE(QLocale::codeToLanguage(u"alb", QLocale::ISO639Part2T | QLocale::ISO639Part3),
+             QLocale::AnyLanguage);
+    QCOMPARE(QLocale::codeToLanguage(u"sqi", QLocale::ISO639Part2T), QLocale::Albanian);
+    QCOMPARE(QLocale::codeToLanguage(u"sqi", QLocale::ISO639Part3), QLocale::Albanian);
+    QCOMPARE(QLocale::codeToLanguage(u"sqi", QLocale::ISO639Part1 | QLocale::ISO639Part2B),
+             QLocale::AnyLanguage);
+
+    // Legacy code
+    QCOMPARE(QLocale::codeToLanguage(u"no"), QLocale::NorwegianBokmal);
+    QCOMPARE(QLocale::codeToLanguage(u"no", QLocale::ISO639Part1), QLocale::AnyLanguage);
 
     QCOMPARE(QLocale::codeToTerritory(QString()), QLocale::AnyTerritory);
     QCOMPARE(QLocale::codeToTerritory(QString("ZZ")), QLocale::AnyTerritory);
