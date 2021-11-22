@@ -924,8 +924,15 @@ bool QMakeSourceFileInfo::findMocs(SourceFile *file)
 
     debug_msg(2, "findMocs: %s", file->file.local().toLatin1().constData());
     int line_count = 1;
-    // [0] for Q_OBJECT, [1] for Q_GADGET, [2] for Q_NAMESPACE, [3] for Q_NAMESPACE_EXPORT
-    bool ignore[4] = { false, false, false, false };
+    enum Keywords {
+        Q_OBJECT_Keyword,
+        Q_GADGET_Keyword,
+        Q_NAMESPACE_Keyword,
+        Q_NAMESPACE_EXPORT_Keyword,
+
+        NumKeywords
+    };
+    bool ignore[NumKeywords] = {};
  /* qmake ignore Q_GADGET */
  /* qmake ignore Q_OBJECT */
  /* qmake ignore Q_NAMESPACE */
@@ -955,25 +962,25 @@ bool QMakeSourceFileInfo::findMocs(SourceFile *file)
                                 debug_msg(2, "Mocgen: %s:%d Found \"qmake ignore Q_OBJECT\"",
                                           file->file.real().toLatin1().constData(), line_count);
                                 x += 20;
-                                ignore[0] = true;
+                                ignore[Q_OBJECT_Keyword] = true;
                             } else if(buffer_len >= (x + 20) &&
                                       !strncmp(buffer + x + 1, "make ignore Q_GADGET", 20)) {
                                 debug_msg(2, "Mocgen: %s:%d Found \"qmake ignore Q_GADGET\"",
                                           file->file.real().toLatin1().constData(), line_count);
                                 x += 20;
-                                ignore[1] = true;
+                                ignore[Q_GADGET_Keyword] = true;
                             } else if (buffer_len >= (x + 23) &&
                                       !strncmp(buffer + x + 1, "make ignore Q_NAMESPACE", 23)) {
                                 debug_msg(2, "Mocgen: %s:%d Found \"qmake ignore Q_NAMESPACE\"",
                                           file->file.real().toLatin1().constData(), line_count);
                                 x += 23;
-                                ignore[2] = true;
+                                ignore[Q_NAMESPACE_Keyword] = true;
                             } else if (buffer_len >= (x + 30) &&
                                        !strncmp(buffer + x + 1, "make ignore Q_NAMESPACE_EXPORT", 30)) {
                                  debug_msg(2, "Mocgen: %s:%d Found \"qmake ignore Q_NAMESPACE_EXPORT\"",
                                            file->file.real().toLatin1().constData(), line_count);
                                  x += 30;
-                                 ignore[3] = true;
+                                 ignore[Q_NAMESPACE_EXPORT_Keyword] = true;
                             }
                         } else if (buffer[x] == '*') {
                             extralines = 0;
@@ -1002,7 +1009,8 @@ bool QMakeSourceFileInfo::findMocs(SourceFile *file)
             int y = skipEscapedLineEnds(buffer, buffer_len, x + 1, &morelines);
             if (buffer[y] == 'Q') {
                 static const char interesting[][19] = { "Q_OBJECT", "Q_GADGET", "Q_NAMESPACE", "Q_NAMESPACE_EXPORT" };
-                for (int interest = 0; interest < 4; ++interest) {
+                static_assert(std::size(interesting) == NumKeywords);
+                for (int interest = 0; interest < NumKeywords; ++interest) {
                     if (ignore[interest])
                         continue;
 
