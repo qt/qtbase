@@ -133,7 +133,7 @@ function(_qt_internal_create_moc_command infile outfile moc_flags moc_options
         set(targetincludes "$<$<BOOL:${targetincludes}>:-I$<JOIN:${targetincludes},\n-I>\n>")
         set(targetdefines "$<$<BOOL:${targetdefines}>:-D$<JOIN:${targetdefines},\n-D>\n>")
 
-        file (GENERATE
+        file(GENERATE
             OUTPUT ${_moc_parameters_file}
             CONTENT "${targetdefines}${targetincludes}${_moc_parameters}\n"
         )
@@ -144,10 +144,9 @@ function(_qt_internal_create_moc_command infile outfile moc_flags moc_options
         file(WRITE ${_moc_parameters_file} "${_moc_parameters}\n")
     endif()
 
-    set(_moc_extra_parameters_file @${_moc_parameters_file})
     add_custom_command(OUTPUT ${outfile} ${extra_output_files}
-                       COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::moc ${_moc_extra_parameters_file}
-                       DEPENDS ${infile} ${moc_depends}
+                       COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::moc @${_moc_parameters_file}
+                       DEPENDS ${QT_CMAKE_EXPORT_NAMESPACE}::moc ${moc_parameters_file} ${infile} ${moc_depends}
                        ${_moc_working_dir}
                        VERBATIM)
     set_source_files_properties(${infile} PROPERTIES SKIP_AUTOMOC ON)
