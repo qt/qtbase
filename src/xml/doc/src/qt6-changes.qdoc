@@ -46,7 +46,9 @@
     QXmlStreamReader for reading XML files. Here are some simple steps to
     port your current code to QXmlStreamReader:
 
-    \oldcode
+    For example, if you have code like
+
+    \code
         QFile *file = new QFile(...);
         QXmlInputSource *source = new QXmlInputSource(file);
 
@@ -61,7 +63,11 @@
         } else {
             ... // do error handling
         }
-    \newcode
+    \endcode
+
+    you can rewrite it as
+
+    \code
         QFile file = ...;
         QXmlStreamReader reader(&file);
 

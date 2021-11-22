@@ -1807,9 +1807,15 @@ inline void QUrlPrivate::validate() const
     help avoid missing QUrl::resolved() calls, and other misuses of
     QString to QUrl conversions.
 
-    \oldcode
+    For example, if you have code like
+
+    \code
         url = filename; // probably not what you want
-    \newcode
+    \endcode
+
+    you can rewrite it as
+
+    \code
         url = QUrl::fromLocalFile(filename);
         url = baseurl.resolved(QUrl(filename));
     \endcode
