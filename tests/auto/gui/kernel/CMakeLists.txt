@@ -43,12 +43,7 @@ if(TARGET Qt::Widgets)
     add_subdirectory(qtouchevent)
 endif()
 if(QT_FEATURE_opengl)
-    # special case begin
-    # QTBUG-85364
-    if(NOT LINUX)
-        add_subdirectory(qopenglwindow)
-    endif()
-    # special case end
+    add_subdirectory(qopenglwindow)
 endif()
 if(TARGET Qt::Network AND WIN32)
     add_subdirectory(noqteventloop)
