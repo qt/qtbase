@@ -1864,7 +1864,7 @@ void tst_QFileInfo::isWritable()
 #endif
 
 #if defined (Q_OS_QNX) // On QNX /etc is usually on a read-only filesystem
-    QVERIFY(!QFileInfo("/etc/passwd").isWritable());
+    QCOMPARE(QFileInfo("/etc/passwd").isWritable(), (geteuid() == 0));
 #elif defined (Q_OS_UNIX) && !defined(Q_OS_VXWORKS) // VxWorks does not have users/groups
     for (const char *attempt : { "/etc/passwd", "/etc/machine-id", "/proc/version" }) {
         if (access(attempt, F_OK) == -1)
