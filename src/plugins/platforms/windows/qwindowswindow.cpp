@@ -2230,10 +2230,16 @@ static inline bool isSoftwareGl()
 }
 
 bool QWindowsWindow::handleWmPaint(HWND hwnd, UINT message,
-                                         WPARAM, LPARAM)
+                                   WPARAM wParam, LPARAM lParam,
+                                   LRESULT *result)
 {
-    if (message == WM_ERASEBKGND) // Backing store - ignored.
+    Q_UNUSED(wParam);
+    Q_UNUSED(lParam);
+
+    if (message == WM_ERASEBKGND) { // Backing store - ignored.
+        *result = 1;
         return true;
+    }
     // QTBUG-75455: Suppress WM_PAINT sent to invisible windows when setting WS_EX_LAYERED
     if (!window()->isVisible() && (GetWindowLong(hwnd, GWL_EXSTYLE) & WS_EX_LAYERED) != 0)
         return false;

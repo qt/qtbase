@@ -312,7 +312,7 @@ public:
     void setStyle(unsigned s) const;
     void setExStyle(unsigned s) const;
 
-    bool handleWmPaint(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
+    bool handleWmPaint(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam, LRESULT *result);
 
     void handleMoved();
     void handleResized(int wParam);
