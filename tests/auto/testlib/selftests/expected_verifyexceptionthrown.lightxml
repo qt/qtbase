@@ -21,31 +21,31 @@
 </TestFunction>
 <TestFunction name="testFailInt">
 <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/verifyexceptionthrown/tst_verifyexceptionthrown.cpp" line="0">
-    <Description><![CDATA[Expected exception of type double to be thrown but unknown exception caught]]></Description>
+    <Description><![CDATA[Expected an exception of type double to be thrown, but caught unknown exception]]></Description>
 </Incident>
     <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="testFailStdString">
 <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/verifyexceptionthrown/tst_verifyexceptionthrown.cpp" line="0">
-    <Description><![CDATA[Expected exception of type char* to be thrown but unknown exception caught]]></Description>
+    <Description><![CDATA[Expected an exception of type char* to be thrown, but caught unknown exception]]></Description>
 </Incident>
     <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="testFailStdRuntimeError">
 <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/verifyexceptionthrown/tst_verifyexceptionthrown.cpp" line="0">
-    <Description><![CDATA[Expected exception of type std::runtime_error to be thrown but std::exception caught with message: logic error]]></Description>
+    <Description><![CDATA[Expected an exception of type std::runtime_error to be thrown, but caught std::exception with message logic error]]></Description>
 </Incident>
     <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="testFailMyException">
 <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/verifyexceptionthrown/tst_verifyexceptionthrown.cpp" line="0">
-    <Description><![CDATA[Expected exception of type MyBaseException to be thrown but std::exception caught with message: logic error]]></Description>
+    <Description><![CDATA[Expected an exception of type MyBaseException to be thrown, but caught std::exception with message logic error]]></Description>
 </Incident>
     <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="testFailMyDerivedException">
 <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/verifyexceptionthrown/tst_verifyexceptionthrown.cpp" line="0">
-    <Description><![CDATA[Expected exception of type std::runtime_error to be thrown but std::exception caught with message: MyDerivedException]]></Description>
+    <Description><![CDATA[Expected an exception of type std::runtime_error to be thrown, but caught std::exception with message MyDerivedException]]></Description>
 </Incident>
     <Duration msecs="0"/>
 </TestFunction>

@@ -115,13 +115,10 @@ inline void useVerifyThrowsException() {}
                 /* success */\
             }\
         } QT_CATCH (const std::exception &e) {\
-            QByteArray msg = QByteArray() + "Expected exception of type " #exceptiontype \
-                             " to be thrown but std::exception caught with message: " + e.what(); \
-            QTest::qFail(msg.constData(), __FILE__, __LINE__);\
+            QTest::qCaught(#exceptiontype, e.what(), __FILE__, __LINE__);\
             return;\
         } QT_CATCH (...) {\
-            QTest::qFail("Expected exception of type " #exceptiontype " to be thrown" \
-                         " but unknown exception caught", __FILE__, __LINE__);\
+            QTest::qCaught(#exceptiontype, nullptr, __FILE__, __LINE__);\
             QT_RETHROW;\
         }\
     } while (false)
@@ -323,6 +320,8 @@ namespace QTest
     Q_TESTLIB_EXPORT void qSkip(const char *message, const char *file, int line);
     Q_TESTLIB_EXPORT bool qExpectFail(const char *dataIndex, const char *comment, TestFailMode mode,
                            const char *file, int line);
+    Q_DECL_COLD_FUNCTION
+    Q_TESTLIB_EXPORT void qCaught(const char *expected, const char *what, const char *file, int line);
 #if QT_DEPRECATED_SINCE(6, 3)
     QT_DEPRECATED_VERSION_X_6_3("Use qWarning() instead")
     Q_TESTLIB_EXPORT void qWarn(const char *message, const char *file = nullptr, int line = 0);

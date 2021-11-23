@@ -2073,6 +2073,40 @@ bool QTest::qExpectFail(const char *dataIndex, const char *comment,
     return QTestResult::expectFail(dataIndex, qstrdup(comment), mode, file, line);
 }
 
+/*!
+    \internal
+
+    Executes qFail() following a failed QVERIFY_THROWS_EXCEPTION or
+    QVERIFY_THROWS_NO_EXCEPTION, passing a suitable message created from \a expected,
+    \a what, along with \a file and \a line.
+
+    The \a expected parameter contains the type of the exception that is expected to
+    be thrown, or \nullptr, if no exception was expected.
+
+    The \a what parameter contains the result of \c{std::exception::what()}, or nullptr,
+    if a non-\c{std::exception}-derived exception was caught.
+
+    The \a file and \a line parameters hold expansions of the \c{__FILE__} and \c{__LINE__}
+    macros, respectively.
+*/
+void QTest::qCaught(const char *expected, const char *what, const char *file, int line)
+{
+    auto message = [&] {
+        const auto exType  = what ? "std::" : "unknown ";
+        const auto ofType  = expected ? " of type " : "";
+        const auto no      = expected ? "an" : "no";
+        const auto withMsg = what ? " with message " : "";
+        const auto protect = [](const char *s) { return s ? s : ""; };
+
+        return QString::asprintf("Expected %s exception%s%s to be thrown, "
+                                 "but caught %sexception%s%s",
+                                 no, ofType, protect(expected),
+                                 exType, withMsg, protect(what));
+    };
+    qFail(message().toUtf8().constData(), file, line);
+}
+
+
 #if QT_DEPRECATED_SINCE(6, 3)
 /*!
   \internal

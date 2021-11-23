@@ -10,19 +10,19 @@
   <testcase name="testCorrectStdExceptions" classname="tst_VerifyExceptionThrown" time="@TEST_DURATION@"/>
   <testcase name="testCorrectMyExceptions" classname="tst_VerifyExceptionThrown" time="@TEST_DURATION@"/>
   <testcase name="testFailInt" classname="tst_VerifyExceptionThrown" time="@TEST_DURATION@">
-    <failure type="fail" message="Expected exception of type double to be thrown but unknown exception caught"/>
+    <failure type="fail" message="Expected an exception of type double to be thrown, but caught unknown exception"/>
   </testcase>
   <testcase name="testFailStdString" classname="tst_VerifyExceptionThrown" time="@TEST_DURATION@">
-    <failure type="fail" message="Expected exception of type char* to be thrown but unknown exception caught"/>
+    <failure type="fail" message="Expected an exception of type char* to be thrown, but caught unknown exception"/>
   </testcase>
   <testcase name="testFailStdRuntimeError" classname="tst_VerifyExceptionThrown" time="@TEST_DURATION@">
-    <failure type="fail" message="Expected exception of type std::runtime_error to be thrown but std::exception caught with message: logic error"/>
+    <failure type="fail" message="Expected an exception of type std::runtime_error to be thrown, but caught std::exception with message logic error"/>
   </testcase>
   <testcase name="testFailMyException" classname="tst_VerifyExceptionThrown" time="@TEST_DURATION@">
-    <failure type="fail" message="Expected exception of type MyBaseException to be thrown but std::exception caught with message: logic error"/>
+    <failure type="fail" message="Expected an exception of type MyBaseException to be thrown, but caught std::exception with message logic error"/>
   </testcase>
   <testcase name="testFailMyDerivedException" classname="tst_VerifyExceptionThrown" time="@TEST_DURATION@">
-    <failure type="fail" message="Expected exception of type std::runtime_error to be thrown but std::exception caught with message: MyDerivedException"/>
+    <failure type="fail" message="Expected an exception of type std::runtime_error to be thrown, but caught std::exception with message MyDerivedException"/>
   </testcase>
   <testcase name="testFailNoException" classname="tst_VerifyExceptionThrown" time="@TEST_DURATION@">
     <failure type="fail" message="Expected exception of type std::exception to be thrown but no exception caught"/>
