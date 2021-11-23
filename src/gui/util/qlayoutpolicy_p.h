@@ -64,9 +64,9 @@ QT_BEGIN_NAMESPACE
 
 class QVariant;
 
-class Q_GUI_EXPORT QLayoutPolicy
+class QLayoutPolicy
 {
-    Q_GADGET
+    Q_GADGET_EXPORT(Q_GUI_EXPORT)
     Q_ENUMS(Policy)
 
 public:
@@ -116,11 +116,11 @@ public:
     }
     Policy horizontalPolicy() const { return static_cast<Policy>(bits.horPolicy); }
     Policy verticalPolicy() const { return static_cast<Policy>(bits.verPolicy); }
-    ControlType controlType() const;
+    Q_GUI_EXPORT ControlType controlType() const;
 
     void setHorizontalPolicy(Policy d) { bits.horPolicy = d; }
     void setVerticalPolicy(Policy d) { bits.verPolicy = d; }
-    void setControlType(ControlType type);
+    Q_GUI_EXPORT void setControlType(ControlType type);
 
     Qt::Orientations expandingDirections() const {
         Qt::Orientations result;
@@ -144,7 +144,7 @@ public:
     void setHorizontalStretch(int stretchFactor) { bits.horStretch = static_cast<quint32>(qBound(0, stretchFactor, 255)); }
     void setVerticalStretch(int stretchFactor) { bits.verStretch = static_cast<quint32>(qBound(0, stretchFactor, 255)); }
 
-    void transpose();
+    inline void transpose();
 
 
 private:
