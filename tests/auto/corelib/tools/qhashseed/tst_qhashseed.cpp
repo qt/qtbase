@@ -152,6 +152,8 @@ void tst_QHashSeed::quality()
             ++oneThird;
         if (seed == BadSeed)
             ++badSeeds;
+
+        QHashSeed::resetRandomGlobalSeed();
     }
 
     // report out
