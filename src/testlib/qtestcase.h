@@ -148,9 +148,9 @@ inline void useVerifyThrowsException() {}
  * in their code.
  */
 #  define QVERIFY_THROWS_EXCEPTION(...) \
-    static_assert(false, "Support of exceptions is disabled")
+    static_assert(false, "Support for exceptions is disabled")
 #  define QVERIFY_THROWS_NO_EXCEPTION(...) \
-    static_assert(false, "Support of exceptions is disabled")
+    static_assert(false, "Support for exceptions is disabled")
 
 #endif // !QT_NO_EXCEPTIONS
 
