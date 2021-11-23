@@ -57,6 +57,9 @@ class tst_VerifyExceptionThrown: public QObject
     Q_OBJECT
 private:
     void doSomething() const {}
+#ifndef QT_NO_EXCEPTIONS
+    void throwSomething() const { throw std::logic_error("This line doesn't throw"); }
+#endif
 
 private slots:
 // Remove all test cases if exceptions are not available
@@ -64,6 +67,7 @@ private slots:
     void testCorrectStdTypes() const;
     void testCorrectStdExceptions() const;
     void testCorrectMyExceptions() const;
+    void testCorrectNoException() const;
 
     void testFailInt() const;
     void testFailStdString() const;
@@ -72,6 +76,7 @@ private slots:
     void testFailMyDerivedException() const;
 
     void testFailNoException() const;
+    void testFailNoException2() const;
 #endif // !QT_NO_EXCEPTIONS
 };
 
@@ -148,6 +153,11 @@ void tst_VerifyExceptionThrown::testCorrectMyExceptions() const
 #endif
 }
 
+void tst_VerifyExceptionThrown::testCorrectNoException() const
+{
+    QVERIFY_THROWS_NO_EXCEPTION(doSomething());
+}
+
 void tst_VerifyExceptionThrown::testFailInt() const
 {
     try {
@@ -180,6 +190,11 @@ void tst_VerifyExceptionThrown::testFailMyDerivedException() const
 void tst_VerifyExceptionThrown::testFailNoException() const
 {
     QVERIFY_THROWS_EXCEPTION(std::exception, doSomething());
+}
+
+void tst_VerifyExceptionThrown::testFailNoException2() const
+{
+    QVERIFY_THROWS_NO_EXCEPTION(throwSomething());
 }
 
 #endif // !QT_NO_EXCEPTIONS

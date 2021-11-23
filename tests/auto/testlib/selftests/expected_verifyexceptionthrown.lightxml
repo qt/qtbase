@@ -19,6 +19,10 @@
 <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>
 </TestFunction>
+<TestFunction name="testCorrectNoException">
+<Incident type="pass" file="" line="0" />
+    <Duration msecs="0"/>
+</TestFunction>
 <TestFunction name="testFailInt">
 <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/verifyexceptionthrown/tst_verifyexceptionthrown.cpp" line="0">
     <Description><![CDATA[Expected an exception of type double to be thrown, but caught unknown exception]]></Description>
@@ -52,6 +56,12 @@
 <TestFunction name="testFailNoException">
 <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/verifyexceptionthrown/tst_verifyexceptionthrown.cpp" line="0">
     <Description><![CDATA[Expected exception of type std::exception to be thrown but no exception caught]]></Description>
+</Incident>
+    <Duration msecs="0"/>
+</TestFunction>
+<TestFunction name="testFailNoException2">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/verifyexceptionthrown/tst_verifyexceptionthrown.cpp" line="0">
+    <Description><![CDATA[Expected no exception to be thrown, but caught std::exception with message This line doesn't throw]]></Description>
 </Incident>
     <Duration msecs="0"/>
 </TestFunction>

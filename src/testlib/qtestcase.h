@@ -93,6 +93,21 @@ do {\
 
 #ifndef QT_NO_EXCEPTIONS
 
+#  define QVERIFY_THROWS_NO_EXCEPTION(...) \
+    do { \
+        QT_TRY { \
+            __VA_ARGS__; \
+            /* success */ \
+        } QT_CATCH (const std::exception &e) { \
+            QTest::qCaught(nullptr, e.what(), __FILE__, __LINE__); \
+            return; \
+        } QT_CATCH (...) { \
+            QTest::qCaught(nullptr, nullptr, __FILE__, __LINE__); \
+            QT_RETHROW; \
+        } \
+    } while (false) \
+    /* end */
+
 #if QT_DEPRECATED_SINCE(6, 3)
 namespace QTest {
 QT_DEPRECATED_VERSION_X_6_3("Don't use QVERIFY_EXCEPTION_THROWN(expr, type) anymore, "
@@ -126,13 +141,15 @@ inline void useVerifyThrowsException() {}
 #else // QT_NO_EXCEPTIONS
 
 /*
- * The expression passed to the macro should throw an exception and we can't
- * catch it because Qt has been compiled without exception support. We can't
+ * These macros check whether the expression passed throws exceptions, but we can't
+ * catch them to check because Qt has been compiled without exception support. We can't
  * skip the expression because it may have side effects and must be executed.
  * So, users must use Qt with exception support enabled if they use exceptions
  * in their code.
  */
 #  define QVERIFY_THROWS_EXCEPTION(...) \
+    static_assert(false, "Support of exceptions is disabled")
+#  define QVERIFY_THROWS_NO_EXCEPTION(...) \
     static_assert(false, "Support of exceptions is disabled")
 
 #endif // !QT_NO_EXCEPTIONS

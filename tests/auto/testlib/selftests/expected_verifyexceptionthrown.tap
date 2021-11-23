@@ -4,50 +4,58 @@ ok 1 - initTestCase()
 ok 2 - testCorrectStdTypes()
 ok 3 - testCorrectStdExceptions()
 ok 4 - testCorrectMyExceptions()
-not ok 5 - testFailInt()
+ok 5 - testCorrectNoException()
+not ok 6 - testFailInt()
   ---
   # Expected an exception of type double to be thrown, but caught unknown exception
   at: tst_VerifyExceptionThrown::testFailInt() (qtbase/tests/auto/testlib/selftests/verifyexceptionthrown/tst_verifyexceptionthrown.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/verifyexceptionthrown/tst_verifyexceptionthrown.cpp
   line: 0
   ...
-not ok 6 - testFailStdString()
+not ok 7 - testFailStdString()
   ---
   # Expected an exception of type char* to be thrown, but caught unknown exception
   at: tst_VerifyExceptionThrown::testFailStdString() (qtbase/tests/auto/testlib/selftests/verifyexceptionthrown/tst_verifyexceptionthrown.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/verifyexceptionthrown/tst_verifyexceptionthrown.cpp
   line: 0
   ...
-not ok 7 - testFailStdRuntimeError()
+not ok 8 - testFailStdRuntimeError()
   ---
   # Expected an exception of type std::runtime_error to be thrown, but caught std::exception with message logic error
   at: tst_VerifyExceptionThrown::testFailStdRuntimeError() (qtbase/tests/auto/testlib/selftests/verifyexceptionthrown/tst_verifyexceptionthrown.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/verifyexceptionthrown/tst_verifyexceptionthrown.cpp
   line: 0
   ...
-not ok 8 - testFailMyException()
+not ok 9 - testFailMyException()
   ---
   # Expected an exception of type MyBaseException to be thrown, but caught std::exception with message logic error
   at: tst_VerifyExceptionThrown::testFailMyException() (qtbase/tests/auto/testlib/selftests/verifyexceptionthrown/tst_verifyexceptionthrown.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/verifyexceptionthrown/tst_verifyexceptionthrown.cpp
   line: 0
   ...
-not ok 9 - testFailMyDerivedException()
+not ok 10 - testFailMyDerivedException()
   ---
   # Expected an exception of type std::runtime_error to be thrown, but caught std::exception with message MyDerivedException
   at: tst_VerifyExceptionThrown::testFailMyDerivedException() (qtbase/tests/auto/testlib/selftests/verifyexceptionthrown/tst_verifyexceptionthrown.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/verifyexceptionthrown/tst_verifyexceptionthrown.cpp
   line: 0
   ...
-not ok 10 - testFailNoException()
+not ok 11 - testFailNoException()
   ---
   # Expected exception of type std::exception to be thrown but no exception caught
   at: tst_VerifyExceptionThrown::testFailNoException() (qtbase/tests/auto/testlib/selftests/verifyexceptionthrown/tst_verifyexceptionthrown.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/verifyexceptionthrown/tst_verifyexceptionthrown.cpp
   line: 0
   ...
-ok 11 - cleanupTestCase()
-1..11
-# tests 11
-# pass 5
-# fail 6
+not ok 12 - testFailNoException2()
+  ---
+  # Expected no exception to be thrown, but caught std::exception with message This line doesn't throw
+  at: tst_VerifyExceptionThrown::testFailNoException2() (qtbase/tests/auto/testlib/selftests/verifyexceptionthrown/tst_verifyexceptionthrown.cpp:0)
+  file: qtbase/tests/auto/testlib/selftests/verifyexceptionthrown/tst_verifyexceptionthrown.cpp
+  line: 0
+  ...
+ok 13 - cleanupTestCase()
+1..13
+# tests 13
+# pass 6
+# fail 7

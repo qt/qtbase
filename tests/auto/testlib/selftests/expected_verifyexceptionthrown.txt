@@ -4,6 +4,7 @@ PASS   : tst_VerifyExceptionThrown::initTestCase()
 PASS   : tst_VerifyExceptionThrown::testCorrectStdTypes()
 PASS   : tst_VerifyExceptionThrown::testCorrectStdExceptions()
 PASS   : tst_VerifyExceptionThrown::testCorrectMyExceptions()
+PASS   : tst_VerifyExceptionThrown::testCorrectNoException()
 FAIL!  : tst_VerifyExceptionThrown::testFailInt() Expected an exception of type double to be thrown, but caught unknown exception
    Loc: [qtbase/tests/auto/testlib/selftests/verifyexceptionthrown/tst_verifyexceptionthrown.cpp(0)]
 FAIL!  : tst_VerifyExceptionThrown::testFailStdString() Expected an exception of type char* to be thrown, but caught unknown exception
@@ -16,6 +17,8 @@ FAIL!  : tst_VerifyExceptionThrown::testFailMyDerivedException() Expected an exc
    Loc: [qtbase/tests/auto/testlib/selftests/verifyexceptionthrown/tst_verifyexceptionthrown.cpp(0)]
 FAIL!  : tst_VerifyExceptionThrown::testFailNoException() Expected exception of type std::exception to be thrown but no exception caught
    Loc: [qtbase/tests/auto/testlib/selftests/verifyexceptionthrown/tst_verifyexceptionthrown.cpp(0)]
+FAIL!  : tst_VerifyExceptionThrown::testFailNoException2() Expected no exception to be thrown, but caught std::exception with message This line doesn't throw
+   Loc: [qtbase/tests/auto/testlib/selftests/verifyexceptionthrown/tst_verifyexceptionthrown.cpp(0)]
 PASS   : tst_VerifyExceptionThrown::cleanupTestCase()
-Totals: 5 passed, 6 failed, 0 skipped, 0 blacklisted, 0ms
+Totals: 6 passed, 7 failed, 0 skipped, 0 blacklisted, 0ms
 ********* Finished testing of tst_VerifyExceptionThrown *********

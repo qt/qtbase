@@ -198,6 +198,40 @@
    by the test framework.
 */
 
+/*!
+   \macro QVERIFY_THROWS_NO_EXCEPTION(...)
+   \since 6.3
+
+   \relates QTest
+
+   The QVERIFY_THROWS_NO_EXCEPTION macro executes the expression given in its
+   variadic argument and tries to catch any exception thrown from the expression.
+
+   There are several different outcomes:
+
+   \list
+   \li If the expression does not throw an exception, then execution will continue.
+
+   \li Otherwise, if an exception derived from \c{std::exception} is caught, a failure
+   will be recorded in the test log and the macro returns early (implicit return from
+   enclosing function).
+
+   \li If an exception not derived from \c{std::exception} is caught, a failure will be
+   recorded in the test log and the exception will be re-thrown. This avoids problems
+   with e.g. pthread cancellation exceptions.
+   \endlist
+
+   The macro uses variadic arguments so the expression can contain commas that the
+   preprocessor considers argument separators, e.g. as in
+   \code
+   QVERIFY_THROWS_NO_EXCEPTION(std::pair<int, long>{42, 42L});
+   // macro arguments:         \---- 1 ----/  \-- 2 -/  \3 /
+   \endcode
+
+   \note This macro can only be used in a test function that is invoked
+   by the test framework.
+*/
+
 /*! \macro QTRY_VERIFY_WITH_TIMEOUT(condition, timeout)
    \since 5.0
 
