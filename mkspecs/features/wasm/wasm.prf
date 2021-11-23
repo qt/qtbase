@@ -9,8 +9,8 @@ exists($$QMAKE_QT_CONFIG) {
 
     qtConfig(thread) {
 
-        EMCC_THREAD_LFLAGS += -pthread
-        EMCC_THREAD_CFLAGS += -pthread
+        EMCC_LFLAGS += -pthread
+        EMCC_CFLAGS += -pthread
 
         # Create worker threads at startup. This is supposed to be an optimization,
         # however exceeding the pool size has been obesverved to hang the application.
@@ -20,24 +20,30 @@ exists($$QMAKE_QT_CONFIG) {
         }
 
         message("Setting PTHREAD_POOL_SIZE to" $$POOL_SIZE)
-        EMCC_THREAD_LFLAGS += -s PTHREAD_POOL_SIZE=$$POOL_SIZE
+        EMCC_LFLAGS += -s PTHREAD_POOL_SIZE=$$POOL_SIZE
     } else {
-        EMCC_THREAD_LFLAGS += -s ALLOW_MEMORY_GROWTH=1
+        EMCC_LFLAGS += -s ALLOW_MEMORY_GROWTH=1
     }
 
-     qtConfig(thread) | !isEmpty(QT_WASM_INITIAL_MEMORY) {
+    isEmpty(QT_WASM_INITIAL_MEMORY) {
+        # Hardcode wasm memory size.
 
-            # Hardcode wasm memory size. Emscripten does not currently support memory growth
-            # (ALLOW_MEMORY_GROWTH) in pthreads mode, and requires specifying the memory size
-            # at build time. Further, browsers limit the maximum initial memory size to 1GB.
-            # QT_WASM_INITIAL_MEMORY must be a multiple of 64KB
+        qtConfig(thread) {
+        # Pthreads and ALLOW_MEMORY_GROWTH can cause javascript wasm memory access to
+        # be slow. Instead, we specify the memory size
+        # at build time. Further, browsers limit the maximum initial memory size to 1GB.
+        # https://github.com/WebAssembly/design/issues/1271
             INITIAL_MEMORY = 1GB
-            !isEmpty(QT_WASM_INITIAL_MEMORY) {
-                INITIAL_MEMORY = $$QT_WASM_INITIAL_MEMORY
-            }
-            message("Setting INITIAL_MEMORY to" $$INITIAL_MEMORY)
-            EMCC_THREAD_LFLAGS += -s INITIAL_MEMORY=$$INITIAL_MEMORY
+        } else {
+            INITIAL_MEMORY = 50MB # emscripten default is 16MB, we need slightly more
+        }
+    } else {
+        # QT_WASM_INITIAL_MEMORY must be a multiple of 64KB (i.e. 65536)
+        INITIAL_MEMORY = $$QT_WASM_INITIAL_MEMORY
+        message("Setting INITIAL_MEMORY to" $$INITIAL_MEMORY)
     }
+    EMCC_LFLAGS += -s INITIAL_MEMORY=$$INITIAL_MEMORY
+    message("Setting INITIAL_MEMORY to" $$INITIAL_MEMORY)
 
     qtConfig(sse2) {
         QMAKE_CFLAGS += -O2 -msimd128 -msse -msse2
@@ -46,10 +52,10 @@ exists($$QMAKE_QT_CONFIG) {
         QMAKE_LFLAGS_DEBUG += -msimd128 -msse -msse2
     }
 
-    QMAKE_LFLAGS       += $$EMCC_THREAD_LFLAGS
-    QMAKE_LFLAGS_DEBUG += $$EMCC_THREAD_LFLAGS
-    QMAKE_CFLAGS += $$EMCC_THREAD_CFLAGS
-    QMAKE_CXXFLAGS += $$EMCC_THREAD_CFLAGS
+    QMAKE_LFLAGS       += $$EMCC_LFLAGS
+    QMAKE_LFLAGS_DEBUG += $$EMCC_LFLAGS
+    QMAKE_CFLAGS += $$EMCC_CFLAGS
+    QMAKE_CXXFLAGS += $$EMCC_CFLAGS
 }
 
 # Create js and wasm files for applications
