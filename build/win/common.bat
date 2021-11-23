@@ -41,11 +41,22 @@ if exist "%__qt_install_dir%" rd /s /q "%__qt_install_dir%"
 if exist "%__qt_build_dir%" rd /s /q "%__qt_build_dir%"
 md "%__qt_build_dir%" && cd "%__qt_build_dir%"
 cmake %__cmake_config_params%
+if %errorlevel% neq 0 goto fin
 cmake %__cmake_build_params%
+if %errorlevel% neq 0 goto fin
 ::cmake %__cmake_install_params%
 ninja install
+if %errorlevel% neq 0 goto fin
+cd /d "%~dp0"
 rd /s /q "%__qt_build_dir%"
-:: TODO: Compress the installed artifacts into a 7-Zip package.
+where 7z
+if %errorlevel% equ 0 (
+    if exist "%~dp0Qt.7z" del /f "%~dp0Qt.7z"
+    7z a Qt.7z Qt\ -mx -myx -ms=on -mqs=on -mmt=on -m0=LZMA2:d=1g:fb=273
+)
+goto fin
+
+:fin
 endlocal
 cd /d "%~dp0"
 pause
