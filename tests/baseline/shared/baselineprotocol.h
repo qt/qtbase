@@ -51,9 +51,7 @@ extern const QString PI_OSVersion;
 extern const QString PI_QtVersion;
 extern const QString PI_QtBuildMode;
 extern const QString PI_GitCommit;
-extern const QString PI_QMakeSpec;
-extern const QString PI_PulseGitBranch;
-extern const QString PI_PulseTestrBranch;
+extern const QString PI_GitBranch;
 
 class PlatformInfo : public QMap<QString, QString>
 {
@@ -174,7 +172,6 @@ private:
 
     bool sendBlock(Command cmd, const QByteArray &block);
     bool receiveBlock(Command *cmd, QByteArray *block);
-    void sysSleep(int ms);
 
     QString errMsg;
     QTcpSocket socket;

@@ -45,6 +45,7 @@ static bool connected = false;
 static bool triedConnecting = false;
 static bool dryRunMode = false;
 static enum { UploadMissing, UploadAll, UploadNone } baselinePolicy = UploadMissing;
+static bool abortIfUnstable = true;
 
 static QByteArray curFunction;
 static ImageItemList itemList;
@@ -66,7 +67,7 @@ void handleCmdLineArgs(int *argcp, char ***argvp)
 
     for (int i = 0; i < numArgs; i++) {
         QByteArray arg = (*argvp)[i];
-        QByteArray nextArg = (i+1 < numArgs) ? (*argvp)[i+1] : 0;
+        QByteArray nextArg = (i+1 < numArgs) ? (*argvp)[i+1] : nullptr;
 
         if (arg == "-simfail") {
             simfail = true;
@@ -88,6 +89,8 @@ void handleCmdLineArgs(int *argcp, char ***argvp)
             customInfo.setAdHocRun(true);
         } else if (arg == "-setbaselines") {
             baselinePolicy = UploadAll;
+        } else if (arg == "-keeprunning") {
+            abortIfUnstable = false;
         } else if (arg == "-nosetbaselines") {
             baselinePolicy = UploadNone;
         } else if (arg == "-compareto") {
@@ -122,6 +125,7 @@ void handleCmdLineArgs(int *argcp, char ***argvp)
         out << " -fuzzlevel <int>    : Specify the percentage of fuzziness in comparison. Overrides server default. 0 means exact match.\n";
         out << " -auto               : Inform server that this run is done by a daemon, CI system or similar.\n";
         out << " -adhoc (default)    : The inverse of -auto; this run is done by human, e.g. for testing.\n";
+        out << " -keeprunning        : Run all tests even if the system is unstable \n";
         out << " -setbaselines       : Store ALL rendered images as new baselines. Forces replacement of previous baselines.\n";
         out << " -nosetbaselines     : Do not store rendered images as new baselines when previous baselines are missing.\n";
         out << " -compareto KEY=VAL  : Force comparison to baselines from a different client,\n";
@@ -131,6 +135,10 @@ void handleCmdLineArgs(int *argcp, char ***argvp)
     }
 }
 
+bool shouldAbortIfUnstable()
+{
+    return abortIfUnstable;
+}
 
 void addClientProperty(const QString& key, const QString& value)
 {
@@ -184,7 +192,8 @@ bool connect(QByteArray *msg, bool *error)
     // Merge the platform info set by the program with the protocols default info
     PlatformInfo clientInfo = customInfo;
     PlatformInfo defaultInfo = PlatformInfo::localHostInfo();
-    foreach (QString key, defaultInfo.keys()) {
+    const auto &defaultInfoKeys = defaultInfo.keys();
+    for (const QString &key : defaultInfoKeys) {
         if (!clientInfo.contains(key))
             clientInfo.insert(key, defaultInfo.value(key));
     }
@@ -319,8 +328,7 @@ bool compareItem(const ImageItem &baseline, const QImage &img, QByteArray *msg, 
     bool fuzzyMatch = false;
     bool res = proto.submitMismatch(item, &srvMsg, &fuzzyMatch);
     if (res && fuzzyMatch) {
-        *error = true;          // To force a QSKIP/debug output; somewhat kludgy
-        *msg += srvMsg;
+        qInfo() << "Baseline server reports:" << srvMsg;
         return true;            // The server decides: a fuzzy match means no mismatch
     }
     *msg += "Mismatch. See report:\n   " + srvMsg;

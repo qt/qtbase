@@ -204,7 +204,7 @@ quint32        initval)         /* the previous hash, or an arbitrary value */
   }
 
   /*------------------------------------------- handle the last 3 quint32's */
-  switch(length)                     /* all the case statements fall through */
+  switch (length)                     /* all the case statements fall through */
   {
   case 3 : c+=k[2];
            Q_FALLTHROUGH();
@@ -253,7 +253,7 @@ quint32       *pb)               /* IN: more seed OUT: secondary hash value */
   }
 
   /*------------------------------------------- handle the last 3 quint32's */
-  switch(length)                     /* all the case statements fall through */
+  switch (length)                     /* all the case statements fall through */
   {
   case 3 : c+=k[2];
            Q_FALLTHROUGH();
@@ -332,7 +332,7 @@ quint32 hashlittle( const void *key, size_t length, quint32 initval)
      */
 #ifndef VALGRIND
 
-    switch(length)
+    switch (length)
     {
     case 12: c+=k[2]; b+=k[1]; a+=k[0]; break;
     case 11: c+=k[2]&0xffffff; b+=k[1]; a+=k[0]; break;
@@ -352,7 +352,7 @@ quint32 hashlittle( const void *key, size_t length, quint32 initval)
 #else /* make valgrind happy */
 
     const quint8  *k8 = (const quint8 *)k;
-    switch(length)
+    switch (length)
     {
     case 12: c+=k[2]; b+=k[1]; a+=k[0]; break;
     case 11: c+=((quint32)k8[10])<<16;
@@ -396,7 +396,7 @@ quint32 hashlittle( const void *key, size_t length, quint32 initval)
 
     /*----------------------------- handle the last (probably partial) block */
     k8 = (const quint8 *)k;
-    switch(length)
+    switch (length)
     {
     case 12: c+=k[4]+(((quint32)k[5])<<16);
              b+=k[2]+(((quint32)k[3])<<16);
@@ -455,7 +455,7 @@ quint32 hashlittle( const void *key, size_t length, quint32 initval)
     }
 
     /*-------------------------------- last block: affect all 32 bits of (c) */
-    switch(length)                   /* all the case statements fall through */
+    switch (length)                   /* all the case statements fall through */
     {
     case 12: c+=((quint32)k[11])<<24;
              Q_FALLTHROUGH();
@@ -540,7 +540,7 @@ void hashlittle2(
      */
 #ifndef VALGRIND
 
-    switch(length)
+    switch (length)
     {
     case 12: c+=k[2]; b+=k[1]; a+=k[0]; break;
     case 11: c+=k[2]&0xffffff; b+=k[1]; a+=k[0]; break;
@@ -560,7 +560,7 @@ void hashlittle2(
 #else /* make valgrind happy */
 
     const quint8  *k8 = (const quint8 *)k;
-    switch(length)
+    switch (length)
     {
     case 12: c+=k[2]; b+=k[1]; a+=k[0]; break;
     case 11: c+=((quint32)k8[10])<<16;
@@ -604,7 +604,7 @@ void hashlittle2(
 
     /*----------------------------- handle the last (probably partial) block */
     k8 = (const quint8 *)k;
-    switch(length)
+    switch (length)
     {
     case 12: c+=k[4]+(((quint32)k[5])<<16);
              b+=k[2]+(((quint32)k[3])<<16);
@@ -663,7 +663,7 @@ void hashlittle2(
     }
 
     /*-------------------------------- last block: affect all 32 bits of (c) */
-    switch(length)                   /* all the case statements fall through */
+    switch (length)                   /* all the case statements fall through */
     {
     case 12: c+=((quint32)k[11])<<24;
              Q_FALLTHROUGH();
@@ -740,7 +740,7 @@ quint32 hashbig( const void *key, size_t length, quint32 initval)
      */
 #ifndef VALGRIND
 
-    switch(length)
+    switch (length)
     {
     case 12: c+=k[2]; b+=k[1]; a+=k[0]; break;
     case 11: c+=k[2]&0xffffff00; b+=k[1]; a+=k[0]; break;
@@ -760,7 +760,7 @@ quint32 hashbig( const void *key, size_t length, quint32 initval)
 #else  /* make valgrind happy */
 
     const quint8 *k8 = (const quint8 *)k;
-    switch(length)                   /* all the case statements fall through */
+    switch (length)                   /* all the case statements fall through */
     {
     case 12: c+=k[2]; b+=k[1]; a+=k[0]; break;
     case 11: c+=((quint32)k8[10])<<8;
@@ -811,7 +811,7 @@ quint32 hashbig( const void *key, size_t length, quint32 initval)
     }
 
     /*-------------------------------- last block: affect all 32 bits of (c) */
-    switch(length)                   /* all the case statements fall through */
+    switch (length)                   /* all the case statements fall through */
     {
     case 12: c+=k[11];
              Q_FALLTHROUGH();

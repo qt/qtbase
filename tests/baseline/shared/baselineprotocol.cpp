@@ -36,6 +36,7 @@
 #endif
 #include <QFileInfo>
 #include <QDir>
+#include <QThread>
 #include <QTime>
 #include <QPointer>
 #include <QRegularExpression>
@@ -49,29 +50,7 @@ const QString PI_OSVersion(QLS("OSVersion"));
 const QString PI_QtVersion(QLS("QtVersion"));
 const QString PI_QtBuildMode(QLS("QtBuildMode"));
 const QString PI_GitCommit(QLS("GitCommit"));
-const QString PI_QMakeSpec(QLS("QMakeSpec"));
-const QString PI_PulseGitBranch(QLS("PulseGitBranch"));
-const QString PI_PulseTestrBranch(QLS("PulseTestrBranch"));
-
-#ifndef QMAKESPEC
-#define QMAKESPEC "Unknown"
-#endif
-
-#if defined(Q_OS_WIN)
-#include <QtCore/qt_windows.h>
-#endif
-#if defined(Q_OS_UNIX)
-#include <time.h>
-#endif
-void BaselineProtocol::sysSleep(int ms)
-{
-#if defined(Q_OS_WIN)
-    Sleep(DWORD(ms));
-#else
-    struct timespec ts = { ms / 1000, (ms % 1000) * 1000 * 1000 };
-    nanosleep(&ts, NULL);
-#endif
-}
+const QString PI_GitBranch(QLS("GitBranch"));
 
 PlatformInfo::PlatformInfo()
     : QMap<QString, QString>(), adHoc(true)
@@ -83,7 +62,6 @@ PlatformInfo PlatformInfo::localHostInfo()
     PlatformInfo pi;
     pi.insert(PI_HostName, QHostInfo::localHostName());
     pi.insert(PI_QtVersion, QLS(qVersion()));
-    pi.insert(PI_QMakeSpec, QString(QLS(QMAKESPEC)).remove(QRegularExpression(QLS("^.*mkspecs/"))));
     pi.insert(PI_QtBuildMode, QLibraryInfo::isDebugBuild() ? QLS("QtDebug") : QLS("QtRelease"));
 #if defined(Q_OS_LINUX) && QT_CONFIG(process)
     pi.insert(PI_OSName, QLS("Linux"));
@@ -113,26 +91,14 @@ PlatformInfo PlatformInfo::localHostInfo()
         pi.insert(PI_GitCommit, QString::fromLocal8Bit(git.readAllStandardOutput().constData()).simplified());
     else
         pi.insert(PI_GitCommit, QLS("Unknown"));
-
-    QByteArray gb = qgetenv("PULSE_GIT_BRANCH");
-    if (!gb.isEmpty()) {
-        pi.insert(PI_PulseGitBranch, QString::fromLatin1(gb));
-        pi.setAdHocRun(false);
-    }
-    QByteArray tb = qgetenv("PULSE_TESTR_BRANCH");
-    if (!tb.isEmpty()) {
-        pi.insert(PI_PulseTestrBranch, QString::fromLatin1(tb));
-        pi.setAdHocRun(false);
-    }
-    if (!qgetenv("JENKINS_HOME").isEmpty()) {
-        pi.setAdHocRun(false);
-        gb = qgetenv("GIT_BRANCH");
-        if (!gb.isEmpty()) {
-            // FIXME: the string "Pulse" should be eliminated, since that is not the used tool.
-            pi.insert(PI_PulseGitBranch, QString::fromLatin1(gb));
-        }
-    }
 #endif // QT_CONFIG(process)
+
+    if (qEnvironmentVariableIsSet("JENKINS_HOME"))
+        pi.setAdHocRun(false);
+
+    QString gb = qEnvironmentVariable("GIT_BRANCH");
+    if (!gb.isEmpty())
+        pi.insert(PI_GitBranch, gb);
 
     return pi;
 }
@@ -286,8 +252,7 @@ void ImageItem::writeImageToStream(QDataStream &out) const
     out << quint8('Q') << quint8(image.format());
     out << quint8(QSysInfo::ByteOrder) << quint8(0);       // pad to multiple of 4 bytes
     out << quint32(image.width()) << quint32(image.height()) << quint32(image.bytesPerLine());
-    out << qCompress(reinterpret_cast<const uchar *>(image.constBits()),
-                     int(image.sizeInBytes()));
+    out << qCompress(reinterpret_cast<const uchar *>(image.constBits()), image.sizeInBytes());
     //# can be followed by colormap for formats that use it
 }
 
@@ -360,7 +325,7 @@ bool BaselineProtocol::connect(const QString &testCase, bool *dryrun, const Plat
 
     socket.connectToHost(serverName, ServerPort);
     if (!socket.waitForConnected(Timeout)) {
-        sysSleep(3000);  // Wait a bit and try again, the server might just be restarting
+        QThread::msleep(3000);  // Wait a bit and try again, the server might just be restarting
         if (!socket.waitForConnected(Timeout)) {
             errMsg += QLS("TCP connectToHost failed. Host:") + QLS(serverName) + QLS(" port:") + QString::number(ServerPort);
             return false;
@@ -425,7 +390,7 @@ bool BaselineProtocol::requestBaselineChecksums(const QString &testFunction, Ima
     if (!itemList)
         return false;
 
-    for(ImageItemList::iterator it = itemList->begin(); it != itemList->end(); it++)
+    for (ImageItemList::iterator it = itemList->begin(); it != itemList->end(); it++)
         it->testFunction = testFunction;
 
     QByteArray block;
@@ -448,7 +413,7 @@ bool BaselineProtocol::submitMatch(const ImageItem &item, QByteArray *serverMsg)
 {
     Command cmd;
     ImageItem smallItem = item;
-    smallItem.image = QImage();  // No need to waste bandwith sending image (identical to baseline) to server
+    smallItem.image = QImage();  // No need to waste bandwidth sending image (identical to baseline) to server
     return (sendItem(AcceptMatch, smallItem) && receiveBlock(&cmd, serverMsg) && cmd == Ack);
 }
 
