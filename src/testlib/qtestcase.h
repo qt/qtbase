@@ -93,11 +93,21 @@ do {\
 
 #ifndef QT_NO_EXCEPTIONS
 
+#if QT_DEPRECATED_SINCE(6, 3)
+namespace QTest {
+QT_DEPRECATED_VERSION_X_6_3("Don't use QVERIFY_EXCEPTION_THROWN(expr, type) anymore, "
+                            "use QVERIFY_THROWS_EXCEPTION(type, expr...) instead")
+inline void useVerifyThrowsException() {}
+} // namespace QTest
 #  define QVERIFY_EXCEPTION_THROWN(expression, exceptiontype) \
+    QVERIFY_THROWS_EXCEPTION(exceptiontype, QTest::useVerifyThrowsException(); expression)
+#endif
+
+#  define QVERIFY_THROWS_EXCEPTION(exceptiontype, ...) \
     do {\
         QT_TRY {\
             QT_TRY {\
-                expression;\
+                __VA_ARGS__;\
                 QTest::qFail("Expected exception of type " #exceptiontype " to be thrown" \
                              " but no exception caught", __FILE__, __LINE__);\
                 return;\
@@ -125,7 +135,7 @@ do {\
  * So, users must use Qt with exception support enabled if they use exceptions
  * in their code.
  */
-#  define QVERIFY_EXCEPTION_THROWN(expression, exceptiontype) \
+#  define QVERIFY_THROWS_EXCEPTION(...) \
     static_assert(false, "Support of exceptions is disabled")
 
 #endif // !QT_NO_EXCEPTIONS

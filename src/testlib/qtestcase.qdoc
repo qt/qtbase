@@ -158,17 +158,23 @@
    \since 5.3
 
    \relates QTest
+   \deprecated [6.3] Use \c{QVERIFY_THROWS_EXCEPTION(exceptiontype, expression)} instead.
+*/
 
-   The QVERIFY_EXCEPTION_THROWN macro executes \a expression
-   and tries to catch an exception thrown from \a expression.
+/*!
+   \macro QVERIFY_THROWS_EXCEPTION(exceptiontype, ...)
+   \since 6.3
+
+   The QVERIFY_THROWS_EXCEPTION macro executes the expression given in the variadic
+   argument and expects to catch an exception thrown from the expression.
 
    There are several possible outcomes:
 
    \list
-   \li If \a expression throws an exception that is either the same as
+   \li If the expression throws an exception that is either the same as
    \a exceptiontype or derived from \a exceptiontype, then execution will continue.
 
-   \li Otherwise, if \a expression throws no exception, or the
+   \li Otherwise, if the expression throws no exception, or the
    exception thrown derives from \c{std::exception}, then a failure
    will be recorded in the test log and the macro returns early
    (from enclosing function).
@@ -177,6 +183,16 @@
    \a exceptiontype, a failure will be recorded in the test log, and the exception is
    re-thrown. This avoids problems with e.g. pthread cancellation exceptions.
    \endlist
+
+   The macro uses variadic arguments so the expression can contain commas that the
+   preprocessor considers argument separators, e.g. as in
+   \code
+   QVERIFY_THROWS_EXCEPTION(std::bad_alloc,
+   // macro arguments:      ^ exceptiontype
+                            std::vector<std::pair<int, long>>{42'000'000'000, {42, 42L}});
+   // macro arguments:      \---------- 1 ----------/  \-------- 2 --------/  \3/  \ 4 /
+   //                       \----------------------- expression -----------------------/
+   \endcode
 
    \note This macro can only be used in a test function that is invoked
    by the test framework.

@@ -2688,7 +2688,7 @@ void tst_QSharedPointer::constructorThrow()
     int childDestructorCounter = ThrowData::childDestructorCounter;
 
     QSharedPointer<ThrowData> ptr;
-    QVERIFY_EXCEPTION_THROWN(ptr = QSharedPointer<ThrowData>::create(), QString);
+    QVERIFY_THROWS_EXCEPTION(QString, ptr = QSharedPointer<ThrowData>::create());
     QVERIFY(ptr.isNull());
     QCOMPARE(ThrowData::childGenerationCounter, childGeneration + 1);
     // destructor should never be called, if a constructor throws

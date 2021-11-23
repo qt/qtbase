@@ -1584,7 +1584,7 @@ void tst_QThread::create()
         const auto &function = [](const ThrowWhenCopying &){};
         QScopedPointer<QThread> thread;
         ThrowWhenCopying t;
-        QVERIFY_EXCEPTION_THROWN(thread.reset(QThread::create(function, t)), ThreadException);
+        QVERIFY_THROWS_EXCEPTION(ThreadException, thread.reset(QThread::create(function, t)));
         QVERIFY(!thread);
     }
 #endif // QT_NO_EXCEPTIONS
