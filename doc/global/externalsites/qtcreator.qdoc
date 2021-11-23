@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -24,6 +24,8 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
+// Up-to-date with Qt Creator 6.0.0
 
 /*!
     \externalpage https://doc.qt.io/qtcreator/creator-deployment-qnx.html
@@ -82,8 +84,16 @@
     \title Qt Creator: Browsing Project Contents
 */
 /*!
-    \externalpage https://doc.qt.io/qtcreator/creator-project-managing-workspaces.html
-    \title Qt Creator: Managing Workspaces
+    \externalpage https://doc.qt.io/qtcreator/creator-projects-view.html
+    \title Qt Creator: Projects
+*/
+/*!
+    \externalpage https://doc.qt.io/qtcreator/creator-file-system-view.html
+    \title Qt Creator: File System
+*/
+/*!
+    \externalpage https://doc.qt.io/qtcreator/creator-open-documents-view.html
+    \title Qt Creator: Open Documents
 */
 /*!
     \externalpage https://doc.qt.io/qtcreator/creator-output-panes.html
@@ -99,7 +109,11 @@
 */
 /*!
     \externalpage https://doc.qt.io/qtcreator/creator-telemetry.html
-    \title Qt Creator: Managing Data Collection Settings
+    \title Qt Creator: Managing Data Collection
+*/
+/*!
+    \externalpage https://doc.qt.io/qtcreator/collecting-usage-statistics.html
+    \title Qt Creator: Collecting Usage Statistics
 */
 /*!
     \externalpage https://doc.qt.io/qtcreator/creator-project-managing-sessions.html
@@ -146,36 +160,8 @@
     \title Qt Creator: Keyboard Shortcuts
 */
 /*!
-    \externalpage https://doc.qt.io/qtcreator/qmldesigner-connections.html
-    \title Qt Creator: Adding Connections
-*/
-/*!
-    \externalpage https://doc.qt.io/qtcreator/quick-signals.html
-    \title Qt Creator: Connecting Objects to Signals
-*/
-/*!
-    \externalpage https://doc.qt.io/qtcreator/quick-dynamic-properties.html
-    \title Qt Creator: Specifying Dynamic Properties
-*/
-/*!
-    \externalpage https://doc.qt.io/qtcreator/quick-property-bindings.html
-    \title Qt Creator: Adding Bindings Between Properties
-*/
-/*!
-    \externalpage https://doc.qt.io/qtcreator/quick-connections-backend.html
-    \title Qt Creator: Managing C++ Backend Objects
-*/
-/*!
     \externalpage https://doc.qt.io/qtcreator/qtcreator-transitions-example.html
     \title Qt Creator: Creating a Qt Quick Application
-*/
-/*!
-    \externalpage https://doc.qt.io/qtcreator/qtquick-iso-icon-browser.html
-    \title Qt Creator: Browsing ISO 7000 Icons
-*/
-/*!
-    \externalpage https://doc.qt.io/qtcreator/creator-exporting-qml.html
-    \title Qt Creator: Exporting QML
 */
 /*!
     \externalpage https://doc.qt.io/qtcreator/creator-qml-modules-with-plugins.html
@@ -190,52 +176,16 @@
     \title Qt Creator: Developing Qt Quick Applications
 */
 /*!
-    \externalpage https://doc.qt.io/qtcreator/creator-using-qt-quick-designer.html
-    \title Qt Creator: Editing QML Files in Design Mode
-*/
-/*!
     \externalpage https://doc.qt.io/qtcreator/quick-projects.html
     \title Qt Creator: Creating Qt Quick Projects
 */
 /*!
-    \externalpage https://doc.qt.io/qtcreator/quick-components.html
-    \title Qt Creator: Creating Components
-*/
-/*!
-    \externalpage https://doc.qt.io/qtcreator/qtquick-form-editor.html
-    \title Qt Creator: Editing 2D Content
-*/
-/*!
-    \externalpage https://doc.qt.io/qtcreator/quick-shapes.html
-    \title Qt Creator: Shapes
-*/
-/*!
-    \externalpage https://doc.qt.io/qtcreator/quick-text.html
-    \title Qt Creator: Text
-*/
-/*!
-    \externalpage https://doc.qt.io/qtcreator/quick-images.html
-    \title Qt Creator: Images
-*/
-/*!
-    \externalpage https://doc.qt.io/qtcreator/quick-controls.html
-    \title Qt Creator: User Interaction Methods
-*/
-/*!
-    \externalpage https://doc.qt.io/qtcreator/quick-data-models.html
-    \title Qt Creator: Lists and Other Data Models
+    \externalpage https://doc.qt.io/qtcreator/creator-qtquickdesigner-plugin.html
+    \title Qt Creator: Using Qt Quick Designer
 */
 /*!
     \externalpage https://doc.qt.io/qtcreator/qt-quick-toolbars.html
     \title Qt Creator: Using Qt Quick Toolbars
-*/
-/*!
-    \externalpage https://doc.qt.io/qtcreator/quick-buttons.html
-    \title Qt Creator: Creating Buttons
-*/
-/*!
-    \externalpage https://doc.qt.io/qtcreator/quick-scalable-image.html
-    \title Qt Creator: Creating Scalable Buttons and Borders
 */
 /*!
     \externalpage https://doc.qt.io/qtcreator/creator-editor-options.html
@@ -284,6 +234,10 @@
 /*!
     \externalpage https://doc.qt.io/qtcreator/creator-editor-refactoring.html
     \title Qt Creator: Refactoring
+*/
+/*!
+    \externalpage https://doc.qt.io/qtcreator/creator-editor-quick-fixes.html
+    \title Qt Creator: Applying Refactoring Actions
 */
 /*!
     \externalpage https://doc.qt.io/qtcreator/creator-editor-locator.html
@@ -372,18 +326,6 @@
 /*!
     \externalpage https://doc.qt.io/qtcreator/creator-connecting-mobile.html
     \title Qt Creator: Connecting Devices
-*/
-/*!
-    \externalpage https://doc.qt.io/qtcreator/creator-ui-best-practices.html
-    \title Qt Creator: Best Practices
-*/
-/*!
-    \externalpage https://doc.qt.io/qtcreator/studio-qtquick-best-practices.html
-    \title Qt Creator: Qt Quick Best Practices
-*/
-/*!
-    \externalpage https://doc.qt.io/qtcreator/studio-optimized-3d-scenes.html
-    \title Qt Creator: Creating Optimized 3D Scenes
 */
 /*!
     \externalpage https://doc.qt.io/qtcreator/creator-usability.html
@@ -516,10 +458,6 @@
     \title Qt Creator: Adding New Custom Wizards
 */
 /*!
-    \externalpage https://doc.qt.io/qtcreator/creator-project-wizards-json.html
-    \title Qt Creator: Adding JSON-Based Wizards
-*/
-/*!
     \externalpage https://doc.qt.io/qtcreator/creator-project-meson.html
     \title Qt Creator: Setting Up Meson
 */
@@ -552,6 +490,30 @@
     \title Qt Creator: Specifying Build Settings
 */
 /*!
+    \externalpage https://doc.qt.io/qtcreator/creator-build-settings-cmake.html
+    \title Qt Creator: CMake Build Configuration
+*/
+/*!
+    \externalpage https://doc.qt.io/qtcreator/creator-build-settings-qmake.html
+    \title Qt Creator: qmake Build Configuration
+*/
+/*!
+    \externalpage https://doc.qt.io/qtcreator/creator-build-settings-qbs.html
+    \title Qt Creator: Qbs Build Configuration
+*/
+/*!
+    \externalpage https://doc.qt.io/qtcreator/creator-build-settings-meson.html
+    \title Qt Creator: Meson Build Configuration
+*/
+/*!
+    \externalpage https://doc.qt.io/qtcreator/creator-build-settings-incredibuild.html
+    \title Qt Creator: IncrediBuild Build Configuration
+*/
+/*!
+    \externalpage https://doc.qt.io/qtcreator/creator-build-settings-conan.html
+    \title Qt Creator: Conan Build Configuration
+*/
+/*!
     \externalpage https://doc.qt.io/qtcreator/creator-code-style-settings.html
     \title Qt Creator: Specifying Code Style Settings
 */
@@ -565,7 +527,7 @@
 */
 /*!
     \externalpage https://doc.qt.io/qtcreator/creator-project-other.html
-    \title Qt Creator: Using Other Build Systems
+    \title Qt Creator: Build Systems
 */
 /*!
     \externalpage https://doc.qt.io/qtcreator/creator-running-targets.html
@@ -638,7 +600,7 @@
 */
 /*!
     \externalpage https://doc.qt.io/qtcreator/creator-quick-ui-forms.html
-    \title Qt Creator: Qt Quick UI Forms
+    \title Qt Creator: UI Files
 */
 
 /*!
@@ -674,44 +636,8 @@
     \title Creating a Qt Widget Based Application
 */
 /*!
-    \externalpage https://doc.qt.io/qtcreator/qtquick-navigator.html
-    \title Qt Creator: Managing Item Hierarchy
-*/
-/*!
-    \externalpage https://doc.qt.io/qtcreator/qtquick-properties.html
-    \title Qt Creator: Specifying Item Properties
-*/
-/*!
-    \externalpage https://doc.qt.io/qtcreator/qtquick-positioning.html
-    \title Qt Creator: Positioning Items
-*/
-/*!
-    \externalpage https://doc.qt.io/qtcreator/qtquick-fonts.html
-    \title Qt Creator: Using Custom Fonts
-*/
-/*!
-    \externalpage https://doc.qt.io/qtcreator/qtquick-annotations.html
-    \title Qt Creator: Annotating Designs
-*/
-/*!
-    \externalpage https://doc.qt.io/qtcreator/qtquick-placeholder-data.html
-    \title Qt Creator: Loading Placeholder Data
-*/
-/*!
-    \externalpage https://doc.qt.io/qtcreator/quick-states.html
-    \title Qt Creator: Adding States
-*/
-/*!
     \externalpage https://doc.qt.io/qtcreator/creator-scxml.html
     \title Qt Creator: Editing State Charts
-*/
-/*!
-    \externalpage https://doc.qt.io/qtcreator/qtquick-adding-dynamics.html
-    \title Qt Creator: Adding Dynamics
-*/
-/*!
-    \externalpage https://doc.qt.io/qtcreator/studio-timeline.html
-    \title Qt Creator: Creating Animations
 */
 /*!
     \externalpage https://doc.qt.io/qtcreator/creator-language-servers.html
@@ -723,7 +649,7 @@
 */
 /*!
     \externalpage https://doc.qt.io/qtcreator/creator-live-preview.html
-    \title Qt Creator: Previewing
+    \title Qt Creator: Validating with Target Hardware
 */
 /*!
     \externalpage https://doc.qt.io/qtcreator/creator-live-preview-desktop.html
@@ -736,84 +662,4 @@
 /*!
     \externalpage https://doc.qt.io/qtcreator/qt-design-viewer.html
     \title Qt Creator: Previewing in Browsers
-*/
-/*!
-    \externalpage https://doc.qt.io/qtcreator/studio-3d.html
-    \title Qt Creator: Editing 3D Scenes
-*/
-/*!
-    \externalpage https://doc.qt.io/qtcreator/exporting-3d-assets.html
-    \title Qt Creator: Exporting 3D Assets
-*/
-/*!
-    \externalpage https://doc.qt.io/qtcreator/exporting-from-blender.html
-    \title Qt Creator: Exporting from Blender
-*/
-/*!
-    \externalpage https://doc.qt.io/qtcreator/exporting-from-maya.html
-    \title Qt Creator: Exporting from Maya
-*/
-/*!
-    \externalpage https://doc.qt.io/qtcreator/studio-importing-3d.html
-    \title Qt Creator: Importing 3D Assets
-*/
-/*!
-    \externalpage https://doc.qt.io/qtcreator/studio-3d-design-mode.html
-    \title Qt Creator: Editing 3D Assets in Design Mode
-*/
-/*!
-    \externalpage https://doc.qt.io/qtcreator/studio-3d-editor.html
-    \title Qt Creator: Working in 3D Editor
-*/
-/*!
-    \externalpage https://doc.qt.io/qtcreator/studio-3d-view.html
-    \title Qt Creator: Adding 3D Views
-*/
-/*!
-    \externalpage https://doc.qt.io/qtcreator/studio-3d-components.html
-    \title Qt Creator: Using 3D Components
-*/
-/*!
-    \externalpage https://doc.qt.io/qtcreator/studio-3d-node.html
-    \title Qt Creator: Setting Group Properties
-*/
-/*!
-    \externalpage https://doc.qt.io/qtcreator/studio-3d-model.html
-    \title Qt Creator: Adding Models
-*/
-/*!
-    \externalpage https://doc.qt.io/qtcreator/studio-3d-materials.html
-    \title Qt Creator: Using Materials and Shaders
-*/
-/*!
-    \externalpage https://doc.qt.io/qtcreator/studio-3d-texture.html
-    \title Qt Creator: Attaching Textures to Materials
-*/
-/*!
-    \externalpage https://doc.qt.io/qtcreator/studio-3d-materials-types.html
-    \title Qt Creator: Using 3D Materials
-*/
-/*!
-    \externalpage https://doc.qt.io/qtcreator/studio-3d-effects.html
-    \title Qt Creator: Applying 3D Effects
-*/
-/*!
-    \externalpage https://doc.qt.io/qtcreator/studio-3d-custom-shaders.html
-    \title Qt Creator: Using Custom Shaders
-*/
-/*!
-    \externalpage https://doc.qt.io/qtcreator/studio-3d-custom-effects-materials.html
-    \title Qt Creator: Creating Custom Effects and Materials
-*/
-/*!
-    \externalpage https://doc.qt.io/qtcreator/studio-3d-lights.html
-    \title Qt Creator: Using Lights
-*/
-/*!
-    \externalpage https://doc.qt.io/qtcreator/studio-3d-camera.html
-    \title Qt Creator: Using Scene Camera
-*/
-/*!
-    \externalpage https://doc.qt.io/qtcreator/studio-3d-scene-environment.html
-    \title Qt Creator: Setting Scene Environment
 */
