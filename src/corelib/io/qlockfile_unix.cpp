@@ -59,7 +59,7 @@
 #include <sys/file.h>  // flock
 #endif
 
-#if defined(Q_OS_RTEMS) || defined(Q_OS_QNX)
+#if defined(Q_OS_RTEMS)
 // flock() does not work in these OSes and produce warnings when we try to use
 #  undef LOCK_EX
 #  undef LOCK_NB
@@ -278,7 +278,27 @@ QString QLockFilePrivate::processNameByPid(qint64 pid)
     QString name = QFile::decodeName(kp.ki_comm);
 # endif
     return name;
+#elif defined(Q_OS_QNX)
+    char exePath[PATH_MAX];
+    sprintf(exePath, "/proc/%lld/exefile", pid);
 
+    int fd = qt_safe_open(exePath, O_RDONLY);
+    if (fd == -1)
+        return QString();
+
+    QT_STATBUF sbuf;
+    if (QT_FSTAT(fd, &sbuf) == -1) {
+        qt_safe_close(fd);
+        return QString();
+    }
+
+    QByteArray buffer(sbuf.st_size, Qt::Uninitialized);
+    buffer.resize(qt_safe_read(fd, buffer.data(), sbuf.st_size - 1));
+    if (buffer.isEmpty()) {
+        // The pid is gone. Return some invalid process name to fail the test.
+        return QStringLiteral("/ERROR/");
+    }
+    return QFileSystemEntry(buffer, QFileSystemEntry::FromNativePath()).fileName();
 #else
     Q_UNUSED(pid);
     return QString();
