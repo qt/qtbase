@@ -5066,7 +5066,13 @@ int QStyleSheetStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const 
         if (!rule.hasNativeBorder() || rule.hasBox())
             return 0;
         break;
+
+    case PM_ScrollView_ScrollBarOverlap:
+        if (!rule.hasNativeBorder() || rule.hasBox())
+            return 0;
+        break;
 #endif // QT_CONFIG(scrollbar)
+
 
     case PM_ProgressBarChunkWidth:
         subRule = renderRule(w, opt, PseudoElement_ProgressBarChunk);
@@ -5660,6 +5666,10 @@ int QStyleSheetStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWi
         case SH_ItemView_PaintAlternatingRowColorsForEmptyArea: s = QLatin1String("paint-alternating-row-colors-for-empty-area"); break;
         case SH_TitleBar_ShowToolTipsOnButtons: s = QLatin1String("titlebar-show-tooltips-on-buttons"); break;
         case SH_Widget_Animation_Duration: s = QLatin1String("widget-animation-duration"); break;
+        case SH_ScrollBar_Transient:
+            if (!rule.hasNativeBorder() || rule.hasBox())
+                return 0;
+            break;
         default: break;
     }
     if (!s.isEmpty() && rule.hasStyleHint(s)) {
