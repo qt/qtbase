@@ -3445,7 +3445,7 @@ void QTableViewPrivate::selectColumn(int column, bool anchor)
         if (q->selectionMode() != QTableView::SingleSelection
             && command.testFlag(QItemSelectionModel::Toggle)) {
             if (anchor)
-                ctrlDragSelectionFlag = horizontalHeader->selectionModel()->selectedColumns().contains(index)
+                ctrlDragSelectionFlag = horizontalHeader->selectionModel()->selectedColumns(row).contains(index)
                                     ? QItemSelectionModel::Deselect : QItemSelectionModel::Select;
             command &= ~QItemSelectionModel::Toggle;
             command |= ctrlDragSelectionFlag;

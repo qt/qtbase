@@ -439,6 +439,8 @@ private slots:
     void deselectRow();
     void selectRowsAndCells();
     void selectColumnsAndCells();
+    void selectWithHeader_data();
+    void selectWithHeader();
 
 #if QT_CONFIG(wheelevent)
     void mouseWheel_data();
@@ -4853,6 +4855,60 @@ void tst_QTableView::selectColumnsAndCells()
     tw.shiftPressed = true;
     tw.selectColumn(1);
     checkColumns(tw.selectionModel()->selectedColumns());
+}
+
+void tst_QTableView::selectWithHeader_data()
+{
+    QTest::addColumn<Qt::Orientation>("orientation");
+
+    QTest::addRow("horizontal") << Qt::Horizontal;
+    QTest::addRow("vertical") << Qt::Vertical;
+}
+
+void tst_QTableView::selectWithHeader()
+{
+    QFETCH(Qt::Orientation, orientation);
+
+    QTableWidget view(10, 10);
+    view.resize(200, 100);
+    view.show();
+
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+
+    QHeaderView *header;
+    QPoint clickPos;
+    QModelIndex lastIndex;
+
+    switch (orientation) {
+    case Qt::Horizontal:
+        header = view.horizontalHeader();
+        clickPos.rx() = header->sectionPosition(0) + header->sectionSize(0) / 2;
+        clickPos.ry() = header->height() / 2;
+        lastIndex = view.model()->index(9, 0);
+        break;
+    case Qt::Vertical:
+        header = view.verticalHeader();
+        clickPos.rx() = header->width() / 2;
+        clickPos.ry() = header->sectionPosition(0) + header->sectionSize(0) / 2;
+        lastIndex = view.model()->index(0, 9);
+        break;
+    }
+
+    const auto isSelected = [&]{
+        return orientation == Qt::Horizontal
+             ? view.selectionModel()->isColumnSelected(0)
+             : view.selectionModel()->isRowSelected(0);
+    };
+
+    QTest::mouseClick(header->viewport(), Qt::LeftButton, {}, clickPos);
+    QVERIFY(isSelected());
+    QTest::mouseClick(header->viewport(), Qt::LeftButton, Qt::ControlModifier, clickPos);
+    QVERIFY(!isSelected());
+    QTest::mouseClick(header->viewport(), Qt::LeftButton, {}, clickPos);
+    QVERIFY(isSelected());
+    view.scrollTo(lastIndex);
+    QTest::mouseClick(header->viewport(), Qt::LeftButton, Qt::ControlModifier, clickPos);
+    QVERIFY(!isSelected());
 }
 
 // This has nothing to do with QTableView, but it's convenient to reuse the QtTestTableModel
