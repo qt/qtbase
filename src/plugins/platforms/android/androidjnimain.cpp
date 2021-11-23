@@ -60,6 +60,7 @@
 #include <android/bitmap.h>
 
 #include <QtCore/private/qjnihelpers_p.h>
+#include <QtCore/qbasicatomic.h>
 #include <QtCore/qjnienvironment.h>
 #include <QtCore/qjniobject.h>
 #include <QtCore/qresource.h>
@@ -122,6 +123,8 @@ static AndroidContentFileEngineHandler *m_androidContentFileEngineHandler = null
 static const char m_qtTag[] = "Qt";
 static const char m_classErrorMsg[] = "Can't find class \"%s\"";
 static const char m_methodErrorMsg[] = "Can't find method \"%s%s\"";
+
+static QBasicAtomicInt startQtAndroidPluginCalled = Q_BASIC_ATOMIC_INITIALIZER(0);
 
 namespace QtAndroid
 {
@@ -545,6 +548,7 @@ static void startQtApplication(JNIEnv */*env*/, jclass /*clazz*/)
     for (int i = 0; i < m_applicationParams.size(); i++)
         params[i] = static_cast<const char *>(m_applicationParams[i].constData());
 
+    startQtAndroidPluginCalled.fetchAndAddRelease(1);
     int ret = m_main(m_applicationParams.length(), const_cast<char **>(params.data()));
 
     if (m_mainLibraryHnd) {
@@ -592,7 +596,9 @@ static void terminateQt(JNIEnv *env, jclass /*clazz*/)
         QAndroidEventDispatcherStopper::instance()->goingToStop(false);
     }
 
-    sem_wait(&m_terminateSemaphore);
+    if (startQtAndroidPluginCalled.loadAcquire())
+        sem_wait(&m_terminateSemaphore);
+
     sem_destroy(&m_terminateSemaphore);
 
     env->DeleteGlobalRef(m_applicationClass);
