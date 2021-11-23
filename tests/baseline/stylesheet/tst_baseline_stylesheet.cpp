@@ -46,6 +46,9 @@ private slots:
     void tst_QToolButton_data();
     void tst_QToolButton();
 
+    void tst_QScrollArea_data();
+    void tst_QScrollArea();
+
 private:
     QDir styleSheetDir;
 };
@@ -146,6 +149,22 @@ void tst_Stylesheet::tst_QToolButton()
     }
     vbox->addLayout(menuButtons);
     testWindow()->setLayout(vbox);
+
+    makeVisible();
+    QBASELINE_TEST(takeSnapshot());
+}
+
+void tst_Stylesheet::tst_QScrollArea_data()
+{
+    loadTestFiles();
+}
+
+void tst_Stylesheet::tst_QScrollArea()
+{
+    QHBoxLayout *layout = new QHBoxLayout;
+    QTableWidget *table = new QTableWidget(20, 20);
+    layout->addWidget(table);
+    testWindow()->setLayout(layout);
 
     makeVisible();
     QBASELINE_TEST(takeSnapshot());
