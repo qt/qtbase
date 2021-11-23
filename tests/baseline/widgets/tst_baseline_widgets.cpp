@@ -271,6 +271,12 @@ void tst_Widgets::tst_QPushButton()
     QBASELINE_CHECK(takeSnapshot(), "down");
     testButton->setDown(false);
     QBASELINE_CHECK(takeSnapshot(), "up");
+
+    testButton->setDefault(true);
+    QBASELINE_CHECK(takeSnapshot(), "default_up");
+    testButton->setDown(true);
+    QBASELINE_CHECK(takeSnapshot(), "default_down");
+    testButton->setDown(false);
 }
 
 
