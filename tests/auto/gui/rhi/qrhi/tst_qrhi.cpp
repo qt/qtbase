@@ -135,6 +135,8 @@ private slots:
     void renderToWindowSimple();
     void finishWithinSwapchainFrame_data();
     void finishWithinSwapchainFrame();
+    void resourceUpdateBatchBufferTextureWithSwapchainFrames_data();
+    void resourceUpdateBatchBufferTextureWithSwapchainFrames();
 
     void pipelineCache_data();
     void pipelineCache();
@@ -910,6 +912,8 @@ void tst_QRhi::resourceUpdateBatchBuffer()
 
         if (rhi->isFeatureSupported(QRhi::ReadBackNonUniformBuffer))
             batch->readBackBuffer(dynamicBuffer.data(), 5, 10, &readResult);
+        else
+            qDebug("Skipping verification of buffer data as ReadBackNonUniformBuffer is not supported");
 
         QVERIFY(submitResourceUpdates(rhi.data(), batch));
 
@@ -3551,6 +3555,216 @@ void tst_QRhi::finishWithinSwapchainFrame()
     }
 
     rhi->endFrame(swapChain.data());
+}
+
+void tst_QRhi::resourceUpdateBatchBufferTextureWithSwapchainFrames_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::resourceUpdateBatchBufferTextureWithSwapchainFrames()
+{
+    if (QGuiApplication::platformName().startsWith(QLatin1String("offscreen"), Qt::CaseInsensitive))
+        QSKIP("Offscreen: Skipping onscreen test");
+
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing buffer resource updates");
+
+    QScopedPointer<QWindow> window(new QWindow);
+    setWindowType(window.data(), impl);
+
+    window->setGeometry(0, 0, 640, 480);
+    window->show();
+    QVERIFY(QTest::qWaitForWindowExposed(window.data()));
+
+    QScopedPointer<QRhiSwapChain> swapChain(rhi->newSwapChain());
+    swapChain->setWindow(window.data());
+    swapChain->setFlags(QRhiSwapChain::UsedAsTransferSource);
+    QScopedPointer<QRhiRenderPassDescriptor> rpDesc(swapChain->newCompatibleRenderPassDescriptor());
+    swapChain->setRenderPassDescriptor(rpDesc.data());
+    QVERIFY(swapChain->createOrResize());
+
+    const int bufferSize = 18;
+    const char *a = "123456789";
+    const char *b = "abcdefghi";
+
+    bool readCompleted = false;
+    QRhiBufferReadbackResult readResult;
+    readResult.completed = [&readCompleted] { readCompleted = true; };
+    QRhiReadbackResult texReadResult;
+    texReadResult.completed = [&readCompleted] { readCompleted = true; };
+
+    {
+        QScopedPointer<QRhiBuffer> dynamicBuffer(rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, bufferSize));
+        QVERIFY(dynamicBuffer->create());
+
+        for (int i = 0; i < bufferSize; ++i) {
+            QVERIFY(rhi->beginFrame(swapChain.data()) == QRhi::FrameOpSuccess);
+
+            QRhiResourceUpdateBatch *batch = rhi->nextResourceUpdateBatch();
+
+            // One byte every 16.66 ms should be enough for everyone: fill up
+            // the buffer with "123456789abcdefghi", one byte in each frame.
+            if (i >= bufferSize / 2)
+                batch->updateDynamicBuffer(dynamicBuffer.data(), i, 1, b + (i - bufferSize / 2));
+            else
+                batch->updateDynamicBuffer(dynamicBuffer.data(), i, 1, a + i);
+
+            QRhiCommandBuffer *cb = swapChain->currentFrameCommandBuffer();
+            // just clear to black, but submit the resource update
+            cb->beginPass(swapChain->currentFrameRenderTarget(), Qt::black, { 1.0f, 0 }, batch);
+            cb->endPass();
+
+            rhi->endFrame(swapChain.data());
+        }
+
+        {
+            QVERIFY(rhi->beginFrame(swapChain.data()) == QRhi::FrameOpSuccess);
+
+            QRhiResourceUpdateBatch *batch = rhi->nextResourceUpdateBatch();
+            readCompleted = false;
+            batch->readBackBuffer(dynamicBuffer.data(), 0, bufferSize, &readResult);
+
+            QRhiCommandBuffer *cb = swapChain->currentFrameCommandBuffer();
+            cb->beginPass(swapChain->currentFrameRenderTarget(), Qt::black, { 1.0f, 0 }, batch);
+            cb->endPass();
+
+            rhi->endFrame(swapChain.data());
+
+            // This is a proper, typically at least double buffered renderer (as
+            // a real swapchain is involved). readCompleted may only become true
+            // in a future frame.
+            while (!readCompleted) {
+                QVERIFY(rhi->beginFrame(swapChain.data()) == QRhi::FrameOpSuccess);
+                rhi->endFrame(swapChain.data());
+            }
+
+            QVERIFY(readResult.data.size() == bufferSize);
+            QCOMPARE(readResult.data.left(bufferSize / 2), QByteArray(a));
+            QCOMPARE(readResult.data.mid(bufferSize / 2), QByteArray(b));
+        }
+    }
+
+    // Repeat for types Immutable and Static, declare Vertex usage.
+    // This may not be readable on GLES 2.0 so skip the verification then.
+    for (QRhiBuffer::Type type : { QRhiBuffer::Immutable, QRhiBuffer::Static }) {
+        QScopedPointer<QRhiBuffer> buffer(rhi->newBuffer(type, QRhiBuffer::VertexBuffer, bufferSize));
+        QVERIFY(buffer->create());
+
+        for (int i = 0; i < bufferSize; ++i) {
+            QVERIFY(rhi->beginFrame(swapChain.data()) == QRhi::FrameOpSuccess);
+
+            QRhiResourceUpdateBatch *batch = rhi->nextResourceUpdateBatch();
+            if (i >= bufferSize / 2)
+                batch->uploadStaticBuffer(buffer.data(), i, 1, b + (i - bufferSize / 2));
+            else
+                batch->uploadStaticBuffer(buffer.data(), i, 1, a + i);
+
+            QRhiCommandBuffer *cb = swapChain->currentFrameCommandBuffer();
+            cb->beginPass(swapChain->currentFrameRenderTarget(), Qt::black, { 1.0f, 0 }, batch);
+            cb->endPass();
+
+            rhi->endFrame(swapChain.data());
+        }
+
+        if (rhi->isFeatureSupported(QRhi::ReadBackNonUniformBuffer)) {
+            QVERIFY(rhi->beginFrame(swapChain.data()) == QRhi::FrameOpSuccess);
+
+            QRhiResourceUpdateBatch *batch = rhi->nextResourceUpdateBatch();
+            readCompleted = false;
+            batch->readBackBuffer(buffer.data(), 0, bufferSize, &readResult);
+
+            QRhiCommandBuffer *cb = swapChain->currentFrameCommandBuffer();
+            cb->beginPass(swapChain->currentFrameRenderTarget(), Qt::black, { 1.0f, 0 }, batch);
+            cb->endPass();
+
+            rhi->endFrame(swapChain.data());
+
+            while (!readCompleted) {
+                QVERIFY(rhi->beginFrame(swapChain.data()) == QRhi::FrameOpSuccess);
+                rhi->endFrame(swapChain.data());
+            }
+
+            QVERIFY(readResult.data.size() == bufferSize);
+            QCOMPARE(readResult.data.left(bufferSize / 2), QByteArray(a));
+            QCOMPARE(readResult.data.mid(bufferSize / 2), QByteArray(b));
+        } else {
+            qDebug("Skipping verification of buffer data as ReadBackNonUniformBuffer is not supported");
+        }
+    }
+
+    // Now exercise a texture. Internally this is expected (with low level APIs
+    // at least) to be similar to what happens with a staic buffer: copy to host
+    // visible staging buffer, enqueue buffer-to-buffer (or here
+    // buffer-to-image) copy.
+    {
+        const int w = 234;
+        const int h = 8; // use a small height because vsync throttling is active
+        const QColor colors[] = { Qt::red, Qt::green, Qt::blue, Qt::gray, Qt::yellow, Qt::black, Qt::white, Qt::magenta };
+        QImage image(w, h, QImage::Format_RGBA8888);
+        for (int i = 0; i < h; ++i) {
+            QRgb c = colors[i].rgb();
+            uchar *p = image.scanLine(i);
+            int x = w;
+            while (x--) {
+                *p++ = qRed(c);
+                *p++ = qGreen(c);
+                *p++ = qBlue(c);
+                *p++ = qAlpha(c);
+            }
+        }
+
+        QScopedPointer<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGBA8, QSize(w, h), 1, QRhiTexture::UsedAsTransferSource));
+        QVERIFY(texture->create());
+
+        // fill a texture from the image, two lines at a time
+        for (int i = 0; i < h / 2; ++i) {
+            QVERIFY(rhi->beginFrame(swapChain.data()) == QRhi::FrameOpSuccess);
+            QRhiResourceUpdateBatch *batch = rhi->nextResourceUpdateBatch();
+
+            QRhiTextureSubresourceUploadDescription subresDesc(image);
+            subresDesc.setSourceSize(QSize(w, 2));
+            subresDesc.setSourceTopLeft(QPoint(0, i * 2));
+            subresDesc.setDestinationTopLeft(QPoint(0, i * 2));
+            QRhiTextureUploadDescription uploadDesc(QRhiTextureUploadEntry(0, 0, subresDesc));
+            batch->uploadTexture(texture.data(), uploadDesc);
+
+            QRhiCommandBuffer *cb = swapChain->currentFrameCommandBuffer();
+            cb->beginPass(swapChain->currentFrameRenderTarget(), Qt::black, { 1.0f, 0 }, batch);
+            cb->endPass();
+
+            rhi->endFrame(swapChain.data());
+        }
+
+        {
+            QVERIFY(rhi->beginFrame(swapChain.data()) == QRhi::FrameOpSuccess);
+
+            QRhiResourceUpdateBatch *batch = rhi->nextResourceUpdateBatch();
+            readCompleted = false;
+            batch->readBackTexture(texture.data(), &texReadResult);
+
+            QRhiCommandBuffer *cb = swapChain->currentFrameCommandBuffer();
+            cb->beginPass(swapChain->currentFrameRenderTarget(), Qt::black, { 1.0f, 0 }, batch);
+            cb->endPass();
+
+            rhi->endFrame(swapChain.data());
+
+            while (!readCompleted) {
+                QVERIFY(rhi->beginFrame(swapChain.data()) == QRhi::FrameOpSuccess);
+                rhi->endFrame(swapChain.data());
+            }
+
+            QCOMPARE(texReadResult.pixelSize, image.size());
+            QImage wrapperImage(reinterpret_cast<const uchar *>(texReadResult.data.constData()),
+                                texReadResult.pixelSize.width(), texReadResult.pixelSize.height(),
+                                image.format());
+            QVERIFY(imageRGBAEquals(image, wrapperImage));
+        }
+    }
 }
 
 void tst_QRhi::srbLayoutCompatibility_data()
