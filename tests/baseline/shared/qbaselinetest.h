@@ -30,6 +30,7 @@
 #define BASELINETEST_H
 
 #include <QTest>
+#include <QString>
 
 namespace QBaselineTest {
 void setAutoMode(bool mode);
@@ -41,6 +42,7 @@ bool checkImage(const QImage& img, const char *name, quint16 checksum, QByteArra
 bool testImage(const QImage& img, QByteArray *msg, bool *error);
 QTestData &newRow(const char *dataTag, quint16 checksum = 0);
 bool disconnectFromBaselineServer();
+bool shouldAbortIfUnstable();
 }
 
 #define QBASELINE_CHECK_SUM(image, name, checksum)\
