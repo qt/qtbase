@@ -1,0 +1,93 @@
+/****************************************************************************
+**
+** Copyright (C) 2021 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file. Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: https://www.gnu.org/licenses/fdl-1.3.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+\page qt_deploy_qt_conf.html
+\ingroup cmake-commands-qtcore
+
+\title qt_deploy_qt_conf
+\target qt_deploy_qt_conf
+
+\summary {Write a qt.conf file at deployment time.}
+
+\include cmake-find-package-core.qdocinc
+
+Unlike most other CMake commands provided by Qt, \c{qt_deploy_qt_conf()} can
+only be called from a deployment script. It cannot be called directly by the
+project.
+
+\section1 Synopsis
+
+\badcode
+qt_deploy_qt_conf(file_name
+    [PREFIX prefix]
+    [DOC_DIR doc_dir]
+    [HEADERS_DIR headers_dir]
+    [LIB_DIR lib_dir]
+    [LIBEXEC_DIR libexec_dir]
+    [BIN_DIR bin_dir]
+    [PLUGINS_DIR plugins_dir]
+    [QML_DIR qml_dir]
+    [ARCHDATA_DIR archdata_dir]
+    [DATA_DIR data_dir]
+    [TRANSLATIONS_DIR translations_dir]
+    [EXAMPLES_DIR examples_dir]
+    [TESTS_DIR test_dir]
+    [SETTINGS_DIR settings_dir]
+)
+\endcode
+
+\section1 Description
+
+Use this command when you need to generate a \c{Using qt.conf}{qt.conf} file
+during deployment. The default value of any path supported by \c{qt.conf} can
+be overridden with the corresponding \c{..._DIR} option. The command will only
+write a path to the generated \c{qt.conf} file if it differs from the default
+value.
+
+This command does not usually need to be called directly. It is used internally
+by other higher level commands, but projects wishing to implement more
+customized deployment logic may find it useful.
+
+\sa {qt6_generate_deploy_app_script}{qt_generate_deploy_app_script()},
+    qt_deploy_runtime_dependencies()
+
+\section1 Example
+
+\badcode
+# The following script must only be executed at install time
+set(deploy_script "${CMAKE_CURRENT_BINARY_DIR}/deploy_custom.cmake")
+
+file(GENERATE OUTPUT ${deploy_script} CONTENTS "
+include(\"${QT_DEPLOY_SUPPORT}\")
+qt_deploy_qt_conf(\"\${QT_DEPLOY_BIN_DIR}/qt.conf\")
+")
+
+install(SCRIPT ${deploy_script})
+\endcode
+
+*/

@@ -1,5 +1,6 @@
-The command is defined in the \c Core component of the \c Qt6 package. Load the package with:
+The command is defined in the \c Core component of the \c Qt6 package, which
+can be loaded like so:
 
-\code
-find_package(Qt6 COMPONENTS Core REQUIRED)
+\badcode
+find_package(Qt6 REQUIRED COMPONENTS Core)
 \endcode

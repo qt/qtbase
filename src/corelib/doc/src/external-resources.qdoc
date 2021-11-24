@@ -105,3 +105,28 @@
     \externalpage https://developer.android.com/training/articles/perf-anr
     \title Android: Keeping your app responsive
 */
+
+/*!
+    \externalpage https://cmake.org/cmake/help/latest/module/GNUInstallDirs.html
+    \title GNUInstallDirs
+*/
+
+/*!
+    \externalpage https://cmake.org/cmake/help/latest/command/install.html#targets
+    \title install(TARGETS)
+*/
+
+/*!
+    \externalpage https://cmake.org/cmake/help/latest/command/install.html#script
+    \title install(SCRIPT)
+*/
+
+/*!
+    \externalpage https://cmake.org/cmake/help/latest/command/add_subdirectory.html
+    \title add_subdirectory()
+*/
+
+/*!
+    \externalpage https://cmake.org/cmake/help/latest/module/FetchContent.html#command:fetchcontent_makeavailable
+    \title FetchContent_MakeAvailable()
+*/

@@ -25,6 +25,12 @@
 **
 ****************************************************************************/
 
+/* NOTE: The variables documented here are available when running CMake, they
+**       are not available in a deployment script. Both these and the set of
+**       deploy-time variables are all members of the cmake-variables-qtcore
+**       group.
+**/
+
 /*!
 \group cmake-variables-qtcore
 \title CMake Variables in Qt6 Core
@@ -158,7 +164,55 @@ Set \c QT_NO_SET_XCODE_BUNDLE_IDENTIFIER to true if you want to prevent this.
 
 \preliminarycmakevariable
 
-Enables verbose mode of the androiddeployqt deployment tool when it is implicitly called
-inside the Qt CMake commands.
+Enables verbose mode of the \l androiddeployqt deployment tool when it is called
+internally at build time, usually during target finalization.
 
+This variable also changes the default verbosity of install-time deployment
+scripts for other platforms (see \l{qt_deploy_runtime_dependencies()}), but it
+must be set before the first \c{find_package(Qt6)} call to have that effect.
 */
+
+/*!
+\page cmake-variable-QT_DEPLOY_SUPPORT.html
+\ingroup cmake-variables
+\ingroup cmake-variables-qtcore
+
+\title QT_DEPLOY_SUPPORT
+\target cmake-variable-QT_DEPLOY_SUPPORT
+
+\summary {Name of the file to include for setting up deployment support.}
+
+This variable is set by the Core package. It is intended to be used as the first
+line of any deployment script. Such scripts do not run during CMake's configure
+phase, they are executed during installation or as part of a post-build rule.
+
+The following example shows one way the variable would be used when installing
+an application, along with its runtime dependencies:
+
+\include cmake-deploy-runtime-dependencies.qdocinc
+
+\sa qt_deploy_runtime_dependencies(), qt_deploy_qml_imports()
+*/
+
+/*!
+\page cmake-variable-QT_NO_STANDARD_PROJECT_SETUP.html
+\ingroup cmake-variables
+\ingroup cmake-variables-qtcore
+
+\title QT_NO_STANDARD_PROJECT_SETUP
+\target cmake-variable-QT_NO_STANDARD_PROJECT_SETUP
+
+\summary {Prevents subsequent calls to qt_standard_project_setup() from making any changes.}
+
+The \l{qt6_standard_project_setup}{qt_standard_project_setup()} command is
+typically called in the top level \c{CMakeLists.txt} file of a project. In some
+scenarios, such projects may be absorbed as a child project of a larger project
+hierarchy. A parent project may want to prevent any child project from applying
+changes to the setup. The parent project can achieve this by setting
+\c{QT_NO_STANDARD_PROJECT_SETUP} to true before bringing in the child project
+via \l{add_subdirectory()}, \l{FetchContent_MakeAvailable()} or other similar
+methods provided by CMake.
+
+\sa {qt6_standard_project_setup}{qt_standard_project_setup()}
+*/
+

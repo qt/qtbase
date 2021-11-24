@@ -1,0 +1,187 @@
+/****************************************************************************
+**
+** Copyright (C) 2021 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file. Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: https://www.gnu.org/licenses/fdl-1.3.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/* NOTE: The variables documented here are available when running a deploy
+**       script, they are not available at configure time (i.e. when running
+**       CMake). Both these and the set of configure-time variables are all
+**       members of the cmake-variables-qtcore group.
+**/
+
+/*!
+\page cmake-variable-QT_DEPLOY_PREFIX.html
+\ingroup cmake-variables
+\ingroup cmake-variables-qtcore
+
+\title QT_DEPLOY_PREFIX
+\target cmake-variable-QT_DEPLOY_PREFIX
+
+\summary {Base location for a deployment.}
+
+\include cmake-deploy-var-usage.qdocinc
+
+\c{QT_DEPLOY_PREFIX} provides the base directory of the deployment. The other
+\c{QT_DEPLOY_..._DIR} variables should be treated as relative to this location.
+The value of \c{QT_DEPLOY_PREFIX} may be relative or absolute, so projects
+should not assume one or the other in any given situation. A relative path is
+expected to be treated as relative to the current working directory.
+
+The default value is \c{$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}}, which is the
+base location CMake uses during installation. If that evaluates to an empty
+string, the default value will be a dot (.) instead, which is generally the
+appropriate value when deploying as part of a post-build rule. This two-step
+fallback logic ensures that projects can assume \c{QT_DEPLOY_PREFIX} will not
+be an empty string, so it can safely be used as part of a path like
+\c{${QT_DEPLOY_PREFIX}/${QT_DEPLOY_BIN_DIR}}.
+
+Projects should rarely need to use this variable. In typical scenarios, deploy
+scripts should assume that the working directory is already set to the base
+install location and just use the prefix-relative \c{QT_DEPLOY_..._DIR}
+variables.
+
+\sa QT_DEPLOY_SUPPORT, QT_DEPLOY_BIN_DIR, QT_DEPLOY_LIB_DIR,
+    QT_DEPLOY_PLUGINS_DIR, QT_DEPLOY_QML_DIR
+*/
+
+/*!
+\page cmake-variable-QT_DEPLOY_BIN_DIR.html
+\ingroup cmake-variables
+\ingroup cmake-variables-qtcore
+
+\title QT_DEPLOY_BIN_DIR
+\target cmake-variable-QT_DEPLOY_BIN_DIR
+
+\summary {Prefix-relative subdirectory for deploying runtime binaries on some target platforms.}
+
+\include cmake-deploy-var-usage.qdocinc
+
+Projects should use \c QT_DEPLOY_BIN_DIR in their deploy scripts instead of
+hard-coding a particular directory in which to deploy the following types of
+binaries:
+
+\list
+\li Executables on all platforms.
+\li DLLs on Windows.
+\endlist
+
+\c QT_DEPLOY_BIN_DIR defaults to the value of \c${CMAKE_INSTALL_BINDIR}, which
+is provided by CMake's \l{GNUInstallDirs} module.
+
+This variable is not meaningful when deploying into a macOS app bundle and
+should not be used for that scenario.
+
+\section1 Example
+
+\include cmake-deploy-runtime-dependencies.qdocinc
+
+\sa QT_DEPLOY_SUPPORT, QT_DEPLOY_PREFIX, QT_DEPLOY_LIB_DIR,
+    QT_DEPLOY_PLUGINS_DIR, QT_DEPLOY_QML_DIR
+*/
+
+/*!
+\page cmake-variable-QT_DEPLOY_LIB_DIR.html
+\ingroup cmake-variables
+\ingroup cmake-variables-qtcore
+
+\title QT_DEPLOY_LIB_DIR
+\target cmake-variable-QT_DEPLOY_LIB_DIR
+
+\summary {Prefix-relative subdirectory for deploying libraries on some target platforms.}
+
+\include cmake-deploy-var-usage.qdocinc
+
+Projects should use \c QT_DEPLOY_LIB_DIR in their deploy scripts instead of
+hard-coding a particular directory in which to deploy the following types of
+binaries:
+
+\list
+\li Shared libraries on platforms other than Windows.
+\li Import libraries on Windows.
+\endlist
+
+\c QT_DEPLOY_LIB_DIR defaults to the value of \c${CMAKE_INSTALL_LIBDIR}, which
+is provided by CMake's \l{GNUInstallDirs} module.
+
+This variable is not meaningful when deploying into a macOS app bundle and
+should not be used for that scenario.
+
+\sa QT_DEPLOY_SUPPORT, QT_DEPLOY_PREFIX, QT_DEPLOY_BIN_DIR,
+    QT_DEPLOY_PLUGINS_DIR, QT_DEPLOY_QML_DIR
+*/
+
+/*!
+\page cmake-variable-QT_DEPLOY_PLUGINS_DIR.html
+\ingroup cmake-variables
+\ingroup cmake-variables-qtcore
+
+\title QT_DEPLOY_PLUGINS_DIR
+\target cmake-variable-QT_DEPLOY_PLUGINS_DIR
+
+\summary {Prefix-relative subdirectory for deploying Qt plugins on some target platforms.}
+
+\include cmake-deploy-var-usage.qdocinc
+
+Projects should use \c QT_DEPLOY_PLUGINS_DIR in their deploy scripts instead of
+hard-coding a particular directory under which to deploy plugins.
+
+\c QT_DEPLOY_PLUGINS_DIR defaults to the value \c{plugins}.
+
+This variable is not meaningful when deploying into a macOS app bundle and
+should not be used for that scenario. Apple's macOS app bundle guidelines
+require all plugins to be deployed to the \c{PlugIns} subdirectory of the
+bundle contents.
+
+\sa QT_DEPLOY_SUPPORT, QT_DEPLOY_PREFIX, QT_DEPLOY_BIN_DIR, QT_DEPLOY_LIB_DIR,
+    QT_DEPLOY_QML_DIR
+*/
+
+/*!
+\page cmake-variable-QT_DEPLOY_QML_DIR.html
+\ingroup cmake-variables
+\ingroup cmake-variables-qtcore
+
+\title QT_DEPLOY_QML_DIR
+\target cmake-variable-QT_DEPLOY_QML_DIR
+
+\summary {Prefix-relative subdirectory for deploying QML plugins on some target platforms.}
+
+\include cmake-deploy-var-usage.qdocinc
+
+Projects should use \c QT_DEPLOY_QML_DIR in their deploy scripts instead of
+hard-coding a particular directory under which to deploy QML modules.
+
+\c QT_DEPLOY_QML_DIR defaults to the value \c{qml}.
+
+This variable is not meaningful when deploying into a macOS app bundle and
+should not be used for that scenario. Apple's macOS app bundle guidelines
+require all plugins to be deployed to the \c{PlugIns} subdirectory of the
+bundle contents, and all other non-binary files should generally be under the
+\c{Resources} subdirectory. The different parts of a QML module therefore need
+to be deployed to different locations within the app bundle.
+
+\sa QT_DEPLOY_SUPPORT, QT_DEPLOY_PREFIX, QT_DEPLOY_BIN_DIR, QT_DEPLOY_LIB_DIR,
+    QT_DEPLOY_PLUGINS_DIR
+*/

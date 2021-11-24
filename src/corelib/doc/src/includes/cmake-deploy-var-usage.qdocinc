@@ -1,0 +1,2 @@
+This variable is defined by the script named by \l QT_DEPLOY_SUPPORT. It should
+only be used as part of deployment during installation or a post-build rule.

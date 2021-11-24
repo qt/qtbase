@@ -1,0 +1,105 @@
+/****************************************************************************
+**
+** Copyright (C) 2021 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file. Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: https://www.gnu.org/licenses/fdl-1.3.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+\page qt_generate_deploy_app_script.html
+\ingroup cmake-commands-qtcore
+
+\title qt_generate_deploy_app_script
+\target qt6_generate_deploy_app_script
+
+\summary {Generate a deployment script for an application.}
+
+\include cmake-find-package-core.qdocinc
+
+\section1 Synopsis
+
+\badcode
+qt_generate_deploy_app_script(
+    TARGET target
+    FILENAME_VARIABLE var_name
+    [NO_UNSUPPORTED_PLATFORM_ERROR]
+)
+\endcode
+
+\versionlessCMakeCommandsNote qt6_generate_deploy_app_script()
+
+\section1 Description
+
+Installing an executable target with \l{install(TARGETS)} only installs the
+target's executable (except for macOS app bundles, which will copy the whole
+bundle). You need to explicitly install any other libraries or plugins the
+executable depends on yourself. \c{qt_generate_deploy_app_script()} is a
+convenience command intended to simplify that process. It expects the
+application to follow Qt's recommended install directory structure fairly
+closely. That structure is based on CMake's default install layout, as
+determined by \l{GNUInstallDirs} (except for macOS app bundles, which follow
+Apple's requirements instead).
+
+The command generates a script whose name will be stored in the variable named
+by the \c{FILENAME_VARIABLE} option. That script is only written at CMake
+generation time. It is intended to be used with the \l{install(SCRIPT)} command,
+which should come after the application's target has been installed using
+\l{install(TARGETS)}.
+
+The deployment script will call \l{qt_deploy_runtime_dependencies()} with a
+suitable set of options for the standard install layout. This is currently only
+implemented for macOS app bundles and Windows targets.
+Calling \c{qt_generate_deploy_app_script()} for any other platform will result
+in a fatal error, unless the \c{NO_UNSUPPORTED_PLATFORM_ERROR} option is given.
+
+For deploying a QML application, use
+\l{qt6_generate_deploy_qml_app_script}{qt_generate_deploy_qml_app_script()}
+instead.
+
+\sa {qt6_standard_project_setup}{qt_standard_project_setup()},
+    {qt6_generate_deploy_qml_app_script}{qt_generate_deploy_qml_app_script()}
+
+\section1 Example
+
+\badcode
+cmake_minimum_required(VERSION 3.16...3.22)
+project(MyThings)
+
+find_package(Qt6 REQUIRED COMPONENTS Core)
+qt_standard_project_setup()
+
+qt_add_executable(MyApp main.cpp)
+
+install(TARGETS MyApp
+    BUNDLE  DESTINATION .
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+
+qt_generate_deploy_app_script(
+    TARGET MyApp
+    FILENAME_VARIABLE deploy_script
+    NO_UNSUPPORTED_PLATFORM_ERROR
+)
+install(SCRIPT ${deploy_script})
+\endcode
+*/
