@@ -2540,6 +2540,8 @@ recalc_minmax_widths:
             for (int n = 0; n < cspan; ++n) {
                 const int col = i + n;
                 QFixed w = widthToDistribute / (cspan - n);
+                if (td->maxWidths[col] != QFIXED_MAX)
+                    w = qMax(td->maxWidths[col], w);
                 td->maxWidths[col] = qMax(td->minWidths.at(col), w);
                 widthToDistribute -= td->maxWidths.at(col);
                 if (widthToDistribute <= 0)
