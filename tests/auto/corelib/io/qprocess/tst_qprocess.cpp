@@ -1236,6 +1236,10 @@ void tst_QProcess::processInAThread()
 
 void tst_QProcess::processesInMultipleThreads()
 {
+#if defined(Q_OS_QNX)
+    QSKIP("QNX: Large amount of threads is unstable and do not finish in given time");
+#endif
+
     for (int i = 0; i < 10; ++i) {
         // run from 1 to 10 threads, but run at least some tests
         // with more threads than the ideal
