@@ -2902,10 +2902,12 @@ void tst_QDateTime::fromStringStringFormat_localTimeZone_data()
     QTest::addColumn<QString>("string");
     QTest::addColumn<QString>("format");
     QTest::addColumn<QDateTime>("expected");
+    bool lacksRows = true;
 
 #if QT_CONFIG(timezone)
     QTimeZone etcGmtWithOffset("Etc/GMT+3");
     if (etcGmtWithOffset.isValid()) {
+        lacksRows = false;
         QTest::newRow("local-timezone-with-offset:Etc/GMT+3") << QByteArrayLiteral("GMT")
             << QString("2008-10-13 Etc/GMT+3 11.50") << QString("yyyy-MM-dd t hh.mm")
             << QDateTime(QDate(2008, 10, 13), QTime(11, 50), etcGmtWithOffset);
@@ -2916,18 +2918,21 @@ void tst_QDateTime::fromStringStringFormat_localTimeZone_data()
     }
     QTimeZone gmtWithOffset("GMT-2");
     if (gmtWithOffset.isValid()) {
+        lacksRows = false;
         QTest::newRow("local-timezone-with-offset:GMT-2") << QByteArrayLiteral("GMT")
             << QString("2008-10-13 GMT-2 11.50") << QString("yyyy-MM-dd t hh.mm")
             << QDateTime(QDate(2008, 10, 13), QTime(11, 50), gmtWithOffset);
     }
     QTimeZone gmt("GMT");
     if (gmt.isValid()) {
+        lacksRows = false;
         QTest::newRow("local-timezone-with-offset:GMT") << QByteArrayLiteral("GMT")
             << QString("2008-10-13 GMT 11.50") << QString("yyyy-MM-dd t hh.mm")
             << QDateTime(QDate(2008, 10, 13), QTime(11, 50), gmt);
     }
     QTimeZone helsinki("Europe/Helsinki");
     if (helsinki.isValid()) {
+        lacksRows = false;
         // QTBUG-96861: QAsn1Element::toDateTime() tripped over an assert in
         // QTimeZonePrivate::dataForLocalTime() on macOS and iOS.
         // The first 20m 11s of 1921-05-01 were skipped, so the parser's attempt
@@ -2939,6 +2944,8 @@ void tst_QDateTime::fromStringStringFormat_localTimeZone_data()
             << QDateTime(QDate(1921, 5, 6), QTime(0, 0), Qt::UTC);
     }
 #endif
+    if (lacksRows)
+        QSKIP("Testcases all use zones unsupported on this platform");
 }
 
 void tst_QDateTime::fromStringStringFormat_localTimeZone()
