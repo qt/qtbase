@@ -124,7 +124,7 @@ void tst_QFileSystemWatcher::basicTest_data()
         + QChar(ushort(0x00DC)) // LATIN_CAPITAL_LETTER_U_WITH_DIAERESIS
         + QStringLiteral(".txt");
 
-#if !defined(Q_OS_QNX) || !defined(QT_NO_INOTIFY)
+#if !defined(QT_NO_INOTIFY)
     QTest::newRow("native backend-testfile") << "native" << testFile;
     QTest::newRow("native backend-specialchars") << "native" << specialCharacterFile;
 #endif
@@ -418,7 +418,7 @@ void tst_QFileSystemWatcher::addPaths()
 {
     QFileSystemWatcher watcher;
     QStringList paths;
-    paths << QDir::homePath() << QDir::currentPath();
+    paths << QDir::homePath() << QDir::tempPath();
     QCOMPARE(watcher.addPaths(paths), QStringList());
     QCOMPARE(watcher.directories().count(), 2);
 
@@ -486,7 +486,7 @@ void tst_QFileSystemWatcher::removePaths()
 {
     QFileSystemWatcher watcher;
     QStringList paths;
-    paths << QDir::homePath() << QDir::currentPath();
+    paths << QDir::homePath() << QDir::tempPath();
     QCOMPARE(watcher.addPaths(paths), QStringList());
     QCOMPARE(watcher.directories().count(), 2);
     QCOMPARE(watcher.removePaths(paths), QStringList());
