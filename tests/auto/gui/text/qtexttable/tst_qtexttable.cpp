@@ -44,6 +44,7 @@
 #include <QPainter>
 #include <QPaintEngine>
 #endif
+#include <private/qtextdocumentlayout_p.h>
 #include <private/qpagedpaintdevice_p.h>
 
 typedef QList<int> IntList;
@@ -99,6 +100,10 @@ private slots:
 #endif
     void checkBorderAttributes_data();
     void checkBorderAttributes();
+
+#ifndef QT_NO_WIDGETS
+    void columnWidthWithSpans();
+#endif
 
 private:
     QTextTable *create2x2Table();
@@ -1277,6 +1282,29 @@ void tst_QTextTable::checkBorderAttributes()
         }
     }
 }
+
+#ifndef QT_NO_WIDGETS
+void tst_QTextTable::columnWidthWithSpans()
+{
+    cleanup();
+    init();
+    QTextTable *table = cursor.insertTable(4, 4);
+    QTextEdit textEdit;
+    textEdit.setDocument(doc);
+    textEdit.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&textEdit));
+
+    for (int i = 0; i < table->columns(); ++i)
+        table->cellAt(0, i).firstCursorPosition().insertText(QString("Header %1").arg(i));
+
+    QTextBlock block = table->cellAt(0, 0).firstCursorPosition().block();
+    const QRectF beforeRect = table->document()->documentLayout()->blockBoundingRect(block);
+    table->mergeCells(1, 0, 1, table->columns());
+    block = table->cellAt(0, 0).firstCursorPosition().block();
+    const QRectF afterRect = table->document()->documentLayout()->blockBoundingRect(block);
+    QCOMPARE(afterRect, beforeRect);
+}
+#endif
 
 QTEST_MAIN(tst_QTextTable)
 #include "tst_qtexttable.moc"
