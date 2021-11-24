@@ -373,10 +373,22 @@ function(qt6_android_add_apk_target target)
     if(QT_ENABLE_VERBOSE_DEPLOYMENT)
         list(APPEND extra_args "--verbose")
     endif()
+
     # The DEPFILE argument to add_custom_command is only available with Ninja or CMake>=3.20 and
     # make.
     if(CMAKE_GENERATOR MATCHES "Ninja" OR
         (CMAKE_VERSION VERSION_GREATER_EQUAL 3.20 AND CMAKE_GENERATOR MATCHES "Makefiles"))
+        cmake_policy(PUSH)
+        if(POLICY CMP0116)
+            # Without explicitly setting this policy to NEW, we get a warning
+            # even though we ensure there's actually no problem here.
+            # See https://gitlab.kitware.com/cmake/cmake/-/issues/21959
+            cmake_policy(SET CMP0116 NEW)
+            set(relative_to_dir ${CMAKE_CURRENT_BINARY_DIR})
+        else()
+            set(relative_to_dir ${CMAKE_BINARY_DIR})
+        endif()
+
         # Add custom command that creates the apk and triggers rebuild if files listed in
         # ${dep_file_path} are changed.
         add_custom_command(OUTPUT "${apk_final_file_path}"
@@ -388,12 +400,13 @@ function(qt6_android_add_apk_target target)
                 --output "${apk_final_dir}"
                 --apk "${apk_final_file_path}"
                 --depfile "${dep_file_path}"
-                --builddir "${CMAKE_BINARY_DIR}"
+                --builddir "${relative_to_dir}"
                 ${extra_args}
             COMMENT "Creating APK for ${target}"
             DEPENDS "${target}" "${deployment_file}" ${extra_deps}
             DEPFILE "${dep_file_path}"
         )
+        cmake_policy(POP)
 
         # Create a ${target}_make_apk target to trigger the apk build.
         add_custom_target(${target}_make_apk DEPENDS "${apk_final_file_path}")
