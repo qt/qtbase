@@ -345,6 +345,18 @@ function(qt6_android_add_apk_target target)
     # The DEPFILE argument to add_custom_command is only available with Ninja or CMake>=3.20 and make.
     if (CMAKE_GENERATOR MATCHES "Ninja" OR
         (CMAKE_VERSION VERSION_GREATER_EQUAL 3.20 AND CMAKE_GENERATOR MATCHES "Makefiles"))
+
+        cmake_policy(PUSH)
+        if(POLICY CMP0116)
+            # Without explicitly setting this policy to NEW, we get a warning
+            # even though we ensure there's actually no problem here.
+            # See https://gitlab.kitware.com/cmake/cmake/-/issues/21959
+            cmake_policy(SET CMP0116 NEW)
+            set(relative_to_dir ${CMAKE_CURRENT_BINARY_DIR})
+        else()
+            set(relative_to_dir ${CMAKE_BINARY_DIR})
+        endif()
+
         # Add custom command that creates the apk in an intermediate location.
         # We need the intermediate location, because we cannot have target-dependent generator
         # expressions in OUTPUT.
@@ -357,10 +369,11 @@ function(qt6_android_add_apk_target target)
                 --output "${apk_intermediate_dir}"
                 --apk "${apk_intermediate_file_path}"
                 --depfile "${dep_intermediate_file_path}"
-                --builddir "${CMAKE_BINARY_DIR}"
+                --builddir "${relative_to_dir}"
             COMMENT "Creating APK for ${target}"
             DEPENDS "${target}" "${deployment_file}" ${extra_deps}
             DEPFILE "${dep_intermediate_file_path}")
+        cmake_policy(POP)
 
         # Create a ${target}_make_apk target to copy the apk from the intermediate to its final
         # location.  If the final and intermediate locations are identical, this is a no-op.
