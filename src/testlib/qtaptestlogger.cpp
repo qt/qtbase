@@ -125,14 +125,28 @@ void QTapTestLogger::addIncident(IncidentTypes type, const char *description,
     bool ok = type == Pass || type == BlacklistedPass || type == Skip
         || type == XPass || type == BlacklistedXPass;
 
-    QTestCharBuffer directive;
-    if (type == XFail || type == XPass || type == BlacklistedFail || type == BlacklistedPass
-            || type == BlacklistedXFail || type == BlacklistedXPass) {
+    const char *const incident = [type]() {
+        switch (type) {
         // We treat expected or blacklisted failures/passes as TODO-failures/passes,
         // which should be treated as soft issues by consumers. Not all do though :/
-        QTest::qt_asprintf(&directive, " # TODO %s", description);
-    } else if (type == Skip) {
-        QTest::qt_asprintf(&directive, " # SKIP %s", description);
+        case BlacklistedPass:
+        case XFail: case BlacklistedXFail:
+        case XPass: case BlacklistedXPass:
+        case BlacklistedFail:
+            return "TODO";
+        case Skip:
+            return "SKIP";
+        case Pass:
+        case Fail:
+            break;
+        }
+        return static_cast<const char *>(nullptr);
+    }();
+
+    QTestCharBuffer directive;
+    if (incident) {
+        QTest::qt_asprintf(&directive, " # %s%s%s", incident,
+                           qstrlen(description) ? " " : "", description);
     }
 
     int testNumber = QTestLog::totalCount();

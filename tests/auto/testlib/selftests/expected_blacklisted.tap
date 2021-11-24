@@ -2,7 +2,7 @@ TAP version 13
 # tst_Blacklisted
 ok 1 - initTestCase()
 # This test should BPASS
-ok 2 - pass() # TODO 
+ok 2 - pass() # TODO
 ok 3 - skip() # SKIP This test should SKIP
 not ok 4 - fail() # TODO 'false' returned FALSE. (This test should BFAIL)
   ---
