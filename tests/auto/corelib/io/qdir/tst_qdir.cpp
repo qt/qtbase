@@ -448,6 +448,9 @@ void tst_QDir::mkdirOnSymlink()
 
     path = "two/four/five";
     fi.setFile(path);
+#if defined(Q_OS_QNX)
+    QSKIP("Fails on QNX QTBUG-98561");
+#endif
     QVERIFY2(fi.exists() && fi.isDir(), msgDoesNotExist(path).constData());
 #endif
 }
