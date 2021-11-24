@@ -1169,6 +1169,8 @@ function(qt6_extract_metatypes target)
             endif()
         endif()
 
+        set(cmake_automoc_parser_timestamp "${type_list_file}.timestamp")
+
         if (NOT use_dep_files)
             # When a project is configured with a Visual Studio generator, CMake's
             # cmQtAutoGenInitializer::InitAutogenTarget() can take one of two code paths on how to
@@ -1198,12 +1200,15 @@ function(qt6_extract_metatypes target)
 
             add_custom_target(${target}_automoc_json_extraction
                 DEPENDS ${QT_CMAKE_EXPORT_NAMESPACE}::cmake_automoc_parser
-                BYPRODUCTS ${type_list_file}
+                BYPRODUCTS
+                    ${type_list_file}
+                    "${cmake_automoc_parser_timestamp}"
                 COMMAND
                     ${QT_CMAKE_EXPORT_NAMESPACE}::cmake_automoc_parser
                     --cmake-autogen-cache-file "${cmake_autogen_cache_file}"
                     --cmake-autogen-info-file "${cmake_autogen_info_file}"
                     --output-file-path "${type_list_file}"
+                    --timestamp-file-path "${cmake_automoc_parser_timestamp}"
                     ${multi_config_args}
                 COMMENT "Running AUTOMOC file extraction for target ${target}"
                 COMMAND_EXPAND_LISTS
@@ -1217,11 +1222,13 @@ function(qt6_extract_metatypes target)
             add_custom_command(OUTPUT ${type_list_file}
                 DEPENDS ${QT_CMAKE_EXPORT_NAMESPACE}::cmake_automoc_parser
                     ${cmake_autogen_timestamp_file}
+                BYPRODUCTS "${cmake_automoc_parser_timestamp}"
                 COMMAND
                     ${QT_CMAKE_EXPORT_NAMESPACE}::cmake_automoc_parser
                     --cmake-autogen-cache-file "${cmake_autogen_cache_file}"
                     --cmake-autogen-info-file "${cmake_autogen_info_file}"
                     --output-file-path "${type_list_file}"
+                    --timestamp-file-path "${cmake_automoc_parser_timestamp}"
                     ${multi_config_args}
                 COMMENT "Running AUTOMOC file extraction for target ${target}"
                 COMMAND_EXPAND_LISTS

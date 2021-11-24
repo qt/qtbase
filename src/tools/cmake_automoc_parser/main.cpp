@@ -30,6 +30,7 @@
 
 #include <cstdio>
 #include <cstdlib>
+#include <limits>
 
 #include <qcommandlineoption.h>
 #include <qcommandlineparser.h>
@@ -46,6 +47,7 @@
 #include <qset.h>
 #include <qstring.h>
 #include <qstack.h>
+#include <qdatastream.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -194,38 +196,52 @@ static bool readParseCache(ParseCacheMap &entries, const QString &parseCacheFile
     return true;
 }
 
-static bool readJsonFiles(QList<QString> &entries, const QString &filePath)
+static bool writeJsonFiles(const QList<QString> &fileList, const QString &fileListFilePath,
+                           const QString &timestampFilePath)
 {
-
-    QFile file(filePath);
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        fprintf(stderr, "Could not open: %s\n", qPrintable(filePath));
+    QFile timestampFile(timestampFilePath);
+    if (!timestampFile.open(QIODevice::ReadWrite)) {
+        fprintf(stderr, "Could not open: %s\n", qPrintable(timestampFilePath));
         return false;
     }
 
-    QTextStream textStream(&file);
-    QString line;
-    while (textStream.readLineInto(&line)) {
-        entries.push_back(line);
-    }
-    file.close();
-    return true;
-}
-
-static bool writeJsonFiles(const QList<QString> &fileList, const QString &fileListFilePath)
-{
-    QFile file(fileListFilePath);
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        fprintf(stderr, "Could not open: %s\n", qPrintable(fileListFilePath));
-        return false;
+    qint64 timestamp = std::numeric_limits<qint64>::min();
+    QByteArray timestampBuffer = timestampFile.readAll();
+    if (timestampBuffer.size() == sizeof(timestamp)) {
+        QDataStream istream(&timestampBuffer, QIODevice::ReadOnly);
+        istream >> timestamp;
     }
 
-    QTextStream textStream(&file);
-    for (const auto &file : fileList) {
-        textStream << file << Qt::endl;
+    // Check if any of the metatype json files produced by automoc is newer than the last file
+    // processed by cmake_automoc parser
+    for (const auto &jsonFile : fileList) {
+        const qint64 jsonFileLastModified =
+                QFileInfo(jsonFile).lastModified().toMSecsSinceEpoch();
+        if (jsonFileLastModified > timestamp) {
+            timestamp = jsonFileLastModified;
+        }
     }
 
-    file.close();
+    if (timestamp != std::numeric_limits<qint64>::min() || !QFile::exists(fileListFilePath)) {
+        QFile file(fileListFilePath);
+        if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+            fprintf(stderr, "Could not open: %s\n", qPrintable(fileListFilePath));
+            return false;
+        }
+
+        QTextStream textStream(&file);
+        for (const auto &jsonFile : fileList) {
+            textStream << jsonFile << Qt::endl;
+        }
+        textStream.flush();
+
+        // Update the timestamp according the newest json file timestamp.
+        timestampBuffer.clear();
+        QDataStream ostream(&timestampBuffer, QIODevice::WriteOnly);
+        ostream << timestamp;
+        timestampFile.resize(0);
+        timestampFile.write(timestampBuffer);
+    }
     return true;
 }
 
@@ -269,6 +285,13 @@ int main(int argc, char **argv)
     isMultiConfigOption.setDescription(
             QStringLiteral("Set this option when using CMake with a multi-config generator"));
     parser.addOption(isMultiConfigOption);
+
+    QCommandLineOption timestampFilePathOption(QStringLiteral("timestamp-file-path"));
+    timestampFilePathOption.setDescription(
+            QStringLiteral("The path to a timestamp file that determines whether the output"
+                           " file needs to be updated."));
+    timestampFilePathOption.setValueName(QStringLiteral("timestamp file"));
+    parser.addOption(timestampFilePathOption);
 
     QStringList arguments = QCoreApplication::arguments();
     parser.process(arguments);
@@ -378,19 +401,9 @@ int main(int argc, char **argv)
     jsonFileList.sort();
 
     // Read Previous file list (if any)
-    const QString fileListFilePath = parser.value(outputFileOption);
-    QList<QString> previousList;
-    QFile prev_file(fileListFilePath);
-
-    // Only try to open file if it exists to avoid error messages
-    if (prev_file.exists()) {
-        (void)readJsonFiles(previousList, fileListFilePath);
-    }
-
-    if (previousList != jsonFileList || !QFile(fileListFilePath).exists()) {
-        if (!writeJsonFiles(jsonFileList, fileListFilePath)) {
-            return EXIT_FAILURE;
-        }
+    if (!writeJsonFiles(jsonFileList, parser.value(outputFileOption),
+                        parser.value(timestampFilePathOption))) {
+        return EXIT_FAILURE;
     }
 
     return EXIT_SUCCESS;

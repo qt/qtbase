@@ -282,3 +282,5 @@ _qt_internal_test_expect_pass(test_static_resources
                               BINARY_ARGS "-V")
 
 _qt_internal_test_expect_pass(test_generating_cpp_exports)
+
+_qt_internal_test_expect_pass(test_qt_extract_metatypes)
