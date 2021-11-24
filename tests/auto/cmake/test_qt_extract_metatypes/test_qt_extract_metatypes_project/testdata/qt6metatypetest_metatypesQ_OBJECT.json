@@ -1,0 +1,19 @@
+[
+    {
+        "classes": [
+            {
+                "className": "MetaType",
+                "object": true,
+                "qualifiedClassName": "MetaType",
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "name": "QObject"
+                    }
+                ]
+            }
+        ],
+        "inputFile": "MetaType.h",
+        "outputRevision": 68
+    }
+]

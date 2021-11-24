@@ -280,3 +280,4 @@ _qt_internal_test_expect_pass(tst_qaddpreroutine
 _qt_internal_test_expect_pass(test_static_resources
                               BINARY "${CMAKE_CTEST_COMMAND}"
                               BINARY_ARGS "-V")
+_qt_internal_test_expect_pass(test_qt_extract_metatypes)
