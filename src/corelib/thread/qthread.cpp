@@ -986,7 +986,10 @@ void QThread::setEventDispatcher(QAbstractEventDispatcher *eventDispatcher)
 
 /*!
     \fn bool QThread::wait(unsigned long time)
+
     \overload
+    \a time is the time to wait in milliseconds.
+    If \a time is ULONG_MAX, then the wait will never timeout.
 */
 
 #if QT_CONFIG(thread)
