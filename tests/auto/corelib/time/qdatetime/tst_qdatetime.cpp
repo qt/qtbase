@@ -2905,6 +2905,10 @@ void tst_QDateTime::fromStringStringFormat_localTimeZone_data()
     bool lacksRows = true;
 
 #if QT_CONFIG(timezone)
+    // Note that the localTimeZone needn't match the zone used in the string and
+    // expected date-time; indeed, having them different is probably best.
+    // Both zones need to be valid; GMT always is, so is a safe one to use for
+    // whichever the test-case doesn't care about (if that applies to either).
     QTimeZone etcGmtWithOffset("Etc/GMT+3");
     if (etcGmtWithOffset.isValid()) {
         lacksRows = false;
