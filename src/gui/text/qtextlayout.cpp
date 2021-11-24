@@ -1108,6 +1108,7 @@ void QTextLayout::draw(QPainter *p, const QPointF &pos, const QList<FormatRange>
             QRectF lineRect(tl.naturalTextRect());
             lineRect.translate(position);
             lineRect.adjust(0, 0, d->leadingSpaceWidth(sl).toReal(), 0);
+            lineRect.setBottom(qCeil(lineRect.bottom()));
 
             bool isLastLineInBlock = (line == d->lines.size()-1);
             int sl_length = sl.length + (isLastLineInBlock? 1 : 0); // the infamous newline
@@ -1129,6 +1130,7 @@ void QTextLayout::draw(QPainter *p, const QPointF &pos, const QList<FormatRange>
                 QRectF fullLineRect(tl.rect());
                 fullLineRect.translate(position);
                 fullLineRect.setRight(QFIXED_MAX);
+                fullLineRect.setBottom(qCeil(fullLineRect.bottom()));
 
                 const bool rightToLeft = d->isRightToLeft();
 
