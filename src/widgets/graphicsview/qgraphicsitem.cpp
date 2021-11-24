@@ -10297,6 +10297,7 @@ bool QGraphicsTextItem::sceneEvent(QEvent *event)
     case QEvent::GraphicsSceneMouseRelease:
     case QEvent::KeyPress:
     case QEvent::KeyRelease:
+    case QEvent::InputMethod:
         // Reset the focus widget's input context, regardless
         // of how this item gained or lost focus.
         if (event->type() == QEvent::FocusIn || event->type() == QEvent::FocusOut) {
