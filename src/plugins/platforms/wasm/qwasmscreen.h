@@ -53,12 +53,13 @@ class QWasmScreen : public QObject, public QPlatformScreen
 {
     Q_OBJECT
 public:
-    QWasmScreen(const emscripten::val &canvas);
+    QWasmScreen(const emscripten::val &containerOrCanvas);
     ~QWasmScreen();
     void destroy();
 
     static QWasmScreen *get(QPlatformScreen *screen);
     static QWasmScreen *get(QScreen *screen);
+    emscripten::val container() const;
     emscripten::val canvas() const;
     QString canvasId() const;
 
@@ -86,6 +87,7 @@ public slots:
     void setGeometry(const QRect &rect);
 
 private:
+    emscripten::val m_container;
     emscripten::val m_canvas;
     std::unique_ptr<QWasmCompositor> m_compositor;
     std::unique_ptr<QWasmEventTranslator> m_eventTranslator;

@@ -142,7 +142,7 @@ function QtLoader(config)
 
     // Qt properties. These are propagated to the Emscripten module after
     // it has been created.
-    self.qtCanvasElements = undefined;
+    self.qtContainerElements = undefined;
     self.qtFontDpi = 96;
 
     function webAssemblySupported() {
@@ -431,13 +431,13 @@ function QtLoader(config)
                 module.ENV[key.toUpperCase()] = value;
             }
             // Propagate Qt module properties
-            module.qtCanvasElements = self.qtCanvasElements;
+            module.qtContainerElements = self.qtContainerElements;
             module.qtFontDpi = self.qtFontDpi;
         });
 
         self.moduleConfig.mainScriptUrlOrBlob = new Blob([emscriptenModuleSource], {type: 'text/javascript'});
 
-        self.qtCanvasElements = config.canvasElements;
+        self.qtContainerElements = config.canvasElements;
 
         config.restart = function() {
 

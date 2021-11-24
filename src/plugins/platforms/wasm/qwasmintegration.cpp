@@ -123,19 +123,34 @@ QWasmIntegration::QWasmIntegration()
             platform = AndroidPlatform;
     }
 
-    // We expect that qtloader.js has populated Module.qtCanvasElements with one or more canvases.
-    emscripten::val qtCanvaseElements = val::module_property("qtCanvasElements");
-    emscripten::val canvas = val::module_property("canvas"); // TODO: remove for Qt 6.0
-
-    if (!qtCanvaseElements.isUndefined()) {
-        int screenCount = qtCanvaseElements["length"].as<int>();
-        for (int i = 0; i < screenCount; ++i) {
-            addScreen(qtCanvaseElements[i].as<emscripten::val>());
+    // Create screens for container elements. Each container element can be a div element (preferred),
+    // or a canvas element (legacy). Qt versions prior to 6.x read the "qtCanvasElements" module property,
+    // which we continue to do to preserve compatibility. The preferred property is now "qtContainerElements".
+    emscripten::val qtContainerElements = val::module_property("qtContainerElements");
+    emscripten::val qtCanvasElements = val::module_property("qtCanvasElements");
+    if (!qtContainerElements.isUndefined()) {
+        emscripten::val length = qtContainerElements["length"];
+        int count = length.as<int>();
+        if (length.isUndefined())
+            qWarning("qtContainerElements does not have the length property set. Qt expects an array of html elements (possibly containing one element only)");
+        for (int i = 0; i < count; ++i) {
+            emscripten::val element = qtContainerElements[i].as<emscripten::val>();
+            if (element.isNull() ||element.isUndefined()) {
+                 qWarning() << "Skipping null or undefined element in qtContainerElements";
+            } else {
+                addScreen(element);
+            }
         }
-    } else if (!canvas.isUndefined()) {
-        qWarning() << "Module.canvas is deprecated. A future version of Qt will stop reading this property. "
-                   << "Instead, set Module.qtCanvasElements to be an array of canvas elements, or use qtloader.js.";
-        addScreen(canvas);
+    } else if (!qtCanvasElements.isUndefined()) {
+        qWarning() << "The qtCanvaseElements property is deprecated. Qt will stop reading"
+                   << "it in some future veresion, please use qtContainerElements instead";
+        emscripten::val length = qtCanvasElements["length"];
+        int count = length.as<int>();
+        for (int i = 0; i < count; ++i)
+            addScreen(qtCanvasElements[i].as<emscripten::val>());
+    } else {
+        // No screens, which may or may not be intended
+        qWarning() << "Note: The qtContainerElements module property was not set. Proceeding with no screens.";
     }
 
     // install browser window resize handler

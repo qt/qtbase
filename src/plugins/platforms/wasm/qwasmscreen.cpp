@@ -52,11 +52,30 @@ QT_BEGIN_NAMESPACE
 
 const char * QWasmScreen::m_canvasResizeObserverCallbackContextPropertyName = "data-qtCanvasResizeObserverCallbackContext";
 
-QWasmScreen::QWasmScreen(const emscripten::val &canvas)
-    : m_canvas(canvas)
+QWasmScreen::QWasmScreen(const emscripten::val &containerOrCanvas)
+    : m_container(containerOrCanvas)
+    , m_canvas(emscripten::val::undefined())
     , m_compositor(new QWasmCompositor(this))
     , m_eventTranslator(new QWasmEventTranslator())
 {
+    // Each screen is backed by a html canvas element. Use either
+    // a user-supplied canvas or create one as a child of the user-
+    // supplied root element.
+    std::string tagName = containerOrCanvas["tagName"].as<std::string>();
+    if (tagName == "CANVAS" || tagName == "canvas") {
+        m_canvas = containerOrCanvas;
+    } else {
+        // Create the canvas (for the correct document) as a child of the container
+        m_canvas = containerOrCanvas["ownerDocument"].call<emscripten::val>("createElement", std::string("canvas"));
+        containerOrCanvas.call<void>("appendChild", m_canvas);
+        m_canvas.set("id", std::string("qtcanvas_") + std::to_string(uint32_t(this)));
+
+        // Make the canvas occupy 100% of parent
+        emscripten::val style = m_canvas["style"];
+        style.set("width", std::string("100%"));
+        style.set("height", std::string("100%"));
+    }
+
     // Configure canvas
     emscripten::val style = m_canvas["style"];
     style.set("border", std::string("0px none"));
@@ -77,6 +96,10 @@ QWasmScreen::QWasmScreen(const emscripten::val &canvas)
     m_onContextMenu = std::make_unique<qstdweb::EventCallback>(m_canvas, "contextmenu", [](emscripten::val event){
         event.call<void>("preventDefault");
     });
+
+    // Install event handlers on the container/canvas. This must be
+    // done after the canvas has been created above.
+    m_compositor->initEventHandlers();
 
     updateQScreenAndCanvasRenderSize();
     m_canvas.call<void>("focus");
@@ -111,6 +134,11 @@ QWasmCompositor *QWasmScreen::compositor()
 QWasmEventTranslator *QWasmScreen::eventTranslator()
 {
     return m_eventTranslator.get();
+}
+
+emscripten::val QWasmScreen::container() const
+{
+    return m_container;
 }
 
 emscripten::val QWasmScreen::canvas() const

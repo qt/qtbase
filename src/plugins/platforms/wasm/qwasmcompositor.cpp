@@ -102,8 +102,6 @@ QWasmCompositor::QWasmCompositor(QWasmScreen *screen)
             QPointingDevice::Capability::Position | QPointingDevice::Capability::Area | QPointingDevice::Capability::NormalizedPosition,
             10, 0);
     QWindowSystemInterface::registerInputDevice(touchDevice);
-
-    initEventHandlers();
 }
 
 QWasmCompositor::~QWasmCompositor()

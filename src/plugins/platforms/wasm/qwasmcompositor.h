@@ -72,6 +72,7 @@ class QWasmCompositor : public QObject
 public:
     QWasmCompositor(QWasmScreen *screen);
     ~QWasmCompositor();
+    void initEventHandlers();
     void deregisterEventHandlers();
     void destroy();
 
@@ -160,7 +161,6 @@ private slots:
     void frame();
 
 private:
-    void initEventHandlers();
     void notifyTopWindowChanged(QWasmWindow *window);
     void drawWindow(QOpenGLTextureBlitter *blitter, QWasmScreen *screen, QWasmWindow *window);
     void drawWindowContent(QOpenGLTextureBlitter *blitter, QWasmScreen *screen, QWasmWindow *window);
