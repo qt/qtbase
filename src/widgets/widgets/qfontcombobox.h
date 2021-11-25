@@ -80,6 +80,12 @@ public:
     QFont currentFont() const;
     QSize sizeHint() const override;
 
+    void setSampleTextForSystem(QFontDatabase::WritingSystem writingSystem, const QString &sampleText);
+    QString sampleTextForSystem(QFontDatabase::WritingSystem writingSystem) const;
+
+    void setSampleTextForFont(const QString &fontFamily, const QString &sampleText);
+    QString sampleTextForFont(const QString &fontFamily) const;
+
 public Q_SLOTS:
     void setCurrentFont(const QFont &f);
 

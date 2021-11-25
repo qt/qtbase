@@ -178,11 +178,27 @@ static QFontDatabase::WritingSystem writingSystemForFont(const QFont &font, bool
     return QFontDatabase::Any;
 }
 
+class QFontComboBoxPrivate : public QComboBoxPrivate
+{
+public:
+    inline QFontComboBoxPrivate() { filters = QFontComboBox::AllFonts; }
+
+    QFontComboBox::FontFilters filters;
+    QFont currentFont;
+    QHash<QFontDatabase::WritingSystem, QString> sampleTextForWritingSystem;
+    QHash<QString, QString> sampleTextForFontFamily;
+
+    void _q_updateModel();
+    void _q_currentChanged(const QString &);
+
+    Q_DECLARE_PUBLIC(QFontComboBox)
+};
+
 class QFontFamilyDelegate : public QAbstractItemDelegate
 {
     Q_OBJECT
 public:
-    explicit QFontFamilyDelegate(QObject *parent);
+    explicit QFontFamilyDelegate(QObject *parent, QFontComboBoxPrivate *comboP);
 
     // painting
     void paint(QPainter *painter,
@@ -195,13 +211,15 @@ public:
     const QIcon truetype;
     const QIcon bitmap;
     QFontDatabase::WritingSystem writingSystem;
+    QFontComboBoxPrivate *comboPrivate;
 };
 
-QFontFamilyDelegate::QFontFamilyDelegate(QObject *parent)
+QFontFamilyDelegate::QFontFamilyDelegate(QObject *parent, QFontComboBoxPrivate *comboP)
     : QAbstractItemDelegate(parent),
       truetype(QStringLiteral(":/qt-project.org/styles/commonstyle/images/fonttruetype-16.png")),
       bitmap(QStringLiteral(":/qt-project.org/styles/commonstyle/images/fontbitmap-16.png")),
-      writingSystem(QFontDatabase::Any)
+      writingSystem(QFontDatabase::Any),
+      comboPrivate(comboP)
 {
 }
 
@@ -264,10 +282,11 @@ void QFontFamilyDelegate::paint(QPainter *painter,
     if (writingSystem != QFontDatabase::Any)
         system = writingSystem;
 
-    if (system != QFontDatabase::Any) {
+    const QString sampleText = comboPrivate->sampleTextForFontFamily.value(text, comboPrivate->sampleTextForWritingSystem.value(system));
+    if (system != QFontDatabase::Any || !sampleText.isEmpty()) {
         int w = painter->fontMetrics().horizontalAdvance(text + QLatin1String("  "));
         painter->setFont(font2);
-        QString sample = QFontDatabase::writingSystemSample(system);
+        const QString sample = !sampleText.isEmpty() ? sampleText : QFontDatabase::writingSystemSample(system);
         if (option.direction == Qt::RightToLeft)
             r.setRight(r.right() - w);
         else
@@ -291,21 +310,6 @@ QSize QFontFamilyDelegate::sizeHint(const QStyleOptionViewItem &option,
     QFontMetrics fontMetrics(font);
     return QSize(fontMetrics.horizontalAdvance(text), fontMetrics.height());
 }
-
-
-class QFontComboBoxPrivate : public QComboBoxPrivate
-{
-public:
-    inline QFontComboBoxPrivate() { filters = QFontComboBox::AllFonts; }
-
-    QFontComboBox::FontFilters filters;
-    QFont currentFont;
-
-    void _q_updateModel();
-    void _q_currentChanged(const QString &);
-
-    Q_DECLARE_PUBLIC(QFontComboBox)
-};
 
 
 void QFontComboBoxPrivate::_q_updateModel()
@@ -423,7 +427,7 @@ QFontComboBox::QFontComboBox(QWidget *parent)
 
     QStringListModel *m = new QStringListModel(this);
     setModel(m);
-    setItemDelegate(new QFontFamilyDelegate(this));
+    setItemDelegate(new QFontFamilyDelegate(this, d));
     QListView *lview = qobject_cast<QListView*>(view());
     if (lview)
         lview->setUniformItemSizes(true);
@@ -562,6 +566,55 @@ QSize QFontComboBox::sizeHint() const
     QFontMetrics fm(font());
     sz.setWidth(fm.horizontalAdvance(QLatin1Char('m'))*14);
     return sz;
+}
+
+/*!
+    Sets the \a sampleText to show after the font name (when the combo is open) for a given \a writingSystem.
+
+    The sample text given with setSampleTextForFont() has priority.
+
+    \since 6.3
+*/
+void QFontComboBox::setSampleTextForSystem(QFontDatabase::WritingSystem writingSystem, const QString &sampleText)
+{
+    Q_D(QFontComboBox);
+    d->sampleTextForWritingSystem[writingSystem] = sampleText;
+}
+
+
+/*!
+    Returns the sample text to show after the font name (when the combo is open) for a given \a writingSystem.
+
+    \since 6.3
+*/
+QString QFontComboBox::sampleTextForSystem(QFontDatabase::WritingSystem writingSystem) const
+{
+    Q_D(const QFontComboBox);
+    return d->sampleTextForWritingSystem.value(writingSystem);
+}
+
+/*!
+    Sets the \a sampleText to show after the font name (when the combo is open) for a given \a fontFamily.
+
+    The sample text given with this function has priority over the one set with setSampleTextForSystem().
+
+    \since 6.3
+*/
+void QFontComboBox::setSampleTextForFont(const QString &fontFamily, const QString &sampleText)
+{
+    Q_D(QFontComboBox);
+    d->sampleTextForFontFamily[fontFamily] = sampleText;
+}
+
+/*!
+    Returns the sample text to show after the font name (when the combo is open) for a given \a fontFamily.
+
+    \since 6.3
+*/
+QString QFontComboBox::sampleTextForFont(const QString &fontFamily) const
+{
+    Q_D(const QFontComboBox);
+    return d->sampleTextForFontFamily.value(fontFamily);
 }
 
 QT_END_NAMESPACE
