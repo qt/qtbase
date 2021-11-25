@@ -187,6 +187,7 @@ public:
     QFont currentFont;
     QHash<QFontDatabase::WritingSystem, QString> sampleTextForWritingSystem;
     QHash<QString, QString> sampleTextForFontFamily;
+    QHash<QString, QFont> displayFontForFontFamily;
 
     void _q_updateModel();
     void _q_currentChanged(const QString &);
@@ -237,6 +238,8 @@ void QFontFamilyDelegate::paint(QPainter *painter,
     QFontDatabase::WritingSystem system = writingSystemForFont(font2, &hasLatin);
     if (hasLatin)
         font = font2;
+
+    font = comboPrivate->displayFontForFontFamily.value(text, font);
 
     QRect r = option.rect;
 
@@ -615,6 +618,28 @@ QString QFontComboBox::sampleTextForFont(const QString &fontFamily) const
 {
     Q_D(const QFontComboBox);
     return d->sampleTextForFontFamily.value(fontFamily);
+}
+
+/*!
+    Sets the \a font to be used to display a given \a fontFamily (when the combo is open).
+
+    \since 6.3
+*/
+void QFontComboBox::setDisplayFont(const QString &fontFamily, const QFont &font)
+{
+    Q_D(QFontComboBox);
+    d->displayFontForFontFamily[fontFamily] = font;
+}
+
+/*!
+    Returns the font (if set) to be used to display a given \a fontFamily (when the combo is open).
+
+    \since 6.3
+*/
+std::optional<QFont> QFontComboBox::displayFont(const QString &fontFamily) const
+{
+    Q_D(const QFontComboBox);
+    return d->displayFontForFontFamily.value(fontFamily, {});
 }
 
 QT_END_NAMESPACE

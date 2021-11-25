@@ -86,6 +86,9 @@ public:
     void setSampleTextForFont(const QString &fontFamily, const QString &sampleText);
     QString sampleTextForFont(const QString &fontFamily) const;
 
+    void setDisplayFont(const QString &fontFamily, const QFont &font);
+    std::optional<QFont> displayFont(const QString &fontFamily) const;
+
 public Q_SLOTS:
     void setCurrentFont(const QFont &f);
 
