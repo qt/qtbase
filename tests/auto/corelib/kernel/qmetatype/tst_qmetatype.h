@@ -48,6 +48,14 @@ struct MessageHandlerCustom : public MessageHandler
     inline static QString expectedMessage;
 };
 
+/* QNX's compiler requires too many resources, letting the CI system abort the test
+* mingw is blacklisted due to issues with gcc 4.8
+* ### TODO: Check if mingw can be safely removed
+*/
+#if defined(__MINGW32__) || defined(Q_OS_QNX)
+# define TST_QMETATYPE_BROKEN_COMPILER
+#endif
+
 class tst_QMetaType: public QObject
 {
     Q_OBJECT
