@@ -1,0 +1,2 @@
+qt_internal_add_example(bindablesubscription)
+qt_internal_add_example(subscription)
