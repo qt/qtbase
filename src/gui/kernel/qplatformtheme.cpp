@@ -169,7 +169,11 @@ QT_BEGIN_NAMESPACE
 
     \value ShowDirectoriesFirst (bool) Whether directories should be shown
            first (before files) in file dialogs.
-           This enum value was added in Qt 6.2.
+           This enum value was added in Qt 6.3.
+
+    \value PreselectFirstFileInDirectory (bool) Whether the first file in a directory
+           should be automatically selected when a file dialog opens.
+           This enum value was added in Qt 6.3.
 
     \sa themeHint(), QStyle::pixelMetric()
 */
@@ -580,6 +584,8 @@ QVariant QPlatformTheme::defaultThemeHint(ThemeHint hint)
         return true;
     case ShowDirectoriesFirst:
         return true;
+    case PreselectFirstFileInDirectory:
+        return false;
     }
     return QVariant();
 }

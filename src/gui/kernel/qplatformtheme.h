@@ -122,6 +122,7 @@ public:
         MouseQuickSelectionThreshold,
         InteractiveResizeAcrossScreens,
         ShowDirectoriesFirst,
+        PreselectFirstFileInDirectory,
     };
     Q_ENUM(ThemeHint)
 
