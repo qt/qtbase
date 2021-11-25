@@ -29,7 +29,7 @@
 
 #include <QTest>
 
-
+#include <qbuffer.h>
 #include <qtextdocument.h>
 #include <qtextdocumentfragment.h>
 #include <qtexttable.h>
@@ -103,6 +103,9 @@ private slots:
 
 #ifndef QT_NO_WIDGETS
     void columnWidthWithSpans();
+
+    void columnWidthWithImage_data();
+    void columnWidthWithImage();
 #endif
 
 private:
@@ -1304,7 +1307,63 @@ void tst_QTextTable::columnWidthWithSpans()
     const QRectF afterRect = table->document()->documentLayout()->blockBoundingRect(block);
     QCOMPARE(afterRect, beforeRect);
 }
+
+void tst_QTextTable::columnWidthWithImage_data()
+{
+    const auto imageHtml = [](int width, int height) {
+        QImage image(width, height, QImage::Format_RGB32);
+        image.fill(Qt::red);
+        QByteArray imageBytes;
+        QBuffer buffer(&imageBytes);
+        buffer.open(QIODevice::WriteOnly);
+        image.save(&buffer, "png");
+        return QString("<td><img src='data:image/png;base64,%1'/></td>").arg(imageBytes.toBase64());
+    };
+
+    QTest::addColumn<QString>("leftHtml");
+    QTest::addColumn<QString>("rightHtml");
+    QTest::addColumn<QSize>("imageSize");
+    QTest::addRow("image")
+        << imageHtml(500, 32) << "<td></td>" << QSize(500, 32);
+    QTest::addRow("image, text")
+        << imageHtml(32, 32) << "<td>abc</td>" << QSize(32, 32);
+    QTest::addRow("image, 100%% text")
+        << imageHtml(32, 32) << "<td style='background-color: grey' width='100%'>abc</td>"
+        << QSize(32, 32);
+    QTest::addRow("image, image")
+        << imageHtml(256, 32) << imageHtml(256, 32) << QSize(256, 32);
+}
+
+void tst_QTextTable::columnWidthWithImage()
+{
+    const QString tableTemplate = "<table><tr>%1 %2</tr></table>";
+
+    QFETCH(QString, leftHtml);
+    QFETCH(QString, rightHtml);
+    QFETCH(QSize, imageSize);
+
+    QTextDocument doc;
+    doc.setHtml(tableTemplate.arg(leftHtml).arg(rightHtml));
+    QTextEdit textEdit;
+    textEdit.setDocument(&doc);
+    textEdit.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&textEdit));
+
+    QTextCursor cursor(doc.firstBlock());
+    cursor.movePosition(QTextCursor::Right);
+
+    QTextTable *currentTable = cursor.currentTable();
+    QVERIFY(currentTable);
+
+    QTextBlock block = currentTable->cellAt(0, 0).firstCursorPosition().block();
+    const QRectF leftRect = currentTable->document()->documentLayout()->blockBoundingRect(block);
+    block = currentTable->cellAt(0, 1).firstCursorPosition().block();
+    const QRectF rightRect = currentTable->document()->documentLayout()->blockBoundingRect(block);
+    QCOMPARE(leftRect.size().toSize(), imageSize);
+    QVERIFY(rightRect.left() > leftRect.right());
+}
 #endif
+
 
 QTEST_MAIN(tst_QTextTable)
 #include "tst_qtexttable.moc"
