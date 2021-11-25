@@ -53,7 +53,7 @@
 
 #import <AppKit/AppKit.h>
 
-bool CocoaNativeEventFilter::nativeEventFilter(const QByteArray &eventType, void *message, long *)
+bool CocoaNativeEventFilter::nativeEventFilter(const QByteArray &eventType, void *message, qintptr *)
 {
     if (eventType == "mac_generic_NSEvent") {
         NSEvent *event = static_cast<NSEvent *>(message);

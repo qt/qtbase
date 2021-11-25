@@ -54,6 +54,6 @@
 class MyCocoaEventFilter : public QAbstractNativeEventFilter
 {
 public:
-    bool nativeEventFilter(const QByteArray &eventType, void *message, long *) override;
+    bool nativeEventFilter(const QByteArray &eventType, void *message, qintptr *) override;
 };
 //! [0]
