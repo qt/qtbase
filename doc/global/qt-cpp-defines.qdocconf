@@ -7,7 +7,6 @@ defines                += Q_QDOC \
                           QT_COMPAT \
                           QT_KEYPAD_NAVIGATION \
                           QT_NO_EGL \
-                          Q_DEAD_CODE_FROM_QT4_.* \
                           Q_BYTE_ORDER \
                           QT_DEPRECATED \
                           QT_DEPRECATED_* \
@@ -54,10 +53,7 @@ clangdefines            += Q_QDOC \
                            Q_COMPILER_VARIADIC_TEMPLATES \
                            Q_ATOMIC_INT16_IS_SUPPORTED \
                            Q_ATOMIC_INT64_IS_SUPPORTED \
-                           Q_ATOMIC_INT8_IS_SUPPORTED \
-                           Q_DEAD_CODE_FROM_QT4_MAC \
-                           Q_DEAD_CODE_FROM_QT4_WIN \
-                           Q_DEAD_CODE_FROM_QT4_X11
+                           Q_ATOMIC_INT8_IS_SUPPORTED
 
 # Q_COMPILER_REF_QUALIFIERS is not yet supported by all compilers
 
