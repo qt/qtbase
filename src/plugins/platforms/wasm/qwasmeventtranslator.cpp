@@ -437,7 +437,7 @@ bool QWasmEventTranslator::processMouse(int eventType, const EmscriptenMouseEven
     QPoint globalPoint = screen()->geometry().topLeft() + targetPoint;
 
     QEvent::Type buttonEventType = QEvent::None;
-    Qt::MouseButton button = translateMouseButton(mouseEvent->button);
+    Qt::MouseButton button = Qt::NoButton;
     Qt::KeyboardModifiers modifiers = translateMouseEventModifier(mouseEvent);
 
     QWindow *window2 = nullptr;
@@ -457,14 +457,22 @@ bool QWasmEventTranslator::processMouse(int eventType, const EmscriptenMouseEven
     switch (eventType) {
     case EMSCRIPTEN_EVENT_MOUSEDOWN:
     {
+        button = translateMouseButton(mouseEvent->button);
+
         if (window2)
             window2->requestActivate();
 
         pressedButtons.setFlag(button);
 
+        pressedWindow = window2;
+        buttonEventType = QEvent::MouseButtonPress;
+
+        // button overview:
+        // 0 = primary mouse button, usually left click
+        // 1 = middle mouse button, usually mouse wheel
+        // 2 = right mouse button, usually right click
+        // from: https://w3c.github.io/uievents/#dom-mouseevent-button
         if (mouseEvent->button == 0) {
-            pressedWindow = window2;
-            buttonEventType = QEvent::MouseButtonPress;
             if (!(htmlWindow->m_windowState & Qt::WindowFullScreen) && !(htmlWindow->m_windowState & Qt::WindowMaximized)) {
                 if (htmlWindow && window2->flags().testFlag(Qt::WindowTitleHint) && htmlWindow->isPointOnTitle(globalPoint))
                     draggedWindow = window2;
@@ -482,7 +490,8 @@ bool QWasmEventTranslator::processMouse(int eventType, const EmscriptenMouseEven
     }
     case EMSCRIPTEN_EVENT_MOUSEUP:
     {
-        pressedButtons.setFlag(translateMouseButton(mouseEvent->button), false);
+        button = translateMouseButton(mouseEvent->button);
+        pressedButtons.setFlag(button, false);
         buttonEventType = QEvent::MouseButtonRelease;
         QWasmWindow *oldWindow = nullptr;
 
