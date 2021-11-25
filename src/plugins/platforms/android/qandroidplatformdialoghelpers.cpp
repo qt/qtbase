@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Copyright (C) 2013 BogDan Vatra <bogdan@kde.org>
 ** Contact: https://www.qt.io/licensing/
 **
@@ -49,14 +49,11 @@
 QT_BEGIN_NAMESPACE
 
 namespace QtAndroidDialogHelpers {
-static jclass g_messageDialogHelperClass = 0;
-
-static const char QtMessageHandlerHelperClassName[] = "org/qtproject/qt/android/QtMessageDialogHelper";
+static jclass g_messageDialogHelperClass = nullptr;
 
 QAndroidPlatformMessageDialogHelper::QAndroidPlatformMessageDialogHelper()
-    :m_buttonId(-1)
-    ,m_javaMessageDialog(g_messageDialogHelperClass, "(Landroid/app/Activity;)V", QtAndroid::activity())
-    ,m_shown(false)
+    : m_javaMessageDialog(g_messageDialogHelperClass, "(Landroid/app/Activity;)V",
+                          QtAndroid::activity())
 {
 }
 
@@ -80,9 +77,9 @@ static QString htmlText(QString text)
     return text.toHtmlEscaped().replace(QLatin1Char('\n'), QLatin1String("<br />"));
 }
 
-bool QAndroidPlatformMessageDialogHelper::show(Qt::WindowFlags windowFlags
-                                         , Qt::WindowModality windowModality
-                                         , QWindow *parent)
+bool QAndroidPlatformMessageDialogHelper::show(Qt::WindowFlags windowFlags,
+                                               Qt::WindowModality windowModality,
+                                               QWindow *parent)
 {
     Q_UNUSED(windowFlags);
     Q_UNUSED(windowModality);
@@ -94,24 +91,32 @@ bool QAndroidPlatformMessageDialogHelper::show(Qt::WindowFlags windowFlags
     m_javaMessageDialog.callMethod<void>("setIcon", "(I)V", opt->icon());
 
     QString str = htmlText(opt->windowTitle());
-    if (!str.isEmpty())
-        m_javaMessageDialog.callMethod<void>("setTile", "(Ljava/lang/String;)V", QJniObject::fromString(str).object());
+    if (!str.isEmpty()) {
+        m_javaMessageDialog.callMethod<void>("setTile", "(Ljava/lang/String;)V",
+                                             QJniObject::fromString(str).object());
+    }
 
     str = htmlText(opt->text());
-    if (!str.isEmpty())
-        m_javaMessageDialog.callMethod<void>("setText", "(Ljava/lang/String;)V", QJniObject::fromString(str).object());
+    if (!str.isEmpty()) {
+        m_javaMessageDialog.callMethod<void>("setText", "(Ljava/lang/String;)V",
+                                             QJniObject::fromString(str).object());
+    }
 
     str = htmlText(opt->informativeText());
-    if (!str.isEmpty())
-        m_javaMessageDialog.callMethod<void>("setInformativeText", "(Ljava/lang/String;)V", QJniObject::fromString(str).object());
+    if (!str.isEmpty()) {
+        m_javaMessageDialog.callMethod<void>("setInformativeText", "(Ljava/lang/String;)V",
+                                             QJniObject::fromString(str).object());
+    }
 
     str = htmlText(opt->detailedText());
-    if (!str.isEmpty())
-        m_javaMessageDialog.callMethod<void>("setDetailedText", "(Ljava/lang/String;)V", QJniObject::fromString(str).object());
+    if (!str.isEmpty()) {
+        m_javaMessageDialog.callMethod<void>("setDetailedText", "(Ljava/lang/String;)V",
+                                             QJniObject::fromString(str).object());
+    }
 
-    const int * currentLayout = buttonLayout(Qt::Horizontal, AndroidLayout);
+    const int *currentLayout = buttonLayout(Qt::Horizontal, AndroidLayout);
     while (*currentLayout != QPlatformDialogHelper::EOL) {
-        int role = (*currentLayout & ~QPlatformDialogHelper::Reverse);
+        const int role = (*currentLayout & ~QPlatformDialogHelper::Reverse);
         addButtons(opt, static_cast<ButtonRole>(role));
         ++currentLayout;
     }
@@ -121,7 +126,8 @@ bool QAndroidPlatformMessageDialogHelper::show(Qt::WindowFlags windowFlags
     return true;
 }
 
-void QAndroidPlatformMessageDialogHelper::addButtons(QSharedPointer<QMessageDialogOptions> opt, ButtonRole role)
+void QAndroidPlatformMessageDialogHelper::addButtons(QSharedPointer<QMessageDialogOptions> opt,
+                                                     ButtonRole role)
 {
     for (const QMessageDialogOptions::CustomButton &b : opt->customButtons()) {
         if (b.role == role) {
@@ -136,7 +142,8 @@ void QAndroidPlatformMessageDialogHelper::addButtons(QSharedPointer<QMessageDial
         StandardButton b = static_cast<StandardButton>(i);
         if (buttonRole(b) == role && (opt->standardButtons() & i)) {
             const QString text = QGuiApplicationPrivate::platformTheme()->standardButtonText(b);
-            m_javaMessageDialog.callMethod<void>("addButton", "(ILjava/lang/String;)V", i, QJniObject::fromString(text).object());
+            m_javaMessageDialog.callMethod<void>("addButton", "(ILjava/lang/String;)V", i,
+                                                 QJniObject::fromString(text).object());
         }
     }
 }
@@ -149,17 +156,17 @@ void QAndroidPlatformMessageDialogHelper::hide()
 
 void QAndroidPlatformMessageDialogHelper::dialogResult(int buttonID)
 {
-    m_buttonId = buttonID;
     if (m_loop.isRunning())
         m_loop.exit();
-    if (m_buttonId < 0) {
+    if (buttonID < 0) {
         emit reject();
         return;
     }
 
-    QPlatformDialogHelper::StandardButton standardButton = static_cast<QPlatformDialogHelper::StandardButton>(buttonID);
-    QPlatformDialogHelper::ButtonRole role = QPlatformDialogHelper::buttonRole(standardButton);
+    const StandardButton standardButton = static_cast<StandardButton>(buttonID);
+    ButtonRole role = QPlatformDialogHelper::buttonRole(standardButton);
     if (buttonID > QPlatformDialogHelper::LastButton) {
+        // In case of a custom button
         const QMessageDialogOptions::CustomButton *custom = options()->customButton(buttonID);
         Q_ASSERT(custom);
         role = custom->role;
@@ -188,6 +195,7 @@ static JNINativeMethod methods[] = {
 
 bool registerNatives(JNIEnv *env)
 {
+    const char QtMessageHandlerHelperClassName[] = "org/qtproject/qt/android/QtMessageDialogHelper";
     QJniEnvironment qenv;
     jclass clazz = qenv.findClass(QtMessageHandlerHelperClassName);
     if (!clazz) {

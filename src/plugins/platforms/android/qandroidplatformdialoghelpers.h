@@ -60,8 +60,7 @@ public:
     ~QAndroidPlatformMessageDialogHelper();
 
     void exec() override;
-    bool show(Qt::WindowFlags windowFlags,
-              Qt::WindowModality windowModality,
+    bool show(Qt::WindowFlags windowFlags, Qt::WindowModality windowModality,
               QWindow *parent) override;
     void hide() override;
 
@@ -72,10 +71,9 @@ private:
     void addButtons(QSharedPointer<QMessageDialogOptions> opt, ButtonRole role);
 
 private:
-    int m_buttonId;
+    bool m_shown = false;
     QEventLoop m_loop;
     QJniObject m_javaMessageDialog;
-    bool m_shown;
 };
 
 
