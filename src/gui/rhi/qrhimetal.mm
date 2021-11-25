@@ -1330,9 +1330,15 @@ void QRhiMetal::draw(QRhiCommandBuffer *cb, quint32 vertexCount,
     QMetalCommandBuffer *cbD = QRHI_RES(QMetalCommandBuffer, cb);
     Q_ASSERT(cbD->recordingPass == QMetalCommandBuffer::RenderPass);
 
-    [cbD->d->currentRenderPassEncoder drawPrimitives:
-        QRHI_RES(QMetalGraphicsPipeline, cbD->currentGraphicsPipeline)->d->primitiveType
-      vertexStart: firstVertex vertexCount: vertexCount instanceCount: instanceCount baseInstance: firstInstance];
+    if (caps.baseVertexAndInstance) {
+        [cbD->d->currentRenderPassEncoder drawPrimitives:
+          QRHI_RES(QMetalGraphicsPipeline, cbD->currentGraphicsPipeline)->d->primitiveType
+          vertexStart: firstVertex vertexCount: vertexCount instanceCount: instanceCount baseInstance: firstInstance];
+    } else {
+        [cbD->d->currentRenderPassEncoder drawPrimitives:
+          QRHI_RES(QMetalGraphicsPipeline, cbD->currentGraphicsPipeline)->d->primitiveType
+          vertexStart: firstVertex vertexCount: vertexCount instanceCount: instanceCount];
+    }
 }
 
 void QRhiMetal::drawIndexed(QRhiCommandBuffer *cb, quint32 indexCount,
