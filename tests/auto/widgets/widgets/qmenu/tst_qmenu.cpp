@@ -118,6 +118,7 @@ private slots:
     void QTBUG_89082_actionTipsHide();
     void QTBUG8122_widgetActionCrashOnClose();
     void widgetActionTriggerClosesMenu();
+    void transientParent();
 
     void QTBUG_10735_crashWithDialog();
 #ifdef Q_OS_MAC
@@ -1586,6 +1587,54 @@ void tst_QMenu::widgetActionTriggerClosesMenu()
     QCOMPARE(menuTriggeredCount, 1);
     QCOMPARE(menuAboutToHideCount, 1);
     QCOMPARE(actionTriggered, &widgetAction);
+}
+
+void tst_QMenu::transientParent()
+{
+    QMainWindow window;
+    window.resize(480, 320);
+    window.menuBar()->setNativeMenuBar(false);
+    centerOnScreen(&window);
+
+    QMenu *fileMenu = new QMenu("&File");
+    QAction *exitAct = new QAction("Exit");
+    fileMenu->addAction(exitAct);
+
+    QMenu *editMenu = new QMenu("&Edit");
+    QAction *undoAct = new QAction("Undo");
+    editMenu->addAction(undoAct);
+
+    QMenuBar *menuBar = new QMenuBar;
+    menuBar->addMenu(fileMenu);
+    menuBar->addMenu(editMenu);
+    window.setMenuBar(menuBar);
+
+    // On Mac, we need to create native key events to test menu
+    // action activation, so skip this part of the test.
+#if QT_CONFIG(shortcut) && !defined(Q_OS_DARWIN)
+    window.show();
+    QVERIFY(QTest::qWaitForWindowActive(&window));
+    QWindow *topLevel = window.windowHandle();
+    QVERIFY(topLevel);
+
+    QApplication::setActiveWindow(&window);
+    window.setFocus();
+    QVERIFY(QTest::qWaitForWindowActive(&window));
+    QVERIFY(window.hasFocus());
+
+    QTest::keyPress(&window, Qt::Key_F, Qt::AltModifier);
+    QTRY_VERIFY(QTest::qWaitForWindowExposed(fileMenu));
+    if (fileMenu->isWindow() && fileMenu->window() && fileMenu->window()->windowHandle())
+        QVERIFY(fileMenu->window()->windowHandle()->transientParent());
+    QTest::keyRelease(fileMenu, Qt::Key_F, Qt::AltModifier);
+
+    QTest::keyPress(fileMenu, Qt::Key_E, Qt::AltModifier);
+    QTRY_VERIFY(QTest::qWaitForWindowExposed(editMenu));
+    if (editMenu->isWindow() && editMenu->window() && editMenu->window()->windowHandle())
+        QVERIFY(editMenu->window()->windowHandle()->transientParent());
+    QTest::keyRelease(editMenu, Qt::Key_E, Qt::AltModifier);
+#endif // QT_CONFIG(shortcut) && !Q_OS_DARWIN
+
 }
 
 class MyMenu : public QMenu

@@ -625,6 +625,29 @@ void QMenuPrivate::hideMenu(QMenu *menu)
     menu->d_func()->causedPopup.widget = nullptr;
 }
 
+QWindow *QMenuPrivate::transientParentWindow() const
+{
+    Q_Q(const QMenu);
+    if (const QWidget *parent = q->nativeParentWidget()) {
+        if (parent->windowHandle())
+            return parent->windowHandle();
+    }
+
+    if (const QWindow *w = q->windowHandle()) {
+        if (w->transientParent())
+            return w->transientParent();
+    }
+
+    if (causedPopup.widget) {
+        if (const QWidget *w = causedPopup.widget.data()) {
+            if (const QWidget *ww = w->window())
+                return ww->windowHandle();
+        }
+    }
+
+    return nullptr;
+}
+
 void QMenuPrivate::popupAction(QAction *action, int delay, bool activateFirst)
 {
     Q_Q(QMenu);
@@ -2983,6 +3006,8 @@ bool QMenu::event(QEvent *e)
         d->sloppyState.reset();
         if (d->currentAction)
             d->popupAction(d->currentAction, 0, false);
+        if (isWindow() && window() && window()->windowHandle() && !window()->windowHandle()->transientParent())
+            window()->windowHandle()->setTransientParent(d->transientParentWindow());
         break;
 #if QT_CONFIG(tooltip)
     case QEvent::ToolTip:

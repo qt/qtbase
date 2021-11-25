@@ -440,6 +440,7 @@ public:
     QMenuCaused causedPopup;
     void hideUpToMenuBar();
     void hideMenu(QMenu *menu);
+    QWindow *transientParentWindow() const;
 
     //index mappings
     inline QAction *actionAt(int i) const { return q_func()->actions().at(i); }
