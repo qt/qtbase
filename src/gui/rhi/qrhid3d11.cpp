@@ -41,7 +41,6 @@
 #include "qshader_p.h"
 #include "cs_tdr_p.h"
 #include <QWindow>
-#include <QOperatingSystemVersion>
 #include <qmath.h>
 #include <private/qsystemlibrary_p.h>
 
@@ -201,8 +200,7 @@ bool QRhiD3D11::create(QRhi::Flags flags)
     dxgiFactory = createDXGIFactory2();
     if (dxgiFactory != nullptr) {
         hasDxgi2 = true;
-        supportsFlipDiscardSwapchain = QOperatingSystemVersion::current() >= QOperatingSystemVersion::Windows10
-                && !qEnvironmentVariableIntValue("QT_D3D_NO_FLIP");
+        supportsFlipDiscardSwapchain = !qEnvironmentVariableIntValue("QT_D3D_NO_FLIP");
     } else {
         dxgiFactory = createDXGIFactory1();
         hasDxgi2 = false;
