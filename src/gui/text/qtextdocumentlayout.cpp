@@ -2364,6 +2364,7 @@ QTextLayoutStruct QTextDocumentLayoutPrivate::layoutCell(QTextTable *t, const QT
     // constraint the maximumWidth by the minimum width of the fixed size floats, to
     // keep them visible
     layoutStruct.maximumWidth = qMax(layoutStruct.maximumWidth, floatMinWidth);
+    layoutStruct.minimumWidth = floatMinWidth;
 
     // as floats in cells get added to the table's float list but must not affect
     // floats in other cells we must clear the list here.
