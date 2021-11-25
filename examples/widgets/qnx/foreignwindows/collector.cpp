@@ -63,7 +63,7 @@ Collector::~Collector()
     QApplication::instance()->removeNativeEventFilter(this);
 }
 
-bool Collector::nativeEventFilter(const QByteArray &eventType, void *message, long *result)
+bool Collector::nativeEventFilter(const QByteArray &eventType, void *message, qintptr *result)
 {
     Q_UNUSED(result);
 
