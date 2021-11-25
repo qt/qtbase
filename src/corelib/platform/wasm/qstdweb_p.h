@@ -129,9 +129,9 @@ namespace qstdweb {
         ArrayBuffer result() const;
         void readAsArrayBuffer(const Blob &blob) const;
 
-        void onLoad(const std::function<void ()> &onLoad);
-        void onError(const std::function<void ()> &onError);
-        void onAbort(const std::function<void ()> &onAbort);
+        void onLoad(const std::function<void(emscripten::val)> &onLoad);
+        void onError(const std::function<void(emscripten::val)> &onError);
+        void onAbort(const std::function<void(emscripten::val)> &onAbort);
 
     private:
         emscripten::val m_fileReader = emscripten::val::global("FileReader").new_();
@@ -166,11 +166,18 @@ namespace qstdweb {
     class EventCallback
     {
     public:
-        EventCallback(emscripten::val element, const std::string &name, const std::function<void ()> &fn);
+        EventCallback() = default;
+        ~EventCallback();
+        EventCallback(EventCallback const&) = delete;
+        EventCallback& operator=(EventCallback const&) = delete;
+        EventCallback(emscripten::val element, const std::string &name,
+                      const std::function<void(emscripten::val)> &fn);
         static void activate(emscripten::val event);
     private:
         static std::string contextPropertyName(const std::string &eventName);
-        std::function<void ()> m_fn;
+        emscripten::val m_element = emscripten::val::undefined();
+        std::string m_eventName;
+        std::function<void(emscripten::val)> m_fn;
     };
 }
 

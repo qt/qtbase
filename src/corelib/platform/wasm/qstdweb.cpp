@@ -151,7 +151,7 @@ void File::stream(uint32_t offset, uint32_t length, char *buffer, const std::fun
             return;
         }
         char *nextChunkBuffer = chunkBuffer + result.byteLength();
-        fileReader->onLoad([=]() { (*chunkCompleted)(nextChunkBegin, nextChunkBuffer); });
+        fileReader->onLoad([=](emscripten::val) { (*chunkCompleted)(nextChunkBegin, nextChunkBuffer); });
         qstdweb::Blob blob = fileHandle.slice(nextChunkBegin, nextChunkEnd);
         fileReader->readAsArrayBuffer(blob);
     };
@@ -203,17 +203,17 @@ void FileReader::readAsArrayBuffer(const Blob &blob) const
     m_fileReader.call<void>("readAsArrayBuffer", blob.m_blob);
 }
 
-void FileReader::onLoad(const std::function<void ()> &onLoad)
+void FileReader::onLoad(const std::function<void(emscripten::val)> &onLoad)
 {
     m_onLoad.reset(new EventCallback(m_fileReader, "load", onLoad));
 }
 
-void FileReader::onError(const std::function<void ()> &onError)
+void FileReader::onError(const std::function<void(emscripten::val)> &onError)
 {
     m_onError.reset(new EventCallback(m_fileReader, "error", onError));
 }
 
-void FileReader::onAbort(const std::function<void ()> &onAbort)
+void FileReader::onAbort(const std::function<void(emscripten::val)> &onAbort)
 {
     m_onAbort.reset(new EventCallback(m_fileReader, "abort", onAbort));
 }
@@ -305,11 +305,19 @@ emscripten::val Uint8Array::constructor_()
 
 // Registers a callback function for a named event on the given element. The event
 // name must be the name as returned by the Event.type property: e.g. "load", "error".
-EventCallback::EventCallback(emscripten::val element, const std::string &name, const std::function<void ()> &fn)
-:m_fn(fn)
+EventCallback::~EventCallback()
 {
-    element.set(contextPropertyName(name).c_str(), emscripten::val(intptr_t(this)));
-    element.set((std::string("on") + name).c_str(), emscripten::val::module_property("qtStdWebEventCallbackActivate"));
+    m_element.set(contextPropertyName(m_eventName).c_str(), emscripten::val::undefined());
+    m_element.set((std::string("on") + m_eventName).c_str(), emscripten::val::undefined());
+}
+
+EventCallback::EventCallback(emscripten::val element, const std::string &name, const std::function<void(emscripten::val)> &fn)
+    :m_element(element)
+    ,m_eventName(name)
+    ,m_fn(fn)
+{
+    m_element.set(contextPropertyName(m_eventName).c_str(), emscripten::val(intptr_t(this)));
+    m_element.set((std::string("on") + m_eventName).c_str(), emscripten::val::module_property("qtStdWebEventCallbackActivate"));
 }
 
 void EventCallback::activate(emscripten::val event)
@@ -317,7 +325,7 @@ void EventCallback::activate(emscripten::val event)
     emscripten::val target = event["target"];
     std::string eventName = event["type"].as<std::string>();
     EventCallback *that = reinterpret_cast<EventCallback *>(target[contextPropertyName(eventName).c_str()].as<intptr_t>());
-    that->m_fn();
+    that->m_fn(event);
 }
 
 std::string EventCallback::contextPropertyName(const std::string &eventName)

@@ -96,7 +96,7 @@ void openFileDialog(const std::string &accept, FileSelectMode fileSelectMode,
 
     // Note: there is no event in case the user cancels the file dialog.
     static std::unique_ptr<qstdweb::EventCallback> changeEvent;
-    auto callback = [=]() { filesSelected(qstdweb::FileList(input["files"])); };
+    auto callback = [=](emscripten::val) { filesSelected(qstdweb::FileList(input["files"])); };
     changeEvent.reset(new qstdweb::EventCallback(input, "change", callback));
 
     // Activate file input
