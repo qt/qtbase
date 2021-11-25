@@ -107,7 +107,6 @@ static sem_t m_exitSemaphore, m_terminateSemaphore;
 QHash<int, AndroidSurfaceClient *> m_surfaces;
 
 static QBasicMutex m_surfacesMutex;
-static int m_surfaceId = 1;
 
 
 static QAndroidPlatformIntegration *m_androidPlatformIntegration = nullptr;
@@ -341,6 +340,12 @@ namespace QtAndroid
         return manufacturer + QLatin1Char(' ') + model;
     }
 
+    jint generateViewId()
+    {
+        return QJNIObjectPrivate::callStaticMethod<jint>("android/view/View","generateViewId",
+                                                         "()I");
+    }
+
     int createSurface(AndroidSurfaceClient *client, const QRect &geometry, bool onTop, int imageDepth)
     {
         QJNIEnvironmentPrivate env;
@@ -348,7 +353,7 @@ namespace QtAndroid
             return -1;
 
         m_surfacesMutex.lock();
-        int surfaceId = m_surfaceId++;
+        jint surfaceId = generateViewId();
         m_surfaces[surfaceId] = client;
         m_surfacesMutex.unlock();
 
@@ -371,7 +376,7 @@ namespace QtAndroid
     int insertNativeView(jobject view, const QRect &geometry)
     {
         m_surfacesMutex.lock();
-        const int surfaceId = m_surfaceId++;
+        jint surfaceId = generateViewId();
         m_surfaces[surfaceId] = nullptr; // dummy
         m_surfacesMutex.unlock();
 
