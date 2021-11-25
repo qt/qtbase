@@ -1,13 +1,12 @@
 versionsym              = QT_VERSION_STR
 
-defines                 += Q_QDOC \
+defines                += Q_QDOC \
                           Q_CLANG_QDOC \
                           QT_.*_SUPPORT \
                           QT_.*_LIB \
                           QT_COMPAT \
                           QT_KEYPAD_NAVIGATION \
                           QT_NO_EGL \
-                          QT3_SUPPORT \
                           Q_DEAD_CODE_FROM_QT4_.* \
                           Q_BYTE_ORDER \
                           QT_DEPRECATED \
@@ -21,7 +20,6 @@ defines                 += Q_QDOC \
 clangdefines            += Q_QDOC \
                            Q_CLANG_QDOC \
                            QT_COMPAT \
-                           QT3_SUPPORT \
                            QT_BUILD_CORE_LIB \
                            QT_BUILD_EGL_DEVICE_LIB \
                            QT_BUILD_LOCATION_LIB \
