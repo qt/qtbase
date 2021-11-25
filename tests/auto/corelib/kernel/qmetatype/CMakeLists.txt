@@ -32,8 +32,3 @@ qt_internal_extend_target(tst_qmetatype CONDITION MSVC
 #### Keys ignored in scope 3:.:.:qmetatype.pro:CLANG:
 # QMAKE_CFLAGS_RELEASE = "--O2" "--g"
 # QMAKE_CXXFLAGS_RELEASE = "--O2" "--g"
-
-qt_internal_extend_target(tst_qmetatype CONDITION CLANG AND (TEST_architecture_arch STREQUAL "arm")
-    DEFINES
-        TST_QMETATYPE_BROKEN_COMPILER
-)
