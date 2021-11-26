@@ -45,6 +45,20 @@
     uses the encapsulating QObject to store the pointer to the
     management data structure.
 
+    \section1 Why Use Bindable Properties?
+
+    Property bindings are one of the core features of QML. They allow to specify
+    relationships between different object properties and automatically update
+    properties' values whenever their dependencies change. Bindable properties
+    allow to achieve the same not only in QML code, but also in C++. Using
+    bindable properties can help to simplify your program, by eliminating a lot
+    of boilerplate code for tracking and reacting to dependency updates of
+    different objects.
+
+    The \l {Introductory Example} below demonstrates the usage of bindable
+    properties in C++ code. You can also check \l {Bindable Properties Example}
+    to see how the bindable properties can help to improve your code.
+
     \section1 Introductory Example
 
     The binding expression computes the value by reading other QProperty values.

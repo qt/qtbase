@@ -103,6 +103,7 @@ int main(int argc, char *argv[])
     QLabel *priceDisplay = w.findChild<QLabel *>("priceDisplay");
 
     // Track price changes
+//! [update-ui]
     auto priceChangeHandler = subscription.bindablePrice().subscribe([&] {
         priceDisplay->setText(QString::number(subscription.price()));
     });
@@ -110,6 +111,7 @@ int main(int argc, char *argv[])
     auto priceValidHandler = subscription.bindableIsValid().subscribe([&] {
         priceDisplay->setEnabled(subscription.isValid());
     });
+//! [update-ui]
 
     w.show();
     return a.exec();

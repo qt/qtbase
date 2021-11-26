@@ -50,6 +50,8 @@
 
 #include "bindableuser.h"
 
+//! [bindable-user-setters]
+
 void BindableUser::setCountry(Country country)
 {
     m_country = country;
@@ -59,3 +61,5 @@ void BindableUser::setAge(int age)
 {
     m_age = age;
 }
+
+//! [bindable-user-setters]

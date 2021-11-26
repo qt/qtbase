@@ -56,6 +56,8 @@ Subscription::Subscription(User *user) : m_user(user)
     Q_ASSERT(user);
 }
 
+//! [calculate-price]
+
 void Subscription::calculatePrice()
 {
     const auto oldPrice = m_price;
@@ -65,6 +67,10 @@ void Subscription::calculatePrice()
         emit priceChanged();
 }
 
+//! [calculate-price]
+
+//! [set-duration]
+
 void Subscription::setDuration(Duration newDuration)
 {
     if (newDuration != m_duration) {
@@ -73,6 +79,10 @@ void Subscription::setDuration(Duration newDuration)
         emit durationChanged();
     }
 }
+
+//! [set-duration]
+
+//! [calculate-discount]
 
 double Subscription::calculateDiscount() const
 {
@@ -88,6 +98,10 @@ double Subscription::calculateDiscount() const
     return -1;
 }
 
+//! [calculate-discount]
+
+//! [calculate-base-price]
+
 int Subscription::basePrice() const
 {
     if (m_user->country() == User::None)
@@ -95,6 +109,10 @@ int Subscription::basePrice() const
 
     return (m_user->country() == User::Norway) ? 100 : 80;
 }
+
+//! [calculate-base-price]
+
+//! [update-validity]
 
 void Subscription::updateValidity()
 {
@@ -104,3 +122,5 @@ void Subscription::updateValidity()
     if (m_isValid != isValid)
         emit isValidChanged();
 }
+
+//! [update-validity]
