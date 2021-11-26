@@ -17,57 +17,69 @@ foreach(_mod ${CMAKE_MODULES_UNDER_TEST})
     message("CMAKE_${_mod}_MODULE_PATCH_VERSION: ${CMAKE_${_mod}_MODULE_PATCH_VERSION}")
 endforeach()
 
-set(BUILD_OPTIONS_LIST)
+function(_qt_internal_get_cmake_test_configure_options out_var)
+    set(option_list)
 
-if (CMAKE_C_COMPILER AND NOT CMAKE_CROSSCOMPILING)
-  list(APPEND BUILD_OPTIONS_LIST "-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}")
-endif()
-
-if (CMAKE_CXX_COMPILER AND NOT CMAKE_CROSSCOMPILING)
-  list(APPEND BUILD_OPTIONS_LIST "-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}")
-endif()
-
-if (CMAKE_BUILD_TYPE)
-  list(APPEND BUILD_OPTIONS_LIST "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}")
-endif()
-
-if (CMAKE_TOOLCHAIN_FILE)
-  file(TO_CMAKE_PATH "${CMAKE_TOOLCHAIN_FILE}" _CMAKE_TOOLCHAIN_FILE)
-  list(APPEND BUILD_OPTIONS_LIST "-DCMAKE_TOOLCHAIN_FILE=${_CMAKE_TOOLCHAIN_FILE}")
-endif()
-
-if (CMAKE_VERBOSE_MAKEFILE)
-  list(APPEND BUILD_OPTIONS_LIST "-DCMAKE_VERBOSE_MAKEFILE=1")
-endif()
-
-if (NO_GUI)
-  list(APPEND BUILD_OPTIONS_LIST "-DNO_GUI=True")
-endif()
-if (NO_WIDGETS)
-  list(APPEND BUILD_OPTIONS_LIST "-DNO_WIDGETS=True")
-endif()
-if (NO_DBUS)
-  list(APPEND BUILD_OPTIONS_LIST "-DNO_DBUS=True")
-endif()
-
-if(APPLE AND CMAKE_OSX_ARCHITECTURES)
-    list(LENGTH CMAKE_OSX_ARCHITECTURES osx_arch_count)
-
-    # When Qt is built as universal config (macOS or iOS), force CMake build tests to build one
-    # architecture instead of all of them, because the build machine that builds the cmake tests
-    # might not have a universal SDK installed.
-    if(osx_arch_count GREATER 1)
-        list(APPEND BUILD_OPTIONS_LIST "-DQT_FORCE_SINGLE_QT_OSX_ARCHITECTURE=ON")
+    if (CMAKE_C_COMPILER AND NOT CMAKE_CROSSCOMPILING)
+        list(APPEND option_list "-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}")
     endif()
-endif()
 
-foreach(module ${CMAKE_MODULES_UNDER_TEST})
-    list(APPEND BUILD_OPTIONS_LIST
-        "-DCMAKE_${module}_MODULE_MAJOR_VERSION=${CMAKE_${module}_MODULE_MAJOR_VERSION}"
-        "-DCMAKE_${module}_MODULE_MINOR_VERSION=${CMAKE_${module}_MODULE_MINOR_VERSION}"
-        "-DCMAKE_${module}_MODULE_PATCH_VERSION=${CMAKE_${module}_MODULE_PATCH_VERSION}"
-    )
-endforeach()
+    if (CMAKE_CXX_COMPILER AND NOT CMAKE_CROSSCOMPILING)
+        list(APPEND option_list "-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}")
+    endif()
+
+    get_cmake_property(is_multi_config GENERATOR_IS_MULTI_CONFIG)
+    if(is_multi_config)
+        if(CMAKE_CONFIGURATION_TYPES)
+            string(REPLACE ";" "\;" configuration_types "${CMAKE_CONFIGURATION_TYPES}")
+            list(APPEND option_list "-DCMAKE_CONFIGURATION_TYPES=${configuration_types}")
+        endif()
+    else()
+        if(CMAKE_BUILD_TYPE)
+            list(APPEND option_list "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}")
+        endif()
+    endif()
+
+    if (CMAKE_TOOLCHAIN_FILE)
+        file(TO_CMAKE_PATH "${CMAKE_TOOLCHAIN_FILE}" _CMAKE_TOOLCHAIN_FILE)
+        list(APPEND option_list "-DCMAKE_TOOLCHAIN_FILE=${_CMAKE_TOOLCHAIN_FILE}")
+    endif()
+
+    if (CMAKE_VERBOSE_MAKEFILE)
+        list(APPEND option_list "-DCMAKE_VERBOSE_MAKEFILE=1")
+    endif()
+
+    if (NO_GUI)
+        list(APPEND option_list "-DNO_GUI=True")
+    endif()
+    if (NO_WIDGETS)
+        list(APPEND option_list "-DNO_WIDGETS=True")
+    endif()
+    if (NO_DBUS)
+        list(APPEND option_list "-DNO_DBUS=True")
+    endif()
+
+    if(APPLE AND CMAKE_OSX_ARCHITECTURES)
+        list(LENGTH CMAKE_OSX_ARCHITECTURES osx_arch_count)
+
+        # When Qt is built as universal config (macOS or iOS), force CMake build tests to build one
+        # architecture instead of all of them, because the build machine that builds the cmake tests
+        # might not have a universal SDK installed.
+        if(osx_arch_count GREATER 1)
+            list(APPEND option_list "-DQT_FORCE_SINGLE_QT_OSX_ARCHITECTURE=ON")
+        endif()
+    endif()
+
+    foreach(module ${CMAKE_MODULES_UNDER_TEST})
+        list(APPEND option_list
+            "-DCMAKE_${module}_MODULE_MAJOR_VERSION=${CMAKE_${module}_MODULE_MAJOR_VERSION}"
+            "-DCMAKE_${module}_MODULE_MINOR_VERSION=${CMAKE_${module}_MODULE_MINOR_VERSION}"
+            "-DCMAKE_${module}_MODULE_PATCH_VERSION=${CMAKE_${module}_MODULE_PATCH_VERSION}"
+        )
+    endforeach()
+
+    set(${out_var} "${option_list}" PARENT_SCOPE)
+endfunction()
 
 function(_qt_internal_set_up_test_run_environment testname)
     # This is copy-pasted from qt_add_test and adapted to the standalone project case.
@@ -319,6 +331,7 @@ macro(_qt_internal_test_expect_pass _dir)
       )
     endif()
 
+    _qt_internal_get_cmake_test_configure_options(option_list)
     set(ctest_command_args
         --build-and-test
         "${__expect_pass_source_dir}"
@@ -328,7 +341,7 @@ macro(_qt_internal_test_expect_pass _dir)
         --build-generator "${generator}"
         --build-makeprogram "${make_program}"
         ${build_project}
-        --build-options "-DCMAKE_PREFIX_PATH=${__expect_pass_prefixes}" ${BUILD_OPTIONS_LIST}
+        --build-options "-DCMAKE_PREFIX_PATH=${__expect_pass_prefixes}" ${option_list}
                         ${_ARGS_BUILD_OPTIONS} ${additional_configure_args}
         ${test_command}
     )
@@ -386,6 +399,8 @@ list(APPEND CMAKE_PREFIX_PATH \"${CMAKE_PREFIX_PATH}\")
       endif()
       "
   )
+
+  _qt_internal_get_cmake_test_configure_options(option_list)
   add_test(${testname} ${CMAKE_CTEST_COMMAND}
     --build-and-test
     "${CMAKE_CURRENT_BINARY_DIR}/failbuild/${_dir}"
@@ -394,7 +409,7 @@ list(APPEND CMAKE_PREFIX_PATH \"${CMAKE_PREFIX_PATH}\")
     --build-generator "${CMAKE_GENERATOR}"
     --build-makeprogram "${CMAKE_MAKE_PROGRAM}"
     --build-project "${_dir}"
-    --build-options "-DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}" ${BUILD_OPTIONS_LIST}
+    --build-options "-DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}" ${option_list}
   )
 endmacro()
 
@@ -488,6 +503,7 @@ function(_qt_internal_test_module_includes)
     int main(int, char **) { ${instances_string} return 0; }\n"
   )
 
+  _qt_internal_get_cmake_test_configure_options(option_list)
   add_test(module_includes ${CMAKE_CTEST_COMMAND}
     --build-and-test
     "${CMAKE_CURRENT_BINARY_DIR}/module_includes/"
@@ -496,6 +512,6 @@ function(_qt_internal_test_module_includes)
     --build-generator "${CMAKE_GENERATOR}"
     --build-makeprogram "${CMAKE_MAKE_PROGRAM}"
     --build-project module_includes
-    --build-options "-DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}" ${BUILD_OPTIONS_LIST}
+    --build-options "-DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}" ${option_list}
   )
 endfunction()
