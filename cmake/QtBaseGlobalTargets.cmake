@@ -351,3 +351,5 @@ endif()
 qt_path_join(__qt_libexec_install_dir "${QT_INSTALL_DIR}" "${INSTALL_LIBEXECDIR}")
 qt_copy_or_install(FILES coin/instructions/qmake/ensure_pro_file.cmake
     DESTINATION "${__qt_libexec_install_dir}")
+qt_copy_or_install(PROGRAMS "util/testrunner/qt-testrunner.py"
+                   DESTINATION "${__qt_libexec_install_dir}")

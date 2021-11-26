@@ -3,6 +3,7 @@
 # qt-cmake-private
 # qt-configure-module
 # qt-cmake-private-install
+# And other helper scripts.
 function(qt_internal_create_wrapper_scripts)
     # Provide a convenience cmake wrapper.
     if(CMAKE_HOST_UNIX)

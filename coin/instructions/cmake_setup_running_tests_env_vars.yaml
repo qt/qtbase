@@ -5,38 +5,6 @@ instructions:
   - type: EnvironmentVariable
     variableName: QTEST_ENVIRONMENT
     variableValue: "ci"
-  - type: WriteFile
-    fileContents: |
-        #!/usr/bin/python3
-        import subprocess
-        import calendar
-        import datetime
-        import time
-        import sys
-        import os
-        import re
-        from os.path import expanduser
-        home = expanduser("~")
-
-        file=os.path.basename(sys.argv[1])
-        timestamp = str(round(time.time() * 1000))
-        results_file = home + "/work/testresults/" + file +"-" + timestamp + ".xml,xml"
-        testargs = ["-o", results_file, "-o", "-,txt"]
-        if re.search("testlib.selftests.tst_selftests", sys.argv[1]):
-            testargs = []
-        exit(subprocess.call([sys.argv[1]] + testargs))
-    filename: "{{.SourceDir}}/coin_ctest_runner.py"
-    fileMode: 755
-  - type: ExecuteCommand
-    command: "chmod 755 {{.SourceDir}}/coin_ctest_runner.py"
-    maxTimeInSeconds: 10
-    maxTimeBetweenOutput: 10
-    userMessageOnFailure: >
-      Failed to change file permission.
-    disable_if:
-      condition: property
-      property: host.os
-      equals_value: Windows
   - type: Group
     instructions:
       - type: EnvironmentVariable
