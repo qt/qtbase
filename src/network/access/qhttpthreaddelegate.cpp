@@ -290,6 +290,12 @@ void QHttpThreadDelegate::startRequest()
         connectionType = QHttpNetworkConnection::ConnectionTypeHTTP2Direct;
     }
 
+    // Use HTTP/1.1 if h2c is not allowed and we would otherwise choose to use it
+    if (!ssl && connectionType == QHttpNetworkConnection::ConnectionTypeHTTP2
+        && !httpRequest.isH2cAllowed()) {
+        connectionType = QHttpNetworkConnection::ConnectionTypeHTTP;
+    }
+
 #if QT_CONFIG(ssl)
     // See qnetworkreplyhttpimpl, delegate's initialization code.
     Q_ASSERT(!ssl || incomingSslConfiguration.data());

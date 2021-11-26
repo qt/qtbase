@@ -365,6 +365,16 @@ void QHttpNetworkRequest::setHTTP2Direct(bool b)
     d->http2Direct = b;
 }
 
+bool QHttpNetworkRequest::isH2cAllowed() const
+{
+    return qEnvironmentVariableIsSet("QT_NETWORK_H2C_ALLOWED");
+}
+
+void QHttpNetworkRequest::setH2cAllowed(bool b)
+{
+    Q_UNUSED(b);
+}
+
 bool QHttpNetworkRequest::withCredentials() const
 {
     return d->withCredentials;

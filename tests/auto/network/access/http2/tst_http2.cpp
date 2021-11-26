@@ -223,6 +223,7 @@ tst_Http2::~tst_Http2()
 void tst_Http2::init()
 {
     manager.reset(new QNetworkAccessManager);
+    qputenv("QT_NETWORK_H2C_ALLOWED", "1");
 }
 
 void tst_Http2::singleRequest_data()
