@@ -67,8 +67,8 @@ public:
 
     inline explicit QVarLengthArray(qsizetype size);
 
-    inline QVarLengthArray(const QVarLengthArray<T, Prealloc> &other)
-        : a(Prealloc), s(0), ptr(reinterpret_cast<T *>(array))
+    QVarLengthArray(const QVarLengthArray &other)
+        : QVarLengthArray{}
     {
         append(other.constData(), other.size());
     }
