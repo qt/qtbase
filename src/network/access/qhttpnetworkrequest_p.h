@@ -125,6 +125,9 @@ public:
     bool isHTTP2Direct() const;
     void setHTTP2Direct(bool b);
 
+    bool isH2cAllowed() const;
+    void setH2cAllowed(bool b);
+
     bool withCredentials() const;
     void setWithCredentials(bool b);
 
