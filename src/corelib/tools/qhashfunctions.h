@@ -251,6 +251,9 @@ struct QNothrowHashable : std::false_type {};
 template <typename T>
 struct QNothrowHashable<T, std::enable_if_t<QNothrowHashableHelper_v<T>>> : std::true_type {};
 
+template <typename T>
+constexpr inline bool QNothrowHashable_v = QNothrowHashable<T>::value;
+
 } // namespace QtPrivate
 
 template <typename... T>
@@ -317,15 +320,15 @@ template <typename T1, typename T2> inline size_t qHash(const std::pair<T1, T2> 
             using argument_type = QT_PREPEND_NAMESPACE(Class);      \
             using result_type = size_t;                             \
             size_t operator()(Arguments s) const                    \
-                noexcept(noexcept(QT_PREPEND_NAMESPACE(qHash)(s)))  \
+              noexcept(QT_PREPEND_NAMESPACE(                        \
+                     QtPrivate::QNothrowHashable_v)<argument_type>) \
             {                                                       \
                 /* this seeds qHash with the result of */           \
                 /* std::hash applied to an int, to reap */          \
                 /* any protection against predictable hash */       \
                 /* values the std implementation may provide */     \
-                return QT_PREPEND_NAMESPACE(qHash)(s,               \
-                           QT_PREPEND_NAMESPACE(qHash)(             \
-                                      std::hash<int>{}(0)));        \
+                using QT_PREPEND_NAMESPACE(qHash);                  \
+                return qHash(s, qHash(std::hash<int>{}(0)));        \
             }                                                       \
         };                                                          \
     }                                                               \
