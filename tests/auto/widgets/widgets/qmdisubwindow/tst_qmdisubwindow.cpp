@@ -1567,9 +1567,6 @@ void tst_QMdiSubWindow::hideAndShow()
 
 #if !defined (Q_OS_DARWIN)
     QVERIFY(menuBar->cornerWidget(Qt::TopRightCorner));
-#if defined Q_OS_QNX
-    QEXPECT_FAIL("", "QTBUG-38231", Abort);
-#endif
     QVERIFY(subWindow->maximizedButtonsWidget());
     QVERIFY(subWindow->maximizedSystemMenuIconWidget());
     QCOMPARE(menuBar->cornerWidget(Qt::TopRightCorner), subWindow->maximizedButtonsWidget());
@@ -1800,9 +1797,6 @@ void tst_QMdiSubWindow::replaceMenuBarWhileMaximized()
 
     QCoreApplication::processEvents();
 
-#if defined Q_OS_QNX
-    QEXPECT_FAIL("", "QTBUG-38231", Abort);
-#endif
     QVERIFY(subWindow->maximizedButtonsWidget());
     QVERIFY(subWindow->maximizedSystemMenuIconWidget());
     QCOMPARE(menuBar1->cornerWidget(Qt::TopLeftCorner), subWindow->maximizedSystemMenuIconWidget());

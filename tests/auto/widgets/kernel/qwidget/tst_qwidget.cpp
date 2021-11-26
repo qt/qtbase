@@ -8947,9 +8947,6 @@ void tst_QWidget::doubleRepaint()
    // Minmize: Should not trigger a repaint.
    widget.showMinimized();
    QTest::qWait(10);
-#if defined(Q_OS_QNX)
-    QEXPECT_FAIL("", "Platform does not support showMinimized()", Continue);
-#endif
    QCOMPARE(widget.numPaintEvents, 0);
    widget.numPaintEvents = 0;
 
