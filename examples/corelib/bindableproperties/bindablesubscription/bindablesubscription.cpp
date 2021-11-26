@@ -51,6 +51,8 @@
 #include "bindablesubscription.h"
 #include "bindableuser.h"
 
+//! [binding-expressions]
+
 BindableSubscription::BindableSubscription(BindableUser *user) : m_user(user)
 {
     Q_ASSERT(user);
@@ -62,10 +64,16 @@ BindableSubscription::BindableSubscription(BindableUser *user) : m_user(user)
     });
 }
 
+//! [binding-expressions]
+
+//! [set-duration]
+
 void BindableSubscription::setDuration(Duration newDuration)
 {
     m_duration = newDuration;
 }
+
+//! [set-duration]
 
 double BindableSubscription::calculateDiscount() const
 {

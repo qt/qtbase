@@ -53,6 +53,8 @@
 
 #include <QObject>
 
+//! [user-class]
+
 class User : public QObject
 {
     Q_OBJECT
@@ -79,4 +81,6 @@ private:
     Country m_country = Country::None;
     int m_age = 0;
 };
+
+//! [user-class]
 #endif // USER_H

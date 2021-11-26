@@ -50,6 +50,8 @@
 
 #include "user.h"
 
+//! [user-setters]
+
 void User::setCountry(Country country)
 {
     if (m_country != country) {
@@ -65,3 +67,5 @@ void User::setAge(int age)
         emit ageChanged();
     }
 }
+
+//! [user-setters]

@@ -53,6 +53,8 @@
 
 #include <QProperty>
 
+//! [bindable-user-class]
+
 class BindableUser
 {
 public:
@@ -78,4 +80,7 @@ private:
     QProperty<Country> m_country { None };
     QProperty<int> m_age { 0 };
 };
+
+//! [bindable-user-class]
+
 #endif // BINDABLEUSER_H

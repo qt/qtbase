@@ -62,8 +62,11 @@
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
+
+//! [init]
     User user;
     Subscription subscription(&user);
+//! [init]
 
     SubscriptionWindow w;
 
@@ -106,14 +109,20 @@ int main(int argc, char *argv[])
     priceDisplay->setEnabled(subscription.isValid());
 
     // Track the price changes
+
+//! [connect-price-changed]
     QObject::connect(&subscription, &Subscription::priceChanged, [&] {
         priceDisplay->setText(QString::number(subscription.price()));
     });
+//! [connect-price-changed]
 
+//! [connect-validity-changed]
     QObject::connect(&subscription, &Subscription::isValidChanged, [&] {
         priceDisplay->setEnabled(subscription.isValid());
     });
+//! [connect-validity-changed]
 
+//! [connect-user]
     QObject::connect(&user, &User::countryChanged, [&] {
         subscription.calculatePrice();
         subscription.updateValidity();
@@ -122,6 +131,7 @@ int main(int argc, char *argv[])
     QObject::connect(&user, &User::ageChanged, [&] {
         subscription.updateValidity();
     });
+//! [connect-user]
 
     w.show();
     return a.exec();

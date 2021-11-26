@@ -1,0 +1,202 @@
+/****************************************************************************
+**
+** Copyright (C) 2021 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file. Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: https://www.gnu.org/licenses/fdl-1.3.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \example bindableproperties
+    \title Bindable Properties Example
+    \brief Demonstrates how the usage of bindable properties can simplify
+    your C++ code.
+
+    In this example we will demonstrate two approaches for expressing the
+    relationships between different objects depending on each other:
+    signal/slot connection-based and bindable property-based. For this
+    purpose we will consider a subscription service model to calculate the
+    cost of the subscription.
+
+    \image bindable_properties_example.png
+
+    \section1 Modelling Subscription System with Signal/Slot Approach
+
+    Let's first consider the usual pre-Qt 6 implementation.
+    To model the subscription service the \c Subscription class is used:
+
+    \snippet bindableproperties/subscription/subscription.h subscription-class
+
+    It stores the information about the subscription and provides corresponding
+    getters, setters, and notifier signals for informing the listeners about the
+    subscription information changes. It also keeps a pointer to an instance of
+    the \c User class.
+
+    The price of the subscription is calculated based on the duration of the
+    subscription:
+
+    \snippet bindableproperties/subscription/subscription.cpp calculate-discount
+
+    And user's location:
+
+    \snippet bindableproperties/subscription/subscription.cpp calculate-base-price
+
+    When the price changes, the \c priceChanged() signal is emitted, to notify the
+    listeners about the change:
+
+    \snippet bindableproperties/subscription/subscription.cpp calculate-price
+
+    Similarly, when the duration of the subscription changes, the \c durationChanged()
+    signal is emitted.
+
+    \snippet bindableproperties/subscription/subscription.cpp set-duration
+
+    \note Both methods need to check if the data is actually changed and
+    only then emit the signals. \c setDuration() also needs to recalculate
+    the price, when the duration has changed.
+
+    The \c Subscription is not valid unless the user has a valid country and
+    age, so the validity is updated in the following way:
+
+    \snippet bindableproperties/subscription/subscription.cpp update-validity
+
+    The \c User class is simple: it stores country and age of the user and
+    provides the corresponding getters, setters, and notifier signals:
+
+    \snippet bindableproperties/subscription/user.h user-class
+
+    \snippet bindableproperties/subscription/user.cpp user-setters
+
+    In the \c main() function we initialize instances of \c User and
+    \c Subsrcription:
+
+    \snippet bindableproperties/subscription/main.cpp init
+
+    And do the proper signal-slot connections, to update the \c user and
+    \c subsrcription data when UI elements change. That is straightforward,
+    so we will skip this part.
+
+    Next, we connect to \c Subscription::priceChanged(), to update the price
+    in the UI when the price changes.
+
+    \snippet bindableproperties/subscription/main.cpp connect-price-changed
+
+    We also connect to \c Subscription::isValidChanged(), to disable the price
+    display if the subscription isn't valid.
+
+    \snippet bindableproperties/subscription/main.cpp connect-validity-changed
+
+    Because the subsrcription price and validity also depend on the user's
+    country and age, we also need to connect to the \c User::countryChanged()
+    and \c User::ageChanged() signals and update \c subscription accordingly.
+
+    \snippet bindableproperties/subscription/main.cpp connect-user
+
+    This works, but there are some problems:
+
+    \list
+    \li There's a lot of boilerplate code for the signal-slot connections,
+    to be able to react to changes to \c user or \c subscription. If any of
+    the dependencies of the price changes, we need to remember to emit the
+    corresponding notifier signals, to recalculate the price and update it in
+    the UI.
+    \li If more dependencies for price calculation are added in future, we'll
+    need to add more signal-slot connections and make sure all the dependencies
+    are properly updated whenever any of them changes. The overall complexity
+    will grow, and the code will become harder to maintain.
+    \li The \c Subscription and \c User classes depend on the metaobject system
+    to be able to use the signal/slot mechanism.
+    \endlist
+
+    Can we do better?
+
+    \section1 Modeling Subscription System with Bindbable Properties
+
+    Now let's see how the \l {Qt Bindable Properties} can help to solve the
+    same problem. First, let's have a look at the \c BindableSubscription class,
+    which is similar to the \c Subscription class, but is implemented using the
+    bindable properties:
+
+    \snippet bindableproperties/bindablesubscription/bindablesubscription.h bindable-subscription-class
+
+    The first difference we can notice, is that the data fields are now wrapped
+    inside \l QProperty classes, and the notifier signals (and as a consequence the
+    dependency from the metaobject system) are gone, and new methods returning a
+    \l QBindable for each \l QProperty are added instead. The \c calculatePrice()
+    and \c updateValidty() methods are also removed. We'll see below why they aren't
+    needed anymore.
+
+    The \c BindableUser class differs from the \c User class in a similar way:
+
+    \snippet bindableproperties/bindablesubscription/bindableuser.h bindable-user-class
+
+    The second differenece is in the implementation of these calsses. First of
+    all, the dependencies between \c subscription and \c user are now tracked via
+    binding expressions:
+
+    \snippet bindableproperties/bindablesubscription/bindablesubscription.cpp binding-expressions
+
+    Behind the scenes the bindable properties track the dependency changes and
+    update the property's value whenever a change is detected. So if, for example,
+    user's country or age is changed, subscription's price and validity will be
+    updated automatically.
+
+    Another difference is that the setters are now trivial:
+
+    \snippet bindableproperties/bindablesubscription/bindablesubscription.cpp set-duration
+
+    \snippet bindableproperties/bindablesubscription/bindableuser.cpp bindable-user-setters
+
+    There's no need to check inside the setters if the property's value has
+    actually changed, \l QProperty already does that. The dependent properties
+    will be notified about the change only if the value has actually changed.
+
+    The code for updating the information about the price in the UI is also
+    simplified:
+
+    \snippet bindableproperties/bindablesubscription/main.cpp update-ui
+
+    We subscribe to changes via \c bindablePrice() and \c bindableIsValid()
+    and update the price display accordingly when any of these properties
+    changes the value. The subscriptions will stay alive as long as the
+    corresponding handlers are alive.
+
+    Also note that the copy constructors of both \c BindableSubsrciption and
+    \c BindableUser are disabled, since it's not defined what should happen
+    with their bindings when copying.
+
+    As you can see, the code became much simpler, and the problems mentioned
+    above are solved:
+
+    \list
+    \li The boilerplate code for the signal-slot connections is removed, the
+    dependencies are now tracked automatically.
+    \li The code is easier to maintain. Adding more dependencies in future
+    will only require adding the corresponding bindable properties and setting
+    the binding expressions that reflect the relationships between each other.
+    \li The \c Subscription and \c User classes don't depend on the metaobject
+    system anymore. Of course, you can still expose them to the metaobject
+    system and add \l {Q_PROPERTY}s if you need, and have the advantages of
+    bindable properties both in \c C++ and \c QML code. You can use the
+    \l QObjectBindableProperty class for that.
+    \endlist
+*/

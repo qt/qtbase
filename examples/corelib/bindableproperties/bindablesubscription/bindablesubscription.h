@@ -56,6 +56,8 @@
 
 class BindableUser;
 
+//! [bindable-subscription-class]
+
 class BindableSubscription
 {
 public:
@@ -83,5 +85,7 @@ private:
     QProperty<int> m_price { 0 };
     QProperty<bool> m_isValid { false };
 };
+
+//! [bindable-subscription-class]
 
 #endif // BNDABLESUBSCRIPTION_H

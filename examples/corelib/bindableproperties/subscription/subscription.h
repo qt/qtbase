@@ -56,6 +56,8 @@
 
 class User;
 
+//! [subscription-class]
+
 class Subscription : public QObject
 {
     Q_OBJECT
@@ -87,5 +89,7 @@ private:
     int m_price = 0;
     bool m_isValid = false;
 };
+
+//! [subscription-class]
 
 #endif // SUBSCRIPTION_H
