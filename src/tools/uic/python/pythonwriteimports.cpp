@@ -179,11 +179,11 @@ void WriteImports::writeImport(const QString &module)
 void WriteImports::doAdd(const QString &className, const DomCustomWidget *dcw)
 {
     const CustomWidgetsInfo *cwi = uic()->customWidgetsInfo();
-    if (cwi->extends(className, QLatin1String("QListWidget")))
+    if (cwi->extends(className, "QListWidget"))
         add(QStringLiteral("QListWidgetItem"));
-    else if (cwi->extends(className, QLatin1String("QTreeWidget")))
+    else if (cwi->extends(className, "QTreeWidget"))
         add(QStringLiteral("QTreeWidgetItem"));
-    else if (cwi->extends(className, QLatin1String("QTableWidget")))
+    else if (cwi->extends(className, "QTableWidget"))
         add(QStringLiteral("QTableWidgetItem"));
 
     if (dcw != nullptr) {

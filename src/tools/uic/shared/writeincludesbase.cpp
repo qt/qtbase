@@ -118,7 +118,7 @@ void WriteIncludesBase::add(const QString &className, const DomCustomWidget *dcw
     if (cwi->extendsOneOf(className, treeViewsWithHeaders))
         add(QStringLiteral("QHeaderView"));
 
-    if (!m_laidOut && cwi->extends(className, QLatin1String("QToolBox")))
+    if (!m_laidOut && cwi->extends(className, "QToolBox"))
         add(QStringLiteral("QLayout")); // spacing property of QToolBox)
 
     if (className == QStringLiteral("Line")) { // ### hmm, deprecate me!
@@ -126,7 +126,7 @@ void WriteIncludesBase::add(const QString &className, const DomCustomWidget *dcw
         return;
     }
 
-    if (cwi->extends(className, QLatin1String("QDialogButtonBox")))
+    if (cwi->extends(className, "QDialogButtonBox"))
         add(QStringLiteral("QAbstractButton")); // for signal "clicked(QAbstractButton*)"
 
     doAdd(className, dcw);
