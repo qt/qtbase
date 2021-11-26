@@ -58,7 +58,7 @@ void CustomWidgetsInfo::acceptCustomWidget(DomCustomWidget *node)
     m_customWidgets.insert(node->elementClass(), node);
 }
 
-bool CustomWidgetsInfo::extends(const QString &classNameIn, QLatin1String baseClassName) const
+bool CustomWidgetsInfo::extends(const QString &classNameIn, QAnyStringView baseClassName) const
 {
     if (classNameIn == baseClassName)
         return true;
@@ -119,19 +119,19 @@ QString CustomWidgetsInfo::customWidgetAddPageMethod(const QString &name) const
 // add page methods for simple containers taking only the widget parameter
 QString CustomWidgetsInfo::simpleContainerAddPageMethod(const QString &name) const
 {
-    using AddPageMethod = std::pair<const char *, const char *>;
+    using AddPageMethod = std::pair<QString, QString>;
 
-    static AddPageMethod addPageMethods[] = {
-        {"QStackedWidget", "addWidget"},
-        {"QToolBar", "addWidget"},
-        {"QDockWidget", "setWidget"},
-        {"QScrollArea", "setWidget"},
-        {"QSplitter", "addWidget"},
-        {"QMdiArea", "addSubWindow"}
+    static const AddPageMethod addPageMethods[] = {
+        {u"QStackedWidget"_qs, u"addWidget"_qs},
+        {u"QToolBar"_qs, u"addWidget"_qs},
+        {u"QDockWidget"_qs, u"setWidget"_qs},
+        {u"QScrollArea"_qs, u"setWidget"_qs},
+        {u"QSplitter"_qs, u"addWidget"_qs},
+        {u"QMdiArea"_qs, u"addSubWindow"_qs}
     };
     for (const auto &m : addPageMethods) {
-        if (extends(name, QLatin1String(m.first)))
-            return QLatin1String(m.second);
+        if (extends(name, m.first))
+            return m.second;
     }
     return QString();
 }
