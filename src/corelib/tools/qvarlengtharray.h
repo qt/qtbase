@@ -187,6 +187,17 @@ public:
     iterator erase(const_iterator pos) { return erase(pos, pos + 1); }
 
 protected:
+    template <typename S>
+    bool equal(const QVLABase<S> &other) const
+    {
+        return std::equal(begin(), end(), other.begin(), other.end());
+    }
+    template <typename S>
+    bool less_than(const QVLABase<S> &other) const
+    {
+        return std::lexicographical_compare(begin(), end(), other.begin(), other.end());
+    }
+
     bool isValidIterator(const const_iterator &i) const
     {
         const std::less<const T *> less = {};
@@ -200,6 +211,8 @@ class QVarLengthArray
     : public QVLABase<T>, // ### Qt 7: swap base class order
       public QVLAStorage<sizeof(T), alignof(T), Prealloc>
 {
+    template <class S, qsizetype Prealloc2>
+    friend class QVarLengthArray;
     using Base = QVLABase<T>;
     using Storage = QVLAStorage<sizeof(T), alignof(T), Prealloc>;
     static_assert(std::is_nothrow_destructible_v<T>, "Types with throwing destructors are not supported in Qt containers.");
@@ -512,7 +525,7 @@ public:
     template <typename U = T, qsizetype Prealloc2 = Prealloc> friend
     QTypeTraits::compare_eq_result<U> operator==(const QVarLengthArray<T, Prealloc> &l, const QVarLengthArray<T, Prealloc2> &r)
     {
-        return std::equal(l.begin(), l.end(), r.begin(), r.end());
+        return l.equal(r);
     }
 
     template <typename U = T, qsizetype Prealloc2 = Prealloc> friend
@@ -526,8 +539,7 @@ public:
         noexcept(noexcept(std::lexicographical_compare(lhs.begin(), lhs.end(),
                                                        rhs.begin(), rhs.end())))
     {
-        return std::lexicographical_compare(lhs.begin(), lhs.end(),
-                                            rhs.begin(), rhs.end());
+        return lhs.less_than(rhs);
     }
 
     template <typename U = T, qsizetype Prealloc2 = Prealloc> friend
@@ -553,6 +565,13 @@ public:
 #endif
 
 private:
+    template <typename U, qsizetype Prealloc2>
+    bool equal(const QVarLengthArray<U, Prealloc2> &other) const
+    { return Base::equal(other); }
+    template <typename U, qsizetype Prealloc2>
+    bool less_than(const QVarLengthArray<U, Prealloc2> &other) const
+    { return Base::less_than(other); }
+
     void reallocate(qsizetype size, qsizetype alloc);
 
     using Base::isValidIterator;
