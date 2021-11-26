@@ -1,8 +1,44 @@
 type: Group
 instructions:
+  - type: ScheduleUploadTestResults
+  - type: PrependToEnvironmentVariable
+    variableName: PATH
+    variableValue: "{{.Env.PYTHON3_PATH}}:"
+    disable_if:
+      condition: property
+      property: host.os
+      equals_value: Windows
+  - type: EnvironmentVariable
+    variableName: TESTRUNNER
+    variableValue: "{{.InstallDir}}/libexec/qt-testrunner.py --"
+    disable_if:
+      condition: property
+      property: host.os
+      equals_value: Windows
+  - type: EnvironmentVariable
+    variableName: TESTRUNNER
+    variableValue: "{{.InstallDir}}\\bin\\qt-testrunner.py --"
+    enable_if:
+      condition: property
+      property: host.os
+      equals_value: Windows
+  - type: EnvironmentVariable
+    variableName: COIN_CTEST_RESULTSDIR
+    variableValue: "{{.AgentWorkingDir}}\\testresults"
+    enable_if:
+      condition: property
+      property: host.os
+      equals_value: Windows
+  - type: EnvironmentVariable
+    variableName: COIN_CTEST_RESULTSDIR
+    variableValue: "{{.AgentWorkingDir}}/testresults"
+    disable_if:
+      condition: property
+      property: host.os
+      equals_value: Windows
   - type: EnvironmentVariable
     variableName: CTEST_ARGS
-    variableValue: "-V --rerun-failed --force-new-ctest-process --repeat until-pass:5"
+    variableValue: "-V"
   - type: AppendToEnvironmentVariable
     variableName: CTEST_ARGS
     variableValue: " --stop-on-failure"
