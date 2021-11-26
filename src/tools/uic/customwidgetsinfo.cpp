@@ -101,6 +101,21 @@ bool CustomWidgetsInfo::isCustomWidgetContainer(const QString &className) const
     return false;
 }
 
+// Is it ambiguous, resulting in different signals for Python
+// "QAbstractButton::clicked(checked=false)"
+bool CustomWidgetsInfo::isAmbiguousSignal(const QString &className,
+                                          const QString &signalSignature) const
+{
+    if (signalSignature.startsWith(u"triggered") && extends(className, "QAction"))
+        return true;
+    if (signalSignature.startsWith(u"clicked(")
+        && extendsOneOf(className, {u"QCommandLinkButton"_qs, u"QCheckBox"_qs,
+                                    u"QPushButton"_qs, u"QRadioButton"_qs, u"QToolButton"_qs})) {
+        return true;
+    }
+    return false;
+}
+
 QString CustomWidgetsInfo::realClassName(const QString &className) const
 {
     if (className == QLatin1String("Line"))

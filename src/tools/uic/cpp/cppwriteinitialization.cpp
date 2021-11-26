@@ -27,6 +27,7 @@
 ****************************************************************************/
 
 #include "cppwriteinitialization.h"
+#include "customwidgetsinfo.h"
 #include "driver.h"
 #include "ui4.h"
 #include "utils.h"
@@ -2640,10 +2641,14 @@ void WriteInitialization::acceptConnection(DomConnection *connection)
         return;
     }
     const QString senderSignature = connection->elementSignal();
+    language::SignalSlotOptions signalOptions;
+    if (m_uic->customWidgetsInfo()->isAmbiguousSignal(senderDecl.className, senderSignature))
+        signalOptions.setFlag(language::SignalSlotOption::Ambiguous);
+
     language::SignalSlot theSignal{senderDecl.name, senderSignature,
-                                   senderDecl.className};
+                                   senderDecl.className, signalOptions};
     language::SignalSlot theSlot{receiverDecl.name, connection->elementSlot(),
-                                 receiverDecl.className};
+                                 receiverDecl.className, {}};
 
     m_output << m_indent;
     language::formatConnection(m_output, theSignal, theSlot,

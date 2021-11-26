@@ -61,6 +61,9 @@ public:
 
     bool isCustomWidgetContainer(const QString &className) const;
 
+    bool isAmbiguousSignal(const QString &className,
+                           const QString &signalSignature) const;
+
 private:
     using NameCustomWidgetMap = QMap<QString, DomCustomWidget*>;
     NameCustomWidgetMap m_customWidgets;
