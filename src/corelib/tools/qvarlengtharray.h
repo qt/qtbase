@@ -75,6 +75,101 @@ protected:
     qsizetype a;      // capacity
     qsizetype s;      // size
     T *ptr;     // data
+
+    Q_ALWAYS_INLINE constexpr void verify(qsizetype pos = 0, qsizetype n = 1) const
+    {
+        Q_ASSERT(pos >= 0);
+        Q_ASSERT(pos <= size());
+        Q_ASSERT(n >= 0);
+        Q_ASSERT(n <= size() - pos);
+    }
+
+public:
+    T *data() noexcept { return ptr; }
+    const T *data() const noexcept { return ptr; }
+
+    using size_type = qsizetype;
+
+    size_type capacity() const noexcept { return a; }
+    size_type size() const noexcept { return s; }
+    bool empty() const noexcept { return size() == 0; }
+
+    using iterator = T*;
+    using const_iterator = const T*;
+
+    iterator begin() noexcept { return data(); }
+    const_iterator begin() const noexcept { return data(); }
+    const_iterator cbegin() const noexcept { return begin(); }
+    iterator end() noexcept { return data() + size(); }
+    const_iterator end() const noexcept { return data() + size(); }
+    const_iterator cend() const noexcept { return end(); }
+
+    using reverse_iterator = std::reverse_iterator<iterator>;
+    using const_reverse_iterator = std::reverse_iterator<const_iterator>;
+
+    reverse_iterator rbegin() noexcept { return reverse_iterator{end()}; }
+    const_reverse_iterator rbegin() const noexcept { return const_reverse_iterator{end()}; }
+    const_reverse_iterator crbegin() const noexcept { return rbegin(); }
+    reverse_iterator rend() noexcept { return reverse_iterator{begin()}; }
+    const_reverse_iterator rend() const noexcept { return const_reverse_iterator{begin()}; }
+    const_reverse_iterator crend() const noexcept { return rend(); }
+
+    using value_type = T;
+    using reference = value_type&;
+    using const_reference = const value_type&;
+    using pointer = value_type*;
+    using const_pointer = const value_type*;
+    using difference_type = qptrdiff;
+
+    reference front()
+    {
+        verify();
+        return *begin();
+    }
+
+    const_reference front() const
+    {
+        verify();
+        return *begin();
+    }
+
+    reference back()
+    {
+        verify();
+        return *rbegin();
+    }
+
+    const_reference back() const
+    {
+        verify();
+        return *rbegin();
+    }
+
+    void pop_back()
+    {
+        verify();
+        if constexpr (QTypeInfo<T>::isComplex)
+            data()[size() - 1].~T();
+        --s;
+    }
+
+    reference operator[](qsizetype idx)
+    {
+        verify(idx);
+        return data()[idx];
+    }
+    const_reference operator[](qsizetype idx) const
+    {
+        verify(idx);
+        return data()[idx];
+    }
+
+protected:
+    bool isValidIterator(const const_iterator &i) const
+    {
+        const std::less<const T *> less = {};
+        return !less(cend(), i) && !less(i, cbegin());
+    }
 };
 
 // Prealloc = 256 by default, specified in qcontainerfwd.h
@@ -86,17 +181,21 @@ class QVarLengthArray
     using Base = QVLABase<T>;
     using Storage = QVLAStorage<sizeof(T), alignof(T), Prealloc>;
     static_assert(std::is_nothrow_destructible_v<T>, "Types with throwing destructors are not supported in Qt containers.");
-
-    Q_ALWAYS_INLINE void verify(qsizetype pos = 0, qsizetype n = 1) const
-    {
-        // verify that [data() + pos, data() + pos + n[ is a valid range
-        Q_ASSERT(pos >= 0);
-        Q_ASSERT(pos <= size());
-        Q_ASSERT(n >= 0);
-        Q_ASSERT(n <= size() - pos);
-    }
-
+    using Base::verify;
 public:
+    using size_type = typename Base::size_type;
+    using value_type = typename Base::value_type;
+    using pointer = typename Base::pointer;
+    using const_pointer = typename Base::const_pointer;
+    using reference = typename Base::reference;
+    using const_reference = typename Base::const_reference;
+    using difference_type = typename Base::difference_type;
+
+    using iterator = typename Base::iterator;
+    using const_iterator = typename Base::const_iterator;
+    using reverse_iterator = typename Base::reverse_iterator;
+    using const_reverse_iterator = typename Base::const_reverse_iterator;
+
     QVarLengthArray() noexcept
     {
         this->a = Prealloc;
@@ -190,40 +289,39 @@ public:
 
     inline void removeLast()
     {
-        verify();
-        if constexpr (QTypeInfo<T>::isComplex)
-            data()[size() - 1].~T();
-        --this->s;
+        Base::pop_back();
     }
+#ifdef Q_QDOC
     inline qsizetype size() const { return this->s; }
+#endif
+    using Base::size;
     inline qsizetype count() const { return size(); }
     inline qsizetype length() const { return size(); }
     inline T &first()
     {
-        verify();
-        return *begin();
+        return front();
     }
     inline const T &first() const
     {
-        verify();
-        return *begin();
+        return front();
     }
     T &last()
     {
-        verify();
-        return *(end() - 1);
+        return back();
     }
     const T &last() const
     {
-        verify();
-        return *(end() - 1);
+        return back();
     }
-    inline bool isEmpty() const { return size() == 0; }
+    bool isEmpty() const { return empty(); }
     void resize(qsizetype sz) { reallocate(sz, qMax(sz, capacity())); }
     inline void clear() { resize(0); }
     void squeeze() { reallocate(size(), size()); }
 
+    using Base::capacity;
+#ifdef Q_QDOC
     qsizetype capacity() const { return this->a; }
+#endif
     void reserve(qsizetype sz) { if (sz > capacity()) reallocate(size(), sz); }
 
     template <typename AT = T>
@@ -233,6 +331,7 @@ public:
     template <typename AT = T>
     inline bool contains(const AT &t) const;
 
+#ifdef Q_QDOC
     inline T &operator[](qsizetype idx)
     {
         verify(idx);
@@ -243,6 +342,8 @@ public:
         verify(idx);
         return data()[idx];
     }
+#endif
+    using Base::operator[];
     inline const T &at(qsizetype idx) const { return operator[](idx); }
 
     T value(qsizetype i) const;
@@ -289,22 +390,13 @@ public:
     template <typename Predicate>
     qsizetype removeIf(Predicate pred);
 
+#ifdef Q_QDOC
     inline T *data() { return this->ptr; }
     inline const T *data() const { return this->ptr; }
+#endif
+    using Base::data;
     inline const T *constData() const { return data(); }
-    typedef qsizetype size_type;
-    typedef T value_type;
-    typedef value_type *pointer;
-    typedef const value_type *const_pointer;
-    typedef value_type &reference;
-    typedef const value_type &const_reference;
-    typedef qptrdiff difference_type;
-
-    typedef T *iterator;
-    typedef const T *const_iterator;
-    typedef std::reverse_iterator<iterator> reverse_iterator;
-    typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
-
+#ifdef Q_QDOC
     inline iterator begin() { return data(); }
     inline const_iterator begin() const { return data(); }
     inline const_iterator cbegin() const { return begin(); }
@@ -312,13 +404,27 @@ public:
     inline iterator end() { return data() + size(); }
     inline const_iterator end() const { return data() + size(); }
     inline const_iterator cend() const { return end(); }
+#endif
+
+    using Base::begin;
+    using Base::cbegin;
+    auto constBegin() const -> const_iterator { return begin(); }
+    using Base::end;
+    using Base::cend;
     inline const_iterator constEnd() const { return end(); }
+#ifdef Q_QDOC
     reverse_iterator rbegin() { return reverse_iterator(end()); }
     reverse_iterator rend() { return reverse_iterator(begin()); }
     const_reverse_iterator rbegin() const { return const_reverse_iterator(end()); }
     const_reverse_iterator rend() const { return const_reverse_iterator(begin()); }
     const_reverse_iterator crbegin() const { return const_reverse_iterator(end()); }
     const_reverse_iterator crend() const { return const_reverse_iterator(begin()); }
+#endif
+    using Base::rbegin;
+    using Base::crbegin;
+    using Base::rend;
+    using Base::crend;
+
     iterator insert(const_iterator before, qsizetype n, const T &x);
     iterator insert(const_iterator before, T &&x) { return emplace(before, std::move(x)); }
     inline iterator insert(const_iterator before, const T &x) { return insert(before, 1, x); }
@@ -326,14 +432,22 @@ public:
     inline iterator erase(const_iterator pos) { return erase(pos, pos + 1); }
 
     // STL compatibility:
+#ifdef Q_QDOC
     inline bool empty() const { return isEmpty(); }
+#endif
+    using Base::empty;
     inline void push_back(const T &t) { append(t); }
     void push_back(T &&t) { append(std::move(t)); }
+#ifdef Q_QDOC
     inline void pop_back() { removeLast(); }
     inline T &front() { return first(); }
     inline const T &front() const { return first(); }
     inline T &back() { return last(); }
     inline const T &back() const { return last(); }
+#endif
+    using Base::pop_back;
+    using Base::front;
+    using Base::back;
     void shrink_to_fit() { squeeze(); }
     template <typename...Args>
     iterator emplace(const_iterator pos, Args &&...args);
@@ -401,11 +515,7 @@ public:
 private:
     void reallocate(qsizetype size, qsizetype alloc);
 
-    bool isValidIterator(const const_iterator &i) const
-    {
-        const std::less<const T *> less = {};
-        return !less(cend(), i) && !less(i, cbegin());
-    }
+    using Base::isValidIterator;
 };
 
 template <typename InputIterator,
