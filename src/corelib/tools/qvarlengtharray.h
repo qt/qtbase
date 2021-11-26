@@ -407,7 +407,7 @@ Q_INLINE_TEMPLATE QVarLengthArray<T, Prealloc>::QVarLengthArray(qsizetype asize)
         ptr = reinterpret_cast<T *>(array);
         a = Prealloc;
     }
-    if (QTypeInfo<T>::isComplex) {
+    if constexpr (QTypeInfo<T>::isComplex) {
         T *i = end();
         while (i != begin())
             new (--i) T;
@@ -516,7 +516,7 @@ Q_OUTOFLINE_TEMPLATE void QVarLengthArray<T, Prealloc>::reallocate(qsizetype asi
             a = Prealloc;
         }
         s = 0;
-        if (!QTypeInfo<T>::isRelocatable) {
+        if constexpr (!QTypeInfo<T>::isRelocatable) {
             QT_TRY {
                 // move all the old elements
                 while (size() < copySize) {
@@ -548,7 +548,7 @@ Q_OUTOFLINE_TEMPLATE void QVarLengthArray<T, Prealloc>::reallocate(qsizetype asi
     if (oldPtr != reinterpret_cast<T *>(array) && oldPtr != data())
         free(oldPtr);
 
-    if (QTypeInfo<T>::isComplex) {
+    if constexpr (QTypeInfo<T>::isComplex) {
         // call default constructor for new objects (which can throw)
         while (size() < asize) {
             new (data() + size()) T;
@@ -630,7 +630,7 @@ Q_OUTOFLINE_TEMPLATE auto QVarLengthArray<T, Prealloc>::emplace(const_iterator b
     qsizetype offset = qsizetype(before - begin());
     if (size() == capacity())
         reserve(size() * 2);
-    if (!QTypeInfo<T>::isRelocatable) {
+    if constexpr (!QTypeInfo<T>::isRelocatable) {
         T *b = begin() + offset;
         T *i = end();
         T *j = i + 1;
@@ -661,7 +661,7 @@ Q_OUTOFLINE_TEMPLATE typename QVarLengthArray<T, Prealloc>::iterator QVarLengthA
     if (n != 0) {
         const T copy(t); // `t` could alias an element in [begin(), end()[
         resize(size() + n);
-        if (!QTypeInfo<T>::isRelocatable) {
+        if constexpr (!QTypeInfo<T>::isRelocatable) {
             T *b = begin() + offset;
             T *j = end();
             T *i = j - n;
