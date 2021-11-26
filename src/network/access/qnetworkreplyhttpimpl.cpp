@@ -790,6 +790,12 @@ void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpReq
         allowed.isValid() && allowed.canConvert<bool>()) {
         httpRequest.setHTTP2Allowed(allowed.value<bool>());
     }
+    auto h2cAttribute = request.attribute(QNetworkRequest::Http2CleartextAllowedAttribute);
+    // ### Qt7: Stop checking the environment variable
+    if (h2cAttribute.toBool()
+        || (!h2cAttribute.isValid() && qEnvironmentVariableIsSet("QT_NETWORK_H2C_ALLOWED"))) {
+        httpRequest.setH2cAllowed(true);
+    }
 
     if (request.attribute(QNetworkRequest::Http2DirectAttribute).toBool()) {
         // Intentionally mutually exclusive - cannot be both direct and 'allowed'

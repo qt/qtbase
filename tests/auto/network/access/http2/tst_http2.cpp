@@ -115,6 +115,9 @@ private slots:
     void authenticationRequired_data();
     void authenticationRequired();
 
+    void h2cAllowedAttribute_data();
+    void h2cAllowedAttribute();
+
 protected slots:
     // Slots to listen to our in-process server:
     void serverStarted(quint16 port);
@@ -223,7 +226,6 @@ tst_Http2::~tst_Http2()
 void tst_Http2::init()
 {
     manager.reset(new QNetworkAccessManager);
-    qputenv("QT_NETWORK_H2C_ALLOWED", "1");
 }
 
 void tst_Http2::singleRequest_data()
@@ -277,6 +279,7 @@ void tst_Http2::singleRequest()
     url.setPath("/index.html");
 
     QNetworkRequest request(url);
+    request.setAttribute(QNetworkRequest::Http2CleartextAllowedAttribute, true);
     QFETCH(const QNetworkRequest::Attribute, h2Attribute);
     request.setAttribute(h2Attribute, QVariant(true));
 
@@ -452,6 +455,7 @@ void tst_Http2::pushPromise()
     url.setPath("/index.html");
 
     QNetworkRequest request(url);
+    request.setAttribute(QNetworkRequest::Http2CleartextAllowedAttribute, true);
     request.setAttribute(QNetworkRequest::Http2AllowedAttribute, QVariant(true));
     request.setHttp2Configuration(params);
 
@@ -478,6 +482,7 @@ void tst_Http2::pushPromise()
 
     url.setPath("/script.js");
     QNetworkRequest promisedRequest(url);
+    request.setAttribute(QNetworkRequest::Http2CleartextAllowedAttribute, true);
     promisedRequest.setAttribute(QNetworkRequest::Http2AllowedAttribute, QVariant(true));
     reply = manager->get(promisedRequest);
     connect(reply, &QNetworkReply::finished, this, &tst_Http2::replyFinished);
@@ -532,6 +537,7 @@ void tst_Http2::goaway()
     for (int i = 0; i < nRequests; ++i) {
         url.setPath(QString("/%1").arg(i));
         QNetworkRequest request(url);
+        request.setAttribute(QNetworkRequest::Http2CleartextAllowedAttribute, true);
         request.setAttribute(QNetworkRequest::Http2AllowedAttribute, QVariant(true));
         replies[i] = manager->get(request);
         QCOMPARE(replies[i]->error(), QNetworkReply::NoError);
@@ -673,6 +679,7 @@ void tst_Http2::connectToHost()
         auto copyUrl = url;
         copyUrl.setScheme(QLatin1String("preconnect-https"));
         QNetworkRequest request(copyUrl);
+        request.setAttribute(QNetworkRequest::Http2CleartextAllowedAttribute, true);
         request.setAttribute(requestAttribute, true);
         reply = manager->get(request);
         // Since we're using self-signed certificates, ignore SSL errors:
@@ -685,6 +692,7 @@ void tst_Http2::connectToHost()
         auto copyUrl = url;
         copyUrl.setScheme(QLatin1String("preconnect-http"));
         QNetworkRequest request(copyUrl);
+        request.setAttribute(QNetworkRequest::Http2CleartextAllowedAttribute, true);
         request.setAttribute(requestAttribute, true);
         reply = manager->get(request);
     }
@@ -705,6 +713,7 @@ void tst_Http2::connectToHost()
     QCOMPARE(nRequests, 1);
 
     QNetworkRequest request(url);
+    request.setAttribute(QNetworkRequest::Http2CleartextAllowedAttribute, true);
     request.setAttribute(requestAttribute, QVariant(true));
     reply = manager->get(request);
     connect(reply, &QNetworkReply::finished, this, &tst_Http2::replyFinished);
@@ -770,6 +779,7 @@ void tst_Http2::maxFrameSize()
     url.setPath(QString("/stream1.html"));
 
     QNetworkRequest request(url);
+    request.setAttribute(QNetworkRequest::Http2CleartextAllowedAttribute, true);
     request.setAttribute(attribute, QVariant(true));
     request.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("text/plain"));
     request.setHttp2Configuration(h2Config);
@@ -916,6 +926,7 @@ void tst_Http2::moreActivitySignals()
     auto url = requestUrl(connectionType);
     url.setPath(QString("/stream1.html"));
     QNetworkRequest request(url);
+    request.setAttribute(QNetworkRequest::Http2CleartextAllowedAttribute, true);
     QFETCH(const QNetworkRequest::Attribute, h2Attribute);
     request.setAttribute(h2Attribute, QVariant(true));
     request.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("text/plain"));
@@ -1036,6 +1047,7 @@ void tst_Http2::contentEncoding()
     url.setPath("/index.html");
 
     QNetworkRequest request(url);
+    request.setAttribute(QNetworkRequest::Http2CleartextAllowedAttribute, true);
     QFETCH(const QNetworkRequest::Attribute, h2Attribute);
     request.setAttribute(h2Attribute, QVariant(true));
 
@@ -1093,6 +1105,7 @@ void tst_Http2::authenticationRequired()
     auto url = requestUrl(defaultConnectionType());
     url.setPath("/index.html");
     QNetworkRequest request(url);
+    request.setAttribute(QNetworkRequest::Http2CleartextAllowedAttribute, true);
 
     QByteArray expectedBody = "Hello, World!";
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
@@ -1145,6 +1158,72 @@ void tst_Http2::authenticationRequired()
     // in the next test running after this. In the `success` case we anyway expect it to have been
     // received.
     QTRY_VERIFY(serverGotSettingsACK);
+}
+
+void tst_Http2::h2cAllowedAttribute_data()
+{
+    QTest::addColumn<bool>("h2cAllowed");
+    QTest::addColumn<bool>("useAttribute"); // true: use attribute, false: use environment variable
+    QTest::addColumn<bool>("success");
+
+    QTest::addRow("h2c-not-allowed") << false << false << false;
+    // Use the attribute to enable/disable the H2C:
+    QTest::addRow("attribute") << true << true << true;
+    // Use the QT_NETWORK_H2C_ALLOWED environment variable to enable/disable the H2C:
+    QTest::addRow("environment-variable") << true << false << true;
+}
+
+void tst_Http2::h2cAllowedAttribute()
+{
+    QFETCH(const bool, h2cAllowed);
+    QFETCH(const bool, useAttribute);
+    QFETCH(const bool, success);
+
+    clearHTTP2State();
+    serverPort = 0;
+
+    ServerPtr targetServer(newServer(defaultServerSettings, H2Type::h2c));
+    targetServer->setResponseBody("Hello");
+
+    QMetaObject::invokeMethod(targetServer.data(), "startServer", Qt::QueuedConnection);
+    runEventLoop();
+
+    QVERIFY(serverPort != 0);
+
+    nRequests = 1;
+
+    auto url = requestUrl(H2Type::h2c);
+    url.setPath("/index.html");
+    QNetworkRequest request(url);
+    if (h2cAllowed) {
+        if (useAttribute)
+            request.setAttribute(QNetworkRequest::Http2CleartextAllowedAttribute, true);
+        else
+            qputenv("QT_NETWORK_H2C_ALLOWED", "1");
+    }
+    auto envCleanup = qScopeGuard([]() { qunsetenv("QT_NETWORK_H2C_ALLOWED"); });
+
+    QScopedPointer<QNetworkReply> reply;
+    reply.reset(manager->get(request));
+
+    if (success)
+        connect(reply.get(), &QNetworkReply::finished, this, &tst_Http2::replyFinished);
+    else
+        connect(reply.get(), &QNetworkReply::errorOccurred, this, &tst_Http2::replyFinishedWithError);
+
+    // Since we're using self-signed certificates,
+    // ignore SSL errors:
+    reply->ignoreSslErrors();
+
+    runEventLoop();
+    STOP_ON_FAILURE
+
+    if (!success) {
+        QCOMPARE(reply->error(), QNetworkReply::ConnectionRefusedError);
+    } else {
+        QCOMPARE(reply->readAll(), QByteArray("Hello"));
+        QTRY_VERIFY(serverGotSettingsACK);
+    }
 }
 
 void tst_Http2::serverStarted(quint16 port)
@@ -1204,6 +1283,7 @@ void tst_Http2::sendRequest(int streamNumber,
     url.setPath(QString("/stream%1.html").arg(streamNumber));
 
     QNetworkRequest request(url);
+    request.setAttribute(QNetworkRequest::Http2CleartextAllowedAttribute, true);
     request.setAttribute(QNetworkRequest::Http2AllowedAttribute, QVariant(true));
     request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
     request.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("text/plain"));

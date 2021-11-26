@@ -61,6 +61,7 @@ QHttpNetworkRequestPrivate::QHttpNetworkRequestPrivate(const QHttpNetworkRequest
       pipeliningAllowed(other.pipeliningAllowed),
       http2Allowed(other.http2Allowed),
       http2Direct(other.http2Direct),
+      h2cAllowed(other.h2cAllowed),
       withCredentials(other.withCredentials),
       ssl(other.ssl),
       preConnect(other.preConnect),
@@ -85,6 +86,7 @@ bool QHttpNetworkRequestPrivate::operator==(const QHttpNetworkRequestPrivate &ot
         && (pipeliningAllowed == other.pipeliningAllowed)
         && (http2Allowed == other.http2Allowed)
         && (http2Direct == other.http2Direct)
+        && (h2cAllowed == other.h2cAllowed)
         // we do not clear the customVerb in setOperation
         && (operation != QHttpNetworkRequest::Custom || (customVerb == other.customVerb))
         && (withCredentials == other.withCredentials)
@@ -367,12 +369,12 @@ void QHttpNetworkRequest::setHTTP2Direct(bool b)
 
 bool QHttpNetworkRequest::isH2cAllowed() const
 {
-    return qEnvironmentVariableIsSet("QT_NETWORK_H2C_ALLOWED");
+    return d->h2cAllowed;
 }
 
 void QHttpNetworkRequest::setH2cAllowed(bool b)
 {
-    Q_UNUSED(b);
+    d->h2cAllowed = b;
 }
 
 bool QHttpNetworkRequest::withCredentials() const

@@ -272,7 +272,8 @@ QT_BEGIN_NAMESPACE
         Requests only, type: QMetaType::Bool (default: true)
         Indicates whether the QNetworkAccessManager code is
         allowed to use HTTP/2 with this request. This applies
-        to SSL requests or 'cleartext' HTTP/2.
+        to SSL requests or 'cleartext' HTTP/2 if Http2CleartextAllowedAttribute
+        is set.
 
     \value Http2WasUsedAttribute
         Replies only, type: QMetaType::Bool (default: false)
@@ -304,8 +305,9 @@ QT_BEGIN_NAMESPACE
         If set, this attribute will force QNetworkAccessManager to use
         HTTP/2 protocol without initial HTTP/2 protocol negotiation.
         Use of this attribute implies prior knowledge that a particular
-        server supports HTTP/2. The attribute works with SSL or 'cleartext'
-        HTTP/2. If a server turns out to not support HTTP/2, when HTTP/2 direct
+        server supports HTTP/2. The attribute works with SSL or with 'cleartext'
+        HTTP/2 if Http2CleartextAllowedAttribute is set.
+        If a server turns out to not support HTTP/2, when HTTP/2 direct
         was specified, QNetworkAccessManager gives up, without attempting to
         fall back to HTTP/1.1. If both Http2AllowedAttribute and
         Http2DirectAttribute are set, Http2DirectAttribute takes priority.
@@ -323,6 +325,15 @@ QT_BEGIN_NAMESPACE
         Requests only, type: QMetaType::Int
         To set when the TCP connections to a server (HTTP1 and HTTP2) should
         be closed after the last pending request had been processed.
+        (This value was introduced in 6.3.)
+
+    \value Http2CleartextAllowedAttribute
+        Requests only, type: QMetaType::Bool (default: false)
+        If set, this attribute will tell QNetworkAccessManager to attempt
+        an upgrade to HTTP/2 over cleartext (also known as h2c).
+        Until Qt 7 the default value for this attribute can be overridden
+        to true by setting the QT_NETWORK_H2C_ALLOWED environment variable.
+        This attribute is ignored if the Http2AllowedAttribute is not set.
         (This value was introduced in 6.3.)
 
     \value User

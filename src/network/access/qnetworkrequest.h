@@ -98,6 +98,7 @@ public:
         ResourceTypeAttribute, // internal
         AutoDeleteReplyOnFinishAttribute,
         ConnectionCacheExpiryTimeoutSecondsAttribute,
+        Http2CleartextAllowedAttribute,
 
         User = 1000,
         UserMax = 32767

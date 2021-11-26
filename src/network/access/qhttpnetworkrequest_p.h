@@ -182,6 +182,7 @@ public:
     bool pipeliningAllowed;
     bool http2Allowed;
     bool http2Direct;
+    bool h2cAllowed = false;
     bool withCredentials;
     bool ssl;
     bool preConnect;
