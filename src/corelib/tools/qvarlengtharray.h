@@ -153,6 +153,13 @@ public:
         --s;
     }
 
+    template <typename AT = T>
+    qsizetype indexOf(const AT &t, qsizetype from = 0) const;
+    template <typename AT = T>
+    qsizetype lastIndexOf(const AT &t, qsizetype from = -1) const;
+    template <typename AT = T>
+    bool contains(const AT &t) const;
+
     reference operator[](qsizetype idx)
     {
         verify(idx);
@@ -163,6 +170,21 @@ public:
         verify(idx);
         return data()[idx];
     }
+
+    value_type value(qsizetype i) const;
+    value_type value(qsizetype i, const T& defaultValue) const;
+
+    void replace(qsizetype i, const T &t);
+    void remove(qsizetype i, qsizetype n = 1);
+    template <typename AT = T>
+    qsizetype removeAll(const AT &t);
+    template <typename AT = T>
+    bool removeOne(const AT &t);
+    template <typename Predicate>
+    qsizetype removeIf(Predicate pred);
+
+    iterator erase(const_iterator begin, const_iterator end);
+    iterator erase(const_iterator pos) { return erase(pos, pos + 1); }
 
 protected:
     bool isValidIterator(const const_iterator &i) const
@@ -324,12 +346,17 @@ public:
 #endif
     void reserve(qsizetype sz) { if (sz > capacity()) reallocate(size(), sz); }
 
+#ifdef Q_QDOC
     template <typename AT = T>
     inline qsizetype indexOf(const AT &t, qsizetype from = 0) const;
     template <typename AT = T>
     inline qsizetype lastIndexOf(const AT &t, qsizetype from = -1) const;
     template <typename AT = T>
     inline bool contains(const AT &t) const;
+#endif
+    using Base::indexOf;
+    using Base::lastIndexOf;
+    using Base::contains;
 
 #ifdef Q_QDOC
     inline T &operator[](qsizetype idx)
@@ -346,8 +373,11 @@ public:
     using Base::operator[];
     inline const T &at(qsizetype idx) const { return operator[](idx); }
 
+#ifdef Q_QDOC
     T value(qsizetype i) const;
     T value(qsizetype i, const T &defaultValue) const;
+#endif
+    using Base::value;
 
     inline void append(const T &t)
     {
@@ -381,6 +411,7 @@ public:
     void insert(qsizetype i, T &&t);
     void insert(qsizetype i, const T &t);
     void insert(qsizetype i, qsizetype n, const T &t);
+#ifdef Q_QDOC
     void replace(qsizetype i, const T &t);
     void remove(qsizetype i, qsizetype n = 1);
     template <typename AT = T>
@@ -389,6 +420,12 @@ public:
     bool removeOne(const AT &t);
     template <typename Predicate>
     qsizetype removeIf(Predicate pred);
+#endif
+    using Base::replace;
+    using Base::remove;
+    using Base::removeAll;
+    using Base::removeOne;
+    using Base::removeIf;
 
 #ifdef Q_QDOC
     inline T *data() { return this->ptr; }
@@ -428,8 +465,11 @@ public:
     iterator insert(const_iterator before, qsizetype n, const T &x);
     iterator insert(const_iterator before, T &&x) { return emplace(before, std::move(x)); }
     inline iterator insert(const_iterator before, const T &x) { return insert(before, 1, x); }
+#ifdef Q_QDOC
     iterator erase(const_iterator begin, const_iterator end);
     inline iterator erase(const_iterator pos) { return erase(pos, pos + 1); }
+#endif
+    using Base::erase;
 
     // STL compatibility:
 #ifdef Q_QDOC
@@ -544,9 +584,9 @@ Q_INLINE_TEMPLATE QVarLengthArray<T, Prealloc>::QVarLengthArray(qsizetype asize)
     }
 }
 
-template <class T, qsizetype Prealloc>
+template <class T>
 template <typename AT>
-Q_INLINE_TEMPLATE qsizetype QVarLengthArray<T, Prealloc>::indexOf(const AT &t, qsizetype from) const
+Q_INLINE_TEMPLATE qsizetype QVLABase<T>::indexOf(const AT &t, qsizetype from) const
 {
     if (from < 0)
         from = qMax(from + size(), qsizetype(0));
@@ -560,9 +600,9 @@ Q_INLINE_TEMPLATE qsizetype QVarLengthArray<T, Prealloc>::indexOf(const AT &t, q
     return -1;
 }
 
-template <class T, qsizetype Prealloc>
+template <class T>
 template <typename AT>
-Q_INLINE_TEMPLATE qsizetype QVarLengthArray<T, Prealloc>::lastIndexOf(const AT &t, qsizetype from) const
+Q_INLINE_TEMPLATE qsizetype QVLABase<T>::lastIndexOf(const AT &t, qsizetype from) const
 {
     if (from < 0)
         from += size();
@@ -579,9 +619,9 @@ Q_INLINE_TEMPLATE qsizetype QVarLengthArray<T, Prealloc>::lastIndexOf(const AT &
     return -1;
 }
 
-template <class T, qsizetype Prealloc>
+template <class T>
 template <typename AT>
-Q_INLINE_TEMPLATE bool QVarLengthArray<T, Prealloc>::contains(const AT &t) const
+Q_INLINE_TEMPLATE bool QVLABase<T>::contains(const AT &t) const
 {
     const T *b = begin();
     const T *i = end();
@@ -669,15 +709,15 @@ Q_OUTOFLINE_TEMPLATE void QVarLengthArray<T, Prealloc>::reallocate(qsizetype asi
 
 }
 
-template <class T, qsizetype Prealloc>
-Q_OUTOFLINE_TEMPLATE T QVarLengthArray<T, Prealloc>::value(qsizetype i) const
+template <class T>
+Q_OUTOFLINE_TEMPLATE T QVLABase<T>::value(qsizetype i) const
 {
     if (size_t(i) >= size_t(size()))
         return T();
     return operator[](i);
 }
-template <class T, qsizetype Prealloc>
-Q_OUTOFLINE_TEMPLATE T QVarLengthArray<T, Prealloc>::value(qsizetype i, const T &defaultValue) const
+template <class T>
+Q_OUTOFLINE_TEMPLATE T QVLABase<T>::value(qsizetype i, const T &defaultValue) const
 {
     return (size_t(i) >= size_t(size())) ? defaultValue : operator[](i);
 }
@@ -694,21 +734,21 @@ template <class T, qsizetype Prealloc>
 inline void QVarLengthArray<T, Prealloc>::insert(qsizetype i, qsizetype n, const T &t)
 { verify(i, 0);
   insert(begin() + i, n, t); }
-template <class T, qsizetype Prealloc>
-inline void QVarLengthArray<T, Prealloc>::remove(qsizetype i, qsizetype n)
+template <class T>
+inline void QVLABase<T>::remove(qsizetype i, qsizetype n)
 { verify(i, n);
   erase(begin() + i, begin() + i + n); }
-template <class T, qsizetype Prealloc>
+template <class T>
 template <typename AT>
-inline qsizetype QVarLengthArray<T, Prealloc>::removeAll(const AT &t)
+inline qsizetype QVLABase<T>::removeAll(const AT &t)
 { return QtPrivate::sequential_erase_with_copy(*this, t); }
-template <class T, qsizetype Prealloc>
+template <class T>
 template <typename AT>
-inline bool QVarLengthArray<T, Prealloc>::removeOne(const AT &t)
+inline bool QVLABase<T>::removeOne(const AT &t)
 { return QtPrivate::sequential_erase_one(*this, t); }
-template <class T, qsizetype Prealloc>
+template <class T>
 template <typename Predicate>
-inline qsizetype QVarLengthArray<T, Prealloc>::removeIf(Predicate pred)
+inline qsizetype QVLABase<T>::removeIf(Predicate pred)
 { return QtPrivate::sequential_erase_if(*this, pred); }
 #if QT_DEPRECATED_SINCE(6, 3)
 template <class T, qsizetype Prealloc>
@@ -719,8 +759,8 @@ inline void QVarLengthArray<T, Prealloc>::prepend(const T &t)
 { insert(begin(), 1, t); }
 #endif
 
-template <class T, qsizetype Prealloc>
-inline void QVarLengthArray<T, Prealloc>::replace(qsizetype i, const T &t)
+template <class T>
+inline void QVLABase<T>::replace(qsizetype i, const T &t)
 {
     verify(i);
     data()[i] = t;
@@ -788,8 +828,8 @@ Q_OUTOFLINE_TEMPLATE typename QVarLengthArray<T, Prealloc>::iterator QVarLengthA
     return data() + offset;
 }
 
-template <class T, qsizetype Prealloc>
-Q_OUTOFLINE_TEMPLATE typename QVarLengthArray<T, Prealloc>::iterator QVarLengthArray<T, Prealloc>::erase(const_iterator abegin, const_iterator aend)
+template <class T>
+Q_OUTOFLINE_TEMPLATE auto QVLABase<T>::erase(const_iterator abegin, const_iterator aend) -> iterator
 {
     Q_ASSERT_X(isValidIterator(abegin), "QVarLengthArray::insert", "The specified const_iterator argument 'abegin' is invalid");
     Q_ASSERT_X(isValidIterator(aend), "QVarLengthArray::insert", "The specified const_iterator argument 'aend' is invalid");
