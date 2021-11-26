@@ -198,11 +198,19 @@ inline QTextStream &operator<<(QTextStream &str, const _stackVariable<withInitPa
 using stackVariable = _stackVariable<false>;
 using stackVariableWithInitParameters = _stackVariable<true>;
 
+enum class SignalSlotOption
+{
+    Ambiguous = 0x1
+};
+
+Q_DECLARE_FLAGS(SignalSlotOptions, SignalSlotOption)
+
 struct SignalSlot
 {
     QString name;
     QString signature;
     QString className;
+    SignalSlotOptions options;
 };
 
 void formatConnection(QTextStream &str, const SignalSlot &sender, const SignalSlot &receiver,

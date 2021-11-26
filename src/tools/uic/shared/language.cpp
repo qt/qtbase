@@ -456,12 +456,22 @@ void formatConnection(QTextStream &str, const SignalSlot &sender, const SignalSl
             break;
         }
         break;
-    case Language::Python:
-        str << sender.name << '.'
-            << QStringView{sender.signature}.left(sender.signature.indexOf(QLatin1Char('(')))
-            << ".connect(" << receiver.name << '.'
+    case Language::Python: {
+        const auto paren = sender.signature.indexOf(u'(');
+        auto senderSignature = QStringView{sender.signature};
+        str << sender.name << '.' << senderSignature.left(paren);
+        // Signals like "QAbstractButton::clicked(checked=false)" require
+        // the parameter if it is used.
+        if (sender.options.testFlag(SignalSlotOption::Ambiguous)) {
+            const QStringView parameters =
+                senderSignature.mid(paren + 1, senderSignature.size() - paren - 2);
+            if (!parameters.isEmpty() && !parameters.contains(u','))
+                str << "[\"" << parameters << "\"]";
+        }
+        str << ".connect(" << receiver.name << '.'
             << QStringView{receiver.signature}.left(receiver.signature.indexOf(QLatin1Char('(')))
             << ')';
+    }
         break;
     }
 }
