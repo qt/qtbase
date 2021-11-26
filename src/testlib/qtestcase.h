@@ -154,6 +154,14 @@ inline void useVerifyThrowsException() {}
 
 #endif // !QT_NO_EXCEPTIONS
 
+/* Ideally we would adapt qWaitFor(), or a variant on it, to implement roughly
+ * what the following provides as QTRY_LOOP_IMPL(); however, for now, the
+ * reporting of how much to increase the timeout to (if within a factor of two)
+ * on failure and the check for QTest::currentTestFailed() go beyond
+ * qWaitFor(). (We no longer care about the bug in MSVC < 2017 that precluded
+ * using qWaitFor() in the implementation here, see QTBUG-59096.)
+ */
+
 // NB: not do {...} while (0) wrapped, as qt_test_i is accessed after it
 #define QTRY_LOOP_IMPL(expr, timeoutValue, step) \
     if (!(expr)) { \
@@ -166,14 +174,12 @@ inline void useVerifyThrowsException() {}
 
 #define QTRY_TIMEOUT_DEBUG_IMPL(expr, timeoutValue, step)\
     if (!(expr)) { \
-        QTRY_LOOP_IMPL((expr), (2 * timeoutValue), step);\
+        QTRY_LOOP_IMPL((expr), 2 * (timeoutValue), step);   \
         if (expr) { \
             QFAIL(qPrintable(QTest::Internal::formatTryTimeoutDebugMessage(u8"" #expr, timeoutValue, timeoutValue + qt_test_i))); \
         } \
     }
 
-// Ideally we'd use qWaitFor instead of QTRY_LOOP_IMPL, but due
-// to a compiler bug on MSVC < 2017 we can't (see QTBUG-59096)
 #define QTRY_IMPL(expr, timeout)\
     const int qt_test_step = timeout < 350 ? timeout / 7 + 1 : 50; \
     const int qt_test_timeoutValue = timeout; \
