@@ -303,8 +303,34 @@ void tst_QHashFunctions::rangeCommutative()
     }
 }
 
+// QVarLengthArray these days has a qHash() as a hidden friend.
+// This checks that QT_SPECIALIZE_STD_HASH_TO_CALL_QHASH can deal with that:
+
+QT_BEGIN_NAMESPACE
+QT_SPECIALIZE_STD_HASH_TO_CALL_QHASH_BY_CREF(QVarLengthArray<QVector<int>>)
+QT_END_NAMESPACE
+
 void tst_QHashFunctions::stdHash()
 {
+    {
+        std::unordered_set<QVarLengthArray<QVector<int>>> s = {
+            {
+                {0, 1, 2},
+                {42, 43, 44},
+                {},
+            }, {
+                {11, 12, 13},
+                {},
+            },
+        };
+        QCOMPARE(s.size(), 2UL);
+        s.insert({
+                     {11, 12, 13},
+                     {},
+                 });
+        QCOMPARE(s.size(), 2UL);
+    }
+
     {
         std::unordered_set<QString> s = {QStringLiteral("Hello"), QStringLiteral("World")};
         QCOMPARE(s.size(), 2UL);
