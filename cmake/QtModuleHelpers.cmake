@@ -61,6 +61,14 @@ endmacro()
 #        For the SomeInternalModulePrivate target, the MODULE_INTERFACE_NAME will be
 #        SomeInternalModule
 #
+#   HEADER_MODULE
+#     Creates an interface library instead of following the Qt configuration default. Mutually
+#     exclusive with STATIC.
+#
+#   STATIC
+#     Creates a static library instead of following the Qt configuration default. Mutually
+#     exclusive with HEADER_MODULE.
+#
 function(qt_internal_add_module target)
     qt_internal_get_internal_add_module_keywords(
         module_option_args
