@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestCase name="qt_mock_test">
+  <Environment>
+    <QtVersion>MOCK</QtVersion>
+    <QtBuild>MOCK</QtBuild>
+    <QTestVersion>6.3.0</QTestVersion>
+  </Environment>
+  <TestFunction name="initTestCase">
+    <Incident type="{{initTestCase_result}}" file="" line="0" />
+    <Duration msecs="0.00004"/>
+  </TestFunction>
+  <TestFunction name="always_pass">
+    <Incident type="{{always_pass_result}}" file="" line="0" />
+    <Duration msecs="0.71704"/>
+  </TestFunction>
+  <TestFunction name="always_fail">
+    <Incident type="{{always_fail_result}}" file="" line="0" />
+    <Duration msecs="0.828272"/>
+  </TestFunction>
+  <TestFunction name="always_crash">
+    <Incident type="{{always_crash_result}}" file="" line="0" />
+    <Duration msecs="0.828272"/>
+  </TestFunction>
+  <TestFunction name="fail_then_pass">
+    <Incident type="{{fail_then_pass:2_result}}" file="" line="0">
+      <DataTag><![CDATA[2]]></DataTag>
+    </Incident>
+    <Incident type="{{fail_then_pass:5_result}}" file="" line="0">
+      <DataTag><![CDATA[5]]></DataTag>
+    </Incident>
+    <Incident type="{{fail_then_pass:6_result}}" file="" line="0">
+      <DataTag><![CDATA[6]]></DataTag>
+    </Incident>
+  </TestFunction>
+  <Duration msecs="1904.9"/>
+</TestCase>

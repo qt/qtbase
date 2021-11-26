@@ -10,19 +10,14 @@ instructions:
       equals_value: Windows
   - type: EnvironmentVariable
     variableName: TESTRUNNER
-    variableValue: "python3 {{.SourceDir}}/coin_ctest_runner.py"
+    variableValue: "{{.InstallDir}}/libexec/qt-testrunner.py --"
     disable_if:
-      condition: or
-      conditions:
-        - condition: property
-          property: host.os
-          equals_value: Windows
-        - condition: property
-          property: features
-          contains_value: AndroidTestRun
+      condition: property
+      property: host.os
+      equals_value: Windows
   - type: EnvironmentVariable
     variableName: TESTRUNNER
-    variableValue: "{{.SourceDir}}\\coin_ctest_runner.py"
+    variableValue: "{{.InstallDir}}\\bin\\qt-testrunner.py --"
     enable_if:
       condition: property
       property: host.os
@@ -43,7 +38,7 @@ instructions:
       equals_value: Windows
   - type: EnvironmentVariable
     variableName: CTEST_ARGS
-    variableValue: "-V --rerun-failed --force-new-ctest-process --repeat until-pass:5"
+    variableValue: "-V"
   - type: AppendToEnvironmentVariable
     variableName: CTEST_ARGS
     variableValue: " --stop-on-failure"
