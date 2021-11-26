@@ -1911,9 +1911,6 @@ void tst_QMdiArea::dontMaximizeSubWindowOnActivation()
     for (int i = 0; i < 5; ++i) {
         QMdiSubWindow *window = mdiArea.addSubWindow(new QWidget);
         window->show();
-#if defined Q_OS_QNX
-        QEXPECT_FAIL("", "QTBUG-38231", Abort);
-#endif
         QVERIFY(window->isMaximized());
         qApp->processEvents();
     }
