@@ -800,7 +800,7 @@ Q_INLINE_TEMPLATE bool operator<(T *ptr1, const QSharedPointer<X> &ptr2)
 template <class T>
 Q_INLINE_TEMPLATE size_t qHash(const QSharedPointer<T> &ptr, size_t seed = 0)
 {
-    return QT_PREPEND_NAMESPACE(qHash)(ptr.data(), seed);
+    return qHash(ptr.data(), seed);
 }
 
 
