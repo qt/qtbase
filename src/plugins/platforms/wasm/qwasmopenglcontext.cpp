@@ -87,13 +87,12 @@ bool QWasmOpenGLContext::maybeCreateEmscriptenContext(QPlatformSurface *surface)
     if (m_context)
         return m_screen == screen;
 
-    QString canvasId = QWasmScreen::get(screen)->canvasId();
-    m_context = createEmscriptenContext(canvasId, m_requestedFormat);
+    m_context = createEmscriptenContext(QWasmScreen::get(screen)->canvasTargetId(), m_requestedFormat);
     m_screen = screen;
     return true;
 }
 
-EMSCRIPTEN_WEBGL_CONTEXT_HANDLE QWasmOpenGLContext::createEmscriptenContext(const QString &canvasId, QSurfaceFormat format)
+EMSCRIPTEN_WEBGL_CONTEXT_HANDLE QWasmOpenGLContext::createEmscriptenContext(const QString &canvasTargetId, QSurfaceFormat format)
 {
     EmscriptenWebGLContextAttributes attributes;
     emscripten_webgl_init_context_attributes(&attributes); // Populate with default attributes
@@ -114,7 +113,7 @@ EMSCRIPTEN_WEBGL_CONTEXT_HANDLE QWasmOpenGLContext::createEmscriptenContext(cons
     attributes.depth = useDepthStencil;
     attributes.stencil = useDepthStencil;
 
-    QByteArray convasSelector = "#" + canvasId.toUtf8();
+    QByteArray convasSelector = canvasTargetId.toUtf8();
     EMSCRIPTEN_WEBGL_CONTEXT_HANDLE context = emscripten_webgl_create_context(convasSelector.constData(), &attributes);
 
     return context;

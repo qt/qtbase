@@ -68,7 +68,8 @@ QWasmScreen::QWasmScreen(const emscripten::val &containerOrCanvas)
         // Create the canvas (for the correct document) as a child of the container
         m_canvas = containerOrCanvas["ownerDocument"].call<emscripten::val>("createElement", std::string("canvas"));
         containerOrCanvas.call<void>("appendChild", m_canvas);
-        m_canvas.set("id", std::string("qtcanvas_") + std::to_string(uint32_t(this)));
+        std::string screenId = std::string("qtcanvas_") + std::to_string(uint32_t(this));
+        m_canvas.set("id", screenId);
 
         // Make the canvas occupy 100% of parent
         emscripten::val style = m_canvas["style"];
@@ -96,6 +97,16 @@ QWasmScreen::QWasmScreen(const emscripten::val &containerOrCanvas)
     m_onContextMenu = std::make_unique<qstdweb::EventCallback>(m_canvas, "contextmenu", [](emscripten::val event){
         event.call<void>("preventDefault");
     });
+    
+    // Create "specialHTMLTargets" mapping for the canvas. Normally, Emscripten
+    // uses the html element id when targeting elements, for example when registering
+    // event callbacks. However, this approach is limited to supporting single-document
+    // apps/ages only, since Emscripten uses the main document to look up the element.
+    // As a workaround for this, Emscripten supports registering custom mappings in the
+    // "specialHTMLTargets" object. Add a mapping for the canvas for this screen.
+    EM_ASM({
+        specialHTMLTargets["!qtcanvas_" + $0] = Emval.toValue($1);
+    }, uint32_t(this), m_canvas.as_handle());
 
     // Install event handlers on the container/canvas. This must be
     // done after the canvas has been created above.
@@ -107,6 +118,10 @@ QWasmScreen::QWasmScreen(const emscripten::val &containerOrCanvas)
 
 QWasmScreen::~QWasmScreen()
 {
+    EM_ASM({
+        specialHTMLTargets["!qtcanvas_" + $0] = undefined;
+    }, uint32_t(this));
+
     m_canvas.set(m_canvasResizeObserverCallbackContextPropertyName, emscripten::val(intptr_t(0)));
     destroy();
 }
@@ -146,9 +161,19 @@ emscripten::val QWasmScreen::canvas() const
     return m_canvas;
 }
 
+// Returns the html element id for the screen's canvas.
 QString QWasmScreen::canvasId() const
 {
     return QWasmString::toQString(m_canvas["id"]);
+}
+
+// Returns the canvas _target_ id, for use with Emscripten's
+// event registration functions. The target id is a globally
+// unique id, unlike the html element id which is only unique
+// within one html document. See specialHtmlTargets.
+QString QWasmScreen::canvasTargetId() const
+{
+    return QStringLiteral("!qtcanvas_") + QString::number(int32_t(this));
 }
 
 QRect QWasmScreen::geometry() const
@@ -246,7 +271,7 @@ void QWasmScreen::updateQScreenAndCanvasRenderSize()
     // Setting the render size to a value larger than the CSS size enables high-dpi
     // rendering.
 
-    QByteArray canvasSelector = "#" + canvasId().toUtf8();
+    QByteArray canvasSelector = canvasTargetId().toUtf8();
     double css_width;
     double css_height;
     emscripten_get_element_css_size(canvasSelector.constData(), &css_width, &css_height);

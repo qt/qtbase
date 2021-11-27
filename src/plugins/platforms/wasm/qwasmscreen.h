@@ -62,6 +62,7 @@ public:
     emscripten::val container() const;
     emscripten::val canvas() const;
     QString canvasId() const;
+    QString canvasTargetId() const;
 
     QWasmCompositor *compositor();
     QWasmEventTranslator *eventTranslator();

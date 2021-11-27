@@ -115,7 +115,7 @@ QWasmCompositor::~QWasmCompositor()
 
 void QWasmCompositor::deregisterEventHandlers()
 {
-    QByteArray canvasSelector = "#" + screen()->canvasId().toUtf8();
+    QByteArray canvasSelector = screen()->canvasTargetId().toUtf8();
     emscripten_set_keydown_callback(canvasSelector.constData(), 0, 0, NULL);
     emscripten_set_keyup_callback(canvasSelector.constData(),  0, 0, NULL);
 
@@ -156,7 +156,7 @@ void QWasmCompositor::destroy()
 
 void QWasmCompositor::initEventHandlers()
 {
-    QByteArray canvasSelector = "#" + screen()->canvasId().toUtf8();
+    QByteArray canvasSelector = screen()->canvasTargetId().toUtf8();
 
     eventTranslator->g_usePlatformMacSpecifics
     = (QWasmIntegration::get()->platform == QWasmIntegration::MacOSPlatform);
