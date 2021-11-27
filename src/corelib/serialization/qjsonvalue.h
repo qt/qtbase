@@ -190,11 +190,6 @@ public:
     inline bool operator!=(const QJsonValue &other) const { return concrete(*this) != other; }
 
 protected:
-    QJsonValueConstRef(QJsonArray *array, qsizetype idx)
-        : a(array), is_object(false), index(static_cast<quint64>(idx)) {}
-    QJsonValueConstRef(QJsonObject *object, qsizetype idx)
-        : o(object), is_object(true), index(static_cast<quint64>(idx)) {}
-
     Q_CORE_EXPORT static QJsonValue::Type
     concreteType(QJsonValueConstRef self) noexcept Q_DECL_PURE_FUNCTION;
     Q_CORE_EXPORT static bool
@@ -206,12 +201,48 @@ protected:
     Q_CORE_EXPORT static QString concreteString(QJsonValueConstRef self, const QString &defaultValue);
     Q_CORE_EXPORT static QJsonValue concrete(QJsonValueConstRef self) noexcept;
 
+    // for iterators
+    Q_CORE_EXPORT static QString objectKey(QJsonValueConstRef self);
+    QString objectKey() const { return objectKey(*this); }
+
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0) && !defined(QT_BOOTSTRAPPED)
+    QJsonValueConstRef(QJsonArray *array, qsizetype idx)
+        : a(array), is_object(false), index(static_cast<quint64>(idx)) {}
+    QJsonValueConstRef(QJsonObject *object, qsizetype idx)
+        : o(object), is_object(true), index(static_cast<quint64>(idx)) {}
+
+    void rebind(QJsonValueConstRef other)
+    {
+        Q_ASSERT(is_object == other.is_object);
+        if (is_object)
+            o = other.o;
+        else
+            a = other.a;
+        index = other.index;
+    }
+
     union {
         QJsonArray *a;
         QJsonObject *o;
+        void *d;
     };
     quint64 is_object : 1;
     quint64 index : 63;
+#else
+    // implemented in qjsonarray.h & qjsonobject.h, to get their d
+    QJsonValueConstRef(QJsonArray *array, qsizetype idx);
+    QJsonValueConstRef(QJsonObject *object, qsizetype idx);
+
+    void rebind(QJsonValueConstRef other)
+    {
+        d = other.d;
+        index = other.index;
+    }
+
+    QCborContainerPrivate *d = nullptr;
+    size_t is_object : 1;
+    size_t index : std::numeric_limits<size_t>::digits - 1;
+#endif
 
     friend class QJsonArray;
     friend class QJsonObject;
@@ -221,11 +252,6 @@ protected:
 class Q_CORE_EXPORT QJsonValueRef : public QJsonValueConstRef
 {
 public:
-    QJsonValueRef(QJsonArray *array, qsizetype idx)
-        : QJsonValueConstRef(array, idx) {}
-    QJsonValueRef(QJsonObject *object, qsizetype idx)
-        : QJsonValueConstRef(object, idx) {}
-
     QJsonValueRef(const QJsonValueRef &) = default;
     QJsonValueRef &operator = (const QJsonValue &val);
     QJsonValueRef &operator = (const QJsonValueRef &val);
@@ -233,6 +259,11 @@ public:
 #if QT_VERSION < QT_VERSION_CHECK(7, 0, 0) && !defined(QT_BOOTSTRAPPED)
     // retained for binary compatibility (due to the Q_CORE_EXPORT) because at
     // least one compiler emits and exports all inlines in an exported class
+
+    QJsonValueRef(QJsonArray *array, qsizetype idx)
+        : QJsonValueConstRef(array, idx) {}
+    QJsonValueRef(QJsonObject *object, qsizetype idx)
+        : QJsonValueConstRef(object, idx) {}
 
     operator QJsonValue() const { return toValue(); }
 
@@ -265,8 +296,12 @@ private:
     QJsonValue toValue() const;
 #else
 private:
+    using QJsonValueConstRef::QJsonValueConstRef;
 #endif // < Qt 7
+
     void detach();
+    friend class QJsonArray;
+    friend class QJsonObject;
 };
 
 inline QJsonValue QCborValueConstRef::toJsonValue() const

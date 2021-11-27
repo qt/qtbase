@@ -56,8 +56,10 @@
 #include <qcborvalue.h>
 #include <private/qcborvalue_p.h>
 
-#include <qjsonarray.h>
-#include <qjsonobject.h>
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0) && !defined(QT_BOOTSTRAPPED)
+#  include <qjsonarray.h>
+#  include <qjsonobject.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -209,7 +211,11 @@ public:
     static QCborContainerPrivate *container(const QCborValue &v) { return v.container; }
     static const QCborContainerPrivate *container(QJsonValueConstRef r) noexcept
     {
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0) && !defined(QT_BOOTSTRAPPED)
         return (r.is_object ? r.o->o : r.a->a).data();
+#else
+        return r.d;
+#endif
     }
     static QCborContainerPrivate *container(QJsonValueRef r) noexcept
     {

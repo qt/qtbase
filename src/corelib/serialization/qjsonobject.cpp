@@ -1419,6 +1419,7 @@ bool QJsonObject::detach(qsizetype reserve)
     return o;
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0) && !defined(QT_BOOTSTRAPPED)
 /*!
     \internal
  */
@@ -1428,7 +1429,6 @@ QString QJsonObject::keyAt(qsizetype i) const
     return o->stringAt(i * 2);
 }
 
-#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0) && !defined(QT_BOOTSTRAPPED)
 /*!
     \internal
  */

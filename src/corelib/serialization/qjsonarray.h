@@ -120,8 +120,7 @@ public:
         constexpr iterator(const iterator &other) = default;
         iterator &operator=(const iterator &other)
         {
-            item.a = other.item.a;
-            item.index = other.item.index;
+            item.rebind(other.item);
             return *this;
         }
 
@@ -131,21 +130,21 @@ public:
         inline QJsonValueRef operator[](qsizetype j) const { return *(*this + j); }
 
         inline bool operator==(const iterator &o) const
-        { return item.a == o.item.a && item.index == o.item.index; }
+        { return item.d == o.item.d && item.index == o.item.index; }
         inline bool operator!=(const iterator &o) const { return !(*this == o); }
         inline bool operator<(const iterator &other) const
-        { Q_ASSERT(item.a == other.item.a); return item.index < other.item.index; }
+        { Q_ASSERT(item.d == other.item.d); return item.index < other.item.index; }
         inline bool operator<=(const iterator &other) const
-        { Q_ASSERT(item.a == other.item.a); return item.index <= other.item.index; }
+        { Q_ASSERT(item.d == other.item.d); return item.index <= other.item.index; }
         inline bool operator>(const iterator &other) const { return !(*this <= other); }
         inline bool operator>=(const iterator &other) const { return !(*this < other); }
         inline bool operator==(const const_iterator &o) const
-        { return item.a == o.item.a && item.index == o.item.index; }
+        { return item.d == o.item.d && item.index == o.item.index; }
         inline bool operator!=(const const_iterator &o) const { return !(*this == o); }
         inline bool operator<(const const_iterator &other) const
-        { Q_ASSERT(item.a == other.item.a); return item.index < other.item.index; }
+        { Q_ASSERT(item.d == other.item.d); return item.index < other.item.index; }
         inline bool operator<=(const const_iterator &other) const
-        { Q_ASSERT(item.a == other.item.a); return item.index <= other.item.index; }
+        { Q_ASSERT(item.d == other.item.d); return item.index <= other.item.index; }
         inline bool operator>(const const_iterator &other) const { return !(*this <= other); }
         inline bool operator>=(const const_iterator &other) const { return !(*this < other); }
         inline iterator &operator++() { ++item.index; return *this; }
@@ -180,8 +179,7 @@ public:
         constexpr const_iterator(const const_iterator &other) = default;
         const_iterator &operator=(const const_iterator &other)
         {
-            item.a = other.item.a;
-            item.index = other.item.index;
+            item.rebind(other.item);
             return *this;
         }
 
@@ -190,12 +188,12 @@ public:
 
         inline QJsonValueConstRef operator[](qsizetype j) const { return *(*this + j); }
         inline bool operator==(const const_iterator &o) const
-        { return item.a == o.item.a && item.index == o.item.index; }
+        { return item.d == o.item.d && item.index == o.item.index; }
         inline bool operator!=(const const_iterator &o) const { return !(*this == o); }
         inline bool operator<(const const_iterator &other) const
-        { Q_ASSERT(item.a == other.item.a); return item.index < other.item.index; }
+        { Q_ASSERT(item.d == other.item.d); return item.index < other.item.index; }
         inline bool operator<=(const const_iterator &other) const
-        { Q_ASSERT(item.a == other.item.a); return item.index <= other.item.index; }
+        { Q_ASSERT(item.d == other.item.d); return item.index <= other.item.index; }
         inline bool operator>(const const_iterator &other) const { return !(*this <= other); }
         inline bool operator>=(const const_iterator &other) const { return !(*this < other); }
         inline const_iterator &operator++() { ++item.index; return *this; }
@@ -270,6 +268,12 @@ private:
 };
 
 Q_DECLARE_SHARED(QJsonArray)
+
+#if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0) || defined(QT_BOOTSTRAPPED)
+inline QJsonValueConstRef::QJsonValueConstRef(QJsonArray *a, qsizetype idx)
+    : d(a->a.data()), is_object(false), index(idx)
+{}
+#endif
 
 Q_CORE_EXPORT size_t qHash(const QJsonArray &array, size_t seed = 0);
 

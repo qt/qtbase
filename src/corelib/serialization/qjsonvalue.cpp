@@ -921,6 +921,7 @@ bool QJsonValue::operator!=(const QJsonValue &other) const
 
 void QJsonValueRef::detach()
 {
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0) && !defined(QT_BOOTSTRAPPED)
     QCborContainerPrivate *d = QJsonPrivate::Value::container(*this);
     d = QCborContainerPrivate::detach(d, d->elements.size());
 
@@ -928,6 +929,9 @@ void QJsonValueRef::detach()
         o->o.reset(d);
     else
         a->a.reset(d);
+#else
+    d = QCborContainerPrivate::detach(d, d->elements.size());
+#endif
 }
 
 static QJsonValueRef &assignToRef(QJsonValueRef &ref, const QCborValue &value, bool is_object)
@@ -1034,6 +1038,18 @@ QJsonValue QJsonValueConstRef::concrete(QJsonValueConstRef self) noexcept
     const QCborContainerPrivate *d = QJsonPrivate::Value::container(self);
     qsizetype index = QJsonPrivate::Value::indexHelper(self);
     return QJsonPrivate::Value::fromTrustedCbor(d->valueAt(index));
+}
+
+QString QJsonValueConstRef::objectKey(QJsonValueConstRef self)
+{
+    Q_ASSERT(self.is_object);
+    Q_ASSUME(self.is_object);
+    const QCborContainerPrivate *d = QJsonPrivate::Value::container(self);
+    qsizetype index = QJsonPrivate::Value::indexHelper(self);
+
+    Q_ASSERT(d);
+    Q_ASSERT(index < d->elements.size());
+    return d->stringAt(index - 1);
 }
 
 #if QT_VERSION < QT_VERSION_CHECK(7, 0, 0) && !defined(QT_BOOTSTRAPPED)
