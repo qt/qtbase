@@ -66,6 +66,7 @@ public:
     void destroy();
 
     bool supportsExternalOESTarget() const;
+    bool supportsRectangleTarget() const;
 
     void bind(GLenum target = GL_TEXTURE_2D);
     void release();
