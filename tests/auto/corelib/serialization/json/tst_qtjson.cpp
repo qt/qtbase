@@ -1040,14 +1040,37 @@ void tst_QtJson::testObjectIteration()
         QCOMPARE(object, object2);
 
         QJsonValue val = *object2.begin();
-        object2.erase(object2.begin());
+        auto next = object2.erase(object2.begin());
         QCOMPARE(object.size(), 10);
         QCOMPARE(object2.size(), 9);
+        QVERIFY(next == object2.begin());
 
-        for (QJsonObject::const_iterator it = object2.constBegin(); it != object2.constEnd(); ++it) {
+        double d = 1;   // we erased the first item
+        for (auto it = object2.constBegin(); it != object2.constEnd(); ++it, d += 1) {
             QJsonValue value = it.value();
             QVERIFY(it.value() != val);
-            QCOMPARE((double)it.key().toInt(), value.toDouble());
+            QCOMPARE(it.value(), d);
+            QCOMPARE(it.value().toDouble(), d);
+            QCOMPARE(it.key().toInt(), value.toDouble());
+        }
+    }
+
+    {
+        QJsonObject object2 = object;
+        QCOMPARE(object, object2);
+
+        QJsonValue val = *(object2.end() - 1);
+        auto next = object2.erase(object2.end() - 1);
+        QCOMPARE(object.size(), 10);
+        QCOMPARE(object2.size(), 9);
+        QVERIFY(next == object2.end());
+        double d = 0;
+        for (auto it = object2.constBegin(); it != object2.constEnd(); ++it, d += 1) {
+            QJsonValue value = it.value();
+            QVERIFY(it.value() != val);
+            QCOMPARE(it.value(), d);
+            QCOMPARE(it.value().toDouble(), d);
+            QCOMPARE(it.key().toInt(), value.toDouble());
         }
     }
 
@@ -1057,14 +1080,20 @@ void tst_QtJson::testObjectIteration()
 
         QJsonObject::iterator it = object2.find(QString::number(5));
         QJsonValue val = *it;
-        object2.erase(it);
+        auto next = object2.erase(it);
         QCOMPARE(object.size(), 10);
         QCOMPARE(object2.size(), 9);
+        QCOMPARE(*next, 6);
 
-        for (QJsonObject::const_iterator it = object2.constBegin(); it != object2.constEnd(); ++it) {
+        int i = 0;
+        for (auto it = object2.constBegin(); it != object2.constEnd(); ++it, ++i) {
+            if (i == 5)
+                ++i;
             QJsonValue value = it.value();
             QVERIFY(it.value() != val);
-            QCOMPARE((double)it.key().toInt(), value.toDouble());
+            QCOMPARE(it.value(), i);
+            QCOMPARE(it.value().toInt(), i);
+            QCOMPARE(it.key().toInt(), value.toDouble());
         }
     }
 
@@ -1120,14 +1149,38 @@ void tst_QtJson::testArrayIteration()
         QCOMPARE(array, array2);
 
         QJsonValue val = *array2.begin();
-        array2.erase(array2.begin());
+        auto next = array2.erase(array2.begin());
         QCOMPARE(array.size(), 10);
         QCOMPARE(array2.size(), 9);
+        QVERIFY(next == array2.begin());
 
         i = 1;
-        for (QJsonArray::const_iterator it = array2.constBegin(); it != array2.constEnd(); ++it, ++i) {
+        for (auto it = array2.constBegin(); it != array2.constEnd(); ++it, ++i) {
             QJsonValue value = (*it);
-            QCOMPARE((double)i, value.toDouble());
+            QCOMPARE(value.toInt(), i);
+            QCOMPARE(value.toDouble(), i);
+            QCOMPARE(it->toInt(), i);
+            QCOMPARE(it->toDouble(), i);
+        }
+    }
+
+    {
+        QJsonArray array2 = array;
+        QCOMPARE(array, array2);
+
+        QJsonValue val = array2.last();
+        auto next = array2.erase(array2.end() - 1);
+        QCOMPARE(array.size(), 10);
+        QCOMPARE(array2.size(), 9);
+        QVERIFY(next == array2.end());
+
+        i = 0;
+        for (auto it = array2.constBegin(); it != array2.constEnd(); ++it, ++i) {
+            QJsonValue value = (*it);
+            QCOMPARE(value.toInt(), i);
+            QCOMPARE(value.toDouble(), i);
+            QCOMPARE(it->toInt(), i);
+            QCOMPARE(it->toDouble(), i);
         }
     }
 

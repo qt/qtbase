@@ -707,13 +707,12 @@ bool QJsonObject::operator!=(const QJsonObject &other) const
  */
 QJsonObject::iterator QJsonObject::erase(QJsonObject::iterator it)
 {
-    if (it.item.o != this || qsizetype(it.item.index) >= o->elements.length())
-        return {this, o->elements.length()};
-
     removeAt(it.item.index);
 
-    // iterator hasn't changed
-    return it;
+    // index hasn't changed; the container pointer shouldn't have changed
+    // because we shouldn't have detached (detaching happens on obtaining a
+    // non-const iterator). But just in case we did, reload the pointer.
+    return { this, qsizetype(it.item.index) };
 }
 
 #if QT_STRINGVIEW_LEVEL < 2
