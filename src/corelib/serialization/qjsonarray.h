@@ -263,6 +263,7 @@ public:
 private:
     friend class QJsonValue;
     friend class QJsonValueConstRef;
+    friend class QJsonValueRef;
     friend class QJsonPrivate::Value;
     friend class QJsonDocument;
     friend class QCborArray;

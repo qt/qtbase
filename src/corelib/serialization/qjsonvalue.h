@@ -263,7 +263,10 @@ public:
 
 private:
     QJsonValue toValue() const;
+#else
+private:
 #endif // < Qt 7
+    void detach();
 };
 
 inline QJsonValue QCborValueConstRef::toJsonValue() const

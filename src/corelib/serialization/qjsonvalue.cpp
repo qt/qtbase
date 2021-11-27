@@ -919,25 +919,49 @@ bool QJsonValue::operator!=(const QJsonValue &other) const
     However, they are not explicitly documented here.
 */
 
+void QJsonValueRef::detach()
+{
+    QCborContainerPrivate *d = QJsonPrivate::Value::container(*this);
+    d = QCborContainerPrivate::detach(d, d->elements.size());
+
+    if (is_object)
+        o->o.reset(d);
+    else
+        a->a.reset(d);
+}
+
+static QJsonValueRef &assignToRef(QJsonValueRef &ref, const QCborValue &value, bool is_object)
+{
+    QCborContainerPrivate *d = QJsonPrivate::Value::container(ref);
+    qsizetype index = QJsonPrivate::Value::indexHelper(ref);
+    if (is_object && value.isUndefined()) {
+        d->removeAt(index);
+        d->removeAt(index - 1);
+    } else {
+        d->replaceAt(index, value);
+    }
+
+    return ref;
+}
 
 QJsonValueRef &QJsonValueRef::operator =(const QJsonValue &val)
 {
-    if (is_object)
-        o->setValueAt(index, val);
-    else
-        a->replace(index, val);
-
-    return *this;
+    detach();
+    return assignToRef(*this, QCborValue::fromJsonValue(val), is_object);
 }
 
 QJsonValueRef &QJsonValueRef::operator =(const QJsonValueRef &ref)
 {
-    if (is_object)
-        o->setValueAt(index, ref);
-    else
-        a->replace(index, ref);
+    // ### optimize more?
+    const QCborContainerPrivate *d = QJsonPrivate::Value::container(ref);
+    qsizetype index = QJsonPrivate::Value::indexHelper(ref);
 
-    return *this;
+    if (d == QJsonPrivate::Value::container(*this) &&
+            index == QJsonPrivate::Value::indexHelper(*this))
+        return *this;     // self assignment
+
+    detach();
+    return assignToRef(*this, d->valueAt(index), is_object);
 }
 
 QVariant QJsonValueConstRef::toVariant() const

@@ -1428,6 +1428,7 @@ QString QJsonObject::keyAt(qsizetype i) const
     return o->stringAt(i * 2);
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0) && !defined(QT_BOOTSTRAPPED)
 /*!
     \internal
  */
@@ -1452,6 +1453,7 @@ void QJsonObject::setValueAt(qsizetype i, const QJsonValue &val)
         o->replaceAt(2 * i + 1, QCborValue::fromJsonValue(val));
     }
 }
+#endif // Qt 7
 
 /*!
     \internal

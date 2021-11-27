@@ -303,8 +303,10 @@ private:
     template <typename T> iterator insertImpl(T key, const QJsonValue &value);
 
     QString keyAt(qsizetype i) const;
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0) && !defined(QT_BOOTSTRAPPED)
     QJsonValue valueAt(qsizetype i) const;
     void setValueAt(qsizetype i, const QJsonValue &val);
+#endif
     void removeAt(qsizetype i);
     template <typename T> iterator insertAt(qsizetype i, T key, const QJsonValue &val, bool exists);
 
