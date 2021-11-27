@@ -128,8 +128,7 @@ public:
         inline QJsonValueRef operator*() const { return item; }
         inline const QJsonValueConstRef *operator->() const { return &item; }
         inline QJsonValueRef *operator->() { return &item; }
-        inline QJsonValueRef operator[](qsizetype j) const
-        { return { item.a, qsizetype(item.index) + j }; }
+        inline QJsonValueRef operator[](qsizetype j) const { return *(*this + j); }
 
         inline bool operator==(const iterator &o) const
         { return item.a == o.item.a && item.index == o.item.index; }
@@ -155,10 +154,8 @@ public:
         inline iterator operator--(int) { iterator n = *this; item.index--; return n; }
         inline iterator &operator+=(qsizetype j) { item.index += quint64(j); return *this; }
         inline iterator &operator-=(qsizetype j) { item.index -= quint64(j); return *this; }
-        inline iterator operator+(qsizetype j) const
-        { return iterator(item.a, qsizetype(item.index) + j); }
-        inline iterator operator-(qsizetype j) const
-        { return iterator(item.a, qsizetype(item.index) - j); }
+        inline iterator operator+(qsizetype j) const { iterator r = *this; return r += j; }
+        inline iterator operator-(qsizetype j) const { return operator+(-j); }
         inline qsizetype operator-(iterator j) const { return item.index - j.item.index; }
 
     private:
@@ -191,8 +188,7 @@ public:
         inline const QJsonValueConstRef operator*() const { return item; }
         inline const QJsonValueConstRef *operator->() const { return &item; }
 
-        inline QJsonValueConstRef operator[](qsizetype j) const
-        { return QJsonValueRef{ item.a, qsizetype(item.index) + j }; }
+        inline QJsonValueConstRef operator[](qsizetype j) const { return *(*this + j); }
         inline bool operator==(const const_iterator &o) const
         { return item.a == o.item.a && item.index == o.item.index; }
         inline bool operator!=(const const_iterator &o) const { return !(*this == o); }
@@ -208,10 +204,8 @@ public:
         inline const_iterator operator--(int) { const_iterator n = *this; item.index--; return n; }
         inline const_iterator &operator+=(qsizetype j) { item.index += quint64(j); return *this; }
         inline const_iterator &operator-=(qsizetype j) { item.index -= quint64(j); return *this; }
-        inline const_iterator operator+(qsizetype j) const
-        { return const_iterator(item.a, qsizetype(item.index) + j); }
-        inline const_iterator operator-(qsizetype j) const
-        { return const_iterator(item.a, qsizetype(item.index) - j); }
+        inline const_iterator operator+(qsizetype j) const { const_iterator r = *this; return r += j; }
+        inline const_iterator operator-(qsizetype j) const { return operator+(-j); }
         inline qsizetype operator-(const_iterator j) const { return item.index - j.item.index; }
 
     private:
