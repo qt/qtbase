@@ -249,12 +249,12 @@ protected:
     friend class QJsonPrivate::Value;
 };
 
-class Q_CORE_EXPORT QJsonValueRef : public QJsonValueConstRef
+class QT6_ONLY(Q_CORE_EXPORT) QJsonValueRef : public QJsonValueConstRef
 {
 public:
     QJsonValueRef(const QJsonValueRef &) = default;
-    QJsonValueRef &operator = (const QJsonValue &val);
-    QJsonValueRef &operator = (const QJsonValueRef &val);
+    QT7_ONLY(Q_CORE_EXPORT) QJsonValueRef &operator = (const QJsonValue &val);
+    QT7_ONLY(Q_CORE_EXPORT) QJsonValueRef &operator = (const QJsonValueRef &val);
 
 #if QT_VERSION < QT_VERSION_CHECK(7, 0, 0) && !defined(QT_BOOTSTRAPPED)
     // retained for binary compatibility (due to the Q_CORE_EXPORT) because at
@@ -295,11 +295,12 @@ public:
 private:
     QJsonValue toValue() const;
 #else
+    using QJsonValueConstRef::operator[];
 private:
     using QJsonValueConstRef::QJsonValueConstRef;
 #endif // < Qt 7
 
-    void detach();
+    QT7_ONLY(Q_CORE_EXPORT) void detach();
     friend class QJsonArray;
     friend class QJsonObject;
 };
