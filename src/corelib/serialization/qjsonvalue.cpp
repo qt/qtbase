@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2022 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -951,9 +952,9 @@ QJsonObject QJsonValueConstRef::toObject() const
 
 QJsonValue QJsonValueConstRef::concrete(QJsonValueConstRef self) noexcept
 {
-    if (!self.is_object)
-        return self.a->at(self.index);
-    return self.o->valueAt(self.index);
+    const QCborContainerPrivate *d = QJsonPrivate::Value::container(self);
+    qsizetype index = QJsonPrivate::Value::indexHelper(self);
+    return QJsonPrivate::Value::fromTrustedCbor(d->valueAt(index));
 }
 
 #if QT_VERSION < QT_VERSION_CHECK(7, 0, 0) && !defined(QT_BOOTSTRAPPED)

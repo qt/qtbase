@@ -56,6 +56,9 @@
 #include <qcborvalue.h>
 #include <private/qcborvalue_p.h>
 
+#include <qjsonarray.h>
+#include <qjsonobject.h>
+
 QT_BEGIN_NAMESPACE
 
 namespace QJsonPrivate {
@@ -203,8 +206,27 @@ inline void swap(KeyIterator::reference a, KeyIterator::reference b)
 class Value
 {
 public:
-    static QCborContainerPrivate *container(const QCborValue &v) { return v.container; }
     static qint64 valueHelper(const QCborValue &v) { return v.n; }
+    static QCborContainerPrivate *container(const QCborValue &v) { return v.container; }
+    static const QCborContainerPrivate *container(QJsonValueConstRef r) noexcept
+    {
+        return (r.is_object ? r.o->o : r.a->a).data();
+    }
+    static QCborContainerPrivate *container(QJsonValueRef r) noexcept
+    {
+        return const_cast<QCborContainerPrivate *>(container(QJsonValueConstRef(r)));
+    }
+    static qsizetype indexHelper(QJsonValueConstRef r) noexcept
+    {
+        qsizetype index = r.index;
+        if (r.is_object)
+            index = index * 2 + 1;
+        return index;
+    }
+    static const QtCbor::Element &elementHelper(QJsonValueConstRef r) noexcept
+    {
+        return container(r)->elements.at(indexHelper(r));
+    }
 
     static QJsonValue fromTrustedCbor(const QCborValue &v)
     {

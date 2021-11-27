@@ -206,6 +206,7 @@ protected:
 
     friend class QJsonArray;
     friend class QJsonObject;
+    friend class QJsonPrivate::Value;
 };
 
 class Q_CORE_EXPORT QJsonValueRef : public QJsonValueConstRef

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2021 The Qt Company Ltd.
-** Copyright (C) 2021 Intel Corporation.
+** Copyright (C) 2022 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -1226,14 +1226,12 @@ void tst_QtJson::testObjectFind()
     QJsonObject::iterator it = object.find(QLatin1String("1"));
     QCOMPARE((*it).toDouble(), 1.);
     it = object.find(QString("11"));
-    QCOMPARE((*it).type(), QJsonValue::Undefined);
     QCOMPARE(it, object.end());
 
     QJsonObject::const_iterator cit = object.constFind(QLatin1String("1"));
     QCOMPARE((*cit).toDouble(), 1.);
     cit = object.constFind(QString("11"));
-    QCOMPARE((*it).type(), QJsonValue::Undefined);
-    QCOMPARE(it, object.end());
+    QCOMPARE(cit, object.constEnd());
 }
 
 void tst_QtJson::testDocument()

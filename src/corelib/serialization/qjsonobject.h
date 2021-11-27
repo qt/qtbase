@@ -284,6 +284,7 @@ public:
 private:
     friend class QJsonValue;
     friend class QJsonDocument;
+    friend class QJsonPrivate::Value;
     friend class QJsonValueConstRef;
     friend class QJsonValueRef;
     friend class QCborMap;
