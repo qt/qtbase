@@ -160,7 +160,7 @@ public:
     inline operator QJsonValue() const { return concrete(*this); }
 
     Q_CORE_EXPORT QVariant toVariant() const;
-    QJsonValue::Type type() const { return concrete(*this).type(); }
+    QJsonValue::Type type() const { return concreteType(*this); }
     bool isNull() const { return type() == QJsonValue::Null; }
     bool isBool() const { return type() == QJsonValue::Bool; }
     bool isDouble() const { return type() == QJsonValue::Double; }
@@ -170,15 +170,15 @@ public:
     bool isUndefined() const { return type() == QJsonValue::Undefined; }
 
     bool toBool(bool defaultValue = false) const
-    { return concrete(*this).toBool(defaultValue); }
+    { return concreteBool(*this, defaultValue); }
     int toInt(int defaultValue = 0) const
-    { return concrete(*this).toInt(defaultValue); }
+    { return concreteInt(*this, defaultValue, true); }
     qint64 toInteger(qint64 defaultValue = 0) const
-    { return concrete(*this).toInteger(defaultValue); }
+    { return concreteInt(*this, defaultValue, false); }
     double toDouble(double defaultValue = 0) const
-    { return concrete(*this).toDouble(defaultValue); }
+    { return concreteDouble(*this, defaultValue); }
     QString toString(const QString &defaultValue = {}) const
-    { return concrete(*this).toString(defaultValue); }
+    { return concreteString(*this, defaultValue); }
     Q_CORE_EXPORT QJsonArray toArray() const;
     Q_CORE_EXPORT QJsonObject toObject() const;
 
@@ -195,6 +195,15 @@ protected:
     QJsonValueConstRef(QJsonObject *object, qsizetype idx)
         : o(object), is_object(true), index(static_cast<quint64>(idx)) {}
 
+    Q_CORE_EXPORT static QJsonValue::Type
+    concreteType(QJsonValueConstRef self) noexcept Q_DECL_PURE_FUNCTION;
+    Q_CORE_EXPORT static bool
+    concreteBool(QJsonValueConstRef self, bool defaultValue) noexcept Q_DECL_PURE_FUNCTION;
+    Q_CORE_EXPORT static qint64
+    concreteInt(QJsonValueConstRef self, qint64 defaultValue, bool clamp) noexcept Q_DECL_PURE_FUNCTION;
+    Q_CORE_EXPORT static double
+    concreteDouble(QJsonValueConstRef self, double defaultValue) noexcept Q_DECL_PURE_FUNCTION;
+    Q_CORE_EXPORT static QString concreteString(QJsonValueConstRef self, const QString &defaultValue);
     Q_CORE_EXPORT static QJsonValue concrete(QJsonValueConstRef self) noexcept;
 
     union {
@@ -228,7 +237,7 @@ public:
     operator QJsonValue() const { return toValue(); }
 
     QVariant toVariant() const;
-    inline QJsonValue::Type type() const { return toValue().type(); }
+    inline QJsonValue::Type type() const { return QJsonValueConstRef::type(); }
     inline bool isNull() const { return type() == QJsonValue::Null; }
     inline bool isBool() const { return type() == QJsonValue::Bool; }
     inline bool isDouble() const { return type() == QJsonValue::Double; }
@@ -237,20 +246,20 @@ public:
     inline bool isObject() const { return type() == QJsonValue::Object; }
     inline bool isUndefined() const { return type() == QJsonValue::Undefined; }
 
-    inline bool toBool(bool defaultValue = false) const { return toValue().toBool(defaultValue); }
-    inline int toInt(int defaultValue = 0) const { return toValue().toInt(defaultValue); }
-    inline qint64 toInteger(qint64 defaultValue = 0) const { return toValue().toInteger(defaultValue); }
-    inline double toDouble(double defaultValue = 0) const { return toValue().toDouble(defaultValue); }
-    inline QString toString(const QString &defaultValue = {}) const { return toValue().toString(defaultValue); }
+    inline bool toBool(bool defaultValue = false) const { return QJsonValueConstRef::toBool(defaultValue); }
+    inline int toInt(int defaultValue = 0) const { return QJsonValueConstRef::toInt(defaultValue); }
+    inline qint64 toInteger(qint64 defaultValue = 0) const { return QJsonValueConstRef::toInteger(defaultValue); }
+    inline double toDouble(double defaultValue = 0) const { return QJsonValueConstRef::toDouble(defaultValue); }
+    inline QString toString(const QString &defaultValue = {}) const { return QJsonValueConstRef::toString(defaultValue); }
     QJsonArray toArray() const;
     QJsonObject toObject() const;
 
-    const QJsonValue operator[](QStringView key) const { return toValue()[key]; }
-    const QJsonValue operator[](QLatin1String key) const { return toValue()[key]; }
-    const QJsonValue operator[](qsizetype i) const { return toValue()[i]; }
+    const QJsonValue operator[](QStringView key) const { return QJsonValueConstRef::operator[](key); }
+    const QJsonValue operator[](QLatin1String key) const { return QJsonValueConstRef::operator[](key); }
+    const QJsonValue operator[](qsizetype i) const { return QJsonValueConstRef::operator[](i); }
 
-    inline bool operator==(const QJsonValue &other) const { return toValue() == other; }
-    inline bool operator!=(const QJsonValue &other) const { return toValue() != other; }
+    inline bool operator==(const QJsonValue &other) const { return QJsonValueConstRef::operator==(other); }
+    inline bool operator!=(const QJsonValue &other) const { return QJsonValueConstRef::operator!=(other); }
 
 private:
     QJsonValue toValue() const;

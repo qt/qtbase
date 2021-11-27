@@ -59,6 +59,29 @@
 
 QT_BEGIN_NAMESPACE
 
+static QJsonValue::Type convertFromCborType(QCborValue::Type type) noexcept
+{
+    switch (type) {
+    case QCborValue::Null:
+        return QJsonValue::Null;
+    case QCborValue::True:
+    case QCborValue::False:
+        return QJsonValue::Bool;
+    case QCborValue::Double:
+    case QCborValue::Integer:
+        return QJsonValue::Double;
+    case QCborValue::String:
+        return QJsonValue::String;
+    case QCborValue::Array:
+        return QJsonValue::Array;
+    case QCborValue::Map:
+        return QJsonValue::Object;
+    case QCborValue::Undefined:
+    default:
+        return QJsonValue::Undefined;
+    }
+}
+
 /*!
     \class QJsonValue
     \inmodule QtCore
@@ -608,25 +631,7 @@ QVariant QJsonValue::toVariant() const
  */
 QJsonValue::Type QJsonValue::type() const
 {
-    switch (value.type()) {
-    case QCborValue::Null:
-        return QJsonValue::Null;
-    case QCborValue::True:
-    case QCborValue::False:
-        return QJsonValue::Bool;
-    case QCborValue::Double:
-    case QCborValue::Integer:
-        return QJsonValue::Double;
-    case QCborValue::String:
-        return QJsonValue::String;
-    case QCborValue::Array:
-        return QJsonValue::Array;
-    case QCborValue::Map:
-        return QJsonValue::Object;
-    case QCborValue::Undefined:
-    default:
-        return QJsonValue::Undefined;
-    }
+    return convertFromCborType(value.type());
 }
 
 /*!
@@ -948,6 +953,56 @@ QJsonArray QJsonValueConstRef::toArray() const
 QJsonObject QJsonValueConstRef::toObject() const
 {
     return concrete(*this).toObject();
+}
+
+QJsonValue::Type QJsonValueConstRef::concreteType(QJsonValueConstRef self) noexcept
+{
+    return convertFromCborType(QJsonPrivate::Value::elementHelper(self).type);
+}
+
+bool QJsonValueConstRef::concreteBool(QJsonValueConstRef self, bool defaultValue) noexcept
+{
+    auto &e = QJsonPrivate::Value::elementHelper(self);
+    if (e.type == QCborValue::False)
+        return false;
+    if (e.type == QCborValue::True)
+        return true;
+    return defaultValue;
+}
+
+qint64 QJsonValueConstRef::concreteInt(QJsonValueConstRef self, qint64 defaultValue, bool clamp) noexcept
+{
+    auto &e = QJsonPrivate::Value::elementHelper(self);
+    qint64 v = defaultValue;
+    if (e.type == QCborValue::Double) {
+        // convertDoubleTo modifies the output even on returning false
+        if (!convertDoubleTo<qint64>(e.fpvalue(), &v))
+            v = defaultValue;
+    } else if (e.type == QCborValue::Integer) {
+        v = e.value;
+    }
+    if (clamp && qint64(int(v)) != v)
+        return defaultValue;
+    return v;
+}
+
+double QJsonValueConstRef::concreteDouble(QJsonValueConstRef self, double defaultValue) noexcept
+{
+    auto &e = QJsonPrivate::Value::elementHelper(self);
+    if (e.type == QCborValue::Double)
+        return e.fpvalue();
+    if (e.type == QCborValue::Integer)
+        return e.value;
+    return defaultValue;
+}
+
+QString QJsonValueConstRef::concreteString(QJsonValueConstRef self, const QString &defaultValue)
+{
+    const QCborContainerPrivate *d = QJsonPrivate::Value::container(self);
+    qsizetype index = QJsonPrivate::Value::indexHelper(self);
+    if (d->elements.at(index).type != QCborValue::String)
+        return defaultValue;
+    return d->stringAt(index);
 }
 
 QJsonValue QJsonValueConstRef::concrete(QJsonValueConstRef self) noexcept
