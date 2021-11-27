@@ -139,7 +139,6 @@ struct ObjectIterator
     bool operator<=(ObjectIterator other) const { return it <= other.it; }
     bool operator>=(ObjectIterator other) const { return it >= other.it; }
 
-private:
     ElementsIterator it;
 };
 

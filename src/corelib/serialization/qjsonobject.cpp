@@ -310,7 +310,7 @@ static qsizetype indexOf(const QExplicitlySharedDataPointer<QCborContainerPrivat
     });
 
     *keyExists = (it != end) && o->stringEqualsElement((*it).key(), key);
-    return (it - begin) * 2;
+    return it.it - begin.it;
 }
 
 #if QT_STRINGVIEW_LEVEL < 2
@@ -566,7 +566,7 @@ void QJsonObject::removeImpl(T key)
     if (!keyExists)
         return;
 
-    removeAt(index / 2);
+    removeAt(index);
 }
 
 #if QT_STRINGVIEW_LEVEL < 2
@@ -619,7 +619,7 @@ QJsonValue QJsonObject::takeImpl(T key)
 
     detach();
     const QJsonValue v = QJsonPrivate::Value::fromTrustedCbor(o->extractAt(index + 1));
-    removeAt(index / 2);
+    removeAt(index);
     return v;
 }
 
@@ -707,7 +707,7 @@ bool QJsonObject::operator!=(const QJsonObject &other) const
  */
 QJsonObject::iterator QJsonObject::erase(QJsonObject::iterator it)
 {
-    removeAt(it.item.index);
+    removeAt(it.item.index * 2);
 
     // index hasn't changed; the container pointer shouldn't have changed
     // because we shouldn't have detached (detaching happens on obtaining a
@@ -1461,8 +1461,8 @@ void QJsonObject::setValueAt(qsizetype i, const QJsonValue &val)
 void QJsonObject::removeAt(qsizetype index)
 {
     detach();
-    o->removeAt(2 * index + 1);
-    o->removeAt(2 * index);
+    o->removeAt(index + 1);
+    o->removeAt(index);
 }
 
 size_t qHash(const QJsonObject &object, size_t seed)

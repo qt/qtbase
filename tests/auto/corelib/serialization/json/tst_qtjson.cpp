@@ -1023,8 +1023,9 @@ void tst_QtJson::testObjectIteration()
     for (QJsonObject::iterator it = object.begin(); it != object.end(); ++it)
         QFAIL("Iterator after property add-and-remove should be empty");
 
-    for (int i = 0; i < 10; ++i)
-        object[QString::number(i)] = (double)i;
+    // insert in weird order to confirm keys are sorted
+    for (int i : {0, 9, 5, 7, 8, 2, 1, 3, 6, 4})
+        object[QString::number(i)] = double(i);
 
     QCOMPARE(object.size(), 10);
 
