@@ -198,7 +198,7 @@ static inline bool convertDoubleTo(double v, T *value, bool allow_precision_upgr
         // T has more bits than double's mantissa, so don't allow "upgrading"
         // to T (makes it look like the number had more precision than really
         // was transmitted)
-        if (!allow_precision_upgrade && (v > double(max_mantissa) || v < double(-max_mantissa - 1)))
+        if (!allow_precision_upgrade && !(v <= double(max_mantissa) && v >= double(-max_mantissa - 1)))
             return false;
     }
 
