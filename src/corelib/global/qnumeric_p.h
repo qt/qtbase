@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2020 The Qt Company Ltd.
-** Copyright (C) 2020 Intel Corporation.
+** Copyright (C) 2021 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -54,6 +54,7 @@
 
 #include "QtCore/private/qglobal_p.h"
 #include "QtCore/qnumeric.h"
+#include "QtCore/qsimd.h"
 #include <cmath>
 #include <limits>
 #include <type_traits>
@@ -202,6 +203,8 @@ static inline bool convertDoubleTo(double v, T *value, bool allow_precision_upgr
             return false;
     }
 
+    constexpr T Tmin = std::numeric_limits<T>::min();
+    constexpr T Tmax = std::numeric_limits<T>::max();
 
     // The [conv.fpint] (7.10 Floating-integral conversions) section of the C++
     // standard says only exact conversions are guaranteed. Converting
@@ -213,11 +216,82 @@ static inline bool convertDoubleTo(double v, T *value, bool allow_precision_upgr
     // correct, but Clang, ICC and MSVC don't realize that it's a constant and
     // the math call stays in the compiled code.
 
+#ifdef Q_PROCESSOR_X86_64
+    // Of course, UB doesn't apply if we use intrinsics, in which case we are
+    // allowed to dpeend on exactly the processor's behavior. This
+    // implementation uses the truncating conversions from Scalar Double to
+    // integral types (CVTTSD2SI and VCVTTSD2USI), which is documented to
+    // return the "indefinite integer value" if the range of the target type is
+    // exceeded. (only implemented for x86-64 to avoid having to deal with the
+    // non-existence of the 64-bit intrinsics on i386)
+
+    if (std::numeric_limits<T>::is_signed) {
+        __m128d mv = _mm_set_sd(v);
+#  ifdef __AVX512F__
+        // use explicit round control and suppress exceptions
+        if (sizeof(T) > 4)
+            *value = T(_mm_cvtt_roundsd_i64(mv, _MM_FROUND_TO_NEAREST_INT | _MM_FROUND_NO_EXC));
+        else
+            *value = _mm_cvtt_roundsd_i32(mv, _MM_FROUND_TO_NEAREST_INT | _MM_FROUND_NO_EXC);
+#  else
+        *value = sizeof(T) > 4 ? T(_mm_cvttsd_si64(mv)) : _mm_cvttsd_si32(mv);
+#  endif
+
+        // if *value is the "indefinite integer value", check if the original
+        // variable \a v is the same value (Tmin is an exact representation)
+        if (*value == Tmin && !_mm_ucomieq_sd(mv, _mm_set_sd(Tmin))) {
+            // v != Tmin, so it was out of range
+            if (v > 0)
+                *value = Tmax;
+            return false;
+        }
+
+        // convert the integer back to double and compare for equality with v,
+        // to determine if we've lost any precision
+        __m128d mi = _mm_setzero_pd();
+        mi = sizeof(T) > 4 ? _mm_cvtsi64_sd(mv, *value) : _mm_cvtsi32_sd(mv, *value);
+        return _mm_ucomieq_sd(mv, mi);
+    }
+
+#  ifdef __AVX512F__
+    if (!std::numeric_limits<T>::is_signed) {
+        // Same thing as above, but this function operates on absolute values
+        // and the "indefinite integer value" for the 64-bit unsigned
+        // conversion (Tmax) is not representable in double, so it can never be
+        // the result of an in-range conversion. This is implemented for AVX512
+        // and later because of the unsigned conversion instruction. Converting
+        // to unsigned without losing an extra bit of precision prior to AVX512
+        // is left to the compiler below.
+
+        v = fabs(v);
+        __m128d mv = _mm_set_sd(v);
+
+        // use explicit round control and suppress exceptions
+        if (sizeof(T) > 4)
+            *value = T(_mm_cvtt_roundsd_u64(mv, _MM_FROUND_TO_NEAREST_INT | _MM_FROUND_NO_EXC));
+        else
+            *value = _mm_cvtt_roundsd_u32(mv, _MM_FROUND_TO_NEAREST_INT | _MM_FROUND_NO_EXC);
+
+        if (*value == Tmax) {
+            // no double can have an exact value of quint64(-1), but they can
+            // quint32(-1), so we need to compare for that
+            if (TypeIsLarger || _mm_ucomieq_sd(mv, _mm_set_sd(Tmax)))
+                return false;
+        }
+
+        // return true if it was an exact conversion
+        __m128d mi = _mm_setzero_pd();
+        mi = sizeof(T) > 4 ? _mm_cvtu64_sd(mv, *value) : _mm_cvtu32_sd(mv, *value);
+        return _mm_ucomieq_sd(mv, mi);
+    }
+#  endif
+#endif
+
     double supremum;
     if (std::numeric_limits<T>::is_signed) {
-        supremum = -1.0 * std::numeric_limits<T>::min();    // -1 * (-2^63) = 2^63, exact (for T = qint64)
-        *value = std::numeric_limits<T>::min();
-        if (v < std::numeric_limits<T>::min())
+        supremum = -1.0 * Tmin;     // -1 * (-2^63) = 2^63, exact (for T = qint64)
+        *value = Tmin;
+        if (v < Tmin)
             return false;
     } else {
         using ST = typename std::make_signed<T>::type;
@@ -225,7 +299,7 @@ static inline bool convertDoubleTo(double v, T *value, bool allow_precision_upgr
         v = fabs(v);
     }
 
-    *value = std::numeric_limits<T>::max();
+    *value = Tmax;
     if (v >= supremum)
         return false;
 
