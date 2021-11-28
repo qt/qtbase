@@ -61,19 +61,19 @@
 using namespace emscripten;
 QT_BEGIN_NAMESPACE
 
-static void addCanvasElement(emscripten::val canvas)
+static void addContainerElement(emscripten::val element)
 {
-    QWasmIntegration::get()->addScreen(canvas);
+    QWasmIntegration::get()->addScreen(element);
 }
 
-static void removeCanvasElement(emscripten::val canvas)
+static void removeContainerElement(emscripten::val element)
 {
-    QWasmIntegration::get()->removeScreen(canvas);
+    QWasmIntegration::get()->removeScreen(element);
 }
 
-static void resizeCanvasElement(emscripten::val canvas)
+static void resizeContainerElement(emscripten::val element)
 {
-    QWasmIntegration::get()->resizeScreen(canvas);
+    QWasmIntegration::get()->resizeScreen(element);
 }
 
 static void qtUpdateDpi()
@@ -89,9 +89,9 @@ static void resizeAllScreens(emscripten::val event)
 
 EMSCRIPTEN_BINDINGS(qtQWasmIntegraton)
 {
-    function("qtAddCanvasElement", &addCanvasElement);
-    function("qtRemoveCanvasElement", &removeCanvasElement);
-    function("qtResizeCanvasElement", &resizeCanvasElement);
+    function("qtAddContainerElement", &addContainerElement);
+    function("qtRemoveContainerElement", &removeContainerElement);
+    function("qtResizeContainerElement", &resizeContainerElement);
     function("qtUpdateDpi", &qtUpdateDpi);
     function("qtResizeAllScreens", &resizeAllScreens);
 }
@@ -191,8 +191,8 @@ QWasmIntegration::~QWasmIntegration()
     if (m_platformInputContext)
         delete m_platformInputContext;
 
-    for (const auto &canvasAndScreen : m_screens)
-        QWindowSystemInterface::handleScreenRemoved(canvasAndScreen.second);
+    for (const auto &elementAndScreen : m_screens)
+        QWindowSystemInterface::handleScreenRemoved(elementAndScreen.second);
     m_screens.clear();
 
     s_instance = nullptr;
@@ -318,20 +318,20 @@ QPlatformClipboard* QWasmIntegration::clipboard() const
     return m_clipboard;
 }
 
-void QWasmIntegration::addScreen(const emscripten::val &canvas)
+void QWasmIntegration::addScreen(const emscripten::val &element)
 {
-    QWasmScreen *screen = new QWasmScreen(canvas);
-    m_screens.append(qMakePair(canvas, screen));
-    m_clipboard->installEventHandlers(canvas);
+    QWasmScreen *screen = new QWasmScreen(element);
+    m_screens.append(qMakePair(element, screen));
+    m_clipboard->installEventHandlers(element);
     QWindowSystemInterface::handleScreenAdded(screen);
 }
 
-void QWasmIntegration::removeScreen(const emscripten::val &canvas)
+void QWasmIntegration::removeScreen(const emscripten::val &element)
 {
     auto it = std::find_if(m_screens.begin(), m_screens.end(),
-        [&] (const QPair<emscripten::val, QWasmScreen *> &candidate) { return candidate.first.equals(canvas); });
+        [&] (const QPair<emscripten::val, QWasmScreen *> &candidate) { return candidate.first.equals(element); });
     if (it == m_screens.end()) {
-        qWarning() << "Attempting to remove non-existing screen for canvas" << QWasmString::toQString(canvas["id"]);;
+        qWarning() << "Attempting to remove non-existing screen for element" << QWasmString::toQString(element["id"]);;
         return;
     }
     QWasmScreen *exScreen = it->second;
@@ -340,12 +340,12 @@ void QWasmIntegration::removeScreen(const emscripten::val &canvas)
     QWindowSystemInterface::handleScreenRemoved(exScreen);
 }
 
-void QWasmIntegration::resizeScreen(const emscripten::val &canvas)
+void QWasmIntegration::resizeScreen(const emscripten::val &element)
 {
     auto it = std::find_if(m_screens.begin(), m_screens.end(),
-        [&] (const QPair<emscripten::val, QWasmScreen *> &candidate) { return candidate.first.equals(canvas); });
+        [&] (const QPair<emscripten::val, QWasmScreen *> &candidate) { return candidate.first.equals(element); });
     if (it == m_screens.end()) {
-        qWarning() << "Attempting to resize non-existing screen for canvas" << QWasmString::toQString(canvas["id"]);;
+        qWarning() << "Attempting to resize non-existing screen for element" << QWasmString::toQString(element["id"]);;
         return;
     }
     it->second->updateQScreenAndCanvasRenderSize();
@@ -357,14 +357,14 @@ void QWasmIntegration::updateDpi()
     if (dpi.isUndefined())
         return;
     qreal dpiValue = dpi.as<qreal>();
-    for (const auto &canvasAndScreen : m_screens)
-        QWindowSystemInterface::handleScreenLogicalDotsPerInchChange(canvasAndScreen.second->screen(), dpiValue, dpiValue);
+    for (const auto &elementAndScreen : m_screens)
+        QWindowSystemInterface::handleScreenLogicalDotsPerInchChange(elementAndScreen.second->screen(), dpiValue, dpiValue);
 }
 
 void QWasmIntegration::resizeAllScreens()
 {
-    for (const auto &canvasAndScreen : m_screens)
-        canvasAndScreen.second->updateQScreenAndCanvasRenderSize();
+    for (const auto &elementAndScreen : m_screens)
+        elementAndScreen.second->updateQScreenAndCanvasRenderSize();
 }
 
 quint64 QWasmIntegration::getTimestamp()
