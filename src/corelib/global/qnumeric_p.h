@@ -189,6 +189,19 @@ template<typename T>
 static inline bool convertDoubleTo(double v, T *value, bool allow_precision_upgrade = true)
 {
     static_assert(std::numeric_limits<T>::is_integer);
+    static_assert(std::is_integral_v<T>);
+    constexpr bool TypeIsLarger = std::numeric_limits<T>::digits > std::numeric_limits<double>::digits;
+
+    if constexpr (TypeIsLarger) {
+        using S = std::make_signed_t<T>;
+        constexpr S max_mantissa = S(1) << std::numeric_limits<double>::digits;
+        // T has more bits than double's mantissa, so don't allow "upgrading"
+        // to T (makes it look like the number had more precision than really
+        // was transmitted)
+        if (!allow_precision_upgrade && (v > double(max_mantissa) || v < double(-max_mantissa - 1)))
+            return false;
+    }
+
 
     // The [conv.fpint] (7.10 Floating-integral conversions) section of the C++
     // standard says only exact conversions are guaranteed. Converting
@@ -210,10 +223,6 @@ static inline bool convertDoubleTo(double v, T *value, bool allow_precision_upgr
         using ST = typename std::make_signed<T>::type;
         supremum = -2.0 * std::numeric_limits<ST>::min();   // -2 * (-2^63) = 2^64, exact (for T = quint64)
         v = fabs(v);
-    }
-    if (std::is_integral<T>::value && sizeof(T) > 4 && !allow_precision_upgrade) {
-        if (v > double(Q_INT64_C(1)<<53) || v < double(-((Q_INT64_C(1)<<53) + 1)))
-            return false;
     }
 
     *value = std::numeric_limits<T>::max();
