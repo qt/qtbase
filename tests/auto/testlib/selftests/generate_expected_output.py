@@ -225,7 +225,7 @@ del re
 def baseEnv(platname=None,
             keep=('PATH', 'QT_QPA_PLATFORM'),
             posix=('HOME', 'USER', 'QEMU_SET_ENV', 'QEMU_LD_PREFIX'),
-            nonapple=('DISPLAY', 'XAUTHLOCALHOSTNAME'), # and XDG_*
+            nonapple=('DISPLAY', 'XAUTHORITY', 'XAUTHLOCALHOSTNAME'), # and XDG_*
             # Don't actually know how to test for QNX, so this is ignored:
             qnx=('GRAPHICS_ROOT', 'TZ'),
             # Probably not actually relevant
