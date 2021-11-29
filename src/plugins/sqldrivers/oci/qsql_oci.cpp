@@ -1484,6 +1484,7 @@ bool QOCICols::execBatch(QOCIResultPrivate *d, QVector<QVariant> &boundValues, b
                         columns[i].lengths[row] = columns[i].maxLen;
                         QOCIDateTime *date = new QOCIDateTime(d->env, d->err, val.toDateTime());
                         *reinterpret_cast<OCIDateTime**>(dataPtr) = date->dateTime;
+                        tmpStorage.dateTimes.append(date);
                         break;
                     }
                     case QVariant::Int:
