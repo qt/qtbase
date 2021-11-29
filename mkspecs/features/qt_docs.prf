@@ -29,20 +29,20 @@ QT_TOOL_ENV =
 
 # On Windows, put the includes into a .inc file which QDoc will read, if the project
 # has too many includes. We do this to overcome a command-line limit on Windows.
-WIN_INCLUDETEMP=
+QDOC_WIN_INCLUDETEMP=
 INCLUDE_PATHS=$$INCPATH
 win32:count(INCLUDE_PATHS, 30, >) {
-    WIN_INCLUDETEMP = $$OUT_PWD/qdocincludepaths.inc
-    WIN_INCLUDETEMP_CONTENT =
+    QDOC_WIN_INCLUDETEMP = $$OUT_PWD/qdocincludepaths.inc
+    QDOC_WIN_INCLUDETEMP_CONTENT =
     for (inc, INCLUDE_PATHS): \
-        WIN_INCLUDETEMP_CONTENT += -I$$inc
-    write_file($$absolute_path($$WIN_INCLUDETEMP, $$OUT_PWD), WIN_INCLUDETEMP_CONTENT)|error()
+        QDOC_WIN_INCLUDETEMP_CONTENT += -I$$inc
+    write_file($$absolute_path($$QDOC_WIN_INCLUDETEMP, $$OUT_PWD), QDOC_WIN_INCLUDETEMP_CONTENT)|error()
 }
 
-isEmpty(WIN_INCLUDETEMP) {
+isEmpty(QDOC_WIN_INCLUDETEMP) {
     QDOC_INCLUDE_PATHS=$(INCPATH)
 } else {
-    QDOC_INCLUDE_PATHS=@$$shell_quote($$WIN_INCLUDETEMP)
+    QDOC_INCLUDE_PATHS=@$$shell_quote($$QDOC_WIN_INCLUDETEMP)
 }
 
 macos: QDOC_INCLUDE_PATHS += $$join(QMAKE_DEFAULT_INCDIRS," -I","-I")
