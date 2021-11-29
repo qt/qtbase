@@ -121,6 +121,9 @@ public:
     unsigned pskServerTlsCallback(const char *identity, unsigned char *psk,
                                   unsigned max_psk_len);
 
+    bool isInSslRead() const;
+    void setRenegotiated(bool renegotiated);
+
 #ifdef Q_OS_WIN
     void fetchCaRootForCert(const QSslCertificate &cert);
     void caRootLoaded(QSslCertificate certificate, QSslCertificate trustedRoot);
@@ -160,6 +163,9 @@ private:
     bool errorsReportedFromCallback = false;
 
     bool shutdown = false;
+
+    bool inSslRead = false;
+    bool renegotiated = false;
 };
 
 } // namespace QTlsPrivate
