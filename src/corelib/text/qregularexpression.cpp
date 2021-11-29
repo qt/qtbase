@@ -910,7 +910,7 @@ void QRegularExpressionPrivate::compilePattern()
     options |= PCRE2_UTF;
 
     PCRE2_SIZE patternErrorOffset;
-    compiledPattern = pcre2_compile_16(reinterpret_cast<PCRE2_SPTR16>(pattern.utf16()),
+    compiledPattern = pcre2_compile_16(reinterpret_cast<PCRE2_SPTR16>(pattern.constData()),
                                        pattern.length(),
                                        options,
                                        &errorCode,
