@@ -1,88 +1,88 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <TestCase name="tst_Blacklisted">
-<Environment>
+  <Environment>
     <QtVersion>@INSERT_QT_VERSION_HERE@</QtVersion>
     <QtBuild/>
     <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
-</Environment>
-<TestFunction name="initTestCase">
-<Incident type="pass" file="" line="0" />
+  </Environment>
+  <TestFunction name="initTestCase">
+    <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="pass">
-<Message type="qdebug" file="" line="0">
+  </TestFunction>
+  <TestFunction name="pass">
+  <Message type="qdebug" file="" line="0">
     <Description><![CDATA[This test should BPASS]]></Description>
-</Message>
-<Incident type="bpass" file="" line="0" />
+  </Message>
+    <Incident type="bpass" file="" line="0" />
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="skip">
-<Incident type="skip" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
-    <Description><![CDATA[This test should SKIP]]></Description>
-</Incident>
+  </TestFunction>
+  <TestFunction name="skip">
+    <Incident type="skip" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
+      <Description><![CDATA[This test should SKIP]]></Description>
+    </Incident>
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="fail">
-<Incident type="bfail" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
-    <Description><![CDATA['false' returned FALSE. (This test should BFAIL)]]></Description>
-</Incident>
+  </TestFunction>
+  <TestFunction name="fail">
+    <Incident type="bfail" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
+      <Description><![CDATA['false' returned FALSE. (This test should BFAIL)]]></Description>
+    </Incident>
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="xfail">
-<Incident type="bxfail" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
-    <Description><![CDATA[This test should BXFAIL then BPASS]]></Description>
-</Incident>
-<Incident type="bpass" file="" line="0" />
+  </TestFunction>
+  <TestFunction name="xfail">
+    <Incident type="bxfail" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
+      <Description><![CDATA[This test should BXFAIL then BPASS]]></Description>
+    </Incident>
+    <Incident type="bpass" file="" line="0" />
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="xfailContinueSkip">
-<Incident type="bxfail" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
-    <Description><![CDATA[This test should BXFAIL then SKIP]]></Description>
-</Incident>
-<Incident type="skip" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
-    <Description><![CDATA[This skip should be seen and counted]]></Description>
-</Incident>
+  </TestFunction>
+  <TestFunction name="xfailContinueSkip">
+    <Incident type="bxfail" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
+      <Description><![CDATA[This test should BXFAIL then SKIP]]></Description>
+    </Incident>
+    <Incident type="skip" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
+      <Description><![CDATA[This skip should be seen and counted]]></Description>
+    </Incident>
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="xfailContinueFail">
-<Incident type="bxfail" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
-    <Description><![CDATA[This test should BXFAIL then BFAIL]]></Description>
-</Incident>
-<Incident type="bfail" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
-    <Description><![CDATA[This fail should be seen and counted as blacklisted]]></Description>
-</Incident>
+  </TestFunction>
+  <TestFunction name="xfailContinueFail">
+    <Incident type="bxfail" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
+      <Description><![CDATA[This test should BXFAIL then BFAIL]]></Description>
+    </Incident>
+    <Incident type="bfail" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
+      <Description><![CDATA[This fail should be seen and counted as blacklisted]]></Description>
+    </Incident>
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="xpass">
-<Incident type="bxpass" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
-    <Description><![CDATA['true' returned TRUE unexpectedly. (This test should BXPASS)]]></Description>
-</Incident>
+  </TestFunction>
+  <TestFunction name="xpass">
+    <Incident type="bxpass" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
+      <Description><![CDATA['true' returned TRUE unexpectedly. (This test should BXPASS)]]></Description>
+    </Incident>
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="xpassContinueSkip">
-<Incident type="bxpass" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
-    <Description><![CDATA['true' returned TRUE unexpectedly. (This test should BXPASS then SKIP)]]></Description>
-</Incident>
-<Incident type="skip" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
-    <Description><![CDATA[This skip should be seen but not counted]]></Description>
-</Incident>
+  </TestFunction>
+  <TestFunction name="xpassContinueSkip">
+    <Incident type="bxpass" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
+      <Description><![CDATA['true' returned TRUE unexpectedly. (This test should BXPASS then SKIP)]]></Description>
+    </Incident>
+    <Incident type="skip" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
+      <Description><![CDATA[This skip should be seen but not counted]]></Description>
+    </Incident>
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="xpassContinueFail">
-<Incident type="bxpass" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
-    <Description><![CDATA['true' returned TRUE unexpectedly. (This test should BXPASS then BFAIL)]]></Description>
-</Incident>
-<Incident type="bfail" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
-    <Description><![CDATA[This fail should be seen and not counted (due to prior XPASS)]]></Description>
-</Incident>
+  </TestFunction>
+  <TestFunction name="xpassContinueFail">
+    <Incident type="bxpass" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
+      <Description><![CDATA['true' returned TRUE unexpectedly. (This test should BXPASS then BFAIL)]]></Description>
+    </Incident>
+    <Incident type="bfail" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
+      <Description><![CDATA[This fail should be seen and not counted (due to prior XPASS)]]></Description>
+    </Incident>
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="cleanupTestCase">
-<Message type="qdebug" file="" line="0">
+  </TestFunction>
+  <TestFunction name="cleanupTestCase">
+  <Message type="qdebug" file="" line="0">
     <Description><![CDATA[Totals should add up to 11: 2 passed, 0 failed, 2 skipped, 7 blacklisted]]></Description>
-</Message>
-<Incident type="pass" file="" line="0" />
+  </Message>
+    <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>
-</TestFunction>
-<Duration msecs="0"/>
+  </TestFunction>
+  <Duration msecs="0"/>
 </TestCase>

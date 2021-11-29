@@ -1,26 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <TestCase name="tst_Assert">
-<Environment>
+  <Environment>
     <QtVersion>@INSERT_QT_VERSION_HERE@</QtVersion>
     <QtBuild/>
     <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
-</Environment>
-<TestFunction name="initTestCase">
-<Incident type="pass" file="" line="0" />
+  </Environment>
+  <TestFunction name="initTestCase">
+    <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="testNumber1">
-<Incident type="pass" file="" line="0" />
+  </TestFunction>
+  <TestFunction name="testNumber1">
+    <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="testNumber2">
-<Message type="qfatal" file="" line="0">
+  </TestFunction>
+  <TestFunction name="testNumber2">
+  <Message type="qfatal" file="" line="0">
     <Description><![CDATA[ASSERT: "false" in file qtbase/tests/auto/testlib/selftests/assert/tst_assert.cpp, line 0]]></Description>
-</Message>
-<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/assert/tst_assert.cpp" line="0">
-    <Description><![CDATA[Received a fatal error.]]></Description>
-</Incident>
+  </Message>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/assert/tst_assert.cpp" line="0">
+      <Description><![CDATA[Received a fatal error.]]></Description>
+    </Incident>
     <Duration msecs="0"/>
-</TestFunction>
-<Duration msecs="0"/>
+  </TestFunction>
+  <Duration msecs="0"/>
 </TestCase>

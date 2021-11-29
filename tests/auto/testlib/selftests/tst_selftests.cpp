@@ -311,8 +311,7 @@ bool compareLine(const QString &logger, const QString &subdir,
         return compareBenchmarkResult(actualResult, expectedResult, errorMessage);
     }
 
-    if (actualLine.startsWith(QLatin1String("    <Duration msecs="))
-        || actualLine.startsWith(QLatin1String("<Duration msecs="))) {
+    if (actualLine.contains(QLatin1String("<Duration msecs="))) {
         static QRegularExpression durationRegExp("<Duration msecs=\"[\\d\\.]+\"/>");
         QRegularExpressionMatch match = durationRegExp.match(actualLine);
         if (match.hasMatch())

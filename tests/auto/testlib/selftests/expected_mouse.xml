@@ -1,64 +1,64 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <TestCase name="tst_Mouse">
-<Environment>
+  <Environment>
     <QtVersion>@INSERT_QT_VERSION_HERE@</QtVersion>
     <QtBuild/>
     <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
-</Environment>
-<TestFunction name="initTestCase">
-<Incident type="pass" file="" line="0" />
+  </Environment>
+  <TestFunction name="initTestCase">
+    <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="timestampBetweenTestFunction">
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[press, release]]></DataTag>
-</Incident>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[press, release, hover]]></DataTag>
-</Incident>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[hover]]></DataTag>
-</Incident>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[hover #2]]></DataTag>
-</Incident>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[press, release #2]]></DataTag>
-</Incident>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[press, release, hover #2]]></DataTag>
-</Incident>
+  </TestFunction>
+  <TestFunction name="timestampBetweenTestFunction">
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[press, release]]></DataTag>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[press, release, hover]]></DataTag>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[hover]]></DataTag>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[hover #2]]></DataTag>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[press, release #2]]></DataTag>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[press, release, hover #2]]></DataTag>
+    </Incident>
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="stateHandlingPart1">
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[dummy-1]]></DataTag>
-</Incident>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[dummy-2]]></DataTag>
-</Incident>
+  </TestFunction>
+  <TestFunction name="stateHandlingPart1">
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[dummy-1]]></DataTag>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[dummy-2]]></DataTag>
+    </Incident>
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="stateHandlingPart2">
-<Incident type="skip" file="qtbase/tests/auto/testlib/selftests/mouse/tst_mouse.cpp" line="0">
-    <Description><![CDATA[Not implemented beyond this point!]]></Description>
-</Incident>
+  </TestFunction>
+  <TestFunction name="stateHandlingPart2">
+    <Incident type="skip" file="qtbase/tests/auto/testlib/selftests/mouse/tst_mouse.cpp" line="0">
+      <Description><![CDATA[Not implemented beyond this point!]]></Description>
+    </Incident>
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="deterministicEvents">
-<Incident type="skip" file="qtbase/tests/auto/testlib/selftests/mouse/tst_mouse.cpp" line="0">
-    <DataTag><![CDATA[first-run-true]]></DataTag>
-    <Description><![CDATA[Not implemented!]]></Description>
-</Incident>
-<Incident type="skip" file="qtbase/tests/auto/testlib/selftests/mouse/tst_mouse.cpp" line="0">
-    <DataTag><![CDATA[first-run-false]]></DataTag>
-    <Description><![CDATA[Not implemented!]]></Description>
-</Incident>
+  </TestFunction>
+  <TestFunction name="deterministicEvents">
+    <Incident type="skip" file="qtbase/tests/auto/testlib/selftests/mouse/tst_mouse.cpp" line="0">
+      <DataTag><![CDATA[first-run-true]]></DataTag>
+      <Description><![CDATA[Not implemented!]]></Description>
+    </Incident>
+    <Incident type="skip" file="qtbase/tests/auto/testlib/selftests/mouse/tst_mouse.cpp" line="0">
+      <DataTag><![CDATA[first-run-false]]></DataTag>
+      <Description><![CDATA[Not implemented!]]></Description>
+    </Incident>
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="cleanupTestCase">
-<Incident type="pass" file="" line="0" />
+  </TestFunction>
+  <TestFunction name="cleanupTestCase">
+    <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>
-</TestFunction>
-<Duration msecs="0"/>
+  </TestFunction>
+  <Duration msecs="0"/>
 </TestCase>

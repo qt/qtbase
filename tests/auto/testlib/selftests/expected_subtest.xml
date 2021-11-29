@@ -1,208 +1,208 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <TestCase name="tst_Subtest">
-<Environment>
+  <Environment>
     <QtVersion>@INSERT_QT_VERSION_HERE@</QtVersion>
     <QtBuild/>
     <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
-</Environment>
-<TestFunction name="initTestCase">
-<Message type="qdebug" file="" line="0">
+  </Environment>
+  <TestFunction name="initTestCase">
+  <Message type="qdebug" file="" line="0">
     <Description><![CDATA[initTestCase initTestCase (null)]]></Description>
-</Message>
-<Incident type="pass" file="" line="0" />
+  </Message>
+    <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="test1">
-<Message type="qdebug" file="" line="0">
+  </TestFunction>
+  <TestFunction name="test1">
+  <Message type="qdebug" file="" line="0">
     <Description><![CDATA[init test1 (null)]]></Description>
-</Message>
-<Message type="qdebug" file="" line="0">
+  </Message>
+  <Message type="qdebug" file="" line="0">
     <Description><![CDATA[test1 test1 (null)]]></Description>
-</Message>
-<Message type="qdebug" file="" line="0">
+  </Message>
+  <Message type="qdebug" file="" line="0">
     <Description><![CDATA[cleanup test1 (null)]]></Description>
-</Message>
-<Incident type="pass" file="" line="0" />
+  </Message>
+    <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="test2">
-<Message type="qdebug" file="" line="0">
+  </TestFunction>
+  <TestFunction name="test2">
+  <Message type="qdebug" file="" line="0">
     <Description><![CDATA[test2_data test2 (null)]]></Description>
-</Message>
-<Message type="qdebug" file="" line="0">
+  </Message>
+  <Message type="qdebug" file="" line="0">
     <Description><![CDATA[test2_data end]]></Description>
-</Message>
-<Message type="qdebug" file="" line="0">
+  </Message>
+  <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[data0]]></DataTag>
     <Description><![CDATA[init test2 data0]]></Description>
-</Message>
-<Message type="qdebug" file="" line="0">
+  </Message>
+  <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[data0]]></DataTag>
     <Description><![CDATA[test2 test2 data0]]></Description>
-</Message>
-<Message type="qdebug" file="" line="0">
+  </Message>
+  <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[data0]]></DataTag>
     <Description><![CDATA[test2 end]]></Description>
-</Message>
-<Message type="qdebug" file="" line="0">
+  </Message>
+  <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[data0]]></DataTag>
     <Description><![CDATA[cleanup test2 data0]]></Description>
-</Message>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[data0]]></DataTag>
-</Incident>
-<Message type="qdebug" file="" line="0">
+  </Message>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[data0]]></DataTag>
+    </Incident>
+  <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[data1]]></DataTag>
     <Description><![CDATA[init test2 data1]]></Description>
-</Message>
-<Message type="qdebug" file="" line="0">
+  </Message>
+  <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[data1]]></DataTag>
     <Description><![CDATA[test2 test2 data1]]></Description>
-</Message>
-<Message type="qdebug" file="" line="0">
+  </Message>
+  <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[data1]]></DataTag>
     <Description><![CDATA[test2 end]]></Description>
-</Message>
-<Message type="qdebug" file="" line="0">
+  </Message>
+  <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[data1]]></DataTag>
     <Description><![CDATA[cleanup test2 data1]]></Description>
-</Message>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[data1]]></DataTag>
-</Incident>
-<Message type="qdebug" file="" line="0">
+  </Message>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[data1]]></DataTag>
+    </Incident>
+  <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[data2]]></DataTag>
     <Description><![CDATA[init test2 data2]]></Description>
-</Message>
-<Message type="qdebug" file="" line="0">
+  </Message>
+  <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[data2]]></DataTag>
     <Description><![CDATA[test2 test2 data2]]></Description>
-</Message>
-<Message type="qdebug" file="" line="0">
+  </Message>
+  <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[data2]]></DataTag>
     <Description><![CDATA[test2 end]]></Description>
-</Message>
-<Message type="qdebug" file="" line="0">
+  </Message>
+  <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[data2]]></DataTag>
     <Description><![CDATA[cleanup test2 data2]]></Description>
-</Message>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[data2]]></DataTag>
-</Incident>
+  </Message>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[data2]]></DataTag>
+    </Incident>
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="test3">
-<Message type="qdebug" file="" line="0">
+  </TestFunction>
+  <TestFunction name="test3">
+  <Message type="qdebug" file="" line="0">
     <Description><![CDATA[test3_data test3 (null)]]></Description>
-</Message>
-<Message type="qdebug" file="" line="0">
+  </Message>
+  <Message type="qdebug" file="" line="0">
     <Description><![CDATA[test3_data end]]></Description>
-</Message>
-<Message type="qdebug" file="" line="0">
+  </Message>
+  <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[data0]]></DataTag>
     <Description><![CDATA[init test3 data0]]></Description>
-</Message>
-<Message type="qdebug" file="" line="0">
+  </Message>
+  <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[data0]]></DataTag>
     <Description><![CDATA[test3 test3 data0]]></Description>
-</Message>
-<Message type="qdebug" file="" line="0">
+  </Message>
+  <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[data0]]></DataTag>
     <Description><![CDATA[test3 end]]></Description>
-</Message>
-<Message type="qdebug" file="" line="0">
+  </Message>
+  <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[data0]]></DataTag>
     <Description><![CDATA[cleanup test3 data0]]></Description>
-</Message>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[data0]]></DataTag>
-</Incident>
-<Message type="qdebug" file="" line="0">
+  </Message>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[data0]]></DataTag>
+    </Incident>
+  <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[data1]]></DataTag>
     <Description><![CDATA[init test3 data1]]></Description>
-</Message>
-<Message type="qdebug" file="" line="0">
+  </Message>
+  <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[data1]]></DataTag>
     <Description><![CDATA[test3 test3 data1]]></Description>
-</Message>
-<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp" line="0">
-    <DataTag><![CDATA[data1]]></DataTag>
-    <Description><![CDATA[Compared values are not the same
+  </Message>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp" line="0">
+      <DataTag><![CDATA[data1]]></DataTag>
+      <Description><![CDATA[Compared values are not the same
    Actual   (str)              : "hello1"
    Expected (QString("hello0")): "hello0"]]></Description>
-</Incident>
-<Message type="qdebug" file="" line="0">
+    </Incident>
+  <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[data1]]></DataTag>
     <Description><![CDATA[cleanup test3 data1]]></Description>
-</Message>
-<Message type="qdebug" file="" line="0">
+  </Message>
+  <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[data2]]></DataTag>
     <Description><![CDATA[init test3 data2]]></Description>
-</Message>
-<Message type="qdebug" file="" line="0">
+  </Message>
+  <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[data2]]></DataTag>
     <Description><![CDATA[test3 test3 data2]]></Description>
-</Message>
-<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp" line="0">
-    <DataTag><![CDATA[data2]]></DataTag>
-    <Description><![CDATA[Compared values are not the same
+  </Message>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp" line="0">
+      <DataTag><![CDATA[data2]]></DataTag>
+      <Description><![CDATA[Compared values are not the same
    Actual   (str)              : "hello2"
    Expected (QString("hello0")): "hello0"]]></Description>
-</Incident>
-<Message type="qdebug" file="" line="0">
+    </Incident>
+  <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[data2]]></DataTag>
     <Description><![CDATA[cleanup test3 data2]]></Description>
-</Message>
+  </Message>
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="multiFail">
-<Message type="qdebug" file="" line="0">
+  </TestFunction>
+  <TestFunction name="multiFail">
+  <Message type="qdebug" file="" line="0">
     <Description><![CDATA[init multiFail (null)]]></Description>
-</Message>
-<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp" line="0">
-    <Description><![CDATA[This failure message should be repeated ten times]]></Description>
-</Incident>
-<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp" line="0">
-    <Description><![CDATA[This failure message should be repeated ten times]]></Description>
-</Incident>
-<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp" line="0">
-    <Description><![CDATA[This failure message should be repeated ten times]]></Description>
-</Incident>
-<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp" line="0">
-    <Description><![CDATA[This failure message should be repeated ten times]]></Description>
-</Incident>
-<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp" line="0">
-    <Description><![CDATA[This failure message should be repeated ten times]]></Description>
-</Incident>
-<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp" line="0">
-    <Description><![CDATA[This failure message should be repeated ten times]]></Description>
-</Incident>
-<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp" line="0">
-    <Description><![CDATA[This failure message should be repeated ten times]]></Description>
-</Incident>
-<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp" line="0">
-    <Description><![CDATA[This failure message should be repeated ten times]]></Description>
-</Incident>
-<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp" line="0">
-    <Description><![CDATA[This failure message should be repeated ten times]]></Description>
-</Incident>
-<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp" line="0">
-    <Description><![CDATA[This failure message should be repeated ten times]]></Description>
-</Incident>
-<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp" line="0">
-    <Description><![CDATA[But this test should only contribute one to the failure count]]></Description>
-</Incident>
-<Message type="qdebug" file="" line="0">
+  </Message>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp" line="0">
+      <Description><![CDATA[This failure message should be repeated ten times]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp" line="0">
+      <Description><![CDATA[This failure message should be repeated ten times]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp" line="0">
+      <Description><![CDATA[This failure message should be repeated ten times]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp" line="0">
+      <Description><![CDATA[This failure message should be repeated ten times]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp" line="0">
+      <Description><![CDATA[This failure message should be repeated ten times]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp" line="0">
+      <Description><![CDATA[This failure message should be repeated ten times]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp" line="0">
+      <Description><![CDATA[This failure message should be repeated ten times]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp" line="0">
+      <Description><![CDATA[This failure message should be repeated ten times]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp" line="0">
+      <Description><![CDATA[This failure message should be repeated ten times]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp" line="0">
+      <Description><![CDATA[This failure message should be repeated ten times]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp" line="0">
+      <Description><![CDATA[But this test should only contribute one to the failure count]]></Description>
+    </Incident>
+  <Message type="qdebug" file="" line="0">
     <Description><![CDATA[cleanup multiFail (null)]]></Description>
-</Message>
+  </Message>
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="cleanupTestCase">
-<Message type="qdebug" file="" line="0">
+  </TestFunction>
+  <TestFunction name="cleanupTestCase">
+  <Message type="qdebug" file="" line="0">
     <Description><![CDATA[cleanupTestCase cleanupTestCase (null)]]></Description>
-</Message>
-<Incident type="pass" file="" line="0" />
+  </Message>
+    <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>
-</TestFunction>
-<Duration msecs="0"/>
+  </TestFunction>
+  <Duration msecs="0"/>
 </TestCase>

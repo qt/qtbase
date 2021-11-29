@@ -1,582 +1,582 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <TestCase name="tst_Signaldumper">
-<Environment>
+  <Environment>
     <QtVersion>@INSERT_QT_VERSION_HERE@</QtVersion>
     <QtBuild/>
     <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
-</Environment>
-<TestFunction name="initTestCase">
-<Incident type="pass" file="" line="0" />
+  </Environment>
+  <TestFunction name="initTestCase">
+    <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="noConnections">
-<Message type="info" file="" line="0">
+  </TestFunction>
+  <TestFunction name="noConnections">
+  <Message type="info" file="" line="0">
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]></Description>
-</Message>
-<Incident type="pass" file="" line="0" />
+  </Message>
+    <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="oneSlot">
-<Message type="info" file="" line="0">
+  </TestFunction>
+  <TestFunction name="oneSlot">
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]></Description>
-</Message>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[direct]]></DataTag>
-</Incident>
-<Message type="info" file="" line="0">
+  </Message>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[direct]]></DataTag>
+    </Incident>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[queued]]></DataTag>
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[queued]]></DataTag>
     <Description><![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[queued]]></DataTag>
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[queued]]></DataTag>
     <Description><![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[queued]]></DataTag>
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[queued]]></DataTag>
     <Description><![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]></Description>
-</Message>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[queued]]></DataTag>
-</Incident>
+  </Message>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[queued]]></DataTag>
+    </Incident>
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="oneSlotOldSyntax">
-<Message type="info" file="" line="0">
+  </TestFunction>
+  <TestFunction name="oneSlotOldSyntax">
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[    Slot: SignalSlotClass(_POINTER_) slotWithoutParameters()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[    Slot: SignalSlotClass(_POINTER_) slotWithParameters(int,char)]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[    Slot: SignalSlotClass(_POINTER_) slotWithoutParameters()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]></Description>
-</Message>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[direct]]></DataTag>
-</Incident>
-<Message type="info" file="" line="0">
+  </Message>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[direct]]></DataTag>
+    </Incident>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[queued]]></DataTag>
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[queued]]></DataTag>
     <Description><![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[queued]]></DataTag>
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[queued]]></DataTag>
     <Description><![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[queued]]></DataTag>
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[queued]]></DataTag>
     <Description><![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]></Description>
-</Message>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[queued]]></DataTag>
-</Incident>
+  </Message>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[queued]]></DataTag>
+    </Incident>
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="twoSlots">
-<Message type="info" file="" line="0">
+  </TestFunction>
+  <TestFunction name="twoSlots">
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]></Description>
-</Message>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[direct]]></DataTag>
-</Incident>
-<Message type="info" file="" line="0">
+  </Message>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[direct]]></DataTag>
+    </Incident>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[queued]]></DataTag>
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[queued]]></DataTag>
     <Description><![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[queued]]></DataTag>
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[queued]]></DataTag>
     <Description><![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[queued]]></DataTag>
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[queued]]></DataTag>
     <Description><![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]></Description>
-</Message>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[queued]]></DataTag>
-</Incident>
+  </Message>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[queued]]></DataTag>
+    </Incident>
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="twoSlotsOldSyntax">
-<Message type="info" file="" line="0">
+  </TestFunction>
+  <TestFunction name="twoSlotsOldSyntax">
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[    Slot: SignalSlotClass(_POINTER_) slotWithoutParameters()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[    Slot: SignalSlotClass(_POINTER_) slotWithoutParameters()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[    Slot: SignalSlotClass(_POINTER_) slotWithParameters(int,char)]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[    Slot: SignalSlotClass(_POINTER_) slotWithParameters(int,char)]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[    Slot: SignalSlotClass(_POINTER_) slotWithoutParameters()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[    Slot: SignalSlotClass(_POINTER_) slotWithoutParameters()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]></Description>
-</Message>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[direct]]></DataTag>
-</Incident>
-<Message type="info" file="" line="0">
+  </Message>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[direct]]></DataTag>
+    </Incident>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[queued]]></DataTag>
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[queued]]></DataTag>
     <Description><![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[queued]]></DataTag>
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[queued]]></DataTag>
     <Description><![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[queued]]></DataTag>
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[queued]]></DataTag>
     <Description><![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]></Description>
-</Message>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[queued]]></DataTag>
-</Incident>
+  </Message>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[queued]]></DataTag>
+    </Incident>
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="signalForwarding">
-<Message type="info" file="" line="0">
+  </TestFunction>
+  <TestFunction name="signalForwarding">
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[    Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[    Signal: SignalSlotClass(_POINTER_) nestedSignalWithParameters (int(242), char(m))]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[    Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]></Description>
-</Message>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[direct]]></DataTag>
-</Incident>
-<Message type="info" file="" line="0">
+  </Message>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[direct]]></DataTag>
+    </Incident>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[queued]]></DataTag>
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[queued]]></DataTag>
     <Description><![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[queued]]></DataTag>
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[queued]]></DataTag>
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[queued]]></DataTag>
     <Description><![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[queued]]></DataTag>
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) nestedSignalWithParameters (int(242), char(m))]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[queued]]></DataTag>
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[queued]]></DataTag>
     <Description><![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[queued]]></DataTag>
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]></Description>
-</Message>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[queued]]></DataTag>
-</Incident>
+  </Message>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[queued]]></DataTag>
+    </Incident>
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="signalForwardingOldSyntax">
-<Message type="info" file="" line="0">
+  </TestFunction>
+  <TestFunction name="signalForwardingOldSyntax">
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[    Slot: SignalSlotClass(_POINTER_) nestedSignal()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[    Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[    Slot: SignalSlotClass(_POINTER_) nestedSignalWithParameters(int,char)]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[    Signal: SignalSlotClass(_POINTER_) nestedSignalWithParameters (int(242), char(m))]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[    Slot: SignalSlotClass(_POINTER_) nestedSignal()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[    Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]></Description>
-</Message>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[direct]]></DataTag>
-</Incident>
-<Message type="info" file="" line="0">
+  </Message>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[direct]]></DataTag>
+    </Incident>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[queued]]></DataTag>
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[queued]]></DataTag>
     <Description><![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[queued]]></DataTag>
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[queued]]></DataTag>
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[queued]]></DataTag>
     <Description><![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[queued]]></DataTag>
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) nestedSignalWithParameters (int(242), char(m))]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[queued]]></DataTag>
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[queued]]></DataTag>
     <Description><![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[queued]]></DataTag>
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]></Description>
-</Message>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[queued]]></DataTag>
-</Incident>
+  </Message>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[queued]]></DataTag>
+    </Incident>
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="slotEmittingSignal">
-<Message type="info" file="" line="0">
+  </TestFunction>
+  <TestFunction name="slotEmittingSignal">
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[    Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]></Description>
-</Message>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[direct]]></DataTag>
-</Incident>
-<Message type="info" file="" line="0">
+  </Message>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[direct]]></DataTag>
+    </Incident>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[queued]]></DataTag>
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[queued]]></DataTag>
     <Description><![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[queued]]></DataTag>
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]></Description>
-</Message>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[queued]]></DataTag>
-</Incident>
+  </Message>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[queued]]></DataTag>
+    </Incident>
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="slotEmittingSignalOldSyntax">
-<Message type="info" file="" line="0">
+  </TestFunction>
+  <TestFunction name="slotEmittingSignalOldSyntax">
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[    Slot: SignalSlotClass(_POINTER_) emitSecondSignal()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[    Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[direct]]></DataTag>
     <Description><![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]></Description>
-</Message>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[direct]]></DataTag>
-</Incident>
-<Message type="info" file="" line="0">
+  </Message>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[direct]]></DataTag>
+    </Incident>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[queued]]></DataTag>
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[queued]]></DataTag>
     <Description><![CDATA[Signal: QEventDispatcherPlatform(_POINTER_) awake ()]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[queued]]></DataTag>
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) nestedSignal ()]]></Description>
-</Message>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[queued]]></DataTag>
-</Incident>
+  </Message>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[queued]]></DataTag>
+    </Incident>
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="variousTypes">
-<Message type="info" file="" line="0">
+  </TestFunction>
+  <TestFunction name="variousTypes">
+  <Message type="info" file="" line="0">
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) qStringSignal (QString(Test string))]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) qStringRefSignal ((QString&)@_POINTER_)]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) qStringConstRefSignal (QString(Test string))]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) qByteArraySignal (QByteArray(Test bytearray))]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) qListSignal (QList<int>())]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) qVectorSignal (QList<int>())]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) qVectorRefSignal ((QList<int>&)@_POINTER_)]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) qVectorConstRefSignal (QList<int>())]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) qVectorConstPointerSignal ((const QList<int>*)_POINTER_)]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) qVectorPointerConstSignal ((QList<int>*)_POINTER_)]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) qVariantSignal (QVariant())]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) qVariantSignal (QVariant())]]></Description>
-</Message>
-<Incident type="pass" file="" line="0" />
+  </Message>
+    <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="deletingSender">
-<Message type="info" file="" line="0">
+  </TestFunction>
+  <TestFunction name="deletingSender">
+  <Message type="info" file="" line="0">
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]></Description>
-</Message>
-<Incident type="pass" file="" line="0" />
+  </Message>
+    <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="cleanupTestCase">
-<Incident type="pass" file="" line="0" />
+  </TestFunction>
+  <TestFunction name="cleanupTestCase">
+    <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>
-</TestFunction>
-<Duration msecs="0"/>
+  </TestFunction>
+  <Duration msecs="0"/>
 </TestCase>

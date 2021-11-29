@@ -1,34 +1,34 @@
-<Environment>
+  <Environment>
     <QtVersion>@INSERT_QT_VERSION_HERE@</QtVersion>
     <QtBuild/>
     <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
-</Environment>
-<TestFunction name="initTestCase">
-<Incident type="pass" file="" line="0" />
+  </Environment>
+  <TestFunction name="initTestCase">
+    <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="testEmptyTuple">
-<Incident type="pass" file="" line="0" />
+  </TestFunction>
+  <TestFunction name="testEmptyTuple">
+    <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="testSimpleTuple">
-<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/tuplediagnostics/tst_tuplediagnostics.cpp" line="0">
-    <Description><![CDATA[Compared values are not the same
+  </TestFunction>
+  <TestFunction name="testSimpleTuple">
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/tuplediagnostics/tst_tuplediagnostics.cpp" line="0">
+      <Description><![CDATA[Compared values are not the same
    Actual   (std::tuple<int>{1}): std::tuple(1)
    Expected (std::tuple<int>{2}): std::tuple(2)]]></Description>
-</Incident>
+    </Incident>
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="testTuple">
-<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/tuplediagnostics/tst_tuplediagnostics.cpp" line="0">
-    <Description><![CDATA[Compared values are not the same
+  </TestFunction>
+  <TestFunction name="testTuple">
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/tuplediagnostics/tst_tuplediagnostics.cpp" line="0">
+      <Description><![CDATA[Compared values are not the same
    Actual   (tuple1): std::tuple(42, 'Y', "tuple1")
    Expected (tuple2): std::tuple(42, 'Y', "tuple2")]]></Description>
-</Incident>
+    </Incident>
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="cleanupTestCase">
-<Incident type="pass" file="" line="0" />
+  </TestFunction>
+  <TestFunction name="cleanupTestCase">
+    <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>
-</TestFunction>
-<Duration msecs="0"/>
+  </TestFunction>
+  <Duration msecs="0"/>

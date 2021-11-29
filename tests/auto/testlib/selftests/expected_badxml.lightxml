@@ -1,125 +1,125 @@
-<Environment>
+  <Environment>
     <QtVersion>@INSERT_QT_VERSION_HERE@</QtVersion>
     <QtBuild/>
     <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
-</Environment>
-<TestFunction name="initTestCase">
-<Incident type="pass" file="" line="0" />
+  </Environment>
+  <TestFunction name="initTestCase">
+    <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="badDataTag">
-<Message type="qdebug" file="" line="0">
+  </TestFunction>
+  <TestFunction name="badDataTag">
+  <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[fail end cdata ]]]><![CDATA[]> text ]]]><![CDATA[]> more text]]></DataTag>
     <Description><![CDATA[a message]]></Description>
-</Message>
-<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/badxml/tst_badxml.cpp" line="0">
-    <DataTag><![CDATA[fail end cdata ]]]><![CDATA[]> text ]]]><![CDATA[]> more text]]></DataTag>
-    <Description><![CDATA[a failure]]></Description>
-</Incident>
-<Message type="qdebug" file="" line="0">
+  </Message>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/badxml/tst_badxml.cpp" line="0">
+      <DataTag><![CDATA[fail end cdata ]]]><![CDATA[]> text ]]]><![CDATA[]> more text]]></DataTag>
+      <Description><![CDATA[a failure]]></Description>
+    </Incident>
+  <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[pass end cdata ]]]><![CDATA[]> text ]]]><![CDATA[]> more text]]></DataTag>
     <Description><![CDATA[a message]]></Description>
-</Message>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[pass end cdata ]]]><![CDATA[]> text ]]]><![CDATA[]> more text]]></DataTag>
-</Incident>
-<BenchmarkResult metric="Events" tag="pass end cdata ]]&gt; text ]]&gt; more text" value="0" iterations="1" />
-<Message type="qdebug" file="" line="0">
+  </Message>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[pass end cdata ]]]><![CDATA[]> text ]]]><![CDATA[]> more text]]></DataTag>
+    </Incident>
+  <BenchmarkResult metric="Events" tag="pass end cdata ]]&gt; text ]]&gt; more text" value="0" iterations="1" />
+  <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[fail quotes " text" more text]]></DataTag>
     <Description><![CDATA[a message]]></Description>
-</Message>
-<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/badxml/tst_badxml.cpp" line="0">
-    <DataTag><![CDATA[fail quotes " text" more text]]></DataTag>
-    <Description><![CDATA[a failure]]></Description>
-</Incident>
-<Message type="qdebug" file="" line="0">
+  </Message>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/badxml/tst_badxml.cpp" line="0">
+      <DataTag><![CDATA[fail quotes " text" more text]]></DataTag>
+      <Description><![CDATA[a failure]]></Description>
+    </Incident>
+  <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[pass quotes " text" more text]]></DataTag>
     <Description><![CDATA[a message]]></Description>
-</Message>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[pass quotes " text" more text]]></DataTag>
-</Incident>
-<BenchmarkResult metric="Events" tag="pass quotes &quot; text&quot; more text" value="0" iterations="1" />
-<Message type="qdebug" file="" line="0">
+  </Message>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[pass quotes " text" more text]]></DataTag>
+    </Incident>
+  <BenchmarkResult metric="Events" tag="pass quotes &quot; text&quot; more text" value="0" iterations="1" />
+  <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[fail xml close > open < tags < text]]></DataTag>
     <Description><![CDATA[a message]]></Description>
-</Message>
-<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/badxml/tst_badxml.cpp" line="0">
-    <DataTag><![CDATA[fail xml close > open < tags < text]]></DataTag>
-    <Description><![CDATA[a failure]]></Description>
-</Incident>
-<Message type="qdebug" file="" line="0">
+  </Message>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/badxml/tst_badxml.cpp" line="0">
+      <DataTag><![CDATA[fail xml close > open < tags < text]]></DataTag>
+      <Description><![CDATA[a failure]]></Description>
+    </Incident>
+  <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[pass xml close > open < tags < text]]></DataTag>
     <Description><![CDATA[a message]]></Description>
-</Message>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[pass xml close > open < tags < text]]></DataTag>
-</Incident>
-<BenchmarkResult metric="Events" tag="pass xml close &gt; open &lt; tags &lt; text" value="0" iterations="1" />
-<Message type="qdebug" file="" line="0">
+  </Message>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[pass xml close > open < tags < text]]></DataTag>
+    </Incident>
+  <BenchmarkResult metric="Events" tag="pass xml close &gt; open &lt; tags &lt; text" value="0" iterations="1" />
+  <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[fail all > " mixed ]]]><![CDATA[]> up > " in < the ]]]><![CDATA[]> hopes < of triggering "< ]]]><![CDATA[]> bugs]]></DataTag>
     <Description><![CDATA[a message]]></Description>
-</Message>
-<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/badxml/tst_badxml.cpp" line="0">
-    <DataTag><![CDATA[fail all > " mixed ]]]><![CDATA[]> up > " in < the ]]]><![CDATA[]> hopes < of triggering "< ]]]><![CDATA[]> bugs]]></DataTag>
-    <Description><![CDATA[a failure]]></Description>
-</Incident>
-<Message type="qdebug" file="" line="0">
+  </Message>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/badxml/tst_badxml.cpp" line="0">
+      <DataTag><![CDATA[fail all > " mixed ]]]><![CDATA[]> up > " in < the ]]]><![CDATA[]> hopes < of triggering "< ]]]><![CDATA[]> bugs]]></DataTag>
+      <Description><![CDATA[a failure]]></Description>
+    </Incident>
+  <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[pass all > " mixed ]]]><![CDATA[]> up > " in < the ]]]><![CDATA[]> hopes < of triggering "< ]]]><![CDATA[]> bugs]]></DataTag>
     <Description><![CDATA[a message]]></Description>
-</Message>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[pass all > " mixed ]]]><![CDATA[]> up > " in < the ]]]><![CDATA[]> hopes < of triggering "< ]]]><![CDATA[]> bugs]]></DataTag>
-</Incident>
-<BenchmarkResult metric="Events" tag="pass all &gt; &quot; mixed ]]&gt; up &gt; &quot; in &lt; the ]]&gt; hopes &lt; of triggering &quot;&lt; ]]&gt; bugs" value="0" iterations="1" />
+  </Message>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[pass all > " mixed ]]]><![CDATA[]> up > " in < the ]]]><![CDATA[]> hopes < of triggering "< ]]]><![CDATA[]> bugs]]></DataTag>
+    </Incident>
+  <BenchmarkResult metric="Events" tag="pass all &gt; &quot; mixed ]]&gt; up &gt; &quot; in &lt; the ]]&gt; hopes &lt; of triggering &quot;&lt; ]]&gt; bugs" value="0" iterations="1" />
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="badMessage">
-<Message type="qdebug" file="" line="0">
+  </TestFunction>
+  <TestFunction name="badMessage">
+  <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[string 0]]></DataTag>
     <Description><![CDATA[end cdata ]]]><![CDATA[]> text ]]]><![CDATA[]> more text]]></Description>
-</Message>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[string 0]]></DataTag>
-</Incident>
-<Message type="qdebug" file="" line="0">
+  </Message>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[string 0]]></DataTag>
+    </Incident>
+  <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[string 1]]></DataTag>
     <Description><![CDATA[quotes " text" more text]]></Description>
-</Message>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[string 1]]></DataTag>
-</Incident>
-<Message type="qdebug" file="" line="0">
+  </Message>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[string 1]]></DataTag>
+    </Incident>
+  <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[string 2]]></DataTag>
     <Description><![CDATA[xml close > open < tags < text]]></Description>
-</Message>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[string 2]]></DataTag>
-</Incident>
-<Message type="qdebug" file="" line="0">
+  </Message>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[string 2]]></DataTag>
+    </Incident>
+  <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[string 3]]></DataTag>
     <Description><![CDATA[all > " mixed ]]]><![CDATA[]> up > " in < the ]]]><![CDATA[]> hopes < of triggering "< ]]]><![CDATA[]> bugs]]></Description>
-</Message>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[string 3]]></DataTag>
-</Incident>
+  </Message>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[string 3]]></DataTag>
+    </Incident>
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="failWithNoFile">
-<Incident type="fail" file="" line="0">
-    <Description><![CDATA[failure message]]></Description>
-</Incident>
+  </TestFunction>
+  <TestFunction name="failWithNoFile">
+    <Incident type="fail" file="" line="0">
+      <Description><![CDATA[failure message]]></Description>
+    </Incident>
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="encoding">
-<Message type="qdebug" file="" line="0">
+  </TestFunction>
+  <TestFunction name="encoding">
+  <Message type="qdebug" file="" line="0">
     <Description><![CDATA["Ülrich Ümläut"]]></Description>
-</Message>
-<Incident type="pass" file="" line="0" />
+  </Message>
+    <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="cleanupTestCase">
-<Incident type="pass" file="" line="0" />
+  </TestFunction>
+  <TestFunction name="cleanupTestCase">
+    <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>
-</TestFunction>
-<Duration msecs="0"/>
+  </TestFunction>
+  <Duration msecs="0"/>

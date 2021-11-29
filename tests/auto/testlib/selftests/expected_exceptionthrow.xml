@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <TestCase name="tst_Exception">
-<Environment>
+  <Environment>
     <QtVersion>@INSERT_QT_VERSION_HERE@</QtVersion>
     <QtBuild/>
     <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
-</Environment>
-<TestFunction name="initTestCase">
-<Incident type="pass" file="" line="0" />
+  </Environment>
+  <TestFunction name="initTestCase">
+    <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="throwException">
-<Incident type="fail" file="qtbase/src/testlib/qtestcase.cpp" line="0">
-    <Description><![CDATA[Caught unhandled exception]]></Description>
-</Incident>
+  </TestFunction>
+  <TestFunction name="throwException">
+    <Incident type="fail" file="qtbase/src/testlib/qtestcase.cpp" line="0">
+      <Description><![CDATA[Caught unhandled exception]]></Description>
+    </Incident>
     <Duration msecs="0"/>
-</TestFunction>
-<Duration msecs="0"/>
+  </TestFunction>
+  <Duration msecs="0"/>
 </TestCase>

@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <TestCase name="tst_FailInitData">
-<Environment>
+  <Environment>
     <QtVersion>@INSERT_QT_VERSION_HERE@</QtVersion>
     <QtBuild/>
     <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
-</Environment>
-<TestFunction name="initTestCase">
-<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/failinitdata/tst_failinitdata.cpp" line="0">
-    <Description><![CDATA['false' returned FALSE. ()]]></Description>
-</Incident>
+  </Environment>
+  <TestFunction name="initTestCase">
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/failinitdata/tst_failinitdata.cpp" line="0">
+      <Description><![CDATA['false' returned FALSE. ()]]></Description>
+    </Incident>
     <Duration msecs="0"/>
-</TestFunction>
-<Duration msecs="0"/>
+  </TestFunction>
+  <Duration msecs="0"/>
 </TestCase>

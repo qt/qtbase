@@ -1,208 +1,208 @@
-<Environment>
+  <Environment>
     <QtVersion>@INSERT_QT_VERSION_HERE@</QtVersion>
     <QtBuild/>
     <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
-</Environment>
-<TestFunction name="initTestCase">
-<Incident type="pass" file="" line="0" />
+  </Environment>
+  <TestFunction name="initTestCase">
+    <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="testWarnings">
-<Message type="qwarn" file="" line="0">
+  </TestFunction>
+  <TestFunction name="testWarnings">
+  <Message type="qwarn" file="" line="0">
     <Description><![CDATA[Warning]]></Description>
-</Message>
-<Message type="qwarn" file="" line="0">
+  </Message>
+  <Message type="qwarn" file="" line="0">
     <Description><![CDATA[Warning]]></Description>
-</Message>
-<Message type="qdebug" file="" line="0">
+  </Message>
+  <Message type="qdebug" file="" line="0">
     <Description><![CDATA[Debug]]></Description>
-</Message>
-<Message type="qdebug" file="" line="0">
+  </Message>
+  <Message type="qdebug" file="" line="0">
     <Description><![CDATA[Debug]]></Description>
-</Message>
-<Message type="qinfo" file="" line="0">
+  </Message>
+  <Message type="qinfo" file="" line="0">
     <Description><![CDATA[Info]]></Description>
-</Message>
-<Message type="qinfo" file="" line="0">
+  </Message>
+  <Message type="qinfo" file="" line="0">
     <Description><![CDATA[Info]]></Description>
-</Message>
-<Message type="qdebug" file="" line="0">
+  </Message>
+  <Message type="qdebug" file="" line="0">
     <Description><![CDATA[Baba]]></Description>
-</Message>
-<Message type="qdebug" file="" line="0">
+  </Message>
+  <Message type="qdebug" file="" line="0">
     <Description><![CDATA[Baba]]></Description>
-</Message>
-<Message type="qdebug" file="" line="0">
+  </Message>
+  <Message type="qdebug" file="" line="0">
     <Description><![CDATA[Bubublabla]]></Description>
-</Message>
-<Message type="qwarn" file="" line="0">
+  </Message>
+  <Message type="qwarn" file="" line="0">
     <Description><![CDATA[Babablabla]]></Description>
-</Message>
-<Incident type="pass" file="" line="0" />
+  </Message>
+    <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="testMissingWarnings">
-<Message type="info" file="" line="0">
+  </TestFunction>
+  <TestFunction name="testMissingWarnings">
+  <Message type="info" file="" line="0">
     <Description><![CDATA[Did not receive message: "Warning0"]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <Description><![CDATA[Did not receive message: "Warning1"]]></Description>
-</Message>
-<Incident type="fail" file="" line="0">
-    <Description><![CDATA[Not all expected messages were received]]></Description>
-</Incident>
+  </Message>
+    <Incident type="fail" file="" line="0">
+      <Description><![CDATA[Not all expected messages were received]]></Description>
+    </Incident>
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="testMissingWarningsRegularExpression">
-<Message type="info" file="" line="0">
+  </TestFunction>
+  <TestFunction name="testMissingWarningsRegularExpression">
+  <Message type="info" file="" line="0">
     <Description><![CDATA[Did not receive any message matching: "Warning\s\d"]]></Description>
-</Message>
-<Incident type="fail" file="" line="0">
-    <Description><![CDATA[Not all expected messages were received]]></Description>
-</Incident>
+  </Message>
+    <Incident type="fail" file="" line="0">
+      <Description><![CDATA[Not all expected messages were received]]></Description>
+    </Incident>
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="testMissingWarningsWithData">
-<Message type="info" file="" line="0">
+  </TestFunction>
+  <TestFunction name="testMissingWarningsWithData">
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[first row]]></DataTag>
     <Description><![CDATA[Did not receive message: "Warning0"]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[first row]]></DataTag>
     <Description><![CDATA[Did not receive message: "Warning1"]]></Description>
-</Message>
-<Incident type="fail" file="" line="0">
-    <DataTag><![CDATA[first row]]></DataTag>
-    <Description><![CDATA[Not all expected messages were received]]></Description>
-</Incident>
-<Message type="info" file="" line="0">
+  </Message>
+    <Incident type="fail" file="" line="0">
+      <DataTag><![CDATA[first row]]></DataTag>
+      <Description><![CDATA[Not all expected messages were received]]></Description>
+    </Incident>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[second row]]></DataTag>
     <Description><![CDATA[Did not receive message: "Warning0"]]></Description>
-</Message>
-<Message type="info" file="" line="0">
+  </Message>
+  <Message type="info" file="" line="0">
     <DataTag><![CDATA[second row]]></DataTag>
     <Description><![CDATA[Did not receive message: "Warning1"]]></Description>
-</Message>
-<Incident type="fail" file="" line="0">
-    <DataTag><![CDATA[second row]]></DataTag>
-    <Description><![CDATA[Not all expected messages were received]]></Description>
-</Incident>
+  </Message>
+    <Incident type="fail" file="" line="0">
+      <DataTag><![CDATA[second row]]></DataTag>
+      <Description><![CDATA[Not all expected messages were received]]></Description>
+    </Incident>
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="testFailOnWarnings">
-<Message type="qwarn" file="" line="0">
+  </TestFunction>
+  <TestFunction name="testFailOnWarnings">
+  <Message type="qwarn" file="" line="0">
     <Description><![CDATA[Ran out of space!]]></Description>
-</Message>
-<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp" line="0">
-    <Description><![CDATA[Received a warning that resulted in a failure:
+  </Message>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp" line="0">
+      <Description><![CDATA[Received a warning that resulted in a failure:
 Ran out of cabbage!]]></Description>
-</Incident>
-<Message type="qdebug" file="" line="0">
+    </Incident>
+  <Message type="qdebug" file="" line="0">
     <Description><![CDATA[Ran out of tortillas!]]></Description>
-</Message>
-<Message type="qinfo" file="" line="0">
+  </Message>
+  <Message type="qinfo" file="" line="0">
     <Description><![CDATA[Ran out of oil!]]></Description>
-</Message>
-<Message type="qwarn" file="" line="0">
+  </Message>
+  <Message type="qwarn" file="" line="0">
     <Description><![CDATA[nope]]></Description>
-</Message>
-<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp" line="0">
-    <Description><![CDATA[Received a warning that resulted in a failure:
+  </Message>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp" line="0">
+      <Description><![CDATA[Received a warning that resulted in a failure:
 Ran out of biscuits!]]></Description>
-</Incident>
-<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp" line="0">
-    <Description><![CDATA[Received a warning that resulted in a failure:
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp" line="0">
+      <Description><![CDATA[Received a warning that resulted in a failure:
 Running low on toothpaste!]]></Description>
-</Incident>
-<Message type="qwarn" file="" line="0">
+    </Incident>
+  <Message type="qwarn" file="" line="0">
     <Description><![CDATA[Running low on flour!]]></Description>
-</Message>
-<Message type="qdebug" file="" line="0">
+  </Message>
+  <Message type="qdebug" file="" line="0">
     <Description><![CDATA[Running low on toothpaste!]]></Description>
-</Message>
-<Message type="qinfo" file="" line="0">
+  </Message>
+  <Message type="qinfo" file="" line="0">
     <Description><![CDATA[Running low on toothpaste!]]></Description>
-</Message>
+  </Message>
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="testFailOnWarningsCleared">
-<Message type="qwarn" file="" line="0">
+  </TestFunction>
+  <TestFunction name="testFailOnWarningsCleared">
+  <Message type="qwarn" file="" line="0">
     <Description><![CDATA[Ran out of muffins!]]></Description>
-</Message>
-<Incident type="pass" file="" line="0" />
+  </Message>
+    <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="testFailOnWarningsWithData">
-<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp" line="0">
-    <DataTag><![CDATA[warning1]]></DataTag>
-    <Description><![CDATA[Received a warning that resulted in a failure:
+  </TestFunction>
+  <TestFunction name="testFailOnWarningsWithData">
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp" line="0">
+      <DataTag><![CDATA[warning1]]></DataTag>
+      <Description><![CDATA[Received a warning that resulted in a failure:
 warning1]]></Description>
-</Incident>
-<Message type="qwarn" file="" line="0">
+    </Incident>
+  <Message type="qwarn" file="" line="0">
     <DataTag><![CDATA[warning1]]></DataTag>
     <Description><![CDATA[warning2]]></Description>
-</Message>
-<Message type="qwarn" file="" line="0">
+  </Message>
+  <Message type="qwarn" file="" line="0">
     <DataTag><![CDATA[warning1]]></DataTag>
     <Description><![CDATA[warning3]]></Description>
-</Message>
-<Message type="qwarn" file="" line="0">
+  </Message>
+  <Message type="qwarn" file="" line="0">
     <DataTag><![CDATA[warning2]]></DataTag>
     <Description><![CDATA[warning1]]></Description>
-</Message>
-<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp" line="0">
-    <DataTag><![CDATA[warning2]]></DataTag>
-    <Description><![CDATA[Received a warning that resulted in a failure:
+  </Message>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp" line="0">
+      <DataTag><![CDATA[warning2]]></DataTag>
+      <Description><![CDATA[Received a warning that resulted in a failure:
 warning2]]></Description>
-</Incident>
-<Message type="qwarn" file="" line="0">
+    </Incident>
+  <Message type="qwarn" file="" line="0">
     <DataTag><![CDATA[warning2]]></DataTag>
     <Description><![CDATA[warning3]]></Description>
-</Message>
-<Message type="qwarn" file="" line="0">
+  </Message>
+  <Message type="qwarn" file="" line="0">
     <DataTag><![CDATA[warning3]]></DataTag>
     <Description><![CDATA[warning1]]></Description>
-</Message>
-<Message type="qwarn" file="" line="0">
+  </Message>
+  <Message type="qwarn" file="" line="0">
     <DataTag><![CDATA[warning3]]></DataTag>
     <Description><![CDATA[warning2]]></Description>
-</Message>
-<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp" line="0">
-    <DataTag><![CDATA[warning3]]></DataTag>
-    <Description><![CDATA[Received a warning that resulted in a failure:
+  </Message>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp" line="0">
+      <DataTag><![CDATA[warning3]]></DataTag>
+      <Description><![CDATA[Received a warning that resulted in a failure:
 warning3]]></Description>
-</Incident>
+    </Incident>
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="testFailOnWarningsFailInHelper">
-<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp" line="0">
-    <Description><![CDATA[This failure message should be printed but not cause the test to abort]]></Description>
-</Incident>
-<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp" line="0">
-    <Description><![CDATA[Received a warning that resulted in a failure:
+  </TestFunction>
+  <TestFunction name="testFailOnWarningsFailInHelper">
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp" line="0">
+      <Description><![CDATA[This failure message should be printed but not cause the test to abort]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp" line="0">
+      <Description><![CDATA[Received a warning that resulted in a failure:
 Ran out of cabbage!]]></Description>
-</Incident>
-<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp" line="0">
-    <Description><![CDATA[My cabbage! :(]]></Description>
-</Incident>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp" line="0">
+      <Description><![CDATA[My cabbage! :(]]></Description>
+    </Incident>
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="testFailOnWarningsThenSkip">
-<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp" line="0">
-    <Description><![CDATA[Received a warning that resulted in a failure:
+  </TestFunction>
+  <TestFunction name="testFailOnWarningsThenSkip">
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp" line="0">
+      <Description><![CDATA[Received a warning that resulted in a failure:
 Ran out of cabbage!]]></Description>
-</Incident>
-<Incident type="skip" file="qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp" line="0">
-    <Description><![CDATA[My cabbage! :(]]></Description>
-</Incident>
+    </Incident>
+    <Incident type="skip" file="qtbase/tests/auto/testlib/selftests/warnings/tst_warnings.cpp" line="0">
+      <Description><![CDATA[My cabbage! :(]]></Description>
+    </Incident>
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="testFailOnWarningsAndIgnoreWarnings">
-<Incident type="pass" file="" line="0" />
+  </TestFunction>
+  <TestFunction name="testFailOnWarningsAndIgnoreWarnings">
+    <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="cleanupTestCase">
-<Incident type="pass" file="" line="0" />
+  </TestFunction>
+  <TestFunction name="cleanupTestCase">
+    <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>
-</TestFunction>
-<Duration msecs="0"/>
+  </TestFunction>
+  <Duration msecs="0"/>

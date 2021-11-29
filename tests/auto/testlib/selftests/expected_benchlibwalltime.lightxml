@@ -1,29 +1,29 @@
-<Environment>
+  <Environment>
     <QtVersion>@INSERT_QT_VERSION_HERE@</QtVersion>
     <QtBuild/>
     <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
-</Environment>
-<TestFunction name="initTestCase">
-<Incident type="pass" file="" line="0" />
+  </Environment>
+  <TestFunction name="initTestCase">
+    <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="waitForOneThousand">
-<Incident type="pass" file="" line="0" />
-<BenchmarkResult metric="WalltimeMilliseconds" tag="" value="0" iterations="1" />
+  </TestFunction>
+  <TestFunction name="waitForOneThousand">
+    <Incident type="pass" file="" line="0" />
+  <BenchmarkResult metric="WalltimeMilliseconds" tag="" value="0" iterations="1" />
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="waitForFourThousand">
-<Incident type="pass" file="" line="0" />
-<BenchmarkResult metric="WalltimeMilliseconds" tag="" value="0" iterations="1" />
+  </TestFunction>
+  <TestFunction name="waitForFourThousand">
+    <Incident type="pass" file="" line="0" />
+  <BenchmarkResult metric="WalltimeMilliseconds" tag="" value="0" iterations="1" />
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="qbenchmark_once">
-<Incident type="pass" file="" line="0" />
-<BenchmarkResult metric="WalltimeMilliseconds" tag="" value="0" iterations="1" />
+  </TestFunction>
+  <TestFunction name="qbenchmark_once">
+    <Incident type="pass" file="" line="0" />
+  <BenchmarkResult metric="WalltimeMilliseconds" tag="" value="0" iterations="1" />
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="cleanupTestCase">
-<Incident type="pass" file="" line="0" />
+  </TestFunction>
+  <TestFunction name="cleanupTestCase">
+    <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>
-</TestFunction>
-<Duration msecs="0"/>
+  </TestFunction>
+  <Duration msecs="0"/>

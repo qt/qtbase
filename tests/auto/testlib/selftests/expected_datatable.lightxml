@@ -1,143 +1,143 @@
-<Environment>
+  <Environment>
     <QtVersion>@INSERT_QT_VERSION_HERE@</QtVersion>
     <QtBuild/>
     <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
-</Environment>
-<TestFunction name="initTestCase">
-<Incident type="pass" file="" line="0" />
+  </Environment>
+  <TestFunction name="initTestCase">
+    <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="singleTestFunction1">
-<Incident type="pass" file="" line="0" />
+  </TestFunction>
+  <TestFunction name="singleTestFunction1">
+    <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="singleTestFunction2">
-<Incident type="pass" file="" line="0" />
+  </TestFunction>
+  <TestFunction name="singleTestFunction2">
+    <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="fiveTablePasses">
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[fiveTablePasses_data 1]]></DataTag>
-</Incident>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[fiveTablePasses_data 2]]></DataTag>
-</Incident>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[fiveTablePasses_data 3]]></DataTag>
-</Incident>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[fiveTablePasses_data 4]]></DataTag>
-</Incident>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[fiveTablePasses_data 5]]></DataTag>
-</Incident>
+  </TestFunction>
+  <TestFunction name="fiveTablePasses">
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[fiveTablePasses_data 1]]></DataTag>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[fiveTablePasses_data 2]]></DataTag>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[fiveTablePasses_data 3]]></DataTag>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[fiveTablePasses_data 4]]></DataTag>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[fiveTablePasses_data 5]]></DataTag>
+    </Incident>
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="fiveTableFailures">
-<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp" line="0">
-    <DataTag><![CDATA[fiveTableFailures_data 1]]></DataTag>
-    <Description><![CDATA['test' returned FALSE. ()]]></Description>
-</Incident>
-<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp" line="0">
-    <DataTag><![CDATA[fiveTableFailures_data 2]]></DataTag>
-    <Description><![CDATA['test' returned FALSE. ()]]></Description>
-</Incident>
-<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp" line="0">
-    <DataTag><![CDATA[fiveTableFailures_data 3]]></DataTag>
-    <Description><![CDATA['test' returned FALSE. ()]]></Description>
-</Incident>
-<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp" line="0">
-    <DataTag><![CDATA[fiveTableFailures_data 4]]></DataTag>
-    <Description><![CDATA['test' returned FALSE. ()]]></Description>
-</Incident>
-<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp" line="0">
-    <DataTag><![CDATA[fiveTableFailures_data 5]]></DataTag>
-    <Description><![CDATA['test' returned FALSE. ()]]></Description>
-</Incident>
+  </TestFunction>
+  <TestFunction name="fiveTableFailures">
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp" line="0">
+      <DataTag><![CDATA[fiveTableFailures_data 1]]></DataTag>
+      <Description><![CDATA['test' returned FALSE. ()]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp" line="0">
+      <DataTag><![CDATA[fiveTableFailures_data 2]]></DataTag>
+      <Description><![CDATA['test' returned FALSE. ()]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp" line="0">
+      <DataTag><![CDATA[fiveTableFailures_data 3]]></DataTag>
+      <Description><![CDATA['test' returned FALSE. ()]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp" line="0">
+      <DataTag><![CDATA[fiveTableFailures_data 4]]></DataTag>
+      <Description><![CDATA['test' returned FALSE. ()]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp" line="0">
+      <DataTag><![CDATA[fiveTableFailures_data 5]]></DataTag>
+      <Description><![CDATA['test' returned FALSE. ()]]></Description>
+    </Incident>
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="startsWithFailure">
-<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp" line="0">
-    <DataTag><![CDATA[startsWithFailure_data 1]]></DataTag>
-    <Description><![CDATA['test' returned FALSE. ()]]></Description>
-</Incident>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[startsWithFailure_data 2]]></DataTag>
-</Incident>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[startsWithFailure_data 3]]></DataTag>
-</Incident>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[startsWithFailure_data 4]]></DataTag>
-</Incident>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[startsWithFailure_data 5]]></DataTag>
-</Incident>
+  </TestFunction>
+  <TestFunction name="startsWithFailure">
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp" line="0">
+      <DataTag><![CDATA[startsWithFailure_data 1]]></DataTag>
+      <Description><![CDATA['test' returned FALSE. ()]]></Description>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[startsWithFailure_data 2]]></DataTag>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[startsWithFailure_data 3]]></DataTag>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[startsWithFailure_data 4]]></DataTag>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[startsWithFailure_data 5]]></DataTag>
+    </Incident>
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="endsWithFailure">
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[endsWithFailure 1]]></DataTag>
-</Incident>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[endsWithFailure 2]]></DataTag>
-</Incident>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[endsWithFailure 3]]></DataTag>
-</Incident>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[endsWithFailure 4]]></DataTag>
-</Incident>
-<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp" line="0">
-    <DataTag><![CDATA[endsWithFailure 5]]></DataTag>
-    <Description><![CDATA['test' returned FALSE. ()]]></Description>
-</Incident>
+  </TestFunction>
+  <TestFunction name="endsWithFailure">
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[endsWithFailure 1]]></DataTag>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[endsWithFailure 2]]></DataTag>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[endsWithFailure 3]]></DataTag>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[endsWithFailure 4]]></DataTag>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp" line="0">
+      <DataTag><![CDATA[endsWithFailure 5]]></DataTag>
+      <Description><![CDATA['test' returned FALSE. ()]]></Description>
+    </Incident>
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="failureInMiddle">
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[failureInMiddle_data 1]]></DataTag>
-</Incident>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[failureInMiddle_data 2]]></DataTag>
-</Incident>
-<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp" line="0">
-    <DataTag><![CDATA[failureInMiddle_data 3]]></DataTag>
-    <Description><![CDATA['test' returned FALSE. ()]]></Description>
-</Incident>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[failureInMiddle_data 4]]></DataTag>
-</Incident>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[failureInMiddle_data 5]]></DataTag>
-</Incident>
+  </TestFunction>
+  <TestFunction name="failureInMiddle">
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[failureInMiddle_data 1]]></DataTag>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[failureInMiddle_data 2]]></DataTag>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp" line="0">
+      <DataTag><![CDATA[failureInMiddle_data 3]]></DataTag>
+      <Description><![CDATA['test' returned FALSE. ()]]></Description>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[failureInMiddle_data 4]]></DataTag>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[failureInMiddle_data 5]]></DataTag>
+    </Incident>
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="fiveIsolatedFailures">
-<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp" line="0">
-    <DataTag><![CDATA[fiveIsolatedFailures_data 1]]></DataTag>
-    <Description><![CDATA['!test' returned FALSE. ()]]></Description>
-</Incident>
-<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp" line="0">
-    <DataTag><![CDATA[fiveIsolatedFailures_data 2]]></DataTag>
-    <Description><![CDATA['!test' returned FALSE. ()]]></Description>
-</Incident>
-<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp" line="0">
-    <DataTag><![CDATA[fiveIsolatedFailures_data 3]]></DataTag>
-    <Description><![CDATA['!test' returned FALSE. ()]]></Description>
-</Incident>
-<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp" line="0">
-    <DataTag><![CDATA[fiveIsolatedFailures_data 4]]></DataTag>
-    <Description><![CDATA['!test' returned FALSE. ()]]></Description>
-</Incident>
-<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp" line="0">
-    <DataTag><![CDATA[fiveIsolatedFailures_data 5]]></DataTag>
-    <Description><![CDATA['!test' returned FALSE. ()]]></Description>
-</Incident>
+  </TestFunction>
+  <TestFunction name="fiveIsolatedFailures">
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp" line="0">
+      <DataTag><![CDATA[fiveIsolatedFailures_data 1]]></DataTag>
+      <Description><![CDATA['!test' returned FALSE. ()]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp" line="0">
+      <DataTag><![CDATA[fiveIsolatedFailures_data 2]]></DataTag>
+      <Description><![CDATA['!test' returned FALSE. ()]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp" line="0">
+      <DataTag><![CDATA[fiveIsolatedFailures_data 3]]></DataTag>
+      <Description><![CDATA['!test' returned FALSE. ()]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp" line="0">
+      <DataTag><![CDATA[fiveIsolatedFailures_data 4]]></DataTag>
+      <Description><![CDATA['!test' returned FALSE. ()]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp" line="0">
+      <DataTag><![CDATA[fiveIsolatedFailures_data 5]]></DataTag>
+      <Description><![CDATA['!test' returned FALSE. ()]]></Description>
+    </Incident>
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="cleanupTestCase">
-<Incident type="pass" file="" line="0" />
+  </TestFunction>
+  <TestFunction name="cleanupTestCase">
+    <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>
-</TestFunction>
-<Duration msecs="0"/>
+  </TestFunction>
+  <Duration msecs="0"/>

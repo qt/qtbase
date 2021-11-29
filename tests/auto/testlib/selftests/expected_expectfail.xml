@@ -1,324 +1,324 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <TestCase name="tst_ExpectFail">
-<Environment>
+  <Environment>
     <QtVersion>@INSERT_QT_VERSION_HERE@</QtVersion>
     <QtBuild/>
     <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
-</Environment>
-<TestFunction name="initTestCase">
-<Incident type="pass" file="" line="0" />
+  </Environment>
+  <TestFunction name="initTestCase">
+    <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="xfailAndContinue">
-<Message type="qdebug" file="" line="0">
+  </TestFunction>
+  <TestFunction name="xfailAndContinue">
+  <Message type="qdebug" file="" line="0">
     <Description><![CDATA[begin]]></Description>
-</Message>
-<Incident type="xfail" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
-    <Description><![CDATA[This should xfail]]></Description>
-</Incident>
-<Message type="qdebug" file="" line="0">
+  </Message>
+    <Incident type="xfail" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
+      <Description><![CDATA[This should xfail]]></Description>
+    </Incident>
+  <Message type="qdebug" file="" line="0">
     <Description><![CDATA[after]]></Description>
-</Message>
-<Incident type="pass" file="" line="0" />
+  </Message>
+    <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="xfailAndAbort">
-<Message type="qdebug" file="" line="0">
+  </TestFunction>
+  <TestFunction name="xfailAndAbort">
+  <Message type="qdebug" file="" line="0">
     <Description><![CDATA[begin]]></Description>
-</Message>
-<Incident type="xfail" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
-    <Description><![CDATA[This should xfail]]></Description>
-</Incident>
-<Incident type="pass" file="" line="0" />
+  </Message>
+    <Incident type="xfail" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
+      <Description><![CDATA[This should xfail]]></Description>
+    </Incident>
+    <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="xfailContinueSkip">
-<Incident type="xfail" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
-    <Description><![CDATA[This should xfail then skip]]></Description>
-</Incident>
-<Incident type="skip" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
-    <Description><![CDATA[This skip should be reported and counted]]></Description>
-</Incident>
+  </TestFunction>
+  <TestFunction name="xfailContinueSkip">
+    <Incident type="xfail" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
+      <Description><![CDATA[This should xfail then skip]]></Description>
+    </Incident>
+    <Incident type="skip" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
+      <Description><![CDATA[This skip should be reported and counted]]></Description>
+    </Incident>
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="xfailAbortSkip">
-<Incident type="xfail" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
-    <Description><![CDATA[This should xfail]]></Description>
-</Incident>
-<Incident type="pass" file="" line="0" />
+  </TestFunction>
+  <TestFunction name="xfailAbortSkip">
+    <Incident type="xfail" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
+      <Description><![CDATA[This should xfail]]></Description>
+    </Incident>
+    <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="xfailTwice">
-<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
-    <Description><![CDATA[Already expecting a fail]]></Description>
-</Incident>
+  </TestFunction>
+  <TestFunction name="xfailTwice">
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
+      <Description><![CDATA[Already expecting a fail]]></Description>
+    </Incident>
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="xfailDataDrivenTwice">
-<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
-    <DataTag><![CDATA[Pass Abort]]></DataTag>
-    <Description><![CDATA[Already expecting a fail]]></Description>
-</Incident>
-<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
-    <DataTag><![CDATA[Pass Continue]]></DataTag>
-    <Description><![CDATA[Already expecting a fail]]></Description>
-</Incident>
-<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
-    <DataTag><![CDATA[Fail Abort]]></DataTag>
-    <Description><![CDATA[Already expecting a fail]]></Description>
-</Incident>
-<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
-    <DataTag><![CDATA[Fail Continue]]></DataTag>
-    <Description><![CDATA[Already expecting a fail]]></Description>
-</Incident>
+  </TestFunction>
+  <TestFunction name="xfailDataDrivenTwice">
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
+      <DataTag><![CDATA[Pass Abort]]></DataTag>
+      <Description><![CDATA[Already expecting a fail]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
+      <DataTag><![CDATA[Pass Continue]]></DataTag>
+      <Description><![CDATA[Already expecting a fail]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
+      <DataTag><![CDATA[Fail Abort]]></DataTag>
+      <Description><![CDATA[Already expecting a fail]]></Description>
+    </Incident>
+    <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
+      <DataTag><![CDATA[Fail Continue]]></DataTag>
+      <Description><![CDATA[Already expecting a fail]]></Description>
+    </Incident>
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="xfailWithQString">
-<Incident type="xfail" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
-    <Description><![CDATA[A string]]></Description>
-</Incident>
-<Incident type="xfail" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
-    <Description><![CDATA[Bug 5 (The message)]]></Description>
-</Incident>
-<Incident type="pass" file="" line="0" />
+  </TestFunction>
+  <TestFunction name="xfailWithQString">
+    <Incident type="xfail" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
+      <Description><![CDATA[A string]]></Description>
+    </Incident>
+    <Incident type="xfail" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
+      <Description><![CDATA[Bug 5 (The message)]]></Description>
+    </Incident>
+    <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="xfailDataDrivenWithQString">
-<Incident type="skip" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
-    <DataTag><![CDATA[Pass Abort]]></DataTag>
-    <Description><![CDATA[Each Continue or Pass reports this and increments skip-count]]></Description>
-</Incident>
-<Incident type="skip" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
-    <DataTag><![CDATA[Pass Continue]]></DataTag>
-    <Description><![CDATA[Each Continue or Pass reports this and increments skip-count]]></Description>
-</Incident>
-<Incident type="xfail" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
-    <DataTag><![CDATA[Fail Abort]]></DataTag>
-    <Description><![CDATA[A string]]></Description>
-</Incident>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[Fail Abort]]></DataTag>
-</Incident>
-<Incident type="xfail" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
-    <DataTag><![CDATA[Fail Continue]]></DataTag>
-    <Description><![CDATA[A string]]></Description>
-</Incident>
-<Incident type="xfail" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
-    <DataTag><![CDATA[Fail Continue]]></DataTag>
-    <Description><![CDATA[Bug 5 (The message)]]></Description>
-</Incident>
-<Incident type="skip" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
-    <DataTag><![CDATA[Fail Continue]]></DataTag>
-    <Description><![CDATA[Each Continue or Pass reports this and increments skip-count]]></Description>
-</Incident>
+  </TestFunction>
+  <TestFunction name="xfailDataDrivenWithQString">
+    <Incident type="skip" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
+      <DataTag><![CDATA[Pass Abort]]></DataTag>
+      <Description><![CDATA[Each Continue or Pass reports this and increments skip-count]]></Description>
+    </Incident>
+    <Incident type="skip" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
+      <DataTag><![CDATA[Pass Continue]]></DataTag>
+      <Description><![CDATA[Each Continue or Pass reports this and increments skip-count]]></Description>
+    </Incident>
+    <Incident type="xfail" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
+      <DataTag><![CDATA[Fail Abort]]></DataTag>
+      <Description><![CDATA[A string]]></Description>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[Fail Abort]]></DataTag>
+    </Incident>
+    <Incident type="xfail" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
+      <DataTag><![CDATA[Fail Continue]]></DataTag>
+      <Description><![CDATA[A string]]></Description>
+    </Incident>
+    <Incident type="xfail" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
+      <DataTag><![CDATA[Fail Continue]]></DataTag>
+      <Description><![CDATA[Bug 5 (The message)]]></Description>
+    </Incident>
+    <Incident type="skip" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
+      <DataTag><![CDATA[Fail Continue]]></DataTag>
+      <Description><![CDATA[Each Continue or Pass reports this and increments skip-count]]></Description>
+    </Incident>
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="xfailDataDrivenWithQVerify">
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[Pass Abort]]></DataTag>
-</Incident>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[Pass Continue]]></DataTag>
-</Incident>
-<Incident type="xfail" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
-    <DataTag><![CDATA[Fail Abort]]></DataTag>
-    <Description><![CDATA[This test should xfail]]></Description>
-</Incident>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[Fail Abort]]></DataTag>
-</Incident>
-<Incident type="xfail" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
-    <DataTag><![CDATA[Fail Continue]]></DataTag>
-    <Description><![CDATA[This test should xfail]]></Description>
-</Incident>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[Fail Continue]]></DataTag>
-</Incident>
+  </TestFunction>
+  <TestFunction name="xfailDataDrivenWithQVerify">
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[Pass Abort]]></DataTag>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[Pass Continue]]></DataTag>
+    </Incident>
+    <Incident type="xfail" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
+      <DataTag><![CDATA[Fail Abort]]></DataTag>
+      <Description><![CDATA[This test should xfail]]></Description>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[Fail Abort]]></DataTag>
+    </Incident>
+    <Incident type="xfail" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
+      <DataTag><![CDATA[Fail Continue]]></DataTag>
+      <Description><![CDATA[This test should xfail]]></Description>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[Fail Continue]]></DataTag>
+    </Incident>
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="xfailDataDrivenWithQCompare">
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[Pass Abort]]></DataTag>
-</Incident>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[Pass Continue]]></DataTag>
-</Incident>
-<Incident type="xfail" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
-    <DataTag><![CDATA[Fail Abort]]></DataTag>
-    <Description><![CDATA[This test should xfail]]></Description>
-</Incident>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[Fail Abort]]></DataTag>
-</Incident>
-<Incident type="xfail" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
-    <DataTag><![CDATA[Fail Continue]]></DataTag>
-    <Description><![CDATA[This test should xfail]]></Description>
-</Incident>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[Fail Continue]]></DataTag>
-</Incident>
+  </TestFunction>
+  <TestFunction name="xfailDataDrivenWithQCompare">
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[Pass Abort]]></DataTag>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[Pass Continue]]></DataTag>
+    </Incident>
+    <Incident type="xfail" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
+      <DataTag><![CDATA[Fail Abort]]></DataTag>
+      <Description><![CDATA[This test should xfail]]></Description>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[Fail Abort]]></DataTag>
+    </Incident>
+    <Incident type="xfail" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
+      <DataTag><![CDATA[Fail Continue]]></DataTag>
+      <Description><![CDATA[This test should xfail]]></Description>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[Fail Continue]]></DataTag>
+    </Incident>
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="xfailOnWrongRow">
-<Message type="qdebug" file="" line="0">
+  </TestFunction>
+  <TestFunction name="xfailOnWrongRow">
+  <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[Fail Abort]]></DataTag>
     <Description><![CDATA[Should pass (*not* xpass), despite test-case name]]></Description>
-</Message>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[Fail Abort]]></DataTag>
-</Incident>
-<Message type="qdebug" file="" line="0">
+  </Message>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[Fail Abort]]></DataTag>
+    </Incident>
+  <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[Fail Continue]]></DataTag>
     <Description><![CDATA[Should pass (*not* xpass), despite test-case name]]></Description>
-</Message>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[Fail Continue]]></DataTag>
-</Incident>
+  </Message>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[Fail Continue]]></DataTag>
+    </Incident>
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="xfailOnAnyRow">
-<Incident type="xfail" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
-    <DataTag><![CDATA[Fail Abort]]></DataTag>
-    <Description><![CDATA[This test should xfail]]></Description>
-</Incident>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[Fail Abort]]></DataTag>
-</Incident>
-<Incident type="xfail" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
-    <DataTag><![CDATA[Fail Continue]]></DataTag>
-    <Description><![CDATA[This test should xfail]]></Description>
-</Incident>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[Fail Continue]]></DataTag>
-</Incident>
+  </TestFunction>
+  <TestFunction name="xfailOnAnyRow">
+    <Incident type="xfail" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
+      <DataTag><![CDATA[Fail Abort]]></DataTag>
+      <Description><![CDATA[This test should xfail]]></Description>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[Fail Abort]]></DataTag>
+    </Incident>
+    <Incident type="xfail" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
+      <DataTag><![CDATA[Fail Continue]]></DataTag>
+      <Description><![CDATA[This test should xfail]]></Description>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[Fail Continue]]></DataTag>
+    </Incident>
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="xfailWithoutCheck">
-<Message type="qdebug" file="" line="0">
+  </TestFunction>
+  <TestFunction name="xfailWithoutCheck">
+  <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[Fail Abort]]></DataTag>
     <Description><![CDATA[Should fail (*not* xfail), despite test-case name]]></Description>
-</Message>
-<Incident type="fail" file="" line="0">
-    <DataTag><![CDATA[Fail Abort]]></DataTag>
-    <Description><![CDATA[QEXPECT_FAIL was called without any subsequent verification statements]]></Description>
-</Incident>
-<Message type="qdebug" file="" line="0">
+  </Message>
+    <Incident type="fail" file="" line="0">
+      <DataTag><![CDATA[Fail Abort]]></DataTag>
+      <Description><![CDATA[QEXPECT_FAIL was called without any subsequent verification statements]]></Description>
+    </Incident>
+  <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[Fail Continue]]></DataTag>
     <Description><![CDATA[Should fail (*not* xfail), despite test-case name]]></Description>
-</Message>
-<Incident type="fail" file="" line="0">
-    <DataTag><![CDATA[Fail Continue]]></DataTag>
-    <Description><![CDATA[QEXPECT_FAIL was called without any subsequent verification statements]]></Description>
-</Incident>
+  </Message>
+    <Incident type="fail" file="" line="0">
+      <DataTag><![CDATA[Fail Continue]]></DataTag>
+      <Description><![CDATA[QEXPECT_FAIL was called without any subsequent verification statements]]></Description>
+    </Incident>
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="xpassAbort">
-<Incident type="xpass" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
-    <Description><![CDATA['true' returned TRUE unexpectedly. ()]]></Description>
-</Incident>
+  </TestFunction>
+  <TestFunction name="xpassAbort">
+    <Incident type="xpass" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
+      <Description><![CDATA['true' returned TRUE unexpectedly. ()]]></Description>
+    </Incident>
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="xpassAbortSkip">
-<Incident type="xpass" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
-    <Description><![CDATA['true' returned TRUE unexpectedly. ()]]></Description>
-</Incident>
+  </TestFunction>
+  <TestFunction name="xpassAbortSkip">
+    <Incident type="xpass" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
+      <Description><![CDATA['true' returned TRUE unexpectedly. ()]]></Description>
+    </Incident>
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="xpassAbortXfailContinue">
-<Incident type="xpass" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
-    <Description><![CDATA['true' returned TRUE unexpectedly. ()]]></Description>
-</Incident>
+  </TestFunction>
+  <TestFunction name="xpassAbortXfailContinue">
+    <Incident type="xpass" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
+      <Description><![CDATA['true' returned TRUE unexpectedly. ()]]></Description>
+    </Incident>
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="xpassContinue">
-<Incident type="xpass" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
-    <Description><![CDATA['true' returned TRUE unexpectedly. ()]]></Description>
-</Incident>
-<Message type="qdebug" file="" line="0">
+  </TestFunction>
+  <TestFunction name="xpassContinue">
+    <Incident type="xpass" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
+      <Description><![CDATA['true' returned TRUE unexpectedly. ()]]></Description>
+    </Incident>
+  <Message type="qdebug" file="" line="0">
     <Description><![CDATA[This should be reached]]></Description>
-</Message>
+  </Message>
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="xpassContinueSkip">
-<Incident type="xpass" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
-    <Description><![CDATA['true' returned TRUE unexpectedly. ()]]></Description>
-</Incident>
-<Incident type="skip" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
-    <Description><![CDATA[This should be reached but not increment skip-count]]></Description>
-</Incident>
+  </TestFunction>
+  <TestFunction name="xpassContinueSkip">
+    <Incident type="xpass" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
+      <Description><![CDATA['true' returned TRUE unexpectedly. ()]]></Description>
+    </Incident>
+    <Incident type="skip" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
+      <Description><![CDATA[This should be reached but not increment skip-count]]></Description>
+    </Incident>
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="xpassContinueXfailAbort">
-<Incident type="xpass" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
-    <Description><![CDATA['true' returned TRUE unexpectedly. ()]]></Description>
-</Incident>
-<Incident type="xfail" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
-    <Description><![CDATA[This test should xfail but not add to totals]]></Description>
-</Incident>
+  </TestFunction>
+  <TestFunction name="xpassContinueXfailAbort">
+    <Incident type="xpass" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
+      <Description><![CDATA['true' returned TRUE unexpectedly. ()]]></Description>
+    </Incident>
+    <Incident type="xfail" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
+      <Description><![CDATA[This test should xfail but not add to totals]]></Description>
+    </Incident>
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="xpassAbortDataDrivenWithQVerify">
-<Incident type="xpass" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
-    <DataTag><![CDATA[XPass]]></DataTag>
-    <Description><![CDATA['true' returned TRUE unexpectedly. ()]]></Description>
-</Incident>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[Pass]]></DataTag>
-</Incident>
+  </TestFunction>
+  <TestFunction name="xpassAbortDataDrivenWithQVerify">
+    <Incident type="xpass" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
+      <DataTag><![CDATA[XPass]]></DataTag>
+      <Description><![CDATA['true' returned TRUE unexpectedly. ()]]></Description>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[Pass]]></DataTag>
+    </Incident>
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="xpassContinueDataDrivenWithQVerify">
-<Incident type="xpass" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
-    <DataTag><![CDATA[XPass]]></DataTag>
-    <Description><![CDATA['true' returned TRUE unexpectedly. ()]]></Description>
-</Incident>
-<Message type="qdebug" file="" line="0">
-    <DataTag><![CDATA[XPass]]></DataTag>
-    <Description><![CDATA[Test should Continue past XPASS]]></Description>
-</Message>
-<Message type="qdebug" file="" line="0">
-    <DataTag><![CDATA[Pass]]></DataTag>
-    <Description><![CDATA[Test should simply PASS]]></Description>
-</Message>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[Pass]]></DataTag>
-</Incident>
-    <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="xpassAbortDataDrivenWithQCompare">
-<Incident type="xpass" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
-    <DataTag><![CDATA[XPass]]></DataTag>
-    <Description><![CDATA[QCOMPARE(1, 1) returned TRUE unexpectedly.]]></Description>
-</Incident>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[Pass]]></DataTag>
-</Incident>
-    <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="xpassContinueDataDrivenWithQCompare">
-<Incident type="xpass" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
-    <DataTag><![CDATA[XPass]]></DataTag>
-    <Description><![CDATA[QCOMPARE(1, 1) returned TRUE unexpectedly.]]></Description>
-</Incident>
-<Message type="qdebug" file="" line="0">
+  </TestFunction>
+  <TestFunction name="xpassContinueDataDrivenWithQVerify">
+    <Incident type="xpass" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
+      <DataTag><![CDATA[XPass]]></DataTag>
+      <Description><![CDATA['true' returned TRUE unexpectedly. ()]]></Description>
+    </Incident>
+  <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[XPass]]></DataTag>
     <Description><![CDATA[Test should Continue past XPASS]]></Description>
-</Message>
-<Message type="qdebug" file="" line="0">
+  </Message>
+  <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[Pass]]></DataTag>
     <Description><![CDATA[Test should simply PASS]]></Description>
-</Message>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[Pass]]></DataTag>
-</Incident>
+  </Message>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[Pass]]></DataTag>
+    </Incident>
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="cleanupTestCase">
-<Message type="qdebug" file="" line="0">
+  </TestFunction>
+  <TestFunction name="xpassAbortDataDrivenWithQCompare">
+    <Incident type="xpass" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
+      <DataTag><![CDATA[XPass]]></DataTag>
+      <Description><![CDATA[QCOMPARE(1, 1) returned TRUE unexpectedly.]]></Description>
+    </Incident>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[Pass]]></DataTag>
+    </Incident>
+    <Duration msecs="0"/>
+  </TestFunction>
+  <TestFunction name="xpassContinueDataDrivenWithQCompare">
+    <Incident type="xpass" file="qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="0">
+      <DataTag><![CDATA[XPass]]></DataTag>
+      <Description><![CDATA[QCOMPARE(1, 1) returned TRUE unexpectedly.]]></Description>
+    </Incident>
+  <Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[XPass]]></DataTag>
+    <Description><![CDATA[Test should Continue past XPASS]]></Description>
+  </Message>
+  <Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[Pass]]></DataTag>
+    <Description><![CDATA[Test should simply PASS]]></Description>
+  </Message>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[Pass]]></DataTag>
+    </Incident>
+    <Duration msecs="0"/>
+  </TestFunction>
+  <TestFunction name="cleanupTestCase">
+  <Message type="qdebug" file="" line="0">
     <Description><![CDATA[Totals should add up to 44: 23 passed, 17 failed, 4 skipped]]></Description>
-</Message>
-<Incident type="pass" file="" line="0" />
+  </Message>
+    <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>
-</TestFunction>
-<Duration msecs="0"/>
+  </TestFunction>
+  <Duration msecs="0"/>
 </TestCase>

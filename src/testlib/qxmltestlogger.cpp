@@ -131,11 +131,11 @@ void QXmlTestLogger::startLogging()
     QTestCharBuffer quotedBuild;
     if (!QLibraryInfo::build() || xmlQuote(&quotedBuild, QLibraryInfo::build())) {
         QTest::qt_asprintf(&buf,
-                           "<Environment>\n"
+                           "  <Environment>\n"
                            "    <QtVersion>%s</QtVersion>\n"
                            "    <QtBuild>%s</QtBuild>\n"
                            "    <QTestVersion>" QTEST_VERSION_STR "</QTestVersion>\n"
-                           "</Environment>\n", qVersion(), quotedBuild.constData());
+                           "  </Environment>\n", qVersion(), quotedBuild.constData());
         outputString(buf.constData());
     }
 }
@@ -144,7 +144,7 @@ void QXmlTestLogger::stopLogging()
 {
     QTestCharBuffer buf;
 
-    QTest::qt_asprintf(&buf, "<Duration msecs=\"%s\"/>\n",
+    QTest::qt_asprintf(&buf, "  <Duration msecs=\"%s\"/>\n",
         QString::number(QTestLog::msecsTotalTime()).toUtf8().constData());
     outputString(buf.constData());
     if (xmlmode == QXmlTestLogger::Complete)
@@ -158,7 +158,7 @@ void QXmlTestLogger::enterTestFunction(const char *function)
     QTestCharBuffer quotedFunction;
     if (xmlQuote(&quotedFunction, function)) {
         QTestCharBuffer buf;
-        QTest::qt_asprintf(&buf, "<TestFunction name=\"%s\">\n", quotedFunction.constData());
+        QTest::qt_asprintf(&buf, "  <TestFunction name=\"%s\">\n", quotedFunction.constData());
         outputString(buf.constData());
     } else {
         // Unconditional end-tag => omitting the start tag is bad.
@@ -172,7 +172,7 @@ void QXmlTestLogger::leaveTestFunction()
     QTestCharBuffer buf;
     QTest::qt_asprintf(&buf,
                 "    <Duration msecs=\"%s\"/>\n"
-                "</TestFunction>\n",
+                "  </TestFunction>\n",
         QString::number(QTestLog::msecsFunctionTime()).toUtf8().constData());
 
     outputString(buf.constData());
@@ -190,45 +190,45 @@ static const char *incidentFormatString(bool noDescription, bool noTag)
 {
     if (noDescription) {
         return noTag
-            ?   "<Incident type=\"%s\" file=\"%s\" line=\"%d\" />\n"
-            :   "<Incident type=\"%s\" file=\"%s\" line=\"%d\">\n"
-                "    <DataTag><![CDATA[%s%s%s%s]]></DataTag>\n"
-                "</Incident>\n";
+            ?   "    <Incident type=\"%s\" file=\"%s\" line=\"%d\" />\n"
+            :   "    <Incident type=\"%s\" file=\"%s\" line=\"%d\">\n"
+                "      <DataTag><![CDATA[%s%s%s%s]]></DataTag>\n"
+                "    </Incident>\n";
     }
     return noTag
-        ? "<Incident type=\"%s\" file=\"%s\" line=\"%d\">\n"
-          "    <Description><![CDATA[%s%s%s%s]]></Description>\n"
-          "</Incident>\n"
-        : "<Incident type=\"%s\" file=\"%s\" line=\"%d\">\n"
-          "    <DataTag><![CDATA[%s%s%s]]></DataTag>\n"
-          "    <Description><![CDATA[%s]]></Description>\n"
-          "</Incident>\n";
+        ? "    <Incident type=\"%s\" file=\"%s\" line=\"%d\">\n"
+          "      <Description><![CDATA[%s%s%s%s]]></Description>\n"
+          "    </Incident>\n"
+        : "    <Incident type=\"%s\" file=\"%s\" line=\"%d\">\n"
+          "      <DataTag><![CDATA[%s%s%s]]></DataTag>\n"
+          "      <Description><![CDATA[%s]]></Description>\n"
+          "    </Incident>\n";
 }
 
 static const char *benchmarkResultFormatString()
 {
-    return "<BenchmarkResult metric=\"%s\" tag=\"%s\" value=\"%.6g\" iterations=\"%d\" />\n";
+    return "  <BenchmarkResult metric=\"%s\" tag=\"%s\" value=\"%.6g\" iterations=\"%d\" />\n";
 }
 
 static const char *messageFormatString(bool noDescription, bool noTag)
 {
     if (noDescription) {
         if (noTag)
-            return "<Message type=\"%s\" file=\"%s\" line=\"%d\" />\n";
+            return "  <Message type=\"%s\" file=\"%s\" line=\"%d\" />\n";
         else
-            return "<Message type=\"%s\" file=\"%s\" line=\"%d\">\n"
+            return "  <Message type=\"%s\" file=\"%s\" line=\"%d\">\n"
                 "    <DataTag><![CDATA[%s%s%s%s]]></DataTag>\n"
-                "</Message>\n";
+                "  </Message>\n";
     } else {
         if (noTag)
-            return "<Message type=\"%s\" file=\"%s\" line=\"%d\">\n"
+            return "  <Message type=\"%s\" file=\"%s\" line=\"%d\">\n"
                 "    <Description><![CDATA[%s%s%s%s]]></Description>\n"
-                "</Message>\n";
+                "  </Message>\n";
         else
-            return "<Message type=\"%s\" file=\"%s\" line=\"%d\">\n"
+            return "  <Message type=\"%s\" file=\"%s\" line=\"%d\">\n"
                 "    <DataTag><![CDATA[%s%s%s]]></DataTag>\n"
                 "    <Description><![CDATA[%s]]></Description>\n"
-                "</Message>\n";
+                "  </Message>\n";
     }
 }
 

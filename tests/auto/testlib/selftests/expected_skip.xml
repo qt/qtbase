@@ -1,43 +1,43 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <TestCase name="tst_Skip">
-<Environment>
+  <Environment>
     <QtVersion>@INSERT_QT_VERSION_HERE@</QtVersion>
     <QtBuild/>
     <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
-</Environment>
-<TestFunction name="initTestCase">
-<Incident type="pass" file="" line="0" />
+  </Environment>
+  <TestFunction name="initTestCase">
+    <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="test">
-<Incident type="skip" file="qtbase/tests/auto/testlib/selftests/skip/tst_skip.cpp" line="0">
-    <Description><![CDATA[skipping all]]></Description>
-</Incident>
+  </TestFunction>
+  <TestFunction name="test">
+    <Incident type="skip" file="qtbase/tests/auto/testlib/selftests/skip/tst_skip.cpp" line="0">
+      <Description><![CDATA[skipping all]]></Description>
+    </Incident>
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="emptytest">
-<Incident type="skip" file="qtbase/tests/auto/testlib/selftests/skip/tst_skip.cpp" line="0">
-    <Description><![CDATA[skipping all]]></Description>
-</Incident>
+  </TestFunction>
+  <TestFunction name="emptytest">
+    <Incident type="skip" file="qtbase/tests/auto/testlib/selftests/skip/tst_skip.cpp" line="0">
+      <Description><![CDATA[skipping all]]></Description>
+    </Incident>
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="singleSkip">
-<Incident type="skip" file="qtbase/tests/auto/testlib/selftests/skip/tst_skip.cpp" line="0">
-    <DataTag><![CDATA[local 1]]></DataTag>
-    <Description><![CDATA[skipping one]]></Description>
-</Incident>
-<Message type="qdebug" file="" line="0">
+  </TestFunction>
+  <TestFunction name="singleSkip">
+    <Incident type="skip" file="qtbase/tests/auto/testlib/selftests/skip/tst_skip.cpp" line="0">
+      <DataTag><![CDATA[local 1]]></DataTag>
+      <Description><![CDATA[skipping one]]></Description>
+    </Incident>
+  <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[local 2]]></DataTag>
     <Description><![CDATA[this line should only be reached once (true)]]></Description>
-</Message>
-<Incident type="pass" file="" line="0">
-    <DataTag><![CDATA[local 2]]></DataTag>
-</Incident>
+  </Message>
+    <Incident type="pass" file="" line="0">
+      <DataTag><![CDATA[local 2]]></DataTag>
+    </Incident>
     <Duration msecs="0"/>
-</TestFunction>
-<TestFunction name="cleanupTestCase">
-<Incident type="pass" file="" line="0" />
+  </TestFunction>
+  <TestFunction name="cleanupTestCase">
+    <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>
-</TestFunction>
-<Duration msecs="0"/>
+  </TestFunction>
+  <Duration msecs="0"/>
 </TestCase>
