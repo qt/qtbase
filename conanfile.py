@@ -528,8 +528,7 @@ class QtBase(ConanFile):
         self.python_requires["qt-conan-common"].module.build_env_wrap(self, _build_qtbase)
 
     def package(self):
-        cmd = ["cmake", "--install", "."]
-        self.run(" ".join(cmd))
+        self.python_requires["qt-conan-common"].module.call_install(self)
 
     def package_info(self):
         self.python_requires["qt-conan-common"].module.package_info(self)
