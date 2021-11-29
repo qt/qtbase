@@ -2635,6 +2635,52 @@ void QCborValueRef::assign(QCborValueRef that, const QCborValueRef other)
     that = other.concrete();
 }
 
+bool QCborValueConstRef::concreteBoolean(QCborValueConstRef self, bool defaultValue) noexcept
+{
+    QtCbor::Element e = self.d->elements.at(self.i);
+    if (e.type != QCborValue::False && e.type != QCborValue::True)
+        return defaultValue;
+    return e.type == QCborValue::True;
+}
+
+double QCborValueConstRef::concreteDouble(QCborValueConstRef self, double defaultValue) noexcept
+{
+    QtCbor::Element e = self.d->elements.at(self.i);
+    if (e.type == QCborValue::Integer)
+        return e.value;
+    if (e.type != QCborValue::Double)
+        return defaultValue;
+    return e.fpvalue();
+}
+
+qint64 QCborValueConstRef::concreteIntegral(QCborValueConstRef self, qint64 defaultValue) noexcept
+{
+    QtCbor::Element e = self.d->elements.at(self.i);
+    QCborValue::Type t = e.type;
+    if (t == QCborValue::Double)
+        return e.fpvalue();
+    if (t != QCborValue::Integer)
+        return defaultValue;
+    return e.value;
+}
+
+QByteArray QCborValueConstRef::concreteByteArray(QCborValueConstRef self,
+                                                 const QByteArray &defaultValue)
+{
+    QtCbor::Element e = self.d->elements.at(self.i);
+    if (e.type != QCborValue::ByteArray)
+        return defaultValue;
+    return self.d->byteArrayAt(self.i);
+}
+
+QString QCborValueConstRef::concreteString(QCborValueConstRef self, const QString &defaultValue)
+{
+    QtCbor::Element e = self.d->elements.at(self.i);
+    if (e.type != QCborValue::String)
+        return defaultValue;
+    return self.d->stringAt(self.i);
+}
+
 QCborValue QCborValueConstRef::concrete(QCborValueConstRef self) noexcept
 {
     return self.d->valueAt(self.i);

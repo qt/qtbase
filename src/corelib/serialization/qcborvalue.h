@@ -445,6 +445,16 @@ protected:
 
     static Q_CORE_EXPORT QCborValue concrete(QCborValueConstRef that) noexcept;
     static Q_CORE_EXPORT QCborValue::Type concreteType(QCborValueConstRef that) noexcept Q_DECL_PURE_FUNCTION;
+    static Q_CORE_EXPORT bool
+    concreteBoolean(QCborValueConstRef that, bool defaultValue) noexcept Q_DECL_PURE_FUNCTION;
+    static Q_CORE_EXPORT double
+    concreteDouble(QCborValueConstRef that, double defaultValue) noexcept Q_DECL_PURE_FUNCTION;
+    static Q_CORE_EXPORT qint64
+    concreteIntegral(QCborValueConstRef that, qint64 defaultValue) noexcept Q_DECL_PURE_FUNCTION;
+    static Q_CORE_EXPORT QByteArray
+    concreteByteArray(QCborValueConstRef that, const QByteArray &defaultValue);
+    static Q_CORE_EXPORT QString
+    concreteString(QCborValueConstRef that, const QString &defaultValue);
 
     constexpr QCborValueConstRef() : d(nullptr), i(0) {} // this will actually be invalid
     constexpr QCborValueConstRef(QCborContainerPrivate *dd, qsizetype ii)
@@ -513,16 +523,16 @@ public:
     { return concrete().taggedValue(defaultValue); }
 
     qint64 toInteger(qint64 defaultValue = 0) const
-    { return concrete().toInteger(defaultValue); }
+    { return concreteIntegral(*this, defaultValue); }
     bool toBool(bool defaultValue = false) const
-    { return concrete().toBool(defaultValue); }
+    { return concreteBoolean(*this, defaultValue); }
     double toDouble(double defaultValue = 0) const
-    { return concrete().toDouble(defaultValue); }
+    { return concreteDouble(*this, defaultValue); }
 
     QByteArray toByteArray(const QByteArray &defaultValue = {}) const
-    { return concrete().toByteArray(defaultValue); }
+    { return concreteByteArray(*this, defaultValue); }
     QString toString(const QString &defaultValue = {}) const
-    { return concrete().toString(defaultValue); }
+    { return concreteString(*this, defaultValue); }
     QDateTime toDateTime(const QDateTime &defaultValue = {}) const
     { return concrete().toDateTime(defaultValue); }
 #ifndef QT_BOOTSTRAPPED
