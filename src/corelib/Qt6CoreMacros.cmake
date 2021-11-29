@@ -723,6 +723,8 @@ function(_qt_internal_finalize_executable target)
     endif()
     if(IOS)
         _qt_internal_finalize_ios_app("${target}")
+    elseif(APPLE)
+        _qt_internal_finalize_macos_app("${target}")
     endif()
 
     # For finalizer mode of plugin importing to work safely, we need to know the list of Qt
@@ -941,6 +943,22 @@ function(_qt_internal_finalize_ios_app target)
     endif()
 
     _qt_internal_set_placeholder_apple_bundle_version("${target}")
+endfunction()
+
+function(_qt_internal_finalize_macos_app target)
+    get_target_property(is_bundle ${target} MACOSX_BUNDLE)
+    if(NOT is_bundle)
+        return()
+    endif()
+
+    # Make sure the install rpath has at least the minimum needed if the app
+    # has any non-static frameworks. We can't rigorously know if the app will
+    # have any, even with a static Qt, so always add this. If there are no
+    # frameworks, it won't do any harm.
+    get_property(install_rpath TARGET ${target} PROPERTY INSTALL_RPATH)
+    list(APPEND install_rpath "@executable_path/../Frameworks")
+    list(REMOVE_DUPLICATES install_rpath)
+    set_property(TARGET ${target} PROPERTY INSTALL_RPATH "${install_rpath}")
 endfunction()
 
 if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
@@ -2411,4 +2429,301 @@ if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
     function(qt_disable_unicode_defines)
         qt6_disable_unicode_defines(${ARGV})
     endfunction()
+endif()
+
+function(_qt_internal_get_deploy_impl_dir var)
+    set(${var} "${CMAKE_BINARY_DIR}/.qt" PARENT_SCOPE)
+endfunction()
+
+function(_qt_internal_add_deploy_support deploy_support_file)
+    get_filename_component(deploy_support_file "${deploy_support_file}" REALPATH)
+
+    set(target ${QT_CMAKE_EXPORT_NAMESPACE}::Core)
+    get_target_property(aliased_target ${target} ALIASED_TARGET)
+    if(aliased_target)
+        set(target ${aliased_target})
+    endif()
+
+    get_property(scripts TARGET ${target} PROPERTY _qt_deploy_support_files)
+    if(NOT "${deploy_support_file}" IN_LIST scripts)
+        set_property(TARGET ${target} APPEND PROPERTY
+            _qt_deploy_support_files "${deploy_support_file}"
+        )
+    endif()
+endfunction()
+
+# Sets up the commands for use at install/deploy time
+function(_qt_internal_setup_deploy_support)
+    get_property(cmake_role GLOBAL PROPERTY CMAKE_ROLE)
+    if(NOT cmake_role STREQUAL "PROJECT")
+        return()
+    endif()
+
+    # Always set QT_DEPLOY_SUPPORT in the caller's scope, even if we've generated
+    # the deploy support file in a previous call. The project may be calling
+    # find_package() from sibling directories with separate variable scopes.
+    _qt_internal_get_deploy_impl_dir(deploy_impl_dir)
+
+    get_cmake_property(is_multi_config GENERATOR_IS_MULTI_CONFIG)
+    if(is_multi_config)
+        set(QT_DEPLOY_SUPPORT "${deploy_impl_dir}/QtDeploySupport-$<CONFIG>.cmake")
+    else()
+        set(QT_DEPLOY_SUPPORT "${deploy_impl_dir}/QtDeploySupport.cmake")
+    endif()
+    set(QT_DEPLOY_SUPPORT "${QT_DEPLOY_SUPPORT}" PARENT_SCOPE)
+
+    get_property(have_generated_file GLOBAL PROPERTY _qt_have_generated_deploy_support)
+    if(have_generated_file)
+        return()
+    endif()
+    set_property(GLOBAL PROPERTY _qt_have_generated_deploy_support TRUE)
+
+    include(GNUInstallDirs)
+    set(target ${QT_CMAKE_EXPORT_NAMESPACE}::Core)
+    get_target_property(aliased_target ${target} ALIASED_TARGET)
+    if(aliased_target)
+        set(target ${aliased_target})
+    endif()
+
+    # Make sure to look under the Qt bin dir with find_program, rather than randomly picking up
+    # a deployqt tool in the system.
+    # QT6_INSTALL_PREFIX is not set during Qt build, so add the hints conditionally.
+    set(find_program_hints)
+    if(QT6_INSTALL_PREFIX)
+        set(find_program_hints HINTS ${QT6_INSTALL_PREFIX}/${QT6_INSTALL_BINS})
+    endif()
+
+    # In the generator expression logic below, we need safe_target_file because
+    # CMake evaluates expressions in both the TRUE and FALSE branches of $<IF:...>.
+    # We still need a target to give to $<TARGET_FILE:...> when we have no deploy
+    # tool, so we cannot use something like $<TARGET_FILE:macdeployqt> directly.
+    if(APPLE AND NOT IOS)
+        find_program(MACDEPLOYQT_EXECUTABLE macdeployqt
+            ${find_program_hints})
+        set(fallback "$<$<BOOL:${MACDEPLOYQT_EXECUTABLE}>:${MACDEPLOYQT_EXECUTABLE}>")
+        set(target_if_exists "$<TARGET_NAME_IF_EXISTS:${QT_CMAKE_EXPORT_NAMESPACE}::macdeployqt>")
+        set(have_deploy_tool "$<BOOL:${target_if_exists}>")
+        set(safe_target_file
+            "$<TARGET_FILE:$<IF:${have_deploy_tool},${target_if_exists},${target}>>")
+        set(__QT_DEPLOY_TOOL "$<IF:${have_deploy_tool},${safe_target_file},${fallback}>")
+    elseif(WIN32)
+        find_program(WINDEPLOYQT_EXECUTABLE windeployqt
+            ${find_program_hints})
+        set(fallback "$<$<BOOL:${WINDEPLOYQT_EXECUTABLE}>:${WINDEPLOYQT_EXECUTABLE}>")
+        set(target_if_exists "$<TARGET_NAME_IF_EXISTS:${QT_CMAKE_EXPORT_NAMESPACE}::windeployqt>")
+        set(have_deploy_tool "$<BOOL:${target_if_exists}>")
+        set(safe_target_file
+            "$<TARGET_FILE:$<IF:${have_deploy_tool},${target_if_exists},${target}>>")
+        set(__QT_DEPLOY_TOOL "$<IF:${have_deploy_tool},${safe_target_file},${fallback}>")
+    else()
+        # Android is handled as a build target, not via this install-based approach.
+        # Therefore, we don't consider androiddeployqt here.
+        set(__QT_DEPLOY_TOOL "")
+    endif()
+
+    _qt_internal_add_deploy_support("${CMAKE_CURRENT_LIST_DIR}/Qt6CoreDeploySupport.cmake")
+
+    file(GENERATE OUTPUT "${QT_DEPLOY_SUPPORT}" CONTENT
+"cmake_minimum_required(VERSION 3.16...3.21)
+
+# These are part of the public API. Projects should use them to provide a
+# consistent set of prefix-relative destinations.
+if(NOT QT_DEPLOY_BIN_DIR)
+    set(QT_DEPLOY_BIN_DIR \"${CMAKE_INSTALL_BINDIR}\")
+endif()
+if(NOT QT_DEPLOY_LIB_DIR)
+    set(QT_DEPLOY_LIB_DIR \"${CMAKE_INSTALL_LIBDIR}\")
+endif()
+if(NOT QT_DEPLOY_PLUGINS_DIR)
+    set(QT_DEPLOY_PLUGINS_DIR \"plugins\")
+endif()
+if(NOT QT_DEPLOY_QML_DIR)
+    set(QT_DEPLOY_QML_DIR \"qml\")
+endif()
+if(NOT QT_DEPLOY_PREFIX)
+    set(QT_DEPLOY_PREFIX \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}\")
+endif()
+if(QT_DEPLOY_PREFIX STREQUAL \"\")
+    set(QT_DEPLOY_PREFIX .)
+endif()
+
+# These are internal implementation details. They may be removed at any time.
+set(__QT_DEPLOY_SYSTEM_NAME \"${CMAKE_SYSTEM_NAME}\")
+set(__QT_DEPLOY_IS_SHARED_LIBS_BUILD \"${QT6_IS_SHARED_LIBS_BUILD}\")
+set(__QT_DEPLOY_TOOL \"${__QT_DEPLOY_TOOL}\")
+set(__QT_DEPLOY_IMPL_DIR \"${deploy_impl_dir}\")
+set(__QT_DEPLOY_VERBOSE \"${QT_ENABLE_VERBOSE_DEPLOYMENT}\")
+set(__QT_CMAKE_EXPORT_NAMESPACE \"${QT_CMAKE_EXPORT_NAMESPACE}\")
+set(__QT_DEPLOY_GENERATOR_IS_MULTI_CONFIG \"${is_multi_config}\")
+set(__QT_DEPLOY_ACTIVE_CONFIG \"$<CONFIG>\")
+
+# Define the CMake commands to be made available during deployment.
+set(__qt_deploy_support_files
+    \"$<JOIN:$<TARGET_PROPERTY:${target},_qt_deploy_support_files>,\"
+    \">\"
+)
+foreach(__qt_deploy_support_file IN LISTS __qt_deploy_support_files)
+    include(\"\${__qt_deploy_support_file}\")
+endforeach()
+
+unset(__qt_deploy_support_file)
+unset(__qt_deploy_support_files)
+")
+endfunction()
+
+# Note this needs to be a macro because it sets variables intended for the
+# calling scope.
+macro(qt6_standard_project_setup)
+    # A parent project might want to prevent child projects pulled in with
+    # add_subdirectory() from changing the parent's preferred arrangement.
+    # They can set this variable to true to effectively disable this function.
+    if(NOT QT_NO_STANDARD_PROJECT_SETUP)
+
+        # All changes below this point should not result in a change to an
+        # existing value, except for CMAKE_INSTALL_RPATH which may append new
+        # values (but no duplicates).
+
+        # Use standard install locations, provided by GNUInstallDirs. All
+        # platforms should have this included so that we know the
+        # CMAKE_INSTALL_xxxDIR variables will be set.
+        include(GNUInstallDirs)
+        if(WIN32)
+            # Windows has no RPATH support, so we need all non-plugin DLLs in
+            # the same directory as application executables if we want to be
+            # able to run them without having to augment the PATH environment
+            # variable. Don't discard an existing value in case the project has
+            # already set this to somewhere else. Our setting is somewhat
+            # opinionated, so make it easy for projects to choose something else.
+            if(NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
+                set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+            endif()
+        elseif(NOT APPLE)
+            # Apart from Windows and Apple, most other platforms support RPATH
+            # and $ORIGIN. Make executables and non-static libraries use an
+            # install RPATH that allows them to find library dependencies if the
+            # project installs things to the directories defined by the
+            # CMAKE_INSTALL_xxxDIR variables (which is what CMake's defaults
+            # are based on).
+            file(RELATIVE_PATH __qt_relDir
+                ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}
+                ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}
+            )
+            list(APPEND CMAKE_INSTALL_RPATH $ORIGIN $ORIGIN/${__qt_relDir})
+            list(REMOVE_DUPLICATES CMAKE_INSTALL_RPATH)
+            unset(__qt_reldir)
+        endif()
+
+        # Turn these on by default, unless they are already set. Projects can
+        # always turn off any they really don't want after we return.
+        foreach(auto_set IN ITEMS MOC UIC RCC)
+            if(NOT DEFINED CMAKE_AUTO${auto_set})
+                set(CMAKE_AUTO${auto_set} TRUE)
+            endif()
+        endforeach()
+    endif()
+endmacro()
+
+if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
+    macro(qt_standard_project_setup)
+        qt6_standard_project_setup(${ARGV})
+    endmacro()
+endif()
+
+function(qt6_generate_deploy_app_script)
+    # We use a TARGET keyword option instead of taking the target as the first
+    # positional argument. This is to keep open the possibility of deploying
+    # an app for which we don't have a target (e.g. an application from a
+    # third party project that the caller may want to include in their own
+    # package). We would add an EXECUTABLE keyword for that, which would be
+    # mutually exclusive with the TARGET keyword.
+    set(no_value_options
+        NO_UNSUPPORTED_PLATFORM_ERROR
+    )
+    set(single_value_options
+        TARGET
+        FILENAME_VARIABLE
+    )
+    set(multi_value_options "")
+    cmake_parse_arguments(PARSE_ARGV 0 arg
+        "${no_value_options}" "${single_value_options}" "${multi_value_options}"
+    )
+    if(arg_UNPARSED_ARGUMENTS)
+        message(FATAL_ERROR "Unexpected arguments: ${arg_UNPARSED_ARGUMENTS}")
+    endif()
+    if(NOT arg_TARGET)
+        message(FATAL_ERROR "TARGET must be specified")
+    endif()
+    if(NOT arg_FILENAME_VARIABLE)
+        message(FATAL_ERROR "FILENAME_VARIABLE must be specified")
+    endif()
+
+    # Create a file name that will be unique for this target and the combination
+    # of arguments passed to this command. This allows the project to call us
+    # multiple times with different arguments for the same target (e.g. to
+    # create deployment scripts for different scenarios).
+    string(MAKE_C_IDENTIFIER "${arg_TARGET}" target_id)
+    string(SHA1 args_hash "${ARGV}")
+    string(SUBSTRING "${args_hash}" 0 10 short_hash)
+    _qt_internal_get_deploy_impl_dir(deploy_impl_dir)
+    set(file_name "${deploy_impl_dir}/deploy_${target_id}_${short_hash}")
+    get_cmake_property(is_multi_config GENERATOR_IS_MULTI_CONFIG)
+    if(is_multi_config)
+        string(APPEND file_name "-$<CONFIG>")
+    endif()
+    set(${arg_FILENAME_VARIABLE} "${file_name}" PARENT_SCOPE)
+
+    if(QT6_IS_SHARED_LIBS_BUILD)
+        set(qt_build_type_string "shared Qt libs")
+    else()
+        set(qt_build_type_string "static Qt libs")
+    endif()
+
+    if(APPLE AND NOT IOS AND QT6_IS_SHARED_LIBS_BUILD)
+        # TODO: Handle non-bundle applications if possible.
+        get_target_property(is_bundle ${arg_TARGET} MACOSX_BUNDLE)
+        if(NOT is_bundle)
+            message(FATAL_ERROR
+                "Executable targets have to be app bundles to use this command "
+                "on Apple platforms."
+            )
+        endif()
+        file(GENERATE OUTPUT "${file_name}" CONTENT "
+include(${QT_DEPLOY_SUPPORT})
+qt_deploy_runtime_dependencies(
+    EXECUTABLE $<TARGET_FILE_NAME:${arg_TARGET}>.app
+    MACOS_BUNDLE
+)
+")
+
+    elseif(WIN32 AND QT6_IS_SHARED_LIBS_BUILD)
+        file(GENERATE OUTPUT "${file_name}" CONTENT "
+include(${QT_DEPLOY_SUPPORT})
+qt_deploy_runtime_dependencies(
+    EXECUTABLE ${CMAKE_INSTALL_BINDIR}/$<TARGET_FILE_NAME:${arg_TARGET}>
+    GENERATE_QT_CONF
+)")
+
+    elseif(NOT arg_NO_UNSUPPORTED_PLATFORM_ERROR AND NOT QT_INTERNAL_NO_UNSUPPORTED_PLATFORM_ERROR)
+        # Currently we don't deploy runtime dependencies if cross-compiling or using a static Qt.
+        # We also don't do it if targeting Linux, but we could provide an option to do
+        # so if we had a deploy tool or purely CMake-based deploy implementation.
+        # Error out by default unless the project opted out of the error.
+        # This provides us a migration path in the future without breaking compatibility promises.
+        message(FATAL_ERROR
+            "Support for installing runtime dependencies is not implemented for "
+            "this target platform (${CMAKE_SYSTEM_NAME}, ${qt_build_type_string})."
+        )
+    else()
+        file(GENERATE OUTPUT "${file_name}" CONTENT "
+include(${QT_DEPLOY_SUPPORT})
+_qt_internal_show_skip_runtime_deploy_message(\"${qt_build_type_string}\")
+")
+    endif()
+
+endfunction()
+
+if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
+    macro(qt_generate_deploy_app_script)
+        qt6_generate_deploy_app_script(${ARGV})
+    endmacro()
 endif()

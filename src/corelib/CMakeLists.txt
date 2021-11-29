@@ -273,9 +273,11 @@ qt_internal_add_module(Core
     EXTRA_CMAKE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/Qt6CTestMacros.cmake"
     "${CMAKE_CURRENT_SOURCE_DIR}/Qt6CoreConfigureFileTemplate.in"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Qt6CoreDeploySupport.cmake"
     ${corelib_extra_cmake_files}
     # special case end
 )
+_qt_internal_setup_deploy_support()
 
 set(corelib_no_pch_sources
     compat/removed_api.cpp
