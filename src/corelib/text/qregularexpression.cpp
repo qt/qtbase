@@ -1297,7 +1297,7 @@ QRegularExpressionMatchPrivate *QRegularExpressionPrivate::doMatch(const QString
     pcre2_jit_stack_assign_16(matchContext, &qtPcreCallback, nullptr);
     pcre2_match_data_16 *matchData = pcre2_match_data_create_from_pattern_16(compiledPattern, nullptr);
 
-    const unsigned short * const subjectUtf16 = subject.utf16() + subjectStart;
+    const auto subjectUtf16 = reinterpret_cast<const ushort*>(subject.data()) + subjectStart;
 
     int result;
 

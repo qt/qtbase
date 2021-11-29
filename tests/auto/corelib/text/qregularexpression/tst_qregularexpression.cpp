@@ -2211,9 +2211,6 @@ void tst_QRegularExpression::returnsViewsIntoOriginalString()
 
     // THEN
     //  the returned views should point into the underlying string:
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    QEXPECT_FAIL("", "QTBUG-98653", Continue);
-#endif
     QCOMPARE(to_void(split.front().data()), stringDataAddress);
 }
 
