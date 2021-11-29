@@ -498,6 +498,17 @@ bool Continuation<Function, ResultType, ParentResultType>::execute()
     return true;
 }
 
+// Workaround for keeping move-only lambdas inside std::function
+template<class Function>
+struct ContinuationWrapper
+{
+    ContinuationWrapper(Function &&f) : function(QSharedPointer<Function>::create(std::move(f))) { }
+    void operator()(const QFutureInterfaceBase &parentData) { (*function)(parentData); }
+
+private:
+    QSharedPointer<Function> function;
+};
+
 template<typename Function, typename ResultType, typename ParentResultType>
 template<typename F>
 void Continuation<Function, ResultType, ParentResultType>::create(F &&func,
@@ -543,8 +554,10 @@ void Continuation<Function, ResultType, ParentResultType>::create(F &&func,
             continuationJob = nullptr;
         }
     };
-
-    f->d.setContinuation(std::move(continuation), p.d);
+    if constexpr (!std::is_copy_constructible_v<Function>)
+        f->d.setContinuation(ContinuationWrapper(std::move(continuation)), p.d);
+    else
+        f->d.setContinuation(std::move(continuation), p.d);
 }
 
 template<typename Function, typename ResultType, typename ParentResultType>
@@ -573,7 +586,10 @@ void Continuation<Function, ResultType, ParentResultType>::create(F &&func,
         }
     };
 
-    f->d.setContinuation(std::move(continuation), p.d);
+    if constexpr (!std::is_copy_constructible_v<Function>)
+        f->d.setContinuation(ContinuationWrapper(std::move(continuation)), p.d);
+    else
+        f->d.setContinuation(std::move(continuation), p.d);
 }
 
 template<typename Function, typename ResultType, typename ParentResultType>
@@ -596,7 +612,10 @@ void Continuation<Function, ResultType, ParentResultType>::create(F &&func,
         });
     };
 
-    f->d.setContinuation(std::move(continuation), p.d);
+    if constexpr (!std::is_copy_constructible_v<Function>)
+        f->d.setContinuation(ContinuationWrapper(std::move(continuation)), p.d);
+    else
+        f->d.setContinuation(std::move(continuation), p.d);
 }
 
 template<typename Function, typename ResultType, typename ParentResultType>
@@ -675,7 +694,10 @@ void FailureHandler<Function, ResultType>::create(F &&function, QFuture<ResultTy
         failureHandler.run();
     };
 
-    future->d.setContinuation(std::move(failureContinuation));
+    if constexpr (!std::is_copy_constructible_v<Function>)
+        future->d.setContinuation(ContinuationWrapper(std::move(failureContinuation)));
+    else
+        future->d.setContinuation(std::move(failureContinuation));
 }
 
 template<class Function, class ResultType>
@@ -699,7 +721,10 @@ void FailureHandler<Function, ResultType>::create(F &&function, QFuture<ResultTy
                         });
             };
 
-    future->d.setContinuation(std::move(failureContinuation));
+    if constexpr (!std::is_copy_constructible_v<Function>)
+        future->d.setContinuation(ContinuationWrapper(std::move(failureContinuation)));
+    else
+        future->d.setContinuation(std::move(failureContinuation));
 }
 
 template<class Function, class ResultType>
@@ -782,7 +807,12 @@ public:
             auto parentFuture = QFutureInterface<ResultType>(parentData).future();
             run(std::forward<F>(handler), parentFuture, promise);
         };
-        future->d.setContinuation(std::move(canceledContinuation));
+
+        if constexpr (!std::is_copy_constructible_v<Function>)
+            future->d.setContinuation(ContinuationWrapper(std::move(canceledContinuation)));
+        else
+            future->d.setContinuation(std::move(canceledContinuation));
+
         return promise.future();
     }
 
@@ -802,7 +832,12 @@ public:
                         run(std::forward<F>(handler), parentFuture, promise);
                     });
         };
-        future->d.setContinuation(std::move(canceledContinuation));
+
+        if constexpr (!std::is_copy_constructible_v<Function>)
+            future->d.setContinuation(ContinuationWrapper(std::move(canceledContinuation)));
+        else
+            future->d.setContinuation(std::move(canceledContinuation));
+
         return promise.future();
     }
 

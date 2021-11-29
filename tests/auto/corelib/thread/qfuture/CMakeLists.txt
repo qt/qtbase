@@ -12,3 +12,8 @@ qt_internal_add_test(tst_qfuture
     PUBLIC_LIBRARIES
         Qt::CorePrivate
 )
+
+qt_internal_extend_target(tst_qmetatype CONDITION MSVC
+    COMPILE_OPTIONS
+        /bigobj
+)

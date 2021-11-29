@@ -145,6 +145,7 @@ private slots:
     void onCanceled();
     void cancelContinuations();
     void continuationsWithContext();
+    void continuationsWithMoveOnlyLambda();
 #if 0
     // TODO: enable when QFuture::takeResults() is enabled
     void takeResults();
@@ -3109,6 +3110,71 @@ void tst_QFuture::continuationsWithContext()
 
     thread.quit();
     thread.wait();
+}
+
+void tst_QFuture::continuationsWithMoveOnlyLambda()
+{
+    // .then()
+    {
+        std::unique_ptr<int> uniquePtr(new int(42));
+        auto future = QtFuture::makeReadyFuture().then([p = std::move(uniquePtr)] { return *p; });
+        QCOMPARE(future.result(), 42);
+    }
+    // .then() with thread pool
+    {
+        QThreadPool pool;
+
+        std::unique_ptr<int> uniquePtr(new int(42));
+        auto future =
+                QtFuture::makeReadyFuture().then(&pool, [p = std::move(uniquePtr)] { return *p; });
+        QCOMPARE(future.result(), 42);
+    }
+    // .then() with context
+    {
+        QObject object;
+
+        std::unique_ptr<int> uniquePtr(new int(42));
+        auto future = QtFuture::makeReadyFuture().then(&object,
+                                                       [p = std::move(uniquePtr)] { return *p; });
+        QCOMPARE(future.result(), 42);
+    }
+
+    // .onCanceled()
+    {
+        std::unique_ptr<int> uniquePtr(new int(42));
+        auto future =
+                createCanceledFuture<int>().onCanceled([p = std::move(uniquePtr)] { return *p; });
+        QCOMPARE(future.result(), 42);
+    }
+
+    // .onCanceled() with context
+    {
+        QObject object;
+
+        std::unique_ptr<int> uniquePtr(new int(42));
+        auto future = createCanceledFuture<int>().onCanceled(
+                &object, [p = std::move(uniquePtr)] { return *p; });
+        QCOMPARE(future.result(), 42);
+    }
+
+#ifndef QT_NO_EXCEPTIONS
+    // .onFailed()
+    {
+        std::unique_ptr<int> uniquePtr(new int(42));
+        auto future = QtFuture::makeExceptionalFuture<int>(QException())
+                              .onFailed([p = std::move(uniquePtr)] { return *p; });
+        QCOMPARE(future.result(), 42);
+    }
+    // .onFailed() with context
+    {
+        QObject object;
+
+        std::unique_ptr<int> uniquePtr(new int(42));
+        auto future = QtFuture::makeExceptionalFuture<int>(QException())
+                              .onFailed(&object, [p = std::move(uniquePtr)] { return *p; });
+        QCOMPARE(future.result(), 42);
+    }
+#endif // QT_NO_EXCEPTIONS
 }
 
 void tst_QFuture::testSingleResult(const UniquePtr &p)
