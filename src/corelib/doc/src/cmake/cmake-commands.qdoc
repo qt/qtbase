@@ -33,7 +33,7 @@ The following CMake commands are defined when Qt6::Core is loaded, for instance
 with
 
 \code
-find_package(Qt6 COMPONENTS Core REQUIRED)
+find_package(Qt6 REQUIRED COMPONENTS Core)
 \endcode
 
 \sa{CMake Command Reference}

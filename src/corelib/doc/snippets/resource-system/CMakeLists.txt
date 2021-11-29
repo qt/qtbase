@@ -1,6 +1,6 @@
 project(my_app)
 cmake_minimum_required(VERSION 3.16)
-find_package(Qt6 COMPONENTS Widgets Qml REQUIRED)
+find_package(Qt6 REQUIRED COMPONENTS Widgets Qml)
 
 #! [AUTORCC]
 set(CMAKE_AUTORCC ON)

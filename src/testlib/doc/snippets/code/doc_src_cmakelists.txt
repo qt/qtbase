@@ -1,6 +1,6 @@
 project(mytest LANGUAGES CXX)
 
-find_package(Qt6 COMPONENTS Test REQUIRED)
+find_package(Qt6 REQUIRED COMPONENTS Test)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 

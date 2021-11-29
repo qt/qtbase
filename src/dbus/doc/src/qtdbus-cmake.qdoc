@@ -33,7 +33,7 @@ The following CMake commands are defined when Qt6::DBus is loaded, for instance
 with
 
 \code
-find_package(Qt6 COMPONENTS DBus REQUIRED)
+find_package(Qt6 REQUIRED COMPONENTS DBus)
 \endcode
 
 \sa{CMake Command Reference}
