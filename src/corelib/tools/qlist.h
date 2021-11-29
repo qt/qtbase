@@ -585,7 +585,7 @@ public:
     template <typename AT = T>
     qsizetype count(const AT &t) const noexcept
     {
-        return qsizetype(std::count(&*cbegin(), &*cend(), t));
+        return qsizetype(std::count(data(), data() + size(), t));
     }
 
     void removeAt(qsizetype i) { remove(i); }
