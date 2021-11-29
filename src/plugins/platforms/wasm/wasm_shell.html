@@ -13,12 +13,8 @@
     <style>
       /* Make the html body cover the entire (visual) viewport with no scroll bars. */
       html, body { padding: 0; margin: 0; overflow:hidden; height: 100vh }
-      /* the canvas *must not* have any border or padding, or mouse coords will be wrong */
-      canvas { border: 0px none; background-color: white; height:100%; width:100%;  }
-      /* The contenteditable property is set to true for the canvas in order to support
-         clipboard events. Hide the resulting focus frame and set the cursor back to
-         the default cursor. */
-      canvas { outline: 0px solid transparent; caret-color: transparent; cursor:default }
+      /* Make the canvas cover the entire body */
+      canvas { height:100%; width:100%; }
     </style>
   </head>
   <body onload="init()">
@@ -30,7 +26,7 @@
         <noscript>JavaScript is disabled. Please enable JavaScript to use this application.</noscript>
       </center>
     </figure>
-    <canvas id="qtcanvas" oncontextmenu="event.preventDefault()" contenteditable="true"></canvas>
+    <canvas id="qtcanvas"></canvas>
 
     <script type='text/javascript'>
         function init() {

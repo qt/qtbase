@@ -57,6 +57,24 @@ QWasmScreen::QWasmScreen(const emscripten::val &canvas)
     , m_compositor(new QWasmCompositor(this))
     , m_eventTranslator(new QWasmEventTranslator())
 {
+    // Configure canvas
+    emscripten::val style = m_canvas["style"];
+    style.set("border", std::string("0px none"));
+    style.set("background-color", std::string("white"));
+
+    // Set contenteditable so that the canvas gets clipboard events,
+    // then hide the resulting focus frame, and reset the cursor.
+    m_canvas.set("contentEditable", std::string("true"));
+    style.set("outline", std::string("0px solid transparent"));
+    style.set("caret-color", std::string("transparent"));
+    style.set("cursor", std::string("default"));
+
+    // Disable the default context menu; Qt applications typically
+    // provide custom right-click behavior.
+    m_onContextMenu = std::make_unique<qstdweb::EventCallback>(m_canvas, "contextmenu", [](emscripten::val event){
+        event.call<void>("preventDefault");
+    });
+
     updateQScreenAndCanvasRenderSize();
     m_canvas.call<void>("focus");
 }

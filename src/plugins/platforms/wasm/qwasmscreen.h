@@ -36,6 +36,7 @@
 
 #include <QtCore/qscopedpointer.h>
 #include <QtCore/qtextstream.h>
+#include <QtCore/private/qstdweb_p.h>
 
 #include <emscripten/val.h>
 
@@ -93,6 +94,7 @@ private:
     QImage::Format m_format = QImage::Format_RGB32;
     QWasmCursor m_cursor;
     static const char * m_canvasResizeObserverCallbackContextPropertyName;
+    std::unique_ptr<qstdweb::EventCallback> m_onContextMenu;
 };
 
 QT_END_NAMESPACE
