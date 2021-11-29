@@ -26,6 +26,7 @@ function(qt_internal_add_resource target resourceName)
             EXPORT_NAME_PREFIX "${INSTALL_CMAKE_NAMESPACE}${target}"
         )
 
+        qt_internal_install_resource_pdb_files("${out_targets}")
         qt_internal_record_rcc_object_files("${target}" "${out_targets}"
                                             INSTALL_DIRECTORY "${INSTALL_LIBDIR}")
    endif()
@@ -88,5 +89,22 @@ function(qt_internal_record_rcc_object_files target resource_targets)
         set_property(TARGET ${target} APPEND PROPERTY _qt_rcc_objects "${rcc_object_file_path}")
 
         qt_internal_link_internal_platform_for_object_library("${out_target}")
+    endforeach()
+endfunction()
+
+function(qt_internal_install_resource_pdb_files objlib_targets)
+    if(NOT MSVC OR NOT QT_WILL_INSTALL)
+        return()
+    endif()
+
+    foreach(target IN LISTS objlib_targets)
+        qt_internal_set_compile_pdb_names(${target})
+
+        get_target_property(generated_cpp_file_relative_path
+            ${target}
+            _qt_resource_generated_cpp_relative_path)
+        get_filename_component(rel_obj_file_dir "${generated_cpp_file_relative_path}" DIRECTORY)
+        qt_internal_install_pdb_files(${target}
+            "${INSTALL_LIBDIR}/objects-$<CONFIG>/${target}/${rel_obj_file_dir}")
     endforeach()
 endfunction()
