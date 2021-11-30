@@ -719,8 +719,11 @@ bool TestLogger::shouldIgnoreTest(const QString &test) const
             || test == "silent")
             return true;
 
-        // `crashes' will not output valid XML on platforms without a crash handler
-        if (test == "crashes")
+        // These tests produce variable output (callgrind because of #if-ery,
+        // crashes by virtue of platform differences in where the output cuts
+        // off), so only test them for one format, to avoid the need for several
+        // _n variants for each format. Also, crashes can produce invalid XML.
+        if (test == "crashes" || test == "benchlibcallgrind")
             return true;
 
         // this test prints out some floats in the testlog and the formatting is
@@ -728,10 +731,11 @@ bool TestLogger::shouldIgnoreTest(const QString &test) const
         if (test == "float")
             return true;
 
-        // these tests are quite slow, and running them for all the loggers significantly
-        // increases the overall test time.  They do not really relate to logging, so it
-        // should be safe to run them just for the stdout loggers.
-        if (test == "benchlibcallgrind" || test == "sleep")
+        // This test is quite slow, and running it for all the loggers
+        // significantly increases the overall test time.  It does not really
+        // relate to logging, so it should be safe to run it just for the stdout
+        // loggers.
+        if (test == "sleep")
             return true;
     }
 

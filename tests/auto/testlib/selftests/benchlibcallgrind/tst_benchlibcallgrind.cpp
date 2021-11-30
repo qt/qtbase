@@ -26,9 +26,8 @@
 **
 ****************************************************************************/
 
-
-#include <QtCore/QCoreApplication>
 #include <QTest>
+#include <QtCore/QCoreApplication>
 
 #if __has_include(<valgrind/valgrind.h>)
 #  include <valgrind/valgrind.h>
@@ -82,9 +81,17 @@ void tst_BenchlibCallgrind::twoHundredMillionInstructions()
 int main(int argc, char *argv[])
 {
     std::vector<const char*> args(argv, argv + argc);
-    args.push_back("-callgrind");
-    argc = args.size();
-    argv = const_cast<char**>(&args[0]);
+    // Add the -callgrind argument unless (it's there anyway or) we're the
+    // recursive invocation with -callgrindchild passed.
+    if (std::find_if(args.begin(), args.end(),
+                     [](const char *arg) {
+                         return qstrcmp(arg, "-callgrindchild") == 0
+                             || qstrcmp(arg, "-callgrind") == 0;
+                     }) == args.end()) {
+        args.push_back("-callgrind");
+        argc = args.size();
+        argv = const_cast<char**>(&args[0]);
+    }
 
     QTEST_MAIN_IMPL(tst_BenchlibCallgrind)
 }

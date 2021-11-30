@@ -325,7 +325,7 @@ def main(argv):
     argument_parser.add_argument('--formats', '-f',
                                  help='Comma-separated list of formats')
     argument_parser.add_argument('--skip-callgrind', '-s', action='store_true',
-                                 help='Skip the expensive benchlib callgrind test')
+                                 help='Skip the (no longer expensive) benchlib callgrind test')
     argument_parser.add_argument('subtests', help='subtests to regenerate',
                                  nargs='*', type=str)
 
