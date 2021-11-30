@@ -231,10 +231,10 @@ QMargins QPageLayoutPrivate::marginsPixels(int resolution) const
 void QPageLayoutPrivate::setDefaultMargins(const QMarginsF &minMargins)
 {
     m_minMargins = minMargins;
-    m_maxMargins = QMarginsF(m_fullSize.width() - m_minMargins.right(),
-                             m_fullSize.height() - m_minMargins.bottom(),
-                             m_fullSize.width() - m_minMargins.left(),
-                             m_fullSize.height() - m_minMargins.top());
+    m_maxMargins = QMarginsF(qMax(m_fullSize.width() - m_minMargins.right(), qreal(0)),
+                             qMax(m_fullSize.height() - m_minMargins.bottom(), qreal(0)),
+                             qMax(m_fullSize.width() - m_minMargins.left(), qreal(0)),
+                             qMax(m_fullSize.height() - m_minMargins.top(), qreal(0)));
     if (m_mode == QPageLayout::StandardMode)
         clampMargins(m_margins);
 }
