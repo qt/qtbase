@@ -1000,6 +1000,10 @@ void QMdiAreaPrivate::activateWindow(QMdiSubWindow *child)
 
     if (child->isHidden() || child == active)
         return;
+
+    if (child->d_func()->isActive && active == nullptr)
+        child->d_func()->isActive = false;
+
     child->d_func()->setActive(true);
 }
 

@@ -283,6 +283,9 @@ private slots:
     void task_236750();
     void qtbug92240_title_data();
     void qtbug92240_title();
+    void tabbedview_activefirst();
+    void tabbedview_activesecond();
+    void tabbedview_activethird();
 
 private:
     QMdiSubWindow *activeWindow;
@@ -2737,6 +2740,60 @@ void tst_QMdiArea::qtbug92240_title()
     sw2->showMaximized();
     QTRY_COMPARE(w.windowTitle(), QLatin1String("QTBUG-92240 - [2]"));
 }
+
+static void setupMdiAreaWithTabbedView(QMdiArea &mdiArea)
+{
+    mdiArea.setViewMode(QMdiArea::TabbedView);
+
+    auto *mdiWin1 = new QWidget(&mdiArea);
+    mdiWin1->setWindowTitle(QLatin1String("Sub1"));
+    mdiArea.addSubWindow(mdiWin1);
+
+    auto *mdiWin2 = new QWidget(&mdiArea);
+    mdiWin2->setWindowTitle(QLatin1String("Sub2"));
+    mdiArea.addSubWindow(mdiWin2);
+
+    auto *mdiWin3 = new QWidget(&mdiArea);
+    mdiWin3->setWindowTitle(QLatin1String("Sub3"));
+    mdiArea.addSubWindow(mdiWin3);
+}
+
+void tst_QMdiArea::tabbedview_activefirst()
+{
+    QMdiArea mdiArea;
+    setupMdiAreaWithTabbedView(mdiArea);
+
+    auto sub0 = mdiArea.subWindowList().at(0);
+    mdiArea.setActiveSubWindow(sub0);
+    mdiArea.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&mdiArea));
+    QCOMPARE(mdiArea.activeSubWindow(), sub0);
+}
+
+void tst_QMdiArea::tabbedview_activesecond()
+{
+    QMdiArea mdiArea;
+    setupMdiAreaWithTabbedView(mdiArea);
+
+    auto sub1 = mdiArea.subWindowList().at(1);
+    mdiArea.setActiveSubWindow(sub1);
+    mdiArea.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&mdiArea));
+    QCOMPARE(mdiArea.activeSubWindow(), sub1);
+}
+
+void tst_QMdiArea::tabbedview_activethird()
+{
+    QMdiArea mdiArea;
+    setupMdiAreaWithTabbedView(mdiArea);
+
+    auto sub2 = mdiArea.subWindowList().at(2);
+    mdiArea.setActiveSubWindow(sub2);
+    mdiArea.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&mdiArea));
+    QCOMPARE(mdiArea.activeSubWindow(), sub2);
+}
+
 
 QTEST_MAIN(tst_QMdiArea)
 #include "tst_qmdiarea.moc"
