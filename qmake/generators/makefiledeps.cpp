@@ -982,8 +982,8 @@ bool QMakeSourceFileInfo::findMocs(SourceFile *file)
                                     debug_msg(2, "Mocgen: %s:%d Found \"q%s%s\"",
                                               file->file.real().toLatin1().constData(), line_count,
                                               tag, keyword);
-                                    x += strlen(tag);
-                                    x += strlen(keyword);
+                                    x += static_cast<int>(strlen(tag));
+                                    x += static_cast<int>(strlen(keyword));
                                     ignore[interest] = true;
                                 }
                                 ++interest;
