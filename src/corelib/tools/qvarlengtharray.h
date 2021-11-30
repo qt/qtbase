@@ -66,15 +66,14 @@ protected:
     std::aligned_storage_t<Size, Align> array[Prealloc];
 };
 
-template<class T>
-class QVLABase
+class QVLABaseBase
 {
 protected:
-    ~QVLABase() = default;
+    ~QVLABaseBase() = default;
 
     qsizetype a;      // capacity
     qsizetype s;      // size
-    T *ptr;     // data
+    void *ptr;     // data
 
     Q_ALWAYS_INLINE constexpr void verify(qsizetype pos = 0, qsizetype n = 1) const
     {
@@ -85,14 +84,22 @@ protected:
     }
 
 public:
-    T *data() noexcept { return ptr; }
-    const T *data() const noexcept { return ptr; }
-
     using size_type = qsizetype;
 
-    size_type capacity() const noexcept { return a; }
-    size_type size() const noexcept { return s; }
-    bool empty() const noexcept { return size() == 0; }
+    constexpr size_type capacity() const noexcept { return a; }
+    constexpr size_type size() const noexcept { return s; }
+    constexpr bool empty() const noexcept { return size() == 0; }
+};
+
+template<class T>
+class QVLABase : public QVLABaseBase
+{
+protected:
+    ~QVLABase() = default;
+
+public:
+    T *data() noexcept { return static_cast<T *>(ptr); }
+    const T *data() const noexcept { return static_cast<T *>(ptr); }
 
     using iterator = T*;
     using const_iterator = const T*;
