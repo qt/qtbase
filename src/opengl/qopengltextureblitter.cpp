@@ -367,19 +367,20 @@ void QOpenGLTextureBlitterPrivate::blit(GLuint texture,
 
     Program *program = &programs[targetToProgramIndex(currentTarget)];
 
-    QMatrix3x3 sourceTransform;
     if (origin == QOpenGLTextureBlitter::OriginTopLeft) {
         if (program->textureMatrixUniformState != IdentityFlipped) {
+            QMatrix3x3 sourceTransform;
             sourceTransform(1,1) = -1;
             sourceTransform(1,2) = 1;
+            const QMatrix3x3 textureTransform = toTextureCoordinates(sourceTransform);
+            program->glProgram->setUniformValue(program->textureTransformUniformPos, textureTransform);
             program->textureMatrixUniformState = IdentityFlipped;
         }
     } else if (program->textureMatrixUniformState != Identity) {
+        const QMatrix3x3 textureTransform = toTextureCoordinates(QMatrix3x3());
+        program->glProgram->setUniformValue(program->textureTransformUniformPos, textureTransform);
         program->textureMatrixUniformState = Identity;
     }
-
-    const QMatrix3x3 textureTransform = toTextureCoordinates(sourceTransform);
-    program->glProgram->setUniformValue(program->textureTransformUniformPos, textureTransform);
 
     QOpenGLContext::currentContext()->functions()->glDrawArrays(GL_TRIANGLES, 0, 6);
 }
