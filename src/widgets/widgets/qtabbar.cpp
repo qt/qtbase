@@ -2408,9 +2408,9 @@ void QTabBar::wheelEvent(QWheelEvent *event)
                 if (!d->rightB->isVisible())
                     scrollRectExtent += tabsVertical ? d->rightB->height() : d->rightB->width();
 
-                const int maxScrollOffset = (tabsVertical ? lastTabRect.bottom()
-                                                          : lastTabRect.right())
-                                          - scrollRectExtent;
+                const int maxScrollOffset = qMax((tabsVertical ?
+                                                  lastTabRect.bottom() :
+                                                  lastTabRect.right()) - scrollRectExtent, 0);
                 d->scrollOffset = qBound(0, d->scrollOffset - delta, maxScrollOffset);
                 d->leftB->setEnabled(d->scrollOffset > -scrollRect.left());
                 d->rightB->setEnabled(maxScrollOffset > d->scrollOffset);
