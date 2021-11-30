@@ -479,7 +479,7 @@ bool qt_OCSP_certificate_match(OCSP_SINGLERESP *singleResponse, X509 *peerCert, 
     const QSharedPointer<OCSP_CERTID> guard(recreatedId, q_OCSP_CERTID_free);
 
     if (q_OCSP_id_cmp(const_cast<OCSP_CERTID *>(certId), recreatedId)) {
-        qDebug(lcTlsBackend, "Certificate ID mismatch");
+        qCDebug(lcTlsBackend, "Certificate ID mismatch");
         return false;
     }
     // Bingo!
