@@ -194,12 +194,12 @@ public:
         return *(end() - 1);
     }
     inline bool isEmpty() const { return size() == 0; }
-    inline void resize(qsizetype size);
+    void resize(qsizetype sz) { reallocate(sz, qMax(sz, capacity())); }
     inline void clear() { resize(0); }
-    inline void squeeze();
+    void squeeze() { reallocate(size(), size()); }
 
     inline qsizetype capacity() const { return a; }
-    inline void reserve(qsizetype size);
+    void reserve(qsizetype sz) { if (sz > capacity()) reallocate(size(), sz); }
 
     template <typename AT = T>
     inline qsizetype indexOf(const AT &t, qsizetype from = 0) const;
@@ -417,14 +417,6 @@ Q_INLINE_TEMPLATE QVarLengthArray<T, Prealloc>::QVarLengthArray(qsizetype asize)
 }
 
 template <class T, qsizetype Prealloc>
-Q_INLINE_TEMPLATE void QVarLengthArray<T, Prealloc>::resize(qsizetype asize)
-{ reallocate(asize, qMax(asize, capacity())); }
-
-template <class T, qsizetype Prealloc>
-Q_INLINE_TEMPLATE void QVarLengthArray<T, Prealloc>::reserve(qsizetype asize)
-{ if (asize > capacity()) reallocate(size(), asize); }
-
-template <class T, qsizetype Prealloc>
 template <typename AT>
 Q_INLINE_TEMPLATE qsizetype QVarLengthArray<T, Prealloc>::indexOf(const AT &t, qsizetype from) const
 {
@@ -491,10 +483,6 @@ Q_OUTOFLINE_TEMPLATE void QVarLengthArray<T, Prealloc>::append(const T *abuf, qs
 
     s = asize;
 }
-
-template <class T, qsizetype Prealloc>
-Q_INLINE_TEMPLATE void QVarLengthArray<T, Prealloc>::squeeze()
-{ reallocate(size(), size()); }
 
 template <class T, qsizetype Prealloc>
 Q_OUTOFLINE_TEMPLATE void QVarLengthArray<T, Prealloc>::reallocate(qsizetype asize, qsizetype aalloc)
