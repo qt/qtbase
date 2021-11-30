@@ -63,7 +63,10 @@ class QVarLengthArray
     static_assert(std::is_nothrow_destructible_v<T>, "Types with throwing destructors are not supported in Qt containers.");
 
 public:
-    QVarLengthArray() : QVarLengthArray(0) {}
+    QVarLengthArray() noexcept
+        : a{Prealloc}, s{0}, ptr{reinterpret_cast<T *>(array)}
+    {
+    }
 
     inline explicit QVarLengthArray(qsizetype size);
 
