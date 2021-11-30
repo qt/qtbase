@@ -140,7 +140,7 @@ public:
             ptr = std::exchange(other.ptr, otherInlineStorage);
         } else {
             // inline storage: move into our storage (doesn't matter whether inline or external)
-            QtPrivate::q_uninitialized_relocate_n(other.ptr, other.s, data());
+            QtPrivate::q_uninitialized_relocate_n(other.data(), other.size(), data());
         }
         s = std::exchange(other.s, 0);
         return *this;
@@ -550,8 +550,10 @@ Q_OUTOFLINE_TEMPLATE void QVarLengthArray<T, Prealloc>::reallocate(qsizetype asi
 
     if (QTypeInfo<T>::isComplex) {
         // call default constructor for new objects (which can throw)
-        while (s < asize)
-            new (ptr+(s++)) T;
+        while (size() < asize) {
+            new (data() + size()) T;
+            ++s;
+        }
     } else {
         s = asize;
     }
