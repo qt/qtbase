@@ -1783,7 +1783,10 @@ glyph_metrics_t QFontEngineFT::boundingBox(glyph_t glyph, const QTransform &matr
 
 glyph_metrics_t QFontEngineFT::alphaMapBoundingBox(glyph_t glyph, QFixed subPixelPosition, const QTransform &matrix, QFontEngine::GlyphFormat format)
 {
-    Glyph *g = loadGlyphFor(glyph, subPixelPosition, format, matrix, true);
+    // When rendering glyphs into a cache via the alphaMap* functions, we disable
+    // outline drawing. To ensure the bounding box matches the rendered glyph, we
+    // need to do the same here.
+    Glyph *g = loadGlyphFor(glyph, subPixelPosition, format, matrix, true, true);
 
     glyph_metrics_t overall;
     if (g) {
