@@ -205,6 +205,8 @@ protected:
         return std::lexicographical_compare(begin(), end(), other.begin(), other.end());
     }
 
+    void reallocate_impl(qsizetype prealloc, void *array, qsizetype size, qsizetype alloc);
+
     bool isValidIterator(const const_iterator &i) const
     {
         const std::less<const T *> less = {};
@@ -579,7 +581,8 @@ private:
     bool less_than(const QVarLengthArray<U, Prealloc2> &other) const
     { return Base::less_than(other); }
 
-    void reallocate(qsizetype size, qsizetype alloc);
+    void reallocate(qsizetype sz, qsizetype alloc)
+    { Base::reallocate_impl(Prealloc, this->array, sz, alloc); }
 
     using Base::isValidIterator;
 };
@@ -678,8 +681,8 @@ Q_OUTOFLINE_TEMPLATE void QVarLengthArray<T, Prealloc>::append(const T *abuf, qs
     this->s = asize;
 }
 
-template <class T, qsizetype Prealloc>
-Q_OUTOFLINE_TEMPLATE void QVarLengthArray<T, Prealloc>::reallocate(qsizetype asize, qsizetype aalloc)
+template <class T>
+Q_OUTOFLINE_TEMPLATE void QVLABase<T>::reallocate_impl(qsizetype prealloc, void *array, qsizetype asize, qsizetype aalloc)
 {
     Q_ASSERT(aalloc >= asize);
     Q_ASSERT(data());
@@ -696,24 +699,24 @@ Q_OUTOFLINE_TEMPLATE void QVarLengthArray<T, Prealloc>::reallocate(qsizetype asi
         std::unique_ptr<void, free_deleter> guard;
         void *newPtr;
         qsizetype newA;
-        if (aalloc > Prealloc) {
+        if (aalloc > prealloc) {
             newPtr = malloc(aalloc * sizeof(T));
             guard.reset(newPtr);
             Q_CHECK_PTR(newPtr); // could throw
             // by design: in case of QT_NO_EXCEPTIONS malloc must not fail or it crashes here
             newA = aalloc;
         } else {
-            newPtr = this->array;
-            newA = Prealloc;
+            newPtr = array;
+            newA = prealloc;
         }
         QtPrivate::q_uninitialized_relocate_n(oldPtr, copySize,
                                               reinterpret_cast<T *>(newPtr));
         // commit:
-        this->ptr = newPtr;
+        ptr = newPtr;
         guard.release();
-        this->a = newA;
+        a = newA;
     }
-    this->s = copySize;
+    s = copySize;
 
     // destroy remaining old objects
     if constexpr (QTypeInfo<T>::isComplex) {
@@ -721,17 +724,17 @@ Q_OUTOFLINE_TEMPLATE void QVarLengthArray<T, Prealloc>::reallocate(qsizetype asi
             std::destroy(oldPtr + asize, oldPtr + osize);
     }
 
-    if (oldPtr != reinterpret_cast<T *>(this->array) && oldPtr != data())
+    if (oldPtr != reinterpret_cast<T *>(array) && oldPtr != data())
         free(oldPtr);
 
     if constexpr (QTypeInfo<T>::isComplex) {
         // call default constructor for new objects (which can throw)
         while (size() < asize) {
             new (data() + size()) T;
-            ++this->s;
+            ++s;
         }
     } else {
-        this->s = asize;
+        s = asize;
     }
 
 }
