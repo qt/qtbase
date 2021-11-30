@@ -690,7 +690,7 @@ void QListView::reset()
 void QListView::setRootIndex(const QModelIndex &index)
 {
     Q_D(QListView);
-    d->column = qBound(0, d->column, d->model->columnCount(index) - 1);
+    d->column = qMax(0, qMin(d->column, d->model->columnCount(index) - 1));
     QAbstractItemView::setRootIndex(index);
     // sometimes we get an update before reset() is called
     d->clear();
