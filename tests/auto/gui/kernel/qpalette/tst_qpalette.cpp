@@ -227,6 +227,14 @@ void tst_QPalette::isBrushSet()
     QVERIFY(p.isBrushSet(QPalette::Active, QPalette::LinkVisited));
     QVERIFY(p.isBrushSet(QPalette::Inactive, QPalette::LinkVisited));
     QVERIFY(p.isBrushSet(QPalette::Disabled, QPalette::LinkVisited));
+
+    // Don't set flag when brush doesn't change (and also don't detach - QTBUG-98762)
+    QPalette p2;
+    QPalette p3;
+    QVERIFY(!p2.isBrushSet(QPalette::Active, QPalette::Dark));
+    p2.setBrush(QPalette::Active, QPalette::Dark, p2.brush(QPalette::Active, QPalette::Dark));
+    QVERIFY(!p3.isBrushSet(QPalette::Active, QPalette::Dark));
+    QVERIFY(!p2.isBrushSet(QPalette::Active, QPalette::Dark));
 }
 
 void tst_QPalette::setAllPossibleBrushes()
