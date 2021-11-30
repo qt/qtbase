@@ -242,7 +242,7 @@ public:
     {
         this->a = Prealloc;
         this->s = 0;
-        this->ptr = reinterpret_cast<T *>(this->array);
+        this->ptr = this->array;
     }
 
     inline explicit QVarLengthArray(qsizetype size);
@@ -260,7 +260,7 @@ public:
         const auto otherInlineStorage = reinterpret_cast<T*>(other.array);
         if (data() == otherInlineStorage) {
             // inline buffer - move into our inline buffer:
-            this->ptr = reinterpret_cast<T*>(this->array);
+            this->ptr = this->array;
             QtPrivate::q_uninitialized_relocate_n(otherInlineStorage, size(), data());
         } else {
             // heap buffer - we just stole the memory
@@ -308,7 +308,7 @@ public:
         // the moved-from state is the empty state, so we're good with the clear() here:
         clear();
         Q_ASSERT(capacity() >= Prealloc);
-        const auto otherInlineStorage = reinterpret_cast<T *>(other.array);
+        const auto otherInlineStorage = other.array;
         if (other.ptr != otherInlineStorage) {
             // heap storage: steal the external buffer, reset other to otherInlineStorage
             this->a = std::exchange(other.a, Prealloc);
@@ -596,11 +596,11 @@ Q_INLINE_TEMPLATE QVarLengthArray<T, Prealloc>::QVarLengthArray(qsizetype asize)
     static_assert(Prealloc > 0, "QVarLengthArray Prealloc must be greater than 0.");
     Q_ASSERT_X(size() >= 0, "QVarLengthArray::QVarLengthArray()", "Size must be greater than or equal to 0.");
     if (size() > Prealloc) {
-        this->ptr = reinterpret_cast<T *>(malloc(size() * sizeof(T)));
+        this->ptr = malloc(size() * sizeof(T));
         Q_CHECK_PTR(data());
         this->a = size();
     } else {
-        this->ptr = reinterpret_cast<T *>(this->array);
+        this->ptr = this->array;
         this->a = Prealloc;
     }
     if constexpr (QTypeInfo<T>::isComplex) {
@@ -694,19 +694,20 @@ Q_OUTOFLINE_TEMPLATE void QVarLengthArray<T, Prealloc>::reallocate(qsizetype asi
             void operator()(void *p) const noexcept { free(p); }
         };
         std::unique_ptr<void, free_deleter> guard;
-        T *newPtr;
+        void *newPtr;
         qsizetype newA;
         if (aalloc > Prealloc) {
-            newPtr = reinterpret_cast<T *>(malloc(aalloc * sizeof(T)));
+            newPtr = malloc(aalloc * sizeof(T));
             guard.reset(newPtr);
             Q_CHECK_PTR(newPtr); // could throw
             // by design: in case of QT_NO_EXCEPTIONS malloc must not fail or it crashes here
             newA = aalloc;
         } else {
-            newPtr = reinterpret_cast<T *>(this->array);
+            newPtr = this->array;
             newA = Prealloc;
         }
-        QtPrivate::q_uninitialized_relocate_n(oldPtr, copySize, newPtr);
+        QtPrivate::q_uninitialized_relocate_n(oldPtr, copySize,
+                                              reinterpret_cast<T *>(newPtr));
         // commit:
         this->ptr = newPtr;
         guard.release();
