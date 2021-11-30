@@ -1877,6 +1877,10 @@ static void initEnvironment()
 
 int QTest::qExec(QObject *testObject, int argc, char **argv)
 {
+    // NB: QtQuick's testing recombines qInit(), qRun() and qCleanup() to
+    // provide a replacement for qExec() that calls qRun() once for each
+    // built-in style. So think twice about moving parts between these three
+    // functions, as doing so may mess up QtQuick's testing.
     qInit(testObject, argc, argv);
     int ret = qRun();
     qCleanup();
@@ -1920,8 +1924,13 @@ void QTest::qInit(QObject *testObject, int argc, char **argv)
 
     qtest_qParseArgs(argc, argv, false);
 
-    QTestTable::globalTestTable();
-    QTestLog::startLogging();
+#if QT_CONFIG(valgrind)
+    if (QBenchmarkGlobalData::current->mode() != QBenchmarkGlobalData::CallgrindParentProcess)
+#endif
+    {
+        QTestTable::globalTestTable();
+        QTestLog::startLogging();
+    }
 }
 
 /*! \internal
@@ -2005,8 +2014,13 @@ void QTest::qCleanup()
 {
     currentTestObject = nullptr;
 
-    QTestTable::clearGlobalTestTable();
-    QTestLog::stopLogging();
+#if QT_CONFIG(valgrind)
+    if (QBenchmarkGlobalData::current->mode() != QBenchmarkGlobalData::CallgrindParentProcess)
+#endif
+    {
+        QTestLog::stopLogging();
+        QTestTable::clearGlobalTestTable();
+    }
 
     delete QBenchmarkGlobalData::current;
     QBenchmarkGlobalData::current = nullptr;
