@@ -369,6 +369,42 @@ void tst_QFocusEvent::checkReason_ActiveWindow()
     QVERIFY( childFocusWidgetOne->hasFocus() );
     QVERIFY( childFocusWidgetOne->focusInEventRecieved );
     QCOMPARE( childFocusWidgetOne->focusInEventReason, (int)Qt::ActiveWindowFocusReason);
+
+    const bool windowActivationReasonFail =
+        QGuiApplication::platformName().toLower() == "minimal";
+
+    struct Window : public QWindow
+    {
+        Qt::FocusReason lastReason = Qt::NoFocusReason;
+    protected:
+        void focusInEvent(QFocusEvent *event) override
+        {
+            lastReason = event->reason();
+        }
+        void focusOutEvent(QFocusEvent *event) override
+        {
+            lastReason = event->reason();
+        }
+    };
+
+    Window window;
+    window.show();
+    window.requestActivate();
+    QVERIFY(QTest::qWaitForWindowActive(&window));
+
+    if (windowActivationReasonFail)
+        QEXPECT_FAIL("", "Platform doesn't set window activation reason for QWindow", Continue);
+    QCOMPARE(window.lastReason, Qt::ActiveWindowFocusReason);
+    window.lastReason = Qt::NoFocusReason;
+
+    Window window2;
+    window2.show();
+    window2.requestActivate();
+    QVERIFY(QTest::qWaitForWindowActive(&window2));
+
+    if (windowActivationReasonFail)
+        QEXPECT_FAIL("", "Platform doesn't set window activation reason for QWindow", Continue);
+    QCOMPARE(window.lastReason, Qt::ActiveWindowFocusReason);
 }
 
 

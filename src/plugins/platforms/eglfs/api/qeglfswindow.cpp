@@ -265,7 +265,7 @@ void QEglFSWindow::requestActivateWindow()
         QOpenGLCompositor::instance()->moveToTop(this);
 #endif
     QWindow *wnd = window();
-    QWindowSystemInterface::handleWindowActivated(wnd);
+    QWindowSystemInterface::handleWindowActivated(wnd, Qt::ActiveWindowFocusReason);
     QWindowSystemInterface::handleExposeEvent(wnd, QRect(QPoint(0, 0), wnd->geometry().size()));
 }
 

@@ -742,7 +742,7 @@ void QQnxScreenEventHandler::handleKeyboardFocusPropertyEvent(screen_window_t wi
     }
 
     if (focus && focusWindow != QGuiApplication::focusWindow())
-        QWindowSystemInterface::handleWindowActivated(focusWindow);
+        QWindowSystemInterface::handleWindowActivated(focusWindow, Qt::ActiveWindowFocusReason);
     else if (!focus && focusWindow == QGuiApplication::focusWindow())
         m_focusLostTimer = startTimer(50);
 }
