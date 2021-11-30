@@ -194,6 +194,16 @@ public:
     iterator erase(const_iterator pos) { return erase(pos, pos + 1); }
 
 protected:
+    template <typename...Args>
+    reference emplace_back_impl(qsizetype prealloc, void *array, Args&&...args)
+    {
+        if (size() == capacity()) // ie. size() != 0
+            reallocate_impl(prealloc, array, size(), size() << 1);
+        reference r = *new (end()) T(std::forward<Args>(args)...);
+        ++s;
+        return r;
+    }
+
     template <typename S>
     bool equal(const QVLABase<S> &other) const
     {
@@ -514,7 +524,8 @@ public:
     template <typename...Args>
     iterator emplace(const_iterator pos, Args &&...args);
     template <typename...Args>
-    T &emplace_back(Args &&...args) { return *emplace(cend(), std::forward<Args>(args)...); }
+    T &emplace_back(Args &&...args)
+    { return Base::emplace_back_impl(Prealloc, this->array, std::forward<Args>(args)...); }
 
 
 #ifdef Q_QDOC
