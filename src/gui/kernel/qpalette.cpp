@@ -787,9 +787,8 @@ void QPalette::setBrush(ColorGroup cg, ColorRole cr, const QBrush &b)
     if (d->br[cg][cr] != b) {
         detach();
         d->br[cg][cr] = b;
+        d->resolveMask |= ResolveMask(1) << bitPosition(cg, cr);
     }
-
-    d->resolveMask |= ResolveMask(1) << bitPosition(cg, cr);
 }
 
 /*!
