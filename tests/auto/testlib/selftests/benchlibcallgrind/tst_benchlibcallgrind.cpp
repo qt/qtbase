@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -62,9 +62,7 @@ void tst_BenchlibCallgrind::failInChildProcess()
 
 void tst_BenchlibCallgrind::twoHundredMillionInstructions()
 {
-#if !defined(__GNUC__) || !defined(__i386)
-    QSKIP("This test is only defined for gcc and x86.");
-#else
+#if defined(__GNUC__) && (defined(__i386) || defined(__x86_64))
     QBENCHMARK {
         __asm__ __volatile__(
             "mov $100000000,%%eax   \n"
@@ -76,6 +74,8 @@ void tst_BenchlibCallgrind::twoHundredMillionInstructions()
             : /* clobber */ "eax"
         );
     }
+#else
+    QSKIP("This test is only implemented for gcc on x86.");
 #endif
 }
 
