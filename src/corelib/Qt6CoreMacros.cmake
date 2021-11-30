@@ -601,11 +601,15 @@ function(_qt_internal_finalize_executable target)
 
     if(finalizers)
         if(CMAKE_VERSION VERSION_LESS 3.18)
-            # cmake_language() not available
-            message(WARNING
-                "Skipping module-specific finalizers for target ${target} "
-                "(requires CMake 3.18 or later)"
-            )
+            # cmake_language() not available, fall back to the slower method of
+            # writing a file and including it
+            set(contents "")
+            foreach(finalizer_func IN LISTS finalizers)
+                string(APPEND contents "${finalizer_func}(${target})\n")
+            endforeach()
+            set(finalizer_file "${CMAKE_CURRENT_BINARY_DIR}/.qt/finalize_${target}.cmake")
+            file(WRITE ${finalizer_file} "${contents}")
+            include(${finalizer_file})
         else()
             foreach(finalizer_func IN LISTS finalizers)
                 cmake_language(CALL ${finalizer_func} ${target})
