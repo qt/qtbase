@@ -1623,6 +1623,9 @@ void tst_QSslSocket::setSocketDescriptor()
 
 void tst_QSslSocket::setSslConfiguration_data()
 {
+#if QT_CONFIG(securetransport)
+    QSKIP("Skipping the cases with certificate, SecureTransport does not like old certificate on the test server");
+#endif // securetransport
     QTest::addColumn<QSslConfiguration>("configuration");
     QTest::addColumn<bool>("works");
 
