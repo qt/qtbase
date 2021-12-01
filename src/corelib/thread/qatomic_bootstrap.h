@@ -52,6 +52,14 @@ QT_END_NAMESPACE
 #pragma qt_sync_stop_processing
 #endif
 
+#define Q_ATOMIC_INT8_IS_SUPPORTED
+template<> struct QAtomicOpsSupport<1> { enum { IsSupported = 1 }; };
+#define Q_ATOMIC_INT16_IS_SUPPORTED
+template<> struct QAtomicOpsSupport<2> { enum { IsSupported = 1 }; };
+#define Q_ATOMIC_INT32_IS_SUPPORTED
+#define Q_ATOMIC_INT64_IS_SUPPORTED
+template<> struct QAtomicOpsSupport<8> { enum { IsSupported = 1 }; };
+
 template <typename T> struct QAtomicOps: QGenericAtomicOps<QAtomicOps<T> >
 {
     typedef T Type;
