@@ -149,7 +149,7 @@ void tst_windeployqt::deploy()
     const QString qtBinDir = QDir::toNativeSeparators(QLibraryInfo::path(QLibraryInfo::BinariesPath));
     QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
     const QString pathKey = QLatin1String("PATH");
-    const QChar pathSeparator(QLatin1Char(';')); // ### fixme: Qt 5.6: QDir::listSeparator()
+    const QChar pathSeparator(QDir::listSeparator());
     const QString origPath = env.value(pathKey);
     QString newPath;
     const QStringList pathElements = origPath.split(pathSeparator, Qt::SkipEmptyParts);

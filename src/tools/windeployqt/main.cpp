@@ -202,12 +202,15 @@ static Platform platformFromMkSpec(const QString &xSpec)
 {
     if (xSpec == QLatin1String("linux-g++"))
         return Unix;
-    if (xSpec.startsWith(QLatin1String("win32-"))) {
+    if (xSpec.startsWith(QLatin1String("win32-")) || xSpec.startsWith(QLatin1String("mingw-"))) {
         if (xSpec.contains(QLatin1String("clang-g++")))
             return WindowsDesktopClangMinGW;
         if (xSpec.contains(QLatin1String("clang-msvc++")))
             return WindowsDesktopClangMsvc;
-        return xSpec.contains(QLatin1String("g++")) ? WindowsDesktopMinGW : WindowsDesktopMsvc;
+        if (xSpec.contains(QLatin1String("g++"))
+            return WindowsDesktopMinGW;
+        if (xSpec.contains(QLatin1String("msvc++")))
+            return WindowsDesktopMsvc;
     }
     return UnknownPlatform;
 }
@@ -1648,7 +1651,7 @@ int main(int argc, char **argv)
     const QByteArray qtBinPath = QFile::encodeName(QDir::toNativeSeparators(QCoreApplication::applicationDirPath()));
     QByteArray path = qgetenv("PATH");
     if (!path.contains(qtBinPath)) { // QTBUG-39177, ensure Qt is in the path so that qt.conf is taken into account.
-        path += ';';
+        path += QDir::listSeparator();
         path += qtBinPath;
         qputenv("PATH", path);
     }
