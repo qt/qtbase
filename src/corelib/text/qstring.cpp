@@ -4152,6 +4152,12 @@ qsizetype QString::lastIndexOf(QChar ch, qsizetype from, Qt::CaseSensitivity cs)
 }
 
 /*!
+  \fn QString::lastIndexOf(QChar ch, Qt::CaseSensitivity) const
+  \since 6.3
+  \overload lastIndexOf()
+*/
+
+/*!
   \fn qsizetype QString::lastIndexOf(QStringView str, qsizetype from, Qt::CaseSensitivity cs) const
   \since 5.14
   \overload lastIndexOf()
@@ -9313,6 +9319,7 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
 */
 
 /*!
+    \fn qsizetype QLatin1String::lastIndexOf(QChar ch, Qt::CaseSensitivity cs) const
     \fn qsizetype QLatin1String::lastIndexOf(QLatin1Char ch, qsizetype from, Qt::CaseSensitivity cs) const
     \since 6.3
     \overload

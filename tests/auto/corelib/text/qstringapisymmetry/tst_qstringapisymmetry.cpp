@@ -913,6 +913,15 @@ private Q_SLOTS:
     void isValidUtf8_QUtf8StringView() { isValidUtf8_impl<QUtf8StringView>(); }
 };
 
+namespace help {
+
+template <typename T> constexpr qsizetype size(const T &s) { return qsizetype(s.size()); }
+
+template <> constexpr qsizetype size(const QChar&) { return 1; }
+template <> constexpr qsizetype size(const QLatin1Char&) { return 1; }
+template <> constexpr qsizetype size(const char16_t&) { return 1; }
+} // namespace help
+
 namespace {
 
 void overload_s_a(const QString &) {}
@@ -2638,6 +2647,13 @@ void tst_QStringApiSymmetry::lastIndexOf_impl() const
     QCOMPARE(haystack.lastIndexOf(needle, startpos, Qt::CaseSensitive), size_type(resultCS));
     QCOMPARE(haystack.lastIndexOf(needle, startpos, Qt::CaseInsensitive), size_type(resultCIS));
 
+    if (startpos == haystack.size() ||
+        (startpos == -1 && help::size(needle) > 0)) { // -1 skips past-the-end-match w/empty needle
+        // check that calls without an explicit 'from' argument work, too:
+        QCOMPARE(haystack.lastIndexOf(needle), size_type(resultCS));
+        QCOMPARE(haystack.lastIndexOf(needle, Qt::CaseSensitive), size_type(resultCS));
+        QCOMPARE(haystack.lastIndexOf(needle, Qt::CaseInsensitive), size_type(resultCIS));
+    }
 }
 
 void tst_QStringApiSymmetry::indexOf_contains_lastIndexOf_count_regexp_data()

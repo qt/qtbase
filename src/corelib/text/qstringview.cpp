@@ -915,6 +915,12 @@ QT_BEGIN_NAMESPACE
     \sa QString::lastIndexOf()
 */
 
+/*!
+    \fn QStringView::lastIndexOf(QChar c, Qt::CaseSensitivity cs) const
+    \since 6.3
+    \overload lastIndexOf()
+*/
+
 #if QT_CONFIG(regularexpression)
 /*!
     \fn qsizetype QStringView::indexOf(const QRegularExpression &re, qsizetype from, QRegularExpressionMatch *rmatch) const
