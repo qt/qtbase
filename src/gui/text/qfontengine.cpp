@@ -436,6 +436,10 @@ bool QFontEngine::processHheaTable() const
         qint16 descent = qFromBigEndian<qint16>(hhea.constData() + 6);
         qint16 leading = qFromBigEndian<qint16>(hhea.constData() + 8);
 
+        // Some fonts may have invalid HHEA data. We detect this and bail out.
+        if (ascent == 0 && descent == 0)
+            return false;
+
         QFixed unitsPerEm = emSquareSize();
         m_ascent = QFixed::fromReal(ascent * fontDef.pixelSize) / unitsPerEm;
         m_descent = -QFixed::fromReal(descent * fontDef.pixelSize) / unitsPerEm;
@@ -450,7 +454,10 @@ bool QFontEngine::processHheaTable() const
 
 void QFontEngine::initializeHeightMetrics() const
 {
-    bool hasEmbeddedBitmaps = !getSfntTable(MAKE_TAG('E', 'B', 'L', 'C')).isEmpty() || !getSfntTable(MAKE_TAG('C', 'B', 'L', 'C')).isEmpty();
+    bool hasEmbeddedBitmaps =
+            !getSfntTable(MAKE_TAG('E', 'B', 'L', 'C')).isEmpty()
+            || !getSfntTable(MAKE_TAG('C', 'B', 'L', 'C')).isEmpty()
+            || !getSfntTable(MAKE_TAG('b', 'd', 'a', 't')).isEmpty();
     if (!hasEmbeddedBitmaps) {
         // Get HHEA table values if available
         processHheaTable();
@@ -476,10 +483,16 @@ bool QFontEngine::processOS2Table() const
         enum { USE_TYPO_METRICS = 0x80 };
         QFixed unitsPerEm = emSquareSize();
         if (fsSelection & USE_TYPO_METRICS) {
+            // Some fonts may have invalid OS/2 data. We detect this and bail out.
+            if (typoAscent == 0 && typoDescent == 0)
+                return false;
             m_ascent = QFixed::fromReal(typoAscent * fontDef.pixelSize) / unitsPerEm;
             m_descent = -QFixed::fromReal(typoDescent * fontDef.pixelSize) / unitsPerEm;
             m_leading = QFixed::fromReal(typoLineGap * fontDef.pixelSize) / unitsPerEm;
         } else {
+            // Some fonts may have invalid OS/2 data. We detect this and bail out.
+            if (winAscent == 0 && winDescent == 0)
+                return false;
             m_ascent = QFixed::fromReal(winAscent * fontDef.pixelSize) / unitsPerEm;
             m_descent = QFixed::fromReal(winDescent * fontDef.pixelSize) / unitsPerEm;
         }

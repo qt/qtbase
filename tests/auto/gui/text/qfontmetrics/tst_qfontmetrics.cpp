@@ -56,6 +56,8 @@ private slots:
     void leadingBelowLine();
     void elidedMetrics();
     void zeroWidthMetrics();
+    void verticalMetrics_data();
+    void verticalMetrics();
 };
 
 void tst_QFontMetrics::same()
@@ -374,6 +376,23 @@ void tst_QFontMetrics::zeroWidthMetrics()
     QCOMPARE(fm.horizontalAdvance(string3), fm.horizontalAdvance(string4));
     QCOMPARE(fm.boundingRect(string1).width(), fm.boundingRect(string2).width());
     QCOMPARE(fm.boundingRect(string3).width(), fm.boundingRect(string4).width());
+}
+
+void tst_QFontMetrics::verticalMetrics_data()
+{
+    QTest::addColumn<QFont>("font");
+    QStringList families = QFontDatabase::families();
+    for (const QString &family : families) {
+        QFont font(family);
+        QTest::newRow(family.toUtf8()) << font;
+    }
+}
+
+void tst_QFontMetrics::verticalMetrics()
+{
+    QFETCH(QFont, font);
+    QFontMetrics fm(font);
+    QVERIFY(fm.ascent() != 0 || fm.descent() != 0);
 }
 
 QTEST_MAIN(tst_QFontMetrics)
