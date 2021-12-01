@@ -63,7 +63,7 @@ instructions:
       property: platformDependency
       equals_value: null
   - type: ExecuteCommand
-    command: "{{.Env.TARGET_ENV_PREFIX}} cmake {{.Env.TARGET_CONFIGURE_ARGS}} -DCMAKE_INSTALL_PREFIX:PATH={{.InstallDir}}/target {{.SourceDir}}"
+    command: "{{.Env.TARGET_ENV_PREFIX}} cmake {{.Env.TARGET_CONFIGURE_ARGS}} -DCMAKE_STAGING_PREFIX:PATH={{.InstallDir}}/target {{.SourceDir}}"
     executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
     maxTimeInSeconds: 6000
     maxTimeBetweenOutput: 1200
