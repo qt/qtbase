@@ -67,7 +67,6 @@ class QVariant;
 class Q_GUI_EXPORT QLayoutPolicy
 {
     Q_GADGET
-    Q_ENUMS(Policy)
 
 public:
     enum PolicyFlag {
@@ -76,16 +75,16 @@ public:
         ShrinkFlag = 4,
         IgnoreFlag = 8
     };
+    Q_DECLARE_FLAGS(Policy, PolicyFlag)
+    Q_FLAG(Policy)
 
-    enum Policy {
-        Fixed = 0,
-        Minimum = GrowFlag,
-        Maximum = ShrinkFlag,
-        Preferred = GrowFlag | ShrinkFlag,
-        MinimumExpanding = GrowFlag | ExpandFlag,
-        Expanding = GrowFlag | ShrinkFlag | ExpandFlag,
-        Ignored = ShrinkFlag | GrowFlag | IgnoreFlag
-    };
+    static constexpr inline Policy Fixed = {};
+    static constexpr inline Policy Minimum = GrowFlag;
+    static constexpr inline Policy Maximum = ShrinkFlag;
+    static constexpr inline Policy Preferred = Minimum | Maximum;
+    static constexpr inline Policy MinimumExpanding = Minimum | ExpandFlag;
+    static constexpr inline Policy Expanding = Preferred | ExpandFlag;
+    static constexpr inline Policy Ignored = Preferred | IgnoreFlag;
 
     enum ControlType {
         DefaultType      = 0x00000001,
@@ -169,6 +168,7 @@ private:
     };
 };
 
+Q_DECLARE_OPERATORS_FOR_FLAGS(QLayoutPolicy::Policy)
 Q_DECLARE_OPERATORS_FOR_FLAGS(QLayoutPolicy::ControlTypes)
 
 #ifndef QT_NO_DATASTREAM
