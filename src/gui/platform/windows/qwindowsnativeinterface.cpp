@@ -60,6 +60,7 @@ using namespace QNativeInterface::Private;
     Accessed through QOpenGLContext::nativeInterface().
 
     \inmodule QtGui
+    \inheaderfile QOpenGLContext
     \ingroup native-interfaces
     \ingroup native-interfaces-qopenglcontext
 */
