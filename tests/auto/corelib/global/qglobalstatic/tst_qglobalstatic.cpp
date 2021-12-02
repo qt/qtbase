@@ -148,7 +148,7 @@ void tst_QGlobalStatic::exception()
         exceptionCaught = true;
     }
     QVERIFY(exceptionCaught);
-    QCOMPARE(Q_QGS_throwingGS::guard.loadRelaxed(), 0);
+    QCOMPARE(QtGlobalStatic::Holder<Q_QGS_throwingGS>::guard.loadRelaxed(), 0);
     QVERIFY(!throwingGS.exists());
     QVERIFY(!throwingGS.isDestroyed());
 }

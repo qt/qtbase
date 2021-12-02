@@ -47,8 +47,10 @@
     type will be recreated when it's accessed again once a new QCoreApplication
     has been created.
 
-    Since the value is bound to the QCoreApplication it should only ever be accessed,
-    if there is a valid QCoreApplication::instance().
+    Since the value is bound to the QCoreApplication, it should only ever be
+    accessed if there is a valid QCoreApplication::instance(). Accessing this
+    object before QCoreApplication is created or after it's destroyed will
+    produce warnings and may have unpredictable behavior.
 
     The typical use of this macro is as follows, in a global context (that is,
     outside of any function bodies):
@@ -60,6 +62,42 @@
     Aside from the value also being bound to the lifetime of the QCoreApplication,
     this macro behaves identically to Q_GLOBAL_STATIC(). Please see that macro's
     documentation for more information.
+
+    \omit
+    \section1 Implementation details
+    See \l Q_GLOBAL_STATIC implementation details for an introduction.
+
+    Q_APPLICATION_STATIC uses the same \l QGlobalStatic public class that
+    Q_GLOBAL_STATIC does, but instead uses a QtGlobalStatic::ApplicationHolder
+    template class as the template parameter. The differences to
+    QtGlobalStatic::Holder are:
+
+    \list
+        \li The ApplicationHolder class is empty. Unlike Holder, the storage is
+        provided as a \c {static inline} member, simply so that the static
+        member reset() function can access it without having to save the
+        pointer in a lambda.
+
+        \li The ApplicationHolder constructor is trivial; initialization of the
+        type is instead deferred to the \c pointer() function. This means the
+        C++11 thread-safe initialization of statics does not protect the
+        object.
+
+        \li Instead, ApplicationHolder provides a mutex (implemented as a \c
+        {static inline} member of type \l QBasicMutex) and locks it before
+        constructing or destructing the object.
+
+        \li After constructing the object, it will QObject::connect() the
+        QCoreApplication::destroyed() signal to a function that will in turn
+        destroy the object.
+
+        \li The destructor will destroy the object if the application is
+        exiting without first destroying the QCoreApplication object (i.e., a
+        call to \c ::exit) or this Q_APPLICATION_STATIC is part of a plugin
+        that is being unloaded.
+    \endlist
+
+    \endomit
 
     \sa Q_APPLICATION_STATIC_WITH_ARGS(), QGlobalStatic
 */

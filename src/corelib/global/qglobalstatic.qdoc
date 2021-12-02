@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 Intel Corporation.
+** Copyright (C) 2021 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -195,11 +195,11 @@
     \omit
     \section1 Compatibility with Qt 4 and Qt 5.0
 
-    This macro, in its current form and behavior, was introduced in Qt 5.1.
-    Prior to that version, Qt had another macro with the same name that was
-    private API. This section is not meant to document how to use
-    Q_GLOBAL_STATIC in those versions, but instead to serve as a porting guide
-    for Qt code that used those macros.
+    This macro, in its current behavior, was introduced in Qt 5.1. Prior to
+    that version, Qt had another macro with the same name that was private API.
+    This section is not meant to document how to use Q_GLOBAL_STATIC in those
+    versions, but instead to serve as a porting guide for Qt code that used
+    those macros.
 
     The Qt 4 Q_GLOBAL_STATIC macro differed in behavior in the following ways:
 
@@ -218,24 +218,38 @@
 
     \section1 Implementation Details
 
-    Q_GLOBAL_STATIC is implemented by creating a QBasicAtomicInt called the \c
-    guard and a free, inline function called \c innerFunction. The guard
-    variable is initialized to value 0 (chosen so that the guard can be placed
-    in the .bss section of the binary file), which denotes that construction
-    has not yet taken place (uninitialized). The inner function is implemented
-    by the helper macro Q_GLOBAL_STATIC_INTERNAL.
+    Q_GLOBAL_STATIC is implemented by creating a type called \c Q_QGS_NAME
+    where \c NAME is the name of the variable the user passed to the macro,
+    inside an unnamed namespace, and a \c static variable of \l QGlobalStatic
+    type, named \c NAME. The use of unnamed namespaces forces the compiler to emit
+    non-exported symbols, often local to the translation unit, and this
+    propagates to the \l QGlobalStatic template instantiation that uses such
+    types. Additionally, because the type is used only for one variable,
+    there's effectively no difference between static and non-static data
+    members.
 
-    Both the guard variable and the inner function are passed as template
-    parameters to QGlobalStatic, along with the type \a Type. Both should also
-    have static linkage or be placed inside an anonymous namespace, so that the
-    visibility of Q_GLOBAL_STATIC is that of a global static. To permit
-    multiple Q_GLOBAL_STATIC per translation unit, the guard variable and the
-    inner function must have unique names, which can be accomplished by
-    concatenating with \a VariableName or by placing them in a namespace that
-    has \a VariableName as part of the name. To simplify and improve
-    readability on Q_GLOBAL_STATIC_INTERNAL, we chose the namespace solution.
-    It's also required for C++98 builds, since static symbols cannot be used as
-    template parameters.
+    The "QGS" type is a \c struct containing a \c typedef to \a TYPE and a
+    static member function that receives a pointer to storage suitable to hold
+    an instance of \a TYPE. It will initialize the storage using a placement \c
+    new and the variadic arguments.
+
+    The majority of the work is done by the public \l QGlobalStatic class and
+    the private \c QtGlobalStatic::Holder class. The \c Holder class has a
+    non-static, trivial member of suitable size and alignment to hold \a TYPE
+    (a \c{std::aligned_union_t} or a \c{std::aligned_storage_t}). The
+    constructor calls the "QGS" type's static member function with a pointer to
+    this location so it can be initialized and the destructor calls the type's
+    destructor. The \c{Holder} type is therefore neither trivially
+    constructible nor trivially destructible. It is used as a function-local \c
+    static so its initialization is thread-safe due to C++11's requirement that
+    such variables be thread-safely initialized.
+
+    Additionally, both the constructor and destructor modify a guard variable
+    after construction and before destruction, respectively. The guard variable
+    is implemented as a \c {static inline} member instead of a non-static
+    member so the compiler and linker are free to place this variable in memory
+    far from the actual object. This way, if we wanted to, we could mark it
+    aligned-to-cacheline in the future to prevent false sharing.
 
     The guard variable can assume the following values:
 
@@ -256,34 +270,6 @@
     The QGlobalStatic::exists() and QGlobalStatic::isDestroyed() functions
     operate solely on the guard variable: the former returns \c true if the guard
     is negative, whereas the latter returns \c true only if it is -2.
-
-    The Q_GLOBAL_STATIC_INTERNAL macro implements the actual construction and
-    destruction. There are two implementations of it: one for compilers that
-    support thread-safe initialization of function-local statics and one for
-    compilers that don't. Thread-safe initialization is required by C++11 in
-    [stmt.decl], but as of the time of this writing, only compilers based on
-    the IA-64 C++ ABI implemented it properly. The implementation requiring
-    thread-safe initialization is also used on the Qt bootstrapped tools, which
-    disable the "thread" feature.
-
-    The implementation requiring thread-safe initialization from the compiler
-    is the simplest: it creates the \a Type object as a function-local static
-    and returns its address. The actual object is actually inside a holder
-    structure so holder's destructor can set the guard variable to the value -2
-    (destroyed) when the type has finished destruction. Since we need to set
-    the guard \b after the destruction has finished, this code needs to be in a
-    base struct's destructor. And it only sets to -2 (destroyed) if it finds
-    the guard at -1 (initialized): this is done to ensure that the guard isn't
-    set to -2 in the event the type's constructor threw an exception. A holder
-    structure is used to avoid creating two statics, which the ABI might
-    require duplicating the thread-safe control structures for.
-
-    The other implementation is similar to Qt 4's Q_GLOBAL_STATIC, but unlike
-    that one, it uses a \l QBasicMutex to provide locking. It is also more
-    efficient memory-wise. It use a simple double-checked locking of the mutex
-    and then creates the contents on the heap. After that, it creates a
-    function-local structure called "Cleanup", whose destructor will be run at
-    program exit and will actually destroy the contents.
 
     \endomit
 
@@ -356,7 +342,7 @@
 */
 
 /*!
-    \fn template <typename T, T *(&innerFunction)(), QBasicAtomicInt &guard> bool QGlobalStatic<T, innerFunction, guard>::isDestroyed() const
+    \fn template <typename Holder> bool QGlobalStatic<Holder>::isDestroyed() const
 
     This function returns \c true if the global static object has already
     completed destruction (that is, if the destructor for the type has already
@@ -386,7 +372,7 @@
 */
 
 /*!
-    \fn template <typename T, T *(&innerFunction)(), QBasicAtomicInt &guard> bool QGlobalStatic<T, innerFunction, guard>::exists() const
+    \fn template <typename Holder> bool QGlobalStatic<Holder>::exists() const
 
     This function returns \c true if the global static object has already
     completed initialization (that is, if the constructor for the type has
@@ -436,7 +422,7 @@
 
 /*!
     \keyword qglobalstatic-operator-type-ptr
-    \fn template <typename T, T *(&innerFunction)(), QBasicAtomicInt &guard> QGlobalStatic<T, innerFunction, guard>::operator Type*()
+    \fn template <typename Holder> QGlobalStatic<Holder>::operator Type*()
 
     This function returns the address of the contents of this global static. If
     the contents have not yet been created, they will be created thread-safely
@@ -469,7 +455,7 @@
 */
 
 /*!
-    \fn template <typename T, T *(&innerFunction)(), QBasicAtomicInt &guard> Type *QGlobalStatic<T, innerFunction, guard>::operator()()
+    \fn template <typename Holder> Type *QGlobalStatic<Holder>::operator()()
     \deprecated
 
     This function returns the address of the contents of this global static. If
@@ -485,7 +471,7 @@
 */
 
 /*!
-    \fn template <typename T, T *(&innerFunction)(), QBasicAtomicInt &guard> Type *QGlobalStatic<T, innerFunction, guard>::operator->()
+    \fn template <typename Holder> Type *QGlobalStatic<Holder>::operator->()
 
     This function returns the address of the contents of this global static. If
     the contents have not yet been created, they will be created thread-safely
@@ -498,7 +484,7 @@
 */
 
 /*!
-    \fn template <typename T, T *(&innerFunction)(), QBasicAtomicInt &guard> Type &QGlobalStatic<T, innerFunction, guard>::operator*()
+    \fn template <typename Holder> Type &QGlobalStatic<Holder>::operator*()
 
     This function returns a reference to the contents of this global static. If
     the contents have not yet been created, they will be created thread-safely

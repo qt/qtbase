@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2021 The Qt Company Ltd.
+** Copyright (C) 2021 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -41,58 +42,75 @@
 #define QAPPLICATIONSTATIC_H
 
 #include <QtCore/QMutex>
+#include <QtCore/qcoreapplication.h>
 #include <QtCore/qglobalstatic.h>
 
 QT_BEGIN_NAMESPACE
 
-#define Q_APPLICATION_STATIC_INTERNAL_HOLDER(ARGS)                          \
-    Q_GLOBAL_STATIC_INTERNAL_HOLDER(ARGS)                                   \
-    struct LifecycleHolder : public Holder                                  \
-    {                                                                       \
-        LifecycleHolder() { connectLifecycle(); }                           \
-        BaseType *get()                                                     \
-        {                                                                   \
-            const QMutexLocker locker(&theMutex);                           \
-            if (value.get() == nullptr                                      \
-                && guard.loadRelaxed() == QtGlobalStatic::Initialized) {    \
-                value.reset(ARGS);                                          \
-                connectLifecycle();                                         \
-            }                                                               \
-            return value.get();                                             \
-        }                                                                   \
-        void connectLifecycle()                                             \
-        {                                                                   \
-            Q_ASSERT(QCoreApplication::instance());                         \
-            QObject::connect(QCoreApplication::instance(),                  \
-                &QCoreApplication::destroyed, [this] {                      \
-                const QMutexLocker locker(&theMutex);                       \
-                value.reset(nullptr);                                       \
-            });                                                             \
-        }                                                                   \
-    };
+namespace QtGlobalStatic {
+template <typename QAS> struct ApplicationHolder
+{
+    using Type = typename QAS::QAS_Type;
+    using PlainType = std::remove_cv_t<Type>;
 
-#define Q_APPLICATION_STATIC_INTERNAL(ARGS)                                 \
-    Q_GLOBAL_STATIC_INTERNAL_DECORATION BaseType *innerFunction()           \
-    {                                                                       \
-        Q_APPLICATION_STATIC_INTERNAL_HOLDER(ARGS)                          \
-        static LifecycleHolder holder;                                      \
-        return holder.get();                                                \
+    static inline std::aligned_union_t<1, PlainType> storage;
+    static inline QBasicAtomicInteger<qint8> guard = { QtGlobalStatic::Uninitialized };
+    static inline QBasicMutex mutex {};
+
+    static constexpr bool MutexLockIsNoexcept = noexcept(mutex.lock());
+    static constexpr bool ConstructionIsNoexcept = noexcept(QAS::innerFunction(nullptr));
+
+    ApplicationHolder() = default;
+    Q_DISABLE_COPY_MOVE(ApplicationHolder)
+    ~ApplicationHolder()
+    {
+        if (guard.loadRelaxed() == QtGlobalStatic::Initialized) {
+            guard.storeRelease(QtGlobalStatic::Destroyed);
+            realPointer()->~PlainType();
+        }
     }
 
+    static PlainType *realPointer()
+    {
+        return reinterpret_cast<PlainType *>(&storage);
+    }
+
+    // called from QGlobalStatic::instance()
+    PlainType *pointer() noexcept(MutexLockIsNoexcept && ConstructionIsNoexcept)
+    {
+        if (guard.loadRelaxed() == QtGlobalStatic::Initialized)
+            return realPointer();
+        QMutexLocker locker(&mutex);
+        if (guard.loadRelaxed() == QtGlobalStatic::Uninitialized) {
+            QAS::innerFunction(realPointer());
+            QObject::connect(QCoreApplication::instance(), &QObject::destroyed, reset);
+            guard.storeRelaxed(QtGlobalStatic::Initialized);
+        }
+        return realPointer();
+    }
+
+    static void reset()
+    {
+        if (guard.loadRelaxed() == QtGlobalStatic::Initialized) {
+            QMutexLocker locker(&mutex);
+            realPointer()->~PlainType();
+            guard.storeRelaxed(QtGlobalStatic::Uninitialized);
+        }
+    }
+};
+} // namespace QtGlobalStatic
+
 #define Q_APPLICATION_STATIC_WITH_ARGS(TYPE, NAME, ARGS)                    \
-    QT_WARNING_PUSH                                                         \
-    QT_WARNING_DISABLE_CLANG("-Wunevaluated-expression")                    \
-    namespace { namespace Q_QAS_ ## NAME {                                  \
-        typedef TYPE BaseType;                                              \
-        typedef std::unique_ptr<BaseType> Type;                             \
-        QBasicAtomicInt guard = Q_BASIC_ATOMIC_INITIALIZER(QtGlobalStatic::Uninitialized); \
-        QBasicMutex theMutex;                                               \
-        Q_APPLICATION_STATIC_INTERNAL((new BaseType ARGS))                  \
-    } }                                                                     \
-    static QGlobalStatic<TYPE,                                              \
-                         Q_QAS_ ## NAME::innerFunction,                     \
-                         Q_QAS_ ## NAME::guard> NAME;                       \
-    QT_WARNING_POP
+    namespace { struct Q_QAS_ ## NAME {                                     \
+        typedef TYPE QAS_Type;                                              \
+        static void innerFunction(void *pointer)                            \
+            noexcept(noexcept(std::remove_cv_t<QAS_Type> ARGS))             \
+        {                                                                   \
+            new (pointer) QAS_Type ARGS;                                    \
+        }                                                                   \
+    }; }                                                                    \
+    static QGlobalStatic<QtGlobalStatic::ApplicationHolder<Q_QAS_ ## NAME>> NAME;\
+    /**/
 
 #define Q_APPLICATION_STATIC(TYPE, NAME) \
     Q_APPLICATION_STATIC_WITH_ARGS(TYPE, NAME, ())

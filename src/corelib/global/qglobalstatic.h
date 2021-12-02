@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 Intel Corporation.
+** Copyright (C) 2021 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -44,6 +44,7 @@
 
 #include <QtCore/qatomic.h>
 
+#include <atomic>           // for bootstrapped (no thread) builds
 #include <type_traits>
 
 QT_BEGIN_NAMESPACE
@@ -55,92 +56,92 @@ enum GuardValues {
     Uninitialized = 0,
     Initializing = 1
 };
-}
 
-#define Q_GLOBAL_STATIC_INTERNAL_HOLDER(ARGS)                               \
-    struct HolderBase                                                       \
-    {                                                                       \
-        HolderBase() = default;                                             \
-        ~HolderBase() noexcept                                              \
-        {                                                                   \
-            if (guard.loadRelaxed() == QtGlobalStatic::Initialized)         \
-                guard.storeRelaxed(QtGlobalStatic::Destroyed);              \
-        }                                                                   \
-        Q_DISABLE_COPY_MOVE(HolderBase)                                     \
-    };                                                                      \
-    struct Holder : public HolderBase                                       \
-    {                                                                       \
-        Type value;                                                         \
-        Holder() noexcept(noexcept(typename std::remove_cv<Type>::type ARGS)) \
-            : value ARGS                                                    \
-        {                                                                   \
-            guard.storeRelaxed(QtGlobalStatic::Initialized);                \
-        }                                                                   \
-    };
+template <typename QGS> struct Holder
+{
+    using Type = typename QGS::QGS_Type;
+    using PlainType = std::remove_cv_t<Type>;
 
-#if defined(Q_OS_UNIX) && defined(Q_CC_INTEL)
-// Work around Intel issue ID 6000058488:
-// local statics inside an inline function inside an anonymous namespace are global
-// symbols (this affects the IA-64 C++ ABI, so OS X and Linux only)
-#  define Q_GLOBAL_STATIC_INTERNAL_DECORATION Q_DECL_HIDDEN
-#else
-#  define Q_GLOBAL_STATIC_INTERNAL_DECORATION Q_DECL_HIDDEN inline
-#endif
+    static constexpr bool ConstructionIsNoexcept = noexcept(QGS::innerFunction(nullptr));
+    std::aligned_union_t<1, PlainType> storage;
+    static inline QBasicAtomicInteger<qint8> guard = { QtGlobalStatic::Uninitialized };
 
-#define Q_GLOBAL_STATIC_INTERNAL(ARGS)                          \
-    Q_GLOBAL_STATIC_INTERNAL_DECORATION Type *innerFunction()   \
-    {                                                           \
-        Q_GLOBAL_STATIC_INTERNAL_HOLDER(ARGS)                   \
-        static Holder holder;                                   \
-        return &holder.value;                                   \
+    Holder() noexcept(ConstructionIsNoexcept)
+    {
+        QGS::innerFunction(pointer());
+        guard.storeRelaxed(QtGlobalStatic::Initialized);
     }
 
-// this class must be POD, unless the compiler supports thread-safe statics
-template <typename T, T *(&innerFunction)(), QBasicAtomicInt &guard>
-struct QGlobalStatic
-{
-    typedef T Type;
+    ~Holder()
+    {
+        guard.storeRelaxed(QtGlobalStatic::Destroyed);
+        std::atomic_thread_fence(std::memory_order_acquire); // avoid mixing stores to guard and *pointer()
+        pointer()->~PlainType();
+    }
 
-    bool isDestroyed() const { return guard.loadRelaxed() <= QtGlobalStatic::Destroyed; }
-    bool exists() const { return guard.loadRelaxed() == QtGlobalStatic::Initialized; }
+    PlainType *pointer() noexcept
+    {
+        return reinterpret_cast<PlainType *>(&storage);
+    }
+
+    Q_DISABLE_COPY_MOVE(Holder)
+};
+}
+
+template <typename Holder> struct QGlobalStatic
+{
+    using Type = typename Holder::Type;
+
+    bool isDestroyed() const { return guardValue() <= QtGlobalStatic::Destroyed; }
+    bool exists() const { return guardValue() == QtGlobalStatic::Initialized; }
     operator Type *()
     {
         if (isDestroyed())
             return nullptr;
-        return innerFunction();
+        return instance();
     }
     Type *operator()()
     {
         if (isDestroyed())
             return nullptr;
-        return innerFunction();
+        return instance();
     }
     Type *operator->()
     {
         Q_ASSERT_X(!isDestroyed(), "Q_GLOBAL_STATIC",
                    "The global static was used after being destroyed");
-        return innerFunction();
+        return instance();
     }
     Type &operator*()
     {
         Q_ASSERT_X(!isDestroyed(), "Q_GLOBAL_STATIC",
                    "The global static was used after being destroyed");
-        return *innerFunction();
+        return *instance();
+    }
+
+protected:
+    static Type *instance() noexcept(Holder::ConstructionIsNoexcept)
+    {
+        static Holder holder;
+        return holder.pointer();
+    }
+    static QtGlobalStatic::GuardValues guardValue()
+    {
+        return QtGlobalStatic::GuardValues(Holder::guard.loadAcquire());
     }
 };
 
 #define Q_GLOBAL_STATIC_WITH_ARGS(TYPE, NAME, ARGS)                         \
-    QT_WARNING_PUSH                                                         \
-    QT_WARNING_DISABLE_CLANG("-Wunevaluated-expression")                    \
-    namespace { namespace Q_QGS_ ## NAME {                                  \
-        typedef TYPE Type;                                                  \
-        QBasicAtomicInt guard = Q_BASIC_ATOMIC_INITIALIZER(QtGlobalStatic::Uninitialized); \
-        Q_GLOBAL_STATIC_INTERNAL(ARGS)                                      \
-    } }                                                                     \
-    static QGlobalStatic<TYPE,                                              \
-                         Q_QGS_ ## NAME::innerFunction,                     \
-                         Q_QGS_ ## NAME::guard> NAME;                       \
-    QT_WARNING_POP
+    namespace { struct Q_QGS_ ## NAME {                                     \
+        typedef TYPE QGS_Type;                                              \
+        static void innerFunction(void *pointer)                            \
+            noexcept(noexcept(std::remove_cv_t<QGS_Type> ARGS))             \
+        {                                                                   \
+            new (pointer) QGS_Type ARGS;                                    \
+        }                                                                   \
+    }; }                                                                    \
+    static QGlobalStatic<QtGlobalStatic::Holder<Q_QGS_ ## NAME>> NAME;      \
+    /**/
 
 #define Q_GLOBAL_STATIC(TYPE, NAME)                                         \
     Q_GLOBAL_STATIC_WITH_ARGS(TYPE, NAME, ())
