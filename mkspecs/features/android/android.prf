@@ -42,11 +42,13 @@ build_pass|if(single_android_abi:!single_arch) {
                 INSTALLS *= target
             }
         }
-    } else: contains(TEMPLATE, "lib"):!static:!QTDIR_build:android_install {
+    } else: contains(TEMPLATE, "lib"):!QTDIR_build:android_install {
         tmpvar = $$str_member($$TARGET, -$$str_size($${QT_ARCH}), -1)
         !equals(tmpvar, $${QT_ARCH}): TARGET = $${TARGET}_$${QT_ARCH}
-        target.path = /libs/$$ANDROID_TARGET_ARCH/
-        INSTALLS *= target
+        !static {
+            target.path = /libs/$$ANDROID_TARGET_ARCH/
+            INSTALLS *= target
+        }
     }
 } else {
     android-build-distclean.commands = \
