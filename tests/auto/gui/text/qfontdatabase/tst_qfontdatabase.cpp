@@ -82,6 +82,10 @@ private slots:
     void registerOpenTypePreferredNamesSystem();
     void registerOpenTypePreferredNamesApplication();
 
+#ifdef Q_OS_WIN
+    void findCourier();
+#endif
+
 private:
     QString m_ledFont;
     QString m_testFont;
@@ -475,6 +479,33 @@ void tst_QFontDatabase::registerOpenTypePreferredNamesApplication()
 
     QFontDatabase::removeApplicationFont(id);
 }
+
+#ifdef Q_OS_WIN
+void tst_QFontDatabase::findCourier()
+{
+    QFont font = QFontDatabase::font(u"Courier"_qs, u""_qs, 16);
+    QFontInfo info(font);
+    QCOMPARE(info.family(), u"Courier New"_qs);
+    QCOMPARE(info.pointSize(), 16);
+
+    font = QFontDatabase::font("Courier", "", 64);
+    info = font;
+    QCOMPARE(info.family(), u"Courier New"_qs);
+    QCOMPARE(info.pointSize(), 64);
+
+    // By setting "PreferBitmap" we should get Courier itself.
+    font.setStyleStrategy(QFont::PreferBitmap);
+    info = font;
+    QCOMPARE(info.family(), u"Courier"_qs);
+    // Which has an upper bound on point size
+    QCOMPARE(info.pointSize(), 19);
+
+    font.setStyleStrategy(QFont::PreferDefault);
+    info = font;
+    QCOMPARE(info.family(), u"Courier New"_qs);
+    QCOMPARE(info.pointSize(), 64);
+}
+#endif
 
 QTEST_MAIN(tst_QFontDatabase)
 #include "tst_qfontdatabase.moc"
