@@ -65,6 +65,7 @@ using namespace QNativeInterface::Private;
     Accessed through QOpenGLContext::nativeInterface().
 
     \inmodule QtGui
+    \inheaderfile QOpenGLContext
     \ingroup native-interfaces
     \ingroup native-interfaces-qopenglcontext
 */
@@ -122,6 +123,7 @@ QOpenGLContext *QNativeInterface::QGLXContext::fromNative(GLXContext visualBased
     Accessed through QOpenGLContext::nativeInterface().
 
     \inmodule QtGui
+    \inheaderfile QOpenGLContext
     \ingroup native-interfaces
     \ingroup native-interfaces-qopenglcontext
 */
@@ -199,6 +201,7 @@ QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QXcbWindow);
     Accessed through QGuiApplication::nativeInterface().
 
     \inmodule QtGui
+    \inheaderfile QGuiApplication
     \ingroup native-interfaces
     \ingroup native-interfaces-qguiapplication
 */
