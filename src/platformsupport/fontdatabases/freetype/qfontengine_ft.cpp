@@ -756,7 +756,8 @@ bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format,
         }
         // underline metrics
         line_thickness =  QFixed::fromFixed(FT_MulFix(face->underline_thickness, face->size->metrics.y_scale));
-        underline_position = QFixed::fromFixed(-FT_MulFix(face->underline_position, face->size->metrics.y_scale));
+        QFixed center_position = QFixed::fromFixed(-FT_MulFix(face->underline_position, face->size->metrics.y_scale));
+        underline_position = center_position - line_thickness / 2;
     } else {
         // ad hoc algorithm
         int score = fontDef.weight * fontDef.pixelSize;
