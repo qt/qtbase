@@ -187,12 +187,6 @@ Q_DECLARE_TYPEINFO_BODY(QFlags<T>, Q_PRIMITIVE_TYPE);
    where 'type' is the name of the type to specialize.  NOTE: shared
    types must define a member-swap, and be defined in the same
    namespace as Qt for this to work.
-
-   If the type was already released without Q_DECLARE_SHARED applied,
-   _and_ without an explicit Q_DECLARE_TYPEINFO(type, Q_RELOCATABLE_TYPE),
-   then use Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(type) to mark the
-   type shared (incl. swap()), without marking it movable (which
-   would change the memory layout of QList, a BiC change.
 */
 
 #define Q_DECLARE_SHARED_IMPL(TYPE, FLAGS) \
@@ -201,8 +195,6 @@ inline void swap(TYPE &value1, TYPE &value2) \
     noexcept(noexcept(value1.swap(value2))) \
 { value1.swap(value2); }
 #define Q_DECLARE_SHARED(TYPE) Q_DECLARE_SHARED_IMPL(TYPE, Q_RELOCATABLE_TYPE)
-#define Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(TYPE) \
-                               Q_DECLARE_SHARED_IMPL(TYPE, Q_RELOCATABLE_TYPE)
 
 namespace QTypeTraits
 {
