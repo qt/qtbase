@@ -121,9 +121,9 @@ void QTapTestLogger::addIncident(IncidentTypes type, const char *description,
         // to emit a single test point for it, so skip the this pass.
         return;
     }
-
-    bool ok = type == Pass || type == BlacklistedPass || type == Skip
-        || type == XPass || type == BlacklistedXPass;
+    m_wasExpectedFail = type == XFail || type == BlacklistedXFail;
+    const bool ok = type == Pass || type == BlacklistedPass || type == Skip
+                    || type == XPass || type == BlacklistedXPass;
 
     const char *const incident = [type]() {
         switch (type) {
@@ -150,15 +150,15 @@ void QTapTestLogger::addIncident(IncidentTypes type, const char *description,
     }
 
     int testNumber = QTestLog::totalCount();
-    if (type == XFail || type == BlacklistedXFail) {
-        // The global test counter hasn't been updated yet for XFail
+    // That counts Pass, Fail, Skip and blacklisted; the XFail will eventually
+    // be added to it as a Pass, but that hasn't heppened yet, so count it now:
+    if (m_wasExpectedFail)
         testNumber += 1;
-    }
 
     outputTestLine(ok, testNumber, directive);
 
     if (!ok) {
-        // All failures need a diagnostics sections to not confuse consumers
+        // All failures need a diagnostics section to not confuse consumers
 
         // The indent needs to be two spaces for maximum compatibility
         #define YAML_INDENT "  "
@@ -250,8 +250,6 @@ void QTapTestLogger::addIncident(IncidentTypes type, const char *description,
 
         outputString(YAML_INDENT "...\n");
     }
-
-    m_wasExpectedFail = (type == XFail || type == BlacklistedXFail);
 }
 
 void QTapTestLogger::addMessage(MessageTypes type, const QString &message,
