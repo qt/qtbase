@@ -317,9 +317,8 @@ void QSizePolicy::setControlType(ControlType type) noexcept
 */
 
 /*!
-    \fn size_t qHash(QSizePolicy key, size_t seed = 0)
+    \fn size_t QSizePolicy::qHash(QSizePolicy key, size_t seed = 0)
     \since 5.6
-    \relates QSizePolicy
 
     Returns the hash value for \a key, using
     \a seed to seed the calculation.
