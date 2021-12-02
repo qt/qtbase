@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 project(styleplugin LANGUAGES CXX)
 
-find_package(Qt6 COMPONENTS Widgets)
+find_package(Qt6 REQUIRED COMPONENTS Widgets)
 
 set(CMAKE_AUTOMOC ON)
 

@@ -15,11 +15,7 @@ endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/qtconcurrent/imagescaling")
 
-find_package(Qt6 COMPONENTS Core)
-find_package(Qt6 COMPONENTS Gui)
-find_package(Qt6 COMPONENTS Concurrent)
-find_package(Qt6 COMPONENTS Widgets)
-find_package(Qt6 COMPONENTS Network)
+find_package(Qt6 REQUIRED COMPONENTS Concurrent Core Gui Network Widgets)
 
 qt_add_executable(imagescaling
     downloaddialog.cpp downloaddialog.h downloaddialog.ui

@@ -15,8 +15,7 @@ endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/qpa/qrasterwindow")
 
-find_package(Qt6 COMPONENTS Core)
-find_package(Qt6 COMPONENTS Gui)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui)
 
 qt_add_executable(qrasterwindow
     main.cpp

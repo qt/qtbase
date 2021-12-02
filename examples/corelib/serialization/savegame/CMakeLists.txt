@@ -15,7 +15,7 @@ endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/corelib/serialization/savegame")
 
-find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
 
 qt_add_executable(savegame
     character.cpp character.h

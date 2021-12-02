@@ -15,7 +15,7 @@ endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/xml/xmlstreamlint")
 
-find_package(Qt6 COMPONENTS Core Xml) # special case
+find_package(Qt6 REQUIRED COMPONENTS Core Xml)
 
 qt_add_executable(xmlstreamlint
     main.cpp

@@ -16,9 +16,7 @@ endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/gui/gui_analogclock") # special case
 
-find_package(Qt6 COMPONENTS Core)
-find_package(Qt6 COMPONENTS Gui)
-find_package(Qt6 COMPONENTS Widgets) # special case: add
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets)
 
 qt_add_executable(gui_analogclock # special case: renamed target
     ../rasterwindow/rasterwindow.cpp ../rasterwindow/rasterwindow.h

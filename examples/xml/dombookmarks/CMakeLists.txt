@@ -15,10 +15,7 @@ endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/xml/dombookmarks")
 
-find_package(Qt6 COMPONENTS Core)
-find_package(Qt6 COMPONENTS Gui)
-find_package(Qt6 COMPONENTS Xml)
-find_package(Qt6 COMPONENTS Widgets)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets Xml)
 
 qt_add_executable(dombookmarks
     main.cpp

@@ -15,10 +15,7 @@ endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/qtestlib/tutorial4")
 
-find_package(Qt6 COMPONENTS Core)
-find_package(Qt6 COMPONENTS Gui)
-find_package(Qt6 COMPONENTS Widgets)
-find_package(Qt6 COMPONENTS Test)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Test Widgets)
 
 qt_add_executable(tutorial4
     testgui.cpp

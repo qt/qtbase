@@ -11,7 +11,7 @@ if(NOT DEFINED INSTALL_EXAMPLESDIR)
   set(INSTALL_EXAMPLESDIR "examples")
 endif()
 
-find_package(Qt6 COMPONENTS Widgets REQUIRED)
+find_package(Qt6 REQUIRED COMPONENTS Widgets)
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/corelib/platform/androidnotifier")
 

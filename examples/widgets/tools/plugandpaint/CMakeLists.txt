@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 project(plugandpaint LANGUAGES CXX)
 
-find_package(Qt6 COMPONENTS Core Gui Widgets)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)

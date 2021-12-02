@@ -15,9 +15,7 @@ endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/qtconcurrent/map")
 
-find_package(Qt6 COMPONENTS Core)
-find_package(Qt6 COMPONENTS Gui)
-find_package(Qt6 COMPONENTS Concurrent)
+find_package(Qt6 REQUIRED COMPONENTS Concurrent Core Gui)
 
 qt_add_executable(mapdemo
     main.cpp

@@ -15,8 +15,7 @@ endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/network/downloadmanager")
 
-find_package(Qt6 COMPONENTS Core)
-find_package(Qt6 COMPONENTS Network)
+find_package(Qt6 REQUIRED COMPONENTS Core Network)
 
 qt_add_executable(downloadmanager
     downloadmanager.cpp downloadmanager.h

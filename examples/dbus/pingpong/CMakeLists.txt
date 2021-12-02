@@ -13,7 +13,7 @@ endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/dbus/pingpong")
 
-find_package(Qt6 COMPONENTS Core DBus)
+find_package(Qt6 REQUIRED COMPONENTS Core DBus)
 
 qt_add_executable(ping
     ping.cpp

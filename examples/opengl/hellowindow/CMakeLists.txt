@@ -15,9 +15,7 @@ endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/opengl/hellowindow")
 
-find_package(Qt6 COMPONENTS Core)
-find_package(Qt6 COMPONENTS Gui)
-find_package(Qt6 COMPONENTS OpenGL)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui OpenGL)
 
 qt_add_executable(hellowindow
     hellowindow.cpp hellowindow.h

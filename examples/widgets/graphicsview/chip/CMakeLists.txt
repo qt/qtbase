@@ -15,11 +15,10 @@ endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/widgets/graphicsview/chip")
 
-find_package(Qt6 COMPONENTS Core)
-find_package(Qt6 COMPONENTS Gui)
-find_package(Qt6 COMPONENTS Widgets)
-find_package(Qt6 COMPONENTS OpenGL) # special case
-find_package(Qt6 COMPONENTS PrintSupport) # special case
+find_package(Qt6
+    REQUIRED COMPONENTS Core Gui OpenGL Widgets
+    OPTIONAL_COMPONENTS PrintSupport
+)
 
 qt_add_executable(chip
     chip.cpp chip.h

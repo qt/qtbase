@@ -15,11 +15,7 @@ endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/xml/rsslisting")
 
-find_package(Qt6 COMPONENTS Core)
-find_package(Qt6 COMPONENTS Gui)
-find_package(Qt6 COMPONENTS Network)
-find_package(Qt6 COMPONENTS Xml)
-find_package(Qt6 COMPONENTS Widgets)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Network Widgets Xml)
 
 qt_add_executable(rsslisting
     main.cpp

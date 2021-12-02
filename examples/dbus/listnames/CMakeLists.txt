@@ -15,8 +15,7 @@ endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/dbus/listnames")
 
-find_package(Qt6 COMPONENTS Core)
-find_package(Qt6 COMPONENTS DBus)
+find_package(Qt6 REQUIRED COMPONENTS Core DBus)
 
 qt_add_executable(listnames
     listnames.cpp

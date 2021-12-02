@@ -15,7 +15,7 @@ endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/corelib/serialization/convert")
 
-find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
 
 qt_add_executable(convert
     cborconverter.cpp cborconverter.h

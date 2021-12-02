@@ -15,10 +15,7 @@ endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/widgets/dialogs/licensewizard")
 
-find_package(Qt6 COMPONENTS Core)
-find_package(Qt6 COMPONENTS Gui)
-find_package(Qt6 COMPONENTS Widgets)
-find_package(Qt6 COMPONENTS PrintSupport)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui PrintSupport Widgets)
 
 qt_add_executable(licensewizard
     licensewizard.cpp licensewizard.h

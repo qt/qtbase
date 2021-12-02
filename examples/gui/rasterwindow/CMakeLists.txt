@@ -15,8 +15,7 @@ endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/gui/rasterwindow")
 
-find_package(Qt6 COMPONENTS Core)
-find_package(Qt6 COMPONENTS Gui)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui)
 
 qt_add_executable(rasterwindow
     main.cpp

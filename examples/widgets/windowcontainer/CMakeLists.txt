@@ -15,10 +15,7 @@ endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/widgets/windowcontainer")
 
-find_package(Qt6 COMPONENTS Core)
-find_package(Qt6 COMPONENTS Gui)
-find_package(Qt6 COMPONENTS Widgets)
-find_package(Qt6 COMPONENTS OpenGL)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui OpenGL Widgets)
 
 qt_add_executable(windowcontainer
     ../../opengl/openglwindow/openglwindow.cpp ../../opengl/openglwindow/openglwindow.h
