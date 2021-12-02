@@ -803,6 +803,16 @@ QMouseEvent::~QMouseEvent()
 
     \sa Qt::MouseEventSource
     \sa QGraphicsSceneMouseEvent::source()
+
+    \note In Qt 5-based code, source() was often used to attempt to distinguish
+    mouse events from an actual mouse vs. those that were synthesized because
+    some legacy QQuickItem or QWidget subclass did not react to a QTouchEvent.
+    However, you could not tell whether it was synthesized from a QTouchEvent
+    or a QTabletEvent, and other information was lost. pointingDevice()
+    tells you the specific device that it came from, so you might check
+    \c {pointingDevice()->type()} or \c {pointingDevice()->capabilities()} to
+    decide how to react to this event. But it's even better to react to the
+    original event rather than handling only mouse events.
 */
 #if QT_DEPRECATED_SINCE(6, 0)
 Qt::MouseEventSource QMouseEvent::source() const
