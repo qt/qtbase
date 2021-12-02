@@ -696,16 +696,6 @@ LOGFONT QWindowsFontDatabaseBase::fontDefToLOGFONT(const QFontDef &request, cons
         fam.truncate(LF_FACESIZE - 1);
     }
 
-    if (fam.isEmpty())
-        fam = QStringLiteral("MS Sans Serif");
-
-    if (fam == QLatin1String("MS Sans Serif")
-        && (request.style == QFont::StyleItalic || (-lf.lfHeight > 18 && -lf.lfHeight != 24))) {
-        fam = QStringLiteral("Arial"); // MS Sans Serif has bearing problems in italic, and does not scale
-    }
-    if (fam == QLatin1String("Courier") && !(request.styleStrategy & QFont::PreferBitmap))
-        fam = QStringLiteral("Courier New");
-
     memcpy(lf.lfFaceName, fam.utf16(), fam.size() * sizeof(wchar_t));
 
     return lf;
@@ -945,6 +935,25 @@ QStringList QWindowsFontDatabaseBase::extraTryFontsForFamily(const QString &fami
     result.append(QStringLiteral("Segoe UI Emoji"));
     result.append(QStringLiteral("Segoe UI Symbol"));
     return result;
+}
+
+QFontDef QWindowsFontDatabaseBase::sanitizeRequest(QFontDef request) const
+{
+    QFontDef req = request;
+    const QString fam = request.families.front();
+    if (fam.isEmpty())
+        req.families[0] = QStringLiteral("MS Sans Serif");
+
+    if (fam == QLatin1String("MS Sans Serif")) {
+        int height = -qRound(request.pixelSize);
+        // MS Sans Serif has bearing problems in italic, and does not scale
+        if (request.style == QFont::StyleItalic || (height > 18 && height != 24))
+            req.families[0] = QStringLiteral("Arial");
+    }
+
+    if (!(request.styleStrategy & QFont::StyleStrategy::PreferBitmap) && fam == u"Courier")
+        req.families[0] = QStringLiteral("Courier New");
+    return req;
 }
 
 QT_END_NAMESPACE

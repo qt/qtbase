@@ -62,6 +62,10 @@
 
 #include <qtgui_tracepoints_p.h>
 
+#ifdef Q_OS_WIN
+#include <QtGui/private/qwindowsfontdatabasebase_p.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcFontDb, "qt.text.font.db")
@@ -2350,7 +2354,7 @@ bool QFontDatabase::removeAllApplicationFonts()
 /*!
     \internal
 */
-QFontEngine *QFontDatabasePrivate::findFont(const QFontDef &request,
+QFontEngine *QFontDatabasePrivate::findFont(const QFontDef &req,
                                             int script,
                                             bool preferScriptOverFamily)
 {
@@ -2360,6 +2364,14 @@ QFontEngine *QFontDatabasePrivate::findFont(const QFontDef &request,
         initializeDb();
 
     QFontEngine *engine;
+
+#ifdef Q_OS_WIN
+    const QFontDef request = static_cast<QWindowsFontDatabaseBase *>(
+                                     QGuiApplicationPrivate::platformIntegration()->fontDatabase())
+                                     ->sanitizeRequest(req);
+#else
+    const QFontDef &request = req;
+#endif
 
 #if defined(QT_BUILD_INTERNAL)
     // For testing purpose only, emulates an exact-matching monospace font

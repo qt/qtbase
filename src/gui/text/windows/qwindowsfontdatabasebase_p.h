@@ -122,6 +122,8 @@ public:
         QByteArray m_fontData;
     };
 
+    QFontDef sanitizeRequest(QFontDef request) const;
+
 protected:
 
 #if QT_CONFIG(directwrite)
