@@ -93,6 +93,8 @@ private:
 
     QHash<QPlatformTheme::Font, QFont *> m_themeFonts;
     QHash<QString, QList<QCFType<CTFontDescriptorRef>>> m_systemFontDescriptors;
+    QHash<QChar::Script, QString> m_hardcodedFallbackFonts;
+    mutable QSet<QString> m_privateFamilies;
 
     bool m_hasPopulatedAliases;
 };

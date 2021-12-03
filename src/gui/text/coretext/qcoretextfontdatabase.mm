@@ -114,6 +114,12 @@ QCoreTextFontDatabase::~QCoreTextFontDatabase()
     qDeleteAll(m_themeFonts);
 }
 
+CTFontDescriptorRef descriptorForFamily(const QString &familyName)
+{
+    return CTFontDescriptorCreateWithAttributes(CFDictionaryRef(@{
+        (id)kCTFontFamilyNameAttribute: familyName.toNSString()
+    }));
+}
 void QCoreTextFontDatabase::populateFontDatabase()
 {
     qCDebug(lcQpaFonts) << "Populating font database...";
@@ -124,6 +130,110 @@ void QCoreTextFontDatabase::populateFontDatabase()
     QCFType<CFArrayRef> familyNames = CTFontManagerCopyAvailableFontFamilyNames();
     for (NSString *familyName in familyNames.as<const NSArray *>())
         QPlatformFontDatabase::registerFontFamily(QString::fromNSString(familyName));
+
+    // Some fonts has special handling since macOS Catalina: It is available
+    // on the platform, so that it may be used by applications directly, but does not
+    // get enumerated. Since there are no alternatives, we hardcode it.
+    if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSCatalina
+            && !qEnvironmentVariableIsSet("QT_NO_HARDCODED_FALLBACK_FONTS")) {
+        m_hardcodedFallbackFonts[QChar::Script_Adlam] = QStringLiteral("Noto Sans Adlam");
+        m_hardcodedFallbackFonts[QChar::Script_Ahom] = QStringLiteral("Noto Serif Ahom");
+        m_hardcodedFallbackFonts[QChar::Script_Avestan] = QStringLiteral("Noto Sans Avestan");
+        m_hardcodedFallbackFonts[QChar::Script_Balinese] = QStringLiteral("Noto Serif Balinese");
+        m_hardcodedFallbackFonts[QChar::Script_Bamum] = QStringLiteral("Noto Sans Bamum");
+        m_hardcodedFallbackFonts[QChar::Script_BassaVah] = QStringLiteral("Noto Sans Bassa Vah");
+        m_hardcodedFallbackFonts[QChar::Script_Batak] = QStringLiteral("Noto Sans Batak");
+        m_hardcodedFallbackFonts[QChar::Script_Bhaiksuki] = QStringLiteral("Noto Sans Bhaiksuki");
+        m_hardcodedFallbackFonts[QChar::Script_Brahmi] = QStringLiteral("Noto Sans Brahmi");
+        m_hardcodedFallbackFonts[QChar::Script_Buginese] = QStringLiteral("Noto Sans Buginese");
+        m_hardcodedFallbackFonts[QChar::Script_Buhid] = QStringLiteral("Noto Sans Buhid");
+        m_hardcodedFallbackFonts[QChar::Script_Carian] = QStringLiteral("Noto Sans Carian");
+        m_hardcodedFallbackFonts[QChar::Script_CaucasianAlbanian] = QStringLiteral("Noto Sans Caucasian Albanian");
+        m_hardcodedFallbackFonts[QChar::Script_Chakma] = QStringLiteral("Noto Sans Chakma");
+        m_hardcodedFallbackFonts[QChar::Script_Cham] = QStringLiteral("Noto Sans Cham");
+        m_hardcodedFallbackFonts[QChar::Script_Coptic] = QStringLiteral("Noto Sans Coptic");
+        m_hardcodedFallbackFonts[QChar::Script_Cuneiform] = QStringLiteral("Noto Sans Cuneiform");
+        m_hardcodedFallbackFonts[QChar::Script_Cypriot] = QStringLiteral("Noto Sans Cypriot");
+        m_hardcodedFallbackFonts[QChar::Script_Duployan] = QStringLiteral("Noto Sans Duployan");
+        m_hardcodedFallbackFonts[QChar::Script_EgyptianHieroglyphs] = QStringLiteral("Noto Sans Egyptian Hieroglyphs");
+        m_hardcodedFallbackFonts[QChar::Script_Elbasan] = QStringLiteral("Noto Sans Elbasan");
+        m_hardcodedFallbackFonts[QChar::Script_Glagolitic] = QStringLiteral("Noto Sans Glagolitic");
+        m_hardcodedFallbackFonts[QChar::Script_Gothic] = QStringLiteral("Noto Sans Gothic");
+        m_hardcodedFallbackFonts[QChar::Script_HanifiRohingya] = QStringLiteral("Noto Sans Hanifi Rohingya");
+        m_hardcodedFallbackFonts[QChar::Script_Hanunoo] = QStringLiteral("Noto Sans Hanunoo");
+        m_hardcodedFallbackFonts[QChar::Script_Hatran] = QStringLiteral("Noto Sans Hatran");
+        m_hardcodedFallbackFonts[QChar::Script_ImperialAramaic] = QStringLiteral("Noto Sans Imperial Aramaic");
+        m_hardcodedFallbackFonts[QChar::Script_InscriptionalPahlavi] = QStringLiteral("Noto Sans Inscriptional Pahlavi");
+        m_hardcodedFallbackFonts[QChar::Script_InscriptionalParthian] = QStringLiteral("Noto Sans Inscriptional Parthian");
+        m_hardcodedFallbackFonts[QChar::Script_Javanese] = QStringLiteral("Noto Sans Javanese");
+        m_hardcodedFallbackFonts[QChar::Script_Kaithi] = QStringLiteral("Noto Sans Kaithi");
+        m_hardcodedFallbackFonts[QChar::Script_KayahLi] = QStringLiteral("Noto Sans Kayah Li");
+        m_hardcodedFallbackFonts[QChar::Script_Kharoshthi] = QStringLiteral("Noto Sans Kharoshthi");
+        m_hardcodedFallbackFonts[QChar::Script_Khojki] = QStringLiteral("Noto Sans Khojki");
+        m_hardcodedFallbackFonts[QChar::Script_Khudawadi] = QStringLiteral("Noto Sans Khudawadi");
+        m_hardcodedFallbackFonts[QChar::Script_Lepcha] = QStringLiteral("Noto Sans Lepcha");
+        m_hardcodedFallbackFonts[QChar::Script_Limbu] = QStringLiteral("Noto Sans Limbu");
+        m_hardcodedFallbackFonts[QChar::Script_LinearA] = QStringLiteral("Noto Sans Linear A");
+        m_hardcodedFallbackFonts[QChar::Script_LinearB] = QStringLiteral("Noto Sans Linear B");
+        m_hardcodedFallbackFonts[QChar::Script_Lisu] = QStringLiteral("Noto Sans Lisu");
+        m_hardcodedFallbackFonts[QChar::Script_Lycian] = QStringLiteral("Noto Sans Lycian");
+        m_hardcodedFallbackFonts[QChar::Script_Lydian] = QStringLiteral("Noto Sans Lydian");
+        m_hardcodedFallbackFonts[QChar::Script_Mahajani] = QStringLiteral("Noto Sans Mahajani");
+        m_hardcodedFallbackFonts[QChar::Script_Mandaic] = QStringLiteral("Noto Sans Mandaic");
+        m_hardcodedFallbackFonts[QChar::Script_Manichaean] = QStringLiteral("Noto Sans Manichaean");
+        m_hardcodedFallbackFonts[QChar::Script_Marchen] = QStringLiteral("Noto Sans Marchen");
+        m_hardcodedFallbackFonts[QChar::Script_MendeKikakui] = QStringLiteral("Noto Sans Mende Kikakui");
+        m_hardcodedFallbackFonts[QChar::Script_MeroiticCursive] = QStringLiteral("Noto Sans Meroitic");
+        m_hardcodedFallbackFonts[QChar::Script_MeroiticHieroglyphs] = QStringLiteral("Noto Sans Meroitic");
+        m_hardcodedFallbackFonts[QChar::Script_Miao] = QStringLiteral("Noto Sans Miao");
+        m_hardcodedFallbackFonts[QChar::Script_Modi] = QStringLiteral("Noto Sans Modi");
+        m_hardcodedFallbackFonts[QChar::Script_Mongolian] = QStringLiteral("Noto Sans Mongolian");
+        m_hardcodedFallbackFonts[QChar::Script_Mro] = QStringLiteral("Noto Sans Mro");
+        m_hardcodedFallbackFonts[QChar::Script_MeeteiMayek] = QStringLiteral("Noto Sans Meetei Mayek");
+        m_hardcodedFallbackFonts[QChar::Script_Multani] = QStringLiteral("Noto Sans Multani");
+        m_hardcodedFallbackFonts[QChar::Script_Nabataean] = QStringLiteral("Noto Sans Nabataean");
+        m_hardcodedFallbackFonts[QChar::Script_Newa] = QStringLiteral("Noto Sans Newa");
+        m_hardcodedFallbackFonts[QChar::Script_NewTaiLue] = QStringLiteral("Noto Sans New Tai Lue");
+        m_hardcodedFallbackFonts[QChar::Script_Nko] = QStringLiteral("Noto Sans Nko");
+        m_hardcodedFallbackFonts[QChar::Script_OlChiki] = QStringLiteral("Noto Sans Ol Chiki");
+        m_hardcodedFallbackFonts[QChar::Script_OldHungarian] = QStringLiteral("Noto Sans Old Hungarian");
+        m_hardcodedFallbackFonts[QChar::Script_OldItalic] = QStringLiteral("Noto Sans Old Italic");
+        m_hardcodedFallbackFonts[QChar::Script_OldNorthArabian] = QStringLiteral("Noto Sans Old North Arabian");
+        m_hardcodedFallbackFonts[QChar::Script_OldPermic] = QStringLiteral("Noto Sans Old Permic");
+        m_hardcodedFallbackFonts[QChar::Script_OldPersian] = QStringLiteral("Noto Sans Old Persian");
+        m_hardcodedFallbackFonts[QChar::Script_OldSouthArabian] = QStringLiteral("Noto Sans Old South Arabian");
+        m_hardcodedFallbackFonts[QChar::Script_OldTurkic] = QStringLiteral("Noto Sans Old Turkic");
+        m_hardcodedFallbackFonts[QChar::Script_Osage] = QStringLiteral("Noto Sans Osage");
+        m_hardcodedFallbackFonts[QChar::Script_Osmanya] = QStringLiteral("Noto Sans Osmanya");
+        m_hardcodedFallbackFonts[QChar::Script_PahawhHmong] = QStringLiteral("Noto Sans Pahawh Hmong");
+        m_hardcodedFallbackFonts[QChar::Script_Palmyrene] = QStringLiteral("Noto Sans Palmyrene");
+        m_hardcodedFallbackFonts[QChar::Script_PauCinHau] = QStringLiteral("Noto Sans Pau Cin Hau");
+        m_hardcodedFallbackFonts[QChar::Script_PhagsPa] = QStringLiteral("Noto Sans PhagsPa");
+        m_hardcodedFallbackFonts[QChar::Script_Phoenician] = QStringLiteral("Noto Sans Phoenician");
+        m_hardcodedFallbackFonts[QChar::Script_PsalterPahlavi] = QStringLiteral("Noto Sans Psalter Pahlavi");
+        m_hardcodedFallbackFonts[QChar::Script_Rejang] = QStringLiteral("Noto Sans Rejang");
+        m_hardcodedFallbackFonts[QChar::Script_Samaritan] = QStringLiteral("Noto Sans Samaritan");
+        m_hardcodedFallbackFonts[QChar::Script_Saurashtra] = QStringLiteral("Noto Sans Saurashtra");
+        m_hardcodedFallbackFonts[QChar::Script_Sharada] = QStringLiteral("Noto Sans Sharada");
+        m_hardcodedFallbackFonts[QChar::Script_Siddham] = QStringLiteral("Noto Sans Siddham");
+        m_hardcodedFallbackFonts[QChar::Script_SoraSompeng] = QStringLiteral("Noto Sans Sora Sompeng");
+        m_hardcodedFallbackFonts[QChar::Script_Sundanese] = QStringLiteral("Noto Sans Sundanese");
+        m_hardcodedFallbackFonts[QChar::Script_SylotiNagri] = QStringLiteral("Noto Sans Syloti Nagri");
+        m_hardcodedFallbackFonts[QChar::Script_Tagalog] = QStringLiteral("Noto Sans Tagalog");
+        m_hardcodedFallbackFonts[QChar::Script_Tagbanwa] = QStringLiteral("Noto Sans Tagbanwa");
+        m_hardcodedFallbackFonts[QChar::Script_Takri] = QStringLiteral("Noto Sans Takri");
+        m_hardcodedFallbackFonts[QChar::Script_TaiLe] = QStringLiteral("Noto Sans Tai Le");
+        m_hardcodedFallbackFonts[QChar::Script_TaiTham] = QStringLiteral("Noto Sans Tai Tham");
+        m_hardcodedFallbackFonts[QChar::Script_TaiViet] = QStringLiteral("Noto Sans Tai Viet");
+        m_hardcodedFallbackFonts[QChar::Script_Thaana] = QStringLiteral("Noto Sans Thaana");
+        m_hardcodedFallbackFonts[QChar::Script_Tifinagh] = QStringLiteral("Noto Sans Tifinagh");
+        m_hardcodedFallbackFonts[QChar::Script_Tirhuta] = QStringLiteral("Noto Sans Tirhuta");
+        m_hardcodedFallbackFonts[QChar::Script_Ugaritic] = QStringLiteral("Noto Sans Ugaritic");
+        m_hardcodedFallbackFonts[QChar::Script_Vai] = QStringLiteral("Noto Sans Vai");
+        m_hardcodedFallbackFonts[QChar::Script_WarangCiti] = QStringLiteral("Noto Sans Warang Citi");
+        m_hardcodedFallbackFonts[QChar::Script_Wancho] = QStringLiteral("Noto Sans Wancho");
+        m_hardcodedFallbackFonts[QChar::Script_Yi] = QStringLiteral("Noto Sans Yi");
+    }
 
     qCDebug(lcQpaFonts) << "Populating available families took" << elapsed.restart() << "ms";
 
@@ -196,13 +306,6 @@ bool QCoreTextFontDatabase::populateFamilyAliases(const QString &missingFamily)
     Q_UNUSED(missingFamily);
     return false;
 #endif
-}
-
-CTFontDescriptorRef descriptorForFamily(const QString &familyName)
-{
-    return CTFontDescriptorCreateWithAttributes(CFDictionaryRef(@{
-        (id)kCTFontFamilyNameAttribute: familyName.toNSString()
-    }));
 }
 
 CTFontDescriptorRef descriptorForFamily(const char *familyName)
@@ -594,6 +697,31 @@ QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString &family, QFo
     // add Apple Symbols to cover those too.
     if (!fallbackList.contains(QStringLiteral("Apple Symbols")))
         fallbackList.append(QStringLiteral("Apple Symbols"));
+    // Some Noto* fonts are not automatically enumerated by system, despite being the main
+    // fonts for their writing system.
+    QString hardcodedFont = m_hardcodedFallbackFonts.value(script);
+    if (!hardcodedFont.isEmpty() && !fallbackList.contains(hardcodedFont)) {
+        if (!isFamilyPopulated(hardcodedFont)) {
+            if (!m_privateFamilies.contains(hardcodedFont)) {
+                QCFType<CTFontDescriptorRef> familyDescriptor = descriptorForFamily(hardcodedFont);
+                QCFType<CFArrayRef> matchingFonts = CTFontDescriptorCreateMatchingFontDescriptors(familyDescriptor, nullptr);
+                if (matchingFonts) {
+                    const int numFonts = CFArrayGetCount(matchingFonts);
+                    for (int i = 0; i < numFonts; ++i)
+                        const_cast<QCoreTextFontDatabase *>(this)->populateFromDescriptor(CTFontDescriptorRef(CFArrayGetValueAtIndex(matchingFonts, i)),
+                                                                                          hardcodedFont);
+
+                    fallbackList.append(hardcodedFont);
+                }
+
+                // Register as private family even if the font is not found, in order to avoid
+                // redoing the check later. In later calls, the font will then just be ignored.
+                m_privateFamilies.insert(hardcodedFont);
+            }
+        } else {
+            fallbackList.append(hardcodedFont);
+        }
+    }
 #endif
 
     extern QStringList qt_sort_families_by_writing_system(QChar::Script, const QStringList &);
@@ -644,7 +772,7 @@ QStringList QCoreTextFontDatabase::addApplicationFont(const QByteArray &fontData
 
 bool QCoreTextFontDatabase::isPrivateFontFamily(const QString &family) const
 {
-    if (family.startsWith(QLatin1Char('.')) || family == QLatin1String("LastResort"))
+    if (family.startsWith(QLatin1Char('.')) || family == QLatin1String("LastResort") || m_privateFamilies.contains(family))
         return true;
 
     return QPlatformFontDatabase::isPrivateFontFamily(family);
