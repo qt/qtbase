@@ -149,7 +149,7 @@ static_assert(sizeof(wchar_t) == sizeof(char32_t) || sizeof(wchar_t) == sizeof(c
 // denormals where GHS compiler is relying hardware behavior that is not IEC
 // 559 compliant. So split the check in several subchecks.
 
-// On GHC the compiler reports std::numeric_limits<float>::is_iec559 as false.
+// On GHS the compiler reports std::numeric_limits<float>::is_iec559 as false.
 // This is all right according to our needs.
 #if !defined(Q_CC_GHS)
 static_assert(std::numeric_limits<float>::is_iec559,
