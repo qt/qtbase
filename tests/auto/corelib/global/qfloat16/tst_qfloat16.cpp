@@ -540,7 +540,20 @@ void tst_qfloat16::properties()
     QVERIFY(Bounds::is_signed);
     QVERIFY(!Bounds::is_integer);
     QVERIFY(!Bounds::is_exact);
+
+    // While we'd like to check for __STDC_IEC_559__, as per ISO/IEC 9899:2011
+    // Annex F (C11, normative for C++11), there are a few corner cases regarding
+    // denormals where GHS compiler is relying hardware behavior that is not IEC
+    // 559 compliant.
+
+    // On GHS the compiler reports std::numeric_limits<float>::is_iec559 as false.
+    // and the same supposed to be for qfloat16.
+#if !defined(Q_CC_GHS)
     QVERIFY(Bounds::is_iec559);
+#else
+    // Technically, presence of NaN and infinities are implied from the above check, but that checkings GHS compiler complies.
+    QVERIFY(Bounds::has_infinity && Bounds::has_quiet_NaN && Bounds::has_signaling_NaN);
+#endif // Q_CC_GHS
     QVERIFY(Bounds::is_bounded);
     QVERIFY(!Bounds::is_modulo);
     QVERIFY(!Bounds::traps);
