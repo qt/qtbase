@@ -7,8 +7,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-find_package(Qt6 COMPONENTS Core)
-find_package(Qt6 COMPONENTS Network)
+find_package(Qt6 REQUIRED COMPONENTS Core Network)
 
 qt_add_executable(pem
     main.cpp
