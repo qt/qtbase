@@ -11,8 +11,7 @@ if(NOT DEFINED INSTALL_EXAMPLESDIR)
   set(INSTALL_EXAMPLESDIR "examples")
 endif()
 
-find_package(QT NAMES Qt6 Qt5 COMPONENTS Widgets REQUIRED)
-find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets REQUIRED)
+find_package(Qt6 COMPONENTS Widgets REQUIRED)
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/corelib/platform/androidnotifier")
 
@@ -26,14 +25,12 @@ if(ANDROID)
     qt_add_executable(androidnotifier
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES})
-    target_link_libraries(androidnotifier PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+    target_link_libraries(androidnotifier PRIVATE Qt6::Widgets)
 
     set_property(TARGET androidnotifier APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
                  ${CMAKE_CURRENT_SOURCE_DIR}/android)
 
-    if(QT_VERSION_MAJOR EQUAL 6)
-        qt_finalize_executable(androidnotifier)
-    endif()
+    qt_finalize_executable(androidnotifier)
 
     set(qml_resource_files
         "images/happy.png"
