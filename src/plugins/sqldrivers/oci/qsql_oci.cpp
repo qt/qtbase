@@ -168,27 +168,16 @@ public:
 QOCIDateTime::QOCIDateTime(OCIEnv *env, OCIError *err, const QDateTime &dt)
     : dateTime(nullptr)
 {
-    if (!dt.isValid()) {
-        // nothing to do, leave dateTime null
-    } else if (OCIDescriptorAlloc(env, reinterpret_cast<void**>(&dateTime),
-                                  OCI_DTYPE_TIMESTAMP_TZ, 0, 0) == OCI_SUCCESS) {
-        Q_ASSERT(!dt.isNull());
+    OCIDescriptorAlloc(env, reinterpret_cast<void**>(&dateTime), OCI_DTYPE_TIMESTAMP_TZ, 0, 0);
+    if (dt.isValid()) {
         const QDate date = dt.date();
-        Q_ASSERT(date.isValid());
         const QTime time = dt.time();
-        Q_ASSERT(time.isValid());
         // Zone in +hh:mm format (stripping UTC prefix from OffsetName)
-        QString timeZone = dt.timeZone().displayName(dt, QTimeZone::OffsetName);
-        Q_ASSERT(timeZone.startsWith(u"UTC"));
-        timeZone = std::move(timeZone).sliced(3);
+        QString timeZone = dt.timeZone().displayName(dt, QTimeZone::OffsetName).mid(3);
         const OraText *tz = reinterpret_cast<const OraText *>(timeZone.utf16());
-        if (OCIDateTimeConstruct(env, err, dateTime, date.year(), date.month(), date.day(),
-                                 time.hour(), time.minute(), time.second(), time.msec() * 1000000,
-                                 const_cast<OraText *>(tz), timeZone.length() * sizeof(QChar))) {
-            qWarning("QOCIDateTime: Failed to construct the OCIDateTime descriptor");
-        }
-    } else {
-        qWarning("QOCIDateTime: Failed to allocate the OCIDateTime descriptor");
+        OCIDateTimeConstruct(env, err, dateTime, date.year(), date.month(), date.day(), time.hour(),
+                             time.minute(), time.second(), time.msec() * 1000000,
+                             const_cast<OraText *>(tz), timeZone.length() * sizeof(QChar));
     }
 }
 
@@ -200,9 +189,6 @@ QOCIDateTime::~QOCIDateTime()
 
 QDateTime QOCIDateTime::fromOCIDateTime(OCIEnv *env, OCIError *err, OCIDateTime *dateTime)
 {
-    if (!dateTime)
-        return QDateTime();
-
     sb2 year;
     ub1 month, day, hour, minute, second;
     ub4 nsec;
@@ -952,8 +938,7 @@ QOCICols::QOCICols(int size, QOCIResultPrivate* dp)
 
         switch (ofi.type.id()) {
         case QMetaType::QDateTime:
-            r = OCIDescriptorAlloc(d->env, static_cast<void **>(&fieldInf[idx].dataPtr),
-                                   OCI_DTYPE_TIMESTAMP_TZ, 0, 0);
+            r = OCIDescriptorAlloc(d->env, (void **)&fieldInf[idx].dataPtr, OCI_DTYPE_TIMESTAMP_TZ, 0, 0);
             if (r != OCI_SUCCESS) {
                 qWarning("QOCICols: Unable to allocate the OCIDateTime descriptor");
                 break;
