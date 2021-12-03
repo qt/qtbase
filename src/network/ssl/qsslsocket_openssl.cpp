@@ -491,8 +491,23 @@ int q_X509Callback(int ok, X509_STORE_CTX *ctx)
             // during a handshake, a pointer to the SSL object is stored into the X509_STORE_CTX object
             // to identify the connection affected. To retrieve this pointer the X509_STORE_CTX_get_ex_data()
             // function can be used with the correct index."
-            if (SSL *ssl = static_cast<SSL *>(q_X509_STORE_CTX_get_ex_data(ctx, q_SSL_get_ex_data_X509_STORE_CTX_idx())))
+            if (SSL *ssl = static_cast<SSL *>(q_X509_STORE_CTX_get_ex_data(
+                        ctx, q_SSL_get_ex_data_X509_STORE_CTX_idx()))) {
+
+                // We may be in a renegotiation, check if we are inside a call to SSL_read:
+                const auto tlsOffset = QSslSocketBackendPrivate::s_indexForSSLExtraData;
+                auto tls = static_cast<QSslSocketBackendPrivate *>(q_SSL_get_ex_data(ssl, tlsOffset));
+                Q_ASSERT(tls);
+                if (tls->isInSslRead()) {
+                    // We are in a renegotiation, make a note of this for later.
+                    // We'll check that the certificate is the same as the one we got during
+                    // the initial handshake
+                    tls->setRenegotiated(true);
+                    return 1;
+                }
+
                 errors = ErrorListPtr(q_SSL_get_ex_data(ssl, QSslSocketBackendPrivate::s_indexForSSLExtraData + 1));
+            }
         }
 
         if (!errors) {
@@ -1156,7 +1171,25 @@ void QSslSocketBackendPrivate::transmit()
                 break;
             }
             // Don't use SSL_pending(). It's very unreliable.
+            inSslRead = true;
             readBytes = q_SSL_read(ssl, buffer.reserve(bytesToRead), bytesToRead);
+            inSslRead = false;
+            if (renegotiated) {
+                renegotiated = false;
+                X509 *x509 = q_SSL_get_peer_certificate(ssl);
+                const auto peerCertificate =
+                        QSslCertificatePrivate::QSslCertificate_from_X509(x509);
+                // Fail the renegotiate if the certificate has changed, else: continue.
+                if (peerCertificate != q->peerCertificate()) {
+                    const ScopedBool bg(inSetAndEmitError, true);
+                    setErrorAndEmit(
+                            QAbstractSocket::RemoteHostClosedError,
+                            QSslSocket::tr(
+                                    "TLS certificate unexpectedly changed during renegotiation!"));
+                    q->abort();
+                    return;
+                }
+            }
             if (readBytes > 0) {
 #ifdef QSSLSOCKET_DEBUG
                 qCDebug(lcSsl) << "QSslSocketBackendPrivate::transmit: decrypted" << readBytes << "bytes";
@@ -1598,6 +1631,16 @@ unsigned int QSslSocketBackendPrivate::tlsPskServerCallback(const char *identity
     const int pskLength = qMin(authenticator.preSharedKey().length(), authenticator.maximumPreSharedKeyLength());
     ::memcpy(psk, authenticator.preSharedKey().constData(), pskLength);
     return pskLength;
+}
+
+bool QSslSocketBackendPrivate::isInSslRead() const
+{
+    return inSslRead;
+}
+
+void QSslSocketBackendPrivate::setRenegotiated(bool renegotiated)
+{
+    this->renegotiated = renegotiated;
 }
 
 #ifdef Q_OS_WIN
