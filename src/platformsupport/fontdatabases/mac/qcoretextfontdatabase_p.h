@@ -89,6 +89,8 @@ public:
 
 protected:
     mutable QSet<CTFontDescriptorRef> m_systemFontDescriptors;
+    QHash<QChar::Script, QString> m_hardcodedFallbackFonts;
+    mutable QSet<QString> m_privateFamilies;
 
 private:
     void populateFromDescriptor(CTFontDescriptorRef font, const QString &familyName = QString());
