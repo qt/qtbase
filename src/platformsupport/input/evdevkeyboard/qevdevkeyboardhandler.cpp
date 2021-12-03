@@ -138,7 +138,11 @@ std::unique_ptr<QEvdevKeyboardHandler> QEvdevKeyboardHandler::create(const QStri
 
     qCDebug(qLcEvdevKey, "Opening keyboard at %ls", qUtf16Printable(device));
 
-    QFdContainer fd(qt_safe_open(device.toLocal8Bit().constData(), O_RDONLY | O_NDELAY, 0));
+    QFdContainer fd(qt_safe_open(device.toLocal8Bit().constData(), O_RDWR | O_NDELAY, 0));
+    if (fd.get() < 0) {
+        qCDebug(qLcEvdevKey, "Keyboard device could not be opened as read-write, trying read-only");
+        fd.reset(qt_safe_open(device.toLocal8Bit().constData(), O_RDONLY | O_NDELAY, 0));
+    }
     if (fd.get() >= 0) {
         ::ioctl(fd.get(), EVIOCGRAB, grab);
         if (repeatDelay > 0 && repeatRate > 0) {
