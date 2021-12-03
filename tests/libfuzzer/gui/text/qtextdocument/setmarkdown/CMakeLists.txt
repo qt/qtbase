@@ -7,8 +7,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-find_package(Qt6 COMPONENTS Core)
-find_package(Qt6 COMPONENTS Gui)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui)
 
 qt_add_executable(setmarkdown
     main.cpp
