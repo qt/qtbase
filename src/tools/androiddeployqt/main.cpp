@@ -2057,7 +2057,7 @@ bool scanImports(Options *options, QSet<QString> *usedDependencies)
                     qPrintable(object.value(QLatin1String("name")).toString()));
         } else {
             if (options->verbose)
-                fprintf(stdout, "  -- Adding '%s' as QML dependency\n", path.toLocal8Bit().constData());
+                fprintf(stdout, "  -- Adding '%s' as QML dependency\n", qPrintable(path));
 
             QFileInfo info(path);
 
@@ -2097,30 +2097,61 @@ bool scanImports(Options *options, QSet<QString> *usedDependencies)
                 return false;
             }
 
-            QDir dir(importPathOfThisImport);
-            importPathOfThisImport = dir.absolutePath() + QLatin1Char('/');
-
-            const QList<QtDependency> fileNames = findFilesRecursively(*options, info, importPathOfThisImport);
-            for (QtDependency fileName : fileNames) {
-                if (usedDependencies->contains(fileName.absolutePath))
-                    continue;
-
-                usedDependencies->insert(fileName.absolutePath);
-
-                if (options->verbose)
-                    fprintf(stdout, "    -- Appending dependency found by qmlimportscanner: %s\n", qPrintable(fileName.absolutePath));
-
-                // Put all imports in default import path in assets
-                fileName.relativePath.prepend(QLatin1String("qml/"));
-                options->qtDependencies[options->currentArchitecture].append(fileName);
-
-                if (fileName.absolutePath.endsWith(QLatin1String(".so")) && checkArchitecture(*options, fileName.absolutePath)) {
-                    QSet<QString> remainingDependencies;
-                    if (!readDependenciesFromElf(options, fileName.absolutePath, usedDependencies, &remainingDependencies))
-                        return false;
-
+            importPathOfThisImport = QDir(importPathOfThisImport).absolutePath() + QLatin1Char('/');
+            QList<QtDependency> qmlImportsDependencies;
+            auto collectQmlDependency = [&usedDependencies, &qmlImportsDependencies,
+                                         &importPathOfThisImport](const QString &filePath) {
+                if (!usedDependencies->contains(filePath)) {
+                    usedDependencies->insert(filePath);
+                    qmlImportsDependencies += QtDependency(
+                            QLatin1String("qml/") + filePath.mid(importPathOfThisImport.size()),
+                            filePath);
                 }
+            };
+
+            QString plugin = object.value(QLatin1String("plugin")).toString();
+            bool pluginIsOptional = object.value(QLatin1String("pluginIsOptional")).toBool();
+            QFileInfo pluginFileInfo = QFileInfo(
+                    path + QLatin1Char('/') + QLatin1String("lib") + plugin + QLatin1Char('_')
+                    + options->currentArchitecture + QLatin1String(".so"));
+            QString pluginFilePath = pluginFileInfo.absoluteFilePath();
+            QSet<QString> remainingDependencies;
+            if (pluginFileInfo.exists() && checkArchitecture(*options, pluginFilePath)
+                && readDependenciesFromElf(options, pluginFilePath, usedDependencies,
+                                           &remainingDependencies)) {
+                collectQmlDependency(pluginFilePath);
+            } else if (!pluginIsOptional) {
+                if (options->verbose)
+                    fprintf(stdout, "    -- Skipping because the required plugin is missing.\n");
+                continue;
             }
+
+            QFileInfo qmldirFileInfo = QFileInfo(path + QLatin1Char('/') + QLatin1String("qmldir"));
+            if (qmldirFileInfo.exists()) {
+                collectQmlDependency(qmldirFileInfo.absoluteFilePath());
+            }
+
+            QVariantList qmlFiles =
+                    object.value(QLatin1String("components")).toArray().toVariantList();
+            qmlFiles.append(object.value(QLatin1String("scripts")).toArray().toVariantList());
+            bool qmlFilesMissing = false;
+            for (const auto &qmlFileEntry : qmlFiles) {
+                QFileInfo fileInfo(qmlFileEntry.toString());
+                if (!fileInfo.exists()) {
+                    qmlFilesMissing = true;
+                    break;
+                }
+                collectQmlDependency(fileInfo.absoluteFilePath());
+            }
+
+            if (qmlFilesMissing) {
+                if (options->verbose)
+                    fprintf(stdout,
+                            "    -- Skipping because the required qml files are missing.\n");
+                continue;
+            }
+
+            options->qtDependencies[options->currentArchitecture].append(qmlImportsDependencies);
         }
     }
 
