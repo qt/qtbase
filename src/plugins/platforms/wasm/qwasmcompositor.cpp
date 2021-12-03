@@ -411,6 +411,8 @@ QWasmCompositor::QWasmTitleBarOptions QWasmCompositor::makeTitleBarOptions(const
     if (!window->window()->title().isEmpty())
         titleBarOptions.titleBarOptionsString = window->window()->title();
 
+    titleBarOptions.windowIcon = window->window()->icon();
+
     return titleBarOptions;
 }
 
@@ -586,8 +588,12 @@ void QWasmCompositor::drawTitlebarWindow(QWasmTitleBarOptions tb, QPainter *pain
 
     if (tb.subControls & SC_TitleBarSysMenu && tb.flags & Qt::WindowSystemMenuHint) {
         ir = titlebarRect(tb, SC_TitleBarSysMenu);
-        pixmap = cachedPixmapFromXPM(qt_menu_xpm).scaled(QSize(10, 10));
-        drawItemPixmap(painter, ir, Qt::AlignCenter, pixmap);
+        if (!tb.windowIcon.isNull()) {
+            tb.windowIcon.paint(painter, ir, Qt::AlignCenter);
+        } else {
+            pixmap = cachedPixmapFromXPM(qt_menu_xpm).scaled(QSize(10, 10));
+            drawItemPixmap(painter, ir, Qt::AlignCenter, pixmap);
+        }
     }
 }
 

@@ -91,6 +91,7 @@ public:
         QPalette palette;
         QString titleBarOptionsString;
         QWasmCompositor::SubControls subControls;
+        QIcon windowIcon;
     };
 
     struct QWasmFrameOptions {
