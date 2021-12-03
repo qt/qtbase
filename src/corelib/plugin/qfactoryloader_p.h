@@ -90,7 +90,7 @@ public:
 
     // if data is not a map, toMap() returns empty, so shall these functions
     QCborMap toCbor() const                         { return data.toMap(); }
-    QCborValue value(QtPluginMetaDataKeys k) const  { return toCbor()[int(k)]; }
+    QCborValue value(QtPluginMetaDataKeys k) const  { return data[int(k)]; }
 };
 
 class QFactoryLoaderPrivate;
