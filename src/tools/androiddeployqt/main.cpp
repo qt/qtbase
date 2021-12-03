@@ -2754,7 +2754,7 @@ QString packagePath(const Options &options, PackageType pt)
             path += QLatin1String(".aab");
         }
     }
-    return shellQuote(path);
+    return path;
 }
 
 bool installApk(const Options &options)
@@ -2883,9 +2883,10 @@ bool jarSignerSignPackage(const Options &options)
     auto signPackage = [&](const QString &file) {
         fprintf(stdout, "Signing file %s\n", qPrintable(file));
         fflush(stdout);
-        QString command = jarSignerTool + QLatin1String(" %1 %2")
-                .arg(file)
-                .arg(shellQuote(options.keyStoreAlias));
+        QString command = jarSignerTool
+                + QLatin1String(" %1 %2")
+                          .arg(shellQuote(file))
+                          .arg(shellQuote(options.keyStoreAlias));
 
         FILE *jarSignerCommand = openProcess(command);
         if (jarSignerCommand == 0) {
@@ -2931,10 +2932,10 @@ bool jarSignerSignPackage(const Options &options)
     }
 
     zipAlignTool = QLatin1String("%1%2 -f 4 %3 %4")
-            .arg(shellQuote(zipAlignTool),
-                 options.verbose ? QLatin1String(" -v") : QLatin1String(),
-                 packagePath(options, UnsignedAPK),
-                 packagePath(options, SignedAPK));
+                           .arg(shellQuote(zipAlignTool),
+                                options.verbose ? QLatin1String(" -v") : QLatin1String(),
+                                shellQuote(packagePath(options, UnsignedAPK)),
+                                shellQuote(packagePath(options, SignedAPK)));
 
     FILE *zipAlignCommand = openProcess(zipAlignTool);
     if (zipAlignCommand == 0) {
@@ -2999,10 +3000,11 @@ bool signPackage(const Options &options)
         return pclose(zipAlignCommand) == 0;
     };
 
-    const QString verifyZipAlignCommandLine = QLatin1String("%1%2 -c 4 %3")
-            .arg(shellQuote(zipAlignTool),
-                 options.verbose ? QLatin1String(" -v") : QLatin1String(),
-                 packagePath(options, UnsignedAPK));
+    const QString verifyZipAlignCommandLine =
+            QLatin1String("%1%2 -c 4 %3")
+                    .arg(shellQuote(zipAlignTool),
+                         options.verbose ? QLatin1String(" -v") : QLatin1String(),
+                         shellQuote(packagePath(options, UnsignedAPK)));
 
     if (zipalignRunner(verifyZipAlignCommandLine)) {
         if (options.verbose)
@@ -3019,11 +3021,12 @@ bool signPackage(const Options &options)
         if (options.verbose)
             fprintf(stdout, "APK not aligned, aligning it for signing.\n");
 
-        const QString zipAlignCommandLine = QLatin1String("%1%2 -f 4 %3 %4")
-                .arg(shellQuote(zipAlignTool),
-                     options.verbose ? QLatin1String(" -v") : QLatin1String(),
-                     packagePath(options, UnsignedAPK),
-                     packagePath(options, SignedAPK));
+        const QString zipAlignCommandLine =
+                QLatin1String("%1%2 -f 4 %3 %4")
+                        .arg(shellQuote(zipAlignTool),
+                             options.verbose ? QLatin1String(" -v") : QLatin1String(),
+                             shellQuote(packagePath(options, UnsignedAPK)),
+                             shellQuote(packagePath(options, SignedAPK)));
 
         if (!zipalignRunner(zipAlignCommandLine)) {
             fprintf(stderr, "zipalign command failed.\n");
@@ -3048,8 +3051,7 @@ bool signPackage(const Options &options)
     if (options.verbose)
         apkSignCommand += QLatin1String(" --verbose");
 
-    apkSignCommand += QLatin1String(" %1")
-            .arg(packagePath(options, SignedAPK));
+    apkSignCommand += QLatin1String(" %1").arg(shellQuote(packagePath(options, SignedAPK)));
 
     auto apkSignerRunner = [](const QString &command, bool verbose) {
         FILE *apkSigner = openProcess(command);
@@ -3076,8 +3078,9 @@ bool signPackage(const Options &options)
     if (!apkSignerRunner(apkSignCommand, options.verbose))
         return false;
 
-    const QString apkVerifyCommand = QLatin1String("%1 verify --verbose %2")
-        .arg(shellQuote(apksignerTool), packagePath(options, SignedAPK));
+    const QString apkVerifyCommand =
+            QLatin1String("%1 verify --verbose %2")
+                    .arg(shellQuote(apksignerTool), shellQuote(packagePath(options, SignedAPK)));
 
     // Verify the package and remove the unsigned apk
     return apkSignerRunner(apkVerifyCommand, true) && QFile::remove(packagePath(options, UnsignedAPK));
