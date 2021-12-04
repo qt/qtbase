@@ -116,6 +116,34 @@ static QByteArray debugWinStyle(DWORD style)
         rc += " WS_MINIMIZEBOX";
     if (style & WS_MAXIMIZEBOX)
         rc += " WS_MAXIMIZEBOX";
+    if (style & WS_BORDER)
+        rc += " WS_BORDER";
+    if (style & WS_CAPTION)
+        rc += " WS_CAPTION";
+    if (style & WS_CHILDWINDOW)
+        rc += " WS_CHILDWINDOW";
+    if (style & WS_DISABLED)
+        rc += " WS_DISABLED";
+    if (style & WS_GROUP)
+        rc += " WS_GROUP";
+    if (style & WS_HSCROLL)
+        rc += " WS_HSCROLL";
+    if (style & WS_ICONIC)
+        rc += " WS_ICONIC";
+    if (style & WS_MAXIMIZE)
+        rc += " WS_MAXIMIZE";
+    if (style & WS_MINIMIZE)
+        rc += " WS_MINIMIZE";
+    if (style & WS_SIZEBOX)
+        rc += " WS_SIZEBOX";
+    if (style & WS_TABSTOP)
+        rc += " WS_TABSTOP";
+    if (style & WS_TILED)
+        rc += " WS_TILED";
+    if (style & WS_VISIBLE)
+        rc += " WS_VISIBLE";
+    if (style & WS_VSCROLL)
+        rc += " WS_VSCROLL";
     return rc;
 }
 
@@ -135,6 +163,44 @@ static QByteArray debugWinExStyle(DWORD exStyle)
         rc += " WS_EX_LAYOUTRTL";
     if (exStyle & WS_EX_NOINHERITLAYOUT)
         rc += " WS_EX_NOINHERITLAYOUT";
+    if (exStyle & WS_EX_ACCEPTFILES)
+        rc += " WS_EX_ACCEPTFILES";
+    if (exStyle & WS_EX_APPWINDOW)
+        rc += " WS_EX_APPWINDOW";
+    if (exStyle & WS_EX_CLIENTEDGE)
+        rc += " WS_EX_CLIENTEDGE";
+    if (exStyle & WS_EX_COMPOSITED)
+        rc += " WS_EX_COMPOSITED";
+    if (exStyle & WS_EX_CONTROLPARENT)
+        rc += " WS_EX_CONTROLPARENT";
+    if (exStyle & WS_EX_LEFT)
+        rc += " WS_EX_LEFT";
+    if (exStyle & WS_EX_LEFTSCROLLBAR)
+        rc += " WS_EX_LEFTSCROLLBAR";
+    if (exStyle & WS_EX_LTRREADING)
+        rc += " WS_EX_LTRREADING";
+    if (exStyle & WS_EX_MDICHILD)
+        rc += " WS_EX_MDICHILD";
+    if (exStyle & WS_EX_NOACTIVATE)
+        rc += " WS_EX_NOACTIVATE";
+    if (exStyle & WS_EX_NOPARENTNOTIFY)
+        rc += " WS_EX_NOPARENTNOTIFY";
+    if (exStyle & WS_EX_NOREDIRECTIONBITMAP)
+        rc += " WS_EX_NOREDIRECTIONBITMAP";
+    if (exStyle & WS_EX_RIGHT)
+        rc += " WS_EX_RIGHT";
+    if (exStyle & WS_EX_RIGHTSCROLLBAR)
+        rc += " WS_EX_RIGHTSCROLLBAR";
+    if (exStyle & WS_EX_RTLREADING)
+        rc += " WS_EX_RTLREADING";
+    if (exStyle & WS_EX_STATICEDGE)
+        rc += " WS_EX_STATICEDGE";
+    if (exStyle & WS_EX_TOPMOST)
+        rc += " WS_EX_TOPMOST";
+    if (exStyle & WS_EX_TRANSPARENT)
+        rc += " WS_EX_TRANSPARENT";
+    if (exStyle & WS_EX_WINDOWEDGE)
+        rc += " WS_EX_WINDOWEDGE";
     return rc;
 }
 
@@ -164,6 +230,14 @@ static QByteArray debugWinSwpPos(UINT flags)
         rc += " SWP_NOZORDER";
     if (flags & SWP_SHOWWINDOW)
         rc += " SWP_SHOWWINDOW";
+    if (flags & SWP_ASYNCWINDOWPOS)
+        rc += " SWP_ASYNCWINDOWPOS";
+    if (flags & SWP_DEFERERASE)
+        rc += " SWP_DEFERERASE";
+    if (flags & SWP_DRAWFRAME)
+        rc += " SWP_DRAWFRAME";
+    if (flags & SWP_NOREPOSITION)
+        rc += " SWP_NOREPOSITION";
     return rc;
 }
 
