@@ -478,10 +478,18 @@ static inline void updateGLWindowSettings(const QWindow *w, HWND hwnd, Qt::Windo
     setWindowOpacity(hwnd, flags, hasAlpha, isAccelerated, opacity);
 }
 
+[[nodiscard]] static inline int getResizeBorderThickness(const UINT dpi)
+{
+    // The width of the padded border will always be 0 if DWM composition is
+    // disabled, but since it will always be enabled and can't be programtically
+    // disabled from Windows 8, we are safe to go.
+    return GetSystemMetricsForDpi(SM_CXSIZEFRAME, dpi)
+           + GetSystemMetricsForDpi(SM_CXPADDEDBORDER, dpi);
+}
+
 /*!
     Calculates the dimensions of the invisible borders within the
-    window frames in Windows 10, using an empirical expression that
-    reproduces the measured values for standard DPI settings.
+    window frames which only exist on Windows 10 and onwards.
 */
 
 static QMargins invisibleMargins(QPoint screenPoint)
@@ -491,12 +499,18 @@ static QMargins invisibleMargins(QPoint screenPoint)
         UINT dpiX;
         UINT dpiY;
         if (SUCCEEDED(GetDpiForMonitor(hMonitor, MDT_EFFECTIVE_DPI, &dpiX, &dpiY))) {
-            const qreal sc = (dpiX - 96) / 96.0;
-            const int gap = 7 + qRound(5*sc) - int(sc);
+            const int gap = getResizeBorderThickness(dpiX);
             return QMargins(gap, 0, gap, gap);
         }
     }
     return QMargins();
+}
+
+[[nodiscard]] static inline QMargins invisibleMargins(const HWND hwnd)
+{
+    const UINT dpi = GetDpiForWindow(hwnd);
+    const int gap = getResizeBorderThickness(dpi);
+    return QMargins(gap, 0, gap, gap);
 }
 
 /*!
@@ -2601,7 +2615,7 @@ QMargins QWindowsWindow::frameMargins() const
 {
     QMargins result = fullFrameMargins();
     if (isTopLevel() && m_data.hasFrame)
-        result -= invisibleMargins(geometry().topLeft());
+        result -= invisibleMargins(m_data.hwnd);
     return result;
 }
 
@@ -2801,13 +2815,6 @@ void QWindowsWindow::setFrameStrutEventsEnabled(bool enabled)
     }
 }
 
-static int getBorderWidth(const QPlatformScreen *screen)
-{
-    NONCLIENTMETRICS ncm;
-    QWindowsContext::nonClientMetricsForScreen(&ncm, screen);
-    return ncm.iBorderWidth + ncm.iPaddedBorderWidth + 2;
-}
-
 void QWindowsWindow::getSizeHints(MINMAXINFO *mmi) const
 {
     QWindowsGeometryHint::applyToMinMaxInfo(window(), fullFrameMargins(), mmi);
@@ -2829,7 +2836,7 @@ void QWindowsWindow::getSizeHints(MINMAXINFO *mmi) const
             mmi->ptMaxPosition.x = availablePositionDiff.x();
             mmi->ptMaxPosition.y = availablePositionDiff.y();
             if (!m_data.flags.testFlag(Qt::FramelessWindowHint)) {
-                const int borderWidth = getBorderWidth(currentScreen);
+                const int borderWidth = invisibleMargins(m_data.hwnd).left();
                 mmi->ptMaxSize.x += borderWidth * 2;
                 mmi->ptMaxSize.y += borderWidth * 2;
                 mmi->ptMaxTrackSize = mmi->ptMaxSize;
@@ -2870,12 +2877,7 @@ bool QWindowsWindow::handleNonClientHitTest(const QPoint &globalPos, LRESULT *re
             return true;
         }
         if (localPos.y() < 0) {
-            // We want to return HTCAPTION/true only over the outer sizing frame, not the entire title bar,
-            // otherwise the title bar buttons (close, etc.) become unresponsive on Windows 7 (QTBUG-78262).
-            // However, neither frameMargins() nor GetSystemMetrics(SM_CYSIZEFRAME), etc., give the correct
-            // sizing frame height in all Windows versions/scales. This empirical constant seems to work, though.
-            const int sizingHeight = 9;
-            const int topResizeBarPos = sizingHeight - frameMargins().top();
+            const int topResizeBarPos = invisibleMargins(m_data.hwnd).left() - frameMargins().top();
             if (localPos.y() < topResizeBarPos) {
                 *result = HTCAPTION; // Extend caption over top resize bar, let's user move the window.
                 return true;
