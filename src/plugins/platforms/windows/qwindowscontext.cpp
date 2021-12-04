@@ -1266,7 +1266,7 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
     case QtWindows::NonClientHitTest:
         return platformWindow->handleNonClientHitTest(QPoint(msg.pt.x, msg.pt.y), result);
     case QtWindows::GeometryChangingEvent:
-        return platformWindow->QWindowsWindow::handleGeometryChanging(&msg);
+        return platformWindow->handleGeometryChanging(&msg);
     case QtWindows::ExposeEvent:
         return platformWindow->handleWmPaint(hwnd, message, wParam, lParam);
     case QtWindows::NonClientMouseEvent:
