@@ -1268,7 +1268,7 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
     case QtWindows::GeometryChangingEvent:
         return platformWindow->handleGeometryChanging(&msg);
     case QtWindows::ExposeEvent:
-        return platformWindow->handleWmPaint(hwnd, message, wParam, lParam);
+        return platformWindow->handleWmPaint(hwnd, message, wParam, lParam, result);
     case QtWindows::NonClientMouseEvent:
         if ((d->m_systemInfo & QWindowsContext::SI_SupportsPointer) && platformWindow->frameStrutEventsEnabled())
             return sessionManagerInteractionBlocked() || d->m_pointerHandler.translateMouseEvent(platformWindow->window(), hwnd, et, msg, result);
