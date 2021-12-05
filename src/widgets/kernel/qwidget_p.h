@@ -390,6 +390,7 @@ public:
     void invalidateBackingStore(const T &);
 
     QRegion overlappedRegion(const QRect &rect, bool breakAfterFirst = false) const;
+    bool isOverlapped(const QRect &rect) const { return !overlappedRegion(rect, true).isEmpty(); }
     void syncBackingStore();
     void syncBackingStore(const QRegion &region);
 
