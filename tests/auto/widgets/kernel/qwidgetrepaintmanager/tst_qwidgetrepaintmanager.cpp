@@ -35,6 +35,8 @@
 
 #include <private/qhighdpiscaling_p.h>
 #include <private/qwidget_p.h>
+#include <private/qwidgetrepaintmanager_p.h>
+#include <qpa/qplatformbackingstore.h>
 
 //#define MANUAL_DEBUG
 
@@ -115,6 +117,11 @@ private:
 class Draggable : public OpaqueWidget
 {
 public:
+    Draggable(QWidget *parent = nullptr)
+    : OpaqueWidget(Qt::white, parent)
+    {
+    }
+
     Draggable(const QColor &col, QWidget *parent = nullptr)
     : OpaqueWidget(col, parent)
     {
@@ -187,6 +194,10 @@ public:
         yellowChild = new Draggable(Qt::yellow, this);
         yellowChild->setObjectName("yellowChild");
 
+        nakedChild = new Draggable(this);
+        nakedChild->move(300, 0);
+        nakedChild->setObjectName("nakedChild");
+
         bar = new OpaqueWidget(Qt::darkGray, this);
         bar->setObjectName("bar");
     }
@@ -195,6 +206,7 @@ public:
     QWidget *redChild;
     QWidget *greenChild;
     QWidget *yellowChild;
+    QWidget *nakedChild;
     QWidget *bar;
 
     QSize sizeHint() const override { return QSize(400, 400); }
@@ -215,6 +227,7 @@ public:
     tst_QWidgetRepaintManager();
 
 public slots:
+    void initTestCase();
     void cleanup();
 
 private slots:
@@ -223,56 +236,78 @@ private slots:
     void opaqueChildren();
     void staticContents();
     void scroll();
-    void moveWithOverlap();
+#if defined(QT_BUILD_INTERNAL)
+    void scrollWithOverlap();
     void overlappedRegion();
+    void fastMove();
+    void moveAccross();
+    void moveInOutOverlapped();
 
 protected:
     /*
-        This helper compares the widget as rendered on screen with the widget
-        as rendered via QWidget::grab. Since the latter always produces a fully
-        rendered image, it allows us to identify update issues in QWidgetRepaintManager
-        which would be visible in the former.
+        This helper compares the widget as rendered into the backingstore with the widget
+        as rendered via QWidget::grab. The latter always produces a fully rendered image,
+        so differences indicate bugs in QWidgetRepaintManager's or QWidget's painting code.
     */
     bool compareWidget(QWidget *w)
     {
-        QScreen *screen = w->screen();
-        const QRect screenGeometry = screen->geometry();
-        QPoint globalPos = w->mapToGlobal(QPoint(0, 0));
-        if (globalPos.x() >= screenGeometry.width())
-            globalPos.rx() -= screenGeometry.x();
-        if (globalPos.y() >= screenGeometry.height())
-            globalPos.ry() -= screenGeometry.y();
+        if (!waitForFlush(w)) {
+            qWarning() << "Widget" << w << "failed to flush";
+            return false;
+        }
+        QBackingStore *backingStore = w->window()->backingStore();
+        Q_ASSERT(backingStore && backingStore->handle());
+        QPlatformBackingStore *platformBackingStore = backingStore->handle();
 
-        QImage systemScreenshot;
-        QImage qtScreenshot;
-        bool result = QTest::qWaitFor([&]{
-            if (w->isFullScreen())
-                systemScreenshot = screen->grabWindow().toImage();
-            else
-                systemScreenshot = screen->grabWindow(w->window()->winId(),
-                                                      globalPos.x(), globalPos.y(),
-                                                      w->width(), w->height()).toImage();
-            systemScreenshot = systemScreenshot.convertToFormat(QImage::Format_RGB32);
-            qtScreenshot = w->grab().toImage().convertToFormat(systemScreenshot.format());
-            return systemScreenshot == qtScreenshot;
-        });
+        QImage backingstoreContent = platformBackingStore->toImage();
+        if (!w->isWindow()) {
+            const qreal dpr = w->devicePixelRatioF();
+            const QPointF offset = w->mapTo(w->window(), QPointF(0, 0)) * dpr;
+            backingstoreContent = backingstoreContent.copy(offset.x(), offset.y(), w->width() * dpr, w->height() * dpr);
+        }
+        const QImage widgetRender = w->grab().toImage().convertToFormat(backingstoreContent.format());
+
+        const bool result = backingstoreContent == widgetRender;
 
 #ifdef MANUAL_DEBUG
         if (!result) {
-            systemScreenshot.save(QString("/tmp/system_%1_%2.png").arg(QTest::currentTestFunction(), QTest::currentDataTag()));
-            qtScreenshot.save(QString("/tmp/qt_%1_%2.png").arg(QTest::currentTestFunction(), QTest::currentDataTag()));
+            backingstoreContent.save(QString("/tmp/backingstore_%1_%2.png").arg(QTest::currentTestFunction(), QTest::currentDataTag()));
+            widgetRender.save(QString("/tmp/grab_%1_%2.png").arg(QTest::currentTestFunction(), QTest::currentDataTag()));
         }
 #endif
         return result;
     };
 
+    QRegion dirtyRegion(QWidget *widget) const
+    {
+        return QWidgetPrivate::get(widget)->dirty;
+    }
+    bool waitForFlush(QWidget *widget) const
+    {
+        auto *repaintManager = QWidgetPrivate::get(widget->window())->maybeRepaintManager();
+        return QTest::qWaitFor([repaintManager]{ return !repaintManager->isDirty(); } );
+    };
+#endif // QT_BUILD_INTERNAL
+
+
 private:
     const int m_fuzz;
+    bool m_implementsScroll = false;
 };
 
 tst_QWidgetRepaintManager::tst_QWidgetRepaintManager() :
      m_fuzz(int(QHighDpiScaling::factor(QGuiApplication::primaryScreen())))
 {
+}
+
+void tst_QWidgetRepaintManager::initTestCase()
+{
+    QWidget widget;
+    widget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
+
+    m_implementsScroll = widget.backingStore()->handle()->scroll(QRegion(widget.rect()), 1, 1);
+    qDebug() << QGuiApplication::platformName() << "QPA backend implements scroll:" << m_implementsScroll;
 }
 
 void tst_QWidgetRepaintManager::cleanup()
@@ -356,7 +391,7 @@ void tst_QWidgetRepaintManager::opaqueChildren()
     child1->move(20, 30);
     QVERIFY(widget.waitForPainted());
     QCOMPARE(widget.takePaintedRegions(), QRegion(20, 20, child1->width(), 10));
-    if (QGuiApplication::platformName() == "cocoa")
+    if (!m_implementsScroll)
         QEXPECT_FAIL("", "child1 shouldn't get painted, we can just move the area of the backingstore", Continue);
     QCOMPARE(child1->takePaintedRegions(), QRegion());
 }
@@ -393,7 +428,7 @@ void tst_QWidgetRepaintManager::scroll()
 
     widget.scroll(10, 0);
     QVERIFY(widget.waitForPainted());
-    if (QGuiApplication::platformName() == "cocoa")
+    if (!m_implementsScroll)
         QEXPECT_FAIL("", "This should just repaint the newly exposed region", Continue);
     QCOMPARE(widget.takePaintedRegions(), QRegion(0, 0, 10, widget.height()));
 
@@ -411,19 +446,21 @@ void tst_QWidgetRepaintManager::scroll()
     child->setAttribute(Qt::WA_OpaquePaintEvent);
     child->scroll(10, 0);
     QVERIFY(child->waitForPainted());
-    if (QStringList{"cocoa", "android"}.contains(QGuiApplication::platformName()))
+    if (!m_implementsScroll)
         QEXPECT_FAIL("", "This should just repaint the newly exposed region", Continue);
     QCOMPARE(child->takePaintedRegions(), QRegion(0, 0, 10, child->height()));
     QCOMPARE(widget.takePaintedRegions(), QRegion());
 }
 
 
+#if defined(QT_BUILD_INTERNAL)
+
 /*!
     Verify that overlapping children are repainted correctly when
     a widget is moved (via a scroll area) for such a distance that
     none of the old area is still visible. QTBUG-26269
 */
-void tst_QWidgetRepaintManager::moveWithOverlap()
+void tst_QWidgetRepaintManager::scrollWithOverlap()
 {
     if (QStringList{"android"}.contains(QGuiApplication::platformName()))
         QSKIP("This test fails on Android");
@@ -446,6 +483,8 @@ void tst_QWidgetRepaintManager::moveWithOverlap()
             m_topWidget->setPalette(QPalette(Qt::red));
             m_topWidget->setAutoFillBackground(true);
             m_topWidget->resize(300, 200);
+
+            resize(600, 300);
         }
 
         void resizeEvent(QResizeEvent *e) override
@@ -466,14 +505,14 @@ void tst_QWidgetRepaintManager::moveWithOverlap()
     };
 
     MainWindow w;
-    w.showFullScreen();
+    w.show();
 
     QVERIFY(QTest::qWaitForWindowActive(&w));
 
     bool result = compareWidget(w.topWidget());
     // if this fails already, then the system we test on can't compare screenshots from grabbed widgets,
-    // and we have to skip this test. Possible reasons are that showing the window took too long, differences
-    // in surface formats, or unrelated bugs in QScreen::grabWindow.
+    // and we have to skip this test. Possible reasons are differences in surface formats or DPI, or
+    // unrelated bugs in QPlatformBackingStore::toImage or QWidget::grab.
     if (!result)
         QSKIP("Cannot compare QWidget::grab with QScreen::grabWindow on this machine");
 
@@ -559,6 +598,103 @@ void tst_QWidgetRepaintManager::overlappedRegion()
     overlap = overlappedRegion(scene.yellowChild);
     QTRY_VERIFY(!overlap.isEmpty());
 }
+
+void tst_QWidgetRepaintManager::fastMove()
+{
+    TestScene scene;
+    scene.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&scene));
+
+    QWidgetRepaintManager *repaintManager = QWidgetPrivate::get(&scene)->maybeRepaintManager();
+    QVERIFY(repaintManager->dirtyRegion().isEmpty());
+
+    // moving yellow; nothing obscured
+    scene.yellowChild->move(QPoint(25, 0));
+    QVERIFY(repaintManager->dirtyRegion().isEmpty()); // fast move
+    if (m_implementsScroll) {
+        QCOMPARE(repaintManager->dirtyWidgetList(), QList<QWidget *>() << &scene);
+        QVERIFY(dirtyRegion(scene.yellowChild).isEmpty());
+    } else {
+        QCOMPARE(repaintManager->dirtyWidgetList(), QList<QWidget *>() << scene.yellowChild << &scene);
+        QCOMPARE(dirtyRegion(scene.yellowChild), QRect(0, 0, 100, 100));
+    }
+    QCOMPARE(dirtyRegion(&scene), QRect(0, 0, 25, 100));
+    QVERIFY(compareWidget(&scene));
+}
+
+void tst_QWidgetRepaintManager::moveAccross()
+{
+    TestScene scene;
+    scene.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&scene));
+
+    QWidgetRepaintManager *repaintManager = QWidgetPrivate::get(&scene)->maybeRepaintManager();
+    QVERIFY(repaintManager->dirtyRegion().isEmpty());
+
+    for (int i = 0; i < 4; ++i) {
+        scene.greenChild->move(scene.greenChild->pos() + QPoint(25, 0));
+        waitForFlush(&scene);
+    }
+    QVERIFY(compareWidget(&scene));
+
+    for (int i = 0; i < 16; ++i) {
+        scene.redChild->move(scene.redChild->pos() + QPoint(25, 0));
+        waitForFlush(&scene);
+    }
+    QVERIFY(compareWidget(&scene));
+
+    for (int i = 0; i < qMin(scene.area->width(), scene.area->height()); i += 25) {
+        scene.yellowChild->move(scene.yellowChild->pos() + QPoint(25, 25));
+        waitForFlush(&scene);
+    }
+    QVERIFY(compareWidget(&scene));
+}
+
+void tst_QWidgetRepaintManager::moveInOutOverlapped()
+{
+    TestScene scene;
+    scene.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&scene));
+
+    QWidgetRepaintManager *repaintManager = QWidgetPrivate::get(&scene)->maybeRepaintManager();
+    QVERIFY(repaintManager->dirtyRegion().isEmpty());
+
+    // yellow out
+    scene.yellowChild->move(QPoint(-100, 0));
+    QVERIFY(!repaintManager->dirtyRegion().isEmpty()); // invalid dest rect
+    QVERIFY(repaintManager->dirtyWidgetList().isEmpty());
+    QVERIFY(waitForFlush(&scene));
+    QVERIFY(compareWidget(&scene));
+
+    // yellow in, obscured by bar
+    scene.yellowChild->move(QPoint(scene.width() / 2, scene.height() / 2));
+    QVERIFY(!repaintManager->dirtyRegion().isEmpty()); // invalid source rect
+    QVERIFY(repaintManager->dirtyWidgetList().isEmpty());
+    QVERIFY(waitForFlush(&scene));
+    QVERIFY(compareWidget(&scene));
+
+    // green out
+    scene.greenChild->move(QPoint(-100, 0));
+    QVERIFY(!repaintManager->dirtyRegion().isEmpty()); // invalid dest rect
+    QVERIFY(repaintManager->dirtyWidgetList().isEmpty());
+    QVERIFY(waitForFlush(&scene));
+    QVERIFY(compareWidget(&scene));
+
+    // green back in, obscured by bar
+    scene.greenChild->move(QPoint(scene.area->width() / 2 - 50, scene.area->height() / 2 - 50));
+    QVERIFY(!repaintManager->dirtyRegion().isEmpty()); // invalid source rect
+    QVERIFY(repaintManager->dirtyWidgetList().isEmpty());
+    QVERIFY(waitForFlush(&scene));
+    QVERIFY(compareWidget(&scene));
+
+    // red back under green
+    scene.redChild->move(scene.greenChild->pos());
+    QVERIFY(!repaintManager->dirtyRegion().isEmpty()); // destination rect obscured
+    QVERIFY(repaintManager->dirtyWidgetList().isEmpty());
+    QVERIFY(waitForFlush(&scene));
+    QVERIFY(compareWidget(&scene));
+}
+#endif //# defined(QT_BUILD_INTERNAL)
 
 QTEST_MAIN(tst_QWidgetRepaintManager)
 #include "tst_qwidgetrepaintmanager.moc"

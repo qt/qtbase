@@ -100,6 +100,9 @@ public:
     void moveStaticWidgets(QWidget *reparented);
     void removeStaticWidget(QWidget *widget);
     QRegion staticContents(QWidget *widget = nullptr, const QRect &withinClipRect = QRect()) const;
+    QRegion dirtyRegion() const { return dirty; }
+    QList<QWidget *> dirtyWidgetList() const { return dirtyWidgets; }
+    bool isDirty() const;
 
     bool bltRect(const QRect &rect, int dx, int dy, QWidget *widget);
 
@@ -120,8 +123,6 @@ private:
 
     void flush();
     void flush(QWidget *widget, const QRegion &region, QPlatformTextureList *widgetTextures);
-
-    bool isDirty() const;
 
     bool hasStaticContents() const;
     void updateStaticContentsSize();
