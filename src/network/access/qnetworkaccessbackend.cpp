@@ -849,6 +849,10 @@ QNetworkAccessBackendFactory::QNetworkAccessBackendFactory()
 /*!
     Destructs QNetworkAccessBackendFactory
 */
-QNetworkAccessBackendFactory::~QNetworkAccessBackendFactory() = default;
+QNetworkAccessBackendFactory::~QNetworkAccessBackendFactory()
+{
+    if (factoryData.exists())
+        factoryData->removeAll(this);
+};
 
 QT_END_NAMESPACE
