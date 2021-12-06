@@ -260,8 +260,7 @@ public:
     void insert(qsizetype i, const T &t);
     void insert(qsizetype i, qsizetype n, const T &t);
     void replace(qsizetype i, const T &t);
-    void remove(qsizetype i);
-    void remove(qsizetype i, qsizetype n);
+    void remove(qsizetype i, qsizetype n = 1);
     template <typename AT = T>
     qsizetype removeAll(const AT &t);
     template <typename AT = T>
@@ -597,10 +596,6 @@ template <class T, qsizetype Prealloc>
 inline void QVarLengthArray<T, Prealloc>::remove(qsizetype i, qsizetype n)
 { verify(i, n);
   erase(begin() + i, begin() + i + n); }
-template <class T, qsizetype Prealloc>
-inline void QVarLengthArray<T, Prealloc>::remove(qsizetype i)
-{ verify(i);
-  erase(begin() + i, begin() + i + 1); }
 template <class T, qsizetype Prealloc>
 template <typename AT>
 inline qsizetype QVarLengthArray<T, Prealloc>::removeAll(const AT &t)

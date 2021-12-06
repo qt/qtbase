@@ -569,16 +569,6 @@
     \sa operator[](), remove()
 */
 
-/*! \fn template<class T, qsizetype Prealloc> void QVarLengthArray<T, Prealloc>::remove(qsizetype i)
-
-    \overload
-    \since 4.8
-
-    Removes the element at index position \a i.
-
-    \sa insert(), replace()
-*/
-
 /*! \fn template<class T, qsizetype Prealloc> void QVarLengthArray<T, Prealloc>::remove(qsizetype i, qsizetype count)
 
     \overload
