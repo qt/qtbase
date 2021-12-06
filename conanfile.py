@@ -377,6 +377,7 @@ class QtBase(ConanFile):
     # use commit ID as the RREV (recipe revision)
     revision_mode = "scm"
     python_requires = "qt-conan-common/{0}@qt/everywhere".format(_get_qt_minor_version())
+    short_paths = True
 
     def set_version(self):
         # Executed during "conan export" i.e. in source tree
