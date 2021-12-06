@@ -34,11 +34,17 @@
 #include <QApplication>
 
 #include <private/qhighdpiscaling_p.h>
+#include <private/qwidget_p.h>
+
+//#define MANUAL_DEBUG
 
 class TestWidget : public QWidget
 {
 public:
-    TestWidget(QWidget *parent = nullptr) : QWidget(parent) {}
+    TestWidget(QWidget *parent = nullptr)
+    : QWidget(parent)
+    {
+    }
 
     QSize sizeHint() const override
     {
@@ -79,6 +85,128 @@ protected:
     }
 };
 
+class OpaqueWidget : public QWidget
+{
+public:
+    OpaqueWidget(const QColor &col, QWidget *parent = nullptr)
+    : QWidget(parent), fillColor(col)
+    {
+        setAttribute(Qt::WA_OpaquePaintEvent);
+    }
+
+protected:
+    void paintEvent(QPaintEvent *e) override
+    {
+        Q_UNUSED(e);
+        QPainter painter(this);
+        fillColor.setBlue(paintCount % 255);
+        painter.fillRect(e->rect(), fillColor);
+#ifdef MANUAL_DEBUG
+        ++paintCount;
+        painter.drawText(rect(), Qt::AlignCenter, QString::number(paintCount));
+#endif
+    }
+
+private:
+    QColor fillColor;
+    int paintCount = 0;
+};
+
+class Draggable : public OpaqueWidget
+{
+public:
+    Draggable(const QColor &col, QWidget *parent = nullptr)
+    : OpaqueWidget(col, parent)
+    {
+        left = new OpaqueWidget(Qt::gray, this);
+        top = new OpaqueWidget(Qt::gray, this);
+        right = new OpaqueWidget(Qt::gray, this);
+        bottom = new OpaqueWidget(Qt::gray, this);
+    }
+
+    QSize sizeHint() const override {
+        return QSize(100, 100);
+    }
+
+protected:
+    void resizeEvent(QResizeEvent *) override
+    {
+        if (!left)
+            return;
+        left->setGeometry(0, 0, 10, height());
+        top->setGeometry(10, 0, width() - 10, 10);
+        right->setGeometry(width() - 10, 10, 10, height() - 10);
+        bottom->setGeometry(10, height() - 10, width() - 10, 10);
+    }
+
+    void mousePressEvent(QMouseEvent *e) override
+    {
+        lastPos = e->position().toPoint();
+    }
+    void mouseMoveEvent(QMouseEvent *e) override
+    {
+        QPoint pos = geometry().topLeft();
+        pos += e->position().toPoint() - lastPos;
+        move(pos);
+    }
+    void mouseReleaseEvent(QMouseEvent *) override
+    {
+        lastPos = {};
+    }
+
+private:
+    OpaqueWidget *left = nullptr;
+    OpaqueWidget *top = nullptr;
+    OpaqueWidget *right = nullptr;
+    OpaqueWidget *bottom = nullptr;
+    QPoint lastPos;
+};
+
+class TestScene : public QWidget
+{
+public:
+    TestScene()
+    {
+        setObjectName("scene");
+
+        // opaque because it has an opaque background color and autoFillBackground is set
+        area = new QWidget(this);
+        area->setObjectName("area");
+        area->setAutoFillBackground(true);
+        QPalette palette;
+        palette.setColor(QPalette::Window, QColor::fromRgb(0, 0, 0));
+        area->setPalette(palette);
+
+        // all these children set WA_OpaquePaintEvent
+        redChild = new Draggable(Qt::red, area);
+        redChild->setObjectName("redChild");
+
+        greenChild = new Draggable(Qt::green, area);
+        greenChild->setObjectName("greenChild");
+
+        yellowChild = new Draggable(Qt::yellow, this);
+        yellowChild->setObjectName("yellowChild");
+
+        bar = new OpaqueWidget(Qt::darkGray, this);
+        bar->setObjectName("bar");
+    }
+
+    QWidget *area;
+    QWidget *redChild;
+    QWidget *greenChild;
+    QWidget *yellowChild;
+    QWidget *bar;
+
+    QSize sizeHint() const override { return QSize(400, 400); }
+
+protected:
+    void resizeEvent(QResizeEvent *) override
+    {
+        area->setGeometry(50, 50, width() - 100, height() - 100);
+        bar->setGeometry(width() / 2 - 25, height() / 2, 50, height() / 2);
+    }
+};
+
 class tst_QWidgetRepaintManager : public QObject
 {
     Q_OBJECT
@@ -96,6 +224,47 @@ private slots:
     void staticContents();
     void scroll();
     void moveWithOverlap();
+    void overlappedRegion();
+
+protected:
+    /*
+        This helper compares the widget as rendered on screen with the widget
+        as rendered via QWidget::grab. Since the latter always produces a fully
+        rendered image, it allows us to identify update issues in QWidgetRepaintManager
+        which would be visible in the former.
+    */
+    bool compareWidget(QWidget *w)
+    {
+        QScreen *screen = w->screen();
+        const QRect screenGeometry = screen->geometry();
+        QPoint globalPos = w->mapToGlobal(QPoint(0, 0));
+        if (globalPos.x() >= screenGeometry.width())
+            globalPos.rx() -= screenGeometry.x();
+        if (globalPos.y() >= screenGeometry.height())
+            globalPos.ry() -= screenGeometry.y();
+
+        QImage systemScreenshot;
+        QImage qtScreenshot;
+        bool result = QTest::qWaitFor([&]{
+            if (w->isFullScreen())
+                systemScreenshot = screen->grabWindow().toImage();
+            else
+                systemScreenshot = screen->grabWindow(w->window()->winId(),
+                                                      globalPos.x(), globalPos.y(),
+                                                      w->width(), w->height()).toImage();
+            systemScreenshot = systemScreenshot.convertToFormat(QImage::Format_RGB32);
+            qtScreenshot = w->grab().toImage().convertToFormat(systemScreenshot.format());
+            return systemScreenshot == qtScreenshot;
+        });
+
+#ifdef MANUAL_DEBUG
+        if (!result) {
+            systemScreenshot.save(QString("/tmp/system_%1_%2.png").arg(QTest::currentTestFunction(), QTest::currentDataTag()));
+            qtScreenshot.save(QString("/tmp/qt_%1_%2.png").arg(QTest::currentTestFunction(), QTest::currentDataTag()));
+        }
+#endif
+        return result;
+    };
 
 private:
     const int m_fuzz;
@@ -291,30 +460,6 @@ void tst_QWidgetRepaintManager::moveWithOverlap()
         inline QScrollArea *scrollArea() const { return m_scrollArea; }
         inline QWidget *topWidget() const { return m_topWidget; }
 
-        bool grabWidgetBackground(QWidget *w)
-        {
-            // To check widget's background we should compare two screenshots:
-            // the first one is taken by system tools through QScreen::grabWindow(),
-            // the second one is taken by Qt rendering to a pixmap via QWidget::grab().
-
-            QScreen *screen = w->screen();
-            const QRect screenGeometry = screen->geometry();
-            QPoint globalPos = w->mapToGlobal(QPoint(0, 0));
-            if (globalPos.x() >= screenGeometry.width())
-                globalPos.rx() -= screenGeometry.x();
-            if (globalPos.y() >= screenGeometry.height())
-                globalPos.ry() -= screenGeometry.y();
-
-            return QTest::qWaitFor([&]{
-                QImage systemScreenshot = screen->grabWindow(winId(),
-                                                             globalPos.x(), globalPos.y(),
-                                                             w->width(), w->height()).toImage();
-                systemScreenshot = systemScreenshot.convertToFormat(QImage::Format_RGB32);
-                QImage qtScreenshot = w->grab().toImage().convertToFormat(systemScreenshot.format());
-                return systemScreenshot == qtScreenshot;
-            });
-        };
-
     private:
         QScrollArea *m_scrollArea;
         QWidget *m_topWidget;
@@ -325,7 +470,7 @@ void tst_QWidgetRepaintManager::moveWithOverlap()
 
     QVERIFY(QTest::qWaitForWindowActive(&w));
 
-    bool result = w.grabWidgetBackground(w.topWidget());
+    bool result = compareWidget(w.topWidget());
     // if this fails already, then the system we test on can't compare screenshots from grabbed widgets,
     // and we have to skip this test. Possible reasons are that showing the window took too long, differences
     // in surface formats, or unrelated bugs in QScreen::grabWindow.
@@ -335,32 +480,84 @@ void tst_QWidgetRepaintManager::moveWithOverlap()
     // scroll the horizontal slider to the right side
     {
         w.scrollArea()->horizontalScrollBar()->setValue(w.scrollArea()->horizontalScrollBar()->maximum());
-        QVERIFY(w.grabWidgetBackground(w.topWidget()));
+        QVERIFY(compareWidget(w.topWidget()));
     }
 
     // scroll the vertical slider down
     {
         w.scrollArea()->verticalScrollBar()->setValue(w.scrollArea()->verticalScrollBar()->maximum());
-        QVERIFY(w.grabWidgetBackground(w.topWidget()));
+        QVERIFY(compareWidget(w.topWidget()));
     }
 
     // hide the top widget
     {
         w.topWidget()->hide();
-        QVERIFY(w.grabWidgetBackground(w.scrollArea()->viewport()));
+        QVERIFY(compareWidget(w.scrollArea()->viewport()));
     }
 
     // scroll the horizontal slider to the left side
     {
         w.scrollArea()->horizontalScrollBar()->setValue(w.scrollArea()->horizontalScrollBar()->minimum());
-        QVERIFY(w.grabWidgetBackground(w.scrollArea()->viewport()));
+        QVERIFY(compareWidget(w.scrollArea()->viewport()));
     }
 
     // scroll the vertical slider up
     {
         w.scrollArea()->verticalScrollBar()->setValue(w.scrollArea()->verticalScrollBar()->minimum());
-        QVERIFY(w.grabWidgetBackground(w.scrollArea()->viewport()));
+        QVERIFY(compareWidget(w.scrollArea()->viewport()));
     }
+}
+
+/*!
+    This tests QWidgetPrivate::overlappedRegion, which however is only used in the
+    QWidgetRepaintManager, so the test is here.
+*/
+void tst_QWidgetRepaintManager::overlappedRegion()
+{
+    TestScene scene;
+
+    if (scene.screen()->availableSize().width() < scene.sizeHint().width()
+     || scene.screen()->availableSize().height() < scene.sizeHint().height()) {
+        QSKIP("The screen on this system is too small for this test");
+    }
+
+    scene.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&scene));
+
+    auto overlappedRegion = [](QWidget *widget, bool breakAfterFirst = false){
+        auto *priv = QWidgetPrivate::get(widget);
+        // overlappedRegion works on parent coordinates (crect, i.e. QWidget::geometry)
+        return priv->overlappedRegion(widget->geometry(), breakAfterFirst);
+    };
+
+    // the yellow child is not overlapped
+    QVERIFY(overlappedRegion(scene.yellowChild).isEmpty());
+    // the green child is partially overlapped by the yellow child, which
+    // is at position -50, -50 relative to the green child (and 100x100 large)
+    QRegion overlap = overlappedRegion(scene.greenChild);
+    QVERIFY(!overlap.isEmpty());
+    QCOMPARE(overlap, QRegion(QRect(-50, -50, 100, 100)));
+    // the red child is completely obscured by the green child, and partially
+    // obscured by the yellow child. How exactly this is divided into rects is
+    // irrelevant for the test.
+    overlap = overlappedRegion(scene.redChild);
+    QVERIFY(!overlap.isEmpty());
+    QCOMPARE(overlap.boundingRect(), QRect(-50, -50, 150, 150));
+
+    // moving the red child out of obscurity
+    scene.redChild->move(100, 0);
+    overlap = overlappedRegion(scene.redChild);
+    QTRY_VERIFY(overlap.isEmpty());
+
+    // moving the red child down so it's partially behind the bar
+    scene.redChild->move(100, 100);
+    overlap = overlappedRegion(scene.redChild);
+    QTRY_VERIFY(!overlap.isEmpty());
+
+    // moving the yellow child so it is partially overlapped by the bar
+    scene.yellowChild->move(200, 200);
+    overlap = overlappedRegion(scene.yellowChild);
+    QTRY_VERIFY(!overlap.isEmpty());
 }
 
 QTEST_MAIN(tst_QWidgetRepaintManager)

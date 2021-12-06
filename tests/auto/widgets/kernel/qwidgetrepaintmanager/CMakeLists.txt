@@ -7,4 +7,5 @@ qt_internal_add_test(tst_qwidgetrepaintmanager
         Qt::GuiPrivate
         Qt::TestPrivate
         Qt::Widgets
+        Qt::WidgetsPrivate
 )
