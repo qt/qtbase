@@ -51,7 +51,7 @@ static void qClipboardCutTo(val event)
 {
     if (!QWasmIntegration::get()->getWasmClipboard()->hasClipboardApi()) {
         // Send synthetic Ctrl+X to make the app cut data to Qt's clipboard
-         QWindowSystemInterface::handleKeyEvent<QWindowSystemInterface::SynchronousDelivery>(
+         QWindowSystemInterface::handleKeyEvent(
                      0, QEvent::KeyPress, Qt::Key_C, Qt::ControlModifier, "X");
    }
 
@@ -62,7 +62,7 @@ static void qClipboardCopyTo(val event)
 {
     if (!QWasmIntegration::get()->getWasmClipboard()->hasClipboardApi()) {
         // Send synthetic Ctrl+C to make the app copy data to Qt's clipboard
-            QWindowSystemInterface::handleKeyEvent<QWindowSystemInterface::SynchronousDelivery>(
+            QWindowSystemInterface::handleKeyEvent(
                         0, QEvent::KeyPress, Qt::Key_C, Qt::ControlModifier, "C");
     }
     commonCopyEvent(event);
@@ -74,7 +74,7 @@ static void qWasmClipboardPaste(QMimeData *mData)
     QWasmIntegration::get()->clipboard()->
         QPlatformClipboard::setMimeData(mData, QClipboard::Clipboard);
 
-    QWindowSystemInterface::handleKeyEvent<QWindowSystemInterface::SynchronousDelivery>(
+    QWindowSystemInterface::handleKeyEvent(
                 0, QEvent::KeyPress, Qt::Key_V, Qt::ControlModifier, "V");
 }
 
