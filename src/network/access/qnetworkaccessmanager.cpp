@@ -80,6 +80,7 @@
 
 #include <QHostInfo>
 
+#include "QtCore/qapplicationstatic.h"
 #include <QtCore/private/qfactoryloader_p.h>
 
 #if defined(Q_OS_MACOS)
@@ -99,13 +100,13 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_GLOBAL_STATIC(QNetworkAccessFileBackendFactory, fileBackend)
+Q_APPLICATION_STATIC(QNetworkAccessFileBackendFactory, fileBackend)
 
 #ifdef QT_BUILD_INTERNAL
 Q_GLOBAL_STATIC(QNetworkAccessDebugPipeBackendFactory, debugpipeBackend)
 #endif
 
-Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
+Q_APPLICATION_STATIC_WITH_ARGS(QFactoryLoader, loader,
                           (QNetworkAccessBackendFactory_iid,
                            QLatin1String("/networkaccess")))
 #if defined(Q_OS_MACOS)
