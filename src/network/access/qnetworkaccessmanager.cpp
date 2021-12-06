@@ -106,9 +106,9 @@ Q_APPLICATION_STATIC(QNetworkAccessFileBackendFactory, fileBackend)
 Q_GLOBAL_STATIC(QNetworkAccessDebugPipeBackendFactory, debugpipeBackend)
 #endif
 
-Q_APPLICATION_STATIC_WITH_ARGS(QFactoryLoader, loader,
-                          (QNetworkAccessBackendFactory_iid,
-                           QLatin1String("/networkaccess")))
+Q_APPLICATION_STATIC(QFactoryLoader, loader, QNetworkAccessBackendFactory_iid,
+                     QLatin1String("/networkaccess"))
+
 #if defined(Q_OS_MACOS)
 bool getProxyAuth(const QString& proxyHostname, const QString &scheme, QString& username, QString& password)
 {

@@ -26,17 +26,18 @@
 ****************************************************************************/
 
 /*!
-    \macro Q_APPLICATION_STATIC(Type, VariableName)
+    \macro Q_APPLICATION_STATIC(Type, VariableName, ...)
     \since 6.3
     \relates QGlobalStatic
 
     This macro extends Q_GLOBAL_STATIC and creates a global and static object
-    of type \l QGlobalStatic, of name \a VariableName and that behaves as a
-    pointer to \a Type, where the actual lifetime of the type is bound to the
-    QCoreApplication. The object created by Q_APPLICATION_STATIC initializes
-    itself on the first use, which means that it will not increase the application
-    or the library's load time. Additionally, the object is initialized in a
-    thread-safe manner on all platforms.
+    of type \l QGlobalStatic, of name \a VariableName, initialized by the
+    variadic arguments, and that behaves as a pointer to \a Type, where the
+    actual lifetime of the type is bound to the QCoreApplication. The object
+    created by Q_APPLICATION_STATIC initializes itself on the first use, which
+    means that it will not increase the application or the library's load time.
+    Additionally, the object is initialized in a thread-safe manner on all
+    platforms.
 
     In contrast to Q_GLOBAL_STATIC where the type is only meant to be destroyed at
     program exit, here the actual lifetime of the type is bound to the lifetime of
@@ -56,8 +57,13 @@
     outside of any function bodies):
 
     \code
-        Q_APPLICATION_STATIC(MyQObjectType, staticType)
+        Q_APPLICATION_STATIC(MyQObjectType, staticType, "some string", function())
     \endcode
+
+    Do note that the arguments passed in variadic fashion to this macro are
+    evaluated every time the object is constructed, so in the above example,
+    the function \c{function} will be called more than once if the object is
+    recreated.
 
     Aside from the value also being bound to the lifetime of the QCoreApplication,
     this macro behaves identically to Q_GLOBAL_STATIC(). Please see that macro's
@@ -99,38 +105,5 @@
 
     \endomit
 
-    \sa Q_APPLICATION_STATIC_WITH_ARGS(), QGlobalStatic
-*/
-
-/*!
-    \macro Q_APPLICATION_STATIC_WITH_ARGS(Type, VariableName, Arguments)
-    \since 6.3
-    \relates QGlobalStatic
-
-    Creates a global and static object of type \l QGlobalStatic, of name \a
-    VariableName, initialized by the arguments \a Arguments and that behaves as
-    a pointer to \a Type, where the actual lifetime of the type is bound to the
-    QCoreApplication. The object created by Q_APPLICATION_STATIC_WITH_ARGS
-    initializes itself on the first use, which means that it will not increase
-    the application or the library's load time. Additionally, the object is
-    initialized in a thread-safe manner on all platforms.
-
-    Since the value is bound to the QCoreApplication it should only ever be accessed,
-    if there is a valid QCoreApplication::instance().
-
-    The typical use of this macro is as follows, in a global context (that is,
-    outside of any function bodies):
-
-    \code
-        Q_APPLICATION_STATIC_WITH_ARGS(MyQObjectType, staticType, (42, "Hello", "World"))
-    \endcode
-
-    The \a Arguments macro parameter must always include the parentheses or, if
-    C++11 uniform initialization is allowed, the braces.
-
-    Aside from the actual initialization of the contents with the supplied
-    arguments, this macro behaves identically to Q_APPLICATION_STATIC(). Please
-    see that macro's documentation for more information.
-
-    \sa Q_APPLICATION_STATIC(), QGlobalStatic
+    \sa Q_GLOBAL_STATIC, QGlobalStatic
 */

@@ -145,8 +145,8 @@ protected:
     static QGlobalStatic<QtGlobalStatic::Holder<Q_QGS_ ## NAME>> NAME;      \
     /**/
 
-#define Q_GLOBAL_STATIC(TYPE, NAME)                                         \
-    Q_GLOBAL_STATIC_WITH_ARGS(TYPE, NAME, ())
+#define Q_GLOBAL_STATIC(TYPE, NAME, ...)                                    \
+    Q_GLOBAL_STATIC_WITH_ARGS(TYPE, NAME, (__VA_ARGS__))
 
 QT_END_NAMESPACE
 #endif // QGLOBALSTATIC_H
