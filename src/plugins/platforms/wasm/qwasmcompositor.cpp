@@ -54,7 +54,9 @@ QWasmCompositor::QWasmCompositor(QWasmScreen *screen)
             QPointingDevice::Capability::Position | QPointingDevice::Capability::Area
                 | QPointingDevice::Capability::NormalizedPosition,
             10, 0);
+
     QWindowSystemInterface::registerInputDevice(m_touchDevice.get());
+    QWindowSystemInterface::setSynchronousWindowSystemEvents(true);
 }
 
 QWasmCompositor::~QWasmCompositor()
@@ -283,7 +285,7 @@ void QWasmCompositor::deliverUpdateRequest(QWasmWindow *window, UpdateRequestDel
         window->QPlatformWindow::deliverUpdateRequest();
     } else {
         QWindow *qwindow = window->window();
-        QWindowSystemInterface::handleExposeEvent<QWindowSystemInterface::SynchronousDelivery>(
+        QWindowSystemInterface::handleExposeEvent(
             qwindow, QRect(QPoint(0, 0), qwindow->geometry().size()));
     }
 }
@@ -472,7 +474,7 @@ bool QWasmCompositor::deliverEventToTarget(const PointerEvent &event, QWindow *e
         MouseEvent::mouseEventTypeFromEventType(event.type, windowArea);
 
     return eventType != QEvent::None &&
-           QWindowSystemInterface::handleMouseEvent<QWindowSystemInterface::SynchronousDelivery>(
+           QWindowSystemInterface::handleMouseEvent(
                eventTarget, QWasmIntegration::getTimestamp(),
                eventTarget->mapFromGlobal(targetPointClippedToScreen),
                targetPointClippedToScreen, event.mouseButtons, event.mouseButton,
@@ -574,7 +576,7 @@ bool QWasmCompositor::processKeyboard(int eventType, const EmscriptenKeyboardEve
     if (translatedEvent.text.size() > 1)
         translatedEvent.text.clear();
     const auto result =
-            QWindowSystemInterface::handleKeyEvent<QWindowSystemInterface::SynchronousDelivery>(
+            QWindowSystemInterface::handleKeyEvent(
                     0, translatedEvent.type, translatedEvent.key, modifiers, translatedEvent.text);
     return clipboardResult == ProcessKeyboardResult::NativeClipboardEventAndCopiedDataNeeded
             ? ProceedToNativeEvent
@@ -701,7 +703,7 @@ bool QWasmCompositor::processTouch(int eventType, const EmscriptenTouchEvent *to
     if (eventType == EMSCRIPTEN_EVENT_TOUCHCANCEL)
         accepted = QWindowSystemInterface::handleTouchCancelEvent(targetWindow, QWasmIntegration::getTimestamp(), m_touchDevice.get(), keyModifier);
     else
-        accepted = QWindowSystemInterface::handleTouchEvent<QWindowSystemInterface::SynchronousDelivery>(
+        accepted = QWindowSystemInterface::handleTouchEvent(
                 targetWindow, QWasmIntegration::getTimestamp(), m_touchDevice.get(), touchPointList, keyModifier);
 
     return static_cast<int>(accepted);
@@ -721,12 +723,12 @@ void QWasmCompositor::releaseCapture()
 void QWasmCompositor::leaveWindow(QWindow *window)
 {
     m_windowUnderMouse = nullptr;
-    QWindowSystemInterface::handleLeaveEvent<QWindowSystemInterface::SynchronousDelivery>(window);
+    QWindowSystemInterface::handleLeaveEvent(window);
 }
 
 void QWasmCompositor::enterWindow(QWindow *window, const QPoint &pointInTargetWindowCoords, const QPoint &targetPointInScreenCoords)
 {
-    QWindowSystemInterface::handleEnterEvent<QWindowSystemInterface::SynchronousDelivery>(window, pointInTargetWindowCoords, targetPointInScreenCoords);
+    QWindowSystemInterface::handleEnterEvent(window, pointInTargetWindowCoords, targetPointInScreenCoords);
 }
 
 bool QWasmCompositor::processMouseEnter(const EmscriptenMouseEvent *mouseEvent)

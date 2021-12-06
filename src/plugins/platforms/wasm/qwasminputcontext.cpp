@@ -144,7 +144,7 @@ void QWasmInputContext::inputStringChanged(QString &inputString, QWasmInputConte
     Q_UNUSED(context)
     QKeySequence keys = QKeySequence::fromString(inputString);
     // synthesize this keyevent as android is not normal
-    QWindowSystemInterface::handleKeyEvent<QWindowSystemInterface::SynchronousDelivery>(
+    QWindowSystemInterface::handleKeyEvent(
                 0, QEvent::KeyPress,keys[0].key(), keys[0].keyboardModifiers(), inputString);
 }
 
