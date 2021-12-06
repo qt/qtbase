@@ -62,6 +62,15 @@ class QVarLengthArray
 {
     static_assert(std::is_nothrow_destructible_v<T>, "Types with throwing destructors are not supported in Qt containers.");
 
+    Q_ALWAYS_INLINE void verify(qsizetype pos = 0, qsizetype n = 1) const
+    {
+        // verify that [data() + pos, data() + pos + n[ is a valid range
+        Q_ASSERT(pos >= 0);
+        Q_ASSERT(pos <= size());
+        Q_ASSERT(n >= 0);
+        Q_ASSERT(n <= size() - pos);
+    }
+
 public:
     QVarLengthArray() noexcept
         : a{Prealloc}, s{0}, ptr{reinterpret_cast<T *>(array)}
@@ -156,7 +165,7 @@ public:
 
     inline void removeLast()
     {
-        Q_ASSERT(size() > 0);
+        verify();
         if constexpr (QTypeInfo<T>::isComplex)
             data()[size() - 1].~T();
         --s;
@@ -166,22 +175,22 @@ public:
     inline qsizetype length() const { return size(); }
     inline T &first()
     {
-        Q_ASSERT(!isEmpty());
+        verify();
         return *begin();
     }
     inline const T &first() const
     {
-        Q_ASSERT(!isEmpty());
+        verify();
         return *begin();
     }
     T &last()
     {
-        Q_ASSERT(!isEmpty());
+        verify();
         return *(end() - 1);
     }
     const T &last() const
     {
-        Q_ASSERT(!isEmpty());
+        verify();
         return *(end() - 1);
     }
     inline bool isEmpty() const { return size() == 0; }
@@ -201,12 +210,12 @@ public:
 
     inline T &operator[](qsizetype idx)
     {
-        Q_ASSERT(idx >= 0 && idx < size());
+        verify(idx);
         return data()[idx];
     }
     inline const T &operator[](qsizetype idx) const
     {
-        Q_ASSERT(idx >= 0 && idx < size());
+        verify(idx);
         return data()[idx];
     }
     inline const T &at(qsizetype idx) const { return operator[](idx); }
@@ -574,23 +583,23 @@ Q_OUTOFLINE_TEMPLATE T QVarLengthArray<T, Prealloc>::value(qsizetype i, const T 
 
 template <class T, qsizetype Prealloc>
 inline void QVarLengthArray<T, Prealloc>::insert(qsizetype i, T &&t)
-{ Q_ASSERT_X(i >= 0 && i <= size(), "QVarLengthArray::insert", "index out of range");
+{ verify(i, 0);
   insert(cbegin() + i, std::move(t)); }
 template <class T, qsizetype Prealloc>
 inline void QVarLengthArray<T, Prealloc>::insert(qsizetype i, const T &t)
-{ Q_ASSERT_X(i >= 0 && i <= size(), "QVarLengthArray::insert", "index out of range");
+{ verify(i, 0);
   insert(begin() + i, 1, t); }
 template <class T, qsizetype Prealloc>
 inline void QVarLengthArray<T, Prealloc>::insert(qsizetype i, qsizetype n, const T &t)
-{ Q_ASSERT_X(i >= 0 && i <= size(), "QVarLengthArray::insert", "index out of range");
+{ verify(i, 0);
   insert(begin() + i, n, t); }
 template <class T, qsizetype Prealloc>
 inline void QVarLengthArray<T, Prealloc>::remove(qsizetype i, qsizetype n)
-{ Q_ASSERT_X(i >= 0 && n >= 0 && i + n <= size(), "QVarLengthArray::remove", "index out of range");
+{ verify(i, n);
   erase(begin() + i, begin() + i + n); }
 template <class T, qsizetype Prealloc>
 inline void QVarLengthArray<T, Prealloc>::remove(qsizetype i)
-{ Q_ASSERT_X(i >= 0 && i < size(), "QVarLengthArray::remove", "index out of range");
+{ verify(i);
   erase(begin() + i, begin() + i + 1); }
 template <class T, qsizetype Prealloc>
 template <typename AT>
@@ -614,7 +623,7 @@ inline void QVarLengthArray<T, Prealloc>::prepend(const T &t)
 template <class T, qsizetype Prealloc>
 inline void QVarLengthArray<T, Prealloc>::replace(qsizetype i, const T &t)
 {
-    Q_ASSERT_X(i >= 0 && i < size(), "QVarLengthArray::replace", "index out of range");
+    verify(i);
     const T copy(t);
     data()[i] = copy;
 }
