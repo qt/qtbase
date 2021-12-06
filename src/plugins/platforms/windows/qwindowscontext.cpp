@@ -181,14 +181,12 @@ QWindowsContext *QWindowsContext::m_instance = nullptr;
     \internal
 */
 
-typedef QHash<HWND, QWindowsWindow *> HandleBaseWindowHash;
-
 struct QWindowsContextPrivate {
     QWindowsContextPrivate();
 
     unsigned m_systemInfo = 0;
     QSet<QString> m_registeredWindowClassNames;
-    HandleBaseWindowHash m_windows;
+    QWindowsContext::HandleBaseWindowHash m_windows;
     HDC m_displayContext = nullptr;
     int m_defaultDPI = 96;
     QWindowsKeyMapper m_keyMapper;
@@ -458,6 +456,11 @@ bool QWindowsContext::useRTLExtensions() const
 QList<int> QWindowsContext::possibleKeys(const QKeyEvent *e) const
 {
     return d->m_keyMapper.possibleKeys(e);
+}
+
+QWindowsContext::HandleBaseWindowHash &QWindowsContext::windows()
+{
+    return d->m_windows;
 }
 
 QSharedPointer<QWindowCreationContext> QWindowsContext::setWindowCreationContext(const QSharedPointer<QWindowCreationContext> &ctx)

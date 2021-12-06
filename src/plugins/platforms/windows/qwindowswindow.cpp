@@ -2894,7 +2894,14 @@ void QWindowsWindow::applyCursor()
 void QWindowsWindow::setCursor(const CursorHandlePtr &c)
 {
 #ifndef QT_NO_CURSOR
-    if (c->handle() != m_cursor->handle()) {
+    bool changed = c->handle() != m_cursor->handle();
+    // QTBUG-98856: Cursors can get out of sync after restoring override
+    // cursors on native windows. Force an update.
+    if (testFlag(RestoreOverrideCursor)) {
+        clearFlag(RestoreOverrideCursor);
+        changed = true;
+    }
+    if (changed) {
         const bool apply = applyNewCursor(window());
         qCDebug(lcQpaWindows) << window() << __FUNCTION__
             << c->handle() << " doApply=" << apply;
