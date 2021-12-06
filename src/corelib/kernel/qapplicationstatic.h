@@ -100,20 +100,17 @@ template <typename QAS> struct ApplicationHolder
 };
 } // namespace QtGlobalStatic
 
-#define Q_APPLICATION_STATIC_WITH_ARGS(TYPE, NAME, ARGS)                    \
+#define Q_APPLICATION_STATIC(TYPE, NAME, ...) \
     namespace { struct Q_QAS_ ## NAME {                                     \
         typedef TYPE QAS_Type;                                              \
         static void innerFunction(void *pointer)                            \
-            noexcept(noexcept(std::remove_cv_t<QAS_Type> ARGS))             \
+            noexcept(noexcept(std::remove_cv_t<QAS_Type>(__VA_ARGS__)))     \
         {                                                                   \
-            new (pointer) QAS_Type ARGS;                                    \
+            new (pointer) QAS_Type(__VA_ARGS__);                            \
         }                                                                   \
     }; }                                                                    \
     static QGlobalStatic<QtGlobalStatic::ApplicationHolder<Q_QAS_ ## NAME>> NAME;\
     /**/
-
-#define Q_APPLICATION_STATIC(TYPE, NAME) \
-    Q_APPLICATION_STATIC_WITH_ARGS(TYPE, NAME, ())
 
 QT_END_NAMESPACE
 

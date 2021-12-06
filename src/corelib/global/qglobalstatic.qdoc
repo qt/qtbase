@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \macro Q_GLOBAL_STATIC(Type, VariableName)
+    \macro Q_GLOBAL_STATIC(Type, VariableName, ...)
     \since 5.1
     \relates QGlobalStatic
 
@@ -35,6 +35,11 @@
     by Q_GLOBAL_STATIC initializes itself on the first use, which means that it
     will not increase the application or the library's load time. Additionally,
     the object is initialized in a thread-safe manner on all platforms.
+
+    Since Qt 6.3, this macro admits variadic arguments, which are used to
+    initialize the object, thus making the need for \l
+    Q_GLOBAL_STATIC_WITH_ARGS unnecessary. Please note the arguments do not
+    require an extra set of parentheses, unlike the older macro.
 
     The typical use of this macro is as follows, in a global context (that is,
     outside of any function bodies):
@@ -273,12 +278,13 @@
 
     \endomit
 
-    \sa Q_GLOBAL_STATIC_WITH_ARGS(), QGlobalStatic
+    \sa Q_GLOBAL_STATIC_WITH_ARGS(), Q_APPLICATION_STATIC(), QGlobalStatic
 */
 
 /*!
     \macro Q_GLOBAL_STATIC_WITH_ARGS(Type, VariableName, Arguments)
     \since 5.1
+    \obsolete
     \relates QGlobalStatic
 
     Creates a global and static object of type \l QGlobalStatic, of name \a
@@ -296,7 +302,12 @@
     \endcode
 
     The \a Arguments macro parameter must always include the parentheses or, if
-    C++11 uniform initialization is allowed, the braces.
+    C++11 uniform initialization is allowed, the braces. The above call is
+    equivalent to
+
+    \code
+        Q_GLOBAL_STATIC(MyType, staticType, 42, "Hello", "World")
+    \endcode
 
     Aside from the actual initialization of the contents with the supplied
     arguments, this macro behaves identically to Q_GLOBAL_STATIC(). Please
