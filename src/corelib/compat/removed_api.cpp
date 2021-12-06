@@ -43,6 +43,23 @@
 
 QT_USE_NAMESPACE
 
+#if QT_REMOVED_SINCE(6, 1)
+
+#include "qmetatype.h"
+
+// keep in sync with version in header
+int QMetaType::id() const
+{
+    if (d_ptr) {
+        if (int id = d_ptr->typeId.loadRelaxed())
+            return id;
+        return idHelper();
+    }
+    return 0;
+}
+
+#endif // QT_REMOVED_SINCE(6, 1)
+
 #if QT_REMOVED_SINCE(6, 3)
 
 #include "tools/qcryptographichash.h"

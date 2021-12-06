@@ -445,13 +445,14 @@ public:
 
     bool isValid() const;
     bool isRegistered() const;
-#if defined(QT_QMETATYPE_BC_COMPAT) || defined(Q_QDOC)
+#if QT_REMOVED_SINCE(6, 1) || defined(Q_QDOC)
     int id() const;
 #else
     // ### Qt 7: Remove traces of out of line version
     // unused int parameter is used to avoid ODR violation
     int id(int = 0) const
     {
+        // keep in sync with the version in removed_api.cpp
         if (d_ptr) {
             if (int id = d_ptr->typeId.loadRelaxed())
                 return id;

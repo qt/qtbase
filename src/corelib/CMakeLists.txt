@@ -279,7 +279,6 @@ qt_internal_add_module(Core
 
 set(corelib_no_pch_sources
     compat/removed_api.cpp
-    kernel/qmetatype.cpp
 )
 
 foreach(src ${corelib_no_pch_sources})
