@@ -733,7 +733,11 @@ public:
     static void unregisterMutableViewFunction(QMetaType from, QMetaType to);
 
     static void unregisterMetaType(QMetaType type);
+
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
     const QtPrivate::QMetaTypeInterface *iface() { return d_ptr; }
+#endif
+    const QtPrivate::QMetaTypeInterface *iface() const { return d_ptr; }
 
 private:
     int idHelper() const;
