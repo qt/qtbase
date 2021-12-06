@@ -238,7 +238,8 @@ public:
         VulkanSurface = 0x400000,
         ResizeMoveActive = 0x800000,
         DisableNonClientScaling = 0x1000000,
-        Direct3DSurface = 0x2000000
+        Direct3DSurface = 0x2000000,
+        RestoreOverrideCursor = 0x4000000
     };
 
     QWindowsWindow(QWindow *window, const QWindowsWindowData &data);

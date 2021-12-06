@@ -652,6 +652,11 @@ void QWindowsCursor::clearOverrideCursor()
         SetCursor(m_overriddenCursor);
         m_overriddenCursor = m_overrideCursor = nullptr;
     }
+    auto &windows = QWindowsContext::instance()->windows();
+    for (auto it = windows.cbegin(), end = windows.cend(); it != end; ++it) {
+        if (it.value()->screen() == m_screen)
+            it.value()->setFlag(QWindowsWindow::RestoreOverrideCursor);
+    }
 }
 
 QPoint QWindowsCursor::mousePosition()
