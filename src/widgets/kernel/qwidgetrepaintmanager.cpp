@@ -439,7 +439,7 @@ void QWidgetPrivate::moveRect(const QRect &rect, int dx, int dy)
     const QRect parentRect(rect & clipR);
     const bool nativeWithTextureChild = textureChildSeen && hasPlatformWindow(q);
 
-    bool accelerateMove = accelEnv && isOpaque && !nativeWithTextureChild
+    bool accelerateMove = accelEnv && isOpaque && !nativeWithTextureChild && sourceRect.isValid()
 #if QT_CONFIG(graphicsview)
                           // No accelerate move for proxy widgets.
                           && !tlw->d_func()->extra->proxyWidget
