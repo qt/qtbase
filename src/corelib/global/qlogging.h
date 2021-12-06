@@ -136,11 +136,17 @@ public:
     QDebug info() const;
     QDebug info(const QLoggingCategory &cat) const;
     QDebug info(CategoryFunction catFunc) const;
+    Q_DECL_COLD_FUNCTION
     QDebug warning() const;
+    Q_DECL_COLD_FUNCTION
     QDebug warning(const QLoggingCategory &cat) const;
+    Q_DECL_COLD_FUNCTION
     QDebug warning(CategoryFunction catFunc) const;
+    Q_DECL_COLD_FUNCTION
     QDebug critical() const;
+    Q_DECL_COLD_FUNCTION
     QDebug critical(const QLoggingCategory &cat) const;
+    Q_DECL_COLD_FUNCTION
     QDebug critical(CategoryFunction catFunc) const;
 
     QNoDebug noDebug() const noexcept;
