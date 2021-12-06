@@ -1698,7 +1698,8 @@ public:
     iterator erase(const_iterator it)
     {
         Q_ASSERT(d);
-        iterator i = detach(it);
+        iterator iter = detach(it);
+        iterator i = iter;
         Chain *e = *i.e;
         Chain *next = e->next;
         *i.e = next;
@@ -1708,7 +1709,7 @@ public:
                 // last remaining entry, erase
                 i = iterator(d->erase(i.i));
             } else {
-                i = iterator(++it.i);
+                i = iterator(++iter.i);
             }
         }
         --m_size;

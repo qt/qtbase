@@ -550,6 +550,22 @@ void tst_QHash::erase()
     auto mit = h2.erase(bit);
     mit = h2.erase(h2.begin());
     QVERIFY(mit == h2.end());
+
+    h2 = QMultiHash<int, int>();
+    h2.emplace(1, 1);
+    h2.emplace(1, 2);
+    h2.emplace(3, 1);
+    h2.emplace(3, 4);
+    QMultiHash<int, int> h3 = h2;
+    auto it = h3.constFind(3);
+    ++it;
+    QVERIFY(h3.isSharedWith(h2));
+    it = h3.erase(it);
+    QVERIFY(!h3.isSharedWith(h2));
+    if (it != h3.cend()) {
+        auto it2 = h3.constFind(it.key());
+        QCOMPARE(it, it2);
+    }
 }
 
 /*
