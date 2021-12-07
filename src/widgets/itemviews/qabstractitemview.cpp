@@ -3982,14 +3982,14 @@ void QAbstractItemView::doAutoScroll()
         }
     }
 
-    int verticalStep = verticalScroll->pageStep();
-    int horizontalStep = horizontalScroll->pageStep();
+    const int verticalStep = verticalScroll->pageStep();
+    const int horizontalStep = horizontalScroll->pageStep();
     if (d->autoScrollCount < qMax(verticalStep, horizontalStep))
         ++d->autoScrollCount;
 
-    int margin = d->autoScrollMargin;
-    int verticalValue = verticalScroll->value();
-    int horizontalValue = horizontalScroll->value();
+    const int margin = d->autoScrollMargin;
+    const int verticalValue = verticalScroll->value();
+    const int horizontalValue = horizontalScroll->value();
 
     const QPoint pos = d->draggedPosition - d->offset();
     const QRect area = QWidgetPrivate::get(d->viewport)->clipRect();
@@ -4004,8 +4004,8 @@ void QAbstractItemView::doAutoScroll()
     else if (area.right() - pos.x() < margin)
         horizontalScroll->setValue(horizontalValue + d->autoScrollCount);
     // if nothing changed, stop scrolling
-    bool verticalUnchanged = (verticalValue == verticalScroll->value());
-    bool horizontalUnchanged = (horizontalValue == horizontalScroll->value());
+    const bool verticalUnchanged = (verticalValue == verticalScroll->value());
+    const bool horizontalUnchanged = (horizontalValue == horizontalScroll->value());
     if (verticalUnchanged && horizontalUnchanged) {
         stopAutoScroll();
     } else {
@@ -4013,13 +4013,29 @@ void QAbstractItemView::doAutoScroll()
         d->dropIndicatorRect = QRect();
         d->dropIndicatorPosition = QAbstractItemView::OnViewport;
 #endif
-        if (state() == QAbstractItemView::DragSelectingState) {
+        switch (state()) {
+        case QAbstractItemView::DragSelectingState: {
+            // mouseMoveEvent updates the drag-selection rectangle, so fake an event. This also
+            // updates draggedPosition taking the now scrolled viewport into account.
             const QPoint globalPos = d->viewport->mapToGlobal(pos);
             const QPoint windowPos = window()->mapFromGlobal(globalPos);
             QMouseEvent mm(QEvent::MouseMove, pos, windowPos, globalPos,
                            Qt::NoButton, Qt::LeftButton, d->pressedModifiers,
                            Qt::MouseEventSynthesizedByQt);
             QApplication::sendEvent(viewport(), &mm);
+            break;
+        }
+        case QAbstractItemView::DraggingState: {
+            // we can't simulate mouse (it would throw off the drag'n'drop state logic) or drag
+            // (we don't have the mime data or the actions) move events during drag'n'drop, so
+            // update our dragged position manually after the scroll. "pos" is the old
+            // draggedPosition - d->offset(), and d->offset() is now updated after scrolling, so
+            // pos + d->offset() gives us the new position.
+            d->draggedPosition = pos + d->offset();
+            break;
+        }
+        default:
+            break;
         }
         d->viewport->update();
     }
