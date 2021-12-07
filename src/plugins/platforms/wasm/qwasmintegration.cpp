@@ -328,4 +328,9 @@ void QWasmIntegration::resizeAllScreens()
         canvasAndScreen.second->updateQScreenAndCanvasRenderSize();
 }
 
+quint64 QWasmIntegration::getTimestamp()
+{
+    return emscripten_performance_now();
+}
+
 QT_END_NAMESPACE

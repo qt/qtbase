@@ -55,7 +55,7 @@ const char * QWasmScreen::m_canvasResizeObserverCallbackContextPropertyName = "d
 QWasmScreen::QWasmScreen(const emscripten::val &canvas)
     : m_canvas(canvas)
     , m_compositor(new QWasmCompositor(this))
-    , m_eventTranslator(new QWasmEventTranslator(this))
+    , m_eventTranslator(new QWasmEventTranslator())
 {
     updateQScreenAndCanvasRenderSize();
     m_canvas.call<void>("focus");

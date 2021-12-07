@@ -274,7 +274,7 @@ bool QWasmWindow::isPointOnResizeRegion(QPoint point) const
     return resizeRegion().contains(point);
 }
 
-QWasmWindow::ResizeMode QWasmWindow::resizeModeAtPoint(QPoint point) const
+QWasmCompositor::ResizeMode QWasmWindow::resizeModeAtPoint(QPoint point) const
 {
     QPoint p1 = window()->frameGeometry().topLeft() - QPoint(5, 5);
     QPoint p2 = window()->frameGeometry().bottomRight() + QPoint(5, 5);
@@ -291,28 +291,28 @@ QWasmWindow::ResizeMode QWasmWindow::resizeModeAtPoint(QPoint point) const
     if (top.contains(point)) {
         // Top
         if (left.contains(point))
-            return ResizeTopLeft;
+            return QWasmCompositor::ResizeTopLeft;
         if (center.contains(point))
-            return ResizeTop;
+            return QWasmCompositor::ResizeTop;
         if (right.contains(point))
-            return ResizeTopRight;
+            return QWasmCompositor::ResizeTopRight;
     } else if (middle.contains(point)) {
         // Middle
         if (left.contains(point))
-            return ResizeLeft;
+            return QWasmCompositor::ResizeLeft;
         if (right.contains(point))
-            return ResizeRight;
+            return QWasmCompositor::ResizeRight;
     } else if (bottom.contains(point)) {
         // Bottom
         if (left.contains(point))
-            return ResizeBottomLeft;
+            return QWasmCompositor::ResizeBottomLeft;
         if (center.contains(point))
-            return ResizeBottom;
+            return QWasmCompositor::ResizeBottom;
         if (right.contains(point))
-            return ResizeBottomRight;
+            return QWasmCompositor::ResizeBottomRight;
     }
 
-    return ResizeNone;
+    return QWasmCompositor::ResizeNone;
 }
 
 QRect getSubControlRect(const QWasmWindow *window, QWasmCompositor::SubControls subControl)
