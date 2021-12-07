@@ -1,0 +1,3 @@
+@echo off
+set PATH=@bindir@;%PATH%
+%*
