@@ -36,6 +36,12 @@
 #include <QtOpenGL/qopengltextureblitter.h>
 #include <QtGui/qpalette.h>
 #include <QtGui/qpainter.h>
+#include <QtGui/qinputdevice.h>
+
+#include <QPointer>
+#include <QPointingDevice>
+
+#include <emscripten/html5.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -43,6 +49,7 @@ class QWasmWindow;
 class QWasmScreen;
 class QOpenGLContext;
 class QOpenGLTexture;
+class QWasmEventTranslator;
 
 class QWasmCompositedWindow
 {
@@ -63,6 +70,7 @@ class QWasmCompositor : public QObject
 public:
     QWasmCompositor(QWasmScreen *screen);
     ~QWasmCompositor();
+    void deregisterEventHandlers();
     void destroy();
 
     enum QWasmSubControl {
@@ -83,6 +91,18 @@ public:
         State_Sunken =             0x00000004
     };
     Q_DECLARE_FLAGS(StateFlags, QWasmStateFlag)
+
+    enum ResizeMode {
+        ResizeNone,
+        ResizeTopLeft,
+        ResizeTop,
+        ResizeTopRight,
+        ResizeRight,
+        ResizeBottomRight,
+        ResizeBottom,
+        ResizeBottomLeft,
+        ResizeLeft
+    };
 
     struct QWasmTitleBarOptions {
         QRect rect;
@@ -128,9 +148,17 @@ public:
     void deliverUpdateRequests();
     void deliverUpdateRequest(QWasmWindow *window, UpdateRequestDeliveryType updateType);
     void handleBackingStoreFlush();
+    bool processMouse(int eventType, const EmscriptenMouseEvent *mouseEvent);
+    bool processKeyboard(int eventType, const EmscriptenKeyboardEvent *keyEvent);
+    bool processWheel(int eventType, const EmscriptenWheelEvent *wheelEvent);
+    int handleTouch(int eventType, const EmscriptenTouchEvent *touchEvent);
+    void resizeWindow(QWindow *window, QWasmCompositor::ResizeMode mode, QRect startRect, QPoint amount);
+
+private slots:
     void frame();
 
 private:
+    void initEventHandlers();
     void notifyTopWindowChanged(QWasmWindow *window);
     void drawWindow(QOpenGLTextureBlitter *blitter, QWasmScreen *screen, QWasmWindow *window);
     void drawWindowContent(QOpenGLTextureBlitter *blitter, QWasmScreen *screen, QWasmWindow *window);
@@ -156,6 +184,21 @@ private:
     int m_requestAnimationFrameId = -1;
     bool m_inDeliverUpdateRequest = false;
 
+    QPointer<QWindow> draggedWindow;
+    QPointer<QWindow> pressedWindow;
+    QPointer<QWindow> lastWindow;
+    Qt::MouseButtons pressedButtons;
+
+    QWasmCompositor::ResizeMode resizeMode;
+    QPoint resizePoint;
+    QRect resizeStartRect;
+    QPointingDevice *touchDevice;
+
+    QMap <int, QPointF> pressedTouchIds;
+
+    QCursor overriddenCursor;
+    bool isCursorOverridden = false;
+
     static QPalette makeWindowPalette();
 
     void drawFrameWindow(QWasmFrameOptions options, QPainter *painter);
@@ -163,6 +206,15 @@ private:
     void drawShadePanel(QWasmTitleBarOptions options, QPainter *painter);
     void drawItemPixmap(QPainter *painter, const QRect &rect,
                                     int alignment, const QPixmap &pixmap) const;
+
+    static int keyboard_cb(int eventType, const EmscriptenKeyboardEvent *keyEvent, void *userData);
+    static int mouse_cb(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData);
+    static int focus_cb(int eventType, const EmscriptenFocusEvent *focusEvent, void *userData);
+    static int wheel_cb(int eventType, const EmscriptenWheelEvent *wheelEvent, void *userData);
+
+    static int touchCallback(int eventType, const EmscriptenTouchEvent *ev, void *userData);
+
+    QWasmEventTranslator *eventTranslator;
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(QWasmCompositor::SubControls)
 

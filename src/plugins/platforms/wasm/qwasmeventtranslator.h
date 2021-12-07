@@ -49,59 +49,37 @@ class QWasmEventTranslator : public QObject
 
 public:
 
-    explicit QWasmEventTranslator(QWasmScreen *screen);
+    explicit QWasmEventTranslator();
     ~QWasmEventTranslator();
 
-    static int keyboard_cb(int eventType, const EmscriptenKeyboardEvent *keyEvent, void *userData);
-    static int mouse_cb(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData);
-    static int focus_cb(int eventType, const EmscriptenFocusEvent *focusEvent, void *userData);
-    static int wheel_cb(int eventType, const EmscriptenWheelEvent *wheelEvent, void *userData);
+    template <typename Event>
+    QFlags<Qt::KeyboardModifier> translatKeyModifier(const Event *event);
 
-    static int touchCallback(int eventType, const EmscriptenTouchEvent *ev, void *userData);
+    static Qt::Key translateEmscriptKey(const EmscriptenKeyboardEvent *emscriptKey);
+    QFlags<Qt::KeyboardModifier> translateKeyboardEventModifier(const EmscriptenKeyboardEvent *keyEvent);
+    QFlags<Qt::KeyboardModifier> translateMouseEventModifier(const EmscriptenMouseEvent *mouseEvent);
+    QFlags<Qt::KeyboardModifier> translateTouchEventModifier(const EmscriptenTouchEvent *touchEvent);
+    static Qt::MouseButton translateMouseButton(unsigned short button);
+    static QCursor cursorForMode(QWasmCompositor::ResizeMode mode);
 
-    void processEvents();
-    void initEventHandlers();
-    int handleTouch(int eventType, const EmscriptenTouchEvent *touchEvent);
+    QString getKeyText(const EmscriptenKeyboardEvent *keyEvent);
+    Qt::Key getKey(const EmscriptenKeyboardEvent *keyEvent);
+    void setStickyDeadKey(const EmscriptenKeyboardEvent *keyEvent);
+
+    void setIsMac(bool is_mac) {g_usePlatformMacSpecifics = is_mac;};
 
 Q_SIGNALS:
     void getWindowAt(const QPoint &point, QWindow **window);
 private:
-    QWasmScreen *screen();
-    Qt::Key translateEmscriptKey(const EmscriptenKeyboardEvent *emscriptKey);
-    template <typename Event>
-    QFlags<Qt::KeyboardModifier> translatKeyModifier(const Event *event);
-    QFlags<Qt::KeyboardModifier> translateKeyboardEventModifier(const EmscriptenKeyboardEvent *keyEvent);
-    QFlags<Qt::KeyboardModifier> translateMouseEventModifier(const EmscriptenMouseEvent *mouseEvent);
-    Qt::MouseButton translateMouseButton(unsigned short button);
-
-    bool processMouse(int eventType, const EmscriptenMouseEvent *mouseEvent);
-    bool processKeyboard(int eventType, const EmscriptenKeyboardEvent *keyEvent);
-
-    Qt::Key translateDeadKey(Qt::Key deadKey, Qt::Key accentBaseKey);
-
-    QMap <int, QPointF> pressedTouchIds;
+    bool g_usePlatformMacSpecifics = false;
+    static Qt::Key translateDeadKey(Qt::Key deadKey, Qt::Key accentBaseKey, bool is_mac = false);
 
 private:
-    QPointer<QWindow> draggedWindow;
-    QPointer<QWindow> pressedWindow;
-    QPointer<QWindow> lastWindow;
-    Qt::MouseButtons pressedButtons;
-
-    QWasmWindow::ResizeMode resizeMode;
-    QPoint resizePoint;
-    QRect resizeStartRect;
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-    QPointingDevice *touchDevice;
-#else
-    QTouchDevice *touchDevice;
-#endif
     static quint64 getTimestamp();
 
     Qt::Key m_emDeadKey = Qt::Key_unknown;
     bool m_emStickyDeadKey = false;
-    QCursor cursorForMode(QWasmWindow::ResizeMode mode);
-    QCursor overriddenCursor;
-    bool isCursorOverridden = false;
+
 };
 
 QT_END_NAMESPACE

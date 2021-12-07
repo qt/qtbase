@@ -89,6 +89,7 @@ public:
     void resizeAllScreens();
     void updateDpi();
     void removeBackingStore(QWindow* window);
+    static quint64 getTimestamp();
 
 private:
     mutable QWasmFontDatabase *m_fontDb;
