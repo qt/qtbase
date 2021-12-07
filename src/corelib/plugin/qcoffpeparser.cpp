@@ -45,10 +45,7 @@
 
 #include <optional>
 
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#undef min
-#undef max
+#include <qt_windows.h>
 
 QT_BEGIN_NAMESPACE
 
