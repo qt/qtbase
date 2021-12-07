@@ -53,6 +53,7 @@ private Q_SLOTS:
     void pinchGesture();
     void swipeGesture_data();
     void swipeGesture();
+    void touchReplay();
 #endif // !QT_NO_GESTURES
 
 private:
@@ -324,6 +325,25 @@ void tst_QGestureRecognizer::swipeGesture()
         QCoreApplication::processEvents();
         QVERIFY(!widget.gestureReceived(gestureType));
     }
+}
+
+void tst_QGestureRecognizer::touchReplay()
+{
+    const Qt::GestureType gestureType = Qt::TapGesture;
+    QWidget parent;
+    TestWidget widget(GestureTypeVector(1, gestureType));
+    widget.setParent(&parent);
+    widget.setGeometry(0, 0, 100, 100);
+    parent.adjustSize();
+    parent.show();
+    QVERIFY(QTest::qWaitForWindowActive(&parent));
+
+    QWindow* windowHandle = parent.window()->windowHandle();
+    const QPoint globalPos = QPoint(42, 16);
+    QTest::touchEvent(windowHandle, m_touchDevice).press(1, globalPos);
+    QTest::touchEvent(windowHandle, m_touchDevice).release(1, globalPos);
+
+    QVERIFY(widget.gestureReceived(gestureType));
 }
 
 #endif // !QT_NO_GESTURES
