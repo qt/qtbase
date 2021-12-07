@@ -68,6 +68,8 @@ class tst_QVarLengthArray : public QObject
 {
     Q_OBJECT
 private slots:
+    void defaultConstructor_int() { defaultConstructor<int>(); }
+    void defaultConstructor_QString() { defaultConstructor<QString>(); }
     void append();
     void prepend();
     void insertToEmpty();
@@ -112,6 +114,8 @@ private slots:
     void erase();
 
 private:
+    template <typename T>
+    void defaultConstructor();
     template <qsizetype N, typename T>
     void move(T t1, T t2);
     template <qsizetype N>
@@ -123,6 +127,23 @@ private:
     template<typename T>
     void initializeList();
 };
+
+template <typename T>
+void tst_QVarLengthArray::defaultConstructor()
+{
+    {
+        QVarLengthArray<T, 123> vla;
+        QCOMPARE(vla.size(), 0);
+        QVERIFY(vla.empty());
+        QVERIFY(vla.isEmpty());
+        QCOMPARE(vla.begin(), vla.end());
+        QCOMPARE(vla.capacity(), 123);
+    }
+    {
+        QVarLengthArray<T> vla;
+        QCOMPARE(vla.capacity(), 256);    // notice, should we change the default
+    }
+}
 
 void tst_QVarLengthArray::append()
 {
