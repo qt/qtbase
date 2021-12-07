@@ -30,6 +30,7 @@
 #include <qvarlengtharray.h>
 #include <qvariant.h>
 #include <qscopeguard.h>
+#include <qscopedvaluerollback.h>
 
 #include <memory>
 
@@ -85,6 +86,7 @@ private slots:
     void removeLast();
     void oldTests();
     void appendCausingRealloc();
+    void appendIsStronglyExceptionSafe();
     void resize();
     void realloc();
     void iterators();
@@ -400,6 +402,49 @@ void tst_QVarLengthArray::appendCausingRealloc()
     QVarLengthArray<float, 1> d(1);
     for (int i=0; i<30; i++)
         d.append(i);
+}
+
+void tst_QVarLengthArray::appendIsStronglyExceptionSafe()
+{
+#ifdef QT_NO_EXCEPTIONS
+    QSKIP("This test requires exception support enabled in the compiler.");
+#else
+    static bool throwOnCopyNow = false;
+    static bool throwOnMoveNow = false;
+    struct Thrower {
+        Thrower() = default;
+        Thrower(const Thrower &)
+        {
+            if (throwOnCopyNow)
+                throw 1;
+        }
+        Thrower &operator=(const Thrower &) = default;
+        Thrower(Thrower &&)
+        {
+            if (throwOnMoveNow)
+                throw 1;
+        }
+        Thrower &operator=(Thrower &&) = default;
+        ~Thrower() = default;
+    };
+
+    {
+        // ### TODO: QVLA isn't exception-safe when throwing during reallocation,
+        // ### so check with size() < capacity() for now
+        QVarLengthArray<Thrower, 2> vla(1);
+        {
+            Thrower t;
+            const QScopedValueRollback rb(throwOnCopyNow, true);
+            QVERIFY_THROWS_EXCEPTION(int, vla.push_back(t));
+            QCOMPARE(vla.size(), 1);
+        }
+        {
+            const QScopedValueRollback rb(throwOnMoveNow, true);
+            QVERIFY_THROWS_EXCEPTION(int, vla.push_back({}));
+            QCOMPARE(vla.size(), 1);
+        }
+    }
+#endif
 }
 
 void tst_QVarLengthArray::resize()

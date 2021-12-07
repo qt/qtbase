@@ -228,20 +228,19 @@ public:
         if (size() == capacity()) { // i.e. size() != 0
             T copy(t);
             reallocate(size(), size() << 1);
-            const qsizetype idx = s++;
-            new (data() + idx) T(std::move(copy));
+            new (end()) T(std::move(copy));
         } else {
-            const qsizetype idx = s++;
-            new (data() + idx) T(t);
+            new (end()) T(t);
         }
+        ++s;
     }
 
     void append(T &&t)
     {
         if (size() == capacity())
             reallocate(size(), size() << 1);
-        const qsizetype idx = s++;
-        new (data() + idx) T(std::move(t));
+        new (end()) T(std::move(t));
+        ++s;
     }
 
     void append(const T *buf, qsizetype size);
