@@ -84,7 +84,7 @@ QRect QLibInputTouch::screenGeometry(DeviceState *state)
         if (m_screen)
             screen = m_screen;
     }
-    return QHighDpi::toNativePixels(screen->geometry(), screen);
+    return screen ? QHighDpi::toNativePixels(screen->geometry(), screen) : QRect();
 }
 
 QPointF QLibInputTouch::getPos(libinput_event_touch *e)
