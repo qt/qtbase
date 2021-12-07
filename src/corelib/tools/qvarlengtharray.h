@@ -631,7 +631,7 @@ Q_OUTOFLINE_TEMPLATE auto QVarLengthArray<T, Prealloc>::emplace(const_iterator b
     Q_ASSERT(size() <= capacity());
     Q_ASSERT(capacity() > 0);
 
-    qsizetype offset = qsizetype(before - begin());
+    qsizetype offset = qsizetype(before - cbegin());
     if (size() == capacity())
         reserve(size() * 2);
     if constexpr (!QTypeInfo<T>::isRelocatable) {
@@ -661,7 +661,7 @@ Q_OUTOFLINE_TEMPLATE typename QVarLengthArray<T, Prealloc>::iterator QVarLengthA
 {
     Q_ASSERT_X(isValidIterator(before), "QVarLengthArray::insert", "The specified const_iterator argument 'before' is invalid");
 
-    qsizetype offset = qsizetype(before - begin());
+    qsizetype offset = qsizetype(before - cbegin());
     if (n != 0) {
         const T copy(t); // `t` could alias an element in [begin(), end()[
         resize(size() + n);
@@ -691,8 +691,8 @@ Q_OUTOFLINE_TEMPLATE typename QVarLengthArray<T, Prealloc>::iterator QVarLengthA
     Q_ASSERT_X(isValidIterator(abegin), "QVarLengthArray::insert", "The specified const_iterator argument 'abegin' is invalid");
     Q_ASSERT_X(isValidIterator(aend), "QVarLengthArray::insert", "The specified const_iterator argument 'aend' is invalid");
 
-    qsizetype f = qsizetype(abegin - begin());
-    qsizetype l = qsizetype(aend - begin());
+    qsizetype f = qsizetype(abegin - cbegin());
+    qsizetype l = qsizetype(aend - cbegin());
     qsizetype n = l - f;
 
     if constexpr (QTypeInfo<T>::isComplex) {
