@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -619,8 +619,7 @@ template <class T, qsizetype Prealloc>
 inline void QVarLengthArray<T, Prealloc>::replace(qsizetype i, const T &t)
 {
     verify(i);
-    const T copy(t);
-    data()[i] = copy;
+    data()[i] = t;
 }
 
 template <class T, qsizetype Prealloc>
