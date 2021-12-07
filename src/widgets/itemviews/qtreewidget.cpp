@@ -2564,9 +2564,6 @@ void QTreeWidgetPrivate::_q_dataChanged(const QModelIndex &topLeft,
     This signal is emitted when the specified \a item is expanded so that
     all of its children are displayed.
 
-    \note This signal will not be emitted if an item changes its state when
-    expandAll() is invoked.
-
     \sa QTreeWidgetItem::isExpanded(), itemCollapsed(), expandItem()
 */
 
