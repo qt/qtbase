@@ -216,20 +216,19 @@ public:
         if (s == a) { // i.e. s != 0
             T copy(t);
             reallocate(s, s << 1);
-            const qsizetype idx = s++;
-            new (ptr + idx) T(std::move(copy));
+            new (end()) T(std::move(copy));
         } else {
-            const qsizetype idx = s++;
-            new (ptr + idx) T(t);
+            new (end()) T(t);
         }
+        ++s;
     }
 
     void append(T &&t)
     {
         if (s == a)
             reallocate(s, s << 1);
-        const qsizetype idx = s++;
-        new (ptr + idx) T(std::move(t));
+        new (end()) T(std::move(t));
+        ++s;
     }
 
     void append(const T *buf, qsizetype size);
