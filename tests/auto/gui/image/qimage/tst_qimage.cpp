@@ -3945,7 +3945,10 @@ void tst_QImage::hugeQImage()
 #if Q_PROCESSOR_WORDSIZE < 8
     QSKIP("Test only makes sense on 64-bit machines");
 #else
-    QImage image(25000, 25000, QImage::Format_RGB32);
+    std::unique_ptr<char[]> enough(new (std::nothrow) char[qsizetype(25000)*25000*4]);
+    if (!enough)
+        QSKIP("Could not allocate enough memory");
+    QImage image((uchar*)enough.get(), 25000, 25000, QImage::Format_RGB32);
 
     QVERIFY(!image.isNull());
     QCOMPARE(image.height(), 25000);
