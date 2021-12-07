@@ -41,7 +41,9 @@
 
 #include <private/qmakearray_p.h>
 
+#include <QtCore/private/qstringiterator_p.h>
 #include <QtCore/QMetaMethod>
+
 #include <QtGui/QKeyEvent>
 #include <QtGui/private/qguiapplication_p.h>
 
@@ -574,7 +576,9 @@ static int keysymToQtKey_internal(xkb_keysym_t keysym, Qt::KeyboardModifiers mod
              // e.g CTRL + ۲ (arabic two), is mapped to CTRL + Qt::Key_2.
              qtKey = Qt::Key_0 + text.unicode()->digitValue();
          } else {
-             qtKey = text.unicode()->toUpper().unicode();
+             text = text.toUpper();
+             QStringIterator i(text);
+             qtKey = i.next(0);
          }
     }
 
