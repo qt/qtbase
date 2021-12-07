@@ -312,6 +312,11 @@ static_assert(!QTypeTraits::has_operator_equal_v<NoCmpRecursiveHashK>);
 static_assert(!QTypeTraits::has_operator_equal_v<NoCmpRecursiveMultiHashV>);
 static_assert(!QTypeTraits::has_operator_equal_v<NoCmpRecursiveMultiHashK>);
 
+template <typename T>
+constexpr inline bool has_prepend_v = true;
+template <typename T, qsizetype N>
+constexpr inline bool has_prepend_v<QVarLengthArray<T,N>> = false; // deprecated in Qt 6.3
+
 void tst_Collections::typeinfo()
 {
     QVERIFY(QTypeInfo<int*>::isPointer);
@@ -3452,7 +3457,10 @@ template<class Container> void insert_remove_loop_impl()
     t.append(T(IntOrString(1)));
     t << (T(IntOrString(2)));
     t += (T(IntOrString(3)));
-    t.prepend(T(IntOrString(4)));
+    if constexpr (has_prepend_v<Container>)
+        t.prepend(T(IntOrString(4)));
+    else
+        t.insert(t.cbegin(), T(IntOrString(4)));
     t.insert(2, 3 , T(IntOrString(5)));
     t.insert(4, T(IntOrString(6)));
     t.insert(t.begin() + 2, T(IntOrString(7)));

@@ -271,8 +271,12 @@ public:
     inline QVarLengthArray<T, Prealloc> &operator+=(T &&t)
     { append(std::move(t)); return *this; }
 
+#if QT_DEPRECATED_SINCE(6, 3)
+    QT_DEPRECATED_VERSION_X_6_3("This is slow. If you must, use insert(cbegin(), ~~~) instead.")
     void prepend(T &&t);
+    QT_DEPRECATED_VERSION_X_6_3("This is slow. If you must, use insert(cbegin(), ~~~) instead.")
     void prepend(const T &t);
+#endif
     void insert(qsizetype i, T &&t);
     void insert(qsizetype i, const T &t);
     void insert(qsizetype i, qsizetype n, const T &t);
@@ -596,12 +600,14 @@ template <class T, qsizetype Prealloc>
 template <typename Predicate>
 inline qsizetype QVarLengthArray<T, Prealloc>::removeIf(Predicate pred)
 { return QtPrivate::sequential_erase_if(*this, pred); }
+#if QT_DEPRECATED_SINCE(6, 3)
 template <class T, qsizetype Prealloc>
 inline void QVarLengthArray<T, Prealloc>::prepend(T &&t)
 { insert(cbegin(), std::move(t)); }
 template <class T, qsizetype Prealloc>
 inline void QVarLengthArray<T, Prealloc>::prepend(const T &t)
 { insert(begin(), 1, t); }
+#endif
 
 template <class T, qsizetype Prealloc>
 inline void QVarLengthArray<T, Prealloc>::replace(qsizetype i, const T &t)

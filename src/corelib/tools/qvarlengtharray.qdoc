@@ -545,6 +545,8 @@
     \fn template<class T, qsizetype Prealloc> void QVarLengthArray<T, Prealloc>::prepend(T &&value)
 
     \since 4.8
+    \deprecated [6.3] This is slow. If you must, use \c{insert(cbegin(), ~~~)} instead.
+
     Inserts \a value at the beginning of the array.
 
 

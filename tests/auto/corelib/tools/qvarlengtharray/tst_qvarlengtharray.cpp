@@ -72,7 +72,9 @@ private slots:
     void defaultConstructor_int() { defaultConstructor<int>(); }
     void defaultConstructor_QString() { defaultConstructor<QString>(); }
     void append();
+#if QT_DEPRECATED_SINCE(6, 3)
     void prepend();
+#endif
     void emplace();
     void move_int_1() { move_int<1>(); }
     void move_int_2() { move_int<2>(); }
@@ -169,6 +171,9 @@ void tst_QVarLengthArray::append()
     v2.append(5);
 }
 
+#if QT_DEPRECATED_SINCE(6, 3)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
 void tst_QVarLengthArray::prepend()
 {
     QVarLengthArray<QString, 2> v;
@@ -187,6 +192,8 @@ void tst_QVarLengthArray::prepend()
     v.prepend(v.back());
     QCOMPARE(v.front(), v.back());
 }
+QT_WARNING_POP
+#endif // QT_DEPRECATED_SINCE(6, 3)
 
 void tst_QVarLengthArray::emplace()
 {
@@ -1339,7 +1346,7 @@ void tst_QVarLengthArray::insertMove()
         QCOMPARE(MyBase::liveCount, 6);
         QCOMPARE(MyBase::movedCount, 2);
 
-        vec.prepend(std::move(m1));
+        vec.insert(vec.cbegin(), std::move(m1));
         QVERIFY(m1.wasConstructedAt(nullptr));
         QVERIFY(vec.at(0).wasConstructedAt(&m1));
         QVERIFY(vec.at(1).wasConstructedAt(&m3));
@@ -1411,7 +1418,7 @@ void tst_QVarLengthArray::nonCopyable()
     QVERIFY(!val4);
     QVERIFY(ptr3 == vec.at(0).get());
     QVERIFY(ptr4 == vec.at(1).get());
-    vec.prepend(std::move(val1));
+    vec.insert(vec.cbegin(), std::move(val1));
     QVERIFY(!val1);
     QVERIFY(ptr1 == vec.at(0).get());
     QVERIFY(ptr3 == vec.at(1).get());
