@@ -273,16 +273,9 @@ function(qt_internal_generate_tool_command_wrapper)
     set(bindir "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}/${INSTALL_BINDIR}")
     file(TO_NATIVE_PATH "${bindir}" bindir)
     set(tool_command_wrapper_path "${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/qt_setup_tool_path.bat")
-    if(CMAKE_VERSION VERSION_LESS 3.18)
-        # TODO: It doesn't make sense to generate wrapper at generator stage. Since file(CONFIGURE
-        # was added in CMake 3.18, keep file(GENERATE for compatibility, until the minimum required
-        # version is raised to 3.18.
-        file(GENERATE OUTPUT "${tool_command_wrapper_path}" CONTENT
-            "@echo off\r\nset PATH=${bindir}$<SEMICOLON>%PATH%\r\n%*")
-    else()
-        file(CONFIGURE OUTPUT "${tool_command_wrapper_path}" CONTENT
-            "@echo off\r\nset PATH=${bindir};%PATH%\r\n%*")
-    endif()
+    configure_file("${QT_CMAKE_DIR}/qt_setup_tool_path.bat.in"
+        "${tool_command_wrapper_path}" @ONLY
+        NEWLINE_STYLE WIN32)
     set(QT_TOOL_COMMAND_WRAPPER_PATH "${tool_command_wrapper_path}"
         CACHE INTERNAL "Path to the wrapper of the tool commands")
     set_property(GLOBAL PROPERTY _qt_internal_generate_tool_command_wrapper_called TRUE)
