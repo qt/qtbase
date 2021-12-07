@@ -225,22 +225,15 @@ public:
 
     inline void append(const T &t)
     {
-        if (size() == capacity()) { // i.e. size() != 0
-            T copy(t);
-            reallocate(size(), size() << 1);
-            new (end()) T(std::move(copy));
-        } else {
-            new (end()) T(t);
-        }
-        ++s;
+        if (size() == capacity())
+            emplace_back(T(t));
+        else
+            emplace_back(t);
     }
 
     void append(T &&t)
     {
-        if (size() == capacity())
-            reallocate(size(), size() << 1);
-        new (end()) T(std::move(t));
-        ++s;
+        emplace_back(std::move(t));
     }
 
     void append(const T *buf, qsizetype size);
