@@ -572,12 +572,12 @@ Q_OUTOFLINE_TEMPLATE T QVarLengthArray<T, Prealloc>::value(qsizetype i) const
 {
     if (size_t(i) >= size_t(size()))
         return T();
-    return at(i);
+    return operator[](i);
 }
 template <class T, qsizetype Prealloc>
 Q_OUTOFLINE_TEMPLATE T QVarLengthArray<T, Prealloc>::value(qsizetype i, const T &defaultValue) const
 {
-    return (size_t(i) >= size_t(size())) ? defaultValue : at(i);
+    return (size_t(i) >= size_t(size())) ? defaultValue : operator[](i);
 }
 
 template <class T, qsizetype Prealloc>
