@@ -66,7 +66,7 @@ class tst_QOffsetStringArray;
 QT_BEGIN_NAMESPACE
 
 QT_WARNING_PUSH
-#if defined(Q_CC_GNU) && Q_CC_GNU >= 900
+#if defined(Q_CC_GNU) && Q_CC_GNU >= 1100
 // we usually don't overread, but GCC has a false positive
 QT_WARNING_DISABLE_GCC("-Wstringop-overread")
 #endif
