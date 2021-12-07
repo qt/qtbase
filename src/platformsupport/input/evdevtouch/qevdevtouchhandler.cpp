@@ -756,7 +756,7 @@ QRect QEvdevTouchScreenData::screenGeometry() const
         if (m_screen)
             screen = m_screen;
     }
-    return QHighDpi::toNativePixels(screen->geometry(), screen);
+    return screen ? QHighDpi::toNativePixels(screen->geometry(), screen) : QRect();
 }
 
 void QEvdevTouchScreenData::reportPoints()
