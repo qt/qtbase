@@ -35,86 +35,42 @@ static const int N = 1000;
 
 struct MyBase
 {
-    MyBase(int i_)
-        : isCopy(false)
-    {
-        ++liveCount;
+    MyBase(int i_) : i(i_) { }
 
-        i = i_;
-    }
-
-    MyBase(const MyBase &other)
-        : isCopy(true)
-    {
-        if (isCopy)
-            ++copyCount;
-        ++liveCount;
-
-        i = other.i;
-    }
+    MyBase(const MyBase &other) : i(other.i) { }
 
     MyBase &operator=(const MyBase &other)
     {
-        if (!isCopy) {
-            isCopy = true;
-            ++copyCount;
-        } else {
-            ++errorCount;
-        }
-
         i = other.i;
         return *this;
-    }
-
-    ~MyBase()
-    {
-        if (isCopy) {
-            if (!copyCount)
-                ++errorCount;
-            else
-                --copyCount;
-        }
-        if (!liveCount)
-            ++errorCount;
-        else
-            --liveCount;
     }
 
     bool operator==(const MyBase &other) const
     { return i == other.i; }
 
 protected:
-    ushort i;
-    bool isCopy;
-
-public:
-    static int errorCount;
-    static int liveCount;
-    static int copyCount;
+    int i;
 };
-
-int MyBase::errorCount = 0;
-int MyBase::liveCount = 0;
-int MyBase::copyCount = 0;
 
 struct MyPrimitive : public MyBase
 {
-    MyPrimitive(int i = -1) : MyBase(i)
-    { ++errorCount; }
-    MyPrimitive(const MyPrimitive &other) : MyBase(other)
-    { ++errorCount; }
-    ~MyPrimitive()
-    { ++errorCount; }
+    MyPrimitive(int i_ = -1) : MyBase(i_) { }
+    MyPrimitive(const MyPrimitive &other) : MyBase(other) { }
+    MyPrimitive &operator=(const MyPrimitive &other)
+    {
+        MyBase::operator=(other);
+        return *this;
+    }
 };
 
 struct MyMovable : public MyBase
 {
-    MyMovable(int i = -1) : MyBase(i) {}
+    MyMovable(int i_ = -1) : MyBase(i_) {}
 };
 
 struct MyComplex : public MyBase
 {
-    MyComplex(int i = -1) : MyBase(i) {}
+    MyComplex(int i_ = -1) : MyBase(i_) {}
 };
 
 QT_BEGIN_NAMESPACE
@@ -277,43 +233,24 @@ private:
 template <class T>
 void removeAll_test(const QList<int> &i10, ushort valueToRemove, int itemsToRemove)
 {
-    bool isComplex = QTypeInfo<T>::isComplex;
-
-    MyBase::errorCount = 0;
-    MyBase::liveCount = 0;
-    MyBase::copyCount = 0;
-    {
-        QList<T> list;
-        QCOMPARE(MyBase::liveCount, 0);
-        QCOMPARE(MyBase::copyCount, 0);
-
-        for (int i = 0; i < 10 * N; ++i) {
-            T t(i10.at(i % 10));
-            list.append(t);
-        }
-        QCOMPARE(MyBase::liveCount, isComplex ? list.size() : 0);
-        QCOMPARE(MyBase::copyCount, isComplex ? list.size() : 0);
-
-        T t(valueToRemove);
-        QCOMPARE(MyBase::liveCount, isComplex ? list.size() + 1 : 1);
-        QCOMPARE(MyBase::copyCount, isComplex ? list.size() : 0);
-
-        int removedCount = 0; // make compiler happy by setting to 0
-        QList<T> l;
-
-        QBENCHMARK {
-            l = list;
-            removedCount = l.removeAll(t);
-        }
-        QCOMPARE(removedCount, itemsToRemove * N);
-        QCOMPARE(l.size() + removedCount, list.size());
-        QVERIFY(!l.contains(valueToRemove));
-
-        QCOMPARE(MyBase::liveCount, isComplex ? l.isDetached() ? list.size() + l.size() + 1 : list.size() + 1 : 1);
-        QCOMPARE(MyBase::copyCount, isComplex ? l.isDetached() ? list.size() + l.size() : list.size() : 0);
+    QList<T> list;
+    for (int i = 0; i < 10 * N; ++i) {
+        T t(i10.at(i % 10));
+        list.append(t);
     }
-    if (isComplex)
-        QCOMPARE(MyBase::errorCount, 0);
+
+    T t(valueToRemove);
+
+    qsizetype removedCount = 0; // make compiler happy by setting to 0
+    QList<T> l;
+
+    QBENCHMARK {
+        l = list;
+        removedCount = l.removeAll(t);
+    }
+    QCOMPARE(removedCount, itemsToRemove * N);
+    QCOMPARE(l.size() + removedCount, list.size());
+    QVERIFY(!l.contains(valueToRemove));
 }
 
 
