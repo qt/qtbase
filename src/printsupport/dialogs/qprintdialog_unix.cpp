@@ -1172,10 +1172,10 @@ void QUnixPrintWidgetPrivate::_q_printerChanged(int index)
             QString filename = widget.filename->text();
             widget.filename->setText(filename);
             widget.lOutput->setEnabled(true);
-            if (optionsPane)
-                optionsPane->selectPrinter(QPrinter::PdfFormat);
             printer->setOutputFormat(QPrinter::PdfFormat);
             m_currentPrintDevice = QPrintDevice();
+            if (optionsPane)
+                optionsPane->selectPrinter(QPrinter::PdfFormat);
             return;
         }
     }
