@@ -72,6 +72,7 @@ void tst_QSortFilterProxyModel::initTestCase()
     m_model = new QStandardItemModel(0, 1);
     m_proxy = new QSortFilterProxyModel();
     m_proxy->setSourceModel(m_model);
+    new QAbstractItemModelTester(m_proxy, this);
 }
 
 void tst_QSortFilterProxyModel::cleanupTestCase()
