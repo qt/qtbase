@@ -553,12 +553,18 @@ void QRhiNull::beginPass(QRhiCommandBuffer *cb,
                          QRhiResourceUpdateBatch *resourceUpdates,
                          QRhiCommandBuffer::BeginPassFlags flags)
 {
-    Q_UNUSED(rt);
     Q_UNUSED(colorClearValue);
     Q_UNUSED(depthStencilClearValue);
     Q_UNUSED(flags);
+
     if (resourceUpdates)
         resourceUpdate(cb, resourceUpdates);
+
+    if (rt->resourceType() == QRhiRenderTarget::TextureRenderTarget) {
+        QNullTextureRenderTarget *rtTex = QRHI_RES(QNullTextureRenderTarget, rt);
+        if (!QRhiRenderTargetAttachmentTracker::isUpToDate<QNullTexture, QNullRenderBuffer>(rtTex->description(), rtTex->d.currentResIdList))
+            rtTex->create();
+    }
 }
 
 void QRhiNull::endPass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates)
@@ -660,6 +666,7 @@ bool QNullRenderBuffer::create()
         destroy();
 
     valid = true;
+    generation += 1;
 
     QRHI_PROF;
     QRHI_PROF_F(newRenderBuffer(this, false, false, 1));
@@ -726,6 +733,8 @@ bool QNullTexture::create()
         }
     }
 
+    generation += 1;
+
     QRHI_PROF;
     QRHI_PROF_F(newTexture(this, true, mipLevelCount, layerCount, 1));
     rhiD->registerResource(this);
@@ -747,6 +756,8 @@ bool QNullTexture::createFrom(QRhiTexture::NativeTexture src)
     const bool hasMipMaps = m_flags.testFlag(MipMapped);
     QSize size = m_pixelSize.isEmpty() ? QSize(1, 1) : m_pixelSize;
     const int mipLevelCount = hasMipMaps ? rhiD->q->mipLevelsForSize(size) : 1;
+
+    generation += 1;
 
     QRHI_PROF;
     QRHI_PROF_F(newTexture(this, false, mipLevelCount, isCube ? 6 : (isArray ? m_arraySize : 1), 1));
@@ -871,6 +882,7 @@ bool QNullTextureRenderTarget::create()
     } else if (m_desc.depthTexture()) {
         d.pixelSize = m_desc.depthTexture()->pixelSize();
     }
+    QRhiRenderTargetAttachmentTracker::updateResIdList<QNullTexture, QNullRenderBuffer>(m_desc, &d.currentResIdList);
     return true;
 }
 

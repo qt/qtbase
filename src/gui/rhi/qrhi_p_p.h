@@ -706,6 +706,83 @@ private:
     int p = 0;
 };
 
+struct QRhiRenderTargetAttachmentTracker
+{
+    struct ResId { quint64 id; uint generation; };
+    using ResIdList = QVarLengthArray<ResId, 8 * 2 + 1>; // color, resolve, ds
+
+    template<typename TexType, typename RenderBufferType>
+    static void updateResIdList(const QRhiTextureRenderTargetDescription &desc, ResIdList *dst);
+
+    template<typename TexType, typename RenderBufferType>
+    static bool isUpToDate(const QRhiTextureRenderTargetDescription &desc, const ResIdList &currentResIdList);
+};
+
+inline bool operator==(const QRhiRenderTargetAttachmentTracker::ResId &a, const QRhiRenderTargetAttachmentTracker::ResId &b)
+{
+    return a.id == b.id && a.generation == b.generation;
+}
+
+inline bool operator!=(const QRhiRenderTargetAttachmentTracker::ResId &a, const QRhiRenderTargetAttachmentTracker::ResId &b)
+{
+    return !(a == b);
+}
+
+template<typename TexType, typename RenderBufferType>
+void QRhiRenderTargetAttachmentTracker::updateResIdList(const QRhiTextureRenderTargetDescription &desc, ResIdList *dst)
+{
+    const quintptr colorAttCount = desc.cendColorAttachments() - desc.cbeginColorAttachments();
+    const bool hasDepthStencil = desc.depthStencilBuffer() || desc.depthTexture();
+    dst->resize(colorAttCount * 2 + (hasDepthStencil ? 1 : 0));
+    int n = 0;
+    for (auto it = desc.cbeginColorAttachments(), itEnd = desc.cendColorAttachments(); it != itEnd; ++it, ++n) {
+        const QRhiColorAttachment &colorAtt(*it);
+        if (colorAtt.texture()) {
+            TexType *texD = QRHI_RES(TexType, colorAtt.texture());
+            (*dst)[n] = { texD->globalResourceId(), texD->generation };
+        } else if (colorAtt.renderBuffer()) {
+            RenderBufferType *rbD = QRHI_RES(RenderBufferType, colorAtt.renderBuffer());
+            (*dst)[n] = { rbD->globalResourceId(), rbD->generation };
+        } else {
+            (*dst)[n] = { 0, 0 };
+        }
+        ++n;
+        if (colorAtt.resolveTexture()) {
+            TexType *texD = QRHI_RES(TexType, colorAtt.resolveTexture());
+            (*dst)[n] = { texD->globalResourceId(), texD->generation };
+        } else {
+            (*dst)[n] = { 0, 0 };
+        }
+    }
+    if (hasDepthStencil) {
+        if (desc.depthTexture()) {
+            TexType *depthTexD = QRHI_RES(TexType, desc.depthTexture());
+            (*dst)[n] = { depthTexD->globalResourceId(), depthTexD->generation };
+        } else if (desc.depthStencilBuffer()) {
+            RenderBufferType *depthRbD = QRHI_RES(RenderBufferType, desc.depthStencilBuffer());
+            (*dst)[n] = { depthRbD->globalResourceId(), depthRbD->generation };
+        } else {
+            (*dst)[n] = { 0, 0 };
+        }
+    }
+}
+
+template<typename TexType, typename RenderBufferType>
+bool QRhiRenderTargetAttachmentTracker::isUpToDate(const QRhiTextureRenderTargetDescription &desc, const ResIdList &currentResIdList)
+{
+    // Just as setShaderResources() recognizes if an srb's referenced
+    // resources have been rebuilt (got a create() since the srb's
+    // create()), we should do the same for the textures and renderbuffers
+    // referenced from the rendertarget. It is not uncommon that a texture
+    // or ds buffer gets resized due to following a window size in some
+    // form, which involves a create() on them. It is then nice if the
+    // render target auto-rebuilds in beginPass().
+
+    ResIdList resIdList;
+    updateResIdList<TexType, RenderBufferType>(desc, &resIdList);
+    return resIdList == currentResIdList;
+}
+
 QT_END_NAMESPACE
 
 #endif

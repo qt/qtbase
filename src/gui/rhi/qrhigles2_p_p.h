@@ -108,6 +108,7 @@ struct QGles2RenderBuffer : public QRhiRenderBuffer
     GLuint stencilRenderbuffer = 0; // when packed depth-stencil not supported
     int samples;
     bool owns = true;
+    uint generation = 0;
     friend class QRhiGles2;
 };
 
@@ -213,6 +214,7 @@ struct QGles2RenderTargetData
     int colorAttCount = 0;
     int dsAttCount = 0;
     bool srgbUpdateAndBlend = false;
+    QRhiRenderTargetAttachmentTracker::ResIdList currentResIdList;
 };
 
 struct QGles2ReferenceRenderTarget : public QRhiRenderTarget

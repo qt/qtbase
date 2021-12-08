@@ -296,6 +296,8 @@ struct QMetalRenderTargetData
         bool hasStencil = false;
         bool depthNeedsStore = false;
     } fb;
+
+    QRhiRenderTargetAttachmentTracker::ResIdList currentResIdList;
 };
 
 struct QMetalGraphicsPipelineData
@@ -2030,6 +2032,8 @@ void QRhiMetal::beginPass(QRhiCommandBuffer *cb,
     {
         QMetalTextureRenderTarget *rtTex = QRHI_RES(QMetalTextureRenderTarget, rt);
         rtD = rtTex->d;
+        if (!QRhiRenderTargetAttachmentTracker::isUpToDate<QMetalTexture, QMetalRenderBuffer>(rtTex->description(), rtD->currentResIdList))
+            rtTex->create();
         cbD->d->currentPassRpDesc = d->createDefaultRenderPass(rtD->dsAttCount, colorClearValue, depthStencilClearValue, rtD->colorAttCount);
         if (rtTex->m_flags.testFlag(QRhiTextureRenderTarget::PreserveColorContents)) {
             for (uint i = 0; i < uint(rtD->colorAttCount); ++i)
@@ -3180,6 +3184,8 @@ bool QMetalTextureRenderTarget::create()
     } else {
         d->dsAttCount = 0;
     }
+
+    QRhiRenderTargetAttachmentTracker::updateResIdList<QMetalTexture, QMetalRenderBuffer>(m_desc, &d->currentResIdList);
 
     return true;
 }

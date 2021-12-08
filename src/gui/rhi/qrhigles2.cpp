@@ -3793,6 +3793,12 @@ void QRhiGles2::beginPass(QRhiCommandBuffer *cb,
     // glMemoryBarrier() calls based on that tracker when submitted.
     enqueueBarriersForPass(cbD);
 
+    if (rt->resourceType() == QRhiRenderTarget::TextureRenderTarget) {
+        QGles2TextureRenderTarget *rtTex = QRHI_RES(QGles2TextureRenderTarget, rt);
+        if (!QRhiRenderTargetAttachmentTracker::isUpToDate<QGles2Texture, QGles2RenderBuffer>(rtTex->description(), rtTex->d.currentResIdList))
+            rtTex->create();
+    }
+
     bool wantsColorClear, wantsDsClear;
     QGles2RenderTargetData *rtD = enqueueBindFramebuffer(rt, cbD, &wantsColorClear, &wantsDsClear);
 
@@ -4626,6 +4632,7 @@ bool QGles2RenderBuffer::create()
     }
 
     owns = true;
+    generation += 1;
     rhiD->registerResource(this);
     return true;
 }
@@ -4653,6 +4660,7 @@ bool QGles2RenderBuffer::createFrom(NativeRenderBuffer src)
     QRHI_PROF_F(newRenderBuffer(this, false, false, samples));
 
     owns = false;
+    generation += 1;
     rhiD->registerResource(this);
     return true;
 }
@@ -5113,6 +5121,8 @@ bool QGles2TextureRenderTarget::create()
         qWarning("Framebuffer incomplete: 0x%x", status);
         return false;
     }
+
+    QRhiRenderTargetAttachmentTracker::updateResIdList<QGles2Texture, QGles2RenderBuffer>(m_desc, &d.currentResIdList);
 
     rhiD->registerResource(this);
     return true;

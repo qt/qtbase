@@ -1762,6 +1762,8 @@ void QRhiD3D11::beginPass(QRhiCommandBuffer *cb,
         QD3D11TextureRenderTarget *rtTex = QRHI_RES(QD3D11TextureRenderTarget, rt);
         wantsColorClear = !rtTex->m_flags.testFlag(QRhiTextureRenderTarget::PreserveColorContents);
         wantsDsClear = !rtTex->m_flags.testFlag(QRhiTextureRenderTarget::PreserveDepthStencilContents);
+        if (!QRhiRenderTargetAttachmentTracker::isUpToDate<QD3D11Texture, QD3D11RenderBuffer>(rtTex->description(), rtD->currentResIdList))
+            rtTex->create();
     }
 
     cbD->commands.get().cmd = QD3D11CommandBuffer::Command::ResetShaderResources;
@@ -2898,6 +2900,7 @@ bool QD3D11RenderBuffer::create()
     QRHI_PROF;
     QRHI_PROF_F(newRenderBuffer(this, false, false, int(sampleDesc.Count)));
 
+    generation += 1;
     rhiD->registerResource(this);
     return true;
 }
@@ -3608,6 +3611,8 @@ bool QD3D11TextureRenderTarget::create()
 
     d.dsv = dsv;
     d.rp = QRHI_RES(QD3D11RenderPassDescriptor, m_renderPassDesc);
+
+    QRhiRenderTargetAttachmentTracker::updateResIdList<QD3D11Texture, QD3D11RenderBuffer>(m_desc, &d.currentResIdList);
 
     rhiD->registerResource(this);
     return true;

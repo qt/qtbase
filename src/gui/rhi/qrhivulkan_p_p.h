@@ -123,6 +123,7 @@ struct QVkRenderBuffer : public QRhiRenderBuffer
     QVkTexture *backingTexture = nullptr;
     VkFormat vkformat;
     int lastActiveFrameSlot = -1;
+    uint generation = 0;
     friend class QRhiVulkan;
 };
 
@@ -214,6 +215,7 @@ struct QVkRenderTargetData
     int colorAttCount = 0;
     int dsAttCount = 0;
     int resolveAttCount = 0;
+    QRhiRenderTargetAttachmentTracker::ResIdList currentResIdList;
     static const int MAX_COLOR_ATTACHMENTS = 8;
 };
 

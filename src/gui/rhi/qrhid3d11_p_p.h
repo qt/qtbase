@@ -96,6 +96,7 @@ struct QD3D11RenderBuffer : public QRhiRenderBuffer
     ID3D11RenderTargetView *rtv = nullptr;
     DXGI_FORMAT dxgiFormat;
     DXGI_SAMPLE_DESC sampleDesc;
+    uint generation = 0;
     friend class QRhiD3D11;
 };
 
@@ -172,6 +173,8 @@ struct QD3D11RenderTargetData
     static const int MAX_COLOR_ATTACHMENTS = 8;
     ID3D11RenderTargetView *rtv[MAX_COLOR_ATTACHMENTS];
     ID3D11DepthStencilView *dsv = nullptr;
+
+    QRhiRenderTargetAttachmentTracker::ResIdList currentResIdList;
 };
 
 struct QD3D11ReferenceRenderTarget : public QRhiRenderTarget

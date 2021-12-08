@@ -330,8 +330,21 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
         ubuf->setSize(512);
         ubuf->create(); // same as ubuf->destroy(); ubuf->create();
 
-        // that's it, srb needs no changes whatsoever
+        // That's it, srb needs no changes whatsoever, any references in it to
+        // ubuf stay valid. When it comes to internal details, such as that
+        // ubuf may now be backed by a completely different native buffer
+        // resource, that is is recognized and handled automatically by the
+        // next setShaderResources().
     \endcode
+
+    QRhiTextureRenderTarget offers the same contract: calling
+    QRhiCommandBuffer::beginPass() is safe even when one of the render target's
+    associated textures or renderbuffers has been rebuilt (by calling \c
+    create() on it) since the creation of the render target object. This allows
+    the application to resize a texture by setting a new pixel size on the
+    QRhiTexture and calling create(), thus creating a whole new native texture
+    resource underneath, without having to update the QRhiTextureRenderTarget
+    as that will be done implicitly in beginPass().
 
     \section3 Pooled objects
 
@@ -5669,6 +5682,25 @@ void QRhiCommandBuffer::resourceUpdate(QRhiResourceUpdateBatch *resourceUpdates)
     called inside a pass. Also, with the exception of setGraphicsPipeline(),
     they expect to have a pipeline set already on the command buffer.
     Unspecified issues may arise otherwise, depending on the backend.
+
+    If \a rt is a QRhiTextureRenderTarget, beginPass() performs a check to see
+    if the texture and renderbuffer objects referenced from the render target
+    are up-to-date. This is similar to what setShaderResources() does for
+    QRhiShaderResourceBindings. If any of the attachments had been rebuilt
+    since QRhiTextureRenderTarget::create(), an implicit call to create() is
+    made on \a rt. Therefore, if \a rt has a QRhiTexture color attachment \c
+    texture, and one needs to make the texture a different size, the following
+    is then valid:
+    \badcode
+      rt = rhi->newTextureRenderTarget({ { texture } });
+      rt->create();
+      ...
+      texture->setPixelSize(new_size);
+      texture->create();
+      cb->beginPass(rt, ...); // this is ok, no explicit rt->create() is required before
+    \endcode
+
+    \sa endPass()
  */
 void QRhiCommandBuffer::beginPass(QRhiRenderTarget *rt,
                                   const QColor &colorClearValue,
@@ -5684,6 +5716,8 @@ void QRhiCommandBuffer::beginPass(QRhiRenderTarget *rt,
 
     \a resourceUpdates, when not null, specifies a resource update batch that
     is to be committed and then released.
+
+    \sa beginPass()
  */
 void QRhiCommandBuffer::endPass(QRhiResourceUpdateBatch *resourceUpdates)
 {

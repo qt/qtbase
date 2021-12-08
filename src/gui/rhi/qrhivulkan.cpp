@@ -2175,6 +2175,9 @@ static inline QRhiPassResourceTracker::UsageState toPassTrackerUsageState(const 
 
 void QRhiVulkan::activateTextureRenderTarget(QVkCommandBuffer *cbD, QVkTextureRenderTarget *rtD)
 {
+    if (!QRhiRenderTargetAttachmentTracker::isUpToDate<QVkTexture, QVkRenderBuffer>(rtD->description(), rtD->d.currentResIdList))
+        rtD->create();
+
     rtD->lastActiveFrameSlot = currentFrameSlot;
     rtD->d.rp->lastActiveFrameSlot = currentFrameSlot;
     QRhiPassResourceTracker &passResTracker(cbD->passResTrackers[cbD->currentPassResTrackerIndex]);
@@ -5759,6 +5762,7 @@ bool QVkRenderBuffer::create()
     }
 
     lastActiveFrameSlot = -1;
+    generation += 1;
     rhiD->registerResource(this);
     return true;
 }
@@ -6571,6 +6575,8 @@ bool QVkTextureRenderTarget::create()
         qWarning("Failed to create framebuffer: %d", err);
         return false;
     }
+
+    QRhiRenderTargetAttachmentTracker::updateResIdList<QVkTexture, QVkRenderBuffer>(m_desc, &d.currentResIdList);
 
     lastActiveFrameSlot = -1;
     rhiD->registerResource(this);
