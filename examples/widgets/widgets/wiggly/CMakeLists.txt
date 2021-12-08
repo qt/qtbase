@@ -1,5 +1,3 @@
-# Generated from wiggly.pro.
-
 cmake_minimum_required(VERSION 3.16)
 project(wiggly LANGUAGES CXX)
 

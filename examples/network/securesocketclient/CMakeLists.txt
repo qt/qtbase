@@ -1,5 +1,3 @@
-# Generated from securesocketclient.pro.
-
 cmake_minimum_required(VERSION 3.16)
 project(securesocketclient LANGUAGES CXX)
 

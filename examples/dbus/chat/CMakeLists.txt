@@ -1,5 +1,3 @@
-# Generated from chat.pro.
-
 cmake_minimum_required(VERSION 3.16)
 project(chat LANGUAGES CXX)
 
@@ -17,7 +15,6 @@ set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/dbus/chat")
 
 find_package(Qt6 REQUIRED COMPONENTS Core DBus Gui Widgets)
 
-# special case begin
 set(chat_SRCS)
 qt_add_dbus_interface(chat_SRCS
     org.example.chat.xml
@@ -29,12 +26,12 @@ qt_add_dbus_adaptor(chat_SRCS
     QObject
     chat_adaptor
 )
-# special case end
+
 qt_add_executable(chat
     chat.cpp chat.h
     chatmainwindow.ui
     chatsetnickname.ui
-    ${chat_SRCS} # special case
+    ${chat_SRCS}
 )
 set_target_properties(chat PROPERTIES
     WIN32_EXECUTABLE TRUE

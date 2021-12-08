@@ -1,5 +1,3 @@
-# Generated from tablet.pro.
-
 cmake_minimum_required(VERSION 3.16)
 project(qttablet LANGUAGES CXX)
 

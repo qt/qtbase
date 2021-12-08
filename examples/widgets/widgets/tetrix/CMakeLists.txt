@@ -1,5 +1,3 @@
-# Generated from tetrix.pro.
-
 cmake_minimum_required(VERSION 3.16)
 project(tetrix LANGUAGES CXX)
 

@@ -1,5 +1,3 @@
-# Generated from network.pro.
-
 if(NOT TARGET Qt::Network)
     return()
 endif()

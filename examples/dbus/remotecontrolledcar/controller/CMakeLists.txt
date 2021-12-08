@@ -1,5 +1,3 @@
-# Generated from controller.pro.
-
 cmake_minimum_required(VERSION 3.16)
 project(controller LANGUAGES CXX)
 
@@ -17,17 +15,16 @@ set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/dbus/remotecontrolledcar/controll
 
 find_package(Qt6 REQUIRED COMPONENTS Core DBus Gui Widgets)
 
-# special case begin
 set(controller_SRCS)
 qt_add_dbus_interface(controller_SRCS
     car.xml
     car_interface
 )
-# special case end
+
 qt_add_executable(controller
     controller.cpp controller.h controller.ui
     main.cpp
-    ${controller_SRCS} # special case
+    ${controller_SRCS}
 )
 set_target_properties(controller PROPERTIES
     WIN32_EXECUTABLE TRUE

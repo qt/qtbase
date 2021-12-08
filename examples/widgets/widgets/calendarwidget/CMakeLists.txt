@@ -1,5 +1,3 @@
-# Generated from calendarwidget.pro.
-
 cmake_minimum_required(VERSION 3.16)
 project(calendarwidget LANGUAGES CXX)
 

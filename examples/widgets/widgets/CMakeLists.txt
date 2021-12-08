@@ -1,5 +1,3 @@
-# Generated from widgets.pro.
-
 qt_internal_add_example(analogclock)
 qt_internal_add_example(calculator)
 qt_internal_add_example(calendarwidget)

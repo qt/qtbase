@@ -1,5 +1,3 @@
-# Generated from queuedcustomtype.pro.
-
 cmake_minimum_required(VERSION 3.16)
 project(queuedcustomtype LANGUAGES CXX)
 

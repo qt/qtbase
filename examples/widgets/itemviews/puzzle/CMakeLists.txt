@@ -1,5 +1,3 @@
-# Generated from puzzle.pro.
-
 cmake_minimum_required(VERSION 3.16)
 project(puzzle LANGUAGES CXX)
 
@@ -17,17 +15,17 @@ set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/widgets/itemviews/puzzle")
 
 find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets)
 
-qt_add_executable(itemviews_puzzle # special case: renamed puzzle
+qt_add_executable(itemviews_puzzle
     main.cpp
     mainwindow.cpp mainwindow.h
     piecesmodel.cpp piecesmodel.h
     puzzlewidget.cpp puzzlewidget.h
 )
-set_target_properties(itemviews_puzzle PROPERTIES # special case
+set_target_properties(itemviews_puzzle PROPERTIES
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
 )
-target_link_libraries(itemviews_puzzle PUBLIC # special case
+target_link_libraries(itemviews_puzzle PUBLIC
     Qt::Core
     Qt::Gui
     Qt::Widgets
@@ -46,7 +44,7 @@ qt_add_resources(itemviews_puzzle "puzzle"
         ${puzzle_resource_files}
 )
 
-install(TARGETS itemviews_puzzle # special case: renamed puzzle
+install(TARGETS itemviews_puzzle
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
     LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"

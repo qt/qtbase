@@ -1,5 +1,3 @@
-# Generated from multistreamclient.pro.
-
 cmake_minimum_required(VERSION 3.16)
 project(multistreamclient LANGUAGES CXX)
 

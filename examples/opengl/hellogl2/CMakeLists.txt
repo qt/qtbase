@@ -1,5 +1,3 @@
-# Generated from hellogl2.pro.
-
 cmake_minimum_required(VERSION 3.16)
 project(hellogl2 LANGUAGES CXX)
 

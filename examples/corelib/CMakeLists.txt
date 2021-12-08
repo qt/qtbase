@@ -1,5 +1,3 @@
-# Generated from corelib.pro.
-
 add_subdirectory(bindableproperties)
 add_subdirectory(ipc)
 add_subdirectory(mimetypes)

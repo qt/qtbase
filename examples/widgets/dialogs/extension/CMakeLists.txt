@@ -1,5 +1,3 @@
-# Generated from extension.pro.
-
 cmake_minimum_required(VERSION 3.16)
 project(extension LANGUAGES CXX)
 

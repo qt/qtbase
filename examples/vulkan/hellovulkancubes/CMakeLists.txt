@@ -1,5 +1,3 @@
-# Generated from hellovulkancubes.pro.
-
 cmake_minimum_required(VERSION 3.16)
 project(hellovulkancubes LANGUAGES CXX)
 

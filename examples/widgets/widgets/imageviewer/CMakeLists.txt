@@ -1,5 +1,3 @@
-# Generated from imageviewer.pro.
-
 cmake_minimum_required(VERSION 3.16)
 project(imageviewer LANGUAGES CXX)
 
@@ -33,11 +31,10 @@ target_link_libraries(imageviewer PUBLIC
     Qt::Gui
     Qt::Widgets
 )
-# special case begin
+
 if (TARGET Qt::PrintSupport)
     target_link_libraries(imageviewer PUBLIC Qt::PrintSupport)
 endif()
-# special case end
 
 if(TARGET Qt::PrintSupport)
     target_link_libraries(imageviewer PUBLIC

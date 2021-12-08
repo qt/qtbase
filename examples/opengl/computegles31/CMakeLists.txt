@@ -1,5 +1,3 @@
-# Generated from computegles31.pro.
-
 cmake_minimum_required(VERSION 3.16)
 project(computegles31 LANGUAGES CXX)
 

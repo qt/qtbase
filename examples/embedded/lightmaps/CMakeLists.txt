@@ -1,5 +1,3 @@
-# Generated from lightmaps.pro.
-
 cmake_minimum_required(VERSION 3.16)
 project(lightmaps LANGUAGES CXX)
 

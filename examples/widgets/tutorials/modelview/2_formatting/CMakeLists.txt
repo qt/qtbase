@@ -1,5 +1,3 @@
-# Generated from 2_formatting.pro.
-
 cmake_minimum_required(VERSION 3.16)
 project(mv_formatting LANGUAGES CXX)
 

@@ -1,5 +1,3 @@
-# Generated from qpa.pro.
-
 if(NOT TARGET Qt::Gui)
     return()
 endif()

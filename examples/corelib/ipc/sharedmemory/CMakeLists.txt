@@ -1,5 +1,3 @@
-# Generated from sharedmemory.pro.
-
 cmake_minimum_required(VERSION 3.16)
 project(sharedmemory LANGUAGES CXX)
 

@@ -1,5 +1,3 @@
-# Generated from interview.pro.
-
 cmake_minimum_required(VERSION 3.16)
 project(interview LANGUAGES CXX)
 

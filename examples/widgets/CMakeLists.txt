@@ -1,5 +1,3 @@
-# Generated from widgets.pro.
-
 if(NOT TARGET Qt::Widgets)
     return()
 endif()
@@ -24,7 +22,7 @@ add_subdirectory(widgets)
 if(QT_FEATURE_draganddrop)
     add_subdirectory(draganddrop)
 endif()
-if(QT_FEATURE_cursor) # special case
+if(QT_FEATURE_cursor)
     add_subdirectory(mainwindows)
 endif()
 if(QT_FEATURE_opengl AND TARGET Qt::Gui)

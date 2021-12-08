@@ -1,5 +1,3 @@
-# Generated from graphicsview.pro.
-
 qt_internal_add_example(chip)
 qt_internal_add_example(elasticnodes)
 qt_internal_add_example(embeddeddialogs)

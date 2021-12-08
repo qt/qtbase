@@ -1,6 +1,3 @@
-# special case skip regeneration
-# Port of shared.pri to be included by painting examples
-
 add_library(painting_shared OBJECT)
 add_library(painting_shared::painting_shared ALIAS painting_shared)
 qt6_wrap_cpp(moc_files arthurwidgets.h hoverpoints.h) # no automoc for OBJECT libs:-/

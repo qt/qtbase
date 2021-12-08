@@ -1,5 +1,3 @@
-# Generated from raycasting.pro.
-
 cmake_minimum_required(VERSION 3.16)
 project(raycasting LANGUAGES CXX)
 

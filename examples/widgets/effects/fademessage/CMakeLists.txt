@@ -1,5 +1,3 @@
-# Generated from fademessage.pro.
-
 cmake_minimum_required(VERSION 3.16)
 project(fademessage LANGUAGES CXX)
 

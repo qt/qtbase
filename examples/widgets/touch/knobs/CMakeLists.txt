@@ -1,5 +1,3 @@
-# Generated from knobs.pro.
-
 cmake_minimum_required(VERSION 3.16)
 project(knobs LANGUAGES CXX)
 

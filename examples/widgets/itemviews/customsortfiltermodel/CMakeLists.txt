@@ -1,5 +1,3 @@
-# Generated from customsortfiltermodel.pro.
-
 cmake_minimum_required(VERSION 3.16)
 project(customsortfiltermodel LANGUAGES CXX)
 

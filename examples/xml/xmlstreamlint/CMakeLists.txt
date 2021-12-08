@@ -1,5 +1,3 @@
-# Generated from xmlstreamlint.pro.
-
 cmake_minimum_required(VERSION 3.16)
 project(xmlstreamlint LANGUAGES CXX)
 
@@ -26,7 +24,7 @@ set_target_properties(xmlstreamlint PROPERTIES
 )
 target_link_libraries(xmlstreamlint PUBLIC
     Qt::Core
-    Qt::Xml # special case: add
+    Qt::Xml
 )
 
 install(TARGETS xmlstreamlint

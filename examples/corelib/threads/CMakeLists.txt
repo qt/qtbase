@@ -1,5 +1,3 @@
-# Generated from threads.pro.
-
 qt_internal_add_example(semaphores)
 qt_internal_add_example(waitconditions)
 if(TARGET Qt::Widgets)

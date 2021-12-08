@@ -1,5 +1,3 @@
-# Generated from 1_readonly.pro.
-
 cmake_minimum_required(VERSION 3.16)
 project(mv_readonly LANGUAGES CXX)
 

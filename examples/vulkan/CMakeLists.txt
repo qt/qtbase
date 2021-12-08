@@ -1,5 +1,3 @@
-# Generated from vulkan.pro.
-
 qt_internal_add_example(hellovulkanwindow)
 qt_internal_add_example(hellovulkantriangle)
 qt_internal_add_example(hellovulkantexture)
