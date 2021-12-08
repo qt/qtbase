@@ -924,13 +924,13 @@ size_t qHash(const QVarLengthArray<T, Prealloc> &key, size_t seed = 0)
 template <typename T, qsizetype Prealloc, typename AT>
 qsizetype erase(QVarLengthArray<T, Prealloc> &array, const AT &t)
 {
-    return QtPrivate::sequential_erase(array, t);
+    return array.removeAll(t);
 }
 
 template <typename T, qsizetype Prealloc, typename Predicate>
 qsizetype erase_if(QVarLengthArray<T, Prealloc> &array, Predicate pred)
 {
-    return QtPrivate::sequential_erase_if(array, pred);
+    return array.removeIf(pred);
 }
 
 QT_END_NAMESPACE
