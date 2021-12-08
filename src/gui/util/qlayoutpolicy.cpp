@@ -43,6 +43,14 @@
 
 QT_BEGIN_NAMESPACE
 
+constexpr QLayoutPolicy::Policy QLayoutPolicy::Fixed;
+constexpr QLayoutPolicy::Policy QLayoutPolicy::Minimum;
+constexpr QLayoutPolicy::Policy QLayoutPolicy::Maximum;
+constexpr QLayoutPolicy::Policy QLayoutPolicy::Preferred;
+constexpr QLayoutPolicy::Policy QLayoutPolicy::MinimumExpanding;
+constexpr QLayoutPolicy::Policy QLayoutPolicy::Expanding;
+constexpr QLayoutPolicy::Policy QLayoutPolicy::Ignored;
+
 void QLayoutPolicy::setControlType(ControlType type)
 {
     /*

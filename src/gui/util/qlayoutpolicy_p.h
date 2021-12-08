@@ -78,13 +78,13 @@ public:
     Q_DECLARE_FLAGS(Policy, PolicyFlag)
     Q_FLAG(Policy)
 
-    static constexpr inline Policy Fixed = {};
-    static constexpr inline Policy Minimum = GrowFlag;
-    static constexpr inline Policy Maximum = ShrinkFlag;
-    static constexpr inline Policy Preferred = Minimum | Maximum;
-    static constexpr inline Policy MinimumExpanding = Minimum | ExpandFlag;
-    static constexpr inline Policy Expanding = Preferred | ExpandFlag;
-    static constexpr inline Policy Ignored = Preferred | IgnoreFlag;
+    static constexpr Policy Fixed = {};
+    static constexpr Policy Minimum = GrowFlag;
+    static constexpr Policy Maximum = ShrinkFlag;
+    static constexpr Policy Preferred = Minimum | Maximum;
+    static constexpr Policy MinimumExpanding = Minimum | ExpandFlag;
+    static constexpr Policy Expanding = Preferred | ExpandFlag;
+    static constexpr Policy Ignored = Preferred | IgnoreFlag;
 
     enum ControlType {
         DefaultType      = 0x00000001,
