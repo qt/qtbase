@@ -206,6 +206,8 @@ protected:
     template <typename...Args>
     iterator emplace_impl(qsizetype prealloc, void *array, const_iterator pos, Args&&...arg);
 
+    iterator insert_impl(qsizetype prealloc, void *array, const_iterator pos, qsizetype n, const T &t);
+
     template <typename S>
     bool equal(const QVLABase<S> &other) const
     {
@@ -219,6 +221,8 @@ protected:
 
     void append_impl(qsizetype prealloc, void *array, const T *buf, qsizetype n);
     void reallocate_impl(qsizetype prealloc, void *array, qsizetype size, qsizetype alloc);
+    void resize_impl(qsizetype prealloc, void *array, qsizetype sz)
+    { reallocate_impl(prealloc, array, sz, qMax(sz, capacity())); }
 
     bool isValidIterator(const const_iterator &i) const
     {
@@ -371,7 +375,7 @@ public:
         return back();
     }
     bool isEmpty() const { return empty(); }
-    void resize(qsizetype sz) { reallocate(sz, qMax(sz, capacity())); }
+    void resize(qsizetype sz) { Base::resize_impl(Prealloc, this->array, sz); }
     inline void clear() { resize(0); }
     void squeeze() { reallocate(size(), size()); }
 
@@ -498,7 +502,8 @@ public:
     using Base::rend;
     using Base::crend;
 
-    iterator insert(const_iterator before, qsizetype n, const T &x);
+    iterator insert(const_iterator before, qsizetype n, const T &x)
+    { return Base::insert_impl(Prealloc, this->array, before, n, x); }
     iterator insert(const_iterator before, T &&x) { return emplace(before, std::move(x)); }
     inline iterator insert(const_iterator before, const T &x) { return insert(before, 1, x); }
 #ifdef Q_QDOC
@@ -845,15 +850,15 @@ Q_OUTOFLINE_TEMPLATE auto QVLABase<T>::emplace_impl(qsizetype prealloc, void *ar
     return data() + offset;
 }
 
-template <class T, qsizetype Prealloc>
-Q_OUTOFLINE_TEMPLATE typename QVarLengthArray<T, Prealloc>::iterator QVarLengthArray<T, Prealloc>::insert(const_iterator before, qsizetype n, const T &t)
+template <class T>
+Q_OUTOFLINE_TEMPLATE auto QVLABase<T>::insert_impl(qsizetype prealloc, void *array, const_iterator before, qsizetype n, const T &t) -> iterator
 {
     Q_ASSERT_X(isValidIterator(before), "QVarLengthArray::insert", "The specified const_iterator argument 'before' is invalid");
 
     qsizetype offset = qsizetype(before - cbegin());
     if (n != 0) {
         const T copy(t); // `t` could alias an element in [begin(), end()[
-        resize(size() + n);
+        resize_impl(prealloc, array, size() + n);
         if constexpr (!QTypeInfo<T>::isRelocatable) {
             T *b = begin() + offset;
             T *j = end();
