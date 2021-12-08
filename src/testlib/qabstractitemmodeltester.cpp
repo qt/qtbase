@@ -570,7 +570,7 @@ void QAbstractItemModelTesterPrivate::checkChildren(const QModelIndex &parent, i
 
             // recursively go down the children
             if (model->hasChildren(index) && currentDepth < 10)
-                checkChildren(index, ++currentDepth);
+                checkChildren(index, currentDepth + 1);
 
             // make sure that after testing the children that the index doesn't change.
             QModelIndex newerIndex = model->index(r, c, parent);
