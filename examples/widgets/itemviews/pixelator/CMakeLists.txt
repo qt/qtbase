@@ -42,7 +42,7 @@ set(images_resource_files
     "images/qt.png"
 )
 
-qt6_add_resources(pixelator "images"
+qt_add_resources(pixelator "images"
     PREFIX
         "/"
     FILES

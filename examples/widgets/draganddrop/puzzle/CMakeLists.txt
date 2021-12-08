@@ -39,7 +39,7 @@ set(puzzle_resource_files
     "example.jpg"
 )
 
-qt6_add_resources(draganddrop_puzzle "puzzle" # special case
+qt_add_resources(draganddrop_puzzle "puzzle" # special case
     PREFIX
         "/images"
     FILES

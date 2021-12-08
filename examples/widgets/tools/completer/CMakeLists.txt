@@ -39,7 +39,7 @@ set(completer_resource_files
     "resources/wordlist.txt"
 )
 
-qt6_add_resources(completer "completer"
+qt_add_resources(completer "completer"
     PREFIX
         "/"
     FILES

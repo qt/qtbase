@@ -39,7 +39,7 @@ set(interview_resource_files
     "images/services.png"
 )
 
-qt6_add_resources(interview "interview"
+qt_add_resources(interview "interview"
     PREFIX
         "/"
     FILES

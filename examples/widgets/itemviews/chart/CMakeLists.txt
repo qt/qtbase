@@ -38,7 +38,7 @@ set(chart_resource_files
     "qtdata.cht"
 )
 
-qt6_add_resources(chart "chart"
+qt_add_resources(chart "chart"
     PREFIX
         "/Charts"
     FILES

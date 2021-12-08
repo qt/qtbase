@@ -19,11 +19,11 @@ find_package(Qt6 REQUIRED COMPONENTS Core DBus Gui Widgets)
 
 # special case begin
 set(chat_SRCS)
-qt6_add_dbus_interface(chat_SRCS
+qt_add_dbus_interface(chat_SRCS
     org.example.chat.xml
     chat_interface
 )
-qt6_add_dbus_adaptor(chat_SRCS
+qt_add_dbus_adaptor(chat_SRCS
     org.example.chat.xml
     qobject.h
     QObject

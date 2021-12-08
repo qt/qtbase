@@ -41,7 +41,7 @@ set(shaders_resource_files
     "background.frag"
 )
 
-qt6_add_resources(qopenglwindow "shaders"
+qt_add_resources(qopenglwindow "shaders"
     PREFIX
         "/"
     FILES

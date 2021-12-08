@@ -43,7 +43,7 @@ set(mdi_resource_files
     "images/save.png"
 )
 
-qt6_add_resources(mdi "mdi"
+qt_add_resources(mdi "mdi"
     PREFIX
         "/"
     FILES

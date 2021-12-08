@@ -39,7 +39,7 @@ set(styles_resource_files
     "images/woodbutton.png"
 )
 
-qt6_add_resources(styles "styles"
+qt_add_resources(styles "styles"
     PREFIX
         "/"
     FILES

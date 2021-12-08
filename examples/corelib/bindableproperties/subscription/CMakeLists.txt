@@ -35,7 +35,7 @@ set(countries_resource_files
     "../shared/norway.png"
 )
 
-qt6_add_resources(subscription "countries"
+qt_add_resources(subscription "countries"
     PREFIX
         "/"
     BASE

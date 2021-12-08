@@ -37,7 +37,7 @@ set(regularexpression_resource_files
     "images/copy.png"
 )
 
-qt6_add_resources(regularexpression "regularexpression"
+qt_add_resources(regularexpression "regularexpression"
     PREFIX
         "/"
     FILES

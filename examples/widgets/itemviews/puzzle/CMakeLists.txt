@@ -39,7 +39,7 @@ set(puzzle_resource_files
     "example.jpg"
 )
 
-qt6_add_resources(itemviews_puzzle "puzzle"
+qt_add_resources(itemviews_puzzle "puzzle"
     PREFIX
         "/images"
     FILES

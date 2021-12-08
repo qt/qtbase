@@ -38,7 +38,7 @@ set(mice_resource_files
     "images/cheese.jpg"
 )
 
-qt6_add_resources(pinchzoom "mice"
+qt_add_resources(pinchzoom "mice"
     PREFIX
         "/"
     FILES

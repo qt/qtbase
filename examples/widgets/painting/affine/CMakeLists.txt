@@ -88,7 +88,7 @@ set(shared_resource_files
     "../shared/images/title_stretch.png"
 )
 
-qt6_add_resources(affine "shared"
+qt_add_resources(affine "shared"
     PREFIX
         "/res"
     BASE
@@ -102,7 +102,7 @@ set(affine_resource_files
     "xform.html"
 )
 
-qt6_add_resources(affine "affine"
+qt_add_resources(affine "affine"
     PREFIX
         "/res/affine"
     FILES

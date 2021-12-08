@@ -39,7 +39,7 @@ set(basicdrawing_resource_files
     "images/qt-logo.png"
 )
 
-qt6_add_resources(basicdrawing "basicdrawing"
+qt_add_resources(basicdrawing "basicdrawing"
     PREFIX
         "/"
     FILES

@@ -54,7 +54,7 @@ set(undo_resource_files
     "icons/undo.png"
 )
 
-qt6_add_resources(undo "undo"
+qt_add_resources(undo "undo"
     PREFIX
         "/"
     FILES

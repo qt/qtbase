@@ -38,7 +38,7 @@ set(treemodelcompleter_resource_files
     "resources/treemodel.txt"
 )
 
-qt6_add_resources(treemodelcompleter "treemodelcompleter"
+qt_add_resources(treemodelcompleter "treemodelcompleter"
     PREFIX
         "/"
     FILES

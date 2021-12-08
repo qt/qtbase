@@ -51,7 +51,7 @@ set(i18n_resource_files
     "translations/i18n_zh.qm"
 )
 
-qt6_add_resources(i18n "i18n"
+qt_add_resources(i18n "i18n"
     PREFIX
         "/"
     FILES

@@ -40,7 +40,7 @@ set(undoframework_resource_files
     "images/cross.png"
 )
 
-qt6_add_resources(undoframework "undoframework"
+qt_add_resources(undoframework "undoframework"
     PREFIX
         "/"
     FILES

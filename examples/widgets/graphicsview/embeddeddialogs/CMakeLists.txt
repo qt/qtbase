@@ -38,7 +38,7 @@ set(embeddeddialogs_resource_files
     "No-Ones-Laughing-3.jpg"
 )
 
-qt6_add_resources(embeddeddialogs "embeddeddialogs"
+qt_add_resources(embeddeddialogs "embeddeddialogs"
     PREFIX
         "/"
     FILES

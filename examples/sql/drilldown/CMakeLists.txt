@@ -44,7 +44,7 @@ set(drilldown_resource_files
     "images/qt-quick.png"
 )
 
-qt6_add_resources(drilldown "drilldown"
+qt_add_resources(drilldown "drilldown"
     PREFIX
         "/"
     FILES

@@ -38,7 +38,7 @@ set(resources_resource_files
     "youtube_com.html"
 )
 
-qt6_add_resources(htmlinfo "resources"
+qt_add_resources(htmlinfo "resources"
     PREFIX
         "/"
     FILES

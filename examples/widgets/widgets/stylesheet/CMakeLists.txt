@@ -72,7 +72,7 @@ set(stylesheet_resource_files
     "qss/pagefold.qss"
 )
 
-qt6_add_resources(stylesheet "stylesheet"
+qt_add_resources(stylesheet "stylesheet"
     PREFIX
         "/"
     FILES

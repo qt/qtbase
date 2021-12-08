@@ -42,7 +42,7 @@ set(application_resource_files
     "images/save.png"
 )
 
-qt6_add_resources(application "application"
+qt_add_resources(application "application"
     PREFIX
         "/"
     FILES

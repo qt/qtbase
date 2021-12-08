@@ -88,7 +88,7 @@ set(shared_resource_files
     "../shared/images/title_stretch.png"
 )
 
-qt6_add_resources(deform "shared"
+qt_add_resources(deform "shared"
     PREFIX
         "/res"
     BASE
@@ -101,7 +101,7 @@ set(deform_resource_files
     "pathdeform.html"
 )
 
-qt6_add_resources(deform "deform"
+qt_add_resources(deform "deform"
     PREFIX
         "/res/deform"
     FILES

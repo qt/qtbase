@@ -38,7 +38,7 @@ set(robot_resource_files
     "images/head.png"
 )
 
-qt6_add_resources(dragdroprobot "robot"
+qt_add_resources(dragdroprobot "robot"
     PREFIX
         "/"
     FILES

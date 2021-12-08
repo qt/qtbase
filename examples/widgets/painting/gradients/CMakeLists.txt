@@ -88,7 +88,7 @@ set(shared_resource_files
     "../shared/images/title_stretch.png"
 )
 
-qt6_add_resources(gradients "shared"
+qt_add_resources(gradients "shared"
     PREFIX
         "/res"
     BASE
@@ -101,7 +101,7 @@ set(gradients_resource_files
     "gradients.html"
 )
 
-qt6_add_resources(gradients "gradients"
+qt_add_resources(gradients "gradients"
     PREFIX
         "/res/gradients"
     FILES

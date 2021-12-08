@@ -37,7 +37,7 @@ set(mice_resource_files
     "images/cheese.jpg"
 )
 
-qt6_add_resources(collidingmice "mice"
+qt_add_resources(collidingmice "mice"
     PREFIX
         "/"
     FILES

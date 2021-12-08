@@ -56,7 +56,7 @@ set(icons_resource_files
     "icons/player_stop.png"
 )
 
-qt6_add_resources(torrent "icons"
+qt_add_resources(torrent "icons"
     PREFIX
         "/"
     FILES

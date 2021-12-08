@@ -40,7 +40,7 @@ set(securesocketclient_resource_files
     "encrypted.png"
 )
 
-qt6_add_resources(securesocketclient "securesocketclient"
+qt_add_resources(securesocketclient "securesocketclient"
     PREFIX
         "/"
     FILES

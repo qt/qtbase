@@ -39,7 +39,7 @@ set(systray_resource_files
     "images/trash.png"
 )
 
-qt6_add_resources(systray "systray"
+qt_add_resources(systray "systray"
     PREFIX
         "/"
     FILES

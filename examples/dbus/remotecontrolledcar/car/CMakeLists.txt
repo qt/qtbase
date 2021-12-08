@@ -19,7 +19,7 @@ find_package(Qt6 REQUIRED COMPONENTS Core DBus Gui Widgets)
 
 # special case begin
 set(car_SRCS)
-qt6_add_dbus_adaptor(car_SRCS
+qt_add_dbus_adaptor(car_SRCS
     car.xml
     qobject.h
     "" # empty parent_class value on purpose to not pass -l flag

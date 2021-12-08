@@ -43,7 +43,7 @@ set(classwizard_resource_files
     "images/watermark2.png"
 )
 
-qt6_add_resources(classwizard "classwizard"
+qt_add_resources(classwizard "classwizard"
     PREFIX
         "/"
     FILES
