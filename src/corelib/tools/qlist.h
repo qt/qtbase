@@ -329,7 +329,7 @@ public:
     template <typename InputIterator, QtPrivate::IfIsInputIterator<InputIterator> = true>
     QList(InputIterator i1, InputIterator i2)
     {
-        if constexpr (!std::is_convertible_v<typename std::iterator_traits<Iterator>::iterator_category, std::forward_iterator_tag>) {
+        if constexpr (!std::is_convertible_v<typename std::iterator_traits<InputIterator>::iterator_category, std::forward_iterator_tag>) {
             std::copy(i1, i2, std::back_inserter(*this));
         } else {
             const auto distance = std::distance(i1, i2);

@@ -66,13 +66,6 @@ std::istream &operator>>(std::istream &os, QChar &c)
 }
 QT_END_NAMESPACE
 
-namespace {
-template <typename T>
-struct is_qlist : std::false_type {};
-template <typename T>
-struct is_qlist<QList<T>> : std::true_type {};
-}
-
 struct Movable
 {
     explicit Movable(int i = 0) noexcept
@@ -458,11 +451,6 @@ void tst_ContainerApiSymmetry::ranged_ctor_non_associative_impl() const
 
     // from stringsteam (= pure input_iterator)
     const Container c5 = [&] {
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0) // QTBUG-99036
-        if constexpr (is_qlist<Container>::value) {
-            return c4;
-        } else
-#endif
         {
             std::stringstream ss;
             for (auto &v : values1)
