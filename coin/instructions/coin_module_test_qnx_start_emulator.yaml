@@ -10,7 +10,7 @@ instructions:
             COUNT=0
             QEMUPID=0
             QEMUIPADDR="{{.Env.QNX_QEMU_IPADDR}}"
-            mkqnximage --type=qemu --hostname=QNX_QEMU_CI --graphics=no --ip=${QEMUIPADDR} --build --run=-h </dev/null &>/dev/null & disown
+            mkqnximage --type=qemu --graphics=no --ip=${QEMUIPADDR} --build --run=-h </dev/null &>/dev/null & disown
 
             while [[ "QEMUPID" -eq 0 ]]
             do
