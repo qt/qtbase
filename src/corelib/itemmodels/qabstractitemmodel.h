@@ -309,28 +309,28 @@ public:
     virtual Qt::DropActions supportedDropActions() const;
     virtual Qt::DropActions supportedDragActions() const;
 
-    virtual bool insertRows(int row, int count, const QModelIndex &parent = QModelIndex());
-    virtual bool insertColumns(int column, int count, const QModelIndex &parent = QModelIndex());
-    virtual bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex());
-    virtual bool removeColumns(int column, int count, const QModelIndex &parent = QModelIndex());
-    virtual bool moveRows(const QModelIndex &sourceParent, int sourceRow, int count,
+    Q_INVOKABLE virtual bool insertRows(int row, int count, const QModelIndex &parent = QModelIndex());
+    Q_INVOKABLE virtual bool insertColumns(int column, int count, const QModelIndex &parent = QModelIndex());
+    Q_INVOKABLE virtual bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex());
+    Q_INVOKABLE virtual bool removeColumns(int column, int count, const QModelIndex &parent = QModelIndex());
+    Q_INVOKABLE virtual bool moveRows(const QModelIndex &sourceParent, int sourceRow, int count,
                           const QModelIndex &destinationParent, int destinationChild);
-    virtual bool moveColumns(const QModelIndex &sourceParent, int sourceColumn, int count,
+    Q_INVOKABLE virtual bool moveColumns(const QModelIndex &sourceParent, int sourceColumn, int count,
                              const QModelIndex &destinationParent, int destinationChild);
 
-    inline bool insertRow(int row, const QModelIndex &parent = QModelIndex());
-    inline bool insertColumn(int column, const QModelIndex &parent = QModelIndex());
-    inline bool removeRow(int row, const QModelIndex &parent = QModelIndex());
-    inline bool removeColumn(int column, const QModelIndex &parent = QModelIndex());
-    inline bool moveRow(const QModelIndex &sourceParent, int sourceRow,
+    Q_INVOKABLE inline bool insertRow(int row, const QModelIndex &parent = QModelIndex());
+    Q_INVOKABLE inline bool insertColumn(int column, const QModelIndex &parent = QModelIndex());
+    Q_INVOKABLE inline bool removeRow(int row, const QModelIndex &parent = QModelIndex());
+    Q_INVOKABLE inline bool removeColumn(int column, const QModelIndex &parent = QModelIndex());
+    Q_INVOKABLE inline bool moveRow(const QModelIndex &sourceParent, int sourceRow,
                         const QModelIndex &destinationParent, int destinationChild);
-    inline bool moveColumn(const QModelIndex &sourceParent, int sourceColumn,
+    Q_INVOKABLE inline bool moveColumn(const QModelIndex &sourceParent, int sourceColumn,
                            const QModelIndex &destinationParent, int destinationChild);
 
     Q_INVOKABLE virtual void fetchMore(const QModelIndex &parent);
     Q_INVOKABLE virtual bool canFetchMore(const QModelIndex &parent) const;
     Q_INVOKABLE virtual Qt::ItemFlags flags(const QModelIndex &index) const;
-    virtual void sort(int column, Qt::SortOrder order = Qt::AscendingOrder);
+    Q_INVOKABLE virtual void sort(int column, Qt::SortOrder order = Qt::AscendingOrder);
     virtual QModelIndex buddy(const QModelIndex &index) const;
     Q_INVOKABLE virtual QModelIndexList match(const QModelIndex &start, int role,
                                               const QVariant &value, int hits = 1,
