@@ -8,7 +8,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 if(NOT DEFINED INSTALL_EXAMPLESDIR)
-  set(INSTALL_EXAMPLESDIR "examples")
+    set(INSTALL_EXAMPLESDIR "examples")
 endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/widgets/painting/painterpaths")
@@ -20,10 +20,12 @@ qt_add_executable(painterpaths
     renderarea.cpp renderarea.h
     window.cpp window.h
 )
+
 set_target_properties(painterpaths PROPERTIES
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
 )
+
 target_link_libraries(painterpaths PUBLIC
     Qt::Core
     Qt::Gui

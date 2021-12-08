@@ -8,7 +8,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 if(NOT DEFINED INSTALL_EXAMPLESDIR)
-  set(INSTALL_EXAMPLESDIR "examples")
+    set(INSTALL_EXAMPLESDIR "examples")
 endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/opengl/openglwindow")
@@ -19,10 +19,12 @@ qt_add_executable(openglwindow
     main.cpp
     openglwindow.cpp openglwindow.h
 )
+
 set_target_properties(openglwindow PROPERTIES
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
 )
+
 target_include_directories(openglwindow PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
 )

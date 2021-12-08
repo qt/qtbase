@@ -8,7 +8,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 if(NOT DEFINED INSTALL_EXAMPLESDIR)
-  set(INSTALL_EXAMPLESDIR "examples")
+    set(INSTALL_EXAMPLESDIR "examples")
 endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/sql/querymodel")
@@ -21,10 +21,12 @@ qt_add_executable(querymodel
     editablesqlmodel.cpp editablesqlmodel.h
     main.cpp
 )
+
 set_target_properties(querymodel PROPERTIES
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
 )
+
 target_link_libraries(querymodel PUBLIC
     Qt::Core
     Qt::Gui

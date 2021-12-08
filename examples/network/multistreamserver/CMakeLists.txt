@@ -8,7 +8,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 if(NOT DEFINED INSTALL_EXAMPLESDIR)
-  set(INSTALL_EXAMPLESDIR "examples")
+    set(INSTALL_EXAMPLESDIR "examples")
 endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/network/multistreamserver")
@@ -23,10 +23,12 @@ qt_add_executable(multistreamserver
     server.cpp server.h
     timeprovider.cpp timeprovider.h
 )
+
 set_target_properties(multistreamserver PROPERTIES
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
 )
+
 target_link_libraries(multistreamserver PUBLIC
     Qt::Core
     Qt::Gui

@@ -8,7 +8,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 if(NOT DEFINED INSTALL_EXAMPLESDIR)
-  set(INSTALL_EXAMPLESDIR "examples")
+    set(INSTALL_EXAMPLESDIR "examples")
 endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/network/multistreamclient")
@@ -23,10 +23,12 @@ qt_add_executable(multistreamclient
     movieconsumer.cpp movieconsumer.h
     timeconsumer.cpp timeconsumer.h
 )
+
 set_target_properties(multistreamclient PROPERTIES
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
 )
+
 target_link_libraries(multistreamclient PUBLIC
     Qt::Core
     Qt::Gui

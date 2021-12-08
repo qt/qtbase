@@ -8,7 +8,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 if(NOT DEFINED INSTALL_EXAMPLESDIR)
-  set(INSTALL_EXAMPLESDIR "examples")
+    set(INSTALL_EXAMPLESDIR "examples")
 endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/widgets/itemviews/spreadsheet")
@@ -25,10 +25,12 @@ qt_add_executable(spreadsheet
     spreadsheetdelegate.cpp spreadsheetdelegate.h
     spreadsheetitem.cpp spreadsheetitem.h
 )
+
 set_target_properties(spreadsheet PROPERTIES
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
 )
+
 target_link_libraries(spreadsheet PUBLIC
     Qt::Core
     Qt::Gui
@@ -38,7 +40,6 @@ target_link_libraries(spreadsheet PUBLIC
 if (TARGET Qt::PrintSupport)
     target_link_libraries(spreadsheet PUBLIC Qt::PrintSupport)
 endif()
-
 
 # Resources:
 set(spreadsheet_resource_files

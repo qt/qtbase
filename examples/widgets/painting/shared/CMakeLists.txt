@@ -7,6 +7,7 @@ target_sources(painting_shared PRIVATE
     hoverpoints.cpp hoverpoints.h
     ${moc_files}
 )
+
 target_link_libraries(painting_shared PUBLIC Qt::Widgets)
 target_include_directories(painting_shared PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 

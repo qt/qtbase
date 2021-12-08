@@ -8,7 +8,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 if(NOT DEFINED INSTALL_EXAMPLESDIR)
-  set(INSTALL_EXAMPLESDIR "examples")
+    set(INSTALL_EXAMPLESDIR "examples")
 endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/network/torrent")
@@ -30,17 +30,18 @@ qt_add_executable(torrent
     torrentserver.cpp torrentserver.h
     trackerclient.cpp trackerclient.h
 )
+
 set_target_properties(torrent PROPERTIES
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
 )
+
 target_link_libraries(torrent PUBLIC
     Qt::Core
     Qt::Gui
     Qt::Network
     Qt::Widgets
 )
-
 
 # Resources:
 set(icons_resource_files

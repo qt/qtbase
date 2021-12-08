@@ -8,7 +8,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 if(NOT DEFINED INSTALL_EXAMPLESDIR)
-  set(INSTALL_EXAMPLESDIR "examples")
+    set(INSTALL_EXAMPLESDIR "examples")
 endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/sql/sqlbrowser")
@@ -22,10 +22,12 @@ qt_add_executable(sqlbrowser
     main.cpp
     qsqlconnectiondialog.cpp qsqlconnectiondialog.h qsqlconnectiondialog.ui
 )
+
 set_target_properties(sqlbrowser PROPERTIES
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
 )
+
 target_link_libraries(sqlbrowser PUBLIC
     Qt::Core
     Qt::Gui

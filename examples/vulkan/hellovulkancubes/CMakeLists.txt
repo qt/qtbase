@@ -8,7 +8,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 if(NOT DEFINED INSTALL_EXAMPLESDIR)
-  set(INSTALL_EXAMPLESDIR "examples")
+    set(INSTALL_EXAMPLESDIR "examples")
 endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/vulkan/hellovulkancubes")
@@ -24,10 +24,12 @@ qt_add_executable(hellovulkancubes
     shader.cpp shader.h
     vulkanwindow.cpp vulkanwindow.h
 )
+
 set_target_properties(hellovulkancubes PROPERTIES
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
 )
+
 target_link_libraries(hellovulkancubes PUBLIC
     Qt::Concurrent
     Qt::Core
@@ -35,14 +37,15 @@ target_link_libraries(hellovulkancubes PUBLIC
     Qt::Widgets
 )
 
-
 # Resources:
 set_source_files_properties("../shared/block.buf"
     PROPERTIES QT_RESOURCE_ALIAS "block.buf"
 )
+
 set_source_files_properties("../shared/qt_logo.buf"
     PROPERTIES QT_RESOURCE_ALIAS "qt_logo.buf"
 )
+
 set(hellovulkancubes_resource_files
     "../shared/block.buf"
     "../shared/qt_logo.buf"

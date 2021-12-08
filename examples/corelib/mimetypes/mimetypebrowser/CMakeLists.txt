@@ -8,7 +8,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 if(NOT DEFINED INSTALL_EXAMPLESDIR)
-  set(INSTALL_EXAMPLESDIR "examples")
+    set(INSTALL_EXAMPLESDIR "examples")
 endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/corelib/mimetypes/mimetypebrowser")
@@ -20,10 +20,12 @@ qt_add_executable(mimetypebrowser
     mainwindow.cpp mainwindow.h
     mimetypemodel.cpp mimetypemodel.h
 )
+
 set_target_properties(mimetypebrowser PROPERTIES
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE FALSE
 )
+
 target_link_libraries(mimetypebrowser PUBLIC
     Qt::Core
     Qt::Gui

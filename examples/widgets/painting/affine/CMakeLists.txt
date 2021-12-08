@@ -8,7 +8,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 if(NOT DEFINED INSTALL_EXAMPLESDIR)
-  set(INSTALL_EXAMPLESDIR "examples")
+    set(INSTALL_EXAMPLESDIR "examples")
 endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/widgets/painting/affine")
@@ -23,10 +23,12 @@ qt_add_executable(affine
     main.cpp
     xform.cpp xform.h
 )
+
 set_target_properties(affine PROPERTIES
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
 )
+
 target_include_directories(affine PUBLIC
     ../shared
 )
@@ -41,7 +43,6 @@ target_link_libraries(affine PUBLIC
     Qt::Widgets
     painting_shared::painting_shared
 )
-
 
 # Resources:
 set(shared_resource_files
@@ -90,6 +91,7 @@ qt_add_resources(affine "shared"
     FILES
         ${shared_resource_files}
 )
+
 set(affine_resource_files
     "bg1.jpg"
     "xform.cpp"

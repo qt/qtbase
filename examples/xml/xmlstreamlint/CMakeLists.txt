@@ -8,7 +8,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 if(NOT DEFINED INSTALL_EXAMPLESDIR)
-  set(INSTALL_EXAMPLESDIR "examples")
+    set(INSTALL_EXAMPLESDIR "examples")
 endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/xml/xmlstreamlint")
@@ -18,10 +18,12 @@ find_package(Qt6 REQUIRED COMPONENTS Core Xml)
 qt_add_executable(xmlstreamlint
     main.cpp
 )
+
 set_target_properties(xmlstreamlint PROPERTIES
     WIN32_EXECUTABLE FALSE
     MACOSX_BUNDLE FALSE
 )
+
 target_link_libraries(xmlstreamlint PUBLIC
     Qt::Core
     Qt::Xml

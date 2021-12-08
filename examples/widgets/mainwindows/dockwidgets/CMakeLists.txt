@@ -8,7 +8,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 if(NOT DEFINED INSTALL_EXAMPLESDIR)
-  set(INSTALL_EXAMPLESDIR "examples")
+    set(INSTALL_EXAMPLESDIR "examples")
 endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/widgets/mainwindows/dockwidgets")
@@ -22,10 +22,12 @@ qt_add_executable(dockwidgets
     main.cpp
     mainwindow.cpp mainwindow.h
 )
+
 set_target_properties(dockwidgets PROPERTIES
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
 )
+
 target_link_libraries(dockwidgets PUBLIC
     Qt::Core
     Qt::Gui
@@ -35,7 +37,6 @@ target_link_libraries(dockwidgets PUBLIC
 if (TARGET Qt::PrintSupport)
     target_link_libraries(dockwidgets PUBLIC Qt::PrintSupport)
 endif()
-
 
 # Resources:
 set(dockwidgets_resource_files

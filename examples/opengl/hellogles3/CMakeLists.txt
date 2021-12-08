@@ -8,7 +8,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 if(NOT DEFINED INSTALL_EXAMPLESDIR)
-  set(INSTALL_EXAMPLESDIR "examples")
+    set(INSTALL_EXAMPLESDIR "examples")
 endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/opengl/hellogles3")
@@ -20,16 +20,17 @@ qt_add_executable(hellogles3
     glwindow.cpp glwindow.h
     main.cpp
 )
+
 set_target_properties(hellogles3 PROPERTIES
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
 )
+
 target_link_libraries(hellogles3 PUBLIC
     Qt::Core
     Qt::Gui
     Qt::OpenGL
 )
-
 
 # Resources:
 set(hellogles3_resource_files

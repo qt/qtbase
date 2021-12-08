@@ -8,7 +8,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 if(NOT DEFINED INSTALL_EXAMPLESDIR)
-  set(INSTALL_EXAMPLESDIR "examples")
+    set(INSTALL_EXAMPLESDIR "examples")
 endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/corelib/threads/semaphores")
@@ -18,10 +18,12 @@ find_package(Qt6 REQUIRED COMPONENTS Core)
 qt_add_executable(semaphores
     semaphores.cpp
 )
+
 set_target_properties(semaphores PROPERTIES
     WIN32_EXECUTABLE FALSE
     MACOSX_BUNDLE FALSE
 )
+
 target_link_libraries(semaphores PUBLIC
     Qt::Core
 )
