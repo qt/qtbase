@@ -88,7 +88,7 @@ set(shared_resource_files
     "../shared/images/title_stretch.png"
 )
 
-qt6_add_resources(pathstroke "shared"
+qt_add_resources(pathstroke "shared"
     PREFIX
         "/res"
     BASE
@@ -101,7 +101,7 @@ set(pathstroke_resource_files
     "pathstroke.html"
 )
 
-qt6_add_resources(pathstroke "pathstroke"
+qt_add_resources(pathstroke "pathstroke"
     PREFIX
         "/res/pathstroke"
     FILES

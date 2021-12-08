@@ -94,7 +94,7 @@ set(textedit_resource_files
     "images/win/zoomout.png"
 )
 
-qt6_add_resources(textedit "textedit"
+qt_add_resources(textedit "textedit"
     PREFIX
         "/"
     FILES

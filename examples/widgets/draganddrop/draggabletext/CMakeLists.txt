@@ -37,7 +37,7 @@ set(draggabletext_resource_files
     "words.txt"
 )
 
-qt6_add_resources(draggabletext "draggabletext"
+qt_add_resources(draggabletext "draggabletext"
     PREFIX
         "/dictionary"
     FILES

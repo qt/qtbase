@@ -38,7 +38,7 @@ set(basicgraphicslayouts_resource_files
     "images/block.png"
 )
 
-qt6_add_resources(basicgraphicslayouts "basicgraphicslayouts"
+qt_add_resources(basicgraphicslayouts "basicgraphicslayouts"
     PREFIX
         "/"
     FILES

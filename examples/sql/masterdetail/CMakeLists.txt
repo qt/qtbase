@@ -42,7 +42,7 @@ set(masterdetail_resource_files
     "images/image.png"
 )
 
-qt6_add_resources(masterdetail "masterdetail"
+qt_add_resources(masterdetail "masterdetail"
     PREFIX
         "/"
     FILES

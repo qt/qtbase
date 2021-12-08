@@ -37,7 +37,7 @@ set(computegles31_resource_files
     "Qt-logo-medium.png"
 )
 
-qt6_add_resources(computegles31 "computegles31"
+qt_add_resources(computegles31 "computegles31"
     PREFIX
         "/"
     FILES

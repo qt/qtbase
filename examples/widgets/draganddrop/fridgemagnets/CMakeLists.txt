@@ -38,7 +38,7 @@ set(fridgemagnets_resource_files
     "words.txt"
 )
 
-qt6_add_resources(fridgemagnets "fridgemagnets"
+qt_add_resources(fridgemagnets "fridgemagnets"
     PREFIX
         "/dictionary"
     FILES

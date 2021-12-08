@@ -38,7 +38,7 @@ set(imagecomposition_resource_files
     "images/checker.png"
 )
 
-qt6_add_resources(imagecomposition "imagecomposition"
+qt_add_resources(imagecomposition "imagecomposition"
     PREFIX
         "/"
     FILES

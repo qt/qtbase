@@ -44,7 +44,7 @@ set(styleexample_resource_files
     "files/transparent.qss"
 )
 
-qt6_add_resources(styleexample "styleexample"
+qt_add_resources(styleexample "styleexample"
     PREFIX
         "/"
     FILES

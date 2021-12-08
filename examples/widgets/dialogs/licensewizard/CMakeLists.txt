@@ -39,7 +39,7 @@ set(licensewizard_resource_files
     "images/watermark.png"
 )
 
-qt6_add_resources(licensewizard "licensewizard"
+qt_add_resources(licensewizard "licensewizard"
     PREFIX
         "/"
     FILES

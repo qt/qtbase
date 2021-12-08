@@ -39,7 +39,7 @@ set(draggableicons_resource_files
     "images/house.png"
 )
 
-qt6_add_resources(draggableicons "draggableicons"
+qt_add_resources(draggableicons "draggableicons"
     PREFIX
         "/"
     FILES

@@ -48,7 +48,7 @@ set(dockwidgets_resource_files
     "images/undo.png"
 )
 
-qt6_add_resources(dockwidgets "dockwidgets"
+qt_add_resources(dockwidgets "dockwidgets"
     PREFIX
         "/"
     FILES

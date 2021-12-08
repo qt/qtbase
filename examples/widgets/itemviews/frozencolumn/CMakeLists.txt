@@ -37,7 +37,7 @@ set(grades_resource_files
     "grades.txt"
 )
 
-qt6_add_resources(frozencolumn "grades"
+qt_add_resources(frozencolumn "grades"
     PREFIX
         "/"
     FILES

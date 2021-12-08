@@ -37,7 +37,7 @@ if(ANDROID)
         "images/sad.png"
     )
 
-    qt6_add_resources(androidnotifier "main"
+    qt_add_resources(androidnotifier "main"
         PREFIX
             "/"
         FILES

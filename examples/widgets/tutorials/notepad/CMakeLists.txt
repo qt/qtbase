@@ -57,7 +57,7 @@ set(notepad_resource_files
     "images/underline.png"
 )
 
-qt6_add_resources(notepad "notepad"
+qt_add_resources(notepad "notepad"
     PREFIX
         "/"
     FILES

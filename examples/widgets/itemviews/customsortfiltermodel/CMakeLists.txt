@@ -39,7 +39,7 @@ set(customsortfiltermodel_resource_files
     "images/find.png"
 )
 
-qt6_add_resources(customsortfiltermodel "customsortfiltermodel"
+qt_add_resources(customsortfiltermodel "customsortfiltermodel"
     PREFIX
         "/"
     FILES

@@ -42,7 +42,7 @@ set(mainwindow_resource_files
     "titlebarRight.png"
 )
 
-qt6_add_resources(mainwindow "mainwindow"
+qt_add_resources(mainwindow "mainwindow"
     PREFIX
         "/res"
     FILES

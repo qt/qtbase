@@ -39,7 +39,7 @@ set(easing_resource_files
     "images/qt-logo.png"
 )
 
-qt6_add_resources(easing "easing"
+qt_add_resources(easing "easing"
     PREFIX
         "/"
     FILES

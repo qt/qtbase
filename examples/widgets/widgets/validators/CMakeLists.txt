@@ -41,7 +41,7 @@ set(validators_resource_files
     "ledon.png"
 )
 
-qt6_add_resources(validators "validators"
+qt_add_resources(validators "validators"
     PREFIX
         "/"
     FILES

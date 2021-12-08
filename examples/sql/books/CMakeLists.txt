@@ -44,7 +44,7 @@ set(books_resource_files
     "images/star.png"
 )
 
-qt6_add_resources(books "books"
+qt_add_resources(books "books"
     PREFIX
         "/"
     FILES

@@ -45,7 +45,7 @@ set(hellovulkanwidget_resource_files
     "../shared/color_vert.spv"
 )
 
-qt6_add_resources(hellovulkanwidget "hellovulkanwidget"
+qt_add_resources(hellovulkanwidget "hellovulkanwidget"
     PREFIX
         "/"
     FILES

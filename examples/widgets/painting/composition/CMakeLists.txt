@@ -88,7 +88,7 @@ set(shared_resource_files
     "../shared/images/title_stretch.png"
 )
 
-qt6_add_resources(composition "shared"
+qt_add_resources(composition "shared"
     PREFIX
         "/res"
     BASE
@@ -103,7 +103,7 @@ set(composition_resource_files
     "flower_alpha.jpg"
 )
 
-qt6_add_resources(composition "composition"
+qt_add_resources(composition "composition"
     PREFIX
         "/res/composition"
     FILES

@@ -37,7 +37,7 @@ set(fademessage_resource_files
     "background.jpg"
 )
 
-qt6_add_resources(fademessage "fademessage"
+qt_add_resources(fademessage "fademessage"
     PREFIX
         "/"
     FILES

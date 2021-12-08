@@ -39,7 +39,7 @@ set(editabletreemodel_resource_files
     "default.txt"
 )
 
-qt6_add_resources(editabletreemodel "editabletreemodel"
+qt_add_resources(editabletreemodel "editabletreemodel"
     PREFIX
         "/"
     FILES

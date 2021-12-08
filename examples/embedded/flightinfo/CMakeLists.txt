@@ -38,7 +38,7 @@ set(flightinfo_resource_files
     "aircraft.png"
 )
 
-qt6_add_resources(flightinfo "flightinfo"
+qt_add_resources(flightinfo "flightinfo"
     PREFIX
         "/"
     FILES

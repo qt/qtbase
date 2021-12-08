@@ -48,7 +48,7 @@ set(spreadsheet_resource_files
     "images/interview.png"
 )
 
-qt6_add_resources(spreadsheet "spreadsheet"
+qt_add_resources(spreadsheet "spreadsheet"
     PREFIX
         "/"
     FILES

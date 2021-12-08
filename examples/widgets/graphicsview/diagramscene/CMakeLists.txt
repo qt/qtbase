@@ -55,7 +55,7 @@ set(diagramscene_resource_files
     "images/underline.png"
 )
 
-qt6_add_resources(diagramscene "diagramscene"
+qt_add_resources(diagramscene "diagramscene"
     PREFIX
         "/"
     FILES

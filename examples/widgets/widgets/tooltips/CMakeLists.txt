@@ -40,7 +40,7 @@ set(tooltips_resource_files
     "images/triangle.png"
 )
 
-qt6_add_resources(tooltips "tooltips"
+qt_add_resources(tooltips "tooltips"
     PREFIX
         "/"
     FILES

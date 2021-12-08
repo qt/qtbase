@@ -47,7 +47,7 @@ set(images_resource_files
     "zoomout.png"
 )
 
-qt6_add_resources(chip "images"
+qt_add_resources(chip "images"
     PREFIX
         "/"
     FILES

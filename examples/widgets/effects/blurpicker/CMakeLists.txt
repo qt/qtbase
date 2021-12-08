@@ -46,7 +46,7 @@ set(blurpicker_resource_files
     "images/system-users.png"
 )
 
-qt6_add_resources(blurpicker "blurpicker"
+qt_add_resources(blurpicker "blurpicker"
     PREFIX
         "/"
     FILES

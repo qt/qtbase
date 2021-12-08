@@ -36,7 +36,7 @@ set(raycasting_resource_files
     "textures.png"
 )
 
-qt6_add_resources(raycasting "raycasting"
+qt_add_resources(raycasting "raycasting"
     PREFIX
         "/"
     FILES

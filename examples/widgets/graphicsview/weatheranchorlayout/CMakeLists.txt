@@ -41,7 +41,7 @@ set(weatheranchorlayout_resource_files
     "images/weather-few-clouds.png"
 )
 
-qt6_add_resources(weatheranchorlayout "weatheranchorlayout"
+qt_add_resources(weatheranchorlayout "weatheranchorlayout"
     PREFIX
         "/"
     FILES

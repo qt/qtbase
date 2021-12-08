@@ -43,7 +43,7 @@ set(hellovulkantriangle_resource_files
     "../shared/color_vert.spv"
 )
 
-qt6_add_resources(hellovulkantriangle "hellovulkantriangle"
+qt_add_resources(hellovulkantriangle "hellovulkantriangle"
     PREFIX
         "/"
     FILES

@@ -38,7 +38,7 @@ set(hellovulkantexture_resource_files
     "texture_vert.spv"
 )
 
-qt6_add_resources(hellovulkantexture "hellovulkantexture"
+qt_add_resources(hellovulkantexture "hellovulkantexture"
     PREFIX
         "/"
     FILES

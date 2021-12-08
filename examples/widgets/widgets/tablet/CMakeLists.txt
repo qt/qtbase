@@ -42,7 +42,7 @@ set(images_resource_files
     "images/cursor-pencil.png"
 )
 
-qt6_add_resources(qttablet "images"
+qt_add_resources(qttablet "images"
     PREFIX
         "/"
     FILES

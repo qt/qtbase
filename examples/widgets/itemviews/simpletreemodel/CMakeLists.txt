@@ -38,7 +38,7 @@ set(simpletreemodel_resource_files
     "default.txt"
 )
 
-qt6_add_resources(simpletreemodel "simpletreemodel"
+qt_add_resources(simpletreemodel "simpletreemodel"
     PREFIX
         "/"
     FILES

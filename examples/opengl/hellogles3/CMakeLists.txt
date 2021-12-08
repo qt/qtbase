@@ -38,7 +38,7 @@ set(hellogles3_resource_files
     "qtlogo.png"
 )
 
-qt6_add_resources(hellogles3 "hellogles3"
+qt_add_resources(hellogles3 "hellogles3"
     PREFIX
         "/"
     FILES
