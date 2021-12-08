@@ -1,5 +1,3 @@
-# Generated from qopenglwidget.pro.
-
 cmake_minimum_required(VERSION 3.16)
 project(qopenglwidget LANGUAGES CXX)
 

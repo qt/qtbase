@@ -1,5 +1,3 @@
-# Generated from standarddialogs.pro.
-
 cmake_minimum_required(VERSION 3.16)
 project(standarddialogs LANGUAGES CXX)
 

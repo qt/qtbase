@@ -1,5 +1,3 @@
-# Generated from qtestlib.pro.
-
 if(NOT TARGET Qt::Widgets)
     return()
 endif()

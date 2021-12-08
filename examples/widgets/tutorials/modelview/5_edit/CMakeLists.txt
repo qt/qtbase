@@ -1,5 +1,3 @@
-# Generated from 5_edit.pro.
-
 cmake_minimum_required(VERSION 3.16)
 project(mv_edit LANGUAGES CXX)
 

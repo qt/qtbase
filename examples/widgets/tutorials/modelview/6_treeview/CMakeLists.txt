@@ -1,5 +1,3 @@
-# Generated from 6_treeview.pro.
-
 cmake_minimum_required(VERSION 3.16)
 project(mv_tree LANGUAGES CXX)
 

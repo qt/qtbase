@@ -1,5 +1,3 @@
-# Generated from xml.pro.
-
 qt_internal_add_example(htmlinfo)
 qt_internal_add_example(xmlstreamlint)
 if(TARGET Qt::Widgets)

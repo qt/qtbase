@@ -1,5 +1,3 @@
-# Generated from part4.pro.
-
 cmake_minimum_required(VERSION 3.16)
 project(part4 LANGUAGES CXX)
 

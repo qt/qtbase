@@ -1,5 +1,3 @@
-# Generated from dialogs.pro.
-
 if(QT_FEATURE_wizard)
     qt_internal_add_example(classwizard)
     qt_internal_add_example(trivialwizard)

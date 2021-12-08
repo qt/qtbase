@@ -1,5 +1,3 @@
-# Generated from savegame.pro.
-
 cmake_minimum_required(VERSION 3.16)
 project(savegame LANGUAGES CXX)
 

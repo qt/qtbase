@@ -1,5 +1,3 @@
-# Generated from spreadsheet.pro.
-
 cmake_minimum_required(VERSION 3.16)
 project(spreadsheet LANGUAGES CXX)
 
@@ -36,11 +34,10 @@ target_link_libraries(spreadsheet PUBLIC
     Qt::Gui
     Qt::Widgets
 )
-# special case begin
+
 if (TARGET Qt::PrintSupport)
     target_link_libraries(spreadsheet PUBLIC Qt::PrintSupport)
 endif()
-# special case end
 
 
 # Resources:

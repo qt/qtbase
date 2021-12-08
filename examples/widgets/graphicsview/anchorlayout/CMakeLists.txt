@@ -1,5 +1,3 @@
-# Generated from anchorlayout.pro.
-
 cmake_minimum_required(VERSION 3.16)
 project(anchorlayout LANGUAGES CXX)
 

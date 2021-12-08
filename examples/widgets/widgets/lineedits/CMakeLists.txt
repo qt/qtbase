@@ -1,5 +1,3 @@
-# Generated from lineedits.pro.
-
 cmake_minimum_required(VERSION 3.16)
 project(lineedits LANGUAGES CXX)
 

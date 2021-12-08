@@ -1,5 +1,3 @@
-# Generated from download.pro.
-
 cmake_minimum_required(VERSION 3.16)
 project(download LANGUAGES CXX)
 

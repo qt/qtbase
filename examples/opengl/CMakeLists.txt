@@ -1,5 +1,3 @@
-# Generated from opengl.pro.
-
 qt_internal_add_example(hellowindow)
 qt_internal_add_example(paintedwindow)
 qt_internal_add_example(openglwindow)

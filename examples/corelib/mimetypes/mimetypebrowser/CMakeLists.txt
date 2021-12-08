@@ -1,5 +1,3 @@
-# Generated from mimetypebrowser.pro.
-
 cmake_minimum_required(VERSION 3.16)
 project(mimetypebrowser LANGUAGES CXX)
 

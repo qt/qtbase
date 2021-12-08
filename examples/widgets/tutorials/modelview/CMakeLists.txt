@@ -1,5 +1,3 @@
-# Generated from modelview.pro.
-
 qt_internal_add_example(1_readonly)
 qt_internal_add_example(2_formatting)
 qt_internal_add_example(3_changingmodel)

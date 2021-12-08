@@ -1,5 +1,3 @@
-# Generated from layouts.pro.
-
 qt_internal_add_example(basiclayouts)
 qt_internal_add_example(borderlayout)
 qt_internal_add_example(dynamiclayouts)

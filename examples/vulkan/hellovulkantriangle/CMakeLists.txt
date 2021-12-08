@@ -1,5 +1,3 @@
-# Generated from hellovulkantriangle.pro.
-
 cmake_minimum_required(VERSION 3.16)
 project(hellovulkantriangle LANGUAGES CXX)
 

@@ -1,5 +1,3 @@
-# Generated from 2dpainting.pro.
-
 cmake_minimum_required(VERSION 3.16)
 project(2dpainting LANGUAGES CXX)
 

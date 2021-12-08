@@ -1,5 +1,3 @@
-# Generated from car.pro.
-
 cmake_minimum_required(VERSION 3.16)
 project(car LANGUAGES CXX)
 
@@ -17,7 +15,6 @@ set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/dbus/remotecontrolledcar/car")
 
 find_package(Qt6 REQUIRED COMPONENTS Core DBus Gui Widgets)
 
-# special case begin
 set(car_SRCS)
 qt_add_dbus_adaptor(car_SRCS
     car.xml
@@ -25,11 +22,11 @@ qt_add_dbus_adaptor(car_SRCS
     "" # empty parent_class value on purpose to not pass -l flag
     car_adaptor
 )
-# special case end
+
 qt_add_executable(car
     car.cpp car.h
     main.cpp
-    ${car_SRCS} # special case
+    ${car_SRCS}
 )
 set_target_properties(car PROPERTIES
     WIN32_EXECUTABLE TRUE

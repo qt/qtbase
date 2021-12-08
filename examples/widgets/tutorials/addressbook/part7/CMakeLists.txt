@@ -1,5 +1,3 @@
-# Generated from part7.pro.
-
 cmake_minimum_required(VERSION 3.16)
 project(part7 LANGUAGES CXX)
 

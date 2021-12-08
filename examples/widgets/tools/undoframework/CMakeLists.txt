@@ -1,5 +1,3 @@
-# Generated from undoframework.pro.
-
 cmake_minimum_required(VERSION 3.16)
 project(undoframework LANGUAGES CXX)
 

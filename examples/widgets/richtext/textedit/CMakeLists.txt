@@ -1,5 +1,3 @@
-# Generated from textedit.pro.
-
 cmake_minimum_required(VERSION 3.16)
 project(textedit LANGUAGES CXX)
 
@@ -33,11 +31,10 @@ target_link_libraries(textedit PUBLIC
     Qt::Gui
     Qt::Widgets
 )
-# special case begin
+
 if (TARGET Qt::PrintSupport)
     target_link_libraries(textedit PUBLIC Qt::PrintSupport)
 endif()
-# special case end
 
 
 # Resources:

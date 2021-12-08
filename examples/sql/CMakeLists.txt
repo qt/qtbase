@@ -1,5 +1,3 @@
-# Generated from sql.pro.
-
 if(NOT TARGET Qt::Widgets)
     return()
 endif()
@@ -14,6 +12,6 @@ if(TARGET Qt::Xml)
     qt_internal_add_example(masterdetail)
 endif()
 
-if(NOT CMAKE_CROSSCOMPILING) # special case
+if(NOT CMAKE_CROSSCOMPILING)
     qt_internal_add_example(sqlbrowser)
 endif()

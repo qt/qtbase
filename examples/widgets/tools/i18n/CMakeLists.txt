@@ -1,5 +1,3 @@
-# Generated from i18n.pro.
-
 cmake_minimum_required(VERSION 3.16)
 project(i18n LANGUAGES CXX)
 

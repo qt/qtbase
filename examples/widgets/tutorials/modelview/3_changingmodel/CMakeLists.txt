@@ -1,5 +1,3 @@
-# Generated from 3_changingmodel.pro.
-
 cmake_minimum_required(VERSION 3.16)
 project(mv_changingmodel LANGUAGES CXX)
 

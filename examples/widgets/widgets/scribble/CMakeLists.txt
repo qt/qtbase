@@ -1,5 +1,3 @@
-# Generated from scribble.pro.
-
 cmake_minimum_required(VERSION 3.16)
 project(scribble LANGUAGES CXX)
 
@@ -34,11 +32,10 @@ target_link_libraries(scribble PUBLIC
     Qt::Gui
     Qt::Widgets
 )
-# special case begin
+
 if (TARGET Qt::PrintSupport)
     target_link_libraries(scribble PUBLIC Qt::PrintSupport)
 endif()
-# special case end
 
 if(TARGET Qt::PrintSupport)
     target_link_libraries(scribble PUBLIC

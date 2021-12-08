@@ -1,5 +1,3 @@
-# Generated from pathstroke.pro.
-
 cmake_minimum_required(VERSION 3.16)
 project(pathstroke LANGUAGES CXX)
 
@@ -18,12 +16,10 @@ set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/widgets/painting/pathstroke")
 find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets)
 
 qt_add_executable(pathstroke
-    # special case begin
     # remove files from ../shared
     #../shared/arthurstyle.cpp ../shared/arthurstyle.h
     #../shared/arthurwidgets.cpp ../shared/arthurwidgets.h
     #../shared/hoverpoints.cpp ../shared/hoverpoints.h
-    # special case end
     main.cpp
     pathstroke.cpp pathstroke.h
 )
@@ -35,17 +31,15 @@ target_include_directories(pathstroke PUBLIC
     ../shared
 )
 
-# special case begin
 if(NOT TARGET painting_shared::painting_shared)
     include(../shared/use_lib.cmake)
 endif()
-# special case end
 
 target_link_libraries(pathstroke PUBLIC
     Qt::Core
     Qt::Gui
     Qt::Widgets
-    painting_shared::painting_shared # special case
+    painting_shared::painting_shared
 )
 
 
@@ -108,7 +102,6 @@ qt_add_resources(pathstroke "pathstroke"
         ${pathstroke_resource_files}
 )
 
-# special case begin
 # remove files from ../shared
 #if(QT_FEATURE_opengl)
     #target_sources(affine PUBLIC
@@ -119,7 +112,6 @@ qt_add_resources(pathstroke "pathstroke"
         #Qt::OpenGL
     #)
 #endif()
-# special case end
 
 install(TARGETS pathstroke
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"

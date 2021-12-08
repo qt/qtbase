@@ -1,5 +1,3 @@
-# Generated from htmlinfo.pro.
-
 cmake_minimum_required(VERSION 3.16)
 project(htmlinfo LANGUAGES CXX)
 

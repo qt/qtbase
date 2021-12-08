@@ -1,5 +1,3 @@
-# Generated from qtconcurrent.pro.
-
 if(NOT TARGET Qt::Concurrent)
     return()
 endif()

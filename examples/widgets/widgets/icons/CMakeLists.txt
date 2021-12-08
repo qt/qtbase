@@ -1,5 +1,3 @@
-# Generated from icons.pro.
-
 cmake_minimum_required(VERSION 3.16)
 project(icons LANGUAGES CXX)
 
@@ -29,7 +27,7 @@ set_target_properties(icons PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 target_compile_definitions(icons PUBLIC
-    SRCDIR="${CMAKE_CURRENT_SOURCE_DIR}" # special case
+    SRCDIR="${CMAKE_CURRENT_SOURCE_DIR}"
 )
 
 target_link_libraries(icons PUBLIC

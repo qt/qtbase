@@ -1,5 +1,3 @@
-# Generated from tutorial4.pro.
-
 cmake_minimum_required(VERSION 3.16)
 project(tutorial4 LANGUAGES CXX)
 

@@ -1,5 +1,3 @@
-# Generated from combowidgetmapper.pro.
-
 cmake_minimum_required(VERSION 3.16)
 project(combowidgetmapper LANGUAGES CXX)
 

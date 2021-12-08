@@ -1,5 +1,3 @@
-# Generated from broadcastreceiver.pro.
-
 cmake_minimum_required(VERSION 3.16)
 project(broadcastreceiver LANGUAGES CXX)
 

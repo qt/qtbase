@@ -1,5 +1,3 @@
-# Generated from part1.pro.
-
 cmake_minimum_required(VERSION 3.16)
 project(getting_started_part1 LANGUAGES CXX)
 

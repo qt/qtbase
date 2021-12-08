@@ -1,5 +1,3 @@
-# Generated from pinchzoom.pro.
-
 cmake_minimum_required(VERSION 3.16)
 project(pinchzoom LANGUAGES CXX)
 
