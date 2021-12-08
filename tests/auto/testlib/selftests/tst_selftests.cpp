@@ -692,17 +692,18 @@ bool TestLogger::shouldIgnoreTest(const QString &test) const
 #endif
 
     if (test == "benchlibcallgrind") {
-#if !(defined(__GNUC__) && defined(__i386) && defined(Q_OS_LINUX))
-        // Skip on platforms where callgrind is not available
-        return true;
-#else
+#if defined(__GNUC__) && (defined(__i386) || defined(__x86_64)) && defined(Q_OS_LINUX)
         // Check that it's actually available
         QProcess checkProcess;
-        QStringList args;
-        args << "--version";
+        QStringList args{u"--version"_qs};
         checkProcess.start("valgrind", args);
-        if (!checkProcess.waitForFinished(-1))
+        if (!checkProcess.waitForFinished(-1)) {
             WARN("Valgrind broken or not available. Not running benchlibcallgrind test!");
+            return true;
+        }
+#else
+        // Skip on platforms where callgrind is not available
+        return true;
 #endif
     }
 

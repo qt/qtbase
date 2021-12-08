@@ -1,9 +1,11 @@
 ********* Start testing of tst_BenchlibCallgrind *********
-Config: Using QtTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
+Config: Using QtTest library
 PASS   : tst_BenchlibCallgrind::initTestCase()
+FAIL!  : tst_BenchlibCallgrind::failInChildProcess() Running under valgrind!
+   Loc: [qtbase/tests/auto/testlib/selftests/benchlibcallgrind/tst_benchlibcallgrind.cpp(0)]
 PASS   : tst_BenchlibCallgrind::twoHundredMillionInstructions()
 RESULT : tst_BenchlibCallgrind::twoHundredMillionInstructions():
-     200,000,158 instruction reads per iteration (total: 200,000,158, iterations: 1)
+     200,000,144 instruction reads per iteration (total: 200,000,144, iterations: 1)
 PASS   : tst_BenchlibCallgrind::cleanupTestCase()
-Totals: 3 passed, 0 failed, 0 skipped, 0 blacklisted
+Totals: 3 passed, 1 failed, 0 skipped, 0 blacklisted, 0ms
 ********* Finished testing of tst_BenchlibCallgrind *********

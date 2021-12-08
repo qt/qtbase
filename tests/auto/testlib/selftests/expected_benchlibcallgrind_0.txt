@@ -1,6 +1,8 @@
 ********* Start testing of tst_BenchlibCallgrind *********
 Config: Using QtTest library
 PASS   : tst_BenchlibCallgrind::initTestCase()
+FAIL!  : tst_BenchlibCallgrind::failInChildProcess() Running under valgrind!
+   Loc: [qtbase/tests/auto/testlib/selftests/benchlibcallgrind/tst_benchlibcallgrind.cpp(0)]
 SKIP   : tst_BenchlibCallgrind::twoHundredMillionInstructions() This test is only defined for gcc and x86.
    Loc: [qtbase/tests/auto/testlib/selftests/benchlibcallgrind/tst_benchlibcallgrind.cpp(0)]
 PASS   : tst_BenchlibCallgrind::cleanupTestCase()
