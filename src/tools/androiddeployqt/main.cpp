@@ -2131,24 +2131,30 @@ bool scanImports(Options *options, QSet<QString> *usedDependencies)
                 collectQmlDependency(qmldirFileInfo.absoluteFilePath());
             }
 
-            QVariantList qmlFiles =
-                    object.value(QLatin1String("components")).toArray().toVariantList();
-            qmlFiles.append(object.value(QLatin1String("scripts")).toArray().toVariantList());
-            bool qmlFilesMissing = false;
-            for (const auto &qmlFileEntry : qmlFiles) {
-                QFileInfo fileInfo(qmlFileEntry.toString());
-                if (!fileInfo.exists()) {
-                    qmlFilesMissing = true;
-                    break;
+            QString prefer = object.value(QLatin1String("prefer")).toString();
+            // If the preferred location of Qml files points to the Qt resources, this means
+            // that all Qml files has been embedded into plugin and we should not copy them to the
+            // android rcc bundle
+            if (!prefer.startsWith(QLatin1String(":/"))) {
+                QVariantList qmlFiles =
+                        object.value(QLatin1String("components")).toArray().toVariantList();
+                qmlFiles.append(object.value(QLatin1String("scripts")).toArray().toVariantList());
+                bool qmlFilesMissing = false;
+                for (const auto &qmlFileEntry : qmlFiles) {
+                    QFileInfo fileInfo(qmlFileEntry.toString());
+                    if (!fileInfo.exists()) {
+                        qmlFilesMissing = true;
+                        break;
+                    }
+                    collectQmlDependency(fileInfo.absoluteFilePath());
                 }
-                collectQmlDependency(fileInfo.absoluteFilePath());
-            }
 
-            if (qmlFilesMissing) {
-                if (options->verbose)
-                    fprintf(stdout,
-                            "    -- Skipping because the required qml files are missing.\n");
-                continue;
+                if (qmlFilesMissing) {
+                    if (options->verbose)
+                        fprintf(stdout,
+                                "    -- Skipping because the required qml files are missing.\n");
+                    continue;
+                }
             }
 
             options->qtDependencies[options->currentArchitecture].append(qmlImportsDependencies);
