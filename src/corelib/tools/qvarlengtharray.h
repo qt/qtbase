@@ -217,6 +217,7 @@ protected:
         return std::lexicographical_compare(begin(), end(), other.begin(), other.end());
     }
 
+    void append_impl(qsizetype prealloc, void *array, const T *buf, qsizetype n);
     void reallocate_impl(qsizetype prealloc, void *array, qsizetype size, qsizetype alloc);
 
     bool isValidIterator(const const_iterator &i) const
@@ -426,7 +427,8 @@ public:
         emplace_back(std::move(t));
     }
 
-    void append(const T *buf, qsizetype size);
+    void append(const T *buf, qsizetype sz)
+    { Base::append_impl(Prealloc, this->array, buf, sz); }
     inline QVarLengthArray<T, Prealloc> &operator<<(const T &t)
     { append(t); return *this; }
     inline QVarLengthArray<T, Prealloc> &operator<<(T &&t)
@@ -675,8 +677,8 @@ Q_INLINE_TEMPLATE bool QVLABase<T>::contains(const AT &t) const
     return false;
 }
 
-template <class T, qsizetype Prealloc>
-Q_OUTOFLINE_TEMPLATE void QVarLengthArray<T, Prealloc>::append(const T *abuf, qsizetype increment)
+template <class T>
+Q_OUTOFLINE_TEMPLATE void QVLABase<T>::append_impl(qsizetype prealloc, void *array, const T *abuf, qsizetype increment)
 {
     Q_ASSERT(abuf || increment == 0);
     if (increment <= 0)
@@ -685,7 +687,7 @@ Q_OUTOFLINE_TEMPLATE void QVarLengthArray<T, Prealloc>::append(const T *abuf, qs
     const qsizetype asize = size() + increment;
 
     if (asize >= capacity())
-        reallocate(size(), qMax(size() * 2, asize));
+        reallocate_impl(prealloc, array, size(), qMax(size() * 2, asize));
 
     if constexpr (QTypeInfo<T>::isComplex)
         std::uninitialized_copy_n(abuf, increment, end());
