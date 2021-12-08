@@ -74,6 +74,15 @@ static constexpr bool q_points_into_range(const T *p, const T *b, const T *e,
 }
 
 template <typename T, typename N>
+void q_uninitialized_move_if_noexcept_n(T* first, N n, T* out)
+{
+    if constexpr (std::is_nothrow_move_constructible_v<T> || !std::is_copy_constructible_v<T>)
+        std::uninitialized_move_n(first, n, out);
+    else
+        std::uninitialized_copy_n(first, n, out);
+}
+
+template <typename T, typename N>
 void q_uninitialized_relocate_n(T* first, N n, T* out)
 {
     if constexpr (QTypeInfo<T>::isRelocatable) {
@@ -83,7 +92,7 @@ void q_uninitialized_relocate_n(T* first, N n, T* out)
                          n * sizeof(T));
         }
     } else {
-        std::uninitialized_move_n(first, n, out);
+        q_uninitialized_move_if_noexcept_n(first, n, out);
         if constexpr (QTypeInfo<T>::isComplex)
             std::destroy_n(first, n);
     }

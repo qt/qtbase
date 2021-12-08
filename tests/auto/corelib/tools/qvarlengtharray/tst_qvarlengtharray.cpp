@@ -429,8 +429,6 @@ void tst_QVarLengthArray::appendIsStronglyExceptionSafe()
     };
 
     {
-        // ### TODO: QVLA isn't exception-safe when throwing during reallocation,
-        // ### so check with size() < capacity() for now
         QVarLengthArray<Thrower, 2> vla(1);
         {
             Thrower t;
@@ -442,6 +440,28 @@ void tst_QVarLengthArray::appendIsStronglyExceptionSafe()
             const QScopedValueRollback rb(throwOnMoveNow, true);
             QVERIFY_THROWS_EXCEPTION(int, vla.push_back({}));
             QCOMPARE(vla.size(), 1);
+        }
+        vla.push_back({});
+        QCOMPARE(vla.size(), 2);
+        {
+            Thrower t;
+            {
+                // tests the copy inside append()
+                const QScopedValueRollback rb(throwOnCopyNow, true);
+                QVERIFY_THROWS_EXCEPTION(int, vla.push_back(t));
+                QCOMPARE(vla.size(), 2);
+            }
+            {
+                // tests the move inside reallocate()
+                const QScopedValueRollback rb(throwOnMoveNow, true);
+                QVERIFY_THROWS_EXCEPTION(int, vla.push_back(t));
+                QCOMPARE(vla.size(), 2);
+            }
+        }
+        {
+            const QScopedValueRollback rb(throwOnMoveNow, true);
+            QVERIFY_THROWS_EXCEPTION(int, vla.push_back({}));
+            QCOMPARE(vla.size(), 2);
         }
     }
 #endif

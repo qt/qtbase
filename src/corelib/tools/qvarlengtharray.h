@@ -49,7 +49,9 @@
 #include <algorithm>
 #include <initializer_list>
 #include <iterator>
+#include <memory>
 #include <new>
+
 #include <string.h>
 #include <stdlib.h>
 
@@ -487,38 +489,29 @@ Q_OUTOFLINE_TEMPLATE void QVarLengthArray<T, Prealloc>::reallocate(qsizetype asi
 
     const qsizetype copySize = qMin(asize, osize);
     Q_ASSUME(copySize >= 0);
+
     if (aalloc != capacity()) {
+        struct free_deleter {
+            void operator()(void *p) const noexcept { free(p); }
+        };
+        std::unique_ptr<void, free_deleter> guard;
+        T *newPtr;
+        qsizetype newA;
         if (aalloc > Prealloc) {
-            T *newPtr = reinterpret_cast<T *>(malloc(aalloc * sizeof(T)));
+            newPtr = reinterpret_cast<T *>(malloc(aalloc * sizeof(T)));
+            guard.reset(newPtr);
             Q_CHECK_PTR(newPtr); // could throw
             // by design: in case of QT_NO_EXCEPTIONS malloc must not fail or it crashes here
-            ptr = newPtr;
-            a = aalloc;
+            newA = aalloc;
         } else {
-            ptr = reinterpret_cast<T *>(array);
-            a = Prealloc;
+            newPtr = reinterpret_cast<T *>(array);
+            newA = Prealloc;
         }
-        s = 0;
-        if constexpr (!QTypeInfo<T>::isRelocatable) {
-            QT_TRY {
-                // move all the old elements
-                while (size() < copySize) {
-                    new (end()) T(std::move(*(oldPtr+size())));
-                    (oldPtr+size())->~T();
-                    s++;
-                }
-            } QT_CATCH(...) {
-                // clean up all the old objects and then free the old ptr
-                qsizetype sClean = size();
-                while (sClean < osize)
-                    (oldPtr+(sClean++))->~T();
-                if (oldPtr != reinterpret_cast<T *>(array) && oldPtr != data())
-                    free(oldPtr);
-                QT_RETHROW;
-            }
-        } else {
-            memcpy(static_cast<void *>(data()), static_cast<const void *>(oldPtr), copySize * sizeof(T));
-        }
+        QtPrivate::q_uninitialized_relocate_n(oldPtr, copySize, newPtr);
+        // commit:
+        ptr = newPtr;
+        guard.release();
+        a = newA;
     }
     s = copySize;
 
@@ -540,6 +533,7 @@ Q_OUTOFLINE_TEMPLATE void QVarLengthArray<T, Prealloc>::reallocate(qsizetype asi
     } else {
         s = asize;
     }
+
 }
 
 template <class T, qsizetype Prealloc>
