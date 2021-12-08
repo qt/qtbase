@@ -8,7 +8,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 if(NOT DEFINED INSTALL_EXAMPLESDIR)
-  set(INSTALL_EXAMPLESDIR "examples")
+    set(INSTALL_EXAMPLESDIR "examples")
 endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/widgets/painting/fontsampler")
@@ -23,10 +23,12 @@ qt_add_executable(fontsampler
     mainwindow.cpp mainwindow.h
     mainwindowbase.ui
 )
+
 set_target_properties(fontsampler PROPERTIES
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
 )
+
 target_link_libraries(fontsampler PUBLIC
     Qt::Core
     Qt::Gui

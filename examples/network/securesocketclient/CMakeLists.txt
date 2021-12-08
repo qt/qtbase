@@ -8,7 +8,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 if(NOT DEFINED INSTALL_EXAMPLESDIR)
-  set(INSTALL_EXAMPLESDIR "examples")
+    set(INSTALL_EXAMPLESDIR "examples")
 endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/network/securesocketclient")
@@ -21,17 +21,18 @@ qt_add_executable(securesocketclient
     sslclient.cpp sslclient.h sslclient.ui
     sslerrors.ui
 )
+
 set_target_properties(securesocketclient PROPERTIES
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
 )
+
 target_link_libraries(securesocketclient PUBLIC
     Qt::Core
     Qt::Gui
     Qt::Network
     Qt::Widgets
 )
-
 
 # Resources:
 set(securesocketclient_resource_files

@@ -8,7 +8,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 if(NOT DEFINED INSTALL_EXAMPLESDIR)
-  set(INSTALL_EXAMPLESDIR "examples")
+    set(INSTALL_EXAMPLESDIR "examples")
 endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/widgets/painting/composition")
@@ -23,10 +23,12 @@ qt_add_executable(composition
     composition.cpp composition.h
     main.cpp
 )
+
 set_target_properties(composition PROPERTIES
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
 )
+
 target_include_directories(composition PUBLIC
     ../shared
 )
@@ -41,7 +43,6 @@ target_link_libraries(composition PUBLIC
     Qt::Widgets
     painting_shared::painting_shared
 )
-
 
 # Resources:
 set(shared_resource_files
@@ -90,6 +91,7 @@ qt_add_resources(composition "shared"
     FILES
         ${shared_resource_files}
 )
+
 set(composition_resource_files
     "composition.cpp"
     "composition.html"

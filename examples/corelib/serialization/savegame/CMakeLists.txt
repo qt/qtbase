@@ -8,7 +8,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 if(NOT DEFINED INSTALL_EXAMPLESDIR)
-  set(INSTALL_EXAMPLESDIR "examples")
+    set(INSTALL_EXAMPLESDIR "examples")
 endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/corelib/serialization/savegame")
@@ -21,10 +21,12 @@ qt_add_executable(savegame
     level.cpp level.h
     main.cpp
 )
+
 set_target_properties(savegame PROPERTIES
     WIN32_EXECUTABLE FALSE
     MACOSX_BUNDLE FALSE
 )
+
 target_link_libraries(savegame PUBLIC
     Qt::Core
 )

@@ -8,7 +8,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 if(NOT DEFINED INSTALL_EXAMPLESDIR)
-  set(INSTALL_EXAMPLESDIR "examples")
+    set(INSTALL_EXAMPLESDIR "examples")
 endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/widgets/richtext/syntaxhighlighter")
@@ -20,10 +20,12 @@ qt_add_executable(syntaxhighlighter
     main.cpp
     mainwindow.cpp mainwindow.h
 )
+
 set_target_properties(syntaxhighlighter PROPERTIES
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
 )
+
 target_link_libraries(syntaxhighlighter PUBLIC
     Qt::Core
     Qt::Gui

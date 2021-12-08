@@ -8,7 +8,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 if(NOT DEFINED INSTALL_EXAMPLESDIR)
-  set(INSTALL_EXAMPLESDIR "examples")
+    set(INSTALL_EXAMPLESDIR "examples")
 endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/widgets/tutorials/gettingStarted/gsQt/part3")
@@ -18,10 +18,12 @@ find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets)
 qt_add_executable(getting_started_part3
     main.cpp
 )
+
 set_target_properties(getting_started_part3 PROPERTIES
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
 )
+
 target_link_libraries(getting_started_part3 PUBLIC
     Qt::Core
     Qt::Gui

@@ -8,7 +8,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 if(NOT DEFINED INSTALL_EXAMPLESDIR)
-  set(INSTALL_EXAMPLESDIR "examples")
+    set(INSTALL_EXAMPLESDIR "examples")
 endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/widgets/tools/customcompleter")
@@ -20,16 +20,17 @@ qt_add_executable(customcompleter
     mainwindow.cpp mainwindow.h
     textedit.cpp textedit.h
 )
+
 set_target_properties(customcompleter PROPERTIES
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
 )
+
 target_link_libraries(customcompleter PUBLIC
     Qt::Core
     Qt::Gui
     Qt::Widgets
 )
-
 
 # Resources:
 set(customcompleter_resource_files

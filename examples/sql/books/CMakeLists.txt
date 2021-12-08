@@ -8,7 +8,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 if(NOT DEFINED INSTALL_EXAMPLESDIR)
-  set(INSTALL_EXAMPLESDIR "examples")
+    set(INSTALL_EXAMPLESDIR "examples")
 endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/sql/books")
@@ -21,10 +21,12 @@ qt_add_executable(books
     initdb.h
     main.cpp
 )
+
 set_target_properties(books PROPERTIES
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
 )
+
 target_include_directories(books PUBLIC
     .
 )
@@ -35,7 +37,6 @@ target_link_libraries(books PUBLIC
     Qt::Sql
     Qt::Widgets
 )
-
 
 # Resources:
 set(books_resource_files

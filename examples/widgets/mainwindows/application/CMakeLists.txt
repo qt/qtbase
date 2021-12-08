@@ -8,7 +8,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 if(NOT DEFINED INSTALL_EXAMPLESDIR)
-  set(INSTALL_EXAMPLESDIR "examples")
+    set(INSTALL_EXAMPLESDIR "examples")
 endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/widgets/mainwindows/application")
@@ -19,16 +19,17 @@ qt_add_executable(application
     main.cpp
     mainwindow.cpp mainwindow.h
 )
+
 set_target_properties(application PROPERTIES
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
 )
+
 target_link_libraries(application PUBLIC
     Qt::Core
     Qt::Gui
     Qt::Widgets
 )
-
 
 # Resources:
 set(application_resource_files

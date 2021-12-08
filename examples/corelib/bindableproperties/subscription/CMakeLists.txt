@@ -8,7 +8,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 if(NOT DEFINED INSTALL_EXAMPLESDIR)
-  set(INSTALL_EXAMPLESDIR "examples")
+    set(INSTALL_EXAMPLESDIR "examples")
 endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/corelib/bindableproperties/subscription")
@@ -21,12 +21,12 @@ qt_add_executable(subscription
     subscription.cpp subscription.h
     user.cpp user.h
 )
+
 target_link_libraries(subscription PUBLIC
     Qt::Core
     Qt::Gui
     Qt::Widgets
 )
-
 
 # Resources:
 set(countries_resource_files

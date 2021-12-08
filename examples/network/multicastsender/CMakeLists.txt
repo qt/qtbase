@@ -8,7 +8,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 if(NOT DEFINED INSTALL_EXAMPLESDIR)
-  set(INSTALL_EXAMPLESDIR "examples")
+    set(INSTALL_EXAMPLESDIR "examples")
 endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/network/multicastsender")
@@ -19,10 +19,12 @@ qt_add_executable(multicastsender
     main.cpp
     sender.cpp sender.h
 )
+
 set_target_properties(multicastsender PROPERTIES
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
 )
+
 target_link_libraries(multicastsender PUBLIC
     Qt::Core
     Qt::Gui

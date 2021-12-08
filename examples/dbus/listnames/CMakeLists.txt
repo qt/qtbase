@@ -8,7 +8,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 if(NOT DEFINED INSTALL_EXAMPLESDIR)
-  set(INSTALL_EXAMPLESDIR "examples")
+    set(INSTALL_EXAMPLESDIR "examples")
 endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/dbus/listnames")
@@ -18,10 +18,12 @@ find_package(Qt6 REQUIRED COMPONENTS Core DBus)
 qt_add_executable(listnames
     listnames.cpp
 )
+
 set_target_properties(listnames PROPERTIES
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
 )
+
 target_link_libraries(listnames PUBLIC
     Qt::Core
     Qt::DBus

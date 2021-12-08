@@ -8,7 +8,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 if(NOT DEFINED INSTALL_EXAMPLESDIR)
-  set(INSTALL_EXAMPLESDIR "examples")
+    set(INSTALL_EXAMPLESDIR "examples")
 endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/dbus/chat")
@@ -20,6 +20,7 @@ qt_add_dbus_interface(chat_SRCS
     org.example.chat.xml
     chat_interface
 )
+
 qt_add_dbus_adaptor(chat_SRCS
     org.example.chat.xml
     qobject.h
@@ -33,10 +34,12 @@ qt_add_executable(chat
     chatsetnickname.ui
     ${chat_SRCS}
 )
+
 set_target_properties(chat PROPERTIES
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
 )
+
 target_link_libraries(chat PUBLIC
     Qt::Core
     Qt::DBus

@@ -8,7 +8,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 if(NOT DEFINED INSTALL_EXAMPLESDIR)
-  set(INSTALL_EXAMPLESDIR "examples")
+    set(INSTALL_EXAMPLESDIR "examples")
 endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/sql/masterdetail")
@@ -21,10 +21,12 @@ qt_add_executable(masterdetail
     main.cpp
     mainwindow.cpp mainwindow.h
 )
+
 set_target_properties(masterdetail PROPERTIES
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
 )
+
 target_link_libraries(masterdetail PUBLIC
     Qt::Core
     Qt::Gui
@@ -32,7 +34,6 @@ target_link_libraries(masterdetail PUBLIC
     Qt::Widgets
     Qt::Xml
 )
-
 
 # Resources:
 set(masterdetail_resource_files

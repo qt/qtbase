@@ -8,7 +8,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 if(NOT DEFINED INSTALL_EXAMPLESDIR)
-  set(INSTALL_EXAMPLESDIR "examples")
+    set(INSTALL_EXAMPLESDIR "examples")
 endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/widgets/widgets/digitalclock")
@@ -19,10 +19,12 @@ qt_add_executable(digitalclock
     digitalclock.cpp digitalclock.h
     main.cpp
 )
+
 set_target_properties(digitalclock PROPERTIES
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
 )
+
 target_link_libraries(digitalclock PUBLIC
     Qt::Core
     Qt::Gui

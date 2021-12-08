@@ -8,7 +8,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 if(NOT DEFINED INSTALL_EXAMPLESDIR)
-  set(INSTALL_EXAMPLESDIR "examples")
+    set(INSTALL_EXAMPLESDIR "examples")
 endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/widgets/tutorials/modelview/6_treeview")
@@ -19,10 +19,12 @@ qt_add_executable(mv_tree
     main.cpp
     mainwindow.cpp mainwindow.h
 )
+
 set_target_properties(mv_tree PROPERTIES
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
 )
+
 target_link_libraries(mv_tree PUBLIC
     Qt::Core
     Qt::Gui

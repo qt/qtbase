@@ -8,7 +8,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 if(NOT DEFINED INSTALL_EXAMPLESDIR)
-  set(INSTALL_EXAMPLESDIR "examples")
+    set(INSTALL_EXAMPLESDIR "examples")
 endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/widgets/itemviews/stardelegate")
@@ -21,10 +21,12 @@ qt_add_executable(stardelegate
     stareditor.cpp stareditor.h
     starrating.cpp starrating.h
 )
+
 set_target_properties(stardelegate PROPERTIES
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
 )
+
 target_link_libraries(stardelegate PUBLIC
     Qt::Core
     Qt::Gui

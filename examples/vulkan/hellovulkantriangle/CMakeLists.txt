@@ -8,7 +8,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 if(NOT DEFINED INSTALL_EXAMPLESDIR)
-  set(INSTALL_EXAMPLESDIR "examples")
+    set(INSTALL_EXAMPLESDIR "examples")
 endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/vulkan/hellovulkantriangle")
@@ -19,23 +19,26 @@ qt_add_executable(hellovulkantriangle
     ../shared/trianglerenderer.cpp ../shared/trianglerenderer.h
     main.cpp
 )
+
 set_target_properties(hellovulkantriangle PROPERTIES
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
 )
+
 target_link_libraries(hellovulkantriangle PUBLIC
     Qt::Core
     Qt::Gui
 )
 
-
 # Resources:
 set_source_files_properties("../shared/color_frag.spv"
     PROPERTIES QT_RESOURCE_ALIAS "color_frag.spv"
 )
+
 set_source_files_properties("../shared/color_vert.spv"
     PROPERTIES QT_RESOURCE_ALIAS "color_vert.spv"
 )
+
 set(hellovulkantriangle_resource_files
     "../shared/color_frag.spv"
     "../shared/color_vert.spv"

@@ -8,7 +8,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 if(NOT DEFINED INSTALL_EXAMPLESDIR)
-  set(INSTALL_EXAMPLESDIR "examples")
+    set(INSTALL_EXAMPLESDIR "examples")
 endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/corelib/bindableproperties/bindablesubscription")
@@ -22,6 +22,7 @@ qt_add_executable(bindablesubscription
     bindablesubscription.cpp bindablesubscription.h
     bindableuser.cpp bindableuser.h
 )
+
 target_link_libraries(bindablesubscription PUBLIC
     Qt::Core
     Qt::Gui

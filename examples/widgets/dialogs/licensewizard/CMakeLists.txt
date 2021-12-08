@@ -8,7 +8,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 if(NOT DEFINED INSTALL_EXAMPLESDIR)
-  set(INSTALL_EXAMPLESDIR "examples")
+    set(INSTALL_EXAMPLESDIR "examples")
 endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/widgets/dialogs/licensewizard")
@@ -19,17 +19,18 @@ qt_add_executable(licensewizard
     licensewizard.cpp licensewizard.h
     main.cpp
 )
+
 set_target_properties(licensewizard PROPERTIES
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
 )
+
 target_link_libraries(licensewizard PUBLIC
     Qt::Core
     Qt::Gui
     Qt::PrintSupport
     Qt::Widgets
 )
-
 
 # Resources:
 set(licensewizard_resource_files

@@ -8,7 +8,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 if(NOT DEFINED INSTALL_EXAMPLESDIR)
-  set(INSTALL_EXAMPLESDIR "examples")
+    set(INSTALL_EXAMPLESDIR "examples")
 endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/widgets/itemviews/frozencolumn")
@@ -19,16 +19,17 @@ qt_add_executable(frozencolumn
     freezetablewidget.cpp freezetablewidget.h
     main.cpp
 )
+
 set_target_properties(frozencolumn PROPERTIES
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
 )
+
 target_link_libraries(frozencolumn PUBLIC
     Qt::Core
     Qt::Gui
     Qt::Widgets
 )
-
 
 # Resources:
 set(grades_resource_files

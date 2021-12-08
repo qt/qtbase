@@ -8,7 +8,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 if(NOT DEFINED INSTALL_EXAMPLESDIR)
-  set(INSTALL_EXAMPLESDIR "examples")
+    set(INSTALL_EXAMPLESDIR "examples")
 endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/widgets/itemviews/chart")
@@ -20,16 +20,17 @@ qt_add_executable(chart
     mainwindow.cpp mainwindow.h
     pieview.cpp pieview.h
 )
+
 set_target_properties(chart PROPERTIES
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
 )
+
 target_link_libraries(chart PUBLIC
     Qt::Core
     Qt::Gui
     Qt::Widgets
 )
-
 
 # Resources:
 set(chart_resource_files
