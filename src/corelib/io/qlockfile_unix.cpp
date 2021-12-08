@@ -52,6 +52,7 @@
 
 #include "private/qcore_unix_p.h" // qt_safe_open
 #include "private/qabstractfileengine_p.h"
+#include "private/qfilesystementry_p.h"
 #include "private/qtemporaryfile_p.h"
 
 #if !defined(Q_OS_INTEGRITY)
@@ -244,7 +245,7 @@ QString QLockFilePrivate::processNameByPid(qint64 pid)
     if (buf.endsWith(deleted))
         buf.chop(strlen(deleted));
 
-    return QFileInfo(QFile::decodeName(buf)).fileName();
+    return QFileSystemEntry(buf, QFileSystemEntry::FromNativePath()).fileName();
 #elif defined(Q_OS_HAIKU)
     thread_info info;
     if (get_thread_info(pid, &info) != B_OK)
