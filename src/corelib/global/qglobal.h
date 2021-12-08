@@ -97,7 +97,7 @@
 #  endif
 #endif // __cplusplus
 
-#if defined(__cplusplus) && defined(Q_CC_MSVC)
+#if defined(__cplusplus) && defined(Q_CC_MSVC) && !defined(Q_CC_CLANG)
 // On MSVC we require /permissive- set by user code. Check that we are
 // under its rules -- for instance, check that std::nullptr_t->bool is
 // not an implicit conversion, as per
