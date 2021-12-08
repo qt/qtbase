@@ -2701,6 +2701,9 @@ void tst_QWindow::keepPendingUpdateRequests()
 
 void tst_QWindow::activateDeactivateEvent()
 {
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("QWindow::requestActivate() is not supported.");
+
     class Window : public QWindow
     {
     public:
