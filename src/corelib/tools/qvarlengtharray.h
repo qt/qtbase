@@ -203,6 +203,8 @@ protected:
         ++s;
         return r;
     }
+    template <typename...Args>
+    iterator emplace_impl(qsizetype prealloc, void *array, const_iterator pos, Args&&...arg);
 
     template <typename S>
     bool equal(const QVLABase<S> &other) const
@@ -522,7 +524,8 @@ public:
     using Base::back;
     void shrink_to_fit() { squeeze(); }
     template <typename...Args>
-    iterator emplace(const_iterator pos, Args &&...args);
+    iterator emplace(const_iterator pos, Args &&...args)
+    { return Base::emplace_impl(Prealloc, this->array, pos, std::forward<Args>(args)...); }
     template <typename...Args>
     T &emplace_back(Args &&...args)
     { return Base::emplace_back_impl(Prealloc, this->array, std::forward<Args>(args)...); }
@@ -807,9 +810,9 @@ inline void QVLABase<T>::replace(qsizetype i, const T &t)
     data()[i] = t;
 }
 
-template <class T, qsizetype Prealloc>
+template <class T>
 template <typename...Args>
-Q_OUTOFLINE_TEMPLATE auto QVarLengthArray<T, Prealloc>::emplace(const_iterator before, Args &&...args) -> iterator
+Q_OUTOFLINE_TEMPLATE auto QVLABase<T>::emplace_impl(qsizetype prealloc, void *array, const_iterator before, Args &&...args) -> iterator
 {
     Q_ASSERT_X(isValidIterator(before), "QVarLengthArray::insert", "The specified const_iterator argument 'before' is invalid");
     Q_ASSERT(size() <= capacity());
@@ -817,7 +820,7 @@ Q_OUTOFLINE_TEMPLATE auto QVarLengthArray<T, Prealloc>::emplace(const_iterator b
 
     qsizetype offset = qsizetype(before - cbegin());
     if (size() == capacity())
-        reserve(size() * 2);
+        reallocate_impl(prealloc, array, size(), size() * 2);
     if constexpr (!QTypeInfo<T>::isRelocatable) {
         T *b = begin() + offset;
         T *i = end();
