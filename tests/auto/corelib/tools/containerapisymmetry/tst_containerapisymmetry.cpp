@@ -38,8 +38,10 @@
 #include <algorithm>
 #include <functional>
 #include <vector> // for reference
+#include <iostream>
 #include <list>
 #include <set>
+#include <sstream>
 #include <map>
 #include <forward_list>
 #include <unordered_set>
@@ -48,6 +50,28 @@
 #if __cplusplus >= 202002L && defined(__cpp_lib_erase_if)
 #  define STDLIB_HAS_UNIFORM_ERASURE
 #endif
+
+QT_BEGIN_NAMESPACE
+std::ostream &operator<<(std::ostream &os, const QChar &c)
+{
+    Q_ASSERT(c == QLatin1Char{c.toLatin1()});
+    return os << c.toLatin1();
+}
+std::istream &operator>>(std::istream &os, QChar &c)
+{
+    char cL1;
+    os >> cL1;
+    c = QLatin1Char{cL1};
+    return os;
+}
+QT_END_NAMESPACE
+
+namespace {
+template <typename T>
+struct is_qlist : std::false_type {};
+template <typename T>
+struct is_qlist<QList<T>> : std::true_type {};
+}
 
 struct Movable
 {
@@ -70,6 +94,11 @@ struct Movable
 
     int i;
     static int instanceCount;
+
+    friend std::ostream &operator<<(std::ostream &os, const Movable &m)
+    { return os << m.i; }
+    friend std::istream &operator>>(std::istream &os, Movable &m)
+    { return os >> m.i; }
 };
 
 int Movable::instanceCount = 0;
@@ -111,6 +140,11 @@ struct Complex
 
     int i;
     static int instanceCount;
+
+    friend std::ostream &operator<<(std::ostream &os, const Complex &c)
+    { return os << c.i; }
+    friend std::istream &operator>>(std::istream &os, Complex &c)
+    { return os >> c.i; }
 };
 
 int Complex::instanceCount = 0;
@@ -422,12 +456,30 @@ void tst_ContainerApiSymmetry::ranged_ctor_non_associative_impl() const
     // from itself
     const Container c4(reference.begin(), reference.end());
 
+    // from stringsteam (= pure input_iterator)
+    const Container c5 = [&] {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0) // QTBUG-99036
+        if constexpr (is_qlist<Container>::value) {
+            return c4;
+        } else
+#endif
+        {
+            std::stringstream ss;
+            for (auto &v : values1)
+                ss << v << ' ';
+            ss.seekg(0);
+            return Container(std::istream_iterator<V>{ss},
+                             std::istream_iterator<V>{});
+        }
+    }();
+
     QCOMPARE(c1,  reference);
     QCOMPARE(c2a, reference);
     QCOMPARE(c2b, reference);
     QCOMPARE(c3a, reference);
     QCOMPARE(c3b, reference);
     QCOMPARE(c4,  reference);
+    QCOMPARE(c5,  reference);
 }
 
 
