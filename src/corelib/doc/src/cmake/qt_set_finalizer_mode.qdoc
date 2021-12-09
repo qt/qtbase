@@ -27,7 +27,7 @@
 
 /*!
 \page qt_set_finalizer_mode.html
-\ingroup cmake-macros-qtcore
+\ingroup cmake-commands-qtcore
 
 \title qt_set_finalizer_mode
 \target qt6_set_finalizer_mode
