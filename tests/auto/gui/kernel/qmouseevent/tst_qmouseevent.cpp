@@ -100,6 +100,7 @@ private slots:
     void grabbers();
     void velocity();
     void clone();
+    void detachSynthesized();
 
 private:
     MouseEventWidget* testMouseWidget;
@@ -329,6 +330,31 @@ void tst_QMouseEvent::clone()
     originalMe.setAccepted(true);
     QVERIFY(!clonedMe->allPointsAccepted());
     QVERIFY(!clonedMe->points().first().isAccepted());
+}
+
+void tst_QMouseEvent::detachSynthesized()
+{
+    const QPointF localPoint1(0.0, 0.0);
+    const QPointF globalPoint1(10.0, 10.0);
+    QMouseEvent ev1(QEvent::MouseButtonPress,
+                    localPoint1, globalPoint1,
+                    Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
+
+    QCOMPARE(ev1.position(), QPointF(0.0, 0.0));
+    QCOMPARE(ev1.globalPosition(), globalPoint1);
+
+    const QPointF localPoint2(20.0, 20.0);
+    const QPointF globalPoint2(30.0, 30.0);
+    QMouseEvent ev2(QEvent::MouseButtonPress,
+                    localPoint2, globalPoint2,
+                    Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
+
+    QCOMPARE(ev2.position(), localPoint2);
+    QCOMPARE(ev2.globalPosition(), globalPoint2);
+
+    // event instances don't overwrite each other's global state
+    QCOMPARE(ev1.position(), localPoint1);
+    QCOMPARE(ev1.globalPosition(), globalPoint1);
 }
 
 QTEST_MAIN(tst_QMouseEvent)
