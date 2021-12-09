@@ -896,6 +896,8 @@ Q_OUTOFLINE_TEMPLATE auto QVLABase<T>::erase(const_iterator abegin, const_iterat
     if (n == 0) // avoid UB in std::move() below
         return data() + f;
 
+    Q_ASSERT(n > 0); // aend must be reachable from abegin
+
     if constexpr (QTypeInfo<T>::isComplex) {
         std::move(begin() + l, end(), QT_MAKE_CHECKED_ARRAY_ITERATOR(begin() + f, size() - f));
         std::destroy(end() - n, end());
