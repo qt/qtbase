@@ -541,6 +541,8 @@ Q_OUTOFLINE_TEMPLATE typename QVarLengthArray<T, Prealloc>::iterator QVarLengthA
     if (n == 0) // avoid UB in std::copy() below
         return data() + f;
 
+    Q_ASSERT(n > 0); // aend must be reachable from abegin
+
     if (QTypeInfo<T>::isComplex) {
         std::copy(ptr + l, ptr + s, QT_MAKE_CHECKED_ARRAY_ITERATOR(ptr + f, s - f));
         T *i = ptr + s;
