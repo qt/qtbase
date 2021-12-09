@@ -40,6 +40,8 @@ Unlike most other CMake commands provided by Qt, \c{qt_deploy_qt_conf()} can
 only be called from a deployment script. It cannot be called directly by the
 project.
 
+\preliminarycmakecommand
+
 \section1 Synopsis
 
 \badcode

@@ -182,6 +182,8 @@ must be set before the first \c{find_package(Qt6)} call to have that effect.
 
 \summary {Name of the file to include for setting up deployment support.}
 
+\preliminarycmakevariable
+
 This variable is set by the Core package. It is intended to be used as the first
 line of any deployment script. Such scripts do not run during CMake's configure
 phase, they are executed during installation or as part of a post-build rule.
@@ -203,6 +205,8 @@ an application, along with its runtime dependencies:
 \target cmake-variable-QT_NO_STANDARD_PROJECT_SETUP
 
 \summary {Prevents subsequent calls to qt_standard_project_setup() from making any changes.}
+
+\preliminarycmakevariable
 
 The \l{qt6_standard_project_setup}{qt_standard_project_setup()} command is
 typically called in the top level \c{CMakeLists.txt} file of a project. In some

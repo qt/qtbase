@@ -43,6 +43,8 @@
 
 \include cmake-deploy-var-usage.qdocinc
 
+\preliminarycmakevariable
+
 \c{QT_DEPLOY_PREFIX} provides the base directory of the deployment. The other
 \c{QT_DEPLOY_..._DIR} variables should be treated as relative to this location.
 The value of \c{QT_DEPLOY_PREFIX} may be relative or absolute, so projects
@@ -77,6 +79,8 @@ variables.
 \summary {Prefix-relative subdirectory for deploying runtime binaries on some target platforms.}
 
 \include cmake-deploy-var-usage.qdocinc
+
+\preliminarycmakevariable
 
 Projects should use \c QT_DEPLOY_BIN_DIR in their deploy scripts instead of
 hard-coding a particular directory in which to deploy the following types of
@@ -113,6 +117,8 @@ should not be used for that scenario.
 
 \include cmake-deploy-var-usage.qdocinc
 
+\preliminarycmakevariable
+
 Projects should use \c QT_DEPLOY_LIB_DIR in their deploy scripts instead of
 hard-coding a particular directory in which to deploy the following types of
 binaries:
@@ -144,6 +150,8 @@ should not be used for that scenario.
 
 \include cmake-deploy-var-usage.qdocinc
 
+\preliminarycmakevariable
+
 Projects should use \c QT_DEPLOY_PLUGINS_DIR in their deploy scripts instead of
 hard-coding a particular directory under which to deploy plugins.
 
@@ -169,6 +177,8 @@ bundle contents.
 \summary {Prefix-relative subdirectory for deploying QML plugins on some target platforms.}
 
 \include cmake-deploy-var-usage.qdocinc
+
+\preliminarycmakevariable
 
 Projects should use \c QT_DEPLOY_QML_DIR in their deploy scripts instead of
 hard-coding a particular directory under which to deploy QML modules.

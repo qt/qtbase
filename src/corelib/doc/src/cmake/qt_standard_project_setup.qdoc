@@ -36,6 +36,8 @@
 
 \include cmake-find-package-core.qdocinc
 
+\preliminarycmakecommand
+
 \section1 Synopsis
 
 \badcode

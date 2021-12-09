@@ -4,6 +4,8 @@
 
 cmake_minimum_required(VERSION 3.16...3.21)
 
+# This function is currently in Technical Preview.
+# Its signature and behavior might change.
 function(qt_deploy_qt_conf file_to_write)
     set(no_value_options "")
     set(single_value_options
@@ -85,6 +87,8 @@ function(qt_deploy_qt_conf file_to_write)
     file(WRITE "${file_to_write}" "${contents}")
 endfunction()
 
+# This function is currently in Technical Preview.
+# Its signature and behavior might change.
 function(qt_deploy_runtime_dependencies)
 
     if(NOT __QT_DEPLOY_TOOL)
