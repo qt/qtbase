@@ -117,7 +117,48 @@ struct ResultTypeHelper<
     using ResultType = std::invoke_result_t<std::decay_t<F>>;
 };
 
+// Helpers to remove QPrivateSignal argument from the list of arguments
+
+template<class T, class Enable = void>
+inline constexpr bool IsPrivateSignalArg = false;
+
+template<class T>
+inline constexpr bool IsPrivateSignalArg<T, typename std::enable_if_t<
+        // finds injected-class-name, the 'class' avoids falling into the rules of [class.qual]/2:
+        std::is_class_v<class T::QPrivateSignal>
+    >> = true;
+
+template<class Tuple, std::size_t... I>
+auto cutTuple(Tuple &&t, std::index_sequence<I...>)
+{
+    return std::make_tuple(std::get<I>(t)...);
+}
+
+template<class Arg, class... Args>
+auto createTuple(Arg &&arg, Args &&... args)
+{
+    using TupleType = std::tuple<std::decay_t<Arg>, std::decay_t<Args>...>;
+    constexpr auto Size = sizeof...(Args); // One less than the size of all arguments
+    if constexpr (QtPrivate::IsPrivateSignalArg<std::tuple_element_t<Size, TupleType>>) {
+        if constexpr (Size == 1) {
+            return arg;
+        } else {
+            return cutTuple(std::make_tuple(std::forward<Arg>(arg), std::forward<Args>(args)...),
+                            std::make_index_sequence<Size>());
+        }
+    } else {
+        return std::make_tuple(std::forward<Arg>(arg), std::forward<Args>(args)...);
+    }
+}
+
 // Helpers to resolve argument types of callables.
+
+template<class Arg, class... Args>
+using FilterLastPrivateSignalArg =
+        std::conditional_t<(sizeof...(Args) > 0),
+                           std::invoke_result_t<decltype(createTuple<Arg, Args...>), Arg, Args...>,
+                           std::conditional_t<IsPrivateSignalArg<Arg>, void, Arg>>;
+
 template<typename...>
 struct ArgsType;
 
@@ -128,9 +169,7 @@ struct ArgsType<Arg, Args...>
     using PromiseType = void;
     using IsPromise = std::false_type;
     static const bool HasExtraArgs = (sizeof...(Args) > 0);
-    using AllArgs =
-            std::conditional_t<HasExtraArgs, std::tuple<std::decay_t<Arg>, std::decay_t<Args>...>,
-                               std::decay_t<Arg>>;
+    using AllArgs = FilterLastPrivateSignalArg<std::decay_t<Arg>, std::decay_t<Args>...>;
 
     template<class Class, class Callable>
     static const bool CanInvokeWithArgs = std::is_invocable_v<Callable, Class, Arg, Args...>;
@@ -143,9 +182,7 @@ struct ArgsType<QPromise<Arg> &, Args...>
     using PromiseType = Arg;
     using IsPromise = std::true_type;
     static const bool HasExtraArgs = (sizeof...(Args) > 0);
-    using AllArgs =
-            std::conditional_t<HasExtraArgs, std::tuple<std::decay_t<QPromise<Arg> &>, std::decay_t<Args>...>,
-                               std::decay_t<QPromise<Arg> &>>;
+    using AllArgs = FilterLastPrivateSignalArg<QPromise<Arg>, std::decay_t<Args>...>;
 
     template<class Class, class Callable>
     static const bool CanInvokeWithArgs = std::is_invocable_v<Callable, Class, QPromise<Arg> &, Args...>;
@@ -851,7 +888,8 @@ static QFuture<ArgsType<Signal>> connect(Sender *sender, Signal signal)
                                               [promise, connections](auto... values) mutable {
                                                   QObject::disconnect(connections->first);
                                                   QObject::disconnect(connections->second);
-                                                  promise.reportResult(std::make_tuple(values...));
+                                                  promise.reportResult(QtPrivate::createTuple(
+                                                          std::move(values)...));
                                                   promise.reportFinished();
                                               });
     } else {
