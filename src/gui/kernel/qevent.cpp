@@ -523,14 +523,13 @@ QSinglePointEvent::QSinglePointEvent(QEvent::Type type, const QPointingDevice *d
       m_reserved(0), m_reserved2(0),
       m_doubleClick(false), m_phase(0), m_invertedScrolling(0)
 {
-    bool isPress = (button != Qt::NoButton && (button | buttons) == buttons);
-    bool isWheel = (type == QEvent::Type::Wheel);
+    const bool isPress = (button != Qt::NoButton && (button | buttons) == buttons);
+    const bool isWheel = (type == QEvent::Type::Wheel);
     auto devPriv = QPointingDevicePrivate::get(const_cast<QPointingDevice *>(pointingDevice()));
     auto epd = devPriv->pointById(0);
     QEventPoint &p = epd->eventPoint;
+    QMutableEventPoint::detach(p);
     Q_ASSERT(p.device() == dev);
-    // p is a reference to a non-detached instance that lives in QPointingDevicePrivate::activePoints.
-    // Update persistent info in that instance.
     if (isPress || isWheel)
         QMutableEventPoint::setGlobalLastPosition(p, globalPos);
     else
@@ -547,8 +546,6 @@ QSinglePointEvent::QSinglePointEvent(QEvent::Type type, const QPointingDevice *d
     else
         QMutableEventPoint::setState(p, QEventPoint::State::Released);
     QMutableEventPoint::setScenePosition(p, scenePos);
-    // Now detach, and update the detached instance with ephemeral state.
-    QMutableEventPoint::detach(p);
     QMutableEventPoint::setPosition(p, localPos);
     m_points.append(p);
 }
