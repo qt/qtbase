@@ -682,6 +682,9 @@ Q_OUTOFLINE_TEMPLATE typename QVarLengthArray<T, Prealloc>::iterator QVarLengthA
     qsizetype l = qsizetype(aend - cbegin());
     qsizetype n = l - f;
 
+    if (n == 0) // avoid UB in std::move() below
+        return data() + f;
+
     if constexpr (QTypeInfo<T>::isComplex) {
         std::move(begin() + l, end(), QT_MAKE_CHECKED_ARRAY_ITERATOR(begin() + f, size() - f));
         std::destroy(end() - n, end());
