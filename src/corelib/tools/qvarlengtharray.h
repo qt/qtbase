@@ -336,12 +336,7 @@ public:
     template <typename U = T, qsizetype Prealloc2 = Prealloc> friend
     QTypeTraits::compare_eq_result<U> operator==(const QVarLengthArray<T, Prealloc> &l, const QVarLengthArray<T, Prealloc2> &r)
     {
-        if (l.size() != r.size())
-            return false;
-        const T *rb = r.begin();
-        const T *b  = l.begin();
-        const T *e  = l.end();
-        return std::equal(b, e, QT_MAKE_CHECKED_ARRAY_ITERATOR(rb, r.size()));
+        return std::equal(l.begin(), l.end(), r.begin(), r.end());
     }
 
     template <typename U = T, qsizetype Prealloc2 = Prealloc> friend
