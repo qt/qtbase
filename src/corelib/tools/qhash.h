@@ -254,6 +254,14 @@ constexpr bool isRelocatable()
     return QTypeInfo<typename Node::KeyType>::isRelocatable && QTypeInfo<typename Node::ValueType>::isRelocatable;
 }
 
+struct SpanConstants {
+    static constexpr size_t NEntries = 128;
+    static constexpr size_t LocalBucketMask = (NEntries - 1);
+    static constexpr size_t UnusedEntry = 0xff;
+
+    static_assert ((NEntries & LocalBucketMask) == 0, "NEntries must be a power of two.");
+};
+
 // Regular hash tables consist of a list of buckets that can store Nodes. But simply allocating one large array of buckets
 // would waste a lot of memory. To avoid this, we split the vector of buckets up into a vector of Spans. Each Span represents
 // NEntries buckets. To quickly find the correct Span that holds a bucket, NEntries must be a power of two.
@@ -264,13 +272,6 @@ constexpr bool isRelocatable()
 // table have a very small memory overhead compared to many other implementations.
 template<typename Node>
 struct Span {
-    enum {
-        NEntries = 128,
-        LocalBucketMask = (NEntries - 1),
-        UnusedEntry = 0xff
-    };
-    static_assert ((NEntries & LocalBucketMask) == 0, "EntriesPerSpan must be a power of two.");
-
     // Entry is a slot available for storing a Node. The Span holds a pointer to
     // an array of Entries. Upon construction of the array, those entries are
     // unused, and nextFree() is being used to set up a singly linked list
@@ -284,13 +285,13 @@ struct Span {
         Node &node() { return *reinterpret_cast<Node *>(&storage); }
     };
 
-    unsigned char offsets[NEntries];
+    unsigned char offsets[SpanConstants::NEntries];
     Entry *entries = nullptr;
     unsigned char allocated = 0;
     unsigned char nextFree = 0;
     Span() noexcept
     {
-        memset(offsets, UnusedEntry, sizeof(offsets));
+        memset(offsets, SpanConstants::UnusedEntry, sizeof(offsets));
     }
     ~Span()
     {
@@ -301,7 +302,7 @@ struct Span {
         if (entries) {
             if constexpr (!std::is_trivially_destructible<Node>::value) {
                 for (auto o : offsets) {
-                    if (o != UnusedEntry)
+                    if (o != SpanConstants::UnusedEntry)
                         entries[o].node().~Node();
                 }
             }
@@ -311,8 +312,8 @@ struct Span {
     }
     Node *insert(size_t i)
     {
-        Q_ASSERT(i <= NEntries);
-        Q_ASSERT(offsets[i] == UnusedEntry);
+        Q_ASSERT(i <= SpanConstants::NEntries);
+        Q_ASSERT(offsets[i] == SpanConstants::UnusedEntry);
         if (nextFree == allocated)
             addStorage();
         unsigned char entry = nextFree;
@@ -323,11 +324,11 @@ struct Span {
     }
     void erase(size_t bucket) noexcept(std::is_nothrow_destructible<Node>::value)
     {
-        Q_ASSERT(bucket <= NEntries);
-        Q_ASSERT(offsets[bucket] != UnusedEntry);
+        Q_ASSERT(bucket <= SpanConstants::NEntries);
+        Q_ASSERT(offsets[bucket] != SpanConstants::UnusedEntry);
 
         unsigned char entry = offsets[bucket];
-        offsets[bucket] = UnusedEntry;
+        offsets[bucket] = SpanConstants::UnusedEntry;
 
         entries[entry].node().~Node();
         entries[entry].nextFree() = nextFree;
@@ -339,19 +340,19 @@ struct Span {
     }
     bool hasNode(size_t i) const noexcept
     {
-        return (offsets[i] != UnusedEntry);
+        return (offsets[i] != SpanConstants::UnusedEntry);
     }
     Node &at(size_t i) noexcept
     {
-        Q_ASSERT(i <= NEntries);
-        Q_ASSERT(offsets[i] != UnusedEntry);
+        Q_ASSERT(i <= SpanConstants::NEntries);
+        Q_ASSERT(offsets[i] != SpanConstants::UnusedEntry);
 
         return entries[offsets[i]].node();
     }
     const Node &at(size_t i) const noexcept
     {
-        Q_ASSERT(i <= NEntries);
-        Q_ASSERT(offsets[i] != UnusedEntry);
+        Q_ASSERT(i <= SpanConstants::NEntries);
+        Q_ASSERT(offsets[i] != SpanConstants::UnusedEntry);
 
         return entries[offsets[i]].node();
     }
@@ -369,17 +370,17 @@ struct Span {
     }
     void moveLocal(size_t from, size_t to) noexcept
     {
-        Q_ASSERT(offsets[from] != UnusedEntry);
-        Q_ASSERT(offsets[to] == UnusedEntry);
+        Q_ASSERT(offsets[from] != SpanConstants::UnusedEntry);
+        Q_ASSERT(offsets[to] == SpanConstants::UnusedEntry);
         offsets[to] = offsets[from];
-        offsets[from] = UnusedEntry;
+        offsets[from] = SpanConstants::UnusedEntry;
     }
     void moveFromSpan(Span &fromSpan, size_t fromIndex, size_t to) noexcept(std::is_nothrow_move_constructible_v<Node>)
     {
-        Q_ASSERT(to <= NEntries);
-        Q_ASSERT(offsets[to] == UnusedEntry);
-        Q_ASSERT(fromIndex <= NEntries);
-        Q_ASSERT(fromSpan.offsets[fromIndex] != UnusedEntry);
+        Q_ASSERT(to <= SpanConstants::NEntries);
+        Q_ASSERT(offsets[to] == SpanConstants::UnusedEntry);
+        Q_ASSERT(fromIndex <= SpanConstants::NEntries);
+        Q_ASSERT(fromSpan.offsets[fromIndex] != SpanConstants::UnusedEntry);
         if (nextFree == allocated)
             addStorage();
         Q_ASSERT(nextFree < allocated);
@@ -388,7 +389,7 @@ struct Span {
         nextFree = toEntry.nextFree();
 
         size_t fromOffset = fromSpan.offsets[fromIndex];
-        fromSpan.offsets[fromIndex] = UnusedEntry;
+        fromSpan.offsets[fromIndex] = SpanConstants::UnusedEntry;
         Entry &fromEntry = fromSpan.entries[fromOffset];
 
         if constexpr (isRelocatable<Node>()) {
@@ -403,14 +404,14 @@ struct Span {
 
     void addStorage()
     {
-        Q_ASSERT(allocated < NEntries);
+        Q_ASSERT(allocated < SpanConstants::NEntries);
         Q_ASSERT(nextFree == allocated);
         // the hash table should always be between 25 and 50% full
         // this implies that we on average have between 32 and 64 entries
         // in here. The likelihood of having below 16 entries is very small,
         // so start with that and increment by 16 each time we need to add
         // some more space
-        const size_t increment = NEntries / 8;
+        const size_t increment = SpanConstants::NEntries / 8;
         size_t alloc = allocated + increment;
         Entry *newEntries = new Entry[alloc];
         // we only add storage if the previous storage was fully filled, so
@@ -443,12 +444,10 @@ inline constexpr size_t maxNumBuckets() noexcept
     using Node3 = Node<qsizetype, QHashDummyValue>;
     static_assert(sizeof(Span<Node1>) == sizeof(Span<Node2>));
     static_assert(sizeof(Span<Node1>) == sizeof(Span<Node3>));
-    static_assert(int(Span<Node1>::NEntries) == int(Span<Node2>::NEntries));
-    static_assert(int(Span<Node1>::NEntries) == int(Span<Node3>::NEntries));
 
     // Maximum is 2^31-1 or 2^63-1 bytes (limited by qsizetype and ptrdiff_t)
     size_t max = (std::numeric_limits<ptrdiff_t>::max)();
-    return max / sizeof(Span<Node1>) * Span<Node1>::NEntries;
+    return max / sizeof(Span<Node1>) * SpanConstants::NEntries;
 }
 inline constexpr size_t bucketsForCapacity(size_t requestedCapacity) noexcept
 {
@@ -486,7 +485,7 @@ struct Data
     Data(size_t reserve = 0)
     {
         numBuckets = GrowthPolicy::bucketsForCapacity(reserve);
-        size_t nSpans = (numBuckets + Span::LocalBucketMask) / Span::NEntries;
+        size_t nSpans = (numBuckets + SpanConstants::LocalBucketMask) / SpanConstants::NEntries;
         spans = new Span[nSpans];
         seed = QHashSeed::globalSeed();
     }
@@ -498,17 +497,17 @@ struct Data
         if (reserved)
             numBuckets = GrowthPolicy::bucketsForCapacity(qMax(size, reserved));
         bool resized = numBuckets != other.numBuckets;
-        size_t nSpans = (numBuckets + Span::LocalBucketMask) / Span::NEntries;
+        size_t nSpans = (numBuckets + SpanConstants::LocalBucketMask) / SpanConstants::NEntries;
         spans = new Span[nSpans];
-        size_t otherNSpans = (other.numBuckets + Span::LocalBucketMask) / Span::NEntries;
+        size_t otherNSpans = (other.numBuckets + SpanConstants::LocalBucketMask) / SpanConstants::NEntries;
 
         for (size_t s = 0; s < otherNSpans; ++s) {
             const Span &span = other.spans[s];
-            for (size_t index = 0; index < Span::NEntries; ++index) {
+            for (size_t index = 0; index < SpanConstants::NEntries; ++index) {
                 if (!span.hasNode(index))
                     continue;
                 const Node &n = span.at(index);
-                iterator it = resized ? find(n.key) : iterator{ this, s*Span::NEntries + index };
+                iterator it = resized ? find(n.key) : iterator{ this, s*SpanConstants::NEntries + index };
                 Q_ASSERT(it.isUnused());
                 Node *newNode = spans[it.span()].insert(it.index());
                 new (newNode) Node(n);
@@ -560,14 +559,14 @@ struct Data
 
         Span *oldSpans = spans;
         size_t oldBucketCount = numBuckets;
-        size_t nSpans = (newBucketCount + Span::LocalBucketMask) / Span::NEntries;
+        size_t nSpans = (newBucketCount + SpanConstants::LocalBucketMask) / SpanConstants::NEntries;
         spans = new Span[nSpans];
         numBuckets = newBucketCount;
-        size_t oldNSpans = (oldBucketCount + Span::LocalBucketMask) / Span::NEntries;
+        size_t oldNSpans = (oldBucketCount + SpanConstants::LocalBucketMask) / SpanConstants::NEntries;
 
         for (size_t s = 0; s < oldNSpans; ++s) {
             Span &span = oldSpans[s];
-            for (size_t index = 0; index < Span::NEntries; ++index) {
+            for (size_t index = 0; index < SpanConstants::NEntries; ++index) {
                 if (!span.hasNode(index))
                     continue;
                 Node &n = span.at(index);
@@ -608,11 +607,11 @@ struct Data
         while (true) {
             // Split the bucket into the indexex of span array, and the local
             // offset inside the span
-            size_t span = bucket / Span::NEntries;
-            size_t index = bucket & Span::LocalBucketMask;
+            size_t span = bucket / SpanConstants::NEntries;
+            size_t index = bucket & SpanConstants::LocalBucketMask;
             Span &s = spans[span];
             size_t offset = s.offset(index);
-            if (offset == Span::UnusedEntry) {
+            if (offset == SpanConstants::UnusedEntry) {
                 return iterator{ this, bucket };
             } else {
                 Node &n = s.atOffset(offset);
@@ -655,8 +654,8 @@ struct Data
     iterator erase(iterator it) noexcept(std::is_nothrow_destructible<Node>::value)
     {
         size_t bucket = it.bucket;
-        size_t span = bucket / Span::NEntries;
-        size_t index = bucket & Span::LocalBucketMask;
+        size_t span = bucket / SpanConstants::NEntries;
+        size_t index = bucket & SpanConstants::LocalBucketMask;
         Q_ASSERT(spans[span].hasNode(index));
         spans[span].erase(index);
         --size;
@@ -666,8 +665,8 @@ struct Data
         size_t next = bucket;
         while (true) {
             next = nextBucket(next);
-            size_t nextSpan = next / Span::NEntries;
-            size_t nextIndex = next & Span::LocalBucketMask;
+            size_t nextSpan = next / SpanConstants::NEntries;
+            size_t nextIndex = next & SpanConstants::LocalBucketMask;
             if (!spans[nextSpan].hasNode(nextIndex))
                 break;
             size_t hash = QHashPrivate::calculateHash(spans[nextSpan].at(nextIndex).key, seed);
@@ -678,8 +677,8 @@ struct Data
                     break;
                 } else if (newBucket == hole) {
                     // move into hole
-                    size_t holeSpan = hole / Span::NEntries;
-                    size_t holeIndex = hole & Span::LocalBucketMask;
+                    size_t holeSpan = hole / SpanConstants::NEntries;
+                    size_t holeIndex = hole & SpanConstants::LocalBucketMask;
                     if (nextSpan == holeSpan) {
                         spans[holeSpan].moveLocal(nextIndex, holeIndex);
                     } else {
@@ -712,8 +711,8 @@ struct iterator {
     const Data<Node> *d = nullptr;
     size_t bucket = 0;
 
-    size_t span() const noexcept { return bucket / Span::NEntries; }
-    size_t index() const noexcept { return bucket & Span::LocalBucketMask; }
+    size_t span() const noexcept { return bucket / SpanConstants::NEntries; }
+    size_t index() const noexcept { return bucket & SpanConstants::LocalBucketMask; }
     inline bool isUnused() const noexcept { return !d->spans[span()].hasNode(index()); }
 
     inline Node *node() const noexcept
