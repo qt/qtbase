@@ -2125,9 +2125,6 @@ size_t qHash(long double key, size_t seed) noexcept
 
     If a key is common to both hashes, its value will be replaced with the
     value stored in \a other.
-
-    \note If \a other contains multiple entries with the same key then the
-    final value of the key is undefined.
 */
 
 /*! \fn template <class Key, class T> bool QHash<Key, T>::empty() const
