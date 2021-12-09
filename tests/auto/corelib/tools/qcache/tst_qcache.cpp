@@ -37,6 +37,7 @@ public slots:
     void initTestCase();
     void cleanupTestCase();
 private slots:
+    void empty();
     void maxCost();
     void setMaxCost();
     void totalCost();
@@ -73,6 +74,21 @@ void tst_QCache::cleanupTestCase()
 {
     // always check for memory leaks
     QCOMPARE(Foo::count, 0);
+}
+
+void tst_QCache::empty()
+{
+    QCache<int, int> cache;
+    QCOMPARE(cache.size(), 0);
+    QCOMPARE(cache.count(), 0);
+    QVERIFY(cache.isEmpty());
+    QVERIFY(!cache.contains(1));
+    QCOMPARE(cache.keys().size(), 0);
+    QCOMPARE(cache.take(1), nullptr);
+    QVERIFY(!cache.remove(1));
+    QCOMPARE(cache.object(1), nullptr);
+    QCOMPARE(cache[1], nullptr);
+    QCOMPARE(cache.totalCost(), 0);
 }
 
 void tst_QCache::maxCost()

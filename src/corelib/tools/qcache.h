@@ -160,6 +160,8 @@ class QCache
     }
     T *relink(const Key &key) const noexcept
     {
+        if (isEmpty())
+            return nullptr;
         Node *n = d.findNode(key);
         if (!n)
             return nullptr;
@@ -269,11 +271,13 @@ public:
     }
     inline bool contains(const Key &key) const noexcept
     {
-        return d.findNode(key) != nullptr;
+        return !isEmpty() && d.findNode(key) != nullptr;
     }
 
     bool remove(const Key &key) noexcept(std::is_nothrow_destructible_v<Node>)
     {
+        if (isEmpty())
+            return false;
         Node *n = d.findNode(key);
         if (!n) {
             return false;
@@ -285,6 +289,8 @@ public:
 
     T *take(const Key &key) noexcept(std::is_nothrow_destructible_v<Key>)
     {
+        if (isEmpty())
+            return nullptr;
         Node *n = d.findNode(key);
         if (!n)
             return nullptr;
