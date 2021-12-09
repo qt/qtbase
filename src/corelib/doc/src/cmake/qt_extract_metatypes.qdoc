@@ -27,7 +27,7 @@
 
 /*!
 \page qt_extract_metatypes.html
-\ingroup cmake-macros-qtcore
+\ingroup cmake-commands-qtcore
 
 \title qt_extract_metatypes
 \target qt6_extract_metatypes
