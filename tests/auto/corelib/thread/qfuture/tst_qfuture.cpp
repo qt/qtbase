@@ -70,11 +70,23 @@ public:
         emit multipleArgs(value1, value2, value3);
     }
 
+    void emitNoArgPrivateSignal() { emit noArgPrivateSignal(QPrivateSignal()); }
+    void emitIntArgPrivateSignal(int value) { emit intArgPrivateSignal(value, QPrivateSignal()); }
+    void emitMultiArgsPrivateSignal(int value1, double value2, const QString &value3)
+    {
+        emit multiArgsPrivateSignal(value1, value2, value3, QPrivateSignal());
+    }
+
 signals:
     void noArgSignal();
     void intArgSignal(int value);
     void constRefArg(const QString &value);
     void multipleArgs(int value1, double value2, const QString &value3);
+
+    // Private signals
+    void noArgPrivateSignal(QPrivateSignal);
+    void intArgPrivateSignal(int value, QPrivateSignal);
+    void multiArgsPrivateSignal(int value1, double value2, const QString &value3, QPrivateSignal);
 };
 
 class LambdaThread : public QThread
@@ -3433,7 +3445,7 @@ void tst_QFuture::signalConnect()
     {
         SenderObject sender;
         auto future =
-                QtFuture::connect(&sender, &SenderObject::noArgSignal).then([&] { return true; });
+                QtFuture::connect(&sender, &SenderObject::noArgSignal).then([] { return true; });
         sender.emitNoArg();
         QCOMPARE(future.result(), true);
     }
@@ -3472,6 +3484,39 @@ void tst_QFuture::signalConnect()
         QCOMPARE(std::get<0>(result), 42);
         QCOMPARE(std::get<1>(result), 42.5);
         QCOMPARE(std::get<2>(result), "42");
+    }
+
+    // No arg private signal
+    {
+        SenderObject sender;
+        auto future = QtFuture::connect(&sender, &SenderObject::noArgPrivateSignal).then([] {
+            return true;
+        });
+        sender.emitNoArgPrivateSignal();
+        QCOMPARE(future.result(), true);
+    }
+
+    // One arg private signal
+    {
+        SenderObject sender;
+        auto future =
+                QtFuture::connect(&sender, &SenderObject::intArgPrivateSignal).then([](int value) {
+                    return value;
+                });
+        sender.emitIntArgPrivateSignal(42);
+        QCOMPARE(future.result(), 42);
+    }
+
+    // Multi-args private signal
+    {
+        SenderObject sender;
+        auto future = QtFuture::connect(&sender, &SenderObject::multiArgsPrivateSignal)
+                              .then([](std::tuple<int, double, QString> values) { return values; });
+        sender.emitMultiArgsPrivateSignal(42, 42.5, "42");
+        const auto [i, d, s] = future.result();
+        QCOMPARE(i, 42);
+        QCOMPARE(d, 42.5);
+        QCOMPARE(s, "42");
     }
 
     // Sender destroyed
