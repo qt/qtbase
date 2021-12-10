@@ -11,7 +11,7 @@ qt_internal_add_example(undo)
 qt_internal_add_example(undoframework)
 
 if(QT_FEATURE_library)
-    add_subdirectory(echoplugin)
+    qt_internal_add_example(echoplugin)
 
     if(QT_FEATURE_inputdialog)
         qt_internal_add_example(plugandpaint)
