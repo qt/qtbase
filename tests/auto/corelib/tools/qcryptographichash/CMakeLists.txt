@@ -19,7 +19,7 @@ qt_internal_add_test(tst_qcryptographichash
 ## Scopes:
 #####################################################################
 
-if(ANDROID)
+if(ANDROID OR INTEGRITY)
     # Resources:
     set(testdata_resource_files
         "data/2c1517dad3678f03917f15849b052fd5.md5"

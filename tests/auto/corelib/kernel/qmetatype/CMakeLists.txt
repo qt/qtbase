@@ -21,6 +21,20 @@ qt_internal_add_test(tst_qmetatype
     TESTDATA ${test_data}
 )
 
+if(INTEGRITY)
+    # Resources:
+    set(testdata_resource_files
+        "typeFlags.bin"
+    )
+
+    qt_internal_add_resource(tst_qmetatype "testdata"
+        PREFIX
+            "/"
+        FILES
+            ${testdata_resource_files}
+    )
+endif()
+
 ## Scopes:
 #####################################################################
 
