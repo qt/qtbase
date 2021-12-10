@@ -466,7 +466,7 @@ Q_INLINE_TEMPLATE bool QVarLengthArray<T, Prealloc>::contains(const AT &t) const
 template <class T, qsizetype Prealloc>
 Q_OUTOFLINE_TEMPLATE void QVarLengthArray<T, Prealloc>::append(const T *abuf, qsizetype increment)
 {
-    Q_ASSERT(abuf);
+    Q_ASSERT(abuf || increment == 0);
     if (increment <= 0)
         return;
 
