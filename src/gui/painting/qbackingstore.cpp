@@ -320,32 +320,34 @@ bool QBackingStore::hasStaticContents() const
 void Q_GUI_EXPORT qt_scrollRectInImage(QImage &img, const QRect &rect, const QPoint &offset)
 {
     // make sure we don't detach
-    uchar *mem = const_cast<uchar*>(const_cast<const QImage &>(img).bits());
+    uchar *mem = const_cast<uchar*>(img.constBits());
 
     int lineskip = img.bytesPerLine();
     int depth = img.depth() >> 3;
 
     const QRect imageRect(0, 0, img.width(), img.height());
-    const QRect r = rect & imageRect & imageRect.translated(-offset);
-    const QPoint p = rect.topLeft() + offset;
-
-    if (r.isEmpty())
+    const QRect sourceRect = rect.intersected(imageRect).intersected(imageRect.translated(-offset));
+    if (sourceRect.isEmpty())
         return;
+
+    const QRect destRect = sourceRect.translated(offset);
+    Q_ASSERT_X(imageRect.contains(destRect), "qt_scrollRectInImage",
+        "The sourceRect should already account for clipping, both pre and post scroll");
 
     const uchar *src;
     uchar *dest;
 
-    if (r.top() < p.y()) {
-        src = mem + r.bottom() * lineskip + r.left() * depth;
-        dest = mem + (p.y() + r.height() - 1) * lineskip + p.x() * depth;
+    if (sourceRect.top() < destRect.top()) {
+        src = mem + sourceRect.bottom() * lineskip + sourceRect.left() * depth;
+        dest = mem + (destRect.top() + sourceRect.height() - 1) * lineskip + destRect.left() * depth;
         lineskip = -lineskip;
     } else {
-        src = mem + r.top() * lineskip + r.left() * depth;
-        dest = mem + p.y() * lineskip + p.x() * depth;
+        src = mem + sourceRect.top() * lineskip + sourceRect.left() * depth;
+        dest = mem + destRect.top() * lineskip + destRect.left() * depth;
     }
 
-    const int w = r.width();
-    int h = r.height();
+    const int w = sourceRect.width();
+    int h = sourceRect.height();
     const int bytes = w * depth;
 
     // overlapping segments?
