@@ -193,6 +193,10 @@ public:
     iterator erase(const_iterator begin, const_iterator end);
     iterator erase(const_iterator pos) { return erase(pos, pos + 1); }
 
+    size_t hash(size_t seed) const noexcept(QtPrivate::QNothrowHashable_v<T>)
+    {
+        return qHashRange(begin(), end(), seed);
+    }
 protected:
     template <typename...Args>
     reference emplace_back_impl(qsizetype prealloc, void *array, Args&&...args)
@@ -926,9 +930,9 @@ bool operator>=(const QVarLengthArray<T, Prealloc1> &l, const QVarLengthArray<T,
 
 template <typename T, qsizetype Prealloc>
 size_t qHash(const QVarLengthArray<T, Prealloc> &key, size_t seed = 0)
-    noexcept(noexcept(qHashRange(key.cbegin(), key.cend(), seed)))
+    noexcept(QtPrivate::QNothrowHashable_v<T>)
 {
-    return qHashRange(key.cbegin(), key.cend(), seed);
+    return key.hash(seed);
 }
 
 template <typename T, qsizetype Prealloc, typename AT>
