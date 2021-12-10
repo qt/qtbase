@@ -1754,7 +1754,8 @@ public:
     template <typename ...Args>
     iterator emplace(const Key &key, Args &&... args)
     {
-        return emplace(Key(key), std::forward<Args>(args)...);
+        Key copy = key; // Needs to be explicit for MSVC 2019
+        return emplace(std::move(copy), std::forward<Args>(args)...);
     }
 
     template <typename ...Args>
