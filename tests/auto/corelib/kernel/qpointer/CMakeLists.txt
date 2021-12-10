@@ -7,6 +7,8 @@
 qt_internal_add_test(tst_qpointer
     SOURCES
         tst_qpointer.cpp
+    PUBLIC_LIBRARIES
+        Qt::Gui
 )
 
 ## Scopes:

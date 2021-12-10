@@ -18,7 +18,7 @@ qt_internal_add_test(tst_qdatastream
 ## Scopes:
 #####################################################################
 
-if(ANDROID)
+if(ANDROID OR INTEGRITY)
     # Resources:
     set(testdata_resource_files
         "datastream.q42"
