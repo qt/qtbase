@@ -37,7 +37,9 @@ class tst_Warnings: public QObject
 private slots:
     void testWarnings();
     void testMissingWarnings();
+#if QT_CONFIG(regularexpression)
     void testMissingWarningsRegularExpression();
+#endif
     void testMissingWarningsWithData_data();
     void testMissingWarningsWithData();
 
@@ -109,6 +111,7 @@ void tst_Warnings::testMissingWarnings()
     qWarning("Warning2");
 }
 
+#if QT_CONFIG(regularexpression)
 void tst_Warnings::testMissingWarningsRegularExpression()
 {
     QTest::ignoreMessage(QtWarningMsg, QRegularExpression("Warning\\d\\d"));
@@ -116,6 +119,7 @@ void tst_Warnings::testMissingWarningsRegularExpression()
 
     qWarning("Warning11");
 }
+#endif
 
 void tst_Warnings::testMissingWarningsWithData_data()
 {
@@ -172,8 +176,9 @@ void tst_Warnings::testFailOnWarnings()
 void tst_Warnings::testFailOnWarningsCleared()
 {
     // The patterns passed to failOnWarnings() should be cleared at the end of
-    // each test function, so this shouldn't fail because of the failOnWarning() call in the previous function.
-    // Note that this test always needs to come after testFailOnWarnings for it to work.
+    // each test function, so this shouldn't fail because of the failOnWarning()
+    // call in the previous function. Note that this test always needs to come
+    // after testFailOnWarnings for it to test anything meaningfully.
     qWarning("Ran out of muffins!");
 }
 
@@ -203,6 +208,7 @@ void tst_Warnings::testFailOnWarningsWithData()
 void tst_Warnings::testFailOnWarningsFailInHelper()
 {
     [](){ QFAIL("This failure message should be printed but not cause the test to abort"); }();
+    // So we've already failed, but we get more messages - that don't increment counters.
     const auto warnRegex = QRegularExpression("Ran out of .*!");
     QTest::failOnWarning(warnRegex);
     qWarning("Ran out of cabbage!");
@@ -214,7 +220,7 @@ void tst_Warnings::testFailOnWarningsThenSkip()
     const auto warnRegex = QRegularExpression("Ran out of .*!");
     QTest::failOnWarning(warnRegex);
     qWarning("Ran out of cabbage!");
-    QSKIP("My cabbage! :(");
+    QSKIP("My cabbage! :("); // Reports, but doesn't count.
 }
 #endif // QT_CONFIG(regularexpression)
 
