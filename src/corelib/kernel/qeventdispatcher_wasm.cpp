@@ -219,7 +219,13 @@ bool QEventDispatcherWasm::processEvents(QEventLoop::ProcessEventsFlags flags)
 
     hasPendingEvents = qGlobalPostedEventsCount() > 0;
     QCoreApplication::sendPostedEvents();
+    processWindowSystemEvents(flags);
     return hasPendingEvents;
+}
+
+void QEventDispatcherWasm::processWindowSystemEvents(QEventLoop::ProcessEventsFlags flags)
+{
+    Q_UNUSED(flags);
 }
 
 void QEventDispatcherWasm::registerSocketNotifier(QSocketNotifier *notifier)
