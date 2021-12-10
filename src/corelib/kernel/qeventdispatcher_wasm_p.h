@@ -86,6 +86,9 @@ public:
     void interrupt() override;
     void wakeUp() override;
 
+protected:
+    virtual void processWindowSystemEvents(QEventLoop::ProcessEventsFlags flags);
+
 private:
     bool isMainThreadEventDispatcher();
     bool isSecondaryThreadEventDispatcher();
