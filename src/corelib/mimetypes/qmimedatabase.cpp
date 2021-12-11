@@ -456,7 +456,7 @@ QMimeType QMimeDatabasePrivate::mimeTypeForData(QIODevice *device)
         // Read 16K in one go (QIODEVICE_BUFFERSIZE in qiodevice_p.h).
         // This is much faster than seeking back and forth into QIODevice.
         const QByteArray data = device->peek(16384);
-        const QMimeType result = findByData(data, &accuracy);
+        QMimeType result = findByData(data, &accuracy);
         if (openedByUs)
             device->close();
         return result;
