@@ -499,11 +499,7 @@ QMimeType QMimeDatabasePrivate::mimeTypeForFile(const QString &fileName,
         return mimeTypeForFileExtension(fileName);
     case QMimeDatabase::MatchContent: {
         QFile file(fileName);
-        if (file.open(QIODevice::ReadOnly)) {
-            return mimeTypeForData(&file);
-        } else {
-            return mimeTypeForName(defaultMimeType());
-        }
+        return mimeTypeForData(&file);
     }
     default:
         Q_ASSERT(false);
