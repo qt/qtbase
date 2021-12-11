@@ -93,7 +93,7 @@ public:
     QString resolveAlias(const QString &nameOrAlias);
     QStringList parents(const QString &mimeName);
     QMimeType mimeTypeForName(const QString &nameOrAlias);
-    QMimeType mimeTypeForFileNameAndData(const QString &fileName, QIODevice *device, int *priorityPtr);
+    QMimeType mimeTypeForFileNameAndData(const QString &fileName, QIODevice *device);
     QMimeType mimeTypeForFileExtension(const QString &fileName);
     QMimeType mimeTypeForData(QIODevice *device);
     QMimeType mimeTypeForFile(const QString &fileName, const QFileInfo *fileInfo, QMimeDatabase::MatchMode mode);
