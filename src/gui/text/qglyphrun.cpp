@@ -434,7 +434,7 @@ void QGlyphRun::setFlags(GlyphRunFlags flags)
 
 /*!
   Sets the bounding rect of the glyphs in this QGlyphRun to be \a boundingRect. This rectangle
-  will be returned by boundingRect() unless it is empty, in which case the bounding rectangle of the
+  will be returned by boundingRect() unless it is null, in which case the bounding rectangle of the
   glyphs in the glyph run will be returned instead.
 
   \note Unless you are implementing text shaping, you should not have to use this function.
@@ -468,7 +468,7 @@ void QGlyphRun::setBoundingRect(const QRectF &boundingRect)
 */
 QRectF QGlyphRun::boundingRect() const
 {
-    if (!d->boundingRect.isEmpty() || !d->rawFont.isValid())
+    if (!d->boundingRect.isNull() || !d->rawFont.isValid())
         return d->boundingRect;
 
     qreal minX, minY, maxX, maxY;
