@@ -53,9 +53,9 @@
 
 #include "QtCore/qbytearray.h"
 #include "QtCore/qiodevice.h"
-#include "QtCore/qlist.h"
 #include "QtCore/qobjectdefs.h"
 #include "QtCore/qstring.h"
+#include "QtCore/qvarlengtharray.h"
 #include "private/qringbuffer_p.h"
 #ifndef QT_NO_QOBJECT
 #include "private/qobject_p.h"
@@ -134,8 +134,8 @@ public:
     int readBufferChunkSize = QIODEVICE_BUFFERSIZE;
     int writeBufferChunkSize = 0;
 
-    QList<QRingBuffer> readBuffers;
-    QList<QRingBuffer> writeBuffers;
+    QVarLengthArray<QRingBuffer, 2> readBuffers;
+    QVarLengthArray<QRingBuffer, 1> writeBuffers;
     QString errorString;
     QIODevice::OpenMode openMode = QIODevice::NotOpen;
 
