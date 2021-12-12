@@ -171,9 +171,13 @@ Q_DECLARE_SHARED(QRingChunk)
 
 class QRingBuffer
 {
+    Q_DISABLE_COPY(QRingBuffer)
 public:
     explicit inline QRingBuffer(int growth = QRINGBUFFER_CHUNKSIZE) :
         bufferSize(0), basicBlockSize(growth) { }
+
+    QRingBuffer(QRingBuffer &&) noexcept = default;
+    QRingBuffer &operator=(QRingBuffer &&) noexcept = default;
 
     inline void setChunkSize(int size) {
         basicBlockSize = size;
