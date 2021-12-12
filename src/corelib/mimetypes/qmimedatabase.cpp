@@ -61,6 +61,15 @@
 
 QT_BEGIN_NAMESPACE
 
+static QString directoryMimeType()
+{
+    return QStringLiteral("inode/directory");
+}
+static QString plainTextMimeType()
+{
+    return QStringLiteral("text/plain");
+}
+
 Q_GLOBAL_STATIC(QMimeDatabasePrivate, staticQMimeDatabase)
 
 QMimeDatabasePrivate *QMimeDatabasePrivate::instance()
@@ -205,7 +214,7 @@ QMimeType QMimeDatabasePrivate::mimeTypeForName(const QString &nameOrAlias)
 QStringList QMimeDatabasePrivate::mimeTypeForFileName(const QString &fileName)
 {
     if (fileName.endsWith(QLatin1Char('/')))
-        return QStringList() << QStringLiteral("inode/directory");
+        return { directoryMimeType() };
 
     const QMimeGlobMatchResult result = findByFileName(fileName);
     QStringList matchingMimeTypes = result.m_matchingMimeTypes;
@@ -272,18 +281,18 @@ void QMimeDatabasePrivate::loadIcon(QMimeTypePrivate &mimePrivate)
     }
 }
 
-static QString fallbackParent(const QString &mimeTypeName)
+QString QMimeDatabasePrivate::fallbackParent(const QString &mimeTypeName) const
 {
     const QStringView myGroup = QStringView{mimeTypeName}.left(mimeTypeName.indexOf(QLatin1Char('/')));
     // All text/* types are subclasses of text/plain.
-    if (myGroup == QLatin1String("text") && mimeTypeName != QLatin1String("text/plain"))
-        return QStringLiteral("text/plain");
+    if (myGroup == QLatin1String("text") && mimeTypeName != plainTextMimeType())
+        return plainTextMimeType();
     // All real-file mimetypes implicitly derive from application/octet-stream
     if (myGroup != QLatin1String("inode") &&
         // ignore non-file extensions
         myGroup != QLatin1String("all") && myGroup != QLatin1String("fonts") && myGroup != QLatin1String("print") && myGroup != QLatin1String("uri")
-        && mimeTypeName != QLatin1String("application/octet-stream")) {
-        return QStringLiteral("application/octet-stream");
+        && mimeTypeName != defaultMimeType()) {
+        return defaultMimeType();
     }
     return QString();
 }
@@ -359,7 +368,7 @@ QMimeType QMimeDatabasePrivate::findByData(const QByteArray &data, int *accuracy
 
     if (isTextFile(data)) {
         *accuracyPtr = 5;
-        return mimeTypeForName(QStringLiteral("text/plain"));
+        return mimeTypeForName(plainTextMimeType());
     }
 
     return mimeTypeForName(defaultMimeType());
@@ -469,7 +478,7 @@ QMimeType QMimeDatabasePrivate::mimeTypeForFile(const QString &fileName,
     QT_STATBUF statBuffer;
     if (QT_STAT(nativeFilePath.constData(), &statBuffer) == 0) {
         if (S_ISDIR(statBuffer.st_mode))
-            return mimeTypeForName(QStringLiteral("inode/directory"));
+            return mimeTypeForName(directoryMimeType());
         if (S_ISCHR(statBuffer.st_mode))
             return mimeTypeForName(QStringLiteral("inode/chardevice"));
         if (S_ISBLK(statBuffer.st_mode))
@@ -482,7 +491,7 @@ QMimeType QMimeDatabasePrivate::mimeTypeForFile(const QString &fileName,
 #else
     const bool isDirectory = fileInfo ? fileInfo->isDir() : QFileInfo(fileName).isDir();
     if (isDirectory)
-        return mimeTypeForName(QStringLiteral("inode/directory"));
+        return mimeTypeForName(directoryMimeType());
 #endif
 
     switch (mode) {
@@ -764,7 +773,7 @@ QMimeType QMimeDatabase::mimeTypeForFileNameAndData(const QString &fileName, QIO
     QMutexLocker locker(&d->mutex);
 
     if (fileName.endsWith(QLatin1Char('/')))
-        return d->mimeTypeForName(QStringLiteral("inode/directory"));
+        return d->mimeTypeForName(directoryMimeType());
 
     const bool openedByUs = !device->isOpen() && device->open(QIODevice::ReadOnly);
     const QMimeType result = d->mimeTypeForFileNameAndData(fileName, device);
@@ -794,7 +803,7 @@ QMimeType QMimeDatabase::mimeTypeForFileNameAndData(const QString &fileName, con
     QMutexLocker locker(&d->mutex);
 
     if (fileName.endsWith(QLatin1Char('/')))
-        return d->mimeTypeForName(QStringLiteral("inode/directory"));
+        return d->mimeTypeForName(directoryMimeType());
 
     QBuffer buffer(const_cast<QByteArray *>(&data));
     buffer.open(QIODevice::ReadOnly);
