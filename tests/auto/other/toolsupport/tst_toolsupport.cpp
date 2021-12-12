@@ -142,9 +142,9 @@ void tst_toolsupport::offsets_data()
 #ifdef Q_PROCESSOR_X86
         // x86 32-bit has weird alignment rules. Refer to QtPrivate::AlignOf in
         // qglobal.h for more details.
-        data << 188 << 304;
+        data << 264 << 424;
 #else
-        data << 196 << 304;
+        data << 300 << 424;
 #endif
     }
 #endif
