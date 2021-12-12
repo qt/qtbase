@@ -703,15 +703,18 @@ void QIODevice::setCurrentReadChannel(int channel)
 void QIODevicePrivate::setReadChannelCount(int count)
 {
     if (count > readBuffers.size()) {
+        readBuffers.reserve(count);
+
         // If readBufferChunkSize is zero, we should bypass QIODevice's
         // read buffers, even if the QIODeviceBase::Unbuffered flag is not
         // set when opened. However, if a read transaction is started or
         // ungetChar() is called, we still have to use the internal buffer.
         // To support these cases, pass a default value to the QRingBuffer
         // constructor.
-        readBuffers.insert(readBuffers.end(), count - readBuffers.size(),
-                           QRingBuffer(readBufferChunkSize != 0 ? readBufferChunkSize
-                                                                : QIODEVICE_BUFFERSIZE));
+
+        while (readBuffers.size() < count)
+            readBuffers.emplace_back(readBufferChunkSize != 0 ? readBufferChunkSize
+                                                              : QIODEVICE_BUFFERSIZE);
     } else {
         readBuffers.resize(count);
     }
@@ -762,8 +765,9 @@ void QIODevicePrivate::setWriteChannelCount(int count)
         // If writeBufferChunkSize is zero (default value), we don't use
         // QIODevice's write buffers.
         if (writeBufferChunkSize != 0) {
-            writeBuffers.insert(writeBuffers.end(), count - writeBuffers.size(),
-                                QRingBuffer(writeBufferChunkSize));
+            writeBuffers.reserve(count);
+            while (writeBuffers.size() < count)
+                writeBuffers.emplace_back(writeBufferChunkSize);
         }
     } else {
         writeBuffers.resize(count);

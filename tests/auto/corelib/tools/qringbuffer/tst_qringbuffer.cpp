@@ -38,6 +38,7 @@ class tst_QRingBuffer : public QObject
 private slots:
     void constructing();
     void usingInVector();
+    void usingInVarLengthArray();
     void readPointerAtPositionWriteRead();
     void readPointerAtPositionEmptyRead();
     void readPointerAtPositionWithHead();
@@ -83,10 +84,20 @@ void tst_QRingBuffer::constructing()
 void tst_QRingBuffer::usingInVector()
 {
     QRingBuffer ringBuffer;
-    QList<QRingBuffer> buffers;
+    std::vector<QRingBuffer> buffers;
 
     ringBuffer.reserve(5);
-    buffers.append(ringBuffer);
+    buffers.push_back(std::move(ringBuffer));
+    QCOMPARE(buffers[0].size(), Q_INT64_C(5));
+}
+
+void tst_QRingBuffer::usingInVarLengthArray()
+{
+    QRingBuffer ringBuffer;
+    QVarLengthArray<QRingBuffer, 42> buffers;
+
+    ringBuffer.reserve(5);
+    buffers.push_back(std::move(ringBuffer));
     QCOMPARE(buffers[0].size(), Q_INT64_C(5));
 }
 
