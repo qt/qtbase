@@ -47,6 +47,7 @@
 
 QT_BEGIN_NAMESPACE
 
+static_assert(std::is_nothrow_default_constructible_v<QRingChunk>);
 static_assert(std::is_nothrow_move_constructible_v<QRingChunk>);
 static_assert(std::is_nothrow_move_assignable_v<QRingChunk>);
 
