@@ -126,7 +126,7 @@ public:
     inline void swap(QByteArray &other) noexcept
     { qSwap(d, other.d); }
 
-    inline bool isEmpty() const;
+    bool isEmpty() const noexcept { return size() == 0; }
     void resize(qsizetype size);
 
     QByteArray &fill(char c, qsizetype size = -1);
@@ -140,11 +140,11 @@ public:
     inline operator const void *() const;
 #endif
     inline char *data();
-    inline const char *data() const;
-    inline const char *constData() const;
+    inline const char *data() const noexcept;
+    const char *constData() const noexcept { return data(); }
     inline void detach();
     inline bool isDetached() const;
-    inline bool isSharedWith(const QByteArray &other) const
+    inline bool isSharedWith(const QByteArray &other) const noexcept
     { return data() == other.data() && size() == other.size(); }
     void clear();
 
@@ -422,20 +422,20 @@ public:
     typedef const_iterator ConstIterator;
     typedef std::reverse_iterator<iterator> reverse_iterator;
     typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
-    inline iterator begin();
-    inline const_iterator begin() const;
-    inline const_iterator cbegin() const;
-    inline const_iterator constBegin() const;
-    inline iterator end();
-    inline const_iterator end() const;
-    inline const_iterator cend() const;
-    inline const_iterator constEnd() const;
+    iterator begin() { return data(); }
+    const_iterator begin() const noexcept { return data(); }
+    const_iterator cbegin() const noexcept { return begin(); }
+    const_iterator constBegin() const noexcept { return begin(); }
+    iterator end() { return data() + size(); }
+    const_iterator end() const noexcept { return data() + size(); }
+    const_iterator cend() const noexcept { return end(); }
+    const_iterator constEnd() const noexcept { return end(); }
     reverse_iterator rbegin() { return reverse_iterator(end()); }
     reverse_iterator rend() { return reverse_iterator(begin()); }
-    const_reverse_iterator rbegin() const { return const_reverse_iterator(end()); }
-    const_reverse_iterator rend() const { return const_reverse_iterator(begin()); }
-    const_reverse_iterator crbegin() const { return const_reverse_iterator(end()); }
-    const_reverse_iterator crend() const { return const_reverse_iterator(begin()); }
+    const_reverse_iterator rbegin() const noexcept { return const_reverse_iterator(end()); }
+    const_reverse_iterator rend() const noexcept { return const_reverse_iterator(begin()); }
+    const_reverse_iterator crbegin() const noexcept { return rbegin(); }
+    const_reverse_iterator crend() const noexcept { return rend(); }
 
     // stl compatibility
     typedef qsizetype size_type;
@@ -467,10 +467,10 @@ public:
     static inline QByteArray fromStdString(const std::string &s);
     inline std::string toStdString() const;
 
-    inline qsizetype size() const { return d->size; }
-    inline qsizetype count() const { return size(); }
-    inline qsizetype length() const { return size(); }
-    bool isNull() const;
+    inline qsizetype size() const noexcept { return d->size; }
+    inline qsizetype count() const noexcept { return size(); }
+    inline qsizetype length() const noexcept { return size(); }
+    bool isNull() const noexcept;
 
     inline DataPointer &data_ptr() { return d; }
     explicit inline QByteArray(const DataPointer &dd)
@@ -507,8 +507,6 @@ inline char QByteArray::at(qsizetype i) const
 inline char QByteArray::operator[](qsizetype i) const
 { Q_ASSERT(size_t(i) < size_t(size())); return d.data()[i]; }
 
-inline bool QByteArray::isEmpty() const
-{ return size() == 0; }
 #ifndef QT_NO_CAST_FROM_BYTEARRAY
 inline QByteArray::operator const char *() const
 { return data(); }
@@ -521,7 +519,7 @@ inline char *QByteArray::data()
     Q_ASSERT(d.data());
     return d.data();
 }
-inline const char *QByteArray::data() const
+inline const char *QByteArray::data() const noexcept
 {
 #if QT5_NULL_STRINGS == 1
     return d.data() ? d.data() : &_empty;
@@ -529,8 +527,6 @@ inline const char *QByteArray::data() const
     return d.data();
 #endif
 }
-inline const char *QByteArray::constData() const
-{ return data(); }
 inline void QByteArray::detach()
 { if (d->needsDetach()) reallocData(size(), QArrayData::KeepSize); }
 inline bool QByteArray::isDetached() const
@@ -562,22 +558,6 @@ inline char &QByteArray::operator[](qsizetype i)
 { Q_ASSERT(i >= 0 && i < size()); return data()[i]; }
 inline char &QByteArray::front() { return operator[](0); }
 inline char &QByteArray::back() { return operator[](size() - 1); }
-inline QByteArray::iterator QByteArray::begin()
-{ return data(); }
-inline QByteArray::const_iterator QByteArray::begin() const
-{ return data(); }
-inline QByteArray::const_iterator QByteArray::cbegin() const
-{ return data(); }
-inline QByteArray::const_iterator QByteArray::constBegin() const
-{ return data(); }
-inline QByteArray::iterator QByteArray::end()
-{ return data() + size(); }
-inline QByteArray::const_iterator QByteArray::end() const
-{ return data() + size(); }
-inline QByteArray::const_iterator QByteArray::cend() const
-{ return data() + size(); }
-inline QByteArray::const_iterator QByteArray::constEnd() const
-{ return data() + size(); }
 inline QByteArray &QByteArray::append(qsizetype n, char ch)
 { return insert(size(), n, ch); }
 inline QByteArray &QByteArray::prepend(qsizetype n, char ch)

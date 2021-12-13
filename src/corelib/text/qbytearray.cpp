@@ -3520,7 +3520,7 @@ QByteArray QByteArray::rightJustified(qsizetype width, char fill, bool truncate)
     return result;
 }
 
-bool QByteArray::isNull() const
+bool QByteArray::isNull() const noexcept
 {
     return d->isNull();
 }
