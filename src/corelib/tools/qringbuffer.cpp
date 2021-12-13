@@ -363,6 +363,21 @@ void QRingBuffer::append(const QByteArray &qba)
     bufferSize += qba.size();
 }
 
+/*!
+    \internal
+
+    Append a new buffer to the end
+*/
+void QRingBuffer::append(QByteArray &&qba)
+{
+    const auto qbaSize = qba.size();
+    if (bufferSize != 0 || buffers.isEmpty())
+        buffers.emplace_back(std::move(qba));
+    else
+        buffers.last().assign(std::move(qba));
+    bufferSize += qbaSize;
+}
+
 qint64 QRingBuffer::readLine(char *data, qint64 maxLength)
 {
     Q_ASSERT(data != nullptr && maxLength > 1);

@@ -81,6 +81,10 @@ public:
         chunk(qba), headOffset(0), tailOffset(qba.size())
     {
     }
+    explicit QRingChunk(QByteArray &&qba) noexcept :
+        chunk(std::move(qba)), headOffset(0), tailOffset(chunk.size())
+    {
+    }
 
     inline QRingChunk &operator=(const QRingChunk &other) noexcept
     {
@@ -160,6 +164,12 @@ public:
         chunk = qba;
         headOffset = 0;
         tailOffset = qba.size();
+    }
+    void assign(QByteArray &&qba)
+    {
+        chunk = std::move(qba);
+        headOffset = 0;
+        tailOffset = chunk.size();
     }
     inline void reset()
     {
@@ -248,6 +258,7 @@ public:
     Q_CORE_EXPORT qint64 peek(char *data, qint64 maxLength, qint64 pos = 0) const;
     Q_CORE_EXPORT void append(const char *data, qint64 size);
     Q_CORE_EXPORT void append(const QByteArray &qba);
+    Q_CORE_EXPORT void append(QByteArray &&qba);
 
     inline qint64 skip(qint64 length) {
         qint64 bytesToSkip = qMin(length, bufferSize);

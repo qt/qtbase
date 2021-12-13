@@ -1190,7 +1190,7 @@ void QSocks5SocketEnginePrivate::_q_controlSocketReadNotification()
             }
             if (buf.size()) {
                 QSOCKS5_DEBUG << dump(buf);
-                connectData->readBuffer.append(buf);
+                connectData->readBuffer.append(std::move(buf));
                 emitReadNotification();
             }
             break;
