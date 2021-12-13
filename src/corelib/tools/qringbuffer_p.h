@@ -167,7 +167,7 @@ public:
     }
     inline void clear()
     {
-        assign(QByteArray());
+        *this = {};
     }
 
 private:
