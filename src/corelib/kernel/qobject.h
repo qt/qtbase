@@ -107,7 +107,8 @@ public:
     uint receiveChildEvents : 1;
     uint isWindow : 1; // for QWindow
     uint deleteLaterCalled : 1;
-    uint unused : 24;
+    uint isQuickItem : 1;
+    uint unused : 23;
     int postedEvents;
     QDynamicMetaObjectData *metaObject;
     QBindingStorage bindingStorage;
@@ -147,6 +148,7 @@ public:
 
     inline bool isWidgetType() const { return d_ptr->isWidget; }
     inline bool isWindowType() const { return d_ptr->isWindow; }
+    inline bool isQuickItemType() const { return d_ptr->isQuickItem; }
 
     inline bool signalsBlocked() const noexcept { return d_ptr->blockSig; }
     bool blockSignals(bool b) noexcept;

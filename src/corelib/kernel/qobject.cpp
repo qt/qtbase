@@ -197,6 +197,7 @@ QObjectPrivate::QObjectPrivate(int version)
     metaObject = nullptr;
     isWindow = false;
     deleteLaterCalled = false;
+    isQuickItem = false;
 }
 
 QObjectPrivate::~QObjectPrivate()
@@ -1301,6 +1302,17 @@ QBindable<QString> QObject::bindableObjectName()
 
     Calling this function is equivalent to calling
     \c{inherits("QWindow")}, except that it is much faster.
+*/
+
+/*!
+    \fn bool QObject::isQuickItemType() const
+
+    Returns \c true if the object is a QQuickItem; otherwise returns \c false.
+
+    Calling this function is equivalent to calling
+    \c{inherits("QQuickItem")}, except that it is much faster.
+
+    \since 6.4
 */
 
 /*!
