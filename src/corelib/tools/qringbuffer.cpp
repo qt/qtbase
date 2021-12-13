@@ -57,9 +57,7 @@ void QRingChunk::detach()
     Q_ASSERT(isShared());
 
     const qsizetype chunkSize = size();
-    QByteArray x(chunkSize, Qt::Uninitialized);
-    ::memcpy(x.data(), chunk.constData() + headOffset, chunkSize);
-    chunk = std::move(x);
+    chunk = QByteArray(std::as_const(*this).data(), chunkSize);
     headOffset = 0;
     tailOffset = chunkSize;
 }
