@@ -62,26 +62,37 @@ function(qt_internal_sort_android_platforms out_var)
     set("${out_var}" "${platforms}" PARENT_SCOPE)
 endfunction()
 
-# Locate android.jar
-set(QT_ANDROID_JAR "${ANDROID_SDK_ROOT}/platforms/${QT_ANDROID_API_VERSION}/android.jar")
-if(NOT EXISTS "${QT_ANDROID_JAR}")
-    # Locate the highest available platform
-    file(GLOB android_platforms
-        LIST_DIRECTORIES true
-        RELATIVE "${ANDROID_SDK_ROOT}/platforms"
-        "${ANDROID_SDK_ROOT}/platforms/*")
-    # If list is not empty
-    if(android_platforms)
-        qt_internal_sort_android_platforms(android_platforms ${android_platforms})
-        list(REVERSE android_platforms)
-        list(GET android_platforms 0 android_platform_latest)
+macro(qt_internal_get_android_platform_version out_var android_platform)
+    string(REGEX REPLACE ".*-([0-9]+)$" "\\1" ${out_var} "${android_platform}")
+endmacro()
+
+# Locate the highest available platform
+file(GLOB android_platforms
+    LIST_DIRECTORIES true
+    RELATIVE "${ANDROID_SDK_ROOT}/platforms"
+    "${ANDROID_SDK_ROOT}/platforms/*")
+# If list is not empty
+if(android_platforms)
+    qt_internal_sort_android_platforms(android_platforms ${android_platforms})
+    list(REVERSE android_platforms)
+    list(GET android_platforms 0 android_platform_latest)
+
+    qt_internal_get_android_platform_version(latest_platform_version
+        "${android_platform_latest}")
+    qt_internal_get_android_platform_version(required_platform_version
+        "${QT_ANDROID_API_VERSION}")
+
+    if("${latest_platform_version}" VERSION_GREATER "${required_platform_version}")
         set(QT_ANDROID_API_VERSION ${android_platform_latest})
-        set(QT_ANDROID_JAR "${ANDROID_SDK_ROOT}/platforms/${QT_ANDROID_API_VERSION}/android.jar")
     endif()
 endif()
 
+set(QT_ANDROID_JAR "${ANDROID_SDK_ROOT}/platforms/${QT_ANDROID_API_VERSION}/android.jar")
 if(NOT EXISTS "${QT_ANDROID_JAR}")
-    message(FATAL_ERROR "No suitable Android SDK platform found. Minimum version is ${QT_ANDROID_API_VERSION}")
+    message(FATAL_ERROR
+        "No suitable Android SDK platform found in '${ANDROID_SDK_ROOT}/platforms'."
+        " Minimum version is ${QT_ANDROID_API_VERSION}"
+    )
 endif()
 
 message(STATUS "Using Android SDK API ${QT_ANDROID_API_VERSION} from ${ANDROID_SDK_ROOT}/platforms")
