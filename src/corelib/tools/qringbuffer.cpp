@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Copyright (C) 2015 Alex Trotsenko <alex1973tr@gmail.com>
 ** Contact: https://www.qt.io/licensing/
 **
@@ -40,9 +40,15 @@
 
 #include "private/qringbuffer_p.h"
 #include "private/qbytearray_p.h"
+
+#include <type_traits>
+
 #include <string.h>
 
 QT_BEGIN_NAMESPACE
+
+static_assert(std::is_nothrow_move_constructible_v<QRingChunk>);
+static_assert(std::is_nothrow_move_assignable_v<QRingChunk>);
 
 void QRingChunk::allocate(qsizetype alloc)
 {

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -69,10 +69,6 @@ public:
         headOffset(0), tailOffset(0)
     {
     }
-    inline QRingChunk(const QRingChunk &other) noexcept :
-        chunk(other.chunk), headOffset(other.headOffset), tailOffset(other.tailOffset)
-    {
-    }
     explicit inline QRingChunk(qsizetype alloc) :
         chunk(alloc, Qt::Uninitialized), headOffset(0), tailOffset(0)
     {
@@ -81,20 +77,6 @@ public:
         chunk(qba), headOffset(0), tailOffset(qba.size())
     {
     }
-
-    inline QRingChunk &operator=(const QRingChunk &other) noexcept
-    {
-        chunk = other.chunk;
-        headOffset = other.headOffset;
-        tailOffset = other.tailOffset;
-        return *this;
-    }
-    inline QRingChunk(QRingChunk &&other) noexcept :
-        chunk(other.chunk), headOffset(other.headOffset), tailOffset(other.tailOffset)
-    {
-        other.headOffset = other.tailOffset = 0;
-    }
-    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QRingChunk)
 
     inline void swap(QRingChunk &other) noexcept
     {
