@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 #include <QtTest/QTest>
-#include <qvarlengtharray.h>
+#include <QVarLengthArray>
 #include <qvariant.h>
 #include <qscopeguard.h>
 #include <qscopedvaluerollback.h>
