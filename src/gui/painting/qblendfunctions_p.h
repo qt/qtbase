@@ -246,25 +246,32 @@ void qt_transform_image_rasterize(DestT *destPixels, int dbpl,
                                   int dudx, int dvdx, int dudy, int dvdy, int u0, int v0,
                                   Blender blender)
 {
-    int fromY = qMax(qRound(topY), clip.top());
-    int toY = qMin(qRound(bottomY), clip.top() + clip.height());
+    qint64 fromY = qMax(qRound(topY), clip.top());
+    qint64 toY = qMin(qRound(bottomY), clip.top() + clip.height());
     if (fromY >= toY)
         return;
 
     qreal leftSlope = (bottomLeft.x - topLeft.x) / (bottomLeft.y - topLeft.y);
     qreal rightSlope = (bottomRight.x - topRight.x) / (bottomRight.y - topRight.y);
-    int dx_l = int(leftSlope * 0x10000);
-    int dx_r = int(rightSlope * 0x10000);
-    int x_l = int((topLeft.x + (qreal(0.5) + fromY - topLeft.y) * leftSlope + qreal(0.5)) * 0x10000);
-    int x_r = int((topRight.x + (qreal(0.5) + fromY - topRight.y) * rightSlope + qreal(0.5)) * 0x10000);
+    qint64 dx_l = qint64(leftSlope * 0x10000);
+    qint64 dx_r = qint64(rightSlope * 0x10000);
+    qint64 x_l = qint64((topLeft.x + (qreal(0.5) + fromY - topLeft.y) * leftSlope + qreal(0.5)) * 0x10000);
+    qint64 x_r = qint64((topRight.x + (qreal(0.5) + fromY - topRight.y) * rightSlope + qreal(0.5)) * 0x10000);
 
-    int fromX, toX, x1, x2, u, v, i, ii;
+    qint64 sourceRectTop = qint64(sourceRect.top());
+    qint64 sourceRectLeft = qint64(sourceRect.left());
+    qint64 sourceRectWidth = qint64(sourceRect.width());
+    qint64 sourceRectHeight = qint64(sourceRect.height());
+    qint64 clipLeft = qint64(clip.left());
+    qint64 clipWidth = qint64(clip.width());
+
+    qint64 fromX, toX, x1, x2, u, v, i, ii;
     DestT *line;
-    for (int y = fromY; y < toY; ++y) {
+    for (qint64 y = fromY; y < toY; ++y) {
         line = reinterpret_cast<DestT *>(reinterpret_cast<uchar *>(destPixels) + y * dbpl);
 
-        fromX = qMax(x_l >> 16, clip.left());
-        toX = qMin(x_r >> 16, clip.left() + clip.width());
+        fromX = qMax(x_l >> 16, clipLeft);
+        toX = qMin(x_r >> 16, clipLeft + clipWidth);
         if (fromX < toX) {
             // Because of rounding, we can get source coordinates outside the source image.
             // Clamp these coordinates to the source rect to avoid segmentation fault and
@@ -275,10 +282,10 @@ void qt_transform_image_rasterize(DestT *destPixels, int dbpl,
             u = x1 * dudx + y * dudy + u0;
             v = x1 * dvdx + y * dvdy + v0;
             for (; x1 < toX; ++x1) {
-                int uu = u >> 16;
-                int vv = v >> 16;
-                if (uu >= sourceRect.left() && uu < sourceRect.left() + sourceRect.width()
-                    && vv >= sourceRect.top() && vv < sourceRect.top() + sourceRect.height()) {
+                qint64 uu = u >> 16;
+                qint64 vv = v >> 16;
+                if (uu >= sourceRectLeft && uu < sourceRectLeft + sourceRectWidth
+                    && vv >= sourceRectTop && vv < sourceRectTop + sourceRectHeight) {
                     break;
                 }
                 u += dudx;
@@ -290,10 +297,10 @@ void qt_transform_image_rasterize(DestT *destPixels, int dbpl,
             u = (x2 - 1) * dudx + y * dudy + u0;
             v = (x2 - 1) * dvdx + y * dvdy + v0;
             for (; x2 > x1; --x2) {
-                int uu = u >> 16;
-                int vv = v >> 16;
-                if (uu >= sourceRect.left() && uu < sourceRect.left() + sourceRect.width()
-                    && vv >= sourceRect.top() && vv < sourceRect.top() + sourceRect.height()) {
+                qint64 uu = u >> 16;
+                qint64 vv = v >> 16;
+                if (uu >= sourceRectLeft && uu < sourceRectLeft + sourceRectWidth
+                    && vv >= sourceRectTop && vv < sourceRectTop + sourceRectHeight) {
                     break;
                 }
                 u -= dudx;
@@ -308,8 +315,8 @@ void qt_transform_image_rasterize(DestT *destPixels, int dbpl,
             // Beginning of the scan line, with per-pixel checks.
             i = x1 - fromX;
             while (i) {
-                int uu = qBound(sourceRect.left(), u >> 16, sourceRect.left() + sourceRect.width() - 1);
-                int vv = qBound(sourceRect.top(), v >> 16, sourceRect.top() + sourceRect.height() - 1);
+                qint64 uu = qBound(sourceRectLeft, u >> 16, sourceRectLeft + sourceRectWidth - 1);
+                qint64 vv = qBound(sourceRectTop, v >> 16, sourceRectTop + sourceRectHeight - 1);
                 blender.write(line, reinterpret_cast<const SrcT *>(reinterpret_cast<const uchar *>(srcPixels) + vv * sbpl)[uu]);
                 u += dudx;
                 v += dvdx;
@@ -348,8 +355,8 @@ void qt_transform_image_rasterize(DestT *destPixels, int dbpl,
             // End of the scan line, with per-pixel checks.
             i = toX - x2;
             while (i) {
-                int uu = qBound(sourceRect.left(), u >> 16, sourceRect.left() + sourceRect.width() - 1);
-                int vv = qBound(sourceRect.top(), v >> 16, sourceRect.top() + sourceRect.height() - 1);
+                qint64 uu = qBound(sourceRectLeft, u >> 16, sourceRectLeft + sourceRectWidth - 1);
+                qint64 vv = qBound(sourceRectTop, v >> 16, sourceRectTop + sourceRectHeight - 1);
                 blender.write(line, reinterpret_cast<const SrcT *>(reinterpret_cast<const uchar *>(srcPixels) + vv * sbpl)[uu]);
                 u += dudx;
                 v += dvdx;
