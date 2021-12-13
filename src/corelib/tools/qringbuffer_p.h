@@ -65,20 +65,17 @@ class QRingChunk
 {
 public:
     // initialization and cleanup
-    inline QRingChunk() noexcept :
-        headOffset(0), tailOffset(0)
-    {
-    }
+    QRingChunk() noexcept = default;
     explicit inline QRingChunk(qsizetype alloc) :
-        chunk(alloc, Qt::Uninitialized), headOffset(0), tailOffset(0)
+        chunk(alloc, Qt::Uninitialized), tailOffset(0)
     {
     }
     explicit inline QRingChunk(const QByteArray &qba) noexcept :
-        chunk(qba), headOffset(0), tailOffset(qba.size())
+        chunk(qba), tailOffset(qba.size())
     {
     }
     explicit QRingChunk(QByteArray &&qba) noexcept :
-        chunk(std::move(qba)), headOffset(0), tailOffset(chunk.size())
+        chunk(std::move(qba)), tailOffset(chunk.size())
     {
     }
 
@@ -164,8 +161,8 @@ public:
 
 private:
     QByteArray chunk;
-    qsizetype headOffset;
-    qsizetype tailOffset;
+    qsizetype headOffset = 0;
+    qsizetype tailOffset = 0;
 };
 Q_DECLARE_SHARED(QRingChunk)
 
