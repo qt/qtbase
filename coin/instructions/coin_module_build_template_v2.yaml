@@ -33,7 +33,7 @@ instructions:
         enable_if:
           condition: property
           property: target.osVersion
-          in_values: [Android_ANY, QEMU, INTEGRITY]
+          in_values: [Android_ANY, QEMU, INTEGRITY, QNX_710]
     enable_if:
       condition: or
       conditions:
