@@ -40,6 +40,11 @@
 #ifndef QVARLENGTHARRAY_H
 #define QVARLENGTHARRAY_H
 
+#if 0
+#pragma qt_class(QVarLengthArray)
+#pragma qt_sync_stop_processing
+#endif
+
 #include <QtCore/qcontainerfwd.h>
 #include <QtCore/qglobal.h>
 #include <QtCore/qalgorithms.h>
