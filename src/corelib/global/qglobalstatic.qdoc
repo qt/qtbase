@@ -234,15 +234,15 @@
     new and the variadic arguments.
 
     The majority of the work is done by the public \l QGlobalStatic class and
-    the private \c QtGlobalStatic::Holder class. The \c Holder class has a
-    non-static, trivial member of suitable size and alignment to hold \a TYPE
-    (a \c{std::aligned_union_t} or a \c{std::aligned_storage_t}). The
-    constructor calls the "QGS" type's static member function with a pointer to
-    this location so it can be initialized and the destructor calls the type's
-    destructor. The \c{Holder} type is therefore neither trivially
-    constructible nor trivially destructible. It is used as a function-local \c
-    static so its initialization is thread-safe due to C++11's requirement that
-    such variables be thread-safely initialized.
+    the private \c QtGlobalStatic::Holder class. The \c Holder union has a
+    single non-static member of type \a TYPE, but because this is a union, its
+    construction and destruction are explicitly controlled in the Holder's
+    constructor and destructor. The constructor calls the "QGS" type's static
+    member function with a pointer to this member so it can be initialized
+    and the destructor calls the type's destructor. The \c{Holder} type is
+    therefore neither trivially constructible nor trivially destructible. It is
+    used as a function-local \c static so its initialization is thread-safe due
+    to C++11's requirement that such variables be thread-safely initialized.
 
     Additionally, both the constructor and destructor modify a guard variable
     after construction and before destruction, respectively. The guard variable
