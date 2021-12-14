@@ -696,6 +696,10 @@ macro(qt_internal_set_up_build_dir_package_paths)
     list(APPEND CMAKE_PREFIX_PATH "${QT_BUILD_DIR}")
     # Make sure the CMake config files do not recreate the already-existing targets
     set(QT_NO_CREATE_TARGETS TRUE)
+
+    # TODO: Remove reliance on CMAKE_FIND_ROOT_PATH_MODE_PACKAGE and instead pass any required
+    # prefixes as a combination of CMAKE_PREFIX_PATH and CMAKE_FIND_ROOT_PATH like we do in
+    # qt_internal_add_tool.
     set(BACKUP_CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ${CMAKE_FIND_ROOT_PATH_MODE_PACKAGE})
     set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE "BOTH")
 endmacro()
@@ -710,7 +714,6 @@ macro(qt_examples_build_begin)
     # Use by qt_internal_add_example.
     set(QT_EXAMPLE_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 
-    # FIXME: Support prefix builds as well QTBUG-96232
     if(arg_EXTERNAL_BUILD AND QT_BUILD_EXAMPLES_AS_EXTERNAL)
         # Examples will be built using ExternalProject.
         # We always depend on all plugins so as to prevent opportunities for
@@ -766,13 +769,25 @@ macro(qt_examples_build_begin)
         endif()
     endif()
 
+    # TODO: Change this to TRUE when all examples in all repos are ported to use
+    # qt_internal_add_example.
+    # We shouldn't need to call qt_internal_set_up_build_dir_package_paths when
+    # QT_IS_EXTERNAL_EXAMPLES_BUILD is TRUE.
+    # Due to not all examples being ported, if we don't
+    # call qt_internal_set_up_build_dir_package_paths -> set(QT_NO_CREATE_TARGETS TRUE) we'll get
+    # CMake configuration errors saying we redefine Qt targets because we both build them and find
+    # them as part of find_package.
+    set(__qt_all_examples_ported_to_external_projects FALSE)
+
     # Examples that are built as part of the Qt build need to use the CMake config files from the
     # build dir, because they are not installed yet in a prefix build.
     # Appending to CMAKE_PREFIX_PATH helps find the initial Qt6Config.cmake.
     # Appending to QT_EXAMPLES_CMAKE_PREFIX_PATH helps find components of Qt6, because those
     # find_package calls use NO_DEFAULT_PATH, and thus CMAKE_PREFIX_PATH is ignored.
-    qt_internal_set_up_build_dir_package_paths()
-    list(APPEND QT_EXAMPLES_CMAKE_PREFIX_PATH "${QT_BUILD_DIR}")
+    if(NOT QT_IS_EXTERNAL_EXAMPLES_BUILD OR NOT __qt_all_examples_ported_to_external_projects)
+        qt_internal_set_up_build_dir_package_paths()
+        list(APPEND QT_EXAMPLES_CMAKE_PREFIX_PATH "${QT_BUILD_DIR}")
+    endif()
 
     # Because CMAKE_INSTALL_RPATH is empty by default in the repo project, examples need to have
     # it set here, so they can run when installed.
@@ -873,8 +888,6 @@ unset(CMAKE_INSTALL_PREFIX)
 endfunction()
 
 function(qt_internal_add_example_external_project subdir)
-    # FIXME: Support building examples externally for prefix builds as well.
-
     set(options "")
     set(singleOpts NAME)
     set(multiOpts "")
@@ -895,15 +908,33 @@ function(qt_internal_add_example_external_project subdir)
         set(arg_NAME "${arg_NAME}-${short_hash}")
     endif()
 
-    if(QtBase_BINARY_DIR)
-        # Always use the copy in the build directory, even for prefix builds.
-        # We may build examples without installing, so we can't use the
-        # install or staging area.
-        set(qt_cmake_dir ${QtBase_BINARY_DIR}/lib/cmake/${QT_CMAKE_EXPORT_NAMESPACE})
+    # TODO: Fix 'prefix Qt' example builds not to rely on CMAKE_FIND_ROOT_PATH_MODE_PACKAGE=BOTH
+    #       for finding Qt packages when cross-compiling.
+    # TODO: Fix example builds when using Conan / install prefixes are different for each repo.
+    if(QT_SUPERBUILD OR QtBase_BINARY_DIR)
+        # When doing a top-level build or when building qtbase,
+        # always use the Config file from the current build directory, even for prefix builds.
+        # We strive to allow building examples without installing Qt first, which means we can't
+        # use the install or staging Config files.
+        set(qt_prefixes "${QT_BUILD_DIR}")
+        set(qt_cmake_dir "${QT_CONFIG_BUILD_DIR}/${QT_CMAKE_EXPORT_NAMESPACE}")
     else()
         # This is a per-repo build that isn't the qtbase repo, so we know that
         # qtbase was found via find_package() and Qt6_DIR must be set
-        set(qt_cmake_dir ${${QT_CMAKE_EXPORT_NAMESPACE}_DIR})
+        set(qt_cmake_dir "${${QT_CMAKE_EXPORT_NAMESPACE}_DIR}")
+
+        # In a prefix build of a non-qtbase repo, we want to pick up the installed Config files
+        # for all repos except the one that is currently built. For the repo that is currently
+        # built, we pick up the Config files from the current repo build dir instead.
+        # For non-prefix builds, there's only one prefix, the main build dir.
+        set(qt_prefixes "${QT_BUILD_DIR}")
+        if(QT_WILL_INSTALL)
+            list(APPEND qt_prefixes "${QT6_INSTALL_PREFIX}")
+
+            # Appending to QT_EXAMPLES_CMAKE_PREFIX_PATH helps find Qt6 components in
+            # non-qtbase prefix builds because we use NO_DEFAULT_PATH in find_package calls.
+            set(QT_EXAMPLES_CMAKE_PREFIX_PATH "${qt_prefixes}")
+        endif()
     endif()
 
     set(vars_to_pass_if_defined)
@@ -912,16 +943,14 @@ function(qt_internal_add_example_external_project subdir)
         # Android NDK forces CMAKE_FIND_ROOT_PATH_MODE_PACKAGE to ONLY, so we
         # can't rely on this setting here making it through to the example
         # project.
-        # TODO: We should probably leave CMAKE_FIND_ROOT_PATH_MODE_PACKAGE
-        #       alone. It may be a leftover from earlier methods that are no
-        #       longer used or that no longer need this.
+        # TODO: Remove CMAKE_FIND_ROOT_PATH_MODE_PACKAGE once cross-compiling examples uses
+        # CMAKE_FIND_ROOT_PATH + CMAKE_PREFIX_PATH instead.
         list(APPEND var_defs
             -DCMAKE_TOOLCHAIN_FILE:FILEPATH=${qt_cmake_dir}/qt.toolchain.cmake
             -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE:STRING=BOTH
         )
     else()
-        get_filename_component(prefix_dir ${qt_cmake_dir}/../../.. ABSOLUTE)
-        list(PREPEND CMAKE_PREFIX_PATH ${prefix_dir})
+        list(PREPEND CMAKE_PREFIX_PATH ${qt_prefixes})
 
         # Setting CMAKE_SYSTEM_NAME affects CMAKE_CROSSCOMPILING, even if it is
         # set to the same as the host, so it should only be set if it is different.
@@ -932,9 +961,36 @@ function(qt_internal_add_example_external_project subdir)
         endif()
     endif()
 
+    # In multi-config mode by default we exclude building tools for configs other than the main one.
+    # Trying to build an example in a non-default config using the non-installed
+    # QtFooConfig.cmake files would error out saying moc is not found.
+    # Make sure to build examples only with the main config.
+    # When users build an example against an installed Qt they won't have this problem because
+    # the generated non-main QtFooTargets-$<CONFIG>.cmake file is empty and doesn't advertise
+    # a tool that is not there.
+    if(QT_GENERATOR_IS_MULTI_CONFIG)
+        set(CMAKE_CONFIGURATION_TYPES "${QT_MULTI_CONFIG_FIRST_CONFIG}")
+    endif()
+
+    # We need to pass the modified CXX flags of the parent project so that using sccache works
+    # properly and doesn't error out due to concurrent access to the pdb files.
+    # See qt_internal_set_up_config_optimizations_like_in_qmake, "/Zi" "/Z7".
+    if(MSVC AND QT_FEATURE_msvc_obj_debug_info)
+        qt_internal_get_enabled_languages_for_flag_manipulation(enabled_languages)
+        set(configs RELWITHDEBINFO DEBUG)
+        foreach(lang ${enabled_languages})
+            foreach(config ${configs})
+                set(flag_var_name "CMAKE_${lang}_FLAGS_${config}")
+                list(APPEND vars_to_pass_if_defined "${flag_var_name}:STRING")
+            endforeach()
+        endforeach()
+    endif()
+
     list(APPEND vars_to_pass_if_defined
         CMAKE_BUILD_TYPE:STRING
+        CMAKE_CONFIGURATION_TYPES:STRING
         CMAKE_PREFIX_PATH:STRING
+        QT_EXAMPLES_CMAKE_PREFIX_PATH:STRING
         CMAKE_FIND_ROOT_PATH:STRING
         CMAKE_FIND_ROOT_PATH_MODE_PACKAGE:STRING
         BUILD_SHARED_LIBS:BOOL
@@ -1000,18 +1056,68 @@ function(qt_internal_add_example_external_project subdir)
         endif()
     endif()
 
+    # QT_EXAMPLE_INSTALL_MARKER
+    # The goal is to install each example project into a directory that keeps the example source dir
+    # hierarchy, without polluting the example projects with dirty INSTALL_EXAMPLEDIR and
+    # INSTALL_EXAMPLESDIR usage.
+    # E.g. ensure qtbase/examples/widgets/widgets/wiggly is installed to
+    # $qt_example_install_prefix/examples/widgets/widgets/wiggly/wiggly.exe
+    # $qt_example_install_prefix defaults to ${CMAKE_INSTALL_PREFIX}/${INSTALL_EXAMPLEDIR}
+    # This needs to work both:
+    #  - when using ExternalProject to build examples
+    #  - when examples are built in-tree as part of Qt (no ExternalProject).
+    # The reason we want to support the latter is for nicer IDE integration: a can developer can
+    # work with a Qt repo and its examples using the same build dir.
+    #
+    # In both case we have to ensure examples are not accidentally installed to $qt_prefix/bin or
+    # similar.
+    #
+    # Example projects installation matrix.
+    # 1) ExternalProject + unclean example install rules (INSTALL_EXAMPLEDIR is set) =>
+    #    use _qt_internal_override_example_install_dir_to_dot + ExternalProject_Add's INSTALL_DIR
+    #    using relative_dir from QT_EXAMPLE_BASE_DIR to example_source_dir
+    #
+    # 2) ExternalProject + clean example install rules =>
+    #    use ExternalProject_Add's INSTALL_DIR using relative_dir from QT_EXAMPLE_BASE_DIR to
+    #    example_source_dir, _qt_internal_override_example_install_dir_to_dot would be a no-op
+    #
+    # 3) in-tree + unclean example install rules (INSTALL_EXAMPLEDIR is set)
+    # +
+    # 4) in-tree + clean example install rules =>
+    #    ensure CMAKE_INSTALL_PREFIX is unset in parent cmake_install.cmake file, set non-cache
+    #    CMAKE_INSTALL_PREFIX using relative_dir from QT_EXAMPLE_BASE_DIR to
+    #    example_source_dir, use _qt_internal_override_example_install_dir_to_dot to ensure
+    #    INSTALL_EXAMPLEDIR does not interfere.
+
+    set(qt_example_install_prefix "${CMAKE_INSTALL_PREFIX}/${INSTALL_EXAMPLESDIR}")
+    set(example_install_prefix "${qt_example_install_prefix}/${example_rel_path}")
+
+    set(ep_binary_dir    "${CMAKE_CURRENT_BINARY_DIR}/${subdir}")
     ExternalProject_Add(${arg_NAME}
         EXCLUDE_FROM_ALL TRUE
         SOURCE_DIR       "${CMAKE_CURRENT_SOURCE_DIR}/${subdir}"
         PREFIX           "${CMAKE_CURRENT_BINARY_DIR}/${subdir}-ep"
         STAMP_DIR        "${CMAKE_CURRENT_BINARY_DIR}/${subdir}-ep/stamp"
-        BINARY_DIR       "${CMAKE_CURRENT_BINARY_DIR}/${subdir}"
+        BINARY_DIR       "${ep_binary_dir}"
+        INSTALL_DIR      "${example_install_prefix}"
         INSTALL_COMMAND  ""
         TEST_COMMAND     ""
         DEPENDS          ${deps}
         CMAKE_CACHE_ARGS ${var_defs}
+                         -DCMAKE_INSTALL_PREFIX:STRING=<INSTALL_DIR>
+                         -DQT_INTERNAL_SET_EXAMPLE_INSTALL_DIR_TO_DOT:BOOL=TRUE
         ${terminal_args}
     )
+
+    # Install the examples when the the user runs 'make install', and not at build time (which is
+    # the default for ExternalProjects).
+    install(CODE "\
+# Install example from inside ExternalProject into the main build's install prefix.
+execute_process(
+    COMMAND
+        \"${CMAKE_COMMAND}\" --build \"${ep_binary_dir}\" --target install
+)
+")
 
     # Force configure step to re-run after we configure the main project
     set(reconfigure_check_file ${CMAKE_CURRENT_BINARY_DIR}/reconfigure_${arg_NAME}.txt)
