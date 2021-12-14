@@ -112,9 +112,7 @@ private slots:
     void isRegisteredStaticLess();
     void isEnum();
     void automaticTemplateRegistration_1();
-#ifndef TST_QMETATYPE_BROKEN_COMPILER
     void automaticTemplateRegistration_2(); // defined in tst_qmetatype3.cpp
-#endif
     void saveAndLoadBuiltin_data();
     void saveAndLoadBuiltin();
     void saveAndLoadCustom();
@@ -295,7 +293,6 @@ Q_DECLARE_METATYPE(CustomMovable);
 #define REGISTER_TYPEDEF(TYPE, ARG1, ARG2) \
   qRegisterMetaType<TYPE <ARG1, ARG2>>(#TYPE "<" #ARG1 "," #ARG2 ">");
 
-#if !defined(TST_QMETATYPE_BROKEN_COMPILER)
 static inline QByteArray createTypeName(const char *begin, const char *va)
 {
     QByteArray tn(begin);
@@ -314,6 +311,5 @@ static inline QByteArray createTypeName(const char *begin, const char *va)
     tn += '>';
     return tn;
 }
-#endif
 
 Q_DECLARE_METATYPE(const void*)

@@ -31,13 +31,9 @@
 #include <QtCore/private/qmetaobjectbuilder_p.h>
 
 
-#if !defined(TST_QMETATYPE_BROKEN_COMPILER)
-
 void tst_QMetaType::automaticTemplateRegistration_2()
 {
     FOR_EACH_STATIC_PRIMITIVE_TYPE(
       PRINT_2ARG_TEMPLATE
     )
 }
-
-#endif // !defined(TST_QMETATYPE_BROKEN_COMPILER)
