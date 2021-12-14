@@ -82,7 +82,6 @@ QByteArray QRingChunk::toByteArray() &&
             headOffset = 0;
         }
 
-        chunk.reserve(0); // avoid that resizing needlessly reallocates
         chunk.resize(tailOffset);
     }
 
