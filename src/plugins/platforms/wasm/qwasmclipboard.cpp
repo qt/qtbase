@@ -108,6 +108,7 @@ static void qClipboardPromiseResolve(emscripten::val clipboardItems)
 
 static void qClipboardCopyPromiseResolve(emscripten::val something)
 {
+    Q_UNUSED(something)
     qWarning() << "copy succeeeded";
 }
 
@@ -455,6 +456,7 @@ void QWasmClipboard::writeToClipboardApi()
 
 void QWasmClipboard::writeToClipboard(const QMimeData *data)
 {
+    Q_UNUSED(data)
     // this works for firefox, chrome by generating
     // copy event, but not safari
     // execCommand has been deemed deprecated in the docs, but browsers do not seem
