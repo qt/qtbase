@@ -23,6 +23,7 @@ macro(qt_internal_get_internal_add_module_keywords option_args single_args multi
         PRECOMPILED_HEADER
         CONFIGURE_FILE_PATH
         CPP_EXPORT_HEADER_BASE_NAME
+        EXTERNAL_HEADERS_DIR
         ${__default_target_info_args}
     )
     set(${multi_args}
@@ -30,6 +31,7 @@ macro(qt_internal_get_internal_add_module_keywords option_args single_args multi
         EXTRA_CMAKE_FILES
         EXTRA_CMAKE_INCLUDES
         NO_PCH_SOURCES
+        EXTERNAL_HEADERS
         ${__default_private_args}
         ${__default_public_args}
         ${__default_private_module_args}
@@ -69,6 +71,16 @@ endmacro()
 #     Creates a static library instead of following the Qt configuration default. Mutually
 #     exclusive with HEADER_MODULE.
 #
+#   EXTERNAL_HEADERS
+#     A explicit list of non qt headers (like 3rdparty) to be installed.
+#     Note this option overrides install headers used as PUBLIC_HEADER by cmake install(TARGET)
+#     otherwise set by syncqt.
+#
+#   EXTERNAL_HEADERS_DIR
+#     A module directory with non qt headers (like 3rdparty) to be installed.
+#     Note this option overrides install headers used as PUBLIC_HEADER by cmake install(TARGET)
+#     otherwise set by syncqt.
+
 function(qt_internal_add_module target)
     qt_internal_get_internal_add_module_keywords(
         module_option_args
@@ -316,6 +328,10 @@ function(qt_internal_add_module target)
 
         ### FIXME: Can we replace headers.pri?
         qt_read_headers_pri("${module_build_interface_include_dir}" "module_headers")
+
+        if(arg_EXTERNAL_HEADERS)
+            set(module_headers_public ${arg_EXTERNAL_HEADERS})
+        endif()
 
         set_property(TARGET ${target} APPEND PROPERTY
             _qt_module_timestamp_dependencies "${module_headers_public}")
@@ -680,14 +696,23 @@ set(QT_LIBINFIX \"${QT_LIBINFIX}\")")
         list(APPEND exported_targets ${target_private})
     endif()
     set(export_name "${INSTALL_CMAKE_NAMESPACE}${target}Targets")
+    if(arg_EXTERNAL_HEADERS_DIR)
+        qt_install(DIRECTORY "${arg_EXTERNAL_HEADERS_DIR}/"
+            DESTINATION "${module_install_interface_include_dir}"
+        )
+        unset(public_header_destination)
+    else()
+        set(public_header_destination PUBLIC_HEADER DESTINATION "${module_install_interface_include_dir}")
+    endif()
+
     qt_install(TARGETS ${exported_targets}
         EXPORT ${export_name}
         RUNTIME DESTINATION ${INSTALL_BINDIR}
         LIBRARY DESTINATION ${INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${INSTALL_LIBDIR}
         FRAMEWORK DESTINATION ${INSTALL_LIBDIR}
-        PUBLIC_HEADER DESTINATION "${module_install_interface_include_dir}"
         PRIVATE_HEADER DESTINATION "${module_install_interface_private_include_dir}"
+        ${public_header_destination}
         )
 
     if(BUILD_SHARED_LIBS)

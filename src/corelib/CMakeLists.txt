@@ -1321,16 +1321,11 @@ qt_internal_add_docs(Core
     doc/qtcore.qdocconf
 )
 
-# special case begin
-# Handle qtzlib.pro to create headers for the
-# QtZlibPrivate target, equivalent to Qt += zlib-private
-if(NOT QT_FEATURE_system_zlib)
-    qt_internal_add_module(ZlibPrivate
-        INTERNAL_MODULE
-        HEADER_MODULE
-        NO_CONFIG_HEADER_FILE
-    )
-endif()
+qt_internal_add_3rdparty_header_module(ZlibPrivate
+    EXTERNAL_HEADERS
+        ../3rdparty/zlib/src/zlib.h
+        ../3rdparty/zlib/src/zconf.h
+)
 
 qt_internal_add_optimize_full_flags()
 

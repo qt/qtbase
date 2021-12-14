@@ -46,16 +46,13 @@ qt_internal_add_3rdparty_library(BundledFreetype
     PUBLIC_INCLUDE_DIRECTORIES
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 )
+
+qt_internal_add_3rdparty_header_module(FreetypePrivate
+    EXTERNAL_HEADERS_DIR include
+)
+
 qt_disable_warnings(BundledFreetype)
 qt_set_symbol_visibility_hidden(BundledFreetype)
-
-#### Keys ignored in scope 1:.:.:freetype.pro:<TRUE>:
-# MODULE_EXT_HEADERS_DIR = "$$PWD/include"
-# OTHER_FILES = "$$PWD/src/autofit/afangles.c" "$$PWD/src/autofit/afglobal.c" "$$PWD/src/autofit/afloader.c" "$$PWD/src/autofit/afmodule.c"
-# QT_FOR_CONFIG = "gui-private"
-
-## Scopes:
-#####################################################################
 
 qt_internal_extend_target(BundledFreetype CONDITION WIN32
     SOURCES

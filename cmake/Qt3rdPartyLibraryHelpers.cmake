@@ -312,3 +312,27 @@ function(qt_install_3rdparty_library_wrap_config_extra_file target)
         COMPONENT Devel
     )
 endfunction()
+
+# This function implements qmake's qt_helper_lib MODULE_EXT_HEADERS and MODULE_EXT_HEADERS_DIR features.
+# It creates a header-only module exposing a subset or all headers of a 3rd-party library.
+function(qt_internal_add_3rdparty_header_module target)
+    set(single_args
+        EXTERNAL_HEADERS_DIR
+    )
+    set(multi_args
+        EXTERNAL_HEADERS
+    )
+    qt_parse_all_arguments(arg "qt_internal_add_header_module"
+        "${option_args}"
+        "${single_args}"
+        "${multi_args}"
+        ${ARGN}
+    )
+    qt_internal_add_module(${target}
+        INTERNAL_MODULE
+        HEADER_MODULE
+        NO_CONFIG_HEADER_FILE
+        EXTERNAL_HEADERS ${arg_EXTERNAL_HEADERS}
+        EXTERNAL_HEADERS_DIR ${arg_EXTERNAL_HEADERS_DIR}
+    )
+endfunction()
