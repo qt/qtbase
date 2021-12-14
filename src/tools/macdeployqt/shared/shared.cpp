@@ -206,7 +206,7 @@ OtoolInfo findDependencyInfo(const QString &binaryPath)
                 info.installName = binaryPath;
             }
         } else {
-            LogError() << "Could not parse otool output line:" << outputLines.first();
+            LogDebug() << "Could not parse otool output line:" << outputLines.first();
             outputLines.removeFirst();
         }
     }
@@ -220,7 +220,7 @@ OtoolInfo findDependencyInfo(const QString &binaryPath)
             dylib.currentVersion = QVersionNumber::fromString(match.captured(3));
             info.dependencies << dylib;
         } else {
-            LogError() << "Could not parse otool output line:" << outputLine;
+            LogDebug() << "Could not parse otool output line:" << outputLine;
         }
     }
 
