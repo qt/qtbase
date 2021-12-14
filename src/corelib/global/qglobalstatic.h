@@ -57,14 +57,16 @@ enum GuardValues {
     Initializing = 1
 };
 
-template <typename QGS> struct Holder
+template <typename QGS> union Holder
 {
     using Type = typename QGS::QGS_Type;
     using PlainType = std::remove_cv_t<Type>;
 
     static constexpr bool ConstructionIsNoexcept = noexcept(QGS::innerFunction(nullptr));
-    std::aligned_union_t<1, PlainType> storage;
     static inline QBasicAtomicInteger<qint8> guard = { QtGlobalStatic::Uninitialized };
+
+    // union's sole member
+    PlainType storage;
 
     Holder() noexcept(ConstructionIsNoexcept)
     {
@@ -81,7 +83,7 @@ template <typename QGS> struct Holder
 
     PlainType *pointer() noexcept
     {
-        return reinterpret_cast<PlainType *>(&storage);
+        return &storage;
     }
 
     Q_DISABLE_COPY_MOVE(Holder)
