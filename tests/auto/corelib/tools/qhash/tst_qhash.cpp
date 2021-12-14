@@ -577,14 +577,40 @@ void tst_QHash::erase()
 */
 void tst_QHash::erase_edge_case()
 {
+    QHashSeed::setDeterministicGlobalSeed();
+    auto resetSeed = qScopeGuard([&]() {
+        QHashSeed::resetRandomGlobalSeed();
+    });
+
     QHash<int, int> h1;
     h1.reserve(2);
-    h1.d->seed = 10230148258692185509ull;
-    h1.insert(3, 4);
-    h1.insert(5, 6);
+    qsizetype capacity = h1.capacity();
+    // Beholden to QHash internals:
+    qsizetype numBuckets = capacity << 1;
+
+    // Find some keys which will both be slotted into the last bucket:
+    int keys[2];
+    int index = 0;
+    for (qsizetype i = 0; i < numBuckets * 4 && index < 2; ++i) {
+        const size_t hash = qHash(i, QHashSeed::globalSeed());
+        const size_t bucketForHash = QHashPrivate::GrowthPolicy::bucketForHash(numBuckets, hash);
+        if (bucketForHash == numBuckets - 1)
+            keys[index++] = i;
+    }
+    QCOMPARE(index, 2); // Sanity check. If this fails then the test needs an update!
+
+    // As mentioned earlier these are both calculated to be in the last bucket:
+    h1.insert(keys[0], 4);
+    h1.insert(keys[1], 6);
+    // As a sanity-check, make sure that the key we inserted last is the first one (because its
+    // allocation to the last bucket would make it wrap around):
+    // NOTE: If this fails this then this test may need an update!!!
+    QCOMPARE(h1.constBegin().key(), keys[1]);
+    // Then we delete the last entry:
     QHash<int, int>::iterator it1 = h1.begin();
     ++it1;
     it1 = h1.erase(it1);
+    // Now, since we deleted the last entry, the iterator should be at the end():
     QVERIFY(it1 == h1.end());
 }
 
