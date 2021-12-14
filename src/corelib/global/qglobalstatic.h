@@ -76,9 +76,9 @@ template <typename QGS> union Holder
 
     ~Holder()
     {
-        guard.storeRelaxed(QtGlobalStatic::Destroyed);
-        std::atomic_thread_fence(std::memory_order_acquire); // avoid mixing stores to guard and *pointer()
         pointer()->~PlainType();
+        std::atomic_thread_fence(std::memory_order_acquire); // avoid mixing stores to guard and *pointer()
+        guard.storeRelaxed(QtGlobalStatic::Destroyed);
     }
 
     PlainType *pointer() noexcept
