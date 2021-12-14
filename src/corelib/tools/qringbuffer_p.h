@@ -114,7 +114,7 @@ public:
         return !chunk.isDetached();
     }
     Q_CORE_EXPORT void detach();
-    QByteArray toByteArray();
+    QByteArray toByteArray() &&;
 
     // getters
     inline qsizetype head() const

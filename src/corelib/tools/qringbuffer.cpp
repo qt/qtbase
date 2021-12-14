@@ -62,7 +62,7 @@ void QRingChunk::detach()
     tailOffset = chunkSize;
 }
 
-QByteArray QRingChunk::toByteArray()
+QByteArray QRingChunk::toByteArray() &&
 {
     if (headOffset != 0 || tailOffset != chunk.size()) {
         if (isShared())
@@ -79,7 +79,7 @@ QByteArray QRingChunk::toByteArray()
         chunk.resize(tailOffset);
     }
 
-    return chunk;
+    return std::move(chunk);
 }
 
 /*!
