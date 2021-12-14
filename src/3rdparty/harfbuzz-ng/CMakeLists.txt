@@ -170,3 +170,7 @@ qt_internal_extend_target(BundledHarfbuzz CONDITION SHAPERS_ISEMPTY OR SHAPERS__
     DEFINES
         HAVE_FALLBACK
 )
+
+qt_internal_add_3rdparty_header_module(HarfbuzzPrivate
+    EXTERNAL_HEADERS_DIR include
+)

@@ -1095,7 +1095,9 @@ foreach my $lib (@modules_to_sync) {
                             # We need both $public_header and $private_header because QPA headers count as neither
                             my $private_header = !$public_header && !$qpa_header
                                 && $header =~ /_p\.h$/ && $subdir !~ /3rdparty/;
-                            check_header($lib, $header, $iheader, $public_header, $private_header);
+                            if ($is_qt) { # skip check since this header is not qt header
+                                check_header($lib, $header, $iheader, $public_header, $private_header);
+                            }
                         }
                         my @classes = ();
                         push @classes, classNames($iheader, \$clean_header, \$requires)
@@ -1112,7 +1114,13 @@ foreach my $lib (@modules_to_sync) {
                             #find out all the places it goes..
                             my $oheader;
                             if ($public_header) {
-                                $oheader = "$out_basedir/include/$lib/$header";
+                                if ($is_qt || $headers_dir eq $subdir) { # this is qt header or header is not in subdirectory
+                                    $oheader = "$out_basedir/include/$lib/$header";
+                                } else {
+                                    my $subdirname = $subdir;
+                                    $subdirname =~ s/^$headers_dir//;
+                                    $oheader = "$out_basedir/include/$lib/$subdirname/$header"; # keep subdirectory name
+                                }
                                 foreach my $full_class (@classes) {
                                     my $header_base = basename($header);
                                     # Strip namespaces:

@@ -30,15 +30,15 @@ qt_internal_add_3rdparty_library(BundledLibpng
     PUBLIC_INCLUDE_DIRECTORIES
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )
+
+qt_internal_add_3rdparty_header_module(PngPrivate
+    EXTERNAL_HEADERS
+        png.h
+        pngconf.h
+)
+
 qt_disable_warnings(BundledLibpng)
 qt_set_symbol_visibility_hidden(BundledLibpng)
-
-#### Keys ignored in scope 1:.:.:libpng.pro:<TRUE>:
-# MODULE_EXT_HEADERS = "png.h" "pngconf.h"
-# TR_EXCLUDE = "$$PWD/*"
-
-## Scopes:
-#####################################################################
 
 qt_internal_extend_target(BundledLibpng CONDITION QT_FEATURE_system_zlib
     LIBRARIES
