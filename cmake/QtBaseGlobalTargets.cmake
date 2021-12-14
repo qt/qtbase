@@ -341,6 +341,17 @@ qt_copy_or_install(DIRECTORY cmake/
     PATTERN "3rdparty" EXCLUDE
 )
 
+# In prefix builds we also need to copy the files into the build config directory, so that the
+# build-dir Qt6Config.cmake finds the files when building examples as ExternalProjects.
+if(QT_WILL_INSTALL)
+    file(COPY cmake/
+        DESTINATION "${__GlobalConfig_build_dir}"
+        FILES_MATCHING PATTERN "Find*.cmake"
+        PATTERN "tests" EXCLUDE
+        PATTERN "3rdparty" EXCLUDE
+    )
+endif()
+
 if(MACOS)
     qt_copy_or_install(FILES
         cmake/macos/MacOSXBundleInfo.plist.in
