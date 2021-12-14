@@ -71,18 +71,13 @@ void QRingChunk::detach()
 
 QByteArray QRingChunk::toByteArray() &&
 {
+    // ### Replace with std::move(chunk).sliced(head(), size()) once sliced()&& is available
     if (headOffset != 0 || tailOffset != chunk.size()) {
         if (isShared())
-            return chunk.mid(headOffset, size());
-
-        if (headOffset != 0) {
-            char *ptr = chunk.data();
-            ::memmove(ptr, ptr + headOffset, size());
-            tailOffset -= headOffset;
-            headOffset = 0;
-        }
+            return chunk.sliced(head(), size());
 
         chunk.resize(tailOffset);
+        chunk.remove(0, headOffset);
     }
 
     return std::move(chunk);
