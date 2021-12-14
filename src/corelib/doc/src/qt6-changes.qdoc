@@ -865,4 +865,10 @@
 
     QLibraryInfo::location() and QLibraryInfo::Location were deprecated due to inconsistent
     naming. Use the new API QLibraryInfo::path() and QLibraryInfo::LibraryPath instead.
+
+    \section1 Qt State Machine Framework
+
+    \l {Qt State Machine} was moved into the Qt SCXML module (soon to be renamed to Qt
+    State Machines) and therefore it is no longer part of Qt Core. There were very few
+    cross dependencies inside Qt Core which ultimately led to this decision.
 */
