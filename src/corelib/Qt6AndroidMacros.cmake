@@ -357,7 +357,7 @@ function(qt6_android_add_apk_target target)
         DEPENDS ${target} ${extra_deps}
         COMMAND ${CMAKE_COMMAND}
             -E copy_if_different $<TARGET_FILE:${target}>
-            "${apk_final_dir}/$<TARGET_FILE_NAME:${target}>"
+            "${apk_final_dir}/${target_file_copy_relative_path}"
         COMMENT "Copying ${target} binary to apk folder"
     )
 
