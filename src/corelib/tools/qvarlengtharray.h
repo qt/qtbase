@@ -371,7 +371,15 @@ private:
     qsizetype a;      // capacity
     qsizetype s;      // size
     T *ptr;     // data
-    std::aligned_storage_t<sizeof(T), alignof(T)> array[Prealloc];
+    alignas(T) char array[Prealloc * (alignof(T) > sizeof(T) ? alignof(T) : sizeof(T))];
+    QT_WARNING_PUSH
+    QT_WARNING_DISABLE_DEPRECATED
+    // ensure we maintain BC: std::aligned_storage_t was only specified by a
+    // minimum size, but for BC we need the substitution to be exact in size:
+    template <size_t> class print;
+    static_assert(std::is_same_v<print<sizeof(std::aligned_storage_t<sizeof(T), alignof(T)>[Prealloc])>,
+                                 print<sizeof(array)>>);
+    QT_WARNING_POP
 
     bool isValidIterator(const const_iterator &i) const
     {
