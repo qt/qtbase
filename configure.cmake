@@ -849,6 +849,11 @@ qt_feature("zstd" PRIVATE
     LABEL "Zstandard support"
     CONDITION ZSTD_FOUND
 )
+qt_feature("stdlib-libcpp" PRIVATE
+    LABEL "Using stdlib=libc++"
+    AUTODETECT OFF
+    CONDITION LINUX AND NOT ANDROID
+)
 # special case begin
 # Check whether CMake was built with zstd support.
 # See https://gitlab.kitware.com/cmake/cmake/-/issues/21552

@@ -26,6 +26,11 @@ function(qt_internal_setup_public_platform_target)
         target_link_libraries(Platform INTERFACE log)
     endif()
 
+    if (QT_FEATURE_stdlib_libcpp)
+        target_compile_options(Platform INTERFACE "-stdlib=libc++")
+        target_link_options(Platform INTERFACE "-stdlib=libc++")
+    endif()
+
     qt_set_msvc_cplusplus_options(Platform INTERFACE)
 
     # Propagate minimum C++ 17 via Platform to Qt consumers (apps), after the global features

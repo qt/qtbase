@@ -943,6 +943,11 @@ function(qt_config_compile_test name)
 
             set(CMAKE_REQUIRED_FLAGS ${arg_COMPILE_OPTIONS})
 
+            # Pass -stdlib=libc++ on if necessary
+            if (INPUT_stdlib_libcpp OR QT_FEATURE_stdlib_libcpp)
+                list(APPEND CMAKE_REQUIRED_FLAGS "-stdlib=libc++")
+            endif()
+
             # For MSVC we need to explicitly pass -Zc:__cplusplus to get correct __cplusplus
             # define values. According to common/msvc-version.conf the flag is supported starting
             # with 1913.
@@ -1002,6 +1007,15 @@ function(qt_get_platform_try_compile_vars out_var)
     # Pass language standard flags.
     list(APPEND flags "CMAKE_C_STANDARD")
     list(APPEND flags "CMAKE_CXX_STANDARD")
+
+    # Pass -stdlib=libc++ on if necessary
+    if (INPUT_stdlib_libcpp OR QT_FEATURE_stdlib_libcpp)
+        if(CMAKE_CXX_FLAGS)
+            string(APPEND CMAKE_CXX_FLAGS " -stdlib=libc++")
+        else()
+            set(CMAKE_CXX_FLAGS "-stdlib=libc++")
+        endif()
+    endif()
 
     # Assemble the list with regular options.
     set(flags_cmd_line "")
