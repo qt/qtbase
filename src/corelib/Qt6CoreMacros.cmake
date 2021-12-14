@@ -2205,6 +2205,16 @@ if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
     endfunction()
 endif()
 
+# TODO: Remove once all repositories use qt_internal_add_example instead of add_subdirectory.
+macro(_qt_internal_override_example_install_dir_to_dot)
+    # Set INSTALL_EXAMPLEDIR to ".".
+    # This overrides the install destination of unclean Qt example projects to install directly
+    # to CMAKE_INSTALL_PREFIX.
+    if(QT_INTERNAL_SET_EXAMPLE_INSTALL_DIR_TO_DOT)
+        set(INSTALL_EXAMPLEDIR ".")
+    endif()
+endmacro()
+
 function(qt6_allow_non_utf8_sources target)
     set_target_properties("${target}" PROPERTIES QT_NO_UTF8_SOURCE TRUE)
 endfunction()
