@@ -1720,9 +1720,6 @@ void tst_QMetaType::automaticTemplateRegistration_1()
     QVERIFY(qRegisterMetaType<UnregisteredTypeList>("UnregisteredTypeList") > 0);
   }
 
-#if !defined(TST_QMETATYPE_BROKEN_COMPILER)
-
-
 
     REGISTER_TYPEDEF(QHash, int, uint)
     REGISTER_TYPEDEF(QMap, int, uint)
@@ -1739,8 +1736,6 @@ void tst_QMetaType::automaticTemplateRegistration_1()
     CREATE_AND_VERIFY_CONTAINER(std::pair, void*, void*)
     CREATE_AND_VERIFY_CONTAINER(QHash, void*, void*)
     CREATE_AND_VERIFY_CONTAINER(QHash, const void*, const void*)
-
-#endif // !defined(TST_QMETATYPE_BROKEN_COMPILER)
 
 #define TEST_OWNING_SMARTPOINTER(SMARTPOINTER, ELEMENT_TYPE, FLAG_TEST, FROMVARIANTFUNCTION) \
     { \
