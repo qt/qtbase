@@ -707,6 +707,9 @@ macro(qt_examples_build_begin)
 
     cmake_parse_arguments(arg "${options}" "${singleOpts}" "${multiOpts}" ${ARGN})
 
+    # Use by qt_internal_add_example.
+    set(QT_EXAMPLE_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+
     # FIXME: Support prefix builds as well QTBUG-96232
     if(arg_EXTERNAL_BUILD AND QT_BUILD_EXAMPLES_AS_EXTERNAL)
         # Examples will be built using ExternalProject.
@@ -727,7 +730,6 @@ macro(qt_examples_build_begin)
             list(APPEND QT_EXAMPLE_DEPENDENCIES ${qt_repo_targets_name}_tools)
         endif()
 
-        set(QT_EXAMPLE_BASE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
         set(QT_IS_EXTERNAL_EXAMPLES_BUILD TRUE)
 
         string(TOLOWER ${PROJECT_NAME} project_name_lower)
@@ -779,6 +781,13 @@ macro(qt_examples_build_begin)
     # seems there's no way to query such information from CMake itself.
     set(CMAKE_INSTALL_RPATH "${_default_install_rpath}")
     set(QT_DISABLE_QT_ADD_PLUGIN_COMPATIBILITY TRUE)
+
+    install(CODE "
+# Backup CMAKE_INSTALL_PREFIX because we're going to change it in each example subdirectory
+# and restore it after all examples are processed so that QtFooToolsAdditionalTargetInfo.cmake
+# files are installed into the original install prefix.
+set(_qt_internal_examples_cmake_install_prefix_backup \"\${CMAKE_INSTALL_PREFIX}\")
+")
 endmacro()
 
 macro(qt_examples_build_end)
@@ -816,6 +825,11 @@ macro(qt_examples_build_end)
     endforeach()
 
     set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ${BACKUP_CMAKE_FIND_ROOT_PATH_MODE_PACKAGE})
+
+    install(CODE "
+# Restore backed up CMAKE_INSTALL_PREFIX.
+set(CMAKE_INSTALL_PREFIX \"\${_qt_internal_examples_cmake_install_prefix_backup}\")
+")
 endmacro()
 
 function(qt_internal_add_example subdir)
@@ -826,8 +840,35 @@ function(qt_internal_add_example subdir)
     endif()
 endfunction()
 
+# Use old non-ExternalProject approach, aka build in-tree with the Qt build.
 function(qt_internal_add_example_in_tree subdir)
-    # Use old non-ExternalProject approach, aka build in-tree with the Qt build.
+    file(RELATIVE_PATH example_rel_path
+         "${QT_EXAMPLE_BASE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/${subdir}")
+
+    # Unset the default CMAKE_INSTALL_PREFIX that's generated in
+    #   ${CMAKE_CURRENT_BINARY_DIR}/cmake_install.cmake
+    # so we can override it with a different value in
+    #   ${CMAKE_CURRENT_BINARY_DIR}/${subdir}/cmake_install.cmake
+    #
+    install(CODE "
+# Unset the CMAKE_INSTALL_PREFIX in the current cmake_install.cmake file so that it can be
+# overridden in the included add_subdirectory-specific cmake_install.cmake files instead.
+unset(CMAKE_INSTALL_PREFIX)
+")
+
+    # Override the install prefix in the subdir cmake_install.cmake, so that
+    # relative install(TARGETS DESTINATION) calls in example projects install where we tell them to.
+    set(CMAKE_INSTALL_PREFIX
+        "${CMAKE_INSTALL_PREFIX}/${INSTALL_EXAMPLESDIR}/${example_rel_path}")
+
+    # Make sure unclean example projects have their INSTALL_EXAMPLEDIR set to "."
+    # Won't have any effect on example projects that don't use INSTALL_EXAMPLEDIR.
+    # This plus the install prefix above takes care of installing examples where we want them to
+    # be installed, while allowing us to remove INSTALL_EXAMPLEDIR code in each example
+    # incrementally.
+    # TODO: Remove once all repositories use qt_internal_add_example instead of add_subdirectory.
+    set(QT_INTERNAL_SET_EXAMPLE_INSTALL_DIR_TO_DOT ON)
+
     add_subdirectory(${subdir} ${ARGN})
 endfunction()
 

@@ -52,3 +52,5 @@ endif()
 if(EMSCRIPTEN)
     include("${CMAKE_CURRENT_LIST_DIR}/@QT_CMAKE_EXPORT_NAMESPACE@WasmMacros.cmake")
 endif()
+
+_qt_internal_override_example_install_dir_to_dot()
