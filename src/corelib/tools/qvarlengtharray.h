@@ -65,10 +65,18 @@ QT_BEGIN_NAMESPACE
 template <size_t Size, size_t Align, qsizetype Prealloc>
 class QVLAStorage
 {
+    template <size_t> class print;
 protected:
     ~QVLAStorage() = default;
 
-    std::aligned_storage_t<Size, Align> array[Prealloc];
+    alignas(Align) char array[Prealloc * (Align > Size ? Align : Size)];
+    QT_WARNING_PUSH
+    QT_WARNING_DISABLE_DEPRECATED
+    // ensure we maintain BC: std::aligned_storage_t was only specified by a
+    // minimum size, but for BC we need the substitution to be exact in size:
+    static_assert(std::is_same_v<print<sizeof(std::aligned_storage_t<Size, Align>[Prealloc])>,
+                                 print<sizeof(array)>>);
+    QT_WARNING_POP
 };
 
 class QVLABaseBase
