@@ -819,13 +819,20 @@ macro(qt_examples_build_end)
 endmacro()
 
 function(qt_internal_add_example subdir)
-    # FIXME: Support building examples externally for prefix builds as well.
-
     if(NOT QT_IS_EXTERNAL_EXAMPLES_BUILD)
-        # Use old non-external approach
-        add_subdirectory(${subdir} ${ARGN})
-        return()
+        qt_internal_add_example_in_tree(${ARGV})
+    else()
+        qt_internal_add_example_external_project(${ARGV})
     endif()
+endfunction()
+
+function(qt_internal_add_example_in_tree subdir)
+    # Use old non-ExternalProject approach, aka build in-tree with the Qt build.
+    add_subdirectory(${subdir} ${ARGN})
+endfunction()
+
+function(qt_internal_add_example_external_project subdir)
+    # FIXME: Support building examples externally for prefix builds as well.
 
     set(options "")
     set(singleOpts NAME)
