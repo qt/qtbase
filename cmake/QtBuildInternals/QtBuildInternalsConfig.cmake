@@ -833,9 +833,18 @@ function(qt_internal_add_example subdir)
 
     cmake_parse_arguments(PARSE_ARGV 1 arg "${options}" "${singleOpts}" "${multiOpts}")
 
+    file(RELATIVE_PATH example_rel_path
+         "${QT_EXAMPLE_BASE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/${subdir}")
+
     if(NOT arg_NAME)
-        file(RELATIVE_PATH rel_path ${QT_EXAMPLE_BASE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/${subdir})
-        string(REPLACE "/" "_" arg_NAME "${rel_path}")
+        set(arg_NAME "${subdir}")
+    endif()
+
+    # Likely a clash with an example subdir ExternalProject custom target of the same name.
+    if(TARGET "${arg_NAME}")
+        string(SHA1 rel_path_hash "${example_rel_path}")
+        string(SUBSTRING "${rel_path_hash}" 0 4 short_hash)
+        set(arg_NAME "${arg_NAME}-${short_hash}")
     endif()
 
     if(QtBase_BINARY_DIR)
@@ -945,7 +954,10 @@ function(qt_internal_add_example subdir)
 
     ExternalProject_Add(${arg_NAME}
         EXCLUDE_FROM_ALL TRUE
-        SOURCE_DIR       ${CMAKE_CURRENT_SOURCE_DIR}/${subdir}
+        SOURCE_DIR       "${CMAKE_CURRENT_SOURCE_DIR}/${subdir}"
+        PREFIX           "${CMAKE_CURRENT_BINARY_DIR}/${subdir}-ep"
+        STAMP_DIR        "${CMAKE_CURRENT_BINARY_DIR}/${subdir}-ep/stamp"
+        BINARY_DIR       "${CMAKE_CURRENT_BINARY_DIR}/${subdir}"
         INSTALL_COMMAND  ""
         TEST_COMMAND     ""
         DEPENDS          ${deps}
