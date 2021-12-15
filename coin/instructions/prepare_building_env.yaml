@@ -370,11 +370,15 @@ instructions:
       - type: AppendToEnvironmentVariable
         variableName: TEST_CONFIGURE_ARGS
         variableValue: " -DCMAKE_C_COMPILER_LAUNCHER=sccache -DCMAKE_CXX_COMPILER_LAUNCHER=sccache"
+
       - type: AppendToEnvironmentVariable
         variableName: TARGET_CONFIGURE_ARGS
         variableValue: " -DCMAKE_C_COMPILER_LAUNCHER=sccache -DCMAKE_CXX_COMPILER_LAUNCHER=sccache"
       - type: AppendToEnvironmentVariable
         variableName: NON_QTBASE_TARGET_CONFIGURE_ARGS
+        variableValue: " -DCMAKE_C_COMPILER_LAUNCHER=sccache -DCMAKE_CXX_COMPILER_LAUNCHER=sccache"
+      - type: AppendToEnvironmentVariable
+        variableName: TARGET_TEST_CONFIGURE_ARGS
         variableValue: " -DCMAKE_C_COMPILER_LAUNCHER=sccache -DCMAKE_CXX_COMPILER_LAUNCHER=sccache"
     enable_if:
       condition: property
