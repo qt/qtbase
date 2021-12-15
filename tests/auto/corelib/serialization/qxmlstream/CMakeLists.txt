@@ -11,8 +11,9 @@ list(APPEND test_data "XML-Test-Suite")
 qt_internal_add_test(tst_qxmlstream
     SOURCES
         tst_qxmlstream.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Network
         Qt::Xml
+        Qt::GuiPrivate
     TESTDATA ${test_data}
 )
