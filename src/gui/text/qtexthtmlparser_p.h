@@ -323,7 +323,9 @@ protected:
     void applyAttributes(const QStringList &attributes);
     void eatSpace();
     inline bool hasPrefix(QChar c, int lookahead = 0) const
-        {return pos + lookahead < len && txt.at(pos) == c; }
+    {
+        return pos + lookahead < len && txt.at(pos + lookahead) == c;
+    }
     int margin(int i, int mar) const;
 
     bool nodeIsChildOf(int i, QTextHTMLElements id) const;
