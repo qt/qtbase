@@ -19,11 +19,6 @@ qt_add_executable(waitconditions
     waitconditions.cpp
 )
 
-set_target_properties(waitconditions PROPERTIES
-    WIN32_EXECUTABLE FALSE
-    MACOSX_BUNDLE FALSE
-)
-
 target_link_libraries(waitconditions PUBLIC
     Qt::Core
 )

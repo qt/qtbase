@@ -19,11 +19,6 @@ qt_add_executable(mapdemo
     main.cpp
 )
 
-set_target_properties(mapdemo PROPERTIES
-    WIN32_EXECUTABLE FALSE
-    MACOSX_BUNDLE FALSE
-)
-
 target_link_libraries(mapdemo PUBLIC
     Qt::Concurrent
     Qt::Core
