@@ -18,7 +18,6 @@ find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets)
 qt_add_executable(bindablesubscription
     ../shared/subscriptionwindow.cpp ../shared/subscriptionwindow.h ../shared/subscriptionwindow.ui
     main.cpp
-    main.cpp
     bindablesubscription.cpp bindablesubscription.h
     bindableuser.cpp bindableuser.h
 )
