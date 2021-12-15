@@ -1,4 +1,8 @@
 # Generated from io.pro.
+# There is no mounted filesystem for IO testing on INTEGRITY yet.
+if(INTEGRITY)
+    return()
+endif()
 
 if(QT_FEATURE_private_tests)
     add_subdirectory(qabstractfileengine)
