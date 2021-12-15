@@ -349,7 +349,12 @@ extern "C" void qt_fromlatin1_mips_asm_unroll8 (char16_t*, const char*, uint);
 extern "C" void qt_toLatin1_mips_dsp_asm(uchar *dst, const char16_t *src, int length);
 #endif
 
-#if defined(__SSE2__) && defined(Q_CC_GNU)
+#ifdef __SSE2__
+static constexpr bool UseAvx2 =
+        (qCompilerCpuFeatures & CpuFeatureArchHaswell) == CpuFeatureArchHaswell;
+#endif
+
+#ifdef Q_CC_GNU
 #  if defined(__SANITIZE_ADDRESS__) && Q_CC_GNU < 800 && !defined(Q_CC_CLANG)
 #     warning "The __attribute__ on below will likely cause a build failure with your GCC version. Your choices are:"
 #     warning "1) disable ASan;"
@@ -467,23 +472,24 @@ const char16_t *QtPrivate::qustrchr(QStringView str, char16_t c) noexcept
     bool loops = true;
     // Using the PMOVMSKB instruction, we get two bits for each character
     // we compare.
-#  if defined(__AVX2__) && !defined(__OPTIMIZE_SIZE__)
-    // we're going to read n[0..15] (32 bytes)
-    __m256i mch256 = _mm256_set1_epi32(c | (c << 16));
-    for (const char16_t *next = n + 16; next <= e; n = next, next += 16) {
-        __m256i data = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(n));
-        __m256i result = _mm256_cmpeq_epi16(data, mch256);
-        uint mask = uint(_mm256_movemask_epi8(result));
-        if (mask) {
-            uint idx = qCountTrailingZeroBits(mask);
-            return n + idx / 2;
+    __m128i mch;
+    if constexpr (UseAvx2) {
+        // we're going to read n[0..15] (32 bytes)
+        __m256i mch256 = _mm256_set1_epi32(c | (c << 16));
+        for (const char16_t *next = n + 16; next <= e; n = next, next += 16) {
+            __m256i data = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(n));
+            __m256i result = _mm256_cmpeq_epi16(data, mch256);
+            uint mask = uint(_mm256_movemask_epi8(result));
+            if (mask) {
+                uint idx = qCountTrailingZeroBits(mask);
+                return n + idx / 2;
+            }
         }
+        loops = false;
+        mch = _mm256_castsi256_si128(mch256);
+    } else {
+        mch = _mm_set1_epi32(c | (c << 16));
     }
-    loops = false;
-    __m128i mch = _mm256_castsi256_si128(mch256);
-#  else
-    __m128i mch = _mm_set1_epi32(c | (c << 16));
-#  endif
 
     auto hasMatch = [mch, &n](__m128i data, ushort validityMask) {
         __m128i result = _mm_cmpeq_epi16(data, mch);
@@ -551,64 +557,66 @@ static bool simdTestMask(const char *&ptr, const char *end, quint32 maskval)
         return false;
     };
 
-#  if defined(__SSE4_1__)
-    __m128i mask;
-    auto updatePtrSimd = [&](__m128i data) {
-        __m128i masked = _mm_and_si128(mask, data);
-        __m128i comparison = _mm_cmpeq_epi16(masked, _mm_setzero_si128());
-        uint result = _mm_movemask_epi8(comparison);
-        return updatePtr(result);
-    };
+    if constexpr (qCompilerCpuFeatures & CpuFeatureSSE4_1) {
+        __m128i mask;
+        auto updatePtrSimd = [&](__m128i data) {
+            __m128i masked = _mm_and_si128(mask, data);
+            __m128i comparison = _mm_cmpeq_epi16(masked, _mm_setzero_si128());
+            uint result = _mm_movemask_epi8(comparison);
+            return updatePtr(result);
+        };
 
-#    if defined(__AVX2__)
-    // AVX2 implementation: test 32 bytes at a time
-    const __m256i mask256 = _mm256_broadcastd_epi32(_mm_cvtsi32_si128(maskval));
-    while (ptr + 32 <= end) {
-        __m256i data = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(ptr));
-        if (!_mm256_testz_si256(mask256, data)) {
-            // found a character matching the mask
-            __m256i masked256 = _mm256_and_si256(mask256, data);
-            __m256i comparison256 = _mm256_cmpeq_epi16(masked256, _mm256_setzero_si256());
-            return updatePtr(_mm256_movemask_epi8(comparison256));
+        if constexpr (UseAvx2) {
+            // AVX2 implementation: test 32 bytes at a time
+            const __m256i mask256 = _mm256_broadcastd_epi32(_mm_cvtsi32_si128(maskval));
+            while (ptr + 32 <= end) {
+                __m256i data = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(ptr));
+                if (!_mm256_testz_si256(mask256, data)) {
+                    // found a character matching the mask
+                    __m256i masked256 = _mm256_and_si256(mask256, data);
+                    __m256i comparison256 = _mm256_cmpeq_epi16(masked256, _mm256_setzero_si256());
+                    return updatePtr(_mm256_movemask_epi8(comparison256));
+                }
+                ptr += 32;
+            }
+
+            mask = _mm256_castsi256_si128(mask256);
+        } else {
+            // SSE 4.1 implementation: test 32 bytes at a time (two 16-byte
+            // comparisons, unrolled)
+            mask = _mm_set1_epi32(maskval);
+            while (ptr + 32 <= end) {
+                __m128i data1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(ptr));
+                __m128i data2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(ptr + 16));
+                if (!_mm_testz_si128(mask, data1))
+                    return updatePtrSimd(data1);
+
+                ptr += 16;
+                if (!_mm_testz_si128(mask, data2))
+                    return updatePtrSimd(data2);
+                ptr += 16;
+            }
         }
-        ptr += 32;
+
+        // AVX2 and SSE4.1: final 16-byte comparison
+        if (ptr + 16 <= end) {
+            __m128i data1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(ptr));
+            if (!_mm_testz_si128(mask, data1))
+                return updatePtrSimd(data1);
+            ptr += 16;
+        }
+
+        // and final 8-byte comparison
+        if (ptr + 8 <= end) {
+            __m128i data1 = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(ptr));
+            if (!_mm_testz_si128(mask, data1))
+                return updatePtrSimd(data1);
+            ptr += 8;
+        }
+
+        return true;
     }
 
-    mask = _mm256_castsi256_si128(mask256);
-#    else
-    // SSE 4.1 implementation: test 32 bytes at a time (two 16-byte
-    // comparisons, unrolled)
-    mask = _mm_set1_epi32(maskval);
-    while (ptr + 32 <= end) {
-        __m128i data1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(ptr));
-        __m128i data2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(ptr + 16));
-        if (!_mm_testz_si128(mask, data1))
-            return updatePtrSimd(data1);
-
-        ptr += 16;
-        if (!_mm_testz_si128(mask, data2))
-            return updatePtrSimd(data2);
-        ptr += 16;
-    }
-#    endif
-
-    // AVX2 and SSE4.1: final 16-byte comparison
-    if (ptr + 16 <= end) {
-        __m128i data1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(ptr));
-        if (!_mm_testz_si128(mask, data1))
-            return updatePtrSimd(data1);
-        ptr += 16;
-    }
-
-    // and final 8-byte comparison
-    if (ptr + 8 <= end) {
-        __m128i data1 = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(ptr));
-        if (!_mm_testz_si128(mask, data1))
-            return updatePtrSimd(data1);
-        ptr += 8;
-    }
-
-#  else
     // SSE2 implementation: test 16 bytes at a time.
     const __m128i mask = _mm_set1_epi32(maskval);
     while (ptr + 16 <= end) {
@@ -631,7 +639,6 @@ static bool simdTestMask(const char *&ptr, const char *end, quint32 maskval)
             return updatePtr(result);
         ptr += 8;
     }
-#  endif
 
     return true;
 }
@@ -639,16 +646,16 @@ static bool simdTestMask(const char *&ptr, const char *end, quint32 maskval)
 static Q_ALWAYS_INLINE __m128i mm_load8_zero_extend(const void *ptr)
 {
     const __m128i *dataptr = static_cast<const __m128i *>(ptr);
-#if defined(__SSE4_1__)
-    // use a MOVQ followed by PMOVZXBW
-    // if AVX2 is present, these should combine into a single VPMOVZXBW instruction
-    __m128i data = _mm_loadl_epi64(dataptr);
-    return _mm_cvtepu8_epi16(data);
-#  else
+    if constexpr (qCompilerCpuFeatures & CpuFeatureSSE4_1) {
+        // use a MOVQ followed by PMOVZXBW
+        // if AVX2 is present, these should combine into a single VPMOVZXBW instruction
+        __m128i data = _mm_loadl_epi64(dataptr);
+        return _mm_cvtepu8_epi16(data);
+    }
+
     // use MOVQ followed by PUNPCKLBW
     __m128i data = _mm_loadl_epi64(dataptr);
     return _mm_unpacklo_epi8(data, _mm_setzero_si128());
-#  endif
 }
 #endif
 
@@ -659,19 +666,19 @@ bool qt_is_ascii(const char *&ptr, const char *end) noexcept
 #if defined(__SSE2__)
     // Testing for the high bit can be done efficiently with just PMOVMSKB
     bool loops = true;
-#  if defined(__AVX2__)
-    while (ptr + 32 <= end) {
-        __m256i data = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(ptr));
-        quint32 mask = _mm256_movemask_epi8(data);
-        if (mask) {
-            uint idx = qCountTrailingZeroBits(mask);
-            ptr += idx;
-            return false;
+    if constexpr (UseAvx2) {
+        while (ptr + 32 <= end) {
+            __m256i data = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(ptr));
+            quint32 mask = _mm256_movemask_epi8(data);
+            if (mask) {
+                uint idx = qCountTrailingZeroBits(mask);
+                ptr += idx;
+                return false;
+            }
+            ptr += 32;
         }
-        ptr += 32;
+        loops = false;
     }
-    loops = false;
-#  endif
 
     while (ptr + 16 <= end) {
         __m128i data = _mm_loadu_si128(reinterpret_cast<const __m128i *>(ptr));
@@ -802,23 +809,23 @@ Q_CORE_EXPORT void qt_from_latin1(char16_t *dst, const char *str, size_t size) n
     // we're going to read str[offset..offset+15] (16 bytes)
     for ( ; str + offset + 15 < e; offset += 16) {
         const __m128i chunk = _mm_loadu_si128((const __m128i*)(str + offset)); // load
-#ifdef __AVX2__
-        // zero extend to an YMM register
-        const __m256i extended = _mm256_cvtepu8_epi16(chunk);
+        if constexpr (UseAvx2) {
+            // zero extend to an YMM register
+            const __m256i extended = _mm256_cvtepu8_epi16(chunk);
 
-        // store
-        _mm256_storeu_si256((__m256i*)(dst + offset), extended);
-#else
-        const __m128i nullMask = _mm_set1_epi32(0);
+            // store
+            _mm256_storeu_si256((__m256i*)(dst + offset), extended);
+        } else {
+            const __m128i nullMask = _mm_set1_epi32(0);
 
-        // unpack the first 8 bytes, padding with zeros
-        const __m128i firstHalf = _mm_unpacklo_epi8(chunk, nullMask);
-        _mm_storeu_si128((__m128i*)(dst + offset), firstHalf); // store
+            // unpack the first 8 bytes, padding with zeros
+            const __m128i firstHalf = _mm_unpacklo_epi8(chunk, nullMask);
+            _mm_storeu_si128((__m128i*)(dst + offset), firstHalf); // store
 
-        // unpack the last 8 bytes, padding with zeros
-        const __m128i secondHalf = _mm_unpackhi_epi8 (chunk, nullMask);
-        _mm_storeu_si128((__m128i*)(dst + offset + 8), secondHalf); // store
-#endif
+            // unpack the last 8 bytes, padding with zeros
+            const __m128i secondHalf = _mm_unpackhi_epi8 (chunk, nullMask);
+            _mm_storeu_si128((__m128i*)(dst + offset + 8), secondHalf); // store
+        }
     }
 
     // we're going to read str[offset..offset+7] (8 bytes)
@@ -855,24 +862,36 @@ static void qt_to_latin1_internal(uchar *dst, const char16_t *src, qsizetype len
     uchar *e = dst + length;
     qptrdiff offset = 0;
 
-#  ifdef __AVX2__
-    const __m256i questionMark256 = _mm256_broadcastw_epi16(_mm_cvtsi32_si128('?'));
-    const __m256i outOfRange256 = _mm256_broadcastw_epi16(_mm_cvtsi32_si128(0x100));
-    const __m128i questionMark = _mm256_castsi256_si128(questionMark256);
-    const __m128i outOfRange = _mm256_castsi256_si128(outOfRange256);
-#  else
-    const __m128i questionMark = _mm_set1_epi16('?');
-    const __m128i outOfRange = _mm_set1_epi16(0x100);
-#  endif
+    auto questionMark256 = []() {
+        if constexpr (UseAvx2)
+            return _mm256_broadcastw_epi16(_mm_cvtsi32_si128('?'));
+        else
+            return 0;
+    }();
+    auto outOfRange256 = []() {
+        if constexpr (UseAvx2)
+            return _mm256_broadcastw_epi16(_mm_cvtsi32_si128(0x100));
+        else
+            return 0;
+    }();
+    __m128i questionMark, outOfRange;
+    if constexpr (UseAvx2) {
+        questionMark = _mm256_castsi256_si128(questionMark256);
+        outOfRange = _mm256_castsi256_si128(outOfRange256);
+    } else {
+        questionMark = _mm_set1_epi16('?');
+        outOfRange = _mm_set1_epi16(0x100);
+    }
 
     auto mergeQuestionMarks = [=](__m128i chunk) {
         // SSE has no compare instruction for unsigned comparison.
-# ifdef __SSE4_1__
-        // We use an unsigned uc = qMin(uc, 0x100) and then compare for equality.
-        chunk = _mm_min_epu16(chunk, outOfRange);
-        const __m128i offLimitMask = _mm_cmpeq_epi16(chunk, outOfRange);
-        chunk = _mm_blendv_epi8(chunk, questionMark, offLimitMask);
-# else
+        if constexpr (qCompilerCpuFeatures & CpuFeatureSSE4_1) {
+            // We use an unsigned uc = qMin(uc, 0x100) and then compare for equality.
+            chunk = _mm_min_epu16(chunk, outOfRange);
+            const __m128i offLimitMask = _mm_cmpeq_epi16(chunk, outOfRange);
+            chunk = _mm_blendv_epi8(chunk, questionMark, offLimitMask);
+            return chunk;
+        }
         // The variables must be shiffted + 0x8000 to be compared
         const __m128i signedBitOffset = _mm_set1_epi16(short(0x8000));
         const __m128i thresholdMask = _mm_set1_epi16(short(0xff + 0x8000));
@@ -892,32 +911,32 @@ static void qt_to_latin1_internal(uchar *dst, const char16_t *src, qsizetype len
         chunk = _mm_or_si128(correctBytes, offLimitQuestionMark);
 
         Q_UNUSED(outOfRange);
-# endif
         return chunk;
     };
 
     // we're going to write to dst[offset..offset+15] (16 bytes)
     for ( ; dst + offset + 15 < e; offset += 16) {
-#  if defined(__AVX2__)
-        __m256i chunk = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(src + offset));
-        if (Checked) {
-            // See mergeQuestionMarks lambda above for details
-            chunk = _mm256_min_epu16(chunk, outOfRange256);
-            const __m256i offLimitMask = _mm256_cmpeq_epi16(chunk, outOfRange256);
-            chunk = _mm256_blendv_epi8(chunk, questionMark256, offLimitMask);
+        __m128i chunk1, chunk2;
+        if constexpr (UseAvx2) {
+            __m256i chunk = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(src + offset));
+            if (Checked) {
+                // See mergeQuestionMarks lambda above for details
+                chunk = _mm256_min_epu16(chunk, outOfRange256);
+                const __m256i offLimitMask = _mm256_cmpeq_epi16(chunk, outOfRange256);
+                chunk = _mm256_blendv_epi8(chunk, questionMark256, offLimitMask);
+            }
+
+            chunk2 = _mm256_extracti128_si256(chunk, 1);
+            chunk1 = _mm256_castsi256_si128(chunk);
+        } else {
+            chunk1 = _mm_loadu_si128((const __m128i*)(src + offset)); // load
+            if (Checked)
+                chunk1 = mergeQuestionMarks(chunk1);
+
+            chunk2 = _mm_loadu_si128((const __m128i*)(src + offset + 8)); // load
+            if (Checked)
+                chunk2 = mergeQuestionMarks(chunk2);
         }
-
-        const __m128i chunk2 = _mm256_extracti128_si256(chunk, 1);
-        const __m128i chunk1 = _mm256_castsi256_si128(chunk);
-#  else
-        __m128i chunk1 = _mm_loadu_si128((const __m128i*)(src + offset)); // load
-        if (Checked)
-            chunk1 = mergeQuestionMarks(chunk1);
-
-        __m128i chunk2 = _mm_loadu_si128((const __m128i*)(src + offset + 8)); // load
-        if (Checked)
-            chunk2 = mergeQuestionMarks(chunk2);
-#  endif
 
         // pack the two vector to 16 x 8bits elements
         const __m128i result = _mm_packus_epi16(chunk1, chunk2);
@@ -1131,20 +1150,21 @@ static int ucstrncmp(const char16_t *a, const char16_t *b, size_t l)
 
     // we're going to read a[0..15] and b[0..15] (32 bytes)
     for ( ; end - a >= offset + 16; offset += 16) {
-#ifdef __AVX2__
-        __m256i a_data = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(a + offset));
-        __m256i b_data = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(b + offset));
-        __m256i result = _mm256_cmpeq_epi16(a_data, b_data);
-        uint mask = _mm256_movemask_epi8(result);
-#else
-        __m128i a_data1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(a + offset));
-        __m128i a_data2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(a + offset + 8));
-        __m128i b_data1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(b + offset));
-        __m128i b_data2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(b + offset + 8));
-        __m128i result1 = _mm_cmpeq_epi16(a_data1, b_data1);
-        __m128i result2 = _mm_cmpeq_epi16(a_data2, b_data2);
-        uint mask = _mm_movemask_epi8(result1) | (_mm_movemask_epi8(result2) << 16);
-#endif
+        uint mask;
+        if constexpr (UseAvx2) {
+            __m256i a_data = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(a + offset));
+            __m256i b_data = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(b + offset));
+            __m256i result = _mm256_cmpeq_epi16(a_data, b_data);
+            mask = _mm256_movemask_epi8(result);
+        } else {
+            __m128i a_data1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(a + offset));
+            __m128i a_data2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(a + offset + 8));
+            __m128i b_data1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(b + offset));
+            __m128i b_data2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(b + offset + 8));
+            __m128i result1 = _mm_cmpeq_epi16(a_data1, b_data1);
+            __m128i result2 = _mm_cmpeq_epi16(a_data2, b_data2);
+            mask = _mm_movemask_epi8(result1) | (_mm_movemask_epi8(result2) << 16);
+        }
         mask = ~mask;
         if (mask) {
             // found a different character
@@ -1252,30 +1272,31 @@ static int ucstrncmp(const char16_t *a, const char *b, size_t l)
     for ( ; uc + offset + 15 < e; offset += 16) {
         // similar to fromLatin1_helper:
         // load 16 bytes of Latin 1 data
+        uint mask;
         __m128i chunk = _mm_loadu_si128((const __m128i*)(c + offset));
 
-#  ifdef __AVX2__
-        // expand Latin 1 data via zero extension
-        __m256i ldata = _mm256_cvtepu8_epi16(chunk);
+        if constexpr (UseAvx2) {
+            // expand Latin 1 data via zero extension
+            __m256i ldata = _mm256_cvtepu8_epi16(chunk);
 
-        // load UTF-16 data and compare
-        __m256i ucdata = _mm256_loadu_si256((const __m256i*)(uc + offset));
-        __m256i result = _mm256_cmpeq_epi16(ldata, ucdata);
+            // load UTF-16 data and compare
+            __m256i ucdata = _mm256_loadu_si256((const __m256i*)(uc + offset));
+            __m256i result = _mm256_cmpeq_epi16(ldata, ucdata);
 
-        uint mask = ~_mm256_movemask_epi8(result);
-#  else
-        // expand via unpacking
-        __m128i firstHalf = _mm_unpacklo_epi8(chunk, nullmask);
-        __m128i secondHalf = _mm_unpackhi_epi8(chunk, nullmask);
+            mask = ~_mm256_movemask_epi8(result);
+        } else {
+            // expand via unpacking
+            __m128i firstHalf = _mm_unpacklo_epi8(chunk, nullmask);
+            __m128i secondHalf = _mm_unpackhi_epi8(chunk, nullmask);
 
-        // load UTF-16 data and compare
-        __m128i ucdata1 = _mm_loadu_si128((const __m128i*)(uc + offset));
-        __m128i ucdata2 = _mm_loadu_si128((const __m128i*)(uc + offset + 8));
-        __m128i result1 = _mm_cmpeq_epi16(firstHalf, ucdata1);
-        __m128i result2 = _mm_cmpeq_epi16(secondHalf, ucdata2);
+            // load UTF-16 data and compare
+            __m128i ucdata1 = _mm_loadu_si128((const __m128i*)(uc + offset));
+            __m128i ucdata2 = _mm_loadu_si128((const __m128i*)(uc + offset + 8));
+            __m128i result1 = _mm_cmpeq_epi16(firstHalf, ucdata1);
+            __m128i result2 = _mm_cmpeq_epi16(secondHalf, ucdata2);
 
-        uint mask = ~(_mm_movemask_epi8(result1) | _mm_movemask_epi8(result2) << 16);
-#  endif
+            mask = ~(_mm_movemask_epi8(result1) | _mm_movemask_epi8(result2) << 16);
+        }
         if (mask) {
             // found a different character
             if (Mode == CompareStringsForEquality)
