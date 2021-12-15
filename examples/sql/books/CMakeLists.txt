@@ -27,10 +27,6 @@ set_target_properties(books PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_include_directories(books PUBLIC
-    .
-)
-
 target_link_libraries(books PUBLIC
     Qt::Core
     Qt::Gui
