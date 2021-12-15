@@ -36,6 +36,9 @@
 #include <QUrl>
 #include <QXmlDefaultHandler>
 #include <QXmlStreamReader>
+#include <QBuffer>
+#include <QStack>
+#include <QtGui/private/qzipreader_p.h>
 
 #include "qc14n.h"
 
@@ -44,6 +47,10 @@ Q_DECLARE_METATYPE(QXmlStreamReader::ReadElementTextBehaviour)
 static const char *const catalogFile = "XML-Test-Suite/xmlconf/finalCatalog.xml";
 static const int expectedRunCount = 1646;
 static const int expectedSkipCount = 532;
+static const char *const xmlconfDir = "XML-Test-Suite/xmlconf/";
+static const char *const xmlDatasetName = "xmltest";
+static const char *const updateFilesDir = "xmltest_updates";
+static const char *const destinationFolder = "/valid/sa/out/";
 
 static inline int best(int a, int b)
 {
@@ -591,6 +598,27 @@ private:
 
 void tst_QXmlStream::initTestCase()
 {
+#ifdef Q_OS_WINRT
+    QSKIP("Skipping the tests because we cannot unzip the data archive from WinRT app");
+#endif
+    // Due to license restrictions, we need to distribute part of the test
+    // suit as a zip archive. So we need to unzip it before running the tests,
+    // and also update some files there.
+    // We also need to remove the unzipped data during cleanup.
+    const QString filesDir(QFINDTESTDATA(xmlconfDir));
+    QZipReader reader(filesDir + xmlDatasetName + ".zip");
+    QVERIFY(reader.isReadable());
+    QVERIFY(reader.extractAll(filesDir));
+    // update files
+    const auto files =
+            QDir(filesDir + updateFilesDir).entryInfoList(QDir::Files | QDir::NoDotAndDotDot);
+    for (const auto &fileInfo : files) {
+        const QString destinationPath =
+                filesDir + xmlDatasetName + destinationFolder + fileInfo.fileName();
+        QFile::remove(destinationPath); // copy will fail if file exists
+        QVERIFY(QFile::copy(fileInfo.filePath(), destinationPath));
+    }
+
     QFile file(QFINDTESTDATA(catalogFile));
     QVERIFY2(file.open(QIODevice::ReadOnly),
              qPrintable(QString::fromLatin1("Failed to open the test suite catalog; %1").arg(file.fileName())));
@@ -600,6 +628,8 @@ void tst_QXmlStream::initTestCase()
 
 void tst_QXmlStream::cleanupTestCase()
 {
+    QDir d(QFINDTESTDATA(xmlconfDir) + xmlDatasetName);
+    d.removeRecursively();
     QFile::remove(QLatin1String("test.xml"));
 }
 
