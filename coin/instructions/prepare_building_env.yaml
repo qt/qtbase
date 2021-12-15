@@ -8,6 +8,24 @@ instructions:
     variableName: CMAKE_GENERATOR
     variableValue: Ninja
 
+  # Set path separator based on host platform.
+  # \ on Windows (double \\ for escaping the backslash)
+  # / on UNIX
+  - type: EnvironmentVariable
+    variableName: CI_PATH_SEP
+    variableValue: "\\"
+    enable_if:
+      condition: property
+      property: host.os
+      equals_value: Windows
+  - type: EnvironmentVariable
+    variableName: CI_PATH_SEP
+    variableValue: "/"
+    disable_if:
+      condition: property
+      property: host.os
+      equals_value: Windows
+
 
   # Export ICC specific env. variables
   - type: Group
