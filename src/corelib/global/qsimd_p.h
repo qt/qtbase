@@ -260,6 +260,20 @@ static_assert(ARCH_HASWELL_MACROS, "Undeclared identifiers indicate which featur
 #    define __haswell__       1
 #  endif
 #  undef ARCH_HASWELL_MACROS
+
+// x86-64 sub-architecture version 4
+//
+// Similar to the above, x86-64-v4 marches the AVX512 variant of the Intel Core
+// 6th generation (codename "Skylake").
+#  define ARCH_SKX_MACROS           (__AVX512F__ + __AVX512BW__ + __AVX512CD__ + __AVX512DQ__ + __AVX512VL__)
+#  if ARCH_SKX_MACROS != 0
+#    if ARCH_SKX_MACROS != 5
+#      error "Please enable all x86-64-v4 extensions; you probably want to use -march=skylake-avx512 or -march=x86-64-v4 instead of -mavx512f"
+#    endif
+static_assert(ARCH_SKX_MACROS, "Undeclared identifiers indicate which features are missing.");
+#    define __skylake_avx512__  1
+#  endif
+#  undef ARCH_SKX_MACROS
 #endif  /* Q_PROCESSOR_X86 */
 
 // NEON intrinsics
@@ -364,6 +378,7 @@ extern "C" {
 typedef uint64_t QCpuFeatureType;
 static const QCpuFeatureType qCompilerCpuFeatures = _compilerCpuFeatures;
 static const QCpuFeatureType CpuFeatureArchHaswell = cpu_haswell;
+static const QCpuFeatureType CpuFeatureArchSkylakeAvx512 = cpu_skylake_avx512;
 #else
 typedef unsigned QCpuFeatureType;
 #endif
