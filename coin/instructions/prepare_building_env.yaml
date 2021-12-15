@@ -425,6 +425,54 @@ instructions:
       property: features
       contains_value: Sccache
 
+  # Specify a custom examples installation directory, so that the built example binaries are not
+  # packaged into the artifact archive together with the Qt libraries.
+  - type: Group
+    instructions:
+      - type: AppendToEnvironmentVariable
+        variableName: COMMON_CMAKE_ARGS
+        variableValue: " -DQT_INTERNAL_EXAMPLES_INSTALL_PREFIX={{unixPathSeparators .BuildDir}}/installed_examples"
+      - type: AppendToEnvironmentVariable
+        variableName: COMMON_TARGET_CMAKE_ARGS
+        variableValue: " -DQT_INTERNAL_EXAMPLES_INSTALL_PREFIX={{unixPathSeparators .BuildDir}}/installed_examples"
+    enable_if:
+      # Only set the custom installation dir if examples are built.
+      condition: or
+      conditions:
+        # qtbase host case
+        - condition: runtime
+          env_var: CONFIGURE_ARGS
+          contains_value: "QT_BUILD_EXAMPLES=ON"
+        # qtbase target case
+        - condition: runtime
+          env_var: TARGET_CONFIGURE_ARGS
+          contains_value: "QT_BUILD_EXAMPLES=ON"
+        # non-qtbase host case
+        - condition: runtime
+          env_var: NON_QTBASE_CONFIGURE_ARGS
+          contains_value: "QT_BUILD_EXAMPLES=ON"
+        # non-qtbase target case
+        - condition: runtime
+          env_var: NON_QTBASE_TARGET_CONFIGURE_ARGS
+          contains_value: "QT_BUILD_EXAMPLES=ON"
+        # Same as above, but for configurations marked with UseConfigure
+        # qtbase host case
+        - condition: runtime
+          env_var: CONFIGURE_ARGS
+          contains_value: "-make examples"
+        # qtbase target case
+        - condition: runtime
+          env_var: TARGET_CONFIGURE_ARGS
+          contains_value: "-make examples"
+        # non-qtbase host case
+        - condition: runtime
+          env_var: NON_QTBASE_CONFIGURE_ARGS
+          contains_value: "-make examples"
+        # non-qtbase target case
+        - condition: runtime
+          env_var: NON_QTBASE_TARGET_CONFIGURE_ARGS
+          contains_value: "-make examples"
+
   - type: SetEnvironmentFromScript
     command: [C:\Utils\emsdk\emsdk_env.bat]
     userMessageOnFailure: "Failed to set emscripten environment"
