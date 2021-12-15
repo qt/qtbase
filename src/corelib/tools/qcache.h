@@ -109,23 +109,6 @@ class QCache
         {
             value = Value(o, cost);
         }
-        static Node create(const Key &k, Value &&t) noexcept(std::is_nothrow_move_assignable_v<Key> && std::is_nothrow_move_assignable_v<T>)
-        {
-            return Node(k, std::move(t));
-        }
-        void replace(const Value &t) noexcept(std::is_nothrow_assignable_v<T, T>)
-        {
-            value = t;
-        }
-        void replace(Value &&t) noexcept(std::is_nothrow_move_assignable_v<T>)
-        {
-            value = std::move(t);
-        }
-        Value takeValue() noexcept(std::is_nothrow_move_constructible_v<T>)
-        {
-            return std::move(value);
-        }
-        bool valuesEqual(const Node *other) const { return value == other->value; }
 
         Node(Node &&other)
             : Chain(other),
