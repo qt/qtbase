@@ -1121,11 +1121,15 @@ bool QWasmCompositor::processMouse(int eventType, const EmscriptenMouseEvent *mo
         lastWindow = nullptr;
         interior = true;
     }
-    bool accepted = true;
+    bool accepted = false;
     if (window2 && interior) {
         accepted = QWindowSystemInterface::handleMouseEvent<QWindowSystemInterface::SynchronousDelivery>(
                 window2, QWasmIntegration::getTimestamp(), localPoint, globalPoint, pressedButtons, button, buttonEventType, modifiers);
     }
+
+    if (eventType == EMSCRIPTEN_EVENT_MOUSEDOWN && !accepted)
+        QGuiApplicationPrivate::instance()->closeAllPopups();
+
     return accepted;
 }
 
