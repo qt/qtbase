@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2021 The Qt Company Ltd.
-** Copyright (C) 2020 Intel Corporation.
+** Copyright (C) 2022 Intel Corporation.
 ** Copyright (C) 2019 Mail.ru Group.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -511,11 +511,9 @@ bool qt_is_ascii(const char *&ptr, const char *end) noexcept
     while (ptr + 4 <= end) {
         quint32 data = qFromUnaligned<quint32>(ptr);
         if (data &= 0x80808080U) {
-#if Q_BYTE_ORDER == Q_BIG_ENDIAN
-            uint idx = qCountLeadingZeroBits(data);
-#else
-            uint idx = qCountTrailingZeroBits(data);
-#endif
+            uint idx = QSysInfo::ByteOrder == QSysInfo::BigEndian
+                    ? qCountLeadingZeroBits(data)
+                    : qCountTrailingZeroBits(data);
             ptr += idx / 8;
             return false;
         }
