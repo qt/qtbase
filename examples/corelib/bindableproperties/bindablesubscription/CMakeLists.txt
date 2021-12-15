@@ -20,7 +20,6 @@ find_package(Qt6 COMPONENTS Widgets)
 qt_add_executable(bindablesubscription
     ../shared/subscriptionwindow.cpp ../shared/subscriptionwindow.h ../shared/subscriptionwindow.ui
     main.cpp
-    main.cpp
     bindablesubscription.cpp bindablesubscription.h
     bindableuser.cpp bindableuser.h
 )
