@@ -25,10 +25,6 @@ set_target_properties(openglwindow PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_include_directories(openglwindow PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}
-)
-
 target_link_libraries(openglwindow PUBLIC
     Qt::Core
     Qt::Gui

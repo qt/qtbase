@@ -25,10 +25,6 @@ set_target_properties(qopenglwindow PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_include_directories(qopenglwindow PUBLIC
-    .
-)
-
 target_link_libraries(qopenglwindow PUBLIC
     Qt::Core
     Qt::Gui
