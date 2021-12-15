@@ -358,6 +358,28 @@ instructions:
       property: features
       contains_value: WarningsAreErrors
 
+  - type: Group
+    instructions:
+      - type: AppendToEnvironmentVariable
+        variableName: CONFIGURE_ARGS
+        variableValue: " -DQT_BUILD_TESTS=OFF -DCMAKE_AUTOGEN_VERBOSE=ON"
+      - type: AppendToEnvironmentVariable
+        variableName: NON_QTBASE_CONFIGURE_ARGS
+        variableValue: " -DQT_BUILD_TESTS=OFF -DCMAKE_AUTOGEN_VERBOSE=ON"
+      - type: AppendToEnvironmentVariable
+        variableName: TEST_CONFIGURE_ARGS
+        variableValue: " -DCMAKE_AUTOGEN_VERBOSE=ON"
+
+      - type: AppendToEnvironmentVariable
+        variableName: TARGET_CONFIGURE_ARGS
+        variableValue: " -DQT_BUILD_TESTS=OFF -DCMAKE_AUTOGEN_VERBOSE=ON"
+      - type: AppendToEnvironmentVariable
+        variableName: NON_QTBASE_TARGET_CONFIGURE_ARGS
+        variableValue: " -DQT_BUILD_TESTS=OFF -DCMAKE_AUTOGEN_VERBOSE=ON"
+      - type: AppendToEnvironmentVariable
+        variableName: TARGET_TEST_CONFIGURE_ARGS
+        variableValue: " -DCMAKE_AUTOGEN_VERBOSE=ON"
+
   # Sccache
   - type: Group
     instructions:
