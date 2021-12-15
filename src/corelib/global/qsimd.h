@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2020 The Qt Company Ltd.
-** Copyright (C) 2018 Intel Corporation.
+** Copyright (C) 2022 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -89,20 +89,20 @@
 #  define QT_COMPILER_USES_mips_dspr2 -1
 #endif
 
-#if defined(Q_PROCESSOR_X86)
-#if defined(Q_CC_MSVC)
+#if defined(Q_PROCESSOR_X86) && defined(Q_CC_MSVC)
 // MSVC doesn't define __SSE2__, so do it ourselves
 #  if (defined(_M_X64) || _M_IX86_FP >= 2)
 #    define __SSE__ 1
 #    define __SSE2__ 1
 #  endif
-#if (defined(_M_AVX) || defined(__AVX__))
+#  if (defined(_M_AVX) || defined(__AVX__))
 // Visual Studio defines __AVX__ when /arch:AVX is passed, but not the earlier macros
 // See: https://msdn.microsoft.com/en-us/library/b0084kay.aspx
 #    define __SSE3__                        1
 #    define __SSSE3__                       1
 #    define __SSE4_1__                      1
 #    define __SSE4_2__                      1
+#    define __POPCNT__                      1
 #    ifndef __AVX__
 #      define __AVX__                       1
 #    endif
@@ -110,7 +110,15 @@
 #  ifdef __SSE2__
 #    define QT_VECTORCALL __vectorcall
 #  endif
-#endif
+#  ifdef __AVX2__
+// MSVC defines __AVX2__ with /arch:AVX2
+#    define __F16C__                        1
+#    define __FMA__                         1
+#    define __BMI__                         1
+#    define __BMI2__                        1
+#    define __LZCNT__                       1
+#  endif
+// Starting with /arch:AVX512, MSVC defines all the macros
 #endif
 
 #if defined(Q_PROCESSOR_X86) && defined(__SSE2__)

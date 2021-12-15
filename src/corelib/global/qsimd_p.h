@@ -198,33 +198,8 @@
 #   include <immintrin.h>
 # endif
 
-#  if defined(__SSE4_2__) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS) && (defined(Q_CC_INTEL) || defined(Q_CC_MSVC))
-// POPCNT instructions:
-// All processors that support SSE4.2 support POPCNT
-// (but neither MSVC nor the Intel compiler define this macro)
-#    define __POPCNT__                      1
-#  endif
-
-// AVX intrinsics
-#  if defined(__AVX__) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS) && (defined(Q_CC_INTEL) || defined(Q_CC_MSVC))
-// PCLMULQDQ instructions:
-// All processors that support AVX support PCLMULQDQ
-// (but neither MSVC nor the Intel compiler define this macro)
-#    define __PCLMUL__                      1
-#  endif
-
-#  if defined(__AVX2__) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS) && (defined(Q_CC_INTEL) || defined(Q_CC_MSVC))
-// F16C instructions:
-// All processors that support AVX2 support F16C:
-// (but neither MSVC nor the Intel compiler define this macro)
-#    define __F16C__                        1
-#  endif
-
-#  if defined(__BMI__) && !defined(__BMI2__) && defined(Q_CC_INTEL)
-// BMI2 instructions:
-// All processors that support BMI support BMI2 (and AVX2)
-// (but neither MSVC nor the Intel compiler define this macro)
-#    define __BMI2__                        1
+#  if defined(Q_CC_GNU) && defined(__AVX2__) && (!defined(__BMI__) || !defined(__FMA__))
+#    error "Please enable the BMI and FMA extensions; you probably want to use -march=haswell or -march=x86-64-v3 instead of -mavx2"
 #  endif
 
 #  include "qsimd_x86_p.h"
