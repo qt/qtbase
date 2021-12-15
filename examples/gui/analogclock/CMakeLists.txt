@@ -13,7 +13,7 @@ endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/gui/gui_analogclock")
 
-find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui)
 
 qt_add_executable(gui_analogclock
     ../rasterwindow/rasterwindow.cpp ../rasterwindow/rasterwindow.h
@@ -27,10 +27,6 @@ set_target_properties(gui_analogclock PROPERTIES
 
 target_include_directories(gui_analogclock PUBLIC
     ../rasterwindow
-)
-
-target_link_libraries(gui_analogclock PUBLIC
-    Qt::Gui
 )
 
 target_link_libraries(gui_analogclock PUBLIC
