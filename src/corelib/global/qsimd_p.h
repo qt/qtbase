@@ -55,6 +55,11 @@
 #include <QtCore/private/qglobal_p.h>
 #include <QtCore/qsimd.h>
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_CLANG("-Wundef")
+QT_WARNING_DISABLE_GCC("-Wundef")
+QT_WARNING_DISABLE_INTEL(103)
+
 #define ALIGNMENT_PROLOGUE_16BYTES(ptr, i, length) \
     for (; i < static_cast<int>(qMin(static_cast<quintptr>(length), ((4 - ((reinterpret_cast<quintptr>(ptr) >> 2) & 0x3)) & 0x3))); ++i)
 
@@ -233,26 +238,28 @@ asm(
 #   include <immintrin.h>
 # endif
 
-#  if defined(Q_CC_GNU) && defined(__AVX2__) && (!defined(__BMI__) || !defined(__FMA__))
-#    error "Please enable the BMI and FMA extensions; you probably want to use -march=haswell or -march=x86-64-v3 instead of -mavx2"
-#  endif
-
 #  include "qsimd_x86_p.h"
 
-// Haswell sub-architecture
+// x86-64 sub-architecture version 3
 //
 // The Intel Core 4th generation was codenamed "Haswell" and introduced AVX2,
 // BMI1, BMI2, FMA, LZCNT, MOVBE, which makes it a good divider for a
 // sub-target for us. The first AMD processor with AVX2 support (Zen) has the
-// same features.
+// same features. This feature set was chosen as the version 3 of the x86-64
+// ISA (x86-64-v3) and is supported by GCC and Clang.
 //
 // macOS's fat binaries support the "x86_64h" sub-architecture and the GNU libc
 // ELF loader also supports a "haswell/" subdir (e.g., /usr/lib/haswell).
 #  define QT_FUNCTION_TARGET_STRING_ARCH_HASWELL    "arch=haswell"
-#  if defined(__AVX2__) && defined(__BMI__) && defined(__BMI2__) && defined(__F16C__) && \
-    defined(__FMA__) && defined(__LZCNT__) && defined(__RDRND__)
+#  define ARCH_HASWELL_MACROS       (__AVX2__ + __BMI__ + __BMI2__ + __F16C__ + __FMA__ + __LZCNT__)
+#  if ARCH_HASWELL_MACROS != 0
+#    if ARCH_HASWELL_MACROS != 6
+#      error "Please enable all x86-64-v3 extensions; you probably want to use -march=haswell or -march=x86-64-v3 instead of -mavx2"
+#    endif
+static_assert(ARCH_HASWELL_MACROS, "Undeclared identifiers indicate which features are missing.");
 #    define __haswell__       1
 #  endif
+#  undef ARCH_HASWELL_MACROS
 #endif  /* Q_PROCESSOR_X86 */
 
 // NEON intrinsics
@@ -400,5 +407,7 @@ static inline bool qHasHwrng()
 QT_END_NAMESPACE
 
 #endif // __cplusplus
+
+QT_WARNING_POP
 
 #endif // QSIMD_P_H
