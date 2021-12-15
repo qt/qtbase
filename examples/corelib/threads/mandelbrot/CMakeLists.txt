@@ -32,12 +32,6 @@ target_link_libraries(mandelbrot PUBLIC
     Qt::Widgets
 )
 
-if(UNIX AND NOT APPLE AND NOT HAIKU AND NOT INTEGRITY AND NOT VXWORKS)
-    target_link_libraries(mandelbrot PUBLIC
-        m
-    )
-endif()
-
 install(TARGETS mandelbrot
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
