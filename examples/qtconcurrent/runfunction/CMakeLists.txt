@@ -19,11 +19,6 @@ qt_add_executable(runfunction
     main.cpp
 )
 
-set_target_properties(runfunction PROPERTIES
-    WIN32_EXECUTABLE FALSE
-    MACOSX_BUNDLE FALSE
-)
-
 target_link_libraries(runfunction PUBLIC
     Qt::Concurrent
     Qt::Core

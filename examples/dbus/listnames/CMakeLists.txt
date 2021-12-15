@@ -19,21 +19,10 @@ qt_add_executable(listnames
     listnames.cpp
 )
 
-set_target_properties(listnames PROPERTIES
-    WIN32_EXECUTABLE TRUE
-    MACOSX_BUNDLE TRUE
-)
-
 target_link_libraries(listnames PUBLIC
     Qt::Core
     Qt::DBus
 )
-
-if(WIN32)
-    set_target_properties(listnames PROPERTIES
-        WIN32_EXECUTABLE FALSE
-    )
-endif()
 
 install(TARGETS listnames
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"

@@ -21,11 +21,6 @@ qt_add_executable(downloadmanager
     textprogressbar.cpp textprogressbar.h
 )
 
-set_target_properties(downloadmanager PROPERTIES
-    WIN32_EXECUTABLE FALSE
-    MACOSX_BUNDLE FALSE
-)
-
 target_link_libraries(downloadmanager PUBLIC
     Qt::Core
     Qt::Network
