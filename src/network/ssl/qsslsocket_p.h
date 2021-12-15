@@ -74,7 +74,7 @@ QT_BEGIN_NAMESPACE
 class QSslContext;
 class QTlsBackend;
 
-class QSslSocketPrivate : public QTcpSocketPrivate
+class Q_NETWORK_EXPORT QSslSocketPrivate : public QTcpSocketPrivate
 {
     Q_DECLARE_PUBLIC(QSslSocket)
 public:
@@ -103,7 +103,7 @@ public:
     static bool s_loadRootCertsOnDemand;
 
     static bool supportsSsl();
-    Q_NETWORK_EXPORT static void ensureInitialized();
+    static void ensureInitialized();
 
     static QList<QSslCipher> defaultCiphers();
     static QList<QSslCipher> defaultDtlsCiphers();
@@ -117,23 +117,23 @@ public:
     static void resetDefaultEllipticCurves();
 
     static QList<QSslCertificate> defaultCaCertificates();
-    Q_NETWORK_EXPORT static QList<QSslCertificate> systemCaCertificates();
+    static QList<QSslCertificate> systemCaCertificates();
     static void setDefaultCaCertificates(const QList<QSslCertificate> &certs);
     static void addDefaultCaCertificate(const QSslCertificate &cert);
     static void addDefaultCaCertificates(const QList<QSslCertificate> &certs);
-    Q_AUTOTEST_EXPORT static bool isMatchingHostname(const QSslCertificate &cert, const QString &peerName);
-    Q_AUTOTEST_EXPORT static bool isMatchingHostname(const QString &cn, const QString &hostname);
+    static bool isMatchingHostname(const QSslCertificate &cert, const QString &peerName);
+    static bool isMatchingHostname(const QString &cn, const QString &hostname);
 
     // The socket itself, including private slots.
     QTcpSocket *plainSocket = nullptr;
     void createPlainSocket(QIODevice::OpenMode openMode);
-    Q_NETWORK_EXPORT static void pauseSocketNotifiers(QSslSocket*);
-    Q_NETWORK_EXPORT static void resumeSocketNotifiers(QSslSocket*);
+    static void pauseSocketNotifiers(QSslSocket*);
+    static void resumeSocketNotifiers(QSslSocket*);
     // ### The 2 methods below should be made member methods once the QSslContext class is made public
     static void checkSettingSslContext(QSslSocket*, std::shared_ptr<QSslContext>);
     static std::shared_ptr<QSslContext> sslContext(QSslSocket *socket);
-    Q_NETWORK_EXPORT bool isPaused() const;
-    Q_NETWORK_EXPORT void setPaused(bool p);
+    bool isPaused() const;
+    void setPaused(bool p);
     bool bind(const QHostAddress &address, quint16, QAbstractSocket::BindMode) override;
     void _q_connectedSlot();
     void _q_hostFoundSlot();
@@ -149,7 +149,7 @@ public:
     void _q_flushReadBuffer();
     void _q_resumeImplementation();
 
-    Q_NETWORK_PRIVATE_EXPORT static QList<QByteArray> unixRootCertDirectories(); // used also by QSslContext
+    static QList<QByteArray> unixRootCertDirectories(); // used also by QSslContext
 
     qint64 peek(char *data, qint64 maxSize) override;
     QByteArray peek(qint64 maxSize) override;
@@ -164,28 +164,28 @@ public:
     QSsl::SslProtocol sessionProtocol() const;
     void continueHandshake();
 
-    Q_NETWORK_PRIVATE_EXPORT static bool rootCertOnDemandLoadingSupported();
-    Q_NETWORK_PRIVATE_EXPORT static void setRootCertOnDemandLoadingSupported(bool supported);
+    static bool rootCertOnDemandLoadingSupported();
+    static void setRootCertOnDemandLoadingSupported(bool supported);
 
     static QTlsBackend *tlsBackendInUse();
 
     // Needed by TlsCryptograph:
-    Q_NETWORK_PRIVATE_EXPORT QSslSocket::SslMode tlsMode() const;
-    Q_NETWORK_PRIVATE_EXPORT bool isRootsOnDemandAllowed() const;
-    Q_NETWORK_PRIVATE_EXPORT QString verificationName() const;
-    Q_NETWORK_PRIVATE_EXPORT QString tlsHostName() const;
-    Q_NETWORK_PRIVATE_EXPORT QTcpSocket *plainTcpSocket() const;
-    Q_NETWORK_PRIVATE_EXPORT bool verifyErrorsHaveBeenIgnored();
-    Q_NETWORK_PRIVATE_EXPORT bool isAutoStartingHandshake() const;
-    Q_NETWORK_PRIVATE_EXPORT bool isPendingClose() const;
-    Q_NETWORK_PRIVATE_EXPORT void setPendingClose(bool pc);
-    Q_NETWORK_PRIVATE_EXPORT qint64 maxReadBufferSize() const;
-    Q_NETWORK_PRIVATE_EXPORT void setMaxReadBufferSize(qint64 maxSize);
-    Q_NETWORK_PRIVATE_EXPORT void setEncrypted(bool enc);
-    Q_NETWORK_PRIVATE_EXPORT QRingBufferRef &tlsWriteBuffer();
-    Q_NETWORK_PRIVATE_EXPORT QRingBufferRef &tlsBuffer();
-    Q_NETWORK_PRIVATE_EXPORT bool &tlsEmittedBytesWritten();
-    Q_NETWORK_PRIVATE_EXPORT bool *readyReadPointer();
+    QSslSocket::SslMode tlsMode() const;
+    bool isRootsOnDemandAllowed() const;
+    QString verificationName() const;
+    QString tlsHostName() const;
+    QTcpSocket *plainTcpSocket() const;
+    bool verifyErrorsHaveBeenIgnored();
+    bool isAutoStartingHandshake() const;
+    bool isPendingClose() const;
+    void setPendingClose(bool pc);
+    qint64 maxReadBufferSize() const;
+    void setMaxReadBufferSize(qint64 maxSize);
+    void setEncrypted(bool enc);
+    QRingBufferRef &tlsWriteBuffer();
+    QRingBufferRef &tlsBuffer();
+    bool &tlsEmittedBytesWritten();
+    bool *readyReadPointer();
 
 protected:
 
