@@ -995,7 +995,7 @@ defineTest(qtConfOutput_architecture) {
     macos {
         eval($$config.input.qmakeArgs)
         apple_archs = $$QMAKE_APPLE_DEVICE_ARCHS
-        isEmpty(apple_archs): apple_archs = "\$\$ARCH"
+        isEmpty(apple_archs): apple_archs = "\$\$QT_ARCH"
     }
 
     $$qtConfEvaluate("features.cross_compile") {
