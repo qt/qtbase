@@ -921,7 +921,7 @@ void QCompleterPrivate::_q_autoResizePopup()
 
 void QCompleterPrivate::showPopup(const QRect& rect)
 {
-    const QRect screen = QWidgetPrivate::availableScreenGeometry(widget);
+    const QRect screen = widget->screen()->availableGeometry();
     Qt::LayoutDirection dir = widget->layoutDirection();
     QPoint pos;
     int rh, w;
