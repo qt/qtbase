@@ -118,6 +118,13 @@ VERS_1;
         set(CMAKE_REQUIRED_FLAGS "")
     endif()
     set(CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS} "-Wl,--version-script=\"${CMAKE_CURRENT_BINARY_DIR}/version_flag.map\"")
+
+    # Pass the linker that the main project uses to the version script compile test.
+    qt_internal_get_active_linker_flags(linker_flags)
+    if(linker_flags)
+        set(CMAKE_REQUIRED_LINK_OPTIONS ${linker_flags})
+    endif()
+
     check_cxx_source_compiles("int main(void){return 0;}" HAVE_LD_VERSION_SCRIPT)
     if(DEFINED CMAKE_REQUIRED_FLAGS_SAVE)
         set(CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS_SAVE})
@@ -164,7 +171,6 @@ endfunction()
 
 function(qt_run_qtbase_config_tests)
     qt_run_config_test_architecture()
-    qt_run_linker_version_script_support()
     qt_internal_ensure_latest_win_nt_api()
 endfunction()
 
