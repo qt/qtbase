@@ -2160,8 +2160,10 @@ QByteArray &QByteArray::replace(qsizetype pos, qsizetype len, QByteArrayView aft
         return replace(pos, len, QByteArrayView{copy});
     }
     if (len == after.size() && (pos + len <= size())) {
+        // same size: in-place replacement possible
         detach();
-        memcpy(d.data() + pos, after.data(), len*sizeof(char));
+        if (len > 0)
+            memcpy(d.data() + pos, after.data(), len*sizeof(char));
         return *this;
     } else {
         // ### optimize me
