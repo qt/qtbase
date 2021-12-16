@@ -130,7 +130,7 @@ private:
 Q_DECLARE_TYPEINFO ( QSpanCollection::Span, Q_RELOCATABLE_TYPE);
 
 
-class QTableViewPrivate : public QAbstractItemViewPrivate
+class Q_AUTOTEST_EXPORT QTableViewPrivate : public QAbstractItemViewPrivate
 {
     Q_DECLARE_PUBLIC(QTableView)
 public:

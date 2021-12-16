@@ -121,7 +121,7 @@ private:
 };
 } // namespace QMdi
 
-class QMdiSubWindowPrivate : public QWidgetPrivate
+class Q_AUTOTEST_EXPORT QMdiSubWindowPrivate : public QWidgetPrivate
 {
     Q_DECLARE_PUBLIC(QMdiSubWindow)
 public:
