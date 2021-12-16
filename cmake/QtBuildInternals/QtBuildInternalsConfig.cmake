@@ -1086,6 +1086,7 @@ function(qt_internal_add_example_external_project subdir)
     # E.g. ensure qtbase/examples/widgets/widgets/wiggly is installed to
     # $qt_example_install_prefix/examples/widgets/widgets/wiggly/wiggly.exe
     # $qt_example_install_prefix defaults to ${CMAKE_INSTALL_PREFIX}/${INSTALL_EXAMPLEDIR}
+    # but can also be set to a custom location.
     # This needs to work both:
     #  - when using ExternalProject to build examples
     #  - when examples are built in-tree as part of Qt (no ExternalProject).
@@ -1112,7 +1113,13 @@ function(qt_internal_add_example_external_project subdir)
     #    example_source_dir, use _qt_internal_override_example_install_dir_to_dot to ensure
     #    INSTALL_EXAMPLEDIR does not interfere.
 
-    set(qt_example_install_prefix "${CMAKE_INSTALL_PREFIX}/${INSTALL_EXAMPLESDIR}")
+    # Allow installing somewhere under the build dir.
+    if(QT_INTERNAL_CUSTOM_INSTALL_DIR)
+        set(qt_example_install_prefix "${QT_INTERNAL_CUSTOM_INSTALL_DIR}")
+    else()
+        set(qt_example_install_prefix "${CMAKE_INSTALL_PREFIX}/${INSTALL_EXAMPLESDIR}")
+    endif()
+
     set(example_install_prefix "${qt_example_install_prefix}/${example_rel_path}")
 
     set(ep_binary_dir    "${CMAKE_CURRENT_BINARY_DIR}/${subdir}")
