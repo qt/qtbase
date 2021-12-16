@@ -320,8 +320,8 @@ void *QThreadPrivate::start(void *arg)
             QMutexLocker locker(&thr->d_func()->mutex);
 
             // do we need to reset the thread priority?
-            if (qToUnderlying(thr->d_func()->priority) & ThreadPriorityResetFlag) {
-                thr->d_func()->setPriority(QThread::Priority(qToUnderlying(thr->d_func()->priority) & ~ThreadPriorityResetFlag));
+            if (thr->d_func()->priority & ThreadPriorityResetFlag) {
+                thr->d_func()->setPriority(QThread::Priority(thr->d_func()->priority & ~ThreadPriorityResetFlag));
             }
 
             // threadId is set in QThread::start()
@@ -678,7 +678,7 @@ void QThread::start(Priority priority)
                 // could not set scheduling hints, fallback to inheriting them
                 // we'll try again from inside the thread
                 pthread_attr_setinheritsched(&attr, PTHREAD_INHERIT_SCHED);
-                d->priority = Priority(qToUnderlying(priority) | ThreadPriorityResetFlag);
+                d->priority = qToUnderlying(priority) | ThreadPriorityResetFlag;
             }
             break;
         }

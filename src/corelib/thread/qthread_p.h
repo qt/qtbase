@@ -164,7 +164,7 @@ public:
     int returnCode;
 
     uint stackSize;
-    QThread::Priority priority;
+    std::underlying_type_t<QThread::Priority> priority;
 
 #ifdef Q_OS_UNIX
     QWaitCondition thread_done;
