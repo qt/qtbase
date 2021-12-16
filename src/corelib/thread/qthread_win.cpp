@@ -457,7 +457,7 @@ void QThread::start(Priority priority)
 
     int prio;
     d->priority = priority;
-    switch (d->priority) {
+    switch (priority) {
     case IdlePriority:
         prio = THREAD_PRIORITY_IDLE;
         break;
@@ -584,7 +584,7 @@ void QThreadPrivate::setPriority(QThread::Priority threadPriority)
 
     int prio;
     priority = threadPriority;
-    switch (priority) {
+    switch (threadPriority) {
     case QThread::IdlePriority:
         prio = THREAD_PRIORITY_IDLE;
         break;
