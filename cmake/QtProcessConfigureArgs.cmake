@@ -151,7 +151,7 @@ defstub(qt_find_package)
 defstub(set_package_properties)
 defstub(qt_qml_find_python)
 defstub(qt_set01)
-
+defstub(qt_internal_check_if_linker_is_available)
 
 ####################################################################################################
 # Define functions/macros that are called in qt_cmdline.cmake files
