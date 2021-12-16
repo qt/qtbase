@@ -291,16 +291,16 @@ void tst_QPropertyAnimation::statesAndSignals_data()
 void tst_QPropertyAnimation::statesAndSignals()
 {
     QFETCH(bool, uncontrolled);
-    QPropertyAnimation *anim;
+    std::unique_ptr<QPropertyAnimation> anim;
     if (uncontrolled)
-        anim = new UncontrolledAnimation;
+        anim = std::make_unique<UncontrolledAnimation>();
     else
-        anim = new DummyPropertyAnimation;
+        anim = std::make_unique<DummyPropertyAnimation>();
     anim->setDuration(100);
 
-    QSignalSpy finishedSpy(anim, &QPropertyAnimation::finished);
-    QSignalSpy runningSpy(anim, &QPropertyAnimation::stateChanged);
-    QSignalSpy currentLoopSpy(anim, &QPropertyAnimation::currentLoopChanged);
+    QSignalSpy finishedSpy(anim.get(), &QPropertyAnimation::finished);
+    QSignalSpy runningSpy(anim.get(), &QPropertyAnimation::stateChanged);
+    QSignalSpy currentLoopSpy(anim.get(), &QPropertyAnimation::currentLoopChanged);
 
     QVERIFY(finishedSpy.isValid());
     QVERIFY(runningSpy.isValid());
@@ -371,8 +371,6 @@ void tst_QPropertyAnimation::statesAndSignals()
         QCOMPARE(runningSpy.count(), 1); // anim has stopped
         QCOMPARE(finishedSpy.count(), 2);
         QCOMPARE(anim->currentLoopTime(), 100);
-
-        delete anim;
     }
 }
 
@@ -461,7 +459,8 @@ void tst_QPropertyAnimation::deletion3()
 {
     //test that the stopped signal is emit when the animation is destroyed
     TestAnimationDriver timeDriver;
-    QObject *object = new QWidget;
+    QWidget w;
+    QObject *object = &w;
     QPropertyAnimation *anim = new QPropertyAnimation(object,"minimumWidth");
     anim->setStartValue(10);
     anim->setEndValue(20);
@@ -1336,8 +1335,8 @@ void tst_QPropertyAnimation::totalDuration()
 
 void tst_QPropertyAnimation::zeroLoopCount()
 {
-    DummyPropertyAnimation* anim;
-    anim = new DummyPropertyAnimation;
+    DummyPropertyAnimation animation;
+    auto *anim = &animation;
     anim->setStartValue(0);
     anim->setDuration(20);
     anim->setLoopCount(0);
