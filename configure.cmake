@@ -24,17 +24,17 @@ qt_find_package(Libudev PROVIDED_TARGETS PkgConfig::Libudev MODULE_NAME global Q
 
 #### Early-evaluated, Linker-related Tests and Features
 
-qt_config_compiler_supports_flag_test(use_bfd_linker
+qt_internal_check_if_linker_is_available(use_bfd_linker
     LABEL "bfd linker"
     FLAG "-fuse-ld=bfd"
     )
 
-qt_config_compiler_supports_flag_test(use_gold_linker
+qt_internal_check_if_linker_is_available(use_gold_linker
     LABEL "gold linker"
     FLAG "-fuse-ld=gold"
     )
 
-qt_config_compiler_supports_flag_test(use_lld_linker
+qt_internal_check_if_linker_is_available(use_lld_linker
     LABEL "lld linker"
     FLAG "-fuse-ld=lld"
     )
