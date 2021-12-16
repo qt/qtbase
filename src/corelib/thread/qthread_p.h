@@ -174,7 +174,7 @@ public:
     int returnCode;
 
     uint stackSize;
-    QThread::Priority priority;
+    std::underlying_type<QThread::Priority>::type priority;
 
     static QThread *threadForId(int id);
 
