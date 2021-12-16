@@ -2170,7 +2170,7 @@ QByteArray &QByteArray::replace(qsizetype pos, qsizetype len, QByteArrayView aft
     }
     if (len == after.size() && (pos + len <= size())) {
         detach();
-        memmove(d.data() + pos, after.data(), len*sizeof(char));
+        memcpy(d.data() + pos, after.data(), len*sizeof(char));
         return *this;
     } else {
         // ### optimize me
