@@ -474,6 +474,7 @@ bool qt_is_ascii(const char *&ptr, const char *end) noexcept
 {
 #if defined(__SSE2__)
     // Testing for the high bit can be done efficiently with just PMOVMSKB
+    bool loops = true;
 #  if defined(__AVX2__)
     while (ptr + 32 <= end) {
         __m256i data = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(ptr));
@@ -485,7 +486,9 @@ bool qt_is_ascii(const char *&ptr, const char *end) noexcept
         }
         ptr += 32;
     }
+    loops = false;
 #  endif
+
     while (ptr + 16 <= end) {
         __m128i data = _mm_loadu_si128(reinterpret_cast<const __m128i *>(ptr));
         quint32 mask = _mm_movemask_epi8(data);
@@ -495,6 +498,9 @@ bool qt_is_ascii(const char *&ptr, const char *end) noexcept
             return false;
         }
         ptr += 16;
+
+        if (!loops)
+            break;
     }
     if (ptr + 8 <= end) {
         __m128i data = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(ptr));
