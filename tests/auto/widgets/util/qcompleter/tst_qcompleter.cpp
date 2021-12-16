@@ -145,6 +145,7 @@ private slots:
     void QTBUG_14292_filesystem();
     void QTBUG_52028_tabAutoCompletes();
     void QTBUG_51889_activatedSentTwice();
+    void showPopupInGraphicsView();
 
 private:
     void filter(bool assync = false);
@@ -1826,6 +1827,37 @@ void tst_QCompleter::QTBUG_51889_activatedSentTwice()
     QTRY_VERIFY(cbox.completer()->popup()->isVisible());
     QTest::keyClick(&cbox, Qt::Key_Return);
     QTRY_COMPARE(activatedSpy.count(), 1);
+}
+
+void tst_QCompleter::showPopupInGraphicsView()
+{
+    QGraphicsView view;
+    QGraphicsScene scene;
+    view.setScene(&scene);
+
+    QLineEdit lineEdit;
+    lineEdit.setCompleter(new QCompleter({"alpha", "omega", "omicron", "zeta"}));
+    scene.addWidget(&lineEdit);
+
+    view.move(view.screen()->availableGeometry().topLeft() + QPoint(10, 10));
+    view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+
+    // show popup under line edit
+    QTest::keyClick(&lineEdit, Qt::Key_A);
+    QVERIFY(lineEdit.completer()->popup());
+    QVERIFY(lineEdit.completer()->popup()->isVisible());
+    QCOMPARE(lineEdit.completer()->popup()->geometry().x(), lineEdit.mapToGlobal(QPoint(0, 0)).x());
+    QVERIFY(lineEdit.completer()->popup()->geometry().top() >= (lineEdit.mapToGlobal(QPoint(0, lineEdit.height() - 1)).y() - 1));
+
+    // move widget to the bottom of screen
+    lineEdit.clear();
+    int y = view.screen()->availableGeometry().height() - lineEdit.geometry().y();
+    view.move(view.geometry().x(), y);
+
+    // show popup above line edit
+    QTest::keyClick(&lineEdit, Qt::Key_A);
+    QVERIFY(lineEdit.completer()->popup()->geometry().bottom() < lineEdit.mapToGlobal(QPoint(0, 0)).y());
 }
 
 QTEST_MAIN(tst_QCompleter)
