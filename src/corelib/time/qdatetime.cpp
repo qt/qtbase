@@ -75,6 +75,7 @@
 
 #include "qcalendar.h"
 #include "qgregoriancalendar_p.h"
+#include "private/qnumeric_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -1429,9 +1430,11 @@ QDate QDate::addDays(qint64 ndays) const
     if (isNull())
         return QDate();
 
-    // Due to limits on minJd() and maxJd() we know that any overflow
-    // will be invalid and caught by fromJulianDay().
-    return fromJulianDay(jd + ndays);
+    qint64 r;
+    if (Q_UNLIKELY(add_overflow(jd, ndays, &r)))
+        return QDate();
+    else
+        return fromJulianDay(r);
 }
 
 /*!
