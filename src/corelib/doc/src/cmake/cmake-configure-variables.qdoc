@@ -103,6 +103,82 @@ out as part of the deployment settings for a target.
 */
 
 /*!
+\page cmake-variable-QT_ANDROID_BUILD_ALL_ABIS.html
+\ingroup cmake-variables
+\ingroup cmake-variables-qtcore
+
+\title QT_ANDROID_BUILD_ALL_ABIS
+\target cmake-variable-QT_ANDROID_BUILD_ALL_ABIS
+
+\summary {Enables building multi-ABI packages using the autodetected Qt for Android SDK list.}
+
+\preliminarycmakevariable
+\cmakevariableandroidonly
+
+The option automatically detects available ABIs of Qt for Android and uses them to
+build a package. The automatic detection expects the default directory structure
+supplied by the Qt installer, with the corresponding naming of the directories.
+The typical directory structure looks as below:
+\badcode
+/path/to/Qt/6.x.x
+    android_armv7
+    android_arm64_v8a
+    android_x86
+    android_x86_64
+    ...
+\endcode
+The auto-detected paths can be customized using one of \c{QT_PATH_ANDROID_ABI_<ABI>} variables.
+
+The variable is set to FALSE by default.
+
+\sa{QT_PATH_ANDROID_ABI_<ABI>}
+*/
+
+/*!
+\page cmake-variable-QT_ANDROID_ABIS.html
+\ingroup cmake-variables
+\ingroup cmake-variables-qtcore
+
+\title QT_ANDROID_ABIS
+\target cmake-variable-QT_ANDROID_ABIS
+
+\summary {List of ABIs that the project packages are built for.}
+
+\preliminarycmakevariable
+\cmakevariableandroidonly
+
+This variable specifies a list of ABIs to be used to build the project packages. The
+supported ABIs: \c{armeabi-v7a, arm64-v8a, x86, x86_64}. Each ABI should have the
+corresponding Qt for Android either installed or user-built. It's possible to
+specify the path to the Qt for Android ABI using the corresponding
+\c{QT_PATH_ANDROID_ABI_<ABI>} variable.
+
+\note: \c{QT_ANDROID_BUILD_ALL_ABIS} has the higher priority and ignores the
+QT_ANDROID_ABIS logic.
+
+\sa{QT_PATH_ANDROID_ABI_<ABI>}, {QT_ANDROID_BUILD_ALL_ABIS}
+*/
+
+/*!
+\page cmake-variable-QT_PATH_ANDROID_ABI.html
+\ingroup cmake-variables
+\ingroup cmake-variables-qtcore
+
+\title QT_PATH_ANDROID_ABI_<ABI>
+\target cmake-variable-QT_PATH_ANDROID_ABI_<ABI>
+
+\summary {Set of variables to specify the path to Qt for Android for the corresponding ABI.}
+
+\preliminarycmakevariable
+\cmakevariableandroidonly
+
+Each variable can be used to specify the path to Qt for Android for the corresponding ABI.
+The list of supported ABIs can be found in the \c{QT_ANDROID_ABIS} variable documentation.
+
+\sa{cmake-variable-QT_ANDROID_ABIS}{QT_ANDROID_ABIS}
+*/
+
+/*!
 \page cmake-variable-QT_HOST_PATH.html
 \ingroup cmake-variables
 \ingroup cmake-variables-qtcore
