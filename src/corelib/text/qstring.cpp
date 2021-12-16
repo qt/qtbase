@@ -542,19 +542,19 @@ bool QtPrivate::isAscii(QLatin1String s) noexcept
     return qt_is_ascii(ptr, end);
 }
 
-static bool isAscii(const QChar *&ptr, const QChar *end)
+static bool isAscii_helper(const char16_t *&ptr, const char16_t *end)
 {
 #ifdef __SSE2__
     const char *ptr8 = reinterpret_cast<const char *>(ptr);
     const char *end8 = reinterpret_cast<const char *>(end);
     bool ok = simdTestMask(ptr8, end8, 0xff80ff80);
-    ptr = reinterpret_cast<const QChar *>(ptr8);
+    ptr = reinterpret_cast<const char16_t *>(ptr8);
     if (!ok)
         return false;
 #endif
 
     while (ptr != end) {
-        if (ptr->unicode() & 0xff80)
+        if (*ptr & 0xff80)
             return false;
         ++ptr;
     }
@@ -563,27 +563,27 @@ static bool isAscii(const QChar *&ptr, const QChar *end)
 
 bool QtPrivate::isAscii(QStringView s) noexcept
 {
-    const QChar *ptr = s.begin();
-    const QChar *end = s.end();
+    const char16_t *ptr = s.utf16();
+    const char16_t *end = ptr + s.size();
 
-    return isAscii(ptr, end);
+    return isAscii_helper(ptr, end);
 }
 
 bool QtPrivate::isLatin1(QStringView s) noexcept
 {
-    const QChar *ptr = s.begin();
-    const QChar *end = s.end();
+    const char16_t *ptr = s.utf16();
+    const char16_t *end = ptr + s.size();
 
 #ifdef __SSE2__
     const char *ptr8 = reinterpret_cast<const char *>(ptr);
     const char *end8 = reinterpret_cast<const char *>(end);
     if (!simdTestMask(ptr8, end8, 0xff00ff00))
         return false;
-    ptr = reinterpret_cast<const QChar *>(ptr8);
+    ptr = reinterpret_cast<const char16_t *>(ptr8);
 #endif
 
     while (ptr != end) {
-        if ((*ptr++).unicode() > 0xff)
+        if (*ptr++ > 0xff)
             return false;
     }
     return true;
@@ -7702,11 +7702,15 @@ QString QString::repeated(qsizetype times) const
 
 void qt_string_normalize(QString *data, QString::NormalizationForm mode, QChar::UnicodeVersion version, qsizetype from)
 {
-    const QChar *p = data->constData() + from;
-    if (isAscii(p, p + data->length() - from))
-        return;
-    if (p > data->constData() + from)
-        from = p - data->constData() - 1;   // need one before the non-ASCII to perform NFC
+    {
+        // check if it's fully ASCII first, because then we have no work
+        auto start = reinterpret_cast<const char16_t *>(data->constData());
+        const char16_t *p = start + from;
+        if (isAscii_helper(p, p + data->length() - from))
+            return;
+        if (p > start + from)
+            from = p - start - 1;        // need one before the non-ASCII to perform NFC
+    }
 
     if (version == QChar::Unicode_Unassigned) {
         version = QChar::currentUnicodeVersion();
