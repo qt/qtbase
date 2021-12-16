@@ -63,7 +63,7 @@ qt_commandline_option(gui TYPE boolean)
 qt_commandline_option(headersclean TYPE boolean)
 qt_commandline_option(incredibuild-xge TYPE boolean NAME incredibuild_xge)
 qt_commandline_option(libudev TYPE boolean)
-qt_commandline_option(linker TYPE optionalString VALUES bfd gold lld)
+qt_commandline_option(linker TYPE optionalString VALUES bfd gold lld mold)
 qt_commandline_option(ltcg TYPE boolean)
 # special case begin
 qt_commandline_option(make TYPE addString VALUES examples libs tests tools
