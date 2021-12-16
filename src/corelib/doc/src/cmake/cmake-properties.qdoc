@@ -227,6 +227,25 @@ For more information, see \l{Android: App Versioning}{Android App Versioning}.
 */
 
 /*!
+\page cmake-target-property-QT_ANDROID_ABIS.html
+\ingroup cmake-properties-qtcore
+\ingroup cmake-target-properties-qtcore
+
+\title QT_ANDROID_ABIS
+\target cmake-target-property-QT_ANDROID_ABIS
+
+\summary {List of ABIs that packages of a single target are built for.}
+
+\preliminarycmakeproperty
+\cmakepropertyandroidonly
+
+By setting the \c{QT_ANDROID_ABIS} property for a target, it's possible to control
+the list of ABIs that the single target packages are supposed to be built for.
+
+\sa{cmake-variable-QT_ANDROID_ABIS}{QT_ANDROID_ABIS}, {QT_ANDROID_BUILD_ALL_ABIS}
+*/
+
+/*!
 \page cmake-target-property-QT_QML_ROOT_PATH.html
 \ingroup cmake-properties-qtcore
 \ingroup cmake-target-properties-qtcore
