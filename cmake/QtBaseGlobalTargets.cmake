@@ -107,6 +107,11 @@ endif()
 
 qt_feature_module_end(GlobalConfig OUT_VAR_PREFIX "__GlobalConfig_")
 
+# The version script support check has to happen after we determined which linker is going
+# to be used. The linker decision happens in the qtbase/configure.cmake file that is processed
+# above.
+qt_run_linker_version_script_support()
+
 qt_generate_global_config_pri_file()
 qt_generate_global_module_pri_file()
 qt_generate_global_device_pri_file()
