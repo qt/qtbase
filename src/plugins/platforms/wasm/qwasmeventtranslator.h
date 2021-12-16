@@ -100,6 +100,8 @@ private:
     Qt::Key m_emDeadKey = Qt::Key_unknown;
     bool m_emStickyDeadKey = false;
     QCursor cursorForMode(QWasmWindow::ResizeMode mode);
+    QCursor overriddenCursor;
+    bool isCursorOverridden = false;
 };
 
 QT_END_NAMESPACE

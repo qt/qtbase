@@ -47,7 +47,6 @@ void QWasmCursor::changeCursor(QCursor *windowCursor, QWindow *window)
     if (!screen)
         return;
 
-    QByteArray htmlCursorName;
     if (windowCursor) {
 
         // Bitmap and custom cursors are not implemented (will fall back to "auto")
@@ -60,10 +59,7 @@ void QWasmCursor::changeCursor(QCursor *windowCursor, QWindow *window)
     if (htmlCursorName.isEmpty())
         htmlCursorName = "default";
 
-    // Set cursor on the canvas
-    val canvas = QWasmScreen::get(screen)->canvas();
-    val canvasStyle = canvas["style"];
-    canvasStyle.set("cursor", val(htmlCursorName.constData()));
+    setWasmCursor(screen, htmlCursorName);
 }
 
 QByteArray QWasmCursor::cursorShapeToHtml(Qt::CursorShape shape)
@@ -142,4 +138,24 @@ QByteArray QWasmCursor::cursorShapeToHtml(Qt::CursorShape shape)
     }
 
     return cursorName;
+}
+
+void QWasmCursor::setWasmCursor(QScreen *screen, const QByteArray &name)
+{
+    // Set cursor on the canvas
+    val canvas = QWasmScreen::get(screen)->canvas();
+    val canvasStyle = canvas["style"];
+    canvasStyle.set("cursor", val(name.constData()));
+}
+
+void QWasmCursor::setOverrideWasmCursor(QCursor *windowCursor, QScreen *screen)
+{
+    QWasmCursor *wCursor = static_cast<QWasmCursor *>(QWasmScreen::get(screen)->cursor());
+    wCursor->setWasmCursor(screen, wCursor->cursorShapeToHtml(windowCursor->shape()));
+}
+
+void QWasmCursor::clearOverrideWasmCursor(QScreen *screen)
+{
+    QWasmCursor *wCursor = static_cast<QWasmCursor *>(QWasmScreen::get(screen)->cursor());
+    wCursor->setWasmCursor(screen, wCursor->htmlCursorName);
 }
