@@ -1768,7 +1768,7 @@ void tst_QByteArray::blockSizeCalculations()
     QCOMPARE(qCalculateGrowingBlockSize(MaxAllocSize/2, 2, 1).elementCount, qsizetype(MaxAllocSize)/2);
 
     // error conditions
-    QCOMPARE(qCalculateBlockSize(qint64(MaxAllocSize) + 1, 1), qsizetype(-1));
+    QCOMPARE(qCalculateBlockSize(quint64(MaxAllocSize) + 1, 1), qsizetype(-1));
     QCOMPARE(qCalculateBlockSize(qsizetype(-1), 1), qsizetype(-1));
     QCOMPARE(qCalculateBlockSize(MaxAllocSize, 1, 1), qsizetype(-1));
     QCOMPARE(qCalculateBlockSize(MaxAllocSize/2 + 1, 2), qsizetype(-1));
@@ -1825,7 +1825,8 @@ void tst_QByteArray::blockSizeCalculations()
         QVERIFY(checkSize(alloc, qsizetype(MaxAllocSize) / elementSize));
 
         // the next allocation should be invalid
-        QCOMPARE(qCalculateGrowingBlockSize(alloc + 1, elementSize).size, qsizetype(-1));
+        if (alloc < MaxAllocSize) // lest alloc + 1 overflows (= UB)
+            QCOMPARE(qCalculateGrowingBlockSize(alloc + 1, elementSize).size, qsizetype(-1));
     }
 }
 
