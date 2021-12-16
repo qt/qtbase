@@ -421,9 +421,10 @@ void tst_QPropertyAnimation::deletion1()
 void tst_QPropertyAnimation::deletion2()
 {
     TestAnimationDriver timeDriver;
-    //test that the animation get deleted if the object is deleted
+    // test that the animation does not get deleted if the object is deleted
     QObject *object = new QWidget;
     QPointer<QPropertyAnimation> anim = new QPropertyAnimation(object,"minimumWidth");
+    QVERIFY(anim->parent() != object);
     anim->setStartValue(10);
     anim->setEndValue(20);
     anim->setDuration(200);
@@ -450,7 +451,10 @@ void tst_QPropertyAnimation::deletion2()
     QTimer::singleShot(0, object, SLOT(deleteLater()));
     timeDriver.wait(50);
 
+    QVERIFY(anim);
     QVERIFY(!anim->targetObject());
+
+    delete anim;
 }
 
 void tst_QPropertyAnimation::deletion3()
