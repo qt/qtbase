@@ -10484,10 +10484,9 @@ static qsizetype qLastIndexOf(Haystack haystack0, qsizetype from,
     const auto *n = needle + sl_minus_1;
     const auto *h = haystack + sl_minus_1;
     std::size_t hashNeedle = 0, hashHaystack = 0;
-    qsizetype idx;
 
     if (cs == Qt::CaseSensitive) {
-        for (idx = 0; idx < sl; ++idx) {
+        for (qsizetype idx = 0; idx < sl; ++idx) {
             hashNeedle = (hashNeedle << 1) + valueTypeToUtf16(*(n - idx));
             hashHaystack = (hashHaystack << 1) + valueTypeToUtf16(*(h - idx));
         }
@@ -10502,7 +10501,7 @@ static qsizetype qLastIndexOf(Haystack haystack0, qsizetype from,
             REHASH(valueTypeToUtf16(haystack[sl]));
         }
     } else {
-        for (idx = 0; idx < sl; ++idx) {
+        for (qsizetype idx = 0; idx < sl; ++idx) {
             hashNeedle = (hashNeedle << 1) + foldCaseHelper(n - idx, needle);
             hashHaystack = (hashHaystack << 1) + foldCaseHelper(h - idx, end);
         }
