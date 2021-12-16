@@ -1081,6 +1081,62 @@ function(qt_config_compiler_supports_flag_test name)
     set(TEST_${name} "${TEST_${name}}" CACHE INTERNAL "${label}")
 endfunction()
 
+# gcc expects -fuse-ld=mold (no absolute path can be given) (gcc >= 12.1)
+#             or an 'ld' symlink to 'mold' in a dir that is passed via -B flag (gcc < 12.1)
+#
+# clang expects     -fuse-ld=mold
+#                or -fuse-ld=<mold-abs-path>
+#                or --ldpath=<mold-abs-path>  (clang >= 12)
+# https://github.com/rui314/mold/#how-to-use
+# TODO: In the gcc < 12.1 case, the qt_internal_check_if_linker_is_available(mold) check will
+#       always return TRUE because gcc will not error out if it is given a -B flag pointing to an
+#       invalid dir, as well as when the the symlink to the linker in the -B dir is not actually
+#       a valid linker.
+#       It would be nice to handle that case in a better way, but it's not that important
+#       given that gcc > 12.1 now supports -fuse-ld=mold
+# NOTE: In comparison to clang, in the gcc < 12.1 case, we pass the full path to where mold is
+#       and that is recorded in PlatformCommonInternal's INTERFACE_LINK_OPTIONS target.
+#       Moving such a Qt to a different machine and trying to build another repo won't
+#       work because the recorded path will be invalid. This is not a problem with
+#       the gcc >= 12.1 case
+function(qt_internal_get_mold_linker_flags out_var)
+    cmake_parse_arguments(PARSE_ARGV 1 arg "ERROR_IF_EMPTY" "" "")
+
+    find_program(QT_INTERNAL_LINKER_MOLD mold)
+
+    set(flag "")
+    if(QT_INTERNAL_LINKER_MOLD)
+        if(GCC)
+            if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "12.1")
+                set(flag "-fuse-ld=mold")
+            else()
+                set(mold_linker_dir "${CMAKE_CURRENT_BINARY_DIR}/.qt_linker")
+                set(mold_linker_path "${mold_linker_dir}/ld")
+                if(NOT EXISTS "${mold_linker_dir}")
+                    file(MAKE_DIRECTORY "${mold_linker_dir}")
+                endif()
+                if(NOT EXISTS "${mold_linker_path}")
+                    file(CREATE_LINK
+                        "${QT_INTERNAL_LINKER_MOLD}"
+                        "${mold_linker_path}"
+                         SYMBOLIC)
+                endif()
+                set(flag "-B${mold_linker_dir}")
+            endif()
+        elseif(CLANG)
+            if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "12")
+                set(flag "--ld-path=mold")
+            else()
+                set(flag "-fuse-ld=mold")
+            endif()
+        endif()
+    endif()
+    if(arg_ERROR_IS_EMPTY AND NOT flag)
+        message(FATAL_ERROR "Could not determine the flags to use the mold linker.")
+    endif()
+    set(${out_var} "${flag}" PARENT_SCOPE)
+endfunction()
+
 function(qt_internal_get_active_linker_flags out_var)
     set(flags "")
     if(GCC OR CLANG)
@@ -1090,6 +1146,9 @@ function(qt_internal_get_active_linker_flags out_var)
             list(APPEND flags "-fuse-ld=bfd")
         elseif(QT_FEATURE_use_lld_linker)
             list(APPEND flags "-fuse-ld=lld")
+        elseif(QT_FEATURE_use_mold_linker)
+            qt_internal_get_mold_linker_flags(mold_flags ERROR_IF_EMPTY)
+            list(APPEND flags "${mold_flags}")
         endif()
     endif()
     set(${out_var} "${flags}" PARENT_SCOPE)
