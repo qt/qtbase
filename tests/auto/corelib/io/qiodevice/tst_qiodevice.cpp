@@ -561,7 +561,8 @@ protected:
     qint64 readData(char *data, qint64 maxSize) override
     {
         maxSize = qMin(maxSize, qint64(buf->size() - offset));
-        memcpy(data, buf->constData() + offset, maxSize);
+        if (maxSize > 0)
+            memcpy(data, buf->constData() + offset, maxSize);
         offset += maxSize;
         return maxSize;
     }
@@ -604,13 +605,15 @@ protected:
     qint64 readData(char *data, qint64 maxSize) override
     {
         maxSize = qMin(maxSize, qint64(buf.size() - pos()));
-        memcpy(data, buf.constData() + pos(), maxSize);
+        if (maxSize > 0)
+            memcpy(data, buf.constData() + pos(), maxSize);
         return maxSize;
     }
     qint64 writeData(const char *data, qint64 maxSize) override
     {
         maxSize = qMin(maxSize, qint64(buf.size() - pos()));
-        memcpy(buf.data() + pos(), data, maxSize);
+        if (maxSize > 0)
+            memcpy(buf.data() + pos(), data, maxSize);
         return maxSize;
     }
 
