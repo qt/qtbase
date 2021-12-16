@@ -33,7 +33,7 @@
 #include "qwasmintegration.h"
 #include "qwasmclipboard.h"
 #include "qwasmstring.h"
-
+#include "qwasmcursor.h"
 #include <QtGui/qevent.h>
 #include <qpa/qwindowsysteminterface.h>
 #include <QtCore/qcoreapplication.h>
@@ -499,7 +499,7 @@ bool QWasmEventTranslator::processMouse(int eventType, const EmscriptenMouseEven
             pressedWindow = nullptr;
         }
 
-        if (mouseEvent->button == 0) {
+       if (draggedWindow && pressedButtons.testFlag(Qt::NoButton)) {
             draggedWindow = nullptr;
             resizeMode = QWasmWindow::ResizeNone;
         }
@@ -514,8 +514,22 @@ bool QWasmEventTranslator::processMouse(int eventType, const EmscriptenMouseEven
     {
         buttonEventType = QEvent::MouseMove;
 
-        if (htmlWindow && htmlWindow->isPointOnResizeRegion(globalPoint))
-            window2->setCursor(cursorForMode(htmlWindow->resizeModeAtPoint(globalPoint)));
+        if (htmlWindow && pressedButtons.testFlag(Qt::NoButton)) {
+
+            if (htmlWindow->isPointOnResizeRegion(globalPoint)) {
+                QCursor resizingCursor = cursorForMode(htmlWindow->resizeModeAtPoint(globalPoint));
+
+                if (resizingCursor != window2->cursor()) {
+                    isCursorOverridden = true;
+                    QWasmCursor::setOverrideWasmCursor(&resizingCursor, window2->screen());
+                }
+            } else { // off resizing area
+                if (isCursorOverridden) {
+                    isCursorOverridden = false;
+                    QWasmCursor::clearOverrideWasmCursor(window2->screen());
+                }
+            }
+        }
 
         if (!(htmlWindow->m_windowState & Qt::WindowFullScreen) && !(htmlWindow->m_windowState & Qt::WindowMaximized)) {
             if (resizeMode == QWasmWindow::ResizeNone && draggedWindow) {
