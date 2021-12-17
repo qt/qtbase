@@ -65,6 +65,7 @@ private slots:
     void crefFunction();
     void customPromise();
     void nonDefaultConstructibleValue();
+    void nullThreadPool();
 };
 
 void light()
@@ -1575,6 +1576,17 @@ void tst_QtConcurrentRun::nonDefaultConstructibleValue()
 
     auto future = QtConcurrent::run([] { return NonDefaultConstructible(42); });
     QCOMPARE(future.result().value, 42);
+}
+
+// QTBUG-98901
+void tst_QtConcurrentRun::nullThreadPool()
+{
+    QThreadPool *pool = nullptr;
+    std::atomic<bool> isInvoked = false;
+    auto future = run(pool, [&] { isInvoked = true; });
+    future.waitForFinished();
+    QVERIFY(future.isCanceled());
+    QVERIFY(!isInvoked);
 }
 
 QTEST_MAIN(tst_QtConcurrentRun)
