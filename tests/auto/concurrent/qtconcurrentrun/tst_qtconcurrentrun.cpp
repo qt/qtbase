@@ -30,6 +30,8 @@
 #include <QString>
 #include <QtTest/QtTest>
 
+#include <atomic>
+
 using namespace QtConcurrent;
 
 class tst_QtConcurrentRun: public QObject
@@ -50,6 +52,7 @@ private slots:
 #endif
     void functor();
     void lambda();
+    void nullThreadPool();
 };
 
 void light()
@@ -730,6 +733,17 @@ void tst_QtConcurrentRun::lambda()
         auto r = f1.result();
         QCOMPARE(r, QStringList({"Hello", "World", "Foo"}));
     }
+}
+
+// QTBUG-98901
+void tst_QtConcurrentRun::nullThreadPool()
+{
+    QThreadPool *pool = nullptr;
+    std::atomic<bool> isInvoked(false);
+    auto future = run(pool, [&] { isInvoked = true; });
+    future.waitForFinished();
+    QVERIFY(future.isCanceled());
+    QVERIFY(!isInvoked);
 }
 
 QTEST_MAIN(tst_QtConcurrentRun)
