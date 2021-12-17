@@ -449,7 +449,9 @@ QByteArray &appendToByteArray(QByteArray &a, const QStringBuilder<A, B> &b, char
 {
     // append 8-bit data to a byte array
     qsizetype len = a.size() + QConcatenable< QStringBuilder<A, B> >::size(b);
-    a.reserve(len);
+    a.detach(); // a detach() in a.data() could reset a.capacity() to a.size()
+    if (len > a.capacity())
+        a.reserve(qMax(len, 2 * a.capacity()));
     char *it = a.data() + a.size();
     QConcatenable< QStringBuilder<A, B> >::appendTo(b, it);
     a.resize(len); //we need to resize after the appendTo for the case str+=foo+str
@@ -476,9 +478,12 @@ template <typename A, typename B>
 QString &operator+=(QString &a, const QStringBuilder<A, B> &b)
 {
     qsizetype len = a.size() + QConcatenable< QStringBuilder<A, B> >::size(b);
-    a.reserve(len);
+    a.detach(); // a detach() in a.data() could reset a.capacity() to a.size()
+    if (len > a.capacity())
+        a.reserve(qMax(len, 2 * a.capacity()));
     QChar *it = a.data() + a.size();
     QConcatenable< QStringBuilder<A, B> >::appendTo(b, it);
+    // we need to resize after the appendTo for the case str+=foo+str
     a.resize(it - a.constData()); //may be smaller than len if there was conversion from utf8
     return a;
 }
