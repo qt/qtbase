@@ -310,6 +310,44 @@ static void append_helper(QString &self, T view, F appendToUtf16)
     }
 }
 
+template <uint MaxCount> struct UnrollTailLoop
+{
+    template <typename RetType, typename Functor1, typename Functor2, typename Number>
+    static inline RetType exec(Number count, RetType returnIfExited, Functor1 loopCheck, Functor2 returnIfFailed, Number i = 0)
+    {
+        /* equivalent to:
+         *   while (count--) {
+         *       if (loopCheck(i))
+         *           return returnIfFailed(i);
+         *   }
+         *   return returnIfExited;
+         */
+
+        if (!count)
+            return returnIfExited;
+
+        bool check = loopCheck(i);
+        if (check)
+            return returnIfFailed(i);
+
+        return UnrollTailLoop<MaxCount - 1>::exec(count - 1, returnIfExited, loopCheck, returnIfFailed, i + 1);
+    }
+
+    template <typename Functor, typename Number>
+    static inline void exec(Number count, Functor code)
+    {
+        /* equivalent to:
+         *   for (Number i = 0; i < count; ++i)
+         *       code(i);
+         */
+        exec(count, 0, [=](Number i) -> bool { code(i); return false; }, [](Number) { return 0; });
+    }
+};
+template <> template <typename RetType, typename Functor1, typename Functor2, typename Number>
+inline RetType UnrollTailLoop<0>::exec(Number, RetType returnIfExited, Functor1, Functor2, Number)
+{
+    return returnIfExited;
+}
 } // unnamed namespace
 
 /*
@@ -350,8 +388,125 @@ extern "C" void qt_toLatin1_mips_dsp_asm(uchar *dst, const char16_t *src, int le
 #endif
 
 #ifdef __SSE2__
-static constexpr bool UseAvx2 =
+static constexpr bool UseSse4_1 = bool(qCompilerCpuFeatures & CpuFeatureSSE4_1);
+static constexpr bool UseAvx2 = UseSse4_1 &&
         (qCompilerCpuFeatures & CpuFeatureArchHaswell) == CpuFeatureArchHaswell;
+
+static Q_ALWAYS_INLINE __m128i mm_load8_zero_extend(const void *ptr)
+{
+    const __m128i *dataptr = static_cast<const __m128i *>(ptr);
+    if constexpr (UseSse4_1) {
+        // use a MOVQ followed by PMOVZXBW
+        // if AVX2 is present, these should combine into a single VPMOVZXBW instruction
+        __m128i data = _mm_loadl_epi64(dataptr);
+        return _mm_cvtepu8_epi16(data);
+    }
+
+    // use MOVQ followed by PUNPCKLBW
+    __m128i data = _mm_loadl_epi64(dataptr);
+    return _mm_unpacklo_epi8(data, _mm_setzero_si128());
+}
+
+// Scans from \a ptr to \a end until \a maskval is non-zero. Returns true if
+// the no non-zero was found. Returns false and updates \a ptr to point to the
+// first 16-bit word that has any bit set (note: if the input is 8-bit, \a ptr
+// may be updated to one byte short).
+static bool simdTestMask(const char *&ptr, const char *end, quint32 maskval)
+{
+    auto updatePtr = [&](uint result) {
+        // found a character matching the mask
+        uint idx = qCountTrailingZeroBits(~result);
+        ptr += idx;
+        return false;
+    };
+
+    if constexpr (UseSse4_1) {
+#  ifndef Q_OS_QNX              // compiler fails in the code below
+        __m128i mask;
+        auto updatePtrSimd = [&](__m128i data) {
+            __m128i masked = _mm_and_si128(mask, data);
+            __m128i comparison = _mm_cmpeq_epi16(masked, _mm_setzero_si128());
+            uint result = _mm_movemask_epi8(comparison);
+            return updatePtr(result);
+        };
+
+        if constexpr (UseAvx2) {
+            // AVX2 implementation: test 32 bytes at a time
+            const __m256i mask256 = _mm256_broadcastd_epi32(_mm_cvtsi32_si128(maskval));
+            while (ptr + 32 <= end) {
+                __m256i data = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(ptr));
+                if (!_mm256_testz_si256(mask256, data)) {
+                    // found a character matching the mask
+                    __m256i masked256 = _mm256_and_si256(mask256, data);
+                    __m256i comparison256 = _mm256_cmpeq_epi16(masked256, _mm256_setzero_si256());
+                    return updatePtr(_mm256_movemask_epi8(comparison256));
+                }
+                ptr += 32;
+            }
+
+            mask = _mm256_castsi256_si128(mask256);
+        } else {
+            // SSE 4.1 implementation: test 32 bytes at a time (two 16-byte
+            // comparisons, unrolled)
+            mask = _mm_set1_epi32(maskval);
+            while (ptr + 32 <= end) {
+                __m128i data1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(ptr));
+                __m128i data2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(ptr + 16));
+                if (!_mm_testz_si128(mask, data1))
+                    return updatePtrSimd(data1);
+
+                ptr += 16;
+                if (!_mm_testz_si128(mask, data2))
+                    return updatePtrSimd(data2);
+                ptr += 16;
+            }
+        }
+
+        // AVX2 and SSE4.1: final 16-byte comparison
+        if (ptr + 16 <= end) {
+            __m128i data1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(ptr));
+            if (!_mm_testz_si128(mask, data1))
+                return updatePtrSimd(data1);
+            ptr += 16;
+        }
+
+        // and final 8-byte comparison
+        if (ptr + 8 <= end) {
+            __m128i data1 = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(ptr));
+            if (!_mm_testz_si128(mask, data1))
+                return updatePtrSimd(data1);
+            ptr += 8;
+        }
+
+        return true;
+#  endif // QNX
+    }
+
+    // SSE2 implementation: test 16 bytes at a time.
+    const __m128i mask = _mm_set1_epi32(maskval);
+    while (ptr + 16 <= end) {
+        __m128i data = _mm_loadu_si128(reinterpret_cast<const __m128i *>(ptr));
+        __m128i masked = _mm_and_si128(mask, data);
+        __m128i comparison = _mm_cmpeq_epi16(masked, _mm_setzero_si128());
+        quint16 result = _mm_movemask_epi8(comparison);
+        if (result != 0xffff)
+            return updatePtr(result);
+        ptr += 16;
+    }
+
+    // and one 8-byte comparison
+    if (ptr + 8 <= end) {
+        __m128i data = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(ptr));
+        __m128i masked = _mm_and_si128(mask, data);
+        __m128i comparison = _mm_cmpeq_epi16(masked, _mm_setzero_si128());
+        quint8 result = _mm_movemask_epi8(comparison);
+        if (result != 0xff)
+            return updatePtr(result);
+        ptr += 8;
+    }
+
+    return true;
+}
 #endif
 
 #ifdef Q_CC_GNU
@@ -411,49 +566,6 @@ qsizetype QtPrivate::qustrlen(const char16_t *str) noexcept
         ++result;
     return result;
 }
-
-#if !defined(__OPTIMIZE_SIZE__)
-namespace {
-template <uint MaxCount> struct UnrollTailLoop
-{
-    template <typename RetType, typename Functor1, typename Functor2, typename Number>
-    static inline RetType exec(Number count, RetType returnIfExited, Functor1 loopCheck, Functor2 returnIfFailed, Number i = 0)
-    {
-        /* equivalent to:
-         *   while (count--) {
-         *       if (loopCheck(i))
-         *           return returnIfFailed(i);
-         *   }
-         *   return returnIfExited;
-         */
-
-        if (!count)
-            return returnIfExited;
-
-        bool check = loopCheck(i);
-        if (check)
-            return returnIfFailed(i);
-
-        return UnrollTailLoop<MaxCount - 1>::exec(count - 1, returnIfExited, loopCheck, returnIfFailed, i + 1);
-    }
-
-    template <typename Functor, typename Number>
-    static inline void exec(Number count, Functor code)
-    {
-        /* equivalent to:
-         *   for (Number i = 0; i < count; ++i)
-         *       code(i);
-         */
-        exec(count, 0, [=](Number i) -> bool { code(i); return false; }, [](Number) { return 0; });
-    }
-};
-template <> template <typename RetType, typename Functor1, typename Functor2, typename Number>
-inline RetType UnrollTailLoop<0>::exec(Number, RetType returnIfExited, Functor1, Functor2, Number)
-{
-    return returnIfExited;
-}
-}
-#endif
 
 /*!
  * \internal
@@ -542,122 +654,6 @@ const char16_t *QtPrivate::qustrchr(QStringView str, char16_t c) noexcept
 
     return std::find(n, e, c);
 }
-
-#ifdef __SSE2__
-// Scans from \a ptr to \a end until \a maskval is non-zero. Returns true if
-// the no non-zero was found. Returns false and updates \a ptr to point to the
-// first 16-bit word that has any bit set (note: if the input is 8-bit, \a ptr
-// may be updated to one byte short).
-static bool simdTestMask(const char *&ptr, const char *end, quint32 maskval)
-{
-    auto updatePtr = [&](uint result) {
-        // found a character matching the mask
-        uint idx = qCountTrailingZeroBits(~result);
-        ptr += idx;
-        return false;
-    };
-
-    if constexpr (qCompilerCpuFeatures & CpuFeatureSSE4_1) {
-        __m128i mask;
-        auto updatePtrSimd = [&](__m128i data) {
-            __m128i masked = _mm_and_si128(mask, data);
-            __m128i comparison = _mm_cmpeq_epi16(masked, _mm_setzero_si128());
-            uint result = _mm_movemask_epi8(comparison);
-            return updatePtr(result);
-        };
-
-        if constexpr (UseAvx2) {
-            // AVX2 implementation: test 32 bytes at a time
-            const __m256i mask256 = _mm256_broadcastd_epi32(_mm_cvtsi32_si128(maskval));
-            while (ptr + 32 <= end) {
-                __m256i data = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(ptr));
-                if (!_mm256_testz_si256(mask256, data)) {
-                    // found a character matching the mask
-                    __m256i masked256 = _mm256_and_si256(mask256, data);
-                    __m256i comparison256 = _mm256_cmpeq_epi16(masked256, _mm256_setzero_si256());
-                    return updatePtr(_mm256_movemask_epi8(comparison256));
-                }
-                ptr += 32;
-            }
-
-            mask = _mm256_castsi256_si128(mask256);
-        } else {
-            // SSE 4.1 implementation: test 32 bytes at a time (two 16-byte
-            // comparisons, unrolled)
-            mask = _mm_set1_epi32(maskval);
-            while (ptr + 32 <= end) {
-                __m128i data1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(ptr));
-                __m128i data2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(ptr + 16));
-                if (!_mm_testz_si128(mask, data1))
-                    return updatePtrSimd(data1);
-
-                ptr += 16;
-                if (!_mm_testz_si128(mask, data2))
-                    return updatePtrSimd(data2);
-                ptr += 16;
-            }
-        }
-
-        // AVX2 and SSE4.1: final 16-byte comparison
-        if (ptr + 16 <= end) {
-            __m128i data1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(ptr));
-            if (!_mm_testz_si128(mask, data1))
-                return updatePtrSimd(data1);
-            ptr += 16;
-        }
-
-        // and final 8-byte comparison
-        if (ptr + 8 <= end) {
-            __m128i data1 = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(ptr));
-            if (!_mm_testz_si128(mask, data1))
-                return updatePtrSimd(data1);
-            ptr += 8;
-        }
-
-        return true;
-    }
-
-    // SSE2 implementation: test 16 bytes at a time.
-    const __m128i mask = _mm_set1_epi32(maskval);
-    while (ptr + 16 <= end) {
-        __m128i data = _mm_loadu_si128(reinterpret_cast<const __m128i *>(ptr));
-        __m128i masked = _mm_and_si128(mask, data);
-        __m128i comparison = _mm_cmpeq_epi16(masked, _mm_setzero_si128());
-        quint16 result = _mm_movemask_epi8(comparison);
-        if (result != 0xffff)
-            return updatePtr(result);
-        ptr += 16;
-    }
-
-    // and one 8-byte comparison
-    if (ptr + 8 <= end) {
-        __m128i data = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(ptr));
-        __m128i masked = _mm_and_si128(mask, data);
-        __m128i comparison = _mm_cmpeq_epi16(masked, _mm_setzero_si128());
-        quint8 result = _mm_movemask_epi8(comparison);
-        if (result != 0xff)
-            return updatePtr(result);
-        ptr += 8;
-    }
-
-    return true;
-}
-
-static Q_ALWAYS_INLINE __m128i mm_load8_zero_extend(const void *ptr)
-{
-    const __m128i *dataptr = static_cast<const __m128i *>(ptr);
-    if constexpr (qCompilerCpuFeatures & CpuFeatureSSE4_1) {
-        // use a MOVQ followed by PMOVZXBW
-        // if AVX2 is present, these should combine into a single VPMOVZXBW instruction
-        __m128i data = _mm_loadl_epi64(dataptr);
-        return _mm_cvtepu8_epi16(data);
-    }
-
-    // use MOVQ followed by PUNPCKLBW
-    __m128i data = _mm_loadl_epi64(dataptr);
-    return _mm_unpacklo_epi8(data, _mm_setzero_si128());
-}
-#endif
 
 // Note: ptr on output may be off by one and point to a preceding US-ASCII
 // character. Usually harmless.
@@ -885,7 +881,7 @@ static void qt_to_latin1_internal(uchar *dst, const char16_t *src, qsizetype len
 
     auto mergeQuestionMarks = [=](__m128i chunk) {
         // SSE has no compare instruction for unsigned comparison.
-        if constexpr (qCompilerCpuFeatures & CpuFeatureSSE4_1) {
+        if constexpr (UseSse4_1) {
             // We use an unsigned uc = qMin(uc, 0x100) and then compare for equality.
             chunk = _mm_min_epu16(chunk, outOfRange);
             const __m128i offLimitMask = _mm_cmpeq_epi16(chunk, outOfRange);
