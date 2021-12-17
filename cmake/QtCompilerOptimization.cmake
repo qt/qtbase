@@ -73,18 +73,6 @@ if(GCC OR CLANG)
     set(QT_CFLAGS_MIPS_DSPR2 "-mdspr2")
 endif()
 
-if (winrt) # FIXME: Correct variable
-    set(QT_CFLAGS_SSE2       "-arch:SSE2")
-    set(QT_CFLAGS_SSE3       "-arch:SSE2")
-    set(QT_CFLAGS_SSSE3      "-arch:SSE2")
-    set(QT_CFLAGS_SSE4_1     "-arch:SSE2")
-    set(QT_CFLAGS_SSE4_2     "-arch:SSE2")
-    set(QT_CFLAGS_AVX        "-arch:AVX")
-    set(QT_CFLAGS_AVX2       "-arch:AVX")
-    set(QT_CFLAGS_AESNI      "-arch:SSE2")
-    set(QT_CFLAGS_SHANI      "-arch:SSE2")
-endif()
-
 # Fall through is important, so that more specific flags that might be missing are set by the
 # previous base cases.
 # This mirrors qmake's mkspecs QMAKE_CFLAGS_OPTIMIZE assignments (mostly).
