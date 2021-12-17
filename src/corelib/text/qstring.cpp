@@ -387,6 +387,14 @@ extern "C" void qt_fromlatin1_mips_asm_unroll8 (char16_t*, const char*, uint);
 extern "C" void qt_toLatin1_mips_dsp_asm(uchar *dst, const char16_t *src, int length);
 #endif
 
+#if defined(__SSE2__) && defined(Q_CC_GNU)
+// We may overrun the buffer, but that's a false positive:
+// this won't crash nor produce incorrect results
+#  define ATTRIBUTE_NO_SANITIZE       __attribute__((__no_sanitize_address__))
+#else
+#  define ATTRIBUTE_NO_SANITIZE
+#endif
+
 #ifdef __SSE2__
 static constexpr bool UseSse4_1 = bool(qCompilerCpuFeatures & CpuFeatureSSE4_1);
 static constexpr bool UseAvx2 = UseSse4_1 &&
@@ -509,11 +517,7 @@ static bool simdTestMask(const char *&ptr, const char *end, quint32 maskval)
 }
 #endif
 
-#ifdef Q_CC_GNU
-// We may overrun the buffer, but that's a false positive:
-// this won't crash nor produce incorrect results
-__attribute__((__no_sanitize_address__))
-#endif
+ATTRIBUTE_NO_SANITIZE
 qsizetype QtPrivate::qustrlen(const char16_t *str) noexcept
 {
     qsizetype result = 0;
