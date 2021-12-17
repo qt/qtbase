@@ -1024,13 +1024,33 @@ bool QZipReader::extractAll(const QString &destinationDir) const
 
     // create directories first
     const QVector<FileInfo> allFiles = fileInfoList();
+    bool foundDirs = false;
+    bool hasDirs = false;
     for (const FileInfo &fi : allFiles) {
         const QString absPath = destinationDir + QDir::separator() + fi.filePath;
         if (fi.isDir) {
+            foundDirs = true;
             if (!baseDir.mkpath(fi.filePath))
                 return false;
             if (!QFile::setPermissions(absPath, fi.permissions))
                 return false;
+        } else if (!hasDirs && fi.filePath.contains(u"/")) {
+            // filePath does not have leading or trailing '/', so if we find
+            // one, than the file path contains directories.
+            hasDirs = true;
+        }
+    }
+
+    // Some zip archives can be broken in the sense that they do not report
+    // separate entries for directories, only for files. In this case we
+    // need to recreate directory structure based on the file paths.
+    if (hasDirs && !foundDirs) {
+        for (const FileInfo &fi : allFiles) {
+            const auto dirPath = fi.filePath.left(fi.filePath.lastIndexOf(u"/"));
+            if (!baseDir.mkpath(dirPath))
+                return false;
+            // We will leave the directory permissions default in this case,
+            // because setting dir permissions based on file is incorrect
         }
     }
 
