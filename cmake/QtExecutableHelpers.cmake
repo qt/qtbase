@@ -21,6 +21,7 @@ function(qt_internal_add_executable name)
 
     _qt_internal_create_executable(${name})
     if (ANDROID)
+        _qt_internal_configure_android_multiabi_target("${name}")
         qt_android_generate_deployment_settings("${name}")
         qt_android_add_apk_target("${name}")
     endif()
