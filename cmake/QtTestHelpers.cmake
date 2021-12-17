@@ -577,7 +577,7 @@ execute_process(COMMAND ${extra_runner} ${arg_COMMAND}
 ${post_run}
 if(NOT result EQUAL 0)
     string(JOIN \" \" full_command ${arg_COMMAND})
-    message(FATAL_ERROR \"\${full_command} execution failed with exit code ${result}.\")
+    message(FATAL_ERROR \"\${full_command} execution failed with exit code \${result}.\")
 endif()"
     )
 endfunction()
