@@ -59,8 +59,7 @@ QT_BEGIN_NAMESPACE
     The Null backend does not issue any graphics calls and creates no
     resources. All QRhi operations will succeed as normal so applications can
     still be run, albeit potentially at an unthrottled speed, depending on
-    their frame rendering strategy. The backend reports resources to
-    QRhiProfiler as usual.
+    their frame rendering strategy.
  */
 
 /*!
@@ -184,9 +183,9 @@ QRhiDriverInfo QRhiNull::driverInfo() const
     return info;
 }
 
-void QRhiNull::sendVMemStatsToProfiler()
+QRhiMemAllocStats QRhiNull::graphicsMemoryAllocationStatistics()
 {
-    // nothing to do here
+    return {};
 }
 
 bool QRhiNull::makeThreadLocalNativeContextCurrent()
@@ -382,8 +381,6 @@ QRhi::FrameOpResult QRhiNull::beginFrame(QRhiSwapChain *swapChain, QRhi::BeginFr
 {
     Q_UNUSED(flags);
     currentSwapChain = swapChain;
-    QRhiProfilerPrivate *rhiP = profilerPrivateOrNull();
-    QRHI_PROF_F(beginSwapChainFrame(swapChain));
     return QRhi::FrameOpSuccess;
 }
 
@@ -391,9 +388,6 @@ QRhi::FrameOpResult QRhiNull::endFrame(QRhiSwapChain *swapChain, QRhi::EndFrameF
 {
     Q_UNUSED(flags);
     QNullSwapChain *swapChainD = QRHI_RES(QNullSwapChain, swapChain);
-    QRhiProfilerPrivate *rhiP = profilerPrivateOrNull();
-    QRHI_PROF_F(endSwapChainFrame(swapChain, swapChainD->frameCount + 1));
-    QRHI_PROF_F(swapChainFrameGpuTime(swapChain, 0.000666f));
     swapChainD->frameCount += 1;
     currentSwapChain = nullptr;
     return QRhi::FrameOpSuccess;
@@ -604,11 +598,8 @@ void QNullBuffer::destroy()
     data = nullptr;
 
     QRHI_RES_RHI(QRhiNull);
-    if (rhiD) {
-        QRHI_PROF;
-        QRHI_PROF_F(releaseBuffer(this));
+    if (rhiD)
         rhiD->unregisterResource(this);
-    }
 }
 
 bool QNullBuffer::create()
@@ -619,11 +610,6 @@ bool QNullBuffer::create()
     data = new char[m_size];
     memset(data, 0, m_size);
 
-    QRHI_PROF;
-    QRHI_PROF_F(newBuffer(this, uint(m_size), 1, 0));
-    // If we register the buffer to the profiler, then it needs to be registered to the
-    // QRhi too (even though we normally do that for native-resource-owning objects only),
-    // in order to be able to implement destroy() in a robust manner.
     QRHI_RES_RHI(QRhiNull);
     rhiD->registerResource(this);
 
@@ -653,11 +639,8 @@ void QNullRenderBuffer::destroy()
     valid = false;
 
     QRHI_RES_RHI(QRhiNull);
-    if (rhiD) {
-        QRHI_PROF;
-        QRHI_PROF_F(releaseRenderBuffer(this));
+    if (rhiD)
         rhiD->unregisterResource(this);
-    }
 }
 
 bool QNullRenderBuffer::create()
@@ -668,8 +651,6 @@ bool QNullRenderBuffer::create()
     valid = true;
     generation += 1;
 
-    QRHI_PROF;
-    QRHI_PROF_F(newRenderBuffer(this, false, false, 1));
     QRHI_RES_RHI(QRhiNull);
     rhiD->registerResource(this);
 
@@ -697,11 +678,8 @@ void QNullTexture::destroy()
     valid = false;
 
     QRHI_RES_RHI(QRhiNull);
-    if (rhiD) {
-        QRHI_PROF;
-        QRHI_PROF_F(releaseTexture(this));
+    if (rhiD)
         rhiD->unregisterResource(this);
-    }
 }
 
 bool QNullTexture::create()
@@ -735,8 +713,6 @@ bool QNullTexture::create()
 
     generation += 1;
 
-    QRHI_PROF;
-    QRHI_PROF_F(newTexture(this, true, mipLevelCount, layerCount, 1));
     rhiD->registerResource(this);
 
     return true;
@@ -750,17 +726,9 @@ bool QNullTexture::createFrom(QRhiTexture::NativeTexture src)
 
     valid = true;
 
-    QRHI_RES_RHI(QRhiNull);
-    const bool isCube = m_flags.testFlag(CubeMap);
-    const bool isArray = m_flags.testFlag(TextureArray);
-    const bool hasMipMaps = m_flags.testFlag(MipMapped);
-    QSize size = m_pixelSize.isEmpty() ? QSize(1, 1) : m_pixelSize;
-    const int mipLevelCount = hasMipMaps ? rhiD->q->mipLevelsForSize(size) : 1;
-
     generation += 1;
 
-    QRHI_PROF;
-    QRHI_PROF_F(newTexture(this, false, mipLevelCount, isCube ? 6 : (isArray ? m_arraySize : 1), 1));
+    QRHI_RES_RHI(QRhiNull);
     rhiD->registerResource(this);
 
     return true;
@@ -1003,11 +971,8 @@ QNullSwapChain::~QNullSwapChain()
 void QNullSwapChain::destroy()
 {
     QRHI_RES_RHI(QRhiNull);
-    if (rhiD) {
-        QRHI_PROF;
-        QRHI_PROF_F(releaseSwapChain(this));
+    if (rhiD)
         rhiD->unregisterResource(this);
-    }
 }
 
 QRhiCommandBuffer *QNullSwapChain::currentFrameCommandBuffer()
@@ -1047,8 +1012,6 @@ bool QNullSwapChain::createOrResize()
     rt.d.pixelSize = m_currentPixelSize;
     frameCount = 0;
 
-    QRHI_PROF;
-    QRHI_PROF_F(resizeSwapChain(this, 1, 0, 1));
     if (needsRegistration) {
         QRHI_RES_RHI(QRhiNull);
         rhiD->registerResource(this);

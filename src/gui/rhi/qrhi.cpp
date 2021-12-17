@@ -418,8 +418,7 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     Errors are printed to the output via qWarning(). Additional debug messages
     can be enabled via the following logging categories. Messages from these
     categories are not printed by default unless explicitly enabled via
-    QRhi::EnableProfiling or the facilities of QLoggingCategory (such as, the
-    \c QT_LOGGING_RULES environment variable).
+    QLoggingCategory or the \c QT_LOGGING_RULES environment variable.
 
     \list
     \li \c{qt.rhi.general}
@@ -427,7 +426,8 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
 
     It is strongly advised to inspect the output with the logging categories
     (\c{qt.rhi.*}) enabled whenever a QRhi-based application is not behaving as
-    expected.
+    expected. For better interoperation with Qt Quick, the environment variable
+    \c{QSG_INFO} also enables these debug prints.
  */
 
 /*!
@@ -445,11 +445,7 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     \enum QRhi::Flag
     Describes what special features to enable.
 
-    \value EnableProfiling Enables gathering timing (CPU, GPU) and resource
-    (QRhiBuffer, QRhiTexture, etc.) information and additional metadata. See
-    QRhiProfiler. Avoid enabling in production builds as it may involve a
-    performance penalty. Also enables debug messages from the \c{qt.rhi.*}
-    logging categories.
+    \value EnableProfiling This flag has currently no effect.
 
     \value EnableDebugMarkers Enables debug marker groups. Without this frame
     debugging features like making debug groups and custom resource name
@@ -518,7 +514,8 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     QRhiCommandBuffer::debugMarkBegin()) are supported.
 
     \value Timestamps Indicates that command buffer timestamps are supported.
-    Relevant for QRhiProfiler::gpuFrameTimes().
+    Relevant for addGpuFrameTimeCallback(). Can be expected to be supported on
+    D3D11 and Vulkan, assuming the underlying implementation supports it.
 
     \value Instancing Indicates that instanced drawing is supported. In
     practice this feature will be unsupported with OpenGL ES 2.0 and OpenGL
@@ -2048,8 +2045,7 @@ QByteArray QRhiResource::name() const
     This has two uses: to get descriptive names for the native graphics
     resources visible in graphics debugging tools, such as
     \l{https://renderdoc.org/}{RenderDoc} and
-    \l{https://developer.apple.com/xcode/}{XCode}, and in the output stream of
-    QRhiProfiler.
+    \l{https://developer.apple.com/xcode/}{XCode}.
 
     When it comes to naming native objects by relaying the name via the
     appropriate graphics API, note that the name is ignored when
@@ -2066,7 +2062,6 @@ QByteArray QRhiResource::name() const
 void QRhiResource::setName(const QByteArray &name)
 {
     m_objectName = name;
-    m_objectName.replace(',', '_'); // cannot contain comma for QRhiProfiler
 }
 
 /*!
@@ -4851,23 +4846,6 @@ void QRhiImplementation::textureFormatInfo(QRhiTexture::Format format, const QSi
         *bytesPerPixel = bpc;
 }
 
-// Approximate because it excludes subresource alignment or multisampling.
-quint32 QRhiImplementation::approxByteSizeForTexture(QRhiTexture::Format format, const QSize &baseSize, int depth,
-                                                     int mipCount, int layerCount)
-{
-    quint32 approxSize = 0;
-    for (int level = 0; level < mipCount; ++level) {
-        quint32 byteSize = 0;
-        const QSize size(qFloor(qreal(qMax(1, baseSize.width() >> level))),
-                         qFloor(qreal(qMax(1, baseSize.height() >> level))));
-        textureFormatInfo(format, size, nullptr, &byteSize, nullptr);
-        approxSize += byteSize;
-    }
-    approxSize *= depth; // 3D texture depth or 1 otherwise
-    approxSize *= uint(layerCount); // 6 for cubemaps or 1 otherwise
-    return approxSize;
-}
-
 bool QRhiImplementation::sanityCheckGraphicsPipeline(QRhiGraphicsPipeline *ps)
 {
     if (ps->cbeginShaderStages() == ps->cendShaderStages()) {
@@ -5000,16 +4978,13 @@ QRhi::~QRhi()
 }
 
 /*!
-    \return a new QRhi instance with a backend for the graphics API specified by \a impl.
+    \return a new QRhi instance with a backend for the graphics API specified
+    by \a impl with the specified \a flags.
 
     \a params must point to an instance of one of the backend-specific
     subclasses of QRhiInitParams, such as, QRhiVulkanInitParams,
     QRhiMetalInitParams, QRhiD3D11InitParams, QRhiGles2InitParams. See these
     classes for examples on creating a QRhi.
-
-    \a flags is optional. It is used to enable profile and debug related
-    features that are potentially expensive and should only be used during
-    development.
  */
 QRhi *QRhi::create(Implementation impl, QRhiInitParams *params, Flags flags, QRhiNativeHandles *importDevice)
 {
@@ -5062,12 +5037,6 @@ QRhi *QRhi::create(Implementation impl, QRhiInitParams *params, Flags flags, QRh
 
     if (r->d) {
         r->d->q = r.data();
-
-        if (flags.testFlag(EnableProfiling)) {
-            QRhiProfilerPrivate *profD = QRhiProfilerPrivate::get(&r->d->profiler);
-            profD->rhiDWhenEnabled = r->d;
-            const_cast<QLoggingCategory &>(QRHI_LOG_INFO()).setEnabled(QtDebugMsg, true);
-        }
 
         // Play nice with QSG_INFO since that is still the most commonly used
         // way to get graphics info printed from Qt Quick apps, and the Quick
@@ -5228,6 +5197,36 @@ void QRhi::runCleanup()
         f(this);
 
     d->cleanupCallbacks.clear();
+}
+
+/*!
+    Registers a \a callback that is called with an elapsed time calculated from
+    GPU timestamps asynchronously after a timestamp becomes available at some
+    point after presenting a frame.
+
+    The callback is called with a float value that is meant to be in
+    milliseconds and represents the elapsed time on the GPU side for a given
+    frame. Care must be exercised with the interpretation of the value, as what
+    it exactly is is not controlled by Qt and depends on the underlying
+    graphics API and its implementation. In particular, comparing the values
+    between different graphics APIs is discouraged and may be meaningless.
+
+    The timing values become available asynchronously, sometimes several frames
+    after the frame has been submitted in endFrame(). There is currently no way
+    to identify the frame. The callback is invoked whenever the timestamp
+    queries complete.
+
+    \note This is only supported when the Timestamp feature is reported as
+    supported from isFeatureSupported(). Otherwise the \a callback is never
+    called.
+
+    The \a callback is always called on the thread the QRhi lives and operates
+    on. While not guaranteed, it is typical that the callback is invoked from
+    within beginFrame().
+ */
+void QRhi::addGpuFrameTimeCallback(const GpuFrameTimeCallback &callback)
+{
+    d->addGpuFrameTimeCallback(callback);
 }
 
 /*!
@@ -6404,18 +6403,6 @@ bool QRhi::makeThreadLocalNativeContextCurrent()
 }
 
 /*!
-    \return the associated QRhiProfiler instance.
-
-    An instance is always available for each QRhi, but it is not very useful
-    without EnableProfiling because no data is collected without setting the
-    flag upon creation.
-  */
-QRhiProfiler *QRhi::profiler()
-{
-    return &d->profiler;
-}
-
-/*!
     Attempts to release resources in the backend's caches. This can include both
     CPU and GPU resources.  Only memory and resources that can be recreated
     automatically are in scope. As an example, if the backend's
@@ -6546,6 +6533,45 @@ QByteArray QRhi::pipelineCacheData()
 void QRhi::setPipelineCacheData(const QByteArray &data)
 {
     d->setPipelineCacheData(data);
+}
+
+/*!
+    \struct QRhiMemAllocStats
+    \internal
+    \inmodule QtGui
+
+    \brief Statistics provided from the underlying memory allocator.
+ */
+
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug dbg, const QRhiMemAllocStats &info)
+{
+    QDebugStateSaver saver(dbg);
+    dbg.nospace() << "QRhiMemAllocStats(blockCount=" << info.blockCount
+                  << " allocCount=" << info.allocCount
+                  << " usedBytes=" << info.usedBytes
+                  << " unusedBytes=" << info.unusedBytes
+                  << ')';
+    return dbg;
+}
+#endif
+
+/*!
+    Gathers and returns some statistics about the memory allocation of graphics
+    resources. Only supported with some backends. With graphics APIs where
+    there is no lower level control over resource memory allocations, this will
+    never be supported and all fields in the results are 0.
+
+    With Vulkan, the values are valid always, and are queried from the
+    underlying memory allocator library. This gives an insight into the memory
+    requirements of the active buffers and textures.
+
+    \note Gathering the data may not be free, and therefore the function should
+    not be called at a high frequency.
+ */
+QRhiMemAllocStats QRhi::graphicsMemoryAllocationStatistics() const
+{
+    return d->graphicsMemoryAllocationStatistics();
 }
 
 /*!

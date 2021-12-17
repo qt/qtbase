@@ -353,7 +353,6 @@ void tst_QRhi::create()
         QVERIFY(uniBufRangeMax >= 224 * 4 * 4);
 
         QVERIFY(rhi->nativeHandles());
-        QVERIFY(rhi->profiler());
 
         const QRhi::Feature features[] = {
             QRhi::MultisampleTexture,

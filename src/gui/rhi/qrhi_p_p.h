@@ -52,7 +52,6 @@
 //
 
 #include "qrhi_p.h"
-#include "qrhiprofiler_p_p.h"
 #include <QBitArray>
 #include <QAtomicInt>
 #include <QLoggingCategory>
@@ -61,8 +60,6 @@ QT_BEGIN_NAMESPACE
 
 #define QRHI_RES(t, x) static_cast<t *>(x)
 #define QRHI_RES_RHI(t) t *rhiD = static_cast<t *>(m_rhi)
-#define QRHI_PROF QRhiProfilerPrivate *rhiP = m_rhi->profilerPrivateOrNull()
-#define QRHI_PROF_F(f) for (bool qrhip_enabled = rhiP != nullptr; qrhip_enabled; qrhip_enabled = false) rhiP->f
 
 Q_DECLARE_LOGGING_CATEGORY(QRHI_LOG_INFO)
 
@@ -168,7 +165,7 @@ public:
     virtual int resourceLimit(QRhi::ResourceLimit limit) const = 0;
     virtual const QRhiNativeHandles *nativeHandles() = 0;
     virtual QRhiDriverInfo driverInfo() const = 0;
-    virtual void sendVMemStatsToProfiler() = 0;
+    virtual QRhiMemAllocStats graphicsMemoryAllocationStatistics() = 0;
     virtual bool makeThreadLocalNativeContextCurrent() = 0;
     virtual void releaseCachedResources() = 0;
     virtual bool isDeviceLost() const = 0;
@@ -182,15 +179,6 @@ public:
                               QSize *blockDim) const;
     void textureFormatInfo(QRhiTexture::Format format, const QSize &size,
                            quint32 *bpl, quint32 *byteSize, quint32 *bytesPerPixel) const;
-    quint32 approxByteSizeForTexture(QRhiTexture::Format format, const QSize &baseSize, int depth,
-                                     int mipCount, int layerCount);
-
-    QRhiProfilerPrivate *profilerPrivateOrNull()
-    {
-        // return null when QRhi::EnableProfiling was not set
-        QRhiProfilerPrivate *p = QRhiProfilerPrivate::get(&profiler);
-        return p->rhiDWhenEnabled ? p : nullptr;
-    }
 
     // only really care about resources that own native graphics resources underneath
     void registerResource(QRhiResource *res)
@@ -221,6 +209,22 @@ public:
         cleanupCallbacks.append(callback);
     }
 
+    void addGpuFrameTimeCallback(const QRhi::GpuFrameTimeCallback &callback)
+    {
+        gpuFrameTimeCallbacks.append(callback);
+    }
+
+    bool hasGpuFrameTimeCallback() const
+    {
+        return !gpuFrameTimeCallbacks.isEmpty();
+    }
+
+    void runGpuFrameTimeCallbacks(float t)
+    {
+        for (const QRhi::GpuFrameTimeCallback &f : qAsConst(gpuFrameTimeCallbacks))
+            f(t);
+    }
+
     bool sanityCheckGraphicsPipeline(QRhiGraphicsPipeline *ps);
     bool sanityCheckShaderResourceBindings(QRhiShaderResourceBindings *srb);
     void updateLayoutDesc(QRhiShaderResourceBindings *srb);
@@ -242,13 +246,13 @@ public:
 private:
     QRhi::Implementation implType;
     QThread *implThread;
-    QRhiProfiler profiler;
     QVarLengthArray<QRhiResourceUpdateBatch *, 4> resUpdPool;
     quint64 resUpdPoolMap = 0;
     int lastResUpdIdx = -1;
     QSet<QRhiResource *> resources;
     QSet<QRhiResource *> pendingDeleteResources;
     QVarLengthArray<QRhi::CleanupCallback, 4> cleanupCallbacks;
+    QVarLengthArray<QRhi::GpuFrameTimeCallback, 4> gpuFrameTimeCallbacks;
 
     friend class QRhi;
     friend class QRhiResourceUpdateBatchPrivate;

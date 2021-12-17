@@ -670,9 +670,9 @@ QRhiDriverInfo QRhiMetal::driverInfo() const
     return driverInfoStruct;
 }
 
-void QRhiMetal::sendVMemStatsToProfiler()
+QRhiMemAllocStats QRhiMetal::graphicsMemoryAllocationStatistics()
 {
-    // nothing to do here
+    return {};
 }
 
 bool QRhiMetal::makeThreadLocalNativeContextCurrent()
@@ -1470,9 +1470,6 @@ QRhi::FrameOpResult QRhiMetal::beginFrame(QRhiSwapChain *swapChain, QRhi::BeginF
     swapChainD->rtWrapper.d->fb.hasStencil = swapChainD->ds ? true : false;
     swapChainD->rtWrapper.d->fb.depthNeedsStore = false;
 
-    QRhiProfilerPrivate *rhiP = profilerPrivateOrNull();
-    QRHI_PROF_F(beginSwapChainFrame(swapChain));
-
     executeDeferredReleases();
     swapChainD->cbWrapper.resetState();
     finishActiveReadbacks();
@@ -1503,9 +1500,6 @@ QRhi::FrameOpResult QRhiMetal::endFrame(QRhiSwapChain *swapChain, QRhi::EndFrame
     }];
 
     [swapChainD->cbWrapper.d->cb commit];
-
-    QRhiProfilerPrivate *rhiP = profilerPrivateOrNull();
-    QRHI_PROF_F(endSwapChainFrame(swapChain, swapChainD->frameCount + 1));
 
     [d->captureScope endScope];
 
@@ -1776,7 +1770,6 @@ void QRhiMetal::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
 {
     QMetalCommandBuffer *cbD = QRHI_RES(QMetalCommandBuffer, cb);
     QRhiResourceUpdateBatchPrivate *ud = QRhiResourceUpdateBatchPrivate::get(resourceUpdates);
-    QRhiProfilerPrivate *rhiP = profilerPrivateOrNull();
 
     for (int opIdx = 0; opIdx < ud->activeBufferOpCount; ++opIdx) {
         const QRhiResourceUpdateBatchPrivate::BufferOp &u(ud->bufferOps[opIdx]);
@@ -1835,7 +1828,6 @@ void QRhiMetal::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
             Q_ASSERT(!utexD->d->stagingBuf[currentFrameSlot]);
             utexD->d->stagingBuf[currentFrameSlot] = [d->dev newBufferWithLength: NSUInteger(stagingSize)
                         options: MTLResourceStorageModeShared];
-            QRHI_PROF_F(newTextureStagingArea(utexD, currentFrameSlot, quint32(stagingSize)));
 
             void *mp = [utexD->d->stagingBuf[currentFrameSlot] contents];
             qsizetype curOfs = 0;
@@ -1854,7 +1846,6 @@ void QRhiMetal::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
             e.stagingBuffer.buffer = utexD->d->stagingBuf[currentFrameSlot];
             utexD->d->stagingBuf[currentFrameSlot] = nil;
             d->releaseQueue.append(e);
-            QRHI_PROF_F(releaseTextureStagingArea(utexD, currentFrameSlot));
         } else if (u.type == QRhiResourceUpdateBatchPrivate::TextureOp::Copy) {
             Q_ASSERT(u.src && u.dst);
             QMetalTexture *srcD = QRHI_RES(QMetalTexture, u.src);
@@ -1915,10 +1906,6 @@ void QRhiMetal::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
             quint32 bpl = 0;
             textureFormatInfo(readback.format, readback.pixelSize, &bpl, &readback.bufSize, nullptr);
             readback.buf = [d->dev newBufferWithLength: readback.bufSize options: MTLResourceStorageModeShared];
-
-            QRHI_PROF_F(newReadbackBuffer(qint64(qintptr(readback.buf)),
-                                          texD ? static_cast<QRhiResource *>(texD) : static_cast<QRhiResource *>(swapChainD),
-                                          readback.bufSize));
 
             ensureBlit();
             [blitEnc copyFromTexture: src
@@ -2218,7 +2205,6 @@ void QRhiMetal::executeDeferredReleases(bool forced)
 void QRhiMetal::finishActiveReadbacks(bool forced)
 {
     QVarLengthArray<std::function<void()>, 4> completedCallbacks;
-    QRhiProfilerPrivate *rhiP = profilerPrivateOrNull();
 
     for (int i = d->activeTextureReadbacks.count() - 1; i >= 0; --i) {
         const QRhiMetalData::TextureReadback &readback(d->activeTextureReadbacks[i]);
@@ -2229,8 +2215,6 @@ void QRhiMetal::finishActiveReadbacks(bool forced)
             void *p = [readback.buf contents];
             memcpy(readback.result->data.data(), p, readback.bufSize);
             [readback.buf release];
-
-            QRHI_PROF_F(releaseReadbackBuffer(qint64(qintptr(readback.buf))));
 
             if (readback.result->completed)
                 completedCallbacks.append(readback.result->completed);
@@ -2275,8 +2259,6 @@ void QMetalBuffer::destroy()
     QRHI_RES_RHI(QRhiMetal);
     if (rhiD) {
         rhiD->d->releaseQueue.append(e);
-        QRHI_PROF;
-        QRHI_PROF_F(releaseBuffer(this));
         rhiD->unregisterResource(this);
     }
 }
@@ -2323,9 +2305,6 @@ bool QMetalBuffer::create()
             }
         }
     }
-
-    QRHI_PROF;
-    QRHI_PROF_F(newBuffer(this, roundedSize, d->slotted ? QMTL_FRAMES_IN_FLIGHT : 1, 0));
 
     lastActiveFrameSlot = -1;
     generation += 1;
@@ -2556,8 +2535,6 @@ void QMetalRenderBuffer::destroy()
     QRHI_RES_RHI(QRhiMetal);
     if (rhiD) {
         rhiD->d->releaseQueue.append(e);
-        QRHI_PROF;
-        QRHI_PROF_F(releaseRenderBuffer(this));
         rhiD->unregisterResource(this);
     }
 }
@@ -2582,7 +2559,6 @@ bool QMetalRenderBuffer::create()
     desc.resourceOptions = MTLResourceStorageModePrivate;
     desc.usage = MTLTextureUsageRenderTarget;
 
-    bool transientBacking = false;
     switch (m_type) {
     case DepthStencil:
 #ifdef Q_OS_MACOS
@@ -2591,7 +2567,6 @@ bool QMetalRenderBuffer::create()
                 ? MTLPixelFormatDepth24Unorm_Stencil8 : MTLPixelFormatDepth32Float_Stencil8;
 #else
         desc.storageMode = MTLStorageModeMemoryless;
-        transientBacking = true;
         d->format = MTLPixelFormatDepth32Float_Stencil8;
 #endif
         desc.pixelFormat = d->format;
@@ -2614,9 +2589,6 @@ bool QMetalRenderBuffer::create()
 
     if (!m_objectName.isEmpty())
         d->tex.label = [NSString stringWithUTF8String: m_objectName.constData()];
-
-    QRHI_PROF;
-    QRHI_PROF_F(newRenderBuffer(this, transientBacking, false, samples));
 
     lastActiveFrameSlot = -1;
     generation += 1;
@@ -2675,8 +2647,6 @@ void QMetalTexture::destroy()
     QRHI_RES_RHI(QRhiMetal);
     if (rhiD) {
         rhiD->d->releaseQueue.append(e);
-        QRHI_PROF;
-        QRHI_PROF_F(releaseTexture(this));
         rhiD->unregisterResource(this);
     }
 }
@@ -2793,9 +2763,6 @@ bool QMetalTexture::create()
 
     d->owns = true;
 
-    QRHI_PROF;
-    QRHI_PROF_F(newTexture(this, true, mipLevelCount, isCube ? 6 : (isArray ? m_arraySize : 1), samples));
-
     lastActiveFrameSlot = -1;
     generation += 1;
     rhiD->registerResource(this);
@@ -2814,9 +2781,6 @@ bool QMetalTexture::createFrom(QRhiTexture::NativeTexture src)
     d->tex = tex;
 
     d->owns = false;
-
-    QRHI_PROF;
-    QRHI_PROF_F(newTexture(this, false, mipLevelCount, m_flags.testFlag(CubeMap) ? 6 : 1, samples));
 
     lastActiveFrameSlot = -1;
     generation += 1;
@@ -3966,8 +3930,6 @@ void QMetalSwapChain::destroy()
     QRHI_RES_RHI(QRhiMetal);
     if (rhiD) {
         rhiD->swapchains.remove(this);
-        QRHI_PROF;
-        QRHI_PROF_F(releaseSwapChain(this));
         rhiD->unregisterResource(this);
     }
 }
@@ -4158,9 +4120,6 @@ bool QMetalSwapChain::createOrResize()
         }
         [desc release];
     }
-
-    QRHI_PROF;
-    QRHI_PROF_F(resizeSwapChain(this, QMTL_FRAMES_IN_FLIGHT, samples > 1 ? QMTL_FRAMES_IN_FLIGHT : 0, samples));
 
     if (needsRegistration)
         rhiD->registerResource(this);

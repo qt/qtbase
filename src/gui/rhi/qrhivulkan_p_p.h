@@ -766,7 +766,7 @@ public:
     int resourceLimit(QRhi::ResourceLimit limit) const override;
     const QRhiNativeHandles *nativeHandles() override;
     QRhiDriverInfo driverInfo() const override;
-    void sendVMemStatsToProfiler() override;
+    QRhiMemAllocStats graphicsMemoryAllocationStatistics() override;
     bool makeThreadLocalNativeContextCurrent() override;
     void releaseCachedResources() override;
     bool isDeviceLost() const override;

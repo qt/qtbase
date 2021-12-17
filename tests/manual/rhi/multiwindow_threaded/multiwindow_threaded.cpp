@@ -66,7 +66,6 @@
 
 #include <QtGui/private/qshader_p.h>
 #include <QFile>
-#include <QtGui/private/qrhiprofiler_p.h>
 
 #ifndef QT_NO_OPENGL
 #include <QtGui/private/qrhigles2_p.h>
@@ -348,7 +347,7 @@ void Renderer::createRhi()
         return;
 
     qDebug() << "renderer" << this << "creating rhi";
-    QRhi::Flags rhiFlags = QRhi::EnableProfiling;
+    QRhi::Flags rhiFlags;
 
 #ifndef QT_NO_OPENGL
     if (graphicsApi == OpenGL) {
@@ -625,26 +624,6 @@ void Renderer::render(bool newlyExposed, bool wakeBeforePresent)
     r->endFrame(m_sc);
 
     m_frameCount += 1;
-    if ((m_frameCount % 300) == 0) {
-        const QRhiProfiler::CpuTime ff = r->profiler()->frameToFrameTimes(m_sc);
-        const QRhiProfiler::CpuTime be = r->profiler()->frameBuildTimes(m_sc);
-        const QRhiProfiler::GpuTime gp = r->profiler()->gpuFrameTimes(m_sc);
-        if (r->isFeatureSupported(QRhi::Timestamps)) {
-            qDebug("[renderer %p] frame-to-frame: min %lld max %lld avg %f. "
-                   "frame build: min %lld max %lld avg %f. "
-                   "gpu frame time: min %f max %f avg %f",
-                   this,
-                   ff.minTime, ff.maxTime, ff.avgTime,
-                   be.minTime, be.maxTime, be.avgTime,
-                   gp.minTime, gp.maxTime, gp.avgTime);
-        } else {
-            qDebug("[renderer %p] frame-to-frame: min %lld max %lld avg %f. "
-                   "frame build: min %lld max %lld avg %f. ",
-                   this,
-                   ff.minTime, ff.maxTime, ff.avgTime,
-                   be.minTime, be.maxTime, be.avgTime);
-        }
-    }
 }
 
 void Renderer::sendInit()

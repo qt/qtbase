@@ -74,7 +74,6 @@ class QRhiSampler;
 class QRhiCommandBuffer;
 class QRhiResourceUpdateBatch;
 class QRhiResourceUpdateBatchPrivate;
-class QRhiProfiler;
 
 class Q_GUI_EXPORT QRhiDepthStencilClearValue
 {
@@ -1541,6 +1540,20 @@ Q_DECLARE_TYPEINFO(QRhiDriverInfo, Q_RELOCATABLE_TYPE);
 Q_GUI_EXPORT QDebug operator<<(QDebug, const QRhiDriverInfo &);
 #endif
 
+struct Q_GUI_EXPORT QRhiMemAllocStats
+{
+    quint32 blockCount = 0;
+    quint32 allocCount = 0;
+    quint64 usedBytes = 0;
+    quint64 unusedBytes = 0;
+};
+
+Q_DECLARE_TYPEINFO(QRhiMemAllocStats, Q_RELOCATABLE_TYPE);
+
+#ifndef QT_NO_DEBUG_STREAM
+Q_GUI_EXPORT QDebug operator<<(QDebug, const QRhiMemAllocStats &);
+#endif
+
 struct Q_GUI_EXPORT QRhiInitParams
 {
 };
@@ -1645,6 +1658,9 @@ public:
     void addCleanupCallback(const CleanupCallback &callback);
     void runCleanup();
 
+    using GpuFrameTimeCallback = std::function<void(float t)>;
+    void addGpuFrameTimeCallback(const GpuFrameTimeCallback &callback);
+
     QRhiGraphicsPipeline *newGraphicsPipeline();
     QRhiComputePipeline *newComputePipeline();
     QRhiShaderResourceBindings *newShaderResourceBindings();
@@ -1719,8 +1735,6 @@ public:
     const QRhiNativeHandles *nativeHandles();
     bool makeThreadLocalNativeContextCurrent();
 
-    QRhiProfiler *profiler();
-
     static const int MAX_MIP_LEVELS = 16; // a width and/or height of 65536 should be enough for everyone
 
     void releaseCachedResources();
@@ -1729,6 +1743,8 @@ public:
 
     QByteArray pipelineCacheData();
     void setPipelineCacheData(const QByteArray &data);
+
+    QRhiMemAllocStats graphicsMemoryAllocationStatistics() const;
 
 protected:
     QRhi();

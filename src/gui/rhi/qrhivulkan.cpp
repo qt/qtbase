@@ -1713,7 +1713,6 @@ QRhi::FrameOpResult QRhiVulkan::beginFrame(QRhiSwapChain *swapChain, QRhi::Begin
     QVkSwapChain *swapChainD = QRHI_RES(QVkSwapChain, swapChain);
     const int frameResIndex = swapChainD->bufferCount > 1 ? swapChainD->currentFrameSlot : 0;
     QVkSwapChain::FrameResources &frame(swapChainD->frameRes[frameResIndex]);
-    QRhiProfilerPrivate *rhiP = profilerPrivateOrNull();
 
     if (!frame.imageAcquired) {
         // Wait if we are too far ahead, i.e. the thread gets throttled based on the presentation rate
@@ -1775,9 +1774,7 @@ QRhi::FrameOpResult QRhiVulkan::beginFrame(QRhiSwapChain *swapChain, QRhi::Begin
             const float nsecsPerTick = physDevProperties.limits.timestampPeriod;
             if (!qFuzzyIsNull(nsecsPerTick)) {
                 const float elapsedMs = float(ts1 - ts0) * nsecsPerTick / 1000000.0f;
-                // now we have the gpu time for the previous frame for this slot, report it
-                // (does not matter that it is not for this frame)
-                QRHI_PROF_F(swapChainFrameGpuTime(swapChain, elapsedMs));
+                runGpuFrameTimeCallbacks(elapsedMs);
             }
         } else {
             qWarning("Failed to query timestamp: %d", err);
@@ -1799,7 +1796,7 @@ QRhi::FrameOpResult QRhiVulkan::beginFrame(QRhiSwapChain *swapChain, QRhi::Begin
 
     // when profiling is enabled, pick a free query (pair) from the pool
     int timestampQueryIdx = -1;
-    if (profilerPrivateOrNull() && swapChainD->bufferCount > 1) { // no timestamps if not having at least 2 frames in flight
+    if (hasGpuFrameTimeCallback() && swapChainD->bufferCount > 1) { // no timestamps if not having at least 2 frames in flight
         for (int i = 0; i < timestampQueryPoolMap.count(); ++i) {
             if (!timestampQueryPoolMap.testBit(i)) {
                 timestampQueryPoolMap.setBit(i);
@@ -1820,8 +1817,6 @@ QRhi::FrameOpResult QRhiVulkan::beginFrame(QRhiSwapChain *swapChain, QRhi::Begin
 
     QVkSwapChain::ImageResources &image(swapChainD->imageRes[swapChainD->currentImageIndex]);
     swapChainD->rtWrapper.d.fb = image.fb;
-
-    QRHI_PROF_F(beginSwapChainFrame(swapChain));
 
     prepareNewFrame(&swapChainD->cbWrapper);
 
@@ -1887,10 +1882,6 @@ QRhi::FrameOpResult QRhiVulkan::endFrame(QRhiSwapChain *swapChain, QRhi::EndFram
 
     frame.imageSemWaitable = false;
     frame.cmdFenceWaitable = true;
-
-    QRhiProfilerPrivate *rhiP = profilerPrivateOrNull();
-    // this must be done before the Present
-    QRHI_PROF_F(endSwapChainFrame(swapChain, swapChainD->frameCount + 1));
 
     if (needsPresent) {
         // add the Present to the queue
@@ -3068,7 +3059,6 @@ void QRhiVulkan::prepareUploadSubres(QVkTexture *texD, int layer, int level,
 void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdateBatch *resourceUpdates)
 {
     QRhiResourceUpdateBatchPrivate *ud = QRhiResourceUpdateBatchPrivate::get(resourceUpdates);
-    QRhiProfilerPrivate *rhiP = profilerPrivateOrNull();
 
     for (int opIdx = 0; opIdx < ud->activeBufferOpCount; ++opIdx) {
         const QRhiResourceUpdateBatchPrivate::BufferOp &u(ud->bufferOps[opIdx]);
@@ -3103,7 +3093,6 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
                                                &bufD->stagingBuffers[currentFrameSlot], &allocation, nullptr);
                 if (err == VK_SUCCESS) {
                     bufD->stagingAllocations[currentFrameSlot] = allocation;
-                    QRHI_PROF_F(newBufferStagingArea(bufD, currentFrameSlot, quint32(bufD->m_size)));
                 } else {
                     qWarning("Failed to create staging buffer of size %d: %d", bufD->m_size, err);
                     continue;
@@ -3154,7 +3143,6 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
                 bufD->stagingBuffers[currentFrameSlot] = VK_NULL_HANDLE;
                 bufD->stagingAllocations[currentFrameSlot] = nullptr;
                 releaseQueue.append(e);
-                QRHI_PROF_F(releaseBufferStagingArea(bufD, currentFrameSlot));
             }
         } else if (u.type == QRhiResourceUpdateBatchPrivate::BufferOp::Read) {
             QVkBuffer *bufD = QRHI_RES(QVkBuffer, u.buf);
@@ -3196,7 +3184,6 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
                 VkResult err = vmaCreateBuffer(toVmaAllocator(allocator), &bufferInfo, &allocInfo, &readback.stagingBuf, &allocation, nullptr);
                 if (err == VK_SUCCESS) {
                     readback.stagingAlloc = allocation;
-                    QRHI_PROF_F(newReadbackBuffer(qint64(readback.stagingBuf), bufD, uint(readback.byteSize)));
                 } else {
                     qWarning("Failed to create readback buffer of size %u: %d", readback.byteSize, err);
                     continue;
@@ -3254,7 +3241,6 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
                 continue;
             }
             utexD->stagingAllocations[currentFrameSlot] = allocation;
-            QRHI_PROF_F(newTextureStagingArea(utexD, currentFrameSlot, quint32(stagingSize)));
 
             BufferImageCopyList copyInfos;
             size_t curOfs = 0;
@@ -3301,7 +3287,6 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
             utexD->stagingBuffers[currentFrameSlot] = VK_NULL_HANDLE;
             utexD->stagingAllocations[currentFrameSlot] = nullptr;
             releaseQueue.append(e);
-            QRHI_PROF_F(releaseTextureStagingArea(utexD, currentFrameSlot));
 
             // Similarly to buffers, transitioning away from DST is done later,
             // when a renderpass using the texture is encountered.
@@ -3411,9 +3396,6 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
             VkResult err = vmaCreateBuffer(toVmaAllocator(allocator), &bufferInfo, &allocInfo, &readback.stagingBuf, &allocation, nullptr);
             if (err == VK_SUCCESS) {
                 readback.stagingAlloc = allocation;
-                QRHI_PROF_F(newReadbackBuffer(qint64(readback.stagingBuf),
-                                              texD ? static_cast<QRhiResource *>(texD) : static_cast<QRhiResource *>(swapChainD),
-                                              readback.byteSize));
             } else {
                 qWarning("Failed to create readback buffer of size %u: %d", readback.byteSize, err);
                 continue;
@@ -3688,7 +3670,6 @@ void QRhiVulkan::executeDeferredReleases(bool forced)
 void QRhiVulkan::finishActiveReadbacks(bool forced)
 {
     QVarLengthArray<std::function<void()>, 4> completedCallbacks;
-    QRhiProfilerPrivate *rhiP = profilerPrivateOrNull();
 
     for (int i = activeTextureReadbacks.count() - 1; i >= 0; --i) {
         const QRhiVulkan::TextureReadback &readback(activeTextureReadbacks[i]);
@@ -3707,7 +3688,6 @@ void QRhiVulkan::finishActiveReadbacks(bool forced)
             }
 
             vmaDestroyBuffer(toVmaAllocator(allocator), readback.stagingBuf, a);
-            QRHI_PROF_F(releaseReadbackBuffer(qint64(readback.stagingBuf)));
 
             if (readback.result->completed)
                 completedCallbacks.append(readback.result->completed);
@@ -3731,7 +3711,6 @@ void QRhiVulkan::finishActiveReadbacks(bool forced)
             }
 
             vmaDestroyBuffer(toVmaAllocator(allocator), readback.stagingBuf, a);
-            QRHI_PROF_F(releaseReadbackBuffer(qint64(readback.stagingBuf)));
 
             if (readback.result->completed)
                 completedCallbacks.append(readback.result->completed);
@@ -4342,16 +4321,16 @@ QRhiDriverInfo QRhiVulkan::driverInfo() const
     return driverInfoStruct;
 }
 
-void QRhiVulkan::sendVMemStatsToProfiler()
+QRhiMemAllocStats QRhiVulkan::graphicsMemoryAllocationStatistics()
 {
-    QRhiProfilerPrivate *rhiP = profilerPrivateOrNull();
-    if (!rhiP)
-        return;
-
     VmaStats stats;
     vmaCalculateStats(toVmaAllocator(allocator), &stats);
-    QRHI_PROF_F(vmemStat(stats.total.blockCount, stats.total.allocationCount,
-                         quint32(stats.total.usedBytes), quint32(stats.total.unusedBytes)));
+    return {
+        stats.total.blockCount,
+        stats.total.allocationCount,
+        stats.total.usedBytes,
+        stats.total.unusedBytes
+    };
 }
 
 bool QRhiVulkan::makeThreadLocalNativeContextCurrent()
@@ -5557,8 +5536,6 @@ void QVkBuffer::destroy()
     // a (leaked) resource after the QRhi.
     if (rhiD) {
         rhiD->releaseQueue.append(e);
-        QRHI_PROF;
-        QRHI_PROF_F(releaseBuffer(this));
         rhiD->unregisterResource(this);
     }
 }
@@ -5619,9 +5596,6 @@ bool QVkBuffer::create()
         qWarning("Failed to create buffer: %d", err);
         return false;
     }
-
-    QRHI_PROF;
-    QRHI_PROF_F(newBuffer(this, uint(nonZeroSize), m_type != Dynamic ? 1 : QVK_FRAMES_IN_FLIGHT, 0));
 
     lastActiveFrameSlot = -1;
     generation += 1;
@@ -5714,8 +5688,6 @@ void QVkRenderBuffer::destroy()
     QRHI_RES_RHI(QRhiVulkan);
     if (rhiD) {
         rhiD->releaseQueue.append(e);
-        QRHI_PROF;
-        QRHI_PROF_F(releaseRenderBuffer(this));
         rhiD->unregisterResource(this);
     }
 }
@@ -5729,7 +5701,6 @@ bool QVkRenderBuffer::create()
         return false;
 
     QRHI_RES_RHI(QRhiVulkan);
-    QRHI_PROF;
     samples = rhiD->effectiveSampleCount(m_sampleCount);
 
     switch (m_type) {
@@ -5750,7 +5721,6 @@ bool QVkRenderBuffer::create()
         if (!backingTexture->create())
             return false;
         vkformat = backingTexture->vkformat;
-        QRHI_PROF_F(newRenderBuffer(this, false, false, samples));
     }
         break;
     case QRhiRenderBuffer::DepthStencil:
@@ -5768,7 +5738,6 @@ bool QVkRenderBuffer::create()
             return false;
         }
         rhiD->setObjectName(uint64_t(image), VK_DEBUG_REPORT_OBJECT_TYPE_IMAGE_EXT, m_objectName);
-        QRHI_PROF_F(newRenderBuffer(this, true, false, samples));
         break;
     default:
         Q_UNREACHABLE();
@@ -5839,8 +5808,6 @@ void QVkTexture::destroy()
     QRHI_RES_RHI(QRhiVulkan);
     if (rhiD) {
         rhiD->releaseQueue.append(e);
-        QRHI_PROF;
-        QRHI_PROF_F(releaseTexture(this));
         rhiD->unregisterResource(this);
     }
 }
@@ -6034,9 +6001,6 @@ bool QVkTexture::create()
 
     rhiD->setObjectName(uint64_t(image), VK_DEBUG_REPORT_OBJECT_TYPE_IMAGE_EXT, m_objectName);
 
-    QRHI_PROF;
-    QRHI_PROF_F(newTexture(this, true, int(mipLevelCount), isCube ? 6 : (isArray ? m_arraySize : 1), samples));
-
     owns = true;
     rhiD->registerResource(this);
     return true;
@@ -6055,12 +6019,6 @@ bool QVkTexture::createFrom(QRhiTexture::NativeTexture src)
 
     if (!finishCreate())
         return false;
-
-    const bool isCube = m_flags.testFlag(CubeMap);
-    const bool isArray = m_flags.testFlag(TextureArray);
-
-    QRHI_PROF;
-    QRHI_PROF_F(newTexture(this, false, int(mipLevelCount), isCube ? 6 : (isArray ? m_arraySize : 1), samples));
 
     usageState.layout = VkImageLayout(src.layout);
 
@@ -7174,11 +7132,8 @@ void QVkSwapChain::destroy()
 
     surface = lastConnectedSurface = VK_NULL_HANDLE;
 
-    if (rhiD) {
-        QRHI_PROF;
-        QRHI_PROF_F(releaseSwapChain(this));
+    if (rhiD)
         rhiD->unregisterResource(this);
-    }
 }
 
 QRhiCommandBuffer *QVkSwapChain::currentFrameCommandBuffer()
@@ -7444,9 +7399,6 @@ bool QVkSwapChain::createOrResize()
     }
 
     frameCount = 0;
-
-    QRHI_PROF;
-    QRHI_PROF_F(resizeSwapChain(this, QVK_FRAMES_IN_FLIGHT, samples > VK_SAMPLE_COUNT_1_BIT ? QVK_FRAMES_IN_FLIGHT : 0, samples));
 
     if (needsRegistration)
         rhiD->registerResource(this);

@@ -62,9 +62,8 @@
 
 #include <QFileInfo>
 #include <QFile>
-#include <QtGui/private/qrhiprofiler_p.h>
+#include <QElapsedTimer>
 
-#define PROFILE_TO_FILE
 //#define SKIP_PRESENT
 //#define USE_MSAA
 //#define USE_SRGB_SWAPCHAIN
@@ -83,18 +82,12 @@ struct {
     QSize lastOutputSize;
     int frameCount = 0;
     QFile profOut;
+    QVarLengthArray<float, 64> gpuFrameTimes;
+    QElapsedTimer gpuFrameTimePrintTimer;
 } d;
 
 void preInit()
 {
-#ifdef PROFILE_TO_FILE
-    rhiFlags |= QRhi::EnableProfiling;
-    const QString profFn = QFileInfo(QLatin1String("rhiprof.txt")).absoluteFilePath();
-    qDebug("Writing profiling output to %s", qPrintable(profFn));
-    d.profOut.setFileName(profFn);
-    d.profOut.open(QIODevice::WriteOnly);
-#endif
-
 #ifdef SKIP_PRESENT
     endFrameFlags |= QRhi::SkipPresent;
 #endif
@@ -129,10 +122,6 @@ void preInit()
 
 void Window::customInit()
 {
-#ifdef PROFILE_TO_FILE
-    m_r->profiler()->setDevice(&d.profOut);
-#endif
-
     d.triRenderer.setRhi(m_r);
     d.triRenderer.setSampleCount(sampleCount);
     d.triRenderer.initResources(m_rp);
@@ -158,10 +147,6 @@ void Window::customInit()
         d.liveTexCubeRenderer.initResources(m_rp);
         d.liveTexCubeRenderer.setTranslation(QVector3D(-2.0f, 0, 0));
     }
-
-    // Put the gpu mem allocator statistics to the profiling stream after doing
-    // all the init. (where applicable)
-    m_r->profiler()->addVMemAllocatorStats();
 
     // Check some features/limits.
     qDebug("isFeatureSupported(MultisampleTexture): %d", m_r->isFeatureSupported(QRhi::MultisampleTexture));
@@ -192,6 +177,24 @@ void Window::customInit()
     qDebug("MaxThreadGroupZ: %d", m_r->resourceLimit(QRhi::MaxThreadGroupZ));
     qDebug("TextureArraySizeMax: %d", m_r->resourceLimit(QRhi::TextureArraySizeMax));
     qDebug("MaxUniformBufferRange: %d", m_r->resourceLimit(QRhi::MaxUniformBufferRange));
+
+    // With Vulkan at least we should see some details from the memory allocator.
+    qDebug() << m_r->graphicsMemoryAllocationStatistics();
+
+    // Every two seconds try printing an average of the gpu frame times.
+    d.gpuFrameTimePrintTimer.start();
+    m_r->addGpuFrameTimeCallback([](float elapsedMs) {
+        d.gpuFrameTimes.append(elapsedMs);
+        if (d.gpuFrameTimePrintTimer.elapsed() > 2000) {
+            float at = 0.0f;
+            for (float t : d.gpuFrameTimes)
+                at += t;
+            at /= d.gpuFrameTimes.count();
+            qDebug() << "Average GPU frame time" << at;
+            d.gpuFrameTimes.clear();
+            d.gpuFrameTimePrintTimer.restart();
+        }
+    });
 }
 
 void Window::customRelease()

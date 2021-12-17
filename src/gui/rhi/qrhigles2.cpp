@@ -1189,9 +1189,9 @@ QRhiDriverInfo QRhiGles2::driverInfo() const
     return driverInfoStruct;
 }
 
-void QRhiGles2::sendVMemStatsToProfiler()
+QRhiMemAllocStats QRhiGles2::graphicsMemoryAllocationStatistics()
 {
-    // nothing to do here
+    return {};
 }
 
 bool QRhiGles2::makeThreadLocalNativeContextCurrent()
@@ -1774,9 +1774,6 @@ QRhi::FrameOpResult QRhiGles2::beginFrame(QRhiSwapChain *swapChain, QRhi::BeginF
 
     currentSwapChain = swapChainD;
 
-    QRhiProfilerPrivate *rhiP = profilerPrivateOrNull();
-    QRHI_PROF_F(beginSwapChainFrame(swapChain));
-
     executeDeferredReleases();
     swapChainD->cb.resetState();
 
@@ -1796,10 +1793,6 @@ QRhi::FrameOpResult QRhiGles2::endFrame(QRhiSwapChain *swapChain, QRhi::EndFrame
         return contextLost ? QRhi::FrameOpDeviceLost : QRhi::FrameOpError;
 
     executeCommandBuffer(&swapChainD->cb);
-
-    QRhiProfilerPrivate *rhiP = profilerPrivateOrNull();
-    // this must be done before the swap
-    QRHI_PROF_F(endSwapChainFrame(swapChain, swapChainD->frameCount + 1));
 
     if (swapChainD->surface && !flags.testFlag(QRhi::SkipPresent)) {
         ctx->swapBuffers(swapChainD->surface);
@@ -4430,8 +4423,6 @@ void QGles2Buffer::destroy()
     QRHI_RES_RHI(QRhiGles2);
     if (rhiD) {
         rhiD->releaseQueue.append(e);
-        QRHI_PROF;
-        QRHI_PROF_F(releaseBuffer(this));
         rhiD->unregisterResource(this);
     }
 }
@@ -4442,7 +4433,6 @@ bool QGles2Buffer::create()
         destroy();
 
     QRHI_RES_RHI(QRhiGles2);
-    QRHI_PROF;
 
     nonZeroSize = m_size <= 0 ? 256 : m_size;
 
@@ -4452,7 +4442,6 @@ bool QGles2Buffer::create()
             return false;
         }
         data.resize(nonZeroSize);
-        QRHI_PROF_F(newBuffer(this, uint(nonZeroSize), 0, 1));
         return true;
     }
 
@@ -4471,7 +4460,6 @@ bool QGles2Buffer::create()
 
     usageState.access = AccessNone;
 
-    QRHI_PROF_F(newBuffer(this, uint(nonZeroSize), 1, 0));
     rhiD->registerResource(this);
     return true;
 }
@@ -4543,8 +4531,6 @@ void QGles2RenderBuffer::destroy()
     if (rhiD) {
         if (owns)
             rhiD->releaseQueue.append(e);
-        QRHI_PROF;
-        QRHI_PROF_F(releaseRenderBuffer(this));
         rhiD->unregisterResource(this);
     }
 }
@@ -4555,14 +4541,11 @@ bool QGles2RenderBuffer::create()
         destroy();
 
     QRHI_RES_RHI(QRhiGles2);
-    QRHI_PROF;
     samples = rhiD->effectiveSampleCount(m_sampleCount);
 
     if (m_flags.testFlag(UsedWithSwapChainOnly)) {
-        if (m_type == DepthStencil) {
-            QRHI_PROF_F(newRenderBuffer(this, false, true, samples));
+        if (m_type == DepthStencil)
             return true;
-        }
 
         qWarning("RenderBuffer: UsedWithSwapChainOnly is meaningless in combination with Color");
     }
@@ -4602,7 +4585,6 @@ bool QGles2RenderBuffer::create()
             rhiD->f->glRenderbufferStorage(GL_RENDERBUFFER, stencilStorage,
                                            size.width(), size.height());
         }
-        QRHI_PROF_F(newRenderBuffer(this, false, false, samples));
         break;
     case QRhiRenderBuffer::Color:
     {
@@ -4623,7 +4605,6 @@ bool QGles2RenderBuffer::create()
             rhiD->f->glRenderbufferStorage(GL_RENDERBUFFER, internalFormat,
                                            size.width(), size.height());
         }
-        QRHI_PROF_F(newRenderBuffer(this, false, false, samples));
     }
         break;
     default:
@@ -4655,9 +4636,6 @@ bool QGles2RenderBuffer::createFrom(NativeRenderBuffer src)
         return false;
 
     renderbuffer = src.object;
-
-    QRHI_PROF;
-    QRHI_PROF_F(newRenderBuffer(this, false, false, samples));
 
     owns = false;
     generation += 1;
@@ -4702,8 +4680,6 @@ void QGles2Texture::destroy()
     if (rhiD) {
         if (owns)
             rhiD->releaseQueue.append(e);
-        QRHI_PROF;
-        QRHI_PROF_F(releaseTexture(this));
         rhiD->unregisterResource(this);
     }
 }
@@ -4850,9 +4826,6 @@ bool QGles2Texture::create()
         specified = false;
     }
 
-    QRHI_PROF;
-    QRHI_PROF_F(newTexture(this, true, mipLevelCount, isCube ? 6 : 1, 1));
-
     owns = true;
 
     generation += 1;
@@ -4873,13 +4846,10 @@ bool QGles2Texture::createFrom(QRhiTexture::NativeTexture src)
     specified = true;
     zeroInitialized = true;
 
-    QRHI_RES_RHI(QRhiGles2);
-    QRHI_PROF;
-    QRHI_PROF_F(newTexture(this, false, mipLevelCount, m_flags.testFlag(CubeMap) ? 6 : 1, 1));
-
     owns = false;
 
     generation += 1;
+    QRHI_RES_RHI(QRhiGles2);
     rhiD->registerResource(this);
     return true;
 }
@@ -5447,11 +5417,8 @@ QGles2SwapChain::~QGles2SwapChain()
 void QGles2SwapChain::destroy()
 {
     QRHI_RES_RHI(QRhiGles2);
-    if (rhiD) {
-        QRHI_PROF;
-        QRHI_PROF_F(releaseSwapChain(this));
+    if (rhiD)
         rhiD->unregisterResource(this);
-    }
 }
 
 QRhiCommandBuffer *QGles2SwapChain::currentFrameCommandBuffer()
@@ -5507,10 +5474,6 @@ bool QGles2SwapChain::createOrResize()
     rt.d.srgbUpdateAndBlend = m_flags.testFlag(QRhiSwapChain::sRGB);
 
     frameCount = 0;
-
-    QRHI_PROF;
-    // make something up
-    QRHI_PROF_F(resizeSwapChain(this, 2, m_sampleCount > 1 ? 2 : 0, m_sampleCount));
 
     // The only reason to register this fairly fake gl swapchain
     // object with no native resources underneath is to be able to

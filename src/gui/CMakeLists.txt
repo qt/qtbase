@@ -206,8 +206,6 @@ qt_internal_add_module(Gui
         rhi/qrhi_p_p.h
         rhi/qrhinull.cpp rhi/qrhinull_p.h
         rhi/qrhinull_p_p.h
-        rhi/qrhiprofiler.cpp rhi/qrhiprofiler_p.h
-        rhi/qrhiprofiler_p_p.h
         rhi/qshader.cpp rhi/qshader_p.h
         rhi/qshader_p_p.h
         rhi/qshaderdescription.cpp rhi/qshaderdescription_p.h

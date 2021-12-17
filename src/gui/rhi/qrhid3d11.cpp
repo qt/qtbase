@@ -611,9 +611,9 @@ QRhiDriverInfo QRhiD3D11::driverInfo() const
     return driverInfoStruct;
 }
 
-void QRhiD3D11::sendVMemStatsToProfiler()
+QRhiMemAllocStats QRhiD3D11::graphicsMemoryAllocationStatistics()
 {
-    // nothing to do here
+    return {};
 }
 
 bool QRhiD3D11::makeThreadLocalNativeContextCurrent()
@@ -1084,7 +1084,6 @@ QRhi::FrameOpResult QRhiD3D11::beginFrame(QRhiSwapChain *swapChain, QRhi::BeginF
     QD3D11SwapChain *swapChainD = QRHI_RES(QD3D11SwapChain, swapChain);
     contextState.currentSwapChain = swapChainD;
     const int currentFrameSlot = swapChainD->currentFrameSlot;
-    QRhiProfilerPrivate *rhiP = profilerPrivateOrNull();
 
     if (swapChainD->timestampActive[currentFrameSlot]) {
         ID3D11Query *tsDisjoint = swapChainD->timestampDisjointQuery[currentFrameSlot];
@@ -1104,8 +1103,7 @@ QRhi::FrameOpResult QRhiD3D11::beginFrame(QRhiSwapChain *swapChain, QRhi::BeginF
         if (ok) {
             if (!dj.Disjoint && dj.Frequency) {
                 const float elapsedMs = (timestamps[1] - timestamps[0]) / float(dj.Frequency) * 1000.0f;
-                // finally got a value, just report it, the profiler cares about min/max/avg anyway
-                QRHI_PROF_F(swapChainFrameGpuTime(swapChain, elapsedMs));
+                runGpuFrameTimeCallbacks(elapsedMs);
             }
             swapChainD->timestampActive[currentFrameSlot] = false;
         } // else leave timestampActive set to true, will retry in a subsequent beginFrame
@@ -1116,8 +1114,6 @@ QRhi::FrameOpResult QRhiD3D11::beginFrame(QRhiSwapChain *swapChain, QRhi::BeginF
     swapChainD->rt.d.rtv[0] = swapChainD->sampleDesc.Count > 1 ?
                 swapChainD->msaaRtv[currentFrameSlot] : swapChainD->backBufferRtv;
     swapChainD->rt.d.dsv = swapChainD->ds ? swapChainD->ds->dsv : nullptr;
-
-    QRHI_PROF_F(beginSwapChainFrame(swapChain));
 
     finishActiveReadbacks();
 
@@ -1154,10 +1150,6 @@ QRhi::FrameOpResult QRhiD3D11::endFrame(QRhiSwapChain *swapChain, QRhi::EndFrame
         context->End(tsDisjoint);
         swapChainD->timestampActive[currentFrameSlot] = true;
     }
-
-    QRhiProfilerPrivate *rhiP = profilerPrivateOrNull();
-    // this must be done before the Present
-    QRHI_PROF_F(endSwapChainFrame(swapChain, swapChainD->frameCount + 1));
 
     if (!flags.testFlag(QRhi::SkipPresent)) {
         const UINT presentFlags = 0;
@@ -1449,7 +1441,6 @@ void QRhiD3D11::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
 {
     QD3D11CommandBuffer *cbD = QRHI_RES(QD3D11CommandBuffer, cb);
     QRhiResourceUpdateBatchPrivate *ud = QRhiResourceUpdateBatchPrivate::get(resourceUpdates);
-    QRhiProfilerPrivate *rhiP = profilerPrivateOrNull();
 
     for (int opIdx = 0; opIdx < ud->activeBufferOpCount; ++opIdx) {
         const QRhiResourceUpdateBatchPrivate::BufferOp &u(ud->bufferOps[opIdx]);
@@ -1498,7 +1489,6 @@ void QRhiD3D11::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
                     qWarning("Failed to create buffer: %s", qPrintable(comErrorMessage(hr)));
                     continue;
                 }
-                QRHI_PROF_F(newReadbackBuffer(qint64(qintptr(readback.stagingBuf)), bufD, readback.byteSize));
 
                 QD3D11CommandBuffer::Command &cmd(cbD->commands.get());
                 cmd.cmd = QD3D11CommandBuffer::Command::CopySubRes;
@@ -1630,9 +1620,6 @@ void QRhiD3D11::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
                 qWarning("Failed to create readback staging texture: %s", qPrintable(comErrorMessage(hr)));
                 return;
             }
-            QRHI_PROF_F(newReadbackBuffer(qint64(qintptr(stagingTex)),
-                                          texD ? static_cast<QRhiResource *>(texD) : static_cast<QRhiResource *>(swapChainD),
-                                          byteSize));
 
             QD3D11CommandBuffer::Command &cmd(cbD->commands.get());
             cmd.cmd = QD3D11CommandBuffer::Command::CopySubRes;
@@ -1677,7 +1664,6 @@ void QRhiD3D11::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
 void QRhiD3D11::finishActiveReadbacks()
 {
     QVarLengthArray<std::function<void()>, 4> completedCallbacks;
-    QRhiProfilerPrivate *rhiP = profilerPrivateOrNull();
 
     for (int i = activeTextureReadbacks.count() - 1; i >= 0; --i) {
         const QRhiD3D11::TextureReadback &readback(activeTextureReadbacks[i]);
@@ -1703,7 +1689,6 @@ void QRhiD3D11::finishActiveReadbacks()
         }
 
         readback.stagingTex->Release();
-        QRHI_PROF_F(releaseReadbackBuffer(qint64(qintptr(readback.stagingTex))));
 
         if (readback.result->completed)
             completedCallbacks.append(readback.result->completed);
@@ -1725,7 +1710,6 @@ void QRhiD3D11::finishActiveReadbacks()
         }
 
         readback.stagingBuf->Release();
-        QRHI_PROF_F(releaseReadbackBuffer(qint64(qintptr(readback.stagingBuf))));
 
         if (readback.result->completed)
             completedCallbacks.append(readback.result->completed);
@@ -2680,11 +2664,8 @@ void QD3D11Buffer::destroy()
     }
 
     QRHI_RES_RHI(QRhiD3D11);
-    if (rhiD) {
-        QRHI_PROF;
-        QRHI_PROF_F(releaseBuffer(this));
+    if (rhiD)
         rhiD->unregisterResource(this);
-    }
 }
 
 static inline uint toD3DBufferUsage(QRhiBuffer::UsageFlags usage)
@@ -2741,9 +2722,6 @@ bool QD3D11Buffer::create()
 
     if (!m_objectName.isEmpty())
         buffer->SetPrivateData(WKPDID_D3DDebugObjectName, UINT(m_objectName.size()), m_objectName.constData());
-
-    QRHI_PROF;
-    QRHI_PROF_F(newBuffer(this, quint32(roundedSize), m_type == Dynamic ? 2 : 1, m_type == Dynamic ? 1 : 0));
 
     generation += 1;
     rhiD->registerResource(this);
@@ -2839,11 +2817,8 @@ void QD3D11RenderBuffer::destroy()
     tex = nullptr;
 
     QRHI_RES_RHI(QRhiD3D11);
-    if (rhiD) {
-        QRHI_PROF;
-        QRHI_PROF_F(releaseRenderBuffer(this));
+    if (rhiD)
         rhiD->unregisterResource(this);
-    }
 }
 
 bool QD3D11RenderBuffer::create()
@@ -2912,9 +2887,6 @@ bool QD3D11RenderBuffer::create()
     if (!m_objectName.isEmpty())
         tex->SetPrivateData(WKPDID_D3DDebugObjectName, UINT(m_objectName.size()), m_objectName.constData());
 
-    QRHI_PROF;
-    QRHI_PROF_F(newRenderBuffer(this, false, false, int(sampleDesc.Count)));
-
     generation += 1;
     rhiD->registerResource(this);
     return true;
@@ -2969,11 +2941,8 @@ void QD3D11Texture::destroy()
     tex3D = nullptr;
 
     QRHI_RES_RHI(QRhiD3D11);
-    if (rhiD) {
-        QRHI_PROF;
-        QRHI_PROF_F(releaseTexture(this));
+    if (rhiD)
         rhiD->unregisterResource(this);
-    }
 }
 
 static inline DXGI_FORMAT toD3DDepthTextureSRVFormat(QRhiTexture::Format format)
@@ -3197,9 +3166,6 @@ bool QD3D11Texture::create()
     if (!finishCreate())
         return false;
 
-    QRHI_PROF;
-    QRHI_PROF_F(newTexture(this, true, int(mipLevelCount), isCube ? 6 : (isArray ? m_arraySize : 1), int(sampleDesc.Count)));
-
     owns = true;
     rhiD->registerResource(this);
     return true;
@@ -3220,12 +3186,6 @@ bool QD3D11Texture::createFrom(QRhiTexture::NativeTexture src)
 
     if (!finishCreate())
         return false;
-
-    const bool isCube = m_flags.testFlag(CubeMap);
-    const bool isArray = m_flags.testFlag(TextureArray);
-
-    QRHI_PROF;
-    QRHI_PROF_F(newTexture(this, false, int(mipLevelCount), isCube ? 6 : (isArray ? m_arraySize : 1), int(sampleDesc.Count)));
 
     owns = false;
     QRHI_RES_RHI(QRhiD3D11);
@@ -4422,11 +4382,8 @@ void QD3D11SwapChain::destroy()
     }
 
     QRHI_RES_RHI(QRhiD3D11);
-    if (rhiD) {
-        QRHI_PROF;
-        QRHI_PROF_F(releaseSwapChain(this));
+    if (rhiD)
         rhiD->unregisterResource(this);
-    }
 }
 
 QRhiCommandBuffer *QD3D11SwapChain::currentFrameCommandBuffer()
@@ -4777,9 +4734,7 @@ bool QD3D11SwapChain::createOrResize()
     rtD->d.colorAttCount = 1;
     rtD->d.dsAttCount = m_depthStencil ? 1 : 0;
 
-    QRHI_PROF;
-    QRHI_PROF_F(resizeSwapChain(this, BUFFER_COUNT, sampleDesc.Count > 1 ? BUFFER_COUNT : 0, int(sampleDesc.Count)));
-    if (rhiP) {
+    if (rhiD->hasGpuFrameTimeCallback()) {
         D3D11_QUERY_DESC queryDesc;
         memset(&queryDesc, 0, sizeof(queryDesc));
         for (int i = 0; i < BUFFER_COUNT; ++i) {
