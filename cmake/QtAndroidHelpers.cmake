@@ -75,6 +75,15 @@ define_property(TARGET
         "Qt Module android feature list."
 )
 
+define_property(TARGET
+    PROPERTY
+        QT_ANDROID_ABIS
+    BRIEF_DOCS
+        "List of ABIs that the target packages are built with."
+    FULL_DOCS
+        "List of ABIs that the target packages are built with."
+)
+
 function(qt_internal_android_dependencies_content target file_content_out)
     get_target_property(arg_JAR_DEPENDENCIES ${target} QT_ANDROID_JAR_DEPENDENCIES)
     get_target_property(arg_BUNDLED_JAR_DEPENDENCIES ${target} QT_ANDROID_BUNDLED_JAR_DEPENDENCIES)
