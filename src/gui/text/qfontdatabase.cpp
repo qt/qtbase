@@ -2535,9 +2535,12 @@ void QFontDatabasePrivate::load(const QFontPrivate *d, int script)
         family_list << req.families.at(0);
 
         // add the default family
-        QString defaultFamily = QGuiApplication::font().families().first();
-        if (! family_list.contains(defaultFamily))
-            family_list << defaultFamily;
+        auto families = QGuiApplication::font().families();
+        if (!families.isEmpty()) {
+            QString defaultFamily = families.first();
+            if (! family_list.contains(defaultFamily))
+                family_list << defaultFamily;
+        }
 
     }
 
