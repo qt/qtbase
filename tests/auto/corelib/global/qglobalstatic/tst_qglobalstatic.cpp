@@ -206,7 +206,13 @@ void tst_QGlobalStatic::threadStressTest()
     if (expectedConstructionCount <= 0)
         QSKIP("This test cannot be run more than once");
 
+#ifdef Q_OS_INTEGRITY
+    // OPEN_REALTIME_THREADS = 123 on current INTEGRITY environment
+    // if try to create more, app is halted
+    const int numThreads = 122;
+#else
     const int numThreads = 200;
+#endif
     ThreadStressTestThread threads[numThreads];
     QReadWriteLock lock;
     lock.lockForWrite();
