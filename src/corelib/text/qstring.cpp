@@ -102,10 +102,195 @@
 #endif
 
 #define IS_RAW_DATA(d) ((d.d)->flags & QArrayData::RawDataType)
+#define REHASH(a) \
+    if (sl_minus_1 < sizeof(std::size_t) * CHAR_BIT)  \
+        hashHaystack -= std::size_t(a) << sl_minus_1; \
+    hashHaystack <<= 1
 
 QT_BEGIN_NAMESPACE
 
 const char16_t QString::_empty = 0;
+
+// in qstringmatcher.cpp
+qsizetype qFindStringBoyerMoore(QStringView haystack, qsizetype from, QStringView needle, Qt::CaseSensitivity cs);
+
+namespace {
+inline bool qIsUpper(char ch)
+{
+    return ch >= 'A' && ch <= 'Z';
+}
+
+inline bool qIsDigit(char ch)
+{
+    return ch >= '0' && ch <= '9';
+}
+
+inline char qToLower(char ch)
+{
+    if (ch >= 'A' && ch <= 'Z')
+        return ch - 'A' + 'a';
+    else
+        return ch;
+}
+template <typename Pointer>
+char32_t foldCaseHelper(Pointer ch, Pointer start) = delete;
+
+template <>
+char32_t foldCaseHelper<const QChar*>(const QChar* ch, const QChar* start)
+{
+    return foldCase(reinterpret_cast<const char16_t*>(ch),
+                    reinterpret_cast<const char16_t*>(start));
+}
+
+template <>
+char32_t foldCaseHelper<const char*>(const char* ch, const char*)
+{
+    return foldCase(char16_t(uchar(*ch)));
+}
+
+template <typename T>
+char16_t valueTypeToUtf16(T t) = delete;
+
+template <>
+char16_t valueTypeToUtf16<QChar>(QChar t)
+{
+    return t.unicode();
+}
+
+template <>
+char16_t valueTypeToUtf16<char>(char t)
+{
+    return char16_t{uchar(t)};
+}
+
+/*!
+    \internal
+
+    Returns the index position of the first occurrence of the
+    character \a ch in the string given by \a str and \a len,
+    searching forward from index
+    position \a from. Returns -1 if \a ch could not be found.
+*/
+static inline qsizetype qFindChar(QStringView str, QChar ch, qsizetype from, Qt::CaseSensitivity cs) noexcept
+{
+    if (-from > str.size())
+        return -1;
+    if (from < 0)
+        from = qMax(from + str.size(), qsizetype(0));
+    if (from < str.size()) {
+        const char16_t *s = str.utf16();
+        char16_t c = ch.unicode();
+        const char16_t *n = s + from;
+        const char16_t *e = s + str.size();
+        if (cs == Qt::CaseSensitive) {
+            n = QtPrivate::qustrchr(QStringView(n, e), c);
+            if (n != e)
+                return n - s;
+        } else {
+            c = foldCase(c);
+            --n;
+            while (++n != e)
+                if (foldCase(*n) == c)
+                    return n - s;
+        }
+    }
+    return -1;
+}
+
+template <typename Haystack>
+static inline qsizetype qLastIndexOf(Haystack haystack, QChar needle,
+                                     qsizetype from, Qt::CaseSensitivity cs) noexcept
+{
+    if (haystack.size() == 0)
+        return -1;
+    if (from < 0)
+        from += haystack.size();
+    else if (std::size_t(from) > std::size_t(haystack.size()))
+        from = haystack.size() - 1;
+    if (from >= 0) {
+        char16_t c = needle.unicode();
+        const auto b = haystack.data();
+        auto n = b + from;
+        if (cs == Qt::CaseSensitive) {
+            for (; n >= b; --n)
+                if (valueTypeToUtf16(*n) == c)
+                    return n - b;
+        } else {
+            c = foldCase(c);
+            for (; n >= b; --n)
+                if (foldCase(valueTypeToUtf16(*n)) == c)
+                    return n - b;
+        }
+    }
+    return -1;
+}
+template <> qsizetype
+qLastIndexOf(QString, QChar, qsizetype, Qt::CaseSensitivity) noexcept = delete; // unwanted, would detach
+
+template<typename Haystack, typename Needle>
+static qsizetype qLastIndexOf(Haystack haystack0, qsizetype from,
+                              Needle needle0, Qt::CaseSensitivity cs) noexcept
+{
+    const qsizetype sl = needle0.size();
+    if (sl == 1)
+        return qLastIndexOf(haystack0, needle0.front(), from, cs);
+
+    const qsizetype l = haystack0.size();
+    if (from < 0)
+        from += l;
+    if (from == l && sl == 0)
+        return from;
+    const qsizetype delta = l - sl;
+    if (std::size_t(from) > std::size_t(l) || delta < 0)
+        return -1;
+    if (from > delta)
+        from = delta;
+
+    auto sv = [sl](const typename Haystack::value_type *v) { return Haystack(v, sl); };
+
+    auto haystack = haystack0.data();
+    const auto needle = needle0.data();
+    const auto *end = haystack;
+    haystack += from;
+    const std::size_t sl_minus_1 = sl ? sl - 1 : 0;
+    const auto *n = needle + sl_minus_1;
+    const auto *h = haystack + sl_minus_1;
+    std::size_t hashNeedle = 0, hashHaystack = 0;
+
+    if (cs == Qt::CaseSensitive) {
+        for (qsizetype idx = 0; idx < sl; ++idx) {
+            hashNeedle = (hashNeedle << 1) + valueTypeToUtf16(*(n - idx));
+            hashHaystack = (hashHaystack << 1) + valueTypeToUtf16(*(h - idx));
+        }
+        hashHaystack -= valueTypeToUtf16(*haystack);
+
+        while (haystack >= end) {
+            hashHaystack += valueTypeToUtf16(*haystack);
+            if (hashHaystack == hashNeedle
+                 && QtPrivate::compareStrings(needle0, sv(haystack), Qt::CaseSensitive) == 0)
+                return haystack - end;
+            --haystack;
+            REHASH(valueTypeToUtf16(haystack[sl]));
+        }
+    } else {
+        for (qsizetype idx = 0; idx < sl; ++idx) {
+            hashNeedle = (hashNeedle << 1) + foldCaseHelper(n - idx, needle);
+            hashHaystack = (hashHaystack << 1) + foldCaseHelper(h - idx, end);
+        }
+        hashHaystack -= foldCaseHelper(haystack, end);
+
+        while (haystack >= end) {
+            hashHaystack += foldCaseHelper(haystack, end);
+            if (hashHaystack == hashNeedle
+                 && QtPrivate::compareStrings(sv(haystack), needle0, Qt::CaseInsensitive) == 0)
+                return haystack - end;
+            --haystack;
+            REHASH(foldCaseHelper(haystack + sl, end));
+        }
+    }
+    return -1;
+}
+} // unnamed namespace
 
 /*
  * Note on the use of SIMD in qstring.cpp:
@@ -143,15 +328,6 @@ extern "C" void qt_fromlatin1_mips_asm_unroll4 (char16_t*, const char*, uint);
 extern "C" void qt_fromlatin1_mips_asm_unroll8 (char16_t*, const char*, uint);
 extern "C" void qt_toLatin1_mips_dsp_asm(uchar *dst, const char16_t *src, int length);
 #endif
-
-// internal
-qsizetype qFindStringBoyerMoore(QStringView haystack, qsizetype from, QStringView needle, Qt::CaseSensitivity cs);
-static inline qsizetype qFindChar(QStringView str, QChar ch, qsizetype from, Qt::CaseSensitivity cs) noexcept;
-template <typename Haystack>
-static inline qsizetype qLastIndexOf(Haystack haystack, QChar needle, qsizetype from, Qt::CaseSensitivity cs) noexcept;
-template <>
-inline qsizetype qLastIndexOf(QString haystack, QChar needle,
-                              qsizetype from, Qt::CaseSensitivity cs) noexcept = delete; // unwanted, would detach
 
 static inline bool qt_starts_with(QStringView haystack, QStringView needle, Qt::CaseSensitivity cs);
 static inline bool qt_starts_with(QStringView haystack, QLatin1String needle, Qt::CaseSensitivity cs);
@@ -1464,29 +1640,6 @@ int QAnyStringView::compare(QAnyStringView lhs, QAnyStringView rhs, Qt::CaseSens
             return QtPrivate::compareStrings(lhs, rhs, cs);
         });
     });
-}
-
-#define REHASH(a) \
-    if (sl_minus_1 < sizeof(std::size_t) * CHAR_BIT)  \
-        hashHaystack -= std::size_t(a) << sl_minus_1; \
-    hashHaystack <<= 1
-
-inline bool qIsUpper(char ch)
-{
-    return ch >= 'A' && ch <= 'Z';
-}
-
-inline bool qIsDigit(char ch)
-{
-    return ch >= '0' && ch <= '9';
-}
-
-inline char qToLower(char ch)
-{
-    if (ch >= 'A' && ch <= 'Z')
-        return ch - 'A' + 'a';
-    else
-        return ch;
 }
 
 // ### Qt 7: do not allow anything but ASCII digits
@@ -10292,74 +10445,6 @@ bool QtPrivate::endsWith(QLatin1String haystack, QLatin1String needle, Qt::CaseS
     return qt_ends_with_impl(haystack, needle, cs);
 }
 
-namespace {
-template <typename Pointer>
-char32_t foldCaseHelper(Pointer ch, Pointer start) = delete;
-
-template <>
-char32_t foldCaseHelper<const QChar*>(const QChar* ch, const QChar* start)
-{
-    return foldCase(reinterpret_cast<const char16_t*>(ch),
-                    reinterpret_cast<const char16_t*>(start));
-}
-
-template <>
-char32_t foldCaseHelper<const char*>(const char* ch, const char*)
-{
-    return foldCase(char16_t(uchar(*ch)));
-}
-
-template <typename T>
-char16_t valueTypeToUtf16(T t) = delete;
-
-template <>
-char16_t valueTypeToUtf16<QChar>(QChar t)
-{
-    return t.unicode();
-}
-
-template <>
-char16_t valueTypeToUtf16<char>(char t)
-{
-    return char16_t{uchar(t)};
-}
-}
-
-/*!
-    \internal
-
-    Returns the index position of the first occurrence of the
-    character \a ch in the string given by \a str and \a len,
-    searching forward from index
-    position \a from. Returns -1 if \a ch could not be found.
-*/
-
-static inline qsizetype qFindChar(QStringView str, QChar ch, qsizetype from, Qt::CaseSensitivity cs) noexcept
-{
-    if (-from > str.size())
-        return -1;
-    if (from < 0)
-        from = qMax(from + str.size(), qsizetype(0));
-    if (from < str.size()) {
-        const char16_t *s = str.utf16();
-        char16_t c = ch.unicode();
-        const char16_t *n = s + from;
-        const char16_t *e = s + str.size();
-        if (cs == Qt::CaseSensitive) {
-            n = QtPrivate::qustrchr(QStringView(n, e), c);
-            if (n != e)
-                return n - s;
-        } else {
-            c = foldCase(c);
-            --n;
-            while (++n != e)
-                if (foldCase(*n) == c)
-                    return n - s;
-        }
-    }
-    return -1;
-}
-
 qsizetype QtPrivate::findString(QStringView haystack0, qsizetype from, QStringView needle0, Qt::CaseSensitivity cs) noexcept
 {
     const qsizetype l = haystack0.size();
@@ -10430,98 +10515,6 @@ qsizetype QtPrivate::findString(QStringView haystack0, qsizetype from, QStringVi
 
             REHASH(foldCase(haystack, haystack_start));
             ++haystack;
-        }
-    }
-    return -1;
-}
-
-template <typename Haystack>
-static inline qsizetype qLastIndexOf(Haystack haystack, QChar needle,
-                                     qsizetype from, Qt::CaseSensitivity cs) noexcept
-{
-    if (haystack.size() == 0)
-        return -1;
-    if (from < 0)
-        from += haystack.size();
-    else if (std::size_t(from) > std::size_t(haystack.size()))
-        from = haystack.size() - 1;
-    if (from >= 0) {
-        char16_t c = needle.unicode();
-        const auto b = haystack.data();
-        auto n = b + from;
-        if (cs == Qt::CaseSensitive) {
-            for (; n >= b; --n)
-                if (valueTypeToUtf16(*n) == c)
-                    return n - b;
-        } else {
-            c = foldCase(c);
-            for (; n >= b; --n)
-                if (foldCase(valueTypeToUtf16(*n)) == c)
-                    return n - b;
-        }
-    }
-    return -1;
-}
-
-template<typename Haystack, typename Needle>
-static qsizetype qLastIndexOf(Haystack haystack0, qsizetype from,
-                              Needle needle0, Qt::CaseSensitivity cs) noexcept
-{
-    const qsizetype sl = needle0.size();
-    if (sl == 1)
-        return qLastIndexOf(haystack0, needle0.front(), from, cs);
-
-    const qsizetype l = haystack0.size();
-    if (from < 0)
-        from += l;
-    if (from == l && sl == 0)
-        return from;
-    const qsizetype delta = l - sl;
-    if (std::size_t(from) > std::size_t(l) || delta < 0)
-        return -1;
-    if (from > delta)
-        from = delta;
-
-    auto sv = [sl](const typename Haystack::value_type *v) { return Haystack(v, sl); };
-
-    auto haystack = haystack0.data();
-    const auto needle = needle0.data();
-    const auto *end = haystack;
-    haystack += from;
-    const std::size_t sl_minus_1 = sl ? sl - 1 : 0;
-    const auto *n = needle + sl_minus_1;
-    const auto *h = haystack + sl_minus_1;
-    std::size_t hashNeedle = 0, hashHaystack = 0;
-
-    if (cs == Qt::CaseSensitive) {
-        for (qsizetype idx = 0; idx < sl; ++idx) {
-            hashNeedle = (hashNeedle << 1) + valueTypeToUtf16(*(n - idx));
-            hashHaystack = (hashHaystack << 1) + valueTypeToUtf16(*(h - idx));
-        }
-        hashHaystack -= valueTypeToUtf16(*haystack);
-
-        while (haystack >= end) {
-            hashHaystack += valueTypeToUtf16(*haystack);
-            if (hashHaystack == hashNeedle
-                 && QtPrivate::compareStrings(needle0, sv(haystack), Qt::CaseSensitive) == 0)
-                return haystack - end;
-            --haystack;
-            REHASH(valueTypeToUtf16(haystack[sl]));
-        }
-    } else {
-        for (qsizetype idx = 0; idx < sl; ++idx) {
-            hashNeedle = (hashNeedle << 1) + foldCaseHelper(n - idx, needle);
-            hashHaystack = (hashHaystack << 1) + foldCaseHelper(h - idx, end);
-        }
-        hashHaystack -= foldCaseHelper(haystack, end);
-
-        while (haystack >= end) {
-            hashHaystack += foldCaseHelper(haystack, end);
-            if (hashHaystack == hashNeedle
-                 && QtPrivate::compareStrings(sv(haystack), needle0, Qt::CaseInsensitive) == 0)
-                return haystack - end;
-            --haystack;
-            REHASH(foldCaseHelper(haystack + sl, end));
         }
     }
     return -1;
