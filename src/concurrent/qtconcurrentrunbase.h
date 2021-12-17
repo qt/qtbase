@@ -93,7 +93,13 @@ public:
         promise.setRunnable(this);
         promise.reportStarted();
         QFuture<T> theFuture = promise.future();
-        parameters.threadPool->start(this, parameters.priority);
+
+        if (parameters.threadPool) {
+            parameters.threadPool->start(this, parameters.priority);
+        } else {
+            promise.reportCanceled();
+            promise.reportFinished();
+        }
         return theFuture;
     }
 
