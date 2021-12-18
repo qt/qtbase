@@ -391,6 +391,18 @@ QByteArray QShader::serialized() const
             ds << mapIt.value().second;
         }
     }
+    ds << int(d->combinedImageMap.count());
+    for (auto it = d->combinedImageMap.cbegin(), itEnd = d->combinedImageMap.cend(); it != itEnd; ++it) {
+        const QShaderKey &k(it.key());
+        writeShaderKey(&ds, k);
+        const SeparateToCombinedImageSamplerMappingList &list(it.value());
+        ds << int(list.count());
+        for (auto listIt = list.cbegin(), listItEnd = list.cend(); listIt != listItEnd; ++listIt) {
+            ds << listIt->combinedSamplerName;
+            ds << listIt->textureBinding;
+            ds << listIt->samplerBinding;
+        }
+    }
 
     return qCompress(buf.buffer());
 }
@@ -431,6 +443,7 @@ QShader QShader::fromSerialized(const QByteArray &data)
     ds >> intVal;
     d->qsbVersion = intVal;
     if (d->qsbVersion != QShaderPrivate::QSB_VERSION
+            && d->qsbVersion != QShaderPrivate::QSB_VERSION_WITHOUT_SEPARATE_IMAGES_AND_SAMPLERS
             && d->qsbVersion != QShaderPrivate::QSB_VERSION_WITHOUT_VAR_ARRAYDIMS
             && d->qsbVersion != QShaderPrivate::QSB_VERSION_WITH_CBOR
             && d->qsbVersion != QShaderPrivate::QSB_VERSION_WITH_BINARY_JSON
@@ -483,6 +496,27 @@ QShader QShader::fromSerialized(const QByteArray &data)
                 map.insert(binding, { firstNativeBinding, secondNativeBinding });
             }
             d->bindings.insert(k, map);
+        }
+    }
+
+    if (d->qsbVersion > QShaderPrivate::QSB_VERSION_WITHOUT_SEPARATE_IMAGES_AND_SAMPLERS) {
+        ds >> count;
+        for (int i = 0; i < count; ++i) {
+            QShaderKey k;
+            readShaderKey(&ds, &k);
+            SeparateToCombinedImageSamplerMappingList list;
+            int listSize;
+            ds >> listSize;
+            for (int b = 0; b < listSize; ++b) {
+                QByteArray combinedSamplerName;
+                ds >> combinedSamplerName;
+                int textureBinding;
+                ds >> textureBinding;
+                int samplerBinding;
+                ds >> samplerBinding;
+                list.append({ combinedSamplerName, textureBinding, samplerBinding });
+            }
+            d->combinedImageMap.insert(k, list);
         }
     }
 
@@ -684,17 +718,20 @@ QDebug operator<<(QDebug dbg, const QShaderVersion &v)
     \c binding layout qualifier in the Vulkan-compatible GLSL shader.
 
     Graphics APIs other than Vulkan may use a resource binding model that is
-    not fully compatible with this. In addition, the generator of the shader
-    code translated from SPIR-V may choose not to take the SPIR-V binding
-    qualifiers into account, for various reasons. (this is the case with the
-    Metal backend of SPIRV-Cross, for example).
+    not fully compatible with this. The generator of the shader code translated
+    from SPIR-V may choose not to take the SPIR-V binding qualifiers into
+    account, for various reasons. This is the case with the Metal backend of
+    SPIRV-Cross, for example. In addition, even when an automatic, implicit
+    translation is mostly possible (e.g. by using SPIR-V binding points as HLSL
+    resource register indices), assigning resource bindings without being
+    constrained by the SPIR-V binding points can lead to better results.
 
     Therefore, a QShader may expose an additional map that describes what the
-    native binding point for a given SPIR-V binding is. The QRhi backends are
-    expected to use this map automatically, as appropriate. The value is a
-    pair, because combined image samplers may map to two native resources (a
-    texture and a sampler) in some shading languages. In that case the second
-    value refers to the sampler.
+    native binding point for a given SPIR-V binding is. The QRhi backends, for
+    which this is relevant, are expected to use this map automatically, as
+    appropriate. The value is a pair, because combined image samplers may map
+    to two native resources (a texture and a sampler) in some shading
+    languages. In that case the second value refers to the sampler.
 
     \note The native binding may be -1, in case there is no active binding for
     the resource in the shader. (for example, there is a uniform block
@@ -739,6 +776,64 @@ void QShader::removeResourceBindingMap(const QShaderKey &key)
 
     detach();
     d->bindings.erase(it);
+}
+
+/*!
+    \typedef QShader::SeparateToCombinedImageSamplerMappingList
+
+    Synonym for QList<QShader::SeparateToCombinedImageSamplerMapping>.
+ */
+
+/*!
+    \struct QShader::SeparateToCombinedImageSamplerMapping
+
+    Describes a mapping from a traditional combined image sampler uniform to
+    binding points for a separate texture and sampler.
+
+    For example, if \c combinedImageSampler is \c{"_54"}, \c textureBinding is
+    \c 1, and \c samplerBinding is \c 2, this means that the GLSL shader code
+    contains a \c sampler2D (or sampler3D, etc.) uniform with the name of
+    \c{_54} which corresponds to two separate resource bindings (\c 1 and \c 2)
+    in the original shader.
+ */
+
+/*!
+    \return the combined image sampler mapping list for \a key or null if there
+    is no data available for \a key, for example because such a mapping is not
+    applicable for the shading language.
+ */
+const QShader::SeparateToCombinedImageSamplerMappingList *QShader::separateToCombinedImageSamplerMappingList(const QShaderKey &key) const
+{
+    auto it = d->combinedImageMap.constFind(key);
+    if (it == d->combinedImageMap.cend())
+        return nullptr;
+
+    return &it.value();
+}
+
+/*!
+    Stores the given combined image sampler mapping \a list associated with \a key.
+
+    \sa separateToCombinedImageSamplerMappingList()
+ */
+void QShader::setSeparateToCombinedImageSamplerMappingList(const QShaderKey &key,
+                                                           const SeparateToCombinedImageSamplerMappingList &list)
+{
+    detach();
+    d->combinedImageMap[key] = list;
+}
+
+/*!
+    Removes the combined image sampler mapping list for \a key.
+ */
+void QShader::removeSeparateToCombinedImageSamplerMappingList(const QShaderKey &key)
+{
+    auto it = d->combinedImageMap.find(key);
+    if (it == d->combinedImageMap.end())
+        return;
+
+    detach();
+    d->combinedImageMap.erase(it);
 }
 
 QT_END_NAMESPACE

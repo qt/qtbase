@@ -74,6 +74,8 @@ struct Q_GUI_EXPORT QShaderDescriptionPrivate
           pushConstantBlocks(other->pushConstantBlocks),
           storageBlocks(other->storageBlocks),
           combinedImageSamplers(other->combinedImageSamplers),
+          separateImages(other->separateImages),
+          separateSamplers(other->separateSamplers),
           storageImages(other->storageImages),
           localSize(other->localSize)
     {
@@ -93,6 +95,8 @@ struct Q_GUI_EXPORT QShaderDescriptionPrivate
     QList<QShaderDescription::PushConstantBlock> pushConstantBlocks;
     QList<QShaderDescription::StorageBlock> storageBlocks;
     QList<QShaderDescription::InOutVariable> combinedImageSamplers;
+    QList<QShaderDescription::InOutVariable> separateImages;
+    QList<QShaderDescription::InOutVariable> separateSamplers;
     QList<QShaderDescription::InOutVariable> storageImages;
     std::array<uint, 3> localSize;
 };

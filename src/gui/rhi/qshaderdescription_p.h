@@ -137,6 +137,7 @@ public:
         SamplerRect,
         SamplerBuffer,
         SamplerExternalOES,
+        Sampler,
 
         Image1D,
         Image2D,
@@ -259,6 +260,8 @@ public:
     QList<PushConstantBlock> pushConstantBlocks() const;
     QList<StorageBlock> storageBlocks() const;
     QList<InOutVariable> combinedImageSamplers() const;
+    QList<InOutVariable> separateImages() const;
+    QList<InOutVariable> separateSamplers() const;
     QList<InOutVariable> storageImages() const;
 
     std::array<uint, 3> computeShaderLocalSize() const;

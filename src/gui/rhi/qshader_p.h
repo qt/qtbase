@@ -167,6 +167,17 @@ public:
     void setResourceBindingMap(const QShaderKey &key, const NativeResourceBindingMap &map);
     void removeResourceBindingMap(const QShaderKey &key);
 
+    struct SeparateToCombinedImageSamplerMapping {
+        QByteArray combinedSamplerName;
+        int textureBinding;
+        int samplerBinding;
+    };
+    using SeparateToCombinedImageSamplerMappingList = QList<SeparateToCombinedImageSamplerMapping>;
+    const SeparateToCombinedImageSamplerMappingList *separateToCombinedImageSamplerMappingList(const QShaderKey &key) const;
+    void setSeparateToCombinedImageSamplerMappingList(const QShaderKey &key,
+                                                      const SeparateToCombinedImageSamplerMappingList &list);
+    void removeSeparateToCombinedImageSamplerMappingList(const QShaderKey &key);
+
 private:
     QShaderPrivate *d;
     friend struct QShaderPrivate;

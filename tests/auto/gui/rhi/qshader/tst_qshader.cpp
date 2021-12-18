@@ -48,6 +48,7 @@ private slots:
     void comparison();
     void loadV4();
     void manualShaderPackCreation();
+    void loadV6WithSeparateImagesAndSamplers();
 };
 
 static QShader getShader(const QString &name)
@@ -568,6 +569,40 @@ void tst_QShader::manualShaderPackCreation()
     QCOMPARE(newShaderPack.description().combinedImageSamplers().count(), 1);
     QCOMPARE(newShaderPack.shader(QShaderKey(QShader::GlslShader, QShaderVersion(100, QShaderVersion::GlslEs))).shader(), fs_gles);
     QCOMPARE(newShaderPack.shader(QShaderKey(QShader::GlslShader, QShaderVersion(120))).shader(), fs_gl);
+}
+
+void tst_QShader::loadV6WithSeparateImagesAndSamplers()
+{
+    QShader s = getShader(QLatin1String(":/data/texture_sep_v6.frag.qsb"));
+    QVERIFY(s.isValid());
+    QCOMPARE(QShaderPrivate::get(&s)->qsbVersion, 6);
+
+    const QList<QShaderKey> availableShaders = s.availableShaders();
+    QCOMPARE(availableShaders.count(), 6);
+    QVERIFY(availableShaders.contains(QShaderKey(QShader::SpirvShader, QShaderVersion(100))));
+    QVERIFY(availableShaders.contains(QShaderKey(QShader::MslShader, QShaderVersion(12))));
+    QVERIFY(availableShaders.contains(QShaderKey(QShader::HlslShader, QShaderVersion(50))));
+    QVERIFY(availableShaders.contains(QShaderKey(QShader::GlslShader, QShaderVersion(100, QShaderVersion::GlslEs))));
+    QVERIFY(availableShaders.contains(QShaderKey(QShader::GlslShader, QShaderVersion(120))));
+    QVERIFY(availableShaders.contains(QShaderKey(QShader::GlslShader, QShaderVersion(150))));
+
+    const QShader::NativeResourceBindingMap *resMap =
+            s.nativeResourceBindingMap(QShaderKey(QShader::HlslShader, QShaderVersion(50)));
+    QVERIFY(resMap && resMap->count() == 4);
+    QVERIFY(!s.separateToCombinedImageSamplerMappingList(QShaderKey(QShader::HlslShader, QShaderVersion(50))));
+    resMap = s.nativeResourceBindingMap(QShaderKey(QShader::MslShader, QShaderVersion(12)));
+    QVERIFY(resMap && resMap->count() == 4);
+    QVERIFY(!s.separateToCombinedImageSamplerMappingList(QShaderKey(QShader::MslShader, QShaderVersion(12))));
+
+    for (auto key : {
+         QShaderKey(QShader::GlslShader, QShaderVersion(100, QShaderVersion::GlslEs)),
+         QShaderKey(QShader::GlslShader, QShaderVersion(120)),
+         QShaderKey(QShader::GlslShader, QShaderVersion(150)) })
+    {
+         auto list = s.separateToCombinedImageSamplerMappingList(key);
+         QVERIFY(list);
+         QCOMPARE(list->count(), 2);
+    }
 }
 
 #include <tst_qshader.moc>

@@ -60,7 +60,8 @@ QT_BEGIN_NAMESPACE
 
 struct Q_GUI_EXPORT QShaderPrivate
 {
-    static const int QSB_VERSION = 5;
+    static const int QSB_VERSION = 6;
+    static const int QSB_VERSION_WITHOUT_SEPARATE_IMAGES_AND_SAMPLERS = 5;
     static const int QSB_VERSION_WITHOUT_VAR_ARRAYDIMS = 4;
     static const int QSB_VERSION_WITH_CBOR = 3;
     static const int QSB_VERSION_WITH_BINARY_JSON = 2;
@@ -77,7 +78,8 @@ struct Q_GUI_EXPORT QShaderPrivate
           stage(other->stage),
           desc(other->desc),
           shaders(other->shaders),
-          bindings(other->bindings)
+          bindings(other->bindings),
+          combinedImageMap(other->combinedImageMap)
     {
     }
 
@@ -90,6 +92,7 @@ struct Q_GUI_EXPORT QShaderPrivate
     QShaderDescription desc;
     QHash<QShaderKey, QShaderCode> shaders;
     QHash<QShaderKey, QShader::NativeResourceBindingMap> bindings;
+    QHash<QShaderKey, QShader::SeparateToCombinedImageSamplerMappingList> combinedImageMap;
 };
 
 QT_END_NAMESPACE

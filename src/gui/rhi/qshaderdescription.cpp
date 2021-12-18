@@ -222,6 +222,7 @@ QT_BEGIN_NAMESPACE
     \value SamplerRect
     \value SamplerBuffer
     \value SamplerExternalOES
+    \value Sampler For separate samplers.
     \value Image1D
     \value Image2D
     \value Image2DMS
@@ -336,7 +337,8 @@ bool QShaderDescription::isValid() const
 {
     return !d->inVars.isEmpty() || !d->outVars.isEmpty()
         || !d->uniformBlocks.isEmpty() || !d->pushConstantBlocks.isEmpty() || !d->storageBlocks.isEmpty()
-        || !d->combinedImageSamplers.isEmpty() || !d->storageImages.isEmpty();
+        || !d->combinedImageSamplers.isEmpty() || !d->storageImages.isEmpty()
+        || !d->separateImages.isEmpty() || !d->separateSamplers.isEmpty();
 }
 
 /*!
@@ -510,6 +512,16 @@ QList<QShaderDescription::InOutVariable> QShaderDescription::combinedImageSample
     return d->combinedImageSamplers;
 }
 
+QList<QShaderDescription::InOutVariable> QShaderDescription::separateImages() const
+{
+    return d->separateImages;
+}
+
+QList<QShaderDescription::InOutVariable> QShaderDescription::separateSamplers() const
+{
+    return d->separateSamplers;
+}
+
 /*!
     \return the list of image variables.
 
@@ -579,6 +591,7 @@ static struct TypeTab {
     { QLatin1String("samplerRect"), QShaderDescription::SamplerRect },
     { QLatin1String("samplerBuffer"), QShaderDescription::SamplerBuffer },
     { QLatin1String("samplerExternalOES"), QShaderDescription::SamplerExternalOES },
+    { QLatin1String("sampler"), QShaderDescription::Sampler },
 
     { QLatin1String("mat2x3"), QShaderDescription::Mat2x3 },
     { QLatin1String("mat2x4"), QShaderDescription::Mat2x4 },
@@ -708,7 +721,9 @@ QDebug operator<<(QDebug dbg, const QShaderDescription &sd)
                       << " pcBlocks " << d->pushConstantBlocks
                       << " storageBlocks " << d->storageBlocks
                       << " combinedSamplers " << d->combinedImageSamplers
-                      << " images " << d->storageImages
+                      << " storageImages " << d->storageImages
+                      << " separateImages " << d->separateImages
+                      << " separateSamplers " << d->separateSamplers
                       << ')';
     } else {
         dbg.nospace() << "QShaderDescription(null)";
@@ -818,6 +833,8 @@ static const QString storageBlocksKey = QLatin1String("storageBlocks");
 static const QString combinedImageSamplersKey = QLatin1String("combinedImageSamplers");
 static const QString storageImagesKey = QLatin1String("storageImages");
 static const QString localSizeKey = QLatin1String("localSize");
+static const QString separateImagesKey = QLatin1String("separateImages");
+static const QString separateSamplersKey = QLatin1String("separateSamplers");
 
 static void addDeco(QJsonObject *obj, const QShaderDescription::InOutVariable &v)
 {
@@ -1007,6 +1024,28 @@ QJsonDocument QShaderDescriptionPrivate::makeDoc()
         jlocalSize.append(QJsonValue(int(localSize[i])));
     root[localSizeKey] = jlocalSize;
 
+    QJsonArray jseparateImages;
+    for (const QShaderDescription::InOutVariable &v : qAsConst(separateImages)) {
+        QJsonObject image;
+        image[nameKey] = QString::fromUtf8(v.name);
+        image[typeKey] = typeStr(v.type);
+        addDeco(&image, v);
+        jseparateImages.append(image);
+    }
+    if (!jseparateImages.isEmpty())
+        root[separateImagesKey] = jseparateImages;
+
+    QJsonArray jseparateSamplers;
+    for (const QShaderDescription::InOutVariable &v : qAsConst(separateSamplers)) {
+        QJsonObject sampler;
+        sampler[nameKey] = QString::fromUtf8(v.name);
+        sampler[typeKey] = typeStr(v.type);
+        addDeco(&sampler, v);
+        jseparateSamplers.append(sampler);
+    }
+    if (!jseparateSamplers.isEmpty())
+        root[separateSamplersKey] = jseparateSamplers;
+
     return QJsonDocument(root);
 }
 
@@ -1069,6 +1108,20 @@ void QShaderDescriptionPrivate::writeToStream(QDataStream *stream)
 
     for (size_t i = 0; i < 3; ++i)
         (*stream) << localSize[i];
+
+    (*stream) << int(separateImages.count());
+    for (const QShaderDescription::InOutVariable &v : qAsConst(separateImages)) {
+        (*stream) << QString::fromUtf8(v.name);
+        (*stream) << int(v.type);
+        serializeDecorations(stream, v);
+    }
+
+    (*stream) << int(separateSamplers.count());
+    for (const QShaderDescription::InOutVariable &v : qAsConst(separateSamplers)) {
+        (*stream) << QString::fromUtf8(v.name);
+        (*stream) << int(v.type);
+        serializeDecorations(stream, v);
+    }
 }
 
 static void deserializeDecorations(QDataStream *stream, int version, QShaderDescription::InOutVariable *v)
@@ -1220,6 +1273,32 @@ void QShaderDescriptionPrivate::loadFromStream(QDataStream *stream, int version)
 
     for (size_t i = 0; i < 3; ++i)
         (*stream) >> localSize[i];
+
+    if (version > QShaderPrivate::QSB_VERSION_WITHOUT_SEPARATE_IMAGES_AND_SAMPLERS) {
+        (*stream) >> count;
+        separateImages.resize(count);
+        for (int i = 0; i < count; ++i) {
+            QString tmp;
+            (*stream) >> tmp;
+            separateImages[i].name = tmp.toUtf8();
+            int t;
+            (*stream) >> t;
+            separateImages[i].type = QShaderDescription::VariableType(t);
+            deserializeDecorations(stream, version, &separateImages[i]);
+        }
+
+        (*stream) >> count;
+        separateSamplers.resize(count);
+        for (int i = 0; i < count; ++i) {
+            QString tmp;
+            (*stream) >> tmp;
+            separateSamplers[i].name = tmp.toUtf8();
+            int t;
+            (*stream) >> t;
+            separateSamplers[i].type = QShaderDescription::VariableType(t);
+            deserializeDecorations(stream, version, &separateSamplers[i]);
+        }
+    }
 }
 
 /*!
@@ -1239,6 +1318,8 @@ bool operator==(const QShaderDescription &lhs, const QShaderDescription &rhs) no
             && lhs.d->pushConstantBlocks == rhs.d->pushConstantBlocks
             && lhs.d->storageBlocks == rhs.d->storageBlocks
             && lhs.d->combinedImageSamplers == rhs.d->combinedImageSamplers
+            && lhs.d->separateImages == rhs.d->separateImages
+            && lhs.d->separateSamplers == rhs.d->separateSamplers
             && lhs.d->storageImages == rhs.d->storageImages
             && lhs.d->localSize == rhs.d->localSize;
 }
