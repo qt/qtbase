@@ -266,6 +266,7 @@ qt_internal_add_module(Core
         Qt::GlobalConfigPrivate # special case
     PRECOMPILED_HEADER
         "global/qt_pch.h"
+    GENERATE_CPP_EXPORTS
     PUBLIC_LIBRARIES  # special case:
         Qt::Platform # special case:
     # special case begin
