@@ -516,14 +516,11 @@ constexpr inline Deprecated_t Deprecated = {};
 #  ifndef QT_SHARED
 #    define QT_SHARED
 #  endif
-#  if defined(QT_BUILD_CORE_LIB)
-#    define Q_CORE_EXPORT Q_DECL_EXPORT
-#  else
-#    define Q_CORE_EXPORT Q_DECL_IMPORT
-#  endif
-#else
-#  define Q_CORE_EXPORT
 #endif
+
+QT_BEGIN_INCLUDE_NAMESPACE
+#include <QtCore/qtcoreexports.h>
+QT_END_INCLUDE_NAMESPACE
 
 /*
    Some classes do not permit copies to be made of an object. These
