@@ -564,38 +564,45 @@ qt_internal_extend_target(Gui CONDITION ((QT_FEATURE_png) AND (WIN32 AND MINGW))
         -fno-reorder-blocks-and-partition
 )
 
+if(TEST_architecture_arch STREQUAL x86_64)
+    qt_internal_extend_target(Gui
+       SOURCES
+            painting/qdrawhelper_sse2.cpp
+    )
+else()
+    qt_internal_add_simd_part(Gui SIMD sse2
+        SOURCES
+            painting/qdrawhelper_sse2.cpp
+    )
+endif()
+
+qt_internal_add_simd_part(Gui SIMD ssse3
+    SOURCES
+        image/qimage_ssse3.cpp
+        painting/qdrawhelper_ssse3.cpp
+)
+
+qt_internal_add_simd_part(Gui SIMD sse4_1
+    SOURCES
+        painting/qdrawhelper_sse4.cpp
+        painting/qimagescale_sse4.cpp
+)
+
+qt_internal_add_simd_part(Gui SIMD arch_haswell
+    SOURCES
+        painting/qdrawhelper_avx2.cpp
+    EXCLUDE_OSX_ARCHITECTURES
+        arm64
+)
+
+qt_internal_add_simd_part(Gui SIMD neon
+    SOURCES
+        image/qimage_neon.cpp
+        painting/qdrawhelper_neon.cpp painting/qdrawhelper_neon_p.h
+        painting/qimagescale_neon.cpp
+)
+
 if(NOT ANDROID)
-    if(TEST_architecture_arch STREQUAL x86_64)
-        qt_internal_extend_target(Gui
-           SOURCES
-                painting/qdrawhelper_sse2.cpp
-        )
-    else()
-        qt_internal_add_simd_part(Gui SIMD sse2
-            SOURCES
-                painting/qdrawhelper_sse2.cpp
-        )
-    endif()
-
-    qt_internal_add_simd_part(Gui SIMD ssse3
-        SOURCES
-            image/qimage_ssse3.cpp
-            painting/qdrawhelper_ssse3.cpp
-    )
-
-    qt_internal_add_simd_part(Gui SIMD sse4_1
-        SOURCES
-            painting/qdrawhelper_sse4.cpp
-            painting/qimagescale_sse4.cpp
-    )
-
-    qt_internal_add_simd_part(Gui SIMD neon
-        SOURCES
-            image/qimage_neon.cpp
-            painting/qdrawhelper_neon.cpp painting/qdrawhelper_neon_p.h
-            painting/qimagescale_neon.cpp
-    )
-
     qt_internal_add_simd_part(Gui SIMD mips_dsp
         SOURCES
             painting/qdrawhelper_mips_dsp.cpp painting/qdrawhelper_mips_dsp_p.h
@@ -608,13 +615,6 @@ if(NOT ANDROID)
             image/qimage_mips_dspr2.cpp
             image/qimage_mips_dspr2_asm.S
             painting/qdrawhelper_mips_dspr2_asm.S
-    )
-
-    qt_internal_add_simd_part(Gui SIMD arch_haswell
-        SOURCES
-            painting/qdrawhelper_avx2.cpp
-        EXCLUDE_OSX_ARCHITECTURES
-            arm64
     )
 endif()
 
