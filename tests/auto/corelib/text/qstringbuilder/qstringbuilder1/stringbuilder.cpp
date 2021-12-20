@@ -73,6 +73,36 @@ template <> QByteArray toQByteArray(char * const &p) { return p; }
 template <size_t N> QByteArray toQByteArray(const char (&a)[N]) { return a; }
 template <> QByteArray toQByteArray(const char &c) { return QByteArray(&c, 1); }
 
+template <typename String, typename Separator>
+void checkItWorksWithFreeSpaceAtBegin(const String &chunk, const Separator &separator)
+{
+    // GIVEN: a String with freeSpaceAtBegin() and less than chunk.size() freeSpaceAtEnd()
+    String str;
+
+    int prepends = 0;
+    const int max_prepends = 10;
+    while (str.data_ptr().freeSpaceAtBegin() < chunk.size() && prepends++ < max_prepends)
+        str.prepend(chunk);
+    QVERIFY(prepends < max_prepends);
+
+    int appends = 0;
+    const int max_appends = 100;
+    while (str.data_ptr().freeSpaceAtEnd() >= chunk.size() && appends++ < max_appends)
+        str.append(chunk);
+    QVERIFY(appends < max_appends);
+
+    QVERIFY(str.capacity() - str.size() >= chunk.size());
+    QVERIFY(str.data_ptr().freeSpaceAtEnd() < chunk.size());
+
+    // WHEN: adding a QStringBuilder expression which exceeds freeSpaceAtEnd()
+    str += separator P chunk;
+
+    // THEN: it doesn't crash (QTBUG-99330)
+    const String expected = chunk.repeated(prepends + appends) + separator + chunk;
+    QCOMPARE(str, expected);
+}
+
+
 void runScenario()
 {
     // this code is latin1. TODO: replace it with the utf8 block below, once
@@ -329,6 +359,16 @@ void runScenario()
         QCOMPARE(str2, str2_e);
     }
 
+    checkItWorksWithFreeSpaceAtBegin(QString::fromUtf8(UTF8_LITERAL),
+                                 #ifdef QT_NO_CAST_FROM_ASCII
+                                     QLatin1String("1234")
+                                 #else
+                                     "1234"
+                                 #endif
+                                     );
+    if (QTest::currentTestFailed())
+        return;
+
     //operator QByteArray  +=
     {
         QByteArray ba = UTF8_LITERAL;
@@ -350,4 +390,7 @@ void runScenario()
         QCOMPARE(byteArray, "multipart/mixed; boundary=\"oooooooooooooooooooooooooooooo\"");
     }
 
+    checkItWorksWithFreeSpaceAtBegin(QByteArray(UTF8_LITERAL), "1234");
+    if (QTest::currentTestFailed())
+        return;
 }
