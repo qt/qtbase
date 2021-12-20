@@ -5295,19 +5295,46 @@ void tst_QString::fromLatin1Roundtrip()
     QCOMPARE(latin1.isEmpty(), unicode.isEmpty());
     QCOMPARE(latin1.size(), unicode.size());
 
-    if (!latin1.isEmpty())
-        while (latin1.size() < 128) {
-            latin1 += latin1;
-            unicode += unicode;
-        }
+    auto roundtripTest = [&]() {
+        // fromLatin1
+        QString fromLatin1 = QString::fromLatin1(latin1, latin1.length());
+        QCOMPARE(fromLatin1.length(), unicode.length());
+        QCOMPARE(fromLatin1, unicode);
 
-    // fromLatin1
-    QCOMPARE(QString::fromLatin1(latin1, latin1.size()).size(), unicode.size());
-    QCOMPARE(QString::fromLatin1(latin1, latin1.size()), unicode);
+        // and back:
+        QByteArray toLatin1 = unicode.toLatin1();
+        QCOMPARE(toLatin1.length(), latin1.length());
+        QCOMPARE(toLatin1, latin1);
+    };
 
-    // and back:
-    QCOMPARE(unicode.toLatin1().size(), latin1.size());
-    QCOMPARE(unicode.toLatin1(), latin1);
+    roundtripTest();
+
+    if (latin1.isEmpty())
+        return;
+
+    if (QTest::currentTestFailed()) QFAIL("failed");
+    while (latin1.length() < 16) {
+        latin1 += latin1;
+        unicode += unicode;
+    }
+    roundtripTest();
+
+    // double again (length will be > 32)
+    if (QTest::currentTestFailed()) QFAIL("failed");
+    latin1 += latin1;
+    unicode += unicode;
+    roundtripTest();
+
+    // double again (length will be > 64)
+    if (QTest::currentTestFailed()) QFAIL("failed");
+    latin1 += latin1;
+    unicode += unicode;
+    roundtripTest();
+
+    if (QTest::currentTestFailed()) QFAIL("failed");
+    latin1 += latin1;
+    unicode += unicode;
+    roundtripTest();
 }
 
 void tst_QString::toLatin1Roundtrip_data()

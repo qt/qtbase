@@ -804,6 +804,7 @@ Q_CORE_EXPORT void qt_from_latin1(char16_t *dst, const char *str, size_t size) n
      */
 #if defined(__SSE2__)
     // we're going to read str[offset..offset+15] (16 bytes)
+    const __m128i nullMask = _mm_setzero_si128();
     auto processOneChunk = [=](qptrdiff offset) {
         const __m128i chunk = _mm_loadu_si128((const __m128i*)(str + offset)); // load
         if constexpr (UseAvx2) {
@@ -813,8 +814,6 @@ Q_CORE_EXPORT void qt_from_latin1(char16_t *dst, const char *str, size_t size) n
             // store
             _mm256_storeu_si256((__m256i*)(dst + offset), extended);
         } else {
-            const __m128i nullMask = _mm_set1_epi32(0);
-
             // unpack the first 8 bytes, padding with zeros
             const __m128i firstHalf = _mm_unpacklo_epi8(chunk, nullMask);
             _mm_storeu_si128((__m128i*)(dst + offset), firstHalf); // store
@@ -826,8 +825,8 @@ Q_CORE_EXPORT void qt_from_latin1(char16_t *dst, const char *str, size_t size) n
     };
 
     const char *e = str + size;
-    qptrdiff offset = 0;
     if (size >= sizeof(__m128i)) {
+        qptrdiff offset = 0;
         for ( ; str + offset + sizeof(__m128i) <= e; offset += sizeof(__m128i))
             processOneChunk(offset);
         if (str + offset < e)
@@ -836,17 +835,26 @@ Q_CORE_EXPORT void qt_from_latin1(char16_t *dst, const char *str, size_t size) n
     }
 
 #  if !defined(__OPTIMIZE_SIZE__)
-    // we're going to read str[offset..offset+7] (8 bytes)
-    if (str + offset + 8 <= e) {
-        const __m128i unpacked = mm_load8_zero_extend(str + offset);
-        _mm_storeu_si128(reinterpret_cast<__m128i *>(dst + offset), unpacked);
-        offset += 8;
+    if (size >= 4) {
+        // two overlapped loads & stores, of either 64-bit or of 32-bit
+        if (size >= 8) {
+            const __m128i unpacked1 = mm_load8_zero_extend(str);
+            const __m128i unpacked2 = mm_load8_zero_extend(str + size - 8);
+            _mm_storeu_si128(reinterpret_cast<__m128i *>(dst), unpacked1);
+            _mm_storeu_si128(reinterpret_cast<__m128i *>(dst + size -  8), unpacked2);
+        } else {
+            const __m128i chunk1 = _mm_cvtsi32_si128(qFromUnaligned<quint32>(str));
+            const __m128i chunk2 = _mm_cvtsi32_si128(qFromUnaligned<quint32>(str + size - 4));
+            const __m128i unpacked1 = _mm_unpacklo_epi8(chunk1, nullMask);
+            const __m128i unpacked2 = _mm_unpacklo_epi8(chunk2, nullMask);
+            _mm_storel_epi64(reinterpret_cast<__m128i *>(dst), unpacked1);
+            _mm_storel_epi64(reinterpret_cast<__m128i *>(dst + size - 4), unpacked2);
+        }
+        return;
+    } else {
+        size = size % 4;
+        return UnrollTailLoop<3>::exec(qsizetype(size), [=](int i) { dst[i] = (uchar)str[i]; });
     }
-
-    size = size % 8;
-    dst += offset;
-    str += offset;
-    return UnrollTailLoop<7>::exec(qsizetype(size), [=](qsizetype i) { dst[i] = (uchar)str[i]; });
 #  endif
 #endif
 #if defined(__mips_dsp)
