@@ -429,7 +429,7 @@ QByteArray &appendToByteArray(QByteArray &a, const QStringBuilder<A, B> &b, char
     // append 8-bit data to a byte array
     qsizetype len = a.size() + QConcatenable< QStringBuilder<A, B> >::size(b);
     a.detach(); // a detach() in a.data() could reset a.capacity() to a.size()
-    if (len > a.capacity())
+    if (len > a.data_ptr().freeSpaceAtEnd()) // capacity() was broken when prepend()-optimization landed
         a.reserve(qMax(len, 2 * a.capacity()));
     char *it = a.data() + a.size();
     QConcatenable< QStringBuilder<A, B> >::appendTo(b, it);
@@ -458,7 +458,7 @@ QString &operator+=(QString &a, const QStringBuilder<A, B> &b)
 {
     qsizetype len = a.size() + QConcatenable< QStringBuilder<A, B> >::size(b);
     a.detach(); // a detach() in a.data() could reset a.capacity() to a.size()
-    if (len > a.capacity())
+    if (len > a.data_ptr().freeSpaceAtEnd()) // capacity() was broken when prepend()-optimization landed
         a.reserve(qMax(len, 2 * a.capacity()));
     QChar *it = a.data() + a.size();
     QConcatenable< QStringBuilder<A, B> >::appendTo(b, it);
