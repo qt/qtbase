@@ -7,15 +7,6 @@ $$sim_and_dev|contains(QMAKE_MAC_SDK, ^$${device.sdk}.*): \
 $$sim_and_dev|contains(QMAKE_MAC_SDK, ^$${simulator.sdk}.*): \
     CONFIG += simulator $${simulator.sdk}
 
-$$sim_and_dev {
-    # For a simulator_and_device build all the config tests
-    # are based on the device's ARM SDK, but we know that the simulator
-    # is Intel and that we support SSE/SSE2.
-    QT_CPU_FEATURES.$$QT_ARCH += sse sse2
-    CONFIG += sse sse2
-    DEFINES += QT_COMPILER_SUPPORTS_SSE2
-}
-
 CONFIG += entrypoint
 
 unset(sim_and_dev)

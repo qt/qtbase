@@ -87,9 +87,10 @@ include("${CMAKE_CURRENT_SOURCE_DIR}/configure.cmake")
 
 qt_internal_get_first_osx_arch(__qt_osx_first_arch)
 set(__qt_apple_silicon_arches "arm64;arm64e")
-if((UIKIT AND NOT QT_UIKIT_SDK)
-        OR (MACOS AND QT_IS_MACOS_UNIVERSAL
-            AND __qt_osx_first_arch IN_LIST __qt_apple_silicon_arches))
+if(MACOS AND QT_IS_MACOS_UNIVERSAL
+        AND __qt_osx_first_arch IN_LIST __qt_apple_silicon_arches)
+    # The test in configure.cmake will not be run, but we know that
+    # the compiler supports these intrinsics
     set(QT_FORCE_FEATURE_sse2 ON CACHE INTERNAL "Force enable sse2 due to platform requirements.")
     set(__QtFeature_custom_enabled_cache_variables
         TEST_subarch_sse2
