@@ -397,9 +397,6 @@ void tst_QEventDispatcher::postEventFromThread()
     }
     done = true;
 
-    if (QAbstractEventDispatcher::instance()->inherits("QEventDispatcherWin32"))
-        QEXPECT_FAIL("", QAbstractEventDispatcher::instance()->metaObject()->className(), Continue);
-
     QVERIFY(!hadToQuit);
     QVERIFY(threadPool->waitForDone());
 }
