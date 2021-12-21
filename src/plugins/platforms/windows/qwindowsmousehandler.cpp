@@ -130,7 +130,9 @@ QWindowsMouseHandler::QWindowsMouseHandler() = default;
 
 const QPointingDevice *QWindowsMouseHandler::primaryMouse()
 {
-    static const auto result = QPointingDevice::primaryPointingDevice();
+    static QPointer<const QPointingDevice> result;
+    if (!result)
+        result = QPointingDevice::primaryPointingDevice();
     return result;
 }
 
