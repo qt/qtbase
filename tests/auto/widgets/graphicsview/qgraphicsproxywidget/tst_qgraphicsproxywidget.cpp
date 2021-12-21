@@ -1355,7 +1355,7 @@ void tst_QGraphicsProxyWidget::scrollUpdate()
     view.show();
     QVERIFY(QTest::qWaitForWindowActive(&view));
     QTRY_VERIFY(view.npaints >= 1);
-    QTest::qWait(20);
+    QTest::qWait(150);
     widget->paintEventRegion = QRegion();
     widget->npaints = 0;
     view.paintEventRegion = QRegion();
