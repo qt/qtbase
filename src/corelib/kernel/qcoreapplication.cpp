@@ -2080,6 +2080,8 @@ void QCoreApplicationPrivate::quit()
 
     The function returns \c true on success and false on failure.
 
+    \note QCoreApplication does \e not take ownership of \a translationFile.
+
     \sa removeTranslator(), translate(), QTranslator::load(), {Dynamic Translation}
 */
 
