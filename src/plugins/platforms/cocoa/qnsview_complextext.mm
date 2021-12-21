@@ -145,7 +145,9 @@
     // e.g. "~\r". We have already inserted the composition,
     // so we need to follow up with a single newline event.
 
-    KeyEvent newlineEvent(NSApp.currentEvent);
+    KeyEvent newlineEvent(m_currentlyInterpretedKeyEvent ?
+        m_currentlyInterpretedKeyEvent : NSApp.currentEvent);
+    newlineEvent.type = QEvent::KeyPress;
     newlineEvent.key = Qt::Key_Return;
     newlineEvent.text = QLatin1Char(kReturnCharCode);
     newlineEvent.nativeVirtualKey = kVK_Return;

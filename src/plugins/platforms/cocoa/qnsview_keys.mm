@@ -235,7 +235,6 @@ KeyEvent::KeyEvent(NSEvent *nsevent)
 {
     timestamp = nsevent.timestamp * 1000;
     nativeModifiers = nsevent.modifierFlags;
-    nativeVirtualKey = nsevent.keyCode;
     modifiers = QAppleKeyMapper::fromCocoaModifiers(nativeModifiers);
 
     switch (nsevent.type) {
@@ -245,6 +244,8 @@ KeyEvent::KeyEvent(NSEvent *nsevent)
     }
 
     if (nsevent.type == NSEventTypeKeyDown || nsevent.type == NSEventTypeKeyUp) {
+        nativeVirtualKey = nsevent.keyCode;
+
         NSString *charactersIgnoringModifiers = nsevent.charactersIgnoringModifiers;
         NSString *characters = nsevent.characters;
 
