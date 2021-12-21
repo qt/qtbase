@@ -190,6 +190,29 @@
 #    define __SSE__                         1
 #  endif
 
+#  if defined(Q_OS_WIN) && defined(Q_CC_GNU) && !defined(Q_CC_INTEL) && !defined(Q_CC_CLANG)
+// 64-bit GCC on Windows does not support AVX, so we hack around it by forcing
+// it to emit unaligned loads & stores
+// See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=49001
+asm(
+    ".macro vmovapd args:vararg\n"
+    "    vmovupd \\args\n"
+    ".endm\n"
+    ".macro vmovaps args:vararg\n"
+    "    vmovups \\args\n"
+    ".endm\n"
+    ".macro vmovdqa args:vararg\n"
+    "    vmovdqu \\args\n"
+    ".endm\n"
+    ".macro vmovdqa32 args:vararg\n"
+    "    vmovdqu32 \\args\n"
+    ".endm\n"
+    ".macro vmovdqa64 args:vararg\n"
+    "    vmovdqu64 \\args\n"
+    ".endm\n"
+);
+#  endif
+
 #  if defined(Q_CC_GNU) && !defined(Q_CC_INTEL) && !defined(Q_OS_WASM)
 // GCC 4.4 and Clang 2.8 added a few more intrinsics there
 #    include <x86intrin.h>
