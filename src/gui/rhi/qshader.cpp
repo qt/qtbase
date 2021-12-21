@@ -742,16 +742,17 @@ QDebug operator<<(QDebug dbg, const QShaderVersion &v)
 */
 
 /*!
-    \return the native binding map for \a key or null if no extra mapping is
-    available, or is not applicable.
+    \return the native binding map for \a key. The map is empty if no mapping
+    is available for \a key (for example, because the map is not applicable for
+    the API and shading language described by \a key).
  */
-const QShader::NativeResourceBindingMap *QShader::nativeResourceBindingMap(const QShaderKey &key) const
+QShader::NativeResourceBindingMap QShader::nativeResourceBindingMap(const QShaderKey &key) const
 {
     auto it = d->bindings.constFind(key);
     if (it == d->bindings.cend())
-        return nullptr;
+        return {};
 
-    return &it.value();
+    return it.value();
 }
 
 /*!
@@ -798,17 +799,17 @@ void QShader::removeResourceBindingMap(const QShaderKey &key)
  */
 
 /*!
-    \return the combined image sampler mapping list for \a key or null if there
-    is no data available for \a key, for example because such a mapping is not
-    applicable for the shading language.
+    \return the combined image sampler mapping list for \a key, or an empty
+    list if there is no data available for \a key, for example because such a
+    mapping is not applicable for the shading language.
  */
-const QShader::SeparateToCombinedImageSamplerMappingList *QShader::separateToCombinedImageSamplerMappingList(const QShaderKey &key) const
+QShader::SeparateToCombinedImageSamplerMappingList QShader::separateToCombinedImageSamplerMappingList(const QShaderKey &key) const
 {
     auto it = d->combinedImageMap.constFind(key);
     if (it == d->combinedImageMap.cend())
-        return nullptr;
+        return {};
 
-    return &it.value();
+    return it.value();
 }
 
 /*!

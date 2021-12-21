@@ -279,19 +279,19 @@ void tst_QShader::mslResourceMapping()
     QVERIFY(availableShaders.contains(QShaderKey(QShader::GlslShader, QShaderVersion(150))));
     QVERIFY(availableShaders.contains(QShaderKey(QShader::GlslShader, QShaderVersion(330))));
 
-    const QShader::NativeResourceBindingMap *resMap =
+    QShader::NativeResourceBindingMap resMap =
             s.nativeResourceBindingMap(QShaderKey(QShader::GlslShader, QShaderVersion(330)));
-    QVERIFY(!resMap);
+    QVERIFY(resMap.isEmpty());
 
     // The Metal shader must come with a mapping table for binding points 0
     // (uniform buffer) and 1 (combined image sampler mapped to a texture and
     // sampler in the shader).
     resMap = s.nativeResourceBindingMap(QShaderKey(QShader::MslShader, QShaderVersion(12)));
-    QVERIFY(resMap);
+    QVERIFY(!resMap.isEmpty());
 
-    QCOMPARE(resMap->count(), 2);
-    QCOMPARE(resMap->value(0).first, 0); // mapped to native buffer index 0
-    QCOMPARE(resMap->value(1), qMakePair(0, 0)); // mapped to native texture index 0 and sampler index 0
+    QCOMPARE(resMap.count(), 2);
+    QCOMPARE(resMap.value(0).first, 0); // mapped to native buffer index 0
+    QCOMPARE(resMap.value(1), qMakePair(0, 0)); // mapped to native texture index 0 and sampler index 0
 }
 
 void tst_QShader::serializeShaderDesc()
@@ -586,13 +586,13 @@ void tst_QShader::loadV6WithSeparateImagesAndSamplers()
     QVERIFY(availableShaders.contains(QShaderKey(QShader::GlslShader, QShaderVersion(120))));
     QVERIFY(availableShaders.contains(QShaderKey(QShader::GlslShader, QShaderVersion(150))));
 
-    const QShader::NativeResourceBindingMap *resMap =
+    QShader::NativeResourceBindingMap resMap =
             s.nativeResourceBindingMap(QShaderKey(QShader::HlslShader, QShaderVersion(50)));
-    QVERIFY(resMap && resMap->count() == 4);
-    QVERIFY(!s.separateToCombinedImageSamplerMappingList(QShaderKey(QShader::HlslShader, QShaderVersion(50))));
+    QVERIFY(resMap.count() == 4);
+    QVERIFY(s.separateToCombinedImageSamplerMappingList(QShaderKey(QShader::HlslShader, QShaderVersion(50))).isEmpty());
     resMap = s.nativeResourceBindingMap(QShaderKey(QShader::MslShader, QShaderVersion(12)));
-    QVERIFY(resMap && resMap->count() == 4);
-    QVERIFY(!s.separateToCombinedImageSamplerMappingList(QShaderKey(QShader::MslShader, QShaderVersion(12))));
+    QVERIFY(resMap.count() == 4);
+    QVERIFY(s.separateToCombinedImageSamplerMappingList(QShaderKey(QShader::MslShader, QShaderVersion(12))).isEmpty());
 
     for (auto key : {
          QShaderKey(QShader::GlslShader, QShaderVersion(100, QShaderVersion::GlslEs)),
@@ -600,8 +600,7 @@ void tst_QShader::loadV6WithSeparateImagesAndSamplers()
          QShaderKey(QShader::GlslShader, QShaderVersion(150)) })
     {
          auto list = s.separateToCombinedImageSamplerMappingList(key);
-         QVERIFY(list);
-         QCOMPARE(list->count(), 2);
+         QCOMPARE(list.count(), 2);
     }
 }
 

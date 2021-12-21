@@ -5341,14 +5341,14 @@ bool QGles2GraphicsPipeline::create()
         if (shaderStage.type() == QRhiShaderStage::Vertex) {
             vsDesc = shader.description();
             if (!rhiD->shaderSource(shaderStage, &glslVersion).isEmpty()) {
-                if (auto *m = shader.separateToCombinedImageSamplerMappingList({ QShader::GlslShader, glslVersion, shaderStage.shaderVariant() }))
-                    vsSamplerMappingList = *m;
+                vsSamplerMappingList = shader.separateToCombinedImageSamplerMappingList(
+                            { QShader::GlslShader, glslVersion, shaderStage.shaderVariant() });
             }
         } else if (shaderStage.type() == QRhiShaderStage::Fragment) {
             fsDesc = shader.description();
             if (!rhiD->shaderSource(shaderStage, &glslVersion).isEmpty()) {
-                if (auto *m = shader.separateToCombinedImageSamplerMappingList({ QShader::GlslShader, glslVersion, shaderStage.shaderVariant() }))
-                    fsSamplerMappingList = *m;
+                fsSamplerMappingList = shader.separateToCombinedImageSamplerMappingList(
+                            { QShader::GlslShader, glslVersion, shaderStage.shaderVariant() });
             }
         }
     }
@@ -5484,8 +5484,8 @@ bool QGles2ComputePipeline::create()
     QShader::SeparateToCombinedImageSamplerMappingList csSamplerMappingList;
     int glslVersion = 0;
     if (!rhiD->shaderSource(m_shaderStage, &glslVersion).isEmpty()) {
-        if (auto *m = m_shaderStage.shader().separateToCombinedImageSamplerMappingList({ QShader::GlslShader, glslVersion, m_shaderStage.shaderVariant() }))
-            csSamplerMappingList = *m;
+        csSamplerMappingList = m_shaderStage.shader().separateToCombinedImageSamplerMappingList(
+                    { QShader::GlslShader, glslVersion, m_shaderStage.shaderVariant() });
     }
 
     program = rhiD->f->glCreateProgram();

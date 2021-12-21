@@ -4156,8 +4156,7 @@ bool QD3D11GraphicsPipeline::create()
                     return false;
                 }
                 vsByteCode = bytecode;
-                if (const QShader::NativeResourceBindingMap *map = shaderStage.shader().nativeResourceBindingMap(shaderKey))
-                    vs.nativeResourceBindingMap = *map;
+                vs.nativeResourceBindingMap = shaderStage.shader().nativeResourceBindingMap(shaderKey);
                 rhiD->m_shaderCache.insert(shaderStage, QRhiD3D11::Shader(vs.shader, bytecode, vs.nativeResourceBindingMap));
                 vs.shader->AddRef();
                 break;
@@ -4167,8 +4166,7 @@ bool QD3D11GraphicsPipeline::create()
                     qWarning("Failed to create pixel shader: %s", qPrintable(comErrorMessage(hr)));
                     return false;
                 }
-                if (const QShader::NativeResourceBindingMap *map = shaderStage.shader().nativeResourceBindingMap(shaderKey))
-                    fs.nativeResourceBindingMap = *map;
+                fs.nativeResourceBindingMap = shaderStage.shader().nativeResourceBindingMap(shaderKey);
                 rhiD->m_shaderCache.insert(shaderStage, QRhiD3D11::Shader(fs.shader, bytecode, fs.nativeResourceBindingMap));
                 fs.shader->AddRef();
                 break;
@@ -4286,8 +4284,7 @@ bool QD3D11ComputePipeline::create()
             return false;
         }
 
-        if (const QShader::NativeResourceBindingMap *map = m_shaderStage.shader().nativeResourceBindingMap(shaderKey))
-            cs.nativeResourceBindingMap = *map;
+        cs.nativeResourceBindingMap = m_shaderStage.shader().nativeResourceBindingMap(shaderKey);
 
         if (rhiD->m_shaderCache.count() >= QRhiD3D11::MAX_SHADER_CACHE_ENTRIES)
             rhiD->clearShaderCache();

@@ -3642,8 +3642,7 @@ bool QMetalGraphicsPipeline::create()
             case QRhiShaderStage::Vertex:
                 d->vs.lib = lib;
                 d->vs.func = func;
-                if (const QShader::NativeResourceBindingMap *map = shader.nativeResourceBindingMap(activeKey))
-                    d->vs.nativeResourceBindingMap = *map;
+                d->vs.nativeResourceBindingMap = shader.nativeResourceBindingMap(activeKey);
                 rhiD->d->shaderCache.insert(shaderStage, d->vs);
                 [d->vs.lib retain];
                 [d->vs.func retain];
@@ -3652,8 +3651,7 @@ bool QMetalGraphicsPipeline::create()
             case QRhiShaderStage::Fragment:
                 d->fs.lib = lib;
                 d->fs.func = func;
-                if (const QShader::NativeResourceBindingMap *map = shader.nativeResourceBindingMap(activeKey))
-                    d->fs.nativeResourceBindingMap = *map;
+                d->fs.nativeResourceBindingMap = shader.nativeResourceBindingMap(activeKey);
                 rhiD->d->shaderCache.insert(shaderStage, d->fs);
                 [d->fs.lib retain];
                 [d->fs.func retain];
@@ -3810,8 +3808,7 @@ bool QMetalComputePipeline::create()
         d->cs.lib = lib;
         d->cs.func = func;
         d->cs.localSize = shader.description().computeShaderLocalSize();
-        if (const QShader::NativeResourceBindingMap *map = shader.nativeResourceBindingMap(activeKey))
-            d->cs.nativeResourceBindingMap = *map;
+        d->cs.nativeResourceBindingMap = shader.nativeResourceBindingMap(activeKey);
 
         if (rhiD->d->shaderCache.count() >= QRhiMetal::MAX_SHADER_CACHE_ENTRIES) {
             for (QMetalShader &s : rhiD->d->shaderCache)

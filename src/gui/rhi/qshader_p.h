@@ -163,7 +163,7 @@ public:
     static QShader fromSerialized(const QByteArray &data);
 
     using NativeResourceBindingMap = QHash<int, QPair<int, int> >; // binding -> native_binding[, native_binding]
-    const NativeResourceBindingMap *nativeResourceBindingMap(const QShaderKey &key) const;
+    NativeResourceBindingMap nativeResourceBindingMap(const QShaderKey &key) const;
     void setResourceBindingMap(const QShaderKey &key, const NativeResourceBindingMap &map);
     void removeResourceBindingMap(const QShaderKey &key);
 
@@ -173,7 +173,7 @@ public:
         int samplerBinding;
     };
     using SeparateToCombinedImageSamplerMappingList = QList<SeparateToCombinedImageSamplerMapping>;
-    const SeparateToCombinedImageSamplerMappingList *separateToCombinedImageSamplerMappingList(const QShaderKey &key) const;
+    SeparateToCombinedImageSamplerMappingList separateToCombinedImageSamplerMappingList(const QShaderKey &key) const;
     void setSeparateToCombinedImageSamplerMappingList(const QShaderKey &key,
                                                       const SeparateToCombinedImageSamplerMappingList &list);
     void removeSeparateToCombinedImageSamplerMappingList(const QShaderKey &key);
