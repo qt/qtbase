@@ -2789,6 +2789,9 @@ void QGuiApplicationPrivate::processContextMenuEvent(QWindowSystemInterfacePriva
 
 void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::TouchEvent *e)
 {
+    if (!QInputDevicePrivate::isRegistered(e->device))
+        return;
+
     modifier_buttons = e->modifiers;
     QPointingDevice *device = const_cast<QPointingDevice *>(static_cast<const QPointingDevice *>(e->device));
     QPointingDevicePrivate *devPriv = QPointingDevicePrivate::get(device);

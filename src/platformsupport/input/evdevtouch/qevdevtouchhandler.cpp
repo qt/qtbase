@@ -474,9 +474,46 @@ void QEvdevTouchScreenHandler::registerPointingDevice()
     QWindowSystemInterface::registerInputDevice(m_device);
 }
 
+/*! \internal
+
+    QEvdevTouchScreenHandler::unregisterPointingDevice can be called by several cases.
+
+    First of all, the case that an application is terminated, and destroy all input devices
+    immediately to unregister in this case.
+
+    Secondly, the case that removing a device without touch events for the device while the
+    application is still running. In this case, the destructor of QEvdevTouchScreenHandler from
+    the connection with QDeviceDiscovery::deviceRemoved in QEvdevTouchManager calls this method.
+    And this method moves a device into the main thread and then deletes it later but there is no
+    touch events for the device so that the device would be deleted in appropriate time.
+
+    Finally, this case is similar as the second one but with touch events, that is, a device is
+    removed while touch events are given to the device and the application is still running.
+    In this case, this method is called by readData with ENODEV error and the destructor of
+    QEvdevTouchScreenHandler. So in order to prevent accessing the device which is already nullptr,
+    check the nullity of a device first. And as same as the second case, move the device into the
+    main thread and then delete it later. But in this case, cannot guarantee which event is
+    handled first since the list or queue where posting QDeferredDeleteEvent and appending touch
+    events are different.
+    If touch events are handled first, there is no problem because the device which is used for
+    these events is registered. However if QDeferredDeleteEvent for deleting the device is
+    handled first, this may cause a crash due to using unregistered device when processing touch
+    events later. In order to prevent processing such touch events, check a device which is used
+    for touch events is registered when processing touch events.
+
+    see QGuiApplicationPrivate::processTouchEvent().
+ */
 void QEvdevTouchScreenHandler::unregisterPointingDevice()
 {
-    delete m_device;
+    if (!m_device)
+        return;
+
+    if (QGuiApplication::instance()) {
+        m_device->moveToThread(QGuiApplication::instance()->thread());
+        m_device->deleteLater();
+    } else {
+        delete m_device;
+    }
     m_device = nullptr;
 }
 
