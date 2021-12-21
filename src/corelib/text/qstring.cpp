@@ -803,11 +803,8 @@ Q_CORE_EXPORT void qt_from_latin1(char16_t *dst, const char *str, size_t size) n
      * itself in exactly the same way as one would do it with intrinsics.
      */
 #if defined(__SSE2__)
-    const char *e = str + size;
-    qptrdiff offset = 0;
-
     // we're going to read str[offset..offset+15] (16 bytes)
-    for ( ; str + offset + 15 < e; offset += 16) {
+    auto processOneChunk = [=](qptrdiff offset) {
         const __m128i chunk = _mm_loadu_si128((const __m128i*)(str + offset)); // load
         if constexpr (UseAvx2) {
             // zero extend to an YMM register
@@ -826,10 +823,21 @@ Q_CORE_EXPORT void qt_from_latin1(char16_t *dst, const char *str, size_t size) n
             const __m128i secondHalf = _mm_unpackhi_epi8 (chunk, nullMask);
             _mm_storeu_si128((__m128i*)(dst + offset + 8), secondHalf); // store
         }
+    };
+
+    const char *e = str + size;
+    qptrdiff offset = 0;
+    if (size >= sizeof(__m128i)) {
+        for ( ; str + offset + sizeof(__m128i) <= e; offset += sizeof(__m128i))
+            processOneChunk(offset);
+        if (str + offset < e)
+            processOneChunk(size - sizeof(__m128i));
+        return;
     }
 
+#  if !defined(__OPTIMIZE_SIZE__)
     // we're going to read str[offset..offset+7] (8 bytes)
-    if (str + offset + 7 < e) {
+    if (str + offset + 8 <= e) {
         const __m128i unpacked = mm_load8_zero_extend(str + offset);
         _mm_storeu_si128(reinterpret_cast<__m128i *>(dst + offset), unpacked);
         offset += 8;
@@ -838,7 +846,6 @@ Q_CORE_EXPORT void qt_from_latin1(char16_t *dst, const char *str, size_t size) n
     size = size % 8;
     dst += offset;
     str += offset;
-#  if !defined(__OPTIMIZE_SIZE__)
     return UnrollTailLoop<7>::exec(qsizetype(size), [=](qsizetype i) { dst[i] = (uchar)str[i]; });
 #  endif
 #endif
@@ -859,9 +866,6 @@ template <bool Checked>
 static void qt_to_latin1_internal(uchar *dst, const char16_t *src, qsizetype length)
 {
 #if defined(__SSE2__)
-    uchar *e = dst + length;
-    qptrdiff offset = 0;
-
     auto questionMark256 = []() {
         if constexpr (UseAvx2)
             return _mm256_broadcastw_epi16(_mm_cvtsi32_si128('?'));
@@ -917,8 +921,8 @@ static void qt_to_latin1_internal(uchar *dst, const char16_t *src, qsizetype len
         return chunk;
     };
 
-    // we're going to write to dst[offset..offset+15] (16 bytes)
-    for ( ; dst + offset + 15 < e; offset += 16) {
+    // we're going to read to src[offset..offset+15] (16 bytes)
+    auto loadChunkAt = [=](qptrdiff offset) {
         __m128i chunk1, chunk2;
         if constexpr (UseAvx2) {
             __m256i chunk = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(src + offset));
@@ -940,8 +944,22 @@ static void qt_to_latin1_internal(uchar *dst, const char16_t *src, qsizetype len
         }
 
         // pack the two vector to 16 x 8bits elements
-        const __m128i result = _mm_packus_epi16(chunk1, chunk2);
-        _mm_storeu_si128((__m128i*)(dst + offset), result); // store
+        return _mm_packus_epi16(chunk1, chunk2);
+    };
+
+    uchar *e = dst + length;
+    qptrdiff offset = 0;
+    if (size_t(length) >= sizeof(__m128i)) {
+        // because of possible overlapping, we won't process the last chunk in the loop
+        for ( ; offset + 2 * sizeof(__m128i) < size_t(length); offset += sizeof(__m128i))
+            _mm_storeu_si128(reinterpret_cast<__m128i *>(dst + offset), loadChunkAt(offset));
+
+        // overlapped conversion of the last full chunk and the tail
+        __m128i last1 = loadChunkAt(offset);
+        __m128i last2 = loadChunkAt(length - sizeof(__m128i));
+        _mm_storeu_si128(reinterpret_cast<__m128i *>(dst + offset), last1);
+        _mm_storeu_si128(reinterpret_cast<__m128i *>(dst + length - sizeof(__m128i)), last2);
+        return;
     }
 
 #  if !defined(__OPTIMIZE_SIZE__)
