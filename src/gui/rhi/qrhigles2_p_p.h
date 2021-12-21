@@ -276,7 +276,9 @@ Q_DECLARE_TYPEINFO(QGles2UniformDescription, Q_RELOCATABLE_TYPE);
 struct QGles2SamplerDescription
 {
     int glslLocation;
-    int binding;
+    int combinedBinding;
+    int tbinding;
+    int sbinding;
 };
 
 Q_DECLARE_TYPEINFO(QGles2SamplerDescription, Q_RELOCATABLE_TYPE);
@@ -862,6 +864,9 @@ public:
                                 QRhiPassResourceTracker::TextureStage stage);
     void executeCommandBuffer(QRhiCommandBuffer *cb);
     void executeBindGraphicsPipeline(QGles2CommandBuffer *cbD, QGles2GraphicsPipeline *psD);
+    void bindCombinedSampler(QGles2CommandBuffer *cbD, QGles2Texture *texD, QGles2Sampler *samplerD,
+                             void *ps, uint psGeneration, int glslLocation,
+                             int *texUnit, bool *activeTexUnitAltered);
     void bindShaderResources(QGles2CommandBuffer *cbD,
                              QRhiGraphicsPipeline *maybeGraphicsPs, QRhiComputePipeline *maybeComputePs,
                              QRhiShaderResourceBindings *srb,
@@ -882,6 +887,9 @@ public:
                         QSet<int> *activeUniformLocations, QGles2UniformDescriptionVector *dst);
     void gatherSamplers(GLuint program, const QShaderDescription::InOutVariable &v,
                         QGles2SamplerDescriptionVector *dst);
+    void gatherGeneratedSamplers(GLuint program,
+                                 const QShader::SeparateToCombinedImageSamplerMapping &mapping,
+                                 QGles2SamplerDescriptionVector *dst);
     void sanityCheckVertexFragmentInterface(const QShaderDescription &vsDesc, const QShaderDescription &fsDesc);
     bool isProgramBinaryDiskCacheEnabled() const;
 

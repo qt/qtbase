@@ -1437,6 +1437,7 @@ void QRhiGles2::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
                 // no BufUniformRead / AccessUniform because no real uniform buffers are used
                 break;
             case QRhiShaderResourceBinding::SampledTexture:
+            case QRhiShaderResourceBinding::Texture:
                 for (int elem = 0; elem < b->u.stex.count; ++elem) {
                     trackedRegisterTexture(&passResTracker,
                                            QRHI_RES(QGles2Texture, b->u.stex.texSamplers[elem].tex),
@@ -3342,6 +3343,59 @@ static inline void qrhi_std140_to_packed(float *dst, int vecSize, int elemCount,
     }
 }
 
+void QRhiGles2::bindCombinedSampler(QGles2CommandBuffer *cbD, QGles2Texture *texD, QGles2Sampler *samplerD,
+                                    void *ps, uint psGeneration, int glslLocation,
+                                    int *texUnit, bool *activeTexUnitAltered)
+{
+    const bool samplerStateValid = texD->samplerState == samplerD->d;
+    const bool cachedStateInRange = *texUnit < 16;
+    bool updateTextureBinding = true;
+    if (samplerStateValid && cachedStateInRange) {
+        // If we already encountered the same texture with
+        // the same pipeline for this texture unit in the
+        // current pass, then the shader program already
+        // has the uniform set. As in a 3D scene one model
+        // often has more than one associated texture map,
+        // the savings here can become significant,
+        // depending on the scene.
+        if (cbD->textureUnitState[*texUnit].ps == ps
+                && cbD->textureUnitState[*texUnit].psGeneration == psGeneration
+                && cbD->textureUnitState[*texUnit].texture == texD->texture)
+        {
+            updateTextureBinding = false;
+        }
+    }
+    if (updateTextureBinding) {
+        f->glActiveTexture(GL_TEXTURE0 + uint(*texUnit));
+        *activeTexUnitAltered = true;
+        f->glBindTexture(texD->target, texD->texture);
+        f->glUniform1i(glslLocation, *texUnit);
+        if (cachedStateInRange) {
+            cbD->textureUnitState[*texUnit].ps = ps;
+            cbD->textureUnitState[*texUnit].psGeneration = psGeneration;
+            cbD->textureUnitState[*texUnit].texture = texD->texture;
+        }
+    }
+    ++(*texUnit);
+    if (!samplerStateValid) {
+        f->glTexParameteri(texD->target, GL_TEXTURE_MIN_FILTER, GLint(samplerD->d.glminfilter));
+        f->glTexParameteri(texD->target, GL_TEXTURE_MAG_FILTER, GLint(samplerD->d.glmagfilter));
+        f->glTexParameteri(texD->target, GL_TEXTURE_WRAP_S, GLint(samplerD->d.glwraps));
+        f->glTexParameteri(texD->target, GL_TEXTURE_WRAP_T, GLint(samplerD->d.glwrapt));
+        if (caps.texture3D)
+            f->glTexParameteri(texD->target, GL_TEXTURE_WRAP_R, GLint(samplerD->d.glwrapr));
+        if (caps.textureCompareMode) {
+            if (samplerD->d.gltexcomparefunc != GL_NEVER) {
+                f->glTexParameteri(texD->target, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+                f->glTexParameteri(texD->target, GL_TEXTURE_COMPARE_FUNC, GLint(samplerD->d.gltexcomparefunc));
+            } else {
+                f->glTexParameteri(texD->target, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+            }
+        }
+        texD->samplerState = samplerD->d;
+    }
+}
+
 void QRhiGles2::bindShaderResources(QGles2CommandBuffer *cbD,
                                     QRhiGraphicsPipeline *maybeGraphicsPs, QRhiComputePipeline *maybeComputePs,
                                     QRhiShaderResourceBindings *srb,
@@ -3355,6 +3409,17 @@ void QRhiGles2::bindShaderResources(QGles2CommandBuffer *cbD,
                                                              : QRHI_RES(QGles2ComputePipeline, maybeComputePs)->uniforms);
     QGles2UniformState *uniformState = maybeGraphicsPs ? QRHI_RES(QGles2GraphicsPipeline, maybeGraphicsPs)->uniformState
                                                        : QRHI_RES(QGles2ComputePipeline, maybeComputePs)->uniformState;
+    struct SeparateTexture {
+        QGles2Texture *texture;
+        int binding;
+        int elem;
+    };
+    QVarLengthArray<SeparateTexture, 8> separateTextureBindings;
+    struct SeparateSampler {
+        QGles2Sampler *sampler;
+        int binding;
+    };
+    QVarLengthArray<SeparateSampler, 4> separateSamplerBindings;
 
     for (int i = 0, ie = srbD->m_bindings.count(); i != ie; ++i) {
         const QRhiShaderResourceBinding::Data *b = srbD->m_bindings.at(i).data();
@@ -3591,57 +3656,25 @@ void QRhiGles2::bindShaderResources(QGles2CommandBuffer *cbD,
                 QGles2Texture *texD = QRHI_RES(QGles2Texture, b->u.stex.texSamplers[elem].tex);
                 QGles2Sampler *samplerD = QRHI_RES(QGles2Sampler, b->u.stex.texSamplers[elem].sampler);
                 for (const QGles2SamplerDescription &shaderSampler : samplers) {
-                    if (shaderSampler.binding == b->binding) {
-                        const bool samplerStateValid = texD->samplerState == samplerD->d;
-                        const bool cachedStateInRange = texUnit < 16;
-                        bool updateTextureBinding = true;
-                        if (samplerStateValid && cachedStateInRange) {
-                            // If we already encountered the same texture with
-                            // the same pipeline for this texture unit in the
-                            // current pass, then the shader program already
-                            // has the uniform set. As in a 3D scene one model
-                            // often has more than one associated texture map,
-                            // the savings here can become significant,
-                            // depending on the scene.
-                            if (cbD->textureUnitState[texUnit].ps == ps
-                                    && cbD->textureUnitState[texUnit].psGeneration == psGeneration
-                                    && cbD->textureUnitState[texUnit].texture == texD->texture)
-                            {
-                                updateTextureBinding = false;
-                            }
-                        }
-                        if (updateTextureBinding) {
-                            f->glActiveTexture(GL_TEXTURE0 + uint(texUnit));
-                            activeTexUnitAltered = true;
-                            f->glBindTexture(texD->target, texD->texture);
-                            f->glUniform1i(shaderSampler.glslLocation + elem, texUnit);
-                            if (cachedStateInRange) {
-                                cbD->textureUnitState[texUnit].ps = ps;
-                                cbD->textureUnitState[texUnit].psGeneration = psGeneration;
-                                cbD->textureUnitState[texUnit].texture = texD->texture;
-                            }
-                        }
-                        ++texUnit;
-                        if (!samplerStateValid) {
-                            f->glTexParameteri(texD->target, GL_TEXTURE_MIN_FILTER, GLint(samplerD->d.glminfilter));
-                            f->glTexParameteri(texD->target, GL_TEXTURE_MAG_FILTER, GLint(samplerD->d.glmagfilter));
-                            f->glTexParameteri(texD->target, GL_TEXTURE_WRAP_S, GLint(samplerD->d.glwraps));
-                            f->glTexParameteri(texD->target, GL_TEXTURE_WRAP_T, GLint(samplerD->d.glwrapt));
-                            if (caps.texture3D)
-                                f->glTexParameteri(texD->target, GL_TEXTURE_WRAP_R, GLint(samplerD->d.glwrapr));
-                            if (caps.textureCompareMode) {
-                                if (samplerD->d.gltexcomparefunc != GL_NEVER) {
-                                    f->glTexParameteri(texD->target, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
-                                    f->glTexParameteri(texD->target, GL_TEXTURE_COMPARE_FUNC, GLint(samplerD->d.gltexcomparefunc));
-                                } else {
-                                    f->glTexParameteri(texD->target, GL_TEXTURE_COMPARE_MODE, GL_NONE);
-                                }
-                            }
-                            texD->samplerState = samplerD->d;
-                        }
+                    if (shaderSampler.combinedBinding == b->binding) {
+                        const int loc = shaderSampler.glslLocation + elem;
+                        bindCombinedSampler(cbD, texD, samplerD, ps, psGeneration, loc, &texUnit, &activeTexUnitAltered);
+                        break;
                     }
                 }
             }
+        }
+            break;
+        case QRhiShaderResourceBinding::Texture:
+            for (int elem = 0; elem < b->u.stex.count; ++elem) {
+                QGles2Texture *texD = QRHI_RES(QGles2Texture, b->u.stex.texSamplers[elem].tex);
+                separateTextureBindings.append({ texD, b->binding, elem });
+            }
+            break;
+        case QRhiShaderResourceBinding::Sampler:
+        {
+            QGles2Sampler *samplerD = QRHI_RES(QGles2Sampler, b->u.stex.texSamplers[0].sampler);
+            separateSamplerBindings.append({ samplerD, b->binding });
         }
             break;
         case QRhiShaderResourceBinding::ImageLoad:
@@ -3677,6 +3710,35 @@ void QRhiGles2::bindShaderResources(QGles2CommandBuffer *cbD,
         default:
             Q_UNREACHABLE();
             break;
+        }
+    }
+
+    if (!separateTextureBindings.isEmpty() || !separateSamplerBindings.isEmpty()) {
+        const QGles2SamplerDescriptionVector &samplers(maybeGraphicsPs ? QRHI_RES(QGles2GraphicsPipeline, maybeGraphicsPs)->samplers
+                                                                       : QRHI_RES(QGles2ComputePipeline, maybeComputePs)->samplers);
+        void *ps;
+        uint psGeneration;
+        if (maybeGraphicsPs) {
+            ps = maybeGraphicsPs;
+            psGeneration = QRHI_RES(QGles2GraphicsPipeline, maybeGraphicsPs)->generation;
+        } else {
+            ps = maybeComputePs;
+            psGeneration = QRHI_RES(QGles2ComputePipeline, maybeComputePs)->generation;
+        }
+        for (const QGles2SamplerDescription &shaderSampler : samplers) {
+            if (shaderSampler.combinedBinding >= 0)
+                continue;
+            for (const SeparateSampler &sepSampler : separateSamplerBindings) {
+                if (sepSampler.binding != shaderSampler.sbinding)
+                    continue;
+                for (const SeparateTexture &sepTex : separateTextureBindings) {
+                    if (sepTex.binding != shaderSampler.tbinding)
+                        continue;
+                    const int loc = shaderSampler.glslLocation + sepTex.elem;
+                    bindCombinedSampler(cbD, sepTex.texture, sepSampler.sampler, ps, psGeneration,
+                                        loc, &texUnit, &activeTexUnitAltered);
+                }
+            }
         }
     }
 
@@ -4228,7 +4290,23 @@ void QRhiGles2::gatherSamplers(GLuint program,
     QGles2SamplerDescription sampler;
     sampler.glslLocation = f->glGetUniformLocation(program, v.name.constData());
     if (sampler.glslLocation >= 0) {
-        sampler.binding = v.binding;
+        sampler.combinedBinding = v.binding;
+        sampler.tbinding = -1;
+        sampler.sbinding = -1;
+        dst->append(sampler);
+    }
+}
+
+void QRhiGles2::gatherGeneratedSamplers(GLuint program,
+                                        const QShader::SeparateToCombinedImageSamplerMapping &mapping,
+                                        QGles2SamplerDescriptionVector *dst)
+{
+    QGles2SamplerDescription sampler;
+    sampler.glslLocation = f->glGetUniformLocation(program, mapping.combinedSamplerName.constData());
+    if (sampler.glslLocation >= 0) {
+        sampler.combinedBinding = -1;
+        sampler.tbinding = mapping.textureBinding;
+        sampler.sbinding = mapping.samplerBinding;
         dst->append(sampler);
     }
 }
@@ -5206,12 +5284,25 @@ bool QGles2GraphicsPipeline::create()
     program = rhiD->f->glCreateProgram();
 
     QShaderDescription vsDesc;
+    QShader::SeparateToCombinedImageSamplerMappingList vsSamplerMappingList;
     QShaderDescription fsDesc;
+    QShader::SeparateToCombinedImageSamplerMappingList fsSamplerMappingList;
     for (const QRhiShaderStage &shaderStage : qAsConst(m_shaderStages)) {
-        if (shaderStage.type() == QRhiShaderStage::Vertex)
-            vsDesc = shaderStage.shader().description();
-        else if (shaderStage.type() == QRhiShaderStage::Fragment)
-            fsDesc = shaderStage.shader().description();
+        QShader shader = shaderStage.shader();
+        int glslVersion = 0;
+        if (shaderStage.type() == QRhiShaderStage::Vertex) {
+            vsDesc = shader.description();
+            if (!rhiD->shaderSource(shaderStage, &glslVersion).isEmpty()) {
+                if (auto *m = shader.separateToCombinedImageSamplerMappingList({ QShader::GlslShader, glslVersion, shaderStage.shaderVariant() }))
+                    vsSamplerMappingList = *m;
+            }
+        } else if (shaderStage.type() == QRhiShaderStage::Fragment) {
+            fsDesc = shader.description();
+            if (!rhiD->shaderSource(shaderStage, &glslVersion).isEmpty()) {
+                if (auto *m = shader.separateToCombinedImageSamplerMappingList({ QShader::GlslShader, glslVersion, shaderStage.shaderVariant() }))
+                    fsSamplerMappingList = *m;
+            }
+        }
     }
 
     QByteArray cacheKey;
@@ -5281,8 +5372,14 @@ bool QGles2GraphicsPipeline::create()
     for (const QShaderDescription::InOutVariable &v : vsDesc.combinedImageSamplers())
         rhiD->gatherSamplers(program, v, &samplers);
 
+    for (const QShader::SeparateToCombinedImageSamplerMapping &mapping : vsSamplerMappingList)
+        rhiD->gatherGeneratedSamplers(program, mapping, &samplers);
+
     for (const QShaderDescription::InOutVariable &v : fsDesc.combinedImageSamplers())
         rhiD->gatherSamplers(program, v, &samplers);
+
+    for (const QShader::SeparateToCombinedImageSamplerMapping &mapping : fsSamplerMappingList)
+        rhiD->gatherGeneratedSamplers(program, mapping, &samplers);
 
     memset(uniformState, 0, sizeof(uniformState));
 
@@ -5336,6 +5433,13 @@ bool QGles2ComputePipeline::create()
         return false;
 
     const QShaderDescription csDesc = m_shaderStage.shader().description();
+    QShader::SeparateToCombinedImageSamplerMappingList csSamplerMappingList;
+    int glslVersion = 0;
+    if (!rhiD->shaderSource(m_shaderStage, &glslVersion).isEmpty()) {
+        if (auto *m = m_shaderStage.shader().separateToCombinedImageSamplerMappingList({ QShader::GlslShader, glslVersion, m_shaderStage.shaderVariant() }))
+            csSamplerMappingList = *m;
+    }
+
     program = rhiD->f->glCreateProgram();
 
     QByteArray cacheKey;
@@ -5373,6 +5477,8 @@ bool QGles2ComputePipeline::create()
         rhiD->gatherUniforms(program, ub, &activeUniformLocations, &uniforms);
     for (const QShaderDescription::InOutVariable &v : csDesc.combinedImageSamplers())
         rhiD->gatherSamplers(program, v, &samplers);
+    for (const QShader::SeparateToCombinedImageSamplerMapping &mapping : csSamplerMappingList)
+        rhiD->gatherGeneratedSamplers(program, mapping, &samplers);
 
     // storage images and buffers need no special steps here
 

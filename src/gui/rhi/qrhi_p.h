@@ -335,6 +335,8 @@ public:
     enum Type {
         UniformBuffer,
         SampledTexture,
+        Texture,
+        Sampler,
         ImageLoad,
         ImageStore,
         ImageLoadStore,
@@ -366,6 +368,10 @@ public:
     };
     static QRhiShaderResourceBinding sampledTextures(int binding, StageFlags stage, int count, const TextureAndSampler *texSamplers);
 
+    static QRhiShaderResourceBinding texture(int binding, StageFlags stage, QRhiTexture *tex);
+    static QRhiShaderResourceBinding textures(int binding, StageFlags stage, int count, QRhiTexture **tex);
+    static QRhiShaderResourceBinding sampler(int binding, StageFlags stage, QRhiSampler *sampler);
+
     static QRhiShaderResourceBinding imageLoad(int binding, StageFlags stage, QRhiTexture *tex, int level);
     static QRhiShaderResourceBinding imageStore(int binding, StageFlags stage, QRhiTexture *tex, int level);
     static QRhiShaderResourceBinding imageLoadStore(int binding, StageFlags stage, QRhiTexture *tex, int level);
@@ -389,7 +395,7 @@ public:
             bool hasDynamicOffset;
         };
         static const int MAX_TEX_SAMPLER_ARRAY_SIZE = 16;
-        struct SampledTextureData {
+        struct TextureAndOrSamplerData {
             int count;
             TextureAndSampler texSamplers[MAX_TEX_SAMPLER_ARRAY_SIZE];
         };
@@ -404,10 +410,17 @@ public:
         };
         union {
             UniformBufferData ubuf;
-            SampledTextureData stex;
+            TextureAndOrSamplerData stex;
             StorageImageData simage;
             StorageBufferData sbuf;
         } u;
+
+        int arraySize() const
+        {
+            return type == QRhiShaderResourceBinding::SampledTexture || type == QRhiShaderResourceBinding::Texture
+                    ? u.stex.count
+                    : 1;
+        }
 
         template<typename Output>
         Output serialize(Output dst) const
@@ -416,7 +429,7 @@ public:
             *dst++ = quint32(binding);
             *dst++ = quint32(stage);
             *dst++ = quint32(type);
-            *dst++ = quint32(type == QRhiShaderResourceBinding::SampledTexture ? u.stex.count : 1);
+            *dst++ = quint32(arraySize());
             return dst;
         }
     };

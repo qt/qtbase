@@ -10,3 +10,6 @@ android
 # Same here, GLES 3.0 features seem hopeless
 [renderToTextureTextureArray]
 android
+# Ditto
+[renderToTextureSampleWithSeparateTextureAndSampler]
+android

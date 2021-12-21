@@ -3157,7 +3157,7 @@ void QRhiImplementation::updateLayoutDesc(QRhiShaderResourceBindings *srb)
     for (const QRhiShaderResourceBinding &b : qAsConst(srb->m_bindings)) {
         const QRhiShaderResourceBinding::Data *d = b.data();
         srb->m_layoutDescHash ^= uint(d->binding) ^ uint(d->stage) ^ uint(d->type)
-            ^ uint(d->type == QRhiShaderResourceBinding::SampledTexture ? d->u.stex.count : 1);
+            ^ uint(d->arraySize());
         layoutDescAppender = d->serialize(layoutDescAppender);
     }
 }
@@ -3223,10 +3223,11 @@ void QRhiImplementation::updateLayoutDesc(QRhiShaderResourceBindings *srb)
  */
 bool QRhiShaderResourceBinding::isLayoutCompatible(const QRhiShaderResourceBinding &other) const
 {
-    // i.e. everything that goes into a VkDescriptorSetLayoutBinding must match
-    const int thisCount = d.type == QRhiShaderResourceBinding::SampledTexture ? d.u.stex.count : 1;
-    const int otherCount = other.d.type == QRhiShaderResourceBinding::SampledTexture ? other.d.u.stex.count : 1;
-    return d.binding == other.d.binding && d.stage == other.d.stage && d.type == other.d.type && thisCount == otherCount;
+    // everything that goes into a VkDescriptorSetLayoutBinding must match
+    return d.binding == other.d.binding
+            && d.stage == other.d.stage
+            && d.type == other.d.type
+            && d.arraySize() == other.d.arraySize();
 }
 
 /*!
@@ -3360,8 +3361,7 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::sampledTexture(
     b.d.stage = stage;
     b.d.type = SampledTexture;
     b.d.u.stex.count = 1;
-    b.d.u.stex.texSamplers[0].tex = tex;
-    b.d.u.stex.texSamplers[0].sampler = sampler;
+    b.d.u.stex.texSamplers[0] = { tex, sampler };
     return b;
 }
 
@@ -3412,8 +3412,112 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::sampledTextures(
         if (texSamplers)
             b.d.u.stex.texSamplers[i] = texSamplers[i];
         else
-            b.d.u.stex.texSamplers[i] = {};
+            b.d.u.stex.texSamplers[i] = { nullptr, nullptr };
     }
+    return b;
+}
+
+/*!
+    \return a shader resource binding for the given binding number, pipeline
+    stages, and texture specified by \a binding, \a stage, \a tex.
+
+    \note This function is equivalent to calling textures() with a
+    \c count of 1.
+
+    \note \a tex can be null. It is valid to create a
+    QRhiShaderResourceBindings with unspecified resources, but such an object
+    cannot be used with QRhiCommandBuffer::setShaderResources(). It is however
+    suitable for creating pipelines. Such a pipeline must then always be used
+    together with another, layout compatible QRhiShaderResourceBindings with
+    resources present passed to QRhiCommandBuffer::setShaderResources().
+
+    This creates a binding for a separate texture (image) object, whereas
+    sampledTexture() is suitable for combined image samplers. In
+    Vulkan-compatible GLSL code separate textures are declared as \c texture2D
+    as opposed to \c sampler2D: \c{layout(binding = 1) uniform texture2D tex;}
+
+    \sa textures(), sampler()
+ */
+QRhiShaderResourceBinding QRhiShaderResourceBinding::texture(int binding, StageFlags stage, QRhiTexture *tex)
+{
+    QRhiShaderResourceBinding b;
+    b.d.binding = binding;
+    b.d.stage = stage;
+    b.d.type = Texture;
+    b.d.u.stex.count = 1;
+    b.d.u.stex.texSamplers[0] = { tex, nullptr };
+    return b;
+}
+
+/*!
+    \return a shader resource binding for the given binding number, pipeline
+    stages, and the array of (separate) textures specified by \a binding, \a
+    stage, \a count, and \a tex.
+
+    \note \a count must be at least 1, and not larger than 16.
+
+    \note When \a count is 1, this function is equivalent to texture().
+
+    \warning All elements of the array must be specified.
+
+    \note \a tex can be null. It is valid to create a
+    QRhiShaderResourceBindings with unspecified resources, but such an object
+    cannot be used with QRhiCommandBuffer::setShaderResources(). It is however
+    suitable for creating pipelines. Such a pipeline must then always be used
+    together with another, layout compatible QRhiShaderResourceBindings with
+    resources present passed to QRhiCommandBuffer::setShaderResources().
+
+    \sa texture(), sampler()
+ */
+QRhiShaderResourceBinding QRhiShaderResourceBinding::textures(int binding, StageFlags stage, int count, QRhiTexture **tex)
+{
+    Q_ASSERT(count >= 1 && count <= Data::MAX_TEX_SAMPLER_ARRAY_SIZE);
+    QRhiShaderResourceBinding b;
+    b.d.binding = binding;
+    b.d.stage = stage;
+    b.d.type = Texture;
+    b.d.u.stex.count = count;
+    for (int i = 0; i < count; ++i) {
+        if (tex)
+            b.d.u.stex.texSamplers[i] = { tex[i], nullptr };
+        else
+            b.d.u.stex.texSamplers[i] = { nullptr, nullptr };
+    }
+    return b;
+}
+
+/*!
+    \return a shader resource binding for the given binding number, pipeline
+    stages, and sampler specified by \a binding, \a stage, \a sampler.
+
+    \note \a sampler can be null. It is valid to create a
+    QRhiShaderResourceBindings with unspecified resources, but such an object
+    cannot be used with QRhiCommandBuffer::setShaderResources(). It is however
+    suitable for creating pipelines. Such a pipeline must then always be used
+    together with another, layout compatible QRhiShaderResourceBindings with
+    resources present passed to QRhiCommandBuffer::setShaderResources().
+
+    Arrays of separate samplers are not supported.
+
+    This creates a binding for a separate sampler object, whereas
+    sampledTexture() is suitable for combined image samplers. In
+    Vulkan-compatible GLSL code separate samplers are declared as \c sampler
+    as opposed to \c sampler2D: \c{layout(binding = 2) uniform sampler samp;}
+
+    With both a \c texture2D and \c sampler present, they can be used together
+    to sample the texture: \c{fragColor = texture(sampler2D(tex, samp),
+    texcoord);}.
+
+    \sa texture()
+ */
+QRhiShaderResourceBinding QRhiShaderResourceBinding::sampler(int binding, StageFlags stage, QRhiSampler *sampler)
+{
+    QRhiShaderResourceBinding b;
+    b.d.binding = binding;
+    b.d.stage = stage;
+    b.d.type = Sampler;
+    b.d.u.stex.count = 1;
+    b.d.u.stex.texSamplers[0] = { nullptr, sampler };
     return b;
 }
 
@@ -3715,6 +3819,18 @@ bool operator==(const QRhiShaderResourceBinding &a, const QRhiShaderResourceBind
             }
         }
         break;
+    case QRhiShaderResourceBinding::Texture:
+        if (da->u.stex.count != db->u.stex.count)
+            return false;
+        for (int i = 0; i < da->u.stex.count; ++i) {
+            if (da->u.stex.texSamplers[i].tex != db->u.stex.texSamplers[i].tex)
+                return false;
+        }
+        break;
+    case QRhiShaderResourceBinding::Sampler:
+        if (da->u.stex.texSamplers[0].sampler != db->u.stex.texSamplers[0].sampler)
+            return false;
+        break;
     case QRhiShaderResourceBinding::ImageLoad:
         Q_FALLTHROUGH();
     case QRhiShaderResourceBinding::ImageStore:
@@ -3774,6 +3890,12 @@ size_t qHash(const QRhiShaderResourceBinding &b, size_t seed) noexcept
         h ^= qHash(reinterpret_cast<quintptr>(d->u.stex.texSamplers[0].tex));
         h ^= qHash(reinterpret_cast<quintptr>(d->u.stex.texSamplers[0].sampler));
         break;
+    case QRhiShaderResourceBinding::Texture:
+        h ^= qHash(reinterpret_cast<quintptr>(d->u.stex.texSamplers[0].tex));
+        break;
+    case QRhiShaderResourceBinding::Sampler:
+        h ^= qHash(reinterpret_cast<quintptr>(d->u.stex.texSamplers[0].sampler));
+        break;
     case QRhiShaderResourceBinding::ImageLoad:
         Q_FALLTHROUGH();
     case QRhiShaderResourceBinding::ImageStore:
@@ -3819,6 +3941,18 @@ QDebug operator<<(QDebug dbg, const QRhiShaderResourceBinding &b)
                           << " sampler=" << d->u.stex.texSamplers[i].sampler;
         }
         dbg.nospace() << ')';
+        break;
+    case QRhiShaderResourceBinding::Texture:
+        dbg.nospace() << " Textures("
+                      << "count=" << d->u.stex.count;
+        for (int i = 0; i < d->u.stex.count; ++i)
+            dbg.nospace() << " texture=" << d->u.stex.texSamplers[i].tex;
+        dbg.nospace() << ')';
+        break;
+    case QRhiShaderResourceBinding::Sampler:
+        dbg.nospace() << " Sampler("
+                      << " sampler=" << d->u.stex.texSamplers[0].sampler
+                      << ')';
         break;
     case QRhiShaderResourceBinding::ImageLoad:
         dbg.nospace() << " ImageLoad("
@@ -4928,6 +5062,22 @@ bool QRhiImplementation::sanityCheckShaderResourceBindings(QRhiShaderResourceBin
                 bindingSeen[binding] = true;
             } else {
                 qWarning("Combined image sampler duplicates an existing binding number %d", binding);
+                bindingsOk = false;
+            }
+            break;
+        case QRhiShaderResourceBinding::Texture:
+            if (!bindingSeen[binding]) {
+                bindingSeen[binding] = true;
+            } else {
+                qWarning("Texture duplicates an existing binding number %d", binding);
+                bindingsOk = false;
+            }
+            break;
+        case QRhiShaderResourceBinding::Sampler:
+            if (!bindingSeen[binding]) {
+                bindingSeen[binding] = true;
+            } else {
+                qWarning("Sampler duplicates an existing binding number %d", binding);
                 bindingsOk = false;
             }
             break;

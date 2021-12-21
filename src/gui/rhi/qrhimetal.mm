@@ -835,34 +835,43 @@ void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD
         }
             break;
         case QRhiShaderResourceBinding::SampledTexture:
+        case QRhiShaderResourceBinding::Texture:
+        case QRhiShaderResourceBinding::Sampler:
         {
-            const QRhiShaderResourceBinding::Data::SampledTextureData *data = &b->u.stex;
+            const QRhiShaderResourceBinding::Data::TextureAndOrSamplerData *data = &b->u.stex;
             for (int elem = 0; elem < data->count; ++elem) {
                 QMetalTexture *texD = QRHI_RES(QMetalTexture, b->u.stex.texSamplers[elem].tex);
                 QMetalSampler *samplerD = QRHI_RES(QMetalSampler, b->u.stex.texSamplers[elem].sampler);
                 if (b->stage.testFlag(QRhiShaderResourceBinding::VertexStage)) {
-                    const int nativeBindingTexture = mapBinding(b->binding, VERTEX, nativeResourceBindingMaps, BindingType::Texture);
-                    const int nativeBindingSampler = mapBinding(b->binding, VERTEX, nativeResourceBindingMaps, BindingType::Sampler);
-                    if (nativeBindingTexture >= 0 && nativeBindingSampler >= 0) {
-                        res[VERTEX].textures.append({ nativeBindingTexture + elem, texD->d->tex });
-                        res[VERTEX].samplers.append({ nativeBindingSampler + elem, samplerD->d->samplerState });
-                    }
+                    // Must handle all three cases (combined, separate, separate):
+                    //   first = texture binding, second = sampler binding
+                    //   first = texture binding
+                    //   first = sampler binding (i.e. BindingType::Texture...)
+                    const int textureBinding = mapBinding(b->binding, VERTEX, nativeResourceBindingMaps, BindingType::Texture);
+                    const int samplerBinding = texD && samplerD ? mapBinding(b->binding, VERTEX, nativeResourceBindingMaps, BindingType::Sampler)
+                                                                : (samplerD ? mapBinding(b->binding, VERTEX, nativeResourceBindingMaps, BindingType::Texture) : -1);
+                    if (textureBinding >= 0 && texD)
+                        res[VERTEX].textures.append({ textureBinding + elem, texD->d->tex });
+                    if (samplerBinding >= 0)
+                        res[VERTEX].samplers.append({ samplerBinding + elem, samplerD->d->samplerState });
                 }
                 if (b->stage.testFlag(QRhiShaderResourceBinding::FragmentStage)) {
-                    const int nativeBindingTexture = mapBinding(b->binding, FRAGMENT, nativeResourceBindingMaps, BindingType::Texture);
-                    const int nativeBindingSampler = mapBinding(b->binding, FRAGMENT, nativeResourceBindingMaps, BindingType::Sampler);
-                    if (nativeBindingTexture >= 0 && nativeBindingSampler >= 0) {
-                        res[FRAGMENT].textures.append({ nativeBindingTexture + elem, texD->d->tex });
-                        res[FRAGMENT].samplers.append({ nativeBindingSampler + elem, samplerD->d->samplerState });
-                    }
+                    const int textureBinding = mapBinding(b->binding, FRAGMENT, nativeResourceBindingMaps, BindingType::Texture);
+                    const int samplerBinding = texD && samplerD ? mapBinding(b->binding, FRAGMENT, nativeResourceBindingMaps, BindingType::Sampler)
+                                                                : (samplerD ? mapBinding(b->binding, FRAGMENT, nativeResourceBindingMaps, BindingType::Texture) : -1);
+                    if (textureBinding >= 0 && texD)
+                        res[FRAGMENT].textures.append({ textureBinding + elem, texD->d->tex });
+                    if (samplerBinding >= 0)
+                        res[FRAGMENT].samplers.append({ samplerBinding + elem, samplerD->d->samplerState });
                 }
                 if (b->stage.testFlag(QRhiShaderResourceBinding::ComputeStage)) {
-                    const int nativeBindingTexture = mapBinding(b->binding, COMPUTE, nativeResourceBindingMaps, BindingType::Texture);
-                    const int nativeBindingSampler = mapBinding(b->binding, COMPUTE, nativeResourceBindingMaps, BindingType::Sampler);
-                    if (nativeBindingTexture >= 0 && nativeBindingSampler >= 0) {
-                        res[COMPUTE].textures.append({ nativeBindingTexture + elem, texD->d->tex });
-                        res[COMPUTE].samplers.append({ nativeBindingSampler + elem, samplerD->d->samplerState });
-                    }
+                    const int textureBinding = mapBinding(b->binding, COMPUTE, nativeResourceBindingMaps, BindingType::Texture);
+                    const int samplerBinding = texD && samplerD ? mapBinding(b->binding, COMPUTE, nativeResourceBindingMaps, BindingType::Sampler)
+                                                                : (samplerD ? mapBinding(b->binding, COMPUTE, nativeResourceBindingMaps, BindingType::Texture) : -1);
+                    if (textureBinding >= 0 && texD)
+                        res[COMPUTE].textures.append({ textureBinding + elem, texD->d->tex });
+                    if (samplerBinding >= 0)
+                        res[COMPUTE].samplers.append({ samplerBinding + elem, samplerD->d->samplerState });
                 }
             }
         }
@@ -1110,8 +1119,10 @@ void QRhiMetal::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
         }
             break;
         case QRhiShaderResourceBinding::SampledTexture:
+        case QRhiShaderResourceBinding::Texture:
+        case QRhiShaderResourceBinding::Sampler:
         {
-            const QRhiShaderResourceBinding::Data::SampledTextureData *data = &b->u.stex;
+            const QRhiShaderResourceBinding::Data::TextureAndOrSamplerData *data = &b->u.stex;
             if (bd.stex.count != data->count) {
                 bd.stex.count = data->count;
                 resNeedsRebind = true;
@@ -1119,19 +1130,26 @@ void QRhiMetal::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
             for (int elem = 0; elem < data->count; ++elem) {
                 QMetalTexture *texD = QRHI_RES(QMetalTexture, data->texSamplers[elem].tex);
                 QMetalSampler *samplerD = QRHI_RES(QMetalSampler, data->texSamplers[elem].sampler);
-                if (texD->generation != bd.stex.d[elem].texGeneration
-                        || texD->m_id != bd.stex.d[elem].texId
-                        || samplerD->generation != bd.stex.d[elem].samplerGeneration
-                        || samplerD->m_id != bd.stex.d[elem].samplerId)
+                Q_ASSERT(texD || samplerD);
+                const quint64 texId = texD ? texD->m_id : 0;
+                const uint texGen = texD ? texD->generation : 0;
+                const quint64 samplerId = samplerD ? samplerD->m_id : 0;
+                const uint samplerGen = samplerD ? samplerD->generation : 0;
+                if (texGen != bd.stex.d[elem].texGeneration
+                        || texId != bd.stex.d[elem].texId
+                        || samplerGen != bd.stex.d[elem].samplerGeneration
+                        || samplerId != bd.stex.d[elem].samplerId)
                 {
                     resNeedsRebind = true;
-                    bd.stex.d[elem].texId = texD->m_id;
-                    bd.stex.d[elem].texGeneration = texD->generation;
-                    bd.stex.d[elem].samplerId = samplerD->m_id;
-                    bd.stex.d[elem].samplerGeneration = samplerD->generation;
+                    bd.stex.d[elem].texId = texId;
+                    bd.stex.d[elem].texGeneration = texGen;
+                    bd.stex.d[elem].samplerId = samplerId;
+                    bd.stex.d[elem].samplerGeneration = samplerGen;
                 }
-                texD->lastActiveFrameSlot = currentFrameSlot;
-                samplerD->lastActiveFrameSlot = currentFrameSlot;
+                if (texD)
+                    texD->lastActiveFrameSlot = currentFrameSlot;
+                if (samplerD)
+                    samplerD->lastActiveFrameSlot = currentFrameSlot;
             }
         }
             break;
