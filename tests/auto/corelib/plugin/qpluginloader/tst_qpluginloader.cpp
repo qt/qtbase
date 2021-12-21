@@ -755,17 +755,17 @@ void tst_QPluginLoader::loadCorruptElfOldPlugin_data()
 
     // arbitrary section bounds checks
     // section index = 0 is usually a NULL section, so we try 1
-    newRow("section1-starts-past-eof", "a section data extends past the end of the file",
+    newRow("section1-starts-past-eof", "section contents extend past the end of the file",
            [](H h, QFile *f) {
         ElfShdr *s = getSection(h, 1);
         s->sh_offset = f->size();
     });
-    newRow("section1-ends-past-eof", "a section data extends past the end of the file",
+    newRow("section1-ends-past-eof", "section contents extend past the end of the file",
            [](H h, QFile *f) {
         ElfShdr *s = getSection(h, 1);
         s->sh_size = f->size() + 1 - s->sh_offset;
     });
-    newRow("section1-bounds-overflow", "a section data extends past the end of the file", [](H h) {
+    newRow("section1-bounds-overflow", "section contents extend past the end of the file", [](H h) {
         ElfShdr *s = getSection(h, 1);
         s->sh_size = -sizeof(*s);
     });

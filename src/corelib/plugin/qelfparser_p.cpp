@@ -714,7 +714,7 @@ static QLibraryScanResult scanSections(QByteArrayView data, const ErrorMaker &er
             continue;;
         if (T::Off end; qAddOverflow(shdr->sh_offset, shdr->sh_size, &end)
                 || end > size_t(data.size())) {
-            return error(QLibrary::tr("a section data extends past the end of the file"));
+            return error(QLibrary::tr("section contents extend past the end of the file"));
         }
 
         if (name != QLatin1String(".qtmetadata"))

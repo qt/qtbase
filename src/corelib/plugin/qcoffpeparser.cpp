@@ -380,7 +380,7 @@ QLibraryScanResult QCoffPeParser::parse(QByteArrayView data, QString *errMsg)
         size_t offset = section->PointerToRawData;
         if (size_t end; qAddOverflow<size_t>(offset, section->SizeOfRawData, &end)
                 || end > size_t(data.size()))
-            return error(QLibrary::tr("a section data extends past the end of the file"));
+            return error(QLibrary::tr("section contents extend past the end of the file"));
 
         DWORD type = section->Characteristics
                 & (IMAGE_SCN_CNT_CODE | IMAGE_SCN_CNT_INITIALIZED_DATA
