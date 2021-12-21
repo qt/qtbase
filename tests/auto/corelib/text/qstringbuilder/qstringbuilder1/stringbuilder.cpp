@@ -376,16 +376,6 @@ void runScenario()
         QByteArray ba2 = withZero;
         ba2 += ba2 P withZero;
         QCOMPARE(ba2, QByteArray(withZero + withZero + withZero));
-
-        // With space allocated in front, mirroring what happens with QHttpMultiPart in QNAM
-        QByteArray byteArray;
-        byteArray.reserve(70);
-        byteArray.insert(0, "multipart/");
-        byteArray.insert(byteArray.size(), "mixed");
-        QEXPECT_FAIL("", "there's no freeSpaceAtBegin()?!", Continue);
-        QVERIFY(byteArray.data_ptr().freeSpaceAtBegin() > 0);
-        byteArray += "; boundary=\"" P QByteArray(30, 'o') P '"';
-        QCOMPARE(byteArray, "multipart/mixed; boundary=\"oooooooooooooooooooooooooooooo\"");
     }
 
     checkItWorksWithFreeSpaceAtBegin(QByteArray(UTF8_LITERAL), "1234");
