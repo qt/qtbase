@@ -1698,7 +1698,7 @@ void tst_QLocalSocket::verifySocketOptions_data()
 void tst_QLocalSocket::verifySocketOptions()
 {
     // These are only guaranteed to be useful on linux at this time
-#ifdef Q_OS_LINUX
+#if defined(Q_OS_LINUX) && !defined(Q_OS_WEBOS)
    QFETCH(QString, service);
    QFETCH(QLocalServer::SocketOption, opts);
    QFETCH(QFile::Permissions, perms);
