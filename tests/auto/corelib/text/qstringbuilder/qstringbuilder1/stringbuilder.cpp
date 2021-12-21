@@ -386,6 +386,8 @@ void runScenario()
         byteArray.reserve(70);
         byteArray.insert(0, "multipart/");
         byteArray.insert(byteArray.size(), "mixed");
+        QEXPECT_FAIL("", "there's no freeSpaceAtBegin()?!", Continue);
+        QVERIFY(byteArray.data_ptr().freeSpaceAtBegin() > 0);
         byteArray += "; boundary=\"" P QByteArray(30, 'o') P '"';
         QCOMPARE(byteArray, "multipart/mixed; boundary=\"oooooooooooooooooooooooooooooo\"");
     }
