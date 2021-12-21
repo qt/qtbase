@@ -407,6 +407,12 @@ function QtLoader(config)
             setStatus("Exited");
         };
         self.moduleConfig.quit = self.moduleConfig.quit || function(code, exception) {
+
+            // Emscripten (and Qt) supports exiting from main() while keeping the app
+            // running. Don't transition into the "Exited" state for clean exits.
+            if (code == 0)
+                return;
+
             if (exception.name == "ExitStatus") {
                 // Clean exit with code
                 publicAPI.exitText = undefined
