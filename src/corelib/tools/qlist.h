@@ -147,12 +147,10 @@ public:
         using value_type = T;
         // libstdc++ shipped with gcc < 11 does not have a fix for defect LWG 3346
 #if __cplusplus >= 202002L && (!defined(_GLIBCXX_RELEASE) || _GLIBCXX_RELEASE >= 11)
-        using iterator_category = std::contiguous_iterator_tag;
+        using iterator_concept = std::contiguous_iterator_tag;
         using element_type = value_type;
-#else
-        using iterator_category = std::random_access_iterator_tag;
 #endif
-
+        using iterator_category = std::random_access_iterator_tag;
         using pointer = T *;
         using reference = T &;
 
@@ -220,11 +218,10 @@ public:
         using value_type = T;
         // libstdc++ shipped with gcc < 11 does not have a fix for defect LWG 3346
 #if __cplusplus >= 202002L && (!defined(_GLIBCXX_RELEASE) || _GLIBCXX_RELEASE >= 11)
-        using iterator_category = std::contiguous_iterator_tag;
+        using iterator_concept = std::contiguous_iterator_tag;
         using element_type = const value_type;
-#else
-        using iterator_category = std::random_access_iterator_tag;
 #endif
+        using iterator_category = std::random_access_iterator_tag;
         using pointer = const T *;
         using reference = const T &;
 
