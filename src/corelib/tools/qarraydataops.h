@@ -911,17 +911,13 @@ public:
         Q_ASSERT(distance >= 0 && distance <= this->allocatedCapacity() - this->size);
         Q_UNUSED(distance);
 
-#if __cplusplus >= 202002L
-        constexpr bool canUseCopyAppend = std::conjunction_v<
-                std::is_convertible<
-                    typename std::iterator_traits<It>::iterator_category,
-                    std::contiguous_iterator_tag
-                >,
-                std::is_same<
+#if __cplusplus >= 202002L && defined(__cpp_concepts) && defined(__cpp_lib_concepts)
+        constexpr bool canUseCopyAppend =
+                std::contiguous_iterator<It> &&
+                std::is_same_v<
                     std::remove_cv_t<typename std::iterator_traits<It>::value_type>,
                     T
-                >
-            >;
+                >;
         if constexpr (canUseCopyAppend) {
             this->copyAppend(std::to_address(b), std::to_address(e));
         } else
