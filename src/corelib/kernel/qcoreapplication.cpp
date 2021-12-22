@@ -788,7 +788,11 @@ void QCoreApplicationPrivate::init()
 
 #if QT_CONFIG(thread)
 #ifdef Q_OS_WASM
-    QThreadPrivate::idealThreadCount = emscripten::val::global("navigator")["hardwareConcurrency"].as<int>();
+    emscripten::val hardwareConcurrency = emscripten::val::global("navigator")["hardwareConcurrency"];
+    if (hardwareConcurrency.isUndefined())
+        QThreadPrivate::idealThreadCount = 2;
+    else
+        QThreadPrivate::idealThreadCount = hardwareConcurrency.as<int>();
 #endif
 #endif
 
