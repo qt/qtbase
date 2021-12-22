@@ -955,10 +955,9 @@ static void qt_to_latin1_internal(uchar *dst, const char16_t *src, qsizetype len
         return _mm_packus_epi16(chunk1, chunk2);
     };
 
-    uchar *e = dst + length;
-    qptrdiff offset = 0;
     if (size_t(length) >= sizeof(__m128i)) {
         // because of possible overlapping, we won't process the last chunk in the loop
+        qptrdiff offset = 0;
         for ( ; offset + 2 * sizeof(__m128i) < size_t(length); offset += sizeof(__m128i))
             _mm_storeu_si128(reinterpret_cast<__m128i *>(dst + offset), loadChunkAt(offset));
 
@@ -971,45 +970,45 @@ static void qt_to_latin1_internal(uchar *dst, const char16_t *src, qsizetype len
     }
 
 #  if !defined(__OPTIMIZE_SIZE__)
-    // we're going to write to dst[offset..offset+7] (8 bytes)
-    if (dst + offset + 7 < e) {
-        __m128i chunk = _mm_loadu_si128(reinterpret_cast<const __m128i *>(src + offset));
-        chunk = mergeQuestionMarks(chunk);
+    if (length >= 4) {
+        // this code is fine even for in-place conversion because we load both
+        // before any store
+        if (length >= 8) {
+            __m128i chunk1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(src));
+            __m128i chunk2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(src + length - 8));
+            chunk1 = mergeQuestionMarks(chunk1);
+            chunk2 = mergeQuestionMarks(chunk2);
 
-        // pack, where the upper half is ignored
-        const __m128i result = _mm_packus_epi16(chunk, chunk);
-        _mm_storel_epi64(reinterpret_cast<__m128i *>(dst + offset), result);
-        offset += 8;
-    }
+            // pack, where the upper half is ignored
+            const __m128i result1 = _mm_packus_epi16(chunk1, chunk1);
+            const __m128i result2 = _mm_packus_epi16(chunk2, chunk2);
+            _mm_storel_epi64(reinterpret_cast<__m128i *>(dst), result1);
+            _mm_storel_epi64(reinterpret_cast<__m128i *>(dst + length - 8), result2);
+        } else {
+            __m128i chunk1 = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(src));
+            __m128i chunk2 = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(src + length - 4));
+            chunk1 = mergeQuestionMarks(chunk1);
+            chunk2 = mergeQuestionMarks(chunk2);
 
-    // we're going to write to dst[offset..offset+3] (4 bytes)
-    if (dst + offset + 3 < e) {
-        __m128i chunk = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(src + offset));
-        chunk = mergeQuestionMarks(chunk);
-
-        // pack, we'll the upper three quarters
-        const __m128i result = _mm_packus_epi16(chunk, chunk);
-        qToUnaligned(_mm_cvtsi128_si32(result), dst + offset);
-        offset += 4;
+            // pack, we'll zero the upper three quarters
+            const __m128i result1 = _mm_packus_epi16(chunk1, chunk1);
+            const __m128i result2 = _mm_packus_epi16(chunk2, chunk2);
+            qToUnaligned(_mm_cvtsi128_si32(result1), dst);
+            qToUnaligned(_mm_cvtsi128_si32(result2), dst + length - 4);
+        }
+        return;
     }
 
     length = length % 4;
-#  else
-    length = length % 16;
-#  endif // optimize size
-
-    // advance dst, src for tail processing
-    dst += offset;
-    src += offset;
-
-#  if !defined(__OPTIMIZE_SIZE__)
     return UnrollTailLoop<3>::exec(length, [=](qsizetype i) {
         if (Checked)
             dst[i] = (src[i]>0xff) ? '?' : (uchar) src[i];
         else
             dst[i] = src[i];
     });
-#  endif
+#  else
+    length = length % 16;
+#  endif // optimize size
 #elif defined(__ARM_NEON__)
     // Refer to the documentation of the SSE2 implementation.
     // This uses exactly the same method as for SSE except:
