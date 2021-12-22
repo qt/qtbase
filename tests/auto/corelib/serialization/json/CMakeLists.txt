@@ -17,7 +17,7 @@ qt_internal_add_test(tst_json
 #### Keys ignored in scope 2:.:.:json.pro:NOT ANDROID:
 # TESTDATA = "bom.json" "test.json" "test3.json" "test2.json"
 
-if(ANDROID)
+if(ANDROID OR INTEGRITY)
     # Resources:
     set(json_resource_files
         "bom.json"
