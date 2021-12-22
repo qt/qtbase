@@ -284,6 +284,29 @@ static void setCurrentThreadName(const char *name)
 }
 #endif
 
+namespace {
+template <typename T>
+void terminate_on_exception(T &&t)
+{
+#ifndef QT_NO_EXCEPTIONS
+    try {
+#endif
+        std::forward<T>(t)();
+#ifndef QT_NO_EXCEPTIONS
+#ifdef __GLIBCXX__
+    // POSIX thread cancellation under glibc is implemented by throwing an exception
+    // of this type. Do what libstdc++ is doing and handle it specially in order not to
+    // abort the application if user's code calls a cancellation function.
+    } catch (abi::__forced_unwind &) {
+        throw;
+#endif // __GLIBCXX__
+    } catch (...) {
+        qTerminate();
+    }
+#endif // QT_NO_EXCEPTIONS
+}
+} // unnamed namespace
+
 void *QThreadPrivate::start(void *arg)
 {
 #if !defined(Q_OS_ANDROID)
@@ -291,10 +314,7 @@ void *QThreadPrivate::start(void *arg)
 #endif
     pthread_cleanup_push(QThreadPrivate::finish, arg);
 
-#ifndef QT_NO_EXCEPTIONS
-    try
-#endif
-    {
+    terminate_on_exception([&] {
         QThread *thr = reinterpret_cast<QThread *>(arg);
         QThreadData *data = QThreadData::get2(thr);
 
@@ -336,20 +356,7 @@ void *QThreadPrivate::start(void *arg)
         pthread_testcancel();
 #endif
         thr->run();
-    }
-#ifndef QT_NO_EXCEPTIONS
-#ifdef __GLIBCXX__
-    // POSIX thread cancellation under glibc is implemented by throwing an exception
-    // of this type. Do what libstdc++ is doing and handle it specially in order not to
-    // abort the application if user's code calls a cancellation function.
-    catch (const abi::__forced_unwind &) {
-        throw;
-    }
-#endif // __GLIBCXX__
-    catch (...) {
-        qTerminate();
-    }
-#endif // QT_NO_EXCEPTIONS
+    });
 
     // This pop runs finish() below. It's outside the try/catch (and has its
     // own try/catch) to prevent finish() to be run in case an exception is
@@ -361,10 +368,7 @@ void *QThreadPrivate::start(void *arg)
 
 void QThreadPrivate::finish(void *arg)
 {
-#ifndef QT_NO_EXCEPTIONS
-    try
-#endif
-    {
+    terminate_on_exception([&] {
         QThread *thr = reinterpret_cast<QThread *>(arg);
         QThreadPrivate *d = thr->d_func();
 
@@ -396,20 +400,7 @@ void QThreadPrivate::finish(void *arg)
         d->data->threadId.storeRelaxed(nullptr);
 
         d->thread_done.wakeAll();
-    }
-#ifndef QT_NO_EXCEPTIONS
-#ifdef __GLIBCXX__
-    // POSIX thread cancellation under glibc is implemented by throwing an exception
-    // of this type. Do what libstdc++ is doing and handle it specially in order not to
-    // abort the application if user's code calls a cancellation function.
-    catch (const abi::__forced_unwind &) {
-        throw;
-    }
-#endif // __GLIBCXX__
-    catch (...) {
-        qTerminate();
-    }
-#endif // QT_NO_EXCEPTIONS
+    });
 }
 
 
