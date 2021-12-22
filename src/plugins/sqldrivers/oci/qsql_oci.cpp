@@ -515,7 +515,7 @@ int QOCIResultPrivate::bindValues(QVariantList &values, IndicatorArray &indicato
 
         OCIBind * hbnd = nullptr; // Oracle handles these automatically
         sb2 *indPtr = &indicators[i];
-        *indPtr = val.isNull() ? -1 : 0;
+        *indPtr = QSqlResultPrivate::isVariantNull(val) ? -1 : 0;
 
         bindValue(sql, &hbnd, err, i, val, indPtr, &tmpSizes[i], tmpStorage);
     }
@@ -1373,7 +1373,7 @@ bool QOCICols::execBatch(QOCIResultPrivate *d, QVariantList &boundValues, bool a
             // not a list - create a deep-copy of the single value
             QOCIBatchColumn &singleCol = columns[i];
             singleCol.indicators = new sb2[1];
-            *singleCol.indicators = boundValues.at(i).isNull() ? -1 : 0;
+            *singleCol.indicators = QSqlResultPrivate::isVariantNull(boundValues.at(i)) ? -1 : 0;
 
             r = d->bindValue(d->sql, &singleCol.bindh, d->err, i,
                              boundValues.at(i), singleCol.indicators, &tmpSizes[i], tmpStorage);
@@ -1470,7 +1470,7 @@ bool QOCICols::execBatch(QOCIResultPrivate *d, QVariantList &boundValues, bool a
         for (uint row = 0; row < col.recordCount; ++row) {
             const QVariant &val = boundValues.at(i).toList().at(row);
 
-            if (val.isNull() && !d->isOutValue(i)) {
+            if (QSqlResultPrivate::isVariantNull(val) && !d->isOutValue(i)) {
                 columns[i].indicators[row] = -1;
                 columns[i].lengths[row] = 0;
             } else {

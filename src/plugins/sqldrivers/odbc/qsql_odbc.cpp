@@ -1419,7 +1419,7 @@ bool QODBCResult::exec()
             values[i].detach();
         const QVariant &val = values.at(i);
         SQLLEN *ind = &indicators[i];
-        if (val.isNull())
+        if (QSqlResultPrivate::isVariantNull(val))
             *ind = SQL_NULL_DATA;
         switch (val.typeId()) {
             case QMetaType::QDate: {
