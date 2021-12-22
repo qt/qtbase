@@ -856,7 +856,7 @@ static QString qCreateParamString(const QList<QVariant> &boundValues, const QSql
     QSqlField f;
     for (const QVariant &val : boundValues) {
         f.setMetaType(val.metaType());
-        if (val.isNull())
+        if (QSqlResultPrivate::isVariantNull(val))
             f.clear();
         else
             f.setValue(val);

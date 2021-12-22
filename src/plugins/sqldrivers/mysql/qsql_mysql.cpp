@@ -902,7 +902,7 @@ bool QMYSQLResult::exec()
 
             MYSQL_BIND* currBind = &d->outBinds[i];
 
-            nullVector[i] = static_cast<my_bool>(val.isNull());
+            nullVector[i] = static_cast<my_bool>(QSqlResultPrivate::isVariantNull(val));
             currBind->is_null = &nullVector[i];
             currBind->length = 0;
             currBind->is_unsigned = 0;

@@ -133,6 +133,8 @@ public:
     bool active = false;
     bool isSel = false;
     bool forwardOnly = false;
+
+    static bool isVariantNull(const QVariant &variant);
 };
 
 QT_END_NAMESPACE

@@ -968,7 +968,7 @@ bool QIBaseResult::exec()
     setAt(QSql::BeforeFirstRow);
 
     if (d->inda) {
-        QList<QVariant>& values = boundValues();
+        const QList<QVariant> &values = boundValues();
         int i;
         if (values.count() > d->inda->sqld) {
             qWarning() << QLatin1String("QIBaseResult::exec: Parameter mismatch, expected") <<
@@ -984,7 +984,7 @@ bool QIBaseResult::exec()
                 continue;
             const QVariant val(values[i]);
             if (d->inda->sqlvar[para].sqltype & 1) {
-                if (val.isNull()) {
+                if (QSqlResultPrivate::isVariantNull(val)) {
                     // set null indicator
                     *(d->inda->sqlvar[para].sqlind) = -1;
                     // and set the value to 0, otherwise it would count as empty string.
