@@ -875,8 +875,8 @@ public:
                                                    bool *wantsColorClear = nullptr, bool *wantsDsClear = nullptr);
     void enqueueBarriersForPass(QGles2CommandBuffer *cbD);
     int effectiveSampleCount(int sampleCount) const;
-    QByteArray shaderSource(const QRhiShaderStage &shaderStage, int *glslVersion);
-    bool compileShader(GLuint program, const QRhiShaderStage &shaderStage, int *glslVersion);
+    QByteArray shaderSource(const QRhiShaderStage &shaderStage, QShaderVersion *shaderVersion);
+    bool compileShader(GLuint program, const QRhiShaderStage &shaderStage, QShaderVersion *shaderVersion);
     bool linkProgram(GLuint program);
     void registerUniformIfActive(const QShaderDescription::BlockVariable &var,
                                  const QByteArray &namePrefix, int binding, int baseOffset,

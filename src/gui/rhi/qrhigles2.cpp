@@ -4127,7 +4127,7 @@ static inline GLenum toGlShaderType(QRhiShaderStage::Type type)
     }
 }
 
-QByteArray QRhiGles2::shaderSource(const QRhiShaderStage &shaderStage, int *glslVersion)
+QByteArray QRhiGles2::shaderSource(const QRhiShaderStage &shaderStage, QShaderVersion *shaderVersion)
 {
     const QShader bakedShader = shaderStage.shader();
     QList<int> versionsToTry;
@@ -4146,8 +4146,8 @@ QByteArray QRhiGles2::shaderSource(const QRhiShaderStage &shaderStage, int *glsl
             QShaderVersion ver(v, QShaderVersion::GlslEs);
             source = bakedShader.shader({ QShader::GlslShader, ver, shaderStage.shaderVariant() }).shader();
             if (!source.isEmpty()) {
-                if (glslVersion)
-                    *glslVersion = v;
+                if (shaderVersion)
+                    *shaderVersion = ver;
                 break;
             }
         }
@@ -4180,8 +4180,8 @@ QByteArray QRhiGles2::shaderSource(const QRhiShaderStage &shaderStage, int *glsl
         for (int v : versionsToTry) {
             source = bakedShader.shader({ QShader::GlslShader, v, shaderStage.shaderVariant() }).shader();
             if (!source.isEmpty()) {
-                if (glslVersion)
-                    *glslVersion = v;
+                if (shaderVersion)
+                    *shaderVersion = v;
                 break;
             }
         }
@@ -4193,9 +4193,9 @@ QByteArray QRhiGles2::shaderSource(const QRhiShaderStage &shaderStage, int *glsl
     return source;
 }
 
-bool QRhiGles2::compileShader(GLuint program, const QRhiShaderStage &shaderStage, int *glslVersion)
+bool QRhiGles2::compileShader(GLuint program, const QRhiShaderStage &shaderStage, QShaderVersion *shaderVersion)
 {
-    const QByteArray source = shaderSource(shaderStage, glslVersion);
+    const QByteArray source = shaderSource(shaderStage, shaderVersion);
     if (source.isEmpty())
         return false;
 
@@ -5337,18 +5337,18 @@ bool QGles2GraphicsPipeline::create()
     QShader::SeparateToCombinedImageSamplerMappingList fsSamplerMappingList;
     for (const QRhiShaderStage &shaderStage : qAsConst(m_shaderStages)) {
         QShader shader = shaderStage.shader();
-        int glslVersion = 0;
+        QShaderVersion shaderVersion;
         if (shaderStage.type() == QRhiShaderStage::Vertex) {
             vsDesc = shader.description();
-            if (!rhiD->shaderSource(shaderStage, &glslVersion).isEmpty()) {
+            if (!rhiD->shaderSource(shaderStage, &shaderVersion).isEmpty()) {
                 vsSamplerMappingList = shader.separateToCombinedImageSamplerMappingList(
-                            { QShader::GlslShader, glslVersion, shaderStage.shaderVariant() });
+                            { QShader::GlslShader, shaderVersion, shaderStage.shaderVariant() });
             }
         } else if (shaderStage.type() == QRhiShaderStage::Fragment) {
             fsDesc = shader.description();
-            if (!rhiD->shaderSource(shaderStage, &glslVersion).isEmpty()) {
+            if (!rhiD->shaderSource(shaderStage, &shaderVersion).isEmpty()) {
                 fsSamplerMappingList = shader.separateToCombinedImageSamplerMappingList(
-                            { QShader::GlslShader, glslVersion, shaderStage.shaderVariant() });
+                            { QShader::GlslShader, shaderVersion, shaderStage.shaderVariant() });
             }
         }
     }
@@ -5482,10 +5482,10 @@ bool QGles2ComputePipeline::create()
 
     const QShaderDescription csDesc = m_shaderStage.shader().description();
     QShader::SeparateToCombinedImageSamplerMappingList csSamplerMappingList;
-    int glslVersion = 0;
-    if (!rhiD->shaderSource(m_shaderStage, &glslVersion).isEmpty()) {
+    QShaderVersion shaderVersion;
+    if (!rhiD->shaderSource(m_shaderStage, &shaderVersion).isEmpty()) {
         csSamplerMappingList = m_shaderStage.shader().separateToCombinedImageSamplerMappingList(
-                    { QShader::GlslShader, glslVersion, m_shaderStage.shaderVariant() });
+                    { QShader::GlslShader, shaderVersion, m_shaderStage.shaderVariant() });
     }
 
     program = rhiD->f->glCreateProgram();
