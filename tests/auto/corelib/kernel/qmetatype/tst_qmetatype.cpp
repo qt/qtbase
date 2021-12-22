@@ -36,6 +36,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <vector>
 
 // mingw gcc 4.8 also takes way too long, letting the CI system abort the test
 #if defined(__MINGW32__)
@@ -242,6 +243,12 @@ struct GenericPODType : BaseGenericType
     QByteArray podData;
 };
 
+// The order of the next two statics matters!
+//
+// need to use shared_ptr, for its template ctor, since QMetaTypeInterface isn't polymorphic,
+// but the test derives from it
+static std::vector<std::shared_ptr<QtPrivate::QMetaTypeInterface>> s_metaTypeInterfaces;
+
 using RegisteredType = QPair<std::shared_ptr<BaseGenericType>, std::shared_ptr<QMetaObject>>;
 static QHash<int, RegisteredType> s_managedTypes;
 
@@ -331,7 +338,7 @@ void tst_QMetaType::registerGadget(const char *name, const QList<GadgetPropertyT
         QMetaObject *mo;
     };
 
-    auto typeInfo = new TypeInfo {
+    auto typeInfo = s_metaTypeInterfaces.emplace_back(new TypeInfo {
         {
             0, alignof(GenericGadgetType), sizeof(GenericGadgetType), uint(flags), 0,
             [](const QtPrivate::QMetaTypeInterface *self) -> const QMetaObject * {
@@ -350,7 +357,7 @@ void tst_QMetaType::registerGadget(const char *name, const QList<GadgetPropertyT
             nullptr
         },
         meta
-    };
+    }).get();
     QMetaType gadgetMetaType(typeInfo);
     dynamicGadgetProperties->m_metatype = gadgetMetaType;
     int gadgetTypeId = QMetaType(typeInfo).id();
@@ -1246,7 +1253,7 @@ void tst_QMetaType::typedConstruct()
     dynamicGadgetProperties->podData = myPodTesData;
     const auto flags = QMetaType::NeedsConstruction | QMetaType::NeedsDestruction;
     using TypeInfo = QtPrivate::QMetaTypeInterface;
-    auto typeInfo = new TypeInfo {
+    auto typeInfo = s_metaTypeInterfaces.emplace_back(new TypeInfo {
         0, alignof(GenericGadgetType), sizeof(GenericGadgetType), uint(flags), 0, nullptr, podTypeName,
         [](const TypeInfo *self, void *where) { GadgetTypedConstructor(self->typeId, where, nullptr); },
         [](const TypeInfo *self, void *where, const void *copy) { GadgetTypedConstructor(self->typeId, where, copy); },
@@ -1258,7 +1265,7 @@ void tst_QMetaType::typedConstruct()
         GadgetSaveOperator,
         GadgetLoadOperator,
         nullptr
-    };
+    }).get();
     QMetaType metatype(typeInfo);
     dynamicGadgetProperties->m_metatype = metatype;
     int podTypeId = metatype.id();
