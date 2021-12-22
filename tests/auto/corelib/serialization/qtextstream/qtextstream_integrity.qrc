@@ -1,0 +1,7 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource prefix="/">
+   <file>rfc3261.txt</file>
+   <file>task113817.txt</file>
+   <file>tst_qtextstream.cpp</file>
+</qresource>
+</RCC>
