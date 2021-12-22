@@ -452,6 +452,8 @@ void tst_QSharedMemory::readOnly()
     QSKIP("No qprocess support", SkipAll);
 #elif defined(Q_OS_MACOS)
     QSKIP("QTBUG-59936: Times out on macOS", SkipAll);
+#elif defined(__SANITIZE_ADDRESS__) || __has_feature(address_sanitizer)
+    QSKIP("ASan prevents the crash this test is looking for.", SkipAll);
 #else
     rememberKey("readonly_segfault");
     // ### on windows disable the popup somehow
