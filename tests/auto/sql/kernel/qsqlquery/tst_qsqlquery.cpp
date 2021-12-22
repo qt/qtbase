@@ -64,6 +64,8 @@ private slots:
     void size();
     void isNull_data() { generic_data(); }
     void isNull();
+    void writeNull_data() { generic_data(); }
+    void writeNull();
     void query_exec_data() { generic_data(); }
     void query_exec();
     void execErrorRecovery_data() { generic_data(); }
@@ -355,6 +357,7 @@ void tst_QSqlQuery::dropTestTables( QSqlDatabase db )
     // drop all the table in case a testcase failed
     tablenames <<  qtest
                << qTableName("qtest_null", __FILE__, db)
+               << qTableName("qtest_writenull", __FILE__, db)
                << qTableName("qtest_blob", __FILE__, db)
                << qTableName("qtest_bittest", __FILE__, db)
                << qTableName("qtest_nullblob", __FILE__, db)
@@ -1767,6 +1770,95 @@ void tst_QSqlQuery::isNull()
     // For a non existent field, it should be returning true.
     QVERIFY(q.isNull(2));
     QVERIFY(q.isNull("unknown"));
+}
+
+void tst_QSqlQuery::writeNull()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+    const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
+
+    QSqlQuery q(db);
+    const QString tableName = qTableName("qtest_writenull", __FILE__, db);
+
+    // the test data table is already used, so use a local hash to exercise the various
+    // cases from the QSqlResultPrivate::isVariantNull helper. Only PostgreSQL supports
+    // QUuid.
+    QMultiHash<QString, QVariant> nullableTypes = {
+        {"varchar(20)", QString("not null")},
+        {"varchar(20)", QByteArray("not null")},
+        {"date", QDateTime::currentDateTime()},
+        {"date", QDate::currentDate()},
+        {"date", QTime::currentTime()},
+    };
+    if (dbType == QSqlDriver::PostgreSQL)
+        nullableTypes["uuid"] = QUuid::createUuid();
+
+    // Helper to count rows with null values in the data column.
+    // Since QSqlDriver::QuerySize might not be supported, we have to count anyway
+    const auto countRowsWithNull = [&]{
+        q.exec("select id, data from " + tableName + " where data is null");
+        int size = 0;
+        while (q.next())
+            ++size;
+        return size;
+    };
+
+    for (const auto &nullableType : nullableTypes.keys()) {
+        auto tableGuard = qScopeGuard([&]{
+            q.exec("drop table " + tableName);
+        });
+        const QVariant nonNullValue = nullableTypes.value(nullableType);
+        // some useful diagnostic output in case of any test failure
+        auto errorHandler = qScopeGuard([&]{
+            qWarning() << "Test failure for data type" << nonNullValue.metaType().name();
+            q.exec("select id, data from " + tableName);
+            while (q.next())
+                qWarning() << q.value(0) << q.value(1);
+        });
+        QString createQuery = "create table " + tableName + " (id int, data " + nullableType;
+        if (dbType == QSqlDriver::MSSqlServer || dbType == QSqlDriver::Sybase)
+            createQuery += " null";
+        createQuery += ")";
+        QVERIFY_SQL(q, exec(createQuery));
+
+        int expectedNullCount = 0;
+        // verify that inserting a non-null value works
+        QVERIFY_SQL(q, prepare("insert into " + tableName + " values(:id, :data)"));
+        q.bindValue(":id", expectedNullCount);
+        q.bindValue(":data", nonNullValue);
+        QVERIFY_SQL(q, exec());
+        QCOMPARE(countRowsWithNull(), expectedNullCount);
+
+        // verify that inserting using a null QVariant produces a null entry in the database
+        QVERIFY_SQL(q, prepare("insert into " + tableName + " values(:id, :data)"));
+        q.bindValue(":id", ++expectedNullCount);
+        q.bindValue(":data", QVariant());
+        QVERIFY_SQL(q, exec());
+        QCOMPARE(countRowsWithNull(), expectedNullCount);
+
+        // verify that writing a null-value (but not a null-variant) produces a null entry in the database
+        const QMetaType nullableMetaType = nullableTypes.value(nullableType).metaType();
+        // creating a QVariant with meta type and nullptr does create a null-QVariant. We want
+        // to explicitly create a non-null variant, so we have to pass in a default-constructed
+        // value as well (and make sure that the default value is also destroyed again,
+        // which is clumsy to do using std::unique_ptr with a custom deleter, so use another
+        // scope guard).
+        void* defaultData = nullableMetaType.create();
+        const auto defaultTypeDeleter = qScopeGuard([&]{ nullableMetaType.destroy(defaultData); });
+        const QVariant nullValueVariant(nullableMetaType, defaultData);
+        QVERIFY(!nullValueVariant.isNull());
+
+        QVERIFY_SQL(q, prepare("insert into " + tableName + " values(:id, :data)"));
+        q.bindValue(":id", ++expectedNullCount);
+        q.bindValue(":data", nullValueVariant);
+        QVERIFY_SQL(q, exec());
+        QCOMPARE(countRowsWithNull(), expectedNullCount);
+
+        // all tests passed for this type if we got here, so don't print diagnostics
+        errorHandler.dismiss();
+    }
 }
 
 /*! TDS specific BIT field test */
