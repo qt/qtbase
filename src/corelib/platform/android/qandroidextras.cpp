@@ -824,10 +824,11 @@ QJniObject QAndroidIntent::handle() const
 /*!
     \namespace QtAndroidPrivate
     \preliminary
-    \inmodule QtCore
+    \inmodule QtCorePrivate
     \since 6.2
-    \brief The QtAndroid namespace provides miscellaneous functions to aid Android development.
-    \inheaderfile QtAndroid
+    \brief The QtAndroidPrivate namespace provides miscellaneous functions
+           to aid Android development.
+    \inheaderfile QtCore/private/qandroidextras_p.h
 */
 
 /*!
