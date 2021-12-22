@@ -1,7 +1,6 @@
 # QTBUG-33574 QTBUG-30943
 [signalsEmittedAfterFileMoved]
-windows-7sp1
-windows-10
+windows
 [watchFileAndItsDirectory:native backend-testfile]
 osx
 windows
