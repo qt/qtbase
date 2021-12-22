@@ -47,7 +47,9 @@
 #include "qsqlfield.h"
 #include "qsqlrecord.h"
 #include "qsqlresult_p.h"
+#include "quuid.h"
 #include "qvariant.h"
+#include "qdatetime.h"
 #include "private/qsqldriver_p.h"
 #include <QDebug>
 
@@ -619,6 +621,31 @@ bool QSqlResult::prepare(const QString& query)
     return true; // fake prepares should always succeed
 }
 
+bool QSqlResultPrivate::isVariantNull(const QVariant &variant)
+{
+    if (variant.isNull())
+        return true;
+
+    switch (variant.typeId()) {
+    case qMetaTypeId<QString>():
+        return static_cast<const QString*>(variant.constData())->isNull();
+    case qMetaTypeId<QByteArray>():
+        return static_cast<const QByteArray*>(variant.constData())->isNull();
+    case qMetaTypeId<QDateTime>():
+        return static_cast<const QDateTime*>(variant.constData())->isNull();
+    case qMetaTypeId<QDate>():
+        return static_cast<const QDate*>(variant.constData())->isNull();
+    case qMetaTypeId<QTime>():
+        return static_cast<const QTime*>(variant.constData())->isNull();
+    case qMetaTypeId<QUuid>():
+        return static_cast<const QUuid*>(variant.constData())->isNull();
+    default:
+        break;
+    }
+
+    return false;
+}
+
 /*!
     Executes the query, returning true if successful; otherwise returns
     false.
@@ -639,7 +666,10 @@ bool QSqlResult::exec()
             holder = d->holders.at(i).holderName;
             val = d->values.value(d->indexes.value(holder).value(0,-1));
             QSqlField f(QLatin1String(""), val.metaType());
-            f.setValue(val);
+            if (QSqlResultPrivate::isVariantNull(val))
+                f.setValue(QVariant());
+            else
+                f.setValue(val);
             query = query.replace(d->holders.at(i).holderPos,
                                    holder.length(), driver()->formatValue(f));
         }
@@ -653,7 +683,7 @@ bool QSqlResult::exec()
                 continue;
             QVariant var = d->values.value(idx);
             QSqlField f(QLatin1String(""), var.metaType());
-            if (var.isNull())
+            if (QSqlResultPrivate::isVariantNull(var))
                 f.clear();
             else
                 f.setValue(var);

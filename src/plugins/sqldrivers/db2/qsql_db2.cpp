@@ -697,7 +697,7 @@ bool QDB2Result::exec()
     for (i = 0; i < values.count(); ++i) {
         // bind parameters - only positional binding allowed
         SQLLEN *ind = &indicators[i];
-        if (values.at(i).isNull())
+        if (QSqlResultPrivate::isVariantNull(values.at(i)))
             *ind = SQL_NULL_DATA;
         if (bindValueType(i) & QSql::Out)
             values[i].detach();
