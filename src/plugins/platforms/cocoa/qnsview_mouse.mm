@@ -733,6 +733,16 @@ static const QPointingDevice *pointingDeviceFor(qint64 deviceID)
         Q_ASSERT(theEvent.momentumPhase != NSEventPhaseStationary);
     }
 
+    // Sanitize deltas for events that should not result in scrolling.
+    // On macOS 12.1 this phase has been observed to report deltas.
+    if (theEvent.phase == NSEventPhaseCancelled) {
+        if (!pixelDelta.isNull() || !angleDelta.isNull()) {
+            qCInfo(lcQpaMouse) << "Ignoring unexpected delta for" << theEvent;
+            pixelDelta = QPoint();
+            angleDelta = QPoint();
+        }
+    }
+
     // Prevent keyboard modifier state from changing during scroll event streams.
     // A two-finger trackpad flick generates a stream of scroll events. We want
     // the keyboard modifier state to be the state at the beginning of the
