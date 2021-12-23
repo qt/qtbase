@@ -3701,7 +3701,7 @@ bool qunsetenv(const char *varName)
 
 /*!
     \macro forever
-    \relates <QtGlobal>
+    \relates <QForeach>
 
     This macro is provided for convenience for writing infinite
     loops.
@@ -3722,7 +3722,7 @@ bool qunsetenv(const char *varName)
 
 /*!
     \macro Q_FOREVER
-    \relates <QtGlobal>
+    \relates <QForeach>
 
     Same as \l{forever}.
 
@@ -3734,7 +3734,7 @@ bool qunsetenv(const char *varName)
 
 /*!
     \macro foreach(variable, container)
-    \relates <QtGlobal>
+    \relates <QForeach>
 
     This macro is used to implement Qt's \c foreach loop. The \a
     variable parameter is a variable name or variable definition; the
@@ -3756,7 +3756,7 @@ bool qunsetenv(const char *varName)
 
 /*!
     \macro Q_FOREACH(variable, container)
-    \relates <QtGlobal>
+    \relates <QForeach>
 
     Same as foreach(\a variable, \a container).
 
