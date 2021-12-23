@@ -203,7 +203,7 @@ template <typename BaseClass> struct QGenericAtomicOps
     T fetchAndStoreRelaxed(T &_q_value, X newValue) noexcept
     {
         // implement fetchAndStore on top of testAndSet
-        Q_FOREVER {
+        for (;;) {
             T tmp = loadRelaxed(_q_value);
             if (BaseClass::testAndSetRelaxed(_q_value, tmp, newValue))
                 return tmp;
@@ -238,7 +238,7 @@ template <typename BaseClass> struct QGenericAtomicOps
     T fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) noexcept
     {
         // implement fetchAndAdd on top of testAndSet
-        Q_FOREVER {
+        for (;;) {
             T tmp = BaseClass::loadRelaxed(_q_value);
             if (BaseClass::testAndSetRelaxed(_q_value, tmp, T(tmp + valueToAdd)))
                 return tmp;
@@ -304,7 +304,7 @@ QT_WARNING_POP
     {
         // implement fetchAndAnd on top of testAndSet
         T tmp = BaseClass::loadRelaxed(_q_value);
-        Q_FOREVER {
+        for (;;) {
             if (BaseClass::testAndSetRelaxed(_q_value, tmp, T(tmp & operand), &tmp))
                 return tmp;
         }
@@ -337,7 +337,7 @@ QT_WARNING_POP
     {
         // implement fetchAndOr on top of testAndSet
         T tmp = BaseClass::loadRelaxed(_q_value);
-        Q_FOREVER {
+        for (;;) {
             if (BaseClass::testAndSetRelaxed(_q_value, tmp, T(tmp | operand), &tmp))
                 return tmp;
         }
@@ -370,7 +370,7 @@ QT_WARNING_POP
     {
         // implement fetchAndXor on top of testAndSet
         T tmp = BaseClass::loadRelaxed(_q_value);
-        Q_FOREVER {
+        for (;;) {
             if (BaseClass::testAndSetRelaxed(_q_value, tmp, T(tmp ^ operand), &tmp))
                 return tmp;
         }

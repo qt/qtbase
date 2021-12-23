@@ -137,7 +137,7 @@ public:
         // backwards through the children
         int backwardIter = childsLastIndexInParent - 1;
         int forwardIter = childsLastIndexInParent;
-        Q_FOREVER {
+        for (;;) {
             if (forwardIter <= lastChild) {
                 if (children.at(forwardIter) == child) {
                     childsLastIndexInParent = forwardIter;
