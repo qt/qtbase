@@ -155,6 +155,9 @@ private slots:
     void sslErrors_data();
     void sslErrors();
     void ciphers();
+#if QT_CONFIG(securetransport)
+    void tls13Ciphers();
+#endif // QT_CONFIG(securetransport)
     void connectToHostEncrypted();
     void connectToHostEncryptedWithVerificationPeerName();
     void sessionCipher();
@@ -1062,6 +1065,42 @@ void tst_QSslSocket::ciphers()
         }
     }
 }
+
+#if QT_CONFIG(securetransport)
+void tst_QSslSocket::tls13Ciphers()
+{
+    // SecureTransport introduced several new ciphers under
+    // "TLS 1.3 ciphersuites" section. Since Qt 6 we respect
+    // the ciphers from QSslConfiguration. In case of default
+    // configuration, these are the same we report and we
+    // were failing (for historical reasons) to report those
+    // TLS 1.3 suites when creating default QSslConfiguration.
+    // Check we now have them.
+    if (!isTestingSecureTransport)
+        QSKIP("The feature 'securetransport' was enabled, but active backend is not \"securetransport\"");
+
+    QFETCH_GLOBAL(const bool, setProxy);
+    if (setProxy)
+        return;
+
+    const auto suites = QSslConfiguration::defaultConfiguration().ciphers();
+    QSslCipher ciph;
+    // Check the one of reported and previously missed:
+    for (const auto &suite : suites) {
+        if (suite.encryptionMethod() == QStringLiteral("CHACHA20")) {
+            // There are several ciphesuites using CHACHA20, the first one
+            // is sufficient for the purpose of this test:
+            ciph = suite;
+            break;
+        }
+    }
+
+    QVERIFY(!ciph.isNull());
+    QCOMPARE(ciph.encryptionMethod(), QStringLiteral("CHACHA20"));
+    QCOMPARE(ciph.supportedBits(), 256);
+    QCOMPARE(ciph.usedBits(), 256);
+}
+#endif // QT_CONFIG(securetransport)
 
 void tst_QSslSocket::connectToHostEncrypted()
 {
