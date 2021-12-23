@@ -183,7 +183,7 @@ static std::optional<qreal> qEnvironmentVariableOptionalReal(const char *name)
       is always enabled. The Qt scale factor value is typically determined by the
       QPlatformScreen implementation - see below.
 
-      There is one environment variable based opt-out option: set QT_ENABLE_HIGH_DPI_SCALING=0.
+      There is one environment variable based opt-out option: set QT_ENABLE_HIGHDPI_SCALING=0.
       Keep in mind that this does not affect the OS scale factor, which is controlled by
       the operating system.
 
