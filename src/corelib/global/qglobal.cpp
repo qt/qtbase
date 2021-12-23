@@ -2759,10 +2759,9 @@ QString QSysInfo::kernelVersion()
     to determine the distribution name and returns that. If determining the
     distribution name failed, it returns "unknown".
 
-    \b{\macos note}: this function returns "osx" for all \macos systems,
-    regardless of Apple naming convention. The returned string will be updated
-    for Qt 6. Note that this function erroneously returned "macos" for \macos
-    10.12 in Qt versions 5.6.2, 5.7.1, and 5.8.0.
+    \b{\macos note}: this function returns "macos" for all \macos systems,
+    regardless of Apple naming convention. Previously, in Qt 5, it returned
+    "osx", again regardless of Apple naming conventions.
 
     \b{Darwin, iOS, tvOS, and watchOS note}: this function returns "ios" for
     iOS systems, "tvos" for tvOS systems, "watchos" for watchOS systems, and
