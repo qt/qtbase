@@ -204,6 +204,55 @@ QSslCipher QSslCipher_from_SSLCipherSuite(SSLCipherSuite cipher)
         name = QLatin1String("ECDHE-RSA-AES256-GCM-SHA384");
         break;
 
+    // TLS 1.3 standard cipher suites for ChaCha20+Poly1305.
+    // Note: TLS 1.3 ciphersuites do not specify the key exchange
+    // algorithm -- they only specify the symmetric ciphers.
+    case TLS_AES_128_GCM_SHA256:
+        name = QLatin1String("AES128-GCM-SHA256");
+        break;
+    case TLS_AES_256_GCM_SHA384:
+        name = QLatin1String("AES256-GCM-SHA384");
+        break;
+    case TLS_CHACHA20_POLY1305_SHA256:
+        name = QLatin1String("CHACHA20-POLY1305-SHA256");
+        break;
+    case TLS_AES_128_CCM_SHA256:
+        name = QLatin1String("AES128-CCM-SHA256");
+        break;
+    case TLS_AES_128_CCM_8_SHA256:
+        name = QLatin1String("AES128-CCM8-SHA256");
+        break;
+    // Addenda from rfc 5289  Elliptic Curve Cipher Suites with
+    // SHA-256/384 and AES Galois Counter Mode (GCM).
+    case TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256:
+        name = QLatin1String("ECDHE-ECDSA-AES128-GCM-SHA256");
+        break;
+    case TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384:
+        name = QLatin1String("ECDHE-ECDSA-AES256-GCM-SHA384");
+        break;
+    case TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256:
+        name = QLatin1String("ECDH-ECDSA-AES128-GCM-SHA256");
+        break;
+    case TLS_ECDH_ECDSA_WITH_AES_256_GCM_SHA384:
+        name = QLatin1String("ECDH-ECDSA-AES256-GCM-SHA384");
+        break;
+    case TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256:
+        name = QLatin1String("ECDHE-RSA-AES128-GCM-SHA256");
+        break;
+    case TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256:
+        name = QLatin1String("ECDH-RSA-AES128-GCM-SHA256");
+        break;
+    case TLS_ECDH_RSA_WITH_AES_256_GCM_SHA384:
+        name = QLatin1String("ECDH-RSA-AES256-GCM-SHA384");
+        break;
+    // Addenda from rfc 7905  ChaCha20-Poly1305 Cipher Suites for
+    // Transport Layer Security (TLS).
+    case TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256:
+        name = QLatin1String("ECDHE-RSA-CHACHA20-POLY1305-SHA256");
+        break;
+    case TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256:
+        name = QLatin1String("ECDHE-ECDSA-CHACHA20-POLY1305-SHA256");
+        break;
     default:
         return {};
     }

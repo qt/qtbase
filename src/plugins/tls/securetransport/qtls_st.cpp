@@ -646,6 +646,35 @@ SSLCipherSuite TlsCryptographSecureTransport::SSLCipherSuite_from_QSslCipher(con
         return TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256;
     if (ciph.name() == QLatin1String("ECDHE-RSA-AES256-GCM-SHA384"))
         return TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384;
+    if (ciph.name() == QLatin1String("AES128-GCM-SHA256"))
+        return TLS_AES_128_GCM_SHA256;
+    if (ciph.name() == QLatin1String("AES256-GCM-SHA384"))
+        return TLS_AES_256_GCM_SHA384;
+    if (ciph.name() == QLatin1String("CHACHA20-POLY1305-SHA256"))
+        return TLS_CHACHA20_POLY1305_SHA256;
+    if (ciph.name() == QLatin1String("AES128-CCM-SHA256"))
+        return TLS_AES_128_CCM_SHA256;
+    if (ciph.name() == QLatin1String("AES128-CCM8-SHA256"))
+        return TLS_AES_128_CCM_8_SHA256;
+    if (ciph.name() == QLatin1String("ECDHE-ECDSA-AES128-GCM-SHA256"))
+        return TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256;
+    if (ciph.name() == QLatin1String("ECDHE-ECDSA-AES256-GCM-SHA384"))
+        return TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384;
+    if (ciph.name() == QLatin1String("ECDH-ECDSA-AES128-GCM-SHA256"))
+        return TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256;
+    if (ciph.name() == QLatin1String("ECDH-ECDSA-AES256-GCM-SHA384"))
+        return TLS_ECDH_ECDSA_WITH_AES_256_GCM_SHA384;
+    if (ciph.name() == QLatin1String("ECDHE-RSA-AES128-GCM-SHA256"))
+        return TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256;
+    if (ciph.name() == QLatin1String("ECDH-RSA-AES128-GCM-SHA256"))
+        return TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256;
+    if (ciph.name() == QLatin1String("ECDH-RSA-AES256-GCM-SHA384"))
+        return TLS_ECDH_RSA_WITH_AES_256_GCM_SHA384;
+    if (ciph.name() == QLatin1String("ECDHE-RSA-CHACHA20-POLY1305-SHA256"))
+        return TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256;
+    if (ciph.name() == QLatin1String("ECDHE-ECDSA-CHACHA20-POLY1305-SHA256"))
+        return TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256;
+
     return 0;
 }
 

@@ -893,6 +893,10 @@ QSslCipher QTlsBackend::createCiphersuite(const QString &suiteName, QSsl::SslPro
             ciph.d->encryptionMethod = QLatin1String("AES(256)");
             ciph.d->bits = 256;
             ciph.d->supportedBits = 256;
+        } else if (ciph.d->name.contains(QLatin1String("CHACHA20-"))) {
+            ciph.d->encryptionMethod = QLatin1String("CHACHA20");
+            ciph.d->bits = 256;
+            ciph.d->supportedBits = 256;
         } else if (ciph.d->name.contains(QLatin1String("NULL-"))) {
             ciph.d->encryptionMethod = QLatin1String("NULL");
         } else {
