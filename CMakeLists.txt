@@ -12,21 +12,25 @@ cmake_minimum_required(VERSION 3.16)
 include(.cmake.conf)
 
 # Bail out if any part of the build directory's path is symlinked.
-# The OS-level current working directory is always the real path and some
-# parts of the build system only deal with that path, which causes confusion
-# when compared to the logical working directory maintained by the shell and
-# passed on the command line.
-get_filename_component(build_dir_absolute "${CMAKE_BINARY_DIR}" ABSOLUTE)
-get_filename_component(build_dir_realpath "${CMAKE_BINARY_DIR}" REALPATH)
-if(NOT build_dir_absolute STREQUAL build_dir_realpath)
-    message(FATAL_ERROR "The build path \"${CMAKE_BINARY_DIR}\" contains symlinks. \
+function(qt_internal_check_if_path_has_symlinks path)
+    get_filename_component(dir "${path}" ABSOLUTE)
+    while(TRUE)
+        if(IS_SYMLINK "${dir}")
+            message(FATAL_ERROR "The path \"${path}\" contains symlinks. \
 This is not supported. Possible solutions:
 - map directories using a transparent mechanism such as mount --bind
 - pass the real path of the build directory to CMake, e.g. using \
-cd $(realpath <build_dir>) before invoking cmake <source_dir>.")
-endif()
-unset(build_dir_absolute)
-unset(build_dir_realpath)
+cd $(realpath <path>) before invoking cmake <source_dir>.")
+        endif()
+
+        set(prev_dir "${dir}")
+        get_filename_component(dir "${dir}" DIRECTORY)
+        if("${dir}" STREQUAL "${prev_dir}")
+            return()
+        endif()
+    endwhile()
+endfunction()
+qt_internal_check_if_path_has_symlinks("${CMAKE_BINARY_DIR}")
 
 # Run auto detection routines, but not when doing standalone tests. In that case, the detection
 # results are taken from either QtBuildInternals or the qt.toolchain.cmake file. Also, inhibit
