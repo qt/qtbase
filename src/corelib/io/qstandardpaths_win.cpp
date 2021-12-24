@@ -40,14 +40,12 @@
 #include "qstandardpaths.h"
 
 #include <qdir.h>
-#include <private/qsystemlibrary_p.h>
 #include <qstringlist.h>
 
 #ifndef QT_BOOTSTRAPPED
 #include <qcoreapplication.h>
 #endif
 
-#include <qoperatingsystemversion.h>
 #include <qt_windows.h>
 #include <shlobj.h>
 #include <intshcut.h>
@@ -95,14 +93,7 @@ static inline void appendTestMode(QString &path)
 }
 
 static bool isProcessLowIntegrity() {
-#ifdef Q_CC_MINGW
-    // GetCurrentProcessToken was introduced in MinGW w64 in v7
-    // Disable function until Qt CI is updated
-    return false;
-#else
-    // non-leaking pseudo-handle. Expanded inline function GetCurrentProcessToken()
-    // (was made an inline function in Windows 8).
-    const auto process_token = HANDLE(quintptr(-4));
+    const HANDLE process_token = GetCurrentProcessToken();
 
     QVarLengthArray<char,256> token_info_buf(256);
     auto* token_info = reinterpret_cast<TOKEN_MANDATORY_LABEL*>(token_info_buf.data());
@@ -119,7 +110,6 @@ static bool isProcessLowIntegrity() {
     // there's no point in checking before dereferencing
     DWORD integrity_level = *GetSidSubAuthority(token_info->Label.Sid, *GetSidSubAuthorityCount(token_info->Label.Sid) - 1);
     return (integrity_level < SECURITY_MANDATORY_MEDIUM_RID);
-#endif
 }
 
 // Map QStandardPaths::StandardLocation to KNOWNFOLDERID of SHGetKnownFolderPath()
