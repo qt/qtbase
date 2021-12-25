@@ -1286,16 +1286,18 @@ int QSplitter::count() const
 void QSplitter::childEvent(QChildEvent *c)
 {
     Q_D(QSplitter);
-    if (!c->child()->isWidgetType()) {
-        if (Q_UNLIKELY(c->type() == QEvent::ChildAdded && qobject_cast<QLayout *>(c->child())))
-            qWarning("Adding a QLayout to a QSplitter is not supported.");
-        return;
-    }
     if (c->added()) {
+        if (!c->child()->isWidgetType()) {
+            if (Q_UNLIKELY(qobject_cast<QLayout *>(c->child())))
+                qWarning("Adding a QLayout to a QSplitter is not supported.");
+            return;
+        }
         QWidget *w = static_cast<QWidget*>(c->child());
         if (!d->blockChildAdd && !w->isWindow() && !d->findWidget(w))
             d->insertWidget_helper(d->list.count(), w, false);
     } else if (c->polished()) {
+        if (!c->child()->isWidgetType())
+            return;
         QWidget *w = static_cast<QWidget*>(c->child());
         if (!d->blockChildAdd && !w->isWindow() && d->shouldShowWidget(w))
             w->show();

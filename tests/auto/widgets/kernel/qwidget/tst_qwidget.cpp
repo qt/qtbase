@@ -247,7 +247,7 @@ private slots:
     void closeAndShowNativeChild();
     void closeAndShowWithNativeChild();
     void transientParent();
-    void qobject_castInDestroyedSlot();
+    void qobject_castOnDestruction();
 
     void showHideEvent_data();
     void showHideEvent();
@@ -5390,34 +5390,74 @@ void tst_QWidget::scrollNativeChildren()
 
 #endif // Mac OS
 
-class DestroyedSlotChecker : public QObject
+/*
+    This class is used as a slot object to test two different steps of
+    QWidget destruction.
+
+    The first step is connecting the destroyed() signal to an object of
+    this class (through its operator()). In widgets, destroyed() is
+    emitted by ~QWidget, and not by ~QObject. This means that in our
+    operator() we expect the sender of the signal to still be a
+    QWidget.
+
+    The connection realized at the first step means that now there's
+    an instance of this class owned by the sender object. That instance
+    is destroyed when the signal/slot connections are destroyed.
+    That happens in ~QObject, not in ~QWidget. Therefore, in the
+    destructor of this class, check that indeed the target is no longer
+    a QWidget but just a QObject.
+*/
+class QObjectCastChecker
 {
-    Q_OBJECT
-
 public:
-    bool wasQWidget = false;
-
-public slots:
-    void destroyedSlot(QObject *object)
+    explicit QObjectCastChecker(QWidget *target)
+        : m_target(target)
     {
-        wasQWidget = (qobject_cast<QWidget *>(object) != nullptr || object->isWidgetType());
     }
+
+    ~QObjectCastChecker()
+    {
+        if (!m_target)
+            return;
+
+        // When ~QObject is reached, check that indeed the object is no
+        // longer a QWidget. This relies on slots being disconnected in
+        // ~QObject (and this "slot object" being destroyed there).
+        QVERIFY(!qobject_cast<QWidget *>(m_target));
+        QVERIFY(!dynamic_cast<QWidget *>(m_target));
+        QVERIFY(!m_target->isWidgetType());
+    }
+
+    QObjectCastChecker(QObjectCastChecker &&other) noexcept
+        : m_target(qExchange(other.m_target, nullptr))
+    {}
+
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QObjectCastChecker)
+
+    void swap(QObjectCastChecker &other) noexcept
+    {
+        qSwap(m_target, other.m_target);
+    }
+
+    void operator()(QObject *object) const
+    {
+        // Test that in a slot connected to destroyed() the emitter is
+        // still a QWidget. This is because ~QWidget() itself emits the
+        // signal.
+        QVERIFY(qobject_cast<QWidget *>(object));
+        QVERIFY(dynamic_cast<QWidget *>(object));
+        QVERIFY(object->isWidgetType());
+    }
+
+private:
+    Q_DISABLE_COPY(QObjectCastChecker)
+    QObject *m_target;
 };
 
-/*
-    Test that qobject_cast<QWidget*> returns 0 in a slot
-    connected to QObject::destroyed.
-*/
-void tst_QWidget::qobject_castInDestroyedSlot()
+void tst_QWidget::qobject_castOnDestruction()
 {
-    DestroyedSlotChecker checker;
-
-    QWidget *widget = new QWidget();
-
-    QObject::connect(widget, &QObject::destroyed, &checker, &DestroyedSlotChecker::destroyedSlot);
-    delete widget;
-
-    QVERIFY(checker.wasQWidget);
+    QWidget widget;
+    QObject::connect(&widget, &QObject::destroyed, QObjectCastChecker(&widget));
 }
 
 // Since X11 WindowManager operations are all async, and we have no way to know if the window

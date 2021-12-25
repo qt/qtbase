@@ -108,7 +108,9 @@ public:
     uint isWindow : 1; // for QWindow
     uint deleteLaterCalled : 1;
     uint isQuickItem : 1;
-    uint unused : 23;
+    uint willBeWidget : 1; // for handling widget-specific bits in QObject's ctor
+    uint wasWidget : 1; // for properly cleaning up in QObject's dtor
+    uint unused : 21;
     int postedEvents;
     QDynamicMetaObjectData *metaObject;
     QBindingStorage bindingStorage;

@@ -110,6 +110,7 @@ private slots:
     void generatedMouseMove();
     void keepPendingUpdateRequests();
     void activateDeactivateEvent();
+    void qobject_castOnDestruction();
 
 private:
     QPoint m_availableTopLeft;
@@ -2742,6 +2743,19 @@ void tst_QWindow::activateDeactivateEvent()
     QVERIFY(QTest::qWaitForWindowActive(&w2));
     QCOMPARE(w1.deactivateCount, 1);
     QCOMPARE(w2.activateCount, 1);
+}
+
+// Test that in a slot connected to destroyed() the emitter is
+// is no longer a QWindow.
+void tst_QWindow::qobject_castOnDestruction()
+{
+    QWindow window;
+    QObject::connect(&window, &QObject::destroyed, [](QObject *object)
+    {
+        QVERIFY(!qobject_cast<QWindow *>(object));
+        QVERIFY(!dynamic_cast<QWindow *>(object));
+        QVERIFY(!object->isWindowType());
+    });
 }
 
 #include <tst_qwindow.moc>

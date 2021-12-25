@@ -570,12 +570,14 @@ void QLayout::widgetEvent(QEvent *e)
     case QEvent::ChildRemoved:
         {
             QChildEvent *c = (QChildEvent *)e;
-            if (c->child()->isWidgetType()) {
+            QObject *child = c->child();
+            QObjectPrivate *op = QObjectPrivate::get(child);
+            if (op->wasWidget) {
 #if QT_CONFIG(menubar)
-                if (c->child() == d->menubar)
+                if (child == d->menubar)
                     d->menubar = nullptr;
 #endif
-                removeWidgetRecursively(this, c->child());
+                removeWidgetRecursively(this, child);
             }
         }
         break;

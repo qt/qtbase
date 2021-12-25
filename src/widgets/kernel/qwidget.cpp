@@ -203,7 +203,7 @@ QWidgetPrivate::QWidgetPrivate(int version)
                 version, QObjectPrivateVersion);
 #endif
 
-    isWidget = true;
+    willBeWidget = true; // used in QObject's ctor
     memset(high_attributes, 0, sizeof(high_attributes));
 
 #ifdef QWIDGET_EXTRA_DEBUG
@@ -978,6 +978,9 @@ void QWidgetPrivate::adjustFlags(Qt::WindowFlags &flags, QWidget *w)
 void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
 {
     Q_Q(QWidget);
+    isWidget = true;
+    wasWidget = true;
+
     Q_ASSERT_X(q != parentWidget, Q_FUNC_INFO, "Cannot parent a QWidget to itself");
 
     if (Q_UNLIKELY(!qobject_cast<QApplication *>(QCoreApplication::instance())))
@@ -1541,6 +1544,8 @@ QWidget::~QWidget()
 #if QT_CONFIG(graphicseffect)
     delete d->graphicsEffect;
 #endif
+
+    d->isWidget = false;
 }
 
 int QWidgetPrivate::instanceCounter = 0;  // Current number of widget instances

@@ -232,12 +232,15 @@ QWindow::~QWindow()
         QGuiApplicationPrivate::currentMouseWindow = nullptr;
     if (QGuiApplicationPrivate::currentMousePressWindow == this)
         QGuiApplicationPrivate::currentMousePressWindow = nullptr;
+
+    d->isWindow = false;
 }
 
 void QWindowPrivate::init(QScreen *targetScreen)
 {
     Q_Q(QWindow);
 
+    isWindow = true;
     parentWindow = static_cast<QWindow *>(q->QObject::parent());
 
     if (!parentWindow)

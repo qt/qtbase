@@ -198,6 +198,8 @@ QObjectPrivate::QObjectPrivate(int version)
     isWindow = false;
     deleteLaterCalled = false;
     isQuickItem = false;
+    willBeWidget = false;
+    wasWidget = false;
 }
 
 QObjectPrivate::~QObjectPrivate()
@@ -932,7 +934,7 @@ QObject::QObject(QObjectPrivate &dd, QObject *parent)
         QT_TRY {
             if (!check_parent_thread(parent, parent ? parent->d_func()->threadData.loadRelaxed() : nullptr, threadData))
                 parent = nullptr;
-            if (d->isWidget) {
+            if (d->willBeWidget) {
                 if (parent) {
                     d->parent = parent;
                     d->parent->d_func()->children.append(this);
@@ -1003,7 +1005,7 @@ QObject::~QObject()
             delete sharedRefcount;
     }
 
-    if (!d->isWidget && d->isSignalConnected(0)) {
+    if (!d->wasWidget && d->isSignalConnected(0)) {
         emit destroyed(this);
     }
 
