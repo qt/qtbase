@@ -40,11 +40,20 @@ qt_internal_extend_target(QTlsBackendOpenSSLPlugin CONDITION ANDROID AND NOT AND
         qsslsocket_openssl_android.cpp
 )
 
-qt_internal_extend_target(QTlsBackendOpenSSLPlugin CONDITION QT_FEATURE_openssl
-                          AND QT_FEATURE_ssl AND WIN32
+qt_internal_extend_target(QTlsBackendOpenSSLPlugin CONDITION WIN32
     SOURCES
         qwindowscarootfetcher.cpp qwindowscarootfetcher_p.h
         ../shared/qwincrypt_p.h
     LIBRARIES
         crypt32
+)
+
+qt_internal_extend_target(QTlsBackendOpenSSLPlugin CONDITION QT_FEATURE_openssl_linked
+    LIBRARIES
+        WrapOpenSSL::WrapOpenSSL
+)
+
+qt_internal_extend_target(QTlsBackendOpenSSLPlugin CONDITION NOT QT_FEATURE_openssl_linked
+    LIBRARIES
+        WrapOpenSSLHeaders::WrapOpenSSLHeaders
 )
