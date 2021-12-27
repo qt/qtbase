@@ -2317,7 +2317,7 @@ function(qt6_finalize_project)
         message("qt6_finalize_project is called not in the top-level CMakeLists.txt.")
     endif()
     if(ANDROID)
-        _qt_internal_collect_target_apk_dependencies()
+        _qt_internal_collect_apk_dependencies()
     endif()
 endfunction()
 

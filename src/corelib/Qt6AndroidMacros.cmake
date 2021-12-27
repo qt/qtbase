@@ -218,8 +218,8 @@ function(qt6_android_generate_deployment_settings target)
     file(TO_CMAKE_PATH "${target_source_dir}" native_target_source_dir)
     set_property(TARGET ${target} APPEND PROPERTY
         _qt_android_native_qml_root_paths "${native_target_source_dir}")
-    _qt_internal_add_android_deployment_list_property(file_contents ${target}
-        "_qt_android_native_qml_root_paths" "qml-root-path")
+    _qt_internal_add_android_deployment_list_property(file_contents "qml-root-path"
+        ${target} "_qt_android_native_qml_root_paths")
 
     # App binary
     string(APPEND file_contents
@@ -265,8 +265,11 @@ function(qt6_android_generate_deployment_settings target)
     #
     # Unlike 'extraPrefixDirs', the 'extraLibraryDirs' key doesn't expect the 'lib' subfolder
     # when looking for dependencies.
-    _qt_internal_add_android_deployment_list_property(file_contents ${target}
-        "_qt_android_extra_library_dirs" "extraLibraryDirs")
+    # TODO: add a public target property accessible from user space
+    _qt_internal_add_android_deployment_list_property(file_contents "extraLibraryDirs"
+        ${target} "_qt_android_extra_library_dirs"
+        _qt_internal_apk_dependencies "_qt_android_extra_library_dirs"
+    )
 
     if(QT_FEATURE_zstd)
         set(is_zstd_enabled "true")
@@ -490,7 +493,7 @@ function(qt6_android_add_apk_target target)
     endif()
 
     set_property(GLOBAL APPEND PROPERTY _qt_apk_targets ${target})
-    _qt_internal_collect_target_apk_dependencies_defer(${target})
+    _qt_internal_collect_apk_dependencies_defer()
 endfunction()
 
 function(_qt_internal_create_global_android_targets)
@@ -519,21 +522,21 @@ endfunction()
 # than or equal to 3.18.
 # Note: Users that use cmake version less that 3.18 need to call qt_finalize_project
 # in the end of a project's top-level CMakeLists.txt.
-function(_qt_internal_collect_target_apk_dependencies_defer target)
+function(_qt_internal_collect_apk_dependencies_defer)
     # User opted-out the functionality
     if(QT_NO_COLLECT_BUILD_TREE_APK_DEPS)
         return()
     endif()
 
-    get_property(is_called GLOBAL PROPERTY _qt_is_collect_target_apk_dependencies_defer_called)
+    get_property(is_called GLOBAL PROPERTY _qt_is_collect_apk_dependencies_defer_called)
     if(is_called) # Already scheduled
         return()
     endif()
-    set_property(GLOBAL PROPERTY _qt_is_collect_target_apk_dependencies_defer_called TRUE)
+    set_property(GLOBAL PROPERTY _qt_is_collect_apk_dependencies_defer_called TRUE)
 
     if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.18")
         cmake_language(EVAL CODE "cmake_language(DEFER DIRECTORY \"${CMAKE_SOURCE_DIR}\"
-            CALL _qt_internal_collect_target_apk_dependencies ${target})")
+            CALL _qt_internal_collect_apk_dependencies)")
     else()
         # User don't want to see the warning
         if(NOT QT_NO_WARN_BUILD_TREE_APK_DEPS)
@@ -550,17 +553,17 @@ endfunction()
 
 # The function collects shared libraries from the build system tree, that might be dependencies for
 # the main apk targets.
-function(_qt_internal_collect_target_apk_dependencies target)
+function(_qt_internal_collect_apk_dependencies)
     # User opted-out the functionality
     if(QT_NO_COLLECT_BUILD_TREE_APK_DEPS)
         return()
     endif()
 
-    get_property(is_called GLOBAL PROPERTY _qt_is_collect_target_apk_dependencies_called)
+    get_property(is_called GLOBAL PROPERTY _qt_is_collect_apk_dependencies_called)
     if(is_called)
         return()
     endif()
-    set_property(GLOBAL PROPERTY _qt_is_collect_target_apk_dependencies_called TRUE)
+    set_property(GLOBAL PROPERTY _qt_is_collect_apk_dependencies_called TRUE)
 
     get_property(apk_targets GLOBAL PROPERTY _qt_apk_targets)
 
@@ -572,7 +575,7 @@ function(_qt_internal_collect_target_apk_dependencies target)
 
     foreach(lib IN LISTS libs)
         if(NOT lib IN_LIST apk_targets)
-            list(APPEND extra_prefix_dirs "$<TARGET_FILE_DIR:${lib}>")
+            list(APPEND extra_library_dirs "$<TARGET_FILE_DIR:${lib}>")
             get_target_property(target_type ${lib} TYPE)
             # We collect all MODULE_LIBRARY targets since target APK may have implicit dependency
             # to the plugin that will cause the runtime issue. Plugins that were added using
@@ -584,7 +587,12 @@ function(_qt_internal_collect_target_apk_dependencies target)
         endif()
     endforeach()
 
-    set_target_properties(${target} PROPERTIES _qt_android_extra_library_dirs "${extra_prefix_dirs}")
+    if(NOT TARGET _qt_internal_apk_dependencies)
+        add_custom_target(_qt_internal_apk_dependencies)
+    endif()
+    set_target_properties(_qt_internal_apk_dependencies PROPERTIES
+        _qt_android_extra_library_dirs "${extra_library_dirs}"
+    )
 endfunction()
 
 # The function recursively goes through the project subfolders and collects targets that supposed to
@@ -655,25 +663,56 @@ function(_qt_internal_add_android_deployment_property out_var json_key target pr
     set(${out_var} "${${out_var}}" PARENT_SCOPE)
 endfunction()
 
-# The function converts the target list property to a json list record and appends it to the output
-# variable.
+# The function converts the list properties of the targets to a json list record and appends it
+# to the output variable.
+# _qt_internal_add_android_deployment_list_property(out_var json_key [<target> <property>]...)
 # The generated JSON object is the normal JSON array, e.g.:
 #    "qml-root-path": ["qml/root/path1","qml/root/path2"],
-function(_qt_internal_add_android_deployment_list_property out_var target property json_key)
-    set(property_genex
-        "$<TARGET_PROPERTY:${target},${property}>"
-    )
-    set(add_quote_genex
-        "$<$<BOOL:${property_genex}>:\">"
-    )
-    string(JOIN "" list_join_genex
-        "${add_quote_genex}"
-            "$<JOIN:"
-                "$<GENEX_EVAL:${property_genex}>,"
-                "\",\""
-            ">"
-        "${add_quote_genex}"
-    )
+function(_qt_internal_add_android_deployment_list_property out_var json_key)
+    list(LENGTH ARGN argn_count)
+    math(EXPR is_odd "${argn_count} % 2")
+    if(is_odd)
+        message(FATAL_ERROR "Invalid argument count")
+    endif()
+
+    set(skip_next FALSE)
+    set(property_genex "")
+    math(EXPR last_index "${argn_count} - 1")
+    foreach(idx RANGE ${last_index})
+        if(skip_next)
+            set(skip_next FALSE)
+            continue()
+        endif()
+        set(skip_next TRUE)
+
+        math(EXPR property_idx "${idx} + 1")
+        list(GET ARGN ${idx} target)
+        list(GET ARGN ${property_idx} property)
+
+        # Add comma if we have at least one element from the previous iteration
+        if(property_genex)
+            set(add_comma_genex
+                "$<$<BOOL:${property_genex}>:$<COMMA>>"
+            )
+        endif()
+
+        set(property_genex
+            "$<TARGET_PROPERTY:${target},${property}>"
+        )
+        set(add_quote_genex
+            "$<$<BOOL:${property_genex}>:\">"
+        )
+        string(JOIN "" list_join_genex
+            "${list_join_genex}"
+            "${add_comma_genex}${add_quote_genex}"
+                "$<JOIN:"
+                    "$<GENEX_EVAL:${property_genex}>,"
+                    "\",\""
+                ">"
+            "${add_quote_genex}"
+        )
+    endforeach()
+
     string(APPEND ${out_var}
         "   \"${json_key}\" : [ ${list_join_genex} ],\n")
     set(${out_var} "${${out_var}}" PARENT_SCOPE)
