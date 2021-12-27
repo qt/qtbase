@@ -3565,7 +3565,7 @@ QString QCalendarBackend::dateTimeToString(QStringView format, const QDateTime &
             }
         }
         if (!used)
-            result.append(QString(repeat, c));
+            result.resize(result.size() + repeat, c);
         i += repeat;
     }
 
