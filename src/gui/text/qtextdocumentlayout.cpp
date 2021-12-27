@@ -2123,7 +2123,7 @@ void QTextDocumentLayoutPrivate::drawListItem(const QPointF &offset, QPainter *p
 {
     Q_Q(const QTextDocumentLayout);
     const QTextBlockFormat blockFormat = bl.blockFormat();
-    const QTextCharFormat charFormat = QTextCursor(bl).charFormat();
+    const QTextCharFormat charFormat = bl.charFormat();
     QFont font(charFormat.font());
     if (q->paintDevice())
         font = QFont(font, q->paintDevice());
