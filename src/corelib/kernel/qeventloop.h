@@ -66,6 +66,7 @@ public:
         ApplicationExec = 0x80,
     };
     Q_DECLARE_FLAGS(ProcessEventsFlags, ProcessEventsFlag)
+    Q_FLAG(ProcessEventsFlags)
 
     bool processEvents(ProcessEventsFlags flags = AllEvents);
     void processEvents(ProcessEventsFlags flags, int maximumTime);
