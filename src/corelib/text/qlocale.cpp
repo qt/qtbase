@@ -4308,7 +4308,7 @@ QString QLocale::toCurrencyString(qlonglong value, const QString &symbol) const
     QString sym = symbol.isNull() ? currencySymbol() : symbol;
     if (sym.isEmpty())
         sym = currencySymbol(QLocale::CurrencyIsoCode);
-    return range.getData(currency_format_data).arg(str, sym);
+    return range.viewData(currency_format_data).arg(str, sym);
 }
 
 /*!
@@ -4363,7 +4363,7 @@ QString QLocale::toCurrencyString(double value, const QString &symbol, int preci
     QString sym = symbol.isNull() ? currencySymbol() : symbol;
     if (sym.isEmpty())
         sym = currencySymbol(QLocale::CurrencyIsoCode);
-    return range.getData(currency_format_data).arg(str, sym);
+    return range.viewData(currency_format_data).arg(str, sym);
 }
 
 /*!
@@ -4422,13 +4422,13 @@ QString QLocale::formattedDataSize(qint64 bytes, int precision, DataSizeFormats 
     // We don't support sizes in units larger than exbibytes because
     // the number of bytes would not fit into qint64.
     Q_ASSERT(power <= 6 && power >= 0);
-    QString unit;
+    QStringView unit;
     if (power > 0) {
         QLocaleData::DataRange range = (format & DataSizeSIQuantifiers)
             ? d->m_data->byteAmountSI() : d->m_data->byteAmountIEC();
-        unit = range.getListEntry(byte_unit_data, power - 1);
+        unit = range.viewListEntry(byte_unit_data, power - 1);
     } else {
-        unit = d->m_data->byteCount().getData(byte_unit_data);
+        unit = d->m_data->byteCount().viewData(byte_unit_data);
     }
 
     return number + QLatin1Char(' ') + unit;
