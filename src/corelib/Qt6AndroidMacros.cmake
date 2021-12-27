@@ -170,36 +170,36 @@ function(qt6_android_generate_deployment_settings target)
         "   \"architectures\": { ${architecture_records} },\n")
 
     # deployment dependencies
-    _qt_internal_add_android_deployment_multi_value_property(file_contents ${target}
-         "QT_ANDROID_DEPLOYMENT_DEPENDENCIES" "dependencies")
+    _qt_internal_add_android_deployment_multi_value_property(file_contents "dependencies"
+        ${target} "QT_ANDROID_DEPLOYMENT_DEPENDENCIES" )
 
     # Extra plugins
-    _qt_internal_add_android_deployment_multi_value_property(file_contents ${target}
-        "QT_ANDROID_EXTRA_PLUGINS" "android-extra-plugins")
+    _qt_internal_add_android_deployment_multi_value_property(file_contents "android-extra-plugins"
+        ${target} "QT_ANDROID_EXTRA_PLUGINS" )
 
     # Extra libs
-    _qt_internal_add_android_deployment_multi_value_property(file_contents ${target}
-        "QT_ANDROID_EXTRA_LIBS" "android-extra-libs")
+    _qt_internal_add_android_deployment_multi_value_property(file_contents "android-extra-libs"
+        ${target} "QT_ANDROID_EXTRA_LIBS" )
 
     # package source dir
-    _qt_internal_add_android_deployment_property(file_contents ${target}
-        "_qt_android_native_package_source_dir" "android-package-source-directory")
+    _qt_internal_add_android_deployment_property(file_contents "android-package-source-directory"
+        ${target} "_qt_android_native_package_source_dir")
 
     # version code
-    _qt_internal_add_android_deployment_property(file_contents ${target}
-        "QT_ANDROID_VERSION_CODE" "android-version-code")
+    _qt_internal_add_android_deployment_property(file_contents "android-version-code"
+        ${target} "QT_ANDROID_VERSION_CODE")
 
     # version name
-    _qt_internal_add_android_deployment_property(file_contents ${target}
-        "QT_ANDROID_VERSION_NAME" "android-version-name")
+    _qt_internal_add_android_deployment_property(file_contents "android-version-name"
+        ${target} "QT_ANDROID_VERSION_NAME")
 
     # minimum SDK version
-    _qt_internal_add_android_deployment_property(file_contents ${target}
-        "QT_ANDROID_MIN_SDK_VERSION" "android-min-sdk-version")
+    _qt_internal_add_android_deployment_property(file_contents "android-min-sdk-version"
+        ${target} "QT_ANDROID_MIN_SDK_VERSION")
 
     # target SDK version
-    _qt_internal_add_android_deployment_property(file_contents ${target}
-        "QT_ANDROID_TARGET_SDK_VERSION" "android-target-sdk-version")
+    _qt_internal_add_android_deployment_property(file_contents "android-target-sdk-version"
+        ${target} "QT_ANDROID_TARGET_SDK_VERSION")
 
     # QML import paths
     if(NOT "${QT_QML_OUTPUT_DIRECTORY}" STREQUAL "")
@@ -211,8 +211,8 @@ function(qt6_android_generate_deployment_settings target)
         set_property(TARGET "${target}" PROPERTY
             "_qt_native_qml_import_paths" "${native_qml_import_paths}")
     endif()
-    _qt_internal_add_android_deployment_multi_value_property(file_contents ${target}
-        "_qt_native_qml_import_paths" "qml-import-paths")
+    _qt_internal_add_android_deployment_multi_value_property(file_contents "qml-import-paths"
+        ${target} "_qt_native_qml_import_paths")
 
     # QML root paths
     file(TO_CMAKE_PATH "${target_source_dir}" native_target_source_dir)
@@ -644,7 +644,7 @@ endfunction()
 
 # The function converts the target property to a json record and appends it to the output
 # variable.
-function(_qt_internal_add_android_deployment_property out_var target property json_key)
+function(_qt_internal_add_android_deployment_property out_var json_key target property)
     set(property_genex "$<TARGET_PROPERTY:${target},${property}>")
     string(APPEND ${out_var}
         "$<$<BOOL:${property_genex}>:"
@@ -684,7 +684,7 @@ endfunction()
 # The generated JSON object is a simple string with the list property items separated by commas,
 # e.g:
 #    "android-extra-plugins": "plugin1,plugin2",
-function(_qt_internal_add_android_deployment_multi_value_property out_var target property json_key)
+function(_qt_internal_add_android_deployment_multi_value_property out_var json_key target property)
     set(property_genex
         "$<TARGET_PROPERTY:${target},${property}>"
     )
