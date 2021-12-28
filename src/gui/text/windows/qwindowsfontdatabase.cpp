@@ -52,7 +52,6 @@
 #include <QtCore/QFile>
 #include <QtCore/QtEndian>
 #include <QtCore/private/qduplicatetracker_p.h>
-#include <QtCore/private/qsystemlibrary_p.h>
 #include <QtCore/private/qwinregistry_p.h>
 
 #include <wchar.h>
@@ -69,10 +68,6 @@
 QT_BEGIN_NAMESPACE
 
 #if QT_CONFIG(directwrite)
-// ### fixme: Consider direct linking of dwrite.dll once Windows Vista pre SP2 is dropped (QTBUG-49711)
-
-typedef HRESULT (WINAPI *DWriteCreateFactoryType)(DWRITE_FACTORY_TYPE, const IID &, IUnknown **);
-
 static inline bool useDirectWrite(QFont::HintingPreference hintingPreference,
                                   const QString &familyName = QString(),
                                   bool isColorFont = false)
