@@ -220,7 +220,7 @@ QT_BEGIN_NAMESPACE
     \endtable
 
     \table
-    \header \li Path type \li Linux
+    \header \li Path type \li Linux and other UNIX operating systems
     \row \li DesktopLocation
          \li "~/Desktop"
     \row \li DocumentsLocation
