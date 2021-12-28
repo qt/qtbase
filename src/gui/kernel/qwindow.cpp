@@ -2002,9 +2002,7 @@ void QWindowPrivate::destroy()
     // Unset platformWindow before deleting, so that the destructor of the
     // platform window does not recurse back into the platform window via
     // this window during destruction (e.g. as a result of platform events).
-    QPlatformWindow *pw = platformWindow;
-    platformWindow = nullptr;
-    delete pw;
+    delete std::exchange(platformWindow, nullptr);
 
     if (QGuiApplicationPrivate::focus_window == q)
         QGuiApplicationPrivate::focus_window = q->parent();
