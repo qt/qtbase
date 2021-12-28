@@ -73,11 +73,8 @@ public:
         WindowFrameExclusive
     };
 
-    QWindowPrivate()
-        : QObjectPrivate()
-    {
-        isWindow = true;
-    }
+    QWindowPrivate();
+    ~QWindowPrivate() override;
 
     void init(QScreen *targetScreen = nullptr);
 

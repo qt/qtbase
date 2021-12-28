@@ -234,6 +234,15 @@ QWindow::~QWindow()
         QGuiApplicationPrivate::currentMousePressWindow = nullptr;
 }
 
+QWindowPrivate::QWindowPrivate()
+    : QObjectPrivate()
+{
+    isWindow = true;
+}
+
+QWindowPrivate::~QWindowPrivate()
+    = default;
+
 void QWindowPrivate::init(QScreen *targetScreen)
 {
     Q_Q(QWindow);
