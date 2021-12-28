@@ -112,6 +112,10 @@ def clean_cmdline():
             prev_arg = a
             continue
         if a in ("-v1", "-v2", "-vs"):
+            print("VERBOSE RUN")
+            if "QT_LOGGING_RULES" in os.environ:
+                print("Environment has QT_LOGGING_RULES:",
+                      os.environ["QT_LOGGING_RULES"])
             continue
         args.append(a)
     return args

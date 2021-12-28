@@ -260,6 +260,12 @@ class Test_testrunner_with_xml_logfile(unittest.TestCase):
         write_xml_log(self.xml_file, failure="always_fail")
         proc = run_testrunner(self.xml_file)
         self.assertEqual(proc.returncode, 2)
+        # Assert that one of the re-runs was in verbose mode
+        matches = re.findall("VERBOSE RUN",
+                             proc.stdout.decode())
+        self.assertEqual(len(matches), 1)
+        # Assert that the environment was altered too
+        self.assertIn("QT_LOGGING_RULES", proc.stdout.decode())
     def test_always_crash_failed(self):
         write_xml_log(self.xml_file, failure="always_crash")
         proc = run_testrunner(self.xml_file)

@@ -92,6 +92,15 @@ class WhatFailed(NamedTuple):
     tag: Optional[str] = None
 
 
+# In the last test re-run, we add special verbosity arguments, in an attempt
+# to log more information about the failure
+VERBOSE_ARGS = ["-v2", "-maxwarnings", "0"]
+VERBOSE_ENV = {
+    "QT_LOGGING_RULES": "*=true",
+    "QT_MESSAGE_PATTERN": "[%{time process} %{if-debug}D%{endif}%{if-warning}W%{endif}%{if-critical}C%{endif}%{if-fatal}F%{endif}] %{category} %{file}:%{line} %{function}()  -  %{message}",
+}
+
+
 def parse_args():
     parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
         description="""
@@ -221,9 +230,9 @@ def parse_log(results_file) -> List[WhatFailed]:
     return failures
 
 
-def run_test(arg_list: List[str], timeout=None):
+def run_test(arg_list: List[str], **kwargs):
     L.debug("Running test command line: %s", arg_list)
-    proc = subprocess.run(arg_list, timeout=timeout)
+    proc = subprocess.run(arg_list, **kwargs)
     L.info("Test process exited with code: %d", proc.returncode)
 
     return proc
@@ -246,15 +255,12 @@ def run_full_test(test_basename, testargs: List[str], output_dir: str,
         output_testargs.extend(["-o", results_files[1] + ",junitxml"])
         output_testargs.extend(["-o", "-,txt"])
 
-    proc = run_test(testargs + specific_extra_args + output_testargs, timeout)
+    proc = run_test(testargs + specific_extra_args + output_testargs,
+                    timeout=timeout)
 
     return (proc.returncode, results_files[0] if results_files else None)
 
 
-# TODO alter environment for logging:
-# QT_LOGGING_RULES="*=true"
-# QT_MESSAGE_PATTERN="[%{time process} %{if-debug}D%{endif}%{if-warning}W%{endif}%{if-critical}C%{endif}%{if-fatal}F%{endif}] %{category} %{file}:%{line} %{function}()  -  %{message}"
-# add arg: -maxwarnings 0 (maybe -v2 -vs?)
 def rerun_failed_testcase(testargs: List[str], what_failed: WhatFailed,
                           max_repeats, passes_needed,
                           dryrun=False, timeout=None) -> bool:
@@ -271,7 +277,12 @@ def rerun_failed_testcase(testargs: List[str], what_failed: WhatFailed,
     n_passes = 0
     for i in range(max_repeats):
         L.info("Re-running testcase: %s", failed_arg)
-        proc = run_test(testargs + [failed_arg], timeout)
+        if i < max_repeats - 1:
+            proc = run_test(testargs + [failed_arg], timeout=timeout)
+        else:                                                   # last re-run
+            proc = run_test(testargs + VERBOSE_ARGS + [failed_arg],
+                            timeout=timeout,
+                            env={**os.environ, **VERBOSE_ENV})
         if proc.returncode == 0:
             n_passes += 1
         if n_passes == passes_needed:
