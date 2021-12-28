@@ -73,6 +73,9 @@ public:
         WindowFrameExclusive
     };
 
+    QWindowPrivate();
+    ~QWindowPrivate() override;
+
     void init(QScreen *targetScreen = nullptr);
 
 #ifndef QT_NO_CURSOR

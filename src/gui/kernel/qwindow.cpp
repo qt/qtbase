@@ -236,6 +236,12 @@ QWindow::~QWindow()
     d->isWindow = false;
 }
 
+QWindowPrivate::QWindowPrivate()
+    = default;
+
+QWindowPrivate::~QWindowPrivate()
+    = default;
+
 void QWindowPrivate::init(QScreen *targetScreen)
 {
     Q_Q(QWindow);
