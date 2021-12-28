@@ -40,7 +40,6 @@
 #include "qwindowsfontdatabasebase_p.h"
 #include "qwindowsfontdatabase_p.h"
 
-#include <QtCore/private/qsystemlibrary_p.h>
 #include <QtCore/QThreadStorage>
 #include <QtCore/QtEndian>
 
