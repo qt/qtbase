@@ -458,7 +458,7 @@ void QWindowPrivate::updateSiblingPosition(SiblingPosition position)
     siblings.move(currentPosition, targetPosition);
 }
 
-inline bool QWindowPrivate::windowRecreationRequired(QScreen *newScreen) const
+bool QWindowPrivate::windowRecreationRequired(QScreen *newScreen) const
 {
     Q_Q(const QWindow);
     const QScreen *oldScreen = q->screen();
@@ -466,7 +466,7 @@ inline bool QWindowPrivate::windowRecreationRequired(QScreen *newScreen) const
         && !(oldScreen && oldScreen->virtualSiblings().contains(newScreen));
 }
 
-inline void QWindowPrivate::disconnectFromScreen()
+void QWindowPrivate::disconnectFromScreen()
 {
     if (topLevelScreen)
         topLevelScreen = nullptr;
