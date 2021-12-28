@@ -523,6 +523,11 @@ void tst_QStringList::joinChar_data() const
                         << QLatin1String("c"))
                 << QChar(QLatin1Char(' '))
                 << QString("a b c");
+
+    QTest::newRow("null separator")
+            << QStringList{QStringLiteral("a"), QStringLiteral("b"), QStringLiteral("c")}
+            << QChar(u'\0')
+            << QStringLiteral("a\0b\0c");
 }
 
 void tst_QStringList::joinEmptiness() const
