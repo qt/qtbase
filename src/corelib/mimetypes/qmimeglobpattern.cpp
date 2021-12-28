@@ -94,7 +94,7 @@ QMimeGlobPattern::PatternType QMimeGlobPattern::detectPatternType(const QString 
     if (!patternLength)
         return OtherPattern;
 
-    const bool starCount = pattern.count(QLatin1Char('*')) == 1;
+    const int starCount = pattern.count(QLatin1Char('*'));
     const bool hasSquareBracket = pattern.indexOf(QLatin1Char('[')) != -1;
     const bool hasQuestionMark = pattern.indexOf(QLatin1Char('?')) != -1;
 
@@ -106,10 +106,10 @@ QMimeGlobPattern::PatternType QMimeGlobPattern::detectPatternType(const QString 
             // Patterns like "README*" (well this is currently the only one like that...)
             if (pattern.at(patternLength - 1) == QLatin1Char('*'))
                 return PrefixPattern;
-        }
-        // Names without any wildcards like "README"
-        if (starCount == 0)
+        } else if (starCount == 0) {
+            // Names without any wildcards like "README"
             return LiteralPattern;
+        }
     }
 
     if (pattern == QLatin1String("[0-9][0-9][0-9].vdr"))
