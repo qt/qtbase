@@ -218,6 +218,7 @@ qt_copy_or_install(FILES
                    cmake/QtCompilerFlags.cmake
                    cmake/QtCompilerOptimization.cmake
                    cmake/QtConfigDependencies.cmake.in
+                   cmake/QtCopyFileIfDifferent.cmake
                    cmake/QtDeferredDependenciesHelpers.cmake
                    cmake/QtDbusHelpers.cmake
                    cmake/QtDocsHelpers.cmake
@@ -299,6 +300,7 @@ qt_copy_or_install(DIRECTORY
 set(__public_cmake_helpers
     cmake/QtFeature.cmake
     cmake/QtFeatureCommon.cmake
+    cmake/QtPublicCMakeHelpers.cmake
     cmake/QtPublicCMakeVersionHelpers.cmake
     cmake/QtPublicFinalizerHelpers.cmake
     cmake/QtPublicPluginHelpers.cmake

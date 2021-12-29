@@ -358,11 +358,13 @@ function(qt6_android_add_apk_target target)
     # in case DEPFILEs are not supported.
     # Also the target is used to copy the library that belongs to ${target} when building multi-abi
     # apk to the abi-specific directory.
+    _qt_internal_copy_file_if_different_command(copy_command
+        "$<TARGET_FILE:${target}>"
+        "${apk_final_dir}/${target_file_copy_relative_path}"
+    )
     add_custom_target(${target}_prepare_apk_dir ALL
         DEPENDS ${target} ${extra_deps}
-        COMMAND ${CMAKE_COMMAND}
-            -E copy_if_different $<TARGET_FILE:${target}>
-            "${apk_final_dir}/${target_file_copy_relative_path}"
+        COMMAND ${copy_command}
         COMMENT "Copying ${target} binary to apk folder"
     )
 
@@ -455,6 +457,10 @@ function(qt6_android_add_apk_target target)
         file(RELATIVE_PATH androiddeployqt_output_path "${CMAKE_BINARY_DIR}" "${apk_final_dir}")
         set(androiddeployqt_output_path
             "${QT_INTERNAL_ANDROID_MULTI_ABI_BINARY_DIR}/${androiddeployqt_output_path}")
+        _qt_internal_copy_file_if_different_command(copy_command
+            "$<TARGET_FILE:${target}>"
+            "${androiddeployqt_output_path}/${target_file_copy_relative_path}"
+        )
         if(has_depfile_support)
             set(deploy_android_deps_dir "${apk_final_dir}/${target}_deploy_android")
             set(timestamp_file "${deploy_android_deps_dir}/timestamp")
@@ -463,9 +469,7 @@ function(qt6_android_add_apk_target target)
                 DEPENDS ${target} ${extra_deps}
                 COMMAND ${CMAKE_COMMAND} -E make_directory "${deploy_android_deps_dir}"
                 COMMAND ${CMAKE_COMMAND} -E touch "${timestamp_file}"
-                COMMAND ${CMAKE_COMMAND}
-                    -E copy_if_different $<TARGET_FILE:${target}>
-                    "${androiddeployqt_output_path}/${target_file_copy_relative_path}"
+                COMMAND ${copy_command}
                 COMMAND  ${deployment_tool}
                     --input ${deployment_file}
                     --output ${androiddeployqt_output_path}
@@ -481,9 +485,7 @@ function(qt6_android_add_apk_target target)
         else()
             add_custom_target(qt_internal_${target}_copy_apk_dependencies
                 DEPENDS ${target} ${extra_deps}
-                COMMAND ${CMAKE_COMMAND}
-                    -E copy_if_different $<TARGET_FILE:${target}>
-                    "${androiddeployqt_output_path}/${target_file_copy_relative_path}"
+                COMMAND ${copy_command}
                 COMMAND  ${deployment_tool}
                     --input ${deployment_file}
                     --output ${androiddeployqt_output_path}
