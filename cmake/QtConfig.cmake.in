@@ -92,6 +92,7 @@ include("${CMAKE_CURRENT_LIST_DIR}/QtPublicWalkLibsHelpers.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/QtPublicFindPackageHelpers.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/QtPublicDependencyHelpers.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/QtPublicToolHelpers.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/QtPublicCMakeHelpers.cmake")
 
 if(NOT DEFINED QT_CMAKE_EXPORT_NAMESPACE)
     set(QT_CMAKE_EXPORT_NAMESPACE @QT_CMAKE_EXPORT_NAMESPACE@)
