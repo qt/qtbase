@@ -358,7 +358,7 @@ function(qt_internal_add_test name)
         endif()
     endif()
 
-    if(ANDROID OR IOS OR WINRT)
+    if(ANDROID OR IOS OR WINRT OR INTEGRITY)
         set(builtin_testdata TRUE)
     endif()
 
