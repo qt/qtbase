@@ -336,11 +336,13 @@ function(qt6_android_add_apk_target target)
 
     # This target is used by Qt Creator's Android support and by the ${target}_make_apk target
     # in case DEPFILEs are not supported.
+    _qt_internal_copy_file_if_different_command(copy_command
+        "$<TARGET_FILE:${target}>"
+        "${apk_final_dir}/libs/${CMAKE_ANDROID_ARCH_ABI}/$<TARGET_FILE_NAME:${target}>"
+    )
     add_custom_target(${target}_prepare_apk_dir ALL
         DEPENDS ${target} ${extra_deps}
-        COMMAND ${CMAKE_COMMAND}
-            -E copy_if_different $<TARGET_FILE:${target}>
-            "${apk_final_dir}/libs/${CMAKE_ANDROID_ARCH_ABI}/$<TARGET_FILE_NAME:${target}>"
+        COMMAND ${copy_command}
         COMMENT "Copying ${target} binary to apk folder"
     )
 
