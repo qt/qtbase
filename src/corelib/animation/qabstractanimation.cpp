@@ -227,6 +227,8 @@ QUnifiedTimer::QUnifiedTimer() :
     driver = &defaultDriver;
 }
 
+QUnifiedTimer::~QUnifiedTimer()
+    = default;
 
 QUnifiedTimer *QUnifiedTimer::instance(bool create)
 {
@@ -559,6 +561,9 @@ QAnimationTimer::QAnimationTimer() :
     runningLeafAnimations(0)
 {
 }
+
+QAnimationTimer::~QAnimationTimer()
+    = default;
 
 QAnimationTimer *QAnimationTimer::instance(bool create)
 {
@@ -896,6 +901,9 @@ QDefaultAnimationDriver::QDefaultAnimationDriver(QUnifiedTimer *timer)
     connect(this, SIGNAL(stopped()), this, SLOT(stopTimer()));
 }
 
+QDefaultAnimationDriver::~QDefaultAnimationDriver()
+    = default;
+
 void QDefaultAnimationDriver::timerEvent(QTimerEvent *e)
 {
     Q_ASSERT(e->timerId() == m_timer.timerId());
@@ -913,6 +921,21 @@ void QDefaultAnimationDriver::stopTimer()
 {
     m_timer.stop();
 }
+
+QAnimationDriverPrivate::QAnimationDriverPrivate()
+    = default;
+
+QAnimationDriverPrivate::~QAnimationDriverPrivate()
+    = default;
+
+QAbstractAnimationTimer::QAbstractAnimationTimer()
+    = default;
+
+QAbstractAnimationTimer::~QAbstractAnimationTimer()
+    = default;
+
+QAbstractAnimationPrivate::QAbstractAnimationPrivate()
+    = default;
 
 QAbstractAnimationPrivate::~QAbstractAnimationPrivate() { }
 

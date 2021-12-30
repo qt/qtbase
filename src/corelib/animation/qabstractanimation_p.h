@@ -68,6 +68,7 @@ class QAbstractAnimation;
 class QAbstractAnimationPrivate : public QObjectPrivate
 {
 public:
+    QAbstractAnimationPrivate();
     virtual ~QAbstractAnimationPrivate();
 
     static QAbstractAnimationPrivate *get(QAbstractAnimation *q)
@@ -117,7 +118,8 @@ class QDefaultAnimationDriver : public QAnimationDriver
 {
     Q_OBJECT
 public:
-    QDefaultAnimationDriver(QUnifiedTimer *timer);
+    explicit QDefaultAnimationDriver(QUnifiedTimer *timer);
+    ~QDefaultAnimationDriver() override;
 
 protected:
     void timerEvent(QTimerEvent *e) override;
@@ -134,24 +136,27 @@ private:
 class Q_CORE_EXPORT QAnimationDriverPrivate : public QObjectPrivate
 {
 public:
-    QAnimationDriverPrivate() : running(false) {}
+    QAnimationDriverPrivate();
+    ~QAnimationDriverPrivate() override;
+
     QElapsedTimer timer;
-    bool running;
+    bool running = false;
 };
 
 class Q_CORE_EXPORT QAbstractAnimationTimer : public QObject
 {
     Q_OBJECT
 public:
-    QAbstractAnimationTimer() : isRegistered(false), isPaused(false), pauseDuration(0) {}
+    QAbstractAnimationTimer();
+    ~QAbstractAnimationTimer() override;
 
     virtual void updateAnimationsTime(qint64 delta) = 0;
     virtual void restartAnimationTimer() = 0;
     virtual int runningAnimationCount() = 0;
 
-    bool isRegistered;
-    bool isPaused;
-    int pauseDuration;
+    bool isRegistered = false;
+    bool isPaused = false;
+    int pauseDuration = 0;
 };
 
 class Q_CORE_EXPORT QUnifiedTimer : public QObject
@@ -161,6 +166,8 @@ private:
     QUnifiedTimer();
 
 public:
+    ~QUnifiedTimer() override;
+
     static QUnifiedTimer *instance();
     static QUnifiedTimer *instance(bool create);
 
@@ -252,6 +259,8 @@ private:
     QAnimationTimer();
 
 public:
+    ~QAnimationTimer() override;
+
     static QAnimationTimer *instance();
     static QAnimationTimer *instance(bool create);
 
