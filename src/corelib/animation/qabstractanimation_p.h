@@ -118,6 +118,8 @@ class QDefaultAnimationDriver : public QAnimationDriver
     Q_OBJECT
 public:
     QDefaultAnimationDriver(QUnifiedTimer *timer);
+
+protected:
     void timerEvent(QTimerEvent *e) override;
 
 private Q_SLOTS:
