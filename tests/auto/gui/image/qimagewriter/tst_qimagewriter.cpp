@@ -281,6 +281,8 @@ void tst_QImageWriter::writeImage2()
     QFETCH(QByteArray, format);
     QFETCH(QImage, image);
 
+    SKIP_IF_UNSUPPORTED(format);
+
     //we reduce the scope of writer so that it closes the associated file
     // and QFile::remove can actually work
     {
