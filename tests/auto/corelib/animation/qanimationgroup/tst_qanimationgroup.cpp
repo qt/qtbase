@@ -290,7 +290,8 @@ void tst_QAnimationGroup::setParentAutoAdd()
 
 void tst_QAnimationGroup::beginNestedGroup()
 {
-    QAnimationGroup *parent = new QParallelAnimationGroup();
+    QParallelAnimationGroup group;
+    QAnimationGroup *parent = &group;
 
     for (int i = 0; i < 10; ++i) {
         if (i & 1) {
@@ -347,7 +348,8 @@ void tst_QAnimationGroup::addChildTwice()
 
 void tst_QAnimationGroup::loopWithoutStartValue()
 {
-    QAnimationGroup *parent = new QSequentialAnimationGroup();
+    QSequentialAnimationGroup group;
+    QAnimationGroup *parent = &group;
     QObject o;
     o.setProperty("ole", 0);
     QCOMPARE(o.property("ole").toInt(), 0);
