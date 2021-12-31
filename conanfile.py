@@ -493,6 +493,7 @@ class QtBase(ConanFile):
             "qpa",
             "translationsdir",
             "headersclean",
+            "qt_host_path",
         ]
         for item in rm_list:
             if item in self.info.options:
