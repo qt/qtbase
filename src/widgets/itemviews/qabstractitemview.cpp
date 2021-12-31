@@ -1818,8 +1818,13 @@ void QAbstractItemView::mousePressEvent(QMouseEvent *event)
     QItemSelectionModel::SelectionFlags command = selectionCommand(index, event);
     d->noSelectionOnMousePress = command == QItemSelectionModel::NoUpdate || !index.isValid();
     QPoint offset = d->offset();
-    d->pressedPosition = pos + offset;
-    if ((command & QItemSelectionModel::Current) == 0) {
+
+    // update the pressed position when drag was enable
+    if (d->dragEnabled)
+        d->pressedPosition = pos + offset;
+
+    if (!(command & QItemSelectionModel::Current)) {
+        d->pressedPosition = pos + offset;
         d->currentSelectionStartIndex = index;
     }
     else if (!d->currentSelectionStartIndex.isValid())
@@ -1841,7 +1846,7 @@ void QAbstractItemView::mousePressEvent(QMouseEvent *event)
             command |= d->ctrlDragSelectionFlag;
         }
 
-        if ((command & QItemSelectionModel::Current) == 0) {
+        if (!(command & QItemSelectionModel::Current)) {
             setSelection(QRect(pos, QSize(1, 1)), command);
         } else {
             QRect rect(visualRect(d->currentSelectionStartIndex).center(), pos);
@@ -1895,16 +1900,10 @@ void QAbstractItemView::mouseMoveEvent(QMouseEvent *event)
         || edit(index, NoEditTriggers, event))
         return;
 
-    if (d->selectionMode != SingleSelection) {
-        // Use the current selection start index if it is valid as this will be based on the
-        // start of the selection and not the last item being pressed which can be different
-        // when in extended selection
-        topLeft = d->currentSelectionStartIndex.isValid()
-                ? visualRect(d->currentSelectionStartIndex).center()
-                : d->pressedPosition - d->offset();
-    } else {
+    if (d->selectionMode != SingleSelection)
+        topLeft = d->pressedPosition - d->offset();
+    else
         topLeft = bottomRight;
-    }
 
     d->checkMouseMove(index);
 
