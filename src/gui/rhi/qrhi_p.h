@@ -1327,6 +1327,12 @@ public:
     };
     Q_DECLARE_FLAGS(Flags, Flag)
 
+    enum Format {
+        SDR,
+        HDRExtendedSrgbLinear,
+        HDR10
+    };
+
     QRhiResource::Type resourceType() const override;
 
     QWindow *window() const { return m_window; }
@@ -1334,6 +1340,9 @@ public:
 
     Flags flags() const { return m_flags; }
     void setFlags(Flags f) { m_flags = f; }
+
+    Format format() const { return m_format; }
+    void setFormat(Format f) { m_format = f; }
 
     QRhiRenderBuffer *depthStencil() const { return m_depthStencil; }
     void setDepthStencil(QRhiRenderBuffer *ds) { m_depthStencil = ds; }
@@ -1349,13 +1358,17 @@ public:
     virtual QRhiCommandBuffer *currentFrameCommandBuffer() = 0;
     virtual QRhiRenderTarget *currentFrameRenderTarget() = 0;
     virtual QSize surfacePixelSize() = 0;
+    virtual bool isFormatSupported(Format f) = 0;
     virtual QRhiRenderPassDescriptor *newCompatibleRenderPassDescriptor() = 0;
     virtual bool createOrResize() = 0;
+
+    virtual const QRhiNativeHandles *nativeHandles();
 
 protected:
     QRhiSwapChain(QRhiImplementation *rhi);
     QWindow *m_window = nullptr;
     Flags m_flags;
+    Format m_format = SDR;
     QRhiRenderBuffer *m_depthStencil = nullptr;
     int m_sampleCount = 1;
     QRhiRenderPassDescriptor *m_renderPassDesc = nullptr;

@@ -5470,6 +5470,11 @@ QSize QGles2SwapChain::surfacePixelSize()
     return m_window->size() * m_window->devicePixelRatio();
 }
 
+bool QGles2SwapChain::isFormatSupported(Format f)
+{
+    return f == SDR;
+}
+
 QRhiRenderPassDescriptor *QGles2SwapChain::newCompatibleRenderPassDescriptor()
 {
     return new QGles2RenderPassDescriptor(m_rhi);

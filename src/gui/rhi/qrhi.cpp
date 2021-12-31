@@ -4285,12 +4285,13 @@ QRhiResource::Type QRhiGraphicsPipeline::resourceType() const
     with premultiplied alpha. In that case the behavior with this flag set is
     expected to be equivalent to SurfaceHasPreMulAlpha.
 
-    \value sRGB Requests to pick an sRGB format for the swapchain and/or its
-    render target views, where applicable. Note that this implies that sRGB
-    framebuffer update and blending will get enabled for all content targeting
-    this swapchain, and opting out is not possible. For OpenGL, set
-    \l{QSurfaceFormat::sRGBColorSpace}{sRGBColorSpace} on the QSurfaceFormat of
-    the QWindow in addition.
+    \value sRGB Requests to pick an sRGB format for the swapchain's color
+    buffers and/or render target views, where applicable. Note that this
+    implies that sRGB framebuffer update and blending will get enabled for all
+    content targeting this swapchain, and opting out is not possible. For
+    OpenGL, set \l{QSurfaceFormat::sRGBColorSpace}{sRGBColorSpace} on the
+    QSurfaceFormat of the QWindow in addition. Applicable only when the
+    swapchain format is set to QRhiSwapChain::SDR.
 
     \value UsedAsTransferSource Indicates the swapchain will be used as the
     source of a readback in QRhiResourceUpdateBatch::readBackTexture().
@@ -4316,6 +4317,27 @@ QRhiResource::Type QRhiGraphicsPipeline::resourceType() const
     (QRhi) will still prepare frames at most \c{N - 1} frames ahead of the GPU,
     even when the swapchain image buffer count larger than \c N. (\c{N} =
     QRhi::FramesInFlight and typically 2).
+ */
+
+/*!
+    \enum QRhiSwapChain::Format
+    Decribes the swapchain format. The default format is SDR.
+
+    \value SDR 8-bit RGBA or BGRA, depending on the backend and platform. With
+    OpenGL ES in particular, it could happen that the platform provides less
+    than 8 bits (e.g. due to EGL and the QSurfaceFormat choosing a 565 or 444
+    format - this is outside the control of QRhi). Standard dynamic range. May
+    be combined with setting the QRhiSwapChain::sRGB flag.
+
+    \value HDRExtendedSrgbLinear 16-bit float RGBA, high dynamic range,
+    extended linear sRGB (scRGB) color space. This involves Rec. 709 primaries
+    (same as SDR/sRGB) and linear colors. Conversion to the display's native
+    color space (such as, HDR10) is performed by the windowing system. On
+    Windows this is the canonical color space of the system compositor, and is
+    the recommended format for HDR swapchains in general.
+
+    \value HDR10 10-bit unsigned int RGB or BGR with 2 bit alpha, high dynamic
+    range, HDR10 (Rec. 2020) color space with an ST2084 PQ transfer function.
  */
 
 /*!
@@ -4396,6 +4418,22 @@ QRhiResource::Type QRhiSwapChain::resourceType() const
   */
 
 /*!
+    \fn bool QRhiSwapChain::isFormatSuported(Format f)
+
+    \return true if the given swapchain format is supported. SDR is always
+    supported.
+
+    \note Can be called independently of createOrResize(), but window() must
+    already be set. Calling without the window set may lead to unexpected
+    results depending on the backend and platform (most likely false for any
+    HDR format), because HDR format support is usually tied to the output
+    (screen) to which the swapchain's associated window belongs at any given
+    time. If the result is true for a HDR format, then creating the swapchain
+    with that format is expected to succeed as long as the window is not moved
+    to another screen in the meantime.
+ */
+
+/*!
     \fn QRhiCommandBuffer *QRhiSwapChain::currentFrameCommandBuffer()
 
     \return a command buffer on which rendering commands can be recorded. Only
@@ -4431,6 +4469,18 @@ QRhiResource::Type QRhiSwapChain::resourceType() const
     \return \c true when successful, \c false when a graphics operation failed.
     Regardless of the return value, calling destroy() is always safe.
  */
+
+/*!
+    \return a pointer to a backend-specific QRhiNativeHandles subclass, such as
+    QRhiD3D11SwapChainNativeHandles. The returned value is \nullptr when
+    exposing the underlying native resources is not supported by the backend.
+
+    \sa QRhiD3D11SwapChainNativeHandles
+ */
+const QRhiNativeHandles *QRhiSwapChain::nativeHandles()
+{
+    return nullptr;
+}
 
 /*!
     \class QRhiComputePipeline

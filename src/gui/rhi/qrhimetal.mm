@@ -4007,6 +4007,11 @@ QSize QMetalSwapChain::surfacePixelSize()
     return QSizeF::fromCGSize(layerSize).toSize();
 }
 
+bool QMetalSwapChain::isFormatSupported(Format f)
+{
+    return f == SDR;
+}
+
 QRhiRenderPassDescriptor *QMetalSwapChain::newCompatibleRenderPassDescriptor()
 {
     chooseFormats(); // ensure colorFormat and similar are filled out

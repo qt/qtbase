@@ -323,6 +323,7 @@ struct QMetalSwapChain : public QRhiSwapChain
     QRhiCommandBuffer *currentFrameCommandBuffer() override;
     QRhiRenderTarget *currentFrameRenderTarget() override;
     QSize surfacePixelSize() override;
+    bool isFormatSupported(Format f) override;
 
     QRhiRenderPassDescriptor *newCompatibleRenderPassDescriptor() override;
 

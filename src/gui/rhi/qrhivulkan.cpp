@@ -640,6 +640,20 @@ bool QRhiVulkan::create(QRhi::Flags flags)
         qCDebug(QRHI_LOG_INFO, "Using imported device %p", dev);
     }
 
+    vkGetPhysicalDeviceSurfaceCapabilitiesKHR = reinterpret_cast<PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR>(
+                inst->getInstanceProcAddr("vkGetPhysicalDeviceSurfaceCapabilitiesKHR"));
+    vkGetPhysicalDeviceSurfaceFormatsKHR = reinterpret_cast<PFN_vkGetPhysicalDeviceSurfaceFormatsKHR>(
+                inst->getInstanceProcAddr("vkGetPhysicalDeviceSurfaceFormatsKHR"));
+    vkGetPhysicalDeviceSurfacePresentModesKHR = reinterpret_cast<PFN_vkGetPhysicalDeviceSurfacePresentModesKHR>(
+                inst->getInstanceProcAddr("vkGetPhysicalDeviceSurfacePresentModesKHR"));
+    if (!vkGetPhysicalDeviceSurfaceCapabilitiesKHR
+            || !vkGetPhysicalDeviceSurfaceFormatsKHR
+            || !vkGetPhysicalDeviceSurfacePresentModesKHR)
+    {
+        qWarning("Physical device surface queries not available");
+        return false;
+    }
+
     df = inst->deviceFunctions(dev);
 
     VkCommandPoolCreateInfo poolInfo;
@@ -7196,6 +7210,49 @@ QSize QVkSwapChain::surfacePixelSize()
     return QSize(int(bufferSize.width), int(bufferSize.height));
 }
 
+static inline bool hdrFormatMatchesVkSurfaceFormat(QRhiSwapChain::Format f, const VkSurfaceFormatKHR &s)
+{
+    switch (f) {
+    case QRhiSwapChain::HDRExtendedSrgbLinear:
+        return s.format == VK_FORMAT_R16G16B16A16_SFLOAT
+                && s.colorSpace == VK_COLOR_SPACE_EXTENDED_SRGB_LINEAR_EXT;
+    case QRhiSwapChain::HDR10:
+        return (s.format == VK_FORMAT_A2B10G10R10_UNORM_PACK32 || s.format == VK_FORMAT_A2R10G10B10_UNORM_PACK32)
+                && s.colorSpace == VK_COLOR_SPACE_HDR10_ST2084_EXT;
+    default:
+        break;
+    }
+    return false;
+}
+
+bool QVkSwapChain::isFormatSupported(Format f)
+{
+    if (f == SDR)
+        return true;
+
+    if (!m_window) {
+        qWarning("Attempted to call isFormatSupported() without a window set");
+        return false;
+    }
+
+    // we may be called before create so query the surface
+    VkSurfaceKHR surf = QVulkanInstance::surfaceForWindow(m_window);
+
+    QRHI_RES_RHI(QRhiVulkan);
+    uint32_t formatCount = 0;
+    rhiD->vkGetPhysicalDeviceSurfaceFormatsKHR(rhiD->physDev, surf, &formatCount, nullptr);
+    QVarLengthArray<VkSurfaceFormatKHR, 8> formats(formatCount);
+    if (formatCount) {
+        rhiD->vkGetPhysicalDeviceSurfaceFormatsKHR(rhiD->physDev, surf, &formatCount, formats.data());
+        for (uint32_t i = 0; i < formatCount; ++i) {
+            if (hdrFormatMatchesVkSurfaceFormat(f, formats[i]))
+                return true;
+        }
+    }
+
+    return false;
+}
+
 QRhiRenderPassDescriptor *QVkSwapChain::newCompatibleRenderPassDescriptor()
 {
     // not yet built so cannot rely on data computed in createOrResize()
@@ -7262,34 +7319,27 @@ bool QVkSwapChain::ensureSurface()
         }
     }
 
-    if (!rhiD->vkGetPhysicalDeviceSurfaceCapabilitiesKHR) {
-        rhiD->vkGetPhysicalDeviceSurfaceCapabilitiesKHR = reinterpret_cast<PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR>(
-                    rhiD->inst->getInstanceProcAddr("vkGetPhysicalDeviceSurfaceCapabilitiesKHR"));
-        rhiD->vkGetPhysicalDeviceSurfaceFormatsKHR = reinterpret_cast<PFN_vkGetPhysicalDeviceSurfaceFormatsKHR>(
-                    rhiD->inst->getInstanceProcAddr("vkGetPhysicalDeviceSurfaceFormatsKHR"));
-        rhiD->vkGetPhysicalDeviceSurfacePresentModesKHR = reinterpret_cast<PFN_vkGetPhysicalDeviceSurfacePresentModesKHR>(
-                    rhiD->inst->getInstanceProcAddr("vkGetPhysicalDeviceSurfacePresentModesKHR"));
-        if (!rhiD->vkGetPhysicalDeviceSurfaceCapabilitiesKHR
-                || !rhiD->vkGetPhysicalDeviceSurfaceFormatsKHR
-                || !rhiD->vkGetPhysicalDeviceSurfacePresentModesKHR)
-        {
-            qWarning("Physical device surface queries not available");
-            return false;
-        }
-    }
-
     quint32 formatCount = 0;
     rhiD->vkGetPhysicalDeviceSurfaceFormatsKHR(rhiD->physDev, surface, &formatCount, nullptr);
     QList<VkSurfaceFormatKHR> formats(formatCount);
     if (formatCount)
         rhiD->vkGetPhysicalDeviceSurfaceFormatsKHR(rhiD->physDev, surface, &formatCount, formats.data());
 
+    // See if there is a better match than the default BGRA8 format. (but if
+    // not, we will stick to the default)
     const bool srgbRequested = m_flags.testFlag(sRGB);
     for (int i = 0; i < int(formatCount); ++i) {
-        if (formats[i].format != VK_FORMAT_UNDEFINED && srgbRequested == isSrgbFormat(formats[i].format)) {
-            colorFormat = formats[i].format;
-            colorSpace = formats[i].colorSpace;
-            break;
+        if (formats[i].format != VK_FORMAT_UNDEFINED) {
+            bool ok = false;
+            if (m_format == SDR)
+                ok = srgbRequested == isSrgbFormat(formats[i].format);
+            else
+                ok = hdrFormatMatchesVkSurfaceFormat(m_format, formats[i]);
+            if (ok) {
+                colorFormat = formats[i].format;
+                colorSpace = formats[i].colorSpace;
+                break;
+            }
         }
     }
 

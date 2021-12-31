@@ -1025,6 +1025,11 @@ QSize QNullSwapChain::surfacePixelSize()
     return QSize(1280, 720);
 }
 
+bool QNullSwapChain::isFormatSupported(Format f)
+{
+    return f == SDR;
+}
+
 QRhiRenderPassDescriptor *QNullSwapChain::newCompatibleRenderPassDescriptor()
 {
     return new QNullRenderPassDescriptor(m_rhi);

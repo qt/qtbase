@@ -57,7 +57,7 @@
 #include <QWindow>
 
 #include <d3d11_1.h>
-#include <dxgi1_3.h>
+#include <dxgi1_6.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -559,9 +559,11 @@ struct QD3D11SwapChain : public QRhiSwapChain
     QRhiRenderTarget *currentFrameRenderTarget() override;
 
     QSize surfacePixelSize() override;
+    bool isFormatSupported(Format f) override;
 
     QRhiRenderPassDescriptor *newCompatibleRenderPassDescriptor() override;
     bool createOrResize() override;
+    const QRhiNativeHandles *nativeHandles() override;
 
     void releaseBuffers();
     bool newColorBuffer(const QSize &size, DXGI_FORMAT format, DXGI_SAMPLE_DESC sampleDesc,
@@ -572,6 +574,7 @@ struct QD3D11SwapChain : public QRhiSwapChain
     QD3D11ReferenceRenderTarget rt;
     QD3D11CommandBuffer cb;
     DXGI_FORMAT colorFormat;
+    DXGI_FORMAT srgbAdjustedColorFormat;
     IDXGISwapChain *swapChain = nullptr;
     static const int BUFFER_COUNT = 2;
     ID3D11Texture2D *backBufferTex;
@@ -586,6 +589,9 @@ struct QD3D11SwapChain : public QRhiSwapChain
     ID3D11Query *timestampDisjointQuery[BUFFER_COUNT];
     ID3D11Query *timestampQuery[BUFFER_COUNT * 2];
     UINT swapInterval = 1;
+    IDXGIOutput6 *output6 = nullptr;
+    DXGI_OUTPUT_DESC1 hdrOutputDesc;
+    QRhiD3D11SwapChainNativeHandles nativeHandlesStruct;
 };
 
 class QRhiD3D11 : public QRhiImplementation
@@ -722,6 +728,7 @@ public:
     D3D_FEATURE_LEVEL featureLevel = D3D_FEATURE_LEVEL(0);
     LUID adapterLuid = {};
     ID3DUserDefinedAnnotation *annotations = nullptr;
+    IDXGIAdapter1 *activeAdapter = nullptr;
     IDXGIFactory1 *dxgiFactory = nullptr;
     bool hasDxgi2 = false;
     bool supportsFlipDiscardSwapchain = false;

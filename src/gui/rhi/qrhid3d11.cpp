@@ -46,7 +46,6 @@
 
 #include <d3dcompiler.h>
 #include <comdef.h>
-#include <dxgi1_3.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -114,6 +113,18 @@ QT_BEGIN_NAMESPACE
     \note The class uses \c{void *} as the type since including the COM-based
     \c{d3d11.h} headers is not acceptable here. The actual types are
     \c{ID3D11Device *} and \c{ID3D11DeviceContext *}.
+ */
+
+/*!
+    \class QRhiD3D11SwapChainNativeHandles
+    \internal
+    \inmodule QtGui
+    \brief Exposes D3D/DXGI specific data for a swapchain
+
+    dxgiOutput6 is the IDXGIOutput6* for the swapchain's current output, if
+    supported, null otherwise. The current output is determined based on the
+    position of the swapchain's associated window at the time of calling
+    QRhiSwapChain::createOrResize().
  */
 
 // help mingw with its ancient sdk headers
@@ -246,7 +257,7 @@ bool QRhiD3D11::create(QRhi::Flags flags)
             }
         }
 
-        IDXGIAdapter1 *adapterToUse = nullptr;
+        activeAdapter = nullptr;
         for (int adapterIndex = 0; dxgiFactory->EnumAdapters1(UINT(adapterIndex), &adapter) != DXGI_ERROR_NOT_FOUND; ++adapterIndex) {
             DXGI_ADAPTER_DESC1 desc;
             adapter->GetDesc1(&desc);
@@ -257,8 +268,8 @@ bool QRhiD3D11::create(QRhi::Flags flags)
                     desc.VendorId,
                     desc.DeviceId,
                     desc.Flags);
-            if (!adapterToUse && (requestedAdapterIndex < 0 || requestedAdapterIndex == adapterIndex)) {
-                adapterToUse = adapter;
+            if (!activeAdapter && (requestedAdapterIndex < 0 || requestedAdapterIndex == adapterIndex)) {
+                activeAdapter = adapter;
                 adapterLuid = desc.AdapterLuid;
                 driverInfoStruct.deviceName = name.toUtf8();
                 driverInfoStruct.deviceId = desc.DeviceId;
@@ -268,7 +279,7 @@ bool QRhiD3D11::create(QRhi::Flags flags)
                 adapter->Release();
             }
         }
-        if (!adapterToUse) {
+        if (!activeAdapter) {
             qWarning("No adapter");
             return false;
         }
@@ -283,7 +294,7 @@ bool QRhiD3D11::create(QRhi::Flags flags)
         }
 
         ID3D11DeviceContext *ctx = nullptr;
-        HRESULT hr = D3D11CreateDevice(adapterToUse, D3D_DRIVER_TYPE_UNKNOWN, nullptr, devFlags,
+        HRESULT hr = D3D11CreateDevice(activeAdapter, D3D_DRIVER_TYPE_UNKNOWN, nullptr, devFlags,
                                        requestFeatureLevels ? requestedFeatureLevels.constData() : nullptr,
                                        requestFeatureLevels ? requestedFeatureLevels.count() : 0,
                                        D3D11_SDK_VERSION,
@@ -293,13 +304,12 @@ bool QRhiD3D11::create(QRhi::Flags flags)
             qCDebug(QRHI_LOG_INFO, "Debug layer was requested but is not available. "
                                    "Attempting to create D3D11 device without it.");
             devFlags &= ~D3D11_CREATE_DEVICE_DEBUG;
-            hr = D3D11CreateDevice(adapterToUse, D3D_DRIVER_TYPE_UNKNOWN, nullptr, devFlags,
+            hr = D3D11CreateDevice(activeAdapter, D3D_DRIVER_TYPE_UNKNOWN, nullptr, devFlags,
                                    requestFeatureLevels ? requestedFeatureLevels.constData() : nullptr,
                                    requestFeatureLevels ? requestedFeatureLevels.count() : 0,
                                    D3D11_SDK_VERSION,
                                    &dev, &featureLevel, &ctx);
         }
-        adapterToUse->Release();
         if (FAILED(hr)) {
             qWarning("Failed to create D3D11 device and context: %s", qPrintable(comErrorMessage(hr)));
             return false;
@@ -377,6 +387,11 @@ void QRhiD3D11::destroy()
             dev->Release();
             dev = nullptr;
         }
+    }
+
+    if (activeAdapter) {
+        activeAdapter->Release();
+        activeAdapter = nullptr;
     }
 
     if (dxgiFactory) {
@@ -4401,6 +4416,11 @@ void QD3D11SwapChain::destroy()
     swapChain->Release();
     swapChain = nullptr;
 
+    if (output6) {
+        output6->Release();
+        output6 = nullptr;
+    }
+
     QRHI_RES_RHI(QRhiD3D11);
     if (rhiD) {
         QRHI_PROF;
@@ -4423,6 +4443,62 @@ QSize QD3D11SwapChain::surfacePixelSize()
 {
     Q_ASSERT(m_window);
     return m_window->size() * m_window->devicePixelRatio();
+}
+
+static bool output6ForWindow(QWindow *w, IDXGIAdapter1 *adapter, IDXGIOutput6 **result)
+{
+    bool ok = false;
+    QRect wr = w->geometry();
+    wr = QRect(wr.topLeft() * w->devicePixelRatio(), wr.size() * w->devicePixelRatio());
+    const QPoint center = wr.center();
+    IDXGIOutput *currentOutput = nullptr;
+    IDXGIOutput *output = nullptr;
+    for (UINT i = 0; adapter->EnumOutputs(i, &output) != DXGI_ERROR_NOT_FOUND; ++i) {
+        DXGI_OUTPUT_DESC desc;
+        output->GetDesc(&desc);
+        const RECT r = desc.DesktopCoordinates;
+        const QRect dr(QPoint(r.left, r.top), QPoint(r.right - 1, r.bottom - 1));
+        if (dr.contains(center)) {
+            currentOutput = output;
+            break;
+        } else {
+            output->Release();
+        }
+    }
+    if (currentOutput) {
+        ok = SUCCEEDED(currentOutput->QueryInterface(__uuidof(IDXGIOutput6), reinterpret_cast<void **>(result)));
+        currentOutput->Release();
+    }
+    return ok;
+}
+
+static bool outputDesc1ForWindow(QWindow *w, IDXGIAdapter1 *adapter, DXGI_OUTPUT_DESC1 *result)
+{
+    bool ok = false;
+    IDXGIOutput6 *out6 = nullptr;
+    if (output6ForWindow(w, adapter, &out6)) {
+        ok = SUCCEEDED(out6->GetDesc1(result));
+        out6->Release();
+    }
+    return ok;
+}
+
+bool QD3D11SwapChain::isFormatSupported(Format f)
+{
+    if (f == SDR)
+        return true;
+
+    if (!m_window) {
+        qWarning("Attempted to call isFormatSupported() without a window set");
+        return false;
+    }
+
+    QRHI_RES_RHI(QRhiD3D11);
+    DXGI_OUTPUT_DESC1 desc1;
+    if (outputDesc1ForWindow(m_window, rhiD->activeAdapter, &desc1))
+        return desc1.ColorSpace == DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020;
+
+    return false;
 }
 
 QRhiRenderPassDescriptor *QD3D11SwapChain::newCompatibleRenderPassDescriptor()
@@ -4466,6 +4542,9 @@ bool QD3D11SwapChain::newColorBuffer(const QSize &size, DXGI_FORMAT format, DXGI
     return true;
 }
 
+static const DXGI_FORMAT DEFAULT_FORMAT = DXGI_FORMAT_R8G8B8A8_UNORM;
+static const DXGI_FORMAT DEFAULT_SRGB_FORMAT = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+
 bool QD3D11SwapChain::createOrResize()
 {
     // Can be called multiple times due to window resizes - that is not the
@@ -4485,17 +4564,15 @@ bool QD3D11SwapChain::createOrResize()
     if (pixelSize.isEmpty())
         return false;
 
-    colorFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
-    const DXGI_FORMAT srgbAdjustedFormat = m_flags.testFlag(sRGB) ?
-                DXGI_FORMAT_R8G8B8A8_UNORM_SRGB : DXGI_FORMAT_R8G8B8A8_UNORM;
-
-    const UINT swapChainFlags = 0;
-
     QRHI_RES_RHI(QRhiD3D11);
     bool useFlipDiscard = rhiD->hasDxgi2 && rhiD->supportsFlipDiscardSwapchain;
+
+    const UINT swapChainFlags = 0;
     if (!swapChain) {
         HWND hwnd = reinterpret_cast<HWND>(window->winId());
         sampleDesc = rhiD->effectiveSampleCount(m_sampleCount);
+        colorFormat = DEFAULT_FORMAT;
+        srgbAdjustedColorFormat = m_flags.testFlag(sRGB) ? DEFAULT_SRGB_FORMAT : DEFAULT_FORMAT;
 
         // Take a shortcut for alpha: our QWindow is OpenGLSurface so whatever
         // the platform plugin does to enable transparency for OpenGL window
@@ -4511,6 +4588,38 @@ bool QD3D11SwapChain::createOrResize()
 
         HRESULT hr;
         if (useFlipDiscard) {
+            DXGI_COLOR_SPACE_TYPE hdrColorSpace = DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P709; // SDR
+            if (output6) {
+                output6->Release();
+                output6 = nullptr;
+            }
+            if (output6ForWindow(m_window, rhiD->activeAdapter, &output6) && m_format != SDR) {
+                // https://docs.microsoft.com/en-us/windows/win32/direct3darticles/high-dynamic-range
+                output6->GetDesc1(&hdrOutputDesc);
+                if (hdrOutputDesc.ColorSpace == DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020) {
+                    switch (m_format) {
+                    case HDRExtendedSrgbLinear:
+                        colorFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
+                        hdrColorSpace = DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709;
+                        srgbAdjustedColorFormat = colorFormat;
+                        break;
+                    case HDR10:
+                        colorFormat = DXGI_FORMAT_R10G10B10A2_UNORM;
+                        hdrColorSpace = DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020;
+                        srgbAdjustedColorFormat = colorFormat;
+                        break;
+                    default:
+                        break;
+                    }
+                } else {
+                    // This happens also when Use HDR is set to Off in the Windows
+                    // Display settings. Show a helpful warning, but continue with the
+                    // default non-HDR format.
+                    qWarning("The output associated with the window is not HDR capable "
+                             "(or Use HDR is Off in the Display Settings), ignoring HDR format request");
+                }
+            }
+
             // We use FLIP_DISCARD which implies a buffer count of 2 (as opposed to the
             // old DISCARD with back buffer count == 1). This makes no difference for
             // the rest of the stuff except that automatic MSAA is unsupported and
@@ -4532,11 +4641,33 @@ bool QD3D11SwapChain::createOrResize()
             // path for now when alpha is requested.
             desc.Flags = swapChainFlags;
 
+            IDXGIFactory2 *fac = static_cast<IDXGIFactory2 *>(rhiD->dxgiFactory);
             IDXGISwapChain1 *sc1;
-            hr = static_cast<IDXGIFactory2 *>(rhiD->dxgiFactory)->CreateSwapChainForHwnd(rhiD->dev, hwnd, &desc,
-                                                                                         nullptr, nullptr, &sc1);
-            if (SUCCEEDED(hr))
+            hr = fac->CreateSwapChainForHwnd(rhiD->dev, hwnd, &desc, nullptr, nullptr, &sc1);
+
+            // If failed and we tried a HDR format, then try with SDR. This
+            // matches other backends, such as Vulkan where if the format is
+            // not supported, the default one is used instead.
+            if (FAILED(hr) && m_format != SDR) {
+                colorFormat = DEFAULT_FORMAT;
+                desc.Format = DEFAULT_FORMAT;
+                hr = fac->CreateSwapChainForHwnd(rhiD->dev, hwnd, &desc, nullptr, nullptr, &sc1);
+            }
+
+            if (SUCCEEDED(hr)) {
                 swapChain = sc1;
+                if (m_format != SDR) {
+                    IDXGISwapChain3 *sc3 = nullptr;
+                    if (SUCCEEDED(sc1->QueryInterface(IID_IDXGISwapChain3, reinterpret_cast<void **>(&sc3)))) {
+                        hr = sc3->SetColorSpace1(hdrColorSpace);
+                        if (FAILED(hr))
+                            qWarning("Failed to set color space on swapchain: %s", qPrintable(comErrorMessage(hr)));
+                        sc3->Release();
+                    } else {
+                        qWarning("IDXGISwapChain3 not available, HDR swapchain will not work as expected");
+                    }
+                }
+            }
         } else {
             // Windows 7 for instance. Use DISCARD mode. Regardless, keep on
             // using our manual resolve for symmetry with the FLIP_DISCARD code
@@ -4600,7 +4731,7 @@ bool QD3D11SwapChain::createOrResize()
     }
     D3D11_RENDER_TARGET_VIEW_DESC rtvDesc;
     memset(&rtvDesc, 0, sizeof(rtvDesc));
-    rtvDesc.Format = srgbAdjustedFormat;
+    rtvDesc.Format = srgbAdjustedColorFormat;
     rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
     hr = rhiD->dev->CreateRenderTargetView(backBufferTex, &rtvDesc, &backBufferRtv);
     if (FAILED(hr)) {
@@ -4611,7 +4742,7 @@ bool QD3D11SwapChain::createOrResize()
     // Try to reduce stalls by having a dedicated MSAA texture per swapchain buffer.
     for (int i = 0; i < BUFFER_COUNT; ++i) {
         if (sampleDesc.Count > 1) {
-            if (!newColorBuffer(pixelSize, srgbAdjustedFormat, sampleDesc, &msaaTex[i], &msaaRtv[i]))
+            if (!newColorBuffer(pixelSize, srgbAdjustedColorFormat, sampleDesc, &msaaTex[i], &msaaRtv[i]))
                 return false;
         }
     }
@@ -4679,6 +4810,12 @@ bool QD3D11SwapChain::createOrResize()
         rhiD->registerResource(this);
 
     return true;
+}
+
+const QRhiNativeHandles *QD3D11SwapChain::nativeHandles()
+{
+    nativeHandlesStruct.dxgiOutput6 = output6;
+    return &nativeHandlesStruct;
 }
 
 void QRhiD3D11::DeviceCurse::initResources()
