@@ -115,18 +115,6 @@ QT_BEGIN_NAMESPACE
     \c{ID3D11Device *} and \c{ID3D11DeviceContext *}.
  */
 
-/*!
-    \class QRhiD3D11SwapChainNativeHandles
-    \internal
-    \inmodule QtGui
-    \brief Exposes D3D/DXGI specific data for a swapchain
-
-    dxgiOutput6 is the IDXGIOutput6* for the swapchain's current output, if
-    supported, null otherwise. The current output is determined based on the
-    position of the swapchain's associated window at the time of calling
-    QRhiSwapChain::createOrResize().
- */
-
 // help mingw with its ancient sdk headers
 #ifndef DXGI_ADAPTER_FLAG_SOFTWARE
 #define DXGI_ADAPTER_FLAG_SOFTWARE 2
@@ -4376,11 +4364,6 @@ void QD3D11SwapChain::destroy()
     swapChain->Release();
     swapChain = nullptr;
 
-    if (output6) {
-        output6->Release();
-        output6 = nullptr;
-    }
-
     QRHI_RES_RHI(QRhiD3D11);
     if (rhiD)
         rhiD->unregisterResource(this);
@@ -4456,6 +4439,22 @@ bool QD3D11SwapChain::isFormatSupported(Format f)
         return desc1.ColorSpace == DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020;
 
     return false;
+}
+
+QRhiSwapChainHdrInfo QD3D11SwapChain::hdrInfo()
+{
+    QRhiSwapChainHdrInfo info = QRhiSwapChain::hdrInfo();
+    if (m_format != QRhiSwapChain::SDR && m_window) {
+        QRHI_RES_RHI(QRhiD3D11);
+        DXGI_OUTPUT_DESC1 hdrOutputDesc;
+        if (outputDesc1ForWindow(m_window, rhiD->activeAdapter, &hdrOutputDesc)) {
+            info.isHardCodedDefaults = false;
+            info.limitsType = QRhiSwapChainHdrInfo::LuminanceInNits;
+            info.limits.luminanceInNits.minLuminance = hdrOutputDesc.MinLuminance;
+            info.limits.luminanceInNits.maxLuminance = hdrOutputDesc.MaxLuminance;
+        }
+    }
+    return info;
 }
 
 QRhiRenderPassDescriptor *QD3D11SwapChain::newCompatibleRenderPassDescriptor()
@@ -4546,13 +4545,9 @@ bool QD3D11SwapChain::createOrResize()
         HRESULT hr;
         if (useFlipDiscard) {
             DXGI_COLOR_SPACE_TYPE hdrColorSpace = DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P709; // SDR
-            if (output6) {
-                output6->Release();
-                output6 = nullptr;
-            }
-            if (output6ForWindow(m_window, rhiD->activeAdapter, &output6) && m_format != SDR) {
+            DXGI_OUTPUT_DESC1 hdrOutputDesc;
+            if (outputDesc1ForWindow(m_window, rhiD->activeAdapter, &hdrOutputDesc) && m_format != SDR) {
                 // https://docs.microsoft.com/en-us/windows/win32/direct3darticles/high-dynamic-range
-                output6->GetDesc1(&hdrOutputDesc);
                 if (hdrOutputDesc.ColorSpace == DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020) {
                     switch (m_format) {
                     case HDRExtendedSrgbLinear:
@@ -4765,12 +4760,6 @@ bool QD3D11SwapChain::createOrResize()
         rhiD->registerResource(this);
 
     return true;
-}
-
-const QRhiNativeHandles *QD3D11SwapChain::nativeHandles()
-{
-    nativeHandlesStruct.dxgiOutput6 = output6;
-    return &nativeHandlesStruct;
 }
 
 void QRhiD3D11::DeviceCurse::initResources()

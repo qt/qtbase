@@ -76,11 +76,6 @@ struct Q_GUI_EXPORT QRhiD3D11NativeHandles : public QRhiNativeHandles
     qint32 adapterLuidHigh = 0;
 };
 
-struct Q_GUI_EXPORT QRhiD3D11SwapChainNativeHandles : public QRhiNativeHandles
-{
-    void *dxgiOutput6 = nullptr;
-};
-
 QT_END_NAMESPACE
 
 #endif

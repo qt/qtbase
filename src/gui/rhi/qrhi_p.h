@@ -1313,6 +1313,31 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(QRhiGraphicsPipeline::Flags)
 Q_DECLARE_OPERATORS_FOR_FLAGS(QRhiGraphicsPipeline::ColorMask)
 Q_DECLARE_TYPEINFO(QRhiGraphicsPipeline::TargetBlend, Q_RELOCATABLE_TYPE);
 
+struct QRhiSwapChainHdrInfo
+{
+    bool isHardCodedDefaults;
+    enum LimitsType {
+        LuminanceInNits,
+        ColorComponentValue
+    };
+    LimitsType limitsType;
+    union {
+        struct {
+            float minLuminance;
+            float maxLuminance;
+        } luminanceInNits;
+        struct {
+            float maxColorComponentValue;
+        } colorComponentValue;
+    } limits;
+};
+
+Q_DECLARE_TYPEINFO(QRhiSwapChainHdrInfo, Q_RELOCATABLE_TYPE);
+
+#ifndef QT_NO_DEBUG_STREAM
+Q_GUI_EXPORT QDebug operator<<(QDebug, const QRhiSwapChainHdrInfo &);
+#endif
+
 class Q_GUI_EXPORT QRhiSwapChain : public QRhiResource
 {
 public:
@@ -1360,8 +1385,7 @@ public:
     virtual bool isFormatSupported(Format f) = 0;
     virtual QRhiRenderPassDescriptor *newCompatibleRenderPassDescriptor() = 0;
     virtual bool createOrResize() = 0;
-
-    virtual const QRhiNativeHandles *nativeHandles();
+    virtual QRhiSwapChainHdrInfo hdrInfo();
 
 protected:
     QRhiSwapChain(QRhiImplementation *rhi);

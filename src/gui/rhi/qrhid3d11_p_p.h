@@ -560,10 +560,10 @@ struct QD3D11SwapChain : public QRhiSwapChain
 
     QSize surfacePixelSize() override;
     bool isFormatSupported(Format f) override;
+    QRhiSwapChainHdrInfo hdrInfo() override;
 
     QRhiRenderPassDescriptor *newCompatibleRenderPassDescriptor() override;
     bool createOrResize() override;
-    const QRhiNativeHandles *nativeHandles() override;
 
     void releaseBuffers();
     bool newColorBuffer(const QSize &size, DXGI_FORMAT format, DXGI_SAMPLE_DESC sampleDesc,
@@ -589,9 +589,6 @@ struct QD3D11SwapChain : public QRhiSwapChain
     ID3D11Query *timestampDisjointQuery[BUFFER_COUNT];
     ID3D11Query *timestampQuery[BUFFER_COUNT * 2];
     UINT swapInterval = 1;
-    IDXGIOutput6 *output6 = nullptr;
-    DXGI_OUTPUT_DESC1 hdrOutputDesc;
-    QRhiD3D11SwapChainNativeHandles nativeHandlesStruct;
 };
 
 class QRhiD3D11 : public QRhiImplementation

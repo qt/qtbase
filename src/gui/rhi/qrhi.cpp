@@ -4465,17 +4465,36 @@ QRhiResource::Type QRhiSwapChain::resourceType() const
     Regardless of the return value, calling destroy() is always safe.
  */
 
-/*!
-    \return a pointer to a backend-specific QRhiNativeHandles subclass, such as
-    QRhiD3D11SwapChainNativeHandles. The returned value is \nullptr when
-    exposing the underlying native resources is not supported by the backend.
-
-    \sa QRhiD3D11SwapChainNativeHandles
- */
-const QRhiNativeHandles *QRhiSwapChain::nativeHandles()
+QRhiSwapChainHdrInfo QRhiSwapChain::hdrInfo()
 {
-    return nullptr;
+    QRhiSwapChainHdrInfo info;
+    info.isHardCodedDefaults = true;
+    info.limitsType = QRhiSwapChainHdrInfo::LuminanceInNits;
+    info.limits.luminanceInNits.minLuminance = 0.0f;
+    info.limits.luminanceInNits.maxLuminance = 1000.0f;
+    return info;
 }
+
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug dbg, const QRhiSwapChainHdrInfo &info)
+{
+    QDebugStateSaver saver(dbg);
+    dbg.nospace() << "QRhiSwapChainHdrInfo(" << (info.isHardCodedDefaults ? "with hard-coded defaults" : "queried from system");
+    switch (info.limitsType) {
+    case QRhiSwapChainHdrInfo::LuminanceInNits:
+        dbg.nospace() << " minLuminance=" << info.limits.luminanceInNits.minLuminance
+                      << " maxLuminance=" << info.limits.luminanceInNits.maxLuminance;
+        break;
+    case QRhiSwapChainHdrInfo::ColorComponentValue:
+        dbg.nospace() << " maxColorComponentValue=" << info.limits.colorComponentValue.maxColorComponentValue;
+        break;
+    default:
+        break;
+    }
+    dbg.nospace() << ')';
+    return dbg;
+}
+#endif
 
 /*!
     \class QRhiComputePipeline
