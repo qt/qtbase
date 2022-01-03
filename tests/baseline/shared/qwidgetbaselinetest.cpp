@@ -184,6 +184,4 @@ void QWidgetBaselineTest::takeStandardSnapshots()
         window->focusWidget()->clearFocus();
 }
 
-#include "qwidgetbaselinetest.moc"
-
 QT_END_NAMESPACE
