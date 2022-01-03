@@ -2027,22 +2027,24 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                     cachePainter.setPen(d->topShadow());
                     cachePainter.drawLine(QPoint(r.left() + 2, r.top() + 1), QPoint(r.right() - 2, r.top() + 1));
 
-                    // Draw button gradient
-                    QColor buttonColor = d->buttonColor(option->palette);
-                    QRect updownRect = upRect.adjusted(0, -2, 0, downRect.height() + 2);
-                    QLinearGradient gradient = qt_fusion_gradient(updownRect, (isEnabled && option->state & State_MouseOver ) ? buttonColor : buttonColor.darker(104));
+                    if (!upRect.isNull()) {
+                        // Draw button gradient
+                        const QColor buttonColor = d->buttonColor(option->palette);
+                        const QRect updownRect = upRect.adjusted(0, -2, 0, downRect.height() + 2);
+                        const QLinearGradient gradient = qt_fusion_gradient(updownRect, (isEnabled && option->state & State_MouseOver )
+                                                       ? buttonColor : buttonColor.darker(104));
 
-                    // Draw button gradient
-                    cachePainter.setPen(Qt::NoPen);
-                    cachePainter.setBrush(gradient);
+                        cachePainter.setPen(Qt::NoPen);
+                        cachePainter.setBrush(gradient);
 
-                    cachePainter.save();
-                    cachePainter.setClipRect(updownRect);
-                    cachePainter.drawRoundedRect(r.adjusted(0, 0, -1, -1), 2, 2);
-                    cachePainter.setPen(QPen(d->innerContrastLine()));
-                    cachePainter.setBrush(Qt::NoBrush);
-                    cachePainter.drawRoundedRect(r.adjusted(1, 1, -2, -2), 2, 2);
-                    cachePainter.restore();
+                        cachePainter.save();
+                        cachePainter.setClipRect(updownRect);
+                        cachePainter.drawRoundedRect(r.adjusted(0, 0, -1, -1), 2, 2);
+                        cachePainter.setPen(QPen(d->innerContrastLine()));
+                        cachePainter.setBrush(Qt::NoBrush);
+                        cachePainter.drawRoundedRect(r.adjusted(1, 1, -2, -2), 2, 2);
+                        cachePainter.restore();
+                    }
 
                     if ((spinBox->stepEnabled & QAbstractSpinBox::StepUpEnabled) && upIsActive) {
                         if (sunken)
@@ -2070,12 +2072,14 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                     cachePainter.restore();
                 }
 
-                // outline the up/down buttons
-                cachePainter.setPen(outline);
-                if (spinBox->direction == Qt::RightToLeft) {
-                    cachePainter.drawLine(upRect.right(), upRect.top() - 1, upRect.right(), downRect.bottom() + 1);
-                } else {
-                    cachePainter.drawLine(upRect.left(), upRect.top() - 1, upRect.left(), downRect.bottom() + 1);
+                if (spinBox->buttonSymbols != QAbstractSpinBox::NoButtons) {
+                    // buttonSymbols == NoButtons results in 'null' rects
+                    // and a tiny rect painted in the corner.
+                    cachePainter.setPen(outline);
+                    if (spinBox->direction == Qt::RightToLeft)
+                        cachePainter.drawLine(upRect.right(), upRect.top() - 1, upRect.right(), downRect.bottom() + 1);
+                    else
+                        cachePainter.drawLine(upRect.left(), upRect.top() - 1, upRect.left(), downRect.bottom() + 1);
                 }
 
                 if (upIsActive && sunken) {
