@@ -141,6 +141,7 @@ if(NOT QT_BUILD_STANDALONE_TESTS)
     if(WASM)
         # Needed when building for WebAssembly.
         include(cmake/QtWasmHelpers.cmake)
+        include(src/corelib/Qt6WasmMacros.cmake)
         qt_internal_setup_wasm_target_properties(Platform)
     endif()
 
