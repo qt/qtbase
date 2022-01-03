@@ -1007,7 +1007,7 @@ public:
         uint texture3D : 1;
     } caps;
     QGles2SwapChain *currentSwapChain = nullptr;
-    QList<GLint> supportedCompressedFormats;
+    QSet<GLint> supportedCompressedFormats;
     mutable QList<int> supportedSampleCountList;
     QRhiGles2NativeHandles nativeHandlesStruct;
     QRhiDriverInfo driverInfoStruct;

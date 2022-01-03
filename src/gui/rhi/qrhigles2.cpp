@@ -543,6 +543,58 @@ bool QRhiGles2::ensureContext(QSurface *surface) const
     return true;
 }
 
+static inline GLenum toGlCompressedTextureFormat(QRhiTexture::Format format, QRhiTexture::Flags flags)
+{
+    const bool srgb = flags.testFlag(QRhiTexture::sRGB);
+    switch (format) {
+    case QRhiTexture::BC1:
+        return srgb ? 0x8C4C : 0x83F0;
+    case QRhiTexture::BC2:
+        return srgb ? 0x8C4E : 0x83F2;
+    case QRhiTexture::BC3:
+        return srgb ? 0x8C4F : 0x83F3;
+
+    case QRhiTexture::ETC2_RGB8:
+        return srgb ? 0x9275 : 0x9274;
+    case QRhiTexture::ETC2_RGB8A1:
+        return srgb ? 0x9277 : 0x9276;
+    case QRhiTexture::ETC2_RGBA8:
+        return srgb ? 0x9279 : 0x9278;
+
+    case QRhiTexture::ASTC_4x4:
+        return srgb ? 0x93D0 : 0x93B0;
+    case QRhiTexture::ASTC_5x4:
+        return srgb ? 0x93D1 : 0x93B1;
+    case QRhiTexture::ASTC_5x5:
+        return srgb ? 0x93D2 : 0x93B2;
+    case QRhiTexture::ASTC_6x5:
+        return srgb ? 0x93D3 : 0x93B3;
+    case QRhiTexture::ASTC_6x6:
+        return srgb ? 0x93D4 : 0x93B4;
+    case QRhiTexture::ASTC_8x5:
+        return srgb ? 0x93D5 : 0x93B5;
+    case QRhiTexture::ASTC_8x6:
+        return srgb ? 0x93D6 : 0x93B6;
+    case QRhiTexture::ASTC_8x8:
+        return srgb ? 0x93D7 : 0x93B7;
+    case QRhiTexture::ASTC_10x5:
+        return srgb ? 0x93D8 : 0x93B8;
+    case QRhiTexture::ASTC_10x6:
+        return srgb ? 0x93D9 : 0x93B9;
+    case QRhiTexture::ASTC_10x8:
+        return srgb ? 0x93DA : 0x93BA;
+    case QRhiTexture::ASTC_10x10:
+        return srgb ? 0x93DB : 0x93BB;
+    case QRhiTexture::ASTC_12x10:
+        return srgb ? 0x93DC : 0x93BC;
+    case QRhiTexture::ASTC_12x12:
+        return srgb ? 0x93DD : 0x93BD;
+
+    default:
+        return 0; // this is reachable, just return an invalid format
+    }
+}
+
 bool QRhiGles2::create(QRhi::Flags flags)
 {
     Q_ASSERT(fallbackSurface);
@@ -598,9 +650,57 @@ bool QRhiGles2::create(QRhi::Flags flags)
 
     GLint n = 0;
     f->glGetIntegerv(GL_NUM_COMPRESSED_TEXTURE_FORMATS, &n);
-    supportedCompressedFormats.resize(n);
-    if (n > 0)
-        f->glGetIntegerv(GL_COMPRESSED_TEXTURE_FORMATS, supportedCompressedFormats.data());
+    if (n > 0) {
+        QVarLengthArray<GLint, 16> compressedTextureFormats(n);
+        f->glGetIntegerv(GL_COMPRESSED_TEXTURE_FORMATS, compressedTextureFormats.data());
+        for (GLint format : compressedTextureFormats)
+            supportedCompressedFormats.insert(format);
+
+    }
+    // The above looks nice, if only it worked always. With GLES the list we
+    // query is likely the full list of compressed formats (mostly anything
+    // that can be decoded). With OpenGL however the list is not required to
+    // include all formats due to the way the spec is worded. For instance, we
+    // cannot rely on ASTC formats being present in the list on non-ES. Some
+    // drivers do include them (Intel, NVIDIA), some don't (Mesa). On the other
+    // hand, relying on extension strings only is not ok: for example, Intel
+    // reports GL_KHR_texture_compression_astc_ldr whereas NVIDIA doesn't. So
+    // the only reasonable thing to do is to query the list always and then see
+    // if there is something we can add - if not already in there.
+    std::array<QRhiTexture::Flags, 2> textureVariantFlags;
+    textureVariantFlags[0] = {};
+    textureVariantFlags[1] = QRhiTexture::sRGB;
+    if (f->hasOpenGLExtension(QOpenGLExtensions::DDSTextureCompression)) {
+        for (QRhiTexture::Flags f : textureVariantFlags) {
+            supportedCompressedFormats.insert(toGlCompressedTextureFormat(QRhiTexture::BC1, f));
+            supportedCompressedFormats.insert(toGlCompressedTextureFormat(QRhiTexture::BC2, f));
+            supportedCompressedFormats.insert(toGlCompressedTextureFormat(QRhiTexture::BC3, f));
+        }
+    }
+    if (f->hasOpenGLExtension(QOpenGLExtensions::ETC2TextureCompression)) {
+        for (QRhiTexture::Flags f : textureVariantFlags) {
+            supportedCompressedFormats.insert(toGlCompressedTextureFormat(QRhiTexture::ETC2_RGB8, f));
+            supportedCompressedFormats.insert(toGlCompressedTextureFormat(QRhiTexture::ETC2_RGB8A1, f));
+            supportedCompressedFormats.insert(toGlCompressedTextureFormat(QRhiTexture::ETC2_RGBA8, f));
+        }
+    }
+    if (f->hasOpenGLExtension(QOpenGLExtensions::ASTCTextureCompression)) {
+        for (QRhiTexture::Flags f : textureVariantFlags) {
+            supportedCompressedFormats.insert(toGlCompressedTextureFormat(QRhiTexture::ASTC_4x4, f));
+            supportedCompressedFormats.insert(toGlCompressedTextureFormat(QRhiTexture::ASTC_5x4, f));
+            supportedCompressedFormats.insert(toGlCompressedTextureFormat(QRhiTexture::ASTC_5x5, f));
+            supportedCompressedFormats.insert(toGlCompressedTextureFormat(QRhiTexture::ASTC_6x5, f));
+            supportedCompressedFormats.insert(toGlCompressedTextureFormat(QRhiTexture::ASTC_6x6, f));
+            supportedCompressedFormats.insert(toGlCompressedTextureFormat(QRhiTexture::ASTC_8x5, f));
+            supportedCompressedFormats.insert(toGlCompressedTextureFormat(QRhiTexture::ASTC_8x6, f));
+            supportedCompressedFormats.insert(toGlCompressedTextureFormat(QRhiTexture::ASTC_8x8, f));
+            supportedCompressedFormats.insert(toGlCompressedTextureFormat(QRhiTexture::ASTC_10x5, f));
+            supportedCompressedFormats.insert(toGlCompressedTextureFormat(QRhiTexture::ASTC_10x8, f));
+            supportedCompressedFormats.insert(toGlCompressedTextureFormat(QRhiTexture::ASTC_10x10, f));
+            supportedCompressedFormats.insert(toGlCompressedTextureFormat(QRhiTexture::ASTC_12x10, f));
+            supportedCompressedFormats.insert(toGlCompressedTextureFormat(QRhiTexture::ASTC_12x12, f));
+        }
+    }
 
     f->glGetIntegerv(GL_MAX_TEXTURE_SIZE, &caps.maxTextureSize);
 
@@ -868,58 +968,6 @@ bool QRhiGles2::isClipDepthZeroToOne() const
 QMatrix4x4 QRhiGles2::clipSpaceCorrMatrix() const
 {
     return QMatrix4x4(); // identity
-}
-
-static inline GLenum toGlCompressedTextureFormat(QRhiTexture::Format format, QRhiTexture::Flags flags)
-{
-    const bool srgb = flags.testFlag(QRhiTexture::sRGB);
-    switch (format) {
-    case QRhiTexture::BC1:
-        return srgb ? 0x8C4C : 0x83F0;
-    case QRhiTexture::BC2:
-        return srgb ? 0x8C4E : 0x83F2;
-    case QRhiTexture::BC3:
-        return srgb ? 0x8C4F : 0x83F3;
-
-    case QRhiTexture::ETC2_RGB8:
-        return srgb ? 0x9275 : 0x9274;
-    case QRhiTexture::ETC2_RGB8A1:
-        return srgb ? 0x9277 : 0x9276;
-    case QRhiTexture::ETC2_RGBA8:
-        return srgb ? 0x9279 : 0x9278;
-
-    case QRhiTexture::ASTC_4x4:
-        return srgb ? 0x93D0 : 0x93B0;
-    case QRhiTexture::ASTC_5x4:
-        return srgb ? 0x93D1 : 0x93B1;
-    case QRhiTexture::ASTC_5x5:
-        return srgb ? 0x93D2 : 0x93B2;
-    case QRhiTexture::ASTC_6x5:
-        return srgb ? 0x93D3 : 0x93B3;
-    case QRhiTexture::ASTC_6x6:
-        return srgb ? 0x93D4 : 0x93B4;
-    case QRhiTexture::ASTC_8x5:
-        return srgb ? 0x93D5 : 0x93B5;
-    case QRhiTexture::ASTC_8x6:
-        return srgb ? 0x93D6 : 0x93B6;
-    case QRhiTexture::ASTC_8x8:
-        return srgb ? 0x93D7 : 0x93B7;
-    case QRhiTexture::ASTC_10x5:
-        return srgb ? 0x93D8 : 0x93B8;
-    case QRhiTexture::ASTC_10x6:
-        return srgb ? 0x93D9 : 0x93B9;
-    case QRhiTexture::ASTC_10x8:
-        return srgb ? 0x93DA : 0x93BA;
-    case QRhiTexture::ASTC_10x10:
-        return srgb ? 0x93DB : 0x93BB;
-    case QRhiTexture::ASTC_12x10:
-        return srgb ? 0x93DC : 0x93BC;
-    case QRhiTexture::ASTC_12x12:
-        return srgb ? 0x93DD : 0x93BD;
-
-    default:
-        return 0; // this is reachable, just return an invalid format
-    }
 }
 
 static inline void toGlTextureFormat(QRhiTexture::Format format, const QRhiGles2::Caps &caps,
