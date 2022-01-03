@@ -364,6 +364,8 @@ static int qt_gl_resolve_extensions()
         extensions |= QOpenGLExtensions::ETC1TextureCompression;
     if (extensionMatcher.match("GL_IMG_texture_compression_pvrtc"))
         extensions |= QOpenGLExtensions::PVRTCTextureCompression;
+    if (extensionMatcher.match("GL_KHR_texture_compression_astc_ldr"))
+        extensions |= QOpenGLExtensions::ASTCTextureCompression;
     if (extensionMatcher.match("GL_ARB_texture_mirrored_repeat"))
         extensions |= QOpenGLExtensions::MirroredRepeat;
     if (extensionMatcher.match("GL_EXT_stencil_two_side"))
@@ -391,7 +393,8 @@ static int qt_gl_resolve_extensions()
                 | QOpenGLExtensions::FramebufferBlit
                 | QOpenGLExtensions::FramebufferMultisample
                 | QOpenGLExtensions::Sized8Formats
-                | QOpenGLExtensions::StandardDerivatives;
+                | QOpenGLExtensions::StandardDerivatives
+                | QOpenGLExtensions::ETC2TextureCompression;
 #ifndef Q_OS_WASM
             // WebGL 2.0 specification explicitly does not support texture swizzles
             // https://www.khronos.org/registry/webgl/specs/latest/2.0/#5.19
@@ -413,6 +416,8 @@ static int qt_gl_resolve_extensions()
                 extensions |= QOpenGLExtensions::FramebufferMultisample;
             if (extensionMatcher.match("GL_OES_rgb8_rgba8"))
                 extensions |= QOpenGLExtensions::Sized8Formats;
+            if (extensionMatcher.match("GL_OES_compressed_ETC2_RGB8_texture"))
+                extensions |= QOpenGLExtensions::ETC2TextureCompression;
         }
 
         if (extensionMatcher.match("GL_OES_mapbuffer"))
@@ -481,6 +486,9 @@ static int qt_gl_resolve_extensions()
             if (srgbCapableFramebuffers)
                 extensions |= QOpenGLExtensions::SRGBFrameBuffer;
         }
+
+        if (extensionMatcher.match("GL_ARB_ES3_compatibility"))
+            extensions |= QOpenGLExtensions::ETC2TextureCompression;
     }
 
     return extensions;
