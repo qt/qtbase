@@ -148,9 +148,6 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
         device = QTabletEvent::Stylus;
     } else {
         switch (bits & 0x0F06) {
-            case 0x0802:
-                device = QTabletEvent::Stylus;
-                break;
             case 0x0902:
                 device = QTabletEvent::Airbrush;
                 break;
@@ -163,8 +160,8 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
             case 0x0804:
                 device = QTabletEvent::RotationStylus;
                 break;
-            default:
-                device = QTabletEvent::NoDevice;
+            default: // usually 0x0802, but 0 on iPad sidecar with Apple Pencil
+                device = QTabletEvent::Stylus;
         }
     }
     return device;
