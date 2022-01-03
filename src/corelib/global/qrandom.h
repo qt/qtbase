@@ -229,15 +229,9 @@ private:
 
     union Storage {
         uint dummy;
-#ifdef Q_COMPILER_UNRESTRICTED_UNIONS
         RandomEngine twister;
         RandomEngine &engine() { return twister; }
         const RandomEngine &engine() const { return twister; }
-#else
-        std::aligned_storage<sizeof(RandomEngine), alignof(RandomEngine)>::type buffer;
-        RandomEngine &engine() { return reinterpret_cast<RandomEngine &>(buffer); }
-        const RandomEngine &engine() const { return reinterpret_cast<const RandomEngine &>(buffer); }
-#endif
 
         static_assert(std::is_trivially_destructible<RandomEngine>::value,
                           "std::mersenne_twister not trivially destructible as expected");
