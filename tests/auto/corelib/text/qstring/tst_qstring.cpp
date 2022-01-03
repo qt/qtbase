@@ -515,6 +515,7 @@ private slots:
     void macTypes();
     void isEmpty();
     void isNull();
+    void nullness();
     void acc_01();
     void length_data();
     void length();
@@ -1089,6 +1090,51 @@ void tst_QString::isNull()
 }
 
 QT_WARNING_POP
+
+void tst_QString::nullness()
+{
+    {
+        QString s;
+        QVERIFY(s.isNull());
+    }
+    {
+        QString s = nullptr;
+        QVERIFY(s.isNull());
+    }
+    {
+        const char *ptr = nullptr;
+        QString s = ptr;
+        QVERIFY(s.isNull());
+    }
+#ifdef __cpp_char8_t
+    {
+        const char8_t *ptr = nullptr;
+        QString s = ptr;
+        QVERIFY(s.isNull());
+    }
+#endif
+    {
+        QString s(nullptr, 0);
+        QVERIFY(s.isNull());
+    }
+    {
+        const QChar *ptr = nullptr;
+        QString s(ptr, 0);
+        QVERIFY(s.isNull());
+    }
+    {
+        QLatin1String l1;
+        QVERIFY(l1.isNull());
+        QString s = l1;
+        QVERIFY(s.isNull());
+    }
+    {
+        QStringView sv;
+        QVERIFY(sv.isNull());
+        QString s = sv.toString();
+        QVERIFY(s.isNull());
+    }
+}
 
 void tst_QString::isEmpty()
 {

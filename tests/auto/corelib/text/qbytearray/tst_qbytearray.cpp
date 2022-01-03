@@ -95,6 +95,7 @@ private slots:
     void number_double();
     void number_base_data();
     void number_base();
+    void nullness();
     void blockSizeCalculations();
 
     void resizeAfterFromRawData();
@@ -1358,6 +1359,38 @@ void tst_QByteArray::number_base()
     } else if (n <= std::numeric_limits<long>::max()) {
         QCOMPARE(QByteArray::number(long(n), base), expected);
         QCOMPARE(QByteArray::number(long(-n), base), '-' + expected);
+    }
+}
+
+void tst_QByteArray::nullness()
+{
+    {
+        QByteArray ba;
+        QVERIFY(ba.isNull());
+    }
+    {
+        QByteArray ba = nullptr;
+        QVERIFY(ba.isNull());
+    }
+    {
+        const char *ptr = nullptr;
+        QByteArray ba = ptr;
+        QVERIFY(ba.isNull());
+    }
+    {
+        QByteArray ba(nullptr, 0);
+        QVERIFY(ba.isNull());
+    }
+    {
+        const char *ptr = nullptr;
+        QByteArray ba(ptr, 0);
+        QVERIFY(ba.isNull());
+    }
+    {
+        QByteArrayView bav;
+        QVERIFY(bav.isNull());
+        QByteArray ba = bav.toByteArray();
+        QVERIFY(ba.isNull());
     }
 }
 
