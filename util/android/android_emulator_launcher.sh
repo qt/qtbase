@@ -31,7 +31,6 @@
 
 set -ex
 
-EMULATOR_TIMEOUT=30
 EMULATOR_MAX_RETRIES=5
 EMULATOR_EXEC="$ANDROID_SDK_ROOT/emulator/emulator"
 ADB_EXEC="$ANDROID_SDK_ROOT/platform-tools/adb"
@@ -40,35 +39,66 @@ if [[ -z "${ANDROID_EMULATOR}" ]]; then
 else
     EMULATOR_NAME="$ANDROID_EMULATOR"
 fi
-RESULT=0
+
+
+function check_for_android_device
+{
+    $ADB_EXEC devices \
+        | awk 'NR==2{print $2}' | grep -qE '^(online|device)$'
+}
+
+function check_if_fully_booted
+{
+    # The "getprop" command separates lines with \r\n so we trim them
+    bootanim=`      $ADB_EXEC shell getprop init.svc.bootanim  | tr -d '\r\n'`
+    boot_completed=`$ADB_EXEC shell getprop sys.boot_completed | tr -d '\r\n'`
+    [ "$bootanim" = stopped ] && [ "$boot_completed" = 1 ]
+}
+
 
 for counter in `seq 1 ${EMULATOR_MAX_RETRIES}`; do
     $ADB_EXEC start-server
+
+    if check_for_android_device
+    then
+        echo "Emulator is already running but it shouldn't be. Aborting\!"
+        exit 3
+    fi
+
     echo "Starting emulator, try ${counter}/${EMULATOR_MAX_RETRIES}"
     $EMULATOR_EXEC $EMULATOR_NAME -gpu swiftshader_indirect -no-audio -partition-size 4096 -cores 4 -memory 3500 -no-snapshot-load -no-snapshot-save &>/dev/null &
     emulator_pid=$!
 
-    # Give emulator time to start
-    sleep $EMULATOR_TIMEOUT
+    $ADB_EXEC wait-for-device
 
-    emulator_status=`$ADB_EXEC devices | tail -n -2 | awk '{print $2}'`
+    # Wait about one minute for the emulator to come up
+    emulator_status=down
+    for i in `seq 60`
+    do
+        sleep 1
+        if  check_for_android_device  &&  check_if_fully_booted
+        then
+            emulator_status=up
+            break
+        fi
+    done
 
     # If emulator status is still offline after timeout period,
     # we can assume it's stuck, and we must restart it
-    if [[ $emulator_status == 'online'  || $emulator_status == 'device' ]]; then
+    if [ $emulator_status = up ]
+    then
         echo "Emulator started successfully"
         break
     else
         if [ $counter -lt $EMULATOR_MAX_RETRIES ]; then
-            echo "Emulator failed to start, forcefully killing current instance"
+            echo "Emulator failed to start, forcefully killing current instance and re-starting emulator"
             kill $emulator_pid || true
             sleep 5
         elif [ $counter -eq $EMULATOR_MAX_RETRIES ]; then
-            echo "Emulator failed to start, reached maximum number of retries"
-            RESULT=-1
-            break
+            echo "Emulator failed to start, reached maximum number of retries. Aborting\!"
+            exit 2
         fi
     fi
 done
 
-exit $RESULT
+exit 0
