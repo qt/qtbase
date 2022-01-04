@@ -2559,7 +2559,12 @@ bool QWindow::event(QEvent *ev)
     static const QEvent::Type contextMenuTrigger =
         QGuiApplicationPrivate::platformTheme()->themeHint(QPlatformTheme::ContextMenuOnMouseRelease).toBool() ?
         QEvent::MouseButtonRelease : QEvent::MouseButtonPress;
-    if (QMouseEvent *me = static_cast<QMouseEvent *>(ev);
+    auto asMouseEvent = [](QEvent *ev) {
+        const auto t = ev->type();
+        return t == QEvent::MouseButtonPress || t == QEvent::MouseButtonRelease
+                ? static_cast<QMouseEvent *>(ev) : nullptr ;
+    };
+    if (QMouseEvent *me = asMouseEvent(ev); me &&
         ev->type() == contextMenuTrigger && me->button() == Qt::RightButton) {
         QSinglePointEvent *pev = static_cast<QSinglePointEvent*>(ev);
         QContextMenuEvent e(QContextMenuEvent::Mouse, me->position().toPoint(),
