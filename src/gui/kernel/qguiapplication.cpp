@@ -1402,9 +1402,16 @@ void QGuiApplicationPrivate::createPlatformIntegration()
     }
 
     const bool defaultIsWayland = !defaultIsXcb && platformPluginBase.startsWith("wayland");
+    bool isGnome = false;
     const QByteArray waylandPlatformName = defaultIsWayland ? platformName : "wayland";
     if (hasWaylandDisplay || isWaylandSessionType) {
-        preferredPlatformOrder.prepend(waylandPlatformName);
+        const QByteArray currentDesktop = qgetenv("XDG_CURRENT_DESKTOP").toLower();
+        const QByteArray sessionDesktop = qgetenv("XDG_SESSION_DESKTOP").toLower();
+        isGnome = currentDesktop.contains("gnome") || sessionDesktop.contains("gnome");
+        if (isGnome)
+            preferredPlatformOrder.append(waylandPlatformName);
+        else
+            preferredPlatformOrder.prepend(waylandPlatformName);
 
         if (defaultIsWayland)
             platformName.clear();
@@ -1472,7 +1479,14 @@ void QGuiApplicationPrivate::createPlatformIntegration()
         argc = j;
     }
 
+#if defined(Q_OS_UNIX) && !defined(Q_OS_DARWIN)
+    if ((hasWaylandDisplay || isWaylandSessionType) && isGnome && !platformExplicitlySelected) {
+        qInfo() << "Warning: Ignoring WAYLAND_DISPLAY on Gnome."
+                << "Use QT_QPA_PLATFORM=wayland to run on Wayland anyway.";
+    }
+#else
     Q_UNUSED(platformExplicitlySelected);
+#endif
 
     init_platform(QLatin1String(platformName), platformPluginPath, platformThemeName, argc, argv);
 
