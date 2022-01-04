@@ -66,7 +66,10 @@ for counter in `seq 1 ${EMULATOR_MAX_RETRIES}`; do
     fi
 
     echo "Starting emulator, try ${counter}/${EMULATOR_MAX_RETRIES}"
-    $EMULATOR_EXEC $EMULATOR_NAME -gpu swiftshader_indirect -no-audio -partition-size 4096 -cores 4 -memory 3500 -no-snapshot-load -no-snapshot-save &>/dev/null &
+    $EMULATOR_EXEC $EMULATOR_NAME  \
+        -gpu swiftshader_indirect -no-audio -partition-size 4096  \
+        -cores 4 -memory 3500 -no-snapshot-load -no-snapshot-save \
+        >$HOME/emulator.log 2>&1  &
     emulator_pid=$!
 
     $ADB_EXEC wait-for-device
