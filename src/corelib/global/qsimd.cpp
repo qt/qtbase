@@ -54,7 +54,8 @@
 #  if !defined(Q_CC_GNU)
 #    include <intrin.h>
 #  endif
-#  if defined(Q_PROCESSOR_ARM64)
+#  if defined(Q_PROCESSOR_ARM_64)
+#    include <qt_windows.h>
 #    include <processthreadsapi.h>
 #  endif
 #elif defined(Q_OS_LINUX) && defined(Q_PROCESSOR_MIPS_32)
@@ -166,7 +167,7 @@ static inline quint64 detectProcessorFeatures()
     features |= CpuFeatureAES;
 #endif
     return features;
-#elif defined(Q_OS_WIN) && defined(Q_PROCESSOR_ARM64)
+#elif defined(Q_OS_WIN) && defined(Q_PROCESSOR_ARM_64)
     features |= CpuFeatureNEON;
     if (IsProcessorFeaturePresent(PF_ARM_V8_CRC32_INSTRUCTIONS_AVAILABLE) != 0)
         features |= CpuFeatureCRC32;
