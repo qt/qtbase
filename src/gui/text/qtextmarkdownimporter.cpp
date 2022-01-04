@@ -620,6 +620,9 @@ void QTextMarkdownImporter::insertBlock()
     if (m_doc->isEmpty()) {
         m_cursor->setBlockFormat(blockFormat);
         m_cursor->setCharFormat(charFormat);
+    } else if (m_listItem) {
+        m_cursor->insertBlock(blockFormat, QTextCharFormat());
+        m_cursor->setCharFormat(charFormat);
     } else {
         m_cursor->insertBlock(blockFormat, charFormat);
     }
