@@ -53,6 +53,29 @@ protected: \
     Class &operator=(const Class &other) = default; \
     Class &operator=(Class &&) = delete
 
+#define Q_DECL_EVENT_COMMON(Class) \
+    protected: \
+        Class(const Class &); \
+        Class(Class &&) = delete; \
+        Class &operator=(const Class &other) = default; \
+        Class &operator=(Class &&) = delete; \
+    public: \
+        Class* clone() const override; \
+        ~Class() override; \
+    private:
+
+#define Q_IMPL_EVENT_COMMON(Class) \
+    Class::Class(const Class &) = default; \
+    Class::~Class() = default; \
+    Class* Class::clone() const \
+    { \
+        auto c = new Class(*this); \
+        QEvent *e = c; \
+        /* check that covariant return is safe to add */ \
+        Q_ASSERT(reinterpret_cast<quintptr>(c) == reinterpret_cast<quintptr>(e)); \
+        return c; \
+    }
+
 class QEventPrivate;
 class Q_CORE_EXPORT QEvent           // event base class
 {
@@ -367,13 +390,10 @@ private:
 
 class Q_CORE_EXPORT QTimerEvent : public QEvent
 {
-    Q_EVENT_DISABLE_COPY(QTimerEvent);
+    Q_DECL_EVENT_COMMON(QTimerEvent)
 public:
     explicit QTimerEvent(int timerId);
-    ~QTimerEvent();
     int timerId() const { return id; }
-
-    QTimerEvent *clone() const override { return new QTimerEvent(*this); }
 
 protected:
     int id;
@@ -383,16 +403,14 @@ class QObject;
 
 class Q_CORE_EXPORT QChildEvent : public QEvent
 {
-    Q_EVENT_DISABLE_COPY(QChildEvent);
+    Q_DECL_EVENT_COMMON(QChildEvent)
 public:
     QChildEvent(Type type, QObject *child);
-    ~QChildEvent();
+
     QObject *child() const { return c; }
     bool added() const { return type() == ChildAdded; }
     bool polished() const { return type() == ChildPolished; }
     bool removed() const { return type() == ChildRemoved; }
-
-    QChildEvent *clone() const override { return new QChildEvent(*this); }
 
 protected:
     QObject *c;
@@ -400,14 +418,11 @@ protected:
 
 class Q_CORE_EXPORT QDynamicPropertyChangeEvent : public QEvent
 {
-    Q_EVENT_DISABLE_COPY(QDynamicPropertyChangeEvent);
+    Q_DECL_EVENT_COMMON(QDynamicPropertyChangeEvent)
 public:
     explicit QDynamicPropertyChangeEvent(const QByteArray &name);
-    ~QDynamicPropertyChangeEvent();
 
     inline QByteArray propertyName() const { return n; }
-
-    QDynamicPropertyChangeEvent *clone() const override { return new QDynamicPropertyChangeEvent(*this); }
 
 private:
     QByteArray n;
@@ -415,13 +430,10 @@ private:
 
 class Q_CORE_EXPORT QDeferredDeleteEvent : public QEvent
 {
-    Q_EVENT_DISABLE_COPY(QDeferredDeleteEvent);
+    Q_DECL_EVENT_COMMON(QDeferredDeleteEvent)
 public:
     explicit QDeferredDeleteEvent();
-    ~QDeferredDeleteEvent();
     int loopLevel() const { return level; }
-
-    QDeferredDeleteEvent *clone() const override { return new QDeferredDeleteEvent(*this); }
 
 private:
     int level;

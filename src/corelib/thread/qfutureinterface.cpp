@@ -74,6 +74,8 @@ const auto suspendingOrSuspended =
 QFutureCallOutInterface::~QFutureCallOutInterface()
     = default;
 
+Q_IMPL_EVENT_COMMON(QFutureCallOutEvent)
+
 QFutureInterfaceBase::QFutureInterfaceBase(State initialState)
     : d(new QFutureInterfaceBasePrivate(initialState))
 { }

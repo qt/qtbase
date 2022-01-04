@@ -559,12 +559,7 @@ QTimerEvent::QTimerEvent(int timerId)
     : QEvent(Timer), id(timerId)
 {}
 
-/*!
-    \internal
-*/
-QTimerEvent::~QTimerEvent()
-{
-}
+Q_IMPL_EVENT_COMMON(QTimerEvent)
 
 /*!
     \fn int QTimerEvent::timerId() const
@@ -606,12 +601,7 @@ QChildEvent::QChildEvent(Type type, QObject *child)
     : QEvent(type), c(child)
 {}
 
-/*!
-    \internal
-*/
-QChildEvent::~QChildEvent()
-{
-}
+Q_IMPL_EVENT_COMMON(QChildEvent)
 
 /*!
     \fn QObject *QChildEvent::child() const
@@ -663,12 +653,7 @@ QDynamicPropertyChangeEvent::QDynamicPropertyChangeEvent(const QByteArray &name)
 {
 }
 
-/*!
-    \internal
-*/
-QDynamicPropertyChangeEvent::~QDynamicPropertyChangeEvent()
-{
-}
+Q_IMPL_EVENT_COMMON(QDynamicPropertyChangeEvent)
 
 /*!
     \fn QByteArray QDynamicPropertyChangeEvent::propertyName() const
@@ -687,11 +672,7 @@ QDeferredDeleteEvent::QDeferredDeleteEvent()
     , level(0)
 { }
 
-/*!
-    \internal
-*/
-QDeferredDeleteEvent::~QDeferredDeleteEvent()
-{ }
+Q_IMPL_EVENT_COMMON(QDeferredDeleteEvent)
 
 /*! \fn int QDeferredDeleteEvent::loopLevel() const
 

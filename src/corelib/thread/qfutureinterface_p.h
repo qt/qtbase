@@ -65,9 +65,9 @@ QT_REQUIRE_CONFIG(future);
 
 QT_BEGIN_NAMESPACE
 
-class QFutureCallOutEvent : public QEvent
+class Q_CORE_EXPORT QFutureCallOutEvent : public QEvent
 {
-    Q_EVENT_DISABLE_COPY(QFutureCallOutEvent);
+    Q_DECL_EVENT_COMMON(QFutureCallOutEvent)
 public:
     enum CallOutType {
         Started,
@@ -103,11 +103,6 @@ public:
     int index1;
     int index2;
     QString text;
-
-    QEvent *clone() const override
-    {
-        return new QFutureCallOutEvent(callOutType, index1, index2, text);
-    }
 
 private:
     QFutureCallOutEvent(CallOutType callOutType,

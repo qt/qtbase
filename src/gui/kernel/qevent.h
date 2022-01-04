@@ -59,6 +59,8 @@
 #  include <QtGui/qkeysequence.h>
 #endif
 
+class tst_QEvent;
+
 QT_BEGIN_NAMESPACE
 
 class QFile;
@@ -74,11 +76,9 @@ class QGesture;
 
 class Q_GUI_EXPORT QInputEvent : public QEvent
 {
-    Q_EVENT_DISABLE_COPY(QInputEvent);
+    Q_DECL_EVENT_COMMON(QInputEvent)
 public:
     explicit QInputEvent(Type type, const QInputDevice *m_dev, Qt::KeyboardModifiers modifiers = Qt::NoModifier);
-    ~QInputEvent();
-    QInputEvent *clone() const override { return new QInputEvent(*this); }
 
     const QInputDevice *device() const { return m_dev; }
     QInputDevice::DeviceType deviceType() const { return m_dev ? m_dev->type() : QInputDevice::DeviceType::Unknown; }
@@ -100,13 +100,10 @@ protected:
 
 class Q_GUI_EXPORT QPointerEvent : public QInputEvent
 {
-    Q_EVENT_DISABLE_COPY(QPointerEvent);
+    Q_DECL_EVENT_COMMON(QPointerEvent)
 public:
     explicit QPointerEvent(Type type, const QPointingDevice *dev,
                            Qt::KeyboardModifiers modifiers = Qt::NoModifier, const QList<QEventPoint> &points = {});
-    ~QPointerEvent();
-
-    QPointerEvent *clone() const override { return new QPointerEvent(*this); }
 
     const QPointingDevice *pointingDevice() const;
     QPointingDevice::PointerType pointerType() const {
@@ -142,7 +139,7 @@ class Q_GUI_EXPORT QSinglePointEvent : public QPointerEvent
     Q_PROPERTY(QObject *exclusivePointGrabber READ exclusivePointGrabber
                WRITE setExclusivePointGrabber)
 
-    Q_EVENT_DISABLE_COPY(QSinglePointEvent);
+    Q_DECL_EVENT_COMMON(QSinglePointEvent)
 public:
     inline Qt::MouseButton button() const { return m_button; }
     inline Qt::MouseButtons buttons() const { return m_mouseState; }
@@ -163,9 +160,8 @@ public:
     void setExclusivePointGrabber(QObject *exclusiveGrabber)
     { QPointerEvent::setExclusiveGrabber(points().first(), exclusiveGrabber); }
 
-    QSinglePointEvent *clone() const override { return new QSinglePointEvent(*this); }
-
 protected:
+    friend class ::tst_QEvent;
     QSinglePointEvent(Type type, const QPointingDevice *dev, const QEventPoint &point,
                       Qt::MouseButton button, Qt::MouseButtons buttons,
                       Qt::KeyboardModifiers modifiers, Qt::MouseEventSource source);
@@ -195,13 +191,10 @@ protected:
 
 class Q_GUI_EXPORT QEnterEvent : public QSinglePointEvent
 {
-    Q_EVENT_DISABLE_COPY(QEnterEvent);
+    Q_DECL_EVENT_COMMON(QEnterEvent)
 public:
     QEnterEvent(const QPointF &localPos, const QPointF &scenePos, const QPointF &globalPos,
                 const QPointingDevice *device = QPointingDevice::primaryPointingDevice());
-    ~QEnterEvent();
-
-    QEnterEvent *clone() const override { return new QEnterEvent(*this); }
 
 #if QT_DEPRECATED_SINCE(6, 0)
 #ifndef QT_NO_INTEGER_EVENT_COORDINATES
@@ -229,7 +222,7 @@ public:
 
 class Q_GUI_EXPORT QMouseEvent : public QSinglePointEvent
 {
-    Q_EVENT_DISABLE_COPY(QMouseEvent);
+    Q_DECL_EVENT_COMMON(QMouseEvent)
 public:
 #if QT_DEPRECATED_SINCE(6, 4)
     QT_DEPRECATED_VERSION_X_6_4("Use another constructor")
@@ -249,9 +242,6 @@ public:
                 Qt::MouseButton button, Qt::MouseButtons buttons,
                 Qt::KeyboardModifiers modifiers, Qt::MouseEventSource source,
                 const QPointingDevice *device = QPointingDevice::primaryPointingDevice());
-    ~QMouseEvent();
-
-    QMouseEvent *clone() const override { return new QMouseEvent(*this); }
 
 #ifndef QT_NO_INTEGER_EVENT_COORDINATES
     inline QPoint pos() const { return position().toPoint(); }
@@ -282,7 +272,7 @@ public:
 
 class Q_GUI_EXPORT QHoverEvent : public QSinglePointEvent
 {
-    Q_EVENT_DISABLE_COPY(QHoverEvent);
+    Q_DECL_EVENT_COMMON(QHoverEvent)
 public:
     QHoverEvent(Type type, const QPointF &pos, const QPointF &globalPos, const QPointF &oldPos,
                 Qt::KeyboardModifiers modifiers = Qt::NoModifier,
@@ -293,9 +283,6 @@ public:
                 Qt::KeyboardModifiers modifiers = Qt::NoModifier,
                 const QPointingDevice *device = QPointingDevice::primaryPointingDevice());
 #endif
-    ~QHoverEvent();
-
-    QHoverEvent *clone() const override { return new QHoverEvent(*this); }
 
 #if QT_DEPRECATED_SINCE(6, 0)
 #ifndef QT_NO_INTEGER_EVENT_COORDINATES
@@ -327,7 +314,7 @@ class Q_GUI_EXPORT QWheelEvent : public QSinglePointEvent
     Q_PROPERTY(Qt::ScrollPhase phase READ phase)
     Q_PROPERTY(bool inverted READ inverted)
 
-    Q_EVENT_DISABLE_COPY(QWheelEvent);
+    Q_DECL_EVENT_COMMON(QWheelEvent)
 public:
     enum { DefaultDeltasPerStep = 120 };
 
@@ -335,9 +322,6 @@ public:
                 Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, Qt::ScrollPhase phase,
                 bool inverted, Qt::MouseEventSource source = Qt::MouseEventNotSynthesized,
                 const QPointingDevice *device = QPointingDevice::primaryPointingDevice());
-    ~QWheelEvent();
-
-    QWheelEvent *clone() const override { return new QWheelEvent(*this); }
 
     inline QPoint pixelDelta() const { return m_pixelDelta; }
     inline QPoint angleDelta() const { return m_angleDelta; }
@@ -361,7 +345,7 @@ protected:
 #if QT_CONFIG(tabletevent)
 class Q_GUI_EXPORT QTabletEvent : public QSinglePointEvent
 {
-    Q_EVENT_DISABLE_COPY(QTabletEvent);
+    Q_DECL_EVENT_COMMON(QTabletEvent)
 public:
     QTabletEvent(Type t, const QPointingDevice *device,
                  const QPointF &pos, const QPointF &globalPos,
@@ -369,9 +353,6 @@ public:
                  float tangentialPressure, qreal rotation, float z,
                  Qt::KeyboardModifiers keyState,
                  Qt::MouseButton button, Qt::MouseButtons buttons);
-    ~QTabletEvent();
-
-    QTabletEvent *clone() const override { return new QTabletEvent(*this); }
 
 #if QT_DEPRECATED_SINCE(6, 0)
     QT_DEPRECATED_VERSION_X_6_0("Use position()")
@@ -416,7 +397,7 @@ protected:
 #if QT_CONFIG(gestures)
 class Q_GUI_EXPORT QNativeGestureEvent : public QSinglePointEvent
 {
-    Q_EVENT_DISABLE_COPY(QNativeGestureEvent);
+    Q_DECL_EVENT_COMMON(QNativeGestureEvent)
 public:
 #if QT_DEPRECATED_SINCE(6, 2)
     QT_DEPRECATED_VERSION_X_6_2("Use the other constructor")
@@ -426,9 +407,6 @@ public:
     QNativeGestureEvent(Qt::NativeGestureType type, const QPointingDevice *dev, int fingerCount,
                         const QPointF &localPos, const QPointF &scenePos, const QPointF &globalPos,
                         qreal value, const QPointF &delta, quint64 sequenceId = UINT64_MAX);
-    ~QNativeGestureEvent();
-
-    QNativeGestureEvent *clone() const override { return new QNativeGestureEvent(*this); }
 
     Qt::NativeGestureType gestureType() const { return m_gestureType; }
     int fingerCount() const { return m_fingerCount; }
@@ -472,7 +450,7 @@ protected:
 
 class Q_GUI_EXPORT QKeyEvent : public QInputEvent
 {
-    Q_EVENT_DISABLE_COPY(QKeyEvent);
+    Q_DECL_EVENT_COMMON(QKeyEvent)
 public:
     QKeyEvent(Type type, int key, Qt::KeyboardModifiers modifiers, const QString& text = QString(),
               bool autorep = false, quint16 count = 1);
@@ -480,9 +458,6 @@ public:
               quint32 nativeScanCode, quint32 nativeVirtualKey, quint32 nativeModifiers,
               const QString &text = QString(), bool autorep = false, quint16 count = 1,
               const QInputDevice *device = QInputDevice::primaryKeyboard());
-    ~QKeyEvent();
-
-    QKeyEvent *clone() const override { return new QKeyEvent(*this); }
 
     int key() const { return m_key; }
 #if QT_CONFIG(shortcut)
@@ -521,12 +496,9 @@ protected:
 
 class Q_GUI_EXPORT QFocusEvent : public QEvent
 {
-    Q_EVENT_DISABLE_COPY(QFocusEvent);
+    Q_DECL_EVENT_COMMON(QFocusEvent)
 public:
     explicit QFocusEvent(Type type, Qt::FocusReason reason=Qt::OtherFocusReason);
-    ~QFocusEvent();
-
-    QFocusEvent *clone() const override { return new QFocusEvent(*this); }
 
     inline bool gotFocus() const { return type() == FocusIn; }
     inline bool lostFocus() const { return type() == FocusOut; }
@@ -540,13 +512,10 @@ private:
 
 class Q_GUI_EXPORT QPaintEvent : public QEvent
 {
-    Q_EVENT_DISABLE_COPY(QPaintEvent);
+    Q_DECL_EVENT_COMMON(QPaintEvent)
 public:
     explicit QPaintEvent(const QRegion& paintRegion);
     explicit QPaintEvent(const QRect &paintRect);
-    ~QPaintEvent();
-
-    QPaintEvent *clone() const override { return new QPaintEvent(*this); }
 
     inline const QRect &rect() const { return m_rect; }
     inline const QRegion &region() const { return m_region; }
@@ -559,12 +528,9 @@ protected:
 
 class Q_GUI_EXPORT QMoveEvent : public QEvent
 {
-    Q_EVENT_DISABLE_COPY(QMoveEvent);
+    Q_DECL_EVENT_COMMON(QMoveEvent)
 public:
     QMoveEvent(const QPoint &pos, const QPoint &oldPos);
-    ~QMoveEvent();
-
-    QMoveEvent *clone() const override { return new QMoveEvent(*this); }
 
     inline const QPoint &pos() const { return m_pos; }
     inline const QPoint &oldPos() const { return m_oldPos;}
@@ -575,12 +541,9 @@ protected:
 
 class Q_GUI_EXPORT QExposeEvent : public QEvent
 {
-    Q_EVENT_DISABLE_COPY(QExposeEvent);
+    Q_DECL_EVENT_COMMON(QExposeEvent)
 public:
     explicit QExposeEvent(const QRegion &m_region);
-    ~QExposeEvent();
-
-    QExposeEvent *clone() const override { return new QExposeEvent(*this); }
 
 #if QT_DEPRECATED_SINCE(6, 0)
     QT_DEPRECATED_VERSION_X_6_0("Handle QPaintEvent instead")
@@ -593,7 +556,7 @@ protected:
 
 class Q_GUI_EXPORT QPlatformSurfaceEvent : public QEvent
 {
-    Q_EVENT_DISABLE_COPY(QPlatformSurfaceEvent);
+    Q_DECL_EVENT_COMMON(QPlatformSurfaceEvent)
 public:
     enum SurfaceEventType {
         SurfaceCreated,
@@ -601,9 +564,6 @@ public:
     };
 
     explicit QPlatformSurfaceEvent(SurfaceEventType surfaceEventType);
-    ~QPlatformSurfaceEvent();
-
-    QPlatformSurfaceEvent *clone() const override { return new QPlatformSurfaceEvent(*this); }
 
     inline SurfaceEventType surfaceEventType() const { return m_surfaceEventType; }
 
@@ -613,12 +573,9 @@ protected:
 
 class Q_GUI_EXPORT QResizeEvent : public QEvent
 {
-    Q_EVENT_DISABLE_COPY(QResizeEvent);
+    Q_DECL_EVENT_COMMON(QResizeEvent)
 public:
     QResizeEvent(const QSize &size, const QSize &oldSize);
-    ~QResizeEvent();
-
-    QResizeEvent *clone() const override { return new QResizeEvent(*this); }
 
     inline const QSize &size() const { return m_size; }
     inline const QSize &oldSize()const { return m_oldSize;}
@@ -630,43 +587,39 @@ protected:
 
 class Q_GUI_EXPORT QCloseEvent : public QEvent
 {
-    Q_EVENT_DISABLE_COPY(QCloseEvent);
+    Q_DECL_EVENT_COMMON(QCloseEvent)
 public:
     QCloseEvent();
-    ~QCloseEvent();
 };
 
 
 class Q_GUI_EXPORT QIconDragEvent : public QEvent
 {
-    Q_EVENT_DISABLE_COPY(QIconDragEvent);
+    Q_DECL_EVENT_COMMON(QIconDragEvent)
 public:
     QIconDragEvent();
-    ~QIconDragEvent();
 };
 
 
 class Q_GUI_EXPORT QShowEvent : public QEvent
 {
-    Q_EVENT_DISABLE_COPY(QShowEvent);
+    Q_DECL_EVENT_COMMON(QShowEvent)
 public:
     QShowEvent();
-    ~QShowEvent();
 };
 
 
 class Q_GUI_EXPORT QHideEvent : public QEvent
 {
-    Q_EVENT_DISABLE_COPY(QHideEvent);
+    Q_DECL_EVENT_COMMON(QHideEvent)
 public:
     QHideEvent();
-    ~QHideEvent();
 };
 
 #ifndef QT_NO_CONTEXTMENU
 class Q_GUI_EXPORT QContextMenuEvent : public QInputEvent
 {
-    Q_EVENT_DISABLE_COPY(QContextMenuEvent);
+    Q_DECL_EVENT_COMMON(QContextMenuEvent)
 public:
     enum Reason { Mouse, Keyboard, Other };
 
@@ -676,9 +629,6 @@ public:
     QT_DEPRECATED_VERSION_X_6_4("Use the other constructor")
     QContextMenuEvent(Reason reason, const QPoint &pos);
 #endif
-    ~QContextMenuEvent();
-
-    QContextMenuEvent *clone() const override { return new QContextMenuEvent(*this); }
 
     inline int x() const { return m_pos.x(); }
     inline int y() const { return m_pos.y(); }
@@ -700,7 +650,7 @@ protected:
 #ifndef QT_NO_INPUTMETHOD
 class Q_GUI_EXPORT QInputMethodEvent : public QEvent
 {
-    Q_EVENT_DISABLE_COPY(QInputMethodEvent);
+    Q_DECL_EVENT_COMMON(QInputMethodEvent)
 public:
     enum AttributeType {
        TextFormat,
@@ -721,9 +671,6 @@ public:
     };
     QInputMethodEvent();
     QInputMethodEvent(const QString &preeditText, const QList<Attribute> &attributes);
-    ~QInputMethodEvent();
-
-    QInputMethodEvent *clone() const override { return new QInputMethodEvent(*this); }
 
     void setCommitString(const QString &commitString, int replaceFrom = 0, int replaceLength = 0);
     inline const QList<Attribute> &attributes() const { return m_attributes; }
@@ -757,12 +704,9 @@ Q_DECLARE_TYPEINFO(QInputMethodEvent::Attribute, Q_RELOCATABLE_TYPE);
 
 class Q_GUI_EXPORT QInputMethodQueryEvent : public QEvent
 {
-    Q_EVENT_DISABLE_COPY(QInputMethodQueryEvent);
+    Q_DECL_EVENT_COMMON(QInputMethodQueryEvent)
 public:
     explicit QInputMethodQueryEvent(Qt::InputMethodQueries queries);
-    ~QInputMethodQueryEvent();
-
-    QInputMethodQueryEvent *clone() const override { return new QInputMethodQueryEvent(*this); }
 
     Qt::InputMethodQueries queries() const { return m_queries; }
 
@@ -787,13 +731,10 @@ class QMimeData;
 
 class Q_GUI_EXPORT QDropEvent : public QEvent
 {
-    Q_EVENT_DISABLE_COPY(QDropEvent);
+    Q_DECL_EVENT_COMMON(QDropEvent)
 public:
     QDropEvent(const QPointF& pos, Qt::DropActions actions, const QMimeData *data,
                Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, Type type = Drop);
-    ~QDropEvent();
-
-    QDropEvent *clone() const override { return new QDropEvent(*this); }
 
 #if QT_DEPRECATED_SINCE(6, 0)
     QT_DEPRECATED_VERSION_X_6_0("Use position().toPoint()")
@@ -834,13 +775,10 @@ protected:
 
 class Q_GUI_EXPORT QDragMoveEvent : public QDropEvent
 {
-    Q_EVENT_DISABLE_COPY(QDragMoveEvent);
+    Q_DECL_EVENT_COMMON(QDragMoveEvent)
 public:
     QDragMoveEvent(const QPoint &pos, Qt::DropActions actions, const QMimeData *data,
                    Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, Type type = DragMove);
-    ~QDragMoveEvent();
-
-    QDragMoveEvent *clone() const override { return new QDragMoveEvent(*this); }
 
     inline QRect answerRect() const { return m_rect; }
 
@@ -857,32 +795,27 @@ protected:
 
 class Q_GUI_EXPORT QDragEnterEvent : public QDragMoveEvent
 {
-    Q_EVENT_DISABLE_COPY(QDragEnterEvent);
+    Q_DECL_EVENT_COMMON(QDragEnterEvent)
 public:
     QDragEnterEvent(const QPoint &pos, Qt::DropActions actions, const QMimeData *data,
                     Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers);
-    ~QDragEnterEvent();
 };
 
 
 class Q_GUI_EXPORT QDragLeaveEvent : public QEvent
 {
-    Q_EVENT_DISABLE_COPY(QDragLeaveEvent);
+    Q_DECL_EVENT_COMMON(QDragLeaveEvent)
 public:
     QDragLeaveEvent();
-    ~QDragLeaveEvent();
 };
 #endif // QT_CONFIG(draganddrop)
 
 
 class Q_GUI_EXPORT QHelpEvent : public QEvent
 {
-    Q_EVENT_DISABLE_COPY(QHelpEvent);
+    Q_DECL_EVENT_COMMON(QHelpEvent)
 public:
     QHelpEvent(Type type, const QPoint &pos, const QPoint &globalPos);
-    ~QHelpEvent();
-
-    QHelpEvent *clone() const override { return new QHelpEvent(*this); }
 
     inline int x() const { return m_pos.x(); }
     inline int y() const { return m_pos.y(); }
@@ -900,12 +833,9 @@ private:
 #ifndef QT_NO_STATUSTIP
 class Q_GUI_EXPORT QStatusTipEvent : public QEvent
 {
-    Q_EVENT_DISABLE_COPY(QStatusTipEvent);
+    Q_DECL_EVENT_COMMON(QStatusTipEvent)
 public:
     explicit QStatusTipEvent(const QString &tip);
-    ~QStatusTipEvent();
-
-    QStatusTipEvent *clone() const override { return new QStatusTipEvent(*this); }
 
     inline QString tip() const { return m_tip; }
 private:
@@ -916,12 +846,9 @@ private:
 #if QT_CONFIG(whatsthis)
 class Q_GUI_EXPORT QWhatsThisClickedEvent : public QEvent
 {
-    Q_EVENT_DISABLE_COPY(QWhatsThisClickedEvent);
+    Q_DECL_EVENT_COMMON(QWhatsThisClickedEvent)
 public:
     explicit QWhatsThisClickedEvent(const QString &href);
-    ~QWhatsThisClickedEvent();
-
-    QWhatsThisClickedEvent *clone() const override { return new QWhatsThisClickedEvent(*this); }
 
     inline QString href() const { return m_href; }
 private:
@@ -932,12 +859,9 @@ private:
 #if QT_CONFIG(action)
 class Q_GUI_EXPORT QActionEvent : public QEvent
 {
-    Q_EVENT_DISABLE_COPY(QActionEvent);
+    Q_DECL_EVENT_COMMON(QActionEvent)
 public:
     QActionEvent(int type, QAction *action, QAction *before = nullptr);
-    ~QActionEvent();
-
-    QActionEvent *clone() const override { return new QActionEvent(*this); }
 
     inline QAction *action() const { return m_action; }
     inline QAction *before() const { return m_before; }
@@ -949,13 +873,10 @@ private:
 
 class Q_GUI_EXPORT QFileOpenEvent : public QEvent
 {
-    Q_EVENT_DISABLE_COPY(QFileOpenEvent);
+    Q_DECL_EVENT_COMMON(QFileOpenEvent)
 public:
     explicit QFileOpenEvent(const QString &file);
     explicit QFileOpenEvent(const QUrl &url);
-    ~QFileOpenEvent();
-
-    QFileOpenEvent *clone() const override { return new QFileOpenEvent(*this); }
 
     inline QString file() const { return m_file; }
     QUrl url() const { return m_url; }
@@ -968,12 +889,9 @@ private:
 #ifndef QT_NO_TOOLBAR
 class Q_GUI_EXPORT QToolBarChangeEvent : public QEvent
 {
-    Q_EVENT_DISABLE_COPY(QToolBarChangeEvent);
+    Q_DECL_EVENT_COMMON(QToolBarChangeEvent)
 public:
     explicit QToolBarChangeEvent(bool t);
-    ~QToolBarChangeEvent();
-
-    QToolBarChangeEvent *clone() const override { return new QToolBarChangeEvent(*this); }
 
     inline bool toggle() const { return m_toggle; }
 private:
@@ -984,12 +902,9 @@ private:
 #if QT_CONFIG(shortcut)
 class Q_GUI_EXPORT QShortcutEvent : public QEvent
 {
-    Q_EVENT_DISABLE_COPY(QShortcutEvent);
+    Q_DECL_EVENT_COMMON(QShortcutEvent)
 public:
     QShortcutEvent(const QKeySequence &key, int id, bool ambiguous = false);
-    ~QShortcutEvent();
-
-    QShortcutEvent *clone() const override { return new QShortcutEvent(*this); }
 
     inline const QKeySequence &key() const { return m_sequence; }
     inline int shortcutId() const { return m_shortcutId; }
@@ -1003,12 +918,9 @@ protected:
 
 class Q_GUI_EXPORT QWindowStateChangeEvent: public QEvent
 {
-    Q_EVENT_DISABLE_COPY(QWindowStateChangeEvent);
+    Q_DECL_EVENT_COMMON(QWindowStateChangeEvent)
 public:
     explicit QWindowStateChangeEvent(Qt::WindowStates oldState, bool isOverride = false);
-    ~QWindowStateChangeEvent();
-
-    QWindowStateChangeEvent *clone() const override { return new QWindowStateChangeEvent(*this); }
 
     inline Qt::WindowStates oldState() const { return m_oldStates; }
     bool isOverride() const;
@@ -1024,7 +936,7 @@ Q_GUI_EXPORT QDebug operator<<(QDebug, const QEvent *);
 
 class Q_GUI_EXPORT QTouchEvent : public QPointerEvent
 {
-    Q_EVENT_DISABLE_COPY(QTouchEvent);
+    Q_DECL_EVENT_COMMON(QTouchEvent)
 public:
     using TouchPoint = QEventPoint; // source compat
 
@@ -1040,9 +952,6 @@ public:
                          QEventPoint::States touchPointStates,
                          const QList<QEventPoint> &touchPoints = {});
 #endif
-    ~QTouchEvent();
-
-    QTouchEvent *clone() const override { return new QTouchEvent(*this); }
 
     inline QObject *target() const { return m_target; }
     inline QEventPoint::States touchPointStates() const { return m_touchPointStates; }
@@ -1062,12 +971,9 @@ protected:
 
 class Q_GUI_EXPORT QScrollPrepareEvent : public QEvent
 {
-    Q_EVENT_DISABLE_COPY(QScrollPrepareEvent);
+    Q_DECL_EVENT_COMMON(QScrollPrepareEvent)
 public:
     explicit QScrollPrepareEvent(const QPointF &startPos);
-    ~QScrollPrepareEvent();
-
-    QScrollPrepareEvent *clone() const override { return new QScrollPrepareEvent(*this); }
 
     QPointF startPos() const { return m_startPos; }
 
@@ -1089,7 +995,7 @@ private:
 
 class Q_GUI_EXPORT QScrollEvent : public QEvent
 {
-    Q_EVENT_DISABLE_COPY(QScrollEvent);
+    Q_DECL_EVENT_COMMON(QScrollEvent)
 public:
     enum ScrollState
     {
@@ -1099,9 +1005,6 @@ public:
     };
 
     QScrollEvent(const QPointF &contentPos, const QPointF &overshoot, ScrollState scrollState);
-    ~QScrollEvent();
-
-    QScrollEvent *clone() const override { return new QScrollEvent(*this); }
 
     QPointF contentPos() const { return m_contentPos; }
     QPointF overshootDistance() const { return m_overshoot; }
@@ -1115,12 +1018,9 @@ private:
 
 class Q_GUI_EXPORT QScreenOrientationChangeEvent : public QEvent
 {
-    Q_EVENT_DISABLE_COPY(QScreenOrientationChangeEvent);
+    Q_DECL_EVENT_COMMON(QScreenOrientationChangeEvent)
 public:
     QScreenOrientationChangeEvent(QScreen *screen, Qt::ScreenOrientation orientation);
-    ~QScreenOrientationChangeEvent();
-
-    QScreenOrientationChangeEvent *clone() const override { return new QScreenOrientationChangeEvent(*this); }
 
     QScreen *screen() const { return m_screen; }
     Qt::ScreenOrientation orientation() const { return m_orientation; }
@@ -1132,11 +1032,9 @@ private:
 
 class Q_GUI_EXPORT QApplicationStateChangeEvent : public QEvent
 {
-    Q_EVENT_DISABLE_COPY(QApplicationStateChangeEvent);
+    Q_DECL_EVENT_COMMON(QApplicationStateChangeEvent)
 public:
     explicit QApplicationStateChangeEvent(Qt::ApplicationState state);
-
-    QApplicationStateChangeEvent *clone() const override { return new QApplicationStateChangeEvent(*this); }
 
     Qt::ApplicationState applicationState() const { return m_applicationState; }
 

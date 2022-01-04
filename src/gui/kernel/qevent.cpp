@@ -91,12 +91,7 @@ QEnterEvent::QEnterEvent(const QPointF &localPos, const QPointF &scenePos, const
 {
 }
 
-/*!
-    \internal
-*/
-QEnterEvent::~QEnterEvent()
-{
-}
+Q_IMPL_EVENT_COMMON(QEnterEvent)
 
 /*!
    \fn QPoint QEnterEvent::globalPos() const
@@ -183,12 +178,7 @@ QInputEvent::QInputEvent(QEvent::Type type, QEvent::SinglePointEventTag, const Q
     : QEvent(type, QEvent::SinglePointEventTag{}), m_dev(dev), m_modState(modifiers), m_reserved(0)
 {}
 
-/*!
-  \internal
-*/
-QInputEvent::~QInputEvent()
-{
-}
+Q_IMPL_EVENT_COMMON(QInputEvent)
 
 /*!
     \fn QInputDevice *QInputEvent::device() const
@@ -294,9 +284,7 @@ QPointerEvent::QPointerEvent(QEvent::Type type, QEvent::SinglePointEventTag, con
 {
 }
 
-QPointerEvent::~QPointerEvent()
-{
-}
+Q_IMPL_EVENT_COMMON(QPointerEvent)
 
 /*!
     Returns the point whose \l {QEventPoint::id()}{id} matches the given \a id,
@@ -598,6 +586,8 @@ QSinglePointEvent::QSinglePointEvent(QEvent::Type type, const QPointingDevice *d
     m_points << point;
 }
 
+Q_IMPL_EVENT_COMMON(QSinglePointEvent)
+
 /*!
     Returns \c true if this event represents a \l {button()}{button} being pressed.
 */
@@ -785,12 +775,7 @@ QMouseEvent::QMouseEvent(QEvent::Type type, const QPointF &localPos, const QPoin
 {
 }
 
-/*!
-    \internal
-*/
-QMouseEvent::~QMouseEvent()
-{
-}
+Q_IMPL_EVENT_COMMON(QMouseEvent)
 
 /*!
     \since 5.3
@@ -1105,12 +1090,7 @@ QHoverEvent::QHoverEvent(Type type, const QPointF &pos, const QPointF &oldPos,
 }
 #endif
 
-/*!
-    \internal
-*/
-QHoverEvent::~QHoverEvent()
-{
-}
+Q_IMPL_EVENT_COMMON(QHoverEvent)
 
 #if QT_CONFIG(wheelevent)
 /*!
@@ -1235,12 +1215,7 @@ QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF &globalPos, QPoint pi
     m_invertedScrolling = inverted;
 }
 
-/*!
-  \internal
-*/
-QWheelEvent::~QWheelEvent()
-{
-}
+Q_IMPL_EVENT_COMMON(QWheelEvent)
 
 /*!
     Returns \c true if this event's phase() is Qt::ScrollBegin.
@@ -1420,12 +1395,7 @@ QKeyEvent::QKeyEvent(Type type, int key, Qt::KeyboardModifiers modifiers,
 }
 
 
-/*!
-  \internal
-*/
-QKeyEvent::~QKeyEvent()
-{
-}
+Q_IMPL_EVENT_COMMON(QKeyEvent)
 
 /*!
     \fn quint32 QKeyEvent::nativeScanCode() const
@@ -1599,12 +1569,7 @@ QFocusEvent::QFocusEvent(Type type, Qt::FocusReason reason)
     : QEvent(type), m_reason(reason)
 {}
 
-/*!
-    \internal
-*/
-QFocusEvent::~QFocusEvent()
-{
-}
+Q_IMPL_EVENT_COMMON(QFocusEvent)
 
 /*!
     Returns the reason for this focus event.
@@ -1677,12 +1642,7 @@ QPaintEvent::QPaintEvent(const QRect &paintRect)
 {}
 
 
-/*!
-  \internal
-*/
-QPaintEvent::~QPaintEvent()
-{
-}
+Q_IMPL_EVENT_COMMON(QPaintEvent)
 
 /*!
     \fn const QRect &QPaintEvent::rect() const
@@ -1724,12 +1684,7 @@ QMoveEvent::QMoveEvent(const QPoint &pos, const QPoint &oldPos)
     : QEvent(Move), m_pos(pos), m_oldPos(oldPos)
 {}
 
-/*!
-  \internal
-*/
-QMoveEvent::~QMoveEvent()
-{
-}
+Q_IMPL_EVENT_COMMON(QMoveEvent)
 
 /*!
     \fn const QPoint &QMoveEvent::pos() const
@@ -1776,12 +1731,7 @@ QExposeEvent::QExposeEvent(const QRegion &exposeRegion)
 {
 }
 
-/*!
-  \internal
-*/
-QExposeEvent::~QExposeEvent()
-{
-}
+Q_IMPL_EVENT_COMMON(QExposeEvent)
 
 /*!
     \class QPlatformSurfaceEvent
@@ -1825,12 +1775,7 @@ QPlatformSurfaceEvent::QPlatformSurfaceEvent(SurfaceEventType surfaceEventType)
 {
 }
 
-/*!
-  \internal
-*/
-QPlatformSurfaceEvent::~QPlatformSurfaceEvent()
-{
-}
+Q_IMPL_EVENT_COMMON(QPlatformSurfaceEvent)
 
 /*!
     \fn const QRegion &QExposeEvent::region() const
@@ -1861,12 +1806,7 @@ QResizeEvent::QResizeEvent(const QSize &size, const QSize &oldSize)
     : QEvent(Resize), m_size(size), m_oldSize(oldSize)
 {}
 
-/*!
-  \internal
-*/
-QResizeEvent::~QResizeEvent()
-{
-}
+Q_IMPL_EVENT_COMMON(QResizeEvent)
 
 /*!
     \fn const QSize &QResizeEvent::size() const
@@ -1941,11 +1881,7 @@ QCloseEvent::QCloseEvent()
     : QEvent(Close)
 {}
 
-/*! \internal
-*/
-QCloseEvent::~QCloseEvent()
-{
-}
+Q_IMPL_EVENT_COMMON(QCloseEvent)
 
 /*!
    \class QIconDragEvent
@@ -1974,10 +1910,7 @@ QIconDragEvent::QIconDragEvent()
     : QEvent(IconDrag)
 { ignore(); }
 
-/*! \internal */
-QIconDragEvent::~QIconDragEvent()
-{
-}
+Q_IMPL_EVENT_COMMON(QIconDragEvent)
 
 /*!
     \class QContextMenuEvent
@@ -2013,11 +1946,7 @@ QContextMenuEvent::QContextMenuEvent(Reason reason, const QPoint &pos, const QPo
     : QInputEvent(ContextMenu, QPointingDevice::primaryPointingDevice(), modifiers), m_pos(pos), m_globalPos(globalPos), m_reason(reason)
 {}
 
-
-/*! \internal */
-QContextMenuEvent::~QContextMenuEvent()
-{
-}
+Q_IMPL_EVENT_COMMON(QContextMenuEvent)
 
 #if QT_DEPRECATED_SINCE(6, 4)
 /*!
@@ -2334,9 +2263,7 @@ QInputMethodEvent::QInputMethodEvent(const QString &preeditText, const QList<Att
 {
 }
 
-QInputMethodEvent::~QInputMethodEvent()
-{
-}
+Q_IMPL_EVENT_COMMON(QInputMethodEvent)
 
 /*!
     Sets the commit string to \a commitString.
@@ -2443,12 +2370,7 @@ QInputMethodQueryEvent::QInputMethodQueryEvent(Qt::InputMethodQueries queries)
 {
 }
 
-/*!
-    \internal
- */
-QInputMethodQueryEvent::~QInputMethodQueryEvent()
-{
-}
+Q_IMPL_EVENT_COMMON(QInputMethodQueryEvent)
 
 /*!
     Sets property \a query to \a value.
@@ -2600,12 +2522,7 @@ QTabletEvent::QTabletEvent(Type type, const QPointingDevice *dev, const QPointF 
     QMutableEventPoint::setRotation(p, rotation);
 }
 
-/*!
-    \internal
-*/
-QTabletEvent::~QTabletEvent()
-{
-}
+Q_IMPL_EVENT_COMMON(QTabletEvent)
 
 /*!
     \fn qreal QTabletEvent::tangentialPressure() const
@@ -2929,7 +2846,7 @@ QNativeGestureEvent::QNativeGestureEvent(Qt::NativeGestureType type, const QPoin
     Q_ASSERT(fingerCount < 16); // we store it in 4 bits unsigned
 }
 
-QNativeGestureEvent::~QNativeGestureEvent() = default;
+Q_IMPL_EVENT_COMMON(QNativeGestureEvent)
 
 /*!
     \fn QNativeGestureEvent::gestureType() const
@@ -3032,12 +2949,7 @@ QDragMoveEvent::QDragMoveEvent(const QPoint& pos, Qt::DropActions actions, const
     , m_rect(pos, QSize(1, 1))
 {}
 
-/*!
-    Destroys the event.
-*/
-QDragMoveEvent::~QDragMoveEvent()
-{
-}
+Q_IMPL_EVENT_COMMON(QDragMoveEvent)
 
 /*!
     \fn void QDragMoveEvent::accept(const QRect &rectangle)
@@ -3150,10 +3062,7 @@ QDropEvent::QDropEvent(const QPointF& pos, Qt::DropActions actions, const QMimeD
     ignore();
 }
 
-/*! \internal */
-QDropEvent::~QDropEvent()
-{
-}
+Q_IMPL_EVENT_COMMON(QDropEvent)
 
 
 /*!
@@ -3298,11 +3207,7 @@ QDragEnterEvent::QDragEnterEvent(const QPoint& point, Qt::DropActions actions, c
     : QDragMoveEvent(point, actions, data, buttons, modifiers, DragEnter)
 {}
 
-/*! \internal
-*/
-QDragEnterEvent::~QDragEnterEvent()
-{
-}
+Q_IMPL_EVENT_COMMON(QDragEnterEvent)
 
 /*!
     \class QDragMoveEvent
@@ -3356,11 +3261,8 @@ QDragLeaveEvent::QDragLeaveEvent()
     : QEvent(DragLeave)
 {}
 
-/*! \internal
-*/
-QDragLeaveEvent::~QDragLeaveEvent()
-{
-}
+Q_IMPL_EVENT_COMMON(QDragLeaveEvent)
+
 #endif // QT_CONFIG(draganddrop)
 
 /*!
@@ -3442,11 +3344,7 @@ QHelpEvent::QHelpEvent(Type type, const QPoint &pos, const QPoint &globalPos)
     \sa pos(), globalX(), globalY()
 */
 
-/*! \internal
-*/
-QHelpEvent::~QHelpEvent()
-{
-}
+Q_IMPL_EVENT_COMMON(QHelpEvent)
 
 #ifndef QT_NO_STATUSTIP
 
@@ -3501,11 +3399,7 @@ QStatusTipEvent::QStatusTipEvent(const QString &tip)
     : QEvent(StatusTip), m_tip(tip)
 {}
 
-/*! \internal
-*/
-QStatusTipEvent::~QStatusTipEvent()
-{
-}
+Q_IMPL_EVENT_COMMON(QStatusTipEvent)
 
 /*!
     \fn QString QStatusTipEvent::tip() const
@@ -3541,11 +3435,7 @@ QWhatsThisClickedEvent::QWhatsThisClickedEvent(const QString &href)
     : QEvent(WhatsThisClicked), m_href(href)
 {}
 
-/*! \internal
-*/
-QWhatsThisClickedEvent::~QWhatsThisClickedEvent()
-{
-}
+Q_IMPL_EVENT_COMMON(QWhatsThisClickedEvent)
 
 /*!
     \fn QString QWhatsThisClickedEvent::href() const
@@ -3587,11 +3477,7 @@ QActionEvent::QActionEvent(int type, QAction *action, QAction *before)
     : QEvent(static_cast<QEvent::Type>(type)), m_action(action), m_before(before)
 {}
 
-/*! \internal
-*/
-QActionEvent::~QActionEvent()
-{
-}
+Q_IMPL_EVENT_COMMON(QActionEvent)
 
 /*!
     \fn QAction *QActionEvent::action() const
@@ -3641,11 +3527,7 @@ QHideEvent::QHideEvent()
     : QEvent(Hide)
 {}
 
-/*! \internal
-*/
-QHideEvent::~QHideEvent()
-{
-}
+Q_IMPL_EVENT_COMMON(QHideEvent)
 
 /*!
     \class QShowEvent
@@ -3671,11 +3553,7 @@ QShowEvent::QShowEvent()
     : QEvent(Show)
 {}
 
-/*! \internal
-*/
-QShowEvent::~QShowEvent()
-{
-}
+Q_IMPL_EVENT_COMMON(QShowEvent)
 
 /*!
     \class QFileOpenEvent
@@ -3732,12 +3610,7 @@ QFileOpenEvent::QFileOpenEvent(const QUrl &url)
 {
 }
 
-
-/*! \internal
-*/
-QFileOpenEvent::~QFileOpenEvent()
-{
-}
+Q_IMPL_EVENT_COMMON(QFileOpenEvent)
 
 /*!
     \fn QString QFileOpenEvent::file() const
@@ -3795,11 +3668,7 @@ QToolBarChangeEvent::QToolBarChangeEvent(bool t)
     : QEvent(ToolBarChange), m_toggle(t)
 {}
 
-/*! \internal
-*/
-QToolBarChangeEvent::~QToolBarChangeEvent()
-{
-}
+Q_IMPL_EVENT_COMMON(QToolBarChangeEvent)
 
 /*!
     \fn bool QToolBarChangeEvent::toggle() const
@@ -3832,12 +3701,7 @@ QShortcutEvent::QShortcutEvent(const QKeySequence &key, int id, bool ambiguous)
 {
 }
 
-/*!
-    Destroys the event object.
-*/
-QShortcutEvent::~QShortcutEvent()
-{
-}
+Q_IMPL_EVENT_COMMON(QShortcutEvent)
 
 #endif // QT_CONFIG(shortcut)
 
@@ -4426,11 +4290,7 @@ bool QWindowStateChangeEvent::isOverride() const
     return m_override;
 }
 
-/*! \internal
-*/
-QWindowStateChangeEvent::~QWindowStateChangeEvent()
-{
-}
+Q_IMPL_EVENT_COMMON(QWindowStateChangeEvent)
 
 
 /*!
@@ -4604,11 +4464,7 @@ QTouchEvent::QTouchEvent(QEvent::Type eventType,
         QMutableEventPoint::setDevice(point, device);
 }
 
-/*!
-    Destroys the QTouchEvent.
-*/
-QTouchEvent::~QTouchEvent()
-{ }
+Q_IMPL_EVENT_COMMON(QTouchEvent)
 
 /*!
     Returns true if this event includes at least one newly-pressed touchpoint.
@@ -4682,12 +4538,7 @@ QScrollPrepareEvent::QScrollPrepareEvent(const QPointF &startPos)
 {
 }
 
-/*!
-    Destroys QScrollEvent.
-*/
-QScrollPrepareEvent::~QScrollPrepareEvent()
-{
-}
+Q_IMPL_EVENT_COMMON(QScrollPrepareEvent)
 
 /*!
     \fn QPointF QScrollPrepareEvent::startPos() const
@@ -4785,12 +4636,7 @@ QScrollEvent::QScrollEvent(const QPointF &contentPos, const QPointF &overshootDi
 {
 }
 
-/*!
-    Destroys QScrollEvent.
-*/
-QScrollEvent::~QScrollEvent()
-{
-}
+Q_IMPL_EVENT_COMMON(QScrollEvent)
 
 /*!
     \fn QPointF QScrollEvent::contentPos() const
@@ -4827,12 +4673,7 @@ QScreenOrientationChangeEvent::QScreenOrientationChangeEvent(QScreen *screen, Qt
 {
 }
 
-/*!
-    Destroys QScreenOrientationChangeEvent.
-*/
-QScreenOrientationChangeEvent::~QScreenOrientationChangeEvent()
-{
-}
+Q_IMPL_EVENT_COMMON(QScreenOrientationChangeEvent)
 
 /*!
     \fn QScreen *QScreenOrientationChangeEvent::screen() const
@@ -4854,6 +4695,8 @@ QApplicationStateChangeEvent::QApplicationStateChangeEvent(Qt::ApplicationState 
     : QEvent(QEvent::ApplicationStateChange), m_applicationState(applicationState)
 {
 }
+
+Q_IMPL_EVENT_COMMON(QApplicationStateChangeEvent)
 
 /*!
     \fn Qt::ApplicationState QApplicationStateChangeEvent::applicationState() const
