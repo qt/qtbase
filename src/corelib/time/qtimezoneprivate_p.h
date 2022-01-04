@@ -348,7 +348,7 @@ public:
     QList<QByteArray> availableTimeZoneIds(QLocale::Territory territory) const override;
 
 private:
-    void init(const QByteArray &ianaId);
+    static QByteArray staticSystemTimeZoneId();
     QList<QTimeZonePrivate::Data> getPosixTransitions(qint64 msNear) const;
 
     Data dataForTzTransition(QTzTransitionTime tran) const;
