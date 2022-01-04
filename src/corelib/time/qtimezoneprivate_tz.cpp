@@ -719,14 +719,8 @@ static QList<QTimeZonePrivate::Data> calculatePosixTransitions(const QByteArray 
 
 // Create the system default time zone
 QTzTimeZonePrivate::QTzTimeZonePrivate()
+    : QTzTimeZonePrivate(staticSystemTimeZoneId())
 {
-    init(systemTimeZoneId());
-}
-
-// Create a named time zone
-QTzTimeZonePrivate::QTzTimeZonePrivate(const QByteArray &ianaId)
-{
-    init(ianaId);
 }
 
 QTzTimeZonePrivate::~QTzTimeZonePrivate()
@@ -953,7 +947,8 @@ QTzTimeZoneCacheEntry QTzTimeZoneCache::fetchEntry(const QByteArray &ianaId)
     return ret;
 }
 
-void QTzTimeZonePrivate::init(const QByteArray &ianaId)
+// Create a named time zone
+QTzTimeZonePrivate::QTzTimeZonePrivate(const QByteArray &ianaId)
 {
     static QTzTimeZoneCache tzCache;
     auto entry = tzCache.fetchEntry(ianaId);
@@ -1360,6 +1355,11 @@ private:
 }
 
 QByteArray QTzTimeZonePrivate::systemTimeZoneId() const
+{
+    return staticSystemTimeZoneId();
+}
+
+QByteArray QTzTimeZonePrivate::staticSystemTimeZoneId()
 {
     // Check TZ env var first, if not populated try find it
     QByteArray ianaId = qgetenv("TZ");
