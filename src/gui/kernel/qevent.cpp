@@ -257,10 +257,12 @@ QInputEvent::~QInputEvent()
 */
 
 /*!
-    \fn QEventPoint &QPointerEvent::point(qsizetype i)
-
     Returns a QEventPoint reference for the point at index \a i.
 */
+QEventPoint &QPointerEvent::point(qsizetype i)
+{
+    return m_points[i];
+}
 
 /*!
     \fn const QList<QEventPoint> &QPointerEvent::points() const
