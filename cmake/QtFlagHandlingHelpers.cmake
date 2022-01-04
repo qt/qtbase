@@ -236,7 +236,8 @@ function(qt_set_msvc_cplusplus_options target visibility)
     # For MSVC we need to explicitly pass -Zc:__cplusplus to get correct __cplusplus.
     # Check qt_config_compile_test for more info.
     if(MSVC AND MSVC_VERSION GREATER_EQUAL 1913)
-        target_compile_options("${target}" ${visibility} "-Zc:__cplusplus" "-permissive-")
+        set(flags "-Zc:__cplusplus" "-permissive-")
+        target_compile_options("${target}" ${visibility} "$<$<COMPILE_LANGUAGE:CXX>:${flags}>")
     endif()
 endfunction()
 
@@ -250,7 +251,11 @@ function(qt_enable_utf8_sources target)
 
     if(utf8_flags)
         # Allow opting out by specifying the QT_NO_UTF8_SOURCE target property.
-        set(genex_condition "$<NOT:$<BOOL:$<TARGET_PROPERTY:QT_NO_UTF8_SOURCE>>>")
+        set(opt_out_condition "$<NOT:$<BOOL:$<TARGET_PROPERTY:QT_NO_UTF8_SOURCE>>>")
+        # Only set the compiler option for C and C++.
+        set(language_condition "$<COMPILE_LANGUAGE:C,CXX>")
+        # Compose the full condition.
+        set(genex_condition "$<AND:${opt_out_condition},${language_condition}>")
         set(utf8_flags "$<${genex_condition}:${utf8_flags}>")
         target_compile_options("${target}" INTERFACE "${utf8_flags}")
     endif()
