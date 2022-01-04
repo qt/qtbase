@@ -3497,7 +3497,7 @@ QString MakefileGenerator::createResponseFile(
         const ProStringList &objList,
         const QString &prefix)
 {
-    QString fileName = baseName + '.' + fileVar("QMAKE_ORIG_TARGET");
+    QString fileName = baseName + '.' + var("QMAKE_ORIG_TARGET");
     if (!var("BUILD_NAME").isEmpty())
         fileName += '.' + var("BUILD_NAME");
     if (!var("MAKEFILE").isEmpty())
