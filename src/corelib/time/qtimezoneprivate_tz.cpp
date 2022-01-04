@@ -42,6 +42,7 @@
 #include "qtimezone.h"
 #include "qtimezoneprivate_p.h"
 #include "private/qlocale_tools_p.h"
+#include "private/qlocking_p.h"
 
 #include <QtCore/QDataStream>
 #include <QtCore/QDateTime>
@@ -61,6 +62,10 @@
 #include <unistd.h>    // to use _SC_SYMLOOP_MAX constant
 
 QT_BEGIN_NAMESPACE
+
+#if QT_CONFIG(icu)
+static QBasicMutex s_icu_mutex;
+#endif
 
 /*
     Private
@@ -664,6 +669,9 @@ QTzTimeZonePrivate::~QTzTimeZonePrivate()
 
 QTzTimeZonePrivate *QTzTimeZonePrivate::clone() const
 {
+#if QT_CONFIG(icu)
+    const auto lock = qt_scoped_lock(s_icu_mutex);
+#endif
     return new QTzTimeZonePrivate(*this);
 }
 
@@ -908,12 +916,14 @@ QString QTzTimeZonePrivate::displayName(qint64 atMSecsSinceEpoch,
                                         const QLocale &locale) const
 {
 #if QT_CONFIG(icu)
+    auto lock = qt_unique_lock(s_icu_mutex);
     if (!m_icu)
         m_icu = new QIcuTimeZonePrivate(m_id);
     // TODO small risk may not match if tran times differ due to outdated files
     // TODO Some valid TZ names are not valid ICU names, use translation table?
     if (m_icu->isValid())
         return m_icu->displayName(atMSecsSinceEpoch, nameType, locale);
+    lock.unlock();
 #else
     Q_UNUSED(nameType)
     Q_UNUSED(locale)
@@ -927,12 +937,14 @@ QString QTzTimeZonePrivate::displayName(QTimeZone::TimeType timeType,
                                         const QLocale &locale) const
 {
 #if QT_CONFIG(icu)
+    auto lock = qt_unique_lock(s_icu_mutex);
     if (!m_icu)
         m_icu = new QIcuTimeZonePrivate(m_id);
     // TODO small risk may not match if tran times differ due to outdated files
     // TODO Some valid TZ names are not valid ICU names, use translation table?
     if (m_icu->isValid())
         return m_icu->displayName(timeType, nameType, locale);
+    lock.unlock();
 #else
     Q_UNUSED(timeType)
     Q_UNUSED(nameType)
