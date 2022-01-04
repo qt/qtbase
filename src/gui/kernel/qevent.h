@@ -114,7 +114,7 @@ public:
     }
     void setTimestamp(quint64 timestamp) override;
     qsizetype pointCount() const { return m_points.count(); }
-    QEventPoint &point(qsizetype i) { return m_points[i]; }
+    QEventPoint &point(qsizetype i);
     const QList<QEventPoint> &points() const { return m_points; }
     QEventPoint *pointById(int id);
     bool allPointsGrabbed() const;
