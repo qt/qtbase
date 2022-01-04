@@ -1566,7 +1566,9 @@ QColor QColorDialogPrivate::grabScreenColor(const QPoint &p)
     QScreen *screen = QGuiApplication::screenAt(p);
     if (!screen)
         screen = QGuiApplication::primaryScreen();
-    const QPixmap pixmap = screen->grabWindow(0, p.x(), p.y(), 1, 1);
+    const QRect screenRect = screen->geometry();
+    const QPixmap pixmap =
+            screen->grabWindow(0, p.x() - screenRect.x(), p.y() - screenRect.y(), 1, 1);
     const QImage i = pixmap.toImage();
     return i.pixel(0, 0);
 }
