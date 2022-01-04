@@ -44,7 +44,7 @@
 #include <QtCore/qarraydata.h>
 #include <QtCore/qcontainertools_impl.h>
 
-#include <algorithm>
+#include <memory>
 #include <new>
 #include <string.h>
 #include <utility>
