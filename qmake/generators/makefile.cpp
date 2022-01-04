@@ -3492,6 +3492,9 @@ ProKey MakefileGenerator::fullTargetVariable() const
     return "TARGET";
 }
 
+/*
+ * Create a response file and return its file name.
+ */
 QString MakefileGenerator::createResponseFile(
         const QString &baseName,
         const ProStringList &objList,
@@ -3504,8 +3507,11 @@ QString MakefileGenerator::createResponseFile(
         fileName += '.' + var("MAKEFILE");
     QString filePath = Option::output_dir + QDir::separator() + fileName;
     QFile file(filePath);
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
-        return QString();
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        fprintf(stderr, "Error: Cannot open response file '%s' for writing.\n",
+                qPrintable(filePath));
+        exit(1);
+    }
     QTextStream t(&file);
     for (ProStringList::ConstIterator it = objList.constBegin(); it != objList.constEnd(); ++it) {
         QString path = (*it).toQString();
