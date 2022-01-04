@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -26,11 +26,8 @@
 **
 ****************************************************************************/
 
-#include <QBuffer>
 #include <QGuiApplication>
 #include <QImage>
-#include <QImageReader>
-#include <QSize>
 #include <QtGlobal>
 
 // silence warnings
@@ -44,12 +41,6 @@ extern "C" int LLVMFuzzerTestOneInput(const char *Data, size_t Size) {
     static char arg3[] = "minimal";
     static char *argv[] = {arg1, arg2, arg3, nullptr};
     static QGuiApplication qga(argc, argv);
-    QByteArray input(QByteArray::fromRawData(Data, Size));
-    QBuffer buf(&input);
-    const QSize size = QImageReader(&buf).size();
-    // Don't try to load huge valid images.
-    // They are justified in using huge memory.
-    if (!size.isValid() || uint64_t(size.width()) * size.height() < 64 * 1024 * 1024)
-        QImage().loadFromData(input);
+    QImage().loadFromData(QByteArray::fromRawData(Data, Size));
     return 0;
 }
