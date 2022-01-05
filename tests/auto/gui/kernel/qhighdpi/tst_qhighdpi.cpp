@@ -76,6 +76,8 @@ private slots:
     void mouseEvents();
     void mouseVelocity();
     void mouseVelocity_data();
+    void setCursor();
+    void setCursor_data();
 };
 
 /// Offscreen platform plugin test setup
@@ -802,6 +804,23 @@ void tst_QHighDpi::mouseVelocity()
         QVERIFY(qAbs(minVx - minVy) < 10);
         QVERIFY(maxVx + minVx < 10);
         QVERIFY(maxVy + minVy < 10);
+    }
+}
+
+void tst_QHighDpi::setCursor_data()
+{
+    standardScreenDpiTestData();
+}
+
+void tst_QHighDpi::setCursor()
+{
+    QFETCH(QList<qreal>, dpiValues);
+    std::unique_ptr<QGuiApplication> app(createStandardOffscreenApp(dpiValues));
+
+    for (QScreen *screen : app->screens()) {
+        QPoint center = screen->geometry().center();
+        QCursor::setPos(center.x(), center.y());
+        QCOMPARE(QCursor::pos(), center);
     }
 }
 
