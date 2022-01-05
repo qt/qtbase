@@ -11,6 +11,8 @@
 
 QT_BEGIN_NAMESPACE
 
+template <typename Event> class QEventStorage;
+
 #define Q_EVENT_DISABLE_COPY(Class) \
 protected: \
     Class(const Class &) = default; \
@@ -19,6 +21,7 @@ protected: \
     Class &operator=(Class &&) = delete
 
 #define Q_DECL_EVENT_COMMON(Class) \
+        friend class QEventStorage<Class>; \
     protected: \
         Class(const Class &); \
         Class(Class &&) = delete; \

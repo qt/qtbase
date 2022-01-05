@@ -608,8 +608,7 @@ void QGraphicsViewPrivate::replayLastMouseEvent()
 {
     if (!useLastMouseEvent || !scene)
         return;
-    QSinglePointEvent *spe = static_cast<QSinglePointEvent *>(&lastMouseEvent);
-    mouseMoveEventHandler(static_cast<QMouseEvent *>(spe));
+    mouseMoveEventHandler(&*lastMouseEvent);
 }
 
 /*!
@@ -618,7 +617,8 @@ void QGraphicsViewPrivate::replayLastMouseEvent()
 void QGraphicsViewPrivate::storeMouseEvent(QMouseEvent *event)
 {
     useLastMouseEvent = true;
-    lastMouseEvent = *event;
+    // *event may alias *lastMouseEvent
+    lastMouseEvent.storeUnlessAlias(*event);
 }
 
 void QGraphicsViewPrivate::mouseMoveEventHandler(QMouseEvent *event)
@@ -630,7 +630,7 @@ void QGraphicsViewPrivate::mouseMoveEventHandler(QMouseEvent *event)
 #endif
 
     storeMouseEvent(event);
-    lastMouseEvent.setAccepted(false);
+    lastMouseEvent->setAccepted(false);
 
     if (!sceneInteractionAllowed)
         return;
@@ -662,7 +662,7 @@ void QGraphicsViewPrivate::mouseMoveEventHandler(QMouseEvent *event)
         QCoreApplication::sendEvent(scene, &mouseEvent);
 
     // Remember whether the last event was accepted or not.
-    lastMouseEvent.setAccepted(mouseEvent.isAccepted());
+    lastMouseEvent->setAccepted(mouseEvent.isAccepted());
 
     if (mouseEvent.isAccepted() && mouseEvent.buttons() != 0) {
         // The event was delivered to a mouse grabber; the press is likely to
@@ -819,7 +819,7 @@ void QGraphicsViewPrivate::_q_setViewportCursor(const QCursor &cursor)
 void QGraphicsViewPrivate::_q_unsetViewportCursor()
 {
     Q_Q(QGraphicsView);
-    const auto items = q->items(lastMouseEvent.position().toPoint());
+    const auto items = q->items(lastMouseEvent->position().toPoint());
     for (QGraphicsItem *item : items) {
         if (item->isEnabled() && item->hasCursor()) {
             _q_setViewportCursor(item->cursor());
@@ -3183,7 +3183,7 @@ void QGraphicsView::mouseDoubleClickEvent(QMouseEvent *event)
     event->setAccepted(isAccepted);
 
     // Update the last mouse event accepted state.
-    d->lastMouseEvent.setAccepted(isAccepted);
+    d->lastMouseEvent->setAccepted(isAccepted);
 }
 
 /*!
@@ -3197,7 +3197,7 @@ void QGraphicsView::mousePressEvent(QMouseEvent *event)
     // scroll-dragging; even in non-interactive mode, scroll hand dragging is
     // allowed, so we store the event at the very top of this function.
     d->storeMouseEvent(event);
-    d->lastMouseEvent.setAccepted(false);
+    d->lastMouseEvent->setAccepted(false);
 
     if (d->sceneInteractionAllowed) {
         // Store some of the event's button-down data.
@@ -3235,7 +3235,7 @@ void QGraphicsView::mousePressEvent(QMouseEvent *event)
             event->setAccepted(isAccepted);
 
             // Update the last mouse event accepted state.
-            d->lastMouseEvent.setAccepted(isAccepted);
+            d->lastMouseEvent->setAccepted(isAccepted);
 
             if (isAccepted)
                 return;
@@ -3284,7 +3284,7 @@ void QGraphicsView::mouseMoveEvent(QMouseEvent *event)
         if (d->handScrolling) {
             QScrollBar *hBar = horizontalScrollBar();
             QScrollBar *vBar = verticalScrollBar();
-            QPoint delta = event->position().toPoint() - d->lastMouseEvent.position().toPoint();
+            QPoint delta = event->position().toPoint() - d->lastMouseEvent->position().toPoint();
             hBar->setValue(hBar->value() + (isRightToLeft() ? delta.x() : -delta.x()));
             vBar->setValue(vBar->value() - delta.y());
 
@@ -3318,7 +3318,7 @@ void QGraphicsView::mouseReleaseEvent(QMouseEvent *event)
 #endif
         d->handScrolling = false;
 
-        if (d->scene && d->sceneInteractionAllowed && !d->lastMouseEvent.isAccepted() && d->handScrollMotions <= 6) {
+        if (d->scene && d->sceneInteractionAllowed && !d->lastMouseEvent->isAccepted() && d->handScrollMotions <= 6) {
             // If we've detected very little motion during the hand drag, and
             // no item accepted the last event, we'll interpret that as a
             // click to the scene, and reset the selection.
@@ -3355,7 +3355,7 @@ void QGraphicsView::mouseReleaseEvent(QMouseEvent *event)
         QCoreApplication::sendEvent(d->scene, &mouseEvent);
 
     // Update the last and current mouse events' accepted state.
-    d->lastMouseEvent.setAccepted(mouseEvent.isAccepted());
+    d->lastMouseEvent->setAccepted(mouseEvent.isAccepted());
     event->setAccepted(mouseEvent.isAccepted());
 
 #ifndef QT_NO_CURSOR

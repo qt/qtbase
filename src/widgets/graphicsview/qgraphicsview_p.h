@@ -89,7 +89,7 @@ public:
     qreal topIndent;
 
     // Replaying mouse events
-    QMutableSinglePointEvent lastMouseEvent;
+    QEventStorage<QMouseEvent> lastMouseEvent;
     void replayLastMouseEvent();
     void storeMouseEvent(QMouseEvent *event);
     void mouseMoveEventHandler(QMouseEvent *event);

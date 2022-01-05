@@ -24,6 +24,100 @@ QT_BEGIN_NAMESPACE
 
 class QPointingDevice;
 
+/*!
+    \internal
+    \since 6.9
+
+    This class provides a way to store copies of QEvents. QEvents can otherwise
+    only be copied by \l{QEvent::clone()}{cloning}, which allocates the copy on
+    the heap. By befriending concrete QEvent subclasses, QEventStorage gains
+    access to their protected copy constructors.
+
+    It is similar to std::optional, but with a more targeted API.
+
+    Note that by storing an event in QEventStorage, it is always sliced.
+*/
+template <typename Event>
+class QEventStorage
+{
+    Q_DISABLE_COPY_MOVE(QEventStorage)
+    static_assert(std::is_base_of_v<QEvent, Event>);
+    union {
+        char m_eventNotSet; // could be std::monostate, but don't want to pay for <variant> include
+        Event m_event;
+    };
+    bool m_engaged = false;
+
+    void engage(const Event &e)
+    {
+        Q_ASSERT(!m_engaged);
+        new (&m_event) Event(e);
+        m_engaged = true;
+    }
+
+    void disengage()
+    {
+        Q_ASSERT(m_engaged);
+        m_event.~Event();
+        m_engaged = false;
+    }
+
+public:
+    QEventStorage() noexcept : m_eventNotSet{} {}
+    explicit QEventStorage(const Event &e)
+    {
+        engage(e);
+    }
+
+    ~QEventStorage()
+    {
+        if (m_engaged)
+            disengage();
+    }
+
+    explicit operator bool() const noexcept { return m_engaged; }
+    bool operator!() const noexcept { return !m_engaged; }
+
+    Event &store(const Event &e)
+    {
+        if (m_engaged)
+            disengage();
+        engage(e);
+        return m_event;
+    }
+
+    Event &storeUnlessAlias(const Event &e)
+    {
+        if (m_engaged && &e == &m_event)
+            return m_event;
+        return store(e);
+    }
+
+    const Event &operator*() const
+    {
+        Q_PRE(m_engaged);
+        return m_event;
+    }
+
+    Event &operator*()
+    {
+        Q_PRE(m_engaged);
+        return m_event;
+    }
+
+    const Event *operator->() const
+    {
+        Q_PRE(m_engaged);
+        return &m_event;
+    }
+
+    Event *operator->()
+    {
+        Q_PRE(m_engaged);
+        return &m_event;
+    }
+};
+
 class Q_GUI_EXPORT QMutableTouchEvent : public QTouchEvent
 {
 public:
