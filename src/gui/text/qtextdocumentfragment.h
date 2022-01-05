@@ -64,6 +64,7 @@ public:
     bool isEmpty() const;
 
     QString toPlainText() const;
+    QString toRawText() const;
 #ifndef QT_NO_TEXTHTMLPARSER
     QString toHtml() const;
 #endif // QT_NO_TEXTHTMLPARSER

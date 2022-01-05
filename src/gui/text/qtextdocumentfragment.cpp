@@ -266,11 +266,10 @@ void QTextDocumentFragmentPrivate::insert(QTextCursor &_cursor) const
     document fragment. Document fragments can also be created by the
     static functions, fromPlainText() and fromHtml().
 
-    The contents of a document fragment can be obtained as plain text
-    by using the toPlainText() function, or it can be obtained as HTML
+    The contents of a document fragment can be obtained as raw text
+    by using the toRawText() function, or it can be obtained as HTML
     with toHtml().
 */
-
 
 /*!
     Constructs an empty QTextDocumentFragment.
@@ -358,10 +357,16 @@ bool QTextDocumentFragment::isEmpty() const
 }
 
 /*!
-    Returns the document fragment's text as plain text (i.e. with no
-    formatting information).
+    This function returns the same as toRawText(), but will replace
+    some unicode characters with ASCII alternatives.
+    In particular, no-break space (U+00A0) is replaced by a regular
+    space (U+0020), and both paragraph (U+2029) and line (U+2028)
+    separators are replaced by line feed (U+000A).
+    If you need the precise contents of the document, use toRawText()
+    instead.
 
-    \sa toHtml()
+
+    \sa toHtml(), toRawText()
 */
 QString QTextDocumentFragment::toPlainText() const
 {
@@ -369,6 +374,21 @@ QString QTextDocumentFragment::toPlainText() const
         return QString();
 
     return d->doc->toPlainText();
+}
+
+/*!
+    Returns the document fragment's text as raw text (i.e. with no
+    formatting information).
+
+    \since 6.4
+    \sa toHtml(), toPlainText()
+*/
+QString QTextDocumentFragment::toRawText() const
+{
+    if (!d)
+        return QString();
+
+    return d->doc->toRawText();
 }
 
 #ifndef QT_NO_TEXTHTMLPARSER

@@ -100,6 +100,7 @@ private slots:
     void inheritAlignment();
     void dontEmitEmptyNodeWhenEmptyTagIsFollowedByCloseTag();
     void toPlainText();
+    void toRawText();
     void copyTableRow();
     void copyTableColumn();
     void copySubTable();
@@ -1092,6 +1093,14 @@ void tst_QTextDocumentFragment::toPlainText()
     input += "Blah";
     doc->setPlainText(input);
     QCOMPARE(doc->blockCount(), 3);
+}
+
+void tst_QTextDocumentFragment::toRawText()
+{
+    // Make sure nbsp, line separator, paragraph separator is preserved
+    doc->setPlainText("Hello\u0A00\u2028\u2029World");
+
+    QCOMPARE(QTextDocumentFragment(doc).toRawText(), "Hello\u0A00\u2028\u2029World");
 }
 
 void tst_QTextDocumentFragment::copyTableRow()
