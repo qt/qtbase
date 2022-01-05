@@ -14,21 +14,35 @@ include(.cmake.conf)
 # Bail out if any part of the build directory's path is symlinked.
 function(qt_internal_check_if_path_has_symlinks path)
     get_filename_component(dir "${path}" ABSOLUTE)
-    while(TRUE)
-        if(IS_SYMLINK "${dir}")
-            message(FATAL_ERROR "The path \"${path}\" contains symlinks. \
-This is not supported. Possible solutions:
-- map directories using a transparent mechanism such as mount --bind
-- pass the real path of the build directory to CMake, e.g. using \
-cd $(realpath <path>) before invoking cmake <source_dir>.")
+    set(is_symlink FALSE)
+    if(CMAKE_HOST_WIN32)
+        # CMake marks Windows mount points as symbolic links, so use simplified REALPATH check
+        # on Windows platforms instead of IS_SYMLINK.
+        get_filename_component(dir_realpath "${dir}" REALPATH)
+        if(NOT dir STREQUAL dir_realpath)
+            set(is_symlink TRUE)
         endif()
+    else()
+        while(TRUE)
+            if(IS_SYMLINK "${dir}")
+                set(is_symlink TRUE)
+                break()
+            endif()
 
-        set(prev_dir "${dir}")
-        get_filename_component(dir "${dir}" DIRECTORY)
-        if("${dir}" STREQUAL "${prev_dir}")
-            return()
-        endif()
-    endwhile()
+            set(prev_dir "${dir}")
+            get_filename_component(dir "${dir}" DIRECTORY)
+            if("${dir}" STREQUAL "${prev_dir}")
+                return()
+            endif()
+        endwhile()
+    endif()
+    if(is_symlink)
+        message(FATAL_ERROR "The path \"${path}\" contains symlinks. \
+            This is not supported. Possible solutions:
+            - map directories using a transparent mechanism such as mount --bind
+            - pass the real path of the build directory to CMake, e.g. using \
+            cd $(realpath <path>) before invoking cmake <source_dir>.")
+    endif()
 endfunction()
 qt_internal_check_if_path_has_symlinks("${CMAKE_BINARY_DIR}")
 
