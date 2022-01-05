@@ -3541,10 +3541,10 @@ void tst_QGraphicsView::embeddedViewsWithFocus()
         void focusOutEvent(QFocusEvent *) override { --focusCount; }
     };
 
-    QGraphicsScene *innerScene = new QGraphicsScene;
+    QGraphicsScene innerScene;
     FocusWidget *innerWidget = new FocusWidget;
-    innerScene->addWidget(innerWidget);
-    QGraphicsView *innerView = new QGraphicsView(innerScene);
+    innerScene.addWidget(innerWidget);
+    QGraphicsView *innerView = new QGraphicsView(&innerScene);
 
     QGraphicsScene outerScene;
     FocusWidget *outerWidget = new FocusWidget;
@@ -3562,7 +3562,7 @@ void tst_QGraphicsView::embeddedViewsWithFocus()
     QCOMPARE(outerView.itemAt(outerCenter), outerProxy);
     QCOMPARE(outerView.itemAt(innerCenter), nestedProxy);
     QVERIFY(outerScene.isActive());
-    QVERIFY(innerScene->isActive());
+    QVERIFY(innerScene.isActive());
 
     QCOMPARE(outerWidget->focusCount, 0);
     QCOMPARE(innerWidget->focusCount, 0);
