@@ -13,7 +13,7 @@ qt_internal_add_test(tst_qfuture
         Qt::CorePrivate
 )
 
-qt_internal_extend_target(tst_qmetatype CONDITION MSVC
+qt_internal_extend_target(tst_qfuture CONDITION MSVC
     COMPILE_OPTIONS
         /bigobj
 )
