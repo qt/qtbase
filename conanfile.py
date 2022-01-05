@@ -504,9 +504,25 @@ class QtBase(ConanFile):
         elif debug == True:
             _set_build_type("Debug")
         else:
-            # set default that mirror the configure(.bat) default values
-            self.options.release = True
-            _set_build_type("Release")
+            # As a fallback set the build type for Qt configure based on the 'build_type'
+            # defined in the conan build settings
+            build_type = self.settings.get_safe("build_type")
+            if build_type in [None, "None"]:
+                # set default that mirror the configure(.bat) default values
+                self.options.release = True
+                self.settings.build_type = "Release"
+            elif build_type == "Release":
+                self.options.release = True
+            elif build_type == "Debug":
+                self.options.debug = True
+            elif build_type == "RelWithDebInfo":
+                self.options.release = True
+                self.options.force_debug_info = True
+            elif build_type == "MinSizeRel":
+                self.options.release = True
+                self.options.optimize_size = True
+            else:
+                raise QtConanError("Unknown build_type: {0}".format(self.settings.build_type))
 
     def build(self):
         self.python_requires["qt-conan-common"].module.build_env_wrap(self, _build_qtbase)
