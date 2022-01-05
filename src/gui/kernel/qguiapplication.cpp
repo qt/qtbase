@@ -2172,7 +2172,7 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
     QPointF localPoint = e->localPos;
     bool doubleClick = false;
     auto persistentEPD = devPriv->pointById(0);
-    const auto &persistentPoint = QMutableEventPoint::from(persistentEPD->eventPoint);
+    const auto &persistentPoint = persistentEPD->eventPoint;
 
     if (mouseMove) {
         QGuiApplicationPrivate::lastCursorPosition = globalPoint;
