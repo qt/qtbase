@@ -130,7 +130,8 @@ static GUID writableSpecialFolderId(QStandardPaths::StandardLocation type)
         FOLDERID_LocalAppData,  // GenericDataLocation ("Local" path)
         GUID(),                 // RuntimeLocation
         FOLDERID_LocalAppData,  // ConfigLocation ("Local" path)
-        GUID(), GUID(),         // DownloadLocation/GenericCacheLocation
+        FOLDERID_Downloads,     // DownloadLocation
+        GUID(),                 // GenericCacheLocation
         FOLDERID_LocalAppData,  // GenericConfigLocation ("Local" path)
         FOLDERID_RoamingAppData,// AppDataLocation ("Roaming" path)
         FOLDERID_LocalAppData,  // AppConfigLocation ("Local" path)
@@ -154,7 +155,8 @@ static GUID writableSpecialFolderId(QStandardPaths::StandardLocation type)
         FOLDERID_LocalAppDataLow,// GenericDataLocation ("Local" path)
         GUID(),                  // RuntimeLocation
         FOLDERID_LocalAppDataLow,// ConfigLocation ("Local" path)
-        GUID(), GUID(),          // DownloadLocation/GenericCacheLocation
+        FOLDERID_Downloads,      // DownloadLocation
+        GUID(),                  // GenericCacheLocation
         FOLDERID_LocalAppDataLow,// GenericConfigLocation ("Local" path)
         FOLDERID_RoamingAppData, // AppDataLocation ("Roaming" path)
         FOLDERID_LocalAppDataLow,// AppConfigLocation ("Local" path)
@@ -185,12 +187,6 @@ QString QStandardPaths::writableLocation(StandardLocation type)
 {
     QString result;
     switch (type) {
-    case DownloadLocation:
-        result = sHGetKnownFolderPath(FOLDERID_Downloads);
-        if (result.isEmpty())
-            result = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
-        break;
-
     case CacheLocation:
         // Although Microsoft has a Cache key it is a pointer to IE's cache, not a cache
         // location for everyone.  Most applications seem to be using a
