@@ -87,13 +87,18 @@ OSVERSIONINFOEX qWindowsVersionInfo()
             result.wServicePackMinor = 0;
 
             const QByteArray winVerOverride = qgetenv("QT_WINVER_OVERRIDE");
-            if (winVerOverride == "WINDOWS10" || winVerOverride == "2016") {
+            if (winVerOverride == "WINDOWS10" || winVerOverride == "2016"
+                || winVerOverride == "2019" || winVerOverride == "2022") {
                 result.dwMajorVersion = 10;
+            } else if (winVerOverride == "WINDOWS11") {
+                result.dwMajorVersion = 10;
+                result.dwBuildNumber = 22000;
             } else {
                 return realResult;
             }
 
-            if (winVerOverride == "2016") {
+            if (winVerOverride == "2016" || winVerOverride == "2019"
+                || winVerOverride == "2022") {
                 // If the current host OS is a domain controller and the override OS
                 // is also a server type OS, preserve that information
                 if (result.wProductType == VER_NT_WORKSTATION)
