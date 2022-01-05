@@ -4008,6 +4008,10 @@
 
     \snippet code/doc_src_qmake-manual.pro 65
 
+    Loops can be interrupted with \c{break()}. The \c{next()} statement skips
+    the remainder of the loop's body and continues execution with the next
+    iteration.
+
     \section2 greaterThan(variablename, value)
 
     Tests that the value of \c variablename is greater than \c value. First,
