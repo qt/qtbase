@@ -1237,6 +1237,9 @@ static inline DXGI_FORMAT toD3DTextureFormat(QRhiTexture::Format format, QRhiTex
     case QRhiTexture::R32F:
         return DXGI_FORMAT_R32_FLOAT;
 
+    case QRhiTexture::RGB10A2:
+        return DXGI_FORMAT_R10G10B10A2_UNORM;
+
     case QRhiTexture::D16:
         return DXGI_FORMAT_R16_TYPELESS;
     case QRhiTexture::D24:
@@ -1290,7 +1293,7 @@ static inline DXGI_FORMAT toD3DTextureFormat(QRhiTexture::Format format, QRhiTex
     }
 }
 
-static inline QRhiTexture::Format colorTextureFormatFromDxgiFormat(DXGI_FORMAT format, QRhiTexture::Flags *flags)
+static inline QRhiTexture::Format swapchainReadbackTextureFormat(DXGI_FORMAT format, QRhiTexture::Flags *flags)
 {
     switch (format) {
     case DXGI_FORMAT_R8G8B8A8_UNORM:
@@ -1305,16 +1308,14 @@ static inline QRhiTexture::Format colorTextureFormatFromDxgiFormat(DXGI_FORMAT f
         if (flags)
             (*flags) |= QRhiTexture::sRGB;
         return QRhiTexture::BGRA8;
-    case DXGI_FORMAT_R8_UNORM:
-        return QRhiTexture::R8;
-    case DXGI_FORMAT_R8G8_UNORM:
-        return QRhiTexture::RG8;
-    case DXGI_FORMAT_R16_UNORM:
-        return QRhiTexture::R16;
-    case DXGI_FORMAT_R16G16_UNORM:
-        return QRhiTexture::RG16;
-    default: // this cannot assert, must warn and return unknown
-        qWarning("DXGI_FORMAT %d is not a recognized uncompressed color format", format);
+    case DXGI_FORMAT_R16G16B16A16_FLOAT:
+        return QRhiTexture::RGBA16F;
+    case DXGI_FORMAT_R32G32B32A32_FLOAT:
+        return QRhiTexture::RGBA32F;
+    case DXGI_FORMAT_R10G10B10A2_UNORM:
+        return QRhiTexture::RGB10A2;
+    default:
+        qWarning("DXGI_FORMAT %d cannot be read back", format);
         break;
     }
     return QRhiTexture::UnknownFormat;
@@ -1594,7 +1595,7 @@ void QRhiD3D11::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
                 src = swapChainD->backBufferTex;
                 dxgiFormat = swapChainD->colorFormat;
                 pixelSize = swapChainD->pixelSize;
-                format = colorTextureFormatFromDxgiFormat(dxgiFormat, nullptr);
+                format = swapchainReadbackTextureFormat(dxgiFormat, nullptr);
                 if (format == QRhiTexture::UnknownFormat)
                     continue;
             }

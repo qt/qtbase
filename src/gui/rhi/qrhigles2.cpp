@@ -422,6 +422,14 @@ QT_BEGIN_NAMESPACE
 #define GL_MAX_FRAGMENT_UNIFORM_VECTORS   0x8DFD
 #endif
 
+#ifndef GL_RGB10_A2
+#define GL_RGB10_A2                       0x8059
+#endif
+
+#ifndef GL_UNSIGNED_INT_2_10_10_10_REV
+#define GL_UNSIGNED_INT_2_10_10_10_REV    0x8368
+#endif
+
 /*!
     Constructs a new QRhiGles2InitParams.
 
@@ -733,6 +741,7 @@ bool QRhiGles2::create(QRhi::Flags flags)
     caps.r8Format = f->hasOpenGLFeature(QOpenGLFunctions::TextureRGFormats);
     caps.r16Format = f->hasOpenGLExtension(QOpenGLExtensions::Sized16Formats);
     caps.floatFormats = caps.ctxMajor >= 3; // 3.0 or ES 3.0
+    caps.rgb10Formats = caps.ctxMajor >= 3; // 3.0 or ES 3.0
     caps.depthTexture = caps.ctxMajor >= 3; // 3.0 or ES 3.0
     caps.packedDepthStencil = f->hasOpenGLExtension(QOpenGLExtensions::PackedDepthStencil);
 #ifdef Q_OS_WASM
@@ -1041,6 +1050,12 @@ static inline void toGlTextureFormat(QRhiTexture::Format format, const QRhiGles2
         *glformat = GL_RED;
         *gltype = GL_FLOAT;
         break;
+    case QRhiTexture::RGB10A2:
+        *glintformat = GL_RGB10_A2;
+        *glsizedintformat = *glintformat;
+        *glformat = GL_RGBA;
+        *gltype = GL_UNSIGNED_INT_2_10_10_10_REV;
+        break;
     case QRhiTexture::D16:
         *glintformat = GL_DEPTH_COMPONENT16;
         *glsizedintformat = *glintformat;
@@ -1113,6 +1128,9 @@ bool QRhiGles2::isTextureFormatSupported(QRhiTexture::Format format, QRhiTexture
     case QRhiTexture::R16F:
     case QRhiTexture::R32F:
         return caps.floatFormats;
+
+    case QRhiTexture::RGB10A2:
+        return caps.rgb10Formats;
 
     default:
         break;
@@ -3050,6 +3068,10 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
                     case QRhiTexture::RGBA32F:
                         result->data.resize(w * h * 16);
                         f->glReadPixels(0, 0, w, h, GL_RGBA, GL_FLOAT, result->data.data());
+                        break;
+                    case QRhiTexture::RGB10A2:
+                        result->data.resize(w * h * 4);
+                        f->glReadPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_INT_2_10_10_10_REV, result->data.data());
                         break;
                     default:
                         result->data.resize(w * h * 4);

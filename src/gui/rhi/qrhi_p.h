@@ -806,6 +806,8 @@ public:
         R16F,
         R32F,
 
+        RGB10A2,
+
         D16,
         D24,
         D24S8,

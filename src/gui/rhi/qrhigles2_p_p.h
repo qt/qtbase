@@ -940,6 +940,7 @@ public:
               r8Format(false),
               r16Format(false),
               floatFormats(false),
+              rgb10Formats(false),
               depthTexture(false),
               packedDepthStencil(false),
               needsDepthStencilCombinedAttach(false),
@@ -985,6 +986,7 @@ public:
         uint r8Format : 1;
         uint r16Format : 1;
         uint floatFormats : 1;
+        uint rgb10Formats : 1;
         uint depthTexture : 1;
         uint packedDepthStencil : 1;
         uint needsDepthStencilCombinedAttach : 1;

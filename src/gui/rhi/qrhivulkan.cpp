@@ -918,6 +918,10 @@ static inline VkFormat toVkTextureFormat(QRhiTexture::Format format, QRhiTexture
     case QRhiTexture::R32F:
         return VK_FORMAT_R32_SFLOAT;
 
+    case QRhiTexture::RGB10A2:
+        // intentionally A2B10G10R10, not A2R10G10B10
+        return VK_FORMAT_A2B10G10R10_UNORM_PACK32;
+
     case QRhiTexture::D16:
         return VK_FORMAT_D16_UNORM;
     case QRhiTexture::D24:
@@ -984,7 +988,7 @@ static inline VkFormat toVkTextureFormat(QRhiTexture::Format format, QRhiTexture
     }
 }
 
-static inline QRhiTexture::Format colorTextureFormatFromVkFormat(VkFormat format, QRhiTexture::Flags *flags)
+static inline QRhiTexture::Format swapchainReadbackTextureFormat(VkFormat format, QRhiTexture::Flags *flags)
 {
     switch (format) {
     case VK_FORMAT_R8G8B8A8_UNORM:
@@ -999,24 +1003,14 @@ static inline QRhiTexture::Format colorTextureFormatFromVkFormat(VkFormat format
         if (flags)
             (*flags) |= QRhiTexture::sRGB;
         return QRhiTexture::BGRA8;
-    case VK_FORMAT_R8_UNORM:
-        return QRhiTexture::R8;
-    case VK_FORMAT_R8G8_UNORM:
-        return QRhiTexture::RG8;
-    case VK_FORMAT_R8_SRGB:
-        if (flags)
-            (*flags) |= QRhiTexture::sRGB;
-        return QRhiTexture::R8;
-    case VK_FORMAT_R8G8_SRGB:
-        if (flags)
-            (*flags) |= QRhiTexture::sRGB;
-        return QRhiTexture::RG8;
-    case VK_FORMAT_R16_UNORM:
-        return QRhiTexture::R16;
-    case VK_FORMAT_R16G16_UNORM:
-        return QRhiTexture::RG16;
-    default: // this cannot assert, must warn and return unknown
-        qWarning("VkFormat %d is not a recognized uncompressed color format", format);
+    case VK_FORMAT_R16G16B16A16_SFLOAT:
+        return QRhiTexture::RGBA16F;
+    case VK_FORMAT_R32G32B32A32_SFLOAT:
+        return QRhiTexture::RGBA32F;
+    case VK_FORMAT_A2B10G10R10_UNORM_PACK32:
+        return QRhiTexture::RGB10A2;
+    default:
+        qWarning("VkFormat %d cannot be read back", format);
         break;
     }
     return QRhiTexture::UnknownFormat;
@@ -3409,7 +3403,7 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
                     continue;
                 }
                 readback.pixelSize = swapChainD->pixelSize;
-                readback.format = colorTextureFormatFromVkFormat(swapChainD->colorFormat, nullptr);
+                readback.format = swapchainReadbackTextureFormat(swapChainD->colorFormat, nullptr);
                 if (readback.format == QRhiTexture::UnknownFormat)
                     continue;
 
