@@ -672,8 +672,8 @@ void QWinSettingsPrivate::set(const QString &uKey, const QVariant &value)
             }
 
             if (type == REG_BINARY) {
-                QString s = variantToString(value);
-                regValueBuff = QByteArray(reinterpret_cast<const char*>(s.utf16()), s.length() * 2);
+                const QString s = variantToString(value);
+                regValueBuff = QByteArray(reinterpret_cast<const char *>(s.data()), s.length() * 2);
             } else {
                 QStringList::const_iterator it = l.constBegin();
                 for (; it != l.constEnd(); ++it) {

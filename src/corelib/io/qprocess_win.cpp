@@ -471,14 +471,14 @@ static QByteArray qt_create_environment(const QProcessEnvironmentPrivate::Map &e
         envlist.resize(envlist.size() + tmpSize);
 
         tmpSize = it.key().length() * sizeof(wchar_t);
-        memcpy(envlist.data() + pos, it.key().utf16(), tmpSize);
+        memcpy(envlist.data() + pos, it.key().data(), tmpSize);
         pos += tmpSize;
 
         memcpy(envlist.data() + pos, &equal, sizeof(wchar_t));
         pos += sizeof(wchar_t);
 
         tmpSize = it.value().length() * sizeof(wchar_t);
-        memcpy(envlist.data() + pos, it.value().utf16(), tmpSize);
+        memcpy(envlist.data() + pos, it.value().data(), tmpSize);
         pos += tmpSize;
 
         memcpy(envlist.data() + pos, &nul, sizeof(wchar_t));

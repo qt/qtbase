@@ -1039,7 +1039,7 @@ public:
         const QString nameSubstitute = QSettings(QLatin1String(keyC), QSettings::NativeFormat).value(familyName, familyName).toString();
         if (nameSubstitute != familyName) {
             const int nameSubstituteLength = qMin(nameSubstitute.length(), LF_FACESIZE - 1);
-            memcpy(lf.lfFaceName, nameSubstitute.utf16(), size_t(nameSubstituteLength) * sizeof(wchar_t));
+            memcpy(lf.lfFaceName, nameSubstitute.data(), size_t(nameSubstituteLength) * sizeof(wchar_t));
             lf.lfFaceName[nameSubstituteLength] = 0;
         }
 

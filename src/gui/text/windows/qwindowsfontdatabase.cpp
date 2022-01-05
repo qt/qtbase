@@ -480,7 +480,7 @@ static QChar *createFontFile(const QString &faceName)
     if (!faceName.isEmpty()) {
         const int nameLength = qMin(faceName.length(), LF_FACESIZE - 1);
         faceNamePtr = new QChar[nameLength + 1];
-        memcpy(static_cast<void *>(faceNamePtr), faceName.utf16(), sizeof(wchar_t) * nameLength);
+        memcpy(static_cast<void *>(faceNamePtr), faceName.data(), sizeof(wchar_t) * nameLength);
         faceNamePtr[nameLength] = u'\0';
     }
     return faceNamePtr;
@@ -990,7 +990,7 @@ QStringList QWindowsFontDatabase::addApplicationFont(const QByteArray &fontData,
             HDC hdc = GetDC(0);
             LOGFONT lf;
             memset(&lf, 0, sizeof(LOGFONT));
-            memcpy(lf.lfFaceName, familyName.utf16(), sizeof(wchar_t) * qMin(LF_FACESIZE - 1, familyName.size()));
+            memcpy(lf.lfFaceName, familyName.data(), sizeof(wchar_t) * qMin(LF_FACESIZE - 1, familyName.size()));
             lf.lfCharSet = DEFAULT_CHARSET;
             const QFontValues &values = fontValues.at(j);
             lf.lfWeight = values.weight;
@@ -1164,7 +1164,7 @@ QFontEngine *QWindowsFontDatabase::createEngine(const QFontDef &request, const Q
         const QString nameSubstitute = QWindowsFontEngineDirectWrite::fontNameSubstitute(fam);
         if (nameSubstitute != fam) {
             const int nameSubstituteLength = qMin(nameSubstitute.length(), LF_FACESIZE - 1);
-            memcpy(lf.lfFaceName, nameSubstitute.utf16(), nameSubstituteLength * sizeof(wchar_t));
+            memcpy(lf.lfFaceName, nameSubstitute.data(), nameSubstituteLength * sizeof(wchar_t));
             lf.lfFaceName[nameSubstituteLength] = 0;
         }
 

@@ -670,7 +670,7 @@ bool QWindowsMimeURI::convertFromMime(const FORMATETC &formatetc, const QMimeDat
             auto *f = reinterpret_cast<wchar_t *>(files);
             for (int i=0; i<fileNames.size(); i++) {
                 const auto l = size_t(fileNames.at(i).length());
-                memcpy(f, fileNames.at(i).utf16(), l * sizeof(ushort));
+                memcpy(f, fileNames.at(i).data(), l * sizeof(ushort));
                 f += l;
                 *f++ = 0;
             }
@@ -682,8 +682,8 @@ bool QWindowsMimeURI::convertFromMime(const FORMATETC &formatetc, const QMimeDat
             const auto urls = mimeData->urls();
             QByteArray result;
             if (!urls.isEmpty()) {
-                QString url = urls.at(0).toString();
-                result = QByteArray(reinterpret_cast<const char *>(url.utf16()),
+                const QString url = urls.at(0).toString();
+                result = QByteArray(reinterpret_cast<const char *>(url.data()),
                                     url.length() * int(sizeof(ushort)));
             }
             result.append('\0');

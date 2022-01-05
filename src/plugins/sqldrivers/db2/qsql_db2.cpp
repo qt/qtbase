@@ -808,11 +808,11 @@ bool QDB2Result::exec()
                 break; }
             case QMetaType::QString:
             {
-                QString str(values.at(i).toString());
+                const QString str(values.at(i).toString());
                 if (*ind != SQL_NULL_DATA)
                     *ind = str.length() * sizeof(QChar);
                 if (bindValueType(i) & QSql::Out) {
-                    QByteArray ba((char*)str.utf16(), str.capacity() * sizeof(QChar));
+                    QByteArray ba((char *)str.data(), str.capacity() * sizeof(QChar));
                     r = SQLBindParameter(d->hStmt,
                                         i + 1,
                                         qParamType[bindValueType(i) & 3],
