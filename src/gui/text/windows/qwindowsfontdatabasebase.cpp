@@ -274,14 +274,11 @@ QString QWindowsFontDatabaseBase::EmbeddedFont::changeFamilyName(const QString &
 
         // nameRecord now points to string data
         quint16 *stringStorage = reinterpret_cast<quint16 *>(nameRecord);
-        const quint16 *sourceString = newFamilyName.utf16();
-        for (int i = 0; i < newFamilyName.size(); ++i)
-            stringStorage[i] = qbswap<quint16>(sourceString[i]);
-        stringStorage += newFamilyName.size();
+        for (QChar ch : newFamilyName)
+            *stringStorage++ = qbswap<quint16>(quint16(ch.unicode()));
 
-        sourceString = regularString.utf16();
-        for (int i = 0; i < regularString.size(); ++i)
-            stringStorage[i] = qbswap<quint16>(sourceString[i]);
+        for (QChar ch : regularString)
+            *stringStorage++ = qbswap<quint16>(quint16(ch.unicode()));
     }
 
     quint32 *p = reinterpret_cast<quint32 *>(newNameTable.data());

@@ -692,12 +692,8 @@ static QTtfTable generateName(const QList<QTtfNameRecord> &name)
         off += len;
     }
     for (int i = 0; i < name.size(); ++i) {
-        const QString &n = name.at(i).value;
-        const ushort *uc = n.utf16();
-        for (int i = 0; i < n.length(); ++i) {
-            s << quint16(*uc);
-            ++uc;
-        }
+        for (QChar ch : name.at(i).value)
+            s << quint16(ch.unicode());
     }
     return t;
 }
