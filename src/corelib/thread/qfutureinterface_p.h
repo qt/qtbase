@@ -125,7 +125,7 @@ private:
 class QFutureCallOutInterface
 {
 public:
-    virtual ~QFutureCallOutInterface() {}
+    virtual ~QFutureCallOutInterface();
     virtual void postCallOutEvent(const QFutureCallOutEvent &) = 0;
     virtual void callOutInterfaceDisconnected() = 0;
 };

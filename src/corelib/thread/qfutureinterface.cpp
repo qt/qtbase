@@ -71,6 +71,8 @@ const auto suspendingOrSuspended =
 
 } // unnamed namespace
 
+QFutureCallOutInterface::~QFutureCallOutInterface()
+    = default;
 
 QFutureInterfaceBase::QFutureInterfaceBase(State initialState)
     : d(new QFutureInterfaceBasePrivate(initialState))
