@@ -55,6 +55,27 @@ function check_if_fully_booted
     [ "$bootanim" = stopped ] && [ "$boot_completed" = 1 ]
 }
 
+function check_for_package_manager
+{
+(   set +e
+    pm_output=`$ADB_EXEC shell pm get-install-location`
+    pm_retval=$?
+    [ $pm_retval = 0 ]  &&  [[ ! "$pm_output" =~ ^Error: ]]
+)}
+
+# NOTE: It happens that the device "finishes" booting and getprop shows
+# bootanim=stopped and boot_completed=1. But sometimes not all packages have
+# been installed (`pm list packages` shows only 16 packages installed), and
+# after around half a minute the boot animation starts spinning
+# (bootanim=running) again despite boot_completed=1 all the time. After some
+# minutes the boot animation stops again and the list of packages contains 80
+# packages, among which is also the "development" package.
+function check_for_development_installed
+{
+    package_list=`$ADB_EXEC shell pm list packages`
+    echo "$package_list" | grep -q package:com.android.development
+}
+
 
 for counter in `seq 1 ${EMULATOR_MAX_RETRIES}`; do
     $ADB_EXEC start-server
@@ -69,17 +90,24 @@ for counter in `seq 1 ${EMULATOR_MAX_RETRIES}`; do
     $EMULATOR_EXEC $EMULATOR_NAME  \
         -gpu swiftshader_indirect -no-audio -partition-size 4096  \
         -cores 4 -memory 3500 -no-snapshot-load -no-snapshot-save \
-        >$HOME/emulator.log 2>&1  &
+        </dev/null  >$HOME/emulator.log 2>&1  &
     emulator_pid=$!
+    disown $emulator_pid
 
     $ADB_EXEC wait-for-device
 
     # Wait about one minute for the emulator to come up
     emulator_status=down
-    for i in `seq 60`
+    for i in `seq 300`
     do
         sleep 1
-        if  check_for_android_device  &&  check_if_fully_booted
+        echo $i
+        # Yes, you need to check continuously for all these heuristics,
+        # see comment above
+        if     check_for_android_device  \
+            && check_if_fully_booted     \
+            && check_for_package_manager \
+            && check_for_development_installed
         then
             emulator_status=up
             break
@@ -103,5 +131,6 @@ for counter in `seq 1 ${EMULATOR_MAX_RETRIES}`; do
         fi
     fi
 done
+
 
 exit 0
