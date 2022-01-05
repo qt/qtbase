@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2021 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -107,7 +107,23 @@ Q_CORE_EXPORT void QTest::qSleep(int ms)
 */
 Q_CORE_EXPORT void QTest::qWait(int ms)
 {
-    (void)qWaitFor([]() { return false; }, ms);
+    // Ideally this method would be implemented in terms of qWaitFor, with
+    // a predicate that always returns false, but due to a compiler bug in
+    // GCC 6 we can't do that.
+
+    Q_ASSERT(QCoreApplication::instance());
+
+    QDeadlineTimer timer(ms, Qt::PreciseTimer);
+    int remaining = ms;
+    do {
+        QCoreApplication::processEvents(QEventLoop::AllEvents, remaining);
+        QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
+        remaining = timer.remainingTime();
+        if (remaining <= 0)
+            break;
+        QTest::qSleep(qMin(10, remaining));
+        remaining = timer.remainingTime();
+    } while (remaining > 0);
 }
 
 QT_END_NAMESPACE
