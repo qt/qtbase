@@ -117,16 +117,12 @@ private:
 void tst_QLabel::getSetCheck()
 {
     QLabel obj1;
-    // bool QLabel::wordWrap()
-    // void QLabel::setWordWrap(bool)
     obj1.setWordWrap(false);
-    QCOMPARE(false, obj1.wordWrap());
+    QVERIFY(!obj1.wordWrap());
     obj1.setWordWrap(true);
-    QCOMPARE(true, obj1.wordWrap());
+    QVERIFY(obj1.wordWrap());
 
 #if QT_CONFIG(shortcut)
-    // QWidget * QLabel::buddy()
-    // void QLabel::setBuddy(QWidget *)
     QWidget *var2 = new QWidget();
     obj1.setBuddy(var2);
     QCOMPARE(var2, obj1.buddy());
@@ -135,8 +131,6 @@ void tst_QLabel::getSetCheck()
     delete var2;
 #endif // QT_CONFIG(shortcut)
 
-    // QMovie * QLabel::movie()
-    // void QLabel::setMovie(QMovie *)
     QMovie *var3 = new QMovie;
     obj1.setMovie(var3);
     QCOMPARE(var3, obj1.movie());
