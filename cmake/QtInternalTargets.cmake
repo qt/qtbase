@@ -284,7 +284,10 @@ if (MSVC)
         )
     endif()
 
-    target_compile_options(PlatformCommonInternal INTERFACE -Zc:wchar_t)
+    target_compile_options(PlatformCommonInternal INTERFACE
+        -Zc:wchar_t
+        -bigobj
+    )
 
     target_compile_options(PlatformCommonInternal INTERFACE
         $<$<NOT:$<CONFIG:Debug>>:-guard:cf>
@@ -294,6 +297,10 @@ if (MSVC)
         -DYNAMICBASE -NXCOMPAT
         $<$<NOT:$<CONFIG:Debug>>:-OPT:REF -OPT:ICF -GUARD:CF>
     )
+endif()
+
+if(MINGW)
+    target_compile_options(PlatformCommonInternal INTERFACE -Wa,-mbig-obj)
 endif()
 
 if (GCC AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "9.2")
