@@ -122,7 +122,9 @@ static const StringEnum lookupTableData[] = {
     { "MoviesLocation", QStandardPaths::MoviesLocation, false },
     { "MusicLocation", QStandardPaths::MusicLocation, false },
     { "PicturesLocation", QStandardPaths::PicturesLocation, false },
+    { "PublicShareLocation", QStandardPaths::PublicShareLocation, false },
     { "RuntimeLocation", QStandardPaths::RuntimeLocation, false },
+    { "TemplatesLocation", QStandardPaths::TemplatesLocation, false },
     { "TempLocation", QStandardPaths::TempLocation, false }
 };
 
