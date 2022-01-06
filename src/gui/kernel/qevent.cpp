@@ -550,30 +550,30 @@ QSinglePointEvent::QSinglePointEvent(QEvent::Type type, const QPointingDevice *d
     bool isWheel = (type == QEvent::Type::Wheel);
     auto devPriv = QPointingDevicePrivate::get(const_cast<QPointingDevice *>(pointingDevice()));
     auto epd = devPriv->pointById(0);
-    QMutableEventPoint &mut = QMutableEventPoint::from(epd->eventPoint);
-    Q_ASSERT(mut.device() == dev);
-    // mut is now a reference to a non-detached instance that lives in QPointingDevicePrivate::activePoints.
+    QEventPoint &p = epd->eventPoint;
+    Q_ASSERT(p.device() == dev);
+    // p is a reference to a non-detached instance that lives in QPointingDevicePrivate::activePoints.
     // Update persistent info in that instance.
     if (isPress || isWheel)
-        mut.setGlobalLastPosition(globalPos);
+        QMutableEventPoint::setGlobalLastPosition(p, globalPos);
     else
-        mut.setGlobalLastPosition(mut.globalPosition());
-    mut.setGlobalPosition(globalPos);
-    if (isWheel && mut.state() != QEventPoint::State::Updated)
-        mut.setGlobalPressPosition(globalPos);
+        QMutableEventPoint::setGlobalLastPosition(p, p.globalPosition());
+    QMutableEventPoint::setGlobalPosition(p, globalPos);
+    if (isWheel && p.state() != QEventPoint::State::Updated)
+        QMutableEventPoint::setGlobalPressPosition(p, globalPos);
     if (type == MouseButtonDblClick)
-        mut.setState(QEventPoint::State::Stationary);
+        QMutableEventPoint::setState(p, QEventPoint::State::Stationary);
     else if (button == Qt::NoButton || isWheel)
-        mut.setState(QEventPoint::State::Updated);
+        QMutableEventPoint::setState(p, QEventPoint::State::Updated);
     else if (isPress)
-        mut.setState(QEventPoint::State::Pressed);
+        QMutableEventPoint::setState(p, QEventPoint::State::Pressed);
     else
-        mut.setState(QEventPoint::State::Released);
-    mut.setScenePosition(scenePos);
+        QMutableEventPoint::setState(p, QEventPoint::State::Released);
+    QMutableEventPoint::setScenePosition(p, scenePos);
     // Now detach, and update the detached instance with ephemeral state.
-    mut.detach();
-    mut.setPosition(localPos);
-    m_points.append(mut);
+    QMutableEventPoint::detach(p);
+    QMutableEventPoint::setPosition(p, localPos);
+    m_points.append(p);
 }
 
 /*! \internal
