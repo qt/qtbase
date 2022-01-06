@@ -408,7 +408,7 @@ inline void QDirPrivate::initFileEngine()
     \snippet code/src_corelib_io_qdir.cpp 0
 
     On Windows, the second example above will be translated to
-    \c{C:\Documents and Settings} when used to access files.
+    \c{C:\Users} when used to access files.
 
     Examples of relative paths:
 

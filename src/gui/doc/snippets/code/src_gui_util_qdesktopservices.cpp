@@ -66,7 +66,7 @@ mailto:user@foo.com?subject=Test&body=Just a test
 //! [1]
 
 //! [2]
-QDesktopServices::openUrl(QUrl("file:///C:/Documents and Settings/All Users/Desktop", QUrl::TolerantMode));
+QDesktopServices::openUrl(QUrl("file:///C:/Program Files", QUrl::TolerantMode));
 //! [2]
 
 //! [3]
