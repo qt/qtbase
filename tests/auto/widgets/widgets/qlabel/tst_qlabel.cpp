@@ -439,7 +439,6 @@ void tst_QLabel::emptyPixmap()
 void tst_QLabel::unicodeText_data()
 {
     QTest::addColumn<QString>("text");
-    QTest::addColumn<QString>("languageName");
 
     /*
     The "glass" phrase in Thai was the initial report for bug QTBUG-4848, was
@@ -456,25 +455,21 @@ void tst_QLabel::unicodeText_data()
     speech, also translated using http://translate.google.com.
     */
 
-    QTest::newRow("english") << QString::fromUtf8("I can eat glass and it doesn't hurt me.") << QString("english");
-    QTest::newRow("thai") << QString::fromUtf8("ฉันจะกินแก้วและไม่เจ็บฉัน") << QString("thai");
-    QTest::newRow("chinese") << QString::fromUtf8("我可以吃玻璃，并没有伤害我。") << QString("chinese");
-    QTest::newRow("arabic") << QString::fromUtf8("أستطيع أكل الزجاج ، وأنه لا يؤذيني.") << QString("arabic");
-    QTest::newRow("russian") << QString::fromUtf8("Я могу есть стекло, и не больно.") << QString("russian");
-    QTest::newRow("korean") << QString::fromUtf8("유리를 먹을 수있는, 그리고 그게 날 다치게하지 않습니다.") << QString("korean");
-    QTest::newRow("greek") << QString::fromUtf8("Μπορώ να φάτε γυαλί και δεν μου κάνει κακό.") << QString("greek");
-    QTest::newRow("german") << QString::fromUtf8("Ich kann Glas essen und es macht mich nicht heiß.") << QString("german");
-
+    QTest::newRow("english") << QString::fromUtf8("I can eat glass and it doesn't hurt me.");
+    QTest::newRow("thai") << QString::fromUtf8("ฉันจะกินแก้วและไม่เจ็บฉัน");
+    QTest::newRow("chinese") << QString::fromUtf8("我可以吃玻璃，并没有伤害我。");
+    QTest::newRow("arabic") << QString::fromUtf8("أستطيع أكل الزجاج ، وأنه لا يؤذيني.");
+    QTest::newRow("russian") << QString::fromUtf8("Я могу есть стекло, и не больно.");
+    QTest::newRow("korean") << QString::fromUtf8("유리를 먹을 수있는, 그리고 그게 날 다치게하지 않습니다.");
+    QTest::newRow("greek") << QString::fromUtf8("Μπορώ να φάτε γυαλί και δεν μου κάνει κακό.");
+    QTest::newRow("german") << QString::fromUtf8("Ich kann Glas essen und es macht mich nicht heiß.");
     QTest::newRow("thai_long") << QString::fromUtf8("เราจะต่อสู้ในทะเลและมหาสมุทร. เราจะต่อสู้ด้วยความมั่นใจเติบโตและความเจริญเติบโตในอากาศเราจะปกป้องเกาะของเราค่าใช้จ่ายใดๆอาจ."
-                                                    "เราจะต่อสู้บนชายหาดเราจะต่อสู้ในบริเวณเชื่อมโยงไปถึงเราจะต่อสู้ในช่องและในถนนที่เราจะต่อสู้ในภูเขานั้นเราจะไม่ยอม.")
-            << QString("thai_long");
+                                                    "เราจะต่อสู้บนชายหาดเราจะต่อสู้ในบริเวณเชื่อมโยงไปถึงเราจะต่อสู้ในช่องและในถนนที่เราจะต่อสู้ในภูเขานั้นเราจะไม่ยอม.");
 }
 
 void tst_QLabel::unicodeText()
 {
-    const QString testDataPath("testdata/unicodeText");
     QFETCH(QString, text);
-    QFETCH(QString, languageName);
     QFrame frame;
     QVBoxLayout *layout = new QVBoxLayout();
     QLabel *label = new QLabel(text, &frame);
