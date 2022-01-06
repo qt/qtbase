@@ -71,7 +71,7 @@
     \image javaiterators1.png
 
     Here's a typical loop for iterating through all the elements of a
-    QList<QString> in order and printing them to the console:
+    QList<QString> in order:
 
     \snippet code/doc_src_containers.cpp 1
 
