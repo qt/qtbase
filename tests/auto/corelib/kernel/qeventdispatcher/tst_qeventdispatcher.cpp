@@ -35,6 +35,7 @@
 #include <QTest>
 #include <QAbstractEventDispatcher>
 #include <QTimer>
+#include <QThreadPool>
 
 enum {
     PreciseTimerInterval    =   10,
@@ -58,20 +59,29 @@ protected:
 public:
     inline tst_QEventDispatcher()
         : QObject(),
-          eventDispatcher(QAbstractEventDispatcher::instance(thread()))
+          eventDispatcher(QAbstractEventDispatcher::instance(thread())),
+          isGuiEventDispatcher(QCoreApplication::instance()->inherits("QGuiApplication"))
     { }
 
 private slots:
     void initTestCase();
     void registerTimer();
+
     /* void registerSocketNotifier(); */ // Not implemented here, see tst_QSocketNotifier instead
     /* void registerEventNotifiier(); */ // Not implemented here, see tst_QWinEventNotifier instead
     void sendPostedEvents_data();
     void sendPostedEvents();
     void processEventsOnlySendsQueuedEvents();
+    // these two tests need to run before postedEventsPingPong
+    void postEventFromThread();
+    void postEventFromEventHandler();
+    // these tests don't leave the event dispatcher in a reliable state
     void postedEventsPingPong();
     void eventLoopExit();
     void interruptTrampling();
+
+private:
+    const bool isGuiEventDispatcher;
 };
 
 bool tst_QEventDispatcher::event(QEvent *e)
@@ -352,6 +362,106 @@ void tst_QEventDispatcher::processEventsOnlySendsQueuedEvents()
     QCoreApplication::processEvents();
     QCOMPARE(object.eventsReceived, 4);
 }
+
+void tst_QEventDispatcher::postEventFromThread()
+{
+    QThreadPool *threadPool = QThreadPool::globalInstance();
+    QAtomicInt hadToQuit = false;
+    QAtomicInt done = false;
+
+    threadPool->start([&]{
+        int loop = 1000 / 10; // give it a second
+        while (!done && --loop)
+            QThread::msleep(10);
+        if (done)
+            return;
+        hadToQuit = true;
+        QCoreApplication::eventDispatcher()->wakeUp();
+    });
+
+    struct EventReceiver : public QObject {
+        bool event(QEvent* event) override {
+            if (event->type() == QEvent::User)
+                return true;
+            return QObject::event(event);
+        }
+    } receiver;
+
+    int count = 500;
+    while (!hadToQuit && --count) {
+        threadPool->start([&receiver]{
+            QCoreApplication::postEvent(&receiver, new QEvent(QEvent::User));
+        });
+
+        QAbstractEventDispatcher::instance()->processEvents(QEventLoop::WaitForMoreEvents);
+    }
+    done = true;
+
+    if (QAbstractEventDispatcher::instance()->inherits("QEventDispatcherWin32"))
+        QEXPECT_FAIL("", QAbstractEventDispatcher::instance()->metaObject()->className(), Continue);
+
+    QVERIFY(!hadToQuit);
+    QVERIFY(threadPool->waitForDone());
+}
+
+void tst_QEventDispatcher::postEventFromEventHandler()
+{
+    QThreadPool *threadPool = QThreadPool::globalInstance();
+    QAtomicInt hadToQuit = false;
+    QAtomicInt done = false;
+
+    threadPool->start([&]{
+        int loop = 250 / 10; // give it 250ms
+        while (!done && --loop)
+            QThread::msleep(10);
+        if (done)
+            return;
+        hadToQuit = true;
+        QCoreApplication::eventDispatcher()->wakeUp();
+    });
+
+    struct EventReceiver : public QObject {
+        int i = 0;
+        bool event(QEvent* event) override
+        {
+            if (event->type() == QEvent::User) {
+                ++i;
+                if (i < 2)
+                    QCoreApplication::postEvent(this, new QEvent(QEvent::User));
+                return true;
+            }
+            return QObject::event(event);
+        }
+    } receiver;
+    QCoreApplication::postEvent(&receiver, new QEvent(QEvent::User));
+    while (receiver.i < 2)
+        QAbstractEventDispatcher::instance()->processEvents(QEventLoop::WaitForMoreEvents);
+    done = true;
+
+    bool coreFails = false;
+    bool guiFails = false;
+    const QByteArrayView eventDispatcherName(QAbstractEventDispatcher::instance()->metaObject()->className());
+#if defined(Q_OS_DARWIN)
+    coreFails = true;
+#elif defined(Q_OS_WINDOWS)
+    coreFails = true;
+    guiFails = true;
+#elif defined(Q_OS_LINUX)
+    // QXcbUnixEventDispatcher and QEventDispatcherUNIX do not do this correctly
+    // QXcbGlibEventDispatcher and QEventDispatcherGlib do
+    coreFails = !eventDispatcherName.contains("Glib");
+    guiFails = !eventDispatcherName.contains("Glib");
+#endif
+
+    if (coreFails && !isGuiEventDispatcher)
+        QEXPECT_FAIL("", eventDispatcherName.constData(), Continue);
+    if (guiFails && isGuiEventDispatcher)
+        QEXPECT_FAIL("", eventDispatcherName.constData(), Continue);
+
+    QVERIFY(!hadToQuit);
+    QVERIFY(threadPool->waitForDone());
+}
+
 
 void tst_QEventDispatcher::postedEventsPingPong()
 {
