@@ -314,7 +314,7 @@ void QGraphicsViewPrivate::translateTouchEvent(QGraphicsViewPrivate *d, QTouchEv
         auto &pt = touchEvent->point(i);
         // the scene will set the item local pos, startPos, lastPos, and rect before delivering to
         // an item, but for now those functions are returning the view's local coordinates
-        QMutableEventPoint::from(pt).setScenePosition(d->mapToScene(pt.position()));
+        QMutableEventPoint::setScenePosition(pt, d->mapToScene(pt.position()));
         // screenPos, startScreenPos, and lastScreenPos are already set
     }
 }

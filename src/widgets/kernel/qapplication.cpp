@@ -3152,8 +3152,8 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                 w = w->parentWidget();
                 touchEvent->setTarget(w);
                 for (int i = 0; i < touchEvent->pointCount(); ++i) {
-                    auto &pt = QMutableEventPoint::from(touchEvent->point(i));
-                    pt.setPosition(pt.position() + offset);
+                    auto &pt = touchEvent->point(i);
+                    QMutableEventPoint::setPosition(pt, pt.position() + offset);
                 }
             }
 
@@ -3802,8 +3802,8 @@ bool QApplicationPrivate::updateTouchPointsForWidget(QWidget *widget, QTouchEven
     bool containsPress = false;
 
     for (int i = 0; i < touchEvent->pointCount(); ++i) {
-        auto &pt = QMutableEventPoint::from(touchEvent->point(i));
-        pt.setPosition(widget->mapFromGlobal(pt.globalPosition()));
+        auto &pt = touchEvent->point(i);
+        QMutableEventPoint::setPosition(pt, widget->mapFromGlobal(pt.globalPosition()));
 
         if (pt.state() == QEventPoint::State::Pressed)
             containsPress = true;
@@ -3862,9 +3862,9 @@ void QApplicationPrivate::activateImplicitTouchGrab(QWidget *widget, QTouchEvent
     // there might already be an implicit grabber. Don't override that. A widget that
     // has partially recognized a gesture needs to grab all points.
     for (int i = 0; i < touchEvent->pointCount(); ++i) {
-        auto &mep = QMutableEventPoint::from(touchEvent->point(i));
-        if (!mep.target() && (mep.isAccepted() || grabMode == GrabAllPoints))
-            mep.setTarget(widget);
+        auto &ep = touchEvent->point(i);
+        if (!QMutableEventPoint::target(ep) && (ep.isAccepted() || grabMode == GrabAllPoints))
+            QMutableEventPoint::setTarget(ep, widget);
     }
     // TODO setExclusiveGrabber() to be consistent with Qt Quick?
 }
@@ -3913,9 +3913,9 @@ bool QApplicationPrivate::translateRawTouchEvent(QWidget *window, const QTouchEv
             // on touch pads, implicitly grab all touch points
             // on touch screens, grab touch points that are redirected to the closest widget
             if (device->type() == QInputDevice::DeviceType::TouchPad || usingClosestWidget)
-                QMutableEventPoint::from(touchPoint).setTarget(target);
+                QMutableEventPoint::setTarget(touchPoint, target);
         } else {
-            target = QMutableEventPoint::from(touchPoint).target();
+            target = QMutableEventPoint::target(touchPoint);
             if (!target)
                 continue;
         }

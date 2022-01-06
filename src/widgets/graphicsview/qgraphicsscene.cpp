@@ -5840,8 +5840,8 @@ void QGraphicsScenePrivate::updateTouchPointsForItem(QGraphicsItem *item, QTouch
         item->d_ptr->genericMapFromSceneTransform(static_cast<const QWidget *>(touchEvent->target()));
 
     for (int i = 0; i < touchEvent->pointCount(); ++i) {
-        auto &pt = QMutableEventPoint::from(touchEvent->point(i));
-        QMutableEventPoint::from(pt).setPosition(mapFromScene.map(pt.scenePosition()));
+        auto &pt = touchEvent->point(i);
+        QMutableEventPoint::setPosition(pt, mapFromScene.map(pt.scenePosition()));
     }
 }
 

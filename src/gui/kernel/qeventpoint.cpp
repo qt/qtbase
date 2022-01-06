@@ -515,12 +515,12 @@ QPointF QEventPoint::lastNormalizedPos() const
     modify an independent copy. (The independent copy can then be used in a
     subsequent event.)
 */
-void QMutableEventPoint::detach()
+void QMutableEventPoint::detach(QEventPoint &p)
 {
-    if (d)
-        d.detach();
+    if (p.d)
+        p.d.detach();
     else
-        d.reset(new QEventPointPrivate(-1, nullptr));
+        p.d.reset(new QEventPointPrivate(-1, nullptr));
 }
 
 /*! \internal
@@ -591,33 +591,33 @@ void QMutableEventPoint::updateFrom(const QEventPoint &other)
     The velocity calculation is skipped if the platform has promised to
     provide velocities already by setting the QInputDevice::Velocity capability.
 */
-void QMutableEventPoint::setTimestamp(const ulong t)
+void QMutableEventPoint::setTimestamp(QEventPoint &p, ulong t)
 {
     // On mouse press, if the mouse has moved from its last-known location,
     // QGuiApplicationPrivate::processMouseEvent() sends first a mouse move and
     // then a press. Both events will get the same timestamp. So we need to set
     // the press timestamp and position even when the timestamp isn't advancing,
     // but skip setting lastTimestamp and velocity because those need a time delta.
-    if (d) {
-        if (state() == QEventPoint::State::Pressed) {
-            d->pressTimestamp = t;
-            d->globalPressPos = d->globalPos;
+    if (p.d) {
+        if (p.state() == QEventPoint::State::Pressed) {
+            p.d->pressTimestamp = t;
+            p.d->globalPressPos = p.d->globalPos;
         }
-        if (d->timestamp == t)
+        if (p.d->timestamp == t)
             return;
     }
-    detach();
-    if (device()) {
+    detach(p);
+    if (p.device()) {
         // get the persistent instance out of QPointingDevicePrivate::activePoints
         // (which sometimes might be the same as this instance)
         QEventPointPrivate *pd = QPointingDevicePrivate::get(
-                    const_cast<QPointingDevice *>(d->device))->pointById(id())->eventPoint.d.get();
+                    const_cast<QPointingDevice *>(p.d->device))->pointById(p.id())->eventPoint.d.get();
         if (t > pd->timestamp) {
             pd->lastTimestamp = pd->timestamp;
             pd->timestamp = t;
-            if (state() == QEventPoint::State::Pressed)
+            if (p.state() == QEventPoint::State::Pressed)
                 pd->pressTimestamp = t;
-            if (pd->lastTimestamp > 0 && !device()->capabilities().testFlag(QInputDevice::Capability::Velocity)) {
+            if (pd->lastTimestamp > 0 && !p.device()->capabilities().testFlag(QInputDevice::Capability::Velocity)) {
                 // calculate instantaneous velocity according to time and distance moved since the previous point
                 QVector2D newVelocity = QVector2D(pd->globalPos - pd->globalLastPos) / (t - pd->lastTimestamp) * 1000;
                 // VERY simple kalman filter: does a weighted average
@@ -628,17 +628,17 @@ void QMutableEventPoint::setTimestamp(const ulong t)
                                          "based on movement" << pd->globalLastPos << "->" << pd->globalPos <<
                                          "over time" << pd->lastTimestamp << "->" << pd->timestamp;
             }
-            if (d != pd) {
-                d->lastTimestamp = pd->lastTimestamp;
-                d->velocity = pd->velocity;
+            if (p.d != pd) {
+                p.d->lastTimestamp = pd->lastTimestamp;
+                p.d->velocity = pd->velocity;
             }
         }
     }
-    d->timestamp = t;
+    p.d->timestamp = t;
 }
 
 /*!
-    \fn void QMutableEventPoint::setPosition(const QPointF &pos)
+    \fn void QMutableEventPoint::setPosition(QPointF pos)
     \internal
 
     Sets the localized position.

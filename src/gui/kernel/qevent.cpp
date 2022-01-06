@@ -362,7 +362,7 @@ void QPointerEvent::setTimestamp(quint64 timestamp)
 {
     QInputEvent::setTimestamp(timestamp);
     for (auto &p : m_points)
-        QMutableEventPoint::from(p).setTimestamp(timestamp);
+        QMutableEventPoint::setTimestamp(p, timestamp);
 }
 
 /*!
@@ -2563,9 +2563,9 @@ QTabletEvent::QTabletEvent(Type type, const QPointingDevice *dev, const QPointF 
       m_yTilt(yTilt),
       m_z(z)
 {
-    QMutableEventPoint &mut = QMutableEventPoint::from(point(0));
-    mut.setPressure(pressure);
-    mut.setRotation(rotation);
+    QEventPoint &p = point(0);
+    QMutableEventPoint::setPressure(p, pressure);
+    QMutableEventPoint::setRotation(p, rotation);
 }
 
 /*!
@@ -4548,7 +4548,7 @@ QTouchEvent::QTouchEvent(QEvent::Type eventType,
 {
     for (QEventPoint &point : m_points) {
         m_touchPointStates |= point.state();
-        QMutableEventPoint::from(point).setDevice(device);
+        QMutableEventPoint::setDevice(point, device);
     }
 }
 
@@ -4569,7 +4569,7 @@ QTouchEvent::QTouchEvent(QEvent::Type eventType,
       m_touchPointStates(touchPointStates)
 {
     for (QEventPoint &point : m_points)
-        QMutableEventPoint::from(point).setDevice(device);
+        QMutableEventPoint::setDevice(point, device);
 }
 
 /*!
@@ -4837,7 +4837,7 @@ void QMutableTouchEvent::addPoint(const QEventPoint &point)
     m_points.append(point);
     auto &added = m_points.last();
     if (!added.device())
-        QMutableEventPoint::from(added).setDevice(pointingDevice());
+        QMutableEventPoint::setDevice(added, pointingDevice());
     m_touchPointStates |= point.state();
 }
 

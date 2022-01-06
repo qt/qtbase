@@ -100,30 +100,30 @@ QTouchEventWidgetSequence::~QTouchEventWidgetSequence()
 
 QTouchEventWidgetSequence& QTouchEventWidgetSequence::press(int touchId, const QPoint &pt, QWidget *widget)
 {
-    auto &p = QMutableEventPoint::from(point(touchId));
-    p.setGlobalPosition(mapToScreen(widget, pt));
-    p.setState(QEventPoint::State::Pressed);
+    auto &p = point(touchId);
+    QMutableEventPoint::setGlobalPosition(p, mapToScreen(widget, pt));
+    QMutableEventPoint::setState(p, QEventPoint::State::Pressed);
     return *this;
 }
 QTouchEventWidgetSequence& QTouchEventWidgetSequence::move(int touchId, const QPoint &pt, QWidget *widget)
 {
-    auto &p = QMutableEventPoint::from(point(touchId));
-    p.setGlobalPosition(mapToScreen(widget, pt));
-    p.setState(QEventPoint::State::Updated);
+    auto &p = point(touchId);
+    QMutableEventPoint::setGlobalPosition(p, mapToScreen(widget, pt));
+    QMutableEventPoint::setState(p, QEventPoint::State::Updated);
     return *this;
 }
 QTouchEventWidgetSequence& QTouchEventWidgetSequence::release(int touchId, const QPoint &pt, QWidget *widget)
 {
-    auto &p = QMutableEventPoint::from(point(touchId));
-    p.setGlobalPosition(mapToScreen(widget, pt));
-    p.setState(QEventPoint::State::Released);
+    auto &p = point(touchId);
+    QMutableEventPoint::setGlobalPosition(p, mapToScreen(widget, pt));
+    QMutableEventPoint::setState(p, QEventPoint::State::Released);
     return *this;
 }
 
 QTouchEventWidgetSequence& QTouchEventWidgetSequence::stationary(int touchId)
 {
-    auto &p = QMutableEventPoint::from(pointOrPreviousPoint(touchId));
-    p.setState(QEventPoint::State::Stationary);
+    auto &p = pointOrPreviousPoint(touchId);
+    QMutableEventPoint::setState(p, QEventPoint::State::Stationary);
     return *this;
 }
 
