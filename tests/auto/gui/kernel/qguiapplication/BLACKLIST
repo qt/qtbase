@@ -4,3 +4,6 @@ opensuse-42.3
 
 [quitOnLastWindowClosedMulti]
 macos ci
+
+[quitOnLastWindowClosedWithEventLoopLocker]
+b2qt
