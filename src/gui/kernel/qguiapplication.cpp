@@ -1281,7 +1281,6 @@ static void init_platform(const QString &pluginNamesWithArguments, const QString
     if (!QGuiApplicationPrivate::platform_theme)
         QGuiApplicationPrivate::platform_theme = new QPlatformTheme;
 
-#ifndef QT_NO_PROPERTIES
     // Set arguments as dynamic properties on the native interface as
     // boolean 'foo' or strings: 'foo=bar'
     if (!platformArguments.isEmpty()) {
@@ -1296,7 +1295,6 @@ static void init_platform(const QString &pluginNamesWithArguments, const QString
             }
         }
     }
-#endif
 
     const auto platformIntegration = QGuiApplicationPrivate::platformIntegration();
     fontSmoothingGamma = platformIntegration->styleHint(QPlatformIntegration::FontSmoothingGamma).toReal();

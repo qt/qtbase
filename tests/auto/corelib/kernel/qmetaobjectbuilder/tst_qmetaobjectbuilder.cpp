@@ -1481,9 +1481,7 @@ int TestObject::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
         if (_id < ownMethodCount)
             qt_static_metacall(this, _c, _id, _a);
         _id -= ownMethodCount;
-    }
-#ifndef QT_NO_PROPERTIES
-      else if (_c == QMetaObject::ReadProperty) {
+    } else if (_c == QMetaObject::ReadProperty) {
         void *_v = _a[0];
         switch (_id) {
         case 0: *reinterpret_cast< int*>(_v) = intProp(); break;
@@ -1506,7 +1504,6 @@ int TestObject::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     } else if (_c == QMetaObject::ResetProperty) {
         _id -= ownPropertyCount;
     }
-#endif // QT_NO_PROPERTIES
     return _id;
 }
 

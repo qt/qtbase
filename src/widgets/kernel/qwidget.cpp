@@ -9236,7 +9236,6 @@ bool QWidget::event(QEvent *event)
         d->renderToTextureReallyDirty = 1;
 #endif
         break;
-#ifndef QT_NO_PROPERTIES
     case QEvent::DynamicPropertyChange: {
         const QByteArray &propName = static_cast<QDynamicPropertyChangeEvent *>(event)->propertyName();
         if (propName.length() == 13 && !qstrncmp(propName, "_q_customDpi", 12)) {
@@ -9254,7 +9253,6 @@ bool QWidget::event(QEvent *event)
             windowHandle()->setProperty(propName, property(propName));
         Q_FALLTHROUGH();
     }
-#endif
     default:
         return QObject::event(event);
     }

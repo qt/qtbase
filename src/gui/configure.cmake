@@ -1158,7 +1158,6 @@ qt_feature("accessibility" PUBLIC
     SECTION "Utilities"
     LABEL "Accessibility"
     PURPOSE "Provides accessibility support."
-    CONDITION QT_FEATURE_properties
 )
 qt_feature_definition("accessibility" "QT_NO_ACCESSIBILITY" NEGATE VALUE "1")
 qt_feature("multiprocess" PRIVATE

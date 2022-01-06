@@ -4048,8 +4048,6 @@ int QObjectPrivate::signalIndex(const char *signalName,
   Properties
  *****************************************************************************/
 
-#ifndef QT_NO_PROPERTIES
-
 /*!
   Sets the value of the object's \a name property to \a value.
 
@@ -4162,9 +4160,6 @@ QList<QByteArray> QObject::dynamicPropertyNames() const
         return d->extraData->propertyNames;
     return QList<QByteArray>();
 }
-
-#endif // QT_NO_PROPERTIES
-
 
 /*****************************************************************************
   QObject debugging output routines.

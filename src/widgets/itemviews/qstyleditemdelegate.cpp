@@ -458,10 +458,6 @@ QWidget *QStyledItemDelegate::createEditor(QWidget *parent,
 */
 void QStyledItemDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
 {
-#ifdef QT_NO_PROPERTIES
-    Q_UNUSED(editor);
-    Q_UNUSED(index);
-#else
     QVariant v = index.data(Qt::EditRole);
     QByteArray n = editor->metaObject()->userProperty().name();
 
@@ -470,7 +466,6 @@ void QStyledItemDelegate::setEditorData(QWidget *editor, const QModelIndex &inde
             v = QVariant(editor->property(n).metaType());
         editor->setProperty(n, v);
     }
-#endif
 }
 
 /*!
@@ -487,11 +482,6 @@ void QStyledItemDelegate::setModelData(QWidget *editor,
                                  QAbstractItemModel *model,
                                  const QModelIndex &index) const
 {
-#ifdef QT_NO_PROPERTIES
-    Q_UNUSED(model);
-    Q_UNUSED(editor);
-    Q_UNUSED(index);
-#else
     Q_D(const QStyledItemDelegate);
     Q_ASSERT(model);
     Q_ASSERT(editor);
@@ -501,7 +491,6 @@ void QStyledItemDelegate::setModelData(QWidget *editor,
             model->data(index, Qt::EditRole).userType());
     if (!n.isEmpty())
         model->setData(index, editor->property(n), Qt::EditRole);
-#endif
 }
 
 /*!

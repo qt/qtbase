@@ -1022,8 +1022,6 @@ void Generator::generateMetacall()
     }
 
     if (cdef->propertyList.size()) {
-
-        fprintf(out, "\n#ifndef QT_NO_PROPERTIES\n    ");
         if (needElse)
             fprintf(out, "else ");
         fprintf(out,
@@ -1032,7 +1030,6 @@ void Generator::generateMetacall()
             "            || _c == QMetaObject::RegisterPropertyMetaType) {\n"
             "        qt_static_metacall(this, _c, _id, _a);\n"
             "        _id -= %d;\n    }", int(cdef->propertyList.count()));
-        fprintf(out, "\n#endif // QT_NO_PROPERTIES");
     }
     if (methodList.size() || cdef->propertyList.size())
         fprintf(out, "\n    ");
@@ -1283,8 +1280,6 @@ void Generator::generateStaticMetacall()
             needReset |= !p.reset.isEmpty();
             hasBindableProperties |= !p.bind.isEmpty();
         }
-        fprintf(out, "\n#ifndef QT_NO_PROPERTIES\n    ");
-
         if (needElse)
             fprintf(out, "else ");
         fprintf(out, "if (_c == QMetaObject::ReadProperty) {\n");
@@ -1429,7 +1424,6 @@ void Generator::generateStaticMetacall()
             fprintf(out, "        }\n");
         }
         fprintf(out, "    }");
-        fprintf(out, "\n#endif // QT_NO_PROPERTIES");
         needElse = true;
     }
 

@@ -42,7 +42,7 @@ qt_feature("style-stylesheet" PUBLIC
     SECTION "Styles"
     LABEL "QStyleSheetStyle"
     PURPOSE "Provides a widget style which is configurable via CSS."
-    CONDITION QT_FEATURE_style_windows AND QT_FEATURE_properties AND QT_FEATURE_cssparser
+    CONDITION QT_FEATURE_style_windows AND QT_FEATURE_cssparser
 )
 qt_feature_definition("style-stylesheet" "QT_NO_STYLE_STYLESHEET" NEGATE VALUE "1")
 qt_feature("effects" PRIVATE
@@ -355,7 +355,7 @@ qt_feature("textedit" PUBLIC
     SECTION "Widgets"
     LABEL "QTextEdit"
     PURPOSE "Supports rich text editing."
-    CONDITION QT_FEATURE_scrollarea AND QT_FEATURE_properties AND QT_FEATURE_widgettextcontrol
+    CONDITION QT_FEATURE_scrollarea AND QT_FEATURE_widgettextcontrol
 )
 qt_feature_definition("textedit" "QT_NO_TEXTEDIT" NEGATE VALUE "1")
 qt_feature("syntaxhighlighter" PUBLIC
@@ -468,7 +468,7 @@ qt_feature("wizard" PUBLIC
     SECTION "Dialogs"
     LABEL "QWizard"
     PURPOSE "Provides a framework for multi-page click-through dialogs."
-    CONDITION ( QT_FEATURE_dialog ) AND ( QT_FEATURE_pushbutton ) AND ( QT_FEATURE_properties ) AND ( QT_FEATURE_label )
+    CONDITION ( QT_FEATURE_dialog ) AND ( QT_FEATURE_pushbutton ) AND ( QT_FEATURE_label )
 )
 qt_feature_definition("wizard" "QT_NO_WIZARD" NEGATE VALUE "1")
 qt_feature("listview" PUBLIC
@@ -496,7 +496,7 @@ qt_feature("datawidgetmapper" PUBLIC
     SECTION "ItemViews"
     LABEL "QDataWidgetMapper"
     PURPOSE "Provides mapping between a section of a data model to widgets."
-    CONDITION QT_FEATURE_itemviews AND QT_FEATURE_properties
+    CONDITION QT_FEATURE_itemviews
 )
 qt_feature_definition("datawidgetmapper" "QT_NO_DATAWIDGETMAPPER" NEGATE VALUE "1")
 qt_feature("columnview" PUBLIC

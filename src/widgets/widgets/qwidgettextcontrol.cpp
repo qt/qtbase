@@ -1433,9 +1433,7 @@ QRectF QWidgetTextControlPrivate::rectForPosition(int position) const
     int cursorWidth;
     {
         bool ok = false;
-#ifndef QT_NO_PROPERTIES
         cursorWidth = docLayout->property("cursorWidth").toInt(&ok);
-#endif
         if (!ok)
             cursorWidth = 1;
     }
@@ -2468,24 +2466,16 @@ void QWidgetTextControl::setOverwriteMode(bool overwrite)
 
 int QWidgetTextControl::cursorWidth() const
 {
-#ifndef QT_NO_PROPERTIES
     Q_D(const QWidgetTextControl);
     return d->doc->documentLayout()->property("cursorWidth").toInt();
-#else
-    return 1;
-#endif
 }
 
 void QWidgetTextControl::setCursorWidth(int width)
 {
     Q_D(QWidgetTextControl);
-#ifdef QT_NO_PROPERTIES
-    Q_UNUSED(width);
-#else
     if (width == -1)
         width = QApplication::style()->pixelMetric(QStyle::PM_TextCursorWidth, nullptr);
     d->doc->documentLayout()->setProperty("cursorWidth", width);
-#endif
     d->repaintCursor();
 }
 

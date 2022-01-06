@@ -397,13 +397,11 @@ public:
     void dumpObjectTree() const;
     void dumpObjectInfo() const;
 
-#ifndef QT_NO_PROPERTIES
     bool setProperty(const char *name, const QVariant &value);
     QVariant property(const char *name) const;
     QList<QByteArray> dynamicPropertyNames() const;
     QBindingStorage *bindingStorage() { return &d_ptr->bindingStorage; }
     const QBindingStorage *bindingStorage() const { return &d_ptr->bindingStorage; }
-#endif // QT_NO_PROPERTIES
 
 Q_SIGNALS:
     void destroyed(QObject * = nullptr);

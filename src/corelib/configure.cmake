@@ -679,12 +679,6 @@ qt_feature("threadsafe-cloexec"
 )
 qt_feature_definition("threadsafe-cloexec" "QT_THREADSAFE_CLOEXEC" VALUE "1")
 qt_feature_config("threadsafe-cloexec" QMAKE_PUBLIC_QT_CONFIG)
-qt_feature("properties" PUBLIC
-    SECTION "Kernel"
-    LABEL "Properties"
-    PURPOSE "Supports scripting Qt-based applications."
-)
-qt_feature_definition("properties" "QT_NO_PROPERTIES" NEGATE VALUE "1")
 qt_feature("regularexpression" PUBLIC
     SECTION "Kernel"
     LABEL "QRegularExpression"
@@ -861,7 +855,7 @@ qt_feature("animation" PUBLIC
     SECTION "Utilities"
     LABEL "Animation"
     PURPOSE "Provides a framework for animations."
-    CONDITION QT_FEATURE_properties AND QT_FEATURE_easingcurve
+    CONDITION QT_FEATURE_easingcurve
 )
 qt_feature_definition("animation" "QT_NO_ANIMATION" NEGATE VALUE "1")
 qt_feature("gestures" PUBLIC

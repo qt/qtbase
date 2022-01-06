@@ -1481,14 +1481,12 @@ void tst_QComboBox::setCurrentText()
     else
         QCOMPARE(testWidget->currentText(), QString("foo"));
 
-#ifndef QT_NO_PROPERTIES
     // verify WRITE for currentText property
     testWidget->setCurrentIndex(0);
     const QByteArray n("currentText");
     QCOMPARE(testWidget->property(n).toString(), QString("foo"));
     testWidget->setProperty(n, QString("bar"));
     QCOMPARE(testWidget->property(n).toString(), QString("bar"));
-#endif
 }
 
 void tst_QComboBox::currentTextChanged_data()
