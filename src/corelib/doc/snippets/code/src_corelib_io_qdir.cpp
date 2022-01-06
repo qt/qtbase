@@ -54,7 +54,7 @@ void wrapInFunction()
 
 //! [0]
 QDir("/home/user/Documents")
-QDir("C:/Documents and Settings")
+QDir("C:/Users")
 //! [0]
 
 
@@ -154,7 +154,7 @@ if (d1 != d2)
 
 
 //! [12]
-C:/Documents and Settings/Username
+C:/Users/Username
 //! [12]
 
 
