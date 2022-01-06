@@ -63,7 +63,7 @@ QStringIterator i(string); // implicitly converted to QStringView
 
 //! [1]
 while (i.hasNext())
-    qDebug() << i.next();
+    uint c = i.next();
 //! [1]
 }
 
