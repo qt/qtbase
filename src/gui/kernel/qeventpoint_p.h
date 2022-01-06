@@ -141,25 +141,27 @@ public:
 
     static const QMutableEventPoint &constFrom(const QEventPoint &me) { return static_cast<const QMutableEventPoint &>(me); }
 
-    void detach();
+    void detach() { detach(*this); }
+    static void detach(QEventPoint &p);
 
-    void setId(int pointId) { d->pointId = pointId; }
+#define TRIVIAL_SETTER(type, field, Field) \
+    void set##Field (type arg) { d->field = std::move(arg); } \
+    static void set##Field (QEventPoint &p, type arg) { p.d->field = std::move(arg); } \
+    /* end */
 
-    void setDevice(const QPointingDevice *device) { d->device = device; }
+    TRIVIAL_SETTER(int, pointId, Id)
+    TRIVIAL_SETTER(const QPointingDevice *, device, Device)
 
-    void setTimestamp(const ulong t);
+    // not trivial:
+    void setTimestamp(const ulong t) { setTimestamp(*this, t); }
+    static void setTimestamp(QEventPoint &p, ulong t);
 
-    void setPressTimestamp(const ulong t) { d->pressTimestamp = t; }
-
-    void setState(QEventPoint::State state) { d->state = state; }
-
-    void setUniqueId(const QPointingDeviceUniqueId &uid) { d->uniqueId = uid; }
-
-    void setPosition(const QPointF &pos) { d->pos = pos; }
-
-    void setScenePosition(const QPointF &pos) { d->scenePos = pos; }
-
-    void setGlobalPosition(const QPointF &pos) { d->globalPos = pos; }
+    TRIVIAL_SETTER(ulong, pressTimestamp, PressTimestamp)
+    TRIVIAL_SETTER(QEventPoint::State, state, State)
+    TRIVIAL_SETTER(QPointingDeviceUniqueId, uniqueId, UniqueId)
+    TRIVIAL_SETTER(QPointF, pos, Position)
+    TRIVIAL_SETTER(QPointF, scenePos, ScenePosition)
+    TRIVIAL_SETTER(QPointF, globalPos, GlobalPosition)
 
 #if QT_DEPRECATED_SINCE(6, 0)
     // temporary replacements for QTouchEvent::TouchPoint setters, mainly to make porting easier
@@ -171,27 +173,25 @@ public:
     void setScreenPos(const QPointF &pos) { d->globalPos = pos; }
 #endif
 
-    void setGlobalPressPosition(const QPointF &pos) { d->globalPressPos = pos; }
-
-    void setGlobalGrabPosition(const QPointF &pos) { d->globalGrabPos = pos; }
-
-    void setGlobalLastPosition(const QPointF &pos) { d->globalLastPos = pos; }
-
-    void setEllipseDiameters(const QSizeF &diams) { d->ellipseDiameters = diams; }
-
-    void setPressure(qreal v) { d->pressure = v; }
-
-    void setRotation(qreal v) { d->rotation = v; }
-
-    void setVelocity(const QVector2D &v) { d->velocity = v; }
+    TRIVIAL_SETTER(QPointF, globalPressPos, GlobalPressPosition)
+    TRIVIAL_SETTER(QPointF, globalGrabPos, GlobalGrabPosition)
+    TRIVIAL_SETTER(QPointF, globalLastPos, GlobalLastPosition)
+    TRIVIAL_SETTER(QSizeF, ellipseDiameters, EllipseDiameters)
+    TRIVIAL_SETTER(qreal, pressure, Pressure)
+    TRIVIAL_SETTER(qreal, rotation, Rotation)
+    TRIVIAL_SETTER(QVector2D, velocity, Velocity)
 
     QWindow *window() const { return d->window.data(); }
+    static QWindow *window(const QEventPoint &p) { return p.d->window.data(); }
 
-    void setWindow(const QPointer<QWindow> &w) { d->window = w; }
+    TRIVIAL_SETTER(QWindow *, window, Window)
 
     QObject *target() const { return d->target.data(); }
+    static QObject *target(const QEventPoint &p) { return p.d->target.data(); }
 
-    void setTarget(const QPointer<QObject> &t) { d->target = t; }
+    TRIVIAL_SETTER(QObject *, target, Target)
+
+#undef TRIVIAL_SETTER
 };
 
 static_assert(sizeof(QMutableEventPoint) == sizeof(QEventPoint));

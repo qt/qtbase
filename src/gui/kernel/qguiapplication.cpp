@@ -2232,7 +2232,7 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
     QMouseEvent ev(type, localPoint, localPoint, globalPoint, button, e->buttons, e->modifiers, e->source, device);
     // restore globalLastPosition to avoid invalidating the velocity calculations,
     // because the QPlatformCursor mouse event above was in native coordinates
-    QMutableEventPoint::from(persistentEPD->eventPoint).setGlobalLastPosition(lastGlobalPosition);
+    QMutableEventPoint::setGlobalLastPosition(persistentEPD->eventPoint, lastGlobalPosition);
     // ev now contains a detached copy of the QEventPoint from QPointingDevicePrivate::activePoints
     ev.setTimestamp(e->timestamp);
     if (window->d_func()->blockedByModalWindow && !qApp->d_func()->popupActive()) {
@@ -2410,7 +2410,7 @@ void QGuiApplicationPrivate::processEnterEvent(QWindowSystemInterfacePrivate::En
     const QPointingDevicePrivate *devPriv = QPointingDevicePrivate::get(event.pointingDevice());
     auto epd = devPriv->queryPointById(event.points().first().id());
     Q_ASSERT(epd);
-    QMutableEventPoint::from(epd->eventPoint).setVelocity({});
+    QMutableEventPoint::setVelocity(epd->eventPoint, {});
 
     QCoreApplication::sendSpontaneousEvent(e->enter.data(), &event);
 }
@@ -2800,9 +2800,7 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
         QSet<QWindow *> windowsNeedingCancel;
 
         for (auto &epd : devPriv->activePoints.values()) {
-            auto &mut = QMutableEventPoint::from(const_cast<QEventPoint &>(epd.eventPoint));
-            QWindow *w = mut.window();
-            if (w)
+            if (QWindow *w = QMutableEventPoint::window(epd.eventPoint))
                 windowsNeedingCancel.insert(w);
         }
 
