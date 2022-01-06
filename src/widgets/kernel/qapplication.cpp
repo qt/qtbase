@@ -2947,7 +2947,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                 if (w->isWindow() || w->testAttribute(Qt::WA_NoMousePropagation))
                     break;
 
-                QMutableSinglePointEvent::from(we).mutablePoint().setPosition(we.position() + w->pos());
+                QMutableEventPoint::setPosition(we.point(0), we.position() + w->pos());
                 w = w->parentWidget();
             } while (w);
             wheel->setAccepted(eventAccepted);

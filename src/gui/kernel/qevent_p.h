@@ -93,8 +93,6 @@ public:
 
     static QMutableSinglePointEvent &from(QSinglePointEvent &e) { return static_cast<QMutableSinglePointEvent &>(e); }
 
-    QMutableEventPoint &mutablePoint() { return QMutableEventPoint::from(point(0)); }
-
     void setSource(Qt::MouseEventSource s) { m_source = s; }
 
     bool isDoubleClick() { return m_doubleClick; }
