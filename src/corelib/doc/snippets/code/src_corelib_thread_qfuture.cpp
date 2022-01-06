@@ -62,7 +62,7 @@ QFuture<QString> future;
 ...
 QFutureIterator<QString> i(future);
 while (i.hasNext())
-    qDebug() << i.next();
+    QString s = i.next();
 //! [1]
 
 
@@ -70,5 +70,5 @@ while (i.hasNext())
 QFutureIterator<QString> i(future);
 i.toBack();
 while (i.hasPrevious())
-    qDebug() << i.previous();
+    QString s = i.previous();
 //! [2]
