@@ -1174,10 +1174,10 @@ void tst_QTouchEvent::multiPointRawEventTranslationOnTouchPad()
 
     // generate TouchBegin on leftWidget only
     {
-        QMutableEventPoint &tp0 = QMutableEventPoint::from(rawTouchPoints[0]);
+        QMutableEventPoint &tp0 = rawTouchPoints[0];
         tp0.setState(QEventPoint::State::Pressed);
         tp0.setGlobalPosition(leftScreenPos);
-        QMutableEventPoint & tp1 = QMutableEventPoint::from(rawTouchPoints[1]);
+        QMutableEventPoint & tp1 = rawTouchPoints[1];
         tp1.setState(QEventPoint::State::Pressed);
         tp1.setGlobalPosition(rightScreenPos);
     }
