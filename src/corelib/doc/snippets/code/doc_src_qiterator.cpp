@@ -53,7 +53,7 @@ QList<float> list;
 ...
 QListIterator<float> i(list);
 while (i.hasNext())
-    qDebug() << i.next();
+    float f = i.next();
 //! [0]
 
 
@@ -61,7 +61,7 @@ while (i.hasNext())
 QListIterator<float> i(list);
 i.toBack();
 while (i.hasPrevious())
-    qDebug() << i.previous();
+    float f = i.previous();
 //! [1]
 
 //! [6]
@@ -69,7 +69,7 @@ QSet<QString> set;
 ...
 QSetIterator<QString> i(set);
 while (i.hasNext())
-    qDebug() << i.next();
+    float f = i.next();
 //! [6]
 
 
@@ -77,7 +77,7 @@ while (i.hasNext())
 QSetIterator<QString> i(set);
 i.toBack();
 while (i.hasPrevious())
-    qDebug() << i.previous();
+    QString s = i.previous();
 //! [7]
 
 
@@ -86,7 +86,7 @@ QList<float> list;
 ...
 QMutableListIterator<float> i(list);
 while (i.hasNext())
-    qDebug() << i.next();
+    float f = i.next();
 //! [8]
 
 
@@ -94,7 +94,7 @@ while (i.hasNext())
 QMutableListIterator<float> i(list);
 i.toBack();
 while (i.hasPrevious())
-    qDebug() << i.previous();
+    float f = i.previous();
 //! [9]
 
 
@@ -115,7 +115,7 @@ QSet<float> set;
 ...
 QMutableSetIterator<float> i(set);
 while (i.hasNext())
-    qDebug() << i.next();
+    float f = i.next();
 //! [17]
 
 //! [19]

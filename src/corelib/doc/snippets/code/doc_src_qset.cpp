@@ -73,8 +73,10 @@ if (!set.contains("ninety-nine"))
 
 //! [4]
 QSetIterator<QWidget *> i(set);
-while (i.hasNext())
-    qDebug() << i.next();
+while (i.hasNext()) {
+    QWidget *w = i.next();
+    qDebug() << w;
+}
 //! [4]
 
 
