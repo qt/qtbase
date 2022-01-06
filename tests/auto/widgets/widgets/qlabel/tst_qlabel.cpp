@@ -38,6 +38,7 @@
 #include <qmovie.h>
 #include <qpicture.h>
 #include <qmessagebox.h>
+#include <qsizepolicy.h>
 #include <qfontmetrics.h>
 #include <qmath.h>
 #include <private/qlabel_p.h>
@@ -75,6 +76,7 @@ private Q_SLOTS:
 #endif
     void setNum();
     void clear();
+    void wordWrap_data();
     void wordWrap();
     void eventPropagation_data();
     void eventPropagation();
@@ -274,21 +276,36 @@ void tst_QLabel::clear()
     QVERIFY(testWidget->text().isEmpty());
 }
 
+void tst_QLabel::wordWrap_data()
+{
+    QTest::addColumn<QString>("text");
+
+    QTest::newRow("Plain text") << "Plain text1";
+    QTest::newRow("Rich text") << "<b>Rich text</b>";
+    QTest::newRow("Long text")
+                  << "This is a very long text to check that QLabel "
+                     "does not wrap, even if the text would require wrapping to be fully displayed";
+}
+
 void tst_QLabel::wordWrap()
 {
+    QFETCH(QString, text);
+
     QLabel label;
-
+    label.setText(text);
     QVERIFY(!label.wordWrap());
+    QVERIFY(!label.sizePolicy().hasHeightForWidth());
 
-    label.setText("Plain Text");
-    QVERIFY(!label.wordWrap());
+    const QSize unWrappedSizeHint = label.sizeHint();
 
-    label.setText("<b>rich text</b>");
-    QVERIFY(!label.wordWrap());
+    label.setWordWrap(true);
+    QVERIFY(label.sizePolicy().hasHeightForWidth());
 
-    label.setWordWrap(false);
-    label.setText("<b>rich text</b>");
-    QVERIFY(!label.wordWrap());
+    if (text.size() > 1 && text.contains(" ")) {
+        const int wrappedHeight = label.heightForWidth(unWrappedSizeHint.width() / 2);
+        QVERIFY(wrappedHeight > unWrappedSizeHint.height());
+    }
+
 }
 
 void tst_QLabel::eventPropagation_data()
