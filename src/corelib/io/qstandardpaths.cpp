@@ -156,11 +156,11 @@ QT_BEGIN_NAMESPACE
     \value PublicShareLocation Returns a directory location where user-specific publicly shared files
            and directories can be stored. This is a generic value. Note that the returned path may be
            empty if the system has no concept of a publicly shared location.
-           This enum value was added in Qt 6.3.
+           This enum value was added in Qt 6.4.
     \value TemplatesLocation Returns a directory location where user-specific
            template files can be stored. This is a generic value. Note that the returned path may be
            empty if the system has no concept of a templates location.
-           This enum value was added in Qt 6.3.
+           This enum value was added in Qt 6.4.
 
     The following table gives examples of paths on different operating systems.
     The first path is the writable path (unless noted). Other, additional
