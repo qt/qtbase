@@ -29,12 +29,14 @@
 # This util launches the Android emulator and ensures it doesn't stuck/freeze
 # by detecting that and restarting it
 
-set -ex
+set -e
+
 
 EMULATOR_MAX_RETRIES=5
 EMULATOR_EXEC="$ANDROID_SDK_ROOT/emulator/emulator"
 ADB_EXEC="$ANDROID_SDK_ROOT/platform-tools/adb"
-if [[ -z "${ANDROID_EMULATOR}" ]]; then
+if [ -z "${ANDROID_EMULATOR}" ]
+then
     EMULATOR_NAME="@x86emulator"
 else
     EMULATOR_NAME="$ANDROID_EMULATOR"
@@ -47,37 +49,32 @@ function check_for_android_device
         | awk 'NR==2{print $2}' | grep -qE '^(online|device)$'
 }
 
+# WARNING: On the very first boot of the emulator it happens that the device
+# "finishes" booting and getprop shows bootanim=stopped and
+# boot_completed=1. But sometimes not all packages have been installed (`pm
+# list packages` shows only 16 packages installed), and after around half a
+# minute the boot animation starts spinning (bootanim=running) again despite
+# boot_completed=1 all the time. After some minutes the boot animation stops
+# again and the list of packages contains 80 packages. Only then the device is
+# fully booted, and only then is dev.bootcomplete=1.
+#
+# To reproduce the emulator booting as the first time, you have to delete the
+# cached images found inside $HOME/.android especially the
+# "userdata-qemu.img.qcow2" file.
 function check_if_fully_booted
 {
     # The "getprop" command separates lines with \r\n so we trim them
     bootanim=`      $ADB_EXEC shell getprop init.svc.bootanim  | tr -d '\r\n'`
     boot_completed=`$ADB_EXEC shell getprop sys.boot_completed | tr -d '\r\n'`
-    [ "$bootanim" = stopped ] && [ "$boot_completed" = 1 ]
-}
-
-function check_for_package_manager
-{
-(   set +e
-    pm_output=`$ADB_EXEC shell pm get-install-location`
-    pm_retval=$?
-    [ $pm_retval = 0 ]  &&  [[ ! "$pm_output" =~ ^Error: ]]
-)}
-
-# NOTE: It happens that the device "finishes" booting and getprop shows
-# bootanim=stopped and boot_completed=1. But sometimes not all packages have
-# been installed (`pm list packages` shows only 16 packages installed), and
-# after around half a minute the boot animation starts spinning
-# (bootanim=running) again despite boot_completed=1 all the time. After some
-# minutes the boot animation stops again and the list of packages contains 80
-# packages, among which is also the "development" package.
-function check_for_development_installed
-{
-    package_list=`$ADB_EXEC shell pm list packages`
-    echo "$package_list" | grep -q package:com.android.development
+    bootcomplete=`  $ADB_EXEC shell getprop dev.bootcomplete   | tr -d '\r\n'`
+    echo "bootanim=$bootanim boot_completed=$boot_completed bootcomplete=$bootcomplete"
+    [ "$bootanim" = stopped ] && [ "$boot_completed" = 1 ] && [ "$bootcomplete" = 1 ]
 }
 
 
-for counter in `seq 1 ${EMULATOR_MAX_RETRIES}`; do
+
+for counter in `seq ${EMULATOR_MAX_RETRIES}`
+do
     $ADB_EXEC start-server
 
     if check_for_android_device
@@ -94,20 +91,16 @@ for counter in `seq 1 ${EMULATOR_MAX_RETRIES}`; do
     emulator_pid=$!
     disown $emulator_pid
 
+    echo "Waiting for emulated device to appear..."
     $ADB_EXEC wait-for-device
 
-    # Wait about one minute for the emulator to come up
+    echo "Waiting a few minutes for the emulator to fully boot..."
     emulator_status=down
     for i in `seq 300`
     do
         sleep 1
-        echo $i
-        # Yes, you need to check continuously for all these heuristics,
-        # see comment above
-        if     check_for_android_device  \
-            && check_if_fully_booted     \
-            && check_for_package_manager \
-            && check_for_development_installed
+
+        if  check_for_android_device  &&  check_if_fully_booted
         then
             emulator_status=up
             break
@@ -121,11 +114,13 @@ for counter in `seq 1 ${EMULATOR_MAX_RETRIES}`; do
         echo "Emulator started successfully"
         break
     else
-        if [ $counter -lt $EMULATOR_MAX_RETRIES ]; then
+        if [ $counter -lt $EMULATOR_MAX_RETRIES ]
+        then
             echo "Emulator failed to start, forcefully killing current instance and re-starting emulator"
             kill $emulator_pid || true
             sleep 5
-        elif [ $counter -eq $EMULATOR_MAX_RETRIES ]; then
+        elif [ $counter -eq $EMULATOR_MAX_RETRIES ]
+        then
             echo "Emulator failed to start, reached maximum number of retries. Aborting\!"
             exit 2
         fi
