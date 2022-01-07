@@ -26,6 +26,8 @@
 **
 ****************************************************************************/
 
+#define QT_USE_QSTRINGBUILDER
+
 #include <QTest>
 
 #include <private/qflatmap_p.h>
@@ -51,6 +53,7 @@ private slots:
     void iterators();
     void statefulComparator();
     void transparency();
+    void try_emplace();
     void viewIterators();
     void varLengthArray();
 };
@@ -423,6 +426,86 @@ void tst_QFlatMap::transparency()
     QCOMPARE(m.lower_bound(sv1).value(), "een");
     QCOMPARE(m.lower_bound(sv2).value(), "twee");
     QCOMPARE(m.lower_bound(sv3).value(), "dree");
+}
+
+void tst_QFlatMap::try_emplace()
+{
+    using Map = QFlatMap<QByteArray, QByteArray>;
+
+    const QByteArray foo = QByteArrayLiteral("foo");
+    const qsizetype qqq_1 = 3;
+    const char qqq_2 = 'q';
+    const QByteArray qqq = QByteArray(qqq_1, qqq_2);
+
+    auto sb = [] (const auto &str) { return str % ""; };
+    auto rvalue = [](const auto &x) { return x; };
+#define lvalue(x) x
+#define CHECKS() \
+    do { \
+        QVERIFY(!m.try_emplace(rvalue(foo), lvalue(foo)).second); \
+        QCOMPARE(m.value(foo), qqq); \
+        QVERIFY(!m.try_emplace(lvalue(foo), lvalue(foo)).second); \
+        QCOMPARE(m.value(foo), qqq); \
+        QVERIFY(!m.try_emplace(lvalue(foo), sb(foo)).second); \
+        QCOMPARE(m.value(foo), qqq); \
+        QVERIFY(!m.try_emplace(rvalue(foo), sb(foo)).second); \
+        QCOMPARE(m.value(foo), qqq); \
+    } while (0) \
+    /* end */
+
+    {
+        Map m;
+        QVERIFY(m.try_emplace(lvalue(foo), lvalue(qqq)).second);
+        CHECKS();
+    }
+
+    {
+        Map m;
+        QVERIFY(m.try_emplace(lvalue(foo), rvalue(qqq)).second);
+        CHECKS();
+    }
+
+    {
+        Map m;
+        QVERIFY(m.try_emplace(lvalue(foo), qqq_1, qqq_2).second);
+        QCOMPARE(m.value(foo), qqq);
+        CHECKS();
+    }
+
+    {
+        Map m;
+        QVERIFY(m.try_emplace(lvalue(foo), sb(qqq)).second);
+        QCOMPARE(m.value(foo), qqq);
+        CHECKS();
+    }
+
+    {
+        Map m;
+        QVERIFY(m.try_emplace(rvalue(foo), lvalue(qqq)).second);
+        CHECKS();
+    }
+
+    {
+        Map m;
+        QVERIFY(m.try_emplace(rvalue(foo), rvalue(qqq)).second);
+        CHECKS();
+    }
+
+    {
+        Map m;
+        QVERIFY(m.try_emplace(rvalue(foo), qqq_1, qqq_2).second);
+        QCOMPARE(m.value(foo), qqq);
+        CHECKS();
+    }
+
+    {
+        Map m;
+        QVERIFY(m.try_emplace(rvalue(foo), sb(qqq)).second);
+        QCOMPARE(m.value(foo), qqq);
+        CHECKS();
+    }
+#undef CHECKS
+#undef lvalue
 }
 
 void tst_QFlatMap::viewIterators()
