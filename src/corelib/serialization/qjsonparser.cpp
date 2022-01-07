@@ -910,7 +910,7 @@ bool Parser::parseString()
         return false;
     }
 
-    container->appendByteData(reinterpret_cast<const char *>(ucs4.utf16()), ucs4.size() * 2,
+    container->appendByteData(reinterpret_cast<const char *>(ucs4.constData()), ucs4.size() * 2,
                               QCborValue::String, QtCbor::Element::StringIsUtf16);
     END;
     return true;

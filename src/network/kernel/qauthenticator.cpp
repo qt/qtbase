@@ -1599,11 +1599,11 @@ static QByteArray qSspiStartup(QAuthenticatorPrivate *ctx, QAuthenticatorPrivate
     auth.Flags = SEC_WINNT_AUTH_IDENTITY_UNICODE;
     bool useAuth = false;
     if (method == QAuthenticatorPrivate::Negotiate && !ctx->user.isEmpty()) {
-        auth.Domain = const_cast<ushort *>(ctx->userDomain.utf16());
+        auth.Domain = const_cast<ushort *>(reinterpret_cast<const ushort *>(ctx->userDomain.constData()));
         auth.DomainLength = ctx->userDomain.size();
-        auth.User = const_cast<ushort *>(ctx->user.utf16());
+        auth.User = const_cast<ushort *>(reinterpret_cast<const ushort *>(ctx->user.constData()));
         auth.UserLength = ctx->user.size();
-        auth.Password = const_cast<ushort *>(ctx->password.utf16());
+        auth.Password = const_cast<ushort *>(reinterpret_cast<const ushort *>(ctx->password.constData()));
         auth.PasswordLength = ctx->password.size();
         useAuth = true;
     }

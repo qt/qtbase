@@ -2172,7 +2172,7 @@ QString qt_normalizePathSegments(const QString &name, QDirPrivate::PathNormaliza
     QVarLengthArray<char16_t> outVector(len);
     int used = len;
     char16_t *out = outVector.data();
-    const ushort *p = name.utf16();
+    const ushort *p = reinterpret_cast<const ushort *>(name.data());
     const ushort *prefix = p;
     int up = 0;
 

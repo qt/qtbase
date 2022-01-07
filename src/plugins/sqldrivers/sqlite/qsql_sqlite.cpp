@@ -524,7 +524,7 @@ bool QSQLiteResult::exec()
                 case QMetaType::QDateTime: {
                     const QDateTime dateTime = value.toDateTime();
                     const QString str = dateTime.toString(Qt::ISODateWithMs);
-                    res = sqlite3_bind_text16(d->stmt, i + 1, str.utf16(),
+                    res = sqlite3_bind_text16(d->stmt, i + 1, str.data(),
                                               int(str.size() * sizeof(ushort)),
                                               SQLITE_TRANSIENT);
                     break;
@@ -532,7 +532,7 @@ bool QSQLiteResult::exec()
                 case QMetaType::QTime: {
                     const QTime time = value.toTime();
                     const QString str = time.toString(u"hh:mm:ss.zzz");
-                    res = sqlite3_bind_text16(d->stmt, i + 1, str.utf16(),
+                    res = sqlite3_bind_text16(d->stmt, i + 1, str.data(),
                                               int(str.size() * sizeof(ushort)),
                                               SQLITE_TRANSIENT);
                     break;
@@ -545,9 +545,9 @@ bool QSQLiteResult::exec()
                                               SQLITE_STATIC);
                     break; }
                 default: {
-                    QString str = value.toString();
+                    const QString str = value.toString();
                     // SQLITE_TRANSIENT makes sure that sqlite buffers the data
-                    res = sqlite3_bind_text16(d->stmt, i + 1, str.utf16(),
+                    res = sqlite3_bind_text16(d->stmt, i + 1, str.data(),
                                               int(str.size()) * sizeof(QChar),
                                               SQLITE_TRANSIENT);
                     break; }

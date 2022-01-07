@@ -992,7 +992,7 @@ inline bool QUrlPrivate::setScheme(const QString &value, int len, bool doSetErro
 
     // validate it:
     int needsLowercasing = -1;
-    const ushort *p = value.utf16();
+    const ushort *p = reinterpret_cast<const ushort *>(value.data());
     for (int i = 0; i < len; ++i) {
         if (p[i] >= 'a' && p[i] <= 'z')
             continue;
