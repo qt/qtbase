@@ -46,6 +46,9 @@ private slots:
 
     void tst_QProgressBar_data();
     void tst_QProgressBar();
+
+    void tst_QSpinBox_data();
+    void tst_QSpinBox();
 };
 
 void tst_Widgets::tst_QSlider_data()
@@ -174,6 +177,40 @@ void tst_Widgets::tst_QProgressBar()
 
     testWindow()->setLayout(&box);
     takeStandardSnapshots();
+}
+
+void tst_Widgets::tst_QSpinBox_data()
+{
+    QTest::addColumn<QAbstractSpinBox::ButtonSymbols>("buttons");
+
+    QTest::addRow("NoButtons") << QSpinBox::NoButtons;
+    QTest::addRow("UpDownArrows") << QSpinBox::UpDownArrows;
+    QTest::addRow("PlusMinus") << QSpinBox::PlusMinus;
+}
+
+void tst_Widgets::tst_QSpinBox()
+{
+    QFETCH(const QSpinBox::ButtonSymbols, buttons);
+
+    QSpinBox *spinBox = new QSpinBox;
+    spinBox->setButtonSymbols(buttons);
+    spinBox->setMinimumWidth(200);
+
+    QVBoxLayout *layout = new QVBoxLayout;
+    layout->addWidget(spinBox);
+
+    testWindow()->setLayout(layout);
+
+    takeStandardSnapshots();
+
+    // Left is default alignment:
+    QBASELINE_CHECK(takeSnapshot(), "align_left");
+
+    spinBox->setAlignment(Qt::AlignHCenter);
+    QBASELINE_CHECK(takeSnapshot(), "align_center");
+
+    spinBox->setAlignment(Qt::AlignRight);
+    QBASELINE_CHECK(takeSnapshot(), "align_right");
 }
 
 #define main _realmain
