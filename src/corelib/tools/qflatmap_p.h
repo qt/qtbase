@@ -733,6 +733,30 @@ public:
         }
     }
 
+    template <typename...Args>
+    std::pair<iterator, bool> try_emplace(const Key &key, Args&&...args)
+    {
+        auto it = lower_bound(key);
+        if (it == end() || key_compare::operator()(key, it.key())) {
+            c.values.emplace(toValuesIterator(it), std::forward<Args>(args)...);
+            return { fromKeysIterator(c.keys.insert(toKeysIterator(it), key)), true };
+        } else {
+            return {it, false};
+        }
+    }
+
+    template <typename...Args>
+    std::pair<iterator, bool> try_emplace(Key &&key, Args&&...args)
+    {
+        auto it = lower_bound(key);
+        if (it == end() || key_compare::operator()(key, it.key())) {
+            c.values.emplace(toValuesIterator(it), std::forward<Args>(args)...);
+            return { fromKeysIterator(c.keys.insert(toKeysIterator(it), std::move(key))), true };
+        } else {
+            return {it, false};
+        }
+    }
+
     template <class InputIt, is_compatible_iterator<InputIt> = nullptr>
     void insert(InputIt first, InputIt last)
     {
