@@ -45,6 +45,7 @@ private slots:
     void constructing();
     void constAccess();
     void insertion();
+    void insertRValuesAndLValues();
     void removal();
     void extraction();
     void iterators();
@@ -154,6 +155,42 @@ void tst_QFlatMap::insertion()
     QCOMPARE(m.size(), 10);
     QCOMPARE(m.value("narf").data(), "NARFFFFFF");
     QCOMPARE(m.value("gnampf").data(), "GNAMPF");
+}
+
+void tst_QFlatMap::insertRValuesAndLValues()
+{
+    using Map = QFlatMap<QByteArray, QByteArray>;
+    const QByteArray foo = QByteArrayLiteral("foo");
+    const QByteArray bar = QByteArrayLiteral("bar");
+
+    auto rvalue = [](const QByteArray &ba) { return ba; };
+#define lvalue(x) x
+
+    {
+        Map m;
+        QVERIFY( m.insert(lvalue(foo), lvalue(bar)).second);
+        QVERIFY(!m.insert(lvalue(foo), lvalue(bar)).second);
+    }
+
+    {
+        Map m;
+        QVERIFY( m.insert(lvalue(foo), rvalue(bar)).second);
+        QVERIFY(!m.insert(lvalue(foo), rvalue(bar)).second);
+    }
+
+    {
+        Map m;
+        QVERIFY( m.insert(rvalue(foo), lvalue(bar)).second);
+        QVERIFY(!m.insert(rvalue(foo), lvalue(bar)).second);
+    }
+
+    {
+        Map m;
+        QVERIFY( m.insert(rvalue(foo), rvalue(bar)).second);
+        QVERIFY(!m.insert(rvalue(foo), rvalue(bar)).second);
+    }
+
+#undef lvalue
 }
 
 void tst_QFlatMap::extraction()

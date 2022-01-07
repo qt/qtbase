@@ -702,7 +702,7 @@ public:
         auto it = lower_bound(key);
         if (it == end() || key_compare::operator()(key, it.key())) {
             c.values.insert(toValuesIterator(it), value);
-            return { c.keys.insert(it, std::move(key)), true };
+            return { fromKeysIterator(c.keys.insert(toKeysIterator(it), std::move(key))), true };
         } else {
             *toValuesIterator(it) = value;
             return {it, false};
@@ -714,7 +714,7 @@ public:
         auto it = lower_bound(key);
         if (it == end() || key_compare::operator()(key, it.key())) {
             c.values.insert(toValuesIterator(it), std::move(value));
-            return { c.keys.insert(it, key), true };
+            return { fromKeysIterator(c.keys.insert(toKeysIterator(it), key)), true };
         } else {
             *toValuesIterator(it) = std::move(value);
             return {it, false};
