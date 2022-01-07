@@ -681,14 +681,14 @@ QList<QEventPoint>
     QList<QWindowSystemInterface::TouchPoint>::const_iterator end = points.constEnd();
     while (point != end) {
         QPointF globalPos = QHighDpi::fromNativePixels(point->area.center(), window);
-        QMutableEventPoint p(point->id, point->state, globalPos, globalPos);
+        QEventPoint p(point->id, point->state, globalPos, globalPos);
         states |= point->state;
         if (point->uniqueId >= 0)
-            p.setUniqueId(QPointingDeviceUniqueId::fromNumericId(point->uniqueId));
-        p.setPressure(point->pressure);
-        p.setRotation(point->rotation);
-        p.setEllipseDiameters(QHighDpi::fromNativePixels(point->area.size(), window));
-        p.setVelocity(QHighDpi::fromNativePixels(point->velocity, window));
+            QMutableEventPoint::setUniqueId(p, QPointingDeviceUniqueId::fromNumericId(point->uniqueId));
+        QMutableEventPoint::setPressure(p, point->pressure);
+        QMutableEventPoint::setRotation(p, point->rotation);
+        QMutableEventPoint::setEllipseDiameters(p, QHighDpi::fromNativePixels(point->area.size(), window));
+        QMutableEventPoint::setVelocity(p, QHighDpi::fromNativePixels(point->velocity, window));
 
         // The local pos is not set: it will be calculated
         // when the event gets processed by QGuiApplication.
