@@ -10,7 +10,7 @@ set(WrapOpenSSL_FOUND OFF)
 # Reuse logic from the headers find script.
 find_package(WrapOpenSSLHeaders ${WrapOpenSSL_FIND_VERSION})
 
-if(OpenSSL_FOUND)
+if(TARGET OpenSSL::SSL)
     if(WIN32)
         get_target_property(libType OpenSSL::Crypto TYPE)
         if(libType STREQUAL "ALIAS")
