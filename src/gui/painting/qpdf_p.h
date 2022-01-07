@@ -321,7 +321,7 @@ private:
     void writePage();
 
     int addXrefEntry(int object, bool printostr = true);
-    void printString(const QString &string);
+    void printString(QStringView string);
     void xprintf(const char* fmt, ...);
     inline void write(const QByteArray &data) {
         stream->writeRawData(data.constData(), data.size());

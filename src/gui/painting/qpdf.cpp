@@ -2182,7 +2182,7 @@ int QPdfEnginePrivate::addXrefEntry(int object, bool printostr)
     return object;
 }
 
-void QPdfEnginePrivate::printString(const QString &string)
+void QPdfEnginePrivate::printString(QStringView string)
 {
     if (string.isEmpty()) {
         write("()");
@@ -2193,9 +2193,9 @@ void QPdfEnginePrivate::printString(const QString &string)
     // Unicode UTF-16 with a Unicode byte order mark as the first character
     // (0xfeff), with the high-order byte first.
     QByteArray array("(\xfe\xff");
-    const ushort *utf16 = string.utf16();
+    const char16_t *utf16 = string.utf16();
 
-    for (int i=0; i < string.size(); ++i) {
+    for (qsizetype i = 0; i < string.size(); ++i) {
         char part[2] = {char((*(utf16 + i)) >> 8), char((*(utf16 + i)) & 0xff)};
         for(int j=0; j < 2; ++j) {
             if (part[j] == '(' || part[j] == ')' || part[j] == '\\')
