@@ -3845,7 +3845,7 @@ QWidget *QApplicationPrivate::findClosestTouchPointTarget(const QPointingDevice 
             if (closestTouchPointId == -1 || distance < closestDistance) {
                 closestTouchPointId = pt.id();
                 closestDistance = distance;
-                closestTarget = static_cast<const QMutableEventPoint &>(pt).target();
+                closestTarget = QMutableEventPoint::target(pt);
             }
         }
     }
@@ -4016,7 +4016,7 @@ void QApplicationPrivate::translateTouchCancel(const QPointingDevice *device, ul
     const QPointingDevicePrivate *devPriv = QPointingDevicePrivate::get(device);
     for (auto &epd : devPriv->activePoints.values()) {
         const auto &pt = epd.eventPoint;
-        QObject *target = static_cast<const QMutableEventPoint &>(pt).target();
+        QObject *target = QMutableEventPoint::target(pt);
         if (target && target->isWidgetType())
             widgetsNeedingCancel.insert(static_cast<QWidget *>(target));
     }
