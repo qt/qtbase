@@ -2851,7 +2851,7 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
     for (auto &tempPt : e->points) {
         // update state
         auto epd = devPriv->pointById(tempPt.id());
-        auto &mut = QMutableEventPoint::from(const_cast<QEventPoint &>(epd->eventPoint));
+        auto &mut = QMutableEventPoint::from(epd->eventPoint);
         epd->eventPoint.setAccepted(false);
         switch (tempPt.state()) {
         case QEventPoint::State::Pressed:
