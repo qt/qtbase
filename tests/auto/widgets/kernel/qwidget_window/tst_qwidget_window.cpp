@@ -267,9 +267,9 @@ void tst_QWidget_window::close()
         int spontClose = -1;
         int spontHide = -1;
     protected:
-        void hideEvent(QHideEvent *e)
+        void hideEvent(QHideEvent *e) override
         { spontHide = e->spontaneous() ? 1 : 0; }
-        void closeEvent(QCloseEvent *e)
+        void closeEvent(QCloseEvent *e) override
         { spontClose = e->spontaneous() ? 1 : 0; }
     };
 
