@@ -2849,7 +2849,7 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
     for (auto &tempPt : e->points) {
         // update state
         auto epd = devPriv->pointById(tempPt.id());
-        auto &mut = QMutableEventPoint::from(epd->eventPoint);
+        auto &ep = epd->eventPoint;
         epd->eventPoint.setAccepted(false);
         switch (tempPt.state()) {
         case QEventPoint::State::Pressed:
@@ -2859,19 +2859,21 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
             // If the QPA event didn't tell us which window, find the one under the touchpoint position.
             if (!window)
                 window = QGuiApplication::topLevelAt(tempPt.globalPosition().toPoint());
-            mut.setWindow(window);
+            QMutableEventPoint::setWindow(ep, window);
             break;
 
         case QEventPoint::State::Released:
-            if (Q_UNLIKELY(!window.isNull() && window != mut.window()))
-                qCWarning(lcPtrDispatch) << "delivering touch release to same window" << mut.window() << "not" << window.data();
-            window = mut.window();
+            if (Q_UNLIKELY(!window.isNull() && window != QMutableEventPoint::window(ep)))
+                qCWarning(lcPtrDispatch) << "delivering touch release to same window"
+                                         << QMutableEventPoint::window(ep) << "not" << window.data();
+            window = QMutableEventPoint::window(ep);
             break;
 
         default: // update or stationary
-            if (Q_UNLIKELY(!window.isNull() && window != mut.window()))
-                qCWarning(lcPtrDispatch) << "delivering touch update to same window" << mut.window() << "not" << window.data();
-            window = mut.window();
+            if (Q_UNLIKELY(!window.isNull() && window != QMutableEventPoint::window(ep)))
+                qCWarning(lcPtrDispatch) << "delivering touch update to same window"
+                                         << QMutableEventPoint::window(ep) << "not" << window.data();
+            window = QMutableEventPoint::window(ep);
             break;
         }
         // If we somehow still don't have a window, we can't deliver this touchpoint.  (should never happen)
@@ -2879,30 +2881,30 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
             qCWarning(lcPtrDispatch) << "skipping" << &tempPt << ": no target window";
             continue;
         }
-        mut.updateFrom(tempPt);
+        QMutableEventPoint::update(tempPt, ep);
 
         Q_ASSERT(window.data() != nullptr);
 
         // make the *scene* position the same as the *global* position
-        mut.setScenePosition(tempPt.globalPosition());
+        QMutableEventPoint::setScenePosition(ep, tempPt.globalPosition());
 
         // store the scene position as local position, for now
-        mut.setPosition(window->mapFromGlobal(tempPt.globalPosition()));
+        QMutableEventPoint::setPosition(ep, window->mapFromGlobal(tempPt.globalPosition()));
 
         // setTimeStamp has side effects, so we do it last
-        mut.setTimestamp(e->timestamp);
+        QMutableEventPoint::setTimestamp(ep, e->timestamp);
 
         // add the touchpoint to the event that will be delivered to the window
         bool added = false;
         for (QMutableTouchEvent &ev : touchEvents) {
             if (ev.target() == window.data()) {
-                ev.addPoint(mut);
+                ev.addPoint(ep);
                 added = true;
                 break;
             }
         }
         if (!added) {
-            QMutableTouchEvent mte(e->touchType, device, e->modifiers, {mut});
+            QMutableTouchEvent mte(e->touchType, device, e->modifiers, {ep});
             mte.setTimestamp(e->timestamp);
             mte.setTarget(window.data());
             touchEvents.append(mte);

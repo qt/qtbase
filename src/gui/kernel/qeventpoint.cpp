@@ -524,8 +524,8 @@ void QMutableEventPoint::detach(QEventPoint &p)
 }
 
 /*! \internal
-    Update current state from the given \a other point, assuming that this
-    instance contains state from the previous event and \a other contains new
+    Update \a target state from the \a other point, assuming that \a target
+    contains state from the previous event and \a other contains new
     values that came in from a device.
 
     That is: global position and other valuators will be updated, but
@@ -537,40 +537,40 @@ void QMutableEventPoint::detach(QEventPoint &p)
     \li properties that should be persistent between events (such as grabbers)
     \endlist
 */
-void QMutableEventPoint::updateFrom(const QEventPoint &other)
+void QMutableEventPoint::update(const QEventPoint &other, QEventPoint &target)
 {
-    detach();
-    setPressure(other.pressure());
+    detach(target);
+    setPressure(target, other.pressure());
 
     switch (other.state()) {
     case QEventPoint::State::Pressed:
-        setGlobalPressPosition(other.globalPosition());
-        setGlobalLastPosition(other.globalPosition());
-        if (pressure() < 0)
-            setPressure(1);
+        setGlobalPressPosition(target, other.globalPosition());
+        setGlobalLastPosition(target, other.globalPosition());
+        if (target.pressure() < 0)
+            setPressure(target, 1);
         break;
 
     case QEventPoint::State::Released:
-        if (globalPosition() != other.globalPosition())
-            setGlobalLastPosition(globalPosition());
-        setPressure(0);
+        if (target.globalPosition() != other.globalPosition())
+            setGlobalLastPosition(target, target.globalPosition());
+        setPressure(target, 0);
         break;
 
     default: // update or stationary
-        if (globalPosition() != other.globalPosition())
-            setGlobalLastPosition(globalPosition());
-        if (pressure() < 0)
-            setPressure(1);
+        if (target.globalPosition() != other.globalPosition())
+            setGlobalLastPosition(target, target.globalPosition());
+        if (target.pressure() < 0)
+            setPressure(target, 1);
         break;
     }
 
-    setState(other.state());
-    setPosition(other.position());
-    setScenePosition(other.scenePosition());
-    setGlobalPosition(other.globalPosition());
-    setEllipseDiameters(other.ellipseDiameters());
-    setRotation(other.rotation());
-    setVelocity(other.velocity());
+    setState(target, other.state());
+    setPosition(target, other.position());
+    setScenePosition(target, other.scenePosition());
+    setGlobalPosition(target, other.globalPosition());
+    setEllipseDiameters(target, other.ellipseDiameters());
+    setRotation(target, other.rotation());
+    setVelocity(target, other.velocity());
 }
 
 /*! \internal
