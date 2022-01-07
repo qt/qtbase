@@ -161,12 +161,12 @@ public:
         {
         }
 
-        reference operator*()
+        reference operator*() const
         {
             return { c->keys[i], c->values[i] };
         }
 
-        pointer operator->()
+        pointer operator->() const
         {
             return { operator*() };
         }
@@ -242,7 +242,7 @@ public:
             return b.i - a.i;
         }
 
-        reference operator[](size_type n)
+        reference operator[](size_type n) const
         {
             size_type k = i + n;
             return { c->keys[k], c->values[k] };
@@ -269,7 +269,7 @@ public:
         }
 
         const Key &key() const { return c->keys[i]; }
-        T &value() { return c->values[i]; }
+        T &value() const { return c->values[i]; }
 
     private:
         containers *c = nullptr;
@@ -298,12 +298,12 @@ public:
         {
         }
 
-        reference operator*()
+        reference operator*() const
         {
             return { c->keys[i], c->values[i] };
         }
 
-        pointer operator->()
+        pointer operator->() const
         {
             return { operator*() };
         }
@@ -379,7 +379,7 @@ public:
             return b.i - a.i;
         }
 
-        reference operator[](size_type n)
+        reference operator[](size_type n) const
         {
             size_type k = i + n;
             return { c->keys[k], c->values[k] };
@@ -406,7 +406,7 @@ public:
         }
 
         const Key &key() const { return c->keys[i]; }
-        const T &value() { return c->values[i]; }
+        const T &value() const { return c->values[i]; }
 
     private:
         const containers *c = nullptr;
