@@ -422,13 +422,12 @@ QPointingDevicePrivate::EventPointData *QPointingDevicePrivate::queryPointById(i
 */
 QPointingDevicePrivate::EventPointData *QPointingDevicePrivate::pointById(int id) const
 {
-    auto it = activePoints.find(id);
-    if (it == activePoints.end()) {
+    const auto [it, inserted] = activePoints.try_emplace(id);
+    if (inserted) {
         Q_Q(const QPointingDevice);
-        QPointingDevicePrivate::EventPointData epd;
+        auto &epd = it.value();
         QMutableEventPoint::setId(epd.eventPoint, id);
         QMutableEventPoint::setDevice(epd.eventPoint, q);
-        return &activePoints.insert(id, epd).first.value();
     }
     return &it.value();
 }
