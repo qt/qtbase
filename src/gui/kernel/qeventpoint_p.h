@@ -133,13 +133,7 @@ public:
         d->pos = position;
     }
 
-    void updateFrom(const QEventPoint &other);
-
-    static QMutableEventPoint *from(QEventPoint *me) { return static_cast<QMutableEventPoint *>(me); }
-
-    static QMutableEventPoint &from(QEventPoint &me) { return static_cast<QMutableEventPoint &>(me); }
-
-    static const QMutableEventPoint &constFrom(const QEventPoint &me) { return static_cast<const QMutableEventPoint &>(me); }
+    static void update(const QEventPoint &from, QEventPoint &to);
 
     void detach() { detach(*this); }
     static void detach(QEventPoint &p);
