@@ -177,6 +177,8 @@ void Window::customInit()
     qDebug("MaxThreadGroupZ: %d", m_r->resourceLimit(QRhi::MaxThreadGroupZ));
     qDebug("TextureArraySizeMax: %d", m_r->resourceLimit(QRhi::TextureArraySizeMax));
     qDebug("MaxUniformBufferRange: %d", m_r->resourceLimit(QRhi::MaxUniformBufferRange));
+    qDebug("MaxVertexInputs: %d", m_r->resourceLimit(QRhi::MaxVertexInputs));
+    qDebug("MaxVertexOutputs: %d", m_r->resourceLimit(QRhi::MaxVertexOutputs));
 
     // With Vulkan at least we should see some details from the memory allocator.
     qDebug() << m_r->graphicsMemoryAllocationStatistics();

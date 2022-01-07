@@ -353,6 +353,9 @@ void tst_QRhi::create()
         const int framesInFlight = rhi->resourceLimit(QRhi::FramesInFlight);
         const int texArrayMax = rhi->resourceLimit(QRhi::TextureArraySizeMax);
         const int uniBufRangeMax = rhi->resourceLimit(QRhi::MaxUniformBufferRange);
+        const int maxVertexInputs = rhi->resourceLimit(QRhi::MaxVertexInputs);
+        const int maxVertexOutputs = rhi->resourceLimit(QRhi::MaxVertexOutputs);
+
         QVERIFY(texMin >= 1);
         QVERIFY(texMax >= texMin);
         QVERIFY(maxAtt >= 1);
@@ -360,6 +363,8 @@ void tst_QRhi::create()
         if (rhi->isFeatureSupported(QRhi::TextureArrays))
             QVERIFY(texArrayMax > 1);
         QVERIFY(uniBufRangeMax >= 224 * 4 * 4);
+        QVERIFY(maxVertexInputs >= 8);
+        QVERIFY(maxVertexOutputs >= 8);
 
         QVERIFY(rhi->nativeHandles());
 

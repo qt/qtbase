@@ -165,6 +165,10 @@ int QRhiNull::resourceLimit(QRhi::ResourceLimit limit) const
         return 2048;
     case QRhi::MaxUniformBufferRange:
         return 65536;
+    case QRhi::MaxVertexInputs:
+        return 32;
+    case QRhi::MaxVertexOutputs:
+        return 32;
     default:
         Q_UNREACHABLE();
         return 0;

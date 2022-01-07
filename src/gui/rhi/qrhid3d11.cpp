@@ -124,6 +124,10 @@ QT_BEGIN_NAMESPACE
 #define D3D11_1_UAV_SLOT_COUNT 64
 #endif
 
+#ifndef D3D11_VS_INPUT_REGISTER_COUNT
+#define D3D11_VS_INPUT_REGISTER_COUNT 32
+#endif
+
 QRhiD3D11::QRhiD3D11(QRhiD3D11InitParams *params, QRhiD3D11NativeHandles *importParams)
     : ofr(this),
       deviceCurse(this)
@@ -583,6 +587,10 @@ int QRhiD3D11::resourceLimit(QRhi::ResourceLimit limit) const
         return D3D11_REQ_TEXTURE2D_ARRAY_AXIS_DIMENSION;
     case QRhi::MaxUniformBufferRange:
         return 65536;
+    case QRhi::MaxVertexInputs:
+        return D3D11_VS_INPUT_REGISTER_COUNT;
+    case QRhi::MaxVertexOutputs:
+        return D3D11_VS_OUTPUT_REGISTER_COUNT;
     default:
         Q_UNREACHABLE();
         return 0;

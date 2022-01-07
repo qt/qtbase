@@ -792,6 +792,16 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     implementations this may be as low as 3584 bytes (224 four component, 32
     bits per component vectors). Elsewhere the value is typically 16384 (1024
     vec4s) or 65536 (4096 vec4s).
+
+    \value MaxVertexInputs The number of input attributes to the vertex shader.
+    The location in a QRhiVertexInputAttribute must be in range \c{[0,
+    MaxVertexInputs-1]}. The value may be as low as 8 with OpenGL ES 2.0.
+    Elsewhere, typical values are 16, 31, or 32.
+
+    \value MaxVertexOutputs The maximum number of outputs (4 component vector
+    \c out variables) from the vertex shader. The value may be as low as 8 with
+    OpenGL ES 2.0, and 15 with OpenGL ES 3.0 and some Metal devices. Elsewhere,
+    a typical value is 32.
  */
 
 /*!

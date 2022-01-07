@@ -430,6 +430,18 @@ QT_BEGIN_NAMESPACE
 #define GL_UNSIGNED_INT_2_10_10_10_REV    0x8368
 #endif
 
+#ifndef GL_MAX_VARYING_COMPONENTS
+#define GL_MAX_VARYING_COMPONENTS         0x8B4B
+#endif
+
+#ifndef GL_MAX_VARYING_FLOATS
+#define GL_MAX_VARYING_FLOATS             0x8B4B
+#endif
+
+#ifndef GL_MAX_VARYING_VECTORS
+#define GL_MAX_VARYING_VECTORS            0x8DFC
+#endif
+
 /*!
     Constructs a new QRhiGles2InitParams.
 
@@ -849,6 +861,23 @@ bool QRhiGles2::create(QRhi::Flags flags)
         caps.maxUniformVectors = qMin(maxVertexUniformComponents, maxFragmentUniformComponents) / 4;
     }
 
+    f->glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &caps.maxVertexInputs);
+
+    if (caps.gles) {
+        f->glGetIntegerv(GL_MAX_VARYING_VECTORS, &caps.maxVertexOutputs);
+    } else if (caps.ctxMajor >= 3) {
+        GLint components = 0;
+        f->glGetIntegerv(GL_MAX_VARYING_COMPONENTS, &components);
+        caps.maxVertexOutputs = components / 4;
+    } else {
+        // OpenGL before 3.0 only has this, and not the same as
+        // MAX_VARYING_COMPONENTS strictly speaking, but will do.
+        GLint components = 0;
+        f->glGetIntegerv(GL_MAX_VARYING_FLOATS, &components);
+        if (components > 0)
+            caps.maxVertexOutputs = components / 4;
+    }
+
     if (!caps.gles) {
         f->glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
         f->glEnable(GL_POINT_SPRITE);
@@ -1239,6 +1268,10 @@ int QRhiGles2::resourceLimit(QRhi::ResourceLimit limit) const
         return 2048;
     case QRhi::MaxUniformBufferRange:
         return int(qMin<qint64>(INT_MAX, caps.maxUniformVectors * qint64(16)));
+    case QRhi::MaxVertexInputs:
+        return caps.maxVertexInputs;
+    case QRhi::MaxVertexOutputs:
+        return caps.maxVertexOutputs;
     default:
         Q_UNREACHABLE();
         return 0;

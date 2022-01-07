@@ -930,6 +930,8 @@ public:
               maxThreadGroupsY(0),
               maxThreadGroupsZ(0),
               maxUniformVectors(4096),
+              maxVertexInputs(8),
+              maxVertexOutputs(8),
               msaaRenderBuffer(false),
               multisampledTexture(false),
               npotTextureFull(true),
@@ -974,6 +976,8 @@ public:
         int maxThreadGroupsY;
         int maxThreadGroupsZ;
         int maxUniformVectors;
+        int maxVertexInputs;
+        int maxVertexOutputs;
         // Multisample fb and blit are supported (GLES 3.0 or OpenGL 3.x). Not
         // the same as multisample textures!
         uint msaaRenderBuffer : 1;

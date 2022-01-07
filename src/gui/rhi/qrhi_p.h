@@ -1678,7 +1678,9 @@ public:
         MaxThreadGroupY,
         MaxThreadGroupZ,
         TextureArraySizeMax,
-        MaxUniformBufferRange
+        MaxUniformBufferRange,
+        MaxVertexInputs,
+        MaxVertexOutputs
     };
 
     ~QRhi();
