@@ -988,8 +988,6 @@ private:
                 k = i + 1;
             }
         }
-        c.keys.shrink_to_fit();
-        c.values.shrink_to_fit();
     }
 
     containers c;
