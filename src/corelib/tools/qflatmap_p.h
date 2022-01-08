@@ -439,23 +439,20 @@ public:
     }
 
     explicit QFlatMap(key_container_type &&keys, const mapped_container_type &values)
+        : c{std::move(keys), values}
     {
-        c.keys = std::move(keys);
-        c.values = values;
         ensureOrderedUnique();
     }
 
     explicit QFlatMap(const key_container_type &keys, mapped_container_type &&values)
+        : c{keys, std::move(values)}
     {
-        c.keys = keys;
-        c.values = std::move(values);
         ensureOrderedUnique();
     }
 
     explicit QFlatMap(key_container_type &&keys, mapped_container_type &&values)
+        : c{std::move(keys), std::move(values)}
     {
-        c.keys = std::move(keys);
-        c.values = std::move(values);
         ensureOrderedUnique();
     }
 
@@ -473,30 +470,26 @@ public:
 
     explicit QFlatMap(Qt::OrderedUniqueRange_t, const key_container_type &keys,
                       const mapped_container_type &values)
+        : c{keys, values}
     {
-        c.keys = keys;
-        c.values = values;
     }
 
     explicit QFlatMap(Qt::OrderedUniqueRange_t, key_container_type &&keys,
                       const mapped_container_type &values)
+        : c{std::move(keys), values}
     {
-        c.keys = std::move(keys);
-        c.values = values;
     }
 
     explicit QFlatMap(Qt::OrderedUniqueRange_t, const key_container_type &keys,
                       mapped_container_type &&values)
+        : c{keys, std::move(values)}
     {
-        c.keys = keys;
-        c.values = std::move(values);
     }
 
     explicit QFlatMap(Qt::OrderedUniqueRange_t, key_container_type &&keys,
                       mapped_container_type &&values)
+        : c{std::move(keys), std::move(values)}
     {
-        c.keys = std::move(keys);
-        c.values = std::move(values);
     }
 
     explicit QFlatMap(Qt::OrderedUniqueRange_t, std::initializer_list<value_type> lst)
