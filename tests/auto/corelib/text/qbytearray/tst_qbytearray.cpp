@@ -958,6 +958,7 @@ void tst_QByteArray::append()
     QCOMPARE(QByteArray().append(2, 'a'), QByteArray("aa"));
     QCOMPARE(QByteArray().append(QByteArray("data")), QByteArray("data"));
     QCOMPARE(QByteArray().append(data), QByteArray("data"));
+    QCOMPARE(QByteArray().append(data, -1), QByteArray("data"));
     QCOMPARE(QByteArray().append(data, 2), QByteArray("da"));
     QCOMPARE(QByteArray().append(QByteArrayView(data)), QByteArray("data"));
 
