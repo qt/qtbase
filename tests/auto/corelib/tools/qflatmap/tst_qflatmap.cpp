@@ -558,8 +558,7 @@ void tst_QFlatMap::viewIterators()
 
 void tst_QFlatMap::varLengthArray()
 {
-    using Map = QFlatMap<int, QByteArray, std::less<int>,
-                         QVarLengthArray<int, 1024>, QVarLengthArray<QByteArray, 1024>>;
+    using Map = QVarLengthFlatMap<int, QByteArray, 1024>;
     Map m{ { 2, "twee" } };
     m.insert(1, "een");
     m.remove(1);
