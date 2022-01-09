@@ -244,9 +244,9 @@ public:
     QByteArray &append(char c);
     inline QByteArray &append(qsizetype count, char c);
     QByteArray &append(const char *s)
-    { return append(QByteArrayView(s, qsizetype(qstrlen(s)))); }
+    { return append(s, -1); }
     QByteArray &append(const char *s, qsizetype len)
-    { return append(QByteArrayView(s, len)); }
+    { return append(QByteArrayView(s, len < 0 ? qsizetype(qstrlen(s)) : len)); }
     QByteArray &append(const QByteArray &a);
     QByteArray &append(QByteArrayView a)
     { return insert(size(), a); }
