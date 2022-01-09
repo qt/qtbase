@@ -202,6 +202,7 @@ const char *QtMetaTypePrivate::typedefNameForType(const QtPrivate::QMetaTypeInte
         if (it.key() == officialName)
             continue;               // skip the official name
         name = it.key().constData();
+        ++it;
         break;
     }
 
