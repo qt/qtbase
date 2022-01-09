@@ -224,7 +224,7 @@ static const QPointingDevice *tabletToolInstance(NSEvent *theEvent)
     QWindowSystemInterface::handleTabletEnterLeaveProximityEvent(nullptr, timestamp, device, theEvent.isEnteringProximity);
     // The windowSystemId starts at 0, but is "unique" while in proximity
     if (theEvent.isEnteringProximity)
-        devicesInProximity->insert(windowSystemId, device);
+        devicesInProximity->insert_or_assign(windowSystemId, device);
     else
         devicesInProximity->remove(windowSystemId);
 }

@@ -53,7 +53,7 @@ private slots:
     void iterators();
     void statefulComparator();
     void transparency();
-    void try_emplace();
+    void try_emplace_and_insert_or_assign();
     void viewIterators();
     void varLengthArray();
 };
@@ -428,7 +428,7 @@ void tst_QFlatMap::transparency()
     QCOMPARE(m.lower_bound(sv3).value(), "dree");
 }
 
-void tst_QFlatMap::try_emplace()
+void tst_QFlatMap::try_emplace_and_insert_or_assign()
 {
     using Map = QFlatMap<QByteArray, QByteArray>;
 
@@ -457,12 +457,32 @@ void tst_QFlatMap::try_emplace()
         Map m;
         QVERIFY(m.try_emplace(lvalue(foo), lvalue(qqq)).second);
         CHECKS();
+        QVERIFY(!m.insert_or_assign(lvalue(foo), lvalue(foo)).second);
+        QCOMPARE(m.value(foo), foo);
+    }
+
+    {
+        Map m;
+        QVERIFY(m.insert_or_assign(lvalue(foo), lvalue(qqq)).second);
+        CHECKS();
+        QVERIFY(!m.try_emplace(lvalue(foo), lvalue(foo)).second);
+        QCOMPARE(m.value(foo), qqq);
     }
 
     {
         Map m;
         QVERIFY(m.try_emplace(lvalue(foo), rvalue(qqq)).second);
         CHECKS();
+        QVERIFY(!m.insert_or_assign(lvalue(foo), rvalue(foo)).second);
+        QCOMPARE(m.value(foo), foo);
+    }
+
+    {
+        Map m;
+        QVERIFY(m.insert_or_assign(lvalue(foo), rvalue(qqq)).second);
+        CHECKS();
+        QVERIFY(!m.try_emplace(lvalue(foo), rvalue(foo)).second);
+        QCOMPARE(m.value(foo), qqq);
     }
 
     {
@@ -477,18 +497,49 @@ void tst_QFlatMap::try_emplace()
         QVERIFY(m.try_emplace(lvalue(foo), sb(qqq)).second);
         QCOMPARE(m.value(foo), qqq);
         CHECKS();
+        QVERIFY(!m.insert_or_assign(lvalue(foo), sb(foo)).second);
+        QCOMPARE(m.value(foo), foo);
+    }
+
+    {
+        Map m;
+        QVERIFY(m.insert_or_assign(lvalue(foo), sb(qqq)).second);
+        QCOMPARE(m.value(foo), qqq);
+        CHECKS();
+        QVERIFY(!m.try_emplace(lvalue(foo), sb(foo)).second);
+        QCOMPARE(m.value(foo), qqq);
     }
 
     {
         Map m;
         QVERIFY(m.try_emplace(rvalue(foo), lvalue(qqq)).second);
         CHECKS();
+        QVERIFY(!m.insert_or_assign(rvalue(foo), lvalue(foo)).second);
+        QCOMPARE(m.value(foo), foo);
+    }
+
+    {
+        Map m;
+        QVERIFY(m.insert_or_assign(rvalue(foo), lvalue(qqq)).second);
+        CHECKS();
+        QVERIFY(!m.try_emplace(rvalue(foo), lvalue(foo)).second);
+        QCOMPARE(m.value(foo), qqq);
     }
 
     {
         Map m;
         QVERIFY(m.try_emplace(rvalue(foo), rvalue(qqq)).second);
         CHECKS();
+        QVERIFY(!m.insert_or_assign(rvalue(foo), rvalue(foo)).second);
+        QCOMPARE(m.value(foo), foo);
+    }
+
+    {
+        Map m;
+        QVERIFY(m.insert_or_assign(rvalue(foo), rvalue(qqq)).second);
+        CHECKS();
+        QVERIFY(!m.try_emplace(rvalue(foo), rvalue(foo)).second);
+        QCOMPARE(m.value(foo), qqq);
     }
 
     {
@@ -503,6 +554,17 @@ void tst_QFlatMap::try_emplace()
         QVERIFY(m.try_emplace(rvalue(foo), sb(qqq)).second);
         QCOMPARE(m.value(foo), qqq);
         CHECKS();
+        QVERIFY(!m.insert_or_assign(rvalue(foo), sb(foo)).second);
+        QCOMPARE(m.value(foo), foo);
+    }
+
+    {
+        Map m;
+        QVERIFY(m.insert_or_assign(rvalue(foo), sb(qqq)).second);
+        QCOMPARE(m.value(foo), qqq);
+        CHECKS();
+        QVERIFY(!m.try_emplace(rvalue(foo), sb(foo)).second);
+        QCOMPARE(m.value(foo), qqq);
     }
 #undef CHECKS
 #undef lvalue
