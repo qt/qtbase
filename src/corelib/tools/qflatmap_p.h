@@ -750,6 +750,24 @@ public:
         }
     }
 
+    template <typename M>
+    std::pair<iterator, bool> insert_or_assign(const Key &key, M &&obj)
+    {
+        auto r = try_emplace(key, std::forward<M>(obj));
+        if (!r.second)
+            *toValuesIterator(r.first) = std::forward<M>(obj);
+        return r;
+    }
+
+    template <typename M>
+    std::pair<iterator, bool> insert_or_assign(Key &&key, M &&obj)
+    {
+        auto r = try_emplace(std::move(key), std::forward<M>(obj));
+        if (!r.second)
+            *toValuesIterator(r.first) = std::forward<M>(obj);
+        return r;
+    }
+
     template <class InputIt, is_compatible_iterator<InputIt> = nullptr>
     void insert(InputIt first, InputIt last)
     {
