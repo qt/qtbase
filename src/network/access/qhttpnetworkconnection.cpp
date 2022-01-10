@@ -1446,7 +1446,7 @@ void QHttpNetworkConnection::setCacheProxy(const QNetworkProxy &networkProxy)
     d->networkProxy = networkProxy;
     // update the authenticator
     if (!d->networkProxy.user().isEmpty()) {
-        for (int i = 0; i < d->activeChannelCount; ++i) {
+        for (int i = 0; i < d->channelCount; ++i) {
             d->channels[i].proxyAuthenticator.setUser(d->networkProxy.user());
             d->channels[i].proxyAuthenticator.setPassword(d->networkProxy.password());
         }
@@ -1462,7 +1462,7 @@ QNetworkProxy QHttpNetworkConnection::cacheProxy() const
 void QHttpNetworkConnection::setTransparentProxy(const QNetworkProxy &networkProxy)
 {
     Q_D(QHttpNetworkConnection);
-    for (int i = 0; i < d->activeChannelCount; ++i)
+    for (int i = 0; i < d->channelCount; ++i)
         d->channels[i].setProxy(networkProxy);
 }
 
