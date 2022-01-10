@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -42,6 +42,7 @@ private slots:
     void xrandr_15_merge_and_unmerge();
     void xrandr_15_scale();
     void xrandr_15_off_and_on();
+    void xrandr_15_primary();
 
 private:
     void xrandr_process(const QStringList &arguments = {});
@@ -196,6 +197,38 @@ void tst_QScreen_Xrandr::xrandr_15_off_and_on()
         QTest::qWait(500);
 
         QVERIFY(QGuiApplication::screens().size() == (i == ss ? 1 : ss - i + 1));
+    }
+}
+
+void tst_QScreen_Xrandr::xrandr_15_primary()
+{
+    QList<QScreen *> screens = QGuiApplication::screens();
+    int ss = screens.size();
+    if (ss < 2)
+        QSKIP("This test requires at least two screens.");
+
+    QStringList names;
+    for (QScreen *s : screens)
+        names << s->name();
+
+    qDebug() << "All screens: " << names;
+    QScreen *ps = qGuiApp->primaryScreen();
+    qDebug() << "Current primary screen: " << ps;
+
+    QStringList args;
+    for (QString name : names) {
+        qDebug() << "Trying to set primary screen:" << name;
+        args.clear();
+        args << "--output" << name << "--primary";
+        xrandr_process(args);
+        QTest::qWait(500);
+
+        QScreen *ps = qGuiApp->primaryScreen();
+        qDebug() << "Current primary screen: " << ps;
+        if (ps) {
+            qDebug() << "primary screen name: " << ps->name();
+            QVERIFY(ps->name() == name);
+        }
     }
 }
 
