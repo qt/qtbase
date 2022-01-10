@@ -133,6 +133,15 @@ public:
         d->pos = position;
     }
 
+    static QEventPoint withTimeStamp(ulong timestamp, int pointId, QEventPoint::State state,
+                                     QPointF position, QPointF scenePosition, QPointF globalPosition)
+    {
+        QEventPoint p(pointId, state, scenePosition, globalPosition);
+        p.d->timestamp = timestamp;
+        p.d->pos = position;
+        return p;
+    }
+
     static void update(const QEventPoint &from, QEventPoint &to);
 
     void detach() { detach(*this); }

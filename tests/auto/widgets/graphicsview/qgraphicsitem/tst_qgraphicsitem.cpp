@@ -11019,13 +11019,13 @@ static QList<QEventPoint>
                       QEventPoint::State state = QEventPoint::State::Pressed)
 {
     const QPointF screenPos = view.viewport()->mapToGlobal(view.mapFromScene(scenePos));
-    QMutableEventPoint tp(0, state, scenePos, screenPos);
-    tp.setState(state);
-    tp.setScenePosition(scenePos);
-    tp.setGlobalPosition(screenPos);
-    tp.setGlobalPressPosition(screenPos);
-    tp.setGlobalLastPosition(screenPos);
-    tp.setEllipseDiameters(ellipseDiameters);
+    QEventPoint tp(0, state, scenePos, screenPos);
+    QMutableEventPoint::setState(tp, state);
+    QMutableEventPoint::setScenePosition(tp, scenePos);
+    QMutableEventPoint::setGlobalPosition(tp, screenPos);
+    QMutableEventPoint::setGlobalPressPosition(tp, screenPos);
+    QMutableEventPoint::setGlobalLastPosition(tp, screenPos);
+    QMutableEventPoint::setEllipseDiameters(tp, ellipseDiameters);
     return QList<QEventPoint>() << tp;
 }
 
