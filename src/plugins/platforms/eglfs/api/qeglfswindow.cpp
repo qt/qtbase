@@ -177,6 +177,8 @@ void QEglFSWindow::destroy()
 
 #ifndef QT_NO_OPENGL
         QOpenGLCompositor::destroy();
+        if (qt_gl_global_share_context() == m_rasterCompositingContext)
+            qt_gl_set_global_share_context(nullptr);
         delete m_rasterCompositingContext;
 #endif
     }
