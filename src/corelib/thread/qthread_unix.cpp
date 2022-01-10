@@ -341,16 +341,10 @@ void *QThreadPrivate::start(void *arg)
             // Sets the name of the current thread. We can only do this
             // when the thread is starting, as we don't have a cross
             // platform way of setting the name of an arbitrary thread.
-
-            // avoid interacting with the binding system while thread is
-            // not properly running yet
-            auto priv = QObjectPrivate::get(thr);
-            QString objectName = priv->extraData ? priv->extraData->objectName.valueBypassingBindings()
-                                                 : QString();
-            if (Q_LIKELY(objectName.isEmpty()))
+            if (Q_LIKELY(thr->d_func()->objectName.isEmpty()))
                 setCurrentThreadName(thr->metaObject()->className());
             else
-                setCurrentThreadName(objectName.toLocal8Bit());
+                setCurrentThreadName(std::exchange(thr->d_func()->objectName, {}).toLocal8Bit());
         }
 #endif
 
@@ -715,7 +709,10 @@ void QThread::start(Priority priority)
         pthread_attr_setthreadname(&attr, metaObject()->className());
     else
         pthread_attr_setthreadname(&attr, objectName().toLocal8Bit());
+#else
+    d->objectName = objectName();
 #endif
+
     pthread_t threadId;
     int code = pthread_create(&threadId, &attr, QThreadPrivate::start, this);
     if (code == EPERM) {
