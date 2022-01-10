@@ -1005,52 +1005,45 @@ void qt_to_latin1_unchecked(uchar *dst, const char16_t *src, qsizetype length)
     qt_to_latin1_internal<false>(dst, src, length);
 }
 
-// Unicode case-insensitive comparison
-Q_NEVER_INLINE static int ucstricmp(const QChar *a, const QChar *ae, const QChar *b, const QChar *be)
+// Unicode case-insensitive comparison (argument order matches QStringView)
+Q_NEVER_INLINE static int ucstricmp(qsizetype alen, const QChar *a, qsizetype blen, const QChar *b)
 {
     if (a == b)
-        return (ae - be);
-
-    const QChar *e = ae;
-    if (be - b < ae - a)
-        e = a + (be - b);
+        return (alen - blen);
 
     char32_t alast = 0;
     char32_t blast = 0;
-    while (a < e) {
+    qsizetype l = qMin(alen, blen);
+    qsizetype i;
+    for (i = 0; i < l; ++i) {
 //         qDebug() << Qt::hex << alast << blast;
 //         qDebug() << Qt::hex << "*a=" << *a << "alast=" << alast << "folded=" << foldCase (*a, alast);
 //         qDebug() << Qt::hex << "*b=" << *b << "blast=" << blast << "folded=" << foldCase (*b, blast);
-        int diff = foldCase(a->unicode(), alast) - foldCase(b->unicode(), blast);
+        int diff = foldCase(a[i].unicode(), alast) - foldCase(b[i].unicode(), blast);
         if ((diff))
             return diff;
-        ++a;
-        ++b;
     }
-    if (a == ae) {
-        if (b == be)
+    if (i == alen) {
+        if (i == blen)
             return 0;
         return -1;
     }
     return 1;
 }
 
-// Case-insensitive comparison between a Unicode string and a QLatin1String
-Q_NEVER_INLINE static int ucstricmp(const QChar *a, const QChar *ae, const char *b, const char *be)
+// Case-insensitive comparison between a QStringView and a QLatin1String
+// (argument order matches those types)
+Q_NEVER_INLINE static int ucstricmp(qsizetype alen, const QChar *a, qsizetype blen, const char *b)
 {
-    auto e = ae;
-    if (be - b < ae - a)
-        e = a + (be - b);
-
-    while (a < e) {
-        int diff = foldCase(a->unicode()) - foldCase(char16_t{uchar(*b)});
+    qsizetype l = qMin(alen, blen);
+    qsizetype i;
+    for (i = 0; i < l; ++i) {
+        int diff = foldCase(a[i].unicode()) - foldCase(char16_t{uchar(b[i])});
         if ((diff))
             return diff;
-        ++a;
-        ++b;
     }
-    if (a == ae) {
-        if (b == be)
+    if (i == alen) {
+        if (i == blen)
             return 0;
         return -1;
     }
@@ -1453,7 +1446,7 @@ int QtPrivate::compareStrings(QStringView lhs, QStringView rhs, Qt::CaseSensitiv
 {
     if (cs == Qt::CaseSensitive)
         return ucstrcmp(lhs.begin(), lhs.size(), rhs.begin(), rhs.size());
-    return ucstricmp(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
+    return ucstricmp(lhs.size(), lhs.begin(), rhs.size(), rhs.begin());
 }
 
 /*!
@@ -1477,7 +1470,7 @@ int QtPrivate::compareStrings(QStringView lhs, QLatin1String rhs, Qt::CaseSensit
 {
     if (cs == Qt::CaseSensitive)
         return ucstrcmp(lhs.begin(), lhs.size(), rhs.begin(), rhs.size());
-    return ucstricmp(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
+    return ucstricmp(lhs.size(), lhs.begin(), rhs.size(), rhs.begin());
 }
 
 /*!
