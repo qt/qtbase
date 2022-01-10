@@ -394,10 +394,9 @@ unsigned int __stdcall QT_ENSURE_STACK_ALIGNED_FOR_SSE QThreadPrivate::start(voi
 
 #if !defined(QT_NO_DEBUG) && defined(Q_CC_MSVC) && !defined(Q_OS_WINRT)
     // sets the name of the current thread.
-    QByteArray objectName = thr->objectName().toLocal8Bit();
-    qt_set_thread_name(HANDLE(-1),
-                       objectName.isEmpty() ?
-                       thr->metaObject()->className() : objectName.constData());
+    qt_set_thread_name(HANDLE(-1), thr->d_func()->objectName.isEmpty()
+                        ? thr->metaObject()->className()
+                        : std::exchange(thr->d_func()->objectName, {}).toLocal8Bit().constData());
 #endif
 
     emit thr->started(QThread::QPrivateSignal());
@@ -503,6 +502,7 @@ void QThread::start(Priority priority)
     if (d->running)
         return;
 
+    d->objectName = objectName();
     d->running = true;
     d->finished = false;
     d->exited = false;
