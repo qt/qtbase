@@ -1096,25 +1096,15 @@ extern "C" int qt_ucstrncmp_mips_dsp_asm(const char16_t *a,
 // Unicode case-sensitive compare two same-sized strings
 static int ucstrncmp(const QChar *a, const QChar *b, size_t l)
 {
-#ifdef __OPTIMIZE_SIZE__
-    const QChar *end = a + l;
-    while (a < end) {
-        if (int diff = (int)a->unicode() - (int)b->unicode())
-            return diff;
-        ++a;
-        ++b;
-    }
-    return 0;
-#else
-#if defined(__mips_dsp)
+#ifndef __OPTIMIZE_SIZE__
+#  if defined(__mips_dsp)
     static_assert(sizeof(uint) == sizeof(size_t));
     if (l >= 8) {
         return qt_ucstrncmp_mips_dsp_asm(reinterpret_cast<const char16_t*>(a),
                                          reinterpret_cast<const char16_t*>(b),
                                          l);
     }
-#endif // __mips_dsp
-#ifdef __SSE2__
+#  elif defined(__SSE2__)
     const QChar *end = a + l;
     qptrdiff offset = 0;
 
@@ -1182,8 +1172,7 @@ static int ucstrncmp(const QChar *a, const QChar *b, size_t l)
         return a[offset + i].unicode() - b[offset + i].unicode();
     };
     return UnrollTailLoop<3>::exec(l, 0, lambda, lambda);
-#endif
-#ifdef __ARM_NEON__
+#  elif defined(__ARM_NEON__)
     if (l >= 8) {
         const QChar *end = a + l;
         const uint16x8_t mask = { 1, 1 << 1, 1 << 2, 1 << 3, 1 << 4, 1 << 5, 1 << 6, 1 << 7 };
@@ -1206,54 +1195,14 @@ static int ucstrncmp(const QChar *a, const QChar *b, size_t l)
         return a[i].unicode() - b[i].unicode();
     };
     return UnrollTailLoop<7>::exec(l, 0, lambda, lambda);
-#endif // __ARM_NEON__
-    if (!l)
-        return 0;
+#  endif // MIPS DSP or __SSE2__ or __ARM_NEON__
+#endif // __OPTIMIZE_SIZE__
 
-    // check alignment
-    if ((reinterpret_cast<quintptr>(a) & 2) == (reinterpret_cast<quintptr>(b) & 2)) {
-        // both addresses have the same alignment
-        if (reinterpret_cast<quintptr>(a) & 2) {
-            // both addresses are not aligned to 4-bytes boundaries
-            // compare the first character
-            if (*a != *b)
-                return a->unicode() - b->unicode();
-            --l;
-            ++a;
-            ++b;
-
-            // now both addresses are 4-bytes aligned
-        }
-
-        // both addresses are 4-bytes aligned
-        // do a fast 32-bit comparison
-        const quint32 *da = reinterpret_cast<const quint32 *>(a);
-        const quint32 *db = reinterpret_cast<const quint32 *>(b);
-        const quint32 *e = da + (l >> 1);
-        for ( ; da != e; ++da, ++db) {
-            if (*da != *db) {
-                a = reinterpret_cast<const QChar *>(da);
-                b = reinterpret_cast<const QChar *>(db);
-                if (*a != *b)
-                    return a->unicode() - b->unicode();
-                return a[1].unicode() - b[1].unicode();
-            }
-        }
-
-        // do we have a tail?
-        a = reinterpret_cast<const QChar *>(da);
-        b = reinterpret_cast<const QChar *>(db);
-        return (l & 1) ? a->unicode() - b->unicode() : 0;
-    } else {
-        // one of the addresses isn't 4-byte aligned but the other is
-        const QChar *e = a + l;
-        for ( ; a != e; ++a, ++b) {
-            if (*a != *b)
-                return a->unicode() - b->unicode();
-        }
+    for (size_t i = 0; i < l; ++i) {
+        if (int diff = a[i].unicode() - b[i].unicode())
+            return diff;
     }
     return 0;
-#endif
 }
 
 static int ucstrncmp(const QChar *a, const uchar *c, size_t l)
