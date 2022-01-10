@@ -1314,6 +1314,19 @@ constexpr int lencmp(qsizetype lhs, qsizetype rhs) noexcept
            /* else */  -1 ;
 }
 
+// Unicode case-sensitive equality
+template <typename Char2>
+static bool ucstreq(const QChar *a, size_t alen, const Char2 *b, size_t blen)
+{
+    if (alen != blen)
+        return false;
+    if constexpr (std::is_same_v<decltype(a), decltype(b)>) {
+        if (a == b)
+            return true;
+    }
+    return ucstrncmp(a, b, alen) == 0;
+}
+
 // Unicode case-sensitive comparison
 static int ucstrcmp(const QChar *a, size_t alen, const QChar *b, size_t blen)
 {
@@ -1371,12 +1384,12 @@ static int latin1nicmp(const char *lhsChar, qsizetype lSize, const char *rhsChar
 }
 bool QtPrivate::equalStrings(QStringView lhs, QStringView rhs) noexcept
 {
-    return ucstrcmp(lhs.begin(), lhs.size(), rhs.begin(), rhs.size()) == 0;
+    return ucstreq(lhs.begin(), lhs.size(), rhs.begin(), rhs.size());
 }
 
 bool QtPrivate::equalStrings(QStringView lhs, QLatin1String rhs) noexcept
 {
-    return ucstrcmp(lhs.begin(), lhs.size(), rhs.begin(), rhs.size()) == 0;
+    return ucstreq(lhs.begin(), lhs.size(), rhs.begin(), rhs.size());
 }
 
 bool QtPrivate::equalStrings(QLatin1String lhs, QStringView rhs) noexcept
