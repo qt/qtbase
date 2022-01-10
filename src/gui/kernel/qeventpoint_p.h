@@ -118,21 +118,9 @@ public:
 // Private subclasses to allow accessing and modifying protected variables.
 // These should NOT hold any extra state.
 
-class Q_GUI_EXPORT QMutableEventPoint : public QEventPoint
+class QMutableEventPoint
 {
 public:
-    QMutableEventPoint(int pointId = -1, State state = QEventPoint::State::Stationary,
-                       const QPointF &scenePosition = QPointF(), const QPointF &globalPosition = QPointF()) :
-        QEventPoint(pointId, state, scenePosition, globalPosition) {}
-
-    QMutableEventPoint(ulong timestamp, int pointId, State state,
-                       const QPointF &position, const QPointF &scenePosition, const QPointF &globalPosition) :
-        QEventPoint(pointId, state, scenePosition, globalPosition)
-    {
-        d->timestamp = timestamp;
-        d->pos = position;
-    }
-
     static QEventPoint withTimeStamp(ulong timestamp, int pointId, QEventPoint::State state,
                                      QPointF position, QPointF scenePosition, QPointF globalPosition)
     {
@@ -142,13 +130,11 @@ public:
         return p;
     }
 
-    static void update(const QEventPoint &from, QEventPoint &to);
+    static Q_GUI_EXPORT void update(const QEventPoint &from, QEventPoint &to);
 
-    void detach() { detach(*this); }
-    static void detach(QEventPoint &p);
+    static Q_GUI_EXPORT void detach(QEventPoint &p);
 
 #define TRIVIAL_SETTER(type, field, Field) \
-    void set##Field (type arg) { d->field = std::move(arg); } \
     static void set##Field (QEventPoint &p, type arg) { p.d->field = std::move(arg); } \
     /* end */
 
@@ -156,8 +142,7 @@ public:
     TRIVIAL_SETTER(const QPointingDevice *, device, Device)
 
     // not trivial:
-    void setTimestamp(const ulong t) { setTimestamp(*this, t); }
-    static void setTimestamp(QEventPoint &p, ulong t);
+    static Q_GUI_EXPORT void setTimestamp(QEventPoint &p, ulong t);
 
     TRIVIAL_SETTER(ulong, pressTimestamp, PressTimestamp)
     TRIVIAL_SETTER(QEventPoint::State, state, State)
@@ -165,16 +150,6 @@ public:
     TRIVIAL_SETTER(QPointF, pos, Position)
     TRIVIAL_SETTER(QPointF, scenePos, ScenePosition)
     TRIVIAL_SETTER(QPointF, globalPos, GlobalPosition)
-
-#if QT_DEPRECATED_SINCE(6, 0)
-    // temporary replacements for QTouchEvent::TouchPoint setters, mainly to make porting easier
-    QT_DEPRECATED_VERSION_X_6_0("Use setPosition()")
-    void setPos(const QPointF &pos) { d->pos = pos; }
-    QT_DEPRECATED_VERSION_X_6_0("Use setScenePosition()")
-    void setScenePos(const QPointF &pos) { d->scenePos = pos; }
-    QT_DEPRECATED_VERSION_X_6_0("Use setGlobalPosition()")
-    void setScreenPos(const QPointF &pos) { d->globalPos = pos; }
-#endif
 
     TRIVIAL_SETTER(QPointF, globalPressPos, GlobalPressPosition)
     TRIVIAL_SETTER(QPointF, globalGrabPos, GlobalGrabPosition)
@@ -184,20 +159,16 @@ public:
     TRIVIAL_SETTER(qreal, rotation, Rotation)
     TRIVIAL_SETTER(QVector2D, velocity, Velocity)
 
-    QWindow *window() const { return d->window.data(); }
     static QWindow *window(const QEventPoint &p) { return p.d->window.data(); }
 
     TRIVIAL_SETTER(QWindow *, window, Window)
 
-    QObject *target() const { return d->target.data(); }
     static QObject *target(const QEventPoint &p) { return p.d->target.data(); }
 
     TRIVIAL_SETTER(QObject *, target, Target)
 
 #undef TRIVIAL_SETTER
 };
-
-static_assert(sizeof(QMutableEventPoint) == sizeof(QEventPoint));
 
 QT_END_NAMESPACE
 
