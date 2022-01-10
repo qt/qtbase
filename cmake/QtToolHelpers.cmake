@@ -52,7 +52,7 @@ function(qt_internal_add_tool target_name)
                             " (QT_WILL_BUILD_TOOLS is ${QT_WILL_BUILD_TOOLS}).")
     endif()
 
-    if(CMAKE_CROSSCOMPILING AND QT_BUILD_TOOLS_WHEN_CROSSCOMPILING AND (name STREQUAL target_name))
+    if(QT_WILL_RENAME_TOOL_TARGETS AND (name STREQUAL target_name))
         message(FATAL_ERROR
             "qt_internal_add_tool must be passed a target obtained from qt_get_tool_target_name.")
     endif()
@@ -61,8 +61,8 @@ function(qt_internal_add_tool target_name)
     set(imported_tool_target_already_found FALSE)
 
     # This condition can only be TRUE if a previous find_package(Qt6${arg_TOOLS_TARGET}Tools)
-    # was already done. That can happen if we are cross compiling or QT_FORCE_FIND_TOOLS was ON.
-    # In such a case, we need to exit early if we're not going to also cross-build the tools.
+    # was already done. That can happen if QT_FORCE_FIND_TOOLS was ON or we're cross-compiling.
+    # In such a case, we need to exit early if we're not going to also build the tools.
     if(TARGET ${full_name})
         get_property(path TARGET ${full_name} PROPERTY LOCATION)
         message(STATUS "Tool '${full_name}' was found at ${path}.")
@@ -72,15 +72,12 @@ function(qt_internal_add_tool target_name)
         endif()
     endif()
 
-    # We need to search for the host Tools package when:
-    # - doing a cross-build and tools are not cross-built
-    # - doing a cross-build and tools ARE cross-built
-    # - QT_FORCE_FIND_TOOLS is ON
-    # This collapses to the condition below.
+    # We need to search for the host Tools package when doing a cross-build
+    # or when QT_FORCE_FIND_TOOLS is ON.
     # As an optimiziation, we don't search for the package one more time if the target
     # was already brought into scope from a previous find_package.
     set(search_for_host_package FALSE)
-    if(NOT QT_WILL_BUILD_TOOLS OR QT_BUILD_TOOLS_WHEN_CROSSCOMPILING)
+    if(NOT QT_WILL_BUILD_TOOLS OR QT_WILL_RENAME_TOOL_TARGETS)
         set(search_for_host_package TRUE)
     endif()
     if(search_for_host_package AND NOT imported_tool_target_already_found)
@@ -160,7 +157,7 @@ function(qt_internal_add_tool target_name)
             qt_internal_append_known_modules_with_tools("${arg_TOOLS_TARGET}")
             get_property(path TARGET ${full_name} PROPERTY LOCATION)
             message(STATUS "${full_name} was found at ${path} using package ${tools_package_name}.")
-            if (NOT QT_BUILD_TOOLS_WHEN_CROSSCOMPILING)
+            if (NOT QT_FORCE_BUILD_TOOLS)
                 return()
             endif()
         endif()
@@ -171,11 +168,7 @@ function(qt_internal_add_tool target_name)
                            "${tools_package_name} package. "
                            "Package found: ${${tools_package_name}_FOUND}")
     else()
-        if(QT_BUILD_TOOLS_WHEN_CROSSCOMPILING)
-            message(STATUS "Tool '${target_name}' will be cross-built from source.")
-        else()
-            message(STATUS "Tool '${full_name}' will be built from source.")
-        endif()
+        message(STATUS "Tool '${full_name}' will be built from source.")
     endif()
 
     set(disable_autogen_tools "${arg_DISABLE_AUTOGEN_TOOLS}")
@@ -366,7 +359,7 @@ function(qt_export_tools module_name)
             list(APPEND extra_cmake_includes "${_extra_cmake_includes}")
         endif()
 
-        if (CMAKE_CROSSCOMPILING AND QT_BUILD_TOOLS_WHEN_CROSSCOMPILING)
+        if (QT_WILL_RENAME_TOOL_TARGETS)
             string(REGEX REPLACE "_native$" "" tool_name ${tool_name})
         endif()
         set(extra_cmake_statements "${extra_cmake_statements}
@@ -471,7 +464,7 @@ endfunction()
 # If the user specifies to build tools when cross-compiling, then the
 # suffix "_native" is appended.
 function(qt_get_tool_target_name out_var name)
-    if (CMAKE_CROSSCOMPILING AND QT_BUILD_TOOLS_WHEN_CROSSCOMPILING)
+    if (QT_WILL_RENAME_TOOL_TARGETS)
         set(${out_var} ${name}_native PARENT_SCOPE)
     else()
         set(${out_var} ${name} PARENT_SCOPE)
@@ -482,20 +475,44 @@ endfunction()
 # This is the inverse of qt_get_tool_target_name.
 function(qt_tool_target_to_name out_var target)
     set(name ${target})
-    if (CMAKE_CROSSCOMPILING AND QT_BUILD_TOOLS_WHEN_CROSSCOMPILING)
+    if (QT_WILL_RENAME_TOOL_TARGETS)
         string(REGEX REPLACE "_native$" "" name ${target})
     endif()
     set(${out_var} ${name} PARENT_SCOPE)
 endfunction()
 
-# Sets QT_WILL_BUILD_TOOLS if tools will be built.
+# Sets QT_WILL_BUILD_TOOLS if tools will be built and QT_WILL_RENAME_TOOL_TARGETS
+# if those tools have replaced naming.
 function(qt_check_if_tools_will_be_built)
-    if(QT_FORCE_FIND_TOOLS OR (CMAKE_CROSSCOMPILING AND NOT QT_BUILD_TOOLS_WHEN_CROSSCOMPILING))
+    if(CMAKE_CROSSCOMPILING AND QT_BUILD_TOOLS_WHEN_CROSSCOMPILING)
+        # pre-6.4 compatibility flag (remove sometime in the future)
+        message(WARNING "QT_BUILD_TOOLS_WHEN_CROSSCOMPILING is deprecated. "
+            "Please use QT_FORCE_BUILD_TOOLS instead.")
+        set(QT_FORCE_BUILD_TOOLS TRUE CACHE INTERNAL "" FORCE)
+    endif()
+
+    # By default, we build our own tools unless we're cross-building.
+    set(need_target_rename FALSE)
+    if(CMAKE_CROSSCOMPILING)
         set(will_build_tools FALSE)
+        if(QT_FORCE_BUILD_TOOLS)
+            set(will_build_tools TRUE)
+            set(need_target_rename TRUE)
+        endif()
     else()
         set(will_build_tools TRUE)
+        if(QT_FORCE_FIND_TOOLS)
+            set(will_build_tools FALSE)
+            if(QT_FORCE_BUILD_TOOLS)
+                set(will_build_tools TRUE)
+                set(need_target_rename TRUE)
+            endif()
+        endif()
     endif()
+
     set(QT_WILL_BUILD_TOOLS ${will_build_tools} CACHE INTERNAL "Are tools going to be built" FORCE)
+    set(QT_WILL_RENAME_TOOL_TARGETS ${need_target_rename} CACHE INTERNAL
+        "Do tool targets need to be renamed" FORCE)
 endfunction()
 
 # Use this macro to exit a file or function scope unless we're building tools. This is supposed to

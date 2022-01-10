@@ -216,7 +216,7 @@ set(BUILD_TESTING ${QT_BUILD_TESTS} CACHE INTERNAL "")
 # Like in qttools/assistant/assistant.pro, load(qt_app), which is guarded by a qtNomakeTools() call.
 
 set(_qt_build_tools_by_default_default ON)
-if(CMAKE_CROSSCOMPILING AND NOT QT_BUILD_TOOLS_WHEN_CROSSCOMPILING)
+if(CMAKE_CROSSCOMPILING AND NOT QT_FORCE_BUILD_TOOLS)
     set(_qt_build_tools_by_default_default OFF)
 endif()
 option(QT_BUILD_TOOLS_BY_DEFAULT "Should tools be built as part of the default 'all' target."

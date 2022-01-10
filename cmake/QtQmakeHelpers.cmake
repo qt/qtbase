@@ -85,7 +85,7 @@ function(qt_generate_qmake_and_qtpaths_wrapper_for_target)
 
     # Call the configuration file something else but qt.conf to avoid
     # being picked up by the qmake executable that's created if
-    # QT_BUILD_TOOLS_WHEN_CROSSCOMPILING is enabled.
+    # QT_FORCE_BUILD_TOOLS is enabled.
     qt_path_join(qt_conf_path "${INSTALL_BINDIR}" "target_qt.conf")
 
     set(prefix "${CMAKE_INSTALL_PREFIX}")
@@ -146,7 +146,7 @@ HostSpec=${QT_QMAKE_HOST_MKSPEC}
     endif()
 
     set(wrapper_prefix)
-    if(QT_BUILD_TOOLS_WHEN_CROSSCOMPILING)
+    if(QT_FORCE_BUILD_TOOLS)
         # Avoid collisions with the cross-compiled qmake/qtpaths binaries.
         set(wrapper_prefix "host-")
     endif()

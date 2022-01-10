@@ -592,9 +592,14 @@ endif()\n")
                 "set(QT_UIKIT_SDK \"${QT_UIKIT_SDK}\" CACHE BOOL \"\")\n")
         endif()
 
-        if(CMAKE_CROSSCOMPILING AND QT_BUILD_TOOLS_WHEN_CROSSCOMPILING)
+        if(QT_FORCE_FIND_TOOLS)
             string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
-                "set(QT_BUILD_TOOLS_WHEN_CROSSCOMPILING \"TRUE\" CACHE BOOL \"\" FORCE)\n")
+                "set(QT_FORCE_FIND_TOOLS \"TRUE\" CACHE BOOL \"\" FORCE)\n")
+        endif()
+
+        if(QT_FORCE_BUILD_TOOLS)
+            string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
+                "set(QT_FORCE_BUILD_TOOLS \"TRUE\" CACHE BOOL \"\" FORCE)\n")
         endif()
 
         if(QT_INTERNAL_EXAMPLES_INSTALL_PREFIX)

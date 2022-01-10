@@ -837,7 +837,7 @@ function(qt_get_build_parts out_var)
         list(APPEND parts "tests")
     endif()
 
-    if(NOT CMAKE_CROSSCOMPILING OR QT_BUILD_TOOLS_WHEN_CROSSCOMPILING)
+    if(NOT CMAKE_CROSSCOMPILING OR QT_FORCE_BUILD_TOOLS)
         list(APPEND parts "tools")
     endif()
 
