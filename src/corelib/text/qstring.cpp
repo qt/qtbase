@@ -1011,7 +1011,7 @@ void qt_to_latin1_unchecked(uchar *dst, const char16_t *src, qsizetype length)
 }
 
 // Unicode case-insensitive comparison (argument order matches QStringView)
-Q_NEVER_INLINE static int ucstricmp(qsizetype alen, const QChar *a, qsizetype blen, const QChar *b)
+Q_NEVER_INLINE static int ucstricmp(qsizetype alen, const char16_t *a, qsizetype blen, const char16_t *b)
 {
     if (a == b)
         return (alen - blen);
@@ -1024,7 +1024,7 @@ Q_NEVER_INLINE static int ucstricmp(qsizetype alen, const QChar *a, qsizetype bl
 //         qDebug() << Qt::hex << alast << blast;
 //         qDebug() << Qt::hex << "*a=" << *a << "alast=" << alast << "folded=" << foldCase (*a, alast);
 //         qDebug() << Qt::hex << "*b=" << *b << "blast=" << blast << "folded=" << foldCase (*b, blast);
-        int diff = foldCase(a[i].unicode(), alast) - foldCase(b[i].unicode(), blast);
+        int diff = foldCase(a[i], alast) - foldCase(b[i], blast);
         if ((diff))
             return diff;
     }
@@ -1038,12 +1038,12 @@ Q_NEVER_INLINE static int ucstricmp(qsizetype alen, const QChar *a, qsizetype bl
 
 // Case-insensitive comparison between a QStringView and a QLatin1String
 // (argument order matches those types)
-Q_NEVER_INLINE static int ucstricmp(qsizetype alen, const QChar *a, qsizetype blen, const char *b)
+Q_NEVER_INLINE static int ucstricmp(qsizetype alen, const char16_t *a, qsizetype blen, const char *b)
 {
     qsizetype l = qMin(alen, blen);
     qsizetype i;
     for (i = 0; i < l; ++i) {
-        int diff = foldCase(a[i].unicode()) - foldCase(char16_t{uchar(b[i])});
+        int diff = foldCase(a[i]) - foldCase(char16_t{uchar(b[i])});
         if ((diff))
             return diff;
     }
@@ -1093,18 +1093,16 @@ extern "C" int qt_ucstrncmp_mips_dsp_asm(const char16_t *a,
 
 // Unicode case-sensitive compare two same-sized strings
 template <StringComparisonMode Mode>
-static int ucstrncmp(const QChar *a, const QChar *b, size_t l)
+static int ucstrncmp(const char16_t *a, const char16_t *b, size_t l)
 {
 #ifndef __OPTIMIZE_SIZE__
 #  if defined(__mips_dsp)
     static_assert(sizeof(uint) == sizeof(size_t));
     if (l >= 8) {
-        return qt_ucstrncmp_mips_dsp_asm(reinterpret_cast<const char16_t*>(a),
-                                         reinterpret_cast<const char16_t*>(b),
-                                         l);
+        return qt_ucstrncmp_mips_dsp_asm(a, b, l);
     }
 #  elif defined(__SSE2__)
-    const QChar *end = a + l;
+    const char16_t *end = a + l;
     qptrdiff offset = 0;
 
     // Using the PMOVMSKB instruction, we get two bits for each character
@@ -1119,7 +1117,7 @@ static int ucstrncmp(const QChar *a, const QChar *b, size_t l)
             retval = 1;
         } else {
             uint idx = qCountTrailingZeroBits(mask);
-            retval = a[offset + idx / 2].unicode() - b[offset + idx / 2].unicode();
+            retval = a[offset + idx / 2] - b[offset + idx / 2];
         }
         return true;
     };
@@ -1146,7 +1144,7 @@ static int ucstrncmp(const QChar *a, const QChar *b, size_t l)
             if (Mode == CompareStringsForEquality)
                 return 1;
             uint idx = qCountTrailingZeroBits(mask);
-            return a[offset + idx / 2].unicode() - b[offset + idx / 2].unicode();
+            return a[offset + idx / 2] - b[offset + idx / 2];
         }
     }
 
@@ -1174,12 +1172,12 @@ static int ucstrncmp(const QChar *a, const QChar *b, size_t l)
     l &= 3;
 
     const auto lambda = [=](size_t i) -> int {
-        return a[offset + i].unicode() - b[offset + i].unicode();
+        return a[offset + i] - b[offset + i];
     };
     return UnrollTailLoop<3>::exec(l, 0, lambda, lambda);
 #  elif defined(__ARM_NEON__)
     if (l >= 8) {
-        const QChar *end = a + l;
+        const char16_t *end = a + l;
         const uint16x8_t mask = { 1, 1 << 1, 1 << 2, 1 << 3, 1 << 4, 1 << 5, 1 << 6, 1 << 7 };
         while (end - a > 7) {
             uint16x8_t da = vld1q_u16(reinterpret_cast<const uint16_t *>(a));
@@ -1191,7 +1189,7 @@ static int ucstrncmp(const QChar *a, const QChar *b, size_t l)
                 if (Mode == CompareStringsForEquality)
                     return 1;
                 uint idx = qCountTrailingZeroBits(r);
-                return (int)a[idx].unicode() - (int)b[idx].unicode();
+                return a[idx] - b[idx];
             }
             a += 8;
             b += 8;
@@ -1199,24 +1197,24 @@ static int ucstrncmp(const QChar *a, const QChar *b, size_t l)
         l &= 7;
     }
     const auto lambda = [=](size_t i) -> int {
-        return a[i].unicode() - b[i].unicode();
+        return a[i] - b[i];
     };
     return UnrollTailLoop<7>::exec(l, 0, lambda, lambda);
 #  endif // MIPS DSP or __SSE2__ or __ARM_NEON__
 #endif // __OPTIMIZE_SIZE__
 
     for (size_t i = 0; i < l; ++i) {
-        if (int diff = a[i].unicode() - b[i].unicode())
+        if (int diff = a[i] - b[i])
             return diff;
     }
     return 0;
 }
 
 template <StringComparisonMode Mode>
-static int ucstrncmp(const QChar *a, const char *b, size_t l)
+static int ucstrncmp(const char16_t *a, const char *b, size_t l)
 {
     const uchar *c = reinterpret_cast<const uchar *>(b);
-    const char16_t *uc = reinterpret_cast<const char16_t *>(a);
+    const char16_t *uc = a;
     const char16_t *e = uc + l;
 
 #ifdef __SSE2__
@@ -1338,7 +1336,7 @@ constexpr int lencmp(qsizetype lhs, qsizetype rhs) noexcept
 
 // Unicode case-sensitive equality
 template <typename Char2>
-static bool ucstreq(const QChar *a, size_t alen, const Char2 *b, size_t blen)
+static bool ucstreq(const char16_t *a, size_t alen, const Char2 *b, size_t blen)
 {
     if (alen != blen)
         return false;
@@ -1351,7 +1349,7 @@ static bool ucstreq(const QChar *a, size_t alen, const Char2 *b, size_t blen)
 
 // Unicode case-sensitive comparison
 template <typename Char2>
-static int ucstrcmp(const QChar *a, size_t alen, const Char2 *b, size_t blen)
+static int ucstrcmp(const char16_t *a, size_t alen, const Char2 *b, size_t blen)
 {
     if constexpr (std::is_same_v<decltype(a), decltype(b)>) {
         if (a == b && alen == blen)
@@ -1402,12 +1400,12 @@ static int latin1nicmp(const char *lhsChar, qsizetype lSize, const char *rhsChar
 }
 bool QtPrivate::equalStrings(QStringView lhs, QStringView rhs) noexcept
 {
-    return ucstreq(lhs.begin(), lhs.size(), rhs.begin(), rhs.size());
+    return ucstreq(lhs.utf16(), lhs.size(), rhs.utf16(), rhs.size());
 }
 
 bool QtPrivate::equalStrings(QStringView lhs, QLatin1String rhs) noexcept
 {
-    return ucstreq(lhs.begin(), lhs.size(), rhs.begin(), rhs.size());
+    return ucstreq(lhs.utf16(), lhs.size(), rhs.latin1(), rhs.size());
 }
 
 bool QtPrivate::equalStrings(QLatin1String lhs, QStringView rhs) noexcept
@@ -1476,8 +1474,8 @@ bool QAnyStringView::equal(QAnyStringView lhs, QAnyStringView rhs) noexcept
 int QtPrivate::compareStrings(QStringView lhs, QStringView rhs, Qt::CaseSensitivity cs) noexcept
 {
     if (cs == Qt::CaseSensitive)
-        return ucstrcmp(lhs.begin(), lhs.size(), rhs.begin(), rhs.size());
-    return ucstricmp(lhs.size(), lhs.begin(), rhs.size(), rhs.begin());
+        return ucstrcmp(lhs.utf16(), lhs.size(), rhs.utf16(), rhs.size());
+    return ucstricmp(lhs.size(), lhs.utf16(), rhs.size(), rhs.utf16());
 }
 
 /*!
@@ -1500,8 +1498,8 @@ int QtPrivate::compareStrings(QStringView lhs, QStringView rhs, Qt::CaseSensitiv
 int QtPrivate::compareStrings(QStringView lhs, QLatin1String rhs, Qt::CaseSensitivity cs) noexcept
 {
     if (cs == Qt::CaseSensitive)
-        return ucstrcmp(lhs.begin(), lhs.size(), rhs.begin(), rhs.size());
-    return ucstricmp(lhs.size(), lhs.begin(), rhs.size(), rhs.begin());
+        return ucstrcmp(lhs.utf16(), lhs.size(), rhs.latin1(), rhs.size());
+    return ucstricmp(lhs.size(), lhs.utf16(), rhs.size(), rhs.latin1());
 }
 
 /*!
