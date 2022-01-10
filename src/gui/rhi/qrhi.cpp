@@ -4599,6 +4599,61 @@ QRhiResource::Type QRhiSwapChain::resourceType() const
     Regardless of the return value, calling destroy() is always safe.
  */
 
+/*!
+    \struct QRhiSwapChainHdrInfo
+    \internal
+    \inmodule QtGui
+
+    \brief Describes the high dynamic range related information of the
+    swapchain's associated output.
+
+    To perform tonemapping, one often needs to know the maximum luminance of
+    the display the swapchain's window is associated with. While this is often
+    made user-configurable, it can be highly useful to set defaults based on
+    the values reported by the display itself, thus providing a decent starting
+    point.
+
+    There are some problems however: the information is exposed in different
+    forms on different platforms, whereas with cross-platform graphics APIs
+    there is often no associated solution at all, because managing such
+    information is not in the scope of the API (and may rather be retrievable
+    via other platform-specific means, if any).
+
+    The struct returned from QRhiSwapChain::hdrInfo() contains either some
+    hard-coded defaults, indicated by the \c isHardCodedDefaults field, or real
+    values received from an API such as DXGI (IDXGIOutput6) or Cocoa
+    (NSScreen). The default is 1000 nits for maximum luminance.
+
+    With Metal on macOS/iOS, there is no luminance values exposed in the
+    platform APIs. Instead, the maximum color component value, that would be
+    1.0 in a non-HDR setup, is provided. The \c limitsType field indicates what
+    kind of information is available. It is then up to the clients of QRhi to
+    access the correct data from the \c limits union and use it as they see
+    fit.
+
+    With an API like Vulkan, where there is no way to get such information, the
+    values are always the built-in defaults and \c isHardCodedDefaults is
+    always true.
+
+    \sa QRhiSwapChain::hdrInfo()
+ */
+
+/*!
+    \return the HDR information for the associated display.
+
+    The returned struct is always the default one if createOrResize() has not
+    been successfully called yet.
+
+    \note What happens when moving a window with an initialized swapchain
+    between displays (HDR to HDR with different characteristics, HDR to SDR,
+    etc.) is not currently well-defined and depends heavily on the windowing
+    system and compositor, with potentially varying behavior between platforms.
+    Currently QRhi only guarantees that hdrInfo() returns valid data, if
+    available, for the display to which the swapchain's associated window
+    belonged at the time of createOrResize().
+
+    \sa QRhiSwapChainHdrInfo
+ */
 QRhiSwapChainHdrInfo QRhiSwapChain::hdrInfo()
 {
     QRhiSwapChainHdrInfo info;
