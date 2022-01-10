@@ -50,6 +50,7 @@ QT_BEGIN_NAMESPACE
 
 class QEventPointPrivate;
 QT_DECLARE_QESDP_SPECIALIZATION_DTOR_WITH_EXPORT(QEventPointPrivate, Q_GUI_EXPORT)
+class QMutableEventPoint;
 
 class Q_GUI_EXPORT QEventPoint
 {
