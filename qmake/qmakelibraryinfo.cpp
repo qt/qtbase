@@ -223,11 +223,11 @@ QString QMakeLibraryInfo::rawLocation(int loc, QMakeLibraryInfo::PathGroup group
                                                                                : "Paths"));
 
             if (locinfo.fallbackKey.isNull()) {
-                ret = config->value(locinfo.key, locinfo.defaultValue).toString();
+                ret = config->value(locinfo.key).toString();
             } else {
                 QVariant v = config->value(locinfo.key);
                 if (!v.isValid())
-                    v = config->value(locinfo.fallbackKey, locinfo.defaultValue);
+                    v = config->value(locinfo.fallbackKey);
                 ret = v.toString();
             }
 
