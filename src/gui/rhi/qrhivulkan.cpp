@@ -424,6 +424,8 @@ bool QRhiVulkan::create(QRhi::Flags flags)
 
     f = inst->functions();
 
+    caps.vulkan11OrHigher = inst->apiVersion() >= QVersionNumber(1, 1);
+
     rhiFlags = flags;
 
     QList<VkQueueFamilyProperties> queueFamilyProps;
@@ -623,6 +625,8 @@ bool QRhiVulkan::create(QRhi::Flags flags)
             features.wideLines = VK_TRUE;
         if (physDevFeatures.largePoints)
             features.largePoints = VK_TRUE;
+        if (physDevFeatures.tessellationShader)
+            features.tessellationShader = VK_TRUE;
         if (physDevFeatures.textureCompressionETC2)
             features.textureCompressionETC2 = VK_TRUE;
         if (physDevFeatures.textureCompressionASTC_LDR)
@@ -689,7 +693,9 @@ bool QRhiVulkan::create(QRhi::Flags flags)
 
     caps.wideLines = physDevFeatures.wideLines;
 
-    caps.texture3DSliceAs2D = inst->apiVersion() >= QVersionNumber(1, 1);
+    caps.texture3DSliceAs2D = caps.vulkan11OrHigher;
+
+    caps.tessellation = physDevFeatures.tessellationShader;
 
     if (!importedAllocator) {
         VmaVulkanFunctions afuncs;
@@ -3973,6 +3979,10 @@ static inline VkPipelineStageFlags toVkPipelineStage(QRhiPassResourceTracker::Bu
         return VK_PIPELINE_STAGE_VERTEX_INPUT_BIT;
     case QRhiPassResourceTracker::BufVertexStage:
         return VK_PIPELINE_STAGE_VERTEX_SHADER_BIT;
+    case QRhiPassResourceTracker::BufTCStage:
+        return VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT;
+    case QRhiPassResourceTracker::BufTEStage:
+        return VK_PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT;
     case QRhiPassResourceTracker::BufFragmentStage:
         return VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
     case QRhiPassResourceTracker::BufComputeStage:
@@ -4039,6 +4049,10 @@ static inline VkPipelineStageFlags toVkPipelineStage(QRhiPassResourceTracker::Te
     switch (stage) {
     case QRhiPassResourceTracker::TexVertexStage:
         return VK_PIPELINE_STAGE_VERTEX_SHADER_BIT;
+    case QRhiPassResourceTracker::TexTCStage:
+        return VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT;
+    case QRhiPassResourceTracker::TexTEStage:
+        return VK_PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT;
     case QRhiPassResourceTracker::TexFragmentStage:
         return VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
     case QRhiPassResourceTracker::TexColorOutputStage:
@@ -4301,6 +4315,8 @@ bool QRhiVulkan::isFeatureSupported(QRhi::Feature feature) const
         return caps.texture3DSliceAs2D;
     case QRhi::TextureArrays:
         return true;
+    case QRhi::Tessellation:
+        return caps.tessellation;
     default:
         Q_UNREACHABLE();
         return false;
@@ -5243,6 +5259,10 @@ static inline VkShaderStageFlagBits toVkShaderStage(QRhiShaderStage::Type type)
     switch (type) {
     case QRhiShaderStage::Vertex:
         return VK_SHADER_STAGE_VERTEX_BIT;
+    case QRhiShaderStage::TessellationControl:
+        return VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
+    case QRhiShaderStage::TessellationEvaluation:
+        return VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
     case QRhiShaderStage::Fragment:
         return VK_SHADER_STAGE_FRAGMENT_BIT;
     case QRhiShaderStage::Compute:
@@ -5307,6 +5327,8 @@ static inline VkPrimitiveTopology toVkTopology(QRhiGraphicsPipeline::Topology t)
         return VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
     case QRhiGraphicsPipeline::Points:
         return VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
+    case QRhiGraphicsPipeline::Patches:
+        return VK_PRIMITIVE_TOPOLOGY_PATCH_LIST;
     default:
         Q_UNREACHABLE();
         return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
@@ -5520,6 +5542,10 @@ static inline VkShaderStageFlags toVkShaderStageFlags(QRhiShaderResourceBinding:
         s |= VK_SHADER_STAGE_FRAGMENT_BIT;
     if (stage.testFlag(QRhiShaderResourceBinding::ComputeStage))
         s |= VK_SHADER_STAGE_COMPUTE_BIT;
+    if (stage.testFlag(QRhiShaderResourceBinding::TessellationControlStage))
+        s |= VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
+    if (stage.testFlag(QRhiShaderResourceBinding::TessellationEvaluationStage))
+        s |= VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
     return VkShaderStageFlags(s);
 }
 
@@ -6938,6 +6964,36 @@ bool QVkGraphicsPipeline::create()
     inputAsmInfo.topology = toVkTopology(m_topology);
     inputAsmInfo.primitiveRestartEnable = (m_topology == TriangleStrip || m_topology == LineStrip);
     pipelineInfo.pInputAssemblyState = &inputAsmInfo;
+
+    VkPipelineTessellationStateCreateInfo tessInfo;
+#ifdef VK_VERSION_1_1
+    VkPipelineTessellationDomainOriginStateCreateInfo originInfo;
+#endif
+    if (m_topology == Patches) {
+        memset(&tessInfo, 0, sizeof(tessInfo));
+        tessInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO;
+        tessInfo.patchControlPoints = uint32_t(qMax(1, m_patchControlPointCount));
+
+        // To be able to use the same tess.evaluation shader with both OpenGL
+        // and Vulkan, flip the tessellation domain origin to be lower left.
+        // This allows declaring the winding order in the shader to be CCW and
+        // still have it working with both APIs. This requires Vulkan 1.1 (or
+        // VK_KHR_maintenance2 but don't bother with that).
+#ifdef VK_VERSION_1_1
+        if (rhiD->caps.vulkan11OrHigher) {
+            memset(&originInfo, 0, sizeof(originInfo));
+            originInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_DOMAIN_ORIGIN_STATE_CREATE_INFO;
+            originInfo.domainOrigin = VK_TESSELLATION_DOMAIN_ORIGIN_LOWER_LEFT;
+            tessInfo.pNext = &originInfo;
+        } else {
+            qWarning("Proper tessellation support requires Vulkan 1.1 or newer, leaving domain origin unset");
+        }
+#else
+        qWarning("QRhi was built without Vulkan 1.1 headers, this is not sufficient for proper tessellation support");
+#endif
+
+        pipelineInfo.pTessellationState = &tessInfo;
+    }
 
     VkPipelineRasterizationStateCreateInfo rastInfo;
     memset(&rastInfo, 0, sizeof(rastInfo));

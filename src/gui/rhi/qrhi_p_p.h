@@ -610,6 +610,8 @@ public:
     enum BufferStage {
         BufVertexInputStage,
         BufVertexStage,
+        BufTCStage,
+        BufTEStage,
         BufFragmentStage,
         BufComputeStage
     };
@@ -628,6 +630,8 @@ public:
 
     enum TextureStage {
         TexVertexStage,
+        TexTCStage,
+        TexTEStage,
         TexFragmentStage,
         TexColorOutputStage,
         TexDepthOutputStage,

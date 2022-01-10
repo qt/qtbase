@@ -889,6 +889,8 @@ public:
         bool debugMarkers = false;
         bool vertexAttribDivisor = false;
         bool texture3DSliceAs2D = false;
+        bool tessellation = false;
+        bool vulkan11OrHigher = false;
     } caps;
 
     VkPipelineCache pipelineCache = VK_NULL_HANDLE;

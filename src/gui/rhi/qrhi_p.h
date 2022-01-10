@@ -295,6 +295,8 @@ class Q_GUI_EXPORT QRhiShaderStage
 public:
     enum Type {
         Vertex,
+        TessellationControl,
+        TessellationEvaluation,
         Fragment,
         Compute
     };
@@ -347,8 +349,10 @@ public:
 
     enum StageFlag {
         VertexStage = 1 << 0,
-        FragmentStage = 1 << 1,
-        ComputeStage = 1 << 2
+        TessellationControlStage = 1 << 1,
+        TessellationEvaluationStage = 1 << 2,
+        FragmentStage = 1 << 3,
+        ComputeStage = 1 << 4
     };
     Q_DECLARE_FLAGS(StageFlags, StageFlag)
 
@@ -1126,7 +1130,8 @@ public:
         TriangleFan,
         Lines,
         LineStrip,
-        Points
+        Points,
+        Patches
     };
 
     enum CullMode {
@@ -1297,6 +1302,9 @@ public:
     QRhiRenderPassDescriptor *renderPassDescriptor() const { return m_renderPassDesc; }
     void setRenderPassDescriptor(QRhiRenderPassDescriptor *desc) { m_renderPassDesc = desc; }
 
+    int patchControlPointCount() const { return m_patchControlPointCount; }
+    void setPatchControlPointCount(int count) { m_patchControlPointCount = count; }
+
     virtual bool create() = 0;
 
 protected:
@@ -1318,6 +1326,7 @@ protected:
     float m_lineWidth = 1.0f;
     int m_depthBias = 0;
     float m_slopeScaledDepthBias = 0.0f;
+    int m_patchControlPointCount = 3;
     QVarLengthArray<QRhiShaderStage, 4> m_shaderStages;
     QRhiVertexInputLayout m_vertexInputLayout;
     QRhiShaderResourceBindings *m_shaderResourceBindings = nullptr;
@@ -1654,7 +1663,8 @@ public:
         RenderBufferImport,
         ThreeDimensionalTextures,
         RenderTo3DTextureSlice,
-        TextureArrays
+        TextureArrays,
+        Tessellation
     };
 
     enum BeginFrameFlag {

@@ -695,6 +695,22 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     QRhi::newTextureArray() is functional. Note that even when texture arrays
     are not supported, arrays of textures are still available as those are two
     independent features.
+
+    \value Tessellation Indicates that the tessellation control and evaluation
+    stages are supported. When reported as supported, the topology of a
+    QRhiGraphicsPipeline can be set to
+    \l{QRhiGraphicsPipeline::Patches}{Patches}, the number of control points
+    can be set via
+    \l{QRhiGraphicsPipeline::setPatchControlPointCount()}{setPatchControlPointCount()},
+    and shaders for tessellation control and evaluation can be specified in the
+    QRhiShaderStage list. \b{Tessellation is considered an experimental feature
+    in QRhi and can only be expected to be supported with Vulkan for the time
+    being}, assuming the Vulkan implementation reports it as supported at run
+    time. Tessellation shaders have portability issues between APIs (for
+    example, translating GLSL/SPIR-V to HLSL is problematic due to the way hull
+    shaders are structured, whereas Metal uses a somewhat different
+    tessellation pipeline than others), and therefore no guarantees can be
+    given for a universal solution for now.
  */
 
 /*!
@@ -1443,8 +1459,17 @@ QDebug operator<<(QDebug dbg, const QRhiVertexInputLayout &v)
     Specifies the type of the shader stage.
 
     \value Vertex Vertex stage
-    \value Fragment Fragment (pixel) stage
-    \value Compute Compute stage (this may not always be supported at run time)
+
+    \value TessellationControlStage Tessellation control (hull shader) stage.
+    Must be used only when the QRhi::Tessellation feature is supported.
+
+    \value TessellationEvaluationStage Tessellation evaluation (domain shader)
+    stage. Must be used only when the QRhi::Tessellation feature is supported.
+
+    \value Fragment Fragment (pixel shader) stage
+
+    \value Compute Compute stage. Must be used only when the QRhi::Compute
+    feature is supported.
  */
 
 /*!
@@ -3228,7 +3253,9 @@ void QRhiImplementation::updateLayoutDesc(QRhiShaderResourceBindings *srb)
     Flag values to indicate which stages the shader resource is visible in
 
     \value VertexStage Vertex stage
-    \value FragmentStage Fragment (pixel) stage
+    \value TessellationControlStage Tessellation control (hull shader) stage
+    \value TessellationEvaluationStage Tessellation evaluation (domain shader) stage
+    \value FragmentStage Fragment (pixel shader) stage
     \value ComputeStage Compute stage
  */
 
@@ -4120,6 +4147,9 @@ QDebug operator<<(QDebug dbg, const QRhiShaderResourceBindings &srb)
     \value Lines
     \value LineStrip
     \value Points
+
+    \value Patches (only available if QRhi::Tessellation is supported, and
+    requires the tessellation stages to be present in the pipeline)
  */
 
 /*!
@@ -7390,6 +7420,10 @@ QRhiPassResourceTracker::BufferStage QRhiPassResourceTracker::toPassTrackerBuffe
     // pick the earlier stage (as this is going to be dstAccessMask)
     if (stages.testFlag(QRhiShaderResourceBinding::VertexStage))
         return QRhiPassResourceTracker::BufVertexStage;
+    if (stages.testFlag(QRhiShaderResourceBinding::TessellationControlStage))
+        return QRhiPassResourceTracker::BufTCStage;
+    if (stages.testFlag(QRhiShaderResourceBinding::TessellationEvaluationStage))
+        return QRhiPassResourceTracker::BufTEStage;
     if (stages.testFlag(QRhiShaderResourceBinding::FragmentStage))
         return QRhiPassResourceTracker::BufFragmentStage;
     if (stages.testFlag(QRhiShaderResourceBinding::ComputeStage))
@@ -7404,6 +7438,10 @@ QRhiPassResourceTracker::TextureStage QRhiPassResourceTracker::toPassTrackerText
     // pick the earlier stage (as this is going to be dstAccessMask)
     if (stages.testFlag(QRhiShaderResourceBinding::VertexStage))
         return QRhiPassResourceTracker::TexVertexStage;
+    if (stages.testFlag(QRhiShaderResourceBinding::TessellationControlStage))
+        return QRhiPassResourceTracker::TexTCStage;
+    if (stages.testFlag(QRhiShaderResourceBinding::TessellationEvaluationStage))
+        return QRhiPassResourceTracker::TexTEStage;
     if (stages.testFlag(QRhiShaderResourceBinding::FragmentStage))
         return QRhiPassResourceTracker::TexFragmentStage;
     if (stages.testFlag(QRhiShaderResourceBinding::ComputeStage))

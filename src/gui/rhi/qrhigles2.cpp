@@ -442,6 +442,22 @@ QT_BEGIN_NAMESPACE
 #define GL_MAX_VARYING_VECTORS            0x8DFC
 #endif
 
+#ifndef GL_TESS_CONTROL_SHADER
+#define GL_TESS_CONTROL_SHADER            0x8E88
+#endif
+
+#ifndef GL_TESS_EVALUATION_SHADER
+#define GL_TESS_EVALUATION_SHADER         0x8E87
+#endif
+
+#ifndef GL_PATCH_VERTICES
+#define GL_PATCH_VERTICES                 0x8E72
+#endif
+
+#ifndef GL_PATCHES
+#define GL_PATCHES                        0x000E
+#endif
+
 /*!
     Constructs a new QRhiGles2InitParams.
 
@@ -835,6 +851,11 @@ bool QRhiGles2::create(QRhi::Flags flags)
     }
 
     caps.texture3D = caps.ctxMajor >= 3; // 3.0
+
+    if (caps.gles)
+        caps.tessellation = caps.ctxMajor > 3 || (caps.ctxMajor == 3 && caps.ctxMinor >= 2); // ES 3.2
+    else
+        caps.tessellation = caps.ctxMajor >= 4; // 4.0
 
     if (caps.ctxMajor >= 3) { // 3.0 or ES 3.0
         GLint maxArraySize = 0;
@@ -1233,6 +1254,8 @@ bool QRhiGles2::isFeatureSupported(QRhi::Feature feature) const
         return caps.texture3D;
     case QRhi::TextureArrays:
         return caps.maxTextureArraySize > 0;
+    case QRhi::Tessellation:
+        return caps.tessellation;
     default:
         Q_UNREACHABLE();
         return false;
@@ -2335,6 +2358,8 @@ static inline GLenum toGlTopology(QRhiGraphicsPipeline::Topology t)
         return GL_LINE_STRIP;
     case QRhiGraphicsPipeline::Points:
         return GL_POINTS;
+    case QRhiGraphicsPipeline::Patches:
+        return GL_PATCHES;
     default:
         Q_UNREACHABLE();
         return GL_TRIANGLES;
@@ -3433,6 +3458,14 @@ void QRhiGles2::executeBindGraphicsPipeline(QGles2CommandBuffer *cbD, QGles2Grap
         }
     }
 
+    if (psD->m_topology == QRhiGraphicsPipeline::Patches) {
+        const int cpCount = psD->m_patchControlPointCount;
+        if (forceUpdate || cpCount != state.cpCount) {
+            state.cpCount = cpCount;
+            f->glPatchParameteri(GL_PATCH_VERTICES, qMax(1, cpCount));
+        }
+    }
+
     f->glUseProgram(psD->program);
 }
 
@@ -4172,6 +4205,10 @@ static inline GLenum toGlShaderType(QRhiShaderStage::Type type)
     switch (type) {
     case QRhiShaderStage::Vertex:
         return GL_VERTEX_SHADER;
+    case QRhiShaderStage::TessellationControl:
+        return GL_TESS_CONTROL_SHADER;
+    case QRhiShaderStage::TessellationEvaluation:
+        return GL_TESS_EVALUATION_SHADER;
     case QRhiShaderStage::Fragment:
         return GL_FRAGMENT_SHADER;
     case QRhiShaderStage::Compute:
@@ -5369,6 +5406,15 @@ void QGles2GraphicsPipeline::destroy()
     }
 }
 
+static inline bool isGraphicsStage(const QRhiShaderStage &shaderStage)
+{
+    const QRhiShaderStage::Type t = shaderStage.type();
+    return t == QRhiShaderStage::Vertex
+            || t == QRhiShaderStage::TessellationControl
+            || t == QRhiShaderStage::TessellationEvaluation
+            || t == QRhiShaderStage::Fragment;
+}
+
 bool QGles2GraphicsPipeline::create()
 {
     QRHI_RES_RHI(QRhiGles2);
@@ -5386,23 +5432,39 @@ bool QGles2GraphicsPipeline::create()
 
     program = rhiD->f->glCreateProgram();
 
-    QShaderDescription vsDesc;
-    QShader::SeparateToCombinedImageSamplerMappingList vsSamplerMappingList;
-    QShaderDescription fsDesc;
-    QShader::SeparateToCombinedImageSamplerMappingList fsSamplerMappingList;
+    enum {
+        VtxIdx = 0,
+        TEIdx,
+        TCIdx,
+        FragIdx,
+        LastIdx
+    };
+    const auto descIdxForStage = [](const QRhiShaderStage &shaderStage) {
+        switch (shaderStage.type()) {
+        case QRhiShaderStage::Vertex:
+            return VtxIdx;
+        case QRhiShaderStage::TessellationControl:
+            return TCIdx;
+        case QRhiShaderStage::TessellationEvaluation:
+            return TEIdx;
+        case QRhiShaderStage::Fragment:
+            return FragIdx;
+        default:
+            break;
+        }
+        Q_UNREACHABLE();
+        return VtxIdx;
+    };
+    QShaderDescription desc[LastIdx];
+    QShader::SeparateToCombinedImageSamplerMappingList samplerMappingList[LastIdx];
     for (const QRhiShaderStage &shaderStage : qAsConst(m_shaderStages)) {
-        QShader shader = shaderStage.shader();
-        QShaderVersion shaderVersion;
-        if (shaderStage.type() == QRhiShaderStage::Vertex) {
-            vsDesc = shader.description();
+        if (isGraphicsStage(shaderStage)) {
+            const int idx = descIdxForStage(shaderStage);
+            QShader shader = shaderStage.shader();
+            QShaderVersion shaderVersion;
+            desc[idx] = shader.description();
             if (!rhiD->shaderSource(shaderStage, &shaderVersion).isEmpty()) {
-                vsSamplerMappingList = shader.separateToCombinedImageSamplerMappingList(
-                            { QShader::GlslShader, shaderVersion, shaderStage.shaderVariant() });
-            }
-        } else if (shaderStage.type() == QRhiShaderStage::Fragment) {
-            fsDesc = shader.description();
-            if (!rhiD->shaderSource(shaderStage, &shaderVersion).isEmpty()) {
-                fsSamplerMappingList = shader.separateToCombinedImageSamplerMappingList(
+                samplerMappingList[idx] = shader.separateToCombinedImageSamplerMappingList(
                             { QShader::GlslShader, shaderVersion, shaderStage.shaderVariant() });
             }
         }
@@ -5412,27 +5474,24 @@ bool QGles2GraphicsPipeline::create()
     QRhiGles2::ProgramCacheResult cacheResult = rhiD->tryLoadFromDiskOrPipelineCache(m_shaderStages.constData(),
                                                                                      m_shaderStages.count(),
                                                                                      program,
-                                                                                     vsDesc.inputVariables(),
+                                                                                     desc[VtxIdx].inputVariables(),
                                                                                      &cacheKey);
     if (cacheResult == QRhiGles2::ProgramCacheError)
         return false;
 
     if (cacheResult == QRhiGles2::ProgramCacheMiss) {
         for (const QRhiShaderStage &shaderStage : qAsConst(m_shaderStages)) {
-            if (shaderStage.type() == QRhiShaderStage::Vertex) {
-                if (!rhiD->compileShader(program, shaderStage, nullptr))
-                    return false;
-            } else if (shaderStage.type() == QRhiShaderStage::Fragment) {
+            if (isGraphicsStage(shaderStage)) {
                 if (!rhiD->compileShader(program, shaderStage, nullptr))
                     return false;
             }
         }
 
         // important when GLSL <= 150 is used that does not have location qualifiers
-        for (const QShaderDescription::InOutVariable &inVar : vsDesc.inputVariables())
+        for (const QShaderDescription::InOutVariable &inVar : desc[VtxIdx].inputVariables())
             rhiD->f->glBindAttribLocation(program, GLuint(inVar.location), inVar.name);
 
-        rhiD->sanityCheckVertexFragmentInterface(vsDesc, fsDesc);
+        rhiD->sanityCheckVertexFragmentInterface(desc[VtxIdx], desc[FragIdx]);
 
         if (!rhiD->linkProgram(program))
             return false;
@@ -5460,29 +5519,23 @@ bool QGles2GraphicsPipeline::create()
     // present in both shaders.
     QSet<int> activeUniformLocations;
 
-    for (const QShaderDescription::UniformBlock &ub : vsDesc.uniformBlocks())
-        rhiD->gatherUniforms(program, ub, &activeUniformLocations, &uniforms);
-
-    for (const QShaderDescription::UniformBlock &ub : fsDesc.uniformBlocks())
-        rhiD->gatherUniforms(program, ub, &activeUniformLocations, &uniforms);
+    for (const QRhiShaderStage &shaderStage : qAsConst(m_shaderStages)) {
+        if (isGraphicsStage(shaderStage)) {
+            const int idx = descIdxForStage(shaderStage);
+            for (const QShaderDescription::UniformBlock &ub : desc[idx].uniformBlocks())
+                rhiD->gatherUniforms(program, ub, &activeUniformLocations, &uniforms);
+            for (const QShaderDescription::InOutVariable &v : desc[idx].combinedImageSamplers())
+                rhiD->gatherSamplers(program, v, &samplers);
+            for (const QShader::SeparateToCombinedImageSamplerMapping &mapping : samplerMappingList[idx])
+                rhiD->gatherGeneratedSamplers(program, mapping, &samplers);
+        }
+    }
 
     std::sort(uniforms.begin(), uniforms.end(),
               [](const QGles2UniformDescription &a, const QGles2UniformDescription &b)
     {
         return a.offset < b.offset;
     });
-
-    for (const QShaderDescription::InOutVariable &v : vsDesc.combinedImageSamplers())
-        rhiD->gatherSamplers(program, v, &samplers);
-
-    for (const QShader::SeparateToCombinedImageSamplerMapping &mapping : vsSamplerMappingList)
-        rhiD->gatherGeneratedSamplers(program, mapping, &samplers);
-
-    for (const QShaderDescription::InOutVariable &v : fsDesc.combinedImageSamplers())
-        rhiD->gatherSamplers(program, v, &samplers);
-
-    for (const QShader::SeparateToCombinedImageSamplerMapping &mapping : fsSamplerMappingList)
-        rhiD->gatherGeneratedSamplers(program, mapping, &samplers);
 
     memset(uniformState, 0, sizeof(uniformState));
 

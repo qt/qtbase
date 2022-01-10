@@ -600,6 +600,7 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
         float polyOffsetFactor;
         float polyOffsetUnits;
         float lineWidth;
+        int cpCount;
         void reset() { valid = false; }
         struct {
             // not part of QRhiGraphicsPipeline but used by setGraphicsPipeline()
@@ -962,7 +963,8 @@ public:
               intAttributes(true),
               screenSpaceDerivatives(false),
               programBinary(false),
-              texture3D(false)
+              texture3D(false),
+              tessellation(false)
         { }
         int ctxMajor;
         int ctxMinor;
@@ -1011,6 +1013,7 @@ public:
         uint screenSpaceDerivatives : 1;
         uint programBinary : 1;
         uint texture3D : 1;
+        uint tessellation : 1;
     } caps;
     QGles2SwapChain *currentSwapChain = nullptr;
     QSet<GLint> supportedCompressedFormats;
