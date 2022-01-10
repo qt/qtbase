@@ -38,6 +38,7 @@
 ****************************************************************************/
 
 #include <private/qguiapplication_p.h>
+#include <private/qeventpoint_p.h>
 
 #include <qpa/qplatformintegration.h>
 

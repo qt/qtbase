@@ -294,6 +294,7 @@ static const int QGRAPHICSVIEW_PREALLOC_STYLE_OPTIONS = 503; // largest prime < 
 #include <QtWidgets/qstyleoption.h>
 
 #include <private/qevent_p.h>
+#include <QtGui/private/qeventpoint_p.h>
 
 QT_BEGIN_NAMESPACE
 

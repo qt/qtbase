@@ -40,6 +40,8 @@
 #include "qpointingdevice.h"
 #include "qpointingdevice_p.h"
 #include "qwindowsysteminterface_p.h"
+#include "qeventpoint_p.h"
+
 #include <QList>
 #include <QLoggingCategory>
 #include <QMutex>

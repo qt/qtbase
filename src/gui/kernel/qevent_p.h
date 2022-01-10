@@ -52,7 +52,6 @@
 //
 
 #include <QtGui/private/qtguiglobal_p.h>
-#include <QtGui/private/qeventpoint_p.h>
 #include <QtCore/qurl.h>
 #include <QtGui/qevent.h>
 #include <QtGui/qwindow.h>

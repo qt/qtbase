@@ -244,6 +244,7 @@
 #include <QtGui/qinputmethod.h>
 #include <private/qapplication_p.h>
 #include <private/qevent_p.h>
+#include <QtGui/private/qeventpoint_p.h>
 #include <private/qobject_p.h>
 #if QT_CONFIG(graphicseffect)
 #include <private/qgraphicseffect_p.h>
