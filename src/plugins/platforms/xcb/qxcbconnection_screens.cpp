@@ -191,7 +191,7 @@ void QXcbConnection::updateScreens(const xcb_randr_notify_event_t *event)
             }
         }
 
-        qCDebug(lcQpaScreen) << "primary output is" << qAsConst(m_screens).first()->name();
+        qCDebug(lcQpaScreen) << "updateScreens: primary output is" << qAsConst(m_screens).first()->name();
     }
 }
 
@@ -379,7 +379,7 @@ void QXcbConnection::initializeScreens(bool initialized)
         }
 
         if (!m_screens.isEmpty())
-            qCDebug(lcQpaScreen) << "primary output is" << qAsConst(m_screens).first()->name();
+            qCDebug(lcQpaScreen) << "initializeScreens: primary output is" << qAsConst(m_screens).first()->name();
     }
 }
 
@@ -533,11 +533,6 @@ void QXcbConnection::initializeScreensFromMonitor(xcb_screen_iterator_t *it, int
         }
 
         siblings << screen;
-
-        if (primaryScreenNumber() == xcbScreenNumber) {
-            primaryScreen = screen;
-            primaryScreen->setPrimary(true);
-        }
 
         xcb_randr_monitor_info_next(&monitor_iter);
     }

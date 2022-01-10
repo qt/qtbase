@@ -705,9 +705,7 @@ void QXcbScreen::setMonitor(xcb_randr_monitor_info_t *monitorInfo, xcb_timestamp
 
     QByteArray ba = connection()->atomName(monitorInfo->name);
     m_outputName = getName(monitorInfo);
-
-    if (monitorInfo->primary)
-        m_primary = true;
+    m_primary = monitorInfo->primary;
 
     m_cursor = new QXcbCursor(connection(), this);
 }
