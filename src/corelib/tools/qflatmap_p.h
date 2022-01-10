@@ -679,51 +679,22 @@ public:
 
     std::pair<iterator, bool> insert(const Key &key, const T &value)
     {
-        auto it = lower_bound(key);
-        if (it == end() || key_compare::operator()(key, it.key())) {
-            c.values.insert(toValuesIterator(it), value);
-            auto k = c.keys.insert(toKeysIterator(it), key);
-            return { fromKeysIterator(k), true };
-        } else {
-            it.value() = value;
-            return {it, false};
-        }
+        return insert_or_assign(key, value);
     }
 
     std::pair<iterator, bool> insert(Key &&key, const T &value)
     {
-        auto it = lower_bound(key);
-        if (it == end() || key_compare::operator()(key, it.key())) {
-            c.values.insert(toValuesIterator(it), value);
-            return { fromKeysIterator(c.keys.insert(toKeysIterator(it), std::move(key))), true };
-        } else {
-            *toValuesIterator(it) = value;
-            return {it, false};
-        }
+        return insert_or_assign(std::move(key), value);
     }
 
     std::pair<iterator, bool> insert(const Key &key, T &&value)
     {
-        auto it = lower_bound(key);
-        if (it == end() || key_compare::operator()(key, it.key())) {
-            c.values.insert(toValuesIterator(it), std::move(value));
-            return { fromKeysIterator(c.keys.insert(toKeysIterator(it), key)), true };
-        } else {
-            *toValuesIterator(it) = std::move(value);
-            return {it, false};
-        }
+        return insert_or_assign(key, std::move(value));
     }
 
     std::pair<iterator, bool> insert(Key &&key, T &&value)
     {
-        auto it = lower_bound(key);
-        if (it == end() || key_compare::operator()(key, it.key())) {
-            c.values.insert(toValuesIterator(it), std::move(value));
-            return { fromKeysIterator(c.keys.insert(toKeysIterator(it), std::move(key))), true };
-        } else {
-            *toValuesIterator(it) = std::move(value);
-            return {it, false};
-        }
+        return insert_or_assign(std::move(key), std::move(value));
     }
 
     template <typename...Args>
