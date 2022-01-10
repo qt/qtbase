@@ -555,6 +555,132 @@ static bool simdTestMask(const char *&ptr, const char *end, quint32 maskval)
 
     return true;
 }
+
+template <StringComparisonMode Mode, typename Char> [[maybe_unused]]
+static int ucstrncmp_sse2(const char16_t *a, const Char *b, size_t l)
+{
+    static_assert(std::is_unsigned_v<Char>);
+
+    // Using the PMOVMSKB instruction, we get two bits for each UTF-16 character
+    // we compare. This lambda helps extract the code unit.
+    static const auto codeUnitAt = [](const auto *n, qptrdiff idx) -> int {
+        constexpr int Stride = 2;
+        // this is the same as:
+        //    return n[idx / Stride];
+        // but using pointer arithmetic to avoid the compiler dividing by two
+        // and multiplying by two in the case of char16_t (we know idx is even,
+        // but the compiler does not). This is not UB.
+
+        auto ptr = reinterpret_cast<const uchar *>(n);
+        ptr += idx / (Stride / sizeof(*n));
+        return *reinterpret_cast<decltype(n)>(ptr);
+    };
+    auto difference = [a, b](uint mask, qptrdiff offset) {
+        if (Mode == CompareStringsForEquality)
+            return 1;
+        uint idx = qCountTrailingZeroBits(mask);
+        return codeUnitAt(a + offset, idx) - codeUnitAt(b + offset, idx);
+    };
+
+    static const auto load8Chars = [](const auto *ptr) {
+        if (sizeof(*ptr) == 2)
+            return _mm_loadu_si128(reinterpret_cast<const __m128i *>(ptr));
+        __m128i chunk = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(ptr));
+        return _mm_unpacklo_epi8(chunk, _mm_setzero_si128());
+    };
+    static const auto load4Chars = [](const auto *ptr) {
+        if (sizeof(*ptr) == 2)
+            return _mm_loadl_epi64(reinterpret_cast<const __m128i *>(ptr));
+        __m128i chunk = _mm_cvtsi32_si128(qFromUnaligned<quint32>(ptr));
+        return _mm_unpacklo_epi8(chunk, _mm_setzero_si128());
+    };
+
+    // we're going to read a[0..15] and b[0..15] (32 bytes)
+    auto processChunk16Chars = [a, b](qptrdiff offset) -> uint {
+        if constexpr (UseAvx2) {
+            __m256i a_data = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(a + offset));
+            __m256i b_data;
+            if (sizeof(Char) == 1) {
+                // expand to UTF-16 via zero-extension
+                __m128i chunk = _mm_loadu_si128(reinterpret_cast<const __m128i *>(b + offset));
+                b_data = _mm256_cvtepu8_epi16(chunk);
+            } else {
+                b_data = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(b + offset));
+            }
+            __m256i result = _mm256_cmpeq_epi16(a_data, b_data);
+            return _mm256_movemask_epi8(result);
+        }
+
+        __m128i a_data1 = load8Chars(a + offset);
+        __m128i a_data2 = load8Chars(a + offset + 8);
+        __m128i b_data1, b_data2;
+        if (sizeof(Char) == 1) {
+            // expand to UTF-16 via unpacking
+            __m128i b_data = _mm_loadu_si128(reinterpret_cast<const __m128i *>(b + offset));
+            b_data1 = _mm_unpacklo_epi8(b_data, _mm_setzero_si128());
+            b_data2 = _mm_unpackhi_epi8(b_data, _mm_setzero_si128());
+        } else {
+            b_data1 = load8Chars(b + offset);
+            b_data2 = load8Chars(b + offset + 8);
+        }
+        __m128i result1 = _mm_cmpeq_epi16(a_data1, b_data1);
+        __m128i result2 = _mm_cmpeq_epi16(a_data2, b_data2);
+        return _mm_movemask_epi8(result1) | _mm_movemask_epi8(result2) << 16;
+    };
+
+    if (l >= sizeof(__m256i) / sizeof(char16_t)) {
+        qptrdiff offset = 0;
+        for ( ; l >= offset + sizeof(__m256i) / sizeof(char16_t); offset += sizeof(__m256i) / sizeof(char16_t)) {
+            uint mask = ~processChunk16Chars(offset);
+            if (mask)
+                return difference(mask, offset);
+        }
+
+        // maybe overlap the last 32 bytes
+        if (size_t(offset) < l) {
+            offset = l - sizeof(__m256i) / sizeof(char16_t);
+            uint mask = ~processChunk16Chars(offset);
+            return mask ? difference(mask, offset) : 0;
+        }
+    } else if (l >= 4) {
+        __m128i a_data1, b_data1;
+        __m128i a_data2, b_data2;
+        int width;
+        if (l >= 8) {
+            width = 8;
+            a_data1 = load8Chars(a);
+            b_data1 = load8Chars(b);
+            a_data2 = load8Chars(a + l - width);
+            b_data2 = load8Chars(b + l - width);
+        } else {
+            // we're going to read a[0..3] and b[0..3] (8 bytes)
+            width = 4;
+            a_data1 = load4Chars(a);
+            b_data1 = load4Chars(b);
+            a_data2 = load4Chars(a + l - width);
+            b_data2 = load4Chars(b + l - width);
+        }
+
+        __m128i result = _mm_cmpeq_epi16(a_data1, b_data1);
+        ushort mask = ~_mm_movemask_epi8(result);
+        if (mask)
+            return difference(mask, 0);
+
+        result = _mm_cmpeq_epi16(a_data2, b_data2);
+        mask = ~_mm_movemask_epi8(result);
+        if (mask)
+            return difference(mask, l - width);
+    } else {
+        // reset l
+        l &= 3;
+
+        const auto lambda = [=](size_t i) -> int {
+            return a[i] - b[i];
+        };
+        return UnrollTailLoop<3>::exec(l, 0, lambda, lambda);
+    }
+    return 0;
+}
 #endif
 
 qsizetype QtPrivate::qustrlen(const char16_t *str) noexcept
@@ -1157,80 +1283,7 @@ static int ucstrncmp(const char16_t *a, const char16_t *b, size_t l)
         return qt_ucstrncmp_mips_dsp_asm(a, b, l);
     }
 #  elif defined(__SSE2__)
-    const char16_t *end = a + l;
-    qptrdiff offset = 0;
-
-    // Using the PMOVMSKB instruction, we get two bits for each character
-    // we compare.
-    int retval;
-    auto isDifferent = [a, b, &offset, &retval](__m128i a_data, __m128i b_data) {
-        __m128i result = _mm_cmpeq_epi16(a_data, b_data);
-        uint mask = ~uint(_mm_movemask_epi8(result));
-        if (ushort(mask) == 0)
-            return false;
-        if (Mode == CompareStringsForEquality) {
-            retval = 1;
-        } else {
-            uint idx = qCountTrailingZeroBits(mask);
-            retval = a[offset + idx / 2] - b[offset + idx / 2];
-        }
-        return true;
-    };
-
-    // we're going to read a[0..15] and b[0..15] (32 bytes)
-    for ( ; end - a >= offset + 16; offset += 16) {
-        uint mask;
-        if constexpr (UseAvx2) {
-            __m256i a_data = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(a + offset));
-            __m256i b_data = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(b + offset));
-            __m256i result = _mm256_cmpeq_epi16(a_data, b_data);
-            mask = _mm256_movemask_epi8(result);
-        } else {
-            __m128i a_data1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(a + offset));
-            __m128i a_data2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(a + offset + 8));
-            __m128i b_data1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(b + offset));
-            __m128i b_data2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(b + offset + 8));
-            __m128i result1 = _mm_cmpeq_epi16(a_data1, b_data1);
-            __m128i result2 = _mm_cmpeq_epi16(a_data2, b_data2);
-            mask = _mm_movemask_epi8(result1) | (_mm_movemask_epi8(result2) << 16);
-        }
-        mask = ~mask;
-        if (mask) {
-            // found a different character
-            if (Mode == CompareStringsForEquality)
-                return 1;
-            uint idx = qCountTrailingZeroBits(mask);
-            return a[offset + idx / 2] - b[offset + idx / 2];
-        }
-    }
-
-    // we're going to read a[0..7] and b[0..7] (16 bytes)
-    if (end - a >= offset + 8) {
-        __m128i a_data = _mm_loadu_si128(reinterpret_cast<const __m128i *>(a + offset));
-        __m128i b_data = _mm_loadu_si128(reinterpret_cast<const __m128i *>(b + offset));
-        if (isDifferent(a_data, b_data))
-            return retval;
-
-        offset += 8;
-    }
-
-    // we're going to read a[0..3] and b[0..3] (8 bytes)
-    if (end - a >= offset + 4) {
-        __m128i a_data = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(a + offset));
-        __m128i b_data = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(b + offset));
-        if (isDifferent(a_data, b_data))
-            return retval;
-
-        offset += 4;
-    }
-
-    // reset l
-    l &= 3;
-
-    const auto lambda = [=](size_t i) -> int {
-        return a[offset + i] - b[offset + i];
-    };
-    return UnrollTailLoop<3>::exec(l, 0, lambda, lambda);
+    return ucstrncmp_sse2<Mode>(a, b, l);
 #  elif defined(__ARM_NEON__)
     if (l >= 8) {
         const char16_t *end = a + l;
@@ -1276,105 +1329,8 @@ static int ucstrncmp(const char16_t *a, const char *b, size_t l)
     const char16_t *uc = a;
     const char16_t *e = uc + l;
 
-#ifdef __SSE2__
-    __m128i nullmask = _mm_setzero_si128();
-    qptrdiff offset = 0;
-
-#  if !defined(__OPTIMIZE_SIZE__)
-    // Using the PMOVMSKB instruction, we get two bits for each character
-    // we compare.
-    int retval;
-    auto isDifferent = [uc, c, &offset, &retval](__m128i a_data, __m128i b_data) {
-        __m128i result = _mm_cmpeq_epi16(a_data, b_data);
-        uint mask = ~uint(_mm_movemask_epi8(result));
-        if (ushort(mask) == 0)
-            return false;
-        if (Mode == CompareStringsForEquality) {
-            retval = 1;
-        } else {
-            uint idx = qCountTrailingZeroBits(mask);
-            retval = uc[offset + idx / 2] - c[offset + idx / 2];
-        }
-        return true;
-    };
-#  endif
-
-    // we're going to read uc[offset..offset+15] (32 bytes)
-    // and c[offset..offset+15] (16 bytes)
-    for ( ; uc + offset + 15 < e; offset += 16) {
-        // similar to fromLatin1_helper:
-        // load 16 bytes of Latin 1 data
-        uint mask;
-        __m128i chunk = _mm_loadu_si128((const __m128i*)(c + offset));
-
-        if constexpr (UseAvx2) {
-            // expand Latin 1 data via zero extension
-            __m256i ldata = _mm256_cvtepu8_epi16(chunk);
-
-            // load UTF-16 data and compare
-            __m256i ucdata = _mm256_loadu_si256((const __m256i*)(uc + offset));
-            __m256i result = _mm256_cmpeq_epi16(ldata, ucdata);
-
-            mask = ~_mm256_movemask_epi8(result);
-        } else {
-            // expand via unpacking
-            __m128i firstHalf = _mm_unpacklo_epi8(chunk, nullmask);
-            __m128i secondHalf = _mm_unpackhi_epi8(chunk, nullmask);
-
-            // load UTF-16 data and compare
-            __m128i ucdata1 = _mm_loadu_si128((const __m128i*)(uc + offset));
-            __m128i ucdata2 = _mm_loadu_si128((const __m128i*)(uc + offset + 8));
-            __m128i result1 = _mm_cmpeq_epi16(firstHalf, ucdata1);
-            __m128i result2 = _mm_cmpeq_epi16(secondHalf, ucdata2);
-
-            mask = ~(_mm_movemask_epi8(result1) | _mm_movemask_epi8(result2) << 16);
-        }
-        if (mask) {
-            // found a different character
-            if (Mode == CompareStringsForEquality)
-                return 1;
-            uint idx = qCountTrailingZeroBits(mask);
-            return uc[offset + idx / 2] - c[offset + idx / 2];
-        }
-    }
-
-#  if !defined(__OPTIMIZE_SIZE__)
-    // we'll read uc[offset..offset+7] (16 bytes) and c[offset..offset+7] (8 bytes)
-    if (uc + offset + 7 < e) {
-        // same, but we're using an 8-byte load
-        __m128i secondHalf = mm_load8_zero_extend(c + offset);
-
-        __m128i ucdata = _mm_loadu_si128((const __m128i*)(uc + offset));
-        if (isDifferent(ucdata, secondHalf))
-            return retval;
-
-        // still matched
-        offset += 8;
-    }
-
-    enum { MaxTailLength = 3 };
-    // we'll read uc[offset..offset+3] (8 bytes) and c[offset..offset+3] (4 bytes)
-    if (uc + offset + 3 < e) {
-        __m128i chunk = _mm_cvtsi32_si128(qFromUnaligned<int>(c + offset));
-        __m128i secondHalf = _mm_unpacklo_epi8(chunk, nullmask);
-
-        __m128i ucdata = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(uc + offset));
-        if (isDifferent(ucdata, secondHalf))
-            return retval;
-
-        // still matched
-        offset += 4;
-    }
-#  endif // optimize size
-
-    // reset uc and c
-    uc += offset;
-    c += offset;
-
-#  if !defined(__OPTIMIZE_SIZE__)
-    const auto lambda = [=](size_t i) { return uc[i] - char16_t(c[i]); };
-    return UnrollTailLoop<MaxTailLength>::exec(e - uc, 0, lambda, lambda);
-#  endif
+#if defined(__SSE2__) && !defined(__OPTIMIZE_SIZE__)
+    return ucstrncmp_sse2<Mode>(uc, c, l);
 #endif
 
     while (uc < e) {
