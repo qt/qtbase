@@ -1006,7 +1006,7 @@ void qt_to_latin1_unchecked(uchar *dst, const char16_t *src, qsizetype length)
 }
 
 // Unicode case-insensitive comparison
-static int ucstricmp(const QChar *a, const QChar *ae, const QChar *b, const QChar *be)
+Q_NEVER_INLINE static int ucstricmp(const QChar *a, const QChar *ae, const QChar *b, const QChar *be)
 {
     if (a == b)
         return (ae - be);
@@ -1036,7 +1036,7 @@ static int ucstricmp(const QChar *a, const QChar *ae, const QChar *b, const QCha
 }
 
 // Case-insensitive comparison between a Unicode string and a QLatin1String
-static int ucstricmp(const QChar *a, const QChar *ae, const char *b, const char *be)
+Q_NEVER_INLINE static int ucstricmp(const QChar *a, const QChar *ae, const char *b, const char *be)
 {
     auto e = ae;
     if (be - b < ae - a)
@@ -1058,7 +1058,7 @@ static int ucstricmp(const QChar *a, const QChar *ae, const char *b, const char 
 }
 
 // Case-insensitive comparison between a Unicode string and a UTF-8 string
-static int ucstricmp8(const char *utf8, const char *utf8end, const QChar *utf16, const QChar *utf16end)
+Q_NEVER_INLINE static int ucstricmp8(const char *utf8, const char *utf8end, const QChar *utf16, const QChar *utf16end)
 {
     auto src1 = reinterpret_cast<const uchar *>(utf8);
     auto end1 = reinterpret_cast<const uchar *>(utf8end);
