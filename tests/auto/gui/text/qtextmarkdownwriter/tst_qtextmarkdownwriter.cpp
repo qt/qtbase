@@ -466,9 +466,9 @@ void tst_QTextMarkdownWriter::fromHtml_data()
 //    QTest::newRow("escaped number and paren after double newline") <<
 //        "<p>(The first sentence of this paragraph is a line, the next paragraph has a number</p>13) but that's not part of an ordered list" <<
 //        "(The first sentence of this paragraph is a line, the next paragraph has a number\n\n13\\) but that's not part of an ordered list\n\n";
-//    QTest::newRow("preformats with embedded backticks") <<
-//        "<pre>none `one` ``two``</pre><pre>```three``` ````four````</pre>plain" <<
-//        "``` none `one` ``two`` ```\n\n````` ```three``` ````four```` `````\n\nplain\n\n";
+    QTest::newRow("preformats with embedded backticks") <<
+        "<pre>none `one` ``two``</pre><pre>```three``` ````four````</pre>plain" <<
+        "``` none `one` ``two`` ```\n\n````` ```three``` ````four```` `````\n\nplain\n\n";
 }
 
 void tst_QTextMarkdownWriter::fromHtml()
