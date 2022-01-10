@@ -44,6 +44,7 @@
 #include "private/qpointingdevice_p.h"
 #include "qpa/qplatformintegration.h"
 #include "private/qevent_p.h"
+#include "private/qeventpoint_p.h"
 #include "qfile.h"
 #include "qhashfunctions.h"
 #include "qmetaobject.h"

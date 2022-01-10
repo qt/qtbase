@@ -44,6 +44,7 @@
 #include "private/qabstractfileiconprovider_p.h"
 #include <qpa/qplatformintegrationfactory_p.h>
 #include "private/qevent_p.h"
+#include "private/qeventpoint_p.h"
 #include "qfont.h"
 #include "qpointingdevice.h"
 #include <qpa/qplatformfontdatabase.h>

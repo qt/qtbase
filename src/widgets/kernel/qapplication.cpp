@@ -92,6 +92,7 @@
 #include <private/qthread_p.h>
 
 #include <QtGui/private/qevent_p.h>
+#include <QtGui/private/qeventpoint_p.h>
 #include <private/qfont_p.h>
 #if QT_CONFIG(action)
 #include <private/qaction_p.h>

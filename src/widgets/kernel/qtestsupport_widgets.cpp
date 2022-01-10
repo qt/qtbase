@@ -46,6 +46,7 @@
 #include <QtCore/qthread.h>
 #include <QtGui/qtestsupport_gui.h>
 #include <QtGui/private/qevent_p.h>
+#include <QtGui/private/qeventpoint_p.h>
 
 QT_BEGIN_NAMESPACE
 

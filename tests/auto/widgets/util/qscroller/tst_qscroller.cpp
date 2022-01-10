@@ -30,6 +30,7 @@
 #include <QtWidgets>
 #include <QTest>
 #include <QtGui/private/qevent_p.h>
+#include <QtGui/private/qeventpoint_p.h>
 #include <qpa/qwindowsysteminterface.h>
 
 // #include <QDebug>

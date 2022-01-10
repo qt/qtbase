@@ -63,6 +63,8 @@
 #include <QSignalSpy>
 #include <QTimer>
 
+#include <QtGui/private/qeventpoint_p.h>
+
 using AbstractGraphicsShapeItemPtr = QSharedPointer<QAbstractGraphicsShapeItem>;
 using GraphicsItems = QList<QGraphicsItem *>;
 using GraphicsItemsList = QList<QGraphicsItem *>;
