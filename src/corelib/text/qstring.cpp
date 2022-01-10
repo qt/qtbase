@@ -1145,6 +1145,10 @@ extern "C" int qt_ucstrncmp_mips_dsp_asm(const char16_t *a,
 template <StringComparisonMode Mode>
 static int ucstrncmp(const char16_t *a, const char16_t *b, size_t l)
 {
+    // This function isn't memcmp() because that can return the wrong sorting
+    // result in little-endian architectures: 0x00ff must sort before 0x0100,
+    // but the bytes in memory are FF 00 and 00 01.
+
 #ifndef __OPTIMIZE_SIZE__
 #  if defined(__mips_dsp)
     static_assert(sizeof(uint) == sizeof(size_t));
@@ -1253,6 +1257,9 @@ static int ucstrncmp(const char16_t *a, const char16_t *b, size_t l)
     return UnrollTailLoop<7>::exec(l, 0, lambda, lambda);
 #  endif // MIPS DSP or __SSE2__ or __ARM_NEON__
 #endif // __OPTIMIZE_SIZE__
+
+    if (Mode == CompareStringsForEquality || QSysInfo::ByteOrder == QSysInfo::BigEndian)
+        return memcmp(a, b, l * sizeof(char16_t));
 
     for (size_t i = 0; i < l; ++i) {
         if (int diff = a[i] - b[i])
