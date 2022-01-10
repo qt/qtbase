@@ -115,6 +115,11 @@ const char16_t QString::_empty = 0;
 qsizetype qFindStringBoyerMoore(QStringView haystack, qsizetype from, QStringView needle, Qt::CaseSensitivity cs);
 
 namespace {
+enum StringComparisonMode {
+    CompareStringsForEquality,
+    CompareStringsForOrdering
+};
+
 inline bool qIsUpper(char ch)
 {
     return ch >= 'A' && ch <= 'Z';
@@ -1087,6 +1092,7 @@ extern "C" int qt_ucstrncmp_mips_dsp_asm(const char16_t *a,
 #endif
 
 // Unicode case-sensitive compare two same-sized strings
+template <StringComparisonMode Mode>
 static int ucstrncmp(const QChar *a, const QChar *b, size_t l)
 {
 #ifndef __OPTIMIZE_SIZE__
@@ -1109,8 +1115,12 @@ static int ucstrncmp(const QChar *a, const QChar *b, size_t l)
         uint mask = ~uint(_mm_movemask_epi8(result));
         if (ushort(mask) == 0)
             return false;
-        uint idx = qCountTrailingZeroBits(mask);
-        retval = a[offset + idx / 2].unicode() - b[offset + idx / 2].unicode();
+        if (Mode == CompareStringsForEquality) {
+            retval = 1;
+        } else {
+            uint idx = qCountTrailingZeroBits(mask);
+            retval = a[offset + idx / 2].unicode() - b[offset + idx / 2].unicode();
+        }
         return true;
     };
 
@@ -1133,6 +1143,8 @@ static int ucstrncmp(const QChar *a, const QChar *b, size_t l)
         mask = ~mask;
         if (mask) {
             // found a different character
+            if (Mode == CompareStringsForEquality)
+                return 1;
             uint idx = qCountTrailingZeroBits(mask);
             return a[offset + idx / 2].unicode() - b[offset + idx / 2].unicode();
         }
@@ -1176,6 +1188,8 @@ static int ucstrncmp(const QChar *a, const QChar *b, size_t l)
             uint8_t r = ~(uint8_t)vaddvq_u16(vandq_u16(vceqq_u16(da, db), mask));
             if (r) {
                 // found a different QChar
+                if (Mode == CompareStringsForEquality)
+                    return 1;
                 uint idx = qCountTrailingZeroBits(r);
                 return (int)a[idx].unicode() - (int)b[idx].unicode();
             }
@@ -1198,6 +1212,7 @@ static int ucstrncmp(const QChar *a, const QChar *b, size_t l)
     return 0;
 }
 
+template <StringComparisonMode Mode>
 static int ucstrncmp(const QChar *a, const char *b, size_t l)
 {
     const uchar *c = reinterpret_cast<const uchar *>(b);
@@ -1217,8 +1232,12 @@ static int ucstrncmp(const QChar *a, const char *b, size_t l)
         uint mask = ~uint(_mm_movemask_epi8(result));
         if (ushort(mask) == 0)
             return false;
-        uint idx = qCountTrailingZeroBits(mask);
-        retval = uc[offset + idx / 2] - c[offset + idx / 2];
+        if (Mode == CompareStringsForEquality) {
+            retval = 1;
+        } else {
+            uint idx = qCountTrailingZeroBits(mask);
+            retval = uc[offset + idx / 2] - c[offset + idx / 2];
+        }
         return true;
     };
 #  endif
@@ -1254,6 +1273,8 @@ static int ucstrncmp(const QChar *a, const char *b, size_t l)
 #  endif
         if (mask) {
             // found a different character
+            if (Mode == CompareStringsForEquality)
+                return 1;
             uint idx = qCountTrailingZeroBits(mask);
             return uc[offset + idx / 2] - c[offset + idx / 2];
         }
@@ -1325,7 +1346,7 @@ static bool ucstreq(const QChar *a, size_t alen, const Char2 *b, size_t blen)
         if (a == b)
             return true;
     }
-    return ucstrncmp(a, b, alen) == 0;
+    return ucstrncmp<CompareStringsForEquality>(a, b, alen) == 0;
 }
 
 // Unicode case-sensitive comparison
@@ -1337,7 +1358,7 @@ static int ucstrcmp(const QChar *a, size_t alen, const Char2 *b, size_t blen)
             return 0;
     }
     const size_t l = qMin(alen, blen);
-    int cmp = ucstrncmp(a, b, l);
+    int cmp = ucstrncmp<CompareStringsForOrdering>(a, b, l);
     return cmp ? cmp : lencmp(alen, blen);
 }
 
