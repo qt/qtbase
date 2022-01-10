@@ -531,7 +531,7 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
             col += s.length();
         } else {
             QFontInfo fontInfo(fmt.font());
-            bool monoFrag = fontInfo.fixedPitch();
+            bool monoFrag = fontInfo.fixedPitch() || fmt.fontFixedPitch();
             QString markers;
             if (!ignoreFormat) {
                 if (monoFrag != mono && !m_indentedCodeBlock && !m_fencedCodeBlock) {
