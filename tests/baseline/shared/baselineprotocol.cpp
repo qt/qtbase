@@ -42,6 +42,7 @@
 #include <QRegularExpression>
 
 const QString PI_Project(QLS("Project"));
+const QString PI_ProjectImageKeys(QLS("ProjectImageKeys"));
 const QString PI_TestCase(QLS("TestCase"));
 const QString PI_HostName(QLS("HostName"));
 const QString PI_HostAddress(QLS("HostAddress"));

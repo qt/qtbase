@@ -37,7 +37,7 @@ QT_BEGIN_NAMESPACE
 
 QWidgetBaselineTest::QWidgetBaselineTest()
 {
-    QBaselineTest::addClientProperty("Project", "Widgets");
+    QBaselineTest::setProject("Widgets");
 
     // Set key platform properties that are relevant for the appearance of widgets
     const QString platformName = QGuiApplication::platformName() + "-" + QSysInfo::productType();

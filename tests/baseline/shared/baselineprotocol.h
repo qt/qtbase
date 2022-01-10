@@ -43,6 +43,7 @@
 #define FileFormat "png"
 
 extern const QString PI_Project;
+extern const QString PI_ProjectImageKeys;
 extern const QString PI_TestCase;
 extern const QString PI_HostName;
 extern const QString PI_HostAddress;
