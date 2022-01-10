@@ -426,6 +426,7 @@ int QTextMarkdownImporter::cbEnterSpan(int spanType, void *det)
     }
     case MD_SPAN_CODE:
         charFmt.setFont(m_monoFont);
+        charFmt.setFontFixedPitch(true);
         break;
     case MD_SPAN_DEL:
         charFmt.setFontStrikeOut(true);
