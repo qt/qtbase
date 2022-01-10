@@ -36,6 +36,8 @@ namespace QBaselineTest {
 void setAutoMode(bool mode);
 void setSimFail(bool fail);
 void handleCmdLineArgs(int *argcp, char ***argvp);
+void setProject(const QString &projectName); // Selects server config settings and top level dir
+void setProjectImageKeys(const QStringList &keys); // Overrides the ItemPathKeys config setting
 void addClientProperty(const QString& key, const QString& value);
 bool connectToBaselineServer(QByteArray *msg = nullptr, const QString &testProject = QString(), const QString &testCase = QString());
 bool checkImage(const QImage& img, const char *name, quint16 checksum, QByteArray *msg, bool *error, int manualdatatag = 0);

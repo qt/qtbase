@@ -238,8 +238,10 @@ bool connectToBaselineServer(QByteArray *msg, const QString &testProject, const 
     bool dummy;
     QByteArray dummyMsg;
 
-    definedTestProject = testProject;
-    definedTestCase = testCase;
+    if (!testProject.isEmpty())
+        definedTestProject = testProject;
+    if (!testCase.isEmpty())
+        definedTestCase = testCase;
 
     return connect(msg ? msg : &dummyMsg, &dummy);
 }
@@ -255,6 +257,16 @@ void setSimFail(bool fail)
     simfail = fail;
 }
 
+void setProject(const QString &projectName)
+{
+    definedTestProject = projectName;
+}
+
+void setProjectImageKeys(const QStringList &keys)
+{
+    QString keyList = keys.join(QLC(','));
+    addClientProperty(PI_ProjectImageKeys, keyList);
+}
 
 void modifyImage(QImage *img)
 {
