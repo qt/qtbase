@@ -53,10 +53,4 @@ QOperatingSystemVersionBase QOperatingSystemVersionBase::current_impl()
     return v;
 }
 
-QOperatingSystemVersionBase QOperatingSystemVersionBase::current()
-{
-    static const QOperatingSystemVersionBase v = current_impl();
-    return v;
-}
-
 QT_END_NAMESPACE

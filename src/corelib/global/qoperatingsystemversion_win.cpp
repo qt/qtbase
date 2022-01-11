@@ -113,17 +113,14 @@ OSVERSIONINFOEX qWindowsVersionInfo()
     return realResult;
 }
 
-QOperatingSystemVersionBase QOperatingSystemVersionBase::current()
+QOperatingSystemVersionBase QOperatingSystemVersionBase::current_impl()
 {
-    static QOperatingSystemVersionBase v = [](){
-        QOperatingSystemVersionBase v;
-        v.m_os = currentType();
-        const OSVERSIONINFOEX osv = qWindowsVersionInfo();
-        v.m_major = osv.dwMajorVersion;
-        v.m_minor = osv.dwMinorVersion;
-        v.m_micro = osv.dwBuildNumber;
-        return v;
-    }();
+    QOperatingSystemVersionBase v;
+    v.m_os = currentType();
+    const OSVERSIONINFOEX osv = qWindowsVersionInfo();
+    v.m_major = osv.dwMajorVersion;
+    v.m_minor = osv.dwMinorVersion;
+    v.m_micro = osv.dwBuildNumber;
     return v;
 }
 
