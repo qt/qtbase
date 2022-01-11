@@ -49,23 +49,30 @@ endif()
 
 set(QT_ADDITIONAL_PACKAGES_PREFIX_PATH "" CACHE STRING
     "Additional directories where find(Qt6 ...) components are searched")
+set(QT_ADDITIONAL_HOST_PACKAGES_PREFIX_PATH "" CACHE STRING
+    "Additional directories where find(Qt6 ...) host Qt components are searched")
 
 # Collect additional package prefix paths to look for Qt packages, both from command line and the
-# env variable.
-if(NOT DEFINED _qt_additional_packages_prefix_paths)
-    set(_qt_additional_packages_prefix_paths "")
-
-    set(_qt_additional_packages_prefixes "")
-    if(QT_ADDITIONAL_PACKAGES_PREFIX_PATH)
-        list(APPEND _qt_additional_packages_prefixes ${QT_ADDITIONAL_PACKAGES_PREFIX_PATH})
-    endif()
-    if(DEFINED ENV{QT_ADDITIONAL_PACKAGES_PREFIX_PATH}
-        AND NOT "$ENV{QT_ADDITIONAL_PACKAGES_PREFIX_PATH}" STREQUAL "")
-        list(APPEND _qt_additional_packages_prefixes $ENV{QT_ADDITIONAL_PACKAGES_PREFIX_PATH})
+# env variable ${prefixes_var}. The result is stored in ${out_var} and is a list of paths ending
+# with "/lib/cmake".
+function(__qt_internal_collect_additional_prefix_paths out_var prefixes_var)
+    if(DEFINED "${out_var}")
+        return()
     endif()
 
-    foreach(_qt_additional_path IN LISTS _qt_additional_packages_prefixes)
-        file(TO_CMAKE_PATH "${_qt_additional_path}" _qt_additional_path)
+    set(additional_packages_prefix_paths "")
+
+    set(additional_packages_prefixes "")
+    if(${prefixes_var})
+        list(APPEND additional_packages_prefixes ${${prefixes_var}})
+    endif()
+    if(DEFINED ENV{${prefixes_var}}
+        AND NOT "$ENV{${prefixes_var}}" STREQUAL "")
+        list(APPEND additional_packages_prefixes $ENV{${prefixes_var}})
+    endif()
+
+    foreach(additional_path IN LISTS additional_packages_prefixes)
+        file(TO_CMAKE_PATH "${additional_path}" additional_path)
 
         # The prefix paths need to end with lib/cmake to ensure the packages are found when
         # cross compiling. Search for REROOT_PATH_ISSUE_MARKER in the qt.toolchain.cmake file for
@@ -74,14 +81,36 @@ if(NOT DEFINED _qt_additional_packages_prefix_paths)
         # NO_DEFAULT_PATH, and thus CMAKE_PREFIX_PATH values are discarded.
         # CMAKE_FIND_ROOT_PATH values are not discarded and togegher with the PATHS option, it
         # ensures packages from additional prefixes are found.
-        if(NOT _qt_additional_path MATCHES "/lib/cmake$")
-            string(APPEND _qt_additional_path "/lib/cmake")
+        if(NOT additional_path MATCHES "/lib/cmake$")
+            string(APPEND additional_path "/lib/cmake")
         endif()
-        list(APPEND _qt_additional_packages_prefix_paths "${_qt_additional_path}")
+        list(APPEND additional_packages_prefix_paths "${additional_path}")
     endforeach()
-    unset(_qt_additional_path)
-    unset(_qt_additional_packages_prefixes)
-endif()
+
+    set("${out_var}" "${additional_packages_prefix_paths}" PARENT_SCOPE)
+endfunction()
+
+__qt_internal_collect_additional_prefix_paths(_qt_additional_packages_prefix_paths
+    QT_ADDITIONAL_PACKAGES_PREFIX_PATH)
+__qt_internal_collect_additional_prefix_paths(_qt_additional_host_packages_prefix_paths
+    QT_ADDITIONAL_HOST_PACKAGES_PREFIX_PATH)
+
+# Take a list of prefix paths ending with "/lib/cmake", and return a list of absolute paths with
+# "/lib/cmake" removed.
+function(__qt_internal_prefix_paths_to_roots out_var prefix_paths)
+    set(result "")
+    foreach(path IN LISTS prefix_paths)
+        if(path MATCHES "/lib/cmake$")
+            string(APPEND path "/../..")
+        endif()
+        get_filename_component(path "${path}" ABSOLUTE)
+        list(APPEND result "${path}")
+    endforeach()
+    set("${out_var}" "${result}" PARENT_SCOPE)
+endfunction()
+
+__qt_internal_prefix_paths_to_roots(_qt_additional_host_packages_root_paths
+    "${_qt_additional_host_packages_prefix_paths}")
 
 # Public helpers available to all Qt packages.
 include("${CMAKE_CURRENT_LIST_DIR}/QtFeature.cmake")
@@ -143,14 +172,14 @@ foreach(module ${@INSTALL_CMAKE_NAMESPACE@_FIND_COMPONENTS})
         # Make sure that a Qt*Tools package is also looked up in QT_HOST_PATH.
         # But don't match QtShaderTools and QtTools which are cross-compiled target package names.
         # Allow opt out just in case.
-        # TODO: Handle a hypothetical QT_ADDITIONAL_HOST_PACKAGES_PREFIX_PATH
-        #       See QTBUG-94524
         get_filename_component(__qt_find_package_host_qt_path
             "${Qt@PROJECT_VERSION_MAJOR@HostInfo_DIR}/.." ABSOLUTE)
         set(__qt_backup_cmake_prefix_path "${CMAKE_PREFIX_PATH}")
         set(__qt_backup_cmake_find_root_path "${CMAKE_FIND_ROOT_PATH}")
-        list(PREPEND CMAKE_PREFIX_PATH "${__qt_find_package_host_qt_path}")
-        list(PREPEND CMAKE_FIND_ROOT_PATH "${QT_HOST_PATH}")
+        list(PREPEND CMAKE_PREFIX_PATH "${__qt_find_package_host_qt_path}"
+            ${_qt_additional_host_packages_prefix_paths})
+        list(PREPEND CMAKE_FIND_ROOT_PATH "${QT_HOST_PATH}"
+            ${_qt_additional_host_packages_root_paths})
     endif()
 
     find_package(@INSTALL_CMAKE_NAMESPACE@${module}
@@ -161,6 +190,7 @@ foreach(module ${@INSTALL_CMAKE_NAMESPACE@_FIND_COMPONENTS})
             ${_qt_additional_packages_prefix_paths}
             ${QT_EXAMPLES_CMAKE_PREFIX_PATH}
             ${__qt_find_package_host_qt_path}
+            ${_qt_additional_host_packages_prefix_paths}
         ${__qt_use_no_default_path_for_qt_packages}
     )
 
