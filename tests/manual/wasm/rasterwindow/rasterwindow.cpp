@@ -101,7 +101,7 @@ void RasterWindow::paintEvent(QPaintEvent * event)
 }
 void RasterWindow::exposeEvent(QExposeEvent * ev)
 {
-    qDebug() << __PRETTY_FUNCTION__ << ev->region();
+    qDebug() << __PRETTY_FUNCTION__;
     QRasterWindow::exposeEvent(ev);
     incrementEventCount();
 }
@@ -155,8 +155,8 @@ void RasterWindow::mouseMoveEvent(QMouseEvent * ev)
     incrementEventCount();
 
     if (m_pressed)
-        m_offset += ev->localPos().toPoint() - m_lastPos;
-    m_lastPos = ev->localPos().toPoint();
+        m_offset += ev->position().toPoint() - m_lastPos;
+    m_lastPos = ev->position().toPoint();
 }
 
 void RasterWindow::mousePressEvent(QMouseEvent * ev)
