@@ -102,6 +102,20 @@ QGtk3Theme::QGtk3Theme()
     SETTING_CONNECT("gtk-application-prefer-dark-theme");
     SETTING_CONNECT("gtk-theme-name");
 #undef SETTING_CONNECT
+
+    /* Set XCURSOR_SIZE and XCURSOR_THEME for Wayland sessions */
+    if (QGuiApplication::platformName().startsWith("wayland"_L1)) {
+        if (qEnvironmentVariableIsEmpty("XCURSOR_SIZE")) {
+            const int cursorSize = gtkSetting<gint>("gtk-cursor-theme-size");
+            if (cursorSize > 0)
+                qputenv("XCURSOR_SIZE", QString::number(cursorSize).toUtf8());
+        }
+        if (qEnvironmentVariableIsEmpty("XCURSOR_THEME")) {
+            const QString cursorTheme = gtkSetting("gtk-cursor-theme-name");
+            if (!cursorTheme.isEmpty())
+                qputenv("XCURSOR_THEME", cursorTheme.toUtf8());
+        }
+    }
 }
 
 static inline QVariant gtkGetLongPressTime()
