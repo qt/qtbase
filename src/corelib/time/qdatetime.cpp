@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2021 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Copyright (C) 2021 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -4373,13 +4373,13 @@ static inline void massageAdjustedDateTime(QDateTimeData &d, QDate date, QTime t
     if (spec == Qt::LocalTime)
         utc = QDateTimePrivate::localMSecsToEpochMSecs(local, &dst, &date, &time);
 #if QT_CONFIG(timezone)
-    else if (spec == Qt::TimeZone && d->m_timeZone.isValid())
-        utc = QDateTimePrivate::zoneMSecsToEpochMSecs(local, d->m_timeZone, &dst, &date, &time);
+    else if (spec == Qt::TimeZone && d.d->m_timeZone.isValid())
+        utc = QDateTimePrivate::zoneMSecsToEpochMSecs(local, d.d->m_timeZone, &dst, &date, &time);
 #endif // timezone
     else
         dst = QDateTimePrivate::UnknownDaylightTime;
 
-    setDateTime(d, date, time);
+    setDateTime(d, date, time); // Detaches d, if needed.
     status = getStatus(d); // Updated by setDateTime()
     const bool ok = (dst != QDateTimePrivate::UnknownDaylightTime
                      && (status & QDateTimePrivate::ValidDate)
