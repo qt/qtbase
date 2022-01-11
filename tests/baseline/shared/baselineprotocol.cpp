@@ -141,17 +141,6 @@ QDataStream & operator>> (QDataStream &stream, PlatformInfo &pi)
 }
 
 
-ImageItem &ImageItem::operator=(const ImageItem &other)
-{
-    testFunction = other.testFunction;
-    itemName = other.itemName;
-    itemChecksum = other.itemChecksum;
-    status = other.status;
-    image = other.image;
-    imageChecksums = other.imageChecksums;
-    return *this;
-}
-
 // Defined in lookup3.c:
 void hashword2 (
 const quint32 *k,         /* the key, an array of quint32 values */
