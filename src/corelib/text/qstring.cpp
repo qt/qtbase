@@ -1198,8 +1198,9 @@ static int ucstrncmp(const QChar *a, const QChar *b, size_t l)
     return 0;
 }
 
-static int ucstrncmp(const QChar *a, const uchar *c, size_t l)
+static int ucstrncmp(const QChar *a, const char *b, size_t l)
 {
+    const uchar *c = reinterpret_cast<const uchar *>(b);
     const char16_t *uc = reinterpret_cast<const char16_t *>(a);
     const char16_t *e = uc + l;
 
@@ -1328,19 +1329,15 @@ static bool ucstreq(const QChar *a, size_t alen, const Char2 *b, size_t blen)
 }
 
 // Unicode case-sensitive comparison
-static int ucstrcmp(const QChar *a, size_t alen, const QChar *b, size_t blen)
+template <typename Char2>
+static int ucstrcmp(const QChar *a, size_t alen, const Char2 *b, size_t blen)
 {
-    if (a == b && alen == blen)
-        return 0;
+    if constexpr (std::is_same_v<decltype(a), decltype(b)>) {
+        if (a == b && alen == blen)
+            return 0;
+    }
     const size_t l = qMin(alen, blen);
     int cmp = ucstrncmp(a, b, l);
-    return cmp ? cmp : lencmp(alen, blen);
-}
-
-static int ucstrcmp(const QChar *a, size_t alen, const char *b, size_t blen)
-{
-    const size_t l = qMin(alen, blen);
-    const int cmp = ucstrncmp(a, reinterpret_cast<const uchar*>(b), l);
     return cmp ? cmp : lencmp(alen, blen);
 }
 
