@@ -82,16 +82,6 @@ QDataStream & operator>> (QDataStream &stream, PlatformInfo& pi);
 
 struct ImageItem
 {
-public:
-    ImageItem()
-        : status(Ok), itemChecksum(0)
-    {}
-    ImageItem(const ImageItem &other)
-    { *this = other; }
-    ~ImageItem()
-    {}
-    ImageItem &operator=(const ImageItem &other);
-
     static quint64 computeChecksum(const QImage& image);
 
     enum ItemStatus {
@@ -105,10 +95,10 @@ public:
 
     QString testFunction;
     QString itemName;
-    ItemStatus status;
+    ItemStatus status = Ok;
     QImage image;
     QList<quint64> imageChecksums;
-    quint16 itemChecksum;
+    quint16 itemChecksum = 0;
     QByteArray misc;
 
     void writeImageToStream(QDataStream &stream) const;
