@@ -1,6 +1,9 @@
 # Make sure @INSTALL_CMAKE_NAMESPACE@ is found before anything else.
 set(@INSTALL_CMAKE_NAMESPACE@@target@_FOUND FALSE)
 
+if("${_qt_cmake_dir}" STREQUAL "")
+    set(_qt_cmake_dir "${QT_TOOLCHAIN_RELOCATABLE_CMAKE_DIR}")
+endif()
 set(__qt_use_no_default_path_for_qt_packages "NO_DEFAULT_PATH")
 if(QT_DISABLE_NO_DEFAULT_PATH_IN_QT_PACKAGES)
     set(__qt_use_no_default_path_for_qt_packages "")
@@ -53,8 +56,10 @@ if(__qt_@target@_tool_deps AND NOT "${QT_HOST_PATH}" STREQUAL "")
      # Make sure that the tools find the host tools first
      set(BACKUP_@target@_CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH})
      set(BACKUP_@target@_CMAKE_FIND_ROOT_PATH ${CMAKE_FIND_ROOT_PATH})
-     list(PREPEND CMAKE_PREFIX_PATH "${QT_HOST_PATH_CMAKE_DIR}")
-     list(PREPEND CMAKE_FIND_ROOT_PATH "${QT_HOST_PATH}")
+     list(PREPEND CMAKE_PREFIX_PATH "${QT_HOST_PATH_CMAKE_DIR}"
+         "${_qt_additional_host_packages_prefix_paths}")
+     list(PREPEND CMAKE_FIND_ROOT_PATH "${QT_HOST_PATH}"
+         "${_qt_additional_host_packages_root_paths}")
 endif()
 
 foreach(__qt_@target@_target_dep ${__qt_@target@_tool_deps})
