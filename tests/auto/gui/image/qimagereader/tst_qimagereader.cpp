@@ -1953,6 +1953,10 @@ void tst_QImageReader::readText_data()
 
 void tst_QImageReader::readText()
 {
+#ifdef QT_NO_IMAGEIO_TEXT_LOADING
+    QSKIP("Reading text from image is configured away");
+#endif
+
     QFETCH(QString, fileName);
     QFETCH(QString, key);
     QFETCH(QString, text);
@@ -1994,6 +1998,10 @@ void tst_QImageReader::preserveTexts_data()
 
 void tst_QImageReader::preserveTexts()
 {
+#ifdef QT_NO_IMAGEIO_TEXT_LOADING
+    QSKIP("Reading text from image is configured away");
+#endif
+
     QFETCH(QString, fileName);
     QByteArray format = fileName.right(3).toLatin1();
     QFETCH(QString, text);
