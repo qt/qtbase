@@ -51,6 +51,7 @@ private slots:
     void largeCache();
     void internalChainOrderAfterEntryUpdate();
     void emplaceLowerCost();
+    void trimWithMovingAcrossSpans();
 };
 
 
@@ -460,6 +461,71 @@ void tst_QCache::emplaceLowerCost()
     // The cache should now have a cost == 0 and be empty.
     QCOMPARE(cache.totalCost(), 0);
     QVERIFY(cache.isEmpty());
+}
+
+struct TrivialHashType {
+    int i = -1;
+    size_t hash = 0;
+
+    TrivialHashType(int i, size_t hash) : i(i), hash(hash) {}
+    TrivialHashType(const TrivialHashType &o) noexcept = default;
+    TrivialHashType &operator=(const TrivialHashType &o) noexcept = default;
+    TrivialHashType(TrivialHashType &&o) noexcept : i(o.i), hash(o.hash) {
+        o.i = -1;
+        o.hash = 0;
+    }
+    TrivialHashType &operator=(TrivialHashType &&o) noexcept {
+        i = o.i;
+        hash = o.hash;
+        o.i = -1;
+        o.hash = 0;
+        return *this;
+    }
+
+
+    friend bool operator==(const TrivialHashType &lhs, const TrivialHashType &rhs)
+    {
+        return lhs.i == rhs.i;
+    }
+};
+quint64 qHash(TrivialHashType t, size_t seed = 0)
+{
+    return t.hash;
+}
+
+// During trim(), if the Node we have a pointer to in the function is moved
+// to another span in the hash table, our pointer would end up pointing to
+// garbage memory. Test that this no longer happens
+void tst_QCache::trimWithMovingAcrossSpans()
+{
+    qsizetype numBuckets = [](){
+        QHash<int, int> h;
+        h.reserve(1);
+        // Beholden to QHash internals:
+        return h.capacity() << 1;
+    }();
+
+    QCache<TrivialHashType, int> cache;
+    cache.setMaxCost(1000);
+
+    auto lastBucketInSpan = size_t(numBuckets - 1);
+    // If this fails then the test is no longer valid
+    QCOMPARE(QHashPrivate::GrowthPolicy::bucketForHash(numBuckets, lastBucketInSpan),
+             lastBucketInSpan);
+
+    // Pad some space so we have two spans:
+    for (int i = 2; i < numBuckets; ++i)
+        cache.insert({i, 0}, nullptr);
+
+    // These two are vying for the last bucket in the first span,
+    // when '0' is deleted, '1' is moved across the span boundary,
+    // invalidating any pointer to its Node.
+    cache.insert({0, lastBucketInSpan}, nullptr);
+    cache.insert({1, lastBucketInSpan}, nullptr);
+
+    QCOMPARE(cache.size(), numBuckets);
+    cache.setMaxCost(0);
+    QCOMPARE(cache.size(), 0);
 }
 
 QTEST_APPLESS_MAIN(tst_QCache)

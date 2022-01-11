@@ -164,11 +164,9 @@ class QCache
 
     void trim(qsizetype m) noexcept(std::is_nothrow_destructible_v<Node>)
     {
-        Chain *n = chain.prev;
-        while (n != &chain && total > m) {
-            Node *u = static_cast<Node *>(n);
-            n = n->prev;
-            unlink(u);
+        while (chain.prev != &chain && total > m) {
+            Node *n = static_cast<Node *>(chain.prev);
+            unlink(n);
         }
     }
 
