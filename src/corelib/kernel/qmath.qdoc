@@ -27,6 +27,7 @@
 
 /*!
     \headerfile <QtMath>
+    \inmodule QtCore
     \title Generic Math Functions
     \ingroup funclists
 

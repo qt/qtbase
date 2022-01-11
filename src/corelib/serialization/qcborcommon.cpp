@@ -50,7 +50,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
    \headerfile <QtCborCommon>
-
+   \inmodule QtCore
    \brief The <QtCborCommon> header contains definitions common to both the
    streaming classes (QCborStreamReader and QCborStreamWriter) and to
    QCborValue.

@@ -832,6 +832,7 @@ size_t qHash(QLatin1String key, size_t seed) noexcept
 
 /*!
     \class QHashSeed
+    \inmodule QtCore
     \since 6.2
 
     The QHashSeed class is used to convey the QHash seed. This is used

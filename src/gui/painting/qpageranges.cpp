@@ -374,6 +374,7 @@ QDebug operator<<(QDebug dbg, const QPageRanges &pageRanges)
 
 /*!
     \struct QPageRanges::Range
+    \inmodule QtGui
     \brief The QPageRanges::Range struct holds the \c from and \c to endpoints of a range.
 
     \sa QPageRanges::toRangeList()

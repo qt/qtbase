@@ -170,6 +170,7 @@ void QTransposeProxyModelPrivate::onRowsAboutToBeMoved(const QModelIndex &source
 /*!
     \since 5.13
     \class QTransposeProxyModel
+    \inmodule QtCore
     \brief This proxy transposes the source model.
 
     This model will make the rows of the source model become columns of the proxy model and vice-versa.

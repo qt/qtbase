@@ -315,6 +315,7 @@ QVulkanInstance::~QVulkanInstance()
 
 /*!
     \class QVulkanLayer
+    \inmodule QtGui
     \brief Represents information about a Vulkan layer.
  */
 
@@ -368,6 +369,7 @@ QVulkanInstance::~QVulkanInstance()
 
 /*!
     \class QVulkanExtension
+    \inmodule QtGui
     \brief Represents information about a Vulkan extension.
  */
 
@@ -411,6 +413,7 @@ QVulkanInstance::~QVulkanInstance()
 
 /*!
     \class QVulkanInfoVector
+    \inmodule QtGui
     \brief A specialized QList for QVulkanLayer and QVulkanExtension.
  */
 

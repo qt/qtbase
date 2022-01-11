@@ -48,6 +48,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QAccessiblePlugin
+    \inmodule QtGui
     \brief The QAccessiblePlugin class provides an abstract base class
     for plugins provinding accessibility information for user interface elements.
 

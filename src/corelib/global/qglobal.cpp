@@ -698,6 +698,7 @@ static_assert(sizeof(qint64) == 8, "Internal error, qint64 is misdefined");
 
 /*!
     \headerfile <QtGlobal>
+    \inmodule QtCore
     \title Global Qt Declarations
     \ingroup funclists
 

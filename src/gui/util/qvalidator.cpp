@@ -915,6 +915,7 @@ QDoubleValidator::Notation QDoubleValidator::notation() const
 
 /*!
     \class QRegularExpressionValidator
+    \inmodule QtGui
     \brief The QRegularExpressionValidator class is used to check a string
     against a regular expression.
 
