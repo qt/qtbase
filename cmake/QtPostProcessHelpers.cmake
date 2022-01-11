@@ -659,18 +659,6 @@ endif()\n")
                    "set(OPENSSL_ROOT_DIR \"${openssl_root_cmake_path}\" CACHE STRING \"\")\n")
         endif()
 
-        if(NOT "${CMAKE_STAGING_PREFIX}" STREQUAL "")
-            string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
-                "
-# If no explicit CMAKE_STAGING_PREFIX is provided, force set the original Qt staging prefix,
-if(\"$\{CMAKE_STAGING_PREFIX}\" STREQUAL \"\"
-   AND NOT QT_BUILD_INTERNALS_NO_FORCE_SET_STAGING_PREFIX)
-    set(CMAKE_STAGING_PREFIX \"${CMAKE_STAGING_PREFIX}\" CACHE PATH
-        \"Staging path prefix, prepended onto install directories on the host machine.\" FORCE)
-endif()
-")
-        endif()
-
         qt_generate_install_prefixes(install_prefix_content)
 
         string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS "${install_prefix_content}")
