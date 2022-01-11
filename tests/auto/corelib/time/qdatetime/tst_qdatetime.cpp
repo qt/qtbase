@@ -1098,6 +1098,18 @@ void tst_QDateTime::addDays()
     QCOMPARE(dt2.timeSpec(), Qt::OffsetFromUTC);
     QCOMPARE(dt2.offsetFromUtc(), 60 * 60);
 
+#if QT_CONFIG(timezone)
+    const QTimeZone cet("Europe/Oslo");
+    if (cet.isValid()) {
+        dt1 = QDate(2022, 1, 10).startOfDay(cet);
+        dt2 = dt1.addDays(2); // QTBUG-99668: should not assert
+        QCOMPARE(dt2.date(), QDate(2022, 1, 12));
+        QCOMPARE(dt2.time(), QTime(0, 0));
+        QCOMPARE(dt2.timeSpec(), Qt::TimeZone);
+        QCOMPARE(dt2.timeZone(), cet);
+    }
+#endif
+
     // ### test invalid QDateTime()
 }
 
