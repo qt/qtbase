@@ -43,6 +43,9 @@ private slots:
 
     void tst_QPushButton_data();
     void tst_QPushButton();
+
+    void tst_QProgressBar_data();
+    void tst_QProgressBar();
 };
 
 void tst_Widgets::tst_QSlider_data()
@@ -136,6 +139,42 @@ void tst_Widgets::tst_QPushButton()
     testButton->setDown(false);
 }
 
+void tst_Widgets::tst_QProgressBar_data()
+{
+    QTest::addColumn<Qt::Orientation>("orientation");
+    QTest::addColumn<bool>("invertedAppearance");
+    QTest::addColumn<bool>("textVisible");
+
+    QTest::newRow("vertical_normalAppearance_textVisible") << Qt::Vertical << false << true;
+    QTest::newRow("vertical_invertedAppearance_textVisible") << Qt::Vertical << true << true;
+    QTest::newRow("horizontal_normalAppearance_textVisible") << Qt::Horizontal << false << true;
+    QTest::newRow("horizontal_invertedAppearance_textVisible") << Qt::Horizontal << true << true;
+    QTest::newRow("vertical_normalAppearance_textNotVisible") << Qt::Vertical << false << false;
+    QTest::newRow("vertical_invertedAppearance_textNotVisible") << Qt::Vertical << true << false;
+    QTest::newRow("horizontal_normalAppearance_textNotVisible") << Qt::Horizontal << false << false;
+    QTest::newRow("horizontal_invertedAppearance_textNotVisible") << Qt::Horizontal << true << false;
+}
+
+void tst_Widgets::tst_QProgressBar()
+{
+    QFETCH(Qt::Orientation, orientation);
+    QFETCH(bool, invertedAppearance);
+    QFETCH(bool, textVisible);
+
+    QBoxLayout box((orientation == Qt::Vertical) ? QBoxLayout::LeftToRight : QBoxLayout::TopToBottom);
+
+    for (int i = 0; i < 4; ++i) {
+        QProgressBar *bar = new QProgressBar(testWindow());
+        bar->setOrientation(orientation);
+        bar->setInvertedAppearance(invertedAppearance);
+        bar->setTextVisible(textVisible);
+        bar->setValue(i * 33);
+        box.addWidget(bar);
+    }
+
+    testWindow()->setLayout(&box);
+    takeStandardSnapshots();
+}
 
 #define main _realmain
 QTEST_MAIN(tst_Widgets)
