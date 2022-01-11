@@ -43,7 +43,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QBaseIterator
-
+    \inmodule QtCore
     QBaseIterator forms the common base class for all iterators operating on
     subclasses of QIterable.
 */

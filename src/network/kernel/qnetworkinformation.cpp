@@ -417,6 +417,7 @@ QNetworkInformationBackendFactory::~QNetworkInformationBackendFactory()
 
 /*!
     \class QNetworkInformation
+    \inmodule QtNetwork
     \since 6.1
     \brief QNetworkInformation exposes various network information
     through native backends.

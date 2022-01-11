@@ -1125,6 +1125,7 @@ const QCalendarBackend *QCalendarBackend::gregorian()
 
 /*!
     \class QCalendar::SystemId
+    \inmodule QtCore
     \since 6.2
 
     This is an opaque type used to identify custom calendar implementations. The

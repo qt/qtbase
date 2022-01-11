@@ -44,6 +44,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
  * \class QOpenGLPixelTransferOptions
+ * \inmodule QtOpenGL
  *
  * \brief The QOpenGLPixelTransferOptions class describes the pixel storage
  * modes that affect the unpacking of pixels during texture upload.

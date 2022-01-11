@@ -27,6 +27,7 @@
 
 /*!
     \headerfile <QtAlgorithms>
+    \inmodule QtCore
     \title Generic Algorithms
     \ingroup funclists
     \keyword generic algorithms

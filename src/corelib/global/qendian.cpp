@@ -47,6 +47,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \headerfile <QtEndian>
+    \inmodule QtCore
     \title Endian Conversion Functions
     \ingroup funclists
     \brief The <QtEndian> header provides functions to convert between

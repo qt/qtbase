@@ -27,6 +27,7 @@
 
 /*!
     \headerfile <QtPlugin>
+    \inmodule QtCore
     \title Defining Plugins
     \keyword qtplugin-defining-plugins
     \ingroup plugins

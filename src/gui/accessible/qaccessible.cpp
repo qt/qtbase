@@ -2516,6 +2516,7 @@ QAccessibleTableCellInterface::~QAccessibleTableCellInterface()
 
 /*!
     \class QAccessibleTableInterface
+    \inmodule QtGui
     \ingroup accessibility
 
     \brief The QAccessibleTableInterface class implements support for
@@ -2662,6 +2663,7 @@ QAccessibleTableInterface::~QAccessibleTableInterface()
 
 /*!
     \class QAccessibleActionInterface
+    \inmodule QtGui
     \ingroup accessibility
 
     \brief The QAccessibleActionInterface class implements support for
