@@ -123,6 +123,19 @@ function(qt_internal_add_tool target_name)
                 "Neither QT_HOST_PATH_CMAKE_DIR nor "
                 "Qt${PROJECT_VERSION_MAJOR}HostInfo_DIR} available.")
         endif()
+
+        # Look for tools in additional host Qt installations. This is done for conan support where
+        # we have separate installation prefixes per package. For simplicity, we assume here that
+        # all host Qt installations use the same value of INSTALL_LIBDIR.
+        if(DEFINED QT_ADDITIONAL_HOST_PACKAGES_PREFIX_PATH)
+            file(RELATIVE_PATH rel_host_cmake_dir "${QT_HOST_PATH}" "${QT_HOST_PATH_CMAKE_DIR}")
+            foreach(host_path IN LISTS QT_ADDITIONAL_HOST_PACKAGES_PREFIX_PATH)
+                set(host_cmake_dir "${host_path}/${rel_host_cmake_dir}")
+                list(PREPEND CMAKE_PREFIX_PATH "${host_cmake_dir}")
+            endforeach()
+
+            list(PREPEND CMAKE_FIND_ROOT_PATH "${QT_ADDITIONAL_HOST_PACKAGES_PREFIX_PATH}")
+        endif()
         list(PREPEND CMAKE_FIND_ROOT_PATH "${QT_HOST_PATH}")
 
         find_package(

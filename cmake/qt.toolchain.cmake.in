@@ -80,9 +80,14 @@ endif()
 # Handle packages located in QT_ADDITIONAL_PACKAGES_PREFIX_PATH when cross-compiling. Needed for
 # Conan.
 # We prepend to CMAKE_PREFIX_PATH so that a find_package(Qt6Foo) call works, without having to go
-# through the Qt6 umbrella package. The paths must end in lib/cmake to esnsure the package is found.
+# through the Qt6 umbrella package. The paths must end in lib/cmake to ensure the package is found.
 # See REROOT_PATH_ISSUE_MARKER.
 # We prepend to CMAKE_FIND_ROOT_PATH, due to the bug mentioned at REROOT_PATH_ISSUE_MARKER.
+#
+# Note that we don't handle QT_ADDITIONAL_HOST_PACKAGES_PREFIX_PATH here, because we would thwart
+# our efforts to not accidentally pick up host packages. For now, we say that
+# find_package(Qt6FooTools) is not supported, and people must use find_package(Qt6 COMPONENTS
+# FooTools) instead.
 set(__qt_toolchain_additional_packages_prefixes "")
 if(QT_ADDITIONAL_PACKAGES_PREFIX_PATH)
     list(APPEND __qt_toolchain_additional_packages_prefixes
