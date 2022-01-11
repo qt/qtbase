@@ -2966,11 +2966,7 @@ QByteArray QByteArray::mid(qsizetype pos, qsizetype len) const
     \sa isLower(), toUpper(), {Character Case}
 */
 
-// prevent the compiler from inlining the function in each of
-// toLower and toUpper when the only difference is the table being used
-// (even with constant propagation, there's no gain in performance).
 template <typename T>
-Q_NEVER_INLINE
 static QByteArray toCase_template(T &input, uchar (*lookup)(uchar))
 {
     // find the first bad character in input
