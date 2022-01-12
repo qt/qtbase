@@ -49,6 +49,9 @@ private slots:
 
     void tst_QSpinBox_data();
     void tst_QSpinBox();
+
+    void tst_QDial_data();
+    void tst_QDial();
 };
 
 void tst_Widgets::tst_QSlider_data()
@@ -211,6 +214,44 @@ void tst_Widgets::tst_QSpinBox()
 
     spinBox->setAlignment(Qt::AlignRight);
     QBASELINE_CHECK(takeSnapshot(), "align_right");
+}
+
+void tst_Widgets::tst_QDial_data()
+{
+    QTest::addColumn<int>("minimum");
+    QTest::addColumn<int>("maximum");
+    QTest::addColumn<bool>("notchesVisible");
+    QTest::addColumn<qreal>("notchTarget");
+
+    QTest::newRow("0..99_notches") << 0 << 99 << true << 3.7;
+    QTest::newRow("0..99_noNotches") << 0 << 99 << false << 3.7;
+    QTest::newRow("1..100_notches") << 1 << 100 << true << 5.7;
+    QTest::newRow("1..100_noNotches") << 1 << 100 << false << 3.7;
+    QTest::newRow("1..5_notches") << 1 << 5 << true << 8.7;
+    QTest::newRow("1..5_noNotches") << 1 << 5 << false << 3.7;
+}
+
+void tst_Widgets::tst_QDial()
+{
+    QFETCH(int, minimum);
+    QFETCH(int, maximum);
+    QFETCH(bool, notchesVisible);
+    QFETCH(qreal, notchTarget);
+
+    QVERIFY(maximum > minimum);
+    const int steps = maximum - minimum;
+
+    QDial dial(testWindow());
+    dial.setMinimum(minimum);
+    dial.setMaximum(maximum);
+    dial.setNotchTarget(notchTarget);
+    dial.setSliderPosition(minimum + (steps / 2));
+    dial.setNotchesVisible(notchesVisible);
+
+    QBoxLayout box(QBoxLayout::LeftToRight);
+    box.addWidget(&dial);
+    testWindow()->setLayout(&box);
+    takeStandardSnapshots();
 }
 
 #define main _realmain
