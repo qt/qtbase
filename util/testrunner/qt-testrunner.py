@@ -247,12 +247,10 @@ def run_full_test(test_basename, testargs: List[str], output_dir: str,
     output_testargs = []
 
     # Append arguments to write log to qtestlib XML file,
-    # to JUnit XML file, and text to stdout.
+    # and text to stdout.
     if not no_extra_args:
         results_files.append(os.path.join(output_dir, test_basename + ".xml"))
-        results_files.append(os.path.join(output_dir, test_basename + "-junitxml.xml"))
         output_testargs.extend(["-o", results_files[0] + ",xml"])
-        output_testargs.extend(["-o", results_files[1] + ",junitxml"])
         output_testargs.extend(["-o", "-,txt"])
 
     proc = run_test(testargs + specific_extra_args + output_testargs,
