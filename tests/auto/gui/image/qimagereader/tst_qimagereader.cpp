@@ -94,6 +94,8 @@ private slots:
     void setScaledClipRect_data();
     void setScaledClipRect();
 
+    void setFormat();
+
     void imageFormat_data();
     void imageFormat();
 
@@ -511,6 +513,30 @@ void tst_QImageReader::setScaledClipRect()
     originalReader.setScaledSize(QSize(300, 300));
     QImage originalImage = originalReader.read();
     QCOMPARE(originalImage.copy(newRect), image);
+}
+
+void tst_QImageReader::setFormat()
+{
+    QByteArray ppmImage = "P1 2 2\n1 0\n0 1";
+    QBuffer buf(&ppmImage);
+    QImageReader reader(&buf);
+
+    // read image in autodetected format
+    QCOMPARE(reader.size(), QSize(2,2));
+    buf.close();
+
+    // try reading with non-matching format, must not succeed
+    reader.setDecideFormatFromContent(false);
+    reader.setFormat("bmp");
+    reader.setDevice(&buf);
+    QCOMPARE(reader.size(), QSize());
+    buf.close();
+
+    // read with manually set matching format
+    reader.setFormat("ppm");
+    reader.setDevice(&buf);
+    QCOMPARE(reader.size(), QSize(2,2));
+    buf.close();
 }
 
 void tst_QImageReader::imageFormat_data()

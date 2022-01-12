@@ -529,6 +529,9 @@ QImageReaderPrivate::~QImageReaderPrivate()
 */
 bool QImageReaderPrivate::initHandler()
 {
+    if (handler)
+        return true;
+
     // check some preconditions
     if (!device || (!deleteDevice && !device->isOpen() && !device->open(QIODevice::ReadOnly))) {
         imageReaderError = QImageReader::DeviceError;
@@ -575,7 +578,7 @@ bool QImageReaderPrivate::initHandler()
     }
 
     // assign a handler
-    if (!handler && (handler = createReadHandlerHelper(device, format, autoDetectImageFormat, ignoresFormatAndExtension)) == nullptr) {
+    if ((handler = createReadHandlerHelper(device, format, autoDetectImageFormat, ignoresFormatAndExtension)) == nullptr) {
         imageReaderError = QImageReader::UnsupportedFormatError;
         errorString = QImageReader::tr("Unsupported image format");
         return false;
@@ -588,7 +591,7 @@ bool QImageReaderPrivate::initHandler()
 */
 void QImageReaderPrivate::getText()
 {
-    if (text.isEmpty() && (handler || initHandler()) && handler->supportsOption(QImageIOHandler::Description))
+    if (text.isEmpty() && initHandler() && handler->supportsOption(QImageIOHandler::Description))
         text = qt_getImageTextFromDescription(handler->option(QImageIOHandler::Description).toString());
 }
 
@@ -1223,7 +1226,7 @@ bool QImageReader::read(QImage *image)
         return false;
     }
 
-    if (!d->handler && !d->initHandler())
+    if (!d->initHandler())
         return false;
 
     // set the handler specific options.
