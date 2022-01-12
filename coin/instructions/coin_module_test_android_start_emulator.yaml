@@ -3,7 +3,7 @@ instructions:
   - type: Group
     instructions:
       - type: ExecuteCommand
-        command: "{{.InstallDir}}/libexec/android_emulator_launcher.sh"
+        command: "{{.Env.LIBEXEC_INSTALL_DIR}}/android_emulator_launcher.sh"
         maxTimeInSeconds: 600
         maxTimeBetweenOutput: 300
         userMessageOnFailure: "Failed to start emulator, check coin log and ~/emulator.log"

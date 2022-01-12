@@ -1,0 +1,29 @@
+type: Group
+instructions:
+  - type: EnvironmentVariable
+    variableName: INSTALL_DIR_FOR_CMAKE_TESTS
+    variableValue: "{{$android_artifact_path:=index .Env \"QT_CI_ARTIFACT_ID_PATH_Android-x86\"}}{{index .Env $android_artifact_path}}/install/target"
+  - type: AppendToEnvironmentVariable
+    variableName: COMMON_TARGET_TEST_CMAKE_ARGS
+    variableValue: " -DQT_PATH_ANDROID_ABI_arm64-v8a={{$android_artifact_path:=index .Env \"QT_CI_ARTIFACT_ID_PATH_Android-arm64-v8a\"}}{{index .Env $android_artifact_path}}/install/target"
+  - type: AppendToEnvironmentVariable
+    variableName: COMMON_TARGET_TEST_CMAKE_ARGS
+    variableValue: " -DQT_PATH_ANDROID_ABI_armeabi-v7a={{$android_artifact_path:=index .Env \"QT_CI_ARTIFACT_ID_PATH_Android-armeabi-v7a\"}}{{index .Env $android_artifact_path}}/install/target"
+  - type: AppendToEnvironmentVariable
+    variableName: COMMON_TARGET_TEST_CMAKE_ARGS
+    variableValue: " -DQT_PATH_ANDROID_ABI_x86={{$android_artifact_path:=index .Env \"QT_CI_ARTIFACT_ID_PATH_Android-x86\"}}{{index .Env $android_artifact_path}}/install/target"
+  - type: AppendToEnvironmentVariable
+    variableName: COMMON_TARGET_TEST_CMAKE_ARGS
+    variableValue: " -DQT_PATH_ANDROID_ABI_x86_64={{$android_artifact_path:=index .Env \"QT_CI_ARTIFACT_ID_PATH_Android-x86_64\"}}{{index .Env $android_artifact_path}}/install/target"
+  - type: AppendToEnvironmentVariable
+    variableName: COMMON_TARGET_TEST_CMAKE_ARGS
+    variableValue: " -DQT_HOST_PATH={{.Env.HOST_INSTALL_DIR}}"
+enable_if:
+  condition: and
+  conditions:
+    - condition: property
+      property: target.osVersion
+      equals_value: Android_ANY
+    - condition: property
+      property: target.arch
+      equals_value: Multi

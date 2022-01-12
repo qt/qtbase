@@ -19,7 +19,19 @@ instructions:
           not_contains_value: "TargetBuildOnly"
   - type: Group
     instructions:
-      - !include "{{qt/qtbase}}/cmake_cross_compilation_qtbase_build_instructions.yaml"
+      - type: Group
+        instructions:
+          - !include "{{qt/qtbase}}/cmake_cross_compilation_qtbase_build_instructions.yaml"
+        disable_if:
+          condition: and
+          conditions:
+            - condition: property
+              property: target.osVersion
+              equals_value: Android_ANY
+            - condition: property
+              property: target.arch
+              equals_value: Multi
+      - !include "{{qt/qtbase}}/prepare_android_multi_abi_env.yaml"
       - type: Group
         instructions:
           - !include "{{qt/qtbase}}/cmake_build_and_upload_test_artifacts_target.yaml"
