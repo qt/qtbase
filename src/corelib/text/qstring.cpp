@@ -428,7 +428,7 @@ static qsizetype qustrlen_sse2(const char16_t *str) noexcept
     const __m128i zeroes = _mm_setzero_si128();
     __m128i data = _mm_load_si128(reinterpret_cast<const __m128i *>(ptr));
     __m128i comparison = _mm_cmpeq_epi16(data, zeroes);
-    quint32 mask = _mm_movemask_epi8(comparison);
+    uint mask = _mm_movemask_epi8(comparison);
 
     // ignore the result prior to the beginning of str
     mask >>= misalignment;
@@ -436,19 +436,22 @@ static qsizetype qustrlen_sse2(const char16_t *str) noexcept
     // Have we found something in the first block? Need to handle it now
     // because of the left shift above.
     if (mask)
-        return qCountTrailingZeroBits(quint32(mask)) / 2;
+        return qCountTrailingZeroBits(mask) / sizeof(char16_t);
 
+    constexpr qsizetype Step = sizeof(__m128i) / sizeof(char16_t);
+    qsizetype size = Step - misalignment / sizeof(char16_t);
+
+    size -= Step;
     do {
-        ptr += 8;
-        data = _mm_load_si128(reinterpret_cast<const __m128i *>(ptr));
+        size += Step;
+        data = _mm_load_si128(reinterpret_cast<const __m128i *>(str + size));
 
         comparison = _mm_cmpeq_epi16(data, zeroes);
         mask = _mm_movemask_epi8(comparison);
     } while (mask == 0);
 
     // found a null
-    uint idx = qCountTrailingZeroBits(quint32(mask));
-    return ptr - str + idx / 2;
+    return size + qCountTrailingZeroBits(mask) / sizeof(char16_t);
 }
 
 // Scans from \a ptr to \a end until \a maskval is non-zero. Returns true if
