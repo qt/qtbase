@@ -319,14 +319,17 @@ def main():
 
             if not args.parse_xml_testlog:
                 assert len(failed_functions) > 0, \
-                    "The XML test log should contain at least one failure!"
+                    "The XML test log should contain at least one failure!" \
+                    " Did the test CRASH right after all its testcases PASSed?"
 
             break    # go to re-running individual failed testcases
 
         except Exception as e:
-            L.exception("Uncontrolled test CRASH! Details:", exc_info=e)
+            L.exception("The test executable CRASHed uncontrollably!"
+                        " Details about where we caught the problem:",
+                        exc_info=e)
             if i < n_full_runs - 1:
-                L.info("Will re-run the full test executable again!")
+                L.info("Will re-run the full test executable")
             else:    # Failed on the final run
                 L.error("Full test run failed repeatedly, aborting!")
                 sys.exit(3)
@@ -343,7 +346,9 @@ def main():
                                         args.max_repeats, args.passes_needed,
                                         dryrun=args.dry_run, timeout=args.timeout)
         except Exception as e:
-            L.exception("Uncontrolled test CRASH! Details:", exc_info=e)
+            L.exception("The test executable CRASHed uncontrollably!"
+                        " Details about where we caught the problem:",
+                        exc_info=e)
             L.error("Test re-run exited unxpectedly, aborting!")
             sys.exit(3)                                    # Test re-run CRASH
 
