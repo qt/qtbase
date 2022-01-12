@@ -168,6 +168,28 @@ public:
 
     /*! \internal
 
+        Reinterprets the data of this QArrayDataPointer to type X. It's the
+        caller's responsibility to ensure that the data contents are valid and
+        properly aligned, particularly if T and X are not trivial types (i.e,
+        don't do that). The current size is kept and the allocated capacity is
+        updated to account for the difference in the element type's size.
+
+        This is used in QString::fromLatin1 to perform in-place conversion of
+        QString to QByteArray.
+    */
+    template <typename X> QArrayDataPointer<X> reinterpreted() &&
+    {
+        if (sizeof(T) != sizeof(X)) {
+            Q_ASSERT(!d->isShared());
+            d->alloc = d->alloc * sizeof(T) / sizeof(X);
+        }
+        auto od = reinterpret_cast<QTypedArrayData<X> *>(std::exchange(d, nullptr));
+        auto optr = reinterpret_cast<X *>(std::exchange(ptr, nullptr));
+        return { od, optr, std::exchange(size, 0) };
+    }
+
+    /*! \internal
+
         Detaches this (optionally) and grows to accommodate the free space for
         \a n elements at the required side. The side is determined from \a pos.
 

@@ -5269,6 +5269,7 @@ QByteArray QtPrivate::convertToLatin1(QStringView string)
     return qt_convert_to_latin1(string);
 }
 
+Q_NEVER_INLINE
 static QByteArray qt_convert_to_latin1(QStringView string)
 {
     if (Q_UNLIKELY(string.isNull()))
@@ -5290,27 +5291,26 @@ QByteArray QString::toLatin1_helper_inplace(QString &s)
 
     // We can return our own buffer to the caller.
     // Conversion to Latin-1 always shrinks the buffer by half.
-    const char16_t *data = s.d.data();
-    qsizetype length = s.d.size;
+    // This relies on the fact that we use QArrayData for everything behind the scenes
 
-    // Move the d pointer over to the bytearray.
+    // First, do the in-place conversion. Since isDetached() == true, the data
+    // was allocated by QArrayData, so the null terminator must be there.
+    qsizetype length = s.size();
+    char16_t *sdata = s.d->data();
+    Q_ASSERT(sdata[length] == u'\0');
+    qt_to_latin1(reinterpret_cast<uchar *>(sdata), sdata, length + 1);
+
+    // Move the internals over to the byte array.
     // Kids, avert your eyes. Don't try this at home.
+    auto ba_d = std::move(s.d).reinterpreted<char>();
 
-    // this relies on the fact that we use QArrayData for everything behind the scenes which has the same layout
-    static_assert(sizeof(QByteArray::DataPointer) == sizeof(QString::DataPointer), "sizes have to be equal");
-    QByteArray::DataPointer ba_d(reinterpret_cast<QByteArray::Data *>(s.d.d_ptr()), reinterpret_cast<char *>(s.d.data()), length);
-    ba_d.ref();
-    s.clear();
+    // Some sanity checks
+    Q_ASSERT(ba_d.d->allocatedCapacity() >= ba_d.size);
+    Q_ASSERT(s.isNull());
+    Q_ASSERT(s.isEmpty());
+    Q_ASSERT(s.constData() == QString().constData());
 
-    char *ddata = ba_d.data();
-
-    // multiply the allocated capacity by sizeof(char16_t)
-    ba_d.d_ptr()->alloc *= sizeof(char16_t);
-
-    // do the in-place conversion
-    qt_to_latin1(reinterpret_cast<uchar *>(ddata), data, length);
-    ddata[length] = '\0';
-    return QByteArray(ba_d);
+    return QByteArray(std::move(ba_d));
 }
 
 /*!

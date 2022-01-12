@@ -473,10 +473,10 @@ public:
     bool isNull() const noexcept;
 
     inline DataPointer &data_ptr() { return d; }
-    explicit inline QByteArray(const DataPointer &dd)
-        : d(dd)
-    {
-    }
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+    explicit inline QByteArray(const DataPointer &dd) : d(dd) {}
+#endif
+    explicit inline QByteArray(DataPointer &&dd) : d(std::move(dd)) {}
 
 private:
     void reallocData(qsizetype alloc, QArrayData::AllocationOption option);
