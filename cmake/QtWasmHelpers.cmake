@@ -56,8 +56,8 @@ function (qt_internal_setup_wasm_target_properties wasmTarget)
     target_link_options("${wasmTarget}" INTERFACE "SHELL:-s DISABLE_EXCEPTION_CATCHING=${disable_exceptions_catching}")
 
     if (QT_FEATURE_thread)
-        target_compile_options("${wasmTarget}" INTERFACE "SHELL:-s USE_PTHREADS=1")
-        target_link_options("${wasmTarget}" INTERFACE "SHELL:-s USE_PTHREADS=1")
+        target_compile_options("${wasmTarget}" INTERFACE "SHELL:-pthread")
+        target_link_options("${wasmTarget}" INTERFACE "SHELL:-pthread")
 
         set(POOL_SIZE 4)
         if(DEFINED QT_WASM_PTHREAD_POOL_SIZE)

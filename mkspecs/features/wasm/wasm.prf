@@ -9,7 +9,7 @@ exists($$QMAKE_QT_CONFIG) {
 
     qtConfig(thread) {
 
-        EMCC_THREAD_LFLAGS += -s USE_PTHREADS=1
+        EMCC_THREAD_LFLAGS += -pthread
 
         # Create worker threads at startup. This is supposed to be an optimization,
         # however exceeding the pool size has been obesverved to hang the application.
