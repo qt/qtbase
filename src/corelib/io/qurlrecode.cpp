@@ -676,7 +676,7 @@ qt_urlRecode(QString &appendTo, QStringView in,
 {
     uchar actionTable[sizeof defaultActionTable];
     if ((encoding & QUrl::FullyDecoded) == QUrl::FullyDecoded) {
-        return int(decode(appendTo, in));
+        return decode(appendTo, in);
     }
 
     memcpy(actionTable, defaultActionTable, sizeof actionTable);

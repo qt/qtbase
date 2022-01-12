@@ -526,8 +526,8 @@ public:
 
     struct Error {
         QString source;
+        qsizetype position;
         ErrorCode code;
-        int position;
     };
 
     QUrlPrivate();
@@ -540,11 +540,11 @@ public:
 
     std::unique_ptr<Error> cloneError() const;
     void clearError();
-    void setError(ErrorCode errorCode, const QString &source, int supplement = -1);
-    ErrorCode validityError(QString *source = nullptr, int *position = nullptr) const;
-    bool validateComponent(Section section, const QString &input, int begin, int end);
+    void setError(ErrorCode errorCode, const QString &source, qsizetype supplement = -1);
+    ErrorCode validityError(QString *source = nullptr, qsizetype *position = nullptr) const;
+    bool validateComponent(Section section, const QString &input, qsizetype begin, qsizetype end);
     bool validateComponent(Section section, const QString &input)
-    { return validateComponent(section, input, 0, uint(input.length())); }
+    { return validateComponent(section, input, 0, input.length()); }
 
     // no QString scheme() const;
     void appendAuthority(QString &appendTo, QUrl::FormattingOptions options, Section appendingTo) const;
@@ -557,15 +557,15 @@ public:
     void appendFragment(QString &appendTo, QUrl::FormattingOptions options, Section appendingTo) const;
 
     // the "end" parameters are like STL iterators: they point to one past the last valid element
-    bool setScheme(const QString &value, int len, bool doSetError);
-    void setAuthority(const QString &auth, int from, int end, QUrl::ParsingMode mode);
-    void setUserInfo(const QString &userInfo, int from, int end);
-    void setUserName(const QString &value, int from, int end);
-    void setPassword(const QString &value, int from, int end);
-    bool setHost(const QString &value, int from, int end, QUrl::ParsingMode mode);
-    void setPath(const QString &value, int from, int end);
-    void setQuery(const QString &value, int from, int end);
-    void setFragment(const QString &value, int from, int end);
+    bool setScheme(const QString &value, qsizetype len, bool doSetError);
+    void setAuthority(const QString &auth, qsizetype from, qsizetype end, QUrl::ParsingMode mode);
+    void setUserInfo(const QString &userInfo, qsizetype from, qsizetype end);
+    void setUserName(const QString &value, qsizetype from, qsizetype end);
+    void setPassword(const QString &value, qsizetype from, qsizetype end);
+    bool setHost(const QString &value, qsizetype from, qsizetype end, QUrl::ParsingMode mode);
+    void setPath(const QString &value, qsizetype from, qsizetype end);
+    void setQuery(const QString &value, qsizetype from, qsizetype end);
+    void setFragment(const QString &value, qsizetype from, qsizetype end);
 
     inline bool hasScheme() const { return sectionIsPresent & Scheme; }
     inline bool hasAuthority() const { return sectionIsPresent & Authority; }
@@ -642,7 +642,7 @@ inline void QUrlPrivate::clearError()
     error.reset();
 }
 
-inline void QUrlPrivate::setError(ErrorCode errorCode, const QString &source, int supplement)
+inline void QUrlPrivate::setError(ErrorCode errorCode, const QString &source, qsizetype supplement)
 {
     if (error) {
         // don't overwrite an error set in a previous section during parsing
@@ -837,7 +837,7 @@ static inline void parseDecodedComponent(QString &data)
 }
 
 static inline QString
-recodeFromUser(const QString &input, const ushort *actions, int from, int to)
+recodeFromUser(const QString &input, const ushort *actions, qsizetype from, qsizetype to)
 {
     QString output;
     const QChar *begin = input.constData() + from;
@@ -945,7 +945,7 @@ inline void QUrlPrivate::appendPath(QString &appendTo, QUrl::FormattingOptions o
 
     QStringView thePathView(thePath);
     if (options & QUrl::RemoveFilename) {
-        const int slash = path.lastIndexOf(QLatin1Char('/'));
+        const qsizetype slash = path.lastIndexOf(QLatin1Char('/'));
         if (slash == -1)
             return;
         thePathView = QStringView{path}.left(slash + 1);
@@ -975,7 +975,7 @@ inline void QUrlPrivate::appendQuery(QString &appendTo, QUrl::FormattingOptions 
 
 // setXXX functions
 
-inline bool QUrlPrivate::setScheme(const QString &value, int len, bool doSetError)
+inline bool QUrlPrivate::setScheme(const QString &value, qsizetype len, bool doSetError)
 {
     // schemes are strictly RFC-compliant:
     //    scheme        = ALPHA *( ALPHA / DIGIT / "+" / "-" / "." )
@@ -991,9 +991,9 @@ inline bool QUrlPrivate::setScheme(const QString &value, int len, bool doSetErro
     sectionIsPresent |= Scheme;
 
     // validate it:
-    int needsLowercasing = -1;
+    qsizetype needsLowercasing = -1;
     const ushort *p = reinterpret_cast<const ushort *>(value.data());
-    for (int i = 0; i < len; ++i) {
+    for (qsizetype i = 0; i < len; ++i) {
         if (p[i] >= 'a' && p[i] <= 'z')
             continue;
         if (p[i] >= 'A' && p[i] <= 'Z') {
@@ -1020,7 +1020,7 @@ inline bool QUrlPrivate::setScheme(const QString &value, int len, bool doSetErro
     if (needsLowercasing != -1) {
         // schemes are ASCII only, so we don't need the full Unicode toLower
         QChar *schemeData = scheme.data(); // force detaching here
-        for (int i = needsLowercasing; i >= 0; --i) {
+        for (qsizetype i = needsLowercasing; i >= 0; --i) {
             ushort c = schemeData[i].unicode();
             if (c >= 'A' && c <= 'Z')
                 schemeData[i] = QChar(c + 0x20);
@@ -1040,7 +1040,7 @@ inline bool QUrlPrivate::setScheme(const QString &value, int len, bool doSetErro
     return true;
 }
 
-inline void QUrlPrivate::setAuthority(const QString &auth, int from, int end, QUrl::ParsingMode mode)
+inline void QUrlPrivate::setAuthority(const QString &auth, qsizetype from, qsizetype end, QUrl::ParsingMode mode)
 {
     sectionIsPresent &= ~Authority;
     sectionIsPresent |= Host;
@@ -1048,31 +1048,31 @@ inline void QUrlPrivate::setAuthority(const QString &auth, int from, int end, QU
 
     // we never actually _loop_
     while (from != end) {
-        int userInfoIndex = auth.indexOf(QLatin1Char('@'), from);
-        if (uint(userInfoIndex) < uint(end)) {
+        qsizetype userInfoIndex = auth.indexOf(QLatin1Char('@'), from);
+        if (size_t(userInfoIndex) < size_t(end)) {
             setUserInfo(auth, from, userInfoIndex);
             if (mode == QUrl::StrictMode && !validateComponent(UserInfo, auth, from, userInfoIndex))
                 break;
             from = userInfoIndex + 1;
         }
 
-        int colonIndex = auth.lastIndexOf(QLatin1Char(':'), end - 1);
+        qsizetype colonIndex = auth.lastIndexOf(QLatin1Char(':'), end - 1);
         if (colonIndex < from)
             colonIndex = -1;
 
-        if (uint(colonIndex) < uint(end)) {
+        if (size_t(colonIndex) < size_t(end)) {
             if (auth.at(from).unicode() == '[') {
                 // check if colonIndex isn't inside the "[...]" part
-                int closingBracket = auth.indexOf(QLatin1Char(']'), from);
-                if (uint(closingBracket) > uint(colonIndex))
+                qsizetype closingBracket = auth.indexOf(QLatin1Char(']'), from);
+                if (size_t(closingBracket) > size_t(colonIndex))
                     colonIndex = -1;
             }
         }
 
-        if (uint(colonIndex) < uint(end) - 1) {
+        if (size_t(colonIndex) < size_t(end) - 1) {
             // found a colon with digits after it
             unsigned long x = 0;
-            for (int i = colonIndex + 1; i < end; ++i) {
+            for (qsizetype i = colonIndex + 1; i < end; ++i) {
                 ushort c = auth.at(i).unicode();
                 if (c >= '0' && c <= '9') {
                     x *= 10;
@@ -1091,8 +1091,8 @@ inline void QUrlPrivate::setAuthority(const QString &auth, int from, int end, QU
             }
         }
 
-        setHost(auth, from, qMin<uint>(end, colonIndex), mode);
-        if (mode == QUrl::StrictMode && !validateComponent(Host, auth, from, qMin<uint>(end, colonIndex))) {
+        setHost(auth, from, qMin<size_t>(end, colonIndex), mode);
+        if (mode == QUrl::StrictMode && !validateComponent(Host, auth, from, qMin<size_t>(end, colonIndex))) {
             // clear host too
             sectionIsPresent &= ~Authority;
             break;
@@ -1109,12 +1109,12 @@ inline void QUrlPrivate::setAuthority(const QString &auth, int from, int end, QU
     port = -1;
 }
 
-inline void QUrlPrivate::setUserInfo(const QString &userInfo, int from, int end)
+inline void QUrlPrivate::setUserInfo(const QString &userInfo, qsizetype from, qsizetype end)
 {
-    int delimIndex = userInfo.indexOf(QLatin1Char(':'), from);
-    setUserName(userInfo, from, qMin<uint>(delimIndex, end));
+    qsizetype delimIndex = userInfo.indexOf(QLatin1Char(':'), from);
+    setUserName(userInfo, from, qMin<size_t>(delimIndex, end));
 
-    if (uint(delimIndex) >= uint(end)) {
+    if (size_t(delimIndex) >= size_t(end)) {
         password.clear();
         sectionIsPresent &= ~Password;
     } else {
@@ -1122,31 +1122,31 @@ inline void QUrlPrivate::setUserInfo(const QString &userInfo, int from, int end)
     }
 }
 
-inline void QUrlPrivate::setUserName(const QString &value, int from, int end)
+inline void QUrlPrivate::setUserName(const QString &value, qsizetype from, qsizetype end)
 {
     sectionIsPresent |= UserName;
     userName = recodeFromUser(value, userNameInIsolation, from, end);
 }
 
-inline void QUrlPrivate::setPassword(const QString &value, int from, int end)
+inline void QUrlPrivate::setPassword(const QString &value, qsizetype from, qsizetype end)
 {
     sectionIsPresent |= Password;
     password = recodeFromUser(value, passwordInIsolation, from, end);
 }
 
-inline void QUrlPrivate::setPath(const QString &value, int from, int end)
+inline void QUrlPrivate::setPath(const QString &value, qsizetype from, qsizetype end)
 {
     // sectionIsPresent |= Path; // not used, save some cycles
     path = recodeFromUser(value, pathInIsolation, from, end);
 }
 
-inline void QUrlPrivate::setFragment(const QString &value, int from, int end)
+inline void QUrlPrivate::setFragment(const QString &value, qsizetype from, qsizetype end)
 {
     sectionIsPresent |= Fragment;
     fragment = recodeFromUser(value, fragmentInIsolation, from, end);
 }
 
-inline void QUrlPrivate::setQuery(const QString &value, int from, int iend)
+inline void QUrlPrivate::setQuery(const QString &value, qsizetype from, qsizetype iend)
 {
     sectionIsPresent |= Query;
     query = recodeFromUser(value, queryInIsolation, from, iend);
@@ -1270,7 +1270,7 @@ static const QChar *parseIp6(QString &host, const QChar *begin, const QChar *end
     QIPAddressUtils::IPv6Address address;
     QStringView zoneId;
 
-    int zoneIdPosition = decoded.indexOf(zoneIdIdentifier);
+    qsizetype zoneIdPosition = decoded.indexOf(zoneIdIdentifier);
     if ((zoneIdPosition != -1) && (decoded.lastIndexOf(zoneIdIdentifier) == zoneIdPosition)) {
         zoneId = decoded.mid(zoneIdPosition + zoneIdIdentifier.size());
         decoded.truncate(zoneIdPosition);
@@ -1301,12 +1301,13 @@ static const QChar *parseIp6(QString &host, const QChar *begin, const QChar *end
     return nullptr;
 }
 
-inline bool QUrlPrivate::setHost(const QString &value, int from, int iend, QUrl::ParsingMode mode)
+inline bool
+QUrlPrivate::setHost(const QString &value, qsizetype from, qsizetype iend, QUrl::ParsingMode mode)
 {
     const QChar *begin = value.constData() + from;
     const QChar *end = value.constData() + iend;
 
-    const int len = end - begin;
+    const qsizetype len = end - begin;
     host.clear();
     sectionIsPresent |= Host;
     if (len == 0)
@@ -1367,7 +1368,7 @@ inline bool QUrlPrivate::setHost(const QString &value, int from, int iend, QUrl:
     if (mode == QUrl::TolerantMode && qt_urlRecode(s, QStringView{begin, end}, { }, nullptr)) {
         // something was decoded
         // anything encoded left?
-        int pos = s.indexOf(QChar(0x25)); // '%'
+        qsizetype pos = s.indexOf(QChar(0x25)); // '%'
         if (pos != -1) {
             setError(InvalidRegNameError, s, pos);
             return false;
@@ -1407,15 +1408,15 @@ inline void QUrlPrivate::parse(const QString &url, QUrl::ParsingMode parsingMode
     clearError();
 
     // find the important delimiters
-    int colon = -1;
-    int question = -1;
-    int hash = -1;
-    const int len = url.length();
+    qsizetype colon = -1;
+    qsizetype question = -1;
+    qsizetype hash = -1;
+    const qsizetype len = url.length();
     const QChar *const begin = url.constData();
     const ushort *const data = reinterpret_cast<const ushort *>(begin);
 
-    for (int i = 0; i < len; ++i) {
-        uint uc = data[i];
+    for (qsizetype i = 0; i < len; ++i) {
+        size_t uc = data[i];
         if (uc == '#' && hash == -1) {
             hash = i;
 
@@ -1432,7 +1433,7 @@ inline void QUrlPrivate::parse(const QString &url, QUrl::ParsingMode parsingMode
     }
 
     // check if we have a scheme
-    int hierStart;
+    qsizetype hierStart;
     if (colon != -1 && setScheme(url, colon, /* don't set error */ false)) {
         hierStart = colon + 1;
     } else {
@@ -1442,12 +1443,12 @@ inline void QUrlPrivate::parse(const QString &url, QUrl::ParsingMode parsingMode
         hierStart = 0;
     }
 
-    int pathStart;
-    int hierEnd = qMin<uint>(qMin<uint>(question, hash), len);
+    qsizetype pathStart;
+    qsizetype hierEnd = qMin<size_t>(qMin<size_t>(question, hash), len);
     if (hierEnd - hierStart >= 2 && data[hierStart] == '/' && data[hierStart + 1] == '/') {
         // we have an authority, it ends at the first slash after these
-        int authorityEnd = hierEnd;
-        for (int i = hierStart + 2; i < authorityEnd ; ++i) {
+        qsizetype authorityEnd = hierEnd;
+        for (qsizetype i = hierStart + 2; i < authorityEnd ; ++i) {
             if (data[i] == '/') {
                 authorityEnd = i;
                 break;
@@ -1472,8 +1473,8 @@ inline void QUrlPrivate::parse(const QString &url, QUrl::ParsingMode parsingMode
             path.clear();
     }
 
-    if (uint(question) < uint(hash))
-        setQuery(url, question + 1, qMin<uint>(hash, len));
+    if (size_t(question) < size_t(hash))
+        setQuery(url, question + 1, qMin<size_t>(hash, len));
 
     if (hash != -1)
         setFragment(url, hash + 1, len);
@@ -1489,7 +1490,7 @@ inline void QUrlPrivate::parse(const QString &url, QUrl::ParsingMode parsingMode
 
     if (!validateComponent(Path, url, pathStart, hierEnd))
         return;
-    if (uint(question) < uint(hash) && !validateComponent(Query, url, question + 1, qMin<uint>(hash, len)))
+    if (size_t(question) < size_t(hash) && !validateComponent(Query, url, question + 1, qMin<size_t>(hash, len)))
         return;
     if (hash != -1)
         validateComponent(Fragment, url, hash + 1, len);
@@ -1634,7 +1635,7 @@ static void removeDotsFromPath(QString *path)
     path->truncate(out - path->constData());
 }
 
-inline QUrlPrivate::ErrorCode QUrlPrivate::validityError(QString *source, int *position) const
+inline QUrlPrivate::ErrorCode QUrlPrivate::validityError(QString *source, qsizetype *position) const
 {
     Q_ASSERT(!source == !position);
     if (error) {
@@ -1681,7 +1682,7 @@ inline QUrlPrivate::ErrorCode QUrlPrivate::validityError(QString *source, int *p
         return NoError;
 
     // check for a path of "text:text/"
-    for (int i = 0; i < path.length(); ++i) {
+    for (qsizetype i = 0; i < path.length(); ++i) {
         ushort c = path.at(i).unicode();
         if (c == '/') {
             // found the slash before the colon
@@ -1700,7 +1701,7 @@ inline QUrlPrivate::ErrorCode QUrlPrivate::validityError(QString *source, int *p
 }
 
 bool QUrlPrivate::validateComponent(QUrlPrivate::Section section, const QString &input,
-                                    int begin, int end)
+                                    qsizetype begin, qsizetype end)
 {
     // What we need to look out for, that the regular parser tolerates:
     //  - percent signs not followed by two hex digits
@@ -1721,13 +1722,13 @@ bool QUrlPrivate::validateComponent(QUrlPrivate::Section section, const QString 
     Q_ASSERT(section != Authority && section != Hierarchy && section != FullUrl);
 
     const ushort *const data = reinterpret_cast<const ushort *>(input.constData());
-    for (uint i = uint(begin); i < uint(end); ++i) {
+    for (size_t i = size_t(begin); i < size_t(end); ++i) {
         uint uc = data[i];
         if (uc >= 0x80)
             continue;
 
         bool error = false;
-        if ((uc == '%' && (uint(end) < i + 2 || !isHex(data[i + 1]) || !isHex(data[i + 2])))
+        if ((uc == '%' && (size_t(end) < i + 2 || !isHex(data[i + 1]) || !isHex(data[i + 2])))
                 || uc <= 0x20 || strchr(forbidden, uc)) {
             // found an error
             error = true;
@@ -1745,7 +1746,7 @@ bool QUrlPrivate::validateComponent(QUrlPrivate::Section section, const QString 
         if (section == UserInfo) {
             // is it the user name or the password?
             errorCode = InvalidUserNameError;
-            for (uint j = uint(begin); j < i; ++j)
+            for (size_t j = size_t(begin); j < i; ++j)
                 if (data[j] == ':') {
                     errorCode = InvalidPasswordError;
                     break;
@@ -2517,7 +2518,7 @@ QString QUrl::path(ComponentFormattingOptions options) const
 QString QUrl::fileName(ComponentFormattingOptions options) const
 {
     const QString ourPath = path(options);
-    const int slash = ourPath.lastIndexOf(QLatin1Char('/'));
+    const qsizetype slash = ourPath.lastIndexOf(QLatin1Char('/'));
     if (slash == -1)
         return ourPath;
     return ourPath.mid(slash + 1);
@@ -3405,7 +3406,7 @@ QUrl QUrl::fromLocalFile(const QString &localFile)
         deslashified.prepend(QLatin1Char('/'));
     } else if (deslashified.startsWith(QLatin1String("//"))) {
         // magic for shared drive on windows
-        int indexOfPath = deslashified.indexOf(QLatin1Char('/'), 2);
+        qsizetype indexOfPath = deslashified.indexOf(QLatin1Char('/'), 2);
         QStringView hostSpec = QStringView{deslashified}.mid(2, indexOfPath - 2);
         // Check for Windows-specific WebDAV specification: "//host@SSL/path".
         if (hostSpec.endsWith(webDavSslTag(), Qt::CaseInsensitive)) {
@@ -3541,9 +3542,9 @@ QDebug operator<<(QDebug d, const QUrl &url)
 }
 #endif
 
-static QString errorMessage(QUrlPrivate::ErrorCode errorCode, const QString &errorSource, int errorPosition)
+static QString errorMessage(QUrlPrivate::ErrorCode errorCode, const QString &errorSource, qsizetype errorPosition)
 {
-    QChar c = uint(errorPosition) < uint(errorSource.length()) ?
+    QChar c = size_t(errorPosition) < size_t(errorSource.length()) ?
                 errorSource.at(errorPosition) : QChar(QChar::Null);
 
     switch (errorCode) {
@@ -3567,7 +3568,7 @@ static QString errorMessage(QUrlPrivate::ErrorCode errorCode, const QString &err
                 .arg(c);
 
     case QUrlPrivate::InvalidRegNameError:
-        if (errorPosition != -1)
+        if (errorPosition >= 0)
             return QLatin1String("Invalid hostname (character '%1' not permitted)")
                     .arg(c);
         else
@@ -3644,7 +3645,7 @@ QString QUrl::errorString() const
         return msg;
 
     QString errorSource;
-    int errorPosition = 0;
+    qsizetype errorPosition = 0;
     QUrlPrivate::ErrorCode errorCode = d->validityError(&errorSource, &errorPosition);
     if (errorCode == QUrlPrivate::NoError)
         return msg;
@@ -3836,7 +3837,7 @@ QUrl QUrl::fromUserInput(const QString &userInput, const QString &workingDirecto
 
     // Else, try the prepended one and adjust the scheme from the host name
     if (urlPrepended.isValid() && (!urlPrepended.host().isEmpty() || !urlPrepended.path().isEmpty())) {
-        int dotIndex = trimmedString.indexOf(QLatin1Char('.'));
+        qsizetype dotIndex = trimmedString.indexOf(QLatin1Char('.'));
         const QStringView hostscheme = QStringView{trimmedString}.left(dotIndex);
         if (hostscheme.compare(ftpScheme(), Qt::CaseInsensitive) == 0)
             urlPrepended.setScheme(ftpScheme());
