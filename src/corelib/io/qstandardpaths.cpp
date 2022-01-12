@@ -207,7 +207,7 @@ QT_BEGIN_NAMESPACE
          \li "C:/Users/<USER>/AppData/Local", "C:/ProgramData"
     \row \li DownloadLocation
          \li "~/Downloads"
-         \li "C:/Users/<USER>/Documents"
+         \li "C:/Users/<USER>/Downloads"
     \row \li GenericCacheLocation
          \li "~/Library/Caches", "/Library/Caches"
          \li "C:/Users/<USER>/AppData/Local/cache"
