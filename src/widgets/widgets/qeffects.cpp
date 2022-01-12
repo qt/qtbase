@@ -499,14 +499,12 @@ void QRollEffect::scroll()
                 + (2 * totalWidth * (elapsed%duration) + duration)
                 / (2 * duration);
             // equiv. to int((totalWidth*elapsed) / duration + 0.5)
-            done = (currentWidth >= totalWidth);
         }
         if (currentHeight != totalHeight) {
             currentHeight = totalHeight * (elapsed/duration)
                 + (2 * totalHeight * (elapsed%duration) + duration)
                 / (2 * duration);
             // equiv. to int((totalHeight*elapsed) / duration + 0.5)
-            done = (currentHeight >= totalHeight);
         }
         done = (currentHeight >= totalHeight) &&
                (currentWidth >= totalWidth);
