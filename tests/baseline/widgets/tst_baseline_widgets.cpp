@@ -55,6 +55,9 @@ private slots:
 
     void tst_QCheckbox_data();
     void tst_QCheckbox();
+
+    void tst_QRadioButton_data();
+    void tst_QRadioButton();
 };
 
 void tst_Widgets::tst_QSlider_data()
@@ -309,6 +312,73 @@ void tst_Widgets::tst_QCheckbox()
         QBASELINE_CHECK_DEFERRED(takeSnapshot(), (snapShotTitle + "_released").toLocal8Bit().constData());
 
     } while (box.checkState() != Qt::Unchecked);
+}
+
+void tst_Widgets::tst_QRadioButton_data()
+{
+    QTest::addColumn<QString>("text");
+    QTest::addColumn<bool>("hasIcon");
+
+    QTest::newRow("SimpleRadioButton") << "" << false;
+    QTest::newRow("RadioButtonWithText") << "RadioButton" << false;
+    QTest::newRow("SimpleRadioButtonWithIcon") << "" << true;
+    QTest::newRow("RadioButtonWithTextAndIcon") << "RadioButton" << true;
+}
+
+void tst_Widgets::tst_QRadioButton()
+{
+    QFETCH(QString,text);
+    QFETCH(bool,hasIcon);
+
+    QRadioButton button1(testWindow());
+
+    if (!text.isEmpty())
+        button1.setText(text);
+
+    if (hasIcon)
+        button1.setIcon(QApplication::style()->standardIcon(QStyle::SP_ComputerIcon));
+
+    button1.setChecked(false);
+
+    QRadioButton button2(testWindow());
+
+    if (!text.isEmpty())
+        button2.setText(text);
+
+    if (hasIcon)
+        button2.setIcon(QApplication::style()->standardIcon(QStyle::SP_ComputerIcon));
+
+    // button2 has to start checked for the following tests to work
+    button2.setChecked(true);
+
+    QBoxLayout box(QBoxLayout::TopToBottom);
+    box.addWidget(&button1);
+    box.addWidget(&button2);
+    takeStandardSnapshots();
+
+    const QPoint clickTarget = button1.rect().center();
+    QTest::mousePress(&button1,Qt::MouseButton::LeftButton, Qt::KeyboardModifiers(), clickTarget,0);
+    QVERIFY(button1.isDown());
+    QBASELINE_CHECK_DEFERRED(takeSnapshot(), "pressUnchecked");
+    QTest::mouseRelease(&button1,Qt::MouseButton::LeftButton, Qt::KeyboardModifiers(), clickTarget,0);
+    QVERIFY(!button1.isDown());
+
+    // button1 has grabbed the check from button2
+    QVERIFY(button1.isChecked());
+    QVERIFY(!button2.isChecked());
+    QBASELINE_CHECK_DEFERRED(takeSnapshot(), "releaseUnchecked");
+
+    // press and release checked button1 again
+    QTest::mousePress(&button1,Qt::MouseButton::LeftButton, Qt::KeyboardModifiers(), clickTarget,0);
+    QVERIFY(button1.isDown());
+    QBASELINE_CHECK_DEFERRED(takeSnapshot(), "pressChecked");
+    QTest::mouseRelease(&button1,Qt::MouseButton::LeftButton, Qt::KeyboardModifiers(), clickTarget,0);
+    QVERIFY(!button1.isDown());
+
+    // checkstate not supposed to change
+    QVERIFY(button1.isChecked());
+    QVERIFY(!button2.isChecked());
+    QBASELINE_CHECK_DEFERRED(takeSnapshot(), "releaseChecked");
 }
 
 #define main _realmain
