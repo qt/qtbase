@@ -333,7 +333,7 @@ constexpr inline uint qConstexprCountTrailingZeroBits(quint64 v) noexcept
 constexpr inline uint qConstexprCountTrailingZeroBits(quint8 v) noexcept
 {
     unsigned int c = 8; // c will be the number of zero bits on the right
-    v &= -signed(v);
+    v &= quint8(-signed(v));
     if (v) c--;
     if (v & 0x0000000F) c -= 4;
     if (v & 0x00000033) c -= 2;
@@ -344,7 +344,7 @@ constexpr inline uint qConstexprCountTrailingZeroBits(quint8 v) noexcept
 constexpr inline uint qConstexprCountTrailingZeroBits(quint16 v) noexcept
 {
     unsigned int c = 16; // c will be the number of zero bits on the right
-    v &= -signed(v);
+    v &= quint16(-signed(v));
     if (v) c--;
     if (v & 0x000000FF) c -= 8;
     if (v & 0x00000F0F) c -= 4;

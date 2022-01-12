@@ -48,7 +48,7 @@
 QT_BEGIN_NAMESPACE
 
 namespace QtPrivate {
-    constexpr quint8 nextByteSize(quint8 bits) { return (bits + 7) / 8; }
+    constexpr quint8 nextByteSize(quint8 bits) { return quint8((bits + 7) / 8); }
 
     template <typename T>
     struct TagInfo
