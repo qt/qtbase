@@ -415,6 +415,42 @@ static Q_ALWAYS_INLINE __m128i mm_load8_zero_extend(const void *ptr)
     return _mm_unpacklo_epi8(data, _mm_setzero_si128());
 }
 
+[[maybe_unused]] ATTRIBUTE_NO_SANITIZE
+static qsizetype qustrlen_sse2(const char16_t *str) noexcept
+{
+    // find the 16-byte alignment immediately prior or equal to str
+    quintptr misalignment = quintptr(str) & 0xf;
+    Q_ASSERT((misalignment & 1) == 0);
+    const char16_t *ptr = str - (misalignment / 2);
+
+    // load 16 bytes and see if we have a null
+    // (aligned loads can never segfault)
+    const __m128i zeroes = _mm_setzero_si128();
+    __m128i data = _mm_load_si128(reinterpret_cast<const __m128i *>(ptr));
+    __m128i comparison = _mm_cmpeq_epi16(data, zeroes);
+    quint32 mask = _mm_movemask_epi8(comparison);
+
+    // ignore the result prior to the beginning of str
+    mask >>= misalignment;
+
+    // Have we found something in the first block? Need to handle it now
+    // because of the left shift above.
+    if (mask)
+        return qCountTrailingZeroBits(quint32(mask)) / 2;
+
+    do {
+        ptr += 8;
+        data = _mm_load_si128(reinterpret_cast<const __m128i *>(ptr));
+
+        comparison = _mm_cmpeq_epi16(data, zeroes);
+        mask = _mm_movemask_epi8(comparison);
+    } while (mask == 0);
+
+    // found a null
+    uint idx = qCountTrailingZeroBits(quint32(mask));
+    return ptr - str + idx / 2;
+}
+
 // Scans from \a ptr to \a end until \a maskval is non-zero. Returns true if
 // the no non-zero was found. Returns false and updates \a ptr to point to the
 // first 16-bit word that has any bit set (note: if the input is 8-bit, \a ptr
@@ -517,48 +553,16 @@ static bool simdTestMask(const char *&ptr, const char *end, quint32 maskval)
 }
 #endif
 
-ATTRIBUTE_NO_SANITIZE
 qsizetype QtPrivate::qustrlen(const char16_t *str) noexcept
 {
-    qsizetype result = 0;
-
 #if defined(__SSE2__) && !(defined(__SANITIZE_ADDRESS__) || __has_feature(address_sanitizer))
-    // find the 16-byte alignment immediately prior or equal to str
-    quintptr misalignment = quintptr(str) & 0xf;
-    Q_ASSERT((misalignment & 1) == 0);
-    const char16_t *ptr = str - (misalignment / 2);
-
-    // load 16 bytes and see if we have a null
-    // (aligned loads can never segfault)
-    const __m128i zeroes = _mm_setzero_si128();
-    __m128i data = _mm_load_si128(reinterpret_cast<const __m128i *>(ptr));
-    __m128i comparison = _mm_cmpeq_epi16(data, zeroes);
-    quint32 mask = _mm_movemask_epi8(comparison);
-
-    // ignore the result prior to the beginning of str
-    mask >>= misalignment;
-
-    // Have we found something in the first block? Need to handle it now
-    // because of the left shift above.
-    if (mask)
-        return qCountTrailingZeroBits(quint32(mask)) / 2;
-
-    do {
-        ptr += 8;
-        data = _mm_load_si128(reinterpret_cast<const __m128i *>(ptr));
-
-        comparison = _mm_cmpeq_epi16(data, zeroes);
-        mask = _mm_movemask_epi8(comparison);
-    } while (mask == 0);
-
-    // found a null
-    uint idx = qCountTrailingZeroBits(quint32(mask));
-    return ptr - str + idx / 2;
+    return qustrlen_sse2(str);
 #endif
 
     if (sizeof(wchar_t) == sizeof(char16_t))
         return wcslen(reinterpret_cast<const wchar_t *>(str));
 
+    qsizetype result = 0;
     while (*str++)
         ++result;
     return result;
