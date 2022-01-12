@@ -55,6 +55,7 @@ protected:
 private:
     void addPythonCustomWidget(const QString &className, const DomCustomWidget *dcw);
     bool addQtClass(const QString &className);
+    void addEnumBaseClass(const QString &v);
     void writeImport(const QString &module);
 
     QHash<QString, QString> m_classToModule;
