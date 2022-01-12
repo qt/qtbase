@@ -413,10 +413,7 @@ static void sortContainer(QCborContainerPrivate *container)
             if (bKey.flags & QtCbor::Element::StringIsUtf16)
                 return QCborContainerPrivate::compareUtf8(aData, bData->asStringView());
 
-            // We're missing an explicit UTF-8 to UTF-8 comparison in Qt, but
-            // UTF-8 to UTF-8 comparison retains simple byte ordering, so we'll
-            // abuse the Latin-1 comparison function.
-            return QtPrivate::compareStrings(aData->asLatin1(), bData->asLatin1());
+            return QtPrivate::compareStrings(aData->asUtf8StringView(), bData->asUtf8StringView());
         }
     };
 

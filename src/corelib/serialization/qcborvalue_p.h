@@ -116,6 +116,7 @@ struct ByteData
 
     QByteArray asByteArrayView() const { return QByteArray::fromRawData(byte(), len); }
     QLatin1String asLatin1() const  { return QLatin1String(byte(), len); }
+    QUtf8StringView asUtf8StringView() const { return QUtf8StringView(byte(), len); }
     QStringView asStringView() const{ return QStringView(utf16(), len / 2); }
     QString asQStringRaw() const    { return QString::fromRawData(utf16(), len / 2); }
 };
