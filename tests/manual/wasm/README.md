@@ -12,3 +12,4 @@ Content
     eventloop       Event loops, application startup, dialog exec()
     localfiles      Local file download and upload
     rasterwindow    Basic GUI app, event handling
+    qtwasmtestlib   native auto test framework
