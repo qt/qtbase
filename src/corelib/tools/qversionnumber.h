@@ -1,8 +1,8 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
-** Copyright (C) 2016 Intel Corporation.
-** Copyright (C) 2014 Keith Gardner <kreios4004@gmail.com>
+** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2022 Intel Corporation.
+** Copyright (C) 2015 Keith Gardner <kreios4004@gmail.com>
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -143,8 +143,8 @@ class QVersionNumber
         }
         SegmentStorage(std::initializer_list<int> args)
         {
-            if (dataFitsInline(std::data(args), int(args.size()))) {
-                setInlineData(std::data(args), int(args.size()));
+            if (dataFitsInline(std::data(args), args.size())) {
+                setInlineData(std::data(args), args.size());
             } else {
                 pointer_segments = new QList<int>(args);
             }
@@ -155,13 +155,16 @@ class QVersionNumber
         bool isUsingPointer() const noexcept
         { return (inline_segments[InlineSegmentMarker] & 1) == 0; }
 
-        int size() const noexcept
+        qsizetype size() const noexcept
         { return isUsingPointer() ? pointer_segments->size() : (inline_segments[InlineSegmentMarker] >> 1); }
 
-        void setInlineSize(int len)
-        { inline_segments[InlineSegmentMarker] = qint8(1 + 2 * len); }
+        void setInlineSize(qsizetype len)
+        {
+            Q_ASSERT(len <= InlineSegmentCount);
+            inline_segments[InlineSegmentMarker] = qint8(1 + 2 * len);
+        }
 
-        void resize(int len)
+        void resize(qsizetype len)
         {
             if (isUsingPointer())
                 pointer_segments->resize(len);
@@ -169,7 +172,7 @@ class QVersionNumber
                 setInlineSize(len);
         }
 
-        int at(int index) const
+        int at(qsizetype index) const
         {
             return isUsingPointer() ?
                         pointer_segments->at(index) :
@@ -187,28 +190,29 @@ class QVersionNumber
         }
 
     private:
-        static bool dataFitsInline(const int *data, int len)
+        static bool dataFitsInline(const int *data, qsizetype len)
         {
             if (len > InlineSegmentCount)
                 return false;
-            for (int i = 0; i < len; ++i)
+            for (qsizetype i = 0; i < len; ++i)
                 if (data[i] != qint8(data[i]))
                     return false;
             return true;
         }
-        void setInlineData(const int *data, int len)
+        void setInlineData(const int *data, qsizetype len)
         {
+            Q_ASSERT(len <= InlineSegmentCount);
             dummy = 1 + len * 2;
 #if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
-            for (int i = 0; i < len; ++i)
+            for (qsizetype i = 0; i < len; ++i)
                 dummy |= quintptr(data[i] & 0xFF) << (8 * (i + 1));
 #elif Q_BYTE_ORDER == Q_BIG_ENDIAN
-            for (int i = 0; i < len; ++i)
+            for (qsizetype i = 0; i < len; ++i)
                 dummy |= quintptr(data[i] & 0xFF) << (8 * (sizeof(void *) - i - 1));
 #else
             // the code above is equivalent to:
             setInlineSize(len);
-            for (int i = 0; i < len; ++i)
+            for (qsizetype i = 0; i < len; ++i)
                 inline_segments[InlineSegmentStartIdx + i] = data[i] & 0xFF;
 #endif
         }
@@ -258,10 +262,10 @@ public:
 
     [[nodiscard]] Q_CORE_EXPORT QList<int> segments() const;
 
-    [[nodiscard]] inline int segmentAt(int index) const noexcept
+    [[nodiscard]] inline int segmentAt(qsizetype index) const noexcept
     { return (m_segments.size() > index) ? m_segments.at(index) : 0; }
 
-    [[nodiscard]] inline int segmentCount() const noexcept
+    [[nodiscard]] inline qsizetype segmentCount() const noexcept
     { return m_segments.size(); }
 
     [[nodiscard]] Q_CORE_EXPORT bool isPrefixOf(const QVersionNumber &other) const noexcept;
