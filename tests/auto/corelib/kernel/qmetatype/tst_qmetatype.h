@@ -217,6 +217,22 @@ struct CustomEqualsOnlyType
 static_assert(QTypeTraits::has_operator_equal_v<CustomEqualsOnlyType>);
 static_assert(!QTypeTraits::has_operator_less_than_v<CustomEqualsOnlyType>);
 
+struct BaseGadgetType
+{
+    Q_GADGET
+public:
+    explicit BaseGadgetType(QVariant foo = QVariant()) : m_foo(std::move(foo)) {}
+    QVariant m_foo;
+};
+
+struct DerivedGadgetType : public BaseGadgetType
+{
+    Q_GADGET
+public:
+    explicit DerivedGadgetType(QVariant foo = QVariant()) : BaseGadgetType(std::move(foo)) {}
+    int bar = 25;
+};
+
 Q_DECLARE_METATYPE(CustomConvertibleType);
 Q_DECLARE_METATYPE(CustomConvertibleType2);
 Q_DECLARE_METATYPE(CustomDebugStreamableType);

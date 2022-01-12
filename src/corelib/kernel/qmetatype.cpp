@@ -2181,7 +2181,7 @@ static bool viewAsAssociativeIterable(QMetaType fromType, void *from, void *to)
     return false;
 }
 
-static bool convertQObject(QMetaType fromType, const void *from, QMetaType toType, void *to)
+static bool convertMetaObject(QMetaType fromType, const void *from, QMetaType toType, void *to)
 {
     // handle QObject conversion
     if ((fromType.flags() & QMetaType::PointerToQObject) && (toType.flags() & QMetaType::PointerToQObject)) {
@@ -2194,8 +2194,14 @@ static bool convertQObject(QMetaType fromType, const void *from, QMetaType toTyp
             // if fromObject is null, use static fromType to check if conversion works
             *static_cast<void **>(to) = nullptr;
             return fromType.metaObject()->inherits(toType.metaObject());
-        } else {
-            return false;
+        }
+    } else {
+        const QMetaObject *f = fromType.metaObject();
+        const QMetaObject *t = toType.metaObject();
+        if (f && t && f->inherits(t)) {
+            toType.destruct(to);
+            toType.construct(to, from);
+            return true;
         }
     }
     return false;
@@ -2278,7 +2284,7 @@ bool QMetaType::convert(QMetaType fromType, const void *from, QMetaType toType, 
     if (toTypeId == qMetaTypeId<QAssociativeIterable>())
         return convertToAssociativeIterable(fromType, from, to);
 
-    return convertQObject(fromType, from, toType, to);
+    return convertMetaObject(fromType, from, toType, to);
 #else
     return false;
 #endif
@@ -2309,7 +2315,7 @@ bool QMetaType::view(QMetaType fromType, void *from, QMetaType toType, void *to)
     if (toTypeId == qMetaTypeId<QAssociativeIterable>())
         return viewAsAssociativeIterable(fromType, from, to);
 
-    return convertQObject(fromType, from, toType, to);
+    return convertMetaObject(fromType, from, toType, to);
 #else
     return false;
 #endif

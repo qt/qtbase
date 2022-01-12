@@ -164,6 +164,7 @@ void tst_QMetaType::convertCustomType_data()
     QTest::addColumn<QLineF>("testQLineF");
     QTest::addColumn<QChar>("testQChar");
     QTest::addColumn<CustomConvertibleType>("testCustom");
+    QTest::addColumn<DerivedGadgetType>("testDerived");
 
     QTest::newRow("default") << true
                              << QString::fromLatin1("string") << true << 15
@@ -171,14 +172,16 @@ void tst_QMetaType::convertCustomType_data()
                              << QRectF(1.4, 1.9, 10.9, 40.2) << QPoint(12, 34)
                              << QPointF(9.2, 2.7) << QSize(4, 9) << QSizeF(3.3, 9.8)
                              << QLine(3, 9, 29, 4) << QLineF(38.9, 28.9, 102.3, 0.0)
-                             << QChar('Q') << CustomConvertibleType(QString::fromLatin1("test"));
+                             << QChar('Q') << CustomConvertibleType(QString::fromLatin1("test"))
+                             << DerivedGadgetType(QString::fromLatin1("test"));
     QTest::newRow("not ok") << false
                             << QString::fromLatin1("string") << true << 15
                             << double(3.14) << float(3.6) << QRect(1, 2, 3, 4)
                             << QRectF(1.4, 1.9, 10.9, 40.2) << QPoint(12, 34)
                             << QPointF(9.2, 2.7) << QSize(4, 9) << QSizeF(3.3, 9.8)
                             << QLine(3, 9, 29, 4) << QLineF()
-                            << QChar('Q') << CustomConvertibleType(42);
+                            << QChar('Q') << CustomConvertibleType(42)
+                            << DerivedGadgetType(42);
 }
 
 void tst_QMetaType::convertCustomType()
@@ -276,6 +279,15 @@ void tst_QMetaType::convertCustomType()
     v = QVariant::fromValue(testCustom);
     QVERIFY(v.canConvert(::qMetaTypeId<CustomConvertibleType2>()));
     QCOMPARE(v.value<CustomConvertibleType2>().m_foo, testCustom.m_foo);
+
+    QFETCH(DerivedGadgetType, testDerived);
+    v = QVariant::fromValue(testDerived);
+    QCOMPARE(v.metaType(), QMetaType::fromType<DerivedGadgetType>());
+    QCOMPARE(v.value<DerivedGadgetType>().m_foo, testDerived.m_foo);
+    QVERIFY(v.canConvert(QMetaType::fromType<BaseGadgetType>()));
+    QVERIFY(v.convert(QMetaType::fromType<BaseGadgetType>()));
+    QCOMPARE(v.metaType(), QMetaType::fromType<BaseGadgetType>());
+    QCOMPARE(v.value<BaseGadgetType>().m_foo, testDerived.m_foo);
 }
 
 void tst_QMetaType::convertConstNonConst()
