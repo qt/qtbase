@@ -371,7 +371,7 @@ void tst_QEventDispatcher::postedEventsPingPong()
 
     // We should use Qt::CoarseTimer on Windows, to prevent event
     // dispatcher from sending a posted event.
-    QTimer::singleShot(500, Qt::CoarseTimer, [&mainLoop]() {
+    QTimer::singleShot(500, Qt::CoarseTimer, &mainLoop, [&mainLoop]() {
         mainLoop.exit(1);
     });
 
@@ -388,12 +388,12 @@ void tst_QEventDispatcher::eventLoopExit()
     // Imitates QApplication::exec():
     QEventLoop mainLoop;
     // The test itself is a lambda:
-    QTimer::singleShot(0, [&mainLoop]() {
+    QTimer::singleShot(0, &mainLoop, [&mainLoop]() {
         // Two more single shots, both will be posted as events
         // (zero timeout) and supposed to be processes by the
         // mainLoop:
 
-        QTimer::singleShot(0, [&mainLoop]() {
+        QTimer::singleShot(0, &mainLoop, [&mainLoop]() {
             // wakeUp triggers QCocoaEventDispatcher into incrementing
             // its 'serialNumber':
             mainLoop.wakeUp();
@@ -402,7 +402,7 @@ void tst_QEventDispatcher::eventLoopExit()
             QCoreApplication::processEvents();
         });
 
-        QTimer::singleShot(0, [&mainLoop]() {
+        QTimer::singleShot(0, &mainLoop, [&mainLoop]() {
             // With QCocoaEventDispatcher this is executed while in the
             // processEvents (see above) and would fail to actually
             // interrupt the loop.
@@ -411,7 +411,7 @@ void tst_QEventDispatcher::eventLoopExit()
     });
 
     bool timeoutObserved = false;
-    QTimer::singleShot(500, [&timeoutObserved, &mainLoop]() {
+    QTimer::singleShot(500, &mainLoop, [&timeoutObserved, &mainLoop]() {
         // In case the QEventLoop::exit above failed, we have to bail out
         // early, not wasting time:
         mainLoop.exit();
@@ -434,7 +434,7 @@ void tst_QEventDispatcher::interruptTrampling()
             auto dispatcher = eventDispatcher();
             QVERIFY(dispatcher);
             dispatcher->processEvents(QEventLoop::AllEvents);
-            QTimer::singleShot(0, [dispatcher]() {
+            QTimer::singleShot(0, dispatcher, [dispatcher]() {
                 dispatcher->wakeUp();
             });
             dispatcher->processEvents(QEventLoop::WaitForMoreEvents);
