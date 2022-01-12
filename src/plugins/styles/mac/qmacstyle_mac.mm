@@ -3990,6 +3990,13 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             }
             pb.frame = frameRect.toCGRect();
 
+            if (!isPopupButton) {
+                // Note: these days we use 'momentary push in' for Button_PushButton,
+                // but tabs are also rendered using NSButton/ButtonPushButton, and
+                // here we need 'push on/off' to make it work (tab highlight colors).
+                pb.buttonType = NSButtonTypePushOnPushOff;
+            }
+
             pb.enabled = isEnabled;
             [pb highlight:isPressed];
             // Set off state when inactive. See needsInactiveHack for when it's selected
