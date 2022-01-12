@@ -417,7 +417,7 @@ public:
     { return QMetaType(type).name(); }
     QT_DEPRECATED_VERSION_6_0
     static int sizeOf(int type)
-    { return QMetaType(type).sizeOf(); }
+    { return int(QMetaType(type).sizeOf()); }
     QT_DEPRECATED_VERSION_6_0
     static TypeFlags typeFlags(int type)
     { return QMetaType(type).flags(); }
