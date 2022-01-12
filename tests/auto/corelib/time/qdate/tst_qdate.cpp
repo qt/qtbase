@@ -568,6 +568,7 @@ void tst_QDate::startOfDay_endOfDay_fixed_data()
     } data[] = {
         { "epoch", QDate(1970, 1, 1) },
         { "y2k-leap-day", QDate(2000, 2, 29) },
+        { "start-1900", QDate(1900, 1, 1) }, // QTBUG-99747
         // Just outside the start and end of 32-bit time_t:
         { "pre-sign32", QDate(start32sign.date().year(), 1, 1) },
         { "post-sign32", QDate(end32sign.date().year(), 12, 31) },
@@ -605,6 +606,17 @@ void tst_QDate::startOfDay_endOfDay_fixed()
         QCOMPARE(date.addDays(1).startOfDay(Qt::OffsetFromUTC, offset).addMSecs(-1), end);
         QCOMPARE(date.addDays(-1).endOfDay(Qt::OffsetFromUTC, offset).addMSecs(1), start);
     }
+
+    // Minimal testing for LocalTime and TimeZone
+    QCOMPARE(date.startOfDay(Qt::LocalTime).date(), date);
+    QCOMPARE(date.endOfDay(Qt::LocalTime).date(), date);
+#if QT_CONFIG(timezone)
+    const QTimeZone cet("Europe/Oslo");
+    if (cet.isValid()) {
+        QCOMPARE(date.startOfDay(cet).date(), date);
+        QCOMPARE(date.endOfDay(cet).date(), date);
+    }
+#endif
 }
 
 void tst_QDate::startOfDay_endOfDay_bounds()
