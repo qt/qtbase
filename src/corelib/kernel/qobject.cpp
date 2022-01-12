@@ -1245,6 +1245,10 @@ QObjectPrivate::Connection::~Connection()
 QString QObject::objectName() const
 {
     Q_D(const QObject);
+#if QT_CONFIG(thread)
+    if (QThread::currentThreadId() != d->threadData.loadRelaxed()->threadId.loadRelaxed()) // Unsafe code path
+        return d->extraData ? d->extraData->objectName.valueBypassingBindings() : QString();
+#endif
     if (!d->extraData && QtPrivate::isAnyBindingEvaluating()) {
         QObjectPrivate *dd = const_cast<QObjectPrivate *>(d);
         // extraData is mutable, so this should be safe
