@@ -114,7 +114,7 @@ public:
     [[nodiscard]] int compare(QLatin1String other, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return QtPrivate::compareStrings(*this, other, cs); }
     [[nodiscard]] constexpr int compare(QChar c) const noexcept
-    { return isEmpty() || front() == c ? size() - 1 : uchar(m_data[0]) - c.unicode() ; }
+    { return isEmpty() ? -1 : front() == c ? int(size() > 1) : uchar(m_data[0]) - c.unicode(); }
     [[nodiscard]] int compare(QChar c, Qt::CaseSensitivity cs) const noexcept
     { return QtPrivate::compareStrings(*this, QStringView(&c, 1), cs); }
 
