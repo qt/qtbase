@@ -156,7 +156,7 @@ public:
     int vertex(Direction direction) const;
 
 private:
-    int m_next[2][2];
+    int m_next[2][2] = { { -1, -1 }, { -1, -1 } };
 };
 
 class QPathSegments
@@ -296,10 +296,6 @@ inline QPathEdge::QPathEdge(int a, int b)
     , angle(0)
     , invAngle(0)
 {
-    m_next[0][0] = -1;
-    m_next[1][0] = -1;
-    m_next[0][0] = -1;
-    m_next[1][0] = -1;
 }
 
 inline int QPathEdge::next(Traversal traversal, Direction direction) const
