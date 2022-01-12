@@ -233,14 +233,29 @@ void WriteImports::addPythonCustomWidget(const QString &className, const DomCust
 
 void WriteImports::acceptProperty(DomProperty *node)
 {
-    if (node->kind() == DomProperty::Enum) {
-        // Add base classes like QFrame for QLabel::frameShape()
-        const QString &enumV = node->elementEnum();
-        const auto colonPos = enumV.indexOf(u"::");
-        if (colonPos > 0)
-            addQtClass(enumV.left(colonPos));
+    switch (node->kind()) {
+    case DomProperty::Enum:
+        addEnumBaseClass(node->elementEnum());
+        break;
+    case DomProperty::Set:
+        addEnumBaseClass(node->elementSet());
+        break;
+    default:
+        break;
     }
+
     WriteIncludesBase::acceptProperty(node);
+}
+
+void WriteImports::addEnumBaseClass(const QString &v)
+{
+    // Add base classes like QFrame for QLabel::frameShape()
+    const auto colonPos = v.indexOf(u"::");
+    if (colonPos > 0) {
+        const QString base = v.left(colonPos);
+        if (base.startsWith(u'Q') && base != u"Qt")
+            addQtClass(base);
+    }
 }
 
 } // namespace Python
