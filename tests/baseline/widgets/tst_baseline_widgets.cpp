@@ -52,6 +52,9 @@ private slots:
 
     void tst_QDial_data();
     void tst_QDial();
+
+    void tst_QCheckbox_data();
+    void tst_QCheckbox();
 };
 
 void tst_Widgets::tst_QSlider_data()
@@ -252,6 +255,60 @@ void tst_Widgets::tst_QDial()
     box.addWidget(&dial);
     testWindow()->setLayout(&box);
     takeStandardSnapshots();
+}
+
+void tst_Widgets::tst_QCheckbox_data()
+{
+    QTest::addColumn<QString>("text");
+    QTest::addColumn<bool>("hasIcon");
+    QTest::addColumn<bool>("isTriState");
+
+    QTest::newRow("SimpleCheckbox") << "" << false << false;
+    QTest::newRow("SimpleCheckboxWithIcon") << "" << true << false;
+    QTest::newRow("SimpleCheckboxWithText") << "checkBox" << false << false;
+    QTest::newRow("SimpleCheckboxWithTextAndIcon") << "checkBox with icon" << true << false;
+    QTest::newRow("SimpleTristate") << "" << false << true;
+    QTest::newRow("SimpleTristateWithText") << "tristateBox" << false << true;
+}
+
+void tst_Widgets::tst_QCheckbox()
+{
+    QFETCH(QString, text);
+    QFETCH(bool, hasIcon);
+    QFETCH(bool, isTriState);
+
+    QBoxLayout layout(QBoxLayout::TopToBottom);
+    QCheckBox box;
+    box.setTristate(isTriState);
+
+    if (!text.isEmpty())
+        box.setText(text);
+
+    if (hasIcon)
+        box.setIcon(QApplication::style()->standardIcon(QStyle::SP_ComputerIcon));
+
+    layout.addWidget(&box);
+    testWindow()->setLayout(&layout);
+    takeStandardSnapshots();
+
+    do
+    {
+        const Qt::CheckState checkState = box.checkState();
+        const QPoint clickTarget = box.rect().center();
+
+        const std::array titles = {"unChecked", "partiallyChecked", "checked"};
+        const QString snapShotTitle = titles[checkState];
+
+        QTest::mousePress(&box,Qt::MouseButton::LeftButton, Qt::KeyboardModifiers(), clickTarget,0);
+        QVERIFY(box.isDown());
+        QBASELINE_CHECK_DEFERRED(takeSnapshot(), (snapShotTitle + "_pressed").toLocal8Bit().constData());
+
+        QTest::mouseRelease(&box,Qt::MouseButton::LeftButton, Qt::KeyboardModifiers(), clickTarget,0);
+        QVERIFY(!box.isDown());
+        QVERIFY(checkState != box.checkState());
+        QBASELINE_CHECK_DEFERRED(takeSnapshot(), (snapShotTitle + "_released").toLocal8Bit().constData());
+
+    } while (box.checkState() != Qt::Unchecked);
 }
 
 #define main _realmain
