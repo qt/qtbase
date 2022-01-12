@@ -1,5 +1,0 @@
-<RCC>
-    <qresource prefix="/">
-        <file>data/NormalizationTest.txt</file>
-    </qresource>
-</RCC>

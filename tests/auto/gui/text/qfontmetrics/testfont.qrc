@@ -1,6 +1,0 @@
-<RCC>
-    <qresource prefix="/fonts">
-        <file>ucs4font.ttf</file>
-        <file alias="testfont.ttf">../../../shared/resources/testfont.ttf</file>
-    </qresource>
-</RCC>

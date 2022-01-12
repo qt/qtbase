@@ -1,5 +1,0 @@
-<!DOCTYPE RCC><RCC version="1.0">
-<qresource prefix="/tst_qdir/">
-   <file>resources/entryList/</file>
-</qresource>
-</RCC>

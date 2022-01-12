@@ -1,8 +1,0 @@
-<RCC>
-    <qresource prefix="/">
-        <file>data/GraphemeBreakTest.txt</file>
-        <file>data/LineBreakTest.txt</file>
-        <file>data/SentenceBreakTest.txt</file>
-        <file>data/WordBreakTest.txt</file>
-    </qresource>
-</RCC>

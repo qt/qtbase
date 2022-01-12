@@ -1,6 +1,0 @@
-<!DOCTYPE RCC><RCC version="1.0">
-<qresource prefix="/">
-  <file>icons/usericon.png</file>
-  <file>icons/appicon.png</file>
-</qresource>
-</RCC>

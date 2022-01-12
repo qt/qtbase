@@ -1,5 +1,0 @@
-<RCC>
-    <qresource prefix="/">
-        <file>rfc3252.txt</file>
-    </qresource>
-</RCC>

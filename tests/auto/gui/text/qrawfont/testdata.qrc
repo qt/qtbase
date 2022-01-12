@@ -1,7 +1,0 @@
-<RCC>
-    <qresource prefix="/">
-        <file>testfont_bold_italic.ttf</file>
-        <file>testfont_os2_v1.ttf</file>
-        <file alias="testfont.ttf">../../../shared/resources/testfont.ttf</file>
-    </qresource>
-</RCC>

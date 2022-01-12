@@ -1,8 +1,0 @@
-<!DOCTYPE RCC><RCC version="1.0">
-    <qresource>
-        <file>geometry.dat</file>
-        <file>geometry-maximized.dat</file>
-        <file>geometry-fullscreen.dat</file>
-        <file>hellotr_la.qm</file>
-    </qresource>
-</RCC>
