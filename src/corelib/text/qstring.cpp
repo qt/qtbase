@@ -2323,9 +2323,9 @@ static int qArgDigitValue(QChar ch) noexcept
 /*!
     \fn QString::QString()
 
-    Constructs a null string. Null strings are also empty.
+    Constructs a null string. Null strings are also considered empty.
 
-    \sa isEmpty()
+    \sa isEmpty(), isNull(), {Distinction Between Null and Empty Strings}
 */
 
 /*!
@@ -9108,7 +9108,9 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
 /*! \fn QLatin1String::QLatin1String()
     \since 5.6
 
-    Constructs a QLatin1String object that stores a nullptr.
+    Constructs a QLatin1String object that stores a \nullptr.
+
+    \sa data(), isEmpty(), isNull(), {Distinction Between Null and Empty Strings}
 */
 
 /*! \fn QLatin1String::QLatin1String(const char *str)
