@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -107,9 +107,11 @@ Q_CORE_EXPORT void QTest::qSleep(int ms)
 */
 Q_CORE_EXPORT void QTest::qWait(int ms)
 {
-    // Ideally this method would be implemented in terms of qWaitFor, with
-    // a predicate that always returns false, but due to a compiler bug in
-    // GCC 6 we can't do that.
+    // Ideally this method would be implemented in terms of qWaitFor(), with a
+    // predicate that always returns false, but qWaitFor() uses the 1-arg overload
+    // of processEvents(), which doesn't handle events posted in this round of event
+    // processing, which, together with the 10ms qSleep() after every processEvents(),
+    // lead to a 10x slow-down in some webengine tests.
 
     Q_ASSERT(QCoreApplication::instance());
 
