@@ -1101,6 +1101,11 @@ QWindow *QWidgetPrivate::_q_closestWindowHandle() const
 
 QScreen *QWidgetPrivate::associatedScreen() const
 {
+#if QT_CONFIG(graphicsview)
+    // embedded widgets never have a screen associated, let QWidget::screen fall back to toplevel
+    if (nearestGraphicsProxyWidget(q_func()))
+        return nullptr;
+#endif
     if (auto window = windowHandle(WindowHandleMode::Closest))
         return window->screen();
     return nullptr;
