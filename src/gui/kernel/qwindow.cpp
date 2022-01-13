@@ -2563,9 +2563,8 @@ bool QWindow::event(QEvent *ev)
     };
     if (QMouseEvent *me = asMouseEvent(ev); me &&
         ev->type() == contextMenuTrigger && me->button() == Qt::RightButton) {
-        QSinglePointEvent *pev = static_cast<QSinglePointEvent*>(ev);
         QContextMenuEvent e(QContextMenuEvent::Mouse, me->position().toPoint(),
-                            pev->globalPosition().toPoint(), pev->modifiers());
+                            me->globalPosition().toPoint(), me->modifiers());
         QGuiApplication::sendEvent(this, &e);
     }
 #endif
