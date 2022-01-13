@@ -1565,6 +1565,12 @@ void QTextEngine::shapeText(int item) const
         // Overwrite with 0 token to indicate failure
         QGlyphLayout g = availableGlyphs(&si);
         g.glyphs[0] = 0;
+        g.attributes[0].clusterStart = true;
+
+        ushort *log_clusters = logClusters(&si);
+        for (int i = 0; i < itemLength; ++i)
+            log_clusters[i] = 0;
+
         return;
     }
 
