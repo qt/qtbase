@@ -1570,39 +1570,53 @@ public:
         } while (metaObject != nullptr);
         return result;
     }
-    QString attribute(NodePtr node, const QString& name) const override
+    QString attributeValue(NodePtr node, const QCss::AttributeSelector& aSelector) const override
     {
         if (isNullNode(node))
             return QString();
 
+        const QString &name = aSelector.name;
         QHash<QString, QString> &cache = m_attributeCache[OBJECT_PTR(node)];
         QHash<QString, QString>::const_iterator cacheIt = cache.constFind(name);
         if (cacheIt != cache.constEnd())
             return cacheIt.value();
 
+        QVariant value;
+        QString valueStr;
         QObject *obj = OBJECT_PTR(node);
-        QVariant value = obj->property(name.toLatin1());
-        if (!value.isValid()) {
-            if (name == QLatin1String("class")) {
-                QString className = QString::fromLatin1(obj->metaObject()->className());
-                if (className.contains(QLatin1Char(':')))
-                    className.replace(QLatin1Char(':'), QLatin1Char('-'));
-                cache[name] = className;
-                return className;
-            } else if (name == QLatin1String("style")) {
-                QWidget *w = qobject_cast<QWidget *>(obj);
-                QStyleSheetStyle *proxy = w ? qt_styleSheet(w->style()) : nullptr;
-                if (proxy) {
-                    QString styleName = QString::fromLatin1(proxy->baseStyle()->metaObject()->className());
-                    cache[name] = styleName;
-                    return styleName;
+        const int propertyIndex = obj->metaObject()->indexOfProperty(name.toLatin1());
+        if (propertyIndex == -1) {
+            value = obj->property(name.toLatin1()); // might be a dynamic property
+            if (!value.isValid()) {
+                if (name == u"class"_qs) {
+                    QString className = QString::fromLatin1(obj->metaObject()->className());
+                    if (className.contains(QLatin1Char(':')))
+                        className.replace(QLatin1Char(':'), QLatin1Char('-'));
+                    valueStr = className;
+                } else if (name == u"style"_qs) {
+                    QWidget *w = qobject_cast<QWidget *>(obj);
+                    QStyleSheetStyle *proxy = w ? qt_styleSheet(w->style()) : nullptr;
+                    if (proxy)
+                        valueStr = QString::fromLatin1(proxy->baseStyle()->metaObject()->className());
                 }
             }
+        } else {
+            const QMetaProperty property = obj->metaObject()->property(propertyIndex);
+            value = property.read(obj);
+            // support Qt 5 selector syntax, which required the integer enum value
+            if (property.isEnumType()) {
+                bool isNumber;
+                aSelector.value.toInt(&isNumber);
+                if (isNumber)
+                    value.convert(QMetaType::fromType<int>());
+            }
         }
-        QString valueStr = (value.userType() == QMetaType::QStringList
-            || value.userType() == QMetaType::QVariantList)
-            ? value.toStringList().join(QLatin1Char(' '))
-            : value.toString();
+        if (value.isValid()) {
+            valueStr = (value.userType() == QMetaType::QStringList
+                        || value.userType() == QMetaType::QVariantList)
+                        ? value.toStringList().join(QLatin1Char(' '))
+                        : value.toString();
+        }
         cache[name] = valueStr;
         return valueStr;
     }

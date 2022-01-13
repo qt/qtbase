@@ -886,32 +886,34 @@ public:
         styleSheets.append(sheet);
     }
 
-    virtual QStringList nodeNames(NodePtr node) const override { return QStringList(reinterpret_cast<QDomElement *>(node.ptr)->tagName()); }
-    virtual QString attribute(NodePtr node, const QString &name) const override { return reinterpret_cast<QDomElement *>(node.ptr)->attribute(name); }
-    virtual bool hasAttribute(NodePtr node, const QString &name) const { return reinterpret_cast<QDomElement *>(node.ptr)->hasAttribute(name); }
-    virtual bool hasAttributes(NodePtr node) const override { return reinterpret_cast<QDomElement *>(node.ptr)->hasAttributes(); }
+    QStringList nodeNames(NodePtr node) const override
+    { return QStringList(reinterpret_cast<QDomElement *>(node.ptr)->tagName()); }
+    QString attributeValue(NodePtr node, const QCss::AttributeSelector &aSel) const override
+    { return reinterpret_cast<QDomElement *>(node.ptr)->attribute(aSel.name); }
+    bool hasAttribute(NodePtr node, const QString &name) const
+    { return reinterpret_cast<QDomElement *>(node.ptr)->hasAttribute(name); }
+    bool hasAttributes(NodePtr node) const override
+    { return reinterpret_cast<QDomElement *>(node.ptr)->hasAttributes(); }
 
-    virtual bool isNullNode(NodePtr node) const override {
-        return reinterpret_cast<QDomElement *>(node.ptr)->isNull();
-    }
-    virtual NodePtr parentNode(NodePtr node) const override {
+    bool isNullNode(NodePtr node) const override
+    { return reinterpret_cast<QDomElement *>(node.ptr)->isNull(); }
+    NodePtr parentNode(NodePtr node) const override {
         NodePtr parent;
         parent.ptr = new QDomElement(reinterpret_cast<QDomElement *>(node.ptr)->parentNode().toElement());
         return parent;
     }
-    virtual NodePtr duplicateNode(NodePtr node) const override {
+    NodePtr duplicateNode(NodePtr node) const override {
         NodePtr n;
         n.ptr = new QDomElement(*reinterpret_cast<QDomElement *>(node.ptr));
         return n;
     }
-    virtual NodePtr previousSiblingNode(NodePtr node) const override {
+    NodePtr previousSiblingNode(NodePtr node) const override {
         NodePtr sibling;
         sibling.ptr = new QDomElement(reinterpret_cast<QDomElement *>(node.ptr)->previousSiblingElement());
         return sibling;
     }
-    virtual void freeNode(NodePtr node) const override {
-        delete reinterpret_cast<QDomElement *>(node.ptr);
-    }
+    void freeNode(NodePtr node) const override
+    { delete reinterpret_cast<QDomElement *>(node.ptr); }
 
 private:
     QDomDocument doc;

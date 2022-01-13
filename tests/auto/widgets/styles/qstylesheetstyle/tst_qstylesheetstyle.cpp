@@ -2371,8 +2371,6 @@ void tst_QStyleSheetStyle::enumPropertySelector()
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QEXPECT_FAIL("Enum value", "In Qt 5, style sheet selectors have to use integer enum values", Continue);
-#else
-    QEXPECT_FAIL("Int value", "In Qt 6, style sheet selectors must use the enum value name", Continue);
 #endif
 
     QVERIFY(styledSizeHint.width() > unstyledSizeHint.width());

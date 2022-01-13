@@ -1848,14 +1848,14 @@ public:
     inline QTextHtmlStyleSelector(const QTextHtmlParser *parser)
         : parser(parser) { nameCaseSensitivity = Qt::CaseInsensitive; }
 
-    virtual QStringList nodeNames(NodePtr node) const override;
-    virtual QString attribute(NodePtr node, const QString &name) const override;
-    virtual bool hasAttributes(NodePtr node) const override;
-    virtual bool isNullNode(NodePtr node) const override;
-    virtual NodePtr parentNode(NodePtr node) const override;
-    virtual NodePtr previousSiblingNode(NodePtr node) const override;
-    virtual NodePtr duplicateNode(NodePtr node) const override;
-    virtual void freeNode(NodePtr node) const override;
+    QStringList nodeNames(NodePtr node) const override;
+    QString attributeValue(NodePtr node, const QCss::AttributeSelector &aSelector) const override;
+    bool hasAttributes(NodePtr node) const override;
+    bool isNullNode(NodePtr node) const override;
+    NodePtr parentNode(NodePtr node) const override;
+    NodePtr previousSiblingNode(NodePtr node) const override;
+    NodePtr duplicateNode(NodePtr node) const override;
+    void freeNode(NodePtr node) const override;
 
 private:
     const QTextHtmlParser *parser;
@@ -1879,10 +1879,10 @@ static inline int findAttribute(const QStringList &attributes, const QString &na
     return idx;
 }
 
-QString QTextHtmlStyleSelector::attribute(NodePtr node, const QString &name) const
+QString QTextHtmlStyleSelector::attributeValue(NodePtr node, const QCss::AttributeSelector &aSelector) const
 {
     const QStringList &attributes = parser->at(node.id).attributes;
-    const int idx = findAttribute(attributes, name);
+    const int idx = findAttribute(attributes, aSelector.name);
     if (idx == -1)
         return QString();
     return attributes.at(idx + 1);
