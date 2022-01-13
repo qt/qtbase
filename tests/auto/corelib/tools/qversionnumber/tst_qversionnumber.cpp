@@ -511,7 +511,7 @@ void tst_QVersionNumber::fromString()
     QFETCH(QVersionNumber, expectedVersion);
     QFETCH(int, suffixIndex);
 
-    int index;
+    qsizetype index;
     QCOMPARE(QVersionNumber::fromString(constructionString), expectedVersion);
     QCOMPARE(QVersionNumber::fromString(constructionString, &index), expectedVersion);
     QCOMPARE(index, suffixIndex);

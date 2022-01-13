@@ -413,7 +413,7 @@ QString QVersionNumber::toString() const
 
     \sa isNull()
 */
-QVersionNumber QVersionNumber::fromString(const QString &string, int *suffixIndex)
+QVersionNumber QVersionNumber::fromString(const QString &string, qsizetype *suffixIndex)
 {
     return fromString(QLatin1String(string.toLatin1()), suffixIndex);
 }
@@ -434,7 +434,7 @@ QVersionNumber QVersionNumber::fromString(const QString &string, int *suffixInde
 
     \sa isNull()
 */
-QVersionNumber QVersionNumber::fromString(QStringView string, int *suffixIndex)
+QVersionNumber QVersionNumber::fromString(QStringView string, qsizetype *suffixIndex)
 {
     return fromString(QLatin1String(string.toLatin1()), suffixIndex);
 }
@@ -454,7 +454,7 @@ QVersionNumber QVersionNumber::fromString(QStringView string, int *suffixIndex)
 
     \sa isNull()
 */
-QVersionNumber QVersionNumber::fromString(QLatin1String string, int *suffixIndex)
+QVersionNumber QVersionNumber::fromString(QLatin1String string, qsizetype *suffixIndex)
 {
     QList<int> seg;
 
@@ -474,7 +474,7 @@ QVersionNumber QVersionNumber::fromString(QLatin1String string, int *suffixIndex
     } while (start < endOfString && (end < endOfString && *end == '.'));
 
     if (suffixIndex)
-        *suffixIndex = int(lastGoodEnd - string.begin());
+        *suffixIndex = lastGoodEnd - string.begin();
 
     return QVersionNumber(std::move(seg));
 }
