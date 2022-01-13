@@ -665,10 +665,7 @@ public:
     QList<Declaration> declarationsForNode(NodePtr node, const char *extraPseudo = nullptr);
 
     virtual bool nodeNameEquals(NodePtr node, const QString& nodeName) const;
-    // ### TODO keep until QtSvg is updated with new qtbase and has overridden attributeValue
-    virtual QString attribute(NodePtr, const QString &) const { return QString(); }
-    virtual QString attributeValue(NodePtr node, const QCss::AttributeSelector &aSelector) const
-    { return attribute(node, aSelector.name); }
+    virtual QString attributeValue(NodePtr node, const QCss::AttributeSelector &aSelector) const = 0;
     virtual bool hasAttributes(NodePtr node) const = 0;
     virtual QStringList nodeIds(NodePtr node) const;
     virtual QStringList nodeNames(NodePtr node) const = 0;
