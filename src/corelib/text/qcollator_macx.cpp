@@ -138,7 +138,7 @@ QCollatorSortKey QCollator::sortKey(const QString &string) const
         status = UCGetCollationKey(d->collator, text, string.count(),
                                    ret.size(), &actualSize, ret.data());
         Q_ASSERT(status != kUCOutputBufferTooSmall);
-        Q_ASSERT(ret.size() == actualSize + 1);
+        Q_ASSERT(ret.size() == qsizetype(actualSize + 1));
     }
     ret[actualSize] = 0;
     return QCollatorSortKey(new QCollatorSortKeyPrivate(std::move(ret)));
