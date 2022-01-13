@@ -1988,7 +1988,7 @@ bool StyleSelector::nodeNameEquals(NodePtr node, const QString& nodeName) const
 
 QStringList StyleSelector::nodeIds(NodePtr node) const
 {
-    return QStringList(attribute(node, QLatin1String("id")));
+    return QStringList(attributeValue(node, QCss::AttributeSelector{QLatin1String("id"), {}, AttributeSelector::NoMatch}));
 }
 
 bool StyleSelector::selectorMatches(const Selector &selector, NodePtr node)
@@ -2060,7 +2060,7 @@ bool StyleSelector::basicSelectorMatches(const BasicSelector &sel, NodePtr node)
         for (int i = 0; i < sel.attributeSelectors.count(); ++i) {
             const QCss::AttributeSelector &a = sel.attributeSelectors.at(i);
 
-            const QString attrValue = attribute(node, a.name);
+            const QString attrValue = attributeValue(node, a);
             if (attrValue.isNull())
                 return false;
 
