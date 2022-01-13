@@ -118,8 +118,7 @@ void QRadioButtonPrivate::init()
     setDown(), isDown(), autoRepeat(), group(), setAutoRepeat(),
     toggle(), pressed(), released(), clicked(), and toggled().
 
-    \sa QPushButton, QToolButton, QCheckBox, {fowler}{GUI Design Handbook: Radio Button},
-        {Group Box Example}
+    \sa QPushButton, QToolButton, QCheckBox, {Group Box Example}
 */
 
 

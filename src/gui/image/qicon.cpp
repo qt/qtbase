@@ -667,7 +667,7 @@ QFactoryLoader *qt_iconEngineFactoryLoader()
     └── index.theme
   \endcode
 
-  \sa {fowler}{GUI Design Handbook: Iconic Label}, {Icons Example}
+  \sa {Icons Example}
 */
 
 

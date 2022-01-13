@@ -684,7 +684,7 @@ void QMenuBar::initStyleOption(QStyleOptionMenuItem *option, const QAction *acti
 
     \sa QMenu, QShortcut, QAction,
         {http://developer.apple.com/documentation/UserExperience/Conceptual/AppleHIGuidelines/XHIGIntro/XHIGIntro.html}{Introduction to Apple Human Interface Guidelines},
-        {fowler}{GUI Design Handbook: Menu Bar}, {Menus Example}
+        {Menus Example}
 */
 
 

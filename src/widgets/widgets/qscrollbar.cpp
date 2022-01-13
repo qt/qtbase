@@ -187,7 +187,7 @@ QT_BEGIN_NAMESPACE
     Most GUI styles use the pageStep() value to calculate the size of the
     slider.
 
-    \sa QScrollArea, QSlider, QDial, QSpinBox, {fowler}{GUI Design Handbook: Scroll Bar}, {Sliders Example}
+    \sa QScrollArea, QSlider, QDial, QSpinBox, {Sliders Example}
 */
 
 bool QScrollBarPrivate::updateHoverControl(const QPoint &pos)

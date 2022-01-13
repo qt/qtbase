@@ -263,7 +263,7 @@ QStyle::SubControl QSliderPrivate::newHoverControl(const QPoint &pos)
         \li End moves to the end (maximum).
     \endlist
 
-    \sa QScrollBar, QSpinBox, QDial, {fowler}{GUI Design Handbook: Slider}, {Sliders Example}
+    \sa QScrollBar, QSpinBox, QDial, {Sliders Example}
 */
 
 

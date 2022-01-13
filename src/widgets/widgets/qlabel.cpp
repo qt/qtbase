@@ -183,8 +183,7 @@ QLabelPrivate::~QLabelPrivate()
     was a button (inheriting from QAbstractButton), triggering the
     mnemonic would emulate a button click.
 
-    \sa QLineEdit, QTextEdit, QPixmap, QMovie,
-        {fowler}{GUI Design Handbook: Label}
+    \sa QLineEdit, QTextEdit, QPixmap, QMovie
 */
 
 #ifndef QT_NO_PICTURE

@@ -1042,8 +1042,7 @@ QComboBox::QComboBox(QComboBoxPrivate &dd, QWidget *parent)
     of the view(), e.g., by using
     \l{QAbstractItemView::}{setSelectionMode()}.
 
-    \sa QLineEdit, QSpinBox, QRadioButton, QButtonGroup,
-        {fowler}{GUI Design Handbook: Combo Box, Drop-Down List Box}
+    \sa QLineEdit, QSpinBox, QRadioButton, QButtonGroup
 */
 
 void QComboBoxPrivate::init()

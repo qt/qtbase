@@ -226,7 +226,7 @@ int QDialPrivate::valueFromPoint(const QPoint &p) const
     by \l {QAbstractSlider::singleStep} {singleStep}, and
     \l {QAbstractSlider::pageStep} {pageStep}.
 
-    \sa QScrollBar, QSpinBox, QSlider, {fowler}{GUI Design Handbook: Slider}, {Sliders Example}
+    \sa QScrollBar, QSpinBox, QSlider, {Sliders Example}
 */
 
 /*!

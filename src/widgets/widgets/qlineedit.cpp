@@ -208,7 +208,7 @@ void QLineEdit::initStyleOption(QStyleOptionFrame *option) const
     Any other key sequence that represents a valid character, will
     cause the character to be inserted into the line edit.
 
-    \sa QTextEdit, QLabel, QComboBox, {fowler}{GUI Design Handbook: Field, Entry}, {Line Edits Example}
+    \sa QTextEdit, QLabel, QComboBox, {Line Edits Example}
 */
 
 

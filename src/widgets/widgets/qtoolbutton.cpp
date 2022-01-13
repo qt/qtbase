@@ -169,8 +169,7 @@ bool QToolButtonPrivate::hasMenu() const
          with actions used in other parts of the main window.
     \endtable
 
-    \sa QPushButton, QToolBar, QMainWindow, QAction,
-        {fowler}{GUI Design Handbook: Push Button}
+    \sa QPushButton, QToolBar, QMainWindow, QAction
 */
 
 /*!
