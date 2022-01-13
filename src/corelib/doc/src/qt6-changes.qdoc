@@ -337,23 +337,10 @@
     In Qt6 \l QStringRef got removed from Qt Core. To ease porting of existing
     applications without touching the whole code-base, the \c QStringRef class
     did not vanish completely and instead it got moved into the Qt5Compat module.
-
-    If you want to use \c QStringRef further, you need to link against the new
-    Qt5Compat module and add this line to your \l qmake \c .pro file:
-    \code
-        QT += core5compat
-    \endcode
-
-    In case you already ported your application or library to the
-    \l {Build with CMake}{cmake} build system, add the following to your
-    \c CMakeList.txt:
-    \code
-        PUBLIC_LIBRARIES
-            Qt::Core5Compat
-    \endcode
+    If you want to use \c QStringRef further, see \l {Using the Qt5Compat module}.
 
     Unfortunately, some methods exposed by \l QString returning a \c QStringRef,
-    could not be moved to Qt5Compat. Therefore some manually porting may be
+    could not be moved to Qt5Compat. Therefore some manual porting may be
     needed. If your code uses one or more of the following functions you need to
     port them to use \l QStringView or \l QStringTokenizer. It is also
     recommended to use \l {QStringView::tokenize} over \l {QStringView::split}
@@ -816,22 +803,8 @@
 
     In Qt6 \l QRegExp got removed from Qt Core. If your application cannot be
     ported right now, \c QRegExp still exists in Qt5Compat to keep these
-    code-bases working. If you want to use \c QRegExp further, you need to link
-    against the new Qt5Compat module and add this line to your \l qmake \c .pro
-    file:
-    \code
-        QT += core5compat
-    \endcode
-
-    In case you already ported your application or library to the
-    \l {Build with CMake}{cmake} build system, add the following to your
-    \c CMakeList.txt:
-    \code
-        PUBLIC_LIBRARIES
-            Qt::Core5Compat
-    \endcode
-
-    \section2 QEvent and subclasses
+    code-bases working. If you want to use \c QRegExp further, see
+    \l {Using the Qt5Compat module}.
 
     The QEvent class defined a copy constructor and an assignment operator,
     in spite of being a polymorphic class. Copying classes with virtual methods
@@ -870,6 +843,19 @@
     pointer-to-implementation pattern), then you will have to implement
     custom copy semantics.
 
+    \section1 Serialization classes
+
+    In Qt 6, QJsonDocument methods for converting it to/from Qt's legacy
+    JSON binary format were removed in favor of the standardized CBOR format.
+    Qt JSON types can be converted to Qt CBOR types, which can in turn be
+    serialized into the CBOR binary format and vice versa. See, for example,
+    \l QCborValue::fromJsonValue() and \l QCborValue::toJsonValue().
+
+    If you still need to use the binary JSON format, you can use the
+    replacements provided in the Qt5Compat module. They can be found in the
+    \l QBinaryJson namespace. See \l {Using the Qt5Compat module} to find out
+    how to use the module in your application.
+
     \section1 Other classes
 
     In Qt 5, QCoreApplication::quit() was equivalent to calling
@@ -889,4 +875,21 @@
     \l {Qt State Machine} was moved into the Qt SCXML module (soon to be renamed to Qt
     State Machines) and therefore it is no longer part of Qt Core. There were very few
     cross dependencies inside Qt Core which ultimately led to this decision.
+
+    \section1 Using the Qt5Compat module
+
+    To use the \l {Qt 5 Core Compatibility APIs}{Qt5Compat} module, you need
+    to build with its headers in your include path and link against its library.
+    If you are using \l qmake, add the following to your \c .pro file:
+
+    \code
+        QT += core5compat
+    \endcode
+
+    If you build your application or library using \l {Build with CMake}{cmake},
+    add the following to your \c CMakeList.txt:
+    \code
+        PUBLIC_LIBRARIES
+            Qt::Core5Compat
+    \endcode
 */
