@@ -122,7 +122,7 @@ public:
     setAutoRepeat(), toggle(), pressed(), released(), clicked(), toggled(),
     checkState(), and stateChanged().
 
-    \sa QAbstractButton, QRadioButton, {fowler}{GUI Design Handbook: Check Box}
+    \sa QAbstractButton, QRadioButton
 */
 
 /*!

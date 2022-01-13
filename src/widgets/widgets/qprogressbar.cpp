@@ -201,7 +201,7 @@ bool QProgressBarPrivate::repaintRequired() const
     example, when using QNetworkAccessManager to download items when
     they are unable to determine the size of the item being downloaded.
 
-    \sa QProgressDialog, {fowler}{GUI Design Handbook: Progress Indicator}
+    \sa QProgressDialog
 */
 
 /*!

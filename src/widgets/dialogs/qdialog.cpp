@@ -380,8 +380,7 @@ void QDialogPrivate::deletePlatformHelper()
 
     \snippet dialogs/dialogs.cpp 0
 
-    \sa QDialogButtonBox, QTabWidget, QWidget, QProgressDialog,
-        {fowler}{GUI Design Handbook: Dialogs, Standard}, {Extension Example},
+    \sa QDialogButtonBox, QTabWidget, QWidget, QProgressDialog, {Extension Example},
         {Standard Dialogs Example}
 */
 

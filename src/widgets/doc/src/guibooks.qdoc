@@ -52,16 +52,6 @@
     design a dialog box, write an error message, or design just about
     anything else humans are supposed to use.
 
-    \target fowler
-    \b{\l{http://www.amazon.com/exec/obidos/ASIN/0070592748/trolltech/t}{GUI Design Handbook}}
-    by Susan Fowler, ISBN 0-07-059274-8, is an
-    alphabetical dictionary of widgets and other user interface elements,
-    with comprehensive coverage of each. Each chapter covers one widget
-    or other element, contains the most important recommendation from the
-    \macos, Windows and Motif style guides, notes about common
-    problems, comparison with other widgets that can serve some of the
-    same roles as this one, etc.
-
     \target Design Patterns
     \b{\l{http://www.amazon.com/exec/obidos/ASIN/0201633612/103-8144203-3273444}
     {Design Patterns - Elements of Reusable Object-Oriented Software}}

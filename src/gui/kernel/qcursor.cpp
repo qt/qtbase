@@ -150,7 +150,7 @@ QT_BEGIN_NAMESPACE
          \li Qt::DragLinkCursor      \li \c dnd-link or \c link
     \endtable
 
-    \sa QWidget, {fowler}{GUI Design Handbook: Cursors}
+    \sa QWidget
 */
 
 /*!
