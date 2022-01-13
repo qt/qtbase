@@ -273,13 +273,9 @@ bool QThreadPoolPrivate::tooManyThreadsActive() const
 */
 void QThreadPoolPrivate::startThread(QRunnable *runnable)
 {
-    Q_Q(QThreadPool);
     Q_ASSERT(runnable != nullptr);
     QScopedPointer<QThreadPoolThread> thread(new QThreadPoolThread(this));
-    QString objectName;
-    if (QString myName = q->objectName(); !myName.isEmpty())
-        objectName = myName;
-    else
+    if (objectName.isEmpty())
         objectName = QLatin1String("Thread (pooled)");
     thread->setObjectName(objectName);
     Q_ASSERT(!allThreads.contains(thread.data())); // if this assert hits, we have an ABA problem (deleted threads don't get removed here)
@@ -476,7 +472,14 @@ void QThreadPoolPrivate::stealAndRunRunnable(QRunnable *runnable)
 */
 QThreadPool::QThreadPool(QObject *parent)
     : QObject(*new QThreadPoolPrivate, parent)
-{ }
+{
+    Q_D(QThreadPool);
+    connect(this, &QObject::objectNameChanged, this, [d](const QString &newName) {
+        // We keep a copy of the name under our own lock, so we can access it thread-safely.
+        QMutexLocker locker(&d->mutex);
+        d->objectName = newName;
+    });
+}
 
 /*!
     Destroys the QThreadPool.

@@ -176,6 +176,7 @@ public:
     QQueue<QThreadPoolThread *> expiredThreads;
     QList<QueuePage *> queue;
     QWaitCondition noActiveThreads;
+    QString objectName;
 
     int expiryTimeout = 30000;
     int requestedMaxThreadCount = QThread::idealThreadCount();  // don't use this directly
