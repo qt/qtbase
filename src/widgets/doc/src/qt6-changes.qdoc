@@ -107,6 +107,27 @@
 
     The various initStyleOption() methods in widget classes are now virtual.
 
+    \section2 Style sheet changes
+
+    Styling a widget by its property in Qt 5 vs Qt 6 is different, especially if the
+    property is an enum. In Qt 5, the selector value for such a property is the integer
+    equivalent of the enum value, while in Qt 6 the string value is used. The following
+    example demonstrates this difference:
+
+    \code
+    // Qt 5 style sheet
+    QToolButton[popupMode="1"] {
+        padding-right: 20px;
+    }
+    \endcode
+
+    \code
+    // Qt 6 style sheet
+    QToolButton[popupMode=MenuButtonPopup] {
+        padding-right: 20px;
+    }
+    \endcode
+
     \section1 Utility Classes
 
     \section2 QUndoCommand, QUndoStack, and QUndoGroup
