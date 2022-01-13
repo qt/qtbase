@@ -100,6 +100,7 @@ private:
     QStringList cupsOptions;
     QString cupsTempFile;
     QPrint::DuplexMode duplex;
+    bool duplexRequestedExplicitly = false;
 };
 
 QT_END_NAMESPACE
