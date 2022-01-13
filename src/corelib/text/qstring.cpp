@@ -884,6 +884,9 @@ static void qt_to_latin1_internal(uchar *dst, const char16_t *src, qsizetype len
     }
 
     auto mergeQuestionMarks = [=](__m128i chunk) {
+        if (!Checked)
+            return chunk;
+
         // SSE has no compare instruction for unsigned comparison.
         if constexpr (UseSse4_1) {
             // We use an unsigned uc = qMin(uc, 0x100) and then compare for equality.
@@ -930,12 +933,10 @@ static void qt_to_latin1_internal(uchar *dst, const char16_t *src, qsizetype len
             chunk1 = _mm256_castsi256_si128(chunk);
         } else {
             chunk1 = _mm_loadu_si128((const __m128i*)(src + offset)); // load
-            if (Checked)
-                chunk1 = mergeQuestionMarks(chunk1);
+            chunk1 = mergeQuestionMarks(chunk1);
 
             chunk2 = _mm_loadu_si128((const __m128i*)(src + offset + 8)); // load
-            if (Checked)
-                chunk2 = mergeQuestionMarks(chunk2);
+            chunk2 = mergeQuestionMarks(chunk2);
         }
 
         // pack the two vector to 16 x 8bits elements
@@ -947,8 +948,7 @@ static void qt_to_latin1_internal(uchar *dst, const char16_t *src, qsizetype len
     // we're going to write to dst[offset..offset+7] (8 bytes)
     if (dst + offset + 7 < e) {
         __m128i chunk = _mm_loadu_si128(reinterpret_cast<const __m128i *>(src + offset));
-        if (Checked)
-            chunk = mergeQuestionMarks(chunk);
+        chunk = mergeQuestionMarks(chunk);
 
         // pack, where the upper half is ignored
         const __m128i result = _mm_packus_epi16(chunk, chunk);
@@ -959,8 +959,7 @@ static void qt_to_latin1_internal(uchar *dst, const char16_t *src, qsizetype len
     // we're going to write to dst[offset..offset+3] (4 bytes)
     if (dst + offset + 3 < e) {
         __m128i chunk = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(src + offset));
-        if (Checked)
-            chunk = mergeQuestionMarks(chunk);
+        chunk = mergeQuestionMarks(chunk);
 
         // pack, we'll the upper three quarters
         const __m128i result = _mm_packus_epi16(chunk, chunk);
