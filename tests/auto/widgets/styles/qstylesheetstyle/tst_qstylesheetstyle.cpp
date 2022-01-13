@@ -128,6 +128,8 @@ private slots:
     void QTBUG36933_brokenPseudoClassLookup();
     void styleSheetChangeBeforePolish();
     void placeholderColor();
+    void enumPropertySelector_data();
+    void enumPropertySelector();
     //at the end because it mess with the style.
     void widgetStyle();
     void appStyle();
@@ -2324,6 +2326,42 @@ void tst_QStyleSheetStyle::placeholderColor()
     QCOMPARE(le2.palette().placeholderText(), red);
     le2.setEnabled(true);
     QCOMPARE(le2.palette().placeholderText(), red);
+}
+
+void tst_QStyleSheetStyle::enumPropertySelector_data()
+{
+    QTest::addColumn<QString>("styleSheet");
+
+    QTest::addRow("Enum value") << R"(QToolButton[popupMode=MenuButtonPopup] { padding-right: 40px; })";
+    QTest::addRow("Int value") << R"(QToolButton[popupMode="1"] { padding-right: 40px; })";
+}
+
+void tst_QStyleSheetStyle::enumPropertySelector()
+{
+    QFETCH(QString, styleSheet);
+
+    QToolButton button;
+    QMenu menu;
+    menu.addAction("Action1");
+    QPixmap pm(50, 50);
+    pm.fill(Qt::red);
+    button.setIcon(pm);
+    button.setMenu(&menu);
+    button.setPopupMode(QToolButton::MenuButtonPopup);
+
+    button.show();
+    const QSize unstyledSizeHint = button.sizeHint();
+
+    qApp->setStyleSheet(styleSheet);
+    const QSize styledSizeHint = button.sizeHint();
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    QEXPECT_FAIL("Enum value", "In Qt 5, style sheet selectors have to use integer enum values", Continue);
+#else
+    QEXPECT_FAIL("Int value", "In Qt 6, style sheet selectors must use the enum value name", Continue);
+#endif
+
+    QVERIFY(styledSizeHint.width() > unstyledSizeHint.width());
 }
 
 void tst_QStyleSheetStyle::iconSizes_data()
