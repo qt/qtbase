@@ -15,6 +15,13 @@ instructions:
       condition: property
       property: host.os
       equals_value: Windows
+  - type: AppendToEnvironmentVariable
+    variableName: TESTRUNNER
+    variableValue: " {{.SourceDir}}/coin_qnx_qemu_runner.sh"
+    enable_if:
+      condition: property
+      property: target.osVersion
+      in_values: [QNX_710]
   - type: EnvironmentVariable
     variableName: TESTRUNNER
     variableValue: "{{.InstallDir}}\\bin\\qt-testrunner.py --"

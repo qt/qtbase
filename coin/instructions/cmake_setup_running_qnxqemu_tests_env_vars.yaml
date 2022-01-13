@@ -1,40 +1,20 @@
 type: Group
 instructions:
   - type: WriteFile
+    filename: "{{.SourceDir}}/coin_qnx_qemu_runner.sh"
+    fileMode: 493
     fileContents: |
-        #!/usr/bin/python3
-        import subprocess
-        import calendar
-        import datetime
-        import time
-        import sys
-        import os
-        import re
+        #!/bin/sh
 
-        file=os.path.basename(sys.argv[1])
-        timestamp = str(round(time.time() * 1000))
-        resultdir = os.getenv('COIN_CTEST_RESULTSDIR')
-        results_file = resultdir + "/testresults/" + file +"-" + timestamp + ".xml,xml"
-        testargs = [" -o", results_file, "-o", "-,txt"]
-        if re.search("testlib.selftests.tst_selftests", sys.argv[1]):
-            testargs = []
-        testcmd = sys.argv[1]
-        testcmd += ' '.join(testargs)
-        qemuargs = os.getenv('TESTARGS')
-        sshcmd, ldenv, backend, qpa = qemuargs.split()
-        testdir = sys.argv[1][::-1].split('/', 1)[1][::-1]
-        testcmd = "cd " + testdir + ";" + ldenv + " " + backend + " " + qpa  + " " + testcmd
-        proc = subprocess.run(["ssh", sshcmd, testcmd])
-        exit(proc.returncode)
-    filename: "{{.SourceDir}}/coin_qnx_qemu_runner.py"
-    fileMode: 755
-  - type: ExecuteCommand
-    command: "chmod 755 {{.SourceDir}}/coin_qnx_qemu_runner.py"
-    maxTimeInSeconds: 10
-    maxTimeBetweenOutput: 10
-    userMessageOnFailure: >
-      Failed to change file permission.
-    disable_if:
-      condition: property
-      property: host.os
-      equals_value: Windows
+        # Many tests require changing into their directory, in order to find
+        # files they depend on.
+        testdir=`dirname "$1"`
+
+        # The remote SSH server executes everything we send under "sh -c". So
+        # the only way to preserve arguments is to shell-quote them and send
+        # them as a single string. We use python's shlex module for that.
+
+        quoted_args=`python3 -c  'import sys, shlex; print(shlex.join(sys.argv[1:]))'  "$@"`
+
+        ssh "$QNX_QEMU_SSH"  \
+            cd "$testdir" \;  $QNX_TEST_ENV   "$quoted_args"

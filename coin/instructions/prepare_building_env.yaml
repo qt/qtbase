@@ -280,14 +280,14 @@ instructions:
       enable_if:
         condition: property
         property: target.osVersion
-        in_values: [QEMU, QNX_710]
+        in_values: [QEMU]
     - type: EnvironmentVariable
       variableName: TARGET_ENV_PREFIX
       variableValue: ""
       disable_if:
         condition: property
         property: target.osVersion
-        in_values: [QEMU, QNX_710]
+        in_values: [QEMU]
 
   # Windows on Arm, cross-compilation with MSVC
   - type: Group
@@ -312,12 +312,6 @@ instructions:
       property: target.os
       equals_value: QNX
     instructions:
-    - type: WriteFile
-      fileContents: "#!/bin/bash\nexport TESTARGS={{.Env.TESTARGS}}\nexport TESTRUNNER={{.Env.TESTRUNNER}}\nexport COIN_CTEST_RESULTSDIR={{.Env.COIN_CTEST_RESULTSDIR}}\n$*"
-      filename: "{{.Env.HOME}}/prefix.sh"
-      fileMode: 493
-      maxTimeInSeconds: 20
-      maxTimeBetweenOutput: 20
     - type: EnvironmentVariable
       variableName: QNX_TARGET
       variableValue: "{{.Env.QNX_710}}/target/qnx7"
