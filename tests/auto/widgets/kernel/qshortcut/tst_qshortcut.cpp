@@ -1292,13 +1292,20 @@ void tst_QShortcut::testElement()
     QFETCH(int, c4);
     QFETCH(tst_QShortcut::Result, result);
 
-    if (mainW.isNull()) {
+    auto mainWindowDeleter = qScopeGuard([&]{
+        if (action == TestEnd)
+            mainW.reset();
+    });
+
+    if (mainW.isNull())
         mainW.reset(new MainWindow);
-        mainW->setWindowTitle(QTest::currentTestFunction());
-        mainW->show();
-        mainW->activateWindow();
-        QVERIFY(QTest::qWaitForWindowActive(mainW.data()));
-    }
+    mainW->setWindowTitle(QTest::currentTestFunction());
+    mainW->show();
+    mainW->activateWindow();
+    // Don't use QVERIFY here; the data function uses QEXPECT_FAIL,
+    // which would result in an XPASS failure.
+    if (!QTest::qWaitForWindowActive(mainW.data()))
+        QVERIFY(false);
 
     switch (action) {
     case ClearAll:
@@ -1313,7 +1320,7 @@ void tst_QShortcut::testElement()
         QCOMPARE(currentResult, result);
         break;
     case TestEnd:
-        mainW.reset();
+        // taken care of by the mainWindowDeleter
         break;
     }
 }
