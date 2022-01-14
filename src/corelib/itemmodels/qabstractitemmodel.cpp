@@ -60,6 +60,9 @@ QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcCheckIndex, "qt.core.qabstractitemmodel.checkindex")
 
+int qRegisterNormalizedMetaType_QList_QModelIndex(const QByteArray &name)
+{ return qRegisterNormalizedMetaTypeImplementation<QList<QModelIndex>>(name); }
+
 QPersistentModelIndexData *QPersistentModelIndexData::create(const QModelIndex &index)
 {
     Q_ASSERT(index.isValid()); // we will _never_ insert an invalid index in the list

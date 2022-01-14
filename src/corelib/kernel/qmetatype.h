@@ -1226,7 +1226,7 @@ namespace QtPrivate {
 }
 
 template <typename T>
-int qRegisterNormalizedMetaType(const QT_PREPEND_NAMESPACE(QByteArray) &normalizedTypeName)
+int qRegisterNormalizedMetaTypeImplementation(const QT_PREPEND_NAMESPACE(QByteArray) &normalizedTypeName)
 {
 #ifndef QT_NO_QOBJECT
     Q_ASSERT_X(normalizedTypeName == QMetaObject::normalizedType(normalizedTypeName.constData()),
@@ -1252,6 +1252,22 @@ int qRegisterNormalizedMetaType(const QT_PREPEND_NAMESPACE(QByteArray) &normaliz
         QMetaType::registerNormalizedTypedef(normalizedTypeName, metaType);
 
     return id;
+}
+
+// This primary template calls the -Implementation, like all other specialisations should.
+// But the split allows to
+// - in a header:
+//   - declare, but not define, a specialization of this template
+//   - add an explicit instantiation declaration (extern template ...)
+// - in the .cpp file:
+//   - define the specialization to call the -Implementation
+//   - add an explicit instantiation definition
+// This prevents the compiler from taking the leeway for inline functions in
+// [temp.explicit]/13 Note 4
+template <typename T>
+int qRegisterNormalizedMetaType(const QT_PREPEND_NAMESPACE(QByteArray) &normalizedTypeName)
+{
+    return qRegisterNormalizedMetaTypeImplementation<T>(normalizedTypeName);
 }
 
 template <typename T>
