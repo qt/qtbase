@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Copyright (C) 2014 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: https://www.qt.io/licensing/
 **
@@ -62,6 +62,7 @@ private slots:
     void formatLogMessage();
 
 private:
+    QString backtraceHelperPath();
     QStringList m_baseEnvironment;
 };
 
@@ -777,11 +778,7 @@ void tst_qmessagehandler::qMessagePattern()
     QFETCH(QList<QByteArray>, expected);
 
     QProcess process;
-#ifndef Q_OS_ANDROID
-    const QString appExe(QLatin1String(HELPER_BINARY));
-#else
-    const QString appExe(QCoreApplication::applicationDirPath() + QLatin1String("/lib" BACKTRACE_HELPER_NAME ".so"));
-#endif
+    const QString appExe(backtraceHelperPath());
 
     //
     // test QT_MESSAGE_PATTERN
@@ -827,11 +824,7 @@ void tst_qmessagehandler::setMessagePattern()
     //
 
     QProcess process;
-#ifndef Q_OS_ANDROID
-    const QString appExe(QLatin1String(HELPER_BINARY));
-#else
-    const QString appExe(QCoreApplication::applicationDirPath() + QLatin1String("/libhelper.so"));
-#endif
+    const QString appExe(backtraceHelperPath());
 
     // make sure there is no QT_MESSAGE_PATTERN in the environment
     QStringList environment;
@@ -928,6 +921,19 @@ void tst_qmessagehandler::formatLogMessage()
     QCOMPARE(r, result);
 }
 
+QString tst_qmessagehandler::backtraceHelperPath()
+{
+#ifdef Q_OS_ANDROID
+    QString appExe(QCoreApplication::applicationDirPath()
+                   + QLatin1String("/lib" BACKTRACE_HELPER_NAME ".so"));
+#elif defined(Q_OS_WEBOS)
+    QString appExe(QCoreApplication::applicationDirPath()
+                   + QLatin1String("/" BACKTRACE_HELPER_NAME));
+#else
+    QString appExe(QLatin1String(HELPER_BINARY));
+#endif
+    return appExe;
+}
 
 QTEST_MAIN(tst_qmessagehandler)
 #include "tst_qlogging.moc"
