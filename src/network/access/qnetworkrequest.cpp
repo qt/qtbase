@@ -410,6 +410,11 @@ QT_BEGIN_NAMESPACE
                                        for example, to ask the user whether to
                                        accept the redirect, or to decide
                                        based on some app-specific configuration.
+
+    \note When Qt handles redirects it will, for legacy and compatibility
+    reasons, issue the redirected request using GET when the server returns
+    a 301 or 302 response, regardless of the original method used, unless it was
+    HEAD.
 */
 
 /*!
