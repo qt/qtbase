@@ -29,6 +29,7 @@
 #include <qbaselinetest.h>
 #include <qwidgetbaselinetest.h>
 #include <QtWidgets>
+#include <QStyleOptionSlider>
 
 class tst_Widgets : public QWidgetBaselineTest
 {
@@ -58,6 +59,9 @@ private slots:
 
     void tst_QRadioButton_data();
     void tst_QRadioButton();
+
+    void tst_QScrollBar_data();
+    void tst_QScrollBar();
 };
 
 void tst_Widgets::tst_QSlider_data()
@@ -380,6 +384,71 @@ void tst_Widgets::tst_QRadioButton()
     QVERIFY(button1.isChecked());
     QVERIFY(!button2.isChecked());
     QBASELINE_CHECK_DEFERRED(takeSnapshot(), "releaseChecked");
+}
+
+void tst_Widgets::tst_QScrollBar_data()
+{
+    QTest::addColumn<Qt::Orientation>("orientation");
+
+    QTest::newRow("Horizontal") << Qt::Horizontal;
+    QTest::newRow("Vertical") << Qt::Vertical;
+}
+
+void tst_Widgets::tst_QScrollBar()
+{
+    QFETCH(Qt::Orientation, orientation);
+
+    QBoxLayout box((orientation == Qt::Vertical) ? QBoxLayout::LeftToRight
+                                                 : QBoxLayout::TopToBottom);
+    QList<QScrollBar*> bars;
+    for (int i = 0; i < 4; ++i) {
+
+        QScrollBar *bar = new QScrollBar(testWindow());
+        (orientation == Qt::Vertical) ? bar->setFixedHeight(100)
+                                      : bar->setFixedWidth(100);
+
+        bar->setOrientation(orientation);
+        bar->setValue(i * 33);
+        box.addWidget(bar);
+        bars.append(bar);
+    }
+
+    testWindow()->setLayout(&box);
+    takeStandardSnapshots();
+
+    // press left/up of first bar
+    QScrollBar *bar = bars.at(0);
+    QStyleOptionSlider styleOption = qt_qscrollbarStyleOption(bar);
+    QPoint clickTarget = bar->style()->subControlRect(QStyle::CC_ScrollBar, &styleOption,
+                                                      QStyle::SC_ScrollBarSubLine, bar).center();
+    QTest::mousePress(bar,Qt::MouseButton::LeftButton, Qt::KeyboardModifiers(), clickTarget,0);
+    QBASELINE_CHECK_DEFERRED(takeSnapshot(), "pressLeftUp");
+    QTest::mouseRelease(bar,Qt::MouseButton::LeftButton, Qt::KeyboardModifiers(), clickTarget,0);
+
+    // press slider of first bar
+    styleOption = qt_qscrollbarStyleOption(bar);
+    clickTarget = bar->style()->subControlRect(QStyle::CC_ScrollBar, &styleOption,
+                                               QStyle::SC_ScrollBarSlider, bar).center();
+    QTest::mousePress(bar,Qt::MouseButton::LeftButton, Qt::KeyboardModifiers(), clickTarget,0);
+    QVERIFY(bar->isSliderDown());
+    QBASELINE_CHECK_DEFERRED(takeSnapshot(), "pressSlider");
+    QTest::mouseRelease(bar,Qt::MouseButton::LeftButton, Qt::KeyboardModifiers(), clickTarget,0);
+
+    // Press AddPage up on first bar
+    clickTarget = bar->style()->subControlRect(QStyle::CC_ScrollBar, &styleOption,
+                                               QStyle::SC_ScrollBarAddPage, bar).center();
+    QTest::mousePress(bar,Qt::MouseButton::LeftButton, Qt::KeyboardModifiers(), clickTarget,0);
+    QBASELINE_CHECK_DEFERRED(takeSnapshot(), "pressAddPage");
+    QTest::mouseRelease(bar,Qt::MouseButton::LeftButton, Qt::KeyboardModifiers(), clickTarget,0);
+
+    // press SubPage of last bar
+    bar = bars.at(3);
+    styleOption = qt_qscrollbarStyleOption(bar);
+    clickTarget = bar->style()->subControlRect(QStyle::CC_ScrollBar, &styleOption,
+                                               QStyle::SC_ScrollBarAddLine, bar).center();
+    QTest::mousePress(bar,Qt::MouseButton::LeftButton, Qt::KeyboardModifiers(), clickTarget,0);
+    QBASELINE_CHECK_DEFERRED(takeSnapshot(), "pressRightDown");
+    QTest::mouseRelease(bar,Qt::MouseButton::LeftButton, Qt::KeyboardModifiers(), clickTarget,0);
 }
 
 #define main _realmain
