@@ -3,6 +3,12 @@ function(qt_internal_set_warnings_are_errors_flags target)
     set(flags "")
     if (CLANG AND NOT MSVC)
         list(APPEND flags -Werror -Wno-error=\#warnings -Wno-error=deprecated-declarations)
+        if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang") # as in: not AppleClang
+            if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "10.0.0")
+                # We do mixed enum arithmetic all over the place:
+                list(APPEND flags -Wno-error=deprecated-enum-enum-conversion)
+            endif()
+        endif()
     elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
         # using GCC
         list(APPEND flags -Werror -Wno-error=cpp -Wno-error=deprecated-declarations)
