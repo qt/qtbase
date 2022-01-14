@@ -263,13 +263,16 @@ void QPolygon::point(int index, int *x, int *y) const
 */
 
 /*!
-    \fn void QPolygon::setPoint(int index, int x, int y)
-
     Sets the point at the given \a index to the point specified by
     (\a{x}, \a{y}).
 
     \sa point(), putPoints(), setPoints(),
 */
+void QPolygon::setPoint(int index, int x, int y)
+{
+    (*this)[index] = QPoint(x, y);
+}
+
 
 /*!
     Resizes the polygon to \a nPoints and populates it with the given
