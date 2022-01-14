@@ -493,7 +493,7 @@ public:
     }
 
     explicit QFlatMap(Qt::OrderedUniqueRange_t, std::initializer_list<value_type> lst)
-        : QFlatMap(lst.begin(), lst.end())
+        : QFlatMap(Qt::OrderedUniqueRange, lst.begin(), lst.end())
     {
     }
 
