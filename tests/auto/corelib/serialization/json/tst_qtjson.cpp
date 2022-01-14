@@ -176,6 +176,8 @@ private Q_SLOTS:
     void fromToVariantConversions_data();
     void fromToVariantConversions();
 
+    void noLeakOnNameClash();
+
 private:
     QString testDataDir;
 };
@@ -3683,6 +3685,24 @@ void tst_QtJson::fromToVariantConversions()
         // variant to QJsonObject
         QCOMPARE(QVariant(object).toJsonObject(), object);
     }
+}
+
+void tst_QtJson::noLeakOnNameClash()
+{
+    QJsonDocument doc = QJsonDocument::fromJson("{\"\":{\"\":0},\"\":0}");
+    QVERIFY(!doc.isNull());
+    const QJsonObject obj = doc.object();
+
+    // Removed the duplicate key.
+    QCOMPARE(obj.length(), 1);
+
+    // Retained the last of the duplicates.
+    const QJsonValue val = obj.begin().value();
+    QVERIFY(val.isDouble());
+    QCOMPARE(val.toDouble(), 0.0);
+
+    // It should not leak.
+    // In particular it should not forget to deref the container for the inner object.
 }
 
 QTEST_MAIN(tst_QtJson)
