@@ -76,8 +76,8 @@ public:
 
     Q_GUI_EXPORT void point(int i, int *x, int *y) const;
     QPoint point(int i) const;
-    void setPoint(int index, int x, int y);
-    void setPoint(int index, const QPoint &p);
+    Q_GUI_EXPORT void setPoint(int index, int x, int y);
+    inline void setPoint(int index, const QPoint &p);
     Q_GUI_EXPORT void setPoints(int nPoints, const int *points);
     Q_GUI_EXPORT void setPoints(int nPoints, int firstx, int firsty, ...);
     Q_GUI_EXPORT void putPoints(int index, int nPoints, const int *points);
@@ -111,10 +111,7 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QPolygon &polygon);
  *****************************************************************************/
 
 inline void QPolygon::setPoint(int index, const QPoint &pt)
-{ (*this)[index] = pt; }
-
-inline void QPolygon::setPoint(int index, int x, int y)
-{ (*this)[index] = QPoint(x, y); }
+{ setPoint(index, pt.x(), pt.y()); }
 
 inline QPoint QPolygon::point(int index) const
 { return at(index); }
