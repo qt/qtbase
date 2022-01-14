@@ -379,10 +379,30 @@ error:
     return QCborValue();
 }
 
+// We need to retain the _last_ value for any duplicate keys and we need to deref containers.
+// Therefore the manual implementation of std::unique().
+template<typename Iterator, typename Compare, typename Assign>
+static Iterator customAssigningUniqueLast(Iterator first, Iterator last,
+                                          Compare compare, Assign assign)
+{
+    first = std::adjacent_find(first, last, compare);
+    if (first == last)
+        return last;
+
+    Iterator result = first;
+    while (++first != last) {
+        if (!compare(*result, *first))
+            ++result;
+        if (result != first)
+            assign(*result, *first);
+    }
+
+    return ++result;
+}
+
 static void sortContainer(QCborContainerPrivate *container)
 {
     using Forward = QJsonPrivate::KeyIterator;
-    using Reverse = std::reverse_iterator<Forward>;
     using Value = Forward::value_type;
 
     auto compare = [container](const Value &a, const Value &b)
@@ -420,17 +440,31 @@ static void sortContainer(QCborContainerPrivate *container)
         }
     };
 
-    std::sort(Forward(container->elements.begin()), Forward(container->elements.end()),
-              [&compare](const Value &a, const Value &b) { return compare(a, b) < 0; });
+    // The elements' containers are owned by the outer container, not by the elements themselves.
+    auto move = [](Forward::reference target, Forward::reference source)
+    {
+        QtCbor::Element &targetValue = target.value();
 
-    // We need to retain the _last_ value for any duplicate keys. Therefore the reverse dance here.
-    auto it = std::unique(Reverse(container->elements.end()), Reverse(container->elements.begin()),
-                          [&compare](const Value &a, const Value &b) {
-        return compare(a, b) == 0;
-    }).base().elementsIterator();
+        // If the target has a container, deref it before overwriting, so that we don't leak.
+        if (targetValue.flags & QtCbor::Element::IsContainer)
+            targetValue.container->deref();
 
-    // The erase from beginning is expensive but hopefully rare.
-    container->elements.erase(container->elements.begin(), it);
+        // Do not move, so that we can clear the value afterwards.
+        target = source;
+
+        // Clear the source value, so that we don't store the same container twice.
+        source.value() = QtCbor::Element();
+    };
+
+    std::stable_sort(
+                Forward(container->elements.begin()), Forward(container->elements.end()),
+                [&compare](const Value &a, const Value &b) { return compare(a, b) < 0; });
+
+    Forward result = customAssigningUniqueLast(
+                Forward(container->elements.begin()),  Forward(container->elements.end()),
+                [&compare](const Value &a, const Value &b) { return compare(a, b) == 0; }, move);
+
+    container->elements.erase(result.elementsIterator(), container->elements.end());
 }
 
 
