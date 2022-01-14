@@ -712,7 +712,7 @@ inline void QTextStreamPrivate::restoreToSavedConverterState()
 /*!
     \internal
 */
-void QTextStreamPrivate::write(const QChar *data, int len)
+void QTextStreamPrivate::write(const QChar *data, qsizetype len)
 {
     if (string) {
         // ### What about seek()??
@@ -757,7 +757,7 @@ void QTextStreamPrivate::write(QLatin1String data)
 /*!
     \internal
 */
-void QTextStreamPrivate::writePadding(int len)
+void QTextStreamPrivate::writePadding(qsizetype len)
 {
     if (string) {
         // ### What about seek()??
@@ -822,7 +822,7 @@ inline void QTextStreamPrivate::putChar(QChar ch)
 /*!
     \internal
 */
-QTextStreamPrivate::PaddingResult QTextStreamPrivate::padding(int len) const
+QTextStreamPrivate::PaddingResult QTextStreamPrivate::padding(qsizetype len) const
 {
     Q_ASSERT(params.fieldWidth > len); // calling padding() when no padding is needed is an error
 
@@ -849,7 +849,7 @@ QTextStreamPrivate::PaddingResult QTextStreamPrivate::padding(int len) const
 /*!
     \internal
 */
-void QTextStreamPrivate::putString(const QChar *data, int len, bool number)
+void QTextStreamPrivate::putString(const QChar *data, qsizetype len, bool number)
 {
     if (Q_UNLIKELY(params.fieldWidth > len)) {
 
