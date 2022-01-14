@@ -4,7 +4,5 @@ ubuntu-16.04
 android
 [multiPointRawEventTranslationOnTouchPad]
 android
-# QTBUG-99489
-macos ci
 [touchBeginWithGraphicsWidget]
 android

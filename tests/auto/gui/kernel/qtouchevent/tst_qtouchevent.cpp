@@ -26,6 +26,7 @@
 **
 ****************************************************************************/
 
+#include <QtGui/QCursor>
 #include <QtGui/QScreen>
 #include <QtWidgets/QGraphicsItem>
 #include <QtWidgets/QGraphicsScene>
@@ -1140,6 +1141,14 @@ void tst_QTouchEvent::touchOnMultipleTouchscreens()
 
 void tst_QTouchEvent::multiPointRawEventTranslationOnTouchPad()
 {
+#ifdef Q_OS_MACOS
+#if QT_CONFIG(cursor)
+    QCursor::setPos(0, 0); // move mouse out of the way
+    if (!QTest::qWaitFor([]{ return QCursor::pos() == QPoint(0, 0); }))
+#endif
+        QSKIP("The macOS mouse cursor interferes with this test can cannot be moved away");
+#endif
+
     tst_QTouchEventWidget touchWidget;
     touchWidget.setObjectName("touchWidget");
     touchWidget.setWindowTitle(QTest::currentTestFunction());
@@ -1160,12 +1169,12 @@ void tst_QTouchEvent::multiPointRawEventTranslationOnTouchPad()
     touchWidget.show();
     QVERIFY(QTest::qWaitForWindowExposed(&touchWidget));
 
-    QPointF leftPos = leftWidget.rect().center();
-    QPointF rightPos = rightWidget.rect().center();
-    QPointF centerPos = touchWidget.rect().center();
-    QPointF leftScreenPos = leftWidget.mapToGlobal(leftPos.toPoint());
-    QPointF rightScreenPos = rightWidget.mapToGlobal(rightPos.toPoint());
-    QPointF centerScreenPos = touchWidget.mapToGlobal(centerPos.toPoint());
+    const QPointF leftPos = leftWidget.rect().center();
+    const QPointF rightPos = rightWidget.rect().center();
+    const QPointF centerPos = touchWidget.rect().center();
+    const QPointF leftScreenPos = leftWidget.mapToGlobal(leftPos.toPoint());
+    const QPointF rightScreenPos = rightWidget.mapToGlobal(rightPos.toPoint());
+    const QPointF centerScreenPos = touchWidget.mapToGlobal(centerPos.toPoint());
 
     ulong timestamp = 0;
     QList<QMutableEventPoint> rawTouchPoints;
