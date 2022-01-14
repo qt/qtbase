@@ -58,7 +58,20 @@ do {\
     }\
 } while (0)
 
+#define QBASELINE_CHECK_SUM_DEFERRED(image, name, checksum)\
+do {\
+    QByteArray _msg;\
+    bool _err = false;\
+    if (!QBaselineTest::checkImage((image), (name), (checksum), &_msg, &_err)) {\
+        QTest::qFail(_msg.constData(), __FILE__, __LINE__);\
+    } else if (_err) {\
+        QSKIP(_msg.constData());\
+    }\
+} while (0)
+
 #define QBASELINE_CHECK(image, name) QBASELINE_CHECK_SUM(image, name, 0)
+
+#define QBASELINE_CHECK_DEFERRED(image, name) QBASELINE_CHECK_SUM_DEFERRED(image, name, 0)
 
 #define QBASELINE_TEST(image)\
 do {\

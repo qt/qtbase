@@ -149,7 +149,7 @@ void QWidgetBaselineTest::takeStandardSnapshots()
         bool focusNextPrevChild(bool next) override { return QWidget::focusNextPrevChild(next); }
     };
 
-    QBASELINE_CHECK(takeSnapshot(), "default");
+    QBASELINE_CHECK_DEFERRED(takeSnapshot(), "default");
 
     // try hard to set focus
     static_cast<PublicWidget*>(window)->focusNextPrevChild(true);
@@ -158,14 +158,15 @@ void QWidgetBaselineTest::takeStandardSnapshots()
         if (firstChild)
             firstChild->setFocus();
     }
+
     if (testWindow()->focusWidget()) {
-        QBASELINE_CHECK(takeSnapshot(), "focused");
+        QBASELINE_CHECK_DEFERRED(takeSnapshot(), "focused");
         testWindow()->focusWidget()->clearFocus();
     }
 
     // this disables all children
     window->setEnabled(false);
-    QBASELINE_CHECK(takeSnapshot(), "disabled");
+    QBASELINE_CHECK_DEFERRED(takeSnapshot(), "disabled");
     window->setEnabled(true);
 
     // show and activate another window so that our test window becomes inactive
@@ -176,7 +177,7 @@ void QWidgetBaselineTest::takeStandardSnapshots()
     otherWindow.show();
     otherWindow.windowHandle()->requestActivate();
     QVERIFY(QTest::qWaitForWindowActive(&otherWindow));
-    QBASELINE_CHECK(takeSnapshot(), "inactive");
+    QBASELINE_CHECK_DEFERRED(takeSnapshot(), "inactive");
 
     window->windowHandle()->requestActivate();
     QVERIFY(QTest::qWaitForWindowActive(window));
