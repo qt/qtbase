@@ -62,6 +62,9 @@ private slots:
 
     void tst_QScrollBar_data();
     void tst_QScrollBar();
+
+    void tst_QTabBar_data();
+    void tst_QTabBar();
 };
 
 void tst_Widgets::tst_QSlider_data()
@@ -449,6 +452,59 @@ void tst_Widgets::tst_QScrollBar()
     QTest::mousePress(bar,Qt::MouseButton::LeftButton, Qt::KeyboardModifiers(), clickTarget,0);
     QBASELINE_CHECK_DEFERRED(takeSnapshot(), "pressRightDown");
     QTest::mouseRelease(bar,Qt::MouseButton::LeftButton, Qt::KeyboardModifiers(), clickTarget,0);
+}
+
+void tst_Widgets::tst_QTabBar_data()
+{
+    QTest::addColumn<QTabBar::Shape>("shape");
+    QTest::addColumn<int>("numberTabs");
+    QTest::addColumn<int>("fixedWidth");
+
+    // fixedWidth <0 will be interpreted as variable width
+    QTest::newRow("RoundedNorth_3_variableWidth") << QTabBar::RoundedNorth << 3 << -1;
+    QTest::newRow("RoundedEast_3_variableWidth") << QTabBar::RoundedEast << 3 << -1;
+    QTest::newRow("RoundedWest_3_variableWidth") << QTabBar::RoundedWest << 3 << -1;
+    QTest::newRow("RoundedSouth_3_variableWidth") << QTabBar::RoundedSouth << 3 << -1;
+    QTest::newRow("RoundedNorth_20_fixedWidth") << QTabBar::RoundedNorth << 20 << 250;
+}
+
+void tst_Widgets::tst_QTabBar()
+{
+    QFETCH(QTabBar::Shape, shape);
+    QFETCH(int, numberTabs);
+    QFETCH(int, fixedWidth);
+
+    QTabBar bar (testWindow());
+    bar.setShape(shape);
+    if (fixedWidth > 0)
+        bar.setFixedWidth(fixedWidth);
+
+    for (int i = 0; i < numberTabs; ++i) {
+        bar.insertTab(i,"Tab_" + QString::number(i));
+    }
+
+    QBoxLayout box(QBoxLayout::LeftToRight, testWindow());
+    box.addWidget(&bar);
+    testWindow()->setLayout(&box);
+
+    takeStandardSnapshots();
+
+    // press/release first tab
+    bar.setCurrentIndex(0);
+    QPoint clickTarget = bar.tabRect(0).center();
+    QTest::mousePress(&bar,Qt::MouseButton::LeftButton, Qt::KeyboardModifiers(), clickTarget,0);
+    QBASELINE_CHECK_DEFERRED(takeSnapshot(), "pressFirstTab");
+    QTest::mouseRelease(&bar,Qt::MouseButton::LeftButton, Qt::KeyboardModifiers(), clickTarget,0);
+    QVERIFY(bar.currentIndex() == 0);
+
+    // press/release second tab if it exists
+    if (bar.count() > 1) {
+        clickTarget = bar.tabRect(1).center();
+        QTest::mousePress(&bar,Qt::MouseButton::LeftButton, Qt::KeyboardModifiers(), clickTarget,0);
+        QBASELINE_CHECK_DEFERRED(takeSnapshot(), "pressSecondTab");
+        QTest::mouseRelease(&bar,Qt::MouseButton::LeftButton, Qt::KeyboardModifiers(), clickTarget,0);
+        QVERIFY(bar.currentIndex() == 1);
+    }
 }
 
 #define main _realmain
