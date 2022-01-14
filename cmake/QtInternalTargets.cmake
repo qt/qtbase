@@ -6,6 +6,10 @@ function(qt_internal_set_warnings_are_errors_flags target)
         if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "3.0.0")
             list(APPEND flags -Werror -Wno-error=\#warnings -Wno-error=deprecated-declarations)
         endif()
+        if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "10.0.0")
+            # We do mixed enum arithmetic all over the place:
+            list(APPEND flags -Wno-error=deprecated-enum-enum-conversion)
+        endif()
     elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
         # using AppleClang
         # Apple clang 4.0+
