@@ -589,3 +589,5 @@ QNetworkReply::NetworkError QNetworkReplyWasmImplPrivate::statusCodeFromHttp(int
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qnetworkreplywasmimpl_p.cpp"

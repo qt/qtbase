@@ -550,3 +550,5 @@ qint64 QHttpMultiPartIODevice::writeData(const char *data, qint64 maxSize)
 
 
 QT_END_NAMESPACE
+
+#include "moc_qhttpmultipart.cpp"

@@ -119,3 +119,5 @@ QTcpSocket::QTcpSocket(QAbstractSocket::SocketType socketType,
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qtcpsocket.cpp"

@@ -1232,3 +1232,5 @@ void QDtls::ignoreVerificationErrors(const QList<QSslError> &errorsToIgnore)
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qdtls.cpp"

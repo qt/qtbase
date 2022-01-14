@@ -373,3 +373,5 @@ bool QNetworkCookieJar::validateCookie(const QNetworkCookie &cookie, const QUrl 
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qnetworkcookiejar.cpp"

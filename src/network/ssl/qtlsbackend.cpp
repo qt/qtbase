@@ -2379,3 +2379,5 @@ Q_NETWORK_EXPORT void qt_ForceTlsSecurityLevel()
 #endif // QT_CONFIG(ssl)
 
 QT_END_NAMESPACE
+
+#include "moc_qtlsbackend_p.cpp"

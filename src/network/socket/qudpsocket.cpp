@@ -531,3 +531,5 @@ qint64 QUdpSocket::readDatagram(char *data, qint64 maxSize, QHostAddress *addres
 #endif // QT_NO_UDPSOCKET
 
 QT_END_NAMESPACE
+
+#include "moc_qudpsocket.cpp"

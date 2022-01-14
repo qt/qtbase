@@ -364,3 +364,5 @@ void QNetworkAccessCache::removeEntry(const QByteArray &key)
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qnetworkaccesscache_p.cpp"

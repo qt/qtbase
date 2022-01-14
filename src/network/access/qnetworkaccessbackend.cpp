@@ -856,3 +856,5 @@ QNetworkAccessBackendFactory::~QNetworkAccessBackendFactory()
 };
 
 QT_END_NAMESPACE
+
+#include "moc_qnetworkaccessbackend_p.cpp"

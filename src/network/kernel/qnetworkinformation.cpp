@@ -729,3 +729,6 @@ QNetworkInformation *QNetworkInformation::instance()
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qnetworkinformation.cpp"
+#include "moc_qnetworkinformation_p.cpp"

@@ -855,3 +855,5 @@ void QHttpNetworkReply::ignoreSslErrors(const QList<QSslError> &errors)
 
 
 QT_END_NAMESPACE
+
+#include "moc_qhttpnetworkreply_p.cpp"

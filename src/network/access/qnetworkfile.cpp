@@ -90,3 +90,5 @@ void QNetworkFile::close()
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qnetworkfile_p.cpp"

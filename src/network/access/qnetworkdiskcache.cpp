@@ -725,3 +725,5 @@ bool QCacheItem::read(QFile *device, bool readData)
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qnetworkdiskcache.cpp"

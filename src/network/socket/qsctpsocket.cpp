@@ -545,3 +545,5 @@ bool QSctpSocket::writeDatagram(const QNetworkDatagram &datagram)
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qsctpsocket.cpp"

@@ -286,3 +286,5 @@ qint64 QNetworkAccessFileBackend::read(char *data, qint64 maxlen)
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qnetworkaccessfilebackend_p.cpp"

@@ -967,3 +967,5 @@ void QNetworkReply::setAttribute(QNetworkRequest::Attribute code, const QVariant
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qnetworkreply.cpp"

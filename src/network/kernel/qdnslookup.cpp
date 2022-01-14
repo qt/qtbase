@@ -1069,3 +1069,4 @@ void QDnsLookupThreadPool::_q_applicationDestroyed()
 QT_END_NAMESPACE
 
 #include "moc_qdnslookup.cpp"
+#include "moc_qdnslookup_p.cpp"

@@ -775,3 +775,5 @@ void  QHttpThreadDelegate::synchronousProxyAuthenticationRequiredSlot(const QNet
 #endif
 
 QT_END_NAMESPACE
+
+#include "moc_qhttpthreaddelegate_p.cpp"

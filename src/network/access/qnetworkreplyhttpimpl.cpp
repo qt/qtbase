@@ -2235,3 +2235,5 @@ void QNetworkReplyHttpImplPrivate::completeCacheSave()
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qnetworkreplyhttpimpl_p.cpp"

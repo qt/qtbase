@@ -1645,3 +1645,5 @@ void QHttp2ProtocolHandler::closeSession()
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qhttp2protocolhandler_p.cpp"

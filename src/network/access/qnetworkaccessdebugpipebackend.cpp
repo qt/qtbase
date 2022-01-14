@@ -270,3 +270,5 @@ void QNetworkAccessDebugPipeBackend::socketConnected()
 #endif
 
 QT_END_NAMESPACE
+
+#include "moc_qnetworkaccessdebugpipebackend_p.cpp"
