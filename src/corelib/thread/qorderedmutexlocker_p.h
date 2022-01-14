@@ -91,9 +91,9 @@ public:
     }
 
     QOrderedMutexLocker(QOrderedMutexLocker &&other) noexcept
-        : mtx1(std::exchange(other.mtx1, nullptr))
-        , mtx2(std::exchange(other.mtx2, nullptr))
-        , locked(std::exchange(other.locked, false))
+        : mtx1(qExchange(other.mtx1, nullptr))
+        , mtx2(qExchange(other.mtx2, nullptr))
+        , locked(qExchange(other.locked, false))
     {}
 
     ~QOrderedMutexLocker()
