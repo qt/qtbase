@@ -103,7 +103,7 @@
     \section2 Sizes and Sub-Strings
 
     All sizes and positions in QAnyStringView functions are in the
-    encoding's code points (that is, UTF-16 surrogate pairs count as
+    encoding's code units (that is, UTF-16 surrogate pairs count as
     two for the purposes of these functions, the same as in QString,
     and UTF-8 multibyte sequences count as two, three or four,
     depending on their length).
