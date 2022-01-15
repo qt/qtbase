@@ -103,6 +103,8 @@ private slots:
     void mouseWheel();
     void kineticWheel_data();
     void kineticWheel();
+    void highResolutionWheel_data();
+    void highResolutionWheel();
 
     void scrollButtons_data();
     void scrollButtons();
@@ -1104,6 +1106,49 @@ void tst_QTabBar::kineticWheel()
         QApplication::sendEvent(&tabbar, &event);
         QVERIFY(!event.isAccepted());
     }
+}
+
+void tst_QTabBar::highResolutionWheel_data()
+{
+    QTest::addColumn<int>("angleDelta");
+    // Smallest angleDelta for a Logitech MX Master 3 with Linux/X11/Libinput
+    QTest::addRow("increment index") << -16;
+    QTest::addRow("decrement index") << 16;
+}
+
+void tst_QTabBar::highResolutionWheel()
+{
+    TabBar tabbar;
+    TabBarScrollingProxyStyle proxyStyle;
+    tabbar.setStyle(&proxyStyle);
+
+    tabbar.addTab("tab1");
+    tabbar.addTab("tab2");
+    QFETCH(int, angleDelta);
+    // Negative values increment, positive values decrement
+    int startIndex = angleDelta < 0 ? 0 : 1;
+    tabbar.setCurrentIndex(startIndex);
+
+    const auto systemId = QPointingDevice::primaryPointingDevice()->systemId() + 1;
+    QPointingDevice hiResWheel(
+            "test high resolution wheel", systemId, QInputDevice::DeviceType::Mouse,
+            QPointingDevice::PointerType::Generic,
+            QInputDevice::Capability::Position | QInputDevice::Capability::Scroll, 1, 3);
+
+    const QPoint wheelPoint = tabbar.rect().bottomRight();
+    QWheelEvent event(wheelPoint, tabbar.mapToGlobal(wheelPoint), QPoint(),
+                      QPoint(angleDelta, angleDelta), Qt::NoButton, Qt::NoModifier,
+                      Qt::NoScrollPhase, false, Qt::MouseEventSynthesizedByApplication,
+                      &hiResWheel);
+
+    proxyStyle.scrolling = true;
+    for (int accumulated = 0; accumulated < QWheelEvent::DefaultDeltasPerStep;
+         accumulated += qAbs(angleDelta)) {
+        // verify that nothing has changed until the threshold has been reached
+        QVERIFY(tabbar.currentIndex() == startIndex);
+        QVERIFY(QApplication::sendEvent(&tabbar, &event));
+    }
+    QVERIFY(tabbar.currentIndex() != startIndex);
 }
 
 #endif // QT_CONFIG(wheelevent)
