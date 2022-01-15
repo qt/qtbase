@@ -207,7 +207,7 @@ const char *QtMetaTypePrivate::typedefNameForType(const QtPrivate::QMetaTypeInte
 #ifndef QT_NO_DEBUG
     QByteArrayList otherNames;
     for ( ; it != end; ++it) {
-        if (it.value() == type_d)
+        if (it.value() == type_d && it.key() != officialName)
             otherNames << it.key();
     }
     if (!otherNames.isEmpty())
