@@ -58,6 +58,8 @@
 #include <QByteArray>
 #include <QSurface>
 
+#include <QtCore/private/qduplicatetracker_p.h>
+
 QT_BEGIN_NAMESPACE
 
 class QOpenGLExtensions;
@@ -882,10 +884,10 @@ public:
     void registerUniformIfActive(const QShaderDescription::BlockVariable &var,
                                  const QByteArray &namePrefix, int binding, int baseOffset,
                                  GLuint program,
-                                 QSet<int> *activeUniformLocations,
+                                 QDuplicateTracker<int, 256> *activeUniformLocations,
                                  QGles2UniformDescriptionVector *dst);
     void gatherUniforms(GLuint program, const QShaderDescription::UniformBlock &ub,
-                        QSet<int> *activeUniformLocations, QGles2UniformDescriptionVector *dst);
+                        QDuplicateTracker<int, 256> *activeUniformLocations, QGles2UniformDescriptionVector *dst);
     void gatherSamplers(GLuint program, const QShaderDescription::InOutVariable &v,
                         QGles2SamplerDescriptionVector *dst);
     void gatherGeneratedSamplers(GLuint program,
