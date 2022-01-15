@@ -275,13 +275,28 @@ public:
     [[nodiscard]] Q_CORE_EXPORT static Q_DECL_PURE_FUNCTION QVersionNumber commonPrefix(const QVersionNumber &v1, const QVersionNumber &v2);
 
     [[nodiscard]] Q_CORE_EXPORT QString toString() const;
-#if QT_STRINGVIEW_LEVEL < 2
-    [[nodiscard]] Q_CORE_EXPORT static Q_DECL_PURE_FUNCTION QVersionNumber fromString(const QString &string, qsizetype *suffixIndex = nullptr);
-#endif
-    [[nodiscard]] Q_CORE_EXPORT static Q_DECL_PURE_FUNCTION QVersionNumber fromString(QLatin1String string, qsizetype *suffixIndex = nullptr);
-    [[nodiscard]] Q_CORE_EXPORT static Q_DECL_PURE_FUNCTION QVersionNumber fromString(QStringView string, qsizetype *suffixIndex = nullptr);
+    [[nodiscard]] Q_CORE_EXPORT static Q_DECL_PURE_FUNCTION QVersionNumber fromString(QAnyStringView string, qsizetype *suffixIndex = nullptr);
 
-#if QT_REMOVED_SINCE(6, 4) && QT_POINTER_SIZE != 4
+#if QT_DEPRECATED_SINCE(6, 4) && QT_POINTER_SIZE != 4
+    Q_WEAK_OVERLOAD
+    QT_DEPRECATED_VERSION_X_6_4("Use the 'qsizetype *suffixIndex' overload.")
+    [[nodiscard]] static QVersionNumber fromString(QAnyStringView string, int *suffixIndex)
+    {
+        QT_WARNING_PUSH
+        // fromString() writes to *n unconditionally, but GCC can't know that
+        QT_WARNING_DISABLE_GCC("-Wmaybe-uninitialized")
+        qsizetype n;
+        auto r = fromString(string, &n);
+        if (suffixIndex) {
+            Q_ASSERT(int(n) == n);
+            *suffixIndex = int(n);
+        }
+        return r;
+        QT_WARNING_POP
+    }
+#endif
+
+#if QT_REMOVED_SINCE(6, 4)
     [[nodiscard]] Q_CORE_EXPORT static Q_DECL_PURE_FUNCTION QVersionNumber fromString(const QString &string, int *suffixIndex);
     [[nodiscard]] Q_CORE_EXPORT static Q_DECL_PURE_FUNCTION QVersionNumber fromString(QLatin1String string, int *suffixIndex);
     [[nodiscard]] Q_CORE_EXPORT static Q_DECL_PURE_FUNCTION QVersionNumber fromString(QStringView string, int *suffixIndex);
@@ -304,7 +319,6 @@ public:
 
     [[nodiscard]] friend bool operator!=(const QVersionNumber &lhs, const QVersionNumber &rhs) noexcept
     { return compare(lhs, rhs) != 0; }
-
 
 private:
 #ifndef QT_NO_DATASTREAM

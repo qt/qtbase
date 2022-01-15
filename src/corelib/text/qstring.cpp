@@ -995,7 +995,7 @@ static void qt_to_latin1_internal(uchar *dst, const char16_t *src, qsizetype len
 #endif
 }
 
-static void qt_to_latin1(uchar *dst, const char16_t *src, qsizetype length)
+void qt_to_latin1(uchar *dst, const char16_t *src, qsizetype length)
 {
     qt_to_latin1_internal<true>(dst, src, length);
 }

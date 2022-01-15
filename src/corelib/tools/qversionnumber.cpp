@@ -400,48 +400,9 @@ QString QVersionNumber::toString() const
     return version;
 }
 
-#if QT_STRINGVIEW_LEVEL < 2
 /*!
-    Constructs a QVersionNumber from a specially formatted \a string of
-    non-negative decimal numbers delimited by a period (\c{.}).
-
-    Once the numerical segments have been parsed, the remainder of the string
-    is considered to be the suffix string.  The start index of that string will be
-    stored in \a suffixIndex if it is not null.
-
-    \snippet qversionnumber/main.cpp 3
-
-    \sa isNull()
-*/
-QVersionNumber QVersionNumber::fromString(const QString &string, qsizetype *suffixIndex)
-{
-    return fromString(QLatin1String(string.toLatin1()), suffixIndex);
-}
-#endif
-
-/*!
-    \since 5.10
-    \overload
-
-    Constructs a QVersionNumber from a specially formatted \a string of
-    non-negative decimal numbers delimited by '.'.
-
-    Once the numerical segments have been parsed, the remainder of the string
-    is considered to be the suffix string.  The start index of that string will be
-    stored in \a suffixIndex if it is not null.
-
-    \snippet qversionnumber/main.cpp 3
-
-    \sa isNull()
-*/
-QVersionNumber QVersionNumber::fromString(QStringView string, qsizetype *suffixIndex)
-{
-    return fromString(QLatin1String(string.toLatin1()), suffixIndex);
-}
-
-/*!
-    \since 5.10
-    \overload
+    \fn QVersionNumber QVersionNumber::fromString(QAnyStringView string, qsizetype *suffixIndex)
+    \since 6.4
 
     Constructs a QVersionNumber from a specially formatted \a string of
     non-negative decimal numbers delimited by '.'.
@@ -452,9 +413,13 @@ QVersionNumber QVersionNumber::fromString(QStringView string, qsizetype *suffixI
 
     \snippet qversionnumber/main.cpp 3-latin1-1
 
+    \note In versions prior to Qt 6.4, this function was overloaded for QString,
+    QLatin1String and QStringView instead, and \a suffixIndex was an \c{int*}.
+
     \sa isNull()
 */
-QVersionNumber QVersionNumber::fromString(QLatin1String string, qsizetype *suffixIndex)
+
+static QVersionNumber from_string(QLatin1String string, qsizetype *suffixIndex)
 {
     QList<int> seg;
 
@@ -477,6 +442,27 @@ QVersionNumber QVersionNumber::fromString(QLatin1String string, qsizetype *suffi
         *suffixIndex = lastGoodEnd - string.begin();
 
     return QVersionNumber(std::move(seg));
+}
+
+static QVersionNumber from_string(q_no_char8_t::QUtf8StringView string, qsizetype *suffixIndex)
+{
+    return from_string(QLatin1String(string.data(), string.size()), suffixIndex);
+}
+
+// in qstring.cpp
+extern void qt_to_latin1(uchar *dst, const char16_t *uc, qsizetype len);
+
+static QVersionNumber from_string(QStringView string, qsizetype *suffixIndex)
+{
+    QVarLengthArray<char> copy;
+    copy.resize(string.size());
+    qt_to_latin1(reinterpret_cast<uchar*>(copy.data()), string.utf16(), string.size());
+    return from_string(QLatin1String(copy.data(), copy.size()), suffixIndex);
+}
+
+QVersionNumber QVersionNumber::fromString(QAnyStringView string, qsizetype *suffixIndex)
+{
+    return string.visit([=] (auto string) { return from_string(string, suffixIndex); });
 }
 
 void QVersionNumber::SegmentStorage::setVector(int len, int maj, int min, int mic)

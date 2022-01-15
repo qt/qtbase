@@ -114,38 +114,30 @@ QByteArray QtPrivate::QByteArrayList_join(const QByteArrayList *that, const char
 }
 
 #endif // QT_REMOVED_SINCE(6, 3)
+
 #if QT_REMOVED_SINCE(6, 4)
 
 #include "qversionnumber.h"
 
-#  if QT_POINTER_SIZE != 4
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
+
 QVersionNumber QVersionNumber::fromString(const QString &string, int *suffixIndex)
 {
-    qsizetype si;
-    QVersionNumber r = fromString(QLatin1String(string.toLatin1()), &si);
-    if (suffixIndex)
-        *suffixIndex = si;
-    return r;
+    return fromString(qToAnyStringViewIgnoringNull(string), suffixIndex);
 }
 
 QVersionNumber QVersionNumber::fromString(QStringView string, int *suffixIndex)
 {
-    qsizetype si;
-    QVersionNumber r = fromString(QLatin1String(string.toLatin1()), &si);
-    if (suffixIndex)
-        *suffixIndex = si;
-    return r;
+    return fromString(QAnyStringView{string}, suffixIndex);
 }
 
 QVersionNumber QVersionNumber::fromString(QLatin1String string, int *suffixIndex)
 {
-    qsizetype si;
-    QVersionNumber r = fromString(string, &si);
-    if (suffixIndex)
-        *suffixIndex = si;
-    return r;
+    return fromString(QAnyStringView{string}, suffixIndex);
 }
-#  endif // QT_POINTER_SIZE != 4
+
+QT_WARNING_POP
 
 // #include <qotherheader.h>
 // // implement removed functions from qotherheader.h

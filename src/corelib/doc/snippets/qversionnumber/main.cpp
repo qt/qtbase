@@ -90,7 +90,7 @@ void QObject::parse()
 {
     //! [3]
     QString string("5.4.0-alpha");
-    int suffixIndex;
+    qsizetype suffixIndex;
     QVersionNumber version = QVersionNumber::fromString(string, &suffixIndex);
     // version is 5.4.0
     // suffixIndex is 5
@@ -98,7 +98,7 @@ void QObject::parse()
 
     //! [3-latin1-1]
     QLatin1String string("5.4.0-alpha");
-    int suffixIndex;
+    qsizetype suffixIndex;
     auto version = QVersionNumber::fromString(string, &suffixIndex);
     // version is 5.4.0
     // suffixIndex is 5

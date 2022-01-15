@@ -73,6 +73,7 @@ private slots:
     void assignment();
     void fromString_data();
     void fromString();
+    void fromString_extra();
     void toString_data();
     void toString();
     void isNull_data();
@@ -523,6 +524,46 @@ void tst_QVersionNumber::fromString()
     QCOMPARE(QVersionNumber::fromString(QLatin1String(constructionString.toLatin1())), expectedVersion);
     QCOMPARE(QVersionNumber::fromString(QLatin1String(constructionString.toLatin1()), &index), expectedVersion);
     QCOMPARE(index, suffixIndex);
+
+#if QT_DEPRECATED_SINCE(6, 4)
+    QT_WARNING_PUSH
+    QT_WARNING_DISABLE_DEPRECATED
+    // check deprecated `int *suffixIndex` overload, too
+    {
+        int i;
+        QCOMPARE(QVersionNumber::fromString(constructionString, &i), expectedVersion);
+        QCOMPARE(i, suffixIndex);
+
+        QCOMPARE(QVersionNumber::fromString(QStringView(constructionString), &i), expectedVersion);
+        QCOMPARE(i, suffixIndex);
+
+        QCOMPARE(QVersionNumber::fromString(QLatin1String(constructionString.toLatin1()), &i), expectedVersion);
+        QCOMPARE(i, suffixIndex);
+    }
+    QT_WARNING_POP
+#endif
+}
+
+void tst_QVersionNumber::fromString_extra()
+{
+    // check the overloaded fromString() functions aren't ambiguous
+    // when passing explicit nullptr:
+    {
+        auto v = QVersionNumber::fromString("1.2.3-rc1", nullptr);
+        QCOMPARE(v, QVersionNumber({1, 2, 3}));
+    }
+    {
+        auto v = QVersionNumber::fromString("1.2.3-rc1", 0);
+        QCOMPARE(v, QVersionNumber({1, 2, 3}));
+    }
+
+    // check the UTF16->L1 conversion isn't doing something weird
+    {
+        qsizetype i = -1;
+        auto v = QVersionNumber::fromString(u"1.0ı", &i); // LATIN SMALL LETTER DOTLESS I
+        QCOMPARE(v, QVersionNumber(1, 0));
+        QCOMPARE(i, 3);
+    }
 }
 
 void tst_QVersionNumber::toString_data()
